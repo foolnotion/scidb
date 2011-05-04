@@ -1,5 +1,5 @@
 /*
- * Author: 
+ * Author:
  *      Guido Draheim <guidod@gmx.de>
  *      Tomi Ollila <Tomi.Ollila@iki.fi>
  *
@@ -7,7 +7,7 @@
  *          All rights reserved
  *          use under the restrictions of the
  *          Lesser GNU General Public License
- *          note the additional license information 
+ *          note the additional license information
  *          that can be found in COPYING.ZZIP
  *
  * This is the private header containing definitions that are not
@@ -18,9 +18,9 @@
 #ifndef _ZZIP_LIB_H /* zzip.h */
 #define _ZZIP_LIB_H
 
-#include <zziplib.h>
-#include <zzip-io.h>
-#include <zzip-stdint.h>
+#include <zzip/zzip.h>
+#include <zzip/zzip-io.h>
+#include <zzip/zzip-stdint.h>
 
 /*
  * this structure cannot be wildly enlarged... (see zzip-zip.c)
@@ -60,7 +60,7 @@ struct zzip_dir
     char*  realname;
     zzip_strings_t* fileext;      /* list of fileext to test for */
     zzip_plugin_io_t io;          /* vtable for io routines */
-}; 
+};
 
 #define ZZIP_32K 32768
 
@@ -68,10 +68,10 @@ struct zzip_dir
 int      __zzip_try_open (zzip_char_t* filename, int filemode,
                           zzip_strings_t* ext, zzip_plugin_io_t io);
 
-ZZIP_DIR * 
+ZZIP_DIR *
 zzip_dir_fdopen(int fd, zzip_error_t * errcode_p);
 
-ZZIP_DIR* 
+ZZIP_DIR*
 zzip_dir_fdopen_ext_io(int fd, zzip_error_t * errorcode_p,
                        zzip_strings_t* ext, const zzip_plugin_io_t io);
 
