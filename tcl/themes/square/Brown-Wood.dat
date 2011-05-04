@@ -1,0 +1,34 @@
+### Square Style: Brown - Wood ########################
+
+::board::addStyle square {
+	identifier					{Wood - Brown|1228820485412|yellow.color|gregor}
+
+	lite,rotation				0
+	lite,solid					#e0d070
+	lite,texture				{wood wood-natural-maple.jpg}
+	lite,x1						0
+	lite,x2						150
+	lite,y1						0
+	lite,y2						150
+
+	dark,rotation				0
+	dark,solid					#70a070
+	dark,texture				{wood wood-amber-cherry.jpg}
+	dark,x1						0
+	dark,x2						150
+	dark,y1						0
+	dark,y2						150
+
+	borderline,width			0.007
+	borderline,opacity		0x50
+	borderline,gap				0
+
+	hilite,selected			#e05524
+	hilite,suggested			#3bbdbe
+
+	hint,border-color			{}
+	hint,border-tile			{wood WoodFine0006_S.jpg}
+	hint,background-color	{}
+	hint,background-tile		{wood WoodFine0006_S.jpg}
+	hint,coordinates 			#000000
+}

@@ -1,0 +1,10 @@
+### Theme: Kingdom ########################
+
+::board::addStyle theme {
+	identifier		Burnett|1228820485389|yellow.color|gregor
+	square-style	{Wood - Brown|1228820485412|yellow.color|gregor}
+	piece-style		Default
+	piece-set		Burnett
+}
+
+# eof

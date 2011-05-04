@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {}
+  dark,y1               0
+  hint,border-color     #666666
+  dark,y2               0
+  hint,background-tile  {misc CeramicTilesPatern_thumbnail.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {}
+  lite,x1               0
+  hilite,selected       #b0d0e0
+  lite,x2               0
+  lite,solid            #d0d0d0
+  hilite,suggested      #eeed2a
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {}
+  dark,x2               0
+  dark,solid            #a0a0a0
+  hint,coordinates      #ffffff
+  borderline,gap        0
+  borderline,opacity    175
+  identifier            Gray|1243532989423|yellow.color|gregor
+  lite,y1               0
+  lite,y2               0
+}

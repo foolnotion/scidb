@@ -1,0 +1,27 @@
+::board::addStyle square {
+  borderline,gap        {0}
+  borderline,opacity    {175}
+  borderline,width      {0.006666666666666667}
+  dark,rotation         {0}
+  dark,solid            {}
+  dark,texture          {marble Diamond_Ebony_Marble.15194542_std.jpg}
+  dark,x1               {0}
+  dark,x2               {96}
+  dark,y1               {0}
+  dark,y2               {96}
+  hilite,selected       {#b0d0e0}
+  hilite,suggested      {#eeed2a}
+  hint,background-color {}
+  hint,background-tile  {misc PeachMelonTowelTexture.jpg}
+  hint,border-color     {}
+  hint,border-tile      {marble marble13.jpg}
+  hint,coordinates      {#ffffff}
+  identifier            {Crater|1296048990606|yellow.color|gregor}
+  lite,rotation         {0}
+  lite,solid            {}
+  lite,texture          {misc Sycomore_yellow_dyed.jpg}
+  lite,x1               {0}
+  lite,x2               {96}
+  lite,y1               {0}
+  lite,y2               {96}
+}

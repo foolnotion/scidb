@@ -1,0 +1,44 @@
+### .subversion format:
+[auto-props]
+*.c   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-csrc
+*.h   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-chdr
+*.cpp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
+*.ipp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
+*.tcl = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-tcl
+*.pl  = svn:eol-style=native; svn:mime-type=text/x-perl
+*.dat = svn:eol-style=native; svn:mime-type=text/plain
+*.txt = svn:eol-style=native; svn:mime-type=text/plain
+*.eXt = svn:eol-style=native; svn:mime-type=text/x-tex
+*.sfd = svn:eol-style=native; svn:mime-type=text/plain
+*.spf = svn:eol-style=native; svn:mime-type=text/plain
+*.spi = svn:eol-style=native; svn:mime-type=text/plain
+*.lem = svn:eol-style=native; svn:mime-type=text/x-csrc
+*.css = svn:eol-style=native; svn:mime-type=text/css
+*.spa = svn:eol-style=LF; svn:mime-type=text/plain
+*.n   = svn:eol-style=LF; svn:mime-type=application/x-troff-man
+
+*.png = svn:mime-type=image/png
+*.jpg = svn:mime-type=image/jpeg
+*.xbm = svn:mime-type=image/x-xbitmap
+*.ico = svn:mime-type=image/vnd.microsoft.icon
+*.ttf = svn:mime-type=application/x-font-truetype
+*.cur = svn:mime-type=image/x-win-bitmap
+*.xcur= svn:mime-type=image/x-xcursor
+
+*.rc  = svn:eol-style=CRLF; svn:mime-type=text/plain
+*.rtf = svn:eol-style=CRLF; svn:mime-type=text/richtext
+
+Makefile   = svn:eol-style=LF; svn:mime-type=text/x-makefile
+magic      = svn:eol-style=LF; svn:mime-type=text/plain
+
+COPYING    = svn:eol-style=native; svn:mime-type=text/plain
+copying    = svn:eol-style=native; svn:mime-type=text/plain
+ChangeLog  = svn:eol-style=native; svn:mime-type=text/plain
+README     = svn:eol-style=native; svn:mime-type=text/plain
+TODO       = svn:eol-style=native; svn:mime-type=text/plain
+URL        = svn:eol-style=native; svn:mime-type=text/plain
+auto-props = svn:eol-style=native; svn:mime-type=text/plain
+copyright  = svn:eol-style=native; svn:mime-type=text/plain
+COPYRIGHT  = svn:eol-style=native; svn:mime-type=text/plain
+readme     = svn:eol-style=native; svn:mime-type=text/plain
+spf2spi    = svn:eol-style=native; svn:mime-type=text/x-tcl

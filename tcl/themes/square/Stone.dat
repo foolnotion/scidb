@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {marble marble_206.jpg}
+  dark,y1               0
+  hint,border-color     {}
+  dark,y2               150
+  hint,background-tile  {marble marble_234.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {misc urulu-lite.png}
+  lite,x1               0
+  hilite,selected       #b0d0e0
+  lite,x2               150
+  lite,solid            {}
+  hilite,suggested      #fdf0b1
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {marble marble_206.jpg}
+  dark,x2               150
+  dark,solid            {}
+  hint,coordinates      #ffffff
+  borderline,gap        0
+  borderline,opacity    175
+  identifier            Stone|1243792087778|yellow.color|gregor
+  lite,y1               0
+  lite,y2               150
+}

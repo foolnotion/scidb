@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {wood WoodFine0006_Green.png}
+  dark,y1               0
+  hint,border-color     {}
+  dark,y2               99
+  hint,background-tile  {wood WoodFine0006_S.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {wood wood_hickory_yellow.png}
+  lite,x1               0
+  hilite,selected       #b0d0e0
+  lite,x2               99
+  lite,solid            {}
+  hilite,suggested      #eeed2a
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {wood WOOD-parisot.jpg}
+  dark,x2               99
+  dark,solid            {}
+  hint,coordinates      #ffffff
+  borderline,gap        0
+  borderline,opacity    175
+  identifier            {Wood - Green|1244309414202|yellow.color|gregor}
+  lite,y1               0
+  lite,y2               99
+}

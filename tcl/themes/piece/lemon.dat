@@ -1,0 +1,56 @@
+### Piece Style: Lemon ########################
+
+::board::addStyle piece {
+	identifier				Lemon|1227320554192|yellow.color|gregor
+
+	contour					1.0
+	shadow					0.03
+	opacity					0.5
+	zoom						1.0
+	diffusion				none
+	useWhitePiece			1
+
+	color,w,contour		#fdf7d3
+	color,w,fill			{}
+	color,w,stroke			{}
+	color,w,texture		{}
+
+	color,b,contour		#eeeeee
+	color,b,fill			{}
+	color,b,stroke			{}
+	color,b,texture		{}
+
+	texture,w,rotation	0
+	texture,w,x1			0
+	texture,w,x2			0
+	texture,w,y1			0
+	texture,w,y2			0
+
+	texture,b,rotation	0
+	texture,b,x1			0
+	texture,b,x2			0
+	texture,b,y1			0
+	texture,b,y2			0
+
+	gradient,w,use			1
+	gradient,w,start		#fdf7d3
+	gradient,w,stop		#c7c2a3
+	gradient,w,tx			0.1
+	gradient,w,ty			0.1
+	gradient,w,x1			0.2972972972972973
+	gradient,w,x2			1
+	gradient,w,y1			0.34459459459459457
+	gradient,w,y2			0.4864864864864865
+
+	gradient,b,use			1
+	gradient,b,start		#b2b2b2
+	gradient,b,stop		#000000
+	gradient,b,tx			0.08666666666666667
+	gradient,b,ty			0.08666666666666667
+	gradient,b,x1			0
+	gradient,b,x2			1
+	gradient,b,y1			0
+	gradient,b,y2			1
+}
+
+# eof

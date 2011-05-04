@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  identifier   {Woodgrain|1296150310528|yellow.color|gregor}
+  piece-set    {Standard}
+  piece-style  {Default}
+  square-style {Woodgrain|1296150231295|yellow.color|gregor}
+}

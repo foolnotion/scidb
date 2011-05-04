@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style           Green|1243460196909|yellow.color|gregor
+  piece-set             Magnetic
+  square-style          Sycomore|1243762745547|yellow.color|gregor
+  identifier            Magnetic|1243762798722|yellow.color|gregor
+}

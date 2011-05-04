@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style          Default
+  piece-set            Merida
+  square-style         {Marble - Red|1243715874135|yellow.color|gregor}
+  identifier           Marble|1243532376507|yellow.color|gregor
+}

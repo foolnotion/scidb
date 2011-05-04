@@ -1,0 +1,1619 @@
+// ======================================================================
+// Author : $Author$
+// Version: $Revision$
+// Date   : $Date$
+// Url    : $URL$
+// ======================================================================
+
+// ======================================================================
+//    _/|            __
+//   // o\         /    )           ,        /    /
+//   || ._)    ----\---------__----------__-/----/__-
+//   //__\          \      /   '  /    /   /    /   )
+//   )___(     _(____/____(___ __/____(___/____(___/_
+// ======================================================================
+
+// ======================================================================
+// Copyright: (C) 2009-2011 Gregor Cramer
+// ======================================================================
+
+// ======================================================================
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+// ======================================================================
+
+// ChessBase format description:
+// http://talkchess.com/forum/viewtopic.php?t=29468&highlight=cbh
+// http://talkchess.com/forum/viewtopic.php?topic_view=threads&p=287896&t=29468&sid=a535ba2e9a17395e2582bdddf57c2425
+
+// Required files:	.cba .cbc .cbg .cbh .cbp .cbt
+// Used files:			.cba .cbc .cbg .cbh .cbp .cbt .cbs .ini
+
+#include "cbh_codec.h"
+#include "cbh_decoder.h"
+
+#include "db_game_data.h"
+#include "db_exception.h"
+
+#include "u_progress.h"
+#include "u_byte_stream.h"
+#include "u_crc.h"
+
+#include "sys_file.h"
+#include "sys_utf8_codec.h"
+
+#include "m_limits.h"
+#include "m_string.h"
+#include "m_byte_order.h"
+#include "m_vector.h"
+#include "m_stdio.h"
+#include "m_static_check.h"
+
+#include <string.h>
+
+using namespace db;
+using namespace db::cbh;
+using namespace db::country;
+using namespace db::type;
+using namespace util;
+
+
+enum { Deleted = -999 };
+
+
+static country::Code NationMap[] =
+{
+	Unknown,										//   0
+	Afghanistan,								//   1 AFG
+	Albania,										//   2 ALB
+	Algeria,										//   3 ALG
+	Angola,										//   4 ANG
+	Andorra,										//   5 AND
+	Antigua,										//   6 ANT
+	Argentina,									//   7 ARG
+	Armenia,										//   8 ARM
+	Australia,									//   9 AUS
+	Austria,										//  10 AUT
+	Azerbaijan,									//  11 AZE
+	Bahamas,										//  12 BAH
+	Bahrain,										//  13 BHN
+	Bangladesh,									//  14 BAN
+	Barbados,									//  15 BAR
+	Belarus,										//  16 BLR
+	Belgium,										//  17 BEL
+	Belize,										//  18 BLZ
+	Bermuda,										//  19 BER
+	Bolivia,										//  20 BOL
+	Bosnia_and_Herzegovina,					//  21 BIH
+	Botswana,									//  22 BOT
+	Brazil,										//  23 BRA
+	British_Virgin_Islands,					//  24 IVB
+	Brunei,										//  25 BRU
+	Bulgaria,									//  26 BUL
+	Burkina_Faso,								//  27 BUR
+	Canada,										//  28 CAN
+	Chile,										//  29 CHI
+	China,										//  30 CHN
+	Colombia,									//  31 COL
+	Costa_Rica,									//  32 CRI
+	Croatia,										//  33 CRO
+	Cuba,											//  34 CUB
+	Cyprus,										//  35 CYP
+	Czech_Republic,							//  36 CZE
+	Denmark,										//  37 DEN
+	Djibouti,									//  38 DJI
+	Dominican_Republic,						//  39 DOM
+	Ecuador,										//  40 ECU
+	Egypt,										//  41 EGY
+	England,										//  42 ENG
+	Spain,										//  43 ESP
+	Estonia,										//  44 EST
+	Ethiopia,									//  45 ETH
+	Faroe_Islands,								//  46 FAI
+	Fiji,											//  47 FIJ
+	Finland,										//  48 FIN
+	France,										//  49 FRA
+	Macedonia,									//  50 FRM
+	Gambia,										//  51 GAM
+	Georgia,										//  52 GEO
+	Germany,										//  53 GER
+	Ghana,										//  54 GHA
+	Greece,										//  55 GRE
+	Guatemala,									//  56 GUA
+	Guernsey,									//  57 GCI
+	Guyana,										//  58 GUY
+	Haiti,										//  59 HAI
+	Honduras,									//  60 HON
+	Hong_Kong,									//  61 HKG
+	Hungary,										//  62 HUN
+	Iceland,										//  63 ISL
+	India,										//  64 IND
+	Indonesia,									//  65 INA
+	Iran,											//  66 IRI
+	Iraq,											//  67 IRQ
+	Israel,										//  68 ISR
+	Ireland,										//  69 IRL
+	Italy,										//  70 ITA
+	Ivory_Coast,								//  71 IVO
+	Jamaica,										//  72 JAM
+	Japan,										//  73 JPN
+	Jersey,										//  74 JCI
+	Jordan,										//  75 JOR
+	Kazakhstan,									//  76 KAZ
+	Kenya,										//  77 KEN
+	South_Korea,								//  78 KOR
+	Kyrgyzstan,									//  79 KGZ
+	Kuwait,										//  80 KUW
+	Latvia,										//  81 LAT
+	Lebanon,										//  82 LBN
+	Libya,										//  83 LBY
+	Liechtenstein,								//  84 LIE
+	Lithuania,									//  85 LTU
+	Luxembourg,									//  86 LUX
+	Macao,										//  87 MAC
+	Madagascar,									//  88 MAD
+	Malaysia,									//  89 MAS
+	Mali,											//  90 MLI
+	Malta,										//  91 MLT
+	Mauritania,									//  92 MAU
+	Mauritius,									//  93 MRI
+	Mexico,										//  94 MEX
+	Moldova,										//  95 MDA
+	Monaco,										//  96 MNC
+	Mongolia,									//  97 MGL
+	Morocco,										//  98 MAR
+	Mozambique,									//  99 MOZ
+	Myanmar,										// 100 MYA
+	Namibia,										// 101 NAM
+	Nepal,										// 102 NEP
+	Netherlands,								// 103 NED
+	Netherlands_Antilles,					// 104 AHO
+	New_Zealand,								// 105 NZL
+	Nicaragua,									// 106 NCA
+	Nigeria,										// 107 NGR
+	Norway,										// 108 NOR
+	Pakistan,									// 109 PAK
+	Palestine,									// 110 PLE
+	Panama,										// 111 PAN
+	Papua_New_Guinea,							// 112 PNG
+	Paraguay,									// 113 PAR
+	Peru,											// 114 PER
+	Philippines,								// 115 PHI
+	Poland,										// 116 POL
+	Portugal,									// 117 POR
+	Puerto_Rico,								// 118 PUR
+	Qatar,										// 119 QAT
+	Romania,										// 120 ROM
+	Russia,										// 121 RUS
+	El_Salvador,								// 122 ESA
+	San_Marino,									// 123 SMR
+	Scotland,									// 124 SCO
+	Senegal,										// 125 SEN
+	Seychelles,									// 126 SEY
+	Singapore,									// 127 SIN
+	Slovakia,									// 128 SVK
+	Slovenia,									// 129 SLO
+	South_Africa,								// 130 RSA
+	Sri_Lanka,									// 131 SRI
+	Sudan,										// 132 SUD
+	Suriname,									// 133 SUR
+	Sweden,										// 134 SWE
+	Switzerland,								// 135 SUI
+	Syria,										// 136 SYR
+	Tajikistan,									// 137 TJK
+	Tanzania,									// 138 TAN
+	Thailand,									// 139 THA
+	Trinidad_and_Tobago,						// 140 TRI
+	Tunisia,										// 141 TUN
+	Turkey,										// 142 TUR
+	Turkmenistan,								// 143 TKM
+	Uganda,										// 144 UGA
+	Ukraine,										// 145 UKR
+	United_Arab_Emirates,					// 146 UAE
+	United_States_of_America,				// 147 USA
+	Uruguay,										// 148 URU
+	Soviet_Union,								// 149 URS
+	Uzbekistan,									// 150 UZB
+	Venezuela,									// 151 VEN
+	Vietnam,										// 152 VIE
+	US_Virgin_Islands,						// 153 ISV
+	Wales,										// 154 WLS
+	Yemen,										// 155 YEM
+	Yugoslavia,									// 156 YUG
+	Zambia,										// 157 ZAM
+	Zimbabwe,									// 158 ZIM
+	DR_Congo,									// 159 ZRE
+	East_Germany,								// 160 DDR
+	Czechoslovakia,							// 161 CSR
+	Cameroon,									// 162 CAM
+	Chad,											// 163 CHD
+	Cape_Verde,									// 164 KAP
+	Kiribati,									// 165 KBA
+	Comoros,										// 166 COM
+	Congo,										// 167 CON
+	North_Korea,								// 168 NKO
+	Laos,											// 169 LAO
+	Lesotho,										// 170 LES
+	Malawi,										// 171 MWI
+	Maldives,									// 172 MDV
+	Marshall_Islands,							// 173 MSH
+	Oman,											// 174 OMN
+	Nauru,										// 175 NAU
+	Micronesia,									// 176 MIC
+	Niger,										// 177 NIG
+	Saudi_Arabia,								// 178 SAU
+	Togo,											// 179 TOG
+	Tonga,										// 180 TON
+	Vanuatu,										// 181 VAN
+	Vatican,										// 182 VAT
+	Tuvalu,										// 183 TUV
+	Swaziland,									// 184 SWA
+	Sierra_Leone,								// 185 SIE
+	Saint_Lucia,								// 186 SLU
+	Papua_New_Guinea,							// 187 PAP
+	Saint_Vincent_and_the_Grenadines,	// 188 SVI
+	Samoa,										// 189 SAM
+	Saint_Kitts_and_Nevis,					// 190 SKI
+	Solomon_Islands,							// 191 SAL
+	Germany,										// 192 GE2 German Empire
+	Russia,										// 193 ZAR Russian Empire
+	Rwanda,										// 194 RWA
+	Liberia,										// 195 LBR
+	American_Samoa,							// 196 NET
+	Chinese_Taipei,							// 197 TWN
+	Anguilla,									// 198 ASU
+	Aruba,										// 199 AGG
+	Benin,										// 200 BNN
+	Bhutan,										// 201 BTN
+	Burundi,										// 202 BRI
+	Cambodia,									// 203 CMB
+	Cayman_Islands,							// 204 CAY
+	Central_African_Republic,				// 205 CAR
+	Jersey,										// 206 CIB Channel Islands
+	Christmas_Island,							// 207 CIA
+	Cocos_Islands,								// 208 COA
+	Cook_Islands,								// 209 CIN
+	Equatorial_Guinea,						// 210 ELG
+	Eritrea,										// 211 ERI
+	Falkland_Islands,							// 212 FGB
+	French_Guiana,								// 213 FRG
+	French_Polynesia,							// 214 FRP
+	Gabon,										// 215 GAB
+	Gibraltar,									// 216 GGB
+	Grenada,										// 217 GRA
+	Greenland,									// 218 GRL
+	Guadeloupe,									// 219 FGA
+	Guam,											// 220 GMA
+	Guinea,										// 221 GUI
+	Guinea_Bissau,								// 222 GUB
+	Isle_of_Man,								// 223 IOM
+	Jan_Mayen_and_Svalbard,					// 224 JMY Jan Mayen
+	Martinique,									// 225 MFR
+	Mayotte,										// 226 MYF
+	Montserrat,									// 227 MSG
+	New_Caledonia,								// 228 NCF
+	Niue,											// 229 NNN
+	Norfolk_Island,							// 230 NNA
+	Northern_Mariana_Islands,				// 231 NMI
+	Timor_Leste,								// 232 OTM
+	Palau,										// 233 PAL
+	Pitcairn_Islands,							// 234 PIG
+	Reunion,										// 235 RUF
+	Sao_Tome_and_Principe,					// 236 SAO
+	Somalia,										// 237 SOM
+	Jan_Mayen_and_Svalbard,					// 238 SVN Svalbard
+	Saint_Helena,								// 239 HGB
+	Saint_Pierre_and_Miquelon,				// 240 PGB
+	Tokelau,										// 241 TKI
+	Turks_and_Caicos_Islands,				// 242 TCI
+	Wallis_and_Futuna,						// 243 WFR
+	Northern_Ireland,							// 244 NIR
+	Aboard_Spacecraft,						// 245 ISS
+	Great_Britain,								// 246 GBR
+	Germany,										// 247 SAA Saarland
+	Montenegro,									// 248 MNT
+	Serbia,										// 249 SER
+	Catalonia,									// 250 CAT
+	Basque,										// 251 BAS
+	Kosovo,										// 252 KOS
+};
+
+
+static type::ID const TypeMap[] =
+{
+	Unspecific,					// Unspecific
+	Work,							// Work
+	My_Games,					// My games
+	Large_Database,			// Large database
+	Informant,					// Informant
+	Openings,					// Openings
+	Unspecific,					// Magazine/Express
+	Tournament,					// Classical Tournament
+	Tournament,					// Recent Tournament
+	Correspondence_Chess,	// Correspondence
+	Tactics,						// Tactics
+	Analysis,					// Analysis
+	Training,					// Training
+	Endgames,					// Endings
+	Studies,						// Studies
+	Blitz_Games,				// Blitz
+	Computer_Chess,			// Computer chess
+	Problems,					// Problems
+	Patzer,						// Patzer
+	Gambit,						// Gambit
+	Correspondence_Chess,	// BdF
+	Match,						// Match
+	Player_Collection,		// Biography
+	Unspecific,					// Multimedia
+	Important,					// Important
+	Unspecific,					// Text
+	Internet_Chess,			// Internet
+	Email_Chess,				// E-Mail
+	Openings,					// Opening book
+	Unspecific,					// Chess Media
+};
+
+
+inline static unsigned
+convertEco(unsigned code)
+{
+	return code ? (code >> 7) & 0x1ff : 0;
+}
+
+
+inline static void
+setDate(Date& result, uint32_t value)
+{
+	result.setYMD((value >> 9) & 4095, (value >> 5) & 15, value & 31);
+}
+
+
+Codec::Tournament::Tournament() :category(0) ,rounds(0) {}
+Codec::Tournament::Tournament(Byte cat, Byte nrounds) :category(cat) ,rounds(nrounds) {}
+
+
+struct Codec::Source : public NamebaseEntry
+{
+	Source(mstl::string const& name, Date const& sourceDate);
+	Date date;
+};
+
+
+Codec::Source::Source(mstl::string const& name, Date const& sourceDate)
+	:NamebaseEntry(name)
+	,date(sourceDate)
+{
+}
+
+
+unsigned Codec::maxGameRecordLength() const	{ return 0x2fffffff - 1; }
+unsigned Codec::maxGameCount() const			{ return (1 << 31)/46; }
+unsigned Codec::maxGameLength() const			{ return (1 << 16) - 1; }
+unsigned Codec::maxPlayerCount() const			{ return (1 << 24) - 1; }
+unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
+unsigned Codec::maxSiteCount() const			{ return (1 << 24) - 1; }
+unsigned Codec::maxRoundCount() const			{ return (1 << 24) - 1; }
+unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
+unsigned Codec::minYear() const					{ return 0; }
+unsigned Codec::maxYear() const					{ return mstl::max(Date::MaxYear, uint16_t(4094)); }
+unsigned Codec::maxDescriptionLength() const	{ return mstl::numeric_limits<uint32_t>::max() - 1; }
+
+
+unsigned
+Codec::gameFlags() const
+{
+	return	GameInfo::Flag_Best_Game
+			 | GameInfo::Flag_Decided_Tournament
+			 | GameInfo::Flag_Model_Game
+			 | GameInfo::Flag_Novelty
+			 | GameInfo::Flag_Pawn_Structure
+			 | GameInfo::Flag_Strategy
+			 | GameInfo::Flag_Tactics
+			 | GameInfo::Flag_With_Attack
+			 | GameInfo::Flag_Sacrifice
+			 | GameInfo::Flag_Defense
+			 | GameInfo::Flag_Material
+			 | GameInfo::Flag_Piece_Play
+			 | GameInfo::Flag_End_Game
+			 | GameInfo::Flag_Blunder
+			 | GameInfo::Flag_User;
+}
+
+
+Codec::Codec()
+	:m_codec(0)
+	,m_allocator(32768)
+	,m_sourceBase(Namebase::Annotator)
+	,m_illegalEvent(0)
+	,m_illegalPlayer(0)
+	,m_siteId(0)
+{
+}
+
+
+Codec::~Codec() throw()
+{
+	delete m_codec;
+
+	for (unsigned i = 0; i < m_teamBase.size(); ++i)
+		delete m_teamBase[i];
+}
+
+
+bool
+Codec::encodingFailed() const
+{
+	M_ASSERT(m_codec);
+	return m_codec->failed();
+}
+
+
+Codec::Format
+Codec::format() const
+{
+	return format::ChessBase;
+}
+
+
+mstl::string const&
+Codec::encoding() const
+{
+	M_ASSERT(m_codec);
+	return m_codec->encoding();
+}
+
+
+mstl::string const&
+Codec::extension() const
+{
+	static mstl::string const Suffix("cbh");
+	return Suffix;
+}
+
+
+void
+Codec::setEncoding(mstl::string const& encoding)
+{
+	delete m_codec;
+	m_codec = new sys::utf8::Codec(encoding);
+}
+
+
+void
+Codec::reset()
+{
+	// no action
+}
+
+
+void
+Codec::close()
+{
+	if (m_gameStream.is_open())
+		m_gameStream.close();
+	if (m_annotationStream.is_open())
+		m_annotationStream.close();
+	if (m_teamStream.is_open())
+		m_teamStream.close();
+}
+
+
+void
+Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
+{
+	ProgressWatcher watcher(progress, 5);
+
+	setEncoding(encoding);
+
+	unsigned numGames = readHeader(rootname);
+
+	m_siteId = 0;
+
+	readIniData(rootname);
+	progress.update(1);
+	readPlayerData(rootname);
+	progress.update(2);
+	readAnnotatorData(rootname);
+	progress.update(3);
+	readTournamentData(rootname);
+	progress.update(4);
+	readTeamData(rootname, numGames);
+	progress.update(5);
+	readSourceData(rootname);
+
+	readIndexData(rootname, numGames, progress);
+
+	// delete unused annotators (because we are discarding guiding text)
+	namebase(Namebase::Annotator).cleanup();
+	namebase(Namebase::Annotator).renumber();
+
+	// delete unused events (sometimes it contains unused entries)
+	namebase(Namebase::Event    ).cleanup();
+	namebase(Namebase::Event    ).renumber();
+
+	namebase(Namebase::Player   ).update();
+	namebase(Namebase::Site     ).update();
+	namebase(Namebase::Event    ).update();
+	namebase(Namebase::Round    ).update();
+	namebase(Namebase::Annotator).update();
+
+	mstl::string filename(rootname + ".cbg");
+	checkPermissions(filename);
+	openFile(m_gameStream, filename);
+
+	filename.assign(rootname + ".cba");
+	checkPermissions(filename);
+	openFile(m_annotationStream, filename);
+}
+
+
+void
+Codec::readTournamentData(mstl::string const& rootname)
+{
+	M_ASSERT(m_codec);
+
+	mstl::string	filename(rootname + ".cbt");
+	mstl::string	name;
+	mstl::string	city;
+	mstl::fstream	strm;
+	mstl::string	str;
+
+	checkPermissions(filename);
+	openFile(strm, filename);
+	str.assign(160, '\0');
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	uint32_t nrecs = mstl::bo::swapLE(hdr[0]);
+	strm.seekg((strm.size() % 99) - sizeof(hdr), mstl::ios_base::cur);
+
+	Namebase& eventBase	= namebase(Namebase::Event);
+	Namebase& siteBase	= namebase(Namebase::Site);
+
+	eventBase.reserve(nrecs, (1 << 24) - 1);
+
+	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	{
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(95, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(str.data(), 40);
+
+			str.set_size(::strlen(str.c_str()));
+			m_codec->toUtf8(str);
+			char* p = eventBase.alloc(str.size());
+			::strncpy(p, str, str.size());
+			name.hook(p, str.size());
+
+			strm.read(str.data(), 30);
+			str.set_size(::strlen(str.c_str()));
+			m_codec->toUtf8(str);
+
+			if (str.empty())
+				str = '?';
+
+			p = siteBase.alloc(str.size());
+			::strncpy(p, str, str.size());
+			city.hook(p, str.size());
+
+			unsigned char buf[6];
+			strm.read(buf, 6);
+
+			Date evDate;
+			::setDate(evDate, ByteStream(buf, 3).uint24LE());
+
+			Byte eventType = buf[4];
+
+			time::Mode	timeMode;
+			event::Mode	eventMode	= event::Undetermined;
+
+			switch ((eventType >> 5) & 3)
+			{
+				case 0: timeMode = time::Normal; break;
+				case 1: timeMode = time::Blitz; break;
+				case 2: timeMode = time::Rapid; break;
+
+				case 4:
+					timeMode = time::Corr;
+					eventMode = event::PaperMail;
+					break;
+			}
+
+			Byte nationCode = strm.get();
+			country::Code countryCode = country::Unknown;
+
+			if (0 < nationCode && nationCode < U_NUMBER_OF(::NationMap))
+			{
+				countryCode = ::NationMap[nationCode];
+
+				if (	countryCode == country::Jersey
+					&& (	::strstr(city, "Guernsey") != 0
+						|| ::strstr(city, "Dgernesy") != 0
+						|| ::strstr(city, "Dgèrnésy") != 0
+						|| ::strstr(city, "Peter Port") != 0))
+				{
+					countryCode = country::Guernsey;
+				}
+			}
+
+			Byte category = strm.get();
+			strm.get();	// skip
+			Byte rounds = strm.get();
+
+			NamebaseEvent* event = eventBase.insertEvent(
+												name,
+												n++,
+												evDate.year(),
+												evDate.month(),
+												evDate.day(),
+												event::Type(mstl::min(eventType & 15, 8)),
+												timeMode,
+												eventMode,
+												nrecs,
+												siteBase.insertSite(city, m_siteId++, countryCode, nrecs));
+
+			m_eventMap[i] = event;
+			m_tournamentMap[event] = Tournament(category, rounds);
+
+			strm.seekg(10, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::readPlayerData(mstl::string const& rootname)
+{
+	static unsigned const RecordSize = 67;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	str;
+	mstl::string	filename(rootname + ".cbp");
+	Namebase&		base(namebase(Namebase::Player));
+
+	checkPermissions(filename);
+	openFile(strm, filename);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	base.reserve(nrecs, (1 << 24) - 1);
+	str.assign(202, '\0');
+
+	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	{
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(str.data(), 30);
+			str.set_size(::strlen(str.c_str()));
+
+			char* p = str.data() + str.size();
+
+			str.append(", ", 2);
+			strm.read(p + 2, 20);
+			str.set_size(::strlen(p + 2) + str.size());
+
+			if (p + 2 == str.end())
+				str.resize(str.size() - 2);
+
+			if (str.empty())
+			{
+				str = '?';
+			}
+			else
+			{
+				mstl::vector<unsigned> indices;
+
+				for (unsigned i = 0; i < str.size(); ++i)
+				{
+					switch (Byte(str[i]))
+					{
+						case 0xa2: str[i] = 'K'; indices.push_back(i); break;
+						case 0xa3: str[i] = 'Q'; indices.push_back(i); break;
+						case 0xa4: str[i] = 'N'; indices.push_back(i); break;
+						case 0xa5: str[i] = 'B'; indices.push_back(i); break;
+						case 0xa6: str[i] = 'R'; indices.push_back(i); break;
+						case 0xa7: str[i] = 'P'; indices.push_back(i); break;
+					}
+				}
+
+				m_codec->toUtf8(str);
+
+				mstl::string piece;
+				unsigned k = 0;
+
+				for (unsigned i = 0; i < indices.size(); ++i)
+				{
+					switch (str[indices[i] + k])
+					{
+						case 'K': piece = piece::utf8::asString(piece::King  ); break;
+						case 'Q': piece = piece::utf8::asString(piece::Queen ); break;
+						case 'R': piece = piece::utf8::asString(piece::Rook  ); break;
+						case 'B': piece = piece::utf8::asString(piece::Bishop); break;
+						case 'N': piece = piece::utf8::asString(piece::Knight); break;
+						case 'P': piece = piece::utf8::asString(piece::Pawn  ); break;
+					}
+
+					str.replace(indices[i] + k, 1, piece);
+					k += piece.size() - 1;
+				}
+			}
+
+			p = base.alloc(str.size());
+			::strncpy(p, str, str.size());
+			name.hook(p, str.size());
+
+			m_playerMap[i] = base.insertPlayer(name, n++, nrecs);
+			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::readAnnotatorData(mstl::string const& rootname)
+{
+	static unsigned const RecordSize = 62;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	str;
+	mstl::string	filename(rootname + ".cbc");
+	Namebase&		base(namebase(Namebase::Annotator));
+
+	checkPermissions(filename);
+	openFile(strm, filename);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	base.reserve(nrecs, (1 << 24) - 1);
+	str.assign(200, '\0');
+
+	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	{
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(str.data(), 45);
+			str.set_size(::strlen(str.c_str()));
+
+			if (!str.empty())
+			{
+				m_codec->toUtf8(str);
+
+				char* p = base.alloc(str.size());
+				::strncpy(p, str, str.size());
+				name.hook(p, str.size());
+
+				m_annotatorMap[i] = base.insert(name, n++, nrecs);
+			}
+
+			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::readSourceData(mstl::string const& rootname)
+{
+	static unsigned const RecordSize = 68;
+
+	mstl::string filename(rootname + ".cbs");
+
+	if (!sys::file::access(filename, sys::file::Readable))
+		return;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	str;
+	Date				sourceDate;
+
+	openFile(strm, filename);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	m_sourceBase.reserve(nrecs, (1 << 24) - 1);
+	str.assign(200, '\0');
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(str.data(), 25);
+			str.set_size(::strlen(str.c_str()));
+
+			strm.seekg(20, mstl::ios_base::cur);
+
+			unsigned char buf[3];
+			strm.read(buf, 3);
+
+			if (!str.empty())
+			{
+				m_codec->toUtf8(str);
+
+				::setDate(sourceDate, ByteStream(buf, 3).uint24LE());
+
+				char* p = m_sourceBase.alloc(str.size());
+				::strncpy(p, str, str.size());
+				name.hook(p, str.size());
+
+				m_sourceMap2[i] = new Source(name, sourceDate);
+			}
+
+			strm.seekg(RecordSize - 57, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::readTeamData(mstl::string const& rootname, unsigned numGames)
+{
+	static unsigned const RecordSize = 72;
+
+	mstl::string filename(rootname + ".cbe");
+	if (!sys::file::access(filename, sys::file::Readable))
+		return;
+
+	mstl::string filenameJ(rootname + ".cbj");
+	if (!sys::file::access(filenameJ, sys::file::Readable))
+		return;
+	openFile(m_teamStream, filenameJ);
+
+	if (m_teamStream.size()/78 < numGames)
+	{
+		// Currently we cannot support the decoding of teams in all cases.
+		// ---------------------------------------------------------------
+		// Problem: Big2010.cbh contains 4463292 records, but Big2010.cbj
+		// has only 4454749 records, and the highest game number with team
+		// data exceeds the number of records in Big2010.cbj.
+
+		m_teamStream.close();
+		return;
+	}
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	str;
+	Date				sourceDate;
+
+	openFile(strm, filename);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	m_teamBase.reserve(nrecs);
+	str.assign(250, '\0');
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+			m_teamBase.push_back(0);
+		}
+		else
+		{
+			Team* team = new Team;
+			m_teamBase.push_back(team);
+
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(str.data(), 45);
+			str.set_size(::strlen(str.c_str()));
+			m_codec->toUtf8(str);
+
+			unsigned char buf[10];
+			strm.read(buf, 10);
+			ByteStream bstrm(buf, sizeof(buf));
+
+			bstrm.skip(4);
+
+			unsigned year2 = bstrm.get();
+			unsigned year  = bstrm.uint16LE();
+
+			if (year && !str.empty())
+			{
+				if (year2)
+					str.format(" %u/%02u", year, (year + 1)%100);
+				else
+					str.format(" %u", year);
+			}
+
+			bstrm.skip(2);
+			Byte nation = bstrm.get();
+
+			if (0 < nation && nation < U_NUMBER_OF(::NationMap))
+				team->nation = ::NationMap[nation];
+			else
+				team->nation = country::Unknown;
+
+			char* p = m_sourceBase.alloc(str.size());
+			::strncpy(p, str, str.size());
+			team->title.hook(p, str.size());
+
+			strm.seekg(RecordSize - 54 - sizeof(buf), mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+unsigned
+Codec::readHeader(mstl::string const& rootname)
+{
+	mstl::string	filename(rootname + ".cbh");
+	mstl::fstream	strm;
+
+	checkPermissions(filename);
+	openFile(strm, filename);
+
+	Byte record[46];
+	strm.read(record, sizeof(record));
+
+	if (	record[0] != 0
+		|| record[1] != 0
+		|| (	record[2] != 0x2c	// CB 9/10/11
+			&& record[2] != 0x24)// CB Light
+		|| record[3] != 0
+		|| record[4] != 0x2e
+		|| record[5] != 0x01)
+	{
+		IO_RAISE(Index, Open_Failed, "bad magic in '%s'", filename.c_str());
+	}
+
+	ByteStream bstrm(record, sizeof(record));
+
+	bstrm.skip(6);
+	return bstrm.uint32() - 1;
+}
+
+
+void
+Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Progress& progress)
+{
+	mstl::string	filename(rootname + ".cbh");
+	mstl::fstream	strm;
+
+	Byte record[46];
+	ByteStream bstrm(record, sizeof(record));
+
+	openFile(strm, filename);
+	strm.seekg(sizeof(record));
+
+	ProgressWatcher watcher(progress, numGames);
+
+	unsigned frequency	= progress.frequency(numGames, 20000);
+	unsigned reportAfter	= frequency;
+
+	GameInfoList& infoList = gameInfoList();
+
+	infoList.reserve(numGames);
+	m_sourceMap.reserve(numGames);
+	if (m_teamStream.is_open())
+		m_gameIndexLookup.reserve(numGames);
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		strm.read(record, sizeof(record));
+		bstrm.resetg();
+
+		Byte flags = bstrm.peek();
+
+		if ((flags & 0x2) == 0)	// otherwise it is guiding text
+		{
+			infoList.push_back(allocGameInfo());
+			decodeIndex(bstrm, *infoList.back(), numGames);
+
+			if (m_teamStream.is_open())
+				m_gameIndexLookup[infoList.back()] = i;
+		}
+	}
+
+	strm.close();
+	m_playerMap.clear();
+	m_eventMap.clear();
+	m_annotatorMap.clear();
+}
+
+
+void
+Codec::readIniData(mstl::string const& rootname)
+{
+	enum Section { AnyOther, DescrCBG , Environ };
+
+	mstl::string	filename(rootname + ".ini");
+	mstl::string	title;
+	mstl::string	tournTitle;
+	mstl::string	tournPlace;
+	mstl::string	tournYear;
+	mstl::fstream	strm;
+
+	if (!sys::file::access(filename, sys::file::Readable))
+		return;
+
+	openFile(strm, filename, Readonly);
+	strm.exceptions(mstl::ios_base::badbit);
+
+	Section section = AnyOther;
+
+	while (true)
+	{
+		mstl::string line;
+
+		if (!strm.getline(line))
+		{
+			strm.close();
+
+			title.trim();
+			tournTitle.trim();
+			tournPlace.trim();
+			tournYear.trim();
+
+			if (!tournTitle.empty())
+			{
+				title = tournTitle;
+
+				if (!tournPlace.empty())
+				{
+					title.append(", ", 2);
+					title += tournPlace;
+				}
+
+				if (!tournYear.empty())
+				{
+					title.append(", ", 2);
+					title += tournYear;
+				}
+			}
+
+			setDescription(title);
+
+			return;
+		}
+
+		if (!line.empty())
+		{
+			if (line[0] == '[')
+			{
+				if (::strncmp(line, "[DescrCBG]", 10) == 0)
+					section = DescrCBG;
+				else if (::strncmp(line, "[Environ]", 9) == 0)
+					section = Environ;
+				else
+					section = AnyOther;
+			}
+			else
+			{
+				switch (section)
+				{
+					case DescrCBG:
+						if (::strncmp(line, "Type=", 5) == 0)
+						{
+							unsigned type = ::strtoul(line.c_str() + 5, 0, 10);
+
+							if (type < U_NUMBER_OF(::TypeMap))
+								setType(::TypeMap[type]);
+						}
+						else if (::strncmp(line, "Title=", 6) == 0)
+						{
+							title = line.substr(6);
+						}
+						break;
+
+					case Environ:
+						if (::strncmp(line, "TournTitle=", 11) == 0)
+							tournTitle = line.substr(11);
+						else if (::strncmp(line, "TournPlace=", 11) == 0)
+							tournPlace = line.substr(11);
+						else if (::strncmp(line, "TournYear=", 10) == 0)
+							tournYear = line.substr(10);
+						break;
+
+					case AnyOther:
+						break;
+				}
+			}
+		}
+	}
+}
+
+
+NamebasePlayer*
+Codec::getPlayer(uint32_t ref)
+{
+	BaseMap::iterator p = m_playerMap.find(ref);
+
+	if (p != m_playerMap.end())
+	{
+		p->second->ref();
+		return static_cast<NamebasePlayer*>(p->second);
+	}
+
+	if (m_illegalPlayer == 0)
+	{
+		m_illegalPlayer = namebase(Namebase::Player).insertPlayer(
+									"? (illegal reference)", m_playerMap.size(), m_playerMap.size() + 1);
+	}
+
+	m_illegalPlayer->ref();
+	return m_illegalPlayer;
+}
+
+
+NamebaseEvent*
+Codec::getEvent(uint32_t ref)
+{
+	BaseMap::iterator p = m_eventMap.find(ref);
+
+	if (p != m_eventMap.end())
+	{
+		NamebaseEvent* event = static_cast<NamebaseEvent*>(p->second);
+
+		event->ref();
+		event->site()->ref();
+
+		return event;
+	}
+
+	if (m_illegalEvent == 0)
+	{
+		unsigned maxRef = 0;
+
+		for (BaseMap::const_iterator i = m_eventMap.begin(); i != m_eventMap.end(); ++i)
+			maxRef = mstl::max(maxRef, i->second->id());
+
+		m_illegalEvent = namebase(Namebase::Event).insertEvent(
+								"? (illegal reference)",
+								maxRef + 1,
+								m_eventMap.size() + 1,
+								namebase(Namebase::Site).insertSite(
+									mstl::string::empty_string,
+									m_siteId++,
+									country::Unknown,
+									m_eventMap.size() + 1));
+	}
+
+	m_illegalEvent->ref();
+	m_illegalEvent->site()->ref();
+
+	return m_illegalEvent;
+}
+
+
+NamebaseEntry*
+Codec::getAnnotator(uint32_t ref)
+{
+	BaseMap::iterator p = m_annotatorMap.find(ref);
+
+	if (p == m_annotatorMap.end())
+		return 0;
+
+	p->second->ref();
+	return p->second;
+}
+
+
+Codec::Source*
+Codec::getSource(uint32_t ref)
+{
+	BaseMap::iterator p = m_sourceMap2.find(ref);
+
+	if (p == m_sourceMap2.end())
+		return 0;
+
+	p->second->ref();
+
+	return static_cast<Source*>(p->second);
+}
+
+
+void
+Codec::decodeIndex(ByteStream& strm, GameInfo& info, unsigned numGames)
+{
+	M_ASSERT(strm.size() == 46);
+
+	Byte flags = strm.get();
+
+	if (flags & (1 << 7))
+		info.m_gameFlags |= GameInfo::Flag_Deleted;
+
+	info.m_gameOffset = strm.uint32();
+
+	if (unsigned offset = strm.uint32())
+		m_annotationMap[info.m_gameOffset] = offset;
+
+	NamebasePlayer* white = getPlayer(strm.uint24());
+	NamebasePlayer* black = getPlayer(strm.uint24());
+	NamebaseEntry*  annot = 0;
+
+	info.m_player[color::White] = white;
+	info.m_player[color::Black] = black;
+	info.m_event = getEvent(strm.uint24());
+	annot = getAnnotator(strm.uint24());
+	m_sourceMap[&info] = getSource(strm.uint24());
+
+	if (annot)
+		info.m_annotator = annot;
+
+	Date date;
+	::setDate(date, strm.uint24());
+
+	info.m_dateYear = Date::encodeYearTo10Bits(date.year());
+	info.m_dateMonth = date.month();
+	info.m_dateDay = date.day();
+
+	switch (strm.get())
+	{
+		case 0:	info.m_result = result::Black; break;
+		case 1:	info.m_result = result::Draw; break;
+		case 2:	info.m_result = result::White; break;
+		case 7:	info.m_result = result::Lost; break;
+		default:	info.m_result = result::Unknown; break;
+	}
+
+	strm.skip(1);	// skip line evaluation
+
+	Byte round		= strm.get();
+	Byte subround	= strm.get();
+
+	if (round)
+	{
+		Namebase& base = namebase(Namebase::Round);
+
+		char* buf = base.alloc(8);
+		unsigned len;
+
+		if (subround)
+			len = ::sprintf(buf, "%u.%u", unsigned(round), unsigned(subround));
+		else
+			len = ::sprintf(buf, "%u", unsigned(round));
+
+		base.shrink(7, len);
+		info.m_round = base.insert(buf, info.m_event->id(), numGames);
+		info.m_round->ref();
+	}
+
+	uint16_t whiteElo = mstl::min(uint16_t(rating::Max_Value), strm.uint16());
+	uint16_t blackElo = mstl::min(uint16_t(rating::Max_Value), strm.uint16());
+
+	info.m_pd[color::White].elo = whiteElo;
+	info.m_pd[color::Black].elo = blackElo;
+
+	if (white != m_illegalPlayer)
+		white->setElo(whiteElo);
+	if (black != m_illegalPlayer)
+		black->setElo(blackElo);
+
+	info.m_eco = ::convertEco(strm.uint16());
+
+	unsigned medals = strm.uint16();
+
+	if (medals & (1 <<  0)) info.m_gameFlags |= GameInfo::Flag_Best_Game;
+	if (medals & (1 <<  1)) info.m_gameFlags |= GameInfo::Flag_Decided_Tournament;
+	if (medals & (1 <<  2)) info.m_gameFlags |= GameInfo::Flag_Model_Game;
+	if (medals & (1 <<  3)) info.m_gameFlags |= GameInfo::Flag_Novelty;
+	if (medals & (1 <<  4)) info.m_gameFlags |= GameInfo::Flag_Pawn_Structure;
+	if (medals & (1 <<  5)) info.m_gameFlags |= GameInfo::Flag_Strategy;
+	if (medals & (1 <<  6)) info.m_gameFlags |= GameInfo::Flag_Tactics;
+	if (medals & (1 <<  7)) info.m_gameFlags |= GameInfo::Flag_With_Attack;
+	if (medals & (1 <<  8)) info.m_gameFlags |= GameInfo::Flag_Sacrifice;
+	if (medals & (1 <<  9)) info.m_gameFlags |= GameInfo::Flag_Defense;
+	if (medals & (1 << 10)) info.m_gameFlags |= GameInfo::Flag_Material;
+	if (medals & (1 << 11)) info.m_gameFlags |= GameInfo::Flag_Piece_Play;
+	if (medals & (1 << 12)) info.m_gameFlags |= GameInfo::Flag_End_Game;
+	if (medals & (1 << 13)) info.m_gameFlags |= GameInfo::Flag_Blunder;	// Flag_Tactical_Blunder
+	if (medals & (1 << 14)) info.m_gameFlags |= GameInfo::Flag_Blunder;	// Flag_Strategical_Blunder
+	if (medals & (1 << 15)) info.m_gameFlags |= GameInfo::Flag_User;
+
+	strm.skip(3);
+	flags = strm.get();
+	info.m_positionId = flags & (1 << 0) ? 0 : chess960::StandardIdn;
+
+	if (flags & (1 << 1)) info.m_variationCount = 5;
+	if (flags & (1 << 2)) info.m_commentCount = 5;
+	if (flags & (7 << 3)) info.m_annotationCount = 5;
+
+	strm.skip(1);
+
+	flags = strm.get();
+	if (flags & (2 << 0)) info.m_variationCount = 15;
+	if (flags & (1 << 2)) info.m_commentCount = 15;
+	if (flags & (7 << 3)) info.m_annotationCount = 15;
+
+	info.m_plyCount = mstl::min(	GameInfo::MaxPlyCount,
+											unsigned(mstl::max(0, mstl::mul2(int(strm.get())) - 1)));
+}
+
+
+void
+Codec::startDecoding(ByteStream& gameStream,
+							ByteStream& annotationStream,
+							GameInfo const& info,
+							bool& isChess960,
+							unsigned flags)
+{
+	if (!info.gameOffset())
+		IO_RAISE(Index, Corrupted, "no game data");
+	if (!m_gameStream.seekg(info.gameOffset(), mstl::ios_base::beg))
+		IO_RAISE(Game, Corrupted, "unexpected end of file");
+	if (!m_gameStream.read(gameStream.base(), 4))
+		IO_RAISE(Game, Corrupted, "unexpected end of file");
+
+	unsigned word = gameStream.uint32();
+
+	if (word & 0x80000000)
+	{
+		M_THROW(DecodingFailedException());
+
+		// TODO: we have something special to do, but what?
+		// look at Big2010, #1964391, Giffard, Nicalas - Castlagliola, Marina
+	}
+
+	isChess960 = bool(word & 0x0a000000);
+	unsigned size = word & 0x00ffffff;
+
+	gameStream.resetg();
+	gameStream.reserve(size);
+	gameStream.provide(size);
+
+	if (!m_gameStream.seekg(-4, mstl::ios_base::cur))
+		IO_RAISE(Game, Unknown_Error_Type, "seek failed");
+	if (!m_gameStream.read(gameStream.base(), size))
+		IO_RAISE(Game, Corrupted, "unexpected end of file");
+
+	if (flags == 0)
+	{
+		annotationStream.provide(0);
+	}
+	else
+	{
+		AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
+
+		if (i != m_annotationMap.end())
+		{
+			uint32_t address = i->second;
+
+			if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
+				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+
+			if (!m_annotationStream.read(annotationStream.base(), 4))
+				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+
+			size = annotationStream.uint32() - 14;
+
+			annotationStream.resetg();
+			annotationStream.reserve(size);
+			annotationStream.provide(size);
+
+			if (!m_annotationStream.read(annotationStream.base(), size))
+				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+		}
+		else
+		{
+			annotationStream.provide(0);
+		}
+	}
+}
+
+
+void
+Codec::addSourceTags(TagSet& tags, GameInfo const& info)
+{
+	SourceMap::const_iterator s = m_sourceMap.find(&info);
+
+	if (s != m_sourceMap.end())
+	{
+		Source const* source = static_cast<Source const*>(s->second);
+
+		tags.set(tag::Source, source->name());
+
+		if (source->date)
+			tags.set(tag::SourceDate, source->date.asString());
+	}
+}
+
+
+void
+Codec::addEventTags(TagSet& tags, GameInfo const& info)
+{
+	TournamentMap::const_iterator t = m_tournamentMap.find(info.eventEntry());
+
+	if (t != m_tournamentMap.end())
+	{
+		Tournament tournament = t->second;
+
+		if (tournament.category)
+			tags.set(tag::EventCategory, tournament.category);
+
+		if (tournament.rounds)
+			tags.set(tag::EventRounds, tournament.rounds);
+	}
+}
+
+
+void
+Codec::addTeamTags(TagSet& tags, GameInfo const& info)
+{
+	unsigned const RecordSize = 78;
+
+	if (!m_teamStream.is_open())
+		return;
+
+	uint32_t buf[2];
+
+	M_ASSERT(m_gameIndexLookup.find(&info) != m_gameIndexLookup.end());
+
+	unsigned gameIndex = m_gameIndexLookup.find(&info)->second;
+
+	if (!m_teamStream.seekg(m_teamStream.size()%RecordSize + gameIndex*RecordSize, mstl::ios_base::beg))
+		IO_RAISE(Index, Read_Error, "seek failed");
+	if (!m_teamStream.read(reinterpret_cast<Byte*>(buf), sizeof(buf)))
+		IO_RAISE(Index, Read_Error, "unexpected end of file");
+
+	unsigned whiteTeamRef = mstl::bo::swapLE(buf[0]);
+	unsigned blackTeamRef = mstl::bo::swapLE(buf[1]);
+
+	if (whiteTeamRef < m_teamBase.size())
+	{
+		if (Team const* team = m_teamBase[whiteTeamRef])
+		{
+			if (!team->title.empty())
+			{
+				tags.set(tag::WhiteTeam, team->title);
+
+				if (team->nation != country::Unknown)
+					tags.set(tag::WhiteTeamCountry, country::toString(team->nation));
+
+			}
+		}
+	}
+
+	if (blackTeamRef < m_teamBase.size())
+	{
+		if (Team const* team = m_teamBase[blackTeamRef])
+		{
+			if (!team->title.empty())
+			{
+				tags.set(tag::BlackTeam, team->title);
+
+				if (team->nation != country::Unknown)
+					tags.set(tag::BlackTeamCountry, country::toString(team->nation));
+
+			}
+		}
+	}
+}
+
+
+void
+Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
+{
+	Byte buf[2][32768];
+
+	ByteStream gStrm(buf[0], sizeof(buf[0]));
+	ByteStream aStrm(buf[1], sizeof(buf[1]));
+
+	bool isChess960;
+
+	startDecoding(gStrm, aStrm, info, isChess960, flags);
+
+	addSourceTags(data.m_tags, info);
+	addEventTags(data.m_tags, info);
+	addTeamTags(data.m_tags, info);
+
+	unsigned crc = crc::compute(0, aStrm.data(), aStrm.size());
+	data.m_crc = crc::compute(crc, gStrm.data(), gStrm.size());
+
+	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
+	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(flags, data));
+}
+
+
+save::State
+Codec::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+{
+	Byte buf[2][32768];
+
+	ByteStream gStrm(buf[0], sizeof(buf[0]));
+	ByteStream aStrm(buf[1], sizeof(buf[1]));
+
+	bool isChess960;
+
+	startDecoding(gStrm, aStrm, info, isChess960, flags);
+
+	addSourceTags(tags, info);
+	addEventTags(tags, info);
+	addTeamTags(tags, info);
+
+	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
+	save::State state = decoder.doDecoding(consumer, flags, tags, info);
+
+	return state;
+}
+
+
+// NOTE: currently not used!
+Move
+Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations)
+{
+	Byte buf[32768];
+
+	ByteStream gStrm(buf, sizeof(buf));
+	ByteStream aStrm(static_cast<Byte*>(0), static_cast<Byte*>(0));
+
+	bool isChess960;
+
+	startDecoding(gStrm, aStrm, info, isChess960);
+
+	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
+	return decoder.findExactPosition(position, skipVariations);
+}
+
+// vi:set ts=3 sw=3:

@@ -1,0 +1,1152 @@
+# ======================================================================
+# Author : $Author$
+# Version: $Revision$
+# Date   : $Date$
+# Url    : $URL$
+# ======================================================================
+
+# ======================================================================
+#    _/|            __
+#   // o\         /    )           ,        /    /
+#   || ._)    ----\---------__----------__-/----/__-
+#   //__\          \      /   '  /    /   /    /   )
+#   )___(     _(____/____(___ __/____(___/____(___/_
+# ======================================================================
+
+# ======================================================================
+# Copyright: (C) 2009-2011 Gregor Cramer
+# ======================================================================
+
+# ======================================================================
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# ======================================================================
+
+::board::addPreferences {marble 11932818.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Emerald_Green_Marble.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble Verde_Guatemala_Green_Marble.png
+	marble black-marble.jpg
+	marble color_green_22.jpg
+	marble marble_138.jpg
+	marble marble_198.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_209.jpg
+	marble marble_219.jpg
+	marble marble_229.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+	misc color_yellow_28.jpg
+	misc urulu-dark.png
+}
+
+::board::addPreferences {marble 13621.jpg} {
+	marble black-marble.jpg
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble marble01.png
+	marble marble13.jpg
+	marble marble_103.jpg
+	marble marble_138.jpg
+	marble marble_202.jpg
+	marble marble_219.jpg
+	marble marble_229.jpg
+	marble NM97.jpg
+}
+
+::board::addPreferences {misc 2274499870_9617a0512f_b.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble marble_209.jpg
+	marble NM97.jpg
+}
+
+::board::addPreferences {misc 84.jpg} {
+	marble E-Stone-203.jpg
+	marble marble_103.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+	misc apollo-dark.png
+	misc rossogerazzo-dark.png
+	misc sand-brown.png
+	misc thatch-green.png
+	misc urulu-dark.png
+	wood Wood-dream.png
+	wood mohogany2.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+}
+
+::board::addPreferences {wood Bamboo.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+}
+
+::board::addPreferences {marble BlueTexture5.jpg} {
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble BlueTexture4.jpg
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble MARBLE-RojoAlicante.png
+	marble marble_219.jpg
+	marble NM97.jpg
+	marble Tea_Rose_Marble.jpg
+}
+
+::board::addPreferences {wood GRA810.png} {
+	wood DarkMaple.jpg
+	wood PNN810.png
+	wood RiftWhiteOak.jpg
+	wood WoodFine0006_Green.png
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+}
+
+::board::addPreferences {wood Green_Maple_363.jpg} {
+	wood MFP810.png
+	wood PNN810.png
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood wood-chestnut-oak2.jpg
+	wood wood03.jpg
+}
+
+::board::addPreferences {wood Hard_Maple_Rustic_111B85AP50KE040.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+}
+
+::board::addPreferences {wood Maple_362.jpg} {
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood Wood-white.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_Green.png
+	wood WoodFine0006_S.jpg
+	wood alder.jpg
+	wood beech_.jpg
+	wood cherry.65152300.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_191.jpg
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {marble MARBLE-BordeauxPink.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble NM97.jpg
+	marble black-marble.jpg
+	marble blue-marble-lite.png
+	marble marble01.png
+	marble marble_202.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+	misc rossogerazzo-dark.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {marble MARBLE-StatuarioVenato.jpg} {
+	marble black-marble.jpg
+	marble Green-Marble.jpg
+	marble marble01.png
+	marble marble_103.jpg
+	marble marble_219.jpg
+	marble Verde_Guatemala_Green_Marble.png
+}
+
+::board::addPreferences {marble Marble-Blue.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble blue-marble-lite.png
+	marble marble_103.jpg
+	marble marble_209.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+}
+
+::board::addPreferences {marble MarbleBeige0017_1_S.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble NM97.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble Verde_Guatemala_Green_Marble.png
+	marble black-marble.jpg
+	marble color_green_22.jpg
+	marble color_orang_130.jpg
+	marble green-marble.jpg
+	marble marble01.png
+	marble marble_138.jpg
+	marble marble_198.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_219.jpg
+	marble marble_233.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc apollo-dark.png
+	misc rossogerazzo-dark.png
+}
+
+::board::addPreferences {marble MarbleWhite0041_1_S.jpg} {
+	marble black-marble.jpg
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble marble_206.jpg
+	marble marble_219.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+}
+
+::board::addPreferences {wood OKP810.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood tawa-dark.png
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {marble Rosamexl.jpg} {
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble E-Stone-203.jpg
+	marble MARBLE-RojoAlicante.png
+	marble marble01.png
+	marble marble_103.jpg
+	marble marble_202.jpg
+	marble Tea_Rose_Marble.jpg
+	marble Verde_Guatemala_Green_Marble.png
+}
+
+::board::addPreferences {misc Sycomore_yellow_dyed.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Green-Marble.jpg
+	marble black-marble.jpg
+	marble marble_219.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+	misc lapis-blue.png
+	wood DarkMaple.jpg
+	wood alder.jpg
+	wood wood03.jpg
+}
+
+::board::addPreferences {wood WoodFine0009_S.jpg} {
+	wood DarkMaple.jpg
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_Green.png
+	wood WoodFine0015_S.jpg
+	wood alder.jpg
+	wood cherry.65152300.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+}
+
+::board::addPreferences {wood WoodPlatesNew0009_S.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood WoodFine0006_Green.png
+	wood tawa-dark.png
+	wood wood-cider-cherry.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood WoodPlatesOld0004_S.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood WoodFine0006_Green.png
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood WoodPlatesOld0036_3_S.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood WOOD-parisot.jpg
+	wood wood03.jpg
+	wood WoodFine0006_Green.png
+}
+
+::board::addPreferences {wood aspen.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood WoodFine0015_S.jpg
+	wood alder.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+}
+
+::board::addPreferences {wood basswood.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood beech_.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {marble blue-marble-lite.png} {
+	marble NM97.jpg
+	marble blue-marble-dark.jpg
+	marble color_orang_130.jpg
+	marble marble_206.jpg
+	marble marble_209.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc apollo-dark.png
+	misc lapis-blue.png
+	misc rossogerazzo-dark.png
+}
+
+::board::addPreferences {marble blue__marble.jpg} {
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble blue-marble-lite.png
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble marble_103.jpg
+	marble marble_202.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+}
+
+::board::addPreferences {misc color_yellow_31.jpg} {
+	marble black-marble.jpg
+	misc color_yellow_28.jpg
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Green-Marble.jpg
+	marble green-marble.jpg
+	marble marble_138.jpg
+	marble marble_219.jpg
+	marble NM97.jpg
+	marble Verde_Guatemala_Green_Marble.png
+}
+
+::board::addPreferences {wood fir-lite.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	misc Sycomore_red_dyed.jpg
+	wood BirchTauari-background.jpg
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood Wood-white.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_S.jpg
+	wood WoodFine0015_S.jpg
+	wood alder.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {marble green_marble.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble blue-marble-dark.jpg
+	marble marble_219.jpg
+	misc thatch-green.png
+}
+
+::board::addPreferences {wood hickory2.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	misc Sycomore_red_dyed.jpg
+	wood WoodFine0001_S.jpg
+	wood alder.jpg
+	wood blckwlnt.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_66.gif
+}
+
+::board::addPreferences {wood hrdmaple.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood light_laminated__maple.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WoodFine0006_Green.png
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood maple.jpg} {
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood Wood-dream.png
+	wood Wood-white.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_S.jpg
+	wood alder.jpg
+	wood beech_.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_191.jpg
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {marble marble04.jpg} {
+	marble black-marble.jpg
+	marble Green-Marble.jpg
+	marble marble01.png
+	marble marble_103.jpg
+	marble marble_219.jpg
+	marble Tea_Rose_Marble.jpg
+	marble Verde_Guatemala_Green_Marble.png
+}
+
+::board::addPreferences {marble marble_141.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Green-Marble.jpg
+	marble NM97.jpg
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble color_green_22.jpg
+	marble marble_103.jpg
+	marble marble_138.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_219.jpg
+	marble marble_233.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+	misc lapis-blue.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {marble marble_166.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-lite.png
+	marble color_green_22.jpg
+	marble marble_206.jpg
+	marble marble_233.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+}
+
+::board::addPreferences {marble marble_234.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Emerald_Green_Marble.jpg
+	marble Green-Marble.jpg
+	marble NM97.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble Verde_Guatemala_Green_Marble.png
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble color_green_22.jpg
+	marble color_orang_130.jpg
+	marble green-marble.jpg
+	marble marble_103.jpg
+	marble marble_138.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_209.jpg
+	marble marble_219.jpg
+	marble marble_229.jpg
+	marble marble_233.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+	misc rossogerazzo-dark.png
+	misc sand-brown.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {marble marble_green_papers.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble NM97.jpg
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble blue-marble-lite.png
+	marble color_green_22.jpg
+	marble marble13.jpg
+	marble marble_209.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+}
+
+::board::addPreferences {marble marble_rose_papers.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Tea_Rose_Marble.jpg
+	marble blue-marble-lite.png
+	marble marble01.png
+	marble marble_103.jpg
+	marble marble_202.jpg
+	marble marble_209.jpg
+	marble marble_233.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc apollo-dark.png
+}
+
+::board::addPreferences {misc metallica.png} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble NM97.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble marble_103.jpg
+	marble marble_202.jpg
+	marble marble_209.jpg
+	marble marble_219.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+	misc aluminium-blue.png
+	misc apollo-dark.png
+	misc rossogerazzo-dark.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {misc phshtecmyk.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble NM97.jpg
+	marble Verde_Guatemala_Green_Marble.png
+	marble black-marble.jpg
+	marble green-marble.jpg
+	marble marble_138.jpg
+	marble marble_219.jpg
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+}
+
+::board::addPreferences {wood red_oak2.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	misc Sycomore_red_dyed.jpg
+	wood WoodFine0001_S.jpg
+	wood alder.jpg
+	wood blckwlnt.jpg
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+}
+
+::board::addPreferences {wood russianbirch.jpg} {
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble marble_209.jpg
+	marble marble_233.jpg
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+}
+
+::board::addPreferences {marble salmon_marble.jpg} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble blue-marble-lite.png
+	marble color_orang_130.jpg
+	marble marble01.png
+	marble marble_138.jpg
+	marble verdiillusion-dark.png
+	wood WoodFine0006_Green.png
+	wood wood_114.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood softmaple.jpg} {
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-white.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_Green.png
+	wood WoodFine0006_S.jpg
+	wood alder.jpg
+	wood beech_.jpg
+	wood cherry.65152300.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {misc texture_etre.png} {
+	misc Sycomore_red_dyed.jpg
+	misc texture_etre.jpg
+}
+
+::board::addPreferences {wood wood30.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood beech_.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_112.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_143.gif} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood tawa-dark.png
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+::board::addPreferences {wood wood_202.jpg} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood wood03.jpg
+	wood wood_142.gif
+	wood WoodFine0006_Green.png
+}
+
+::board::addPreferences {wood wood_208.jpg} {
+	wood RiftWhiteOak.jpg
+	wood tawa-dark.png
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+}
+
+::board::addPreferences {wood wood_ash_clear.jpg} {
+	wood MFP810.png
+	wood PNN810.png
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood tawa-dark.png
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+}
+
+::board::addPreferences {wood wood_eastern_white_pine.jpg} {
+	wood BirchTauari-background.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0006_Green.png
+	wood WoodFine0006_S.jpg
+	wood WoodFine0015_S.jpg
+	wood alder.jpg
+	wood beech_.jpg
+	wood blckwlnt.jpg
+	wood cherry.65152300.jpg
+	wood mohogany2.jpg
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_grain_white.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WoodFine0001_S.jpg
+	wood WoodFine0015_S.jpg
+	wood alder.jpg
+	wood cherry.65152300.jpg
+	wood mohogany2.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+	wood wood_191.jpg
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_hickory_clear.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_hickory_yellow.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood blckwlnt.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood-natural-maple.jpg} {
+	misc Sycomore_red_dyed.jpg
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood RiftWhiteOak.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_poplar_clear.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood blckwlnt.jpg
+	wood tawa-dark.png
+	wood wood-cafe-maple.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood wood_redalder_clear.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood WOOD-parisot.jpg
+	wood WoodFine0006_Green.png
+	wood tawa-dark.png
+	wood wood03.jpg
+}
+
+::board::addPreferences {marble verdiillusion-lite.png} {
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble color_green_22.jpg
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble marble01.png
+	marble marble_103.jpg
+	marble marble_138.jpg
+	marble marble_206.jpg
+	marble marble_229.jpg
+	marble marble_233.jpg
+	marble marble_252.jpg
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	misc urulu-dark.png
+}
+
+::board::addPreferences {misc aluminium-grey.png} {
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+	misc lapis-blue.png
+	misc sand-brown.png
+	misc thatch-green.png
+}
+
+::board::addPreferences {misc apollo-lite.png} {
+	marble blue-marble-lite.png
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble marble_138.jpg
+	marble NM97.jpg
+	misc apollo-dark.png
+	misc lapis-blue.png
+	misc sand-brown.png
+}
+
+::board::addPreferences {misc lapis-gold.png} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Tea_Rose_Marble.jpg
+	marble blue-marble-dark.jpg
+	marble color_orang_130.jpg
+	marble green-marble.jpg
+	marble marble_138.jpg
+	marble marble_206.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+	misc lapis-blue.png
+	misc thatch-green.png
+}
+
+::board::addPreferences {misc rossogerazzo-lite.png} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble MARBLE-RojoAlicante.png
+	marble PinkMarble.png
+	marble black-marble.jpg
+	marble color_orang_130.jpg
+	marble marble01.png
+	marble marble_138.jpg
+	marble marble_198.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_219.jpg
+	marble marble_229.jpg
+	marble marble_233.jpg
+	marble verdiillusion-dark.png
+	misc lapis-blue.png
+	misc rossogerazzo-dark.png
+}
+
+::board::addPreferences {misc sand-yellow.png} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble E-Stone-203.jpg
+	marble Green-Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble PinkMarble.png
+	marble Tea_Rose_Marble.jpg
+	marble blue-marble-lite.png
+	marble color_green_22.jpg
+	marble color_orang_130.jpg
+	marble marble13.jpg
+	marble marble_138.jpg
+	marble marble_202.jpg
+	marble marble_206.jpg
+	marble marble_209.jpg
+	marble marble_219.jpg
+	marble marble_229.jpg
+	marble marble_233.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+	misc Sycomore_red_dyed.jpg
+	misc aluminium-blue.png
+	misc apollo-dark.png
+	misc lapis-blue.png
+	misc sand-brown.png
+	misc thatch-green.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {misc urulu-lite.png} {
+	marble Diamond_Ebony_Marble.15194542_std.jpg
+	marble Emerald_Green_Marble.jpg
+	marble MARBLE-RojoAlicante.png
+	marble Tea_Rose_Marble.jpg
+	marble black-marble.jpg
+	marble blue-marble-dark.jpg
+	marble color_orang_130.jpg
+	marble marble_138.jpg
+	marble marble_206.jpg
+	marble marble_252.jpg
+	marble verdiillusion-dark.png
+	misc apollo-dark.png
+	misc lapis-blue.png
+	misc rossogerazzo-dark.png
+	misc urulu-dark.png
+}
+
+::board::addPreferences {wood tawa-lite.png} {
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood PNN810.png
+	wood RedWood3.jpg
+	wood Wood-dream.png
+	wood WoodFine0006_Green.png
+	wood alder.jpg
+	wood beech_.jpg
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-chestnut-oak2.jpg
+	wood wood-cider-cherry.jpg
+	wood wood01.jpg
+	wood wood03.jpg
+	wood wood_114.jpg
+	wood wood_142.gif
+	wood wood_66.gif
+	wood wood_blackwalnut_clear.png
+}
+
+::board::addPreferences {wood Wood-dream.png} {
+	misc Sycomore_red_dyed.jpg
+	misc lapis-blue.png
+	wood DarkMaple.jpg
+	wood MFP810.png
+	wood RedWood3.jpg
+	wood WOOD-parisot.jpg
+	wood Wood-dream.png
+	wood tawa-dark.png
+	wood wood-amber-cherry.jpg
+	wood wood-cafe-maple.jpg
+	wood wood-cider-cherry.jpg
+	wood wood03.jpg
+	wood wood03.jpg
+	wood wood_142.gif
+}
+
+# vi:set ts=3 sw=3:

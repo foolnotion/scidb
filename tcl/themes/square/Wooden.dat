@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {wood WoodFine0006_S.jpg}
+  dark,y1               0
+  hint,border-color     {}
+  dark,y2               90
+  hint,background-tile  {wood WoodFine0006_S.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {wood GRA810.png}
+  lite,x1               0
+  hilite,selected       #9c0000
+  lite,x2               90
+  lite,solid            {}
+  hilite,suggested      #eeed2a
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {wood beech_.jpg}
+  dark,x2               90
+  dark,solid            {}
+  hint,coordinates      #000000
+  borderline,gap        0
+  identifier            Wooden|1263914443955|yellow.color|gregor
+  borderline,opacity    115
+  lite,y1               0
+  lite,y2               90
+}

@@ -1,0 +1,229 @@
+################################################################################
+# $Id: Makefile,v 1.1 2008/11/29 15:22:54 gregor Exp gregor $
+#
+# Makefile for jpegd library
+# 
+################################################################################
+
+CC			= g++
+AR			= ar
+RANLIB	= ranlib
+LIB_NAME	= jpegd
+
+CFLAGS		= -Wall #-DJPEG_SUPPORT_12_BIT
+DEBUGFLAGS	= #-g
+OPTFLAGS		= -O3 -DNDEBUG
+SIMD			= #-msse2
+ARFLAGS		= rc
+
+.SUFFIXES: .cpp
+.PRECIOUS:
+
+INCLUDE	= -I/.
+
+SRC		= \
+	jpeg_base.cpp \
+	jpeg_bit_stream.cpp \
+	jpeg_color_conv.cpp \
+	jpeg_component.cpp \
+	jpeg_dct.cpp \
+	jpeg_decoder.cpp \
+	jpeg_exception.cpp \
+	jpeg_huffman.cpp \
+	jpeg_image.cpp \
+	jpeg_reader.cpp \
+	jpeg_scanline.cpp \
+	jpeg_stream.cpp
+
+OBJS = $(SRC:.cpp=.o)
+LIB  = lib$(LIB_NAME)
+EXE  = test
+
+all: $(LIB).a
+
+depend:
+	makedepend -fMakefile.orig -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+
+clean:
+	rm -f $(LIB).a $(LIB) $(EXE)
+	rm -f $(OBJS)
+
+$(LIB).a: $(OBJS)
+	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	#$(RANLIB) $(LIB).a
+
+.cpp.o:
+	$(CC) -c $(CXXFLAGS) $(INCLUDE) $*.cpp
+
+data/jpeg_pycc_to_rgb_8.dat: data/jpeg_pycc_to_rgb_8.pl
+	data/jpeg_pycc_to_rgb_8.pl > data/jpeg_pycc_to_rgb_8.dat
+
+data/jpeg_ycc_to_rgb_8.dat: data/jpeg_ycc_to_rgb_8.pl
+	data/jpeg_ycc_to_rgb_8.pl > data/jpeg_ycc_to_rgb_8.dat
+
+data/jpeg_pycc_to_rgb_12.dat: data/jpeg_pycc_to_rgb_12.pl
+	data/jpeg_pycc_to_rgb_12.pl > data/jpeg_pycc_to_rgb_12.dat
+
+data/jpeg_ycc_to_rgb_12.dat: data/jpeg_ycc_to_rgb_12.pl
+	data/jpeg_ycc_to_rgb_12.pl > data/jpeg_ycc_to_rgb_12.dat
+
+# DO NOT DELETE
+
+jpeg_base.o: jpeg_base.h
+jpeg_base.o: /usr/include/stdint.h
+jpeg_base.o: /usr/include/features.h
+jpeg_base.o: /usr/include/sys/cdefs.h
+jpeg_base.o: /usr/include/gnu/stubs.h
+jpeg_base.o: /usr/include/bits/wchar.h
+jpeg_base.o: /usr/include/bits/wordsize.h
+jpeg_base.o: /usr/include/string.h
+jpeg_base.o: /usr/include/stdio.h
+jpeg_base.o: /usr/include/bits/types.h
+jpeg_base.o: /usr/include/bits/typesizes.h
+jpeg_base.o: /usr/include/libio.h
+jpeg_base.o: /usr/include/_G_config.h
+jpeg_base.o: /usr/include/wchar.h
+jpeg_base.o: /usr/include/gconv.h
+jpeg_base.o: /usr/include/bits/stdio_lim.h
+jpeg_base.o: /usr/include/bits/sys_errlist.h
+jpeg_bit_stream.o: jpeg_bit_stream.h
+jpeg_bit_stream.o: /usr/include/assert.h
+jpeg_bit_stream.o: /usr/include/features.h
+jpeg_bit_stream.o: /usr/include/sys/cdefs.h
+jpeg_bit_stream.o: /usr/include/gnu/stubs.h
+jpeg_bit_stream.o: jpeg_stream.h
+jpeg_color_conv.o: jpeg_color_conv.h
+jpeg_color_conv.o: jpeg_base.h
+jpeg_color_conv.o: /usr/include/stdint.h
+jpeg_color_conv.o: /usr/include/features.h
+jpeg_color_conv.o: /usr/include/sys/cdefs.h
+jpeg_color_conv.o: /usr/include/gnu/stubs.h
+jpeg_color_conv.o: /usr/include/bits/wchar.h
+jpeg_color_conv.o: /usr/include/bits/wordsize.h
+jpeg_color_conv.o: jpeg_scanline.h
+jpeg_color_conv.o: /usr/include/string.h
+jpeg_color_conv.o: /usr/include/assert.h
+jpeg_color_conv.o: data/jpeg_ycc_to_rgb_8.dat
+jpeg_color_conv.o: data/jpeg_pycc_to_rgb_8.dat
+jpeg_component.o: jpeg_component.h
+jpeg_component.o: jpeg_base.h
+jpeg_component.o: /usr/include/stdint.h
+jpeg_component.o: /usr/include/features.h
+jpeg_component.o: /usr/include/sys/cdefs.h
+jpeg_component.o: /usr/include/gnu/stubs.h
+jpeg_component.o: /usr/include/bits/wchar.h
+jpeg_component.o: /usr/include/bits/wordsize.h
+jpeg_component.o: jpeg_dct.h
+jpeg_component.o: jpeg_huffman.h
+jpeg_component.o: jpeg_bit_stream.h
+jpeg_component.o: /usr/include/assert.h
+jpeg_component.o: jpeg_exception.h
+jpeg_component.o: /usr/include/string.h
+jpeg_dct.o: jpeg_dct.h
+jpeg_dct.o: jpeg_base.h
+jpeg_dct.o: /usr/include/stdint.h
+jpeg_dct.o: /usr/include/features.h
+jpeg_dct.o: /usr/include/sys/cdefs.h
+jpeg_dct.o: /usr/include/gnu/stubs.h
+jpeg_dct.o: /usr/include/bits/wchar.h
+jpeg_dct.o: /usr/include/bits/wordsize.h
+jpeg_dct.o: /usr/include/string.h
+jpeg_dct.o: /usr/include/assert.h
+jpeg_decoder.o: jpeg_decoder.h
+jpeg_decoder.o: jpeg_base.h
+jpeg_decoder.o: /usr/include/stdint.h
+jpeg_decoder.o: /usr/include/features.h
+jpeg_decoder.o: /usr/include/sys/cdefs.h
+jpeg_decoder.o: /usr/include/gnu/stubs.h
+jpeg_decoder.o: /usr/include/bits/wchar.h
+jpeg_decoder.o: /usr/include/bits/wordsize.h
+jpeg_decoder.o: jpeg_stream.h
+jpeg_decoder.o: jpeg_component.h
+jpeg_decoder.o: jpeg_dct.h
+jpeg_decoder.o: jpeg_image.h
+jpeg_decoder.o: jpeg_scanline.h
+jpeg_decoder.o: jpeg_bit_stream.h
+jpeg_decoder.o: /usr/include/assert.h
+jpeg_decoder.o: jpeg_color_conv.h
+jpeg_decoder.o: jpeg_huffman.h
+jpeg_decoder.o: jpeg_exception.h
+jpeg_decoder.o: /usr/include/stdio.h
+jpeg_decoder.o: /usr/include/bits/types.h
+jpeg_decoder.o: /usr/include/bits/typesizes.h
+jpeg_decoder.o: /usr/include/libio.h
+jpeg_decoder.o: /usr/include/_G_config.h
+jpeg_decoder.o: /usr/include/wchar.h
+jpeg_decoder.o: /usr/include/gconv.h
+jpeg_decoder.o: /usr/include/bits/stdio_lim.h
+jpeg_decoder.o: /usr/include/bits/sys_errlist.h
+jpeg_decoder.o: /usr/include/string.h
+jpeg_exception.o: jpeg_exception.h
+jpeg_exception.o: /usr/include/string.h
+jpeg_exception.o: /usr/include/features.h
+jpeg_exception.o: /usr/include/sys/cdefs.h
+jpeg_exception.o: /usr/include/gnu/stubs.h
+jpeg_exception.o: /usr/include/stdlib.h
+jpeg_exception.o: /usr/include/sys/types.h
+jpeg_exception.o: /usr/include/bits/types.h
+jpeg_exception.o: /usr/include/bits/wordsize.h
+jpeg_exception.o: /usr/include/bits/typesizes.h
+jpeg_exception.o: /usr/include/time.h
+jpeg_exception.o: /usr/include/endian.h
+jpeg_exception.o: /usr/include/bits/endian.h
+jpeg_exception.o: /usr/include/sys/select.h
+jpeg_exception.o: /usr/include/bits/select.h
+jpeg_exception.o: /usr/include/bits/sigset.h
+jpeg_exception.o: /usr/include/bits/time.h
+jpeg_exception.o: /usr/include/sys/sysmacros.h
+jpeg_exception.o: /usr/include/bits/pthreadtypes.h
+jpeg_exception.o: /usr/include/bits/sched.h
+jpeg_exception.o: /usr/include/alloca.h
+jpeg_exception.o: /usr/include/stdio.h
+jpeg_exception.o: /usr/include/libio.h
+jpeg_exception.o: /usr/include/_G_config.h
+jpeg_exception.o: /usr/include/wchar.h
+jpeg_exception.o: /usr/include/bits/wchar.h
+jpeg_exception.o: /usr/include/gconv.h
+jpeg_exception.o: /usr/include/bits/stdio_lim.h
+jpeg_exception.o: /usr/include/bits/sys_errlist.h
+jpeg_huffman.o: jpeg_huffman.h
+jpeg_huffman.o: jpeg_bit_stream.h
+jpeg_huffman.o: /usr/include/assert.h
+jpeg_huffman.o: /usr/include/features.h
+jpeg_huffman.o: /usr/include/sys/cdefs.h
+jpeg_huffman.o: /usr/include/gnu/stubs.h
+jpeg_huffman.o: jpeg_exception.h
+jpeg_huffman.o: /usr/include/string.h
+jpeg_image.o: jpeg_image.h
+jpeg_image.o: jpeg_scanline.h
+jpeg_image.o: jpeg_decoder.h
+jpeg_image.o: jpeg_base.h
+jpeg_image.o: /usr/include/stdint.h
+jpeg_image.o: /usr/include/features.h
+jpeg_image.o: /usr/include/sys/cdefs.h
+jpeg_image.o: /usr/include/gnu/stubs.h
+jpeg_image.o: /usr/include/bits/wchar.h
+jpeg_image.o: /usr/include/bits/wordsize.h
+jpeg_image.o: jpeg_stream.h
+jpeg_image.o: jpeg_component.h
+jpeg_image.o: jpeg_dct.h
+jpeg_image.o: jpeg_bit_stream.h
+jpeg_image.o: /usr/include/assert.h
+jpeg_image.o: jpeg_exception.h
+jpeg_reader.o: jpeg_reader.h
+jpeg_scanline.o: jpeg_scanline.h
+jpeg_scanline.o: /usr/include/assert.h
+jpeg_scanline.o: /usr/include/features.h
+jpeg_scanline.o: /usr/include/sys/cdefs.h
+jpeg_scanline.o: /usr/include/gnu/stubs.h
+jpeg_stream.o: jpeg_stream.h
+jpeg_stream.o: jpeg_exception.h
+jpeg_stream.o: jpeg_reader.h
+jpeg_stream.o: /usr/include/string.h
+jpeg_stream.o: /usr/include/features.h
+jpeg_stream.o: /usr/include/sys/cdefs.h
+jpeg_stream.o: /usr/include/gnu/stubs.h
+jpeg_stream.o: /usr/include/stdint.h
+jpeg_stream.o: /usr/include/bits/wchar.h
+jpeg_stream.o: /usr/include/bits/wordsize.h
+jpeg_stream.o: /usr/include/assert.h

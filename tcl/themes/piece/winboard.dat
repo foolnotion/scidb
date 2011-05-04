@@ -1,0 +1,56 @@
+### Piece Style: Winboard ########################
+
+::board::addStyle piece {
+	identifier				Winboard|1228820514952|yellow.color|gregor
+
+	contour					1.0
+	shadow					0.03
+	opacity					0.5
+	zoom						1.0
+	diffusion				none
+	useWhitePiece			0
+
+	color,w,contour		#ffffcc
+	color,w,fill			#ffffcc
+	color,w,stroke			{}
+	color,w,texture		{}
+
+	color,b,contour		#ffffcc
+	color,b,fill			{}
+	color,b,stroke			#ffffcc
+	color,b,texture		{}
+
+	texture,w,rotation	0
+	texture,w,x1			0
+	texture,w,x2			0
+	texture,w,y1			0
+	texture,w,y2			0
+
+	texture,b,rotation	0
+	texture,b,x1			0
+	texture,b,x2			0
+	texture,b,y1			0
+	texture,b,y2			0
+
+	gradient,w,use			false
+	gradient,w,start		{}
+	gradient,w,stop		{}
+	gradient,w,tx			0
+	gradient,w,ty			0
+	gradient,w,x1			0
+	gradient,w,x2			1
+	gradient,w,y1			0
+	gradient,w,y2			1
+
+	gradient,b,use			false
+	gradient,b,start		{}
+	gradient,b,stop		{}
+	gradient,b,tx			0
+	gradient,b,ty			0
+	gradient,b,x1			0
+	gradient,b,x2			1
+	gradient,b,y1			0
+	gradient,b,y2			1
+}
+
+# eof

@@ -1,0 +1,27 @@
+::board::addStyle square {
+  borderline,gap        {0}
+  borderline,opacity    {0x80}
+  borderline,width      {0.006666666666666667}
+  dark,rotation         {0}
+  dark,solid            {#b7712d}
+  dark,texture          {}
+  dark,x1               {0}
+  dark,x2               {0}
+  dark,y1               {0}
+  dark,y2               {0}
+  hilite,selected       {#e03a5a}
+  hilite,suggested      {#ffe084}
+  hint,background-color {}
+  hint,background-tile  {marble marble_234.jpg}
+  hint,border-color     {#995f26}
+  hint,border-tile      {}
+  hint,coordinates      {#ffffff}
+  identifier            {Burly|1295711105525|yellow.color|gregor}
+  lite,rotation         {0}
+  lite,solid            {#e4b484}
+  lite,texture          {}
+  lite,x1               {0}
+  lite,x2               {0}
+  lite,y1               {0}
+  lite,y2               {0}
+}

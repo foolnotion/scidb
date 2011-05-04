@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  identifier   {Phoenix|1296049187980|yellow.color|gregor}
+  piece-set    {Phoenix}
+  piece-style  {Yellow|1296047348974|yellow.color|gregor}
+  square-style {Crater|1296048990606|yellow.color|gregor}
+}

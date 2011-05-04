@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  identifier   {Alpha|1295711284602|yellow.color|gregor}
+  piece-set    {Alpha}
+  piece-style  {Lemon|1251901475461|yellow.color|gregor}
+  square-style {Burly|1295711105525|yellow.color|gregor}
+}

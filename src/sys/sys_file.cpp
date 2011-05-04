@@ -1,0 +1,264 @@
+// ======================================================================
+// Author : $Author$
+// Version: $Revision$
+// Date   : $Date$
+// Url    : $URL$
+// ======================================================================
+
+// ======================================================================
+// Copyright: (C) 2009-2011 Gregor Cramer
+// ======================================================================
+
+// ======================================================================
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+// ======================================================================
+
+#include "sys_file.h"
+
+#include "tcl_base.h"
+
+#include "m_assert.h"
+
+#include <tcl.h>
+#include <time.h>
+
+#if !TCL_PREREQ(8,5)
+# error  "unsupported TCL version"
+#endif
+
+#if !TCL_PREREQ(8,6)
+# include <sys/stat.h>
+#endif
+
+
+sys::file::Time::Time() : year(0), month(0), day(0), hour(0), minute(0), second(0) {}
+
+
+bool
+sys::file::access(char const* filename, Mode mode)
+{
+	M_REQUIRE(filename);
+	return Tcl_Access(filename, mode) == 0;
+}
+
+
+long
+sys::file::size(char const* filename)
+{
+	M_REQUIRE(filename);
+
+	Tcl_StatBuf*	buf		= Tcl_AllocStatBuf();
+	Tcl_Obj*			pathObj	= Tcl_NewStringObj(filename, -1);
+	long				size		= -1;
+
+	Tcl_IncrRefCount(pathObj);
+	int ret = Tcl_FSStat(pathObj, buf);
+	Tcl_DecrRefCount(pathObj);
+
+	if (ret != -1)
+	{
+#if !TCL_PREREQ(8,6)
+		size = buf->st_size;
+#else
+		size = long(Tcl_GetSizeFromStat(buf));
+#endif
+	}
+
+	::ckfree(reinterpret_cast<char*>(buf));
+	return size;
+}
+
+
+bool
+sys::file::changed(char const* filename, Time& result)
+{
+	M_REQUIRE(filename);
+
+	Tcl_StatBuf*	buf		= Tcl_AllocStatBuf();
+	Tcl_Obj*			pathObj	= Tcl_NewStringObj(filename, -1);
+
+	Tcl_IncrRefCount(pathObj);
+	int ret = Tcl_FSStat(pathObj, buf);
+	Tcl_DecrRefCount(pathObj);
+
+	if (ret != -1)
+	{
+		time_t ctime;
+
+#if !TCL_PREREQ(8,6)
+		ctime = buf->st_ctime;
+#else
+		ctime = Tcl_GetChangeTimeFromStat(buf);
+#endif
+
+		struct tm const* t = ::localtime(&ctime);
+
+		result.year		= t->tm_year + 1900;
+		result.month	= t->tm_mon + 1;
+		result.day		= t->tm_mday;
+		result.hour		= t->tm_hour;
+		result.minute	= t->tm_min;
+		result.second	= t->tm_sec;
+	}
+
+	::ckfree(reinterpret_cast<char*>(buf));
+	return ret != -1;
+}
+
+
+#ifdef WIN32
+
+# include <windows.h>
+
+
+void*
+sys::file::createMapping(char const* filename, Mode mode)
+{
+	M_REQUIRE(filename);
+
+	HANDLE file = CreateFileA(
+							filename,
+							(mode & Writeable ? GENERIC_WRITE : 0) | (mode & Readable ? GENERIC_READ : 0),
+							0,
+							0,
+							OPEN_EXISTING,
+							FILE_ATTRIBUTE_NORMAL | FILE_FLAG_RANDOM_ACCESS,
+							0);
+
+	if (file == 0)
+		return 0;
+
+	HANDLE mapping = CreateFileMappingA(
+								file,
+								0,
+								PAGE_READONLY,
+								0,
+								0,
+								filename);
+
+	if (mapping == 0)
+	{
+		CloseHandle(file);
+		return 0;
+	}
+
+	void* address = MapViewOfFile(
+							handle->mapping,
+							(mode & Writeable ? FILE_MAP_WRITE : 0) | (mode & Readable ? FILE_MAP_READ : 0),
+							0,
+							0,
+							0);
+
+	CloseHandle(mapping);
+	CloseHandle(file);
+
+	return address;
+}
+
+
+void
+sys::file::closeMapping(void*& address)
+{
+	if (address)
+		UnmapViewOfFile(address);
+
+	address = 0;
+}
+
+#else
+
+#include "m_map.h"
+#include "m_pair.h"
+
+# include <fcntl.h>
+# include <unistd.h>
+# include <errno.h>
+
+# include <sys/stat.h>
+# include <sys/mman.h>
+
+
+static mstl::map<void*,mstl::pair<int,int> > FileMap;
+
+
+void*
+sys::file::createMapping(char const* filename, Mode mode)
+{
+	M_REQUIRE(filename);
+
+	int flags = 0;
+
+	if (mode & (Writeable | Readable))
+		flags = O_RDWR;
+	else if (!(mode & Writeable))
+		flags = O_WRONLY;
+	else
+		flags = O_RDONLY;
+
+	int fildes = ::open(filename, flags);
+
+	if (fildes == -1)
+		return 0;
+
+	struct ::stat st;
+	if (::fstat(fildes, &st) == -1)
+	{
+		::close(fildes);
+		return 0;
+	}
+
+	int length = st.st_size;
+
+	flags = 0;
+	if (flags & Readable)	flags |= PROT_READ;
+	if (flags & Writeable)	flags |= PROT_WRITE;
+
+	void* address = ::mmap(0, length, flags, MAP_PRIVATE, fildes, 0);
+
+	if (address == MAP_FAILED)
+	{
+		::close(fildes);
+		return 0;
+	}
+
+	FileMap[address] = mstl::make_pair(fildes, length);
+	return address;
+}
+
+
+void
+sys::file::closeMapping(void*& address)
+{
+	if (address)
+	{
+		mstl::pair<int,int> p = FileMap[address];
+
+		::close(p.first);
+		::munmap(address, p.second);
+
+		FileMap.erase(address);
+	}
+
+	address = 0;
+}
+
+
+bool
+sys::file::lock(int fd)
+{
+	return ::lockf(fd, F_TLOCK, 0) != -1;
+}
+
+
+void
+sys::file::unlock(int fd)
+{
+	::lockf(fd, F_ULOCK, 0);
+}
+
+#endif
+
+// vi:set ts=3 sw=3:

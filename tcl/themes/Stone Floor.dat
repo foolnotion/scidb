@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style           Emerald|1244127333315|yellow.color|gregor
+  piece-set             Cheq
+  square-style          {Stone Floor|1244113188050|yellow.color|gregor}
+  identifier            {Stone Floor|1244113337107|yellow.color|gregor}
+}

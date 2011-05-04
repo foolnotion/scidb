@@ -1,0 +1,3 @@
+set photo_Engine(micromax) [list $::load::photoFile 26328 13346]
+set photo_Engine(stockfish) [list $::load::photoFile 139 6882]
+set photo_Engine(gully2) [list $::load::photoFile 7040 19266]

@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style  Glass|1243791877212|yellow.color|gregor
+  identifier   {Glassy & Red|1250851039023|yellow.color|gregor}
+  piece-set    {Good Companion}
+  square-style {Sycomore Gray|1244122565844|yellow.color|gregor}
+}

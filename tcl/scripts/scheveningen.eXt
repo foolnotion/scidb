@@ -1,0 +1,483 @@
+% scheveningen.eXt
+
+\input\plain
+
+%%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\check-optional-token#tok#dflt{%
+	\ifx#tok\undefined
+		\message{WARNING: Token \string#tok is not defined (default is \string#dflt).}%
+		\let#tok#dflt%
+	\fi
+}
+\def\check-mandatory-token#tok{%
+	\ifx#tok\undefined
+		\errorcontextlines\0
+		\errmessage{ERROR: Token \string#tok is not defined.}%
+	\fi
+}
+
+\check-optional-token\ShowRating\1
+\check-optional-token\ShowTiebreaks\1
+\check-optional-token\ShowPerformance\1
+\check-optional-token\ShowChange\1
+\check-optional-token\ShowCountry\1
+\check-optional-token\CellSpacing\1
+\check-optional-token\CellPadding\3
+
+\check-mandatory-token\FormatDate
+\check-mandatory-token\DecimalPoint
+\check-mandatory-token\Linespace
+\check-mandatory-token\CharWidth
+
+\check-mandatory-token\Players
+\check-mandatory-token\AverageRating
+\check-mandatory-token\Category
+\check-mandatory-token\Games
+\check-mandatory-token\Game
+\check-mandatory-token\Header
+\check-mandatory-token\Results
+
+%%% tracing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifx\Tracing\undefined \let\Tracing\0 \fi
+\tracingcommands\Tracing
+\tracingmacros\Tracing
+\errorcontextlines\2
+
+%%% options %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\utf-8\1
+\ucpref{\&\#}
+\ucsuff;
+
+\fillchar 0
+\indentchar\ %
+\indentstep\2
+\let^^M\empty
+
+%%% layout  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\let\cell-padding\CellPadding \decr\cell-padding
+\let\pad\cell-padding \mul\pad\2 \add\Linespace\pad
+
+%%% helpers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\width#1{\let@n\CharWidth\mul@n#1@n}
+
+\def\let-digits#1#2{%
+	\if#2\0 \let@n\0 \else \xlet@n\log10#2\add@n\1 \fi
+	\let#1@n
+}
+
+%%% preparations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\xlet\Players1\lfront\Players
+\xlet\Players2\lback\Players
+\xlet\nplayers1\llength\Players1
+\xlet\nplayers2\llength\Players2
+\let\nplayers${\nplayers1\nplayers2}
+\lbind\nplayers
+
+%%% HTML tags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\expandafter\def\csname col!attrs\endcsname{%
+	\unless\ifempty\col-align \space align="\col-align"\let\col-align\empty\fi
+	\unless\ifempty\col-width \space width="\col-width{}px"\let\col-width\empty\fi
+	\unless\ifempty\col-height \space height="\col-height{}px"\let\col-height\empty\fi
+	\unless\ifempty\col-recv \space recv="\col-recv"\let\col-recv\empty\fi
+	\unless\ifempty\col-send \space send="\col-send"\let\col-send\empty\fi
+	\unless\ifempty\col-rank \space rank="\col-rank"\let\col-rank\empty\fi
+	\unless\if\col-game\0 \space game="\decrement\col-game"\let\col-game\0\fi
+}
+
+\let\col-align\empty
+\let\col-width\empty
+\let\col-height\empty
+\let\col-recv\empty
+\let\col-send\empty
+\let\col-rank\empty
+\let\col-game\0
+
+\def\begin-table#border#padding#spacing#height{%
+	<table border="#border" cellpadding="#padding" cellspacing="#spacing"
+	\unless\if#height\0 height="#height"\fi >\cr
+	\incr\indent
+}
+
+\def\end-table{\decr\indent</table>\cr}
+\def\begin-col{<td\csname col!attrs\endcsname>\cr \incr\indent}
+\def\end-col{\decr\indent</td>\cr}
+\def\begin-row{<tr>\cr \incr\indent}
+\def\end-row{\decr\indent</tr>\cr}
+\def\begin-col-end#1{<td\csname col!attrs\endcsname>#1</td>\cr}
+
+%%% print macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\prepare-players{%
+	\let\count-countries\0
+	\let\count-ratings\0
+	\let\count-performance\0
+	\let\count-change\0
+	\let\ndigits-ngames\0
+	\let\ndigits-score\0
+	\let\ntb\0
+	\for \k \0 \2 {%
+		\llet\players\Players\k
+		\llet\num-players\nplayers\k
+		\for \i \0 \num-players {%
+			\expandafter\lassign\lindex\players\i
+				{\country\unused\elo\score\ngames\performance\change\tiebreaks}%
+			\unless\ifempty\country \incr\count-countries \fi
+			\unless\if\elo\0 \incr\count-ratings \fi
+			\unless\if\performance\0 \incr\count-performance \fi
+			\unless\if\change\0 \incr\count-change \fi
+			\let-digits\n\ngames \max\ndigits-ngames\n
+			\xlet\n\llength\tiebreaks \max\ntb\n
+			\div\score\2 \let-digits\n\score \max\ndigits-score\n
+		}%
+	}%
+	\if\count-countries\0 \let\ShowCountry\0 \fi
+	\if\count-ratings\0 \let\ShowRating\0 \fi
+	\if\count-performance\0 \let\ShowPerformance\0 \fi
+	\if\count-change\0 \let\ShowChange\0 \fi
+	\let\ndigits-tiebreaks${}%
+	\for \k \0 \ntb {%
+		\let\ndigits-pts\0
+		\let\ndigits-frc\0
+		\for \j \0 \2 {%
+			\llet\players\Players\j
+			\llet\num-players\nplayers\j
+			\for \i \0 \num-players {%
+				\expandafter\llet\expandafter\tiebreaks\lindex\players\i\7
+				\llet\tb\tiebreaks\k
+				\iflist\tb
+					\lassign\tb{\pts\frc}%
+					\let-digits\n\pts \max\ndigits-pts\n
+					\let-digits\n\frc \max\ndigits-frc\n
+				\else
+					\let-digits\n\tb \max\ndigits-pts\n
+				\fi
+			}%
+		}%
+		\edef\pair{\ndigits-pts\ndigits-frc}%
+		\xlet\ndigits\expandafter\list\expandafter{\pair}%
+		\lset\ndigits-tiebreaks\k\ndigits
+	}%
+	\xlet\row\lindex\Results\0
+	\xlet\result\lindex\row\0
+	\xlet\parity\llength\result
+	\if\parity\1
+		\let\cell-width\Linespace
+	\else
+		\let\result-width\CharWidth \mul\result-width\2
+		\let\cell-width\result-width \mul\cell-width\parity
+	\fi
+}
+
+\def\print-players#which{%
+	\llet\players\Players#which
+	\llet\num-players\nplayers#which
+	\let\index\0
+	\if#which\1 \add\index\nplayers1 \fi
+	\for \i \0 \num-players {%
+		\expandafter\lassign\lindex\players\i{\country\name\elo}%
+		\begin-row
+		\def\col-align{right}%
+		\begin-col-end{\increment\i}%
+		\begin-col-end\empty
+		\unless\if\ShowCountry\0
+			\begin-col-end{\unless\ifempty\country <img src="\country"/>\fi}%
+		\fi
+		\def\col-recv{row-\index}%
+		\if#which\1 \def\col-send{col-\i}\fi
+		\def\col-rank{\increment\index}%
+		\begin-col-end{<b>\name</b>}%
+		\begin-col-end\empty
+		\unless\if\ShowRating\0
+			\if\elo\0\let\elo\empty\fi
+			\def\col-align{right}%
+			\begin-col-end{<font color="green">\elo</font>}%
+			\begin-col-end\thin-space
+			\end-row
+		\fi
+		\incr\index
+	}%
+}
+
+\def\print-results{%
+	\def\print-result##result{%
+		\ifcase##result%
+			\when \2 \let##result\0
+			\when \3 \def##result{\fraction-one-half}%
+			\when\-1 \let##result\thick-space
+		\fi
+		##result%
+	}%
+	\for \r \0 \nplayers1 {%
+		\begin-row
+		\xlet\row\lindex\Results\r
+		\xlet\n\llength\row
+		\iflower\nplayers2\n \let\n\nplayers2 \fi
+		\for \c \0 \n {%
+			\if\r\c
+				\def\col-align{center}%
+				\let\col-width\cell-width
+				\begin-col-end\medium-black-circle
+			\else
+				\xlet\result\lindex\row\c
+				\xlet\k\llength\result
+				\let\index\c \add\index\nplayers1
+				\if\k\1
+					\expandafter\lassign\lindex\result\0{\pts\col-game}%
+					\def\col-align{center}%
+					\let\col-width\Linespace
+					\unless\if\pts\-1
+						\def\col-recv{cell-\r-\c}%
+						\def\col-send{row-\index:row-\r}%
+					\fi
+					\begin-col-end{\print-result\pts}%
+				\else
+					\begin-col
+					\begin-table\0\0\0\0
+					\begin-row
+					\for \i \0 \k {%
+						\expandafter\lassign\lindex\result\i{\pts\col-game}%
+						\def\col-align{center}%
+						\let\col-width\result-width
+						\unless\if\pts\-1
+							\def\col-recv{cell-\r-\c-\i}%
+							\def\col-send{row-\index:row-\r}%
+						\fi
+						\begin-col-end{\print-result\pts}%
+					}%
+					\end-row
+					\end-table
+					\end-col
+				\fi
+			\fi
+		}%
+		\end-row
+	}%
+}
+
+\def\print-scores#which{%
+	\llet\players\Players#which
+	\llet\num-players\nplayers#which
+	\for \i \0 \num-players {%
+		\expandafter\lassign\lindex\players\i
+			{\unused\unused\unused\score\ngames\performance\change\tiebreaks}%
+		\begin-row
+		\begin-col-end\empty
+		\let\points\score \div\points\2
+		\let\frac\score \mod\frac\2 \mul\frac\5
+		\begin-col
+		\begin-table\0\0\0\0
+		\begin-row
+		\def\col-align{right}%
+		\def\col-width{\width\ndigits-score}%
+		\begin-col-end{<b>\points</b>}%
+		\let\col-width\CharWidth
+		\def\col-align{center}%
+		\begin-col-end{<b>\DecimalPoint\frac</b>}%
+		\begin-col-end{\thick-space<b>\/</b>}%
+		\def\col-align{right}%
+		\def\col-width{\width\ndigits-ngames}%
+		\begin-col-end{<b>\ngames</b>}%
+		\end-row
+		\end-table
+		\end-col
+		\unless\if\ShowTiebreaks\0
+			\let\k\0
+			\let\ndigits-frc\0
+			\foreach\tb\tiebreaks{%
+				\begin-col
+				\begin-table\0\0\0\0
+				\begin-row
+				\expandafter\lassign\lindex\ndigits-tiebreaks\k{\ndigits-pts\ndigits-frc}%
+				\def\col-align{right}%
+				\iflist\tb
+					\def\col-width{\width\ndigits-pts}%
+					\lassign\tb{\pts\frac}%
+					\begin-col-end\pts
+					\def\col-width{\width\ndigits-frc}%
+					\begin-col-end{\DecimalPoint{\adjustnum\ndigits-frc \frac}}%
+				\else
+					\def\col-width{\width\ndigits-pts}%
+					\begin-col-end\tb
+				\fi
+				\incr\k
+				\end-row
+				\end-table
+				\end-col
+			}%
+		\fi
+		\unless\if\ShowPerformance\0
+			\begin-col-end\empty
+			\def\col-align{right}%
+			\begin-col-end{<font color="darkred">\unless\if\performance\0\performance\fi</font>}%
+			\unless\if\ShowChange\0
+				\begin-col-end\empty
+				\def\col-align{right}%
+				\begin-col-end{%
+					\unless\if\performance\0
+						\expandafter\ifcase\compare\change\0
+							\when \1 +\when\-1\minus
+						\fi
+						\abs\change
+					\fi
+				}%
+			\fi
+		\fi
+		\end-row
+	}%
+}
+
+%%% output header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
+
+<html>\cr
+<p><nobr>\cr
+<big>
+<font color="blue">\event</font> \site
+\unless\ifempty\country\ <img src="\country"/>\fi\cr
+\unless\ifempty\startDate
+	\edef\startDate{\FormatDate\startDate}
+	\edef\endDate{\FormatDate\endDate}
+	\startDate
+	\expandafter\if\length\endDate\8
+		\unless\ifx\startDate\endDate
+			\ \endash\ \endDate
+		\fi
+	\fi
+\fi
+</big>\cr
+\unless\if\avgElo\0
+</nobr></p><p>\cr
+\AverageRating: \avgElo
+\unless\if\category\0
+\ (\Category\ \category)
+\fi\fi\cr
+</p>\cr\cr
+
+%%% output table %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\unless\if\llength\Players\0
+	\prepare-players
+	\begin-table\0\0\0\0
+	\begin-row
+	\begin-col
+	\begin-table\0\0\0\0
+	\begin-row
+	\begin-col
+	\begin-table\0\CellPadding\CellSpacing\0
+	\begin-row
+	\begin-col-end\thick-space
+	\end-row
+	\end-table
+	\end-col
+	\end-row
+	\begin-row
+	\begin-col
+	\begin-table\0\CellPadding\CellSpacing\0
+	\print-players\0
+	\print-players\1
+	\end-table
+	\end-col
+	\end-row
+	\end-table
+	\end-col
+	\begin-col
+	\begin-table\0\0\0\0
+	\begin-row
+	\begin-col
+	\begin-table\0\CellPadding\CellSpacing\0
+	\begin-row
+	\for \i \0 \nplayers2 {%
+		\def\col-align{center}%
+		\let\col-width\cell-width
+		\def\col-recv{col-\i}%
+		\def\col-send{row-{\add\i\nplayers1\i}}%
+		\def\col-rank{{\add\i\nplayers1\add\i\1\i}}%
+		\begin-col-end{\increment\i}%
+	}%
+	\end-row
+	\end-table
+	\end-col
+	\end-row
+	\unless\if\nplayers2\0
+		\begin-row
+		\begin-col
+		\begin-table\1\cell-padding\CellSpacing\0
+		\print-results
+		\end-table
+		\end-col
+		\end-row
+		\begin-row
+		\begin-col
+		\begin-table\0\0\CellSpacing\0
+		\let\wd\cell-width
+		\unless\if\CellSpacing\0 \add\wd\1 \fi
+		\let\ls\Linespace \div\ls\2 \sub\ls\CellSpacing
+		\for \i \0 \nplayers2 {%
+			\begin-row
+			\begin-col
+			\begin-table\0\0\0\Linespace
+			\begin-row
+			<td height="\ls"></td>\cr
+			\end-row
+			\begin-row
+			\for \k \0 \nplayers2 {
+				<td width="\wd" height="2" bgcolor="\#dddddd"></td>\cr
+			}
+			\end-row
+			\end-table
+			\end-col
+			\end-row
+		}
+		\end-table
+	\fi
+	\end-col
+	\end-row
+	\end-table
+	\end-col
+	\begin-col
+	\begin-table\0\0\0\0
+	\begin-row
+	\begin-col
+	\begin-table\0\CellPadding\CellSpacing\0
+	\begin-row
+	\begin-col-end\thick-space
+	\end-row
+	\end-table
+	\end-col
+	\end-row
+	\begin-row
+	\begin-col
+	\begin-table\0\CellPadding\CellSpacing\0
+	\print-scores\0
+	\print-scores\1
+	\end-table
+	\end-col
+	\end-row
+	\end-table
+	\end-col
+	\end-row
+	\end-table
+\fi
+
+%%% output footer %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cr
+<p>\cr
+\lassign\results{\unused\won\draw\lost}%
+\numGames\ \if\numGames\1\Game\else\Games\fi
+\ (+\won\thick-space\ =\lost\thick-space\ \minus\draw)\cr
+</p>\cr
+</html>
+
+%%% end of file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bye
+
+% vi:set ts=3 sw=3:

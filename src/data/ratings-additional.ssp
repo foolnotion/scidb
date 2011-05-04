@@ -1,0 +1,537 @@
+# ratings-additional.ssp
+#
+# NOTE: an entry like 
+#   Polgar, Judit
+#      + Polgár, Judit
+# means: replace "Polgar, Judit" with "Polgár, Judit"
+# and add "Polgar, Judit" as an alias.
+#
+# NOTE: an entry like
+#   %Federation LAT
+# means: replace country with new country.
+#
+# NOTE: many UTF-8 conversions are still missing!.
+
+@PLAYER "., -_*'"
+
+### Additional attributes /Corrections of attributes ###############
+# country corrected, alias added (http://en.wikipedia.org/wiki/Teodors_Bergs)
+Bergs, Teodors          #- GER [2510*] 1902.07.27--1966.10.03
+   = Berg, Theodore
+   %Federation LAT
+# birth date corrected, correction of Elo (http://de.wikipedia.org/wiki/Arthur_Bisguier)
+Bisguier, Arthur B      #gm USA [2634] 1929.10.08
+# country addded, events added, correction of best Elo (http://de.wikipedia.org/wiki/Berthold_Englisch)
+Englisch, Berthold      #- AUT [2690]
+   %Bio Leipzig 1879
+   %Bio Wiesbaden 1880
+# country added, event added, correction of Elo (http://de.wikipedia.org/wiki/Hans_Fahrni)
+Fahrni, Hans            #- SUI [2557] 1874.10.01--1939.05.28
+   %Bio San Remo 1911
+# country added, birth date and death date added
+Flechsig, Ernst         #- GER [....] 1852.10.05--1890.10.11
+# country added, birth date and death date added
+Fox, Albert             #- USA [....] 1881.04.29--1964.04.29
+# country added, birth date and death date added
+Franke, August          #- GER [....] 1663.03.22--1727.06.18
+# ancient chess player
+Perrin, Frederic        #- USA [....] 1815.12.05–-1889.01.27
+   = Perrin, Frederick
+# birth and death date corrected
+Gothilf, Solomon Borisovich #-    URS [....] 1903.01.??-1967.12.??
+# country added, birth date added
+Hasenfuss, Wolfgang     #- LAT [....] 1900
+# correction of VIAF ID
+Kasparov, Garry
+   %Bio VIAF 99874643
+# birth date corrected
+Konstantinopolsky, Alex #gm+cgm+hgm URS [2520] 1910.02.19
+# birth date corrected, country added
+Lichtenhein, Theodore   #- USA [....] 1829.01.??--1874.05.19
+# birth date corrected
+Mäder, Karl-Heinz       #fm+cgm BRD/GER [2400] 1948.10.17
+# country added, events added
+Metger, Johannes        #- GER [2410] 1851.12.15--1926.01.24
+   %Bio Rostock 1884
+   %Bio Wismar 1886
+# birth date corrected
+Minasian, Artashes      #gm URS/ARM [2620] 1967.01.21
+# country added, ELO corrected: http://de.wikipedia.org/wiki/Josef_Noa
+Noa, Josef              #- AUT/HUN [2583] 1856.10.21--1903.06.01
+# birth date corrected, Bio entry added
+Ornaghi, Giovanni       #- ITA [1680] 1987.09.30
+   %Bio http://blogchess.blogosfere.it
+# birth date corrected
+Pares Vives, Natalia    #- ??? [....] 1955.08.31
+# country added, ELO corrected: http://de.wikipedia.org/wiki/Julius_Perlis_(Schachspieler)
+Perlis, Julius          #- AUT [2648] 1880.01.19--1913.09.11
+# country added, ELO corrected: http://de.wikipedia.org/wiki/Vladimirs_Petrovs
+Petrovs, Vladimirs      #- LAT [2647] 1907.09.27--1945.03.15
+# country and death data added
+Pitschel, Karl          #- AUT [....] 1829.??.??--1883.01.29
+# typo in alias corrected (delete "Pollock, William Henry Krause"
+Pollock, William
+   = Pollock, William Henry Kraus
+# country added
+Romi, Massimiliano      #- ITA
+# country added
+Schwarz, Adolf          #- AUT
+# country, birth date, and death date added
+Trenchard, Herbert      #- ENG [....] 1857.09.08--1934-04-15
+# death date corrected
+Wolf, Heinrich          #- AUT [2500*] 1875.10.20--1943.12.??
+
+### Wrong entries (should be replaced) #############################
+### typo errors corrected
+Deschappelles, Alexander
+   + Deschapelles, Alexandre
+Olano Aizpurua, José Maria #-   ESP [....] ????
+   = Olano Aizpurua, Jose M
+   = Olano Aizpurua, Jose Maria
+   = Olano Aizpurua, Jose Ma
+Vieito Soria, Luis Maria   #-   ESP [2038] 1965
+   %Bio FIDEID 22202749
+   = Vieito Soria, Luis M
+Yates, Frederic D
+   + Yates, Frederick D
+### wrong country order ############################################
+Belić, Jordanka         #wgm SRB/GER [2389] 1964
+   %Bio FIDEID 4617304
+   = Belic, Jordanka
+   = Micic, Jordanka
+Duras, Oldřich          #gm  CSR/AUT [2580*] 1882.10.30--1957.01.05
+   %Bio Title gm:1950
+   = Duras, Oldrich
+Mikènas, Alius           #cim LTU/URS [2240] 1955
+   %Bio FIDEID 12800317
+   = Mikenas, Alius
+   = Mikenas, Alius V
+### renamed ########################################################
+Gaponenko, Inna
+   + Yanovska, Inna
+
+### UTF-8 name added ###############################################
+Aaskov. Jorgen
+   + Aaskov. Jørgen
+Abbasov, Farid
+   + Abbasov, Fərid
+Agamaliev, Gamil
+   + Ağamalıyev, Cəmil
+Anastasian, Ashot
+   + Anastasyan, Ašot
+Araiza Munoz, Jose Joaquin
+   + Araiza Muñoz, José Joaquín
+Bodis Laszlo
+   + Bódis László
+Bondarevsky, Igor
+   + Bondarewski, Igor
+Campora, Daniel H
+   + Cámpora, Daniel H
+Capablanca, Jose
+   + Capablanca, José
+Cheron, Andre
+   + Chéron, André
+Ciric, Dragoljub M
+   + Čirić, Dragoljub M
+De Souza Mendes, Joao
+   + De Souza Mendes, João
+Forintos, Gyozo V
+   + Forintos, Győző V
+Garcia Gonzales, Guillermo
+   + García González, Guillermo
+Minasian, Artashes
+   + Minasian, Artašes
+Morozevich, Alexander
+   + Morozevič, Aleksandr
+Muziciuk, Natalie
+   + Muzičuk, Ana
+#Pachman, Ludek
+#   + Pachman, Luděk
+Philidor, Francois A D
+   + Philidor, François A D
+Polgar, Istvan
+   + Polgár, István
+Polgar, Janos
+   + Polgár, János
+Polgar, Judit
+   + Polgár, Judit
+Polgar, Ladislav
+   + Polgár, Ladislav
+Polgar, Sofia
+   + Polgár, Zsófia
+Polgar, Zsuzsa
+   + Polgár, Zsuzsa
+Polgari, Ladislav
+   + Polgári, Ladislav
+Rocas, Orlando
+   + Roças, Orlando
+Safarli, Eltaj
+   + Səfərli, Eltaj
+Stahlberg, Gideon
+   + Ståhlberg, Gideon
+Szabo, Laszlo GM
+   + László Szabó
+Tolush, Alexander
+   + Toluš, Aleksandr
+Vasquez, Rodrigo
+   + Vásquez, Rodrigo
+
+### Alias(es) added (especially German transliteration) ############
+Agamaliev, Gamil
+   = Agamaliyev, Gamil
+Aleksandrov, Aleksej
+   = Aleksandrov, Alexcej
+   = Alexandrow, Alexei
+Anastasian, Ashot
+   = Anastassjan, Aschot
+Araiza Munoz, Jose Joaquin
+   = Araiza Muñoz, José J
+   = Araiza, José Joaquin
+   = Araiza, José J
+Avrukh, Boris
+   = Awruch, Boris
+Baird, David
+   = Baird, David Graham
+Balinov, Ilia
+   = Balinow, Ilija
+Barbero, Gerardo F
+   = Barbero, Gerardo Fabián
+Beliavsky, Alexander G
+   = Beljawski, Alexander
+   = Beljawski, Alexander G
+Bisguier, Arthur B
+   = Bisguier, Arthur
+Bohatirchuk, Fedor
+   = Bohatyrtschuk, Fedir
+   = Bohatyrtschuk, Fjodor
+   = Bogatirtschuk, Fedir
+   = Bogatirtschuk, Fedor
+   = Bogatirtschuk, Fjodor
+   = Bogatyrtschuk, Fedir
+   = Bogatyrtschuk, Fedor
+   = Bogatyrtschuk, Fjodor
+   = Bohatyrtschuk, Fedir
+   = Bohatyrtschuk, Fedor
+   = Bohatyrtschuk, Fjodor
+   = Bohatyrczuk, Fedir
+   = Bohatyrczuk, Fjodor
+Bronstein, David I
+   = Bronstein, David
+Bunzmann, Dimitrij
+   = Bunzmann, Dimitri
+Calero, I
+   = Calero, Ivan
+Djingarova, Emilia
+   = Dschingarowa, Emilija
+Dreev, Alexey
+   = Dreev, Aleksej Sergeevič
+   = Drejew, Alexei Sergejewitsch
+   = Drejew, Alexei S
+   = Drejew, Alexei
+   = Drejew, AS
+Khalifman, Alexander
+   = Chalifman, Alexander
+   = Chalifman, Alexander W
+   = Chalifman, Alexander Walerjewitsch
+Charousek, Rudolf
+   = Charousek, Rudolf Rezso
+   = Charousek, Rudolf R
+Danielian, Elina
+   = Danieljan, Elina
+Delchev, Aleksander
+   = Deltschew, Alexandar
+Fedorov, Alexei
+   = Fjodorow, Alexei
+Fischer, Robert J
+   = Fischer, Bobby
+Franke, August
+   = Franke, August W
+   = Franke, August Wilhelm
+   = Franke, August Wilhelm E
+   = Franke, August W E
+   = Franke, A W E
+Freiman, Sergey
+   = Von Freiman, Sergey Nikolaevich
+   = Von Freiman, Sergey N
+Galliamova, Alisa
+   = Galliamova, Alisa Mikhailovna
+   = Galliamova, Alisa M
+   = Galljamowa, Alissa Michailowna
+   = Galljamowa, Alissa M
+   = Galljamowa, Alissa
+   = Galljamowa-Iwantschuk, Alissa Michailowna
+   = Galljamowa-Iwantschuk, Alissa M
+   = Galljamowa-Iwantschuk, Alissa
+Yanovska, Inna
+   = Yanovska-Gaponenko, Inna
+   = Janovskaja, Inna
+   = Janovskaja-Gaponenko, Inna
+   = Janowskaja, Inna
+   = Janowskaja-Gaponenko, Inna
+Gothilf, Solomon Borisovich
+   = Gothilf, Solomon B
+   = Gothilf, Solomon
+Gurgenidze, Bukhuti
+   = Gurgenidse, Buchuti Iwanowitsch
+   = Gurgenidse, Buchuti I
+   = Gurgenidse, Buchuti
+   = Gurgenidse, BI
+Grigoryan, Avetik
+   = Grigorian, Avetik
+Harikrishna, Pendyala
+   = Harikrishna, Penteala
+Goering, Carl T
+   = Goering, Carl
+Inarkiev, Ernesto
+   = Inarkiew, Ernesto
+Ivanov, Alexander Al
+   = Ivanov, Alexander A
+Jaenisch, Carl F A
+   = Jaenisch, Carl Friedrich Andrejewitsch
+   = Jaenisch, Carl Friedrich
+Jakovenko, Dmitry
+   = Jakowenko, Dmitri
+Jobava, Baadur
+   = Dschobawa, Baadur
+Johansen, Darryl K
+   = Johansen, Darryl
+Jojua, Davit
+   = Dschodschua, Dawit
+   = Dschodschua, David
+Kaidanov, Gregory S
+   = Kaidanow, Grigori S
+Kan, Ilya
+   = Kan, Ilia
+   = Kan, Ilia Abramovich
+Kasimdzhanov, Rustam
+   = Kazimdzhanov, Rustam
+   = Kasimjanov, Rustam
+   = Qosimjonov, Rustam
+   = Kasimjanov, Rustam
+Kharlov, Andrei
+   = Charlow, Andrei
+Khasanova, Flyura
+   = Chassanowa, Fljura
+   = Uskowa, Fljura
+Kochyev, Alexander
+   = Kotschijew, Alexander Wassiljewitsch
+   = Kotschijew, Alexander W
+   = Kotschijew, Alexander
+Korchnoi, Viktor
+   = Kortschnoj, Viktor
+Korobov, Anton
+   = Korobow, Anton
+Kosten, Anthony C
+   = Kosten, Anthony
+Kosteniuk, Alexandra
+   = Kosteniuk, Alexandra Konstantinovna
+   = Kosteniuk, Alexandra K
+   = Kostenjuk, Alexandra Konstantinowna
+   = Kostenjuk, Alexandra K
+   = Kostenjuk, Alexandra
+Kovanova, Baira
+   = Kowanowa, Baira
+Kuzmin, Gennadi P
+   = Kusmin, Gennadi Pawlowitsch
+   = Kusmin, Gennadi P
+   = Kusmin, GP
+Leffmann, Carl
+   = Leffmann, Karl
+Lein, Anatoly
+   = Lein, Anatoli Jakowlewitsch
+   = Lein, Anatoli J
+   = Lein, Anatoli
+   = Lein, AJ
+Levenfish, Grigory
+   = Loewenfisch, Grigori Jakowlewitsch
+   = Loewenfisch, Grigori J
+   = Loewenfisch, Grigori
+Levushkina, Elena
+   = Lewuschkina, Elena
+Lutikov, Anatoly S
+   = Lutikov, Anatoly
+   = Lutikow, Anatoli Stepanowitsch
+   = Lutikow, Anatoli S
+   = Lutikow, Anatoli
+   = Lutikow, AS
+Makogonov, Vladimir
+   = Makogonow, Wladimir Andrejewitsch
+   = Makogonow, Wladimir A
+   = Makogonow, Wladimir
+Matnadze, Ana
+   = Matnadse, Ana
+Mihalcisin, Adrian
+   = Michaltschischin, Adrian
+Minasian, Artashes
+   = Minassjan, Artasches
+Morozevich, Alexander
+   = Morozevich, Alexandr Sergejewitsch
+   = Morozevich, Alexandr S
+   = Morozewich, Alexander Sergejewitsch
+   = Morozewich, Alexander S
+   = Morosevic, Alexander Sergejewitsch
+   = Morosevic, Alexander S
+   = Morosewitsch, Alexander Sergejewitsch
+   = Morosewitsch, Alexander S
+   = Morosewitsch, Alexander
+Motylev, Alexander
+   = Motylev, Alexander Anatolyevich
+   = Motylev, Alexander A
+   = Motyljow, Alexander Anatoljewitsch
+   = Motyljow, Alexander A
+   = Motyljow, Alexander
+Muziciuk, Natalie
+   = Musytschuk, Anna
+Neumann, Gustav
+   = Neumann, Gustav Richard
+Petroff, Alexander D
+   = Petrow, Alexander Dmitrijewitsch
+   = Petrow, Alexander D
+Rabinovich, Ilya
+   = Rabinowitsch, Ilja Leontjewitsch
+   = Rabinowitsch, Ilja L
+   = Rabinowitsch, Ilja
+Romanovsky, Pjotr
+   = Romanowski, Pjotr Arsenjewitsch
+   = Romanowski, Pjotr A
+   = Romanowski, Pjotr
+   = Romanowski, Peter Arsenjewitsch
+   = Romanowski, Peter A
+   = Romanowski, Peter
+Sadvakasov, Darmen
+   = Sadwakasow, Darmen
+Safarli, Eltaj
+   = Safarli, Eltac
+Sargissian, Gabriel
+   = Sargsyan, Gabriel
+   = Sarkisyan, Gabriel
+   = Sarkissian, Gabriel
+   = Sarkissyan, Gabriel
+   = Sargissjan, Gabriel
+   = Sarkissjan, Gabriel
+Sharevich, Anna
+   = Scharewitsch, Anna
+Shengelia, David
+   = Schengelia, Dawit
+   = Schengelia, David
+Shirov, Alexei
+   = Schirow, Alexei
+Skripchenko, Almira
+   = Scripcenco, Almira
+   = Skripchenko, Almira
+Spassky, Boris V
+   = Spasski, Boris Wassiljewitsch
+   = Spasski, Boris W
+   = Spasski, BW
+Stean, Michael F
+   = Stean, Michael
+Stefanova, Antoaneta
+   = Stefanowa, Antoaneta
+Suetin, Alexey S
+   = Suetin, Alexei Stepanowitsch
+   = Suetin, Alexei
+Tal, Mikhail
+   = Tal, Mihail
+   = Tal, Michail Nechemjewitsch
+Tartakower, Savielly
+   = Tartakower, Saviely
+   = Tartakower, Savielly Grigoriewitsch
+Timofeev, Artyom
+  = Timofejew, Artjom Walerjewitsch
+  = Timofejew, Artjom W
+  = Timofejew, Artjom
+Tolush, Alexander
+   = Tolusch, Alexander Kasimirowitsch
+   = Tolusch, Alexander K
+   = Tolusch, Alexander
+   = Tolusch, A K
+Tringov, Georgi P
+   = Tringow, Georgi Petrow
+   = Tringow, Georgi P
+   = Tringow, GP
+Ushenina, Anna
+   = Uschenina, Anna
+Vaisser, Anatoly
+   = Waisser, Anatoli Wolfowitsch
+   = Waisser, Anatoli W
+   = Waisser, Anatoli
+   = Waisser, AW
+Vasquez, Rodrigo
+   = Vasquez, Rodrigo Rafael
+   = Vasquez, Rodrigo R
+Vescovi, Giovanni
+   = Vescovi, Giovanni P
+   = Vescovi, Giovanni Portilho
+Voicu, Carmen
+   = Voicu-Jagodzinsky, Carmen
+Volokitin, Andrei
+   = Wolokitin, Andrij
+Zaitsev, Alexander
+   = Saizew, Alexander Nikolajewitsch
+   = Saizew, Alexander N
+   = Saizew, Alexander
+   = Saizew, Alexander1
+   = Saizew, A N
+Zaitsev, Igor A
+   = Saizew, Igor Arkadjewitsch
+   = Saizew, Igor A
+   = Saizew, IN
+
+### Additional entries #############################################
+Cutri, Giovanni Leonardo da #- ITA [....] 1552.??.??--1597
+   = Cutri, Giovanni Leonardo
+   = Cutri, Giovanni L
+Diemer, Emil Josef      #- GER [2360] 1908.??.??--1990.??.??
+   = Diemer, Emil J
+Dyckhoff, Eduard        #- GER [....] 1880.11.14--1949.03.02
+Fiske, Willard          #- USA [....] 1831.11.11--1904.09.17
+   = Fiske, Daniel Willard
+   = Fiske, Daniel W
+Fleissig, Miksa         #- AUT/HUN [....] 1845.11.10
+   = Fleissig, Max
+   = Fleissig, Maximilian
+Fuller, William James   #- AUS [....] 1822.04.08--1929.03.12
+   = Fuller, William James Appleton
+Göring, Carl Theodor   #- GER [2534] 1841.04.28--1879.04.02
+   = Goering, Carl Theodor
+   = Göring, Carl T
+   = Goering, Carl T
+Geiger, Hans Dr         #- AUT [....] 1899.01.01-????.??.??
+   = Geiger, Dr Hans
+Lolli, Giambattista     #- ITA [....] 1698.??.??--1769.06.04
+Marquez Sterling, Manuel
+   = Marquez Sterling, M   #- CUB [....] 1872.08.28--1934-12.09
+Mattison, Hermanis      #- LAT [2631] 1894.12.28--1932.12.16
+   = Mattison, Herrmann
+Meek, Alexander Beaufort   #- USA [....] 1814.07.17--1865.11.30
+   = Meek, Alexander B
+Montgomery, Hardman Philips #- USA [....] 1834.09.25--1870.01.22
+Ponziani, Domenico Lorenzo #- ITA [....] 1719.11.09--1796.07.15
+   = Ponziani, Domenico L
+   = Ponziani, Domenico
+Popławski, Artur        #- POL [....] 1860.??.??--1980.08.10
+   = Popławski, Artur Władysław Kamil
+   = Popławski, AWK
+   = Popławski, A
+Rinder, Friedl          #- GER [....] 1905.11.20--2001.06.03
+Salvio, Alessandro      #- ITA [....] 1570-1640
+Schudel, Hans Jakob     #- SUI [....] 1915.08.28--2004.02.02
+Stern, Adolf            #- GER [2483*] 1849.12.25--1907.08.24
+   %Bio Baden-Baden 1870
+Traxler, Karel          #- CZE [....] 1866.??.??--1936.??.??
+
+### Additional entries (Scidb developers/testers) ##################
+Atkinson, Steven        #- AUS [....] 1967
+   %Sex m
+   %FICS 1700
+Cramer, Gregor          #- GER [....] 1960
+   %Sex m
+Simpson, Matthew        #- ??? [....]
+   %Sex m
+Wagner, Alexander       #- GER [1779] 1960
+   %Sex m
+Tibenszky, Zoltán       #- HUN [1845] 1985
+   %Bio FIDEID 739200
+   %Sex m
+
+# vi:set et sw=3 ts=3:

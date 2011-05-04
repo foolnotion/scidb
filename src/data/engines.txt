@@ -1,0 +1,1041 @@
+#############################################################
+#
+# engines.txt (Encoding: ISO-88559-1)
+#
+#############################################################
+# - <http://computerchess.org.uk/ccrl/4040/rating_list_all.html>; April 2, 2010
+# - <http://www.husvankempen.de/nunn/40_40%20Rating%20List/40_40%20SingleVersion/rangliste.html>; 4 April 2010
+# - <http://schachprogrammrangliste.blogspot.com/>; 1 January 2010
+# - <http://www.chessprogram.de/messages/19747.htm>; 3. October 2006
+# - <http://www.chessica.de/winboard.html>
+# - <http://www.andreadrian.de/schach/>
+# - <http://www.playwitharena.com/directory/engines.htm>
+# - <http://computer-chess.org/doku.php?id=computer_chess:wiki:lists:private_engine_list>
+# - <http://tonythomas.mylivepage.com/wiki/431/842_Clones_and_Cloners>
+#############################################################
+#	Name									ELO	CCRL	Fed	Protocol
+## 0-9 ######################################################
+	3D Schach							2630	----	GBR
+## A ########################################################
+	Abrok									2454	----	GER	WB/UCI
+	Ace									----	----	FRA	UCI
+	Achilles								----	----	SRB
+=	Axon
+	Adam									1964	2248	FRA	UCI
+	Adamant								1835	----	RUS	WB
+*	AICE									1987	2443	GRC	WB/UCI/FRC
+	Ajedrez								1873	----	MEX	WB
+	Akiba									1276	----	POL	WB
+	Alaric								2686	2766	SWE	WB/UCI
+	Alarm									2088	----	SWE	WB
+*	AlChess								1806	----	BLR	WB/UCI
+*	Aldebaran							----	----	ITA	WB
+	Alderon								----	----	USA	WB
+	Alex									1876	2130	USA	WB/UCI
+*	AlexUCI								----	----	RUS	UCI
+	Alf									1698	2300	DEN	WB
+	Alfil									2579	2702	ESP	WB/UCI
+*	AliBaba								----	----	NED	WB
+*	AliChess								2085	2351	GER	UCI
+	Alice									1661	----	USA	WB
+	Almond								----	----	USA
+	Amateur								2140	2495	USA	WB
+	Amundsen								1846	2434	SWE	WB
+	Amy									2171	2499	GER	WB
+	Amyan									2616	2672	CHI	WB/UCI/FRC
+	Anatoli								----	2578	NED	WB
+	Anaconda								2591	2660	GER	WB/FRC
+	Anechka								2269	2411	BLR	UCI
+	Animats								----	----	AUS	WB
+ 	AnMon									2563	2618	FRA	WB/UCI
+=	Anmon
+	Ant									2299	2405	NED	WB
+	Anus									----	----	---
+*	ApiChess								1815	----	FRA
+*	ApilChess							1386	----	GER	UCI
+*	Arabian Knight						----	----	POL	WB
+	Arasan								2581	2691	USA	WB/UCI
+*	ArcBishop							----	----	CMR	WB/UCI/FRC
+*	ARChess								----	----	IRI
+	Ares									----	2416	USA	WB/UCI
+	Argonaut								----	----	GER
+	Arics									----	----	BLR	WB
+	Arion									2333	2430	FRA	UCI
+	Aristarch							2604	2701	GER	UCI
+	Armageddon							2020	----	POL	WB
+	Arthur								----	----	NED
+	Asterisk								1926	2438	HUN	WB/UCI
+	Atak									1926	2382	POL	WB
+*	Atlanchess							1439	----	ENG	WB
+	Atlas									2058	2305	ESP	WB/UCI
+	Atom									----	----	---
+	Averno								2146	2406	ESP	WB
+*	AviChess								----	----	FRA	WB
+	Awesome								1725	----	AUS	WB
+	Ax										1940	----	VIE	WB
+	Ayito									2133	2341	ESP	UCI/FRC
+	Azaad									----	----	USA
+	Azraël								----	----	GBR
+=	Azrael
+## B ########################################################
+*	BabyChess							1430	----	GER	WB
+*	BACE									1994	----	USA	WB
+*	BaChess								1694	----	GER	WB
+*	BamBam								1900	----	AUT
+*	BBChess								2546	2588	SLO	UCI
+	Beaches								1751	----	USA	WB
+	Bearded								2024	2262	POL	WB
+	Belka									----	----	RUS	UCI
+	Belle									----	----	USA
+	Belofte								1522	----	BEL	WB
+*	Belzebub								1818	----	POL	WB
+*	BeoWulf								2212	----	ENG	WB
+	Berta									----	----	GER
+	Bestia								2256	----	UKR	WB
+*	BetaQuark							2349	----	---
+	Betsy									2237	----	USA	WB/FRC
+*	BibiChess							1992	2119	FRA	UCI
+*	Big Book								1376	----	USA
+*	BigLion								2022	2172	CMR	WB/UCI/FRC
+*	BikJump								----	2175	NED	UCI
+	Bionic								2366	----	BEL	WB
+=	Bionic Impakt
+	Bird									----	----	USA
+	Bison									2793	2828	RUS	UCI
+*	BlackBishop							2089	2317	GER	WB/UCI
+*	BliksKottel							1705	----	RSA	WB
+*	BlitzKibitz							----	----	ROU	WB
+*	Blitzter								1602	----	USA	WB
+	Bodo									1954	----	AUS	WB
+*	Booot									2702	2796	UKR	WB/UCI
+*	Braincrack							1712	----	GER	WB
+*	Brainless							----	----	CAN	WB
+	Brama									1661	----	ITA	WB
+*	BremboCE								1692	----	ITA	WB
+	Bright								2826	2883	NED	UCI
+	Bruja									2415	2556	USA	WB
+ 	Brutus Chess						2572	2556	NED	WB/UCI
+=	Brutus
+*	BSC									1874	----	FRA	WB
+	Bubble								----	----	BRA	WB/UCI
+*	BugChess								2690	2764	FRA	WB
+=	BugChess2
+	Bullucks								----	----	NED	WB
+	Butcher								2199	2380	POL	WB
+	Butterfly							----	----	ITA	WB
+	Buzz									----	2296	USA	WB
+## C ########################################################
+	Caligula								----	----	ESP	WB
+	Canalla								1802	----	GER
+*	CapaChess							----	----	PUR	WB
+	Capture								2377	----	FRA
+	Carballo								----	2072	ESP	UCI
+	Carnivor								----	----	USA
+	Cassandre							1626	----	FRA	UCI
+*	CCCP									----	----	POL	WB
+	Catalejo								----	----	CHI	WB
+	Cecir									1767	----	URU	WB
+	Cefap									1810	----	SWE	WB
+	Celes									1856	----	NED
+=	31337
+	Cerebro								2498	2619	ARG	WB/UCI
+*	Chad's Chess						1418	----	USA	WB
+	Chancellor							----	----	CMR	WB/UCI/FRC
+	Chaturanga							1784	----	ITA	WB
+	Cheese								----	2413	FRA	WB/UCI
+	Cheetah								2032	----	SWE
+	Chenard								----	----	USA	WB
+	Cheops								1553	----	CAN	UCI
+	Cheoss								----	----	ESP	WB
+	Chesley								----	----	USA	WB
+*	Chess Alex							1846	2327	RUS
+*	Chesscraft							1625	----	DEN
+*	ChessMind							----	----	GER
+ 	Chess Rikus							1716	----	USA	WB
+=	Rikus
+*	Chessmaster							----	----	FRA	WB
+*	Chessmaster 10th					----	----	FRA	WB
+=	CM 10th
+*	Chessmaster 10th Default		----	2731	FRA	WB
+=	CM 10th Default
+*	Chessmaster 10th Guardian		----	2748	FRA	WB
+=	CM 10th Guardian
+*	Chessmaster 10th Lazarus		----	2751	FRA	WB
+=	CM 10th Lazarus
+*	Chessmaster 10th Magic II		----	2748	FRA	WB
+=	CM 10th Magic II
+*	Chessmaster 10th Ogre			----	2743	FRA	WB
+=	CM 10th Ogre
+*	Chessmaster 10th Paralyse		----	2754	FRA	WB
+=	CM 10th Paralyse
+*	Chessmaster 10th Pestilence	----	2741	FRA	WB
+=	CM 10th Pestilence
+*	Chessmaster 10th Warrior		----	2735	FRA	WB
+=	CM 10th Warrior
+*	Chessmaster 10th Xperience		----	2763	FRA	WB
+=	CM 10th Xperience
+*	Chessmaster 9000 Assassin		----	2749	FRA	WB
+=	CM 9000 Assassin
+*	Chessmaster 9000 Enforcer		----	2760	FRA	WB
+=	CM 9000 Enforcer
+*	Chessmaster King					----	----	FRA	WB
+=	CM King
+*	Chessmaster II						----	2826	FRA	WB
+*	Chessmaster 11 Aiglos II		----	2815	FRA	WB
+*	Chessmaster 11 Archangel		----	2799	FRA	WB
+*	Chessmaster 11 Leonidas			----	2795	FRA	WB
+*	Chessmaster 11 Toxic				----	2776	FRA	WB
+*	Chess System Tal					2123	----	ENG
+*	Chess Tiger							2729	----	FRA	UCI
+*	Chess Tiger 15						----	----	FRA	UCI
+*	Chess Tiger 15 Gambit			----	----	FRA	UCI
+*	Chess Tiger 2004					----	2698	FRA	UCI
+*	Chess Tiger 2007					----	2787	FRA	UCI
+*	Chess Tiger 2007 Gambit			----	2737	FRA	UCI
+*	Chess Tiger 2007.1				----	2805	FRA	UCI
+*	Chess Wizard						----	----	FRA
+*	Chess0								----	----	ESP	WB
+*	ChessBin								----	----	CAN	WB
+*	Chess Genius						2189	----	ENG
+*	ChessOne								----	----	RUS	WB
+	Chesster								----	----	RUS	WB
+*	ChessterfieldCL					1808	----	SUI	WB
+	Chester								2663	----	USA
+ 	ChestUCI								----	----	GER	UCI
+=	Chest
+*	ChessV								----	----	USA	WB/FRC
+*	Chezzz								2118	2439	DEN	WB
+	Chimp									----	----	GBR
+*	ChipTest								----	----	---
+	Chiron								2636	2713	ITA
+	Chispa								2077	2365	ARG	WB/UCI/FRC
+	Chompster							----	----	AUS
+*	Christine_T							----	----	FRA
+	Chronos								2644	2742	ARG	WB
+	Cilian								2116	----	SUI	WB
+	Cipollino							----	----	ITA
+	Clarabit								----	2227	ESP	WB/UCI
+	Cleo									----	----	BRA	WB
+*	Clueless								1836	2014	GER	UCI
+	Cogito								----	----	GER
+*	ColChess								1915	----	ENG	WB
+	Colossus								2668	2708	ENG	UCI
+	Comet									2420	2505	GER	WB
+	Counter								----	2576	RUS	UCI
+*	Cowrie Chess						----	----	SIN
+*	CPP1									1206	----	NED	WB
+*	CPW									----	----	USA	UCI
+*	Crafty								2736	2794	USA	WB
+*	Cray Blitz							----	----	USA
+	Crimson								----	----	USA	UCI
+=	Demon
+	Critter								2743	2875	SVK	UCI
+*	CTD									1883	----	NED
+*	CuckooChess							----	----	SWE	UCI
+	Crux									1817	----	HUN	WB
+*	CyberPagno							2057	----	ITA	WB
+	Cyclone								2874	2928	USA	UCI
+*	Cyclone xTreme						----	2932	USA	UCI
+*	Cyclone xTreme Fury				----	2932	USA	UCI
+*	Cyclone xTreme Rage				----	2919	USA	UCI
+	Cyclops								----	----	USA	WB
+	Cyrano								2683	2680	FRA	WB/UCI
+	Cyrus									----	----	ENG
+	Czolgista							----	----	POL
+## D ########################################################
+*	Dabbaba								----	----	DEN	WB
+	Damas									1739	----	BRA	WB
+*	DanaSah								2519	2627	ESP	WB
+*	DanChess								2218	----	ETH	WB
+*	DarkFUSc#							1625	----	GER	UCI
+=	FUSc#
+	Darmenios							----	----	POL	WB
+*	Daydreamer							2685	2815	USA	UCI/FRC
+*	DChess								1936	----	USA	WB
+*	Decapod								----	----	AUS
+=	K9
+*	Deep Blue							----	----	USA
+*	DeepDuke								----	----	SUI	WB/UCI
+ 	Frenzee								2692	2676	DEN	WB/UCI/FRC
+=	Deep Frenzee
+*	Deep Fritz							2932	2954	GER	UCI
+*	Deep Junior							2858	2944	ISR	UCI
+*	Deep Patzer							2381	----	GER	WB
+*	Deep Shredder						2886	2948	GER	UCI
+* 	Deep Sjeng							2843	2915	BEL	WB/UCI
+=	Sjeng
+*	Deep Sjeng WC2008					----	2925	BEL	WB/UCI
+*	Deep Thought						----	----	USA
+*	DeepTrouble							1719	----	USA	WB
+	Delfi									2689	2792	ITA	WB/UCI
+*	DelfiT								2392	----	ITA
+	Delphil								2474	2547	FRA	WB
+*	DelphiMax							1953	----	GER	UCI
+	Dendron								----	----	USA	WB
+ 	Der Bringer							2387	----	GER	WB
+=	Bringer
+	Desperado							----	----	AUS
+	Deuterium							2007	2698	PHI	WB
+*	Deuterium Milan					----	----	PHI	WB
+	Diablo								2393	2514	USA	UCI
+	Diep									2640	----	NED	WB
+	Dika									----	----	FRA	WB
+ 	DimitriWBE							1654	----	ITA	WB
+=	Dimitri
+	Dirty									----	2525	ESP	WB
+*	Dirty	ACCA3							----	2494	ESP	WB
+	Djenghis								----	----	NED
+	Djinn									2422	2515	USA	WB
+	Doch									2974	2951	USA	UCI
+	Komodo								----	2964	USA	UCI
+*	Doctor?								2124	----	GER
+	Dorky									2059	----	USA	WB
+	Dragon								2460	2516	FRA	WB/UCI
+	Dreamer								----	----	NED	WB
+*	DrChess								1937	----	SIN	WB
+*	Dr. Theopolis						----	----	USA
+*	DrunkenMaster						2019	----	USA	WB/UCI
+	Duke									1944	----	ITA
+## E ########################################################
+	Eagle									1885	----	GER	UCI
+*	ECE									----	2174	ITA	UCI
+	Eden									1401	----	GER	WB/UCI
+*	EdlChess								----	----	GER
+	Eeyore								2130	----	RUS	WB
+*	EGM									----	----	POL
+	Eichhörnchen						----	----	GER
+=	Eichhoernchen
+	Eire									----	----	ESP 	WB
+*	El Chinito							----	----	ZZX
+*	El Turco								----	----	POR	WB
+	Elephant								1928	----	GER	WB
+	Elf									1790	----	TUR	WB
+	Embracer								1865	----	SWE	WB
+	Enano									----	----	VEN	WB
+*	EnginMax								2047	----	GER	UCI
+	Enigma								1802	----	POL	WB
+	Erendal								----	----	CAN
+	Ermintrude							----	----	GBR
+*	EtaBeta								----	----	ITA
+*	Equilibrium							----	----	ITA
+	Esc									2165	----	ITA
+*	E.T. Chess							2675	2751	FRA	WB
+	Étude									----	----	USA	WB/UCI
+*	EveAnn								1967	2313	ESP	WB
+*	EvilKnightIII						----	----	GER	UCI
+*	Evolution Chess					----	----	IND	WB
+	Exacto								1827	----	USA	WB
+*	EXchess								2061	2353	USA	WB
+	Excelsior							1580	----	POL	WB
+*	EXchess								2306	----	USA	WB
+## F ########################################################
+	Fafis									----	----	MEX	WB/UCI
+	Faile									2131	----	CAN	WB
+*	Fairy-Max							----	----	NED	WB
+	Falcon								----	----	ISR
+*	FAUCE									1878	----	ITA	WB
+	Felpo									----	----	ITA	WB
+	Fencer								----	----	AUS
+	Ferret								2825	----	USA
+	Feuerstein							1934	2339	GER	UCI
+*	Fianchetto							----	----	AUS	WB
+*	FIBChess								2070	----	ESP
+*	Fimbulwinter						1649	----	USA	WB
+	Firebird								----	----	USA	UCI
+	FireFly								1985	2185	HKG	WB/UCI/FRC
+*	Flux									----	2450	SUI	UCI
+*	FluxII								----	----	SUI	UCI
+*	Flywheel								----	----	USA
+	Fortress								2166	----	SUI	WB
+ 	Francesca Mad						2484	----	ENG	WB
+=	Francesca
+	Frank									----	----	ITA	WB
+	Frank-Walter						----	----	NED	WB
+	Freccia								----	----	ITA
+*	FreeChessII							1951	----	RUS	UCI
+=	FreeChess
+	Freyr									2150	----	ROU	WB
+	Frittle								----	----	IND	WB
+	Fritz									2867	2977	GER	UCI
+*	Fritz Bilbao						---	2801	GER	UCI
+	Fruit									2887	2888	FRA	UCI/FRC
+## G ########################################################
+	Gaïa									2431	2510	FRA	UCI
+=	Gaia
+*	GambitFruit							2649	----	USA	UCI
+*	Gambit Tiger						2609	----	GER	UCI
+	Gandalf								2660	2725	DEN	WB/UCI
+*	GarboChess							2644	2626	USA	WB
+	Gargamella							1887	----	ITA	WB
+	Gaviota								2410	2551	ARG	WB
+*	GChessIV								----	----	ITA	WB
+	Gedeone								1690	----	ITA	WB
+*	Geisterauge							----	----	GER
+	Geko									1486	----	ITA	WB
+	Genesis								2081	----	ISR	WB
+ 	Gerbil Chess						2126	----	USA	WB
+=	Gerbil
+*	GES									2078	----	USA	WB
+*	GFC									----	----	ARG	WB
+	Ghost									2015	----	GER	WB
+	Gibbon								----	2336	FRA	UCI
+*	GIUChess								1551	----	ITA	WB
+*	GK										2014	----	NED	WB
+	Glass									----	2521	AUT	UCI
+	Glaurung								2791	2843	NOR	UCI/FRC
+*	Glaurung Avalanche				---	2772	NOR	UCI/FRC
+*	Glaurung Beren						---	2781	NOR	UCI/FRC
+*	Glaurung Crusader					---	2767	NOR	UCI/FRC
+*	Glaurung epsilon/5				---	2813	NOR	UCI/FRC
+*	GLC									2274	----	ENG
+*	Gnd0									----	----	---
+*	GnuChess								2264	----	USA	WB
+*	Go2Chess								1538	----	BRA
+	Golem									1919	----	ITA	WB
+*	Goliath Blitz						2260	----	GER	WB
+*	Goliath Light						2318	----	GER
+*	Goliath Mate						----	----	GER	UCI
+*	Goofy									----	----	---
+	Gosu									2147	2500	POL	WB
+*	Gothic Vortex						----	----	---
+	Gothmog								2272	----	NOR	WB/UCI
+	Goyaz									----	----	BRA	WB
+*	Gray Matter							----	----	USA	WB
+	Grapefruit							2858	2935	---
+*	Green Light Chess					2543	----	ENG	WB
+=	Green Light
+	Greif									----	----	GER
+*	GreKo									2031	2495	RUS	WB/UCI
+	Gringo								1664	----	AUT	WB
+	Grizzly								1895	----	GER	WB
+	Grok									2436	----	USA
+	Gromit								2422	----	GER	WB
+*	Gullydeckel							2101	----	GER	WB
+=	Gully
+	Gunda									----	----	INA
+## H ########################################################
+	Hagrid								2038	----	GER	WB/UCI
+	Hai									----	----	BRA
+	Hamsters								2652	2722	ITA	UCI/FRC
+	Hannibal								----	----	ZZX
+*	HansDamf								----	----	GER
+*	Hanzo the Razor					----	----	BAN	WB
+*	HardwareHarveyX55					----	----	ZZX
+*	Heavychess							----	----	ARG	UCI
+*	Hector for Chess					----	----	HUN
+	Heracles								----	2095	FRA	UCI
+	Hermann								2497	----	GER	WB/UCI/FRC
+*	Hiarcs								2861	2922	ENG	UCI/FRC
+=	HIARCS
+*	Hiarcs Paderborn					----	2900	ENG	UCI/FRC
+*	Hiarcs X50							----	2849	ENG	UCI/FRC
+*	Hiarcs X50 Hypermodern			----	2866	ENG	UCI/FRC
+*	Hiarcs X54							----	2845	ENG	UCI/FRC
+*	Hiarcs X54 Hypermodern			----	2850	ENG	UCI/FRC
+	Hikeeba								----	----	---
+*	Hippocampe							----	----	FRA	WB
+*	HiTech								----	----	USA
+*	HoiChess								1856	----	GER	WB
+*	Hokus-Pokus							1756	----	POL
+	Holmes								2041	----	GER	WB
+	Homer									2428	2538	GER	WB/UCI/FRC
+	Hopeless								1933	----	POL	WB
+	Hoplite								1779	----	FIN	WB
+	Horizon								2079	2496	USA	WB
+	Hossa									2512	----	AUT
+	Hustle								----	----	CHN
+	Hydra									----	----	UAE
+## I ########################################################
+*	IACH									1761	----	ESP	WB
+*	IceSpell								2047	----	GER
+*	iChess								1522	----	USA	WB
+*	Ifrit									----	2204	RUS	UCI
+	Igorrit								----	----	USA	UCI
+	Ikarus								2279	----	GER	FRC
+*	Ildtiadar							----	----	GER	WB
+	Imp									1933	----	LTU
+*	InmiChess							2263	----	AUT	WB
+*	Insomniac							2711	----	USA
+=	JRCP
+	Ippolit								----	----	USA
+*	IsiChess								----	----	GER
+*	IvanHoe								----	----	USA	UCI
+*	IQ23									1846	----	GER	UCI
+## J ########################################################
+	Jabba									----	2126	ENG	WB/UCI
+	Jake									----	----	NED
+*	JaksaH								1581	----	YUG	WB
+	Jan Willem							1902	----	NED	WB
+*	JARS									----	----	FRA	WB
+*	JChecs								----	----	FRA	WB
+*	JChess								1795	----	POL	WB
+	Jester								1626	----	USA	WB
+	Joana									1648	----	MEX	WB
+	Joanna								----	----	POL	WB
+	Joker									2186	2405	NED	WB
+	Jonny									2751	2680	GER	WB/FRC
+*	JsBaM									1805	----	NED	WB
+	Junior								2758	2846	ISR	UCI
+*	JuniorJunior						2758	----	---
+	Jupiter								1826	----	DEN	WB
+## K ########################################################
+	Kace									1541	----	USA	WB
+*	Kaissa								----	----	BLR	WB/UCI
+=	Kaissa2
+	Kallisto								----	----	NED
+	Kanguruh								1821	----	AUS	WB
+*	KasparovX							----	----	PUR	WB
+*	KCChess								----	----	RUS	WB
+	Kerostave							----	----	---
+*	Killer Queen						1654	----	ITA	WB/UCI
+*	King of Kings						2475	----	CAN	WB
+*	King's Out							2085	----	GER	WB
+*	Kingzilla							----	----	---
+	Kiwi									2085	2553	ITA	WB
+*	KKFChess								1899	----	HKG	WB/UCI
+*	KMTChess								----	2257	ESP	WB
+*	KnightCap							1950	----	AUS	WB
+*	KnightDreamer						2220	2522	SWE	WB
+*	Knightmare							----	----	USA	WB
+*	KnightX								2077	2433	FRA	WB
+=	Techno Chess
+*	König Schwarz						1430	----	GER
+=	Koenig Schwarz
+=	Konig Schwarz
+*	Ktulu									2787	2855	IRI	WB/UCI
+	Kurt									----	2072	GER	UCI
+## L ########################################################
+*	La Dame Blanche					2156	----	FRA	WB
+*	LadyGambit							1928	----	ITA
+*	LambChop								2393	----	NZL	WB/UCI
+*	LaMoSca								1261	----	ITA	WB
+*	La Grande							----	----	SUI	WB
+*	La Petite							2399	----	SUI	WB
+*	LarsenVB								1837	----	ITA	WB
+	Laurifer								1917	----	POL	WB
+*	LChess								1928	----	NED
+*	LearningLemming					----	----	USA
+	Leila									2278	----	ITA	WB/UCI
+	Lemming								----	2687	---
+	Lime									1941	2282	ENG	WB/UCI
+	List									2821	2721	GER	WB/UCI/FRC
+ 	Loop									----	2882	GER	WB/UCI/FRC
+*	Loop M1-T							----	2872	GER	WB/UCI/FRC
+*	LoopList								----	2753	GER	WB/UCI/FRC
+*	LoopMP								----	2927	GER	WB/UCI/FRC
+*	Little Goliath						2449	----	GER	WB/UCI
+*	Little Goliath Evolution		2608	2609	GER	WB/UCI
+=	LG Evolution
+*	Little Goliath Nemesis			2449	----	GER	WB/UCI
+=	LG Nemesis
+*	Little Goliath Revival			2449	----	GER	WB/UCI
+=	LG Revival
+*	Little Thought						1967	2487	AUS	UCI
+	Lodocase								1917	----	BEL	WB
+*	LoopMP								2762	----	GER	UCI
+*	Lord King							2224	----	ITA	WB
+=	Caiozzz
+=	Quartax
+=	Serafinus
+	Lovelace								1708	----	FRA	WB
+*	LuiZa									----	----	POR
+	Luzhin								----	----	RUS	WB
+## M ########################################################
+	Madeleine							2042	----	ITA	WB/UCI
+	Maestro								----	----	ISR
+	Magnum								----	----	CAN	UCI
+	Mainsworthy							----	----	ENG	WB
+	Marginal								----	----	RUS	UCI
+	Maronti								----	----	ITA
+	Marquis								1662	----	SUI	WB
+	Marvin								1973	2073	SWE	WB/UCI
+	Massaka								----	----	SCO
+	Matacz								2494	2590	POL	WB
+	Matant								2000	----	POL	WB
+	Matheus								1934	2163	BRA	WB/UCI
+	Matilde								----	2398	ITA	WB
+*	MatMoi								----	----	CAN	WB
+	Matrix								----	----	USA	WB
+	Maxima								2449	----	NED
+=	QueenMaxima
+*	MChess								----	----	USA
+=	M-Chess
+=	MChess Professional
+=	MChess Pro
+*	Mediocre Chess						----	2293	SWE	WB/UCI
+*	MeneChess							----	----	GBR
+*	Mentally Challenged				----	----	---
+*	Mephisto								----	----	GER
+*	Mephisto Academy					----  ----  GER
+*	Mephisto Advanced					----  ----  GER
+*	Mephisto Alaska					----  ----  GER
+*	Mephisto Almeria					----  ----  GER
+*	Mephisto America					----  ----  GER
+*	Mephisto America					----  ----  GER
+*	Mephisto Amsterdam				----  ----  GER
+*	Mephisto Atlanta					----  ----  GER
+*	Mephisto Avanti					----  ----  GER
+*	Mephisto B&P						----  ----  GER
+*	Mephisto Bavaria					----  ----  GER
+*	Mephisto Beach						----  ----  GER
+*	Mephisto Berlin					----  ----  GER
+*	Mephisto Berlin Professional	----  ----  GER
+*	Mephisto Bistro					----  ----  GER
+*	Mephisto Champion					----  ----  GER
+*	Mephisto Chess Challenger		----  ----  GER
+*	Mephisto Chess Explorer			----  ----  GER
+*	Mephisto Chess Trainer			----  ----  GER
+*	Mephisto Chessbook				----  ----  GER
+*	Mephisto College					----  ----  GER
+*	Mephisto Dallas					----  ----  GER
+*	Mephisto ESB						----  ----  GER
+*	Mephisto ESB II					----  ----  GER
+*	Mephisto Europa					----  ----  GER
+*	Mephisto Europa A					----  ----  GER
+*	Mephisto Excalibur				----  ----  GER
+*	Mephisto Excalibur Glasgow		----  ----  GER
+*	Mephisto Exclusive				----  ----  GER
+*	Mephisto Expert					----  ----  GER
+*	Mephisto Explorer Pro			----  ----  GER
+*	Mephisto Genius					----  ----  GER
+*	Mephisto HG							----  ----  GER
+*	Mephisto I							----  ----  GER
+*	Mephisto II							----  ----  GER
+*	Mephisto III						----  ----  GER
+*	Mephisto III-S Glasgow			----  ----  GER
+*	Mephisto Junior					----  ----  GER
+*	Mephisto London					----  ----  GER
+*	Mephisto Lyon						----  ----  GER
+*	Mephisto MM							----  ----  GER
+*	Mephisto MM I						----  ----  GER
+*	Mephisto MM II						----  ----  GER
+*	Mephisto MM IV						----  ----  GER
+*	Mephisto MM IV Turbo				----  ----  GER
+*	Mephisto MM V						----  ----  GER
+*	Mephisto MM VI						----  ----  GER
+*	Mephisto Madison					----  ----  GER
+*	Mephisto Maestro					----  ----  GER
+*	Mephisto Magellan					----  ----  GER
+*	Mephisto Manhattan				----  ----  GER
+*	Mephisto Marco Polo				----  ----  GER
+*	Mephisto Master Chess			----  ----  GER
+*	Mephisto MeXs						----  ----  GER
+*	Mephisto Mega IV					----  ----  GER
+*	Mephisto Merlin					----  ----  GER
+*	Mephisto Miami						----  ----  GER
+*	Mephisto Micro						----  ----  GER
+*	Mephisto Milano					----  ----  GER
+*	Mephisto Milano Pro				----  ----  GER
+*	Mephisto Mini						----  ----  GER
+*	Mephisto Mirage					----  ----  GER
+*	Mephisto Mobil						----  ----  GER
+*	Mephisto Modena					----  ----  GER
+*	Mephisto Modular					----  ----  GER
+*	Mephisto Monaco					----  ----  GER
+*	Mephisto Mondial					----  ----  GER
+*	Mephisto Mondial II				----  ----  GER
+*	Mephisto Montana					----  ----  GER
+*	Mephisto Monte Carlo				----  ----  GER
+*	Mephisto Monte Carlo IV			----  ----  GER
+*	Mephisto Monte Carlo IV LE		----  ----  GER
+*	Mephisto Montreal					----  ----  GER
+*	Mephisto Montreux					----  ----  GER
+*	Mephisto Mystery					----  ----  GER
+*	Mephisto Mythos					----  ----  GER
+*	Mephisto München					----  ----  GER
+=	Mephisto Munich
+*	Mephisto Nigel Short				----  ----  GER
+*	Mephisto PC							----  ----  GER
+*	Mephisto Phantom					----  ----  GER
+*	Mephisto Polgar					----  ----  GER
+*	Mephisto Portorose				----  ----  GER
+*	Mephisto Rebell					----  ----  GER
+*	Mephisto Risc						----  ----  GER
+*	Mephisto Roma						----  ----  GER
+*	Mephisto Roma II					----  ----  GER
+*	Mephisto Schachakademie			----  ----  GER
+*	Mephisto Schachschule			----  ----  GER
+*	Mephisto Schachschule II		----  ----  GER
+*	Mephisto Senator					----  ----  GER
+*	Mephisto Super Mondial			----  ----  GER
+*	Mephisto Super Mondial II		----  ----  GER
+*	Mephisto Supermini				----  ----  GER
+*	Mephisto TM Almeria				----  ----  GER
+*	Mephisto TM London				----  ----  GER
+*	Mephisto TM Lyon					----  ----  GER
+*	Mephisto TM Portorose			----  ----  GER
+*	Mephisto TM Vancouver			----  ----  GER
+*	Mephisto Vancouver				----  ----  GER
+*	Mephisto Wundermaschine			----  ----  GER
+	Mercury								----	----	IND
+	Merlin								2014	----	HUN	WB
+*	Messchess							2399	----	IND
+*	MFChess								1451	----	SWE	WB
+*	Microchess							----	----	GER	WB
+*	Micro-Max							1845	2046	NED	WB
+*	Milady								1796	----	FRA	WB
+*	MiniChessAI							1674	----	POL	WB
+=	MiniChess
+*	miniMardi							1516	----	SWE	WB
+*	MiniMax								1816	----	GER	WB
+	Mint									1999	----	SWE	WB
+	Mizar									1865	----	ITA	WB
+	Moga									----	----	---
+	Monarch								1926	2136	ENG	WB/UCI
+	Monik									2053	----	CAN	WB
+	Moneypenny							----	----	USA
+*	Monsoon								2631	----	USA
+*	Mooboo								1775	----	GER	WB
+	Morphy								2114	----	NED	WB
+	Movei									2674	2778	ISR	WB/UCI/FRC
+*	MrChess								2117	----	SIN	WB
+*	MSCP									1780	----	NED	WB
+*	Murderhole							1769	----	USA
+	Muriel								1910	----	ESP	WB
+	Muse									2113	2528	SUI	WB/UCI
+	Mustang								1923	2162	BLR	WB
+*	Myrddin								1675	2049	USA	WB
+*	Mystery								----	----	GER	WB
+## N ########################################################
+*	N2										----	2589	GER	UCI
+*	NagaSkaki							1958	2283	RSA	WB
+*	NaltaP312							----	----	---
+	Nanook								----	----	FRA	UCI
+*	nanoSzachy							----	2606	POL	WB
+=	nanoSachy
+	Natwarlal							2141	2409	IND	WB
+	Naum									2984	3059	CAN	WB/UCI/FRC
+	Needle								1841	----	FIN	WB
+*	NEG									----	----	NED	WB
+	Nejmet								2477	----	FRA	WB/UCI
+*	Neophyte								----	----	ENG	WB
+	Nero									1751	----	FIN	WB
+	Nesik									2010	----	POL	WB
+	Neurone								----	----	ITA	WB
+	Neurosis								1957	2302	NED	WB
+*	New Rival							2037	----	ENG	WB
+*	Nimzo									2518	2612	AUT	WB
+*	Nimzo-8								---- -----	AUT	WB
+*	Nimzo 2000b							---- -----	AUT	WB
+ 	Noonian Chess						2036	----	USA	WB
+=	Noonian
+	Now									----	----	USA
+*	NPMchess								----	----	IND
+*	Nr5									----	----	GER
+*	NSVChess								----	----	FRA	UCI
+*	NullMover							2031	----	NED
+	Numpty								----	----	ENG	WB
+## O ########################################################
+	Ocha									----	----	---
+*	O'Chess								1603	----	USA	WB
+	OBender								----	2289	RUS	WB
+*	OldBlindDog							----	----	USA
+*	OliThink								2109	2464	GER	WB
+	Olympus								----	----	USA
+	Omar									----	----	ESP	WB
+	Onno									2830	2907	GER	UCI
+*	Oxygen								----	----	ZZX
+	Ozwald								1810	----	FIN	WB
+=	Oswald
+## P ########################################################
+*	P.ConNers							----	----	GER
+=	P-ConNers
+=	ConNers
+	Pandix								----	----	HUN
+ 	ParrotX								1885	2252	USA	WB
+=	Parrot
+	Patriot								----	----	BLR	WB/UCI
+*	Patzer								2247	2497	GER	WB/UCI/FRC
+	Pawny									2340	2477	BUL	UCI
+	Pebble								----	----	USA
+*	Pentagon								1799	----	ITA	WB
+	Pepito								2540	2583	ESP	WB/UCI
+	Peter									----	----	ENG
+	Petir									2617	2697	INA	WB
+*	Phalanx								2396	2492	CZE	WB
+	Pharaon								2639	2714	FRA	WB/UCI/FRC
+	Phark									----	----	AUS
+	Philou								2492	2610	FRA	UCI
+	Philemon								1865	----	SUI	UCI
+	Philidor								----	----	FRA
+*	pikoSzachy							1950	----	POL	WB
+=	pikoSachy
+	Pierre								1553	----	CAN	WB
+	Piranha								2000	----	GER	UCI
+	Pirat									2067	----	GER
+	Plisk									----	----	ROU	WB
+	Plywood								1922	----	USA	WB
+*	PLP									----	2153	NOR	UCI
+*	Polar Chess							1778	----	NOR	WB
+*	Polarengine							----	----	---
+	Pooky									1713	----	USA	WB/UCI
+*	Popeye								----	----	GER	UCI
+	Popochin								2342	2440	ESP	WB
+	Porucznik							----	----	POL	WB
+*	POS									1385	----	NED	WB/UCI
+*	PostModernist						2442	2540	ENG	WB
+*	PreChess								1363	----	BRA	WB
+	Prédateur							----	----	FRA	UCI
+=	Predateur
+*	Pro Deo								2657	2722	NED	WB
+*	Pro Deo Silver						----	2679	NED	WB
+*	Pro Deo Mx4							----	2655	NED	WB
+	Prophet								----	2239	USA	WB
+	Protector							2890	2947	GER	UCI
+	Protej								----	2154	ITA	WB/UCI
+*	Pseudo								2609	2698	CZE	WB
+*	PulChess								----	----	ITA	WB
+*	Pulsar								1926	----	USA	WB
+*	Pupsi									2492	2473	DEN	UCI
+*	Pupsi2								----	2558	DEN	UCI
+*	PurpleHaze							----	----	---
+ 	PyotrCE								1481	----	GRC	WB
+=	Pyotr
+=	Pyotr Amateur
+=	Pyotr Novice
+## Q ########################################################
+	Qalat									----	----	ESP
+*	QChess								1837	----	RUS	WB
+	Quark									2510	2585	GER	WB
+	Queen									2418	2511	NED	WB/UCI
+*	Quaestor V							----	----	ECU
+*	QuTeChess							----	----	SLO	UCI
+## R ########################################################
+	Rafa									----	----	---
+	Raffaela								1612	----	ITA	WB
+	Rainman								1890	----	SWE	WB
+	Ranita								1903	----	FRA	WB
+	Rascal								----	----	USA
+	Rashess								----	----	IRI
+ 	RattateChess						----	2478	ITA	WB
+=	Rattate
+	RattateChess Bologna				----	2309	ITA	WB
+*	RBrChess								----	----	NED	WB
+*	RDChess								1924	----	AUT	WB
+	Rebel									2555	----	NED	WB
+*	RedQueen								----	----	BRA	UCI
+	Reger									----	2046	NED	WB
+*	Replicant							----	----	POR	WB
+*	Requiem								1930	----	FIN	WB
+	Resp									2342	----	GER	WB
+	Rinko									1885	----	ITA
+ 	Rival Chess							----	2060	ENG	WB/UCI
+=	Rival
+*	RobboLito							3037	----	USA	UCI
+	Robin									1780	----	POL
+*	ROBOKewpler							1558	----	USA
+	Roce									1661	----	SUI	UCI/FRC
+	Rocinante							----	----	ESP	UCI
+	Rocket								----	----	ZZX
+	Rodin									2367	2429	ESP	WB
+*	RomiChess							2414	2512	USA	WB
+	Rookie								2649	----	NED
+	Rooster								----	----	FRA	WB
+	Roque									1796	----	ESP	WB
+	Rotor									2571	2669	NED	UCI
+	Rucsil								----	----	---
+	Ruffian								2652	2734	SWE	WB/UCI
+*	Ruy Lopez							----	----	ESP
+	Rybka									3052	3098	USA	UCI/FRC
+*	Revelation Rybka					----	----	USA
+*	Resurrection Rybka				----	----	USA
+## S ########################################################
+	Sachy									1433	----	CZE	WB
+	Sage									----	2495	USA	WB
+*	Sally6								----	----	---
+*	SAM-Chess							1950	----	USA	WB
+	Schola								----	2080	USA	WB
+*	Sargon								----	----	USA
+*	SaruChess							----	----	---
+*	Scidlet								2312	----	NZL	WB
+	Scorpio								2691	2767	ETH	WB
+*	SCP									----	----	USA	WB
+*	SdBC									1810	----	GER	WB
+	Searcher								2621	----	GBR
+*	SEEChess								1839	----	AUT	WB
+=	SEE
+*	SharpChess							1553	----	SWE	WB
+*	SharpChess II						1836	----	ENG	WB
+=	SharpChess2
+	Sharper								1865	----	SWE	WB
+	Shatranj								----	----	USA	WB
+*	Shredder								2810	3032	GER	UCI/FRC
+	Siboney								----	----	CRC
+	Sibyl									----	----	NED
+	Sierzant								1896	----	POL	WB
+*	Silke Chess							1862	----	GER
+	Sillycon								----	----	NOR
+	Simon									1795	----	USA	WB
+	Simontacchi							1911	----	USA	WB/UCI
+	Simple								1809	----	FRA	WB
+	Simplex								----	----	ESP	UCI
+	Sinapse								1684	----	BRA	WB
+	Sinobyl								1919	2301	USA	WB
+=	Latista
+	Sissa									----	----	FRA	UCI
+	Sjakk									----	----	NOR	WB
+	Skaki									1590	----	GRC	WB
+	Slibo									----	2127	GER	WB
+*	Sloppy								2642	2696	FIN	WB
+*	Slow Chess							2650	2743	USA	WB/UCI
+=	Slow Chess Blitz
+*	Small-C								1874	----	FRA	UCI
+*	Small Potato						1935	----	AUS	WB
+*	SmarThink							2759	2840	RUS	WB/UCI
+	Smash									1934	2077	ITA	UCI
+	Smaug									----	----	FIN	UCI
+*	SMIRF									----	----	GER	WB
+ 	SnailChess							1863	----	SIN	WB
+=	Snail
+	Snitch								2467	2535	GER	WB/UCI
+	Sogey									----	----	IND
+	Soldat								1782	----	ITA	WB
+*	Son of Mainsworthy				----	----	ENG	WB
+	Sorgenkind							2429	2494	GER	WB
+*	SOS									2609	2663	GER	WB/UCI
+=	ParSOS								----	----	GER	WB/UCI
+	Spandrel								----	----	NZL
+	Spark									2868	2902	NED	UCI
+*	SpiderChess							2504	2583	NED	WB
+	Spike									2475	2787	GER	WB/UCI/FRC
+	Spike Turin							----	2849	GER	WB/UCI/FRC
+	Squash								----	----	---
+*	SSEChess								1948	----	USA	WB
+*	StAndersen							1751	----	SWE	WB
+*	Stan's Chess						1681	----	NED	WB
+	Stobor								----	----	USA
+	Stockfish							2888	3034	ITA	UCI
+	Storm									1822	----	USA	WB
+*	StrategicDeep						1550	----	POL	WB
+	Strelka								----	----	RUS	WB/UCI
+	Sucka									----	----	SCO
+	Suff									----	----	AUT	UCI
+	Sungorus								----	2341	ESP	UCI
+	Sunsetter							2047	----	GER	WB
+	Surprise								1870	1996	GER	WB
+	Symbolic								----	----	USA
+## T ########################################################
+*	Taktix								2008	----	CMR	WB/UCI/FRC
+*	Talvmenni							1661	----	FAI	WB
+	Tamerlane							1828	----	ITA	WB
+	Tao									2545	2607	NED	WB/UCI
+	Tarrasch								----	----	USA	UCI
+*	Tasc R30								2380	----	NED
+=	R30
+*	TBomb									----	----	PHI
+*	Tec_Kika								----	----	---
+*	Techno								2401	----	---
+*	Telepath								----	----	USA
+	Temible								----	----	---
+*	Terra									2237	----	SWE	WB/UCI
+	Testina								1573	----	ITA	WB
+*	The Baron							2299	2700	NED	WB/FRC
+*	The Crazy Bishop					2387	----	FRA	WB
+=	Crazy Bishop
+=	TCB
+*	The Genius							2411	----	IND
+*	The King								2685	----	NED	WB
+*	The Lightning						1701	----	GER	WB
+=	Lightning
+*	TheMadPrune							----	2911	---
+	Thinker								2885	2647	CAN	WB
+*	Thinker Passive					----	2871	CAN	WB
+*	Thinker Inert						----	2942	CAN	WB
+*	Thor's Hammer						2134	2481	CRO	WB
+	Thunder								----	----	USA
+*	Tiffanys								----	----	SUI	WB
+ 	Tikov Chess							1591	----	ENG	WB
+=	Tikov
+	Timea									----	----	HUN
+	Tinker								2480	----	USA
+*	TJChess								----	2243	USA	WB/UCI
+*	Toga II								2873	3006	ZZX	UCI
+ 	Toga									----	----	ZZX	UCI
+*	Toledo Nanochess					----	----	MEX	WB
+*	Tony's Chess						----	----	CAN	WB
+	Tornado								2620	2650	GER	UCI/FRC
+	Tossa									----	----	SCO
+	Trace									2508	2592	AUS	WB
+*	T-Rex									1645	----	FRA	WB/UCI
+*	Tri-OS								1193	----	USA	WB
+	Tristram								1948	----	USA	WB
+	Trueno								1819	----	USA
+*	Trynyty								1603	----	HUN	WB
+*	TSCP									1801	----	USA	WB
+	Turing								1652	----	GER
+*	TuttiFruity							----	----	---
+*	Tuxedo								----	----	---
+*	Twilight Chess						----	----	FRA
+*	Twisted Logic						2735	2851	PHI	WB/UCI
+	Typhoon								2200	2549	USA	WB
+	Tytan									----	2462	POL	WB
+*	Tzunami								----	----	NED
+## U ########################################################
+	Ufim									2568	2647	RUS	WB/UCI/FRC
+*	Ultima								----	----	IND
+	Umko									2754	2738	SLO	UCI
+	Uragano								1942	----	ITA	WB
+	Uralochka							----	2328	RUS	UCI
+	Usurper								1503	----	USA	WB
+## V ########################################################
+*	Vanilla Chess						1846	----	AUS	WB
+	Vicki									----	----	RSA	WB
+	Viper									2227	2623	NOR	UCI
+*	Virtual Chess						----	----	FRA
+=	Virtual Chess X
+=	Virtual Chess 2
+=	VirtuaChess
+*	Vlad Tepes							----	----	NED
+*	Voayager								----	----	SUI
+## W ########################################################
+*	WaDuuttie							----	----	NED
+	Warp									----	----	NZL
+	Warrior								1959	2012	LAT	WB
+	Waster								2104	----	GBR
+	Waxman								----	2357	USA	WB
+*	WChess								2197	2445	USA
+	Weid									----	----	RSA
+*	WESP									----	----	NED
+*	WildCat								2661	2729	BLR	WB/UCI
+*	WinChess								2177	----	USA
+	Wing									1890	----	NED	WB
+*	Wincraft								----	----	ENG
+	Witz									1645	----	USA	WB
+*	WJChess								2018	----	FRA	WB/UCI
+*	Woodpecker							----	----	RUS	WB
+## X ########################################################
+	Xadreco								1658	----	BRA	WB
+*	XBomb									----	----	PHI
+*	XiniX									----	----	NED
+*	Xpdnt									2085	2598	USA	WB
+*	xyclOps								----	----	USA	WB
+## Y ########################################################
+	Yace									2524	2585	GER	WB/UCI
+	Yawce									1648	----	DEN	WB
+*	Ychess								2124	----	AUT
+	Yoda									----	----	FRA	WB
+	Youk									----	----	FRA	WB
+## Z ########################################################
+*	Z										----	----	ESP
+*	Zap!Chess							2753	----	USA	WB/UCI
+*	Zap!Chess Paderborn				----	2784	USA	WB/UCI
+*	Zap!Chess Reykjavik				----	2765	USA	WB/UCI
+*	Zap!Chess Turin					2753	----	USA	WB/UCI
+*	Zap!Chess Zanzibar				----	2883	USA	WB/UCI
+	Zappa									2836	2684	USA	WB/UCI
+*	Zappa Mexico						----	2890	USA	WB/UCI
+*	Zappa Mexico II					----	2914	USA	WB/UCI
+	Zarkov								2646	----	USA
+*	ZChess								2442	----	FRA	WB
+*	ZCT									2193	2314	USA	WB/UCI
+	Zephyr								1820	----	GER	WB
+	Zeta									----	----	GER
+	Zeus									2074	2414	RUS	WB
+	Zilch									----	----	USA
+*	ZL Chess								----	----	PUR	WB
+=	ZL
+	Zoidberg								----	----	ESP	WB
+	Zotron								1697	----	USA	WB
+*	Zzzzzz								2026	----	NED
+# EOF #######################################################
+# # vi:set ts=3 sw=3:

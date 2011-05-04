@@ -1,0 +1,1797 @@
+#########################################
+#
+# wikipedia-en.txt
+#
+#########################################
+@lang=en
+#########################################
+Daniels, A. Polak|A._Polak_Daniels
+Alexandre, Aaron|Aaron_Alexandre
+Schwartzman, Aaron|Aaron_Schwartzman
+Summerscale, Aaron|Aaron_Summerscale
+Turner, Abe|Abe_Turner
+Gupta, Abhijeet|Abhijeet_Gupta
+Kunte, Abhijit|Abhijit_Kunte
+Even, Abir Har|Abir_Har_Even
+Baratz, Abraham|Abraham_Baratz
+Kupchik, Abraham|Abraham_Kupchik
+Speijer, Abraham|Abraham_Speijer
+Blass, Abram|Abram_Blass
+Khavin, Abram|Abram_Khavin
+Model, Abram|Abram_Model
+Rabinovich, Abram|Abram_Rabinovich
+Szpiro, Abram|Abram_Szpiro
+Zamikhovsky, Abram|Abram_Zamikhovsky
+Frydman, Achilles|Achilles_Frydman
+Kuligowski, Adam|Adam_Kuligowski
+Albin, Adolf|Adolf_Albin
+Anderssen, Adolf|Adolf_Anderssen
+Olland, Adolf Georg|Adolf_Georg_Olland
+Kraemer, Adolf|Adolf_Kraemer
+Kramer, Adolf|Adolf_Kramer
+Schwarz, Adolf|Adolf_Schwarz
+Seitz, Adolf|Adolf_Seitz
+Stern, Adolf|Adolf_Stern_%28chess_player%29
+Zinkl, Adolf|Adolf_Zinkl
+Zytogorski, Adolf|Adolf_Zytogorski
+Groot, Adriaan de|Adriaan_de_Groot
+Conde, Adrian Garcia|Adrian_Garcia_Conde
+Hollis, Adrian|Adrian_Hollis
+Mikhalchishin, Adrian|Adrian_Mikhalchishin
+Stevenson, Agnes|Agnes_Stevenson
+Brustman, Agnieszka|Agnieszka_Brustman
+Adly, Ahmed|Ahmed_Adly
+Gipslis, Aivars|Aivars_Gipslis
+Rubinstein, Akiba|Akiba_Rubinstein
+Galway, Alberic O'Kelly de|Alb%C3%A9ric_O%27Kelly_de_Galway
+Becker, Albert|Albert_Becker_%28chess_player%29
+Clerc, Albert|Albert_Clerc
+Fox, Albert|Albert_Fox
+Hodges, Albert|Albert_Hodges
+Kapengut, Albert|Albert_Kapengut
+Pinkus, Albert|Albert_Pinkus
+Simonson, Albert|Albert_Simonson
+David, Alberto|Alberto_David
+Foguelman, Alberto|Alberto_Foguelman
+Planinc, Albin|Albin_Planinc
+Zadrima, Aldo|Aldo_Zadrima
+Ramirez, Alejandro|Alejandro_Ramirez
+Matanovic, Aleksandar|Aleksandar_Matanovi%C4%87
+Wohl, Aleksandar|Aleksandar_Wohl
+Delchev, Aleksander|Aleksander_Delchev
+Sznapik, Aleksander|Aleksander_Sznapik
+Wojtkiewicz, Aleksander|Aleksander_Wojtkiewicz
+Levin, Aleksandr Mitrofanovich|Aleksandr_Mitrofanovich_Levin
+Machtas, Aleksandras|Aleksandras_Machtas
+Goncharov, Aleksei Fyodorovich|Aleksei_Fyodorovich_Goncharov
+Aleksandrov, Aleksej|Aleksej_Aleksandrov
+Riegler, Alessandra|Alessandra_Riegler
+Salvio, Alessandro|Alessandro_Salvio
+Fishbein, Alex|Alex_Fishbein
+Lenderman, Alex|Alex_Lenderman
+Yermolinsky, Alex|Alex_Yermolinsky
+Alekhine, Alexander|Alexander_Alekhine
+Areshchenko, Alexander|Alexander_Areshchenko
+Baburin, Alexander|Alexander_Baburin
+Beliavsky, Alexander|Alexander_Beliavsky
+Cherepkov, Alexander|Alexander_Cherepkov
+Chernin, Alexander|Alexander_Chernin
+Evensohn, Alexander|Alexander_Evensohn
+Flamberg, Alexander|Alexander_Flamberg
+Fritz, Alexander|Alexander_Fritz
+Galkin, Alexander|Alexander_Galkin
+Goldin, Alexander|Alexander_Goldin
+Graf, Alexander|Alexander_Graf
+Grischuk, Alexander|Alexander_Grischuk
+Halprin, Alexander|Alexander_Halprin
+Huzman, Alexander|Alexander_Huzman
+Ilyin-Zhenevsky, Alexander|Alexander_Ilyin-Zhenevsky
+Ivanov, Alexander|Alexander_Ivanov_%28chess_player%29
+Kevitz, Alexander|Alexander_Kevitz
+Khalifman, Alexander|Alexander_Khalifman
+Koblencs, Alexander|Alexander_Koblencs
+Kochyev, Alexander|Alexander_Kochyev
+Konstantinopolsky, Alexander|Alexander_Konstantinopolsky
+Kotov, Alexander|Alexander_Kotov
+Lastin, Alexander|Alexander_Lastin
+McDonnell, Alexander|Alexander_McDonnell
+Moiseenko, Alexander|Alexander_Moiseenko
+Morozevich, Alexander|Alexander_Morozevich
+Moroz, Alexander|Alexander_Moroz_%28chess_player%29
+Motylev, Alexander|Alexander_Motylev
+Zaitsev, Alexander Nikolayevich|Alexander_Nikolayevich_Zaitsev
+Onischuk, Alexander|Alexander_Onischuk
+Petrov, Alexander|Alexander_Petrov
+Riazantsev, Alexander|Alexander_Riazantsev
+Romanovsky, Alexander|Alexander_Romanovsky
+Rueb, Alexander|Alexander_Rueb
+Sergeev, Alexander|Alexander_Sergeev
+Shabalov, Alexander|Alexander_Shabalov
+Tolush, Alexander|Alexander_Tolush
+Tsvetkov, Alexander|Alexander_Tsvetkov
+Wagner, Alexander|Alexander_Wagner
+Wittek, Alexander|Alexander_Wittek
+Fier, Alexandr|Alexandr_Fier
+Kosteniuk, Alexandra|Alexandra_Kosteniuk
+Deschapelles, Alexandre|Alexandre_Deschapelles
+Lesiege, Alexandre|Alexandre_Lesiege
+Tyroler, Alexandru|Alexandru_Tyroler
+Alekhine, Alexei|Alexei_Alekhine
+Barsov, Alexei|Alexei_Barsov
+Fedorov, Alexei|Alexei_Fedorov
+Shirov, Alexei|Alexei_Shirov
+Dreev, Alexey|Alexey_Dreev
+Selezniev, Alexey|Alexey_Selezniev
+Sokolsky, Alexey|Alexey_Sokolsky
+Suetin, Alexey|Alexey_Suetin
+Vyzmanavin, Alexey|Alexey_Vyzmanavin
+Ceron, Alfonso|Alfonso_Ceron
+Brinckmann, Alfred|Alfred_Brinckmann
+Flatow, Alfred|Alfred_Flatow_%28chess_player%29
+Gyles, Alfred William|Alfred_William_Gyles
+Butnorius, Algimantas|Algimantas_Butnorius
+Tonini, Alice|Alice_Tonini
+Galliamova, Alisa|Alisa_Galliamova
+Maric, Alisa|Alisa_Maric
+Kushnir, Alla|Alla_Kushnir
+Nilsson, Allan|Allan_Nilsson
+Skripchenko, Almira|Almira_Skripchenko
+Greenfeld, Alon|Alon_Greenfeld
+Zapata, Alonso|Alonso_Zapata
+Goetz, Alphonse|Alphonse_Goetz
+Vitolins, Alvis|Alvis_Vitolin%C5%A1
+Gibaud, Amedee|Am%C3%A9d%C3%A9e_Gibaud
+Ghasi, Ameet|Ameet_Ghasi
+Balshan, Amikam|Amikam_Balshan
+Bagheri, Amir|Amir_Bagheri
+Simutowe, Amon|Amon_Simutowe
+Burn, Amos|Amos_Burn
+Pokorny, Amos|Amos_Pokorn%C3%BD
+Yangfeng, An|An_Yangfeng
+Srebrnic, Ana|Ana_Srebrnic
+Tschepurnoff, Anatol|Anatol_Tschepurnoff
+Bannik, Anatoly|Anatoly_Bannik
+Karpov, Anatoly|Anatoly_Karpov
+Lein, Anatoly|Anatoly_Lein
+Vaisser, Anatoly|Anatoly_Vaisser
+Lilienthal, Andor|Andor_Lilienthal
+Adorjan, Andras|Andr%C3%A1s_Adorj%C3%A1n
+Cheron, Andre|Andr%C3%A9_Ch%C3%A9ron
+Diamant, Andre|Andr%C3%A9_Diamant
+Muffang, Andre|Andr%C3%A9_Muffang
+Ascharin, Andreas|Andreas_Ascharin
+Dueckstein, Andreas|Andreas_D%C3%BCckstein
+Duhm, Andreas|Andreas_Duhm
+Rosendahl, Andreas|Andreas_Rosendahl
+Istratescu, Andrei|Andrei_Istratescu
+Kharlov, Andrei|Andrei_Kharlov
+Sokolov, Andrei|Andrei_Sokolov
+Volokitin, Andrei|Andrei_Volokitin
+Soltis, Andrew|Andrew_Soltis
+Lukin, Andrey|Andrey_Lukin
+Fuderer, Andrija|Andrija_Fuderer
+Giri, Anish|Anish_Giri
+Belakovskaia, Anjelina|Anjelina_Belakovskaia
+Akhsharumova, Anna|Anna_Akhsharumova
+Gasik, Anna|Anna_Gasik
+Hahn, Anna|Anna_Hahn_%28chess%29
+Muzychuk, Anna|Anna_Muzychuk
+Rudolf, Anna|Anna_Rudolf
+Ushenina, Anna|Anna_Ushenina
+Zatonskih, Anna|Anna_Zatonskih
+Sunnucks, Anne|Anne_Sunnucks
+Santasiere, Anthony|Anthony_Santasiere
+Stefanova, Antoaneta|Antoaneta_Stefanova
+Kohler, Anton|Anton_Kohler
+Korobov, Anton|Anton_Korobov
+Olson, Anton|Anton_Olson
+Wojciechowski, Antoni|Antoni_Wojciechowski
+Medina, Antonio|Antonio_Medina
+Rico, Antonio|Antonio_Rico
+Sacconi, Antonio|Antonio_Sacconi
+Corke, Anya|Anya_Corke
+Mohiliver, Ariah|Ariah_Mohiliver
+Caoili, Arianne|Arianne_Caoili
+Sorin, Ariel|Ariel_Sorin
+Gromer, Aristide|Aristide_Gromer
+Naiditsch, Arkadij|Arkadij_Naiditsch
+Pashikian, Arman|Arman_Pashikian
+Blackmar, Armand|Armand_Blackmar
+Nickel, Arno|Arno_Nickel
+Aurbach, Arnold|Arnold_Aurbach
+Denker, Arnold|Arnold_Denker
+Schottlaender, Arnold|Arnold_Schottl%C3%A4nder
+Foreest, Arnold van|Arnold_van_Foreest
+Hoek, Arnold van den|Arnold_van_den_Hoek
+Nimzowitsch, Aron|Aron_Nimzowitsch
+Zabludowski, Aron|Aron_Zab%C5%82udowski
+Vajda, Arpad|Arpad_Vajda
+Petrosian, Arshak|Arshak_Petrosian
+Minasian, Artashes|Artashes_Minasian
+Bisguier, Arthur|Arthur_Bisguier
+Dake, Arthur|Arthur_Dake
+Dunkelblum, Arthur|Arthur_Dunkelblum
+Feuerstein, Arthur|Arthur_Feuerstein
+Kaufmann, Arthur|Arthur_Kaufmann
+Wijnans, Arthur|Arthur_Wijnans
+Kogan, Artur|Artur_Kogan
+Poplawski, Artur|Artur_Poplawski
+Yusupov, Artur|Artur_Yusupov
+Pomar, Arturo|Arturo_Pomar
+Reggio, Arturo|Arturo_Reggio
+Timofeev, Artyom|Artyom_Timofeev
+Kubbel, Arvid|Arvid_Kubbel
+As-Suli|As-Suli
+Anastasian, Ashot|Ashot_Anastasian
+Nadanian, Ashot|Ashot_Nadanian
+Taminsyah, Aston|Aston_Taminsyah
+Kolev, Atanas|Atanas_Kolev
+Pourkashiyan, Atousa|Atousa_Pourkashiyan
+Neumann, Augustin|Augustin_Neumann
+Muro, Augusto de|Augusto_de_Muro
+Mongredien, Augustus|Augustus_Mongredien
+Jobava, Baadur|Baadur_Jobava
+Kouatly, Bachar|Bachar_Kouatly
+Wolff, Balduin|Balduin_Wolff
+Hoenlinger, Baldur|Baldur_H%C3%B6nlinger
+Moeller, Baldur|Baldur_M%C3%B6ller
+Lasa, Baron Tassilo von Heydebrand und der|Baron_Tassilo_von_Heydebrand_und_der_Lasa
+Macieja, Bartlomiej|Bartlomiej_Macieja
+Socko, Bartosz|Bartosz_Socko
+Wood, Baruch Harold|Baruch_Harold_Wood
+Amin, Bassem|Bassem_Amin
+Kadziolka, Beata|Beata_K%C4%85dzio%C5%82ka
+Marinello, Beatriz|Beatriz_Marinello
+Berger, Bela|Bela_Berger
+Igla, Bella|Bella_Igla
+Finegold, Ben|Ben_Finegold
+Ekenberg, Bengt|Bengt_Ekenberg
+Vergani, Beniamino|Beniamino_Vergani
+Villegas, Benito|Benito_Villegas
+Blumenfeld, Benjamin|Benjamin_Blumenfeld
+Larsen, Bent|Bent_Larsen
+Ostenstad, Berge|Berge_Ostenstad
+Carrasco, Berna|Berna_Carrasco
+Zuckerman, Bernard|Bernard_Zuckerman
+Roselli, Bernardo|Bernardo_Roselli
+Wexler, Bernardo|Bernardo_Wexler
+Fleissig, Bernhard|Bernhard_Fleissig
+Gregory, Bernhard|Bernhard_Gregory
+Horwitz, Bernhard|Bernhard_Horwitz
+Kagan, Bernhard|Bernhard_Kagan
+Englisch, Berthold|Berthold_Englisch
+Koch, Berthold|Berthold_Koch
+Lasker, Berthold|Berthold_Lasker
+Suhle, Berthold|Berthold_Suhle
+Yildiz, Betul Cemre|Betul_Cemre_Yildiz
+Nielsen, Bjorn|Bj%C3%B8rn_Nielsen
+Fischer, Bobby|Bobby_Fischer
+Lalic, Bogdan|Bogdan_Lalic
+Sliwa, Bogdan|Bogdan_%C5%9Aliwa
+Kurajica, Bojan|Bojan_Kurajica
+Vuckovic, Bojan|Bojan_Vu%C4%8Dkovi%C4%87
+Alterman, Boris|Boris_Alterman
+Avrukh, Boris|Boris_Avrukh
+Blumin, Boris|Boris_Blumin
+Greiff, Boris De|Boris_De_Greiff
+Gelfand, Boris|Boris_Gelfand
+Gulko, Boris|Boris_Gulko
+Kogan, Boris|Boris_Kogan
+Kostic, Boris|Boris_Kosti%C4%87
+Koyalovich, Boris|Boris_Koyalovich
+Kreiman, Boris|Boris_Kreiman
+Maliutin, Boris|Boris_Maliutin
+Spassky, Boris|Boris_Spassky
+Verlinsky, Boris|Boris_Verlinsky
+Ivkov, Borislav|Borislav_Ivkov
+Kostic, Borislav|Borislav_Kosti%C4%87
+Milic, Borislav|Borislav_Milic
+Predojevic, Borki|Borki_Predojevic
+Dyner, Boruch Israel|Boruch_Israel_Dyner
+Ivanovic, Bozidar|Bo%C5%BEidar_Ivanovi%C4%87
+Damljanovic, Branko|Branko_Damljanovic
+Rabar, Braslav|Braslav_Rabar
+Kelly, Brian|Brian_Kelly_%28chess_player%29
+Reilly, Brian|Brian_Reilly
+Amos, Bruce|Bruce_Amos
+Siegheim, Bruno Edgar|Bruno_Edgar_Siegheim
+Moritz, Bruno|Bruno_Moritz
+Parma, Bruno|Bruno_Parma
+Nickoloff, Bryon|Bryon_Nickoloff
+Xiangzhi, Bu|Bu_Xiangzhi
+Gurgenidze, Bukhuti|Bukhuti_Gurgenidze
+Baginskaite, Camilla|Camilla_Baginskaite
+Ahues, Carl|Carl_Ahues
+Walbrodt, Carl August|Carl_August_Walbrodt
+Carls, Carl|Carl_Carls
+Schmid, Carl Friedrich|Carl_Friedrich_Schmid
+Goering, Carl|Carl_Goering
+Hamppe, Carl|Carl_Hamppe
+Jaenisch, Carl|Carl_Jaenisch
+Mayet, Carl|Carl_Mayet
+Schlechter, Carl|Carl_Schlechter
+Wemmers, Carl|Carl_Wemmers
+Cozio, Carlo|Carlo_Cozio
+Bielicki, Carlos|Carlos_Bielicki
+Palermo, Carlos Garcia|Carlos_Garcia_Palermo
+Guimard, Carlos|Carlos_Guimard
+Jauregui, Carlos|Carlos_Jauregui
+Maderna, Carlos|Carlos_Maderna
+Repetto, Carlos Torre|Carlos_Torre_Repetto
+Roodzant, Catharina|Catharina_Roodzant
+Warwick, Cathy|Cathy_Warwick
+Purdy, Cecil|Cecil_Purdy
+Haussernot, Cecile|Cecile_Haussernot
+Torriente, Celso Golmayo|Celso_Golmayo_Torriente
+Zupide, Celso Golmayo|Celso_Golmayo_Zupide
+Kottnauer, Cenek|Cenek_Kottnauer
+Boutteville, Cesar|C%C3%A9sar_Boutteville
+Munoz, Cesar|C%C3%A9sar_Mu%C3%B1oz
+Janowski, Chaim|Chaim_Janowski
+Kong, Chan Peng|Chan_Peng_Kong
+Sandipan, Chanda|Chanda_Sandipan
+Lo, Chang Tung|Chang_Tung_Lo
+Silans, Chantal Chaude de|Chantal_Chaude_de_Silans
+Jaffe, Charles|Charles_Jaffe
+Kalme, Charles|Charles_Kalme
+Moehle, Charles|Charles_Moehle
+Stanley, Charles|Charles_Stanley_%28Chess_player%29
+De, Chen|Chen_De
+Cup, Chess World|Chess_World_Cup
+Ward, Chris|Chris_Ward_%28chess_player%29
+Ronde, Chris de|Chris_de_Ronde
+Bauer, Christian|Christian_Bauer
+Poulsen, Christian|Christian_Poulsen_%28chess_player%29
+Leotard, Christophe|Christophe_L%C3%A9otard
+Lutz, Christopher|Christopher_Lutz
+Benini, Clarice|Clarice_Benini
+Bloodgood, Claude|Claude_Bloodgood
+McNab, Colin|Colin_McNab
+Alexander, Conel Hugh O'Donel|Conel_Hugh_O%27Donel_Alexander
+Burille, Constant Ferdinand|Constant_Ferdinand_Burille
+Lupulescu, Constantin|Constantin_Lupulescu
+Peptan, Corina|Corina_Peptan
+Balogh, Csaba|Csaba_Balogh
+Hansen, Curt|Curt_Hansen
+Bardeleben, Curt von|Curt_von_Bardeleben
+Arngrimsson, Dagur|Dagur_Arngrimsson
+Reca, Damian|Damian_Reca
+Heisman, Dan|Dan_Heisman
+Campora, Daniel|Daniel_C%C3%A1mpora
+Elyakim, Daniel|Daniel_Elyakim
+Fridman, Daniel|Daniel_Fridman
+Harrwitz, Daniel|Daniel_Harrwitz
+King, Daniel J.|Daniel_J._King
+Naroditsky, Daniel|Daniel_Naroditsky
+Noteboom, Daniel|Daniel_Noteboom
+Stellwagen, Daniel|Daniel_Stellwagen
+Yanofsky, Daniel|Daniel_Yanofsky
+Gormally, Danny|Danny_Gormally
+Kopec, Danny|Danny_Kopec
+Lima, Darcy|Darcy_Lima
+Swiercz, Dariusz|Dariusz_Swiercz
+Kaps, Darja|Darja_Kap%C5%A1
+Sadvakasov, Darmen|Darmen_Sadvakasov
+Johansen, Darryl|Darryl_Johansen
+Laylo, Darwin|Darwin_Laylo
+Baramidze, David|David_Baramidze
+Bronstein, David|David_Bronstein
+Enoch, David|David_Enoch
+Friedgood, David|David_Friedgood
+Baird, David Graham|David_Graham_Baird
+Howell, David|David_Howell_%28chess_player%29
+Levy, David|David_Levy_%28chess_player%29
+Navara, David|David_Navara
+Norwood, David|David_Norwood
+Penkalski, David|David_Penkalski
+Podhorzer, David|David_Podhorzer
+Polland, David|David_Polland
+Goodman, David S.|David_S._Goodman
+Smerdon, David|David_Smerdon
+Marotti, Davide|Davide_Marotti
+Palo, Davor|Davor_Palo
+Daniuszewski, Dawid|Dawid_Daniuszewski
+Janowski, Dawid|Dawid_Janowski
+Przepiorka, Dawid|Dawid_Przepi%C3%B3rka
+Hergott, Deen|Deen_Hergott
+Antic, Dejan|Dejan_Antic
+Barua, Dibyendu|Dibyendu_Barua
+Keller, Dieter|Dieter_Keller
+Duhm, Dietrich|Dietrich_Duhm
+Reinderman, Dimitri|Dimitri_Reinderman
+Bjelica, Dimitrije|Dimitrije_Bjelica
+Liren, Ding|Ding_Liren
+Martinez, Dion|Dion_Martinez
+Foreest, Dirk van|Dirk_van_Foreest
+Gurevich, Dmitry|Dmitry_Gurevich
+Jakovenko, Dmitry|Dmitry_Jakovenko
+Ponziani, Domenico|Domenico_Ponziani
+Byrne, Donald|Donald_Byrne
+Ciric, Dragoljub|Dragoljub_%C4%8Ciri%C4%87
+Janosevic, Dragoljub|Dragoljub_Jano%C5%A1evi%C4%87
+Minic, Dragoljub|Dragoljub_Mini%C4%87
+Velimirovic, Dragoljub|Dragoljub_Velimirovic
+Marovic, Drazen|Drazen_Marovic
+Sermek, Drazen|Drazen_Sermek
+Suttles, Duncan|Duncan_Suttles
+Pavasovic, Dusko|Du%C5%A1ko_Pavasovi%C4%8D
+Colle, Edgard|Edgard_Colle
+Handoko, Edhi|Edhi_Handoko
+Price, Edith Charlotte|Edith_Charlotte_Price
+Holloway, Edith|Edith_Holloway
+Keller-Herrmann, Edith|Edith_Keller-Herrmann
+Mednis, Edmar|Edmar_Mednis
+Nash, Edmund|Edmund_Nash
+Dyckhoff, Eduard|Eduard_Dyckhoff
+Glass, Eduard|Eduard_Glass
+Gufeld, Eduard|Eduard_Gufeld
+Rozentalis, Eduardas|Eduardas_Rozentalis
+Kengis, Edvins|Edvins_Kengis
+Chamier, Edward|Edward_Chamier
+Gerstenfeld, Edward|Edward_Gerstenfeld
+Sergeant, Edward Guthlac|Edward_Guthlac_Sergeant
+Lasker, Edward|Edward_Lasker
+Loewe, Edward|Edward_L%C3%B6we
+Boeoek, Eero|Eero_B%C3%B6%C3%B6k
+Paloheimo, Eero|Eero_Paloheimo
+Bogoljubov, Efim|Efim_Bogoljubov
+Geller, Efim|Efim_Geller
+Grivas, Efstratios|Efstratios_Grivas
+Jacobsen, Egil|Egil_Jacobsen
+Varnusz, Egon|Egon_Varnusz
+Post, Ehrhardt|Ehrhardt_Post
+Maghami, Ehsan Ghaem|Ehsan_Ghaem_Maghami
+Ghaem-Maghami, Ehsan|Ehsan_Ghaem-Maghami
+Gausel, Einar|Einar_Gausel
+Atalik, Ekaterina|Ekaterina_Atalik
+Gasanov, Eldar|Eldar_Gasanov
+Jimenez, Eleazar|Eleazar_Jimenez
+Donaldson, Elena|Elena_Donaldson
+Stein, Elias|Elias_Stein_%28chess_player%29
+Williams, Elijah|Elijah_Williams
+Polihroniade, Elisabeta|Elisabeta_Polihroniade
+Bykova, Elisabeth|Elisabeth_Bykova
+Paehtz, Elisabeth|Elisabeth_P%C3%A4htz
+Shaughnessy, Elizabeth|Elizabeth_Shaughnessy
+Gilbert, Ellen|Ellen_Gilbert
+Magerramov, Elmar|Elmar_Magerramov
+Zemgalis, Elmars|Elmars_Zemgalis
+Moradi, Elshan|Elshan_Moradi
+Berg, Emanuel|Emanuel_Berg
+Guthi, Emanuel|Emanuel_Guthi
+Lasker, Emanuel|Emanuel_Lasker
+Rubinstein, Emanuel|Emanuel_Rubinstein
+Schiffers, Emanuel|Emanuel_Schiffers
+Diemer, Emil Josef|Emil_Josef_Diemer
+Kemeny, Emil|Emil_Kem%C3%A9ny
+Schallopp, Emil|Emil_Schallopp
+Sutovsky, Emil|Emil_Sutovsky
+Zinner, Emil|Emil_Zinner
+Sapira, Emmanuel|Emmanuel_Sapira
+Hossain, Enamul|Enamul_Hossain
+Steiner, Endre|Endre_Steiner
+Paoli, Enrico|Enrico_Paoli
+Lobron, Eric|Eric_Lobron
+Prie, Eric|%C3%89ric_Pri%C3%A9
+Cohn, Erich|Erich_Cohn
+Eliskases, Erich|Erich_Eliskases
+Andersen, Erik|Erik_Andersen
+Lundin, Erik|Erik_Lundin
+Klein, Ernest|Ernest_Klein_%28chess_player%29
+Pogosyants, Ernest|Ernest_Pogosyants
+Inarkiev, Ernesto|Ernesto_Inarkiev
+Gereben, Erno|Ern%C5%91_Gereben
+Falkbeer, Ernst|Ernst_Falkbeer
+Flechsig, Ernst|Ernst_Flechsig
+Gruenfeld, Ernst|Ernst_Gr%C3%BCnfeld
+Jacobson, Ernst|Ernst_Jacobson
+Larsson, Ernst|Ernst_Larsson
+Voellmy, Erwin|Erwin_Voellmy
+l'Ami, Erwin|Erwin_l%27Ami
+Lie, Espen|Espen_Lie
+Canal, Esteban|Esteban_Canal
+Bacrot, Etienne|Etienne_Bacrot
+Delmar, Eugene|Eugene_Delmar
+Colman, Eugene Ernest|Eugene_Ernest_Colman
+Perelshteyn, Eugene|Eugene_Perelshteyn
+Rousseau, Eugene|Eug%C3%A9ne_Rousseau_%28chess%29
+Znosko-Borovsky, Eugene|Eugene_Znosko-Borovsky
+German, Eugenio|Eugenio_German
+Szabados, Eugenio|Eugenio_Szabados
+Torre, Eugenio|Eugenio_Torre
+Vasiukov, Evgeni|Evgeni_Vasiukov
+Ermenkov, Evgenij|Evgenij_Ermenkov
+Miroshnichenko, Evgenij|Evgenij_Miroshnichenko
+Najer, Evgeniy|Evgeniy_Najer
+Agrest, Evgeny|Evgeny_Agrest
+Alekseev, Evgeny|Evgeny_Alekseev_%28chess_player%29
+Bareev, Evgeny|Evgeny_Bareev
+Postny, Evgeny|Evgeny_Postny
+Sveshnikov, Evgeny|Evgeny_Sveshnikov
+Tomashevsky, Evgeny|Evgeny_Tomashevsky
+Vladimirov, Evgeny|Evgeny_Vladimirov
+Green, Ewen McGowen|Ewen_McGowen_Green
+Caruana, Fabiano|Fabiano_Caruana
+Abbasov, Farid|Farid_Abbasov
+Amonatov, Farrukh|Farrukh_Amonatov
+Norcia, Federico|Federico_Norcia
+Bogatyrchuk, Fedor|Fedor_Bogatyrchuk
+Kibbermann, Feliks|Feliks_Kibbermann
+Debs, Felipe El|Felipe_El_Debs
+Heemskerk, Fenny|Fenny_Heemskerk
+Chalupetzky, Ferenc|Ferenc_Chalupetzky
+Campomanes, Florencio|Florencio_Campomanes
+Jenni, Florian|Florian_Jenni
+Felecan, Florin|Florin_Felecan
+Gheorghiu, Florin|Florin_Gheorghiu
+Ekstroem, Folke|Folke_Ekstr%C3%B6m
+Benkoe, Francisco|Francisco_Benk%C3%B6
+Lupi, Francisco|Francisco_Lupi
+Pons, Francisco Vallejo|Francisco_Vallejo_Pons
+Sulik, Franciszek|Franciszek_Sulik
+Philidor, Francois-Andre Danican|Fran%C3%A7ois-Andr%C3%A9_Danican_Philidor
+Anderson, Frank|Frank_Anderson_%28chess_player%29
+Lamprecht, Frank|Frank_Lamprecht
+Marshall, Frank|Frank_Marshall
+Parr, Frank|Frank_Parr
+Schubert, Frantisek|Franti%C5%A1ek_Schubert
+Treybal, Frantisek|Franti%C5%A1ek_Treybal
+Zita, Frantisek|Franti%C5%A1ek_Zita
+Reinfeld, Fred|Fred_Reinfeld
+Deacon, Frederic|Frederic_Deacon
+Friedel, Frederic|Frederic_Friedel
+Lazard, Frederic|Fr%C3%A9d%C3%A9ric_Lazard
+Yates, Frederick|Frederick_Yates
+Apsenieks, Fricis|Fricis_Ap%C5%A1enieks
+Olafsson, Fridrik|Fri%C3%B0rik_%C3%93lafsson
+Rinder, Friedl|Friedl_Rinder
+Amelung, Friedrich|Friedrich_Amelung
+Baumbach, Friedrich|Friedrich_Baumbach
+Koehnlein, Friedrich|Friedrich_K%C3%B6hnlein
+Nuernberg, Friedrich|Friedrich_N%C3%BCrnberg
+Saemisch, Friedrich|Friedrich_S%C3%A4misch
+Nijboer, Friso|Friso_Nijboer
+Gygli, Fritz|Fritz_Gygli
+Riemann, Fritz|Fritz_Riemann
+Duz-Khotimirsky, Fyodor|Fyodor_Duz-Khotimirsky
+Kallai, Gabor|Gabor_Kallai
+Sargissian, Gabriel|Gabriel_Sargissian
+Schwartzman, Gabriel|Gabriel_Schwartzman
+Guseinov, Gadir|Gadir_Guseinov
+Rui, Gao|Gao_Rui
+Kasparov, Garry|Garry_Kasparov
+Koshnitsky, Gary|Gary_Koshnitsky
+Lane, Gary|Gary_Lane
+Needleman, Gaston|Gast%C3%B3n_Needleman
+Kamsky, Gata|Gata_Kamsky
+Shankar, Gauri|Gauri_Shankar
+Veresov, Gavriil|Gavriil_Veresov
+Jones, Gawain|Gawain_Jones
+Szapiro, Gedali|Gedali_Szapiro
+Barcza, Gedeon|Gedeon_Barcza
+Sosonko, Genna|Genna_Sosonko
+Sosonko, Gennadi|Gennadi_Sosonko
+Kuzmin, Gennady|Gennady_Kuzmin
+Kasparyan, Genrikh|Genrikh_Kasparyan
+Kieninger, Georg|Georg_Kieninger
+Klaus, Georg|Georg_Klaus
+Marco, Georg|Georg_Marco
+Meier, Georg|Georg_Meier_%28chess_player%29
+Mohr, Georg|Georg_Mohr_%28chess_player%29
+Schories, Georg|Georg_Schories
+Thomas, George Alan|George_Alan_Thomas
+Botterill, George|George_Botterill
+Gossip, George H. D.|George_H._D._Gossip
+Mackenzie, George Henry|George_Henry_Mackenzie
+Koltanowski, George|George_Koltanowski
+Fontein, George Salto|George_Salto_Fontein
+Treysman, George|George_Treysman
+Walker, George|George_Walker_%28chess_player%29
+Koltanowski, Georges|Georges_Koltanowski
+Renaud, Georges|Georges_Renaud
+Tringov, Georgi|Georgi_Tringov
+Geshev, Georgy|Georgy_Geshev
+Lisitsin, Georgy|Georgy_Lisitsin
+Abrahams, Gerald|Gerald_Abrahams
+Oskam, Gerard|Gerard_Oskam
+Barbero, Gerardo|Gerardo_Barbero
+Budowski, Gerardo|Gerardo_Budowski
+Pfeiffer, Gerhard|Gerhard_Pfeiffer
+Rotlewi, Gersz|Gersz_Rotlewi
+Salwe, Gersz|Gersz_Salwe
+Timmerman, Gert Jan|Gert_Jan_Timmerman
+Fuester, Geza|G%C3%A9za_F%C3%BCster
+Maroczy, Geza|Geza_Maroczy
+Nagy, Geza|G%C3%A9za_Nagy
+Lolli, Giambattista|Giambattista_Lolli
+Stahlberg, Gideon|Gideon_Stahlberg
+Guerrero, Gilberto Hernandez|Gilberto_Hernandez_Guerrero
+Milos, Gilberto|Gilberto_Milos
+Greco, Gioachino|Gioachino_Greco
+Cenni, Giovanni|Giovanni_Cenni
+Leonardo, Giovanni|Giovanni_Leonardo
+Martinolich, Giovanni|Giovanni_Martinolich
+Vescovi, Giovanni|Giovanni_Vescovi
+Gresser, Gisela Kahn|Gisela_Kahn_Gresser
+Polerio, Giulio|Giulio_Polerio
+Flear, Glenn|Glenn_Flear
+Danielsson, Goesta|G%C3%B6sta_Danielsson
+Stoltz, Goesta|G%C3%B6sta_Stoltz
+Weiming, Goh|Goh_Weiming
+Qianyun, Gong|Gong_Qianyun
+Machate, Gottlieb|Gottlieb_Machate
+Alekhine, Grace|Grace_Alekhine
+Shahade, Greg|Greg_Shahade
+Kaidanov, Gregory|Gregory_Kaidanov
+Serper, Gregory|Gregory_Serper
+Helbach, Grigory|Grigory_Helbach
+Levenfish, Grigory|Grigory_Levenfish
+Sanakoev, Grigory|Grigory_Sanakoev
+Gajewski, Grzegorz|Grzegorz_Gajewski
+Xiaobing, Gu|Gu_Xiaobing
+Sigurjonsson, Gudmundur|Gu%C3%B0mundur_Sigurj%C3%B3nsson
+Friedemann, Gunnar|Gunnar_Friedemann
+Gundersen, Gunnar|Gunnar_Gundersen_%28chess_player%29
+Nyholm, Gustaf|Gustaf_Nyholm
+Neumann, Gustav|Gustav_Neumann
+Rogmann, Gustav|Gustav_Rogmann
+Lazard, Gustave|Gustave_Lazard
+West, Guy|Guy_West
+Exner, Gyozo|Gy%C5%91z%C5%91_Exner
+Forintos, Gyozo|Gy%C5%91z%C5%91_Forintos
+Breyer, Gyula|Gyula_Breyer
+Kluger, Gyula|Gyula_Kluger
+Makovetz, Gyula|Gyula_Makovetz
+Sax, Gyula|Gyula_Sax
+Roepstorff, H.|H._Roepstorff_%28chess_player%29
+Kramer, Haije|Haije_Kramer
+Odeev, Handszar|Handszar_Odeev
+Erenska, Hanna|Hanna_Ere%C5%84ska
+Stefansson, Hannes|Hannes_Stefansson
+Berliner, Hans|Hans_Berliner
+Duhm, Hans|Hans_Duhm
+Fahrni, Hans|Hans_Fahrni
+Johner, Hans|Hans_Johner
+Kmoch, Hans|Hans_Kmoch
+Mueller, Hans|Hans_M%C3%BCller_%28chess_player%29
+Ree, Hans|Hans_Ree
+Hecht, Hans-Joachim|Hans-Joachim_Hecht
+Saunders, Harold|Harold_Saunders
+Hunt, Harriet|Harriet_Hunt
+Golombek, Harry|Harry_Golombek
+Pillsbury, Harry Nelson|Harry_Nelson_Pillsbury
+Rossetto, Hector|H%C3%A9ctor_Rossetto
+Westerinen, Heikki|Heikki_Westerinen
+Reinhardt, Heinrich|Heinrich_Reinhardt
+Wagner, Heinrich|Heinrich_Wagner
+Wolf, Heinrich|Heinrich_Wolf
+Nowarra, Heinz|Heinz_Nowarra
+Gretarsson, Helgi|Helgi_Gretarsson
+Olafsson, Helgi|Helgi_Olafsson
+Pfleger, Helmut|Helmut_Pfleger
+Grob, Henri|Henri_Grob
+Weenink, Henri|Henri_Weenink
+Konarkowska-Sokolov, Henrijeta|Henrijeta_Konarkowska-Sokolov
+Mecking, Henrique|Henrique_Mecking
+Bird, Henry|Henry_Bird_%28chess_player%29
+Atkins, Henry Ernest|Henry_Ernest_Atkins
+Hosmer, Henry|Henry_Hosmer
+Buckle, Henry Thomas|Henry_Thomas_Buckle
+Friedman, Henryk|Henryk_Friedman
+Pogoriely, Henryk|Henryk_Pogorie%C5%82y
+Avram, Herbert|Herbert_Avram
+Heinicke, Herbert|Herbert_Heinicke
+Trenchard, Herbert William|Herbert_William_Trenchard
+Pilnik, Herman|Herman_Pilnik
+Steiner, Herman|Herman_Steiner
+Riemsdijk, Herman Van|Herman_Van_Riemsdijk
+Matisons, Hermanis|Hermanis_Matisons
+Helms, Hermann|Hermann_Helms
+Keidanski, Hermann|Hermann_Keidanski
+Gottschall, Hermann von|Hermann_von_Gottschall
+Hanneken, Hermann von|Hermann_von_Hanneken_%28chess_player%29
+Hamdouchi, Hichem|Hichem_Hamdouchi
+Czarnowski, Hieronim|Hieronim_Czarnowski
+Nakamura, Hikaru|Hikaru_Nakamura
+Tan, Hiong Liong|Hiong_Liong_Tan
+Gargatagli, Hipolito Asis|Hip%C3%B3lito_Asis_Gargatagli
+Trang, Hoang Thanh|Hoang_Thanh_Trang
+Norman-Hansen, Holger|Holger_Norman-Hansen
+Bigelow, Horace|Horace_Bigelow
+Caro, Horatio|Horatio_Caro
+Rittner, Horst|Horst_Rittner
+Yifan, Hou|Hou_Yifan
+Mashian, Houshang|Houshang_Mashian
+Staunton, Howard|Howard_Staunton
+Melkumyan, Hrant|Hrant_Melkumyan
+Banikas, Hristos|Hristos_Banikas
+Yang, Hsu Li|Hsu_Li_Yang
+Qian, Huang|Huang_Qian
+Kennedy, Hugh Alexander|Hugh_Alexander_Kennedy
+Myers, Hugh|Hugh_Myers
+Faehndrich, Hugo|Hugo_F%C3%A4hndrich
+Spangenberg, Hugo|Hugo_Spangenberg
+Suechting, Hugo|Hugo_S%C3%BCchting
+Nepomniachtchi, Ian|Ian_Nepomniachtchi
+Rogers, Ian|Ian_Rogers
+Kolisch, Ignac|Ign%C3%A1c_Kolisch
+Popiel, Ignatz von|Ignatz_von_Popiel
+Bondarevsky, Igor|Igor_Bondarevsky
+Glek, Igor|Igor_Glek
+Ivanov, Igor|Igor_Ivanov_%28chess_player%29
+Khenkin, Igor|Igor_Khenkin
+Kurnosov, Igor|Igor_Kurnosov
+Lysyj, Igor|Igor_Lysyj
+Miladinovic, Igor|Igor_Miladinovic
+Novikov, Igor|Igor_Novikov_%28chess_player%29
+Platonov, Igor|Igor_Platonov
+Ivanov, Igor Vasilyevich|Igor_Vasilyevich_Ivanov
+Zaitsev, Igor|Igor_Zaitsev
+Nei, Iivo|Iivo_Nei
+Ibragimov, Ildar|Ildar_Ibragimov
+Madl, Ildiko|Ildiko_Madl
+Nyzhnyk, Illya|Illya_Nyzhnyk
+Raud, Ilmar|Ilmar_Raud
+Guggenberger, Ilse|Ilse_Guggenberger
+Gurevich, Ilya|Ilya_Gurevich
+Kan, Ilya|Ilya_Kan
+Rabinovich, Ilya|Ilya_Rabinovich
+Smirin, Ilya|Ilya_Smirin
+Koenig, Imre|Imre_K%C3%B6nig
+Korody, Imre|Imre_Korody
+Papadopoulos, Ioannis|Ioannis_Papadopoulos
+Jones, Iolo|Iolo_Jones
+Gudju, Ion|Ion_Gudju
+Pogrebyssky, Iosif|Iosif_Pogrebyssky
+Rudakovsky, Iosif|Iosif_Rudakovsky
+Dorfman, Iossif|Iossif_Dorfman
+Krush, Irina|Irina_Krush
+Levitina, Irina|Irina_Levitina
+Chernev, Irving|Irving_Chernev
+Boleslavsky, Isaac|Isaac_Boleslavsky
+Kashdan, Isaac|Isaac_Kashdan
+Lipnitsky, Isaac|Isaac_Lipnitsky
+Rice, Isaac|Isaac_Rice
+Mazel, Isaak|Isaak_Mazel
+Turover, Isador Samuel|Isador_Samuel_Turover
+Pleci, Isaias|Isaias_Pleci
+Vistaneckis, Isakas|Isakas_Vistaneckis
+Gunsberg, Isidor|Isidor_Gunsberg
+Horowitz, Israel|Israel_Horowitz
+Abonyi, Istvan|Istv%C3%A1n_Abonyi
+Bilek, Istvan|Istvan_Bilek
+Csom, Istvan|Istvan_Csom
+Cheparinov, Ivan|Ivan_Cheparinov
+Ivanisevic, Ivan|Ivan_Ivanisevic
+Morovic, Ivan|Iv%C3%A1n_Morovic
+Radulov, Ivan|Ivan_Radulov
+Saric, Ivan|Ivan_Saric_%28chess_player%29
+Sokolov, Ivan|Ivan_Sokolov
+Rohacek, Ivan Vladimir|Ivan_Vladimir_Roha%C4%8Dek
+Furtado, Ivana Maria|Ivana_Maria_Furtado
+Bern, Ivar|Ivar_Bern
+Donev, Ivo|Ivo_Donev
+Rajlich, Iweta|Iweta_Rajlich
+Appel, Izaak|Izaak_Appel
+Grynfeld, Izaak|Izaak_Grynfeld
+Towbin, Izaak|Izaak_Towbin
+Aloni, Izak|Izak_Aloni
+Ehlvest, Jaan|Jaan_Ehlvest
+Showalter, Jackson|Jackson_Showalter
+Aagaard, Jacob|Jacob_Aagaard
+Ascher, Jacob|Jacob_Ascher
+Bernstein, Jacob|Jacob_Bernstein
+Levin, Jacob|Jacob_Levin_%28chess_player%29
+Murey, Jacob|Jacob_Murey
+Rosenthal, Jacob|Jacob_Rosenthal
+Sarratt, Jacob|Jacob_Sarratt
+Bolbochan, Jacobo|J%C3%A1cobo_Bolboch%C3%A1n
+Davidson, Jacques|Jacques_Davidson
+Mieses, Jacques|Jacques_Mieses
+Schwarz, Jacques|Jacques_Schwarz
+Neto, Jaime Sunye|Jaime_Sunye_Neto
+Rosanes, Jakob|Jakob_Rosanes
+Heilpern, Jakub|Jakub_Heilpern
+Kolski, Jakub|Jakub_Kolski
+Leonard, James A.|James_A._Leonard
+Eade, James|James_Eade
+Grundy, James|James_Grundy_%28chess_player%29
+Hanham, James|James_Hanham
+Aitken, James Macrae|James_Macrae_Aitken
+Mason, James|James_Mason_%28chess_player%29
+Morris, James|James_Morris_%28chess_player%29
+Plaskett, James|James_Plaskett
+Sherwin, James|James_Sherwin
+Tarjan, James|James_Tarjan
+Foltys, Jan|Jan_Foltys
+Gustafsson, Jan|Jan_Gustafsson
+Donner, Jan Hein|Jan_Hein_Donner
+Jr., Jan Kleczynski,|Jan_Kleczy%C5%84ski,_Jr.
+Sr., Jan Kleczynski,|Jan_Kleczy%C5%84ski,_Sr.
+Kotrc, Jan|Jan_Kotr%C4%8D
+Kvicala, Jan|Jan_Kvicala
+Plachetka, Jan|J%C3%A1n_Plachetka
+Schulz, Jan|Jan_Schulz
+Smeets, Jan|Jan_Smeets
+Smejkal, Jan|Jan_Smejkal
+Timman, Jan|Jan_Timman
+Werle, Jan|Jan_Werle
+Kolste, Jan Willem te|Jan_Willem_te_Kolst%C3%A9
+Bellin, Jana|Jana_Bellin
+Jackova, Jana|Jana_Jackova
+Klovans, Janis|J%C4%81nis_Klov%C4%81ns
+Balogh, Janos|J%C3%A1nos_Balogh_%28chess_player%29
+Flesch, Janos|J%C3%A1nos_Flesch
+Sajtar, Jaroslav|Jaroslav_%C5%A0ajtar
+Koon-Jong, Jason Goh|Jason_Goh_Koon-Jong
+Gonzales, Jayson|Jayson_Gonzales
+Dufresne, Jean|Jean_Dufresne
+Hebert, Jean|Jean_Hebert
+Taubenhaus, Jean|Jean_Taubenhaus
+Degraeve, Jean-Marc|Jean-Marc_Degraeve
+Sarwer, Jeff|Jeff_Sarwer
+Shahade, Jennifer|Jennifer_Shahade
+Enevoldsen, Jens|Jens_Enevoldsen
+Silman, Jeremy|Jeremy_Silman
+Piket, Jeroen|Jeroen_Piket
+Jagielski, Jerzy|Jerzy_Jagielski
+Konikowski, Jerzy|Jerzy_Konikowski
+Lewi, Jerzy|Jerzy_Lewi
+Kraai, Jesse|Jesse_Kraai
+Gilbert, Jessie|Jessie_Gilbert
+Nogueiras, Jesus|Jesus_Nogueiras
+Villa, Jesus de la|Jes%C3%BAs_de_la_Villa
+Pelikan, Jiri|Ji%C5%99%C3%AD_Pelik%C3%A1n
+Dworakowska, Joanna|Joanna_Dworakowska
+Majdan, Joanna|Joanna_Majdan
+Mendes, Joao de Souza|Jo%C3%A3o_de_Souza_Mendes
+Benjamin, Joel|Joel_Benjamin
+Fridlizius, Joel|Joel_Fridlizius
+Lautier, Joel|Joel_Lautier
+Hellsten, Johan|Johan_Hellsten
+Allgaier, Johann Baptist|Johann_Baptist_Allgaier
+Berger, Johann|Johann_Berger
+Bauer, Johann Hermann|Johann_Hermann_Bauer
+Hjartarson, Johann|Johann_Hjartarson
+Loewenthal, Johann|Johann_L%C3%B6wenthal
+Giersing, Johannes|Johannes_Giersing
+Metger, Johannes|Johannes_Metger
+Minckwitz, Johannes|Johannes_Minckwitz
+Tuern, Johannes|Johannes_T%C3%BCrn
+Zukertort, Johannes|Johannes_Zukertort
+Bosch, Johannes van den|Johannes_van_den_Bosch_%28chess_player%29
+Erskine, John Angus|John_Angus_Erskine
+Cochrane, John|John_Cochrane
+Curdo, John|John_Curdo
+Emms, John|John_Emms_%28chess_player%29
+Fedorowicz, John|John_Fedorowicz
+Grefe, John|John_Grefe
+Watson, John L.|John_L._Watson
+Littlewood, John|John_Littlewood_%28chess_player%29
+Morrison, John|John_Morrison_%28chess_player%29
+Nunn, John|John_Nunn
+O'Hanlon, John|John_O%27Hanlon
+Owen, John|John_Owen_%28chess_player%29
+Peters, John|John_Peters_%28chess%29
+Purdy, John|John_Purdy_%28chess_player%29
+Collins, John W.|John_W._Collins
+Donaldson, John W.|John_W._Donaldson
+Schulten, John William|John_William_Schulten
+Wisker, John|John_Wisker
+Wiel, John van der|John_van_der_Wiel
+Zawadzka, Jolanta|Jolanta_Zawadzka
+Arnason, Jon|Jon_Arnason
+Hammer, Jon Ludvig|Jon_Ludvig_Hammer
+Speelman, Jon|Jon_Speelman
+Berry, Jonathan|Jonathan_Berry
+Mestel, Jonathan|Jonathan_Mestel
+Penrose, Jonathan|Jonathan_Penrose
+Rowson, Jonathan|Jonathan_Rowson
+Sarfati, Jonathan|Jonathan_Sarfati
+Tisdall, Jonathan|Jonathan_Tisdall
+Hector, Jonny|Jonny_Hector
+Oosterom, Joop van|Joop_van_Oosterom
+Rubinetti, Jorge|Jorge_Rubinetti
+Szmetan, Jorge|Jorge_Szmetan
+Moeller, Jorgen|Jorgen_Moeller
+Sloth, Jorn|Jorn_Sloth
+Garcia, Jose Gonzalez|Jose_Gonzalez_Garcia
+Araiza, Jose Joaquin|Jos%C3%A9_Joaquin_Araiza
+Capablanca, Jose Raul|Jos%C3%A9_Ra%C3%BAl_Capablanca
+Rubinstein, Jose|Jos%C3%A9_Rubinstein
+Cukierman, Josef|Josef_Cukierman
+Dobias, Josef|Josef_Dobi%C3%A1%C5%A1
+Krejcik, Josef|Josef_Krejcik
+Lokvenc, Josef|Josef_Lokvenc
+Noa, Josef|Josef_Noa
+Rejfir, Josef|Josef_Rejfir
+Gallagher, Joseph|Joseph_Gallagher
+Blackburne, Joseph Henry|Joseph_Henry_Blackburne
+Blake, Joseph Henry|Joseph_Henry_Blake_%28chess_player%29
+Platz, Joseph|Joseph_Platz
+Waitzkin, Josh|Josh_Waitzkin
+Dorfman, Josif|Josif_Dorfman
+Houska, Jovanka|Jovanka_Houska
+Dominik, Jozef|J%C3%B3zef_Dominik
+Zabinski, Jozef|J%C3%B3zef_%C5%BBabi%C5%84ski
+Pinter, Jozsef|Jozsef_Pinter
+Szen, Jozsef|J%C3%B3zsef_Sz%C3%A9n
+Szily, Jozsef|J%C3%B3zsef_Szily
+Wenjun, Ju|Ju_Wenjun
+Zamora, Juan Carlos Gonzalez|Juan_Carlos_Gonzalez_Zamora
+Corzo, Juan|Juan_Corzo
+Iliesco, Juan|Juan_Iliesco
+Acers, Jude|Jude_Acers
+Polgar, Judit|Judit_Polgar
+Riviere, Jules Arnous de|Jules_Arnous_de_Rivi%C3%A8re
+Hodgson, Julian|Julian_Hodgson
+Balparda, Julio|Julio_Balparda
+Becerra, Julio|Julio_Becerra
+Bolbochan, Julio|Julio_Bolboch%C3%A1n
+Zuniga, Julio Granda|Julio_Granda_Zuniga
+Granda, Julio|Julio_Granda
+Kaplan, Julio|Julio_Kaplan
+Brach, Julius|Julius_Brach
+Dimer, Julius|Julius_Dimer
+Finn, Julius|Julius_Finn
+Mendheim, Julius|Julius_Mendheim
+Perlis, Julius|Julius_Perlis
+Mont, Julius du|Julius_du_Mont
+Petkevich, Jusefs|Jusefs_Petkevich
+Ojanen, Kaarle|Kaarle_Ojanen
+Morawski, Kalikst|Kalikst_Morawski
+Miton, Kamil|Kamil_Miton
+Shirazi, Kamran|Kamran_Shirazi
+Hromadka, Karel|Karel_Hrom%C3%A1dka
+Opocensky, Karel|Karel_Opo%C4%8Densky
+Skalicka, Karel|Karel_Skali%C4%8Dka
+Traxler, Karel|Karel_Traxler
+Treybal, Karel|Karel_Treybal
+Asrian, Karen|Karen_Asrian
+Berndtsson, Karl|Karl_Berndtsson
+Gilg, Karl|Karl_Gilg
+Helling, Karl|Karl_Helling
+Hollaender, Karl|Karl_Holl%C3%A4nder
+Pitschel, Karl|Karl_Pitschel
+Robatsch, Karl|Karl_Robatsch
+Ruben, Karl|Karl_Ruben
+Schorn, Karl|Karl_Schorn
+Rosenkrantz, Karl Wilhelm|Karl_Wilhelm_Rosenkrantz
+Betins, Karlis|Karlis_Betin%C5%A1
+Ozols, Karlis|Karlis_Ozols
+Mar, Karmen|Karmen_Mar
+Piltz, Karol|Karol_Piltz
+Sterk, Karoly|K%C3%A1roly_Sterk
+Mueller, Karsten|Karsten_M%C3%BCller
+Beskow, Katarina|Katarina_Beskow
+Nemcova, Katerina|Katerina_Nemcova
+Lahno, Kateryna|Kateryna_Lahno
+Makarczyk, Kazimierz|Kazimierz_Makarczyk
+Plater, Kazimierz|Kazimierz_Plater
+Arkell, Keith|Keith_Arkell
+Rogoff, Kenneth|Kenneth_Rogoff
+Arakhamia-Grant, Ketevan|Ketevan_Arakhamia-Grant
+O'Connell, Kevin|Kevin_O%27Connell_%28chess_player%29
+Spraggett, Kevin|Kevin_Spraggett
+Harandi, Khosro|Khosro_Harandi
+Zvorykina, Kira|Kira_Zvorykina
+Georgiev, Kiril|Kiril_Georgiev
+Lie, Kjetil Aleksander|Kjetil_Aleksander_Lie
+Bischoff, Klaus|Klaus_Bischoff
+Darga, Klaus|Klaus_Darga
+Junge, Klaus|Klaus_Junge
+Humpy, Koneru|Koneru_Humpy
+Aseev, Konstantin|Konstantin_Aseev
+Landa, Konstantin|Konstantin_Landa
+Lerner, Konstantin|Konstantin_Lerner
+Sakaev, Konstantin|Konstantin_Sakaev
+Vygodchikov, Konstantin|Konstantin_Vygodchikov
+Havasi, Kornel|Kornel_Havasi
+Sasikiran, Krishnan|Krishnan_Sasikiran
+Georgiev, Krum|Krum_Georgiev
+Hulak, Krunoslav|Krunoslav_Hulak
+Holuj-Radzikowska, Krystyna|Krystyna_Ho%C5%82uj-Radzikowska
+Dreyer, Kurt|Kurt_Dreyer
+Richter, Kurt|Kurt_Richter
+Asztalos, Lajos|Lajos_Asztalos
+Portisch, Lajos|Lajos_Portisch
+Steiner, Lajos|Lajos_Steiner
+Stock, Lara|Lara_Stock
+Volpert, Larisa|Larisa_Volpert
+Christiansen, Larry|Larry_Christiansen
+Evans, Larry|Larry_Evans
+Szabo, Laszlo|L%C3%A1szl%C3%B3_Szab%C3%B3_%28chess_player%29
+Tapaszto, Laszlo|L%C3%A1szl%C3%B3_Tapaszt%C3%B3
+Ross, Laura|Laura_Ross
+Fressinet, Laurent|Laurent_Fressinet
+Zalkind, Lazar|Lazar_Zalkind
+Bruzon, Lazaro|L%C3%A1zaro_Bruz%C3%B3n
+Liem, Le Quang|Le_Quang_Liem
+Kermeur, Legall de|Legall_de_Kermeur
+Laurine, Leho|Leho_Laurine
+Johannessen, Leif Erlend|Leif_Erlend_Johannessen
+Ogaard, Leif|Leif_Ogaard
+Dominguez, Leinier|Leinier_Dom%C3%ADnguez
+Oll, Lembit|Lembit_Oll
+Dominguez, Lenier|Lenier_Dominguez
+Ptacnikova, Lenka|Lenka_Ptacnikova
+Forgacs, Leo|Le%C3%B3_Forg%C3%A1cs
+Zobel, Leo|Leo_Zobel
+Kremer, Leon|Leon_Kremer
+Monosson, Leon|L%C3%A9on_Monosson
+Rosen, Leon|Leon_Rosen
+Schwartzmann, Leon|Leon_Schwartzmann
+Stolzenberg, Leon|Leon_Stolzenberg
+Tuhan-Baranowski, Leon|Leon_Tuhan-Baranowski
+Barden, Leonard|Leonard_Barden
+Abramavicius, Leonardas|Leonardas_Abramavi%C4%8Dius
+Kubbel, Leonid|Leonid_Kubbel
+Shamkovich, Leonid|Leonid_Shamkovich
+Stein, Leonid|Leonid_Stein
+Yudasin, Leonid|Leonid_Yudasin
+Dreibergs, Leonids|Leonids_Dreibergs
+Hoffer, Leopold|Leopold_Hoffer
+Jr, Leopold Loewy,|Leopold_L%C3%B6wy,_Jr
+Sr, Leopold Loewy,|Leopold_L%C3%B6wy,_Sr
+Dubeck, Leroy|Leroy_Dubeck
+Alburt, Lev|Lev_Alburt
+Aptekar, Lev|Lev_Aptekar
+Aronin, Lev|Lev_Aronin
+Gutman, Lev|Lev_Gutman
+Polugaevsky, Lev|Lev_Polugaevsky
+Psakhis, Lev|Lev_Psakhis
+Taussig, Lev|Lev_Taussig
+Lengyel, Levente|Levente_Lengyel
+Benima, Levi|Levi_Benima
+Aronian, Levon|Levon_Aronian
+Chao, Li|Li_Chao_%28chess_player%29
+Ruofan, Li|Li_Ruofan
+Shilong, Li|Li_Shilong
+Shongjian, Li|Li_Shongjian
+Wenliang, Li|Li_Wenliang
+Zunian, Li|Li_Zunian
+Tan, Lian Ann|Lian_Ann_Tan
+Chong, Liang|Liang_Chong
+Jinrong, Liang|Liang_Jinrong
+Semenova, Lidia|Lidia_Semenova
+Mkrtchian, Lilit|Lilit_Mkrtchian
+Ta, Lin|Lin_Ta
+Weiguo, Lin|Lin_Weiguo
+Kieseritzky, Lionel|Lionel_Kieseritzky
+Lane, Lisa|Lisa_Lane
+Shilan, Liu|Liu_Shilan
+Wenzhe, Liu|Liu_Wenzhe
+Belavenets, Liudmila|Liudmila_Belavenets
+Nisipeanu, Liviu-Dieter|Liviu-Dieter_Nisipeanu
+Kristol, Ljuba|Ljuba_Kristol
+Ljubojevic, Ljubomir|Ljubomir_Ljubojevic
+Myagmarsueren, Lkhamsuerengiin|Lkhams%C3%BCrengiin_Myagmars%C3%BCren
+Prins, Lodewijk|Lodewijk_Prins
+Wely, Loek van|Loek_van_Wely
+Jakovleva, Lora|Lora_Jakovleva
+Schmid, Lothar|Lothar_Schmid
+Matibet, Louis Betbeder|Louis_Betbeder_Matibet
+Eisenberg, Louis|Louis_Eisenberg
+Paulsen, Louis|Louis_Paulsen
+Uedemann, Louis|Louis_Uedemann
+Vliet, Louis van|Louis_van_Vliet
+Bourdonnais, Louis-Charles Mahe de La|Louis-Charles_Mah%C3%A9_de_La_Bourdonnais
+Fagan, Louisa Matilda|Louisa_Matilda_Fagan
+Ftacnik, Lubomir|Lubomir_Ft%C3%A1%C4%8Dnik
+Kavalek, Lubomir|Lubomir_Kavalek
+Mendoza, Luciana Morales|Luciana_Morales_Mendoza
+Endzelins, Lucijs|Lucijs_Endzelins
+Pachman, Ludek|Ludek_Pachman
+Potucek, Ludovit|Ludovit_Potu%C4%8Dek
+Bledow, Ludwig|Ludwig_Bledow
+Engels, Ludwig|Ludwig_Engels
+Rellstab, Ludwig|Ludwig_Rellstab_%28chess_player%29
+Roedl, Ludwig|Ludwig_R%C3%B6dl
+Schmitt, Ludwig|Ludwig_Schmitt
+Sanchez, Luis Augusto|Luis_Augusto_S%C3%A1nchez
+Galego, Luis|Lu%C3%ADs_Galego
+Palau, Luis|Luis_Palau
+Piazzini, Luis|Luis_Piazzini
+Lucena, Luis Ramirez|Luis_Ramirez_Lucena
+McShane, Luke|Luke_McShane
+Rudenko, Lyudmila|Lyudmila_Rudenko
+Panchanathan, Magesh|Magesh_Panchanathan
+Carlsen, Magnus|Magnus_Carlsen
+Chiburdanidze, Maia|Maia_Chiburdanidze
+Aaron, Manuel|Manuel_Aaron
+Apicella, Manuel|Manuel_Apicella
+Torriente, Manuel Golmayo|Manuel_Golmayo_Torriente
+Hoyos, Manuel Leon|Manuel_Le%C3%B3n_Hoyos
+Dzhumaev, Marat|Marat_Dzhumaev
+Santo-Roman, Marc|Marc_Santo-Roman
+Campbell, Marcel Sisniega|Marcel_Sisniega_Campbell
+Manakova, Maria|Maria_Manakova
+Mora, Maria Teresa|Mar%C3%ADa_Teresa_Mora
+Castillo, Mariano|Mariano_Castillo
+Sebag, Marie|Marie_Sebag
+Degrande, Marigje|Marigje_Degrande
+Bertok, Mario|Mario_Bertok
+Monticelli, Mario|Mario_Monticelli
+Napolitano, Mario|Mario_Napolitano
+Bluvshtein, Mark|Mark_Bluvshtein
+Diesen, Mark|Mark_Diesen
+Dvoretsky, Mark|Mark_Dvoretsky
+Hebden, Mark|Mark_Hebden
+Paragua, Mark|Mark_Paragua
+Stolberg, Mark|Mark_Stolberg
+Taimanov, Mark|Mark_Taimanov
+Tseitlin, Mark|Mark_Tseitlin
+Luckis, Markas|Markas_Luckis
+Wyvill, Marmaduke|Marmaduke_Wyvill_%28chess_player%29
+Efroimski, Marsel|Marsel_Efroimski
+Litinskaya-Shul, Marta|Marta_Litinskaya-Shul
+Fierro, Martha|Martha_Fierro
+Bier, Martin|Martin_Bier
+Kreuzer, Martin|Martin_Kreuzer
+Mrva, Martin|Martin_Mrva
+From, Martin Severin|Martin_Severin_From
+Bain, Mary|Mary_Bain
+Rudge, Mary|Mary_Rudge
+Bartel, Mateusz|Mateusz_Bartel
+Damjanovic, Mato|Mato_Damjanovi%C4%87
+Gladig, Matteo|Matteo_Gladig
+Sadler, Matthew|Matthew_Sadler_%28chess_player%29
+Ashley, Maurice|Maurice_Ashley
+Billecard, Maurice|Maurice_Billecard
+Fox, Maurice|Maurice_Fox
+Raizman, Maurice|Maurice_Raizman
+Blau, Max|Max_Blau
+Bluemich, Max|Max_Bl%C3%BCmich
+Euwe, Max|Max_Euwe
+Fleissig, Max|Max_Fleissig
+Harmonist, Max|Max_Harmonist
+Judd, Max|Max_Judd
+Lange, Max|Max_Lange
+Marchand, Max|Max_Marchand
+Pavey, Max|Max_Pavey
+Romih, Max|Max_Romih
+Walter, Max|Max_Walter
+Weiss, Max|Max_Weiss
+Dlugy, Maxim|Maxim_Dlugy
+Rodshtein, Maxim|Maxim_Rodshtein
+Vachier-Lagrave, Maxime|Maxime_Vachier-Lagrave
+Ujtelky, Maximilian|Maximilian_Ujtelky
+Khachiyan, Melikset|Melikset_Khachiyan
+Oren, Menachem|Menachem_Oren
+Amanov, Mesgen|Mesgen_Amanov
+Adams, Michael|Michael_Adams
+Basman, Michael|Michael_Basman
+Freeman, Michael|Michael_Freeman_%28chess_player%29
+Rohde, Michael|Michael_Rohde_%28chess_player%29
+Roiz, Michael|Michael_Roiz
+Stean, Michael|Michael_Stean
+Valvo, Michael|Michael_Valvo
+Wiedenkeller, Michael|Michael_Wiedenkeller
+Wilder, Michael|Michael_Wilder
+Krasenkow, Michal|Michal_Krasenkow
+Olszewski, Michal|Micha%C5%82_Olszewski
+Godena, Michele|Michele_Godena
+Jursevskis, Miervaldis|Miervaldis_Jursevskis
+Cuellar, Miguel|Miguel_Cuellar
+Cordoba, Miguel Illescas|Miguel_Illescas_Cordoba
+Illescas, Miguel|Miguel_Illescas
+Najdorf, Miguel|Miguel_Najdorf
+Quinteros, Miguel|Miguel_Quinteros
+Suba, Mihai|Mihai_Suba
+Marin, Mihail|Mihail_Marin
+Udovcic, Mijo|Mijo_Udov%C4%8Di%C4%87
+Botvinnik, Mikhail|Mikhail_Botvinnik
+Chigorin, Mikhail|Mikhail_Chigorin
+Golubev, Mikhail|Mikhail_Golubev
+Gurevich, Mikhail|Mikhail_Gurevich_%28chess_player%29
+Rytshagov, Mikhail|Mikhail_Rytshagov
+Tal, Mikhail|Mikhail_Tal
+Tseitlin, Mikhail|Mikhail_Tseitlin
+Umansky, Mikhail|Mikhail_Umansky
+Yudovich, Mikhail|Mikhail_Yudovich
+Brody, Miklos|Miklos_Brody
+Matulovic, Milan|Milan_Matulovi%C4%87
+Jr., Milan Vidmar,|Milan_Vidmar,_Jr.
+Vidmar, Milan|Milan_Vidmar
+Vukcevich, Milan|Milan_Vukcevich
+Vukic, Milan|Milan_Vuki%C4%87
+Lauberte, Milda|Milda_Lauberte
+Bobotsov, Milko|Milko_Bobotsov
+Hanauer, Milton|Milton_Hanauer
+Lazarevic, Milunka|Milunka_Lazarevic
+Todorcevic, Miodrag|Miodrag_Todorcevic
+Khan, Mir Sultan|Mir_Sultan_Khan
+Maric, Mirjana|Mirjana_Maric
+Broeder, Mirko|Mirko_Br%C3%B6der
+Filip, Miroslav|Miroslav_Filip
+Katetov, Miroslav|Miroslav_Kat%C4%9Btov
+Cebalo, Miso|Miso_Cebalo
+Watai, Miyoko|Miyoko_Watai
+Subaric, Mladen|Mladen_%C5%A0ubari%C4%87
+Al-Modiahki, Mohamad|Mohamad_Al-Modiahki
+Al-Modiahki, Mohammed|Mohammed_Al-Modiahki
+Lowtzky, Moishe|Moishe_Lowtzky
+Eljaschoff, Moissei|Moissei_Eljaschoff
+Karff, Mona May|Mona_May_Karff
+Socko, Monika|Monika_Socko
+Lewitt, Moritz|Moritz_Lewitt
+Porges, Moritz|Moritz_Porges
+Henneberger, Moriz|Moriz_Henneberger
+Schapiro, Morris|Morris_Schapiro
+Mahjoub, Morteza|Morteza_Mahjoub
+Hirschel, Moses|Moses_Hirschel
+Czerniak, Moshe|Moshe_Czerniak
+Hirschbein, Moshe|Moshe_Hirschbein
+Taleb, Moussa|Moussa_Taleb
+Feigins, Movsas|Movsas_Feigins
+Chandler, Murray|Murray_Chandler
+Kazhgaleyev, Murtas|Murtas_Kazhgaleyev
+Thiruchelvam, Murugan|Murugan_Thiruchelvam
+Turiansky, Myroslav|Myroslav_Turiansky
+Kosintseva, Nadezhda|Nadezhda_Kosintseva
+Alexandria, Nana|Nana_Alexandria
+Dzagnidze, Nana|Nana_Dzagnidze
+Ioseliani, Nana|Nana_Ioseliani
+Khoudgarian, Natalia|Natalia_Khoudgarian
+Pogonina, Natalia|Natalia_Pogonina
+Zhukova, Natalia|Natalia_Zhukova
+Birnboim, Nathan|Nathan_Birnboim
+Divinsky, Nathan|Nathan_Divinsky
+Levin, Naum|Naum_Levin
+Starr, Nava|Nava_Starr
+McDonald, Neil|Neil_McDonald_%28chess_player%29
+Son, Nguyen Ngoc Truong|Nguyen_Ngoc_Truong_Son
+Hua, Ni|Ni_Hua
+Morshed, Niaz|Niaz_Morshed
+MacLeod, Nicholas|Nicholas_MacLeod
+Pert, Nicholas|Nicholas_Pert
+Pert, Nick|Nick_Pert
+Firmian, Nick de|Nick_de_Firmian
+Cortlever, Nicolaas|Nicolaas_Cortlever
+Jasnogrodsky, Nicolai|Nicolai_Jasnogrodsky
+Rossolimo, Nicolas|Nicolas_Rossolimo
+Davies, Nigel|Nigel_Davies_%28chess_player%29
+Short, Nigel|Nigel_Short
+Vitiugov, Nikita|Nikita_Vitiugov
+Padevsky, Nikola|Nikola_Padevsky
+Krogius, Nikolai|Nikolai_Krogius
+Riumin, Nikolai|Nikolai_Riumin
+Zubarev, Nikolai|Nikolai_Zubarev
+Stanec, Nikolaus|Nikolaus_Stanec
+Grigoriev, Nikolay|Nikolay_Grigoriev
+Minev, Nikolay|Nikolay_Minev
+Novotelnov, Nikolay|Nikolay_Novotelnov
+Rudnev, Nikoly|Nikoly_Rudnev
+Bergkvist, Nils|Nils_Bergkvist
+Chunhong, Ning|Ning_Chunhong
+Khurtsidze, Nino|Nino_Khurtsidze
+Gaprindashvili, Nona|Nona_Gaprindashvili
+Lessing, Norman|Norman_Lessing
+Whitaker, Norman Tweed|Norman_Tweed_Whitaker
+Lennep, Norman van|Norman_van_Lennep
+Miezis, Normunds|Normunds_Miezis
+Rashkovsky, Nukhim|Nukhim_Rashkovsky
+Cvitan, Ognjen|Ognjen_Cvitan
+Barda, Olaf|Olaf_Barda
+Sepp, Olav|Olav_Sepp
+Yepez, Olavo|Olavo_Yepez
+Duras, Oldrich|Oldrich_Duras
+Neikirch, Oleg|Oleg_Neikirch
+Romanishin, Oleg|Oleg_Romanishin
+Boytsun, Olena|Olena_Boytsun
+Menchik, Olga|Olga_Menchik
+Rubtsova, Olga|Olga_Rubtsova
+Kinnmark, Olof|Olof_Kinnmark
+Krause, Orla Hermann|Orla_Hermann_Krause
+Sarapu, Ortvin|Ortvin_Sarapu
+Blum, Oscar|Oscar_Blum
+Chajes, Oscar|Oscar_Chajes
+Panno, Oscar|Oscar_Panno
+Quinones, Oscar|Oscar_Quinones
+Tenner, Oscar|Oscar_Tenner
+Antze, Oskar|Oskar_Antze
+Naegeli, Oskar|Oskar_Naegeli
+Kaila, Osmo|Osmo_Kaila
+Bernstein, Ossip|Ossip_Bernstein
+Zambrana, Oswaldo|Oswaldo_Zambrana
+Blathy, Otto|Ott%C3%B3_Bl%C3%A1thy
+Junge, Otto|Otto_Junge
+Loewenborg, Otto|Otto_L%C3%B6wenborg
+Wegemund, Otto|Otto_Wegemund
+Zimmermann, Otto|Otto_Zimmermann
+Kinnmark, Ove|Ove_Kinnmark
+Nedeljkovic, Ozren|Ozren_Nedeljkovi%C4%87
+Ricardi, Pablo|Pablo_Ricardi
+Zarnicki, Pablo|Pablo_Zarnicki
+Benko, Pal|Pal_Benko
+Rethy, Pal|P%C3%A1l_R%C3%A9thy
+Boi, Paolo|Paolo_Boi
+Negi, Parimarjan|Parimarjan_Negi
+Charbonneau, Pascal|Pascal_Charbonneau
+Wolff, Patrick|Patrick_Wolff
+Baender, Paul|Paul_Baender
+Devos, Paul|Paul_Devos
+Schmidt, Paul Felix|Paul_Felix_Schmidt
+Johner, Paul|Paul_Johner
+Keres, Paul|Paul_Keres
+Klein, Paul|Paul_Klein_%28chess_player%29
+Krueger, Paul|Paul_Kr%C3%BCger_%28chess_player%29
+Lipke, Paul|Paul_Lipke
+List, Paul|Paul_List
+Michel, Paul|Paul_Michel_%28chess_player%29
+Morphy, Paul|Paul_Morphy
+Motwani, Paul|Paul_Motwani
+Mross, Paul|Paul_Mross
+Bilguer, Paul Rudolf von|Paul_Rudolf_von_Bilguer
+Leonhardt, Paul Saladin|Paul_Saladin_Leonhardt
+Truong, Paul|Paul_Truong
+Sterren, Paul van der|Paul_van_der_Sterren
+Wolf-Kalmar, Paula|Paula_Wolf-Kalmar
+Schwartzmann, Paulette|Paulette_Schwartzmann
+Frydman, Paulino|Paulino_Frydman
+Eljanov, Pavel|Pavel_Eljanov
+Kotsur, Pavel|Pavel_Kotsur
+Tregubov, Pavel|Pavel_Tregubov
+Damiano, Pedro|Pedro_Damiano
+Harikrishna, Pendyala|Pendyala_Harikrishna
+Xiaomin, Peng|Peng_Xiaomin
+Zhaoqin, Peng|Peng_Zhaoqin
+Harikrishna, Pentala|Pentala_Harikrishna
+Popovic, Petar|Petar_Popovic
+Trifunovic, Petar|Petar_Trifunovi%C4%87
+Velikov, Petar|Petar_Velikov
+Acs, Peter|Peter_Acs
+Saburov, Peter Alexandrovich|Peter_Alexandrovich_Saburov
+Biyiasas, Peter|Peter_Biyiasas
+Nielsen, Peter Heine|Peter_Heine_Nielsen
+Leepin, Peter|Peter_Leepin
+Lee, Peter|Peter_Lee_%28chess_player%29
+Leko, Peter|Peter_Leko
+Millican, Peter|Peter_Millican
+Saburov, Peter Petrovich|Peter_Petrovich_Saburov
+Potemkine, Peter|Peter_Potemkine
+Romanovsky, Peter|Peter_Romanovsky
+Svidler, Peter|Peter_Svidler
+Wells, Peter|Peter_Wells_%28chess_player%29
+Winston, Peter|Peter_Winston
+Yurdansky, Peter|Peter_Yurdansky
+Velicka, Petr|Petr_Veli%C4%8Dka
+Sergeant, Philip Walsingham|Philip_Walsingham_Sergeant
+Hirschfeld, Philipp|Philipp_Hirschfeld
+Meitner, Philipp|Philipp_Meitner
+Stamma, Phillip|Phillip_Stamma
+Cramling, Pia|Pia_Cramling
+Saint-Amant, Pierre Charles Fournier de|Pierre_Charles_Fournier_de_Saint-Amant
+Carrera, Pietro|Pietro_Carrera
+Murdzia, Piotr|Piotr_Murdzia
+Carlsson, Pontus|Pontus_Carlsson
+Tautvaisas, Povilas|Povilas_Tautvai%C5%A1as
+Vaitonis, Povilas|Povilas_Vaitonis
+Thipsay, Praveen|Praveen_Thipsay
+Nikolic, Predrag|Predrag_Nikoli%C4%87
+Ostojic, Predrag|Predrag_Ostoji%C4%87
+Ware, Preston|Preston_Ware
+Jingxuan, Qi|Qi_Jingxuan
+Kanying, Qin|Qin_Kanying
+Kieseritzky, R.K.|R.K._Kieseritzky
+Persitz, Raaphi|Raaphi_Persitz
+Wojtaszek, Radoslaw|Radoslaw_Wojtaszek
+Leitao, Rafael|Rafael_Leit%C3%A3o
+Vaganian, Rafael|Rafael_Vaganian
+Feinmesser, Rafal|Rafal_Feinmesser
+Garcia, Raimundo|Raimundo_Garcia
+Knaak, Rainer|Rainer_Knaak
+Eidelson, Rakhil|Rakhil_Eidelson
+Akesson, Ralf|Ralf_Akesson
+Soffer, Ram|Ram_Soffer
+Ramesh, Ramachandran|Ramachandran_Ramesh
+Ardid, Ramon Rey|Ram%C3%B3n_Rey_Ardid
+Hamid, Rani|Rani_Hamid
+Falk, Raphael|Raphael_Falk
+Nezhmetdinov, Rashid|Rashid_Nezhmetdinov
+Kholmov, Ratmir|Ratmir_Kholmov
+Mammadov, Rauf|Rauf_Mammadov
+Sanguineti, Raul|Ra%C3%BAl_Sanguineti
+Sanguinetti, Raul|Raul_Sanguinetti
+Robson, Ray|Ray_Robson
+Keene, Raymond|Raymond_Keene
+Bin-Sattar, Reefat|Reefat_Bin-Sattar
+Gerlecka, Regina|Regina_Gerlecka
+Michell, Reginald Price|Reginald_Price_Michell
+Naranja, Renato|Renato_Naranja
+Letelier, Rene|Ren%C3%A9_Letelier
+Fine, Reuben|Reuben_Fine
+Griffith, Richard|Richard_Griffith_%28chess_player%29
+Palliser, Richard|Richard_Palliser
+Reti, Richard|Richard_R%C3%A9ti
+Teichmann, Richard|Richard_Teichmann
+Mascarinas, Rico|Rico_Mascarinas
+Byrne, Robert|Robert_Byrne
+Crepeaux, Robert|Robert_Cr%C3%A9peaux
+Barnes, Robert Henry|Robert_Henry_Barnes
+Hess, Robert|Robert_Hess_%28chess_player%29
+Huebner, Robert|Robert_H%C3%BCbner
+Fischer, Robert James|Robert_James_Fischer
+Kempinski, Robert|Robert_Kempi%C5%84ski
+Markus, Robert|Robert_Markus
+Wade, Robert|Robert_Wade_%28chess_player%29
+Cifuentes, Roberto|Roberto_Cifuentes
+Grau, Roberto|Roberto_Grau
+Smith, Robin|Robin_Smith_%28chess_player%29
+Cardoso, Rodolfo Tan|Rodolfo_Tan_Cardoso
+Flores, Rodrigo|Rodrigo_Flores
+Jr., Rogelio Antonio,|Rogelio_Antonio,_Jr.
+Khadilkar, Rohini|Rohini_Khadilkar
+Schmaltz, Roland|Roland_Schmaltz
+Illa, Rolando|Rolando_Illa
+Dzindzichashvili, Roman|Roman_Dzindzichashvili
+Pelts, Roman|Roman_Pelts
+Slobodjan, Roman|Roman_Slobodjan
+Arlauskas, Romanas|Romanas_Arlauskas
+Henley, Ron|Ron_Henley
+Har-Zvi, Ronen|Ronen_Har-Zvi
+Jr., Rosendo Balinas,|Rosendo_Balinas,_Jr.
+Fyllingen, Roy|Roy_Fyllingen
+Black, Roy Turnbull|Roy_Turnbull_Black
+Herman, Roza|R%C3%B3%C5%BCa_Herman
+Lufei, Ruan|Ruan_Lufei
+Felgaer, Ruben|Rub%C3%A9n_Felgaer
+Charousek, Rudolf|Rudolf_Charousek
+Keller, Rudolf|Rudolf_Keller
+Loman, Rudolf|Rudolf_Loman
+Palme, Rudolf|Rudolf_Palme
+Pitschak, Rudolf|Rudolf_Pitschak
+Spielmann, Rudolf|Rudolf_Spielmann
+Swiderski, Rudolf|Rudolf_Swiderski
+Teschner, Rudolf|Rudolf_Teschner
+Pokorny, Rudolph|Rudolph_Pokorny
+Sze, Rudolph|Rudolph_Sze
+Djurhuus, Rune|Rune_Djurhuus
+Ponomariov, Ruslan|Ruslan_Ponomariov
+Kasimdzhanov, Rustam|Rustam_Kasimdzhanov
+Dautov, Rustem|Rustem_Dautov
+Goletiani, Rusudan|Rusudan_Goletiani
+Cardoso, Ruth Volgl|Ruth_Volgl_Cardoso
+Segura, Ruy Lopez de|Ruy_L%C3%B3pez_de_Segura
+Palmer, Ryan|Ryan_Palmer
+Rootare, Salme|Salme_Rootare
+Flohr, Salo|Salo_Flohr
+Landau, Salo|Salo_Landau
+Reischer, Salome|Salome_Reischer
+Langleben, Salomon|Salomon_Langleben
+Szapiro, Salomon|Salomon_Szapiro
+Loyd, Sam|Sam_Loyd
+Palatnik, Sam|Sam_Palatnik
+Fajarowicz, Sammi|Sammi_Fajarowicz
+Boden, Samuel|Samuel_Boden
+Factor, Samuel|Samuel_Factor
+Gold, Samuel|Samuel_Gold
+Lipschuetz, Samuel|Samuel_Lipsch%C3%BCtz
+Mieses, Samuel|Samuel_Mieses
+Reshevsky, Samuel|Samuel_Reshevsky
+Rosenthal, Samuel|Samuel_Rosenthal
+Schweber, Samuel|Samuel_Schweber
+Vainshtein, Samuil|Samuil_Vainshtein
+Chanda, Sandipan|Sandipan_Chanda
+Takacs, Sandor|S%C3%A1ndor_Tak%C3%A1cs
+Sulskis, Sarunas|%C5%A0ar%C5%ABnas_%C5%A0ulskis
+Tartakower, Savielly|Savielly_Tartakower
+Franklin, Selim|Selim_Franklin_%28chess_player%29
+Furman, Semyon|Semyon_Furman
+Dubois, Serafino|Serafino_Dubois
+Rubanraut, Serge|Serge_Rubanraut
+Makarichev, Sergei|Sergei_Makarichev
+Movsesian, Sergei|Sergei_Movsesian
+Rublevsky, Sergei|Sergei_Rublevsky
+Shipov, Sergei|Sergei_Shipov
+Tiviakov, Sergei|Sergei_Tiviakov
+Belavenets, Sergey|Sergey_Belavenets
+Dolmatov, Sergey|Sergey_Dolmatov
+Karjakin, Sergey|Sergey_Karjakin
+Kudrin, Sergey|Sergey_Kudrin
+Lebedev, Sergey|Sergey_Lebedev
+Smagin, Sergey|Sergey_Smagin
+Volkov, Sergey Viktorovich|Sergey_Viktorovich_Volkov
+Volkov, Sergey|Sergey_Volkov_%28chess%29
+Zagrebelny, Sergey|Sergey_Zagrebelny
+Freymann, Sergey von|Sergey_von_Freymann
+Mariotti, Sergio|Sergio_Mariotti
+Samarian, Sergiu|Sergiu_Samarian
+Paridar, Shadi|Shadi_Paridar
+Mamedyarov, Shakhriyar|Shakhriyar_Mamedyarov
+Yang, Shen|Shen_Yang_%28chess_player%29
+Kagan, Shimon|Shimon_Kagan
+Smiltiner, Shlomo|Shlomo_Smiltiner
+Bernstein, Sidney Norman|Sidney_Norman_Bernstein
+Tarrasch, Siegbert|Siegbert_Tarrasch
+Wolf, Siegfried Reginald|Siegfried_Reginald_Wolf
+Beutum, Siegmund|Siegmund_Beutum
+Herland, Sigmund|Sigmund_Herland
+Danailov, Silvio|Silvio_Danailov
+Agdestein, Simen|Simen_Agdestein
+Alapin, Simon|Simon_Alapin
+Rubinstein, Simon|Simon_Rubinstein
+Webb, Simon|Simon_Webb_%28chess_player%29
+Lputian, Smbat|Smbat_Lputian
+Gotthilf, Solomon|Solomon_Gotthilf
+Rozental, Solomon|Solomon_Rozental
+Rubinstein, Solomon|Solomon_Rubinstein
+Graf, Sonja|Sonja_Graf
+Milliet, Sophie|Sophie_Milliet
+Crakanthorp, Spencer|Spencer_Crakanthorp
+Narayanan, Srinath|Srinath_Narayanan
+Sittenfeld, Stanislaus|Stanislaus_Sittenfeld
+Kriventsov, Stanislav|Stanislav_Kriventsov
+Kohn, Stanislaw|Stanis%C5%82aw_Kohn
+Mlotkowski, Stasch|Stasch_Mlotkowski
+Erdelyi, Stefan|Stefan_Erd%C3%A9lyi
+Fazekas, Stefan|Stefan_Fazekas
+Izbinsky, Stefan|Stefan_Izbinsky
+Mohr, Stefan|Stefan_Mohr
+Turco, Stefano Rosselli del|Stefano_Rosselli_del_Turco
+Brynell, Stellan|Stellan_Brynell
+Levitsky, Stepan|Stepan_Levitsky
+Popel, Stepan|Stepan_Popel
+Smith, Stephen Francis|Stephen_Francis_Smith
+Gordon, Stephen J.|Stephen_J._Gordon
+Lundholm, Stig|Stig_Lundholm
+Puc, Stojan|Stojan_Puc
+Conquest, Stuart|Stuart_Conquest
+Milner-Barry, Stuart|Stuart_Milner-Barry
+Atalik, Suat|Suat_Atalik
+Vijayalakshmi, Subbaraman|Subbaraman_Vijayalakshmi
+Singh, Surjeet|Surjeet_Singh_%28chess_player%29
+Ganguly, Surya Shekhar|Surya_Shekhar_Ganguly
+Polgar, Susan|Susan_Polgar
+Megaranto, Susanto|Susanto_Megaranto
+Johannessen, Svein|Svein_Johannessen
+Matveeva, Svetlana|Svetlana_Matveeva
+Prudnikova, Svetlana|Svetlana_Prudnikova
+Gligoric, Svetozar|Svetozar_Gligoric
+Winawer, Szymon|Szymon_Winawer
+Tylor, T H|T_H_Tylor
+Shaked, Tal|Tal_Shaked
+Gelashvili, Tamaz|Tamaz_Gelashvili
+Chengxuan, Tan|Tan_Chengxuan
+Abrahamyan, Tatev|Tatev_Abrahamyan
+Kosintseva, Tatiana|Tatiana_Kosintseva
+Zatulovskaya, Tatiana|Tatiana_Zatulovskaya
+Bosboom-Lanchava, Tea|Tea_Bosboom-Lanchava
+Radjabov, Teimour|Teimour_Radjabov
+Regedzinski, Teodor|Teodor_Regedzi%C5%84ski
+Bergs, Teodors|Teodors_Bergs
+Scheltinga, Theo van|Theo_van_Scheltinga
+Germann, Theodor|Theodor_Germann
+Lichtenhein, Theodor|Theodor_Lichtenhein
+Scheve, Theodor von|Theodor_von_Scheve
+Thompson, Theophilus|Theophilus_Thompson
+Luther, Thomas|Thomas_Luther
+Barnes, Thomas Wilson|Thomas_Wilson_Barnes
+Tian, Tian|Tian_Tian_%28chess_player%29
+Persson, Tiger Hillarp|Tiger_Hillarp_Persson
+Kotanjian, Tigran|Tigran_Kotanjian
+Petrosian, Tigran L.|Tigran_L._Petrosian
+Petrosian, Tigran|Tigran_Petrosian
+Drezga, Tihomil|Tihomil_Drezga
+Gareev, Timur|Timur_Gareev
+Pym, Tom|Tom_Pym
+Wedberg, Tom|Tom_Wedberg
+Markowski, Tomasz|Tomasz_Markowski_%28chess_player%29
+Nyback, Tomi|Tomi_Nyback
+Yuanming, Tong|Tong_Yuanming
+Oim, Tonu|Tonu_Oim
+Miles, Tony|Tony_Miles
+Nielsen, Torkil|Torkil_Nielsen
+Ueituemen, Tuedeviin|T%C3%BCdeviin_%C3%9Cit%C3%BCmen
+Hamarat, Tunc|Tunc_Hamarat
+Andersson, Ulf|Ulf_Andersson
+Adianto, Utut|Utut_Adianto
+Geller, Uzi|Uzi_Geller
+Malakhatko, Vadim|Vadim_Malakhatko
+Milov, Vadim|Vadim_Milov
+Zvjaginsev, Vadim|Vadim_Zvjaginsev
+Golubenko, Valentina|Valentina_Golubenko
+Kozlovskaya, Valentina|Valentina_Kozlovskaya
+Aveskulov, Valeriy|Valeriy_Aveskulov
+Chekhov, Valery|Valery_Chekhov
+Salov, Valery|Valery_Salov
+Akobian, Varuzhan|Varuzhan_Akobian
+Spasov, Vasil|Vasil_Spasov
+Tomovic, Vasilije|Vasilije_Tomovi%C4%87
+Smyslov, Vasily Osipovich|Vasily_Osipovich_Smyslov
+Panov, Vasily|Vasily_Panov
+Smyslov, Vasily|Vasily_Smyslov
+Pirc, Vasja|Vasja_Pirc
+Kotronias, Vassilios|Vassilios_Kotronias
+Ivanchuk, Vassily|Vassily_Ivanchuk
+Menchik, Vera|Vera_Menchik
+Nebolsina, Vera|Vera_Nebolsina
+Eingorn, Vereslav|Vereslav_Eingorn
+Topalov, Veselin|Veselin_Topalov
+Misanovic, Vesna|Vesna_Misanovic
+Dydyshko, Viacheslav|Viacheslav_Dydyshko
+Ragozin, Viacheslav|Viacheslav_Ragozin
+Bologan, Victor|Victor_Bologan
+Buerger, Victor|Victor_Buerger
+Ciocaltea, Victor|Victor_Cioc%C3%A2ltea
+Kahn, Victor|Victor_Kahn
+Mikhalevski, Victor|Victor_Mikhalevski
+Palciauskas, Victor|Victor_Palciauskas
+Soultanbeieff, Victor|Victor_Soultanbeieff
+Wahltuch, Victor|Victor_Wahltuch
+Winz, Victor|Victor_Winz
+Malisauskas, Vidmantas|Vidmantas_Malisauskas
+Rootare, Vidrik|Vidrik_Rootare
+Gavrikov, Viktor|Viktor_Gavrikov
+Knorre, Viktor|Viktor_Knorre
+Korchnoi, Viktor|Viktor_Korchnoi
+Kupreichik, Viktor|Viktor_Kupreichik
+Laznicka, Viktor|Viktor_Laznicka
+Tietz, Viktor|Viktor_Tietz
+Cmilyte, Viktorija|Viktorija_Cmilyte
+Pupols, Viktors|Viktors_Pupols
+Bhat, Vinay|Vinay_Bhat
+Grimm, Vincent|Vincent_Grimm
+Hruby, Vincenz|Vincenz_Hruby
+Castaldi, Vincenzo|Vincenzo_Castaldi
+Nestler, Vincenzo|Vincenzo_Nestler
+Fenoglio, Virgilio|Virgilio_Fenoglio
+Anand, Viswanathan|Viswanathan_Anand
+Golod, Vitali|Vitali_Golod
+Chekhover, Vitaly|Vitaly_Chekhover
+Halberstadt, Vitaly|Vitaly_Halberstadt
+Tseshkovsky, Vitaly|Vitaly_Tseshkovsky
+Mikenas, Vladas|Vladas_Mikenas
+Afromeev, Vladimir|Vladimir_Afromeev
+Akopian, Vladimir|Vladimir_Akopian
+Alatortsev, Vladimir|Vladimir_Alatortsev
+Antoshin, Vladimir|Vladimir_Antoshin
+Bagirov, Vladimir|Vladimir_Bagirov
+Baklan, Vladimir|Vladimir_Baklan
+Belov, Vladimir|Vladimir_Belov_%28chess_player%29
+Bron, Vladimir|Vladimir_Bron
+Chuchelov, Vladimir|Vladimir_Chuchelov
+Epishin, Vladimir|Vladimir_Epishin
+Georgiev, Vladimir|Vladimir_Georgiev_%28chess_player%29
+Kovacevic, Vladimir|Vladimir_Kovacevic
+Kramnik, Vladimir|Vladimir_Kramnik
+Liberzon, Vladimir|Vladimir_Liberzon
+Makogonov, Vladimir|Vladimir_Makogonov
+Malakhov, Vladimir|Vladimir_Malakhov_%28chess_player%29
+Malaniuk, Vladimir|Vladimir_Malaniuk
+Nenarokov, Vladimir|Vladimir_Nenarokov
+Savon, Vladimir|Vladimir_Savon
+Simagin, Vladimir|Vladimir_Simagin
+Sournin, Vladimir|Vladimir_Sournin
+Tukmakov, Vladimir|Vladimir_Tukmakov
+Vukovic, Vladimir|Vladimir_Vukovi%C4%87
+Zagorovsky, Vladimir|Vladimir_Zagorovsky
+Petrovs, Vladimirs|Vladimirs_Petrovs
+Tkachiev, Vladislav|Vladislav_Tkachiev
+Hort, Vlastimil|Vlastimil_Hort
+Jansa, Vlastimil|Vlastimil_Jansa
+Kovacevic, Vlatko|Vlatko_Kova%C4%8Devi%C4%87
+Mezgailis, Voldemars|Voldemars_Me%C5%BEgailis
+Rauzer, Vsevolod|Vsevolod_Rauzer
+Gashimov, Vugar|Vugar_Gashimov
+Arencibia, Walter|Walter_Arencibia
+Browne, Walter|Walter_Browne
+Cruz, Walter|Walter_Cruz
+Henneberger, Walter|Walter_Henneberger
+John, Walter|Walter_John
+Michel, Walter|Walter_Michel
+Niephaus, Walter|Walter_Niephaus
+Robinow, Walter|Walter_Robinow
+Holzhausen, Walther von|Walther_von_Holzhausen
+Hao, Wang|Wang_Hao_%28chess_player%29
+Lei, Wang|Wang_Lei_%28chess_player%29
+Pin, Wang|Wang_Pin
+Puchen, Wang|Wang_Puchen
+Rui, Wang|Wang_Rui_%28chess_player%29
+Yue, Wang|Wang_Yue
+Yu, Wang|Wang_Yu_%28chess_player%29
+Zili, Wang|Wang_Zili
+Adams, Weaver W.|Weaver_W._Adams
+Yang, Wen|Wen_Yang_%28chess_player%29
+Hug, Werner|Werner_Hug
+So, Wesley|Wesley_So
+Paulsen, Wilfried|Wilfried_Paulsen
+Cohn, Wilhelm|Wilhelm_Cohn
+Ernst, Wilhelm|Wilhelm_Ernst_%28chess_player%29
+Hanstein, Wilhelm|Wilhelm_Hanstein
+Hilse, Wilhelm|Wilhelm_Hilse
+Orbach, Wilhelm|Wilhelm_Orbach
+Schoenmann, Wilhelm|Wilhelm_Sch%C3%B6nmann
+Steinitz, Wilhelm|Wilhelm_Steinitz
+Stamm, Wilhelm von|Wilhelm_von_Stamm
+Schelfhout, Willem|Willem_Schelfhout
+Schlage, Willi|Willi_Schlage
+Evans, William Davies|William_Davies_Evans
+Napier, William Ewart|William_Ewart_Napier
+Fairhurst, William|William_Fairhurst
+Hartston, William|William_Hartston
+Hook, William|William_Hook
+Lombardy, William|William_Lombardy
+Pollock, William|William_Pollock_%28chess_player%29
+Viner, William Samuel|William_Samuel_Viner
+Watson, William|William_Watson_%28chess_player%29
+Wayte, William|William_Wayte
+Winter, William|William_Winter_%28chess_player%29
+Schmidt, Wlodzimierz|Wlodzimierz_Schmidt
+Hasenfuss, Wolfgang|Wolfgang_Hasenfuss
+Heidenfeld, Wolfgang|Wolfgang_Heidenfeld
+Uhlmann, Wolfgang|Wolfgang_Uhlmann
+Unzicker, Wolfgang|Wolfgang_Unzicker
+Weil, Wolfgang|Wolfgang_Weil
+Kong, Wong Meng|Wong_Meng_Kong
+Mingqian, Wu|Wu_Mingqian
+Shaobin, Wu|Wu_Shaobin
+Wenjin, Wu|Wu_Wenjin
+Jun, Xie|Xie_Jun
+Jun, Xu|Xu_Jun
+Yuanyuan, Xu|Xu_Yuanyuan
+Yuhua, Xu|Xu_Yuhua_%28chess_player%29
+Bernstein, Yaacov|Yaacov_Bernstein
+Bleiman, Yaacov|Yaacov_Bleiman
+Zilberman, Yaacov|Yaacov_Zilberman
+Kraidman, Yair|Yair_Kraidman
+Estrin, Yakov|Yakov_Estrin
+Vilner, Yakov|Yakov_Vilner
+Pelletier, Yannick|Yannick_Pelletier
+Seirawan, Yasser|Yasser_Seirawan
+Jiangchuan, Ye|Ye_Jiangchuan
+Rongguang, Ye|Ye_Rongguang
+Gruenfeld, Yehuda|Yehuda_Gruenfeld
+Dembo, Yelena|Yelena_Dembo
+Hao, Yin|Yin_Hao_%28chess_player%29
+Dothan, Yoav|Yoav_Dothan
+Aloni, Yoel|Yoel_Aloni
+Kosashvili, Yona|Yona_Kosashvili
+Dobkin, Yosef|Yosef_Dobkin
+Porath, Yosef|Yosef_Porath
+Safvat, Yousof|Yousof_Safvat
+Shaoteng, Yu|Yu_Shaoteng
+Yangyi, Yu|Yu_Yangyi
+Averbakh, Yuri|Yuri_Averbakh
+Balashov, Yuri|Yuri_Balashov
+Drozdovskij, Yuri|Yuri_Drozdovskij
+Nikolaevsky, Yuri|Yuri_Nikolaevsky
+Razuvayev, Yuri|Yuri_Razuvayev
+Sakharov, Yuri|Yuri_Sakharov
+Kuzubov, Yuriy|Yuriy_Kuzubov
+Dokhoian, Yury|Yury_Dokhoian
+Shulman, Yury|Yury_Shulman
+Toshev, Yury|Yury_Toshev
+Domnitz, Zadok|Zadok_Domnitz
+Efimenko, Zahar|Zahar_Efimenko
+Andriasian, Zaven|Zaven_Andriasian
+Hracek, Zbynek|Zbynek_Hracek
+Kozul, Zdenko|Zdenko_Kozul
+Milev, Zdravko|Zdravko_Milev
+Belsitzmann, Zdzislaw|Zdzis%C5%82aw_Belsitzmann
+Franco, Zenon|Zenon_Franco
+Jilin, Zhang|Zhang_Jilin
+Pengxiang, Zhang|Zhang_Pengxiang
+Weida, Zhang|Zhang_Weida
+Xiaowen, Zhang|Zhang_Xiaowen
+Zhong, Zhang|Zhang_Zhong
+Jun, Zhao|Zhao_Jun
+Lan, Zhao|Zhao_Lan
+Xue, Zhao|Zhao_Xue
+Zong-Yuan, Zhao|Zhao_Zong-Yuan
+Jianchao, Zhou|Zhou_Jianchao
+Weiqi, Zhou|Zhou_Weiqi
+Chen, Zhu|Zhu_Chen
+Rahman, Ziaur|Ziaur_Rahman_%28chess_player%29
+Almasi, Zoltan|Zolt%C3%A1n_Alm%C3%A1si
+Gyimesi, Zoltan|Zoltan_Gyimesi
+Ribli, Zoltan|Zoltan_Ribli
+Sarosy, Zoltan|Zoltan_Sarosy
+Varga, Zoltan|Zolt%C3%A1n_Varga_%28chess_player%29
+Balla, Zoltan von|Zoltan_von_Balla
+Barasz, Zsigmond|Zsigmond_Bar%C3%A1sz
+Polgar, Zsofia|Zsofia_Polgar
+Polgar, Zsuzsa|Zsuzsa_Polgar
+Azmaiparashvili, Zurab|Zurab_Azmaiparashvili
+Izoria, Zviad|Zviad_Izoria
+Vranesic, Zvonko|Zvonko_Vranesic

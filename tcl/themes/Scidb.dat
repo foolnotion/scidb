@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style  Lemon|1251901475461|yellow.color|gregor
+  identifier   Scidb|1251901638256|yellow.color|gregor
+  piece-set    Leipzig
+  square-style Scidb|1251901586671|yellow.color|gregor
+}

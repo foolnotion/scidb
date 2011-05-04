@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {}
+  dark,y1               0
+  hint,border-color     #32719d
+  dark,y2               0
+  hint,background-tile  {marble marble_252.jpg}
+  borderline,width      0.007
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {}
+  lite,x1               0
+  hilite,selected       #b3e088
+  lite,x2               0
+  lite,solid            #e0e0e0
+  hilite,suggested      #ffff00
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {}
+  dark,x2               0
+  dark,solid            #449ad6
+  hint,coordinates      #ffffff
+  borderline,gap        1
+  identifier            Scidb|1251901586671|yellow.color|gregor
+  borderline,opacity    0x50
+  lite,y1               0
+  lite,y2               0
+}

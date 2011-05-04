@@ -1,0 +1,92 @@
+% plain.eXt
+
+\let\bgroup\{
+\let\egroup\}
+\let\blank\ % space character
+\xlet\cr\char\10 % newline character
+
+\def\ucchar#1{\the\ucpref#1\the\ucsuff}
+
+\def\ellipsis{\ucchar{x2026}}
+\def\middle-dot{\ucchar{x00b7}}
+\def\fraction-one-half{\ucchar{x00bd}}
+\def\minus{\ucchar{x2212}}
+\def\endash{\ucchar{x2013}}
+\def\emdash{\ucchar{x2014}}
+\def\enspace{\ucchar{x2002}}
+\def\emspace{\ucchar{x2003}}
+\def\thick-space{\ucchar{x2004}}	% 1/3 em
+\def\mid-space{\ucchar{x2005}}	% 1/4 em
+\def\thin-space{\ucchar{x2006}}	% 1/5 em
+\def\hair-space{\ucchar{x200a}}
+\def\zero-space{\ucchar{x2008}}
+\def\medium-white-circle{\ucchar{x26aa}}
+\def\medium-black-circle{\ucchar{x26ab}}
+
+\def\incr#1{\add#1\1}
+\def\decr#1{\sub#1\1}
+
+\def\increment#1{%
+	\expandafter\let\csname n!increment\endcsname#1%
+	\expandafter\add\csname n!increment\endcsname\1
+	\csname n!increment\endcsname}
+\def\decrement#1{%
+	\expandafter\let\csname n!increment\endcsname#1%
+	\expandafter\sub\csname n!increment\endcsname\1
+	\csname n!increment\endcsname}
+
+\def\max#1#2{\if\compare#2#1\1\uplevel\let#1#2\fi}
+\def\min#1#2{\if\compare#1#2\1\uplevel\let#1#2\fi}
+\def\abs#1{\if\compare\0#1\1\let@n\0\sub@n#1\else\let@n#1\fi@n}
+
+\def\newif#1{%
+	\expandafter\expandafter\expandafter\def\expandafter
+		\csname\expandafter\eat-if\string#1true\endcsname{\let#1\iftrue}%
+	\expandafter\expandafter\expandafter\def\expandafter
+		\csname\expandafter\eat-if\string#1false\endcsname{\let#1\iffalse}%
+	\let#1\iffalse}
+\def\eat-if\\if{}
+
+\def\loop#body\loop-repeat{%
+	\xlet@cxt\context \add@cxt\1
+	\expandafter\def\csname!loop-body-@cxt\endcsname{#body}\loop-iterate}
+\def\loop-iterate{%
+	\csname!loop-body-\context\endcsname
+	\let@next\loop-iterate\else\let@next\empty\fi
+	@next}
+\let\loop-repeat\fi % this makes \loop...\if...\loop-repeat skippable
+
+\def\times#num#body{%
+	\if\compare#num\0\1 \let@next\times-iterate \else \let@next\times-stop \fi
+	\let@n#num%
+	@next@n{#body}%
+}
+\def\times-iterate#count#body{%
+	#body%
+	\if#count\1 \let@next\times-stop \else \let@next\times-iterate\sub#count\1 \fi
+	@next#count{#body}%
+} 
+\def\times-stop#1#2{}
+
+\def\for#var#from#to#body{%
+	\let#var#from%
+	\let@n#to%
+	\sub@n#from%
+	\times@n{#body\add#var\1}%
+}
+
+\def\foreach#var#list#body{%
+	\xlet@n\llength#list%
+	\expandafter\for \csname!foreach!iter!\context\endcsname \0 @n{%
+		\let@cxt\context\sub@cxt\3
+		\xlet@i\csname!foreach!iter!@cxt\endcsname
+		\xlet#var\lindex#list@i%
+		#body%
+	}%
+}
+
+\def\tracingall{\tracingcommands\1 \tracingmacros\1 \tracingonline\1}
+
+\def\fmtname{plain}\def\fmtversion{1.0}
+
+% vi:set ts=3 sw=3:

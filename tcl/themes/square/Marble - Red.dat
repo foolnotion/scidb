@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {marble marble_206.jpg}
+  dark,y1               0
+  hint,border-color     {}
+  dark,y2               150
+  hint,background-tile  {marble marble_206.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {marble verdiillusion-lite.png}
+  lite,x1               0
+  hilite,selected       #b0d0e0
+  lite,x2               150
+  lite,solid            #e0d070
+  hilite,suggested      #ffff00
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {marble PinkMarble.png}
+  dark,x2               150
+  dark,solid            #70a070
+  hint,coordinates      #ffffff
+  borderline,gap        1
+  borderline,opacity    0x80
+  identifier            {Marble - Red|1243715874135|yellow.color|gregor}
+  lite,y1               0
+  lite,y2               150
+}

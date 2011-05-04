@@ -1,0 +1,104 @@
+=====================================================================
+   _/|            __
+  // o\         /    )           ,        /    /
+  || ._)    ----\---------__----------__-/----/__-
+  //__\          \      /   '  /    /   /    /   )
+  )___(     _(____/____(___ __/____(___/____(___/_
+=====================================================================
+
+*Scidb is a *Chess *Information *Data *Base
+=====================================================================
+
+http://scidb.sourceforge.net
+http://sourceforge.net/projects/scidb/
+
+Email address of author: gcramer@users.sourceforge.net
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONTENTS
+
+   1: Introduction.
+      1.1: What is Scidb?
+      1.2: Copyright.
+      1.3: Installing Scidb (Unix).
+      1.4: Installing Scidb (Windows).
+      1.5: Customising Scidb.
+   2: Copying/Distribution
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1: Introduction
+
+ 1.1: What is Scidb?
+
+   Scidb (for "Scidb is Chess Information Data Base" is a free chess database
+   application for Unix, Microsoft Windows and Mac OS operating systems.
+
+ 1.2: Copyright.
+
+   Scidb is copyrighted software. It is freely distributable under the
+   terms of the GPL, which is a common license used for free software.
+   See the COPYING file for details.
+
+ 1.3: Installing Scidb (Unix).
+
+   On Unix-ish operating systems (such as Linux, Solaris, BSD, etc) you
+   should just be able to type "./configure" then "make" to compile the
+   programs. The configure script tries to determine the appropriate
+   Makefile settings for your computer. If it is not successful, you
+   may need to edit the file "Makefile.in" before typing "make".
+
+   Scidb can be compiled only with the GNU compiler collection. You have to
+   install this compiler if gcc or g++ is missing. On Linux systems gcc and
+   g++ should be always installed. The minimal required gcc/g++ version is
+   3.4, but a higher version is recommended.
+
+   The configure script can take optional parameters specifying settings.
+   For example, you want the install directory to be your home directory
+   just type
+
+      ./configure --prefix=~
+
+   To install just type
+
+      make install
+
+   You need Tcl/Tk (version 8.5 or higher) installed to run Scidb.
+   With a Debian based distribution (e.g. Ubuntu) just type the following
+   for the installation of Tcl/Tk:
+
+      sudo apt-get install tk8.5
+
+   Alternatively you can download it from the website:
+
+      http://www.tcl/tk
+
+   Tk should be compiled with Xft support. Some distributions do contain
+   a library version without Xft support, although the support of Xft is
+   default. In this case it is recommended to compile and install Tk by
+   your own.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+2. Copying/Distribution
+
+Scidb is Free Software and is licensed under the GNU General
+Public License. For more details see the file COPYING that
+comes with Scidb. 
+
+Scidb includes tablebase accessing code written by Andrew Kadatch
+and Eugene Nalimov. This code is contained in the files tbindex.cpp
+and tbdecode.h and is copyrighted by them, all rights reserved.
+This code does _not_ fall under the GPL. You are hereby given the
+additional right to compile and link Scidb with this code, as well
+as to distribute the resulting executable and code under the 
+conditions of the GPL, except for the files tbindex.cpp and 
+tbdecode.h, which do not fall under the GPL, but may also be 
+distributed together with Scidb.
+
+The author regrets having to include this non-free code with
+Scidb, but no free replacement of the same quality is availble
+yet.
+
+=== eof =============================================================
+= vi:set et sw=3 ts=3: =

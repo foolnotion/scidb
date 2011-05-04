@@ -1,0 +1,1733 @@
+# ======================================================================
+# Author : $Author$
+# Version: $Revision$
+# Date   : $Date$
+# Url    : $URL$
+# ======================================================================
+
+# ======================================================================
+#    _/|            __
+#   // o\         /    )           ,        /    /
+#   || ._)    ----\---------__----------__-/----/__-
+#   //__\          \      /   '  /    /   /    /   )
+#   )___(     _(____/____(___ __/____(___/____(___/_
+# ======================================================================
+
+# ======================================================================
+# Copyright: (C) 2009-2011 Gregor Cramer
+# ======================================================================
+
+# ======================================================================
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# ======================================================================
+
+namespace eval application {
+namespace eval pgn {
+namespace eval mc {
+
+set Command(move:annotation)		"Set Annotation/Comment/Marks"
+set Command(move:append)			"Add Move"
+set Command(move:exchange)			"Exchange Move"
+set Command(variation:new)			"Add Variation"
+set Command(variation:replace)	"Replace Moves"
+set Command(variation:truncate)	"Truncate Variation"
+set Command(variation:first)		"Make First Variation"
+set Command(variation:promote)	"Promote Variation"
+set Command(variation:remove)		"Delete Variation"
+set Command(variation:mainline)	"New Mainline"
+set Command(variation:insert)		"Insert Moves"
+set Command(variation:exchange)	"Exchange Moves"
+set Command(strip:moves)			"Moves from the beginning"
+set Command(strip:truncate)		"Moves to the end"
+set Command(strip:annotations)	"Annotations"
+set Command(strip:marks)			"Marks"
+set Command(strip:comments)		"Comments"
+set Command(strip:variations)		"Variations"
+set Command(game:clear)				"Clear Game"
+set Command(game:transpose)		"Transpose Game"
+
+set ColumnStyle						"Column Style"
+set NarrowLines						"Narrow Lines"
+set IndentVariations					"Indent Variations"
+set IndentComments					"Indent Comments"
+set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
+set SpaceAfterMoveNumbers			"Space after Move Numbers"
+set ShowDiagrams						"Show Diagrams"
+
+set NumberOfMoves						"Number of moves (in main line):"
+set InvalidInput						"Invalid input '%d'."
+set MustBeEven							"Input must be an even number."
+set MustBeOdd							"Input must be an odd number."
+
+set StartTrialMode					"Start Trial Mode"
+set StopTrialMode						"Stop Trial Mode"
+set Strip								"Strip"
+set InsertDiagram						"Insert Diagramm"
+set InsertDiagramFromBlack			"Insert Diagramm from Black's Perspective"
+set SuffixCommentaries				"Suffixed Commentaries"
+
+set AddNewGame							"Save: Add New Game to %s..."
+set ReplaceGame						"Save: Replace Game in %s..."
+
+set EditAnnotation					"Edit annotation"
+set EditComment						"Edit comment"
+set Display								"Display"
+set None									"none"
+
+} ;# namespace mc
+
+array set Colors {
+	main				#000000
+	variation		#0000ee
+	startvar			#68480a
+	bracket			#0000ee
+	nag				#ee0000
+	comment			#006300
+	comment:hilite	#7a5807
+	current			#ffdd76
+	hilite			#ebf4f5
+	next-move		#eeff00
+	background		#ffffff
+	emphasized		#ebf4f5
+	result			#000000
+	illegal			#ee0000
+	marks				#6300c6
+}
+#	next-move		#eee8aa
+#	comment			#008b00
+#	comment:hilite	#005500
+
+array set Options {
+	font					TkTextFont
+	font-bold			{}
+	font-italic			{}
+	font-bold-italic	{}
+	mainline-bold		1
+	indent-amount		25
+	indent-max			2
+	indent-comment		1
+	indent-var			1
+	narrow-lines		1
+	column-style		0
+	add-space			0
+	tabstop-1			6.0
+	tabstop-2			0.7
+	tabstop-3			12.0
+	board-size			30
+	diagram-show		1
+	diagram-pad-x		25
+	diagram-pad-y		5
+}
+
+variable Vars
+variable CharLimit 250
+
+
+proc build {parent menu width height} {
+	variable Vars
+	variable Options
+
+	set font $Options(font)
+	foreach {key attrs} {bold bold italic italic bold-italic {bold italic}} {
+		set Vars(font-$key) $Options(font-$key)
+		if {[llength $Vars(font-$key)] == 0} {
+			set Vars(font-$key) [list [font configure $font -family] [font configure $font -size] $attrs]
+		}
+	}
+
+	set top [::ttk::frame $parent.top -borderwidth 0]
+	pack $top -fill both -expand yes
+	bind $top <Configure> [namespace code { Configure %W %h }]
+
+	set Vars(bar) [::gamebar::gamebar $top.gamebar]
+	grid $Vars(bar) -row 1 -column 1 -sticky nsew
+
+	bind $Vars(bar) <<LabelbarSelected>>	[namespace code { LabelbarSelected %d }]
+	bind $Vars(bar) <<LabelbarRemoved>>		[namespace code { LabelbarRemoved %d }]
+
+	if {$Options(mainline-bold)} {
+		set mainFont $Vars(font-bold)
+	} else {
+		set mainFont $Options(font)
+	}
+
+	set Vars(frame) $top
+	set Vars(delta) 0
+	set Vars(after) {}
+	set Vars(index) 0
+	set Vars(break) 0
+	set Vars(height) 0
+
+	SetupStyle
+
+	for {set i 0} {$i < 9} {incr i} {
+		set f [::ttk::frame $top.f$i]
+	
+		# NOTE: we cannot use both option -setgrid and scrolling by ourself
+		set sb [::ttk::scrollbar $f.sb \
+					-command [namespace code [list ::widget::textLineScroll $f.pgn]] -takefocus 0]
+		set pgn [text $f.pgn \
+						-yscrollcommand [list $f.sb set] \
+						-takefocus 0 \
+						-exportselection 0 \
+						-undo 0 \
+						-width 0 \
+						-height 0 \
+						-relief sunken \
+						-borderwidth 1 \
+						-state disabled \
+						-wrap word \
+						-font $Options(font) \
+						-cursor {}]
+		ConfigureText $f.pgn
+
+		bind $pgn <Button-3>		[namespace code [list PopupMenu $top $i]]
+		bind $pgn <Double-1>		{ break }
+		bind $pgn <B1-Motion>	{ break }
+		bind $pgn <B2-Motion>	{ break }
+
+		grid $pgn -row 1 -column 1 -sticky nsew
+		grid $sb -row 1 -column 2 -sticky ns
+		grid rowconfigure $f 1 -weight 1
+		grid columnconfigure $f 1 -weight 1
+
+		grid $f -row 2 -column 1 -sticky nsew
+
+		set Vars(pgn:$i) $pgn
+		set Vars(frame:$i) $f
+		set Vars(after:$i) {}
+	}
+
+	set f [::ttk::frame $top.f$i]
+	grid $f -row 2 -column 1 -sticky nsew
+	set Vars(frame:9) $f
+
+	grid columnconfigure $top 1 -weight 1
+	grid rowconfigure $top 2 -weight 1
+	bind $top <<Language>> [namespace code LanguageChanged]
+
+	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
+	raise $Vars(frame:9)
+
+	set tab1 [expr {round($Options(tabstop-1)*$Vars(charwidth))}]
+	set tab2 [expr {$tab1 + round($Options(tabstop-2)*$Vars(charwidth))}]
+	set tab3 [expr {$tab2 + round($Options(tabstop-3)*$Vars(charwidth))}]
+
+	set Vars(tabs) [list	$tab1 right $tab2 $tab3]
+
+	InitScratchGame
+}
+
+
+proc empty? {} {
+	variable Vars
+	return [expr {[::gamebar::size $Vars(bar)] == 0}]
+}
+
+
+proc gamebar {} {
+	return [set [namespace current]::Vars(bar)]
+}
+
+
+proc add {position base info tags} {
+	variable Vars
+	variable Options
+
+	set w $Vars(pgn:$position)
+
+	$w configure -state normal
+	$w delete 1.0 end
+#	$w tag delete {*}[$Vars(pgn:$position) tag names]
+	$w edit reset
+	foreach diagram [$w window names] { destroy $diagram }
+	array unset Vars diagram:*:$position
+	$w configure -state disabled
+
+	::gamebar::add $Vars(bar) $position $info $tags
+	::gamebar::activate $Vars(bar) $position
+	raise $Vars(frame:$position)
+
+	set Vars(current:$position) {}
+	set Vars(previous:$position) {}
+	set Vars(next:$position) {}
+	set Vars(active:$position) {}
+	set Vars(info:$position) $info
+	set Vars(see:$position) 1
+	set Vars(lang:$position) {}
+	set Vars(langSet:$position) {}
+	set Vars(comment:$position) ""
+	set Vars(result:$position) ""
+	set Vars(virgin:$position) 1
+
+	::scidb::game::subscribe pgn $position [namespace current]::Update
+	::scidb::game::subscribe board $position [namespace parent]::board::update
+	::scidb::game::subscribe tree $position [namespace parent]::tree::update
+}
+
+
+proc release {position} {
+	variable Vars
+
+	::gamebar::remove $Vars(bar) $position
+#	bind $Vars(frame) <Configure> [namespace code { Align %W %h }]
+}
+
+
+proc select {{position {}}} {
+	variable Vars
+
+	if {[llength $position] == 0} {
+		set position [::gamebar::selected $Vars(bar)]
+		if {[llength $position]} { return }
+		if {[::gamebar::empty? $Vars(bar)]} {
+			::scidb::game::switch 9
+			raise $Vars(frame:9)
+			return
+		}
+		set position [::gamebar::getId $Vars(bar) 0]
+	}
+
+	::gamebar::activate $Vars(bar) $position
+	raise $Vars(frame:$position)
+	set Vars(index) $position
+}
+
+
+proc selectAt {index} {
+	variable Vars
+
+	if {$index < [::gamebar::size $Vars(bar)]} {
+		select [::gamebar::getId $Vars(bar) $index]
+	}
+}
+
+
+proc gamebarIsEmpty? {} {
+	variable Vars
+	return [::gamebar::empty? $Vars(bar)]
+}
+
+
+proc editAnnotation {{position -1} {key {}}} {
+	variable Vars
+
+	if {$position == -1} {
+		if {[::annotation::open?]} {
+			return [::annotation::close]
+		}
+		set position $Vars(index)
+	}
+
+	if {[string length $key]} {
+		GotoMove $position $key
+	}
+
+	Edit $position ::annotation
+}
+
+
+proc editComment {{position -1} {key {}}} {
+	variable Vars
+
+	if {$position == -1} { set position $Vars(index) }
+	Edit $position ::comment $key
+}
+
+
+proc openMarksPalette {{position -1} {key {}}} {
+	if {$position == -1 && [::marks::open?]} {
+		::marks::close
+	} else {
+		Edit $position ::marks $key
+	}
+}
+
+
+proc scroll {args} {
+	::widget::textLineScroll [set [namespace current]::Vars(pgn:[::scidb::game::current])] scroll {*}$args
+}
+
+
+proc undo {} { Undo undo }
+proc redo {} { Undo redo }
+
+
+proc ensureScratchGame {} {
+	variable [namespace parent]::database::scratchbaseName
+	variable Vars
+
+	if {[::gamebar::empty? $Vars(bar)]} {
+		# TODO
+		# Site:	Scratch Game
+		# Event:	<current timestamp>
+		::scidb::game::switch 9
+		set fen [::scidb::pos::fen]
+		::scidb::game::new 0
+		::scidb::game::switch 0
+		::scidb::pos::setup $fen
+		set info [::scidb::game::info 0]
+		add 0 $scratchbaseName $info [::scidb::game::tags 0]
+		::game::setFirst $scratchbaseName $info
+	}
+}
+
+
+proc InitScratchGame {} {
+	variable Vars
+
+	::scidb::game::new 9
+	::scidb::game::switch 9
+
+	set Vars(current:9) {}
+	set Vars(previous:9) {}
+	set Vars(next:9) {}
+	set Vars(active:9) {}
+	set Vars(info:9) [::scidb::game::info 9]
+	set Vars(see:9) 1
+
+	::scidb::game::subscribe board 9 [namespace parent]::board::update
+	::scidb::game::switch 9
+	raise $Vars(frame:9)
+}
+
+
+proc See {position w key succKey} {
+	variable Vars
+	variable CharLimit
+
+	if {!$Vars(see:$position)} { return }
+
+	set firstLine [$w index h-end]
+	set range [$w tag nextrange $succKey [$w index $key]]
+
+	if {[llength $range]} {
+		lassign [split [lindex $range 0] .] row col
+		set last [expr {min($row + 3, $Vars(lastrow:$position))}]
+		set rest [$w count -chars $row.$col $row.end]
+		set count $rest
+		set r $row
+		while {$r < $last} {
+			incr r
+			incr count [$w count -chars $r.0 $r.end]
+			if {$count > $CharLimit} {
+				incr r -1
+				break
+			}
+		}
+		if {$r > $row} { $w see $r.0 }
+		if {$rest < $CharLimit} {
+			set offs [expr {[winfo width $w]/$Vars(charwidth)}]
+			$w see $row.[expr {$col + min($CharLimit, 3*$offs)}]
+		}
+		$w see $row.$col
+	}
+}
+
+
+proc Configure {w height} {
+	variable Vars
+
+	after cancel $Vars(after)
+	set Vars(after) [after 50 [namespace code [list Align $w $height]]]
+}
+
+
+proc ConfigureText {w} {
+	variable Options
+	variable Colors
+	variable Vars
+
+	if {$Options(mainline-bold)} {
+		set mainFont $Vars(font-bold)
+	} else {
+		set mainFont $Options(font)
+	}
+
+	$w tag configure eco -font $Vars(font-bold)
+
+	$w tag configure main -font $mainFont
+	$w tag configure variation -foreground $Colors(variation)
+	$w tag configure nag -foreground $Colors(nag)
+	$w tag configure illegal -foreground $Colors(illegal)
+	$w tag configure result -font $mainFont -foreground $Colors(result)
+#	$w tag configure startvar -foreground $Colors(startvar)
+	$w tag configure bracket -foreground $Colors(bracket)
+	$w tag configure marks -foreground $Colors(marks)
+
+	$w tag configure figurine -font $::font::figurine
+	$w tag configure symbol -font $::font::symbol
+	$w tag configure symbolb -font $::font::symbolb
+
+	$w tag configure comment -foreground $Colors(comment)
+	$w tag configure bold -font $Vars(font-bold)
+	$w tag configure italic -font $Vars(font-italic)
+	$w tag configure bold-italic -font $Vars(font-bold-italic)
+	$w tag configure underline -underline true
+
+	$w tag bind illegal <Any-Enter> [namespace code [list Tooltip $w illegal]]
+	$w tag bind illegal <Any-Leave> [namespace code [list Tooltip $w hide]]
+
+	if {$Options(column-style)} {
+		$w configure -tabs $Vars(tabs) -tabstyle wordprocessor
+	} else {
+		$w configure -tabs {} -tabstyle tabular
+	}
+
+	for {set k 0} {$k <= $Vars(indent-max)} {incr k} {
+		set amount [expr {$k*$Options(indent-amount)}]
+		$w tag configure indent$k -lmargin1 $amount -lmargin2 $amount
+	}
+
+	foreach k [array names ::annotation::mc::Nag] {
+		$w tag bind nag$k <Any-Enter> [namespace code [list Tooltip $w $k]]
+		$w tag bind nag$k <Any-Leave> [namespace code [list Tooltip $w hide]]
+	}
+}
+
+
+proc Align {w height} {
+	variable Vars
+
+	if {$height != $Vars(height)} {
+		set Vars(height) $height
+		set linespace [font metrics [$Vars(pgn:0) cget -font] -linespace]
+		set amounts [list $linespace [expr {($height - 2) % $linespace}]]
+		::gamebar::setAlignment $Vars(bar) $amounts
+	}
+}
+
+
+proc LabelbarSelected {position} {
+	variable Vars
+
+	::game::select $position
+	raise $Vars(frame:$position)
+}
+
+
+proc LabelbarRemoved {position} {
+	variable Vars
+
+	::game::release $position
+
+	if {[::gamebar::empty? $Vars(bar)]} {
+		::widget::busyCursor on
+		::scidb::game::switch 9
+		raise $Vars(frame:9)
+		::widget::busyCursor off
+	}
+}
+
+
+proc Edit {position ns {key {}}} {
+	variable Vars
+
+	if {![::gamebar::empty? $Vars(bar)]} {
+		if {$position == -1} {
+			set position $Vars(index)
+		}
+
+		if {[llength $key]} {
+			GotoMove $position $key
+		}
+
+		${ns}::open [winfo toplevel $Vars(pgn:$position)]
+	}
+}
+
+
+proc Update {position data} {
+	variable Vars
+
+	set w $Vars(pgn:$position)
+	set startLevel -1
+
+	foreach node $data {
+		switch [lindex $node 0] {
+			start {
+				$w configure -state normal
+				set Vars(marks) {}
+			}
+
+			languages {
+				set Vars(lang:$position) [lindex $node 1]
+				if {[llength $Vars(langSet:$position)] == 0} {
+					set Vars(langSet:$position) $Vars(lang:$position)
+				}
+			}
+
+			header { UpdateHeader $position $w [lindex $node 1] }
+
+			begin {
+				set level [lindex $node 2]
+				set startVar($level) [lindex $node 1]
+				Mark $w $startVar($level)
+			}
+
+			end {
+				set endVar($level) [lindex $node 1]
+				set level [lindex $node 2]
+				Mark $w $endVar($level)
+
+				if {$level > 0} {
+					set lvl [expr {min($level, 2)}]
+					$w tag add indent$level [$w index $startVar($level)] [$w index $endVar($level)]
+				}
+
+				incr level -1
+			}
+
+			action {
+				set args [lindex $node 1]
+
+				switch [lindex $args 0] {
+					remove { $w delete {*}[lrange $args 2 end] }
+
+					replace {
+						set action replace
+						set level [lindex $args 1]
+						$w delete [lindex $args 2] [lindex $args 3]
+						set insertMark [lindex $args 2]
+						$w mark gravity $insertMark left
+						set insertPos [$w index [lindex $args 3]]
+						$w mark set current $insertPos
+					}
+
+					insert {
+						set action insert
+						set level [lindex $args 1]
+						set insertPos [$w index [lindex $args 2]]
+						$w mark set current $insertPos
+					}
+
+					finish {
+						set level [lindex $args 1]
+						if {$level > 0} {
+							set lvl [expr {min(2, $level)}]
+							$w tag add indent$lvl $insertPos [$w index current]
+						}
+						if {$action eq "replace"} {
+							$w mark gravity $insertMark right
+						}
+					}
+
+					clear {
+						$w delete h-end e-0
+#						$w tag delete {*}[$Vars(pgn:$position) tag names]
+						set Vars(virgin:$position) 1
+					}
+
+					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
+					goto	{ ProcessGoto $position $w [lindex $args 1] [lindex $args 2] }
+				}
+			}
+
+			comment {
+				set key  [lindex $node 1]
+				set data [lindex $node 2]
+
+				set startPos [$w index current]
+				PrintComment $position $w $level $key $data
+				if {$level == 0} { $w tag add indent1 $startPos [$w index current] }
+				Mark $w $key
+			}
+
+			move {
+				set key  [lindex $node 1]
+				set data [lindex $node 2]
+
+				InsertMove $position $w $level $key $data
+				Mark $w $key
+			}
+
+			diagram {
+				set key  [lindex $node 1]
+				set data [lindex $node 2]
+
+				InsertDiagram $position $w $level $key $data
+				Mark $w $key
+			}
+
+			result {
+				set result [lindex $node 2]
+				if {$Vars(result:$position) != $result} {
+					$w mark gravity e-0 left
+					$w delete e-0 end
+					$w insert e-0 [::util::formatResult $result] result
+					$w insert e-0 "\n"
+					$w mark gravity e-0 right
+				}
+
+				$w mark set [lindex $node 1] [$w index end]
+				foreach mark $Vars(marks) { $w mark gravity $mark right }
+				$w configure -state disabled
+				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+			}
+		}
+	}
+}
+
+
+proc ProcessGoto {position w key succKey} {
+	variable Vars
+	variable Colors
+
+	if {$Vars(current:$position) eq $key} { return }
+
+	foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+	set Vars(next:$position) [::scidb::game::next keys $position]
+	if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
+	if {[llength $Vars(previous:$position)]} {
+		$w tag configure $Vars(previous:$position) -background $Colors(background)
+	}
+	$w tag configure $key -background $Colors(current)
+	set Vars(current:$position) $key
+	if {[llength $Vars(previous:$position)]} {
+		after cancel $Vars(after:$position)
+		See $position $w $key $succKey
+		if {$Vars(active:$position) eq $Vars(previous:$position)} {
+			EnterMove $position $Vars(previous:$position)
+		}
+	}
+	foreach k $Vars(next:$position) {
+		$w tag configure $k -background $Colors(next-move)
+	}
+	set Vars(previous:$position) $Vars(current:$position)
+	[namespace parent]::board::updateMarks [::scidb::game::query marks]
+	::annotation::update $key
+}
+
+
+proc UpdateHeader {position w data} {
+	variable Vars
+
+	set idn 0
+	set opening {}
+	set pos ""
+
+	foreach pair $data {
+		lassign $pair name value
+		switch $name {
+			idn		{ set idn $value }
+			eco		{ set eco $value }
+			position { set pos $value }
+			opening	{ set opg $value }
+		}
+	}
+
+	if {$Vars(virgin:$position)} {
+		$w mark set h-beg 1.0
+	} else {
+		$w delete 1.0 h-end
+	}
+
+	$w mark set current [$w index h-beg]
+	$w insert current [lindex [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] 0 0] bold
+	$w insert current "\n\n"
+	$w mark set h-end [$w index current]
+
+	if {$Vars(virgin:$position)} {
+		$w mark set e-0 [$w index current]
+		set Vars(virgin:$position) 0
+	}
+}
+
+
+proc InsertMove {position w level key data} {
+	variable Options
+
+	foreach node $data {
+		switch [lindex $node 0] {
+			break {
+				set level [lindex $node 1]
+				set bracket [lindex $node 2]
+
+				if {$bracket eq ")"} { $w insert current " )" bracket }
+
+				switch $level {
+					0 - 1 - 2 { $w insert current "\n" }
+
+					default {
+						if {$bracket ne ")"} {
+							$w insert current " "
+						}
+					}
+				}
+
+				if {$bracket eq "("} { $w insert current "( " bracket }
+			}
+
+			space {
+				switch [lindex $node 1] {
+					"("		{ $w insert current " ( " bracket }
+					")"		{ $w insert current " )" bracket }
+					default	{ $w insert current " " }
+				}
+			}
+
+			ply {
+				PrintMove $position $w $level $key [lindex $node 1]
+			}
+
+			annotation {
+				set pre [lindex $node 1]
+				set suf [lindex $node 2]
+				lappend suf {*}[lindex $node 3]
+
+				if {[llength $pre]} {
+					PrintAnnotation $w $position $level $key $pre
+				}
+				if {[llength $suf]} {
+					if {[llength $pre]} {
+						$w insert current " "
+					}
+					PrintAnnotation $w $position $level $key $suf
+				}
+			}
+
+			marks {
+				set count [lindex $node 1]
+				if {$count > 0} {
+					set tag marks:$key
+					$w insert current " "
+					$w insert current "\u27f8" [list marks $tag]
+					$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag]]
+					$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
+					$w tag bind $tag <ButtonPress-1> [namespace code [list openMarksPalette $position $key]]
+				}
+			}
+
+			comment {
+				set startPos [$w index current]
+				PrintComment $position $w $level $key [lindex $node 1]
+				if {$level == 0} { $w tag add indent1 $startPos [$w index current] }
+			}
+		}
+	}
+}
+
+
+proc InsertDiagram {position w level key data} {
+	variable Options
+
+	set index 0
+	set color white
+
+	foreach {tag value} $data {
+		color { set color $value }
+		board { set board $value }
+		break { $w insert current "\n" }
+	}
+
+	set img $w.$key
+	board::stuff::new $img $Options(board-size) 2
+	if {$color eq "black"} { ::board::stuff::rotate $img }
+	::board::stuff::update $img $board
+	::board::stuff::bind $img <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
+	::board::stuff::bind $img <ButtonPress-2> [namespace code [list PopupMenu $w $position]]
+	$w window create current \
+		-align center \
+		-window $img \
+		-padx $Options(diagram-pad-x) \
+		-pady $Options(diagram-pad-y) \
+		;
+}
+
+
+proc PrintMove {position w level key data} {
+	variable Options
+
+	lassign $data moveNo stm san legal
+	lappend tags $key
+	if {$level > 0} { lappend tags variation } else { lappend tags main }
+
+	if {$moveNo} {
+		$w insert current $moveNo $tags
+
+		if {$Options(add-space)} {
+			$w insert current ". " $tags
+			if {$stm eq "black"} { $w insert current "..." $tags }
+		} else {
+			$w insert current "." $tags
+			if {$stm eq "black"} { $w insert current ".." $tags }
+		}
+	}
+
+	foreach {text tag} [::font::splitMoves $san] {
+		$w insert current $text [list {*}$tags $tag]
+		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
+		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
+		$w tag bind $key <Any-Button> [namespace code [list HidePosition $w]]
+		$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key]]
+		$w tag bind $key <ButtonRelease-2> [namespace code [list HidePosition $w]]
+	}
+
+	if {!$legal} {
+		set tags illegal
+		if {$level == 0} { lappend tags main }
+		$w insert current "\u26A1" $tags
+		$w tag bind illegal <Any-Enter> +[namespace code [list Tooltip $w illegal]]
+		$w tag bind illegal <Any-Leave> +[namespace code [list Tooltip $w hide]]
+		$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+	}
+}
+
+
+proc PrintComment {position w level key data} {
+	variable Vars
+
+	set startPos {}
+	set keyTag comment:$key
+	set underline 0
+	set flags 0
+	set count 0
+	set needSpace 0
+	set lastChar ""
+
+	foreach entry [::scidb::misc::xmlToList $data] {
+		lassign $entry lang comment
+		if {[string length $lang] == 0 || $lang in $Vars(langSet:$position)} {
+			foreach pair $comment {
+				lassign $pair code text
+				set text [string map {"<brace/>" "\{"} $text]
+				if {$needSpace} {
+					if {![string is space -strict [string index $text 0]]} {
+						$w insert current " " $keyTag
+					}
+					set needSpace 0
+				}
+				set lastChar [string index $text end]
+				switch -- $code {
+					sym - nag - str {
+						if {[llength $startPos] == 0} { set startPos [$w index current] }
+					}
+				}
+				switch -- $code {
+					sym {
+						$w insert current [string map $::font::pieceMap $text] [list figurine $keyTag]
+					}
+					nag {
+						lassign [::font::splitAnnotation $text] value sym tag
+						set nagTag nag$text
+						if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
+						if {[string is digit $sym]} { set text "{\$$text}" }
+						lappend tag $keyTag $nagTag
+						$w insert current $sym $tag
+						incr count
+					}
+					str {
+						switch $flags {
+							0 { set tag {} }
+							1 { set tag bold }
+							2 { set tag italic }
+							3 { set tag bold-italic }
+						}
+						$w insert current $text [list $keyTag $tag]
+					}
+					+bold			{ incr flags +1 }
+					-bold			{ incr flags -1 }
+					+italic		{ incr flags +2 }
+					-italic		{ incr flags -2 }
+					+underline	{ set underline 1 }
+					-underline	{ set underline 0 }
+				}
+			}
+
+			if {[string length $lang] == 0 && ![string is space -strict $lastChar]} {
+				set needSpace 1
+			}
+		}
+	}
+
+	if {[llength $startPos]} {
+		$w tag add comment $startPos [$w index current]
+		$w tag bind $keyTag <Enter> [namespace code [list EnterComment $w $key]]
+		$w tag bind $keyTag <Leave> [namespace code [list LeaveComment $w $key]]
+		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editComment $position $key]]
+	}
+}
+
+
+proc PrintAnnotation {w position level key nags} {
+	variable Vars
+	variable Options
+
+	set annotation [::font::splitAnnotation $nags]
+	set isPrefix [string match {14[0-5]} [lindex $nags 0]]
+	set pos [$w index current]
+	set keyTag nag:$key
+	set prevSym -1
+	set count 0
+	set nag ""
+
+	foreach {value nag tag} $annotation {
+		set sym [expr {$tag eq "symbol"}]
+		if {$level == 0} {
+			if {$sym} { set tag symbolb }
+			lappend tag main
+		}
+		set nagTag $keyTag:[incr count]
+		set c [string index $nag 0]
+		if {[string match {[RN]*} $c]} {
+			if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current " " }
+			set prevSym 1
+		} elseif {$value <= 6} {
+			if {$count > 1} { $w insert current " " }
+			set prevSym 1
+		} elseif {$value == 155 || $value == 156} {
+			if {$Options(diagram-show)} {
+				set nag ""
+			} else {
+				if {[lindex [split [$w index current] .] end] ne "0"} { w insert current " " }
+				set prevSym $sym
+			}
+		} elseif {$prevSym == 0 || (!$sym && !$isPrefix)} {
+			$w insert current " "
+			set prevSym $sym
+		}
+		if {[string length $nag]} {
+			$w insert current $nag [list nag$value {*}$tag $nagTag]
+			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
+			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+		}
+		set prefix 0
+	}
+
+	set keyTag annotation:$key
+	$w tag add nag $pos [$w index current]
+	$w tag raise symbol
+	$w tag raise symbolb
+	$w tag add $keyTag $pos [$w index current]
+	$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
+}
+
+
+proc ParentKey {key} {
+	return [join [lrange [split $key .] 0 end-2] .]
+}
+
+
+proc Mark {w key} {
+	variable Vars
+
+	$w mark unset $key
+	$w mark set $key [$w index current]
+	$w mark gravity $key left
+	lappend Vars(marks) $key
+}
+
+
+proc EnterMove {position key} {
+	variable Vars
+	variable Colors
+
+	if {$Vars(current:$position) ne $key} {
+		$Vars(pgn:$position) tag configure $key -background $Colors(hilite)
+		$Vars(pgn:$position) configure -cursor hand2
+	}
+
+	set Vars(active:$position) $key
+}
+
+
+proc LeaveMove {position key} {
+	variable Vars
+	variable Colors
+
+	set Vars(active:$position) {}
+
+	if {$Vars(current:$position) ne $key} {
+		if {$key in $Vars(next:$position)} {
+			set color $Colors(next-move)
+		} else {
+			set color $Colors(background)
+		}
+		$Vars(pgn:$position) tag configure $key -background $color
+		$Vars(pgn:$position) configure -cursor {}
+	}
+}
+
+
+proc EnterMark {w tag} {
+	variable Colors
+	$w tag configure $tag -background $Colors(emphasized)
+}
+
+
+proc LeaveMark {w tag} {
+	variable Colors
+	$w tag configure $tag -background $Colors(background)
+}
+
+
+proc GotoMove {position key} {
+	variable Vars
+
+	set Vars(see:$position) 0
+	if {[llength $key] == 0} { set key [::scidb::game::query start] }
+	::scidb::game::moveto $position $key
+	set Vars(see:$position) 1
+}
+
+
+proc EnterComment {w key} {
+	variable Colors
+#	$w tag configure comment:$key -underline true
+	$w tag configure comment:$key -foreground $Colors(comment:hilite)
+}
+
+
+proc LeaveComment {w key} {
+	variable Colors
+	$w tag configure comment:$key -foreground $Colors(comment)
+}
+
+
+proc EnterAnnotation {w tag} {
+	variable Colors
+	$w tag configure $tag -background $Colors(emphasized)
+}
+
+
+proc LeaveAnnotation {w tag} {
+	variable Colors
+	$w tag configure $tag -background $Colors(background)
+}
+
+
+proc ShowPosition {parent position key} {
+	set w $parent.showboard
+
+	if {![winfo exists $w]} {
+		variable Options
+
+		toplevel $w -class Tooltip -relief solid
+		wm withdraw $w
+		if {[tk windowingsystem] eq "aqua"} {
+			::tk::unsupported::MacWindowStyle style $w help none
+		} else {
+			wm overrideredirect $w true
+		}
+		wm attributes $w -topmost true
+		::board::stuff::new $w.board $Options(board-size) 2
+		pack $w.board
+	}
+
+	if {[llength $key] == 0} { set key [::scidb::game::query start] }
+	::board::stuff::update $w.board [::scidb::game::board $position $key]
+	::tooltip::popup $parent $w cursor
+}
+
+
+proc HidePosition {parent} {
+	::tooltip::popdown $parent.showboard
+}
+
+
+proc Tooltip {path nag} {
+	variable ::annotation::mc::Nag
+
+	switch $nag {
+		hide		{ ::tooltip::tooltip hide }
+		illegal	{ ::tooltip::show $path $mc::IllegalMove }
+		
+		default {
+			if {[info exists Nag($nag)]} {
+				::tooltip::show $path $Nag($nag)
+			}
+		}
+	}
+}
+
+
+proc Undo {action} {
+	variable Vars
+
+	if {[llength [::scidb::game::query $action]]} {
+		::widget::busyOperation ::scidb::game::execute $action
+	}
+}
+
+
+proc PopupMenu {parent position} {
+	variable ::annotation::mc::Nag
+	variable ::annotation::LastNag
+	variable [namespace parent]::database::mc::T_Clipbase
+	variable [namespace parent]::database::clipbaseName
+	variable [namespace parent]::database::scratchbaseName
+	variable Vars
+
+	set menu $parent.__menu__
+	catch { destroy $menu }
+	menu $menu -tearoff 0
+
+	if {[::game::trialMode?]} {
+		$menu add command -label $mc::StopTrialMode -command ::game::endTrialMode
+	} else {
+		if {[::scidb::game::level] > 0} {
+			set varno [::scidb::game::variation current]
+			if {$varno > 1} {
+				$menu add command \
+					-label "$mc::Command(variation:first)" \
+					-command [namespace code FirstVariation] \
+					;
+			}
+			foreach {action cmd} {promote PromoteVariation remove RemoveVariation} {
+				$menu add command -label $mc::Command(variation:$action) -command [namespace code $cmd]
+			}
+			if {[::scidb::game::variation length] % 2} {
+				set state disabled
+			} else {
+				set state normal
+			}
+			$menu add command \
+				-state $state \
+				-label $mc::Command(variation:insert) \
+				-command [namespace code [list InsertMoves $parent]] \
+				;
+			$menu add command \
+				-label "$mc::Command(variation:exchange)..." \
+				-command [namespace code [list ExchangeMoves $parent]] \
+				;
+			$menu add separator
+		}
+
+		$menu add command -label $mc::StartTrialMode -command ::game::startTrialMode
+		$menu add command -label $mc::Command(game:transpose) -command [namespace code TransposeGame]
+
+		menu $menu.strip -tearoff no
+		set state "normal"
+		if {![::scidb::game::position isMainline?] || [::scidb::game::position atStart?]} {
+			set state "disabled"
+		}
+		$menu.strip add command \
+			-label $mc::Command(strip:moves) \
+			-state $state \
+			-command [list ::widget::busyOperation ::scidb::game::strip moves]
+		set state "normal"
+		if {	[::scidb::game::position atEnd?]
+			|| (![::scidb::game::position isMainline?] && [::scidb::game::position atStart?])} {
+			
+			set state "disabled"
+		}
+		$menu.strip add command \
+			-label $mc::Command(strip:truncate) \
+			-state $state \
+			-command [list ::widget::busyOperation ::scidb::game::strip truncate] \
+			;
+		foreach cmd {variations annotations marks} {
+			set state "normal"
+			if {[::scidb::game::count $cmd] == 0} { set state "disabled" }
+			$menu.strip add command \
+				-label $mc::Command(strip:$cmd) \
+				-state $state \
+				-command [list ::widget::busyOperation ::scidb::game::strip $cmd] \
+				;
+		}
+
+		set state "normal"
+		if {[::scidb::game::count comments] == 0} { set state "disabled" }
+
+		menu $menu.strip.comments -tearoff no
+		$menu.strip add cascade \
+			-menu $menu.strip.comments \
+			-label $mc::Command(strip:comments) \
+			-state $state \
+			;
+
+		if {$state eq "normal"} {
+			$menu.strip.comments add command \
+				-compound left \
+				-image $::country::icon::flag($::mc::langToCountry(xx)) \
+				-label " $::comment::mc::AllLanguages" \
+				-command [list ::widget::busyOperation ::scidb::game::strip comments] \
+				;
+
+			foreach lang $Vars(lang:$position) {
+				$menu.strip.comments add command \
+					-compound left \
+					-image $::country::icon::flag($::mc::langToCountry($lang)) \
+					-label " $::encoding::mc::Lang($lang)" \
+					-command [list ::widget::busyOperation ::scidb::game::strip comments $lang] \
+					;
+			}
+		}
+
+		$menu add cascade -menu $menu.strip -label $mc::Strip
+
+#		set vars [::scidb::game::next moves -unicode]
+#
+#		foreach {which cmd start} {first FirstVariation 2
+#											promote PromoteVariation 1
+#											remove RemoveVariation 1} {
+#			if {[llength $vars] > $start} {
+#				if {[llength $vars] > [expr {$start + 1}]} {
+#					menu $menu.$which
+#					$menu add cascade -menu $menu.$which -label $mc::Command($which)
+#
+#					for {set i $start} {$i < [llength $vars]} {incr i} {
+#						$menu.$which add command \
+#							-label [::font::translate [lindex $vars $i]] \
+#							-command [namespace code [list $cmd $i]]
+#					}
+#				} else {
+#					$menu add command \
+#						-label "$mc::Command($which): [::font::translate [lindex $vars 1]]" \
+#						-command [namespace code [list $cmd 1]]
+#				}
+#			}
+#		}
+
+		$menu add separator
+
+		if {[::scidb::game::position atStart?]} {
+			$menu add command \
+				-label $mc::InsertDiagram \
+				-command [list ::annotation::setNags suffix 155] \
+				;
+			$menu add command \
+				-label $mc::InsertDiagramFromBlack \
+				-command [list ::annotation::setNags suffix 156] \
+				;
+		} else {
+			set cmd ::annotation::setNags
+
+			if {[::scidb::pos::stm] eq "w"} {
+				upvar #0 ::annotation::isWhiteNag isStmNag
+			} else {
+				upvar #0 ::annotation::isBlackNag isStmNag
+			}
+
+			foreach type {prefix infix suffix} {
+				set ranges $::annotation::sections($type)
+				set m [menu $menu.$type]
+
+				if {[llength $ranges] == 1} {
+					$m add command -command "$cmd $type 0"
+					lassign [lindex $ranges 0] descr from to
+					bind $m <<MenuSelect>> [namespace code { ::widget::menuItemHighlightSecond %W }]
+				} else {
+					$menu add cascade -menu $m -label $mc::SuffixCommentaries
+					$m add command -label "($mc::None)" -command "$cmd $type 0"
+				}
+
+				foreach range $::annotation::sections($type) {
+					lassign $range descr from to
+					set text [set ::annotation::mc::$descr]
+
+					if {[llength $ranges] == 1} {
+						$menu add cascade -menu $m -label $text
+						set sub $m
+					} else {
+						set sub [menu $m.[string tolower $descr 0 0]]
+						$m add cascade -menu $sub -label $text
+						bind $sub <<MenuSelect>> [namespace code { ::widget::menuItemHighlightSecond %W }]
+					}
+
+					set nags {}
+					for {set nag $from} {$nag <= $to} {incr nag} {
+						if {!$isStmNag($nag)} {
+							set symbol [::font::mapNagToSymbol $nag]
+							if {$symbol ne $nag} {
+								$sub add command -label $symbol -command "$cmd $type $nag"
+								lappend nags $nag
+							}
+						}
+					}
+
+					if {[llength $ranges] == 1} {
+						$sub add command -columnbreak 1 -label "($mc::None)" -command "$cmd infix 0"
+						set columnbreak 0
+					} else {
+						set columnbreak 1
+					}
+
+					foreach nag $nags {
+						$sub add command \
+							-label [string toupper $Nag($nag) 0 0] \
+							-command "$cmd $type $nag" \
+							-columnbreak $columnbreak \
+							;
+						set columnbreak 0
+					}
+				}
+			}
+		}
+
+		if {[::annotation::open?]} { set state disabled } else { set state normal }
+		$menu add command \
+			-label "$mc::EditAnnotation..." \
+			-state $state \
+			-command [namespace code [list editAnnotation $position]] \
+			;
+		$menu add command \
+			-label "$mc::EditComment..." \
+			-command [namespace code [list editComment $position]] \
+			;
+		if {[::marks::open?]} { set state disabled } else { set state normal }
+		$menu add command \
+			-label "$::marks::mc::MarksPalette..." \
+			-state $state \
+			-command [namespace code [list openMarksPalette $position]] \
+			;
+
+		$menu add separator
+
+		$menu add command \
+			-label $::import::mc::ImportPgnGame \
+			-command [namespace code PasteClipboardGame] \
+			;
+		$menu add command \
+			-label $::import::mc::ImportPgnVariation \
+			-command [namespace code PasteClipboardVariation] \
+			;
+
+		$menu add separator
+
+		foreach action {undo redo} {
+			set cmd [::scidb::game::query $action]
+			set label [set ::mc::[string toupper $action 0 0]]
+			if {[llength $cmd]} {
+				append label " '"
+				if {[string match strip:* $cmd]} { append label "$mc::Strip: " }
+				append label $mc::Command($cmd) "'"
+			}
+			$menu add command \
+				-compound left \
+				-image [set ::icon::12x12::$action] \
+				-label $label \
+				-command [list ::widget::busyOperation ::scidb::game::execute $action] \
+				-state [expr {[llength $cmd] ? "normal" : "disabled"}] \
+				;
+		}
+
+		$menu add separator
+	}
+
+	set base [::scidb::game::query $position database]
+	set number [::scidb::game::number $position]
+	set bases [::scidb::app::bases]
+	unset -nocomplain state
+
+	if {$base eq $scratchbaseName} {
+		set base $clipbaseName
+		set name $T_Clipbase
+		set ext ""
+		set state(save) normal
+		set state(replace) disabled
+	} else {
+		if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+			set state(save) normal
+			if {$number >= 0} { set state(replace) normal } else { set state(replace) disabled }
+		} else {
+			set state(save) disabled
+			set state(replace) disabled
+		}
+
+		if {$base eq $clipbaseName} {
+			set name $T_Clipbase
+		} else {
+			set name [::util::databaseName $base]
+		}
+	}
+
+	$menu add command \
+		-label [format $mc::ReplaceGame $name] \
+		-command [list ::dialog::save::open $parent $base $position $number] \
+		-state $state(replace) \
+		;
+	$menu add command \
+		-label  [format $mc::AddNewGame $name] \
+		-command [list ::dialog::save::open $parent $base $position -1] \
+		-state $state(save) \
+		;
+
+	menu $menu.save
+	set count 0
+	foreach base $bases {
+		set myName [::util::databaseName $base]
+		if {$name ne $myName && ![::scidb::db::get readonly? $base]} {
+			$menu.save add command \
+				-label $myName \
+				-command [list ::dialog::save::open $parent $base $position -1] \
+				;
+			incr count
+		}
+	}
+	if {$name ne $T_Clipbase} {
+		$menu.save add command \
+			-label $T_Clipbase \
+			-command [list ::dialog::save::open $parent Clipbase $position -1] \
+			;
+			incr count
+	}
+	$menu add cascade \
+		-menu $menu.save \
+		-label [format $mc::AddNewGame ""] \
+		-state [expr {$count ? "normal" : "disabled"}] \
+		;
+	$menu add separator
+
+	menu $menu.display
+	$menu add cascade -menu $menu.display -label $mc::Display
+
+	foreach {label var onValue} {	ColumnStyle column-style 1
+											NarrowLines narrow-lines 1
+											IndentVariations indent-var 1
+											IndentComments indent-comment 1
+											BoldTextForMainlineMoves mainline-bold 1
+											SpaceAfterMoveNumbers add-space 1
+											ShowDiagrams diagram-show 1} {
+		if {$onValue} { set offValue 0 } else { set offValue 1 }
+
+		$menu.display add checkbutton \
+			-label [set mc::$label] \
+			-onvalue $onValue \
+			-offvalue $offValue \
+			-variable [namespace current]::Options($var) \
+			-command [namespace code [list Refresh $position]] \
+			;
+	}
+
+#	$menu add separator
+#
+#	$menu add command -label "$SetupColors..."
+#	$menu add command -label "$SetupFonts..."
+#
+#	$menu add separator
+#
+#	$menu add command -label $CopyGameToClipboard
+#	$menu add command -label "$PrintToFile..."
+
+	tk_popup $menu {*}[winfo pointerxy $parent]
+}
+
+
+proc PasteClipboardGame {} {
+	variable Vars
+
+	set position $Vars(index)
+	::import::openEdit $Vars(frame:$position) $position game
+}
+
+
+proc PasteClipboardVariation {} {
+	variable Vars
+
+	set position $Vars(index)
+	::import::openEdit $Vars(frame:$position) $position variation
+}
+
+
+proc TransposeGame {} {
+	::game::startTrialMode
+	::widget::busyOperation ::scidb::game::transpose true
+}
+
+
+proc FirstVariation {{varno 0}} {
+	variable Vars
+
+	set key [::scidb::game::position key]
+
+	if {$varno} {
+		set Vars(current:[::scidb::game::current]) {}
+		::scidb::game::position forward
+	} else {
+		set varno [::scidb::game::variation leave]
+		set parts [split $key "."]
+		lset parts end-1 0
+		set key [join $parts "."]
+	}
+
+	::widget::busyOperation ::scidb::game::variation first $varno
+	::scidb::game::moveto $key
+}
+
+
+proc PromoteVariation {{varno 0}} {
+	set key [::scidb::game::position key]
+
+	if {$varno} {
+		::scidb::game::position forward
+	} else {
+		set varno [::scidb::game::variation leave]
+		set parts [split $key "."]
+		set parts [lreplace $parts end-2 end-1]
+		set key [join $parts "."]
+	}
+
+	::widget::busyOperation ::scidb::game::variation promote $varno
+	::scidb::game::moveto $key
+}
+
+
+proc RemoveVariation {{varno 0}} {
+	if {$varno} {
+		::scidb::game::position forward
+	} else {
+		set varno [::scidb::game::variation leave]
+	}
+
+	::widget::busyOperation ::scidb::game::variation remove $varno
+
+	if {$varno} {
+		::scidb::game::position backward
+		::scidb::game::moveto [::scidb::game::position key]
+	} else {
+		::scidb::game::moveto [ParentKey $key]
+	}
+}
+
+
+proc InsertMoves {parent} {
+	set key [::scidb::game::position key]
+	set varno  [::scidb::game::variation leave]
+	::move::doDestructiveCommand \
+		$parent \
+		$mc::Command(variation:insert) \
+		[list ::widget::busyOperation ::scidb::game::variation insert $varno] \
+		[list ::scidb::game::moveto [ParentKey $key]] \
+		[list ::scidb::game::moveto $key]
+}
+
+
+proc ExchangeMoves {parent} {
+	variable Length_
+	variable Key_
+
+	set key [::scidb::game::position key]
+	set varno [::scidb::game::variation leave]
+	set dlg [toplevel $parent.exchange -class Dialog]
+	set top [::ttk::frame $dlg.top]
+	pack $dlg.top
+	set Length_ [::scidb::game::variation length $varno]
+	::ttk::spinbox $top.sblength \
+		-from [expr {$Length_ % 2 ? 1 : 2}]  \
+		-to [expr {10000 + ($Length_ % 2)}] \
+		-increment 2 \
+		-textvariable [namespace current]::Length_ \
+		-width 4 \
+		-exportselection false \
+		-justify right \
+		;
+	::validate::spinboxInt $top.sblength no
+	::theme::configureSpinbox $top.sblength
+	$top.sblength selection range 0 end
+	$top.sblength icursor end
+	::ttk::label $top.llength -text $mc::NumberOfMoves
+	::widget::dialogButtons $dlg {ok cancel} ok
+	$dlg.cancel configure -command [namespace code [list DontExchangeMoves $dlg $key]]
+	$dlg.ok configure -command [namespace code [list VerifyNumberOfMoves $dlg $Length_]]
+
+	grid $top.llength		-row 1 -column 1
+	grid $top.sblength	-row 1 -column 3
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padding
+	grid rowconfigure $top {0 2} -minsize $::theme::padding
+
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list DontExchangeMoves $dlg $key]]]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $mc::Command(variation:exchange)
+	wm resizable $dlg false false
+	::util::place $dlg center
+	wm deiconify $dlg
+	focus $top.sblength
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+
+	if {$Length_ >= 0} {
+		::move::doDestructiveCommand \
+			$parent \
+			$mc::Command(variation:exchange) \
+			[list ::widget::busyOperation ::scidb::game::variation exchange $varno $Length_] \
+			[list ::scidb::game::moveto [ParentKey $key]] \
+			[list ::scidb::game::moveto $key]
+	}
+}
+
+
+proc DontExchangeMoves {dlg key} {
+	variable Length_
+
+	destroy $dlg
+	set Length_ -1
+	::scidb::game::moveto $key
+}
+
+
+proc VerifyNumberOfMoves {dlg length} {
+	variable Length_
+
+	if {$length % 2 != $Length_ % 2} {
+		if {$length % 2} {
+			set detail $mc::MustBeOdd
+		} else {
+			set detail $mc::MustBeEven
+		}
+
+		::dialog::error -parent $dlg -message [format $mc::InvalidInput $Length_] -detail $detail
+		set Length_ $length
+		$dlg.top.sblength selection range 0 end
+		$dlg.top.sblength icursor end
+		::validate::spinboxInt $dlg.top.sblength off
+		focus $dlg.top.sblength
+	} else {
+		destroy $dlg
+	}
+}
+
+
+proc Refresh {position} {
+	variable Options
+	variable Colors
+	variable Vars
+
+	set Vars(current:$position) {}
+	SetupStyle
+	::widget::busyOperation ::scidb::game::refresh $position
+}
+
+
+proc SetupStyle {} {
+	variable Options
+	variable Vars
+
+	set Vars(indent-max) $Options(indent-max)
+
+	if {$Options(column-style)} {
+		incr Vars(indent-max)
+		::scidb::game::setup 0 0 0 0
+	} else {
+		::scidb::game::setup 240 80 60 2
+	}
+}
+
+
+proc LanguageChanged {} {
+	variable Vars 
+
+	if {[info exists Vars(see:0)]} {
+		::widget::busyOperation ::scidb::game::refresh
+	}
+}
+
+
+proc WriteOptions {chan} {
+	::options::writeItem $chan [namespace current]::Colors
+	::options::writeItem $chan [namespace current]::Options
+}
+
+
+::options::hookWriter [namespace current]::WriteOptions
+
+} ;# namespace pgn
+} ;# namespace application
+
+# vi:set ts=3 sw=3:

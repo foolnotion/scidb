@@ -1,0 +1,1 @@
+set photo_Player(traxler,karel) [list $::load::photoFile 25 10837]

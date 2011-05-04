@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  piece-style  Burly|1262881395698|yellow.color|gregor
+  identifier   Burly|1262881982561|yellow.color|gregor
+  piece-set    Adventurer
+  square-style Stone|1243792087778|yellow.color|gregor
+}

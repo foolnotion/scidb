@@ -1,0 +1,27 @@
+::board::addStyle square {
+  hint,border-tile      {}
+  dark,y1               0
+  hint,border-color     #4c4463
+  dark,y2               150
+  hint,background-tile  {marble marble_234.jpg}
+  borderline,width      0.006666666666666667
+  lite,rotation         0
+  hint,background-color {}
+  lite,texture          {misc apollo-lite.png}
+  lite,x1               0
+  hilite,selected       #d1c773
+  lite,x2               150
+  lite,solid            #e0d070
+  hilite,suggested      #3bbdbe
+  dark,rotation         0
+  dark,x1               0
+  dark,texture          {misc apollo-dark.png}
+  dark,x2               150
+  dark,solid            #70a070
+  hint,coordinates      #ffffff
+  borderline,gap        0
+  borderline,opacity    0x50
+  identifier            Apollo|1243715687066|yellow.color|gregor
+  lite,y1               0
+  lite,y2               150
+}

@@ -1,0 +1,6 @@
+::board::addStyle theme {
+  identifier   {Apollo|1296050637190|yellow.color|gregor}
+  piece-set    {Eyes}
+  piece-style  {Orange - Lemon|1243778153963|yellow.color|gregor}
+  square-style {Apollo|1243715687066|yellow.color|gregor}
+}
