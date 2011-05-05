@@ -86,7 +86,7 @@ main (int argc, char ** argv)
             {
                 buf[n] = '\0';
 #	      ifdef STDOUT_FILENO
-                write (STDOUT_FILENO, buf, n);
+                if (write (STDOUT_FILENO, buf, n));
 #	      else
                 fwrite (buf, 1, n, stdout);
 #             endif

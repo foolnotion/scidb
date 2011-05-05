@@ -528,7 +528,7 @@ proc checkZlib {} {
     } else {
         puts "no."
         set subdir(zlib) "util/zlib"
-        set package(zlib-lib) "-lutil/zlib/libz.a"
+        set package(zlib-lib) "util/zlib/libz.a"
     }
 }
 
@@ -598,7 +598,7 @@ proc checkZziplib {} {
     } else {
         puts "no."
         set subdir(zziplib) "util/zzip"
-        set package(zziplib-lib) "-lutil/zzip/libzzip.a"
+        set package(zziplib-lib) "util/zzip/libzzip.a"
     }
 }
 
@@ -669,7 +669,7 @@ proc checkExpat {} {
     } else {
         puts "no."
         set subdir(expat) "util/expat"
-        set package(expat-lib) "-lutil/expat/libexpat.a"
+        set package(expat-lib) "util/expat/libexpat.a"
     }
 }
 
@@ -812,7 +812,7 @@ proc writeMakefile {{type ""}} {
 
     foreach name [array names subdir] {
         if {[string length $subdir($name)]} {
-            Append option(SUBDIRS) util/$subdir($name)
+            Append option(SUBDIRS) $subdir($name)
         }
     }
 

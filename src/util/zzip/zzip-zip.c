@@ -173,7 +173,7 @@ __zzip_find_disk_trailer(int fd, zzip_off_t filesize,
 
             fd_map = _zzip_mmap(io->use_mmap, fd, mapoff, (zzip_size_t)maplen);
             if (fd_map == MAP_FAILED) goto non_mmap;
-	    mapped = fd_map; offset = mapoff; /* success */
+	    mapped = (unsigned char*)fd_map; offset = mapoff; /* success */
 	    HINT3("mapped %p len=%li", fd_map, (long) maplen);
         } else {
         non_mmap:
@@ -199,7 +199,7 @@ __zzip_find_disk_trailer(int fd, zzip_off_t filesize,
                 { return(ZZIP_DIR_SEEK); }
             if (io->read(fd, buf, (zzip_size_t)maplen) < (zzip_ssize_t)maplen)
                 { return(ZZIP_DIR_READ); }
-            mapped = buf; /* success */
+            mapped = (unsigned char*)buf; /* success */
 	    HINT5("offs=$%lx len=%li filesize=%li pagesize=%i", 
 		  (long)offset, (long)maplen, (long)filesize, ZZIP_BUFSIZ);
         }
