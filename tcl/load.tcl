@@ -24,8 +24,6 @@
 # (at your option) any later version.
 # ======================================================================
 
-# XXX change dirs
-
 namespace eval load {
 namespace eval mc {
 
@@ -96,13 +94,13 @@ proc load {msg type path} {
 # --- Load ECO file ----------------------------------------------------
 load::load	"Loading ECO file" \
 				eco \
-				[file join $scidb::dir::home development c++ scidb src data eco.bin] \
+				[file join $scidb::dir::data eco.bin] \
 				;
 
 # --- Load engines -----------------------------------------------------
 load::load	"Loading engine file" \
 				comp \
-				[file join $scidb::dir::home development c++ scidb src data engines.txt] \
+				[file join $scidb::dir::data engines.txt] \
 				;
 
 if {[lsearch $argv "--fast"] == -1} {
@@ -111,14 +109,14 @@ if {[lsearch $argv "--fast"] == -1} {
 foreach file {ratings_utf8.ssp.zip ratings-additional.ssp} {
 	load::load	"Loading spellcheck files" \
 					ssp \
-					[file join $scidb::dir::home development c++ scidb src data $file] \
+					[file join $scidb::dir::data $file] \
 					;
 }
 
 # --- Load FIDE players ------------------------------------------------
 load::load	"Loading FIDE player file" \
 				fide \
-				[file join $scidb::dir::home development c++ scidb src data players_list.zip] \
+				[file join $scidb::dir::data players_list.zip] \
 				;
 
 if {[lsearch $argv "--elo-only"] == -1} {
@@ -126,25 +124,25 @@ if {[lsearch $argv "--elo-only"] == -1} {
 # --- Load IPS rating list ---------------------------------------------
 load::load	"Loading IPS rating list" \
 				ips \
-				[file join $scidb::dir::home development c++ scidb src data ips-ratings.txt] \
+				[file join $scidb::dir::data ips-ratings.txt] \
 				;
 
 # --- Load DWZ rating list ---------------------------------------------
 load::load	"Loading DWZ rating list" \
 				dwz \
-				[file join $scidb::dir::home development c++ scidb src data dwz-ratings.txt] \
+				[file join $scidb::dir::data dwz-ratings.txt] \
 				;
 
 # --- Load ECF rating list ---------------------------------------------
 load::load	"Loading ECF rating list" \
 				ecf \
-				[file join $scidb::dir::home development c++ scidb src data ecf-ratings.txt] \
+				[file join $scidb::dir::data ecf-ratings.txt] \
 				;
 
 # --- Load ICCF rating list ---------------------------------------------
 load::load	"Loading ICCF rating list" \
 				iccf \
-				[file join $scidb::dir::home development c++ scidb src data iccf-ratings.txt] \
+				[file join $scidb::dir::data iccf-ratings.txt] \
 				;
 
 } ;# if {[lsearch $argv "--elo-only"] == -1}
@@ -153,29 +151,33 @@ load::load	"Loading ICCF rating list" \
 foreach lang {de en} {
 	load::load	"Loading Wikipedia links" \
 					wiki \
-					[file join $scidb::dir::home development c++ scidb src data wikipedia-${lang}.txt] \
+					[file join $scidb::dir::data wikipedia-${lang}.txt] \
 					;
 }
 
 # --- Load chessgames.com links ----------------------------------------
 load::load	"Loading chessgames.com links" \
 				cgdc \
-				[file join $scidb::dir::home development c++ scidb src data chessgames.com.zip] \
+				[file join $scidb::dir::data chessgames.com.zip] \
 				;
 
 # --- Load cities ------------------------------------------------------
 load::load	"Loading cities" \
 				site \
-				[file join $scidb::dir::home development c++ scidb src data cities.txt] \
+				[file join $scidb::dir::data cities.txt] \
 				;
 
 # --- Load photo index files -------------------------------------------
 if {[lsearch $argv "--no-photos"] == -1} {
 
-foreach idx [glob -directory [file join $::scidb::dir::share photos] -nocomplain *.spi] {
-	if {[file readable $idx]} {
-		if {[file readable [file rootname $idx].spf]} {
-			load::source "Loading photo index" $idx
+foreach basedir [list $::scidb::dir::share $::scidb::dir::user] {
+	if {[file isdirectory $basedir]} {
+		foreach idx [glob -directory [file join $basedir photos] -nocomplain *.spi] {
+			if {[file readable $idx]} {
+				if {[file readable [file rootname $idx].spf]} {
+					load::source "Loading photo index" $idx
+				}
+			}
 		}
 	}
 }

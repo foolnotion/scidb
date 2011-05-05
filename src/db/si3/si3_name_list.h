@@ -38,6 +38,8 @@ namespace db {
 
 class Namebase;
 class NamebaseEntry;
+class NamebasePlayer;
+class NamebaseSite;
 
 namespace si3 {
 
@@ -47,7 +49,7 @@ public:
 
 	struct Node
 	{
-		typedef NamebaseEntry const Entry;
+		typedef NamebaseEntry Entry;
 
 		Entry*			entry;
 		mstl::string	encoded;
@@ -58,9 +60,9 @@ public:
 	NameList(Namebase& base, sys::utf8::Codec& codec, mstl::bitset& usedIdSet);
 
 	bool isEmpty() const;
-	bool isValidId(unsigned id) const;
 
 	unsigned size() const;
+	unsigned maxId() const;
 	unsigned maxFrequency() const;
 	unsigned lookup(unsigned id) const;
 
@@ -70,17 +72,20 @@ public:
 private:
 
 	typedef mstl::vector<Node*> List;
-	typedef mstl::vector<unsigned> Lookup;
 	typedef List::const_iterator Iterator;
 
 	typedef mstl::chunk_allocator<Node> NodeAlloc;
 	typedef mstl::chunk_allocator<char> StringAlloc;
 	typedef sys::utf8::Codec Codec;
 
-	void insertRounds(Namebase& base, Codec& codec);
-	void insertEvents(Namebase& base, Codec& codec);
-	void insertSites(Namebase& base, Codec& codec);
-	void insertPlayers(Namebase& base, Codec& codec);
+	void buildList(Namebase& base, Codec& codec);
+	void renumber(Namebase& base);
+
+#ifdef SI3_NORMALIZE_ENTRIES
+	void preparePlayer(NamebasePlayer const* entry, mstl::string const*& str);
+	void prepareSite(NamebaseSite const* entry, mstl::string const*& str);
+#endif
+
 	void copyNode(Node* node, NamebaseEntry* entry);
 	Node* makeNode(NamebaseEntry* entry, mstl::string const* str);
 
@@ -91,7 +96,7 @@ private:
 	unsigned				m_size;
 	mutable Iterator	m_first;
 	mutable Iterator	m_last;
-	Lookup				m_lookup;
+	List					m_lookup;
 	NodeAlloc			m_nodeAlloc;
 	StringAlloc			m_stringAlloc;
 	mstl::string		m_buf;

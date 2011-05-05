@@ -24,63 +24,31 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_assert.h"
+
 namespace db {
 namespace si3 {
 
-inline
-bool
-NameList::isEmpty() const
-{
-	return m_first == m_last;
-}
+inline bool NameList::isEmpty() const				{ return m_first == m_last; }
 
+inline unsigned NameList::size() const				{ return m_size; }
+inline unsigned NameList::maxId() const			{ return m_lookup.size() - 1; }
+inline unsigned NameList::maxFrequency() const	{ return m_maxFrequency; }
 
-inline
-unsigned
-NameList::size() const
-{
-	return m_size;
-}
-
-
-inline
-unsigned
-NameList::maxFrequency() const
-{
-	return m_maxFrequency;
-}
-
-
-inline
-bool
-NameList::isValidId(unsigned id) const
-{
-	return id < m_lookup.size() && m_lookup[id] > 0;
-}
+inline NameList::Node const* NameList::first() const	{ return m_first == m_last ? 0 : *m_first; }
+inline NameList::Node const* NameList::next() const	{ return ++m_first == m_last ? 0 : *m_first; }
 
 
 inline
 unsigned
 NameList::lookup(unsigned id) const
 {
-	M_REQUIRE(isValidId(id));
-	return m_lookup[id] - 1;
-}
+	M_REQUIRE(id <= maxId());
 
+	M_ASSERT(m_lookup[id]);
+	M_ASSERT(m_lookup[id]->id < m_size);
 
-inline
-NameList::Node const*
-NameList::first() const
-{
-	return m_first == m_last ? 0 : *m_first;
-}
-
-
-inline
-NameList::Node const*
-NameList::next() const
-{
-	return ++m_first == m_last ? 0 : *m_first;
+	return m_lookup[id]->id;
 }
 
 } // namespace si3

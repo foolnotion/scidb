@@ -809,14 +809,9 @@ Tree::makeTree(TreeP tree,
 		}
 
 		tree->m_complete = true;
-		tree->m_filter.finish();
 
 #ifdef SHOW_TREE_INFO
 		fprintf(stderr, "games parsed: %u\n", tree->m_numGamesParsed);
-	}
-	else
-	{
-		tree->m_filter.finish();
 #endif
 	}
 

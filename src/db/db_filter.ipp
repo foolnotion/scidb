@@ -28,11 +28,12 @@
 
 namespace db {
 
-inline bool Filter::isComplete() const		{ return m_count == m_set.size(); }
-inline bool Filter::isCompressed() const	{ return m_set.compressed(); }
+inline bool Filter::isComplete() const					{ return m_count == m_set.size(); }
+inline bool Filter::isCompressed() const				{ return m_set.compressed(); }
+inline bool Filter::checkClassInvariance() const	{ return m_count == m_set.count(); }
 
-inline unsigned Filter::count() const		{ return m_count; }
-inline unsigned Filter::size() const		{ return m_set.size(); }
+inline unsigned Filter::count() const	{ return m_count; }
+inline unsigned Filter::size() const	{ return m_set.size(); }
 
 
 inline
@@ -67,24 +68,11 @@ void
 Filter::add(unsigned index)
 {
 	M_REQUIRE(index < size());
-	m_set.set(index);
-}
 
+	if (!m_set.test_and_set(index))
+		++m_count;
 
-inline
-void
-Filter::finish()
-{
-	m_count = m_set.count();
-}
-
-
-inline
-void
-Filter::finish(unsigned count)
-{
-	M_ASSERT(count == m_set.count());
-	m_count = count;
+	M_ASSERT(checkClassInvariance());
 }
 
 
@@ -102,7 +90,7 @@ void
 Filter::uncompress()
 {
 	m_set.uncompress();
-	M_ASSERT(m_count == m_set.count());
+	M_ASSERT(checkClassInvariance());
 }
 
 } // namespace db

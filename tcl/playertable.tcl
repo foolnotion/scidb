@@ -531,7 +531,7 @@ proc countryFlag {code} {
 
 	if {[llength $code] == 0} { return {} }
 	if {[info exists _Flags($code)]} { return [set _Flags($code)] }
-	set file [file join $::scidb::dir::share/flags/$code.png]
+	set file [file join $::scidb::dir::share flags $code.png]
 	if {[catch {set _Flags($code) [image create photo -file $file]}]} { return {} }
 	return [set _Flags($code)]
 }

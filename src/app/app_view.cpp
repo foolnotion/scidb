@@ -296,7 +296,6 @@ View::filterPlayers()
 			m_playerFilter.add(i);
 	}
 
-	m_playerFilter.finish();
 	m_playerSelector.update(m_playerFilter);
 }
 
@@ -317,7 +316,6 @@ View::filterEvents()
 			m_eventFilter.add(i);
 	}
 
-	m_eventFilter.finish();
 	m_eventSelector.update(m_eventFilter);
 }
 

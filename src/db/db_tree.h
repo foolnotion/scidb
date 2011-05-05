@@ -37,8 +37,6 @@
 #include "m_ref_counter.h"
 #include "m_ref_counted_ptr.h"
 
-#define SHOW_TREE_INFO
-
 namespace util { class Progress; }
 namespace util { class ByteStream; }
 

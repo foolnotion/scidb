@@ -46,6 +46,7 @@
 #include "u_crc.h"
 
 #include "sys_time.h"
+#include "sys_file.h"
 #include "sys_utf8_codec.h"
 
 #include "m_fstream.h"
@@ -674,16 +675,18 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	if (isReadOnly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
-	mstl::fstream indexStream;
-	mstl::fstream namebaseStream;
+	mstl::fstream	indexStream;
+	mstl::fstream	namebaseStream;
+	mstl::string	namebaseTempFilename(namebaseFilename + ".temp.38583276");
 
 	m_gameData->sync();
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
-	openFile(namebaseStream, namebaseFilename, MagicNamebase, attach ? Truncate : 0);
+	openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 
 	try
 	{
 		writeNamebase(namebaseStream);
+		sys::file::rename(namebaseTempFilename, namebaseFilename);
 		writeIndex(indexStream, start, progress);
 	}
 	catch (...)
@@ -693,6 +696,7 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 		delete m_siteList;
 		delete m_roundList;
 
+		sys::file::deleteIt(namebaseTempFilename);
 		m_playerList = m_eventList = m_siteList = m_roundList = 0;
 		throw;
 	}
@@ -745,16 +749,18 @@ Codec::update(mstl::string const& rootname)
 	if (isReadOnly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
-	mstl::fstream indexStream;
-	mstl::fstream namebaseStream;
+	mstl::fstream	indexStream;
+	mstl::fstream	namebaseStream;
+	mstl::string	namebaseTempFilename(namebaseFilename + ".temp.38583276");
 
 	m_gameData->sync();
 	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
-	openFile(namebaseStream, namebaseFilename, MagicNamebase);
+	openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 
 	try
 	{
 		writeNamebase(namebaseStream);
+		sys::file::rename(namebaseTempFilename, namebaseFilename);
 		updateIndex(indexStream);
 	}
 	catch (...)
@@ -764,6 +770,7 @@ Codec::update(mstl::string const& rootname)
 		delete m_siteList;
 		delete m_roundList;
 
+		sys::file::deleteIt(namebaseTempFilename);
 		m_playerList = m_eventList = m_siteList = m_roundList = 0;
 		throw;
 	}
@@ -796,13 +803,24 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 	if (updateNamebase)
 	{
-		// XXX catch exceptions
 		mstl::fstream namebaseStream;
 		mstl::string namebaseFilename(rootname + m_extNamebase);
 
-		checkPermissions(namebaseFilename);
-		openFile(namebaseStream, namebaseFilename, MagicNamebase);
-		writeNamebase(namebaseStream);
+		mstl::string namebaseTempFilename(namebaseFilename + ".temp.38583276");
+
+		try
+		{
+			mstl::fstream namebaseStream;
+			checkPermissions(namebaseFilename);
+			openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
+			writeNamebase(namebaseStream);
+			sys::file::rename(namebaseTempFilename, namebaseFilename);
+		}
+		catch (...)
+		{
+			sys::file::deleteIt(namebaseTempFilename);
+			throw;
+		}
 	}
 
 	GameInfo* info = gameInfoList()[index];

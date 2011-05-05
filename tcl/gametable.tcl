@@ -1063,7 +1063,7 @@ proc TableFill {path args} {
 						if {$codec eq "cbh"} {
 							lappend text $mc::NotAvailable
 						} else {
-							lappend text [string map {: " - "} $item]
+							lappend text [::fonts::translate [string map {: " - "} $item]]
 						}
 					}
 
@@ -1087,7 +1087,7 @@ proc TableFill {path args} {
 						if {$codec eq "cbh"} {
 							lappend text $mc::NotAvailable
 						} else {
-							lappend text $item
+							lappend text [::fonts::translate $item]
 						}
 					}
 

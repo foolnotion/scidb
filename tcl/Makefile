@@ -132,7 +132,8 @@ install: $(SCRIPT)
 	install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
 	install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
 	install -m 644 -p cursor/*.cur $(SHAREDIR)/cursor
-	install -m 644 -p cursor/*.xcur $(SHAREDIR)/flags
+	install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
+	install -m 644 -p flags/*.png $(SHAREDIR)/flags
 	install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
 	install -m 644 -p lang/eco/*.* $(SHAREDIR)/lang/eco
 	install -m 644 -p photos/*.sp? $(SHAREDIR)/photos

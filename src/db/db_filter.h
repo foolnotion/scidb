@@ -78,10 +78,6 @@ public:
 	void search(Query const& query, DatabaseContent const& content);
 	/// add given game number
 	void add(unsigned index);
-	/// should be called finally after add() is used
-	void finish();
-	/// should be called finally after add() is used
-	void finish(unsigned count);
 
 	/// resize the filter to the specified size (keeps the current filter content)
 	void resize(unsigned newSize, ResizeMode mode);
@@ -95,6 +91,8 @@ public:
 	void dump() const;
 
 private:
+
+	bool checkClassInvariance() const;
 
 	mstl::bitset	m_set;
 	unsigned			m_count;
