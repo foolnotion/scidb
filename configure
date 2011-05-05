@@ -817,6 +817,7 @@ proc writeMakefile {{type ""}} {
     }
 
     if {$feature(symbols)}          { Append option(C_DEBUG) "-g" }
+    if {$feature(symbols)}          { Append option(CXX_DEBUG) "-g" }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ -DNASSERT" }
     if {$feature(gprof-profiling)}  { Append option(PROFILING) "-pg" }
