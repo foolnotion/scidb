@@ -7,9 +7,9 @@ See the file copying.txt for copying permission.
 #include <endian.h>
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-# define XML_BYTE_ORDER=12
+# define XML_BYTE_ORDER 12
 #else
-# define XML_BYTE_ORDER=21
+# define XML_BYTE_ORDER 21
 #endif
 
 #ifdef XML_WINLIB
