@@ -19,8 +19,9 @@
 #define _ZZIP_LIB_H
 
 #include <zzip/zzip.h>
-#include <zzip/zzip-io.h>
-#include <zzip/zzip-stdint.h>
+#include <zzip/plugin.h>
+#include <zzip/stdint.h>
+#include <zzip/lib.h>
 
 /*
  * this structure cannot be wildly enlarged... (see zzip-zip.c)

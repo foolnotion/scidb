@@ -13,7 +13,6 @@
 include ../../../Makefile.in
 
 .SUFFIXES: .c
-.PRECIOUS:
 
 INCLUDE	= -I.
 OPTIMIZE	= -O2 -fomit-frame-pointer
@@ -33,6 +32,9 @@ all: $(LIB).a
 
 clean:
 	rm -f $(LIB).a $(OBJS)
+
+depend:
+	# do nothing
 
 $(LIB).a: $(OBJS)
 	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)

@@ -1,6 +1,6 @@
 #ifndef __ZZIP_INTERNAL_HINTS_H
 #define __ZZIP_INTERNAL_HINTS_H
-#include <zzip-conf.h>
+#include <zzip/conf.h>
 
 #ifndef ZZIP_GNUC_ATLEAST
 # if defined __GNUC__ && defined __GNUC_MINOR__

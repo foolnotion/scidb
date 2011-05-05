@@ -13,11 +13,9 @@
 include ../../../Makefile.in
 
 .SUFFIXES: .c
-.PRECIOUS:
 
 INCLUDE	= -I.
 DEFINES	= -DNDEBUG
-CFLAGS	= $(CFLAGS) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	adler32.c \
@@ -41,13 +39,15 @@ all: $(LIB).a
 
 clean:
 	rm -f $(LIB).a $(OBJS)
+ 
+depend:
+	# do nothing
 
 $(LIB).a: $(OBJS)
 	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INCLUDE) $*.c
+	$(CC) -c $(CFLAGS) $(OPTIMIZE) $(DEFINES) $(INCLUDE) $*.c
 
 # vi:set ts=3 sw=3:
-# DO NOT DELETE THIS LINE -- make depend depends on it.

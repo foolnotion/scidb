@@ -77,13 +77,18 @@ set ForbiddenChars		"Contains forbidden character(s)."
 
 set Settings				"&Settings"
 
+# do not need translation
+set SettingsEnglish		"&English"
+
 }
 
 
-foreach entry $::i18n::languages {
-	set language [lindex $entry 0]
-	if {[info exists ::mc::lang$language]} {
-		set ::menu::mc::Settings$language "&$language"
+if {[info exists ::i18n::languages]} {
+	foreach entry $::i18n::languages {
+		set language [lindex $entry 0]
+		if {[info exists ::mc::lang$language]} {
+			set ::menu::mc::Settings$language "&$language"
+		}
 	}
 }
 

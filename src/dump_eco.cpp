@@ -603,7 +603,7 @@ dumpBinary(	mstl::ostream& strm,
 	M_ASSERT(!node->alreadyDone());
 	node->done();
 
-	if (!info.testAndSet(node->eco()))
+	if (!info.test_and_set(node->eco()))
 	{
 		strm.put(node->length());
 		strm.put(node->name().size());
@@ -684,7 +684,7 @@ dumpBinary(Node* node)
 
 	mstl::cout.write("eco.bin", 8);
 
-	bstrm << uint16_t(100);
+	bstrm << uint16_t(99);
 	bstrm << uint32_t(countCodes);
 	bstrm << uint32_t(countNodes);
 	bstrm << uint32_t(countMoves);

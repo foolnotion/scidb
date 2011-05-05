@@ -13,11 +13,8 @@
 include ../../../../Makefile.in
 
 .SUFFIXES: .cpp
-.PRECIOUS:
 
 INCLUDE	= -I.
-CFLAGS	= $(CFLAGS) $(OPTIMIZE) $(C_DEBUG)
-CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG)
 
 SRC_CXX=\
 	agg_arc.cpp \
@@ -59,16 +56,16 @@ clean:
 	rm -f $(LIB).a $(OBJS)
 
 depend:
-	makedepend -fMakefile -Y -- $(CFLAGS) $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
 
 $(LIB).a: $(OBJS)
 	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INCLUDE) $*.c
+	$(CC) -c $(CFLAGS) $(CFLAGS) $(OPTIMIZE) $(C_DEBUG) $(INCLUDE) $*.c
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

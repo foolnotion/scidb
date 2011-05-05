@@ -11,7 +11,7 @@
 #ifndef _ZZIPWRAP_H
 #define _ZZIPWRAP_H
 
-#include <zziplib.h>
+#include <zzip/lib.h>
 
 #ifdef __cplusplus
 extern "C" {

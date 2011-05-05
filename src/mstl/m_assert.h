@@ -33,24 +33,20 @@ struct assertion_failure_exception : public exception
 	assertion_failure_exception(char const* what);
 };
 
-#define __M_CHECK(Exc,expr)	({ if (__builtin_expect(!(expr), 0)) M_THROW(Exc(#expr)); })
+#ifdef NREQ
 
-#ifndef NREQ
-# define M_REQUIRE(expr)	__M_CHECK(::mstl::precondition_violation_exception, expr)
-#else
 # define M_REQUIRE(expr)
-#endif
-
-#ifndef NASSERT
-# define M_ASSERT(expr)	__M_CHECK(::mstl::assertion_failure_exception, expr)
-#else
 # define M_ASSERT(expr)
-#endif
-
-#ifndef NDEBUG
-# define M_DEBUG(expr)		__M_CHECK(::mstl::assertion_failure_exception, expr)
-#else
 # define M_DEBUG(expr)
+
+#else
+
+#define __M_CHECK(Exc,expr) ({ if (__builtin_expect(!(expr), 0)) M_THROW(Exc(#expr)); })
+
+# define M_REQUIRE(expr)	__M_CHECK(::mstl::precondition_violation_exception, expr)
+# define M_ASSERT(expr)		__M_CHECK(::mstl::assertion_failure_exception, expr)
+# define M_DEBUG(expr)		__M_CHECK(::mstl::assertion_failure_exception, expr)
+
 #endif
 
 } // namespace mstl

@@ -11,8 +11,8 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>                                         /* exported...*/
-#include <zzip-file.h>
+#include <zzip/zzip.h>                                         /* exported...*/
+#include <zzip/file.h>
 
 #include <string.h>
 #include <sys/stat.h>
@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include <zzipformat.h>
-#include "__debug.h"
+#include <zzip/format.h>
+#include "zzip/__debug.h"
 
 #if 0
 # if defined ZZIP_HAVE_IO_H

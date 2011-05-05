@@ -4,8 +4,10 @@
 
 include ../../../Makefile.in
 
-SOURCES = minilzo.c
-OBJS = $(SOURCES:.c=.o)
+.SUFFIXES: .c
+
+SOURCES	= minilzo.c
+OBJS		= $(SOURCES:.c=.o)
 
 # Make sure that minilzo.h, lzoconf.h and lzodefs.h are in the
 # current dircectory. Otherwise you may want to adjust CPPFLAGS.
@@ -36,5 +38,7 @@ clean:
 	rm -f $(PROGRAM) $(PROGRAM).exe $(PROGRAM).map $(PROGRAM).tds
 	rm -f *.err *.o *.obj
 
-.PHONY: default clean
+depend:
+	# do nothing
 
+# vi:set ts=3 sw=3:

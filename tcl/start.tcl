@@ -39,7 +39,6 @@ if {$tcl_platform(platform) eq "windows"} {
 } else {
 	# already defined in tkscidb
 }
-set share [file join $home development c++ scidb tcl]	;# XXX
 
 
 if {![file isdirectory $user]} {

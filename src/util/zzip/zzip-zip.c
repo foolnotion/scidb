@@ -11,9 +11,9 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>                                  /* archive handling */
-#include <zzip-file.h>
-#include <zzipformat.h>
+#include <zzip/zzip.h>                                  /* archive handling */
+#include <zzip/file.h>
+#include <zzip/format.h>
 
 #include <ctype.h>
 #include <errno.h>

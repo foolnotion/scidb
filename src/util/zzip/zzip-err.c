@@ -11,13 +11,13 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>                                    /* exported... */
+#include <zzip/zzip.h>                                    /* exported... */
 #include <zlib.h>
 
 #include <string.h>
 #include <errno.h>
 
-#include <zzip-file.h>
+#include <zzip/file.h>
 
 static struct errlistentry { int code; const char* mesg; } 
 errlist[] = 

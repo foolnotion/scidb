@@ -13,10 +13,8 @@
 include ../../../Makefile.in
 
 .SUFFIXES: .cpp
-.PRECIOUS:
 
 INCLUDE	= -I. -I../../mstl -I../../util -I../../util/expat -Iagg
-CXXFLAGS = $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	svg_exception.cpp \
@@ -42,7 +40,7 @@ $(LIB).a: $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp
+	$(CXX) -c $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

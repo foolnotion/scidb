@@ -49,6 +49,7 @@ private:
 	void symbols();
 # ifdef __unix__
 	bool symbols_gdb();
+	bool symbols_linux();
 # endif
 
 	void*			m_addresses[64];	///< Addresses of each function on the stack.

@@ -33,10 +33,14 @@ lower_bound(ForwardIterator first, ForwardIterator last, LessThanComparable cons
 
 template <typename ForwardIterator, typename LessThanComparable>
 ForwardIterator
+upper_bound(ForwardIterator first, ForwardIterator last, LessThanComparable const& value);
+
+template <typename ForwardIterator, typename LessThanComparable>
+ForwardIterator
 binary_search(ForwardIterator first, ForwardIterator last, LessThanComparable const& value);
 
 template <typename ForwardIterator>
-ForwardIterator rotate (ForwardIterator first, ForwardIterator middle, ForwardIterator last);
+ForwardIterator rotate(ForwardIterator first, ForwardIterator middle, ForwardIterator last);
 
 } // namespace mstl
 

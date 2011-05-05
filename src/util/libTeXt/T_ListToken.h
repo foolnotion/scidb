@@ -58,6 +58,7 @@ public:
 	void append(Value value);
 	void append(Value value1, Value value2);
 	void append(Value value1, Value value2, Value value3);
+	void append(Value value1, Value value2, Value value3, Value value4);
 	void append(Value const* first, Value const* last);
 
 	TokenP front() const;

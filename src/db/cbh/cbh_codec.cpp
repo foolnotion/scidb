@@ -34,6 +34,7 @@
 #include "cbh_codec.h"
 #include "cbh_decoder.h"
 
+#include "db_pgn_reader.h"
 #include "db_game_data.h"
 #include "db_exception.h"
 
@@ -353,6 +354,18 @@ static type::ID const TypeMap[] =
 	Email_Chess,				// E-Mail
 	Openings,					// Opening book
 	Unspecific,					// Chess Media
+	Unspecific,					// Reference
+	Unspecific,					// Repertoire
+	Unspecific,					// Update
+	Unspecific,					// Strategy
+	Unspecific,					// Playchess
+	Unspecific,					// Tutorial
+	Unspecific,					// Elite Chess
+	Jewels,						// Brilliance
+	Unspecific,					// Woman Chess
+	Unspecific,					// Junior Chess
+	Unspecific,					// Simultaneous
+	Unspecific,					// Team Tournaments
 };
 
 
@@ -394,7 +407,6 @@ unsigned Codec::maxGameLength() const			{ return (1 << 16) - 1; }
 unsigned Codec::maxPlayerCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxSiteCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxRoundCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
 unsigned Codec::minYear() const					{ return 0; }
 unsigned Codec::maxYear() const					{ return mstl::max(Date::MaxYear, uint16_t(4094)); }
@@ -536,16 +548,15 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	namebase(Namebase::Player   ).update();
 	namebase(Namebase::Site     ).update();
 	namebase(Namebase::Event    ).update();
-	namebase(Namebase::Round    ).update();
 	namebase(Namebase::Annotator).update();
 
 	mstl::string filename(rootname + ".cbg");
 	checkPermissions(filename);
-	openFile(m_gameStream, filename);
+	openFile(m_gameStream, filename, Readonly);
 
 	filename.assign(rootname + ".cba");
 	checkPermissions(filename);
-	openFile(m_annotationStream, filename);
+	openFile(m_annotationStream, filename, Readonly);
 }
 
 
@@ -561,7 +572,7 @@ Codec::readTournamentData(mstl::string const& rootname)
 	mstl::string	str;
 
 	checkPermissions(filename);
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 	str.assign(160, '\0');
 
 	uint32_t hdr[7];
@@ -614,7 +625,7 @@ Codec::readTournamentData(mstl::string const& rootname)
 
 			Byte eventType = buf[4];
 
-			time::Mode	timeMode;
+			time::Mode	timeMode		= time::Unknown;
 			event::Mode	eventMode	= event::Undetermined;
 
 			switch ((eventType >> 5) & 3)
@@ -625,7 +636,7 @@ Codec::readTournamentData(mstl::string const& rootname)
 
 				case 4:
 					timeMode = time::Corr;
-					eventMode = event::PaperMail;
+//					eventMode = event::PaperMail;
 					break;
 			}
 
@@ -646,9 +657,19 @@ Codec::readTournamentData(mstl::string const& rootname)
 				}
 			}
 
+			if (countryCode == country::Unknown)
+				countryCode = PgnReader::extractCountryFromSite(city);
+
 			Byte category = strm.get();
 			strm.get();	// skip
 			Byte rounds = strm.get();
+
+			NamebaseSite* site = siteBase.insertSite(city, m_siteId, countryCode, nrecs);
+
+			if (site->id() == m_siteId)
+				++m_siteId;
+			else
+				siteBase.shrink(str.size(), 0);
 
 			NamebaseEvent* event = eventBase.insertEvent(
 												name,
@@ -660,7 +681,7 @@ Codec::readTournamentData(mstl::string const& rootname)
 												timeMode,
 												eventMode,
 												nrecs,
-												siteBase.insertSite(city, m_siteId++, countryCode, nrecs));
+												site);
 
 			m_eventMap[i] = event;
 			m_tournamentMap[event] = Tournament(category, rounds);
@@ -685,7 +706,7 @@ Codec::readPlayerData(mstl::string const& rootname)
 	Namebase&		base(namebase(Namebase::Player));
 
 	checkPermissions(filename);
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 
 	uint32_t hdr[7];
 	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
@@ -788,7 +809,7 @@ Codec::readAnnotatorData(mstl::string const& rootname)
 	Namebase&		base(namebase(Namebase::Annotator));
 
 	checkPermissions(filename);
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 
 	uint32_t hdr[7];
 	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
@@ -848,7 +869,7 @@ Codec::readSourceData(mstl::string const& rootname)
 	mstl::string	str;
 	Date				sourceDate;
 
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 
 	uint32_t hdr[7];
 	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
@@ -912,7 +933,7 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames)
 	mstl::string filenameJ(rootname + ".cbj");
 	if (!sys::file::access(filenameJ, sys::file::Readable))
 		return;
-	openFile(m_teamStream, filenameJ);
+	openFile(m_teamStream, filenameJ, Readonly);
 
 	if (m_teamStream.size()/78 < numGames)
 	{
@@ -931,7 +952,7 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames)
 	mstl::string	str;
 	Date				sourceDate;
 
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 
 	uint32_t hdr[7];
 	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
@@ -1006,7 +1027,7 @@ Codec::readHeader(mstl::string const& rootname)
 	mstl::fstream	strm;
 
 	checkPermissions(filename);
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 
 	Byte record[46];
 	strm.read(record, sizeof(record));
@@ -1038,7 +1059,7 @@ Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Prog
 	Byte record[46];
 	ByteStream bstrm(record, sizeof(record));
 
-	openFile(strm, filename);
+	openFile(strm, filename, Readonly);
 	strm.seekg(sizeof(record));
 
 	ProgressWatcher watcher(progress, numGames);
@@ -1291,16 +1312,15 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info, unsigned numGames)
 
 	NamebasePlayer* white = getPlayer(strm.uint24());
 	NamebasePlayer* black = getPlayer(strm.uint24());
-	NamebaseEntry*  annot = 0;
 
 	info.m_player[color::White] = white;
 	info.m_player[color::Black] = black;
 	info.m_event = getEvent(strm.uint24());
-	annot = getAnnotator(strm.uint24());
-	m_sourceMap[&info] = getSource(strm.uint24());
 
-	if (annot)
-		info.m_annotator = annot;
+	if (NamebaseEntry* annotator = getAnnotator(strm.uint24()))
+		info.m_annotator = annotator;
+	if (Source* source = getSource(strm.uint24()))
+		m_sourceMap[&info] = source;
 
 	Date date;
 	::setDate(date, strm.uint24());
@@ -1320,25 +1340,8 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info, unsigned numGames)
 
 	strm.skip(1);	// skip line evaluation
 
-	Byte round		= strm.get();
-	Byte subround	= strm.get();
-
-	if (round)
-	{
-		Namebase& base = namebase(Namebase::Round);
-
-		char* buf = base.alloc(8);
-		unsigned len;
-
-		if (subround)
-			len = ::sprintf(buf, "%u.%u", unsigned(round), unsigned(subround));
-		else
-			len = ::sprintf(buf, "%u", unsigned(round));
-
-		base.shrink(7, len);
-		info.m_round = base.insert(buf, info.m_event->id(), numGames);
-		info.m_round->ref();
-	}
+	info.m_round = strm.get();
+	info.m_subround = strm.get();
 
 	uint16_t whiteElo = mstl::min(uint16_t(rating::Max_Value), strm.uint16());
 	uint16_t blackElo = mstl::min(uint16_t(rating::Max_Value), strm.uint16());

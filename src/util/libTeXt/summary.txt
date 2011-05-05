@@ -1,0 +1,196 @@
+T_ActiveToken			Token			binding
+T_Ascii					Final			output
+T_Conditional			Expandable	expanding
+T_Generic				Final			setting/modifying
+T_Invalid				Expandable	error
+T_LeftBrace				Final			setting
+T_List					Expandable	expanding
+T_Macro					Expandable	expanding
+T_Number					Final			output
+T_Parameter				Parameter	binding
+T_RightBrace			Final			setting
+T_Text					Final			output
+T_Undefined				Undefined	self
+T_Value					Final			setting
+T_Variable				Variable		binding
+
+Alignment
+----------------------------------------------------------------------------------------------
+\crcr						Final			output		GenericFinal
+\space					Final			output		GenericFinal
+\tab						Final			output		GenericFinal
+\eps						Final			setting		GenericFinal
+\lineno					Number		expanding	Macro
+\everycr					Final			setting		GenericFinal			undefined/group
+\indent					Number		expanding	Macro
+\indentchar				Final			setting		GenericValue			number/ascii
+\indentstep				Final			setting		GenericValue			number/ascii
+
+Arithmetic
+----------------------------------------------------------------------------------------------
+\add						Final			binding		GenericAssignment		number/cs, number
+\sub						Final			binding		GenericAssignment		number/cs, number
+\mul						Final			binding		GenericAssignment		number/cs, number
+\div						Final			binding		GenericAssignment		number/cs, number
+\mod						Final			binding		GenericAssignment		number/cs, number
+\rem						Final			binding		GenericAssignment		number/cs, number
+\log10					Expandable	expanding	GenericExpandable		number
+
+Char
+----------------------------------------------------------------------------------------------
+\char						Expandable	expanding	GenericExpandable		ascii/number
+\code						Expandable	expanding	GenericExpandable		ascii/number
+
+Conditional
+----------------------------------------------------------------------------------------------
+\ifbound					Expandable	expanding	GenericConditional	until \fi
+\iffalse					Expandable	expanding	GenericConditional	until \fi
+\ifmacro					Expandable	expanding	GenericConditional	until \fi
+\iftext					Expandable	expanding	GenericConditional	until \fi
+\ifempty					Expandable	expanding	GenericConditional	until \fi
+\ifnum					Expandable	expanding	GenericConditional	until \fi
+\ifodd					Expandable	expanding	GenericConditional	until \fi
+\iftrue					Expandable	expanding	GenericConditional	until \fi
+\ifx						Expandable	expanding	GenericConditional	until \fi
+\if						Expandable	expanding	GenericConditional	until \fi
+\ifcase					Expandable	expanding	GenericConditional	until \fi
+\unless					Expandable	expanding	GenericExpandable		until \fi
+\else						Expandable	expanding	GenericExpandable		until \fi
+\when						Expandable	expanding	GenericExpandable		until \when or \else or \fi
+\fi						Expandable	expanding	GenericExpandable
+
+DateTime
+----------------------------------------------------------------------------------------------
+\second					Expandable	expanding	GenericExpandable
+\minute					Expandable	expanding	GenericExpandable
+\hour						Expandable	expanding	GenericExpandable
+\day						Expandable	expanding	GenericExpandable
+\mon						Expandable	expanding	GenericExpandable
+\year						Expandable	expanding	GenericExpandable
+
+Diagnostic
+----------------------------------------------------------------------------------------------
+\show						Final			tracing		GenericFinal			expandable
+\showthe					Final			tracing		GenericFinal			final
+
+ErrorMode
+----------------------------------------------------------------------------------------------
+\batchmode				Final			setting		GenericFinal
+\scrollmode				Final			setting		GenericFinal
+\nonstopmode			Final			setting		GenericFinal
+\abortmode				Final			setting		GenericFinal
+\errorstopmode			Final			setting		GenericFinal
+
+Expansion
+----------------------------------------------------------------------------------------------
+\expandafter			Expandable	expanding	GenericExpandable		undefined, expandable
+\noexpand				Expandable	expanding	GenericExpandable		undefined
+\the						Expandable	expanding	GenericExpandable		final
+
+Format
+----------------------------------------------------------------------------------------------
+\dec						Final			setting		GenericFinal
+\hex						Final			setting		GenericFinal
+\oct						Final			setting		GenericFinal
+\ignorecase				Final			setting		GenericFinal
+\lowercase				Final			setting		GenericFinal
+\uppercase				Final			setting		GenericFinal
+\showpos					Final			setting		GenericFinal
+\noshowpos				Final			setting		GenericFinal
+\fillchar				Final			setting		GenericValue			number/ascii
+\adjustnum				Final			setting		GenericValue			number/ascii
+
+Grouping
+----------------------------------------------------------------------------------------------
+\begingroup				Final			setting		GenericFinal
+\endgroup				Final			setting		GenericFinal
+\uptoken					Final			setting		GenericFinal			{number,} not final
+\uplevel					Final			setting		GenericFinal			{number,} generic assignment
+\global					Final			setting		GenericFinal			{number,} generic assignment
+
+InputOutput
+----------------------------------------------------------------------------------------------
+\input					Final			setting		GenericFinal			undefined
+\endinput				Final			setting		GenericFinal
+\inputlineno			Expandable	expanding	GenericExpandable
+
+List
+----------------------------------------------------------------------------------------------
+\list						Final			expanding	GenericFinal			undefined/group
+\lfront					Expandable	expanding	GenericExpandable		list
+\lback					Expandable	expanding	GenericExpandable		list
+\lindex					Expandable	expanding	GenericExpandable		list, number
+\llength					Expandable	expanding	GenericExpandable		list
+\lfind					Expandable	expanding	GenericExpandable		list, expandable
+\lappend					Final			modifying	GenericFinal			list, undefined
+\lprepend				Final			modifying	GenericFinal			list
+\lpopfront				Final			modifying	GenericFinal			list
+\lpopback				Final			modifying	GenericFinal			list
+\lreverse				Final			modifying	GenericFinal			list
+\lrotate					Final			modifying	GenericFinal			list
+\lflatten				Final			modifying	GenericFinal			list
+\lassign					Final			binding		GenericFinal			list, undefined/group(undefined)
+\lset						Final			modifying	GenericFinal			list, number, expandable
+\llet						Final			binding		GenericAssignment		undefined, list, number
+\iflist					Expandable	expanding	GenericConditional	until \fi
+
+Macros
+----------------------------------------------------------------------------------------------
+\let						Final			binding		GenericAssignment		undefined
+\xlet						Final			binding		GenericAssignment		final
+\futurelet				Final			binding		GenericAssignment		undefined, expandable
+\def						Final			binding		GenericAssignment		params, group(unbound)
+\edef						Final			binding		GenericAssignment		params, group(final)
+\xdef						Final			binding		GenericAssignment		params, group
+\csname					Expandable	expanding	GenericExpandable		final until \endcsname
+\endcsname				Final			binding		GenericFinal
+
+Messages
+----------------------------------------------------------------------------------------------
+\message					Final			trace			GenericFinal			final/group(final)
+\errmessage				Final			error			GenericFinal			final/group(final)
+\errorcontextlines	Final			setting		GenericValue			number/ascii
+
+Miscellaneous
+----------------------------------------------------------------------------------------------
+\bye						Final			terminate	GenericFinal
+\use						Final			setting		GenericFinal			undefined
+\number					Expandable	expanding	GenericExpandable		number/ascii
+\text						Expandable	expanding	GenericExpandable		undefined
+\context					Expandable	expanding	GenericExpandable
+\compare					Expandable	expanding	GenericExpandable		final, final
+\length					Expandable	expanding	GenericExpandable		undefined
+
+Nothing
+----------------------------------------------------------------------------------------------
+\empty					Expandable	nothing		GenericExpandable
+\relax					Final			nothing		GenericFinal
+\undefined				Undefined	error			Undefined
+
+Tracing
+----------------------------------------------------------------------------------------------
+\tracingcommands		Final			setting		GenericValue			number/ascii
+\tracingmacros			Final			setting		GenericValue			number/ascii
+\tracingcommands		Final			setting		GenericValue			number/ascii
+
+Unicode
+----------------------------------------------------------------------------------------------
+\ucpref					Final			setting		GenericFinal			undefined
+\ucsuff					Final			setting		GenericFinal			undefined
+\utf-8					Final			setting		GenericValue			number/ascii
+
+Values
+----------------------------------------------------------------------------------------------
+\meaning					Expandable	expanding	GenericExpandable		expandable
+\string					Expandable	expanding	GenericExpandable		expandable
+\escapechar				Final			setting		GenericValue			number/ascii
+
+==============================================================================================
+
+binding		: binding token with value
+output		: sending text to output stream
+setting		: sets an option
+modifying	: modifies a token
+expanding	: put new Token(s) into queue
+tracing		: sends some info to log stream
+error			: thowing an error

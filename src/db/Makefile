@@ -13,10 +13,8 @@
 include ../../Makefile.in
 
 .SUFFIXES: .cpp
-.PRECIOUS:
 
 INCLUDE	= -I. -Isci -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../sys
-CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	db_annotation.cpp \
@@ -97,7 +95,7 @@ LIB	= libdb
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS) db_eco_table.o db_eco_table_stubs.o
+	rm -f $(LIB).a $(LIB)stubs.a $(OBJS) db_eco_table.o db_eco_table_stubs.o
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) db_eco_table.cpp db_eco_table_stubs.cpp  2>/dev/null
@@ -111,7 +109,7 @@ $(LIB)stubs.a: $(OBJS) db_eco_table_stubs.o
 	$(RANLIB) $(LIB)stubs.a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

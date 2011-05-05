@@ -48,6 +48,9 @@ bool access(char const* filename, Mode mode);
 long size(char const* filename);
 bool changed(char const* filename, Time& result);
 
+void rename(char const* oldFilename, char const* newFilename);
+void deleteIt(char const* filename);
+
 void* createMapping(char const* filename, Mode mode);
 void closeMapping(void*& address);
 

@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <zziplib.h>
+#include <zzip/lib.h>
 
 #ifndef O_BINARY
 #define O_BINARY 0

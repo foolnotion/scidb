@@ -10,9 +10,9 @@
 #include <string.h>
 #include <stdlib.h> /* exit */
 
-#include <zziplib.h>
+#include <zzip/lib.h>
 /* #incl "zzipwrap.h" */
-#include      "zzipwrap.h"
+#include <zzip/wrap.h>
 
 #ifndef O_BINARY
 #define O_BINARY 0

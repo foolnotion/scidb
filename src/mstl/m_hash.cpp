@@ -19,9 +19,7 @@
 #include "m_hash.h"
 #include "m_string.h"
 #include "m_bit_functions.h"
-
-
-inline static bool notPow2(unsigned n) { return n & (n - 1); }
+#include "m_utility.h"
 
 
 size_t
@@ -35,7 +33,7 @@ size_t
 mstl::bits::hash_size(size_t min_size)
 {
 	M_ASSERT(min_size > 0);
-	return ::notPow2(min_size) ? hash_expansion(min_size) : min_size;
+	return is_not_pow_2(min_size) ? hash_expansion(min_size) : min_size;
 }
 
 

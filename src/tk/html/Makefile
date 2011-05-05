@@ -15,7 +15,6 @@ include ../../../Makefile.in
 .SUFFIXES: .c
 
 INCLUDE	= -I. -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
-CFLAGS	= $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_C	= \
 	css.c \
@@ -52,14 +51,14 @@ clean:
 	rm -f $(LIB).a $(OBJS) lempar.c lemon cssparse.out
 
 depend:
-	makedepend -fMakefile -Y -- $(CFLAGS) $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
 
 $(LIB).a: $(OBJS)
 	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INCLUDE) $*.c
+	$(CC) -c $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.c
 
 #========================================================================
 

@@ -12,6 +12,8 @@
 
 include ../../../Makefile.in
 
+.SUFFIXES: .c
+
 INCLUDE	= -Ixmltok -Ixmlparse
 DEFINES	= -DXML_NS -DXML_DTD
 
@@ -39,6 +41,9 @@ $(LIB): $(LIBOBJS)
 
 clean:
 	rm -f $(OBJS) $(LIBOBJS) $(LIB)
+
+depend:
+	# do nothing
 
 .c.o:
 	$(CC) $(CFLAGS) -O2 $(INCLUDE) $(DEFINES) -c -o $@ $<

@@ -1,6 +1,6 @@
 #ifndef __ZZIP_INTERNAL_DEBUG_H
 #define __ZZIP_INTERNAL_DEBUG_H
-#include <zzip-conf.h>
+#include <zzip/conf.h>
 #include "__hints.h"
 
 /* perhaps want to show on syslog(3) ?? */

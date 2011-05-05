@@ -136,7 +136,7 @@ gdb_cmd(char const* script_name)
 	return cmd;
 }
 
-#  else // USE_GDB
+#  endif // USE_GDB
 
 namespace {
 
@@ -222,7 +222,7 @@ proc_stream::proc_stream(string const& cmd)
 		if (sd != 1 && ::dup2(sd, 1) < 0) throw 0;
 
 		::close(sd);
-		::execl("/bin/sh", "sh", "-c", cmd.c_str(), 0);
+		::execl("/bin/sh", "sh", "-c", cmd.c_str(), static_cast<char*>(0));
 
 		throw 0;
 	}
@@ -280,7 +280,6 @@ addr2line_cmd()
 	return string();
 }
 
-#  endif // USE_GDB
 
 bool
 mstl::backtrace::is_debug_mode()
@@ -468,7 +467,8 @@ mstl::backtrace::operator=(backtrace const& v)
 }
 
 
-# if defined(__unix__) && defined(USE_GDB)
+# if defined(__unix__)
+#  if defined(USE_GDB)
 
 bool
 mstl::backtrace::symbols_gdb()
@@ -560,7 +560,7 @@ mstl::backtrace::symbols_gdb()
 	return true;
 }
 
-#else // defined(__unix__) && defined(USE_GDB)
+#  endif // defined(USE_GDB)
 
 bool
 mstl::backtrace::symbols_linux()
@@ -623,7 +623,7 @@ mstl::backtrace::symbols_linux()
 	return true;
 }
 
-# endif	// defined(__unix__) && defined(USE_GDB)
+# endif	// defined(__unix__)
 
 
 bool
@@ -645,6 +645,9 @@ mstl::backtrace::symbols()
 		return;
 
 	if (symbols_gdb())
+		return;
+
+	if (symbols_linux())
 		return;
 
 	m_allocator->clear();
@@ -687,6 +690,9 @@ mstl::backtrace::text_write(ostringstream& os, size_t skip) const
 	unsigned i = 0;
 
 	skip += m_skip;
+
+	if (::strncmp(m_symbols[0], "__read_nocancel", 12) == 0)
+		skip += 4;
 
 	for ( ; i < m_nframes && skip; ++i)
 	{

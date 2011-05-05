@@ -10,9 +10,9 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>                                   /* exported... */
-#include <zzip-file.h>
-#include <zzipformat.h>
+#include <zzip/zzip.h>                                   /* exported... */
+#include <zzip/file.h>
+#include <zzip/format.h>
 
 #ifdef ZZIP_HAVE_SYS_STAT_H
 #include <sys/stat.h>

@@ -30,7 +30,7 @@
 #endif
 #endif
 
-#include <zzip.h>
+#include <zzip/zzip.h>
 #include <zlib.h>
 
 #ifdef ZZIP_HAVE_UNISTD_H

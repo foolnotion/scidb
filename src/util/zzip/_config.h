@@ -13,6 +13,9 @@
 #define ZZIP__FILE_OFFSET_BITS  64 
 #endif
 
+/* Define if you have the <direct.h> header file. */
+/* #undef ZZIP_HAVE_DIRECT_H */
+
 /* Define if you have the <dirent.h> header file, and it defines `DIR'. */
 #ifndef ZZIP_HAVE_DIRENT_H 
 #define ZZIP_HAVE_DIRENT_H  1 
@@ -94,10 +97,14 @@
 #endif
 
 /* Define if you have the <unistd.h> header file. */
-#ifndef ZZIP_HAVE_UNISTD_H 
-#define ZZIP_HAVE_UNISTD_H  1 
+#ifndef WIN32
+# ifndef ZZIP_HAVE_UNISTD_H 
+# define ZZIP_HAVE_UNISTD_H  1 
+# endif
 #endif
 
+#ifdef WIN32
+# define ZZIP_HAVE_WINDOWS_H
 /* Define if you have the <winbase.h> header file. */
 /* #undef ZZIP_HAVE_WINBASE_H */
 
@@ -106,6 +113,7 @@
 
 /* Define if you have the <winnt.h> header file. */
 /* #undef ZZIP_HAVE_WINNT_H */
+#endif
 
 /* Define if you have the <zlib.h> header file. */
 #ifndef ZZIP_HAVE_ZLIB_H 
@@ -114,6 +122,7 @@
 
 /* Define as `__inline' if that's what the C compiler calls it, or to nothing
    if it is not supported. */
+#define _zzip_inline __inline
 /* #undef _zzip_inline */
 
 /* Define for large files, on AIX-style hosts. */

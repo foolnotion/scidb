@@ -11,8 +11,8 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>
-#include <zzip-io.h>
+#include <zzip/zzip.h>
+#include <zzip/plugin.h>
 
 #include <string.h>
 #include <sys/stat.h>
@@ -22,8 +22,8 @@
 #include <stdio.h>
 #endif
 
-#include <zzip-file.h>
-#include <zzipformat.h>
+#include <zzip/file.h>
+#include <zzip/format.h>
 
 zzip_off_t
 zzip_filesize(int fd)

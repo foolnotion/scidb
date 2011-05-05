@@ -1,6 +1,6 @@
 #ifndef ZZIP_INTERNAL_DIRENT_H
 #define ZZIP_INTERNAL_DIRENT_H
-#include <zzip-conf.h>
+#include <zzip/conf.h>
 
 /*
  * DO NOT USE THIS CODE.

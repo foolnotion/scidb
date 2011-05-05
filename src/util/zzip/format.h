@@ -14,7 +14,7 @@
 #ifndef _ZZIP_FORMAT_H /* zzipformat.h */
 #define _ZZIP_FORMAT_H
  
-#include <zzip.h>
+#include <zzip/zzip.h>
 /* we have ICO C 9X types defined */
 
 /* 

@@ -44,6 +44,7 @@
 #include "m_string.h"
 #include "m_fstream.h"
 #include "m_assert.h"
+#include "m_static_check.h"
 
 #include "sys_utf8_codec.h"
 
@@ -65,7 +66,7 @@ typedef ByteStream::uint48_t uint48_t;
 
 namespace
 {
-	enum { IndexEntrySize = 62 };	// = sizeof(pointers) + sizeof(IndexBits) = 37 + 25
+	enum { IndexEntrySize = 61 };	// = sizeof(pointers) + sizeof(IndexBits) = 35 + 27
 
 	struct IndexBits
 	{
@@ -97,10 +98,12 @@ namespace
 		uint32_t eco					:9;
 		uint32_t promotion			:1;
 		//----------------------------- 32 bit
+		uint32_t round					:8;
+		uint32_t subround				:8;
 		uint32_t whiteRatingType	:3;
 		uint32_t blackRatingType	:3;
 		uint32_t _unused_				:2;
-		//-----------------------------  8 bit
+		//----------------------------- 24 bit
 	};
 }
 
@@ -110,9 +113,9 @@ static mstl::string const MagicGameFile ("Scidb.g\0", 8);
 static mstl::string const MagicNamebase ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
-static uint16_t const FileVersion = 100;
+static uint16_t const FileVersion = 99;
 
-static char const* NamebaseTags[Namebase::Last];
+static char const* NamebaseTags[Namebase::Round];
 
 namespace {
 
@@ -124,7 +127,6 @@ Init::Init()
 	NamebaseTags[Namebase::Player		] = "player\0";
 	NamebaseTags[Namebase::Site		] = "site\0\0\0";
 	NamebaseTags[Namebase::Event		] = "event\0\0";
-	NamebaseTags[Namebase::Round		] = "round\0\0";
 	NamebaseTags[Namebase::Annotator	] = "annota\0";
 }
 
@@ -157,12 +159,23 @@ getPlayer(Namebase& base, unsigned index)
 	if (index >= base.size())
 		IO_RAISE(Index, Corrupted, "corrupted namebase index %u", index);
 
+	// XXX we need player with id()==index
 	return base.playerAt(index);
 }
 
 
 inline static NamebaseEntry*
-getEntry(Namebase& base, unsigned index)
+getRound(Namebase& base, unsigned index)
+{
+	if (index >= base.size())
+		IO_RAISE(Index, Corrupted, "corrupted namebase index %u", index);
+
+	return base.entryAt(index);
+}
+
+
+inline static NamebaseEntry*
+getAnnotator(Namebase& base, unsigned index)
 {
 	if (index >= base.size())
 		IO_RAISE(Index, Corrupted, "corrupted namebase index %u", index);
@@ -262,7 +275,6 @@ unsigned Codec::maxGameCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxPlayerCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxSiteCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxRoundCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
 unsigned Codec::minYear() const					{ return Date::MinYear; }
 unsigned Codec::maxYear() const					{ return Date::MaxYear; }
@@ -304,6 +316,8 @@ Codec::Codec()
 	:m_gameData(0)
 	,m_asyncReader(0)
 {
+	M_STATIC_CHECK(U_NUMBER_OF(m_lookup) <= Namebase::Round, Index_Out_Of_Range);
+
 	m_magicGameFile = MagicGameFile;
 	m_magicGameFile.resize(MagicGameFile.size() + 2);
 
@@ -340,6 +354,14 @@ BlockFile*
 Codec::newBlockFile() const
 {
 	return new BlockFile(Block_Size, BlockFile::ReadWriteLength);
+}
+
+
+void
+Codec::filterTag(TagSet& tags, tag::ID tag) const
+{
+	if (!Encoder::skipTag(tag))
+		tags.remove(tag);
 }
 
 
@@ -544,7 +566,6 @@ Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const&
 	M_ASSERT(namebase(Namebase::Player).size() <= maxPlayerCount());
 	M_ASSERT(namebase(Namebase::Site).size() <= maxSiteCount());
 	M_ASSERT(namebase(Namebase::Event).size() <= maxEventCount());
-	M_ASSERT(namebase(Namebase::Round).size() <= maxRoundCount());
 
 	Encoder encoder(strm);
 	encoder.doEncoding(signature, data);
@@ -552,9 +573,9 @@ Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const&
 
 
 db::Consumer*
-Codec::getConsumer()
+Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(*this);
+	return new Consumer(srcFormat, *this);
 }
 
 
@@ -732,10 +753,13 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 	unsigned numGames	= bstrm.uint24();
 	unsigned baseType	= bstrm.uint8();
 
-//	if (version < 100)
-//		IO_RAISE("old format scidb version (%d)", unsigned(version));
-	if (version > FileVersion)
-		IO_RAISE(Index, Unknown_Version, "unknown scidb version (%u)", unsigned(version));
+	if (version != ::FileVersion)
+	{
+		if (version < FileVersion)
+			IO_RAISE(Index, Unexpected_Version, "old format scidb version (%d)", unsigned(version));
+		else
+			IO_RAISE(Index, Unknown_Version, "unknown Scidb version (%u)", unsigned(version));
+	}
 
 	bstrm.skip(2);	// skip unused bytes
 
@@ -791,26 +815,28 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 void
 Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 {
+#define GET(type) ::get##type(namebase(Namebase::type), m_lookup[Namebase::type][strm.uint24()])
+
 	item.m_gameOffset = strm.uint32();
 
-	NamebasePlayer* whitePlayer = ::getPlayer(namebase(Namebase::Player), strm.uint24());
-	NamebasePlayer* blackPlayer = ::getPlayer(namebase(Namebase::Player), strm.uint24());
+	NamebasePlayer* whitePlayer = GET(Player);
+	NamebasePlayer* blackPlayer = GET(Player);
 
 	whitePlayer->ref(); blackPlayer->ref();
 
 	{
-		NamebaseEvent* event			= ::getEvent(namebase(Namebase::Event),		strm.uint24());
-		NamebaseEntry* round			= ::getEntry(namebase(Namebase::Round),		strm.uint24());
-		NamebaseEntry* annotator	= ::getEntry(namebase(Namebase::Annotator),	strm.uint24());
+		NamebaseEvent* event			= GET(Event);
+		NamebaseEntry* annotator	= GET(Annotator);
 
-		event->ref(); round->ref(); annotator->ref();
+		event->ref(); annotator->ref();
 
 		item.m_player[color::White]	= whitePlayer;
 		item.m_player[color::Black]	= blackPlayer;
 		item.m_event						= event;
-		item.m_round						= round;
 		item.m_annotator					= annotator;
 	}
+
+#undef GET
 
 	item.m_signature.m_homePawns.value = strm.uint64();
 	item.m_signature.m_progress.side[color::White].rankValue = strm.uint16();
@@ -830,6 +856,8 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 
 	M_STATIC_CHECK(Eco::Bit_Size_Per_Subcode == 20, ReimplementationNeeded);
 
+	item.m_round								= bits->round;
+	item.m_subround							= bits->subround;
 	item.m_eco									= bits->eco;
 	item.m_ecoKey								= bits->ecoKey;
 	item.m_ecoOpening							= bits->ecoOpening;
@@ -846,11 +874,11 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_commentCount						= bits->commentCount;
 	item.m_annotationCount					= bits->annotationCount;
 	item.m_positionId							= bits->positionId;
-	item.m_termination							= bits->termination;
+	item.m_termination						= bits->termination;
 	item.m_dateYear							= bits->dateYear;
 	item.m_dateMonth							= bits->dateMonth;
 	item.m_dateDay								= bits->dateDay;
-	item.m_signature.m_castling				= bits->castling;
+	item.m_signature.m_castling			= bits->castling;
 	item.m_signature.m_promotions			= bits->promotion;
 	item.m_signature.m_underPromotions	= bits->underPromotion;
 	item.m_signature.m_hpCount				= bits->hpCount;
@@ -960,7 +988,6 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	strm << uint24_t(item.m_player[color::White]->id());
 	strm << uint24_t(item.m_player[color::Black]->id());
 	strm << uint24_t(item.m_event->id());
-	strm << uint24_t(item.m_round->id());
 	strm << uint24_t(item.m_annotator->id());
 	strm << uint64_t(item.m_signature.m_homePawns.value);
 	strm << uint16_t(item.m_signature.m_progress.side[color::White].rankValue);
@@ -974,6 +1001,8 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 
 	M_STATIC_CHECK(Eco::Bit_Size_Per_Subcode == 20, ReimplementationNeeded);
 
+	bits->round					= item.m_round;
+	bits->subround				= item.m_subround;
 	bits->eco					= item.m_eco;
 	bits->ecoKey				= item.m_ecoKey;
 	bits->ecoOpening			= item.m_ecoOpening;
@@ -1025,7 +1054,6 @@ Codec::readNamebase(mstl::fstream& stream, Progress& progress)
 			case 's':	type = Namebase::Site; break;
 			case 'p':	type = Namebase::Player; break;
 			case 'e':	type = Namebase::Event; break;
-			case 'r':	type = Namebase::Round; break;
 			case 'a':	type = Namebase::Annotator; break;
 			default:		IO_RAISE(Namebase, Corrupted, "unexpected tag entry");
 		}
@@ -1035,6 +1063,8 @@ Codec::readNamebase(mstl::fstream& stream, Progress& progress)
 		unsigned size = bstrm.uint24();
 		unsigned maxFreq = bstrm.uint24();
 		unsigned maxUsage = bstrm.uint24();
+
+		m_lookup[i].resize(size);
 
 		switch (i)
 		{
@@ -1063,10 +1093,12 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count)
 	unsigned	index		= bstrm.uint24();
 	unsigned	length	= bstrm.get();
 	char*		prev		= base.alloc(length);
+	Lookup&	lookup	= m_lookup[base.type()];
 
 	bstrm.get(prev, length);
 	name.hook(prev, length);
 	base.append(name, index);
+	lookup[index] = 0;
 
 	for (unsigned i = 1; i < count; ++i)
 	{
@@ -1074,7 +1106,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count)
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
 
-		if (prefix > length)
+		if (prefix >= length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
 		char* curr = base.alloc(length);
@@ -1083,6 +1115,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count)
 		name.hook(curr, length);
 		prev = curr;
 		base.append(name, index);
+		lookup[index] = i;
 	}
 }
 
@@ -1100,11 +1133,13 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count)
 	unsigned	index		= bstrm.uint24();
 	unsigned	length	= bstrm.get();
 	char*		prev		= base.alloc(length);
+	Lookup&	lookup	= m_lookup[Namebase::Site];
 
 	bstrm.get(prev, length);
 	name.hook(prev, length);
 
 	base.appendSite(name, index, country::Code(bstrm.uint16()));
+	lookup[index] = 0;
 
 	for (unsigned i = 1; i < count; ++i)
 	{
@@ -1115,12 +1150,17 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count)
 		if (prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
-		char* curr = base.alloc(length);
-		::memcpy(curr, prev, prefix);
-		bstrm.get(curr + prefix, length - prefix);
-		name.hook(curr, length);
-		prev = curr;
+		if (prefix < length)
+		{
+			char* curr = base.alloc(length);
+			::memcpy(curr, prev, prefix);
+			bstrm.get(curr + prefix, length - prefix);
+			name.hook(curr, length);
+			prev = curr;
+		}
+
 		base.appendSite(name, index, country::Code(bstrm.uint16()));
+		lookup[index] = i;
 	}
 }
 
@@ -1138,12 +1178,13 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
 	char*		prev		= 0;
 	unsigned	index		= bstrm.uint24();
 	unsigned	length	= bstrm.get();
+	Lookup&	lookup	= m_lookup[Namebase::Event];
 
 	prev = base.alloc(length);
 	bstrm.get(prev, length);
 	name.hook(prev, length);
 
-	NamebaseSite* site = ::getSite(namebase(Namebase::Site), bstrm.uint24());
+	NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
 	site->ref();
 
@@ -1195,6 +1236,8 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		base.appendEvent(name, index, site);
 	}
 
+	lookup[index] = 0;
+
 	for (unsigned i = 1; i < count; ++i)
 	{
 		unsigned	index		= bstrm.uint24();
@@ -1204,14 +1247,17 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		if (prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
-		char* curr = base.alloc(length);
-		M_ASSERT(prev || prefix == 0);
-		::memcpy(curr, prev, prefix);
-		bstrm.get(curr + prefix, length - prefix);
-		name.hook(curr, length);
-		prev = curr;
+		if (prefix < length)
+		{
+			char* curr = base.alloc(length);
+			M_ASSERT(prev || prefix == 0);
+			::memcpy(curr, prev, prefix);
+			bstrm.get(curr + prefix, length - prefix);
+			name.hook(curr, length);
+			prev = curr;
+		}
 
-		NamebaseSite* site = ::getSite(namebase(Namebase::Site), bstrm.uint24());
+		NamebaseSite* site = ::getSite(namebase(Namebase::Site), m_lookup[Namebase::Site][bstrm.uint24()]);
 
 		site->ref();
 
@@ -1248,6 +1294,8 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		{
 			base.appendEvent(name, index, site);
 		}
+
+		lookup[index] = i;
 	}
 }
 
@@ -1265,6 +1313,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 	unsigned	index		= bstrm.uint24();
 	unsigned	length	= bstrm.get();
 	char*		prev		= base.alloc(length);
+	Lookup&	lookup	= m_lookup[Namebase::Player];
 
 	bstrm.get(prev, length);
 	name.hook(prev, length);
@@ -1312,6 +1361,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		base.appendPlayer(name, index);
 	}
 
+	lookup[index] = 0;
+
 	for (unsigned i = 1; i < count; ++i)
 	{
 		unsigned	index		= bstrm.uint24();
@@ -1321,12 +1372,15 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		if (prefix > length)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
 
-		char* curr = base.alloc(length);
-		M_ASSERT(prev || prefix == 0);
-		::memcpy(curr, prev, prefix);
-		bstrm.get(curr + prefix, length - prefix);
-		name.hook(curr, length);
-		prev = curr;
+		if (prefix < length)
+		{
+			char* curr = base.alloc(length);
+			M_ASSERT(prev || prefix == 0);
+			::memcpy(curr, prev, prefix);
+			bstrm.get(curr + prefix, length - prefix);
+			name.hook(curr, length);
+			prev = curr;
+		}
 
 		if (Byte flags = bstrm.get())
 		{
@@ -1357,6 +1411,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		{
 			base.appendPlayer(name, index);
 		}
+
+		lookup[index] = i;
 	}
 }
 
@@ -1411,7 +1467,7 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base)
 	bstrm.put(prev->name().size());
 	bstrm.put(prev->name(), prev->name().size());
 
-	for (unsigned i = 1; i < base.size(); ++i)
+	for (unsigned i = 1; i < base.used(); ++i)
 	{
 		NamebaseEntry* entry = base.entry(i);
 
@@ -1445,7 +1501,7 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base)
 	bstrm.put(prev->name(), prev->name().size());
 	bstrm << uint16_t(prev->country());
 
-	for (unsigned i = 1; i < base.size(); ++i)
+	for (unsigned i = 1; i < base.used(); ++i)
 	{
 		NamebaseSite* entry = base.site(i);
 
@@ -1562,7 +1618,7 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 		bstrm.put(flags);
 	}
 
-	for (unsigned i = 0; i < base.used(); ++i)
+	for (unsigned i = 1; i < base.used(); ++i)
 	{
 		NamebasePlayer* entry = base.player(i);
 

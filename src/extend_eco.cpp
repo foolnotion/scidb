@@ -391,7 +391,7 @@ prepare()
 						last = b;
 					}
 					else if (	last
-								&& !exists.testAndSet(last->second.first)
+								&& !exists.test_and_set(last->second.first)
 								&& b->second.second != Move(line[k + 1]).index()
 								&& position.find(hash) == position.end())
 					{

@@ -14,8 +14,8 @@ include ../Makefile.in
 
 .SUFFIXES: .cpp
 
-INCLUDE	= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
-CXXFLAGS = $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+INCLUDE			= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
+ALL_CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 LIBS_BASE = \
 	db/libdbstubs.a \
@@ -50,7 +50,7 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libharu util/libTeXt $(SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libharu util/libTeXt $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move $(PROGRAM)
 
@@ -66,27 +66,27 @@ install: $(PROGRAM)
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
 	rm -f $(SHAREDIR)/data/eco.bin
-	for i in `ls data/*.*`; do
-		rm -f $(SHAREDIR)/data/$f
+	for i in `ls data/*.*`; do \
+		rm -f $(SHAREDIR)/data/$$f \
 	done
 	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
 	/bin/sh -e 'find $(SHAREDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
 
 clean:
 	rm -f $(TARGETS)
-	for dir in $(SUBDIRS); do
-		(cd $dir && make clean)
+	for dir in $(SUBDIRS); do \
+		(cd $$dir && make clean) \
 	done
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
-	for dir in $(SUBDIRS); do
-		(cd $dir && make depend)
+	for dir in $(SUBDIRS); do \
+		(cd $$dir && make depend) \
 	done
 
 recursive:
-	for dir in $(SUBDIRS); do
-		(cd $dir && make)
+	for dir in $(SUBDIRS); do \
+		(cd $$dir && make) \
 	done
 
 mstl/libmstl.a:
@@ -141,34 +141,463 @@ db/libdb.a:
 	(cd db && make)
 
 permute_eco: permute_eco.cpp $(LIBS)
-	$(CXX) -o permute_eco permute_eco.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o permute_eco permute_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 extend_eco: extend_eco.cpp $(LIBS_BASE)
-	$(CXX) -o extend_eco extend_eco.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o extend_eco extend_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 dump_eco: dump_eco.cpp $(LIBS_BASE)
-	$(CXX) -o dump_eco dump_eco.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o dump_eco dump_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 eco2code: eco2code.cpp $(LIBS_BASE)
-	$(CXX) -o eco2code eco2code.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o eco2code eco2code.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 code2eco: code2eco.cpp $(LIBS_BASE)
-	$(CXX) -o code2eco code2eco.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o code2eco code2eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 pawn_progress: pawn_progress.cpp $(LIBS_BASE)
-	$(CXX) -o pawn_progress pawn_progress.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	$(CXX) -o pawn_progress pawn_progress.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 best_move: best_move.cpp $(LIBS)
-	$(CXX) -o best_move best_move.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) -$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
+	$(CXX) -o best_move best_move.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) -$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
 
 pgn_split_eco: pgn_split_eco.cpp $(LIBS)
-	$(CXX) -o pgn_split_eco pgn_split_eco.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
+	$(CXX) -o pgn_split_eco pgn_split_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
 
 $(PROGRAM): tkscidb.cpp $(LIBS)
-	$(CXX) -o $(PROGRAM) tkscidb.cpp $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread $(EXPAT_LIBRARY)
+	$(CXX) -o $(PROGRAM) tkscidb.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread $(EXPAT_LIBRARY)
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(INCLUDE) $*.cpp
+	$(CXX) -c $(ALL_CXXFLAGS) $(CXX_DEBUG) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+best_move.o: db/db_board.h
+best_move.o: db/db_move_list.h
+best_move.o: db/db_move.h
+best_move.o: db/db_common.h
+best_move.o: util/u_base.h
+best_move.o: mstl/m_types.h
+best_move.o: db/db_common.ipp
+best_move.o: mstl/m_assert.h
+best_move.o: mstl/m_exception.h
+best_move.o: mstl/m_backtrace.h
+best_move.o: mstl/m_exception.ipp
+best_move.o: mstl/m_utility.h
+best_move.o: mstl/m_utility.ipp
+best_move.o: mstl/m_limits.h
+best_move.o: mstl/m_bit_functions.h
+best_move.o: mstl/m_bit_functions.ipp
+best_move.o: mstl/m_static_check.h
+best_move.o: mstl/m_string.h
+best_move.o: mstl/m_string.ipp
+best_move.o: db/db_move.ipp
+best_move.o: util/u_crc.h
+best_move.o: util/u_crc.ipp
+best_move.o: db/db_move_list.ipp
+best_move.o: db/db_signature.h
+best_move.o: db/db_signature.ipp
+best_move.o: db/db_board.ipp
+best_move.o: db/db_guess.h
+best_move.o: db/db_guess.ipp
+best_move.o: db/db_eco_table.h
+best_move.o: db/db_eco.h
+best_move.o: db/db_eco.ipp
+best_move.o: db/db_line.h
+best_move.o: db/db_line.ipp
+best_move.o: db/db_home_pawns.h
+best_move.o: db/db_home_pawns.ipp
+best_move.o: mstl/m_map.h
+best_move.o: mstl/m_vector.h
+best_move.o: mstl/m_type_traits.h
+best_move.o: mstl/m_type_traits.ipp
+best_move.o: mstl/m_memblock.h
+best_move.o: mstl/m_memblock.ipp
+best_move.o: mstl/m_vector.ipp
+best_move.o: mstl/m_uninitialized.h
+best_move.o: mstl/m_uninitialized.ipp
+best_move.o: mstl/m_algobase.h
+best_move.o: mstl/m_algobase.ipp
+best_move.o: mstl/m_construct.h
+best_move.o: mstl/m_construct.ipp
+best_move.o: mstl/m_pair.h
+best_move.o: mstl/m_pair.ipp
+best_move.o: mstl/m_map.ipp
+best_move.o: mstl/m_hash.h
+best_move.o: mstl/m_hash.ipp
+best_move.o: mstl/m_bitset.h
+best_move.o: mstl/m_bitset_iterator.h
+best_move.o: mstl/m_bitfield.h
+best_move.o: mstl/m_bitfield.ipp
+best_move.o: mstl/m_bitset_iterator.ipp
+best_move.o: mstl/m_bitset.ipp
+best_move.o: mstl/m_chunk_allocator.h
+best_move.o: mstl/m_stack.h
+best_move.o: mstl/m_stack.ipp
+best_move.o: mstl/m_chunk_allocator.ipp
+best_move.o: db/db_eco_table.ipp
+best_move.o: tk/tk_init.h
+best_move.o: tcl/tcl_base.h
+best_move.o: tcl/tcl_base.ipp
+best_move.o: util/u_zstream.h
+best_move.o: mstl/m_istream.h
+best_move.o: mstl/m_ios.h
+best_move.o: mstl/m_ios.ipp
+best_move.o: mstl/m_istream.ipp
+best_move.o: mstl/m_ostream.h
+best_move.o: mstl/m_ostream.ipp
+best_move.o: mstl/m_ifstream.h
+best_move.o: mstl/m_file.h
+best_move.o: mstl/m_file.ipp
+best_move.o: mstl/m_ifstream.ipp
+code2eco.o: db/db_eco.h
+code2eco.o: util/u_base.h
+code2eco.o: mstl/m_types.h
+code2eco.o: mstl/m_string.h
+code2eco.o: mstl/m_string.ipp
+code2eco.o: mstl/m_assert.h
+code2eco.o: mstl/m_exception.h
+code2eco.o: mstl/m_backtrace.h
+code2eco.o: mstl/m_exception.ipp
+code2eco.o: db/db_eco.ipp
+code2eco.o: mstl/m_static_check.h
+dump_eco.o: db/db_board.h
+dump_eco.o: db/db_move_list.h
+dump_eco.o: db/db_move.h
+dump_eco.o: db/db_common.h
+dump_eco.o: util/u_base.h
+dump_eco.o: mstl/m_types.h
+dump_eco.o: db/db_common.ipp
+dump_eco.o: mstl/m_assert.h
+dump_eco.o: mstl/m_exception.h
+dump_eco.o: mstl/m_backtrace.h
+dump_eco.o: mstl/m_exception.ipp
+dump_eco.o: mstl/m_utility.h
+dump_eco.o: mstl/m_utility.ipp
+dump_eco.o: mstl/m_limits.h
+dump_eco.o: mstl/m_bit_functions.h
+dump_eco.o: mstl/m_bit_functions.ipp
+dump_eco.o: mstl/m_static_check.h
+dump_eco.o: mstl/m_string.h
+dump_eco.o: mstl/m_string.ipp
+dump_eco.o: db/db_move.ipp
+dump_eco.o: util/u_crc.h
+dump_eco.o: util/u_crc.ipp
+dump_eco.o: db/db_move_list.ipp
+dump_eco.o: db/db_signature.h
+dump_eco.o: db/db_signature.ipp
+dump_eco.o: db/db_board.ipp
+dump_eco.o: db/db_line.h
+dump_eco.o: db/db_line.ipp
+dump_eco.o: db/db_eco.h
+dump_eco.o: db/db_eco.ipp
+dump_eco.o: util/u_byte_stream.h
+dump_eco.o: util/u_byte_stream.ipp
+dump_eco.o: mstl/m_ifstream.h
+dump_eco.o: mstl/m_istream.h
+dump_eco.o: mstl/m_ios.h
+dump_eco.o: mstl/m_ios.ipp
+dump_eco.o: mstl/m_istream.ipp
+dump_eco.o: mstl/m_file.h
+dump_eco.o: mstl/m_file.ipp
+dump_eco.o: mstl/m_ifstream.ipp
+dump_eco.o: mstl/m_ofstream.h
+dump_eco.o: mstl/m_ostream.h
+dump_eco.o: mstl/m_ostream.ipp
+dump_eco.o: mstl/m_ofstream.ipp
+dump_eco.o: mstl/m_vector.h
+dump_eco.o: mstl/m_type_traits.h
+dump_eco.o: mstl/m_type_traits.ipp
+dump_eco.o: mstl/m_memblock.h
+dump_eco.o: mstl/m_memblock.ipp
+dump_eco.o: mstl/m_vector.ipp
+dump_eco.o: mstl/m_uninitialized.h
+dump_eco.o: mstl/m_uninitialized.ipp
+dump_eco.o: mstl/m_algobase.h
+dump_eco.o: mstl/m_algobase.ipp
+dump_eco.o: mstl/m_construct.h
+dump_eco.o: mstl/m_construct.ipp
+dump_eco.o: mstl/m_map.h
+dump_eco.o: mstl/m_pair.h
+dump_eco.o: mstl/m_pair.ipp
+dump_eco.o: mstl/m_map.ipp
+dump_eco.o: mstl/m_bitset.h
+dump_eco.o: mstl/m_bitset_iterator.h
+dump_eco.o: mstl/m_bitfield.h
+dump_eco.o: mstl/m_bitfield.ipp
+dump_eco.o: mstl/m_bitset_iterator.ipp
+dump_eco.o: mstl/m_bitset.ipp
+dump_eco.o: mstl/m_hash.h
+dump_eco.o: mstl/m_hash.ipp
+eco2code.o: db/db_eco.h
+eco2code.o: util/u_base.h
+eco2code.o: mstl/m_types.h
+eco2code.o: mstl/m_string.h
+eco2code.o: mstl/m_string.ipp
+eco2code.o: mstl/m_assert.h
+eco2code.o: mstl/m_exception.h
+eco2code.o: mstl/m_backtrace.h
+eco2code.o: mstl/m_exception.ipp
+eco2code.o: db/db_eco.ipp
+eco2code.o: mstl/m_static_check.h
+extend_eco.o: db/db_board.h
+extend_eco.o: db/db_move_list.h
+extend_eco.o: db/db_move.h
+extend_eco.o: db/db_common.h
+extend_eco.o: util/u_base.h
+extend_eco.o: mstl/m_types.h
+extend_eco.o: db/db_common.ipp
+extend_eco.o: mstl/m_assert.h
+extend_eco.o: mstl/m_exception.h
+extend_eco.o: mstl/m_backtrace.h
+extend_eco.o: mstl/m_exception.ipp
+extend_eco.o: mstl/m_utility.h
+extend_eco.o: mstl/m_utility.ipp
+extend_eco.o: mstl/m_limits.h
+extend_eco.o: mstl/m_bit_functions.h
+extend_eco.o: mstl/m_bit_functions.ipp
+extend_eco.o: mstl/m_static_check.h
+extend_eco.o: mstl/m_string.h
+extend_eco.o: mstl/m_string.ipp
+extend_eco.o: db/db_move.ipp
+extend_eco.o: util/u_crc.h
+extend_eco.o: util/u_crc.ipp
+extend_eco.o: db/db_move_list.ipp
+extend_eco.o: db/db_signature.h
+extend_eco.o: db/db_signature.ipp
+extend_eco.o: db/db_board.ipp
+extend_eco.o: db/db_eco.h
+extend_eco.o: db/db_eco.ipp
+extend_eco.o: mstl/m_map.h
+extend_eco.o: mstl/m_vector.h
+extend_eco.o: mstl/m_type_traits.h
+extend_eco.o: mstl/m_type_traits.ipp
+extend_eco.o: mstl/m_memblock.h
+extend_eco.o: mstl/m_memblock.ipp
+extend_eco.o: mstl/m_vector.ipp
+extend_eco.o: mstl/m_uninitialized.h
+extend_eco.o: mstl/m_uninitialized.ipp
+extend_eco.o: mstl/m_algobase.h
+extend_eco.o: mstl/m_algobase.ipp
+extend_eco.o: mstl/m_construct.h
+extend_eco.o: mstl/m_construct.ipp
+extend_eco.o: mstl/m_pair.h
+extend_eco.o: mstl/m_pair.ipp
+extend_eco.o: mstl/m_map.ipp
+extend_eco.o: mstl/m_set.h
+extend_eco.o: mstl/m_set.ipp
+extend_eco.o: mstl/m_algorithm.h
+extend_eco.o: mstl/m_algorithm.ipp
+extend_eco.o: mstl/m_ifstream.h
+extend_eco.o: mstl/m_istream.h
+extend_eco.o: mstl/m_ios.h
+extend_eco.o: mstl/m_ios.ipp
+extend_eco.o: mstl/m_istream.ipp
+extend_eco.o: mstl/m_file.h
+extend_eco.o: mstl/m_file.ipp
+extend_eco.o: mstl/m_ifstream.ipp
+extend_eco.o: mstl/m_bitset.h
+extend_eco.o: mstl/m_bitset_iterator.h
+extend_eco.o: mstl/m_bitfield.h
+extend_eco.o: mstl/m_bitfield.ipp
+extend_eco.o: mstl/m_bitset_iterator.ipp
+extend_eco.o: mstl/m_bitset.ipp
+extend_eco.o: mstl/m_chunk_allocator.h
+extend_eco.o: mstl/m_stack.h
+extend_eco.o: mstl/m_stack.ipp
+extend_eco.o: mstl/m_chunk_allocator.ipp
+extend_eco.o: guess/guess.h
+permute_eco.o: db/db_move_list.h
+permute_eco.o: db/db_move.h
+permute_eco.o: db/db_common.h
+permute_eco.o: util/u_base.h
+permute_eco.o: mstl/m_types.h
+permute_eco.o: db/db_common.ipp
+permute_eco.o: mstl/m_assert.h
+permute_eco.o: mstl/m_exception.h
+permute_eco.o: mstl/m_backtrace.h
+permute_eco.o: mstl/m_exception.ipp
+permute_eco.o: mstl/m_utility.h
+permute_eco.o: mstl/m_utility.ipp
+permute_eco.o: mstl/m_limits.h
+permute_eco.o: mstl/m_bit_functions.h
+permute_eco.o: mstl/m_bit_functions.ipp
+permute_eco.o: mstl/m_static_check.h
+permute_eco.o: mstl/m_string.h
+permute_eco.o: mstl/m_string.ipp
+permute_eco.o: db/db_move.ipp
+permute_eco.o: util/u_crc.h
+permute_eco.o: util/u_crc.ipp
+permute_eco.o: db/db_move_list.ipp
+permute_eco.o: db/db_eco.h
+permute_eco.o: db/db_eco.ipp
+permute_eco.o: mstl/m_map.h
+permute_eco.o: mstl/m_vector.h
+permute_eco.o: mstl/m_type_traits.h
+permute_eco.o: mstl/m_type_traits.ipp
+permute_eco.o: mstl/m_memblock.h
+permute_eco.o: mstl/m_memblock.ipp
+permute_eco.o: mstl/m_vector.ipp
+permute_eco.o: mstl/m_uninitialized.h
+permute_eco.o: mstl/m_uninitialized.ipp
+permute_eco.o: mstl/m_algobase.h
+permute_eco.o: mstl/m_algobase.ipp
+permute_eco.o: mstl/m_construct.h
+permute_eco.o: mstl/m_construct.ipp
+permute_eco.o: mstl/m_pair.h
+permute_eco.o: mstl/m_pair.ipp
+permute_eco.o: mstl/m_map.ipp
+permute_eco.o: mstl/m_ifstream.h
+permute_eco.o: mstl/m_istream.h
+permute_eco.o: mstl/m_ios.h
+permute_eco.o: mstl/m_ios.ipp
+permute_eco.o: mstl/m_istream.ipp
+permute_eco.o: mstl/m_file.h
+permute_eco.o: mstl/m_file.ipp
+permute_eco.o: mstl/m_ifstream.ipp
+permute_eco.o: guess/guess.h
+pgn_split_eco.o: tcl/tcl_base.h
+pgn_split_eco.o: tcl/tcl_base.ipp
+pgn_split_eco.o: db/db_pgn_reader.h
+pgn_split_eco.o: db/db_reader.h
+pgn_split_eco.o: db/db_producer.h
+pgn_split_eco.o: db/db_common.h
+pgn_split_eco.o: util/u_base.h
+pgn_split_eco.o: mstl/m_types.h
+pgn_split_eco.o: db/db_common.ipp
+pgn_split_eco.o: mstl/m_assert.h
+pgn_split_eco.o: mstl/m_exception.h
+pgn_split_eco.o: mstl/m_backtrace.h
+pgn_split_eco.o: mstl/m_exception.ipp
+pgn_split_eco.o: mstl/m_utility.h
+pgn_split_eco.o: mstl/m_utility.ipp
+pgn_split_eco.o: mstl/m_limits.h
+pgn_split_eco.o: mstl/m_bit_functions.h
+pgn_split_eco.o: mstl/m_bit_functions.ipp
+pgn_split_eco.o: mstl/m_static_check.h
+pgn_split_eco.o: db/db_producer.ipp
+pgn_split_eco.o: db/db_consumer.h
+pgn_split_eco.o: db/db_provider.h
+pgn_split_eco.o: db/db_provider.ipp
+pgn_split_eco.o: db/db_board.h
+pgn_split_eco.o: db/db_move_list.h
+pgn_split_eco.o: db/db_move.h
+pgn_split_eco.o: mstl/m_string.h
+pgn_split_eco.o: mstl/m_string.ipp
+pgn_split_eco.o: db/db_move.ipp
+pgn_split_eco.o: util/u_crc.h
+pgn_split_eco.o: util/u_crc.ipp
+pgn_split_eco.o: db/db_move_list.ipp
+pgn_split_eco.o: db/db_signature.h
+pgn_split_eco.o: db/db_signature.ipp
+pgn_split_eco.o: db/db_board.ipp
+pgn_split_eco.o: db/db_line.h
+pgn_split_eco.o: db/db_line.ipp
+pgn_split_eco.o: db/db_comment.h
+pgn_split_eco.o: mstl/m_map.h
+pgn_split_eco.o: mstl/m_vector.h
+pgn_split_eco.o: mstl/m_type_traits.h
+pgn_split_eco.o: mstl/m_type_traits.ipp
+pgn_split_eco.o: mstl/m_memblock.h
+pgn_split_eco.o: mstl/m_memblock.ipp
+pgn_split_eco.o: mstl/m_vector.ipp
+pgn_split_eco.o: mstl/m_uninitialized.h
+pgn_split_eco.o: mstl/m_uninitialized.ipp
+pgn_split_eco.o: mstl/m_algobase.h
+pgn_split_eco.o: mstl/m_algobase.ipp
+pgn_split_eco.o: mstl/m_construct.h
+pgn_split_eco.o: mstl/m_construct.ipp
+pgn_split_eco.o: mstl/m_pair.h
+pgn_split_eco.o: mstl/m_pair.ipp
+pgn_split_eco.o: mstl/m_map.ipp
+pgn_split_eco.o: db/db_comment.ipp
+pgn_split_eco.o: db/db_annotation.h
+pgn_split_eco.o: db/db_annotation.ipp
+pgn_split_eco.o: db/db_mark_set.h
+pgn_split_eco.o: db/db_mark.h
+pgn_split_eco.o: db/db_mark.ipp
+pgn_split_eco.o: db/db_mark_set.ipp
+pgn_split_eco.o: db/db_home_pawns.h
+pgn_split_eco.o: db/db_home_pawns.ipp
+pgn_split_eco.o: mstl/m_stack.h
+pgn_split_eco.o: mstl/m_stack.ipp
+pgn_split_eco.o: db/db_consumer.ipp
+pgn_split_eco.o: db/db_reader.ipp
+pgn_split_eco.o: db/db_tag_set.h
+pgn_split_eco.o: db/db_tag_set.ipp
+pgn_split_eco.o: db/db_pgn_writer.h
+pgn_split_eco.o: db/db_writer.h
+pgn_split_eco.o: db/db_writer.ipp
+pgn_split_eco.o: db/db_eco_table.h
+pgn_split_eco.o: db/db_eco.h
+pgn_split_eco.o: db/db_eco.ipp
+pgn_split_eco.o: mstl/m_hash.h
+pgn_split_eco.o: mstl/m_hash.ipp
+pgn_split_eco.o: mstl/m_bitset.h
+pgn_split_eco.o: mstl/m_bitset_iterator.h
+pgn_split_eco.o: mstl/m_bitfield.h
+pgn_split_eco.o: mstl/m_bitfield.ipp
+pgn_split_eco.o: mstl/m_bitset_iterator.ipp
+pgn_split_eco.o: mstl/m_bitset.ipp
+pgn_split_eco.o: mstl/m_chunk_allocator.h
+pgn_split_eco.o: mstl/m_chunk_allocator.ipp
+pgn_split_eco.o: db/db_eco_table.ipp
+pgn_split_eco.o: util/u_zstream.h
+pgn_split_eco.o: mstl/m_istream.h
+pgn_split_eco.o: mstl/m_ios.h
+pgn_split_eco.o: mstl/m_ios.ipp
+pgn_split_eco.o: mstl/m_istream.ipp
+pgn_split_eco.o: mstl/m_ostream.h
+pgn_split_eco.o: mstl/m_ostream.ipp
+pgn_split_eco.o: util/u_progress.h
+pgn_split_eco.o: util/u_progress.ipp
+pgn_split_eco.o: sys/sys_utf8_codec.h
+pgn_split_eco.o: sys/sys_utf8_codec.ipp
+pgn_split_eco.o: mstl/m_ifstream.h
+pgn_split_eco.o: mstl/m_file.h
+pgn_split_eco.o: mstl/m_file.ipp
+pgn_split_eco.o: mstl/m_ifstream.ipp
+pgn_split_eco.o: mstl/m_ofstream.h
+pgn_split_eco.o: mstl/m_ofstream.ipp
+pgn_split_eco.o: mstl/m_sstream.h
+tkscidb.o: tk/tk_init.h
+tkscidb.o: tcl/tcl_base.h
+tkscidb.o: tcl/tcl_base.ipp
+tkscidb.o: db/db_annotation.h
+tkscidb.o: db/db_common.h
+tkscidb.o: util/u_base.h
+tkscidb.o: mstl/m_types.h
+tkscidb.o: db/db_common.ipp
+tkscidb.o: mstl/m_assert.h
+tkscidb.o: mstl/m_exception.h
+tkscidb.o: mstl/m_backtrace.h
+tkscidb.o: mstl/m_exception.ipp
+tkscidb.o: mstl/m_utility.h
+tkscidb.o: mstl/m_utility.ipp
+tkscidb.o: mstl/m_limits.h
+tkscidb.o: mstl/m_bit_functions.h
+tkscidb.o: mstl/m_bit_functions.ipp
+tkscidb.o: mstl/m_static_check.h
+tkscidb.o: db/db_annotation.ipp
+tkscidb.o: util/u_zstream.h
+tkscidb.o: mstl/m_istream.h
+tkscidb.o: mstl/m_ios.h
+tkscidb.o: mstl/m_ios.ipp
+tkscidb.o: mstl/m_istream.ipp
+tkscidb.o: mstl/m_ostream.h
+tkscidb.o: mstl/m_ostream.ipp
+tkscidb.o: mstl/m_vector.h
+tkscidb.o: mstl/m_type_traits.h
+tkscidb.o: mstl/m_type_traits.ipp
+tkscidb.o: mstl/m_memblock.h
+tkscidb.o: mstl/m_memblock.ipp
+tkscidb.o: mstl/m_vector.ipp
+tkscidb.o: mstl/m_uninitialized.h
+tkscidb.o: mstl/m_uninitialized.ipp
+tkscidb.o: mstl/m_algobase.h
+tkscidb.o: mstl/m_algobase.ipp
+tkscidb.o: mstl/m_construct.h
+tkscidb.o: mstl/m_construct.ipp
+tkscidb.o: mstl/m_string.h
+tkscidb.o: mstl/m_string.ipp

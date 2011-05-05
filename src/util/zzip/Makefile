@@ -13,13 +13,11 @@
 include ../../../Makefile.in
 
 .SUFFIXES: .c
-.PRECIOUS:
 
 INCLUDE	= -I.
 OPTIMIZE	= -O2 -fomit-frame-pointer
 C_DEBUG	= -DNDEBUG
 DEFINES	= -D_USE_MMAP
-CFLAGS	= $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	zzcat.c \
@@ -46,12 +44,15 @@ all: $(LIB).a
 clean:
 	rm -f $(LIB).a $(OBJS)
 
+depend:
+	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+
 $(LIB).a: $(OBJS)
 	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(INCLUDE) $*.c
+	$(CC) -c $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(DEFINES) $(INCLUDE) $*.c
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

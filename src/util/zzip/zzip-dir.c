@@ -10,8 +10,8 @@
  *          that can be found in COPYING.ZZIP
  */
 
-#include <zzip.h>                                   /* exported... */
-#include <zzip-file.h>
+#include <zzip/zzip.h>                                   /* exported... */
+#include <zzip/file.h>
 #include <stddef.h> /*offsetof*/
 #include <stdlib.h>
 #include <string.h>

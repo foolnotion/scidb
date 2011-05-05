@@ -32,6 +32,7 @@
 
 #include "m_fstream.h"
 #include "m_string.h"
+#include "m_vector.h"
 
 namespace util
 {
@@ -69,7 +70,6 @@ public:
 	unsigned maxPlayerCount() const;
 	unsigned maxEventCount() const;
 	unsigned maxSiteCount() const;
-	unsigned maxRoundCount() const;
 	unsigned maxAnnotatorCount() const;
 	unsigned minYear() const;
 	unsigned maxYear() const;
@@ -77,6 +77,7 @@ public:
 
 	unsigned gameFlags() const;
 
+	void filterTag(TagSet& tags, tag::ID tag) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
 	uint32_t computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const;
@@ -113,7 +114,7 @@ public:
 	void doDecoding(unsigned flags, GameData& data, GameInfo& info);
 
 	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
-	Consumer* getConsumer();
+	Consumer* getConsumer(format::Type srcFormat);
 
 	void reset();
 	void setEncoding(mstl::string const& encoding);
@@ -122,6 +123,8 @@ public:
 	Move findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations);
 
 private:
+
+	typedef mstl::vector<unsigned> Lookup;
 
 	void encodeIndex(GameInfo const& item, util::ByteStream& buf);
 
@@ -151,6 +154,7 @@ private:
 	util::BlockFile*			m_gameData;
 	util::BlockFileReader*	m_asyncReader;
 	mstl::string				m_magicGameFile;
+	Lookup						m_lookup[4];
 };
 
 } // namespace sci

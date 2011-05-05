@@ -816,9 +816,6 @@ proc writeMakefile {{type ""}} {
         }
     }
 
-    # PRELIMINARY:
-    append configure(program-suffix) "-beta"
-
 #   set option(SPLASH) "no"
 
     if {$feature(symbols)}          { Append option(C_DEBUG) "-g" }
@@ -827,6 +824,10 @@ proc writeMakefile {{type ""}} {
     if {$feature(gprof-profiling)}  { Append option(PROFILING) "-pg" }
     if {$feature(gcov-coverage)}    { Append option(PROFILING) "-coverage" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
+
+    set option(TCL_VERSION) $configure(tcl-version)
+    set option(PROGRAM) tkscidb$configure(program-suffix)
+    set option(SCRIPT) scidb$configure(program-suffix)
 
     foreach d {bin lib} {
         if {[info exists configure(${d}dir)]} {
@@ -837,19 +838,19 @@ proc writeMakefile {{type ""}} {
         set option([string toupper $d]DIR) $dir
     }
 
-    foreach d {data include man} {
-        if {[info exists configure(${d}dir)]} {
-            set dir $configure(${d}dir)
-        } else {
-            if {$d eq "data"} { set s share } else { set s $d }
-            set dir $configure(prefix)/$s
-        }
-        set option([string toupper $d]DIR) $dir
+    if {[info exists configure(mandir)]} {
+        set dir $configure(mandir)
+    } else {
+        set dir $configure(prefix)/man
     }
+    set option(MANDIR) $dir
 
-    set option(TCL_VERSION) $configure(tcl-version)
-    set option(PROGRAM) tkscidb$configure(program-suffix)
-    set option(SCRIPT) scidb$configure(program-suffix)
+    if {[info exists configure(datadir)]} {
+        set dir $configure(datadir)
+    } else {
+        set dir $configure(prefix)/share
+    }
+    set option(SHAREDIR) $dir/$option(SCRIPT)
 
     # XXX not working for MacOS
     if {[string match {/usr/local*} $configure(prefix)] && [file isdirectory /usr/local/share/fonts]} {
@@ -940,9 +941,9 @@ proc usage {rc} {
     puts ""
     puts "Installation directories:"
     puts "  --prefix=PREFIX          install architecture-independent files in PREFIX"
-    puts "\[$configure(prefix)\]"
+    puts "                           \[$configure(prefix)\]"
     puts "  --exec-prefix=EPREFIX    install architecture-dependent files in EPREFIX"
-    puts "\[$configure(exec-prefix)\]"
+    puts "                           \[$configure(exec-prefix)\]"
     puts ""
     puts "By default, \`make install' will install all the files in"
     puts "\`$configure(prefix)/bin', \`$configure(prefix)/lib' etc.  You can specify"
@@ -955,7 +956,6 @@ proc usage {rc} {
     puts "  --bindir=DIR             user executables \[EPREFIX/bin\]"
     puts "  --datadir=DIR            read-only architecture-independent data \[PREFIX/share\]"
     puts "  --libdir=DIR             object code libraries \[EPREFIX/lib\]"
-    puts "  --includedir=DIR         C header files \[PREFIX/include\]"
     puts "  --mandir=DIR             man documentation \[PREFIX/man\]"
     puts ""
     puts "Program names:"
@@ -982,16 +982,16 @@ proc usage {rc} {
     puts "  --with-expat-lib=DIR     link options for Expat XML Parser library"
     puts ""
     puts "Optional Features:"
-    puts "--disable-FEATURE          do not include FEATURE (same as --enable-FEATURE=no)"
-    puts "--enable-FEATURE\[=ARG\]     include FEATURE \[ARG=yes\]"
-    puts "--enable-symbols           build with debugging symbols \[default=$feature(symbols)\]"
-    puts "--enable-assertions        build with assertions (slows down the program)"
+    puts "  --disable-FEATURE        do not include FEATURE (same as --enable-FEATURE=no)"
+    puts "  --enable-FEATURE\[=ARG\]   include FEATURE \[ARG=yes\]"
+    puts "  --enable-symbols         build with debugging symbols \[default=$feature(symbols)\]"
+    puts "  --enable-assertions      build with assertions (slows down the program)"
     puts "                           \[default=$feature(assertions)\]"
-    puts "--enable-gprof-profiling   enable gprof profiling (slows down the program)"
+    puts "  --enable-gprof-profiling enable gprof profiling (slows down the program)"
     puts "                           \[default=$feature(gprof-profiling)\]"
-    puts "--enable-gcov-coverage     enable coverage (slows down the program)"
+    puts "  --enable-gcov-coverage   enable coverage (slows down the program)"
     puts "                           \[default=$feature(gcov-coverage)\]"
-    puts "--enable-splash-screen     enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
+#    puts "  --enable-splash-screen   enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
     puts ""
     puts "Some influential environment variables:"
     puts "  CC          C compiler command \[$environment(CC)\]"
@@ -1012,6 +1012,12 @@ proc usage {rc} {
 }
 
 ##############################################################################
+
+# XXX for BETA version
+set environment(OPTIMIZE) ""
+set feature(symbols) yes
+set feature(assertions) yes
+set configure(program-suffix) "-beta"
 
 if {[lsearch $argv -h] >= 0 || [lsearch $argv --help] >= 0} { usage 0 }
 

@@ -127,9 +127,16 @@ atomic_test(atomic_t* v)
 	return *v == 1;
 }
 
-#elif __GNUC_PREREQ(4,1)
+#elif 0 && __GNUC_PREREQ(4,1)	// XXX not working
+
+# define ATOMIC_INIT(x) { x }
+
+# define atomic_read(v)		*v
+# define atomic_set(v, i)	(*v = i)
 
 typedef volatile int atomic_t;
+
+static atomic_t m_lock = 0;
 
 template <int N>
 void

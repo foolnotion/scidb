@@ -663,7 +663,7 @@ EcoTable::Loader::load()
 		m_strm.read(buf, sizeof(buf));
 		unsigned version = bstrm.uint16();
 
-		if (version != 100)
+		if (version != 99)
 			DB_RAISE("unknown ECO version (%u)", version);
 
 		unsigned countCodes		= bstrm.uint32();

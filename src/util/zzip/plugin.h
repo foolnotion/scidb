@@ -32,7 +32,8 @@
 #ifndef _ZZIP_PLUGIN_H /* zzip-io.h */
 #define _ZZIP_PLUGIN_H 1
 
-#include <zziplib.h>
+#include <zzip/zzip.h>
+#include <zzip/lib.h>
 
 #ifdef __cplusplus
 extern "C" {

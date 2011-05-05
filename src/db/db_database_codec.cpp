@@ -654,13 +654,11 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
-	unsigned index;
+	unsigned index = info ? provider.index() : m_db->m_gameInfoList.size();
 
 	if (format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
-
-		index = info ? provider.index() : m_db->m_gameInfoList.size();
 
 		if (!failed)
 		{
@@ -669,7 +667,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 		}
 	}
 
-	unsigned gameOffset;
+	unsigned gameOffset = 0; // shut up compiler
 
 	if (failed || int(gameOffset = putGame(gameData)) < 0)
 	{
@@ -805,7 +803,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 		}
 	}
 
-	unsigned gameOffset;
+	unsigned gameOffset = 0; // shut up compiler
 
 	if (failed || int(gameOffset = putGame(gameData)) < 0)
 	{

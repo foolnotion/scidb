@@ -11,10 +11,10 @@
  *  modified 2002 to use new plugin_io interface by Guido Draheim
  */
 
-#include <zzip-conf.h>
-#include <zzip-io.h>
+#include <zzip/conf.h>
+#include <zzip/plugin.h>
 /* #incl "zzipwrap.h" */
-#include      "zzipwrap.h"
+#include <zzip/wrap.h>
 
 #include <stdlib.h>
 #include <stdio.h>

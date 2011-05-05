@@ -115,12 +115,8 @@ clean:
 	rm -f $(SCRIPT)
 
 install: $(SCRIPT)
-	if [ "`id -u`" -eq 0 ]; then
-		fontdir=$(FONTDIR)
-	else
-		fontdir=~/.fonts
-	fi
 	install -m 755 -d $(BINDIR)
+	install -m 755 -d $(SHAREDIR)
 	install -m 755 -d $(SHAREDIR)/pieces
 	install -m 755 -d $(SHAREDIR)/cursor
 	install -m 755 -d $(SHAREDIR)/flags
@@ -132,79 +128,88 @@ install: $(SCRIPT)
 	install -m 755 -d $(SHAREDIR)/themes/square
 	install -m 755 -d $(SHAREDIR)/themes/piece
 	install -m 755 -d $(SHAREDIR)/scripts
-	install -m 755 -d $fontdir
 	install -m 755 -p $(SCRIPT) $(BINDIR)
 	install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
 	install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
-	install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
-	install -m 644 -p cursor/*.png $(SHAREDIR)/flags
+	install -m 644 -p cursor/*.cur $(SHAREDIR)/cursor
+	install -m 644 -p cursor/*.xcur $(SHAREDIR)/flags
 	install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
-	install -m 644 -p lang/eco/* $(SHAREDIR)/lang/eco
+	install -m 644 -p lang/eco/*.* $(SHAREDIR)/lang/eco
 	install -m 644 -p photos/*.sp? $(SHAREDIR)/photos
 	install -m 644 -p themes/*.dat $(SHAREDIR)/themes
 	install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
 	install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
 	install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
-	for i in dark lite tile; do
-		for k in marble misc wood; do
-			install -m 755 -d $(SHAREDIR)/textures/$i/$k
-			install -m 644 -p textures/$i/$k/* $(SHAREDIR)/$i/$k
-		done
+	for i in dark lite tile; do \
+		for k in marble misc wood; do \
+			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k; \
+			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
+		done; \
 	done
-	install -m 755 -d $fontdir
-	install -m 644 -p fonts/*.ttf $fontdir
+	if [ "`id -u`" -eq 0 ]; then \
+		install -m 755 -d $(FONTDIR); \
+		install -m 644 -p fonts/*.ttf $(FONTDIR); \
+	else \
+		install -m 755 -d ~/.fonts; \
+		install -m 644 -p fonts/*.ttf ~/.fonts; \
+	fi
 	fc-cache
 
 uninstall:
-	if [ "`id -u`" -eq 0 ]; then
-		fontdir=$(FONTDIR)
-	else
-		fontdir=~/.fonts
-	fi
 	rm -f $(BINDIR)/$(SCRIPT)
-	for f in `ls pieces/*.tcl`; do
-		rm -f $(SHAREDIR)/pieces/$f
+	for f in `ls pieces/*.tcl`; do \
+		rm -f $(SHAREDIR)/pieces/$$f \
 	done
-	for f in `ls cursor/*.xbm do
-		rm -f $(SHAREDIR)/cursor/$f
+	for f in `ls cursor/*.xbm do \
+		rm -f $(SHAREDIR)/cursor/$$f \
 	done
-	for f in `ls cursor/*.xcur do
-		rm -f $(SHAREDIR)/cursor/$f
+	for f in `ls cursor/*.cur do \
+		rm -f $(SHAREDIR)/cursor/$$f \
 	done
-	for f in `ls flags/*.png`; do
-		rm -f $(SHAREDIR)/flags/$f
+	for f in `ls cursor/*.xcur do \
+		rm -f $(SHAREDIR)/cursor/$$f \
 	done
-	for f in `ls lang/*.tcl`; do
-		rm -f $(SHAREDIR)/lang/$f
+	for f in `ls flags/*.png`; do \
+		rm -f $(SHAREDIR)/flags/$$f \
 	done
-	for f in `ls lang/eco/*`; do
-		rm -f $(SHAREDIR)/lang/eco/$f
+	for f in `ls lang/*.tcl`; do \
+		rm -f $(SHAREDIR)/lang/$$f \
 	done
-	for f in `ls photos/*.sp?`; do
-		rm -f $(SHAREDIR)/photos/$f
+	for f in `ls lang/eco/*.*`; do \
+		rm -f $(SHAREDIR)/lang/eco/$$f \
 	done
-	for f in `ls themes/*.dat`; do
-		rm -f $(SHAREDIR)/themes/$f
+	for f in `ls photos/*.sp?`; do \
+		rm -f $(SHAREDIR)/photos/$$f \
 	done
-	for f in `ls themes/piece/*.dat`; do
-		rm -f $(SHAREDIR)/themes/$piece/f
+	for f in `ls themes/*.dat`; do \
+		rm -f $(SHAREDIR)/themes/$$f \
 	done
-	for f in `ls themes/square/*.dat`; do
-		rm -f $(SHAREDIR)/themes/square/$f
+	for f in `ls themes/piece/*.dat`; do \
+		rm -f $(SHAREDIR)/themes/piece/$$f \
 	done
-	for i in dark lite tile; do
-		for k in marble misc wood; do
-			for f in `ls textures/$i/$k/*`; do
-				rm -f $(SHAREDIR)/textures/$i/$k/$f
-			done
-		done
+	for f in `ls themes/square/*.dat`; do \
+		rm -f $(SHAREDIR)/themes/square/$$f \
 	done
-	for f in `ls font/*.ttf`; do
-		rm -f $fontdir/$f
+	for i in dark lite tile; do \
+		for k in marble misc wood; do \
+			for f in `ls textures/$$i/$$k/*`; do \
+				rm -f $(SHAREDIR)/textures/$$i/$$k/$$f; \
+			done; \
+		done; \
 	done
 	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
 	/bin/sh -e 'find $(SHAREDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
-	/bin/sh -e 'rmdir $fontdir'
+	if [ "`id -u`" -eq 0 ]; then \
+		for f in `ls font/*.ttf`; do \
+			rm -f $(FONTDIR)/$$f \
+		done; \
+		/bin/sh -e 'rmdir $(FONTDIR)'; \
+	else \
+		for f in `ls font/*.ttf`; do \
+			rm -f ~/.fonts/$$f \
+		done; \
+		/bin/sh -e 'rmdir ~/.fonts'; \
+	fi
 	fc-cache
 
 $(SCRIPT): $(SOURCES)

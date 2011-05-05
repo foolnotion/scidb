@@ -17,7 +17,7 @@
  *      of 
  */
 
-#include <zzip.h>                                   /* exported...*/
+#include <zzip/zzip.h>                                   /* exported...*/
 #include <string.h>
 
 /**

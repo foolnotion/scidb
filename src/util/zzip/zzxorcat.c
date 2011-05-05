@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <zziplib.h>
-#include <zzip-io.h>
+#include <zzip/lib.h>
+#include <zzip/plugin.h>
 
 #if defined ZZIP_HAVE_UNISTD_H
 #include <unistd.h>

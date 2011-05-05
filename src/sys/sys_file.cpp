@@ -261,4 +261,29 @@ sys::file::unlock(int fd)
 
 #endif
 
+
+void
+sys::file::rename(char const* oldFilename, char const* newFilename)
+{
+	Tcl_Obj* src(Tcl_NewStringObj(oldFilename, -1));
+	Tcl_Obj* dst(Tcl_NewStringObj(newFilename, -1));
+
+	Tcl_IncrRefCount(src);
+	Tcl_IncrRefCount(dst);
+	Tcl_FSRenameFile(src, dst);
+	Tcl_DecrRefCount(dst);
+	Tcl_DecrRefCount(src);
+}
+
+
+void
+sys::file::deleteIt(char const* filename)
+{
+	Tcl_Obj* fn(Tcl_NewStringObj(filename, -1));
+
+	Tcl_IncrRefCount(fn);
+	Tcl_FSDeleteFile(fn);
+	Tcl_DecrRefCount(fn);
+}
+
 // vi:set ts=3 sw=3:

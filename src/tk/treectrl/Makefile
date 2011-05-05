@@ -15,7 +15,6 @@ include ../../../Makefile.in
 .SUFFIXES: .c
 
 INCLUDE	= -I. -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
-CFLAGS	= $(CFLAGS) $(C_DEBUG) $(OPTIMIZE)
 DEFINES	= -DHAVE_UNISTD_H=1
 
 SRC_C = \
@@ -49,7 +48,7 @@ $(LIB).a: $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) -g $(INCLUDE) $(OPT_C) $(DEFINES) $*.c
+	$(CC) -c $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(INCLUDE) $(OPT_C) $(DEFINES) $*.c
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

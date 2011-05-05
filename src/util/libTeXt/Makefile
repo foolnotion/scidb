@@ -13,10 +13,8 @@
 include ../../../Makefile.in
 
 .SUFFIXES: .cpp
-.PRECIOUS:
 
 INCLUDE	= -I. -I../../mstl
-CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	T_ActiveToken.cpp \
@@ -97,7 +95,7 @@ $(LIB).a: $(OBJS)
 	$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(INCLUDE) $*.cpp
+	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
