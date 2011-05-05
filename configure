@@ -171,7 +171,7 @@ proc Append {var str} {
         if {[string length $var] > 0} {
             uplevel { append var " " }
         }
-        uplevel [list append var $str ]
+        uplevel [list append $var $str ]
     }
 }
 
@@ -816,14 +816,13 @@ proc writeMakefile {{type ""}} {
         }
     }
 
-#   set option(SPLASH) "no"
-
     if {$feature(symbols)}          { Append option(C_DEBUG) "-g" }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ -DNASSERT" }
     if {$feature(gprof-profiling)}  { Append option(PROFILING) "-pg" }
     if {$feature(gcov-coverage)}    { Append option(PROFILING) "-coverage" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
+#   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
 
     set option(TCL_VERSION) $configure(tcl-version)
     set option(PROGRAM) tkscidb$configure(program-suffix)
