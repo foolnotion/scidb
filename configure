@@ -850,7 +850,7 @@ proc writeMakefile {{type ""}} {
     } else {
         set dir $configure(prefix)/share
     }
-    set option(SHAREDIR) $dir/$option(SCRIPT)
+    set option(DATADIR) $dir/$option(SCRIPT)
 
     # XXX not working for MacOS
     if {[string match {/usr/local*} $configure(prefix)] && [file isdirectory /usr/local/share/fonts]} {
