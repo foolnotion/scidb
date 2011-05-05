@@ -15,7 +15,9 @@ include ../Makefile.in
 .SUFFIXES: .cpp
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
+ALL_ICLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
 ALL_CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+MINIZIP_LIB		= -Lutil/minizip -lminizip
 
 LIBS_BASE = \
 	db/libdbstubs.a \
@@ -33,7 +35,6 @@ LIBS = \
 	tk/svg/agg/libagg.a \
 	util/libutil.a \
 	util/lzo/liblzo.a \
-	util/libharu/libharu.a \
 	util/libTeXt/libTeXt.a \
 	mstl/libmstl.a \
 	tk/jpeg/libjpegd.a \
@@ -50,7 +51,9 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libharu util/libTeXt $(LIB_SUBDIRS)
+ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIBRARY) -lpthread
+
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libTeXt $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move $(PROGRAM)
 
@@ -58,10 +61,13 @@ all: recursive $(PROGRAM)
 
 install: $(PROGRAM)
 	install -m 755 -d $(BINDIR)
+	install -m 755 -d $(SHAREDIR)
 	install -m 755 -d $(SHAREDIR)/data
+	install -m 755 -d $(SHAREDIR)/scripts
 	install -m 755 -p $(PROGRAM) $(BINDIR)
 	install -m 644 -p data/eco.bin $(SHAREDIR)/data
 	install -m 644 -p data/*.* $(SHAREDIR)/data
+	install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
 
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
@@ -159,13 +165,13 @@ pawn_progress: pawn_progress.cpp $(LIBS_BASE)
 	$(CXX) -o pawn_progress pawn_progress.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 best_move: best_move.cpp $(LIBS)
-	$(CXX) -o best_move best_move.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) -$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
+	$(CXX) -o best_move best_move.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 pgn_split_eco: pgn_split_eco.cpp $(LIBS)
-	$(CXX) -o pgn_split_eco pgn_split_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread
+	$(CXX) -o pgn_split_eco pgn_split_eco.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 $(PROGRAM): tkscidb.cpp $(LIBS)
-	$(CXX) -o $(PROGRAM) tkscidb.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS) $(X_LIBRARY) -l$(TK_LIBRARY) -l$(TCL_LIBRARY) $(ZZIPLIB_LIB) -lminizip $(ZLIB_LIB) -lpthread $(EXPAT_LIBRARY)
+	$(CXX) -o $(PROGRAM) tkscidb.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 .cpp.o:
 	$(CXX) -c $(ALL_CXXFLAGS) $(CXX_DEBUG) $(INCLUDE) $*.cpp

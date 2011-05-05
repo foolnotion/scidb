@@ -13,6 +13,7 @@
 include ../../Makefile.in
 
 .SUFFIXES: .cpp
+.PRECIOUS:
 
 INCLUDE	= -I. -I../util -I../tcl -I../mstl
 LIBS		= mstl/libmstl.a
@@ -49,3 +50,100 @@ $(LIB).a: $(OBJS)
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
+
+sys_dl.o: sys_dl.h
+sys_dl.o: ../tcl/tcl_base.h
+sys_dl.o: ../tcl/tcl_base.ipp
+sys_dl.o: ../mstl/m_string.h
+sys_dl.o: ../mstl/m_types.h
+sys_dl.o: ../mstl/m_string.ipp
+sys_dl.o: ../mstl/m_assert.h
+sys_dl.o: ../mstl/m_exception.h
+sys_dl.o: ../mstl/m_backtrace.h
+sys_dl.o: ../mstl/m_exception.ipp
+sys_file.o: sys_file.h
+sys_file.o: ../mstl/m_types.h
+sys_file.o: ../tcl/tcl_base.h
+sys_file.o: ../tcl/tcl_base.ipp
+sys_file.o: ../mstl/m_assert.h
+sys_file.o: ../mstl/m_exception.h
+sys_file.o: ../mstl/m_backtrace.h
+sys_file.o: ../mstl/m_exception.ipp
+sys_file.o: ../mstl/m_map.h
+sys_file.o: ../mstl/m_vector.h
+sys_file.o: ../mstl/m_type_traits.h
+sys_file.o: ../mstl/m_type_traits.ipp
+sys_file.o: ../mstl/m_memblock.h
+sys_file.o: ../mstl/m_memblock.ipp
+sys_file.o: ../mstl/m_utility.h
+sys_file.o: ../mstl/m_utility.ipp
+sys_file.o: ../mstl/m_limits.h
+sys_file.o: ../mstl/m_bit_functions.h
+sys_file.o: ../mstl/m_bit_functions.ipp
+sys_file.o: ../mstl/m_static_check.h
+sys_file.o: ../mstl/m_vector.ipp
+sys_file.o: ../mstl/m_uninitialized.h
+sys_file.o: ../mstl/m_uninitialized.ipp
+sys_file.o: ../mstl/m_algobase.h
+sys_file.o: ../mstl/m_algobase.ipp
+sys_file.o: ../mstl/m_construct.h
+sys_file.o: ../mstl/m_construct.ipp
+sys_file.o: ../mstl/m_pair.h
+sys_file.o: ../mstl/m_pair.ipp
+sys_file.o: ../mstl/m_map.ipp
+sys_pipe.o: sys_pipe.h
+sys_pipe.o: ../mstl/m_assert.h
+sys_pipe.o: ../mstl/m_exception.h
+sys_pipe.o: ../mstl/m_backtrace.h
+sys_pipe.o: ../mstl/m_types.h
+sys_pipe.o: ../mstl/m_exception.ipp
+sys_process.o: sys_process.h
+sys_process.o: sys_process.ipp
+sys_process.o: ../tcl/tcl_exception.h
+sys_process.o: ../util/u_exception.h
+sys_process.o: ../mstl/m_exception.h
+sys_process.o: ../mstl/m_backtrace.h
+sys_process.o: ../mstl/m_types.h
+sys_process.o: ../mstl/m_exception.ipp
+sys_process.o: ../tcl/tcl_base.h
+sys_process.o: ../tcl/tcl_base.ipp
+sys_process.o: ../mstl/m_string.h
+sys_process.o: ../mstl/m_string.ipp
+sys_process.o: ../mstl/m_assert.h
+sys_signal.o: sys_signal.h
+sys_thread.o: sys_thread.h
+sys_thread.o: ../mstl/m_function.h
+sys_thread.o: ../mstl/m_function_base.h
+sys_thread.o: ../mstl/m_function_base.ipp
+sys_thread.o: ../mstl/m_static_check.h
+sys_thread.o: ../mstl/m_function.ipp
+sys_thread.o: ../mstl/m_assert.h
+sys_thread.o: ../mstl/m_exception.h
+sys_thread.o: ../mstl/m_backtrace.h
+sys_thread.o: ../mstl/m_types.h
+sys_thread.o: ../mstl/m_exception.ipp
+sys_thread.o: ../mstl/m_stdio.h
+sys_time.o: sys_time.h
+sys_time.o: ../util/u_base.h
+sys_time.o: ../mstl/m_types.h
+sys_timer.o: sys_timer.h
+sys_timer.o: ../tcl/tcl_base.h
+sys_timer.o: ../tcl/tcl_base.ipp
+sys_utf8_codec.o: sys_utf8_codec.h
+sys_utf8_codec.o: ../mstl/m_string.h
+sys_utf8_codec.o: ../mstl/m_types.h
+sys_utf8_codec.o: ../mstl/m_string.ipp
+sys_utf8_codec.o: ../mstl/m_assert.h
+sys_utf8_codec.o: ../mstl/m_exception.h
+sys_utf8_codec.o: ../mstl/m_backtrace.h
+sys_utf8_codec.o: ../mstl/m_exception.ipp
+sys_utf8_codec.o: sys_utf8_codec.ipp
+sys_utf8_codec.o: ../mstl/m_utility.h
+sys_utf8_codec.o: ../mstl/m_utility.ipp
+sys_utf8_codec.o: ../mstl/m_limits.h
+sys_utf8_codec.o: ../mstl/m_bit_functions.h
+sys_utf8_codec.o: ../mstl/m_bit_functions.ipp
+sys_utf8_codec.o: ../mstl/m_static_check.h
+sys_utf8_codec.o: ../util/u_base.h
+sys_utf8_codec.o: ../tcl/tcl_base.h
+sys_utf8_codec.o: ../tcl/tcl_base.ipp
