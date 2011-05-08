@@ -262,6 +262,7 @@ proc add {position base info tags} {
 	set Vars(comment:$position) ""
 	set Vars(result:$position) ""
 	set Vars(virgin:$position) 1
+	set Vars(last:$position) ""
 
 	::scidb::game::subscribe pgn $position [namespace current]::Update
 	::scidb::game::subscribe board $position [namespace parent]::board::update
@@ -388,6 +389,7 @@ proc InitScratchGame {} {
 	set Vars(active:9) {}
 	set Vars(info:9) [::scidb::game::info 9]
 	set Vars(see:9) 1
+	set Vars(last:9) {}
 
 	::scidb::game::subscribe board 9 [namespace parent]::board::update
 	::scidb::game::switch 9
@@ -540,6 +542,20 @@ proc Edit {position ns {key {}}} {
 }
 
 
+proc Dump {w} {
+	set dump [$w dump -all 1.0 end]
+	foreach {type attr pos} $dump {
+		if {$attr ne "current" && $attr ne "insert"} {
+			if {$attr eq "\n"} { set attr "\\n" }
+			switch $type {
+				tagon - tagoff {}
+				default { puts "$pos: $type $attr" }
+			}
+		}
+	}
+}
+
+
 proc Update {position data} {
 	variable Vars
 
@@ -560,22 +576,26 @@ proc Update {position data} {
 				}
 			}
 
-			header { UpdateHeader $position $w [lindex $node 1] }
+			header {
+				UpdateHeader $position $w [lindex $node 1]
+Dump $w
+puts "-------------------------------------------------"
+			}
 
 			begin {
 				set level [lindex $node 2]
 				set startVar($level) [lindex $node 1]
-				Mark $w $startVar($level)
+#				Mark $w $startVar($level)
 			}
 
 			end {
-				set endVar($level) [lindex $node 1]
+#				set endVar($level) [lindex $node 1]
 				set level [lindex $node 2]
-				Mark $w $endVar($level)
+#				Mark $w $endVar($level)
 
 				if {$level > 0} {
-					set lvl [expr {min($level, 2)}]
-					$w tag add indent$level [$w index $startVar($level)] [$w index $endVar($level)]
+#					$w tag add indent$level [$w index $startVar($level)] [$w index $endVar($level)]
+					$w tag add indent$level $startVar($level) current
 				}
 
 				incr level -1
@@ -585,40 +605,45 @@ proc Update {position data} {
 				set args [lindex $node 1]
 
 				switch [lindex $args 0] {
-					remove { $w delete {*}[lrange $args 2 end] }
+					remove {
+						$w delete {*}[lrange $args 2 end]
+					}
 
 					replace {
 						set action replace
-						set level [lindex $args 1]
-						$w delete [lindex $args 2] [lindex $args 3]
-						set insertMark [lindex $args 2]
-						$w mark gravity $insertMark left
-						set insertPos [$w index [lindex $args 3]]
-						$w mark set current $insertPos
+						lassign $args unused level removePos insertMark
+						$w delete $removePos $insertMark
+						$w mark gravity $removePos left
+						$w mark gravity $insertMark right
+						$w mark set current $insertMark
+						set insertPos [$w index $insertMark]
 					}
 
 					insert {
 						set action insert
-						set level [lindex $args 1]
-						set insertPos [$w index [lindex $args 2]]
-						$w mark set current $insertPos
+						lassign $args unused level insertMark
+						$w mark gravity $insertMark right
+						$w mark set current $insertMark
+						set insertPos [$w index $insertMark]
 					}
 
 					finish {
 						set level [lindex $args 1]
 						if {$level > 0} {
 							set lvl [expr {min(2, $level)}]
-							$w tag add indent$lvl $insertPos [$w index current]
+							$w tag add indent$lvl $insertPos current
 						}
-						if {$action eq "replace"} {
-							$w mark gravity $insertMark right
-						}
+						Mark $w $insertMark
+Dump $w
+puts "--- finish --------------------------------------"
 					}
 
 					clear {
-						$w delete h-end e-0
+						$w delete h-end m-0
+						$w insert m-0 \n
 #						$w tag delete {*}[$Vars(pgn:$position) tag names]
-						set Vars(virgin:$position) 1
+Dump $w
+puts "--- clear ---------------------------------------"
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
@@ -627,12 +652,16 @@ proc Update {position data} {
 			}
 
 			comment {
-				set key  [lindex $node 1]
-				set data [lindex $node 2]
+				lassign $node unused key break data
 
+				if {[llength $break]} {
+					InsertBreak $w [lindex $break 1] [lindex $break 2]
+				}
 				set startPos [$w index current]
 				PrintComment $position $w $level $key $data
-				if {$level == 0} { $w tag add indent1 $startPos [$w index current] }
+				if {$level == 0 && $startPos ne "3.0"} {
+					$w tag add indent1 $startPos current
+				}
 				Mark $w $key
 			}
 
@@ -640,8 +669,9 @@ proc Update {position data} {
 				set key  [lindex $node 1]
 				set data [lindex $node 2]
 
-				InsertMove $position $w $level $key $data
 				Mark $w $key
+				InsertMove $position $w $level $key $data
+				set Vars(last:$position) $key
 			}
 
 			diagram {
@@ -653,19 +683,35 @@ proc Update {position data} {
 			}
 
 			result {
-				set result [lindex $node 2]
-				if {$Vars(result:$position) != $result} {
-					$w mark gravity e-0 left
-					$w delete e-0 end
-					$w insert e-0 [::util::formatResult $result] result
-					$w insert e-0 "\n"
-					$w mark gravity e-0 right
-				}
+				set result [lindex $node 1]
 
-				$w mark set [lindex $node 1] [$w index end]
+				if {$Vars(result:$position) != $result} {
+					if {[string length $Vars(last:$position)]} {
+						$w mark gravity $Vars(last:$position) left
+					}
+					$w mark gravity m-0 left
+					$w mark set current m-0
+					# NOTE: the text editor has a severe bug:
+					# if all chars after <pos> are newlines, the command
+					# '<text> delete <pos> end' will also delete one newline
+					# before <pos>. We will catch this case:
+					if {![string is space [$w get m-0 end]]} {
+						$w delete current end
+					}
+					$w insert current \n
+					$w insert current [::util::formatResult $result] result
+					$w mark gravity m-0 right
+					if {[string length $Vars(last:$position)]} {
+						$w mark gravity $Vars(last:$position) right
+					}
+					set Vars(result:$position) $result
+				}
 				foreach mark $Vars(marks) { $w mark gravity $mark right }
+				$w mark gravity m-0 right
 				$w configure -state disabled
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+Dump $w
+puts "--- result -----------------------------------------"
 			}
 		}
 	}
@@ -719,21 +765,44 @@ proc UpdateHeader {position w data} {
 		}
 	}
 
-	if {$Vars(virgin:$position)} {
-		$w mark set h-beg 1.0
-	} else {
+	if {!$Vars(virgin:$position)} {
 		$w delete 1.0 h-end
 	}
 
-	$w mark set current [$w index h-beg]
-	$w insert current [lindex [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] 0 0] bold
-	$w insert current "\n\n"
+	$w mark set current 1.0
+	foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
+		$w insert current {*}$line
+	}
 	$w mark set h-end [$w index current]
+	$w mark gravity h-end left
 
 	if {$Vars(virgin:$position)} {
-		$w mark set e-0 [$w index current]
-		set Vars(virgin:$position) 0
+		$w insert current "\n"
+#		$w mark set v-0 [$w index current]
+#		$w mark gravity v-0 left
+		$w mark set m-0 [$w index current]
+		$w mark gravity m-0 right
 	}
+
+#	$w mark gravity h-end right
+	set Vars(virgin:$position) 0
+}
+
+
+proc InsertBreak {w level bracket} {
+	if {$bracket eq ")"} { $w insert current " )" bracket }
+
+	switch $level {
+		0 - 1 - 2 { $w insert current "\n" }
+
+		default {
+			if {$bracket ne ")"} {
+				$w insert current " "
+			}
+		}
+	}
+
+	if {$bracket eq "("} { $w insert current "( " bracket }
 }
 
 
@@ -743,22 +812,7 @@ proc InsertMove {position w level key data} {
 	foreach node $data {
 		switch [lindex $node 0] {
 			break {
-				set level [lindex $node 1]
-				set bracket [lindex $node 2]
-
-				if {$bracket eq ")"} { $w insert current " )" bracket }
-
-				switch $level {
-					0 - 1 - 2 { $w insert current "\n" }
-
-					default {
-						if {$bracket ne ")"} {
-							$w insert current " "
-						}
-					}
-				}
-
-				if {$bracket eq "("} { $w insert current "( " bracket }
+				InsertBreak $w [lindex $node 1] [lindex $node 2]
 			}
 
 			space {
@@ -804,7 +858,7 @@ proc InsertMove {position w level key data} {
 			comment {
 				set startPos [$w index current]
 				PrintComment $position $w $level $key [lindex $node 1]
-				if {$level == 0} { $w tag add indent1 $startPos [$w index current] }
+				if {$level == 0} { $w tag add indent1 $startPos current }
 			}
 		}
 	}
@@ -817,24 +871,28 @@ proc InsertDiagram {position w level key data} {
 	set index 0
 	set color white
 
-	foreach {tag value} $data {
-		color { set color $value }
-		board { set board $value }
-		break { $w insert current "\n" }
+	foreach entry $data {
+		switch [lindex $entry 0] {
+			color { set color [lindex $entry 1] }
+			board { set board [lindex $entry 1] }
+			break { $w insert current "\n" }
+		}
 	}
 
-	set img $w.$key
+	set img $w.[string map {. :} $key]
 	board::stuff::new $img $Options(board-size) 2
 	if {$color eq "black"} { ::board::stuff::rotate $img }
 	::board::stuff::update $img $board
 	::board::stuff::bind $img <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
 	::board::stuff::bind $img <ButtonPress-2> [namespace code [list PopupMenu $w $position]]
+	$w insert current \n
 	$w window create current \
 		-align center \
 		-window $img \
 		-padx $Options(diagram-pad-x) \
 		-pady $Options(diagram-pad-y) \
 		;
+	$w insert current \n
 }
 
 
@@ -945,7 +1003,7 @@ proc PrintComment {position w level key data} {
 	}
 
 	if {[llength $startPos]} {
-		$w tag add comment $startPos [$w index current]
+		$w tag add comment $startPos current
 		$w tag bind $keyTag <Enter> [namespace code [list EnterComment $w $key]]
 		$w tag bind $keyTag <Leave> [namespace code [list LeaveComment $w $key]]
 		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editComment $position $key]]
@@ -999,10 +1057,10 @@ proc PrintAnnotation {w position level key nags} {
 	}
 
 	set keyTag annotation:$key
-	$w tag add nag $pos [$w index current]
+	$w tag add nag $pos current
 	$w tag raise symbol
 	$w tag raise symbolb
-	$w tag add $keyTag $pos [$w index current]
+	$w tag add $keyTag $pos current
 	$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
 }
 
@@ -1490,7 +1548,7 @@ proc PopupMenu {parent position} {
 			-onvalue $onValue \
 			-offvalue $offValue \
 			-variable [namespace current]::Options($var) \
-			-command [namespace code [list Refresh $position]] \
+			-command [namespace code Refresh] \
 			;
 	}
 
@@ -1684,14 +1742,14 @@ proc VerifyNumberOfMoves {dlg length} {
 }
 
 
-proc Refresh {position} {
+proc Refresh {} {
 	variable Options
 	variable Colors
 	variable Vars
 
 	set Vars(current:$position) {}
 	SetupStyle
-	::widget::busyOperation ::scidb::game::refresh $position
+	::widget::busyOperation ::scidb::game::refresh
 }
 
 

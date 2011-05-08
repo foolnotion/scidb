@@ -38,7 +38,7 @@ set Priv(sbset:cmd)		{}
 set Priv(sbset:orient)	{}
 
 
-set ButtonOrder { previous next update clear close ok cancel apply reset revert }
+set ButtonOrder { previous next update clear close ok apply cancel reset revert }
 	
 
 bind TScrollbar <ButtonPress-1>	{+ set ::widget::Priv(sbset:orient) [%W cget -orient] }

@@ -398,16 +398,15 @@ proc ConfirmReplaceMove {} {
 	variable Disabled
 	variable Leave
 	variable Lock
-	variable _action
 
 	if {$Options(addVarWithoutAsking)}	{ return "variation" }
 	if {[::game::trialMode?]}				{ return "replace" }
 	if {!$Options(askToReplaceMoves)}	{ return "replace" }
 
-	set _action ""
 	set i 0
 	set m $board.popup_confirm
 	catch { destroy $m }
+	variable _action cancel
 	menu $m -tearoff false
 	foreach {label action} [list	[namespace current]::mc::ReplaceMove		replace   \
 											[namespace current]::mc::AddNewVariation	variation \
@@ -424,8 +423,10 @@ proc ConfirmReplaceMove {} {
 	set Leave 0
 	set Disabled 1
 	set Lock 1
-	tk_popup $m {*}[winfo pointerxy $board] {} -var [namespace current]::_action -trigger "" -exit cancel
-	tkwait variable [namespace current]::_action
+	variable _wait 1
+	bind $m <<MenuUnpost>> [list set [namespace current]::_wait 0]
+	tk_popup $m {*}[winfo pointerxy $board]
+	tkwait variable [namespace current]::_wait
 	if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
 	set Leave 1
 	after idle [namespace code Unlock]

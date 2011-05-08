@@ -295,7 +295,7 @@ Application::hasTrialMode(unsigned position) const
 	if (position == InvalidPosition)
 		position = m_position;
 
-	return m_gameMap.find(position)->second.backup != 0;
+	return m_gameMap.find(m_position)->second.backup != 0;
 }
 
 
@@ -834,8 +834,10 @@ Application::clearGame(Board const* startPosition)
 void
 Application::switchGame(unsigned position)
 {
-	M_REQUIRE(position != InvalidPosition);
 	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = currentPosition();
 
 	stopUpdateTree();
 
@@ -857,43 +859,39 @@ Application::switchGame(unsigned position)
 
 
 void
-Application::startTrialMode(unsigned position)
+Application::startTrialMode()
 {
-	M_REQUIRE(containsGameAt(position));
-	M_REQUIRE(!hasTrialMode(position));
+	M_REQUIRE(!hasTrialMode());
 
-	if (position == InvalidPosition)
-		position = m_position;
-
-	EditGame& game = m_gameMap[position];
+	EditGame& game = m_gameMap[m_position];
 
 	game.backup = game.game;
 	game.game = new Game(*game.backup);
+	game.game->moveTo(game.backup->currentKey());
 }
 
 
 void
-Application::endTrialMode(unsigned position)
+Application::endTrialMode()
 {
-	M_REQUIRE(containsGameAt(position));
-	M_REQUIRE(hasTrialMode(position));
+	M_REQUIRE(hasTrialMode());
 
-	if (position == InvalidPosition)
-		position = m_position;
-
-	EditGame& game = m_gameMap[position];
+	EditGame& game = m_gameMap[m_position];
 
 	delete game.game;
 	game.game = game.backup;
+	game.game->moveTo(game.backup->currentKey());
 	game.backup = 0;
 }
 
 
 void
-Application::refreshGames()
+Application::refreshGame() const
 {
-	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
-		i->second.refresh = true;
+	M_REQUIRE(haveCurrentGame());
+
+	Game* game = m_gameMap.find(m_position)->second.game;
+	game->refreshSubscriber();
 }
 
 

@@ -83,8 +83,9 @@ public:
 		NoSpace			= 0,
 		PrefixSpace		= 1 << 0,
 		PrefixBreak		= 1 << 1,
-		ForcedBreak		= 1 << 2,
-		RequiredBreak	= 1 << 3,
+		SuffixBreak		= 1 << 2,
+		ForcedBreak		= 1 << 3,
+		RequiredBreak	= 1 << 4,
 	};
 
 	typedef mstl::vector<Node const*> List;
@@ -99,7 +100,7 @@ public:
 
 	virtual void visit(Visitor& visitor) const = 0;
 
-	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags, edit::Key const& lastKey);
+	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags);
 	static void setStyle(DisplayStyle style);
 
 	static unsigned linebreakThreshold;
@@ -109,13 +110,8 @@ public:
 
 protected:
 
-	static char const PrefixMove		= 'm';
 	static char const PrefixDiagram	= 'd';
 	static char const PrefixComment	= 'c';
-	static char const PrefixBegin		= 'v';
-	static char const PrefixEnd		= 'e';
-	static char const PrefixOpen		= 'O';
-	static char const PrefixClose		= 'C';
 
 	bool isRoot() const;
 
@@ -129,7 +125,6 @@ protected:
 		Bracket					bracket;
 		bool						needMoveNo;
 		unsigned					level;
-		bool						incrementLevel;
 		unsigned					linebreakMaxLineLength;
 		unsigned					plyCount;
 	};
@@ -154,6 +149,8 @@ public:
 	bool operator>(KeyNode const* node) const;
 
 	Key const& key() const;
+	virtual Key const& startKey() const;
+	virtual Key const& endKey() const;
 
 protected:
 
@@ -193,7 +190,6 @@ public:
 	~Root() throw();
 
 	Type type() const;
-	edit::Key const lastKey() const;
 
 	void visit(Visitor& visitor) const;
 	void difference(Root const* root, List& nodes) const;
@@ -223,7 +219,6 @@ private:
 	Node*				m_opening;
 	Node* 			m_languages;
 	Variation*		m_variation;
-	edit::Key		m_last;
 	result::ID		m_result;
 	mutable List	m_nodes;
 };
@@ -274,14 +269,20 @@ class Variation : public KeyNode
 public:
 
 	Variation(Key const& key);
+	Variation(Key const& key, Key const& succ);
 	~Variation() throw();
 
 	bool operator==(Node const* node) const;
 
+	bool empty() const;
+
 	Type type() const;
 
-	void visit(Visitor& visitor) const;
+	Key const& startKey() const;
+	Key const& endKey() const;
+	Key const& successor() const;
 
+	void visit(Visitor& visitor) const;
 
 private:
 
@@ -289,7 +290,8 @@ private:
 
 	void difference(Root const* root, Variation const* var, unsigned level, Node::List& nodes) const;
 
-	List m_list;
+	List	m_list;
+	Key	m_succ;
 };
 
 
@@ -320,24 +322,27 @@ public:
 
 	typedef Node::List List;
 
+	Move(Work& work);
 	Move(Work& work, MoveNode const* move);
+	Move(Key const& key);
 	Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const* move);
 	~Move() throw();
 
 	bool operator==(Node const* node) const;
 
 	Type type() const;
+	Key const& startKey() const;
+	Key const& endKey() const;
 
 	Ply const* ply() const;
 
 	void visit(Visitor& visitor) const;
 
-	static Key key(Key const& key);
-
 private:
 
-	List m_list;
-	Ply* m_ply;
+	List	m_list;
+	Ply*	m_ply;
+	Key 	m_endKey;
 };
 
 
@@ -482,10 +487,10 @@ public:
 	virtual void linebreak(unsigned level, char bracket) = 0;
 
 	virtual void start(result::ID result) = 0;
-	virtual void finish(Key const& key, result::ID result) = 0;
+	virtual void finish(result::ID result) = 0;
 
-	virtual void startVariation(Key const& key) = 0;
-	virtual void endVariation(Key const& key) = 0;
+	virtual void startVariation(Key const& startKey, Key const& endKey) = 0;
+	virtual void endVariation(Key const& startKey, Key const& endKey) = 0;
 
 	virtual void startMove(Key const& key) = 0;
 	virtual void endMove(Key const& key) = 0;

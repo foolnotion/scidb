@@ -134,7 +134,7 @@ public:
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
 	void switchBase(mstl::string const& name);
-	void refreshGames();
+	void refreshGame() const;
 
 	Cursor& clipBase();
 	Cursor const& clipBase() const;
@@ -184,8 +184,8 @@ public:
 	static void stopUpdateTree();
 	static void cancelUpdateTree();
 
-	void startTrialMode(unsigned position);
-	void endTrialMode(unsigned position);
+	void startTrialMode();
+	void endTrialMode();
 
 	void searchGames(Cursor& cursor, db::Query const& query, unsigned view = 0, unsigned filter = None);
 	void recode(Cursor& cursor, mstl::string const& encoding, db::Log& log);

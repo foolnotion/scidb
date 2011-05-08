@@ -222,22 +222,19 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, m_start);
 	}
 
-	void finish(edit::Key const& key, result::ID result)
+	void finish(result::ID result)
 	{
 ////////////////////////////////////////////////////////////////////////
 		s += l;
-		s += "result ";
-		s += key.id();
-		s += " { ";
+		s += "result { ";
 		s += result::toString(result);
 		s += " }\n";
 ////////////////////////////////////////////////////////////////////////
 
-		Tcl_Obj* objv[3];
+		Tcl_Obj* objv[2];
 
 		objv[0] = m_result;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewStringObj(result::toString(result), -1);
+		objv[1] = Tcl_NewStringObj(result::toString(result), -1);
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
@@ -262,7 +259,7 @@ public:
 ////////////////////////////////////////////////////////////////////////
 		s += l;
 		s += "action { insert ";
-		s.format(" %u ", level);
+		s.format("%u ", level);
 		s += beforeKey.id();
 		s += " }\n";
 ////////////////////////////////////////////////////////////////////////
@@ -286,7 +283,7 @@ public:
 ////////////////////////////////////////////////////////////////////////
 		s += l;
 		s += "action { replace ";
-		s.format(" %u ", level);
+		s.format("%u ", level);
 		s += startKey.id();
 		s += " ";
 		s += endKey.id();
@@ -361,7 +358,7 @@ public:
 		EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvariation);
 
 ////////////////////////////////////////////////////////////////////////
-		mstl::string pos(position);
+		mstl::string pos;
 
 		if (idn)
 		{
@@ -536,31 +533,31 @@ public:
 		objv_2[0] = m_board;
 		objv_2[1] = Tcl_NewStringObj(position, position.size());
 
-		Tcl_Obj* objv_3[2];
-
-		objv_3[0] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
-		objv_3[1] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
-
-		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_3), objv_3);
+		M_ASSERT(m_objc + 1 < U_NUMBER_OF(m_objv));
+		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1);
+		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
 	void comment(edit::Key const& key, Comment const& comment)
 	{
 ////////////////////////////////////////////////////////////////////////
 		s += l;
-		s += "comment";
+		s += "comment ";
 		s += key.id();
 		s += " {";
 		s += comment.content();
 		s += "}\n";
 ////////////////////////////////////////////////////////////////////////
 
-		Tcl_Obj* objv_1[3];
+		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_comment;
 		objv_1[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv_1[2] = Tcl_NewStringObj(comment.content(), comment.content().size());
+		objv_1[2] = m_objc == 1 ? m_objv[0] : Tcl_NewListObj(0, 0);
+		objv_1[3] = Tcl_NewStringObj(comment.content(), comment.content().size());
+
+		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1));
+		m_objc = 0;
 	}
 
 	void comment(Comment const& comment)
@@ -684,36 +681,36 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void startVariation(edit::Key const& key)
+	void startVariation(edit::Key const& startKey, edit::Key const& endKey)
 	{
 ////////////////////////////////////////////////////////////////////////
 		s += l;
-		s.format("begin %s { %u }\n", key.id().c_str(), key.level());
+		s.format("begin %s { %u }\n", startKey.id().c_str(), startKey.level());
 		l.assign(2*(l.size()/2 + 1), ' ');
 ////////////////////////////////////////////////////////////////////////
 
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_begin;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewIntObj(key.level());
+		objv[1] = Tcl_NewStringObj(startKey.id(), startKey.id().size());
+		objv[2] = Tcl_NewIntObj(startKey.level());
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
 
-	void endVariation(edit::Key const& key)
+	void endVariation(edit::Key const& startKey, edit::Key const& endKey)
 	{
 ////////////////////////////////////////////////////////////////////////
 		l.assign(2*(l.size()/2 - 1), ' ');
 		s += l;
-		s.format("end %s { %u }\n", key.id().c_str(), key.level());
+		s.format("end %s { %u }\n", endKey.id().c_str(), endKey.level());
 ////////////////////////////////////////////////////////////////////////
 
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_end;
-		objv[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv[2] = Tcl_NewIntObj(key.level());
+		objv[1] = Tcl_NewStringObj(endKey.id(), endKey.id().size());
+		objv[2] = Tcl_NewIntObj(endKey.level());
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
@@ -928,12 +925,12 @@ struct Subscriber : public Game::Subscriber
 		}
 	}
 
-	void updateEditor(Game::DiffList const& nodes, TagSet const& tags, edit::Key const& lastKey)
+	void updateEditor(Game::DiffList const& nodes, TagSet const& tags)
 	{
 		if (m_pgn)
 		{
 			Visitor visitor;
-			edit::Node::visit(visitor, nodes, tags, lastKey);
+			edit::Node::visit(visitor, nodes, tags);
 			::fprintf(stderr, visitor.s.c_str());
 			::fprintf(stderr, "================================\n");
 			invoke(__func__, m_pgn, m_position, visitor.m_list, 0);
@@ -1351,16 +1348,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned position;
-
-	if (objc < 2)
-		position = Scidb.currentPosition();
-	else
-		position = intFromObj(objc, objv, 1);
-
-	scidb.refreshGames();
-	scidb.switchGame(position);
-
+	scidb.refreshGame();
 	return TCL_OK;
 }
 
@@ -1609,7 +1597,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 	enum
 	{
-		Cmd_Count, Cmd_Current, Cmd_New, Cmd_Paste, Cmd_Remove, Cmd_Insert, Cmd_Exchange,
+		Cmd_Count, Cmd_Current, Cmd_New, Cmd_Remove, Cmd_Insert, Cmd_Exchange,
 		Cmd_Promote, Cmd_Mainline, Cmd_First, Cmd_Leave, Cmd_Length,
 	};
 
@@ -2206,10 +2194,7 @@ cmdNumber(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdPush(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	edit::Key const& key = scidb.game().currentKey();
-	scidb.startTrialMode(Application::InvalidPosition);
-	scidb.game().moveTo(key);
-
+	scidb.startTrialMode();
 	return TCL_OK;
 }
 
@@ -2217,9 +2202,8 @@ cmdPush(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdPop(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.endTrialMode(Application::InvalidPosition);
-	scidb.game().updateSubscriber(Game::UpdateAll);
-
+	scidb.endTrialMode();
+	scidb.refreshGame();
 	return TCL_OK;
 }
 

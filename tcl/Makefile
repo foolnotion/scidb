@@ -114,6 +114,9 @@ all: $(SCRIPT)
 clean:
 	rm -f $(SCRIPT)
 
+depend:
+	# nothing to do
+
 install: $(SCRIPT)
 	install -m 755 -d $(BINDIR)
 	install -m 755 -d $(SHAREDIR)
@@ -154,7 +157,14 @@ install: $(SCRIPT)
 		install -m 755 -d ~/.fonts; \
 		install -m 644 -p fonts/*.ttf ~/.fonts; \
 	fi
-	fc-cache
+	if [ -x /usr/local/bin/fc-cache ]; then \
+		/usr/local/bin/fc-cache; \
+	elif [ -x /usr/bin/fc-cache ]; then \
+		/usr/bin/fc-cache; \
+	else \
+		@echo "Don't know how to setup truetype fonts."; \
+		@echo "Please contact your system administrator."; \
+	fi
 
 uninstall:
 	rm -f $(BINDIR)/$(SCRIPT)
@@ -211,7 +221,11 @@ uninstall:
 		done; \
 		/bin/sh -e 'rmdir ~/.fonts'; \
 	fi
-	fc-cache
+	if [ -x /usr/local/bin/fc-cache ]; then \
+		/usr/local/bin/fc-cache; \
+	elif [ -x /usr/bin/fc-cache ]; then \
+		/usr/bin/fc-cache; \
+	fi
 
 $(SCRIPT): $(SOURCES)
 	rm -f $(SCRIPT)

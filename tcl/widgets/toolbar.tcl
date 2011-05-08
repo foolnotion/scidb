@@ -119,7 +119,7 @@ proc toolbar {parent args} {
 		}
 	}
 
-	if {!$haveId} { set id [incr $Counter] }
+	if {!$haveId} { set id [incr Counter] }
 
 	set toolbar ${path}__tb__${id}
 	set handle $toolbar.handle
@@ -803,13 +803,17 @@ proc Cleanup {toolbar} {
 	set Specs(count:$parent) [lreplace $Specs(count:$parent) $i $i]
 	if {[llength $Specs(count:$parent)] == 0} {
 		set keepoptions $Specs(keepoptions:$toolbar)
-		set idlist $Specs(idlist:$parent)
+		if {[info exists Specs(idlist:$parent)]} {
+			set idlist $Specs(idlist:$parent)
+		}
 		if {$keepoptions} { set options [getOptions $parent] }
 		foreach tb $Specs(remember:$parent) { array unset Specs *:$tb }
 		array unset Specs *:$parent
 		if {$keepoptions} {
 			set Specs(options:$parent) $options
-			set Specs(idlist:$parent) $idlist
+			if {[info exists idlist]} {
+				set Specs(idlist:$parent) $idlist
+			}
 		}
 	}
 

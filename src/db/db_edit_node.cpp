@@ -90,6 +90,9 @@ void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_marks); }
 inline bool KeyNode::operator<(KeyNode const* node) const { return m_key < node->m_key; }
 inline bool KeyNode::operator>(KeyNode const* node) const { return node->m_key < m_key; }
 
+Key const& KeyNode::startKey() const	{ return m_key; }
+Key const& KeyNode::endKey() const		{ return m_key; }
+
 
 bool
 KeyNode::operator==(KeyNode const* node) const
@@ -126,12 +129,6 @@ Diagram::Diagram(Work& work, color::ID fromColor)
 	,m_prefixBreak(work.spacing != Move::NoSpace)
 {
 	work.spacing = ForcedBreak;
-
-	if (work.incrementLevel)
-	{
-		++work.level;
-		work.incrementLevel = false;
-	}
 }
 
 
@@ -150,17 +147,11 @@ PreComment::PreComment(Work& work, db::Comment const& comment)
 	:KeyNode(work.key, PrefixComment)
 	,m_comment(comment)
 	,m_level(0)
-	,m_spacing(NoSpace)
+	,m_spacing(work.spacing)
 	,m_bracket(work.bracket)
 {
-	if (work.incrementLevel)
-	{
-		++work.level;
-		work.incrementLevel = false;
-	}
-
 	if (!(work.spacing & (ForcedBreak | RequiredBreak)))
-		m_level = work.spacing;
+		m_level = work.level;
 }
 
 
@@ -275,7 +266,7 @@ Node::operator==(Node const* node) const
 
 
 void
-Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags, edit::Key const& lastKey)
+Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags)
 {
 	result::ID result = result::fromString(tags.value(tag::Result));
 
@@ -284,15 +275,7 @@ Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags, edit::Key c
 	for (unsigned i = 0; i < nodes.size(); ++i)
 		nodes[i]->visit(visitor);
 
-	visitor.finish(lastKey, result);
-}
-
-
-Action::Action(Command command)
-	:m_command(command)
-	,m_level(0)
-{
-	M_ASSERT(command == Clear);
+	visitor.finish(result);
 }
 
 
@@ -301,6 +284,13 @@ Action::Action(Command command, unsigned level)
 	,m_level(level)
 {
 	M_ASSERT(command == Finish);
+}
+
+
+Action::Action(Command command)
+	:m_command(command)
+{
+	M_ASSERT(command == Clear);
 }
 
 
@@ -354,12 +344,27 @@ Languages::operator==(Node const* node) const
 }
 
 
+Key const& Variation::startKey() const
+{
+	return m_list.empty() ? m_key : m_list.front()->key();
+}
+
+
+Key const&
+Variation::endKey() const
+{
+	return m_list.empty() ? m_key : m_list.back()->key();
+}
+
+
 bool
 Variation::operator==(Node const* node) const
 {
 	M_ASSERT(node);
 	M_ASSERT(dynamic_cast<Variation const*>(node));
-	M_ASSERT(m_key == static_cast<Variation const*>(node)->m_key);
+
+	if (m_key != static_cast<Variation const*>(node)->m_key)
+		return false;
 
 	if (m_list.size() != static_cast<Variation const*>(node)->m_list.size())
 		return false;
@@ -377,12 +382,12 @@ Variation::operator==(Node const* node) const
 void
 Variation::visit(Visitor& visitor) const
 {
-	visitor.startVariation(Key(m_key, PrefixBegin));
+	visitor.startVariation(startKey(), endKey());
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
 		m_list[i]->visit(visitor);
 
-	visitor.endVariation(Key(m_key, PrefixEnd));
+	visitor.endVariation(startKey(), endKey());
 }
 
 
@@ -445,8 +450,8 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	// Game::clear()
 	//		remove all
 
-	edit::Key startVar(var->key(), PrefixBegin);
-	edit::Key endVar(var->key(), PrefixEnd);
+	Key const& startVar	= var->startKey();
+	Key const& endVar		= var->successor();
 
 	unsigned	i = 0;
 	unsigned k = 0;
@@ -478,16 +483,36 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 				{
 					if (*static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply())
 					{
-						Key const& before = (k == 0) ? startVar : var->m_list[k - 1]->key();
-						nodes.push_back(root->newAction(Action::Replace, level, before, endVar));
-						nodes.insert(nodes.end(), m_list.begin() + i, m_list.end());
+						KeyNode const* const* lhsFirst	= m_list.begin() + i + 1;
+						KeyNode const* const* lhsLast		= m_list.end() - 1;
+						KeyNode const* const* rhsFirst	= var->m_list.begin() + k + 1;
+						KeyNode const* const* rhsLast		= var->m_list.end() - 1;
+
+						while (	lhsFirst <= lhsLast
+								&& rhsFirst <= rhsLast
+								&& (*lhsLast)->type() == (*rhsLast)->type()
+								&& *static_cast<Node const*>(*lhsLast) == static_cast<Node const*>(*rhsLast))
+						{
+							--lhsLast;
+							--rhsLast;
+						}
+
+						++lhsLast;
+						++rhsLast;
+
+						Key const& before = rhs->endKey();
+						Key const& after = rhsLast == var->m_list.end() ? endVar : (*rhsLast)->startKey();
+						nodes.push_back(root->newAction(Action::Replace, level, before, after));
+						nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
 						nodes.push_back(root->newAction(Action::Finish, level));
 						return;
 					}
 				}
 
-				Key const& before = (k == 0) ? startVar : var->m_list[k - 1]->key();
-				nodes.push_back(root->newAction(Action::Replace, level, before, lhs->key()));
+				Key const& before	= rhs->endKey();
+				Key const& after	= (k == n - 1) ? endVar : var->m_list[k + 1]->startKey();
+
+				nodes.push_back(root->newAction(Action::Replace, level, before, after));
 				nodes.push_back(lhs);
 				nodes.push_back(root->newAction(Action::Finish, level));
 			}
@@ -514,22 +539,22 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 					break;
 
 				case TVariation:
-					action = (lhsType == TVariation) ? Remove : Insert;
+					action = (lhsType == TMove) ? Remove : Insert;
 					break;
 			}
 
 			switch (action)
 			{
 				case Insert:
-					nodes.push_back(root->newAction(Action::Insert, level, rhs->key()));
+					nodes.push_back(root->newAction(Action::Insert, level, rhs->endKey()));
 					nodes.push_back(lhs);
 					nodes.push_back(root->newAction(Action::Finish, level));
 					++i;
 					break;
 
 				case Remove:
-					Key const& before = (k == 0) ? startVar : var->m_list[k - 1]->key();
-					nodes.push_back(root->newAction(Action::Remove, level, before, rhs->key()));
+					Key const& endKey = (k == n - 1) ? endVar : var->m_list[k + 1]->startKey();
+					nodes.push_back(root->newAction(Action::Remove, level, rhs->startKey(), endKey));
 					++k;
 					break;
 			}
@@ -544,7 +569,10 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	}
 
 	if (k < n)
-		nodes.push_back(root->newAction(Action::Remove, level, var->m_list[k]->key(), endVar));
+	{
+		Key const& before = (k == 0) ? startVar : var->m_list[k - 1]->endKey();
+		nodes.push_back(root->newAction(Action::Remove, level, before, endVar));
+	}
 }
 
 
@@ -568,8 +596,41 @@ Move::operator==(Node const* node) const
 }
 
 
+Move::Move(Work& work)
+	:KeyNode(work.key)
+	,m_ply(0)
+	,m_endKey(m_key)
+{
+	M_ASSERT(work.spacing != NoSpace);
+
+	if (work.spacing & ForcedBreak)
+	{
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+	}
+	else if (work.spacing & RequiredBreak)
+	{
+		m_list.push_back(new Space(0));
+		work.plyCount = 0;
+	}
+	else if (work.spacing & PrefixBreak)
+	{
+		m_list.push_back(new Space(work.level, work.bracket));
+		work.plyCount = 0;
+	}
+	else if (work.spacing & PrefixSpace)
+	{
+		m_list.push_back(new Space(work.bracket));
+	}
+
+	work.spacing = NoSpace;
+	work.bracket = None;
+}
+
+
 Move::Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const* move)
-	:KeyNode(key, PrefixMove)
+	:KeyNode(key)
+	,m_endKey(m_key)
 {
 	M_ASSERT(!move->atLineStart());
 
@@ -590,19 +651,14 @@ Move::Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const
 
 
 Move::Move(Work& work, MoveNode const* move)
-	:KeyNode(work.key, PrefixMove)
+	:KeyNode(work.key)
+	,m_endKey(m_key)
 {
 	M_ASSERT(!move->atLineStart());
 
 	bool useMoveNo = work.board.whiteToMove() || work.needMoveNo;
 
 	work.needMoveNo = false;
-
-	if (work.incrementLevel)
-	{
-		++work.level;
-		work.incrementLevel = false;
-	}
 
 	if (work.spacing & ForcedBreak)
 	{
@@ -670,6 +726,7 @@ Move::Move(Work& work, MoveNode const* move)
 			}
 
 			m_list.push_back(new Comment(move->comment()));
+			m_endKey.exchangePrefix(PrefixComment);
 			work.plyCount = 0;
 			work.needMoveNo = true;
 		}
@@ -681,6 +738,10 @@ Move::Move(Work& work, MoveNode const* move)
 	work.spacing = spacing;
 	work.bracket = None;
 }
+
+
+Key const& Move::startKey() const	{ return m_key; }
+Key const& Move::endKey() const		{ return m_endKey; }
 
 
 void
@@ -713,7 +774,7 @@ Root::visit(Visitor& visitor) const
 	m_opening->visit(visitor);
 	m_languages->visit(visitor);
 	m_variation->visit(visitor);
-	visitor.finish(m_last, m_result);
+	visitor.finish(m_result);
 }
 
 
@@ -765,19 +826,19 @@ Root::difference(Root const* root, List& nodes) const
 		nodes.push_back(m_languages);
 		nodes.push_back(newAction(Action::Clear));
 
-		if (!m_variation->m_list.empty())
+		if (!m_variation->empty())
 		{
-			nodes.push_back(newAction(Action::Insert, 0, Key(Key(), PrefixEnd)));
+			nodes.push_back(newAction(Action::Insert, 0, Key()));
 			nodes.push_back(m_variation);
 		}
 	}
 	else
 	{
 		if (*m_opening != root->m_opening)
-			nodes.push_back(root->m_opening);
+			nodes.push_back(m_opening);
 
 		if (*m_languages != root->m_languages)
-			nodes.push_back(root->m_languages);
+			nodes.push_back(m_languages);
 
 		m_variation->difference(this, root->m_variation, 0, nodes);
 	}
@@ -814,13 +875,14 @@ Root::makeList(TagSet const& tags,
 	KeyNode::List& result = root->m_variation->m_list;
 
 	result.reserve(2*node->countHalfMoves() + 10);
-	key.addPly(0);
+	key.addPly(plyNumber);
+	result.push_back(new Move(key));
 
 	unsigned plyCount = 0;
 
 	for (node = node->next(); node; node = node->next())
 	{
-		key.exchangePly(plyNumber++);
+		key.exchangePly(++plyNumber);
 		if (plyCount++ == linebreakMaxLineLength)
 		{
 			spacing = RequiredBreak;
@@ -831,9 +893,6 @@ Root::makeList(TagSet const& tags,
 			++moveNumber;
 		spacing = PrefixSpace;
 	}
-
-	key.exchangePly(plyNumber);
-	root->m_last = Key(key, PrefixMove);
 
 	return root;
 }
@@ -854,12 +913,11 @@ Root::makeList(TagSet const& tags,
 	Work work;
 	work.board = startBoard;
 	work.languages = new Languages(node);
-	work.spacing = NoSpace;
+	work.spacing = PrefixBreak;
 	work.bracket = None;
 	work.needMoveNo = true;
 	work.wantedLanguages = &wantedLanguages;
 	work.level = 0;
-	work.incrementLevel = false;
 	work.linebreakMaxLineLength = ::DontSetBreaks;
 
 	if (m_style != ColumnStyle && node->countHalfMoves() > linebreakThreshold)
@@ -875,9 +933,6 @@ Root::makeList(TagSet const& tags,
 
 	makeList(work, var->m_list, node);
 
-	root->m_last = Key(work.key, PrefixMove);
-	root->m_last.addPly(startBoard.plyNumber() + node->countHalfMoves() + 1);
-
 	return root;
 }
 
@@ -889,7 +944,11 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 	M_ASSERT(node->atLineStart());
 
 	result.reserve(2*node->countHalfMoves() + 10);
-	work.key.addPly(work.board.plyNumber() + 1);
+	work.key.addPly(work.board.plyNumber());
+	result.push_back(new Move(work));
+
+	if (node->prev())
+		++work.level;
 
 	if (node->hasComment())
 	{
@@ -941,17 +1000,30 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 
 		if (node->hasVariation())
 		{
-			work.needMoveNo = true;
-
 			for (unsigned i = 0; i < node->variationCount(); ++i)
 			{
-				Board board(work.board);
+				Board	board(work.board);
+				Key	succKey;
+
+				if (i + 1 < node->variationCount())
+				{
+					succKey = work.key;
+					succKey.addVariation(i + 1);
+					succKey.addPly(work.board.plyNumber());
+				}
+				else if (node->next())
+				{
+					succKey = work.key;
+					succKey.exchangePly(work.board.plyNumber() + 2);
+				}
+
 				work.key.addVariation(i);
 				work.spacing = PrefixBreak;
 				work.bracket = Open;
-				Variation* var = new Variation(work.key);
+				work.needMoveNo = true;
+
+				Variation* var = new Variation(work.key, succKey);
 				result.push_back(var);
-				work.incrementLevel = true;
 
 				if (	work.linebreakMaxLineLength != ::DontSetBreaks
 					&& linebreakMaxLineLengthVar > 0
@@ -961,7 +1033,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 				}
 
 				makeList(work, var->m_list, node->variation(i));
-				M_ASSERT(!work.incrementLevel);
+				M_ASSERT(work.level > 0);
 				--work.level;
 				work.key.removeVariation();
 				work.board = board;

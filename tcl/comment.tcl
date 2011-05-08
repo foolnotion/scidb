@@ -118,15 +118,6 @@ proc open {parent} {
 	variable Vars
 
 	set dlg $parent.__comment__
-
-	if {[winfo exists $dlg]} {
-		if {[wm state $dlg] ne "normal"} {
-			Update
-			wm state $dlg normal
-		}
-		return
-	}
-
 	set Vars(dialog) $dlg
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
@@ -141,6 +132,7 @@ proc open {parent} {
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 
 	set Vars(widget:text) $top.text
+	set Vars(key) [::scidb::game::position key]
 
 	text $top.text \
 		-height 6 \
@@ -225,7 +217,8 @@ proc open {parent} {
 	grid $butts.clear		-row 5 -column 1 -sticky ew
 	grid $butts.revert	-row 7 -column 1 -sticky ew
 
-	grid rowconfigure $butts {2 4 6} -minsize $::theme::padding
+	grid rowconfigure $butts 2 -minsize $::theme::padY
+	grid rowconfigure $butts {4 6} -minsize $::theme::pady
 	grid rowconfigure $butts 2 -weight 1
 
 	::widget::dialogButtons $dlg {ok apply cancel} ok
@@ -321,9 +314,9 @@ proc MakeLanguageButtons {} {
 
 	set langButtons [array names Vars tb:*]
 	
-	foreach lang $langButtons {
-		::toolbar::remove $Vars(tb) $Vars(tb:$lang)
-		unset Vars(tb:$lang)
+	foreach button $langButtons {
+		::toolbar::remove $Vars(tb) $Vars($button)
+		unset Vars($button)
 	}
 
 	foreach lang $Vars(langSet) {
@@ -1431,8 +1424,13 @@ proc Selected {popdown args} {
 
 
 proc NewLanguage {lang} {
-	SwitchLanguage $lang
-	MakeLanguageButtons
+	variable Vars
+
+	if {$lang ni $Vars(langSet)} {
+		lappend Vars(langSet) $lang
+		SwitchLanguage $lang
+		MakeLanguageButtons
+	}
 }
 
 

@@ -73,7 +73,7 @@ toplevel .application -class $::scidb::app
 wm withdraw .application
 
 if {[::scidb::misc::debug?]} {
-	proc grab {args} {}
+#	proc grab {args} {}
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::wm sync }
 }
 

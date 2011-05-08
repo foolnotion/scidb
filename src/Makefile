@@ -72,7 +72,7 @@ install: $(PROGRAM)
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
 	rm -f $(SHAREDIR)/data/eco.bin
-	for i in `ls data/*.*`; do \
+	@for i in `ls data/*.*`; do \
 		rm -f $(SHAREDIR)/data/$$f \
 	done
 	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
@@ -80,71 +80,71 @@ uninstall:
 
 clean:
 	rm -f $(TARGETS)
-	for dir in $(SUBDIRS); do \
+	@for dir in $(SUBDIRS); do \
 		(cd $$dir && make clean) \
 	done
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
-	for dir in $(SUBDIRS); do \
-		(cd $$dir && make depend) \
+	@for dir in $(SUBDIRS); do \
+		make -C $$dir depend; \
 	done
 
 recursive:
-	for dir in $(SUBDIRS); do \
-		(cd $$dir && make) \
+	@for dir in $(SUBDIRS); do \
+		make -C $$dir; \
 	done
 
 mstl/libmstl.a:
-	(cd mstl && make)
+	make -C mstl
 
 sys/libsys.a:
-	(cd sys && make)
+	make -C sys
 
 util/libutil.a:
-	(cd util && make)
+	make -C util
 
 util/lzo/liblzo.a:
-	(cd util/lzo && make)
+	make -C util/lzo
 
 util/minizip/libminizip.a:
-	(cd util/libminizip && make)
+	make -C util/libminizip
 
 util/zzip/libzzip.a:
-	(cd util/zzip && make)
+	make -C util/zzip
 
 util/libharu/libharu.a:
-	(cd util/libharu && make)
+	make -C util/libharu
 
 util/libTeXt/libTeXt.a:
-	(cd util/libTeXt && make)
+	make -C util/libTeXt
 
 tcl/libtcl.a:
-	(cd tcl && make)
+	make -C tcl
 
 tk/libtk.a:
-	(cd tk && make)
+	make -C tk
 
 tk/jpeg/libjpegd.a:
-	(cd tk/jpeg && make)
+	make -C tk/jpeg
 
 tk/svg/libsvg.a:
-	(cd tk/svg && make)
+	make -C tk/svg
 
 tk/svg/agg/libagg.a:
-	(cd tk/svg/agg && make)
+	make -C tk/svg/agg
 
 tk/treectrl/libtreectrl.a:
-	(cd tk/treectrl && make)
+	make -C tk/treectrl
 
 tk/html/libTkhtml3.a:
-	(cd tk/html && make)
+	make -C tk/html
 
 db/libapp.a:
-	(cd app && make)
+	make -C app
 
 db/libdb.a:
-	(cd db && make)
+	make -C db
 
 permute_eco: permute_eco.cpp $(LIBS)
 	$(CXX) -o permute_eco permute_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)

@@ -54,15 +54,6 @@ using namespace db;
 unsigned Game::undoLevel = 20;
 
 
-static void
-addNumber(mstl::string& key, unsigned num)
-{
-	char buf[32];
-	sprintf(buf, "%u", num);
-	key += buf;
-}
-
-
 namespace {
 
 struct UndoApplyWatcher
@@ -852,13 +843,6 @@ Game::getStartBoard() const
 	return startBoard();
 }
 
-edit::Key
-Game::currentKey() const
-{
-	return edit::Move::key(m_currentKey);
-}
-
-
 Move const&
 Game::currentMove() const
 {
@@ -876,17 +860,14 @@ Game::nextMove() const
 mstl::string
 Game::startKey() const
 {
-	edit::Key key(edit::Move::key(edit::Key(m_startBoard.plyNumber())));
-	return key.id();
+	return edit::Key(m_startBoard.plyNumber()).id();
 }
 
 
 mstl::string
 Game::successorKey() const
 {
-	edit::Key key(edit::Move::key(m_currentKey));
-	key.exchangePly(m_currentBoard.plyNumber() + 1);
-	return key.id();
+	return m_currentKey.successorKey(m_currentNode).id();
 }
 
 
@@ -942,7 +923,7 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 	{
 		if (flags & BlackNumbers)
 		{
-			::addNumber(result, board.moveNumber());
+			result.format("%u", board.moveNumber());
 			result += "...";
 
 			if (!(flags & SuppressSpace) || (flags & ExportFormat))
@@ -953,7 +934,7 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 	{
 		if (flags & WhiteNumbers)
 		{
-			::addNumber(result, board.moveNumber());
+			result.format("%u", board.moveNumber());
 			result += '.';
 
 			if (!(flags & SuppressSpace) || (flags & ExportFormat))
@@ -1200,7 +1181,7 @@ Game::goToCurrentMove() const
 	if (m_subscriber)
 	{
 		m_subscriber->boardSetup(m_currentBoard);
-		m_subscriber->gotoMove(edit::Move::key(m_currentKey).id(), successorKey());
+		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
 	}
 }
 
@@ -1215,7 +1196,7 @@ Game::goToCurrentMove(bool forward) const
 		Move move = forward ? m_currentNode->move() : m_currentNode->next()->move();
 
 		m_subscriber->boardMove(m_currentBoard, move, forward);
-		m_subscriber->gotoMove(edit::Move::key(m_currentKey).id(), successorKey());
+		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
 	}
 }
 
@@ -1241,7 +1222,6 @@ Game::moveTo(edit::Key const& key)
 	edit::Key wantedKey(key);
 	edit::Key currentKey(m_currentKey);
 
-	wantedKey.strip();
 	moveToMainlineStart();
 
 	if (!wantedKey.setPosition(*this))
@@ -1301,7 +1281,7 @@ Game::getKeys(StringList& result)
 		return;
 
 	forward();
-	result.push_back(edit::Move::key(m_currentKey).id());
+	result.push_back(m_currentKey.id());
 
 	for (unsigned i = 0; i < m_currentNode->variationCount(); ++i)
 	{
@@ -1310,7 +1290,7 @@ Game::getKeys(StringList& result)
 		if (!atLineEnd())
 		{
 			forward();
-			result.push_back(edit::Move::key(m_currentKey).id());
+			result.push_back(m_currentKey.id());
 		}
 
 		exitVariation();
@@ -1781,7 +1761,13 @@ Game::addMove(Move const& move)
 
 	insertUndo(Truncate_Variation, AddMove);
 	m_currentNode->setNext(new MoveNode(m_currentBoard, move));
-	updateSubscriber(UpdatePgn | UpdateBoard | UpdateIllegalMoves);
+
+	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
+
+	if (isMainline())
+		flags |= UpdateOpening;
+
+	updateSubscriber(flags);
 }
 
 
@@ -2592,9 +2578,6 @@ Game::updateLine()
 
 	unsigned idn = m_startBoard.computeIdn();
 
-	if (m_idn == idn)
-		return false;
-
 	bool update = m_idn != idn;
 
 	if (idn)
@@ -2754,6 +2737,15 @@ Game::setLanguages(LanguageSet const& set)
 
 
 void
+Game::refreshSubscriber()
+{
+	delete m_editNode;
+	m_editNode = 0;
+	updateSubscriber(Game::UpdateAll);
+}
+
+
+void
 Game::updateSubscriber(unsigned action)
 {
 	if (!m_subscriber)
@@ -2761,6 +2753,8 @@ Game::updateSubscriber(unsigned action)
 
 	if (action & UpdateIllegalMoves)
 		m_containsIllegalMoves = m_startNode->containsIllegalMoves();
+
+	updateLine();
 
 	if (action & (UpdatePgn | UpdateOpening | UpdateLanguageSet))
 	{
@@ -2785,7 +2779,7 @@ Game::updateSubscriber(unsigned action)
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
 //			m_subscriber->updateEditor(editNode.get());
-			m_subscriber->updateEditor(diff, m_tags, editNode->lastKey());
+			m_subscriber->updateEditor(diff, m_tags);
 			delete m_editNode;
 			m_editNode = editNode.release();
 		}

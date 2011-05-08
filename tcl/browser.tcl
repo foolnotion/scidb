@@ -504,7 +504,7 @@ proc UpdateHeader {position {info {}}} {
 		}
 	}
 
-	update	;# makes -displaylines working
+	update ;# makes -displaylines working
 	$text configure -height [$text count -displaylines 1.0 end]
 	$text configure -state disabled
 }
@@ -524,10 +524,12 @@ proc UpdatePGN {position data} {
 				set current $Vars(current)
 				set Vars(current) {}
 				set Vars(active) {}
+				set Vars(key) ""
 			}
 
 			move {
-				set key [lindex $node 1]
+				set key $Vars(key)
+				set Vars(key) [lindex $node 1]
 
 				foreach move [lindex $node 2] {
 					switch [lindex $move 0] {
@@ -559,9 +561,9 @@ proc UpdatePGN {position data} {
 			}
 
 			result {
-				set key [lindex $node 1]
+				set key $Vars(key)
 				$w insert end " "
-				$w insert end [::util::formatResult [lindex $node 2]] [list $key result]
+				$w insert end [::util::formatResult [lindex $node 1]] [list $key result]
 				$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
 				$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
 				$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]

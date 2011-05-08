@@ -38,41 +38,30 @@
 using namespace db::edit;
 
 
-inline static char const*
-skipPrefix(char const* s)
-{
-	return isalpha(*s) ? s + 2 : s;
-}
+static mstl::string const StartKey("m-0");
 
 
-Key::Key() :m_id("0") {}
-Key::Key(unsigned firstPly) :m_id("0") { addPly(firstPly); }
+inline static char const* skipPrefix(char const* s) { return s + 2; }
+
+
+Key::Key() :m_id(StartKey) {}
+Key::Key(unsigned firstPly) :m_id(StartKey) { addPly(firstPly); }
 Key::Key(mstl::string const& key) :m_id(key) { M_REQUIRE(isValid(key)); }
 
 
+Key::Key(mstl::string const& key, char prefix)
+	:m_id(key)
+{
+	M_REQUIRE(isValid(key));
+	m_id[0] = prefix;
+}
+
+
 Key::Key(Key const& key, char prefix)
+	:m_id(key.id())
 {
-	M_REQUIRE(::isalpha(prefix));
-
-	m_id.reserve(key.m_id.size() + 2);
-	m_id += prefix;
-	m_id += '-';
-	m_id += key.m_id;
-}
-
-
-bool
-
-Key::isPrefixed() const
-{
-	return ::isalpha(m_id[0]);
-}
-
-
-char
-Key::prefix() const
-{
-	return ::isalpha(m_id[0]) ? m_id[0] : '\0';
+	M_REQUIRE(isValid(key.id()));
+	m_id[0] = prefix;
 }
 
 
@@ -152,6 +141,24 @@ Key::removePly()
 
 
 void
+Key::incrementPly()
+{
+	M_REQUIRE(!isVariationId());
+
+	char const* s = m_id.end();
+	char const* t = ::skipPrefix(m_id);
+
+	while (s > t && s[-1] != '.')
+		--s;
+
+	unsigned number = ::strtoul(s, 0, 10);
+
+	m_id.resize(s - m_id.begin());
+	m_id.format("%u", number + 1);
+}
+
+
+void
 Key::addVariation(unsigned varno)
 {
 	M_REQUIRE(!isVariationId());
@@ -187,7 +194,7 @@ Key::removeVariation()
 void
 Key::exchangePrefix(char prefix)
 {
-	M_REQUIRE(isPrefixed());
+	M_REQUIRE(::isalpha(prefix));
 	m_id[0] = prefix;
 }
 
@@ -195,32 +202,15 @@ Key::exchangePrefix(char prefix)
 void
 Key::clear()
 {
-	if (::isalpha(m_id[0]))
-	{
-		m_id.erase(3);
-		m_id[2] = '0';
-	}
-	else
-	{
-		m_id.assign("0", 1);
-	}
+	m_id.assign(StartKey);
 }
 
 
 void
 Key::reset(unsigned firstPly)
 {
-	if (::isalpha(m_id[0]))
-	{
-		m_id.erase(4);
-		m_id[2] = '0';
-		m_id[3] = '.';
-	}
-	else
-	{
-		m_id.assign("0.", 2);
-	}
-
+	m_id.assign(StartKey);
+	m_id += '.';
 	m_id.format("%u", firstPly);
 }
 
@@ -230,13 +220,10 @@ Key::isValid(mstl::string const& key)
 {
 	char const* s = key;
 
-	if (::isalpha(*s))
-	{
-		if (s[1] != '-')
-			return false;
+	if (s[0] == '\0' || s[1] != '-')
+		return false;
 
 		s += 2;
-	}
 
 	if (*s++ != '0')
 		return false;
@@ -359,6 +346,48 @@ Key::setBoard(MoveNode const* root, Board& board) const
 }
 
 
+Key
+Key::successorKey(MoveNode const* node) const
+{
+	M_REQUIRE(node);
+
+	if (node->atLineEnd())
+	{
+		unsigned ply = plyNumber();
+
+		while (!node->atLineStart())
+		{
+			node = node->prev();
+			--ply;
+		}
+
+		if (!node->prev())
+			return Key();
+
+		unsigned i = node->prev()->variationNumber(node) + 1;
+		Key key(m_id);
+
+		node = node->prev();
+		key.removePly();
+		key.removeVariation();
+
+		if (i == node->variationCount())
+		{
+			key.incrementPly();
+		}
+		else
+		{
+			key.addVariation(i);
+			key.addPly(ply);
+		}
+	}
+
+	Key key(m_id);
+	key.incrementPly();
+	return key;
+}
+
+
 unsigned
 Key::plyNumber() const
 {
@@ -378,16 +407,6 @@ Key::computeDistance(Key const& key) const
 	M_REQUIRE(isVariationId() == key.isVariationId());
 
 	return int(plyNumber()) - int(key.plyNumber());
-}
-
-
-Key&
-Key::strip()
-{
-	if (::isalpha(*m_id.c_str()))
-		m_id.erase(0u, 2u);
-
-	return *this;
 }
 
 // vi:set ts=3 sw=3:

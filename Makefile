@@ -11,23 +11,23 @@
 # ======================================================================
 
 all:
-	(cd src && make)
-	(cd tcl && make)
+	$(MAKE) -w -C src
+	$(MAKE) -w -C tcl
 
 depend:
-	(cd src && make depend)
-	(cd tcl && make depend)
+	$(MAKE) -w -C src depend
+	$(MAKE) -w -C tcl depend
 
 clean:
-	(cd src && make clean)
-	(cd tcl && make clean)
+	$(MAKE) -w -C src clean
+	$(MAKE) -w -C tcl clean
 
 install:
-	(cd src && make install)
-	(cd tcl && make install)
+	$(MAKE) -w -C src install
+	$(MAKE) -w -C tcl install
 
 uninstall:
-	(cd src && make install)
-	(cd tcl && make install)
+	$(MAKE) -w -C src install
+	$(MAKE) -w -C tcl install
 
 # vi:set ts=3 sw=3:
