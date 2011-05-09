@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2008-20109 Gregor Cramer
+// Copyright: (C) 2008-2011 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -1697,7 +1697,7 @@ tk_copy_image(	char const* subcmd,
 		return rc;
 	}
 
-	typedef pixbuf<BGRA> pixbuf;
+	typedef pixbuf<RGBA> pixbuf;
 
 	if (rotate || srcBlock.width != wd || srcBlock.height != ht)
 		srcBlock = dstBlock;

@@ -542,13 +542,15 @@ Decoder::decodeComments(MoveNode* node)
 		if (node->shouldHaveComment())
 		{
 			mstl::string	comment;
+			mstl::string	result;
 			MarkSet			marks;
 
 			m_strm.get(comment);
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
+			PgnReader::convertCommentToXml(comment, result);
 			node->swapMarks(marks);
-			node->swapComment(comment);
+			node->swapComment(result);
 		}
 
 		for (unsigned i = 0; i < node->variationCount(); ++i)
@@ -681,11 +683,13 @@ Decoder::decodeComments(Consumer& consumer, unsigned flags, MoveNode* node)
 		{
 			MarkSet marks;
 			mstl::string comment;
+			mstl::string result;
 
 			m_strm.get(comment);
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
-			node->swapComment(comment);
+			PgnReader::convertCommentToXml(comment, result);
+			node->swapComment(result);
 			node->swapMarks(marks);
 		}
 

@@ -578,26 +578,18 @@ proc Update {position data} {
 
 			header {
 				UpdateHeader $position $w [lindex $node 1]
-Dump $w
-puts "-------------------------------------------------"
 			}
 
 			begin {
 				set level [lindex $node 2]
 				set startVar($level) [lindex $node 1]
-#				Mark $w $startVar($level)
 			}
 
 			end {
-#				set endVar($level) [lindex $node 1]
 				set level [lindex $node 2]
-#				Mark $w $endVar($level)
-
 				if {$level > 0} {
-#					$w tag add indent$level [$w index $startVar($level)] [$w index $endVar($level)]
 					$w tag add indent$level $startVar($level) current
 				}
-
 				incr level -1
 			}
 
@@ -642,8 +634,6 @@ puts "--- finish --------------------------------------"
 						$w delete h-end m-0
 						$w insert m-0 \n
 #						$w tag delete {*}[$Vars(pgn:$position) tag names]
-Dump $w
-puts "--- clear ---------------------------------------"
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
@@ -692,9 +682,9 @@ puts "--- clear ---------------------------------------"
 					$w mark gravity m-0 left
 					$w mark set current m-0
 					# NOTE: the text editor has a severe bug:
-					# if all chars after <pos> are newlines, the command
-					# '<text> delete <pos> end' will also delete one newline
-					# before <pos>. We will catch this case:
+					# If all chars after <pos> are newlines, the command
+					# '<text> delete <pos-1> <pos-2>' will also delete one
+					# newline before <pos>. We will catch this case:
 					if {![string is space [$w get m-0 end]]} {
 						$w delete current end
 					}
@@ -706,12 +696,11 @@ puts "--- clear ---------------------------------------"
 					}
 					set Vars(result:$position) $result
 				}
+				# TODO: really needed?
 				foreach mark $Vars(marks) { $w mark gravity $mark right }
 				$w mark gravity m-0 right
 				$w configure -state disabled
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
-Dump $w
-puts "--- result -----------------------------------------"
 			}
 		}
 	}
@@ -778,8 +767,6 @@ proc UpdateHeader {position w data} {
 
 	if {$Vars(virgin:$position)} {
 		$w insert current "\n"
-#		$w mark set v-0 [$w index current]
-#		$w mark gravity v-0 left
 		$w mark set m-0 [$w index current]
 		$w mark gravity m-0 right
 	}

@@ -147,9 +147,7 @@ Consumer::sendComment(Comment const& comment, Annotation const& annotation, Mark
 			m_data.buffer()[-1] = '\n';
 		}
 
-		mstl::string text;
-		PgnReader::convertCommentToXml(comment, text);
-		m_data.put(text, text.size() + 1);
+		m_data.put(comment.content(), comment.size() + 1);
 		m_endOfRun = true;
 	}
 }

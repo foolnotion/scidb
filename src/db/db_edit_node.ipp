@@ -56,7 +56,7 @@ inline bool Variation::empty() const								{ return m_list.empty(); }
 inline Key const& Variation::successor() const					{ return m_succ; }
 inline unsigned Ply::moveNo() const									{ return m_moveNo; }
 inline db::Move const& Ply::move() const							{ return m_move; }
-inline Ply const* Move::ply() const									{ M_ASSERT(m_ply); return m_ply; }
+inline Ply const* Move::ply() const									{ return m_ply; }
 inline Node::LanguageSet const& Languages::langSet() const	{ return m_langSet; }
 inline bool Node::operator!=(Node const* node) const			{ return !operator==(node); }
 

@@ -143,15 +143,10 @@ Diagram::visit(Visitor& visitor) const
 }
 
 
-PreComment::PreComment(Work& work, db::Comment const& comment)
+PreComment::PreComment(Work const& work, db::Comment const& comment)
 	:KeyNode(work.key, PrefixComment)
 	,m_comment(comment)
-	,m_level(0)
-	,m_spacing(work.spacing)
-	,m_bracket(work.bracket)
 {
-	if (!(work.spacing & (ForcedBreak | RequiredBreak)))
-		m_level = work.level;
 }
 
 
@@ -162,16 +157,13 @@ PreComment::operator==(Node const* node) const
 	M_ASSERT(dynamic_cast<PreComment const*>(node));
 	M_ASSERT(m_key == static_cast<PreComment const*>(node)->m_key);
 
-	return	m_level == static_cast<PreComment const*>(node)->m_level
-			&& m_bracket == static_cast<PreComment const*>(node)->m_bracket
-			&& m_comment == static_cast<PreComment const*>(node)->m_comment;
+	return m_comment == static_cast<PreComment const*>(node)->m_comment;
 }
 
 
 void
 PreComment::visit(Visitor& visitor) const
 {
-	visitor.linebreak(m_level, m_bracket);
 	visitor.comment(m_key, m_comment);
 }
 
@@ -346,14 +338,14 @@ Languages::operator==(Node const* node) const
 
 Key const& Variation::startKey() const
 {
-	return m_list.empty() ? m_key : m_list.front()->key();
+	return m_list.empty() ? m_key : m_list.front()->startKey();
 }
 
 
 Key const&
 Variation::endKey() const
 {
-	return m_list.empty() ? m_key : m_list.back()->key();
+	return m_list.empty() ? m_key : m_list.back()->endKey();
 }
 
 
@@ -450,8 +442,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	// Game::clear()
 	//		remove all
 
-	Key const& startVar	= var->startKey();
-	Key const& endVar		= var->successor();
+	Key const& endVar = var->successor();
 
 	unsigned	i = 0;
 	unsigned k = 0;
@@ -481,7 +472,8 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 			{
 				if (lhsType == TMove)
 				{
-					if (*static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply())
+					if (	static_cast<Move const*>(lhs)->ply() == 0
+						|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply())
 					{
 						KeyNode const* const* lhsFirst	= m_list.begin() + i + 1;
 						KeyNode const* const* lhsLast		= m_list.end() - 1;
@@ -524,7 +516,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 		{
 			enum { Insert, Remove } action;
 
-			switch (int(rhsType))
+			switch (rhsType)
 			{
 				case TPreComment:
 					action = Remove;
@@ -540,6 +532,10 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 
 				case TVariation:
 					action = (lhsType == TMove) ? Remove : Insert;
+					break;
+
+				default:
+					M_ASSERT(!"should not happen");
 					break;
 			}
 
@@ -570,7 +566,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 
 	if (k < n)
 	{
-		Key const& before = (k == 0) ? startVar : var->m_list[k - 1]->endKey();
+		Key const& before = (k == 0) ? var->startKey() : var->m_list[k - 1]->endKey();
 		nodes.push_back(root->newAction(Action::Remove, level, before, endVar));
 	}
 }
@@ -601,8 +597,6 @@ Move::Move(Work& work)
 	,m_ply(0)
 	,m_endKey(m_key)
 {
-	M_ASSERT(work.spacing != NoSpace);
-
 	if (work.spacing & ForcedBreak)
 	{
 		m_list.push_back(new Space(0, work.bracket));
@@ -610,7 +604,7 @@ Move::Move(Work& work)
 	}
 	else if (work.spacing & RequiredBreak)
 	{
-		m_list.push_back(new Space(0));
+		m_list.push_back(new Space(0, work.bracket));
 		work.plyCount = 0;
 	}
 	else if (work.spacing & PrefixBreak)
@@ -623,7 +617,7 @@ Move::Move(Work& work)
 		m_list.push_back(new Space(work.bracket));
 	}
 
-	work.spacing = NoSpace;
+	work.spacing = None;
 	work.bracket = None;
 }
 
@@ -955,10 +949,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 		if (unsigned length = node->comment().countLength(*work.wantedLanguages))
 		{
 			result.push_back(new PreComment(work, node->comment()));
-			if (work.level == 0 && length > linebreakMinCommentLength)
-				work.spacing = PrefixBreak;
-			else
-				work.spacing = PrefixSpace;
+			work.spacing = (length > linebreakMinCommentLength) ? PrefixBreak : PrefixSpace;
 			work.needMoveNo = true;
 			work.bracket = None;
 		}

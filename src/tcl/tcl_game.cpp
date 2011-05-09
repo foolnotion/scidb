@@ -564,7 +564,10 @@ public:
 	{
 ////////////////////////////////////////////////////////////////////////
 		mstl::string buf;
-		::sys::utf8::Codec::convertToNonDiacritics(1, comment.content(), buf);
+		if (::sys::utf8::Codec::fitsRegion(comment.content(), 1))
+			::sys::utf8::Codec::convertToNonDiacritics(1, comment.content(), buf);
+		else
+			buf = "<comment not LATIN-1>";
 		s += l;
 		s += "comment {";
 		s += buf;

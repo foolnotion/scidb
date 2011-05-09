@@ -4299,6 +4299,8 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 bool
 PgnReader::convertCommentToXml(mstl::string const& comment, mstl::string& result)
 {
+	M_REQUIRE(comment.c_str() != result.c_str());
+
 	char const* s		= comment.c_str();
 	bool hasDiagram	= false;
 

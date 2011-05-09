@@ -176,13 +176,6 @@ proc WidgetProc {w command args} {
 			return
 		}
 
-		measure {
-			if {[llength $args] != 1} {
-				error "wrong # args: should be \"[namespace current] $command <string>\""
-			}
-			return []
-		}
-
 		stimulate {
 			array unset HoverNodes
 			set Priv(lastNode) {}
@@ -211,7 +204,7 @@ proc ComputeBoundingBox {w node} {
 
 	if {[string length $tag]} {
 		switch $tag {
-			html - body { #skip }
+			html - body { ;# skip }
 
 			default {
 				set bbox [$w bbox $node]

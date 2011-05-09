@@ -350,7 +350,7 @@ class PreComment : public KeyNode
 {
 public:
 
-	PreComment(Work& work, db::Comment const& comment);
+	PreComment(Work const& work, db::Comment const& comment);
 
 	bool operator==(Node const* node) const;
 
@@ -360,10 +360,7 @@ public:
 
 private:
 
-	db::Comment	m_comment;
-	unsigned		m_level;
-	unsigned		m_spacing;
-	Bracket		m_bracket;
+	db::Comment m_comment;
 };
 
 
