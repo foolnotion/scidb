@@ -282,6 +282,10 @@ proc findTclTkPaths {} {
         /usr/local/X11R6/lib
         /usr/local/X/lib
         /usr/lib
+        /usr/local/lib/i386-linux-gnu
+        /usr/lib/i386-linux-gnu
+        /usr/local/lib/x86_64-linux-gnu
+        /usr/lib/x86_64-linux-gnu
         /usr/X11/lib
         /usr/X11R6/lib
         /usr/X/lib
@@ -448,9 +452,13 @@ proc findTclTkPaths {} {
         }
     }
 
+    if {[info exists package(x-inc)]} {
+        set package(xcursor-inc) $package(x-inc)
+    }
+
     foreach {module} {tcl tk x xcursor} {
         foreach type {inc lib} {
-            if {![info exists package($module-lib)]} {
+            if {![info exists package($module-$type)]} {
                 return 0
             }
         }

@@ -111,7 +111,7 @@ MarkSet::extractFromComment(mstl::string& comment)
 	{
 		if (q[1] == '%')
 		{
-			if (q[2] == 'c' && q[3] && q[4] == 'l' && q[5] == ' ')
+			if (q[2] == 'c' && q[3] == 'a' && q[4] == 'l' && q[5] == ' ')
 			{
 				char const* e = 0;
 
