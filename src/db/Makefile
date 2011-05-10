@@ -2598,7 +2598,6 @@ db_tree.o: ../util/u_byte_stream.h
 db_tree.o: ../util/u_byte_stream.ipp
 db_tree.o: ../util/u_progress.h
 db_tree.o: ../util/u_progress.ipp
-db_tree.o: ../mstl/m_stdio.h
 db_tree_info.o: db_tree_info.h
 db_tree_info.o: db_move.h
 db_tree_info.o: db_common.h
@@ -3558,6 +3557,7 @@ si3/si3_codec.o: ../util/u_block_file.ipp
 si3/si3_codec.o: ../util/u_progress.h
 si3/si3_codec.o: ../util/u_progress.ipp
 si3/si3_codec.o: ../sys/sys_time.h
+si3/si3_codec.o: ../sys/sys_file.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.ipp
 si3/si3_codec.o: ../mstl/m_stdio.h

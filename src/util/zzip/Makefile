@@ -17,7 +17,7 @@ include ../../../Makefile.in
 
 INCLUDE	= -I..
 OPTIMIZE	= -O2 -fomit-frame-pointer
-C_DEBUG	= -DNDEBUG -Werror -Wno-strict-aliasing
+C_DEBUG	= -DNDEBUG -Wno-strict-aliasing
 DEFINES	= -D_USE_MMAP -DZZIP_HAVE_STDINT_H
 
 SRC_C = \
