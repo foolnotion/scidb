@@ -11,11 +11,12 @@
 # ======================================================================
 
 include ../../Makefile.in
+# force
 
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util -I../tcl -I../mstl
+INCLUDE	= -I. -I../util -I../tcl -I../mstl $(TCL_INCLUDE) $(TK_INCLUDE)
 LIBS		= mstl/libmstl.a
 
 SRC_CXX = \

@@ -11,6 +11,7 @@
 # ======================================================================
 
 include ../Makefile.in
+# force
 
 .SUFFIXES: .cpp
 
@@ -72,7 +73,7 @@ install: $(PROGRAM)
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
 	rm -f $(SHAREDIR)/data/eco.bin
-	@for i in `ls data/*.*`; do \
+	for i in `ls data/*.*`; do \
 		rm -f $(SHAREDIR)/data/$$f \
 	done
 	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
@@ -81,70 +82,70 @@ uninstall:
 clean:
 	rm -f $(TARGETS)
 	@for dir in $(SUBDIRS); do \
-		(cd $$dir && make clean) \
+		$(MAKE) -w -C $$dir clean; \
 	done
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
 	@for dir in $(SUBDIRS); do \
-		make -C $$dir depend; \
+		$(MAKE) -w -C $$dir depend; \
 	done
 
 recursive:
 	@for dir in $(SUBDIRS); do \
-		make -C $$dir; \
+		$(MAKE) -w -C $$dir; \
 	done
 
 mstl/libmstl.a:
-	make -C mstl
+	$(MAKE) -w -C mstl
 
 sys/libsys.a:
-	make -C sys
+	$(MAKE) -w -C sys
 
 util/libutil.a:
-	make -C util
+	$(MAKE) -w -C util
 
 util/lzo/liblzo.a:
-	make -C util/lzo
+	$(MAKE) -w -C util/lzo
 
 util/minizip/libminizip.a:
-	make -C util/libminizip
+	$(MAKE) -w -C util/libminizip
 
 util/zzip/libzzip.a:
-	make -C util/zzip
+	$(MAKE) -w -C util/zzip
 
 util/libharu/libharu.a:
-	make -C util/libharu
+	$(MAKE) -w -C util/libharu
 
 util/libTeXt/libTeXt.a:
-	make -C util/libTeXt
+	$(MAKE) -w -C util/libTeXt
 
 tcl/libtcl.a:
-	make -C tcl
+	$(MAKE) -w -C tcl
 
 tk/libtk.a:
-	make -C tk
+	$(MAKE) -w -C tk
 
 tk/jpeg/libjpegd.a:
-	make -C tk/jpeg
+	$(MAKE) -w -C tk/jpeg
 
 tk/svg/libsvg.a:
-	make -C tk/svg
+	$(MAKE) -w -C tk/svg
 
 tk/svg/agg/libagg.a:
-	make -C tk/svg/agg
+	$(MAKE) -w -C tk/svg/agg
 
 tk/treectrl/libtreectrl.a:
-	make -C tk/treectrl
+	$(MAKE) -w -C tk/treectrl
 
 tk/html/libTkhtml3.a:
-	make -C tk/html
+	$(MAKE) -w -C tk/html
 
 db/libapp.a:
-	make -C app
+	$(MAKE) -w -C app
 
 db/libdb.a:
-	make -C db
+	$(MAKE) -w -C db
 
 permute_eco: permute_eco.cpp $(LIBS)
 	$(CXX) -o permute_eco permute_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)

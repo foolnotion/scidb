@@ -11,11 +11,12 @@
 # ======================================================================
 
 include ../../Makefile.in
+# force
 
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3
+INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3 $(TCL_INCLUDE) $(TK_INCLUDE)
 
 SRC_CXX = \
 	tcl_application.cpp \

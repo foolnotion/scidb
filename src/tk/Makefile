@@ -11,11 +11,12 @@
 # ======================================================================
 
 include ../../Makefile.in
+# force
 
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../util -I../util/zlib -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
+INCLUDE	= -I. -I../mstl -I../util -I../util/zlib $(TCL_INCLUDE) $(TK_INCLUDE) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
 
 SRC_CXX = \
 	tk_image.cpp \

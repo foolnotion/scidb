@@ -11,10 +11,11 @@
 # ======================================================================
 
 include ../../../Makefile.in
+# force
 
 .SUFFIXES: .c
 
-INCLUDE	= -I. -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
+INCLUDE	= -I. $(TCL_INCLUDE) $(TK_INCLUDE) -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
 DEFINES	= -DHAVE_UNISTD_H=1
 
 SRC_C = \
