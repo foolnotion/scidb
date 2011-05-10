@@ -130,7 +130,7 @@ map<K,V>::erase(iterator first, iterator last)
 
 template <typename K, typename V>
 typename map<K,V>::iterator
-map<K,V>::map<K,V>::lower_bound(const_key_ref k)
+map<K,V>::lower_bound(const_key_ref k)
 {
 	iterator first(begin());
 	iterator last(end());

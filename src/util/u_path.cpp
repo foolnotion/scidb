@@ -18,8 +18,6 @@
 
 #include "u_path.h"
 
-#include <tcl.h>
-
 using namespace util;
 
 

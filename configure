@@ -264,7 +264,7 @@ proc FindTclTkPathsAqua {} {
 proc findTclTkPaths {} {
     global tclv tclv_nodot configure package tcl_platform
 
-    if {"$tcl_platform(os)" == "Darwin" && [FindTclTkPathsAqua]} {
+    if {"$tcl_platform(os)" eq "Darwin" && [FindTclTkPathsAqua]} {
         # Frameworks found, stop looking for paths:
         return 1
     }
@@ -278,13 +278,13 @@ proc findTclTkPaths {} {
     # X library path: List of possible locations of X library.
     set path(x,libraries) {
         /usr/local/lib
+        /usr/local/lib/i386-linux-gnu
+        /usr/local/lib/x86_64-linux-gnu
         /usr/local/X11/lib
         /usr/local/X11R6/lib
         /usr/local/X/lib
         /usr/lib
-        /usr/local/lib/i386-linux-gnu
         /usr/lib/i386-linux-gnu
-        /usr/local/lib/x86_64-linux-gnu
         /usr/lib/x86_64-linux-gnu
         /usr/X11/lib
         /usr/X11R6/lib
@@ -349,29 +349,31 @@ proc findTclTkPaths {} {
         /usr/local/lib/tk${tclv_nodot}                     \
         /usr/local/tcl/lib                                 \
         /usr/local/lib                                     \
+        /usr/local/lib64                                   \
         /usr/lib/tcl${tclv}                                \
         /usr/lib/tcl${tclv_nodot}                          \
         /usr/lib/tk${tclv}                                 \
         /usr/lib/tk${tclv_nodot}                           \
         /usr/lib                                           \
+        /usr/lib64                                         \
         /usr/X11R6/lib                                     \
         /opt/tcltk/lib                                     \
     ]
-    set path(tk,libraries) $path(tcl,libraries)
 
-    # Try to add tcl_library and auto_path values to libraryPath,
+    # Try to add tcl_library and auto_path values to path(tcl,libraries),
     # in case the user has a non-standard Tcl/Tk library location:
 
     if {[info exists ::tcl_library]} {
-        lappend headerPath [file join [file dirname [file dirname $::tcl_library]] include]
-        lappend libraryPath [file dirname $::tcl_library]
-        lappend libraryPath $::tcl_library
+        lappend path(tcl,includes) [file join [file dirname [file dirname $::tcl_library]] include]
+        lappend path(tcl,libraries) [file dirname $::tcl_library]
+        lappend path(tcl,libraries) $::tcl_library
     }
     if {[info exists ::auto_path]} {
         foreach name $::auto_path {
-            lappend libraryPath $name
+            lappend path(tcl,libraries) $name
         }
     }
+    set path(tk,libraries) $path(tcl,libraries)
 
     set exp(tcl) "TCL_VERSION.*$tclv"
     set exp(tk)  "TK_VERSION.*$tclv"
@@ -708,7 +710,7 @@ fi
 
 
 # TestSSE2.sh:
-#    Script used to test if the gcc supports SSE2 (required for jpeg library).
+#    Script used to test if gcc supports SSE2 (required for jpeg library).
 #
 set TestSSE2 {#!/bin/sh
 cat <<EOF > testsse2.c
@@ -728,7 +730,7 @@ fi
 
 
 # checkGCC:
-#    Checks whether gcc/g++ is installed (with minimum version 3.6).
+#    Checks whether gcc/g++ is installed (with minimum version 3.4).
 proc checkGCC {cc} {
     global TestGCC
     global TestSSE2
@@ -777,7 +779,7 @@ proc checkGCC {cc} {
         }
     }
     if {$result} {
-        puts -nonewline "    Checking if your $gcc supports sse2: "
+        puts -nonewline "    Checking if your $gcc supports SSE2: "
         flush stdout
         if {![catch {open testsse2.sh w} f]} {
             puts $f [regsub -all __CC__ $TestSSE2 $environment($cc)]

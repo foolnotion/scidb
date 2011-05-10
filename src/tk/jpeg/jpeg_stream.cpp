@@ -20,8 +20,6 @@
 #include "jpeg_exception.h"
 #include "jpeg_reader.h"
 
-#include <tcl.h>
-
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
