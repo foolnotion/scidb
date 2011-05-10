@@ -14,7 +14,7 @@ include ../../../Makefile.in
 
 .SUFFIXES: .c
 
-INCLUDE	= -I. -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
+INCLUDE	= -I. $(TCL_INCLUDE) $(TK_INCLUDE) -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
 
 SRC_C	= \
 	css.c \
