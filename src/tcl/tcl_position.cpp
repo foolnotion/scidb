@@ -146,7 +146,7 @@ cmdGuess(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (square == sq::Null)
 		return error(::CmdGuess, 0, 0, "invalid square %s", Tcl_GetString(objv[1]));
 
-	Board const& currentBoard = Scidb.game().board();
+	Board const& currentBoard = Scidb.game().currentBoard();
 
 	if (::bestMoveCache[square] != sq::Null)
 	{
@@ -183,7 +183,7 @@ cmdSearchDepth(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdStm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(color::isWhite(Scidb.game().board().sideToMove()) ? "w" : "b");
+	setResult(color::isWhite(Scidb.game().currentBoard().sideToMove()) ? "w" : "b");
 	return TCL_OK;
 }
 
@@ -192,7 +192,7 @@ static int
 cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	mstl::string result;
-	dumpBoard(Scidb.game().board(), result);
+	dumpBoard(Scidb.game().currentBoard(), result);
 	setResult(result);
 	return TCL_OK;
 }
@@ -201,7 +201,7 @@ cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb.game().board().toFen());
+	setResult(Scidb.game().currentBoard().toFen());
 	return TCL_OK;
 }
 
@@ -217,7 +217,7 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdIdn(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb.game().board().computeIdn());
+	setResult(Scidb.game().currentBoard().computeIdn());
 	return TCL_OK;
 }
 
@@ -232,7 +232,7 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (sq1 == sq::Null || sq2 == sq::Null)
 	{
-		switch (Scidb.game().board().checkState())
+		switch (Scidb.game().currentBoard().checkState())
 		{
 			case Board::CheckMate:
 			case Board::StaleMate:
@@ -246,7 +246,7 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 	else
 	{
-		Board	board	= Scidb.game().board();
+		Board	board	= Scidb.game().currentBoard();
 		Move	move	= board.prepareMove(sq1, sq2);
 
 		if (!move.isLegal() && allowIllegalMove)
@@ -284,12 +284,12 @@ cmdPromotion(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 	else
 	{
-		Board	board	= Scidb.game().board();
+		Board	board	= Scidb.game().currentBoard();
 		Move	move	= board.prepareMove(sq1, sq2);
 
 		if (!move.isLegal() && allowIllegalMove)
 		{
-			Board			board	= Scidb.game().board();
+			Board			board	= Scidb.game().currentBoard();
 			color::ID	side	= board.sideToMove();
 
 			board.tryCastleShort(side);
@@ -322,17 +322,17 @@ cmdSan(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Move move;
 
 	if (sq1 == sq::Null && sq2 == sq::Null)
-		move = Scidb.game().board().makeNullMove();
+		move = Scidb.game().currentBoard().makeNullMove();
 	else if (sq1 == sq::Null)
 		return error(::CmdSan, 0, 0, "invalid square %s", Tcl_GetString(objv[1]));
 	else if (sq2 == sq::Null)
 		return error(::CmdSan, 0, 0, "invalid square %s", Tcl_GetString(objv[2]));
 	else
-		move = Scidb.game().board().prepareMove(sq1, sq2);
+		move = Scidb.game().currentBoard().prepareMove(sq1, sq2);
 
 	if (!move.isLegal())
 	{
-		Board			board	= Scidb.game().board();
+		Board			board	= Scidb.game().currentBoard();
 		color::ID	side	= board.sideToMove();
 
 		board.tryCastleShort(side);
@@ -356,7 +356,7 @@ cmdSan(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		mstl::string san;
-		Scidb.game().board().prepareForSan(move);
+		Scidb.game().currentBoard().prepareForSan(move);
 		move.printSan(san);
 		setResult(san);
 	}

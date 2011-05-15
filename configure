@@ -120,9 +120,9 @@ array set feature {
 
 array set environment {
     CC          gcc
-    CFLAGS      "-Wall -pipe"
+    CFLAGS      "-Wall"
     CXX         g++
-    CXXFLAGS    "-Wall -pipe"
+    CXXFLAGS    "-Wall"
     LDFLAGS     {}
     OPTIMIZE    "-O3 -funit-at-a-time -fomit-frame-pointer"
     AR          ar
@@ -268,6 +268,11 @@ proc findTclTkPaths {} {
         # Frameworks found, stop looking for paths:
         return 1
     }
+
+    # IMPORTANT NOTE:
+    # Ubuntu 11.04 (Natty Narwhal) has severe bugs: missing link
+    # libXcursor.so to libXcursor.so.1.0.2, missing links from /usr/lib
+    # to /usr/local/lib/i386-linux-gnu (and /usr/local/lib/x86_64-linux-gnu).
 
     # X header path: List of possible locations for X.h
     set path(x,includes) {
@@ -448,9 +453,24 @@ proc findTclTkPaths {} {
         if {[string length $configure(xcursor-libraries)] == 0} {
             puts "not found"
         } else {
-            set package(xcursor-lib) [MakeOption -L $configure(xcursor-libraries)]
-            append package(xcursor-lib) " -lXcursor"
-            puts $configure(xcursor-libraries)
+            # Because of an Ubuntu 11.04 (Natty Narwhal) bug we have
+            # to check the library path.
+            if {[file exists $configure(xcursor-libraries)/libXcursor.so]} {
+                # this is the normal case
+                set package(xcursor-lib) [MakeOption -L $configure(xcursor-libraries)]
+                append package(xcursor-lib) " -lXcursor"
+                puts $configure(xcursor-libraries)
+            } else {
+                # special case on Ubuntu 11.04
+                set files [glob -directory $configure(xcursor-libraries) -nocomplain libXcursor.so.*]
+                if {[llength $files] == 1} {
+                    # only libXursor.so.1.0.2 is existing
+                    set package(xcursor-lib) [lindex $files 0]
+                    puts $package(xcursor-lib)
+                } else {
+                    puts "not found"
+                }
+            }
         }
     }
 

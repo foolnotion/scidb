@@ -12,6 +12,7 @@
 
 all:
 	$(MAKE) -w -C src
+	@if [ $$? != 0 ]; then exit 1; fi
 	$(MAKE) -w -C tcl
 
 depend:

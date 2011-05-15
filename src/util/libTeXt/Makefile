@@ -16,6 +16,7 @@ include ../../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../../mstl
+CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	T_ActiveToken.cpp \
@@ -86,17 +87,23 @@ LIB	= libTeXt
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

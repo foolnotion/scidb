@@ -26,7 +26,7 @@
 
 namespace db {
 
-inline Board const& Game::board() const				{ return m_currentBoard; }
+inline Board const& Game::currentBoard() const		{ return m_currentBoard; }
 inline Board const& Game::startBoard() const			{ return m_startBoard; }
 inline Line const& Game::openingLine() const			{ return m_line; }
 inline Eco const& Game::ecoCode() const				{ return m_eco; }

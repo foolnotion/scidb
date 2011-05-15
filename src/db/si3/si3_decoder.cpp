@@ -315,8 +315,23 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 						m_position.undoMove(current->move());
 						current->addVariation(m_currentNode = new MoveNode);
 						decodeVariation(flags, level + 1);
-						if (m_currentNode->next() == 0)
-							current->deleteVariation(current->countVariations() - 1);
+
+						// Scidb does not support empty variations...
+						if (m_currentNode->atLineStart())
+						{
+							if (m_currentNode->hasNote())
+							{
+								// ...but we cannot delete the variation if a
+								// pre-comment/annotation/mark exists. As a
+								// workaround we insert a null move.
+								m_currentNode->setNext(new MoveNode(m_position.board().makeNullMove()));
+							}
+							else
+							{
+								current->deleteVariation(current->countVariations() - 1);
+							}
+						}
+
 						m_currentNode = current;
 						m_position.pop();
 					}

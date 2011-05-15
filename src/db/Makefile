@@ -16,6 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -Isci -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../sys
+CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	db_annotation.cpp \
@@ -96,21 +97,28 @@ LIB	= libdb
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(LIB)stubs.a $(OBJS) db_eco_table.o db_eco_table_stubs.o
+	rm -f $(LIB).a $(LIB)stubs.a $(OBJS) db_eco_table.o db_eco_table_stubs.o Makefile.bak
 
 depend:
-	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) db_eco_table.cpp db_eco_table_stubs.cpp  2>/dev/null
+	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) db_eco_table.cpp db_eco_table_stubs.cpp 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS) db_eco_table.o
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS) db_eco_table.o
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS) db_eco_table.o
+	@$(RANLIB) $(LIB).a
 
 $(LIB)stubs.a: $(OBJS) db_eco_table_stubs.o
-	$(AR) $(ARFLAGS) $(LIB)stubs.a $(OBJS) db_eco_table_stubs.o
-	$(RANLIB) $(LIB)stubs.a
+	@echo "Building $(LIB)stubs.a"
+	@$(AR) $(ARFLAGS) $(LIB)stubs.a $(OBJS) db_eco_table_stubs.o
+	@$(RANLIB) $(LIB)stubs.a
 
 .cpp.o:
-	$(CXX) -c -o $@ $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c -o $@ $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -833,6 +841,9 @@ db_edit_node.o: db_mark.ipp
 db_edit_node.o: db_mark_set.ipp
 db_edit_node.o: db_tag_set.h
 db_edit_node.o: db_tag_set.ipp
+db_edit_node.o: ../sys/sys_utf8_codec.h
+db_edit_node.o: ../sys/sys_utf8_codec.ipp
+db_edit_node.o: ../mstl/m_stdio.h
 db_exception.o: db_exception.h
 db_exception.o: ../util/u_exception.h
 db_exception.o: ../mstl/m_exception.h
@@ -2491,6 +2502,8 @@ db_tournament_table.o: ../mstl/m_scoped_ptr.ipp
 db_tournament_table.o: ../util/libTeXt/T_Environment.ipp
 db_tournament_table.o: ../mstl/m_algorithm.h
 db_tournament_table.o: ../mstl/m_algorithm.ipp
+db_tournament_table.o: ../mstl/m_equiv_classes.h
+db_tournament_table.o: ../mstl/m_equiv_classes.ipp
 db_tree.o: db_tree.h
 db_tree.o: db_tree_info.h
 db_tree.o: db_move.h

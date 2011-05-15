@@ -43,23 +43,26 @@ Cursor::Cursor(Application& app, Database* database)
 	,m_isRefBase(false)
 {
 	M_REQUIRE(database);
-	m_viewList.push_back(new View(app, *database));
+
+	m_viewList.push_back(new View(app, *database));	// base view
+	m_viewList.push_back(new View(app, *database));	// view 0
 }
 
 
 Cursor::~Cursor()
 {
 	clear();
+	delete *m_viewList.begin();
 }
 
 
 void
 Cursor::clear() throw()
 {
-	for (ViewList::iterator i = m_viewList.begin(); i != m_viewList.end(); ++i)
+	for (ViewList::iterator i = m_viewList.begin() + 1; i < m_viewList.end(); ++i)
 		delete *i;
 
-	m_viewList.clear();
+	m_viewList.resize(1);
 	m_treeView = -1;
 }
 
@@ -67,8 +70,8 @@ Cursor::clear() throw()
 bool
 Cursor::isViewOpen(unsigned view) const
 {
-	M_REQUIRE(view < m_viewList.size());
-	return m_viewList[view] != 0;
+	M_REQUIRE(view == BaseView || view <= maxViewNumber());
+	return view == BaseView ? true : m_viewList[view + 1] != 0;
 }
 
 
@@ -81,14 +84,14 @@ Cursor::newView()
 
 	if (m_freeSet.empty())
 	{
-		view = m_viewList.size();
+		view = m_viewList.size() - 1;
 		m_viewList.push_back(new View(m_app, *m_db));
 	}
 	else
 	{
 		view = *m_freeSet.begin();
 		m_freeSet.erase(m_freeSet.begin());
-		m_viewList[view] = new View(m_app, *m_db);
+		m_viewList[view + 1] = new View(m_app, *m_db);
 	}
 
 	return view;
@@ -106,11 +109,13 @@ Cursor::newTreeView()
 void
 Cursor::closeView(unsigned view)
 {
+	M_REQUIRE(view != BaseView);
+
 	if (view != 0 && m_viewList[view])
 	{
 		m_freeSet.push_back(view);
-		delete m_viewList[view];
-		m_viewList[view] = 0;
+		delete m_viewList[view + 1];
+		m_viewList[view + 1] = 0;
 
 		if (m_treeView == int(view))
 			m_treeView = -1;
@@ -190,28 +195,37 @@ Cursor::gameIndex(unsigned index, unsigned view) const
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isViewOpen(view));
 
-	return m_viewList[view]->gameIndex(index);
+	return view == BaseView ? index : m_viewList[view + 1]->gameIndex(index);
 }
 
 
 unsigned
 Cursor::playerIndex(unsigned index, unsigned view) const
 {
-	return m_viewList[view]->playerIndex(index);
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isViewOpen(view));
+
+	return view == BaseView ? index : m_viewList[view + 1]->playerIndex(index);
 }
 
 
 unsigned
 Cursor::eventIndex(unsigned index, unsigned view) const
 {
-	return m_viewList[view]->eventIndex(index);
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isViewOpen(view));
+
+	return view == BaseView ? index : m_viewList[view + 1]->eventIndex(index);
 }
 
 
 unsigned
 Cursor::annotatorIndex(unsigned index, unsigned view) const
 {
-	return m_viewList[view]->annotatorIndex(index);
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isViewOpen(view));
+
+	return view == BaseView ? index : m_viewList[view + 1]->annotatorIndex(index);
 }
 
 
@@ -289,7 +303,7 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 			View* view = m_viewList[i];
 
 			if (view)
-				view->update(i == 0 ? View::AddNewGames : View::LeaveEmpty);
+				view->update(i <= 1 ? View::AddNewGames : View::LeaveEmpty);
 		}
 	}
 

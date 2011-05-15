@@ -1004,7 +1004,7 @@ Game::setComment(mstl::string const& comment, Position position)
 			m_currentNode->swapComment(comm);
 		}
 
-		unsigned flags = UpdatePgn;
+		unsigned flags = UpdatePgn | UpdateBoard;
 
 		if (updateLanguageSet())
 			flags |= UpdateLanguageSet;
@@ -1056,7 +1056,7 @@ Game::setAnnotation(Annotation const& annotation)
 
 	insertUndo(Set_Annotation, SetAnnotation, m_currentNode->annotation(), annotation);
 	m_currentNode->setAnnotation(annotation);
-	updateSubscriber(UpdatePgn);
+	updateSubscriber(UpdatePgn | UpdateBoard);
 }
 
 
@@ -1691,7 +1691,7 @@ Game::replaceNode(MoveNode* newNode, Command command)
 
 	m_currentNode->setNext(newNode);
 
-	unsigned flags = UpdatePgn | UpdateIllegalMoves;
+	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateBoard;
 
 	if (isMainline())
 		flags |= UpdateOpening;
@@ -1714,7 +1714,7 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 	m_currentNode->addVariation(node.release());
 	m_currentNode->swapVariations(number, m_currentNode->variationCount() - 1);
 
-	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet;
+	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet | UpdateBoard;
 
 	if (isMainline())
 		flags |= UpdateOpening;
@@ -1727,7 +1727,7 @@ bool
 Game::exchangeMove(Move move, Force flag)
 {
 	M_REQUIRE(!atLineEnd());
-	M_REQUIRE(board().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move));
 
 	if (move == m_currentNode->next()->move())
 		return true;
@@ -1829,7 +1829,7 @@ unsigned
 Game::addVariation(Move const& move)
 {
 	M_REQUIRE(!atLineEnd());
-	M_REQUIRE(board().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move));
 
 	MoveNodeP varNode(new MoveNode);
 	varNode->setNext(new MoveNode(m_currentBoard, move));
@@ -1865,7 +1865,7 @@ void
 Game::newMainline(Move const& move)
 {
 	M_REQUIRE(!atLineEnd());
-	M_REQUIRE(board().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move));
 
 	MoveNode* varNode = new MoveNode;
 	varNode->setNext(new MoveNode(m_currentBoard, move));
@@ -2038,8 +2038,12 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 	{
 		insertUndo(Promote_Variation, PromoteVariation, newVariationNumber, oldVariationNumber);
 
+		unsigned flags = UpdatePgn | UpdateBoard;
+
 		if (isMainline())
-			updateSubscriber(UpdateOpening);
+			flags |= UpdateOpening;
+
+		updateSubscriber(flags);
 	}
 }
 
@@ -2208,14 +2212,14 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	MoveNode* varNode = node.release();
 	delete m_currentNode->next()->replaceVariation(variationNumber, varNode);
 
-	updateSubscriber(UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet);
+	updateSubscriber(UpdatePgn | UpdateBoard | UpdateIllegalMoves | UpdateLanguageSet);
 }
 
 
 void
 Game::replaceVariation(Move const& move)
 {
-	M_REQUIRE(board().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move));
 
 	if (atLineEnd())
 		addMove(move);
@@ -2292,7 +2296,7 @@ Game::stripAnnotations()
 	m_startNode = m_startNode->clone();
 	m_startNode->stripAnnotations();
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn);
+	updateSubscriber(UpdatePgn | UpdateBoard);
 
 	return true;
 }
@@ -2308,7 +2312,7 @@ Game::stripComments()
 	m_startNode = m_startNode->clone();
 	m_startNode->stripComments();
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateLanguageSet);
+	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet);
 
 	return true;
 }
@@ -2324,7 +2328,7 @@ Game::stripComments(mstl::string const& lang)
 	m_startNode = m_startNode->clone();
 	m_startNode->stripComments(lang);
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateLanguageSet);
+	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet);
 
 	return true;
 }
@@ -2344,6 +2348,7 @@ Game::stripMarks()
 	if (m_subscriber)
 		m_subscriber->updateMarks(mstl::string::empty_string);
 
+	updateSubscriber(UpdatePgn);
 	return true;
 }
 
@@ -2360,7 +2365,7 @@ Game::stripVariations()
 	m_startNode = m_startNode->clone();
 	m_startNode->stripVariations();
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateLanguageSet | UpdateIllegalMoves);
+	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves);
 
 	return true;
 }
@@ -2379,7 +2384,7 @@ Game::revertGame(MoveNode* startNode, Command command)
 	}
 
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateOpening | UpdateLanguageSet | UpdateIllegalMoves);
+	updateSubscriber(UpdateAll);
 }
 
 
@@ -2732,7 +2737,19 @@ Game::setSubscriber(SubscriberP subscriber, unsigned action)
 void
 Game::setLanguages(LanguageSet const& set)
 {
-	m_wantedLanguages = set;
+	if (m_wantedLanguages != set)
+	{
+		m_wantedLanguages = set;
+		updateSubscriber(UpdatePgn | UpdateBoard);
+	}
+}
+
+
+bool
+Game::containsLanguage(edit::Key const& key, mstl::string const& lang) const
+{
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
+	return node && node->comment().containsLanguage(lang);
 }
 
 

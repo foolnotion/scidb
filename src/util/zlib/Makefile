@@ -15,7 +15,9 @@ include ../../../Makefile.in
 .SUFFIXES: .c
 
 INCLUDE	= -I.
-DEFINES	= -DNDEBUG
+DEBUG		= -DNDEBUG
+OPTIMIZE	= -O2
+CFLAGS	+= $(OPTIMIZE) $(DEBUG)
 
 SRC_C = \
 	adler32.c \
@@ -44,10 +46,12 @@ depend:
 	# do nothing
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(OPTIMIZE) $(DEFINES) $(INCLUDE) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:

@@ -24,7 +24,7 @@
 # (at your option) any later version.
 # ======================================================================
 
-#set tcl_traceExec=1
+#set tcl_traceExec 1
 
 namespace eval scidb {
 namespace eval dir {
@@ -170,8 +170,7 @@ proc databasePath {file} {
 namespace eval remote {
 
 proc openBase {path} {
-	# TODO: raise main window
-	puts "raise .application"
+	raise .application
 
 	if {[llength $path]} {
 		# TODO: extend path with extension if needed

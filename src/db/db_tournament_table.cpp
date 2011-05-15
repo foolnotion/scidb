@@ -644,9 +644,9 @@ TournamentTable::guessBestMode()
 	mstl::bitset group1(m_playerMap.size());
 	mstl::bitset group2(m_playerMap.size());
 
-	unsigned minGameCount		= mstl::numeric_limits<unsigned>::max();
-	unsigned maxGameCount		= 0;
-	unsigned maxOpponentCount	= 0;
+	unsigned minGameCount	= mstl::numeric_limits<unsigned>::max();
+	unsigned maxGameCount	= 0;
+	unsigned maxOppCount		= 0;
 
 	for (PlayerMap::iterator i = m_playerMap.begin(); i != m_playerMap.end(); ++i)
 	{
@@ -656,8 +656,10 @@ TournamentTable::guessBestMode()
 		minGameCount = mstl::min(minGameCount, clashList.size());
 		maxGameCount = mstl::max(maxGameCount, clashList.size());
 
-		unsigned playerCount = 0;
 		Player const* opponent = 0;
+
+		unsigned oppCount = 0;
+
 		bool isGroup1 = i == m_playerMap.begin();
 		bool isGroup2 = false;
 
@@ -665,7 +667,7 @@ TournamentTable::guessBestMode()
 		{
 			if (clashList[k]->opponent->player != opponent)
 			{
-				++playerCount;
+				++oppCount;
 				opponent = clashList[k]->opponent->player;
 
 				if (group1.test(opponent->ranking))
@@ -683,7 +685,7 @@ TournamentTable::guessBestMode()
 			(isGroup1 ? group1 : group2).set(player->ranking);
 		}
 
-		maxOpponentCount = mstl::max(maxOpponentCount, playerCount);
+		maxOppCount = mstl::max(maxOppCount, oppCount);
 	}
 
 	bool isDisjoint = group1.disjunctive(group2) && group1.count() + group2.count() == m_playerMap.size();
@@ -697,29 +699,33 @@ TournamentTable::guessBestMode()
 		}
 	}
 
+	unsigned nplayers = m_playerMap.size();
+
 	switch (m_event.type())
 	{
 		case event::Unknown:
 		case event::Game:
 		case event::Team:
-			if (maxOpponentCount == 1)
+			if (maxOppCount == 1)
 				m_bestMode = Match;
-			else if (m_playerMap.size() < 2)
+			else if (nplayers < 2)
 				m_bestMode = RankingList;
-			else if (isDisjoint && mstl::abs(int(group1.count()) - int(group2.count())) <= 1)
+			else if (isDisjoint && group1.count() == group2.count())
 				m_bestMode = Scheveningen;
-			else if (minGameCount == 1 && maxGameCount == mstl::log2_ceil(m_playerMap.size()))
+			else if (minGameCount == 1 && maxGameCount == mstl::log2_ceil(nplayers))
 				m_bestMode = Knockout;
-			else if (m_playerMap.size() <= 12)
+			else if (nplayers <= 12)
 				m_bestMode = Crosstable;
-			else if (m_playerMap.size() > 30)
+			else if (nplayers > 30)
 				m_bestMode = Swiss;
-			else if (m_numGames/m_playerMap.size() < 5)
+			else if (m_numGames/nplayers < 5)
 				m_bestMode = Swiss;
-			else if (m_numGames < ((m_playerMap.size()*(m_playerMap.size() - 1))/4))
+			else if (m_numGames < ((m_playerMap.size()*(nplayers - 1))/4))
 				m_bestMode = Swiss;
+			else if (nplayers <= 30)
+				m_bestMode = Crosstable;
 			else
-				m_bestMode = Crosstable;
+				m_bestMode = RankingList;
 			break;
 
 		case event::Swiss:		m_bestMode = Swiss; break;

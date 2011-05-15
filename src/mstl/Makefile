@@ -16,6 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I.
+CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	m_algorithm.cpp \
@@ -25,6 +26,7 @@ SRC_CXX = \
 	m_bitset.cpp \
 	m_bitset_iterator.cpp \
 	m_byte_buf.cpp \
+	m_equiv_classes.cpp \
 	m_exception.cpp \
 	m_file.cpp \
 	m_fstream.cpp \
@@ -45,17 +47,23 @@ LIB	= libmstl
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -175,6 +183,31 @@ m_byte_buf.o: m_limits.h
 m_byte_buf.o: m_bit_functions.h
 m_byte_buf.o: m_bit_functions.ipp
 m_byte_buf.o: m_static_check.h
+m_equiv_classes.o: m_equiv_classes.h
+m_equiv_classes.o: m_vector.h
+m_equiv_classes.o: m_type_traits.h
+m_equiv_classes.o: m_type_traits.ipp
+m_equiv_classes.o: m_types.h
+m_equiv_classes.o: m_memblock.h
+m_equiv_classes.o: m_memblock.ipp
+m_equiv_classes.o: m_utility.h
+m_equiv_classes.o: m_utility.ipp
+m_equiv_classes.o: m_limits.h
+m_equiv_classes.o: m_bit_functions.h
+m_equiv_classes.o: m_bit_functions.ipp
+m_equiv_classes.o: m_static_check.h
+m_equiv_classes.o: m_assert.h
+m_equiv_classes.o: m_exception.h
+m_equiv_classes.o: m_backtrace.h
+m_equiv_classes.o: m_exception.ipp
+m_equiv_classes.o: m_vector.ipp
+m_equiv_classes.o: m_uninitialized.h
+m_equiv_classes.o: m_uninitialized.ipp
+m_equiv_classes.o: m_algobase.h
+m_equiv_classes.o: m_algobase.ipp
+m_equiv_classes.o: m_construct.h
+m_equiv_classes.o: m_construct.ipp
+m_equiv_classes.o: m_equiv_classes.ipp
 m_exception.o: m_exception.h
 m_exception.o: m_backtrace.h
 m_exception.o: m_types.h

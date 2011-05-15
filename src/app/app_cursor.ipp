@@ -36,7 +36,7 @@ inline bool Cursor::hasTreeView() const			{ return m_treeView != -1; }
 inline db::Database const& Cursor::database() const	{ return *m_db; }
 inline db::Database& Cursor::base()							{ return *m_db; }
 inline int Cursor::treeViewIdentifier() const			{ return m_treeView; }
-inline unsigned Cursor::maxViewNumber() const			{ return m_viewList.size(); }
+inline unsigned Cursor::maxViewNumber() const			{ return m_viewList.size() - 1; }
 
 inline void Cursor::setReferenceBase(bool flag)	{ m_isRefBase = flag; }
 
@@ -45,7 +45,7 @@ inline View const&
 Cursor::view() const
 {
 	M_REQUIRE(isViewOpen(0));
-	return *m_viewList[0];
+	return *m_viewList[1];
 }
 
 
@@ -53,7 +53,7 @@ inline View&
 Cursor::view()
 {
 	M_REQUIRE(isViewOpen(0));
-	return *m_viewList[0];
+	return *m_viewList[1];
 }
 
 
@@ -62,7 +62,7 @@ View const&
 Cursor::view(unsigned id) const
 {
 	M_REQUIRE(isViewOpen(id));
-	return *m_viewList[id];
+	return *m_viewList[id + 1];
 }
 
 
@@ -71,7 +71,7 @@ View&
 Cursor::view(unsigned id)
 {
 	M_REQUIRE(isViewOpen(id));
-	return *m_viewList[id];
+	return *m_viewList[id + 1];
 }
 
 
@@ -82,7 +82,7 @@ Cursor::treeView() const
 	M_REQUIRE(hasTreeView());
 	M_REQUIRE(isViewOpen(treeViewIdentifier()));
 
-	return *m_viewList[m_treeView];
+	return *m_viewList[m_treeView + 1];
 }
 
 
@@ -93,7 +93,7 @@ Cursor::treeView()
 	M_REQUIRE(hasTreeView());
 	M_REQUIRE(isViewOpen(treeViewIdentifier()));
 
-	return *m_viewList[m_treeView];
+	return *m_viewList[m_treeView + 1];
 }
 
 } // namespace app

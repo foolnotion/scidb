@@ -121,6 +121,10 @@ proc build {w menu width height} {
 	::toolbar::add $tbTools button -image $::icon::toolbarTreeWindow		-command {}
 
 	::toolbar::add $tbTools button \
+		-image $::icon::toolbarCrossTable \
+		-command [namespace code ShowCrossTable] \
+		;
+	::toolbar::add $tbTools button \
 		-image $::icon::toolbarEngine \
 		-command [namespace code StartAnalysis] \
 		;
@@ -823,6 +827,15 @@ proc UpdateControls {} {
 
 proc StartAnalysis {} {
 	puts "StartAnalysis"
+}
+
+
+proc ShowCrossTable {} {
+	set base [::scidb::game::query database]
+	set index [::scidb::game::index]
+	set eventIndex [::scidb::db::fetch eventIndex $base $index]
+
+	::crosstable::open .application $base $eventIndex
 }
 
 

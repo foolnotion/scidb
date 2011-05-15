@@ -38,7 +38,7 @@ namespace import ::tcl::mathfunc::min
 
 variable List	{}	;# {<timestamp> <modified> {<base> <codec> <number>} <info>}
 variable Max	9
-variable Size	1
+variable Size	3
 variable Count	0
 
 array set Options {

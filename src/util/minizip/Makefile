@@ -18,6 +18,7 @@ INCLUDE	= -I.
 OPTIMIZE	= -O2 -fomit-frame-pointer
 C_DEBUG	= -DNDEBUG
 DEFINES	= -D_USE_MMAP
+CFLAGS	= $(OPTIMIZE) $(C_DEBUG) $(DEFINES)
 
 SRC_C = \
 	ioapi.c \
@@ -37,11 +38,13 @@ depend:
 	# do nothing
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(OPTIMIZE) $(C_DEBUG) $(DEFINES) $(INCLUDE) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

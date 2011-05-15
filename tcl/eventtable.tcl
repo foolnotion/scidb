@@ -486,7 +486,7 @@ proc PopupMenu {path menu base index} {
 
 	$menu add command \
 		-label $::gametable::mc::ShowTournamentTable \
-		-command [namespace code [list ::crosstable::open $path $base $index $view]] \
+		-command [list ::crosstable::open $path $base $index $view] \
 		;
 }
 

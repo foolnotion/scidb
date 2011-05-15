@@ -45,8 +45,8 @@ set FileQuit				"&Quit"
 set GameNew					"&New Game"
 set GameNewShuffle		"New Game: &Shuffle"
 set GameNewShuffleSymm	"New Game: S&huffle (symmetrical only)"
-set GameSave				"&Save Game"		;# NEW
-set GameReplace			"&Replace Game"	;# NEW
+set GameSave				"&Save Game"
+set GameReplace			"&Replace Game"
 
 set HelpInfo				"&Info..."
 set HelpContents			"&Contents"

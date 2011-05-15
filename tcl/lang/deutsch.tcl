@@ -913,7 +913,7 @@
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Partie speichern"
 ::dialog::save::mc::ReplaceGame					"Partie ersetzen"
-::dialog::save::mc::EditCharacteristics		"Kenndaten ändern"
+::dialog::save::mc::EditCharacteristics		"Kenndaten bearbeiten"
 	
 ::dialog::save::mc::GameData						"Partiedaten"
 ::dialog::save::mc::Event							"Turnier"

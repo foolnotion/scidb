@@ -47,6 +47,7 @@ inline static char const* skipPrefix(char const* s) { return s + 2; }
 Key::Key() :m_id(StartKey) {}
 Key::Key(unsigned firstPly) :m_id(StartKey) { addPly(firstPly); }
 Key::Key(mstl::string const& key) :m_id(key) { M_REQUIRE(isValid(key)); }
+Key::Key(char const* key) :m_id(key) { M_REQUIRE(isValid(key)); }
 
 
 Key::Key(mstl::string const& key, char prefix)
@@ -287,10 +288,55 @@ Key::setPosition(Game& game) const
 			s = *e == '.' ? e + 1 : e;
 		}
 
-		plyNumber = game.board().plyNumber();
+		plyNumber = game.currentBoard().plyNumber();
 	}
 
 	return true;
+}
+
+
+db::MoveNode*
+Key::findPosition(MoveNode* node, unsigned plyNumber) const
+{
+	M_REQUIRE(node->atLineStart());
+	M_REQUIRE(node->prev() == 0);
+
+	char const* s = ::skipPrefix(m_id);
+
+	if (s[1] == '\0')
+		return node;
+
+	s += 2;
+;
+	char* e = 0;
+
+	while (*s)
+	{
+		unsigned nextPly = ::strtoul(s, &e, 10);
+
+		for ( ; plyNumber < nextPly; ++plyNumber)
+		{
+			node = node->next();
+
+			if (!node)
+				return 0;
+		}
+
+		s = *e == '.' ? e + 1 : e;
+
+		if (*e)
+		{
+			unsigned varNo = ::strtoul(s, &e, 10);
+
+			if (varNo >= node->variationCount())
+				return 0;
+
+			node = node->variation(varNo);
+			s = *e == '.' ? e + 1 : e;
+		}
+	}
+
+	return node;
 }
 
 
@@ -407,6 +453,20 @@ Key::computeDistance(Key const& key) const
 	M_REQUIRE(isVariationId() == key.isVariationId());
 
 	return int(plyNumber()) - int(key.plyNumber());
+}
+
+
+bool
+Key::operator<(Key const& key) const
+{
+	unsigned lhsLevel = level();
+	unsigned rhsLevel = key.level();
+
+	if (lhsLevel < rhsLevel)
+		return true;
+	if (rhsLevel < lhsLevel)
+		return false;
+	return computeDistance(key) < 0;
 }
 
 // vi:set ts=3 sw=3:

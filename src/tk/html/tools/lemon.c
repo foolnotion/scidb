@@ -16,6 +16,7 @@
 #   if defined(_WIN32) || defined(WIN32)
 #	define __WIN32__
 #   endif
+# include <unistd.h>
 #endif
 
 /* #define PRIVATE static */
@@ -27,8 +28,7 @@
 #define MAXRHS 1000
 #endif
 
-char *msort();
-extern void *malloc();
+static char *msort();
 
 /******** From the file "action.h" *************************************/
 struct action *Action_new();
@@ -1617,7 +1617,7 @@ int offset;
 **   The "next" pointers for elements in list are changed.
 */
 #define LISTSIZE 30
-char *msort(list,next,cmp)
+static char *msort(list,next,cmp)
 char *list;
 char **next;
 int (*cmp)();
@@ -2884,7 +2884,6 @@ int modemask;
   char *pathlist;
   char *path,*cp;
   char c;
-  extern int access();
 
 #ifdef __WIN32__
   cp = strrchr(argv0,'\\');

@@ -19,6 +19,7 @@ INCLUDE	= -I..
 OPTIMIZE	= -O2 -fomit-frame-pointer
 C_DEBUG	= -DNDEBUG -Wno-strict-aliasing
 DEFINES	= -D_USE_MMAP -DZZIP_HAVE_STDINT_H
+CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	zzcat.c \
@@ -43,17 +44,23 @@ LIB	= libzzip
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(DEFINES) $(INCLUDE) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

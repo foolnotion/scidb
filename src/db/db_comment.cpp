@@ -91,10 +91,11 @@ struct Normalize : public Comment::Callback
 	};
 
 	typedef mstl::map<mstl::string,Content> LangMap;
+	typedef Comment::LanguageSet LanguageSet;
 
-	Normalize(mstl::string& result, mstl::string const* remove = 0)
+	Normalize(mstl::string& result, LanguageSet const* wanted = 0)
 		:m_result(result)
-		,m_remove(remove)
+		,m_wanted(wanted)
 		,m_lang(0)
 		,m_isXml(false)
 	{
@@ -111,27 +112,26 @@ struct Normalize : public Comment::Callback
 		{
 			if (i->second.length > 0)
 			{
-				if (m_remove == 0 || i->first != *m_remove)
-				{
-					if (i->first.empty())
-					{
-						m_result += i->second.str;
-					}
-					else
-					{
-						m_result += '<';
-						m_result += ':';
-						m_result += i->first;
-						m_result += '>';
-						m_result += i->second.str;
-						m_result += '<';
-						m_result += '/';
-						m_result += ':';
-						m_result += i->first;
-						m_result += '>';
+				M_ASSERT(m_wanted == 0 || m_wanted->find(i->first) != m_wanted->end());
 
-						m_isXml = true;
-					}
+				if (i->first.empty())
+				{
+					m_result += i->second.str;
+				}
+				else
+				{
+					m_result += '<';
+					m_result += ':';
+					m_result += i->first;
+					m_result += '>';
+					m_result += i->second.str;
+					m_result += '<';
+					m_result += '/';
+					m_result += ':';
+					m_result += i->first;
+					m_result += '>';
+
+					m_isXml = true;
 				}
 			}
 		}
@@ -145,23 +145,33 @@ struct Normalize : public Comment::Callback
 
 	void startLanguage(mstl::string const& lang)
 	{
-		m_lang = &m_map[lang];
-
-		if (!m_lang->str.empty())
+		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
 		{
-			m_lang->str += '\n';
-			m_lang->length += 1;
+			m_lang = &m_map[lang];
+
+			if (!m_lang->str.empty())
+			{
+				m_lang->str += '\n';
+				m_lang->length += 1;
+			}
+		}
+		else
+		{
+			m_lang = 0;
 		}
 	}
 
 	void endLanguage(mstl::string const& lang)
 	{
-		m_lang = &m_map[mstl::string::empty_string];
+		if (m_wanted == 0 || m_wanted->find(mstl::string::empty_string) != m_wanted->end())
+			m_lang = &m_map[mstl::string::empty_string];
+		else
+			m_lang = 0;
 	}
 
 	void startAttribute(Attribute attr)
 	{
-		if (++m_attr[attr] == 1)
+		if (m_lang && ++m_attr[attr] == 1)
 		{
 			m_lang->str += '<';
 			m_lang->str += attr;
@@ -172,7 +182,7 @@ struct Normalize : public Comment::Callback
 
 	void endAttribute(Attribute attr)
 	{
-		if (--m_attr[attr] == 0)
+		if (m_lang && --m_attr[attr] == 0)
 		{
 			m_lang->str += '<';
 			m_lang->str += '/';
@@ -183,49 +193,61 @@ struct Normalize : public Comment::Callback
 
 	void content(mstl::string const& s)
 	{
-		if (s.size() == 1)
+		if (m_lang)
 		{
-			switch (s[0])
+			if (s.size() == 1)
 			{
-				case '<': m_lang->str.append("&lt;", 4); break;
-				case '>': m_lang->str.append("&gt;", 4); break;
-				case '&': m_lang->str.append("&amp;", 5); break;
+				switch (s[0])
+				{
+					case '<': m_lang->str.append("&lt;", 4); break;
+					case '>': m_lang->str.append("&gt;", 4); break;
+					case '&': m_lang->str.append("&amp;", 5); break;
+				}
 			}
-		}
-		else
-		{
-			m_lang->str += s;
-		}
+			else
+			{
+				m_lang->str += s;
+			}
 
-		m_lang->length += s.size();
+			m_lang->length += s.size();
+		}
 	}
 
 	void symbol(char s)
 	{
-		m_lang->str += "<sym>";
-		m_lang->str += s;
-		m_lang->str += "</sym>";
-		m_lang->length += 1;
-		m_isXml = true;
+		if (m_lang)
+		{
+			m_lang->str += "<sym>";
+			m_lang->str += s;
+			m_lang->str += "</sym>";
+			m_lang->length += 1;
+			m_isXml = true;
+		}
 	}
 
 	void nag(mstl::string const& s)
 	{
-		m_lang->str += "<nag>";
-		m_lang->str += s;
-		m_lang->str += "</nag>";
-		m_lang->length += 1;
-		m_isXml = true;
+		if (m_lang)
+		{
+			m_lang->str += "<nag>";
+			m_lang->str += s;
+			m_lang->str += "</nag>";
+			m_lang->length += 1;
+			m_isXml = true;
+		}
 	}
 
 	void invalidXmlContent(mstl::string const& content)
 	{
-		m_lang->str += content;
-		m_lang->length += content.size();
+		if (m_lang)
+		{
+			m_lang->str += content;
+			m_lang->length += content.size();
+		}
 	}
 
 	mstl::string&			m_result;
-	mstl::string const*	m_remove;
+	LanguageSet const*	m_wanted;
 	Content*					m_lang;
 	LangMap					m_map;
 	bool						m_isXml;
@@ -261,8 +283,10 @@ struct Flatten : public Comment::Callback
 
 	void content(mstl::string const& s)				{ m_result += s; }
 
-	// TODO: should take language into account
-	void symbol(char s)									{ m_result += s; }
+	void symbol(char s)
+	{
+		m_result += piece::utf8::asString(piece::fromLetter(s));
+	}
 
 	void nag(mstl::string const& s)
 	{
@@ -493,6 +517,16 @@ Comment::collectLanguages(LanguageSet& result) const
 }
 
 
+bool
+Comment::containsLanguage(mstl::string const& lang) const
+{
+	if (m_languageSet.empty())
+		collect();
+
+	return m_languageSet.find(lang) != m_languageSet.end();
+}
+
+
 unsigned
 Comment::countLength(LanguageSet const& set) const
 {
@@ -586,12 +620,40 @@ Comment::normalize()
 void
 Comment::remove(mstl::string const& lang)
 {
-	if (!isXml())
-		return;
+	if (isXml())
+	{
+		LanguageSet set;
+		collectLanguages(set);
+		set.erase(lang);
+		strip(set);
+	}
+	else if (lang.empty())
+	{
+		m_content.clear();
+	}
 
-	Normalize normalize(m_content, &lang);
-	parse(normalize);
 	m_languageSet.erase(lang);
+}
+
+
+void
+Comment::strip(LanguageSet const& set)
+{
+	if (set.empty())
+	{
+		m_content.clear();
+	}
+	else if (isXml())
+	{
+		Normalize normalize(m_content, &set);
+		parse(normalize);
+	}
+	else if (set.find(mstl::string::empty_string) == set.end())
+	{
+		m_content.clear();
+	}
+
+	m_languageSet.clear();
 }
 
 // vi:set ts=3 sw=3:

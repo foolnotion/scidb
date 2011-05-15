@@ -42,7 +42,7 @@ set BackgroundSelection	"Background Selection"
 set Zoom						"Zoom"
 set Shadow					"Shadow"
 set Opacity					"Opacity"
-set ShadowDiffusion		"Shadow Diffusion"	;# NEW
+set ShadowDiffusion		"Shadow Diffusion"
 set None						"None"
 set Linear					"Linear"
 set Quadratic				"Quadratic"

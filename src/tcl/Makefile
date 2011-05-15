@@ -16,6 +16,8 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3 $(TCL_INCLUDE) $(TK_INCLUDE)
+DEFINES	= -DSHAREDIR=\"$(SHAREDIR)\"
+CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(DEFINES)
 
 SRC_CXX = \
 	tcl_application.cpp \
@@ -41,17 +43,23 @@ LIB	= libtcl
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -173,6 +181,9 @@ tcl_application.o: ../mstl/m_ifstream.h
 tcl_application.o: ../mstl/m_file.h
 tcl_application.o: ../mstl/m_file.ipp
 tcl_application.o: ../mstl/m_ifstream.ipp
+tcl_application.o: /usr/local/include/tcl.h
+tcl_application.o: /usr/local/include/tclDecls.h
+tcl_application.o: /usr/local/include/tclPlatDecls.h
 tcl_base.o: tcl_base.h
 tcl_base.o: tcl_base.ipp
 tcl_base.o: tcl_exception.h
@@ -224,6 +235,9 @@ tcl_base.o: ../app/app_application.ipp
 tcl_base.o: tcl_position.h
 tcl_base.o: ../db/db_exception.h
 tcl_base.o: ../mstl/m_stdio.h
+tcl_base.o: /usr/local/include/tcl.h
+tcl_base.o: /usr/local/include/tclDecls.h
+tcl_base.o: /usr/local/include/tclPlatDecls.h
 tcl_board.o: tcl_board.h
 tcl_board.o: ../mstl/m_string.h
 tcl_board.o: ../mstl/m_types.h
@@ -255,6 +269,9 @@ tcl_board.o: ../db/db_signature.ipp
 tcl_board.o: ../db/db_board.ipp
 tcl_board.o: ../db/db_board_base.h
 tcl_board.o: ../db/db_board_base.ipp
+tcl_board.o: /usr/local/include/tcl.h
+tcl_board.o: /usr/local/include/tclDecls.h
+tcl_board.o: /usr/local/include/tclPlatDecls.h
 tcl_crosstable.o: tcl_application.h
 tcl_crosstable.o: ../app/app_application.h
 tcl_crosstable.o: ../db/db_common.h
@@ -380,6 +397,9 @@ tcl_crosstable.o: ../mstl/m_ostream.h
 tcl_crosstable.o: ../mstl/m_ostream.ipp
 tcl_crosstable.o: ../mstl/m_hash.h
 tcl_crosstable.o: ../mstl/m_hash.ipp
+tcl_crosstable.o: /usr/local/include/tcl.h
+tcl_crosstable.o: /usr/local/include/tclDecls.h
+tcl_crosstable.o: /usr/local/include/tclPlatDecls.h
 tcl_database.o: tcl_database.h
 tcl_database.o: ../db/db_common.h
 tcl_database.o: ../util/u_base.h
@@ -537,6 +557,9 @@ tcl_database.o: ../sys/sys_utf8_codec.h
 tcl_database.o: ../sys/sys_utf8_codec.ipp
 tcl_database.o: ../mstl/m_algorithm.h
 tcl_database.o: ../mstl/m_algorithm.ipp
+tcl_database.o: /usr/local/include/tcl.h
+tcl_database.o: /usr/local/include/tclDecls.h
+tcl_database.o: /usr/local/include/tclPlatDecls.h
 tcl_exception.o: tcl_exception.h
 tcl_exception.o: ../util/u_exception.h
 tcl_exception.o: ../mstl/m_exception.h
@@ -707,6 +730,9 @@ tcl_game.o: ../mstl/m_ios.ipp
 tcl_game.o: ../mstl/m_ostream.ipp
 tcl_game.o: ../mstl/m_istream.h
 tcl_game.o: ../mstl/m_istream.ipp
+tcl_game.o: /usr/local/include/tcl.h
+tcl_game.o: /usr/local/include/tclDecls.h
+tcl_game.o: /usr/local/include/tclPlatDecls.h
 tcl_http.o: tcl_http.h
 tcl_http.o: tcl_exception.h
 tcl_http.o: ../util/u_exception.h
@@ -716,6 +742,9 @@ tcl_http.o: ../mstl/m_types.h
 tcl_http.o: ../mstl/m_exception.ipp
 tcl_http.o: tcl_base.h
 tcl_http.o: tcl_base.ipp
+tcl_http.o: /usr/local/include/tcl.h
+tcl_http.o: /usr/local/include/tclDecls.h
+tcl_http.o: /usr/local/include/tclPlatDecls.h
 tcl_log.o: tcl_log.h
 tcl_log.o: ../db/db_log.h
 tcl_log.o: ../db/db_common.h
@@ -734,6 +763,9 @@ tcl_log.o: ../mstl/m_bit_functions.ipp
 tcl_log.o: ../mstl/m_static_check.h
 tcl_log.o: tcl_base.h
 tcl_log.o: tcl_base.ipp
+tcl_log.o: /usr/local/include/tcl.h
+tcl_log.o: /usr/local/include/tclDecls.h
+tcl_log.o: /usr/local/include/tclPlatDecls.h
 tcl_misc.o: tcl_base.h
 tcl_misc.o: tcl_base.ipp
 tcl_misc.o: tcl_exception.h
@@ -776,6 +808,9 @@ tcl_misc.o: ../util/u_base.h
 tcl_misc.o: ../util/u_crc.ipp
 tcl_misc.o: ../mstl/m_stack.h
 tcl_misc.o: ../mstl/m_stack.ipp
+tcl_misc.o: /usr/local/include/tcl.h
+tcl_misc.o: /usr/local/include/tclDecls.h
+tcl_misc.o: /usr/local/include/tclPlatDecls.h
 tcl_pgn_reader.o: tcl_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_reader.h
@@ -857,6 +892,9 @@ tcl_pgn_reader.o: ../mstl/m_istream.h
 tcl_pgn_reader.o: ../mstl/m_ios.h
 tcl_pgn_reader.o: ../mstl/m_ios.ipp
 tcl_pgn_reader.o: ../mstl/m_istream.ipp
+tcl_pgn_reader.o: /usr/local/include/tcl.h
+tcl_pgn_reader.o: /usr/local/include/tclDecls.h
+tcl_pgn_reader.o: /usr/local/include/tclPlatDecls.h
 tcl_position.o: tcl_position.h
 tcl_position.o: tcl_application.h
 tcl_position.o: ../app/app_application.h
@@ -946,6 +984,9 @@ tcl_position.o: ../db/db_player.h
 tcl_position.o: ../db/db_player.ipp
 tcl_position.o: ../db/db_guess.h
 tcl_position.o: ../db/db_guess.ipp
+tcl_position.o: /usr/local/include/tcl.h
+tcl_position.o: /usr/local/include/tclDecls.h
+tcl_position.o: /usr/local/include/tclPlatDecls.h
 tcl_progress.o: tcl_progress.h
 tcl_progress.o: ../util/u_progress.h
 tcl_progress.o: ../util/u_progress.ipp
@@ -957,6 +998,9 @@ tcl_progress.o: ../mstl/m_types.h
 tcl_progress.o: ../mstl/m_exception.ipp
 tcl_progress.o: tcl_base.h
 tcl_progress.o: tcl_base.ipp
+tcl_progress.o: /usr/local/include/tcl.h
+tcl_progress.o: /usr/local/include/tclDecls.h
+tcl_progress.o: /usr/local/include/tclPlatDecls.h
 tcl_tree.o: tcl_tree.h
 tcl_tree.o: tcl_base.h
 tcl_tree.o: tcl_base.ipp
@@ -1080,6 +1124,9 @@ tcl_tree.o: ../util/u_piped_progress.h
 tcl_tree.o: ../util/u_progress.h
 tcl_tree.o: ../util/u_progress.ipp
 tcl_tree.o: ../sys/sys_pipe.h
+tcl_tree.o: /usr/local/include/tcl.h
+tcl_tree.o: /usr/local/include/tclDecls.h
+tcl_tree.o: /usr/local/include/tclPlatDecls.h
 tcl_view.o: tcl_progress.h
 tcl_view.o: ../util/u_progress.h
 tcl_view.o: ../util/u_progress.ipp
@@ -1192,3 +1239,6 @@ tcl_view.o: ../db/db_database_codec.h
 tcl_view.o: ../db/db_database_codec.ipp
 tcl_view.o: ../sys/sys_utf8_codec.h
 tcl_view.o: ../sys/sys_utf8_codec.ipp
+tcl_view.o: /usr/local/include/tcl.h
+tcl_view.o: /usr/local/include/tclDecls.h
+tcl_view.o: /usr/local/include/tclPlatDecls.h

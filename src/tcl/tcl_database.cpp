@@ -1232,7 +1232,10 @@ static int
 getGameInfo(int index, int view, char const* database, unsigned which)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	index = cursor.gameIndex(index, view);
+
+	if (view >= 0)
+		index = cursor.gameIndex(index, view);
+
 	GameInfo const& info = cursor.database().gameInfo(index);
 	Tcl_Obj* obj;
 
@@ -1500,7 +1503,10 @@ static int
 getGameInfo(int index, int view, char const* database)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	index = cursor.gameIndex(index, view);
+
+	if (view >= 0)
+		index = cursor.gameIndex(index, view);
+
 	GameInfo const& info = cursor.database().gameInfo(index);
 
 	return getGameInfo(	info,
@@ -1514,9 +1520,11 @@ static int
 getGameInfo(int index, int view, char const* database, Ratings const& ratings)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	index = cursor.gameIndex(index, view);
-	GameInfo const& info = cursor.database().gameInfo(index);
 
+	if (view >= 0)
+		index = cursor.gameIndex(index, view);
+
+	GameInfo const& info = cursor.database().gameInfo(index);
 	return getGameInfo(info, index + 1, ratings, cursor.database().format());
 }
 
@@ -1525,7 +1533,10 @@ static int
 getPlayerInfo(int index, int view, char const* database, unsigned which)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	index = cursor.playerIndex(index, view);
+
+	if (view >= 0)
+		index = cursor.playerIndex(index, view);
+
 	NamebasePlayer const& player = cursor.database().player(index);
 	Tcl_Obj* obj;
 
@@ -1561,7 +1572,10 @@ getPlayerInfo(	int index, int view, char const* database, Ratings const& ratings
 {
 	Cursor const& cursor = Scidb.cursor(database);
 
-	return getPlayerInfo(cursor.database().player(cursor.playerIndex(index, view)),
+	if (view >= 0)
+		index = cursor.playerIndex(index, view);
+
+	return getPlayerInfo(cursor.database().player(index),
 								ratings,
 								info,
 								idCard);
@@ -1572,7 +1586,10 @@ static int
 getEventInfo(int index, int view, char const* database, unsigned which)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	index = cursor.eventIndex(index, view);
+
+	if (view >= 0)
+		index = cursor.eventIndex(index, view);
+
 	NamebaseEvent const& event = cursor.database().event(index);
 	Tcl_Obj* obj;
 
@@ -1630,7 +1647,11 @@ static int
 getEventInfo(int index, int view)
 {
 	Cursor const& cursor = Scidb.cursor();
-	return getEventInfo(cursor.database().event(cursor.eventIndex(index, view)));
+
+	if (view >= 0)
+		index = cursor.eventIndex(index, view);
+
+	return getEventInfo(cursor.database().event(index));
 }
 
 
@@ -1642,7 +1663,10 @@ getAnnotator(int index, int view)
 	M_ASSERT(::memset(objv, 0, sizeof(objv)));
 
 	Cursor const& cursor = Scidb.cursor();
-	index = cursor.annotatorIndex(index, view);
+
+	if (view >= 0)
+		index = cursor.annotatorIndex(index, view);
+
 	NamebaseEntry const& annotator = cursor.database().annotator(index);
 
 	objv[::attribute::annotator::Name] = Tcl_NewStringObj(annotator.name(), annotator.name().size());
@@ -1675,7 +1699,11 @@ static int
 getDeleted(int index, int view, char const* database)
 {
 	Cursor const& cursor = Scidb.cursor(database);
-	setResult(cursor.database().gameInfo(cursor.gameIndex(index, view)).isDeleted());
+
+	if (view >= 0)
+		index = cursor.gameIndex(index, view);
+
+	setResult(cursor.database().gameInfo(index).isDeleted());
 	return TCL_OK;
 }
 
@@ -1743,24 +1771,43 @@ getRatingTypes(int index, char const* database)
 static int
 cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "eventIndex", 0 };
-	static char const* args[] = { "<database> <game-index> <view>", 0 };
-	enum { Cmd_EventIndex };
+	static char const* subcommands[] = { "eventIndex", "whitePlayerIndex", "blackPlayerIndex", 0 };
+	static char const* args[] =
+	{
+		"<database> <game-index> ?<view>?",
+		"<database> <game-index> ?<view>?",
+		"<database> <game-index> ?<view>?",
+		0,
+	};
+	enum { Cmd_EventIndex, Cmd_WhitePlayerIndex, Cmd_BlackPlayerIndex };
 
 	int index	= intFromObj(objc, objv, 3);
-	int view		= intFromObj(objc, objv, 4);
+	int view		= objc <= 4 ? -1 : intFromObj(objc, objv, 4);
 
 	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 2));
+
+	if (view >= 0)
+		index = cursor.gameIndex(index, view);
+
 	Database const& database = cursor.database();
-	NamebaseEvent const* event = database.gameInfo(cursor.gameIndex(index, view)).eventEntry();
+	GameInfo const& info = database.gameInfo(index);
 
 	switch (tcl::uniqueMatchObj(objv[1], subcommands))
 	{
 		case Cmd_EventIndex:
-			setResult(database.namebase(Namebase::Event).lookup(event));
+			setResult(database.namebase(Namebase::Event).lookup(info.eventEntry()));
 			break;
 
-		default: return usage(::CmdFetch, 0, 0, subcommands, args);
+		case Cmd_WhitePlayerIndex:
+			setResult(database.namebase(Namebase::Player).lookup(info.playerEntry(color::White)));
+			break;
+
+		case Cmd_BlackPlayerIndex:
+			setResult(database.namebase(Namebase::Player).lookup(info.playerEntry(color::Black)));
+			break;
+
+		default:
+			return usage(::CmdFetch, 0, 0, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -1917,7 +1964,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					if (*lastArg != '-')
 						lastArg = Tcl_GetStringFromObj(objv[objc - 2], 0);
 
-					if (*lastArg == '-')
+					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
 						if (::strcmp(lastArg, "-card") == 0)
 						{
@@ -2100,9 +2147,13 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				char const* base = stringFromObj(objc, objv, 2);
 				unsigned index = unsignedFromObj(objc, objv, 3);
-				unsigned view = unsignedFromObj(objc, objv, 4);
 
-				setResult(Scidb.cursor(base).gameIndex(index, view));
+				view = intFromObj(objc, objv, 4);
+
+				if (view >= 0)
+					index = Scidb.cursor(base).gameIndex(index, view);
+
+				setResult(index);
 			}
 			return TCL_OK;
 
@@ -2379,7 +2430,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return usage(::CmdSort, 0, 0, subcommands, args);
 
 	if (objc == 5)
-		view = unsignedFromObj(objc, objv, 4);
+		view = intFromObj(objc, objv, 4);
 
 	for (int i = 0; i < optCount; ++i)
 	{

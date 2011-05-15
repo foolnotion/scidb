@@ -16,8 +16,10 @@ include ../Makefile.in
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
 ALL_ICLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE)   $(CXX_DEBUG) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
+
+MAKEFLAGS += --no-print-directory
 
 LIBS_BASE = \
 	db/libdbstubs.a \
@@ -79,102 +81,120 @@ uninstall:
 	/bin/sh -e 'find $(SHAREDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
 
 clean:
-	rm -f $(TARGETS)
+	rm -f $(TARGETS) Makefile.bak
 	@for dir in $(SUBDIRS); do \
-		$(MAKE) -w -C $$dir clean; \
+		$(MAKE) -C $$dir clean; \
 	done
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 	@for dir in $(SUBDIRS); do \
-		$(MAKE) -w -C $$dir depend; \
+		$(MAKE) -C $$dir depend; \
 	done
 
 recursive:
 	@for dir in $(SUBDIRS); do \
-		$(MAKE) -w -C $$dir; \
+		$(MAKE) -C $$dir; \
+		if [ $$? != 0 ]; then exit 1; fi; \
 	done
 
 mstl/libmstl.a:
-	$(MAKE) -w -C mstl
+	$(MAKE) -C mstl
 
 sys/libsys.a:
-	$(MAKE) -w -C sys
+	$(MAKE) -C sys
 
 util/libutil.a:
-	$(MAKE) -w -C util
+	$(MAKE) -C util
 
 util/lzo/liblzo.a:
-	$(MAKE) -w -C util/lzo
+	$(MAKE) -C util/lzo
 
 util/minizip/libminizip.a:
-	$(MAKE) -w -C util/libminizip
+	$(MAKE) -C util/libminizip
 
 util/zzip/libzzip.a:
-	$(MAKE) -w -C util/zzip
+	$(MAKE) -C util/zzip
 
 util/libharu/libharu.a:
-	$(MAKE) -w -C util/libharu
+	$(MAKE) -C util/libharu
 
 util/libTeXt/libTeXt.a:
-	$(MAKE) -w -C util/libTeXt
+	$(MAKE) -C util/libTeXt
 
 tcl/libtcl.a:
-	$(MAKE) -w -C tcl
+	$(MAKE) -C tcl
 
 tk/libtk.a:
-	$(MAKE) -w -C tk
+	$(MAKE) -C tk
 
 tk/jpeg/libjpegd.a:
-	$(MAKE) -w -C tk/jpeg
+	$(MAKE) -C tk/jpeg
 
 tk/svg/libsvg.a:
-	$(MAKE) -w -C tk/svg
+	$(MAKE) -C tk/svg
 
 tk/svg/agg/libagg.a:
-	$(MAKE) -w -C tk/svg/agg
+	$(MAKE) -C tk/svg/agg
 
 tk/treectrl/libtreectrl.a:
-	$(MAKE) -w -C tk/treectrl
+	$(MAKE) -C tk/treectrl
 
 tk/html/libTkhtml3.a:
-	$(MAKE) -w -C tk/html
+	$(MAKE) -C tk/html
 
 db/libapp.a:
-	$(MAKE) -w -C app
+	$(MAKE) -C app
 
 db/libdb.a:
-	$(MAKE) -w -C db
+	$(MAKE) -C db
+
+db/libdbstubs.a:
+	$(MAKE) -C db libdbstubs.a
 
 permute_eco: permute_eco.cpp $(LIBS)
-	$(CXX) -o permute_eco permute_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 extend_eco: extend_eco.cpp $(LIBS_BASE)
-	$(CXX) -o extend_eco extend_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 dump_eco: dump_eco.cpp $(LIBS_BASE)
-	$(CXX) -o dump_eco dump_eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 eco2code: eco2code.cpp $(LIBS_BASE)
-	$(CXX) -o eco2code eco2code.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 code2eco: code2eco.cpp $(LIBS_BASE)
-	$(CXX) -o code2eco code2eco.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 pawn_progress: pawn_progress.cpp $(LIBS_BASE)
-	$(CXX) -o pawn_progress pawn_progress.cpp $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
 
 best_move: best_move.cpp $(LIBS)
-	$(CXX) -o best_move best_move.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 pgn_split_eco: pgn_split_eco.cpp $(LIBS)
-	$(CXX) -o pgn_split_eco pgn_split_eco.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 $(PROGRAM): tkscidb.cpp $(LIBS)
-	$(CXX) -o $(PROGRAM) tkscidb.cpp $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -o $(PROGRAM) $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
 
 .cpp.o:
-	$(CXX) -c $(ALL_CXXFLAGS) $(CXX_DEBUG) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

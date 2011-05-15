@@ -75,6 +75,7 @@ public:
 
 	bool isEmpty() const;
 	bool isXml() const;
+	bool containsLanguage(mstl::string const& lang) const;
 
 	unsigned size() const;
 	mstl::string const& content() const;
@@ -82,6 +83,7 @@ public:
 	mstl::string& content();
 
 	void remove(mstl::string const& lang);
+	void strip(LanguageSet const& set);
 	void setContent(mstl::string const& s);
 	void swap(Comment& comment);
 	void swap(mstl::string& content);

@@ -34,7 +34,7 @@ inline KeyNode::KeyNode(Key const& key) :m_key(key) {}
 inline KeyNode::KeyNode(Key const& key, char prefix) :m_key(key, prefix) {}
 inline Variation::Variation(Key const& key) :KeyNode(key) {}
 inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_succ(succ) {}
-inline Move::Move(Key const& key) :KeyNode(key), m_ply(0), m_endKey(key) {}
+inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
 inline Comment::Comment(db::Comment const& comment) :m_comment(comment) {}
 inline Annotation::Annotation(db::Annotation const& annotation) :m_annotation(annotation) {}
 inline Marks::Marks(MarkSet const& marks) :m_marks(marks) {}
@@ -51,6 +51,7 @@ Opening::Opening(Board const& startBoard, uint16_t idn, Eco eco)
 }
 
 
+inline void Node::dump() const										{ dump(0); }
 inline Key const& KeyNode::key() const								{ return m_key; }
 inline bool Variation::empty() const								{ return m_list.empty(); }
 inline Key const& Variation::successor() const					{ return m_succ; }

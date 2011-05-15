@@ -53,14 +53,16 @@ namespace import ::tcl::mathfunc::max
 set Priv(count) 100
 
 array set Options {
-	font					TkTextFont
-	board:size			40
-	autoplay:delay		2500
-	repeat:interval	300
-	background:pgn		white
-	background:header	#ebf4f5
-	foreground:result	black
-	color:current		#ffdd76
+	font						TkTextFont
+	board:size				40
+	autoplay:delay			2500
+	repeat:interval		300
+	background:pgn			white
+	background:header		#ebf4f5
+	background:player		"cornflower blue"
+	foreground:player		white
+	background:current	#ffdd76
+	foreground:result		black
 }
 
 set Options(font:bold) [list \
@@ -493,7 +495,16 @@ proc UpdateHeader {position {info {}}} {
 
 	$text delete 1.0 end
 	$text insert end $evline
-	$text insert end "$white - $black" bold
+	$text insert end $white {bold white}
+	$text insert end " - " bold
+	$text insert end $black {bold black}
+
+	foreach side {white black} {
+		$text tag bind $side <Any-Enter>			[namespace code [list EnterPlayer $position $side]]
+		$text tag bind $side <Any-Leave>			[namespace code [list LeavePlayer $position $side]]
+		$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayer $position $side]]
+		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayer $position $side]]
+	}
 
 	set Vars(opening) [makeOpeningLines $data]
 
@@ -507,6 +518,44 @@ proc UpdateHeader {position {info {}}} {
 	update ;# makes -displaylines working
 	$text configure -height [$text count -displaylines 1.0 end]
 	$text configure -state disabled
+}
+
+
+proc EnterPlayer {position side} {
+	variable ${position}::Vars
+	variable Options
+
+	$Vars(header) tag configure $side \
+		-background $Options(background:player) \
+		-foreground $Options(foreground:player) \
+		;
+}
+
+
+proc LeavePlayer {position side} {
+	variable ${position}::Vars
+	variable Options
+
+	$Vars(header) tag configure $side -background $Options(background:header) -foreground black
+}
+
+
+proc ShowPlayer {position side} {
+	variable ${position}::Vars
+
+	set base  $Vars(base)
+	set index $Vars(index)
+	set view  $Vars(view)
+
+	set playerIndex [::scidb::db::fetch ${side}PlayerIndex $base $index $view]
+	set info [scidb::db::get playerInfo $playerIndex -1 $base -card -ratings {Elo Elo}]
+	::playertable::showInfo $Vars(header) $info
+}
+
+
+proc HidePlayer {position side} {
+	variable ${position}::Vars
+	::playertable::hideInfo $Vars(header)
 }
 
 
@@ -583,7 +632,7 @@ proc UpdatePGN {position data} {
 					if {[llength $previous]} {
 						$w tag configure $previous -background $Options(background:pgn)
 					}
-					$w tag configure $key -background $Options(color:current)
+					$w tag configure $key -background $Options(background:current)
 					if {[llength $previous]} { $w see [lindex [$w tag nextrange $key 1.0] 0] }
 					set Vars(current) $key
 					if {[llength $previous] && $Vars(active) eq $previous} { EnterMove $position $previous }
@@ -755,8 +804,8 @@ proc LoadGame {parent position} {
 	variable ${position}::Vars
 
 	set base  $Vars(base)
-	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] 0 $base]
-	set info  [::scidb::db::get gameInfo $index 0 $base]
+	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $base]
+	set info  [::scidb::db::get gameInfo $index $Vars(view) $base]
 
 	::widget::busyOperation ::game::new $parent $base $info $index
 }	
@@ -765,7 +814,7 @@ proc LoadGame {parent position} {
 proc MergeGame {parent position} {
 	variable ${position}::Vars
 
-	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] 0 $Vars(base)]
+	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
 puts "MergeGame $index"	;# TODO
 }
 

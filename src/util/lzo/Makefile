@@ -13,21 +13,25 @@ OBJS		= $(SOURCES:.c=.o)
 # current dircectory. Otherwise you may want to adjust CPPFLAGS.
 ##CPPFLAGS = -I../include/lzo -I.
 
-GCC_CFLAGS = -s -Wall -O2 -fomit-frame-pointer
+CFLAGS = -s -Wall -O2 -fomit-frame-pointer
+
+LIB = liblzo
 
 
-all: liblzo.a
+all: $(LIB).a
 
 
 #
 # gcc (generic)
 #
 
-liblzo.a: minilzo.o
-	$(AR) $(ARFLAGS) liblzo.a $(OBJS)
+$(LIB).a: minilzo.o
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 
-minilzo.o:
-	gcc -c $(GCC_CFLAGS) $(SOURCES)
+minilzo.o: minilzo.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@gcc -c $(CFLAGS) $(EXTRA_CFLAGS) $(SOURCES)
 
 
 #

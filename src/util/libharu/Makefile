@@ -16,6 +16,7 @@ include ../../../Makefile.in
 
 INCLUDE	= -I. -I../../mstl
 DEFINES	= -DHPDF_NOPNGLIB
+CFLAGS	+= $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	hpdf_annotation.c \
@@ -76,17 +77,23 @@ LIB	= libharu
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(OPTIMIZE) $(INCLUDE) $(DEFINES) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

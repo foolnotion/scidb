@@ -16,6 +16,8 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../mstl -I../util -I../util/zlib $(TCL_INCLUDE) $(TK_INCLUDE) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
+CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
+CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	tk_image.cpp \
@@ -33,20 +35,27 @@ LIB	= libtk
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(OPTIMIZE) $(C_DEBUG) $(PROFILING) $(INCLUDE) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -131,14 +140,32 @@ tk_image.o: svg/agg/agg_image_filters.h
 tk_image.o: svg/agg/agg_span_image_filter_rgba.h
 tk_image.o: svg/agg/agg_blur.h
 tk_image.o: svg/agg/agg_pixfmt_transposer.h
+tk_image.o: /usr/local/include/tcl.h
+tk_image.o: /usr/local/include/tclDecls.h
+tk_image.o: /usr/local/include/tclPlatDecls.h
+tk_image.o: /usr/local/include/tk.h
+tk_image.o: /usr/local/include/tkDecls.h
 tk_init.o: tk_init.h
+tk_init.o: /usr/local/include/tcl.h
+tk_init.o: /usr/local/include/tclDecls.h
+tk_init.o: /usr/local/include/tclPlatDecls.h
 tk_jpeg.o: tk_init.h
 tk_jpeg.o: jpeg/jpeg_image.h
 tk_jpeg.o: jpeg/jpeg_scanline.h
 tk_jpeg.o: jpeg/jpeg_reader.h
 tk_jpeg.o: jpeg/jpeg_exception.h
+tk_jpeg.o: /usr/local/include/tcl.h
+tk_jpeg.o: /usr/local/include/tclDecls.h
+tk_jpeg.o: /usr/local/include/tclPlatDecls.h
+tk_jpeg.o: /usr/local/include/tk.h
+tk_jpeg.o: /usr/local/include/tkDecls.h
 tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
+tk_png.o: /usr/local/include/tcl.h
+tk_png.o: /usr/local/include/tclDecls.h
+tk_png.o: /usr/local/include/tclPlatDecls.h
+tk_png.o: /usr/local/include/tk.h
+tk_png.o: /usr/local/include/tkDecls.h
 tk_png.o: tk_init.h
 tk_twm.o: tk_init.h
 tk_twm.o: ../tcl/tcl_exception.h
@@ -176,7 +203,12 @@ tk_twm.o: ../mstl/m_string.h
 tk_twm.o: ../mstl/m_string.ipp
 tk_twm.o: ../mstl/m_algorithm.h
 tk_twm.o: ../mstl/m_algorithm.ipp
+tk_twm.o: /usr/local/include/tcl.h
+tk_twm.o: /usr/local/include/tclDecls.h
+tk_twm.o: /usr/local/include/tclPlatDecls.h
 tk_twm.o: tk8.5/tkInt.h
+tk_twm.o: /usr/local/include/tk.h
+tk_twm.o: /usr/local/include/tkDecls.h
 tk_twm.o: tk8.5/tkPort.h
 tk_twm.o: tk8.5/tkUnixPort.h
 tk_twm.o: tk8.5/tkIntDecls.h
@@ -188,4 +220,14 @@ tk_window_manager.o: ../mstl/m_assert.h
 tk_window_manager.o: ../mstl/m_exception.h
 tk_window_manager.o: ../mstl/m_backtrace.h
 tk_window_manager.o: ../mstl/m_exception.ipp
+tk_window_manager.o: /usr/local/include/tcl.h
+tk_window_manager.o: /usr/local/include/tclDecls.h
+tk_window_manager.o: /usr/local/include/tclPlatDecls.h
+tk_window_manager.o: /usr/local/include/tk.h
+tk_window_manager.o: /usr/local/include/tkDecls.h
+tk_xcursor.o: /usr/local/include/tk.h
+tk_xcursor.o: /usr/local/include/tcl.h
+tk_xcursor.o: /usr/local/include/tclDecls.h
+tk_xcursor.o: /usr/local/include/tclPlatDecls.h
+tk_xcursor.o: /usr/local/include/tkDecls.h
 tk_xcursor.o: ./X11/Xcursor/Xcursor.h

@@ -363,7 +363,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (Tree const* tree = Scidb.currentTree())
 	{
-		Board const& board = Scidb.game().board();
+		Board const& board = Scidb.game().currentBoard();
 
 		if (tree->isTreeFor(Scidb.cursor().database(), board))
 		{

@@ -31,7 +31,10 @@
 #include "db_mark_set.h"
 #include "db_tag_set.h"
 
+#include "sys_utf8_codec.h"
+
 #include "m_limits.h"
+#include "m_stdio.h"
 #include "m_assert.h"
 
 using namespace db::edit;
@@ -143,6 +146,32 @@ Diagram::visit(Visitor& visitor) const
 }
 
 
+void
+Diagram::dump(unsigned level) const
+{
+	mstl::string fen;
+	m_board.toFen(fen);
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("diagram %s {", m_key.id().c_str());
+
+	if (m_prefixBreak)
+	{
+		::printf("\n");
+		::printf(mstl::string(2*(level + 1), ' ').c_str());
+		::printf("linebreak\n");
+		::printf(mstl::string(2*level, ' ').c_str());
+	}
+
+	::printf(mstl::string(2*(level + 1), ' ').c_str());
+	::printf("color %s\n", color::printColor(m_fromColor));
+	::printf(mstl::string(2*(level + 1), ' ').c_str());
+	::printf("board %s\n", fen.c_str());
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("}\n");
+}
+
+
 PreComment::PreComment(Work const& work, db::Comment const& comment)
 	:KeyNode(work.key, PrefixComment)
 	,m_comment(comment)
@@ -168,6 +197,14 @@ PreComment::visit(Visitor& visitor) const
 }
 
 
+void
+PreComment::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("comment %s { %s }\n", m_key.id().c_str(), m_comment.content().c_str());
+}
+
+
 Ply::Ply(MoveNode const* move, unsigned moveno)
 	:m_moveNo(moveno)
 	,m_move(move->move())
@@ -186,6 +223,23 @@ Ply::operator==(Node const* node) const
 }
 
 
+void
+Ply::dump(unsigned level) const
+{
+	mstl::string san;
+	m_move.printSan(san);
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("ply ");
+	if (m_moveNo)
+		::printf("%u ", m_moveNo);
+	::printf("{ %s %s ", color::printColor(m_move.color()), san.c_str());
+		if (!m_move.isLegal())
+			::printf("illegal ");
+	::printf("}\n");
+}
+
+
 bool
 Comment::operator==(Node const* node) const
 {
@@ -196,6 +250,23 @@ Comment::operator==(Node const* node) const
 }
 
 
+void
+Comment::dump(unsigned level) const
+{
+	mstl::string buf;
+
+	if (::sys::utf8::Codec::fitsRegion(m_comment.content(), 1))
+		::sys::utf8::Codec::convertToNonDiacritics(1, m_comment.content(), buf);
+	else
+		buf = "<comment not LATIN-1>";
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("comment {");
+	::printf("%s", buf.c_str());
+	::printf("}\n");
+}
+
+
 bool
 Annotation::operator==(Node const* node) const
 {
@@ -203,6 +274,20 @@ Annotation::operator==(Node const* node) const
 	M_ASSERT(dynamic_cast<Annotation const*>(node));
 
 	return m_annotation == static_cast<Annotation const*>(node)->m_annotation;
+}
+
+
+void
+Annotation::dump(unsigned level) const
+{
+	mstl::string prefix, infix, suffix;
+
+	m_annotation.prefix(prefix);
+	m_annotation.infix(infix);
+	m_annotation.suffix(suffix);
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("annotation { %s } { %s } { %s }\n", prefix.c_str(), infix.c_str(), suffix.c_str());
 }
 
 
@@ -217,12 +302,39 @@ Marks::operator==(Node const* node) const
 
 
 void
+Marks::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("marks %u\n", unsigned(m_marks.count()));
+}
+
+
+void
 Space::visit(Visitor& visitor) const
 {
 	if (m_level >= 0)
 		visitor.linebreak(m_level, m_bracket);
 	else
 		visitor.space(m_bracket);
+}
+
+
+void
+Space::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+
+	if (m_level >= 0)
+		::printf("linebreak %u", m_level);
+	else
+		::printf("space");
+
+	if (m_bracket == '(')
+		::printf(" { open } ");
+	else if (m_bracket == ')')
+		::printf(" { close } ");
+
+	::printf("\n");
 }
 
 
@@ -246,6 +358,24 @@ Opening::operator==(Node const* node) const
 	return	m_idn == static_cast<Opening const*>(node)->m_idn
 			&& m_eco == static_cast<Opening const*>(node)->m_eco
 			&& m_board.isEqualPosition(static_cast<Opening const*>(node)->m_board);
+}
+
+
+void
+Opening::dump(unsigned) const
+{
+	mstl::string openingLong, openingShort, variation, subvariation, position;
+	mstl::string pos;
+
+	if (m_idn)
+		pos = shuffle::position(m_idn);
+	else
+		m_board.toFen(pos);
+
+	::printf("header {\n");
+	::printf("  idn %u\n", unsigned(m_idn));
+	::printf("  eco %s\n", m_eco.asShortString().c_str());
+	::printf("}\n");
 }
 
 
@@ -319,6 +449,36 @@ Action::visit(Visitor& visitor) const
 }
 
 
+void
+Action::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+
+	switch (m_command)
+	{
+		case Clear:
+			::printf("action { clear }\n");
+			break;
+
+		case Insert:
+			::printf("action { insert %u %s }\n", level, m_key1.id().c_str());
+			break;
+
+		case Replace:
+			::printf("action { replace %u %s %s }\n", level, m_key1.id().c_str(), m_key2.id().c_str());
+			break;
+
+		case Remove:
+			::printf("action { remove %u %s %s }\n", level, m_key1.id().c_str(), m_key2.id().c_str());
+			break;
+
+		case Finish:
+			::printf("action { finish %u }\n", level);
+			break;
+	}
+}
+
+
 Languages::Languages(MoveNode const* root)
 {
 	if (root)
@@ -336,7 +496,28 @@ Languages::operator==(Node const* node) const
 }
 
 
-Key const& Variation::startKey() const
+void
+Languages::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("languages {");
+
+	for (LanguageSet::const_iterator i = m_langSet.begin(), e = m_langSet.end(); i != e; ++i)
+	{
+		if (!i->first.empty())
+		{
+			if (i != m_langSet.begin())
+				::printf(" ");
+			::printf(i->first.c_str());
+		}
+	}
+
+	::printf("}\n");
+}
+
+
+Key const&
+Variation::startKey() const
 {
 	return m_list.empty() ? m_key : m_list.front()->startKey();
 }
@@ -384,63 +565,30 @@ Variation::visit(Visitor& visitor) const
 
 
 void
+Variation::dump(unsigned level) const
+{
+	if (m_list.empty())
+		return;
+
+	Key const& startKey	= m_list.front()->startKey();
+	Key const& endKey		= m_list.back()->startKey();
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("begin %s { %u }\n", startKey.id().c_str(), startKey.level());
+
+	for (unsigned i = 0; i < m_list.size(); ++i)
+		m_list[i]->dump(level + 1);
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("end %s { %u }\n", endKey.id().c_str(), endKey.level());
+}
+
+
+void
 Variation::difference(Root const* root, Variation const* var, unsigned level, Node::List& nodes) const
 {
 	M_ASSERT(root);
 	M_ASSERT(var);
-
-	// Game::setComment()
-	// Game::setAnnotation()
-	// Game::exchangeMove()
-	// Game::setMarks()
-	//		replace current move and successor diagram/move
-	//
-	// Game::replaceNode()
-	// Game::newMainline()
-	// Game::removeMainline()
-	// Game::promoteVariation()
-	//		replace rest of variation
-	//
-	// Game::insertVariation()
-	// Game::addVariation()
-	//		insert variation
-	//
-	// Game::addMove()
-	//		insert move
-	//
-	// Game::moveVariation()
-	//		replace variations
-	//
-	// Game::changeVariation()
-	//		replace variation
-	//
-	// Game::removeVariation()
-	//		remove variation
-	//
-	// Game::insertMoves()
-	//		remove variation
-	//		insert moves
-	//
-	// Game::exchangeMoves()
-	//		remove variation
-	//		replace moves
-	//
-	// Game::truncateVariation()
-	// Game::stripMoves()
-	//		remove rest of variation
-	//
-	// Game::unstripMoves
-	//		insert moves
-	//
-	// Game::stripAnnotations()
-	// Game::stripComments()
-	// Game::stripMarks()
-	// Game::revertGame()
-	// Game::resetGame()
-	//		replace all
-	//
-	// Game::clear()
-	//		remove all
 
 	Key const& endVar = var->successor();
 
@@ -448,6 +596,32 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	unsigned k = 0;
 	unsigned m = m_list.size();
 	unsigned n = var->m_list.size();
+
+	if (m > 0 && n > 0)
+	{
+		KeyNode const* lhs = m_list[0];			// node from current game
+		KeyNode const* rhs = var->m_list[0];	// node from previous game
+
+		if (lhs->key() < rhs->key())
+		{
+			do
+				++i;
+			while (i < m && m_list[i]->key() < rhs->key());
+
+			nodes.push_back(root->newAction(Action::Insert, level, rhs->startKey()));
+			nodes.insert(nodes.end(), m_list.begin(), m_list.begin() + i);
+			nodes.push_back(root->newAction(Action::Finish, level));
+		}
+		else if (rhs->key() < lhs->key())
+		{
+			do
+				++k;
+			while (k < n && var->m_list[k]->key() < lhs->key());
+
+			Key const& after = k == n ? endVar : var->m_list[k]->startKey();
+			nodes.push_back(root->newAction(Action::Remove, level, rhs->startKey(), after));
+		}
+	}
 
 	while (i < m && k < n)
 	{
@@ -459,8 +633,6 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 
 		if (lhsType == rhsType)
 		{
-			M_ASSERT(lhs->key() == rhs->key());
-
 			if (lhsType == TVariation)
 			{
 				Variation const* lhsVar = static_cast<Variation const*>(lhs);
@@ -473,6 +645,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 				if (lhsType == TMove)
 				{
 					if (	static_cast<Move const*>(lhs)->ply() == 0
+						|| static_cast<Move const*>(rhs)->ply() == 0
 						|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply())
 					{
 						KeyNode const* const* lhsFirst	= m_list.begin() + i + 1;
@@ -483,6 +656,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 						while (	lhsFirst <= lhsLast
 								&& rhsFirst <= rhsLast
 								&& (*lhsLast)->type() == (*rhsLast)->type()
+								&& (*lhsLast)->key() == (*rhsLast)->key()
 								&& *static_cast<Node const*>(*lhsLast) == static_cast<Node const*>(*rhsLast))
 						{
 							--lhsLast;
@@ -542,7 +716,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 			switch (action)
 			{
 				case Insert:
-					nodes.push_back(root->newAction(Action::Insert, level, rhs->endKey()));
+					nodes.push_back(root->newAction(Action::Insert, level, rhs->startKey()));
 					nodes.push_back(lhs);
 					nodes.push_back(root->newAction(Action::Finish, level));
 					++i;
@@ -565,10 +739,21 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 	}
 
 	if (k < n)
-	{
-		Key const& before = (k == 0) ? var->startKey() : var->m_list[k - 1]->endKey();
-		nodes.push_back(root->newAction(Action::Remove, level, before, endVar));
-	}
+		nodes.push_back(root->newAction(Action::Remove, level, var->m_list[k]->startKey(), endVar));
+}
+
+
+void
+Move::dump(unsigned level) const
+{
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("move %s {\n", m_key.id().c_str());
+
+	for (unsigned i = 0; i < m_list.size(); ++i)
+		m_list[i]->dump(level + 1);
+
+	::printf(mstl::string(2*level, ' ').c_str());
+	::printf("}\n");
 }
 
 
@@ -579,12 +764,14 @@ Move::operator==(Node const* node) const
 	M_ASSERT(dynamic_cast<Move const*>(node));
 	M_ASSERT(m_key == static_cast<Move const*>(node)->m_key);
 
-	if (m_list.size() != dynamic_cast<Move const*>(node)->m_list.size())
+	if (m_list.size() != static_cast<Move const*>(node)->m_list.size())
 		return false;
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
 	{
-		if (*m_list[i] != dynamic_cast<Move const*>(node)->m_list[i])
+		if (m_list[i]->type() != static_cast<Move const*>(node)->m_list[i]->type())
+			return false;
+		if (*m_list[i] != static_cast<Move const*>(node)->m_list[i])
 			return false;
 	}
 
@@ -595,7 +782,6 @@ Move::operator==(Node const* node) const
 Move::Move(Work& work)
 	:KeyNode(work.key)
 	,m_ply(0)
-	,m_endKey(m_key)
 {
 	if (work.spacing & ForcedBreak)
 	{
@@ -624,7 +810,6 @@ Move::Move(Work& work)
 
 Move::Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const* move)
 	:KeyNode(key)
-	,m_endKey(m_key)
 {
 	M_ASSERT(!move->atLineStart());
 
@@ -646,7 +831,6 @@ Move::Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const
 
 Move::Move(Work& work, MoveNode const* move)
 	:KeyNode(work.key)
-	,m_endKey(m_key)
 {
 	M_ASSERT(!move->atLineStart());
 
@@ -706,9 +890,12 @@ Move::Move(Work& work, MoveNode const* move)
 
 	if (move->hasComment())
 	{
-		if (unsigned length = move->comment().countLength(*work.wantedLanguages))
+		db::Comment comment(move->comment());
+		comment.strip(*work.wantedLanguages);
+
+		if (!comment.isEmpty())
 		{
-			if (work.level == 0 && length > linebreakMinCommentLength)
+			if (work.level == 0 && comment.size() > linebreakMinCommentLength)
 			{
 				m_list.push_back(new Space(work.level));
 				spacing = PrefixBreak;
@@ -719,8 +906,7 @@ Move::Move(Work& work, MoveNode const* move)
 				spacing = PrefixSpace;
 			}
 
-			m_list.push_back(new Comment(move->comment()));
-			m_endKey.exchangePrefix(PrefixComment);
+			m_list.push_back(new Comment(comment));
 			work.plyCount = 0;
 			work.needMoveNo = true;
 		}
@@ -732,10 +918,6 @@ Move::Move(Work& work, MoveNode const* move)
 	work.spacing = spacing;
 	work.bracket = None;
 }
-
-
-Key const& Move::startKey() const	{ return m_key; }
-Key const& Move::endKey() const		{ return m_endKey; }
 
 
 void
@@ -769,6 +951,15 @@ Root::visit(Visitor& visitor) const
 	m_languages->visit(visitor);
 	m_variation->visit(visitor);
 	visitor.finish(m_result);
+}
+
+
+void
+Root::dump(unsigned level) const
+{
+	m_opening->dump(level);
+	m_languages->dump(level);
+	m_variation->dump(level);
 }
 
 
@@ -946,10 +1137,13 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 
 	if (node->hasComment())
 	{
-		if (unsigned length = node->comment().countLength(*work.wantedLanguages))
+		db::Comment comment(node->comment());
+		comment.strip(*work.wantedLanguages);
+
+		if (!comment.isEmpty())
 		{
-			result.push_back(new PreComment(work, node->comment()));
-			work.spacing = (length > linebreakMinCommentLength) ? PrefixBreak : PrefixSpace;
+			result.push_back(new PreComment(work, comment));
+			work.spacing = (comment.size() > linebreakMinCommentLength) ? PrefixBreak : PrefixSpace;
 			work.needMoveNo = true;
 			work.bracket = None;
 		}

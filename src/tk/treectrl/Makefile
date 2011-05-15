@@ -16,6 +16,7 @@ include ../../../Makefile.in
 
 INCLUDE	= -I. $(TCL_INCLUDE) $(TK_INCLUDE) -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
 DEFINES	= -DHAVE_UNISTD_H=1
+CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	qebind.c \
@@ -38,24 +39,40 @@ LIB	= libtreectrl
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(INCLUDE) $(OPT_C) $(DEFINES) $*.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+qebind.o: /usr/local/include/tcl.h
+qebind.o: /usr/local/include/tclDecls.h
+qebind.o: /usr/local/include/tclPlatDecls.h
+qebind.o: /usr/local/include/tk.h
+qebind.o: /usr/local/include/tkDecls.h
 qebind.o: qebind.h
 tkTreeColumn.o: tkTreeCtrl.h
 tkTreeColumn.o: ../tk8.5/tkPort.h
+tkTreeColumn.o: /usr/local/include/tk.h
+tkTreeColumn.o: /usr/local/include/tcl.h
+tkTreeColumn.o: /usr/local/include/tclDecls.h
+tkTreeColumn.o: /usr/local/include/tclPlatDecls.h
+tkTreeColumn.o: /usr/local/include/tkDecls.h
 tkTreeColumn.o: ../tk8.5/tkUnixPort.h
 tkTreeColumn.o: ../tk8.5/default.h
 tkTreeColumn.o: ../tk8.5/tkUnixDefault.h
@@ -64,11 +81,17 @@ tkTreeColumn.o: ../tcl8.5/tclPort.h
 tkTreeColumn.o: ../tcl8.5/tclUnixPort.h
 tkTreeColumn.o: ../tcl8.5/tclIntDecls.h
 tkTreeColumn.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeColumn.o: /usr/local/include/tclTomMathDecls.h
 tkTreeColumn.o: ../tk8.5/tkInt.h
 tkTreeColumn.o: ../tk8.5/tkIntDecls.h
 tkTreeColumn.o: qebind.h
 tkTreeCtrl.o: tkTreeCtrl.h
 tkTreeCtrl.o: ../tk8.5/tkPort.h
+tkTreeCtrl.o: /usr/local/include/tk.h
+tkTreeCtrl.o: /usr/local/include/tcl.h
+tkTreeCtrl.o: /usr/local/include/tclDecls.h
+tkTreeCtrl.o: /usr/local/include/tclPlatDecls.h
+tkTreeCtrl.o: /usr/local/include/tkDecls.h
 tkTreeCtrl.o: ../tk8.5/tkUnixPort.h
 tkTreeCtrl.o: ../tk8.5/default.h
 tkTreeCtrl.o: ../tk8.5/tkUnixDefault.h
@@ -77,11 +100,17 @@ tkTreeCtrl.o: ../tcl8.5/tclPort.h
 tkTreeCtrl.o: ../tcl8.5/tclUnixPort.h
 tkTreeCtrl.o: ../tcl8.5/tclIntDecls.h
 tkTreeCtrl.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeCtrl.o: /usr/local/include/tclTomMathDecls.h
 tkTreeCtrl.o: ../tk8.5/tkInt.h
 tkTreeCtrl.o: ../tk8.5/tkIntDecls.h
 tkTreeCtrl.o: qebind.h
 tkTreeDisplay.o: tkTreeCtrl.h
 tkTreeDisplay.o: ../tk8.5/tkPort.h
+tkTreeDisplay.o: /usr/local/include/tk.h
+tkTreeDisplay.o: /usr/local/include/tcl.h
+tkTreeDisplay.o: /usr/local/include/tclDecls.h
+tkTreeDisplay.o: /usr/local/include/tclPlatDecls.h
+tkTreeDisplay.o: /usr/local/include/tkDecls.h
 tkTreeDisplay.o: ../tk8.5/tkUnixPort.h
 tkTreeDisplay.o: ../tk8.5/default.h
 tkTreeDisplay.o: ../tk8.5/tkUnixDefault.h
@@ -90,11 +119,17 @@ tkTreeDisplay.o: ../tcl8.5/tclPort.h
 tkTreeDisplay.o: ../tcl8.5/tclUnixPort.h
 tkTreeDisplay.o: ../tcl8.5/tclIntDecls.h
 tkTreeDisplay.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeDisplay.o: /usr/local/include/tclTomMathDecls.h
 tkTreeDisplay.o: ../tk8.5/tkInt.h
 tkTreeDisplay.o: ../tk8.5/tkIntDecls.h
 tkTreeDisplay.o: qebind.h
 tkTreeDrag.o: tkTreeCtrl.h
 tkTreeDrag.o: ../tk8.5/tkPort.h
+tkTreeDrag.o: /usr/local/include/tk.h
+tkTreeDrag.o: /usr/local/include/tcl.h
+tkTreeDrag.o: /usr/local/include/tclDecls.h
+tkTreeDrag.o: /usr/local/include/tclPlatDecls.h
+tkTreeDrag.o: /usr/local/include/tkDecls.h
 tkTreeDrag.o: ../tk8.5/tkUnixPort.h
 tkTreeDrag.o: ../tk8.5/default.h
 tkTreeDrag.o: ../tk8.5/tkUnixDefault.h
@@ -103,11 +138,17 @@ tkTreeDrag.o: ../tcl8.5/tclPort.h
 tkTreeDrag.o: ../tcl8.5/tclUnixPort.h
 tkTreeDrag.o: ../tcl8.5/tclIntDecls.h
 tkTreeDrag.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeDrag.o: /usr/local/include/tclTomMathDecls.h
 tkTreeDrag.o: ../tk8.5/tkInt.h
 tkTreeDrag.o: ../tk8.5/tkIntDecls.h
 tkTreeDrag.o: qebind.h
 tkTreeElem.o: tkTreeCtrl.h
 tkTreeElem.o: ../tk8.5/tkPort.h
+tkTreeElem.o: /usr/local/include/tk.h
+tkTreeElem.o: /usr/local/include/tcl.h
+tkTreeElem.o: /usr/local/include/tclDecls.h
+tkTreeElem.o: /usr/local/include/tclPlatDecls.h
+tkTreeElem.o: /usr/local/include/tkDecls.h
 tkTreeElem.o: ../tk8.5/tkUnixPort.h
 tkTreeElem.o: ../tk8.5/default.h
 tkTreeElem.o: ../tk8.5/tkUnixDefault.h
@@ -116,12 +157,18 @@ tkTreeElem.o: ../tcl8.5/tclPort.h
 tkTreeElem.o: ../tcl8.5/tclUnixPort.h
 tkTreeElem.o: ../tcl8.5/tclIntDecls.h
 tkTreeElem.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeElem.o: /usr/local/include/tclTomMathDecls.h
 tkTreeElem.o: ../tk8.5/tkInt.h
 tkTreeElem.o: ../tk8.5/tkIntDecls.h
 tkTreeElem.o: qebind.h
 tkTreeElem.o: tkTreeElem.h
 tkTreeItem.o: tkTreeCtrl.h
 tkTreeItem.o: ../tk8.5/tkPort.h
+tkTreeItem.o: /usr/local/include/tk.h
+tkTreeItem.o: /usr/local/include/tcl.h
+tkTreeItem.o: /usr/local/include/tclDecls.h
+tkTreeItem.o: /usr/local/include/tclPlatDecls.h
+tkTreeItem.o: /usr/local/include/tkDecls.h
 tkTreeItem.o: ../tk8.5/tkUnixPort.h
 tkTreeItem.o: ../tk8.5/default.h
 tkTreeItem.o: ../tk8.5/tkUnixDefault.h
@@ -130,11 +177,17 @@ tkTreeItem.o: ../tcl8.5/tclPort.h
 tkTreeItem.o: ../tcl8.5/tclUnixPort.h
 tkTreeItem.o: ../tcl8.5/tclIntDecls.h
 tkTreeItem.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeItem.o: /usr/local/include/tclTomMathDecls.h
 tkTreeItem.o: ../tk8.5/tkInt.h
 tkTreeItem.o: ../tk8.5/tkIntDecls.h
 tkTreeItem.o: qebind.h
 tkTreeMarquee.o: tkTreeCtrl.h
 tkTreeMarquee.o: ../tk8.5/tkPort.h
+tkTreeMarquee.o: /usr/local/include/tk.h
+tkTreeMarquee.o: /usr/local/include/tcl.h
+tkTreeMarquee.o: /usr/local/include/tclDecls.h
+tkTreeMarquee.o: /usr/local/include/tclPlatDecls.h
+tkTreeMarquee.o: /usr/local/include/tkDecls.h
 tkTreeMarquee.o: ../tk8.5/tkUnixPort.h
 tkTreeMarquee.o: ../tk8.5/default.h
 tkTreeMarquee.o: ../tk8.5/tkUnixDefault.h
@@ -143,11 +196,17 @@ tkTreeMarquee.o: ../tcl8.5/tclPort.h
 tkTreeMarquee.o: ../tcl8.5/tclUnixPort.h
 tkTreeMarquee.o: ../tcl8.5/tclIntDecls.h
 tkTreeMarquee.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeMarquee.o: /usr/local/include/tclTomMathDecls.h
 tkTreeMarquee.o: ../tk8.5/tkInt.h
 tkTreeMarquee.o: ../tk8.5/tkIntDecls.h
 tkTreeMarquee.o: qebind.h
 tkTreeNotify.o: tkTreeCtrl.h
 tkTreeNotify.o: ../tk8.5/tkPort.h
+tkTreeNotify.o: /usr/local/include/tk.h
+tkTreeNotify.o: /usr/local/include/tcl.h
+tkTreeNotify.o: /usr/local/include/tclDecls.h
+tkTreeNotify.o: /usr/local/include/tclPlatDecls.h
+tkTreeNotify.o: /usr/local/include/tkDecls.h
 tkTreeNotify.o: ../tk8.5/tkUnixPort.h
 tkTreeNotify.o: ../tk8.5/default.h
 tkTreeNotify.o: ../tk8.5/tkUnixDefault.h
@@ -156,11 +215,17 @@ tkTreeNotify.o: ../tcl8.5/tclPort.h
 tkTreeNotify.o: ../tcl8.5/tclUnixPort.h
 tkTreeNotify.o: ../tcl8.5/tclIntDecls.h
 tkTreeNotify.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeNotify.o: /usr/local/include/tclTomMathDecls.h
 tkTreeNotify.o: ../tk8.5/tkInt.h
 tkTreeNotify.o: ../tk8.5/tkIntDecls.h
 tkTreeNotify.o: qebind.h
 tkTreeStyle.o: tkTreeCtrl.h
 tkTreeStyle.o: ../tk8.5/tkPort.h
+tkTreeStyle.o: /usr/local/include/tk.h
+tkTreeStyle.o: /usr/local/include/tcl.h
+tkTreeStyle.o: /usr/local/include/tclDecls.h
+tkTreeStyle.o: /usr/local/include/tclPlatDecls.h
+tkTreeStyle.o: /usr/local/include/tkDecls.h
 tkTreeStyle.o: ../tk8.5/tkUnixPort.h
 tkTreeStyle.o: ../tk8.5/default.h
 tkTreeStyle.o: ../tk8.5/tkUnixDefault.h
@@ -169,12 +234,18 @@ tkTreeStyle.o: ../tcl8.5/tclPort.h
 tkTreeStyle.o: ../tcl8.5/tclUnixPort.h
 tkTreeStyle.o: ../tcl8.5/tclIntDecls.h
 tkTreeStyle.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeStyle.o: /usr/local/include/tclTomMathDecls.h
 tkTreeStyle.o: ../tk8.5/tkInt.h
 tkTreeStyle.o: ../tk8.5/tkIntDecls.h
 tkTreeStyle.o: qebind.h
 tkTreeStyle.o: tkTreeElem.h
 tkTreeTheme.o: tkTreeCtrl.h
 tkTreeTheme.o: ../tk8.5/tkPort.h
+tkTreeTheme.o: /usr/local/include/tk.h
+tkTreeTheme.o: /usr/local/include/tcl.h
+tkTreeTheme.o: /usr/local/include/tclDecls.h
+tkTreeTheme.o: /usr/local/include/tclPlatDecls.h
+tkTreeTheme.o: /usr/local/include/tkDecls.h
 tkTreeTheme.o: ../tk8.5/tkUnixPort.h
 tkTreeTheme.o: ../tk8.5/default.h
 tkTreeTheme.o: ../tk8.5/tkUnixDefault.h
@@ -183,11 +254,17 @@ tkTreeTheme.o: ../tcl8.5/tclPort.h
 tkTreeTheme.o: ../tcl8.5/tclUnixPort.h
 tkTreeTheme.o: ../tcl8.5/tclIntDecls.h
 tkTreeTheme.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeTheme.o: /usr/local/include/tclTomMathDecls.h
 tkTreeTheme.o: ../tk8.5/tkInt.h
 tkTreeTheme.o: ../tk8.5/tkIntDecls.h
 tkTreeTheme.o: qebind.h
 tkTreeUtils.o: tkTreeCtrl.h
 tkTreeUtils.o: ../tk8.5/tkPort.h
+tkTreeUtils.o: /usr/local/include/tk.h
+tkTreeUtils.o: /usr/local/include/tcl.h
+tkTreeUtils.o: /usr/local/include/tclDecls.h
+tkTreeUtils.o: /usr/local/include/tclPlatDecls.h
+tkTreeUtils.o: /usr/local/include/tkDecls.h
 tkTreeUtils.o: ../tk8.5/tkUnixPort.h
 tkTreeUtils.o: ../tk8.5/default.h
 tkTreeUtils.o: ../tk8.5/tkUnixDefault.h
@@ -196,6 +273,7 @@ tkTreeUtils.o: ../tcl8.5/tclPort.h
 tkTreeUtils.o: ../tcl8.5/tclUnixPort.h
 tkTreeUtils.o: ../tcl8.5/tclIntDecls.h
 tkTreeUtils.o: ../tcl8.5/tclIntPlatDecls.h
+tkTreeUtils.o: /usr/local/include/tclTomMathDecls.h
 tkTreeUtils.o: ../tk8.5/tkInt.h
 tkTreeUtils.o: ../tk8.5/tkIntDecls.h
 tkTreeUtils.o: qebind.h

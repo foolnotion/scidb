@@ -12,7 +12,8 @@
 
 include ../../Makefile.in
 
-INCLUDE = -I. -I../mstl -I../sys -Izlib -Iminizip
+INCLUDE	= -I. -I../mstl -I../sys -Izlib -Iminizip
+CXXFLAGS	+=  $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	u_block_file.cpp \
@@ -35,17 +36,23 @@ LIB	= libutil
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
 
 $(LIB).a: $(OBJS)
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	$(RANLIB) $(LIB).a
+	@echo "Building $(LIB).a"
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(RANLIB) $(LIB).a
 
 .cpp.o:
-	$(CXX) -c $(CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING) $(INCLUDE) $*.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 

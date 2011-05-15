@@ -289,6 +289,7 @@ proc toolbar {parent args} {
 	}
 
 	lappend Specs(toolbars) $toolbar
+	set path $parent
 
 	return $toolbar
 }
@@ -311,6 +312,7 @@ proc add {toolbar widgetCommand args} {
 
 	array set Specs [list                                       \
 		float:$w:$toolbar				1                             \
+		padx:$w:$toolbar				0                             \
 		tooltip:$w:$toolbar			{}                            \
 		tooltipvar:$w:$toolbar		{}                            \
 		default:$w:$toolbar			{}                            \
@@ -333,6 +335,7 @@ proc add {toolbar widgetCommand args} {
 			-value		{ set value $val }
 			-variable	{ set variable $val }
 			-float		{ set Specs(float:$w:$toolbar) $val }
+			-padx			{ set Specs(padx:$w:$toolbar) $val }
 			default		{ set options($arg) $val }
 		}
 	}
@@ -367,7 +370,7 @@ proc add {toolbar widgetCommand args} {
 		if {$widgetType eq "checkbutton"} {
 			set traceCmd "[namespace current]::Tracer4 $toolbar $w $variable"
 			trace add variable $variable write $traceCmd
-			bind $toolbar <Destroy> "+trace remove variable $variable write {$traceCmd}"
+			bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 			ConfigureCheckButton $toolbar $w $w $variable
 		} else {
 			if {[llength $value]} {
@@ -386,7 +389,7 @@ proc add {toolbar widgetCommand args} {
 				set activebg [$w cget -activebackground]
 				set traceCmd "[namespace current]::Tracer1 $toolbar $variable $bg $activebg"
 				trace add variable $variable write $traceCmd
-				bind $toolbar <Destroy> "+trace remove variable $variable write {$traceCmd}"
+				bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 			}
 			if {[llength $value] && [set $variable] eq $value} {
 				$w configure -relief solid -background [$w cget -activebackground]
@@ -400,12 +403,12 @@ proc add {toolbar widgetCommand args} {
 	set variable [namespace current]::Specs(state:$w:$toolbar)
 	set traceCmd "[namespace current]::Tracer2 $toolbar $w $variable"
 	trace add variable $variable write $traceCmd
-	bind $toolbar <Destroy> "+trace remove variable $variable write {$traceCmd}"
+	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 
 	set variable [namespace current]::Specs(state:$toolbar)
 	set traceCmd "[namespace current]::Tracer3 $toolbar $variable"
 	trace add variable $variable write $traceCmd
-	bind $toolbar <Destroy> "+trace remove variable $variable write {$traceCmd}"
+	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 
 	if {	$HaveTooltips
 		&& ([llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)])} {
@@ -420,7 +423,9 @@ proc add {toolbar widgetCommand args} {
 	if {$Specs(usehandle:$toolbar)} {
 		bind $w <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
 	}
+
 	PackWidget $toolbar $w
+	if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $w }
 
 	set parent [winfo parent $toolbar]
 	if {![info exists Specs(configure:$parent)]} {
@@ -446,6 +451,7 @@ proc addSeparator {toolbar} {
 	}
 	set Specs(float:$w:$toolbar) 1
 	PackWidget $toolbar $w
+	if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $w }
 	return $w
 }
 
@@ -454,6 +460,7 @@ proc remove {toolbar widget} {
 	variable Specs
 
 	destroy $widget
+	catch { destroy $Specs(child:$widget:$toolbar.floating.frame) }
 	array unset Specs *:$widget:$toolbar
 }
 
@@ -831,6 +838,12 @@ proc PackWidget {toolbar w} {
 		set side top; set fill x; set width -height
 	}
 
+	if {[string match *.floating.frame $toolbar]} {
+		set tb [string range $toolbar 0 end-15]
+	} else {
+		set tb $toolbar
+	}
+
 	lappend options -side $side
 	set cls [winfo class $w]
 
@@ -838,6 +851,8 @@ proc PackWidget {toolbar w} {
 		set pady 3; set padx 3
 		$w configure $width 3
 		lappend options -fill $fill
+	} elseif {$Specs(padx:$w:$toolbar)} {
+		set pady 1; set padx $Specs(padx:$w:$toolbar)
 	} elseif {[string match T* $cls]} {
 		set pady 1; set padx 3
 	} else {
@@ -2206,37 +2221,35 @@ proc UndockToolbar {toolbar x y} {
 	pack [frame $floatingToolbar.widgets -borderwidth 0 -takefocus 0] -padx $padx -pady $pady
 
 	foreach child [pack slaves $toolbar.widgets] {
-		if {$Specs(float:$child:$toolbar)} {
-			set widget [CloneWidget $floatingToolbar $child]
-			set Specs(child:$child:$floatingToolbar) $widget
-
-			if {[llength $widget]} {
-				bind $widget <Destroy> [namespace code [list array unset Specs *:$widget:$floatingToolbar]]
-
-				foreach attr [list default {*}$iconSizes tooltip tooltipvar] {
-					set Specs($attr:$widget:$floatingToolbar) $Specs($attr:$child:$toolbar)
-				}
-				if {$HaveTooltips} {
-					if {	[llength $Specs(tooltip:$widget:$floatingToolbar)]
-						|| [llength $Specs(tooltipvar:$widget:$floatingToolbar)]} {
-						bind $widget <Enter> +[namespace code { Tooltip show %W }]
-						bind $widget <Leave> +[namespace code { Tooltip hide %W }]
-					}
-				}
-				if {[winfo class $child] eq "Button"} {
-					foreach attr {relief overrelief active command} {
-						set Specs($attr:$widget:$floatingToolbar) $Specs($attr:$child:$toolbar)
-					}
-				}
-
-				foreach var $Specs(variables:$toolbar) {
-					if {[info exists Specs(value:$var:$child:$toolbar)]} {
-						set Specs(value:$var:$widget:$floatingToolbar) $Specs(value:$var:$child:$toolbar)
-						lappend Specs(variable:$var:$floatingToolbar) $widget
-					}
-				}
-			}
-		}
+		if {$Specs(float:$child:$toolbar)} { CloneWidget $toolbar $child }
+#			set Specs(child:$child:$floatingToolbar) $widget
+#
+#			if {[llength $widget]} {
+#				bind $widget <Destroy> [namespace code [list array unset Specs *:$widget:$floatingToolbar]]
+#
+#				foreach attr [list default {*}$iconSizes tooltip tooltipvar] {
+#					set Specs($attr:$widget:$floatingToolbar) $Specs($attr:$child:$toolbar)
+#				}
+#				if {$HaveTooltips} {
+#					if {	[llength $Specs(tooltip:$widget:$floatingToolbar)]
+#						|| [llength $Specs(tooltipvar:$widget:$floatingToolbar)]} {
+#						bind $widget <Enter> +[namespace code { Tooltip show %W }]
+#						bind $widget <Leave> +[namespace code { Tooltip hide %W }]
+#					}
+#				}
+#				if {[winfo class $child] eq "Button"} {
+#					foreach attr {relief overrelief active command} {
+#						set Specs($attr:$widget:$floatingToolbar) $Specs($attr:$child:$toolbar)
+#					}
+#				}
+#
+#				foreach var $Specs(variables:$toolbar) {
+#					if {[info exists Specs(value:$var:$child:$toolbar)]} {
+#						set Specs(value:$var:$widget:$floatingToolbar) $Specs(value:$var:$child:$toolbar)
+#						lappend Specs(variable:$var:$floatingToolbar) $widget
+#					}
+#				}
+#			}
 	}
 
 	wm withdraw $win
@@ -2322,13 +2335,51 @@ proc Motion {toolbar x y} {
 }
 
 
-proc CloneWidget {parent w} {
+proc CloneWidget {toolbar child} {
 	variable Counter
+	variable Specs
+	variable HaveTooltips
+	variable iconSizes
 
-	set clone $parent.__tbw__[incr Counter]
-	MakeClone $parent $clone $w
-	PackWidget $parent $clone
-	if {[winfo class $w] eq "ToolbarSeparator"} { return "" }
+	set floatingToolbar $toolbar.floating.frame
+	set clone $floatingToolbar.__tbw__[incr Counter]
+	MakeClone $floatingToolbar $clone $child
+
+	set Specs(child:$child:$floatingToolbar) $clone
+
+	if {[info exists Specs(padx:$child:$toolbar)]} {
+		set Specs(padx:$clone:$floatingToolbar) $Specs(padx:$child:$toolbar)
+	}
+
+	if {[llength $clone]} {
+		bind $clone <Destroy> [namespace code [list array unset Specs *:$clone:$floatingToolbar]]
+
+		foreach attr [list default {*}$iconSizes tooltip tooltipvar] {
+			set Specs($attr:$clone:$floatingToolbar) $Specs($attr:$child:$toolbar)
+		}
+		if {$HaveTooltips} {
+			if {	[llength $Specs(tooltip:$clone:$floatingToolbar)]
+				|| [llength $Specs(tooltipvar:$clone:$floatingToolbar)]} {
+				bind $clone <Enter> +[namespace code { Tooltip show %W }]
+				bind $clone <Leave> +[namespace code { Tooltip hide %W }]
+			}
+		}
+		if {[winfo class $child] eq "Button"} {
+			foreach attr {relief overrelief active command} {
+				set Specs($attr:$clone:$floatingToolbar) $Specs($attr:$child:$toolbar)
+			}
+		}
+
+		foreach var $Specs(variables:$toolbar) {
+			if {[info exists Specs(value:$var:$child:$toolbar)]} {
+				set Specs(value:$var:$clone:$floatingToolbar) $Specs(value:$var:$child:$toolbar)
+				lappend Specs(variable:$var:$floatingToolbar) $clone
+			}
+		}
+	}
+
+	PackWidget $floatingToolbar $clone
+	if {[winfo class $child] eq "ToolbarSeparator"} { return "" }
 	return $clone
 }
 

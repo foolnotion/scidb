@@ -57,14 +57,8 @@
 #include <tcl.h>
 
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
-
-#ifdef DEBUG
-# undef DEBUG
-# define DEBUG(x) x
-#else
-# define DEBUG(x)
-#endif
 
 using namespace db;
 using namespace app;
@@ -81,7 +75,9 @@ static char const* CmdExchange	= "::scidb::game::exchange";
 static char const* CmdExecute		= "::scidb::game::execute";
 static char const* CmdGo			= "::scidb::game::go";
 static char const* CmdImport		= "::scidb::game::import";
+static char const* CmdIndex		= "::scidb::game::index";
 static char const* CmdInfo			= "::scidb::game::info";
+static char const* CmdLangSet		= "::scidb::game::langSet";
 static char const* CmdLevel		= "::scidb::game::level";
 static char const* CmdLoad			= "::scidb::game::load";
 static char const* CmdMaterial	= "::scidb::game::material";
@@ -108,6 +104,11 @@ static char const* CmdTranspose	= "::scidb::game::transpose";
 static char const* CmdUpdate		= "::scidb::game::update";
 static char const* CmdVariation	= "::scidb::game::variation";
 static char const* CmdSwitch		= "::scidb::game::switch";
+
+
+#ifndef NDEBUG
+static bool const traceDiff = getenv("SCIDB_TRACE_DIFF") != 0;
+#endif
 
 
 static char const*
@@ -214,23 +215,11 @@ public:
 
 	void start(result::ID)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "start {}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_ListObjAppendElement(0, m_list, m_start);
 	}
 
 	void finish(result::ID result)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "result { ";
-		s += result::toString(result);
-		s += " }\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_result;
@@ -241,11 +230,6 @@ public:
 
 	void clear()
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "action { clear }\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[2];
 
 		objv_1[0] = m_action;
@@ -256,14 +240,6 @@ public:
 
 	void insert(unsigned level, edit::Key const& beforeKey)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "action { insert ";
-		s.format("%u ", level);
-		s += beforeKey.id();
-		s += " }\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[3];
 
 		objv_1[0] = m_insert;
@@ -280,16 +256,6 @@ public:
 
 	void replace(unsigned level, edit::Key const& startKey, edit::Key const& endKey)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "action { replace ";
-		s.format("%u ", level);
-		s += startKey.id();
-		s += " ";
-		s += endKey.id();
-		s += " }\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_replace;
@@ -307,16 +273,6 @@ public:
 
 	void remove(unsigned level, edit::Key const& startKey, edit::Key const& endKey)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "action { remove ";
-		s.format(" %u ", level);
-		s += startKey.id();
-		s += " ";
-		s += endKey.id();
-		s += " }\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_remove;
@@ -334,11 +290,6 @@ public:
 
 	void finish(unsigned level)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s.format("action { finish %u }\n", level);
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[2];
 
 		objv_1[0] = m_finish;
@@ -356,32 +307,6 @@ public:
 	{
 		mstl::string openingLong, openingShort, variation, subvariation, position;
 		EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvariation);
-
-////////////////////////////////////////////////////////////////////////
-		mstl::string pos;
-
-		if (idn)
-		{
-//			shuffle::utf8::position(idn, pos);
-			pos = shuffle::position(idn);
-			// TODO add castling rights
-		}
-		else
-		{
-			startBoard.toFen(pos);
-		}
-
-		s.format("header {\n");
-		s.format("  idn %u\n", unsigned(idn));
-		s.format("  position %s\n", pos.c_str());
-		s.format("  eco %s\n", eco.asShortString().c_str());
-		s.format("  opening {{%s} {%s}} {%s} {%s}}\n",
-					openingLong.c_str(),
-					openingShort.c_str(),
-					variation.c_str(),
-					subvariation.c_str());
-		s.format("}\n");
-////////////////////////////////////////////////////////////////////////
 
 		if (idn)
 			shuffle::utf8::position(idn, position);
@@ -436,23 +361,6 @@ public:
 
 	void languages(LanguageSet const& languages)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "languages {";
-
-		for (LanguageSet::const_iterator i = languages.begin(), e = languages.end(); i != e; ++i)
-		{
-			if (!i->first.empty())
-			{
-				if (i != languages.begin())
-					s += " ";
-				s += i->first;
-			}
-		}
-
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj*  objv_1[languages.size()];
 		Tcl_Obj** p(&objv_1[0]);
 
@@ -474,22 +382,6 @@ public:
 	{
 		mstl::string san;
 
-////////////////////////////////////////////////////////////////////////
-		move.printSan(san);
-		s += l;
-		s += "ply ";
-		if (moveNo)
-			s.format("%u ", moveNo);
-		s += "{ ";
-		s += color::printColor(move.color());
-		s += " ";
-		s += san;
-		if (!move.isLegal())
-			s += " illegal";
-		s += " }\n";
-		san.clear();
-////////////////////////////////////////////////////////////////////////
-
 		move.printSan(san, Move::Unicode);
 
 		Tcl_Obj* objv_1[4];
@@ -510,17 +402,6 @@ public:
 
 	void position(::db::Board const& board, color::ID fromColor)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "color ";
-		s += color::printColor(fromColor);
-		s += "\n";
-		s += l;
-		s += "board ";
-		board.toFen(s);
-		s += "\n";
-////////////////////////////////////////////////////////////////////////
-
 		mstl::string position = tcl::board::toBoard(board);
 
 		Tcl_Obj* objv_1[2];
@@ -540,15 +421,6 @@ public:
 
 	void comment(edit::Key const& key, Comment const& comment)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "comment ";
-		s += key.id();
-		s += " {";
-		s += comment.content();
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv_1[4];
 
 		objv_1[0] = m_comment;
@@ -562,18 +434,6 @@ public:
 
 	void comment(Comment const& comment)
 	{
-////////////////////////////////////////////////////////////////////////
-		mstl::string buf;
-		if (::sys::utf8::Codec::fitsRegion(comment.content(), 1))
-			::sys::utf8::Codec::convertToNonDiacritics(1, comment.content(), buf);
-		else
-			buf = "<comment not LATIN-1>";
-		s += l;
-		s += "comment {";
-		s += buf;
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_comment;
@@ -591,17 +451,6 @@ public:
 		annotation.infix(infix);
 		annotation.suffix(suffix);
 
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "annotation {";
-		s += prefix;
-		s += "} {";
-		s += infix;
-		s += "} {";
-		s += suffix;
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[4];
 
 		objv[0] = m_annotation;
@@ -615,15 +464,14 @@ public:
 
 	void marks(MarkSet const& marks)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s.format("marks %u\n", unsigned(marks.count()));
-////////////////////////////////////////////////////////////////////////
+		mstl::string str;
+		marks.toString(str);
 
-		Tcl_Obj* objv[2];
+		Tcl_Obj* objv[3];
 
 		objv[0] = m_marks;
 		objv[1] = Tcl_NewIntObj(marks.count());
+		objv[2] = Tcl_NewStringObj(str, str.size());
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
@@ -631,16 +479,6 @@ public:
 
 	void space(char bracket)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s += "space";
-		if (bracket == '(')
-			s += " { open } ";
-		else if (bracket == ')')
-			s += " { close } ";
-		s += '\n';
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[2];
 
 		objv[0] = m_space;
@@ -658,16 +496,6 @@ public:
 
 	void linebreak(unsigned level, char bracket)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s.format("break %u", level);
-		if (bracket == '(')
-			s += " { open } ";
-		else if (bracket == ')')
-			s += " { close } ";
-		s += '\n';
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_break;
@@ -686,12 +514,6 @@ public:
 
 	void startVariation(edit::Key const& startKey, edit::Key const& endKey)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		s.format("begin %s { %u }\n", startKey.id().c_str(), startKey.level());
-		l.assign(2*(l.size()/2 + 1), ' ');
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_begin;
@@ -703,38 +525,21 @@ public:
 
 	void endVariation(edit::Key const& startKey, edit::Key const& endKey)
 	{
-////////////////////////////////////////////////////////////////////////
-		l.assign(2*(l.size()/2 - 1), ' ');
-		s += l;
-		s.format("end %s { %u }\n", endKey.id().c_str(), endKey.level());
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_end;
 		objv[1] = Tcl_NewStringObj(endKey.id(), endKey.id().size());
-		objv[2] = Tcl_NewIntObj(endKey.level());
+		objv[2] = Tcl_NewIntObj(startKey.level());
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
 
 	void startMove(edit::Key const& key)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		l.assign(2*(l.size()/2 + 1), ' ');
-		s.format("move %s {\n", key.id().c_str());
-////////////////////////////////////////////////////////////////////////
 	}
 
 	void endMove(edit::Key const& key)
 	{
-////////////////////////////////////////////////////////////////////////
-		l.assign(2*(l.size()/2 - 1), ' ');
-		s += l;
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_move;
@@ -747,21 +552,10 @@ public:
 
 	void startDiagram(edit::Key const& key)
 	{
-////////////////////////////////////////////////////////////////////////
-		s += l;
-		l.assign(2*(l.size()/2 + 1), ' ');
-		s.format("diagram %s {\n", key.id().c_str());
-////////////////////////////////////////////////////////////////////////
 	}
 
 	void endDiagram(edit::Key const& key)
 	{
-////////////////////////////////////////////////////////////////////////
-		l.assign(2*(l.size()/2 - 1), ' ');
-		s += l;
-		s += "}\n";
-////////////////////////////////////////////////////////////////////////
-
 		Tcl_Obj* objv[3];
 
 		objv[0] = m_diagram;
@@ -771,11 +565,6 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 		m_objc = 0;
 	}
-
-////////////////////////////////////////////////////////////////////////
-	mstl::string l;
-	mstl::string s;
-////////////////////////////////////////////////////////////////////////
 
 	Tcl_Obj* m_list;
 
@@ -922,8 +711,13 @@ struct Subscriber : public Game::Subscriber
 		{
 			Visitor visitor;
 			node->visit(visitor);
-			DEBUG(::fprintf(stderr, visitor.s.c_str()));
-			DEBUG(::fprintf(stderr, "================================\n"));
+#ifndef NDEBUG
+			if (::traceDiff)
+			{
+				node->dump(0);
+				::printf("===========================================\n");
+			}
+#endif
 			invoke(__func__, m_pgn, m_position, visitor.m_list, 0);
 		}
 	}
@@ -934,8 +728,13 @@ struct Subscriber : public Game::Subscriber
 		{
 			Visitor visitor;
 			edit::Node::visit(visitor, nodes, tags);
-			::fprintf(stderr, visitor.s.c_str());
-			::fprintf(stderr, "================================\n");
+#ifndef NDEBUG
+			if (::traceDiff)
+			{
+				for (unsigned i = 0; i < nodes.size(); ++i) nodes[i]->dump(0);
+				::printf("===========================================\n");
+			}
+#endif
 			invoke(__func__, m_pgn, m_position, visitor.m_list, 0);
 		}
 	}
@@ -1198,7 +997,7 @@ static int
 cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const*		database	= stringFromObj(objc, objv, 1);
-	unsigned			view		= unsignedFromObj(objc, objv, 2);
+	int				view		= intFromObj(objc, objv, 2);
 	unsigned			number	= unsignedFromObj(objc, objv, 3);
 	mstl::string	fen;
 
@@ -1525,7 +1324,7 @@ static int
 cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "keys", "moves", "move", 0 };
-	static char const* args[] = { "<position>", "<position>", "",  };
+	static char const* args[] = { "?<position>?", "?<position>?", "",  };
 	enum { Cmd_Keys, Cmd_Moves, Cmd_Move };
 
 	if (objc < 2)
@@ -1581,6 +1380,30 @@ static int
 cmdLevel(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	setResult(Scidb.game().variationLevel());
+	return TCL_OK;
+}
+
+
+static int
+cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	int position = objc < 2 ? -1 : intFromObj(objc, objv, 1);
+	Tcl_Obj* languages = objectFromObj(objc, objv, objc < 2 ? 1 : 2);
+	Game::LanguageSet set;
+	int n;
+
+	if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
+		return error(CmdLangSet, 0, 0, "list of languages expected");
+
+	for (int i = 0; i < n; ++i)
+	{
+		Tcl_Obj* lang;
+		Tcl_ListObjIndex(ti, languages, i, &lang);
+		set[Tcl_GetStringFromObj(lang, 0)] = 1;
+	}
+
+	scidb.game(position).setLanguages(set);
+
 	return TCL_OK;
 }
 
@@ -1697,7 +1520,7 @@ cmdPly(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	// NOTE: this call may come too early (before scratch game is created)
 	if (scidb.haveCurrentGame())
-		setResult(scidb.game().board().plyNumber());
+		setResult(scidb.game().currentBoard().plyNumber());
 	else
 		setResult(0);
 
@@ -1857,8 +1680,24 @@ cmdSink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	int			pos = objc == 2 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
-	char const*	cmd = stringFromObj(objc, objv, objc == 2 ? 1 : 2);
+	char const* fst = stringFromObj(objc, objv, 1);
+	char const* cmd;
+
+	int pos;
+	int nextArg;
+
+	if (::isdigit(fst[0]) || ((fst[0] == '-' || fst[0] == '1') && ::isdigit(fst[1])))
+	{
+		pos = intFromObj(objc, objv, 1);
+		cmd = stringFromObj(objc, objv, 2);
+		nextArg = 3;
+	}
+	else
+	{
+		pos = Application::InvalidPosition;
+		cmd = stringFromObj(objc, objv, 1);
+		nextArg = 2;
+	}
 
 	if (::strlen(cmd) <= 1)
 		return error(CmdQuery, 0, 0, "unexpected argument %s", cmd);
@@ -1922,6 +1761,14 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case 'l':	// langSet
+			if (objc >= 3)
+			{
+				char const* key	= stringFromObj(objc, objv, nextArg);
+				char const* lang	= stringFromObj(objc, objv, nextArg + 1);
+
+				setResult(Scidb.game().containsLanguage(edit::Key(key), lang));
+			}
+			else
 			{
 				Game::LanguageSet const& langSet = Scidb.game().languageSet();
 				mstl::string languages;
@@ -2055,7 +1902,7 @@ cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Board board;
 
 	if (objc == 1)
-		board = Scidb.game().board();
+		board = Scidb.game().currentBoard();
 	else
 		board = Scidb.game(intFromObj(objc, objv, 1)).board(stringFromObj(objc, objv, 2));
 
@@ -2070,7 +1917,7 @@ cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMaterial(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Board const& board = Scidb.game().board();
+	Board const& board = Scidb.game().currentBoard();
 
 	int p = 0;
 	int n = 0;
@@ -2190,6 +2037,14 @@ static int
 cmdNumber(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	setResult(Scidb.gameIndex(objc > 1 ? intFromObj(objc, objv, 1) : -1) + 1);
+	return TCL_OK;
+}
+
+
+static int
+cmdIndex(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Scidb.gameIndex(objc > 1 ? intFromObj(objc, objv, 1) : -1));
 	return TCL_OK;
 }
 
@@ -2388,7 +2243,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Encoder					encoder(encoding);
 		mstl::istringstream	stream(stringFromObj(objc, objv, 2));
 		tcl::PgnReader			reader(stream, encoder, objv[3], objv[4], -1);
-		VarConsumer				consumer(Scidb.game().board());
+		VarConsumer				consumer(Scidb.game().currentBoard());
 		SingleProgress			progress;
 
 		if (figurine)
@@ -2467,7 +2322,9 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdExecute,		cmdExecute);
 	createCommand(ti, CmdGo,			cmdGo);
 	createCommand(ti, CmdImport,		cmdImport);
+	createCommand(ti, CmdIndex,		cmdIndex);
 	createCommand(ti, CmdInfo,			cmdInfo);
+	createCommand(ti, CmdLangSet,		cmdLangSet);
 	createCommand(ti, CmdLevel,		cmdLevel);
 	createCommand(ti, CmdLoad,			cmdLoad);
 	createCommand(ti, CmdMaterial,		cmdMaterial);

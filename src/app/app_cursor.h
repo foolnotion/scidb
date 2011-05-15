@@ -51,6 +51,8 @@ class Cursor
 {
 public:
 
+	static unsigned const BaseView = unsigned(-1);
+
 	Cursor(Application& app, db::Database* database);
 	~Cursor();
 
@@ -73,13 +75,13 @@ public:
 	/// Return database index of current game.
 	unsigned gameIndex() const;
 	/// Return database index of specified game in given view.
-	unsigned gameIndex(unsigned index, unsigned view = 0) const;
+	unsigned gameIndex(unsigned index, unsigned view) const;
 	/// Return player index of specified player in given view.
-	unsigned playerIndex(unsigned index, unsigned view = 0) const;
+	unsigned playerIndex(unsigned index, unsigned view) const;
 	/// Return event index of specified event in given view.
-	unsigned eventIndex(unsigned index, unsigned view = 0) const;
+	unsigned eventIndex(unsigned index, unsigned view) const;
 	/// Return annotator index of specified player in given view.
-	unsigned annotatorIndex(unsigned index, unsigned view = 0) const;
+	unsigned annotatorIndex(unsigned index, unsigned view) const;
 	/// Return name of database (may be a file name)
 	mstl::string const& name() const;
 	/// Return type of database

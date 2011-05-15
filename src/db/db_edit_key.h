@@ -46,6 +46,7 @@ public:
 	Key(mstl::string const& key);
 	Key(mstl::string const& key, char prefix);
 	Key(Key const& key, char prefix);
+	explicit Key(char const* key);
 
 	bool operator==(Key const& key) const;
 	bool operator!=(Key const& key) const;
@@ -78,6 +79,7 @@ public:
 	bool setPosition(Game& game) const;
 	bool setBoard(MoveNode const* root, Board& board) const;
 	Key successorKey(MoveNode const* current) const;
+	MoveNode* findPosition(MoveNode* root, unsigned startPly) const;
 
 	static bool isValid(mstl::string const& key);
 

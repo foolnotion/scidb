@@ -985,7 +985,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 	Move move;
 
 //printf("annotation(0): %d - %d\n", int(count) - 1, m_moveNo);
-	getAnnotation(root, int(count) - 1, flags);
+	getAnnotation(root, int(count), flags);
 
 	while (true)
 	{
@@ -1020,6 +1020,20 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 
 						for (unsigned i = 1; i < varList.size(); ++i)
 						{
+							if (varList[i]->atLineEnd())
+							{
+								// Scidb does not support empty variations,
+								// but we cannot delete the variation if a
+								// pre-comment/annotation/mark exists. As a
+								// workaround we insert a null move.
+								if (varList[i]->hasSupplement())
+								{
+									Move null(Move::null());
+									null.setColor(move.color());
+									varList[i]->setNext(new MoveNode(null));
+								}
+							}
+
 							if (!varList[i]->atLineEnd())
 								root->addVariation(varList[i]);
 						}

@@ -29,8 +29,7 @@ namespace edit {
 
 inline bool Key::operator==(Key const& key) const { return m_id == key.m_id; }
 inline bool Key::operator!=(Key const& key) const { return m_id != key.m_id; }
-inline bool Key::operator< (Key const& key) const { return computeDistance(key) < 0; }
-inline bool Key::operator> (Key const& key) const { return computeDistance(key) > 0; }
+inline bool Key::operator> (Key const& key) const { return key < *this; }
 
 inline char Key::prefix() const { return m_id[0]; }
 inline mstl::string const& Key::id() const { return m_id; }

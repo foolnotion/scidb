@@ -16,6 +16,8 @@ include ../../../Makefile.in
 
 INCLUDE	= -Ixmltok -Ixmlparse
 DEFINES	= -DXML_NS -DXML_DTD
+OPTIMIZE	= -O2
+CFLAGS	+= $(OPTIMIZE) $(DEFINES)
 
 # Use one of the next two lines; unixfilemap is better if it works.
 FILEMAP_OBJ=unixfilemap.o
@@ -32,21 +34,24 @@ OBJS =  \
 	codepage.o \
 	$(FILEMAP_OBJ)
 
-LIB = libexpat.a
+LIB = libexpat
 
-all: $(LIB)
+all: $(LIB).a
 
-$(LIB): $(LIBOBJS)
-	$(AR) rc $(LIB) $(LIBOBJS)
+$(LIB).a: $(LIBOBJS)
+	@echo "Building $(LIB).a"
+	@$(AR) rc $(LIB).a $(LIBOBJS)
+	@$(RANLIB) $(LIB).a
 
 clean:
-	rm -f $(OBJS) $(LIBOBJS) $(LIB)
+	rm -f $(OBJS) $(LIBOBJS) $(LIB).a
 
 depend:
 	# do nothing
 
 .c.o:
-	$(CC) $(CFLAGS) -O2 $(INCLUDE) $(DEFINES) -c -o $@ $<
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) -o $@ $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

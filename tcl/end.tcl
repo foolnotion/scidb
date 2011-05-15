@@ -110,10 +110,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			Stockfish
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/stockfish-191-32-ja
+			Command		stockfish-191-32-ja
 			Parameters	{}
 			Logo			stockfish
-			Directory	~/.scidb
 			Url			http://www.stockfishchess.com/download/all/index.html
 			Protocol		UCI
 			Options		{}
@@ -123,10 +122,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			Crafty
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/crafty
+			Command		crafty
 			Parameters	{}
 			Logo			crafty
-			Directory	~/.scidb
 			Url			ftp://ftp.cis.uab.edu/pub/hyatt
 			Protocol		WB
 			Options		{}
@@ -136,10 +134,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			Fruit
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/fruit
+			Command		fruit
 			Parameters	{}
 			Logo			fruit
-			Directory	~/.scidb
 			Url			http://www.fruitchess.com
 			Protocol		UCI/FRC
 			Options		{}
@@ -149,10 +146,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			Phalanx
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/phalanx
+			Command		phalanx
 			Parameters	{}
 			Logo			phalanx
-			Directory	~/.scidb
 			Url			http://phalanx.sourceforge.net
 			Protocol		WB
 			Options		{}
@@ -162,10 +158,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			{Gullydeckel 2}
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/gully2
+			Command		gully2
 			Parameters	{}
 			Logo			gully2
-			Directory	~/.scidb
 			Url			http://borriss.com
 			Protocol		WB
 			Options		{}
@@ -175,10 +170,9 @@ if {[llength $::engine::Engines] == 0} {
 			Name			Micro-Max
 			Elo			0
 			CCRL			0
-			Command		/home/gregor/development/c++/scidb/tcl/engines/micromax
+			Command		micromax
 			Parameters	{}
 			Logo			micromax
-			Directory	~/.scidb
 			Url			http://home.hccnet.nl/h.g.muller/max-src2.html
 			Protocol		WB
 			Options		{}
@@ -186,6 +180,8 @@ if {[llength $::engine::Engines] == 0} {
 		}} {
 
 		array set arr $entry
+		set arr(Directory) $::scidb::dir::user
+		set arr(Command) "[file join $::scidb::dir::share engines $arr(Command)]"
 
 		if {[file executable $arr(Command)]} {
 			::engine::engine $entry

@@ -959,7 +959,10 @@ EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) c
 	{
 		Move move = board.makeMove(line[i]);
 
-		if (move.isEmpty() || move.isNull() || !board.isValidMove(move, move::DontAllowIllegalMove))
+		if (move.isNull())
+			return Eco();
+
+		if (move.isEmpty() || !board.isValidMove(move, move::DontAllowIllegalMove))
 			break;
 
 		board.prepareUndo(move);
@@ -1062,7 +1065,7 @@ EcoTable::lookup(	Line const& line,
 
 	Node const* last = m_root;
 
-	if (line.length == 0 || line[0] == 0)
+	if (line.length == 0)
 	{
 		if (reachable)
 			reachable->set(1, Eco::Max_Code);
@@ -1072,6 +1075,15 @@ EcoTable::lookup(	Line const& line,
 
 		if (length)
 			*length = 0;
+	}
+	else if (line[0] == 0)
+	{
+		if (length)
+			*length = 0;
+		if (successors)
+			successors->length = 0;
+
+		return Eco();
 	}
 	else
 	{
@@ -1083,7 +1095,7 @@ EcoTable::lookup(	Line const& line,
 
 		M_ASSERT(branch);
 
-		for (unsigned i = 1; branch; branch = i == line.length ? 0 : node->find(line[i]), ++i)
+		for (unsigned i = 1; branch; branch = (i == line.length) ? 0 : node->find(line[i]), ++i)
 		{
 			node = branch->node;
 

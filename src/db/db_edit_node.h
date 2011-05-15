@@ -99,6 +99,8 @@ public:
 	virtual Type type() const = 0;
 
 	virtual void visit(Visitor& visitor) const = 0;
+	virtual void dump(unsigned level) const = 0;
+	void dump() const;
 
 	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags);
 	static void setStyle(DisplayStyle style);
@@ -172,6 +174,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -193,6 +196,7 @@ public:
 
 	void visit(Visitor& visitor) const;
 	void difference(Root const* root, List& nodes) const;
+	void dump(unsigned level) const;
 
 	static Root* makeList(	TagSet const& tags,
 									uint16_t idn,
@@ -236,6 +240,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -257,6 +262,7 @@ public:
 	LanguageSet const& langSet() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -283,6 +289,7 @@ public:
 	Key const& successor() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -308,6 +315,7 @@ public:
 	db::Move const& move() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -331,18 +339,16 @@ public:
 	bool operator==(Node const* node) const;
 
 	Type type() const;
-	Key const& startKey() const;
-	Key const& endKey() const;
 
 	Ply const* ply() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
 	List	m_list;
 	Ply*	m_ply;
-	Key 	m_endKey;
 };
 
 
@@ -357,6 +363,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -375,6 +382,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -395,6 +403,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -413,6 +422,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -431,6 +441,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 
@@ -450,6 +461,7 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
+	void dump(unsigned level) const;
 
 private:
 

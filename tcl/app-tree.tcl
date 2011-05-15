@@ -388,7 +388,7 @@ proc build {parent menu width height} {
 	::toolbar::add $tbSwitcher frame -width 4
 	set stm [::toolbar::add $tbSwitcher label -image $Vars(whiteKnob)]
 	::toolbar::add $tbSwitcher frame -width 2
-	foreach mode {exact fast quick} {
+	foreach mode {exact fast} {
 		::toolbar::add $tbControl button \
 			-image [set ::icon::toolbar[string toupper $mode 0 0]] \
 			-variable [namespace current]::Options(search:mode) \
@@ -1239,7 +1239,7 @@ proc PopupMenu {table x y} {
 		-command [namespace code [list StartSearch $table]] \
 		;
 	$m add separator
-	foreach mode {exact fast quick} {
+	foreach mode {exact fast} {
 		$m add radiobutton \
 			-label [set mc::Use[string toupper $mode 0 0]Mode] \
 			-variable [namespace current]::Options(search:mode) \

@@ -401,7 +401,7 @@ View::dumpGame(unsigned index,
 	{
 		game.forward(lengths[i]);
 		positions.push_back();
-		game.board().toFen(positions.back());
+		game.currentBoard().toFen(positions.back());
 	}
 
 	return Result(ok, count);

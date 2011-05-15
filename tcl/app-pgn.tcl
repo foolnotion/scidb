@@ -56,6 +56,7 @@ set IndentComments					"Indent Comments"
 set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
 set SpaceAfterMoveNumbers			"Space after Move Numbers"
 set ShowDiagrams						"Show Diagrams"
+set Languages							"Languages"
 
 set NumberOfMoves						"Number of moves (in main line):"
 set InvalidInput						"Invalid input '%d'."
@@ -165,8 +166,6 @@ proc build {parent menu width height} {
 
 	for {set i 0} {$i < 9} {incr i} {
 		set f [::ttk::frame $top.f$i]
-	
-		# NOTE: we cannot use both option -setgrid and scrolling by ourself
 		set sb [::ttk::scrollbar $f.sb \
 					-command [namespace code [list ::widget::textLineScroll $f.pgn]] -takefocus 0]
 		set pgn [text $f.pgn \
@@ -205,6 +204,22 @@ proc build {parent menu width height} {
 	grid $f -row 2 -column 1 -sticky nsew
 	set Vars(frame:9) $f
 
+	set tbLanguages [::toolbar::toolbar $parent \
+		-id languages \
+		-side bottom \
+		-tooltipvar [namespace current]::mc::Languages \
+	]
+	set Vars(lang:active:xx) 1
+	::toolbar::add $tbLanguages checkbutton \
+		-image [::country::makeToolbarIcon ZZX] \
+		-command [namespace code [list ToggleLanguage xx]] \
+		-tooltipvar ::comment::::mc::AllLanguages \
+		-variable [namespace current]::Vars(lang:active:xx) \
+		-padx 1 \
+		;
+	set Vars(lang:toolbar) $tbLanguages
+	set Vars(lang:active:$::mc::langID) 1
+
 	grid columnconfigure $top 1 -weight 1
 	grid rowconfigure $top 2 -weight 1
 	bind $top <<Language>> [namespace code LanguageChanged]
@@ -217,6 +232,8 @@ proc build {parent menu width height} {
 	set tab3 [expr {$tab2 + round($Options(tabstop-3)*$Vars(charwidth))}]
 
 	set Vars(tabs) [list	$tab1 right $tab2 $tab3]
+	set Vars(lang:set) {}
+	set Vars(edit:comment) 0
 
 	InitScratchGame
 }
@@ -236,6 +253,7 @@ proc gamebar {} {
 proc add {position base info tags} {
 	variable Vars
 	variable Options
+	variable Colors
 
 	set w $Vars(pgn:$position)
 
@@ -257,13 +275,13 @@ proc add {position base info tags} {
 	set Vars(active:$position) {}
 	set Vars(info:$position) $info
 	set Vars(see:$position) 1
-	set Vars(lang:$position) {}
-	set Vars(langSet:$position) {}
+	set Vars(dirty:$position) 0
 	set Vars(comment:$position) ""
 	set Vars(result:$position) ""
 	set Vars(virgin:$position) 1
 	set Vars(last:$position) ""
 
+	SetLanguages $position
 	::scidb::game::subscribe pgn $position [namespace current]::Update
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
@@ -331,11 +349,21 @@ proc editAnnotation {{position -1} {key {}}} {
 }
 
 
-proc editComment {{position -1} {key {}}} {
+proc editComment {{position -1} {key {}} {lang {}}} {
 	variable Vars
 
 	if {$position == -1} { set position $Vars(index) }
-	Edit $position ::comment $key
+
+	if {[llength $lang] == 0} {
+		if {	$::mc::langID in $Vars(lang:set)
+			&& [::scidb::game::query $position langSet $Vars(current:$position) $::mc::langID]} {
+			set lang $::mc::langID
+		} else {
+			set lang xx
+		}
+	}
+
+	Edit $position ::comment $key $lang
 }
 
 
@@ -513,8 +541,13 @@ proc LabelbarSelected {position} {
 
 proc LabelbarRemoved {position} {
 	variable Vars
+	variable Colors
 
 	::game::release $position
+
+	set w $Vars(pgn:$position)
+	$w tag configure $Vars(current:$position) -background $Colors(background)
+	foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
 
 	if {[::gamebar::empty? $Vars(bar)]} {
 		::widget::busyCursor on
@@ -525,7 +558,66 @@ proc LabelbarRemoved {position} {
 }
 
 
-proc Edit {position ns {key {}}} {
+proc ToggleLanguage {lang} {
+	variable Vars
+
+	set Vars(lang:active:$lang) [expr {!$Vars(lang:active:$lang)}]
+	SetLanguages $Vars(index)
+}
+
+
+proc SetLanguages {position} {
+	variable Vars
+
+	set langSet {}
+	foreach key [array names Vars lang:active:*] {
+		if {$Vars($key)} {
+			set lang [lindex [split $key :] 2]
+			if {$lang eq "xx"} { set lang "" }
+			lappend langSet $lang
+		}
+	}
+	::scidb::game::langSet $position $langSet
+}
+
+
+proc AddLanguageButton {lang} {
+	variable Vars
+
+	if {![info exists Vars(lang:active:$lang)]} {
+		set Vars(lang:active:$lang) 0
+	}
+	set countryCode $::mc::langToCountry($lang)
+	set w [::toolbar::add $Vars(lang:toolbar) checkbutton \
+		-image [::country::makeToolbarIcon $countryCode] \
+		-command [namespace code [list ToggleLanguage $lang]] \
+		-tooltipvar ::encoding::mc::Lang($lang) \
+		-variable [namespace current]::Vars(lang:active:$lang) \
+		-padx 1 \
+	]
+	set Vars(lang:button:$lang) $w
+}
+
+
+proc UpdateLanguages {languages} {
+	variable Vars
+
+	if {$Vars(lang:set) eq $languages} { return }
+	set Vars(lang:set) $languages
+	set langButtons [array names Vars lang:button:*]
+	
+	foreach button $langButtons {
+		::toolbar::remove $Vars(lang:toolbar) $Vars($button)
+		unset Vars($button)
+	}
+
+	foreach lang $languages {
+		AddLanguageButton $lang
+	}
+}
+
+
+proc Edit {position ns {key {}} {lang {}}} {
 	variable Vars
 
 	if {![::gamebar::empty? $Vars(bar)]} {
@@ -537,7 +629,7 @@ proc Edit {position ns {key {}}} {
 			GotoMove $position $key
 		}
 
-		${ns}::open [winfo toplevel $Vars(pgn:$position)]
+		${ns}::open [winfo toplevel $Vars(pgn:$position)] {*}$lang
 	}
 }
 
@@ -553,6 +645,7 @@ proc Dump {w} {
 			}
 		}
 	}
+	puts "==============================================="
 }
 
 
@@ -570,10 +663,7 @@ proc Update {position data} {
 			}
 
 			languages {
-				set Vars(lang:$position) [lindex $node 1]
-				if {[llength $Vars(langSet:$position)] == 0} {
-					set Vars(langSet:$position) $Vars(lang:$position)
-				}
+				UpdateLanguages [lindex $node 1]
 			}
 
 			header {
@@ -595,12 +685,9 @@ proc Update {position data} {
 
 			action {
 				set args [lindex $node 1]
+				set Vars(dirty:$position) 1
 
 				switch [lindex $args 0] {
-					remove {
-						$w delete {*}[lrange $args 2 end]
-					}
-
 					replace {
 						set action replace
 						lassign $args unused level removePos insertMark
@@ -626,8 +713,10 @@ proc Update {position data} {
 							$w tag add indent$lvl $insertPos current
 						}
 						Mark $w $insertMark
-Dump $w
-puts "--- finish --------------------------------------"
+					}
+
+					remove {
+						$w delete {*}[lrange $args 2 end]
 					}
 
 					clear {
@@ -644,6 +733,7 @@ puts "--- finish --------------------------------------"
 			comment {
 				lassign $node unused key break data
 
+				Mark $w $key
 				if {[llength $break]} {
 					InsertBreak $w [lindex $break 1] [lindex $break 2]
 				}
@@ -652,7 +742,6 @@ puts "--- finish --------------------------------------"
 				if {$level == 0 && $startPos ne "3.0"} {
 					$w tag add indent1 $startPos current
 				}
-				Mark $w $key
 			}
 
 			move {
@@ -668,8 +757,8 @@ puts "--- finish --------------------------------------"
 				set key  [lindex $node 1]
 				set data [lindex $node 2]
 
-				InsertDiagram $position $w $level $key $data
 				Mark $w $key
+				InsertDiagram $position $w $level $key $data
 			}
 
 			result {
@@ -711,29 +800,35 @@ proc ProcessGoto {position w key succKey} {
 	variable Vars
 	variable Colors
 
-	if {$Vars(current:$position) eq $key} { return }
-
-	foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
-	set Vars(next:$position) [::scidb::game::next keys $position]
-	if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
-	if {[llength $Vars(previous:$position)]} {
-		$w tag configure $Vars(previous:$position) -background $Colors(background)
-	}
-	$w tag configure $key -background $Colors(current)
-	set Vars(current:$position) $key
-	if {[llength $Vars(previous:$position)]} {
-		after cancel $Vars(after:$position)
-		See $position $w $key $succKey
-		if {$Vars(active:$position) eq $Vars(previous:$position)} {
-			EnterMove $position $Vars(previous:$position)
+	if {$Vars(current:$position) ne $key} {
+		foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+		set Vars(next:$position) [::scidb::game::next keys $position]
+		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
+		if {[llength $Vars(previous:$position)]} {
+			$w tag configure $Vars(previous:$position) -background $Colors(background)
 		}
+		$w tag configure $key -background $Colors(current)
+		set Vars(current:$position) $key
+		if {[llength $Vars(previous:$position)]} {
+			after cancel $Vars(after:$position)
+			set Vars(after:$position) {}
+			See $position $w $key $succKey
+			if {$Vars(active:$position) eq $Vars(previous:$position)} {
+				EnterMove $position $Vars(previous:$position)
+			}
+		}
+		foreach k $Vars(next:$position) {
+			$w tag configure $k -background $Colors(next-move)
+		}
+		set Vars(previous:$position) $Vars(current:$position)
+		[namespace parent]::board::updateMarks [::scidb::game::query marks]
+		::annotation::update $key
+	} elseif {$Vars(dirty:$position)} {
+		set Vars(dirty:$position) 0
+		after cancel $Vars(after:$position)
+		set Vars(after:$position) {}
+		See $position $w $key $succKey
 	}
-	foreach k $Vars(next:$position) {
-		$w tag configure $k -background $Colors(next-move)
-	}
-	set Vars(previous:$position) $Vars(current:$position)
-	[namespace parent]::board::updateMarks [::scidb::game::query marks]
-	::annotation::update $key
 }
 
 
@@ -771,7 +866,6 @@ proc UpdateHeader {position w data} {
 		$w mark gravity m-0 right
 	}
 
-#	$w mark gravity h-end right
 	set Vars(virgin:$position) 0
 }
 
@@ -833,10 +927,11 @@ proc InsertMove {position w level key data} {
 			marks {
 				set count [lindex $node 1]
 				if {$count > 0} {
+					set marks [string map {"\[%" "" "\] " "\n" "\]" ""} [lindex $node 2]]
 					set tag marks:$key
 					$w insert current " "
 					$w insert current "\u27f8" [list marks $tag]
-					$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag]]
+					$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $marks]]
 					$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
 					$w tag bind $tag <ButtonPress-1> [namespace code [list openMarksPalette $position $key]]
 				}
@@ -866,20 +961,19 @@ proc InsertDiagram {position w level key data} {
 		}
 	}
 
+	set key [string map {d m} $key]
 	set img $w.[string map {. :} $key]
 	board::stuff::new $img $Options(board-size) 2
 	if {$color eq "black"} { ::board::stuff::rotate $img }
 	::board::stuff::update $img $board
 	::board::stuff::bind $img <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-	::board::stuff::bind $img <ButtonPress-2> [namespace code [list PopupMenu $w $position]]
-	$w insert current \n
+	::board::stuff::bind $img <ButtonPress-3> [namespace code [list PopupMenu $w $position]]
 	$w window create current \
 		-align center \
 		-window $img \
 		-padx $Options(diagram-pad-x) \
 		-pady $Options(diagram-pad-y) \
 		;
-	$w insert current \n
 }
 
 
@@ -936,13 +1030,15 @@ proc PrintComment {position w level key data} {
 
 	foreach entry [::scidb::misc::xmlToList $data] {
 		lassign $entry lang comment
-		if {[string length $lang] == 0 || $lang in $Vars(langSet:$position)} {
+		if {[string length $lang] == 0} { set lang xx }
+		if {$Vars(lang:active:$lang)} {
+			set langTag $keyTag:$lang
 			foreach pair $comment {
 				lassign $pair code text
 				set text [string map {"<brace/>" "\{"} $text]
 				if {$needSpace} {
 					if {![string is space -strict [string index $text 0]]} {
-						$w insert current " " $keyTag
+						$w insert current " " $langTag
 					}
 					set needSpace 0
 				}
@@ -954,14 +1050,14 @@ proc PrintComment {position w level key data} {
 				}
 				switch -- $code {
 					sym {
-						$w insert current [string map $::font::pieceMap $text] [list figurine $keyTag]
+						$w insert current [string map $::font::pieceMap $text] [list figurine $langTag]
 					}
 					nag {
 						lassign [::font::splitAnnotation $text] value sym tag
 						set nagTag nag$text
 						if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
 						if {[string is digit $sym]} { set text "{\$$text}" }
-						lappend tag $keyTag $nagTag
+						lappend tag $langTag $nagTag
 						$w insert current $sym $tag
 						incr count
 					}
@@ -972,7 +1068,7 @@ proc PrintComment {position w level key data} {
 							2 { set tag italic }
 							3 { set tag bold-italic }
 						}
-						$w insert current $text [list $keyTag $tag]
+						$w insert current $text [list $langTag $tag]
 					}
 					+bold			{ incr flags +1 }
 					-bold			{ incr flags -1 }
@@ -983,18 +1079,30 @@ proc PrintComment {position w level key data} {
 				}
 			}
 
-			if {[string length $lang] == 0 && ![string is space -strict $lastChar]} {
+			if {[llength $startPos]} {
+				$w tag add comment $startPos current
+				$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$lang]]
+				$w tag bind $langTag <Leave> [namespace code [list LeaveComment $w $position $key:$lang]]
+				$w tag bind $langTag <ButtonPress-1> [namespace code [list EditComment $position $key $lang]]
+				set startPos {}
+			}
+
+			if {![string is space -strict $lastChar]} {
 				set needSpace 1
 			}
 		}
 	}
+}
 
-	if {[llength $startPos]} {
-		$w tag add comment $startPos current
-		$w tag bind $keyTag <Enter> [namespace code [list EnterComment $w $key]]
-		$w tag bind $keyTag <Leave> [namespace code [list LeaveComment $w $key]]
-		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editComment $position $key]]
-	}
+
+proc EditComment {position key lang} {
+	variable Vars
+
+	set w $Vars(pgn:$position)
+	set Vars(edit:comment) 1
+	editComment $position $key $lang
+	set Vars(edit:comment) 0
+	LeaveComment $w $position $key:$lang
 }
 
 
@@ -1098,15 +1206,19 @@ proc LeaveMove {position key} {
 }
 
 
-proc EnterMark {w tag} {
+proc EnterMark {w tag marks} {
 	variable Colors
+
 	$w tag configure $tag -background $Colors(emphasized)
+	::tooltip::show $w $marks
 }
 
 
 proc LeaveMark {w tag} {
 	variable Colors
+
 	$w tag configure $tag -background $Colors(background)
+	::tooltip::hide
 }
 
 
@@ -1127,9 +1239,13 @@ proc EnterComment {w key} {
 }
 
 
-proc LeaveComment {w key} {
+proc LeaveComment {w position key} {
 	variable Colors
-	$w tag configure comment:$key -foreground $Colors(comment)
+	variable Vars
+
+	if {!$Vars(edit:comment)} {
+		$w tag configure comment:$key -foreground $Colors(comment)
+	}
 }
 
 
@@ -1178,7 +1294,7 @@ proc Tooltip {path nag} {
 	variable ::annotation::mc::Nag
 
 	switch $nag {
-		hide		{ ::tooltip::tooltip hide }
+		hide		{ ::tooltip::hide }
 		illegal	{ ::tooltip::show $path $mc::IllegalMove }
 		
 		default {
@@ -1293,7 +1409,7 @@ proc PopupMenu {parent position} {
 				-command [list ::widget::busyOperation ::scidb::game::strip comments] \
 				;
 
-			foreach lang $Vars(lang:$position) {
+			foreach lang $Vars(lang:set) {
 				$menu.strip.comments add command \
 					-compound left \
 					-image $::country::icon::flag($::mc::langToCountry($lang)) \
@@ -1734,7 +1850,7 @@ proc Refresh {} {
 	variable Colors
 	variable Vars
 
-	set Vars(current:$position) {}
+	set Vars(current:$Vars(index)) {}
 	SetupStyle
 	::widget::busyOperation ::scidb::game::refresh
 }

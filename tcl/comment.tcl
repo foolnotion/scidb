@@ -110,7 +110,7 @@ foreach section {prefix suffix} {
 variable UndoIsWorking 0
 
 
-proc open {parent} {
+proc open {parent lang} {
 	variable UndoIsWorking
 	variable Annotations
 	variable Geometry
@@ -133,6 +133,7 @@ proc open {parent} {
 
 	set Vars(widget:text) $top.text
 	set Vars(key) [::scidb::game::position key]
+	set Vars(lang) xx
 
 	text $top.text \
 		-height 6 \
@@ -193,7 +194,7 @@ proc open {parent} {
 	ttk::label $butts.lang \
 		-compound left \
 		-textvar [namespace current]::Vars(lang:label) \
-		-image $::country::icon::flag($::mc::langToCountry($Vars(lang))) \
+		-image $::country::icon::flag($::mc::langToCountry($lang)) \
 		-justify left \
 		-relief ridge \
 		-background $bg \
@@ -231,10 +232,6 @@ proc open {parent} {
 	set tb [::toolbar::toolbar $dlg -float 0 -side left -allow {left top bottom}]
 	set Vars(tb) [::toolbar::toolbar $dlg -float 0 -side top -allow {left top bottom}]
 
-	if {![info exists Vars(icon:ZZX)]} {
-		set Vars(icon:ZZX) [::country::makeToolbarIcon ZZX]
-	}
-
 	foreach format {Bold Italic Underline} {
 		set fmt [string tolower $format]
 		set Vars(format:$fmt) 0
@@ -252,7 +249,7 @@ proc open {parent} {
 	]
 	::toolbar::addSeparator $Vars(tb)
 	::toolbar::add $Vars(tb) button \
-		-image $Vars(icon:ZZX) \
+		-image [::country::makeToolbarIcon ZZX] \
 		-command [namespace code { SwitchLanguage xx }] \
 		-tooltipvar [namespace current]::mc::AllLanguages \
 		-variable [namespace current]::Vars(lang) \
@@ -282,7 +279,7 @@ proc open {parent} {
 		wm geometry $dlg ${x0}x${y0}+${rx}+${ry}
 	}
 
-	Init $parent
+	Init $parent $lang
 	wm deiconify $dlg
 	focus $top.text
 	ttk::grabWindow $dlg
@@ -295,11 +292,8 @@ proc AddLanguageButton {lang} {
 	variable Vars
 
 	set countryCode $::mc::langToCountry($lang)
-	if {![info exists Vars(icon:$countryCode)]} {
-		set Vars(icon:$countryCode) [::country::makeToolbarIcon $countryCode]
-	}
 	set w [::toolbar::add $Vars(tb) button \
-		-image $Vars(icon:$countryCode) \
+		-image [::country::makeToolbarIcon $countryCode] \
 		-command [namespace code [list SwitchLanguage $lang]] \
 		-tooltipvar ::encoding::mc::Lang($lang) \
 		-variable [namespace current]::Vars(lang) \
@@ -396,7 +390,7 @@ proc RecordGeometry {dlg parent} {
 }
 
 
-proc Init {parent} {
+proc Init {parent lang} {
 	variable Vars
 
 	MakeCountryList
@@ -404,16 +398,8 @@ proc Init {parent} {
 	set Vars(comment) [::scidb::game::query comment]
 	set Vars(langSet) [::scidb::game::query langSet]
 
-	if {$Vars(lang) ni $Vars(langSet)} {
-		SwitchLanguage xx
-	}
-
+	SwitchLanguage $lang
 	MakeLanguageButtons
-
-	if {$Vars(lang) in $Vars(langSet)} {
-		SwitchLanguage $Vars(lang)
-	}
-
 	Update
 }
 
@@ -1871,6 +1857,7 @@ rename tk_textPaste	tk_textPaste_comment_
 rename tk_textCopy	tk_textCopy_comment_
 rename tk_textCut		tk_textCut_comment_
 
+
 proc tk_textPaste {w} {
 	variable ::comment::Vars
 
@@ -1879,21 +1866,22 @@ proc tk_textPaste {w} {
 	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
 		global tcl_platform
 
-		set oldSeparator [$w cget -autoseparators]
-		if {$oldSeparator} {
-			$w configure -autoseparators 0
-			$w edit separator
-		}
+#		set oldSeparator [$w cget -autoseparators]
+#		if {$oldSeparator} {
+#			$w configure -autoseparators 0
+#			$w edit separator
+#		}
+
 		if {[tk windowingsystem] ne "x11"} {
 			catch { $w delete sel.first sel.last }
 		}
 
 		::comment::PasteText $w $sel
 
-		if {$oldSeparator} {
-			$w edit separator
-			$w configure -autoseparators 1
-		}
+#		if {$oldSeparator} {
+#			$w edit separator
+#			$w configure -autoseparators 1
+#		}
 	}
 }
 
