@@ -32,6 +32,7 @@
 #include "db_tag_set.h"
 #include "db_mark_set.h"
 #include "db_annotation.h"
+#include "db_comment.h"
 #include "db_move_node.h"
 #include "db_database_codec.h"
 #include "db_pgn_reader.h"
@@ -564,7 +565,7 @@ Decoder::decodeComments(MoveNode* node)
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
 
-			if (PgnReader::convertCommentToXml(comment, result))
+			if (Comment::convertCommentToXml(comment, result))
 				node->addAnnotation(nag::Diagram);
 
 			node->swapMarks(marks);
@@ -707,7 +708,7 @@ Decoder::decodeComments(Consumer& consumer, unsigned flags, MoveNode* node)
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
 
-			if (PgnReader::convertCommentToXml(comment, result))
+			if (Comment::convertCommentToXml(comment, result))
 				node->addAnnotation(nag::Diagram);
 
 			node->swapComment(result);

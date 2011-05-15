@@ -463,12 +463,12 @@ proc findTclTkPaths {} {
             } else {
                 # special case on Ubuntu 11.04
                 set files [glob -directory $configure(xcursor-libraries) -nocomplain libXcursor.so.*]
-                if {[llength $files] == 1} {
+                if {[llength $files] == 0} {
+                    puts "not found"
+                } else {
                     # only libXursor.so.1.0.2 is existing
                     set package(xcursor-lib) [lindex $files 0]
                     puts $package(xcursor-lib)
-                } else {
-                    puts "not found"
                 }
             }
         }

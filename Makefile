@@ -10,25 +10,27 @@
 #   )___(     _(____/____(___ __/____(___/____(___/_
 # ======================================================================
 
+MAKEFLAGS += --no-print-directory
+
 all:
-	$(MAKE) -w -C src
+	$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
-	$(MAKE) -w -C tcl
+	$(MAKE) -C tcl
 
 depend:
-	$(MAKE) -w -C src depend
-	$(MAKE) -w -C tcl depend
+	$(MAKE) -C src depend
+	$(MAKE) -C tcl depend
 
 clean:
-	$(MAKE) -w -C src clean
-	$(MAKE) -w -C tcl clean
+	$(MAKE) -C src clean
+	$(MAKE) -C tcl clean
 
 install:
-	$(MAKE) -w -C src install
-	$(MAKE) -w -C tcl install
+	$(MAKE) -C src install
+	$(MAKE) -C tcl install
 
 uninstall:
-	$(MAKE) -w -C src install
-	$(MAKE) -w -C tcl install
+	$(MAKE) -C src install
+	$(MAKE) -C tcl install
 
 # vi:set ts=3 sw=3:

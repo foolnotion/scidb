@@ -156,7 +156,6 @@ public:
 	static country::Code extractCountryFromSite(mstl::string& data);
 	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
 	static event::Mode getEventMode(char const* event, char const* site);
-	static bool convertCommentToXml(mstl::string const& comment, mstl::string& result);
 	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
 
 private:

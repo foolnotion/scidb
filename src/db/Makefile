@@ -224,6 +224,8 @@ db_comment.o: ../util/u_base.h
 db_comment.o: db_common.ipp
 db_comment.o: db_exception.h
 db_comment.o: ../util/u_exception.h
+db_comment.o: ../sys/sys_utf8_codec.h
+db_comment.o: ../sys/sys_utf8_codec.ipp
 db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
 db_comment.o: ../mstl/m_algorithm.h
@@ -2502,8 +2504,6 @@ db_tournament_table.o: ../mstl/m_scoped_ptr.ipp
 db_tournament_table.o: ../util/libTeXt/T_Environment.ipp
 db_tournament_table.o: ../mstl/m_algorithm.h
 db_tournament_table.o: ../mstl/m_algorithm.ipp
-db_tournament_table.o: ../mstl/m_equiv_classes.h
-db_tournament_table.o: ../mstl/m_equiv_classes.ipp
 db_tree.o: db_tree.h
 db_tree.o: db_tree_info.h
 db_tree.o: db_move.h

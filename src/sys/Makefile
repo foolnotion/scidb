@@ -15,9 +15,10 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util -I../tcl -I../mstl $(TCL_INCLUDE) $(TK_INCLUDE)
-LIBS		= mstl/libmstl.a
-CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+INCLUDE		= -I. -I../util -I../tcl -I../mstl
+ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
+LIBS			= mstl/libmstl.a
+CXXFLAGS		+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	sys_dl.cpp \
@@ -53,7 +54,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -68,9 +69,6 @@ sys_dl.o: ../mstl/m_assert.h
 sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
 sys_dl.o: ../mstl/m_exception.ipp
-sys_dl.o: /usr/local/include/tcl.h
-sys_dl.o: /usr/local/include/tclDecls.h
-sys_dl.o: /usr/local/include/tclPlatDecls.h
 sys_file.o: sys_file.h
 sys_file.o: ../mstl/m_types.h
 sys_file.o: ../tcl/tcl_base.h
@@ -79,9 +77,6 @@ sys_file.o: ../mstl/m_assert.h
 sys_file.o: ../mstl/m_exception.h
 sys_file.o: ../mstl/m_backtrace.h
 sys_file.o: ../mstl/m_exception.ipp
-sys_file.o: /usr/local/include/tcl.h
-sys_file.o: /usr/local/include/tclDecls.h
-sys_file.o: /usr/local/include/tclPlatDecls.h
 sys_file.o: ../mstl/m_map.h
 sys_file.o: ../mstl/m_vector.h
 sys_file.o: ../mstl/m_type_traits.h
@@ -110,9 +105,6 @@ sys_pipe.o: ../mstl/m_exception.h
 sys_pipe.o: ../mstl/m_backtrace.h
 sys_pipe.o: ../mstl/m_types.h
 sys_pipe.o: ../mstl/m_exception.ipp
-sys_pipe.o: /usr/local/include/tcl.h
-sys_pipe.o: /usr/local/include/tclDecls.h
-sys_pipe.o: /usr/local/include/tclPlatDecls.h
 sys_process.o: sys_process.h
 sys_process.o: sys_process.ipp
 sys_process.o: ../tcl/tcl_exception.h
@@ -126,9 +118,6 @@ sys_process.o: ../tcl/tcl_base.ipp
 sys_process.o: ../mstl/m_string.h
 sys_process.o: ../mstl/m_string.ipp
 sys_process.o: ../mstl/m_assert.h
-sys_process.o: /usr/local/include/tcl.h
-sys_process.o: /usr/local/include/tclDecls.h
-sys_process.o: /usr/local/include/tclPlatDecls.h
 sys_signal.o: sys_signal.h
 sys_thread.o: sys_thread.h
 sys_thread.o: ../mstl/m_function.h
@@ -148,9 +137,6 @@ sys_time.o: ../mstl/m_types.h
 sys_timer.o: sys_timer.h
 sys_timer.o: ../tcl/tcl_base.h
 sys_timer.o: ../tcl/tcl_base.ipp
-sys_timer.o: /usr/local/include/tcl.h
-sys_timer.o: /usr/local/include/tclDecls.h
-sys_timer.o: /usr/local/include/tclPlatDecls.h
 sys_utf8_codec.o: sys_utf8_codec.h
 sys_utf8_codec.o: ../mstl/m_string.h
 sys_utf8_codec.o: ../mstl/m_types.h
@@ -169,6 +155,3 @@ sys_utf8_codec.o: ../mstl/m_static_check.h
 sys_utf8_codec.o: ../util/u_base.h
 sys_utf8_codec.o: ../tcl/tcl_base.h
 sys_utf8_codec.o: ../tcl/tcl_base.ipp
-sys_utf8_codec.o: /usr/local/include/tcl.h
-sys_utf8_codec.o: /usr/local/include/tclDecls.h
-sys_utf8_codec.o: /usr/local/include/tclPlatDecls.h

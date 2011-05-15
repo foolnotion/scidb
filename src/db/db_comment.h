@@ -97,6 +97,8 @@ public:
 	unsigned countLength(mstl::string const& lang) const;
 	unsigned countLength(LanguageSet const& set) const;
 
+	static bool convertCommentToXml(mstl::string const& comment, mstl::string& result);
+
 private:
 
 	void collect() const;

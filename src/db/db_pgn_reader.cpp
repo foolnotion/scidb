@@ -166,13 +166,6 @@ addSpace(mstl::string& s)
 
 
 static bool
-isDelimChar(char c)
-{
-	return c == '\0' || ::strchr(" \t\n/.,;:!?", c);
-}
-
-
-static bool
 checkScore(mstl::string const& s)
 {
 	if (s.find_first_not_of('?') == mstl::string::npos)
@@ -2268,7 +2261,7 @@ PgnReader::parseComment(Token prevToken, int c)
 	{
 		mstl::string str;
 
-		if (convertCommentToXml(m_comment, str))
+		if (Comment::convertCommentToXml(m_comment, str))
 			m_annotation.add(nag::Diagram);
 
 		Comment comment;
@@ -4293,178 +4286,6 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 			++s;
 		}
 	}
-}
-
-
-bool
-PgnReader::convertCommentToXml(mstl::string const& comment, mstl::string& result)
-{
-	M_REQUIRE(comment.c_str() != result.c_str());
-
-	char const* s		= comment.c_str();
-	bool hasDiagram	= false;
-
-	result.reserve(comment.size() + 100);
-
-	if (s[0] == '#' && (s[1] == '\0' || ::isspace(s[1])))
-	{
-		hasDiagram = true;
-		s = ::skipSpaces(s + 1);
-	}
-	else
-	{
-		char const* t = s;
-
-		while (::isalpha(*t))
-			++t;
-		while (*t == ' ' || *t == '\t')
-			++t;
-
-		if (::strncmp(t, "{#}", 3) == 0)
-		{
-			hasDiagram = true;
-			s = ::skipSpaces(t + 3);
-		}
-	}
-
-	bool specialExpected = true;
-	bool isXml = false;
-
-	while (*s)
-	{
-		if (*s & 0x80)
-		{
-			char const* e = sys::utf8::Codec::utfNextChar(s);
-			result.append(s, e - s);
-			s = e;
-		}
-		else
-		{
-			if (::isprint(*s))
-			{
-				switch (*s)
-				{
-					case '&': result += '\x01'; ++s; break;
-					case '<': result += '\x02'; ++s; break;
-					case '>': result += '\x03'; ++s; break;
-
-					default:
-						if (::isDelimChar(*s))
-						{
-							result += *s++;
-							specialExpected = true;
-						}
-						else if (specialExpected)
-						{
-							switch (s[0])
-							{
-								case '$':
-									if (::isdigit(*s))
-									{
-										char* e = const_cast<char*>(s);
-										unsigned nag = ::strtoul(s, &e, 10);
-
-										if (0 <= nag && nag < nag::Scidb_Last)
-										{
-											result.append("<nag>", 5);
-											result.append(s, e - s);
-											result.append("</nag>", 6);
-											isXml = true;
-										}
-
-										s = e + 1;
-									}
-									break;
-
-								case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
-									if (s[1] == '\0' || ::isDelimChar(s[1]))
-									{
-										result.append("<sym>", 5);
-										result += *s++;
-										result.append("</sym>", 6);
-										isXml = true;
-									}
-									else
-									{
-										result += *s++;
-									}
-									break;
-
-								default:
-									{
-										unsigned	len = 1;
-										nag::ID	nag;
-
-										while (!::isDelimChar(s[len]))
-											++len;
-
-										if (len <= 5 && (nag = nag::fromSymbol(s, len)) != nag::Null)
-										{
-											result.append("<nag>", 5);
-											result.format("%u", unsigned(nag));
-											result.append("</nag>", 6);
-											isXml = true;
-										}
-										else
-										{
-											result.append(s, len);
-										}
-
-										s += len;
-									}
-									break;
-							}
-
-							specialExpected = false;
-						}
-						else
-						{
-							result += *s++;
-						}
-						break;
-				}
-			}
-			else if (::isspace(*s++))
-			{
-				result += '\n';
-			}
-		}
-	}
-
-	if (isXml)
-	{
-		mstl::string str;
-		str.swap(result);
-		result += "<xml>";
-
-		for (unsigned i = 0; i < str.size(); ++i)
-		{
-			switch (char c = str[i])
-			{
-				case '\x01': result += "&amp;"; break;
-				case '\x02': result += "&lt;";  break;
-				case '\x03': result += "&gt;";  break;
-
-				default: result += c;
-			}
-		}
-
-		result += "</xml>";
-	}
-	else
-	{
-		for (unsigned i = 0; i < result.size(); ++i)
-		{
-			switch (result[i])
-			{
-				case '\x01': result[i] = '&'; break;
-				case '\x02': result[i] = '<'; break;
-				case '\x03': result[i] = '>'; break;
-			}
-		}
-	}
-
-	return hasDiagram;
 }
 
 // vi:set ts=3 sw=3:
