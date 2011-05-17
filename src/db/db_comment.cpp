@@ -218,9 +218,10 @@ struct Normalize : public Comment::Callback
 			{
 				switch (s[0])
 				{
-					case '<': m_lang->str.append("&lt;", 4); break;
-					case '>': m_lang->str.append("&gt;", 4); break;
-					case '&': m_lang->str.append("&amp;", 5); break;
+					case '<':	m_lang->str.append("&lt;", 4); break;
+					case '>':	m_lang->str.append("&gt;", 4); break;
+					case '&':	m_lang->str.append("&amp;", 5); break;
+					default:		m_lang->str.append(s[0]); break;
 				}
 			}
 			else

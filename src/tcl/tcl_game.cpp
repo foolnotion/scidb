@@ -419,19 +419,6 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
-	void comment(edit::Key const& key, Comment const& comment)
-	{
-		Tcl_Obj* objv_1[4];
-
-		objv_1[0] = m_comment;
-		objv_1[1] = Tcl_NewStringObj(key.id(), key.id().size());
-		objv_1[2] = m_objc == 1 ? m_objv[0] : Tcl_NewListObj(0, 0);
-		objv_1[3] = Tcl_NewStringObj(comment.content(), comment.content().size());
-
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1));
-		m_objc = 0;
-	}
-
 	void comment(Comment const& comment)
 	{
 		Tcl_Obj* objv[2];
@@ -1150,7 +1137,19 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.refreshGame();
+	bool radical = false;
+
+	if (objc == 2)
+	{
+		char const* option = stringFromObj(objc, objv, 1);
+
+		if (::strcmp(option, "-radical"))
+			return error(CmdRefresh, 0, 0, "unknown option %s", option);
+
+		radical = true;
+	}
+
+	scidb.refreshGame(radical);
 	return TCL_OK;
 }
 
@@ -1399,7 +1398,7 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_Obj* lang;
 		Tcl_ListObjIndex(ti, languages, i, &lang);
-		set[Tcl_GetStringFromObj(lang, 0)] = 1;
+		set[mstl::string(Tcl_GetStringFromObj(lang, 0))] = 1;
 	}
 
 	scidb.game(position).setLanguages(set);
@@ -1956,10 +1955,44 @@ cmdMaterial(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	edit::Node::linebreakThreshold			= unsignedFromObj(objc, objv, 1);
-	edit::Node::linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, 2);
-	edit::Node::linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, 3);
-	edit::Node::linebreakMinCommentLength	= unsignedFromObj(objc, objv, 4);
+	int position = -1;
+	int arg = 1;
+
+	if (objc == 9)
+		position = intFromObj(objc, objv, arg++);
+
+	unsigned linebreakThreshold			= unsignedFromObj(objc, objv, arg++);
+	unsigned linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, arg++);
+	unsigned linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, arg++);
+	unsigned linebreakMinCommentLength	= unsignedFromObj(objc, objv, arg++);
+
+	bool columnStyle	= boolFromObj(objc, objv, arg++);
+	bool narrowLines	= boolFromObj(objc, objv, arg++);
+	bool showDiagram	= boolFromObj(objc, objv, arg++);
+
+	unsigned displayStyle = columnStyle ? display::ColumnStyle : display::CompactStyle;
+
+	if (showDiagram)
+		displayStyle |= display::ShowDiagrams;
+	if (narrowLines)
+		displayStyle |= display::NarrowLines;
+
+	if (position >= 0)
+	{
+		scidb.game(position).setup(linebreakThreshold,
+											linebreakMaxLineLengthMain,
+											linebreakMaxLineLengthVar,
+											linebreakMinCommentLength,
+											displayStyle);
+	}
+	else
+	{
+		scidb.setupGame(linebreakThreshold,
+							linebreakMaxLineLengthMain,
+							linebreakMaxLineLengthVar,
+							linebreakMinCommentLength,
+							displayStyle);
+	}
 
 	return TCL_OK;
 }
@@ -2061,7 +2094,7 @@ static int
 cmdPop(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	scidb.endTrialMode();
-	scidb.refreshGame();
+	scidb.refreshGame(true);
 	return TCL_OK;
 }
 

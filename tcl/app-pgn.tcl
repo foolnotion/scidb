@@ -51,10 +51,10 @@ set Command(game:transpose)		"Transpose Game"
 
 set ColumnStyle						"Column Style"
 set NarrowLines						"Narrow Lines"
-set IndentVariations					"Indent Variations"
-set IndentComments					"Indent Comments"
+set IndentVariations					"Indent Variations"					;# TODO remove
+set IndentComments					"Indent Comments"						;# TODO remove
 set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
-set SpaceAfterMoveNumbers			"Space after Move Numbers"
+set SpaceAfterMoveNumbers			"Space after Move Numbers"			;# TODO remove
 set ShowDiagrams						"Show Diagrams"
 set Languages							"Languages"
 
@@ -111,9 +111,8 @@ array set Options {
 	indent-max			2
 	indent-comment		1
 	indent-var			1
-	narrow-lines		1
+	narrow-lines		0
 	column-style		0
-	add-space			0
 	tabstop-1			6.0
 	tabstop-2			0.7
 	tabstop-3			12.0
@@ -149,20 +148,12 @@ proc build {parent menu width height} {
 	bind $Vars(bar) <<LabelbarSelected>>	[namespace code { LabelbarSelected %d }]
 	bind $Vars(bar) <<LabelbarRemoved>>		[namespace code { LabelbarRemoved %d }]
 
-	if {$Options(mainline-bold)} {
-		set mainFont $Vars(font-bold)
-	} else {
-		set mainFont $Options(font)
-	}
-
 	set Vars(frame) $top
 	set Vars(delta) 0
 	set Vars(after) {}
 	set Vars(index) 0
 	set Vars(break) 0
 	set Vars(height) 0
-
-	SetupStyle
 
 	for {set i 0} {$i < 9} {incr i} {
 		set f [::ttk::frame $top.f$i]
@@ -181,7 +172,6 @@ proc build {parent menu width height} {
 						-wrap word \
 						-font $Options(font) \
 						-cursor {}]
-		ConfigureText $f.pgn
 
 		bind $pgn <Button-3>		[namespace code [list PopupMenu $top $i]]
 		bind $pgn <Double-1>		{ break }
@@ -199,6 +189,17 @@ proc build {parent menu width height} {
 		set Vars(frame:$i) $f
 		set Vars(after:$i) {}
 	}
+
+	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
+
+	set tab1 [expr {round($Options(tabstop-1)*$Vars(charwidth))}]
+	set tab2 [expr {$tab1 + round($Options(tabstop-2)*$Vars(charwidth))}]
+	set tab3 [expr {$tab2 + round($Options(tabstop-3)*$Vars(charwidth))}]
+
+	set Vars(tabs) [list	$tab1 right $tab2 $tab3]
+
+	SetupStyle
+	for {set i 0} {$i < 9} {incr i} { ConfigureText $Vars(pgn:$i) }
 
 	set f [::ttk::frame $top.f$i]
 	grid $f -row 2 -column 1 -sticky nsew
@@ -224,14 +225,8 @@ proc build {parent menu width height} {
 	grid rowconfigure $top 2 -weight 1
 	bind $top <<Language>> [namespace code LanguageChanged]
 
-	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
 	raise $Vars(frame:9)
 
-	set tab1 [expr {round($Options(tabstop-1)*$Vars(charwidth))}]
-	set tab2 [expr {$tab1 + round($Options(tabstop-2)*$Vars(charwidth))}]
-	set tab3 [expr {$tab2 + round($Options(tabstop-3)*$Vars(charwidth))}]
-
-	set Vars(tabs) [list	$tab1 right $tab2 $tab3]
 	set Vars(lang:set) {}
 	set Vars(edit:comment) 0
 
@@ -280,8 +275,11 @@ proc add {position base info tags} {
 	set Vars(result:$position) ""
 	set Vars(virgin:$position) 1
 	set Vars(last:$position) ""
+	set Vars(start:$position) 1
 
 	SetLanguages $position
+	SetupStyle $position
+
 	::scidb::game::subscribe pgn $position [namespace current]::Update
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
@@ -355,12 +353,16 @@ proc editComment {{position -1} {key {}} {lang {}}} {
 	if {$position == -1} { set position $Vars(index) }
 
 	if {[llength $lang] == 0} {
-		if {	$::mc::langID in $Vars(lang:set)
-			&& [::scidb::game::query $position langSet $Vars(current:$position) $::mc::langID]} {
-			set lang $::mc::langID
-		} else {
-			set lang xx
+		set lang ""
+		foreach code [array names Vars lang:active:*] {
+			set code [string range $code end-1 end]
+			if {[string length $lang] == 0 || $code eq $::mc::langID} {
+				if {[::scidb::game::query $position langSet $Vars(current:$position) $code]} {
+					set lang $code
+				}
+			}
 		}
+		if {[string length $lang] == 0} { set lang xx }
 	}
 
 	Edit $position ::comment $key $lang
@@ -431,6 +433,11 @@ proc See {position w key succKey} {
 
 	if {!$Vars(see:$position)} { return }
 
+	if {$Vars(start:$position)} {
+		if {$key eq "m-0.0"} { return }
+		set Vars(start:$position) 0
+	}
+
 	set firstLine [$w index h-end]
 	set range [$w tag nextrange $succKey [$w index $key]]
 
@@ -454,6 +461,8 @@ proc See {position w key succKey} {
 			$w see $row.[expr {$col + min($CharLimit, 3*$offs)}]
 		}
 		$w see $row.$col
+	} else {
+		$w see $key
 	}
 }
 
@@ -650,6 +659,7 @@ proc Dump {w} {
 
 
 proc Update {position data} {
+	variable Options
 	variable Vars
 
 	set w $Vars(pgn:$position)
@@ -677,15 +687,13 @@ proc Update {position data} {
 
 			end {
 				set level [lindex $node 2]
-				if {$level > 0} {
-					$w tag add indent$level $startVar($level) current
-				}
+				Indent $w $level $startVar($level)
 				incr level -1
 			}
 
 			action {
-				set args [lindex $node 1]
 				set Vars(dirty:$position) 1
+				set args [lindex $node 1]
 
 				switch [lindex $args 0] {
 					replace {
@@ -708,10 +716,7 @@ proc Update {position data} {
 
 					finish {
 						set level [lindex $args 1]
-						if {$level > 0} {
-							set lvl [expr {min(2, $level)}]
-							$w tag add indent$lvl $insertPos current
-						}
+						Indent $w $level $insertPos
 						Mark $w $insertMark
 					}
 
@@ -727,20 +732,6 @@ proc Update {position data} {
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
 					goto	{ ProcessGoto $position $w [lindex $args 1] [lindex $args 2] }
-				}
-			}
-
-			comment {
-				lassign $node unused key break data
-
-				Mark $w $key
-				if {[llength $break]} {
-					InsertBreak $w [lindex $break 1] [lindex $break 2]
-				}
-				set startPos [$w index current]
-				PrintComment $position $w $level $key $data
-				if {$level == 0 && $startPos ne "3.0"} {
-					$w tag add indent1 $startPos current
 				}
 			}
 
@@ -773,11 +764,12 @@ proc Update {position data} {
 					# NOTE: the text editor has a severe bug:
 					# If all chars after <pos> are newlines, the command
 					# '<text> delete <pos-1> <pos-2>' will also delete one
-					# newline before <pos>. We will catch this case:
+					# newline before <pos>. We should catch this case:
 					if {![string is space [$w get m-0 end]]} {
 						$w delete current end
 					}
 					$w insert current \n
+					if {$Options(column-style)} { $w insert current \n }
 					$w insert current [::util::formatResult $result] result
 					$w mark gravity m-0 right
 					if {[string length $Vars(last:$position)]} {
@@ -792,6 +784,19 @@ proc Update {position data} {
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
 			}
 		}
+	}
+}
+
+
+proc Indent {w level key} {
+	variable Options
+
+	if {$level > 0} {
+		if {$Options(column-style)} {
+			if {$level == 1} { return }
+			incr level -1
+		}
+		$w tag add indent$level $key current
 	}
 }
 
@@ -871,19 +876,19 @@ proc UpdateHeader {position w data} {
 
 
 proc InsertBreak {w level bracket} {
-	if {$bracket eq ")"} { $w insert current " )" bracket }
+	variable Options
 
 	switch $level {
-		0 - 1 - 2 { $w insert current "\n" }
-
-		default {
-			if {$bracket ne ")"} {
-				$w insert current " "
-			}
-		}
+		0 - 1 - 2	{ set space "\n" }
+		3				{ if {$Options(column-style)} { set space "\n" } { set space " " } }
+		default		{ $w insert current " " }
 	}
 
-	if {$bracket eq "("} { $w insert current "( " bracket }
+	$w insert current $space
+
+	if {$bracket eq "(" && ($level > 0 || !$Options(column-style) || $Options(narrow-lines))} {
+		$w insert current "( " bracket
+	}
 }
 
 
@@ -898,8 +903,13 @@ proc InsertMove {position w level key data} {
 
 			space {
 				switch [lindex $node 1] {
+					")" {
+						if {$level > 1 || !$Options(column-style) || $Options(narrow-lines)} {
+							$w insert current " )" bracket
+						}
+					}
+
 					"("		{ $w insert current " ( " bracket }
-					")"		{ $w insert current " )" bracket }
 					default	{ $w insert current " " }
 				}
 			}
@@ -940,7 +950,9 @@ proc InsertMove {position w level key data} {
 			comment {
 				set startPos [$w index current]
 				PrintComment $position $w $level $key [lindex $node 1]
-				if {$level == 0} { $w tag add indent1 $startPos current }
+				if {$level == 0 && !$Options(column-style)} {
+					$w tag add indent1 $startPos current
+				}
 			}
 		}
 	}
@@ -950,30 +962,32 @@ proc InsertMove {position w level key data} {
 proc InsertDiagram {position w level key data} {
 	variable Options
 
-	set index 0
 	set color white
 
 	foreach entry $data {
 		switch [lindex $entry 0] {
 			color { set color [lindex $entry 1] }
-			board { set board [lindex $entry 1] }
 			break { $w insert current "\n" }
+
+			board {
+				set board [lindex $entry 1]
+				set index 0
+				set key [string map {d m} $key]
+				set img $w.[string map {. :} $key]
+				board::stuff::new $img $Options(board-size) 2
+				if {$color eq "black"} { ::board::stuff::rotate $img }
+				::board::stuff::update $img $board
+				::board::stuff::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
+				::board::stuff::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
+				$w window create current \
+					-align center \
+					-window $img \
+					-padx $Options(diagram-pad-x) \
+					-pady $Options(diagram-pad-y) \
+					;
+			}
 		}
 	}
-
-	set key [string map {d m} $key]
-	set img $w.[string map {. :} $key]
-	board::stuff::new $img $Options(board-size) 2
-	if {$color eq "black"} { ::board::stuff::rotate $img }
-	::board::stuff::update $img $board
-	::board::stuff::bind $img <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-	::board::stuff::bind $img <ButtonPress-3> [namespace code [list PopupMenu $w $position]]
-	$w window create current \
-		-align center \
-		-window $img \
-		-padx $Options(diagram-pad-x) \
-		-pady $Options(diagram-pad-y) \
-		;
 }
 
 
@@ -982,15 +996,27 @@ proc PrintMove {position w level key data} {
 
 	lassign $data moveNo stm san legal
 	lappend tags $key
-	if {$level > 0} { lappend tags variation } else { lappend tags main }
 
-	if {$moveNo} {
-		$w insert current $moveNo $tags
+	if {$level > 0} {
+		lappend tags variation
+	} else {
+		lappend tags main
+	}
 
-		if {$Options(add-space)} {
-			$w insert current ". " $tags
-			if {$stm eq "black"} { $w insert current "..." $tags }
-		} else {
+	if {$level == 0 && $Options(column-style)} {
+		$w insert current "\t"
+
+		if {$moveNo} {
+			$w insert current $moveNo main
+			$w insert current ". " main
+			$w insert current "\t"
+			if {$stm eq "black"} { $w insert current "...\t" main }
+		} 
+	} else {
+		lappend tags $key
+
+		if {$moveNo} {
+			$w insert current $moveNo $tags
 			$w insert current "." $tags
 			if {$stm eq "black"} { $w insert current ".." $tags }
 		}
@@ -1027,11 +1053,17 @@ proc PrintComment {position w level key data} {
 	set count 0
 	set needSpace 0
 	set lastChar ""
+	set paragraph 0
 
 	foreach entry [::scidb::misc::xmlToList $data] {
 		lassign $entry lang comment
-		if {[string length $lang] == 0} { set lang xx }
-		if {$Vars(lang:active:$lang)} {
+		if {[string length $lang] == 0} {
+			set lang xx
+		} elseif {[incr paragraph] == 2} {
+			$w insert current " \u2726 "
+			set needSpace 0
+		}
+#		if {$Vars(lang:active:$lang)} {
 			set langTag $keyTag:$lang
 			foreach pair $comment {
 				lassign $pair code text
@@ -1090,19 +1122,8 @@ proc PrintComment {position w level key data} {
 			if {![string is space -strict $lastChar]} {
 				set needSpace 1
 			}
-		}
+#		}
 	}
-}
-
-
-proc EditComment {position key lang} {
-	variable Vars
-
-	set w $Vars(pgn:$position)
-	set Vars(edit:comment) 1
-	editComment $position $key $lang
-	set Vars(edit:comment) 0
-	LeaveComment $w $position $key:$lang
 }
 
 
@@ -1136,7 +1157,7 @@ proc PrintAnnotation {w position level key nags} {
 			if {$Options(diagram-show)} {
 				set nag ""
 			} else {
-				if {[lindex [split [$w index current] .] end] ne "0"} { w insert current " " }
+				if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current " " }
 				set prevSym $sym
 			}
 		} elseif {$prevSym == 0 || (!$sym && !$isPrefix)} {
@@ -1160,6 +1181,18 @@ proc PrintAnnotation {w position level key nags} {
 }
 
 
+proc EditComment {position key lang} {
+	variable Vars
+
+	set w $Vars(pgn:$position)
+	set Vars(edit:comment) 1
+	editComment $position $key $lang
+	set Vars(edit:comment) 0
+	LeaveComment $w $position $key:$lang
+}
+
+
+# XXX use something like ::scidb::game::key
 proc ParentKey {key} {
 	return [join [lrange [split $key .] 0 end-2] .]
 }
@@ -1568,81 +1601,78 @@ proc PopupMenu {parent position} {
 		}
 
 		$menu add separator
-	}
 
-	set base [::scidb::game::query $position database]
-	set number [::scidb::game::number $position]
-	set bases [::scidb::app::bases]
-	unset -nocomplain state
+		set base [::scidb::game::query $position database]
+		set number [::scidb::game::number $position]
+		set bases [::scidb::app::bases]
+		unset -nocomplain state
 
-	if {$base eq $scratchbaseName} {
-		set base $clipbaseName
-		set name $T_Clipbase
-		set ext ""
-		set state(save) normal
-		set state(replace) disabled
-	} else {
-		if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-			set state(save) normal
-			if {$number >= 0} { set state(replace) normal } else { set state(replace) disabled }
-		} else {
-			set state(save) disabled
-			set state(replace) disabled
-		}
-
-		if {$base eq $clipbaseName} {
+		if {$base eq $scratchbaseName} {
+			set base $clipbaseName
 			set name $T_Clipbase
+			set ext ""
+			set state(save) normal
+			set state(replace) disabled
 		} else {
-			set name [::util::databaseName $base]
-		}
-	}
+			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+				set state(save) normal
+				if {$number >= 0} { set state(replace) normal } else { set state(replace) disabled }
+			} else {
+				set state(save) disabled
+				set state(replace) disabled
+			}
 
-	$menu add command \
-		-label [format $mc::ReplaceGame $name] \
-		-command [list ::dialog::save::open $parent $base $position $number] \
-		-state $state(replace) \
-		;
-	$menu add command \
-		-label  [format $mc::AddNewGame $name] \
-		-command [list ::dialog::save::open $parent $base $position -1] \
-		-state $state(save) \
-		;
-
-	menu $menu.save
-	set count 0
-	foreach base $bases {
-		set myName [::util::databaseName $base]
-		if {$name ne $myName && ![::scidb::db::get readonly? $base]} {
-			$menu.save add command \
-				-label $myName \
-				-command [list ::dialog::save::open $parent $base $position -1] \
-				;
-			incr count
+			if {$base eq $clipbaseName} {
+				set name $T_Clipbase
+			} else {
+				set name [::util::databaseName $base]
+			}
 		}
-	}
-	if {$name ne $T_Clipbase} {
-		$menu.save add command \
-			-label $T_Clipbase \
-			-command [list ::dialog::save::open $parent Clipbase $position -1] \
+
+		$menu add command \
+			-label [format $mc::ReplaceGame $name] \
+			-command [list ::dialog::save::open $parent $base $position $number] \
+			-state $state(replace) \
 			;
-			incr count
+		$menu add command \
+			-label  [format $mc::AddNewGame $name] \
+			-command [list ::dialog::save::open $parent $base $position -1] \
+			-state $state(save) \
+			;
+
+		menu $menu.save
+		set count 0
+		foreach base $bases {
+			set myName [::util::databaseName $base]
+			if {$name ne $myName && ![::scidb::db::get readonly? $base]} {
+				$menu.save add command \
+					-label $myName \
+					-command [list ::dialog::save::open $parent $base $position -1] \
+					;
+				incr count
+			}
+		}
+		if {$name ne $T_Clipbase} {
+			$menu.save add command \
+				-label $T_Clipbase \
+				-command [list ::dialog::save::open $parent Clipbase $position -1] \
+				;
+				incr count
+		}
+		$menu add cascade \
+			-menu $menu.save \
+			-label [format $mc::AddNewGame ""] \
+			-state [expr {$count ? "normal" : "disabled"}] \
+			;
+		$menu add separator
 	}
-	$menu add cascade \
-		-menu $menu.save \
-		-label [format $mc::AddNewGame ""] \
-		-state [expr {$count ? "normal" : "disabled"}] \
-		;
-	$menu add separator
 
 	menu $menu.display
 	$menu add cascade -menu $menu.display -label $mc::Display
 
 	foreach {label var onValue} {	ColumnStyle column-style 1
 											NarrowLines narrow-lines 1
-											IndentVariations indent-var 1
-											IndentComments indent-comment 1
 											BoldTextForMainlineMoves mainline-bold 1
-											SpaceAfterMoveNumbers add-space 1
 											ShowDiagrams diagram-show 1} {
 		if {$onValue} { set offValue 0 } else { set offValue 1 }
 
@@ -1651,7 +1681,7 @@ proc PopupMenu {parent position} {
 			-onvalue $onValue \
 			-offvalue $offValue \
 			-variable [namespace current]::Options($var) \
-			-command [namespace code Refresh] \
+			-command [namespace code [list Refresh $var]] \
 			;
 	}
 
@@ -1845,18 +1875,45 @@ proc VerifyNumberOfMoves {dlg length} {
 }
 
 
-proc Refresh {} {
+proc Refresh {var} {
 	variable Options
 	variable Colors
 	variable Vars
 
+	set radical ""
+
+	if {$var eq "mainline-bold"} {
+		if {$Options(mainline-bold)} {
+			set mainFont $Vars(font-bold)
+		} else {
+			set mainFont $Options(font)
+		}
+
+		for {set i 0} {$i < 9} {incr i} {
+			$Vars(pgn:$i) tag configure main -font $mainFont
+		}
+	}
+
 	set Vars(current:$Vars(index)) {}
 	SetupStyle
-	::widget::busyOperation ::scidb::game::refresh
+
+	if {$var eq "column-style"} {
+		for {set i 0} {$i < 9} {incr i} {
+			if {$Options(column-style)} {
+				$Vars(pgn:$i) configure -tabs $Vars(tabs) -tabstyle wordprocessor
+			} else {
+				$Vars(pgn:$i) configure -tabs {} -tabstyle tabular
+			}
+			set Vars(result:$i) ""
+		}
+	}
+
+	if {$var eq "diagram-show"} { set radical "" } else { set radical "-radical" }
+	::widget::busyOperation ::scidb::game::refresh {*}$radical
 }
 
 
-proc SetupStyle {} {
+proc SetupStyle {{position {}}} {
 	variable Options
 	variable Vars
 
@@ -1864,10 +1921,13 @@ proc SetupStyle {} {
 
 	if {$Options(column-style)} {
 		incr Vars(indent-max)
-		::scidb::game::setup 0 0 0 0
+		set thresholds {0 0 0 0}
 	} else {
-		::scidb::game::setup 240 80 60 2
+		set thresholds {240 80 60 0}
 	}
+
+	::scidb::game::setup {*}$position {*}$thresholds \
+		$Options(column-style) $Options(narrow-lines) $Options(diagram-show)
 }
 
 

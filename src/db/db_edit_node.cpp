@@ -40,12 +40,6 @@
 using namespace db::edit;
 
 
-unsigned Node::linebreakThreshold			= 0;
-unsigned Node::linebreakMaxLineLengthMain	= 0;
-unsigned Node::linebreakMaxLineLengthVar	= 0;
-unsigned Node::linebreakMinCommentLength	= 1;
-
-
 static unsigned const DontSetBreaks = mstl::numeric_limits<unsigned>::max();
 
 
@@ -56,9 +50,6 @@ deleteList(List& list)
 	for (unsigned i = 0; i < list.size(); ++i)
 		delete list[i];
 }
-
-
-Node::DisplayStyle Node::m_style = Node::CompactStyle;
 
 
 Node::~Node() throw()				{}
@@ -72,7 +63,6 @@ Node::Type Root::type() const			{ return TRoot; }
 Node::Type Opening::type() const		{ return TOpening; }
 Node::Type Languages::type() const	{ return TLanguages; }
 Node::Type Variation::type() const	{ return TVariation; }
-Node::Type PreComment::type() const	{ return TPreComment; }
 Node::Type Move::type() const			{ return TMove; }
 Node::Type Diagram::type() const		{ return TDiagram; }
 Node::Type Ply::type() const			{ return TPly; }
@@ -120,6 +110,7 @@ Diagram::operator==(Node const* node) const
 
 	return	m_fromColor == static_cast<Diagram const*>(node)->m_fromColor
 			&& m_prefixBreak && static_cast<Diagram const*>(node)->m_prefixBreak
+			&& m_suffixBreak && static_cast<Diagram const*>(node)->m_suffixBreak
 			&& m_board.isEqualPosition(static_cast<Diagram const*>(node)->m_board);
 }
 
@@ -129,9 +120,20 @@ Diagram::Diagram(Work& work, color::ID fromColor)
 	:KeyNode(Key(work.key, PrefixDiagram))
 	,m_board(work.board)
 	,m_fromColor(fromColor)
-	,m_prefixBreak(work.spacing != Move::NoSpace)
+	,m_prefixBreak((work.spacing & ~Move::SuppressBreak) == Move::NoSpace ? 0 : 1)
+	,m_suffixBreak(0)
 {
-	work.spacing = ForcedBreak;
+	unsigned spacing = ForcedBreak;
+
+	if (!(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+	{
+		if (!(work.spacing & SuppressBreak) || (work.spacing & PrefixSpace))
+			++m_prefixBreak;
+		++m_suffixBreak;
+		spacing |= SuppressBreak;
+	}
+
+	work.spacing = spacing;
 }
 
 
@@ -139,9 +141,13 @@ void
 Diagram::visit(Visitor& visitor) const
 {
 	visitor.startDiagram(m_key);
-	if (m_prefixBreak)
+	if (m_prefixBreak > 0)
+		visitor.linebreak(0, None);
+	if (m_prefixBreak > 1)
 		visitor.linebreak(0, None);
 	visitor.position(m_board, m_fromColor);
+	if (m_suffixBreak > 0)
+		visitor.linebreak(0, None);
 	visitor.endDiagram(m_key);
 }
 
@@ -150,6 +156,7 @@ void
 Diagram::dump(unsigned level) const
 {
 	mstl::string fen;
+	mstl::string space(2*(level + 1), ' ');
 	m_board.toFen(fen);
 
 	::printf(mstl::string(2*level, ' ').c_str());
@@ -157,51 +164,17 @@ Diagram::dump(unsigned level) const
 
 	if (m_prefixBreak)
 	{
-		::printf("\n");
-		::printf(mstl::string(2*(level + 1), ' ').c_str());
-		::printf("linebreak\n");
-		::printf(mstl::string(2*level, ' ').c_str());
+		::printf("\n%slinebreak\n", space.c_str());
+		if (m_prefixBreak > 1)
+			::printf("%slinebreak\n", space.c_str());
 	}
 
-	::printf(mstl::string(2*(level + 1), ' ').c_str());
-	::printf("color %s\n", color::printColor(m_fromColor));
-	::printf(mstl::string(2*(level + 1), ' ').c_str());
-	::printf("board %s\n", fen.c_str());
+	::printf("%scolor %s\n", space.c_str(), color::printColor(m_fromColor));
+	::printf("%sboard %s\n", space.c_str(), fen.c_str());
+	if (m_suffixBreak)
+		::printf("%slinebreak\n", space.c_str());
 	::printf(mstl::string(2*level, ' ').c_str());
 	::printf("}\n");
-}
-
-
-PreComment::PreComment(Work const& work, db::Comment const& comment)
-	:KeyNode(work.key, PrefixComment)
-	,m_comment(comment)
-{
-}
-
-
-bool
-PreComment::operator==(Node const* node) const
-{
-	M_ASSERT(node);
-	M_ASSERT(dynamic_cast<PreComment const*>(node));
-	M_ASSERT(m_key == static_cast<PreComment const*>(node)->m_key);
-
-	return m_comment == static_cast<PreComment const*>(node)->m_comment;
-}
-
-
-void
-PreComment::visit(Visitor& visitor) const
-{
-	visitor.comment(m_key, m_comment);
-}
-
-
-void
-PreComment::dump(unsigned level) const
-{
-	::printf(mstl::string(2*level, ' ').c_str());
-	::printf("comment %s { %s }\n", m_key.id().c_str(), m_comment.content().c_str());
 }
 
 
@@ -264,6 +237,17 @@ Comment::dump(unsigned level) const
 	::printf("comment {");
 	::printf("%s", buf.c_str());
 	::printf("}\n");
+}
+
+
+Annotation::Annotation(db::Annotation const& annotation, bool deleteDiagram)
+	:m_annotation(annotation)
+{
+	if (deleteDiagram)
+	{
+		m_annotation.remove(nag::Diagram);
+		m_annotation.remove(nag::DiagramFromBlack);
+	}
 }
 
 
@@ -653,6 +637,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 						KeyNode const* const* rhsFirst	= var->m_list.begin() + k + 1;
 						KeyNode const* const* rhsLast		= var->m_list.end() - 1;
 
+						// XXX: we should search forward
 						while (	lhsFirst <= lhsLast
 								&& rhsFirst <= rhsLast
 								&& (*lhsLast)->type() == (*rhsLast)->type()
@@ -779,16 +764,17 @@ Move::operator==(Node const* node) const
 }
 
 
-Move::Move(Work& work)
+Move::Move(Work& work, db::Comment const& comment)
 	:KeyNode(work.key)
 	,m_ply(0)
 {
-	if (work.spacing & ForcedBreak)
+	if (work.spacing & RequiredBreak)
 	{
+		m_list.push_back(new Space(0));
 		m_list.push_back(new Space(0, work.bracket));
 		work.plyCount = 0;
 	}
-	else if (work.spacing & RequiredBreak)
+	else if (work.spacing & ForcedBreak)
 	{
 		m_list.push_back(new Space(0, work.bracket));
 		work.plyCount = 0;
@@ -796,6 +782,12 @@ Move::Move(Work& work)
 	else if (work.spacing & PrefixBreak)
 	{
 		m_list.push_back(new Space(work.level, work.bracket));
+		if (	work.level == 0
+			&& !(work.spacing & SuppressBreak)
+			&& !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+		{
+			m_list.push_back(new Space(0));
+		}
 		work.plyCount = 0;
 	}
 	else if (work.spacing & PrefixSpace)
@@ -803,8 +795,165 @@ Move::Move(Work& work)
 		m_list.push_back(new Space(work.bracket));
 	}
 
-	work.spacing = None;
+	work.spacing = NoSpace;
 	work.bracket = None;
+
+	if (!comment.isEmpty())
+	{
+		db::Comment comm(comment);
+		comm.strip(*work.wantedLanguages);
+
+		if (!comm.isEmpty())
+		{
+			m_list.push_back(new Comment(comm));
+			work.spacing = PrefixSpace | SuppressBreak;
+			work.needMoveNo = true;
+		}
+	}
+}
+
+
+Move::Move(Work& work, MoveNode const* move)
+	:KeyNode(work.key)
+{
+	M_ASSERT(!move->atLineStart());
+
+	bool useMoveNo = work.board.whiteToMove() || work.needMoveNo;
+
+	work.needMoveNo = false;
+
+	if (work.spacing & RequiredBreak)
+	{
+		m_list.push_back(new Space(0));
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+		useMoveNo = true;
+	}
+	else if (work.spacing & ForcedBreak)
+	{
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+		useMoveNo = true;
+	}
+	else if (work.spacing & PrefixBreak)
+	{
+		m_list.push_back(new Space(work.level, work.bracket));
+		work.plyCount = 0;
+		useMoveNo = true;
+	}
+	else if (work.displayStyle & display::ColumnStyle)
+	{
+		if (	!move->prev()->atLineStart()
+			&& work.level == 0
+			&& work.board.whiteToMove())
+		{
+			m_list.push_back(new Space(0, work.bracket));
+			work.plyCount = 0;
+			useMoveNo = true;
+		}
+		else if (work.spacing & PrefixSpace)
+		{
+			m_list.push_back(new Space(work.bracket));
+		}
+	}
+	else if (work.spacing & PrefixSpace)
+	{
+		m_list.push_back(new Space(work.bracket));
+	}
+
+	m_ply = useMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
+	m_list.push_back(m_ply);
+
+	unsigned spacing = PrefixSpace;
+
+	if (move->hasAnnotation())
+	{
+		m_list.push_back(new Annotation(
+			move->annotation(),
+			bool(work.displayStyle & display::ShowDiagrams)));
+		spacing = PrefixSpace;
+	}
+
+	if (move->hasMark())
+	{
+		m_list.push_back(new Marks(move->marks()));
+		spacing = PrefixSpace;
+	}
+
+	if (move->hasComment())
+	{
+		db::Comment comment(move->comment());
+		comment.strip(*work.wantedLanguages);
+
+		if (!comment.isEmpty())
+		{
+			if (	work.level == 0
+				&& (	(work.displayStyle & display::ColumnStyle)
+					|| comment.size() > work.linebreakMinCommentLength))
+			{
+				if (	!(work.spacing & SuppressBreak)
+					&& !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+				{
+					m_list.push_back(new Space(0));
+				}
+				m_list.push_back(new Space(0));
+				spacing = PrefixBreak;
+			}
+			else
+			{
+				m_list.push_back(new Space);
+				spacing = PrefixSpace;
+			}
+
+			m_list.push_back(new Comment(comment));
+			work.plyCount = 0;
+			work.needMoveNo = true;
+			spacing |= SuppressBreak;
+
+			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+				m_list.push_back(new Space(0));
+		}
+	}
+
+	work.spacing = spacing;
+	work.bracket = None;
+}
+
+
+Move::Move(Work& work)
+	:KeyNode(work.key)
+	,m_ply(0)
+{
+	if (	(work.spacing & ForcedBreak)
+		&& !(work.spacing & SuppressBreak)
+		&& !(work.displayStyle & display::NarrowLines))
+	{
+		m_list.push_back(new Space(0, Close));
+	}
+
+	if (work.level == 1 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+	{
+		m_list.push_back(new Space(Close));
+		if (!(work.spacing & ForcedBreak))
+			m_list.push_back(new Space(0));
+		work.spacing = PrefixBreak;
+	}
+	else if (work.level > 0)
+	{
+		m_list.push_back(new Space(Close));
+		work.spacing = PrefixBreak;
+	}
+	else if (work.displayStyle & display::CompactStyle)
+	{
+		work.spacing = PrefixBreak;
+	}
+	else
+	{
+		work.spacing = NoSpace;
+	}
+
+	work.bracket = None;
+	work.needMoveNo = true;
 }
 
 
@@ -826,97 +975,6 @@ Move::Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const
 
 	if (move->hasMark())
 		m_list.push_back(new Marks(move->marks()));
-}
-
-
-Move::Move(Work& work, MoveNode const* move)
-	:KeyNode(work.key)
-{
-	M_ASSERT(!move->atLineStart());
-
-	bool useMoveNo = work.board.whiteToMove() || work.needMoveNo;
-
-	work.needMoveNo = false;
-
-	if (work.spacing & ForcedBreak)
-	{
-		m_list.push_back(new Space(0, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (work.spacing & PrefixBreak)
-	{
-		m_list.push_back(new Space(work.level, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (m_style == ColumnStyle)
-	{
-		if (	work.spacing == PrefixSpace
-			|| (!move->atLineStart() && work.board.whiteToMove()))
-		{
-			m_list.push_back(new Space(0, work.bracket));
-			work.plyCount = 0;
-			useMoveNo = true;
-		}
-	}
-	else if (work.spacing & RequiredBreak)
-	{
-		m_list.push_back(new Space(0, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (work.spacing == PrefixSpace)
-	{
-		m_list.push_back(new Space(work.bracket));
-	}
-
-	m_ply = useMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
-	m_list.push_back(m_ply);
-
-	unsigned spacing = PrefixSpace;
-
-	if (move->hasAnnotation())
-	{
-		m_list.push_back(new Annotation(move->annotation()));
-		spacing = PrefixSpace;
-	}
-
-	if (move->hasMark())
-	{
-		m_list.push_back(new Marks(move->marks()));
-		spacing = PrefixSpace;
-	}
-
-	if (move->hasComment())
-	{
-		db::Comment comment(move->comment());
-		comment.strip(*work.wantedLanguages);
-
-		if (!comment.isEmpty())
-		{
-			if (work.level == 0 && comment.size() > linebreakMinCommentLength)
-			{
-				m_list.push_back(new Space(work.level));
-				spacing = PrefixBreak;
-			}
-			else
-			{
-				m_list.push_back(new Space);
-				spacing = PrefixSpace;
-			}
-
-			m_list.push_back(new Comment(comment));
-			work.plyCount = 0;
-			work.needMoveNo = true;
-		}
-	}
-
-	if (move->atLineEnd() && work.level > 0)
-		m_list.push_back(new Space(Close));
-
-	work.spacing = spacing;
-	work.bracket = None;
 }
 
 
@@ -1035,15 +1093,15 @@ Root::makeList(TagSet const& tags,
 					uint16_t idn,
 					Eco eco,
 					db::Board const& startBoard,
-					MoveNode const* node)
+					MoveNode const* node,
+					unsigned linebreakThreshold,
+					unsigned linebreakMaxLineLength)
 {
 	M_REQUIRE(node);
 	M_REQUIRE(node->atLineStart());
 
-	unsigned	linebreakMaxLineLength = ::DontSetBreaks;
-
-	if (m_style != ColumnStyle && node->countHalfMoves() > linebreakThreshold)
-		linebreakMaxLineLength = linebreakMaxLineLengthMain;
+	if (node->countHalfMoves() <= linebreakThreshold)
+		linebreakMaxLineLength = ::DontSetBreaks;
 
 	unsigned	moveNumber	= startBoard.moveNumber();
 	unsigned	plyNumber	= startBoard.plyNumber();
@@ -1090,23 +1148,34 @@ Root::makeList(TagSet const& tags,
 					db::Board const& startBoard,
 					LanguageSet const& langSet,
 					LanguageSet const& wantedLanguages,
-					MoveNode const* node)
+					MoveNode const* node,
+					unsigned linebreakThreshold,
+					unsigned linebreakMaxLineLength,
+					unsigned linebreakMaxLineLengthVar,
+					unsigned linebreakMinCommentLength,
+					unsigned displayStyle)
 {
 	M_REQUIRE(node);
 	M_REQUIRE(node->atLineStart());
+	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
+	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
+					!= (display::CompactStyle | display::ColumnStyle));
 
 	Work work;
 	work.board = startBoard;
 	work.languages = new Languages(node);
-	work.spacing = PrefixBreak;
+	work.spacing = PrefixBreak | SuppressBreak;
 	work.bracket = None;
 	work.needMoveNo = true;
 	work.wantedLanguages = &wantedLanguages;
 	work.level = 0;
 	work.linebreakMaxLineLength = ::DontSetBreaks;
+	work.linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
+	work.linebreakMinCommentLength = linebreakMinCommentLength;
+	work.displayStyle = displayStyle;
 
-	if (m_style != ColumnStyle && node->countHalfMoves() > linebreakThreshold)
-		work.linebreakMaxLineLength = linebreakMaxLineLengthMain;
+	if ((displayStyle & display::CompactStyle) && node->countHalfMoves() > linebreakThreshold)
+		work.linebreakMaxLineLength = linebreakMaxLineLength;
 
 	Root*			root	= new Root;
 	Variation*	var	= new Variation(work.key);
@@ -1116,41 +1185,28 @@ Root::makeList(TagSet const& tags,
 	root->m_variation = var;
 	root->m_result = result::fromString(tags.value(tag::Result));
 
-	makeList(work, var->m_list, node);
+	makeList(work, var->m_list, node, work.linebreakMaxLineLength);
 
 	return root;
 }
 
 
 void
-Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
+Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node, unsigned linebreakMaxLineLength)
 {
 	M_ASSERT(node);
 	M_ASSERT(node->atLineStart());
 
 	result.reserve(2*node->countHalfMoves() + 10);
 	work.key.addPly(work.board.plyNumber());
-	result.push_back(new Move(work));
+	result.push_back(new Move(work, node->comment()));
 
 	if (node->prev())
 		++work.level;
 
-	if (node->hasComment())
-	{
-		db::Comment comment(node->comment());
-		comment.strip(*work.wantedLanguages);
-
-		if (!comment.isEmpty())
-		{
-			result.push_back(new PreComment(work, comment));
-			work.spacing = (comment.size() > linebreakMinCommentLength) ? PrefixBreak : PrefixSpace;
-			work.needMoveNo = true;
-			work.bracket = None;
-		}
-	}
-
-	if (	node->annotation().contains(nag::Diagram)
-		|| node->annotation().contains(nag::DiagramFromBlack))
+	if (	(work.displayStyle & display::ShowDiagrams)
+		&& (	node->annotation().contains(nag::Diagram)
+			|| node->annotation().contains(nag::DiagramFromBlack)))
 	{
 		result.push_back(new Diagram(
 			work, node->annotation().contains(nag::Diagram) ? color::White : color::Black));
@@ -1164,7 +1220,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 	{
 		work.key.addPly(work.board.plyNumber() + 1);
 
-		if (work.plyCount++ == work.linebreakMaxLineLength)
+		if (work.plyCount++ == linebreakMaxLineLength)
 		{
 			work.spacing |= RequiredBreak;
 			work.plyCount = 0;
@@ -1172,8 +1228,9 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 
 		result.push_back(new Move(work, node));
 
-		if (	node->annotation().contains(nag::Diagram)
-			|| node->annotation().contains(nag::DiagramFromBlack))
+		if (	(work.displayStyle & display::ShowDiagrams)
+			&& (	node->annotation().contains(nag::Diagram)
+				|| node->annotation().contains(nag::DiagramFromBlack)))
 		{
 			work.board.doMove(node->move());
 			result.push_back(new Diagram(
@@ -1201,37 +1258,53 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 					succKey = work.key;
 					succKey.exchangePly(work.board.plyNumber() + 2);
 				}
+				else if (work.level > 0)
+				{
+					succKey = work.key;
+					succKey.removePly();
+					succKey.removeVariation();
+					succKey.incrementPly();
+				}
+
+				unsigned spacing = work.spacing;
 
 				work.key.addVariation(i);
 				work.spacing = PrefixBreak;
 				work.bracket = Open;
 				work.needMoveNo = true;
 
+				if ((spacing & SuppressBreak) || (0 < i && i < node->variationCount()))
+					work.spacing |= SuppressBreak;
+
 				Variation* var = new Variation(work.key, succKey);
 				result.push_back(var);
 
+				unsigned linebreakMaxLineLengthVar = ::DontSetBreaks;
+
 				if (	work.linebreakMaxLineLength != ::DontSetBreaks
-					&& linebreakMaxLineLengthVar > 0
-					&& node->variation(i)->countNodes() > linebreakMaxLineLengthVar)
+					&& work.linebreakMaxLineLengthVar > 0
+					&& node->variation(i)->countNodes() > work.linebreakMaxLineLengthVar)
 				{
-					work.linebreakMaxLineLength = linebreakMaxLineLengthVar;
+					linebreakMaxLineLengthVar = work.linebreakMaxLineLengthVar;
 				}
 
-				makeList(work, var->m_list, node->variation(i));
+				makeList(work, var->m_list, node->variation(i), linebreakMaxLineLengthVar);
 				M_ASSERT(work.level > 0);
 				--work.level;
 				work.key.removeVariation();
 				work.board = board;
 			}
 
-			work.spacing = PrefixBreak;
-			work.needMoveNo = true;
 			work.plyCount = 0;
 		}
 
 		work.board.doMove(node->move());
 		work.key.removePly();
 	}
+
+	work.key.addPly(work.board.plyNumber() + 1);
+	result.push_back(new Move(work));
+	work.key.removePly();
 }
 
 // vi:set ts=3 sw=3:

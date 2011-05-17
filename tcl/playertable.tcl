@@ -515,6 +515,10 @@ proc showInfo {path info} {
 		grid columnconfigure $top 0 -minsize 2
 		grid columnconfigure $top 2 -minsize $::theme::padding
 		grid rowconfigure $top {0 2} -minsize 2
+
+		if {[winfo exists $top.lt.photo] && [winfo exists $top.lt.flag]} {
+			grid rowconfigure $top.lt 2 -minsize 3
+		}
 	}
 
 	::tooltip::popup $path $w cursor

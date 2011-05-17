@@ -54,9 +54,7 @@ proc new {parent base info {index -1}} {
 	variable Size
 	variable Count
 
-	if {[llength $List] == 0} {
-		::scidb::db::subscribe gameInfo [namespace current]::Update
-	}
+	set init [expr {[llength $List] == 0}]
 
 	if {$index == -1} { set index [incr Count] }
 	if {[llength $base] == 0} {
@@ -94,6 +92,10 @@ proc new {parent base info {index -1}} {
 		::scidb::game::switch $pos
 		::application::pgn::add $pos $base $info [::scidb::game::tags $pos]
 		lset List $pos $entry
+	}
+
+	if {$init} {
+		::scidb::db::subscribe gameInfo [namespace current]::Update
 	}
 
 	return $pos

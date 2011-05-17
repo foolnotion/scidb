@@ -67,7 +67,7 @@ depend:
 
 $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
-	$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	@$(RANLIB) $(LIB).a
 
 .c.o:

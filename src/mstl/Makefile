@@ -59,7 +59,7 @@ depend:
 $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
 	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-	@$(RANLIB) $(LIB).a
+#	@$(RANLIB) $(LIB).a
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"

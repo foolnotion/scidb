@@ -294,6 +294,11 @@ Game::Game()
 	,m_containsIllegalMoves(false)
 	,m_finalBoardIsValid(false)
 	,m_line(m_lineBuf[0])
+	,m_linebreakThreshold(0)
+	,m_linebreakMaxLineLengthMain(0)
+	,m_linebreakMaxLineLengthVar(0)
+	,m_linebreakMinCommentLength(0)
+	,m_displayStyle(display::CompactStyle)
 {
 }
 
@@ -321,27 +326,32 @@ Game::operator=(Game const& game)
 {
 	if (this != &game)
 	{
-		m_startNode					= game.m_startNode ? game.m_startNode->clone() : 0;
-		m_startBoard				= game.m_startBoard;
-		m_currentBoard				= game.m_startBoard;
-		m_currentNode				= m_startNode;
-		m_editNode					= 0;
-		m_currentKey				= edit::Key(game.m_startBoard.plyNumber());
-		m_currentLevel				= 0;
-		m_idn							= game.m_idn;
-		m_eco							= game.m_eco;
-		m_opening					= game.m_opening;
-		m_languageSet				= game.m_languageSet;
-		m_wantedLanguages			= game.m_wantedLanguages;
-		m_isModified				= false;
-		m_containsIllegalMoves	= game.m_containsIllegalMoves;
-		m_finalBoardIsValid		= false;
-		m_subscriber				= game.m_subscriber;
-		m_undoIndex					= 0;
-		m_maxUndoLevel				= 0;
-		m_undoCommand				= None;
-		m_redoCommand				= None;
-		m_flags						= game.m_flags;
+		m_startNode							= game.m_startNode ? game.m_startNode->clone() : 0;
+		m_startBoard						= game.m_startBoard;
+		m_currentBoard						= game.m_startBoard;
+		m_currentNode						= m_startNode;
+		m_editNode							= 0;
+		m_currentKey						= edit::Key(game.m_startBoard.plyNumber());
+		m_currentLevel						= 0;
+		m_idn									= game.m_idn;
+		m_eco									= game.m_eco;
+		m_opening							= game.m_opening;
+		m_languageSet						= game.m_languageSet;
+		m_wantedLanguages					= game.m_wantedLanguages;
+		m_isModified						= false;
+		m_containsIllegalMoves			= game.m_containsIllegalMoves;
+		m_finalBoardIsValid				= false;
+		m_subscriber						= game.m_subscriber;
+		m_undoIndex							= 0;
+		m_maxUndoLevel						= 0;
+		m_undoCommand						= None;
+		m_redoCommand						= None;
+		m_flags								= game.m_flags;
+		m_linebreakThreshold				= game.m_linebreakThreshold;
+		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
+		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
+		m_linebreakMinCommentLength		= game.m_linebreakMinCommentLength;
+		m_displayStyle						= game.m_displayStyle;
 
 		m_line.copy(game.m_line);
 
@@ -2754,10 +2764,14 @@ Game::containsLanguage(edit::Key const& key, mstl::string const& lang) const
 
 
 void
-Game::refreshSubscriber()
+Game::refreshSubscriber(bool radical)
 {
-	delete m_editNode;
-	m_editNode = 0;
+	if (radical)
+	{
+		delete m_editNode;
+		m_editNode = 0;
+	}
+
 	updateSubscriber(Game::UpdateAll);
 }
 
@@ -2779,7 +2793,13 @@ Game::updateSubscriber(unsigned action)
 
 		if (m_subscriber->mainlineOnly())
 		{
-			Root editNode(edit::Root::makeList(m_tags, m_idn, m_eco, m_startBoard, m_startNode));
+			Root editNode(edit::Root::makeList(	m_tags,
+															m_idn,
+															m_eco,
+															m_startBoard,
+															m_startNode,
+															m_linebreakThreshold,
+															m_linebreakMaxLineLengthMain));
 			m_editNode = editNode.release();
 			m_subscriber->updateEditor(m_editNode);
 		}
@@ -2791,7 +2811,12 @@ Game::updateSubscriber(unsigned action)
 															m_startBoard,
 															m_languageSet,
 															m_wantedLanguages,
-															m_startNode));
+															m_startNode,
+															m_linebreakThreshold,
+															m_linebreakMaxLineLengthMain,
+															m_linebreakMaxLineLengthVar,
+															m_linebreakMinCommentLength,
+															m_displayStyle));
 
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
@@ -2827,6 +2852,25 @@ mstl::string&
 Game::printFen(mstl::string const& key, mstl::string& result) const
 {
 	return board(key).toFen(result);
+}
+
+
+void
+Game::setup(unsigned linebreakThreshold,
+				unsigned linebreakMaxLineLengthMain,
+				unsigned linebreakMaxLineLengthVar,
+				unsigned linebreakMinCommentLength,
+				unsigned displayStyle)
+{
+	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
+	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
+					!= (display::CompactStyle | display::ColumnStyle));
+
+	m_linebreakThreshold				= linebreakThreshold;
+	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
+	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
+	m_linebreakMinCommentLength		= linebreakMinCommentLength;
+	m_displayStyle						= displayStyle;
 }
 
 // vi:set ts=3 sw=3:

@@ -284,6 +284,8 @@ proc BuildTab {nb boardSize sw sh specified} {
 			grid $board -column [expr {2*($col + 1)}] -row [expr {4*($row + 1)}]
 			grid $text  -column [expr {2*($col + 1)}] -row [expr {4*($row + 1) + 2}] -sticky ew
 			$text tag configure figurine -font $::font::figurine
+			bind $text <Enter> [namespace code [list ShowMoves $text]]
+			bind $text <Leave> [namespace code [list HideMoves $text]]
 		}
 	}
 
@@ -301,6 +303,18 @@ proc BuildTab {nb boardSize sw sh specified} {
 
 	grid columnconfigure $f [list 1 [lindex $cols end]] -weight 1 -minsize 5
 	grid rowconfigure $f [list 3 [lindex $rows end]] -weight 1 -minsize 5
+}
+
+
+proc ShowMoves {text} {
+	if {[$text count -displaylines 1.0 2.0] > 2} {
+		::gametable::showMoves $text [$text get 1.0 end]
+	}
+}
+
+
+proc HideMoves {text} {
+	::gametable::hideMoves $text
 }
 
 

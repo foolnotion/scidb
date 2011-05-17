@@ -116,94 +116,94 @@ package require Tk 8.4
 package provide tooltip 1.5.0
 
 namespace eval ::tooltip {
-	namespace export -clear tooltip show hide init
-	namespace import ::tcl::mathfunc::int
 
+namespace export -clear tooltip show hide init
+namespace import ::tcl::mathfunc::int
+
+variable tooltip
+variable tooltipvar
+variable G
+
+array set G {
+	font					TkTooltipFont
+	background			lightyellow
+	exposureTime		3500
+	delay					500
+	delayMenu			250
+
+	allowed				{}
+	exclude				{}
+	init					1
+	enabled				1
+	fadeId				{}
+	exposureId			{}
+	afterId				{}
+	last					-1
+	toplevel				.__tooltip__
+}
+# original background: lightyellow
+# alternative background: #ffffaa
+
+switch [tk windowingsystem] {
+	x11 {
+		array set G {
+			fade					0
+			fadeStep				0.2
+			shadowThickness	1
+			shadowOffset		5
+			shadowColor			gray50
+			shadowAlpha			1.0
+		}
+	}
+
+	win32 {
+		array set G {
+			fade					1
+			fadeStep				0.2
+			shadowThickness	2
+			shadowOffset		5
+			shadowColor			black
+			shadowAlpha			0.6
+		}
+	}
+
+	aqua {
+		array set G {
+			fade					0
+			fadeStep				0.2
+			shadowThickness	2
+			shadowOffset		5
+			shadowColor			black
+			shadowAlpha			0.6
+		}
+	}
+}
+
+# The extra ::hide call in <Enter> is necessary to catch moving to
+# child widgets where the <Leave> event won't be generated
+bind Tooltip <Enter> [namespace code {
 	variable tooltip
 	variable tooltipvar
 	variable G
 
-	array set G {
-		font					TkTooltipFont
-		background			lightyellow
-		exposureTime		3500
-		delay					500
-		delayMenu			250
+	#tooltip::hide
+	if {!$G(enabled)} { return }
+	set G(last) -1
 
-		allowed				{}
-		exclude				{}
-		init					1
-		enabled				1
-		fadeId				{}
-		exposureId			{}
-		afterId				{}
-		last					-1
-		toplevel				.__tooltip__
+	if {[info exists tooltipvar(%W)]} {
+		showvar %W $tooltipvar(%W)
+	} elseif {[info exists tooltip(%W)]} {
+		show %W $tooltip(%W)
 	}
-	# original background: lightyellow
-	# alternative background: #ffffaa
+}]
 
-	switch [tk windowingsystem] {
-		x11 {
-			array set G {
-				fade					0
-				fadeStep				0.2
-				shadowThickness	1
-				shadowOffset		5
-				shadowColor			gray50
-				shadowAlpha			1.0
-			}
-		}
-
-		win32 {
-			array set G {
-				fade					1
-				fadeStep				0.2
-				shadowThickness	2
-				shadowOffset		5
-				shadowColor			black
-				shadowAlpha			0.6
-			}
-		}
-
-		aqua {
-			array set G {
-				fade					0
-				fadeStep				0.2
-				shadowThickness	2
-				shadowOffset		5
-				shadowColor			black
-				shadowAlpha			0.6
-			}
-		}
-	}
-
-	# The extra ::hide call in <Enter> is necessary to catch moving to
-	# child widgets where the <Leave> event won't be generated
-	bind Tooltip <Enter> [namespace code {
-		variable tooltip
-		variable tooltipvar
-		variable G
-
-		#tooltip::hide
-		if {!$G(enabled)} { return }
-		set G(last) -1
-
-		if {[info exists tooltipvar(%W)]} {
-			showvar %W $tooltipvar(%W)
-		} elseif {[info exists tooltip(%W)]} {
-			show %W $tooltip(%W)
-		}
-	}]
-
-	bind Menu <<MenuSelect>> [namespace code { MenuMotion %W }]
-	bind Tooltip <Leave> [namespace code { hide 1 }] ;# fade ok
-	bind Tooltip <Any-KeyPress> [namespace code hide]
-	bind Tooltip <Any-Button> [namespace code hide]
-}
+bind Menu <<MenuSelect>> [namespace code { MenuMotion %W }]
+bind Tooltip <Leave> [namespace code { hide 1 }] ;# fade ok
+bind Tooltip <Any-KeyPress> [namespace code hide]
+bind Tooltip <Any-Button> [namespace code hide]
 
 
-proc ::tooltip::init {} {
+proc init {} {
 	variable G
 
 	if {!$G(init)} { return }
@@ -237,13 +237,13 @@ proc ::tooltip::init {} {
 }
 
 
-proc ::tooltip::background	{} { return $::tooltip::G(background) }
-proc ::tooltip::delay		{} { return $::tooltip::G(delay) }
-proc ::tooltip::enabled		{} { return $::tooltip::G(enabled) }
-proc ::tooltip::font			{} { return $::tooltip::G(font) }
+proc background	{} { return [set [namespace current]::G(background)] }
+proc delay			{} { return [set [namespace current]::G(delay)] }
+proc enabled		{} { return [set [namespace current]::G(enabled)] }
+proc font			{} { return [set [namespace current]::G(font)] }
 
 
-proc ::tooltip::tooltip {w {args {}}} {
+proc tooltip {w {args {}}} {
 	variable tooltip
 	variable tooltipvar
 	variable G
@@ -341,7 +341,191 @@ proc ::tooltip::tooltip {w {args {}}} {
 }
 
 
-proc ::tooltip::Register {w arguments} {
+proc show {w msg {i cursor} {font {}}} {
+	variable G
+
+	if {$G(enabled)} {
+		after cancel $G(afterId)
+		after cancel $G(exposureId)
+
+		if {[llength $font] == 0} { set font $G(font) }
+		set G(afterId) [after $G(delay) [namespace code [list Show $w {} $msg $i $font]]]
+	}
+}
+
+
+proc showvar {w var {i cursor} {font {}}} {
+	variable G
+
+	if {$G(enabled)} {
+		after cancel $G(afterId)
+		after cancel $G(exposureId)
+
+		if {[llength $font] == 0} { set font $G(font) }
+		set G(afterId) [after $G(delay) [namespace code [list Show $w $var {} $i $font]]]
+	}
+}
+
+
+proc popup {w b {i {}}} {
+	variable G
+
+	update idletasks
+
+	if {$b ne $G(toplevel)} { tooltip off }
+
+	set screenw [winfo screenwidth $w]
+	set screenh [winfo screenheight $w]
+	set reqw [winfo reqwidth $b]
+	set reqh [winfo reqheight $b]
+
+	# When adjusting for being on the screen boundary, check that we are
+	# near the "edge" already, as Tk handles multiple monitors oddly
+	if {$i eq "cursor"} {
+		set y [expr {[winfo pointery $w] + 20}]
+		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+			set y [expr {[winfo pointery $w] - $reqh - 5}]
+		}
+	} elseif {$i ne ""} {
+		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [$w yposition $i] + 25}]
+		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+			# show above if we would be offscreen
+			set y [expr {[winfo rooty $w] + [$w yposition $i] - $reqh - 5}]
+		}
+	} else {
+		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [winfo height $w] + 5}]
+		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+			# show above if we would be offscreen
+			set y [expr {[winfo rooty $w] - $reqh - 5}]
+		}
+	}
+
+	if {$i eq "cursor"} {
+		set x [winfo pointerx $w]
+	} else {
+		set x [expr {[winfo rootx $w] + [winfo vrootx $w] + ([winfo width $w] - $reqw)/2}]
+	}
+
+	# only readjust when we would appear right on the screen edge
+	if {$x < 0 && ($x + $reqw) > 0} {
+		set x 0
+	} elseif {($x < $screenw) && ($x + $reqw) > $screenw} {
+		set x [expr {$screenw - $reqw}]
+	}
+
+	if {[tk windowingsystem] eq "aqua"} {
+		set focus [focus]
+	}
+
+	if {$G(shadowThickness)} {
+		set bw [expr {$reqw - $G(shadowOffset)}]
+		set bh $G(shadowThickness)
+		set rw $G(shadowThickness)
+		set rh [expr {$reqh - $G(shadowOffset) + $G(shadowThickness)}]
+		if {![winfo exists $b.__shadow__b__]} {
+			set options [list -background $G(shadowColor) -borderwidth 0 -relief flat -highlightthickness 0]
+			toplevel $b.__shadow__b__ -width $bw -height $bh {*}$options
+			toplevel $b.__shadow__r__ -width $rw -height $rh {*}$options
+			wm withdraw $b.__shadow__b__
+			wm withdraw $b.__shadow__r__
+			wm overrideredirect $b.__shadow__b__ 1
+			wm overrideredirect $b.__shadow__r__ 1
+			catch { wm attributes $b.__shadow__b__ -alpha $G(shadowAlpha) }
+			catch { wm attributes $b.__shadow__r__ -alpha $G(shadowAlpha) }
+		} else {
+			$b.__shadow__b__ configure -width $bw -height $bh
+			$b.__shadow__r__ configure -width $rw -height $rh
+		}
+		wm geometry $b.__shadow__b__ +[expr {$x + $G(shadowOffset)}]+[expr {$y + $reqh}]
+		wm geometry $b.__shadow__r__ +[expr {$x + $reqw}]+[expr {$y + $G(shadowOffset)}]
+		wm deiconify $b.__shadow__b__
+		wm deiconify $b.__shadow__r__
+		raise $b.__shadow__b__
+		raise $b.__shadow__r__
+	}
+
+	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
+	catch { wm attributes $b -alpha 0.99 }
+	wm geometry $b +$x+$y
+	wm deiconify $b
+	raise $b
+
+	if {[tk windowingsystem] eq "aqua" && $focus ne ""} {
+		# Aqua's help window steals focus on display
+		after idle [list focus -force $focus]
+	}
+}
+
+
+proc popdown {w} {
+	variable G
+
+	if {$w ne $G(toplevel)} { tooltip on }
+
+	if {[winfo exists $w]} {
+		wm withdraw $w
+
+		if {[winfo exists $w.__shadow__b__]} {
+			wm withdraw $w.__shadow__b__
+			wm withdraw $w.__shadow__r__
+		}
+	}
+}
+
+
+proc hide {{fadeOk 0}} {
+	variable G
+
+	after cancel $G(afterId)
+	after cancel $G(exposureId)
+	after cancel $G(fadeId)
+
+	if {$fadeOk && $G(fade)} {
+		set w $G(toplevel)
+		if {[winfo exists $w.__shadow__b__]} {
+			wm withdraw $w.__shadow__b__
+			wm withdraw $w.__shadow__r__
+		}
+		Fade $w $G(fadeStep)
+	} else {
+		popdown $G(toplevel)
+	}
+}
+
+
+proc enable {{allowed {}}} {
+	variable G
+
+	set G(enabled) 1
+	set G(allowed) $allowed
+}
+
+
+proc disable {{fadeOk 0}} {
+	variable G
+
+	set G(enabled) 0
+	hide $fadeOk
+}
+
+
+proc wname {{w {}}} {
+	variable G
+
+	if {[llength [info level 0]] > 1} {
+		# $w specified
+		if {$w ne $G(toplevel)} {
+			hide
+			destroy $G(toplevel)
+			set G(toplevel) $w
+		}
+	}
+
+	return $G(toplevel)
+}
+
+
+proc Register {w arguments} {
 	variable tooltip
 	variable tooltipvar
 
@@ -449,7 +633,7 @@ proc ::tooltip::Register {w arguments} {
 }
 
 
-proc ::tooltip::Clear {{pattern .*}} {
+proc Clear {{pattern .*}} {
 	variable tooltip
 	variable tooltipvar
 	variable G
@@ -484,33 +668,7 @@ proc ::tooltip::Clear {{pattern .*}} {
 }
 
 
-proc ::tooltip::show {w msg {i cursor} {font {}}} {
-	variable G
-
-	if {$G(enabled)} {
-		after cancel $G(afterId)
-		after cancel $G(exposureId)
-
-		if {[llength $font] == 0} { set font $G(font) }
-		set G(afterId) [after $G(delay) [namespace code [list Show $w {} $msg $i $font]]]
-	}
-}
-
-
-proc ::tooltip::showvar {w var {i cursor} {font {}}} {
-	variable G
-
-	if {$G(enabled)} {
-		after cancel $G(afterId)
-		after cancel $G(exposureId)
-
-		if {[llength $font] == 0} { set font $G(font) }
-		set G(afterId) [after $G(delay) [namespace code [list Show $w $var {} $i $font]]]
-	}
-}
-
-
-proc ::tooltip::Show {w var msg {i {}} {font {}}} {
+proc Show {w var msg {i {}} {font {}}} {
 	variable G
 
 	if {![winfo exists $w]} { return }
@@ -551,102 +709,12 @@ proc ::tooltip::Show {w var msg {i {}} {font {}}} {
 	popup $w $b $i
 
 	if {$G(exposureTime)} {
-		set G(exposureId) [after $G(exposureTime) { ::tooltip::hide true }]
+		set G(exposureId) [after $G(exposureTime) [namespace code { hide true }]]
 	}
 }
 
 
-proc ::tooltip::popup {w b {i {}}} {
-	variable G
-
-	update idletasks
-
-	if {$b ne $G(toplevel)} { tooltip off }
-
-	set screenw [winfo screenwidth $w]
-	set screenh [winfo screenheight $w]
-	set reqw [winfo reqwidth $b]
-	set reqh [winfo reqheight $b]
-
-	# When adjusting for being on the screen boundary, check that we are
-	# near the "edge" already, as Tk handles multiple monitors oddly
-	if {$i eq "cursor"} {
-		set y [expr {[winfo pointery $w] + 20}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
-			set y [expr {[winfo pointery $w] - $reqh - 5}]
-		}
-	} elseif {$i ne ""} {
-		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [$w yposition $i] + 25}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
-			# show above if we would be offscreen
-			set y [expr {[winfo rooty $w] + [$w yposition $i] - $reqh - 5}]
-		}
-	} else {
-		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [winfo height $w] + 5}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
-			# show above if we would be offscreen
-			set y [expr {[winfo rooty $w] - $reqh - 5}]
-		}
-	}
-
-	if {$i eq "cursor"} {
-		set x [winfo pointerx $w]
-	} else {
-		set x [expr {[winfo rootx $w] + [winfo vrootx $w] + ([winfo width $w] - $reqw)/2}]
-	}
-
-	# only readjust when we would appear right on the screen edge
-	if {$x < 0 && ($x + $reqw) > 0} {
-		set x 0
-	} elseif {($x < $screenw) && ($x + $reqw) > $screenw} {
-		set x [expr {$screenw - $reqw}]
-	}
-
-	if {[tk windowingsystem] eq "aqua"} {
-		set focus [focus]
-	}
-
-	if {$G(shadowThickness)} {
-		set bw [expr {$reqw - $G(shadowOffset)}]
-		set bh $G(shadowThickness)
-		set rw $G(shadowThickness)
-		set rh [expr {$reqh - $G(shadowOffset) + $G(shadowThickness)}]
-		if {![winfo exists $b.__shadow__b__]} {
-			set options [list -background $G(shadowColor) -borderwidth 0 -relief flat -highlightthickness 0]
-			toplevel $b.__shadow__b__ -width $bw -height $bh {*}$options
-			toplevel $b.__shadow__r__ -width $rw -height $rh {*}$options
-			wm withdraw $b.__shadow__b__
-			wm withdraw $b.__shadow__r__
-			wm overrideredirect $b.__shadow__b__ 1
-			wm overrideredirect $b.__shadow__r__ 1
-			catch { wm attributes $b.__shadow__b__ -alpha $G(shadowAlpha) }
-			catch { wm attributes $b.__shadow__r__ -alpha $G(shadowAlpha) }
-		} else {
-			$b.__shadow__b__ configure -width $bw -height $bh
-			$b.__shadow__r__ configure -width $rw -height $rh
-		}
-		wm geometry $b.__shadow__b__ +[expr {$x + $G(shadowOffset)}]+[expr {$y + $reqh}]
-		wm geometry $b.__shadow__r__ +[expr {$x + $reqw}]+[expr {$y + $G(shadowOffset)}]
-		wm deiconify $b.__shadow__b__
-		wm deiconify $b.__shadow__r__
-		raise $b.__shadow__b__
-		raise $b.__shadow__r__
-	}
-
-	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
-	catch { wm attributes $b -alpha 0.99 }
-	wm geometry $b +$x+$y
-	wm deiconify $b
-	raise $b
-
-	if {[tk windowingsystem] eq "aqua" && $focus ne ""} {
-		# Aqua's help window steals focus on display
-		after idle [list focus -force $focus]
-	}
-}
-
-
-proc ::tooltip::MenuMotion {w} {
+proc MenuMotion {w} {
 	variable tooltip
 	variable tooltipvar
 	variable G
@@ -684,59 +752,7 @@ proc ::tooltip::MenuMotion {w} {
 }
 
 
-proc ::tooltip::popdown {w} {
-	variable G
-
-	if {$w ne $G(toplevel)} { tooltip on }
-
-	if {[winfo exists $w]} {
-		wm withdraw $w
-
-		if {[winfo exists $w.__shadow__b__]} {
-			wm withdraw $w.__shadow__b__
-			wm withdraw $w.__shadow__r__
-		}
-	}
-}
-
-
-proc ::tooltip::hide {{fadeOk 0}} {
-	variable G
-
-	after cancel $G(afterId)
-	after cancel $G(exposureId)
-	after cancel $G(fadeId)
-
-	if {$fadeOk && $G(fade)} {
-		set w $G(toplevel)
-		if {[winfo exists $w.__shadow__b__]} {
-			wm withdraw $w.__shadow__b__
-			wm withdraw $w.__shadow__r__
-		}
-		Fade $w $G(fadeStep)
-	} else {
-		popdown $G(toplevel)
-	}
-}
-
-
-proc ::tooltip::enable {{allowed {}}} {
-	variable G
-
-	set G(enabled) 1
-	set G(allowed) $allowed
-}
-
-
-proc ::tooltip::disable {{fadeOk 0}} {
-	variable G
-
-	set G(enabled) 0
-	hide $fadeOk
-}
-
-
-proc ::tooltip::Fade {w step} {
+proc Fade {w step} {
 	if {[catch {wm attributes $w -alpha} alpha] || $alpha <= 0.0} {
 		popdown $w
 		catch { wm attributes $w -alpha 0.99 }
@@ -748,23 +764,7 @@ proc ::tooltip::Fade {w step} {
 }
 
 
-proc ::tooltip::wname {{w {}}} {
-	variable G
-
-	if {[llength [info level 0]] > 1} {
-		# $w specified
-		if {$w ne $G(toplevel)} {
-			hide
-			destroy $G(toplevel)
-			set G(toplevel) $w
-		}
-	}
-
-	return $G(toplevel)
-}
-
-
-proc ::tooltip::ItemTip {w args} {
+proc ItemTip {w args} {
 	variable tooltip
 	variable tooltipvar
 	variable G
@@ -783,7 +783,7 @@ proc ::tooltip::ItemTip {w args} {
 }
 
 
-proc ::tooltip::EnableCanvas {w args} {
+proc EnableCanvas {w args} {
 	if {[string match *itemTip* [$w bind all <Enter>]]} { return }
 
 	$w bind all <Enter> +[namespace code [list ItemTip $w]]
@@ -793,7 +793,7 @@ proc ::tooltip::EnableCanvas {w args} {
 }
 
 
-proc ::tooltip::TagTip {w tag} {
+proc TagTip {w tag} {
 	variable tooltip
 	variable tooltipvar
 	variable G
@@ -813,7 +813,7 @@ proc ::tooltip::TagTip {w tag} {
 }
 
 
-proc ::tooltip::EnableTag {w tag} {
+proc EnableTag {w tag} {
 	if {[string match *tagTip* [$w tag bind $tag]]} { return }
 
 	$w tag bind $tag <Enter> +[namespace code [list TagTip $w $tag]]
@@ -821,5 +821,7 @@ proc ::tooltip::EnableTag {w tag} {
 	$w tag bind $tag <Any-KeyPress> +[namespace code hide]
 	$w tag bind $tag <Any-Button> +[namespace code hide]
 }
+
+} ;# namespace tooltip
 
 # vi:set ts=3 sw=3:

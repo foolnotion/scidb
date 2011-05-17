@@ -952,7 +952,7 @@ proc Mouse2Down {node} {
 	set gameIndex [$node attribute -default {} game]
 	if {[string length $gameIndex]} {
 		MouseEnter $node
-		::gametable::showMoves $Path $Vars(base) -1 $gameIndex 
+		::gametable::showGame $Path $Vars(base) -1 $gameIndex 
 	} else {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
@@ -972,7 +972,7 @@ proc Mouse2Up {node} {
 	set attr [$node attribute -default {} recv]
 	if {[string length $attr] == 0} { return }
 
-	::gametable::hideMoves $Path
+	::gametable::hideGame $Path
 	::playertable::hideInfo $Path
 	MouseLeave $node 1
 }

@@ -156,41 +156,41 @@ db/libdb.a:
 db/libdbstubs.a:
 	$(MAKE) -C db libdbstubs.a
 
-permute_eco: permute_eco.cpp $(LIBS)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+permute_eco: permute_eco.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-extend_eco: extend_eco.cpp $(LIBS_BASE)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+extend_eco: extend_eco.o $(LIBS_BASE)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-dump_eco: dump_eco.cpp $(LIBS_BASE)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+dump_eco: dump_eco.o $(LIBS_BASE)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-eco2code: eco2code.cpp $(LIBS_BASE)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+eco2code: eco2code.o $(LIBS_BASE)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-code2eco: code2eco.cpp $(LIBS_BASE)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+code2eco: code2eco.o $(LIBS_BASE)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-pawn_progress: pawn_progress.cpp $(LIBS_BASE)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(INCLUDE) $(LDFLAGS) $(LIBS_BASE)
+pawn_progress: pawn_progress.o $(LIBS_BASE)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
-best_move: best_move.cpp $(LIBS)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+best_move: best_move.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
-pgn_split_eco: pgn_split_eco.cpp $(LIBS)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $* $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+pgn_split_eco: pgn_split_eco.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
-$(PROGRAM): tkscidb.cpp $(LIBS)
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -o $(PROGRAM) $< $(ALL_CXXFLAGS) $(ALL_ICLUDE) $(LDFLAGS) $(ALL_LIBS)
+$(PROGRAM): tkscidb.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"

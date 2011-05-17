@@ -110,6 +110,7 @@ set MissingYear					"Year is missing."
 set MissingMonth					"Month is missing."
 set StringTooLong					"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 set InvalidEventDate				"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
+set TagIsEmpty						"Tag '%s' is empty (will be discarded)."
 
 } ;# namespace mc
 
@@ -1047,7 +1048,7 @@ proc FinishEditTag {t item column} {
 			$t item element configure $item name elemText -text ""
 			set msg [format $mc::TagAlreadyExists $name]
 			::dialog::error -parent $t -message $msg -title $mc::EditTags
-		} elseif {[string length $value]} {
+		} elseif {$img ne $icon::12x12::plus || ($column != 1 && $column ne "name")} {
 			$t item element configure $item delete elemImage -image $icon::12x12::delete
 			if {![info exists TagOrder($name)] || $TagOrder($name) < 99} {
 				set TagOrder($name) 99
@@ -1057,7 +1058,7 @@ proc FinishEditTag {t item column} {
 			if {$img eq $icon::12x12::plus} {
 				AddEmptyTag $t
 			}
-		} elseif {$img eq $icon::12x12::plus && ($column == 1 || $column eq "name")} {
+		} else {
 			OpenEntry $t $item value
 			return
 		}
@@ -2063,7 +2064,6 @@ proc SetupTags {top base idn position number} {
 	variable TagOrder
 	variable RatingTagOrder
 	variable Lookup
-	variable Item
 
 #	if {!$Priv(twoRatings)} { set Tag(PlyCount) 99 }
 
@@ -2558,7 +2558,10 @@ proc CheckFields {top title fields} {
 	foreach tag [array names Lookup] {
 		if {![info exists Tags($tag)]} {
 			set value $Lookup($tag)
-			if {[string length $value] && $value ne "?"} {
+puts "$tag --> $value"
+			if {[string length $value] == 0} {
+				lappend warnings [format $mc::TagIsEmpty $tag]
+			} elseif {$value ne "?"} {
 				set error ""
 
 				if {![regexp {^[A-Za-z][A-Za-z0-9_]*$} $tag]} {

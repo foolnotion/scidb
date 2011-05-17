@@ -433,7 +433,7 @@ public:
 	/// Traverse whole game.
 	void updateSubscriber(unsigned action = UpdateBoard | UpdatePgn);
 	/// Traverse whole game.
-	void refreshSubscriber();
+	void refreshSubscriber(bool radical = false);
 	/// Set undo level.
 	void setUndoLevel(unsigned level);
 	/// Set game tags.
@@ -446,6 +446,11 @@ public:
 	void setLanguages(LanguageSet const& set);
 	/// Set whether game is modified anymore.
 	void setIsModified(bool flag);
+	void setup(	unsigned linebreakThreshold,
+					unsigned linebreakMaxLineLengthMain,
+					unsigned linebreakMaxLineLengthVar,
+					unsigned linebreakMinCommentLength,
+					unsigned displayStyle);
 
 	Board const& getFinalBoard() const;
 	Board const& getStartBoard() const;
@@ -566,6 +571,11 @@ private:
 	mutable bool	m_finalBoardIsValid;
 	uint16_t			m_lineBuf[opening::Max_Line_Length][2];
 	mutable Line	m_line;
+	unsigned			m_linebreakThreshold;
+	unsigned			m_linebreakMaxLineLengthMain;
+	unsigned			m_linebreakMaxLineLengthVar;
+	unsigned			m_linebreakMinCommentLength;
+	unsigned			m_displayStyle;
 };
 
 } // namebase db

@@ -1044,6 +1044,17 @@ namespace save
 	};
 }
 
+namespace display
+{
+	enum
+	{
+		CompactStyle	= 1 << 0,
+		ColumnStyle		= 1 << 1,
+		NarrowLines		= 1 << 2,
+		ShowDiagrams	= 1 << 3,
+	};
+};
+
 namespace type
 {
 	enum ID

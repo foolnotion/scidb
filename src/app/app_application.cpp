@@ -734,7 +734,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.crcMoves = game.game->computeChecksum();
 	game.game->updateSubscriber(Game::UpdateAll);
 
-	if (!m_subscriber && isNew)
+	if (m_subscriber && !isNew)
 		m_subscriber->updateGameInfo(position);
 
 	return ok;
@@ -886,12 +886,12 @@ Application::endTrialMode()
 
 
 void
-Application::refreshGame() const
+Application::refreshGame(bool radical) const
 {
 	M_REQUIRE(haveCurrentGame());
 
 	Game* game = m_gameMap.find(m_position)->second.game;
-	game->refreshSubscriber();
+	game->refreshSubscriber(radical);
 }
 
 
@@ -1287,6 +1287,30 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 	}
 
 	return state;
+}
+
+
+void
+Application::setupGame(	unsigned linebreakThreshold,
+								unsigned linebreakMaxLineLengthMain,
+								unsigned linebreakMaxLineLengthVar,
+								unsigned linebreakMinCommentLength,
+								unsigned displayStyle)
+{
+	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
+	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
+					!= (display::CompactStyle | display::ColumnStyle));
+
+	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	{
+		i->second.game->setup(	linebreakThreshold,
+										linebreakMaxLineLengthMain,
+										linebreakMaxLineLengthVar,
+										linebreakMinCommentLength,
+										displayStyle);
+
+		i->second.refresh = true;
+	}
 }
 
 // vi:set ts=3 sw=3:

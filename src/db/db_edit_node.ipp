@@ -36,7 +36,6 @@ inline Variation::Variation(Key const& key) :KeyNode(key) {}
 inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_succ(succ) {}
 inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
 inline Comment::Comment(db::Comment const& comment) :m_comment(comment) {}
-inline Annotation::Annotation(db::Annotation const& annotation) :m_annotation(annotation) {}
 inline Marks::Marks(MarkSet const& marks) :m_marks(marks) {}
 inline Space::Space(Bracket bracket) :m_level(-1), m_bracket(bracket) {}
 inline Space::Space(unsigned level, Bracket bracket) :m_level(level), m_bracket(bracket) {}
@@ -62,8 +61,6 @@ inline Node::LanguageSet const& Languages::langSet() const	{ return m_langSet; }
 inline bool Node::operator!=(Node const* node) const			{ return !operator==(node); }
 
 inline bool Node::isRoot() const	{ return dynamic_cast<Root const*>(this) != 0; }
-
-inline void Node::setStyle(DisplayStyle style) { m_style = style; }
 
 } // namespace edit
 } // namespace db

@@ -471,14 +471,17 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 proc makePieceSelectionFrame {parent visible} {
 	variable [namespace parent]::theme::style
 	variable Listbox
+	global board_PieceSet
 
 	set Listbox [::tlistbox $parent.pieceSel -height $visible -usescroll 1]
 
 	$Listbox addcol image -id icon
 	$Listbox addcol text -id text -expand yes
 
+	set board_PieceSet [lsort -dictionary -index 0 $board_PieceSet]
+
 	set contents {}
-	foreach pieceSet $::board_PieceSet {
+	foreach pieceSet $board_PieceSet {
 		set name [lindex $pieceSet 0]
 		set source [lindex $pieceSet 1]
 		set dataName [string map {"-" "_" " " ""} $name]

@@ -755,16 +755,17 @@ vector<T>::insert_aux(iterator position, const_reference value)
 		if (is_movable<T>::value)
 		{
 			::memmove(position + 1, position, mstl::distance(position, end())*sizeof(T));
-			::memset(position, 0, sizeof(T));
+			mstl::bits::construct(position, value);
 		}
 		else
 		{
 			mstl::bits::construct(this->m_finish, *(this->m_finish - 1));
-			mstl::copy_backward(position, this->m_finish - 1, this->m_finish);
+			if (position < this->m_finish)
+				mstl::copy_backward(position, this->m_finish - 1, this->m_finish);
+			*position = value;
 		}
 
 		++this->m_finish;
-		*position = value;
 	}
 	else
 	{

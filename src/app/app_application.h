@@ -134,7 +134,7 @@ public:
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
 	void switchBase(mstl::string const& name);
-	void refreshGame() const;
+	void refreshGame(bool radical = false) const;
 
 	Cursor& clipBase();
 	Cursor const& clipBase() const;
@@ -171,6 +171,11 @@ public:
 	void clearGame(db::Board const* startPosition = 0);
 	db::save::State saveGame(Cursor& cursor, bool replace);
 	db::save::State updateCharacteristics(Cursor& cursor, unsigned index, db::TagSet const& tags);
+	void setupGame(unsigned linebreakThreshold,
+						unsigned linebreakMaxLineLengthMain,
+						unsigned linebreakMaxLineLengthVar,
+						unsigned linebreakMinCommentLength,
+						unsigned displayStyle);
 
 	void clearBase(Cursor& cursor);
 	void setReferenceBase(Cursor* cursor);

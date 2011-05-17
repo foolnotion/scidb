@@ -272,6 +272,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $rt.header <<Language>> [namespace code [list UpdateHeader $position $info]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
 
+	::scidb::game::setup $position 240 80 0 0 no no no
 	::scidb::game::subscribe board $position [namespace current]::UpdateBoard
 	::scidb::game::subscribe pgn $position [namespace current]::UpdatePGN true
 	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close $position
@@ -285,17 +286,17 @@ proc open {parent base info view index {fen {}}} {
 }
 
 
-proc load {parent base info view index windowId} {
-	if {[llength $windowId] == 0} { set windowId _ }
-
-	if {![namespace exists [namespace current]::${windowId}]} {
-		return [open $parent $base $info $view $index]
-	}
-
-	variable ${windowId}::Vars
-	NextGame $Vars(dlg) $windowId {} [expr {$index - $Vars(index)}]
-	return $windowId
-}
+#proc load {parent base info view index windowId} {
+#	if {[llength $windowId] == 0} { set windowId _ }
+#
+#	if {![namespace exists [namespace current]::${windowId}]} {
+#		return [open $parent $base $info $view $index]
+#	}
+#
+#	variable ${windowId}::Vars
+#	NextGame $Vars(dlg) $windowId {} [expr {$index - $Vars(index)}]
+#	return $windowId
+#}
 
 
 proc makeOpeningLines {data} {

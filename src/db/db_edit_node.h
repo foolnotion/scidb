@@ -32,6 +32,8 @@
 #include "db_eco.h"
 #include "db_edit_key.h"
 #include "db_comment.h"
+#include "db_annotation.h"
+#include "db_mark_set.h"
 
 #include "m_vector.h"
 #include "m_map.h"
@@ -65,12 +67,6 @@ public:
 		TPly, TAnnotation, TMarks, TComment, TSpace,	// move level
 	};
 
-	enum DisplayStyle
-	{
-		CompactStyle,
-		ColumnStyle,
-	};
-
 	enum Bracket
 	{
 		None = ' ',
@@ -86,6 +82,7 @@ public:
 		SuffixBreak		= 1 << 2,
 		ForcedBreak		= 1 << 3,
 		RequiredBreak	= 1 << 4,
+		SuppressBreak	= 1 << 5,
 	};
 
 	typedef mstl::vector<Node const*> List;
@@ -103,12 +100,6 @@ public:
 	void dump() const;
 
 	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags);
-	static void setStyle(DisplayStyle style);
-
-	static unsigned linebreakThreshold;
-	static unsigned linebreakMaxLineLengthMain;
-	static unsigned linebreakMaxLineLengthVar;
-	static unsigned linebreakMinCommentLength;
 
 protected:
 
@@ -127,11 +118,12 @@ protected:
 		Bracket					bracket;
 		bool						needMoveNo;
 		unsigned					level;
-		unsigned					linebreakMaxLineLength;
 		unsigned					plyCount;
+		unsigned					linebreakMaxLineLength;
+		unsigned					linebreakMaxLineLengthVar;
+		unsigned					linebreakMinCommentLength;
+		unsigned					displayStyle;
 	};
-
-	static DisplayStyle m_style;
 };
 
 
@@ -202,14 +194,21 @@ public:
 									uint16_t idn,
 									Eco eco,
 									db::Board const& startBoard,
-									MoveNode const* node);
+									MoveNode const* node,
+									unsigned linebreakThreshold,
+									unsigned linebreakMaxLineLength);
 	static Root* makeList(	TagSet const& tags,
 									uint16_t idn,
 									Eco eco,
 									db::Board const& startBoard,
 									LanguageSet const& langSet,
 									LanguageSet const& wantedLanguages,
-									MoveNode const* node);
+									MoveNode const* node,
+									unsigned linebreakThreshold,
+									unsigned linebreakMaxLineLength,
+									unsigned linebreakMaxLineLengthVar,
+									unsigned linebreakMinCommentLength,
+									unsigned displayStyle);
 
 	Node* newAction(Action::Command command) const;
 	Node* newAction(Action::Command command, unsigned level) const;
@@ -218,7 +217,10 @@ public:
 
 private:
 
-	static void makeList(Work& work, KeyNode::List& result, MoveNode const* node);
+	static void makeList(Work& work,
+								KeyNode::List& result,
+								MoveNode const* node,
+								unsigned linebreakMaxLineLength);
 
 	Node*				m_opening;
 	Node* 			m_languages;
@@ -330,10 +332,13 @@ public:
 
 	typedef Node::List List;
 
-	Move(Work& work);
 	Move(Work& work, MoveNode const* move);
+	Move(Work& work, db::Comment const& comment);
+	Move(Work& work);
+
 	Move(Key const& key);
 	Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const* move);
+
 	~Move() throw();
 
 	bool operator==(Node const* node) const;
@@ -349,25 +354,6 @@ private:
 
 	List	m_list;
 	Ply*	m_ply;
-};
-
-
-class PreComment : public KeyNode
-{
-public:
-
-	PreComment(Work const& work, db::Comment const& comment);
-
-	bool operator==(Node const* node) const;
-
-	Type type() const;
-
-	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
-
-private:
-
-	db::Comment m_comment;
 };
 
 
@@ -388,7 +374,8 @@ private:
 
 	db::Board	m_board;
 	color::ID	m_fromColor;
-	bool			m_prefixBreak;
+	unsigned		m_prefixBreak;
+	unsigned		m_suffixBreak;
 };
 
 
@@ -415,7 +402,7 @@ class Annotation : public Node
 {
 public:
 
-	Annotation(db::Annotation const& annotation);
+	Annotation(db::Annotation const& annotation, bool deleteDiagram = false);
 
 	bool operator==(Node const* node) const;
 
@@ -426,7 +413,7 @@ public:
 
 private:
 
-	db::Annotation const& m_annotation;
+	db::Annotation m_annotation;
 };
 
 
@@ -445,7 +432,7 @@ public:
 
 private:
 
-	db::MarkSet const& m_marks;
+	db::MarkSet m_marks;
 };
 
 
@@ -488,7 +475,6 @@ public:
 	virtual void languages(LanguageSet const& languages) = 0;
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
-	virtual void comment(Key const& key, db::Comment const& comment) = 0;
 	virtual void comment(db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
 	virtual void marks(MarkSet const& marks) = 0;

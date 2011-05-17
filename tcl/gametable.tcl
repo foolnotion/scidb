@@ -494,9 +494,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<TableShow>>			[namespace code [list TableHide $path %d 0]]
 	::bind $path <Destroy>				[namespace code [list PrepareImages $path -2]]
 
-	bind $path <ButtonPress-2>			[namespace code [list ShowMoves $path %x %y]]
-	bind $path <ButtonRelease-2>		[namespace code [list hideMoves $path]]
-	bind $path <ButtonPress-3>			+[namespace code [list hideMoves $path]]
+	bind $path <ButtonPress-2>			[namespace code [list ShowGame $path %x %y]]
+	bind $path <ButtonRelease-2>		[namespace code [list hideGame $path]]
+	bind $path <ButtonPress-3>			+[namespace code [list hideGame $path]]
 
 	BindAccelerators $path
 	::bind $path <<Language>>  [namespace code [list BindAccelerators $path]]
@@ -658,7 +658,18 @@ proc bind {path sequence script} {
 }
 
 
-proc showMoves {path base view index {pos {}}} {
+proc showGame {path base view index {pos {}}} {
+	set info [::scidb::db::get gameInfo $index $view $base]
+	set result [lindex $info [columnIndex result]]
+	if {$result eq "1/2-1/2"} { set result "1/2" }
+	showMoves $path [lindex [::scidb::game::dump $base $view $index $pos] 1] $result
+}
+
+
+proc hideGame {path} { hideMoves $path }
+
+
+proc showMoves {path moves {result ""}} {
 	set w $path.showmoves
 	if {![winfo exists $w]} {
 		toplevel $w -background white -class Tooltip
@@ -680,16 +691,13 @@ proc showMoves {path base view index {pos {}}} {
       $w.text tag configure figurine -font $::font::figurine
 	}
 	$w.text delete 1.0 end
-	set moves [::font::splitMoves [lindex [::scidb::game::dump $base $view $index $pos] 1]]
+	set moves [::font::splitMoves $moves]
 	if {[llength $moves] == 0} {
 		$w.text insert end $mc::NoMoves
 		$w.text insert end " "
 	} else {
 		foreach {move tag} $moves { $w.text insert end $move $tag }
 	}
-	set info [::scidb::db::get gameInfo $index $view $base]
-	set result [lindex $info [columnIndex result]]
-	if {$result eq "1/2-1/2"} { set result "1/2" }
 	$w.text insert end $result
 	::tooltip::disable
 	::tooltip::popup $path $w cursor
@@ -1372,7 +1380,7 @@ proc SortColumn {path id dir {rating {}}} {
 }
 
 
-proc ShowMoves {path x y} {
+proc ShowGame {path x y} {
 	variable ${path}::Vars
 
 	set index [::scrolledtable::at $path $y]
@@ -1387,7 +1395,7 @@ proc ShowMoves {path x y} {
 	} else {
 		set pos {}
 	}
-	showMoves $path $base $view $index $pos
+	showGame $path $base $view $index $pos
 }
 
 
