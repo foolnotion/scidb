@@ -80,7 +80,6 @@ inline rating::Type Tree::ratingType() const				{ return m_key.ratingType(); }
 
 inline void Tree::compressFilter()		{ m_filter.compress(); }
 inline void Tree::uncompressFilter()	{ m_filter.uncompress(); }
-inline void Tree::setIncomplete()		{ m_complete = false; }
 
 
 inline

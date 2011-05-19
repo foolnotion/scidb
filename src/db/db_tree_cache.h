@@ -59,6 +59,7 @@ public:
 	void add(Tree* tree);
 	void clear();
 	void setIncomplete();
+	void setIncomplete(unsigned index);
 
 private:
 

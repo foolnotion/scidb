@@ -107,8 +107,10 @@
 ::menu::mc::FileQuit					"&Quit"
 
 ::menu::mc::GameNew					"&New Game"
-::menu::mc::GameNewShuffle			"New Game: &Shuffle"
-::menu::mc::GameNewShuffleSymm	"New Game: S&huffle (symmetrical only)"
+::menu::mc::GameNewShuffle			"N&ew Game: Shuffle"
+::menu::mc::GameNewShuffleSymm	"Ne&w Game: Shuffle (symmetrical only)"
+::menu::mc::GameSave					"&Save Game"
+::menu::mc::GameReplace				"&Replace Game"
 
 ::menu::mc::HelpInfo					"&Info"
 ::menu::mc::HelpContents			"&Contents"
@@ -446,6 +448,7 @@
 ::board::piece::mc::Zoom						"Zoom"
 ::board::piece::mc::Shadow						"Shadow"
 ::board::piece::mc::Opacity					"Opacity"
+::board::piece::mc::ShadowDiffusion			"Shadow Diffusion"
 ::board::piece::mc::PieceStyleConf			"Piece Style Configuration"
 ::board::piece::mc::Offset						"Offset"
 ::board::piece::mc::Rotate						"Rotate"
@@ -910,6 +913,7 @@
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Add mode after event type"
 ::export::mc::Option(pgn,use_chessbase_format)					"Use ChessBase format"
+::export::mc::Option(pgn,comment_to_html)							"Write comment in HTML style"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
 
 ### save/replace #######################################################
@@ -994,6 +998,7 @@
 ::dialog::save::mc::MissingMonth					"Month is missing."
 ::dialog::save::mc::StringTooLong				"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
+::dialog::save::mc::TagIsEmpty					"Tag '%s' is empty (will be discarded)."
 
 ### game ###############################################################
 ::game::mc::Overwrite "Game %s has been altered.\n\nDo you really want to continue and discard the changes made to it?"
@@ -1231,7 +1236,9 @@
 ::table::mc::Foreground					"Foreground"
 ::table::mc::Background					"Background"
 ::table::mc::DisabledForeground		"Deleted Foreground"
-::table::mc::SelectForeground			"Select Foreground"
+::table::mc::SelectionForeground		"Selection Foreground"
+::table::mc::SelectionBackground		"Selection Background"
+::table::mc::HighlightColor			"Highlight Background"
 ::table::mc::Stripes						"Stripes"
 ::table::mc::MinWidth					"Minimal Width"
 ::table::mc::MaxWidth					"Maximal Width"
@@ -1260,6 +1267,7 @@
 ::dialog::choosecolor::mc::Old				"Old"
 ::dialog::choosecolor::mc::Current			"Current"
 ::dialog::choosecolor::mc::Color				"Color"
+::dialog::choosecolor::mc::ColorSelection	"Color Selection"
 ::dialog::choosecolor::mc::Red				"Red"
 ::dialog::choosecolor::mc::Green				"Green"
 ::dialog::choosecolor::mc::Blue				"Blue"

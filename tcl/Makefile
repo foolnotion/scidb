@@ -157,49 +157,51 @@ install: $(SCRIPT)
 		install -m 755 -d ~/.fonts; \
 		install -m 644 -p fonts/*.ttf ~/.fonts; \
 	fi
-	if [ -x /usr/local/bin/fc-cache ]; then \
+	@if [ -x /usr/local/bin/fc-cache ]; then \
+		echo "fc-cache"; \
 		/usr/local/bin/fc-cache; \
 	elif [ -x /usr/bin/fc-cache ]; then \
+		echo "fc-cache"; \
 		/usr/bin/fc-cache; \
 	else \
-		@echo "Don't know how to setup truetype fonts."; \
-		@echo "Please contact your system administrator."; \
+		echo "Don't know how to setup truetype fonts."; \
+		echo "Please contact your system administrator."; \
 	fi
 
 uninstall:
 	rm -f $(BINDIR)/$(SCRIPT)
 	for f in `ls pieces/*.tcl`; do \
-		rm -f $(SHAREDIR)/pieces/$$f \
+		rm -f $(SHAREDIR)/pieces/$$f; \
 	done
-	for f in `ls cursor/*.xbm do \
-		rm -f $(SHAREDIR)/cursor/$$f \
+	for f in `ls cursor/*.xbm`; do \
+		rm -f $(SHAREDIR)/cursor/$$f; \
 	done
-	for f in `ls cursor/*.cur do \
-		rm -f $(SHAREDIR)/cursor/$$f \
+	for f in `ls cursor/*.cur`; do \
+		rm -f $(SHAREDIR)/cursor/$$f; \
 	done
-	for f in `ls cursor/*.xcur do \
-		rm -f $(SHAREDIR)/cursor/$$f \
+	for f in `ls cursor/*.xcur`; do \
+		rm -f $(SHAREDIR)/cursor/$$f; \
 	done
 	for f in `ls flags/*.png`; do \
-		rm -f $(SHAREDIR)/flags/$$f \
+		rm -f $(SHAREDIR)/flags/$$f; \
 	done
 	for f in `ls lang/*.tcl`; do \
-		rm -f $(SHAREDIR)/lang/$$f \
+		rm -f $(SHAREDIR)/lang/$$f; \
 	done
 	for f in `ls lang/eco/*.*`; do \
-		rm -f $(SHAREDIR)/lang/eco/$$f \
+		rm -f $(SHAREDIR)/lang/eco/$$f; \
 	done
 	for f in `ls photos/*.sp?`; do \
-		rm -f $(SHAREDIR)/photos/$$f \
+		rm -f $(SHAREDIR)/photos/$$f; \
 	done
 	for f in `ls themes/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/$$f \
+		rm -f $(SHAREDIR)/themes/$$f; \
 	done
 	for f in `ls themes/piece/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/piece/$$f \
+		rm -f $(SHAREDIR)/themes/piece/$$f; \
 	done
 	for f in `ls themes/square/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/square/$$f \
+		rm -f $(SHAREDIR)/themes/square/$$f; \
 	done
 	for i in dark lite tile; do \
 		for k in marble misc wood; do \
@@ -208,8 +210,9 @@ uninstall:
 			done; \
 		done; \
 	done
-	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
-	/bin/sh -e 'find $(SHAREDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
+	for d in `find $(SHAREDIR) -type d -empty`; do \
+		rmdir $$d; \
+	done
 	if [ "`id -u`" -eq 0 ]; then \
 		for f in `ls font/*.ttf`; do \
 			rm -f $(FONTDIR)/$$f \

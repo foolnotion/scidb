@@ -64,7 +64,6 @@ Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encod
 
 		m_flags |= Flag_Use_Shredder_FEN;
 		m_flags |= Flag_Append_Mode_To_Event_Type;
-		m_flags |= Flag_Include_Ply_Count_Tag;
 	}
 }
 
@@ -305,7 +304,7 @@ Writer::beginGame(TagSet const& tags)
 				break;
 
 			case tag::PlyCount:
-				if (!isEmpty && test(Flag_Include_Ply_Count_Tag))
+				if (!isEmpty && test(Flag_Use_ChessBase_Format))
 					writeTag(tag::ID(i), value);
 				break;
 

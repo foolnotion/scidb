@@ -114,6 +114,7 @@ public:
 	rating::Type ratingType() const;
 
 	void sort(attribute::tree::ID column);
+	void setIncomplete(unsigned index);
 	void setIncomplete();
 
 	void compressFilter();
@@ -155,7 +156,8 @@ private:
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
-									unsigned frequency);
+									unsigned frequency,
+									unsigned numGames);
 	bool buildTree518(		unsigned myIdn,
 									Board const& startPosition,
 									Board const& myPosition,
@@ -165,7 +167,8 @@ private:
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
-									unsigned frequency);
+									unsigned frequency,
+									unsigned numGames);
 	bool buildTree960(		unsigned myIdn,
 									Board const& startPosition,
 									Board const& myPosition,
@@ -175,7 +178,8 @@ private:
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
-									unsigned frequency);
+									unsigned frequency,
+									unsigned numGames);
 	bool buildTreeStandard(	unsigned myIdn,
 									Board const& startPosition,
 									Board const& myPosition,
@@ -185,7 +189,8 @@ private:
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
-									unsigned frequency);
+									unsigned frequency,
+									unsigned numGames);
 	bool buildTreeStart(		unsigned myIdn,
 									Board const& startPosition,
 									Board const& myPosition,
@@ -195,7 +200,8 @@ private:
 									tree::Mode mode,
 									ReachableFunc reachableFunc,
 									util::Progress& progress,
-									unsigned frequency);
+									unsigned frequency,
+									unsigned numGames);
 
 	void possiblyAdd(	Database const& base,
 							GameInfo const& info,
@@ -206,16 +212,17 @@ private:
 	static bool isCached(TreeCache& cache, uint64_t hash, Position const& position);
 	static Tree* lookup(TreeCache& cache, uint64_t hash, Position const& position);
 
-	Database*		m_base;
-	Key				m_key;
-	unsigned			m_index;
-	bool				m_complete;
-	List				m_list;
-	TreeInfo			m_total;
-	Filter			m_filter;
+	Database*	m_base;
+	Key			m_key;
+	unsigned		m_index;
+	unsigned		m_last;
+	bool			m_complete;
+	List			m_list;
+	TreeInfo		m_total;
+	Filter		m_filter;
 
 #ifdef SHOW_TREE_INFO
-	unsigned			m_numGamesParsed;
+	unsigned		m_numGamesParsed;
 #endif
 };
 

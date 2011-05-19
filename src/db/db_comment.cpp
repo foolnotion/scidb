@@ -73,7 +73,7 @@ struct XmlData
 
 struct HtmlData
 {
-	HtmlData(mstl::string& s) :result(s) ,skipLang(0), isXml(false) ,isHtml(false) ,parseNag(false)	{}
+	HtmlData(mstl::string& s) :result(s) ,skipLang(0), isXml(false) ,isHtml(false)	{}
 
 	mstl::string& result;
 	mstl::string  lang;
@@ -82,7 +82,6 @@ struct HtmlData
 
 	bool isXml;
 	bool isHtml;
-	bool parseNag;
 };
 
 
@@ -422,8 +421,7 @@ struct HtmlConv : public Comment::Callback
 
 	void nag(mstl::string const& s)
 	{
-		m_result.append("<nag>", 5);
-		m_result.append('$');
+		m_result.append("<nag>$", 6);
 		m_result.append(s);
 		m_result.append("</nag>", 6);
 	}
@@ -593,12 +591,12 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 					case '$':
 						if (isdigit(s[1]))
 						{
-							unsigned nag	= 0;
-							unsigned k		= 1;
+							unsigned nag = 0;
+							int k = 1;
 
 							do
 								nag = nag*10 + (s[k] - '0');
-							while (isdigit(s[++k]));
+							while (++k < len && isdigit(s[k]));
 
 							if (nag < nag::Scidb_Specific)
 							{
@@ -730,7 +728,7 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 			if (strcmp(elem, "lang") == 0)
 			{
 				if (	attr[0]
-					&& ::strcmp(attr[0], "id") == 0
+					&& strcmp(attr[0], "id") == 0
 					&& attr[1]
 					&& islower(attr[1][0])
 					&& islower(attr[1][1])
@@ -751,10 +749,7 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 
 		case 'n':
 			if (strcmp(elem, "nag") == 0)
-			{
-				data->parseNag = true;
 				data->isXml = true;
-			}
 			break;
 
 		case 'u':
@@ -803,11 +798,6 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 					data->result.append(">", 1);
 				}
 			}
-			break;
-
-		case 'n':
-			if (strcmp(elem, "nag") == 0)
-				data->parseNag = false;
 			break;
 	}
 }
@@ -1002,7 +992,7 @@ Comment::toHtml(mstl::string& result) const
 
 						s = sys::utf8::Codec::utfNextChar(s, code);
 
-						if (code < 128)
+						if (code < 0x80)
 							result += char(code);
 						else
 							result.format("&#x%04x;", code);

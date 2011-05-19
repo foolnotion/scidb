@@ -74,11 +74,12 @@ install: $(PROGRAM)
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
 	rm -f $(SHAREDIR)/data/eco.bin
-	for i in `ls data/*.*`; do \
-		rm -f $(SHAREDIR)/data/$$f \
+	for f in `ls data/*.*`; do \
+		rm -f $(SHAREDIR)/$$f; \
 	done
-	/bin/sh -e 'find $(BINDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
-	/bin/sh -e 'find $(SHAREDIR) -type d -empty -exec rmdir {} \; 2>/dev/null'
+	for d in `find $(SHAREDIR) -type d -empty`; do \
+		rmdir $$d; \
+	done
 
 clean:
 	rm -f $(TARGETS) Makefile.bak

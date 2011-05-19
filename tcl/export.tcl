@@ -313,36 +313,34 @@ array set Flags {
 	pgn,include_comments							 1
 	pgn,include_annotation						 2
 	pgn,include_marks								 3
-	pgn,include_ply_count_tag					 4
-	pgn,include_termination_tag				 5
-	pgn,include_mode_tag							 6
+	pgn,include_termination_tag				 4
+	pgn,include_mode_tag							 5
 	pgn,include_opening_tag						 7
-	pgn,include_setup_tag						10
-	pgn,include_variant_tag						11
-	pgn,include_position_tag					12
-	pgn,include_time_mode_tag					13
-	pgn,exclude_extra_tags						14
-	pgn,add_country_after_player				15
-	pgn,indent_variations						16
-	pgn,indent_comments							17
-	pgn,column_style								18
-	pgn,symbolic_annotation_style				19
-	pgn,extended_symbolic_style				20
-	pgn,convert_null_moves						21
-	pgn,space_after_move_number				22
-	pgn,shredder_fen								23
-	pgn,convert_lost_result_to_comment		24
-	pgn,append_mode_to_event_type				25
-	pgn,use_chessbase_format					26
-	pgn,comment_to_html							27
-	pgn,exclude_games_with_illegal_moves	28
+	pgn,include_setup_tag						 9
+	pgn,include_variant_tag						10
+	pgn,include_position_tag					11
+	pgn,include_time_mode_tag					12
+	pgn,exclude_extra_tags						13
+	pgn,add_country_after_player				14
+	pgn,indent_variations						15
+	pgn,indent_comments							16
+	pgn,column_style								17
+	pgn,symbolic_annotation_style				18
+	pgn,extended_symbolic_style				29
+	pgn,convert_null_moves						20
+	pgn,space_after_move_number				21
+	pgn,shredder_fen								22
+	pgn,convert_lost_result_to_comment		23
+	pgn,append_mode_to_event_type				24
+	pgn,use_chessbase_format					25
+	pgn,comment_to_html							25
+	pgn,exclude_games_with_illegal_moves	26
 }
 
 array set Defaults {
 	pgn,include_varations						1
 	pgn,include_comments							1
 	pgn,include_marks								1
-	pgn,include_ply_count_tag					1
 	pgn,include_termination_tag				0
 	pgn,include_mode_tag							0
 	pgn,include_opening_tag						1
@@ -423,10 +421,10 @@ array set Fields {
 	pgn	{	include_varations include_comments include_marks indent_variations indent_comments
 				convert_lost_result_to_comment add_country_after_player append_mode_to_event_type
 				symbolic_annotation_style extended_symbolic_style shredder_fen column_style
-				convert_null_moves comment_to_html space_after_move_number include_ply_count_tag
-				include_termination_tag include_mode_tag include_opening_tag include_setup_tag
-				include_variant_tag include_position_tag include_time_mode_tag exclude_extra_tags
-				use_chessbase_format exclude_games_with_illegal_moves
+				convert_null_moves comment_to_html space_after_move_number include_termination_tag
+				include_mode_tag include_opening_tag include_setup_tag include_variant_tag
+				include_position_tag include_time_mode_tag exclude_extra_tags use_chessbase_format
+				exclude_games_with_illegal_moves
 			}
 	scid	{}
 }

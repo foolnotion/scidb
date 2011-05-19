@@ -337,6 +337,7 @@ Database::addGame(Game const& game)
 
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
+		m_treeCache.setIncomplete();
 	}
 
 	return state;
@@ -366,6 +367,7 @@ Database::updateGame(Game const& game)
 			m_codec->update(m_rootname, game.index(), true);
 
 		m_lastChange = sys::time::timestamp();
+		m_treeCache.setIncomplete(game.index());
 
 		// TODO: only an update is needed
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),

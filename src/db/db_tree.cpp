@@ -35,6 +35,7 @@
 #include "u_progress.h"
 
 #include "m_bitset.h"
+#include "m_limits.h"
 #include "m_ref_counted_ptr.h"
 #include "m_static_check.h"
 
@@ -247,7 +248,8 @@ Tree::buildTree0(	unsigned myIdn,
 						tree::Mode mode,
 						ReachableFunc reachableFunc,
 						util::Progress& progress,
-						unsigned frequency)
+						unsigned frequency,
+						unsigned numGames)
 {
 	typedef EcoTable::EcoSet EcoSet;
 
@@ -262,7 +264,7 @@ Tree::buildTree0(	unsigned myIdn,
 
 	if (myEco)
 	{
-		for (unsigned n = base.countGames(); m_index < n; ++m_index)
+		for ( ; m_index < numGames; ++m_index)
 		{
 			if (progress.interrupted())
 				return false;
@@ -343,7 +345,8 @@ Tree::buildTree518(	unsigned myIdn,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
-							unsigned frequency)
+							unsigned frequency,
+							unsigned numGames)
 {
 	typedef EcoTable::EcoSet EcoSet;
 
@@ -363,7 +366,7 @@ Tree::buildTree518(	unsigned myIdn,
 	myProgress.side[color::White] = myPosition.signature().progress(color::White);
 	myProgress.side[color::Black] = myPosition.signature().progress(color::Black);
 
-	for (unsigned n = base.countGames(); m_index < n; ++m_index)
+	for ( ; m_index < numGames; ++m_index)
 	{
 		if (reportAfter == m_index)
 		{
@@ -439,7 +442,8 @@ Tree::buildTree960(	unsigned myIdn,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
-							unsigned frequency)
+							unsigned frequency,
+							unsigned numGames)
 {
 	typedef EcoTable::EcoSet EcoSet;
 
@@ -449,7 +453,7 @@ Tree::buildTree960(	unsigned myIdn,
 
 	unsigned reportAfter = m_index + frequency;
 
-	for (unsigned n = base.countGames(); m_index < n; ++m_index)
+	for ( ; m_index < numGames; ++m_index)
 	{
 		if (reportAfter == m_index)
 		{
@@ -588,7 +592,8 @@ Tree::buildTreeStandard(unsigned myIdn,
 								tree::Mode mode,
 								ReachableFunc reachableFunc,
 								util::Progress& progress,
-								unsigned frequency)
+								unsigned frequency,
+								unsigned numGames)
 {
 	typedef EcoTable::EcoSet EcoSet;
 
@@ -602,7 +607,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 
 	Eco myEco = EcoTable::specimen().lookup(myLine, myOpening, &myLength, &successors);
 
-	for (unsigned n = base.countGames(); m_index < n; ++m_index)
+	for ( ; m_index < numGames; ++m_index)
 	{
 		if (reportAfter == m_index)
 		{
@@ -654,7 +659,8 @@ Tree::buildTreeStart(unsigned myIdn,
 							tree::Mode mode,
 							ReachableFunc reachableFunc,
 							util::Progress& progress,
-							unsigned frequency)
+							unsigned frequency,
+							unsigned numGames)
 {
 	typedef EcoTable::EcoSet EcoSet;
 
@@ -663,7 +669,7 @@ Tree::buildTreeStart(unsigned myIdn,
 
 	unsigned reportAfter = m_index + mstl::max(frequency, 1000u);
 
-	for (unsigned n = base.countGames(); m_index < n; ++m_index)
+	for ( ; m_index < numGames; ++m_index)
 	{
 		if (reportAfter == m_index)
 		{
@@ -676,7 +682,7 @@ Tree::buildTreeStart(unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		M_STATIC_CHECK(::Empty == 0, Reimplment);
+		M_STATIC_CHECK(::Empty == 0, Reimplement);
 
 		if (info.idn() == myIdn)
 			add(info, Eco(), info.ply<0>(), myPosition);
@@ -711,6 +717,7 @@ Tree::makeTree(TreeP tree,
 												tree::Mode,
 												ReachableFunc,
 												util::Progress&,
+												unsigned,
 												unsigned);
 
 	BuildMeth buildMeth;
@@ -759,6 +766,7 @@ Tree::makeTree(TreeP tree,
 
 		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactPosition());
 		tree->m_index = 0;
+		tree->m_last = mstl::numeric_limits<unsigned>::max();
 		tree->m_complete = false;
 		tree->m_base = &base;
 
@@ -778,7 +786,8 @@ Tree::makeTree(TreeP tree,
 											mode,
 											reachableFunc,
 											progress,
-											frequency))
+											frequency,
+											mstl::min(base.countGames(), tree->m_last)))
 	{
 		uint16_t buf[opening::Max_Line_Length];
 
@@ -816,6 +825,30 @@ Tree::makeTree(TreeP tree,
 	}
 
 	return tree.release();
+}
+
+
+void
+Tree::setIncomplete()
+{
+	m_complete = false;
+	m_last = mstl::numeric_limits<unsigned>::max();
+}
+
+
+void
+Tree::setIncomplete(unsigned index)
+{
+	if (m_complete)
+	{
+		m_index = index;
+		m_last = index;
+		m_complete = false;
+	}
+	else if (index < m_index)
+	{
+		m_index = index;
+	}
 }
 
 

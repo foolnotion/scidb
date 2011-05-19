@@ -249,7 +249,7 @@ private:
 	EditGame* findGame(Cursor* cursor, unsigned index);
 
 	typedef mstl::map<unsigned,EditGame>		GameMap;
-	typedef mstl::map<unsigned,unsigned> 	IndexMap;
+	typedef mstl::map<unsigned,unsigned> 		IndexMap;
 	typedef mstl::map<mstl::string,Cursor*>	CursorMap;
 
 	Cursor*			m_current;

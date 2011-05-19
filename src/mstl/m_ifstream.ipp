@@ -32,7 +32,7 @@ inline void ifstream::set_bufsize(unsigned size)	{ bits::file::set_bufsize(size)
 
 inline unsigned ifstream::bufsize() const	{ return bits::file::bufsize(); }
 inline char* ifstream::buffer() const		{ return bits::file::buffer(); }
-inline uint64_t ifstream::mtime()				{ return bits::file::mtime(); }
+inline uint64_t ifstream::mtime()			{ return bits::file::mtime(); }
 
 inline mstl::string const& ifstream::filename() const { return bits::file::filename(); }
 

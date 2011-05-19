@@ -82,6 +82,7 @@ private:
 
 	Move nextMove();
 	void skipVariations();
+	void checkVariant(TagSet& tags);
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);
@@ -91,6 +92,7 @@ private:
 	decoder::Position	m_position;
 	MoveNode*			m_currentNode;
 	Move					m_move;
+	bool					m_hasVariantTag;
 
 #ifdef DEBUG_SI4
 	HomePawns m_homePawns;

@@ -122,4 +122,12 @@ TreeCache::setIncomplete()
 		m_cache[i]->setIncomplete();
 }
 
+
+void
+TreeCache::setIncomplete(unsigned index)
+{
+	for (unsigned i = 0; i < m_inUse; ++i)
+		m_cache[i]->setIncomplete(index);
+}
+
 // vi:set ts=3 sw=3:

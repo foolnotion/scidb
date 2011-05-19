@@ -43,8 +43,8 @@ set FileClose				"&Close"
 set FileQuit				"&Quit"
 
 set GameNew					"&New Game"
-set GameNewShuffle		"New Game: &Shuffle"
-set GameNewShuffleSymm	"New Game: S&huffle (symmetrical only)"
+set GameNewShuffle		"N&ew Game: Shuffle"
+set GameNewShuffleSymm	"Ne&w Game: Shuffle (symmetrical only)"
 set GameSave				"&Save Game"
 set GameReplace			"&Replace Game"
 

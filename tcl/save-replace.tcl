@@ -2558,7 +2558,6 @@ proc CheckFields {top title fields} {
 	foreach tag [array names Lookup] {
 		if {![info exists Tags($tag)]} {
 			set value $Lookup($tag)
-puts "$tag --> $value"
 			if {[string length $value] == 0} {
 				lappend warnings [format $mc::TagIsEmpty $tag]
 			} elseif {$value ne "?"} {

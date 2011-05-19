@@ -93,6 +93,7 @@ Decoder::Decoder(ByteStream& strm, sys::utf8::Codec& codec)
 	:m_strm(strm)
 	,m_codec(codec)
 	,m_currentNode(0)
+	,m_hasVariantTag(false)
 {
 }
 
@@ -378,8 +379,6 @@ Decoder::skipTags()
 void
 Decoder::decodeTags(TagSet& tags)
 {
-	Board const& startBoard = m_position.startBoard();
-
 	Byte significance[2] = { 2, 2 };
 	mstl::string out;
 	Byte b;
@@ -413,17 +412,7 @@ Decoder::decodeTags(TagSet& tags)
 						break;
 
 					case tag::Variant:
-						if (!startBoard.isStandardPosition())
-						{
-							if (startBoard.isChess960Position())
-								tags.set(tag::Variant, chess960::identifier());
-							else if (startBoard.isShuffleChessPosition())
-								tags.set(tag::Variant, shuffle::identifier());
-							else if (!startBoard.notDerivableFromChess960())
-								tags.set(tag::Variant, shuffle::identifier());
-							else if (!startBoard.notDerivableFromStandardChess())
-								tags.set(tag::Variant, chess960::identifier());
-						}
+						m_hasVariantTag = true;
 						break;
 
 					case tag::Fen: // should not happen
@@ -528,25 +517,6 @@ Decoder::decodeTags(TagSet& tags)
 			}
 		}
 	}
-
-	if (!m_position.startBoard().isStandardPosition())
-	{
-		if (startBoard.isChess960Position())
-		{
-			tags.set(tag::Variant, chess960::identifier());
-		}
-		else if (startBoard.isShuffleChessPosition())
-		{
-			tags.set(tag::Variant, shuffle::identifier());
-		}
-		else if (!tags.contains(tag::Variant))
-		{
-			if (!startBoard.notDerivableFromChess960())
-				tags.set(tag::Variant, shuffle::identifier());
-			else if (!startBoard.notDerivableFromStandardChess())
-				tags.set(tag::Variant, chess960::identifier());
-		}
-	}
 }
 
 
@@ -578,6 +548,32 @@ Decoder::decodeComments(MoveNode* node)
 }
 
 
+void
+Decoder::checkVariant(TagSet& tags)
+{
+	Board const& startBoard = m_position.startBoard();
+
+	if (!startBoard.isStandardPosition())
+	{
+		if (startBoard.isChess960Position())
+		{
+			tags.set(tag::Variant, chess960::identifier());
+		}
+		else if (startBoard.isShuffleChessPosition())
+		{
+			tags.set(tag::Variant, shuffle::identifier());
+		}
+		else if (m_hasVariantTag)
+		{
+			if (!startBoard.notDerivableFromChess960())
+				tags.set(tag::Variant, shuffle::identifier());
+			else if (!startBoard.notDerivableFromStandardChess())
+				tags.set(tag::Variant, chess960::identifier());
+		}
+	}
+}
+
+
 save::State
 Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
 {
@@ -598,6 +594,8 @@ Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
 	{
 		m_position.setup();
 	}
+
+	checkVariant(tags);
 
 	if (!consumer.startGame(tags, m_position.board()))
 		return save::UnsupportedVariant;
@@ -651,6 +649,8 @@ Decoder::doDecoding(unsigned flags, GameData& data)
 	{
 		m_position.setup();
 	}
+
+	checkVariant(data.m_tags);
 
 	unsigned plyNumber = m_position.board().plyNumber();
 

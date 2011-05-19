@@ -107,6 +107,8 @@
 ::menu::mc::GameNew					"&Neue Partie"
 ::menu::mc::GameNewShuffle			"Neue Partie: &Mischen"
 ::menu::mc::GameNewShuffleSymm	"Neue Partie: M&ischen (nur symmetrische)"
+::menu::mc::GameSave					"Partie &hinzufügen"
+::menu::mc::GameReplace				"Partie &ersetzen"
 
 ::menu::mc::HelpInfo					"&Information"
 ::menu::mc::HelpContents			"In&halt"
@@ -444,6 +446,7 @@
 ::board::piece::mc::Zoom						"Zoom"
 ::board::piece::mc::Shadow						"Schatten"
 ::board::piece::mc::Opacity					"Opazität"
+::board::piece::mc::ShadowDiffusion			"Schattendiffusion"
 ::board::piece::mc::PieceStyleConf			"Figurengestaltungskonfiguration"
 ::board::piece::mc::Offset						"Verschiebung"
 ::board::piece::mc::Rotate						"Rotation"
@@ -908,6 +911,7 @@
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Schreibe Kommentar für Ergebnis '0-0'"
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Modus an Ereignistyp anhängen"
 ::export::mc::Option(pgn,use_chessbase_format)					"ChessBase Format benutzen"
+::export::mc::Option(pgn,comment_to_html)							"Schreibe Kommentar im HTML-Format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Partien mit regelwidrigen Zügen ausschliessen"
 
 ### save/replace #######################################################
@@ -992,6 +996,7 @@
 ::dialog::save::mc::MissingMonth					"Die Monatsangabe wird vermisst."
 ::dialog::save::mc::StringTooLong				"Tag %tag%: der Eintrag '%value%' ist zu lang und wird auf '%trunc%' abgeschnitten."
 ::dialog::save::mc::InvalidEventDate			"Das eingegebene Turnierdatum kann nicht akzeptiert werden: Die Differenz zwischen dem Partiejahr und dem Turnierjahr muss kleiner als 4 sein (eine Beschränkung in Scid's Datenbankformat)."
+::dialog::save::mc::TagIsEmpty					"Das Tag '%s' ist leer (und wird ausgesondert)"
 
 ### game ###############################################################
 ::game::mc::Overwrite "Die Partie %s wurde geändert.\n\nWollen sie wirklich ohne zu Speichern fortfahren?"
@@ -1229,7 +1234,9 @@
 ::table::mc::Foreground					"Vordergrund"
 ::table::mc::Background					"Hintergrund"
 ::table::mc::DisabledForeground		"Gelöscht-Vordergrund"
-::table::mc::SelectForeground			"Selektiert-Vordergrund"
+::table::mc::SelectionForeground		"Selektiert-Vordergrund"
+::table::mc::SelectionBackground		"Selektiert-Hintergrund"
+::table::mc::HighlightColor			"Markierungsfarbe"
 ::table::mc::Stripes						"Streifen"
 ::table::mc::MinWidth					"Minimale Breite"
 ::table::mc::MaxWidth					"Maximale Breite"
@@ -1258,6 +1265,7 @@
 ::dialog::choosecolor::mc::Old				"Zuvor"
 ::dialog::choosecolor::mc::Current			"Aktuell"
 ::dialog::choosecolor::mc::Color				"Farbe"
+::dialog::choosecolor::mc::ColorSelection	"Farbauswahl"
 ::dialog::choosecolor::mc::Red				"Rot"
 ::dialog::choosecolor::mc::Green				"Grün"
 ::dialog::choosecolor::mc::Blue				"Blau"
