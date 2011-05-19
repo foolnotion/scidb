@@ -713,13 +713,33 @@ proc ParseContent {lang} {
 	set w $Vars(widget:text)
 	set dump [$w dump -tag -text 1.0 end]
 	set count 0
+	set fst 0
+	set lst 0
 	set n 1
 
 	foreach {key value index} $dump {
 		switch $key {
-			text		{ incr count $n }
-			tagon		{ switch -glob $value { symbol* - code* - figurine { set n 0 } } }
-			tagoff	{ switch -glob $value { symbol* - code* - figurine { set n 1 } } }
+			text		{
+				incr count $n
+				set lst 1
+				if {$fst == 0} { set fst 1 }
+			}
+
+			tagon {
+				switch -glob $value {
+					symbol* - code* - figurine {
+						set n 0
+						set lst 2
+						if {$fst == 0} { set fst 2 }
+					}
+				}
+			}
+
+			tagoff {
+				switch -glob $value {
+					symbol* - code* - figurine { set n 1 }
+				}
+			}
 		}
 	}
 
@@ -735,9 +755,9 @@ proc ParseContent {lang} {
 			text {
 				if {$token eq "str"} {
 					if {[incr n] == 1} {
-						set value [string trimleft $value]
+						if {$fst == 1} { set value [string trimleft $value] }
 					} elseif {$n == $count} {
-						set value [string trimright $value]
+						if {$lst == 1} { set value [string trimright $value] }
 					}
 				} else {
 					set value $Vars(symbol:$num)

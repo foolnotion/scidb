@@ -53,7 +53,7 @@ class Consumer : public Provider
 {
 public:
 
-	Consumer(format::Type srcFormat, mstl::string const& encoding = mstl::string::empty_string);
+	Consumer(format::Type srcFormat, mstl::string const& encoding);
 	~Consumer() throw();
 
 	bool isMainline() const;

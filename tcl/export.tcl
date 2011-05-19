@@ -124,6 +124,7 @@ set Option(pgn,shredder_fen)								"Write Shredder-FEN (default is X-FEN)"
 set Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
 set Option(pgn,append_mode_to_event_type)				"Add mode after event type"
 set Option(pgn,use_chessbase_format)					"Use ChessBase format"
+set Option(pgn,comment_to_html)							"Write comment in HTML style"
 set Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
 
 }
@@ -306,6 +307,7 @@ set Margin(pt)	42.48
 variable Types	{scidb scid pgn pdf html tex}
 variable Info
 
+# NOTE: order must coincide with flags in db::Writer.
 array set Flags {
 	pgn,include_varations						 0
 	pgn,include_comments							 1
@@ -332,7 +334,8 @@ array set Flags {
 	pgn,convert_lost_result_to_comment		24
 	pgn,append_mode_to_event_type				25
 	pgn,use_chessbase_format					26
-	pgn,exclude_games_with_illegal_moves	27
+	pgn,comment_to_html							27
+	pgn,exclude_games_with_illegal_moves	28
 }
 
 array set Defaults {
@@ -362,6 +365,7 @@ array set Defaults {
 	pgn,append_mode_to_event_type				0
 	pgn,use_chessbase_format					0
 	pgn,exclude_games_with_illegal_moves	0
+	pgn,comment_to_html							0
 
 	tex,margins,A2								{ 15 15 15 15 }
 	tex,margins,A3								{ 15 15 15 15 }
@@ -419,7 +423,7 @@ array set Fields {
 	pgn	{	include_varations include_comments include_marks indent_variations indent_comments
 				convert_lost_result_to_comment add_country_after_player append_mode_to_event_type
 				symbolic_annotation_style extended_symbolic_style shredder_fen column_style
-				convert_null_moves space_after_move_number include_ply_count_tag
+				convert_null_moves comment_to_html space_after_move_number include_ply_count_tag
 				include_termination_tag include_mode_tag include_opening_tag include_setup_tag
 				include_variant_tag include_position_tag include_time_mode_tag exclude_extra_tags
 				use_chessbase_format exclude_games_with_illegal_moves

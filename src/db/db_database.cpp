@@ -291,15 +291,27 @@ Database::loadGame(unsigned index, Game& game)
 }
 
 
-void
-Database::newGame(Game* game)
+save::State
+Database::newGame(Game& game, GameInfo const& info)
 {
+	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(isMemoryOnly());
 
-	m_gameInfoList.push_back(new GameInfo());
+	unsigned char buffer[8192];
+	ByteStream strm(buffer, sizeof(buffer));
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	save::State state = m_codec->addGame(strm, info);
+	m_namebases.update();
 
-	if (game)
-		game->finishLoad();
+	if (state == save::Ok)
+	{
+		m_lastChange = sys::time::timestamp();
+		m_statistic.add(*m_gameInfoList.back());
+	}
+
+	return state;
 }
 
 

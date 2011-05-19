@@ -565,7 +565,7 @@ Decoder::decodeComments(MoveNode* node)
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
 
-			if (Comment::convertCommentToXml(comment, result))
+			if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
 				node->addAnnotation(nag::Diagram);
 
 			node->swapMarks(marks);
@@ -708,7 +708,7 @@ Decoder::decodeComments(Consumer& consumer, unsigned flags, MoveNode* node)
 			marks.extractFromComment(comment);
 			m_codec.toUtf8(comment);
 
-			if (Comment::convertCommentToXml(comment, result))
+			if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
 				node->addAnnotation(nag::Diagram);
 
 			node->swapComment(result);

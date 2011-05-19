@@ -117,7 +117,7 @@ Encoder::encodeComments(MoveNode* node)
 
 			if (node->hasComment())
 			{
-				node->comment().flatten(comment);
+				node->comment().flatten(comment, m_codec.isUtf8() ? Comment::Unicode : Comment::Latin1);
 				m_codec.fromUtf8(comment, comment);
 //				PgnWriter::convertExtensions(comment, PgnWriter::Mode_Extended);
 			}

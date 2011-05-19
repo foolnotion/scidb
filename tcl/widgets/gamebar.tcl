@@ -1070,10 +1070,14 @@ proc EnterPlayer {gamebar id side} {
 	variable Defaults
 
 	if {$id eq $Specs(selected:$gamebar)} {
-		$gamebar itemconfigure ${side}bg${id} \
-			-fill $Defaults(color:player) \
-			-outline $Defaults(color:player) \
-			;
+		set name [GetPlayerName $gamebar $id $side]
+
+		if {[string length $name]} {
+			$gamebar itemconfigure ${side}bg${id} \
+				-fill $Defaults(color:player) \
+				-outline $Defaults(color:player) \
+				;
+		}
 	}
 }
 
@@ -1116,16 +1120,36 @@ proc LeaveFlag {gamebar id} {
 }
 
 
-proc ShowPlayer {gamebar id side} {
+proc GetPlayerInfo {gamebar id side} {
 	lassign [::scidb::game::sink? $id] base index
 	set playerIndex [::scidb::db::fetch ${side}PlayerIndex $base $index]
-	set info [scidb::db::get playerInfo $playerIndex -1 $base -card -ratings {Elo Elo}]
-	::playertable::showInfo $gamebar $info
+	return [scidb::db::get playerInfo $playerIndex -1 $base -card -ratings {Elo Elo}]
+}
+
+
+proc GetPlayerName {gamebar id side} {
+	return [lindex [GetPlayerInfo $gamebar $id $side] 0]
+}
+
+
+proc ShowPlayer {gamebar id side} {
+
+	set info [GetPlayerInfo $gamebar $id $side]
+
+	if {[string length [lindex $info 0]]} {
+		::playertable::showInfo $gamebar $info
+	} else {
+		ShowTags $gamebar $id
+	}
 }
 
 
 proc HidePlayer {gamebar id side} {
-	::playertable::hideInfo $gamebar
+	if {[string length [GetPlayerName $gamebar $id $side]]} {
+		::playertable::hideInfo $gamebar
+	} else {
+		HideTags $gamebar
+	}
 }
 
 

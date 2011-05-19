@@ -1652,7 +1652,7 @@ Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const&
 db::Consumer*
 Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(srcFormat, *this);
+	return new Consumer(srcFormat, *this, encoding());
 }
 
 

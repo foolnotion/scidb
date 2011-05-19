@@ -500,7 +500,7 @@ View::exportGames(mstl::string const& filename,
 //		else
 		{
 			format::Type format(ext == "si3" ? format::Scid3 : format::Scid4);
-			si3::Consumer consumer(format, dynamic_cast<si3::Codec&>(destination.codec()));
+			si3::Consumer consumer(format, dynamic_cast<si3::Codec&>(destination.codec()), encoding);
 			count = exportGames(consumer, gameMode, log, progress);
 		}
 

@@ -115,10 +115,16 @@ proc dialogButtons {dlg buttons dflt {useIcons yes}} {
 		pack $dlg.__sep -fill x -side bottom
 	}
 	pack $dlg.__buttons -anchor center -side bottom -before $dlg.__sep
-	set entries {}
 
+	set entries {}
 	foreach entry $buttons {
 		set icon {}
+		lassign $entry type var icon
+		lappend entries [list $type $var $icon [lsearch $ButtonOrder $type]]
+	}
+	set entries [lsort -index 3 -integer $entries]
+
+	foreach entry $entries {
 		lassign $entry type var icon
 		set w [::ttk::button $dlg.$type -class TButton]
 
@@ -163,13 +169,7 @@ proc dialogButtons {dlg buttons dflt {useIcons yes}} {
 
 		dialogButtonsSetup $dlg $type $var $dflt
 		bind $w <Return> "event generate $w <Key-space>; break"
-		lappend entries [list $w [lsearch $ButtonOrder $type]]
-	}
-
-	set entries [lsort -index 1 -integer $entries]
-	
-	foreach entry $entries {
-		pack [lindex $entry 0] -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+		pack $w -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
 	}
 }
 

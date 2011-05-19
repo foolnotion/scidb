@@ -36,6 +36,8 @@ class Comment
 {
 public:
 
+	enum Encoding { Unicode, Latin1 };
+
 	struct Callback
 	{
 		enum Attribute
@@ -85,6 +87,7 @@ public:
 	void remove(mstl::string const& lang);
 	void strip(LanguageSet const& set);
 	void setContent(mstl::string const& s);
+	bool fromHtml(mstl::string const& s);
 	void swap(Comment& comment);
 	void swap(mstl::string& content);
 	void normalize();
@@ -92,12 +95,13 @@ public:
 
 	void parse(Callback& cb) const;
 	void collectLanguages(LanguageSet& result) const;
-	void flatten(mstl::string& result) const;
+	void flatten(mstl::string& result, Encoding encoding) const;
+	void toHtml(mstl::string& result) const;
 
 	unsigned countLength(mstl::string const& lang) const;
 	unsigned countLength(LanguageSet const& set) const;
 
-	static bool convertCommentToXml(mstl::string const& comment, mstl::string& result);
+	static bool convertCommentToXml(mstl::string const& comment, mstl::string& result, Encoding encoding);
 
 private:
 

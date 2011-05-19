@@ -71,6 +71,7 @@ proc new {parent base info {index -1}} {
 		select $pos
 	} elseif {[llength $List] < $Size} {
 		set pos [llength $List]
+		# XXX we should use replace instead
 		::scidb::game::release $pos	;# release scratch game
 		load $parent $pos $base $index
 		if {[llength $info] == 0} { set info [::scidb::game::info $pos] }
@@ -261,11 +262,14 @@ proc AskOverwrite {parent info} {
 
 proc Update {_ position} {
 	variable List
+	variable Max
 
-	lset List $position 2 0 [::scidb::game::query $position database]
-	lset List $position 2 1 [::scidb::game::query $position index]
-	lset List $position 1 [::scidb::game::query $position modified?]
-	lset List $position 3 [::scidb::game::info $position]
+	if {$position <= $Max} {
+		lset List $position 2 0 [::scidb::game::query $position database]
+		lset List $position 2 1 [::scidb::game::query $position index]
+		lset List $position 1 [::scidb::game::query $position modified?]
+		lset List $position 3 [::scidb::game::info $position]
+	}
 }
 
 } ;# namespace game

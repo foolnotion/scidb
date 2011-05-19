@@ -286,17 +286,17 @@ proc open {parent base info view index {fen {}}} {
 }
 
 
-#proc load {parent base info view index windowId} {
-#	if {[llength $windowId] == 0} { set windowId _ }
-#
-#	if {![namespace exists [namespace current]::${windowId}]} {
-#		return [open $parent $base $info $view $index]
-#	}
-#
-#	variable ${windowId}::Vars
-#	NextGame $Vars(dlg) $windowId {} [expr {$index - $Vars(index)}]
-#	return $windowId
-#}
+proc load {parent base info view index windowId} {
+	if {[llength $windowId] == 0} { set windowId _ }
+
+	if {![namespace exists [namespace current]::${windowId}]} {
+		return [open $parent $base $info $view $index]
+	}
+
+	variable ${windowId}::Vars
+	NextGame $Vars(dlg) $windowId {} [expr {$index - $Vars(index)}]
+	return $windowId
+}
 
 
 proc makeOpeningLines {data} {

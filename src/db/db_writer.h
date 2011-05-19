@@ -120,7 +120,7 @@ protected:
 
 private:
 
-	mstl::string const& conv(mstl::string const& s);
+	mstl::string const& conv(Comment const& comment);
 
 	void writeMove(Move const& move,
 						Annotation const& annotation,

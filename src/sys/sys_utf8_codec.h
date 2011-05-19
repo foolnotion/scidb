@@ -70,6 +70,7 @@ public:
 	static unsigned countUtfChars(mstl::string const& s);
 	static unsigned utfCharLength(char const* s);
 	static char const* utfNextChar(char const* s);
+	static char const* utfNextChar(char const* s, uint16_t& code);
 	static unsigned levenstein(mstl::string const& lhs,
 										mstl::string const& rhs,
 										unsigned ins = 2,

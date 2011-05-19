@@ -546,7 +546,7 @@ proc SystemHasZlib {} {
 #    if necessary. 
 #
 proc checkZlib {} {
-    global environment package package subdir
+    global environment package subdir
 
     if {[string first "libz." $environment(LDFLAGS)] >= 0} {
         return
@@ -687,7 +687,7 @@ proc SystemHasExpat {} {
 #    if necessary. 
 #
 proc checkExpat {} {
-    global environment subdir
+    global environment subdir package
 
     if {[string first "libz." $environment(LDFLAGS)] >= 0} {
         return

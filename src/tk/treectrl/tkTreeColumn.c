@@ -5822,10 +5822,10 @@ LayoutColumns(
 	if (visWidth < totalWidth &&
 			numSqueeze > 0 &&
 			(tree->alwaysSqueeze ||
-				(tree->prevTreeWidth > Tk_Width(tree->tkwin) ||
-					tree->prevVisWidth > visWidth ||
-					tree->prevColumnWidth > totalWidth ||
-					tree->prevColumnCount < columnCount))) {
+				(totalWidth == tree->prevColumnWidth &&
+					width < tree->prevTreeWidth &&
+					tree->prevColumnWidth <= tree->prevTreeWidth) ||
+					tree->prevColumnCount < columnCount)) {
 		int overplus = 0;
 		int numColumns = 0;
 		int spaceRemaining = totalWidth - visWidth;

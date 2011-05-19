@@ -53,7 +53,7 @@ class Consumer : private Encoder, public db::Consumer
 {
 public:
 
-	Consumer(format::Type srcFormat, Codec& codec);
+	Consumer(format::Type srcFormat, Codec& codec, mstl::string const& encoding);
 
 private:
 

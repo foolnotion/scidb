@@ -626,46 +626,43 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 			}
 			else if (*lhs != rhs)
 			{
-				if (lhsType == TMove)
-				{
-					if (	static_cast<Move const*>(lhs)->ply() == 0
+				if (	lhsType == TMove
+					&& (	static_cast<Move const*>(lhs)->ply() == 0
 						|| static_cast<Move const*>(rhs)->ply() == 0
-						|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply())
+						|| *static_cast<Move const*>(lhs)->ply() != static_cast<Move const*>(rhs)->ply()))
+				{
+					KeyNode const* const* lhsLast	= m_list.begin() + i + 1;
+					KeyNode const* const* lhsEnd	= m_list.end();
+					KeyNode const* const* rhsLast	= var->m_list.begin() + k + 1;
+					KeyNode const* const* rhsEnd	= var->m_list.end();
+
+					while	(	lhsLast < lhsEnd
+							&& rhsLast < rhsEnd
+							&& (*lhsLast)->type() == (*rhsLast)->type()
+							&& (*lhsLast)->key() == (*rhsLast)->key()
+							&& *static_cast<Node const*>(*lhsLast) == static_cast<Node const*>(*rhsLast))
 					{
-						KeyNode const* const* lhsFirst	= m_list.begin() + i + 1;
-						KeyNode const* const* lhsLast		= m_list.end() - 1;
-						KeyNode const* const* rhsFirst	= var->m_list.begin() + k + 1;
-						KeyNode const* const* rhsLast		= var->m_list.end() - 1;
-
-						// XXX: we should search forward
-						while (	lhsFirst <= lhsLast
-								&& rhsFirst <= rhsLast
-								&& (*lhsLast)->type() == (*rhsLast)->type()
-								&& (*lhsLast)->key() == (*rhsLast)->key()
-								&& *static_cast<Node const*>(*lhsLast) == static_cast<Node const*>(*rhsLast))
-						{
-							--lhsLast;
-							--rhsLast;
-						}
-
 						++lhsLast;
 						++rhsLast;
-
-						Key const& before = rhs->endKey();
-						Key const& after = rhsLast == var->m_list.end() ? endVar : (*rhsLast)->startKey();
-						nodes.push_back(root->newAction(Action::Replace, level, before, after));
-						nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
-						nodes.push_back(root->newAction(Action::Finish, level));
-						return;
 					}
+
+					Key const& before = rhs->endKey();
+					Key const& after = rhsLast == var->m_list.end() ? endVar : (*rhsLast)->startKey();
+					nodes.push_back(root->newAction(Action::Replace, level, before, after));
+					nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
+					nodes.push_back(root->newAction(Action::Finish, level));
+					i = lhsLast - m_list.begin() - 1;
+					k = rhsLast - var->m_list.begin() - 1;
 				}
+				else
+				{
+					Key const& before	= rhs->endKey();
+					Key const& after	= (k == n - 1) ? endVar : var->m_list[k + 1]->startKey();
 
-				Key const& before	= rhs->endKey();
-				Key const& after	= (k == n - 1) ? endVar : var->m_list[k + 1]->startKey();
-
-				nodes.push_back(root->newAction(Action::Replace, level, before, after));
-				nodes.push_back(lhs);
-				nodes.push_back(root->newAction(Action::Finish, level));
+					nodes.push_back(root->newAction(Action::Replace, level, before, after));
+					nodes.push_back(lhs);
+					nodes.push_back(root->newAction(Action::Finish, level));
+				}
 			}
 
 			++i;

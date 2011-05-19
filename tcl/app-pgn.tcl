@@ -1354,6 +1354,7 @@ proc PopupMenu {parent position} {
 	variable [namespace parent]::database::mc::T_Clipbase
 	variable [namespace parent]::database::clipbaseName
 	variable [namespace parent]::database::scratchbaseName
+	variable Options
 	variable Vars
 
 	set menu $parent.__menu__
@@ -1669,12 +1670,15 @@ proc PopupMenu {parent position} {
 
 	menu $menu.display
 	$menu add cascade -menu $menu.display -label $mc::Display
+	array unset state
 
 	foreach {label var onValue} {	ColumnStyle column-style 1
 											NarrowLines narrow-lines 1
 											BoldTextForMainlineMoves mainline-bold 1
 											ShowDiagrams diagram-show 1} {
+		set state normal
 		if {$onValue} { set offValue 0 } else { set offValue 1 }
+		if {$var eq "narrow-lines" && !$Options(column-style)} { set state disabled }
 
 		$menu.display add checkbutton \
 			-label [set mc::$label] \
@@ -1682,6 +1686,7 @@ proc PopupMenu {parent position} {
 			-offvalue $offValue \
 			-variable [namespace current]::Options($var) \
 			-command [namespace code [list Refresh $var]] \
+			-state $state \
 			;
 	}
 

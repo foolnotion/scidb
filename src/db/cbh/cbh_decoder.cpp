@@ -617,6 +617,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 					case '<':	str += '\x01'; break;
 					case '>':	str += '\x02'; break;
 					case '&':	str += '\x03'; break;
+					case '"':	str += '\x04'; break;
 					default:		str += c; break;
 				}
 			}

@@ -53,7 +53,7 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIBRARY) -lpthread
+ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libTeXt $(LIB_SUBDIRS)
 

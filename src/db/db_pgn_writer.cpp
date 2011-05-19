@@ -29,6 +29,8 @@
 #include "db_mark_set.h"
 #include "db_move.h"
 
+#include "sys_utf8_codec.h"
+
 #include "m_ostream.h"
 #include "m_assert.h"
 
@@ -369,15 +371,26 @@ PgnWriter::writeComment(mstl::string const& comment)
 void
 PgnWriter::writeComment(Comment const& comment, MarkSet const& marks)
 {
-	if (test(Flag_Include_Comments) && !comment.isEmpty())
+	mstl::string text;
+
+	if (test(Flag_Comment_To_Html))
 	{
-		mstl::string text;
-		comment.flatten(text);
-		replaceCurlyBraces(text);
-		writeComment(text);
+		comment.toHtml(text);
+	}
+	else if (codec().isUtf8())
+	{
+		comment.flatten(text, Comment::Unicode);
+	}
+	else
+	{
+		comment.flatten(text, Comment::Latin1);
+		codec().fromUtf8(text);
 	}
 
-	if (test(Flag_Include_Marks) && !marks.isEmpty())
+	replaceCurlyBraces(text);
+	writeComment(text);
+
+	if (!marks.isEmpty())
 	{
 		m_marks.clear();
 

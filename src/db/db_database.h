@@ -150,7 +150,7 @@ public:
 	/// Saves a game at the given position.
 	void replaceGame(unsigned index, Game const& game);
 	/// Adds a game to the database.
-	void newGame(Game* game = 0);
+	save::State newGame(Game& game, GameInfo const& info);
 	/// Deletes (or undeletes) a game from the database.
 	void deleteGame(unsigned index, bool flag = true);
 	/// Set the game flags of the specified game.

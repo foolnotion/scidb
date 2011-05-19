@@ -232,8 +232,23 @@ Application::insertScratchGame(unsigned position)
 	IndexMap::const_iterator i = m_indexMap.find(position);
 	if (i == m_indexMap.end())
 	{
+		GameInfo info;
+		mstl::string const& empty = mstl::string::empty_string;
+
+		Namebase::PlayerEntry*	player		= base.namebase(Namebase::Player).insertPlayer(empty);
+		Namebase::SiteEntry*		site			= base.namebase(Namebase::Site).insertSite(empty);
+		Namebase::EventEntry*	event			= base.namebase(Namebase::Event).insertEvent(empty, site);
+		Namebase::Entry*			annotator	= base.namebase(Namebase::Annotator).insert(empty);
+
+		info.setup(0, 0, player, player, event, annotator, base.namebases());
+		base.namebases().update();
+
 		m_indexMap[position] = index = base.countGames();
-		base.newGame(game.game);
+
+		if (base.newGame(*game.game, info) != save::Ok)
+			M_RAISE("unexpected error: couldn't add new game to Scratchbase");
+
+		game.game->finishLoad();
 	}
 	else
 	{
@@ -245,6 +260,8 @@ Application::insertScratchGame(unsigned position)
 	game.game->setUndoLevel(::undoLevel);
 	game.crcIndex = base.gameInfo(index).computeChecksum();
 	game.crcMoves = game.game->computeChecksum();
+	game.sourceBase = base.name();
+	game.sourceIndex = index;
 
 	return game;
 }
@@ -733,6 +750,8 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.crcIndex = info.computeChecksum();
 	game.crcMoves = game.game->computeChecksum();
 	game.game->updateSubscriber(Game::UpdateAll);
+	game.sourceBase = base.name();
+	game.sourceIndex = index;
 
 	if (m_subscriber && !isNew)
 		m_subscriber->updateGameInfo(position);
@@ -937,11 +956,13 @@ Application::moveGamesToScratchbase(Cursor& cursor)
 
 			m_indexMap[i->first] = index;
 
-			base.newGame();
-			base.gameInfo(index) = game.cursor->base().gameInfo(game.index);
+			if (base.newGame(*game.game, game.cursor->base().gameInfo(game.index)) != save::Ok)
+				M_RAISE("unexpected error: couldn't add new game to Scratchbase");
 
 			game.cursor = m_scratchBase;
 			game.index = index;
+			game.sourceBase = cursor.name();
+			game.sourceIndex = index;
 		}
 	}
 }

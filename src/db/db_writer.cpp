@@ -71,12 +71,13 @@ Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encod
 
 inline
 mstl::string const&
-Writer::conv(mstl::string const& s)
+Writer::conv(Comment const& comment)
 {
 	if (codec().isUtf8())
-		return s;
+		return comment.content();
 
-	codec().fromUtf8(s, m_buf);
+	m_buf.clear();
+	codec().fromUtf8(comment.content(), m_buf);
 	return m_buf;
 }
 
@@ -84,16 +85,19 @@ Writer::conv(mstl::string const& s)
 void
 Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	if (!m_needSpace && annotation.contains(nag::Diagram))
+	if (test(Flag_Include_Comments))
 	{
-		writeComment(Comment("#"), MarkSet());
-		m_needSpace = true;
-	}
+		if (!m_needSpace && annotation.contains(nag::Diagram))
+		{
+			writeComment(Comment("#"), MarkSet());
+			m_needSpace = true;
+		}
 
-	if (!comment.isEmpty())
-	{
-		writeComment(conv(comment), marks);
-		m_needSpace = true;
+		if (!comment.isEmpty())
+		{
+			writeComment(comment, marks);
+			m_needSpace = true;
+		}
 	}
 }
 
@@ -393,11 +397,11 @@ Writer::writeMove(Move const& move,
 	{
 		Move m(move);
 		board().prepareForSan(m);
-		writeMove(m, m_moveNumber, annotation, marks, conv(comment));
+		writeMove(m, m_moveNumber, annotation, marks, comment);
 	}
 	else
 	{
-		writeMove(move, m_moveNumber, annotation, marks, conv(comment));
+		writeMove(move, m_moveNumber, annotation, marks, comment);
 	}
 
 	m_needSpace = true;

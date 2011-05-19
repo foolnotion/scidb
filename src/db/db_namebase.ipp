@@ -277,9 +277,32 @@ Namebase::ref(Entry* entry)
 
 inline
 Namebase::Entry*
+Namebase::insert(mstl::string const& name)
+{
+	return insert(name, InvalidId, m_list.size() + 1);
+}
+
+
+inline
+Namebase::Entry*
 Namebase::insert(mstl::string const& name, unsigned limit)
 {
 	return insert(name, InvalidId, limit);
+}
+
+
+inline
+Namebase::EventEntry*
+Namebase::insertEvent(mstl::string const& name, NamebaseSite* site)
+{
+	return insertEvent(	name,
+								InvalidId,
+								0, 0, 0,
+								event::Unknown,
+								time::Unknown,
+								event::Undetermined,
+								m_list.size() + 1,
+								site);
 }
 
 
@@ -371,6 +394,20 @@ Namebase::appendEvent(mstl::string const& name, unsigned id, NamebaseSite* site)
 
 inline
 Namebase::PlayerEntry*
+Namebase::insertPlayer(mstl::string const& name)
+{
+	return insertPlayer(	name,
+								InvalidId,
+								country::Unknown,
+								title::None,
+								species::Unspecified,
+								sex::Unspecified,
+								m_list.size() + 1);
+}
+
+
+inline
+Namebase::PlayerEntry*
 Namebase::insertPlayer(	mstl::string const& name,
 								country::Code country,
 								title::ID title,
@@ -420,6 +457,14 @@ Namebase::appendPlayer(mstl::string const& name, unsigned id)
 								species::Unspecified,
 								sex::Unspecified,
 								0);
+}
+
+
+inline
+Namebase::SiteEntry*
+Namebase::insertSite(mstl::string const& name)
+{
+	return insertSite(name, InvalidId, country::Unknown, m_list.size() + 1);
 }
 
 

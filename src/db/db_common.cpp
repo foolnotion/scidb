@@ -3544,8 +3544,12 @@ nag::fromSymbol(mstl::string const& symbol)
 {
 	CommentToken const* p = mstl::lower_bound(Map, Map + U_NUMBER_OF(Map), symbol);
 
-	if (p == Map + U_NUMBER_OF(Map) || symbol.size() != p->token.size() || symbol != p->token)
+	if (	p == Map + U_NUMBER_OF(Map)
+		|| symbol.size() != p->token.size()
+		|| ::strncmp(symbol, p->token, symbol.size()) != 0)
+	{
 		return Null;
+	}
 
 	return nag::ID(p->value);
 }

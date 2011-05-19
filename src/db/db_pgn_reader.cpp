@@ -2137,9 +2137,10 @@ PgnReader::stripDiagram()
 
 	if (s[0] == '#' && (m_comment.size() == 1 || ::isspace(s[1])))
 	{
-		s = ::skipSpaces(s + 1);
+		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 1));
+		m_annotation.add(nag::Diagram);
 	}
-	else
+	else if (m_maybeChessBase)
 	{
 		// ChessBase does not have any convention for diagram notation. Therefore we look for
 		// any sequence "<word> {#}".
@@ -2151,11 +2152,9 @@ PgnReader::stripDiagram()
 		if (::strncmp(s, "{#}", 3) != 0)
 			return;
 
-		s = ::skipSpaces(s + 3);
+		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 3));
+		m_annotation.add(nag::Diagram);
 	}
-
-	m_comment.erase(m_comment.begin(), s);
-	m_annotation.add(nag::Diagram);
 }
 
 
@@ -2255,23 +2254,25 @@ PgnReader::parseComment(Token prevToken, int c)
 	}
 
 	m_comment.trim();
-	convertToUtf(m_comment);
 
-	if (m_maybeChessBase)
+	stripDiagram();
+
+	Comment comment;
+
+	if (comment.fromHtml(m_comment))
 	{
-		mstl::string str;
-
-		if (Comment::convertCommentToXml(m_comment, str))
-			m_annotation.add(nag::Diagram);
-
-		Comment comment;
-		comment.swap(str);
-		comment.normalize();
 		comment.swap(m_comment);
 	}
 	else
 	{
-		stripDiagram();
+		mstl::string str;
+
+		Comment::convertCommentToXml(m_comment, str, Comment::Latin1);
+		Comment comment;
+		comment.swap(str);
+		comment.normalize();
+		comment.swap(m_comment);
+		convertToUtf(m_comment);
 	}
 
 	switch (m_comment.size())

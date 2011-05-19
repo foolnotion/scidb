@@ -105,10 +105,12 @@ public:
 	void setMaxUsage(unsigned usage);
 
 	Entry* insert();
+	Entry* insert(mstl::string const& name);
 	Entry* insert(mstl::string const& name, unsigned limit);
 	Entry* insert(mstl::string const& name, unsigned id, unsigned limit);
 	Entry const* append(mstl::string const& name, unsigned id);
 
+	SiteEntry* insertSite(mstl::string const& name);
 	SiteEntry* insertSite(	mstl::string const& name,
 									unsigned id,
 									country::Code country,
@@ -117,6 +119,8 @@ public:
 	SiteEntry* appendSite(	mstl::string const& name, unsigned id);
 	SiteEntry* appendSite(	mstl::string const& name, unsigned id, country::Code country);
 
+	EventEntry* insertEvent(	mstl::string const& name,
+										NamebaseSite* site);
 	EventEntry* insertEvent(	mstl::string const& name,
 										unsigned id,
 										unsigned limit,
@@ -158,6 +162,7 @@ public:
 											event::Mode eventMode,
 											NamebaseSite* site);
 
+	PlayerEntry* insertPlayer(	mstl::string const& name);
 	PlayerEntry* insertPlayer(	mstl::string const& name, unsigned id, unsigned limit);
 	PlayerEntry* insertPlayer(	mstl::string const& name,
 										country::Code country,
