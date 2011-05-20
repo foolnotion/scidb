@@ -1167,13 +1167,12 @@ HtmlTokenize(pTree, zText, isFinal, xAddText, xAddElement, xAddClosing)
                      * </script>, </noscript> or whatever closing tag matches
                      * the tag that opened the script node.
                      */
-                    int rc;
                     HtmlCallbackRestyle(pTree, pTree->state.pCurrent);
 
                     assert(pTree->eWriteState == HTML_WRITE_NONE);
                     pTree->eWriteState = HTML_WRITE_INHANDLER;
                     pTree->iWriteInsert = n;
-                    rc = executeScript(pTree, pScript, pAttr, zScript, nScript);
+                    executeScript(pTree, pScript, pAttr, zScript, nScript);
 
                     assert(
                         pTree->eWriteState == HTML_WRITE_INHANDLER ||

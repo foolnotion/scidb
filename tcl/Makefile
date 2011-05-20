@@ -157,14 +157,14 @@ install: $(SCRIPT)
 		install -m 755 -d ~/.fonts; \
 		install -m 644 -p fonts/*.ttf ~/.fonts; \
 	fi
-	@if [ -x /usr/local/bin/fc-cache ]; then \
-		echo "fc-cache"; \
-		/usr/local/bin/fc-cache; \
-	elif [ -x /usr/bin/fc-cache ]; then \
-		echo "fc-cache"; \
-		/usr/bin/fc-cache; \
+	@if [ ! -z "`which fc-cache`" ]; then \
+		if [ "`id -u`" -eq 0 ]; then \
+			fc-cache -fv $(FONTDIR); \
+		else \
+			fc-cache -fv ~/.fonts; \
+		fi; \
 	else \
-		echo "Don't know how to setup truetype fonts."; \
+		echo "Don't know how to setup truetype fonts (fc-cache not available)."; \
 		echo "Please contact your system administrator."; \
 	fi
 
@@ -214,24 +214,29 @@ uninstall:
 		rmdir $$d; \
 	done
 	if [ "`id -u`" -eq 0 ]; then \
-		for f in `ls font/*.ttf`; do \
-			rm -f $(FONTDIR)/$$f \
+		for f in `ls fonts/*.ttf`; do \
+			rm -f $(FONTDIR)/`basename $$f`; \
 		done; \
-		/bin/sh -e 'rmdir $(FONTDIR)'; \
+		if [ ! -z "`which fc-cache`" ]; then \
+			fc-cache -fv $(FONTDIR); \
+		fi; \
+		if [ "`find $(FONTDIR) -type d -empty`" == "$(FONTDIR)" ]; then \
+			rmdir $(FONTDIR); \
+		fi \
 	else \
-		for f in `ls font/*.ttf`; do \
-			rm -f ~/.fonts/$$f \
+		for f in `ls fonts/*.ttf`; do \
+			rm -f ~/.$$f; \
 		done; \
-		/bin/sh -e 'rmdir ~/.fonts'; \
-	fi
-	if [ -x /usr/local/bin/fc-cache ]; then \
-		/usr/local/bin/fc-cache; \
-	elif [ -x /usr/bin/fc-cache ]; then \
-		/usr/bin/fc-cache; \
+		if [ ! -z "`which fc-cache`" ]; then \
+			fc-cache -fv ~/.fonts; \
+		fi; \
+		if [ "`find ~/.fonts -type d -empty`" == "`ls -d ~/.fonts`" ]; then \
+			rmdir ~/.fonts; \
+		fi \
 	fi
 
 $(SCRIPT): $(SOURCES)
-	rm -f $(SCRIPT)
+	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
 	cat $(SOURCES) | sed -e '/^##/d' -e '/^# /d' > $(SCRIPT)
 	chmod 0555 $(SCRIPT)
 

@@ -78,8 +78,10 @@ proc load {msg type path} {
 	set currentFile $path
 
 	if {[catch {::scidb::app::load $type $path} err]} {
-		::log::error [format $mc::FileIsCorrupt $path]
+		set msg [format $mc::FileIsCorrupt $path]
+		::log::error $msg
 		::log::error $err
+		puts "$msg -- $err"
 	} else {
 		::log::info "$msg: $path"
 	}

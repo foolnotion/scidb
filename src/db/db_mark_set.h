@@ -39,6 +39,8 @@ class MarkSet
 {
 public:
 
+	MarkSet();
+
 	bool operator==(MarkSet const& marks) const;
 	bool operator!=(MarkSet const& marks) const;
 

@@ -28,6 +28,8 @@
 
 namespace db {
 
+inline MarkSet::MarkSet() {} // gcc-4.6 complains w/o explicit default constructor
+
 inline bool MarkSet::isEmpty() const						{ return m_marks.empty(); }
 inline unsigned MarkSet::count() const						{ return m_marks.size(); }
 inline bool MarkSet::contains(Mark const& mark) const	{ return find(mark) >= 0; }

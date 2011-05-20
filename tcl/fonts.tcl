@@ -837,14 +837,6 @@ array set DiagramChessBaseEncoding {
 
 set FigurineChessBaseEncoding {"\u2654" K "\u2655" Q "\u2656" R "\u2657" L "\u2658" N "\u2659" P}
 
-# HACK: for any reason XftListFonts() cannot see "Scidb Chess Ole!",
-# so we have to add this family manually.
-#font create f -family {Scidb Chess Ole!}
-#if {[font actual f -family] eq "Scidb Chess Ole!"} {
-#	::dialog::choosefont::addFontFamily {Scidb Chess Ole!}
-#}
-#font delete f
-
 # Chess figurine fonts:
 set fonts [::dialog::choosefont::fontFamilies]
 set chessFigurineFonts {}
@@ -1145,11 +1137,13 @@ proc splitAnnotation {text} {
 
 # setup ###############################################################################
 
-if {[::tk windowingsystem] eq "x11"} {
+if {$UseFigurines && [::tk windowingsystem] eq "x11"} {
 	set UseFigurines 0
 	catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set UseFigurines 1 } }
-	useFigurines $UseFigurines
 }
+
+useFigurines $UseFigurines
+useLanguage $langFigurine
 
 } ;# namespace font
 

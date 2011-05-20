@@ -1622,11 +1622,10 @@ drawReplacementContent(pLayout, pBox, pNode)
     assert(iWidth != 0);
 
     if (pElem->pReplacement && pElem->pReplacement->win) {
-        CONST char *zReplace = Tcl_GetString(pElem->pReplacement->pReplace);
+        /*CONST char *zReplace = Tcl_GetString(pElem->pReplacement->pReplace);*/
         Tk_Window win = pElem->pReplacement->win;
         if (win) {
-            Tcl_Obj *pWin = 0;
-            int iOffset;
+            /*Tcl_Obj *pWin = 0;*/
             int mmt = pLayout->minmaxTest;
 
             /* At this point local variable iWidth may be either a pixel
@@ -1660,10 +1659,9 @@ drawReplacementContent(pLayout, pBox, pNode)
 
             if (!pLayout->minmaxTest) {
                 doConfigureCmd(pLayout->pTree, pElem, pBox->iContaining);
-                pWin = Tcl_NewStringObj(zReplace, -1);
+                /*pWin = Tcl_NewStringObj(zReplace, -1);*/
             }
 
-            iOffset = pElem->pReplacement->iOffset;
             DRAW_WINDOW(&pBox->vc, pNode, 0, 0, iWidth, height);
         }
     } else {
@@ -3416,7 +3414,6 @@ normalFlowLayout(pLayout, pBox, pNode, pNormal)
 {
     InlineContext *pContext;
     int y = 0;
-    int rc = 0;                       /* Return Code */
     InlineBorder *pBorder;
     HtmlFloatList *pFloat = pNormal->pFloat;
     NodeList *pAbsolute = pLayout->pAbsolute;
@@ -3524,7 +3521,7 @@ normalFlowLayout(pLayout, pBox, pNode, pNormal)
     /* Finish the inline-border started by the parent, if any. */
     HtmlInlineContextPopBorder(pContext, pBorder);
 
-    rc = inlineLayoutDrawLines(pLayout, pBox, pContext, 1, &y, pNormal);
+    inlineLayoutDrawLines(pLayout, pBox, pContext, 1, &y, pNormal);
     HtmlInlineContextCleanup(pContext);
 
     /* If this element is a list-item with "list-style-position:outside",

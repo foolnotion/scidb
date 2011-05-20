@@ -171,7 +171,7 @@ struct Normalize : public Comment::Callback
 
 		if (m_isXml)
 		{
-			m_result.insert(0u, "<xml>");
+			m_result.insert(size_t(0), "<xml>");
 			m_result += "</xml>";
 		}
 	}

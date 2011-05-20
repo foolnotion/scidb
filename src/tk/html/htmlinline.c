@@ -243,7 +243,6 @@ inlineBoxMetrics(pContext, pNode, pMetrics)
     InlineMetrics *pMetrics;       /* OUT: Vertical inline-box metrics */
 {
     int iLineHeight;
-    int iTopLeading;
     int iBottomLeading;
     int iContentHeight;
 
@@ -265,7 +264,6 @@ inlineBoxMetrics(pContext, pNode, pMetrics)
 
     iContentHeight = pFont->metrics.ascent + pFont->metrics.descent;
     iBottomLeading = (iLineHeight - iContentHeight) / 2;
-    iTopLeading = (iLineHeight - iContentHeight) - iBottomLeading;
 
     pMetrics->iLogical = iLineHeight;
     pMetrics->iFontBottom = pMetrics->iLogical - iBottomLeading;
@@ -623,9 +621,7 @@ inlineContextAddNewLine(p, nHeight)
     InlineContext *p;
     int nHeight;
 {
-    InlineBox *pBox;
     inlineContextAddInlineCanvas(p, INLINE_NEWLINE, 0);
-    pBox = &p->aInline[p->nInline - 1];
 
     /* This inline-box is added only to account for space that may come
      * after the new line box.
@@ -1472,7 +1468,6 @@ HtmlInlineContextAddText(pContext, pNode)
 {
     HtmlTextIter sIter;
 
-    XColor *color;                 /* Color to render in */
     HtmlFont *pFont;               /* Font to render in */
     Tk_Font tkfont;                /* Copy of pFont->tkfont */
     int eWhitespace;               /* Value of 'white-space' property */
@@ -1490,7 +1485,6 @@ HtmlInlineContextAddText(pContext, pNode)
     eWhitespace = pValues->eWhitespace;
 
     tkfont = pFont->tkfont;
-    color = pValues->cColor->xcolor;
 
     sw = pFont->space_pixels;
     nh = pFont->metrics.ascent + pFont->metrics.descent;
