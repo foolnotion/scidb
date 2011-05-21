@@ -428,13 +428,13 @@ proc SetFigurines {dlg position} {
 
 			default {
 				if {[string bytelength $figurine] == 6} {
-					lappend Priv($position:values) [list $lang $::encoding::mc::Lang($lang) $figurine]
+					lappend Priv($position:values) [list $lang [::encoding::languageName $lang] $figurine]
 				}
 			}
 		}
 	}
 	set Priv($position:values) [lsort -index 1 -dictionary $Priv($position:values)]
-	set value [list en $::encoding::mc::Lang(en) $::font::figurines(en)]
+	set value [list en [::encoding::languageName en] $::font::figurines(en)]
 	set Priv($position:values) [linsert $Priv($position:values) 0 $value]
 	set index [lsearch -index 0 -exact $Priv($position:values) $current]
 	if {$index == -1} { set index 0 }

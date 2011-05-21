@@ -203,7 +203,6 @@ TokenBuffer::upToken(unsigned level, RefID refID, unsigned nlevels)
 }
 
 
-//#include <stdio.h>
 TokenBuffer::Entry const*
 TokenBuffer::lookup(unsigned level, RefID refID) const
 {
@@ -216,24 +215,6 @@ TokenBuffer::lookup(unsigned level, RefID refID) const
 
 	Relations::const_iterator b = relations.begin();
 	Relations::const_iterator r = b + mstl::min(long(level), long(relations.size()) - 1);
-
-//printf(	"m_domainStack.size() = %u\n", m_domainStack.size());
-//for (Relations::const_iterator i = r; i >= b; --i)
-//{
-//	printf("level: %u\n", i->get<idx::Level>());
-//	Domain const* domain = m_domainStack[i->get<idx::Level>()].get<idx::Entries>().get();
-//	if (domain)
-//	{
-//		Entry const& e = (*domain)[i->get<idx::Index>()];
-//		printf(	"level = %u, domain id = %u/%u, token = %u : %s\n",
-//					i->get<idx::Level>(),
-//					i->get<idx::DomainID>(),
-//					unsigned(m_domainStack[i->get<idx::Level>()].get<idx::ID>()),
-//					unsigned(e.get<idx::RefID>()),
-//					e.get<idx::Token>()->name().c_str()
-//					);
-//	}
-//}
 
 	while (r != b && (r - 1)->get<idx::Level>() >= level)
 		--r;
@@ -258,7 +239,7 @@ TokenBuffer::lookupToken(unsigned level, RefID refID) const
 	M_REQUIRE(refID < m_relList.size());
 	M_REQUIRE(!m_domainStack.empty());
 
-	Entry const* entry = lookup(mstl::min(level, m_domainStack.size() - 1), refID);
+	Entry const* entry = lookup(mstl::min(size_t(level), m_domainStack.size() - 1), refID);
 	return entry == 0 ? TokenP() : entry->get<idx::Token>();
 }
 

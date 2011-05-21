@@ -116,10 +116,11 @@ protected:
 	virtual bool beginGame(TagSet const& tags) = 0;
 	virtual save::State endGame(TagSet const& tags) = 0;
 
-	virtual void sendComment(Comment const& comment,
-									Annotation const& annotation,
-									MarkSet const& marks) = 0;
-	virtual bool sendMove(Move const& move) = 0;
+	virtual void sendComment(Comment const& comment);
+	virtual void sendComment(	Comment const& comment,
+										Annotation const& annotation,
+										MarkSet const& marks) = 0;
+	virtual bool sendMove(	Move const& move) = 0;
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,
 									MarkSet const& marks,
@@ -171,6 +172,8 @@ private:
 	sys::utf8::Codec*	m_codec;
 	Consumer*			m_consumer;
 	bool					m_setupBoard;
+	bool					m_hasPreComment;
+	bool					m_afterVariation;
 };
 
 } // namespace db

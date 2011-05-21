@@ -79,7 +79,7 @@ Tokenizer::fixLine()
 //			++m;
 
 		if (m > 0)
-			m_line.erase(0u, m);
+			m_line.erase(size_t(0), m);
 
 		mstl::string::size_type n = 0;
 		m = mstl::string::npos;

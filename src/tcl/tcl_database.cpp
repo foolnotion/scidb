@@ -2525,14 +2525,15 @@ cmdRecode(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "gameInfo", "player", "annotator", 0 };
+	static char const* subcommands[] = { "gameInfo", "player", "event", "annotator", 0 };
 	static char const* args[] =
 	{
 		"<database> ?<view>?",
 		"<database> ?<view>?",
 		"<database> ?<view>?",
+		"<database> ?<view>?",
 	};
-	enum { Cmd_GameInfo, Cmd_Player, Cmd_Annotator };
+	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Annotator };
 
 	if (objc < 3 || 4 < objc)
 		return usage(::CmdReverse, 0, 0, subcommands, args);
@@ -2552,6 +2553,10 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Player:
 			scidb.reverse(scidb.cursor(database), view, attribute::player::Name);
+			break;
+
+		case Cmd_Event:
+			scidb.reverse(scidb.cursor(database), view, attribute::event::Title);
 			break;
 
 		case Cmd_Annotator:

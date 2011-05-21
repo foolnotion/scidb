@@ -46,8 +46,6 @@ hash_key<Key>::hash(void const* key)
 }
 
 
-inline size_t hash_key<long>::hash(long key)									{ return key; }
-inline size_t hash_key<unsigned long>::hash(unsigned long key)			{ return key; }
 inline size_t hash_key<int16_t>::hash(int16_t key)							{ return key; }
 inline size_t hash_key<int32_t>::hash(int32_t key)							{ return key; }
 inline size_t hash_key<int64_t>::hash(int64_t key)							{ return key; }
@@ -227,7 +225,7 @@ hash<Value,Key>::fullness() const
 template <typename Value, typename Key>
 inline
 hash<Value,Key>::hash(size_type capacity)
-	:m_size(bits::hash_size(mstl::max(8u, capacity)))
+	:m_size(bits::hash_size(mstl::max(size_type(8), capacity)))
 	,m_modulo(m_size - 1)
 	,m_used(0)
 	,m_first(m_size)
@@ -337,7 +335,7 @@ inline
 void
 hash<Value,Key>::reserve(size_type capacity)
 {
-	rebuild(bits::hash_size(mstl::max(8u, capacity)));
+	rebuild(bits::hash_size(mstl::max(size_type(8), capacity)));
 }
 
 

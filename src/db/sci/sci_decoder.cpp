@@ -262,10 +262,11 @@ Decoder::decodeMove(Byte value, Move& move)
 
 
 void
-Decoder::decodeVariation(unsigned flags, unsigned level)
+Decoder::decodeVariation(unsigned flags)
 {
-	unsigned	pieceNum	= 0;	// satisfies the compiler
-	Move		move;
+	unsigned		pieceNum		= 0;	// satisfies the compiler
+	MoveNode*	preComment	= 0;
+	Move			move;
 
 	while (true)
 	{
@@ -295,23 +296,15 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 					m_position.push();
 					m_position.board().undoMove(move);
 					current->addVariation(m_currentNode = new MoveNode);
-					decodeVariation(flags, level + 1);
-					m_currentNode = current;
+					decodeVariation(flags);
+					preComment = m_currentNode = current;
 					m_position.pop();
 				}
 				break;
 
 			case token::Nag:
-				{
-					M_STATIC_CHECK(Annotation::Max_Nags >= 7, ScidbNeedsAtLeastSeven);
-
-					nag::ID nag = nag::ID(m_strm.get());
-
-					if (nag == 0)
-						m_currentNode->move().setIllegalMove();
-					else
-						m_currentNode->addAnnotation(nag);
-				}
+				M_STATIC_CHECK(Annotation::Max_Nags >= 7, ScidbNeedsAtLeastSeven);
+				m_currentNode->addAnnotation(nag::ID(m_strm.get()));
 				break;
 
 			case token::Mark:
@@ -321,7 +314,12 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 
 			case token::Comment:
 				if (flags & DatabaseCodec::Decode_Comments)
-					m_currentNode->setComment();
+				{
+					if (preComment == m_currentNode)
+						m_currentNode->setPreComment();
+					else
+						m_currentNode->setComment();
+				}
 				break;
 		}
 	}
@@ -329,7 +327,7 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 
 
 void
-Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags, unsigned level)
+Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 {
 	MarkSet			marks;
 	Annotation		annotation;
@@ -401,28 +399,25 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags, u
 					return;
 
 				case token::Start_Marker:
-					if (move)
-					{
-						if (hasNote)
-						{
-							consumer.putMove(move, annotation, comment, marks);
-							marks.clear();
-							annotation.clear();
-							comment.clear();
-							hasNote = false;
-						}
-						else
-						{
-							consumer.putMove(move);
-						}
+					M_ASSERT(move);
 
-						outstanding = move;
+					if (hasNote)
+					{
+						consumer.putMove(move, annotation, comment, marks);
+						marks.clear();
+						annotation.clear();
+						comment.clear();
+						hasNote = false;
+					}
+					else
+					{
+						consumer.putMove(move);
 					}
 
 					m_position.push();
-					m_position.board().undoMove(outstanding);
+					m_position.board().undoMove(outstanding = move);
 					consumer.startVariation();
-					decodeVariation(consumer, text, flags, level + 1);
+					decodeVariation(consumer, text, flags);
 					consumer.finishVariation();
 					m_position.pop();
 					move.clear();
@@ -431,16 +426,8 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags, u
 				case token::Nag:
 					{
 						nag::ID nag = nag::ID(m_strm.get());
-
-						if (nag == 0)
-						{
-							move.setIllegalMove();
-						}
-						else
-						{
-							annotation.add(nag);
-							hasNote = true;
-						}
+						annotation.add(nag);
+						hasNote = true;
 					}
 					break;
 
@@ -458,7 +445,11 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags, u
 					if (flags & DatabaseCodec::Decode_Comments)
 					{
 						text.get(comment);
-						hasNote = true;
+
+						if (outstanding)
+							consumer.putPreComment(comment);
+						else
+							hasNote = true;
 					}
 					break;
 			}
@@ -507,26 +498,36 @@ Decoder::decodeComments(MoveNode* node)
 {
 	for ( ; node; node = node->next())
 	{
-		if (node->hasMark())
+		if (node->hasSupplement())
 		{
-			MarkSet marks;
-			node->swapMarks(marks);
+			if (node->hasMark())
+			{
+				MarkSet marks;
+				node->swapMarks(marks);
 
-			for (unsigned i = 0; i < marks.count(); ++i)
-				marks[i].decode(m_strm);
+				for (unsigned i = 0; i < marks.count(); ++i)
+					marks[i].decode(m_strm);
 
-			node->swapMarks(marks);
+				node->swapMarks(marks);
+			}
+
+			if (node->hasComment())
+			{
+				mstl::string comment;
+				m_strm.get(comment);
+				node->swapComment(comment);
+			}
+
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+				decodeComments(node->variation(i));
+
+			if (node->hasPreComment())
+			{
+				mstl::string comment;
+				m_strm.get(comment);
+				node->swapPreComment(comment);
+			}
 		}
-
-		if (node->shouldHaveComment())
-		{
-			mstl::string comment;
-			m_strm.get(comment);
-			node->swapComment(comment);
-		}
-
-		for (unsigned i = 0; i < node->variationCount(); ++i)
-			decodeComments(node->variation(i));
 	}
 }
 
@@ -651,7 +652,7 @@ Decoder::doDecoding(unsigned flags, GameData& data)
 	M_ASSERT(m_currentNode);
 
 	decodeRun(m_strm.uint16());
-	decodeVariation(flags, 0);
+	decodeVariation(flags);
 	decodeTextSection(flags, data);
 }
 

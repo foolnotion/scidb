@@ -73,6 +73,7 @@ private:
 							MarkSet const& marks,
 							bool isPreComment);
 
+	void sendComment(Comment const& comment);
 	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
@@ -84,6 +85,8 @@ private:
 	void endMoveSection(result::ID result);
 	void beginVariation();
 	void endVariation();
+
+	void pushComment(Comment const& comment);
 
 	bool checkMove(Move const& move);
 

@@ -73,6 +73,7 @@ protected:
 	void encodeMainline(MoveNode const* node);
 	void encodeVariation(MoveNode const* node);
 	void encodeNote(MoveNode const* node);
+	void encodePreComment(MoveNode const* node);
 
 	void setup(Board const& board);
 	Byte makeMoveByte(Square from, Byte value);

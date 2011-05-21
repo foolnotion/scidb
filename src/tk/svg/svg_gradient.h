@@ -74,7 +74,7 @@ public:
 
 	color_type operator[] (unsigned v) const
 	{
-		return m_color_list[mstl::min(v, m_color_list.size() - 1)];
+		return m_color_list[mstl::min(size_t(v), m_color_list.size() - 1)];
 	}
 
 private:

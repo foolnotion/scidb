@@ -134,7 +134,7 @@ DatabaseCodec::CustomFlags::set(unsigned n, char const* text)
 {
 	M_REQUIRE(n < 6);
 
-	unsigned len = mstl::min(8u, ::strlen(text));
+	unsigned len = mstl::min(size_t(8), ::strlen(text));
 	::strncpy(m_text[n], text, len);
 	m_text[n][len] = '\0';
 }
@@ -145,7 +145,7 @@ DatabaseCodec::CustomFlags::set(unsigned n, mstl::string const& text)
 {
 	M_REQUIRE(n < 6);
 
-	unsigned len = mstl::min(8u, text.size());
+	unsigned len = mstl::min(size_t(8), text.size());
 	::memcpy(m_text[n], text, len);
 	m_text[n][len] = '\0';
 }

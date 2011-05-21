@@ -323,6 +323,9 @@ Encoder::encodeVariation(MoveNode const* node)
 				encodeVariation(var->next());
 				m_position.pop();
 			}
+
+			if (node->hasPreComment())
+				encodePreComment(node);
 		}
 
 		m_position.doMove(node->move());
@@ -362,6 +365,16 @@ Encoder::encodeNote(MoveNode const* node)
 		m_strm.put(token::Comment);
 		m_data.put(node->comment().content(), node->comment().size() + 1);
 	}
+}
+
+
+void
+Encoder::encodePreComment(MoveNode const* node)
+{
+	M_ASSERT(node->hasPreComment());
+
+	m_strm.put(token::Comment);
+	m_data.put(node->preComment().content(), node->comment().size() + 1);
 }
 
 

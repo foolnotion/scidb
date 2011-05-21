@@ -15,6 +15,7 @@
  * RCS: @(#) $Id: tkTreeItem.c,v 1.107 2009/05/17 18:39:54 treectrl Exp $
  */
 
+#include <stdint.h>
 #include "tkTreeCtrl.h"
 
 typedef struct TreeItem_ TreeItem_;
@@ -2081,7 +2082,7 @@ TreeItemList_FromObj(
 			gotId = TRUE;
 		}
 		if (gotId) {
-			hPtr = Tcl_FindHashEntry(&tree->itemHash, (char *) id);
+			hPtr = Tcl_FindHashEntry(&tree->itemHash, (char *)(intptr_t) id);
 			if (hPtr != NULL) {
 				item = (TreeItem) Tcl_GetHashValue(hPtr);
 			} else {

@@ -15,6 +15,7 @@
  * RCS: @(#) $Id: tkTreeUtils.c,v 1.75 2008/07/21 18:35:38 treectrl Exp $
  */
 
+#include <stdint.h>
 #include "tkTreeCtrl.h"
 
 #ifdef WIN32
@@ -6641,7 +6642,7 @@ BooleanFlagCO_Set(
 	int flags
 	)
 {
-	int theFlag = (int) clientData;
+	int theFlag = (int)(intptr_t) clientData;
 	int new, *internalPtr;
 
 	if (internalOffset >= 0)
@@ -6671,7 +6672,7 @@ BooleanFlagCO_Get(
 	int internalOffset
 	)
 {
-	int theFlag = (int) clientData;
+	int theFlag = (int)(intptr_t) clientData;
 	int value = *(int *) (recordPtr + internalOffset);
 
 	return Tcl_NewBooleanObj(value & theFlag);
@@ -6685,7 +6686,7 @@ BooleanFlagCO_Restore(
 	char *saveInternalPtr
 	)
 {
-	int theFlag = (int) clientData;
+	int theFlag = (int)(intptr_t) clientData;
 	int value = *(int *) saveInternalPtr;
 
 	if (value & theFlag)
@@ -6717,7 +6718,7 @@ BooleanFlagCO_Init(
 	co->getProc = BooleanFlagCO_Get;
 	co->restoreProc = BooleanFlagCO_Restore;
 	co->freeProc = NULL;
-	co->clientData = (ClientData) theFlag;
+	co->clientData = (ClientData)(intptr_t) theFlag;
 
 	specPtr->clientData = co;
 

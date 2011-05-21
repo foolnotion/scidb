@@ -18,6 +18,7 @@
  * RCS: @(#) $Id: tkTreeColumn.c,v 1.87 2009/05/17 19:46:27 treectrl Exp $
  */
 
+#include <stdint.h>
 #include "tkTreeCtrl.h"
 
 typedef struct TreeColumn_ TreeColumn_;
@@ -466,7 +467,7 @@ ColumnCO_Set(
 	int flags					/* Flags for the option, set Tk_SetOptions. */
 	)
 {
-	int cfoFlags = (int) clientData;
+	int cfoFlags = (int)(intptr_t) clientData;
 	TreeCtrl *tree = (TreeCtrl *) ((TkWindow *) tkwin)->instanceData;
 	int objEmpty;
 	TreeColumn new, *internalPtr;

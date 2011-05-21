@@ -900,14 +900,14 @@ Decoder::getAnnotation(MoveNode* node, int position, unsigned flags)
 				if (!node->atLineStart())
 				{
 					decodeComment(node->prev(), length, flags);
-printf("pre comment: %s\n", node->prev()->comment().content().c_str());
+printf("pre comment(%d): %s\n", position, node->prev()->comment().content().c_str());
 					break;
 				}
 				// fallthru
 
 			case 0x02:	// text after move
 				decodeComment(node, length, flags);
-printf("post comment: %s\n", node->comment().content().c_str());
+printf("post comment(%d): %s\n", position, node->comment().content().c_str());
 				break;
 
 			case 0x03:	// symbols
@@ -985,7 +985,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 	Vars varList;
 	Move move;
 
-printf("annotation(0): %d - %d\n", int(count) - 1, m_moveNo);
+printf("----- pre (%d): %d\n", int(count), m_moveNo);
 	getAnnotation(root, int(count), flags);
 
 	while (true)
@@ -998,7 +998,7 @@ printf("annotation(0): %d - %d\n", int(count) - 1, m_moveNo);
 				if (move)
 				{
 					node = new MoveNode(move);
-printf("move: %s\n", move.asString().c_str());
+printf("move(%u): %s\n", count - 1, move.asString().c_str());
 
 					if (varList.empty())
 					{
@@ -1044,7 +1044,7 @@ printf("move: %s\n", move.asString().c_str());
 						varList.clear();
 					}
 
-printf("annotation(1): %d - %d\n", int(count) - 1, m_moveNo);
+printf("post-annotation(%d): %d\n", int(count) - 1, m_moveNo);
 					getAnnotation(node, int(count) - 1, flags);
 					root = node;
 				}

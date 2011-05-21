@@ -365,6 +365,14 @@ proc select {path encoding} {
 }
 
 
+proc languageName {lang} {
+	variable Lang
+
+	if {[info exists mc::Lang($lang)]} { return $mc::Lang($lang) }
+	return $lang
+}
+
+
 proc See {table} {
 	variable ${table}::Vars
 

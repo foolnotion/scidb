@@ -1000,7 +1000,7 @@ proc PopupMenu {table menu base index} {
 		if {[string length $flag] == 0} { set flag ::icon::16x16::none }
 		set url [string map [list %lang% $lang %name% $name] $Options(url:wikipedia)]
 		$sub add command \
-			-label " $::encoding::mc::Lang($lang)" \
+			-label " [::encoding::languageName $lang]" \
 			-image $flag \
 			-compound left \
 			-command [list ::web::open $url] \

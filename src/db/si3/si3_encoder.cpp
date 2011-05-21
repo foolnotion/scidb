@@ -111,35 +111,47 @@ Encoder::encodeComments(MoveNode* node)
 
 	for (node = node->next(); node; node = node->next())
 	{
-		if (node->hasComment() || node->hasMark())
+		if (node->hasSupplement())
 		{
-			mstl::string comment;
-
-			if (node->hasComment())
+			if (node->hasComment() || node->hasMark())
 			{
-				node->comment().flatten(comment, m_codec.isUtf8() ? Comment::Unicode : Comment::Latin1);
+				mstl::string comment;
+
+				if (node->hasComment())
+				{
+					node->comment().flatten(comment, m_codec.isUtf8() ? Comment::Unicode : Comment::Latin1);
+					m_codec.fromUtf8(comment, comment);
+//					PgnWriter::convertExtensions(comment, PgnWriter::Mode_Extended);
+				}
+
+				if (node->hasMark())
+				{
+					if (!comment.empty())
+						comment += ' ';
+
+					MarkSet const& marks = node->marks();
+
+					for (unsigned i = 0; i < marks.count(); ++i)
+						marks[i].toString(comment);
+				}
+
+				m_strm.put(comment, comment.size() + 1);
+			}
+
+			if (node->hasVariation())
+			{
+				for (unsigned i = 0; i < node->variationCount(); ++i)
+					encodeComments(node->variation(i));
+			}
+
+			if (node->hasPreComment())
+			{
+				mstl::string comment;
+
+				node->preComment().flatten(comment, m_codec.isUtf8() ? Comment::Unicode : Comment::Latin1);
 				m_codec.fromUtf8(comment, comment);
-//				PgnWriter::convertExtensions(comment, PgnWriter::Mode_Extended);
+				m_strm.put(comment, comment.size() + 1);
 			}
-
-			if (node->hasMark())
-			{
-				if (!comment.empty())
-					comment += ' ';
-
-				MarkSet const& marks = node->marks();
-
-				for (unsigned i = 0; i < marks.count(); ++i)
-					marks[i].toString(comment);
-			}
-
-			m_strm.put(comment, comment.size() + 1);
-		}
-
-		if (node->hasVariation())
-		{
-			for (unsigned i = 0; i < node->variationCount(); ++i)
-				encodeComments(node->variation(i));
 		}
 	}
 }
@@ -280,7 +292,7 @@ Encoder::encodeTags(TagSet const& tags)
 			mstl::string const& value	= tags.extra(i).value;
 
 			// we cannot store tag values with a length > 255
-			unsigned valueSize = mstl::min(255u, value.size());
+			unsigned valueSize = mstl::min(size_t(255), value.size());
 
 			// TODO: use m_codec?
 			m_strm.put(name.size());
@@ -530,6 +542,15 @@ Encoder::encodeVariation(MoveNode const* node, unsigned level)
 			m_strm.put(token::Start_Marker);
 			encodeVariation(var, level + 1);
 			m_position.pop();
+		}
+
+		if (node->hasPreComment())
+		{
+			// Scid cannot handle comments preceding next move. As a workaround
+			// we will insert an empty variation.
+			m_strm.put(token::Start_Marker);
+			m_strm.put(token::Comment);
+			m_strm.put(token::End_Marker);
 		}
 	}
 

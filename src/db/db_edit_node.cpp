@@ -803,7 +803,18 @@ Move::Move(Work& work, db::Comment const& comment)
 		if (!comm.isEmpty())
 		{
 			m_list.push_back(new Comment(comm));
-			work.spacing = PrefixSpace | SuppressBreak;
+			if (work.level == 0)
+			{
+				m_list.push_back(new Space(0));
+
+				if ((work.displayStyle & (display::CompactStyle | display::NarrowLines)) == 0)
+					work.spacing = PrefixBreak;
+			}
+			else
+			{
+				work.spacing = PrefixSpace;
+			}
+			work.spacing |= SuppressBreak;
 			work.needMoveNo = true;
 		}
 	}
@@ -818,6 +829,11 @@ Move::Move(Work& work, MoveNode const* move)
 	bool useMoveNo = work.board.whiteToMove() || work.needMoveNo;
 
 	work.needMoveNo = false;
+
+	if (move->hasPreComment())
+	{
+		// TODO
+	}
 
 	if (work.spacing & RequiredBreak)
 	{

@@ -223,6 +223,8 @@ public:
 	void setLegalMove();
 	/// Mark this move as illegal in position
 	void setIllegalMove();
+	/// Mark this move as legal or illegal in position
+	void setLegalMove(bool flag);
 	/// Set the side to move (only works if color is black)
 	void setColor(unsigned color);
 	/// Set source and destination squares

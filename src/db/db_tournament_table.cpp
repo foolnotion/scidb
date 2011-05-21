@@ -653,8 +653,8 @@ TournamentTable::guessBestMode()
 		Player const* player = i->second;
 		Player::ClashList const& clashList = player->clashList;
 
-		minGameCount = mstl::min(minGameCount, clashList.size());
-		maxGameCount = mstl::max(maxGameCount, clashList.size());
+		minGameCount = mstl::min(size_t(minGameCount), clashList.size());
+		maxGameCount = mstl::max(size_t(maxGameCount), clashList.size());
 
 		Player const* opponent = 0;
 

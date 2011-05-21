@@ -65,8 +65,8 @@ private:
 
 	void decodeRun(unsigned count);
 	void decodeRun(unsigned count, Consumer& consumer);
-	void decodeVariation(unsigned flags, unsigned level = 0);
-	void decodeVariation(Consumer& consumer, util::ByteStream& text, unsigned flags, unsigned level = 0);
+	void decodeVariation(unsigned flags);
+	void decodeVariation(Consumer& consumer, util::ByteStream& text, unsigned flags);
 	void decodeComments(MoveNode* node);
 	void decodeTags(util::ByteStream& strm, TagSet& tags);
 	void skipTags();

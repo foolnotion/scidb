@@ -641,7 +641,7 @@ proc BuildOptionsFrame_pdf {w} {
 	set Figurines {}
 	foreach lang [array names ::font::figurines] {
 		if {$lang ne "graphic"} {
-			lappend Figurines [list $lang $::encoding::mc::Lang($lang)]
+			lappend Figurines [list $lang [::encoding::languageName $lang]]
 		}
 	}
 	set Figurines [lsort -index 1 -dictionary $Figurines]

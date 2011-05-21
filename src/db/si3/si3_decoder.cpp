@@ -323,10 +323,20 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 						{
 							if (m_currentNode->hasNote())
 							{
-								// ...but we cannot delete the variation if a
-								// pre-comment/annotation/mark exists. As a
-								// workaround we insert a null move.
-								m_currentNode->setNext(new MoveNode(m_position.board().makeNullMove()));
+								// ...but we cannot delete the variation if a pre-comment/annotation/mark exists.
+								if (	!m_currentNode->annotation().isEmpty()
+									|| m_strm.peek() == token::Start_Marker)
+								{
+									// As a workaround we insert a null move.
+									m_currentNode->setNext(new MoveNode(m_position.board().makeNullMove()));
+								}
+								else
+								{
+									// This is the last variation. Handle this comment as a pre-comment.
+									current->deleteVariation(current->countVariations() - 1);
+									m_currentNode->unsetComment();
+									current->setPreComment();
+								}
 							}
 							else
 							{
@@ -525,25 +535,39 @@ Decoder::decodeComments(MoveNode* node)
 {
 	for ( ; node; node = node->next())
 	{
-		if (node->shouldHaveComment())
+		if (node->hasSupplement())
 		{
-			mstl::string	comment;
-			mstl::string	result;
-			MarkSet			marks;
+			if (node->hasComment())
+			{
+				mstl::string	comment;
+				mstl::string	result;
+				MarkSet			marks;
 
-			m_strm.get(comment);
-			marks.extractFromComment(comment);
-			m_codec.toUtf8(comment);
+				m_strm.get(comment);
+				marks.extractFromComment(comment);
+				m_codec.toUtf8(comment);
 
-			if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
-				node->addAnnotation(nag::Diagram);
+				if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
+					node->addAnnotation(nag::Diagram);
 
-			node->swapMarks(marks);
-			node->swapComment(result);
+				node->swapMarks(marks);
+				node->swapComment(result);
+			}
+
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+				decodeComments(node->variation(i));
+
+			if (node->hasPreComment())
+			{
+				mstl::string comment;
+				mstl::string result;
+
+				m_strm.get(comment);
+				m_codec.toUtf8(comment);
+				Comment::convertCommentToXml(comment, result, Comment::Unicode);
+				node->swapComment(result);
+			}
 		}
-
-		for (unsigned i = 0; i < node->variationCount(); ++i)
-			decodeComments(node->variation(i));
 	}
 }
 
@@ -608,7 +632,7 @@ Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
 	decodeVariation(flags);
 
 	if (flags & DatabaseCodec::Decode_Comments)
-		decodeComments(consumer, flags, &start);
+		decodeComments(&start);
 
 	decodeVariation(consumer, &start);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
@@ -673,51 +697,26 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 {
 	M_ASSERT(node);
 
-	if (node->shouldHaveNote())
+	if (node->hasNote())
 		consumer.putPreComment(node->comment(), node->annotation(), node->marks());
 
-	for (node = node->next(); node; node = node->next())
+	for (MoveNode* n = node->next(); n; n = n->next())
 	{
-		if (node->shouldHaveNote())
-			consumer.putMove(node->move(), node->annotation(), node->comment(), node->marks());
+		if (n->hasNote())
+			consumer.putMove(n->move(), n->annotation(), n->comment(), n->marks());
 		else
-			consumer.putMove(node->move());
+			consumer.putMove(n->move());
 
-		for (unsigned i = 0; i < node->variationCount(); ++i)
+		for (unsigned i = 0; i < n->variationCount(); ++i)
 		{
 			consumer.startVariation();
-			decodeVariation(consumer, node->variation(i));
+			decodeVariation(consumer, n->variation(i));
 			consumer.finishVariation();
 		}
 	}
-}
 
-
-void
-Decoder::decodeComments(Consumer& consumer, unsigned flags, MoveNode* node)
-{
-	for ( ; node; node = node->next())
-	{
-		if (node->shouldHaveComment())
-		{
-			MarkSet marks;
-			mstl::string comment;
-			mstl::string result;
-
-			m_strm.get(comment);
-			marks.extractFromComment(comment);
-			m_codec.toUtf8(comment);
-
-			if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
-				node->addAnnotation(nag::Diagram);
-
-			node->swapComment(result);
-			node->swapMarks(marks);
-		}
-
-		for (unsigned i = 0; i < node->variationCount(); ++i)
-			decodeComments(consumer, flags, node->variation(i));
-	}
+	if (node->hasPreComment())
+		consumer.putPreComment(node->preComment());
 }
 
 

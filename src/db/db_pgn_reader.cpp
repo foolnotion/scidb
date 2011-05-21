@@ -1770,7 +1770,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				if (::isElo(value.begin(), value.end()))
 				{
 					if (value[0] == '0')
-						value.erase(0u, 1u);
+						value.erase(size_t(0), size_t(1));
 
 					int rat = ::strtoul(value, 0, 10);
 

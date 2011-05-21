@@ -1492,7 +1492,7 @@ Player::findMatches(mstl::string const& name, Matches& result, unsigned maxMatch
 {
 	typedef int (*Compare)(const void *, const void *);
 
-	unsigned n = result.size();
+	size_t n = result.size();
 
 	if (maxMatches <= n)
 		return 0;
@@ -1508,7 +1508,7 @@ Player::findMatches(mstl::string const& name, Matches& result, unsigned maxMatch
 	::insert(result, i->second);
 	++i;
 
-	unsigned maxSize = maxMatches + n;
+	size_t maxSize = maxMatches + n;
 
 	while (result.size() < maxSize && i != ::playerList.end() && ::isPrefix(name2, i->first))
 	{
@@ -1516,7 +1516,7 @@ Player::findMatches(mstl::string const& name, Matches& result, unsigned maxMatch
 		++i;
 	}
 
-	result.resize(mstl::min(maxMatches + n, result.size()));
+	result.resize(mstl::min(size_t(maxMatches + n), result.size()));
 
 	::qsort(	result.begin(),
 				result.size(),

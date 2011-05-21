@@ -88,7 +88,7 @@ BlockFile::BlockFile(mstl::fstream* stream, unsigned blockSize, Mode mode)
 	M_REQUIRE(stream->mode() & mstl::ios_base::in);
 	M_REQUIRE(stream->mode() & mstl::ios_base::binary);
 	M_REQUIRE(stream->is_unbuffered());
-	M_REQUIRE(blockSize && !(blockSize & (blockSize - 1)));	// blockSize must be power of two
+	M_REQUIRE(mstl::is_pow_2(blockSize));
 
 	m_mtime = stream->mtime();
 	computeBlockCount();
@@ -113,7 +113,7 @@ BlockFile::BlockFile(mstl::fstream* stream, unsigned blockSize, Mode mode, mstl:
 	M_REQUIRE(stream->mode() & mstl::ios_base::in);
 	M_REQUIRE(stream->mode() & mstl::ios_base::binary);
 	M_REQUIRE(stream->is_unbuffered());
-	M_REQUIRE(blockSize && !(blockSize & (blockSize - 1)));	// blockSize must be power of two
+	M_REQUIRE(mstl::is_pow_2(blockSize));
 	M_REQUIRE(magic.size() < blockSize);
 
 	m_mtime = stream->mtime();
@@ -134,7 +134,7 @@ BlockFile::BlockFile(unsigned blockSize, Mode mode)
 	,m_isClosed(false)
 	,m_countWrites(0)
 {
-	M_REQUIRE(blockSize && !(blockSize & (blockSize - 1)));	// blockSize must be power of two
+	M_REQUIRE(mstl::is_pow_2(blockSize));
 }
 
 
@@ -166,7 +166,7 @@ BlockFile::~BlockFile() throw()
 void
 BlockFile::computeBlockCount()
 {
-	unsigned size = m_stream->size();
+	size_t size = m_stream->size();
 
 	if (size)
 	{
@@ -641,7 +641,7 @@ BlockFile::put(ByteStream const& buf)
 	M_REQUIRE(isInSyncMode());
 	M_REQUIRE(buf.size() <= MaxSpanSize);
 
-	unsigned nbytes = buf.size();
+	size_t nbytes = buf.size();
 
 	if (nbytes == 0)
 		return 0;
@@ -649,7 +649,7 @@ BlockFile::put(ByteStream const& buf)
 	if (m_mode == ReadWriteLength)
 		nbytes += 3;
 
-	unsigned span = countSpans(nbytes);
+	size_t span = countSpans(nbytes);
 
 	if (m_view.m_buffer.m_capacity == 0)
 	{

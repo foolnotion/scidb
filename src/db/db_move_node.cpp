@@ -538,7 +538,7 @@ MoveNode::countSequence() const
 
 	unsigned count = 0;
 
-	for ( ; p && !p->hasComment() && !p->hasVariation(); p = p->m_next)
+	for ( ; p && !p->hasAnyComment() && !p->hasVariation(); p = p->m_next)
 		++count;
 
 	return p ? count + 1 : count;

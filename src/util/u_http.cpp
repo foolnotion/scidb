@@ -560,7 +560,7 @@ Http::get(char const* url, mstl::ostream& stream)
 
 		char buffer[500];
 
-		rc = sock.recv(mstl::min(sizeof(buffer), unsigned(contentSize)), buffer);
+		rc = sock.recv(mstl::min(sizeof(buffer), size_t(contentSize)), buffer);
 
 		if (rc <= 0)
 			return rc == 0 ? bytesRead : rc;

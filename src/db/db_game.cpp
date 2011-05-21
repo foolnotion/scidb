@@ -1916,7 +1916,10 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 	while (node->next())
 	{
 		if (node->move())
+		{
+			node->move().setLegalMove(board.isValidMove(node->move(), move::DontAllowIllegalMove));
 			board.doMove(node->move());
+		}
 
 		node = node->next();
 
@@ -2672,19 +2675,19 @@ Game::setUndoLevel(unsigned level)
 
 	if (m_undoList.size() > m_maxUndoLevel)
 	{
-		unsigned n = m_undoList.size() - m_maxUndoLevel;
-		unsigned r = mstl::min(m_undoList.size() - m_undoIndex, n);
-		unsigned k = m_undoList.size() - r;
+		size_t n = m_undoList.size() - m_maxUndoLevel;
+		size_t r = mstl::min(m_undoList.size() - m_undoIndex, n);
+		size_t k = m_undoList.size() - r;
 
 		// firstly erase redo's
-		for (unsigned i = k; i < m_undoList.size(); ++i)
+		for (size_t i = k; i < m_undoList.size(); ++i)
 			delete m_undoList[i];
 
 		m_undoList.resize(k);
 		n -= r;
 
 		// secondly erase undo's
-		for (unsigned i = 0; i < n; ++i)
+		for (size_t i = 0; i < n; ++i)
 			delete m_undoList[i];
 
 		m_undoList.erase(m_undoList.begin(), m_undoList.begin() + n);
@@ -2750,7 +2753,7 @@ Game::setLanguages(LanguageSet const& set)
 	if (m_wantedLanguages != set)
 	{
 		m_wantedLanguages = set;
-		updateSubscriber(UpdatePgn | UpdateBoard);
+		updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet);
 	}
 }
 

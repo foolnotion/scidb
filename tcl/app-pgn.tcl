@@ -268,6 +268,7 @@ proc add {position base info tags} {
 	set Vars(previous:$position) {}
 	set Vars(next:$position) {}
 	set Vars(active:$position) {}
+	set Vars(lang:set:$position) {}
 	set Vars(info:$position) $info
 	set Vars(see:$position) 1
 	set Vars(dirty:$position) 0
@@ -596,11 +597,11 @@ proc AddLanguageButton {lang} {
 	if {![info exists Vars(lang:active:$lang)]} {
 		set Vars(lang:active:$lang) 0
 	}
-	set countryCode $::mc::langToCountry($lang)
+	set countryCode [::mc::countryForLang $lang]
 	set w [::toolbar::add $Vars(lang:toolbar) checkbutton \
 		-image [::country::makeToolbarIcon $countryCode] \
 		-command [namespace code [list ToggleLanguage $lang]] \
-		-tooltipvar ::encoding::mc::Lang($lang) \
+		-tooltipvar [::encoding::languageName $lang] \
 		-variable [namespace current]::Vars(lang:active:$lang) \
 		-padx 1 \
 	]
@@ -608,11 +609,22 @@ proc AddLanguageButton {lang} {
 }
 
 
-proc UpdateLanguages {languages} {
+proc UpdateLanguages {position languages} {
 	variable Vars
 
 	if {$Vars(lang:set) eq $languages} { return }
+
+	if {[llength $Vars(lang:set:$position)]} {
+		foreach lang $languages {
+			if {$lang ni $Vars(lang:set:$position)} {
+				set Vars(lang:active:$lang) 1
+			}
+		}
+		SetLanguages $position
+	}
+
 	set Vars(lang:set) $languages
+	set Vars(lang:set:$position) $languages
 	set langButtons [array names Vars lang:button:*]
 	
 	foreach button $langButtons {
@@ -673,7 +685,7 @@ proc Update {position data} {
 			}
 
 			languages {
-				UpdateLanguages [lindex $node 1]
+				UpdateLanguages $position [lindex $node 1]
 			}
 
 			header {
@@ -1059,70 +1071,68 @@ proc PrintComment {position w level key data} {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} {
 			set lang xx
-		} elseif {[incr paragraph] == 2} {
+		} elseif {[incr paragraph] >= 2} {
 			$w insert current " \u2726 "
 			set needSpace 0
 		}
-#		if {$Vars(lang:active:$lang)} {
-			set langTag $keyTag:$lang
-			foreach pair $comment {
-				lassign $pair code text
-				set text [string map {"<brace/>" "\{"} $text]
-				if {$needSpace} {
-					if {![string is space -strict [string index $text 0]]} {
-						$w insert current " " $langTag
-					}
-					set needSpace 0
+		set langTag $keyTag:$lang
+		foreach pair $comment {
+			lassign $pair code text
+			set text [string map {"<brace/>" "\{"} $text]
+			if {$needSpace} {
+				if {![string is space -strict [string index $text 0]]} {
+					$w insert current " " $langTag
 				}
-				set lastChar [string index $text end]
-				switch -- $code {
-					sym - nag - str {
-						if {[llength $startPos] == 0} { set startPos [$w index current] }
-					}
-				}
-				switch -- $code {
-					sym {
-						$w insert current [string map $::font::pieceMap $text] [list figurine $langTag]
-					}
-					nag {
-						lassign [::font::splitAnnotation $text] value sym tag
-						set nagTag nag$text
-						if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
-						if {[string is digit $sym]} { set text "{\$$text}" }
-						lappend tag $langTag $nagTag
-						$w insert current $sym $tag
-						incr count
-					}
-					str {
-						switch $flags {
-							0 { set tag {} }
-							1 { set tag bold }
-							2 { set tag italic }
-							3 { set tag bold-italic }
-						}
-						$w insert current $text [list $langTag $tag]
-					}
-					+bold			{ incr flags +1 }
-					-bold			{ incr flags -1 }
-					+italic		{ incr flags +2 }
-					-italic		{ incr flags -2 }
-					+underline	{ set underline 1 }
-					-underline	{ set underline 0 }
+				set needSpace 0
+			}
+			set lastChar [string index $text end]
+			switch -- $code {
+				sym - nag - str {
+					if {[llength $startPos] == 0} { set startPos [$w index current] }
 				}
 			}
+			switch -- $code {
+				sym {
+					$w insert current [string map $::font::pieceMap $text] [list figurine $langTag]
+				}
+				nag {
+					lassign [::font::splitAnnotation $text] value sym tag
+					set nagTag nag$text
+					if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
+					if {[string is digit $sym]} { set text "{\$$text}" }
+					lappend tag $langTag $nagTag
+					$w insert current $sym $tag
+					incr count
+				}
+				str {
+					switch $flags {
+						0 { set tag {} }
+						1 { set tag bold }
+						2 { set tag italic }
+						3 { set tag bold-italic }
+					}
+					$w insert current $text [list $langTag $tag]
+				}
+				+bold			{ incr flags +1 }
+				-bold			{ incr flags -1 }
+				+italic		{ incr flags +2 }
+				-italic		{ incr flags -2 }
+				+underline	{ set underline 1 }
+				-underline	{ set underline 0 }
+			}
+		}
 
-			if {[llength $startPos]} {
-				$w tag add comment $startPos current
-				$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$lang]]
-				$w tag bind $langTag <Leave> [namespace code [list LeaveComment $w $position $key:$lang]]
-				$w tag bind $langTag <ButtonPress-1> [namespace code [list EditComment $position $key $lang]]
-				set startPos {}
-			}
+		if {[llength $startPos]} {
+			$w tag add comment $startPos current
+			$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$lang]]
+			$w tag bind $langTag <Leave> [namespace code [list LeaveComment $w $position $key:$lang]]
+			$w tag bind $langTag <ButtonPress-1> [namespace code [list EditComment $position $key $lang]]
+			set startPos {}
+		}
 
-			if {![string is space -strict $lastChar]} {
-				set needSpace 1
-			}
-#		}
+		if {![string is space -strict $lastChar]} {
+			set needSpace 1
+		}
 	}
 }
 
@@ -1192,7 +1202,7 @@ proc EditComment {position key lang} {
 }
 
 
-# XXX use something like ::scidb::game::key
+# XXX use something like [::scidb::game::key parent $key]
 proc ParentKey {key} {
 	return [join [lrange [split $key .] 0 end-2] .]
 }
@@ -1438,7 +1448,7 @@ proc PopupMenu {parent position} {
 		if {$state eq "normal"} {
 			$menu.strip.comments add command \
 				-compound left \
-				-image $::country::icon::flag($::mc::langToCountry(xx)) \
+				-image $::country::icon::flag([::mc::countryForLang xx]) \
 				-label " $::comment::mc::AllLanguages" \
 				-command [list ::widget::busyOperation ::scidb::game::strip comments] \
 				;
@@ -1446,8 +1456,8 @@ proc PopupMenu {parent position} {
 			foreach lang $Vars(lang:set) {
 				$menu.strip.comments add command \
 					-compound left \
-					-image $::country::icon::flag($::mc::langToCountry($lang)) \
-					-label " $::encoding::mc::Lang($lang)" \
+					-image $::country::icon::flag([::mc::countryForLang $lang]) \
+					-label " [::encoding::languageName $lang]" \
 					-command [list ::widget::busyOperation ::scidb::game::strip comments $lang] \
 					;
 			}

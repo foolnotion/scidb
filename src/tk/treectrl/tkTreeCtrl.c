@@ -18,6 +18,7 @@
  * RCS: @(#) $Id: tkTreeCtrl.c,v 1.110 2009/04/18 18:41:52 treectrl Exp $
  */
 
+#include <stdint.h>
 #include "tkTreeCtrl.h"
 
 #ifdef WIN32
@@ -1974,7 +1975,7 @@ Tree_AddItem(
 	int id, isNew;
 
 	id = TreeItem_SetID(tree, item, tree->nextItemId++);
-	hPtr = Tcl_CreateHashEntry(&tree->itemHash, (char *) id, &isNew);
+	hPtr = Tcl_CreateHashEntry(&tree->itemHash, (char *)(intptr_t) id, &isNew);
 	Tcl_SetHashValue(hPtr, item);
 	tree->itemCount++;
 }
@@ -2014,7 +2015,7 @@ Tree_RemoveItem(
 		Tcl_DeleteHashEntry(hPtr);
 
 	hPtr = Tcl_FindHashEntry(&tree->itemHash,
-			(char *) TreeItem_GetID(tree, item));
+			(char *)(intptr_t) TreeItem_GetID(tree, item));
 	Tcl_DeleteHashEntry(hPtr);
 	tree->itemCount--;
 	if (tree->itemCount == 1)

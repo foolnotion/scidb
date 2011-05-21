@@ -53,6 +53,8 @@ Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
 	,m_codec(new sys::utf8::Codec(encoding))
 	,m_consumer(0)
 	,m_setupBoard(true)
+	,m_hasPreComment(false)
+	,m_afterVariation(false)
 {
 }
 
@@ -122,6 +124,8 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_markCount = 0;
 	m_terminated = false;
 	m_line.length = 0;
+	m_hasPreComment = false;
+	m_afterVariation = false;
 	m_homePawns.clear();
 
 	if (board)
@@ -178,7 +182,17 @@ Consumer::finishMoveSection(result::ID result)
 void
 Consumer::putPreComment(Comment const& comment)
 {
-	m_preComment = comment;
+	if (m_afterVariation)
+	{
+		sendComment(comment);
+	}
+	else
+	{
+		m_preComment = comment;
+		m_preAnnotation.clear();
+		m_preMarks.clear();
+		m_hasPreComment = !comment.isEmpty();
+	}
 }
 
 
@@ -188,24 +202,26 @@ Consumer::putPreComment(Comment const& comment, Annotation const& annotation, Ma
 	m_preComment = comment;
 	m_preAnnotation = annotation;
 	m_preMarks = marks;
+	m_hasPreComment = !comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty();
 }
 
 
 void
 Consumer::sendPreComment()
 {
-	if (!m_terminated && (!m_preComment.isEmpty() || !m_preAnnotation.isEmpty() || !m_preMarks.isEmpty()))
+	if (m_hasPreComment)
 	{
-		if (!m_preComment.isEmpty())
-			++m_commentCount;
-		m_annotationCount += m_preAnnotation.count();
-		m_markCount += m_preMarks.count();
+		if (!m_terminated)
+		{
+			if (!m_preComment.isEmpty())
+				++m_commentCount;
+			m_annotationCount += m_preAnnotation.count();
+			m_markCount += m_preMarks.count();
 
-		sendComment(m_preComment, m_preAnnotation, m_preMarks);
+			sendComment(m_preComment, m_preAnnotation, m_preMarks);
+		}
 
-		m_preComment.clear();
-		m_preAnnotation.clear();
-		m_preMarks.clear();
+		m_hasPreComment = false;
 	}
 }
 
@@ -239,6 +255,7 @@ Consumer::putMove(Move const& move,
 		++m_commentCount;
 	m_annotationCount += annotation.count();
 	m_markCount += marks.count();
+	m_afterVariation = false;
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
@@ -289,6 +306,7 @@ Consumer::putMove(Move const& move)
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
+	m_afterVariation = false;
 
 	if (sendMove(entry.move))
 	{
@@ -309,6 +327,15 @@ Consumer::putMove(Move const& move)
 	{
 		m_terminated = true;
 	}
+}
+
+
+void
+Consumer::sendComment(Comment const& comment)
+{
+	m_preAnnotation.clear();
+	m_preMarks.clear();
+	sendComment(comment, m_preAnnotation, m_preMarks);
 }
 
 
@@ -340,6 +367,7 @@ Consumer::finishVariation()
 
 	m_stack.pop();
 	sendPreComment();	// send dangling pre-comment (if variation is empty)
+	m_afterVariation = true;
 }
 
 

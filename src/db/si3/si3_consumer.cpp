@@ -118,6 +118,22 @@ Consumer::endMoveSection(result::ID)
 
 
 void
+Consumer::pushComment(Comment const& comment)
+{
+	if (comment.isXml())
+	{
+		mstl::string text;
+		comment.flatten(text, codec().isUtf8() ? Comment::Unicode : Comment::Latin1);
+		m_comments.push_back(text);
+	}
+	else
+	{
+		m_comments.push_back(comment.content());
+	}
+}
+
+
+void
 Consumer::sendComment(	Comment const& comment,
 								Annotation const& annotation,
 								MarkSet const& marks,
@@ -163,18 +179,18 @@ Consumer::sendComment(	Comment const& comment,
 	else if (!comment.isEmpty())
 	{
 		m_strm.put(token::Comment);
-
-		if (comment.isXml())
-		{
-			mstl::string text;
-			comment.flatten(text, codec().isUtf8() ? Comment::Unicode : Comment::Latin1);
-			m_comments.push_back(text);
-		}
-		else
-		{
-			m_comments.push_back(comment.content());
-		}
+		pushComment(comment);
 	}
+}
+
+
+void
+Consumer::sendComment(Comment const& comment)
+{
+	m_strm.put(token::Start_Marker);
+	m_strm.put(token::Comment);
+	m_strm.put(token::End_Marker);
+	pushComment(comment);
 }
 
 

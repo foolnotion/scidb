@@ -77,7 +77,7 @@ Token::name(Environment& env) const
 		if (0 <= escapeChar && escapeChar <= 255)
 			result[0] = escapeChar;
 		else
-			result.erase(0u, 1u);
+			result.erase(size_t(0), size_t(1));
 	}
 
 	return result;

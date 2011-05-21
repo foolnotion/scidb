@@ -72,7 +72,8 @@ Filter::add(unsigned index)
 	if (!m_set.test_and_set(index))
 		++m_count;
 
-	M_ASSERT(checkClassInvariance());
+// too slow!
+//	M_ASSERT(checkClassInvariance());
 }
 
 

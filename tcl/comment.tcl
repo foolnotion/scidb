@@ -132,7 +132,7 @@ proc open {parent lang} {
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 
 	set Vars(widget:text) $top.text
-	set Vars(key) [::scidb::game::position key]
+set Vars(key) [::scidb::game::position key]
 	set Vars(lang) xx
 
 	text $top.text \
@@ -194,7 +194,7 @@ proc open {parent lang} {
 	ttk::label $butts.lang \
 		-compound left \
 		-textvar [namespace current]::Vars(lang:label) \
-		-image $::country::icon::flag($::mc::langToCountry($lang)) \
+		-image $::country::icon::flag([::mc::countryForLang $lang]) \
 		-justify left \
 		-relief ridge \
 		-background $bg \
@@ -291,11 +291,19 @@ proc open {parent lang} {
 proc AddLanguageButton {lang} {
 	variable Vars
 
-	set countryCode $::mc::langToCountry($lang)
+	set countryCode [::mc::countryForLang $lang]
+
+	if {[info exists ::encoding::mc::Lang($lang)]} {
+		set languageNameVar ::encoding::mc::Lang($lang)
+	} else {
+		variable _LanguageName_$lang
+		set languageNameVar _LanguageName_$lang
+	}
+
 	set w [::toolbar::add $Vars(tb) button \
 		-image [::country::makeToolbarIcon $countryCode] \
 		-command [namespace code [list SwitchLanguage $lang]] \
-		-tooltipvar ::encoding::mc::Lang($lang) \
+		-tooltipvar $languageNameVar \
 		-variable [namespace current]::Vars(lang) \
 		-value $lang \
 	]
@@ -702,7 +710,7 @@ proc SwitchLanguage {lang} {
 	set Vars(content) [ParseContent $Vars(lang)]
 	set Vars(lang) $lang
 	set Vars(lang:label) [LanguageName]
-	$Vars(widget:label) configure -image $::country::icon::flag($::mc::langToCountry($Vars(lang)))
+	$Vars(widget:label) configure -image $::country::icon::flag([::mc::countryForLang $Vars(lang)])
 	Update 0
 }
 
@@ -1112,7 +1120,7 @@ proc PopupMenu {parent} {
 	if {$Vars(lang) eq "xx"} { set state disabled } else { set state normal }
 	$m.switch add command \
 		-compound left \
-		-image $::country::icon::flag($mc::langToCountry(xx)) \
+		-image $::country::icon::flag([::mc::countryForLang xx]) \
 		-label " $mc::AllLanguages" \
 		-command [namespace code [list SwitchLanguage xx]] \
 		-state $state \
@@ -1122,8 +1130,8 @@ proc PopupMenu {parent} {
 		if {$lang eq $Vars(lang)} { set state disabled } else { set state normal }
 		$m.switch add command \
 			-compound left \
-			-image $::country::icon::flag($mc::langToCountry($lang)) \
-			-label " $::encoding::mc::Lang($lang)" \
+			-image $::country::icon::flag([::mc::countryForLang $lang]) \
+			-label " [::encoding::languageName $lang]" \
 			-command [namespace code [list SwitchLanguage $lang]] \
 			-state $state \
 			;
@@ -1409,7 +1417,7 @@ proc MakeCountryList {} {
 		if {$lang ne "xx"} {
 			set country $::mc::langToCountry($lang)
 			set flag $::country::icon::flag($country)
-			set name $::encoding::mc::Lang($lang)
+			set name [::encoding::languageName $lang]
 			lappend list [list $flag $name $lang]
 		}
 	}
@@ -1459,7 +1467,7 @@ proc LanguageName {} {
 	variable Vars
 
 	if {$Vars(lang) eq "xx" } { return $mc::AllLanguages }
-	return $::encoding::mc::Lang($Vars(lang))
+	return [::encoding::languageName $Vars(lang)]
 }
 
 

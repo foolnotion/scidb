@@ -111,6 +111,17 @@ Move::Move(Square from, Square to, unsigned color)
 
 
 inline
+void
+Move::setLegalMove(bool flag)
+{
+	if (flag)
+		setLegalMove();
+	else
+		setIllegalMove();
+}
+
+
+inline
 bool
 Move::isShortCastling() const
 {

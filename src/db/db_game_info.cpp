@@ -115,7 +115,7 @@ encodeCount(unsigned count)
 		15,													// >= 45
 	};
 
-	return Lookup[mstl::min(count, U_NUMBER_OF(Lookup) - 1)];
+	return Lookup[mstl::min(size_t(count), U_NUMBER_OF(Lookup) - 1)];
 }
 
 

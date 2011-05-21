@@ -238,6 +238,14 @@ if {[info exists ::i18n::languages]} {
 }
 
 
+proc countryForLang {lang} {
+	variable langToCountry
+
+	if {[info exists langToCountry($lang)]} { return $langToCountry($lang) }
+	return UNK
+}
+
+
 proc setLang {id} {
 	variable langID
 	variable ::i18n::languages

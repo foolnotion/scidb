@@ -143,7 +143,7 @@ namespace {
 static ssize_t
 sock_read(void* cookie, char* buf, size_t len)
 {
-	ssize_t n = recv(reinterpret_cast<int>(cookie), buf, len, 0);
+	ssize_t n = recv(reinterpret_cast<int>(intptr_t(cookie)), buf, len, 0);
 	return n <= 0 ? -1 : n;
 }
 
@@ -153,7 +153,7 @@ sock_write(void* cookie, char const* buf, size_t len)
 {
 	while (true)
 	{
-		ssize_t n = write(reinterpret_cast<int>(cookie), buf, len);
+		ssize_t n = write(reinterpret_cast<int>(intptr_t(cookie)), buf, len);
 
 		if (n == 0)
 			return -1;
@@ -172,11 +172,12 @@ sock_write(void* cookie, char const* buf, size_t len)
 static int
 sock_close(void* cookie)
 {
-	return close(reinterpret_cast<int>(cookie));
+	return close(reinterpret_cast<int>(intptr_t(cookie)));
 }
 
 
-static ssize_t sock_seek(void*, __off64_t*, int) { return -1; }
+//static ssize_t sock_seek(void*, __off64_t*, int) { return -1; }
+static int sock_seek(void*, __off64_t*, int) { return -1; }
 
 
 static cookie_io_functions_t m_sock_io = { sock_read, sock_write, sock_seek, sock_close };
@@ -189,7 +190,7 @@ public:
 	proc_stream(string const& cmd);
 	~proc_stream() throw();
 
-	bool is_open() const { return m_socket >= 0; }
+	bool is_open() const { return m_socket != -1; }
 
 private:
 
@@ -229,7 +230,7 @@ proc_stream::proc_stream(string const& cmd)
 
 	::close(socks[1]);
 	m_socket = socks[0];
-	m_fp = ::fopencookie(reinterpret_cast<void*>(m_socket), "r+", m_sock_io);
+	m_fp = ::fopencookie(reinterpret_cast<void*>(intptr_t(m_socket)), "r+", m_sock_io);
 
 	if (!m_fp)
 	{
@@ -241,7 +242,7 @@ proc_stream::proc_stream(string const& cmd)
 
 proc_stream::~proc_stream() throw()
 {
-	if (m_socket < 0)
+	if (m_socket == -1)
 		return;
 
 	::fclose(m_fp);
@@ -383,7 +384,7 @@ extract_abi_name(char const* isym, char* nmbuf)
 
 		if (nm_start++ == 0)
 		{
-			nm_size = min(::strlen(isym), 256u);
+			nm_size = min(::strlen(isym), size_t(256));
 			::memcpy(nmbuf, isym, nm_size);
 		}
 		else
@@ -392,12 +393,12 @@ extract_abi_name(char const* isym, char* nmbuf)
 
 			if (nm_end)
 			{
-				nm_size = min(size_t(distance(nm_start, nm_end)), 256u);
+				nm_size = min(size_t(distance(nm_start, nm_end)), size_t(256));
 				::memcpy(nmbuf, nm_start, nm_size);
 			}
 			else
 			{
-				nm_size = min(::strlen(isym), 256u);
+				nm_size = min(::strlen(isym), size_t(256));
 				::memcpy(nmbuf, isym, nm_size);
 			}
 		}

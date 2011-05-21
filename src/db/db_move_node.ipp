@@ -28,77 +28,32 @@
 
 namespace db {
 
-inline MoveNode* MoveNode::prev() const					{ return m_prev; }
 inline bool MoveNode::atLineStart() const					{ return m_prev == 0 || m_prev->m_next != this;}
 inline bool MoveNode::atLineEnd() const					{ return m_next == 0; }
-inline bool MoveNode::shouldHaveComment() const			{ return m_flags & HasComment; };
-inline bool MoveNode::shouldHaveNote() const				{ return m_flags & HasNote; }
+inline bool MoveNode::hasComment() const					{ return m_flags & HasComment; }
+inline bool MoveNode::hasPreComment() const				{ return m_flags & HasPreComment; }
+inline bool MoveNode::hasAnyComment() const				{ return m_flags & (HasComment | HasPreComment); }
+inline bool MoveNode::hasMark() const						{ return m_flags & HasMark; }
+inline bool MoveNode::hasAnnotation() const				{ return m_flags & HasAnnotation; }
+inline bool MoveNode::hasVariation() const				{ return m_flags & HasVariation; }
+inline bool MoveNode::hasNote() const						{ return m_flags & HasNote; }
+inline bool MoveNode::hasSupplement() const				{ return m_flags & HasSupplement; }
+
+inline MoveNode* MoveNode::prev() const					{ return m_prev; }
 inline Move& MoveNode::move()									{ return m_move; }
 inline Move const& MoveNode::move() const					{ return m_move; }
 inline MoveNode* MoveNode::next() const					{ return m_next; }
 
-inline void MoveNode::setComment()							{ m_flags |= HasComment; }
-inline MoveNode* MoveNode::clone() const					{ return clone(0); }
-
 inline MarkSet const& MoveNode::marks() const			{ return *m_marks; }
 inline Comment const& MoveNode::comment() const			{ return m_comment; }
+inline Comment const& MoveNode::preComment() const		{ return m_preComment; }
 inline Annotation const& MoveNode::annotation() const	{ return *m_annotation; }
+inline unsigned MoveNode::variationCount() const		{ return m_variations.size(); }
 
-
-inline
-bool
-MoveNode::hasComment() const
-{
-	return m_flags & HasComment;
-}
-
-
-inline
-bool
-MoveNode::hasMark() const
-{
-	return m_flags & HasMark;
-}
-
-
-inline
-bool
-MoveNode::hasAnnotation() const
-{
-	return m_flags & HasAnnotation;
-}
-
-
-inline
-bool
-MoveNode::hasVariation() const
-{
-	return m_flags & HasVariation;
-}
-
-
-inline
-bool
-MoveNode::hasNote() const
-{
-	return m_flags & HasNote;
-}
-
-
-inline
-bool
-MoveNode::hasSupplement() const
-{
-	return m_flags & HasSupplement;
-}
-
-
-inline
-unsigned
-MoveNode::variationCount() const
-{
-	return m_variations.size();
-}
+inline void MoveNode::setComment()							{ m_flags |= HasComment; }
+inline void MoveNode::setPreComment()						{ m_flags |= HasPreComment; }
+inline void MoveNode::unsetComment()						{ m_flags &= ~HasComment; }
+inline MoveNode* MoveNode::clone() const					{ return clone(0); }
 
 
 inline
@@ -120,15 +75,36 @@ MoveNode::variations() const
 
 inline
 void
-MoveNode::swapComment(Comment& comment)
+MoveNode::updateCommentFlags()
 {
-	m_comment.swap(comment);
 	m_flags &= ~IsPrepared;
 
 	if (m_comment.isEmpty())
 		m_flags &= ~HasComment;
 	else
 		m_flags |= HasComment;
+}
+
+
+inline
+void
+MoveNode::updatePreCommentFlags()
+{
+	m_flags &= ~IsPrepared;
+
+	if (m_preComment.isEmpty())
+		m_flags &= ~HasPreComment;
+	else
+		m_flags |= HasPreComment;
+}
+
+
+inline
+void
+MoveNode::swapComment(Comment& comment)
+{
+	m_comment.swap(comment);
+	updateCommentFlags();
 }
 
 
@@ -137,12 +113,16 @@ void
 MoveNode::swapComment(mstl::string& str)
 {
 	m_comment.swap(str);
-	m_flags &= ~IsPrepared;
+	updateCommentFlags();
+}
 
-	if (m_comment.isEmpty())
-		m_flags &= ~HasComment;
-	else
-		m_flags |= HasComment;
+
+inline
+void
+MoveNode::swapPreComment(mstl::string& str)
+{
+	m_preComment.swap(str);
+	updatePreCommentFlags();
 }
 
 
@@ -151,12 +131,16 @@ void
 MoveNode::setComment(mstl::string const& str)
 {
 	m_comment = str;
-	m_flags &= ~IsPrepared;
+	updateCommentFlags();
+}
 
-	if (m_comment.isEmpty())
-		m_flags &= ~HasComment;
-	else
-		m_flags |= HasComment;
+
+inline
+void
+MoveNode::setPreComment(mstl::string const& str)
+{
+	m_preComment = str;
+	updatePreCommentFlags();
 }
 
 

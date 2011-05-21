@@ -140,8 +140,6 @@ private:
 
 template <typename Key> struct hash_key			{ static size_t hash(void const* key); };
 
-template <> struct hash_key<long>					{ static size_t hash(long key); };
-template <> struct hash_key<unsigned long>		{ static size_t hash(unsigned long key); };
 template <> struct hash_key<int16_t>				{ static size_t hash(int16_t key); };
 template <> struct hash_key<int32_t>				{ static size_t hash(int32_t key); };
 template <> struct hash_key<int64_t>				{ static size_t hash(int64_t key); };

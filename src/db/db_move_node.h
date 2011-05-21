@@ -93,13 +93,13 @@ public:
 	bool atLineEnd() const;
 
 	bool hasComment() const;
+	bool hasPreComment() const;
+	bool hasAnyComment() const;
 	bool hasVariation() const;
 	bool hasAnnotation() const;
 	bool hasMark() const;
 	bool hasNote() const;
 	bool hasSupplement() const;
-	bool shouldHaveComment() const;
-	bool shouldHaveNote() const;
 	bool containsIllegalMoves() const;
 
 	unsigned variationCount() const;
@@ -122,9 +122,12 @@ public:
 	Annotation const& annotation() const;
 	MarkSet const& marks() const;
 	Comment const& comment() const;
+	Comment const& preComment() const;
 	move::Constraint constraint() const;
 
 	void setComment();
+	void setPreComment();
+	void unsetComment();
 	void setMark();
 
 	void setMove(Board const& board, Move const& move);
@@ -138,7 +141,9 @@ public:
 	void replaceMarks(MarkSet const& marks);
 	void swapComment(Comment& comment);
 	void swapComment(mstl::string& str);
+	void swapPreComment(mstl::string& str);
 	void setComment(mstl::string const& str);
+	void setPreComment(mstl::string const& str);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
 	void prepareForSan(Board const& board);
 	void transpose();
@@ -169,11 +174,12 @@ private:
 	enum
 	{
 		HasComment		= 1 << 0,
-		HasMark			= 1 << 1,
-		HasAnnotation	= 1 << 2,
-		HasVariation	= 1 << 3,
-		IsPrepared		= 1 << 4,
-		HasNote			= HasComment | HasMark | HasAnnotation,
+		HasPreComment	= 1 << 1,
+		HasMark			= 1 << 2,
+		HasAnnotation	= 1 << 3,
+		HasVariation	= 1 << 4,
+		IsPrepared		= 1 << 5,
+		HasNote			= HasComment | HasPreComment | HasMark | HasAnnotation,
 		HasSupplement	= HasNote | HasVariation,
 	};
 
@@ -183,6 +189,8 @@ private:
 	MoveNode* clone(MoveNode* prev) const;
 
 	void setupAnnotation(Annotation const& annotation);
+	void updatePreCommentFlags();
+	void updateCommentFlags();
 
 	bool checkHasMark() const;
 	bool checkHasAnnotation() const;
@@ -195,6 +203,7 @@ private:
 	MarkSet*			m_marks;
 	Move				m_move;
 	Comment			m_comment;
+	Comment			m_preComment;
 };
 
 } // namespace db

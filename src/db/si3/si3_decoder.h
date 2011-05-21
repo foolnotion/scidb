@@ -78,7 +78,6 @@ private:
 	void decodePawn(sq::ID from, Byte nybble);
 
 	void decodeVariation(Consumer& consumer, MoveNode const* node);
-	void decodeComments(Consumer& consumer, unsigned flags, MoveNode* node);
 
 	Move nextMove();
 	void skipVariations();

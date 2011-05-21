@@ -874,7 +874,7 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 	strm << uint32_t(Encoder::encodeType(type()));	// base type
 	strm << uint24_t(gameInfoList().size());			// number of games
 	strm << uint24_t(autoLoad);							// auto load
-	strm.put(description(), mstl::min(description().size(), 119 - strm.tellp()));
+	strm.put(description(), mstl::min(description().size(), size_t(119 - strm.tellp())));
 
 	if (!fstrm.seekp(8, mstl::ios_base::beg))	// skip magic
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");

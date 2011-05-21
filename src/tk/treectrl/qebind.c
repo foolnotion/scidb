@@ -36,6 +36,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 #include <tcl.h>
 #include <tk.h>
 #include "qebind.h"
@@ -231,7 +232,7 @@ int QE_InstallEvent(QE_BindingTable bindingTable, char *name, QE_ExpandProc expa
 
 	Tcl_SetHashValue(hPtr, (ClientData) eiPtr);
 
-	hPtr = Tcl_CreateHashEntry(&bindPtr->eventTableByType, (char *) type, &isNew);
+	hPtr = Tcl_CreateHashEntry(&bindPtr->eventTableByType, (char *)(intptr_t) type, &isNew);
 	Tcl_SetHashValue(hPtr, (ClientData) eiPtr);
 
 	/* List of EventInfos */
@@ -355,7 +356,7 @@ int QE_UninstallEvent(QE_BindingTable bindingTable, int eventType)
 	int i, count = 0;
 
 	/* Find the event */
-	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *) eventType);
+	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *)(intptr_t) eventType);
 	if (hPtr == NULL)
 		return TCL_ERROR;
 	eiPtr = (EventInfo *) Tcl_GetHashValue(hPtr);
@@ -462,7 +463,7 @@ static EventInfo *FindEvent(BindingTable *bindPtr, int eventType)
 {
 	Tcl_HashEntry *hPtr;
 
-	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *) eventType);
+	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *)(intptr_t) eventType);
 	if (hPtr == NULL) return NULL;
 	return (EventInfo *) Tcl_GetHashValue(hPtr);
 }
