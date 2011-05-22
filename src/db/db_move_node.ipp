@@ -53,6 +53,7 @@ inline unsigned MoveNode::variationCount() const		{ return m_variations.size(); 
 inline void MoveNode::setComment()							{ m_flags |= HasComment; }
 inline void MoveNode::setPreComment()						{ m_flags |= HasPreComment; }
 inline void MoveNode::unsetComment()						{ m_flags &= ~HasComment; }
+inline void MoveNode::unsetPreComment()					{ m_flags &= ~HasPreComment; }
 inline MoveNode* MoveNode::clone() const					{ return clone(0); }
 
 

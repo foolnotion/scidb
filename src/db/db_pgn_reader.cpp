@@ -627,6 +627,13 @@ PgnReader::process(Progress& progress)
 							else
 							{
 								token = nextToken(kEndVariation);
+
+// XXX
+//								if (!m_comment.empty())
+//								{
+//									consumer().putPreComment(m_comment);
+//									m_comment.clear();
+//								}
 							}
 						}
 						else

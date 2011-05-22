@@ -340,6 +340,7 @@ MoveNode::swapData(MoveNode* node)
 	mstl::swap(m_annotation,	node->m_annotation);
 	mstl::swap(m_marks,			node->m_marks);
 	mstl::swap(m_comment,			node->m_comment);
+	mstl::swap(m_preComment,		node->m_preComment);
 }
 
 
@@ -390,6 +391,7 @@ MoveNode::clone(MoveNode* prev) const
 		node->setupAnnotation(*m_annotation);
 
 	node->m_comment = m_comment;
+	node->m_preComment = m_preComment;
 	node->m_move = m_move;
 	node->m_flags = m_flags;
 
@@ -492,7 +494,7 @@ MoveNode::countMarks() const
 unsigned
 MoveNode::countComments() const
 {
-	unsigned result = m_comment.isEmpty() ? 0 : 1;
+	unsigned result = (m_comment.isEmpty()) ? 0 : 1 + (m_preComment.isEmpty() ? 0 : 1);
 
 	if (m_next)
 		result += m_next->countComments();
@@ -507,7 +509,7 @@ MoveNode::countComments() const
 unsigned
 MoveNode::countComments(mstl::string const& lang) const
 {
-	unsigned result = m_comment.countLength(lang) ? 1 : 0;
+	unsigned result = (m_comment.countLength(lang) ? 1 : 0) + (m_preComment.countLength(lang) ? 1 : 0);
 
 	if (m_next)
 		result += m_next->countComments(lang);
@@ -585,6 +587,7 @@ void
 MoveNode::stripComments()
 {
 	m_comment.clear();
+	m_preComment.clear();
 	m_flags &= ~(HasComment | IsPrepared);
 
 	for (unsigned i = 0; i < m_variations.size(); ++i)
@@ -599,6 +602,7 @@ void
 MoveNode::stripComments(mstl::string const& lang)
 {
 	m_comment.remove(lang);
+	m_preComment.remove(lang);
 	m_flags &= ~IsPrepared;
 
 	if (m_comment.isEmpty())
@@ -689,6 +693,7 @@ void
 MoveNode::collectLanguages(LanguageSet& langSet) const
 {
 	m_comment.collectLanguages(langSet);
+	m_preComment.collectLanguages(langSet);
 
 	if (m_next)
 		m_next->collectLanguages(langSet);

@@ -185,16 +185,6 @@ Consumer::sendComment(	Comment const& comment,
 
 
 void
-Consumer::sendComment(Comment const& comment)
-{
-	m_strm.put(token::Start_Marker);
-	m_strm.put(token::Comment);
-	m_strm.put(token::End_Marker);
-	pushComment(comment);
-}
-
-
-void
 Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
 	sendComment(comment, annotation, marks, false);

@@ -830,10 +830,29 @@ Move::Move(Work& work, MoveNode const* move)
 
 	work.needMoveNo = false;
 
-	if (move->hasPreComment())
-	{
-		// TODO
-	}
+//	if (move->hasPreComment())
+//	{
+//		db::Comment comment(move->preComment());
+//		comment.strip(*work.wantedLanguages);
+//
+//		if (!comment.isEmpty())
+//		{
+//			m_list.push_back(new Space(work.level, work.bracket));
+//			work.plyCount = 0;
+//			useMoveNo = true;
+//
+//			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+//				m_list.push_back(new Space(0));
+//
+//			m_list.push_back(new Comment(comment));
+//			m_list.push_back(new Space(work.level));
+//
+//			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+//				m_list.push_back(new Space(0));
+//
+//			work.spacing = NoSpace;
+//		}
+//	}
 
 	if (work.spacing & RequiredBreak)
 	{

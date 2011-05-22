@@ -54,7 +54,6 @@ Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
 	,m_consumer(0)
 	,m_setupBoard(true)
 	,m_hasPreComment(false)
-	,m_afterVariation(false)
 {
 }
 
@@ -125,7 +124,6 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_terminated = false;
 	m_line.length = 0;
 	m_hasPreComment = false;
-	m_afterVariation = false;
 	m_homePawns.clear();
 
 	if (board)
@@ -182,11 +180,7 @@ Consumer::finishMoveSection(result::ID result)
 void
 Consumer::putPreComment(Comment const& comment)
 {
-	if (m_afterVariation)
-	{
-		sendComment(comment);
-	}
-	else
+	if (!m_preComment.isEmpty())
 	{
 		m_preComment = comment;
 		m_preAnnotation.clear();
@@ -255,7 +249,6 @@ Consumer::putMove(Move const& move,
 		++m_commentCount;
 	m_annotationCount += annotation.count();
 	m_markCount += marks.count();
-	m_afterVariation = false;
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
@@ -306,7 +299,6 @@ Consumer::putMove(Move const& move)
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
-	m_afterVariation = false;
 
 	if (sendMove(entry.move))
 	{
@@ -367,7 +359,6 @@ Consumer::finishVariation()
 
 	m_stack.pop();
 	sendPreComment();	// send dangling pre-comment (if variation is empty)
-	m_afterVariation = true;
 }
 
 

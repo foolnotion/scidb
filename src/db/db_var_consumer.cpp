@@ -57,6 +57,13 @@ void VarConsumer::endMoveSection(result::ID) {}
 
 
 void
+VarConsumer::sendComment(Comment const& comment)
+{
+	m_current->setComment(comment);
+}
+
+
+void
 VarConsumer::sendComment(	Comment const& comment,
 									Annotation const& annotation,
 									MarkSet const& marks)

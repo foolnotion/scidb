@@ -173,7 +173,6 @@ private:
 	Consumer*			m_consumer;
 	bool					m_setupBoard;
 	bool					m_hasPreComment;
-	bool					m_afterVariation;
 };
 
 } // namespace db

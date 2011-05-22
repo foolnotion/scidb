@@ -866,7 +866,7 @@ Comment::collect() const
 void
 Comment::collectLanguages(LanguageSet& result) const
 {
-	if (m_languageSet.empty())
+	if (m_languageSet.empty() && !m_content.empty())
 		collect();
 
 	result.insert(m_languageSet.begin(), m_languageSet.end());
@@ -876,6 +876,9 @@ Comment::collectLanguages(LanguageSet& result) const
 bool
 Comment::containsLanguage(mstl::string const& lang) const
 {
+	if (m_content.empty())
+		return 0;
+
 	if (m_languageSet.empty())
 		collect();
 
@@ -886,6 +889,9 @@ Comment::containsLanguage(mstl::string const& lang) const
 unsigned
 Comment::countLength(LanguageSet const& set) const
 {
+	if (m_content.empty())
+		return 0;
+
 	if (m_languageSet.empty())
 		collect();
 
@@ -906,6 +912,9 @@ Comment::countLength(LanguageSet const& set) const
 unsigned
 Comment::countLength(mstl::string const& lang) const
 {
+	if (m_content.empty())
+		return 0;
+
 	if (m_languageSet.empty())
 		collect();
 
@@ -949,6 +958,9 @@ Comment::clear()
 void
 Comment::flatten(mstl::string& result, Encoding encoding) const
 {
+	if (m_content.empty())
+		return;
+
 	if (isXml())
 	{
 		Flatten flatten(result, encoding);
@@ -965,6 +977,9 @@ Comment::flatten(mstl::string& result, Encoding encoding) const
 void
 Comment::toHtml(mstl::string& result) const
 {
+	if (m_content.empty())
+		return;
+
 	result.reserve(result.size() + m_content.size() + 100);
 
 	if (isXml())
@@ -1007,6 +1022,9 @@ Comment::toHtml(mstl::string& result) const
 void
 Comment::normalize()
 {
+	if (m_content.empty())
+		return;
+
 	if (!isXml())
 		return;
 
@@ -1018,6 +1036,9 @@ Comment::normalize()
 void
 Comment::remove(mstl::string const& lang)
 {
+	if (m_content.empty())
+		return;
+
 	if (isXml())
 	{
 		LanguageSet set;
@@ -1037,6 +1058,9 @@ Comment::remove(mstl::string const& lang)
 void
 Comment::strip(LanguageSet const& set)
 {
+	if (m_content.empty())
+		return;
+
 	if (set.empty())
 	{
 		m_content.clear();

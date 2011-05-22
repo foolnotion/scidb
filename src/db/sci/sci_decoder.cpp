@@ -264,9 +264,8 @@ Decoder::decodeMove(Byte value, Move& move)
 void
 Decoder::decodeVariation(unsigned flags)
 {
-	unsigned		pieceNum		= 0;	// satisfies the compiler
-	MoveNode*	preComment	= 0;
-	Move			move;
+	unsigned	pieceNum = 0;	// satisfies the compiler
+	Move		move;
 
 	while (true)
 	{
@@ -297,7 +296,7 @@ Decoder::decodeVariation(unsigned flags)
 					m_position.board().undoMove(move);
 					current->addVariation(m_currentNode = new MoveNode);
 					decodeVariation(flags);
-					preComment = m_currentNode = current;
+					m_currentNode = current;
 					m_position.pop();
 				}
 				break;
@@ -314,12 +313,7 @@ Decoder::decodeVariation(unsigned flags)
 
 			case token::Comment:
 				if (flags & DatabaseCodec::Decode_Comments)
-				{
-					if (preComment == m_currentNode)
-						m_currentNode->setPreComment();
-					else
-						m_currentNode->setComment();
-				}
+					m_currentNode->setComment();
 				break;
 		}
 	}
@@ -445,11 +439,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 					if (flags & DatabaseCodec::Decode_Comments)
 					{
 						text.get(comment);
-
-						if (outstanding)
-							consumer.putPreComment(comment);
-						else
-							hasNote = true;
+						hasNote = true;
 					}
 					break;
 			}
@@ -520,13 +510,6 @@ Decoder::decodeComments(MoveNode* node)
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
 				decodeComments(node->variation(i));
-
-			if (node->hasPreComment())
-			{
-				mstl::string comment;
-				m_strm.get(comment);
-				node->swapPreComment(comment);
-			}
 		}
 	}
 }

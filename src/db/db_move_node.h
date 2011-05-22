@@ -128,6 +128,7 @@ public:
 	void setComment();
 	void setPreComment();
 	void unsetComment();
+	void unsetPreComment();
 	void setMark();
 
 	void setMove(Board const& board, Move const& move);
