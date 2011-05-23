@@ -1016,6 +1016,7 @@ proc PopupSymbolTable {w text} {
 	util::place $m below $w
 	wm deiconify $m
 	raise $m
+	focus $m
 	if {[tk windowingsystem] == "x11"} {
 		tkwait visibility $m
 		::update
@@ -1395,6 +1396,7 @@ proc PopdownLaguages {dlg} {
 	set Vars(focus) [focus]
 	wm deiconify $popdown
 	raise $popdown
+	focus $popdown
 }
 
 

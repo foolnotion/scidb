@@ -449,6 +449,7 @@ proc popup {w b {i {}}} {
 	wm geometry $b +$x+$y
 	wm deiconify $b
 	raise $b
+	focus $b
 
 	if {[tk windowingsystem] eq "aqua" && $focus ne ""} {
 		# Aqua's help window steals focus on display

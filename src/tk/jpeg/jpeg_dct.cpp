@@ -185,14 +185,22 @@ cpuid(int op, uint32_t& eax, uint32_t& ebx, uint32_t& ecx, uint32_t& edx)
 static bool
 cpu_provides_sse2()
 {
+#if defined(__x86_64__)
+
+	return true;
+
+#elif !defined(__i386__)
+
+	return false;
+
+#else
+
 	static bool first_time = true;
 
 	static bool caps = false;
 
 	if (!first_time)
 		return caps;
-
-#ifdef __i386__
 
 	bool haveCPUID;
 
@@ -239,11 +247,11 @@ cpu_provides_sse2()
 		}
 	}
 
-#endif
-
 	first_time = false;
 
 	return caps;
+
+#endif
 }
 
 

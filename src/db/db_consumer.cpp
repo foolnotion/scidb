@@ -53,7 +53,7 @@ Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
 	,m_codec(new sys::utf8::Codec(encoding))
 	,m_consumer(0)
 	,m_setupBoard(true)
-	,m_hasPreComment(false)
+	,m_hasComment(false)
 {
 }
 
@@ -123,7 +123,7 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_markCount = 0;
 	m_terminated = false;
 	m_line.length = 0;
-	m_hasPreComment = false;
+	m_hasComment = false;
 	m_homePawns.clear();
 
 	if (board)
@@ -162,7 +162,7 @@ Consumer::finishGame(TagSet const& tags)
 void
 Consumer::finishMoveSection(result::ID result)
 {
-	sendPreComment();	// send dangling pre-comment
+	sendComment();	// send dangling pre-comment
 
 	if (m_terminated)
 	{
@@ -178,44 +178,44 @@ Consumer::finishMoveSection(result::ID result)
 
 
 void
-Consumer::putPreComment(Comment const& comment)
+Consumer::putComment(Comment const& comment)
 {
-	if (!m_preComment.isEmpty())
+	if (!m_comment.isEmpty())
 	{
-		m_preComment = comment;
+		m_comment = comment;
 		m_preAnnotation.clear();
 		m_preMarks.clear();
-		m_hasPreComment = !comment.isEmpty();
+		m_hasComment = !comment.isEmpty();
 	}
 }
 
 
 void
-Consumer::putPreComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+Consumer::putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	m_preComment = comment;
+	m_comment = comment;
 	m_preAnnotation = annotation;
 	m_preMarks = marks;
-	m_hasPreComment = !comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty();
+	m_hasComment = !comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty();
 }
 
 
 void
-Consumer::sendPreComment()
+Consumer::sendComment()
 {
-	if (m_hasPreComment)
+	if (m_hasComment)
 	{
 		if (!m_terminated)
 		{
-			if (!m_preComment.isEmpty())
+			if (!m_comment.isEmpty())
 				++m_commentCount;
 			m_annotationCount += m_preAnnotation.count();
 			m_markCount += m_preMarks.count();
 
-			sendComment(m_preComment, m_preAnnotation, m_preMarks);
+			sendComment(m_comment, m_preAnnotation, m_preMarks);
 		}
 
-		m_hasPreComment = false;
+		m_hasComment = false;
 	}
 }
 
@@ -223,6 +223,7 @@ Consumer::sendPreComment()
 void
 Consumer::putMove(Move const& move,
 						Annotation const& annotation,
+						Comment const& preComment,
 						Comment const& comment,
 						MarkSet const& marks)
 {
@@ -241,7 +242,7 @@ Consumer::putMove(Move const& move,
 			beginVariation();
 		}
 
-		sendPreComment();
+		sendComment();
 		entry.empty = false;
 	}
 
@@ -253,7 +254,7 @@ Consumer::putMove(Move const& move,
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
 
-	if (sendMove(entry.move, annotation, marks, comment))
+	if (sendMove(entry.move, annotation, marks, preComment, comment))
 	{
 		entry.board.doMove(entry.move);
 
@@ -293,7 +294,7 @@ Consumer::putMove(Move const& move)
 			beginVariation();
 		}
 
-		sendPreComment();
+		sendComment();
 		entry.empty = false;
 	}
 
@@ -319,15 +320,6 @@ Consumer::putMove(Move const& move)
 	{
 		m_terminated = true;
 	}
-}
-
-
-void
-Consumer::sendComment(Comment const& comment)
-{
-	m_preAnnotation.clear();
-	m_preMarks.clear();
-	sendComment(comment, m_preAnnotation, m_preMarks);
 }
 
 
@@ -358,7 +350,7 @@ Consumer::finishVariation()
 		endVariation();
 
 	m_stack.pop();
-	sendPreComment();	// send dangling pre-comment (if variation is empty)
+	sendComment();	// send dangling pre-comment (if variation is empty)
 }
 
 

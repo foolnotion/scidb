@@ -131,6 +131,7 @@ proc Show {} {
 			if {$Priv(show) && $Priv(visibility) ne "VisibilityUnobscured"} {
 				wm deiconify .log
 				raise .log
+				focus .log
 			}
 		}
 	}

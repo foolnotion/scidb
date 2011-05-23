@@ -169,6 +169,7 @@ proc table {args} {
 	set Vars(active)			-1
 	set Vars(selection)		-1
 	set Vars(columns)			{}
+	set Vars(visible)			{}
 	set Vars(order)			{}
 	set Vars(styles)			{}
 
@@ -435,6 +436,7 @@ proc addcol {table id args} {
 	lappend Vars(styles) $id style$id
 	lappend Vars(columns) $id
 	if {$opts(-visible)} {
+		lappend Vars(visible) $id
 		if {$minwidth > 0} {
 			incr Vars(minwidth) $minwidth
 		} elseif {[llength $width]} {
@@ -521,6 +523,11 @@ proc tablePath {table} {
 
 proc columns {table} {
 	return [set ${table}::Vars(columns)]
+}
+
+
+proc visibleColumns {table} {
+	return [set ${table}::Vars(visible)]
 }
 
 
@@ -729,12 +736,10 @@ proc clear {table {first -1} {last -1}} {
 	for {set row $first} {$row < $last} {incr row} {
 		set item [$table.t item id $row]
 		if {[llength $item]} {
-			foreach id $Vars(columns) {
-				if {$Options(-visible:$id)} {
-					catch {
-						$table.t item element configure $row $id elemIco -image {}
-						$table.t item element configure $row $id elemTxt$id -text ""
-					}
+			foreach id $Vars(visible) {
+				catch {
+					$table.t item element configure $row $id elemIco -image {}
+					$table.t item element configure $row $id elemTxt$id -text ""
 				}
 			}
 		}
@@ -991,7 +996,7 @@ proc GenerateTableMinSizeEvent {table} {
 	variable ${table}::Vars
 
 	set minwidth 0
-	foreach id $Vars(columns) { incr minwidth [$table.t column minimumwidth $id] }
+	foreach id $Vars(visible) { incr minwidth [$table.t column minimumwidth $id] }
 	incr minwidth 2	;# minimum width of trail column
 
 	set Vars(minheight) [expr {$Vars(linespace) + [$table.t headerheight]}]
@@ -1237,6 +1242,8 @@ proc Hide {table id} {
 
 	$table.t column configure $id -visible 0
 	set Options(-visible:$id) 0
+	set i [lsearch -exact $Vars(visible) $id]
+	if {$i >= 0} { set Vars(visible) [lreplace $Vars(visible) $i $i] }
 	event generate $table <<TableHide>> -data $id
 	after idle [namespace code [list UpdateColunnWidths $table]]
 }
@@ -1248,6 +1255,10 @@ proc Show {table id} {
 
 	$table.t column configure $id -visible 1
 	set Options(-visible:$id) 1
+	set Vars(visible) {}
+	foreach i $Vars(columns) {
+		if {$Options(-visible:$i)} { lappend Vars(visible) $i }
+	}
 	event generate $table <<TableShow>> -data $id
 	event generate $table <<TableFill>> -data [list 0 $Vars(rows)]
 	after idle [namespace code [list UpdateColunnWidths $table]]
@@ -1522,14 +1533,12 @@ proc FitColumns {table action} {
 		$table.t column squeeze
 	} else {
 		set columns {}
-		foreach id $Vars(columns) {
-			if {$Options(-visible:$id)} {
-				if {	!$Options(-pixels:$id)
-					&& $Options(-optimizable:$id)
-					&& (	$Options(-maxwidth:$id) == 0
-						|| $Options(-maxwidth:$id) >= $Options(-width:$id))} {
-					lappend columns $id
-				}
+		foreach id $Vars(visible) {
+			if {	!$Options(-pixels:$id)
+				&& $Options(-optimizable:$id)
+				&& (	$Options(-maxwidth:$id) == 0
+					|| $Options(-maxwidth:$id) >= $Options(-width:$id))} {
+				lappend columns $id
 			}
 		}
 		$table.t column $action $columns

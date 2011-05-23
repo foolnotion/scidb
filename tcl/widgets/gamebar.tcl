@@ -1122,8 +1122,7 @@ proc LeaveFlag {gamebar id} {
 
 proc GetPlayerInfo {gamebar id side} {
 	lassign [::scidb::game::sink? $id] base index
-	set playerIndex [::scidb::db::fetch ${side}PlayerIndex $base $index]
-	return [scidb::db::get playerInfo $playerIndex -1 $base -card -ratings {Elo Elo}]
+	return [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
 }
 
 

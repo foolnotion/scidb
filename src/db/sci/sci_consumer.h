@@ -64,10 +64,15 @@ private:
 	save::State endGame(TagSet const& tags);
 
 	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void sendComment(	Comment const& preComment,
+							Comment const& comment,
+							Annotation const& annotation,
+							MarkSet const& marks);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
+						Comment const& preComment,
 						Comment const& comment);
 
 	void beginMoveSection();

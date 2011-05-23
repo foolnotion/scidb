@@ -86,7 +86,9 @@ struct Pixel
 
 template <int N, int M>
 typename Pixel<M>::Type
-convRGBtoRGB(typename JPEG<N>::Sample r, typename JPEG<N>::Sample g, typename JPEG<N>::Sample b);
+convRGBtoRGB(	typename JPEG<N>::Sample r,
+					typename JPEG<N>::Sample g,
+					typename JPEG<N>::Sample b);
 
 template <int N, int M>
 typename Pixel<M>::Type
@@ -97,7 +99,9 @@ convRGBAtoRGBA(typename JPEG<N>::Sample r,
 
 template <int N, int M>
 typename Pixel<M>::Type
-convYCCtoRGB(typename JPEG<N>::Sample y, typename JPEG<N>::Sample u, typename JPEG<N>::Sample v);
+convYCCtoRGB(	typename JPEG<N>::Sample y,
+					typename JPEG<N>::Sample u,
+					typename JPEG<N>::Sample v);
 
 template <int N, int M>
 typename Pixel<M>::Type
@@ -108,7 +112,9 @@ convYCCAtoRGBA(typename JPEG<N>::Sample y,
 
 template <int N, int M>
 typename Pixel<M>::Type
-convCMYtoRGB_Adobe(	typename JPEG<N>::Sample c, typename JPEG<N>::Sample m, typename JPEG<N>::Sample y);
+convCMYtoRGB_Adobe(	typename JPEG<N>::Sample c,
+							typename JPEG<N>::Sample m,
+							typename JPEG<N>::Sample y);
 
 template <int N, int M>
 typename Pixel<M>::Type
@@ -140,9 +146,9 @@ convYCCKtoRGB_JPEG(	typename JPEG<N>::Sample y,
 
 template <int N, int M>
 typename Pixel<M>::Type
-convPhotoYCCtoRGB(typename JPEG<N>::Sample y,
-						typename JPEG<N>::Sample u,
-						typename JPEG<N>::Sample v);
+convPhotoYCCtoRGB(	typename JPEG<N>::Sample y,
+							typename JPEG<N>::Sample u,
+							typename JPEG<N>::Sample v);
 
 template <int N, int M>
 typename Pixel<M>::Type

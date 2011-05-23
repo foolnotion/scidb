@@ -231,7 +231,7 @@ private:
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
 	void putMove();
-	void putPreComment();
+	void putComment();
 	void handleError(Error code, mstl::string const& message);
 	void finishGame();
 	void checkSite();
@@ -304,6 +304,7 @@ private:
 	int					m_firstGameNumber;
 	ResultMode			m_resultMode;
 	mstl::string		m_comment;
+	mstl::string		m_preComment;
 	country::Code		m_eventCountry;
 	Annotation			m_annotation;
 	nag::ID				m_prefixAnnotation;
@@ -318,6 +319,7 @@ private:
 	bool					m_parsingTags;
 	bool					m_failed;
 	bool					m_eof;
+	bool					m_hasNote;
 	bool					m_parsingComment;
 	bool					m_maybeChessBase;
 	variant::Type		m_variant;

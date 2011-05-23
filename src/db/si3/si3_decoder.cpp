@@ -687,12 +687,12 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 	M_ASSERT(node);
 
 	if (node->hasNote())
-		consumer.putPreComment(node->comment(), node->annotation(), node->marks());
+		consumer.putComment(node->comment(), node->annotation(), node->marks());
 
 	for (MoveNode* n = node->next(); n; n = n->next())
 	{
 		if (n->hasNote())
-			consumer.putMove(n->move(), n->annotation(), n->comment(), n->marks());
+			consumer.putMove(n->move(), n->annotation(), n->preComment(), n->comment(), n->marks());
 		else
 			consumer.putMove(n->move());
 

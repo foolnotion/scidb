@@ -833,9 +833,8 @@ proc StartAnalysis {} {
 proc ShowCrossTable {} {
 	set base [::scidb::game::query database]
 	set index [::scidb::game::index]
-	set eventIndex [::scidb::db::fetch eventIndex $base $index]
 
-	::crosstable::open .application $base $eventIndex
+	::crosstable::open .application $base $index
 }
 
 

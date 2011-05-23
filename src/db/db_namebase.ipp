@@ -43,34 +43,6 @@ inline void Namebase::setMaxUsage(unsigned usage)	{ m_maxUsage = usage; }
 
 
 inline
-bool
-Namebase::contains(Entry const* entry) const
-{
-	return findIndex(entry) < m_list.size();
-}
-
-
-inline
-unsigned
-Namebase::lookup(Entry const* entry) const
-{
-	M_REQUIRE(contains(entry));
-	return findIndex(entry);
-}
-
-
-inline
-unsigned
-Namebase::lookup(unsigned index) const
-{
-	M_REQUIRE(isConsistent());
-	M_REQUIRE(index < used());
-
-	return findIndex(m_list[m_map[index]]);
-}
-
-
-inline
 void
 Namebase::setMaxFrequency(unsigned frequency)
 {

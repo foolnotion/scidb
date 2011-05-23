@@ -129,6 +129,8 @@ public:
 		unsigned		subround;
 		Date			date;
 		bool			deleted;
+
+		termination::Reason termination;
 	};
 
 private:
@@ -140,6 +142,7 @@ private:
 
 	void buildList(Database const& db, Filter const& gameFilter);
 	void eliminateDuplicates();
+	void computeScores();
 	void computePerformance();
 	void guessBestMode();
 	void computeTiebreaks();

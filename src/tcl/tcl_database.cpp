@@ -1771,46 +1771,77 @@ getRatingTypes(int index, char const* database)
 static int
 cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "eventIndex", "whitePlayerIndex", "blackPlayerIndex", 0 };
+	static char const* subcommands[] = { "eventInfo", "whitePlayerInfo", "blackPlayerInfo", 0 };
 	static char const* args[] =
 	{
-		"<database> <game-index> ?<view>?",
-		"<database> <game-index> ?<view>?",
-		"<database> <game-index> ?<view>?",
+		"<game-index> <database>",
+		"<game-index> <database>",
+		"<game-index> <database>",
 		0,
 	};
-	enum { Cmd_EventIndex, Cmd_WhitePlayerIndex, Cmd_BlackPlayerIndex };
+	enum { Cmd_EventInfo, Cmd_WhitePlayerInfo, Cmd_BlackPlayerInfo };
 
-	int index	= intFromObj(objc, objv, 3);
-	int view		= objc <= 4 ? -1 : intFromObj(objc, objv, 4);
+	int index = intFromObj(objc, objv, 2);
 
-	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 2));
+	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 3));
+	GameInfo const& info = cursor.database().gameInfo(index);
 
-	if (view >= 0)
-		index = cursor.gameIndex(index, view);
-
-	Database const& database = cursor.database();
-	GameInfo const& info = database.gameInfo(index);
-
-	switch (tcl::uniqueMatchObj(objv[1], subcommands))
+	switch (int idx = tcl::uniqueMatchObj(objv[1], subcommands))
 	{
-		case Cmd_EventIndex:
-			setResult(database.namebase(Namebase::Event).lookup(info.eventEntry()));
-			break;
+		case Cmd_EventInfo:
+			return getEventInfo(*info.eventEntry());
 
-		case Cmd_WhitePlayerIndex:
-			setResult(database.namebase(Namebase::Player).lookup(info.playerEntry(color::White)));
-			break;
+		case Cmd_WhitePlayerInfo:
+		case Cmd_BlackPlayerInfo: // fallthru
+			{
+				Ratings ratings(rating::Any, rating::Any);
 
-		case Cmd_BlackPlayerIndex:
-			setResult(database.namebase(Namebase::Player).lookup(info.playerEntry(color::Black)));
-			break;
+				bool parseOptions = true;
+				bool idCard			= false;
+				bool infoWanted	= false;
 
-		default:
-			return usage(::CmdFetch, 0, 0, subcommands, args);
+				while (parseOptions && objc > 4)
+				{
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+
+					if (*lastArg != '-')
+						lastArg = Tcl_GetStringFromObj(objv[objc - 2], 0);
+
+					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
+					{
+						if (::strcmp(lastArg, "-card") == 0)
+						{
+							idCard = infoWanted = true;
+						}
+						else if (::strcmp(lastArg, "-info") == 0)
+						{
+							infoWanted = true;
+						}
+						else if (::strcmp(lastArg, "-ratings") == 0)
+						{
+							ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
+							--objc;
+						}
+						else
+						{
+							return error(::CmdFetch, 0, 0, "invalid argument %s", lastArg);
+						}
+
+						--objc;
+					}
+					else
+					{
+						parseOptions = false;
+					}
+				}
+
+				color::ID side = idx == Cmd_WhitePlayerInfo ? color::White : color::Black;
+				return getPlayerInfo(*info.playerEntry(side), ratings, infoWanted, idCard);
+			}
+			break;
 	}
 
-	return TCL_OK;
+	return usage(::CmdFetch, 0, 0, subcommands, args);
 }
 
 

@@ -137,12 +137,13 @@ debugClash(TournamentTable::Player::Clash const* clash)
 	printf("Name:       %s\n", clash->player->entry->name().c_str());
 	printf("Opponent:   %s\n", clash->opponent->player->entry->name().c_str());
 	printf("Result:     %s\n", result::toString(clash->result).c_str());
-	printf("Progress:   %s\n", clash->progress);
+	printf("Progress:   %u\n", clash->progress);
 	printf("Color:      %s\n", clash->color == color::White ? "white" : "black");
 	printf("Game index: %u\n", clash->gameIndex);
 	printf("Date:       %s\n", clash->date.asString().c_str());
 	printf("Round:      %u\n", clash->round);
 	printf("Sub-round:  %u\n", clash->subround);
+	printf("Deleted:    %s\n", clash->deleted ? "yes" : "no");
 	printf("--------------------------------------------\n");
 }
 
@@ -180,8 +181,28 @@ debugPlayer(TournamentTable::Player const* player)
 static bool
 match(TournamentTable::Clash const* lhs, TournamentTable::Clash const* rhs)
 {
-	return lhs->opponent == rhs->opponent && lhs->round == rhs->round && lhs->subround == rhs->subround;
+	return	lhs->opponent->player == rhs->opponent->player
+			&& lhs->round == rhs->round
+			&& lhs->subround == rhs->subround;
 }
+
+
+static void
+removeOpponentsClash(TournamentTable::Clash const* clash)
+{
+	TournamentTable::Clash const* opponent = clash->opponent;
+	TournamentTable::Player::ClashList& clashList = opponent->player->clashList;
+
+	for (TournamentTable::Player::ClashList::iterator i = clashList.begin(); i != clashList.end(); ++i)
+	{
+		if (*i== opponent)
+		{
+			clashList.erase(i);
+			return;
+		}
+	}
+}
+
 
 
 TournamentTable::Player::Player(NamebasePlayer const* entry, unsigned ranking)
@@ -366,6 +387,7 @@ TournamentTable::TournamentTable(Database const& db,
 
 	buildList(db, gameFilter);
 	eliminateDuplicates();
+	computeScores();
 	computePerformance();
 	guessBestMode();
 	computeTiebreaks();
@@ -420,6 +442,7 @@ TournamentTable::buildList(Database const& db, Filter const& gameFilter)
 		wClash->round = info.round();
 		wClash->subround = info.subround();
 		wClash->deleted = info.isDeleted();
+		wClash->termination = info.terminationReason();
 
 		bClash->player = bPlayer;
 		bClash->opponent = wClash;
@@ -431,76 +454,12 @@ TournamentTable::buildList(Database const& db, Filter const& gameFilter)
 		bClash->round = info.round();
 		bClash->subround = info.subround();
 		bClash->deleted = info.isDeleted();
-
-		wPlayer->maxRound = mstl::max(wPlayer->maxRound, wClash->round);
-		bPlayer->maxRound = mstl::max(bPlayer->maxRound, bClash->round);
-
-		switch (int(info.result()))
-		{
-			case result::White:
-			case result::Black:
-			case result::Draw:
-				if (bPlayer->elo > 0)
-				{
-					++wPlayer->oppEloCount;
-					wPlayer->oppEloTotal += ::opponentElo(wPlayer->elo, bPlayer->elo);
-				}
-				if (wPlayer->elo > 0)
-				{
-					++bPlayer->oppEloCount;
-					bPlayer->oppEloTotal += ::opponentElo(bPlayer->elo, wPlayer->elo);
-				}
-				break;
-		}
-
-		unsigned whiteMedianScore = 0;
-		unsigned blackMedianScore = 0;
-
-		switch (int(info.result()))
-		{
-			case result::White:
-				wPlayer->score += 2;
-				whiteMedianScore = 2;
-				if (bPlayer->elo > 0)
-					wPlayer->oppEloScore += 2;
-				break;
-
-			case result::Black:
-				bPlayer->score += 2;
-				blackMedianScore = 2;
-				if (wPlayer->elo > 0)
-					bPlayer->oppEloScore += 2;
-				break;
-
-			case result::Draw:
-				++wPlayer->score;
-				++bPlayer->score;
-				whiteMedianScore = 1;
-				blackMedianScore = 1;
-				if (bPlayer->elo > 0)
-					wPlayer->oppEloScore += 1;
-				if (wPlayer->elo > 0)
-					bPlayer->oppEloScore += 1;
-				break;
-		}
-
-		if (info.terminationReason() == termination::Unplayed)
-		{
-			if (whiteMedianScore == 2)
-				whiteMedianScore = 1;
-			if (blackMedianScore == 2)
-				blackMedianScore = 1;
-		}
-
-		wPlayer->medianScore += whiteMedianScore;
-		bPlayer->medianScore += blackMedianScore;
+		bClash->termination = info.terminationReason();
 
 		if (!m_startDate || (info.date() < m_startDate && m_startDate.year() - info.dateYear() <= 1))
 			m_startDate = info.date();
 		if (!m_endDate || (info.date() > m_endDate && m_endDate.year() - info.dateYear() <= 1))
 			m_endDate = info.date();
-
-		++m_resultCount[info.result()];
 	}
 }
 
@@ -527,12 +486,16 @@ TournamentTable::eliminateDuplicates()
 			{
 				if ((*i)->deleted)
 				{
+					removeOpponentsClash(*i);
 					clashList.erase(i.base());
 				}
 				else
 				{
 					if ((*prev)->deleted)
+					{
+						removeOpponentsClash(*prev);
 						clashList.erase(prev.base());
+					}
 
 					prev = i;
 				}
@@ -541,6 +504,90 @@ TournamentTable::eliminateDuplicates()
 			{
 				prev = i;
 			}
+		}
+	}
+}
+
+
+void
+TournamentTable::computeScores()
+{
+	for (PlayerMap::iterator i = m_playerMap.begin(); i != m_playerMap.end(); ++i)
+	{
+		Player* player = i->second;
+		Player::ClashList const& clashList = player->clashList;
+
+		for (unsigned k = 0; k < clashList.size(); ++k)
+		{
+			Clash* clash = clashList[k];
+			Player* opponent = clash->opponent->player;
+
+			player->maxRound = mstl::max(player->maxRound, clash->round);
+
+			if (clash->color == color::White)
+			{
+				switch (int(clash->result))
+				{
+					case result::White:
+					case result::Black:
+					case result::Draw:
+						if (opponent->elo > 0)
+						{
+							++player->oppEloCount;
+							player->oppEloTotal += ::opponentElo(player->elo, opponent->elo);
+						}
+						if (player->elo > 0)
+						{
+							++opponent->oppEloCount;
+							opponent->oppEloTotal += ::opponentElo(opponent->elo, player->elo);
+						}
+						break;
+				}
+
+				unsigned whiteMedianScore = 0;
+				unsigned blackMedianScore = 0;
+
+				switch (int(clash->result))
+				{
+					case result::White:
+						player->score += 2;
+						whiteMedianScore = 2;
+						if (opponent->elo > 0)
+							player->oppEloScore += 2;
+						break;
+
+					case result::Black:
+						opponent->score += 2;
+						blackMedianScore = 2;
+						if (player->elo > 0)
+							opponent->oppEloScore += 2;
+						break;
+
+					case result::Draw:
+						++player->score;
+						++opponent->score;
+						whiteMedianScore = 1;
+						blackMedianScore = 1;
+						if (opponent->elo > 0)
+							player->oppEloScore += 1;
+						if (player->elo > 0)
+							opponent->oppEloScore += 1;
+						break;
+				}
+
+				if (clash->termination == termination::Unplayed)
+				{
+					if (whiteMedianScore == 2)
+						whiteMedianScore = 1;
+					if (blackMedianScore == 2)
+						blackMedianScore = 1;
+				}
+
+				player->medianScore += whiteMedianScore;
+				opponent->medianScore += blackMedianScore;
+			}
+
+			++m_resultCount[clash->result];
 		}
 	}
 }
@@ -565,7 +612,7 @@ TournamentTable::computePerformance()
 		for (unsigned k = 0; k < clashList.size(); ++k)
 		{
 			Clash* clash = clashList[k];
-			Player const* opponent = clash->opponent->player;
+			Player* opponent = clash->opponent->player;
 
 			if (opponent == previous)
 			{
@@ -1310,7 +1357,7 @@ TournamentTable::emitKnockoutTable(TeXt::Receptacle& receptacle, KnockoutOrder o
 				{
 					if (Clash* p = prev[k])
 					{
-						// we need a preliminary test, probably this tournament isn't a knockout system
+						// we need a premature test, probably this tournament isn't a knockout system
 						if (!used.test(p->player->ranking) && !used.test(p->opponent->player->ranking))
 						{
 							unsigned clashIndex = 0; // shut up compiler
@@ -1345,12 +1392,12 @@ TournamentTable::emitKnockoutTable(TeXt::Receptacle& receptacle, KnockoutOrder o
 		{
 			Player const* player = m_playerMap.container()[m_orderMap[i]].second;
 
-			// we need a preliminary test, probably this tournament isn't a knockout system
+			// we need a premature test, probably this tournament isn't a knockout system
 			if (!used.test(player->ranking))
 			{
 				if (Clash* clash = player->lookup[round])
 				{
-					// we need a preliminary test, probably this tournament isn't a knockout system
+					// we need a premature test, probably this tournament isn't a knockout system
 					if (!used.test(clash->opponent->player->ranking))
 					{
 						while (slotIndex < slots.size() && slots[slotIndex])

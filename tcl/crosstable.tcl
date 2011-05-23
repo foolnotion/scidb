@@ -182,18 +182,21 @@ proc open {parent base index {view -1}} {
 	variable Geometry
 	variable Path
 
-	if {$view < 0} {
-		set useNext 0
-		set view 0
-	} else {
-		set useNext 1
-	}
-
 	set dlg $Path
-	set number [::scidb::db::get eventIndex $index $view $base]
 
-	if {$Vars(base) eq $base && $Vars(number) == $number} {
+	if {$view == -1} {;# we assume a game index
+		set info [::scidb::db::fetch eventInfo $index $base]
+		set number $index
+	} else {				;# we assume an event index
+		set info [::scidb::db::get eventInfo $index $view $base]
+		set number [::scidb::db::get eventIndex $index $view $base]
+	}
+	lassign $info country site title type date mode timeMode
+	set key [list $base $site $title $type $date $mode $timeMode]
+
+	if {$Vars(base) eq $base && $Vars(key) == $key} {
 		raise $dlg
+		focus $dlg
 		return
 	}
 
@@ -206,14 +209,17 @@ proc open {parent base index {view -1}} {
 	set Vars(view) $view
 	set Vars(index) $index
 	set Vars(number) $number
+	set Vars(info) $info
+	set Vars(key) $key
 	set Vars(warning) {}
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
 
 	if {[winfo exists $dlg]} {
-		::scidb::crosstable::release $Vars(base) $Vars(number)
-		::scidb::crosstable::make $base $number
+		::scidb::crosstable::release $Vars(base) $Vars(handle)
+		if {$view < 0} { set type game } else { set type event }
+		set Vars(handle) [::scidb::crosstable::make $base $type $number]
 		Update 1
 		return
 	}
@@ -333,7 +339,7 @@ proc open {parent base index {view -1}} {
 
 	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
 
-	if {$useNext} {
+	if {$view >= 0} {
 		::widget::dialogButtons $dlg {close previous next} close
 		$dlg.previous configure -command [namespace code [list NextEvent -1]]
 		$dlg.next configure -command [namespace code [list NextEvent +1]]
@@ -342,7 +348,8 @@ proc open {parent base index {view -1}} {
 	}
 	$dlg.close configure -command [list destroy $dlg]
 
-	::scidb::crosstable::make $base $number
+	if {$view < 0} { set type game } else { set type event }
+	set Vars(handle) [::scidb::crosstable::make $base $type $number]
 	Update 1
 
 	scan $Geometry "%dx%d" w h
@@ -368,10 +375,10 @@ proc RecordGeometry {dlg} {
 proc NextEvent {step} {
 	variable Vars
 
-	::scidb::crosstable::release $Vars(base) $Vars(number)
+	::scidb::crosstable::release $Vars(base) $Vars(handle)
 	incr Vars(index) $step
 	set Vars(number) [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
-	::scidb::crosstable::make $Vars(base) $Vars(number)
+	set Vars(handle) [::scidb::crosstable::make $Vars(base) event $Vars(number)]
 	set Vars(warning) 0
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
@@ -511,7 +518,7 @@ proc Update {{setup 0}} {
 	set base $Vars(base)
 	set view $Vars(view)
 	set index $Vars(index)
-	set number $Vars(number)
+	set handle $Vars(handle)
 
 	array unset ImageCache
 
@@ -523,7 +530,7 @@ proc Update {{setup 0}} {
 		variable RecentlyUsedHistory
 		variable MostRecentHistory
 
-		set info [::scidb::db::get eventInfo $index $view $base]
+		set info $Vars(info)
 		set name [lindex $info [::eventtable::columnIndex event]]
 		set eventType [lindex $info [::eventtable::columnIndex eventType]]
 		set eventDate [lindex $info [::eventtable::columnIndex eventDate]]
@@ -543,7 +550,7 @@ proc Update {{setup 0}} {
 			if {$i >= 0} {
 				lassign [lindex $MostRecentHistory $i 1] bestMode tiebreaks
 			} else {
-				set bestMode [::scidb::crosstable::get bestMode $base $number]
+				set bestMode [::scidb::crosstable::get bestMode $base $handle]
 				set tiebreaks $RecentlyUsedTiebreaks($bestMode)
 			}
 		}
@@ -602,10 +609,10 @@ proc Update {{setup 0}} {
 
 	if {$Vars(bestMode) eq "Crosstable"} {
 		append preamble "\\let\\TableLimit\\$Defaults(crosstableLimit)"
-		set id [list $base $number]
+		set id [list $base $Vars(handle)]
 
 		if {$Vars(warning) ne $id} {
-			set playerCount [::scidb::crosstable::get playerCount $base $number]
+			set playerCount [::scidb::crosstable::get playerCount $base $handle]
 
 			if {$playerCount > $Defaults(crosstableLimit)} {
 				set detail ""
@@ -622,7 +629,7 @@ proc Update {{setup 0}} {
 				if {$rc eq "cancel"} {
 					set Vars(bestMode) $Vars(lastMode)
 					if {[string length $Vars(prevMode)] == 0} {
-						set Vars(bestMode) [::scidb::crosstable::get bestMode $base $number]
+						set Vars(bestMode) [::scidb::crosstable::get bestMode $base $handle]
 						if {$Vars(bestMode) eq "Crosstable"} { set Vars(bestMode) RankingList }
 						set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $Vars(bestMode)]]
 						UpdateHistory
@@ -640,7 +647,7 @@ proc Update {{setup 0}} {
 
 	::widget::busyCursor on
 	set result [::scidb::crosstable::emit \
-						$base $number $searchDir $script $bestMode $order $knockoutOrder $tiebreaks $preamble]
+						$base $handle $searchDir $script $bestMode $order $knockoutOrder $tiebreaks $preamble]
 	lassign $result html Vars(output:log)
 
 	set i [string first "%date%" $html]
@@ -763,7 +770,7 @@ proc Destroy {dlg w} {
 	variable Defaults
 	variable ImageCache
 
-	::scidb::crosstable::release $Vars(base) $Vars(number)
+	::scidb::crosstable::release $Vars(base) $Vars(handle)
 	array unset ImageCache
 	array unset Vars
 	array set Vars [array get Defaults]
@@ -822,7 +829,7 @@ proc MouseEnter {node} {
 		set rank [$node attribute -default {} player]
 		if {[llength $rank]} {
 			set Vars(tooltip) $node
-			Tooltip [::scidb::crosstable::get playerName $Vars(base) $Vars(number) $rank]
+			Tooltip [::scidb::crosstable::get playerName $Vars(base) $Vars(handle) $rank]
 		}
 	}
 }
@@ -957,7 +964,7 @@ proc Mouse2Down {node} {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
 			MouseEnter $node
-			set info [::scidb::crosstable::get playerInfo $Vars(base) $Vars(number) $rank]
+			set info [::scidb::crosstable::get playerInfo $Vars(base) $Vars(handle) $rank]
 			::playertable::showInfo $Path $info
 		}
 	}

@@ -326,6 +326,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 	MarkSet			marks;
 	Annotation		annotation;
 	mstl::string	comment;
+	mstl::string	preComment;
 	bool				hasNote(0);		// satisfies the compiler
 	unsigned			pieceNum(0);	// satisfies the compiler
 	Move				move;
@@ -341,7 +342,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 			{
 				if (hasNote)
 				{
-					consumer.putMove(move, annotation, comment, marks);
+					consumer.putMove(move, annotation, preComment, comment, marks);
 					marks.clear();
 					annotation.clear();
 					comment.clear();
@@ -364,7 +365,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 
 				if (hasNote)
 				{
-					consumer.putPreComment(comment, annotation, marks);
+					consumer.putComment(comment, annotation, marks);
 					comment.clear();
 					annotation.clear();
 					marks.clear();
@@ -382,9 +383,9 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 					if (hasNote)
 					{
 						if (move)
-							consumer.putMove(move, annotation, comment, marks);
+							consumer.putMove(move, annotation, preComment, comment, marks);
 						else
-							consumer.putPreComment(comment, annotation, marks);
+							consumer.putComment(comment, annotation, marks);
 					}
 					else if (move)
 					{
@@ -397,7 +398,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 
 					if (hasNote)
 					{
-						consumer.putMove(move, annotation, comment, marks);
+						consumer.putMove(move, annotation, preComment, comment, marks);
 						marks.clear();
 						annotation.clear();
 						comment.clear();
@@ -438,7 +439,13 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& text, unsigned flags)
 				case token::Comment:
 					if (flags & DatabaseCodec::Decode_Comments)
 					{
-						text.get(comment);
+						uint8_t flag = text.get();
+
+						if (flag & 1)
+							text.get(preComment);
+						if (flag & 2)
+							text.get(comment);
+
 						hasNote = true;
 					}
 					break;
@@ -504,8 +511,23 @@ Decoder::decodeComments(MoveNode* node)
 			if (node->hasComment())
 			{
 				mstl::string comment;
-				m_strm.get(comment);
-				node->swapComment(comment);
+				uint8_t flag = m_strm.get();
+
+				if (flag & 1)
+				{
+					m_strm.get(comment);
+					node->swapPreComment(comment);
+				}
+
+				if (flag & 2)
+				{
+					m_strm.get(comment);
+					node->swapComment(comment);
+				}
+				else
+				{
+					node->unsetComment();
+				}
 			}
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)

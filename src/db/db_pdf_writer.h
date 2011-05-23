@@ -54,6 +54,7 @@ public:
 						mstl::string const& moveNumber,
 						Annotation const& annotation,
 						MarkSet const& marks,
+						Comment const& preComment,
 						Comment const& comment);
 
 	void writeBeginGame(unsigned number);

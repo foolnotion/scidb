@@ -87,11 +87,12 @@ public:
 	bool startGame(TagSet const& tags, Board const& board);
 	save::State finishGame(TagSet const& tags);
 
-	void putPreComment(Comment const& comment);
-	void putPreComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void putComment(Comment const& comment);
+	void putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
 	void putMove(Move const& move);
 	void putMove(	Move const& move,
 						Annotation const& annotation,
+						Comment const& preComment,
 						Comment const& comment,
 						MarkSet const& marks);
 	void setFlags(uint32_t flags);
@@ -116,7 +117,6 @@ protected:
 	virtual bool beginGame(TagSet const& tags) = 0;
 	virtual save::State endGame(TagSet const& tags) = 0;
 
-	virtual void sendComment(Comment const& comment);
 	virtual void sendComment(	Comment const& comment,
 										Annotation const& annotation,
 										MarkSet const& marks) = 0;
@@ -124,6 +124,7 @@ protected:
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,
 									MarkSet const& marks,
+									Comment const& preComment,
 									Comment const& comment) = 0;
 
 	virtual void beginMoveSection() = 0;
@@ -150,7 +151,7 @@ private:
 	void setup(Board const& startPosition);
 	void setup(mstl::string const& fen);
 	void setup(unsigned idn);
-	void sendPreComment();
+	void sendComment();
 
 	friend class Producer;
 
@@ -166,13 +167,13 @@ private:
 	HomePawns			m_homePawns;
 	uint16_t				m_moveBuffer[opening::Max_Line_Length];
 	mstl::string		m_encoding;
-	Comment				m_preComment;
+	Comment				m_comment;
 	Annotation			m_preAnnotation;
 	MarkSet				m_preMarks;
 	sys::utf8::Codec*	m_codec;
 	Consumer*			m_consumer;
 	bool					m_setupBoard;
-	bool					m_hasPreComment;
+	bool					m_hasComment;
 };
 
 } // namespace db

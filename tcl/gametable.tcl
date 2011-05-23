@@ -388,10 +388,6 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 				lappend menu { separator }
 			}
 
-			deleted {
-				if {$id in $visibleColumns} { set Vars(deleted) 0 }
-			}
-
 			idn {
 				set Vars(idn-index) $index
 			}
@@ -859,6 +855,8 @@ proc TableFill {path args} {
 	set view [{*}$Vars(viewcmd) $base]
 	set last [expr {min($last, [scidb::view::count games $base $view] - $start)}]
 	set ratings [list $Defaults(rating:1) $Defaults(rating:2)]
+	set gray [::scrolledtable::visible? $path deleted]
+	set delIdx [columnIndex deleted]
 
 	set unused {}
 	foreach elem $Vars(pool) {
@@ -881,10 +879,12 @@ proc TableFill {path args} {
 			}
 		}
 
+		if {!$gray && [lindex $line $delIdx]} { set deleted {} }
+
 		foreach id $columns {
 			if {[::table::visible? $table $id]} {
 				set item [lindex $line $k]
-
+				
 				switch $id {
 					acv {
 						if {$Options(transparent)} {
@@ -945,7 +945,6 @@ proc TableFill {path args} {
 						if {$item} {
 							# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
 							set image $CrossHand
-							if {$Vars(deleted)} { set deleted {} }
 						} else {
 							set image {}
 						}
@@ -1178,7 +1177,6 @@ proc TableHide {table id flag} {
 	variable ${table}::Vars
 
 	if {$id eq "deleted"} {
-		set Vars(deleted) $flag
 		::scrolledtable::refresh $table
 	}
 }
@@ -1410,7 +1408,6 @@ proc PopupMenu {path menu base index} {
 
 	if {$index ne "outside"} {
 		set view [{*}$Vars(viewcmd) $base]
-		set eventIndex [::scidb::db::fetch eventIndex $base $index $view]
 
 		if {$Vars(listmode)} {
 			$menu add command \
@@ -1427,7 +1424,7 @@ proc PopupMenu {path menu base index} {
 				;
 			$menu add command \
 				-label $mc::ShowTournamentTable \
-				-command [namespace code [list ::crosstable::open $path $base $eventIndex]] \
+				-command [namespace code [list ::crosstable::open $path $base $index]] \
 				;
 		} else {
 			$menu add command \
@@ -1448,7 +1445,7 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-label $mc::ShowTournamentTable \
 				-accelerator $mc::AccelTournTable \
-				-command [namespace code [list ::crosstable::open $path $base $eventIndex]] \
+				-command [namespace code [list ::crosstable::open $path $base $index]] \
 				;
 		}
 	

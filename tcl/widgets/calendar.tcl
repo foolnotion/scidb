@@ -346,6 +346,7 @@ proc popup {parent args} {
 	util::place $top below $parent
 	wm deiconify $top
 	raise $top
+	focus $top
 	if {[tk windowingsystem] == "x11"} {
 		tkwait visibility $top
 		update

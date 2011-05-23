@@ -533,14 +533,22 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 	M_ASSERT(node);
 
 	if (node->hasNote())
-		consumer.putPreComment(node->comment(), node->annotation(), node->marks());
+		consumer.putComment(node->comment(), node->annotation(), node->marks());
 
 	for (node = node->next(); node; node = node->next())
 	{
 		if (node->hasNote())
-			consumer.putMove(node->move(), node->annotation(), node->comment(), node->marks());
+		{
+			consumer.putMove(	node->move(),
+									node->annotation(),
+									node->preComment(),
+									node->comment(),
+									node->marks());
+		}
 		else
+		{
 			consumer.putMove(node->move());
+		}
 
 		for (unsigned i = 0; i < node->variationCount(); ++i)
 		{
@@ -617,7 +625,6 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 					case '<':	str += '\x01'; break;
 					case '>':	str += '\x02'; break;
 					case '&':	str += '\x03'; break;
-					case '"':	str += '\x04'; break;
 					default:		str += c; break;
 				}
 			}
@@ -900,14 +907,14 @@ Decoder::getAnnotation(MoveNode* node, int position, unsigned flags)
 				if (!node->atLineStart())
 				{
 					decodeComment(node->prev(), length, flags);
-printf("pre comment(%d): %s\n", position, node->prev()->comment().content().c_str());
+//printf("pre comment(%d): %s\n", position, node->prev()->comment().content().c_str());
 					break;
 				}
 				// fallthru
 
 			case 0x02:	// text after move
 				decodeComment(node, length, flags);
-printf("post comment(%d): %s\n", position, node->comment().content().c_str());
+//printf("post comment(%d): %s\n", position, node->comment().content().c_str());
 				break;
 
 			case 0x03:	// symbols
@@ -941,6 +948,7 @@ Decoder::decodeMoves(Consumer& consumer)
 {
 	MoveNode			node;
 	mstl::string	comment;
+	mstl::string	preComment;
 	MarkSet			marks;
 	unsigned			count = 0;
 	Move				move;
@@ -957,7 +965,7 @@ Decoder::decodeMoves(Consumer& consumer)
 				getAnnotation(&node, int(count) - 1, 0);
 				if (node.hasNote())
 				{
-					consumer.putMove(move, node.annotation(), comment, marks);
+					consumer.putMove(move, node.annotation(), preComment, comment, marks);
 					node.clearAnnotation();
 				}
 				else
@@ -985,7 +993,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 	Vars varList;
 	Move move;
 
-printf("----- pre (%d): %d\n", int(count), m_moveNo);
+//printf("----- pre (%d): %d\n", int(count), m_moveNo);
 	getAnnotation(root, int(count), flags);
 
 	while (true)
@@ -998,7 +1006,7 @@ printf("----- pre (%d): %d\n", int(count), m_moveNo);
 				if (move)
 				{
 					node = new MoveNode(move);
-printf("move(%u): %s\n", count - 1, move.asString().c_str());
+//printf("move(%u): %s\n", count - 1, move.asString().c_str());
 
 					if (varList.empty())
 					{
@@ -1015,8 +1023,6 @@ printf("move(%u): %s\n", count - 1, move.asString().c_str());
 							IO_RAISE(Game, Corrupted, "bad data");
 
 						root->setNext(main->removeNext());
-//if (!root->comment().empty()) printf("swap: %s\n", root->comment().c_str());
-//						root->swapData(main);
 						root = root->next();
 
 						for (unsigned i = 1; i < varList.size(); ++i)
@@ -1044,7 +1050,7 @@ printf("move(%u): %s\n", count - 1, move.asString().c_str());
 						varList.clear();
 					}
 
-printf("post-annotation(%d): %d\n", int(count) - 1, m_moveNo);
+//printf("post-annotation(%d): %d\n", int(count) - 1, m_moveNo);
 					getAnnotation(node, int(count) - 1, flags);
 					root = node;
 				}
@@ -1058,12 +1064,12 @@ printf("post-annotation(%d): %d\n", int(count) - 1, m_moveNo);
 			case ::Push:
 				node = new MoveNode;
 				varList.push_back(node);
-printf("push\n");
+//printf("push\n");
 				decodeMoves(node, flags, count);
 				break;
 
 			case ::Pop:
-printf("pop\n");
+//printf("pop\n");
 				return;
 		}
 	}

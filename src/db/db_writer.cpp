@@ -368,6 +368,7 @@ void
 Writer::writeMove(Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
+						mstl::string const& preComment,
 						mstl::string const& comment)
 {
 	if (m_level && !test(Flag_Include_Variations))
@@ -396,11 +397,11 @@ Writer::writeMove(Move const& move,
 	{
 		Move m(move);
 		board().prepareForSan(m);
-		writeMove(m, m_moveNumber, annotation, marks, comment);
+		writeMove(m, m_moveNumber, annotation, marks, preComment, comment);
 	}
 	else
 	{
-		writeMove(move, m_moveNumber, annotation, marks, comment);
+		writeMove(move, m_moveNumber, annotation, marks, preComment, comment);
 	}
 
 	m_needSpace = true;
@@ -413,9 +414,10 @@ bool
 Writer::sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
-						Comment const& comment)
+						Comment const& comment,
+						Comment const& preComment)
 {
-	writeMove(move, annotation, marks, comment);
+	writeMove(move, annotation, marks, preComment, comment);
 	return true;
 }
 
@@ -423,7 +425,7 @@ Writer::sendMove(	Move const& move,
 bool
 Writer::sendMove(Move const& move)
 {
-	writeMove(move, Annotation(), MarkSet(), Comment());
+	writeMove(move, Annotation(), MarkSet(), Comment(), Comment());
 	return true;
 }
 

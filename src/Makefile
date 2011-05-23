@@ -83,6 +83,7 @@ uninstall:
 
 clean:
 	rm -f $(TARGETS) Makefile.bak
+	rm -f $(SRC:.cpp=.o)
 	@for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done

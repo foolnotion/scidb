@@ -1380,9 +1380,9 @@ proc Properties {index popup} {
 	} else {
 		set dlg $canv.prop_[regsub -all {[^[:alnum:]]} $file _]
 		if {[winfo exists $dlg]} {
-			# this may raise the window
-			wm withdraw $dlg
 			wm deiconify $dlg
+			raise $dlg
+			focus $dlg
 			return
 		}
 	}

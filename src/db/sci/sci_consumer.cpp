@@ -112,7 +112,10 @@ Consumer::endMoveSection(result::ID)
 
 
 void
-Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+Consumer::sendComment(	Comment const& preComment,
+								Comment const& comment,
+								Annotation const& annotation,
+								MarkSet const& marks)
 {
 	if (!annotation.isEmpty())
 	{
@@ -136,22 +139,37 @@ Consumer::sendComment(Comment const& comment, Annotation const& annotation, Mark
 		m_endOfRun = true;
 	}
 
-	if (!comment.isEmpty())
+	if (uint8_t flag = (preComment.isEmpty() ? 0 : 1) | (comment.isEmpty() ? 0 : 2))
 	{
-		if (m_putComment)
+		M_ASSERT(m_putComment);
+
+//		if (m_putComment)
 		{
 			m_strm.put(token::Comment);
 			m_putComment = false;
 		}
-		else
-		{
-			M_ASSERT(m_data.tellp() > 0);
-			m_data.buffer()[-1] = '\n';
-		}
+//		else
+//		{
+//			M_ASSERT(m_data.tellp() > 0);
+//			m_data.buffer()[-1] = '\n';
+//		}
 
-		m_data.put(comment.content(), comment.size() + 1);
+		m_data.put(flag);
+		if (flag & 1)
+			m_data.put(preComment.content(), preComment.size() + 1);
+		if (flag & 2)
+			m_data.put(comment.content(), comment.size() + 1);
+
 		m_endOfRun = true;
 	}
+}
+
+
+
+void
+Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+{
+	sendComment(Comment(), comment, annotation, marks);
 }
 
 
@@ -235,6 +253,7 @@ bool
 Consumer::sendMove(	Move const& move,
 							Annotation const& annotation,
 							MarkSet const& marks,
+							Comment const& preComment,
 							Comment const& comment)
 {
 	if (m_danglingPop)
@@ -252,7 +271,7 @@ Consumer::sendMove(	Move const& move,
 	if (!encodeMove(m_move = move))
 		m_endOfRun = true;
 
-	sendComment(comment, annotation, marks);
+	sendComment(preComment, comment, annotation, marks);
 
 	if (!m_endOfRun)
 		++m_runLength;

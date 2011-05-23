@@ -990,6 +990,7 @@ proc Select {nb index} {
 				set encoding $Values($Values(type),encoding)
 			}
 			raise $nb.encoding.$encTab
+			focus $nb.encoding.$encTab
 			::encoding::select $nb.encoding.$encTab $encoding
 		}
 	}

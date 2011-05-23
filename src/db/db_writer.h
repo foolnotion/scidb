@@ -90,6 +90,7 @@ public:
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
+						Comment const& preComment,
 						Comment const& comment);
 
 	void beginMoveSection();
@@ -109,6 +110,7 @@ protected:
 									mstl::string const& moveNumber,
 									Annotation const& annotation,
 									MarkSet const& marks,
+									Comment const& preComment,
 									Comment const& comment) = 0;
 	virtual void writeBeginMoveSection() = 0;
 	virtual void writeEndMoveSection(result::ID result) = 0;
@@ -124,6 +126,7 @@ private:
 	void writeMove(Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
+						mstl::string const& preComment,
 						mstl::string const& comment);
 
 	unsigned			m_flags;

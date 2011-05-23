@@ -147,6 +147,7 @@ public:
 
 		bool operator< (Value value) const;
 		bool operator==(Value value) const;
+		bool operator!=(Value value) const;
 
 		union
 		{

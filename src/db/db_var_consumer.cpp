@@ -57,9 +57,19 @@ void VarConsumer::endMoveSection(result::ID) {}
 
 
 void
-VarConsumer::sendComment(Comment const& comment)
+VarConsumer::sendComment(	Comment const& comment,
+									Comment const& preComment,
+									Annotation const& annotation,
+									MarkSet const& marks)
 {
-	m_current->setComment(comment);
+	if (!preComment.isEmpty())
+		m_current->setPreComment(comment);
+	if (!comment.isEmpty())
+		m_current->setComment(comment);
+	if (!annotation.isEmpty())
+		m_current->setAnnotation(annotation);
+	if (!marks.isEmpty())
+		m_current->setMarks(marks);
 }
 
 
@@ -68,12 +78,7 @@ VarConsumer::sendComment(	Comment const& comment,
 									Annotation const& annotation,
 									MarkSet const& marks)
 {
-	if (!comment.isEmpty())
-		m_current->setComment(comment);
-	if (!annotation.isEmpty())
-		m_current->setAnnotation(annotation);
-	if (!marks.isEmpty())
-		m_current->setMarks(marks);
+	sendComment(Comment(), comment, annotation, marks);
 }
 
 
@@ -100,12 +105,13 @@ bool
 VarConsumer::sendMove(	Move const& move,
 								Annotation const& annotation,
 								MarkSet const& marks,
+								Comment const& preComment,
 								Comment const& comment)
 {
 	if (!sendMove(move))
 		return false;
 
-	sendComment(comment, annotation, marks);
+	sendComment(preComment, comment, annotation, marks);
 	return true;
 }
 

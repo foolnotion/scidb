@@ -334,7 +334,7 @@ private:
 
 	static const GameInfo m_initializer;
 }
-#ifdef __i386__ // Intel has hardware support for unaligned word access
+#if defined(__i386__) || defined(__x86_64__) // Intel/AMD has hardware support for unaligned word access
 __attribute__((packed))
 #endif
 ;

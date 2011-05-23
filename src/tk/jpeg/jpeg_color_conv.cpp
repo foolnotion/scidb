@@ -23,6 +23,11 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(__i386__) || defined(__x86_64__)
+# define HAS_UNALIGNED_WORD_ACCESS 1
+#endif
+
+
 using namespace JPEG;
 
 extern "C" {
@@ -338,70 +343,104 @@ convPhotoYCCAtoRGBA(	typename JPEG<N>::Sample y,
 		resample<N,M>(a));
 }
 
-#ifndef __i386__
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+
+template <int M, int Channel> struct Copy;
+
+
+template <int Channel>
+struct Copy<8, Channel>
+{
+	inline static void set(Byte* dst, uint8_t sample) { dst[Channel] = sample; }
+};
+
+
+template <int Channel>
+struct Copy<16, Channel>
+{
+	inline static void
+	set(Byte* dst, uint16_t sample)
+	{
+		dst[2*Channel    ] = reinterpret_cast<char*>(sample)[0];
+		dst[2*Channel + 1] = reinterpret_cast<char*>(sample)[1];
+	}
+};
+
 
 template <int N, int M>
-typename Pixel<M>::Type
-convRGBtoRGB(Byte* dst, typename JPEG<N>::Sample r, typename JPEG<N>::Sample g, typename JPEG<N>::Sample b)
+void
+convRGBtoRGB(	Byte* dst,
+					typename JPEG<N>::Sample r,
+					typename JPEG<N>::Sample g,
+					typename JPEG<N>::Sample b)
 {
-	dst[Pixel<M>::R] = resample<N,M>(r);
-	dst[Pixel<M>::G] = resample<N,M>(g);
-	dst[Pixel<M>::B] = resample<N,M>(b);
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>(r));
+	Copy<M,Pixel<M>::G>::set(dst, resample<N,M>(g));
+	Copy<M,Pixel<M>::G>::set(dst, resample<N,M>(b));
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
-convCMYtoRGB(Byte* dst, typename JPEG<N>::Sample c, typename JPEG<N>::Sample m, typename JPEG<N>::Sample y)
+void
+convCMYtoRGB(	Byte* dst,
+					typename JPEG<N>::Sample c,
+					typename JPEG<N>::Sample m,
+					typename JPEG<N>::Sample y)
 {
-	dst[Pixel<M>::R] = resample<N,M>(Pixel<M>::MaxSample - c);
-	dst[Pixel<M>::G] = resample<N,M>(Pixel<M>::MaxSample - m);
-	dst[Pixel<M>::B] = resample<N,M>(Pixel<M>::MaxSample - y);
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>(Pixel<M>::MaxSample - c));
+	Copy<M,Pixel<M>::G>::set(dst, resample<N,M>(Pixel<M>::MaxSample - m));
+	Copy<M,Pixel<M>::B>::set(dst, resample<N,M>(Pixel<M>::MaxSample - y));
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
+void
 convCMYKtoRGB_JPEG(	Byte* dst,
 							typename JPEG<N>::Sample c,
 							typename JPEG<N>::Sample m,
 							typename JPEG<N>::Sample y,
 							typename JPEG<N>::Sample k)
 {
-	int32_t km = Pixel<M>::MaxSample - k;
+	static int32_t const MaxSample = Pixel<M>::MaxSample;
 
-	dst[Pixel<M>::R] = resample<N,M>((km*int32_t(Pixel<M>::MaxSample - c))/Pixel<M>::MaxSample);
-	dst[Pixel<M>::G] = resample<N,M>((km*int32_t(Pixel<M>::MaxSample - m))/Pixel<M>::MaxSample);
-	dst[Pixel<M>::B] = resample<N,M>((km*int32_t(Pixel<M>::MaxSample - y))/Pixel<M>::MaxSample);
+	int32_t km = MaxSample - k;
+
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>((km*int32_t(MaxSample - c))/MaxSample));
+	Copy<M,Pixel<M>::G>::set(dst, resample<N,M>((km*int32_t(MaxSample - m))/MaxSample));
+	Copy<M,Pixel<M>::B>::set(dst, resample<N,M>((km*int32_t(MaxSample - y))/MaxSample));
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
+void
 convCMYKtoRGB_Adobe(	Byte* dst,
 							typename JPEG<N>::Sample c,
 							typename JPEG<N>::Sample m,
 							typename JPEG<N>::Sample y,
 							typename JPEG<N>::Sample k)
 {
-	dst[Pixel<M>::R] = resample<N,M>((int32_t(k)*int32_t(c))/Pixel<M>::MaxSample);
-	dst[Pixel<M>::G] = resample<N,M>((int32_t(m)*int32_t(c))/Pixel<M>::MaxSample);
-	dst[Pixel<M>::B] = resample<N,M>((int32_t(y)*int32_t(c))/Pixel<M>::MaxSample);
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>((int32_t(k)*int32_t(c))/Pixel<M>::MaxSample));
+	Copy<M,Pixel<M>::G>::set(dst, resample<N,M>((int32_t(m)*int32_t(c))/Pixel<M>::MaxSample));
+	Copy<M,Pixel<M>::B>::set(dst, resample<N,M>((int32_t(y)*int32_t(c))/Pixel<M>::MaxSample));
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
-convYCCtoRGB(Byte* dst, typename JPEG<N>::Sample y, typename JPEG<N>::Sample u, typename JPEG<N>::Sample v)
+void
+convYCCtoRGB(	Byte* dst,
+					typename JPEG<N>::Sample y,
+					typename JPEG<N>::Sample u,
+					typename JPEG<N>::Sample v)
 {
-	dst[Pixel<M>::R] = resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::vToR(v))));
-	dst[Pixel<M>::G] = resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v))));
-	dst[Pixel<M>::B] = resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::uToB(u))));
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::vToR(v)))));
+	Copy<M,Pixel<M>::G>::set(dst,
+						resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v)))));
+	Copy<M,Pixel<M>::B>::set(dst, resample<N,M>(clamp<N>(y + descale(Mapper<YCC,N>::uToB(u)))));
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
+void
 convYCCKtoRGB_Adobe(	Byte* dst,
 							typename JPEG<N>::Sample y,
 							typename JPEG<N>::Sample u,
@@ -410,17 +449,17 @@ convYCCKtoRGB_Adobe(	Byte* dst,
 {
 	static const int32_t MaxSample = (int32_t(1) << N) - 1;
 
-	return convCMYKtoRGB_Adobe<N,M>(
-					dst,
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::vToR(v)))),
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v)))),
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::uToB(u)))),
-					k);
+	convCMYKtoRGB_Adobe<N,M>(
+			dst,
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::vToR(v)))),
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v)))),
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::uToB(u)))),
+			k);
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
+void
 convYCCKtoRGB_JPEG(	Byte* dst,
 							typename JPEG<N>::Sample y,
 							typename JPEG<N>::Sample u,
@@ -429,17 +468,17 @@ convYCCKtoRGB_JPEG(	Byte* dst,
 {
 	static const int32_t MaxSample = (int32_t(1) << N) - 1;
 
-	return convCMYKtoRGB_JPEG<N,M>(
-					dst,
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::vToR(v)))),
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v)))),
-					clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::uToB(u)))),
-					k);
+	convCMYKtoRGB_JPEG<N,M>(
+			dst,
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::vToR(v)))),
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::utoG(u) + Mapper<YCC,N>::vToG(v)))),
+			clamp<N>(MaxSample - (y + descale(Mapper<YCC,N>::uToB(u)))),
+			k);
 }
 
 
 template <int N, int M>
-typename Pixel<M>::Type
+void
 convPhotoYCCtoRGB(Byte* dst,
 						typename JPEG<N>::Sample y,
 						typename JPEG<N>::Sample u,
@@ -447,15 +486,16 @@ convPhotoYCCtoRGB(Byte* dst,
 {
 	int32_t L = Mapper<PhotoYCC,N>::yToL(y);
 
-	dst[Pixel<M>::R] = resample<N,M>(clamp<N>(descale(L + Mapper<PhotoYCC,N>::vToR(v))));
-	dst[Pixel<M>::G] = resample<N,M>(
-								clamp<N>(descale(L + Mapper<PhotoYCC,N>::uToG(u) + Mapper<PhotoYCC,N>::vToG(u))));
-	dst[Pixel<M>::B] = resample<N,M>(clamp<N>(descale(L + Mapper<PhotoYCC,N>::uToB(u))));
+	Copy<M,Pixel<M>::R>::set(dst, resample<N,M>(clamp<N>(descale(L + Mapper<PhotoYCC,N>::vToR(v)))));
+	Copy<M,Pixel<M>::G>::set(
+		dst,
+		resample<N,M>(clamp<N>(descale(L + Mapper<PhotoYCC,N>::uToG(u) + Mapper<PhotoYCC,N>::vToG(u)))));
+	Copy<M,Pixel<M>::B>::set(dst, resample<N,M>(clamp<N>(descale(L + Mapper<PhotoYCC,N>::uToB(u)))));
 }
 
 #endif
 
-template <int Colorspace, int N, int M> struct Conv {};
+template <int Colorspace, int N, int M> struct Conv;
 
 template <int N, int M>
 struct Conv<RGB,N,M>
@@ -465,11 +505,11 @@ struct Conv<RGB,N,M>
 	{
 		return convRGBtoRGB<N,M>(a, b, c);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c)
 	{
-		return convRGBtoRGB<N,M>(dst, a, b, c);
+		convRGBtoRGB<N,M>(dst, a, b, c);
 	}
 #endif
 };
@@ -482,11 +522,11 @@ struct Conv<RGBA,N,M>
 	{
 		return convRGBAtoRGBA<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
-	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
+	map(Byte*, JPEGSample, JPEGSample, JPEGSample, JPEGSample)
 	{
-		return 0;	// not needed
+		// not needed
 	}
 #endif
 };
@@ -499,11 +539,11 @@ struct Conv<YCC,N,M>
 	{
 		return convYCCtoRGB<N,M>(a, b, c);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c)
 	{
-		return convYCCtoRGB<N,M>(dst, a, b, c);
+		convYCCtoRGB<N,M>(dst, a, b, c);
 	}
 #endif
 };
@@ -516,11 +556,11 @@ struct Conv<YCCA,N,M>
 	{
 		return convYCCAtoRGBA<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
-	map(JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
+	map(Byte*, JPEGSample, JPEGSample, JPEGSample, JPEGSample)
 	{
-		return 0;	// not needed
+		// not needed
 	}
 #endif
 };
@@ -533,11 +573,11 @@ struct Conv<YCCK_Adobe,N,M>
 	{
 		return convYCCKtoRGB_Adobe<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
 	{
-		return convYCCKtoRGB_Adobe<N,M>(dst, a, b, c, d);
+		convYCCKtoRGB_Adobe<N,M>(dst, a, b, c, d);
 	}
 #endif
 };
@@ -550,11 +590,11 @@ struct Conv<YCCK_JPEG,N,M>
 	{
 		return convYCCKtoRGB_JPEG<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
 	{
-		return convYCCKtoRGB_JPEG<N,M>(dst, a, b, c, d);
+		convYCCKtoRGB_JPEG<N,M>(dst, a, b, c, d);
 	}
 #endif
 };
@@ -567,11 +607,11 @@ struct Conv<PhotoYCC,N,M>
 	{
 		return convPhotoYCCtoRGB<N,M>(a, b, c);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c)
 	{
-		return convPhotoYCCtoRGB<N,M>(dst, a, b, c);
+		convPhotoYCCtoRGB<N,M>(dst, a, b, c);
 	}
 #endif
 };
@@ -584,11 +624,11 @@ struct Conv<PhotoYCCA,N,M>
 	{
 		return convPhotoYCCAtoRGBA<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
-	map(JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
+	map(Byte*, JPEGSample, JPEGSample, JPEGSample, JPEGSample)
 	{
-		return 0;	// not needed
+		// not needed
 	}
 #endif
 };
@@ -601,11 +641,11 @@ struct Conv<CMY,N,M>
 	{
 		return convCMYtoRGB<N,M>(a, b, c);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c)
 	{
-		return convCMYtoRGB<N,M>(dst, a, b, c);
+		convCMYtoRGB<N,M>(dst, a, b, c);
 	}
 #endif
 };
@@ -618,11 +658,11 @@ struct Conv<CMYK_Adobe,N,M>
 	{
 		return convCMYKtoRGB_Adobe<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
 	{
-		return convCMYKtoRGB_Adobe<N,M>(dst, a, b, c, d);
+		convCMYKtoRGB_Adobe<N,M>(dst, a, b, c, d);
 	}
 #endif
 };
@@ -635,11 +675,11 @@ struct Conv<CMYK_JPEG,N,M>
 	{
 		return convCMYKtoRGB_JPEG<N,M>(a, b, c, d);
 	}
-#ifndef __i386__
-	inline static typename Pixel<M>::Type
+#ifndef HAS_UNALIGNED_WORD_ACCESS
+	inline static void
 	map(Byte* dst, JPEGSample a, JPEGSample b, JPEGSample c, JPEGSample d)
 	{
-		return convCMYKtoRGB_JPEG<N,M>(dst, a, b, c, d);
+		convCMYKtoRGB_JPEG<N,M>(dst, a, b, c, d);
 	}
 #endif
 };
@@ -730,7 +770,7 @@ convertRow(	typename JPEG<N,Colorspace>::Sample const* src0,
 
 		for (Sample const* e = src0 + dst.length(); src0 < e; ++src0, ++src1, ++src2, q += BytesPerPixel)
 		{
-#ifdef __i386__   // Intel has hardware support for unaligned 32/64 bit word accesses
+#ifdef HAS_UNALIGNED_WORD_ACCESS
 			// additional data overhead is granted
 			*reinterpret_cast<Pixel*>(q) = Conv<Colorspace,N,M>::map(*src0, *src1, *src2);
 #else
@@ -780,7 +820,7 @@ convertRow(	typename JPEG<N,Colorspace>::Sample const* src0,
 
 		for ( ; src0 < e; ++src0, ++src1, ++src2, ++src3, q += BytesPerPixel)
 		{
-#ifdef __i386__   // Intel has hardware support for unaligned 32/64 bit word accesses
+#ifdef HAS_UNALIGNED_WORD_ACCESS
 			// additional data overhead is granted
 			*reinterpret_cast<Pixel*>(q) = Conv<Colorspace,N,M>::map(*src0, *src1, *src2, *src3);
 #else
@@ -1002,17 +1042,17 @@ struct Converter<YCCK_JPEG,N>
 typedef JPEGSample	S;
 typedef S const*		Line;
 
-template Pixel< 8>::Type convRGBtoRGB			<8,8>(S, S, S);
-template Pixel< 8>::Type convRGBAtoRGBA		<8,8>(S, S, S, S);
-template Pixel< 8>::Type convYCCtoRGB			<8,8>(S, S, S);
-template Pixel< 8>::Type convYCCAtoRGBA		<8,8>(S, S, S, S);
-template Pixel< 8>::Type convPhotoYCCtoRGB	<8,8>(S, S, S);
-template Pixel< 8>::Type convPhotoYCCAtoRGBA	<8,8>(S, S, S, S);
-template Pixel< 8>::Type convYCCKtoRGB_Adobe	<8,8>(S, S, S, S);
-template Pixel< 8>::Type convYCCKtoRGB_JPEG	<8,8>(S, S, S, S);
-template Pixel< 8>::Type convCMYtoRGB			<8,8>(S, S, S);
-template Pixel< 8>::Type convCMYKtoRGB_JPEG	<8,8>(S, S, S, S);
-template Pixel< 8>::Type convCMYKtoRGB_Adobe	<8,8>(S, S, S, S);
+template Pixel<8>::Type convRGBtoRGB			<8,8>(S, S, S);
+template Pixel<8>::Type convRGBAtoRGBA			<8,8>(S, S, S, S);
+template Pixel<8>::Type convYCCtoRGB			<8,8>(S, S, S);
+template Pixel<8>::Type convYCCAtoRGBA			<8,8>(S, S, S, S);
+template Pixel<8>::Type convPhotoYCCtoRGB		<8,8>(S, S, S);
+template Pixel<8>::Type convPhotoYCCAtoRGBA	<8,8>(S, S, S, S);
+template Pixel<8>::Type convYCCKtoRGB_Adobe	<8,8>(S, S, S, S);
+template Pixel<8>::Type convYCCKtoRGB_JPEG	<8,8>(S, S, S, S);
+template Pixel<8>::Type convCMYtoRGB			<8,8>(S, S, S);
+template Pixel<8>::Type convCMYKtoRGB_JPEG	<8,8>(S, S, S, S);
+template Pixel<8>::Type convCMYKtoRGB_Adobe	<8,8>(S, S, S, S);
 
 template void convertRow<Grayscale, 8>(Line, Scanline&);
 template void convertRow<GrayAlpha, 8>(Line, Line, Scanline&);
@@ -1042,16 +1082,16 @@ template class Converter<CMY,       8>;
 template class Converter<CMYK_Adobe,8>;
 template class Converter<CMYK_JPEG, 8>;
 
-#ifndef __i386__
+#ifndef HAS_UNALIGNED_WORD_ACCESS
 
-template Pixel< 8>::Type convRGBtoRGB			<8,8>(Byte*, S, S, S);
-template Pixel< 8>::Type convYCCtoRGB			<8,8>(Byte*, S, S, S);
-template Pixel< 8>::Type convPhotoYCCtoRGB	<8,8>(Byte*, S, S, S);
-template Pixel< 8>::Type convYCCKtoRGB_Adobe	<8,8>(Byte*, S, S, S, S);
-template Pixel< 8>::Type convYCCKtoRGB_JPEG	<8,8>(Byte*, S, S, S, S);
-template Pixel< 8>::Type convCMYtoRGB			<8,8>(Byte*, S, S, S);
-template Pixel< 8>::Type convCMYKtoRGB_JPEG	<8,8>(Byte*, S, S, S, S);
-template Pixel< 8>::Type convCMYKtoRGB_Adobe	<8,8>(Byte*, S, S, S, S);
+template void convRGBtoRGB				<8,8>(Byte*, S, S, S);
+template void convYCCtoRGB				<8,8>(Byte*, S, S, S);
+template void convPhotoYCCtoRGB		<8,8>(Byte*, S, S, S);
+template void convYCCKtoRGB_Adobe	<8,8>(Byte*, S, S, S, S);
+template void convYCCKtoRGB_JPEG		<8,8>(Byte*, S, S, S, S);
+template void convCMYtoRGB				<8,8>(Byte*, S, S, S);
+template void convCMYKtoRGB_JPEG		<8,8>(Byte*, S, S, S, S);
+template void convCMYKtoRGB_Adobe	<8,8>(Byte*, S, S, S, S);
 
 #endif
 
@@ -1097,16 +1137,16 @@ template class Converter<CMY,       12>;
 template class Converter<CMYK_Adobe,12>;
 template class Converter<CMYK_JPEG, 12>;
 
-# ifndef __i386__
+# ifndef HAS_UNALIGNED_WORD_ACCESS
 
-template Pixel<8>::Type convRGBtoRGB			<12,16>(Byte*, S, S, S);
-template Pixel<8>::Type convYCCtoRGB			<12,16>(Byte*, S, S, S);
-template Pixel<8>::Type convPhotoYCCtoRGB		<12,16>(Byte*, S, S, S);
-template Pixel<8>::Type convYCCKtoRGB_Adobe	<12,16>(Byte*, S, S, S, S);
-template Pixel<8>::Type convYCCKtoRGB_JPEG	<12,16>(Byte*, S, S, S, S);
-template Pixel<8>::Type convCMYtoRGB			<12,16>(Byte*, S, S, S);
-template Pixel<8>::Type convCMYKtoRGB_JPEG	<12,16>(Byte*, S, S, S, S);
-template Pixel<8>::Type convCMYKtoRGB_Adobe	<12,16>(Byte*, S, S, S, S);
+template void convRGBtoRGB				<12,16>(Byte*, S, S, S);
+template void convYCCtoRGB				<12,16>(Byte*, S, S, S);
+template void convPhotoYCCtoRGB		<12,16>(Byte*, S, S, S);
+template void convYCCKtoRGB_Adobe	<12,16>(Byte*, S, S, S, S);
+template void convYCCKtoRGB_JPEG		<12,16>(Byte*, S, S, S, S);
+template void convCMYtoRGB				<12,16>(Byte*, S, S, S);
+template void convCMYKtoRGB_JPEG		<12,16>(Byte*, S, S, S, S);
+template void convCMYKtoRGB_Adobe	<12,16>(Byte*, S, S, S, S);
 
 # endif
 

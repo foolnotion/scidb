@@ -528,7 +528,10 @@ Namebase::insert()
 	M_REQUIRE(m_list.empty() || (m_list.size() == 1 && m_list.front()->name().empty()));
 
 	if (m_list.empty())
+	{
 		m_list.push_back(m_entryAllocator->alloc());
+		m_list.back()->m_id = 0;
+	}
 
 	return m_list.front();
 }
@@ -611,7 +614,7 @@ Namebase::renumber()
 
 	for (unsigned i = 0, n = m_list.size(); i < n; ++i)
 	{
-		m_list[i]->setId(i);
+		m_list[i]->m_id = i;
 
 		if (m_list[i]->m_frequency == 0)
 		{
@@ -632,6 +635,8 @@ Namebase::cleanup()
 		if ((*i)->m_frequency == 0 && (*i)->m_id >= size_t(i.base() - m_list.begin()))
 			i = m_list.erase(i.base());
 	}
+
+	// XXX the namebase is now inconsistent
 }
 
 
@@ -840,22 +845,6 @@ Namebase::exchangeId(IdSet const& newIdSet, EntryMap const& entryMap)
 				m_nextId = mstl::max(entry->m_id + 1, m_nextId);
 		}
 	}
-}
-
-
-unsigned
-Namebase::findIndex(Entry const* entry) const
-{
-	// XXX handle special case of empty entry
-
-	switch (int(m_type))
-	{
-		case Site:		return m_siteAllocator->lookup(static_cast<NamebaseSite const*>(entry));
-		case Event:		return m_eventAllocator->lookup(static_cast<NamebaseEvent const*>(entry));
-		case Player:	return m_playerAllocator->lookup(static_cast<NamebasePlayer const*>(entry));
-	}
-
-	return m_entryAllocator->lookup(entry);
 }
 
 // vi:set ts=3 sw=3:

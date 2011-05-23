@@ -79,9 +79,9 @@ proc openDialog {parent} {
 	set dlg ${path}infoDialog
 
 	if {[winfo exists $dlg]} {
-		# raise window
-		wm withdraw $dlg
 		wm deiconify $dlg
+		raise $dlg
+		focus $dlg
 	} else {
 		toplevel $dlg -class $::scidb::app
 		wm iconname $dlg ""

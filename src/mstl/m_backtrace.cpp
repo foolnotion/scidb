@@ -143,7 +143,7 @@ namespace {
 static ssize_t
 sock_read(void* cookie, char* buf, size_t len)
 {
-	ssize_t n = recv(reinterpret_cast<int>(intptr_t(cookie)), buf, len, 0);
+	ssize_t n = recv(reinterpret_cast<intptr_t>(cookie), buf, len, 0);
 	return n <= 0 ? -1 : n;
 }
 
@@ -153,7 +153,7 @@ sock_write(void* cookie, char const* buf, size_t len)
 {
 	while (true)
 	{
-		ssize_t n = write(reinterpret_cast<int>(intptr_t(cookie)), buf, len);
+		ssize_t n = write(reinterpret_cast<intptr_t>(cookie), buf, len);
 
 		if (n == 0)
 			return -1;
@@ -172,7 +172,7 @@ sock_write(void* cookie, char const* buf, size_t len)
 static int
 sock_close(void* cookie)
 {
-	return close(reinterpret_cast<int>(intptr_t(cookie)));
+	return close(reinterpret_cast<intptr_t>(cookie));
 }
 
 
@@ -307,9 +307,8 @@ mstl::backtrace::is_debug_mode()
 				switch (c)
 				{
 					case '/':
-						if (buf.back() == '.')
-							buf.erase(buf.end() - 1);
-						// fallthru
+						buf.clear();
+						break;
 
 					case ' ':
 					case '\t':

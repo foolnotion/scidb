@@ -548,8 +548,7 @@ proc ShowPlayer {position side} {
 	set index $Vars(index)
 	set view  $Vars(view)
 
-	set playerIndex [::scidb::db::fetch ${side}PlayerIndex $base $index $view]
-	set info [scidb::db::get playerInfo $playerIndex -1 $base -card -ratings {Elo Elo}]
+	set info [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
 	::playertable::showInfo $Vars(header) $info
 }
 

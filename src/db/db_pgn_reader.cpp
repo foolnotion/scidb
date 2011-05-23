@@ -337,6 +337,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_parsingTags(false)
 	,m_failed(false)
 	,m_eof(false)
+	,m_hasNote(false)
 	,m_parsingComment(false)
 	,m_maybeChessBase(false)
 	,m_variant(variant::Unknown)
@@ -576,12 +577,14 @@ PgnReader::process(Progress& progress)
 				m_noResult = false;
 				m_parsingFirstHdr = false;
 				m_comment.clear();
+				m_preComment.clear();
 				m_site.clear();
 				m_annotation.clear();
 				m_timeMode = time::Unknown;
 				m_parsingComment = false;
 				m_variant = variant::Unknown;
 				m_ignoreNags = false;
+				m_hasNote = false;
 				m_significance[color::White] = 1;
 				m_significance[color::Black] = 1;
 
@@ -598,7 +601,7 @@ PgnReader::process(Progress& progress)
 
 				token = nextToken(kTag);
 				consumer().startMoveSection();
-				putPreComment();
+				putComment();
 				m_nestedVar = 0;
 
 				while (token == kSan)
@@ -627,26 +630,20 @@ PgnReader::process(Progress& progress)
 							else
 							{
 								token = nextToken(kEndVariation);
-
-// XXX
-//								if (!m_comment.empty())
-//								{
-//									consumer().putPreComment(m_comment);
-//									m_comment.clear();
-//								}
+								m_preComment.swap(m_comment);
 							}
 						}
 						else
 						{
 							consumer().startVariation();
 							token = nextToken(kStartVariation);
-							putPreComment();
+							putComment();
 
 							if (token == kStartVariation)
 							{
 								++m_nestedVar;
 								token = nextToken(kStartVariation);
-								putPreComment();
+								putComment();
 							}
 						}
 					}
@@ -750,7 +747,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 	if (!msg.empty())
 	{
-		consumer().putPreComment(msg);
+		consumer().putComment(msg);
 
 		while (consumer().variationLevel() > 0)
 			consumer().finishVariation();
@@ -1016,18 +1013,23 @@ PgnReader::putMove()
 {
 	if (__builtin_expect(m_move, 1))
 	{
-		if (m_comment.empty() & m_annotation.isEmpty())
+		M_ASSERT(!m_hasNote == bool(m_preComment.empty() && m_comment.empty() && m_annotation.isEmpty()));
+
+		if (m_hasNote)
 		{
-			consumer().putMove(m_move);
+			MarkSet marks;
+			marks.extractFromComment(m_preComment);
+			marks.extractFromComment(m_comment);
+			consumer().putMove(m_move, m_annotation, m_preComment, m_comment, marks);
+			m_comment.clear();
+			m_preComment.clear();
+			m_annotation.set(m_prefixAnnotation);
+			m_prefixAnnotation = nag::Null;
+			m_hasNote = false;
 		}
 		else
 		{
-			MarkSet marks;
-			marks.extractFromComment(m_comment);
-			consumer().putMove(m_move, m_annotation, m_comment, marks);
-			m_comment.clear();
-			m_annotation.set(m_prefixAnnotation);
-			m_prefixAnnotation = nag::Null;
+			consumer().putMove(m_move);
 		}
 
 		m_move.clear();
@@ -1036,16 +1038,17 @@ PgnReader::putMove()
 
 
 void
-PgnReader::putPreComment()
+PgnReader::putComment()
 {
-	if (!(m_comment.empty() & m_annotation.isEmpty()))
+	if (m_hasNote && !(m_comment.empty() & m_annotation.isEmpty()))
 	{
 		MarkSet marks;
 
 		marks.extractFromComment(m_comment);
-		consumer().putPreComment(m_comment, m_annotation, marks);
+		consumer().putComment(m_comment, m_annotation, marks);
 		m_comment.clear();
 		m_annotation.clear();
+		m_hasNote = false;
 	}
 }
 
@@ -2113,6 +2116,8 @@ PgnReader::putNag(nag::ID nag)
 		m_ignoreNags = true;
 		warning(TooManyNags, m_prevPos);
 	}
+
+	m_hasNote = true;
 }
 
 
@@ -2146,6 +2151,7 @@ PgnReader::stripDiagram()
 	{
 		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 1));
 		m_annotation.add(nag::Diagram);
+		m_hasNote = true;
 	}
 	else if (m_maybeChessBase)
 	{
@@ -2161,6 +2167,7 @@ PgnReader::stripDiagram()
 
 		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 3));
 		m_annotation.add(nag::Diagram);
+		m_hasNote = true;
 	}
 }
 
@@ -2261,74 +2268,78 @@ PgnReader::parseComment(Token prevToken, int c)
 	}
 
 	m_comment.trim();
-
 	stripDiagram();
 
-	Comment comment;
-
-	if (comment.fromHtml(m_comment))
+	if (!m_comment.empty())
 	{
-		comment.swap(m_comment);
-	}
-	else
-	{
-		mstl::string str;
-
-		Comment::convertCommentToXml(m_comment, str, Comment::Latin1);
 		Comment comment;
-		comment.swap(str);
-		comment.normalize();
-		comment.swap(m_comment);
-		convertToUtf(m_comment);
-	}
 
-	switch (m_comment.size())
-	{
-		case 1:
-			switch (m_comment[0])
-			{
-				case 'N':
-					if (prevToken & PartOfMove)
-					{
-						m_comment.clear();
-						putNag(nag::Novelty);
-						return kNag;
-					}
-					break;
+		if (comment.fromHtml(m_comment))
+		{
+			comment.swap(m_comment);
+		}
+		else
+		{
+			mstl::string str;
 
-				case 'D':
-					if (!m_annotation.contains(nag::Diagram))
-					{
-						m_comment.clear();
-						putNag(nag::Diagram);
-						return kNag;
-					}
-					break;
-			}
-			break;
+			Comment::convertCommentToXml(m_comment, str, Comment::Latin1);
+			Comment comment;
+			comment.swap(str);
+			comment.normalize();
+			comment.swap(m_comment);
+			convertToUtf(m_comment);
+		}
 
-		case 2:
-			switch (m_comment[0])
-			{
-				case 'D':
-					if (m_comment[1] == '\'')
-					{
-						m_comment.clear();
-						putNag(nag::DiagramFromBlack);
-						return kNag;
-					}
-					break;
+		switch (m_comment.size())
+		{
+			case 1:
+				switch (m_comment[0])
+				{
+					case 'N':
+						if (prevToken & PartOfMove)
+						{
+							m_comment.clear();
+							putNag(nag::Novelty);
+							return kNag;
+						}
+						break;
 
-				case 'R':
-					if (m_comment[1] == 'R')
-					{
-						m_comment.clear();
-						putNag(nag::EditorsRemark);
-						return kNag;
-					}
-					break;
-			}
-			break;
+					case 'D':
+						if (!m_annotation.contains(nag::Diagram))
+						{
+							m_comment.clear();
+							putNag(nag::Diagram);
+							return kNag;
+						}
+						break;
+				}
+				break;
+
+			case 2:
+				switch (m_comment[0])
+				{
+					case 'D':
+						if (m_comment[1] == '\'')
+						{
+							m_comment.clear();
+							putNag(nag::DiagramFromBlack);
+							return kNag;
+						}
+						break;
+
+					case 'R':
+						if (m_comment[1] == 'R')
+						{
+							m_comment.clear();
+							putNag(nag::EditorsRemark);
+							return kNag;
+						}
+						break;
+				}
+				break;
+		}
+
+		m_hasNote = true;
 	}
 
 	return kComment;

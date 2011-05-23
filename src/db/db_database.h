@@ -180,7 +180,7 @@ public:
 	void recode(mstl::string const& encoding, Log& log);
 
 	/// Build tournament table for given event index.
-	TournamentTable* makeTournamentTable(unsigned eventIndex) const;
+	TournamentTable* makeTournamentTable(NamebaseEvent const& event) const;
 
 	/// Open an asynchronous game stream (block file) reader for findExactPositionAsync() operation.
 	void openAsyncReader();
