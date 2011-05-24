@@ -845,13 +845,19 @@ proc LanguageChanged {} {
 	Bind <Control-[string toupper $Vars(key:annotation)]> {}
 	Bind <Control-[string tolower $Vars(key:comment)]> {}
 	Bind <Control-[string toupper $Vars(key:comment)]> {}
+	Bind <Control-Shift-[string tolower $Vars(key:comment)]> {}
+	Bind <Control-Shift-[string toupper $Vars(key:comment)]> {}
 	Bind <Control-[string tolower $Vars(key:marks)]> {}
 	Bind <Control-[string toupper $Vars(key:marks)]> {}
 
 	Bind <Control-[string tolower $mc::KeyEditAnnotation]> [namespace parent]::pgn::editAnnotation
 	Bind <Control-[string toupper $mc::KeyEditAnnotation]> [namespace parent]::pgn::editAnnotation
-	Bind <Control-[string tolower $mc::KeyEditComment]> [namespace parent]::pgn::editComment
-	Bind <Control-[string toupper $mc::KeyEditComment]> [namespace parent]::pgn::editComment
+	Bind <Control-[string tolower $mc::KeyEditComment]> [list [namespace parent]::pgn::editComment p]
+	Bind <Control-[string toupper $mc::KeyEditComment]> [list [namespace parent]::pgn::editComment p]
+	Bind <Control-Shift-[string tolower $mc::KeyEditComment]> \
+		[list [namespace parent]::pgn::editComment a]
+	Bind <Control-Shift-[string toupper $mc::KeyEditComment]> \
+		[list [namespace parent]::pgn::editComment a]
 	Bind <Control-[string tolower $mc::KeyEditMarks]> [namespace parent]::pgn::openMarksPalette
 	Bind <Control-[string toupper $mc::KeyEditMarks]> [namespace parent]::pgn::openMarksPalette
 

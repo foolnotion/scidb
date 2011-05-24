@@ -68,7 +68,7 @@ VariableToken::value() const
 mstl::string
 VariableToken::name() const
 {
-	size_t n = m_name.rfind(Token::ParamChar);
+	mstl::string::size_type n = m_name.rfind(Token::ParamChar);
 	return n == mstl::string::npos ? m_name : m_name.substr(0, n);
 }
 

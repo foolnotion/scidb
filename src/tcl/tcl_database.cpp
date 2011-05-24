@@ -350,7 +350,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_closeCmd)
-				invoke(__func__, i->m_closeCmd, i->m_arg, file, 0);
+				invoke(__func__, i->m_closeCmd, i->m_arg, file, NULL);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -365,7 +365,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & DatabaseInfo)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, f, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -394,7 +394,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & GameList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -425,7 +425,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & PlayerList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -456,7 +456,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & EventList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -487,7 +487,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & AnnotatorList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -503,7 +503,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type == GameInfo)
-				invoke(__func__, i->m_updateCmd, i->m_arg, pos, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, pos, NULL);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -525,7 +525,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type == Tree)
-				invoke(__func__, i->m_updateCmd, i->m_arg, file, 0);
+				invoke(__func__, i->m_updateCmd, i->m_arg, file, NULL);
 		}
 
 		Tcl_DecrRefCount(file);

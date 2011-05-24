@@ -2312,7 +2312,7 @@ Player::parseIpsRatingList(mstl::istream& stream)
 	{
 		if (!line.empty() && line.front() != '#')
 		{
-			unsigned n = line.find('\t');
+			mstl::string::size_type n = line.find('\t');
 
 			if (n != mstl::string::npos)
 			{
@@ -2357,7 +2357,7 @@ Player::parseChessgamesDotComLinks(mstl::istream& stream)
 
 	while (stream.getline(line))
 	{
-		unsigned n = line.find('|');
+		mstl::string::size_type n = line.find('|');
 
 		if (n != mstl::string::npos)
 		{
@@ -2439,7 +2439,7 @@ Player::parseWikipediaLinks(mstl::istream& stream)
 
 	while (stream.getline(line))
 	{
-		unsigned n = line.find('|');
+		mstl::string::size_type n = line.find('|');
 
 		if (n != mstl::string::npos)
 		{

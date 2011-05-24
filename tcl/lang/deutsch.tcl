@@ -1137,7 +1137,8 @@
 ::info::mc::Reference(MicroMax)	"ist möglicherweise das kleinste verfügbare in C programmierte Schachprogramm. Die Webseite von Micro-Max ist %url%. Micro-Max wurde von H.G. Muller entwickelt."
 
 ### comment ############################################################
-::comment::mc::CommentEditor			"Kommentar"
+::comment::mc::CommentBeforeMove		"Kommentar vor dem Zug"
+::comment::mc::CommentAfterMove		"Kommentar nach dem Zug"
 ::comment::mc::Language					"Sprache"
 ::comment::mc::AllLanguages			"Alle Sprachen"
 ::comment::mc::AddLanguage				"Sprache hinzufügen..."

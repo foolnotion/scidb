@@ -348,7 +348,7 @@ proc editAnnotation {{position -1} {key {}}} {
 }
 
 
-proc editComment {{position -1} {key {}} {lang {}}} {
+proc editComment {pos {position -1} {key {}} {lang {}}} {
 	variable Vars
 
 	if {$position == -1} { set position $Vars(index) }
@@ -358,7 +358,7 @@ proc editComment {{position -1} {key {}} {lang {}}} {
 		foreach code [array names Vars lang:active:*] {
 			set code [string range $code end-1 end]
 			if {[string length $lang] == 0 || $code eq $::mc::langID} {
-				if {[::scidb::game::query $position langSet $Vars(current:$position) $code]} {
+				if {[::scidb::game::query $position langSet $pos $Vars(current:$position) $code]} {
 					set lang $code
 				}
 			}
@@ -366,7 +366,7 @@ proc editComment {{position -1} {key {}} {lang {}}} {
 		if {[string length $lang] == 0} { set lang xx }
 	}
 
-	Edit $position ::comment $key $lang
+	Edit $position ::comment $key $pos $lang
 }
 
 
@@ -638,7 +638,7 @@ proc UpdateLanguages {position languages} {
 }
 
 
-proc Edit {position ns {key {}} {lang {}}} {
+proc Edit {position ns {key {}} {pos {}} {lang {}}} {
 	variable Vars
 
 	if {![::gamebar::empty? $Vars(bar)]} {
@@ -650,7 +650,7 @@ proc Edit {position ns {key {}} {lang {}}} {
 			GotoMove $position $key
 		}
 
-		${ns}::open [winfo toplevel $Vars(pgn:$position)] {*}$lang
+		${ns}::open [winfo toplevel $Vars(pgn:$position)] {*}$pos {*}$lang
 	}
 }
 
@@ -959,7 +959,7 @@ proc InsertMove {position w level key data} {
 
 			comment {
 				set startPos [$w index current]
-				PrintComment $position $w $level $key [lindex $node 1]
+				PrintComment $position $w $level $key [lindex $node 1] [lindex $node 2]
 				if {$level == 0 && !$Options(column-style)} {
 					$w tag add indent1 $startPos current
 				}
@@ -1053,11 +1053,13 @@ proc PrintMove {position w level key data} {
 }
 
 
-proc PrintComment {position w level key data} {
+proc PrintComment {position w level key pos data} {
 	variable Vars
 
+	if {$pos} { set pos a } else { set pos p } ;# ante/post
+
 	set startPos {}
-	set keyTag comment:$key
+	set keyTag comment:$key:$pos
 	set underline 0
 	set flags 0
 	set count 0
@@ -1122,9 +1124,10 @@ proc PrintComment {position w level key data} {
 
 		if {[llength $startPos]} {
 			$w tag add comment $startPos current
-			$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$lang]]
-			$w tag bind $langTag <Leave> [namespace code [list LeaveComment $w $position $key:$lang]]
-			$w tag bind $langTag <ButtonPress-1> [namespace code [list EditComment $position $key $lang]]
+			$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$pos:$lang]]
+			$w tag bind $langTag <Leave> [namespace code [list LeaveComment $w $position $key:$pos:$lang]]
+			$w tag bind $langTag <ButtonPress-1> \
+				[namespace code [list EditComment $position $key $pos $lang]]
 			set startPos {}
 		}
 
@@ -1189,14 +1192,14 @@ proc PrintAnnotation {w position level key nags} {
 }
 
 
-proc EditComment {position key lang} {
+proc EditComment {position key pos lang} {
 	variable Vars
 
 	set w $Vars(pgn:$position)
 	set Vars(edit:comment) 1
-	editComment $position $key $lang
+	editComment $pos $position $key $lang
 	set Vars(edit:comment) 0
-	LeaveComment $w $position $key:$lang
+	LeaveComment $w $position $key:$pos:$lang
 }
 
 
@@ -1570,7 +1573,7 @@ proc PopupMenu {parent position} {
 			;
 		$menu add command \
 			-label "$mc::EditComment..." \
-			-command [namespace code [list editComment $position]] \
+			-command [namespace code [list editComment p $position]] \
 			;
 		if {[::marks::open?]} { set state disabled } else { set state normal }
 		$menu add command \

@@ -403,7 +403,8 @@ namespace castling
 
 namespace move {
 
-	enum Constraint { DontAllowIllegalMove, AllowIllegalMove };
+	enum Constraint	{ DontAllowIllegalMove, AllowIllegalMove };
+	enum Position		{ Ante, Post };
 
 } // namespace move
 

@@ -231,7 +231,8 @@ struct Game::Undo
 	Command			command;
 	edit::Key		key;
 	Node				node;
-	mstl::string*	comment;
+	Comment*			comment;
+	move::Position	position;
 	MarkSet*			marks;
 	Annotation*		annotation;
 	unsigned			varNo;
@@ -243,6 +244,7 @@ struct Game::Undo
 Game::Undo::Undo()
 	:command(None)
 	,comment(0)
+	,position(move::Post)
 	,marks(0)
 	,annotation(0)
 	,varNo(0)
@@ -442,8 +444,9 @@ Game::insertUndo(UndoAction action, Command command)
 void
 Game::insertUndo(	UndoAction action,
 						Command command,
-						mstl::string const& oldComment,
-						mstl::string const& newComment)
+						Comment const& oldComment,
+						Comment const& newComment,
+						move::Position position)
 {
 	M_ASSERT(action == Set_Annotation);
 
@@ -451,15 +454,19 @@ Game::insertUndo(	UndoAction action,
 	{
 		Undo* prev = prevUndo();
 
-		if (prev == 0 || prev->action != action || prev->key != m_currentKey)
+		if (prev == 0 || prev->action != action || prev->key != m_currentKey || prev->position != position)
 		{
-			newUndo(action, command).comment = new mstl::string(oldComment);
+			Undo& undo = newUndo(action, command);
+			undo.comment = new Comment(oldComment);
+			undo.position = position;
 		}
 		else if (prev->comment == 0)
 		{
-			prev->comment = new mstl::string(oldComment);
+			prev->comment = new Comment(oldComment);
+			prev->position = position;
 		}
 		else if (	m_undoCommand == None
+					&& prev->position == position
 					&& *prev->comment == newComment
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation())
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
@@ -494,7 +501,7 @@ Game::insertUndo(UndoAction action, Command command, MarkSet const& oldMarks, Ma
 		}
 		else if (	m_undoCommand == None
 					&& *prev->marks == newMarks
-					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment())
+					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment(prev->position))
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation()))
 		{
 			prev->clear();
@@ -530,7 +537,7 @@ Game::insertUndo(	UndoAction action,
 		}
 		else if (	m_undoCommand == None
 					&& *prev->annotation == newAnnotation
-					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment())
+					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment(prev->position))
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
 		{
 			prev->clear();
@@ -656,7 +663,7 @@ Game::applyUndo(Undo& undo, bool redo)
 	switch (undo.action)
 	{
 		case Replace_Node:			replaceNode(undo.node.release(), undo.command); break;
-		case Truncate_Variation:	truncateVariation(AfterMove); break;
+		case Truncate_Variation:	truncateVariation(move::Post); break;
 		case Swap_Variations:		moveVariation(undo.varNo, undo.varNo2, undo.command); break;
 		case Insert_Variation:		insertVariation(undo.node.release(), undo.varNo); break;
 		case Promote_Variation:		promoteVariation(undo.varNo, undo.varNo2); break;
@@ -664,7 +671,7 @@ Game::applyUndo(Undo& undo, bool redo)
 		case Remove_Mainline:		removeMainline(); break;
 		case New_Mainline:			newMainline(undo.node.release()); break;
 		case Strip_Moves:				unstripMoves(undo.node.release(), undo.board, undo.key); break;
-		case Unstrip_Moves:			stripMoves(AfterMove); break;
+		case Unstrip_Moves:			stripMoves(move::Post); break;
 		case Revert_Game:				revertGame(undo.node.release(), undo.command); break;
 		case Set_Start_Position:	resetGame(undo.node.release(), undo.board, undo.key.id()); break;
 
@@ -686,9 +693,13 @@ Game::applyUndo(Undo& undo, bool redo)
 				}
 				if (undo.comment)
 				{
-					mstl::string comment(*undo.comment);
-					insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(), comment);
-					m_currentNode->swapComment(comment);
+					Comment comment(*undo.comment);
+					insertUndo(	Set_Annotation,
+									SetAnnotation,
+									m_currentNode->comment(undo.position),
+									comment,
+									undo.position);
+					m_currentNode->swapComment(comment, undo.position);
 					if (updateLanguageSet())
 						flags |= UpdateLanguageSet;
 				}
@@ -882,9 +893,9 @@ Game::successorKey() const
 
 
 Comment const&
-Game::comment() const
+Game::comment(move::Position position) const
 {
-	return m_currentNode->comment();
+	return m_currentNode->comment(position);
 }
 
 
@@ -995,23 +1006,20 @@ Game::getNextMove(unsigned flags)
 
 
 void
-Game::setComment(mstl::string const& comment, Position position)
+Game::setComment(mstl::string const& comment, move::Position position)
 {
-	M_REQUIRE(position == AfterMove || !atLineStart());
+	M_REQUIRE(position == move::Post || !atLineStart());
 
-	if (position == BeforeMove)
-		backward();
-
-	if (comment != m_currentNode->comment())
+	if (comment != m_currentNode->comment(position))
 	{
-		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(), comment);
-		m_currentNode->setComment(comment);
+		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(position), comment, position);
+		m_currentNode->setComment(comment, position);
 
 		{
 			Comment comm;
-			m_currentNode->swapComment(comm);
+			m_currentNode->swapComment(comm, position);
 			comm.normalize();
-			m_currentNode->swapComment(comm);
+			m_currentNode->swapComment(comm, position);
 		}
 
 		unsigned flags = UpdatePgn | UpdateBoard;
@@ -1021,20 +1029,12 @@ Game::setComment(mstl::string const& comment, Position position)
 
 		updateSubscriber(flags);
 	}
-
-	if (position == BeforeMove)
-		forward();
 }
 
 
 void
-Game::setMarks(MarkSet const& marks, Position position)
+Game::setMarks(MarkSet const& marks)
 {
-	M_REQUIRE(position == AfterMove || !atLineStart());
-
-	if (position == BeforeMove)
-		backward();
-
 	if (marks != m_currentNode->marks())
 	{
 		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->marks(), marks);
@@ -1047,9 +1047,6 @@ Game::setMarks(MarkSet const& marks, Position position)
 			updateSubscriber(UpdatePgn);
 		}
 	}
-
-	if (position == BeforeMove)
-		forward();
 }
 
 
@@ -2184,9 +2181,9 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 
 
 void
-Game::truncateVariation(Position position)
+Game::truncateVariation(move::Position position)
 {
-	if (position == BeforeMove)
+	if (position == move::Ante)
 		backward();
 
 	if (atLineEnd())
@@ -2198,7 +2195,7 @@ Game::truncateVariation(Position position)
 
 	if (isMainline())
 		flags |= UpdateOpening;
-	if (position == BeforeMove)
+	if (position == move::Ante)
 		flags |= UpdateBoard;
 
 	updateSubscriber(flags);
@@ -2249,11 +2246,11 @@ Game::replaceVariation(mstl::string const& san)
 
 
 bool
-Game::stripMoves(Position position)
+Game::stripMoves(move::Position position)
 {
 	M_REQUIRE(isMainline());
 
-	if (position == BeforeMove)
+	if (position == move::Ante)
 		backward();
 
 	if (atLineStart())
@@ -2759,10 +2756,10 @@ Game::setLanguages(LanguageSet const& set)
 
 
 bool
-Game::containsLanguage(edit::Key const& key, mstl::string const& lang) const
+Game::containsLanguage(edit::Key const& key, move::Position position, mstl::string const& lang) const
 {
 	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
-	return node && node->comment().containsLanguage(lang);
+	return node && node->comment(position).containsLanguage(lang);
 }
 
 

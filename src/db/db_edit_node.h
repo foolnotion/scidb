@@ -352,6 +352,9 @@ public:
 
 private:
 
+	void preSpacing(Work& work, bool atLineStart);
+	unsigned putComment(Work& work, db::Comment const& comment, move::Position position);
+
 	List	m_list;
 	Ply*	m_ply;
 };
@@ -383,7 +386,7 @@ class Comment : public Node
 {
 public:
 
-	Comment(db::Comment const& comment);
+	Comment(db::Comment const& comment, move::Position position);
 
 	bool operator==(Node const* node) const;
 
@@ -394,7 +397,8 @@ public:
 
 private:
 
-	db::Comment m_comment;
+	move::Position	m_position;
+	db::Comment		m_comment;
 };
 
 
@@ -475,7 +479,7 @@ public:
 	virtual void languages(LanguageSet const& languages) = 0;
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
-	virtual void comment(db::Comment const& comment) = 0;
+	virtual void comment(move::Position position, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
 	virtual void marks(MarkSet const& marks) = 0;
 	virtual void space(char bracket) = 0;

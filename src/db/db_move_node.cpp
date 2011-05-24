@@ -33,6 +33,7 @@
 
 #include "m_utility.h"
 #include "m_assert.h"
+#include "m_static_check.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -339,8 +340,8 @@ MoveNode::swapData(MoveNode* node)
 	mstl::swap(m_flags,			node->m_flags);
 	mstl::swap(m_annotation,	node->m_annotation);
 	mstl::swap(m_marks,			node->m_marks);
-	mstl::swap(m_comment,			node->m_comment);
-	mstl::swap(m_preComment,		node->m_preComment);
+	mstl::swap(m_comment[0],		node->m_comment[0]);
+	mstl::swap(m_comment[1],		node->m_comment[1]);
 }
 
 
@@ -390,8 +391,8 @@ MoveNode::clone(MoveNode* prev) const
 	if (!m_annotation->isEmpty())
 		node->setupAnnotation(*m_annotation);
 
-	node->m_comment = m_comment;
-	node->m_preComment = m_preComment;
+	node->m_comment[0] = m_comment[0];
+	node->m_comment[1] = m_comment[1];
 	node->m_move = m_move;
 	node->m_flags = m_flags;
 
@@ -494,7 +495,7 @@ MoveNode::countMarks() const
 unsigned
 MoveNode::countComments() const
 {
-	unsigned result = (m_comment.isEmpty()) ? 0 : 1 + (m_preComment.isEmpty() ? 0 : 1);
+	unsigned result = (m_comment[0].isEmpty() ? 0 : 1) + (m_comment[1].isEmpty() ? 0 : 1);
 
 	if (m_next)
 		result += m_next->countComments();
@@ -509,7 +510,7 @@ MoveNode::countComments() const
 unsigned
 MoveNode::countComments(mstl::string const& lang) const
 {
-	unsigned result = (m_comment.countLength(lang) ? 1 : 0) + (m_preComment.countLength(lang) ? 1 : 0);
+	unsigned result = (m_comment[0].countLength(lang) ? 1 : 0) + (m_comment[1].countLength(lang) ? 1 : 0);
 
 	if (m_next)
 		result += m_next->countComments(lang);
@@ -586,8 +587,8 @@ MoveNode::stripMarks()
 void
 MoveNode::stripComments()
 {
-	m_comment.clear();
-	m_preComment.clear();
+	m_comment[0].clear();
+	m_comment[1].clear();
 	m_flags &= ~(HasComment | IsPrepared);
 
 	for (unsigned i = 0; i < m_variations.size(); ++i)
@@ -601,11 +602,13 @@ MoveNode::stripComments()
 void
 MoveNode::stripComments(mstl::string const& lang)
 {
-	m_comment.remove(lang);
-	m_preComment.remove(lang);
+	m_comment[0].remove(lang);
+	m_comment[1].remove(lang);
 	m_flags &= ~IsPrepared;
 
-	if (m_comment.isEmpty())
+	if (m_comment[move::Ante].isEmpty())
+		m_flags &= ~HasPreComment;
+	if (m_comment[move::Post].isEmpty())
 		m_flags &= ~HasComment;
 
 	for (unsigned i = 0; i < m_variations.size(); ++i)
@@ -692,8 +695,8 @@ MoveNode::computeChecksum(uint64_t crc) const
 void
 MoveNode::collectLanguages(LanguageSet& langSet) const
 {
-	m_comment.collectLanguages(langSet);
-	m_preComment.collectLanguages(langSet);
+	m_comment[0].collectLanguages(langSet);
+	m_comment[1].collectLanguages(langSet);
 
 	if (m_next)
 		m_next->collectLanguages(langSet);

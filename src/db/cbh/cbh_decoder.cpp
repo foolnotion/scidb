@@ -533,7 +533,7 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 	M_ASSERT(node);
 
 	if (node->hasNote())
-		consumer.putComment(node->comment(), node->annotation(), node->marks());
+		consumer.putComment(node->comment(move::Post), node->annotation(), node->marks());
 
 	for (node = node->next(); node; node = node->next())
 	{
@@ -541,8 +541,8 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 		{
 			consumer.putMove(	node->move(),
 									node->annotation(),
-									node->preComment(),
-									node->comment(),
+									node->comment(move::Ante),
+									node->comment(move::Post),
 									node->marks());
 		}
 		else
@@ -591,16 +591,16 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 
 		str.reserve(length + 200);
 
-		if (::strncmp(node->comment().content(), "<xml>", 5) == 0)
+		if (::strncmp(node->comment(move::Post).content(), "<xml>", 5) == 0)
 		{
 			useXml = true;
 
-			if (::strcmp(node->comment().content().end() - 6, "</xml>") == 0)
+			if (::strcmp(node->comment(move::Post).content().end() - 6, "</xml>") == 0)
 			{
 				Comment comment;
-				node->swapComment(comment);
+				node->swapComment(comment, move::Post);
 				comment.content().resize(comment.size() - 6);
-				node->swapComment(comment);
+				node->swapComment(comment, move::Post);
 			}
 		}
 
@@ -716,7 +716,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 			{
 				mstl::string xml;
 
-				node->swapComment(xml);
+				node->swapComment(xml, move::Post);
 				xml.reserve(xml.size() + str.size() + 20);
 
 				if (::strncmp(xml, "<xml>", 5) != 0)
@@ -762,21 +762,21 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 				}
 
 				xml += "</xml>";
-				node->swapComment(xml);
+				node->swapComment(xml, move::Post);
 			}
 			else
 			{
 				mstl::string s;
-				node->swapComment(s);
+				node->swapComment(s, move::Post);
 				s += str;
-				node->swapComment(s);
+				node->swapComment(s, move::Post);
 			}
 		}
 
 		Comment comment;
-		node->swapComment(comment);
+		node->swapComment(comment, move::Post);
 		comment.normalize();
-		node->swapComment(comment);
+		node->swapComment(comment, move::Post);
 	}
 
 	m_aStrm.skip(length);

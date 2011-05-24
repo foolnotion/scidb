@@ -67,8 +67,8 @@ InputOutput::searchFile(mstl::string const& searchDirs, mstl::string& filename)
 	if (fileExists(filename))
 		return true;
 
-	unsigned start	= 0;
-	unsigned end	= searchDirs.find(':');
+	mstl::string::size_type start	= 0;
+	mstl::string::size_type end	= searchDirs.find(':');
 
 	if (end == mstl::string::npos)
 		end = searchDirs.size();

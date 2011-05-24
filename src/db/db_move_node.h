@@ -92,8 +92,7 @@ public:
 	bool atLineStart() const;
 	bool atLineEnd() const;
 
-	bool hasComment() const;
-	bool hasPreComment() const;
+	bool hasComment(move::Position position) const;
 	bool hasAnyComment() const;
 	bool hasVariation() const;
 	bool hasAnnotation() const;
@@ -121,14 +120,11 @@ public:
 	Nodes const& variations() const;
 	Annotation const& annotation() const;
 	MarkSet const& marks() const;
-	Comment const& comment() const;
-	Comment const& preComment() const;
+	Comment const& comment(move::Position position) const;
 	move::Constraint constraint() const;
 
-	void setComment();
-	void setPreComment();
-	void unsetComment();
-	void unsetPreComment();
+	void setComment(move::Position position);
+	void unsetComment(move::Position position);
 	void setMark();
 
 	void setMove(Board const& board, Move const& move);
@@ -140,11 +136,10 @@ public:
 	void swapMarks(MarkSet& marks);
 	void setMarks(MarkSet const& marks);
 	void replaceMarks(MarkSet const& marks);
-	void swapComment(Comment& comment);
-	void swapComment(mstl::string& str);
-	void swapPreComment(mstl::string& str);
-	void setComment(mstl::string const& str);
-	void setPreComment(mstl::string const& str);
+	void swapComment(Comment& comment, move::Position position);
+	void swapComment(mstl::string& str, move::Position position);
+	void setComment(Comment const& comment, move::Position position);
+	void setComment(mstl::string const& str, move::Position position);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
 	void prepareForSan(Board const& board);
 	void transpose();
@@ -174,8 +169,8 @@ private:
 
 	enum
 	{
-		HasComment		= 1 << 0,
-		HasPreComment	= 1 << 1,
+		HasPreComment	= 1 << move::Ante,
+		HasComment		= 1 << move::Post,
 		HasMark			= 1 << 2,
 		HasAnnotation	= 1 << 3,
 		HasVariation	= 1 << 4,
@@ -190,21 +185,19 @@ private:
 	MoveNode* clone(MoveNode* prev) const;
 
 	void setupAnnotation(Annotation const& annotation);
-	void updatePreCommentFlags();
-	void updateCommentFlags();
+	void updateCommentFlags(move::Position position);
 
 	bool checkHasMark() const;
 	bool checkHasAnnotation() const;
 
-	unsigned			m_flags;
-	MoveNode*		m_next;
-	MoveNode*		m_prev;
-	Nodes				m_variations;
-	Annotation*		m_annotation;
-	MarkSet*			m_marks;
-	Move				m_move;
-	Comment			m_comment;
-	Comment			m_preComment;
+	unsigned		m_flags;
+	MoveNode*	m_next;
+	MoveNode*	m_prev;
+	Nodes			m_variations;
+	Annotation*	m_annotation;
+	MarkSet*		m_marks;
+	Move			m_move;
+	Comment		m_comment[2];
 };
 
 } // namespace db

@@ -89,8 +89,11 @@ public:
 		UpdateAll				= ~(1 << 6),
 	};
 
-	enum Position	{ AfterMove, BeforeMove };
-	enum Force		{ OnlyIfRemainsConsistent, TruncateIfNeccessary };
+	enum Force
+	{
+		OnlyIfRemainsConsistent,
+		TruncateIfNeccessary,
+	};
 
 	enum Command
 	{
@@ -167,7 +170,9 @@ public:
 	/// Return whether the game contains illegal moves.
 	bool containsIllegalMoves() const;
 	/// Return whether
-	bool containsLanguage(edit::Key const& key, mstl::string const& lang) const;
+	bool containsLanguage(	edit::Key const& key,
+									move::Position position,
+									mstl::string const& lang) const;
 	/// Return whether the game is currently at the start position of the mainline
 	bool atMainlineStart() const;
 	/// Return whether the game is at the end of the mainline
@@ -236,7 +241,7 @@ public:
 	/// Fill line to current position, update home pawn data, and current home pawn signature
 	uint16_t currentLine(Line& result);
 	/// Return comment at current position
-	Comment const& comment() const;
+	Comment const& comment(move::Position position) const;
 	/// Return infix annotation at current position
 	mstl::string& infix(mstl::string& result) const;
 	/// Return prefix annotation at current position
@@ -354,11 +359,11 @@ public:
 	// Node modification methods
 
 	/// Sets the comment associated with current move
-	void setComment(mstl::string const& comment, Position position = AfterMove);
+	void setComment(mstl::string const& comment, move::Position position);
 	/// Sets the annotation associated with current move
 	void setAnnotation(Annotation const& annotation);
 	/// Sets the marks associated with current move
-	void setMarks(MarkSet const& marks, Position position = AfterMove);
+	void setMarks(MarkSet const& marks);
 	/// Adds a move at the current position
 	void addMove(mstl::string const& san);
 	/// Adds a move at the current position
@@ -391,7 +396,7 @@ public:
 	void removeVariation(unsigned variationNumber);
 	/// Removes all variations and mainline moves after the current position,
 	/// or before the current position if @p position == BeforeMove
-	void truncateVariation(Position position = AfterMove);
+	void truncateVariation(move::Position position = move::Post);
 	/// Exchange the moves of given variation with main line moves,
 	bool exchangeMoves(	unsigned variationNumber,
 								unsigned movesToExchange,
@@ -400,7 +405,7 @@ public:
 	bool insertMoves(unsigned variationNumber, Force flag = OnlyIfRemainsConsistent);
 	/// Removes all variations and mainline moves before next move,
 	/// or before the current position if @p position == BeforeMove
-	bool stripMoves(Position position = AfterMove);
+	bool stripMoves(move::Position position = move::Post);
 	/// Remove all annotations.
 	bool stripAnnotations();
 	/// Remove all comments.
@@ -511,8 +516,9 @@ private:
 	void insertUndo(UndoAction action, Command command, MoveNode* node, Board const& board);
 	void insertUndo(	UndoAction action,
 							Command command,
-							mstl::string const& oldComment,
-							mstl::string const& newComment);
+							Comment const& oldComment,
+							Comment const& newComment,
+							move::Position position);
 	void insertUndo(	UndoAction action,
 							Command command,
 							MarkSet const& oldMarks,

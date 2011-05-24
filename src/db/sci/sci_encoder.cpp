@@ -359,13 +359,13 @@ Encoder::encodeNote(MoveNode const* node)
 
 	if (node->hasAnyComment())
 	{
-		uint8_t flag = (node->hasPreComment() ? 1 : 0) | (node->hasComment() ? 2 : 0);
+		uint8_t flag = (node->hasComment(move::Ante) ? 1 : 0) | (node->hasComment(move::Post) ? 2 : 0);
 
 		m_data.put(flag);
 		if (flag & 1)
-			m_data.put(node->preComment().content(), node->preComment().size() + 1);
+			m_data.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
 		if (flag & 2)
-			m_data.put(node->comment().content(), node->comment().size() + 1);
+			m_data.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
 
 		m_strm.put(token::Comment);
 	}

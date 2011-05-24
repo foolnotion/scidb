@@ -507,11 +507,11 @@ tcl::invoke(char const* callee,
 	Tcl_IncrRefCount(list);
 
 	if (arg1 && arg2)
-		rc = invoke(callee, cmd, arg1, arg2, list, 0);
+		rc = invoke(callee, cmd, arg1, arg2, list, NULL);
 	else if (arg1)
-		rc = invoke(callee, cmd, arg1, list, 0);
+		rc = invoke(callee, cmd, arg1, list, NULL);
 	else
-		rc = invoke(callee, cmd, list, 0);
+		rc = invoke(callee, cmd, list, NULL);
 
 	Tcl_DecrRefCount(list);
 	return rc;
@@ -581,7 +581,7 @@ tcl::call(	char const* callee,
 static void
 callRemoteUpdate(ClientData)
 {
-	invoke(__func__, "::remote::update", 0);
+	invoke(__func__, "::remote::update", NULL);
 }
 
 

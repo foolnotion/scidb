@@ -420,7 +420,7 @@ NameList::prepareSite(NamebaseSite const* entry, mstl::string const*& str)
 	{
 		char const* country = country::toString(entry->country());
 
-		unsigned n = str->find(country);
+		mstl::string::size_type n = str->find(country);
 
 		if (	n == mstl::string::npos
 			|| (n == 0

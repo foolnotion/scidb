@@ -828,6 +828,12 @@ db_edit_node.o: ../mstl/m_pair.h
 db_edit_node.o: ../mstl/m_pair.ipp
 db_edit_node.o: ../mstl/m_map.ipp
 db_edit_node.o: db_comment.ipp
+db_edit_node.o: db_annotation.h
+db_edit_node.o: db_annotation.ipp
+db_edit_node.o: db_mark_set.h
+db_edit_node.o: db_mark.h
+db_edit_node.o: db_mark.ipp
+db_edit_node.o: db_mark_set.ipp
 db_edit_node.o: db_edit_node.ipp
 db_edit_node.o: db_move_node.h
 db_edit_node.o: ../mstl/m_set.h
@@ -835,12 +841,6 @@ db_edit_node.o: ../mstl/m_set.ipp
 db_edit_node.o: ../mstl/m_algorithm.h
 db_edit_node.o: ../mstl/m_algorithm.ipp
 db_edit_node.o: db_move_node.ipp
-db_edit_node.o: db_annotation.h
-db_edit_node.o: db_annotation.ipp
-db_edit_node.o: db_mark_set.h
-db_edit_node.o: db_mark.h
-db_edit_node.o: db_mark.ipp
-db_edit_node.o: db_mark_set.ipp
 db_edit_node.o: db_tag_set.h
 db_edit_node.o: db_tag_set.ipp
 db_edit_node.o: ../sys/sys_utf8_codec.h
@@ -1879,6 +1879,8 @@ db_pgn_writer.o: ../mstl/m_stack.h
 db_pgn_writer.o: ../mstl/m_stack.ipp
 db_pgn_writer.o: db_consumer.ipp
 db_pgn_writer.o: db_writer.ipp
+db_pgn_writer.o: ../sys/sys_utf8_codec.h
+db_pgn_writer.o: ../sys/sys_utf8_codec.ipp
 db_pgn_writer.o: ../mstl/m_ostream.h
 db_pgn_writer.o: ../mstl/m_ios.h
 db_pgn_writer.o: ../mstl/m_ios.ipp
@@ -3166,6 +3168,8 @@ sci/sci_consumer.o: db_reader.h
 sci/sci_consumer.o: db_producer.h
 sci/sci_consumer.o: db_producer.ipp
 sci/sci_consumer.o: db_reader.ipp
+sci/sci_consumer.o: ../sys/sys_utf8_codec.h
+sci/sci_consumer.o: ../sys/sys_utf8_codec.ipp
 sci/sci_decoder.o: sci/sci_decoder.h
 sci/sci_decoder.o: sci/sci_decoder_position.h
 sci/sci_decoder.o: db_board.h

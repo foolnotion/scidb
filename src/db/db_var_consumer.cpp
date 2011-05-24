@@ -57,15 +57,15 @@ void VarConsumer::endMoveSection(result::ID) {}
 
 
 void
-VarConsumer::sendComment(	Comment const& comment,
-									Comment const& preComment,
+VarConsumer::sendComment(	Comment const& preComment,
+									Comment const& comment,
 									Annotation const& annotation,
 									MarkSet const& marks)
 {
 	if (!preComment.isEmpty())
-		m_current->setPreComment(comment);
+		m_current->setComment(comment, move::Ante);
 	if (!comment.isEmpty())
-		m_current->setComment(comment);
+		m_current->setComment(comment, move::Post);
 	if (!annotation.isEmpty())
 		m_current->setAnnotation(annotation);
 	if (!marks.isEmpty())

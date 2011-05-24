@@ -313,7 +313,7 @@ Decoder::decodeVariation(unsigned flags)
 
 			case token::Comment:
 				if (flags & DatabaseCodec::Decode_Comments)
-					m_currentNode->setComment();
+					m_currentNode->setComment(move::Post);
 				break;
 		}
 	}
@@ -508,7 +508,7 @@ Decoder::decodeComments(MoveNode* node)
 				node->swapMarks(marks);
 			}
 
-			if (node->hasComment())
+			if (node->hasComment(move::Post))
 			{
 				mstl::string comment;
 				uint8_t flag = m_strm.get();
@@ -516,17 +516,17 @@ Decoder::decodeComments(MoveNode* node)
 				if (flag & 1)
 				{
 					m_strm.get(comment);
-					node->swapPreComment(comment);
+					node->swapComment(comment, move::Ante);
 				}
 
 				if (flag & 2)
 				{
 					m_strm.get(comment);
-					node->swapComment(comment);
+					node->swapComment(comment, move::Post);
 				}
 				else
 				{
-					node->unsetComment();
+					node->unsetComment(move::Post);
 				}
 			}
 

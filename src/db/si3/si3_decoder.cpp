@@ -334,7 +334,7 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 								{
 									// This is the last variation. Handle this comment as a pre-comment.
 									current->deleteVariation(current->countVariations() - 1);
-									m_currentNode->unsetComment();
+									m_currentNode->unsetComment(move::Ante);
 									// XXX but for next node!
 								}
 							}
@@ -356,7 +356,7 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 
 				case token::Comment:
 					if (flags & DatabaseCodec::Decode_Comments)
-						m_currentNode->setComment();
+						m_currentNode->setComment(move::Post);
 					break;
 			}
 		}
@@ -537,7 +537,7 @@ Decoder::decodeComments(MoveNode* node)
 	{
 		if (node->hasSupplement())
 		{
-			if (node->hasComment())
+			if (node->hasComment(move::Post))
 			{
 				mstl::string	comment;
 				mstl::string	result;
@@ -551,7 +551,7 @@ Decoder::decodeComments(MoveNode* node)
 					node->addAnnotation(nag::Diagram);
 
 				node->swapMarks(marks);
-				node->swapComment(result);
+				node->swapComment(result, move::Post);
 			}
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
@@ -687,14 +687,22 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 	M_ASSERT(node);
 
 	if (node->hasNote())
-		consumer.putComment(node->comment(), node->annotation(), node->marks());
+		consumer.putComment(node->comment(move::Post), node->annotation(), node->marks());
 
 	for (MoveNode* n = node->next(); n; n = n->next())
 	{
 		if (n->hasNote())
-			consumer.putMove(n->move(), n->annotation(), n->preComment(), n->comment(), n->marks());
+		{
+			consumer.putMove(	n->move(),
+									n->annotation(),
+									n->comment(move::Ante),
+									n->comment(move::Post),
+									n->marks());
+		}
 		else
+		{
 			consumer.putMove(n->move());
+		}
 
 		for (unsigned i = 0; i < n->variationCount(); ++i)
 		{

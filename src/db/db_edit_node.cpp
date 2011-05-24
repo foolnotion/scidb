@@ -75,7 +75,7 @@ Node::Type Space::type() const		{ return TSpace; }
 void Opening::visit(Visitor& visitor) const		{ visitor.opening(m_board, m_idn, m_eco); }
 void Languages::visit(Visitor& visitor) const	{ visitor.languages(m_langSet); }
 void Ply::visit(Visitor& visitor) const			{ visitor.move(m_moveNo, m_move); }
-void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_comment); }
+void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_position, m_comment); }
 void Annotation::visit(Visitor& visitor) const	{ visitor.annotation(m_annotation); }
 void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_marks); }
 
@@ -219,7 +219,8 @@ Comment::operator==(Node const* node) const
 	M_ASSERT(node);
 	M_ASSERT(dynamic_cast<Comment const*>(node));
 
-	return m_comment == static_cast<Comment const*>(node)->m_comment;
+	return	m_position == static_cast<Comment const*>(node)->m_position
+			&& m_comment == static_cast<Comment const*>(node)->m_comment;
 }
 
 
@@ -235,7 +236,7 @@ Comment::dump(unsigned level) const
 
 	::printf(mstl::string(2*level, ' ').c_str());
 	::printf("comment {");
-	::printf("%s", buf.c_str());
+	::printf("%s \"%s\"", m_position == move::Ante ? "ante" : "post", buf.c_str());
 	::printf("}\n");
 }
 
@@ -802,7 +803,8 @@ Move::Move(Work& work, db::Comment const& comment)
 
 		if (!comm.isEmpty())
 		{
-			m_list.push_back(new Comment(comm));
+			m_list.push_back(new Comment(comm, move::Post));
+
 			if (work.level == 0)
 			{
 				m_list.push_back(new Space(0));
@@ -814,6 +816,7 @@ Move::Move(Work& work, db::Comment const& comment)
 			{
 				work.spacing = PrefixSpace;
 			}
+
 			work.spacing |= SuppressBreak;
 			work.needMoveNo = true;
 		}
@@ -826,75 +829,30 @@ Move::Move(Work& work, MoveNode const* move)
 {
 	M_ASSERT(!move->atLineStart());
 
-	bool useMoveNo = work.board.whiteToMove() || work.needMoveNo;
+	bool atLineStart = move->prev()->atLineStart();
 
-	work.needMoveNo = false;
+	if (work.board.whiteToMove())
+		work.needMoveNo = true;
 
-//	if (move->hasPreComment())
-//	{
-//		db::Comment comment(move->preComment());
-//		comment.strip(*work.wantedLanguages);
-//
-//		if (!comment.isEmpty())
-//		{
-//			m_list.push_back(new Space(work.level, work.bracket));
-//			work.plyCount = 0;
-//			useMoveNo = true;
-//
-//			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
-//				m_list.push_back(new Space(0));
-//
-//			m_list.push_back(new Comment(comment));
-//			m_list.push_back(new Space(work.level));
-//
-//			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
-//				m_list.push_back(new Space(0));
-//
-//			work.spacing = NoSpace;
-//		}
-//	}
+	if (move->hasComment(move::Ante))
+	{
+		db::Comment comment(move->comment(move::Ante));
+		comment.strip(*work.wantedLanguages);
 
-	if (work.spacing & RequiredBreak)
-	{
-		m_list.push_back(new Space(0));
-		m_list.push_back(new Space(0, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (work.spacing & ForcedBreak)
-	{
-		m_list.push_back(new Space(0, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (work.spacing & PrefixBreak)
-	{
-		m_list.push_back(new Space(work.level, work.bracket));
-		work.plyCount = 0;
-		useMoveNo = true;
-	}
-	else if (work.displayStyle & display::ColumnStyle)
-	{
-		if (	!move->prev()->atLineStart()
-			&& work.level == 0
-			&& work.board.whiteToMove())
+		if (!comment.isEmpty())
 		{
-			m_list.push_back(new Space(0, work.bracket));
-			work.plyCount = 0;
-			useMoveNo = true;
-		}
-		else if (work.spacing & PrefixSpace)
-		{
-			m_list.push_back(new Space(work.bracket));
+			preSpacing(work, atLineStart);
+			work.spacing = putComment(work, comment, move::Ante);
+			work.needMoveNo = true;
+			atLineStart = false;
 		}
 	}
-	else if (work.spacing & PrefixSpace)
-	{
-		m_list.push_back(new Space(work.bracket));
-	}
 
-	m_ply = useMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
+	preSpacing(work, atLineStart);
+
+	m_ply = work.needMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
 	m_list.push_back(m_ply);
+	work.needMoveNo = false;
 
 	unsigned spacing = PrefixSpace;
 
@@ -912,43 +870,101 @@ Move::Move(Work& work, MoveNode const* move)
 		spacing = PrefixSpace;
 	}
 
-	if (move->hasComment())
+	if (move->hasComment(move::Post))
 	{
-		db::Comment comment(move->comment());
+		db::Comment comment(move->comment(move::Post));
 		comment.strip(*work.wantedLanguages);
 
 		if (!comment.isEmpty())
-		{
-			if (	work.level == 0
-				&& (	(work.displayStyle & display::ColumnStyle)
-					|| comment.size() > work.linebreakMinCommentLength))
-			{
-				if (	!(work.spacing & SuppressBreak)
-					&& !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
-				{
-					m_list.push_back(new Space(0));
-				}
-				m_list.push_back(new Space(0));
-				spacing = PrefixBreak;
-			}
-			else
-			{
-				m_list.push_back(new Space);
-				spacing = PrefixSpace;
-			}
-
-			m_list.push_back(new Comment(comment));
-			work.plyCount = 0;
-			work.needMoveNo = true;
-			spacing |= SuppressBreak;
-
-			if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
-				m_list.push_back(new Space(0));
-		}
+			spacing = putComment(work, comment, move::Post);
 	}
 
 	work.spacing = spacing;
 	work.bracket = None;
+}
+
+
+void
+Move::preSpacing(Work& work, bool atLineStart)
+{
+	if (work.spacing & RequiredBreak)
+	{
+		m_list.push_back(new Space(0));
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+		work.needMoveNo = true;
+	}
+	else if (work.spacing & ForcedBreak)
+	{
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+		work.needMoveNo = true;
+	}
+	else if (work.spacing & PrefixBreak)
+	{
+		m_list.push_back(new Space(work.level, work.bracket));
+		work.plyCount = 0;
+		work.needMoveNo = true;
+	}
+	else if (work.displayStyle & display::ColumnStyle)
+	{
+		if (	!atLineStart
+			&& work.level == 0
+			&& work.board.whiteToMove())
+		{
+			m_list.push_back(new Space(0, work.bracket));
+			work.plyCount = 0;
+			work.needMoveNo = true;
+		}
+		else if (work.spacing & PrefixSpace)
+		{
+			m_list.push_back(new Space(work.bracket));
+		}
+	}
+	else if (work.spacing & PrefixSpace)
+	{
+		m_list.push_back(new Space(work.bracket));
+	}
+}
+
+
+unsigned
+Move::putComment(Work& work, db::Comment const& comment, move::Position position)
+{
+	unsigned spacing;
+
+	if (	work.level == 0
+		&& (	(work.displayStyle & display::ColumnStyle)
+			|| comment.size() > work.linebreakMinCommentLength))
+	{
+		if (position == move::Post)
+		{
+			if (	!(work.spacing & SuppressBreak)
+				&& !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+			{
+				m_list.push_back(new Space(0));
+			}
+			m_list.push_back(new Space(0));
+		}
+
+		spacing = PrefixBreak;
+	}
+	else
+	{
+		if (position == move::Post)
+			m_list.push_back(new Space);
+
+		spacing = PrefixSpace;
+	}
+
+	m_list.push_back(new Comment(comment, position));
+	work.plyCount = 0;
+	work.needMoveNo = true;
+
+	if (work.level == 0 && !(work.displayStyle & (display::CompactStyle | display::NarrowLines)))
+		m_list.push_back(new Space(0));
+
+	return spacing | SuppressBreak;
 }
 
 
@@ -1231,10 +1247,11 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node, unsigned
 
 	result.reserve(2*node->countHalfMoves() + 10);
 	work.key.addPly(work.board.plyNumber());
-	result.push_back(new Move(work, node->comment()));
 
 	if (node->prev())
 		++work.level;
+
+	result.push_back(new Move(work, node->comment(move::Post)));
 
 	if (	(work.displayStyle & display::ShowDiagrams)
 		&& (	node->annotation().contains(nag::Diagram)

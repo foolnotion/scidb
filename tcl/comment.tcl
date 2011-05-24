@@ -27,7 +27,8 @@
 namespace eval comment {
 namespace eval mc {
 
-set CommentEditor				"Comment Editor"
+set CommentBeforeMove		"Comment before Move"
+set CommentAfterMove			"Comment after Move"
 set Language					"Language"
 set AllLanguages				"All languages"
 set AddLanguage				"Add language..."
@@ -110,7 +111,7 @@ foreach section {prefix suffix} {
 variable UndoIsWorking 0
 
 
-proc open {parent lang} {
+proc open {parent pos lang} {
 	variable UndoIsWorking
 	variable Annotations
 	variable Geometry
@@ -132,7 +133,8 @@ proc open {parent lang} {
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 
 	set Vars(widget:text) $top.text
-set Vars(key) [::scidb::game::position key]
+	set Vars(key) [::scidb::game::position key]
+	set Vars(pos) $pos
 	set Vars(lang) xx
 
 	text $top.text \
@@ -255,12 +257,14 @@ set Vars(key) [::scidb::game::position key]
 		-variable [namespace current]::Vars(lang) \
 		-value xx \
 		;
+	
+	if {$Vars(pos) eq "a"} { set titleVar CommentBeforeMove } else { set titleVar CommentAfterMove }
 
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
 	scan [wm grid $dlg] "%d %d" w h
 	wm minsize $dlg $w $h
-	wm title $dlg "$::scidb::app: $mc::CommentEditor"
+	wm title $dlg [set mc::$titleVar]
 	wm transient $dlg $parent
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
@@ -332,7 +336,7 @@ proc Accept {} {
 
 	set Vars(content) [ParseContent $Vars(lang)]
 	set Vars(comment) [::scidb::misc::xmlFromList $Vars(content)]
-	::scidb::game::update comment $Vars(key) $Vars(comment)
+	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
 	$Vars(widget:text) edit reset
 	$Vars(widget:text) edit modified no
 	set Vars(redo) 0
@@ -403,7 +407,7 @@ proc Init {parent lang} {
 
 	MakeCountryList
 
-	set Vars(comment) [::scidb::game::query comment]
+	set Vars(comment) [::scidb::game::query comment $Vars(pos)]
 	set Vars(langSet) [::scidb::game::query langSet]
 
 	SwitchLanguage $lang
@@ -688,7 +692,8 @@ proc LanguageChanged {dlg w} {
 	variable Vars
 
 	if {$dlg eq $w} {
-		wm title $dlg "$::scidb::app: $mc::CommentEditor"
+		if {$Vars(pos) eq "a"} { set titleVar CommentBeforeMove } else { set titleVar CommentAfterMove }
+		wm title $dlg [set mc::$titleVar]
 	}
 
 	set Vars(lang:label) [LanguageName]

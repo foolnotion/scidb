@@ -84,7 +84,7 @@ struct MyPipedProgress : public util::PipedProgress
 		Tcl_Obj* n = Tcl_NewIntObj(c);
 
 		Tcl_IncrRefCount(n);
-		invoke(__func__, m_cmd, m_arg, n, 0);
+		invoke(__func__, m_cmd, m_arg, n, NULL);
 		Tcl_DecrRefCount(n);
 	}
 

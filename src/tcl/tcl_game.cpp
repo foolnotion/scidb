@@ -203,6 +203,8 @@ public:
 			Tcl_IncrRefCount(m_close		= Tcl_NewStringObj(")",				-1));
 			Tcl_IncrRefCount(m_none			= Tcl_NewStringObj("",				-1));
 			Tcl_IncrRefCount(m_zero			= Tcl_NewIntObj(0));
+			Tcl_IncrRefCount(m_true			= Tcl_NewBooleanObj(1));
+			Tcl_IncrRefCount(m_false		= Tcl_NewBooleanObj(0));
 		}
 
 		Tcl_IncrRefCount(m_list = Tcl_NewListObj(0, 0));
@@ -419,12 +421,13 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
-	void comment(Comment const& comment)
+	void comment(move::Position position, Comment const& comment)
 	{
-		Tcl_Obj* objv[2];
+		Tcl_Obj* objv[3];
 
 		objv[0] = m_comment;
-		objv[1] = Tcl_NewStringObj(comment.content(), comment.content().size());
+		objv[1] = (position == move::Ante) ? m_true : m_false;
+		objv[2] = Tcl_NewStringObj(comment.content(), comment.content().size());
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
@@ -591,6 +594,8 @@ public:
 	static Tcl_Obj* m_close;
 	static Tcl_Obj* m_none;
 	static Tcl_Obj* m_zero;
+	static Tcl_Obj* m_true;
+	static Tcl_Obj* m_false;
 };
 
 
@@ -627,6 +632,8 @@ Tcl_Obj* Visitor::m_open			= 0;
 Tcl_Obj* Visitor::m_close			= 0;
 Tcl_Obj* Visitor::m_none			= 0;
 Tcl_Obj* Visitor::m_zero			= 0;
+Tcl_Obj* Visitor::m_true			= 0;
+Tcl_Obj* Visitor::m_false			= 0;
 
 
 struct Subscriber : public Game::Subscriber
@@ -705,7 +712,7 @@ struct Subscriber : public Game::Subscriber
 				::printf("===========================================\n");
 			}
 #endif
-			invoke(__func__, m_pgn, m_position, visitor.m_list, 0);
+			invoke(__func__, m_pgn, m_position, visitor.m_list, NULL);
 		}
 	}
 
@@ -722,7 +729,7 @@ struct Subscriber : public Game::Subscriber
 				::printf("===========================================\n");
 			}
 #endif
-			invoke(__func__, m_pgn, m_position, visitor.m_list, 0);
+			invoke(__func__, m_pgn, m_position, visitor.m_list, NULL);
 		}
 	}
 
@@ -734,11 +741,11 @@ struct Subscriber : public Game::Subscriber
 			pos::dumpBoard(board, pos);
 
 			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
-			invoke(__func__, m_board, m_position, m_set, b, 0);
+			invoke(__func__, m_board, m_position, m_set, b, NULL);
 		}
 
 		if (m_tree)
-			invoke(__func__, m_tree, m_position, 0);
+			invoke(__func__, m_tree, m_position, NULL);
 	}
 
 	void boardMove(Board const& board, Move const& move, bool forward)
@@ -817,7 +824,7 @@ struct Subscriber : public Game::Subscriber
 		pos::resetMoveCache();
 
 		if (m_tree)
-			invoke(__func__, m_tree, m_position, 0);
+			invoke(__func__, m_tree, m_position, NULL);
 	}
 
 	void updateMarks(mstl::string const& marks)
@@ -836,7 +843,7 @@ struct Subscriber : public Game::Subscriber
 
 			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), 0);
+			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), NULL);
 		}
 	}
 
@@ -857,7 +864,7 @@ struct Subscriber : public Game::Subscriber
 
 			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), 0);
+			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), NULL);
 		}
 
 		pos::resetMoveCache();
@@ -1707,7 +1714,13 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 't': setResult(Scidb.hasTrialMode(pos)); break;						// trial
 		case 'i': setResult(Scidb.game().idn()); break;								// idn
 		case 'f': setResult(Scidb.game().startBoard().toFen()); break;			// fen
-		case 'c': setResult(Scidb.game().comment()); break;							// comment
+
+		case 'c':			// comment
+			{
+				char const* pos = stringFromObj(objc, objv, nextArg);
+				setResult(Scidb.game().comment(*pos == 'a' ? move::Ante : move::Post));
+			}
+			break;
 
 		case 'm':
 			switch (cmd[1])
@@ -1760,12 +1773,14 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case 'l':	// langSet
-			if (objc >= 3)
+			if (objc >= 4)
 			{
-				char const* key	= stringFromObj(objc, objv, nextArg);
-				char const* lang	= stringFromObj(objc, objv, nextArg + 1);
+				char const* pos	= stringFromObj(objc, objv, nextArg);
+				char const* key	= stringFromObj(objc, objv, nextArg + 1);
+				char const* lang	= stringFromObj(objc, objv, nextArg + 2);
 
-				setResult(Scidb.game().containsLanguage(edit::Key(key), lang));
+				move::Position p = *pos == 'a' ? move::Ante : move::Post;
+				setResult(Scidb.game().containsLanguage(edit::Key(key), p, lang));
 			}
 			else
 			{
@@ -2112,7 +2127,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<key> <nag-list>",
 		"<key> <nag-list>",
 		"<key> <nag-list>",
-		"<key> <string>",
+		"<key> <position> <string>",
 		"<key> <type> <color> <from> <to>",
 		0
 	};
@@ -2167,7 +2182,11 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_Comment:
-			game.setComment(stringFromObj(objc, objv, 3));
+			{
+				char const* pos = stringFromObj(objc, objv, 3);
+				move::Position position = (*pos == 'a' ? move::Ante : move::Post);
+				game.setComment(stringFromObj(objc, objv, 4), position);
+			}
 			break;
 
 		case Cmd_Marks:

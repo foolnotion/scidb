@@ -636,7 +636,12 @@ PgnReader::process(Progress& progress)
 						else
 						{
 							consumer().startVariation();
+
+							if (m_comment.empty())
+								m_preComment.swap(m_comment);
+
 							token = nextToken(kStartVariation);
+
 							putComment();
 
 							if (token == kStartVariation)
@@ -650,6 +655,14 @@ PgnReader::process(Progress& progress)
 				}
 
 				putMove();
+
+				if (!m_preComment.empty())
+				{
+					// We have a comment after the last variation has finished,
+					// but no more moves. We will add a null move.
+					m_move = Move::null();
+					putMove();
+				}
 
 				if (token == kError)
 					unexpectedSymbol(kError, get());
@@ -1468,7 +1481,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				// strip values like "team-" or "team-tourn", but take into account that
 				// an entry like "tourn-blitz" contains the time mode.
-				unsigned n = value.find_first_of('-');
+				mstl::string::size_type n = value.find_first_of('-');
 
 				if (n != mstl::string::npos)
 				{
@@ -2048,7 +2061,8 @@ PgnReader::readTagValue(mstl::string& s)
 time::Mode
 PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
 {
-	unsigned field		= 0;
+	mstl::string::size_type field = 0;
+
 	unsigned seconds	= 0;
 	unsigned moves		= 0;
 
@@ -2230,6 +2244,8 @@ PgnReader::parseComment(Token prevToken, int c)
 			c = get();
 		while (::isspace(c));
 
+		::appendSpace(m_comment);
+
 		while (c != '}')
 		{
 			if (c == '\n' || c == '\r')
@@ -2253,6 +2269,8 @@ PgnReader::parseComment(Token prevToken, int c)
 		do
 			c = get();
 		while (::isspace(c) && c != '\n' && c != '\r');
+
+		::appendSpace(m_comment);
 
 		while (c && c != '\n' && c != '\r')
 		{
