@@ -203,34 +203,41 @@ proc_stream::proc_stream(string const& cmd)
 	:m_socket(-1)
 	,m_pid(0)
 {
-	int socks[2];
+	int socks[2] = { -1, -1 };
 
-	if (::socketpair(PF_LOCAL, SOCK_STREAM, 0, socks) < 0)
-		throw 0;
-
-	m_pid = ::fork();
-
-	if (m_pid == -1)
-		return;
-
-	if (m_pid == 0)
+	try
 	{
-		::close(socks[0]);
+		if (::socketpair(PF_LOCAL, SOCK_STREAM, 0, socks) < 0)
+			throw "socketpair() failed";
 
-		int sd = socks[1];
+		m_pid = ::fork();
 
-		if (sd != 0 && ::dup2(sd, 0) < 0) throw 0;
-		if (sd != 1 && ::dup2(sd, 1) < 0) throw 0;
+		if (m_pid == -1)
+			throw "fork() failed";
 
-		::close(sd);
-		::execl("/bin/sh", "sh", "-c", cmd.c_str(), static_cast<char*>(0));
+		if (m_pid == 0)
+		{
+			::close(socks[0]);
 
-		throw 0;
+			int sd = socks[1];
+
+			if ((sd != 0 && ::dup2(sd, 0) < 0) || (sd != 1 && ::dup2(sd, 1) < 0))
+				throw "dup2() failed";
+
+			::close(sd);
+			::execl("/bin/sh", "sh", "-c", cmd.c_str(), static_cast<char*>(0));
+
+			throw "execl() failed";
+		}
+
+		::close(socks[1]);
+		m_socket = socks[0];
+		m_fp = ::fopencookie(reinterpret_cast<void*>(intptr_t(m_socket)), "r+", m_sock_io);
 	}
-
-	::close(socks[1]);
-	m_socket = socks[0];
-	m_fp = ::fopencookie(reinterpret_cast<void*>(intptr_t(m_socket)), "r+", m_sock_io);
+	catch (char const* msg)
+	{
+		::fprintf(stderr, "%s\n", msg);
+	}
 
 	if (!m_fp)
 	{
@@ -245,13 +252,19 @@ proc_stream::~proc_stream() throw()
 	if (m_socket == -1)
 		return;
 
-	::fclose(m_fp);
-	m_fp = 0;
+	if (m_fp)
+	{
+		::fclose(m_fp);
+		m_fp = 0;
+	}
 
-	if (::waitpid(m_pid, 0, WNOHANG) == 0)
-		::kill(m_pid, SIGTERM);
+	if (m_pid)
+	{
+		if (::waitpid(m_pid, 0, WNOHANG) == 0)
+			::kill(m_pid, SIGTERM);
 
-	::waitpid(m_pid, 0, 0);
+		::waitpid(m_pid, 0, 0);
+	}
 }
 
 } // namespace
