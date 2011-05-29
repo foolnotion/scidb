@@ -430,6 +430,10 @@ public:
 	bool transpose(Force flag = OnlyIfRemainsConsistent);
 	/// Clean up variations.
 	unsigned cleanupVariations();
+	/// Set given variation folded/unfolded.
+	void setFolded(edit::Key const& key, unsigned variationNumber, bool flag = true);
+	/// Fold/unfold all variations.
+	void setFolded(bool flag = true);
 
 	// modification methods
 

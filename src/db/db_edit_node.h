@@ -487,8 +487,8 @@ public:
 	virtual void start(result::ID result) = 0;
 	virtual void finish(result::ID result) = 0;
 
-	virtual void startVariation(Key const& startKey, Key const& endKey) = 0;
-	virtual void endVariation(Key const& startKey, Key const& endKey) = 0;
+	virtual void startVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;
+	virtual void endVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;
 
 	virtual void startMove(Key const& key) = 0;
 	virtual void endMove(Key const& key) = 0;

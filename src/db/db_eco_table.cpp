@@ -949,7 +949,7 @@ EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) c
 	M_REQUIRE(isLoaded());
 
 	// IMPORTANT NOTE:
-	// If the line contains null moves this function will return the zero.
+	// If the line contains null moves this function will return zero.
 
 	Board		board(startBoard);
 	MoveList	moves;

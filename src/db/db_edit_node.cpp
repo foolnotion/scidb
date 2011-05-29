@@ -540,12 +540,15 @@ Variation::operator==(Node const* node) const
 void
 Variation::visit(Visitor& visitor) const
 {
-	visitor.startVariation(startKey(), endKey());
+	Key key(startKey());
+	key.removePly();
+
+	visitor.startVariation(key, startKey(), endKey());
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
 		m_list[i]->visit(visitor);
 
-	visitor.endVariation(startKey(), endKey());
+	visitor.endVariation(key, startKey(), endKey());
 }
 
 

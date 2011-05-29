@@ -652,7 +652,9 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 		char const* e = s + len;
 		char const* p;
 
+#ifdef FOREIGN_SOURCE
 		bool specialExpected = true;
+#endif
 
 		if (data->putLang == 1)
 		{
@@ -662,8 +664,39 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 
 		while (s < e)
 		{
-			if (isprint(*s))
+			if (s[0] & 0x80)
 			{
+				if (s[0] == '\xe2' && s[1] == '\x99' && ('\x94' <= s[2] && s[2] <= '\x99'))
+				{
+					switch (s[2])
+					{
+						case '\x94': data->result.append("<sym>K</sym>", 12); break;
+						case '\x95': data->result.append("<sym>Q</sym>", 12); break;
+						case '\x96': data->result.append("<sym>R</sym>", 12); break;
+						case '\x97': data->result.append("<sym>B</sym>", 12); break;
+						case '\x98': data->result.append("<sym>N</sym>", 12); break;
+						case '\x99': data->result.append("<sym>P</sym>", 12); break;
+					}
+
+					data->isXml = true;
+					data->isHtml = true;
+					s += 3;
+				}
+				else if ((p = sys::utf8::Codec::utfNextChar(s)) - s > 1)
+				{
+					data->result.append(s, p - s);
+					data->isHtml = true;
+					s = p;
+				}
+				else
+				{
+					data->result += '?';
+					++s;
+				}
+			}
+			else if (isprint(*s))
+			{
+#ifdef FOREIGN_SOURCE
 				if (isDelimChar(*s))
 				{
 					data->result += *s++;
@@ -741,36 +774,9 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 								break;
 					}
 				}
-			}
-			else if (s[0] & 0x80)
-			{
-				if (s[0] == '\xe2' && s[1] == '\x99' && ('\x94' <= s[2] && s[2] <= '\x99'))
-				{
-					switch (s[2])
-					{
-						case '\x94': data->result.append("<sym>K</sym>", 12); break;
-						case '\x95': data->result.append("<sym>Q</sym>", 12); break;
-						case '\x96': data->result.append("<sym>R</sym>", 12); break;
-						case '\x97': data->result.append("<sym>B</sym>", 12); break;
-						case '\x98': data->result.append("<sym>N</sym>", 12); break;
-						case '\x99': data->result.append("<sym>P</sym>", 12); break;
-					}
-
-					data->isXml = true;
-					data->isHtml = true;
-					s += 3;
-				}
-				else if ((p = sys::utf8::Codec::utfNextChar(s)) - s > 1)
-				{
-					data->result.append(s, p - s);
-					data->isHtml = true;
-					s = p;
-				}
-				else
-				{
-					data->result += '?';
-					++s;
-				}
+#else
+				data->result += *s++;
+#endif
 			}
 			else if (isspace(*s++))
 			{
