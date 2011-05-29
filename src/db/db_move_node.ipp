@@ -87,15 +87,6 @@ MoveNode::updateCommentFlags(move::Position position)
 
 inline
 void
-MoveNode::swapComment(mstl::string& str, move::Position position)
-{
-	m_comment[position].swap(str);
-	updateCommentFlags(position);
-}
-
-
-inline
-void
 MoveNode::swapComment(Comment& comment, move::Position position)
 {
 	m_comment[position].swap(comment);
@@ -108,16 +99,6 @@ void
 MoveNode::setComment(Comment const& comment, move::Position position)
 {
 	m_comment[position] = comment;
-	updateCommentFlags(position);
-}
-
-
-
-inline
-void
-MoveNode::setComment(mstl::string const& str, move::Position position)
-{
-	m_comment[position] = str;
 	updateCommentFlags(position);
 }
 

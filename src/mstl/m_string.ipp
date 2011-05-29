@@ -169,6 +169,17 @@ string::append(const_pointer s)
 
 inline
 string&
+string::append(string const& s, size_type sp, size_type len)
+{
+	M_REQUIRE(sp <= s.size());
+	M_REQUIRE(len == npos || sp + len <= s.size());
+
+	return append(s.c_str() + sp, len == npos ? s.size() - sp : len);
+}
+
+
+inline
+string&
 string::assign(const_pointer s)
 {
 	M_REQUIRE(s);

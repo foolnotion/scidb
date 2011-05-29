@@ -578,6 +578,7 @@ PgnReader::process(Progress& progress)
 				m_parsingFirstHdr = false;
 				m_comment.clear();
 				m_preComment.clear();
+				m_marks.clear();
 				m_site.clear();
 				m_annotation.clear();
 				m_timeMode = time::Unknown;
@@ -637,7 +638,7 @@ PgnReader::process(Progress& progress)
 						{
 							consumer().startVariation();
 
-							if (m_comment.empty())
+							if (m_comment.isEmpty())
 								m_preComment.swap(m_comment);
 
 							token = nextToken(kStartVariation);
@@ -656,7 +657,7 @@ PgnReader::process(Progress& progress)
 
 				putMove();
 
-				if (!m_preComment.empty())
+				if (!m_preComment.isEmpty())
 				{
 					// We have a comment after the last variation has finished,
 					// but no more moves. We will add a null move.
@@ -760,7 +761,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 	if (!msg.empty())
 	{
-		consumer().putComment(msg);
+		consumer().putComment(Comment(msg, false, false));
 
 		while (consumer().variationLevel() > 0)
 			consumer().finishVariation();
@@ -1026,14 +1027,15 @@ PgnReader::putMove()
 {
 	if (__builtin_expect(m_move, 1))
 	{
-		M_ASSERT(!m_hasNote == bool(m_preComment.empty() && m_comment.empty() && m_annotation.isEmpty()));
+		M_ASSERT(!m_hasNote ==
+			bool(m_preComment.isEmpty() && m_comment.isEmpty() && m_annotation.isEmpty()));
 
 		if (m_hasNote)
 		{
 			MarkSet marks;
-			marks.extractFromComment(m_preComment);
-			marks.extractFromComment(m_comment);
-			consumer().putMove(m_move, m_annotation, m_preComment, m_comment, marks);
+
+			consumer().putMove(m_move, m_annotation, m_preComment, m_comment, m_marks);
+			m_marks.clear();
 			m_comment.clear();
 			m_preComment.clear();
 			m_annotation.set(m_prefixAnnotation);
@@ -1053,12 +1055,9 @@ PgnReader::putMove()
 void
 PgnReader::putComment()
 {
-	if (m_hasNote && !(m_comment.empty() & m_annotation.isEmpty()))
+	if (m_hasNote && !(m_comment.isEmpty() & m_annotation.isEmpty()))
 	{
-		MarkSet marks;
-
-		marks.extractFromComment(m_comment);
-		consumer().putComment(m_comment, m_annotation, marks);
+		consumer().putComment(m_comment, m_annotation, m_marks);
 		m_comment.clear();
 		m_annotation.clear();
 		m_hasNote = false;
@@ -2154,16 +2153,16 @@ PgnReader::resultToken(result::ID result)
 
 
 void
-PgnReader::stripDiagram()
+PgnReader::stripDiagram(mstl::string& comment)
 {
-	if (m_comment.empty())
+	if (comment.empty())
 		return;
 
-	char const* s = m_comment.c_str();;
+	char const* s = comment.c_str();
 
 	if (s[0] == '#' && (m_comment.size() == 1 || ::isspace(s[1])))
 	{
-		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 1));
+		comment.erase(comment.begin(), ::skipSpaces(s + 1));
 		m_annotation.add(nag::Diagram);
 		m_hasNote = true;
 	}
@@ -2179,7 +2178,7 @@ PgnReader::stripDiagram()
 		if (::strncmp(s, "{#}", 3) != 0)
 			return;
 
-		m_comment.erase(m_comment.begin(), ::skipSpaces(s + 3));
+		comment.erase(comment.begin(), ::skipSpaces(s + 3));
 		m_annotation.add(nag::Diagram);
 		m_hasNote = true;
 	}
@@ -2235,6 +2234,8 @@ PgnReader::parseComment(Token prevToken, int c)
 {
 	// Comment: '{' ... '}'
 
+	mstl::string content;
+
 	m_prevPos = m_currPos;
 
 	if (c == '{')
@@ -2244,13 +2245,11 @@ PgnReader::parseComment(Token prevToken, int c)
 			c = get();
 		while (::isspace(c));
 
-		::appendSpace(m_comment);
-
 		while (c != '}')
 		{
 			if (c == '\n' || c == '\r')
 			{
-				::appendSpace(m_comment);
+				::appendSpace(content);
 
 				do
 					c = get();
@@ -2258,7 +2257,7 @@ PgnReader::parseComment(Token prevToken, int c)
 			}
 			else
 			{
-				m_comment += c;
+				content += c;
 				c = get();
 			}
 		}
@@ -2270,11 +2269,9 @@ PgnReader::parseComment(Token prevToken, int c)
 			c = get();
 		while (::isspace(c) && c != '\n' && c != '\r');
 
-		::appendSpace(m_comment);
-
 		while (c && c != '\n' && c != '\r')
 		{
-			m_comment += c;
+			content += c;
 			c = get();
 		}
 
@@ -2285,80 +2282,76 @@ PgnReader::parseComment(Token prevToken, int c)
 			putback(c);
 	}
 
-	m_comment.trim();
-	stripDiagram();
+	content.trim();
+	stripDiagram(content);
 
-	if (!m_comment.empty())
+	switch (content.size())
 	{
-		Comment comment;
+		case 1:
+			switch (content[0])
+			{
+				case 'N':
+					if (prevToken & PartOfMove)
+					{
+						putNag(nag::Novelty);
+						return kNag;
+					}
+					break;
 
-		if (comment.fromHtml(m_comment))
-		{
-			comment.swap(m_comment);
-		}
-		else
-		{
-			mstl::string str;
+				case 'D':
+					if (!m_annotation.contains(nag::Diagram))
+					{
+						putNag(nag::Diagram);
+						return kNag;
+					}
+					break;
+			}
+			break;
 
-			Comment::convertCommentToXml(m_comment, str, Comment::Latin1);
-			Comment comment;
-			comment.swap(str);
+		case 2:
+			switch (content[0])
+			{
+				case 'D':
+					if (content[1] == '\'')
+					{
+						putNag(nag::DiagramFromBlack);
+						return kNag;
+					}
+					break;
+
+				case 'R':
+					if (content[1] == 'R')
+					{
+						putNag(nag::EditorsRemark);
+						return kNag;
+					}
+					break;
+			}
+			break;
+	}
+
+	Comment comment;
+
+	if (!content.empty())
+	{
+		m_marks.extractFromComment(content);
+
+		if (!comment.fromHtml(content))
+		{
+			comment.clear();
+			convertToUtf(content);
+			Comment::convertCommentToXml(
+				content, comment, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
 			comment.normalize();
-			comment.swap(m_comment);
-			convertToUtf(m_comment);
-		}
-
-		switch (m_comment.size())
-		{
-			case 1:
-				switch (m_comment[0])
-				{
-					case 'N':
-						if (prevToken & PartOfMove)
-						{
-							m_comment.clear();
-							putNag(nag::Novelty);
-							return kNag;
-						}
-						break;
-
-					case 'D':
-						if (!m_annotation.contains(nag::Diagram))
-						{
-							m_comment.clear();
-							putNag(nag::Diagram);
-							return kNag;
-						}
-						break;
-				}
-				break;
-
-			case 2:
-				switch (m_comment[0])
-				{
-					case 'D':
-						if (m_comment[1] == '\'')
-						{
-							m_comment.clear();
-							putNag(nag::DiagramFromBlack);
-							return kNag;
-						}
-						break;
-
-					case 'R':
-						if (m_comment[1] == 'R')
-						{
-							m_comment.clear();
-							putNag(nag::EditorsRemark);
-							return kNag;
-						}
-						break;
-				}
-				break;
 		}
 
 		m_hasNote = true;
 	}
+
+	if (m_comment.isEmpty())
+		m_comment.swap(comment);
+	else
+		m_comment.append(comment, ' ');
 
 	return kComment;
 }

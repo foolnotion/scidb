@@ -315,7 +315,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mstl::string const& most = info.mostFrequentPlayer().name();
 
 			if (info.move())
-				info.move().printSan(move, Move::Unicode);
+				info.move().printSan(move, encoding::Utf8);
 			else if (i < objc)
 				move = "end";
 

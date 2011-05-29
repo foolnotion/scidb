@@ -960,7 +960,7 @@ proc Focus {dlg mode} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Position
+	::options::writeList $chan [namespace current]::Position
 }
 
 

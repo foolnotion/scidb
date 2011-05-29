@@ -209,6 +209,14 @@ DatabaseCodec::putGame(ByteStream const&)
 }
 
 
+unsigned
+DatabaseCodec::putGame(ByteStream const&, unsigned, unsigned)
+{
+	M_RAISE("should not be used");
+	return 0;
+}
+
+
 util::ByteStream
 DatabaseCodec::getGame(GameInfo const&)
 {
@@ -267,7 +275,7 @@ DatabaseCodec::doClear(mstl::string const&)
 
 
 save::State
-DatabaseCodec::doDecoding(Consumer&, ByteStream&, unsigned, TagSet&)
+DatabaseCodec::doDecoding(Consumer&, ByteStream&/*, unsigned*/, TagSet&)
 {
 	M_RAISE("should not be used");
 	return save::UnsupportedVariant;
@@ -376,7 +384,7 @@ DatabaseCodec::modified(mstl::string const& rootname) const
 
 
 uint32_t
-DatabaseCodec::computeChecksum(unsigned, GameInfo const&, uint32_t crc) const
+DatabaseCodec::computeChecksum(/*unsigned, */GameInfo const&, uint32_t crc) const
 {
 	return crc == 0 ? 1 : crc;	// do not use zero!
 }
@@ -499,10 +507,17 @@ DatabaseCodec::useAsyncReader(bool flag)
 
 
 void
-DatabaseCodec::decodeGame(unsigned flags, GameData& data, GameInfo& info)
+DatabaseCodec::sync()
+{
+	// no action
+}
+
+
+void
+DatabaseCodec::decodeGame(/*unsigned flags, */GameData& data, GameInfo& info)
 {
 	M_REQUIRE(isOpen());
-	doDecoding(flags, data, info);
+	doDecoding(/*flags, */data, info);
 }
 
 
@@ -517,16 +532,16 @@ DatabaseCodec::encodeGame(util::ByteStream& strm, GameData const& data, Signatur
 
 
 save::State
-DatabaseCodec::exportGame(Consumer& consumer, ByteStream& strm, unsigned flags, TagSet& tags)
+DatabaseCodec::exportGame(Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
 {
-	return doDecoding(consumer, strm, flags, tags);
+	return doDecoding(consumer, strm/*, flags*/, tags);
 }
 
 
 save::State
-DatabaseCodec::exportGame(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+DatabaseCodec::exportGame(Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
 {
-	return doDecoding(consumer, flags, tags, info);
+	return doDecoding(consumer/*, flags*/, tags, info);
 }
 
 
@@ -552,7 +567,7 @@ DatabaseCodec::addGame(ByteStream& gameData, TagSet const& tags, Consumer& consu
 	{
 		TagSet myTags(tags);
 		GameInfo::setupTags(myTags, consumer);
-		state = exportGame(*consumer.consumer(), gameData, DatabaseCodec::Decode_All, myTags);
+		state = exportGame(*consumer.consumer(), gameData, /*DatabaseCodec::Decode_All, */myTags);
 	}
 	else
 	{
@@ -578,6 +593,43 @@ DatabaseCodec::addGame(ByteStream& gameData, TagSet const& tags, Consumer& consu
 	}
 
 	return state;
+}
+
+
+save::State
+DatabaseCodec::saveMoves(util::ByteStream const& gameData, Provider const& provider)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(provider.index() >= 0);
+
+	GameInfo* info = m_db->m_gameInfoList[provider.index()];
+
+	if (gameData.size() > maxGameRecordLength())
+		return save::GameTooLong;
+	if (provider.plyCount() > maxGameLength())
+		return save::GameTooLong;
+
+	unsigned gameOffset = putGame(gameData, info->gameOffset(), info->gameRecordLength());
+
+	switch (gameOffset)
+	{
+		case util::BlockFile::MaxFileSizeExceeded:
+			IO_RAISE(Game, Max_File_Size_Exceeded, "maximal file size (2 GB) exceeded");
+
+		case util::BlockFile::SyncFailed:
+			IO_RAISE(Game, Write_Failed, "sync failed");
+
+		case util::BlockFile::ReadError:
+			IO_RAISE(Game, Read_Error, "read error");
+
+		case util::BlockFile::IllegalOffset:
+			IO_RAISE(Game, Write_Failed, "offset failure (internal error)");
+	}
+
+	info->setup(gameOffset, gameData.size());
+	sync();
+
+	return save::Ok;
 }
 
 
@@ -669,7 +721,15 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 
 	unsigned gameOffset = 0; // shut up compiler
 
-	if (failed || int(gameOffset = putGame(gameData)) < 0)
+	if (!failed)
+	{
+		if (info)
+			gameOffset = putGame(gameData, info->gameOffset(), info->gameRecordLength());
+		else
+			gameOffset = putGame(gameData);
+	}
+
+	if (failed || int(gameOffset) < 0)
 	{
 		if (info)
 			info->restore(*m_storedInfo, m_db->m_namebases);

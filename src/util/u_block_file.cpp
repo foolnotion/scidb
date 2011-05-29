@@ -64,6 +64,7 @@ BlockFileReader::Buffer::Buffer()
 	:m_capacity(0)
 	,m_size(0)
 	,m_number(BlockFile::InvalidBlock)
+	,m_span(0)
 	,m_data(0)
 {
 }
@@ -150,7 +151,7 @@ BlockFile::BlockFile(unsigned blockSize, Mode mode, mstl::string const& magic)
 	,m_isClosed(false)
 	,m_countWrites(0)
 {
-	M_REQUIRE(blockSize && !(blockSize & (blockSize - 1)));	// blockSize must be power of two
+	M_REQUIRE(mstl::is_pow_2(blockSize));
 	M_REQUIRE(magic.size() < blockSize);
 
 	putMagic(magic);
@@ -195,6 +196,7 @@ BlockFile::putMagic(mstl::string const& magic)
 	resize(m_view, 1);
 	m_view.m_buffer.m_size = magic.size() + 1;
 	m_view.m_buffer.m_number = 0;
+	m_view.m_buffer.m_span = 1;
 
 	::memcpy(m_view.m_buffer.m_data, magic.c_str(), magic.size() + 1);
 
@@ -403,90 +405,38 @@ BlockFile::resize(View& view, unsigned span)
 
 
 unsigned
-BlockFile::fetch(View& view, unsigned blockNumber, unsigned offset, unsigned span)
+BlockFile::fetch(View& view, unsigned blockNumber, unsigned span)
 {
 	M_ASSERT(isOpen());
 	M_ASSERT(countBlocks() > 0);
 	M_ASSERT(blockNumber < m_sizeInfo.size());
 	M_ASSERT(blockNumber + span <= countBlocks());
-	M_ASSERT(offset < m_blockSize);
 
-	unsigned size = 0;
-
-	if (view.m_buffer.m_number != blockNumber)
+	if (view.m_buffer.m_number != blockNumber || view.m_buffer.m_span < span)
 	{
 		if (m_stream)
 		{
 			if (m_isDirty && !sync())
 				return SyncFailed;
 
-			if (m_mode == ReadWriteLength)
+			M_ASSERT(span > 0);
+
+			if (span > 1)
 			{
-				m_stream->seekg(fileOffset(blockNumber), mstl::ios_base::beg);
-
-				view.m_buffer.m_size = m_sizeInfo[blockNumber];
-				resize(view, 1);
-
-				if (__builtin_expect(!m_stream->read(view.m_buffer.m_data, view.m_buffer.m_size), 0))
-					return ReadError;
-
-				if (offset >= m_blockSize - 3)
-					return IllegalOffset;
-
-				size = ::getUint24(view.m_buffer.m_data + offset);
-				span = countSpans(size);
-
-				if (span > 1)
-				{
-					M_ASSERT(m_sizeInfo[blockNumber] <= span*m_blockSize);
-
-					if (offset > 0)
-						return IllegalOffset;
-
-					m_sizeInfo[blockNumber] = span*m_blockSize;
-
-					if (resize(view, span))
-					{
-						m_stream->seekg(fileOffset(blockNumber), mstl::ios_base::beg);
-						view.m_buffer.m_size = m_sizeInfo[blockNumber];
-
-						if (__builtin_expect(!m_stream->read(view.m_buffer.m_data, view.m_buffer.m_size), 0))
-							return ReadError;
-					}
-					else
-					{
-						M_ASSERT(view.m_buffer.m_size > m_blockSize);
-
-						if (__builtin_expect(!m_stream->read(	view.m_buffer.m_data + m_blockSize,
-																			view.m_buffer.m_size - m_blockSize), 0))
-						{
-							return ReadError;
-						}
-					}
-				}
+				M_ASSERT(m_sizeInfo[blockNumber] <= span*m_blockSize);
+				m_sizeInfo[blockNumber] = span*m_blockSize;
 			}
-			else
-			{
-				M_ASSERT(span > 0);
 
-				if (span > 1)
-				{
-					if (offset > 0)
-						return IllegalOffset;
-					M_ASSERT(m_sizeInfo[blockNumber] <= span*m_blockSize);
-					m_sizeInfo[blockNumber] = span*m_blockSize;
-				}
+			m_stream->seekg(blockNumber*m_blockSize, mstl::ios_base::beg);
 
-				m_stream->seekg(blockNumber*m_blockSize, mstl::ios_base::beg);
+			resize(view, span);
+			view.m_buffer.m_size = m_sizeInfo[blockNumber];
+			view.m_buffer.m_span = span;
 
-				resize(view, span);
-				view.m_buffer.m_size = m_sizeInfo[blockNumber];
+			if (__builtin_expect(!m_stream->read(view.m_buffer.m_data, view.m_buffer.m_size), 0))
+				return ReadError;
 
-				if (__builtin_expect(!m_stream->read(view.m_buffer.m_data, view.m_buffer.m_size), 0))
-					return ReadError;
-
-				view.m_countReads += span;
-			}
+			view.m_countReads += span;
 		}
 		else
 		{
@@ -494,35 +444,47 @@ BlockFile::fetch(View& view, unsigned blockNumber, unsigned offset, unsigned spa
 
 			view.m_buffer.m_size = m_sizeInfo[blockNumber];
 			view.m_buffer.m_data = m_cache[blockNumber];
-
-			if (m_mode == ReadWriteLength)
-				size = ::getUint24(view.m_buffer.m_data + offset);
 		}
 
 		view.m_buffer.m_number = blockNumber;
 	}
-	else if (m_mode == ReadWriteLength)
-	{
-		size = ::getUint24(view.m_buffer.m_data + offset);
-	}
 
-	return size;
+	return 0;
+}
+
+
+unsigned
+BlockFile::retrieve(View& view, unsigned blockNumber, unsigned offset)
+{
+	M_ASSERT(isOpen());
+	M_ASSERT(countBlocks() > 0);
+	M_ASSERT(blockNumber < m_sizeInfo.size());
+	M_ASSERT(blockNumber < countBlocks());
+	M_ASSERT(offset < m_blockSize);
+	M_ASSERT(m_mode == ReadWriteLength);
+
+	if (unsigned rc = fetch(view, blockNumber, 1))
+		return rc;
+
+	return ::getUint24(view.m_buffer.m_data + offset);
 }
 
 
 void
-BlockFile::copy(ByteStream const& buf, unsigned nbytes)
+BlockFile::copy(ByteStream const& buf, unsigned offset, unsigned nbytes)
 {
 	M_ASSERT(isInSyncMode());
 
+	unsigned char* data = m_view.m_buffer.m_data + offset;
+
 	if (m_mode == ReadWriteLength)
 	{
-		::putUint24(m_view.m_buffer.m_data + m_view.m_buffer.m_size, nbytes);
-		::memcpy(m_view.m_buffer.m_data + m_view.m_buffer.m_size + 3, buf.data(), nbytes - 3);
+		::putUint24(data, nbytes);
+		::memcpy(data + 3, buf.data(), nbytes - 3);
 	}
 	else
 	{
-		::memcpy(m_view.m_buffer.m_data + m_view.m_buffer.m_size, buf.data(), nbytes);
+		::memcpy(data, buf.data(), nbytes);
 	}
 }
 
@@ -551,7 +513,7 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 
 	if (m_mode == ReadWriteLength)
 	{
-		minSize = fetch(m_view, blockNo, blockOffset(offset), 0);
+		minSize = retrieve(m_view, blockNo, blockOffset(offset));
 
 		if (minSize > MaxFileSize)
 			return minSize;	// it's an error code
@@ -564,19 +526,16 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 
 	if (nbytes <= minSize)
 	{
-		unsigned size = fetch(m_view, blockNo, 0);
-
-		if (size > MaxFileSize)
-			return size;	// it's an error code
-
-		copy(buf, nbytes);
-		::zero(m_view.m_buffer.m_data + nbytes, nbytes - minSize);
+		resize(m_view, newSpan);
+		copy(buf, offset, nbytes);
+		::zero(m_view.m_buffer.m_data + offset + minSize, minSize - nbytes);
 		m_isDirty = true;
 
 		if (newSpan < oldSpan)
 		{
 			m_view.m_buffer.m_capacity = fileOffset(newSpan);
 			m_view.m_buffer.m_size = nbytes;
+			m_view.m_buffer.m_span = newSpan;
 
 			unsigned span = oldSpan - newSpan - 1;
 
@@ -592,38 +551,34 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 			}
 			else
 			{
-				size = fetch(m_view, blockNo + newSpan, minSize);
-
-				if (size > MaxFileSize)
-					return size;	// it's an error code
+				if (unsigned rc = fetch(m_view, blockNo + newSpan))
+					return rc;
 
 				m_view.m_buffer.m_size = 0;
 				m_view.m_buffer.m_capacity = fileOffset(span);
 				m_sizeInfo[m_view.m_buffer.m_number] = 0;
 			}
 		}
-		else if (m_view.m_buffer.m_size == minSize)
+		else if (m_view.m_buffer.m_size == blockOffset(offset) + minSize)
 		{
-			m_view.m_buffer.m_size = nbytes;
-
-			if (m_view.m_buffer.m_number + newSpan == countBlocks())
-				m_sizeInfo[m_view.m_buffer.m_number] = nbytes;
+			m_sizeInfo[m_view.m_buffer.m_number] = (m_view.m_buffer.m_size -= minSize - nbytes);
 		}
 	}
 	else if (	blockNo == countBlocks() - 1
 				&& m_sizeInfo[blockNo] == blockOffset(offset) + minSize
 				&& ::modulo(offset, m_mask) + nbytes <= m_blockSize)
 	{
-		unsigned size = fetch(m_view, blockNo, minSize);
-
-		if (size > MaxFileSize)
-			return size;	// it's an error code
-
-		copy(buf, nbytes);
+		resize(m_view, newSpan);
+		copy(buf, offset, nbytes);
 		m_isDirty = true;
-		m_view.m_buffer.m_size += nbytes - minSize;
-		m_sizeInfo[blockNo] = m_view.m_buffer.m_size;
+		m_sizeInfo[blockNo] = (m_view.m_buffer.m_size += nbytes - minSize);
 	}
+	// TODO:
+	// else if (	newSpan > 1
+	//				&& (newSpan == oldSpan || blockNo + oldSpan == countBlocks())
+	//				&& m_sizeInfo[blockNo + oldSpan - 1] == ::modulo(offset + minSize, m_mask))
+	// {
+	// }
 	else
 	{
 		offset = put(buf);
@@ -670,7 +625,8 @@ BlockFile::put(ByteStream const& buf)
 		}
 		else if ((m_view.m_buffer.m_size = m_sizeInfo.back()) + nbytes <= m_blockSize)
 		{
-			fetch(m_view, m_sizeInfo.size() - 1, 0, span);
+			if (unsigned rc = fetch(m_view, m_sizeInfo.size() - 1, span))
+				return rc;
 		}
 	}
 
@@ -685,10 +641,8 @@ BlockFile::put(ByteStream const& buf)
 	else if (lastBlockSize() + nbytes <= m_blockSize)
 	{
 		// use last block
-		unsigned size = fetch(m_view, countBlocks() - 1, 0);
-
-		if (size > MaxFileSize)
-			return size;	// it's an error code
+		if (unsigned rc = fetch(m_view, countBlocks() - 1))
+			return rc;
 	}
 	else
 	{
@@ -730,7 +684,7 @@ BlockFile::put(ByteStream const& buf)
 	M_ASSERT(m_view.m_buffer.m_size + nbytes <= m_view.m_buffer.m_capacity);
 	M_ASSERT(m_view.m_buffer.m_size + nbytes <= m_blockSize || nbytes > m_blockSize);
 
-	copy(buf, nbytes);
+	copy(buf, m_view.m_buffer.m_size, nbytes);
 	m_isDirty = true;
 
 	unsigned offset = fileOffset(m_view.m_buffer.m_number) + m_view.m_buffer.m_size;
@@ -739,7 +693,6 @@ BlockFile::put(ByteStream const& buf)
 
 	m_view.m_buffer.m_size += nbytes;
 	m_sizeInfo[m_view.m_buffer.m_number + span - 1] = ::modulo(m_view.m_buffer.m_size, m_mask);
-
 	return offset;
 }
 
@@ -749,14 +702,22 @@ BlockFile::get(View& view, ByteStream& result, unsigned offset, unsigned size)
 {
 	if (m_mode == ReadWriteLength)
 	{
-		size = fetch(view, blockNumber(offset), blockOffset(offset), 0);
+		size = retrieve(view, blockNumber(offset), blockOffset(offset));
 
 		if (size <= MaxFileSize)	// otherwise it's an error code
+		{
+			if (unsigned span	= countSpans(size) > 1)
+			{
+				if (unsigned rc = fetch(view, blockNumber(offset), span))
+					return rc;
+			}
+
 			result.setup(view.m_buffer.m_data + blockOffset(offset) + 3, size - 3);
+		}
 	}
 	else if (size > 0)
 	{
-		unsigned rc = fetch(view, blockNumber(offset), blockOffset(offset), countSpans(size));
+		unsigned rc = fetch(view, blockNumber(offset), countSpans(size));
 
 		if (rc <= MaxFileSize)	// otherwise it's an error code
 			result.setup(view.m_buffer.m_data + blockOffset(offset), size);

@@ -43,6 +43,7 @@
 
 #include "m_assert.h"
 #include "m_bit_functions.h"
+#include "m_static_check.h"
 
 using namespace db;
 using namespace db::si3;
@@ -89,64 +90,19 @@ Encoder::doEncoding(Signature const& signature, GameData const& data)
 {
 	Byte flags = 0;
 
-	if (!data.m_startBoard.isStandardPosition())	flags |= flags::Non_Standard_Start;
-	if (signature.hasPromotion())						flags |= flags::Promotion;
-	if (signature.hasUnderPromotion())				flags |= flags::Under_Promotion;
+	if (!data.m_startBoard.isStandardPosition())
+		flags |= flags::Non_Standard_Start;
+	if (signature.hasPromotion())
+		flags |= flags::Promotion;
+	if (signature.hasUnderPromotion())
+		flags |= flags::Under_Promotion;
 
 	setup(data.m_startBoard);
 	encodeTags(data.m_tags);
 	m_strm.put(flags);
 	encodeVariation(data.m_startNode);
-	encodeComments(data.m_startNode);
+	encodeComments(data.m_startNode, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
 	m_strm.provide();
-}
-
-
-void
-Encoder::encodeComments(MoveNode* node)
-{
-	M_ASSERT(node);
-
-	mstl::string buf;
-
-	for (node = node->next(); node; node = node->next())
-	{
-		if (node->hasSupplement())
-		{
-			if (node->hasComment(move::Post) || node->hasMark())
-			{
-				mstl::string comment;
-
-				if (node->hasComment(move::Post))
-				{
-					node->comment(move::Post).flatten(
-						comment,
-						m_codec.isUtf8() ? Comment::Unicode : Comment::Latin1);
-					m_codec.fromUtf8(comment, comment);
-//					PgnWriter::convertExtensions(comment, PgnWriter::Mode_Extended);
-				}
-
-				if (node->hasMark())
-				{
-					if (!comment.empty())
-						comment += ' ';
-
-					MarkSet const& marks = node->marks();
-
-					for (unsigned i = 0; i < marks.count(); ++i)
-						marks[i].toString(comment);
-				}
-
-				m_strm.put(comment, comment.size() + 1);
-			}
-
-			if (node->hasVariation())
-			{
-				for (unsigned i = 0; i < node->variationCount(); ++i)
-					encodeComments(node->variation(i));
-			}
-		}
-	}
 }
 
 
@@ -473,6 +429,12 @@ Encoder::encodePawn(Move const& move)
 		// move.promotedPiece() must be Queen=2, Rook=3, Bishop=4 or Knight=5.
 		// We add 3 for Queen, 6 for Rook, 9 for Bishop, 12 for Knight.
 
+		M_STATIC_CHECK(	piece::Queen == 2
+							&& piece::Rook == 3
+							&& piece::Bishop == 4
+							&& piece::Knight == 5,
+							Reimplementation_Needed);
+
 		M_ASSERT(2 <= move.promoted() && move.promoted() <= 5);
 		value += 3*(move.promoted() - 1);
 	}
@@ -500,42 +462,148 @@ Encoder::encodeMove(Move const& move)
 
 
 void
-Encoder::encodeVariation(MoveNode const* node, unsigned level)
+Encoder::putComment(mstl::string& buf)
 {
-	if (node->hasComment(move::Post) || node->hasMark())
-		m_strm.put(token::Comment);
+	m_codec.fromUtf8(buf, buf);
+//	PgnWriter::convertExtensions(buf, PgnWriter::Mode_Extended);
+	m_strm.put(buf, buf.size() + 1);
+	buf.clear();
+}
+
+
+void
+Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
+{
+	M_ASSERT(node);
+
+	mstl::string buf;
+
+	if (node->hasComment(move::Post))
+		node->comment(move::Post).flatten(buf, encoding);
 
 	for (node = node->next(); node; node = node->next())
 	{
-		encodeMove(node->move());
-		m_position.doMove(node->move());
-
-		Annotation const& annotation = node->annotation();
-
-		for (unsigned i = 0; i < annotation.count(); ++i)
+		if (node->hasComment(move::Ante))
 		{
-			int nag = nag::toScid3(annotation[i]);
+			if (!buf.empty())
+				buf += ' ';
+			node->comment(move::Ante).flatten(buf, encoding);
+		}
 
-			if (nag != nag::Null)
+		if (!buf.empty())
+			putComment(buf);
+
+		if (node->hasSupplement())
+		{
+			if (node->hasComment(move::Post))
+				node->comment(move::Post).flatten(buf, encoding);
+
+			if (node->hasMark())
 			{
-				m_strm.put(token::Nag);
-				m_strm.put(nag);
+				if (!buf.empty())
+					buf += ' ';
+
+				MarkSet const& marks = node->marks();
+
+				for (unsigned i = 0; i < marks.count(); ++i)
+					marks[i].toString(buf);
+			}
+
+			if (node->hasVariation())
+			{
+				if (!buf.empty())
+					putComment(buf);
+
+				for (unsigned i = 0; i < node->variationCount(); ++i)
+					encodeComments(node->variation(i), encoding);
+			}
+		}
+	}
+
+	if (!buf.empty())
+		putComment(buf);
+}
+
+
+void
+Encoder::encodeVariation(MoveNode const* node, unsigned level)
+{
+	bool pendingComment = node->hasComment(move::Post) || node->hasMark();
+	bool afterVariation = false;
+
+	for (node = node->next(); node; node = node->next())
+	{
+		if (pendingComment || node->hasComment(move::Ante))
+		{
+			if (afterVariation)
+			{
+				m_strm.put(token::Start_Marker);
+				m_strm.put(token::Comment);
+				m_strm.put(token::End_Marker);
+			}
+			else
+			{
+				m_strm.put(token::Comment);
 			}
 		}
 
-		if (node->hasComment(move::Post) || node->hasMark())
-			m_strm.put(token::Comment);
+		encodeMove(node->move());
+		m_position.doMove(node->move());
+		afterVariation = false;
 
-		for (unsigned i = 0; i < node->variationCount(); ++i)
+		Annotation const& annotation = node->annotation();
+
+		if (node->hasAnnotation())
 		{
-			MoveNode const* var = node->variation(i);
+			for (unsigned i = 0; i < annotation.count(); ++i)
+			{
+				int nag = nag::toScid3(annotation[i]);
 
-			m_position.push();
-			m_position.undoMove(node->move());
-			m_strm.put(token::Start_Marker);
-			encodeVariation(var, level + 1);
-			m_position.pop();
+				if (nag != nag::Null)
+				{
+					m_strm.put(token::Nag);
+					m_strm.put(nag);
+				}
+			}
 		}
+
+		pendingComment = node->hasComment(move::Post) || node->hasMark();
+
+		if (node->hasVariation())
+		{
+			if (pendingComment)
+			{
+				m_strm.put(token::Comment);
+				pendingComment = false;
+			}
+
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+			{
+				MoveNode const* var = node->variation(i);
+
+				m_position.push();
+				m_position.undoMove(node->move());
+				m_strm.put(token::Start_Marker);
+				encodeVariation(var, level + 1);
+				m_position.pop();
+			}
+
+			afterVariation = true;
+		}
+	}
+
+	if (pendingComment)
+	{
+		if (afterVariation)
+			{
+				m_strm.put(token::Start_Marker);
+				m_strm.put(token::Comment);
+				m_strm.put(token::End_Marker);
+			}
+			else
+			{
+				m_strm.put(token::Comment);
+			}
 	}
 
 	m_strm.put(level == 0 ? token::End_Game : token::End_Marker);

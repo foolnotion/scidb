@@ -88,7 +88,9 @@ private:
 	unsigned				m_runLength;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
+#ifndef NREQ
 	bool					m_putComment;
+#endif
 };
 
 } // namespace sci

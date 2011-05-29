@@ -83,9 +83,9 @@ public:
 
 	void close();
 
-	void doDecoding(unsigned flags, GameData& data, GameInfo& info);
+	void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info);
 	save::State doDecoding(	Consumer& consumer,
-									unsigned flags,
+//									unsigned flags,
 									TagSet& tags,
 									GameInfo const& info);
 
@@ -125,17 +125,18 @@ private:
 	void startDecoding(	util::ByteStream& gameStream,
 								util::ByteStream& annotationStream,
 								GameInfo const& info,
-								bool& isChess960,
-								unsigned flags = 0);
+								bool& isChess960/*,
+								unsigned flags = 0*/);
 	void decodeIndex(util::ByteStream& strm, GameInfo& info, unsigned numGames);
 
 	unsigned readHeader(mstl::string const& rootname);
 
 	void readIniData(mstl::string const& rootname);
-	void readPlayerData(mstl::string const& rootname);
-	void readTournamentData(mstl::string const& rootname);
-	void readAnnotatorData(mstl::string const& rootname);
-	void readSourceData(mstl::string const& rootname);
+	void readPlayerData(mstl::string const& rootname, util::Progress& progress);
+	void readTournamentData(mstl::string const& rootname, util::Progress& progress);
+	void readAnnotatorData(mstl::string const& rootname, util::Progress& progress);
+	void readSourceData(mstl::string const& rootname, util::Progress& progress);
+	void readTeamData(mstl::string const& rootname, unsigned numGames, util::Progress& progress);
 	void readIndexData(mstl::string const& rootname, unsigned numGames, util::Progress& progress);
 
 	void addSourceTags(TagSet& tags, GameInfo const& info);
@@ -146,7 +147,6 @@ private:
 	NamebaseEntry* getAnnotator(uint32_t ref);
 	Source* getSource(uint32_t ref);
 
-	void readTeamData(mstl::string const& rootname, unsigned numGames);
 	void addTeamTags(TagSet& tags, GameInfo const& info);
 
 	sys::utf8::Codec*	m_codec;

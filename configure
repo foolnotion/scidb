@@ -115,6 +115,7 @@ array set feature {
     assertions      no
     gprof-profiling no
     gcov-coverage   no
+    debug-si4       no
     splash-screen   yes
 }
 
@@ -828,6 +829,8 @@ proc checkGCC {cc} {
 proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir
 
+    set option(EXTRA_CFLAGS) "-pipe"
+
     set success [findTclTkPaths]
 
     foreach name [array names defaults] {
@@ -848,12 +851,13 @@ proc writeMakefile {{type ""}} {
         }
     }
 
-    if {$feature(symbols)}          { Append option(C_DEBUG) "-g" }
-    if {$feature(symbols)}          { Append option(CXX_DEBUG) "-g" }
+    if { $feature(symbols)}         { Append option(C_DEBUG) "-g" }
+    if { $feature(symbols)}         { Append option(CXX_DEBUG) "-g" }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ -DNASSERT" }
-    if {$feature(gprof-profiling)}  { Append option(PROFILING) "-pg" }
-    if {$feature(gcov-coverage)}    { Append option(PROFILING) "-coverage" }
+    if { $feature(gprof-profiling)} { Append option(PROFILING) "-pg" }
+    if { $feature(gcov-coverage)}   { Append option(PROFILING) "-coverage" }
+    if { $feature(debug-si4)}       { Append option(EXTRA_DEBUG_FLAGS) "-DDEBUG_SI4" }
 #   if {$feature(splash-screen)}    { set option(SPLASH) "yes" }
 #   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
 
@@ -941,11 +945,11 @@ proc writeMakefile {{type ""}} {
 
     # Summary info
     if {$success} {
-        puts "The Makefile configured for your system was written."
+        puts "Makefile.in configured for your system was written."
         puts "Now just type \"make\" to compile Scidb."
     } else {
         puts "Not all settings could be determined!"
-        puts "The default Makefile was written."
+        puts "The default Makefile.in was written."
         puts "You will need to edit it before you can compile Scidb."
     }
 }
@@ -1023,7 +1027,8 @@ proc usage {rc} {
     puts "                           \[default=$feature(gprof-profiling)\]"
     puts "  --enable-gcov-coverage   enable coverage (slows down the program)"
     puts "                           \[default=$feature(gcov-coverage)\]"
-#    puts "  --enable-splash-screen   enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
+    puts "  --enable-si4-debugging   enable debugging information for .si3/.si4 format"
+#   puts "  --enable-splash-screen   enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
     puts ""
     puts "Some influential environment variables:"
     puts "  CC          C compiler command \[$environment(CC)\]"
@@ -1049,6 +1054,7 @@ proc usage {rc} {
 set environment(OPTIMIZE) ""
 set feature(symbols) yes
 set feature(assertions) yes
+set feature(debug-si4) yes
 set configure(program-suffix) "-beta"
 
 if {[lsearch $argv -h] >= 0 || [lsearch $argv --help] >= 0} { usage 0 }

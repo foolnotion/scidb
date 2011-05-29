@@ -30,8 +30,9 @@ namespace db {
 
 inline bool Comment::isXml() const							{ return ::strncmp(m_content, "<xml>", 5) == 0; }
 inline bool Comment::isEmpty() const							{ return m_content.empty(); }
+inline bool Comment::engFlag() const						{ return m_engFlag; }
+inline bool Comment::othFlag() const						{ return m_othFlag; }
 inline unsigned Comment::size() const						{ return m_content.size(); }
-inline mstl::string& Comment::content()						{ return m_content; }
 inline mstl::string const& Comment::content() const		{ return m_content; }
 inline Comment::operator mstl::string const& () const	{ return m_content; }
 

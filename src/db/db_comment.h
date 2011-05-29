@@ -27,6 +27,8 @@
 #ifndef _db_comment_included
 #define _db_comment_included
 
+#include "db_common.h"
+
 #include "m_string.h"
 #include "m_map.h"
 
@@ -35,8 +37,6 @@ namespace db {
 class Comment
 {
 public:
-
-	enum Encoding { Unicode, Latin1 };
 
 	struct Callback
 	{
@@ -68,7 +68,7 @@ public:
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
 
 	Comment();
-	Comment(mstl::string const& content);
+	Comment(mstl::string const& content, bool engFlag, bool othFlag);
 
 	operator mstl::string const& () const;
 
@@ -77,38 +77,45 @@ public:
 
 	bool isEmpty() const;
 	bool isXml() const;
+	bool engFlag() const;
+	bool othFlag() const;
 	bool containsLanguage(mstl::string const& lang) const;
 
 	unsigned size() const;
 	mstl::string const& content() const;
 
-	mstl::string& content();
-
+	void append(Comment const& comment, char delim = '\0');
 	void remove(mstl::string const& lang);
 	void strip(LanguageSet const& set);
-	void setContent(mstl::string const& s);
 	bool fromHtml(mstl::string const& s);
 	void swap(Comment& comment);
-	void swap(mstl::string& content);
-	void normalize();
+	void swap(mstl::string& content, bool engFlag, bool othFlag);
+	void normalize(char delim = '\n');
 	void clear();
 
 	void parse(Callback& cb) const;
 	void collectLanguages(LanguageSet& result) const;
-	void flatten(mstl::string& result, Encoding encoding) const;
+	void flatten(mstl::string& result, encoding::CharSet encoding) const;
 	void toHtml(mstl::string& result) const;
 
 	unsigned countLength(mstl::string const& lang) const;
 	unsigned countLength(LanguageSet const& set) const;
 
-	static bool convertCommentToXml(mstl::string const& comment, mstl::string& result, Encoding encoding);
+	static bool convertCommentToXml(	mstl::string const& comment,
+												Comment& result,
+												encoding::CharSet encoding);
 
 private:
+
+	bool operator==(mstl::string const& comment) const; // avoid this usage
+	bool operator!=(mstl::string const& comment) const; // avoid this usage
 
 	void collect() const;
 
 	mstl::string m_content;
 
+	mutable bool m_engFlag;
+	mutable bool m_othFlag; // other language than en (but not ALL)
 	mutable LanguageSet m_languageSet;
 };
 

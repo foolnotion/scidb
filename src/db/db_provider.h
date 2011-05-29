@@ -52,6 +52,8 @@ public:
 	virtual unsigned countMarks() const = 0;
 	virtual unsigned plyCount() const = 0;
 	virtual uint32_t flags() const = 0;
+	virtual bool commentEngFlag() const = 0;
+	virtual bool commentOthFlag() const = 0;
 
 	// data for receiver
 

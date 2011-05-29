@@ -84,7 +84,7 @@ Move::printAlgebraic(mstl::string& s) const
 
 
 mstl::string&
-Move::printSan(mstl::string& s, CharSet charSet) const
+Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable());
@@ -106,7 +106,7 @@ Move::printSan(mstl::string& s, CharSet charSet) const
 		{
 			if (pieceMoved() != piece::Pawn)
 			{
-				if (charSet == Unicode)
+				if (charSet == encoding::Utf8)
 					s += piece::utf8::asString(pieceMoved());
 				else
 					s += piece::print(pieceMoved());
@@ -148,7 +148,7 @@ Move::printSan(mstl::string& s, CharSet charSet) const
 
 
 mstl::string&
-Move::printLan(mstl::string& s, CharSet charSet) const
+Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable());
@@ -161,7 +161,7 @@ Move::printLan(mstl::string& s, CharSet charSet) const
 	{
 		if (pieceMoved() != piece::Pawn)
 		{
-			if (charSet == Unicode)
+			if (charSet == encoding::Utf8)
 				s += piece::utf8::asString(pieceMoved());
 			else
 				s += piece::print(pieceMoved());

@@ -597,7 +597,7 @@ void
 Namebase::shrink(unsigned oldLength, unsigned newLength)
 {
 	M_REQUIRE(newLength <= NamebaseEntry::MaxNameLength);
-	m_stringAllocator.shrink(oldLength + 1, newLength + 1);
+	m_stringAllocator.shrink(oldLength + 1, newLength ? newLength + 1 : 0u);
 }
 
 

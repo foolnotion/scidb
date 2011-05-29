@@ -447,6 +447,7 @@ proc ComboboxSelected {w} {
 }
 
 
+option add *Frame.background #efefef
 option add *Spinbox.background white
 option add *Spinbox.selectForeground white
 option add *Spinbox.readonlyBackground white

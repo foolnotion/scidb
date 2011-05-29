@@ -467,6 +467,18 @@ ByteStream::operator<<(uint64_t i)
 
 
 void
+ByteStream::setup(Byte* buf, Byte* end)
+{
+	if (m_owner)
+		delete [] m_base;
+
+	m_base = m_getp = m_putp = buf;
+	m_endp = end;
+	m_owner = false;
+}
+
+
+void
 ByteStream::setup(Byte* buf, unsigned size)
 {
 	if (m_owner)

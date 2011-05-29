@@ -111,6 +111,7 @@
 ::menu::mc::GameNewShuffleSymm	"Ne&w Game: Shuffle (symmetrical only)"
 ::menu::mc::GameSave					"&Save Game"
 ::menu::mc::GameReplace				"&Replace Game"
+::menu::mc::GameReplaceMoves		"Replace &Moves Only"
 
 ::menu::mc::HelpInfo					"&Info"
 ::menu::mc::HelpContents			"&Contents"
@@ -143,6 +144,23 @@
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt	"File %s is corrupt:"
+
+::load::mc::Loading					"Loading %s"
+::load::mc::ReadingOptionsFile	"Reading options file"
+::load::mc::StartupFinished		"Startup finished"
+
+::load::mc::ECOFile					"ECO file"
+::load::mc::EngineFile				"engine file"
+::load::mc::SpellcheckFile			"spell-check file"
+::load::mc::LocalizationFile		"localization file"
+::load::mc::RatingList				"%s rating list"
+::load::mc::WikipediaLinks			"Wikipedia links"
+::load::mc::ChessgamesComLinks	"chessgames.com links"
+::load::mc::Cities					"cities"
+::load::mc::PhotoIndex				"photo index"
+::load::mc::PieceSet					"piece set"
+::load::mc::Theme						"theme"
+::load::mc::Icons						"icons"
 
 ### application ########################################################
 ::application::mc::Database				"&Database"
@@ -274,7 +292,7 @@
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Annotator"
-::application::database::annotators::mc::F_Total			"Total"
+::application::database::annotators::mc::F_Frequency		"Frequency"
 
 ::application::database::annotators::mc::Find				"Find"
 ::application::database::annotators::mc::FindAnnotator	"Find annotator"
@@ -314,14 +332,13 @@
 
 ::application::pgn::mc::AddNewGame							"Save: Add New Game to %s..."
 ::application::pgn::mc::ReplaceGame							"Save: Replace Game in %s..."
+::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game"
 
 ::application::pgn::mc::ColumnStyle							"Column Style"
 ::application::pgn::mc::NarrowLines							"Narrow Lines"	;# ???
-::application::pgn::mc::IndentVariations					"Indent Variations"
-::application::pgn::mc::IndentComments						"Indent Comments"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Bold Text for Main Line Moves"
-::application::pgn::mc::SpaceAfterMoveNumbers			"Space after Move Numbers"
 ::application::pgn::mc::ShowDiagrams						"Show Diagrams"
+::application::pgn::mc::Languages							"Languages"
 
 ::application::pgn::mc::NumberOfMoves						"Number of half moves (in main line):"
 ::application::pgn::mc::InvalidInput						"Invalid input '%d'."
@@ -329,7 +346,9 @@
 ::application::pgn::mc::MustBeOdd							"Input must be an odd number."
 
 ::application::pgn::mc::EditAnnotation						"Edit annotation"
-::application::pgn::mc::EditComment							"Edit comment"
+::application::pgn::mc::EditCommentBefore					"Edit comment before move"
+::application::pgn::mc::EditCommentAfter					"Edit comment after move"
+::application::pgn::mc::EditCommentAtStart				"Edit comment at start"
 ::application::pgn::mc::EditMarks							"Edit marks"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"none"
@@ -539,6 +558,7 @@
 ::gametable::mc::F_Promotion				"Promotion"
 ::gametable::mc::F_UnderPromo				"Under-Promotion"
 ::gametable::mc::F_StandardPos			"Standard Position"
+::gametable::mc::F_Chess960Pos			"9"
 ::gametable::mc::F_Opening					"Opening"
 ::gametable::mc::F_Variation				"Variation"
 ::gametable::mc::F_Subvariation			"Subvariation"
@@ -561,6 +581,8 @@
 ::gametable::mc::T_EventType				"Event Type"
 ::gametable::mc::T_Chess960Pos			"Chess 960 Position"
 ::gametable::mc::T_Deleted					"Deleted"
+::gametable::mc::T_EngFlag					"English Language Flag"
+::gametable::mc::T_OthFlag					"Other Language Flag"
 ::gametable::mc::T_Idn						"Chess 960 Position Number"
 ::gametable::mc::T_Annotations			"Annotations"
 ::gametable::mc::T_Comments				"Comments"
@@ -1139,8 +1161,9 @@
 ::info::mc::Reference(MicroMax)	"is probably the smallest C Chess program in existence. The Micro-Max site is %url%. Micro-Max is written by H.G. Muller."
 
 ### comment ############################################################
-::comment::mc::CommentBeforeMove		"Comment before Move"
-::comment::mc::CommentAfterMove		"Comment after Move"
+::comment::mc::CommentBeforeMove		"Comment before move"
+::comment::mc::CommentAfterMove		"Comment after move"
+::comment::mc::CommentAtStart			"Comment at start"
 ::comment::mc::Language					"Language"
 ::comment::mc::AllLanguages			"All languages"
 ::comment::mc::AddLanguage				"Add language..."

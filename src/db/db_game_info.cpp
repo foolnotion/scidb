@@ -39,6 +39,7 @@
 #include "m_bit_functions.h"
 #include "m_assert.h"
 #include "m_utility.h"
+#include "m_limits.h"
 #include "m_stdio.h"
 
 #include <string.h>
@@ -385,6 +386,16 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 
 
 void
+GameInfo::setup(uint32_t gameOffset, uint32_t gameRecordLength)
+{
+	m_gameOffset = gameOffset;
+
+	if (m_recordLengthFlag)
+		setGameRecordLength(gameRecordLength);
+}
+
+
+void
 GameInfo::setup(	uint32_t gameOffset,
 						uint32_t gameRecordLength,
 						NamebasePlayer* whitePlayer,
@@ -435,11 +446,13 @@ GameInfo::setup(	uint32_t gameOffset,
 
 	setup(gameOffset, gameRecordLength, whitePlayer, blackPlayer, event, annotator, namebases);
 
-	m_gameOffset	= gameOffset;
-	m_gameFlags		= provider.flags();
-	m_signature		= provider.getFinalBoard().signature();
-	m_result			= result::fromString(tags.value(tag::Result));
-	m_plyCount		= mstl::min(MaxPlyCount, provider.plyCount());
+	m_gameOffset		= gameOffset;
+	m_gameFlags			= provider.flags();
+	m_signature			= provider.getFinalBoard().signature();
+	m_result				= result::fromString(tags.value(tag::Result));
+	m_plyCount			= mstl::min(MaxPlyCount, provider.plyCount());
+	m_pd[0].langFlag	= provider.commentEngFlag();
+	m_pd[1].langFlag	= provider.commentOthFlag();
 
 	char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 	m_round = ::strtoul(s, &s, 10);
@@ -506,15 +519,6 @@ GameInfo::setup(	uint32_t gameOffset,
 	M_REQUIRE(eventEntry()->timeMode() == time::fromString(tags.value(tag::TimeMode)));
 	M_REQUIRE(eventEntry()->date() == Date(tags.value(tag::EventDate)));
 
-//	if (tags.contains(tag::EventCountry))
-//		m_event->setCountry(country::fromString(tags.value(tag::EventCountry)));
-//	if (tags.contains(tag::Mode))
-//		m_event->setEventMode(event::modeFromString(tags.value(tag::Mode)));
-//	if (tags.contains(tag::TimeMode))
-//		m_event->setTimeMode(time::fromString(tags.value(tag::TimeMode)));
-//	if (tags.contains(tag::EventDate))
-//		m_event->setDate(Date(tags.value(tag::EventDate)));
-
 	if (tags.contains(tag::Termination))
 		m_termination = termination::fromString(tags.value(tag::Termination));
 
@@ -552,26 +556,6 @@ GameInfo::setup(	uint32_t gameOffset,
 	M_REQUIRE(
 			!tags.contains(tag::BlackSex)
 		|| playerEntry(color::Black)->sex() == sex::fromString(tags.value(tag::BlackSex)));
-
-//	if (tags.contains(tag::WhiteCountry))
-//		whitePlayer->setFederation(country::Code(country::fromString(tags.value(tag::WhiteCountry))));
-//	if (tags.contains(tag::BlackCountry))
-//		blackPlayer->setFederation(country::Code(country::fromString(tags.value(tag::BlackCountry))));
-//
-//	if (tags.contains(tag::WhiteTitle))
-//		whitePlayer->setTitle(title::fromString(tags.value(tag::WhiteTitle)));
-//	if (tags.contains(tag::BlackTitle))
-//		blackPlayer->setTitle(title::fromString(tags.value(tag::BlackTitle)));
-//
-//	if (tags.contains(tag::WhiteType))
-//		whitePlayer->setPlayerType(species::fromString(tags.value(tag::WhiteType)));
-//	if (tags.contains(tag::BlackType))
-//		blackPlayer->setPlayerType(species::fromString(tags.value(tag::BlackType)));
-//
-//	if (tags.contains(tag::WhiteSex))
-//		whitePlayer->setSex(sex::fromChar(*tags.value(tag::WhiteSex)));
-//	if (tags.contains(tag::BlackSex))
-//		blackPlayer->setSex(sex::fromChar(*tags.value(tag::BlackSex)));
 
 	if (tags.contains(tag::Date))
 	{
@@ -646,6 +630,73 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 	namebases(Namebase::Player).ref(m_player[Black]);
 	namebases(Namebase::Site  ).ref(m_event->site());
 	namebases(Namebase::Event ).ref(m_event);
+
+	if (!m_recordLengthFlag)
+		namebases(Namebase::Annotator).ref(m_annotator);
+}
+
+
+void
+GameInfo::reallocate(Namebases& namebases)
+{
+	static unsigned const Limit = mstl::numeric_limits<unsigned>::max();
+
+	NamebaseSite* site;
+
+	{
+		Namebase& namebase = namebases(Namebase::Player);
+		NamebasePlayer* entry = m_player[White];
+		mstl::string name(entry->name());
+		char* s = namebase.alloc(name.size());
+		::memcpy(s, name, name.size());
+		name.hook(s, name.size());
+
+		namebase.insertPlayer(
+			name, entry->federation(), entry->title(), entry->type(), entry->sex(), Limit);
+	}
+	{
+		Namebase& namebase = namebases(Namebase::Player);
+		NamebasePlayer* entry = m_player[Black];
+		mstl::string name(entry->name());
+		char* s = namebase.alloc(name.size());
+		::memcpy(s, name, name.size());
+		name.hook(s, name.size());
+
+		namebase.insertPlayer(
+			name, entry->federation(), entry->title(), entry->type(), entry->sex(), Limit);
+	}
+	{
+		Namebase& namebase = namebases(Namebase::Site);
+		NamebaseSite* entry = m_event->site();
+		mstl::string name(entry->name());
+		char* s = namebase.alloc(name.size());
+		::memcpy(s, name, name.size());
+		name.hook(s, name.size());
+
+		site = namebase.insertSite(name, entry->country(), Limit);
+	}
+	{
+		Namebase& namebase = namebases(Namebase::Event);
+		NamebaseEvent* entry = m_event;
+		mstl::string name(entry->name());
+		char* s = namebase.alloc(name.size());
+		::memcpy(s, name, name.size());
+		name.hook(s, name.size());
+
+		namebase.insertEvent(
+			name, entry->date(), entry->type(), entry->timeMode(), entry->eventMode(), Limit, site);
+	}
+	if (!m_recordLengthFlag)
+	{
+		Namebase& namebase = namebases(Namebase::Annotator);
+		NamebaseEntry* entry = m_annotator;
+		mstl::string name(entry->name());
+		char* s = namebase.alloc(name.size());
+		::memcpy(s, name, name.size());
+		name.hook(s, name.size());
+
+		namebase.insert(name, Limit);
+	}
 }
 
 

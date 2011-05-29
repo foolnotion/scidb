@@ -504,7 +504,7 @@ mstl::backtrace::symbols_gdb()
 	if (!strm.is_open())
 		return false;
 
-	m_skip = 4;
+//	m_skip = 4;	seems to be too much on some systems
 
 	string line;
 
@@ -588,7 +588,7 @@ mstl::backtrace::symbols_linux()
 	if (!stream.is_open())
 		return false;
 
-	m_skip = 2;
+//	m_skip = 2;	probably too much
 
 	void** ebp = static_cast<void**>(__builtin_frame_address(0));
 
@@ -717,7 +717,10 @@ mstl::backtrace::text_write(ostringstream& os, size_t skip) const
 	{
 		char const* s = m_symbols[i];
 
-		if (s && ((::strncmp(s, "throw_exc", 9) != 0) || ::strstr(s, "m_exception.ipp") == 0))
+		if (	s
+			&& ::strstr(s, "m_exception.ipp") == 0
+			&& ::strstr(s, "mstl::backtrace::backtrace") == 0
+			&& ::strstr(s, "mstl::exception::exception") == 0)
 		{
 			char const* e = ::strchr(s, '\n') + 1;
 

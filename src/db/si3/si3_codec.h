@@ -91,7 +91,7 @@ public:
 	void filterTag(TagSet& tags, tag::ID tag) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
-	uint32_t computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const;
+	uint32_t computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const;
 	util::BlockFile* newBlockFile() const;
 
 	void doOpen(mstl::string const& encoding);
@@ -102,6 +102,7 @@ public:
 	void doClear(mstl::string const& rootname);
 
 	unsigned putGame(util::ByteStream const& strm);
+	unsigned putGame(util::ByteStream const& strm, unsigned prevOffset, unsigned prevRecordLength);
 	util::ByteStream getGame(GameInfo const& info);
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
 	void attach(mstl::string const& rootname, util::Progress& progress);
@@ -109,13 +110,14 @@ public:
 	void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	void updateHeader(mstl::string const& rootname);
 	void close();
+	void sync();
 
-	save::State doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info);
+	save::State doDecoding(db::Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info);
 	save::State doDecoding(	db::Consumer& consumer,
 									util::ByteStream& strm,
-									unsigned flags,
+//									unsigned flags,
 									TagSet& tags);
-	void doDecoding(unsigned flags, GameData& data, GameInfo& info);
+	void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info);
 
 	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	db::Consumer* getConsumer(format::Type srcFormat);
@@ -131,9 +133,10 @@ public:
 
 private:
 
-	friend class Consumer;
 	class ByteIStream;
 	class ByteOStream;
+
+	friend class Consumer;
 
 	typedef mstl::vector<NamebaseEntry*> Lookup;
 

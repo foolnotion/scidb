@@ -56,7 +56,7 @@ proc makeToolbarIcon {img {ns {}}} {
 }
 
 
-::splash::print "Loading icons..."
+::splash::print "[format $::load::mc::Loading $::load::mc::Icons]..."
 
 namespace eval 12x12 {
 

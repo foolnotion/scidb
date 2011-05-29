@@ -32,6 +32,7 @@
 #include "db_common.h"
 
 namespace util { class ByteStream; }
+namespace mstl { class string; }
 namespace sys { namespace utf8 { class Codec; } }
 
 namespace db {
@@ -63,7 +64,7 @@ protected:
 	typedef encoder::Position Position;
 
 	void encodeVariation(MoveNode const* node, unsigned level = 0);
-	void encodeComments(MoveNode* node);
+	void encodeComments(MoveNode* node, encoding::CharSet encoding);
 	void encodeTag(TagSet const& tags, tag::ID tagID);
 	void encodeTags(TagSet const& tags);
 	void encodeNullMove(Move const& move);
@@ -75,6 +76,7 @@ protected:
 	void encodePawn(Move const& move);
 	void encodeMove(Move const& move);
 
+	void putComment(mstl::string& buf);
 	void setup(Board const& board);
 
 	util::ByteStream&	m_strm;

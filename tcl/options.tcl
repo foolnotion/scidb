@@ -41,6 +41,7 @@ proc write {} {
 	variable Callbacks
 
 	set chan [open $::scidb::file::options.tmp w]
+	fconfigure $chan -encoding utf-8
 
 	puts $chan "# Scidb options file"
 	puts $chan "# Version: $::scidb::version"

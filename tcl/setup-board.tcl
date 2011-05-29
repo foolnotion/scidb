@@ -1032,7 +1032,7 @@ proc SetupCursors {} {
 
 
 proc WriteOptions {chan} {
-	options::writeItem $chan [namespace current]::History
+	options::writeList $chan [namespace current]::History
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

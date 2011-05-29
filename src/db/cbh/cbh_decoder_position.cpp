@@ -418,7 +418,7 @@ Position::setup(BitStream& strm)
 	else
 	{
 		if (board.validate(variant::Chess960) != Board::Valid)
-			IO_RAISE(Game, Corrupted, "illegal start position");
+			IO_RAISE(Game, Corrupted, "unsupported start position");
 	}
 }
 

@@ -116,6 +116,7 @@ public:
 	string& append(const_reference c);
 	string& append(size_type n, const_reference c);
 	string& append(const_iterator i1, const_iterator i2);
+	string& append(string const& s, size_type sp = 0, size_type slen = npos);
 	string& append(const_pointer s, size_type len);
 	string& append(const_pointer s);
 

@@ -113,6 +113,8 @@ set T_EventType			"Event Type"
 set T_Chess960Pos			"Chess 960 Position"
 set T_ShuffleChessPos	"Shuffle Chess Position"
 set T_Deleted				"Deleted"
+set T_EngFlag				"English Language Flag"
+set T_OthFlag				"Other Language Flag"
 set T_Idn					"Chess 960 Position Number"
 set T_Annotations			"Annotations"
 set T_Comments				"Comments"
@@ -222,6 +224,8 @@ variable Columns {
 	{ material			{}			left		 8		 0		25			0			1			1			{}				}
 	{ deleted			{}			center	 0		 0		14px		0			1			0			red			}
 	{ acv					{}			center	 0		 0		30px		0			1			0			{}				}
+	{ engFlag			{}			center	 0		 0		18px		0			1			0			black			}
+	{ othFlag			{}			center	 0		 0		18px		0			1			0			black			}
 	{ changed			{}			center	 0		 0		14px		0			1			0			{}				}
 	{ promotion			{}			center	 0		 0		14px		0			1			0			{}				}
 	{ underPromo		{}			center	 0		 0		14px		0			1			0			{}				}
@@ -840,7 +844,7 @@ proc PrepareImages {path count} {
 
 
 proc TableFill {path args} {
-	variable icon::12x12::CrossHand
+	variable icon::12x12::CrossHandRed
 	variable icon::12x12::Check
 	variable icon::12x12::NotAvailable
 	variable GameFlags
@@ -941,19 +945,23 @@ proc TableFill {path args} {
 						}
 					}
 
-					deleted {
-						if {$item} {
-							# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
-							set image $CrossHand
+					engFlag - othFlag {
+						if {$codec eq "sci"} {
+							if {$item} {
+								# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
+								set image $Check
+							} else {
+								set image {}
+							}
+							lappend text [list @ $image]
 						} else {
-							set image {}
+							lappend text [list @ $NotAvailable]
 						}
-						lappend text [list @ $image]
 					}
 
-					changed {
+					deleted - changed {
 						# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
-						if {$item} { set image $CrossHand } else { set image {} }
+						if {$item} { set image $CrossHandRed } else { set image {} }
 						lappend text [list @ $image]
 					}
 
@@ -1663,7 +1671,15 @@ proc WriteOptions {chan} {
 namespace eval icon {
 namespace eval 12x12 {
 
-set CrossHand [image create photo -data {
+set CrossHandBlack [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAAClSURB
+	VBgZBcHLKoQBAIDR80pjhYXZzI8x5VZYiEIuiyFloygLl42VJI9AXvJzDngKAD4DHPXTfQC3
+	/TUPo9776Lvr4KyvPvptFHZ77KG3DtvspYeemwfYbN5Vd91202sHAWDWacedddIQABgaWmqp
+	oSEArLbRSmutt9JGqwHW227SVguN2mrSTtOw3HnT9loMFttv2kWzMOmycQDjLpsEGAcAN8E/
+	sb1yJ55STrUAAAAASUVORK5CYII=
+}]
+
+set CrossHandRed [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAABFFBMVEWAAACoAACtAACHAACK
 	AACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABtAABqAACiAACWKyt/HhaCJBvS
 	eHXDSknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCrJBevJxuzMSazKx++Sj/DSkDI
@@ -1733,6 +1749,9 @@ set I_BlackType [image create photo -data {
 #	rkJggg==
 #}]
 
+set I_EngFlag $::country::icon::flag(GBR)
+set I_OthFlag $::country::icon::flag(ZZX)
+
 set I_WhiteTitle  [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QAAKqNIzIAAAD8SURB
 	VBjTZY89SwIBAIbf6job1MBAyMo+QNAMIRoOHJqcm2wrvCKJqPsB/YD6BbUFiRDREDTJIdHY
@@ -1751,14 +1770,7 @@ set I_BlackTitle  [image create photo -data {
 	FH9kbXYlTH9sqa66Gqqrprw4nQ271nNq+Ks7tF84gW+b6GMJEmdX5QAAAABJRU5ErkJggg==
 }]
 
-set I_Deleted [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QAAKqNIzIAAAClSURB
-	VBgZBcHLKoQBAIDR80pjhYXZzI8x5VZYiEIuiyFloygLl42VJI9AXvJzDngKAD4DHPXTfQC3
-	/TUPo9776Lvr4KyvPvptFHZ77KG3DtvspYeemwfYbN5Vd91202sHAWDWacedddIQABgaWmqp
-	oSEArLbRSmutt9JGqwHW227SVguN2mrSTtOw3HnT9loMFttv2kWzMOmycQDjLpsEGAcAN8E/
-	sb1yJ55STrUAAAAASUVORK5CYII=
-}]
-
+set I_Deleted $CrossHandBlack
 set I_WhiteSex $::icon::12x12::yinyang
 
 set I_BlackSex [image create photo -data {

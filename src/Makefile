@@ -57,7 +57,7 @@ ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MI
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libTeXt $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move $(PROGRAM)
+TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move $(PROGRAM)
 
 all: recursive $(PROGRAM)
 

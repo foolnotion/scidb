@@ -107,8 +107,6 @@ public:
 	static unsigned const Promote			= piece::Pawn | (1 << (Shift_Promote - Shift_Action));
 	static unsigned const Castle			= piece::King | (1 << (Shift_Castling - Shift_Action));
 
-	enum CharSet { Ascii, Unicode };
-
 	enum { Max_SAN_Length = 12 };
 	enum { Index_Bit_Length = 14 };
 
@@ -209,9 +207,9 @@ public:
 	/// Print algebraic form.
 	mstl::string& printAlgebraic(mstl::string& s) const;
 	/// Print LAN (long algebraic noatation).
-	mstl::string& printLan(mstl::string& s, CharSet charSet = Ascii) const;
+	mstl::string& printLan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print SAN (short algebraic noatation).
-	mstl::string& printSan(mstl::string& s, CharSet charSet = Ascii) const;
+	mstl::string& printSan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print correspondence form.
 	mstl::string& printNumeric(mstl::string& s) const;
 	/// Print telegraphic form.

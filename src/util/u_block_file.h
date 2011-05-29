@@ -49,6 +49,7 @@ private:
 		unsigned	m_capacity;
 		unsigned	m_size;
 		unsigned	m_number;
+		unsigned m_span;
 
 		unsigned char* m_data;
 	};
@@ -144,12 +145,13 @@ private:
 	unsigned fileOffset(unsigned blockNumber) const;
 
 	void computeBlockCount();
-	unsigned fetch(View& view, unsigned blockNumber, unsigned offset, unsigned span = 1);
+	unsigned fetch(View& view, unsigned blockNumber, unsigned span = 1);
+	unsigned retrieve(View& view, unsigned blockNumber, unsigned offset);
 	bool resize(View& view, unsigned span);
 	void deallocate() throw();
 	void putMagic(mstl::string const& magic);
 
-	void copy(ByteStream const& buf, unsigned nbytes);
+	void copy(ByteStream const& buf, unsigned offset, unsigned nbytes);
 
 	BlockFile(BlockFile const&);
 	BlockFile& operator=(BlockFile const&);

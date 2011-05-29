@@ -675,25 +675,10 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 
 			switch (rhsType)
 			{
-				case TPreComment:
-					action = Remove;
-					break;
-
-				case TDiagram:
-					action = (lhsType == TPreComment) ? Insert : Remove;
-					break;
-
-				case TMove:
-					action = Insert;
-					break;
-
-				case TVariation:
-					action = (lhsType == TMove) ? Remove : Insert;
-					break;
-
-				default:
-					M_ASSERT(!"should not happen");
-					break;
+				case TDiagram:		action = Remove; break;
+				case TMove:			action = Insert; break;
+				case TVariation:	action = (lhsType == TMove) ? Remove : Insert; break;
+				default:				M_ASSERT(!"should not happen"); break;
 			}
 
 			switch (action)
@@ -841,14 +826,14 @@ Move::Move(Work& work, MoveNode const* move)
 
 		if (!comment.isEmpty())
 		{
-			preSpacing(work, atLineStart);
+			preSpacing(work, atLineStart, PrefixBreak);
 			work.spacing = putComment(work, comment, move::Ante);
 			work.needMoveNo = true;
 			atLineStart = false;
 		}
 	}
 
-	preSpacing(work, atLineStart);
+	preSpacing(work, atLineStart, PrefixSpace);
 
 	m_ply = work.needMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
 	m_list.push_back(m_ply);
@@ -885,7 +870,7 @@ Move::Move(Work& work, MoveNode const* move)
 
 
 void
-Move::preSpacing(Work& work, bool atLineStart)
+Move::preSpacing(Work& work, bool atLineStart, unsigned space)
 {
 	if (work.spacing & RequiredBreak)
 	{
@@ -906,24 +891,21 @@ Move::preSpacing(Work& work, bool atLineStart)
 		work.plyCount = 0;
 		work.needMoveNo = true;
 	}
-	else if (work.displayStyle & display::ColumnStyle)
+	else if (	(work.displayStyle & display::ColumnStyle)
+				&& !atLineStart
+				&& work.level == 0
+				&& work.board.whiteToMove())
 	{
-		if (	!atLineStart
-			&& work.level == 0
-			&& work.board.whiteToMove())
-		{
-			m_list.push_back(new Space(0, work.bracket));
-			work.plyCount = 0;
-			work.needMoveNo = true;
-		}
-		else if (work.spacing & PrefixSpace)
-		{
-			m_list.push_back(new Space(work.bracket));
-		}
+		m_list.push_back(new Space(0, work.bracket));
+		work.plyCount = 0;
+		work.needMoveNo = true;
 	}
 	else if (work.spacing & PrefixSpace)
 	{
-		m_list.push_back(new Space(work.bracket));
+		if (space == PrefixBreak && work.level == 0)
+			m_list.push_back(new Space(work.level, work.bracket));
+		else
+			m_list.push_back(new Space(work.bracket));
 	}
 }
 

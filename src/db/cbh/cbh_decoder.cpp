@@ -136,6 +136,7 @@ static Byte MoveNumberLookup[256] =
 };
 
 
+#if 0
 #define ____ 0xff
 static Byte MoveNumberLookup960[256] =
 {
@@ -173,6 +174,7 @@ static Byte MoveNumberLookup960[256] =
 	____, ____, ____, ____, ____, 0x7f, ____, ____,	// 248 - 255
 };
 #undef ____
+#endif
 
 
 Decoder::Decoder(ByteStream& gStrm, ByteStream& aStrm, sys::utf8::Codec& codec, bool isChess960)
@@ -181,7 +183,7 @@ Decoder::Decoder(ByteStream& gStrm, ByteStream& aStrm, sys::utf8::Codec& codec, 
 	,m_codec(codec)
 	,m_moveNo(MaxMoveNo)
 	,m_isChess960(isChess960)
-	,m_lookup(isChess960 ? MoveNumberLookup960 : MoveNumberLookup)
+	,m_lookup(/*isChess960 ? MoveNumberLookup960 : */MoveNumberLookup)
 {
 	if (!m_aStrm.isEmpty())
 	{
@@ -561,7 +563,7 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 
 
 void
-Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
+Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position/*, unsigned flags*/)
 {
 	M_ASSERT(node);
 
@@ -574,41 +576,23 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 	uint16_t country = m_aStrm.uint16();
 	length -= 2;
 
-	if (flags & DatabaseCodec::Decode_Comments)
+//	if (flags & DatabaseCodec::Decode_Comments)
 	{
 		unsigned char const* p = m_aStrm.data();
 
 		mstl::string str;
-		bool useXml = false;
 
 		char const* lang = 0;
 
 		if (country < U_NUMBER_OF(::LangMap))
 			lang = ::LangMap[country];
 
+		bool useXml = lang != 0 || node->comment(position).isXml();
+
 		// BUG: ChessBase uses country code 0 for ALL and for Pol.
 		//      How should we distinguish between these countries?
 
 		str.reserve(length + 200);
-
-		if (::strncmp(node->comment(move::Post).content(), "<xml>", 5) == 0)
-		{
-			useXml = true;
-
-			if (::strcmp(node->comment(move::Post).content().end() - 6, "</xml>") == 0)
-			{
-				Comment comment;
-				node->swapComment(comment, move::Post);
-				comment.content().resize(comment.size() - 6);
-				node->swapComment(comment, move::Post);
-			}
-		}
-
-		if (lang)
-		{
-			((str += "<:") += lang) += ">";
-			useXml = true;
-		}
 
 		unsigned i = 0;
 		while (::isspace(p[i]))
@@ -706,21 +690,12 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 
 		if (!str.empty())
 		{
-			if (lang)
-				((str += "</:") += lang) += '>';
-
 			// TODO: use character encoding according to language code ?!
 			m_codec.toUtf8(str);
 
 			if (useXml)
 			{
 				mstl::string xml;
-
-				node->swapComment(xml, move::Post);
-				xml.reserve(xml.size() + str.size() + 20);
-
-				if (::strncmp(xml, "<xml>", 5) != 0)
-					xml.insert(size_t(0), "<xml>", 5);
 
 				char const* s = str.begin();
 				char const* e = str.end();
@@ -742,9 +717,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 				{
 					while (s < e)
 					{
-						char c = str[i];
-
-						switch (c)
+						switch (*s)
 						{
 							case 0x01: xml += '<'; ++s; break;
 							case 0x02: xml += '>'; ++s; break;
@@ -761,22 +734,36 @@ Decoder::decodeComment(MoveNode* node, unsigned length, unsigned flags)
 					}
 				}
 
-				xml += "</xml>";
-				node->swapComment(xml, move::Post);
+				str.swap(xml);
+			}
+
+			if (useXml)
+			{
+				str.insert(str.begin(), mstl::string("<xml><:") + (lang ? lang : "") + '>');
+				str.append("</:");
+				if (lang)
+					str.append(lang);
+				str.append("></xml>");
+			}
+
+			bool isEnglish	= lang && ::strcmp(lang, "en") == 0;
+			bool isOther	= lang && !isEnglish;
+
+			Comment comment;
+			comment.swap(str, isEnglish, isOther);
+
+			if (node->hasComment(position))
+			{
+				Comment prefix;
+				node->swapComment(prefix, position);
+				prefix.append(comment, '\n');
+				node->swapComment(prefix, position);
 			}
 			else
 			{
-				mstl::string s;
-				node->swapComment(s, move::Post);
-				s += str;
-				node->swapComment(s, move::Post);
+				node->setComment(comment, position);
 			}
 		}
-
-		Comment comment;
-		node->swapComment(comment, move::Post);
-		comment.normalize();
-		node->swapComment(comment, move::Post);
 	}
 
 	m_aStrm.skip(length);
@@ -880,17 +867,17 @@ Decoder::decodeArrows(MoveNode* node, unsigned length)
 
 
 void
-Decoder::getAnnotation(MoveNode* node, int position, unsigned flags)
+Decoder::getAnnotation(MoveNode* node, int moveNo/*, unsigned flags*/)
 {
-	M_ASSERT(position != MaxMoveNo);
+	M_ASSERT(moveNo != MaxMoveNo);
 	M_ASSERT(node);
 
-	if (position < m_moveNo)
+	if (moveNo < m_moveNo)
 		return;
 
 	M_ASSERT(!m_aStrm.isEmpty());
 
-	while (position == m_moveNo)
+	while (moveNo == m_moveNo)
 	{
 		Byte		type		= m_aStrm.get();
 		unsigned length	= m_aStrm.uint16() - 6;
@@ -906,15 +893,13 @@ Decoder::getAnnotation(MoveNode* node, int position, unsigned flags)
 			case 0x82:	// text before move
 				if (!node->atLineStart())
 				{
-					decodeComment(node->prev(), length, flags);
-//printf("pre comment(%d): %s\n", position, node->prev()->comment().content().c_str());
+					decodeComment(node, length, move::Ante/*, flags*/);
 					break;
 				}
 				// fallthru
 
 			case 0x02:	// text after move
-				decodeComment(node, length, flags);
-//printf("post comment(%d): %s\n", position, node->comment().content().c_str());
+				decodeComment(node, length, move::Post/*, flags*/);
 				break;
 
 			case 0x03:	// symbols
@@ -947,13 +932,11 @@ void
 Decoder::decodeMoves(Consumer& consumer)
 {
 	MoveNode			node;
-	mstl::string	comment;
-	mstl::string	preComment;
+	Comment			comment;
+	Comment			preComment;
 	MarkSet			marks;
 	unsigned			count = 0;
 	Move				move;
-
-	getAnnotation(&node, int(count) - 1, 0);
 
 	while (true)
 	{
@@ -962,7 +945,7 @@ Decoder::decodeMoves(Consumer& consumer)
 			case ::Move:
 				if (!move)
 					return;
-				getAnnotation(&node, int(count) - 1, 0);
+				getAnnotation(&node, int(count) - 1/*, 0*/);
 				if (node.hasNote())
 				{
 					consumer.putMove(move, node.annotation(), preComment, comment, marks);
@@ -986,15 +969,12 @@ Decoder::decodeMoves(Consumer& consumer)
 
 
 void
-Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
+Decoder::decodeMoves(MoveNode* root, /*unsigned flags, */unsigned& count)
 {
 	typedef mstl::vector<MoveNode*> Vars;
 
 	Vars varList;
 	Move move;
-
-//printf("----- pre (%d): %d\n", int(count), m_moveNo);
-	getAnnotation(root, int(count), flags);
 
 	while (true)
 	{
@@ -1006,7 +986,6 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 				if (move)
 				{
 					node = new MoveNode(move);
-//printf("move(%u): %s\n", count - 1, move.asString().c_str());
 
 					if (varList.empty())
 					{
@@ -1033,6 +1012,9 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 								// but we cannot delete the variation if a
 								// pre-comment/annotation/mark exists. As a
 								// workaround we insert a null move.
+								// Note: Possibly it isn't possible to enter
+								// empty variations in ChessBase, but we like
+								// to handle this case for safety reasons.
 								if (varList[i]->hasSupplement())
 								{
 									Move null(Move::null());
@@ -1050,26 +1032,23 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 						varList.clear();
 					}
 
-//printf("post-annotation(%d): %d\n", int(count) - 1, m_moveNo);
-					getAnnotation(node, int(count) - 1, flags);
+					getAnnotation(node, int(count) - 1/*, flags*/);
 					root = node;
 				}
 				else
 				{
 					MoveNode dummy;
-					getAnnotation(&dummy, int(count) - 1, flags);
+					getAnnotation(&dummy, int(count) - 1/*, flags*/);
 				}
 				break;
 
 			case ::Push:
 				node = new MoveNode;
 				varList.push_back(node);
-//printf("push\n");
-				decodeMoves(node, flags, count);
+				decodeMoves(node, /*flags, */count);
 				break;
 
 			case ::Pop:
-//printf("pop\n");
 				return;
 		}
 	}
@@ -1077,10 +1056,10 @@ Decoder::decodeMoves(MoveNode* root, unsigned flags, unsigned& count)
 
 
 void
-Decoder::decodeMoves(MoveNode* root, unsigned flags)
+Decoder::decodeMoves(MoveNode* root/*, unsigned flags*/)
 {
 	unsigned count = 0;
-	decodeMoves(root, flags, count);
+	decodeMoves(root, /*flags, */count);
 }
 
 
@@ -1111,18 +1090,18 @@ Decoder::startDecoding(TagSet* tags)
 
 
 unsigned
-Decoder::doDecoding(unsigned flags, GameData& data)
+Decoder::doDecoding(/*unsigned flags, */GameData& data)
 {
 	startDecoding(&data.m_tags);
 	data.m_startBoard = m_position.board();
 	unsigned plyNumber = m_position.board().plyNumber();
-	decodeMoves(data.m_startNode, flags);
+	decodeMoves(data.m_startNode/*, flags*/);
 	return m_position.board().plyNumber() - plyNumber;
 }
 
 
 save::State
-Decoder::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+Decoder::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info)
 {
 	startDecoding(&tags);
 
@@ -1133,7 +1112,7 @@ Decoder::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo c
 	consumer.startMoveSection();
 
 	if (	info.countVariations() == 0
-		&& (info.countComments() == 0 || !(flags & DatabaseCodec::Decode_Comments)))
+		&& (info.countComments() == 0 /*|| !(flags & DatabaseCodec::Decode_Comments)*/))
 	{
 		// fast decoding
 		decodeMoves(consumer);
@@ -1142,7 +1121,7 @@ Decoder::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo c
 	{
 		// slow decoding
 		MoveNode root;
-		decodeMoves(&root, flags);
+		decodeMoves(&root/*, flags*/);
 		traverse(consumer, &root);
 	}
 

@@ -85,7 +85,7 @@ proc ::dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $stat
 proc ::colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan ::dialog::choosecolor::UserColorList
+	::options::writeList $chan ::dialog::choosecolor::UserColorList
 	::options::writeItem $chan ::dialog::fsbox::showHiddenBtn
 	::options::writeItem $chan ::table::options
 	::options::writeItem $chan ::menu::Theme
@@ -96,10 +96,7 @@ proc WriteOptions {chan} {
 # --- Read options -----------------------------------------------------
 
 if {[file readable $::scidb::file::options]} {
-	::load::source "Reading options file" $::scidb::file::options
-	# close log opened in load.tcl
-	::log::info "Startup finished"
-	::log::close
+	::load::source $::scidb::file::options -message $::load::mc::ReadingOptionsFile -encoding utf-8
 }
 
 # --- Initalization ----------------------------------------------------

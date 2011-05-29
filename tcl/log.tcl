@@ -122,6 +122,8 @@ proc Show {} {
 				set parent .application
 				if {![winfo exists $parent]} { set parent . }
 				::util::place .log center $parent
+				raise .log
+				focus .log
 				set Priv(center) 0
 			}
 			wm deiconify .log

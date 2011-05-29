@@ -309,7 +309,7 @@ proc Accept {dlg} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Previous
+	::options::writeList $chan [namespace current]::Previous
 }
 
 

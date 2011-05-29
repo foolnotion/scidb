@@ -59,11 +59,11 @@ depend:
 $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
 	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
-#	@$(RANLIB) $(LIB).a
+	@$(RANLIB) $(LIB).a
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $*.cpp
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $*.cpp
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

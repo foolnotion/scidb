@@ -270,7 +270,7 @@ Database::computeChecksum(unsigned index) const
 	M_REQUIRE(index < countGames());
 
 	GameInfo const& info = *m_gameInfoList[index];
-	return m_codec->computeChecksum(DatabaseCodec::Decode_All, info, info.computeChecksum());
+	return m_codec->computeChecksum(/*DatabaseCodec::Decode_All, */info, info.computeChecksum());
 }
 
 
@@ -282,7 +282,7 @@ Database::loadGame(unsigned index, Game& game)
 
 	GameInfo* info = m_gameInfoList[index];
 	m_codec->reset();
-	m_codec->decodeGame(DatabaseCodec::Decode_All, game, *info);
+	m_codec->decodeGame(/*DatabaseCodec::Decode_All, */game, *info);
 	setEncodingFailed(m_codec->encodingFailed());
 	game.moveToMainlineStart();
 	bool ok = game.finishLoad();
@@ -380,6 +380,31 @@ Database::updateGame(Game const& game)
 
 
 save::State
+Database::updateMoves(Game const& game)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
+	M_REQUIRE(!usingAsyncReader());
+
+	unsigned char buffer[8192];
+	ByteStream strm(buffer, sizeof(buffer));
+
+	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+
+	save::State state = m_codec->saveMoves(strm, game);
+
+	if (state == save::Ok)
+	{
+		m_lastChange = sys::time::timestamp();
+		m_treeCache.setIncomplete(game.index());
+	}
+
+	return state;
+}
+
+
+save::State
 Database::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
@@ -396,6 +421,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 		if (!m_memoryOnly)
 			m_codec->update(m_rootname, index, true);
 
+		m_gameInfoList[index]->setDirty(false);
 		m_lastChange = sys::time::timestamp();
 
 		// TODO: only an update is needed
@@ -451,7 +477,7 @@ Database::exportGame(unsigned index, Consumer& consumer)
 
 	try
 	{
-		rc = m_codec->exportGame(consumer, DatabaseCodec::Decode_All, tags, *info);
+		rc = m_codec->exportGame(consumer, /*DatabaseCodec::Decode_All, */tags, *info);
 	}
 	catch (DecodingFailedException const& exc)
 	{

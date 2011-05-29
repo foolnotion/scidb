@@ -29,6 +29,8 @@ namespace db {
 inline bool Consumer::isMainline() const					{ return m_stack.size() == 2; }
 inline bool Consumer::variationIsEmpty() const			{ return m_stack.top().empty; }
 inline bool Consumer::terminated() const					{ return m_terminated; }
+inline bool Consumer::commentEngFlag() const				{ return m_commentEngFlag; }
+inline bool Consumer::commentOthFlag() const				{ return m_commentOthFlag; }
 
 inline format::Type Consumer::sourceFormat() const		{ return m_format; }
 inline Board& Consumer::getBoard()							{ return m_stack.top().board; }

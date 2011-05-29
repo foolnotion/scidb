@@ -42,6 +42,10 @@
 using namespace db;
 
 
+static mstl::string const prefix("<xml>");
+static mstl::string const suffix("</xml>");
+
+
 static char const*
 skipSpaces(char const* s)
 {
@@ -55,6 +59,35 @@ static bool
 isDelimChar(char c)
 {
 	return c == '\0' || ::strchr(" \t\n/.,;:!?", c);
+}
+
+
+static void
+append(mstl::string& dst, mstl::string const& src, bool isXml)
+{
+	if (isXml)
+	{
+		dst.append(src, prefix.size(), src.size() - prefix.size() - suffix.size());
+	}
+	else
+	{
+		dst.append("<:>", 3);
+		dst.append(src);
+		dst.append("</:>", 4);
+	}
+}
+
+
+static unsigned
+appendDelim(mstl::string& str, char delim)
+{
+	if (delim && !str.empty() && (!::isspace(delim) || !::isspace(str.back())))
+	{
+		str += delim;
+		return 1;
+	}
+
+	return 0;
 }
 
 
@@ -73,15 +106,32 @@ struct XmlData
 
 struct HtmlData
 {
-	HtmlData(mstl::string& s) :result(s) ,skipLang(0), isXml(false) ,isHtml(false)	{}
+	HtmlData(mstl::string& s, bool &engFlag, bool& othFlag)
+		:result(s)
+		,skipLang(0)
+		,putLang(1)
+		,engFlag(engFlag)
+		,othFlag(othFlag)
+		,isXml(false)
+		,isHtml(false)
+		,insideNag(false)
+	{
+	}
+
+	bool success() const { return isHtml && putLang != 2 && !insideNag && lang.empty(); }
 
 	mstl::string& result;
 	mstl::string  lang;
 
 	unsigned skipLang;
+	unsigned putLang;
+
+	bool& engFlag;
+	bool& othFlag;
 
 	bool isXml;
 	bool isHtml;
+	bool insideNag;
 };
 
 
@@ -126,13 +176,17 @@ struct Normalize : public Comment::Callback
 	typedef mstl::map<mstl::string,Content> LangMap;
 	typedef Comment::LanguageSet LanguageSet;
 
-	Normalize(mstl::string& result, LanguageSet const* wanted = 0)
+	Normalize(mstl::string& result, bool& engFlag, bool& othFlag, char delim, LanguageSet const* wanted = 0)
 		:m_result(result)
+		,m_delim(delim)
 		,m_wanted(wanted)
 		,m_lang(0)
+		,m_engFlag(engFlag)
+		,m_othFlag(othFlag)
 		,m_isXml(false)
 	{
 		::memset(m_attr, 0, sizeof(m_attr));
+		m_engFlag = m_othFlag = false;
 	}
 
 	void start() { endLanguage(mstl::string::empty_string); }
@@ -141,38 +195,44 @@ struct Normalize : public Comment::Callback
 	{
 		m_result.clear();
 
-		for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
+		if (!m_map.empty())
 		{
-			if (i->second.length > 0)
+			for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 			{
-				M_ASSERT(m_wanted == 0 || m_wanted->find(i->first) != m_wanted->end());
-
-				if (i->first.empty())
-				{
-					m_result += i->second.str;
-				}
-				else
-				{
-					m_result += '<';
-					m_result += ':';
-					m_result += i->first;
-					m_result += '>';
-					m_result += i->second.str;
-					m_result += '<';
-					m_result += '/';
-					m_result += ':';
-					m_result += i->first;
-					m_result += '>';
-
+				if (!i->first.empty() && i->second.length > 0)
 					m_isXml = true;
-				}
 			}
-		}
 
-		if (m_isXml)
-		{
-			m_result.insert(size_t(0), "<xml>");
-			m_result += "</xml>";
+			if (!m_isXml)
+			{
+				M_ASSERT(m_map.find(mstl::string::empty_string) != m_map.end());
+				m_result = m_map.find(mstl::string::empty_string)->second.str;
+			}
+			else
+			{
+				m_result += ::prefix;
+
+				for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
+				{
+					if (i->second.length > 0)
+					{
+						M_ASSERT(m_wanted == 0 || m_wanted->find(i->first) != m_wanted->end());
+
+						m_result += '<';
+						m_result += ':';
+						m_result += i->first;
+						m_result += '>';
+						m_result += i->second.str;
+						m_result += '<';
+						m_result += '/';
+						m_result += ':';
+						m_result += i->first;
+						m_result += '>';
+					}
+				}
+
+				m_result += suffix;
+			}
 		}
 	}
 
@@ -181,11 +241,14 @@ struct Normalize : public Comment::Callback
 		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
 		{
 			m_lang = &m_map[lang];
+			m_lang->length += ::appendDelim(m_lang->str, m_delim);
 
-			if (!m_lang->str.empty())
+			if (!lang.empty())
 			{
-				m_lang->str += '\n';
-				m_lang->length += 1;
+				if (lang == "en")
+					m_engFlag = true;
+				else
+					m_othFlag = true;
 			}
 		}
 		else
@@ -281,9 +344,12 @@ struct Normalize : public Comment::Callback
 	}
 
 	mstl::string&			m_result;
+	char						m_delim;
 	LanguageSet const*	m_wanted;
 	Content*					m_lang;
 	LangMap					m_map;
+	bool&						m_engFlag;
+	bool&						m_othFlag;
 	bool						m_isXml;
 	Byte						m_attr[256];
 };
@@ -291,7 +357,7 @@ struct Normalize : public Comment::Callback
 
 struct Flatten : public Comment::Callback
 {
-	Flatten(mstl::string& result, Comment::Encoding encoding) :m_result(result), m_encoding(encoding) {}
+	Flatten(mstl::string& result, encoding::CharSet encoding) :m_result(result), m_encoding(encoding) {}
 
 	void start()	{}
 	void finish()	{}
@@ -299,12 +365,15 @@ struct Flatten : public Comment::Callback
 	void startLanguage(mstl::string const& lang)
 	{
 		if (!m_result.empty())
-			m_result += '\n';
+			m_result += ' ';
 
-		m_result += '<';
-		m_result += lang;
-		m_result += '>';
-		m_result += ' ';
+		if (!lang.empty())
+		{
+			m_result += '<';
+			m_result += lang;
+			m_result += '>';
+			m_result += ' ';
+		}
 	}
 
 	void endLanguage(mstl::string const& lang)	{}
@@ -316,7 +385,7 @@ struct Flatten : public Comment::Callback
 
 	void symbol(char s)
 	{
-		if (m_encoding == Comment::Unicode)
+		if (m_encoding == encoding::Utf8)
 			m_result += piece::utf8::asString(piece::fromLetter(s));
 		else
 			m_result += s;
@@ -341,7 +410,7 @@ struct Flatten : public Comment::Callback
 	void invalidXmlContent(mstl::string const& content) { m_result = content; }
 
 	mstl::string&		m_result;
-	Comment::Encoding	m_encoding;
+	encoding::CharSet	m_encoding;
 };
 
 
@@ -354,14 +423,18 @@ struct HtmlConv : public Comment::Callback
 
 	void startLanguage(mstl::string const& lang)
 	{
-		m_result.append("<lang id=\"", 10);
-		m_result.append(lang);
-		m_result.append("\">", 2);
+		if (!lang.empty())
+		{
+			m_result.append("<lang id=\"", 10);
+			m_result.append(lang);
+			m_result.append("\">", 2);
+		}
 	}
 
 	void endLanguage(mstl::string const& lang)
 	{
-		m_result.append("</lang>", 7);
+		if (!lang.empty())
+			m_result.append("</lang>", 7);
 	}
 
 	void startAttribute(Attribute attr)
@@ -421,7 +494,7 @@ struct HtmlConv : public Comment::Callback
 
 	void nag(mstl::string const& s)
 	{
-		m_result.append("<nag>$", 6);
+		m_result.append("<nag>", 5);
 		m_result.append(s);
 		m_result.append("</nag>", 6);
 	}
@@ -570,60 +643,59 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 {
 	HtmlData* data = static_cast<HtmlData*>(cbData);
 
-	char const* e = s + len;
-	char const* p;
-
-	bool specialExpected = true;
-
-	while (s < e)
+	if (data->insideNag)
 	{
-		if (isprint(*s))
+		data->result.append(s, len);
+	}
+	else
+	{
+		char const* e = s + len;
+		char const* p;
+
+		bool specialExpected = true;
+
+		if (data->putLang == 1)
 		{
-			if (isDelimChar(*s))
+			data->result.append("<:>", 3);
+			data->putLang = 2;
+		}
+
+		while (s < e)
+		{
+			if (isprint(*s))
 			{
-				data->result += *s++;
-				specialExpected = true;
-			}
-			else if (specialExpected)
-			{
-				switch (*s)
+				if (isDelimChar(*s))
 				{
-					case '$':
-						if (isdigit(s[1]))
-						{
-							unsigned nag = 0;
-							int k = 1;
-
-							do
-								nag = nag*10 + (s[k] - '0');
-							while (++k < len && isdigit(s[k]));
-
-							if (nag < nag::Scidb_Specific)
+					data->result += *s++;
+					specialExpected = true;
+				}
+				else if (specialExpected)
+				{
+					switch (*s)
+					{
+						case '$':
+							if (isdigit(s[1]))
 							{
-								data->result.append("<nag>", 5);
-								data->result.append(s + 1, k - 1);
-								data->result.append("</nag>", 6);
-								data->isXml = true;
-								s += k;
-							}
-							else
-							{
-								data->result += *s++;
-							}
-						}
-						else
-						{
-							data->result += *s++;
-						}
-						break;
+								char const* p = s + 1;
 
-						case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
-							if (s[1] == '\0' || isDelimChar(s[1]))
-							{
-								data->result.append("<sym>", 5);
-								data->result += *s++;
-								data->result.append("</sym>", 6);
-								data->isXml = true;
+								unsigned nag = 0;
+
+								do
+									nag = nag*10 + (*p - '0');
+								while (++p < e && isdigit(*p));
+
+								if (nag < nag::Scidb_Specific)
+								{
+									data->result.append("<nag>", 5);
+									data->result.append(s + 1, p - s - 1);
+									data->result.append("</nag>", 6);
+									data->isXml = true;
+									s = p;
+								}
+								else
+								{
+									data->result += *s++;
+								}
 							}
 							else
 							{
@@ -631,67 +703,83 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 							}
 							break;
 
-						default:
-							{
-								int n = 1;
-								nag::ID nag;
-
-								while (n < len && !isDelimChar(s[n]))
-									++n;
-
-								if (n <= 5 && (nag = nag::fromSymbol(s, n)) != nag::Null)
+							case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
+								if (s[1] == '\0' || isDelimChar(s[1]))
 								{
-									data->result.format("<nag>%u</nag>", unsigned(nag));
+									data->result.append("<sym>", 5);
+									data->result += *s++;
+									data->result.append("</sym>", 6);
 									data->isXml = true;
 								}
 								else
 								{
-									data->result.append(s, n);
+									data->result += *s++;
 								}
+								break;
 
-								s += n;
-							}
-							break;
+							default:
+								{
+									char const* p = s + 1;
+
+									nag::ID nag;
+
+									while (p < s && !isDelimChar(*p))
+										++p;
+
+									if (p - s <= 5 && (nag = nag::fromSymbol(s, p - s)) != nag::Null)
+									{
+										data->result.format("<nag>%u</nag>", unsigned(nag));
+										data->isXml = true;
+									}
+									else
+									{
+										data->result.append(s, p - s);
+									}
+
+									s = p;
+								}
+								break;
+					}
 				}
 			}
-		}
-		else if (s[0] & 0x80)
-		{
-			if (s[0] == '\xe2' && s[1] == '\x99' && ('\x94' <= s[2] && s[2] <= '\x99'))
+			else if (s[0] & 0x80)
 			{
-				switch (s[2])
+				if (s[0] == '\xe2' && s[1] == '\x99' && ('\x94' <= s[2] && s[2] <= '\x99'))
 				{
-					case '\x94': data->result.append("<sym>K</sym>", 12); break;
-					case '\x95': data->result.append("<sym>Q</sym>", 12); break;
-					case '\x96': data->result.append("<sym>R</sym>", 12); break;
-					case '\x97': data->result.append("<sym>B</sym>", 12); break;
-					case '\x98': data->result.append("<sym>N</sym>", 12); break;
-					case '\x99': data->result.append("<sym>P</sym>", 12); break;
-				}
+					switch (s[2])
+					{
+						case '\x94': data->result.append("<sym>K</sym>", 12); break;
+						case '\x95': data->result.append("<sym>Q</sym>", 12); break;
+						case '\x96': data->result.append("<sym>R</sym>", 12); break;
+						case '\x97': data->result.append("<sym>B</sym>", 12); break;
+						case '\x98': data->result.append("<sym>N</sym>", 12); break;
+						case '\x99': data->result.append("<sym>P</sym>", 12); break;
+					}
 
-				data->isXml = true;
-				data->isHtml = true;
-				s += 3;
+					data->isXml = true;
+					data->isHtml = true;
+					s += 3;
+				}
+				else if ((p = sys::utf8::Codec::utfNextChar(s)) - s > 1)
+				{
+					data->result.append(s, p - s);
+					data->isHtml = true;
+					s = p;
+				}
+				else
+				{
+					data->result += '?';
+					++s;
+				}
 			}
-			else if ((p = sys::utf8::Codec::utfNextChar(s)) - s > 1)
+			else if (isspace(*s++))
 			{
-				data->result.append(s, p - s);
-				data->isHtml = true;
-				s = p;
+				data->result += '\n';
 			}
 			else
 			{
 				data->result += '?';
-				++s;
 			}
-		}
-		else if (isspace(*s++))
-		{
-			data->result += '\n';
-		}
-		else
-		{
-			data->result += '?';
 		}
 	}
 }
@@ -724,6 +812,11 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 			}
 			break;
 
+		case 'h':
+			if (strcmp(elem, "html") == 0)
+				data->result.append("<xml>", 5);
+			break;
+
 		case 'l':
 			if (strcmp(elem, "lang") == 0)
 			{
@@ -734,11 +827,20 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 					&& islower(attr[1][1])
 					&& attr[1][2] == '\0')
 				{
+					if (data->putLang == 2)
+						data->result.append("</:>", 4);
+
+					data->putLang = 0;
 					data->result.append("<:", 2);
 					data->result.append(attr[1]);
 					data->result.append(">", 1);
 					data->lang.assign(attr[1], 2);
 					data->isXml = true;
+
+					if (attr[1][0] == 'e' && attr[1][1] == 'n')
+						data->engFlag = true;
+					else
+						data->othFlag = true;
 				}
 				else
 				{
@@ -749,7 +851,11 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 
 		case 'n':
 			if (strcmp(elem, "nag") == 0)
+			{
+				data->result.append("<nag>", 5);
+				data->insideNag = true;
 				data->isXml = true;
+			}
 			break;
 
 		case 'u':
@@ -796,7 +902,29 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 					data->result.append("</:", 3);
 					data->result.append(data->lang);
 					data->result.append(">", 1);
+					data->putLang = 1;
+					data->lang.clear();
 				}
+			}
+			break;
+
+		case 'h':
+			if (strcmp(elem, "html") == 0)
+			{
+				if (data->putLang == 2)
+				{
+					data->result.append("</:>", 4);
+					data->putLang = 0;
+				}
+				data->result.append("</xml>", 6);
+			}
+			break;
+
+		case 'n':
+			if (strcmp(elem, "nag") == 0)
+			{
+				data->result.append("</nag>", 6);
+				data->insideNag = false;
 			}
 			break;
 	}
@@ -805,8 +933,58 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 
 Comment::Callback::~Callback() throw() {}
 
-Comment::Comment() {}
-Comment::Comment(mstl::string const& content) :m_content(content) {}
+Comment::Comment() :m_engFlag(false), m_othFlag(false) {}
+
+
+Comment::Comment(mstl::string const& content, bool engFlag, bool othFlag)
+	:m_content(content)
+	,m_engFlag(engFlag)
+	,m_othFlag(othFlag)
+{
+}
+
+
+void
+Comment::append(Comment const& comment, char delim)
+{
+	if (m_content.empty())
+	{
+		m_content = comment;
+		m_engFlag = comment.m_engFlag;
+		m_othFlag = comment.m_othFlag;
+		m_languageSet.clear();
+	}
+	else
+	{
+		bool thisIsXml = isXml();
+		bool thatIsXml = comment.isXml();
+
+		if (thisIsXml != thatIsXml)
+		{
+			mstl::string content;
+			content.reserve(
+				m_content.size() + comment.m_content.size() + ::prefix.size() + ::suffix.size());
+			content.append(::prefix);
+			::append(content, m_content, thisIsXml);
+			::append(content, comment.m_content, thatIsXml);
+			content.append(::suffix);
+			m_content.swap(content);
+			normalize(delim); // updates m_engFlag, m_othFlag
+		}
+		else if (thisIsXml) // && thatIsXml
+		{
+			m_content.erase(m_content.end() - ::suffix.size(), m_content.end());
+			m_content.append(comment.content(), ::prefix.size());
+			normalize(delim); // updates m_engFlag, m_othFlag
+			m_languageSet.clear();
+		}
+		else // if (!thisIsXml && !thatIsXml)
+		{
+			::appendDelim(m_content, delim);
+			m_content.append(comment);
+		}
+	}
+}
 
 
 void
@@ -927,23 +1105,19 @@ void
 Comment::swap(Comment& comment)
 {
 	m_content.swap(comment.m_content);
+	mstl::swap(m_engFlag, comment.m_engFlag);
+	mstl::swap(m_othFlag, comment.m_othFlag);
 	m_languageSet.swap(comment.m_languageSet);
 }
 
 
 void
-Comment::swap(mstl::string& content)
+Comment::swap(mstl::string& content, bool engFlag, bool othFlag)
 {
 	m_content.swap(content);
 	m_languageSet.clear();
-}
-
-
-void
-Comment::setContent(mstl::string const& s)
-{
-	m_content = s;
-	m_languageSet.clear();
+	m_engFlag = engFlag;
+	m_othFlag = othFlag;
 }
 
 
@@ -952,11 +1126,12 @@ Comment::clear()
 {
 	m_content.clear();
 	m_languageSet.clear();
+	m_engFlag = m_othFlag = false;
 }
 
 
 void
-Comment::flatten(mstl::string& result, Encoding encoding) const
+Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
 {
 	if (m_content.empty())
 		return;
@@ -1020,7 +1195,7 @@ Comment::toHtml(mstl::string& result) const
 
 
 void
-Comment::normalize()
+Comment::normalize(char delim)
 {
 	if (m_content.empty())
 		return;
@@ -1028,7 +1203,7 @@ Comment::normalize()
 	if (!isXml())
 		return;
 
-	Normalize normalize(m_content);
+	Normalize normalize(m_content, m_engFlag, m_othFlag, delim);
 	parse(normalize);
 }
 
@@ -1064,15 +1239,17 @@ Comment::strip(LanguageSet const& set)
 	if (set.empty())
 	{
 		m_content.clear();
+		m_engFlag = m_othFlag = false;
 	}
 	else if (isXml())
 	{
-		Normalize normalize(m_content, &set);
+		Normalize normalize(m_content, m_engFlag, m_othFlag, '\0', &set);
 		parse(normalize);
 	}
 	else if (set.find(mstl::string::empty_string) == set.end())
 	{
 		m_content.clear();
+		m_engFlag = m_othFlag = false;
 	}
 
 	m_languageSet.clear();
@@ -1089,7 +1266,7 @@ Comment::fromHtml(mstl::string const& s)
 
 	bool sucesss = false;
 
-	HtmlData data(m_content);
+	HtmlData data(m_content, m_engFlag, m_othFlag);
 	m_content.reserve(s.size());
 
 	XML_SetUserData(parser, &data);
@@ -1099,20 +1276,29 @@ Comment::fromHtml(mstl::string const& s)
 	try
 	{
 		mstl::string buf;
-		buf.reserve(s.size() + 11);
+		mstl::string const* str;
 
-		buf.append("<xml>");
-		buf.append(s);
-		buf.append("</xml>");
-
-		if (XML_Parse(parser, buf, buf.size(), true))
+		if (::strncmp(s, "<html>", 6) == 0)
 		{
-			sucesss = data.isHtml;
+			str = &s;
+		}
+		else
+		{
+			buf.reserve(s.size() + 20);
+			buf.append("<html>", 6);
+			buf.append(s);
+			buf.append("</html>", 7);
+			str = &buf;
+		}
+
+		if (XML_Parse(parser, str->c_str(), str->size(), true))
+		{
+			sucesss = data.success();
 
 			if (data.isXml)
 			{
-				m_content.insert(m_content.begin(), "<xml>", 5);
-				m_content.append("</xml>", 6);
+				m_content.insert(m_content.begin(), ::prefix);
+				m_content.append(::suffix);
 			}
 		}
 	}
@@ -1128,14 +1314,16 @@ Comment::fromHtml(mstl::string const& s)
 
 
 bool
-Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, Encoding encoding)
+Comment::convertCommentToXml(	mstl::string const& comment,
+										Comment& result,
+										encoding::CharSet encoding)
 {
-	M_REQUIRE(comment.c_str() != result.c_str());
+	M_REQUIRE(&comment != &result.content());
 
 	char const* s		= comment.c_str();
 	bool hasDiagram	= false;
 
-	result.reserve(comment.size() + 100);
+	result.m_content.reserve(comment.size() + 100);
 
 	if (s[0] == '#' && (s[1] == '\0' || ::isspace(s[1])))
 	{
@@ -1167,7 +1355,7 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 	{
 		if (*s & 0x80)
 		{
-			if (encoding == Unicode)
+			if (encoding == encoding::Utf8)
 			{
 				char const* e = sys::utf8::Codec::utfNextChar(s);
 
@@ -1175,24 +1363,24 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 				{
 					switch (s[2])
 					{
-						case '\x94': result.append("<sym>K</sym>", 12); isXml = true; break;
-						case '\x95': result.append("<sym>Q</sym>", 12); isXml = true; break;
-						case '\x96': result.append("<sym>R</sym>", 12); isXml = true; break;
-						case '\x97': result.append("<sym>B</sym>", 12); isXml = true; break;
-						case '\x98': result.append("<sym>N</sym>", 12); isXml = true; break;
-						case '\x99': result.append("<sym>P</sym>", 12); isXml = true; break;
+						case '\x94': result.m_content.append("<sym>K</sym>", 12); isXml = true; break;
+						case '\x95': result.m_content.append("<sym>Q</sym>", 12); isXml = true; break;
+						case '\x96': result.m_content.append("<sym>R</sym>", 12); isXml = true; break;
+						case '\x97': result.m_content.append("<sym>B</sym>", 12); isXml = true; break;
+						case '\x98': result.m_content.append("<sym>N</sym>", 12); isXml = true; break;
+						case '\x99': result.m_content.append("<sym>P</sym>", 12); isXml = true; break;
 					}
 				}
 				else
 				{
-					result.append(s, e - s);
+					result.m_content.append(s, e - s);
 				}
 
 				s = e;
 			}
 			else if (::isprint(*s))
 			{
-				result += *s++;
+				result.m_content += *s++;
 			}
 		}
 		else
@@ -1201,8 +1389,8 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 			{
 				switch (*s)
 				{
-					case '&': result += '\x01'; ++s; break;
-					case '>': result += '\x03'; ++s; break;
+					case '&': result.m_content += '\x01'; ++s; break;
+					case '>': result.m_content += '\x03'; ++s; break;
 
 					case '<':
 						if (	::islower(s[1])
@@ -1210,23 +1398,21 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 							&& s[3] == '>'
 							&& s[4] == ' ')
 						{
-							if (!lang.empty())
-							{
-								result.append("</:", 3);
-								result.append(lang);
-								result.append(">", 1);
-							}
-
+							while (!result.m_content.empty() && result.m_content.back() == ' ')
+								result.m_content.set_size(result.m_content.size() - 1);
+							result.m_content.append("</:", 3);
+							result.m_content.append(lang);
+							result.m_content.append(">", 1);
 							lang.assign(s + 1, 2);
-							result.append("<:", 2);
-							result.append(lang);
-							result.append(">", 1);
+							result.m_content.append("<:", 2);
+							result.m_content.append(lang);
+							result.m_content.append(">", 1);
 							isXml = true;
-							s += 4;
+							s += 5;
 						}
 					else
 					{
-						result += '\x02';
+						result.m_content += '\x02';
 						++s;
 					}
 					break;
@@ -1234,7 +1420,7 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 					default:
 						if (::isDelimChar(*s))
 						{
-							result += *s++;
+							result.m_content += *s++;
 							specialExpected = true;
 						}
 						else if (specialExpected)
@@ -1249,9 +1435,9 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 
 										if (0 <= nag && nag < nag::Scidb_Last)
 										{
-											result.append("<nag>", 5);
-											result.append(s, e - s);
-											result.append("</nag>", 6);
+											result.m_content.append("<nag>", 5);
+											result.m_content.append(s, e - s);
+											result.m_content.append("</nag>", 6);
 											isXml = true;
 										}
 
@@ -1259,19 +1445,20 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 									}
 									break;
 
-								case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
-									if (s[1] == '\0' || ::isDelimChar(s[1]))
-									{
-										result.append("<sym>", 5);
-										result += *s++;
-										result.append("</sym>", 6);
-										isXml = true;
-									}
-									else
-									{
-										result += *s++;
-									}
-									break;
+//								not working, e.g. "Ponomariov, R (2718)-Leko, P (2741)"
+//								case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
+//									if (s[1] == '\0' || ::isDelimChar(s[1]))
+//									{
+//										result.m_content.append("<sym>", 5);
+//										result.m_content += *s++;
+//										result.m_content.append("</sym>", 6);
+//										isXml = true;
+//									}
+//									else
+//									{
+//										result.m_content += *s++;
+//									}
+//									break;
 
 								default:
 									{
@@ -1283,12 +1470,12 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 
 										if (len <= 5 && (nag = nag::fromSymbol(s, len)) != nag::Null)
 										{
-											result.format("<nag>%u</nag>", unsigned(nag));
+											result.m_content.format("<nag>%u</nag>", unsigned(nag));
 											isXml = true;
 										}
 										else
 										{
-											result.append(s, len);
+											result.m_content.append(s, len);
 										}
 
 										s += len;
@@ -1300,7 +1487,7 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 						}
 						else
 						{
-							result += *s++;
+							result.m_content += *s++;
 						}
 						break;
 				}
@@ -1315,66 +1502,73 @@ Comment::convertCommentToXml(mstl::string const& comment, mstl::string& result, 
 				{
 					if (!lang.empty())
 					{
-						result.append("</:", 3);
-						result.append(lang);
-						result.append(">", 1);
+						result.m_content.append("</:", 3);
+						result.m_content.append(lang);
+						result.m_content.append(">", 1);
 					}
 
 					lang.assign(s + 1, 2);
-					result.append("<:", 2);
-					result.append(lang);
-					result.append(">", 1);
+					result.m_content.append("<:", 2);
+					result.m_content.append(lang);
+					result.m_content.append(">", 1);
 					isXml = true;
 					s += 5;
+
+					if (s[1] == 'e' && s[2] == 'n')
+						result.m_engFlag = true;
+					else
+						result.m_othFlag = true;
 				}
 				else
 				{
-					result += '\n';
+					result.m_content += '\n';
 				}
 			}
 			else
 			{
-				result += '?';
+				result.m_content += '?';
 			}
 		}
-	}
-
-	if (!lang.empty())
-	{
-		result.append("</:", 3);
-		result.append(lang);
-		result.append(">", 1);
 	}
 
 	if (isXml)
 	{
 		mstl::string str;
-		str.swap(result);
-		result += "<xml>";
+		str.swap(result.m_content);
+
+		result.m_content.append(::prefix);
+		result.m_content.append("<:>", 3);
 
 		for (unsigned i = 0; i < str.size(); ++i)
 		{
 			switch (char c = str[i])
 			{
-				case '\x01': result += "&amp;";  break;
-				case '\x02': result += "&lt;";   break;
-				case '\x03': result += "&gt;";   break;
+				case '\x01': result.m_content += "&amp;";  break;
+				case '\x02': result.m_content += "&lt;";   break;
+				case '\x03': result.m_content += "&gt;";   break;
 
-				default: result += c;
+				default: result.m_content += c;
 			}
 		}
 
-		result += "</xml>";
+		while (result.m_content.back() == ' ')
+			result.m_content.set_size(result.m_content.size() - 1);
+
+		result.m_content.append("</:", 3);
+		result.m_content.append(lang);
+		result.m_content.append(">", 1);
+		result.m_content += ::suffix;
+		result.normalize('\0');
 	}
 	else
 	{
-		for (unsigned i = 0; i < result.size(); ++i)
+		for (unsigned i = 0; i < result.m_content.size(); ++i)
 		{
-			switch (result[i])
+			switch (result.m_content[i])
 			{
-				case '\x01': result[i] = '&'; break;
-				case '\x02': result[i] = '<'; break;
-				case '\x03': result[i] = '>'; break;
+				case '\x01': result.m_content[i] = '&'; break;
+				case '\x02': result.m_content[i] = '<'; break;
+				case '\x03': result.m_content[i] = '>'; break;
 			}
 		}
 	}

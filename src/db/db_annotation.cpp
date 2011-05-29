@@ -418,6 +418,7 @@ Annotation::add(Annotation const& set)
 
 	uint8_t n = mstl::min(set.m_count, uint8_t(Max_Nags - m_count));
 	;;memcpy(m_annotation + m_count, set.m_annotation, n);
+	m_count += n;
 	return n;
 }
 

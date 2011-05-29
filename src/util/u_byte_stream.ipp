@@ -42,8 +42,10 @@ inline unsigned ByteStream::tellg() const			{ return m_getp - m_base; }
 
 inline ByteStream::Byte* ByteStream::base()					{ return m_base; }
 inline ByteStream::Byte const* ByteStream::base() const	{ return m_base; }
+inline ByteStream::Byte* ByteStream::data()					{ return m_getp; }
 inline ByteStream::Byte const* ByteStream::data() const	{ return m_getp; }
 inline ByteStream::Byte* ByteStream::buffer()				{ return m_putp; }
+inline ByteStream::Byte* ByteStream::end()					{ return m_endp; }
 inline ByteStream::Byte const* ByteStream::end() const	{ return m_endp; }
 
 inline void ByteStream::reset(unsigned size)					{ m_endp = m_base + size; }

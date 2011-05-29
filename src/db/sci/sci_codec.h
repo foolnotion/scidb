@@ -96,6 +96,7 @@ public:
 					sys::utf8::Codec& newCodec);
 
 	unsigned putGame(util::ByteStream const& strm);
+	unsigned putGame(util::ByteStream const& strm, unsigned prevOffset, unsigned prevRecordLength);
 	util::ByteStream getGame(GameInfo const& info);
 	void replaceBlockFile(util::BlockFile* blockFile);
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
@@ -105,13 +106,14 @@ public:
 	void updateHeader(mstl::string const& rootname);
 	void unlock(mstl::string const& rootname);
 	void close();
+	void sync();
 
-	save::State doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info);
+	save::State doDecoding(db::Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info);
 	save::State doDecoding(	db::Consumer& consumer,
 									util::ByteStream& strm,
-									unsigned flags,
+//									unsigned flags,
 									TagSet& tags);
-	void doDecoding(unsigned flags, GameData& data, GameInfo& info);
+	void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info);
 
 	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	Consumer* getConsumer(format::Type srcFormat);

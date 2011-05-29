@@ -454,7 +454,7 @@ proc LanguageChanged {dlg w} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Position
+	::options::writeList $chan [namespace current]::Position
 }
 
 

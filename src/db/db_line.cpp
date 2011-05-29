@@ -68,7 +68,7 @@ Line::print(mstl::string& result) const
 			result.format("%u.", mstl::div2(i) + 1);
 
 		board.prepareForSan(m);
-		m.printSan(result, Move::Unicode);
+		m.printSan(result, encoding::Utf8);
 		board.doMove(m);
 	}
 

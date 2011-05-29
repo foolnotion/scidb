@@ -384,6 +384,13 @@ Codec::close()
 }
 
 
+void
+Codec::sync()
+{
+	m_gameData->sync();
+}
+
+
 util::ByteStream
 Codec::getGame(GameInfo const& info)
 {
@@ -403,26 +410,34 @@ Codec::putGame(ByteStream const& strm)
 }
 
 
+unsigned
+Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordLength)
+{
+	M_ASSERT(m_gameData);
+	return m_gameData->put(strm, prevOffset, prevRecordLength);
+}
+
+
 save::State
-Codec::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, *m_codec);
-	return decoder.doDecoding(consumer, flags, tags);
+	return decoder.doDecoding(consumer/*, flags*/, tags);
 }
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, unsigned flags, TagSet& tags)
+Codec::doDecoding(db::Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
 {
 	Decoder decoder(strm, *m_codec);
-	return decoder.doDecoding(consumer, flags, tags);
+	return decoder.doDecoding(consumer/*, flags*/, tags);
 }
 
 
 void
-Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
+Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
@@ -432,7 +447,7 @@ Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
 	M_ASSERT(strm.size() == info.gameRecordLength());
 
 	data.m_crc = crc::compute(0, strm.data(), strm.size());
-	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(flags, data));
+	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));
 
 	if (data.m_tags.contains(tag::EventDate) && !info.m_event->hasDate())
 		info.m_event->setDate(Date(data.m_tags.value(tag::EventDate)));
@@ -583,28 +598,8 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	m_gameData->sync();
 	m_hasMagic = true;
 
-	try
-	{
-		writeNamebase(namebaseStream);
-		writeIndexHeader(indexStream);
-	}
-	catch (...)
-	{
-		delete m_playerList;
-		delete m_eventList;
-		delete m_siteList;
-		delete m_roundList;
-
-		m_playerList = m_eventList = m_siteList = m_roundList = 0;
-		throw;
-	}
-
-	delete m_playerList;
-	delete m_eventList;
-	delete m_siteList;
-	delete m_roundList;
-
-	m_playerList = m_eventList = m_siteList = m_roundList = 0;
+	writeNamebase(namebaseStream);
+	writeIndexHeader(indexStream);
 }
 
 
@@ -630,28 +625,8 @@ Codec::doClear(mstl::string const& rootname)
 	m_gameData = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength, m_magicGameFile);
 	m_hasMagic = true;
 
-	try
-	{
-		writeNamebase(namebaseStream);
-		writeIndexHeader(indexStream);
-	}
-	catch (...)
-	{
-		delete m_playerList;
-		delete m_eventList;
-		delete m_siteList;
-		delete m_roundList;
-
-		m_playerList = m_eventList = m_siteList = m_roundList = 0;
-		throw;
-	}
-
-	delete m_playerList;
-	delete m_eventList;
-	delete m_siteList;
-	delete m_roundList;
-
-	m_playerList = m_eventList = m_siteList = m_roundList = 0;
+	writeNamebase(namebaseStream);
+	writeIndexHeader(indexStream);
 }
 
 
@@ -687,26 +662,14 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	{
 		writeNamebase(namebaseStream);
 		sys::file::rename(namebaseTempFilename, namebaseFilename);
-		writeIndex(indexStream, start, progress);
 	}
 	catch (...)
 	{
-		delete m_playerList;
-		delete m_eventList;
-		delete m_siteList;
-		delete m_roundList;
-
 		sys::file::deleteIt(namebaseTempFilename);
-		m_playerList = m_eventList = m_siteList = m_roundList = 0;
 		throw;
 	}
 
-	delete m_playerList;
-	delete m_eventList;
-	delete m_siteList;
-	delete m_roundList;
-
-	m_playerList = m_eventList = m_siteList = m_roundList = 0;
+	writeIndex(indexStream, start, progress);
 }
 
 
@@ -761,26 +724,14 @@ Codec::update(mstl::string const& rootname)
 	{
 		writeNamebase(namebaseStream);
 		sys::file::rename(namebaseTempFilename, namebaseFilename);
-		updateIndex(indexStream);
 	}
 	catch (...)
 	{
-		delete m_playerList;
-		delete m_eventList;
-		delete m_siteList;
-		delete m_roundList;
-
 		sys::file::deleteIt(namebaseTempFilename);
-		m_playerList = m_eventList = m_siteList = m_roundList = 0;
 		throw;
 	}
 
-	delete m_playerList;
-	delete m_eventList;
-	delete m_siteList;
-	delete m_roundList;
-
-	m_playerList = m_eventList = m_siteList = m_roundList = 0;
+	updateIndex(indexStream);
 }
 
 
@@ -834,8 +785,6 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
 	if (!indexStream.write(buf, m_indexEntrySize))
 		IO_RAISE(Index, Write_Failed, "error while writing index entry");
-
-	info->setDirty(false);
 }
 
 
@@ -951,6 +900,8 @@ Codec::updateIndex(mstl::fstream& fstrm)
 				IO_RAISE(Index, Corrupted, "unexpected end of file");
 			if (!fstrm.write(buf, m_indexEntrySize))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
+
+			infoList[i]->setDirty(false);
 		}
 	}
 }
@@ -1659,15 +1610,13 @@ Codec::getConsumer(format::Type srcFormat)
 void
 Codec::writeNamebase(mstl::fstream& stream)
 {
-	M_ASSERT(m_playerList == 0);
-	M_ASSERT(m_eventList == 0);
-	M_ASSERT(m_siteList == 0);
-	M_ASSERT(m_roundList == 0);
-
 	stream.set_unbuffered();
 
 	unsigned char buf[28];
 	ByteStream bstrm(buf, sizeof(buf));
+
+	delete m_playerList; delete m_eventList; delete m_siteList; delete m_roundList;
+	m_playerList = m_eventList = m_siteList = m_roundList = 0;
 
 	m_playerList = new NameList(namebase(Namebase::Player), *m_codec, m_usedIdSet[Namebase::Player]);
 	m_eventList  = new NameList(namebase(Namebase::Event ), *m_codec, m_usedIdSet[Namebase::Event ]);
@@ -1808,7 +1757,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 
 
 uint32_t
-Codec::computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const
+Codec::computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);

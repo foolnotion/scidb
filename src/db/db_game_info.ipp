@@ -67,6 +67,8 @@ inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag
 inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId; }
 inline bool GameInfo::hasChess960Position() const			{ return m_positionId <= 960; }
 inline bool GameInfo::hasStandardPosition() const			{ return m_positionId == chess960::StandardIdn;}
+inline bool GameInfo::containsEnglishLanguage() const		{ return m_pd[0].langFlag; }
+inline bool GameInfo::containsOtherLanguage() const		{ return m_pd[1].langFlag; }
 
 inline uint16_t GameInfo::idn() const							{ return m_positionId; }
 inline result::ID GameInfo::result() const					{ return result::ID(m_result); }

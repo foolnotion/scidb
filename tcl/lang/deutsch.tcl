@@ -109,6 +109,7 @@
 ::menu::mc::GameNewShuffleSymm	"Neue Partie: M&ischen (nur symmetrische)"
 ::menu::mc::GameSave					"Partie &hinzufügen"
 ::menu::mc::GameReplace				"Partie &ersetzen"
+::menu::mc::GameReplaceMoves		"Partie&züge ersetzen"
 
 ::menu::mc::HelpInfo					"&Information"
 ::menu::mc::HelpContents			"In&halt"
@@ -140,7 +141,24 @@
 ::menu::mc::Settings					"&Einstellungen"
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt	"Datei %s is beschädigt:"
+::load::mc::FileIsCorrupt			"Datei %s is beschädigt:"
+
+::load::mc::Loading					"Lade %s"
+::load::mc::ReadingOptionsFile	"Lese Optionendatei"
+::load::mc::StartupFinished		"Programmstart beendet"
+
+::load::mc::ECOFile					"ECO-Datei"
+::load::mc::EngineFile				"Engine-Datei"
+::load::mc::SpellcheckFile			"Rechtschreibprüfungsdatei"
+::load::mc::LocalizationFile		"Lokalisierungsdatei"
+::load::mc::RatingList				"%s-Wertungszahlenliste"
+::load::mc::WikipediaLinks			"Verknüpfungen zu Wikipedia"
+::load::mc::ChessgamesComLinks	"Verknüpfungen zu chessgames.com"
+::load::mc::Cities					"Städteliste"
+::load::mc::PhotoIndex				"Photoindex"
+::load::mc::PieceSet					"Figurensatz"
+::load::mc::Theme						"Thema"
+::load::mc::Icons						"Icons"
 
 ### application ########################################################
 ::application::mc::Database				"Datenba&nk"
@@ -272,6 +290,7 @@
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Kommentator"	;# ???
+::application::database::annotators::mc::F_Frequency		"Häufigkeit"
 
 ::application::database::annotators::mc::Find				"Finde"
 ::application::database::annotators::mc::FindAnnotator	"Finde Kommentator"
@@ -311,14 +330,13 @@
 
 ::application::pgn::mc::AddNewGame							"Partie speichern in %s..."
 ::application::pgn::mc::ReplaceGame							"Partie ersetzen in %s..."
+::application::pgn::mc::ReplaceMoves						"Partiezüge ersetzen in aktueller Partie"
 
 ::application::pgn::mc::ColumnStyle							"Spaltenanzeige"
 ::application::pgn::mc::NarrowLines							"Keine Leerzeilen"
-::application::pgn::mc::IndentVariations					"Varianten einrücken"
-::application::pgn::mc::IndentComments						"Kommentare einrücken"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Fettdruck für Hauptfortsetzung"
-::application::pgn::mc::SpaceAfterMoveNumbers			"Leerzeichen nach Zugnummer"
 ::application::pgn::mc::ShowDiagrams						"Diagramme zeigen"
+::application::pgn::mc::Languages							"Sprachen"
 
 ::application::pgn::mc::NumberOfMoves						"Zahl der Halbzüge (in Hauptfortsetzung):"
 ::application::pgn::mc::InvalidInput						"Ungültige Eingabe '%d'."
@@ -326,7 +344,9 @@
 ::application::pgn::mc::MustBeOdd							"Die Eingabe muß eine ungerade Zahl sein."
 
 ::application::pgn::mc::EditAnnotation						"Anmerkungen bearbeiten"
-::application::pgn::mc::EditComment							"Kommentar bearbeiten"
+::application::pgn::mc::EditCommentBefore					"Kommentar (vor dem Zug) bearbeiten"
+::application::pgn::mc::EditCommentAfter					"Kommentar (nach dem Zug) bearbeiten"
+::application::pgn::mc::EditCommentAtStart				"Kommentar (vor Variante) bearbeiten"
 ::application::pgn::mc::EditMarks							"Markierungen bearbeiten"
 ::application::pgn::mc::Display								"Anzeige"
 ::application::pgn::mc::None									"keine"
@@ -559,6 +579,8 @@
 ::gametable::mc::T_EventType				"Turniertyp"
 ::gametable::mc::T_Chess960Pos			"Schach-960 Position"
 ::gametable::mc::T_Deleted					"Gelöscht"
+::gametable::mc::T_EngFlag					"Englischsprachig-Kennzeichen"
+::gametable::mc::T_OthFlag					"Anderssprachig-Kennzeichen"
 ::gametable::mc::T_Idn						"Schach-960 Positionsnummer"
 ::gametable::mc::T_Annotations			"Anmerkungen"
 ::gametable::mc::T_Comments				"Kommentare"
@@ -1139,6 +1161,7 @@
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar vor dem Zug"
 ::comment::mc::CommentAfterMove		"Kommentar nach dem Zug"
+::comment::mc::CommentAtStart			"Kommentar vor Variante"
 ::comment::mc::Language					"Sprache"
 ::comment::mc::AllLanguages			"Alle Sprachen"
 ::comment::mc::AddLanguage				"Sprache hinzufügen..."

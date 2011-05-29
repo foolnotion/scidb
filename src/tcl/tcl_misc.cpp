@@ -374,9 +374,7 @@ Parser::parse()
 
 		char const* lang = Tcl_GetStringFromObj(argv[0], 0);
 
-		if (*lang)
-			m_xml.format("<:%s>", lang);
-
+		m_xml.format("<:%s>", lang);
 		Tcl_ListObjGetElements(0, argv[1], &argc, &argv);
 
 		for (int k = 0; k < argc; ++k)
@@ -472,8 +470,7 @@ Parser::parse()
 		}
 
 		processModes();
-		if (*lang)
-			m_xml.format("</:%s>", lang);
+		m_xml.format("</:%s>", lang);
 	}
 
 	m_xml.append("</xml>", 6);
@@ -515,7 +512,7 @@ cmdToAscii(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	db::Comment comment(stringFromObj(objc, objv, 1));
+	db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
 	Callback callback;
 
 	comment.parse(callback);

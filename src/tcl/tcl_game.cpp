@@ -384,7 +384,7 @@ public:
 	{
 		mstl::string san;
 
-		move.printSan(san, Move::Unicode);
+		move.printSan(san, encoding::Utf8);
 
 		Tcl_Obj* objv_1[4];
 

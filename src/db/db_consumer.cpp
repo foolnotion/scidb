@@ -35,6 +35,7 @@
 #include "m_assert.h"
 
 #include <stdlib.h>
+#include <ctype.h>
 
 using namespace db;
 
@@ -54,6 +55,8 @@ Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
 	,m_consumer(0)
 	,m_setupBoard(true)
 	,m_hasComment(false)
+	,m_commentEngFlag(false)
+	,m_commentOthFlag(false)
 {
 }
 
@@ -124,6 +127,8 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_terminated = false;
 	m_line.length = 0;
 	m_hasComment = false;
+	m_commentEngFlag = false;
+	m_commentOthFlag = false;
 	m_homePawns.clear();
 
 	if (board)
@@ -174,29 +179,31 @@ Consumer::finishMoveSection(result::ID result)
 	}
 
 	endMoveSection(result);
+
+	// we don't like to have null moves in the opening line
+	unsigned i = 0;
+	while (i < m_line.length && m_line[i])
+		++i;
+	m_line.length = i;
 }
 
 
 void
 Consumer::putComment(Comment const& comment)
 {
-	if (!m_comment.isEmpty())
-	{
-		m_comment = comment;
-		m_preAnnotation.clear();
-		m_preMarks.clear();
-		m_hasComment = !comment.isEmpty();
-	}
+	m_comment.append(comment, '\n');
+	m_hasComment = !m_comment.isEmpty();
 }
 
 
 void
 Consumer::putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	m_comment = comment;
-	m_preAnnotation = annotation;
-	m_preMarks = marks;
+	m_comment.append(comment, ' ');
+	m_preAnnotation.add(annotation);
+	m_preMarks.add(marks);
 	m_hasComment = !comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty();
+
 }
 
 
@@ -212,7 +219,16 @@ Consumer::sendComment()
 			m_annotationCount += m_preAnnotation.count();
 			m_markCount += m_preMarks.count();
 
+			if (m_comment.engFlag())
+				m_commentEngFlag = true;
+			if (m_comment.othFlag())
+				m_commentOthFlag = true;
+
 			sendComment(m_comment, m_preAnnotation, m_preMarks);
+
+			m_comment.clear();
+			m_preAnnotation.clear();
+			m_preMarks.clear();
 		}
 
 		m_hasComment = false;
@@ -253,6 +269,15 @@ Consumer::putMove(Move const& move,
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
+
+	if (comment.engFlag())
+		m_commentEngFlag = true;
+	if (comment.othFlag())
+		m_commentOthFlag = true;
+	if (preComment.engFlag())
+		m_commentEngFlag = true;
+	if (preComment.othFlag())
+		m_commentOthFlag = true;
 
 	if (sendMove(entry.move, annotation, marks, preComment, comment))
 	{
@@ -350,7 +375,6 @@ Consumer::finishVariation()
 		endVariation();
 
 	m_stack.pop();
-	sendComment();	// send dangling pre-comment (if variation is empty)
 }
 
 

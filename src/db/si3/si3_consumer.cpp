@@ -47,6 +47,9 @@ Consumer::Consumer(format::Type srcFormat, Codec& codec, mstl::string const& enc
 	,m_stream(m_buffer, codec.blockSize())
 	,m_codec(codec)
 	,m_flagPos(0)
+	,m_encoding(this->codec().isUtf8() ? encoding::Utf8 : encoding::Latin1)
+	,m_afterVar(false)
+	,m_appendComment(false)
 {
 }
 
@@ -72,6 +75,8 @@ Consumer::beginGame(TagSet const& tags)
 	Encoder::setup(board());
 	m_comments.clear();
 	m_move = Move::empty();
+	m_afterVar = false;
+	m_appendComment = false;
 
 	return true;
 }
@@ -123,7 +128,7 @@ Consumer::pushComment(Comment const& comment)
 	if (comment.isXml())
 	{
 		mstl::string text;
-		comment.flatten(text, codec().isUtf8() ? Comment::Unicode : Comment::Latin1);
+		comment.flatten(text, m_encoding);
 		m_comments.push_back(text);
 	}
 	else
@@ -134,17 +139,43 @@ Consumer::pushComment(Comment const& comment)
 
 
 void
-Consumer::sendComment(	Comment const& preComment,
-								Comment const& comment,
-								Annotation const& annotation,
-								MarkSet const& marks,
-								bool isPreComment)
+Consumer::sendPreComment(Comment const& comment)
+{
+	if (!comment.isEmpty())
+	{
+		if (m_afterVar)
+		{
+			m_strm.put(token::Start_Marker);
+			m_strm.put(token::Comment);
+			m_strm.put(token::End_Marker);
+			m_appendComment = false;
+			pushComment(comment);
+		}
+		else if (m_appendComment)
+		{
+			m_comments.back() += ' ';
+			comment.flatten(m_comments.back(), m_encoding);
+		}
+		else
+		{
+			pushComment(comment);
+			m_appendComment = true;
+		}
+	}
+}
+
+
+void
+Consumer::sendComment(Comment const& comment,
+							Annotation const& annotation,
+							MarkSet const& marks,
+							bool isPreComment)
 {
 	if (!annotation.isEmpty())
 	{
 		if (isPreComment)
 		{
-			if (annotation.contains(nag::Diagram))
+			if (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack))
 			{
 				m_strm.put(token::Comment);
 				m_comments.push_back("D");
@@ -167,20 +198,19 @@ Consumer::sendComment(	Comment const& preComment,
 
 	if (!marks.isEmpty())
 	{
-		mstl::string text;
-		comment.flatten(text, codec().isUtf8() ? Comment::Unicode : Comment::Latin1);
+		pushComment(comment);
+		mstl::string& text = m_comments.back();
 
 		if (!text.empty())
 			text += ' ';
 		marks.toString(text);
-
-		m_strm.put(token::Comment);
-		m_comments.push_back(text);
+		m_appendComment = true;
 	}
 	else if (!comment.isEmpty())
 	{
 		m_strm.put(token::Comment);
 		pushComment(comment);
+		m_appendComment = true;
 	}
 }
 
@@ -188,7 +218,7 @@ Consumer::sendComment(	Comment const& preComment,
 void
 Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	sendComment(Comment(), comment, annotation, marks, false);
+	sendComment(comment, annotation, marks, true);
 }
 
 
@@ -201,6 +231,8 @@ Consumer::beginVariation()
 	m_position.push();
 	m_position.undoMove(m_move);
 	m_strm.put(token::Start_Marker);
+	m_afterVar = false;
+	m_appendComment = false;
 }
 
 
@@ -213,6 +245,8 @@ Consumer::endVariation()
 	m_moveStack.pop();
 	m_position.pop();
 	m_strm.put(token::End_Marker);
+	m_afterVar = true;
+	m_appendComment = false;
 }
 
 
@@ -247,11 +281,13 @@ Consumer::sendMove(Move const& move)
 {
 	M_REQUIRE(move);
 
-	if (!checkMove(move))
+	if (!move.isLegal() && !checkMove(move))
 		return false;
 
 	m_position.doMove(move);
 	encodeMove(m_move = move);
+	m_appendComment = false;
+	m_afterVar = false;
 
 	return true;
 }
@@ -266,12 +302,16 @@ Consumer::sendMove(	Move const& move,
 {
 	M_REQUIRE(move);
 
-	if (!checkMove(move))
+	if (!move.isLegal() && !checkMove(move))
 		return false;
 
 	m_position.doMove(move);
+
+	sendPreComment(preComment);
 	encodeMove(m_move = move);
-	sendComment(preComment, comment, annotation, marks, false);
+	m_appendComment = false;
+	m_afterVar = false;
+	sendComment(comment, annotation, marks, false);
 
 	return true;
 }

@@ -1592,9 +1592,9 @@ proc FindRecentFile {file} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::RecentFiles
+	::options::writeList $chan [namespace current]::RecentFiles
 	::options::writeItem $chan [namespace current]::Defaults
-	::options::writeItem $chan [namespace current]::PreOpen	;# TODO
+	::options::writeList $chan [namespace current]::PreOpen	;# TODO
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

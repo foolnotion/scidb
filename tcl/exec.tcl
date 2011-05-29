@@ -63,6 +63,56 @@ if {[string compare [::scidb::misc::version] $scidb::version]} {
 }
 
 
+namespace eval process {
+
+array set Options {}
+variable Arguments {}
+
+
+proc arguments {} { return [set [namespace current]::Arguments] }
+
+
+proc testOption {arg} {
+	set rc 0
+	catch { set rc [set [namespace current]::Options($arg)] }
+	return $rc
+}
+
+
+proc setOption {arg {value 1}} {
+	set [namespace current]::Options($arg) $value
+}
+
+
+proc ParseArgs {} {
+	global argc argv
+	variable Options
+	variable Arguments
+
+	for {set i 0} {$i < $argc} {incr i} {
+		set arg [lindex $argv $i]
+		if {$arg eq "--"} {
+			incr i
+			break
+		}
+		if {[string range $arg 0 1] ne "--"} {
+			break
+		}
+		set Options([string range $arg 2 end]) 1
+	}
+
+	if {[::scidb::misc::debug?]} {
+		set Options(single-process) 1
+	}
+
+	set Arguments [lrange $argv $i end]
+}
+
+ParseArgs
+
+} ;# namespace process
+
+
 namespace eval remote {
 namespace eval mc {
 
@@ -205,7 +255,7 @@ proc Execute {path} {
 #rename ::remote::Vwait ::vwait
 
 
-if {[lsearch $argv "--force"] == -1} {
+if {![::process::testOption single-process]} {
 	# Pick a port number based on the name of the main script executing
 	set port [expr {1024 + [::scidb::misc::crc32 [file normalize $::argv0]] % 30000}]
 

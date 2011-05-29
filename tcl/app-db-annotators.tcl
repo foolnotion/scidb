@@ -413,7 +413,7 @@ proc WriteOptions {chan} {
 	variable Tables
 
 #	::options::writeItem $chan [namespace current]::Defaults
-	::options::writeItem $chan [namespace current]::Find
+	::options::writeList $chan [namespace current]::Find
 
 	foreach table $Tables {
 		foreach type {names pairings} {

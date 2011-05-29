@@ -69,6 +69,7 @@ protected:
 	bool encodeMove(Move const& move);
 	void encodeTag(TagSet const& tags, tag::ID tagID);
 	void encodeTags(TagSet const& tags);
+	void encodeDataSection();
 	void encodeTextSection(unsigned offset);
 	void encodeMainline(MoveNode const* node);
 	void encodeVariation(MoveNode const* node);
@@ -79,9 +80,10 @@ protected:
 
 	util::ByteStream&	m_strm;
 	util::ByteStream	m_data;
+	util::ByteStream	m_text;
 	Position				m_position;
 	uint16_t				m_runLength;
-	unsigned char		m_buffer[4096];
+	unsigned char		m_buffer[2][4096];
 };
 
 

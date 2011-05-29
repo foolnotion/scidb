@@ -728,6 +728,32 @@ MoveNode::containsIllegalMoves() const
 }
 
 
+bool
+MoveNode::containsEnglishLang() const
+{
+	for (MoveNode const* p = this; p; p = p->m_next)
+	{
+		if (p->m_comment[0].engFlag() || p->m_comment[1].engFlag())
+			return true;
+	}
+
+	return false;
+}
+
+
+bool
+MoveNode::containsOtherLang() const
+{
+	for (MoveNode const* p = this; p; p = p->m_next)
+	{
+		if (p->m_comment[0].othFlag() || p->m_comment[1].othFlag())
+			return true;
+	}
+
+	return false;
+}
+
+
 bool MoveNode::checkHasMark() const			{ return !m_marks->isEmpty(); }
 bool MoveNode::checkHasAnnotation() const	{ return !m_annotation->isEmpty(); }
 

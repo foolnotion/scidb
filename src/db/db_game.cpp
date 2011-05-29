@@ -677,16 +677,10 @@ Game::applyUndo(Undo& undo, bool redo)
 
 		case Set_Annotation:
 			{
-				unsigned n = 1;
 				unsigned flags = UpdatePgn;
 
 				if (undo.annotation)
 				{
-					if (	m_currentNode->annotation().contains(nag::Diagram)
-						^ undo.annotation->contains(nag::Diagram))
-					{
-						++n;
-					}
 					Annotation annotation(*undo.annotation);
 					insertUndo(Set_Annotation, SetAnnotation, m_currentNode->annotation(), annotation);
 					m_currentNode->setAnnotation(annotation);
@@ -964,7 +958,7 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 	}
 
 	// move
-	move.printSan(result, flags & ExportFormat ? Move::Ascii : Move::Unicode);
+	move.printSan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
 
 	if (!(flags & ExportFormat) && !move.givesMate() && board.isDoubleCheck())
 		result += '+';
@@ -1010,17 +1004,13 @@ Game::setComment(mstl::string const& comment, move::Position position)
 {
 	M_REQUIRE(position == move::Post || !atLineStart());
 
-	if (comment != m_currentNode->comment(position))
-	{
-		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(position), comment, position);
-		m_currentNode->setComment(comment, position);
+	Comment comm(comment, false, false);
+	comm.normalize();
 
-		{
-			Comment comm;
-			m_currentNode->swapComment(comm, position);
-			comm.normalize();
-			m_currentNode->swapComment(comm, position);
-		}
+	if (comm != m_currentNode->comment(position))
+	{
+		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(position), comm, position);
+		m_currentNode->setComment(comm, position);
 
 		unsigned flags = UpdatePgn | UpdateBoard;
 
@@ -1055,11 +1045,6 @@ Game::setAnnotation(Annotation const& annotation)
 {
 	if (annotation == m_currentNode->annotation())
 		return;
-
-	unsigned n = 1;
-
-	if (annotation.contains(nag::Diagram) ^ m_currentNode->annotation().contains(nag::Diagram))
-		++n;
 
 	insertUndo(Set_Annotation, SetAnnotation, m_currentNode->annotation(), annotation);
 	m_currentNode->setAnnotation(annotation);
@@ -1910,7 +1895,7 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 {
 	M_ASSERT(node);
 
-	while (node->next())
+	while (1)
 	{
 		if (node->move())
 		{
@@ -1918,7 +1903,8 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 			board.doMove(node->move());
 		}
 
-		node = node->next();
+		if (!(node = node->next()))
+			return true;
 
 		if (!board.isValidMove(node->move(), node->constraint()))
 		{
@@ -1974,7 +1960,7 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 		}
 	}
 
-	return true;
+	return true; // shut up the compiler
 }
 
 
@@ -2602,7 +2588,7 @@ Game::updateLine()
 		unsigned	i = 0;
 
 		for (	MoveNode const* node = m_startNode->next();
-				node && i < opening::Max_Line_Length;
+				node && !node->move().isNull() && i < opening::Max_Line_Length;
 				node = node->next(), ++i)
 		{
 			lineBuf[i] = node->move().index();
@@ -2760,6 +2746,20 @@ Game::containsLanguage(edit::Key const& key, move::Position position, mstl::stri
 {
 	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
 	return node && node->comment(position).containsLanguage(lang);
+}
+
+
+bool
+Game::commentEngFlag() const
+{
+	return m_startNode->containsEnglishLang();
+}
+
+
+bool
+Game::commentOthFlag() const
+{
+	return m_startNode->containsOtherLang();
 }
 
 

@@ -121,13 +121,13 @@ protected:
 
 private:
 
-	mstl::string const& conv(Comment const& comment);
+	mstl::string const& conv(mstl::string const& comment);
 
 	void writeMove(Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
-						mstl::string const& preComment,
-						mstl::string const& comment);
+						Comment const& preComment,
+						Comment const& comment);
 
 	unsigned			m_flags;
 	unsigned			m_count;
@@ -137,7 +137,7 @@ private:
 	bool				m_needMoveNumber;
 	bool				m_needSpace;
 	result::ID		m_result;
-	mstl::string	m_buf;
+	mstl::string	m_stringBuf;
 };
 
 } // namespace db

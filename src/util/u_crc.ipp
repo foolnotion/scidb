@@ -31,17 +31,17 @@
 
 #include <zlib.h>
 
-#undef _ZLIB_Byte
-#undef _ZLIB_uInt
-#undef _ZLIB_uLong
-#undef _ZLIB_Bytef
-#undef _ZLIB_charf
-#undef _ZLIB_intf
-#undef _ZLIB_uIntf
-#undef _ZLIB_uLongf
-#undef _ZLIB_voidpc
-#undef _ZLIB_voidpf
-#undef _ZLIB_voidp
+#undef Byte
+#undef uInt
+#undef uLong
+#undef Bytef
+#undef charf
+#undef intf
+#undef uIntf
+#undef uLongf
+#undef voidpc
+#undef voidpf
+#undef voidp
 
 namespace util {
 namespace crc {

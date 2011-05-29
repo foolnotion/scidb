@@ -105,7 +105,9 @@ public:
 	Byte* base();
 	Byte const* base() const;
 	Byte* buffer();
+	Byte* data();
 	Byte const* data() const;
+	Byte* end();
 	Byte const* end() const;
 
 	uint8_t  uint8();
@@ -130,6 +132,7 @@ public:
 	void provide(unsigned size);
 	void reset(unsigned size);
 
+	void setup(Byte* buf, Byte* end);
 	void setup(Byte* buf, unsigned size);
 	void reserve(unsigned size);
 	void swap(ByteStream& strm);

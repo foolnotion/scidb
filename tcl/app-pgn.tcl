@@ -51,10 +51,7 @@ set Command(game:transpose)		"Transpose Game"
 
 set ColumnStyle						"Column Style"
 set NarrowLines						"Narrow Lines"
-set IndentVariations					"Indent Variations"					;# TODO remove
-set IndentComments					"Indent Comments"						;# TODO remove
 set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
-set SpaceAfterMoveNumbers			"Space after Move Numbers"			;# TODO remove
 set ShowDiagrams						"Show Diagrams"
 set Languages							"Languages"
 
@@ -72,9 +69,12 @@ set SuffixCommentaries				"Suffixed Commentaries"
 
 set AddNewGame							"Save: Add New Game to %s..."
 set ReplaceGame						"Save: Replace Game in %s..."
+set ReplaceMoves						"Save: Replace Moves Only in Game"
 
 set EditAnnotation					"Edit annotation"
-set EditComment						"Edit comment"
+set EditCommentBefore				"Edit comment before move"
+set EditCommentAfter					"Edit comment after move"
+set EditCommentAtStart				"Edit comment at start"
 set Display								"Display"
 set None									"none"
 
@@ -352,6 +352,7 @@ proc editComment {pos {position -1} {key {}} {lang {}}} {
 	variable Vars
 
 	if {$position == -1} { set position $Vars(index) }
+	if {[llength $key] == 0 && $pos eq "a" && [::scidb::game::position $position atStart?]} { return }
 
 	if {[llength $lang] == 0} {
 		set lang ""
@@ -891,7 +892,7 @@ proc InsertBreak {w level bracket} {
 	switch $level {
 		0 - 1 - 2	{ set space "\n" }
 		3				{ if {$Options(column-style)} { set space "\n" } else { set space " " } }
-		default		{ $w insert current " " }
+		default		{ set space " " }
 	}
 
 	$w insert current $space
@@ -1339,7 +1340,7 @@ proc Tooltip {path nag} {
 
 	switch $nag {
 		hide		{ ::tooltip::hide }
-		illegal	{ ::tooltip::show $path $mc::IllegalMove }
+		illegal	{ ::tooltip::show $path $::browser::mc::IllegalMove }
 		
 		default {
 			if {[info exists Nag($nag)]} {
@@ -1571,10 +1572,21 @@ proc PopupMenu {parent position} {
 			-state $state \
 			-command [namespace code [list editAnnotation $position]] \
 			;
-		$menu add command \
-			-label "$mc::EditComment..." \
-			-command [namespace code [list editComment p $position]] \
-			;
+		if {[::scidb::game::position atStart?]} {
+			$menu add command \
+				-label "$mc::EditCommentAtStart..." \
+				-command [namespace code [list editComment p $position]] \
+				;
+		} else {
+			$menu add command \
+				-label "$mc::EditCommentAfter..." \
+				-command [namespace code [list editComment p $position]] \
+				;
+			$menu add command \
+				-label "$mc::EditCommentBefore..." \
+				-command [namespace code [list editComment a $position]] \
+				;
+		}
 		if {[::marks::open?]} { set state disabled } else { set state normal }
 		$menu add command \
 			-label "$::marks::mc::MarksPalette..." \
@@ -1647,7 +1659,12 @@ proc PopupMenu {parent position} {
 			-state $state(replace) \
 			;
 		$menu add command \
-			-label  [format $mc::AddNewGame $name] \
+			-label [format $mc::ReplaceMoves $name] \
+			-command [list ::scidb::db::update moves $base [expr {$number - 1}]] \
+			-state $state(replace) \
+			;
+		$menu add command \
+			-label [format $mc::AddNewGame $name] \
 			-command [list ::dialog::save::open $parent $base $position -1] \
 			-state $state(save) \
 			;

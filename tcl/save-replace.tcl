@@ -2188,7 +2188,7 @@ proc Save {top title base number position fields} {
 
 	if {$rc} {
 		if {$Priv(characteristics-only)} {
-			::scidb::db::update $base $number [array get Tags] 
+			::scidb::db::update characteristics $base $number [array get Tags] 
 		} else {
 			::log::open $title
 			::log::delay

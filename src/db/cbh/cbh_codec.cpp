@@ -524,17 +524,11 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	m_siteId = 0;
 
 	readIniData(rootname);
-	progress.update(1);
-	readPlayerData(rootname);
-	progress.update(2);
-	readAnnotatorData(rootname);
-	progress.update(3);
-	readTournamentData(rootname);
-	progress.update(4);
-	readTeamData(rootname, numGames);
-	progress.update(5);
-	readSourceData(rootname);
-
+	readPlayerData(rootname, progress);
+	readAnnotatorData(rootname, progress);
+	readTournamentData(rootname, progress);
+	readTeamData(rootname, numGames, progress);
+	readSourceData(rootname, progress);
 	readIndexData(rootname, numGames, progress);
 
 	// delete unused annotators (because we are discarding guiding text)
@@ -561,7 +555,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 
 
 void
-Codec::readTournamentData(mstl::string const& rootname)
+Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress)
 {
 	M_ASSERT(m_codec);
 
@@ -580,13 +574,22 @@ Codec::readTournamentData(mstl::string const& rootname)
 	uint32_t nrecs = mstl::bo::swapLE(hdr[0]);
 	strm.seekg((strm.size() % 99) - sizeof(hdr), mstl::ios_base::cur);
 
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
 	Namebase& eventBase	= namebase(Namebase::Event);
 	Namebase& siteBase	= namebase(Namebase::Site);
 
+	progress.start(nrecs);
 	eventBase.reserve(nrecs, (1 << 24) - 1);
 
 	for (unsigned i = 0, n = 0; i < nrecs; ++i)
 	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
 		int32_t addr;
 		strm.read(reinterpret_cast<char*>(&addr), 4);
 		addr = mstl::bo::swapLE(addr);
@@ -695,7 +698,7 @@ Codec::readTournamentData(mstl::string const& rootname)
 
 
 void
-Codec::readPlayerData(mstl::string const& rootname)
+Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 67;
 
@@ -713,11 +716,21 @@ Codec::readPlayerData(mstl::string const& rootname)
 	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
 	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
 
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
 	base.reserve(nrecs, (1 << 24) - 1);
 	str.assign(202, '\0');
+	progress.start(nrecs);
 
 	for (unsigned i = 0, n = 0; i < nrecs; ++i)
 	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
 		int32_t addr;
 		strm.read(reinterpret_cast<char*>(&addr), 4);
 		addr = mstl::bo::swapLE(addr);
@@ -798,7 +811,7 @@ Codec::readPlayerData(mstl::string const& rootname)
 
 
 void
-Codec::readAnnotatorData(mstl::string const& rootname)
+Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 62;
 
@@ -816,11 +829,21 @@ Codec::readAnnotatorData(mstl::string const& rootname)
 	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
 	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
 
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
 	base.reserve(nrecs, (1 << 24) - 1);
 	str.assign(200, '\0');
+	progress.start(nrecs);
 
 	for (unsigned i = 0, n = 0; i < nrecs; ++i)
 	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
 		int32_t addr;
 		strm.read(reinterpret_cast<char*>(&addr), 4);
 		addr = mstl::bo::swapLE(addr);
@@ -855,7 +878,7 @@ Codec::readAnnotatorData(mstl::string const& rootname)
 
 
 void
-Codec::readSourceData(mstl::string const& rootname)
+Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 68;
 
@@ -876,11 +899,21 @@ Codec::readSourceData(mstl::string const& rootname)
 	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
 	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
 
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
 	m_sourceBase.reserve(nrecs, (1 << 24) - 1);
 	str.assign(200, '\0');
+	progress.start(nrecs);
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
 		int32_t addr;
 		strm.read(reinterpret_cast<char*>(&addr), 4);
 		addr = mstl::bo::swapLE(addr);
@@ -922,7 +955,7 @@ Codec::readSourceData(mstl::string const& rootname)
 
 
 void
-Codec::readTeamData(mstl::string const& rootname, unsigned numGames)
+Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progress& progress)
 {
 	static unsigned const RecordSize = 72;
 
@@ -959,11 +992,21 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames)
 	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
 	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
 
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
 	m_teamBase.reserve(nrecs);
 	str.assign(250, '\0');
+	progress.start(nrecs);
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
 		int32_t addr;
 		strm.read(reinterpret_cast<char*>(&addr), 4);
 		addr = mstl::bo::swapLE(addr);
@@ -1399,8 +1442,8 @@ void
 Codec::startDecoding(ByteStream& gameStream,
 							ByteStream& annotationStream,
 							GameInfo const& info,
-							bool& isChess960,
-							unsigned flags)
+							bool& isChess960/*,
+							unsigned flags*/)
 {
 	if (!info.gameOffset())
 		IO_RAISE(Index, Corrupted, "no game data");
@@ -1431,11 +1474,11 @@ Codec::startDecoding(ByteStream& gameStream,
 	if (!m_gameStream.read(gameStream.base(), size))
 		IO_RAISE(Game, Corrupted, "unexpected end of file");
 
-	if (flags == 0)
-	{
-		annotationStream.provide(0);
-	}
-	else
+//	if (flags == 0)
+//	{
+//		annotationStream.provide(0);
+//	}
+//	else
 	{
 		AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
 
@@ -1556,7 +1599,7 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 
 
 void
-Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
+Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 {
 	Byte buf[2][32768];
 
@@ -1565,7 +1608,7 @@ Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960, flags);
+	startDecoding(gStrm, aStrm, info, isChess960/*, flags*/);
 
 	addSourceTags(data.m_tags, info);
 	addEventTags(data.m_tags, info);
@@ -1575,12 +1618,12 @@ Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
 	data.m_crc = crc::compute(crc, gStrm.data(), gStrm.size());
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
-	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(flags, data));
+	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));
 }
 
 
 save::State
-Codec::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info)
 {
 	Byte buf[2][32768];
 
@@ -1589,14 +1632,14 @@ Codec::doDecoding(Consumer& consumer, unsigned flags, TagSet& tags, GameInfo con
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960, flags);
+	startDecoding(gStrm, aStrm, info, isChess960/*, flags*/);
 
 	addSourceTags(tags, info);
 	addEventTags(tags, info);
 	addTeamTags(tags, info);
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
-	save::State state = decoder.doDecoding(consumer, flags, tags, info);
+	save::State state = decoder.doDecoding(consumer, /*flags, */tags, info);
 
 	return state;
 }

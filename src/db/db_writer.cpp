@@ -43,7 +43,7 @@
 using namespace db;
 
 
-static mstl::string const lostResult("The game was declared lost for both players");
+static Comment const lostResult("The game was declared lost for both players", false, false);
 
 
 Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding)
@@ -68,16 +68,14 @@ Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encod
 }
 
 
-inline
 mstl::string const&
-Writer::conv(Comment const& comment)
+Writer::conv(mstl::string const& comment)
 {
 	if (codec().isUtf8())
-		return comment.content();
+		return comment;
 
-	m_buf.clear();
-	codec().fromUtf8(comment.content(), m_buf);
-	return m_buf;
+	codec().fromUtf8(comment, m_stringBuf);
+	return m_stringBuf;
 }
 
 
@@ -86,9 +84,10 @@ Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSe
 {
 	if (test(Flag_Include_Comments))
 	{
-		if (!m_needSpace && annotation.contains(nag::Diagram))
+		if (	!m_needSpace
+			&& (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack)))
 		{
-			writeComment(Comment("#"), MarkSet());
+			writeComment(Comment("#", false, false), MarkSet());
 			m_needSpace = true;
 		}
 
@@ -368,11 +367,14 @@ void
 Writer::writeMove(Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
-						mstl::string const& preComment,
-						mstl::string const& comment)
+						Comment const& preComment,
+						Comment const& comment)
 {
 	if (m_level && !test(Flag_Include_Variations))
 		return;
+
+	if (!preComment.isEmpty() && test(Flag_Include_Comments))
+		m_needMoveNumber = true;
 
 	if (m_needMoveNumber)
 	{
@@ -406,7 +408,7 @@ Writer::writeMove(Move const& move,
 
 	m_needSpace = true;
 	m_needMoveNumber =	color::isBlack(move.color())
-							|| (!comment.empty() && test(Flag_Include_Comments));
+							|| (!comment.isEmpty() && test(Flag_Include_Comments));
 }
 
 

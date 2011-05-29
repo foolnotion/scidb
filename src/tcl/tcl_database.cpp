@@ -1476,6 +1476,8 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	SET(Material,             Tcl_NewStringObj(material, material.size()));
 	SET(Deleted,              Tcl_NewBooleanObj(info.isDeleted()));
 	SET(Acv,                  Tcl_NewStringObj(acv, acvSize));
+	SET(CommentEngFlag,       Tcl_NewBooleanObj(info.containsEnglishLanguage()));
+	SET(CommentOthFlag,       Tcl_NewBooleanObj(info.containsOtherLanguage()));
 	SET(Changed,              Tcl_NewIntObj(info.isDirty() || info.isChanged()));
 	SET(Promotion,            Tcl_NewBooleanObj(info.hasPromotion()));
 	SET(UnderPromotion,       Tcl_NewBooleanObj(info.hasUnderPromotion()));
@@ -2816,22 +2818,26 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 4)
+	char const*	subcmd	= stringFromObj(objc, objv, 1);
+	char const*	database = stringFromObj(objc, objv, 2);
+	unsigned		index		= unsignedFromObj(objc, objv, 3);
+	int			rc			= TCL_OK;
+
+	if (::strcmp(subcmd, "characteristics") == 0)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<database> <number> <tag-list>");
-		return TCL_ERROR;
+		TagSet tags;
+
+		if ((rc = game::convertTags(tags, objectFromObj(objc, objv, 3))) == TCL_OK)
+			scidb.cursor(database).updateCharacteristics(index, tags);
 	}
-
-	char const*	database = stringFromObj(objc, objv, 1);
-	unsigned		index		= unsignedFromObj(objc, objv, 2);
-	Tcl_Obj*		taglist	= objectFromObj(objc, objv, 3);
-
-	TagSet tags;
-
-	int rc = game::convertTags(tags, taglist);
-
-	if (rc == TCL_OK)
-		scidb.cursor(database).updateCharacteristics(index, tags);
+	else if (::strcmp(subcmd, "moves") == 0)
+	{
+		scidb.cursor(database).updateMoves(index);
+	}
+	else
+	{
+		rc = error(::CmdUpdate, 0, 0, "unknown sub-command '%s'", subcmd);
+	}
 
 	return rc;
 }

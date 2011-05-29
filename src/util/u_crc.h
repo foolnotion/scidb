@@ -25,7 +25,7 @@ namespace util {
 namespace crc {
 
 uint32_t compute(uint32_t crc, char const* bytes, unsigned len);
-uint32_t compute(uint32_t crc, unsigned char* const bytes, unsigned len);
+uint32_t compute(uint32_t crc, unsigned char const* bytes, unsigned len);
 uint32_t combine(uint32_t crc1, uint32_t crc2, unsigned len2);
 
 } // namespace crc

@@ -956,7 +956,11 @@ Application::moveGamesToScratchbase(Cursor& cursor)
 
 			m_indexMap[i->first] = index;
 
-			if (base.newGame(*game.game, game.cursor->base().gameInfo(game.index)) != save::Ok)
+			GameInfo info(game.cursor->base().gameInfo(game.index));
+			info.reallocate(base.namebases());
+			base.namebases().update();
+
+			if (base.newGame(*game.game, info) != save::Ok)
 				M_RAISE("unexpected error: couldn't add new game to Scratchbase");
 
 			game.cursor = m_scratchBase;
@@ -1208,12 +1212,12 @@ Application::saveGame(Cursor& cursor, bool replace)
 		}
 	}
 
-	GameInfo& info	= g.cursor->base().gameInfo(g.index);
+	GameInfo* info	= &g.cursor->base().gameInfo(g.index);
 	Database& db	= cursor.base();
 
 	if (replace)
 	{
-		g.game->setFlags(info.flags());
+		g.game->setFlags(info->flags());
 		g.game->setIndex(g.index);
 		// TODO: should be transaction save
 		state = db.updateGame(*g.game);
@@ -1231,13 +1235,15 @@ Application::saveGame(Cursor& cursor, bool replace)
 			if (cursor.isViewOpen(i))
 				cursor.view(i).update(View::AddNewGames);
 		}
+
+		info = &g.cursor->base().gameInfo(g.index);
 	}
 
-	info.setIllegalMove(g.game->containsIllegalMoves());
+	info->setIllegalMove(g.game->containsIllegalMoves());
 
 	if (state == save::Ok)
 	{
-		info.setDirty(false);
+		info->setDirty(false);
 		g.game->setIsModified(false);
 
 		if (m_subscriber)
@@ -1271,6 +1277,47 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (m_subscriber && cursor.isReferenceBase())
 		m_subscriber->updateTree(db.name());
+
+	return state;
+}
+
+
+db::save::State
+Application::updateMoves(Cursor& cursor, unsigned index)
+{
+	M_REQUIRE(cursor.isOpen());
+	M_REQUIRE(index < cursor.countGames());
+	M_REQUIRE(findGame(&cursor, index));
+
+	if (cursor.isReferenceBase())
+		cancelUpdateTree();
+
+	EditGame* game = findGame(&cursor, index);
+
+	game->game->setIndex(game->index);
+
+	save::State state = cursor.base().updateMoves(*game->game);
+
+	if (m_subscriber)
+	{
+		mstl::string const& name = cursor.name();
+
+		if (state == save::Ok)
+		{
+			m_subscriber->updateDatabaseInfo(name);
+
+			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+			{
+				if (cursor.isViewOpen(i))
+					m_subscriber->updateGameList(name, i, game->index);
+			}
+
+			game->game->updateSubscriber(Game::UpdatePgn);
+		}
+
+		if (cursor.isReferenceBase())
+			m_subscriber->updateTree(name);
+	}
 
 	return state;
 }
@@ -1310,7 +1357,8 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 				}
 			}
 
-			game->game->updateSubscriber(Game::UpdatePgn);
+			if (game)
+				game->game->updateSubscriber(Game::UpdatePgn);
 		}
 
 		if (cursor.isReferenceBase())

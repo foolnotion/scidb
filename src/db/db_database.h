@@ -165,6 +165,8 @@ public:
 	save::State updateGame(Game const& game);
 	/// Update the characteristics of a game
 	save::State updateCharacteristics(unsigned index, TagSet const& tags);
+	/// Update the move data of a game
+	save::State updateMoves(Game const& game);
 
 	/// Removes all games from the database.
 	void clear();

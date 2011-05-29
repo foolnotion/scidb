@@ -42,6 +42,7 @@ namespace si3  { class Codec; }
 namespace cbh  { class Codec; }
 namespace bits { template <int> struct Accessor; }
 
+class DatabaseContent;
 class Namebases;
 class NamebaseEntry;
 class NamebaseEvent;
@@ -150,6 +151,8 @@ public:
 	mstl::string roundAsString() const;
 	mstl::string const& site() const;
 	mstl::string const& annotator() const;				// Scid: n/a
+	bool containsEnglishLanguage() const;
+	bool containsOtherLanguage() const;
 	uint8_t countComments() const;						// ChessBase: very roughly
 	uint8_t countAnnotations() const;					// ChessBase: very roughly
 	uint8_t countVariations() const;						// ChessBase: very roughly
@@ -191,6 +194,8 @@ public:
 
 	void setupTags(TagSet& tags) const;
 	void setup(	uint32_t gameOffset,
+					uint32_t gameRecordLength);
+	void setup(	uint32_t gameOffset,
 					uint32_t gameRecordLength,
 					NamebasePlayer* whitePlayer,
 					NamebasePlayer* blackPlayer,
@@ -215,6 +220,7 @@ public:
 	void update(Provider const& provider);
 	void recode(sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec);
 	template <int N> void setPly(uint16_t move);
+	void setLanguageCount(unsigned count);
 	void setRecord(uint32_t offset, uint32_t length);
 	void setDeleted(bool flag = true);
 	void setChanged(bool flag = true);
@@ -224,6 +230,7 @@ public:
 	void reset(Namebases& namebases);
 	void resetCharacteristics(Namebases& namebases);
 	void restore(GameInfo& oldInfo, Namebases& namebases);
+	void reallocate(Namebases& namebases);
 
 	void debug() const;
 
@@ -252,7 +259,7 @@ private:
 				uint32_t matR			:1;
 				uint32_t matB			:1;
 				uint32_t matN			:1;
-				uint32_t _unused_		:1;
+				uint32_t langFlag		:1;
 			};
 
 			uint32_t value;
@@ -270,6 +277,7 @@ private:
 	void setRating(color::ID color, rating::Type ratingType, uint16_t value);
 	void setMaterial(material::si3::Signature sig);
 	void setGameRecordLength(unsigned length);
+	void setLangCount(unsigned count);
 	void setupOpening(unsigned idn, Line const& line);
 
 	static void setupIdn(TagSet& tags, uint16_t idn);

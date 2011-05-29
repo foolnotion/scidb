@@ -35,6 +35,7 @@
 #include "db_game_data.h"
 
 #include "m_assert.h"
+#include "m_static_check.h"
 
 using namespace db;
 using namespace db::sci;
@@ -44,7 +45,13 @@ using namespace util;
 typedef ByteStream::uint24_t uint24_t;
 
 
-Encoder::Encoder(ByteStream& strm) : m_strm(strm), m_data(m_buffer, sizeof(m_buffer)), m_runLength(0) {}
+Encoder::Encoder(ByteStream& strm)
+	:m_strm(strm)
+	,m_data(m_buffer[0], sizeof(m_buffer[0]))
+	,m_text(m_buffer[1], sizeof(m_buffer[2]))
+	,m_runLength(0)
+{
+}
 
 
 inline
@@ -236,6 +243,12 @@ Encoder::encodePawn(Move const& move)
 		// move.promotedPiece() must be Queen=2, Rook=3, Bishop=4 or Knight=5.
 		// We add 3 for Queen, 6 for Rook, 9 for Bishop, 12 for Knight.
 
+		M_STATIC_CHECK(	piece::Queen == 2
+							&& piece::Rook == 3
+							&& piece::Bishop == 4
+							&& piece::Knight == 5,
+							Reimplementation_Needed);
+
 		M_ASSERT(2 <= move.promoted() && move.promoted() <= 5);
 		value += 3*(move.promoted() - 1);
 	}
@@ -320,6 +333,8 @@ Encoder::encodeVariation(MoveNode const* node)
 
 				m_position.push();
 				m_strm.put(token::Start_Marker);
+				if (var->hasNote())
+					encodeNote(var);
 				encodeVariation(var->next());
 				m_position.pop();
 			}
@@ -359,14 +374,33 @@ Encoder::encodeNote(MoveNode const* node)
 
 	if (node->hasAnyComment())
 	{
-		uint8_t flag = (node->hasComment(move::Ante) ? 1 : 0) | (node->hasComment(move::Post) ? 2 : 0);
+		uint8_t flag = 0;
+
+		if (node->hasComment(move::Ante))
+		{
+			flag |= comm::Ante;
+			if (node->comment(move::Ante).engFlag())
+				flag |= comm::Ante_Eng;
+			if (node->comment(move::Ante).othFlag())
+				flag |= comm::Ante_Oth;
+		}
+
+		if (node->hasComment(move::Post))
+		{
+			flag |= comm::Post;
+			if (node->comment(move::Post).engFlag())
+				flag |= comm::Post_Eng;
+			if (node->comment(move::Post).othFlag())
+				flag |= comm::Post_Oth;
+		}
+
+		if (flag & 1)
+			m_text.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
+
+		if (flag & 2)
+			m_text.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
 
 		m_data.put(flag);
-		if (flag & 1)
-			m_data.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
-		if (flag & 2)
-			m_data.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
-
 		m_strm.put(token::Comment);
 	}
 }
@@ -496,6 +530,19 @@ Encoder::encodeTextSection(unsigned offset)
 
 	ByteStream(m_strm.base() + offset, 3) << uint24_t(m_strm.tellp());
 
+	if (m_text.tellp() > 0 || m_data.tellp() > 1)
+	{
+		m_strm << uint24_t(m_text.tellp());
+		m_strm.put(m_text.base(), m_text.tellp());
+	}
+}
+
+
+void
+Encoder::encodeDataSection()
+{
+	M_ASSERT(m_strm.tellp() < (1 << 24));
+
 	if (m_data.tellp() > 1)
 		m_strm.put(m_data.base(), m_data.tellp());
 }
@@ -513,6 +560,7 @@ Encoder::doEncoding(Signature const&, GameData const& data)
 	encodeMainline(data.m_startNode);
 	ByteStream(m_strm.base() + offset + 3, 2) << m_runLength;
 	encodeTextSection(offset);
+	encodeDataSection();
 	m_strm.provide();
 }
 

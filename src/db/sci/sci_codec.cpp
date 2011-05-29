@@ -102,7 +102,8 @@ namespace
 		uint32_t subround				:8;
 		uint32_t whiteRatingType	:3;
 		uint32_t blackRatingType	:3;
-		uint32_t _unused_				:2;
+		uint32_t commentEngFlag		:1;
+		uint32_t commentOthFlag		:1;
 		//----------------------------- 24 bit
 	};
 }
@@ -403,6 +404,13 @@ Codec::close()
 }
 
 
+void
+Codec::sync()
+{
+	m_gameData->sync();
+}
+
+
 util::ByteStream
 Codec::getGame(GameInfo const& info)
 {
@@ -419,6 +427,16 @@ Codec::putGame(ByteStream const& strm)
 {
 	M_ASSERT(m_gameData);
 	return m_gameData->put(strm);
+}
+
+
+unsigned
+Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordLength)
+{
+	M_ASSERT(m_gameData);
+	M_ASSERT(prevRecordLength == 0);
+
+	return m_gameData->put(strm, prevOffset, prevRecordLength);
 }
 
 
@@ -539,8 +557,6 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 	if (!indexStream.seekp(index*IndexEntrySize + 128) || !indexStream.write(buf, IndexEntrySize))
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
-
-	info->setDirty(false);
 }
 
 
@@ -580,31 +596,31 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
-	return decoder.doDecoding(consumer, flags, tags);
+	return decoder.doDecoding(consumer/*, flags*/, tags);
 }
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, unsigned flags, TagSet& tags)
+Codec::doDecoding(db::Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
 {
 	Decoder decoder(strm);
-	return decoder.doDecoding(consumer, flags, tags);
+	return decoder.doDecoding(consumer/*, flags*/, tags);
 }
 
 
 void
-Codec::doDecoding(unsigned flags, GameData& data, GameInfo& info)
+Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	data.m_crc = crc::compute(0, strm.data(), strm.size());
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
-	decoder.doDecoding(flags, data);
+	decoder.doDecoding(/*flags, */data);
 }
 
 
@@ -882,6 +898,8 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_signature.m_promotions			= bits->promotion;
 	item.m_signature.m_underPromotions	= bits->underPromotion;
 	item.m_signature.m_hpCount				= bits->hpCount;
+	item.m_pd[0].langFlag					= bits->commentEngFlag;
+	item.m_pd[1].langFlag					= bits->commentOthFlag;
 }
 
 
@@ -1027,6 +1045,8 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	bits->blackRating			= item.m_pd[color::Black].rating;
 	bits->whiteRatingType	= item.m_pd[color::White].ratingType;
 	bits->blackRatingType	= item.m_pd[color::Black].ratingType;
+	bits->commentEngFlag		= item.m_pd[0].langFlag;
+	bits->commentOthFlag		= item.m_pd[1].langFlag;
 }
 
 

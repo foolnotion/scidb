@@ -379,7 +379,7 @@ TournamentTable::TournamentTable(Database const& db,
 	,m_parity(0)
 	,m_maxRound(0)
 	,m_maxSubround(0)
-	,m_excludeKnockout(false)
+	,m_missingRoundInfo(false)
 	,m_allocator(32768)
 {
 	m_playerMap.reserve(2*m_numGames);
@@ -421,7 +421,7 @@ TournamentTable::buildList(Database const& db, Filter const& gameFilter)
 		m_maxSubround = mstl::max(info.subround(), m_maxSubround);
 
 		if (info.round() == 0)
-			m_excludeKnockout = true;
+			m_missingRoundInfo = true;
 
 		wPlayer->elo = mstl::max(uint16_t(wPlayer->elo), info.findElo(color::White));
 		bPlayer->elo = mstl::max(uint16_t(bPlayer->elo), info.findElo(color::Black));
@@ -783,8 +783,8 @@ TournamentTable::guessBestMode()
 		case event::Schev:		m_bestMode = Scheveningen; break;
 	}
 
-	if (m_bestMode == Knockout && m_excludeKnockout)
-		m_bestMode = Crosstable;
+	if (m_missingRoundInfo && (m_bestMode == Knockout || Knockout == Swiss))
+		m_bestMode = RankingList;
 
 	m_mode = m_bestMode;
 }

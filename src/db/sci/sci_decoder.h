@@ -56,8 +56,8 @@ public:
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
-	void doDecoding(unsigned flags, GameData& data);
-	save::State doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags);
+	void doDecoding(/*unsigned flags, */GameData& data);
+	save::State doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags);
 
 	void recode(util::ByteStream& dst, sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec);
 
@@ -65,12 +65,12 @@ private:
 
 	void decodeRun(unsigned count);
 	void decodeRun(unsigned count, Consumer& consumer);
-	void decodeVariation(unsigned flags);
-	void decodeVariation(Consumer& consumer, util::ByteStream& text, unsigned flags);
-	void decodeComments(MoveNode* node);
+	void decodeVariation(/*unsigned flags*/);
+	void decodeVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text/*, unsigned flags*/);
+	void decodeComments(MoveNode* node, util::ByteStream& data);
 	void decodeTags(util::ByteStream& strm, TagSet& tags);
 	void skipTags();
-	void decodeTextSection(unsigned flags, GameData& data);
+	void decodeTextSection(/*unsigned flags, */GameData& data);
 	void decodeMark();
 
 	unsigned decodeMove(Byte value, Move& move);
@@ -83,6 +83,8 @@ private:
 	Move decodeBishop(sq::ID from, Byte nybble);
 	Move decodeKnight(sq::ID from, Byte nybble);
 	Move decodePawn(sq::ID from, Byte nybble);
+
+	Move searchForPosition(Board const& position, bool skipVariations);
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);

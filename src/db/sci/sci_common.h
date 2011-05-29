@@ -42,6 +42,19 @@ namespace token
 	};
 }
 
+namespace comm
+{
+	enum
+	{
+		Ante		= 1 << 0,
+		Post		= 1 << 1,
+		Ante_Eng	= 1 << 2,
+		Ante_Oth	= 1 << 3,
+		Post_Eng	= 1 << 4,
+		Post_Oth	= 1 << 5,
+	};
+}
+
 enum { Block_Size = 131072 };
 
 } // namespace sci

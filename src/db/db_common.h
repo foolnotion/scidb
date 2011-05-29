@@ -769,7 +769,12 @@ namespace tree
 namespace format
 {
 	enum Type { Scidb, Scid3, Scid4, ChessBase, Pgn };
-};
+}
+
+namespace encoding
+{
+	enum CharSet { Latin1, Utf8 };
+}
 
 namespace nag
 {
@@ -1135,6 +1140,8 @@ namespace attribute
 			Material,
 			Deleted,
 			Acv,
+			CommentEngFlag,
+			CommentOthFlag,
 			Changed,
 			Promotion,
 			UnderPromotion,

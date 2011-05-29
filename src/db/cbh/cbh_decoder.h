@@ -52,8 +52,8 @@ public:
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
-	unsigned doDecoding(unsigned flags, GameData& data);
-	save::State doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags, GameInfo const& info);
+	unsigned doDecoding(/*unsigned flags, */GameData& data);
+	save::State doDecoding(db::Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info);
 
 private:
 
@@ -63,11 +63,11 @@ private:
 	void startDecoding(TagSet* tags = 0);
 	unsigned decodeMove(Move& move, unsigned& count);
 	void decodeMoves(Consumer& consumer);
-	void decodeMoves(MoveNode* root, unsigned flags);
-	void decodeMoves(MoveNode* root, unsigned flags, unsigned& count);
+	void decodeMoves(MoveNode* root/*, unsigned flags*/);
+	void decodeMoves(MoveNode* root/*, unsigned flags*/, unsigned& count);
 	void traverse(Consumer& consumer, MoveNode const* root);
-	void getAnnotation(MoveNode* node, int position, unsigned flags);
-	void decodeComment(MoveNode* node, unsigned length, unsigned flags);
+	void getAnnotation(MoveNode* node, int moveNo/*, unsigned flags*/);
+	void decodeComment(MoveNode* node, unsigned length, move::Position position/*, unsigned flags*/);
 	void decodeSymbols(MoveNode* node, unsigned length);
 	void decodeSquares(MoveNode* node, unsigned length);
 	void decodeArrows(MoveNode* node, unsigned length);

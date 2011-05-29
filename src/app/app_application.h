@@ -171,6 +171,7 @@ public:
 	void clearGame(db::Board const* startPosition = 0);
 	db::save::State saveGame(Cursor& cursor, bool replace);
 	db::save::State updateCharacteristics(Cursor& cursor, unsigned index, db::TagSet const& tags);
+	db::save::State updateMoves(Cursor& cursor, unsigned index);
 	void setupGame(unsigned linebreakThreshold,
 						unsigned linebreakMaxLineLengthMain,
 						unsigned linebreakMaxLineLengthVar,

@@ -30,7 +30,9 @@
 #include "db_reader.h"
 #include "db_annotation.h"
 #include "db_tag_set.h"
+#include "db_mark_set.h"
 #include "db_move.h"
+#include "db_comment.h"
 
 #include "m_string.h"
 
@@ -226,7 +228,7 @@ private:
 	void readTags();
 	bool readTagName(mstl::string& s);
 	void readTagValue(mstl::string& s);
-	void stripDiagram();
+	void stripDiagram(mstl::string& comment);
 
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
@@ -303,8 +305,9 @@ private:
 	unsigned				m_gameCount;
 	int					m_firstGameNumber;
 	ResultMode			m_resultMode;
-	mstl::string		m_comment;
-	mstl::string		m_preComment;
+	Comment				m_comment;
+	Comment				m_preComment;
+	MarkSet				m_marks;
 	country::Code		m_eventCountry;
 	Annotation			m_annotation;
 	nag::ID				m_prefixAnnotation;

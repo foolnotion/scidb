@@ -86,9 +86,9 @@ public:
 
 	typedef format::Type Format;
 
-	static unsigned const Decode_Tags		= 1 << 0;
-	static unsigned const Decode_Comments	= 1 << 1;
-	static unsigned const Decode_All			= Decode_Tags | Decode_Comments;
+//	static unsigned const Decode_Tags		= 1 << 0;
+//	static unsigned const Decode_Comments	= 1 << 1;
+//	static unsigned const Decode_All			= Decode_Tags | Decode_Comments;
 
 	DatabaseCodec();
 	virtual ~DatabaseCodec() throw();
@@ -117,7 +117,7 @@ public:
 	virtual mstl::string const& extension() const = 0;
 	virtual mstl::string const& encoding() const = 0;
 	virtual Time modified(mstl::string const& rootname) const;
-	virtual uint32_t computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const;
+	virtual uint32_t computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const;
 	virtual util::BlockFile* newBlockFile() const;
 
 	virtual void updateHeader(mstl::string const& rootname);
@@ -149,16 +149,16 @@ public:
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
-	void decodeGame(unsigned flags, GameData& data, GameInfo& info);
+	void decodeGame(/*unsigned flags, */GameData& data, GameInfo& info);
 	void encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature);
 
 	save::State exportGame(	Consumer& consumer,
-									unsigned flags,
+//									unsigned flags,
 									TagSet& tags,
 									GameInfo const& info);
 	save::State exportGame(	Consumer& consumer,
 									util::ByteStream& strm,
-									unsigned flags,
+//									unsigned flags,
 									TagSet& tags);
 
 	virtual util::ByteStream getGame(GameInfo const& info);
@@ -166,7 +166,9 @@ public:
 	save::State addGame(util::ByteStream& gameData, TagSet const& tags, Consumer& consumer);
 	save::State saveGame(util::ByteStream const& gameData, TagSet const& tags, Provider const& provider);
 	save::State updateCharacteristics(unsigned index, TagSet const& tags);
+	save::State saveMoves(util::ByteStream const& gameData, Provider const& provider);
 	virtual void replaceBlockFile(util::BlockFile* blockFile);
+	virtual void sync();
 
 	virtual void useAsyncReader(bool flag);
 	virtual Move findExactPositionAsync(GameInfo const& info,
@@ -196,17 +198,20 @@ protected:
 								util::Progress& progress) = 0;
 	virtual void doClear(mstl::string const& rootname);
 
-	virtual void doDecoding(unsigned flags, GameData& data, GameInfo& info) = 0;
+	virtual void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info) = 0;
 	virtual save::State doDecoding(	Consumer& consumer,
 												util::ByteStream& strm,
-												unsigned flags,
+//												unsigned flags,
 												TagSet& tags);
 	virtual save::State doDecoding(	Consumer& consumer,
-												unsigned flags,
+//												unsigned flags,
 												TagSet& tags,
 												GameInfo const& info) = 0;
 	virtual void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	virtual unsigned putGame(util::ByteStream const& data);
+	virtual unsigned putGame(	util::ByteStream const& strm,
+										unsigned prevOffset,
+										unsigned prevRecordLength);
 
 	bool isReadOnly() const;
 	GameInfoList& gameInfoList();

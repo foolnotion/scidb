@@ -276,8 +276,10 @@ Decoder::decodeMove(Byte value)
 
 
 void
-Decoder::decodeVariation(unsigned flags, unsigned level)
+Decoder::decodeVariation(/*unsigned flags, */unsigned level)
 {
+	bool preComment = false;
+
 	while (true)
 	{
 		Byte b;
@@ -287,6 +289,12 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 			m_position.doMove(m_move, decodeMove(b));
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
+
+			if (preComment)
+			{
+				m_currentNode->setComment(move::Ante);
+				preComment = false;
+			}
 		}
 
 		if (b < token::First)
@@ -294,6 +302,12 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 			m_position.doMove(m_move, decodeMove(b));
 			m_currentNode->setNext(new MoveNode(m_move));
 			m_currentNode = m_currentNode->next();
+
+			if (preComment)
+			{
+				m_currentNode->setComment(move::Ante);
+				preComment = false;
+			}
 		}
 		else
 		{
@@ -316,26 +330,41 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 						m_position.push();
 						m_position.undoMove(current->move());
 						current->addVariation(m_currentNode = new MoveNode);
-						decodeVariation(flags, level + 1);
+						decodeVariation(/*flags, */level + 1);
 
 						// Scidb does not support empty variations...
 						if (m_currentNode->atLineStart())
 						{
 							if (m_currentNode->hasNote())
 							{
-								// ...but we cannot delete the variation if a pre-comment/annotation/mark exists.
-								if (	!m_currentNode->annotation().isEmpty()
-									|| m_strm.peek() == token::Start_Marker)
+								// ...but we cannot delete the variation if an annotation/comment exists.
+
+								if (!m_currentNode->annotation().isEmpty())
 								{
 									// As a workaround we insert a null move.
 									m_currentNode->setNext(new MoveNode(m_position.board().makeNullMove()));
+
+									if (m_currentNode->hasComment(move::Post))
+									{
+										m_currentNode->unsetComment(move::Post);
+										preComment = true;
+									}
 								}
-								else
+								else // if (m_currentNode->hasComment(move::Post))
 								{
-									// This is the last variation. Handle this comment as a pre-comment.
-									current->deleteVariation(current->countVariations() - 1);
-									m_currentNode->unsetComment(move::Ante);
-									// XXX but for next node!
+									if (m_strm.peek() == token::Start_Marker)
+									{
+										// As a workaround we insert a null move.
+										m_currentNode->setNext(new MoveNode(m_position.board().makeNullMove()));
+									}
+									else
+									{
+										// This is the last variation. Handle this comment as a pre-comment.
+										current->deleteVariation(current->countVariations() - 1);
+									}
+
+									m_currentNode->unsetComment(move::Post);
+									preComment = true;
 								}
 							}
 							else
@@ -355,7 +384,7 @@ Decoder::decodeVariation(unsigned flags, unsigned level)
 					break;
 
 				case token::Comment:
-					if (flags & DatabaseCodec::Decode_Comments)
+//					if (flags & DatabaseCodec::Decode_Comments)
 						m_currentNode->setComment(move::Post);
 					break;
 			}
@@ -533,25 +562,43 @@ Decoder::decodeTags(TagSet& tags)
 void
 Decoder::decodeComments(MoveNode* node)
 {
+	mstl::string buffer;
+
 	for ( ; node; node = node->next())
 	{
 		if (node->hasSupplement())
 		{
+			if (node->hasComment(move::Ante))
+			{
+				mstl::string content;
+				Comment comment;
+
+				buffer.clear();
+				m_strm.get(content);
+				m_codec.toUtf8(content, buffer);
+
+				if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
+					node->addAnnotation(nag::Diagram);
+
+				node->swapComment(comment, move::Ante);
+			}
+
 			if (node->hasComment(move::Post))
 			{
-				mstl::string	comment;
-				mstl::string	result;
+				mstl::string	content;
+				Comment			comment;
 				MarkSet			marks;
 
-				m_strm.get(comment);
-				marks.extractFromComment(comment);
-				m_codec.toUtf8(comment);
+				buffer.clear();
+				m_strm.get(content);
+				marks.extractFromComment(content);
+				m_codec.toUtf8(content, buffer);
 
-				if (Comment::convertCommentToXml(comment, result, Comment::Unicode))
+				if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
 					node->addAnnotation(nag::Diagram);
 
 				node->swapMarks(marks);
-				node->swapComment(result, move::Post);
+				node->swapComment(comment, move::Post);
 			}
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
@@ -588,12 +635,12 @@ Decoder::checkVariant(TagSet& tags)
 
 
 save::State
-Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
+Decoder::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags)
 {
-	if (flags & DatabaseCodec::Decode_Tags)
+//	if (flags & DatabaseCodec::Decode_Tags)
 		decodeTags(tags);
-	else
-		skipTags();
+//	else
+//		skipTags();
 
 	if (m_strm.get() & flags::Non_Standard_Start)
 	{
@@ -618,9 +665,9 @@ Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
 	MoveNode start;
 	m_currentNode = &start;
 
-	decodeVariation(flags);
+	decodeVariation(/*flags*/);
 
-	if (flags & DatabaseCodec::Decode_Comments)
+//	if (flags & DatabaseCodec::Decode_Comments)
 		decodeComments(&start);
 
 	decodeVariation(consumer, &start);
@@ -643,12 +690,12 @@ Decoder::doDecoding(db::Consumer& consumer, unsigned flags, TagSet& tags)
 
 
 unsigned
-Decoder::doDecoding(unsigned flags, GameData& data)
+Decoder::doDecoding(/*unsigned flags, */GameData& data)
 {
-	if (flags & DatabaseCodec::Decode_Tags)
+//	if (flags & DatabaseCodec::Decode_Tags)
 		decodeTags(data.m_tags);
-	else
-		skipTags();
+//	else
+//		skipTags();
 
 	unsigned myFlags = m_strm.get();
 
@@ -672,9 +719,9 @@ Decoder::doDecoding(unsigned flags, GameData& data)
 
 	M_ASSERT(m_currentNode);
 
-	decodeVariation(flags);
+	decodeVariation(/*flags*/);
 
-	if (flags & DatabaseCodec::Decode_Comments)
+//	if (flags & DatabaseCodec::Decode_Comments)
 		decodeComments(data.m_startNode);
 
 	return m_position.board().plyNumber() - plyNumber;
@@ -689,25 +736,25 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 	if (node->hasNote())
 		consumer.putComment(node->comment(move::Post), node->annotation(), node->marks());
 
-	for (MoveNode* n = node->next(); n; n = n->next())
+	for (node = node->next(); node; node = node->next())
 	{
-		if (n->hasNote())
+		if (node->hasNote())
 		{
-			consumer.putMove(	n->move(),
-									n->annotation(),
-									n->comment(move::Ante),
-									n->comment(move::Post),
-									n->marks());
+			consumer.putMove(	node->move(),
+									node->annotation(),
+									node->comment(move::Ante),
+									node->comment(move::Post),
+									node->marks());
 		}
 		else
 		{
-			consumer.putMove(n->move());
+			consumer.putMove(node->move());
 		}
 
-		for (unsigned i = 0; i < n->variationCount(); ++i)
+		for (unsigned i = 0; i < node->variationCount(); ++i)
 		{
 			consumer.startVariation();
-			decodeVariation(consumer, n->variation(i));
+			decodeVariation(consumer, node->variation(i));
 			consumer.finishVariation();
 		}
 	}

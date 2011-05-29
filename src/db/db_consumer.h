@@ -59,6 +59,8 @@ public:
 	bool isMainline() const;
 	bool variationIsEmpty() const;
 	bool terminated() const;
+	bool commentEngFlag() const;
+	bool commentOthFlag() const;
 
 	format::Type sourceFormat() const;
 	virtual format::Type format() const = 0;
@@ -174,6 +176,8 @@ private:
 	Consumer*			m_consumer;
 	bool					m_setupBoard;
 	bool					m_hasComment;
+	bool					m_commentEngFlag;
+	bool					m_commentOthFlag;
 };
 
 } // namespace db

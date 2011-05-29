@@ -85,6 +85,8 @@ public:
 
 private:
 
+	void writeComment(Comment const& comment);
+	void writeMarks(MarkSet const& marks);
 	void writeComment(mstl::string const& comment);
 
 	void putSpace();

@@ -74,6 +74,7 @@ wm withdraw .application
 
 if {[::scidb::misc::debug?]} {
 #	proc grab {args} {}
+	::process::setOption single-process
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::wm sync }
 }
 
@@ -169,14 +170,16 @@ proc databasePath {file} {
 
 namespace eval remote {
 
-proc openBase {path} {
+proc openBase {pathList} {
 	raise .application
 
-	if {[llength $path]} {
-		# TODO: extend path with extension if needed
-		::application::database::openBase .application [::util::databasePath $path]
-		after idle [::remote::update]
+	if {[llength $pathList]} {
+		foreach path $pathList {
+			::application::database::openBase .application [::util::databasePath $path]
+		}
 	}
+
+	after idle [::remote::update]
 }
 
 } ;# namespace remote

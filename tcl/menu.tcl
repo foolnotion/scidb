@@ -47,6 +47,7 @@ set GameNewShuffle		"N&ew Game: Shuffle"
 set GameNewShuffleSymm	"Ne&w Game: Shuffle (symmetrical only)"
 set GameSave				"&Save Game"
 set GameReplace			"&Replace Game"
+set GameReplaceMoves		"Replace &Moves Only"
 
 set HelpInfo				"&Info..."
 set HelpContents			"&Contents"
@@ -169,21 +170,22 @@ proc setup {} {
 	variable Entries
 
 	lappend Menu \
-		File	{	New					1	Ctrl+N			docNew			{ ::menu::dbNew .application }
-					Open					1	Ctrl+O			docOpen			{ ::menu::dbOpen .application }
-					OpenURL				1	{}					internet			{ ::menu::dbOpenUrl .application }
-					Export				1	Ctrl+X			fileExport		{ ::menu::dbExport .application }
-					Import				1	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
-					ImportOne			1	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
-					Close					0	Ctrl+C			close				{ ::menu::dbClose .application }
-					-----------------	-	-------------	--------------	---------------------------------
-					Quit					0	Ctrl+Q			exit				{ ::application::quit }
+		File	{	New				1	Ctrl+N			docNew			{ ::menu::dbNew .application }
+					Open				1	Ctrl+O			docOpen			{ ::menu::dbOpen .application }
+					OpenURL			1	{}					internet			{ ::menu::dbOpenUrl .application }
+					Export			1	Ctrl+X			fileExport		{ ::menu::dbExport .application }
+					Import			1	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
+					ImportOne		1	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
+					Close				0	Ctrl+C			close				{ ::menu::dbClose .application }
+					--------------	-	-------------	--------------	---------------------------------
+					Quit				0	Ctrl+Q			exit				{ ::application::quit }
 				} \
-		Game	{	New					1	Ctrl+X			document			{ ::menu::gameNew .application std }
-					NewShuffle			1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
-					NewShuffleSymm		1	Ctrl+Shift+Y	symmetric		{ ::menu::gameNew .application sfrc }
-					Save					1	Ctrl+S			save				{ ::menu::gameSave .application }
-					Replace				1	Ctrl+R			saveAs			{ ::menu::gameReplace .application }
+		Game	{	New				1	Ctrl+X			document			{ ::menu::gameNew .application std }
+					NewShuffle		1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
+					NewShuffleSymm	1	Ctrl+Shift+Y	symmetric		{ ::menu::gameNew .application sfrc }
+					Save				1	Ctrl+S			save				{ ::menu::gameSave .application }
+					Replace			1	Ctrl+R			saveAs			{ ::menu::gameReplace .application }
+					ReplaceMoves	1	Ctrl+M			saveAs			{ ::menu::gameReplaceMoves .application }
 				} \
 		View	CreateViewMenu
 
@@ -200,9 +202,9 @@ proc setup {} {
 	unset lst
 
 	lappend Menu \
-		Help	{	Contents						1	F1			help		{ puts "Help contents" }
-					BugReport					1	{}			bug		{ ::menu::bugReport .application }
-					Info							1	{}			info		{ ::info::openDialog .application }
+		Help	{	Contents			1	F1			help		{ puts "Help contents" }
+					BugReport		1	{}			bug		{ ::menu::bugReport .application }
+					Info				1	{}			info		{ ::info::openDialog .application }
 				}
 
 
@@ -408,7 +410,9 @@ proc dbImport {parent} {
 			lappend files [encoding convertto utf-8 $file]
 		}
 		set base [::scidb::db::get name]
-		::import::open $parent $base $files $title
+# XXX hack!
+set encoding iso8859-1
+		::import::open $parent $base $files $title $encoding
 		::application::database::refreshBase $base
 	}
 }
@@ -437,6 +441,21 @@ proc gameSave {parent} {
 
 proc gameReplace {parent} {
 	::dialog::save::open $parent [::scidb::db::get name] -1 [::scidb::game::number]
+}
+
+
+proc gameReplaceMoves {parent} {
+	set base [::scidb::db::get name]
+
+	if {[::scidb::db::get readonly? $base]} {
+		::dialog::info \
+			-parent $parent \
+			-message [format $::dialog::save::mc::CurrentBaseIsReadonly [::util::databaseName $base]] \
+			-title "[tk appname] - $::dialog::save::mc::ReplaceGame" \
+			;
+	} else {
+		::scidb::db::update moves $base [expr {[::scidb::game::number] - 1}]
+	}
 }
 
 

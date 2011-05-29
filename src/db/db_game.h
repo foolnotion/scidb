@@ -169,10 +169,14 @@ public:
 	bool isEmpty() const;
 	/// Return whether the game contains illegal moves.
 	bool containsIllegalMoves() const;
-	/// Return whether
+	/// Return whether the game contains the given language at specified position.
 	bool containsLanguage(	edit::Key const& key,
 									move::Position position,
 									mstl::string const& lang) const;
+	/// Return whether any comment contains English language.
+	bool commentEngFlag() const;
+	/// Return whether any comment contains any other language than English.
+	bool commentOthFlag() const;
 	/// Return whether the game is currently at the start position of the mainline
 	bool atMainlineStart() const;
 	/// Return whether the game is at the end of the mainline

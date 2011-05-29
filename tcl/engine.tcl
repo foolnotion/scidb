@@ -100,7 +100,7 @@ proc engines {} {
 
 
 proc WriteOptions {chan} {
-	options::writeItem $chan [namespace current]::Engines
+	options::writeList $chan [namespace current]::Engines
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

@@ -74,6 +74,7 @@ excbreak()
 	return 0;
 }
 
+
 void
 mstl::bits::prepare_msg(mstl::exception& exc,
 								char const* file,

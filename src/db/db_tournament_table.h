@@ -169,7 +169,7 @@ private:
 	unsigned		m_parity;
 	unsigned		m_maxRound;
 	unsigned		m_maxSubround;
-	bool			m_excludeKnockout;
+	bool			m_missingRoundInfo;
 	Map			m_orderMap;
 	Allocator	m_allocator;
 };

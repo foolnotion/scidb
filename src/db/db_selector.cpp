@@ -423,6 +423,8 @@ DEF_COMPARE(StandardPosition, hasStandardPosition());
 DEF_COMPARE(Chess960Position, hasChess960Position());
 DEF_COMPARE(Promotion, hasPromotion());
 DEF_COMPARE(UnderPromotion, hasUnderPromotion());
+DEF_COMPARE(EngFlag, containsEnglishLanguage());
+DEF_COMPARE(OthFlag, containsOtherLanguage());
 
 } // namespace game
 
@@ -561,7 +563,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 
 	switch (attr)
 	{
-		case attribute::game::Number:					break;
+		case attribute::game::Number:						break;
 		case attribute::game::WhitePlayer:				func = game::compWhitePlayer; break;
 		case attribute::game::BlackPlayer:				func = game::compBlackPlayer; break;
 		case attribute::game::Event:						func = game::compEvent; break;
@@ -592,6 +594,8 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Idn:							func = game::compIdn; break;
 		case attribute::game::Position:					func = game::compPosition; break;
 		case attribute::game::Acv:							func = game::compAcv; break;
+		case attribute::game::CommentEngFlag:			func = game::compEngFlag; break;
+		case attribute::game::CommentOthFlag:			func = game::compOthFlag; break;
 		case attribute::game::Termination:				func = game::compTermination; break;
 		case attribute::game::Mode:						func = game::compMode; break;
 		case attribute::game::TimeMode:					func = game::compTimeMode; break;
@@ -670,11 +674,15 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 	{
 		unsigned n = db.countGames();
 
+		M_ASSERT(m_map.size() <= n);
+
 		if (n != m_map.size())
 		{
+			unsigned k = m_map.size();
+
 			m_map.resize(n);
 
-			for (unsigned i = 0; i < n; ++i)
+			for (unsigned i = k; i < n; ++i)
 				m_map[i] = i;
 		}
 
@@ -688,7 +696,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 			f = reverseCompare;
 		}
 
-		::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type*), f);
+		::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), f);
 	}
 	else
 	{
@@ -768,11 +776,15 @@ Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, 
 
 	unsigned n = db.countPlayers();
 
+	M_ASSERT(m_map.size() <= n);
+
 	if (n != m_map.size())
 	{
+		unsigned k = m_map.size();
+
 		m_map.resize(n);
 
-		for (unsigned i = 0; i < n; ++i)
+		for (unsigned i = k; i < n; ++i)
 			m_map[i] = i;
 	}
 
@@ -815,11 +827,15 @@ Selector::sort(Database const& db, attribute::event::ID attr, order::ID order)
 
 	unsigned n = db.countEvents();
 
+	M_ASSERT(m_map.size() <= n);
+
 	if (n != m_map.size())
 	{
+		unsigned k = m_map.size();
+
 		m_map.resize(n);
 
-		for (unsigned i = 0; i < n; ++i)
+		for (unsigned i = k; i < n; ++i)
 			m_map[i] = i;
 	}
 
@@ -856,11 +872,15 @@ Selector::sort(Database const& db, attribute::annotator::ID attr, order::ID orde
 
 	unsigned n = db.countAnnotators();
 
+	M_ASSERT(m_map.size() <= n);
+
 	if (n != m_map.size())
 	{
+		unsigned k = m_map.size();
+
 		m_map.resize(n);
 
-		for (unsigned i = 0; i < n; ++i)
+		for (unsigned i = k; i < n; ++i)
 			m_map[i] = i;
 	}
 
