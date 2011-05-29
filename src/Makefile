@@ -16,7 +16,7 @@ include ../Makefile.in
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
 ALL_ICLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(OPTIMIZE)   $(CXX_DEBUG) $(PROFILING)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
 MAKEFLAGS += --no-print-directory
@@ -57,7 +57,7 @@ ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MI
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libTeXt $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move $(PROGRAM)
+TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress $(PROGRAM)
 
 all: recursive $(PROGRAM)
 

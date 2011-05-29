@@ -18,7 +18,7 @@ include ../../Makefile.in
 INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 DEFINES	= -DSHAREDIR=\"$(SHAREDIR)\"
-CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(DEFINES)
+CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(DEFINES)
 
 SRC_CXX = \
 	tcl_application.cpp \

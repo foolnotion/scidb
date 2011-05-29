@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../mstl -I../sys -I../util -I../db -I../db/sci -I../db/si3
-CXXFLAGS	+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	app_application.cpp \

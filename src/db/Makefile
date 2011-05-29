@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -Isci -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../sys
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(PROFILING)
+CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	db_annotation.cpp \
@@ -189,28 +189,25 @@ db_board_base.o: ../mstl/m_bit_functions.ipp
 db_board_base.o: ../mstl/m_static_check.h
 db_board_base.o: db_board_base.ipp
 db_comment.o: db_comment.h
-db_comment.o: db_common.h
-db_comment.o: ../util/u_base.h
+db_comment.o: ../mstl/m_string.h
 db_comment.o: ../mstl/m_types.h
-db_comment.o: db_common.ipp
+db_comment.o: ../mstl/m_string.ipp
 db_comment.o: ../mstl/m_assert.h
 db_comment.o: ../mstl/m_exception.h
 db_comment.o: ../mstl/m_backtrace.h
 db_comment.o: ../mstl/m_exception.ipp
-db_comment.o: ../mstl/m_utility.h
-db_comment.o: ../mstl/m_utility.ipp
-db_comment.o: ../mstl/m_limits.h
-db_comment.o: ../mstl/m_bit_functions.h
-db_comment.o: ../mstl/m_bit_functions.ipp
-db_comment.o: ../mstl/m_static_check.h
-db_comment.o: ../mstl/m_string.h
-db_comment.o: ../mstl/m_string.ipp
 db_comment.o: ../mstl/m_map.h
 db_comment.o: ../mstl/m_vector.h
 db_comment.o: ../mstl/m_type_traits.h
 db_comment.o: ../mstl/m_type_traits.ipp
 db_comment.o: ../mstl/m_memblock.h
 db_comment.o: ../mstl/m_memblock.ipp
+db_comment.o: ../mstl/m_utility.h
+db_comment.o: ../mstl/m_utility.ipp
+db_comment.o: ../mstl/m_limits.h
+db_comment.o: ../mstl/m_bit_functions.h
+db_comment.o: ../mstl/m_bit_functions.ipp
+db_comment.o: ../mstl/m_static_check.h
 db_comment.o: ../mstl/m_vector.ipp
 db_comment.o: ../mstl/m_uninitialized.h
 db_comment.o: ../mstl/m_uninitialized.ipp
@@ -222,6 +219,9 @@ db_comment.o: ../mstl/m_pair.h
 db_comment.o: ../mstl/m_pair.ipp
 db_comment.o: ../mstl/m_map.ipp
 db_comment.o: db_comment.ipp
+db_comment.o: db_common.h
+db_comment.o: ../util/u_base.h
+db_comment.o: db_common.ipp
 db_comment.o: db_exception.h
 db_comment.o: ../util/u_exception.h
 db_comment.o: ../sys/sys_utf8_codec.h
@@ -1672,28 +1672,25 @@ db_move_list.o: db_move_list.ipp
 db_move_list.o: ../mstl/m_stdio.h
 db_move_node.o: db_move_node.h
 db_move_node.o: db_comment.h
-db_move_node.o: db_common.h
-db_move_node.o: ../util/u_base.h
+db_move_node.o: ../mstl/m_string.h
 db_move_node.o: ../mstl/m_types.h
-db_move_node.o: db_common.ipp
+db_move_node.o: ../mstl/m_string.ipp
 db_move_node.o: ../mstl/m_assert.h
 db_move_node.o: ../mstl/m_exception.h
 db_move_node.o: ../mstl/m_backtrace.h
 db_move_node.o: ../mstl/m_exception.ipp
-db_move_node.o: ../mstl/m_utility.h
-db_move_node.o: ../mstl/m_utility.ipp
-db_move_node.o: ../mstl/m_limits.h
-db_move_node.o: ../mstl/m_bit_functions.h
-db_move_node.o: ../mstl/m_bit_functions.ipp
-db_move_node.o: ../mstl/m_static_check.h
-db_move_node.o: ../mstl/m_string.h
-db_move_node.o: ../mstl/m_string.ipp
 db_move_node.o: ../mstl/m_map.h
 db_move_node.o: ../mstl/m_vector.h
 db_move_node.o: ../mstl/m_type_traits.h
 db_move_node.o: ../mstl/m_type_traits.ipp
 db_move_node.o: ../mstl/m_memblock.h
 db_move_node.o: ../mstl/m_memblock.ipp
+db_move_node.o: ../mstl/m_utility.h
+db_move_node.o: ../mstl/m_utility.ipp
+db_move_node.o: ../mstl/m_limits.h
+db_move_node.o: ../mstl/m_bit_functions.h
+db_move_node.o: ../mstl/m_bit_functions.ipp
+db_move_node.o: ../mstl/m_static_check.h
 db_move_node.o: ../mstl/m_vector.ipp
 db_move_node.o: ../mstl/m_uninitialized.h
 db_move_node.o: ../mstl/m_uninitialized.ipp
@@ -1706,6 +1703,9 @@ db_move_node.o: ../mstl/m_pair.ipp
 db_move_node.o: ../mstl/m_map.ipp
 db_move_node.o: db_comment.ipp
 db_move_node.o: db_move.h
+db_move_node.o: db_common.h
+db_move_node.o: ../util/u_base.h
+db_move_node.o: db_common.ipp
 db_move_node.o: db_move.ipp
 db_move_node.o: ../util/u_crc.h
 db_move_node.o: ../util/u_crc.ipp
