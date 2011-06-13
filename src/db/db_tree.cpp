@@ -341,7 +341,7 @@ Tree::buildTree518(	unsigned myIdn,
 	EcoSet				reachable;
 	pawns::Progress	myProgress;
 
-	Eco myEco = EcoTable::specimen().getEco(myLine);
+//	Eco myEco = EcoTable::specimen().getEco(myLine);
 	Eco myKey = EcoTable::specimen().lookup(myLine, &myLength, &successors, &reachable);
 
 	myProgress.side[color::White] = myPosition.signature().progress(color::White);

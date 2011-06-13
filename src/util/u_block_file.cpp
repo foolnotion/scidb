@@ -22,7 +22,6 @@
 #include "m_utility.h"
 #include "m_bit_functions.h"
 #include "m_fstream.h"
-#include "m_endian.h"
 #include "m_assert.h"
 
 #include <string.h>
