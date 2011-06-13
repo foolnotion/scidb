@@ -30,7 +30,7 @@ install:
 	@$(MAKE) -C tcl install
 
 uninstall:
-	@$(MAKE) -C src install
-	@$(MAKE) -C tcl install
+	@$(MAKE) -C src uninstall
+	@$(MAKE) -C tcl uninstall
 
 # vi:set ts=3 sw=3:
