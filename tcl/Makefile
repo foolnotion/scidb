@@ -220,9 +220,9 @@ uninstall:
 		if [ ! -z "`which fc-cache`" ]; then \
 			fc-cache -fv $(FONTDIR); \
 		fi; \
-		if [ "`find $(FONTDIR) -type d -empty`" == "$(FONTDIR)" ]; then \
+		if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then \
 			rmdir $(FONTDIR); \
-		fi \
+		fi; \
 	else \
 		for f in `ls fonts/*.ttf`; do \
 			rm -f ~/.$$f; \
@@ -230,9 +230,9 @@ uninstall:
 		if [ ! -z "`which fc-cache`" ]; then \
 			fc-cache -fv ~/.fonts; \
 		fi; \
-		if [ "`find ~/.fonts -type d -empty`" == "`ls -d ~/.fonts`" ]; then \
+		if [ "`find ~/.fonts -type d -empty`" = "`ls -d ~/.fonts`" ]; then \
 			rmdir ~/.fonts; \
-		fi \
+		fi; \
 	fi
 
 $(SCRIPT): $(SOURCES)
