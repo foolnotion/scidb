@@ -61,24 +61,27 @@ bind PanedWindowFrame <Destroy> [namespace code { DestroyHandler %W }]
 proc Build {w args} {
 	variable Initialized
 
+	array set opts {
+		-borderwidth	0
+		-cursor			{}
+		-sashcmd			{}
+	}
+
 	array set opts $args
-	unset -nocomplain opts(-borderwidth)
+	set sashcmd $opts(-sashcmd)
 	unset -nocomplain opts(-opaqueresize)
 	unset -nocomplain opts(-sashcmd)
-	unset -nocomplain opts(-cursor)
 
-	::panedwindow_old $w {*}[array get opts] -opaqueresize 1 -borderwidth 0
+	::panedwindow_old $w {*}[array get opts] -opaqueresize 1
 	if {[string match h* [$w cget -orient]]} {
 		$w configure -cursor sb_h_double_arrow
 	} else {
 		$w configure -cursor sb_v_double_arrow
 	}
-	pack $w -fill both -expand yes
 	
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::MaxSize
-	variable [namespace current]::${w}::GridSize
-	variable [namespace current]::${w}::SashCmd {}
+	variable [namespace current]::${w}::SashCmd $sashcmd
 	variable [namespace current]::${w}::Cursor left_ptr
 
 	rename ::$w $w.__panedwindow__
@@ -137,9 +140,7 @@ proc WidgetProc {w command args} {
 			set child [lindex $args 0]
 			
 			if {[llength [$child cget -cursor]] == 0} {
-				set cursor [[winfo parent $w] cget -cursor]
-				if {[llength $cursor] == 0} { set cursor $Cursor }
-				$child configure -cursor $cursor
+				$child configure -cursor $Cursor
 			}
 		}
 
@@ -154,16 +155,6 @@ proc WidgetProc {w command args} {
 						variable ${w}::Cursor
 						set Cursor $val
 						if {[llength $Cursor] == 0} { set Cursor left_ptr }
-						unset opts($key)
-						$w.__panedwindow__ configure $key $val
-					}
-
-					-background {
-						$w.__panedwindow__ configure $key $val
-					}
-
-					-borderwidth - -width - -height - -relief {
-						$w.__panedwindow__ configure $key $val
 						unset opts($key)
 					}
 
@@ -183,8 +174,9 @@ proc WidgetProc {w command args} {
 
 		cget {
 			switch -- [lindex $args 0] {
-				-cursor - -background - -borderwidth - -width - -height - -relief {
-					return [$w.__panedwindow__ cget {*}$args]
+				-cursor {
+					variable ${w}::Cursor
+					return $Cursor
 				}
 			}
 		}
@@ -204,9 +196,9 @@ proc DestroyHandler {w} {
 } ;# namespace panedwindow
 
 
-bind Panedwindow <Button-1>			{ ::tk::panedwindow::MarkSash %W %x %y }
-bind Panedwindow <B1-Motion>			{ ::tk::panedwindow::DragSash %W %x %y }
-bind Panedwindow <ButtonRelease-1>	{ ::tk::panedwindow::ReleaseSash %W }
+bind Panedwindow <Button-1>			{ tk::panedwindow::MarkSash %W %x %y }
+bind Panedwindow <B1-Motion>			{ tk::panedwindow::DragSash %W %x %y }
+bind Panedwindow <ButtonRelease-1>	{ tk::panedwindow::ReleaseSash %W }
 
 bind Panedwindow <Button-2>			{ break }
 bind Panedwindow <B2-Motion>			{ break }
@@ -225,9 +217,9 @@ proc MarkSash {w x y} {
 	lassign $what index which
 	if {$::tk_strictMotif && $which ne "handle"} { return }
 
-	variable ::panedwindow::[winfo parent $w]::MaxSize
-	variable ::panedwindow::[winfo parent $w]::GridSize
-	variable ::panedwindow::[winfo parent $w]::SashCmd
+	variable ::panedwindow::${w}::MaxSize
+	variable ::panedwindow::${w}::GridSize
+	variable ::panedwindow::${w}::SashCmd
 
 	set panes [$w panes]
 	lassign {0 0 0 0} lhsMax rhsMax lhsMin rhsMin
@@ -330,8 +322,8 @@ proc ReleaseSash {w} {
 
 
 proc MoveSash {w index x y offs} {
-	variable ::panedwindow::[winfo parent $w]::SashCmd
-	variable ::panedwindow::[winfo parent $w]::GridSize
+	variable ::panedwindow::${w}::SashCmd
+	variable ::panedwindow::${w}::GridSize
 	variable ::tk::Priv
 
 	set panes [$w panes]
