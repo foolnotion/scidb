@@ -336,6 +336,11 @@ Board::hashEnPassant()
 bool
 Board::isIntoCheck(Move const& move) const
 {
+	M_REQUIRE(move);
+
+	if (move.isNull())
+		return false;
+
 	Board peek(*this);
 	peek.doMove(move);
 	return peek.givesCheck();
@@ -3632,7 +3637,16 @@ Board::isValidMove(Move const& move, move::Constraint flag) const
 	if (!checkMove(move, flag))
 		return false;
 
-	return flag == move::AllowIllegalMove || !isIntoCheck(move);
+	if (move.isNull())
+	{
+		Status state = checkState();
+		return state != CheckMate && state != StaleMate;
+	}
+
+	if (flag == move::AllowIllegalMove)
+		return true;
+
+	return !isIntoCheck(move);
 }
 
 

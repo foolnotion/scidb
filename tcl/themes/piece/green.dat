@@ -1,56 +1,53 @@
-### Piece Style: Green ########################
-
 ::board::addStyle piece {
-  identifier          Green|1243460196909|yellow.color|gregor
+  version            1.0
+  identifier         Green|1243460196909|yellow.color|gregor
 
-  contour             1.0
-  shadow              0.03
-  opacity             0.5
-  zoom                1.0
-  diffusion           none
-  useWhitePiece       1
+  contour            1.0
+  shadow             0.03
+  opacity            0.5
+  zoom               1.0
+  diffusion          none
+  useWhitePiece      1
  
-  color,w,contour     #ffffff
-  color,w,fill        {}
-  color,w,stroke      {}
-  color,w,texture     {}
+  color,w,contour    #ffffff
+  color,w,fill       {}
+  color,w,stroke     {}
+  color,w,texture    {}
 
-  color,b,contour     #ffffff
-  color,b,fill        {}
-  color,b,stroke      {}
-  color,b,texture     {}
+  color,b,contour    #ffffff
+  color,b,fill       {}
+  color,b,stroke     {}
+  color,b,texture    {}
 
-  texture,w,rotation  0
-  texture,w,x1        0
-  texture,w,x2        0
-  texture,w,y1        0
-  texture,w,y2        0
+  texture,w,rotation 0
+  texture,w,x1       0
+  texture,w,x2       0
+  texture,w,y1       0
+  texture,w,y2       0
 
-  texture,b,rotation  0
-  texture,b,x1        0
-  texture,b,x2        0
-  texture,b,y1        0
-  texture,b,y2        0
+  texture,b,rotation 0
+  texture,b,x1       0
+  texture,b,x2       0
+  texture,b,y1       0
+  texture,b,y2       0
  
-  gradient,w,start    #ffff00
-  gradient,w,stop     #999900
-  gradient,w,tx       0
-  gradient,w,ty       0
-  gradient,w,use      true
-  gradient,w,x1       0
-  gradient,w,x2       1
-  gradient,w,y1       0
-  gradient,w,y2       1
+  gradient,w,start   #ffff00
+  gradient,w,stop    #999900
+  gradient,w,tx      0
+  gradient,w,ty      0
+  gradient,w,use     true
+  gradient,w,x1      0
+  gradient,w,x2      1
+  gradient,w,y1      0
+  gradient,w,y2      1
 
-  gradient,b,start    #52cc92
-  gradient,b,stop     #666666
-  gradient,b,tx       0
-  gradient,b,ty       0
-  gradient,b,use      true
-  gradient,b,x1       0.07432432432432433
-  gradient,b,x2       0.9797297297297297
-  gradient,b,y1       0.31756756756756754
-  gradient,b,y2       0.6756756756756757
+  gradient,b,start   #52cc92
+  gradient,b,stop    #666666
+  gradient,b,tx      0
+  gradient,b,ty      0
+  gradient,b,use     true
+  gradient,b,x1      0.07432432432432433
+  gradient,b,x2      0.9797297297297297
+  gradient,b,y1      0.31756756756756754
+  gradient,b,y2      0.6756756756756757
 }
-
-# eof

@@ -31,6 +31,8 @@
 #include "db_move.h"
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_set.h"
 #include "m_vector.h"
 #include "m_string.h"
@@ -102,8 +104,11 @@ public:
 	bool containsIllegalMoves() const;
 	bool containsEnglishLang() const;
 	bool containsOtherLang() const;
+	bool contains(MoveNode const* node) const;
+	bool isFolded() const;
 
 	unsigned variationCount() const;
+	unsigned unfoldedVariationCount() const;
 	unsigned variationNumber(MoveNode const* node) const;
 	unsigned countHalfMoves() const;
 	unsigned countNodes() const;
@@ -112,7 +117,6 @@ public:
 	unsigned countComments() const;
 	unsigned countComments(mstl::string const& lang) const;
 	unsigned countVariations() const;
-	unsigned countSequence() const;
 
 	Move& move();
 	Move const& move() const;
@@ -129,6 +133,8 @@ public:
 	void unsetComment(move::Position position);
 	void setMark();
 
+	void setFolded(bool flag);
+	void fold(bool flag);
 	void setMove(Board const& board, Move const& move);
 	void setNext(MoveNode* next);
 	void addVariation(MoveNode* variation);
@@ -156,7 +162,7 @@ public:
 	void stripComments(mstl::string const& lang);
 	void stripVariations();
 
-	uint64_t computeChecksum(uint64_t crc = 0) const;
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 	void collectLanguages(LanguageSet& langSet) const;
 
 	MoveNode* removeNext();
@@ -177,6 +183,7 @@ private:
 		IsPrepared		= 1 << 5,
 		HasNote			= HasComment | HasPreComment | HasMark | HasAnnotation,
 		HasSupplement	= HasNote | HasVariation,
+		IsFolded			= 1 << 6,
 	};
 
 	MoveNode(MoveNode const&);

@@ -44,7 +44,6 @@ public:
 	MoveNode*	m_startNode;	/// Keeps the starting node of the game
 	Board			m_startBoard;	/// Keeps the start position of the game
 	TagSet		m_tags;
-	uint64_t		m_crc;			// XXX unused
 
 private:
 

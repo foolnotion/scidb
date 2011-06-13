@@ -41,6 +41,8 @@ array set colors {
 	info		black
 }
 
+variable Log .application.log
+
 
 proc warning {args}	{ Print Warning 1 {*}$args }
 proc error {args}		{ Print Error 1 {*}$args }
@@ -49,14 +51,15 @@ proc info {args}		{ Print Information 0 {*}$args }
 
 proc open {callee {show 1}} {
 	variable Priv
+	variable Log
 
-	if {![winfo exists .log]} { Open }
+	if {![winfo exists $Log]} { Open }
 
 	set Priv(callee) $callee
 	set Priv(show) $show
 	set Priv(delay) 0
 	set Priv(force) 0
-	set t .log.top.text
+	set t $Log.top.text
 
 	if {[$t count -chars 1.0 2.0] > 1} {
 		$t configure -state normal
@@ -69,6 +72,7 @@ proc open {callee {show 1}} {
 
 proc close {} {
 	variable Priv
+	variable Log
 
 	if {$Priv(hide)} {
 		set Priv(hide) 0
@@ -82,14 +86,15 @@ proc close {} {
 	}
 
 	update idle
-	.log.top.text yview moveto 1.0
+	$Log.top.text yview moveto 1.0
 }
 
 
 proc show {} {
 	variable Priv
+	variable Log
 
-	if {![winfo exists .log]} { Open }
+	if {![winfo exists $Log]} { Open }
 	set Priv(show) 1
 	set Priv(delay) 0
 	Show
@@ -106,44 +111,49 @@ proc hide {{flag 1}} {
 }
 
 
-proc exists	{} { return [winfo exists .log] }
+proc exists	{} { return [winfo exists $Log] }
 
 
 proc Show {} {
 	variable Priv
+	variable Log
 
 	if {$Priv(delay)} { return }
 
 	update idle
 
-	switch [wm state .log] {
+	if {$Priv(transient)} {
+		wm transient $Log .application
+		set Priv(transient) 0
+	}
+
+	switch [wm state $Log] {
 		withdrawn - iconic {
 			if {$Priv(center)} {
-				set parent .application
-				if {![winfo exists $parent]} { set parent . }
-				::util::place .log center $parent
-				raise .log
-				focus .log
+				raise $Log
+				::util::place $Log center .application
+				focus $Log
 				set Priv(center) 0
 			}
-			wm deiconify .log
+			wm deiconify $Log
 		}
 	
 		default {
 			if {$Priv(show) && $Priv(visibility) ne "VisibilityUnobscured"} {
-				wm deiconify .log
-				raise .log
-				focus .log
+				raise $Log
+				wm deiconify $Log
+				focus $Log
 			}
 		}
 	}
 
-	after idle [focus .log.close]
+	after idle [focus $Log.close]
 }
 
 
 proc Print {type show args} {
 	variable Priv
+	variable Log
 
 	switch [llength $args] {
 		1 {
@@ -168,9 +178,9 @@ proc Print {type show args} {
 		}
 	}
 
-	if {![winfo exists .log]} { Open }
+	if {![winfo exists $Log]} { Open }
 
-	set t .log.top.text
+	set t $Log.top.text
 	$t configure -state normal
 	if {[$t count -chars 1.0 2.0] > 1} { $t insert end "\n" }
 
@@ -196,8 +206,9 @@ proc Print {type show args} {
 
 proc Clear {} {
 	variable Priv
+	variable Log
 
-	set t .log.top.text
+	set t $Log.top.text
 	$t configure -state normal
 	$t delete 1.0 end
 	$t configure -state disabled
@@ -211,17 +222,15 @@ proc Visibility {state} {
 
 proc Open {} {
 	variable Priv
+	variable Log
 	variable colors
 
-	set dlg .log
-	toplevel $dlg -class $::scidb::app
-	wm protocol $dlg WM_DELETE_WINDOW [list wm withdraw $dlg]
-	if {[tk windowingsystem] ne "win32" && [winfo viewable .application]} {
-		wm transient $dlg .application
-	}
-	set top [ttk::frame $dlg.top]
+	toplevel $Log -class $::scidb::app
+	wm withdraw $Log
+	wm protocol $Log WM_DELETE_WINDOW [list wm withdraw $Log]
+	set top [ttk::frame $Log.top]
 	pack $top -fill both -expand yes -padx $::theme::padx -pady $::theme::pady
-	set log [text $top.text \
+	set log [tk::text $top.text \
 		-wrap none \
 		-state disabled \
 		-height 10 \
@@ -245,19 +254,18 @@ proc Open {} {
 	$log tag configure Callee -foreground #88681a
 	$log tag configure hyperlink -underline on -foreground blue
 	$log tag configure link -foreground blue
-	widget::dialogButtons $dlg {clear close} close no
-	$dlg.close configure -command [list wm withdraw $dlg]
-	$dlg.clear configure -command [namespace code Clear]
-	wm protocol $dlg WM_DELETE_WINDOW [list wm withdraw $dlg]
-	wm withdraw $dlg
-	wm title $dlg "$::scidb::app - $mc::LogTitle"
-	wm minsize $dlg 50 5
+	widget::dialogButtons $Log {clear close} close no
+	$Log.close configure -command [list wm withdraw $Log]
+	$Log.clear configure -command [namespace code Clear]
+	wm title $Log "$::scidb::app - $mc::LogTitle"
+	wm minsize $Log 50 5
 	set Priv(visibility) VisibilityFullyObscured
 	set Priv(show) 0
 	set Priv(force) 0
 	set Priv(delay) 0
 	set Priv(hide) 0
 	set Priv(center) 1
+	set Priv(transient) [expr {[tk windowingsystem] ne "win32"}]
 }
 
 } ;# namespace log

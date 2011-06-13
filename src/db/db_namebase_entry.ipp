@@ -289,11 +289,11 @@ inline country::Code NamebaseEvent::country() const	{ return m_value.m_site->cou
 inline NamebaseSite* NamebaseEvent::site() const		{ return m_value.m_site; }
 inline NamebaseSite* NamebaseEvent::emptySite()			{ return m_emptySite; }
 
-inline void NamebaseEvent::setType(event::Type type)				{ m_value.m_type = type; }
-inline void NamebaseEvent::setTimeMode(time::Mode timeMode)		{ m_value.m_timeMode = timeMode; }
-inline void NamebaseEvent::setEventMode(event::Mode mode)		{ m_value.m_eventMode = mode; }
-inline void NamebaseEvent::setCountry(country::Code country)	{ m_value.m_site->setCountry(country); }
-inline void NamebaseEvent::setSite(NamebaseSite* site)			{ m_value.m_site = site; }
+inline void NamebaseEvent::setType_(event::Type type)				{ m_value.m_type = type; }
+inline void NamebaseEvent::setTimeMode_(time::Mode timeMode)		{ m_value.m_timeMode = timeMode; }
+inline void NamebaseEvent::setEventMode_(event::Mode mode)		{ m_value.m_eventMode = mode; }
+inline void NamebaseEvent::setCountry_(country::Code country)	{ m_value.m_site->setCountry(country); }
+inline void NamebaseEvent::setSite_(NamebaseSite* site)			{ m_value.m_site = site; }
 
 
 inline
@@ -322,7 +322,7 @@ NamebaseEvent::date() const
 
 inline
 void
-NamebaseEvent::setDate(unsigned year, unsigned month, unsigned day)
+NamebaseEvent::setDate_(unsigned year, unsigned month, unsigned day)
 {
 	M_REQUIRE(year == 0 || (Date::MinYear <= year && year <= Date::MaxYear));
 
@@ -334,9 +334,9 @@ NamebaseEvent::setDate(unsigned year, unsigned month, unsigned day)
 
 inline
 void
-NamebaseEvent::setDate(Date const& date)
+NamebaseEvent::setDate_(Date const& date)
 {
-	setDate(date.year(), date.month(), date.day());
+	setDate_(date.year(), date.month(), date.day());
 }
 
 
@@ -625,7 +625,9 @@ NamebasePlayer::setRating(rating::Type type, uint16_t value)
 	if (value)
 	{
 		m_rating[type] = mstl::max(m_rating[type], value);
-		m_ratingType = mstl::min(rating::Type(m_ratingType), type);
+
+		if (type != rating::Elo)
+			m_ratingType = mstl::min(rating::Type(m_ratingType), type);
 	}
 }
 

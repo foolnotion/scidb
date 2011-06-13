@@ -70,7 +70,74 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	,m_lineLength(lineLength)
 	,m_length(0)
 	,m_pendingSpace(0)
+	,m_hasPreComment(false)
+	,m_needPostComment(false)
 {
+	if (test(Flag_Use_Scidb_Import_Format))
+	{
+		addFlag(Flag_Include_Variations);
+		addFlag(Flag_Include_Comments);
+		addFlag(Flag_Include_Annotation);
+		addFlag(Flag_Include_Marks);
+		addFlag(Flag_Include_Termination_Tag);
+		addFlag(Flag_Include_Mode_Tag);
+		addFlag(Flag_Include_Variation_Tag);
+		addFlag(Flag_Include_Sub_Variation_Tag);
+		addFlag(Flag_Include_Setup_Tag);
+		addFlag(Flag_Include_Variant_Tag);
+		addFlag(Flag_Include_Position_Tag);
+		addFlag(Flag_Include_Time_Mode_Tag);
+		addFlag(Flag_Comment_To_Html);
+
+		removeFlag(Flag_Exclude_Extra_Tags);
+		removeFlag(Flag_Include_Country_Inside_Player);
+		removeFlag(Flag_Symbolic_Annotation_Style);
+		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
+		removeFlag(Flag_Convert_Null_Moves_To_Comments);
+		removeFlag(Flag_Use_Shredder_FEN);
+		removeFlag(Flag_Convert_Lost_Result_To_Comment);
+		removeFlag(Flag_Append_Mode_To_Event_Type);
+		removeFlag(Flag_Use_ChessBase_Format);
+	}
+	else if (test(Flag_Use_ChessBase_Format))
+	{
+		addFlag(Flag_Include_Variations);
+		addFlag(Flag_Include_Comments);
+		addFlag(Flag_Include_Annotation);
+		addFlag(Flag_Include_Marks);
+		addFlag(Flag_Include_Termination_Tag);
+		addFlag(Flag_Include_Mode_Tag);
+		addFlag(Flag_Include_Variation_Tag);
+		addFlag(Flag_Include_Sub_Variation_Tag);
+		addFlag(Flag_Include_Setup_Tag);
+		addFlag(Flag_Include_Variant_Tag);
+		addFlag(Flag_Include_Position_Tag);
+		addFlag(Flag_Include_Time_Mode_Tag);
+		addFlag(Flag_Use_Shredder_FEN);
+
+		removeFlag(Flag_Exclude_Extra_Tags);
+		removeFlag(Flag_Include_Country_Inside_Player);
+		removeFlag(Flag_Symbolic_Annotation_Style);
+		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
+		removeFlag(Flag_Convert_Null_Moves_To_Comments);
+		removeFlag(Flag_Convert_Lost_Result_To_Comment);
+		removeFlag(Flag_Append_Mode_To_Event_Type);
+		removeFlag(Flag_Use_Scidb_Import_Format);
+	}
+}
+
+
+void
+PgnWriter::writeCommnentLine(mstl::string const& content)
+{
+	if (!content.empty())
+	{
+		mstl::string text;
+		codec().fromUtf8(content, text);
+		m_strm.write("; ");
+		m_strm.write(content);
+		m_strm.write("\n\n");
+	}
 }
 
 
@@ -183,6 +250,8 @@ PgnWriter::writeBeginGame(unsigned number)
 
 	m_pendingSpace = 0;
 	m_length = 0;
+	m_hasPreComment = false;
+	m_needPostComment = false;
 
 	m_move.clear();
 	m_annotation.clear();
@@ -371,8 +440,7 @@ PgnWriter::writeComment(mstl::string const& comment)
 void
 PgnWriter::writeComment(Comment const& comment)
 {
-	if (comment.isEmpty())
-		return;
+	M_ASSERT(!comment.isEmpty());
 
 	mstl::string text;
 
@@ -399,19 +467,16 @@ PgnWriter::writeComment(Comment const& comment)
 void
 PgnWriter::writeMarks(MarkSet const& marks)
 {
-	if (!marks.isEmpty())
+	M_ASSERT(!marks.isEmpty());
+
+	m_marks.clear();
+
+	for (unsigned i = 0; i < marks.count(); ++i)
 	{
-		m_marks.clear();
+		if (i > 0)
+			m_marks += ' ';
 
-		for (unsigned i = 0; i < marks.count(); ++i)
-		{
-			if (i > 0)
-				m_marks += ' ';
-
-			marks[i].toString(m_marks);
-		}
-
-		writeComment(m_marks);
+		marks[i].toString(m_marks);
 	}
 }
 
@@ -419,8 +484,28 @@ PgnWriter::writeMarks(MarkSet const& marks)
 void
 PgnWriter::writeComment(Comment const& comment, MarkSet const& marks)
 {
-	writeComment(comment);
-	writeMarks(marks);
+	if (comment.isEmpty())
+	{
+		if (!marks.isEmpty())
+		{
+			writeMarks(marks);
+			writeComment(m_marks);
+			m_hasPreComment = true;
+		}
+	}
+	else if (!marks.isEmpty())
+	{
+		writeMarks(marks);
+		Comment buf(m_marks, false, false);
+		buf.append(comment, ' ');
+		writeComment(buf);
+		m_hasPreComment = true;
+	}
+	else if (!comment.isEmpty())
+	{
+		writeComment(comment);
+		m_hasPreComment = true;
+	}
 }
 
 
@@ -437,6 +522,15 @@ PgnWriter::writeMove(Move const& move,
 
 	m_annotation.clear();
 	m_move.clear();
+
+	if (m_hasPreComment || !preComment.isEmpty())
+	{
+		if (m_needPostComment)
+			writeComment(mstl::string::empty_string);
+
+		writeComment(preComment);
+		m_hasPreComment = false;
+	}
 
 	if (test(Flag_Space_After_Move_Number))
 	{
@@ -463,11 +557,19 @@ PgnWriter::writeMove(Move const& move,
 		annotation.print(m_move, f);
 	}
 
-	writeComment(preComment);
 	putToken(m_move);
 	putTokens(m_annotation);
-	writeComment(comment);
-	writeMarks(marks);
+	putSpace();
+
+	if (comment.isEmpty() && marks.isEmpty())
+	{
+		m_needPostComment = true;
+	}
+	else
+	{
+		writeComment(comment, marks);
+		m_needPostComment = false;
+	}
 }
 
 
@@ -487,6 +589,9 @@ PgnWriter::writeBeginVariation(unsigned)
 		m_pendingSpace = 0;
 	}
 
+	m_needPostComment = false;
+	m_hasPreComment = false;
+
 	if (::SpaceAfterBracket)
 		putSpace();
 }
@@ -499,6 +604,8 @@ PgnWriter::writeEndVariation(unsigned)
 		putSpace();
 
 	putDelim(')');
+	m_needPostComment = false;
+	m_hasPreComment = false;
 
 	if (test(Flag_Indent_Variations))
 	{

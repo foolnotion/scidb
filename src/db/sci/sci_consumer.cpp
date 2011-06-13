@@ -148,30 +148,36 @@ Consumer::sendComment(	Comment const& preComment,
 		m_endOfRun = true;
 	}
 
-	if (uint8_t flag =	(preComment.isEmpty() ? 0 : comm::Ante)
-							 | (comment.isEmpty() ? 0 : comm::Post))
-	{
-		M_ASSERT(m_putComment);
+	Byte flag = 0;
 
+	if (!preComment.isEmpty())
+	{
 		if (preComment.engFlag())
 			flag |= comm::Ante_Eng;
 		if (preComment.othFlag())
 			flag |= comm::Ante_Oth;
+		flag |= comm::Ante;
+		m_text.put(preComment.content(), preComment.size() + 1);
+	}
 
+	if (!comment.isEmpty())
+	{
 		if (comment.engFlag())
 			flag |= comm::Post_Eng;
 		if (comment.othFlag())
 			flag |= comm::Post_Oth;
+		flag |= comm::Post;
+		m_text.put(comment.content(), comment.size() + 1);
+	}
 
-		if (flag & comm::Ante)
-			m_text.put(preComment.content(), preComment.size() + 1);
-		if (flag & comm::Post)
-			m_text.put(comment.content(), comment.size() + 1);
+	if (flag)
+	{
+		DEBUG(M_ASSERT(m_putComment));
 
 		m_strm.put(token::Comment);
 		m_data.put(flag);
 
-		m_putComment = false;
+		DEBUG(m_putComment = false);
 		m_endOfRun = true;
 	}
 }

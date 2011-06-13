@@ -1,4 +1,5 @@
 ::board::addStyle square {
+  version               1.0
   hint,border-tile      {wood WoodFine0006_Green.png}
   dark,y1               0
   hint,border-color     {}

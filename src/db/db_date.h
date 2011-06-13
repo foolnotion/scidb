@@ -82,6 +82,8 @@ public:
 	unsigned month() const;
 	/// Returns day, @p 0 if undefined.
 	unsigned day() const;
+	/// Return hash code
+	unsigned hash() const;
 
 	/// Sets year, month, and day.
 	bool setYMD(unsigned y, unsigned m, unsigned d);

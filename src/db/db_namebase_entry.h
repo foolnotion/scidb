@@ -209,13 +209,14 @@ public:
 	country::Code country() const;
 	NamebaseSite* site() const;
 
-	void setDate(Date const& date);
-	void setDate(unsigned year, unsigned month, unsigned day);
-	void setType(event::Type type);
-	void setTimeMode(time::Mode timeMode);
-	void setEventMode(event::Mode mode);
-	void setCountry(country::Code country);
-	void setSite(NamebaseSite* site);
+	// NOTE: use with care because the Namebase is dending on the key!
+	void setDate_(Date const& date);
+	void setDate_(unsigned year, unsigned month, unsigned day);
+	void setType_(event::Type type);
+	void setTimeMode_(time::Mode timeMode);
+	void setEventMode_(event::Mode mode);
+	void setCountry_(country::Code country);
+	void setSite_(NamebaseSite* site);
 
 	// XXX not working; one instance per database is needed
 	static NamebaseSite* emptySite();

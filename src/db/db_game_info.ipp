@@ -25,34 +25,18 @@
 // ======================================================================
 
 #include "db_namebase_entry.h"
+#include "db_move.h"
 
 #include "m_utility.h"
 
 namespace db {
 namespace bits {
 
-template <> struct Accessor<0>
+template <int N>
+struct Accessor
 {
-	static uint16_t ply(GameInfo const& info) { return info.m_ply1; }
-	static void set(GameInfo& info, uint16_t move) { info.m_ply1 = move; }
-};
-
-template <> struct Accessor<1>
-{
-	static uint16_t ply(GameInfo const& info) { return info.m_ply2; }
-	static void set(GameInfo& info, uint16_t move) { info.m_ply2 = move; }
-};
-
-template <> struct Accessor<2>
-{
-	static uint16_t ply(GameInfo const& info) { return info.m_ply3; }
-	static void set(GameInfo& info, uint16_t move) { info.m_ply3 = move; }
-};
-
-template <> struct Accessor<3>
-{
-	static uint16_t ply(GameInfo const& info) { return info.m_ply4; }
-	static void set(GameInfo& info, uint16_t move) { info.m_ply4 = move; }
+	static uint16_t ply(GameInfo const& info) { return info.m_ply[N]; }
+	static void set(GameInfo& info, uint16_t move) { info.m_ply[N] = Move::compress<N>(move); }
 };
 
 } // namespace bits
@@ -147,15 +131,7 @@ inline
 Eco
 GameInfo::ecoKey() const
 {
-	return m_positionId == chess960::StandardIdn ? Eco(m_ecoKey) : Eco();
-}
-
-
-inline
-Eco
-GameInfo::ecoOpening() const
-{
-	return m_positionId == chess960::StandardIdn ? Eco(m_ecoOpening) : Eco();
+	return Eco(m_ecoKey);
 }
 
 

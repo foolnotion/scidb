@@ -94,6 +94,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 
 	m_type = type;
 	m_memoryOnly = storage == MemoryOnly;
+	m_created = sys::time::time();
 
 	if (m_memoryOnly)
 		m_codec->open(this, encoding);
@@ -159,6 +160,7 @@ Database::Database(mstl::string const& name, Producer& producer, Progress& progr
 {
 	// NOTE: we assume normalized (unique) file names.
 
+	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec();
 	m_codec->open(this, sys::utf8::Codec::utf8(), producer, progress);
 	m_size = m_gameInfoList.size();
@@ -263,7 +265,7 @@ Database::clear()
 }
 
 
-uint32_t
+util::crc::checksum_t
 Database::computeChecksum(unsigned index) const
 {
 	M_REQUIRE(isOpen());
@@ -485,30 +487,30 @@ Database::exportGame(unsigned index, Consumer& consumer)
 	}
 
 #ifdef DEBUG_SI4
-	if (	info->idn() == 518
-		&& m_codec->format() != format::ChessBase
-		&& (	consumer.sourceFormat() == format::Scid3
-			|| consumer.sourceFormat() == format::Scid4))
-	{
-		Eco opening;
-		Eco eco = EcoTable::specimen().lookup(consumer.openingLine(), opening);
-
-		uint8_t myStoredLine = EcoTable::specimen().getStoredLine(info->ecoKey(), info->ecoOpening());
-		uint8_t storedLine = EcoTable::specimen().getStoredLine(eco, opening);
-
-		if (myStoredLine != storedLine)
-		{
-			mstl::string line;
-			consumer.openingLine().dump(line);
-
-			::fprintf(	stderr,
-							"WARNING(%u): unexpected stored line %u (%u is expected for line '%s')\n",
-							index,
-							unsigned(storedLine),
-							unsigned(myStoredLine),
-							line.c_str());
-		}
-	}
+//	if (	info->idn() == 518
+//		&& m_codec->format() != format::ChessBase
+//		&& (	consumer.sourceFormat() == format::Scid3
+//			|| consumer.sourceFormat() == format::Scid4))
+//	{
+//		Eco opening;
+//		Eco eco = EcoTable::specimen().lookup(consumer.openingLine(), opening);
+//
+//		uint8_t myStoredLine = EcoTable::specimen().getStoredLine(info->ecoKey(), info->ecoOpening());
+//		uint8_t storedLine = EcoTable::specimen().getStoredLine(eco, opening);
+//
+//		if (myStoredLine != storedLine)
+//		{
+//			mstl::string line;
+//			consumer.openingLine().dump(line);
+//
+//			::fprintf(	stderr,
+//							"WARNING(%u): unexpected stored line %u (%u is expected for line '%s')\n",
+//							index,
+//							unsigned(storedLine),
+//							unsigned(myStoredLine),
+//							line.c_str());
+//		}
+//	}
 #endif
 
 	setEncodingFailed(m_codec->encodingFailed());
@@ -741,7 +743,7 @@ Database::countAnnotators() const
 	if (annotatorBase.isEmpty())
 		return 0;
 
-	if (annotatorBase.entry(0)->name().empty())
+	if (annotatorBase.entryAt(0)->name().empty())
 		return annotatorBase.size() - 1;
 
 	return annotatorBase.size();
@@ -753,7 +755,7 @@ Database::annotator(unsigned index) const
 {
 	M_REQUIRE(index < countAnnotators());
 
-	if (m_namebases(Namebase::Annotator).entry(0)->name().empty())
+	if (m_namebases(Namebase::Annotator).entryAt(0)->name().empty())
 		++index;
 
 	return *m_namebases(Namebase::Annotator).entryAt(index);

@@ -28,6 +28,7 @@
 
 #include "m_string.h"
 #include "m_algorithm.h"
+#include "m_bitfield.h"
 #include "m_bit_functions.h"
 #include "m_static_check.h"
 
@@ -56,6 +57,7 @@ static Pair const NameMap[] =
 	{ "Annotator",				Annotator },
 	{ "Black",					Black, },
 	{ "BlackBCF",				BlackECF },
+	{ "BlackClock",			BlackClock },
 	{ "BlackCountry",			BlackCountry },
 	{ "BlackDWZ",				BlackDWZ },
 	{ "BlackECF",				BlackECF },
@@ -72,6 +74,7 @@ static Pair const NameMap[] =
 	{ "BlackTitle",			BlackTitle },
 	{ "BlackType",				BlackType },
 	{ "BlackUSCF",				BlackUSCF },
+	{ "Board",					Board },
 	{ "Date",					Date },
 	{ "ECO",						Eco },
 	{ "Event",					Event },
@@ -100,6 +103,7 @@ static Pair const NameMap[] =
 	{ "Variation",				Variation },
 	{ "White",					White },
 	{ "WhiteBCF",				WhiteECF },
+	{ "WhiteClock",			WhiteClock },
 	{ "WhiteCountry",			WhiteCountry },
 	{ "WhiteDWZ",				WhiteDWZ },
 	{ "WhiteECF",				WhiteECF },
@@ -118,8 +122,6 @@ static Pair const NameMap[] =
 	{ "WhiteUSCF",				WhiteUSCF },
 };
 
-static mstl::string const* NameLookup[ExtraTag];
-
 static int
 compareTags(void const* lhs, const void* rhs)
 {
@@ -130,32 +132,6 @@ compareTags(void const* lhs, const void* rhs)
 	return rc ? rc : (t.size() == s->size() ? 0 : -1);
 }
 
-
-namespace {
-
-struct Initializer { Initializer(); };
-static Initializer initializer;
-
-Initializer::Initializer()
-{
-	M_STATIC_CHECK(U_NUMBER_OF(NameLookup) == ExtraTag, NameLookupExpired)
-	M_STATIC_CHECK(U_NUMBER_OF(NameMap) - 2 == ExtraTag, NameMapExpired)
-
-#ifndef NDEBUG
-	for (int i = 0; i < ExtraTag; ++i)
-		NameLookup[i] = 0;
-#endif
-
-	for (unsigned i = 0; i < U_NUMBER_OF(NameMap); ++i)
-		NameLookup[NameMap[i].id] = &NameMap[i].name;
-
-#ifndef NDEBUG
-	for (int i = 0; i < ExtraTag; ++i)
-		assert(NameLookup[i]);
-#endif
-}
-
-} // namespace
 } // namespace tag
 
 namespace termination {
@@ -443,6 +419,9 @@ struct CommentToken
 
 static CommentToken const Map[] =
 {
+	{ "!",		GoodMove																	}, //   1
+	{ "!!",		VeryGoodMove															}, //   3
+	{ "!?",		SpeculativeMove														}, //   5
 	{ "&&",		EqualChancesActivePosition											},	//  12
 	{ "&/=",		WithCompensationForMaterial										}, // 181
 	{ "&~",		EqualChancesActivePosition											},	//  12
@@ -484,6 +463,9 @@ static CommentToken const Map[] =
 	{ "><",		WeakPoint																},	// 147
 	{ ">=",		BetterMove																},	// 142
 	{ ">>",		Kingside																	},	// 183
+	{ "?",		PoorMove																	}, //   2
+	{ "?!",		QuestionableMove														}, //   6
+	{ "??",		VeryPoorMove															}, //   4
 	{ "@",		Development																},	// 175
 	{ "[+]",		Center																	},	// 167
 	{ "[]",		SingularMove															},	//   8
@@ -1150,6 +1132,7 @@ compareNames(void const* lhs, const void* rhs)
 
 namespace castling
 {
+
 	unsigned Transpose[AllRights + 1];
 
 	struct Initializer { Initializer(); };
@@ -1170,6 +1153,58 @@ namespace castling
 
 } // namespace castling
 
+namespace tag
+{
+	static mstl::string const* NameLookup[ExtraTag];
+
+	mstl::bitfield<uint64_t> IsWhiteRating(ExtraTag);
+	mstl::bitfield<uint64_t> IsBlackRating(ExtraTag);
+	mstl::bitfield<uint64_t> IsRating(ExtraTag);
+
+	struct Initializer { Initializer(); };
+	static Initializer initializer;
+
+	Initializer::Initializer()
+	{
+		M_STATIC_CHECK(U_NUMBER_OF(NameLookup) == ExtraTag, NameLookupExpired)
+		M_STATIC_CHECK(U_NUMBER_OF(NameMap) - 2 == ExtraTag, NameMapExpired)
+		M_STATIC_CHECK(ExtraTag <= 8*sizeof(uint64_t), BitField_Size_Exceeded);
+
+#ifndef NDEBUG
+		::memset(NameLookup, 0, sizeof(NameLookup));
+#endif
+
+		for (unsigned i = 0; i < U_NUMBER_OF(NameMap); ++i)
+			NameLookup[NameMap[i].id] = &NameMap[i].name;
+
+#ifndef NDEBUG
+		for (int i = 0; i < ExtraTag; ++i)
+			assert(NameLookup[i]);
+#endif
+
+		IsWhiteRating.set(WhiteDWZ);
+		IsWhiteRating.set(WhiteECF);
+		IsWhiteRating.set(WhiteElo);
+		IsWhiteRating.set(WhiteICCF);
+		IsWhiteRating.set(WhiteIPS);
+		IsWhiteRating.set(WhiteRapid);
+		IsWhiteRating.set(WhiteRating);
+		IsWhiteRating.set(WhiteUSCF);
+
+		IsBlackRating.set(BlackDWZ);
+		IsBlackRating.set(BlackECF);
+		IsBlackRating.set(BlackElo);
+		IsBlackRating.set(BlackICCF);
+		IsBlackRating.set(BlackIPS);
+		IsBlackRating.set(BlackRapid);
+		IsBlackRating.set(BlackRating);
+		IsBlackRating.set(BlackUSCF);
+
+		IsRating |= IsWhiteRating;
+		IsRating |= IsBlackRating;
+	}
+
+} // namespace tag
 } // namespace db
 
 
@@ -1367,6 +1402,10 @@ species::fromString(char const* s)
 	return species::Unspecified;
 }
 
+
+bool tag::isWhiteRatingTag(ID tag)	{ return IsWhiteRating.test(tag); }
+bool tag::isBlackRatingTag(ID tag)	{ return IsBlackRating.test(tag); }
+bool tag::isRatingTag(ID tag)			{ return IsRating.test(tag); }
 
 
 mstl::string const&

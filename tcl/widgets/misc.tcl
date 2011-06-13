@@ -107,7 +107,7 @@ proc dialogButtons {dlg buttons dflt {useIcons yes}} {
 
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 	::ttk::separator $dlg.__sep -class Dialog
-	frame $dlg.__buttons -class Dialog
+	tk::frame $dlg.__buttons -class Dialog
 	set slaves [pack slaves $dlg]
 	if {[llength $slaves]} {
 		pack $dlg.__sep -fill x -side bottom -before [lindex $slaves 0]

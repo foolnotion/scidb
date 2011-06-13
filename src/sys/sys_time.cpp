@@ -18,6 +18,8 @@
 
 #include "sys_time.h"
 
+#include <time.h>
+
 #ifdef WIN32
 
 # include <windows.h>
@@ -29,6 +31,8 @@ sys::time::time()
 	FILETIME ft;
 	GetSystemTimeAsFileTime(&ft);
 	uint64_t time = (uint64_t(ft.dwHighDateTime) << 32) | uint64_t(ft.dwLowDateTime);
+
+	// 116444736000000000 = 10000000 * 60 * 60 * 24 * 365 * 369 + 89 leap days
 	return (time - UINT64_C(116444736000000000))/10000000;
 }
 
@@ -57,5 +61,23 @@ sys::time::timestamp()
 }
 
 #endif
+
+
+sys::time::Time::Time() : year(0), month(0), day(0), hour(0), minute(0), second(0) {}
+
+
+void
+sys::time::localtime(uint32_t time, Time& tm)
+{
+	time_t ctime = time;
+	struct tm const* t = ::localtime(&ctime);
+
+	tm.year		= t->tm_year + 1900;
+	tm.month		= t->tm_mon + 1;
+	tm.day		= t->tm_mday;
+	tm.hour		= t->tm_hour;
+	tm.minute	= t->tm_min;
+	tm.second	= t->tm_sec;
+}
 
 // vi:set ts=3 sw=3:

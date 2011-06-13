@@ -712,8 +712,8 @@ proc ::tk::MenuInvoke {w buttonRelease} {
 	set menu [$w entrycget active -menu]
 	MenuFirstEntry $menu
     ### FIX begin ####################################################################
-    } elseif {     [llength $Priv(fix:active)]
-                && [winfo exists $Priv(fix:active)]
+    } elseif {     [info exists Priv(fix:active)]
+                && [string length $Priv(fix:active)]
                 && [$Priv(fix:active) type active] eq "cascade"} {
 	$Priv(fix:active) postcascade active
 	set menu [$Priv(fix:active) entrycget active -menu]

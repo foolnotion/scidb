@@ -62,7 +62,7 @@ public:
 	void swap(MarkSet& marks);
 	void clear();
 
-	void extractFromComment(mstl::string& comment);
+	bool extractFromComment(mstl::string& comment);
 	mstl::string& toString(mstl::string& result) const;
 	mstl::string& print(mstl::string& result) const;
 

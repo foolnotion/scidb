@@ -31,9 +31,7 @@ namespace eval mc {
 set AutoPlayMoves			"Autoplay Moves"
 
 set Tools					"Tools"
-set Game						"Game"
 set Control					"Control"
-set Layout					"Layout"
 set GoIntoNextVar			"Go into next variation"
 set GoIntPrevVar			"Go into previous variation"
 
@@ -104,7 +102,7 @@ proc build {w menu width height} {
 	::board::unregisterSize $Dim(squaresize)
 
 	set tbTools		[::toolbar::toolbar $w -hide 1 -id tools -tooltipvar [namespace current]::mc::Tools]
-	set tbLayout	[::toolbar::toolbar $w -hide 1 -id layout -tooltipvar [namespace current]::mc::Layout]
+	set tbLayout	[::toolbar::toolbar $w -hide 1 -id layout -tooltipvar ::mc::Layout]
 	set tbControl	[::toolbar::toolbar $w \
 							-hide 1 \
 							-id control \
@@ -173,6 +171,8 @@ proc build {w menu width height} {
 	Bind <End>				[namespace code GoEnd]
 	Bind <Down>				[namespace code GoDown]
 	Bind <Up>				[namespace code GoUp]
+	Bind <Control-Down>	[namespace code LoadNext]
+	Bind <Control-Up>		[namespace code LoadPrevious]
 	Bind <<Undo>>			[namespace parent]::pgn::undo
 	Bind <<Redo>>			[namespace parent]::pgn::redo
 	Bind <ButtonPress-3>	[namespace code { PopupMenu %W %X %Y }]
@@ -290,6 +290,10 @@ proc GoDown		{} { goto down }
 proc GoUp		{} { goto up }
 
 
+proc LoadNext		{} { ;# TODO load next game from last used view }
+proc LoadPrevious	{} { ;# TODO }
+
+
 proc Bind {key cmd} {
 	variable Vars
 
@@ -351,24 +355,32 @@ proc PopupMenu {w x y} {
 	menu $m -tearoff false
 
 	$m add command \
+		-compound left \
+		-image $::icon::16x16::rotateBoard \
 		-label $::overview::mc::RotateBoard \
 		-command [namespace code [list Rotate $Vars(widget:frame)]] \
 		;
 	$m add command \
-		-label "$::setup::board::mc::SetStartBoard..." \
+		-compound left \
+		-image $::icon::16x16::checker \
+		-label " $::setup::board::mc::SetStartBoard..." \
 		-command [namespace code [list SetStartBoard $Vars(widget:frame)]] \
 		;
 	$m add command \
-		-label "$::setup::position::mc::SetStartPosition..." \
+		-compound left \
+		-image $::icon::16x16::checker \
+		-label " $::setup::position::mc::SetStartPosition..." \
 		-command [namespace code [list SetStartPosition $Vars(widget:frame)]] \
 		;
-	if {![::board::options::isOpen]} {
-		$m add command \
-			-label "$::board::options::mc::BoardSetup..." \
-			-command [list ::board::options::openConfigDialog $w \
-				[list [namespace current]::Apply $Vars(widget:frame)]] \
-			;
-	}
+	if {[::board::options::isOpen]} { set state disabled } else { set state normal }
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::setup \
+		-label " $::board::options::mc::BoardSetup..." \
+		-command [list ::board::options::openConfigDialog $w \
+			[list [namespace current]::Apply $Vars(widget:frame)]] \
+		-state $state \
+		;
 	
 	$m add separator
 

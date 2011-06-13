@@ -1,34 +1,33 @@
-### Square Style: lite-blue ########################
-
 ::board::addStyle square {
-	identifier					{Winboard|1228820514851|yellow.color|gregor}
+  version               {1.0}
+  identifier            {Winboard|1228820514851|yellow.color|gregor}
 
-	lite,rotation				0
-	lite,solid					#c8c365
-	lite,texture				{}
-	lite,x1						0
-	lite,x2						0
-	lite,y1						0
-	lite,y2						0
+  lite,rotation         0
+  lite,solid            #c8c365
+  lite,texture          {}
+  lite,x1               0
+  lite,x2               0
+  lite,y1               0
+  lite,y2               0
 
-	dark,rotation				0
-	dark,solid					#77a26d
-	dark,texture				{}
-	dark,x1						0
-	dark,x2						0
-	dark,y1						0
-	dark,y2						0
+  dark,rotation         0
+  dark,solid            #77a26d
+  dark,texture          {}
+  dark,x1               0
+  dark,x2               0
+  dark,y1               0
+  dark,y2               0
 
-	borderline,width			0.007
-	borderline,opacity		0x50
-	borderline,gap				1
+  borderline,width      0.007
+  borderline,opacity    0x50
+  borderline,gap        1
 
-	hilite,selected			#b0d0e0
-	hilite,suggested			#ffff00
+  hilite,selected       #b0d0e0
+  hilite,suggested      #ffff00
 
-	hint,border-color			#587851
-	hint,border-tile			{}
-	hint,background-color	#70a070
-	hint,background-tile		{}
-	hint,coordinates 			#ffffcc
+  hint,border-color     #587851
+  hint,border-tile      {}
+  hint,background-color #70a070
+  hint,background-tile  {}
+  hint,coordinates      #ffffcc
 }

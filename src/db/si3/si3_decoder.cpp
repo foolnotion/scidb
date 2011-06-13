@@ -316,6 +316,14 @@ Decoder::decodeVariation(/*unsigned flags, */unsigned level)
 				case token::End_Game:
 					if (level > 0)
 						::throwCorruptData();
+					if (preComment)
+					{
+						// We are at the end of game. Re-insert dangling comment as
+						// a sub-variation.
+						MoveNode* node = new MoveNode(m_position.board().makeNullMove());
+						node->setComment(move::Ante);
+						m_currentNode->addVariation(node);
+					}
 					return;
 
 				case token::End_Marker:

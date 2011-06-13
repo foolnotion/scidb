@@ -24,9 +24,16 @@
 namespace util {
 namespace crc {
 
-uint32_t compute(uint32_t crc, char const* bytes, unsigned len);
-uint32_t compute(uint32_t crc, unsigned char const* bytes, unsigned len);
-uint32_t combine(uint32_t crc1, uint32_t crc2, unsigned len2);
+typedef uint32_t checksum_t;
+
+checksum_t compute(checksum_t crc, char const* bytes, unsigned len);
+checksum_t compute(checksum_t crc, unsigned char const* bytes, unsigned len);
+checksum_t compute(checksum_t crc, uint8_t value);
+checksum_t compute(checksum_t crc, uint16_t value);
+checksum_t compute(checksum_t crc, uint32_t value);
+checksum_t compute(checksum_t crc, uint64_t value);
+
+checksum_t combine(checksum_t crc1, checksum_t crc2, unsigned len2);
 
 } // namespace crc
 } // namespace util

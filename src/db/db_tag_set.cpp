@@ -46,7 +46,7 @@ trim(mstl::string& s)
 
 TagSet::TagSet()
 {
-	::memset(m_isUserSupplied, 0, sizeof(m_isUserSupplied));
+	M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(BitSet), BitSet_Size_Exceeded);
 	::memset(m_significance, 0, sizeof(m_significance));
 }
 
@@ -119,6 +119,7 @@ TagSet::set(tag::ID tag, mstl::string const& value, bool isUserSupplied)
 
 	m_isUserSupplied[tag] = isUserSupplied;
 	::trim(m_values[tag] = value);
+	m_set.set(tag);
 }
 
 
@@ -132,6 +133,7 @@ TagSet::set(tag::ID tag, char const* value, unsigned length, bool isUserSupplied
 	m_isUserSupplied[tag] = isUserSupplied;
 	m_values[tag].assign(value, length);
 	::trim(m_values[tag]);
+	m_set.set(tag);
 }
 
 
@@ -178,6 +180,7 @@ TagSet::overwrite(tag::ID tag, char const* value, unsigned valueLen)
 
 	m_values[tag].assign(value, valueLen);
 	::trim(m_values[tag]);
+	m_set.set(tag);
 }
 
 
@@ -276,15 +279,17 @@ void
 TagSet::remove(tag::ID tag)
 {
 	m_values[tag].clear();
-	m_isUserSupplied[tag] = false;
+	m_isUserSupplied.reset(tag);
+	m_set.reset(tag);
 }
 
 
 void
 TagSet::clear()
 {
-	::memset(m_isUserSupplied, 0, sizeof(m_isUserSupplied));
+	m_isUserSupplied.reset();
 	m_extra.clear();
+	m_set.reset();
 
 	for (unsigned i = 0; i < tag::ExtraTag; ++i)
 		m_values[i].clear();
@@ -299,23 +304,47 @@ TagSet::asInt(tag::ID tag) const
 }
 
 
+util::crc::checksum_t
+TagSet::computeChecksum(util::crc::checksum_t crc) const
+{
+	for (tag::ID tag = findFirst(); tag < tag::ExtraTag; tag = findNext(tag))
+	{
+		crc = util::crc::compute(crc, uint8_t(tag));
+		crc = util::crc::compute(crc, uint8_t(m_isUserSupplied.test(tag)));
+		crc = util::crc::compute(crc, uint8_t(m_significance[tag]));
+		crc = util::crc::compute(crc, m_values[tag].c_str(), m_values[tag].size());
+	}
+
+	for (unsigned i = 0; i < m_extra.size(); ++i)
+	{
+		crc = util::crc::compute(crc, m_extra[i].name.c_str(), m_extra[i].name.size());
+		crc = util::crc::compute(crc, m_extra[i].value.c_str(), m_extra[i].value.size());
+	}
+
+	return crc;
+}
+
+
 void
 TagSet::dump() const
 {
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (tag::ID tag = findFirst(); tag < tag::ExtraTag; tag = findNext(tag))
 	{
-		if (!m_values[i].empty())
-		{
-			::printf("%s: %s", tag::toName(tag::ID(i)).c_str(), m_values[i].c_str());
+		::printf("%s: %s", tag::toName(tag).c_str(), m_values[tag].c_str());
 
-			if (significance(tag::ID(i)) > 0)
-				::printf(" (%d)", significance(tag::ID(i)));
+		if (significance(tag) > 0)
+			::printf(" (%d)", significance(tag));
 
-			if (isUserSupplied(tag::ID(i)))
-				::printf(" (user-supplied)");
+		if (isUserSupplied(tag))
+			::printf(" (user-supplied)");
 
-			printf("\n");
-		}
+		printf("\n");
+	}
+
+	for (unsigned i = 0; i < m_extra.size(); ++i)
+	{
+		::printf("%s: %s", m_extra[i].name.c_str(), m_extra[i].value.c_str());
+		printf("\n");
 	}
 }
 

@@ -14,7 +14,7 @@ include ../Makefile.in
 
 .SUFFIXES: .cpp
 
-INCLUDE			= -I. -Imstl -Iutil -Idb -Iapp -Itcl -Itk -Isys
+INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iapp -Itcl -Itk -Isys
 ALL_ICLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
 ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
@@ -168,7 +168,7 @@ extend_eco: extend_eco.o $(LIBS_BASE)
 
 dump_eco: dump_eco.o $(LIBS_BASE)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 $(LIBS_BASE)
 
 eco2code: eco2code.o $(LIBS_BASE)
 	@echo "Building $@"
@@ -218,11 +218,13 @@ best_move.o: mstl/m_limits.h
 best_move.o: mstl/m_bit_functions.h
 best_move.o: mstl/m_bit_functions.ipp
 best_move.o: mstl/m_static_check.h
+best_move.o: util/u_crc.h
+best_move.o: util/u_crc.ipp
+best_move.o: mstl/m_byte_order.h
+best_move.o: mstl/m_byte_order.ipp
 best_move.o: mstl/m_string.h
 best_move.o: mstl/m_string.ipp
 best_move.o: db/db_move.ipp
-best_move.o: util/u_crc.h
-best_move.o: util/u_crc.ipp
 best_move.o: db/db_move_list.ipp
 best_move.o: db/db_signature.h
 best_move.o: db/db_signature.ipp
@@ -307,11 +309,13 @@ dump_eco.o: mstl/m_limits.h
 dump_eco.o: mstl/m_bit_functions.h
 dump_eco.o: mstl/m_bit_functions.ipp
 dump_eco.o: mstl/m_static_check.h
+dump_eco.o: util/u_crc.h
+dump_eco.o: util/u_crc.ipp
+dump_eco.o: mstl/m_byte_order.h
+dump_eco.o: mstl/m_byte_order.ipp
 dump_eco.o: mstl/m_string.h
 dump_eco.o: mstl/m_string.ipp
 dump_eco.o: db/db_move.ipp
-dump_eco.o: util/u_crc.h
-dump_eco.o: util/u_crc.ipp
 dump_eco.o: db/db_move_list.ipp
 dump_eco.o: db/db_signature.h
 dump_eco.o: db/db_signature.ipp
@@ -320,6 +324,40 @@ dump_eco.o: db/db_line.h
 dump_eco.o: db/db_line.ipp
 dump_eco.o: db/db_eco.h
 dump_eco.o: db/db_eco.ipp
+dump_eco.o: db/db_eco_table.h
+dump_eco.o: db/db_home_pawns.h
+dump_eco.o: db/db_home_pawns.ipp
+dump_eco.o: mstl/m_map.h
+dump_eco.o: mstl/m_vector.h
+dump_eco.o: mstl/m_type_traits.h
+dump_eco.o: mstl/m_type_traits.ipp
+dump_eco.o: mstl/m_memblock.h
+dump_eco.o: mstl/m_memblock.ipp
+dump_eco.o: mstl/m_vector.ipp
+dump_eco.o: mstl/m_uninitialized.h
+dump_eco.o: mstl/m_uninitialized.ipp
+dump_eco.o: mstl/m_algobase.h
+dump_eco.o: mstl/m_algobase.ipp
+dump_eco.o: mstl/m_construct.h
+dump_eco.o: mstl/m_construct.ipp
+dump_eco.o: mstl/m_pair.h
+dump_eco.o: mstl/m_pair.ipp
+dump_eco.o: mstl/m_map.ipp
+dump_eco.o: mstl/m_hash.h
+dump_eco.o: mstl/m_hash.ipp
+dump_eco.o: mstl/m_bitset.h
+dump_eco.o: mstl/m_bitset_iterator.h
+dump_eco.o: mstl/m_bitfield.h
+dump_eco.o: mstl/m_bitfield.ipp
+dump_eco.o: mstl/m_bitset_iterator.ipp
+dump_eco.o: mstl/m_bitset.ipp
+dump_eco.o: mstl/m_chunk_allocator.h
+dump_eco.o: mstl/m_stack.h
+dump_eco.o: mstl/m_stack.ipp
+dump_eco.o: mstl/m_chunk_allocator.ipp
+dump_eco.o: db/db_eco_table.ipp
+dump_eco.o: db/si3/si3_stored_line.h
+dump_eco.o: db/si3/si3_stored_line.ipp
 dump_eco.o: util/u_byte_stream.h
 dump_eco.o: util/u_byte_stream.ipp
 dump_eco.o: mstl/m_ifstream.h
@@ -334,30 +372,6 @@ dump_eco.o: mstl/m_ofstream.h
 dump_eco.o: mstl/m_ostream.h
 dump_eco.o: mstl/m_ostream.ipp
 dump_eco.o: mstl/m_ofstream.ipp
-dump_eco.o: mstl/m_vector.h
-dump_eco.o: mstl/m_type_traits.h
-dump_eco.o: mstl/m_type_traits.ipp
-dump_eco.o: mstl/m_memblock.h
-dump_eco.o: mstl/m_memblock.ipp
-dump_eco.o: mstl/m_vector.ipp
-dump_eco.o: mstl/m_uninitialized.h
-dump_eco.o: mstl/m_uninitialized.ipp
-dump_eco.o: mstl/m_algobase.h
-dump_eco.o: mstl/m_algobase.ipp
-dump_eco.o: mstl/m_construct.h
-dump_eco.o: mstl/m_construct.ipp
-dump_eco.o: mstl/m_map.h
-dump_eco.o: mstl/m_pair.h
-dump_eco.o: mstl/m_pair.ipp
-dump_eco.o: mstl/m_map.ipp
-dump_eco.o: mstl/m_bitset.h
-dump_eco.o: mstl/m_bitset_iterator.h
-dump_eco.o: mstl/m_bitfield.h
-dump_eco.o: mstl/m_bitfield.ipp
-dump_eco.o: mstl/m_bitset_iterator.ipp
-dump_eco.o: mstl/m_bitset.ipp
-dump_eco.o: mstl/m_hash.h
-dump_eco.o: mstl/m_hash.ipp
 eco2code.o: db/db_eco.h
 eco2code.o: util/u_base.h
 eco2code.o: mstl/m_types.h
@@ -386,11 +400,13 @@ extend_eco.o: mstl/m_limits.h
 extend_eco.o: mstl/m_bit_functions.h
 extend_eco.o: mstl/m_bit_functions.ipp
 extend_eco.o: mstl/m_static_check.h
+extend_eco.o: util/u_crc.h
+extend_eco.o: util/u_crc.ipp
+extend_eco.o: mstl/m_byte_order.h
+extend_eco.o: mstl/m_byte_order.ipp
 extend_eco.o: mstl/m_string.h
 extend_eco.o: mstl/m_string.ipp
 extend_eco.o: db/db_move.ipp
-extend_eco.o: util/u_crc.h
-extend_eco.o: util/u_crc.ipp
 extend_eco.o: db/db_move_list.ipp
 extend_eco.o: db/db_signature.h
 extend_eco.o: db/db_signature.ipp
@@ -452,11 +468,13 @@ permute_eco.o: mstl/m_limits.h
 permute_eco.o: mstl/m_bit_functions.h
 permute_eco.o: mstl/m_bit_functions.ipp
 permute_eco.o: mstl/m_static_check.h
+permute_eco.o: util/u_crc.h
+permute_eco.o: util/u_crc.ipp
+permute_eco.o: mstl/m_byte_order.h
+permute_eco.o: mstl/m_byte_order.ipp
 permute_eco.o: mstl/m_string.h
 permute_eco.o: mstl/m_string.ipp
 permute_eco.o: db/db_move.ipp
-permute_eco.o: util/u_crc.h
-permute_eco.o: util/u_crc.ipp
 permute_eco.o: db/db_move_list.ipp
 permute_eco.o: db/db_eco.h
 permute_eco.o: db/db_eco.ipp
@@ -511,11 +529,13 @@ pgn_split_eco.o: db/db_provider.ipp
 pgn_split_eco.o: db/db_board.h
 pgn_split_eco.o: db/db_move_list.h
 pgn_split_eco.o: db/db_move.h
+pgn_split_eco.o: util/u_crc.h
+pgn_split_eco.o: util/u_crc.ipp
+pgn_split_eco.o: mstl/m_byte_order.h
+pgn_split_eco.o: mstl/m_byte_order.ipp
 pgn_split_eco.o: mstl/m_string.h
 pgn_split_eco.o: mstl/m_string.ipp
 pgn_split_eco.o: db/db_move.ipp
-pgn_split_eco.o: util/u_crc.h
-pgn_split_eco.o: util/u_crc.ipp
 pgn_split_eco.o: db/db_move_list.ipp
 pgn_split_eco.o: db/db_signature.h
 pgn_split_eco.o: db/db_signature.ipp
@@ -553,6 +573,8 @@ pgn_split_eco.o: mstl/m_stack.ipp
 pgn_split_eco.o: db/db_consumer.ipp
 pgn_split_eco.o: db/db_reader.ipp
 pgn_split_eco.o: db/db_tag_set.h
+pgn_split_eco.o: mstl/m_bitfield.h
+pgn_split_eco.o: mstl/m_bitfield.ipp
 pgn_split_eco.o: db/db_tag_set.ipp
 pgn_split_eco.o: db/db_pgn_writer.h
 pgn_split_eco.o: db/db_writer.h
@@ -564,8 +586,6 @@ pgn_split_eco.o: mstl/m_hash.h
 pgn_split_eco.o: mstl/m_hash.ipp
 pgn_split_eco.o: mstl/m_bitset.h
 pgn_split_eco.o: mstl/m_bitset_iterator.h
-pgn_split_eco.o: mstl/m_bitfield.h
-pgn_split_eco.o: mstl/m_bitfield.ipp
 pgn_split_eco.o: mstl/m_bitset_iterator.ipp
 pgn_split_eco.o: mstl/m_bitset.ipp
 pgn_split_eco.o: mstl/m_chunk_allocator.h

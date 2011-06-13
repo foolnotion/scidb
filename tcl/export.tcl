@@ -103,6 +103,8 @@ set FormatName(ps)		"Postscript"
 set Option(pgn,include_varations)						"Export variations"
 set Option(pgn,include_comments)							"Export comments"
 set Option(pgn,include_marks)								"Export marks (as comments)"
+set Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
+set Option(pgn,use_chessbase_format)					"Use ChessBase format"
 set Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
 set Option(pgn,include_termination_tag)				"Write tag 'Termination'"
 set Option(pgn,include_mode_tag)							"Write tag 'Mode'"
@@ -123,7 +125,6 @@ set Option(pgn,space_after_move_number)				"Add space after move numbers"
 set Option(pgn,shredder_fen)								"Write Shredder-FEN (default is X-FEN)"
 set Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
 set Option(pgn,append_mode_to_event_type)				"Add mode after event type"
-set Option(pgn,use_chessbase_format)					"Use ChessBase format"
 set Option(pgn,comment_to_html)							"Write comment in HTML style"
 set Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
 
@@ -307,7 +308,7 @@ set Margin(pt)	42.48
 variable Types	{scidb scid pgn pdf html tex}
 variable Info
 
-# NOTE: order must coincide with flags in db::Writer.
+# NOTE: order must coincide with flags in db::Writer/db::PgnWriter.
 array set Flags {
 	pgn,include_varations						 0
 	pgn,include_comments							 1
@@ -332,9 +333,10 @@ array set Flags {
 	pgn,shredder_fen								22
 	pgn,convert_lost_result_to_comment		23
 	pgn,append_mode_to_event_type				24
-	pgn,use_chessbase_format					25
-	pgn,comment_to_html							26
-	pgn,exclude_games_with_illegal_moves	27
+	pgn,comment_to_html							25
+	pgn,use_chessbase_format					26
+	pgn,use_scidb_import_format				27
+	pgn,exclude_games_with_illegal_moves	28
 }
 
 array set Defaults {
@@ -362,8 +364,9 @@ array set Defaults {
 	pgn,map_lost_result_to_unknown			1
 	pgn,append_mode_to_event_type				0
 	pgn,use_chessbase_format					0
-	pgn,exclude_games_with_illegal_moves	0
 	pgn,comment_to_html							0
+	pgn,use_scidb_import_format				0
+	pgn,exclude_games_with_illegal_moves	0
 
 	tex,margins,A2								{ 15 15 15 15 }
 	tex,margins,A3								{ 15 15 15 15 }
@@ -419,12 +422,12 @@ if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
 
 array set Fields {
 	pgn	{	include_varations include_comments include_marks indent_variations indent_comments
-				convert_lost_result_to_comment add_country_after_player append_mode_to_event_type
-				symbolic_annotation_style extended_symbolic_style shredder_fen column_style
-				convert_null_moves comment_to_html space_after_move_number include_termination_tag
-				include_mode_tag include_opening_tag include_setup_tag include_variant_tag
-				include_position_tag include_time_mode_tag exclude_extra_tags use_chessbase_format
-				exclude_games_with_illegal_moves
+				convert_lost_result_to_comment use_scidb_import_format use_chessbase_format
+				add_country_after_player append_mode_to_event_type symbolic_annotation_style
+				extended_symbolic_style shredder_fen column_style convert_null_moves comment_to_html
+				space_after_move_number include_termination_tag include_mode_tag include_opening_tag
+				include_setup_tag include_variant_tag include_position_tag include_time_mode_tag
+				exclude_extra_tags exclude_games_with_illegal_moves
 			}
 	scid	{}
 }
@@ -653,14 +656,14 @@ proc BuildOptionsFrame_pdf {w} {
 		set var [string toupper $what 0 0]
 		ttk::labelframe $w.$what -text [set mc::$var]
 		ttk::frame $w.$what.list
-		listbox $w.$what.list.lb \
+		tk::listbox $w.$what.list.lb \
 			-selectmode single \
 			-exportselection false \
 			-listvariable [namespace current]::${var}List
 		bind $w.$what.list.lb <<ListboxSelect>> [namespace code [list Set$var $w.$what]]
 		bind $w.$what.list <Configure> [namespace code [list ConfigureListbox $w.$what.list %h]]
-		label $w.$what.sample -borderwidth 2 -relief sunken
-		label $w.$what.sample.text -background white
+		tk::label $w.$what.sample -borderwidth 2 -relief sunken
+		tk::label $w.$what.sample.text -background white
 		pack $w.$what.sample.text -fill both -expand yes
 		pack propagate $w.$what.sample 0
 		pack $w.$what.list.lb -side left
@@ -831,14 +834,38 @@ proc SetupFlags {w type} {
 
 	switch $type {
 		pgn {
-			if {$Values(pgn,symbolic_annotation_style)} {
-				$w.extended_symbolic_style configure -state normal
+			if {$Values(pgn,use_chessbase_format) || $Values(pgn,use_scidb_import_format)} {
+				if {$Values(pgn,use_chessbase_format)} {
+					$w.use_chessbase_format configure -state normal
+					$w.use_scidb_import_format configure -state disabled
+				} else {
+					$w.use_chessbase_format configure -state disabled
+					$w.use_scidb_import_format configure -state normal
+				}
+				foreach field $Fields(pgn) {
+					switch $field {
+						use_chessbase_format -
+						use_scidb_import_format -
+						exclude_games_with_illegal_moves -
+						column_style -
+						indent_comments -
+						indent_variations -
+						space_after_move_number -
+						include_opening_tag {}
+						default { $w.$field configure -state disabled }
+					}
+				}
 			} else {
-				$w.extended_symbolic_style configure -state disabled
-				Exclude pgn extended_symbolic_style
-			}
-			if {$Values(pgn,exclude_games_with_illegal_moves)} {
-				set flags [expr {$flags & ~[Pow2 $Flags($type,$field)]}]
+				foreach field $Fields(pgn) { $w.$field configure -state normal }
+				if {$Values(pgn,symbolic_annotation_style)} {
+					$w.extended_symbolic_style configure -state normal
+				} else {
+					$w.extended_symbolic_style configure -state disabled
+					Exclude pgn extended_symbolic_style
+				}
+				if {$Values(pgn,exclude_games_with_illegal_moves)} {
+					set flags [expr {$flags & ~[Pow2 $Flags($type,$field)]}]
+				}
 			}
 		}
 	}
@@ -888,7 +915,7 @@ proc Select {nb index} {
 			HideTab $nb $nb.setup_tex
 			HideTab $nb $nb.style
 			HideTab $nb $nb.options
-			if {$Info(type) eq "scidb"} {
+			if {$Values(type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
@@ -902,7 +929,7 @@ proc Select {nb index} {
 			HideTab $nb $nb.setup_pdf
 			HideTab $nb $nb.setup_tex
 			HideTab $nb $nb.style
-			if {$Info(type) eq "scidb"} {
+			if {$Values(type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
@@ -917,7 +944,7 @@ proc Select {nb index} {
 			ShowTab $nb $nb.setup_pdf
 			HideTab $nb $nb.setup_tex
 			ShowTab $nb $nb.style
-			if {$Info(type) eq "scidb" || $Info(pdf-encoding)} {
+			if {$Values(type) eq "scidb" || $Info(pdf-encoding)} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
@@ -925,6 +952,7 @@ proc Select {nb index} {
 			grid $nb.options.pdf
 			SetupOptions $nb.options
 			set Values(useCustom) 1
+			set Info(configure-style) 1
 			set var $mc::PdfFiles
 			set ext .pdf
 		}
@@ -937,6 +965,7 @@ proc Select {nb index} {
 			HideTab $nb $nb.encoding
 			grid $nb.options.pdf
 			SetupOptions $nb.options
+			set Info(configure-style) 1
 			set var $mc::HtmlFiles
 			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
 		}
@@ -949,6 +978,7 @@ proc Select {nb index} {
 			HideTab $nb $nb.encoding
 			grid $nb.options.pdf
 			SetupOptions $nb.options
+			set Info(configure-style) 1
 			set Values(useCustom) 0
 			set var $mc::TeXFiles
 			set ext {.tex .ltx}
@@ -1013,7 +1043,7 @@ proc ConfigureEncoding {w tab encList} {
 		set encoding $Values($Values(type),encoding)
 	}
 
-	if {$Info(type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
+	if {$Values(type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
 	::encoding::build $w.$tab $currentEncoding $Defaults(encoding) [winfo width $w] {} $encList
 	if {$Values(type) eq "pdf" && $Info(pdf-encoding)} {
 		::encoding::activate $w.$tab $Defaults(encoding)
@@ -1045,6 +1075,10 @@ proc ConfigureStyle {w} {
 	variable StyleLayout
 	variable Styles
 	variable Values
+
+	if {[winfo exists $w.t]} {
+		foreach child [winfo children $w] { destroy $child }
+	}
 
 	treectrl $w.t \
 		-highlightthickness 0 \
@@ -1786,8 +1820,8 @@ proc SaveScidb {parent dlg file} {
 
 	# XXX text widget may overflow (too many messages)
 	set parent [winfo toplevel $parent]
-	set formatName $mc::FormatName($Info(type))
-	if {$mc::FormatName($Info(type)) eq "scid"} {
+	set formatName $mc::FormatName($Values(type))
+	if {$formatName eq "scid"} {
 		append formatName " " [string index $file end]
 	}
 	::log::open "$formatName $mc::Export"

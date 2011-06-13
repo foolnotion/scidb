@@ -89,8 +89,192 @@ static char const CharToType[256] =
 #undef R
 #undef C
 
-static unsigned const MaxWarnings	= 400;
-static unsigned const MaxErrors		= 400;
+static unsigned const MaxWarnings	= 40;
+static unsigned const MaxErrors		= 40;
+
+
+// IMPORTANT NOTE: keep the entries normalized!
+static char const* Phrases200[] =
+{
+	/* 200 */ 0,
+	/* 201 */ "<xml><:de>Eine Ungenauigkeit.</:de><:en>An inaccuracy.</:en><:it>Poco precisa.</:it></xml>",
+	/* 202 */ "<xml><:de>Ein Fehler.</:de><:en>An error.</:en><:it>Un errore.</:it></xml>",
+	/* 203 */ "<xml><:de>Ein Patzer.</:de><:en>A blunder.</:en><:it>Una svista.</:it></xml>",
+	/* 204 */ "<xml><:de>Der zweite Fehler in Folge.</:de><:en>The second error in a row.</:en><:it>Il secondo errore di fila.</:it></xml>",
+	/* 205 */ "<xml><:de>Nicht die beste Fortsetzung.</:de><:en>Not the best continuation.</:en><:it>Non è la continuazione migliore.</:it></xml>",
+	/* 206 */ "<xml><:de>Weiß kann den gegnerischen Fehler nicht zu seinem Vorteil nutzen.</:de><:en>White fails to take advantage of the opponent's error.</:en><:it>Il Bianco manca di sfruttare l'errore dell'avversario.</:it></xml>",
+	/* 207 */ "<xml><:de>Schwarz kann den gegnerischen Fehler nicht zu seinem Vorteil nutzen.</:de><:en>Black fails to take advantage of the opponent's error.</:en><:it>Il Nero manca di sfruttare l'errore dell'avversario.</:it></xml>",
+	/* 208 */ 0,
+	/* 209 */ 0,
+	/* 210 */ 0,
+	/* 211 */ "<xml><:de>Stärker ist</:de><:en>Stronger is</:en><:it>Più forte è</:it></xml>",
+	/* 212 */ "<xml><:de>Vielversprechender ist</:de><:en>More promising is</:en><:it>Più promettente è</:it></xml>",
+	/* 213 */ "<xml><:de>Vorzuziehen ist</:de><:en>Preferable is</:en><:it>È preferibile</:it></xml>",
+	/* 214 */ "<xml><:de>Beachtung verdient</:de><:en>Worth attention is</:en><:it>Merita attenzione</:it></xml>",
+	/* 215 */ "<xml><:de>Eine interessante Alternative ist</:de><:en>An interesting alternative is</:en><:it>Un'alternativa interessante è</:it></xml>",
+	/* 216 */ "<xml><:de>Besser ist</:de><:en>Better is</:en><:it>Migliore</:it></xml>",
+	/* 217 */ "<xml><:de>Noch eigensinniger ist</:de><:en>More stubborn is</:en><:it>Più coriacea è</:it></xml>",
+	/* 218 */ 0,
+	/* 219 */ 0,
+	/* 220 */ 0,
+	/* 221 */ "<xml><:de>bewahrt eine Vorteil</:de><:en>retains an advantage.</:en><:it>mantiene il vantaggio.</:it></xml>",
+	/* 222 */ "<xml><:de>bewahrt eine ungefähre Ausgeglichenheit.</:de><:en>retains an approximate equality.</:en><:it>mantiene una sostanziale parità.</:it></xml>",
+	/* 223 */ "<xml><:de>gibt eine Möglichkeit um die Partie zu retten.</:de><:en>gives a chance to save the game.</:en><:it>da speranze per salvare la partita.</:it></xml>",
+	/* 224 */ 0,
+	/* 225 */ 0,
+	/* 226 */ 0,
+	/* 227 */ 0,
+	/* 228 */ 0,
+	/* 229 */ 0,
+	/* 230 */ 0,
+	/* 231 */ "<xml><:de>Weiß steht etwas besser.</:de><:en>White stands slightly better.</:en><:it>Il Bianco sta leggermente meglio.</:it></xml>",
+	/* 232 */ "<xml><:de>Schwarz steht etwas besser.</:de><:en>Black stands slightly better.</:en><:it>Il Nero sta leggermente meglio.</:it></xml>",
+	/* 233 */ "<xml><:de>Die weißen Chancen sind etwas besser.</:de><:en>White's chances are slightly better.</:en><:it>Le possibilità del Bianco sono leggermente migliori.</:it></xml>",
+	/* 234 */ "<xml><:de>Die schwarzen Chancen sind etwas besser.</:de><:en>Black's chances are slightly better.</:en><:it>Le possibilità del Nero sono leggermente migliori.</:it></xml>",
+	/* 235 */ "<xml><:de>Die weiße Position ist etwas vielversprechender.</:de><:en>White's position is slightly more promising.</:en><:it>La posizione del Bianco è un po' più promettente.</:it></xml>",
+	/* 236 */ "<xml><:de>Die schwarze Position ist etwas vielversprechender.</:de><:en>Black's position is slightly more promising.</:en><:it>La posizione del Nero è un po' più promettente.</:it></xml>",
+	/* 237 */ "<xml><:de>Die Chancen sind gleich.</:de><:en>Chances are equal.</:en><:it>Uguali possibilità.</:it></xml>",
+	/* 238 */ "<xml><:de>Die Position ist ungefähr ausgeglichen.</:de><:en>The position is approximately equal.</:en><:it>La posizione è sostanzialmente pari.</:it></xml>",
+	/* 239 */ "<xml><:de>Die Chancen sind verteilt.</:de><:en>Chances are mutual.</:en><:it>Con possibilità da entrambi i lati.</:it></xml>",
+	/* 240 */ "<xml><:de>Zweischneidiges Spiel.</:de><:en>Double-edged play.</:en><:it>Con gioco a doppio taglio.</:it></xml>",
+	/* 241 */ "<xml><:de>Weiß ist am gewinnen.</:de><:en>White is winning.</:en><:it>Il Bianco sta vincendo.</:it></xml>",
+	/* 242 */ "<xml><:de>Schwarz ist am gewinnen.</:de><:en>Black is winning.</:en><:it>Il Nero sta vincendo.</:it></xml>",
+	/* 243 */ "<xml><:de>Weiß hat einen entscheidenden Vorteil.</:de><:en>White has a decisive advantage.</:en><:it>Il Bianco è in netto vantaggio.</:it></xml>",
+	/* 244 */ "<xml><:de>Schwarz hat einen entscheidenden Vorteil.</:de><:en>Black has a decisive advantage.</:en><:it>Il Nero è in netto vantaggio.</:it></xml>",
+	/* 245 */ "<xml><:de>Weiß hat einige Initiative.</:de><:en>White has an initiative.</:en><:it>Il Bianco ha l'iniziativa.</:it></xml>",
+	/* 246 */ "<xml><:de>Schwarz hat einige Initiative.</:de><:en>Black has an initiative.</:en><:it>Il Nero ha l'iniziativa.</:it></xml>",
+	/* 247 */ "<xml><:de>Der weiße König ist in Gefahr.</:de><:en>White's king is in danger.</:en><:it>Il re Bianco è in pericolo.</:it></xml>",
+	/* 248 */ "<xml><:de>Der schwarze König ist in Gefahr.</:de><:en>Black's king is in danger.</:en><:it>Il re Nero è in pericolo.</:it></xml>",
+	/* 249 */ "<xml><:de>Weiß entwickelt einen gefährlichen Angriff.</:de><:en>White develops a dangerous attack.</:en><:it>Il Bianco sviluppa un attacco pericoloso.</:it></xml>",
+	/* 250 */ "<xml><:de>Schwarz entwickelt einen gefährlichen Angriff.</:de><:en>Black develops a dangerous attack.</:en><:it>Il Nero sviluppa un attacco pericoloso.</:it></xml>",
+	/* 251 */ "<xml><:de>Weiß hat das Läuferpaar.</:de><:en>White has a pair of bishops.</:en><:it>Il Bianco ha la coppia degli alfieri.</:it></xml>",
+	/* 252 */ "<xml><:de>Schwarz hat das Läuferpaar.</:de><:en>Black has a pair of bishops.</:en><:it>Il Nero ha la coppia degli alfieri.</:it></xml>",
+	/* 253 */ 0,
+	/* 254 */ 0,
+	/* 255 */ "<xml><:de>Der weiße König ist der Rochade beraubt.</:de><:en>White king is deprived of castling.</:en><:it>Il Bianco perde il diritto di arroccare.</:it></xml>",
+	/* 256 */ "<xml><:de>Der schwarze König ist der Rochade beraubt.</:de><:en>Black king is deprived of castling.</:en><:it>Il Nero perde il diritto di arroccare.</:it></xml>",
+	/* 257 */ "<xml><:de>Im bevorstehenden Endspiel sind die weißen Chancen etwas besser.</:de><:en>In the ensuing endgame white's chances are slightly better.</:en><:it>Nel finale a seguire il Bianco ha maggiori possibilità.</:it></xml>",
+	/* 258 */ "<xml><:de>Im bevorstehenden Endspiel sind die schwarzen Chancen etwas besser.</:de><:en>In the ensuing endgame black's chances are slightly better.</:en><:it>Nel finale a seguire il Nero ha maggiori possibilità.</:it></xml>",
+	/* 259 */ "<xml><:de>Der Freibauer sichert Weiß einen Vorteil.</:de><:en>A passed pawn secures an advantage for White.</:en><:it>Un pedone passato assicura il vantaggio Bianco.</:it></xml>",
+	/* 260 */ "<xml><:de>Der Freibauer sichert Schwarz einen Vorteil.</:de><:en>A passed pawn secures an advantage for Black.</:en><:it>Un pedone passato assicura il vantaggio Nero.</:it></xml>",
+	/* 261 */ "<xml><:de>Beiderseitiger Schlagabtausch.</:de><:en>Both sides exchange blows.</:en><:it>Scambio di colpi da entrambi i lati.</:it></xml>",
+	/* 262 */ 0,
+	/* 263 */ "<xml><:de>Eine unangenehme Fesselung, die Weiß einen Vorteil garantiert.</:de><:en>An unpleasant pin granting a slight advantage to White.</:en><:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Bianco.</:it></xml>",
+	/* 264 */ "<xml><:de>Eine unangenehme Fesselung, die Schwarz einen Vorteil garantiert.</:de><:en>An unpleasant pin granting a slight advantage to Black.</:en><:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Nero.</:it></xml>",
+	/* 265 */ "<xml><:de>Weiß hat eine gute Kompensation für das geopferte Material.</:de><:en>White has good compensation for sacrificed material.</:en><:it>Il Bianco ha buon compenso per il materiale sacrificato.</:it></xml>",
+	/* 266 */ "<xml><:de>Schwarz hat eine gute Kompensation für das geopferte Material.</:de><:en>Black has good compensation for sacrificed material.</:en><:it>Il Nero ha buon compenso per il materiale sacrificato.</:it></xml>",
+	/* 267 */ "<xml><:de>Weiß hat keine Kompensation für das Materialdefizit.</:de><:en>White has no compensation for lacking material.</:en><:it>Il Bianco non ha alcun compenso per il materiale in meno.</:it></xml>",
+	/* 268 */ "<xml><:de>Schwarz hat keine Kompensation für das Materialdefizit.</:de><:en>Black has no compensation for lacking material.</:en><:it>Il Nero non ha alcun compenso per il materiale in meno.</:it></xml>",
+	/* 269 */ "<xml><:de>Weiß hat einen Materialvorteil.</:de><:en>White has a material advantage.</:en><:it>Il Bianco ha vantaggio materiale.</:it></xml>",
+	/* 270 */ "<xml><:de>Schwarz hat einen Materialvorteil.</:de><:en>Black has a material advantage.</:en><:it>Il Nero ha vantaggio materiale.</:it></xml>",
+	/* 271 */ "<xml><:de>Das Schliessen der Position favorisiert Weiß.</:de><:en>The ensuing closed position is favorable for White.</:en><:it>La posizione chiusa a seguire favorisce il Bianco.</:it></xml>",
+	/* 272 */ "<xml><:de>Das Schliessen der Position favorisiert Schwarz.</:de><:en>The ensuing closed position is favorable for Black.</:en><:it>La posizione chiusa a seguire favorisce il Nero.</:it></xml>",
+	/* 273 */ 0,
+	/* 274 */ 0,
+	/* 275 */ 0,
+	/* 276 */ 0,
+	/* 277 */ 0,
+	/* 278 */ 0,
+	/* 279 */ 0,
+	/* 280 */ 0,
+	/* 281 */ 0,
+	/* 282 */ 0,
+	/* 283 */ 0,
+	/* 284 */ 0,
+	/* 285 */ 0,
+	/* 286 */ 0,
+	/* 287 */ 0,
+	/* 288 */ 0,
+	/* 289 */ 0,
+	/* 290 */ 0,
+	/* 291 */ "<xml><:de>Mit der Drohung</:de><:en>With a threat of</:en><:it>Minacciando</:it></xml>",
+	/* 292 */ "<xml><:de>Mit der Idee</:de><:en>With the idea of</:en><:it>Con l'idea</:it></xml>",
+};
+
+
+// IMPORTANT NOTE: keep the entries normalized!
+static char const* Phrases500[] =
+{
+	/* 500 */ 0,
+	/* 501 */ "<xml><:de>Ein seltener Zug.</:de><:en>A rare move.</:en><:it>Una mossa rara.</:it></xml>",
+	/* 502 */ "<xml><:de>Die Hauptfortsetzung ist</:de><:en>The main continuation is</:en><:it>La continuazione principale è</:it></xml>",
+	/* 503 */ "<xml><:de>Neuerung!</:de><:en>Novelty!</:en><:it>Novità!</:it></xml>",
+	/* 504 */ 0,
+	/* 505 */ "<xml><:de>Ein veralteter Zug.</:de><:en>An old move.</:en><:it>Una vecchia mossa.</:it></xml>",
+	/* 506 */ "<xml><:de>Neuerdings ist folgende Fortsetzung populärer:</:de><:en>Recently more popular is the continuation:</:en><:it>Recentemente è più popolare la continuazione:</:it></xml>",
+	/* 507 */ "<xml><:de>Dieser Zug wurde bisher nicht auf hohem Niveau angewandt.</:de><:en>This move has not occurred at the high level before.</:en><:it>Questa mossa non si è ancora vista a livello magistrale.</:it></xml>",
+	/* 508 */ "<xml><:de>Führende Schachspieler bevorzugen</:de><:en>Leading chessplayers prefer</:en><:it>I più forti giocatori preferiscono</:it></xml>",
+	/* 509 */ "<xml><:de>Die solidere Alternative ist</:de><:en>The more reliable continuation is</:en><:it>Una solida alternativa è</:it></xml>",
+	/* 510 */ "<xml><:de>Beachtung verdient</:de><:en>Worth attention is</:en><:it>Merita attenzione</:it></xml>",
+};
+
+
+static
+bool
+parseChessOkComment(mstl::string& s)
+{
+	switch (*s.c_str())
+	{
+		case '<':
+			// convert comments like {<font color=red>-12.13|d11</font>}
+			if (::strncmp(s, "<font color=", 11) == 0 && ::strncmp(s.end() - 7, "</font>", 7) == 0)
+			{
+				mstl::string::size_type n = s.find('>');
+
+				if (n != mstl::string::npos)
+				{
+					s.replace(0, n + 1, "<xml><b>", 8);
+					s.replace(s.size() - 7, 7, "</b></xml>", 10);
+					return true;
+				}
+			}
+			break;
+
+		case '&':
+			// convert comments like {&lt;font color=red&gt;-12.13|d11&lt;/font&gt;}
+			if (	::strncmp(s, "&lt;font color=", 15) == 0
+				&& ::strncmp(s.end() - 13, "&lt;/font&gt;", 13) == 0)
+			{
+				mstl::string::size_type n = s.find("&gt;");
+
+				if (n != mstl::string::npos && n < s.size() - 4)
+				{
+					s.replace(0, n + 4, "<xml><b>", 8);
+					s.replace(s.size() - 13, 13, "</b></xml>", 10);
+					return true;
+				}
+			}
+			break;
+
+		case 'R':
+			// strip comments like {Rybka Aquarium (0:00:08)}
+			if (::strncmp(s, "Rybka Aquarium (", 16) == 0)
+			{
+				char const* p = s.c_str() + 16;
+
+				while (*p == ':' || ::isdigit(*p))
+					++p;
+
+				if (*p == ')')
+				{
+					s.erase(s.begin(), p + 1);
+					s.ltrim();
+				}
+			}
+			break;
+	}
+
+	return false;
+}
+
+
+static
+void
+join(Comment* first, Comment* last)
+{
+	for (Comment* next = first + 1; next < last; ++next)
+		first->append(*next, ' ');
+}
 
 
 inline static
@@ -316,14 +500,13 @@ PgnReader::Pos::Pos() : line(0), column(0) {}
 PgnReader::PgnReader(mstl::istream& stream,
 							sys::utf8::Codec& codec,
 							int firstGameNumber,
+							Modification modification,
 							ResultMode resultMode)
 	:Reader(format::Pgn)
 	,m_stream(stream)
 	,m_putback(0)
 	,m_linePos(0)
 	,m_lineEnd(0)
-	,m_countWarnings(0)
-	,m_countErrors(0)
 	,m_gameCount(0)
 	,m_firstGameNumber(firstGameNumber)
 	,m_resultMode(resultMode)
@@ -332,18 +515,24 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_noResult(false)
 	,m_result(result::Unknown)
 	,m_timeMode(time::Unknown)
-	,m_nestedVar(0)
+	,m_modification(modification)
 	,m_parsingFirstHdr(true)
 	,m_parsingTags(false)
 	,m_failed(false)
 	,m_eof(false)
 	,m_hasNote(false)
+	,m_atStart(true)
 	,m_parsingComment(false)
-	,m_maybeChessBase(false)
+	,m_sourceIsPossiblyChessBase(false)
+	,m_sourceIsChessOK(false)
+	,m_postIndex(0)
 	,m_variant(variant::Unknown)
 	,m_codec(codec)
 {
 	M_REQUIRE(codec.hasEncoding());
+
+	::memset(m_countWarnings, 0, sizeof(m_countWarnings));
+	::memset(m_countErrors, 0, sizeof(m_countErrors));
 }
 
 
@@ -421,7 +610,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 {
 	if (m_firstGameNumber < 0 && code == UnexpectedEndOfInput)
 	{
-		putMove();
+		putMove(true);
 		throw Termination();
 	}
 
@@ -469,22 +658,22 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 			}
 	}
 
-	if (m_countErrors == MaxErrors)
-		throw Interruption(code, msg);
-
-	mstl::string info;
-
-	if (m_tags.contains(White) && m_tags.contains(Black))
-		info = m_tags.value(White) + " - " + m_tags.value(Black);
-
-	error(code, pos.line, pos.column, gameCount, msg, info, myItem);
-
-	if (++m_countErrors == MaxErrors)
+	if (m_countErrors[code] < MaxErrors)
 	{
-		warning(	MaximalErrorCountExceeded,
-					pos.line, 0, 0,
-					mstl::string::empty_string,
-					mstl::string::empty_string);
+		mstl::string info;
+
+		if (m_tags.contains(White) && m_tags.contains(Black))
+			info = m_tags.value(White) + " - " + m_tags.value(Black);
+
+		error(code, pos.line, pos.column, gameCount, msg, info, myItem);
+
+		if (++m_countErrors[code] == MaxErrors)
+		{
+			warning(	MaximalErrorCountExceeded,
+						pos.line, 0, 0,
+						mstl::string::empty_string,
+						mstl::string::empty_string);
+		}
 	}
 
 	if (code == InvalidMove || !m_move.isLegal())
@@ -497,7 +686,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 void
 PgnReader::warning(Warning code, Pos pos, mstl::string const& item)
 {
-	if (m_countWarnings == MaxWarnings)
+	if (m_countWarnings[code] == MaxWarnings)
 		return;
 
 	switch (unsigned(code))
@@ -530,7 +719,7 @@ PgnReader::warning(Warning code, Pos pos, mstl::string const& item)
 					info);
 	}
 
-	if (++m_countWarnings == MaxWarnings)
+	if (++m_countWarnings[code] == MaxWarnings)
 	{
 		warning(	MaximalWarningCountExceeded,
 					pos.line, 0, 0,
@@ -576,8 +765,7 @@ PgnReader::process(Progress& progress)
 			{
 				m_noResult = false;
 				m_parsingFirstHdr = false;
-				m_comment.clear();
-				m_preComment.clear();
+				m_comments.clear();
 				m_marks.clear();
 				m_site.clear();
 				m_annotation.clear();
@@ -586,15 +774,20 @@ PgnReader::process(Progress& progress)
 				m_variant = variant::Unknown;
 				m_ignoreNags = false;
 				m_hasNote = false;
+				m_atStart = true;
 				m_significance[color::White] = 1;
 				m_significance[color::Black] = 1;
+				m_sourceIsChessOK = false;
+				m_postIndex = 0;
 
 				if (m_firstGameNumber >= 0)
 				{
 					m_parsingTags = true;
 					readTags();
 					m_parsingTags = false;
-					m_maybeChessBase = m_tags.contains(PlyCount) && m_tags.contains(EventCountry);
+					m_sourceIsPossiblyChessBase =		m_modification == Raw
+															&& m_tags.contains(PlyCount)
+															&& m_tags.contains(EventCountry);
 				}
 
 				if (!consumer().startGame(m_tags))
@@ -602,8 +795,8 @@ PgnReader::process(Progress& progress)
 
 				token = nextToken(kTag);
 				consumer().startMoveSection();
-				putComment();
-				m_nestedVar = 0;
+
+				unsigned nestedVar = 0;
 
 				while (token == kSan)
 				{
@@ -614,7 +807,7 @@ PgnReader::process(Progress& progress)
 					// The PGN standard does not forbid such things.
 					while (token & (kStartVariation | kEndVariation))
 					{
-						putMove();
+						putMove(true);
 
 						if (token == kEndVariation)
 						{
@@ -623,46 +816,45 @@ PgnReader::process(Progress& progress)
 
 							consumer().finishVariation();
 
-							if (m_nestedVar)
+							if (nestedVar)
 							{
 								token = kStartVariation;
-								--m_nestedVar;
+								--nestedVar;
 							}
 							else
 							{
 								token = nextToken(kEndVariation);
-								m_preComment.swap(m_comment);
 							}
 						}
 						else
 						{
 							consumer().startVariation();
-
-							if (m_comment.isEmpty())
-								m_preComment.swap(m_comment);
-
+							m_atStart = true;
 							token = nextToken(kStartVariation);
-
-							putComment();
 
 							if (token == kStartVariation)
 							{
-								++m_nestedVar;
+								++nestedVar;
 								token = nextToken(kStartVariation);
-								putComment();
 							}
 						}
 					}
 				}
 
-				putMove();
+				putMove(true);
 
-				if (!m_preComment.isEmpty())
+				if (!m_comments.empty())
 				{
 					// We have a comment after the last variation has finished,
-					// but no more moves. We will add a null move.
+					// but no more moves. As a workaround we add a variation.
+					consumer().startVariation();
 					m_move = Move::null();
+					if (consumer().board().blackToMove())
+						m_move.setColor(color::Black);
+					m_postIndex = m_comments.size();
 					putMove();
+					consumer().finishVariation();
+					warning(CommentAtEndOfGame);
 				}
 
 				if (token == kError)
@@ -718,7 +910,7 @@ PgnReader::process(Progress& progress)
 			{
 				if (!m_parsingTags)
 				{
-					putMove();
+					putMove(true);
 					handleError(exc.error, exc.message);
 				}
 				token = kResult;
@@ -781,8 +973,6 @@ void
 PgnReader::checkSite()
 {
 	mstl::string const& site = m_tags.value(tag::Site);
-
-	consumer().finishMoveSection(m_result);
 
 	if (m_eventCountry == country::Unknown)
 	{
@@ -852,7 +1042,7 @@ PgnReader::checkSite()
 				break;
 		}
 
-		if (m_maybeChessBase)
+		if (m_sourceIsPossiblyChessBase)
 		{
 			// ChessBases ignores the PGN standard in case of the country codes.
 			// We try to fix wrong country code mappings (should only happen if
@@ -977,8 +1167,13 @@ PgnReader::checkMode()
 void
 PgnReader::finishGame()
 {
-	checkSite();
-	checkMode();
+	consumer().finishMoveSection(m_result);
+
+	if (m_modification == Normalize)
+	{
+		checkSite();
+		checkMode();
+	}
 
 	switch (consumer().finishGame(m_tags))
 	{
@@ -1023,24 +1218,78 @@ PgnReader::convertToUtf(mstl::string& s)
 
 
 void
-PgnReader::putMove()
+PgnReader::putMove(bool lastMove)
 {
 	if (__builtin_expect(m_move, 1))
 	{
-		M_ASSERT(!m_hasNote ==
-			bool(m_preComment.isEmpty() && m_comment.isEmpty() && m_annotation.isEmpty()));
+		M_ASSERT(m_hasNote == (!m_comments.empty() || !m_marks.isEmpty() || !m_annotation.isEmpty()));
 
 		if (m_hasNote)
 		{
-			MarkSet marks;
+			if (m_atStart)
+			{
+				if (m_comments.empty() || m_postIndex <= 1)
+				{
+					if (!m_annotation.isEmpty() || !m_marks.isEmpty())
+						consumer().putComment(Comment(), m_annotation, m_marks);
+				}
+				else
+				{
+					consumer().putComment(m_comments[0], m_annotation, m_marks);
+					m_comments.erase(m_comments.begin());
 
-			consumer().putMove(m_move, m_annotation, m_preComment, m_comment, m_marks);
+					if (m_postIndex > 0)
+						--m_postIndex;
+				}
+				m_marks.clear();
+				m_annotation.remove(nag::Diagram);
+				m_annotation.remove(nag::DiagramFromBlack);
+			}
+
+			if (m_postIndex > 0)
+			{
+				M_ASSERT(m_postIndex <= m_comments.size());
+
+				::join(m_comments.begin(), m_comments.begin() + m_postIndex);
+
+				if (m_postIndex == m_comments.size())
+				{
+					consumer().putMove(m_move, m_annotation, m_comments[0], Comment(), m_marks);
+					m_comments.clear();
+				}
+				else if (lastMove)
+				{
+					::join(m_comments.begin() + m_postIndex, m_comments.end());
+					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
+					m_comments.clear();
+				}
+				else
+				{
+					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
+					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
+				}
+			}
+			else if (lastMove)
+			{
+				::join(m_comments.begin(), m_comments.end());
+				if (m_comments.empty())
+					m_comments.push_back();
+				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
+				m_comments.clear();
+			}
+			else
+			{
+				if (m_comments.empty())
+					m_comments.push_back();
+				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
+				m_comments.erase(m_comments.begin());
+			}
+
 			m_marks.clear();
-			m_comment.clear();
-			m_preComment.clear();
 			m_annotation.set(m_prefixAnnotation);
 			m_prefixAnnotation = nag::Null;
-			m_hasNote = false;
+			m_postIndex = m_comments.size();
+			m_hasNote = !m_comments.empty();
 		}
 		else
 		{
@@ -1048,19 +1297,11 @@ PgnReader::putMove()
 		}
 
 		m_move.clear();
+		m_atStart = false;
 	}
-}
-
-
-void
-PgnReader::putComment()
-{
-	if (m_hasNote && !(m_comment.isEmpty() & m_annotation.isEmpty()))
+	else
 	{
-		consumer().putComment(m_comment, m_annotation, m_marks);
-		m_comment.clear();
-		m_annotation.clear();
-		m_hasNote = false;
+		m_postIndex = m_comments.size();
 	}
 }
 
@@ -1197,10 +1438,10 @@ PgnReader::searchTag()
 	{
 		int c = get(true);
 
-		while (c == '\n')
+		while (::isspace(c))
 			c = get(true);
 
-		if (m_stream.eof())
+		if (c == '\0')
 			return kEoi;
 
 		if (c == '[')
@@ -1216,6 +1457,8 @@ PgnReader::searchTag()
 void
 PgnReader::checkTags()
 {
+	M_ASSERT(m_modification == Normalize);
+
 	if (m_tags.contains(Fen))
 	{
 		Board board;
@@ -1286,6 +1529,9 @@ PgnReader::checkTags()
 bool
 PgnReader::checkTag(ID tag, mstl::string& value)
 {
+	if (m_modification == Raw)
+		return true;
+
 	switch (tag)
 	{
 		case White:
@@ -1839,6 +2085,23 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 
 void
+PgnReader::addTag(tag::ID tag, mstl::string const& value)
+{
+	m_tags.set(tag, value);
+
+	if (tag::isRatingTag(tag))
+	{
+		color::ID color = tag::isWhiteRatingTag(tag) ? color::White : color::Black;
+
+		m_tags.setSignificance(tag, m_significance[color]);
+
+		if (m_significance[color] > 0 && ++m_significance[color] > 2)
+			m_significance[color] = 0;
+	}
+}
+
+
+void
 PgnReader::readTags()
 {
 	mstl::string name;
@@ -1873,7 +2136,14 @@ PgnReader::readTags()
 
 			tag::ID tag = fromName(name);
 
-			if (checkTag(tag, value))
+			if (m_modification == Raw)
+			{
+				if (tag == ExtraTag)
+					m_tags.setExtra(name, value);
+				else
+					addTag(tag, value);
+			}
+			else if (checkTag(tag, value))
 			{
 				if (isMandatory(tag))
 				{
@@ -1895,32 +2165,48 @@ PgnReader::readTags()
 						case ExtraTag:
 							// we will silently ignore all tags not starting
 							// with an upper case character
-							if (::isupper(name[0]))
-								m_tags.setExtra(name, value);
+							if (m_modification == Raw || ::isupper(name[0]))
+							{
+								bool ignore = false;
+
+								if (m_modification == Normalize)
+								{
+									// ignore special tags from chessOK.com
+									switch (name[0])
+									{
+										case 'G': ignore = (name == "GameID"); break;
+										case 'I': ignore = (name == "Input"); break;
+										case 'O': ignore = (name == "Owner"); break;
+										case 'S': ignore = (name == "Stamp"); break;
+										case 'U': ignore = (name == "UniqID"); break;
+
+										case 'L':
+											ignore = (name == "LastMoves");
+											m_sourceIsChessOK = true;
+											break;
+									}
+								}
+
+								if (!ignore)
+									m_tags.setExtra(name, value);
+							}
 							break;
 
 						case WhiteType:
 						case BlackType:
-							if (::isHuman(value.begin(), value.end()))
-								m_tags.set(tag, species::toString(species::Human));
-							else if (::isProgram(value.begin(), value.end()))
-								m_tags.set(tag, species::toString(species::Program));
-							else
-								warning(UnknownPlayerType, m_prevPos, value);
+							if (m_modification == Normalize)
+							{
+								if (::isHuman(value.begin(), value.end()))
+									m_tags.set(tag, species::toString(species::Human));
+								else if (::isProgram(value.begin(), value.end()))
+									m_tags.set(tag, species::toString(species::Program));
+								else
+									warning(UnknownPlayerType, m_prevPos, value);
+							}
 							break;
 
 						default:
-							m_tags.set(tag, value);
-
-							if (tag::isRatingTag(tag))
-							{
-								color::ID color = tag::isWhiteRatingTag(tag) ? color::White : color::Black;
-
-								m_tags.setSignificance(tag, m_significance[color]);
-
-								if (m_significance[color] > 0 && ++m_significance[color] > 2)
-									m_significance[color] = 0;
-							}
+							addTag(tag, value);
 							break;
 					}
 				}
@@ -1942,7 +2228,11 @@ PgnReader::readTags()
 		if (c != '[')
 		{
 			putback(c);
-			return checkTags();
+
+			if (m_modification == Normalize)
+				checkTags();
+
+			return;
 		}
 
 		name.clear();
@@ -2120,6 +2410,14 @@ PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
 
 
 void
+PgnReader::setNullMove()
+{
+	putMove();
+	m_move = Move::null();
+}
+
+
+void
 PgnReader::putNag(nag::ID nag)
 {
 	M_ASSERT(nag < nag::Scidb_Last);
@@ -2160,13 +2458,13 @@ PgnReader::stripDiagram(mstl::string& comment)
 
 	char const* s = comment.c_str();
 
-	if (s[0] == '#' && (m_comment.size() == 1 || ::isspace(s[1])))
+	if (s[0] == '#' && (comment.size() == 1 || ::isspace(s[1])))
 	{
 		comment.erase(comment.begin(), ::skipSpaces(s + 1));
 		m_annotation.add(nag::Diagram);
 		m_hasNote = true;
 	}
-	else if (m_maybeChessBase)
+	else if (m_sourceIsPossiblyChessBase)
 	{
 		// ChessBase does not have any convention for diagram notation. Therefore we look for
 		// any sequence "<word> {#}".
@@ -2282,76 +2580,197 @@ PgnReader::parseComment(Token prevToken, int c)
 			putback(c);
 	}
 
-	content.trim();
-	stripDiagram(content);
+	if (m_marks.extractFromComment(content))
+		m_hasNote = true;
 
-	switch (content.size())
+	if (m_modification == Normalize)
 	{
-		case 1:
-			switch (content[0])
-			{
-				case 'N':
-					if (prevToken & PartOfMove)
-					{
-						putNag(nag::Novelty);
-						return kNag;
-					}
-					break;
+		content.trim();
+		stripDiagram(content);
 
-				case 'D':
-					if (!m_annotation.contains(nag::Diagram))
+		switch (content.size())
+		{
+			case 0:
+				return kComment;
+
+			case 1:
+				switch (content[0])
+				{
+					case 'N':
+						if (prevToken & PartOfMove)
+						{
+							putNag(nag::Novelty);
+							return kNag;
+						}
+						break;
+
+					case 'D':
+						if (!m_annotation.contains(nag::Diagram))
+						{
+							putNag(nag::Diagram);
+							return kNag;
+						}
+						break;
+				}
+				break;
+
+			case 2:
+				switch (content[0])
+				{
+					case 'D':
+						if (content[1] == '\'')
+						{
+							putNag(nag::DiagramFromBlack);
+							return kNag;
+						}
+						break;
+
+					case 'R':
+						if (content[1] == 'R')
+						{
+							putNag(nag::EditorsRemark);
+							return kNag;
+						}
+						break;
+				}
+				break;
+		}
+
+		if (content.empty())
+			return kComment;
+
+		if (m_sourceIsChessOK)
+		{
+			if (::parseChessOkComment(content))
+			{
+				Comment comment(content, false, false);
+				m_hasNote = true;
+				m_comments.push_back();
+				m_comments.back().swap(comment);
+				return kComment;
+			}
+
+			if (content.empty())
+				return kComment;
+
+			char const* s = content;
+
+			while (::isdigit(*s))
+				++s;
+			while (*s == '.')
+				++s;
+
+			char const* p = s + 1;
+
+			switch (*s)
+			{
+				case 'K': case 'Q': case 'R': case 'B': case 'N': case 'P':
+					if (!('a' <= *p && *p <= 'h'))
+						break;
+					++p;
+					// fallthru
+
+				case 'a' ... 'h':
+					if ('1' <= *p && *p <= '8' && p[1] == '\0')
 					{
-						putNag(nag::Diagram);
-						return kNag;
+						mstl::string buf;
+
+						buf.append("<xml><:>", 8);
+						buf.append(content.begin(), s);
+						buf.append("<sym>", 5);
+						buf.append(*s);
+						buf.append("</sym>", 6);
+						buf.append(s + 1, content.end());
+						buf.append('.');
+						buf.append("</:></xml>", 10);
+
+						Comment comment(buf, false, false);
+
+						if (!m_comments.empty() && m_postIndex < m_comments.size())
+						{
+							m_comments.back().append(comment, ' ');
+						}
+						else
+						{
+							m_comments.push_back();
+							m_comments.back().swap(comment);
+							m_hasNote = true;
+						}
+
+						return kComment;
 					}
 					break;
 			}
-			break;
+		}
 
-		case 2:
-			switch (content[0])
+		// Why the hell does Rybka Aquarium use comments for his annotation?
+		// Obviously this company is not interested in the PGN standard.
+		if (content[0] == '$')
+		{
+			char const* s = content.c_str() + 1;
+
+			while (::isdigit(*s))
+				++s;
+
+			if (*s == '\0')
 			{
-				case 'D':
-					if (content[1] == '\'')
-					{
-						putNag(nag::DiagramFromBlack);
-						return kNag;
-					}
-					break;
+				unsigned nag = ::strtoul(content.c_str() + 1, 0, 10);
 
-				case 'R':
-					if (content[1] == 'R')
-					{
-						putNag(nag::EditorsRemark);
-						return kNag;
-					}
-					break;
+				if (nag < nag::Pgn_Last)
+				{
+					putNag(nag::ID(nag));
+					return kNag;
+				}
+
+				char const* phrase = 0;
+
+				// Rybka Aquarium is using enumerated phrases.
+				if (500 < nag && nag < 500 + U_NUMBER_OF(::Phrases500))
+					phrase = ::Phrases500[nag - 500];
+				else if (200 < nag && 200 + U_NUMBER_OF(::Phrases200))
+					phrase = ::Phrases200[nag - 200];
+
+				if (phrase)
+				{
+					Comment comment(phrase, true, true);
+					m_comments.push_back();
+					m_comments.back().swap(comment);
+					m_hasNote = true;
+					return kComment;
+				}
 			}
-			break;
+		}
+		else if (!::isalpha(content[0]) && content.size() <= 5)
+		{
+			nag::ID nag = nag::fromSymbol(content);
+
+			if (nag != nag::Null)
+			{
+				if (::strlen(nag::toSymbol(nag)) == content.size())
+				{
+					putNag(nag::ID(nag));
+					return kNag;
+				}
+			}
+		}
+
+		if (content.empty())
+			return kComment;
 	}
 
 	Comment comment;
 
-	if (!content.empty())
+	if (m_modification != Raw || !comment.fromHtml(content))
 	{
-		m_marks.extractFromComment(content);
-
-		if (!comment.fromHtml(content))
-		{
-			comment.clear();
-			convertToUtf(content);
-			Comment::convertCommentToXml(
-				content, comment, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
-			comment.normalize();
-		}
-
-		m_hasNote = true;
+		convertToUtf(content);
+		Comment::convertCommentToXml(
+			content, comment, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
+		comment.normalize();
 	}
 
-	if (m_comment.isEmpty())
-		m_comment.swap(comment);
-	else
-		m_comment.append(comment, ' ');
+	m_hasNote = true;
+	m_comments.push_back();
+	m_comments.back().swap(comment);
 
 	return kComment;
 }
@@ -2368,7 +2787,7 @@ PgnReader::parseAsterisk(Token prevToken, int)
 	if (prevToken == kStartVariation)
 	{
 		// '*' is interpreted as null move (used in PalView)
-		m_move = Move::null();
+		setNullMove();
 		return kSan;
 	}
 
@@ -2508,6 +2927,8 @@ PgnReader::parseCastling(Token prevToken, int c)
 
 		error(InvalidToken, m_prevPos, mstl::string(m_linePos - 1, e));
 	}
+
+	putMove();
 
 	if (!doCastling(castle))
 		error(InvalidMove, m_prevPos, mstl::string(m_linePos - 1, e));
@@ -2696,7 +3117,7 @@ PgnReader::parseLessThanSign(Token prevToken, int)
 	{
 		case '>':
 			// "<>" is interpreted as null move (used in PalView)
-			m_move = Move::null();
+			setNullMove();
 			return kSan;
 
 		case '=':
@@ -2801,7 +3222,7 @@ PgnReader::parseLowercaseN(Token, int)
 	if (get() != 'u' && get() != 'l' && get() != 'l')
 		error(UnexpectedSymbol, m_prevPos, "n");
 
-	m_move = Move::null();
+	setNullMove();
 	return kSan;
 }
 
@@ -2903,7 +3324,7 @@ PgnReader::parseMinusSign(Token prevToken, int)
 				}
 				putback(d);
 			}
-			m_move = Move::null();
+			setNullMove();
 			return kSan;
 
 		case '+':
@@ -3513,7 +3934,7 @@ PgnReader::parseUppercaseZ(Token prevToken, int c)
 		return unexpectedSymbol(prevToken, c);
 
 	advanceLinePos(1);
-	m_move = Move::null();
+	setNullMove();
 	return kSan;
 }
 
@@ -3804,7 +4225,7 @@ PgnReader::parseRound(mstl::string const& data, unsigned& round, unsigned& subro
 
 			if (subround > 255)
 			{
-				round = subround = 0;
+				subround = 0;
 				return false;
 			}
 

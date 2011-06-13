@@ -39,14 +39,16 @@ set home		[file nativename "~"]
 set exec		[file dirname [info nameofexecutable]]
 set user		[file join $home .[string range [file tail [info nameofexecutable]] 2 end]]
 set data		[file join $share data]
+set backup	[file join $user backup]
 set config	[file join $user config]
 
 if {![file isdirectory $user]} {
 	set setup 1
 	file mkdir $user
-	file mkdir $user/log
-	file mkdir $user/photos
-	file copy $share/themes $user
+	file mkdir [file join $user log]
+	file mkdir [file join $user photos]
+	file mkdir [file join $user backup]
+	file copy  [file join $share themes] $user
 } else {
 	set setup 0
 }
@@ -60,6 +62,10 @@ if {![file isdirectory $config]} {
 namespace eval file {
 
 set options [file join [set [namespace parent]::dir::config] options.dat]
+
+if {[::process::testOption from-the-scratch]} {
+	file delete $options
+}
 
 } ;# namespace file
 } ;# namespace scidb
@@ -121,7 +127,7 @@ proc databaseName {base} {
 	}
 
 	if {[string length $ext]} { append name " $ext" }
-	return $name
+	return [string map {" " "\u2002"} $name]
 }
 
 

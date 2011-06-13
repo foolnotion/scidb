@@ -48,6 +48,7 @@ public:
 					Encoder& encoder,
 					Tcl_Obj* cmd,
 					Tcl_Obj* arg,
+					Modification modification,
 					int firstGameNumber = 0,
 					unsigned lineOffset = 0);
 	~PgnReader() throw();

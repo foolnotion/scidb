@@ -34,9 +34,6 @@
 #endif
 
 
-sys::file::Time::Time() : year(0), month(0), day(0), hour(0), minute(0), second(0) {}
-
-
 bool
 sys::file::access(char const* filename, Mode mode)
 {
@@ -73,7 +70,7 @@ sys::file::size(char const* filename)
 
 
 bool
-sys::file::changed(char const* filename, Time& result)
+sys::file::changed(char const* filename, uint32_t& time)
 {
 	M_REQUIRE(filename);
 
@@ -86,22 +83,11 @@ sys::file::changed(char const* filename, Time& result)
 
 	if (ret != -1)
 	{
-		time_t ctime;
-
 #if !TCL_PREREQ(8,6)
-		ctime = buf->st_ctime;
+		time = buf->st_ctime;
 #else
-		ctime = Tcl_GetChangeTimeFromStat(buf);
+		time = Tcl_GetChangeTimeFromStat(buf);
 #endif
-
-		struct tm const* t = ::localtime(&ctime);
-
-		result.year		= t->tm_year + 1900;
-		result.month	= t->tm_mon + 1;
-		result.day		= t->tm_mday;
-		result.hour		= t->tm_hour;
-		result.minute	= t->tm_min;
-		result.second	= t->tm_sec;
 	}
 
 	::ckfree(reinterpret_cast<char*>(buf));

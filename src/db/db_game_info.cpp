@@ -57,7 +57,7 @@ static NamebaseEntry		g_empty;
 static NamebaseEvent		g_event;
 static NamebasePlayer	g_player;
 
-static char const GameFlagMap[22] =
+static char const GameFlagMap[23] =
 {
 	'w', // Flag_White_Opening
 	'b', // Flag_Black_Opening
@@ -80,22 +80,15 @@ static char const GameFlagMap[22] =
 	'=', // Flag_Defense
 	'M', // Flag_Material
 	'P', // Flag_Piece_Play
+	'C', // Flag_Illegal_Castling,
 	'I', // Flag_Illegal_Move,
 //	't', // Flag_Tactical_Blunder
 //	's', // Flag_Strategical_Blunder
 };
 
 
-template <typename T>
-inline static uint32_t
-computeCRC(uint32_t crc, T const& v)
-{
-	return util::crc::compute(crc, reinterpret_cast<unsigned char const*>(&v), sizeof(T));
-}
-
-
-inline static uint32_t
-computeCRC(uint32_t crc, mstl::string const& s)
+inline static util::crc::checksum_t
+computeCRC(util::crc::checksum_t crc, mstl::string const& s)
 {
 	return util::crc::compute(crc, s, s.size());
 }
@@ -172,19 +165,21 @@ GameInfo::GameInfo(Initializer const&)
 	,m_commentCount(0)
 	,m_termination(termination::Unknown)
 	,m_gameOffset(0)
-	,m_plyCount(0)
-	,m_ecoKey(0)
-	,m_ecoOpening(0)
-	,m_eco(Eco::root())
-	,m_result(result::Unknown)
 	,m_gameFlags(0)
+	,m_plyCount(0)
 	,m_positionId(chess960::StandardIdn)
 	,m_dateYear(Date::Zero10Bits)
-	,m_dateDay(0)
 	,m_dateMonth(0)
+	,m_ecoKey(1)
+	,m_eco(Eco::root())
+	,m_rest(0)
 	,m_round(0)
 	,m_subround(0)
+	,m_dateDay(0)
+	,m_result(result::Unknown)
 {
+	M_STATIC_CHECK(sizeof(GameInfo) == 64, XXX);
+
 	m_pd[White].value = m_pd[Black].value = 0;
 	m_player[White] = m_player[Black] = &g_player;
 	::memset(&m_signature, 0, sizeof(m_signature));
@@ -197,22 +192,12 @@ bool GameInfo::isEmpty() const { return m_event == &g_event; }
 
 
 Eco
-GameInfo::ecoFromOpening() const
-{
-	if (m_positionId != chess960::StandardIdn)
-		return Eco();
-
-	return m_ecoOpening ? Eco(m_ecoOpening) : Eco::root();
-}
-
-
-Eco
 GameInfo::userEco() const
 {
 	if (m_positionId != chess960::StandardIdn)
 		return Eco();
 
-	return m_eco ? Eco::fromShort(m_eco) : ecoFromOpening();
+	return m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
 }
 
 
@@ -224,42 +209,27 @@ GameInfo::setupOpening(unsigned idn, Line const& line)
 	switch (idn)
 	{
 		case 0:
+			m_ecoKey = 0;
 			break;
 
 		case chess960::StandardIdn:
-			{
-				Eco opening;
-				m_ecoKey = EcoTable::specimen().lookup(line, opening);
-				m_ecoOpening = opening;
-			}
+			m_ecoKey = EcoTable::specimen().lookup(line);
 			break;
 
 		default:
+			m_ecoKey = 0;
 			switch (line.length)
 			{
 				case 0:
 					break;
 
 				case 1:
-					m_ply1 = line.moves[0];
-					break;
-
-				case 2:
-					m_ply1 = line.moves[0];
-					m_ply2 = line.moves[1];
-					break;
-
-				case 3:
-					m_ply1 = line.moves[0];
-					m_ply2 = line.moves[1];
-					m_ply3 = line.moves[2];
+					m_ply[0] = line.moves[0];
 					break;
 
 				default:
-					m_ply1 = line.moves[0];
-					m_ply2 = line.moves[1];
-					m_ply3 = line.moves[2];
-					m_ply4 = line.moves[3];
+					m_ply[0] = line.moves[0];
+					m_ply[1] = line.moves[1];
 					break;
 			}
 			break;
@@ -300,86 +270,177 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 	m_round		= 0;
 	m_subround	= 0;
 
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		if (tags.contains(tag::ID(i)))
+		switch (int(tag))
 		{
-			switch (int(tag::ID(i)))
-			{
-				case tag::Round:
-					{
-						char* s = const_cast<char*>(tags.value(tag::Round).c_str());
-						m_round = ::strtoul(s, &s, 10);
-						if (*s == '.')
-							m_subround = ::strtoul(s + 1, 0, 10);
-					}
-					break;
+			case tag::Round:
+				{
+					char* s = const_cast<char*>(tags.value(tag::Round).c_str());
+					m_round = ::strtoul(s, &s, 10);
+					if (*s == '.')
+						m_subround = ::strtoul(s + 1, 0, 10);
+				}
+				break;
 
-				case tag::Result:
-					m_result = result::fromString(tags.value(tag::Result));
-					break;
+			case tag::Result:
+				m_result = result::fromString(tags.value(tag::Result));
+				break;
 
-				case tag::Eco:
-					m_eco = Eco::toShort(tags.value(tag::Eco));
-					break;
+			case tag::Eco:
+				m_eco = Eco::toShort(tags.value(tag::Eco));
+				break;
 
-				case tag::WhiteElo:
-					whitePlayer->setElo(m_pd[White].elo = tags.asInt(tag::WhiteElo));
-					break;
+			case tag::WhiteElo:
+				whitePlayer->setElo(m_pd[White].elo = tags.asInt(tag::WhiteElo));
+				break;
 
-				case tag::BlackElo:
-					blackPlayer->setElo(m_pd[Black].elo = tags.asInt(tag::BlackElo));
-					break;
+			case tag::BlackElo:
+				blackPlayer->setElo(m_pd[Black].elo = tags.asInt(tag::BlackElo));
+				break;
 
-				case tag::WhiteRating:	break;
-				case tag::WhiteRapid:	break;
-				case tag::WhiteICCF:		break;
-				case tag::WhiteUSCF:		break;
-				case tag::WhiteDWZ:		break;
-				case tag::WhiteECF:		break;
-				case tag::WhiteIPS:		break;
-					{
-						if (uint16_t value = ::getRatingValue(tags, tag::ID(i)))
-						{
-							rating::Type rt = rating::fromTag(tag::ID(i));
+			case tag::WhiteRating:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::Rating, value);
 
-							whitePlayer->setRating(rt, value);
+					if (tags.significance(tag))
+						setRating(White, rating::Rating, value);
+				}
+				break;
 
-							if (tags.significance(tag::ID(i)))
-								setRating(White, rt, value);
-						}
-					}
-					break;
+			case tag::WhiteRapid:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::Rapid, value);
 
-				case tag::BlackRating:	break;
-				case tag::BlackRapid:	break;
-				case tag::BlackICCF:		break;
-				case tag::BlackUSCF:		break;
-				case tag::BlackDWZ:		break;
-				case tag::BlackECF:		break;
-				case tag::BlackIPS:		break;
-					{
-						if (uint16_t value = ::getRatingValue(tags, tag::ID(i)))
-						{
-							rating::Type rt = rating::fromTag(tag::ID(i));
+					if (tags.significance(tag))
+						setRating(White, rating::Rapid, value);
+				}
+				break;
 
-							blackPlayer->setRating(rt, value);
+			case tag::WhiteICCF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::ICCF, value);
 
-							if (tags.significance(tag::ID(i)))
-								setRating(Black, rt, value);
-						}
-					}
-					break;
+					if (tags.significance(tag))
+						setRating(White, rating::ICCF, value);
+				}
+				break;
 
-				case tag::Date:
-					{
-						Date date(tags.value(tag::Date));
-						m_dateYear = Date::encodeYearTo10Bits(date.year());
-						m_dateMonth = date.month();
-						m_dateDay = date.day();
-					}
-					break;
-			}
+			case tag::WhiteUSCF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::USCF, value);
+
+					if (tags.significance(tag))
+						setRating(White, rating::USCF, value);
+				}
+				break;
+
+			case tag::WhiteDWZ:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::DWZ, value);
+
+					if (tags.significance(tag))
+						setRating(White, rating::DWZ, value);
+				}
+				break;
+
+			case tag::WhiteECF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::ECF, value);
+
+					if (tags.significance(tag))
+						setRating(White, rating::ECF, value);
+				}
+				break;
+
+			case tag::WhiteIPS:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					whitePlayer->setRating(rating::IPS, value);
+
+					if (tags.significance(tag))
+						setRating(White, rating::IPS, value);
+				}
+				break;
+
+			case tag::BlackRating:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::Rating, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::Rating, value);
+				}
+
+			case tag::BlackRapid:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::Rapid, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::Rapid, value);
+				}
+
+			case tag::BlackICCF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::ICCF, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::ICCF, value);
+				}
+
+			case tag::BlackUSCF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::USCF, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::USCF, value);
+				}
+
+			case tag::BlackDWZ:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::DWZ, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::DWZ, value);
+				}
+
+			case tag::BlackECF:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::ECF, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::ECF, value);
+				}
+
+			case tag::BlackIPS:
+				if (uint16_t value = ::getRatingValue(tags, tag))
+				{
+					blackPlayer->setRating(rating::IPS, value);
+
+					if (tags.significance(tag))
+						setRating(Black, rating::IPS, value);
+				}
+				break;
+
+			case tag::Date:
+				{
+					Date date(tags.value(tag::Date));
+					m_dateYear = Date::encodeYearTo10Bits(date.year());
+					m_dateMonth = date.month();
+					m_dateDay = date.day();
+				}
+				break;
 		}
 	}
 }
@@ -432,6 +493,19 @@ GameInfo::setup(	uint32_t gameOffset,
 
 
 void
+GameInfo::setupRating(TagSet const& tags, color::ID color, rating::Type rtType, tag::ID tag)
+{
+	if (uint16_t value = ::getRatingValue(tags, tag))
+	{
+		m_player[color]->setRating(rtType, value);
+
+		if (tags.significance(tag))
+			setRating(color, rtType, value);
+	}
+}
+
+
+void
 GameInfo::setup(	uint32_t gameOffset,
 						uint32_t gameRecordLength,
 						NamebasePlayer* whitePlayer,
@@ -463,9 +537,6 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_commentCount    = ::encodeCount(provider.countComments());
 	m_annotationCount = ::encodeCount(provider.countAnnotations() + provider.countMarks());
 
-	if (tags.contains(tag::EventType))
-		m_event->setType(event::typeFromString(tags.value(tag::EventType)));
-
 	{
 		material::Count matCount;
 
@@ -491,28 +562,21 @@ GameInfo::setup(	uint32_t gameOffset,
 
 	M_STATIC_CHECK(rating::Last == 8, Reimplementation_Needed);
 
-	for (unsigned i = rating::Elo + 1; i < rating::Any; ++i)
-	{
-		tag::ID tag = tag::fromRating(White, rating::Type(i));
+	setupRating(tags, White, rating::Rating,	tag::WhiteRating);
+	setupRating(tags, White, rating::Rapid,		tag::WhiteRapid);
+	setupRating(tags, White, rating::ICCF,		tag::WhiteICCF);
+	setupRating(tags, White, rating::USCF,		tag::WhiteUSCF);
+	setupRating(tags, White, rating::DWZ,		tag::WhiteDWZ);
+	setupRating(tags, White, rating::ECF,		tag::WhiteECF);
+	setupRating(tags, White, rating::IPS,		tag::WhiteIPS);
 
-		if (uint16_t value = ::getRatingValue(tags, tag))
-		{
-			whitePlayer->setRating(rating::Type(i), value);
-
-			if (tags.significance(tag))
-				setRating(White, rating::Type(i), value);
-		}
-
-		tag = tag::fromRating(Black, rating::Type(i));
-
-		if (uint16_t value = ::getRatingValue(tags, tag))
-		{
-			blackPlayer->setRating(rating::Type(i), value);
-
-			if (tags.significance(tag))
-				setRating(Black, rating::Type(i), value);
-		}
-	}
+	setupRating(tags, Black, rating::Rating,	tag::BlackRating);
+	setupRating(tags, Black, rating::Rapid,		tag::BlackRapid);
+	setupRating(tags, Black, rating::ICCF,		tag::BlackICCF);
+	setupRating(tags, Black, rating::USCF,		tag::BlackUSCF);
+	setupRating(tags, Black, rating::DWZ,		tag::BlackDWZ);
+	setupRating(tags, Black, rating::ECF,		tag::BlackECF);
+	setupRating(tags, Black, rating::IPS,		tag::BlackIPS);
 
 	M_REQUIRE(eventEntry()->country() == country::fromString(tags.value(tag::EventCountry)));
 	M_REQUIRE(eventEntry()->eventMode() == event::modeFromString(tags.value(tag::Mode)));
@@ -590,10 +654,22 @@ GameInfo::reset(Namebases& namebases)
 		namebases(Namebase::Site  ).deref(m_event->site());
 		namebases(Namebase::Event ).deref(m_event);
 
-		if (!m_recordLengthFlag)
-			namebases(Namebase::Annotator).deref(m_annotator);
+		unsigned gameOffset = m_gameOffset;
 
-		*this = m_initializer;
+		if (m_recordLengthFlag)
+		{
+			unsigned recordLength = m_recordLength;
+			*this = m_initializer;
+			m_recordLength = recordLength;
+			m_recordLengthFlag = true;
+		}
+		else
+		{
+			namebases(Namebase::Annotator).deref(m_annotator);
+			*this = m_initializer;
+		}
+
+		m_gameOffset = gameOffset;
 	}
 }
 
@@ -754,9 +830,9 @@ GameInfo::setupTags(TagSet& tags) const
 		tags.set(tag::EventType, event::toString(m_event->type()));
 	if (m_event->country() != country::Unknown)
 		tags.set(tag::EventCountry, country::toString(m_event->country()));
-	if (m_player[White]->federation())
+	if (m_player[White]->federation() != country::Unknown)
 		tags.set(tag::WhiteCountry, country::toString(country::Code(m_player[White]->federation())));
-	if (m_player[Black]->federation())
+	if (m_player[Black]->federation() != country::Unknown)
 		tags.set(tag::BlackCountry, country::toString(country::Code(m_player[Black]->federation())));
 	if (m_player[White]->title())
 		tags.set(tag::WhiteTitle, title::toString(m_player[White]->title()));
@@ -771,7 +847,11 @@ GameInfo::setupTags(TagSet& tags) const
 	if (m_player[Black]->sex() != sex::Unspecified)
 		tags.set(tag::BlackSex, sex::toString(m_player[Black]->sex()));
 
-	if (m_dateYear != Date::Zero10Bits)
+	if (m_dateYear == Date::Zero10Bits)
+	{
+		tags.set(tag::Date, "????.??.??", 10);
+	}
+	else
 	{
 		tags.set(tag::Date,
 					Date(Date::decodeYearFrom10Bits(m_dateYear), m_dateMonth, m_dateDay).asString());
@@ -816,7 +896,7 @@ GameInfo::setupTags(TagSet& tags) const
 	{
 		tags.set(tag::Eco, Eco::fromShort(m_eco).asShortString());
 
-		Eco eco = m_eco ? Eco::fromShort(m_eco) : ecoFromOpening();
+		Eco eco = m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
 
 		if (	eco
 			&& !tags.isUserSupplied(tag::Opening)
@@ -1101,45 +1181,51 @@ GameInfo::isGameRating(color::ID color, rating::Type type) const
 //}
 
 
-uint32_t
-GameInfo::computeChecksum() const
+util::crc::checksum_t
+GameInfo::computeChecksum(util::crc::checksum_t crc) const
 {
-	unsigned crc = 0;
-
 	crc = ::computeCRC(crc, m_event->name());
 	crc = ::computeCRC(crc, m_event->site()->name());
-	crc = ::computeCRC(crc, uint16_t(m_event->site()->country()));
-	crc = ::computeCRC(crc, annotator());
 	crc = ::computeCRC(crc, m_player[White]->name());
 	crc = ::computeCRC(crc, m_player[Black]->name());
-	crc = ::computeCRC(crc, uint16_t(m_player[White]->federation()));
-	crc = ::computeCRC(crc, uint16_t(m_player[Black]->federation()));
-	crc = ::computeCRC(crc, uint8_t(m_player[White]->title()));
-	crc = ::computeCRC(crc, uint8_t(m_player[Black]->title()));
-	crc = ::computeCRC(crc, uint8_t(m_player[White]->type()));
-	crc = ::computeCRC(crc, uint8_t(m_player[Black]->type()));
-	crc = ::computeCRC(crc, uint8_t(m_player[White]->sex()));
-	crc = ::computeCRC(crc, uint8_t(m_player[Black]->sex()));
-	crc = ::computeCRC(crc, uint8_t(date()));
-	crc = ::computeCRC(crc, uint16_t(eventDate()));
-	crc = ::computeCRC(crc, uint8_t(eventType()));
-	crc = ::computeCRC(crc, uint8_t(timeMode()));
-	crc = ::computeCRC(crc, uint8_t(eventMode()));
-	crc = ::computeCRC(crc, m_signature);
-	crc = ::computeCRC(crc, material().value);
-	crc = ::computeCRC(crc, uint16_t(m_eco));
-	crc = ::computeCRC(crc, m_ecoKey);
-	crc = ::computeCRC(crc, m_ecoOpening);
-	crc = ::computeCRC(crc, uint8_t(m_annotationCount));
-	crc = ::computeCRC(crc, uint8_t(m_commentCount));
-	crc = ::computeCRC(crc, uint8_t(m_variationCount));
-	crc = ::computeCRC(crc, uint8_t(m_termination));
-	crc = ::computeCRC(crc, uint32_t(m_gameFlags));
-	crc = ::computeCRC(crc, uint8_t(m_result));
-	crc = ::computeCRC(crc, uint16_t(m_plyCount));
-	crc = ::computeCRC(crc, uint16_t(m_positionId));
-	crc = ::computeCRC(crc, uint8_t(m_pd[White].value));
-	crc = ::computeCRC(crc, uint8_t(m_pd[Black].value));
+
+	if (!hasGameRecordLength())
+		crc = ::computeCRC(crc, m_annotator->name());
+
+	crc = ::util::crc::compute(crc, uint32_t(m_pd[White].ratingValue));
+	crc = ::util::crc::compute(crc, uint32_t(m_pd[Black].ratingValue));
+	crc = ::util::crc::compute(crc, uint32_t(date().hash()));
+	crc = ::util::crc::compute(crc, uint32_t(eventDate().hash()));
+
+	crc = ::util::crc::compute(crc, uint16_t(m_event->site()->country()));
+	crc = ::util::crc::compute(crc, uint16_t(m_event->site()->country()));
+	crc = ::util::crc::compute(crc, uint16_t(m_player[White]->federation()));
+	crc = ::util::crc::compute(crc, uint16_t(m_player[Black]->federation()));
+	crc = ::util::crc::compute(crc, uint16_t(m_eco));
+
+	crc = ::util::crc::compute(crc, uint8_t(m_player[White]->title()));
+	crc = ::util::crc::compute(crc, uint8_t(m_player[Black]->title()));
+	crc = ::util::crc::compute(crc, uint8_t(m_player[White]->type()));
+	crc = ::util::crc::compute(crc, uint8_t(m_player[Black]->type()));
+	crc = ::util::crc::compute(crc, uint8_t(m_player[White]->sex()));
+	crc = ::util::crc::compute(crc, uint8_t(m_player[Black]->sex()));
+	crc = ::util::crc::compute(crc, uint8_t(eventType()));
+	crc = ::util::crc::compute(crc, uint8_t(timeMode()));
+	crc = ::util::crc::compute(crc, uint8_t(eventMode()));
+	crc = ::util::crc::compute(crc, uint8_t(m_termination));
+	crc = ::util::crc::compute(crc, uint8_t(m_result));
+
+// belongs to move data
+//	crc = ::computeCRC(crc, m_ecoKey);
+//	crc = ::computeCRC(crc, m_signature);
+//	crc = ::util::crc::compute(crc, uint16_t(m_positionId));
+//	crc = ::util::crc::compute(crc, uint16_t(m_plyCount));
+//	crc = ::util::crc::compute(crc, uint8_t(m_annotationCount));
+//	crc = ::util::crc::compute(crc, uint8_t(m_commentCount));
+//	crc = ::util::crc::compute(crc, uint8_t(m_variationCount));
+
+// should not be included
+//	crc = ::computeCRC(crc, uint32_t(m_gameFlags));
 
 	return crc;
 }
@@ -1251,18 +1337,13 @@ GameInfo::debug() const
 	if (idn() == chess960::StandardIdn)
 	{
 		::printf("Eco Key:          %s\n", Eco(m_ecoKey).asString().c_str());
-		::printf("Eco Opening:      %s\n", Eco(m_ecoOpening).asString().c_str());
 	}
 	else if (idn())
 	{
 		::printf("Ply 1:            %s-%s\n",
-					sq::printAlgebraic(Move(m_ply1).from()), sq::printAlgebraic(Move(m_ply1).to()));
+					sq::printAlgebraic(Move(m_ply[0]).from()), sq::printAlgebraic(Move(m_ply[0]).to()));
 		::printf("Ply 2:            %s-%s\n",
-					sq::printAlgebraic(Move(m_ply2).from()), sq::printAlgebraic(Move(m_ply2).to()));
-		::printf("Ply 3:            %s-%s\n",
-					sq::printAlgebraic(Move(m_ply3).from()), sq::printAlgebraic(Move(m_ply3).to()));
-		::printf("Ply 4:            %s-%s\n",
-					sq::printAlgebraic(Move(m_ply4).from()), sq::printAlgebraic(Move(m_ply4).to()));
+					sq::printAlgebraic(Move(m_ply[1]).from()), sq::printAlgebraic(Move(m_ply[1]).to()));
 	}
 	::printf(   "Ply Count:        %u\n", unsigned(plyCount()));
 	::printf(   "Deleted:          %s\n", isDeleted() ? "yes" : "no");

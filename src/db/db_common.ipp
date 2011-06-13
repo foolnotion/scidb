@@ -327,70 +327,11 @@ convertEcfToElo(unsigned ecf)
 	return ecf*8 + 600;
 }
 
-
-inline
-tag::ID
-toTag(rating::Type type, color::ID color)
-{
-	return color::isWhite(color) ? toWhiteTag(type) : toBlackTag(type);
-}
-
-
-inline
-Type
-fromTag(tag::ID tag)
-{
-	M_REQUIRE(tag::isRatingTag(tag));
-	return Type(int(tag) - int(isWhiteRatingTag(tag) ? tag::WhiteElo : tag::BlackElo));
-}
-
 } // namespace rating
 
 namespace tag {
 
 inline bool isMandatory(ID tag) { return Event <= tag && tag <= Result; }
-inline bool isRatingTag(ID tag) { return FirstRatingTypeTag <= tag && tag <= LastRatingTypeTag; }
-
-
-inline
-bool
-isWhiteRatingTag(ID tag)
-{
-	return FirstWhiteRatingType <= tag && tag <= LastWhiteRatingType;
-}
-
-
-inline
-bool
-isBlackRatingTag(ID tag)
-{
-	return FirstBlackRatingType <= tag && tag <= LastBlackRatingType;
-}
-
-
-inline
-ID
-fromRating(color::ID color, rating::Type type)
-{
-	M_REQUIRE(type != rating::Any);
-
-	M_STATIC_CHECK(rating::Rating - rating::Elo == WhiteRating - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::Rapid  - rating::Elo == WhiteRapid  - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::ICCF   - rating::Elo == WhiteICCF   - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::USCF   - rating::Elo == WhiteUSCF   - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::DWZ    - rating::Elo == WhiteDWZ    - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::ECF    - rating::Elo == WhiteECF    - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::IPS    - rating::Elo == WhiteIPS    - WhiteElo, Wrong_Order);
-	M_STATIC_CHECK(rating::Rating - rating::Elo == BlackRating - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::Rapid  - rating::Elo == BlackRapid  - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::ICCF   - rating::Elo == BlackICCF   - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::USCF   - rating::Elo == BlackUSCF   - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::DWZ    - rating::Elo == BlackDWZ    - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::ECF    - rating::Elo == BlackECF    - BlackElo, Wrong_Order);
-	M_STATIC_CHECK(rating::IPS    - rating::Elo == BlackIPS    - BlackElo, Wrong_Order);
-
-	return ID((color == color::White ? tag::WhiteElo : tag::BlackElo) + type - rating::Elo);
-}
 
 } // namespace tag
 

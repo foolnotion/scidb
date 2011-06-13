@@ -332,7 +332,7 @@ StoredLine::initialize()
 			while (*text == ' ') ++text;
 		}
 
-		line.m_ecoKey = EcoTable::specimen().lookup(line.m_line, line.m_opening);
+		line.m_ecoKey = EcoTable::specimen().lookup(line.m_line);
 //		assert(EcoTable::specimen().getLine(line.m_eco).length == line.m_line.length);
 	}
 }
@@ -375,6 +375,14 @@ StoredLine::findLine(Line const& line)
 	}
 
 	return *found;
+}
+
+
+StoredLine const&
+StoredLine::lookup(Eco const& key)
+{
+	// TODO: find a faster algorithm
+	return findLine(EcoTable::specimen().getLine(key));
 }
 
 

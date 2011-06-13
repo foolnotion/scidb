@@ -1,4 +1,5 @@
 ::board::addStyle piece {
+  version            1.0
   gradient,w,y2      1
   texture,w,rotation 0
   texture,w,x1       0

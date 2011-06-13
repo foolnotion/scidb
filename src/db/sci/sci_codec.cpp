@@ -39,10 +39,10 @@
 #include "u_byte_stream.h"
 #include "u_block_file.h"
 #include "u_progress.h"
-#include "u_crc.h"
 
 #include "m_string.h"
 #include "m_fstream.h"
+#include "m_byte_order.h"
 #include "m_assert.h"
 #include "m_static_check.h"
 
@@ -60,51 +60,93 @@ using namespace db;
 using namespace db::sci;
 using namespace util;
 
-
 typedef ByteStream::uint24_t uint24_t;
 typedef ByteStream::uint48_t uint48_t;
 
+
 namespace
 {
-	enum { IndexEntrySize = 61 };	// = sizeof(pointers) + sizeof(IndexBits) = 35 + 27
-
-	struct IndexBits
+	// 56 bytes (Scid: 46 bytes)
+	struct IndexEntry
 	{
-		uint32_t flags					:23;
-		uint32_t castling				:4;
-		uint32_t termination			:4;
-		uint32_t underPromotion		:1;
-		//----------------------------- 32 bit
-		uint32_t ecoKey				:20;
-		uint32_t plyCount				:12;
-		//----------------------------- 32 bit
-		uint32_t ecoOpening			:20;
-		uint32_t whiteRating			:12;
-		//----------------------------- 32 bit
-		uint32_t blackElo				:12;
-		uint32_t blackRating			:12;
-		uint32_t dateMonth			:4;
-		uint32_t annotationCount	:4;
-		//----------------------------- 32 bit
-		uint32_t whiteElo				:12;
-		uint32_t dateDay				:5;
-		uint32_t variationCount		:4;
-		uint32_t commentCount		:4;
-		uint32_t hpCount				:4;
-		uint32_t result				:3;
-		//----------------------------- 32 bit
-		uint32_t positionId			:12;
-		uint32_t dateYear				:10;
-		uint32_t eco					:9;
-		uint32_t promotion			:1;
-		//----------------------------- 32 bit
-		uint32_t round					:8;
-		uint32_t subround				:8;
-		uint32_t whiteRatingType	:3;
-		uint32_t blackRatingType	:3;
-		uint32_t commentEngFlag		:1;
-		uint32_t commentOthFlag		:1;
-		//----------------------------- 24 bit
+		union
+		{
+			struct
+			{
+				uint64_t homePawns;
+				//----------------------------- 64 bit
+				uint64_t whitePlayer			:24;
+				uint64_t blackPlayer			:24;
+				uint64_t plyCount				:12;
+				uint64_t termination			: 4;
+				//----------------------------- 64 bit
+				uint32_t pawnProgress;
+				//----------------------------- 32 bit
+				uint32_t positionData;
+				//----------------------------- 32 bit
+				uint32_t gameOffset;
+				//----------------------------- 32 bit
+				uint32_t annotator			:24;
+				uint32_t variationCount		: 4;
+				uint32_t commentCount		: 4;
+				//----------------------------- 32 bit
+				uint32_t event					:24;
+				uint32_t round					: 8;
+				//----------------------------- 32 bit
+				uint32_t material				:24;
+				uint32_t hpCount				: 4;
+				uint32_t blackRatingType	: 3;
+				uint32_t underPromotion		: 1;
+				//----------------------------- 32 bit
+				uint32_t gameFlags			:24;
+				uint32_t castling				: 4;
+				uint32_t whiteRatingType	: 3;
+				uint32_t promotion			: 1;
+				//----------------------------- 32 bit
+				uint32_t whiteRating			:12;
+				uint32_t positionId			:12;
+				uint32_t subround				: 8;
+				//----------------------------- 32 bit
+				uint32_t blackElo				:12;
+				uint32_t blackRating			:12;
+				uint32_t dateMonth			: 4;
+				uint32_t annotationCount	: 4;
+				//----------------------------- 32 bit
+				uint32_t whiteElo				:12;
+				uint32_t dateYear				:10;
+				uint32_t dateDay				: 5;
+				uint32_t result				: 3;
+				uint16_t commentEngFlag		: 1;
+				uint16_t commentOthFlag		: 1;
+				//----------------------------- 32 bit
+			};
+			struct
+			{
+				uint64_t u64[2];
+				uint32_t u32[10];
+			};
+		};
+
+		void swapBytes(uint16_t idn)
+		{
+			M_STATIC_CHECK(sizeof(IndexEntry) == 56, Error_In_Struct);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+//			u64[ 0] = mstl::bo::swap(u64[ 1]);	// dont swap homepawns
+			u64[ 1] = mstl::bo::swap(u64[ 1]);
+//			u32[ 0] = mstl::bo::swap(u32[ 0]);	// dont swap pawn progression
+			if (idn == 518)
+			u32[ 1] = mstl::bo::swap(u32[ 1]);	// only swap if eco data is used
+			u32[ 2] = mstl::bo::swap(u32[ 2]);
+			u32[ 3] = mstl::bo::swap(u32[ 3]);
+			u32[ 4] = mstl::bo::swap(u32[ 4]);
+			u32[ 5] = mstl::bo::swap(u32[ 5]);
+			u32[ 6] = mstl::bo::swap(u32[ 6]);
+			u32[ 7] = mstl::bo::swap(u32[ 7]);
+			u32[ 8] = mstl::bo::swap(u32[ 8]);
+			u32[ 9] = mstl::bo::swap(u32[ 9]);
+			u32[10] = mstl::bo::swap(u32[10]);
+#endif
+		};
 	};
 }
 
@@ -114,7 +156,7 @@ static mstl::string const MagicGameFile ("Scidb.g\0", 8);
 static mstl::string const MagicNamebase ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
-static uint16_t const FileVersion = 99;
+static uint16_t const FileVersion = 90;
 
 static char const* NamebaseTags[Namebase::Round];
 
@@ -279,7 +321,7 @@ unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
 unsigned Codec::minYear() const					{ return Date::MinYear; }
 unsigned Codec::maxYear() const					{ return Date::MaxYear; }
-unsigned Codec::maxDescriptionLength() const	{ return 111; }
+unsigned Codec::maxDescriptionLength() const	{ return 109; }
 mstl::string const& Codec::extension() const	{ return Extension; }
 mstl::string const& Codec::encoding() const	{ return sys::utf8::Codec::utf8(); }
 bool Codec::encodingFailed() const				{ return false; }
@@ -550,13 +592,16 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 	GameInfo* info = gameInfoList()[index];
 
-	unsigned char buf[IndexEntrySize];
+	unsigned char buf[sizeof(IndexEntry)];
 
-	ByteStream bstrm(buf, IndexEntrySize);
+	ByteStream bstrm(buf, sizeof(IndexEntry));
 	encodeIndex(*info, bstrm);
 
-	if (!indexStream.seekp(index*IndexEntrySize + 128) || !indexStream.write(buf, IndexEntrySize))
+	if (	!indexStream.seekp(index*sizeof(IndexEntry) + 128)
+		|| !indexStream.write(buf, sizeof(IndexEntry)))
+	{
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
+	}
 }
 
 
@@ -618,7 +663,6 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
-	data.m_crc = crc::compute(0, strm.data(), strm.size());
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	decoder.doDecoding(/*flags, */data);
 }
@@ -768,22 +812,22 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 	unsigned version	= bstrm.uint16();
 	unsigned numGames	= bstrm.uint24();
 	unsigned baseType	= bstrm.uint8();
+	unsigned created  = bstrm.uint32();
 
 	if (version != ::FileVersion)
 	{
 		if (version < FileVersion)
-			IO_RAISE(Index, Unexpected_Version, "old format scidb version (%d)", unsigned(version));
+			IO_RAISE(Index, Unexpected_Version, "old format Scidb version (%d)", unsigned(version));
 		else
 			IO_RAISE(Index, Unknown_Version, "unknown Scidb version (%u)", unsigned(version));
 	}
-
-	bstrm.skip(2);	// skip unused bytes
 
 	mstl::string description;
 	bstrm.get(description);
 	setDescription(description);
 
 	setType(type::ID(baseType));
+	setCreated(created);
 
 	GameInfoList& infoList = gameInfoList();
 
@@ -817,12 +861,12 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 			reportAfter += frequency;
 		}
 
-		char buf[IndexEntrySize];
+		char buf[sizeof(IndexEntry)];
 
-		if (__builtin_expect(!fstrm.read(buf, IndexEntrySize), 0))
+		if (__builtin_expect(!fstrm.read(buf, sizeof(IndexEntry)), 0))
 			IO_RAISE(Index, Corrupted, "unexpected end of index file");
 
-		ByteStream bstrm(buf, IndexEntrySize);
+		ByteStream bstrm(buf, sizeof(IndexEntry));
 		decodeIndex(bstrm, *infoList[i]);
 	}
 }
@@ -831,18 +875,21 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 void
 Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 {
-#define GET(type) ::get##type(namebase(Namebase::type), m_lookup[Namebase::type][strm.uint24()])
+	IndexEntry* bits = reinterpret_cast<IndexEntry*>(strm.data());
 
-	item.m_gameOffset = strm.uint32();
+	bits->swapBytes(item.m_positionId);
 
-	NamebasePlayer* whitePlayer = GET(Player);
-	NamebasePlayer* blackPlayer = GET(Player);
+#define GET(type, field) \
+	::get##type(namebase(Namebase::type), m_lookup[Namebase::type][bits->field])
+
+	NamebasePlayer* whitePlayer = GET(Player, whitePlayer);
+	NamebasePlayer* blackPlayer = GET(Player, blackPlayer);
 
 	whitePlayer->ref(); blackPlayer->ref();
 
 	{
-		NamebaseEvent* event			= GET(Event);
-		NamebaseEntry* annotator	= GET(Annotator);
+		NamebaseEvent* event			= GET(Event, event);
+		NamebaseEntry* annotator	= GET(Annotator, annotator);
 
 		event->ref(); annotator->ref();
 
@@ -854,52 +901,35 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 
 #undef GET
 
-	item.m_signature.m_homePawns.value = strm.uint64();
-	item.m_signature.m_progress.side[color::White].rankValue = strm.uint16();
-	item.m_signature.m_progress.side[color::Black].rankValue = strm.uint16();
-	item.setMaterial(strm.uint24());
+	whitePlayer->setElo(item.m_pd[color::White].elo = bits->whiteElo);
+	blackPlayer->setElo(item.m_pd[color::Black].elo = bits->blackElo);
 
-//	M_ASSERT(IndexEntrySize - sizeof(struct IndexBits) == strm.tellg());
-//	M_ASSERT(sizeof(IndexBits) == strm.remaining());
+	whitePlayer->setRating(	rating::Type(item.m_pd[color::White].ratingType = bits->whiteRatingType),
+									item.m_pd[color::White].rating = bits->whiteRating);
+	blackPlayer->setRating(	rating::Type(item.m_pd[color::Black].ratingType = bits->blackRatingType),
+									item.m_pd[color::Black].rating = bits->blackRating);
 
-	IndexBits const* bits = reinterpret_cast<IndexBits const*>(strm.data());
+	item.setMaterial(bits->material);
 
-	whitePlayer->setElo(bits->whiteElo);
-	blackPlayer->setElo(bits->blackElo);
-
-	whitePlayer->setRating(rating::Type(bits->whiteRatingType), bits->whiteRating);
-	blackPlayer->setRating(rating::Type(bits->blackRatingType), bits->blackRating);
-
-	M_STATIC_CHECK(Eco::Bit_Size_Per_Subcode == 20, ReimplementationNeeded);
-
+	item.m_signature.m_homePawns.value	= bits->homePawns;
+	item.m_signature.m_progress.value		= bits->pawnProgress;
+	item.m_pd[0].langFlag					= bits->commentEngFlag;
+	item.m_pd[1].langFlag					= bits->commentEngFlag;
+	item.m_variationCount					= bits->variationCount;
+	item.m_annotationCount					= bits->annotationCount;
+	item.m_commentCount						= bits->commentCount;
+	item.m_termination							= bits->termination;
+	item.m_gameFlags							= bits->gameFlags;
 	item.m_round								= bits->round;
 	item.m_subround							= bits->subround;
-	item.m_eco									= bits->eco;
-	item.m_ecoKey								= bits->ecoKey;
-	item.m_ecoOpening							= bits->ecoOpening;
-	item.m_pd[color::White].elo			= bits->whiteElo;
-	item.m_pd[color::Black].elo			= bits->blackElo;
-	item.m_pd[color::White].rating		= bits->whiteRating;
-	item.m_pd[color::Black].rating		= bits->blackRating;
-	item.m_pd[color::White].ratingType	= bits->whiteRatingType;
-	item.m_pd[color::Black].ratingType	= bits->blackRatingType;
-	item.m_gameFlags							= bits->flags;
-	item.m_result								= bits->result;
-	item.m_plyCount							= bits->plyCount;
-	item.m_variationCount					= bits->variationCount;
-	item.m_commentCount						= bits->commentCount;
-	item.m_annotationCount					= bits->annotationCount;
-	item.m_positionId							= bits->positionId;
-	item.m_termination						= bits->termination;
-	item.m_dateYear							= bits->dateYear;
 	item.m_dateMonth							= bits->dateMonth;
 	item.m_dateDay								= bits->dateDay;
-	item.m_signature.m_castling			= bits->castling;
-	item.m_signature.m_promotions			= bits->promotion;
-	item.m_signature.m_underPromotions	= bits->underPromotion;
-	item.m_signature.m_hpCount				= bits->hpCount;
-	item.m_pd[0].langFlag					= bits->commentEngFlag;
-	item.m_pd[1].langFlag					= bits->commentOthFlag;
+	item.m_result								= bits->result;
+	item.m_gameOffset							= bits->gameOffset;
+	item.m_plyCount							= bits->plyCount;
+	item.m_positionId							= bits->positionId;
+	item.m_dateYear							= bits->dateYear;
+	item.m_positionData						= bits->positionData;
 }
 
 
@@ -915,7 +945,7 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 	strm << uint16_t(FileVersion);				// Scidb version
 	strm << uint24_t(gameInfoList().size());	// number of games
 	strm << uint8_t(type());						// base type
-	strm << uint16_t(0);								// unused
+	strm << uint32_t(created());					// creation time
 
 	strm.put(description(), mstl::min(description().size(), sizeof(header) - strm.tellp() - 1));
 
@@ -932,7 +962,7 @@ Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress
 {
 	writeIndexHeader(fstrm);
 
-	if (start > 0 && !fstrm.seekp(start*::IndexEntrySize + 128, mstl::ios_base::beg))
+	if (start > 0 && !fstrm.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
 
 	GameInfoList& infoList = gameInfoList();
@@ -950,12 +980,12 @@ Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress
 			reportAfter += frequency;
 		}
 
-		char buf[IndexEntrySize];
+		char buf[sizeof(IndexEntry)];
 
-		ByteStream bstrm(buf, IndexEntrySize);
+		ByteStream bstrm(buf, sizeof(IndexEntry));
 		encodeIndex(*infoList[i], bstrm);
 
-		if (__builtin_expect(!fstrm.write(buf, IndexEntrySize), 0))
+		if (__builtin_expect(!fstrm.write(buf, sizeof(IndexEntry)), 0))
 			IO_RAISE(Index, Write_Failed, "error while writing index entry");
 	}
 }
@@ -983,14 +1013,14 @@ Codec::updateIndex(mstl::fstream& fstrm)
 	{
 		if (infoList[i]->isDirty())
 		{
-			unsigned char buf[IndexEntrySize];
+			unsigned char buf[sizeof(IndexEntry)];
 
-			ByteStream bstrm(buf, IndexEntrySize);
+			ByteStream bstrm(buf, sizeof(IndexEntry));
 			encodeIndex(*infoList[i], bstrm);
 
-			if (!fstrm.seekp(i*IndexEntrySize + 128))
+			if (!fstrm.seekp(i*sizeof(IndexEntry) + 128))
 				IO_RAISE(Index, Corrupted, "unexpected end of index file");
-			if (!fstrm.write(buf, IndexEntrySize))
+			if (!fstrm.write(buf, sizeof(IndexEntry)))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
 
 			infoList[i]->setDirty(false);
@@ -1002,29 +1032,19 @@ Codec::updateIndex(mstl::fstream& fstrm)
 void
 Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 {
-	strm << uint32_t(item.m_gameOffset);
-	strm << uint24_t(item.m_player[color::White]->id());
-	strm << uint24_t(item.m_player[color::Black]->id());
-	strm << uint24_t(item.m_event->id());
-	strm << uint24_t(item.m_annotator->id());
-	strm << uint64_t(item.m_signature.m_homePawns.value);
-	strm << uint16_t(item.m_signature.m_progress.side[color::White].rankValue);
-	strm << uint16_t(item.m_signature.m_progress.side[color::Black].rankValue);
-	strm << uint24_t(item.material().value);
+	IndexEntry* bits = reinterpret_cast<IndexEntry*>(strm.buffer());
 
-//	M_ASSERT(IndexEntrySize - sizeof(struct IndexBits) == strm.tellp());
-//	M_ASSERT(sizeof(IndexBits) == strm.free());
-
-	IndexBits* bits = reinterpret_cast<IndexBits*>(strm.buffer());
-
-	M_STATIC_CHECK(Eco::Bit_Size_Per_Subcode == 20, ReimplementationNeeded);
-
+	bits->whitePlayer			= item.m_player[color::White]->id();
+	bits->blackPlayer			= item.m_player[color::Black]->id();
+	bits->event					= item.m_event->id();
+	bits->annotator			= item.m_annotator->id();
+	bits->gameOffset			= item.m_gameOffset;
+	bits->homePawns			= item.m_signature.m_homePawns.value;
+	bits->pawnProgress		= item.m_signature.m_progress.value;
+	bits->material				= item.material().value;
 	bits->round					= item.m_round;
 	bits->subround				= item.m_subround;
-	bits->eco					= item.m_eco;
-	bits->ecoKey				= item.m_ecoKey;
-	bits->ecoOpening			= item.m_ecoOpening;
-	bits->flags					= item.m_gameFlags;
+	bits->gameFlags			= item.m_gameFlags;
 	bits->promotion			= item.m_signature.hasPromotion();
 	bits->underPromotion		= item.m_signature.hasUnderPromotion();
 	bits->castling				= item.m_signature.m_castling;
@@ -1047,6 +1067,9 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	bits->blackRatingType	= item.m_pd[color::Black].ratingType;
 	bits->commentEngFlag		= item.m_pd[0].langFlag;
 	bits->commentOthFlag		= item.m_pd[1].langFlag;
+	bits->positionData		= item.m_positionData;
+
+	bits->swapBytes(item.m_positionId);
 }
 
 
@@ -1349,8 +1372,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		//
 		// extraneous data (16 bit)
 		// -------------------------------
-		// 0000 0000 0000 1111  title
-		// 0001 1111 1111 0000  country
+		// 0000 0001 1111 1111  country
+		// 0000 1111 0000 1111  title
 		// 1110 0000 0000 0000  <unused>
 
 		country::Code	country;
@@ -1360,8 +1383,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		{
 			uint16_t extraneous = bstrm.uint16();
 
-			country = country::Code(extraneous >> 4);
-			title = title::ID(extraneous & 0x0f);
+			country = country::Code(extraneous & 0x01ff);
+			title = title::ID((extraneous >> 4) & 0x000f);
 		}
 		else
 		{
@@ -1411,8 +1434,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 			{
 				uint16_t extraneous = bstrm.uint16();
 
-				country = country::Code(extraneous >> 4);
-				title = title::ID(extraneous & 0x0f);
+				country = country::Code(extraneous & 0x0100);
+				title = title::ID((extraneous >> 4) & 0x000f);
 			}
 			else
 			{
@@ -1563,11 +1586,12 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base)
 
 	if (prev->hasDate())
 	{
+		uint16_t year = Date::encodeYearTo10Bits(prev->dateYear());
+
 		flags |= ((prev->dateDay() & 0x001f) << 10) | 0x8000;
 
 		bstrm << flags;
-		bstrm << uint16_t(	Date::encodeYearTo10Bits(prev->dateYear())
-								 | ((prev->dateMonth() & 0x000f) << 10));
+		bstrm << uint16_t(uint16_t(year & 0x03ff) | (uint16_t(prev->dateMonth() & 0x000f) << 10));
 	}
 	else
 	{
@@ -1597,11 +1621,12 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base)
 
 		if (entry->hasDate())
 		{
+			uint16_t year = Date::encodeYearTo10Bits(entry->dateYear());
+
 			flags |= ((entry->dateDay() & 0x001f) << 10) | 0x8000;
 
 			bstrm << flags;
-			bstrm << uint16_t(	Date::encodeYearTo10Bits(entry->dateYear())
-									 | ((entry->dateMonth() & 0x000f) << 10));
+			bstrm << uint16_t(uint16_t(year & 0x03ff) | (uint16_t(entry->dateMonth() & 0x000f) << 10));
 		}
 		else
 		{
@@ -1628,7 +1653,8 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 
 	Byte flags = (prev->type() & 0x03) | ((prev->sex() & 0x03) << 3);
 
-	if (uint16_t extranouos = ((prev->title() & 0x0f) | (prev->federation() << 4)))
+	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x0f) << 4)
+									 | uint16_t(prev->federation() & 0x01ff))
 	{
 		bstrm.put(flags | 0x80);
 		bstrm << extranouos;
@@ -1655,7 +1681,8 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 
 		flags = (entry->type() & 0x03) | ((entry->sex() & 0x03) << 3);
 
-		if (uint16_t extranouos = ((entry->title() & 0x0f) | (entry->federation() << 4)))
+		if (uint16_t extranouos = (uint16_t(entry->title() & 0x0f) << 4)
+										 | uint16_t(entry->federation() & 0x0100))
 		{
 			bstrm.put(flags | 0x80);
 			bstrm << extranouos;
@@ -1697,15 +1724,6 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	getGameRecord(info, *m_asyncReader, src);
 	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
 	return decoder.findExactPosition(position, skipVariations);
-}
-
-
-uint32_t
-Codec::computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const
-{
-	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
-	return crc::compute(crc, strm.data(), strm.size());
 }
 
 // vi:set ts=3 sw=3:

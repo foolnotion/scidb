@@ -534,7 +534,6 @@ struct Subscriber : public Application::Subscriber
 
 } // namespace
 
-static Subscriber subscriber;
 
 
 static char const*
@@ -822,7 +821,12 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		char const*		db(stringFromObj(objc, objv, 1));
 		Cursor&			cursor(scidb.cursor(db));
 		Encoder			encoder(encoding);
-		tcl::PgnReader	reader(stream, encoder, objv[3], objv[4], cursor.countGames());
+		tcl::PgnReader	reader(	stream,
+										encoder,
+										objv[3],
+										objv[4],
+										tcl::PgnReader::Normalize,
+										cursor.countGames());
 		Progress			progress(objv[5], objv[6]);
 
 		n = cursor.importGames(reader, progress);
@@ -867,7 +871,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		"<database> <number>",
 		"<database> <string>",
-		"<database> <bool>",
+		"?<database>? <bool>",
 		"<index> ?<view> ?<database>?? <value>",
 		"<index> ?<view> ?<database>?? <flag> <value>",
 	};
@@ -941,8 +945,15 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_Readonly:
-			scidb.cursor(
-				stringFromObj(objc, objv, 2)).database().setReadOnly(boolFromObj(objc, objv, 3));
+			if (objc == 4)
+			{
+				scidb.cursor(
+					stringFromObj(objc, objv, 2)).database().setReadOnly(boolFromObj(objc, objv, 3));
+			}
+			else
+			{
+				scidb.cursor().database().setReadOnly(boolFromObj(objc, objv, 2));
+			}
 			break;
 
 		default:
@@ -1086,6 +1097,14 @@ static int
 getEncoding(char const* database = 0)
 {
 	::tcl::setResult(Scidb.cursor(database).database().encoding());
+	return TCL_OK;
+}
+
+
+static int
+getCreated(char const* database = 0)
+{
+	::tcl::setResult(Scidb.cursor(database).database().created().asString());
 	return TCL_OK;
 }
 
@@ -1303,7 +1322,7 @@ getGameInfo(int index, int view, char const* database, unsigned which)
 				if (which == attribute::game::Eco || which == attribute::game::Opening)
 					eco = info.userEco();
 				else
-					eco = info.ecoFromOpening();
+					eco = info.ecoKey();
 
 				if (info.idn() == chess960::StandardIdn && eco)
 					EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvar);
@@ -1404,7 +1423,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	mstl::string openingLong, openingShort, variation, subvariation;
 
 	Eco eco = info.eco();
-	Eco eop = info.ecoFromOpening();
+	Eco eop = info.ecoKey();
 
 	if (!eco && format == format::Scidb)
 		eco = eop;
@@ -1421,9 +1440,14 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 		::mapScid4Flags(flags);
 
 	if (info.idn() == chess960::StandardIdn)
-		EcoTable::specimen().getLine(eop).print(overview);
+	{
+		if (eop)
+			EcoTable::specimen().getLine(eop).print(overview);
+	}
 	else if (info.idn())
+	{
 		overview = startPosition;
+	}
 
 	Tcl_Obj* openingVar[2] =
 	{
@@ -1710,32 +1734,49 @@ getDeleted(int index, int view, char const* database)
 }
 
 
-static int
-getTags(Tcl_Interp* ti, int index, char const* database)
+int
+tcl::db::getTags(TagSet const& tags, bool userSuppliedOnly)
 {
-	TagSet tags;
-	Scidb.cursor(database).database().getTags(index, tags);
-
 	Tcl_Obj* result = Tcl_NewListObj(0, 0);
 
-	for (unsigned tag = 0; tag < tag::ExtraTag; ++tag)
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		if (tags.contains(tag::ID(tag)) && tags.isUserSupplied(tag::ID(tag)))
+		if (tags.isUserSupplied(tag))
 		{
 			Tcl_Obj* objs[2];
 
-			mstl::string const name		= tag::toName(tag::ID(tag));
-			mstl::string const value	= tags.value(tag::ID(tag));
+			mstl::string const name		= tag::toName(tag);
+			mstl::string const value	= tags.value(tag);
 
 			objs[0] = Tcl_NewStringObj(name, name.size());
 			objs[1] = Tcl_NewStringObj(value, value.size());
 
-			Tcl_ListObjAppendElement(ti, result, Tcl_NewListObj(2, objs));
+			Tcl_ListObjAppendElement(0, result, Tcl_NewListObj(2, objs));
 		}
+	}
+
+	for (unsigned i = 0; i < tags.countExtra(); ++i)
+	{
+		Tcl_Obj* objs[2];
+
+		TagSet::Tag const& pair = tags.extra(i);
+		objs[0] = Tcl_NewStringObj(pair.name, pair.name.size());
+		objs[1] = Tcl_NewStringObj(pair.value, pair.value.size());
+
+		Tcl_ListObjAppendElement(0, result, Tcl_NewListObj(2, objs));
 	}
 
 	setResult(result);
 	return TCL_OK;
+}
+
+
+static int
+getTags(int index, char const* database)
+{
+	TagSet tags;
+	Scidb.cursor(database).database().getTags(index, tags);
+	return getTags(tags, false);
 }
 
 
@@ -1852,8 +1893,8 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"clipbase", "scratchbase", "types", "type", "name", "codec", "encoding", "modified?",
-		"gameInfo", "playerInfo", "eventInfo", "annotator", "gameIndex", "playerIndex",
+		"clipbase", "scratchbase", "types", "type", "name", "codec", "encoding", "created?",
+		"modified?", "gameInfo", "playerInfo", "eventInfo", "annotator", "gameIndex", "playerIndex",
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "idn", "eco", "ratingTypes",
@@ -1867,6 +1908,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"sci|si3|si4",
 		"?<database>?",
 		"",
+		"?<database>?",
 		"?<database>?",
 		"?<database>?",
 		"?<database>?",
@@ -1902,11 +1944,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum
 	{
 		Cmd_Clipbase, Cmd_Scratchbase, Cmd_Types, Cmd_Type, Cmd_Name, Cmd_Codec, Cmd_Encoding,
-		Cmd_Modified, Cmd_GameInfo, Cmd_PlayerInfo, Cmd_EventInfo, Cmd_Annotator, Cmd_GameIndex,
-		Cmd_PlayerIndex, Cmd_EventIndex, Cmd_AnnotatorIndex, Cmd_Description, Cmd_Stats, Cmd_ReadOnly,
-		Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags,
-		Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Idn, Cmd_Eco,
-		Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent
+		Cmd_Created, Cmd_Modified, Cmd_GameInfo, Cmd_PlayerInfo, Cmd_EventInfo, Cmd_Annotator,
+		Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_AnnotatorIndex, Cmd_Description,
+		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
+		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
+		Cmd_Tags, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
 	};
 
 	if (objc < 2)
@@ -1949,6 +1991,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (objc < 3)
 				return getEncoding();
 			return getEncoding(Tcl_GetStringFromObj(objv[2], 0));
+
+		case Cmd_Created:
+			if (objc < 3)
+				return getCreated();
+			return getCreated(Tcl_GetStringFromObj(objv[2], 0));
 
 		case Cmd_Modified:
 			if (objc < 3)
@@ -2217,7 +2264,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Tags:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
 				return usage(::CmdGet, 0, 0, subcommands, args);
-			return getTags(ti, index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
+			return getTags(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_Idn:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
@@ -2818,26 +2865,14 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	subcmd	= stringFromObj(objc, objv, 1);
-	char const*	database = stringFromObj(objc, objv, 2);
-	unsigned		index		= unsignedFromObj(objc, objv, 3);
-	int			rc			= TCL_OK;
+	char const*	database	= stringFromObj(objc, objv, 1);
+	unsigned		index		= unsignedFromObj(objc, objv, 2);
 
-	if (::strcmp(subcmd, "characteristics") == 0)
-	{
-		TagSet tags;
+	int rc = TCL_OK;
+	TagSet tags;
 
-		if ((rc = game::convertTags(tags, objectFromObj(objc, objv, 3))) == TCL_OK)
-			scidb.cursor(database).updateCharacteristics(index, tags);
-	}
-	else if (::strcmp(subcmd, "moves") == 0)
-	{
-		scidb.cursor(database).updateMoves(index);
-	}
-	else
-	{
-		rc = error(::CmdUpdate, 0, 0, "unknown sub-command '%s'", subcmd);
-	}
+	if ((rc = game::convertTags(tags, objectFromObj(objc, objv, 3))) == TCL_OK)
+		scidb.cursor(database).updateCharacteristics(index, tags);
 
 	return rc;
 }

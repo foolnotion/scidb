@@ -55,10 +55,20 @@ variable iconYes {}
 namespace export alert error warning info question
 
 
+namespace eval messagebox {
+
+variable Current ""
+
+
 proc mc {msg} {
 	package require msgcat
 	return [::msgcat::mc [set $msg]]
 }
+
+
+proc open? {} { return [set [namespace current]::Current] }
+
+} ;# namespace messagebox
 
 
 # this is a replacement for tk_messageBox
@@ -71,6 +81,7 @@ proc messageBox {args} {
 		{ -detail	"" "" "" }
 		{ -default	"" "" "" }
 		{ -title		"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data $specs "" $args
@@ -83,6 +94,7 @@ proc messageBox {args} {
 		-default	{}              \
 		-title	$data(-title)   \
 		-type		info            \
+		-embed	$data(-embed)   \
 	]
 
 	switch $data(-type) {
@@ -108,19 +120,19 @@ proc messageBox {args} {
 	switch $data(-icon) {
 		error		{
 			set opts(-type) error
-			if {[llength $opts(-title)] == 0} { set opts(-title) [mc ::dialog::mc::Error] }
+			if {[llength $opts(-title)] == 0} { set opts(-title) [messagebox::mc ::dialog::mc::Error] }
 		}
 		info		{
 			set opts(-type) info
-			if {[llength $opts(-title)] == 0} { set opts(-title) [mc ::dialog::mc::Information] }
+			if {[llength $opts(-title)] == 0} { set opts(-title) [messagebox::mc ::dialog::mc::Information]}
 		}
 		warning	{
 			set opts(-type) warning
-			if {[llength $opts(-title)] == 0} { set opts(-title) [mc ::dialog::mc::Warning] }
+			if {[llength $opts(-title)] == 0} { set opts(-title) [messagebox::mc ::dialog::mc::Warning] }
 		}
 		question {
 			set opts(-type) question
-			if {[llength $opts(-title)] == 0} { set opts(-title) [mc ::dialog::mc::Question] }
+			if {[llength $opts(-title)] == 0} { set opts(-title) [messagebox::mc ::dialog::mc::Question] }
 		}
 	}
 
@@ -138,6 +150,7 @@ proc error {args} {
 		{ -title		"" "" "" }
 		{ -check		"" "" "" }
 		{ -topmost	"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	array set opts {
 		-parent	.
@@ -149,6 +162,7 @@ proc error {args} {
 		-check	""
 		-type		error
 		-topmost	false
+		-embed   {}
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data $specs "" $args
@@ -167,6 +181,7 @@ proc warning {args} {
 		{ -title		"" "" "" }
 		{ -check		"" "" "" }
 		{ -topmost	"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	array set opts {
 		-parent	.
@@ -178,6 +193,7 @@ proc warning {args} {
 		-check	""
 		-type		warning
 		-topmost	false
+		-embed   {}
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data $specs "" $args
@@ -196,6 +212,7 @@ proc question {args} {
 		{ -title		"" "" "" }
 		{ -check		"" "" "" }
 		{ -topmost	"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	array set opts {
 		-parent	.
@@ -207,6 +224,7 @@ proc question {args} {
 		-check	""
 		-type		question
 		-topmost	false
+		-embed   {}
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data $specs "" $args
@@ -225,6 +243,7 @@ proc info {args} {
 		{ -title		"" "" "" }
 		{ -check		"" "" "" }
 		{ -topmost	"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	array set opts {
 		-parent	.
@@ -250,6 +269,7 @@ proc alert {args} {
 	variable iconYes
 	variable infoFont
 	variable alertFont
+	variable messagebox::Current
 
 	set specs {
 		{ -parent	"" "" "" }
@@ -261,6 +281,7 @@ proc alert {args} {
 		{ -check		"" "" "" }
 		{ -type		"" "" "" }
 		{ -topmost	"" "" "" }
+		{ -embed		"" "" "" }
 	}
 	array set opts {
 		-parent	.
@@ -272,13 +293,14 @@ proc alert {args} {
 		-check	""
 		-type		info
 		-topmost	false
+		-embed   {}
 	}
 	upvar [namespace current]::Data data
 	tclParseConfigSpec [namespace current]::Data $specs "" $args
 	array set opts $args
 
 	if {[llength $opts(-type)] == 0} {
-		set type [mc ::dialog::mc::Information]
+		set type [messagebox::mc ::dialog::mc::Information]
 	}
 	if {[llength $opts(-title)] == 0} {
 		set opts(-title) [tk appname]
@@ -298,7 +320,7 @@ proc alert {args} {
 	toplevel $w -relief solid -class Dialog
 	wm title $w $opts(-title)
 	wm iconname $w Dialog
-	wm protocol $w WM_DELETE_WINDOW {}
+	wm protocol $w WM_DELETE_WINDOW {#}
 	bind $w <Alt-Key> [list tk::AltKeyInDialog $w %A]
 
 	if {[winfo viewable [winfo toplevel $parent]] } {
@@ -308,10 +330,40 @@ proc alert {args} {
 		catch { ::tk::unsupported::MacWindowStyle style $w moveableModal {} }
 	}
 
-	set iconLabel		[label $w.icon -image [set [namespace current]::icon::64x64::$opts(-type)]]
-	set alertText		[message $w.alert -font $alertFont -text $opts(-message) -width 384]
-	set infoText 		[message $w.info -font $infoFont -text $opts(-detail) -width 384]
-	set buttonFrame	[frame $w.buttonFrame]
+	set alertBox [tk::frame $w.alert]
+
+	if {[llength $opts(-embed)]} {
+		set k [string first <embed> $opts(-message)]
+		set ante [string trim [string range $opts(-message) 0 [expr {$k - 1}]]]
+		set post [string trim [string range $opts(-message) [expr {$k + 7}] end]]
+
+		if {[llength $ante]} {
+			grid [tk::message $alertBox.ante -font $alertFont -text $ante -width 384 -justify left] \
+				-row 0 -column 0 -sticky w
+			grid rowconfigure $alertBox 1 -minsize 10
+		}
+
+		set f [tk::frame $alertBox.embed -borderwidth 0]
+		eval $opts(-embed) $f [list $infoFont $alertFont]
+		grid $f -row 2 -column 0 -sticky we
+		bind $alertBox <Configure> [namespace code [list Resize $alertBox %w]]
+
+		if {[llength $post]} {
+			grid [tk::message $alertBox.post -font $alertFont -text $post -width 384 -justify left] \
+				-row 4 -column 0 -sticky w
+			grid rowconfigure $alertBox 3 -minsize 10
+		}
+	} else {
+		grid [tk::message $alertBox.text -font $alertFont -text $opts(-message) -width 384]
+	}
+
+	if {[llength $opts(-detail)]} {
+		set infoText 	[tk::message $w.info -font $infoFont -text $opts(-detail) -width 384]
+	} else {
+		set infoText	[tk::frame $w.info -width 1 -height 1]
+	}
+	set iconLabel		[tk::label $w.icon -image [set [namespace current]::icon::64x64::$opts(-type)]]
+	set buttonFrame	[tk::frame $w.buttonFrame]
 
 	set entries $opts(-buttons)
 	set defaultButton {}
@@ -321,14 +373,14 @@ proc alert {args} {
 		lassign $entry type text icon
 		if {![::info exists text] || [llength $text] == 0} {
 			switch $type {
-				abort		{ set text [mc ::dialog::mc::Abort ]	}
-				cancel	{ set text [mc ::dialog::mc::Cancel]	}
-				continue	{ set text [mc ::dialog::mc::Continue]	}
-				ignore	{ set text [mc ::dialog::mc::Ignore]	}
-				no			{ set text [mc ::dialog::mc::No    ]	}
-				ok			{ set text [mc ::dialog::mc::Ok    ]	}
-				retry		{ set text [mc ::dialog::mc::Retry ]	}
-				yes		{ set text [mc ::dialog::mc::Yes   ]	}
+				abort		{ set text [messagebox::mc ::dialog::mc::Abort ]	}
+				cancel	{ set text [messagebox::mc ::dialog::mc::Cancel]	}
+				continue	{ set text [messagebox::mc ::dialog::mc::Continue]	}
+				ignore	{ set text [messagebox::mc ::dialog::mc::Ignore]	}
+				no			{ set text [messagebox::mc ::dialog::mc::No    ]	}
+				ok			{ set text [messagebox::mc ::dialog::mc::Ok    ]	}
+				retry		{ set text [messagebox::mc ::dialog::mc::Retry ]	}
+				yes		{ set text [messagebox::mc ::dialog::mc::Yes   ]	}
 				default	{ set text "" }
 			}
 		}
@@ -375,15 +427,16 @@ proc alert {args} {
 	# grid elements following guidlines from Apple HIG:
 	# http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html
 
-	grid $iconLabel $alertText
+	grid $iconLabel $alertBox
 	grid ^ $infoText
 	grid $buttonFrame - -sticky news
 
 	grid configure $iconLabel -padx [list 24 8] -pady 15 -sticky n
-	grid configure $alertText -padx [list 8 24] -pady [list 15 4] -sticky w
+	grid configure $alertBox -padx [list 8 24] -pady [list 15 4] -sticky w
 	grid configure $infoText -padx [list 8 24] -pady [list 4 5] -sticky w
 	grid configure $buttonFrame -padx 24 -pady [list 5 20]
 
+	set Current $opts(-type)
 	wm withdraw $w
 	update idletasks
 
@@ -413,7 +466,6 @@ proc alert {args} {
 		if {0 <= $y && $y < 22} { set y0 "+22" }
 	}
 	wm geometry $w ${x}${y}
-	update
 
 	if {$opts(-topmost)} {
 		wm attributes $w -topmost true
@@ -433,9 +485,22 @@ proc alert {args} {
 	vwait ::dialog::Reply
 	::ttk::releaseGrab $w
 	destroy $w
-	update
+#	update
+	set Current ""
 
 	return $::dialog::Reply
+}
+
+
+proc Resize {alertBox width} {
+	if {$width > 384} {
+		if {[winfo exists $alertBox.ante]} {
+			$alertBox.ante configure -width $width
+		}
+		if {[winfo exists $alertBox.post]} {
+			$alertBox.post configure -width $width
+		}
+	}
 }
 
 namespace eval icon {

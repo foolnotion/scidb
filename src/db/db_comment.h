@@ -82,6 +82,7 @@ public:
 	bool containsLanguage(mstl::string const& lang) const;
 
 	unsigned size() const;
+	unsigned length() const;
 	mstl::string const& content() const;
 
 	void append(Comment const& comment, char delim = '\0');

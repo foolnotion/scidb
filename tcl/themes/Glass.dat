@@ -1,6 +1,7 @@
 ::board::addStyle theme {
-  piece-style           {Yellow - Blue|1243787883127|yellow.color|gregor}
-  piece-set             Spatial
-  square-style          Glass|1228820514871|yellow.color|gregor
-  identifier            Glass|1243787890671|yellow.color|gregor
+  version		1.0
+  piece-style  {Yellow - Blue|1243787883127|yellow.color|gregor}
+  piece-set    Spatial
+  square-style Glass|1228820514871|yellow.color|gregor
+  identifier   Glass|1243787890671|yellow.color|gregor
 }

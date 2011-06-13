@@ -29,9 +29,9 @@
 
 #include "u_base.h"
 
-#include "m_string.h"
+#include "sys_time.h"
 
-namespace sys { namespace file { struct Time; } }
+#include "m_string.h"
 
 namespace db {
 
@@ -40,7 +40,7 @@ class Time
 public:
 
 	Time();
-	Time(::sys::file::Time& time);
+	Time(uint32_t utc);
 
 	operator bool() const;
 
@@ -62,12 +62,7 @@ public:
 
 private:
 
-	uint16_t	m_year;
-	uint8_t	m_month;
-	uint8_t	m_day;
-	uint8_t	m_hour;
-	uint8_t	m_minute;
-	uint8_t	m_second;
+	sys::time::Time m_time;
 };
 
 bool operator==(const Time& d1, const Time& d2);

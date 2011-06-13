@@ -36,13 +36,12 @@
 #include <tcl.h>
 #include <tk.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 static int
 init(Tcl_Interp* ti)
 {
-	db::Annotation::initialize();	// initializing before main() is not working for any reason
-
 	try
 	{
 		util::ZStream::setZipFileSuffixes(util::ZStream::Strings(1, "pgn"));

@@ -26,19 +26,13 @@
 
 #include "db_time.h"
 
-#include "sys_file.h"
-
 using namespace db;
 
 
-Time::Time(::sys::file::Time& time)
-	:m_year(time.year)
-	,m_month(time.month)
-	,m_day(time.day)
-	,m_hour(time.hour)
-	,m_minute(time.minute)
-	,m_second(time.second)
+Time::Time(uint32_t utc)
 {
+	if (utc)
+		sys::time::localtime(utc, m_time);
 }
 
 
@@ -48,7 +42,10 @@ Time::asString() const
 	mstl::string str;
 
 	if (!isEmpty())
-		str.format("%04u.%02u.%02u %02u:%02u:%02u", m_year, m_month, m_day, m_hour, m_minute, m_second);
+	{
+		str.format(	"%04u.%02u.%02u %02u:%02u:%02u",
+						m_time.year, m_time.month, m_time.day, m_time.hour, m_time.minute, m_time.second);
+	}
 
 	return str;
 }

@@ -29,8 +29,11 @@
 
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_bitfield.h"
 
 namespace db {
 
@@ -51,6 +54,7 @@ public:
 	bool isUserSupplied(tag::ID tag) const;
 
 	unsigned countExtra() const;
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 
 	mstl::string const& value(tag::ID tag) const;
 	int asInt(tag::ID tag) const;
@@ -79,11 +83,15 @@ public:
 	void remove(tag::ID tag);
 	void clear();
 
+	tag::ID findFirst() const;
+	tag::ID findNext(tag::ID prev) const;
+
 	void dump() const;
 
 private:
 
 	typedef mstl::vector<Tag> ExtraTags;
+	typedef mstl::bitfield<uint64_t> BitSet;
 
 	int find(mstl::string const& tag) const;
 
@@ -92,9 +100,10 @@ private:
 	void overwrite(tag::ID tag, char const* value, unsigned valueLen);
 
 	mstl::string	m_values[tag::ExtraTag];
-	bool				m_isUserSupplied[tag::ExtraTag];
 	Byte				m_significance[tag::ExtraTag];
 	ExtraTags		m_extra;
+	BitSet			m_isUserSupplied;
+	BitSet			m_set;
 };
 
 } // namespace db

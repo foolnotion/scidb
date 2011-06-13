@@ -124,7 +124,7 @@ proc open {parent pos lang} {
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
 
-	set top [frame $dlg.top]
+	set top [tk::frame $dlg.top]
 	set bg [$top cget -background]
 	destroy $top
 
@@ -138,7 +138,7 @@ proc open {parent pos lang} {
 	set Vars(pos) $pos
 	set Vars(lang) xx
 
-	text $top.text \
+	tk::text $top.text \
 		-height 6 \
 		-width 0 \
 		-background white \
@@ -232,8 +232,8 @@ proc open {parent pos lang} {
 	$dlg.ok		configure -command [namespace code [list Ok $dlg]]
 	$dlg.cancel	configure -command [namespace code [list Close $dlg]]
 
-	set tb [::toolbar::toolbar $dlg -float 0 -side left -allow {left top bottom}]
-	set Vars(tb) [::toolbar::toolbar $dlg -float 0 -side top -allow {left top bottom}]
+	set tb [::toolbar::toolbar $dlg -id languages -float 0 -side left -allow {left top bottom}]
+	set Vars(tb) [::toolbar::toolbar $dlg -id format -float 0 -side top -allow {left top bottom}]
 
 	foreach format {Bold Italic Underline} {
 		set fmt [string tolower $format]
@@ -867,7 +867,7 @@ proc PopupSymbolTable {w text} {
 	if {[winfo exists $m]} { return }
 	menu $m -tearoff no
 	bind $m <Escape> [list set [namespace current]::_Symbol {}]
-	set top [frame $m.top]
+	set top [tk::frame $m.top]
 	pack $top -padx $::theme::padding -pady $::theme::padding
 	set size [expr {int(abs(double([font configure $::font::symbol -size])*2.0) + 0.5)}]
 	set _Symbol {}
@@ -1076,7 +1076,7 @@ proc PopupMenu {parent} {
 	menu $m.symbol -tearoff no
 	$m add cascade \
 		-compound left \
-		-image $icon::12x12::blackPawn \
+		-image $icon::16x16::blackPawn \
 		-label [::menu::stripAmpersand $mc::InsertSymbol] \
 		-menu $m.symbol \
 		;
@@ -1085,7 +1085,7 @@ proc PopupMenu {parent} {
 	menu $m.format -tearoff no
 	$m add cascade \
 		-compound left \
-		-image $icon::12x12::format \
+		-image $icon::16x16::format \
 		-label " $mc::FormatText" \
 		-menu $m.format \
 		-state $state \
@@ -1094,7 +1094,7 @@ proc PopupMenu {parent} {
 		set fmt [string tolower $format]
 		$m.format add command \
 			-compound left \
-			-image [set icon::12x12::text-$fmt] \
+			-image [set ::icon::12x12::text-$fmt] \
 			-label [set mc::$format] \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
@@ -1105,7 +1105,7 @@ proc PopupMenu {parent} {
 		$m add separator
 		$m add command \
 			-compound left \
-			-image $::icon::12x12::undo \
+			-image $::icon::16x16::undo \
 			-label $::mc::Undo \
 			-command [namespace code Undo] \
 			-state $state \
@@ -1113,7 +1113,7 @@ proc PopupMenu {parent} {
 		if {$Vars(redo)} { set state normal } else { set state disabled }
 		$m add command \
 			-compound left \
-			-image $::icon::12x12::redo \
+			-image $::icon::16x16::redo \
 			-label $::mc::Redo \
 			-command [namespace code Redo] \
 			-state $state \
@@ -1125,7 +1125,7 @@ proc PopupMenu {parent} {
 	menu $m.switch -tearoff no
 	$m add cascade \
 		-compound left \
-		-image $::icon::12x12::none \
+		-image $::icon::16x16::none \
 		-label " $mc::SwitchLanguage" \
 		-menu $m.switch \
 		-state $state \
@@ -1153,20 +1153,20 @@ proc PopupMenu {parent} {
 	MakeLanguageMenu $m.languages
 	$m add cascade \
 		-compound left \
-		-image $::icon::12x12::plus \
+		-image $::icon::16x16::plus \
 		-label " [lindex [split $mc::AddLanguage .] 0]" \
 		-menu $m.languages \
 		;
 	$m add separator
 	$m add command \
 		-compound left \
-		-image $::icon::12x12::clear \
+		-image $::icon::16x16::clear \
 		-label " [::menu::stripAmpersand $::widget::mc::Clear]" \
 		-command [namespace code Clear] \
 		;
 	$m add command \
 		-compound left \
-		-image $::icon::12x12::reset \
+		-image $::icon::16x16::reset \
 		-label " [::menu::stripAmpersand $::widget::mc::Revert]" \
 		-command [namespace code [list Revert [winfo toplevel $parent]]] \
 		;
@@ -1637,12 +1637,12 @@ switch -- [tk windowingsystem] {
 namespace eval icon {
 namespace eval 12x12 {
 
-set format [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QAAKqNIzIAAACDSURB
-	VBgZBcHBDcFgGADQ93/9OQgVkfTCBKYQzq7SbbqPIcQOnaEXETbo570iAQCAisnDz8UZL087
-	dwdGvYJBSgOK3lhdfSQASA/P8DZTUACYvQOoGhUABFA1lgAggCqsBQACqMLGAgABfGm3VrQA
-	QNHvp1se06RXAOiM+zxlm9Kogz9QASBGCjU3BAAAAABJRU5ErkJggg==
-}]
+#set format [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QAAKqNIzIAAACDSURB
+#	VBgZBcHBDcFgGADQ93/9OQgVkfTCBKYQzq7SbbqPIcQOnaEXETbo570iAQCAisnDz8UZL087
+#	dwdGvYJBSgOK3lhdfSQASA/P8DZTUACYvQOoGhUABFA1lgAggCqsBQACqMLGAgABfGm3VrQA
+#	QNHvp1se06RXAOiM+zxlm9Kogz9QASBGCjU3BAAAAABJRU5ErkJggg==
+#}]
 
 set bold [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAB
@@ -1689,6 +1689,25 @@ set underline [image create photo -data {
 } ;# namespace 12x12
 
 namespace eval 16x16 {
+
+set format [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAAAZi
+	S0dEAAAAAAAA+UO7fwAAAAlwSFlzAAAASAAAAEgARslrPgAAArtJREFUOMt9kc1rHHUcxj+/
+	2dmZdWd3Zndd667rNi8F25gGE9pcpCJ47EXwIkgFQaQ9iOh/4EW8CEEvUoVeSls8eSlSqcHW
+	HFpfDkFI0pJuo6mJSZfMvkyy2Zn8XjwkQpqWfo5fvs/Dw/OIq5XnP6oPDp6y045xAKW1kFo7
+	luMIIQQ2sN3tqpm7d6aO2+mZ1zsd9mMfrlTfODo+8Wa73VY7SaxKpVI6EwSitbqqev048QuB
+	Yylt/bG8fO1kIZjhoIHT28rf//V289uFhc/ox+Enkyc/L9dqtau3bv1+Yf3h16cLhcnTR4bP
+	/itlxbvXKAOpPa0FROJ64F9b16Z7Jore/RKK7xyu37jh+0d/enm0Rbm8rOP4mUNSDvccJ4zT
+	6VBrbdm2bXq9npienr5gT3W6H3dAGoinALO+TlNrVKlUeNBoyCiKWu16PRkdGjo0OzubXVtb
+	+zsIgtLAwEDVdd0j9g9wB+CLvUzECe2tLX6+eXO1sbDwAXBvbGzsklFqcm5u7s/FxcUzQG1k
+	ZOTy5uZm3uYABhjsRtS2encbMAPoZrMZa61ptVoJ8BD4Z2lp6aLWOn6iwdtKUVKq+QtsA5mN
+	jQ3a7TZSSgAB7PT7/U8B61EDsduxACyNQe+epZRIKTHG7P/e+X+KXVJACoGHwAeRwewFOih8
+	BAvgxzLkXJ4byjGR8smLAAp5KufzTLyWwuMpWACnKlDL8d7os1wxHuUwg6wGvPpKke9fSjOR
+	831VLBbxvMe9bICv1qC5zfXbCV0tSIxBa4OQmuS3mPv14RftnOcRhiGNRuOx2p7I+IkTRN3o
+	WO2F6lulYvFDz/OqnU7nQRiG36ysrHzned7i/Pz8vhIP4Hse2Yw7XgiCc67rJkmS/OW6rvZ9
+	//1UKnU8m80+PUEmk0FrXbRtuw7ovRkFYJRSK5ZltaSU/AeMCziMuW8gRQAAAABJRU5ErkJg
+	gg==
+}]
 
 set bold [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABVlBMVEUAAAAyY6IhTIkrWZcp

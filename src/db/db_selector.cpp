@@ -344,7 +344,7 @@ compOverview(unsigned const* lhs, unsigned const* rhs)
 	if (il.idn() != chess960::StandardIdn)
 		return 0;
 
-	return int(il.ecoFromOpening()) - int(ir.ecoFromOpening());
+	return int(il.ecoKey()) - int(ir.ecoKey());
 }
 
 

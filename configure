@@ -801,8 +801,8 @@ proc checkGCC {cc} {
             set result 1
         }
     }
-    if {$result} {
-        puts -nonewline "    Checking if your $gcc supports SSE2: "
+    if {$result && $cc eq "CXX"} {
+        puts -nonewline "    Checking if your compiler supports SSE2: "
         flush stdout
         if {![catch {open testsse2.sh w} f]} {
             puts $f [regsub -all __CC__ $TestSSE2 $environment($cc)]

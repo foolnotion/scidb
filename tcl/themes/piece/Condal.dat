@@ -1,4 +1,5 @@
 ::board::addStyle piece {
+  version            1.0
   gradient,b,y1      0
   gradient,b,y2      1
   gradient,b,use     true

@@ -67,16 +67,13 @@ proc Build {w args} {
 	unset -nocomplain opts(-sashcmd)
 	unset -nocomplain opts(-cursor)
 
-	frame $w -class PanedWindowFrame
-	set pw $w.__panedwindow__
-	::panedwindow_old $pw {*}[array get opts] -opaqueresize 1 -borderwidth 0
-	if {[string match h* [$pw cget -orient]]} {
-		$pw configure -cursor sb_h_double_arrow
+	::panedwindow_old $w {*}[array get opts] -opaqueresize 1 -borderwidth 0
+	if {[string match h* [$w cget -orient]]} {
+		$w configure -cursor sb_h_double_arrow
 	} else {
-		$pw configure -cursor sb_v_double_arrow
+		$w configure -cursor sb_v_double_arrow
 	}
-	$w configure -borderwidth [$pw cget -borderwidth]
-	pack $pw -fill both -expand yes
+	pack $w -fill both -expand yes
 	
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::MaxSize
@@ -84,9 +81,8 @@ proc Build {w args} {
 	variable [namespace current]::${w}::SashCmd {}
 	variable [namespace current]::${w}::Cursor left_ptr
 
-	rename ::$w $w.__panedwindow_frame__
+	rename ::$w $w.__panedwindow__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
-	$w configure {*}$args
 
 	return $w
 }
@@ -159,15 +155,15 @@ proc WidgetProc {w command args} {
 						set Cursor $val
 						if {[llength $Cursor] == 0} { set Cursor left_ptr }
 						unset opts($key)
-						$w.__panedwindow_frame__ configure $key $val
+						$w.__panedwindow__ configure $key $val
 					}
 
 					-background {
-						$w.__panedwindow_frame__ configure $key $val
+						$w.__panedwindow__ configure $key $val
 					}
 
 					-borderwidth - -width - -height - -relief {
-						$w.__panedwindow_frame__ configure $key $val
+						$w.__panedwindow__ configure $key $val
 						unset opts($key)
 					}
 
@@ -188,7 +184,7 @@ proc WidgetProc {w command args} {
 		cget {
 			switch -- [lindex $args 0] {
 				-cursor - -background - -borderwidth - -width - -height - -relief {
-					return [$w.__panedwindow_frame__ cget {*}$args]
+					return [$w.__panedwindow__ cget {*}$args]
 				}
 			}
 		}

@@ -27,6 +27,7 @@ extern "C" { struct Tcl_Interp; }
 
 namespace db { class GameInfo; }
 namespace db { class NamebasePlayer; }
+namespace db { class TagSet; }
 
 namespace tcl
 {
@@ -42,6 +43,7 @@ namespace tcl
 								Ratings const& ratings,
 								bool info,
 								bool idCard);
+		int getTags(::db::TagSet const& tags, bool userSuppliedOnly);
 	}
 }
 

@@ -1,4 +1,5 @@
 ::board::addStyle theme {
+  version		1.0
   piece-style  Burly|1262881395698|yellow.color|gregor
   identifier   Blue|1262882648418|yellow.color|gregor
   piece-set    Magnetic

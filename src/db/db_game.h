@@ -36,6 +36,8 @@
 #include "db_eco.h"
 #include "db_edit_key.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 #include "m_vector.h"
 #include "m_list.h"
@@ -129,6 +131,8 @@ public:
 
 		virtual bool mainlineOnly();
 
+		virtual void stateChanged(bool locked) = 0;
+
 		virtual void updateMarks(mstl::string const& marks) = 0;
 		virtual void gotoMove(mstl::string const& key, mstl::string const& succKey) = 0;
 
@@ -137,8 +141,6 @@ public:
 
 		virtual void updateEditor(edit::Root const* node) = 0;
 		virtual void updateEditor(DiffList const& nodes, TagSet const& tags) = 0;
-
-		static void setFlag(unsigned& value, unsigned flag, bool set);
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
@@ -193,8 +195,12 @@ public:
 	bool hasUndo() const;
 	/// Return whether an redo action is possible
 	bool hasRedo() const;
-	/// Returns whether given variation is a valid variation at current position
+	/// Returns whether given variation does not contain invalid moves.
 	bool isValidVariation(MoveNode const* node) const;
+	/// Return whether given key is valid.
+	bool isValidKey(edit::Key const& key) const;
+	/// Return whether variation is folded at given position
+	bool isFolded(edit::Key const& key) const;
 
 	// Accessing game information
 
@@ -253,10 +259,7 @@ public:
 	/// Return suffix annotation at current position
 	mstl::string& suffix(mstl::string& result) const;
 	/// Compute checksum.
-	uint64_t computeChecksum(uint64_t crc = 0) const;
-
-	// Moving through game
-
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 	/// Counts the number of sub-variations at current ply
 	unsigned variationCount() const;
 	/// Counts the number of sub-variations at next ply
@@ -283,6 +286,8 @@ public:
 	MarkSet const& marks() const;
 	/// Get current language set.
 	LanguageSet const& languageSet() const;
+
+	// Moving through game
 
 	/// Moves to the beginning of the game
 	void moveToMainlineStart();
@@ -337,6 +342,8 @@ public:
 	void goToStart();
 	/// Go to end of current variation (or main line).
 	void goToEnd();
+	/// Go to first move current variation (or main line).
+	void goToFirst();
 	/// Go to according ply given by key.
 	void goTo(mstl::string const& key);
 	/// Go to according ply given by key.
@@ -431,9 +438,13 @@ public:
 	/// Clean up variations.
 	unsigned cleanupVariations();
 	/// Set given variation folded/unfolded.
-	void setFolded(edit::Key const& key, unsigned variationNumber, bool flag = true);
+	void setFolded(edit::Key const& key, bool flag = true);
+	/// Toggle fold flag of given variation.
+	void toggleFolded(edit::Key const& key);
 	/// Fold/unfold all variations.
 	void setFolded(bool flag = true);
+	/// Unfold variation if current ply is after first ply of an folded variation.
+	void unfold();
 
 	// modification methods
 
@@ -551,10 +562,7 @@ private:
 
 	Move parseMove(mstl::string const& san) const;
 
-	static bool checkConsistency(	MoveNode* node,
-											Board& board,
-											Force flag,
-											bool tryToFixKingMoves = false);
+	static bool checkConsistency(MoveNode* node, Board& board, Force flag);
 	static mstl::string& printSan(Board const& board,
 											MoveNode* node,
 											mstl::string& result,
@@ -567,10 +575,8 @@ private:
 	Board				m_currentBoard;
 	mutable Board	m_finalBoard;
 	edit::Key		m_currentKey;
-	unsigned			m_currentLevel;
 	unsigned			m_idn;
 	Eco				m_eco;
-	Eco				m_opening;
 	UndoList			m_undoList;
 	LanguageSet		m_languageSet;
 	LanguageSet		m_wantedLanguages;
@@ -579,8 +585,9 @@ private:
 	Command			m_undoCommand;
 	Command			m_redoCommand;
 	uint32_t			m_flags;
-	unsigned			m_countChanges;
+	bool				m_isIrreversible;
 	bool				m_isModified;
+	bool				m_wasModified;
 	bool				m_containsIllegalMoves;
 	mutable bool	m_finalBoardIsValid;
 	uint16_t			m_lineBuf[opening::Max_Line_Length][2];

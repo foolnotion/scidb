@@ -144,7 +144,7 @@ proc popup {parent args} {
 	
 	menu $top
 	wm withdraw $top
-	frame $top.f -relief raised -borderwidth 2
+	tk::frame $top.f -relief raised -borderwidth 2
 	set bg [$top.f cget -background]
 	pack $top.f
 
@@ -200,7 +200,7 @@ proc popup {parent args} {
 				return -code error "option \"$key\": invalid color \"$color\""
 			}
 		}
-		set f [frame $top.f.color$col$row \
+		set f [tk::frame $top.f.color$col$row \
 					-highlightthickness 1 \
 					-highlightcolor black \
 					-highlightbackground $bg \
@@ -208,7 +208,7 @@ proc popup {parent args} {
 					-borderwidth 0 \
 					-width 22 \
 					-height 22]
-		set b [frame $f.b \
+		set b [tk::frame $f.b \
 					-relief solid \
 					-borderwidth 1 \
 					-width 18 \
@@ -248,7 +248,7 @@ proc popup {parent args} {
 	if {$nt > 0} {
 		grid [ttk::separator $top.f.sep1] -column 0 -row [expr {$row - 1}] -columnspan 6 -sticky we
 		foreach texture $textureList {
-			set f [frame $top.f.color$col$row \
+			set f [tk::frame $top.f.color$col$row \
 						-highlightthickness 1 \
 						-highlightcolor black \
 						-highlightbackground $bg \
@@ -306,7 +306,7 @@ proc popup {parent args} {
 
 	set col 0
 	foreach {name icon tip} $actions {
-		set f [label $top.f.$name \
+		set f [tk::label $top.f.$name \
 					-highlightthickness 1 \
 					-highlightcolor black \
 					-highlightbackground $bg \

@@ -27,6 +27,7 @@ variable Lookup [dict create None 0]
 
 proc setCursor {window cursor} {
 	variable Lookup
+	variable Cursor
 
 	if {![winfo exists $window]} {
 		return -code error "bad window path name \"$window\""
@@ -36,7 +37,18 @@ proc setCursor {window cursor} {
 		return -code error "cursor \"$cursor\" unknown"
 	}
 
+	set Cursor($window) [$window cget -cursor]
 	DefineCursor $window [dict get $Lookup $cursor]
+}
+
+
+proc unsetCursor {window} {
+	variable Cursor
+
+	if {[info exists Cursor($window)]} {
+		$window configure -cursor $Cursor($window)
+		unset Cursor($window)
+	}
 }
 
 

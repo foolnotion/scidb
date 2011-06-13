@@ -535,16 +535,17 @@ MoveNode::countVariations() const
 
 
 unsigned
-MoveNode::countSequence() const
+MoveNode::unfoldedVariationCount() const
 {
-	MoveNode const* p = atLineStart() ? m_next : this;
+	unsigned n = 0;
 
-	unsigned count = 0;
+	for (unsigned i = 0; i < variationCount(); ++i)
+	{
+		if (!variation(i)->isFolded())
+			++n;
+	}
 
-	for ( ; p && !p->hasAnyComment() && !p->hasVariation(); p = p->m_next)
-		++count;
-
-	return p ? count + 1 : count;
+	return n;
 }
 
 
@@ -634,6 +635,23 @@ MoveNode::stripVariations()
 
 
 void
+MoveNode::fold(bool flag)
+{
+	for (MoveNode* p = this; p; p = p->m_next)
+	{
+		if (p->hasVariation())
+		{
+			for (unsigned i = 0; i < p->m_variations.size(); ++i)
+			{
+				p->m_variations[i]->setFolded(flag);
+				p->m_variations[i]->fold(flag);
+			}
+		}
+	}
+}
+
+
+void
 MoveNode::transpose()
 {
 	if (m_move)
@@ -676,8 +694,8 @@ MoveNode::setMark()
 }
 
 
-uint64_t
-MoveNode::computeChecksum(uint64_t crc) const
+util::crc::checksum_t
+MoveNode::computeChecksum(util::crc::checksum_t crc) const
 {
 	if (m_move)
 		crc = m_move.computeChecksum(crc);
@@ -719,6 +737,28 @@ MoveNode::containsIllegalMoves() const
 			for (unsigned i = 0; i < p->variationCount(); ++i)
 			{
 				if (p->variation(i)->containsIllegalMoves())
+					return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+bool
+MoveNode::contains(MoveNode const* node) const
+{
+	for (MoveNode const* p = this; p; p = p->m_next)
+	{
+		if (p == node)
+			return true;
+
+		if (p->hasVariation())
+		{
+			for (unsigned i = 0; i < p->variationCount(); ++i)
+			{
+				if (p->variation(i)->contains(node))
 					return true;
 			}
 		}

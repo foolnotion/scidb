@@ -258,10 +258,9 @@ set lineno 1
 while {[gets $fd line] >= 0} {
 	if {[string length $line] > 0 && [string index $line 0] ne "#"} {
 		set parts [split $line "\""]
-		if {	[llength $parts] != 5
+		if {	[llength $parts] < 5
 			|| ![string is space [lindex $parts 0]]
-			|| ![string is space [lindex $parts 2]]
-			|| ![string is space [lindex $parts 4]]} {
+			|| ![string is space [lindex $parts 2]]} {
 
 			set msg "syntax error in '$filename' on line $lineno"
 

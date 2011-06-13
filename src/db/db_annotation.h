@@ -75,14 +75,14 @@ public:
 	mstl::string dump() const;
 
 	static Annotation const* defaultSet(nag::ID nag);
-	static void initialize();
+
+	class Default;
+	friend class Default;
 
 private:
 
 	uint8_t m_count;
 	uint8_t m_annotation[Max_Nags];
-
-	static Annotation DefaultSets[nag::Scidb_Last];
 };
 
 } // namespace db

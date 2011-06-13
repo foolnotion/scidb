@@ -36,6 +36,7 @@ inline bool MoveNode::hasAnnotation() const				{ return m_flags & HasAnnotation;
 inline bool MoveNode::hasVariation() const				{ return m_flags & HasVariation; }
 inline bool MoveNode::hasNote() const						{ return m_flags & HasNote; }
 inline bool MoveNode::hasSupplement() const				{ return m_flags & HasSupplement; }
+inline bool MoveNode::isFolded() const						{ return m_flags & IsFolded; }
 
 inline bool MoveNode::hasComment(move::Position position) const	 { return m_flags & (1 << position); }
 
@@ -53,6 +54,17 @@ inline Comment const& MoveNode::comment(move::Position position) const { return 
 
 inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
+
+
+inline
+void
+MoveNode::setFolded(bool flag)
+{
+	if (flag)
+		m_flags |= IsFolded;
+	else
+		m_flags &= ~IsFolded;
+}
 
 
 inline

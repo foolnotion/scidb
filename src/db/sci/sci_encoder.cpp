@@ -34,6 +34,7 @@
 #include "db_board.h"
 #include "db_game_data.h"
 
+#include "m_bitfield.h"
 #include "m_assert.h"
 #include "m_static_check.h"
 
@@ -43,6 +44,52 @@ using namespace util;
 
 
 typedef ByteStream::uint24_t uint24_t;
+
+
+namespace {
+
+struct TagLookup
+{
+	TagLookup()
+	{
+		M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(uint64_t), BitSet_Size_Exceeded);
+
+		m_lookup.set(tag::Event);
+		m_lookup.set(tag::Site);
+		m_lookup.set(tag::Date);
+		m_lookup.set(tag::Round);
+		m_lookup.set(tag::White);
+		m_lookup.set(tag::Black);
+		m_lookup.set(tag::Result);
+		m_lookup.set(tag::Annotator);
+		m_lookup.set(tag::Eco);
+		m_lookup.set(tag::WhiteElo);
+		m_lookup.set(tag::BlackElo);
+		m_lookup.set(tag::WhiteCountry);
+		m_lookup.set(tag::BlackCountry);
+		m_lookup.set(tag::WhiteTitle);
+		m_lookup.set(tag::BlackTitle);
+		m_lookup.set(tag::WhiteType);
+		m_lookup.set(tag::BlackType);
+		m_lookup.set(tag::WhiteSex);
+		m_lookup.set(tag::BlackSex);
+		m_lookup.set(tag::EventDate);
+		m_lookup.set(tag::EventCountry);
+		m_lookup.set(tag::EventType);
+		m_lookup.set(tag::Mode);
+		m_lookup.set(tag::TimeMode);
+		m_lookup.set(tag::Termination);
+	}
+
+	static mstl::bitfield<uint64_t> m_lookup;
+
+	bool skipTag(tag::ID tag) const { return m_lookup.test(tag); }
+};
+
+mstl::bitfield<uint64_t> TagLookup::m_lookup;
+static TagLookup tagLookup;
+
+} // namespace
 
 
 Encoder::Encoder(ByteStream& strm)
@@ -421,68 +468,32 @@ Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 bool
 Encoder::skipTag(tag::ID tag)
 {
-	switch (unsigned(tag))
-	{
-		// belongs to index
-		case tag::Event:			return true;
-		case tag::Site:			return true;
-		case tag::Date:			return true;
-		case tag::Round:			return true;
-		case tag::White:			return true;
-		case tag::Black:			return true;
-		case tag::Result:			return true;
-		case tag::Annotator:		return true;
-		case tag::Eco:				return true;
-		case tag::WhiteElo:		return true;
-		case tag::BlackElo:		return true;
-		case tag::WhiteCountry:	return true;
-		case tag::BlackCountry:	return true;
-		case tag::WhiteTitle:	return true;
-		case tag::BlackTitle:	return true;
-		case tag::WhiteType:		return true;
-		case tag::BlackType:		return true;
-		case tag::WhiteSex:		return true;
-		case tag::BlackSex:		return true;
-		case tag::EventDate:		return true;
-		case tag::EventCountry:	return true;
-		case tag::EventType:		return true;
-		case tag::Mode:			return true;
-		case tag::TimeMode:		return true;
-		case tag::Termination:	return true;
-	}
-
-	return false;
+	return ::tagLookup.skipTag(tag);
 }
 
 
 void
 Encoder::encodeTags(TagSet const& tags)
 {
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		if (tags.contains(tag::ID(i)))
+		if (!::tagLookup.skipTag(tag))
 		{
-			if (!skipTag(tag::ID(i)))
+			switch (tag)
 			{
-				switch (i)
-				{
-					// not needed
-					case tag::SetUp:		break;
-					case tag::Fen:			break;
-					case tag::Idn:			break;
-					case tag::PlyCount:	break;
+				// not needed
+				case tag::SetUp:		break;
+				case tag::Fen:			break;
+				case tag::Idn:			break;
+				case tag::PlyCount:	break;
 
-					// makes the compiler shut up
-					case tag::ExtraTag:	break;
+				// makes the compiler shut up
+				case tag::ExtraTag:	break;
 
-					default:
-						if (	tags.isUserSupplied(tag::ID(i))
-							&& (!tag::isRatingTag(tag::ID(i)) || tags.significance(tag::ID(i)) == 0))
-						{
-							encodeTag(tags, tag::ID(i));
-						}
-						break;
-				}
+				default:
+					if (tags.isUserSupplied(tag) && (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
+						encodeTag(tags, tag);
+					break;
 			}
 		}
 	}

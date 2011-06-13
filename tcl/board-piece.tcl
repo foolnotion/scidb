@@ -1565,7 +1565,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 													Shadow shadow rt 1 0 $Constant(shadowMaxTick) \
 													Opacity opacity rt 3 0 255 \
 												] {
-		scale $bot.$side.s$var \
+		tk::scale $bot.$side.s$var \
 			-from $min \
 			-to $max \
 			-bigincrement 10 \

@@ -50,15 +50,19 @@ set Command(game:clear)				"Clear Game"
 set Command(game:transpose)		"Transpose Game"
 
 set ColumnStyle						"Column Style"
-set NarrowLines						"Narrow Lines"
+set UseParagraphSpacing				"Use Paragraph Spacing"
 set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
 set ShowDiagrams						"Show Diagrams"
 set Languages							"Languages"
+set CollapseVariations				"Collapse Variations"
+set ExpandVariations					"Expand Variations"
+set EmptyGame							"Empty Game"
 
 set NumberOfMoves						"Number of moves (in main line):"
 set InvalidInput						"Invalid input '%d'."
 set MustBeEven							"Input must be an even number."
 set MustBeOdd							"Input must be an odd number."
+set ReplaceMovesSucceeded			"Game moves successfully replaced."
 
 set StartTrialMode					"Start Trial Mode"
 set StopTrialMode						"Stop Trial Mode"
@@ -96,8 +100,12 @@ array set Colors {
 	result			#000000
 	illegal			#ee0000
 	marks				#6300c6
+	header			#000000
+	empty				#666666
 }
-#	next-move		#eee8aa
+#	header			#1c1cd6
+#	next-move		#f8f2b1
+#	next-move		#e5ff00
 #	comment			#008b00
 #	comment:hilite	#005500
 
@@ -111,8 +119,8 @@ array set Options {
 	indent-max			2
 	indent-comment		1
 	indent-var			1
-	narrow-lines		0
 	column-style		0
+	paragraph-spacing	0
 	tabstop-1			6.0
 	tabstop-2			0.7
 	tabstop-3			12.0
@@ -124,6 +132,7 @@ array set Options {
 
 variable Vars
 variable CharLimit 250
+variable Counter 0
 
 
 proc build {parent menu width height} {
@@ -140,41 +149,47 @@ proc build {parent menu width height} {
 
 	set top [::ttk::frame $parent.top -borderwidth 0]
 	pack $top -fill both -expand yes
-	bind $top <Configure> [namespace code { Configure %W %h }]
 
-	set Vars(bar) [::gamebar::gamebar $top.gamebar]
+	set edit [::ttk::frame $top.edit -borderwidth 0]
+	grid $edit -row 0 -column 0 -sticky nsew
+	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $top 0 -weight 1
+	bind $edit <Configure> [namespace code { Configure %W %h }]
+
+	set Vars(bar) [::gamebar::gamebar $edit.gamebar]
 	grid $Vars(bar) -row 1 -column 1 -sticky nsew
 
-	bind $Vars(bar) <<LabelbarSelected>>	[namespace code { LabelbarSelected %d }]
-	bind $Vars(bar) <<LabelbarRemoved>>		[namespace code { LabelbarRemoved %d }]
+	::gamebar::addReceiver $Vars(bar) [namespace code GameBarEvent]
 
-	set Vars(frame) $top
+	set Vars(frame) $edit
 	set Vars(delta) 0
 	set Vars(after) {}
-	set Vars(index) 0
+	set Vars(index) -1
 	set Vars(break) 0
 	set Vars(height) 0
-	set Vars(varKey) ""
 
 	for {set i 0} {$i < 9} {incr i} {
-		set f [::ttk::frame $top.f$i]
+		set f [::ttk::frame $edit.f$i]
 		set sb [::ttk::scrollbar $f.sb \
-					-command [namespace code [list ::widget::textLineScroll $f.pgn]] -takefocus 0]
-		set pgn [text $f.pgn \
-						-yscrollcommand [list $f.sb set] \
-						-takefocus 0 \
-						-exportselection 0 \
-						-undo 0 \
-						-width 0 \
-						-height 0 \
-						-relief sunken \
-						-borderwidth 1 \
-						-state disabled \
-						-wrap word \
-						-font $Options(font) \
-						-cursor {}]
+			-command [namespace code [list ::widget::textLineScroll $f.pgn]] \
+			-takefocus 0 \
+		]
+		set pgn [tk::text $f.pgn \
+			-yscrollcommand [list $f.sb set] \
+			-takefocus 0 \
+			-exportselection 0 \
+			-undo 0 \
+			-width 0 \
+			-height 0 \
+			-relief sunken \
+			-borderwidth 1 \
+			-state disabled \
+			-wrap word \
+			-font $Options(font) \
+			-cursor {} \
+		]
 
-		bind $pgn <Button-3>		[namespace code [list PopupMenu $top $i]]
+		bind $pgn <Button-3>		[namespace code [list PopupMenu $edit $i]]
 		bind $pgn <Double-1>		{ break }
 		bind $pgn <B1-Motion>	{ break }
 		bind $pgn <B2-Motion>	{ break }
@@ -191,6 +206,17 @@ proc build {parent menu width height} {
 		set Vars(after:$i) {}
 	}
 
+	set hist [tk::frame $top.history -background white -borderwidth 1 -relief sunken]
+	grid $hist -row 0 -column 0 -sticky nsew
+	tk::label $hist.icon -image $::icon::64x64::logo -borderwidth 0 -background white
+	tk::label $hist.logo -image $icon::104x30::logo -borderwidth 0 -background white
+	place $hist.icon -x 0 -y 0
+	place $hist.logo -x 0 -y 0
+	bind $hist <Configure> [namespace code [list CenterIcon $hist.icon $hist.logo %w %h]]
+
+	set Vars(hist) $hist
+	set Vars(edit) $edit
+
 	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
 
 	set tab1 [expr {round($Options(tabstop-1)*$Vars(charwidth))}]
@@ -202,9 +228,40 @@ proc build {parent menu width height} {
 	SetupStyle
 	for {set i 0} {$i < 9} {incr i} { ConfigureText $Vars(pgn:$i) }
 
-	set f [::ttk::frame $top.f$i]
+	set f [::ttk::frame $edit.f$i]
 	grid $f -row 2 -column 1 -sticky nsew
 	set Vars(frame:9) $f
+
+	set tbDisplay [::toolbar::toolbar $parent \
+		-id display \
+		-side bottom \
+		-tooltipvar [namespace current]::mc::Display \
+	]
+	::toolbar::add $tbDisplay checkbutton \
+		-image $::icon::toolbarColumnLayout \
+		-command [namespace code [list ToggleOption column-style]] \
+		-tooltipvar [namespace current]::mc::ColumnStyle \
+		-variable [namespace current]::Options(column-style) \
+		-padx 1 \
+		;
+	::toolbar::add $tbDisplay checkbutton \
+		-image $::icon::toolbarParagraphSpacing \
+		-command [namespace code [list ToggleOption paragraph-spacing]] \
+		-tooltipvar [namespace current]::mc::UseParagraphSpacing \
+		-variable [namespace current]::Options(paragraph-spacing) \
+		-padx 1 \
+		;
+	::toolbar::addSeparator $tbDisplay
+	::toolbar::add $tbDisplay button \
+		-image $::icon::toolbarToggleMinus \
+		-command [list ::scidb::game::variation fold on] \
+		-tooltipvar [namespace current]::mc::CollapseVariations \
+		;
+	::toolbar::add $tbDisplay button \
+		-image $::icon::toolbarTogglePlus \
+		-command [list ::scidb::game::variation fold off] \
+		-tooltipvar [namespace current]::mc::ExpandVariations \
+		;
 
 	set tbLanguages [::toolbar::toolbar $parent \
 		-id languages \
@@ -215,17 +272,19 @@ proc build {parent menu width height} {
 	::toolbar::add $tbLanguages checkbutton \
 		-image [::country::makeToolbarIcon ZZX] \
 		-command [namespace code [list ToggleLanguage xx]] \
-		-tooltipvar ::comment::::mc::AllLanguages \
+		-tooltipvar ::comment::mc::AllLanguages \
 		-variable [namespace current]::Vars(lang:active:xx) \
 		-padx 1 \
 		;
 	set Vars(lang:toolbar) $tbLanguages
 	set Vars(lang:active:$::mc::langID) 1
+	set Vars(toolbars) [list $tbDisplay $tbLanguages]
 
-	grid columnconfigure $top 1 -weight 1
-	grid rowconfigure $top 2 -weight 1
+	grid columnconfigure $edit 1 -weight 1
+	grid rowconfigure $edit 2 -weight 1
 	bind $top <<Language>> [namespace code LanguageChanged]
 
+	raise $Vars(hist)
 	raise $Vars(frame:9)
 
 	set Vars(lang:set) {}
@@ -246,53 +305,30 @@ proc gamebar {} {
 }
 
 
-proc add {position base info tags} {
+proc add {position base tags} {
 	variable Vars
-	variable Options
-	variable Colors
 
-	set w $Vars(pgn:$position)
+	::gamebar::add $Vars(bar) $position $tags
+	ResetGame $position $tags
+}
 
-	$w configure -state normal
-	$w delete 1.0 end
-#	$w tag delete {*}[$Vars(pgn:$position) tag names]
-	$w edit reset
-	foreach diagram [$w window names] { destroy $diagram }
-	array unset Vars diagram:*:$position
-	$w configure -state disabled
 
-	::gamebar::add $Vars(bar) $position $info $tags
-	::gamebar::activate $Vars(bar) $position
-	raise $Vars(frame:$position)
+proc replace {position base tags} {
+	variable Vars
 
-	set Vars(current:$position) {}
-	set Vars(previous:$position) {}
-	set Vars(next:$position) {}
-	set Vars(active:$position) {}
-	set Vars(lang:set:$position) {}
-	set Vars(info:$position) $info
-	set Vars(see:$position) 1
-	set Vars(dirty:$position) 0
-	set Vars(comment:$position) ""
-	set Vars(result:$position) ""
-	set Vars(virgin:$position) 1
-	set Vars(last:$position) ""
-	set Vars(start:$position) 1
-
-	SetLanguages $position
-	SetupStyle $position
-
-	::scidb::game::subscribe pgn $position [namespace current]::Update
-	::scidb::game::subscribe board $position [namespace parent]::board::update
-	::scidb::game::subscribe tree $position [namespace parent]::tree::update
+	::gamebar::replace $Vars(bar) $position $tags
+	ResetGame $position $tags
 }
 
 
 proc release {position} {
 	variable Vars
-
 	::gamebar::remove $Vars(bar) $position
-#	bind $Vars(frame) <Configure> [namespace code { Align %W %h }]
+}
+
+
+proc getTags {position} {
+	return [set [namespace current]::Vars(tags:$position)]
 }
 
 
@@ -304,13 +340,16 @@ proc select {{position {}}} {
 		if {[llength $position]} { return }
 		if {[::gamebar::empty? $Vars(bar)]} {
 			::scidb::game::switch 9
+			raise $Vars(hist)
 			raise $Vars(frame:9)
+			set Vars(index) -1
 			return
 		}
 		set position [::gamebar::getId $Vars(bar) 0]
 	}
 
 	::gamebar::activate $Vars(bar) $position
+	raise $Vars(edit)
 	raise $Vars(frame:$position)
 	set Vars(index) $position
 }
@@ -322,6 +361,11 @@ proc selectAt {index} {
 	if {$index < [::gamebar::size $Vars(bar)]} {
 		select [::gamebar::getId $Vars(bar) $index]
 	}
+}
+
+
+proc lock {position} {
+	::gamebar::lock [set [namespace current]::Vars(bar)] $position
 }
 
 
@@ -395,17 +439,15 @@ proc ensureScratchGame {} {
 	variable Vars
 
 	if {[::gamebar::empty? $Vars(bar)]} {
-		# TODO
-		# Site:	Scratch Game
-		# Event:	<current timestamp>
 		::scidb::game::switch 9
 		set fen [::scidb::pos::fen]
 		::scidb::game::new 0
 		::scidb::game::switch 0
 		::scidb::pos::setup $fen
-		set info [::scidb::game::info 0]
-		add 0 $scratchbaseName $info [::scidb::game::tags 0]
-		::game::setFirst $scratchbaseName $info
+		set tags [::scidb::game::tags 0]
+		::game::setFirst $scratchbaseName $tags
+		add 0 $scratchbaseName $tags
+		select 0
 	}
 }
 
@@ -420,13 +462,19 @@ proc InitScratchGame {} {
 	set Vars(previous:9) {}
 	set Vars(next:9) {}
 	set Vars(active:9) {}
-	set Vars(info:9) [::scidb::game::info 9]
 	set Vars(see:9) 1
 	set Vars(last:9) {}
 
 	::scidb::game::subscribe board 9 [namespace parent]::board::update
 	::scidb::game::switch 9
 	raise $Vars(frame:9)
+	set Vars(index) -1
+}
+
+
+proc StateChanged {position modified} {
+	::gamebar::setState [set [namespace current]::Vars(bar)] $position $modified
+	::game::stateChanged $position $modified
 }
 
 
@@ -441,7 +489,7 @@ proc See {position w key succKey} {
 		set Vars(start:$position) 0
 	}
 
-	set firstLine [$w index h-end]
+	set firstLine [$w index m-start]
 	set range [$w tag nextrange $succKey [$w index $key]]
 
 	if {[llength $range]} {
@@ -470,11 +518,17 @@ proc See {position w key succKey} {
 }
 
 
+proc CenterIcon {icon logo wd ht} {
+	place $icon -x [expr {($wd - [winfo width $icon])/2}] -y 60
+	place $logo -x [expr {($wd - [winfo width $logo])/2}] -y 140
+}
+
+
 proc Configure {w height} {
 	variable Vars
 
 	after cancel $Vars(after)
-	set Vars(after) [after 50 [namespace code [list Align $w $height]]]
+	set Vars(after) [after 75 [namespace code [list Align $w $height]]]
 }
 
 
@@ -490,7 +544,6 @@ proc ConfigureText {w} {
 	}
 
 	$w tag configure eco -font $Vars(font-bold)
-
 	$w tag configure main -font $mainFont
 	$w tag configure variation -foreground $Colors(variation)
 	$w tag configure nag -foreground $Colors(nag)
@@ -499,6 +552,8 @@ proc ConfigureText {w} {
 #	$w tag configure startvar -foreground $Colors(startvar)
 	$w tag configure bracket -foreground $Colors(bracket)
 	$w tag configure marks -foreground $Colors(marks)
+	$w tag configure header -foreground $Colors(header)
+	$w tag configure empty -foreground $Colors(empty)
 
 	$w tag configure figurine -font $::font::figurine
 	$w tag configure symbol -font $::font::symbol
@@ -543,30 +598,48 @@ proc Align {w height} {
 }
 
 
-proc LabelbarSelected {position} {
-	variable Vars
-
-	::game::select $position
-	raise $Vars(frame:$position)
-}
-
-
-proc LabelbarRemoved {position} {
+proc GameBarEvent {action position} {
 	variable Vars
 	variable Colors
 
-	::game::release $position
+	switch $action {
+		removed {
+			::game::release $position
 
-	set w $Vars(pgn:$position)
-	$w tag configure $Vars(current:$position) -background $Colors(background)
-	foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+			set w $Vars(pgn:$position)
+			$w tag configure $Vars(current:$position) -background $Colors(background)
+			foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
 
-	if {[::gamebar::empty? $Vars(bar)]} {
-		::widget::busyCursor on
-		::scidb::game::switch 9
-		raise $Vars(frame:9)
-		::widget::busyCursor off
+			if {[::gamebar::empty? $Vars(bar)]} {
+				::widget::busyCursor on
+				::scidb::game::switch 9
+				raise $Vars(hist)
+				raise $Vars(frame:9)
+				set Vars(index) -1
+				::widget::busyCursor off
+			}
+		}
+
+		lock {
+			::game::lockChanged $position [::gamebar::locked? $Vars(bar) $position]
+		}
+
+		select {
+			::scidb::game::switch $position
+			[namespace parent]::board::updateMarks [::scidb::game::query marks]
+			raise $Vars(edit)
+			raise $Vars(frame:$position)
+			set Vars(index) $position
+		}
 	}
+}
+
+
+proc ToggleOption {var} {
+	variable Options
+
+	set Options($var) [expr {!$Options($var)}]
+	Refresh $var
 }
 
 
@@ -603,7 +676,7 @@ proc AddLanguageButton {lang} {
 	set w [::toolbar::add $Vars(lang:toolbar) checkbutton \
 		-image [::country::makeToolbarIcon $countryCode] \
 		-command [namespace code [list ToggleLanguage $lang]] \
-		-tooltipvar [::encoding::languageName $lang] \
+		-tooltipvar ::encoding::mc::Lang($lang) \
 		-variable [namespace current]::Vars(lang:active:$lang) \
 		-padx 1 \
 	]
@@ -676,6 +749,7 @@ proc Update {position data} {
 	variable Options
 	variable Vars
 
+#set clock0 [clock milliseconds]
 	set w $Vars(pgn:$position)
 	set startLevel -1
 
@@ -696,7 +770,6 @@ proc Update {position data} {
 
 			begin {
 				set level [lindex $node 3]
-				set Vars(varKey) [lindex $node 1]
 				set startVar($level) [lindex $node 2]
 			}
 
@@ -740,9 +813,12 @@ proc Update {position data} {
 					}
 
 					clear {
-						$w delete h-end m-0
-						$w insert m-0 \n
-#						$w tag delete {*}[$Vars(pgn:$position) tag names]
+						$w delete m-start m-0
+						$w insert m-0 "\u200b"
+
+#						foreach tag [$Vars(pgn:$position) tag names] {
+#							if {[string match m-* $tag]} { $w tag delete $tag }
+#						}
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
@@ -776,30 +852,32 @@ proc Update {position data} {
 					}
 					$w mark gravity m-0 left
 					$w mark set current m-0
-					# NOTE: the text editor has a severe bug:
-					# If all chars after <pos> are newlines, the command
-					# '<text> delete <pos-1> <pos-2>' will also delete one
-					# newline before <pos>. We should catch this case:
-					if {![string is space [$w get m-0 end]]} {
-						$w delete current end
-					}
-					$w insert current \n
-					if {$Options(column-style)} { $w insert current \n }
+					set prevChar [$w get current-1c]
+					$w delete current end
+					if {$Options(paragraph-spacing)} { $w insert current \n }
 					$w insert current [::util::formatResult $result] result
 					$w mark gravity m-0 right
+					# NOTE: the text editor has a severe bug:
+					# If the char after <pos1> is a newline, the command
+					# '<text> delete <pos1> <pos2>' will also delete one
+					# newline before <pos1>. We should catch this case:
+					if {$prevChar eq "\n"} { $w insert m-0 \n }
 					if {[string length $Vars(last:$position)]} {
 						$w mark gravity $Vars(last:$position) right
 					}
 					set Vars(result:$position) $result
 				}
 				# TODO: really needed?
-				foreach mark $Vars(marks) { $w mark gravity $mark right }
+				# NOTE: very slow!!
+#				foreach mark $Vars(marks) { $w mark gravity $mark right }
 				$w mark gravity m-0 right
 				$w configure -state disabled
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
 			}
 		}
 	}
+#set clock1 [clock milliseconds]
+#puts "clock: [expr {$clock1 - $clock0}]"
 }
 
 
@@ -807,7 +885,7 @@ proc Indent {w level key} {
 	variable Options
 
 	if {$level > 0} {
-		if {$Options(column-style) && [incr level -1] == 0} { return }
+		if {($Options(column-style)) && [incr level -1] == 0} { return }
 		set level [expr {min($level, $Options(indent-max))}]
 		$w tag add indent$level $key current
 	}
@@ -819,6 +897,7 @@ proc ProcessGoto {position w key succKey} {
 	variable Colors
 
 	if {$Vars(current:$position) ne $key} {
+		::scidb::game::variation unfold
 		foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
 		set Vars(next:$position) [::scidb::game::next keys $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
@@ -868,18 +947,21 @@ proc UpdateHeader {position w data} {
 	}
 
 	if {!$Vars(virgin:$position)} {
-		$w delete 1.0 h-end
+		$w delete 1.0 m-start
 	}
 
 	$w mark set current 1.0
 	foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
-		$w insert current {*}$line
+		set tags {}
+		lassign $line content tags
+		lappend tags header
+		$w insert current $content $tags
 	}
-	$w mark set h-end [$w index current]
-	$w mark gravity h-end left
+	$w insert current "\n"
+	$w mark set m-start [$w index current]
+	$w mark gravity m-start left
 
 	if {$Vars(virgin:$position)} {
-		$w insert current "\n"
 		$w mark set m-0 [$w index current]
 		$w mark gravity m-0 right
 	}
@@ -888,42 +970,63 @@ proc UpdateHeader {position w data} {
 }
 
 
-proc InsertBreak {w level bracket} {
-	variable Options
-
-	switch $level {
-		0 - 1 - 2	{ set space "\n" }
-		3				{ if {$Options(column-style)} { set space "\n" } else { set space " " } }
-		default		{ set space " " }
-	}
-
-	$w insert current $space
-
-	if {$bracket eq "(" && ($level > 0 || !$Options(column-style) || $Options(narrow-lines))} {
-		$w insert current "( " bracket
-	}
-}
-
-
 proc InsertMove {position w level key data} {
 	variable Options
+
+	if {[llength $data] == 0} {
+		# NOTE: We need a blind character between the marks because
+		# the editor is permuting consecutive marks.
+		# NOTE: Actually this case (empty data) should not happen.
+		$w insert current "\u200b"
+	}
 
 	foreach node $data {
 		switch [lindex $node 0] {
 			break {
-				InsertBreak $w [lindex $node 1] [lindex $node 2]
+				switch  [lindex $node 1] {
+					0 - 1 - 2	{ set space "\n" }
+					3				{ if {$Options(column-style)} { set space "\n" } else { set space " " } }
+					default		{ set space " " }
+				}
+
+				$w insert current $space
 			}
 
 			space {
-				switch [lindex $node 1] {
-					")" {
-						if {$level > 1 || !$Options(column-style) || $Options(narrow-lines)} {
+				set space [lindex $node 1]
+				switch $space {
+					" " { $w insert current " " }
+					")" { $w insert current " )" }
+					"s" { $w insert current "\n" }
+					"e" { $w insert current "\n<$mc::EmptyGame>" empty }
+
+					default {
+						variable Cursor
+						variable Colors
+
+						if {$space eq "+"} {
+							$w insert current " "
+							set img $w.[string map {. :} $key]
+							tk::label $img \
+								-background $Colors(background) \
+								-borderwidth 0 \
+								-padx 0 \
+								-pady 0 \
+								-image $icon::12x12::expand \
+								;
+							$w window create current -align center -window $img
+							bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
 							$w insert current " )" bracket
+						} elseif {[info exists Cursor(collapse)]} {
+							set tag fold:$key
+							$w insert current "( " [list bracket $tag]
+							$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
+							$w tag bind $tag <Any-Leave> +[namespace code [list LeaveBracket $w]]
+							$w tag bind $tag <ButtonPress-1> [namespace code [list ToggleFold $w $key 1]]
+						} else {
+							$w insert current "( " bracket
 						}
 					}
-
-					"("		{ $w insert current " ( " bracket }
-					default	{ $w insert current " " }
 				}
 			}
 
@@ -962,8 +1065,8 @@ proc InsertMove {position w level key data} {
 
 			comment {
 				set startPos [$w index current]
-				PrintComment $position $w $level $key [lindex $node 1] [lindex $node 2]
-				if {$level == 0 && !$Options(column-style)} {
+				PrintComment $position $w $level $key [lindex $node 1] [lindex $node 3]
+				if {$level == 0 && !($Options(column-style))} {
 					$w tag add indent1 $startPos current
 				}
 			}
@@ -1206,12 +1309,6 @@ proc EditComment {position key pos lang} {
 }
 
 
-# XXX use something like [::scidb::game::key parent $key]
-proc ParentKey {key} {
-	return [join [lrange [split $key .] 0 end-2] .]
-}
-
-
 proc Mark {w key} {
 	variable Vars
 
@@ -1269,6 +1366,57 @@ proc LeaveMark {w tag} {
 }
 
 
+proc EnterBracket {w key} {
+	variable Cursor
+	variable Counter
+	variable Vars
+
+	if {[::scidb::game::variation folded? $key]} {
+		set cursor $Cursor(expand)
+	} else {
+		set cursor $Cursor(collapse)
+	}
+
+	incr Counter
+	after 75 [namespace code [list SetCursor $w $cursor $Counter]]
+}
+
+
+proc SetCursor {w cursor counter} {
+	variable Counter
+
+	if {$counter < $Counter} { return }
+
+	if {[tk windowingsystem] eq "x11"} {
+		::xcursor::setCursor $w $cursor
+	} else {
+		$w configure -cursor $cursor
+	}
+}
+
+
+proc LeaveBracket {w} {
+	variable Vars
+	variable Counter
+
+	incr Counter
+
+	if {[tk windowingsystem] eq "x11"} {
+		::xcursor::unsetCursor $w
+	} else {
+		$w configure -cursor {}
+	}
+}
+
+
+proc ToggleFold {w key triggerEnter} {
+	::scidb::game::variation fold $key toggle
+	if {$triggerEnter} {
+		EnterBracket $w $key	;# toggle cursor
+	}
+}
+
+
 proc GotoMove {position key} {
 	variable Vars
 
@@ -1281,7 +1429,6 @@ proc GotoMove {position key} {
 
 proc EnterComment {w key} {
 	variable Colors
-#	$w tag configure comment:$key -underline true
 	$w tag configure comment:$key -foreground $Colors(comment:hilite)
 }
 
@@ -1359,6 +1506,53 @@ proc Undo {action} {
 	if {[llength [::scidb::game::query $action]]} {
 		::widget::busyOperation ::scidb::game::execute $action
 	}
+}
+
+
+proc ResetGame {position tags} {
+	variable Vars
+	variable Colors
+
+	set w $Vars(pgn:$position)
+
+	$w configure -state normal
+	$w delete 1.0 end
+#	foreach tag [$Vars(pgn:$position) tag names] {
+#		if {[string match m-* $tag]} { $w tag delete $tag }
+#	}
+	$w edit reset
+	$w configure -state disabled
+
+	::gamebar::activate $Vars(bar) $position
+	raise $Vars(frame:$position)
+	set Vars(index) $position
+
+	if {[info exists Vars(next:$position)]} {
+		foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+		$w tag configure $Vars(current:$position) -background $Colors(background)
+	}
+
+	set Vars(current:$position) {}
+	set Vars(previous:$position) {}
+	set Vars(next:$position) {}
+	set Vars(active:$position) {}
+	set Vars(lang:set:$position) {}
+	set Vars(see:$position) 1
+	set Vars(dirty:$position) 0
+	set Vars(comment:$position) ""
+	set Vars(result:$position) ""
+	set Vars(virgin:$position) 1
+	set Vars(last:$position) ""
+	set Vars(start:$position) 1
+	set Vars(tags:$position) $tags
+
+	SetLanguages $position
+	SetupStyle $position
+
+	::scidb::game::subscribe pgn $position [namespace current]::Update
+	::scidb::game::subscribe board $position [namespace parent]::board::update
+	::scidb::game::subscribe tree $position [namespace parent]::tree::update
+	::scidb::game::subscribe state $position [namespace current]::StateChanged
 }
 
 
@@ -1619,7 +1813,7 @@ proc PopupMenu {parent position} {
 			}
 			$menu add command \
 				-compound left \
-				-image [set ::icon::12x12::$action] \
+				-image [set ::icon::16x16::$action] \
 				-label $label \
 				-command [list ::widget::busyOperation ::scidb::game::execute $action] \
 				-state [expr {[llength $cmd] ? "normal" : "disabled"}] \
@@ -1628,9 +1822,7 @@ proc PopupMenu {parent position} {
 
 		$menu add separator
 
-		set base [::scidb::game::query $position database]
-		set number [::scidb::game::number $position]
-		set bases [::scidb::app::bases]
+		lassign [::scidb::game::link? $position] base index
 		unset -nocomplain state
 
 		if {$base eq $scratchbaseName} {
@@ -1642,7 +1834,11 @@ proc PopupMenu {parent position} {
 		} else {
 			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
 				set state(save) normal
-				if {$number >= 0} { set state(replace) normal } else { set state(replace) disabled }
+				if {$index >= 0 && [::scidb::game::query modified?]} {
+					set state(replace) normal
+				} else {
+					set state(replace) disabled
+				}
 			} else {
 				set state(save) disabled
 				set state(replace) disabled
@@ -1655,29 +1851,37 @@ proc PopupMenu {parent position} {
 			}
 		}
 
+		set actual [::scidb::db::get name]
+
 		$menu add command \
 			-label [format $mc::ReplaceGame $name] \
-			-command [list ::dialog::save::open $parent $base $position $number] \
+			-command [list ::dialog::save::open $parent $base $position $index] \
 			-state $state(replace) \
 			;
 		$menu add command \
 			-label [format $mc::ReplaceMoves $name] \
-			-command [list ::scidb::db::update moves $base [expr {$number - 1}]] \
+			-command [namespace code [list ReplaceMoves $parent $base $index]] \
 			-state $state(replace) \
 			;
 		$menu add command \
-			-label [format $mc::AddNewGame $name] \
-			-command [list ::dialog::save::open $parent $base $position -1] \
+			-label [format $mc::AddNewGame [::util::databaseName $actual]] \
+			-command [list ::dialog::save::open $parent $actual $position -1] \
 			-state $state(save) \
 			;
 
 		menu $menu.save
 		set count 0
+		set bases [::scidb::app::bases]
+		lappend bases $clipbaseName
 		foreach base $bases {
-			set myName [::util::databaseName $base]
-			if {$name ne $myName && ![::scidb::db::get readonly? $base]} {
+			if {$base ne $actual && ![::scidb::db::get readonly? $base]} {
+				if {$base eq $clipbaseName} {
+					set name $T_Clipbase
+				} else {
+					set name [::util::databaseName $base]
+				}
 				$menu.save add command \
-					-label $myName \
+					-label $name \
 					-command [list ::dialog::save::open $parent $base $position -1] \
 					;
 				incr count
@@ -1698,17 +1902,30 @@ proc PopupMenu {parent position} {
 		$menu add separator
 	}
 
+	$menu add command \
+		-compound left \
+		-label " $mc::CollapseVariations" \
+		-image $::icon::16x16::toggleMinus \
+		-command [list ::scidb::game::variation fold on] \
+		;
+	$menu add command \
+		-compound left \
+		-label " $mc::ExpandVariations" \
+		-image $::icon::16x16::togglePlus \
+		-command [list ::scidb::game::variation fold off] \
+		;
+	$menu add separator
+
 	menu $menu.display
 	$menu add cascade -menu $menu.display -label $mc::Display
 	array unset state
 
 	foreach {label var onValue} {	ColumnStyle column-style 1
-											NarrowLines narrow-lines 1
+											UseParagraphSpacing paragraph-spacing 1
 											BoldTextForMainlineMoves mainline-bold 1
 											ShowDiagrams diagram-show 1} {
 		set state normal
 		if {$onValue} { set offValue 0 } else { set offValue 1 }
-		if {$var eq "narrow-lines" && !$Options(column-style)} { set state disabled }
 
 		$menu.display add checkbutton \
 			-label [set mc::$label] \
@@ -1747,6 +1964,12 @@ proc PasteClipboardVariation {} {
 
 	set position $Vars(index)
 	::import::openEdit $Vars(frame:$position) $position variation
+}
+
+
+proc ReplaceMoves {parent base index} {
+	::scidb::game::update moves $base $index
+	::dialog::info -parent $parent -message $mc::ReplaceMovesSucceeded
 }
 
 
@@ -1806,7 +2029,7 @@ proc RemoveVariation {{varno 0}} {
 		::scidb::game::position backward
 		::scidb::game::moveto [::scidb::game::position key]
 	} else {
-		::scidb::game::moveto [ParentKey $key]
+		::scidb::game::moveto [::scidb::game::query parent $key]
 	}
 }
 
@@ -1818,7 +2041,7 @@ proc InsertMoves {parent} {
 		$parent \
 		$mc::Command(variation:insert) \
 		[list ::widget::busyOperation ::scidb::game::variation insert $varno] \
-		[list ::scidb::game::moveto [ParentKey $key]] \
+		[list ::scidb::game::moveto [::scidb::game::query parent $key]] \
 		[list ::scidb::game::moveto $key]
 }
 
@@ -1873,7 +2096,7 @@ proc ExchangeMoves {parent} {
 			$parent \
 			$mc::Command(variation:exchange) \
 			[list ::widget::busyOperation ::scidb::game::variation exchange $varno $Length_] \
-			[list ::scidb::game::moveto [ParentKey $key]] \
+			[list ::scidb::game::moveto [::scidb::game::query parent $key]] \
 			[list ::scidb::game::moveto $key]
 	}
 }
@@ -1932,7 +2155,7 @@ proc Refresh {var} {
 	set Vars(current:$Vars(index)) {}
 	SetupStyle
 
-	if {$var eq "column-style"} {
+	if {$var eq "column-style" || $var eq "paragraph-spacing"} {
 		for {set i 0} {$i < 9} {incr i} {
 			if {$Options(column-style)} {
 				$Vars(pgn:$i) configure -tabs $Vars(tabs) -tabstyle wordprocessor
@@ -1962,7 +2185,7 @@ proc SetupStyle {{position {}}} {
 	}
 
 	::scidb::game::setup {*}$position {*}$thresholds \
-		$Options(column-style) $Options(narrow-lines) $Options(diagram-show)
+		$Options(column-style) $Options(paragraph-spacing) $Options(diagram-show)
 }
 
 
@@ -1970,19 +2193,157 @@ proc LanguageChanged {} {
 	variable Vars 
 
 	if {[info exists Vars(see:0)]} {
+		# TODO not working
 		::widget::busyOperation ::scidb::game::refresh
 	}
 }
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Colors
+	variable Vars
+
+#	::options::writeItem $chan [namespace current]::Colors
 	::options::writeItem $chan [namespace current]::Options
 }
 
 
 ::options::hookWriter [namespace current]::WriteOptions
 
+
+switch [tk windowingsystem] {
+	x11 {
+		if {[::xcursor::supported?]} {
+			set file1 [file join $::scidb::dir::share "cursor/collapse-16x16.xcur"]
+			set file2 [file join $::scidb::dir::share "cursor/expand-16x16.xcur"]
+			if {[file readable $file1] && [file readable $file2]} {
+				catch {
+					set Cursor(collapse) [::xcursor::loadCursor $file1]
+					set Cursor(expand)   [::xcursor::loadCursor $file2]
+				}
+			}
+		}
+	}
+
+	win32 {
+		set file1 [file join $::scidb::dir::share "cursor/collapse-16x16.cur"]
+		set file2 [file join $::scidb::dir::share "cursor/expand-16x16.cur"]
+		if {[file readable $file1] && [file readable $file2]} {
+			catch {
+				set Cursor(collapse) [::xcursor::loadCursor $file1]
+				set Cursor(expand)   [::xcursor::loadCursor $file2]
+			}
+		}
+	}
+
+	aqua {
+		# TODO
+	}
+}
+
+
+namespace eval icon {
+namespace eval 12x12 {
+
+set expand [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAABL1BMVEUAAAAFEwAPXgA2eABV
+	lwBXlQBqpCSHtCYAAAAAAAArbQA4dgAULQBEhABHhg1JhwBTjRUwXQA4ZAAxWgA/bwBRiwBc
+	kxM5ZwBOgwJfmgiDsj5flwhsoBpnnwuJtzxflglimQponRFsow2cxVRgkwtsoA9+sB+cxkx0
+	pxJ9rxeIuBqmzkKIuxyMvRyNvRySvx++31uSvzWVzgOWwx6WxQCWxwOWzwCXxRyXxwCXyACY
+	xgCYyRuY0gGZyRuZywWZyx2ayRyaywWa0wOa1QWbzRyb0AmcyQiczRyc0gedx0Wdywyd1Q6e
+	ywyf0BegziGg0BehyxOhzxGiyxujzRWl0Sem0S6o0jOv0kCv1i223VK63ky94GfA42ng7rjg
+	8bvm8sjq9M/s9tX6/PT9/vv////Gb6PpAAAAMXRSTlMAAAAAAAAAAAEEEREcHh4lJStOU1Zb
+	W3B6iYmlpa2tsre3u7u80ODg5e709Pv7+/z85zOZ6QAAAAFiS0dEZMLauAkAAACVSURBVAgd
+	BcFLDoIwEADQaTuligUiwbBxo0sTL+D9z+ABXOAnSOQjbWmd+h7jUuns+PiOkyUh06o8i7xe
+	MHihthd1q7ApY/CoM9OyBPxYG4vJ6bnnHA70znqUrtCcgSYfJNIgHU9goZmiWPOiee3itd+0
+	AzoT9UKQJsE6AeTT/DNpd+9mdIyCFPDznXEMYIUKIbhg4Q/3gUdcn5n7ugAAAABJRU5ErkJg
+	gg==
+}]
+
+#set collapse [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
+#	CXBIWXMAAABIAAAASABGyWs+AAAB7UlEQVQoz1WQvWsTYQCHn/feu9zl0qSXi59E6wetBbU4
+#	itTFqTSCk1D8F3TwHxBH3QUdHOzg5FhXRVFBWkFQaMQ2Hayp1djmq7nk7s3l7nVoF4ff+PB7
+#	eMRCGW7NT/J1rTExMz1z55CTXxBKnYp6XTrd3c1G9++LHaUee/BzS4JYvHmGRndv6srM7JOy
+#	zlzrf6/KQatJmqaQseg7MtlSnbdbYXB73KQmjyWd4tXzlx6dHsnrjQ9vjN7vbUaqT6IGJL2A
+#	TDQ0CuP+2aEYlTfC+JUxfcKvHMWaa335RDzoIyUYAgzAMCBVEZl2m+NOYe6wScXMm3ZFtJu5
+#	OApwz00hsi460QAIKdDhgLj+g3wqcmOWXTETFfqptrB8n8kHz7FPTaKT9AAwUJsbbNy9AUJj
+#	CMM3lYriWLqYgz3+LD5Eej6agwcESaeFHuyhC0USrWOzGQ6XA1fPl7Q2e6+X0IAW7AMaBCCz
+#	Nh3BqBkOl41akC7Vo3418UqYjsQ0+X+2JCmWqEf9ai1Il+Rqi92JMdXK2ubseMHLZ4RGGiBN
+#	iXCyKK9ETYXbn3e7956t8076OXi/zZpnR+uxkRxJHLeo3LwVOG7aEEb3W9D7uLLTu/90jZd+
+#	jvTAdl/5gk/5osflMYuTAEFMfbXNSrXNL9gv8Q+fYd/xb8HXjAAAAABJRU5ErkJggg==
+#}]
+
+} ;# namespace 12x12
+
+namespace eval 104x30 {
+
+set logo [image create photo -data {
+	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
+	5+6xMI//AruNNzmyEcKFAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 104x30
+} ;# namespace icon
 } ;# namespace pgn
 } ;# namespace application
 

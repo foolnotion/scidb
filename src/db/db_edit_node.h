@@ -67,23 +67,7 @@ public:
 		TPly, TAnnotation, TMarks, TComment, TSpace,	// move level
 	};
 
-	enum Bracket
-	{
-		None = ' ',
-		Open = '(',
-		Close = ')',
-	};
-
-	enum
-	{
-		NoSpace			= 0,
-		PrefixSpace		= 1 << 0,
-		PrefixBreak		= 1 << 1,
-		SuffixBreak		= 1 << 2,
-		ForcedBreak		= 1 << 3,
-		RequiredBreak	= 1 << 4,
-		SuppressBreak	= 1 << 5,
-	};
+	enum Bracket { Blank, Open, Close, Fold, Empty, Start };
 
 	typedef mstl::vector<Node const*> List;
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
@@ -96,34 +80,18 @@ public:
 	virtual Type type() const = 0;
 
 	virtual void visit(Visitor& visitor) const = 0;
-	virtual void dump(unsigned level) const = 0;
-	void dump() const;
 
 	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags);
 
 protected:
 
+	struct Spacing;
+	struct Work;
+
 	static char const PrefixDiagram	= 'd';
 	static char const PrefixComment	= 'c';
 
 	bool isRoot() const;
-
-	struct Work
-	{
-		LanguageSet const*	wantedLanguages;
-		db::Board				board;
-		Languages*				languages;
-		Key						key;
-		unsigned					spacing;
-		Bracket					bracket;
-		bool						needMoveNo;
-		unsigned					level;
-		unsigned					plyCount;
-		unsigned					linebreakMaxLineLength;
-		unsigned					linebreakMaxLineLengthVar;
-		unsigned					linebreakMinCommentLength;
-		unsigned					displayStyle;
-	};
 };
 
 
@@ -166,7 +134,6 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -188,7 +155,6 @@ public:
 
 	void visit(Visitor& visitor) const;
 	void difference(Root const* root, List& nodes) const;
-	void dump(unsigned level) const;
 
 	static Root* makeList(	TagSet const& tags,
 									uint16_t idn,
@@ -217,10 +183,7 @@ public:
 
 private:
 
-	static void makeList(Work& work,
-								KeyNode::List& result,
-								MoveNode const* node,
-								unsigned linebreakMaxLineLength);
+	static void makeList(Work& work, KeyNode::List& result, MoveNode const* node);
 
 	Node*				m_opening;
 	Node* 			m_languages;
@@ -241,7 +204,6 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -263,7 +225,6 @@ public:
 	LanguageSet const& langSet() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -290,7 +251,6 @@ public:
 	Key const& successor() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -316,7 +276,6 @@ public:
 	db::Move const& move() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -336,7 +295,7 @@ public:
 	Move(Work& work);
 
 	Move(Key const& key);
-	Move(Key const& key, unsigned moveNumber, unsigned spacing, MoveNode const* move);
+	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move);
 
 	~Move() throw();
 
@@ -347,12 +306,10 @@ public:
 	Ply const* ply() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
-	void preSpacing(Work& work, bool atLineStart, unsigned space);
-	unsigned putComment(Work& work, db::Comment const& comment, move::Position position);
+	friend class Root;
 
 	List	m_list;
 	Ply*	m_ply;
@@ -370,14 +327,11 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
 	db::Board	m_board;
 	color::ID	m_fromColor;
-	unsigned		m_prefixBreak;
-	unsigned		m_suffixBreak;
 };
 
 
@@ -385,18 +339,18 @@ class Comment : public Node
 {
 public:
 
-	Comment(db::Comment const& comment, move::Position position);
+	Comment(db::Comment const& comment, move::Position position, bool atStart = false);
 
 	bool operator==(Node const* node) const;
 
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
 	move::Position	m_position;
+	bool				m_atStart;
 	db::Comment		m_comment;
 };
 
@@ -412,7 +366,6 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -431,7 +384,6 @@ public:
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -443,15 +395,14 @@ class Space : public Node
 {
 public:
 
-	Space(Bracket bracket = None);
-	Space(unsigned level, Bracket bracket = None);
+	Space(Bracket bracket = Blank);
+	Space(unsigned level);
 
 	bool operator==(Node const* node) const;
 
 	Type type() const;
 
 	void visit(Visitor& visitor) const;
-	void dump(unsigned level) const;
 
 private:
 
@@ -465,6 +416,7 @@ class Visitor
 public:
 
 	typedef Node::LanguageSet LanguageSet;
+	typedef Node::Bracket Bracket;
 
 	virtual ~Visitor() throw();
 
@@ -478,11 +430,11 @@ public:
 	virtual void languages(LanguageSet const& languages) = 0;
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
-	virtual void comment(move::Position position, db::Comment const& comment) = 0;
+	virtual void comment(move::Position position, bool atStartOfVariation, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
 	virtual void marks(MarkSet const& marks) = 0;
-	virtual void space(char bracket) = 0;
-	virtual void linebreak(unsigned level, char bracket) = 0;
+	virtual void space(Bracket bracket) = 0;
+	virtual void linebreak(unsigned level) = 0;
 
 	virtual void start(result::ID result) = 0;
 	virtual void finish(result::ID result) = 0;

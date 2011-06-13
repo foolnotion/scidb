@@ -130,8 +130,6 @@ public:
 	void clearBase();
 	/// Update the characteristics of a game.
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
-	/// Update the move data of a game.
-	void updateMoves(unsigned index);
 
 private:
 

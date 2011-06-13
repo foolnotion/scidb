@@ -69,17 +69,17 @@ proc build {parent menu width height} {
 	set Vars(engine:pause) 0
 	set Vars(engine:lock) 0
 
-	set w [::ttk::frame $parent.f]
+	set w [ttk::frame $parent.f]
 
-	set info [frame $w.info -background $Options(background) -borderwidth 0]
+	set info [tk::frame $w.info -background $Options(background) -borderwidth 0]
 
-	set move  [frame $info.move -background $Options(info:background) -borderwidth 1 -relief raised]
-	set lmove [label $info.move.l \
+	set move  [tk::frame $info.move -background $Options(info:background) -borderwidth 1 -relief raised]
+	set lmove [tk::label $info.move.l \
 					-font $Vars(font:bold) \
 					-background $Options(info:background) \
 					-borderwidth 0 \
 					]
-	set tmove [text $info.move.t \
+	set tmove [tk::text $info.move.t \
 						-background $Options(info:background) \
 						-borderwidth 0 \
 						-foreground $Options(info:background) \
@@ -90,26 +90,26 @@ proc build {parent menu width height} {
 					]
 	$tmove tag configure figurine -font $Vars(font:figurine)
 
-	set dpth  [frame $info.dpth -background $Options(info:background) -borderwidth 1 -relief raised]
-	set ldpth [label $info.dpth.l \
+	set dpth  [tk::frame $info.dpth -background $Options(info:background) -borderwidth 1 -relief raised]
+	set ldpth [tk::label $info.dpth.l \
 					-font $Vars(font:bold) \
 					-background $Options(info:background) \
 					-borderwidth 0 \
 					]
-	set tdpth [label $info.dpth.t \
+	set tdpth [tk::label $info.dpth.t \
 						-background $Options(info:background) \
 						-borderwidth 0 \
 						-foreground $Options(info:background) \
 						-width 0 \
 					]
 
-	set time  [frame $info.time -background $Options(info:background) -borderwidth 1 -relief raised]
-	set ltime [label $info.time.l \
+	set time  [tk::frame $info.time -background $Options(info:background) -borderwidth 1 -relief raised]
+	set ltime [tk::label $info.time.l \
 					-font $Vars(font:bold) \
 					-background $Options(info:background) \
 					-borderwidth 0 \
 					]
-	set ttime [label $info.time.t \
+	set ttime [tk::label $info.time.t \
 						-background $Options(info:background) \
 						-borderwidth 0 \
 						-foreground $Options(info:background) \

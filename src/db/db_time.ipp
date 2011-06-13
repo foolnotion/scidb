@@ -26,27 +26,34 @@
 
 namespace db {
 
-inline Time::operator bool() const		{ return m_year > 0; }
-inline bool Time::isEmpty() const		{ return m_year == 0; }
-inline unsigned Time::year() const		{ return m_year; }
-inline unsigned Time::month() const		{ return m_month; }
-inline unsigned Time::day() const		{ return m_day; }
-inline unsigned Time::hour() const		{ return m_hour; }
-inline unsigned Time::minute() const	{ return m_minute; }
-inline unsigned Time::second() const	{ return m_second; }
-inline void Time::clear()					{ m_year = m_month = m_day = m_hour = m_minute = m_second = 0; }
+inline Time::operator bool() const		{ return m_time.year > 0; }
+inline bool Time::isEmpty() const		{ return m_time.year == 0; }
+inline unsigned Time::year() const		{ return m_time.year; }
+inline unsigned Time::month() const		{ return m_time.month; }
+inline unsigned Time::day() const		{ return m_time.day; }
+inline unsigned Time::hour() const		{ return m_time.hour; }
+inline unsigned Time::minute() const	{ return m_time.minute; }
+inline unsigned Time::second() const	{ return m_time.second; }
+
+
+inline
+void
+Time::clear()
+{
+	m_time.year = m_time.month = m_time.day = m_time.hour = m_time.minute = m_time.second = 0;
+}
 
 
 inline
 bool
 operator==(const Time& lhs, const Time& rhs)
 {
-	return	lhs.m_year		== rhs.m_year
-			&& lhs.m_month		== rhs.m_month
-			&& lhs.m_day		== rhs.m_day
-			&& lhs.m_hour		== rhs.m_hour
-			&& lhs.m_minute	== rhs.m_minute
-			&& lhs.m_second	== rhs.m_second;
+	return	lhs.m_time.year	== rhs.m_time.year
+			&& lhs.m_time.month	== rhs.m_time.month
+			&& lhs.m_time.day		== rhs.m_time.day
+			&& lhs.m_time.hour	== rhs.m_time.hour
+			&& lhs.m_time.minute	== rhs.m_time.minute
+			&& lhs.m_time.second	== rhs.m_time.second;
 }
 
 
@@ -54,12 +61,12 @@ inline
 bool
 operator!=(const Time& lhs, const Time& rhs)
 {
-	return	lhs.m_year		!= rhs.m_year
-			|| lhs.m_month		!= rhs.m_month
-			|| lhs.m_day		!= rhs.m_day
-			|| lhs.m_hour		!= rhs.m_hour
-			|| lhs.m_minute	!= rhs.m_minute
-			|| lhs.m_second	!= rhs.m_second;
+	return	lhs.m_time.year	!= rhs.m_time.year
+			|| lhs.m_time.month	!= rhs.m_time.month
+			|| lhs.m_time.day		!= rhs.m_time.day
+			|| lhs.m_time.hour	!= rhs.m_time.hour
+			|| lhs.m_time.minute	!= rhs.m_time.minute
+			|| lhs.m_time.second	!= rhs.m_time.second;
 }
 
 } // namespace db

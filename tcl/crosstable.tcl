@@ -257,7 +257,7 @@ proc open {parent base index {view -1}} {
 		set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
 		set f [set f[expr {($i - 1)/2 + 1}]]
 		set r [expr {(1 - ($i%2))*2 + 1}]
-		label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
+		tk::label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
 		::ttk::combobox $f.choose$i \
 			-takefocus 0 \
 			-exportselection 0 \
@@ -271,7 +271,7 @@ proc open {parent base index {view -1}} {
 		grid $f.choose$i -row $r -column 3 -sticky ew
 	}
 
-	label $f3.label_type -textvar [namespace current]::mc::Type
+	tk::label $f3.label_type -textvar [namespace current]::mc::Type
 	::ttk::combobox  $f3.choose_type \
 		-takefocus 0 \
 		-exportselection 0 \
@@ -282,7 +282,7 @@ proc open {parent base index {view -1}} {
 		;
 	set Vars(widget:type) $f3.choose_type
 
-	label $f3.label_order -textvar [namespace current]::mc::Order
+	tk::label $f3.label_order -textvar [namespace current]::mc::Order
 	::ttk::combobox $f3.choose_order \
 		-takefocus 0 \
 		-exportselection 0 \
@@ -714,7 +714,7 @@ proc ShowTrace {which} {
 		toplevel $dlg -class Scidb
 		set f [::ttk::frame $dlg.f]
 
-		text $f.text \
+		tk::text $f.text \
 			-width 100 \
 			-height 40 \
 			-yscrollcommand [list $f.vsb set] \
@@ -785,7 +785,7 @@ proc Open {which gameIndex} {
 	set path .application
 
 	if {$which eq "pgn"} {
-		::widget::busyOperation ::game::new $path $base $info $gameIndex
+		::widget::busyOperation ::game::new $path $base $gameIndex
 	} else {
 		set Vars(${which}Id) \
 			[::widget::busyOperation ::${which}::load $path $base $info -1 $gameIndex $Vars(${which}Id)]
@@ -1058,7 +1058,7 @@ proc BuildMenu {m} {
 	menu $sub.padding
 	menu $sub.knockout
 
-	foreach pad {1 2 3 4} {
+	foreach pad {1 2 3 4 5 6} {
 		$sub.padding add radiobutton \
 			-label $pad \
 			-command [namespace code Update] \

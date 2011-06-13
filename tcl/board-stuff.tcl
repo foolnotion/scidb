@@ -78,7 +78,7 @@ proc new {w size {borderSize 0} {flipped 0}} {
 	set Board(animate) 1
 
    set boardSize [expr {8*$size}]
-   frame $w -class Board
+   tk::frame $w -class Board
    canvas $w.c -width $boardSize -height $boardSize -borderwidth $borderSize -relief raised -takefocus 0
    pack $w.c
 

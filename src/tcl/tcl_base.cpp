@@ -568,11 +568,11 @@ tcl::call(	char const* callee,
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
 	if (arg1 && arg2)
-		result = call(callee, cmd, arg1, arg2, list, 0);
+		result = call(callee, cmd, arg1, arg2, list, NULL);
 	else if (arg1)
-		result = call(callee, cmd, arg1, list, 0);
+		result = call(callee, cmd, arg1, list, NULL);
 	else
-		result = call(callee, cmd, list, 0);
+		result = call(callee, cmd, list, NULL);
 
 	return result;
 }

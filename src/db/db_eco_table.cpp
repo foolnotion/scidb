@@ -57,8 +57,6 @@
 using namespace db;
 using namespace util;
 
-typedef util::ByteStream::uint24_t uint24_t;
-
 db::EcoTable db::EcoTable::m_specimen;
 
 
@@ -663,7 +661,7 @@ EcoTable::Loader::load()
 		m_strm.read(buf, sizeof(buf));
 		unsigned version = bstrm.uint16();
 
-		if (version != 99)
+		if (version != FileVersion)
 			DB_RAISE("unknown ECO version (%u)", version);
 
 		unsigned countCodes		= bstrm.uint32();
@@ -1053,7 +1051,6 @@ EcoTable::getSuccessors(uint64_t hash, Successors& successors) const
 
 Eco
 EcoTable::lookup(	Line const& line,
-						Eco& opening,
 						unsigned* length,
 						Successors* successors,
 						EcoSet* reachable) const
@@ -1063,8 +1060,6 @@ EcoTable::lookup(	Line const& line,
 
 	if (reachable)
 		reachable->resize(Eco::Max_Code + 1);
-
-	opening = Eco::root();
 
 	Node const* last = m_root;
 
@@ -1090,11 +1085,10 @@ EcoTable::lookup(	Line const& line,
 	}
 	else
 	{
-		bool							transposed	= false;
-		Node const* 				prev			= last;
-		Branch const*				branch		= m_root->find(line[0]);
-		Node const*					node			= branch->node;
-		StoredLineNode const*	storedLine	= StoredLineNode::m_storedLineRoot;
+		bool				transposed	= false;
+		Node const* 	prev			= last;
+		Branch const*	branch		= m_root->find(line[0]);
+		Node const*		node			= branch->node;
 
 		M_ASSERT(branch);
 
@@ -1113,14 +1107,6 @@ EcoTable::lookup(	Line const& line,
 					last = node;
 
 				prev = node;
-			}
-
-			if (storedLine)
-			{
-				storedLine = storedLine->find(line[i - 1]);
-
-				if (storedLine && storedLine->index)
-					opening = storedLine->opening();
 			}
 		}
 

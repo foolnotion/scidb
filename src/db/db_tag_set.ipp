@@ -25,15 +25,34 @@
 // ======================================================================
 
 #include "m_assert.h"
+#include "m_static_check.h"
 
 namespace db {
 
-inline bool TagSet::contains(tag::ID tag) const					{ return !m_values[tag].empty(); }
+inline bool TagSet::contains(tag::ID tag) const					{ return m_set.test(tag); }
 inline bool TagSet::contains(mstl::string const& tag) const	{ return find(tag) >= 0; }
 inline bool TagSet::isUserSupplied(tag::ID tag) const			{ return m_isUserSupplied[tag]; }
 inline Byte TagSet::significance(tag::ID tag) const			{ return m_significance[tag]; }
 inline mstl::string const& TagSet::value(tag::ID tag) const	{ return m_values[tag]; }
 inline unsigned TagSet::countExtra() const						{ return m_extra.size(); }
+
+
+inline
+tag::ID
+TagSet::findFirst() const
+{
+	M_STATIC_CHECK(tag::ExtraTag < 0xff, Reimplementation_Needed);
+	return tag::ID(m_set.find_first() & 0xff);
+}
+
+
+inline
+tag::ID
+TagSet::findNext(tag::ID prev) const
+{
+	M_STATIC_CHECK(tag::ExtraTag < 0xff, Reimplementation_Needed);
+	return tag::ID(m_set.find_next(prev) & 0xff);
+}
 
 
 inline

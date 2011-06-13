@@ -83,13 +83,13 @@ proc open {parent} {
 	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {[tk windowingsystem] ne "win32"} {
-		set decor [label $top.decor -justify left -text $title -font TkSmallCaptionFont]
+		set decor [tk::label $top.decor -justify left -text $title -font TkSmallCaptionFont]
 		set font [$decor cget -font]
 		$decor configure -font [list [font configure $font -family] [font configure $font -size] bold]
 		pack $decor -fill x -expand yes
-		button $decor.close \
+		tk::button $decor.close \
 			-command [namespace code [list Close $dlg]] \
-			-image $::gamebar::icon::15x15::close \
+			-image $::gamebar::icon::15x15::close(locked) \
 			;
 		Focus $dlg out
 		pack $decor.close -side right

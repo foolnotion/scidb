@@ -1,10 +1,7 @@
-### Theme: Sand ########################
-
 ::board::addStyle theme {
-	identifier		Sand|1228828282840|yellow.color|gregor
-	square-style	Sand|1228820287277|yellow.color|gregor
-	piece-style		Lemon|1227320554192|yellow.color|gregor
-	piece-set		Spatial
+  version		1.0
+  identifier   Sand|1228828282840|yellow.color|gregor
+  square-style Sand|1228820287277|yellow.color|gregor
+  piece-style  Lemon|1227320554192|yellow.color|gregor
+  piece-set    Spatial
 }
-
-# eof

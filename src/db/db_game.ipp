@@ -30,27 +30,25 @@ inline Board const& Game::currentBoard() const		{ return m_currentBoard; }
 inline Board const& Game::startBoard() const			{ return m_startBoard; }
 inline Line const& Game::openingLine() const			{ return m_line; }
 inline Eco const& Game::ecoCode() const				{ return m_eco; }
-inline Eco const& Game::opening() const				{ return m_opening; }
 inline uint16_t Game::idn() const						{ return m_idn; }
 inline uint32_t Game::flags() const						{ return m_flags; }
 inline edit::Key const& Game::currentKey() const	{ return m_currentKey; }
 
-inline bool Game::isMainline() const					{ return m_currentLevel == 0; }
-inline bool Game::isVariation() const					{ return m_currentLevel > 0; }
+inline bool Game::isMainline() const					{ return m_currentKey.level() == 0; }
+inline bool Game::isVariation() const					{ return m_currentKey.level() > 0; }
 inline bool Game::atMainlineStart() const				{ return m_currentNode == m_startNode; }
 inline bool Game::hasUndo() const						{ return m_undoIndex > 0; }
 inline bool Game::hasRedo() const						{ return m_undoIndex < m_undoList.size(); }
 inline bool Game::containsIllegalMoves() const		{ return m_containsIllegalMoves; }
 inline bool Game::isModified() const					{ return m_isModified || m_undoIndex > 0; }
 
-inline unsigned Game::variationLevel() const			{ return m_currentLevel; }
+inline unsigned Game::variationLevel() const			{ return m_currentKey.level(); }
 inline color::ID Game::sideToMove() const				{ return m_currentBoard.sideToMove(); }
 inline TagSet const& Game::tags() const				{ return m_tags; }
 inline GameData const& Game::data() const				{ return *this; }
 
 inline void Game::setTags(TagSet const& tags)		{ m_tags = tags; }
 inline void Game::setFlags(unsigned flags)			{ m_flags = flags; }
-inline void Game::setIsModified(bool flag)			{ m_isModified = flag; }
 
 inline Game::Subscriber* Game::subscriber() const	{ return m_subscriber.get(); }
 

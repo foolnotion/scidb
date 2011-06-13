@@ -28,12 +28,12 @@
 
 namespace db {
 
+
 inline Annotation::Annotation() : m_count(0) {}
 
-inline bool Annotation::isEmpty() const								{ return m_count == 0; }
-inline unsigned Annotation::count() const								{ return m_count; }
-inline Annotation const* Annotation::defaultSet(nag::ID nag)	{ return &DefaultSets[nag]; }
-inline uint8_t const* Annotation::data() const						{ return m_annotation; }
+inline bool Annotation::isEmpty() const			{ return m_count == 0; }
+inline unsigned Annotation::count() const			{ return m_count; }
+inline uint8_t const* Annotation::data() const	{ return m_annotation; }
 
 
 inline

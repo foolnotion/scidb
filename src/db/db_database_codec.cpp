@@ -118,6 +118,9 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 	if (tags.contains(tag::TimeMode))
 		timeMode = time::fromString(tags.value(tag::TimeMode));
 
+	if (tags.contains(tag::EventType))
+		eventType = event::typeFromString(tags.value(tag::EventType));
+
 	if (tags.contains(tag::EventCountry))
 		eventCountry = country::fromString(tags.value(tag::EventCountry));
 
@@ -377,14 +380,14 @@ DatabaseCodec::openFile(mstl::fstream& stream,
 Time
 DatabaseCodec::modified(mstl::string const& rootname) const
 {
-	sys::file::Time tm;
-	sys::file::changed(rootname + "." + extension(), tm);
-	return Time(tm);
+	uint32_t time;
+	sys::file::changed(rootname + "." + extension(), time);
+	return Time(time);
 }
 
 
-uint32_t
-DatabaseCodec::computeChecksum(/*unsigned, */GameInfo const&, uint32_t crc) const
+util::crc::checksum_t
+DatabaseCodec::computeChecksum(/*unsigned, */GameInfo const&, util::crc::checksum_t crc) const
 {
 	return crc == 0 ? 1 : crc;	// do not use zero!
 }
@@ -648,17 +651,23 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 	if (provider.plyCount() > maxGameLength())
 		return save::GameTooLong;
 
-	GameInfo* info = 0;
+	GameInfo*	info = 0;
+	unsigned		index;
 
 	if (provider.index() >= 0)
 	{
-		info = m_db->m_gameInfoList[provider.index()];
+		index = provider.index();
+		info = m_db->m_gameInfoList[index];
 		*m_storedInfo = *info;
 		info->reset(m_db->m_namebases);
 	}
 	else if (m_db->size() == maxGameCount())
 	{
 		return save::TooManyGames;
+	}
+	else
+	{
+		index = m_db->m_gameInfoList.size();
 	}
 
 	unsigned maxAnnotatorCount	= this->maxAnnotatorCount();
@@ -705,8 +714,6 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 						|| eventEntry == 0
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
-
-	unsigned index = info ? provider.index() : m_db->m_gameInfoList.size();
 
 	if (format() != format::Scidb)
 	{

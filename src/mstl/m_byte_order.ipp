@@ -19,14 +19,6 @@
 #include <byteswap.h>
 #include <endian.h>
 
-extern "C" {
-
-inline static uint16_t __attribute__((always_inline)) __mstl_bswap_16(uint16_t a) { return bswap_16(a); }
-inline static uint32_t __attribute__((always_inline)) __mstl_bswap_32(uint32_t a) { return bswap_32(a); }
-inline static uint64_t __attribute__((always_inline)) __mstl_bswap_64(uint64_t a) { return bswap_64(a); }
-
-} // extern "C"
-
 namespace mstl {
 namespace bo {
 

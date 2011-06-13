@@ -882,7 +882,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 					-labelwidget [ttk::label $bot.lborderline -textvar [namespace current]::mc::Borderline]]
 
 	ttk::label $brl.lwidth -textvar [namespace current]::mc::Width
-	scale $brl.swidth \
+	tk::scale $brl.swidth \
 		-from 0 \
 		-to 20 \
 		-orient horizontal \
@@ -894,7 +894,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	ttk::label $brl.lopacity -textvar [namespace current]::mc::Opacity
 	ttk::frame $brl.fopacity -borderwidth 1 -relief flat
 	set Widget(opacity) [ \
-		scale $brl.sopacity \
+		tk::scale $brl.sopacity \
 			-from 0 \
 			-to 255 \
 			-orient horizontal \

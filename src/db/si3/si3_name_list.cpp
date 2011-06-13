@@ -235,19 +235,22 @@ NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 void
 NameList::copyNode(Node* node, NamebaseEntry* entry)
 {
-	unsigned oldId = node->id;
+	unsigned id		= entry->id();
+	unsigned oldId	= node->id;
 
-	if (!m_usedIdSet.test(oldId) && entry->id() < oldId)
+	if (!m_usedIdSet.test(oldId) && id < oldId)
 	{
+		M_ASSERT(id < m_size);
 		m_newIdSet.reset(oldId);
-		m_newIdSet.set(node->id = entry->id());
+		m_newIdSet.set(node->id = id);
 		node->entry = entry;
-
-		if (node->id >= m_size)
-			m_size = node->id + 1;
+	}
+	else if (id >= m_size)
+	{
+		m_size = id + 1;
 	}
 
-	m_lookup[entry->id()] = node;
+	m_lookup[id] = node;
 
 	if ((node->frequency += entry->frequency()) > m_maxFrequency)
 		m_maxFrequency = node->frequency;

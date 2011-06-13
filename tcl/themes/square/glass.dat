@@ -1,34 +1,33 @@
-### Square Style: Glass ########################
-
 ::board::addStyle square {
-	identifier					{Glass|1228820514871|yellow.color|gregor}
+  version               {1.0}
+  identifier            {Glass|1228820514871|yellow.color|gregor}
 
-	lite,rotation				0
-	lite,solid					#77a26d
-	lite,texture				{misc texture_etre.png}
-	lite,x1						0
-	lite,x2						150
-	lite,y1						0
-	lite,y2						150
+  lite,rotation         0
+  lite,solid            #77a26d
+  lite,texture          {misc texture_etre.png}
+  lite,x1               0
+  lite,x2               150
+  lite,y1               0
+  lite,y2               150
 
-	dark,rotation				0
-	dark,solid					#c8c365
-	dark,texture				{misc texture_etre.jpg}
-	dark,x1						0
-	dark,x2						150
-	dark,y1						0
-	dark,y2						150
+  dark,rotation         0
+  dark,solid            #c8c365
+  dark,texture          {misc texture_etre.jpg}
+  dark,x1               0
+  dark,x2               150
+  dark,y1               0
+  dark,y2               150
 
-	borderline,width			0
-	borderline,opacity		0x50
-	borderline,gap				0
+  borderline,width      0
+  borderline,opacity    0x50
+  borderline,gap        0
 
-	hilite,selected			#abe09f
-	hilite,suggested			#6e4ce0
+  hilite,selected       #abe09f
+  hilite,suggested      #6e4ce0
 
-	hint,border-color			#127a7a
-	hint,border-tile			{}
-	hint,background-color	#169393
-	hint,background-tile		{}
-	hint,coordinates 			#ffffff
+  hint,border-color     #127a7a
+  hint,border-tile      {}
+  hint,background-color #169393
+  hint,background-tile  {}
+  hint,coordinates      #ffffff
 }

@@ -48,6 +48,7 @@ public:
 	Eco opening() const;
 	Line const& line() const;
 
+	static StoredLine const& lookup(Eco const& key);
 	static StoredLine const& getLine(uint8_t index);
 	static StoredLine const& findLine(Line const& line);
 	static char const* getText(uint8_t index);

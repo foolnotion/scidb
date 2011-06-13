@@ -35,6 +35,8 @@
 
 #include "sys_utf8_codec.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 #include "m_vector.h"
 #include "m_stack.h"
@@ -78,142 +80,8 @@ struct UndoApplyWatcher
 } // namespace
 
 
-struct Game::CleanUp
-{
-	struct Position
-	{
-		Position();
-		Position(board::ExactPosition const& pos, MoveNode* n) :position(pos), node(n) {}
-
-		bool operator==(board::ExactPosition const& pos) const { return position == pos; }
-
-		board::ExactPosition	position;
-		MoveNode*				node;
-	};
-
-	typedef mstl::list<Position> List;
-	typedef mstl::hash<uint64_t,List> Map;
-
-	static unsigned
-	transfer(Board board, Map& map, MoveNode* main, unsigned varno, Position const* dest)
-	{
-		MoveNode* node = main->variation(varno)->next();
-
-		Position const* prev = dest;
-		Position const* next = dest;
-
-		// XXX wrong!
-		// we have to search backwards, and we have to compare the position traces
-
-		do
-		{
-			board.doMove(node->move());
-
-			prev = next;
-			node = node->next();
-
-			if (Map::const_pointer j = map.find(board.hash()))
-				next = mstl::find(j->begin(), j->end(), board.exactPosition());
-			else
-				next = 0;
-		}
-		while (node && next && prev->node->next() == next->node);
-
-		if (node)
-		{
-			// TODO
-			// strip variation from beginning to node; but: merge annotations
-			// transfer stripped variation to dest
-		}
-		else
-		{
-			// TODO
-			// delete whole variation; but: merge annotations
-		}
-
-		return 0;
-	}
-
-	static unsigned
-	cleanup(MoveNode* root, Board const& board, Map map)
-	{
-		M_ASSERT(root->atLineStart());
-
-		Board myBoard(board);
-
-		for (MoveNode* node = root->next(); node; node = node->next())
-		{
-			myBoard.doMove(node->move());
-
-			List& positions = map.find_or_insert(board.hash(), List());
-			List::iterator i = mstl::find(positions.begin(), positions.end(), board.exactPosition());
-
-			if (i == positions.end())
-				positions.push_back(Position(board.exactPosition(), node));
-		}
-
-		unsigned count = 0;
-
-		myBoard = board;
-
-		for (MoveNode* node = root->next(); node; node = node->next())
-		{
-			if (node->hasVariation())
-			{
-				for (unsigned i = 0; i < node->variationCount(); ++i)
-				{
-					MoveNode* n = node->variation(i)->next();
-
-					if (n)
-					{
-						if (Map::const_pointer p = map.find(myBoard.hash()))
-						{
-							Position const* pos = mstl::find(p->begin(), p->end(), myBoard.exactPosition());
-
-							if (pos)
-								count += transfer(myBoard, map, node, i, pos);
-						}
-					}
-				}
-			}
-
-			myBoard.doMove(node->move());
-		}
-
-		myBoard = board;
-
-		for (MoveNode* node = root->next(); node; node = node->next())
-		{
-			if (node->hasVariation())
-			{
-				for (unsigned i = 0; i < node->variationCount(); ++i)
-					count += cleanup(node->variation(i), myBoard, map);
-			}
-		}
-
-		return count;
-	}
-
-	static unsigned
-	cleanup(MoveNode* root, Board const& board)
-	{
-		return cleanup(root, board, Map());
-	}
-};
-
-
 Game::Subscriber::~Subscriber() throw() {}
 bool Game::Subscriber::mainlineOnly() { return false; }
-
-
-void
-Game::Subscriber::setFlag(unsigned& value, unsigned flag, bool set)
-{
-	if (set)
-		value |= flag;
-	else
-		value &= ~flag;
-}
 
 
 struct Game::Undo
@@ -285,14 +153,15 @@ Game::Game()
 	,m_currentNode(m_startNode)
 	,m_editNode(0)
 	,m_currentBoard(m_startBoard)
-	,m_currentLevel(0)
 	,m_idn(0)
 	,m_undoIndex(0)
 	,m_maxUndoLevel(0)
 	,m_undoCommand(None)
 	,m_redoCommand(None)
 	,m_flags(0)
+	,m_isIrreversible(false)
 	,m_isModified(false)
+	,m_wasModified(false)
 	,m_containsIllegalMoves(false)
 	,m_finalBoardIsValid(false)
 	,m_line(m_lineBuf[0])
@@ -331,16 +200,17 @@ Game::operator=(Game const& game)
 		m_startNode							= game.m_startNode ? game.m_startNode->clone() : 0;
 		m_startBoard						= game.m_startBoard;
 		m_currentBoard						= game.m_startBoard;
+		m_finalBoard						= game.m_finalBoard;
 		m_currentNode						= m_startNode;
 		m_editNode							= 0;
 		m_currentKey						= edit::Key(game.m_startBoard.plyNumber());
-		m_currentLevel						= 0;
 		m_idn									= game.m_idn;
 		m_eco									= game.m_eco;
-		m_opening							= game.m_opening;
 		m_languageSet						= game.m_languageSet;
 		m_wantedLanguages					= game.m_wantedLanguages;
+		m_isIrreversible					= false;
 		m_isModified						= false;
+		m_wasModified						= false;
 		m_containsIllegalMoves			= game.m_containsIllegalMoves;
 		m_finalBoardIsValid				= false;
 		m_subscriber						= game.m_subscriber;
@@ -389,7 +259,7 @@ Game::newUndo(UndoAction action, Command command)
 			m_undoList.pop_front();
 			m_undoList.push_back(undo);
 			undo->clear();
-			m_isModified = true;
+			m_isIrreversible = true;
 		}
 		else
 		{
@@ -406,9 +276,15 @@ Game::newUndo(UndoAction action, Command command)
 	undo.key = m_currentKey;
 
 	if (m_undoCommand != None)
-		--m_undoIndex;
+	{
+		if (--m_undoIndex == 0 && !m_isIrreversible)
+			m_isModified = false;
+	}
 	else if (m_redoCommand == None)
+	{
 		undo.command = command;
+		m_isModified = true;
+	}
 
 	return undo;
 }
@@ -437,7 +313,7 @@ Game::insertUndo(UndoAction action, Command command)
 	if (m_maxUndoLevel)
 		newUndo(action, command);
 	else
-		m_isModified = true;
+		m_isIrreversible = true;
 }
 
 
@@ -472,12 +348,14 @@ Game::insertUndo(	UndoAction action,
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
 		{
 			prev->clear();
-			--m_undoIndex;
+
+			if (--m_undoIndex == 0 && !m_isIrreversible)
+				m_isModified = false;
 		}
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 	}
 }
 
@@ -505,12 +383,14 @@ Game::insertUndo(UndoAction action, Command command, MarkSet const& oldMarks, Ma
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation()))
 		{
 			prev->clear();
-			--m_undoIndex;
+
+			if (--m_undoIndex == 0 && !m_isIrreversible)
+				m_isModified = false;
 		}
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 	}
 }
 
@@ -541,12 +421,14 @@ Game::insertUndo(	UndoAction action,
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
 		{
 			prev->clear();
-			--m_undoIndex;
+
+			if (--m_undoIndex == 0 && !m_isIrreversible)
+				m_isModified = false;
 		}
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 	}
 }
 
@@ -567,7 +449,7 @@ Game::insertUndo(UndoAction action, Command command, MoveNode* node)
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 		delete node;
 	}
 }
@@ -586,7 +468,7 @@ Game::insertUndo(UndoAction action, Command command, MoveNode* node, unsigned va
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 		delete node;
 	}
 }
@@ -600,7 +482,7 @@ Game::insertUndo(UndoAction action, Command command, unsigned varNo)
 	if (m_maxUndoLevel)
 		newUndo(action, command).varNo = varNo;
 	else
-		m_isModified = true;
+		m_isIrreversible = true;
 }
 
 
@@ -617,7 +499,7 @@ Game::insertUndo(UndoAction action, Command command, unsigned varNo1, unsigned v
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 	}
 }
 
@@ -635,7 +517,7 @@ Game::insertUndo(UndoAction action, Command command, MoveNode* node, Board const
 	}
 	else
 	{
-		m_isModified = true;
+		m_isIrreversible = true;
 	}
 }
 
@@ -753,6 +635,7 @@ Game::redo()
 
 	Undo& redo = *m_undoList[m_undoIndex];
 	UndoApplyWatcher watcher(m_redoCommand, redo.command);
+	m_isModified = true;
 	applyUndo(redo, true);
 }
 
@@ -788,7 +671,7 @@ Game::atLineEnd() const
 bool
 Game::isFirstVariation() const
 {
-	if (m_currentLevel == 0)
+	if (m_currentKey.level() == 0)
 		return false;
 
 	MoveNode* node = m_currentNode;
@@ -809,7 +692,7 @@ Game::isFirstVariation() const
 bool
 Game::isLastVariation() const
 {
-	if (m_currentLevel == 0)
+	if (m_currentKey.level() == 0)
 		return true;
 
 	MoveNode* node = m_currentNode;
@@ -1139,7 +1022,6 @@ void
 Game::moveToMainlineStart()
 {
 	m_currentKey.reset(m_startBoard.plyNumber());
-	m_currentLevel = 0;
 	m_currentNode = m_startNode;
 	m_currentBoard = m_startBoard;
 }
@@ -1211,6 +1093,8 @@ Game::goToPosition(mstl::string const& fen)
 void
 Game::moveTo(edit::Key const& key)
 {
+	M_REQUIRE(isValidKey(key));
+
 	edit::Key wantedKey(key);
 	edit::Key currentKey(m_currentKey);
 
@@ -1371,7 +1255,7 @@ Game::countVariations() const
 unsigned
 Game::variationNumber() const
 {
-	if (m_currentLevel == 0)
+	if (m_currentKey.level() == 0)
 		return 0;
 
 	MoveNode* node = m_currentNode;
@@ -1416,7 +1300,6 @@ Game::enterVariation(unsigned variationNumber)
 	m_currentKey.addPly(m_currentBoard.plyNumber());
 	undoMove();
 	m_currentNode = m_currentNode->variation(variationNumber);
-	++m_currentLevel;
 }
 
 
@@ -1429,7 +1312,6 @@ Game::exitVariation()
 	m_currentNode = m_currentNode->prev();
 	m_currentKey.removePly();
 	m_currentKey.removeVariation();
-	--m_currentLevel;
 	doMove();
 
 	M_ASSERT(m_currentNode);
@@ -1455,6 +1337,15 @@ Game::goToMainlineEnd()
 		moveToMainlineEnd();
 		goToCurrentMove();
 	}
+}
+
+
+void
+Game::goToFirst()
+{
+	backward(mstl::numeric_limits<unsigned>::max());
+	forward();
+	goToCurrentMove();
 }
 
 
@@ -1485,6 +1376,8 @@ Game::goTo(mstl::string const& key)
 void
 Game::goTo(edit::Key const& key)
 {
+	M_REQUIRE(isValidKey(key));
+
 	moveTo(key);
 	goToCurrentMove();
 }
@@ -1540,10 +1433,10 @@ Game::goOutOfVariation()
 void
 Game::goIntoNextVariation()
 {
-	if (m_currentLevel == 0 && m_currentNode->atLineEnd())
+	if (m_currentKey.level() == 0 && m_currentNode->atLineEnd())
 		return;
 
-	if (m_currentLevel == 0 && m_currentNode->next()->variationCount() == 0)
+	if (m_currentKey.level() == 0 && m_currentNode->next()->variationCount() == 0)
 	{
 		goForward();
 	}
@@ -1556,7 +1449,7 @@ Game::goIntoNextVariation()
 
 		if (node->variationCount() == 0)
 		{
-			if (m_currentLevel > 0)
+			if (m_currentKey.level() > 0)
 				exitVariation();
 
 			while (!node->atLineStart())
@@ -1585,10 +1478,10 @@ Game::goIntoNextVariation()
 void
 Game::goIntoPrevVariation()
 {
-	if (m_currentLevel == 0 && m_currentNode->atLineStart())
+	if (m_currentKey.level() == 0 && m_currentNode->atLineStart())
 		return;
 
-	if (m_currentLevel == 0)
+	if (m_currentKey.level() == 0)
 	{
 		goBackward();
 	}
@@ -1771,6 +1664,13 @@ Game::addMove(mstl::string const& san)
 
 
 bool
+Game::isValidKey(edit::Key const& key) const
+{
+	return key.findPosition(m_startNode, m_startBoard.plyNumber()) != 0;
+}
+
+
+bool
 Game::isValidVariation(MoveNode const* node) const
 {
 	M_REQUIRE(node);
@@ -1891,7 +1791,7 @@ Game::removeMainline()
 
 
 bool
-Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKingMoves)
+Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 {
 	M_ASSERT(node);
 
@@ -1913,27 +1813,6 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 
 			bool truncate = true;
 
-#if 0
-			if (tryToFixKingMoves && !node->move().isCastling() && node->move().pieceMoved() == piece::King)
-			{
-				color::ID stm = board.sideToMove();
-
-				if (board.kingSquare(stm) != node->move().to())
-				{
-					Move move = board.prepareMove(board.kingSquare(stm), node->move().to());
-
-					if (move.isLegal() && board.isValidMove(move, node->constraint()))
-					{
-						board.prepareUndo(move);
-						board.prepareForSan(move);
-
-						node->setMove(move);
-						truncate = false;
-					}
-				}
-			}
-#endif
-
 			if (truncate)
 			{
 				node->prev()->deleteNext();
@@ -1947,7 +1826,7 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag, bool tryToFixKi
 			{
 				Board b(board);
 
-				if (!checkConsistency(node->variation(i)->next(), b, flag, tryToFixKingMoves))
+				if (!checkConsistency(node->variation(i)->next(), b, flag))
 					return false;
 
 				if (node->variation(i)->atLineEnd())
@@ -2393,7 +2272,8 @@ Game::resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const&)
 	moveToMainlineStart();
 	m_startNode = startNode;
 	m_startBoard = startBoard;
-	insertUndo(Set_Start_Position, Clear, node, board);
+	if (node->next() && !board.isEqualPosition(m_startBoard))
+		insertUndo(Set_Start_Position, Clear, node, board);
 	moveToMainlineStart();
 	updateSubscriber(UpdateAll);
 }
@@ -2403,7 +2283,8 @@ void
 Game::clear(Board const* startPosition)
 {
 	moveToMainlineStart();
-	insertUndo(Set_Start_Position, Clear, m_startNode, m_startBoard);
+	if (m_startNode->next())
+		insertUndo(Set_Start_Position, Clear, m_startNode, m_startBoard);
 	m_startNode = m_currentNode = new MoveNode();
 	if (startPosition)
 		m_startBoard = *startPosition;
@@ -2416,25 +2297,39 @@ void
 Game::resetForNextLoad()
 {
 	delete m_startNode;
+	delete m_editNode;
+
 	m_startNode = m_currentNode = new MoveNode();
+	m_editNode = 0;
 	m_currentKey.clear();
-	m_currentLevel = 0;
 	m_undoList.clear();
 	m_languageSet.clear();
 	m_undoIndex = 0;
 	m_idn = 0;
+	m_isIrreversible = false;
 	m_isModified = false;
+	m_wasModified = false;
 	m_finalBoardIsValid = false;
 	m_currentBoard = m_startBoard;
 	m_tags.clear();
+	m_finalBoard.clear();
 	m_flags = 0;
+	m_eco = Eco();
+	m_undoCommand = None;
+	m_redoCommand = None;
+	m_containsIllegalMoves = false;
+	m_line.length = 0;
 }
 
 
-uint64_t
-Game::computeChecksum(uint64_t crc) const
+util::crc::checksum_t
+Game::computeChecksum(util::crc::checksum_t crc) const
 {
-	return m_startNode->computeChecksum(crc);
+	crc = util::crc::compute(crc, reinterpret_cast<unsigned char const*>(&m_startBoard), sizeof(Board));
+	crc = m_startNode->computeChecksum(crc);
+	crc = m_tags.computeChecksum(crc);
+
+	return crc;
 }
 
 
@@ -2600,27 +2495,26 @@ Game::updateLine()
 		{
 			if (line != m_line || !m_eco)
 			{
-				Eco opening(m_opening);
 				Eco eco(m_eco);
 
 				m_line = line;
 				m_eco = EcoTable::specimen().getEco(m_line);
 
-				EcoTable::specimen().lookup(m_line, m_opening);
+				EcoTable::specimen().lookup(m_line);
 
-				if (m_eco != eco || opening != m_opening)
+				if (m_eco != eco)
 					update = true;
 			}
 		}
 		else
 		{
-			m_eco = m_opening = 0;
 			m_eco = 0;
+			m_line.length = 0;
 		}
 	}
 	else
 	{
-		m_eco = m_opening = 0;
+		m_eco = 0;
 		m_line.length = 0;
 	}
 
@@ -2690,7 +2584,7 @@ Game::transpose(Force flag)
 		root->transpose();
 		board.transpose();
 
-		if (!checkConsistency(root.get(), board, flag, true))
+		if (!checkConsistency(root.get(), board, flag))
 			return false;
 
 		insertUndo(Revert_Game, Transpose, m_startNode);
@@ -2706,19 +2600,107 @@ Game::transpose(Force flag)
 }
 
 
-unsigned
-Game::cleanupVariations()
+void
+Game::unfold()
 {
-	unsigned k = CleanUp::cleanup(m_startNode, m_startBoard);
-	unsigned n = k;
+	MoveNode*	node		= m_currentNode;
+	unsigned		level		= 0;
+	bool			unfolded	= false;
 
-	while (k)
+	do
 	{
-		k = CleanUp::cleanup(m_startNode, m_startBoard);
-		n += k;
-	}
+		if (!node->atLineStart())
+			node = node->prev();
 
-	return n;
+		if (level == 0 && node->atLineStart())
+		{
+			node = node->prev();
+			++level;
+		}
+		else
+		{
+			while (!node->atLineStart())
+				node = node->prev();
+
+			if (node->isFolded())
+			{
+				node->setFolded(false);
+				unfolded = true;
+			}
+
+			node = node->prev();
+			++level;
+		}
+	}
+	while (node);
+
+	if (unfolded)
+		updateSubscriber(UpdatePgn);
+}
+
+
+bool
+Game::isFolded(edit::Key const& key) const
+{
+	M_REQUIRE(isValidKey(key));
+
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
+
+	while (!node->atLineStart())
+		node = node->prev();
+
+	return node->isFolded();
+}
+
+
+void
+Game::setFolded(edit::Key const& key, bool flag)
+{
+	M_REQUIRE(isValidKey(key));
+	M_REQUIRE(key.level() > 0);
+
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
+
+	while (!node->atLineStart())
+		node = node->prev();
+
+	if (flag && node->contains(m_currentNode))
+		goToFirst();
+
+	node->setFolded(flag);
+	updateSubscriber(UpdatePgn);
+}
+
+
+void
+Game::toggleFolded(edit::Key const& key)
+{
+	M_REQUIRE(isValidKey(key));
+	M_REQUIRE(key.level() > 0);
+
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
+
+	while (!node->atLineStart())
+		node = node->prev();
+
+	bool flag = !node->isFolded();
+
+	if (flag && node->contains(m_currentNode))
+		goToFirst();
+
+	node->setFolded(flag);
+	updateSubscriber(UpdatePgn);
+}
+
+
+void
+Game::setFolded(bool flag)
+{
+	if (flag && isVariation())
+		goToFirst();
+
+	m_startNode->fold(flag);
+	updateSubscriber(UpdatePgn);
 }
 
 
@@ -2744,8 +2726,10 @@ Game::setLanguages(LanguageSet const& set)
 bool
 Game::containsLanguage(edit::Key const& key, move::Position position, mstl::string const& lang) const
 {
+	M_REQUIRE(isValidKey(key));
+
 	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
-	return node && node->comment(position).containsLanguage(lang);
+	return node->comment(position).containsLanguage(lang);
 }
 
 
@@ -2820,12 +2804,14 @@ Game::updateSubscriber(unsigned action)
 
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
-//			m_subscriber->updateEditor(editNode.get());
 			m_subscriber->updateEditor(diff, m_tags);
 			delete m_editNode;
 			m_editNode = editNode.release();
 		}
 	}
+
+	if (m_isModified != m_wasModified)
+		m_subscriber->stateChanged(m_wasModified = m_isModified);
 
 	if (action & UpdateBoard)
 		goToCurrentMove();
@@ -2835,6 +2821,8 @@ Game::updateSubscriber(unsigned action)
 Board
 Game::board(edit::Key const& key) const
 {
+	M_REQUIRE(isValidKey(key));
+
 	Board board = m_startBoard;
 	key.setBoard(m_startNode, board);
 	return board;
@@ -2869,8 +2857,23 @@ Game::setup(unsigned linebreakThreshold,
 	m_linebreakThreshold				= linebreakThreshold;
 	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
 	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
-	m_linebreakMinCommentLength		= linebreakMinCommentLength;
+	m_linebreakMinCommentLength	= linebreakMinCommentLength;
 	m_displayStyle						= displayStyle;
+}
+
+
+void
+Game::setIsModified(bool flag)
+{
+	m_isModified = flag;
+
+	if (flag)
+		m_isIrreversible = false;
+	else
+		m_undoIndex = 0;
+
+	if (m_subscriber && m_isModified != m_wasModified)
+		m_subscriber->stateChanged(m_wasModified = m_isModified);
 }
 
 // vi:set ts=3 sw=3:

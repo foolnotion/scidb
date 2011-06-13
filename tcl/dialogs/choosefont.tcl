@@ -390,7 +390,7 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 	variable ${dlg}::S
 
 	ttk::style configure fsbox.TButton -anchor w -width -1
-	set buttons [frame $dlg.buttons]
+	set buttons [tk::frame $dlg.buttons]
 	set focusInCmd "%W configure -default active; $buttons.ok configure -default normal"
 	set focusOutCmd "%W configure -default normal; $buttons.ok configure -default active"
 
@@ -570,11 +570,11 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 	}
 
 	set height 8
-	entry $w.efont \
+	tk::entry $w.efont \
 		-textvariable [namespace current]::${w}::S(font) \
 		-background white
 	ttk::scrollbar $w.sbfonts -command [list $w.lfonts yview]
-	listbox $w.lfonts \
+	tk::listbox $w.lfonts \
 		-listvariable [namespace current]::${w}::S(fonts) \
 		-yscroll [list $w.sbfonts set] \
 		-height $height \
@@ -583,25 +583,25 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		-exportselection 0 \
 		-highlightthickness 0 \
 		-setgrid 1
-	entry $w.estyle \
+	tk::entry $w.estyle \
 		-textvariable [namespace current]::${w}::S(style) \
 		-background white \
 		-takefocus 0 \
 		-width 0
-	listbox $w.lstyles \
+	tk::listbox $w.lstyles \
 		-listvariable [namespace current]::Vars(styles) \
 		-height $height \
 		-width 0 \
 		-background white \
 	   -exportselection 0 \
 		-highlightthickness 0
-	entry $w.esize \
+	tk::entry $w.esize \
 		-textvariable [namespace current]::${w}::S(size) \
 		-background white \
 		-takefocus 0 \
 		-width 0
 	ttk::scrollbar $w.sbsizes -command [list $w.lsizes yview]
-	listbox $w.lsizes \
+	tk::listbox $w.lsizes \
 		-listvariable [namespace current]::Vars(sizes) \
 	   -yscroll [list $w.sbsizes set] \
 		-width 6 \
@@ -690,8 +690,8 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 
 	set WS $w.sample
 	ttk::labelframe $WS -text [Tr Sample]
-	label $WS.fsample -borderwidth 2 -relief sunken
-	label $WS.fsample.sample -text $Vars(sample) -background white
+	tk::label $WS.fsample -borderwidth 2 -relief sunken
+	tk::label $WS.fsample.sample -text $Vars(sample) -background white
 	if {[llength $color]} { $WS.fsample.sample configure -foreground $color }
 	set S(sample) $WS.fsample.sample
 	pack $WS.fsample -fill both -expand 1 -padx 10 -pady 10 -ipady 15

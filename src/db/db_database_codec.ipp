@@ -31,10 +31,13 @@ namespace db {
 inline bool DatabaseCodec::isOpen() const								{ return m_db; }
 inline bool DatabaseCodec::isReadOnly() const						{ return m_db->m_readOnly; }
 inline void DatabaseCodec::setType(DatabaseContent::Type type) { m_db->m_type = type; }
-inline void DatabaseCodec::setDescription(char const* description){ m_db->m_description = description; }
+inline void DatabaseCodec::setCreated(uint32_t time)				{ m_db->m_created = time; }
 inline mstl::string const& DatabaseCodec::description() const	{ return m_db->m_description; }
 inline DatabaseContent::Type DatabaseCodec::type() const			{ return m_db->m_type; }
+inline uint32_t DatabaseCodec::created() const						{ return m_db->m_created; }
 inline Namebases& DatabaseCodec::namebases()							{ return m_db->m_namebases; }
+
+inline void DatabaseCodec::setDescription(char const* description) { m_db->m_description = description; }
 
 
 inline

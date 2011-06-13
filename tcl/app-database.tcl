@@ -60,6 +60,7 @@ set GameCount					"Games"
 set DatabasePath				"Database path"
 set DeletedGames				"Deleted Games"
 set Description				"Description"
+set Created						"Created"
 set LastModified				"Last modified"
 set Encoding					"Encoding"
 set YearRange					"Year range"
@@ -163,7 +164,7 @@ proc build {tab menu width height} {
 		-orient vertical \
 		-opaqueresize true \
 		-borderwidth 0 \
-		-sashcmd [namespace code SashCmd]
+		-sashcmd [namespace code SashCmd] \
 		]
 	pack $main -fill both -expand yes
 	set switcher [::ttk::frame $main.switcher -borderwidth 1]
@@ -267,7 +268,8 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 
 
 proc closeBase {parent {file {}} {number -1}} {
-	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
+#	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
+CloseBase $parent $file $number
 }
 
 
@@ -349,6 +351,9 @@ proc OpenBase {parent file encoding readonly} {
 			set k [FindRecentFile $file]
 			if {$k >= 0} {
 				set encoding [lindex $RecentFiles $k 2]
+				if {$readonly == -1} {
+					set readonly [lindex $RecentFiles $k 3]
+				}
 			}
 		}
 		if {$ext eq ".gz" || $ext eq ".zip"} { set name [file rootname $name] }
@@ -466,29 +471,6 @@ proc SashCmd {w action x y} {
 	}
 
 	return [list $x $y]
-}
-
-
-proc MarkSash {w x y} {
-	variable Vars
-
-	set Vars(y) $y
-	incr Vars(y) [expr {[games::overhang $Vars(games)] - 2*[games::borderwidth $Vars(games)]}]
-	::tk::panedwindow::MarkSash $w $x $y 0
-}
-
-
-proc DragSash {w x y} {
-	variable Vars
-
-	if {$y > $Vars(y)} {
-		set y [expr {(($y - $Vars(y))/$Vars(incr))*$Vars(incr) + $Vars(y)}]
-	} else {
-		set y [expr {$Vars(y) - (($Vars(y) - $y)/$Vars(incr))*$Vars(incr)}]
-	}
-
-	::tk::panedwindow::DragSash $w $x $y 0
-	set Vars(pixels) 0
 }
 
 
@@ -661,7 +643,7 @@ proc AddBase {type file encoding readonly} {
 	set Vars(active) $i
 	set Vars(selection) $i
 	if {[llength $encoding] == 0} { set encoding [::scidb::db::get codec] }
-	lappend Vars(bases) [list $i $type $file $name $ext $encoding]
+	lappend Vars(bases) [list $i $type $file $name $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
 	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
 	set count [::locale::formatNumber $count]
@@ -685,7 +667,7 @@ proc AddBase {type file encoding readonly} {
 		set symFont $Defaults(font-symbol-normal)
 	}
 
-	label .tmp; set Vars(background) [.tmp cget -background]; destroy .tmp
+	tk::label .tmp; set Vars(background) [.tmp cget -background]; destroy .tmp
 	$canv create rectangle 0 0 0 0 -tag active$i -fill black -width 0
 	$canv create rectangle 0 0 0 0 -tag filler$i -fill white -width 0
 	$canv create rectangle 0 0 0 0 -tag border1$i -fill white -width 0
@@ -823,7 +805,6 @@ proc RefreshSwitcher {} {
 	$Vars(canvas) itemconfigure size$i -text $count
 	LayoutSwitcher
 }
-
 
 
 proc LanguageChanged {} {
@@ -1020,12 +1001,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lassign [lindex $Vars(bases) $k] i type file name ext
 		set readonly [::scidb::db::get readonly? $file]
 		set isSciFormat [expr {$ext eq "sci"}]
-		switch $ext {
-			sci			{ set type scidb }
-			si3 - si4	{ set type scid }
-			default		{ set type pgn }
-		}
-		if {$name eq $clipbaseName} { set name [set [namespace current]::mc::T_Clipbase] }
+		set isClipbase [expr {$name eq $clipbaseName}]
+		if {$isClipbase} { set name [set [namespace current]::mc::T_Clipbase] }
 		$menu add command                                    \
 			-label " [encoding convertfrom utf-8 $name]"      \
 			-image $::icon::16x16::none                       \
@@ -1037,41 +1014,56 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-font $options(menu:headerfont)                   \
 			;
 		$menu add separator
-		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info
+		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {}
 		lappend specs command $::menu::mc::FileExport [list ::export::open $canv $file $type $name 0] \
-			0 0 fileExport
-		lappend specs command $::menu::mc::FileImport ::menu::dbImport 1 0 filetypePGN
-		lappend specs separator {} {} {} {} {}
+			0 0 fileExport {}
+		lappend specs command $::menu::mc::FileImport ::menu::dbImport 1 0 filetypePGN {}
+		lappend specs separator {} {} {} {} {} {}
 		if {$file ne $clipbaseName} {
 			lappend specs command $::menu::mc::FileClose \
-				[namespace code [list closeBase $canv $file $i]] 0 0 close
+				[namespace code [list closeBase $canv $file $i]] 0 0 close {}
 		}
 		if {$file eq $clipbaseName} {
 			lappend specs command \
 				$mc::EmptyClipbase \
 				[list [namespace current]::EmptyClipbase $canv] \
-				0 0 trash \
+				0 0 trash {} \
 				;
 		} else {
-			lappend specs command "$mc::ChangeIcon..." [list [namespace current]::ChangeIcon $i $top] 1 0 {}
+			lappend specs command "$mc::ChangeIcon..." \
+				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {}
 			lappend specs command "$mc::EditDescription..." \
-				[list [namespace current]::EditDescription $canv $i] 1 0 {}
+				[list [namespace current]::EditDescription $canv $i] 1 0 {} {}
 		}
 		lappend specs	command \
 							"$mc::Recode..." \
 							[namespace code [list Recode $i $top]] \
-							0 1 {}
+							0 1 {} {} \
+							;
 		# TODO:
 		#	if {	[::scidb::view::count games $base 0] == [::scidb::db::count games $base]
 		#		&& [::scidb::view::query sorted]} {
-		#		lappend specs command "Save current order" [namespace code [list SaveOrder $i $top]] 1 0 disk
+		#		lappend specs command "Save current order" \
+		#			[namespace code [list SaveOrder $i $top]] 1 0 disk {}
 		#	}
-		lappend specs separator {} {} {} {} {}
-	}
-	lappend specs command $::menu::mc::FileNew ::menu::dbNew 0 0 docNew
-	lappend specs command $::menu::mc::FileOpen ::menu::dbOpen 0 0 docOpen
+		lappend specs separator {} {} {} {} {} {}
 
-	foreach {type text cmd writableOnly notSci icon} $specs {
+		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
+			variable _ReadOnly [::scidb::db::get readonly?]
+			lappend specs \
+				tk::checkbutton \
+				$mc::ReadOnly \
+				[namespace code [list ToggleReadOnly $file $index]] \
+				0 0 lock \
+				[namespace current]::_ReadOnly \
+				;
+			lappend specs separator {} {} {} {} {} {}
+		}
+	}
+	lappend specs command $::menu::mc::FileNew ::menu::dbNew 0 0 docNew {}
+	lappend specs command $::menu::mc::FileOpen ::menu::dbOpen 0 0 docOpen {}
+
+	foreach {type text cmd writableOnly notSci icon var} $specs {
 		if {$type eq "separator"} {
 			$menu add separator
 		} else {
@@ -1082,12 +1074,15 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			} else {
 				set state normal
 			}
-			$menu add command \
-				-label " [::menu::stripAmpersand $text]" \
-				-image [set ::icon::16x16::$icon] \
-				-compound left \
-				-command [list {*}$cmd] \
-				-state $state \
+			set entry {}
+			lappend entry $type
+			lappend entry -label " [::menu::stripAmpersand $text]"
+			lappend entry -image [set ::icon::16x16::$icon]
+			lappend entry -compound left
+			lappend entry -command [list {*}$cmd]
+			lappend entry -state $state
+			if {[llength $var]} { lappend entry -variable $var }
+			$menu add {*}$entry
 		}
 	}
 
@@ -1146,6 +1141,21 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 
 	::tooltip::hide
 	tk_popup $menu $x $y
+}
+
+
+proc ToggleReadOnly {file index} {
+	variable Vars
+	variable _ReadOnly
+	variable RecentFiles
+
+	::scidb::db::set readonly $_ReadOnly
+
+	set k [lsearch -integer -index 0 $Vars(bases) $index]
+	lset Vars(bases) $k 6 $_ReadOnly
+
+	set k [FindRecentFile $file]
+	if {$k >= 0} { lset RecentFiles $k 3 $_ReadOnly }
 }
 
 
@@ -1400,13 +1410,13 @@ proc Properties {index popup} {
 		}
 		wm attributes $dlg -topmost true
 		set bg [::tooltip::background]
-		frame $f -takefocus 0 -relief solid -borderwidth 0 -background $bg
-		set label label
+		tk::frame $f -takefocus 0 -relief solid -borderwidth 0 -background $bg
+		set label tk::label
 		set options [list -background $bg]
 		pack $f -fill x -expand yes -padx 2 -pady 2
 	} else {
 		toplevel $dlg -class Scidb
-		frame $f -takefocus 0 -background $PropBackground
+		tk::frame $f -takefocus 0 -background $PropBackground
 		wm title $dlg "$::scidb::app - $name"
 		wm resizable $dlg false false
 		set label ::ttk::label
@@ -1416,10 +1426,10 @@ proc Properties {index popup} {
 
 	set row 1
 	foreach {name var} {	path DatabasePath descr Description type Type readonly ReadOnly
-								lastModified LastModified encoding Encoding games GameCount deleted DeletedGames
-								yearRange YearRange ratingRange RatingRange score Score resWhite {Result 1-0}
-								resBlack {Result 0-1} resDraw {Result 1/2-1/2} resLost {Result 0-0}
-								resNone {Result *}} {
+								created Created lastModified LastModified encoding Encoding games
+								GameCount deleted DeletedGames yearRange YearRange ratingRange RatingRange
+								score Score resWhite {Result 1-0} resBlack {Result 0-1} resDraw {Result 1/2-1/2}
+								resLost {Result 0-0} resNone {Result *}} {
 
 		if {[llength $var] == 1} {
 			$label $f.l$name -text "[set mc::$var]:" {*}$options
@@ -1453,13 +1463,19 @@ proc Properties {index popup} {
 	$f.tdescr configure -text $descr
 
 	if {$file eq $clipbaseName} {
-		foreach name {path lastModified} {
+		foreach name {path readonly created lastModified} {
 			grid remove $f.l$name $f.t$name
 		}
 	} else {
+		set created [::scidb::db::get created? $file]
+		if {[string length $created] == 0} {
+			$f.tcreated configure -text $::mc::NotAvailable
+		} else {
+			$f.tcreated configure -text [::locale::formatTime $created]
+		}
 		set lastModified [::scidb::db::get modified? $file]
 		if {[string length $lastModified] == 0} {
-			grid remove $f.llastModified $f.tlastModified
+			$f.tlastModified configure -text $::mc::NotAvailable
 		} else {
 			$f.tlastModified configure -text [::locale::formatTime $lastModified]
 		}

@@ -40,7 +40,6 @@
 
 #include "u_progress.h"
 #include "u_byte_stream.h"
-#include "u_crc.h"
 
 #include "sys_file.h"
 #include "sys_utf8_codec.h"
@@ -1613,9 +1612,6 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 	addSourceTags(data.m_tags, info);
 	addEventTags(data.m_tags, info);
 	addTeamTags(data.m_tags, info);
-
-	unsigned crc = crc::compute(0, aStrm.data(), aStrm.size());
-	data.m_crc = crc::compute(crc, gStrm.data(), gStrm.size());
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
 	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));

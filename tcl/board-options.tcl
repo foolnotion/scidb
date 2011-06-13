@@ -36,7 +36,6 @@ set SolidColor				"Solid Color"
 set EditList				"Edit list"
 set Embossed				"Embossed"
 set Highlighting			"Highlighting"
-set Layout					"Layout"
 set Border					"Border"
 set SaveWorkingSet		"Save Working Set"
 set SelectedSquare		"Selected Square"
@@ -132,9 +131,7 @@ proc makeBasicFrame {path} {
 
 	# Layout #######################################
 
-	set f [::ttk::labelframe $path.layout \
-				-labelwidget [::ttk::label $path.llayout \
-				-textvar [namespace current]::mc::Layout]]
+	set f [::ttk::labelframe $path.layout -labelwidget [::ttk::label $path.llayout -textvar ::mc::Layout]]
 
 	::ttk::checkbutton $f.border \
 		-textvar [namespace current]::mc::ShowBorder \
@@ -280,7 +277,7 @@ proc makeBasicFrame {path} {
 #	} else {
 #		variable _animation
 #		set _animation [expr {$effects(animation)/10.0}]
-#		scale $f.s_animation \
+#		tk::scale $f.s_animation \
 #			-showvalue 0 \
 #			-variable [namespace current]::_animation \
 #			-from 9 \
@@ -389,11 +386,11 @@ proc BuildThemeListbox {f height} {
 	if {$height <= 1} { return }
 	bind $f <Configure> {}
 
-	set l [listbox .__BuildThemeListbox__should_be_unique_path__[clock milliseconds]]
+	set l [tk::listbox .__BuildThemeListbox__should_be_unique_path__[clock milliseconds]]
 	set font [$l cget -font]
 	array set metrics [font metrics $font]
 
-	listbox $f.content \
+	tk::listbox $f.content \
 		-height [expr {$height/($metrics(-linespace) + 1)}] \
 		-selectmode single \
 		-exportselection false \
@@ -467,7 +464,7 @@ proc makeStyleSelectionFrame {path} {
 		set f [::ttk::labelframe $path.$which \
 					-labelwidget [::ttk::label $path.l$which -textvar [namespace current]::mc::$label] \
 					-padding $::theme::padding]
-		listbox $f.content \
+		tk::listbox $f.content \
 			-selectmode single \
 			-exportselection false \
 			-yscrollcommand "$f.vsb set" \
@@ -1095,7 +1092,7 @@ proc EditStyles {parent which} {
 
 	# left side ####################################
 	set lt [::ttk::frame $top.list -padding $::theme::padding]
-	listbox $lt.content \
+	tk::listbox $lt.content \
 		-width 0 \
 		-setgrid true \
 		-height [min 15 [llength $NameList]] \

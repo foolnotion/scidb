@@ -37,12 +37,13 @@ inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_su
 inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
 inline Marks::Marks(MarkSet const& marks) :m_marks(marks) {}
 inline Space::Space(Bracket bracket) :m_level(-1), m_bracket(bracket) {}
-inline Space::Space(unsigned level, Bracket bracket) :m_level(level), m_bracket(bracket) {}
+inline Space::Space(unsigned level) :m_level(level), m_bracket(Blank) {}
 
 
 inline
-Comment::Comment(db::Comment const& comment, move::Position position)
+Comment::Comment(db::Comment const& comment, move::Position position, bool atStart)
 	:m_position(position)
+	,m_atStart(atStart)
 	,m_comment(comment)
 {
 }
@@ -57,7 +58,6 @@ Opening::Opening(Board const& startBoard, uint16_t idn, Eco eco)
 }
 
 
-inline void Node::dump() const										{ dump(0); }
 inline Key const& KeyNode::key() const								{ return m_key; }
 inline bool Variation::empty() const								{ return m_list.empty(); }
 inline Key const& Variation::successor() const					{ return m_succ; }

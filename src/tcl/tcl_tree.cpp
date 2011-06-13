@@ -53,6 +53,7 @@ static char const* CmdFinish		= "::scidb::tree::finish";
 static char const* CmdGet			= "::scidb::tree::get";
 static char const* CmdInit			= "::scidb::tree::init";
 static char const* CmdIsRefBase	= "::scidb::tree::isRefBase?";
+static char const* CmdIsUpToDate	= "::scidb::tree::isUpToDate?";
 static char const* CmdList			= "::scidb::tree::list";
 static char const* CmdMove			= "::scidb::tree::move";
 static char const* CmdPlayer		= "::scidb::tree::player";
@@ -62,6 +63,29 @@ static char const* CmdStop			= "::scidb::tree::stop";
 static char const* CmdSwitch		= "::scidb::tree::switch";
 static char const* CmdUpdate		= "::scidb::tree::update";
 static char const* CmdView			= "::scidb::tree::view";
+
+
+static int
+parseArguments(int objc, Tcl_Obj* const objv[], rating::Type& ratingType, ::db::tree::Mode& mode)
+{
+	ratingType = rating::fromString(stringFromObj(objc, objv, 1));
+
+	if (ratingType == rating::Last)
+		return error(CmdUpdate, 0, 0, "unknown rating type %s", stringFromObj(objc, objv, 1));
+
+	char const* which = stringFromObj(objc, objv, 2);
+
+	if (::strcmp(which, "exact") == 0)
+		mode = ::db::tree::Exact;
+	else if (::strcmp(which, "fast") == 0)
+		mode = ::db::tree::Fast;
+	else if (::strcmp(which, "quick") == 0)
+		mode = ::db::tree::Rapid;
+	else
+		return error(CmdUpdate, 0, 0, "unknown mode '%s'", which);
+
+	return TCL_OK;
+}
 
 
 namespace {
@@ -180,25 +204,15 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	M_ASSERT(m_progress);
 
-	rating::Type ratingType = rating::fromString(stringFromObj(objc, objv, 1));
-
-	if (ratingType == rating::Last)
-		return error(CmdUpdate, 0, 0, "unknown rating type %s", stringFromObj(objc, objv, 1));
-
+	rating::Type ratingType;
 	::db::tree::Mode mode;
-	char const* which = stringFromObj(objc, objv, 2);
 
-	if (::strcmp(which, "exact") == 0)
-		mode = ::db::tree::Exact;
-	else if (::strcmp(which, "fast") == 0)
-		mode = ::db::tree::Fast;
-	else if (::strcmp(which, "quick") == 0)
-		mode = ::db::tree::Rapid;
-	else
-		return error(CmdUpdate, 0, 0, "unknown mode '%s'", which);
+	int rc = parseArguments(objc, objv, ratingType, mode);
 
-	setResult(scidb.updateTree(mode, ratingType, *m_progress));
-	return TCL_OK;
+	if (rc == TCL_OK)
+		setResult(scidb.updateTree(mode, ratingType, *m_progress));
+
+	return rc;
 }
 
 
@@ -244,22 +258,13 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 	}
 
-	rating::Type ratingType = rating::fromString(stringFromObj(objc, objv, 1));
-
-	if (ratingType == rating::Last)
-		return error(CmdFetch, 0, 0, "unknown rating type %s", stringFromObj(objc, objv, 1));
-
+	rating::Type ratingType;
 	::db::tree::Mode mode;
-	char const* which = stringFromObj(objc, objv, 2);
 
-	if (::strcmp(which, "exact") == 0)
-		mode = ::db::tree::Exact;
-	else if (::strcmp(which, "fast") == 0)
-		mode = ::db::tree::Fast;
-	else if (::strcmp(which, "quick") == 0)
-		mode = ::db::tree::Rapid;
-	else
-		return error(CmdUpdate, 0, 0, "unknown mode '%s'", which);
+	int rc = parseArguments(objc, objv, ratingType, mode);
+
+	if (rc != TCL_OK)
+		return rc;
 
 	if (sortColumn == attribute::tree::LastColumn)
 		return error(CmdFetch, 0, 0, "no sort column given");
@@ -468,6 +473,14 @@ cmdIsRefBase(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdIsUpToDate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Scidb.treeIsUpToDate(m_key));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace tree {
 
@@ -479,6 +492,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdGet,			cmdGet);
 	createCommand(ti, CmdInit,			cmdInit);
 	createCommand(ti, CmdIsRefBase,	cmdIsRefBase);
+	createCommand(ti, CmdIsUpToDate,	cmdIsUpToDate);
 	createCommand(ti, CmdList,			cmdList);
 	createCommand(ti, CmdMove,			cmdMove);
 	createCommand(ti, CmdPlayer,		cmdPlayer);

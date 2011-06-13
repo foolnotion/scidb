@@ -35,7 +35,6 @@
 #include "db_game_data.h"
 #include "db_game_info.h"
 #include "db_producer.h"
-#include "db_eco_table.h"
 #include "db_pgn_reader.h"
 #include "db_eco_table.h"
 #include "db_exception.h"
@@ -43,7 +42,6 @@
 #include "u_byte_stream.h"
 #include "u_block_file.h"
 #include "u_progress.h"
-#include "u_crc.h"
 
 #include "sys_time.h"
 #include "sys_file.h"
@@ -446,14 +444,16 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 
 	M_ASSERT(strm.size() == info.gameRecordLength());
 
-	data.m_crc = crc::compute(0, strm.data(), strm.size());
 	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));
-
-	if (data.m_tags.contains(tag::EventDate) && !info.m_event->hasDate())
-		info.m_event->setDate(Date(data.m_tags.value(tag::EventDate)));
 
 	if (data.m_tags.contains(tag::Termination) && info.terminationReason() == termination::Unknown)
 		info.m_termination = termination::fromString(data.m_tags.value(tag::Termination));
+
+#if 0
+// NOTE: We cannot do this because the order in the namebase will be corrupted!
+// ----------------------------------------------------------------------------
+	if (data.m_tags.contains(tag::EventDate) && !info.m_event->hasDate())
+		info.m_event->setDate(Date(data.m_tags.value(tag::EventDate)));
 
 	if (data.m_tags.contains(tag::EventType) && info.m_event->type() == event::Unknown)
 	{
@@ -508,6 +508,7 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 			}
 		}
 	}
+#endif
 }
 
 
@@ -558,7 +559,9 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 	readNamebase(namebaseStream, progress);
 	readIndex(indexStream, progress);
 
-	// NOTE: we cannot trust the maximal frequency, Scid's value is possibly faulty.
+	// NOTE:
+	// 1. we cannot trust the maximal frequency, Scid's value is possibly faulty
+	// 2. we need to recompute the frequency values of the Event and Site bases
 	namebase(Namebase::Player   ).update();
 	namebase(Namebase::Site     ).update();
 	namebase(Namebase::Event    ).update();
@@ -1031,14 +1034,14 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 	uint8_t storedLineIndex;
 
 	if (item.idn() == chess960::StandardIdn)
-		storedLineIndex = EcoTable::specimen().getStoredLine(Eco(item.m_ecoKey), Eco(item.m_ecoOpening));
+		storedLineIndex = StoredLine::lookup(Eco(item.m_ecoKey)).index();
 	else
 		storedLineIndex = 0;
 
 	M_ASSERT(storedLineIndex < 255);
 
 	// what will happen if item.m_numHalfMoves succeeds 1023?
-	unsigned plyCount = mstl::min(item.m_plyCount, 0x03ffu);
+	unsigned plyCount = mstl::min(unsigned(item.m_plyCount), 0x03ffu);
 
 	buf << storedLineIndex;
 	buf << uint24_t(item.material().value);
@@ -1183,9 +1186,6 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	NamebaseSite*  site	= ::check(static_cast<NamebaseSite* >(m_lookup[Namebase::Site ][siteId ]));
 	NamebaseEntry* round	= ::check(static_cast<NamebaseEntry*>(m_lookup[Namebase::Round][roundId]));
 
-	site->ref();
-	round->ref();
-
 	m_roundLookup[index] = round;
 
 	unsigned rnd, subrnd;
@@ -1220,25 +1220,43 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	else
 		date.clear();
 
-	bool determineMode = false;
-
 	if (event->site() == NamebaseEvent::emptySite())
 	{
-		event->setSite(site);
-		event->setDate(date);
+		event::Mode mode = PgnReader::getEventMode(event->name(), site->name());
 
-		determineMode = true;
+		switch (int(mode))
+		{
+			case event::PaperMail:
+			case event::Email:
+				event->setTimeMode_(time::Corr);
+				break;
+		}
+
+		event->setSite_(site);
+		event->setDate_(date);
+		event->setEventMode_(mode);
 	}
 	else if (event->site() != site || event->date() != date)
 	{
+		event::Mode	eventMode	= PgnReader::getEventMode(event->name(), site->name());
+		time::Mode	timeMode		= time::Unknown;
+
+		switch (int(eventMode))
+		{
+			case event::PaperMail:
+			case event::Email:
+				timeMode = time::Corr;
+				break;
+		}
+
 		event = namebase(Namebase::Event).insertEvent(	event->name(),
 																		namebase(Namebase::Event).size(),
 																		date.year(),
 																		date.month(),
 																		date.day(),
 																		event->type(),
-																		event->timeMode(),
-																		event->eventMode(),
+																		timeMode,
+																		eventMode,
 																		maxEventCount(),
 																		site);
 
@@ -1247,26 +1265,12 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 			gameInfoList().resize(index);
 			IO_RAISE(Index, Load_Failed, "too many events; load aborted");
 		}
-
-		determineMode = true;
 	}
 
-	if (determineMode)
-	{
-		event::Mode mode = PgnReader::getEventMode(event->name(), site->name());
-
-		event->setEventMode(mode);
-
-		switch (int(mode))
-		{
-			case event::PaperMail:
-			case event::Email:
-				event->setTimeMode(time::Corr);
-				break;
-		}
-	}
-
+	round->ref();
 	event->ref();
+	site->ref();
+
 	item.m_event = event;
 
 	uint16_t whiteRating = strm.uint16();
@@ -1308,17 +1312,10 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 
 		// IMPORTANT NOTE: stored line index is probably broken (Scid bug)
 		if (index < StoredLine::count())
-		{
-			StoredLine const& line = StoredLine::getLine(index);
-
-			item.m_ecoKey = line.ecoKey();
-			item.m_ecoOpening = line.opening();
-		}
+			item.m_ecoKey = StoredLine::getLine(index).ecoKey();
 #ifdef DEBUG_SI4
 		else
-		{
 			::fprintf(stderr, "WARNING(%u): invalid stored line value 255\n", index);
-		}
 #endif
 	}
 	else
@@ -1753,15 +1750,6 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	getGameRecord(info, *m_asyncReader, src);
 	Decoder decoder(src, *m_codec);
 	return decoder.findExactPosition(position, skipVariations);
-}
-
-
-uint32_t
-Codec::computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const
-{
-	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
-	return crc::compute(crc, strm.data(), strm.size());
 }
 
 // vi:set ts=3 sw=3:

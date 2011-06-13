@@ -95,7 +95,7 @@ proc open {parent base info view index {fen {}}} {
 	toplevel $dlg -class Scidb
 
 	set top [::ttk::frame $dlg.top]
-	set bot [frame $dlg.bot]
+	set bot [tk::frame $dlg.bot]
 	::ttk::separator $dlg.sep -class Dialog
 	grid $dlg.top -column 0 -row 0 -sticky nsew
 	grid $dlg.sep -column 0 -row 1 -sticky nsew
@@ -116,8 +116,8 @@ proc open {parent base info view index {fen {}}} {
 	grid $board -column 0 -row 0 -sticky nsew -padx $::theme::padding -pady $::theme::padding
 
 	# board buttons
-	set controls [frame $bot.controls]
-	button $controls.rotateBoard \
+	set controls [tk::frame $bot.controls]
+	tk::button $controls.rotateBoard \
 		-takefocus 0 \
 		-image $::icon::22x22::rotateBoard \
 		-command [namespace code [list RotateBoard $board]] \
@@ -131,7 +131,7 @@ proc open {parent base info view index {fen {}}} {
 														FastForward 8 <Next> GoForwardFast
 														GotoEnd 9 <End> GotoEndOfGame} {
 		set w $controls.[string tolower $control 0 0]
-		button $w \
+		tk::button $w \
 			-image [set ::icon::22x22::control$control] \
 			-takefocus 0 \
 			-command [list event generate $w $key]
@@ -142,7 +142,7 @@ proc open {parent base info view index {fen {}}} {
 		set w $controls.[string tolower $control 0 0]
 		$w configure -repeatdelay $::theme::repeatDelay -repeatinterval $Options(repeat:interval)
 	}
-	button $controls.autoplay \
+	tk::button $controls.autoplay \
 		-takefocus 0 \
 		-image $::icon::22x22::playerStart \
 		-command [namespace code [list ToggleAutoPlay $position 1]] \
@@ -154,7 +154,7 @@ proc open {parent base info view index {fen {}}} {
 	grid columnconfigure $controls {3 12} -weight 1
 
 	# PGN side
-	text $rt.header \
+	tk::text $rt.header \
 		-background $Options(background:header) \
 		-height 3 -width 0 \
 		-state disabled \
@@ -165,7 +165,7 @@ proc open {parent base info view index {fen {}}} {
 		-font $Options(font) \
 		-cursor {} \
 		;
-	text $rt.pgn \
+	tk::text $rt.pgn \
 		-height 0 -width 0 \
 		-yscrollcommand [list ::widget::sbset $rt.sb] \
 		-state disabled \
@@ -187,7 +187,7 @@ proc open {parent base info view index {fen {}}} {
 	grid columnconfigure $rt 3 -minsize $::theme::padding
 
 	# PGN buttons
-	set buttons [frame $bot.buttons -takefocus 0]
+	set buttons [tk::frame $bot.buttons -takefocus 0]
 	foreach {cmd var column} {backward Previous 0 forward Next 2 close Close 4} {
 		set w $buttons.$cmd
 		::ttk::button $w -class TButton
@@ -585,7 +585,7 @@ proc UpdatePGN {position data} {
 						annotation - marks { ;# skip }
 
 						space { $w insert end " " }
-						break { $w insert end "\n\n" }
+						break { $w insert end "\n" }
 
 						ply {
 							lassign [lindex $move 1] moveNo stm san legal
@@ -805,9 +805,8 @@ proc LoadGame {parent position} {
 
 	set base  $Vars(base)
 	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $base]
-	set info  [::scidb::db::get gameInfo $index $Vars(view) $base]
 
-	::widget::busyOperation ::game::new $parent $base $info $index
+	::widget::busyOperation ::game::new $parent $base $index
 }	
 
 

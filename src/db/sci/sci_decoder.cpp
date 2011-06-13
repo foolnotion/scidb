@@ -357,10 +357,22 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 				m_position.doMove(move, pieceNum);
 			}
 			// TODO: not needed if consumer.startVariation(DoNotTakeBackMove) was called
-			else if (lastMove)
+			else
 			{
-				m_position.doMove(lastMove, pieceNum);
-				lastMove.clear();
+				if (lastMove)
+				{
+					m_position.doMove(lastMove, pieceNum);
+					lastMove.clear();
+				}
+
+				if (hasNote)
+				{
+					consumer.putComment(comment, annotation, marks);
+					marks.clear();
+					annotation.clear();
+					comment.clear();
+					hasNote = false;
+				}
 			}
 
 			pieceNum = decodeMove(b, move);

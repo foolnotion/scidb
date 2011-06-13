@@ -33,7 +33,6 @@ using namespace db;
 GameData::GameData()
 	:m_startNode(new MoveNode)
 	,m_startBoard(Board::standardBoard())
-	,m_crc(0)
 {
 	m_tags.set(tag::Event,	"?", 1);
 	m_tags.set(tag::Site,	"?", 1);

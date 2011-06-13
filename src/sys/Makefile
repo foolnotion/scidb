@@ -70,6 +70,8 @@ sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
 sys_dl.o: ../mstl/m_exception.ipp
 sys_file.o: sys_file.h
+sys_file.o: sys_time.h
+sys_file.o: ../util/u_base.h
 sys_file.o: ../mstl/m_types.h
 sys_file.o: ../tcl/tcl_base.h
 sys_file.o: ../tcl/tcl_base.ipp

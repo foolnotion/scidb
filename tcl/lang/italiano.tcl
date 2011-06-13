@@ -28,44 +28,50 @@
 ::mc::SortMapping		{Å A   à a   è e   é e   ì i   ò o  ù u}
 ::mc::AsciiMapping	{Å A   à a   è e   é e   ì i   ò o  ù u}
 
-::mc::Apply			"Applica"
-::mc::Background	"Sfondo"
-::mc::Black			"Nero"
-::mc::Cancel		"Annulla"
-::mc::Clear			"Pulisci"
-::mc::Close			"Chiudi"
-::mc::Color			"Colore"
-::mc::Colors		"Colori"
-::mc::Copy			"Copia"
-::mc::Cut			"Taglia"
-::mc::Dark			"Scura"
-::mc::Delete		"Elimina"
-::mc::Edit			"Modifica"
-::mc::Lite			"Chiara"
-::mc::Modify		"Cambia"
-::mc::OK				"OK"
-::mc::Paste			"Incolla"
-::mc::PieceSet		"Set di Pezzi"
-::mc::Preview		"Anteprima"
-::mc::Reset			"Reset"
-::mc::SelectAll	"Seleziona Tutto"
-::mc::Texture		"Texture"
-::mc::Theme			"Tema"
-::mc::White			"Bianco"
-::mc::Escape		"Esci"
-::mc::Yes			"sì"
-::mc::No				"no"
-::mc::Undo			"Indietro"
-::mc::Redo			"Rifai"
-::mc::Game			"Partita"
-::mc::Variation	"Variante"
+::mc::Alignment		"Allineamento"
+::mc::Apply				"Applica"
+::mc::Background		"Sfondo"
+::mc::Black				"Nero"
+::mc::Cancel			"Annulla"
+::mc::Clear				"Pulisci"
+::mc::Close				"Chiudi"
+::mc::Color				"Colore"
+::mc::Colors			"Colori"
+::mc::Copy				"Copia"
+::mc::Cut				"Taglia"
+::mc::Dark				"Scura"
+::mc::Database			"Database"
+::mc::Delete			"Elimina"
+::mc::Edit				"Modifica"
+::mc::Escape			"Esci"
+::mc::Game				"Partita"
+::mc::Game				"Partita"
+::mc::Layout			"Layout"
+::mc::Lite				"Chiara"
+::mc::Modify			"Cambia"
+::mc::No					"no"
+::mc::NotAvailable	"n/a"
+::mc::Number			"Number" ;# NEW
+::mc::OK					"OK"
+::mc::Paste				"Incolla"
+::mc::PieceSet			"Set di Pezzi"
+::mc::Preview			"Anteprima"
+::mc::Redo				"Rifai"
+::mc::Reset				"Reset"
+::mc::SelectAll		"Seleziona Tutto"
+::mc::Texture			"Texture"
+::mc::Theme				"Tema"
+::mc::Undo				"Indietro"
+::mc::Variation		"Variante"
+::mc::White				"Bianco"
+::mc::Yes				"sì"
 
-::mc::King			"Re"
-::mc::Queen			"Donna"
-::mc::Rook			"Torre"
-::mc::Bishop		"Alfiere"
-::mc::Knight		"Cavallo"
-::mc::Pawn			"Pedone"
+::mc::King				"Re"
+::mc::Queen				"Donna"
+::mc::Rook				"Torre"
+::mc::Bishop			"Alfiere"
+::mc::Knight			"Cavallo"
+::mc::Pawn				"Pedone"
 
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
@@ -146,8 +152,8 @@
 ::load::mc::FileIsCorrupt	"Il file %s è corrotto:"
 
 ::load::mc::Loading					"Carico %s"
-::load::mc::ReadingOptionsFile	"Permessi di lettura del file" ;# reading options file"
-::load::mc::StartupFinished		"Startup completato" ;#NEW "Startup finished"
+::load::mc::ReadingOptionsFile	"Permessi di lettura del file" ;# "reading options file"
+::load::mc::StartupFinished		"Startup completato"
 
 ::load::mc::ECOFile					"File ECO"
 ::load::mc::EngineFile				"File motore"
@@ -169,14 +175,13 @@
 ::application::mc::DockWindow				"Blocca Finestra"
 ::application::mc::UndockWindow			"Sblocca Finestra"
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
+::application::mc::Shutdown				"Shutdown..." ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::AutoPlayMoves		"Usa Autoplay"
 
 ::application::board::mc::Tools					"Strumenti"
-::application::board::mc::Game					"Partita"
 ::application::board::mc::Control				"Controllo"
-::application::board::mc::Layout					"Layout"
 ::application::board::mc::GoIntoNextVar		"Vai alla prossima variante"
 ::application::board::mc::GoIntPrevVar			"Vai alla precedente variante"
 
@@ -217,6 +222,7 @@
 ::application::database::mc::DatabasePath				"Indirizzo Database"
 ::application::database::mc::DeletedGames				"Partite Eliminate"
 ::application::database::mc::Description				"Descrizione"
+::application::database::mc::Created					"Created" ;# NEW
 ::application::database::mc::LastModified				"Ultima Modifica"
 ::application::database::mc::Encoding					"Codifica"
 ::application::database::mc::YearRange					"Range Anni"
@@ -274,7 +280,6 @@
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Controllo"
 ::application::database::games::mc::GameNumber					"Numero partita"
-::application::database::games::mc::Layout						"Layout"
 
 ::application::database::games::mc::GotoFirstPage				"Vai alla prima pagina di partite"
 ::application::database::games::mc::GotoLastPage				"Vai all'ultima pagina di partite"
@@ -335,18 +340,19 @@
 ::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game" ;# NEW
 
 ::application::pgn::mc::ColumnStyle							"Stile colonna"
-::application::pgn::mc::NarrowLines							"Linee sottili"
-#::application::pgn::mc::IndentVariations					"Indenta varianti"
-#::application::pgn::mc::IndentComments					"Indenta commenti"
+::application::pgn::mc::UseParagraphSpacing				"Use Paragraph Spacing" ;# NEW
 ::application::pgn::mc::BoldTextForMainlineMoves		"Grassetto per mosse nella linea principale"
-#::application::pgn::mc::SpaceAfterMoveNumbers			"Spazio dopo il numero di mossa"
 ::application::pgn::mc::ShowDiagrams						"Mostra diagrammi"
 ::application::pgn::mc::Languages							"Languages" ;# NEW
+::application::pgn::mc::CollapseVariations				"Collapse Variations" ;# NEW
+::application::pgn::mc::ExpandVariations					"Expand Variations" ;# NEW
+::application::pgn::mc::EmptyGame							"Empty Game" ;# NEW
 
 ::application::pgn::mc::NumberOfMoves						"Numero di semimosse (nella linea principale):"
 ::application::pgn::mc::InvalidInput						"Input non valido '%d'."
 ::application::pgn::mc::MustBeEven							"Input deve essere un numero pari."
 ::application::pgn::mc::MustBeOdd							"Input deve essere un numero dispari."
+::application::pgn::mc::ReplaceMovesSucceeded			"Game moves successfully replaced." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Modifica annotazioni"
 ::application::pgn::mc::EditCommentBefore					"Modifica commento prima della mossa"
@@ -414,7 +420,6 @@
 ::board::options::mc::EditList				"Modifica lista"
 ::board::options::mc::Embossed				"In Rilievo"
 ::board::options::mc::Highlighting			"Evidenzia"
-::board::options::mc::Layout					"Layout"
 ::board::options::mc::Border					"Bordo"
 ::board::options::mc::SaveWorkingSet		"Salva set di lavoro"
 ::board::options::mc::SelectedSquare		"Seleziona casa"
@@ -517,7 +522,6 @@
 ::gametable::mc::SortOnDate				"Ordina su data (discendente)"
 ::gametable::mc::SortOnNumber				"Ordina su numero partita (ascendente)"
 ::gametable::mc::ReverseOrder				"Inverti ordine"
-::gametable::mc::NotAvailable				"n/a"
 ::gametable::mc::NoMoves					"Nessuna mossa"
 ::gametable::mc::WhiteRating				"Punteggio Bianco"
 ::gametable::mc::BlackRating				"Punteggio Nero"
@@ -683,6 +687,10 @@
 ::gamebar::mc::Site						"Sito"
 ::gamebar::mc::ShowActiveAtBottom	"Mostra partita attiva in basso"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Mostra giocatori su righe separate"
+::gamebar::mc::DiscardChanges			"This game has altered.\n\nDo you really want to discard the changes made to it?" ;# NEW
+::gamebar::mc::DiscardNewGame			"Do you really want to throw away this game?" ;# NEW
+::gamebar::mc::NewGameFstPart			"New" ;# NEW
+::gamebar::mc::NewGameSndPart			"Game" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"
@@ -816,8 +824,11 @@
 ::import::mc::DecodingFailed						"Decodifica fallita"
 ::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"
 ::import::mc::ValueTooLong							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
-::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori"
-::import::mc::MaximalWarningCountExceeded		"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti"
+::import::mc::CommentAtEndOfGame					"Comment at end of game inserted as sub-variation" ;# NEW
+#::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori"
+::import::mc::MaximalErrorCountExceeded		"Maximal error count exceeded; no more errors (of previous error type) will be reported" ;# NEW (change, see preceeding line)
+#::import::mc::MaximalWarningCountExceeded	"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti"
+::import::mc::MaximalWarningCountExceeded		"Maximal warning count exceeded; no more warnings (of previous warning type) will be reported" ;# NEW (change, see preceeding line)
 ::import::mc::InvalidToken							"Token non valido"
 ::import::mc::InvalidMove							"Mossa non valida"
 ::import::mc::UnexpectedSymbol					"Simbolo inatteso"
@@ -917,6 +928,8 @@
 ::export::mc::Option(pgn,include_varations)						"Esporta variante"
 ::export::mc::Option(pgn,include_comments)						"Esporta commenti"
 ::export::mc::Option(pgn,include_marks)							"Esporta codici (come commenti)"
+::export::mc::Option(pgn,use_chessbase_format)					"Use Scidb Import Format" ;# NEW
+::export::mc::Option(pgn,use_chessbase_format)					"Usa formato ChessBase"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Scrivi tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Scrivi tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Scrivi tag 'Mode'"
@@ -937,7 +950,6 @@
 ::export::mc::Option(pgn,shredder_fen)								"Scrivi in Shredder-FEN (default è X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Scrivi commento per risultato '0-0'"
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Aggiungi modalità dopo il tipo dell'evento"
-::export::mc::Option(pgn,use_chessbase_format)					"Usa formato ChessBase"
 ::export::mc::Option(pgn,comment_to_html)							"Scrivi commento in stile HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Escludi partite con mosse illegali"
 
@@ -1026,9 +1038,26 @@
 ::dialog::save::mc::TagIsEmpty					"Tag '%s' is empty (will be discarded)."
 
 ### game ###############################################################
-::game::mc::Overwrite "La partita %s è stata modificata.\n\nVuoi davvero continuare ed eliminare i cambiamenti effettuati?"
-::game::mc::CloseAllGames "Chiudere tutte le partite aperte del database '%s'?\n%s"
-::game::mc::DetachAllOpenGames "Tutte le partite ancora aperte saranno slegate dalla dipendenza col loro database."
+::game::mc::CloseAllGames				"Chiudere tutte le partite aperte del database '%s'?"
+::game::mc::AllSlotsOccupied			"All game slots are occupied." ;# NEW
+::game::mc::ReleaseOneGame				"Please release one of the games before loading a new one." ;# NEW
+::game::mc::GameAlreadyOpen			"Game is already open but modified. Discard modified version of this game?" ;# NEW
+::game::mc::GameAlreadyOpenDetail	"'%s' will open a new game." ;# NEW
+::game::mc::GameHasChanged				"Game %s has changed (outside this session)." ;# NEW
+::game::mc::CorruptedHeader			"Corrupted header in recovery file '%s'." ;# NEW
+::game::mc::RenamedFile					"Renamed this file to '%s.bak'." ;# NEW
+::game::mc::CannotOpen					"Cannot open recovery file '%s'." ;# NEW
+::game::mc::GameRestored				"One game from last session restored." ;# NEW
+::game::mc::GamesRestored				"%s games from last session restored." ;# NEW
+::game::mc::ErrorInRecoveryFile		"Error in recovery file '%s'" ;# NEW
+::game::mc::Recovery						"Recovery" ;# NEW
+::game::mc::UnsavedGames				"You have unsaved game changes." ;# NEW
+::game::mc::DiscardChanges				"'%s' will throw away all changes." ;# NEW
+::game::mc::ShouldRestoreGame			"Should this game be restored in next session?" ;# NEW
+::game::mc::ShouldRestoreGames		"Should these games be restored in next session?" ;# NEW
+::game::mc::NewGame						"New Game" ;# NEW
+::game::mc::NewGames						"New Games" ;# NEW
+::game::mc::Created						"created" ;# NEW
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Oggi"
@@ -1241,6 +1270,8 @@
 ::dialog::mc::Warning		"Avvertenza"
 ::dialog::mc::Information	"Informazioni"
 ::dialog::mc::Question		"Domanda"
+
+::dialog::mc::DontAskAgain	"Don't ask again" ;# NEW
 
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Base Colori"

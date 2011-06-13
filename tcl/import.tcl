@@ -78,8 +78,9 @@ set UnsupportedVariant					"Unsupported chess variant"
 set DecodingFailed						"Decoding failed"
 set ResultDidNotMatchHeaderResult	"Result did not match header result"
 set ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
-set MaximalErrorCountExceeded			"Maximal error count exeeded"
-set MaximalWarningCountExceeded		"Maximal warning count exeeded"
+set CommentAtEndOfGame					"Comment at end of game inserted as sub-variation"
+set MaximalErrorCountExceeded			"Maximal error count (of previous error type) exceeded"
+set MaximalWarningCountExceeded		"Maximal warning count (of previous warning type) exceeded"
 set InvalidToken							"Invalid token"
 set InvalidMove							"Invalid move"
 set UnexpectedSymbol						"Unexpected symbol"
@@ -141,8 +142,11 @@ proc openEdit {parent position {mode {}}} {
 					-width 26 \
 				]
 	set lab [ttk::label $top.encodingText -textvar ::encoding::mc::Encoding]
-	set enc [entry $top.encoding -state readonly -textvar [namespace current]::Priv($position:encoding)]
-	set but [button $top.choose \
+	set enc [tk::entry $top.encoding \
+		-state readonly \
+		-textvar [namespace current]::Priv($position:encoding) \
+	]
+	set but [tk::button $top.choose \
 					-height 13 \
 					-image $::icon::15x13::list \
 					-command [namespace code [list ChooseEncoding $top.choose $position]] \
@@ -158,14 +162,14 @@ proc openEdit {parent position {mode {}}} {
 	bind $fig <<ComboboxCurrent>> [namespace code [list ShowCountry $fig $position]]
 
 	set gamebar [::application::pgn::gamebar]
-	::gamebar::addReceiver $gamebar $dlg
-	bind $dlg <<LabelbarRemoved>> [namespace code [list GamebarChanged $dlg $position %d]]
+	set recv [namespace code [list GamebarChanged $dlg $position]]
+	::gamebar::addReceiver $gamebar $recv
+	bind $dlg <Destroy> [list ::gamebar::removeReceiver $gamebar $recv]
 	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W $position]]
-	bind $dlg <Destroy> [list ::gamebar::removeReceiver $gamebar $dlg]
 
 	# text editor
 	set edit [ttk::frame $main.edit]
-	text $edit.text \
+	tk::text $edit.text \
 		-width 80 \
 		-height 20 \
 		-undo on \
@@ -181,7 +185,7 @@ proc openEdit {parent position {mode {}}} {
 
 	# log window
 	set log [ttk::frame $main.log]
-	listbox $log.text \
+	tk::listbox $log.text \
 		-background $Background \
 		-selectbackground $SelectBackground \
 		-height 4 \
@@ -259,6 +263,37 @@ proc openEdit {parent position {mode {}}} {
 		tkwait window $dlg
 		ttk::releaseGrab $dlg
 	}
+}
+
+
+proc makeLog {arguments} {
+	variable Priv
+
+	lassign $arguments type lineNo column gameNo msg code info item
+	set line ""
+
+	if {$code eq "SeemsNotToBePgnText"} { set Priv(ok) 0 }
+
+	append line $mc::Line " " [::locale::formatNumber $lineNo]
+	if {$column} {
+		append line " (" $mc::Column " " [::locale::formatNumber $column] ")"
+	}
+	if {$Priv(gameNo) && [llength $gameNo] && $gameNo > 0} {
+		append line " " $mc::GameNumber " " [::locale::formatNumber $gameNo]
+	}
+	append line ": "
+
+	if {[::info exists [namespace current]::mc::$code]} {
+		append line [set mc::$code]
+	} else {
+		append line $code
+	}
+
+	if {[llength $item]} {
+		append line ": " $item
+	}
+
+	return $line
 }
 
 
@@ -405,11 +440,13 @@ proc SetTitle {dlg position} {
 }
 
 
-proc GamebarChanged {dlg position id} {
-	if {$position == $id} {
-		destroy $dlg
-	} else {
-		SetTitle $dlg $position
+proc GamebarChanged {dlg position action id} {
+	if {$action eq "removed"} {
+		if {$position == $id} {
+			destroy $dlg
+		} else {
+			SetTitle $dlg $position
+		}
 	}
 }
 
@@ -640,33 +677,8 @@ proc info {line}		{ Show info $line }
 
 
 proc Log {sink arguments} {
-	variable Priv
-
-	lassign $arguments type lineNo column gameNo msg code info item
-	set line ""
-
-	if {$code eq "SeemsNotToBePgnText"} { set Priv(ok) 0 }
-
-	append line $mc::Line " " [::locale::formatNumber $lineNo]
-	if {$column} {
-		append line " (" $mc::Column " " [::locale::formatNumber $column] ")"
-	}
-	if {$Priv(gameNo) && [llength $gameNo] && $gameNo > 0} {
-		append line " " $mc::GameNumber " " [::locale::formatNumber $gameNo]
-	}
-	append line ": "
-
-	if {[::info exists [namespace current]::mc::$code]} {
-		append line [set mc::$code]
-	} else {
-		append line $code
-	}
-
-	if {[llength $item]} {
-		append line ": " $item
-	}
-
-	::${sink}::${type} $line
+	set type [lindex $arguments 0]
+	::${sink}::${type} [makeLog $arguments]
 	update
 }
 

@@ -76,7 +76,7 @@ proc open {args} {
 	wm transient $w [winfo toplevel $parent]
 	wm attributes $w -topmost $opts(-topmost)
 	
-	label $w.l \
+	tk::label $w.l \
 		-image $HourGlass \
 		-text $opts(-message) \
 		-compound left \
@@ -125,11 +125,11 @@ proc open {args} {
 	tkwait visibility $w
 	if {[llength $opts(-command)] == 0} { return }
 	after idle [namespace code [list Start $w $opts(-command) $opts(-close)]]
-	focus $dlg
-	ttk::grabWindow $dlg
+	focus $w
+	ttk::grabWindow $w
 	tkwait window $w
-	ttk::releaseGrab $dlg
-	busyCursor $w off
+	ttk::releaseGrab $w
+	if {[llength $opts(-command)]} { busyCursor $w off }
 	update
 }
 

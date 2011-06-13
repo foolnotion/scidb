@@ -1,4 +1,5 @@
 ::board::addStyle square {
+  version               1.0
   hint,border-tile      {marble color_green_22.jpg}
   dark,y1               0
   hint,border-color     {}

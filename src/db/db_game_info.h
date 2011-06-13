@@ -31,6 +31,8 @@
 #include "db_date.h"
 #include "db_eco.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 
 namespace sys  { namespace utf8 { class Codec; } }
@@ -90,7 +92,8 @@ public:
 //		Flag_Strategical_Blunder	= 1 << 23,	///< Strategical blunder flag
 
 		// --- Scidb specific flags ---------------------------------------------
-		Flag_Illegal_Move				= 1 << 22,	///< Illegal move flag
+		Flag_Illegal_Castling		= 1 << 22,	///< Illegal castling flag
+		Flag_Illegal_Move				= 1 << 23,	///< Illegal move flag
 
 		// --- temporary flags --------------------------------------------------
 		Flag_Dirty						= 1 << 23,	///< Dirty flag
@@ -121,9 +124,7 @@ public:
 	unsigned dateYear() const;
 	Eco eco() const;
 	Eco ecoKey() const;										// ChessBase: n/a
-	Eco ecoOpening() const;									// Scid/ChessBase: n/a
 	Eco userEco() const;
-	Eco ecoFromOpening() const;							// ChessBase: n/a
 	template <int N> uint16_t ply() const;
 	bool hasShuffleChessPosition() const;
 	bool hasChess960Position() const;
@@ -190,7 +191,7 @@ public:
 //	rating::Type playerRatingType(color::ID color) const;
 //	bool isPlayerRating(color::ID color, rating::Type type) const;
 
-	uint32_t computeChecksum() const;
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 
 	void setupTags(TagSet& tags) const;
 	void setup(	uint32_t gameOffset,
@@ -255,11 +256,17 @@ private:
 				uint32_t elo			:12;
 				uint32_t rating		:12;
 				uint32_t ratingType	:3;
+				uint32_t langFlag		:1;
 				uint32_t matQ			:1;
 				uint32_t matR			:1;
 				uint32_t matB			:1;
 				uint32_t matN			:1;
-				uint32_t langFlag		:1;
+			};
+
+			struct
+			{
+				uint32_t ratingValue	:27;
+				uint32_t __dontUse	:5;
 			};
 
 			uint32_t value;
@@ -279,6 +286,7 @@ private:
 	void setGameRecordLength(unsigned length);
 	void setLangCount(unsigned count);
 	void setupOpening(unsigned idn, Line const& line);
+	void setupRating(TagSet const& tags, color::ID color, rating::Type rtType, tag::ID tag);
 
 	static void setupIdn(TagSet& tags, uint16_t idn);
 
@@ -291,7 +299,7 @@ private:
 	{
 		NamebaseEntry*	m_annotator;	// Scid: n/a
 
-		struct	// XXX is this endian independent?
+		struct
 		{
 			unsigned long m_recordLengthFlag:1;	// should be lsb!
 			unsigned long m_recordLength:(U_BITS_OF(long) - 1);
@@ -308,46 +316,39 @@ private:
 
 	uint32_t m_gameOffset;
 
+	uint64_t m_gameFlags			:26;
+	uint64_t m_plyCount			:12;
+	uint64_t m_positionId		:12;
+	uint64_t m_dateYear			:10;
+	uint64_t m_dateMonth			: 4;
+
 	union
 	{
 		struct
 		{
-			uint32_t m_plyCount	:12;
 			uint32_t m_ecoKey		:20;
-			uint32_t m_ecoOpening:20;
 			uint32_t m_eco			: 9;
-			uint32_t m_result		: 3;
+			uint32_t m_rest		: 3;
 		};
 
-		struct
-		{
-			uint64_t __skip_		:12;
-			uint64_t m_ply1		:12;
-			uint64_t m_ply2		:12;
-			uint64_t m_ply3		:12;
-			uint64_t m_ply4		:12;
-			uint64_t __eco_rest_	: 1;
-			uint64_t __result_	: 3;
-		};
+		uint8_t  m_ply[4];
+		uint32_t m_positionData;
 	};
 
-	uint64_t m_gameFlags			:25;
-	uint64_t m_positionId		:12;
-	uint64_t m_dateYear			:10;
-	uint64_t m_dateDay			: 5;
-	uint64_t m_dateMonth			: 4;
-	uint64_t m_round				: 8;
-
-	uint8_t  m_subround;
+	uint32_t m_round				: 8;
+	uint32_t m_subround			: 8;
+	uint32_t m_dateDay			: 5;
+	uint32_t m_result				: 3;
+	uint32_t __unused__			: 8;
 
 	static const GameInfo m_initializer;
 }
-#if defined(__i386__) || defined(__x86_64__) // Intel/AMD has hardware support for unaligned word access
-__attribute__((packed))
-#endif
+//#if defined(__i386__) || defined(__x86_64__)// Intel/AMD has hardware support for unaligned word access
+//__attribute__((packed))
+//#endif
 ;
 
-// NOTE: 65 bytes on Intel, 68 bytes on PPC, Sparc, ...
+// NOTE: 64 bytes on all platforms (63 bytes if packed on Intel based platforms)
 // NOTE: IndexEntry (Scid) has 48 bytes
 
 } // namespace db

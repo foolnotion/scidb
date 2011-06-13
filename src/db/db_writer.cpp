@@ -91,7 +91,7 @@ Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSe
 			m_needSpace = true;
 		}
 
-		if (!comment.isEmpty())
+		if (!comment.isEmpty() || !marks.isEmpty())
 		{
 			writeComment(comment, marks);
 			m_needSpace = true;
@@ -416,8 +416,8 @@ bool
 Writer::sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
-						Comment const& comment,
-						Comment const& preComment)
+						Comment const& preComment,
+						Comment const& comment)
 {
 	writeMove(move, annotation, marks, preComment, comment);
 	return true;

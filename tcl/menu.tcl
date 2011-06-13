@@ -178,9 +178,9 @@ proc setup {} {
 					ImportOne		1	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
 					Close				0	Ctrl+C			close				{ ::menu::dbClose .application }
 					--------------	-	-------------	--------------	---------------------------------
-					Quit				0	Ctrl+Q			exit				{ ::application::quit }
+					Quit				0	Ctrl+Q			exit				{ ::application::shutdown }
 				} \
-		Game	{	New				1	Ctrl+X			document			{ ::menu::gameNew .application std }
+		Game	{	New				1	Ctrl+X			document			{ ::menu::gameNew .application }
 					NewShuffle		1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
 					NewShuffleSymm	1	Ctrl+Shift+Y	symmetric		{ ::menu::gameNew .application sfrc }
 					Save				1	Ctrl+S			save				{ ::menu::gameSave .application }
@@ -419,8 +419,10 @@ set encoding iso8859-1
 
 
 proc dbImportOne {parent} {
-	set pos [::game::new $parent {} {} {}]
-	::import::openEdit $parent $pos
+	set pos [::game::new $parent]
+	if {$pos >= 0} {
+		::import::openEdit $parent $pos
+	}
 }
 
 
@@ -428,9 +430,14 @@ proc dbClose {parent} { ::application::database::closeBase $parent }
 proc dbExport {parent} { ::export::open $parent }
 
 
-proc gameNew {parent variant} {
-	::game::new $parent {} {} {}
-	::scidb::game::clear [::setup::shuffle $variant]
+proc gameNew {parent {variant {}}} {
+	if {[::game::new $parent] >= 0} {
+		if {[string length $variant] == 0} {
+			::scidb::game::clear [::scidb::game::query 9 fen]
+		} else {
+			::scidb::game::clear [::setup::shuffle $variant]
+		}
+	}
 }
 
 

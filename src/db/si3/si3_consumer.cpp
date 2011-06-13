@@ -159,6 +159,7 @@ Consumer::sendPreComment(Comment const& comment)
 		else
 		{
 			pushComment(comment);
+			m_strm.put(token::Comment);
 			m_appendComment = true;
 		}
 	}

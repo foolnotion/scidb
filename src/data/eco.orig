@@ -3077,7 +3077,7 @@ A53 1.d4 Nf6 2.c4 d6 3.Nc3 Bf5 4.e4 "Grinberg Gambit" {2}
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 "Ukrainian Variation" {1}
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.e4
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.e3
-A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.e3 Nbd7 5.Bd3 "Dus-Khotimirsky Variation" {1}
+A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.e3 Nbd7 5.Bd3 "Duz-Khotimirsky Variation" {1}
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.d5
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.d5 Be7
 A53 1.d4 Nf6 2.c4 d6 3.Nc3 e5 4.dxe5
@@ -3927,6 +3927,7 @@ B00 1.e4 f5 "Duras Gambit (Fred Gambit)" {1}
 B00 1.e4 f5 2.exf5 Kf7 3.Qh5+ "Mao Tse Tung Attack" {2}
 B00 1.e4 g5 "Borg/Basman Defence (Reversed Grob)" {0}
 B00 1.e4 g5 2.d4
+B00 1.e4 g5 2.d4 f6 3.Qh5# "Fool's Mate" {1}
 B00 1.e4 g5 2.d4 Bg7
 B00 1.e4 g5 2.d4 e5 "Borg/Basman Defence, Zilbermints Gambit" {1}
 B00 1.e4 g5 2.d4 h6 3.h4 g4 "Troon Gambit" {1}
@@ -4048,7 +4049,7 @@ B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qd6 4.d4 Nf6
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qd6 4.d4 Nf6 5.Nf3 a6 "Bronstein Variation" {2}
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qd6 4.d4 c6 "Schiller-Pytel Variation" {1}
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qd6 4.d4 c6 5.Bc4 Nf6 6.Nge2 Bf5 7.Bf4 Qb4 "Modern Variation" {2}
-B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 "Main Lines" {1}
+B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 "Main Line" {1}
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 4.b4 "Kotrc-Mieses Gambit" {1}
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 4.g3
 B01 1.e4 d5 2.exd5 Qxd5 3.Nc3 Qa5 4.Bc4
@@ -6057,7 +6058,7 @@ B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 a5
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 a6
-B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 Qb6 "Podebrad Variation" {3}
+B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 Qb6
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 Qb6 10.f3
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 Qb6 10.f3 Rd8
 B63 1.e4 c5 2.Nf3 d6 3.d4 cxd4 4.Nxd4 Nf6 5.Nc3 Nc6 6.Bg5 e6 7.Qd2 Be7 8.O-O-O O-O 9.Nb3 Qb6 10.f3 Rd8 11.Kb1
@@ -7781,7 +7782,7 @@ C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 "Rubinstein Variation" {1}
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.f3 "Giertz-Peters Gambit" {2}
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 e5 "Ellis Gambit" {2}
-C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Qd5 "Frere (Becker) Variation" {2}
+C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Qd5 "Frère (Becker) Variation" {2}
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nf6
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7
 C10 1.e4 e6 2.d4 d5 3.Nc3 dxe4 4.Nxe4 Nd7 5.Nf3
@@ -8479,7 +8480,7 @@ C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.Nc3 c6 5.Bb3 d5 6.exd5 cxd5 7.d4 Bd6 8.Nge2 "F
 C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.Nc3 c6 5.Bb3 d5 6.exd5 cxd5 7.d4 Bd6 8.Nf3 "Silverman-Short Variation" {2}
 C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.Nc3 c6 5.d4 "Westerinen Variation" {2}
 C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.Nc3 c6 5.d4 Bb4 6.Nge2 "Humble Variation" {2}
-C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.d3 "Polgar Variation" {2}
+C33 1.e4 e5 2.f4 exf4 3.Bc4 Nf6 4.d3 "Polgár Variation" {2}
 
 C34 1.e4 e5 2.f4 exf4 3.Nf3 "King's Knight Gambit" {1}
 C34 1.e4 e5 2.f4 exf4 3.Nf3 Ne7 "Bonsch-Osmolovsky Variation" {1}
@@ -10204,7 +10205,7 @@ C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 "Morphy Defence" {1}
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 "Anderssen Variation" {2}
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 b5
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 d6
-C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 d6 6.c4 "Spanish: Duras Variation" {2}
+C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 d6 6.c4 "Duras Variation" {2}
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 d6 6.c3
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.d3 d6 6.c3 g6
 C77 1.e4 e5 2.Nf3 Nc6 3.Bb5 a6 4.Ba4 Nf6 5.Nc3 "Four Knights (Tarrasch) Variation" {2}
@@ -13179,7 +13180,7 @@ D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 b6 6.e3 Nbd7 7.cxd5 Nxd5 8.Bxe7 Qx
 D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nc6
 # the following is D43
 #53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 c6
-D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nbd7 "Stahlberg-Espina System" {2}
+D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nbd7 "Ståhlberg-Espina System" {2}
 D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nbd7 6.Rc1
 D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nbd7 6.Qc2
 D53 1.d4 d5 2.c4 e6 3.Nc3 Nf6 4.Bg5 Be7 5.Nf3 Nbd7 6.cxd5
@@ -14808,7 +14809,7 @@ E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.dxe6 fxe6
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.dxe6 fxe6 6.cxb5
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.dxe6 fxe6 6.cxb5 d5
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5
-E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5 Bb7 "Dus-Khotimursky Variation" {1}
+E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5 Bb7 "Dus-Chotimursky Variation" {1}
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5 Bb7 6.e4
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5 Bb7 6.e4 h6 7.Bxf6 Qxf6 8.Nc3
 E10 1.d4 Nf6 2.c4 e6 3.Nf3 c5 4.d5 b5 5.Bg5 h6
@@ -15143,7 +15144,7 @@ E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Qb3 Nc6 6.Nbd2 Na5
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Qc2
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Qc2 Bb4+
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Qc2 c5
-E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Nbd2 "Uhlmann-Stahlberg System" {3}
+E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Nbd2 "Uhlmann-Ståhlberg System" {3}
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Nbd2 d5
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Nbd2 d5 6.cxd5
 E15 1.d4 Nf6 2.c4 e6 3.Nf3 b6 4.g3 Ba6 5.Nbd2 d5 6.Bg2
@@ -17819,7 +17820,7 @@ E65 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.dxc5 dxc5 
 E65 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.dxc5 dxc5 9.Be3 Qa5
 E65 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.dxc5 dxc5 9.Be3 Be6
 
-E66 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.d5 "Yugoslav Panno Variation" {2}
+E66 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.d5 "Yugoslav (Panno) Variation" {2}
 E66 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.d5 Na5
 E66 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.d5 Na5 9.Qd3
 E66 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.Nf3 d6 5.g3 O-O 6.Bg2 c5 7.O-O Nc6 8.d5 Na5 9.Nd2
@@ -19825,7 +19826,7 @@ E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Qd2
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Qd2 cxd5
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Qd2 cxd5 9.cxd5 a6
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Qd2 cxd5 9.cxd5 a6 10.Bd3
-E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Bd3 "Polugayevsky Variation" {3}
+E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Bd3 "Polugaevsky Variation" {3}
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Bd3 Na6
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Bd3 a6
 E88 1.d4 Nf6 2.c4 g6 3.Nc3 Bg7 4.e4 d6 5.f3 O-O 6.Be3 e5 7.d5 c6 8.Bd3 Nbd7

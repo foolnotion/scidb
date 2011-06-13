@@ -51,8 +51,7 @@ public:
 													 | Flag_Indent_Variations
 													 | Flag_Convert_Lost_Result_To_Comment;
 
-	static unsigned const Flag_Comment_To_Html	= Flag_LAST << 1;
-	static unsigned const Flag_Append_Games	= Flag_LAST << 2;
+	static unsigned const Flag_Append_Games = Flag_LAST << 3;
 
 	PgnWriter(	format::Type srcFormat,
 					mstl::ostream& strm,
@@ -61,6 +60,8 @@ public:
 					unsigned lineLength = 80);
 
 	format::Type format() const;
+
+	void writeCommnentLine(mstl::string const& content);
 
 	void writeTag(mstl::string const& name, mstl::string const& value);
 	void writeComment(Comment const& comment, MarkSet const& marks);
@@ -103,6 +104,8 @@ private:
 	unsigned			m_lineLength;
 	unsigned			m_length;
 	unsigned			m_pendingSpace;
+	bool				m_hasPreComment;
+	bool				m_needPostComment;
 };
 
 } // namespace db

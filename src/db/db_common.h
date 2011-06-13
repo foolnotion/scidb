@@ -320,7 +320,12 @@ namespace pawns
 	}
 	__attribute__((packed));
 
-	struct Progress { Side side[2]; } __attribute__((packed));
+	union Progress
+	{
+		struct { Side side[2]; };
+		uint32_t value;
+	}
+	__attribute__((packed));
 
 	mstl::string& print(Progress progrss, color::ID color, mstl::string& result);
 }
@@ -413,90 +418,85 @@ namespace tag
 	enum ID
 	{
 		// mandatory tags (seven tag roster)
-		Event,			///< Name of the tournament or match event
-		Site,				///< Location of the event
-		Date,				///< Starting date of the game
-		Round,			///< Playing round ordinal of the game
-		White,			///< Player of the White pieces
-		Black,			///< Player of the Black pieces
-		Result,			///< Result of the game
+		Event				=  0,	///< Name of the tournament or match event
+		Site				=  1,	///< Location of the event
+		Date				=  2,	///< Starting date of the game
+		Round				=  3,	///< Playing round ordinal of the game
+		White				=  4,	///< Player of the White pieces
+		Black				=  5,	///< Player of the Black pieces
+		Result			=  6,	///< Result of the game
 
 		// event related information
-		EventDate,		///< Starting date of the event
-		EventCountry,	///< Country of the event (.e.g. "GER")
-		EventType,		///< Type of the event (.e.g. "tourn")
-		EventRounds,	///< Number of rounds of the event
-		EventCategory,	///< Category of the event
+		EventDate		= 29,	///< Starting date of the event
+		EventCountry	= 28,	///< Country of the event (.e.g. "GER")
+		EventType		= 31,	///< Type of the event (.e.g. "tourn")
+		EventRounds		= 30,	///< Number of rounds of the event
+		EventCategory	= 27,	///< Category of the event
 
 		// opening information
-		Eco, Opening, Variation, SubVariation,
+		Eco				= 26,
+		Opening			= 34,
+		Variation		= 46,
+		SubVariation	= 41,
 
 		// chess variants
-		Variant,
+		Variant			= 45,
 
 		// alternative starting positions
-		SetUp,			///< Denotes the "set-up" status of the game
-		Fen,				///< Position at the start of the game
-		Idn,				///< Unique position IDentification Number (chess 960 position number)
+		SetUp				= 38,	///< Denotes the "set-up" status of the game
+		Fen				= 32,	///< Position at the start of the game
+		Idn				= 36,	///< Unique position IDentification Number (chess 960 position number)
 
 		// game conclusion
-		Termination,	///< Describes the reason for the conclusion of the game
+		Termination		= 42,	///< Describes the reason for the conclusion of the game
 
 		// time information
-		TimeControl,	///< Describes the time control.
-		TimeMode,		///< Describes the time mode (normal, rapid, blitz, corr)
+		TimeControl		= 43,	///< Describes the time control.
+		TimeMode			= 44,	///< Describes the time mode (normal, rapid, blitz, corr)
 
 		// player related information
-		WhiteCountry,		BlackCountry,
-		WhiteTitle,			BlackTitle,		///< Titles of the players
-		WhiteNA,				BlackNA,			///< E-mail or network addresses
-		WhiteType,			BlackType,		///< Player types ("human" or "program")
-		WhiteSex,			BlackSex,		///< Sex of the players ("m" or "f")
-		WhiteFideId,		BlackFideId,	///< Fide ID of the players
+		WhiteCountry	= 48,	BlackCountry	=  9,
+		WhiteTitle		= 61,	BlackTitle		= 22,	///< Titles of the players
+		WhiteNA			= 55,	BlackNA			= 16,	///< E-mail or network addresses
+		WhiteType		= 62,	BlackType		= 23,	///< Player types ("human" or "program")
+		WhiteSex			= 58,	BlackSex			= 19,	///< Sex of the players ("m" or "f")
+		WhiteFideId		= 52,	BlackFideId		= 13,	///< Fide ID of the players
+		WhiteClock		= 47,	BlackClock		=  8,	///< Time at end of game
 
 		// rating types; should be ordered due to rating type order
-		WhiteElo,		///< FIDE Rating
-		WhiteRating,	///< CCRL Computer Rating
-		WhiteRapid,		///< English Chess Federation Rapid Rating
-		WhiteICCF,		///< International Correspondence Chess Federation
-		WhiteUSCF,		///< United States Chess Federation
-		WhiteDWZ,		///< Deutsche Wertungszahl
-		WhiteECF,		///< English Chess Federation
-		WhiteIPS,		///< Individual Player Strength (Chess 960 Rating)
+		WhiteElo		= 51,	///< FIDE Rating
+		WhiteRating	= 57,	///< CCRL Computer Rating
+		WhiteRapid	= 56,	///< English Chess Federation Rapid Rating
+		WhiteICCF	= 53,	///< International Correspondence Chess Federation
+		WhiteUSCF	= 63,	///< United States Chess Federation
+		WhiteDWZ		= 49,	///< Deutsche Wertungszahl
+		WhiteECF		= 50,	///< English Chess Federation
+		WhiteIPS		= 54,	///< Individual Player Strength (Chess 960 Rating)
 
-		BlackElo,		///< FIDE Rating
-		BlackRating,	///< CCRL Computer Rating
-		BlackRapid,		///< English Chess Federation Rapid Rating
-		BlackICCF,		///< International Correspondence Chess Federation
-		BlackUSCF,		///< United States Chess Federation
-		BlackDWZ,		///< Deutsche Wertungszahl
-		BlackECF,		///< English Chess Federation
-		BlackIPS,		///< Individual Player Strength (Chess 960 Rating)
+		BlackElo		= 12,	///< FIDE Rating
+		BlackRating	= 18,	///< CCRL Computer Rating
+		BlackRapid	= 17,	///< English Chess Federation Rapid Rating
+		BlackICCF	= 14,	///< International Correspondence Chess Federation
+		BlackUSCF	= 24,	///< United States Chess Federation
+		BlackDWZ		= 10,	///< Deutsche Wertungszahl
+		BlackECF		= 11,	///< English Chess Federation
+		BlackIPS		= 15,	///< Individual Player Strength (Chess 960 Rating)
 
 		// team related information
-		WhiteTeam,			BlackTeam,
-		WhiteTeamCountry,	BlackTeamCountry,
+		WhiteTeam			= 59,	BlackTeam			= 20,
+		WhiteTeamCountry	= 60,	BlackTeamCountry	= 21,
 
 		// miscellaneous
-		Annotator,		///< Identifies the annotator or annotators of the game
-		Mode,				///< Playing mode of the game (e.g. "OTB" over the board)
-		Source,			///< The provider of the game annotation (e.g. "ChessBase")
-		SourceDate,		///< The date when the game is provided
-		PlyCount,		///< The number of ply (moves) in the game
-		Remark,			///< Any comment to this game
+		Annotator	=  7,	///< Identifies the annotator or annotators of the game
+		Mode			= 33,	///< Playing mode of the game (e.g. "OTB" over the board)
+		Source		= 39,	///< The provider of the game annotation (e.g. "ChessBase")
+		SourceDate	= 40,	///< The date when the game is provided
+		PlyCount		= 35,	///< The number of ply (moves) in the game
+		Remark		= 37,	///< Any comment to this game
+		Board			= 25,	///< The board number
 
 		// # of tags
-		ExtraTag,
-
-		// ranges of rating type tags
-		FirstWhiteRatingType	= WhiteElo,
-		LastWhiteRatingType	= WhiteIPS,
-
-		FirstBlackRatingType	= BlackElo,
-		LastBlackRatingType	= BlackIPS,
-
-		FirstRatingTypeTag	= WhiteElo,
-		LastRatingTypeTag		= BlackIPS,
+		ExtraTag		= 64,
 	};
 
 	bool isMandatory(ID tag);
@@ -615,9 +615,6 @@ namespace rating
 
 	tag::ID toWhiteTag(rating::Type type);
 	tag::ID toBlackTag(rating::Type type);
-	tag::ID toTag(rating::Type type, color::ID color);
-
-	Type fromTag(tag::ID tag);
 
 	unsigned convertEloToUscf(unsigned elo);
 	unsigned convertEloToEcf(unsigned elo);
@@ -627,12 +624,6 @@ namespace rating
 
 	mstl::string const& toString(Type type);
 	Type fromString(char const* s);
-}
-
-namespace tag {
-
-ID fromRating(color::ID color, rating::Type type);
-
 }
 
 namespace termination
@@ -1054,10 +1045,10 @@ namespace display
 {
 	enum
 	{
-		CompactStyle	= 1 << 0,
-		ColumnStyle		= 1 << 1,
-		NarrowLines		= 1 << 2,
-		ShowDiagrams	= 1 << 3,
+		CompactStyle		= 1 << 0,
+		ColumnStyle			= 1 << 1,
+		ParagraphSpacing	= 1 << 2,
+		ShowDiagrams		= 1 << 3,
 	};
 };
 

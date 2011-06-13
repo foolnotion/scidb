@@ -425,7 +425,7 @@ proc open {parent} {
 	set selectbg $::board::square::style(hilite,selected)
 	set activebg [::theme::getActiveBackgroundColor]
 	if {[string length $activebg] == 0} {
-		button $top.temp
+		tk::button $top.temp
 		set activebg [$top.temp cget -activebackground]
 		destroy $top.temp
 	}
@@ -434,7 +434,7 @@ proc open {parent} {
 		set col 1
 		foreach side {w b} {
 			set fig $side$piece
-			radiobutton $panel.$fig \
+			tk::radiobutton $panel.$fig \
 				-image photo_Piece($fig,$squareSize) \
 				-indicatoron no \
 				-value $fig \

@@ -250,7 +250,7 @@ proc getActualColor {color} {
 	variable Label
 
 	if {[llength $Label] == 0} {
-		set Label [label ._choosecolor__should_be_unique_pathname_[clock seconds]]
+		set Label [tk::label ._choosecolor__should_be_unique_pathname_[clock seconds]]
 	}
 	if {[catch {$Label configure -background $color}]} { return "" }
 	lassign [winfo rgb $Label [$Label cget -background]] r g b
@@ -350,8 +350,8 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 	set NotebookSize(x) [[namespace current]::[lindex $Methods 0]::ComputeWidth $NotebookSize(y)]
 
 	### Top Frame ##################
-	set top [frame $dlg.top]
-	set lt [frame $top.lt -relief flat]
+	set top [tk::frame $dlg.top]
+	set lt [tk::frame $top.lt -relief flat]
 	set rt [ttk::notebook $top.rt -takefocus 1]
 
 	grid $lt -row 1 -column 1 -sticky ns
@@ -375,9 +375,9 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 		set col [expr {($type eq "user") + 1}]
 
 		foreach c [set $var] {
-			set fround [frame $lt.round$type$count -relief raised -borderwidth 1]
+			set fround [tk::frame $lt.round$type$count -relief raised -borderwidth 1]
 			if {[llength $c] == 0} { set c [$top cget -background] }
-			set fcolor [frame $lt.color$type$count \
+			set fcolor [tk::frame $lt.color$type$count \
 										-width [expr {$ButtonW - 0}] \
 										-height [expr {$ButtonH - 0}] \
 										-highlightthickness 0 \
@@ -407,7 +407,7 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 	}
 
 	if {[llength $UserColorList] > 0} {
-		set add [button $lt.add \
+		set add [tk::button $lt.add \
 						-image [set GreenArrow] \
 						-width [expr {$ButtonW - 2}] \
 						-height [expr {$ButtonH - 2}] \
@@ -424,7 +424,7 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 	if {$embedcmd eq "" || $oldcolor eq ""} { lappend colorFrames current Current }
 
 	if {$embedcmd ne ""} {
-		set Embedded [frame $lt.embed]
+		set Embedded [tk::frame $lt.embed]
 		grid $Embedded -row $frow -sticky nsew
 		lappend frows [expr {$frow - 1}]
 		set rcv [eval $embedcmd $Embedded]
@@ -456,7 +456,7 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 
 	set count 1
 	foreach meth $Methods {
-		frame $rt.$meth
+		tk::frame $rt.$meth
 		namespace eval $meth [list MakeFrame $rt.$meth]
 		set icon [namespace eval $meth { Icon }]
 		if {$icon eq ""} {
@@ -487,7 +487,7 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 	}
 
 	### Button Frame ###############
-	set box [frame $dlg.bbox]
+	set box [tk::frame $dlg.bbox]
 	tk::AmpWidget ttk::button $box.cancel -command \
 		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $initialColor : $oldcolor}]]]
 	tk::AmpWidget ttk::button $box.ok  -default active -command [namespace code [list Done $dlg 1 ]]
@@ -1292,14 +1292,14 @@ proc MakeFrame {container} {
 	set width 220
 	set Width 0
 
-	set f [frame $container.f]
+	set f [tk::frame $container.f]
 	pack $f -anchor n -expand yes -fill x -padx 5 -pady 10
 
 	set row 0
 	foreach which {r g b h s v} {
 		set Value($which) "0"
 		set Value(current,$which) "0"
-		frame $f.f$which -borderwidth 2 -relief sunken
+		tk::frame $f.f$which -borderwidth 2 -relief sunken
 		canvas $f.c$which -width 100 -height $height
 		bind $f.c$which <FocusIn> "
 			$f.c$which itemconfigure target -state hidden
@@ -1697,7 +1697,7 @@ proc MakeFrame {container} {
 	variable Size
 	variable Widget
 
-	set f [frame $container.f -relief flat]
+	set f [tk::frame $container.f -relief flat]
 	pack $f -anchor n -expand yes -fill both -padx 5 -pady 5
 	set bg [::ttk::style lookup $::ttk::currentTheme -background]
 	set Widget [canvas $f.buttons \

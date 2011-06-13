@@ -210,14 +210,14 @@ proc popup {parent args} {
 	bind $top <Deactivate> [namespace code Exit]
 	if {!$useGrab} { bind $top <FocusOut> [namespace code Exit] }
 
-	frame $top.calendar -relief raised -borderwidth 2 -takefocus 0
-	frame $top.calendar.header -takefocus 0
+	tk::frame $top.calendar -relief raised -borderwidth 2 -takefocus 0
+	tk::frame $top.calendar.header -takefocus 0
 	pack $top.calendar
 	set Priv(background) [$top.calendar cget -background]
 
 	bind $top.calendar <Escape> [namespace code Exit]
 
-	label $top.calendar.header.month -padx 0 -anchor e
+	tk::label $top.calendar.header.month -padx 0 -anchor e
 	set font [$top.calendar.header.month cget -font]
 	set size [abs [font configure $font -size]]
 	set n [lsearch -integer $FontSizes $size]
@@ -230,15 +230,15 @@ proc popup {parent args} {
 	$top.calendar.header.month configure -font $boldFont
 	tooltip $top.calendar.header.month [Tr MonthName($Priv(m))]
 
-	label $top.calendar.header.year -font $boldFont -padx 0 -anchor center
+	tk::label $top.calendar.header.year -font $boldFont -padx 0 -anchor center
 
-	frame $top.calendar.header.left -takefocus 0
-	frame $top.calendar.header.right -takefocus 0
+	tk::frame $top.calendar.header.left -takefocus 0
+	tk::frame $top.calendar.header.right -takefocus 0
 
-	button $top.calendar.header.left.year   -image $PrevYear
-	button $top.calendar.header.left.month  -image $PrevMonth
-	button $top.calendar.header.right.year  -image $NextYear
-	button $top.calendar.header.right.month -image $NextMonth
+	tk::button $top.calendar.header.left.year   -image $PrevYear
+	tk::button $top.calendar.header.left.month  -image $PrevMonth
+	tk::button $top.calendar.header.right.year  -image $NextYear
+	tk::button $top.calendar.header.right.month -image $NextMonth
 
 	foreach which {left.year left.month right.year right.month} {
 		$top.calendar.header.$which configure \
@@ -256,7 +256,7 @@ proc popup {parent args} {
 	tooltip $top.calendar.header.left.month	[namespace current]::mc::OneMonthBackward
 	tooltip $top.calendar.header.right.month	[namespace current]::mc::OneMonthForward
 
-#	frame $top.calendar.sep -height 2 -background black -borderwidth 0
+#	tk::frame $top.calendar.sep -height 2 -background black -borderwidth 0
 	ttk::separator $top.calendar.sep
 
 	pack $top.calendar.header.left.year -side left -padx 2
@@ -286,7 +286,7 @@ proc popup {parent args} {
 		} else {
 			set foreground black
 		}
-		label $top.calendar.days:$dayName \
+		tk::label $top.calendar.days:$dayName \
 			-text $dayName \
 			-font TkFixedFont \
 			-borderwidth 1 \
@@ -318,7 +318,7 @@ proc popup {parent args} {
 		set rowData {}
 
 		for {set col 1} {$col < 8} {incr col} {
-			set lbl [label $top.calendar.$row:$col \
+			set lbl [tk::label $top.calendar.$row:$col \
 							-borderwidth 1 \
 							-width 2 \
 							-highlightthickness 1 \

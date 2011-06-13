@@ -37,6 +37,7 @@ DatabaseContent::~DatabaseContent() throw() {}
 
 DatabaseContent::DatabaseContent(Type type)
 	:m_type(type)
+	,m_created(0)
 	,m_readOnly(false)
 	,m_memoryOnly(false)
 	,m_allocator(32768)

@@ -132,7 +132,7 @@ proc table {args} {
 	variable KeySqueezeColumns
 
 	set parent [lindex $args 0]
-	set table [frame $parent]
+	set table [tk::frame $parent]
 
 	namespace eval [namespace current]::$table {}
 	variable ${table}::Vars

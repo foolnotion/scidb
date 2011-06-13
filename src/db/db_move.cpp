@@ -252,13 +252,10 @@ Move::dump(mstl::string& result) const
 			if (pieceMoved() != piece::Pawn)
 				result += piece::print(pieceMoved());
 
-			if (captured() != piece::None)
-			{
-				if (pieceMoved() == piece::Pawn)
-					result += sq::printFyle(from());
+			result += sq::printFyle(from());
+			result += sq::printRank(from());
 
-				result += "x";
-			}
+			result += captured() == piece::None ? "-" : "x";
 
 			result += sq::printFyle(to());
 			result += sq::printRank(to());

@@ -33,6 +33,8 @@
 
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 
 namespace db {
@@ -84,10 +86,11 @@ private:
 		Bit_Legality		= 1 << Shift_Legality,
 	};
 
-	static uint32_t const Mask_PieceType		= (1 << 3) - 1;
-	static uint32_t const Mask_Promoted 		= (1 << 2) - 1;
-	static uint32_t const Mask_Removal			= (1 << 4) - 1;
-	static uint32_t const Mask_Action			= (1 << 6) - 1;
+	static uint32_t const Mask_PieceType		= (1u << 3) - 1;
+	static uint32_t const Mask_Promoted 		= (1u << 2) - 1;
+	static uint32_t const Mask_Removal			= (1u << 4) - 1;
+	static uint32_t const Mask_Action			= (1u << 6) - 1;
+	static uint32_t const Mask_Compare			= uint32_t(~0) >> (31 - Shift_SideToMove);
 
 	static uint32_t const Clear_PieceType		= ~(Mask_PieceType << Shift_Piece);
 	static uint32_t const Clear_CaptureType	= ~(Mask_PieceType << Shift_Capture);
@@ -103,9 +106,9 @@ public:
 
 	// action
 	static unsigned const One_Forward	= piece::Pawn;
-	static unsigned const Two_Forward	= piece::Pawn | (1 << (Shift_TwoForward - Shift_Action));
-	static unsigned const Promote			= piece::Pawn | (1 << (Shift_Promote - Shift_Action));
-	static unsigned const Castle			= piece::King | (1 << (Shift_Castling - Shift_Action));
+	static unsigned const Two_Forward	= piece::Pawn | (1u << (Shift_TwoForward - Shift_Action));
+	static unsigned const Promote			= piece::Pawn | (1u << (Shift_Promote - Shift_Action));
+	static unsigned const Castle			= piece::King | (1u << (Shift_Castling - Shift_Action));
 
 	enum { Max_SAN_Length = 12 };
 	enum { Index_Bit_Length = 14 };
@@ -148,7 +151,7 @@ public:
 	/// Return action of this move.
 	uint32_t action() const;
 	/// Compute checksum fot this move.
-	uint64_t computeChecksum(uint64_t crc) const;
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	/// Get the piece type moving.
 	piece::Type pieceMoved() const;
@@ -268,10 +271,13 @@ public:
 	mstl::string& dump(mstl::string& result) const;
 	void dump() const;
 
-	/// Moves are considered the same only if they match exactly.
+	/// Moves are considered the same only if they match exactly (discarding info values).
 	friend bool operator==(Move const& m1, Move const& m2);
-	/// Required for keeping moves in some map-like structures.
+	/// Required for keeping moves in some map-like structures (discarding info values).
 	friend bool operator<(Move const& m1, Move const& m2);
+
+	template <int N> static uint8_t compress(uint16_t move);
+	template <int N> static uint16_t uncompress(uint8_t move);
 
 	friend class Board;
 	friend class MoveList;
@@ -326,7 +332,7 @@ private:
 	// The move definition 'm' bitfield layout:
 	// - move is empty if all bits are zero
 	// - move is null if only the legality status is set
-	// - the first 14 bits are usable as a short move value
+	// - the first 12/14 bits are usable as a short move value
 	// - fill bit 15 ensures that isCaptureOrPromotion() works
 	// 00000000 00000000 00000000 00111111 = from square     = bits  1-6
 	// 00000000 00000000 00001111 11000000 = to square       = bits  7-12

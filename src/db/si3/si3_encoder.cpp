@@ -41,8 +41,9 @@
 
 #include "sys_utf8_codec.h"
 
-#include "m_assert.h"
+#include "m_bitfield.h"
 #include "m_bit_functions.h"
+#include "m_assert.h"
 #include "m_static_check.h"
 
 using namespace db;
@@ -59,6 +60,37 @@ makeMoveByte(Byte pieceNumber, Byte value)
 
     return Byte(pieceNumber << 4) | Byte(value);
 }
+
+
+namespace {
+
+struct TagLookup
+{
+	TagLookup()
+	{
+		M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(uint64_t), BitSet_Size_Exceeded);
+
+		m_lookup.set(tag::Event);
+		m_lookup.set(tag::Site);
+		m_lookup.set(tag::Date);
+		m_lookup.set(tag::Round);
+		m_lookup.set(tag::White);
+		m_lookup.set(tag::Black);
+		m_lookup.set(tag::Result);
+		m_lookup.set(tag::Eco);
+		m_lookup.set(tag::WhiteElo);
+		m_lookup.set(tag::BlackElo);
+	}
+
+	static mstl::bitfield<uint64_t> m_lookup;
+
+	bool skipTag(tag::ID tag) const { return m_lookup.test(tag); }
+};
+
+mstl::bitfield<uint64_t> TagLookup::m_lookup;
+static TagLookup tagLookup;
+
+} // namespace
 
 
 Encoder::Encoder(ByteStream& strm, sys::utf8::Codec& codec)
@@ -123,22 +155,7 @@ Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 bool
 Encoder::skipTag(tag::ID tag)
 {
-	switch (unsigned(tag))
-	{
-		// belongs to index
-		case tag::Event:		return true;
-		case tag::Site:		return true;
-		case tag::Date:		return true;
-		case tag::Round:		return true;
-		case tag::White:		return true;
-		case tag::Black:		return true;
-		case tag::Result:		return true;
-		case tag::Eco:			return true;
-		case tag::WhiteElo:	return true;
-		case tag::BlackElo:	return true;
-	}
-
-	return false;
+	return ::tagLookup.skipTag(tag);
 }
 
 
@@ -147,87 +164,80 @@ Encoder::encodeTags(TagSet const& tags)
 {
 	mstl::string buf;
 
-	for (unsigned i = tag::FirstRatingTypeTag; i <= tag::LastRatingTypeTag; ++i)
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		tag::ID tag = tag::ID(i);
-
-		switch (tags.significance(tag))
+		if (tag::isRatingTag(tag))
 		{
-			case 1:
-				if (tag != tag::WhiteIPS && tag != tag::BlackIPS)
-					break;
-				// fallthru
+			switch (tags.significance(tag))
+			{
+				case 1:
+					if (tag != tag::WhiteIPS && tag != tag::BlackIPS)
+						break;
+					// fallthru
 
-			case 2:
-				encodeTag(tags, tag);
-				break;
+				case 2:
+					encodeTag(tags, tag);
+					break;
+			}
 		}
 	}
 
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		tag::ID tag = tag::ID(i);
-
-		if (tags.contains(tag))
+		if (!::tagLookup.skipTag(tag))
 		{
-			if (!skipTag(tag))
+			Byte key = 0;
+
+			switch (tag)
 			{
-				Byte key = 0;
+				// not needed
+				case tag::Fen:				// fallthru
+				case tag::Idn:				// fallthru
 
-				switch (i)
-				{
-					// not needed
-					case tag::Fen:				// fallthru
-					case tag::Idn:				// fallthru
+				// makes the compiler shut up
+				case tag::ExtraTag:		break;
 
-					// makes the compiler shut up
-					case tag::ExtraTag:		break;
+				// common tag
+				case tag::WhiteCountry:	key = 241; break;
+				case tag::BlackCountry:	key = 242; break;
+				case tag::Annotator:		key = 243; break;
+				case tag::PlyCount:		key = 244; break;
+				case tag::Opening:		key = 246; break;
+				case tag::Variation:		key = 247; break;
+				case tag::Source:			key = 249; break;
+				case tag::SetUp:			key = 250; break;
 
-					// common tag
-					case tag::WhiteCountry:	key = 241; break;
-					case tag::BlackCountry:	key = 242; break;
-					case tag::Annotator:		key = 243; break;
-					case tag::PlyCount:		key = 244; break;
-					case tag::Opening:		key = 246; break;
-					case tag::Variation:		key = 247; break;
-					case tag::Source:			key = 249; break;
-					case tag::SetUp:			key = 250; break;
+				// special case
+				case tag::EventDate:
+					if (tags.contains(tag::Date))
+					{
+						Date date(tags.value(tag::Date));
+						Date eventDate(tags.value(tag::EventDate));
 
-					// special case
-					case tag::EventDate:
-						if (tags.contains(tag::Date))
-						{
-							Date date(tags.value(tag::Date));
-							Date eventDate(tags.value(tag::EventDate));
-
-							if (mstl::abs(int(eventDate.year()) - int(date.year())) > 3)
-								key = 245;
-						}
-						else
-						{
+						if (mstl::abs(int(eventDate.year()) - int(date.year())) > 3)
 							key = 245;
-						}
-						break;
+					}
+					else
+					{
+						key = 245;
+					}
+					break;
 
-					// extra tag
-					default:
-						if (	tags.isUserSupplied(tag)
-							&& (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
-						{
-							encodeTag(tags, tag);
-						}
-						break;
-				}
+				// extra tag
+				default:
+					if (tags.isUserSupplied(tag) && (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
+						encodeTag(tags, tag);
+					break;
+			}
 
-				if (key && tags.isUserSupplied(tag))
-				{
-					mstl::string const& value = tags.value(tag);
+			if (key && tags.isUserSupplied(tag))
+			{
+				mstl::string const& value = tags.value(tag);
 
-					// TODO: use m_codec?
-					m_strm.put(key);
-					m_strm.put(value.size());
-					m_strm.put(value, value.size());
-				}
+				// TODO: use m_codec?
+				m_strm.put(key);
+				m_strm.put(value.size());
+				m_strm.put(value, value.size());
 			}
 		}
 	}

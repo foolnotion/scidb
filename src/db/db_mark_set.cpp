@@ -94,7 +94,7 @@ MarkSet::add(MarkSet const& set)
 }
 
 
-void
+bool
 MarkSet::extractFromComment(mstl::string& comment)
 {
 	mstl::string result;
@@ -160,7 +160,9 @@ MarkSet::extractFromComment(mstl::string& comment)
 		}
 	}
 
-	if (!isEmpty())
+	bool rc = !isEmpty();
+
+	if (rc)
 	{
 		result.append(p, comment.end());
 		comment = result;
@@ -169,6 +171,8 @@ MarkSet::extractFromComment(mstl::string& comment)
 	M_ASSERT(!isEmpty() || result.empty());
 
 	::trim(comment);
+
+	return rc;
 }
 
 

@@ -31,6 +31,8 @@
 #include "db_namebase.h"
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_fstream.h"
 #include "m_vector.h"
 #include "m_string.h"
@@ -50,7 +52,6 @@ namespace sys
 namespace db {
 
 class Consumer;
-class Producer;
 class GameData;
 class GameInfo;
 class NamebaseEntry;
@@ -91,7 +92,6 @@ public:
 	void filterTag(TagSet& tags, tag::ID tag) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
-	uint32_t computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const;
 	util::BlockFile* newBlockFile() const;
 
 	void doOpen(mstl::string const& encoding);

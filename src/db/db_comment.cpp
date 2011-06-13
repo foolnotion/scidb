@@ -62,22 +62,6 @@ isDelimChar(char c)
 }
 
 
-static void
-append(mstl::string& dst, mstl::string const& src, bool isXml)
-{
-	if (isXml)
-	{
-		dst.append(src, prefix.size(), src.size() - prefix.size() - suffix.size());
-	}
-	else
-	{
-		dst.append("<:>", 3);
-		dst.append(src);
-		dst.append("</:>", 4);
-	}
-}
-
-
 static unsigned
 appendDelim(mstl::string& str, char delim)
 {
@@ -163,6 +147,203 @@ struct Collector : public Comment::Callback
 };
 
 
+struct Split : public Comment::Callback
+{
+	typedef mstl::map<mstl::string, mstl::string> LangMap;
+	typedef Comment::LanguageSet LanguageSet;
+
+	Split() :m_current(&m_result[mstl::string::empty_string]) {}
+
+	void start()  {}
+	void finish() {}
+
+	void startLanguage(mstl::string const& lang)	{ m_current = &m_result[lang]; }
+	void endLanguage(mstl::string const& lang)	{ m_current = &m_result[mstl::string::empty_string]; }
+
+	void startAttribute(Attribute attr)
+	{
+		m_current->append('<');
+		m_current->append(attr);
+		m_current->append('>');
+	}
+
+	void endAttribute(Attribute attr)
+	{
+		m_current->append('<');
+		m_current->append('/');
+		m_current->append(attr);
+		m_current->append('>');
+	}
+
+	void content(mstl::string const& s)
+	{
+		if (s.size() == 1)
+		{
+			switch (s[0])
+			{
+				case '<':	m_current->append("&lt;", 4); break;
+				case '>':	m_current->append("&gt;", 4); break;
+				case '&':	m_current->append("&amp;", 5); break;
+				default:		m_current->append(s[0]); break;
+			}
+		}
+		else
+		{
+			m_current->append(s);
+		}
+	}
+
+	void symbol(char s)
+	{
+		m_current->append("<sym>", 5);
+		m_current->append(s);
+		m_current->append("</sym>", 6);
+	}
+
+	void nag(mstl::string const& s)
+	{
+		m_current->append("<nag>", 5);
+		m_current->append(s);
+		m_current->append("</nag>", 6);
+	}
+
+	void invalidXmlContent(mstl::string const& content) {}
+
+	static void join(mstl::string& result, LangMap const& lhs, LangMap const& rhs, char delim)
+	{
+		LangMap::const_iterator	e = lhs.find(mstl::string::empty_string);
+
+		result.assign(::prefix);
+
+		if (lhs.size() == 1 && e != lhs.end())
+		{
+			LangMap::const_iterator	f = rhs.find(mstl::string::empty_string);
+
+			result.append("<:>", 3);
+			result.append(e->second);
+
+			if (f != rhs.end())
+			{
+				if (delim && !e->second.empty() && !f->second.empty())
+					result.append(delim);
+
+				result.append(f->second);
+			}
+
+			result.append("</:>", 4);
+
+			for (unsigned i = 0; i < rhs.container().size(); ++i)
+			{
+				mstl::string const& lang = rhs.container()[i].first;
+
+				if (!lang.empty())
+				{
+					result.append("<:", 2);
+					result.append(lang);
+					result.append('>');
+					result.append(rhs.container()[i].second);
+					result.append("</:", 3);
+					result.append(lang);
+					result.append('>');
+				}
+			}
+		}
+		else
+		{
+			LanguageSet langSet;
+
+			for (LangMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
+				langSet[i->first] = 1;
+			for (LangMap::const_iterator i = rhs.begin(); i != rhs.end(); ++i)
+				langSet[i->first] = 1;
+
+			LangMap::const_iterator	f = rhs.find(mstl::string::empty_string);
+
+			if (f == rhs.end() || f->second.empty())
+			{
+				for (unsigned i = 0; i < langSet.container().size(); ++i)
+				{
+					mstl::string const& lang = langSet.container()[i].first;
+
+					LangMap::const_iterator	p = lhs.find(lang);
+					LangMap::const_iterator	q = rhs.find(lang);
+
+					result.append("<:", 2);
+					result.append(lang);
+					result.append('>');
+
+					if (p != lhs.end())
+					{
+						result.append(p->second);
+
+						if (delim && !p->second.empty() && q != rhs.end() && !q->second.empty())
+							result.append(delim);
+					}
+
+					if (q != rhs.end())
+						result.append(q->second);
+
+					result.append("</:", 3);
+					result.append(lang);
+					result.append('>');
+				}
+			}
+			else
+			{
+				if (e != lhs.end() && !e->second.empty())
+				{
+					result.append("<:>", 3);
+					result.append(e->second);
+					result.append("</:>", 4);
+				}
+
+				for (unsigned i = 0; i < langSet.container().size(); ++i)
+				{
+					mstl::string const& lang = langSet.container()[i].first;
+
+					if (!lang.empty())
+					{
+						LangMap::const_iterator	p = lhs.find(lang);
+						LangMap::const_iterator	q = rhs.find(lang);
+
+						result.append("<:", 2);
+						result.append(lang);
+						result.append('>');
+
+						if (p != lhs.end())
+						{
+							result.append(p->second);
+
+							if (delim && !p->second.empty())
+								result.append(delim);
+						}
+
+						result.append(f->second);
+
+						if (q != rhs.end() && !q->second.empty())
+						{
+							if (delim)
+								result.append(delim);
+
+							result.append(q->second);
+						}
+
+						result.append("</:", 3);
+						result.append(lang);
+						result.append('>');
+					}
+				}
+			}
+		}
+
+		result.append(::suffix);
+	}
+
+	LangMap m_result;
+	mstl::string* m_current;
+};
+
+
 struct Normalize : public Comment::Callback
 {
 	struct Content
@@ -176,7 +357,11 @@ struct Normalize : public Comment::Callback
 	typedef mstl::map<mstl::string,Content> LangMap;
 	typedef Comment::LanguageSet LanguageSet;
 
-	Normalize(mstl::string& result, bool& engFlag, bool& othFlag, char delim, LanguageSet const* wanted = 0)
+	Normalize(	mstl::string& result,
+					bool& engFlag,
+					bool& othFlag,
+					char delim,
+					LanguageSet const* wanted = 0)
 		:m_result(result)
 		,m_delim(delim)
 		,m_wanted(wanted)
@@ -205,7 +390,7 @@ struct Normalize : public Comment::Callback
 
 			if (!m_isXml)
 			{
-				M_ASSERT(m_map.find(mstl::string::empty_string) != m_map.end());
+				m_map[mstl::string::empty_string]; // ensure existence
 				m_result = m_map.find(mstl::string::empty_string)->second.str;
 			}
 			else
@@ -639,6 +824,17 @@ endXmlElement(void* cbData, XML_Char const* elem)
 
 
 static void
+checkLang(HtmlData* data)
+{
+	if (data->putLang == 1)
+	{
+		data->result.append("<:>", 3);
+		data->putLang = 2;
+	}
+}
+
+
+static void
 htmlContent(void* cbData, XML_Char const* s, int len)
 {
 	HtmlData* data = static_cast<HtmlData*>(cbData);
@@ -656,11 +852,7 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 		bool specialExpected = true;
 #endif
 
-		if (data->putLang == 1)
-		{
-			data->result.append("<:>", 3);
-			data->putLang = 2;
-		}
+		checkLang(data);
 
 		while (s < e)
 		{
@@ -801,11 +993,13 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 		case 'b':
 			if (elem[1] == '\0')
 			{
+				checkLang(data);
 				data->result.append("<b>", 3);
 				data->isXml = true;
 			}
 			else if (elem[1] == 'r' && elem[2] == '0')
 			{
+				checkLang(data);
 				data->result += '\n';
 			}
 			break;
@@ -813,14 +1007,10 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 		case 'i':
 			if (elem[1] == '\0')
 			{
+				checkLang(data);
 				data->result.append("<i>", 3);
 				data->isXml = true;
 			}
-			break;
-
-		case 'h':
-			if (strcmp(elem, "html") == 0)
-				data->result.append("<xml>", 5);
 			break;
 
 		case 'l':
@@ -834,9 +1024,12 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 					&& attr[1][2] == '\0')
 				{
 					if (data->putLang == 2)
+					{
 						data->result.append("</:>", 4);
+						data->putLang = 0;
+					}
 
-					data->putLang = 0;
+					checkLang(data);
 					data->result.append("<:", 2);
 					data->result.append(attr[1]);
 					data->result.append(">", 1);
@@ -852,12 +1045,14 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 				{
 					++data->skipLang;
 				}
+				return;
 			}
 			break;
 
 		case 'n':
 			if (strcmp(elem, "nag") == 0)
 			{
+				checkLang(data);
 				data->result.append("<nag>", 5);
 				data->insideNag = true;
 				data->isXml = true;
@@ -867,14 +1062,19 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 		case 'u':
 			if (elem[1] == '\0')
 			{
+				checkLang(data);
 				data->result.append("<u>", 3);
 				data->isXml = true;
 			}
 			break;
+
+		case 'x':
+			if (::strcmp(elem, "xml") == 0)
+				return;
+			break;
 	}
 
-	if (::strcmp(elem, "xml") != 0)
-		data->isHtml = true;
+	data->isHtml = true;
 }
 
 
@@ -915,14 +1115,10 @@ endHtmlElement(void* cbData, XML_Char const* elem)
 			break;
 
 		case 'h':
-			if (strcmp(elem, "html") == 0)
+			if (data->putLang == 2 && strcmp(elem, "html") == 0)
 			{
-				if (data->putLang == 2)
-				{
-					data->result.append("</:>", 4);
-					data->putLang = 0;
-				}
-				data->result.append("</xml>", 6);
+				data->result.append("</:>", 4);
+				data->putLang = 0;
 			}
 			break;
 
@@ -953,6 +1149,9 @@ Comment::Comment(mstl::string const& content, bool engFlag, bool othFlag)
 void
 Comment::append(Comment const& comment, char delim)
 {
+	if (comment.isEmpty())
+		return;
+
 	if (m_content.empty())
 	{
 		m_content = comment;
@@ -965,23 +1164,34 @@ Comment::append(Comment const& comment, char delim)
 		bool thisIsXml = isXml();
 		bool thatIsXml = comment.isXml();
 
-		if (thisIsXml != thatIsXml)
+		if (thisIsXml && thatIsXml)
 		{
-			mstl::string content;
-			content.reserve(
-				m_content.size() + comment.m_content.size() + ::prefix.size() + ::suffix.size());
-			content.append(::prefix);
-			::append(content, m_content, thisIsXml);
-			::append(content, comment.m_content, thatIsXml);
-			content.append(::suffix);
-			m_content.swap(content);
-			normalize(delim); // updates m_engFlag, m_othFlag
+			Split thisSplit;
+			Split thatSplit;
+
+			parse(thisSplit);
+			comment.parse(thatSplit);
+			Split::join(m_content, thisSplit.m_result, thatSplit.m_result, delim);
+			m_languageSet.clear();
 		}
-		else if (thisIsXml) // && thatIsXml
+		else if (thisIsXml)
 		{
-			m_content.erase(m_content.end() - ::suffix.size(), m_content.end());
-			m_content.append(comment.content(), ::prefix.size());
-			normalize(delim); // updates m_engFlag, m_othFlag
+			Split thisSplit;
+			Split::LangMap thatMap;
+
+			parse(thisSplit);
+			thatMap[mstl::string::empty_string] = comment.content();
+			Split::join(m_content, thisSplit.m_result, thatMap, delim);
+			m_languageSet.clear();
+		}
+		else if (thatIsXml)
+		{
+			Split thatSplit;
+			Split::LangMap thisMap;
+
+			comment.parse(thatSplit);
+			thisMap[mstl::string::empty_string].swap(m_content);
+			Split::join(m_content, thisMap, thatSplit.m_result, delim);
 			m_languageSet.clear();
 		}
 		else // if (!thisIsXml && !thatIsXml)
@@ -1104,6 +1314,24 @@ Comment::countLength(mstl::string const& lang) const
 
 	LanguageSet::const_iterator k = m_languageSet.find(lang);
 	return k == m_languageSet.end() ? 0 : k->second;
+}
+
+
+unsigned
+Comment::length() const
+{
+	if (m_content.empty())
+		return 0;
+
+	if (m_languageSet.empty())
+		collect();
+
+	unsigned length = 0;
+
+	for (LanguageSet::const_iterator i = m_languageSet.begin(); i != m_languageSet.end(); ++i)
+		length += i->second;
+
+	return length;
 }
 
 
@@ -1265,6 +1493,9 @@ Comment::strip(LanguageSet const& set)
 bool
 Comment::fromHtml(mstl::string const& s)
 {
+	if (::strncmp(s, "<xml>", 5) == 0)
+		return false;
+
 	XML_Parser parser = ::XML_ParserCreate("ISO-8859-1");
 
 	if (parser == 0)
@@ -1273,7 +1504,7 @@ Comment::fromHtml(mstl::string const& s)
 	bool sucesss = false;
 
 	HtmlData data(m_content, m_engFlag, m_othFlag);
-	m_content.reserve(s.size());
+	m_content.reserve(s.size() + 20);
 
 	XML_SetUserData(parser, &data);
 	XML_SetElementHandler(parser, ::startHtmlElement, ::endHtmlElement);
@@ -1306,6 +1537,12 @@ Comment::fromHtml(mstl::string const& s)
 				m_content.insert(m_content.begin(), ::prefix);
 				m_content.append(::suffix);
 			}
+			else
+			{
+				M_ASSERT(::strncmp(m_content, "<:>", 3) == 0);
+				m_content.erase(size_t(0), size_t(3));
+				m_content.erase(m_content.size() - 4, size_t(4));
+			}
 		}
 	}
 	catch (...)
@@ -1326,8 +1563,8 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 {
 	M_REQUIRE(&comment != &result.content());
 
-	char const* s		= comment.c_str();
-	bool hasDiagram	= false;
+	char const* s = comment.c_str();
+	bool hasDiagram = false;
 
 	result.m_content.reserve(comment.size() + 100);
 

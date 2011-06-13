@@ -198,7 +198,7 @@ proc SetupCurrentTheme {} {
 
 	# get current settings
 	set background [::ttk::style lookup $currentTheme -background]
-	set f [frame .__hopefully_unique_widget_id__[clock milliseconds]]
+	set f [tk::frame .__hopefully_unique_widget_id__[clock milliseconds]]
 	set Settings(tk:background) [$f cget -background]
 	destroy $f
 
@@ -212,6 +212,7 @@ proc SetupCurrentTheme {} {
 	ttk::style configure active.Vertical.TScale -troughcolor [GetActiveTroughColor]
 
 	# 4. Set theme options
+#	option add *Frame.background $Settings(tk:background)
 	option add *Button.background $background
 	option add *Spinbox.selectBackground [::ttk::style lookup $currentTheme -selectbackground]
 	option add *Spinbox.disabledBackground $background
@@ -447,7 +448,6 @@ proc ComboboxSelected {w} {
 }
 
 
-option add *Frame.background #efefef
 option add *Spinbox.background white
 option add *Spinbox.selectForeground white
 option add *Spinbox.readonlyBackground white

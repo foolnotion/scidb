@@ -126,7 +126,7 @@ proc BuildAboutFrame {w} {
 	set charwidth [font measure $font "0"]
 	set height [expr {9 + (143 + $linespace - 1)/$linespace}]
 	set width [expr {38 + (138 + $charwidth - 1)/$charwidth}]
-	set t [text $w.t \
+	set t [tk::text $w.t \
 				-padx 10 \
 				-pady 10 \
 				-cursor left_ptr \
@@ -174,7 +174,7 @@ proc BuildAboutFrame {w} {
 
 
 proc BuildContributionsFrame {w} {
-	set t [text $w.t \
+	set t [tk::text $w.t \
 		-padx 10 -pady 10 \
 		-cursor left_ptr \
 		-width 0 -height 0 \
@@ -190,14 +190,17 @@ proc BuildContributionsFrame {w} {
 
 	$t insert end "[set [namespace current]::mc::Localization]:\n" caption
 	$t insert end "Giovanni Ornaghi ([::encoding::languageName it]), "
-	$t insert end "Gregor Cramer ([::encoding::languageName en])"
+	$t insert end "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"
 
 	$t insert end "\n\n"
 	$t insert end "[set [namespace current]::mc::Testing]:\n" caption
 	$t insert end "Steven Atkinson, "
+	$t insert end "Paolo Casaschi, "
+	$t insert end "Austen Green, "
 	$t insert end "Natalia Parés Vives, "
-#	$t insert end "Lars ???, "
+	$t insert end "Lars ???, "
 	$t insert end "Giovanni Ornaghi, "
+	$t insert end "Zoltan Tibensky, "
 	$t insert end "Matthew Simpson"
 
 	$t insert end "\n\n"
@@ -245,7 +248,7 @@ proc BuildContributionsFrame {w} {
 proc BuildReferencesFrame {w} {
 	variable Data
 
-	set t [text $w.t \
+	set t [tk::text $w.t \
 		-padx 10 -pady 10 \
 		-cursor left_ptr \
 		-width 0 -height 16 \
@@ -316,16 +319,25 @@ proc BuildSystemFrame {w} {
 	}
 
 	# TODO: use a label for the first line (ensures minimum width)
-	set f [frame $w.f -background white -relief sunken -borderwidth 1]
-	set t [text $f.t \
+	set f [tk::frame $w.f -background white -relief sunken -borderwidth 1]
+	set t [tk::text $f.t \
 		-cursor left_ptr \
 		-width 0 -height [expr {6 + [llength $total]}] \
 		-font TkFixedFont \
 		-padx $padding \
 		-borderwidth 0]
-	set l1 [label $f.l1 -image [set [namespace current]::icon::64x64::LinuxIcon] -background lightgray]
-	set l2 [label $f.l2 -image [set [namespace current]::icon::64x58::WindowsIcon] -background lightgray]
-	set l3 [label $f.l3 -image [set [namespace current]::icon::64x74::AppleIcon] -background lightgray]
+	set l1 [tk::label $f.l1 \
+		-image [set [namespace current]::icon::64x64::LinuxIcon] \
+		-background lightgray \
+	]
+	set l2 [tk::label $f.l2 \
+		-image [set [namespace current]::icon::64x58::WindowsIcon] \
+		-background lightgray \
+	]
+	set l3 [tk::label $f.l3 \
+		-image [set [namespace current]::icon::64x74::AppleIcon] \
+		-background lightgray \
+	]
 	pack $f -fill both -expand true
 	grid $l1 -row 0 -column 0 -sticky nswe
 	grid $l2 -row 1 -column 0 -sticky nswe
@@ -351,7 +363,7 @@ proc BuildSystemFrame {w} {
 
 
 proc BuildLicenseFrame {w} {
-	set t [text $w.t \
+	set t [tk::text $w.t \
 		-cursor left_ptr \
 		-height 0 \
 		-font TkFixedFont \

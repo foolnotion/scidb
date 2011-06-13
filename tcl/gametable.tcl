@@ -46,7 +46,6 @@ set SortOnAverageRating	"Sort on average rating (descending)"
 set SortOnDate				"Sort on date (descending)"
 set SortOnNumber			"Sort on game number (asscending)"
 set ReverseOrder			"Reverse order"
-set NotAvailable			"n.a."
 set NoMoves					"No moves"
 set WhiteRating			"White Rating"
 set BlackRating			"Black Rating"
@@ -214,7 +213,7 @@ variable Columns {
 	{ eventCountry		event		center	 0		 0		 5			0			1			0			{}				}
 	{ site				event		left		10		 0		16			1			1			1			{}				}
 	{ date				{}			left		 5		10		10			0			1			0			darkred		}
-	{ round				{}			right		 2		 5		 5			0			1			1			{}				}
+	{ round				{}			right		 2		 5		 8			0			1			1			{}				}
 	{ annotator			{}			left		10		 0		10			0			1			1			darkred		}
 	{ idn					{}			right		 0		 0		 5			0			1			1			#68480a		}
 	{ position			{}			left		 0		 0		13			0			1			1			#68480a		}
@@ -680,7 +679,7 @@ proc showMoves {path moves {result ""}} {
 			wm overrideredirect $w true
 		}
 		wm attributes $w -topmost true
-		text $w.text \
+		tk::text $w.text \
 			-wrap word \
 			-width 50 \
 			-height 8 \
@@ -718,9 +717,9 @@ proc TableSelected {path index} {
 	set info [::scidb::db::get gameInfo $index $view $base]
 
 	set pos [::widget::busyOperation \
-					::game::new $path $base $info [expr {[column $info number] - 1}]]
+					::game::new $path $base [expr {[column $info number] - 1}]]
 
-	if {[llength $Vars(positioncmd)]} {
+	if {$pos >= 0 && [llength $Vars(positioncmd)]} {
 		::scidb::game::go $pos position [{*}$Vars(positioncmd)]
 	}
 }
@@ -937,7 +936,7 @@ proc TableFill {path args} {
 
 					termination {
 						if {$codec ne "sci"} {
-							lappend text $mc::NotAvailable]
+							lappend text $::mc::NotAvailable]
 						} elseif {[llength $item]} {
 							lappend text [list @ [set ::terminationbox::icon::12x12::$item]]
 						} else {
@@ -985,12 +984,12 @@ proc TableFill {path args} {
 						if {$codec eq "sci"} {
 							if {$item} { lappend text $item } else { lappend text "" }
 						} else {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						}
 					}
 
 					position {
-						if {$codec eq "sci"} { lappend text $item } else { lappend text $mc::NotAvailable }
+						if {$codec eq "sci"} { lappend text $item } else { lappend text $::mc::NotAvailable }
 					}
 
 					whiteRating1 - blackRating1 - whiteRating2 - blackRating2 {
@@ -1031,7 +1030,7 @@ proc TableFill {path args} {
 						if {$codec eq "sci" || $codec eq "cbh"} {
 							lappend text $item
 						} else {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						}
 					}
 
@@ -1076,15 +1075,15 @@ proc TableFill {path args} {
 
 					material {
 						if {$codec eq "cbh"} {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						} else {
-							lappend text [::fonts::translate [string map {: " - "} $item]]
+							lappend text [::font::translate [string map {: " - "} $item]]
 						}
 					}
 
 					key {
 						if {$codec eq "cbh"} {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						} else {
 							lappend text $item
 						}
@@ -1100,9 +1099,9 @@ proc TableFill {path args} {
 
 					overview {
 						if {$codec eq "cbh"} {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						} else {
-							lappend text [::fonts::translate $item]
+							lappend text [::font::translate $item]
 						}
 					}
 
@@ -1149,7 +1148,7 @@ proc TableFill {path args} {
 
 					eventType {
 						if {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $mc::NotAvailable
+							lappend text $::mc::NotAvailable
 						} elseif {[llength $item]} {
 							if {$Options(eventtype-icon)} {
 								lappend text [list @ $::eventtypebox::icon::12x12::Type($item)]

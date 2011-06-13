@@ -34,12 +34,57 @@
 #include "m_static_check.h"
 
 namespace db {
+namespace detail {
+
+inline
+uint8_t
+compressWhiteMove(uint8_t fromFyle, uint8_t fromRank, uint8_t toFyle, uint8_t toRank)
+{
+	M_REQUIRE(fromRank <= sq::Rank2);
+	M_REQUIRE(sq::Rank2 < toRank);
+	M_REQUIRE(toRank <= sq::Rank4);
+
+	return (fromFyle << 5) | (toFyle << 2) | ((fromRank - sq::Rank1) << 1) | (toRank - sq::Rank3);
+}
+
+
+inline
+uint8_t
+compressBlackMove(uint8_t fromFyle, uint8_t fromRank, uint8_t toFyle, uint8_t toRank)
+{
+	M_REQUIRE(fromRank >= sq::Rank7);
+	M_REQUIRE(sq::Rank7 > toRank);
+	M_REQUIRE(toRank >= sq::Rank5);
+
+	return (fromFyle << 5) | (toFyle << 2) | ((fromRank - sq::Rank7) << 1) | (toRank - sq::Rank5);
+}
+
+
+inline
+uint16_t
+uncompressWhiteMove(uint8_t m)
+{
+	M_ASSERT(m);
+
+	return	uint16_t(sq::make(m >> 5, sq::Rank1 + ((m >> 1) & 1)))
+			 | (uint16_t(sq::make((m >> 2) & 7, sq::Rank3 + (m & 1)) << 6));
+}
+
+
+inline
+uint16_t
+uncompressBlackMove(uint8_t m)
+{
+	M_ASSERT(m);
+
+	return	uint16_t(sq::make(m >> 5, sq::Rank7 + ((m >> 1) & 1)))
+			 | (uint16_t(sq::make((m >> 2) & 7, sq::Rank5 + (m & 1)) << 6));
+}
+
+} // namespace detail
 
 inline Move::Move() :m(0), u(0) {}
 inline Move::Move(uint32_t m) :m(m), u(0) {}
-
-inline bool operator==(Move const& m1, Move const& m2) { return m1.m == m2.m; }
-inline bool operator< (Move const& m1, Move const& m2) { return m1.m <  m2.m; }
 
 inline Move::operator bool () const { return m != 0; }
 inline bool Move::operator!() const { return m == 0; }
@@ -107,6 +152,22 @@ Move::Move(Square from, Square to, unsigned color)
 	:m(from | (to << 6) | (color << Shift_SideToMove))
 	,u(0)
 {
+}
+
+
+inline
+bool
+operator==(Move const& m1, Move const& m2)
+{
+	return (m1.m & Move::Mask_Compare) == (m2.m & Move::Mask_Compare);
+}
+
+
+inline
+bool
+operator<(Move const& m1, Move const& m2)
+{
+	return (m1.m & Move::Mask_Compare) <  (m2.m & Move::Mask_Compare);
 }
 
 
@@ -411,10 +472,114 @@ Move::setUndo(uint32_t halfMoves, uint32_t epSquare, bool epSquareExists, uint32
 
 
 inline
-uint64_t
-Move::computeChecksum(uint64_t crc) const
+util::crc::checksum_t
+Move::computeChecksum(util::crc::checksum_t crc) const
 {
 	return ::util::crc::compute(crc, reinterpret_cast<char const*>(&m), sizeof(m));
+}
+
+
+template <>
+inline
+uint8_t
+Move::compress<0>(uint16_t m)
+{
+	if (m == 0)
+		return 0;
+
+	return detail::compressWhiteMove(sq::fyle(m & 0x3f),
+												sq::rank(m & 0x3f),
+												sq::fyle((m >> 6) & 0x3f),
+												sq::rank((m >> 6) & 0x3f));
+}
+
+
+template <>
+inline
+uint8_t
+Move::compress<1>(uint16_t m)
+{
+	if (m == 0)
+		return 0;
+
+	return detail::compressBlackMove(sq::fyle(m & 0x3f),
+												sq::rank(m & 0x3f),
+												sq::fyle((m >> 6) & 0x3f),
+												sq::rank((m >> 6) & 0x3f));
+}
+
+
+template <>
+inline
+uint8_t
+Move::compress<2>(uint16_t m)
+{
+	sq::Rank from = sq::rank(m & 0x3f);
+
+	if (from > sq::Rank2)
+		return 0;
+
+	sq::Rank to = sq::rank((m >> 6) & 0x3f);
+
+	if (to <= sq::Rank2 || sq::Rank4 < to)
+		return 0;
+
+	return detail::compressWhiteMove(sq::fyle(m & 0x3f), from, sq::fyle((m >> 6) & 0x3f), to);
+}
+
+
+template <>
+inline
+uint8_t
+Move::compress<3>(uint16_t m)
+{
+	sq::Rank from = sq::rank(m & 0x3f);
+
+	if (from < sq::Rank7)
+		return 0;
+
+	sq::Rank to = sq::rank((m >> 6) & 0x3f);
+
+	if (to >= sq::Rank7 || sq::Rank4 > to)
+		return 0;
+
+	return detail::compressBlackMove(sq::fyle(m & 0x3f), from, sq::fyle((m >> 6) & 0x3f), to);
+}
+
+
+template <>
+inline
+uint16_t
+Move::uncompress<0>(uint8_t m)
+{
+	return m == 0 ? uint16_t(0) : detail::uncompressWhiteMove(m);
+}
+
+
+template <>
+inline
+uint16_t
+Move::uncompress<1>(uint8_t m)
+{
+	return m == 0 ? uint16_t(0) : detail::uncompressBlackMove(m);
+}
+
+
+template <>
+inline
+uint16_t
+Move::uncompress<2>(uint8_t m)
+{
+	return m == 0 ? uint16_t(0) : detail::uncompressWhiteMove(m);
+}
+
+
+template <>
+inline
+uint16_t
+Move::uncompress<3>(uint8_t m)
+{
+	return m == 0 ? uint16_t(0) : detail::uncompressBlackMove(m);
 }
 
 } // namespace db

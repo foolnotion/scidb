@@ -273,7 +273,7 @@ proc BuildTab {nb boardSize sw sh specified} {
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {
 			set board [::board::stuff::new $f.board_${row}_${col} $boardSize 1 $Priv(flip)]
-			set text [text $f.text_${row}_${col} \
+			set text [tk::text $f.text_${row}_${col} \
 				-borderwidth 1 \
 				-relief raised \
 				-width 0 -height 2 \
@@ -395,9 +395,9 @@ proc LoadGame {nb} {
 	variable ${nb}::Vars
 
 	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-	set info  [::scidb::db::get gameInfo $index $Vars(view) $Vars(base)]
+	set tags  [::scidb::db::get tags $index $Vars(view) $Vars(base)]
 
-	::widget::busyOperation ::game::new $nb $Vars(base) $info $index
+	::widget::busyOperation ::game::new $nb $Vars(base) $tags $index
 }	
 
 

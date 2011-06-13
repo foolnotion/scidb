@@ -447,10 +447,10 @@ proc showInfo {path info} {
 	wm attributes $w -topmost true
 
 	set bg [::tooltip::background]
-	set top [frame $w.f -relief solid -borderwidth 0 -background $bg]
+	set top [tk::frame $w.f -relief solid -borderwidth 0 -background $bg]
 	pack $top -padx 2 -pady 2
 
-	set f [frame $top.f -borderwidth 0 -background $bg]
+	set f [tk::frame $top.f -borderwidth 0 -background $bg]
 	grid $f -column 3 -row 1
 
 	lassign $elo highestRating mostRecentRating
@@ -486,8 +486,8 @@ proc showInfo {path info} {
 		} else {
 			set text [set mc::$attr]
 		}
-		label $f.lbl$row -background $bg -text "$text:"
-		label $f.val$row -background $bg -text $value -justify left
+		tk::label $f.lbl$row -background $bg -text "$text:"
+		tk::label $f.val$row -background $bg -text $value -justify left
 		grid $f.lbl$row -row $row -column 3 -sticky nw
 		grid $f.val$row -row $row -column 5 -sticky w
 #		grid rowconfigure $f [expr {$row + 1}] -minsize $::theme::padding
@@ -498,15 +498,15 @@ proc showInfo {path info} {
 	grid rowconfigure $f [list 0 [incr row -1]] -minsize 2
 
 	if {[FindPlayerPhoto $name $info]} {
-		frame $top.lt -background $bg -borderwidth 0
-		set lbl [label $top.lt.photo -background $bg -image PlayerPhoto_ -relief solid]
+		tk::frame $top.lt -background $bg -borderwidth 0
+		set lbl [tk::label $top.lt.photo -background $bg -image PlayerPhoto_ -relief solid]
 		grid $lbl -column 1 -row 1
 	}
 
 	set icon [countryFlag $country]
 	if {[llength $icon]} {
-		if {![winfo exists $top.lt]} { frame $top.lt -background $bg -borderwidth 0 }
-		set lbl [label $top.lt.flag -background $bg -image $icon -borderwidth 0]
+		if {![winfo exists $top.lt]} { tk::frame $top.lt -background $bg -borderwidth 0 }
+		set lbl [tk::label $top.lt.flag -background $bg -image $icon -borderwidth 0]
 		grid $lbl -column 1 -row 3 -sticky n
 	}
 
@@ -737,7 +737,9 @@ proc TableFill {path args} {
 
 				federation {
 					if {[string length $item] == 0} {
-						if {$Options(country-code) eq "flags"} {
+						if {$codec eq "si3" || $codec eq "si4"} {
+							lappend text $::mc::NotAvailable
+						} elseif {$Options(country-code) eq "flags"} {
 							lappend text [list @ {}]
 						} else {
 							lappend text {}

@@ -28,6 +28,7 @@
 #include "db_move_list.h"
 #include "db_line.h"
 #include "db_eco.h"
+#include "db_eco_table.h"
 
 #include "si3_stored_line.h"
 
@@ -286,7 +287,7 @@ public:
 	typedef board::Position Position;
 
 	Node(Eco eco, Position const& position, Line const& line);
-	Node(Eco eco, Name const& name, unsigned length, Position const& position, Line const& line);
+	Node(Eco eco, Name const* name, unsigned length, Position const& position, Line const& line);
 
 	Node* find(uint16_t move) const;
 
@@ -315,13 +316,15 @@ public:
 	Eco eco() const;
 	Line const& line() const;
 	Name const& name() const;
+	Name const* nameRef() const;
 	unsigned ref(unsigned level) const;
 	mstl::string const& name(unsigned n) const;
 	unsigned length() const;
 	Successors const& successors() const;
 	Successors& successors();
 
-	void setup(Eco eco, Name const& name, unsigned length);
+	void setup(Name const* name, Eco eco);
+	void setup(Eco eco, Name const* name, unsigned length);
 	void setNode(uint16_t move, Node* node);
 	void setIsStoredLineKey();
 	void sort();
@@ -332,7 +335,7 @@ private:
 	unsigned			m_length;
 	uint16_t			m_linebuf[Max_Move_Length];
 	Line				m_line;
-	Name				m_name;
+	Name const*		m_name;
 	Successors		m_successors;
 	bool				m_isStoredLineKey;
 	mutable bool	m_done;
@@ -364,9 +367,10 @@ template <> struct is_pod< ::Resolve> { enum { value = 1 }; };
 } // namespace mstl
 
 Eco Node::eco() const										{ return m_eco; }
-Name const& Node::name() const							{ return m_name; }
-mstl::string const& Node::name(unsigned n) const	{ return m_name.str(n); }
-unsigned Node::ref(unsigned n) const					{ return m_name.ref(n); }
+Name const& Node::name() const							{ M_ASSERT(m_name); return *m_name; }
+Name const* Node::nameRef() const						{ return m_name; }
+mstl::string const& Node::name(unsigned n) const	{ M_ASSERT(m_name); return m_name->str(n); }
+unsigned Node::ref(unsigned n) const					{ M_ASSERT(m_name); return m_name->ref(n); }
 unsigned Node::length() const								{ return m_length; }
 Line const& Node::line() const							{ return m_line; }
 Node::Successors const& Node::successors() const	{ return m_successors; }
@@ -406,7 +410,7 @@ Node::Node(Eco eco, Position const& position, Line const& line)
 }
 
 
-Node::Node(Eco eco, Name const& name, unsigned length, Position const& position, Line const& line)
+Node::Node(Eco eco, Name const* name, unsigned length, Position const& position, Line const& line)
 	:m_eco(eco)
 	,m_length(length)
 	,m_line(m_linebuf)
@@ -468,7 +472,17 @@ Node::countTranspositionDepth() const
 
 
 void
-Node::setup(Eco eco, Name const& name, unsigned length)
+Node::setup(Name const* name, Eco eco)
+{
+	if (m_name == 0)
+		m_name = name;
+	if (!m_eco)
+		m_eco = eco;
+}
+
+
+void
+Node::setup(Eco eco, Name const* name, unsigned length)
 {
 	m_name = name;
 	m_eco = eco;
@@ -684,7 +698,7 @@ dumpBinary(Node* node)
 
 	mstl::cout.write("eco.bin", 8);
 
-	bstrm << uint16_t(99);
+	bstrm << uint16_t(EcoTable::FileVersion);
 	bstrm << uint32_t(countCodes);
 	bstrm << uint32_t(countNodes);
 	bstrm << uint32_t(countMoves);
@@ -783,6 +797,20 @@ dumpStoredLines(StoredLine* root)
 
 
 void
+resolveNames(Node* node, Name const* name, Eco eco)
+{
+	node->setup(name, eco);
+
+	Node::Successors::const_iterator i;
+	for (i = node->successors().begin(); i != node->successors().end(); ++i)
+	{
+		if (!i->transposition)
+			resolveNames(i->node, node->nameRef(), node->eco());
+	}
+}
+
+
+void
 prepare(mstl::bitset& done, Node* node, unsigned ply)
 {
 	if (node->name().size() == 0)
@@ -830,9 +858,10 @@ load(mstl::istream& strm)
 					uint64_t hash = r.board.hashNoEP();
 					Node* node = lookup[hash];
 					r.node->setNode(r.move, node);
-					M_ASSERT(r.eco == node->eco());
+//					M_ASSERT(r.eco == node->eco());
 				}
 
+				resolveNames(root, root->nameRef(), root->eco());
 				mstl::bitset done(Eco::Max_Code + 1);
 				prepare(done, root, 0);
 				root->reset();
@@ -871,7 +900,7 @@ load(mstl::istream& strm)
 		if (!s)
 			throwCorrupted(lineNo);
 
-		Name name;
+		Name* name = new Name;
 		unsigned level = 0;
 
 		while (*s == '"')
@@ -884,12 +913,12 @@ load(mstl::istream& strm)
 			if (!e)
 				M_RAISE("unterminated string in ECO file (line %u)", lineNo);
 
-			name.set(level++, mstl::string(s + 1, e));
+			name->set(level++, mstl::string(s + 1, e));
 			char const* t = ::strchr(e + 1, '"');
 			s = t ? t : e - 1;
 		}
 
-		if (name.size() <= 1)
+		if (name->size() <= 1)
 			M_RAISE("at least two levels needed (line %u)", lineNo);
 
 		++countCodes;
@@ -928,6 +957,9 @@ load(mstl::istream& strm)
 			maxLength = moves.size();
 
 		Node* node = root;
+		Name* myName = 0;
+		Eco myEco;
+
 		board = Board::standardBoard();
 
 		for (unsigned i = 0; i < moves.size(); ++i)
@@ -939,18 +971,24 @@ load(mstl::istream& strm)
 
 			uint64_t hash = board.hashNoEP();
 
+			if (i + 1 == moves.size())
+			{
+				myName = name;
+				myEco = eco;
+			}
+
 			Node* succ = lookup[hash];
 
 			if (succ == 0)
 			{
-				Node*	n = new Node(eco, name, moves.size(), board.position(), line);
+				Node*	n = new Node(myEco, myName, moves.size(), board.position(), line);
 				lookup[hash] = n;
 				node->successors().push_back(Node::Successor(moves[i].index(), n, false));
 				succ = node->successors().back().node;
 			}
 			else if (succ->length() == 0 || moves.size() < succ->length())
 			{
-				succ->setup(eco, name, moves.size());
+				succ->setup(myEco, myName, moves.size());
 			}
 
 			node = succ;
@@ -996,7 +1034,7 @@ load(mstl::istream& strm)
 			{
 				M_ASSERT(node->find(move.index()) == 0);
 				node->successors().push_back(Node::Successor(move.index(), 0, true));
-				resolve.push_back(Resolve(node, move.index(), next, board));
+				resolve.push_back(Resolve(node, move.index(), Eco(), board));
 			}
 			else
 			{
@@ -1004,7 +1042,7 @@ load(mstl::istream& strm)
 
 				if (succ == 0)
 				{
-					Node*	n = new Node(next, board.position(), line);
+					Node*	n = new Node(Eco(), board.position(), line);
 					node->successors().push_back(Node::Successor(move.index(), n, false));
 					lookup[hash] = n;
 				}

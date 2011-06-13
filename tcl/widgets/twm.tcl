@@ -203,7 +203,7 @@ proc MakeFrame {twm textVar} {
 	variable Defaults
 
 	set top [ttk::frame $twm.top]
-	set hdr [frame $twm.top.header \
+	set hdr [tk::frame $twm.top.header \
 					-background $Defaults(header:background) \
 					-borderwidth 1 \
 					-relief raised \
@@ -212,14 +212,14 @@ proc MakeFrame {twm textVar} {
 	pack $top -fill both -expand yes
 	pack $hdr -side top -fill x -expand yes
 
-	button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
-	button $hdr.undock -image $icon::12x12::undock -background $Defaults(header:button:background)
+	tk::button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
+	tk::button $hdr.undock -image $icon::12x12::undock -background $Defaults(header:button:background)
 
 	tooltip $hdr.close  Close
 	tooltip $hdr.undock Undock
 
 	set headerFont [list [font configure $Defaults(header:font) -family] $Defaults(header:fontsize) bold]
-	label $hdr.label \
+	tk::label $hdr.label \
 		-textvar $textVar \
 		-background $Defaults(header:background) \
 		-foreground $Defaults(header:foreground) \
@@ -280,18 +280,18 @@ if {0} {
 
 	twm::MakeFrame .f ::header
 
-	text .f.text -background white
+	tk::text .f.text -background white
 	pack .f.text -in .f.top -side top
 }
 
 if {0} {
-	frame .f1 -width 200 -height 200 -background blue
-	frame .f2 -width 100 -height 200 -background red
+	tk::frame .f1 -width 200 -height 200 -background blue
+	tk::frame .f2 -width 100 -height 200 -background red
 
 	pack .f1 -expand 1 -fill both
 	pack .f2 -expand 1 -fill both
 
-	button .f1.b -text "Dock/Undock" -command { Move .f1.b }
+	tk::button .f1.b -text "Dock/Undock" -command { Move .f1.b }
 	pack .f1.b
 	set parent .f1
 
@@ -311,7 +311,7 @@ if {0} {
 }
 
 if {0} {
-	button .b -text "Move" -command Move
+	tk::button .b -text "Move" -command Move
 	pack .b
 	toplevel .tl
 	wm deiconify .tl

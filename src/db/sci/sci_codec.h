@@ -48,7 +48,6 @@ class GameData;
 class GameInfo;
 class Namebase;
 class Consumer;
-class Producer;
 class TagSet;
 
 namespace sci {
@@ -80,7 +79,6 @@ public:
 	void filterTag(TagSet& tags, tag::ID tag) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
-	uint32_t computeChecksum(unsigned flags, GameInfo const& info, unsigned crc) const;
 	util::BlockFile* newBlockFile() const;
 
 	void doOpen(mstl::string const& encoding);

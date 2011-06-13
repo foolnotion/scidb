@@ -163,10 +163,12 @@ array set TagOrder {
 	WhiteRating			64
 	BlackRating			65
 
+	BlackClock			99
 	BlackFideId			99
 	BlackNA				99
 	BlackTeam			99
 	BlackTeamCountry	99
+	Board					99
 	EventRounds			99
 	Opening				99
 	Remark				99
@@ -175,6 +177,7 @@ array set TagOrder {
 	SubVariation		99
 	TimeControl			99
 	Variation			99
+	WhiteClock			99
 	WhiteFideId			99
 	WhiteNA				99
 	WhiteTeam			99
@@ -236,7 +239,7 @@ array set Colors {
 variable MaxColumnLength 380
 
 
-proc open {parent base position {number -1}} {
+proc open {parent base position {number 0}} {
 	variable Priv
 	variable Colors
 	variable MaxColumnLength
@@ -2188,7 +2191,7 @@ proc Save {top title base number position fields} {
 
 	if {$rc} {
 		if {$Priv(characteristics-only)} {
-			::scidb::db::update characteristics $base $number [array get Tags] 
+			::scidb::db::update $base $number [array get Tags] 
 		} else {
 			::log::open $title
 			::log::delay

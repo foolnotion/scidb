@@ -35,6 +35,7 @@
 #include "db_comment.h"
 
 #include "m_string.h"
+#include "m_vector.h"
 
 namespace mstl { class istream; }
 namespace util { class Progress; }
@@ -71,6 +72,8 @@ public:
 		TooManyAnnotatorNames,
 		TooManySourceNames,
 		SeemsNotToBePgnText,
+
+		LastError = SeemsNotToBePgnText,
 	};
 
 	enum Warning
@@ -104,8 +107,11 @@ public:
 		IllegalCastling,
 		IllegalMove,
 		ValueTooLong,
+		CommentAtEndOfGame,
 		MaximalErrorCountExceeded,
 		MaximalWarningCountExceeded,
+
+		LastWarning = MaximalWarningCountExceeded,
 	};
 
 	enum Tag
@@ -125,9 +131,16 @@ public:
 		InMoveSection,
 	};
 
+	enum Modification
+	{
+		Normalize,
+		Raw,
+	};
+
 	PgnReader(	mstl::istream& stream,
 					sys::utf8::Codec& codec,
 					int firstGameNumber = 0,
+					Modification modification = Normalize,
 					ResultMode resultMode = UseResultTag);
 	virtual ~PgnReader() throw();
 
@@ -196,7 +209,10 @@ private:
 		Error error;
 		mstl::string message;
 	};
+
 	struct Termination {};
+
+	typedef mstl::vector<Comment> Comments;
 
 	void error(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string)
 		__attribute__((noreturn));
@@ -224,6 +240,7 @@ private:
 
 	void checkTags();
 	bool checkTag(tag::ID tag, mstl::string& value);
+	void addTag(tag::ID tag, mstl::string const& value);
 
 	void readTags();
 	bool readTagName(mstl::string& s);
@@ -232,8 +249,8 @@ private:
 
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
-	void putMove();
-	void putComment();
+	void putMove(bool lastMove = false);
+	void setNullMove();
 	void handleError(Error code, mstl::string const& message);
 	void finishGame();
 	void checkSite();
@@ -300,13 +317,12 @@ private:
 	Pos					m_prevPos;
 	Pos					m_fenPos;
 	Pos					m_variantPos;
-	unsigned				m_countWarnings;
-	unsigned				m_countErrors;
+	unsigned				m_countWarnings[LastWarning + 1];
+	unsigned				m_countErrors[LastError + 1];
 	unsigned				m_gameCount;
 	int					m_firstGameNumber;
 	ResultMode			m_resultMode;
-	Comment				m_comment;
-	Comment				m_preComment;
+	Comments				m_comments;
 	MarkSet				m_marks;
 	country::Code		m_eventCountry;
 	Annotation			m_annotation;
@@ -316,15 +332,18 @@ private:
 	bool					m_noResult;
 	result::ID			m_result;
 	time::Mode			m_timeMode;
-	unsigned				m_nestedVar;
 	unsigned				m_significance[2];
+	Modification		m_modification;
 	bool					m_parsingFirstHdr;
 	bool					m_parsingTags;
 	bool					m_failed;
 	bool					m_eof;
 	bool					m_hasNote;
+	bool					m_atStart;
 	bool					m_parsingComment;
-	bool					m_maybeChessBase;
+	bool					m_sourceIsPossiblyChessBase;
+	bool					m_sourceIsChessOK;
+	unsigned				m_postIndex;
 	variant::Type		m_variant;
 	mstl::string		m_figurine;
 	sys::utf8::Codec&	m_codec;

@@ -1,6 +1,7 @@
 ::board::addStyle theme {
-  piece-style           Sycomore|1244122254189|yellow.color|gregor
-  piece-set             Cheq
-  square-style          {Sycomore Gray|1244122565844|yellow.color|gregor}
-  identifier            {Modern Cheq|1244122899886|yellow.color|gregor}
+  version		1.0
+  piece-style  Sycomore|1244122254189|yellow.color|gregor
+  piece-set    Cheq
+  square-style {Sycomore Gray|1244122565844|yellow.color|gregor}
+  identifier   {Modern Cheq|1244122899886|yellow.color|gregor}
 }

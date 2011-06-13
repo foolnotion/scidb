@@ -161,6 +161,11 @@ proc update {} {
 }
 
 
+proc cleanup {} {
+	set [namespace current]::Vars(pending) {}
+}
+
+
 proc Update {} {
 	variable blocked
 	variable postponed

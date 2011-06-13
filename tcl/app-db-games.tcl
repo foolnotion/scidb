@@ -31,7 +31,6 @@ namespace eval mc {
 
 set Control						"Control"
 set GameNumber					"Game Number"
-set Layout						"Layout"
 
 set GotoFirstPage				"Go to the first page of games"
 set GotoLastPage				"Go to the last page of games"
@@ -122,7 +121,7 @@ proc build {parent} {
 		-side bottom \
 		-alignment center \
 		-allow {top bottom} \
-		-tooltipvar [namespace current]::mc::Layout] \
+		-tooltipvar ::mc::Layout] \
 		;
 	lappend Vars(toolbars) $tbLayout
 	

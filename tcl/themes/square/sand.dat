@@ -1,34 +1,33 @@
-### Square Style: Sand ##########################
-
 ::board::addStyle square {
-	identifier					Sand|1228820287277|yellow.color|gregor
+  version               {1.0}
+  identifier            Sand|1228820287277|yellow.color|gregor
 
-	lite,rotation				0
-	lite,solid					#e0d070
-	lite,texture				{misc sand-yellow.png}
-	lite,x1						0
-	lite,x2						150
-	lite,y1						0
-	lite,y2						150
+  lite,rotation         0
+  lite,solid            #e0d070
+  lite,texture          {misc sand-yellow.png}
+  lite,x1               0
+  lite,x2               150
+  lite,y1               0
+  lite,y2               150
 
-	dark,rotation				0
-	dark,solid					#70a070
-	dark,texture				{misc sand-brown.png}
-	dark,x1						0
-	dark,x2						150
-	dark,y1						0
-	dark,y2						150
+  dark,rotation         0
+  dark,solid            #70a070
+  dark,texture          {misc sand-brown.png}
+  dark,x1               0
+  dark,x2               150
+  dark,y1               0
+  dark,y2               150
 
-	borderline,width			0.021
-	borderline,opacity		0x50
-	borderline,gap				0
+  borderline,width      0.021
+  borderline,opacity    0x50
+  borderline,gap        0
 
-	hilite,selected			#e0c21f
-	hilite,suggested			#be6623
+  hilite,selected       #e0c21f
+  hilite,suggested      #be6623
 
-	hint,border-color			{}
-	hint,border-tile			{marble marble_206.jpg}
-	hint,background-color	{}
-	hint,background-tile		{marble marble_234.jpg}
-	hint,coordinates 			#ffffff
+  hint,border-color     {}
+  hint,border-tile      {marble marble_206.jpg}
+  hint,background-color {}
+  hint,background-tile  {marble marble_234.jpg}
+  hint,coordinates      #ffffff
 }

@@ -5711,7 +5711,7 @@ LayoutColumns(
 {
 	TreeCtrl *tree;
 	TreeColumn column;
-	int width, visWidth = 0, totalWidth = 0;
+	int width = 0, visWidth = 0, totalWidth = 0;
 	int numExpand = 0, numSqueeze = 0;
 	Tcl_HashEntry *hPtr;
 	Tcl_HashSearch search;

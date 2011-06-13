@@ -263,21 +263,28 @@ Consumer::putMove(Move const& move,
 	}
 
 	if (!comment.isEmpty())
+	{
+		if (comment.engFlag())
+			m_commentEngFlag = true;
+		if (comment.othFlag())
+			m_commentOthFlag = true;
 		++m_commentCount;
+	}
+
+	if (!preComment.isEmpty())
+	{
+		if (preComment.engFlag())
+			m_commentEngFlag = true;
+		if (preComment.othFlag())
+			m_commentOthFlag = true;
+		++m_commentCount;
+	}
+
 	m_annotationCount += annotation.count();
 	m_markCount += marks.count();
 
 	entry.move = move;
 	entry.board.prepareUndo(entry.move);
-
-	if (comment.engFlag())
-		m_commentEngFlag = true;
-	if (comment.othFlag())
-		m_commentOthFlag = true;
-	if (preComment.engFlag())
-		m_commentEngFlag = true;
-	if (preComment.othFlag())
-		m_commentOthFlag = true;
 
 	if (sendMove(entry.move, annotation, marks, preComment, comment))
 	{

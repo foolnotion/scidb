@@ -13,7 +13,7 @@
 //   )___(     _(____/____(___ __/____(___/____(___/_
 // ======================================================================
 
-// ======================================================================
+// ======================================================================unmodifiziert
 // Copyright: (C) 2009-2011 Gregor Cramer
 // ======================================================================
 
@@ -58,9 +58,14 @@ PgnReader::PgnReader(mstl::istream& strm,
 							Encoder& encoder,
 							Tcl_Obj* cmd,
 							Tcl_Obj* arg,
+							Modification modification,
 							int firstGameNumber,
 							unsigned lineOffset)
-	:db::PgnReader(strm, *encoder.codec, firstGameNumber, lineOffset ? InMoveSection : UseResultTag)
+	:db::PgnReader(strm,
+						*encoder.codec,
+						firstGameNumber,
+						modification,
+						lineOffset ? InMoveSection : UseResultTag)
 	,m_cmd(cmd)
 	,m_arg(arg)
 	,m_warning(Tcl_NewStringObj("warning", -1))
@@ -128,6 +133,7 @@ PgnReader::warning(	Warning code,
 		case IllegalMove:							msg = "IllegalMove"; break;
 		case ResultDidNotMatchHeaderResult: msg = "ResultDidNotMatchHeaderResult"; break;
 		case ValueTooLong:						msg = "ValueTooLong"; break;
+		case CommentAtEndOfGame:					msg = "CommentAtEndOfGame"; break;
 		case MaximalErrorCountExceeded:		msg = "MaximalErrorCountExceeded"; break;
 		case MaximalWarningCountExceeded:	msg = "MaximalWarningCountExceeded"; break;
 	}

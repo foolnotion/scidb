@@ -225,7 +225,7 @@ proc init {} {
 	wm positionfrom $b program
 	wm withdraw $b
 
-	label $b.label \
+	tk::label $b.label \
 		-highlightthickness 0 \
 		-relief solid \
 		-borderwidth 1 \

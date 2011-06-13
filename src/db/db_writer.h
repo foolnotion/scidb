@@ -69,8 +69,10 @@ public:
 	static unsigned const Flag_Use_Shredder_FEN							= 1 << 22;
 	static unsigned const Flag_Convert_Lost_Result_To_Comment		= 1 << 23;
 	static unsigned const Flag_Append_Mode_To_Event_Type				= 1 << 24;
-	static unsigned const Flag_Use_ChessBase_Format						= 1 << 25;
-	static unsigned const Flag_LAST											= Flag_Use_ChessBase_Format;
+	static unsigned const Flag_Comment_To_Html								= 1 << 25;
+	static unsigned const Flag_Use_ChessBase_Format						= 1 << 26;
+	static unsigned const Flag_Use_Scidb_Import_Format					= 1 << 27;
+	static unsigned const Flag_LAST											= Flag_Use_Scidb_Import_Format;
 
 	Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding);
 
@@ -100,6 +102,9 @@ public:
 	void endVariation();
 
 protected:
+
+	void addFlag(unsigned flag);
+	void removeFlag(unsigned flag);
 
 	virtual void writeBeginGame(unsigned number) = 0;
 	virtual void writeEndGame() = 0;

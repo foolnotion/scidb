@@ -22,6 +22,7 @@
 #include "m_utility.h"
 #include "m_bit_functions.h"
 #include "m_fstream.h"
+#include "m_endian.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -45,7 +46,7 @@ modulo(unsigned a, unsigned m)
 
 
 inline static void
-putUint24(unsigned char* data, unsigned size)
+putUint24(unsigned char* data, uint32_t size)
 {
 	data[0] = size >> 16;
 	data[1] = size >> 8;
@@ -53,7 +54,7 @@ putUint24(unsigned char* data, unsigned size)
 }
 
 
-inline static unsigned
+inline static uint32_t
 getUint24(unsigned char const* data)
 {
 	return (unsigned(data[0]) << 16) | (unsigned(data[1]) << 8) | unsigned(data[2]);
@@ -396,6 +397,10 @@ BlockFile::resize(View& view, unsigned span)
 
 	view.m_buffer.m_capacity = fileOffset(span);
 	delete [] view.m_buffer.m_data;
+
+	// IMPORTANT NOTE:
+	// If the block file is on disk we have to use a double sized buffer. This allows
+	// some optimizations (on user side).
 
 	unsigned capacity = m_stream ? mstl::mul2(view.m_buffer.m_capacity) : view.m_buffer.m_capacity;
 	view.m_buffer.m_data = new Byte[capacity];

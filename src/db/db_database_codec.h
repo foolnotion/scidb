@@ -31,6 +31,8 @@
 #include "db_time.h"
 #include "db_move.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 
 namespace sys
@@ -117,7 +119,8 @@ public:
 	virtual mstl::string const& extension() const = 0;
 	virtual mstl::string const& encoding() const = 0;
 	virtual Time modified(mstl::string const& rootname) const;
-	virtual uint32_t computeChecksum(/*unsigned flags, */GameInfo const& info, unsigned crc) const;
+	uint32_t created() const;
+	virtual util::crc::checksum_t computeChecksum(GameInfo const& info, unsigned crc) const;
 	virtual util::BlockFile* newBlockFile() const;
 
 	virtual void updateHeader(mstl::string const& rootname);
@@ -222,6 +225,7 @@ protected:
 	Namebases& namebases();
 
 	void setType(DatabaseContent::Type type);
+	void setCreated(uint32_t time);
 	void setDescription(char const* description);
 
 	void checkPermissions(mstl::string const& filename);

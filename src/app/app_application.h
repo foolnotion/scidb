@@ -28,6 +28,9 @@
 #define _app_application_included
 
 #include "db_common.h"
+#include "db_tree.h"
+
+#include "u_crc.h"
 
 #include "m_map.h"
 #include "m_vector.h"
@@ -108,15 +111,18 @@ public:
 	bool contains(Cursor& cursor) const;
 	bool contains(mstl::string const& name) const;
 	bool containsGameAt(unsigned position) const;
+	bool isScratchGame(unsigned position) const;
 	bool haveCurrentGame() const;
 	bool haveCurrentBase() const;
 	bool haveClipbase() const;
 	bool haveReferenceBase() const;
 	bool hasTrialMode(unsigned position = InvalidPosition) const;
 	bool switchReferenceBase() const;
+	bool treeIsUpToDate(db::Tree::Key const& key) const;
 
 	unsigned countBases() const;
 	unsigned countGames() const;
+	unsigned countModifiedGames() const;
 
 	void enumCursors(CursorList& list) const;
 
@@ -156,22 +162,32 @@ public:
 	db::NamebasePlayer const& player(unsigned index, unsigned view = 0) const;
 	Subscriber* subscriber() const;
 	unsigned gameIndex(unsigned position = InvalidPosition) const;
+	unsigned sourceIndex(unsigned position = InvalidPosition) const;
 	mstl::string const& databaseName(unsigned position = InvalidPosition) const;
+	mstl::string const& sourceName(unsigned position = InvalidPosition) const;
 	unsigned currentPosition() const;
 	unsigned indexAt(unsigned position) const;
-	uint32_t checksum(unsigned position = InvalidPosition) const;
+	uint32_t checksumIndex(unsigned position = InvalidPosition) const;
+	uint32_t checksumMoves(unsigned position = InvalidPosition) const;
 
 	bool loadGame(unsigned position);
 	bool loadGame(unsigned position, Cursor& cursor, unsigned index);
 	void newGame(unsigned position);
 	void deleteGame(Cursor& cursor, unsigned index, unsigned view = 0, bool flag = true);
+	void swapGames(unsigned position1, unsigned position2);
 	void setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigned flags);
 	void releaseGame(unsigned position);
 	void switchGame(unsigned position);
 	void clearGame(db::Board const* startPosition = 0);
+	void setSource(unsigned position, mstl::string const& name, unsigned index);
+	db::save::State writeGame(	unsigned position,
+										mstl::string const& filename,
+										mstl::string const& encoding,
+										mstl::string const& comment,
+										unsigned flags) const;
 	db::save::State saveGame(Cursor& cursor, bool replace);
+	db::save::State updateMoves();
 	db::save::State updateCharacteristics(Cursor& cursor, unsigned index, db::TagSet const& tags);
-	db::save::State updateMoves(Cursor& cursor, unsigned index);
 	void setupGame(unsigned linebreakThreshold,
 						unsigned linebreakMaxLineLengthMain,
 						unsigned linebreakMaxLineLengthVar,
@@ -228,14 +244,16 @@ public:
 
 private:
 
+	typedef util::crc::checksum_t checksum_t;
+
 	struct EditGame
 	{
 		Cursor*			cursor;
 		unsigned			index;
 		db::Game*		game;
 		db::Game*		backup;
-		uint64_t			crcIndex;
-		uint64_t			crcMoves;
+		checksum_t		crcIndex;
+		checksum_t		crcMoves;
 		bool				refresh;
 		mstl::string	sourceBase;
 		unsigned			sourceIndex;
@@ -260,6 +278,7 @@ private:
 	bool				m_switchReference;
 	bool				m_isUserSet;
 	unsigned			m_position;
+	unsigned			m_fallbackPosition;
 	GameMap			m_gameMap;
 	CursorMap		m_cursorMap;
 	IndexMap			m_indexMap;

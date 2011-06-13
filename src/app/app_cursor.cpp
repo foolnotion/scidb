@@ -275,17 +275,6 @@ Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 }
 
 
-void
-Cursor::updateMoves(unsigned index)
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(index < countGames());
-
-	// TODO: handle return code!
-	m_app.updateMoves(*this, index);
-}
-
-
 unsigned
 Cursor::importGame(Producer& producer, unsigned index)
 {

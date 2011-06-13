@@ -622,12 +622,12 @@ set regions {
 	America_South
 	America_Central
 	America_Caribbean
+	Oceania
 	Asia_West_Central
 	Asia_East
 	Asia_South_South_East
 	Africa_North
 	Africa_Sub_Saharan
-	Oceania
 	Antarctic
 	Stateless
 }

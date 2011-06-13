@@ -30,6 +30,7 @@
 #include "db_namebases.h"
 #include "db_game_info.h"
 #include "db_statistic.h"
+#include "db_time.h"
 #include "db_common.h"
 
 #include "m_vector.h"
@@ -58,6 +59,7 @@ public:
 	GameInfoList		m_gameInfoList;
 	Namebases			m_namebases;
 	Type					m_type;
+	uint32_t				m_created;
 	bool					m_readOnly;
 	bool					m_memoryOnly;
 	mstl::string		m_description;

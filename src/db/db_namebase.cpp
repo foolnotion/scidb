@@ -703,11 +703,19 @@ Namebase::update()
 		}
 
 #ifdef DEBUG_SI4
-		if (m_type != Event && (*i)->m_orig_freq >= 0)
+		if ((*i)->m_orig_freq >= 0)
 		{
+			if (m_type == Event)
+			{
+				for (List::iterator j = i + 1; j != m_list.end() && (*j)->name() == (*i)->name(); ++j)
+					freq += (*j)->frequency();
+				for (List::iterator j = i - 1; j >= m_list.begin() && (*j)->name() == (*i)->name(); --j)
+					freq += (*j)->frequency();
+			}
+
 			if (freq != unsigned((*i)->m_orig_freq))
 			{
-				char const* type;
+				char const* type = "";	// shut up the compiler
 
 				switch (m_type)
 				{
@@ -719,10 +727,12 @@ Namebase::update()
 				}
 
 				::fprintf(	stderr,
-								"WARNING(%u): invalid frequency value %u in %s namebase (%u is expected)\n",
+								"WARNING(%u): invalid frequency value %u in %s namebase "
+								"(item '%s') (%u is expected)\n",
 								i - m_list.begin(),
 								(*i)->m_orig_freq,
 								type,
+								(*i)->name().c_str(),
 								freq);
 			}
 

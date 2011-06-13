@@ -35,6 +35,9 @@ inline bool Writer::insideComment() const	{ return m_nullLevel; }
 
 inline bool Writer::test(unsigned flags) const { return m_flags & flags; }
 
+inline void Writer::addFlag(unsigned flag)		{ m_flags |= flag; }
+inline void Writer::removeFlag(unsigned flag)	{ m_flags &= ~flag; }
+
 } // namespace db
 
 // vi:set ts=3 sw=3:
