@@ -1935,7 +1935,7 @@
 ::encoding::mc::Lang(kl)	"Greenlandic"
 ::encoding::mc::Lang(ko)	"Korean"
 ::encoding::mc::Lang(ku)	"Kurdish"
-::encoding::mc::Lang(ku)	"Kirghiz"
+::encoding::mc::Lang(ky)	"Kirghiz"
 ::encoding::mc::Lang(la)	"Latin"
 ::encoding::mc::Lang(lb)	"Luxembourgish"
 ::encoding::mc::Lang(lt)	"Lithuanian"

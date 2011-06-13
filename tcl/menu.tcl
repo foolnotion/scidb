@@ -52,6 +52,7 @@ set GameReplaceMoves		"Replace &Moves Only"
 set HelpInfo				"&Info..."
 set HelpContents			"&Contents"
 set HelpBugReport			"&Bug Report (open in web browser)"
+set HelpFeatureRequest	"&Feature Request (open in web browser)"
 
 set ViewShowLog			"Show &Log..."
 
@@ -94,8 +95,9 @@ if {[info exists ::i18n::languages]} {
 }
 
 
-set Defaults(iconsize)	medium
-set BugTracker				"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
+set Defaults(iconsize)		medium
+set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
+set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
 
 variable Theme				default
 variable IconSize
@@ -204,6 +206,7 @@ proc setup {} {
 	lappend Menu \
 		Help	{	Contents			1	F1			help		{ puts "Help contents" }
 					BugReport		1	{}			bug		{ ::menu::bugReport .application }
+					FeatureRequest	1	{}			question	{ ::menu::featureRequest .application }
 					Info				1	{}			info		{ ::info::openDialog .application }
 				}
 
@@ -468,6 +471,11 @@ proc gameReplaceMoves {parent} {
 
 proc bugReport {parent} {
 	::web::open [set [namespace current]::BugTracker]
+}
+
+
+proc featureRequest {parent} {
+	::web::open [set [namespace current]::FeatureRequestTracker]
 }
 
 

@@ -189,19 +189,20 @@ proc BuildContributionsFrame {w} {
 	grid columnconfigure $w 0 -weight 1
 
 	$t insert end "[set [namespace current]::mc::Localization]:\n" caption
-	$t insert end "Giovanni Ornaghi ([::encoding::languageName it]), "
+	$t insert end "Giovanni Ornaghi ([::encoding::languageName it]), Fernando González ([::encoding::languageName es])"
 	$t insert end "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"
 
 	$t insert end "\n\n"
 	$t insert end "[set [namespace current]::mc::Testing]:\n" caption
 	$t insert end "Steven Atkinson, "
 	$t insert end "Paolo Casaschi, "
+	$t insert end "Fernando González, "
 	$t insert end "Austen Green, "
-	$t insert end "Natalia Parés Vives, "
-	$t insert end "Lars ???, "
 	$t insert end "Giovanni Ornaghi, "
+	$t insert end "Matthew Simpson, "
 	$t insert end "Zoltan Tibensky, "
-	$t insert end "Matthew Simpson"
+	$t insert end "Natalia Parés Vives, "
+	$t insert end "Lars ???"
 
 	$t insert end "\n\n"
 	$t insert end "TrueType [set [namespace current]::mc::FontDesign]:\n" caption

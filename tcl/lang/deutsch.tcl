@@ -1931,7 +1931,7 @@
 ::encoding::mc::Lang(kl)	"Grönländisch"
 ::encoding::mc::Lang(ko)	"Koreanisch"
 ::encoding::mc::Lang(ku)	"Kurdisch"
-::encoding::mc::Lang(ku)	"Kirgisisch"
+::encoding::mc::Lang(ky)	"Kirgisisch"
 ::encoding::mc::Lang(la)	"Latein"
 ::encoding::mc::Lang(lb)	"Luxemburgisch"
 ::encoding::mc::Lang(lt)	"Litauisch"

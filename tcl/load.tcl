@@ -248,7 +248,7 @@ foreach idx [glob -directory [file join $::scidb::dir::user photos] -nocomplain 
 # --- Load localization file -------------------------------------------
 set file [file join $scidb::dir::share lang localization.tcl]
 if {[file readable $file]} {
-	load::source $file -message [format $load::mc::Loading $load::mc::LocalizationFile]
+	load::source $file -message [format $load::mc::Loading $load::mc::LocalizationFile] -encoding utf-8
 }
 
 # --- Load piece sets --------------------------------------------------

@@ -65,6 +65,7 @@ set options [file join [set [namespace parent]::dir::config] options.dat]
 
 if {[::process::testOption from-the-scratch]} {
 	file delete $options
+	set ::scidb::dir::setup 1
 }
 
 } ;# namespace file
