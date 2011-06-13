@@ -783,7 +783,7 @@ proc Create {w class} {
 	set data(dirMenuBtn) $rt.dirMenu
 	set data(dirMenu) $rt.dirMenu.m
 
-	tmenubutton $data(dirMenuBtn) \
+	menubutton $data(dirMenuBtn) \
 		-menu $data(dirMenu) \
 		-takefocus 1 \
 		-direction flush \
@@ -863,7 +863,7 @@ proc Create {w class} {
 		set data(typeMenuLab) [::tk::AmpWidget ttk::label $rt.fType \
 										-text [Tr FilesType] \
 										-anchor e]
-		set data(typeMenuBtn) [tmenubutton $rt.typeMenu -menu $rt.typeMenu.m]
+		set data(typeMenuBtn) [menubutton $rt.typeMenu -menu $rt.typeMenu.m]
 		set data(typeMenu) [menu $data(typeMenuBtn).m -tearoff 0]
 		bind $data(typeMenuLab) <<AltUnderlined>> [list focus $data(typeMenuBtn)]
 		tooltip $data(typeMenuBtn) [Tr SelectWhichType]
