@@ -2748,14 +2748,10 @@ Game::commentOthFlag() const
 
 
 void
-Game::refreshSubscriber(bool radical)
+Game::refreshSubscriber()
 {
-	if (radical)
-	{
-		delete m_editNode;
-		m_editNode = 0;
-	}
-
+	delete m_editNode;
+	m_editNode = 0;
 	updateSubscriber(Game::UpdateAll);
 }
 

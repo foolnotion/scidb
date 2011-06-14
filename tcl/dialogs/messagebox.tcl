@@ -485,7 +485,7 @@ proc alert {args} {
 	vwait ::dialog::Reply
 	::ttk::releaseGrab $w
 	destroy $w
-#	update
+#	update idletasks
 	set Current ""
 
 	return $::dialog::Reply

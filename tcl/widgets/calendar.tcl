@@ -357,7 +357,7 @@ proc popup {parent args} {
 	if {$useGrab} { ttk::releaseGrab $top.calendar }
 	destroy [winfo toplevel $top]
 	tooltip on
-	update
+	update idletasks
 
 	if {$Priv(d) eq "none"} { return {} }
 	return [list $Priv(y) $Priv(m) $Priv(d)]

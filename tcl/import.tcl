@@ -248,7 +248,7 @@ proc openEdit {parent position {mode {}}} {
 	::util::place $dlg center [winfo toplevel $parent]
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $position $dlg]]
 	SetTitle $dlg $position
-	update
+	update idletasks
 	wm minsize $dlg [winfo width $dlg] [winfo height $dlg]
 	wm resizable $dlg true true
 	wm deiconify $dlg
@@ -320,7 +320,7 @@ proc Open {parent base files msg encoding type useLog} {
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
 		set options [list -message $msg -log $useLog]
 		set count [::progress::start $parent.progress $cmd [list -encoding $encoding] $options 0]
-		update	;# be sure the following will be appended
+		update idletasks	;# be sure the following will be appended
 
 		if {$count == 0} {
 			set msg $mc::NoGamesImported
@@ -679,7 +679,7 @@ proc info {line}		{ Show info $line }
 proc Log {sink arguments} {
 	set type [lindex $arguments 0]
 	::${sink}::${type} [makeLog $arguments]
-	update
+	update idletasks
 }
 
 } ;# namespace import

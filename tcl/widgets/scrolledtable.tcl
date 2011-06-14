@@ -488,7 +488,7 @@ proc changeLayout {path dir} {
 		grid $sb -column 1 -row 0 -rowspan 2 -sticky ns
 		grid rowconfigure $parent {2 3 4} -minsize 0
 		grid forget $sc
-		::update
+		::update idletasks
 		set width [winfo width $sb]
 		set height -[expr {[winfo height $sc] + 2*$pady}]
 	} else {
@@ -502,7 +502,7 @@ proc changeLayout {path dir} {
 			-padx $Defaults(scale:padx) \
 			;
 		grid rowconfigure $parent {2 4} -minsize $Defaults(scale:pady)
-		::update
+		::update idletasks
 		set width -[winfo width $sb]
 		set height [expr {[winfo height $sc] + 2*$pady}]
 	}
@@ -852,7 +852,7 @@ proc PopupMenu {table y} {
 	if {$Vars(takefocus)} {
 		::table::focus $table
 	}
-	::update
+	::update idletasks
 	set menu $table.menu
 	catch { destroy $menu }
 	menu $menu -tearoff false

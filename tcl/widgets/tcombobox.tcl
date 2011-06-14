@@ -398,7 +398,7 @@ proc Unposted {w focus} {
 
 
 proc PlaceIcon {w icon} {
-	update
+	update idletasks
 	$w placeicon $icon
 	bind $w <Map> {}
 }

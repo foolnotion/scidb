@@ -1182,17 +1182,19 @@ cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	bool radical = false;
 
-	if (objc == 2)
+	if (objc >= 2)
 	{
-		char const* option = stringFromObj(objc, objv, 1);
+		char const* option = stringFromObj(objc, objv, objc - 1);
 
-		if (::strcmp(option, "-radical"))
-			return error(CmdRefresh, 0, 0, "unknown option %s", option);
-
-		radical = true;
+		if (::strcmp(option, "-radical") == 0)
+		{
+			radical = true;
+			--objc;
+		}
 	}
 
-	scidb.refreshGame(radical);
+	unsigned position = objc > 1 ? unsignedFromObj(objc, objv, 1) : Application::InvalidPosition;
+	scidb.refreshGame(position, radical);
 	return TCL_OK;
 }
 
@@ -1723,7 +1725,7 @@ cmdExchange(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned position = intFromObj(objc, objv, 1);
+	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
 	Tcl_Obj* objs[2];
 
 	objs[0] = Tcl_NewStringObj(Scidb.sourceName(position), -1);
@@ -2194,7 +2196,7 @@ static int
 cmdPop(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	scidb.endTrialMode();
-	scidb.refreshGame(true);
+	scidb.refreshGame(Application::InvalidPosition, true);
 	return TCL_OK;
 }
 

@@ -130,7 +130,7 @@ proc open {args} {
 	tkwait window $w
 	ttk::releaseGrab $w
 	if {[llength $opts(-command)]} { busyCursor $w off }
-	update
+	update idletasks
 }
 
 

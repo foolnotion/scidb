@@ -265,6 +265,7 @@ Application::insertScratchGame(unsigned position)
 	game.crcMoves = game.game->computeChecksum();
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
+	game.refresh = 0;
 
 	return game;
 }
@@ -832,6 +833,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.game->updateSubscriber(Game::UpdateAll);
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
+	game.refresh = 0;
 
 	if (m_subscriber && !isNew)
 		m_subscriber->updateGameInfo(position);
@@ -1035,20 +1037,31 @@ Application::switchGame(unsigned position)
 
 	stopUpdateTree();
 
-	unsigned		flags	= Game::UpdateBoard;
-	EditGame&	game	= m_gameMap[position];
+	EditGame& game = m_gameMap[position];
 
 	if (game.refresh)
 	{
-		flags |= Game::UpdatePgn | Game::UpdateOpening;
-		game.refresh = false;
+		if (game.refresh == 2)
+			game.game->refreshSubscriber();
+		else
+			game.game->updateSubscriber(Game::UpdateBoard | Game::UpdatePgn | Game::UpdateOpening);
+
+		game.refresh = 0;
+	}
+	else
+	{
+		game.game->updateSubscriber(Game::UpdateBoard);
 	}
 
 	m_position = position;
-	game.game->updateSubscriber(flags);
 
-	if (m_subscriber && m_referenceBase)
-		m_subscriber->updateTree(m_referenceBase->name());
+	if (m_subscriber)
+	{
+		m_subscriber->gameSwitched(m_position);
+
+		if (m_referenceBase)
+			m_subscriber->updateTree(m_referenceBase->name());
+	}
 }
 
 
@@ -1080,12 +1093,19 @@ Application::endTrialMode()
 
 
 void
-Application::refreshGame(bool radical) const
+Application::refreshGame(unsigned position, bool radical)
 {
-	M_REQUIRE(haveCurrentGame());
+	M_REQUIRE(containsGameAt(position));
 
-	Game* game = m_gameMap.find(m_position)->second.game;
-	game->refreshSubscriber(radical);
+	if (position == InvalidPosition)
+		position = m_position;
+
+	EditGame& game = m_gameMap.find(position)->second;
+
+	if (position == m_position)
+		game.game->refreshSubscriber();
+	else
+		game.refresh = 2;
 }
 
 
@@ -1596,7 +1616,7 @@ Application::setupGame(	unsigned linebreakThreshold,
 										linebreakMinCommentLength,
 										displayStyle);
 
-		i->second.refresh = true;
+		i->second.refresh = 1;
 	}
 }
 

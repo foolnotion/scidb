@@ -251,7 +251,8 @@ proc open {} {
 	focus $nb
 	TabChanged $nb $app
 	::load::writeLog
-	update
+	update idletasks
+	::beta::welcomeToScidb $app
 
 	set ::remote::blocked 0
 
@@ -284,12 +285,11 @@ proc shutdown {} {
 	wm resizable $dlg no no
 	wm transient $dlg .application
 	::util::place $dlg center .application
-	update
+	update idletasks
 	::scidb::tk::wm noDecor $dlg
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	::widget::busyCursor on
-	::update
 
 	::remote::cleanup
 	database::closeAllBases
@@ -312,35 +312,42 @@ proc switchTab {which} {
 
 proc ChooseLanguage {parent} {
 	if {!$::scidb::dir::setup} { return }
+	wm protocol $parent WM_DELETE_WINDOW {#}
 	set dlg $parent.lang
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
+	set top [frame $dlg.top -border 2 -relief raised]
+	pack $top
 	foreach lang [lsort [array names ::mc::input]] {
 		if {[string length $lang]} {
 			set flag ""
 			catch { set flag $::country::icon::flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
 			if {[string length $flag] == 0} { set flag none }
 			set code [set ::mc::lang$lang]
-			ttk::button $dlg.$code \
-				-text $lang \
+			ttk::button $top.$code \
+				-text " $lang" \
 				-image $flag \
 				-compound left \
 				-command [list set ::mc::langID $code] \
 				;
-			pack $dlg.$code -side top -padx $::theme::padx -pady $::theme::pady
+			pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
+			bind $top.$code <Return> "event generate %W <Key-space>; break"
 		}
 	}
-	wm title $dlg $::scidb::app
 	wm resizable $dlg no no
 	wm transient $dlg $parent
-	wm protocol $dlg WM_DELETE_WINDOW { set ::mc::langID en }
 	::util::place $dlg center $parent
+	update idletasks
+	::scidb::tk::wm noDecor $dlg
 	wm deiconify $dlg
+	focus $top.en
 	::ttk::grabWindow $dlg
 	vwait ::mc::langID
 	::ttk::releaseGrab $dlg
 	catch { destroy $dlg }
 	::mc::setLang $mc::langID
+	wm protocol $parent WM_DELETE_WINDOW [namespace code shutdown]
+	focus -force .application
 }
 
 

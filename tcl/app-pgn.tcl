@@ -294,6 +294,13 @@ proc build {parent menu width height} {
 }
 
 
+proc activate {w menu flag} {
+	variable Vars
+
+	::toolbar::activate [winfo parent [lindex $Vars(toolbars) 0]] $flag
+}
+
+
 proc empty? {} {
 	variable Vars
 	return [expr {[::gamebar::size $Vars(bar)] == 0}]
@@ -967,6 +974,7 @@ proc UpdateHeader {position w data} {
 	}
 
 	set Vars(virgin:$position) 0
+	set Vars(header:$position) $data
 }
 
 
@@ -1542,6 +1550,7 @@ proc ResetGame {position tags} {
 	set Vars(comment:$position) ""
 	set Vars(result:$position) ""
 	set Vars(virgin:$position) 1
+	set Vars(header:$position) ""
 	set Vars(last:$position) ""
 	set Vars(start:$position) 1
 	set Vars(tags:$position) $tags
@@ -1825,61 +1834,48 @@ proc PopupMenu {parent position} {
 		lassign [::scidb::game::link? $position] base index
 		unset -nocomplain state
 
-		if {$base eq $scratchbaseName} {
-			set base $clipbaseName
-			set name $T_Clipbase
-			set ext ""
-			set state(save) normal
-			set state(replace) disabled
-		} else {
-			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-				set state(save) normal
-				if {$index >= 0 && [::scidb::game::query modified?]} {
-					set state(replace) normal
-				} else {
-					set state(replace) disabled
-				}
-			} else {
-				set state(save) disabled
-				set state(replace) disabled
-			}
-
-			if {$base eq $clipbaseName} {
-				set name $T_Clipbase
-			} else {
-				set name [::util::databaseName $base]
-			}
-		}
-
 		set actual [::scidb::db::get name]
 
-		$menu add command \
-			-label [format $mc::ReplaceGame $name] \
-			-command [list ::dialog::save::open $parent $base $position $index] \
-			-state $state(replace) \
-			;
-		$menu add command \
-			-label [format $mc::ReplaceMoves $name] \
-			-command [namespace code [list ReplaceMoves $parent $base $index]] \
-			-state $state(replace) \
-			;
+		if {$base ne $scratchbaseName} {
+			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+				if {$index >= 0} { set state normal } else { set state disabled }
+			} else {
+				set state disabled
+			}
+
+			set name [::util::databaseName $base]
+
+			$menu add command \
+				-label [format $mc::ReplaceGame $name] \
+				-command [list ::dialog::save::open $parent $base $position $index] \
+				-state $state \
+				;
+
+			if {![::scidb::game::query modified?]} { set state disabled }
+			$menu add command \
+				-label [format $mc::ReplaceMoves $name] \
+				-command [namespace code [list ReplaceMoves $parent $base $index]] \
+				-state $state \
+				;
+		}
+
+		if {$actual eq $scratchbaseName || [::scidb::db::get readonly? $actual]} {
+			set state disabled
+		} else {
+			set state normal
+		}
 		$menu add command \
 			-label [format $mc::AddNewGame [::util::databaseName $actual]] \
 			-command [list ::dialog::save::open $parent $actual $position -1] \
-			-state $state(save) \
+			-state $state \
 			;
 
 		menu $menu.save
 		set count 0
 		set bases [::scidb::app::bases]
-		lappend bases $clipbaseName
 		foreach base $bases {
 			if {$base ne $actual && ![::scidb::db::get readonly? $base]} {
-				if {$base eq $clipbaseName} {
-					set name $T_Clipbase
-				} else {
-					set name [::util::databaseName $base]
-				}
+				set name [::util::databaseName $base]
 				$menu.save add command \
 					-label $name \
 					-command [list ::dialog::save::open $parent $base $position -1] \
@@ -1887,17 +1883,12 @@ proc PopupMenu {parent position} {
 				incr count
 			}
 		}
-		if {$name ne $T_Clipbase} {
-			$menu.save add command \
-				-label $T_Clipbase \
-				-command [list ::dialog::save::open $parent Clipbase $position -1] \
-				;
-				incr count
-		}
+
+		if {$count} { set state normal } else { set state disabled }
 		$menu add cascade \
 			-menu $menu.save \
 			-label [format $mc::AddNewGame ""] \
-			-state [expr {$count ? "normal" : "disabled"}] \
+			-state $state \
 			;
 		$menu add separator
 	}
@@ -2192,9 +2183,15 @@ proc SetupStyle {{position {}}} {
 proc LanguageChanged {} {
 	variable Vars 
 
-	if {[info exists Vars(see:0)]} {
-		# TODO not working
-		::widget::busyOperation ::scidb::game::refresh
+	foreach position [::game::usedPositions?] {
+		if {[::scidb::game::query $position empty]} {
+			::scidb::game::refresh $position -radical
+		} else {
+			set w $Vars(pgn:$position)
+			$w configure -state normal
+			UpdateHeader $position $w $Vars(header:$position)
+			$w configure -state disabled
+		}
 	}
 }
 

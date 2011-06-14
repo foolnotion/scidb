@@ -73,7 +73,7 @@ proc close {} {
 
 proc print {msg} {
 	.splash.f.text configure -text $msg
-	update
+	update idletasks
 }
 
 

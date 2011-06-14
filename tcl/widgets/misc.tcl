@@ -257,7 +257,7 @@ proc busyCursor {w {state on}} {
 	if {$state eq "on"} {
 		SaveCursors .
 		BusyCursor . watch
-		update
+		update idletasks
 	} else {
 		BusyCursor .
 	}
@@ -282,7 +282,7 @@ if {[info tclversion] >= "8.6"} {
 
 			if {$state eq "on"} {
 				tk_busy hold .
-				update
+				update idletasks
 			} else {
 				tk_busy forget .
 			}

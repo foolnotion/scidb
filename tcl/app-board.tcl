@@ -28,7 +28,7 @@ namespace eval application {
 namespace eval board {
 namespace eval mc {
 
-set AutoPlayMoves			"Autoplay Moves"
+set ShowCrosstable		"Show tournament table for this game"
 
 set Tools					"Tools"
 set Control					"Control"
@@ -112,20 +112,21 @@ proc build {w menu width height} {
 
 	set main [winfo parent $w]
 
-	::toolbar::add $tbTools button -image $::icon::toolbarGameList			-command {}
-	::toolbar::add $tbTools button -image $::icon::toolbarGameNotation	-command {}
-	::toolbar::add $tbTools button -image $::icon::toolbarMaintenance		-command {}
-	::toolbar::add $tbTools button -image $::icon::toolbarEcoBrowser		-command {}
-	::toolbar::add $tbTools button -image $::icon::toolbarTreeWindow		-command {}
+#	::toolbar::add $tbTools button -image $::icon::toolbarGameList			-command {}
+#	::toolbar::add $tbTools button -image $::icon::toolbarGameNotation	-command {}
+#	::toolbar::add $tbTools button -image $::icon::toolbarMaintenance		-command {}
+#	::toolbar::add $tbTools button -image $::icon::toolbarEcoBrowser		-command {}
+#	::toolbar::add $tbTools button -image $::icon::toolbarTreeWindow		-command {}
 
-	::toolbar::add $tbTools button \
+	set Vars(crossTable) [::toolbar::add $tbTools button \
 		-image $::icon::toolbarCrossTable \
-		-command [namespace code ShowCrossTable] \
-		;
-	::toolbar::add $tbTools button \
-		-image $::icon::toolbarEngine \
-		-command [namespace code StartAnalysis] \
-		;
+		-command [namespace code [list ShowCrossTable [winfo toplevel $board]]] \
+		-tooltipvar [namespace current]::mc::ShowCrosstable \
+	]
+#	::toolbar::add $tbTools button \
+#		-image $::icon::toolbarEngine \
+#		-command [namespace code StartAnalysis] \
+#		;
 
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarRotateBoard \
@@ -200,6 +201,8 @@ proc build {w menu width height} {
 
 	BuildBoard $canv
 	ConfigureBoard $canv
+
+	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 }
 
 
@@ -227,6 +230,8 @@ proc activate {w menu flag} {
 		trace remove variable ::toolbar::mc::Toolbar write $cmd
 		set Index -1
 	}
+
+	[namespace parent]::pgn::activate $w $menu $flag
 }
 
 
@@ -442,7 +447,7 @@ proc RebuildBoard {canv width height} {
 	DrawMaterialValues $canv
 
 	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
-		::update idle
+		::update idletasks
 		::board::stuff::resize $Vars(widget:board) $Dim(squaresize) $Dim(edgethickness)
 	} else {
 		::board::stuff::rebuild $Vars(widget:board)
@@ -842,10 +847,22 @@ proc StartAnalysis {} {
 }
 
 
-proc ShowCrossTable {} {
+proc GameSwitched {position} {
+	variable Vars
+
+	if {[lindex [::scidb::game::link?] 0] eq "Scratchbase"} {
+		set state disabled
+	} else {
+		set state normal
+	}
+
+	::toolbar::childconfigure $Vars(crossTable) -state $state
+}
+
+
+proc ShowCrossTable {parent} {
 	set base [::scidb::game::query database]
 	set index [::scidb::game::index]
-
 	::crosstable::open .application $base $index
 }
 

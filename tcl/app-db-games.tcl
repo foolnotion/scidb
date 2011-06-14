@@ -306,7 +306,7 @@ proc GenerateTableMinSizeEvent {table} {
 	# may invoked before configuration completed
 	if {![info exists Vars(minwidth)]} { return }
 
-	update
+	update idletasks
 	set data [list $Vars(minwidth) [ComputeMinHeight $table] $Vars(gridsize)]
 	event generate [winfo parent $table] <<TableMinSize>> -data $data
 }
@@ -364,7 +364,7 @@ proc TableMinSize {table minsize} {
 	set Vars(gridsize) $gridsize
 	set Vars(minsize) $minsize
 
-	update
+	update idletasks
 #	# avoid resizing (multicolumn problem)
 #	wm geometry [winfo toplevel $table] [wm geometry [winfo toplevel $table]]
 

@@ -1229,6 +1229,7 @@ proc Tooltip {table mode {id {}} {x 0} {y 0}} {
 proc VisitItem {table mode column item {x {}} {y {}}} {
 	variable ${table}::Vars
 
+	if {[string length $column] == 0} { return }
 	if {[catch { set row [$table.t item tag names $item] }]} { return }
 	if {$row >= $Vars(rows)} { return }
 	set id [$table.t column tag names $column]
@@ -1364,13 +1365,15 @@ proc PopupMenu {table x y X Y} {
 		if {	!$Options(-pixels:$id)
 			&& $Options(-optimizable:$id)
 			&& (	$Options(-maxwidth:$id) == 0
-				|| $Options(-maxwidth:$id) > $Options(-width:$id))} {
+				|| $Options(-maxwidth:$id) >= $Options(-width:$id))} {
 			$menu add command \
 				-label $mc::OptimizeColumn \
-				-command [list $table.t column fit $id]
+				-command [list $table.t column optimize $id] \
+				;
 			$menu add command \
 				-label $mc::FitColumnWidth \
-				-command [list $table.t column fit $id]
+				-command [list $table.t column fit $id] \
+				;
 		}
 		$menu add command \
 			-label "$mc::Configure..." \
@@ -1383,7 +1386,8 @@ proc PopupMenu {table x y X Y} {
 			$menu add check \
 				-label $mc::AutoStretchColumn \
 				-variable [namespace current]::${table}::Options(-stretch:$id) \
-				-command [namespace code [list ToggleStretchable $table $id]]
+				-command [namespace code [list ToggleStretchable $table $id]] \
+				;
 		}
 	}
 

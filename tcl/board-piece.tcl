@@ -1122,7 +1122,7 @@ proc SelectGradient {which} {
 	}
 
 	ConfigurePieceFrame $which
-	update
+	update idletasks
 }
 
 

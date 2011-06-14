@@ -178,7 +178,7 @@
 ::application::mc::Shutdown				"Shutdown..." ;# NEW
 
 ### application::board #################################################
-::application::board::mc::AutoPlayMoves		"Usa Autoplay"
+::application::board::mc::ShowCrosstable		"Show tournament table for this game" ;# NEW
 
 ::application::board::mc::Tools					"Strumenti"
 ::application::board::mc::Control				"Controllo"

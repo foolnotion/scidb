@@ -138,7 +138,7 @@ proc new {parent {base {}} {index -1}} {
 				if {![lindex $elem 1] && ![lindex $elem 2]} {
 					if {$pos == -1} {
 						set pos $i
-					} elseif {[lindex $elem 0] != 0} {
+					} elseif {[llength [lindex $elem 0]]} {
 						set pos $i
 					}
 				}
@@ -151,7 +151,7 @@ proc new {parent {base {}} {index -1}} {
 				}
 				lappend List $entry	;# only a placeholder
 				set cmd add
-			} elseif {[lindex $List $pos 0] == 0} {
+			} elseif {[llength [lindex $List $pos 0]] == 0} {
 				set cmd add
 			} else {
 				set cmd replace
@@ -210,6 +210,21 @@ proc time? {position} {
 }
 
 
+proc usedPositions? {} {
+	variable List
+
+	set pos 0
+	set result {}
+
+	foreach entry $List {
+		if {[llength [lindex $List $pos 0]]} { lappend result $pos }
+		incr pos
+	}
+
+	return $result
+}
+
+
 proc stateChanged {position modified} {
 	variable List
 	variable MaxPosition
@@ -221,7 +236,10 @@ proc stateChanged {position modified} {
 			# ensure that at most one game is writable
 			for {set i 0} {$i < [llength $List]} {incr i} {
 				set entry [lindex $List $i]
-				if {$i != $position && [lindex $entry 0] != 0 && ![lindex $entry 1] && ![lindex $entry 2]} {
+				if {	$i != $position
+					&& [llength [lindex $entry 0]]
+					&& ![lindex $entry 1]
+					&& ![lindex $entry 2]} {
 					::application::pgn::lock $position
 					return
 				}
@@ -270,9 +288,9 @@ proc setFirst {base tags} {
 proc release {position} {
 	variable List
 
-	update idletasks	;# fire dangling events
+	update ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {0 0 0 {{} {} {}} {0 0} {}}
+	lset List $position {{} 0 0 {{} {} {}} {0 0} {}}
 }
 
 
@@ -408,7 +426,7 @@ proc backup {} {
 	set Recovery [lrepeat $MaxPosition {}]
 
 	for {set i 0} {$i < [llength $List]} {incr i} {
-		if {	[lindex $List $i 0] != 0
+		if {	[llength [lindex $List $i 0]]
 			&& [::scidb::game::query $i modified?]
 			&& ![::scidb::game::query $i empty?]} {
 			lassign [lindex $List $i] time _ _ key crc _
@@ -427,56 +445,58 @@ proc recover {} {
 	set count 0
 
 	foreach file [glob -directory $::scidb::dir::backup -nocomplain game-*.pgn] {
-		if {[file readable $file]} {
-			set position [string range $file 5 end-4]
-			set chan [open $file r]
-			fconfigure $chan -encoding utf-8
-			set content [read $chan]
-			close $chan
+		if {![::process::testOption dont-recover]} {
+			if {[file readable $file]} {
+				set position [string range $file 5 end-4]
+				set chan [open $file r]
+				fconfigure $chan -encoding utf-8
+				set content [read $chan]
+				close $chan
 
-			set header [string range [lindex [split $content "\n"] 0] 1 end]
+				set header [string range [lindex [split $content "\n"] 0] 1 end]
 
-			if {[catch { set length [llength $header] }]} {
-				::dialog::error \
-					-parent .application \
-					-message [format $mc::CorruptedHeader $file] \
-					-detail [format $mc::RenamedFile $file] \
-					;
-			} else {
-				if {	$length != 3
-					|| [llength [lindex $header 1]] != 3
-					|| [llength [lindex $header 2]] != 2} {
+				if {[catch { set length [llength $header] }]} {
 					::dialog::error \
 						-parent .application \
 						-message [format $mc::CorruptedHeader $file] \
 						-detail [format $mc::RenamedFile $file] \
 						;
 				} else {
-					lassign $header time key crc
-					set Current(file) $file
-					set Current(kex) $key
-					::scidb::game::new $count
-					set tags [::scidb::game::tags $count]
-					lappend List [list $time 1 0 $key $crc $tags]
-					::scidb::game::import $count $content [namespace current]::Log {} \
-						-encoding utf-8 \
-						-variation 0 \
-						-scidb 1 \
-						;
-					set base [lindex $key 0]
-					set index [lindex $key 2]
-					::scidb::game::sink $count $base $index
-					::application::pgn::add $count $base $tags
-					::scidb::game::modified $count
-					incr count
+					if {	$length != 3
+						|| [llength [lindex $header 1]] != 3
+						|| [llength [lindex $header 2]] != 2} {
+						::dialog::error \
+							-parent .application \
+							-message [format $mc::CorruptedHeader $file] \
+							-detail [format $mc::RenamedFile $file] \
+							;
+					} else {
+						lassign $header time key crc
+						set Current(file) $file
+						set Current(kex) $key
+						::scidb::game::new $count
+						set tags [::scidb::game::tags $count]
+						lappend List [list $time 1 0 $key $crc $tags]
+						::scidb::game::import $count $content [namespace current]::Log {} \
+							-encoding utf-8 \
+							-variation 0 \
+							-scidb 1 \
+							;
+						set base [lindex $key 0]
+						set index [lindex $key 2]
+						::scidb::game::sink $count $base $index
+						::application::pgn::add $count $base $tags
+						::scidb::game::modified $count
+						incr count
+					}
 				}
+			} else {
+				::dialog::error \
+					-parent .application \
+					-message [format $mc::CannotOpen $file] \
+					-detail [format $mc::RenamedFile $file] \
+					;
 			}
-		} else {
-			::dialog::error \
-				-parent .application \
-				-message [format $mc::CannotOpen $file] \
-				-detail [format $mc::RenamedFile $file] \
-				;
 		}
 
 		file rename -force $file $file.bak

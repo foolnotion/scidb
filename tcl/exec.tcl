@@ -110,6 +110,33 @@ proc ParseArgs {} {
 
 ParseArgs
 
+
+if {[testOption help]} {
+	puts "$::scidb::app version $::scidb::version"
+	puts ""
+	puts "Usage: $::argv0 \[arguments] \[database ...]"
+	puts ""
+	puts "Arguments:"
+	puts "  --                      Only file names after this"
+	puts "  --help                  Print Help (this message) and exit"
+	puts "  --version               Print version information and exit"
+	puts "  --print-recovery-files  Print recovery files from last session and exit"
+	puts "  --delete-recovery-files Delete recovery files and exit"
+	puts "  --dont-recover          Do not recover unsaved games from last session"
+	puts "  --from-the-scratch      Delete option file and recovery files at startup"
+	puts "                          ($::scidb::app will be started as it would be the first time)"
+	puts "  --fast-load             Do only load the mandatory files at startup"
+	puts "  --elo-only              Do not load rating files except for ELO rating"
+	puts "  --no-photos             Skip the load of the photo files"
+	puts "  --single-process        Forcing a new process of $::scidb::app"
+	puts "                          (normally you shouldn't use this option)"
+	puts ""
+	puts "Arguments recognised by GUI (Tk) library:"
+	puts "  -geometry <geom>        Use <geom> for initial geometry"
+	puts "  -display <display>      Run $::scidb::app on <display>"
+	exit 0
+}
+
 } ;# namespace process
 
 
@@ -260,7 +287,10 @@ proc Execute {path} {
 #rename ::remote::Vwait ::vwait
 
 
-if {![::process::testOption single-process]} {
+if {	![::process::testOption single-process]
+	&& ![::process::testOption version]
+	&& ![::process::testOption print-recovery-files]} {
+
 	# Pick a port number based on the name of the main script executing
 	set port [expr {1024 + [::scidb::misc::crc32 [file normalize $::argv0]] % 30000}]
 

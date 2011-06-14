@@ -92,6 +92,7 @@ public:
 		virtual void updateAnnotatorList(mstl::string const& filename, unsigned view, unsigned index) = 0;
 
 		virtual void updateGameInfo(unsigned position) = 0;
+		virtual void gameSwitched(unsigned position) = 0;
 		virtual void updateTree(mstl::string const& filename) = 0;
 		virtual void closeDatabase(mstl::string const& filename) = 0;
 	};
@@ -140,7 +141,7 @@ public:
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
 	void switchBase(mstl::string const& name);
-	void refreshGame(bool radical = false) const;
+	void refreshGame(unsigned position = InvalidPosition, bool radical = false);
 
 	Cursor& clipBase();
 	Cursor const& clipBase() const;
@@ -254,7 +255,7 @@ private:
 		db::Game*		backup;
 		checksum_t		crcIndex;
 		checksum_t		crcMoves;
-		bool				refresh;
+		unsigned			refresh;
 		mstl::string	sourceBase;
 		unsigned			sourceIndex;
 	};
@@ -271,18 +272,18 @@ private:
 	typedef mstl::map<unsigned,unsigned> 		IndexMap;
 	typedef mstl::map<mstl::string,Cursor*>	CursorMap;
 
-	Cursor*			m_current;
-	Cursor*			m_clipBase;
-	Cursor*			m_scratchBase;
-	Cursor*			m_referenceBase;
-	bool				m_switchReference;
-	bool				m_isUserSet;
-	unsigned			m_position;
-	unsigned			m_fallbackPosition;
-	GameMap			m_gameMap;
-	CursorMap		m_cursorMap;
-	IndexMap			m_indexMap;
-	TreeP				m_currentTree;
+	Cursor*		m_current;
+	Cursor*		m_clipBase;
+	Cursor*		m_scratchBase;
+	Cursor*		m_referenceBase;
+	bool			m_switchReference;
+	bool			m_isUserSet;
+	unsigned		m_position;
+	unsigned		m_fallbackPosition;
+	GameMap		m_gameMap;
+	CursorMap	m_cursorMap;
+	IndexMap		m_indexMap;
+	TreeP			m_currentTree;
 
 	mutable SubscriberP m_subscriber;
 

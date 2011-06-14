@@ -134,7 +134,7 @@ proc Select {path base index} {
 
 	set position [::scidb::db::get lookupEvent $index $Vars($base:view) $base]
 	::eventtable::see $path.events $position
-	update idle
+	update idletasks
 	set row [::eventtable::indexToRow $path.events $position]
 	::eventtable::setSelection $path.events $row
 }

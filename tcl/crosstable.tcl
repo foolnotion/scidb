@@ -362,7 +362,7 @@ proc open {parent base index {view -1}} {
 	wm resizable $dlg yes yes
 	wm deiconify $dlg
 
-	update
+	update idletasks
 	wm minsize $dlg [expr {max(840, [winfo width [::toolbar::realpath $tb]] + 4)}] 400
 }
 

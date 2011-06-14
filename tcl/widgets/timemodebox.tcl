@@ -302,18 +302,41 @@ proc Search {w var full} {
 namespace eval icon {
 namespace eval 12x12 {
 
-set Mode(normal) $::icon::12x12::dot
+#set Mode(normal) [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAADrSURB
+#	VBjTPdBNTsJQFIDR2y11G11dHzTxgcGIE3FiMDGOJCSGAYQID0EoFEr5CU9Q3MH9HBjdwcmR
+#	siRBHBpb902a3PiSjcMkKIskgYmqrqMzzckY6bNWXSlKAonDS/dKxoAeXYZMaFNxcSjGvmhK
+#	hx5Dxkx4J+VRjZW6d9qnz5gpc5bkbBlozcs9E7qMmbFgRcGWAzm3yB0jHCkZKwp2HDhS0EBq
+#	vqMpS9Zs2HPgyJmpXnkx9kHnFGzZ4zlx5ouWGitxeOFarPF88Mk3Z3q/3CQoRdY96Ztu2LHQ
+#	tlaciZJA/kpqvkGD6/+SH0mU4K2igZ6gAAAAAElFTkSuQmCC
+#}]
+
+set Mode(normal) $::eventtypebox::icon::12x12::Type(tourn)
+
+#set Mode(rapid) [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABlElEQVQoz2NgwAQsbGxsGfb2
+#	Dt8Cg4J+ysjILmZgYGBjwANkNLV0z+47dOr/sVOX//sHRvxnYGBQgZuGRQObgKAo87efzAyf
+#	v/1g+PXnPwMDAwMPTJIZi4aPTx7f1/r5+7vx48d33x3ev3P358+fJuBzkoGxsfFmCwuLzwwM
+#	DOsZGBjKGRgYonA5iVNUVDQiv6DQXUVFhenAwUM23FxcDosXLbhz5syZIwwMDI+Y0DSIWFha
+#	GyqrqLMKCoszGxgYi/DxCwswMrH8YWBgEMNmA+uvX7+5fv78x/D2zQeGBfMXMGzdsuHO16+f
+#	KxkYGK4wMDAwoNjAycnpKy0jp8fLL8jAJyDEkJSSyeDt4y/EwMAgycDA8ANZbbCcnNL13ILK
+#	/7sOnv5f09D6R1xc8kZ9c8/PTduP/zcytrzLwMBggxysxq4eASFunn6cO3ds+rJiyfwVL54/
+#	q3xw/44kOzuXyssXzxifPH5wgoGB4RLMBjEpGfmDGpq690TFxAugHmRkYGAwEBOXXMnGxh7M
+#	wMAgwMDAwAAA2k9/Hff2g9AAAAAASUVORK5CYII=
+#}]
 
 set Mode(rapid) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABlElEQVQoz2NgwAQsbGxsGfb2
-	Dt8Cg4J+ysjILmZgYGBjwANkNLV0z+47dOr/sVOX//sHRvxnYGBQgZuGRQObgKAo87efzAyf
-	v/1g+PXnPwMDAwMPTJIZi4aPTx7f1/r5+7vx48d33x3ev3P358+fJuBzkoGxsfFmCwuLzwwM
-	DOsZGBjKGRgYonA5iVNUVDQiv6DQXUVFhenAwUM23FxcDosXLbhz5syZIwwMDI+Y0DSIWFha
-	GyqrqLMKCoszGxgYi/DxCwswMrH8YWBgEMNmA+uvX7+5fv78x/D2zQeGBfMXMGzdsuHO16+f
-	KxkYGK4wMDAwoNjAycnpKy0jp8fLL8jAJyDEkJSSyeDt4y/EwMAgycDA8ANZbbCcnNL13ILK
-	/7sOnv5f09D6R1xc8kZ9c8/PTduP/zcytrzLwMBggxysxq4eASFunn6cO3ds+rJiyfwVL54/
-	q3xw/44kOzuXyssXzxifPH5wgoGB4RLMBjEpGfmDGpq690TFxAugHmRkYGAwEBOXXMnGxh7M
-	wMAgwMDAwAAA2k9/Hff2g9AAAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH2wYOCQYLFeuBXgAAAa1JREFUKM91kE1IFHEY
+	h593PnaY3WY3VsLYNZAKAjEELx6CjECC0ItdunReJDp08xR0SSqJ9lQRERJBB41ufUALWZRk
+	ZJLCEsrQh6LVUn9xt3HcmX8HV9iKfufn+fH+XmiKiKCUYuBYZ//D8ZPTty/smmlvlRP8L7nW
+	JLZt75y4tq/0w2/TlbKliwWZMgxa0sktxmgWatWAOI6sxSnfC1aWqKuIRIznWFgpZ4sxm4Ug
+	1Gitg4VlvLUPHPTf6ZWxSa5+qvC8uoH+RzhTOEo6s2fvyHB0+tnLter1EkX1iyCKwTZZrcd/
+	bVBKUTzfPfyt7MZf37A5N87q/AQbvR1cBuSPDSJCJpNxso7faZuhoDGXFki9eMTMlwrl7Wus
+	bcE0NPWI7Prnn216UyOCvH7L95EHjNZC7gNxAwSBZCrBoeNd3J0eI5i9R/3pFdb9J+ibBeY8
+	l8NKNZrTLpgGfUN9fHx8CX1jiLCrnTuey6mz/cy/uoUe6KYE7LZM4EAORMj3djA52MNyi8dF
+	IA+YboLBnv3M5rOcAzI0llvADhGOAI7WvAfCxkMsIAcsAhWg9hsaS50j/4yYmwAAAABJRU5E
+	rkJggg==
 }]
 
 set Mode(blitz) [image create photo -data {

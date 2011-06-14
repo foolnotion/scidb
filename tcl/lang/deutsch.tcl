@@ -147,7 +147,7 @@
 ::menu::mc::Settings					"&Einstellungen"
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt			"Datei %s is beschädigt:"
+::load::mc::FileIsCorrupt			"Datei %s ist beschädigt:"
 
 ::load::mc::Loading					"Lade %s"
 ::load::mc::ReadingOptionsFile	"Lese Optionendatei"
@@ -176,7 +176,7 @@
 ::application::mc::Shutdown				"Schließung..."
 
 ### application::board #################################################
-::application::board::mc::AutoPlayMoves		"Automatisches Vorspielen"
+::application::board::mc::ShowCrosstable		"Zeige Turniertabelle für die aktuelle Partie"
 
 ::application::board::mc::Tools					"Werkzeuge"
 ::application::board::mc::Control				"Steuerung"
@@ -205,7 +205,7 @@
 ::application::database::mc::LoadMessage				"Datenbank %s öffnen"
 ::application::database::mc::CannotOpenFile			"Die Datei '%s' kann nicht geöffnet werden."
 ::application::database::mc::EncodingFailed			"Die Enkodierung %s ist fehlgeschlagen."
-::application::database::mc::DatabaseAlreadyOpen	"Die Datenbank '%s' is bereits geöffnet."
+::application::database::mc::DatabaseAlreadyOpen	"Die Datenbank '%s' ist bereits geöffnet."
 ::application::database::mc::Properties				"Eigenschaften"
 ::application::database::mc::Preload					"Preload"	;# ???
 ::application::database::mc::MissingEncoding			"Fehlende Enkodierung %s (%s wurde statdessen verwendet)"
@@ -973,7 +973,7 @@
 ::dialog::save::mc::SaveGameFailed				"Das Speichern der Partie ist fehlgeschlagen."
 ::dialog::save::mc::SaveGameFailedDetail		"Siehe Log-Dialog für Details."
 ::dialog::save::mc::SavingGameLogInfo			"Partie (%white - %black, %event) in Datenbank '%base' speichern"
-::dialog::save::mc::CurrentBaseIsReadonly		"Die aktuelle Datenbank '%s' is schreibgeschützt."
+::dialog::save::mc::CurrentBaseIsReadonly		"Die aktuelle Datenbank '%s' ist schreibgeschützt."
 
 ::dialog::save::mc::LocalName						"&Heimatl. Name"
 ::dialog::save::mc::EnglishName					"E&nglischer Name"

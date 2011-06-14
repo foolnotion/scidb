@@ -869,7 +869,7 @@ proc SearchFixed {w} {
 
 	foreach f $Vars(fonts) {
 		incr S(progress)
-		update
+		update idletasks
 
 		if {[font metrics [list $f] -fixed] == 1} {
 			lappend Vars(fonts,fixed) $f

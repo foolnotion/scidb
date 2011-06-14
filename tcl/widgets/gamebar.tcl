@@ -1069,15 +1069,17 @@ proc Layout {gamebar} {
 			if {$Options(alignment) eq "center"} {
 				set maxWidth 0
 				set colors white
-				if {$line == 0} { lappend colors black }
+#				if {$line == 0} { lappend colors black }
 
 				for {set i 0} {$i < $Specs(size:$gamebar)} {incr i} {
 					set id $Specs(lookup:$i:$gamebar)
 					foreach color $colors {
-						set state [$gamebar itemcget $color$id -state]
-						$gamebar itemconfigure $color$id -state normal
-						lassign [$gamebar bbox $color$id] x1 y1 x2 y2
-						set maxWidth [expr {max($maxWidth, $x2 - $x1)}]
+						if {$id ne $Specs(selected:$gamebar)} {
+							set state [$gamebar itemcget $color$id -state]
+							$gamebar itemconfigure $color$id -state normal
+							lassign [$gamebar bbox $color$id] x1 y1 x2 y2
+							set maxWidth [expr {max($maxWidth, $x2 - $x1)}]
+						}
 					}
 				}
 			}

@@ -149,13 +149,13 @@ proc WidgetProc {w command args} {
 			set Priv(lastNode) {}
 			$f.html reset
 			$f.html configure -width $MaxWidth
-			update idle
+			update idletasks
 			$f.html parse -final [lindex $args 0]
 			set Priv(bbox) [ComputeBoundingBox $f.html [$f.html node]]
 			if {[llength $Priv(bbox)]} {
 				lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
 				$f.html configure -width [lindex $Priv(bbox) 2]
-				update
+				update idletasks
 				::scrolledframe::resize $w.__scrolledframe__
 			}
 			return

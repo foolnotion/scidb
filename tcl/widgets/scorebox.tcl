@@ -127,7 +127,7 @@ proc WidgetProc {w command args} {
 proc Focus {w} {
 	if {[focus] ne $w} {
 		focus $w
-		update
+		update idletasks
 		$w selection clear
 	}
 }

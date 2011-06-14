@@ -63,13 +63,41 @@ namespace eval file {
 
 set options [file join [set [namespace parent]::dir::config] options.dat]
 
+} ;# namespace file
+} ;# namespace scidb
+
+
+if {[::process::testOption version]} {
+	puts "$::scidb::app version $::scidb::version"
+	if {[file readable $::scidb::file::options]} {
+		puts "option file: $::scidb::file::options"
+	}
+	puts "exec directory: $::scidb::dir::exec"
+	puts "share directory: $::scidb::dir::share"
+	exit 0
+}
+
+
+if {[::process::testOption print-recovery-files]} {
+	foreach file [glob -directory $::scidb::dir::backup -nocomplain game-*.pgn] {
+		if {[file readable $file]} { puts $file }
+	}
+	exit 0
+}
+
+if {[::process::testOption delete-recovery-files]} {
+	foreach file [glob -directory $::scidb::dir::backup -nocomplain game-*.pgn] {
+		file rename -force $file $file.bak
+	}
+	exit 0
+}
+
 if {[::process::testOption from-the-scratch]} {
-	file delete $options
+	file delete $::scidb::file::options
+	::process::setOption dont-recover
 	set ::scidb::dir::setup 1
 }
 
-} ;# namespace file
-} ;# namespace scidb
 
 namespace eval mc {}
 

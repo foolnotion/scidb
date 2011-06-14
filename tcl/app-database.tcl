@@ -268,8 +268,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 
 
 proc closeBase {parent {file {}} {number -1}} {
-#	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
-CloseBase $parent $file $number
+	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
 }
 
 
@@ -477,7 +476,7 @@ proc SashCmd {w action x y} {
 proc ToolbarShow {pane} {
 	variable Vars
 
-	update
+	update idletasks
 	set minheight [::toolbar::totalheight $pane]
 	if {$minheight == 1} {
 		after idle [namespace code [list ToolbarShow $pane]]
@@ -1051,7 +1050,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
 			variable _ReadOnly [::scidb::db::get readonly?]
 			lappend specs \
-				tk::checkbutton \
+				checkbutton \
 				$mc::ReadOnly \
 				[namespace code [list ToggleReadOnly $file $index]] \
 				0 0 lock \
@@ -1239,7 +1238,7 @@ proc ChangeIconSize {canv} {
 		$canv itemconfigure size$i -font $symFont
 	}
 
-	update
+	update idletasks
 	LayoutSwitcher
 }
 
@@ -1257,7 +1256,7 @@ proc Recode {number parent} {
 	}
 	set encoding [::encoding::choose $parent $enc $defaultEncoding]
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }
-	update idle
+	update idletasks
 
 	if {[::scidb::db::get encodingState $file] ne "ok"} {
 		set readonly [::scidb::db::get readonly? $file]
@@ -1271,7 +1270,7 @@ proc Recode {number parent} {
 		::log::delay
 		::log::info [format $mc::RecodingDatabase $name $enc $encoding]
 		::scidb::db::recode $file $encoding ::log::error {}
-		update idle ;# be sure the following will be appended
+		update idletasks ;# be sure the following will be appended
 		::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
 		::log::close
 		::widget::busyCursor off

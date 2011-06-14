@@ -348,7 +348,7 @@ proc popup {parent args} {
 	focus $top
 	if {[tk windowingsystem] == "x11"} {
 		tkwait visibility $top
-		update
+		update idletasks
 	}
 	if {$useGrab} { ttk::globalGrab $top.f }
 	catch { focus -force $top.f.close }
@@ -356,7 +356,7 @@ proc popup {parent args} {
 	if {$useGrab} { ttk::releaseGrab $top.f }
 	destroy [winfo toplevel $top]
 	Tooltip on
-	update
+	update idletasks
 
 	switch $selection {
 		close		{ return "" }

@@ -930,7 +930,7 @@ proc Accept {} {
 	variable Vars
 	variable History
 
-	update
+	update idletasks
 	set Vars(fen) [string trim $Vars(fen)]
 
 	switch $Vars(field) {

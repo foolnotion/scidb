@@ -85,7 +85,7 @@ proc close {} {
 		}
 	}
 
-	update idle
+	update idletasks
 	$Log.top.text yview moveto 1.0
 }
 
@@ -120,7 +120,7 @@ proc Show {} {
 
 	if {$Priv(delay)} { return }
 
-	update idle
+	update idletasks
 
 	if {$Priv(transient)} {
 		wm transient $Log .application

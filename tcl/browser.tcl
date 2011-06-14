@@ -516,7 +516,7 @@ proc UpdateHeader {position {info {}}} {
 		}
 	}
 
-	update ;# makes -displaylines working
+	update idletasks ;# makes -displaylines working
 	$text configure -height [$text count -displaylines 1.0 end]
 	$text configure -state disabled
 }
@@ -822,7 +822,7 @@ proc IncreaseBoardSize {position board delta} {
 	variable ${position}::Vars
 	variable Options
 
-	update
+	update idletasks
 
 	set dlg [winfo toplevel $board]
 	set maxSize [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size) - 75)/8}]

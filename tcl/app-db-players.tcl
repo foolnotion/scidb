@@ -144,7 +144,7 @@ proc Select {path base index} {
 
 	set position [::scidb::db::get lookupPlayer $index $Vars($base:view) $base]
 	::playertable::see $path.players $position
-	update idle
+	update idletasks
 	set row [::playertable::indexToRow $path.players $position]
 	::playertable::setSelection $path.players $row
 }

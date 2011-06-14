@@ -218,7 +218,8 @@ struct Subscriber : public Application::Subscriber
 		EventList		= 1 << 3,
 		AnnotatorList	= 1 << 4,
 		GameInfo			= 1 << 5,
-		Tree				= 1 << 6,
+		GameSwitched	= 1 << 6,
+		Tree				= 1 << 7,
 	};
 
 	struct Args
@@ -298,6 +299,11 @@ struct Subscriber : public Application::Subscriber
 	void setGameInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
 		m_list.push_back(Args(GameInfo, updateCmd, closeCmd, arg));
+	}
+
+	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
+	{
+		m_list.push_back(Args(GameSwitched, updateCmd, 0, 0));
 	}
 
 	void setTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
@@ -504,6 +510,20 @@ struct Subscriber : public Application::Subscriber
 		{
 			if (i->m_type == GameInfo)
 				invoke(__func__, i->m_updateCmd, i->m_arg, pos, NULL);
+		}
+
+		Tcl_DecrRefCount(pos);
+	}
+
+	void gameSwitched(unsigned position)
+	{
+		Tcl_Obj* pos = Tcl_NewIntObj(position);
+		Tcl_IncrRefCount(pos);
+
+		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		{
+			if (i->m_type == GameSwitched)
+				invoke(__func__, i->m_updateCmd, pos, NULL);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -2293,17 +2313,20 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"dbInfo|gameList|playerList|annotatorList|gameInfo|tree <update-cmd> ??" "<close-cmd>? <arg>?");
+			"dbInfo|gameList|playerList|annotatorList|gameInfo|gameSwitch|tree <update-cmd> ??"
+			"<close-cmd>? <arg>?");
 		return TCL_ERROR;
 	}
 
 	static char const* subcommands[] =
 	{
-		"dbInfo", "gameList", "playerList", "annotatorList", "eventList", "gameInfo", "tree", 0
+		"dbInfo", "gameList", "playerList", "annotatorList",
+		"eventList", "gameInfo", "gameSwitch", "tree", 0
 	};
 	enum
 	{
-		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_EventList, Cmd_GameInfo, Cmd_Tree
+		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList,
+		Cmd_EventList, Cmd_GameInfo, Cmd_GameSwitch, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb.subscriber());
@@ -2344,6 +2367,10 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_GameInfo:
 			subscriber->setGameInfoCmd(updateCmd, closeCmd, arg);
+			break;
+
+		case Cmd_GameSwitch:
+			subscriber->setGameSwitchedCmd(updateCmd);
 			break;
 
 		case Cmd_Tree:

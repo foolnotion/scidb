@@ -1031,7 +1031,7 @@ proc PopupSymbolTable {w text} {
 	focus $m
 	if {[tk windowingsystem] == "x11"} {
 		tkwait visibility $m
-		::update
+		::update idletasks
 	}
 	focus -force $top.c_0_0
 	ttk::globalGrab $top
