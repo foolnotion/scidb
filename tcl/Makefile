@@ -203,12 +203,22 @@ uninstall:
 	for f in `ls themes/square/*.dat`; do \
 		rm -f $(SHAREDIR)/$$f; \
 	done
+	for f in `ls scripts/*.eXt`; do \
+		rm -f $(SHAREDIR)/$$f; \
+	done
 	for i in dark lite tile; do \
 		for k in marble misc wood; do \
 			for f in `ls textures/$$i/$$k/*`; do \
 				rm -f $(SHAREDIR)/$$f; \
 			done; \
 		done; \
+	done
+	# repeat 3 times (directory level is 3)
+	for d in `find $(SHAREDIR) -type d -empty`; do \
+		rmdir $$d; \
+	done
+	for d in `find $(SHAREDIR) -type d -empty`; do \
+		rmdir $$d; \
 	done
 	for d in `find $(SHAREDIR) -type d -empty`; do \
 		rmdir $$d; \
