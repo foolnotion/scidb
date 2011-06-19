@@ -171,42 +171,42 @@ install: $(SCRIPT)
 uninstall:
 	rm -f $(BINDIR)/$(SCRIPT)
 	for f in `ls pieces/*.tcl`; do \
-		rm -f $(SHAREDIR)/pieces/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls cursor/*.xbm`; do \
-		rm -f $(SHAREDIR)/cursor/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls cursor/*.cur`; do \
-		rm -f $(SHAREDIR)/cursor/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls cursor/*.xcur`; do \
-		rm -f $(SHAREDIR)/cursor/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls flags/*.png`; do \
-		rm -f $(SHAREDIR)/flags/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls lang/*.tcl`; do \
-		rm -f $(SHAREDIR)/lang/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls lang/eco/*.*`; do \
-		rm -f $(SHAREDIR)/lang/eco/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls photos/*.sp?`; do \
-		rm -f $(SHAREDIR)/photos/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls themes/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls themes/piece/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/piece/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for f in `ls themes/square/*.dat`; do \
-		rm -f $(SHAREDIR)/themes/square/$$f; \
+		rm -f $(SHAREDIR)/$$f; \
 	done
 	for i in dark lite tile; do \
 		for k in marble misc wood; do \
 			for f in `ls textures/$$i/$$k/*`; do \
-				rm -f $(SHAREDIR)/textures/$$i/$$k/$$f; \
+				rm -f $(SHAREDIR)/$$f; \
 			done; \
 		done; \
 	done
