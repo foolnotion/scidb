@@ -543,6 +543,8 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	namebase(Namebase::Event    ).update();
 	namebase(Namebase::Annotator).update();
 
+	namebases().resetModified();
+
 	mstl::string filename(rootname + ".cbg");
 	checkPermissions(filename);
 	openFile(m_gameStream, filename, Readonly);

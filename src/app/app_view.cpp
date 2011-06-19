@@ -330,6 +330,13 @@ View::setGameFilter(Filter const& filter)
 }
 
 
+db::TournamentTable*
+View::makeTournamentTable() const
+{
+	return m_db.makeTournamentTable(m_gameFilter);
+}
+
+
 View::Result
 View::dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const
 {

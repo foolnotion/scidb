@@ -440,7 +440,8 @@ PgnWriter::writeComment(mstl::string const& comment)
 void
 PgnWriter::writeComment(Comment const& comment)
 {
-	M_ASSERT(!comment.isEmpty());
+	if (comment.isEmpty())
+		return;
 
 	mstl::string text;
 

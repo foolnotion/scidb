@@ -77,8 +77,9 @@ proc open {parent base info view index {fen {}}} {
 
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
+	bind $nb <<Language>> [namespace code [list SetTitle $nb]]
 	bind $dlg <Key-[string tolower $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
-	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb]]
+	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base]]
 
 	namespace eval $nb {}
 	variable ${nb}::Vars
@@ -90,6 +91,8 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(tabs) {}
 	set Vars(after) {}
 	set Vars(flip) $Priv(flip)
+	set Vars(fen) $fen
+	set Vars(closed) 0
 
 	set idn [::gametable::column $info idn]
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
@@ -97,8 +100,8 @@ proc open {parent base info view index {fen {}}} {
 	pack $nb
 
 	bind $dlg <Destroy> [namespace code [list Destroy $nb]]
-	$dlg.previous configure -command [namespace code [list NextGame $nb $base $fen -1]]
-	$dlg.next configure -command [namespace code [list NextGame $nb $base $fen +1]]
+	$dlg.previous configure -command [namespace code [list NextGame $nb $base -1]]
+	$dlg.next configure -command [namespace code [list NextGame $nb $base +1]]
 
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -107,10 +110,13 @@ proc open {parent base info view index {fen {}}} {
 	wm deiconify $dlg
 	focus $nb
 
-	NextGame $nb $base $fen
-	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close $nb
+	NextGame $nb $base
+
+	set Vars(subscribe:list) [list [namespace current]::Update [namespace current]::Close $nb]
+	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
 	if {$view == [::scidb::tree::view $base]} {
-		::scidb::db::subscribe tree [namespace current]::UpdateTreeBase {} $nb
+		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $nb]
+		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
 	}
 
 	return $nb
@@ -151,7 +157,7 @@ proc ConfigureButtons {nb} {
 proc Update {nb base {view -1} {index -1}} {
 	variable ${nb}::Vars
 
-	if {$Vars(index) != -1 && $Vars(base) eq $base && $Vars(view) == $view} {
+	if {!$Vars(closed) && $Vars(base) eq $base && $Vars(view) == $view} {
 		after cancel $Vars(after)
 		set Vars(after) [after idle [namespace code [list Update2 $nb]]]
 	}
@@ -162,6 +168,7 @@ proc Update2 {nb} {
 	variable ${nb}::Vars
 
 	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
+	set Vars(fen) [::scidb::game::fen]
 	ConfigureButtons $nb
 }
 
@@ -170,8 +177,9 @@ proc Close {nb base} {
 	variable ${nb}::Vars
 
 	set Vars(index) -1
+	set Vars(closed) 1
 	ConfigureButtons $nb
-	wm title [winfo toplevel $nb] "[tk appname] - $mc::Overview"
+	SetTitle $nb
 }
 
 
@@ -184,7 +192,29 @@ proc UpdateTreeBase {nb base} {
 }
 
 
-proc NextGame {nb base fen {step 0}} {
+proc GotoFirstGame {nb base} {
+	variable ${nb}::Vars
+
+	if {$Vars(index) > 0} {
+		set Vars(index) 0
+		NextGame $nb $base
+	}
+}
+
+
+proc GotoLastGame {nb base} {
+	variable ${nb}::Vars
+
+	set index [expr {[scidb::view::count games $Vars(base) $Vars(view)] - 1}]
+
+	if {$Vars(index) < $index} {
+		set Vars(index) $index
+		NextGame $nb $base
+	}
+}
+
+
+proc NextGame {nb base {step 0}} {
 	variable ${nb}::Vars
 	variable Priv
 
@@ -204,12 +234,12 @@ proc NextGame {nb base fen {step 0}} {
 		incr Priv($key:count)
 	}
 	set idn [::gametable::column $info idn]
-	wm title [winfo toplevel $nb] "[tk appname] - $mc::Overview ($Vars(name) #$Vars(number))"
+	SetTitle $nb
 	set showError 1
 
 	foreach {boardSize nrows ncols} $Vars(tabs) {
 		set num [expr {$ncols*$nrows}]
-		set result [::scidb::game::dump $base $Vars(view) $Vars(index) $fen $num]
+		set result [::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num]
 		if {![lindex $result 0]} {
 			if {$showError} {
 				after idle [list ::dialog::error -parent $nb -message $::browser::mc::GameDataCorrupted]
@@ -247,6 +277,15 @@ proc NextGame {nb base fen {step 0}} {
 			::board::stuff::update $nb.s$boardSize.board_${row}_${col} $position
 		}
 	}
+}
+
+
+proc SetTitle {nb} {
+	variable ${nb}::Vars
+
+	set title "[tk appname] - $mc::Overview"
+	if {$Vars(index) > 0} { append title " ($Vars(name) #$Vars(number))" }
+	wm title [winfo toplevel $nb] $title
 }
 
 
@@ -318,7 +357,7 @@ proc HideMoves {text} {
 }
 
 
-proc PopupMenu {nb} {
+proc PopupMenu {nb base} {
 	variable ${nb}::Vars
 
 	set menu $nb.__menu__
@@ -328,17 +367,32 @@ proc PopupMenu {nb} {
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 
 	$menu add command \
-		-label $mc::RotateBoard \
+		-compound left \
+		-image $::icon::16x16::rotateBoard \
+		-label " $mc::RotateBoard" \
 		-accelerator [string toupper $mc::AcceleratorRotate] \
 		-command [namespace code [list RotateBoard $nb]]
 	$menu add command \
-		-label $::browser::mc::LoadGame \
+		-compound left \
+		-image $::icon::16x16::document \
+		-label " $::browser::mc::LoadGame" \
 		-command [namespace code [list LoadGame $nb]] \
 		-state $state \
 		;
+#	$menu add command \
+#		-label $::browser::mc::MergeGame \
+#		-command [namespace code [list MergeGame $nb]] \
+#		-state $state \
+#		;
+	$menu add separator
 	$menu add command \
-		-label $::browser::mc::MergeGame \
-		-command [namespace code [list MergeGame $nb]] \
+		-label $::browser::mc::GotoFirstGame \
+		-command [namespace code [list GotoFirstGame $nb $base]] \
+		-state $state \
+		;
+	$menu add command \
+		-label $::browser::mc::GotoLastGame \
+		-command [namespace code [list GotoLastGame $nb $base]] \
 		-state $state \
 		;
 
@@ -378,9 +432,11 @@ proc Destroy {nb} {
 			unset Priv($key)
 			unset Priv($key:count)
 		}
+		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+		if {[info exists Vars(subscribe:tree)]} {
+			::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
+		}
 		namespace delete [namespace current]::${nb}
-		::scidb::db::unsubscribe gameList [namespace current]::Update [namespace current]::Close $nb
-		::scidb::db::unsubscribe tree [namespace current]::UpdateTreeBase {} $nb
 	}
 }
 

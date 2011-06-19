@@ -30,7 +30,6 @@
 #include "db_namebase_entry.h"
 
 #include "m_vector.h"
-#include "m_map.h"
 #include "m_string.h"
 #include "m_bitset.h"
 #include "m_chunk_allocator.h"
@@ -51,7 +50,6 @@ public:
 	typedef NamebasePlayer	PlayerEntry;
 
 	typedef mstl::vector<Entry const*> Matches;
-	typedef mstl::map<unsigned,Entry*> EntryMap;
 	typedef mstl::bitset IdSet;
 
 	enum Type
@@ -69,6 +67,7 @@ public:
 	bool isEmpty() const;
 	bool isPrepared() const;
 	bool isConsistent() const;
+	bool isModified() const;
 
 	Type type() const;
 
@@ -186,6 +185,7 @@ public:
 	void reserve(unsigned size, unsigned limit);
 	void renumber();
 	void clear();
+	void setModified(bool flag);
 
 	unsigned findMatches(mstl::string const& name, Matches& result, unsigned maxMatches = 9) const;
 
@@ -193,7 +193,6 @@ public:
 	void shrink(unsigned oldLength, unsigned newLength);
 	void ref(Entry* entry);
 	void deref(Entry* entry);
-	void exchangeId(IdSet const& newIdSet, EntryMap const& entryMap);
 	void cleanup();
 
 private:
@@ -230,6 +229,7 @@ private:
 	bool		m_isConsistent;
 	bool		m_isPrepared;
 	bool		m_freeSetIsEmpty;
+	bool		m_isModified;
 
 	union
 	{

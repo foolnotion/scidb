@@ -36,7 +36,6 @@
 #include "m_fstream.h"
 #include "m_vector.h"
 #include "m_string.h"
-#include "m_bitset.h"
 
 namespace util
 {
@@ -153,6 +152,7 @@ private:
 	void readNamebase(mstl::fstream& stream, util::Progress& progress);
 	void readNamebase(ByteIStream& stream,
 							Namebase& base,
+							NameList& shadowBase,
 							unsigned maxFreq,
 							unsigned count,
 							unsigned limit);
@@ -171,8 +171,6 @@ private:
 	unsigned						m_blockSize;
 	mstl::fstream				m_gameStream;
 	mstl::fstream				m_gameStream2;
-	Lookup						m_lookup[5];
-	mstl::bitset				m_usedIdSet[5];
 	Lookup						m_roundLookup;
 	sys::utf8::Codec*			m_codec;
 	CustomFlags*				m_customFlags;

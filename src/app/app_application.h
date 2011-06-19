@@ -109,6 +109,7 @@ public:
 
 	static bool hasInstance();
 
+	bool isClosed() const;
 	bool contains(Cursor& cursor) const;
 	bool contains(mstl::string const& name) const;
 	bool containsGameAt(unsigned position) const;
@@ -135,6 +136,7 @@ public:
 						mstl::string const& encoding,
 						db::type::ID type = db::type::Unspecific);
 
+	void close();
 	void close(Cursor& cursor);
 	void close(mstl::string const& name);
 	void closeAll(CloseMode mode);
@@ -284,6 +286,7 @@ private:
 	CursorMap	m_cursorMap;
 	IndexMap		m_indexMap;
 	TreeP			m_currentTree;
+	bool			m_isClosed;
 
 	mutable SubscriberP m_subscriber;
 

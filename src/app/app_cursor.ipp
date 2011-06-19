@@ -37,8 +37,17 @@ inline db::Database const& Cursor::database() const	{ return *m_db; }
 inline db::Database& Cursor::base()							{ return *m_db; }
 inline int Cursor::treeViewIdentifier() const			{ return m_treeView; }
 inline unsigned Cursor::maxViewNumber() const			{ return m_viewList.size() - 1; }
+inline Cursor::SubscriberP Cursor::subscriber() const	{ return m_subscriber; }
 
 inline void Cursor::setReferenceBase(bool flag)	{ m_isRefBase = flag; }
+
+
+inline
+bool
+Cursor::isValidView(unsigned view) const
+{
+	return view == BaseView || view <= maxViewNumber();
+}
 
 
 inline View const&
@@ -94,6 +103,14 @@ Cursor::treeView()
 	M_REQUIRE(isViewOpen(treeViewIdentifier()));
 
 	return *m_viewList[m_treeView + 1];
+}
+
+
+inline
+void
+Cursor::setSubscriber(SubscriberP subscriber)
+{
+	m_subscriber = subscriber;
 }
 
 } // namespace app

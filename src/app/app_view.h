@@ -40,6 +40,7 @@ namespace util { class Progress; }
 
 namespace db {
 
+class TournamentTable;
 class Database;
 class Query;
 class Consumer;
@@ -155,6 +156,9 @@ public:
 	void update(UpdateMode mode);
 	/// Set game filter.
 	void setGameFilter(db::Filter const& filter);
+
+	/// Build tournament table for all games in current view.
+	db::TournamentTable* makeTournamentTable() const;
 
 	/// Export games in view.
 	unsigned exportGames(	mstl::string const& filename,

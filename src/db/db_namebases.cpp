@@ -46,6 +46,28 @@ Namebases::Namebases()
 }
 
 
+bool
+Namebases::isModified() const
+{
+	return	m_player.isModified()
+			|| m_site.isModified()
+			|| m_event.isModified()
+			|| m_annotator.isModified()
+			|| m_round.isModified();
+}
+
+
+void
+Namebases::resetModified()
+{
+	m_player.setModified(false);
+	m_site.setModified(false);
+	m_event.setModified(false);
+	m_annotator.setModified(false);
+	m_round.setModified(false);
+}
+
+
 void
 Namebases::clear()
 {

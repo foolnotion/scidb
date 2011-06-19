@@ -38,7 +38,7 @@ set Localization			"Localization"
 set Testing					"Testing"
 set References				"References"
 set System					"System"
-set FontDesign				"font design"
+set FontDesign				"chess font design"
 set ChessPieceDesign		"chess piece design"
 set BoardThemeDesign		"Board theme design"
 set FlagsDesign			"Miniature flags design"
@@ -173,6 +173,9 @@ proc BuildAboutFrame {w} {
 }
 
 
+proc Enc {s} { return [encoding convertfrom utf-8 $s] }
+
+
 proc BuildContributionsFrame {w} {
 	set t [tk::text $w.t \
 		-padx 10 -pady 10 \
@@ -188,54 +191,55 @@ proc BuildContributionsFrame {w} {
 	grid rowconfigure $w 0 -weight 1
 	grid columnconfigure $w 0 -weight 1
 
-	$t insert end "[set [namespace current]::mc::Localization]:\n" caption
-	$t insert end "Giovanni Ornaghi ([::encoding::languageName it]), Fernando Gonz·lez ([::encoding::languageName es])"
-	$t insert end "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"
+	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
+	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
+#	$t insert end [Enc "Fernando Gonz√°lez ([::encoding::languageName es]), "]
+	$t insert end [Enc "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"]
 
-	$t insert end "\n\n"
-	$t insert end "[set [namespace current]::mc::Testing]:\n" caption
-	$t insert end "Steven Atkinson, "
-	$t insert end "Paolo Casaschi, "
-	$t insert end "Fernando Gonz·lez, "
-	$t insert end "Austen Green, "
-	$t insert end "Giovanni Ornaghi, "
-	$t insert end "Matthew Simpson, "
-	$t insert end "Zoltan Tibensky, "
-	$t insert end "Natalia ParÈs Vives, "
-	$t insert end "Lars ???"
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
+	$t insert end [Enc "Steven Atkinson, "]
+	$t insert end [Enc "Paolo Casaschi, "]
+	$t insert end [Enc "Lars Ekman, "]
+#	$t insert end [Enc "Fernando Gonz√°lez, "]
+	$t insert end [Enc "Austen Green, "]
+	$t insert end [Enc "Giovanni Ornaghi, "]
+	$t insert end [Enc "Matthew Simpson, "]
+	$t insert end [Enc "Zoltan Tibensky, "]
+	$t insert end [Enc "Natalia Par√©s Vives"]
 
-	$t insert end "\n\n"
-	$t insert end "TrueType [set [namespace current]::mc::FontDesign]:\n" caption
-	$t insert end "Armando Hern·ndez MarroquÌn, "
-	$t insert end "Eric Bentzen, "
-	$t insert end "Matthieu Leschemelle, "
-	$t insert end "Alastair Scott, "
-	$t insert end "Alan Cowderoy, "
-	$t insert end "Christian Poisson, "
-	$t insert end "David L. Brown, "
-	$t insert end "Frank David, "
-	$t insert end "Christoph Wirth"
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "TrueType [set [namespace current]::mc::FontDesign]:\n"] caption
+	$t insert end [Enc "Armando Hern√°ndez Marroqu√≠n, "]
+	$t insert end [Enc "Eric Bentzen, "]
+	$t insert end [Enc "Matthieu Leschemelle, "]
+	$t insert end [Enc "Alastair Scott, "]
+	$t insert end [Enc "Alan Cowderoy, "]
+	$t insert end [Enc "Christian Poisson, "]
+	$t insert end [Enc "David L. Brown, "]
+	$t insert end [Enc "Frank David, "]
+	$t insert end [Enc "Christoph Wirth"]
 
-	$t insert end "\n\n"
-	$t insert end "SVG [set [namespace current]::mc::ChessPieceDesign]:\n" caption
-	$t insert end "Maurizio Monge, "
-	$t insert end "Colin M.L. Burnett"
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "SVG [set [namespace current]::mc::ChessPieceDesign]:\n"] caption
+	$t insert end [Enc "Maurizio Monge, "]
+	$t insert end [Enc "Colin M.L. Burnett"]
 
-	$t insert end "\n\n"
-	$t insert end "[set [namespace current]::mc::BoardThemeDesign]:\n" caption
-	$t insert end "Gregor Cramer"
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "[set [namespace current]::mc::BoardThemeDesign]:\n"] caption
+	$t insert end [Enc "Gregor Cramer"]
 
-	$t insert end "\n\n"
-	$t insert end "[set [namespace current]::mc::FlagsDesign]:\n" caption
-	$t insert end "Mark James, Gregor Cramer"
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "[set [namespace current]::mc::FlagsDesign]:\n"] caption
+	$t insert end [Enc "Mark James, Gregor Cramer"]
 
-#	$t insert end "\n\n"
-#	$t insert end "[set [namespace current]::mc::IconDesign]:\n" caption
-#	$t insert end "Gregor Cramer"
+#	$t insert end [Enc "\n\n"]
+#	$t insert end [Enc "[set [namespace current]::mc::IconDesign]:\n"] caption
+#	$t insert end [Enc "Gregor Cramer"]
 
-	$t insert end "\n\n"
-	$t insert end "Scid 3:\n" caption
-	$t insert end $mc::SpecialThanks
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "Scid 3:\n"] caption
+	$t insert end [Enc $mc::SpecialThanks]
 
 	set family [font configure TkTextFont -family]
 	set size [font configure TkTextFont -size]
@@ -382,7 +386,7 @@ proc ClickLink {w xpos ypos} {
 	set url [$w get {*}$range]
 	$w tag add $url {*}$range
 	$w tag configure $url -foreground red
-	update
+	update idletasks
 	::web::open $url
 }
 

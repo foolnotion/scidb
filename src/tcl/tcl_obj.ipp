@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2011 Gregor Cramer
+// Copyright: (C) 2011 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -26,76 +26,55 @@
 
 #include "m_assert.h"
 
-namespace db {
+#include <string.h>
 
-inline bool Filter::isComplete() const					{ return m_count == m_set.size(); }
-inline bool Filter::isCompressed() const				{ return m_set.compressed(); }
-inline bool Filter::checkClassInvariance() const	{ return m_count == m_set.count(); }
+namespace tcl {
 
-inline unsigned Filter::count() const	{ return m_count; }
-inline unsigned Filter::size() const	{ return m_set.size(); }
+inline Obj::operator Tcl_Obj* () const { return m_obj; }
 
-inline bool Filter::isEmpty() const		{ return m_count == 0; }
+inline Obj::Obj(Tcl_Obj* obj) :m_obj(obj) {}
+
+
+inline
+void
+Obj::ref()
+{
+	if (m_obj)
+		Tcl_IncrRefCount(m_obj);
+}
+
+
+inline
+void
+Obj::deref()
+{
+	if (m_obj)
+		Tcl_DecrRefCount(m_obj);
+}
+
+
+inline
+Tcl_Obj*
+Obj::operator()() const
+{
+	M_ASSERT(m_obj);
+	return m_obj;
+}
 
 
 inline
 bool
-Filter::contains(unsigned index) const
+Obj::operator==(Obj const& obj) const
 {
-	M_REQUIRE(index < size());
-	return m_set.test(index);
+	if (m_obj == 0)
+		return obj.m_obj == 0;
+
+	if (obj.m_obj == 0)
+		return false;
+
+	return ::strcmp(Tcl_GetStringFromObj(m_obj, 0), Tcl_GetStringFromObj(obj.m_obj, 0)) == 0;
 }
 
-
-inline
-int
-Filter::next(int current) const
-{
-	M_REQUIRE(current < int(size()));
-	return current == Invalid ? m_set.find_first() : int(m_set.find_next(current));
-}
-
-
-inline
-int
-Filter::prev(int current) const
-{
-	M_REQUIRE(current < int(size()));
-	return current == Invalid ? m_set.find_last() : int(m_set.find_prev(current));
-}
-
-
-inline
-void
-Filter::add(unsigned index)
-{
-	M_REQUIRE(index < size());
-
-	if (!m_set.test_and_set(index))
-		++m_count;
-
-// too slow!
-//	M_ASSERT(checkClassInvariance());
-}
-
-
-inline
-void
-Filter::compress()
-{
-	M_ASSERT(m_set.compressed() || m_count == m_set.count());
-	m_set.compress();
-}
-
-
-inline
-void
-Filter::uncompress()
-{
-	m_set.uncompress();
-	M_ASSERT(checkClassInvariance());
-}
-
-} // namespace db
+} // namespace tcl
 
 // vi:set ts=3 sw=3:

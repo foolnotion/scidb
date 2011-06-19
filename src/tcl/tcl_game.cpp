@@ -74,6 +74,7 @@ static char const* CmdDump			= "::scidb::game::dump";
 static char const* CmdExchange	= "::scidb::game::exchange";
 static char const* CmdExecute		= "::scidb::game::execute";
 static char const* CmdExport		= "::scidb::game::export";
+static char const* CmdFen			= "::scidb::game::fen";
 static char const* CmdGo			= "::scidb::game::go";
 static char const* CmdImport		= "::scidb::game::import";
 static char const* CmdIndex		= "::scidb::game::index";
@@ -671,19 +672,31 @@ struct Subscriber : public Game::Subscriber
 	{
 		if (m_action == 0)
 		{
-			Tcl_IncrRefCount(m_action		= Tcl_NewStringObj("action", -1));
-			Tcl_IncrRefCount(m_set			= Tcl_NewStringObj("set", -1));
-			Tcl_IncrRefCount(m_goto			= Tcl_NewStringObj("goto", -1));
-			Tcl_IncrRefCount(m_move			= Tcl_NewStringObj("move", -1));
-			Tcl_IncrRefCount(m_marks		= Tcl_NewStringObj("marks", -1));
+			Tcl_IncrRefCount(m_action	= Tcl_NewStringObj("action", -1));
+			Tcl_IncrRefCount(m_set		= Tcl_NewStringObj("set", -1));
+			Tcl_IncrRefCount(m_goto		= Tcl_NewStringObj("goto", -1));
+			Tcl_IncrRefCount(m_move		= Tcl_NewStringObj("move", -1));
+			Tcl_IncrRefCount(m_marks	= Tcl_NewStringObj("marks", -1));
 
-			Tcl_IncrRefCount(m_true			= Tcl_NewBooleanObj(1));
-			Tcl_IncrRefCount(m_false		= Tcl_NewBooleanObj(0));
+			Tcl_IncrRefCount(m_true		= Tcl_NewBooleanObj(1));
+			Tcl_IncrRefCount(m_false	= Tcl_NewBooleanObj(0));
 
 			pos::resetMoveCache();
 		}
 
 		Tcl_IncrRefCount(m_position);
+	}
+
+	~Subscriber() throw()
+	{
+		if (m_board)
+			Tcl_DecrRefCount(m_board);
+		if (m_tree)
+			Tcl_DecrRefCount(m_tree);
+		if (m_pgn)
+			Tcl_DecrRefCount(m_pgn);
+		if (m_state)
+			Tcl_DecrRefCount(m_state);
 	}
 
 	void setBoardCmd(Tcl_Obj* obj)
@@ -1555,7 +1568,17 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_Unfold:
-			scidb.game().unfold();
+			if (objc > 2)
+			{
+				if (::strcmp(stringFromObj(objc, objv, 2), "-force") != 0)
+					error(CmdVariation, 0, 0, "unexpected option %s", stringFromObj(objc, objv, 2));
+
+				scidb.game().setFolded(Scidb.game().currentKey(), false);
+			}
+			else
+			{
+				scidb.game().unfold();
+			}
 			break;
 
 		default:
@@ -1830,7 +1853,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								{
 									char const* side = stringFromObj(objc, objv, nextArg);
 									color::ID color = *side == 'w' ? color::White : color::Black;
-									country::Code country = Scidb.gameInfo(pos).findFederation(color);
+									country::Code country = Scidb.gameInfoAt(pos).findFederation(color);
 									setResult(country::toString(country));
 								}
 								break;
@@ -2042,6 +2065,14 @@ cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	pos::dumpBoard(board, str);
 	setResult(str);
 
+	return TCL_OK;
+}
+
+
+static int
+cmdFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Scidb.game().currentBoard().toFen());
 	return TCL_OK;
 }
 
@@ -2509,6 +2540,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdExchange,		cmdExchange);
 	createCommand(ti, CmdExecute,		cmdExecute);
 	createCommand(ti, CmdExport,		cmdExport);
+	createCommand(ti, CmdFen,			cmdFen);
 	createCommand(ti, CmdGo,			cmdGo);
 	createCommand(ti, CmdImport,		cmdImport);
 	createCommand(ti, CmdIndex,		cmdIndex);

@@ -606,9 +606,9 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position/
 			{
 				switch (c)
 				{
-					case '<':	str += '\x01'; break;
-					case '>':	str += '\x02'; break;
-					case '&':	str += '\x03'; break;
+					case '<':	str.append("&lt;", 4); break;
+					case '>':	str.append("&gt;", 4); break;
+					case '&':	str.append("&amp;", 5); break;
 					default:		str += c; break;
 				}
 			}
@@ -692,50 +692,6 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position/
 		{
 			// TODO: use character encoding according to language code ?!
 			m_codec.toUtf8(str);
-
-			if (useXml)
-			{
-				mstl::string xml;
-
-				char const* s = str.begin();
-				char const* e = str.end();
-
-				if (sys::utf8::Codec::is7BitAscii(s, e - s))
-				{
-					for ( ; s < e; ++s)
-					{
-						switch (*s)
-						{
-							case 0x01:	xml += "&lt;"; break;
-							case 0x02:	xml += "&gt;"; break;
-							case 0x03:	xml += "&amp;"; break;
-							default:		xml += *s; break;
-						}
-					}
-				}
-				else
-				{
-					while (s < e)
-					{
-						switch (*s)
-						{
-							case 0x01: xml += '<'; ++s; break;
-							case 0x02: xml += '>'; ++s; break;
-							case 0x03: xml += '&'; ++s; break;
-
-							default:
-								{
-									unsigned len = sys::utf8::Codec::utfCharLength(s);
-									xml.append(s, len);
-									s += len;
-								}
-								break;
-						}
-					}
-				}
-
-				str.swap(xml);
-			}
 
 			if (useXml)
 			{
@@ -931,12 +887,12 @@ Decoder::getAnnotation(MoveNode* node, int moveNo/*, unsigned flags*/)
 void
 Decoder::decodeMoves(Consumer& consumer)
 {
-	MoveNode			node;
-	Comment			comment;
-	Comment			preComment;
-	MarkSet			marks;
-	unsigned			count = 0;
-	Move				move;
+	MoveNode	node;
+	Comment	comment;
+	Comment	preComment;
+	MarkSet	marks;
+	unsigned	count = 0;
+	Move		move;
 
 	while (true)
 	{

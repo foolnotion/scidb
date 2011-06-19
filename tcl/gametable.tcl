@@ -1418,41 +1418,57 @@ proc PopupMenu {path menu base index} {
 
 		if {$Vars(listmode)} {
 			$menu add command \
+				-compound left \
+				-image $::icon::16x16::browse \
 				-label $::browser::mc::BrowseGame \
 				-command [namespace code [list OpenBrowser $path $index]] \
 				;
 			$menu add command \
+				-compound left \
+				-image $::icon::16x16::overview \
 				-label $::overview::mc::Overview \
 				-command [namespace code [list OpenOverview $path $index]] \
 				;
 			$menu add command \
-				-label [string map {& {}} $::browser::mc::LoadGame] \
+				-compound left \
+				-image $::icon::16x16::document \
+				-label " $::browser::mc::LoadGame" \
 				-command [namespace code [list LoadGame $path $index]] \
 				;
 			$menu add command \
-				-label $mc::ShowTournamentTable \
-				-command [namespace code [list ::crosstable::open $path $base $index]] \
+				-compound left \
+				-image $::icon::16x16::crossTable \
+				-label " $mc::ShowTournamentTable" \
+				-command [namespace code [list OpenCrosstable $path $index]] \
 				;
 		} else {
 			$menu add command \
+				-compound left \
+				-image $::icon::16x16::filetypeScidbBase \
 				-label $::browser::mc::BrowseGame \
 				-accelerator $mc::AccelBrowse \
 				-command [namespace code [list OpenBrowser $path $index]] \
 				;
 			$menu add command \
-				-label $::overview::mc::Overview \
+				-compound left \
+				-image $::icon::16x16::overview \
+				-label " $::overview::mc::Overview" \
 				-accelerator $mc::AccelOverview \
 				-command [namespace code [list OpenOverview $path $index]] \
 				;
 			$menu add command \
-				-label [string map {& {}} $::browser::mc::LoadGame] \
+				-compound left \
+				-image $::icon::16x16::document \
+				-label " $::browser::mc::LoadGame" \
 				-accelerator $mc::Space \
 				-command [namespace code [list LoadGame $path $index]] \
 				;
 			$menu add command \
-				-label $mc::ShowTournamentTable \
+				-compound left \
+				-image $::icon::16x16::crossTable \
+				-label " $mc::ShowTournamentTable" \
 				-accelerator $mc::AccelTournTable \
-				-command [namespace code [list ::crosstable::open $path $base $index]] \
+				-command [namespace code [list OpenCrosstable $path $index]] \
 				;
 		}
 	
@@ -1462,11 +1478,15 @@ proc PopupMenu {path menu base index} {
 
 			if {$flag} {
 				set text $mc::UndeleteGame
+				set icon ${::icon::16x16::delete}
 			} else {
 				set text $mc::DeleteGame
+				set icon $::icon::16x16::delete
 			}
 			$menu add command \
-				-label $text \
+				-compound left \
+				-image $icon \
+				-label " $text" \
 				-command [namespace code [list DeleteGame $base $index $view [expr {!$flag}]]] \
 				;
 
@@ -1506,11 +1526,15 @@ proc PopupMenu {path menu base index} {
 			set info [::scidb::db::get gameInfo $index $view $base]
 
 			$menu add cascade \
-				-label $mc::EditGameFlags \
+				-compound left \
+				-image $::icon::16x16::flag \
+				-label " $mc::EditGameFlags" \
 				-menu $menu.gameflags
 				;
 			$menu add command \
-				-label $::dialog::::save::mc::EditCharacteristics \
+				-compound left \
+				-image $::icon::16x16::setup \
+				-label " $::dialog::::save::mc::EditCharacteristics" \
 				-command [list ::dialog::save::open $path $base {} [column $info number]] \
 				;
 		}
@@ -1612,15 +1636,17 @@ proc SetFlag {base index view flag} {
 proc BindAccelerators {path} {
 	variable ${path}::Vars
 
-	foreach {accel proc} [list $mc::AccelBrowse OpenBrowser $mc::AccelOverview OpenOverview] {
-		if {[info exists Vars(accel:$proc)]} {
-			bind $path <Key-[string toupper $Vars(accel:$proc)]> {}
-			bind $path <Key-[string tolower $Vars(accel:$proc)]> {}
-		}
+	foreach {accel proc} [list $mc::AccelBrowse OpenBrowser \
+										$mc::AccelOverview OpenOverview \
+										$mc::AccelTournTable OpenCrosstable] {
+#		if {[info exists Vars(accel:$proc)]} {
+#			bind $path <Key-[string toupper $Vars(accel:$proc)]> {}
+#			bind $path <Key-[string tolower $Vars(accel:$proc)]> {}
+#		}
 		set cmd [namespace code [list $proc $path]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
-		set Vars(accel:$proc) $accel
+#		set Vars(accel:$proc) $accel
 	}
 }
 
@@ -1657,6 +1683,19 @@ proc OpenOverview {path {index -1}} {
 	set info [::scidb::db::get gameInfo $index $view $base]
 
 	::widget::busyOperation ::overview::open $path $base $info $view $index [{*}$Vars(positioncmd)]
+}
+
+
+proc OpenCrosstable {path {index -1}} {
+	variable ${path}::Vars
+
+	if {$index == -1} { set index [::scrolledtable::active $path] }
+	if {$index == -1} { return }
+
+	set base [::scrolledtable::base $path]
+	set view [{*}$Vars(viewcmd) $base]
+
+	::crosstable::open $path $base $index $view game
 }
 
 

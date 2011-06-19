@@ -38,8 +38,10 @@ inline unsigned Namebase::nextId() const				{ return m_nextId; }
 
 inline bool Namebase::isConsistent() const			{ return m_isConsistent; }
 inline bool Namebase::isPrepared() const				{ return m_isPrepared; }
+inline bool Namebase::isModified() const				{ return m_isModified; }
 
 inline void Namebase::setMaxUsage(unsigned usage)	{ m_maxUsage = usage; }
+inline void Namebase::setModified(bool flag)			{ m_isModified = false; }
 
 
 inline

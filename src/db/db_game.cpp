@@ -1596,6 +1596,7 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 
 	insertUndo(Remove_Variation, RemoveVariation, number);
 
+	node->fold(false);
 	m_currentNode->addVariation(node.release());
 	m_currentNode->swapVariations(number, m_currentNode->variationCount() - 1);
 
@@ -1710,6 +1711,7 @@ Game::addVariation(MoveNodeP node)
 	}
 
 	MoveNode* varNode = node.release();
+	varNode->setFolded(false);
 	m_currentNode->next()->addVariation(varNode);
 	updateSubscriber(UpdatePgn | UpdateBoard);
 
@@ -1745,6 +1747,7 @@ Game::newMainline(MoveNode* node)
 
 	forward();
 	insertUndo(Remove_Mainline, NewMainline);
+	node->setFolded(false);
 	m_currentNode->addVariation(node);
 	unsigned varNo = m_currentNode->variationCount() - 1;
 	promoteVariation(varNo, varNo, false);
@@ -1896,6 +1899,7 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 	M_ASSERT(parent);
 	M_ASSERT(next);
 
+	variation->setFolded(false);
 	parent->removeNext();	// = m_currentNode
 	parent->setNext(next);
 	variation->setNext(m_currentNode);
@@ -1939,6 +1943,7 @@ Game::removeVariation(unsigned variationNumber)
 	M_REQUIRE(variationNumber < variationCount());
 
 	MoveNode* node = m_currentNode->removeVariation(variationNumber);
+	node->setFolded(false);
 	insertUndo(Insert_Variation, RemoveVariation, node, variationNumber);
 	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves);
 }
@@ -1955,6 +1960,8 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 
 	Board board(m_currentBoard);
 	board.undoMove(m_currentNode->move());
+
+	m_currentNode->variation(variationNumber)->setFolded(false);
 
 	MoveNode* curr = m_currentNode->clone();
 	MoveNode* node = curr->removeVariation(variationNumber);
@@ -2007,6 +2014,8 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 	MoveNode* curr = m_currentNode->clone();
 	MoveNode* node = curr->removeVariation(variationNumber);
 	MoveNode* last = node;
+
+	node->setFolded(false);
 
 	while (last->next())
 		last = last->next();
@@ -2085,6 +2094,7 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	}
 
 	MoveNode* varNode = node.release();
+	varNode->setFolded(false);
 	delete m_currentNode->next()->replaceVariation(variationNumber, varNode);
 
 	updateSubscriber(UpdatePgn | UpdateBoard | UpdateIllegalMoves | UpdateLanguageSet);
@@ -2141,6 +2151,8 @@ void
 Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const& key)
 {
 	MoveNode* last = startNode;
+
+	startNode->setFolded(false);
 
 	while (last->next())
 		last = last->next();
@@ -2251,6 +2263,7 @@ Game::revertGame(MoveNode* startNode, Command command)
 {
 	insertUndo(Revert_Game, command, m_startNode);
 	m_startNode = startNode;
+	startNode->setFolded(false);
 
 	if (command == Transpose)
 	{
@@ -2270,6 +2283,7 @@ Game::resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const&)
 	MoveNode* node(m_startNode);
 
 	moveToMainlineStart();
+	startNode->setFolded(false);
 	m_startNode = startNode;
 	m_startBoard = startBoard;
 	if (node->next() && !board.isEqualPosition(m_startBoard))
@@ -2657,7 +2671,9 @@ void
 Game::setFolded(edit::Key const& key, bool flag)
 {
 	M_REQUIRE(isValidKey(key));
-	M_REQUIRE(key.level() > 0);
+
+	if (key.level() == 0)
+		return;
 
 	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
 

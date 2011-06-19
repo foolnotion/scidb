@@ -36,7 +36,6 @@ LIBS = \
 	tk/svg/libsvg.a \
 	tk/svg/agg/libagg.a \
 	util/libutil.a \
-	util/lzo/liblzo.a \
 	util/libTeXt/libTeXt.a \
 	mstl/libmstl.a \
 	tk/jpeg/libjpegd.a \
@@ -55,7 +54,7 @@ SRC = \
 
 ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/lzo util/minizip util/libTeXt $(LIB_SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress $(PROGRAM)
 
@@ -112,9 +111,6 @@ sys/libsys.a:
 
 util/libutil.a:
 	$(MAKE) -C util
-
-util/lzo/liblzo.a:
-	$(MAKE) -C util/lzo
 
 util/minizip/libminizip.a:
 	$(MAKE) -C util/libminizip

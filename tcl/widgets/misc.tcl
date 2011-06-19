@@ -30,6 +30,8 @@ set Revert		"&Revert"
 set Update		"&Update"
 set Previous	"&Previous"
 set Next			"&Next"
+set Last			"&Last"
+set First		"Firs&t"
 
 } ;# namespace mc
 
@@ -140,6 +142,8 @@ proc dialogButtons {dlg buttons dflt {useIcons yes}} {
 				revert	{ set icon $icon::iconReset }
 				previous	{ set icon $icon::iconBackward }
 				next		{ set icon $icon::iconForward }
+				first		{ set icon $icon::iconFirst }
+				last		{ set icon $icon::iconLast }
 			}
 		}
 
@@ -159,6 +163,8 @@ proc dialogButtons {dlg buttons dflt {useIcons yes}} {
 			revert	{ set var [namespace current]::mc::Revert }
 			previous	{ set var [namespace current]::mc::Previous }
 			next		{ set var [namespace current]::mc::Next }
+			first		{ set var [namespace current]::mc::First }
+			last		{ set var [namespace current]::mc::Last }
 
 			default	{
 				if {![info exists var]} {

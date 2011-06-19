@@ -652,6 +652,30 @@ namespace eval 16x16 {
 
 	set none [image create photo -width 16 -height 16]
 
+	set delete [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABF1BM
+		VEX///+AAACoAACtAACHAACKAACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABt
+		AABqAACiAACWKyt/HhaCJBvSeHXDSknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCr
+		JBevJxuzMSazKx++Sj/DSkDITEPKVkyAIyGBIyGhPjSyQzpqIx9qIyB7PDJZIRxbIRu9AAC+
+		AAC/OTPBEQrCMzPCTUjDOjrFOTLGEgzHEgzJPj7LRD/LTkrMRkbQAADQEgzTVlbTV1TTZWDU
+		Yl7WYF3XY2HbExDbFBHfEw/fFBLfaGHjAADlLyrlMCzlMi3lMi7lc3HmbW3mdnXpjYnvFBLv
+		FRPviYfwjYr1AABjjkEhAAAANHRSTlMAMjIySEhISEhISUlJSktPUFFS0Nfd3uTm6vL09fr6
+		+vr6+vr6+vv7+/v7/Pz8/P39/f7+1W7eYgAAAJxJREFUGBmNwUUWggAABcAPKNgidnd3Ygdi
+		d+f9z6HwdM8MoATlNuDL4KQgI73PjBbQp18+EhLr9nJNGc2F8+VmhUSTmIiLfHkmzpMayJjY
+		oD9sjaZxBj90tNNsNyI0/tRhvlbnw2r8qPxjodsTxgEVZLrgeresVla7TcgEiX3/vhdZrvR4
+		H2yQEJ5jlgW43MlDQEY4LPjiXASU+ABDsxNremw/FgAAAABJRU5ErkJggg==
+	}]
+
+	set flag [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+		CXBIWXMAAABIAAAASABGyWs+AAABEUlEQVQ4y8XSvyvEcRgH8Nfd9/zKdFkOCxkskkEp/4Qy
+		iSTyr5iNSjJYlMVi8WMxnFJKyo9JGYgYcHIGOZbn6lx34Rbv+vSpz/M87+f9fvfhv5FCS9z9
+		6EMH7nCE298QLKIJGcwjQRFnWMcWLlGqR7CECaxiHD0V9Y8YPsY5CrFgBc/lpgGcIo9lvOOz
+		xinFecVMeTjBfSiZik3N6KyjNhV2c9hGIYniFUYxhD0MRmM95PCIfJmgGP4mcYMLXGM/VKWQ
+		jaAhHVkdVrK2YQ0PGEN7WMygG3PYjfDKeWykqqSNYBMHmMVLVT2L4bDbFf/lG9JYiMFpDaIX
+		J+Ev91NzUuPtCW/heyfC/TPSaG3Uwp/wBeGlPtVbYcb9AAAAAElFTkSuQmCC
+	}]
+
 	set lines [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAAAAAAAD5Q7t/AAAA
 		CXBIWXMAAAsTAAALEwEAmpwYAAADDUlEQVQ4y32ST2hcVRTGf/e+O2/eJJP5T8fJGDNNp01i
@@ -1427,6 +1451,27 @@ namespace eval 16x16 {
 		3TbYvwC5uE87Bx2GaQAAAABJRU5ErkJggg==
 	}]
 
+	set overview [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAACVBMVEUAAAAycZ3g4OAW335U
+		AAAAAXRSTlMAQObYZgAAABlJREFUCNdjCA0RDWXIWiK1EisBlkUAwooBgmwWdxNF7jIAAAAA
+		SUVORK5CYII=
+	}]
+
+	set overview [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
+		ZSBJbWFnZVJlYWR5ccllPAAAAg9JREFUeNqEU89rGlEQHnc31gQ3ilnE4tZKKYj0kENbcvKU
+		4C35A/pXeBNPpdRbTiWnBHLpwVsvDfTStD0I0otIiZtTLoFoNGRXE7O74o/dzDx2zYsY+uDj
+		vX3ffMN882YDgUAAuPUJ8QahIT7C47WYowQcvhWLRVeW5eNIJAKxWIyBznRHHMXwGpGr4LOi
+		KO8dx3mu63pfFMV3giAcIQDPB5IkvSJuMBjYlmW9wPg/XgGzBN/L5fK2YRgwmQBUKl//8fUX
+		CoX129sbsO0R7O19OcKrHbqXuBhhNBrB1VUXLMuFVCq1nsvlGFGtVoG462sder0Bi/VFfAJx
+		Op0C4fLyfCb0V61Wg2QyyXiKnYk8C7vRaHQDPSoXFy0WpKoqZLNZtlNMt9uF8Zgq7KANezoc
+		Dl+i7qffg+NSqbRpmnfQarUZTk+1M74H+Xz+dSKRIDEr/PBw/xcetnwLEnns9Qzo9/v4dElw
+		nBOq7gORrutW0uk0GIYO7XYbv0Mz+9K8fw7k8+8i3nUf+vBkAuyHuKjBTyWQUADLyysQj8dx
+		cEKUQOCfmITB4DNYW1MeVe8nCDabTRQK2IMbdjFfgaZpgNMINGi+hiXABtEuZzIZME0TwuFV
+		DAxBo9EQPI6eUSDeti38J8JoQYJ6vS77mVTED0SHB4p+4/6W4J07cyCNSkOw6llZ4ifsP4u6
+		OEZM7gUYAHqYEUhK/miMAAAAAElFTkSuQmCC
+	}]
+
 	set document [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAApVBM
 		VEX///8AAAAAAAAAAAAAAAAAAAAFBQUAAACrq6usrKyxsbH4+Pj5+fnT09PU1NTX19fb29vm
@@ -1731,6 +1776,34 @@ namespace eval 16x16 {
 		m0f7HRIAzCN+nUF28vbal+X1WYdEcp5bBohBhP2gduUSeFHgV8pBfSt4X4/1h5SxCALj89sD
 		feiB8BNM0TT941EBhAAAACJ6VFh0U29mdHdhcmUAAHjac0zJT0pV8MxNTE8NSk1MqQQAL5wF
 		1K4MqU0AAAAASUVORK5CYII=
+	}]
+
+	set first [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABCFBM
+		VEX///8gSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocg
+		SogjT4sjTosgSocjToogS4ggS4giToogS4giTYkgS4ggSoghS4cyW5NJcqggSoc0X5pNdqsg
+		SochS4c5Y51Req4gSochS4chS4gmUIsgSochS4goUYtAaaFUfbFFbqUgSochS4g0ZaQ1ZqQ+
+		b6s+b6w/b6s/b6xAb6xCc61DcatEbqRJebNKc6lKerNMd69Me7ROfbVPebBQerBRe7FWfrNX
+		f7NXgLRZgbRbhrpehbZhibtiiLlkjb5mjLpokMBpjbprksJrk8Jsk8Jtkb1vnMxwkr3tIxl3
+		AAAAMXRSTlMAAgMGCAoLDxETFx4lJi4+Z4emvsfS2+Pj6u7v8/X1+fr6+vv7+/v8/Pz8/f39
+		/f3+/1bJgQAAAKNJREFUGBkFwb1OAkEYAMDZywfyd+ROtBUtaCztfP9HsDQhFHQaIyBq8HbX
+		mXTfexmgO2VoYvML+ocEAmi6xQVowKhvnzMQMF20T2W0hhyYzpePH5NNIuVdoL1dH4a/U4NO
+		MF1177WqUk5LweWtmX1WoAjycXuzOlzNU6IInGst16N9hlnAsZSfu7zLEOCrlu04DxDAudYO
+		iOF1At+lAACME/gHfW47UjdbZA8AAAAASUVORK5CYII=
+	}]
+
+	set last [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAA/FBM
+		VEX///8gSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgSocgS4gl
+		TosgSockTosjTosgS4ggS4giToogS4ggSogiToogSocgS4ghTIg0W5RLdKkgSocgSodPea4g
+		Soc0YJpTfLAkTYk7Zp9BaqNWf7MgSoclTok0ZaQ1ZqQ+b6o+b6s/b6s/b6xAb6xCcq1FcqtH
+		cKZJcahJebNKerNLebNMd65Md69Me7RNdalOfbVPebBQerBRe7BWfrJWfrNXf7NagbRdh7tf
+		hbZhibtjiblkjb5mirlokMBrkcFrksFrksJrk8JtkL1vkr5yn8/jdZUuAAAAKnRSTlMAAQYH
+		CA0OFxkdJCcsNT5ul7PJytzj6uru8vLz9Pb2+fr7+/z8/P39/v7MmAgyAAAAm0lEQVQY02Ng
+		AAN+CKWlpQVhMCgIMIIFgmECinKCTKgCQfLCbBABaUUQ0A70UxLhAAsoevv6+/sHuNn5qIpz
+		gwU8LS0sLMzNzW28NKXAAu56+oYGBoaGRsYeZmABV10dCHCwlQULOLkAgbOJrr2pDB9IQEEZ
+		BNQcrTUkecG2MLOAgKKVugQPisNUxLhQXSrKieoXIXY037IywAAAWrEdMuYOm/0AAAAASUVO
+		RK5CYII=
 	}]
 
 	set info [image create photo -data {
@@ -2220,6 +2293,8 @@ namespace eval 16x16 {
 		OI6FUovsaAtCDrl3gr8BLjHMdq68SS8AAAAASUVORK5CYII=
 	}]
 
+	set browse $filetypeScidbBase
+
 	set paragraphSpacing [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAmJLR0QA/4ePzL8AAAAJcEhZ
 		cwAACxMAAAsTAQCanBgAAAAHdElNRQfbBR8NEy1YXwBBAAAAw0lEQVQoz4XRQUrDYBAF4G9i
@@ -2340,27 +2415,6 @@ namespace eval 16x16 {
 		HB5c37MAAFZWEuh04Fv7svk2vaWOttu9GB4Oot02MDrK56emlEd9fcItWzdgevogAKiFYvlF
 		Oq1e2thIIfMriwHRBcNgJEURHLIsb3cFKIpCPq+R4zORuV4HfVTsp48USyX4fYw5NhZ6Ksue
 		O6lUCn8A529LlkmWou8AAAAASUVORK5CYII=
-	}]
-
-	set setup [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8A
-		AIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAAAGYktHRAD/AP8A/6C9p5MAAAAJcEhZcwAACxMA
-		AAsTAQCanBgAAAMjSURBVDjLhdNbbFN1HAfw7//09PRcurgdikvTbWVjhJItUpmXYXSJgNFs
-		CSS4BGOMDxBeJnHE8KTAo1tMvAUVo9FnH0aixKgbxPiw4SYzbYHtwLprYb1sbbdezqXn9vfB
-		B9Mg4fv++yS//L4/AEAwGASlFLquHzVN63dDrymWZc3Yjv2RrmsRSikURcEj09XVBQBQVfXb
-		XLZMp/5I0ps3lunqct419FpC09TDlFLEYrGHZkkmm2UbGvxtlmVtZtKZA8Fg6LtFpbA7eTcL
-		hiFo79yJ7qdDd0xTH+R8/D1JFOsAxufzDTCEvS7wwmXJL82nUitDnft2LIc7ZFSrGm7H1rC6
-		uNnt5bi3REGA3y/VA6zH88b8rfvtC0r2zebm5k8aG5tSLMskG2URumagVKpiQVmHbTkHp6f/
-		lCYmrtUBLCEkklkvYu5WirjugRORrlDvvfl0+PovCaiqAVCgUCjDMu0dgZ0BwbFdtQ4wakZc
-		lLjoRm4bV8dmvGsr7Z2J2WVUKgYYhsCxHYQ7AuB8Xp71cDLnJfm6Fba3tn4K7w6UeIHF+v0N
-		/Hb1JrKZAjRVQ7lURc00EQw1IXk3vVeWmz72clxbsVj8Dxgfn7jGi+RK/7Ee+HgvSttVbG1V
-		UCyWYdsWXujbh7XVHC5/+jOZmVoYkETxkqbrrflC4d8zzs3NI7mYDEWj0ZHKtjV4J7EmbOZK
-		aHhCQGtbALHZJUxPKrBtF4LA4e3TR+jBvsiP5XLlDM/zaQIAk5NTiMViDc89/+wRWZYPc5yv
-		BaDUNtH39We/yvG/F8GyHlCXQpR8OPXOa7T3pchYuVx9lzzULEKIKPnZ1pYWMnZl7CQDfuT7
-		r8Yb47NL8LAeuK4LSeJx5txR56meXZ97/q/almm6w8NnnS8ufRnvH3ilFO3Z++KDVJ7PPCiA
-		YRhoqgHCEOaZ3j0y86j/uHDhPA4detk+O/zeN5ToF08NvVrp3r8LNcMEARDueBKWZa4QPCYj
-		o6OIxxLeD86/PwSXuxifXZJFiUd3tFXZzGeHHgsAwIcjo8jlNrjjx4/1y3JTv+O4ano9/cPr
-		gyf++gfTDW78BayGGgAAAABJRU5ErkJggg==
 	}]
 
 } ;# namespace 16x16
@@ -5612,6 +5666,8 @@ set iconRemove		[makeStateSpecificIcons [set [namespace current]::16x16::minus]]
 set iconClear		[makeStateSpecificIcons [set [namespace current]::16x16::clear]]
 set iconForward	[makeStateSpecificIcons [set [namespace current]::16x16::forward]]
 set iconBackward	[makeStateSpecificIcons [set [namespace current]::16x16::backward]]
+set iconFirst		[makeStateSpecificIcons [set [namespace current]::16x16::first]]
+set iconLast		[makeStateSpecificIcons [set [namespace current]::16x16::last]]
 set iconClose		[makeStateSpecificIcons [set [namespace current]::16x16::close]]
 set iconEraser		[makeStateSpecificIcons [set [namespace current]::16x16::eraser]]
 set iconRepeat		[makeStateSpecificIcons [set [namespace current]::16x16::repeat]]

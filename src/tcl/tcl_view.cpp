@@ -27,6 +27,7 @@
 #include "tcl_progress.h"
 #include "tcl_application.h"
 #include "tcl_log.h"
+#include "tcl_obj.h"
 #include "tcl_base.h"
 
 #include "app_application.h"
@@ -39,6 +40,12 @@
 
 #include "sys_utf8_codec.h"
 
+#include "m_vector.h"
+#include "m_algorithm.h"
+#include "m_tuple.h"
+#include "m_map.h"
+#include "m_assert.h"
+
 #include <tcl.h>
 
 using namespace db;
@@ -46,13 +53,81 @@ using namespace app;
 using namespace tcl;
 using namespace tcl::app;
 
-static char const* CmdClose	= "::scidb::view::close";
-static char const* CmdCount	= "::scidb::view::count";
-static char const* CmdExport	= "::scidb::view::export";
-static char const* CmdNew		= "::scidb::view::new";
-static char const* CmdSearch	= "::scidb::view::search";
-static char const* CmdFind		= "::scidb::view::find";
-static char const* CmdView		= "::scidb::view::view";
+static char const* CmdClose			= "::scidb::view::close";
+static char const* CmdCount			= "::scidb::view::count";
+static char const* CmdExport			= "::scidb::view::export";
+static char const* CmdFind				= "::scidb::view::find";
+static char const* CmdMap				= "::scidb::view::map";
+static char const* CmdNew				= "::scidb::view::new";
+static char const* CmdSearch			= "::scidb::view::search";
+static char const* CmdSubscribe		= "::scidb::view::subscribe";
+static char const* CmdUnsubscribe	= "::scidb::view::unsubscribe";
+
+
+namespace {
+
+struct Subscriber : public Cursor::Subscriber
+{
+	typedef mstl::tuple<Obj,Obj,Obj> Tuple;
+
+	void addProc(Tcl_Obj* base, Tcl_Obj* proc, Tcl_Obj* arg)
+	{
+		M_ASSERT(base);
+		M_ASSERT(proc);
+
+		m_list.push_back(Tuple(base, proc, arg));
+		m_list.back().get<0>().ref();
+		m_list.back().get<1>().ref();
+		m_list.back().get<2>().ref();
+	}
+
+	void removeProc(Tcl_Obj* base, Tcl_Obj* proc, Tcl_Obj* arg)
+	{
+		List::iterator i = mstl::find(m_list.begin(), m_list.end(), Tuple(base, proc, arg));
+
+		if (i == m_list.end())
+		{
+			fprintf(stderr, "Warning: view::unsubscribe failed\n");
+		}
+		else
+		{
+			i->get<0>().deref();
+			i->get<1>().deref();
+			i->get<2>().deref();
+			m_list.erase(i);
+		}
+	}
+
+	void close(unsigned view)
+	{
+		Tcl_Obj* v = Tcl_NewIntObj(view);
+		Tcl_IncrRefCount(v);
+
+		for (unsigned i = 0; i < m_list.size(); ++i)
+		{
+			Tuple const& data = m_list[i];
+
+			if (data.get<2>())
+				invoke(__func__, data.get<0>()(), data.get<2>()(), data.get<1>()(), v, NULL);
+			else
+				invoke(__func__, data.get<0>()(), data.get<1>()(), v, NULL);
+		}
+
+		Tcl_DecrRefCount(v);
+	}
+
+	typedef mstl::vector<Tuple> List;
+
+	List m_list;
+};
+
+
+typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
+typedef mstl::map<mstl::string, SubscriberP> SubscriberMap;
+
+static SubscriberMap subscriberMap;
+
+} // namespace
 
 
 static Search*
@@ -71,15 +146,15 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 
 	static char const* subcommands[] =
 	{
-		"OR", "AND", "NOT", "player", "event", "annotator", 0
+		"OR", "AND", "NOT", "player", "event", "gameevent", "annotator", 0
 	};
 	static char const* args[] =
 	{
-		"<query>+", "<query>+", "<query>+", "<string>", "<string>"
+		"<query>+", "<query>+", "<query>+", "<string>", "<string>", "<string>"
 	};
 	enum
 	{
-		OR, AND, NOT, Player, Event, Annotator
+		OR, AND, NOT, Player, Event, GameEvent, Annotator
 	};
 
 	Search* search = 0;
@@ -116,6 +191,15 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 				return 0;
 			}
 			search = new SearchEvent(&db.event(unsignedFromObj(2, objv, 1)));
+			break;
+
+		case GameEvent:
+			if (objc != 2)
+			{
+				error(CmdSearch, "gameevent", 0, "invalid query");
+				return 0;
+			}
+			search = new SearchEvent(db.gameInfo(unsignedFromObj(2, objv, 1)).eventEntry());
 			break;
 
 		case Annotator:
@@ -359,14 +443,68 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (!Scidb.haveReferenceBase())
-		setResult(-1);
-	else if (objc <= 1)
-		setResult(Scidb.referenceBase().treeViewIdentifier());
+	char const* attr = stringFromObj(objc, objv, 1);
+	Cursor const& cursor(Scidb.cursor(stringFromObj(objc, objv, 2)));
+	View const& view = cursor.view(unsignedFromObj(objc, objv, 3));
+	unsigned index = unsignedFromObj(objc, objv, 4);
+
+	if (::strcmp(attr, "player") == 0)
+		setResult(view.lookupPlayer(index));
+	else if (::strcmp(attr, "event") == 0)
+		setResult(view.lookupEvent(index));
+	else if (::strcmp(attr, "game") == 0)
+		setResult(view.lookupGame(index));
 	else
-		setResult(Scidb.cursor(stringFromObj(objc, objv, 1)).treeViewIdentifier());
+		error(CmdMap, 0, 0, "unexpected attribute '%s'", attr);
+
+	return TCL_OK;
+}
+
+
+static int
+cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tcl_Obj* proc	= objectFromObj(objc, objv, 1);
+	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
+	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
+
+	// XXX we don't want cancelling tree search
+	mstl::string basename(Tcl_GetStringFromObj(base, 0));
+	Cursor& cursor = scidb.cursor(basename);
+
+	SubscriberP& subscriber = ::subscriberMap[basename];
+
+	if (!subscriber)
+	{
+		subscriber = new Subscriber;
+		cursor.setSubscriber(subscriber);
+	}
+
+	subscriber->addProc(proc, base, arg);
+
+	return TCL_OK;
+}
+
+
+static int
+cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tcl_Obj* proc	= objectFromObj(objc, objv, 1);
+	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
+	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
+
+	mstl::string basename(Tcl_GetStringFromObj(base, 0));
+	SubscriberMap::iterator i = ::subscriberMap.find(basename);
+
+	if (i != subscriberMap.end())
+	{
+		i->second->removeProc(proc, base, arg);
+
+		if (i->second->m_list.empty())
+			::subscriberMap.erase(i);
+	}
 
 	return TCL_OK;
 }
@@ -378,13 +516,15 @@ namespace view {
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdClose,	cmdClose);
-	createCommand(ti, CmdCount,		cmdCount);
-	createCommand(ti, CmdExport,	cmdExport);
-	createCommand(ti, CmdFind,		cmdFind);
-	createCommand(ti, CmdNew,		cmdNew);
-	createCommand(ti, CmdSearch,	cmdSearch);
-	createCommand(ti, CmdView,		cmdView);
+	createCommand(ti, CmdClose,			cmdClose);
+	createCommand(ti, CmdCount,			cmdCount);
+	createCommand(ti, CmdExport,		cmdExport);
+	createCommand(ti, CmdFind,			cmdFind);
+	createCommand(ti, CmdMap,			cmdMap);
+	createCommand(ti, CmdNew,			cmdNew);
+	createCommand(ti, CmdSearch,		cmdSearch);
+	createCommand(ti, CmdSubscribe,	cmdSubscribe);
+	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 }
 
 } // namespace view

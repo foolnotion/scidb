@@ -116,6 +116,8 @@ $(LIB)stubs.a: $(OBJS) db_eco_table_stubs.o
 	@$(AR) $(ARFLAGS) $(LIB)stubs.a $(OBJS) db_eco_table_stubs.o
 	@$(RANLIB) $(LIB)stubs.a
 
+db_eco_table_stubs.o: db_eco_table_stubs.cpp
+
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
 	@$(CXX) -c -o $@ $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
@@ -380,8 +382,6 @@ db_database.o: ../mstl/m_list.ipp
 db_database.o: ../mstl/m_pair.h
 db_database.o: ../mstl/m_pair.ipp
 db_database.o: db_player.ipp
-db_database.o: ../mstl/m_map.h
-db_database.o: ../mstl/m_map.ipp
 db_database.o: ../mstl/m_bitset.h
 db_database.o: ../mstl/m_bitset_iterator.h
 db_database.o: ../mstl/m_bitfield.h
@@ -430,6 +430,8 @@ db_database.o: db_provider.ipp
 db_database.o: db_line.h
 db_database.o: db_line.ipp
 db_database.o: db_comment.h
+db_database.o: ../mstl/m_map.h
+db_database.o: ../mstl/m_map.ipp
 db_database.o: db_comment.ipp
 db_database.o: db_annotation.h
 db_database.o: db_annotation.ipp
@@ -534,8 +536,6 @@ db_database_content.o: ../mstl/m_list.ipp
 db_database_content.o: ../mstl/m_pair.h
 db_database_content.o: ../mstl/m_pair.ipp
 db_database_content.o: db_player.ipp
-db_database_content.o: ../mstl/m_map.h
-db_database_content.o: ../mstl/m_map.ipp
 db_database_content.o: ../mstl/m_bitset.h
 db_database_content.o: ../mstl/m_bitset_iterator.h
 db_database_content.o: ../mstl/m_bitfield.h
@@ -609,8 +609,6 @@ db_database_codec.o: ../mstl/m_list.ipp
 db_database_codec.o: ../mstl/m_pair.h
 db_database_codec.o: ../mstl/m_pair.ipp
 db_database_codec.o: db_player.ipp
-db_database_codec.o: ../mstl/m_map.h
-db_database_codec.o: ../mstl/m_map.ipp
 db_database_codec.o: ../mstl/m_bitset.h
 db_database_codec.o: ../mstl/m_bitset_iterator.h
 db_database_codec.o: ../mstl/m_bitfield.h
@@ -651,6 +649,8 @@ db_database_codec.o: db_board.ipp
 db_database_codec.o: db_line.h
 db_database_codec.o: db_line.ipp
 db_database_codec.o: db_comment.h
+db_database_codec.o: ../mstl/m_map.h
+db_database_codec.o: ../mstl/m_map.ipp
 db_database_codec.o: db_comment.ipp
 db_database_codec.o: db_annotation.h
 db_database_codec.o: db_annotation.ipp
@@ -939,8 +939,6 @@ db_filter.o: ../mstl/m_list.ipp
 db_filter.o: ../mstl/m_pair.h
 db_filter.o: ../mstl/m_pair.ipp
 db_filter.o: db_player.ipp
-db_filter.o: ../mstl/m_map.h
-db_filter.o: ../mstl/m_map.ipp
 db_filter.o: ../mstl/m_chunk_allocator.h
 db_filter.o: ../mstl/m_stack.h
 db_filter.o: ../mstl/m_stack.ipp
@@ -1567,8 +1565,6 @@ db_namebase.o: ../mstl/m_list.ipp
 db_namebase.o: ../mstl/m_pair.h
 db_namebase.o: ../mstl/m_pair.ipp
 db_namebase.o: db_player.ipp
-db_namebase.o: ../mstl/m_map.h
-db_namebase.o: ../mstl/m_map.ipp
 db_namebase.o: ../mstl/m_bitset.h
 db_namebase.o: ../mstl/m_bitset_iterator.h
 db_namebase.o: ../mstl/m_bitfield.h
@@ -1670,8 +1666,6 @@ db_namebases.o: ../mstl/m_list.ipp
 db_namebases.o: ../mstl/m_pair.h
 db_namebases.o: ../mstl/m_pair.ipp
 db_namebases.o: db_player.ipp
-db_namebases.o: ../mstl/m_map.h
-db_namebases.o: ../mstl/m_map.ipp
 db_namebases.o: ../mstl/m_bitset.h
 db_namebases.o: ../mstl/m_bitset_iterator.h
 db_namebases.o: ../mstl/m_bitfield.h
@@ -2222,8 +2216,6 @@ db_selector.o: ../mstl/m_list.ipp
 db_selector.o: ../mstl/m_pair.h
 db_selector.o: ../mstl/m_pair.ipp
 db_selector.o: db_player.ipp
-db_selector.o: ../mstl/m_map.h
-db_selector.o: ../mstl/m_map.ipp
 db_selector.o: ../mstl/m_bitset.h
 db_selector.o: ../mstl/m_bitset_iterator.h
 db_selector.o: ../mstl/m_bitfield.h
@@ -2686,8 +2678,6 @@ db_tree.o: db_player.h
 db_tree.o: ../mstl/m_pair.h
 db_tree.o: ../mstl/m_pair.ipp
 db_tree.o: db_player.ipp
-db_tree.o: ../mstl/m_map.h
-db_tree.o: ../mstl/m_map.ipp
 db_tree.o: ../mstl/m_chunk_allocator.h
 db_tree.o: ../mstl/m_stack.h
 db_tree.o: ../mstl/m_stack.ipp
@@ -2709,6 +2699,8 @@ db_tree.o: db_database_codec.ipp
 db_tree.o: db_eco_table.h
 db_tree.o: db_home_pawns.h
 db_tree.o: db_home_pawns.ipp
+db_tree.o: ../mstl/m_map.h
+db_tree.o: ../mstl/m_map.ipp
 db_tree.o: ../mstl/m_hash.h
 db_tree.o: ../mstl/m_hash.ipp
 db_tree.o: db_eco_table.ipp
@@ -2861,8 +2853,6 @@ db_tree_cache.o: db_player.h
 db_tree_cache.o: ../mstl/m_pair.h
 db_tree_cache.o: ../mstl/m_pair.ipp
 db_tree_cache.o: db_player.ipp
-db_tree_cache.o: ../mstl/m_map.h
-db_tree_cache.o: ../mstl/m_map.ipp
 db_tree_cache.o: ../mstl/m_chunk_allocator.h
 db_tree_cache.o: ../mstl/m_stack.h
 db_tree_cache.o: ../mstl/m_stack.ipp
@@ -3076,8 +3066,6 @@ sci/sci_codec.o: ../mstl/m_list.ipp
 sci/sci_codec.o: ../mstl/m_pair.h
 sci/sci_codec.o: ../mstl/m_pair.ipp
 sci/sci_codec.o: db_player.ipp
-sci/sci_codec.o: ../mstl/m_map.h
-sci/sci_codec.o: ../mstl/m_map.ipp
 sci/sci_codec.o: ../mstl/m_bitset.h
 sci/sci_codec.o: ../mstl/m_bitset_iterator.h
 sci/sci_codec.o: ../mstl/m_bitfield.h
@@ -3141,6 +3129,8 @@ sci/sci_codec.o: db_provider.ipp
 sci/sci_codec.o: db_line.h
 sci/sci_codec.o: db_line.ipp
 sci/sci_codec.o: db_comment.h
+sci/sci_codec.o: ../mstl/m_map.h
+sci/sci_codec.o: ../mstl/m_map.ipp
 sci/sci_codec.o: db_comment.ipp
 sci/sci_codec.o: db_annotation.h
 sci/sci_codec.o: db_annotation.ipp
@@ -3196,8 +3186,6 @@ sci/sci_consumer.o: ../mstl/m_construct.ipp
 sci/sci_consumer.o: sci/sci_encoder_position.ipp
 sci/sci_consumer.o: ../util/u_byte_stream.h
 sci/sci_consumer.o: ../util/u_byte_stream.ipp
-sci/sci_consumer.o: ../mstl/m_bitfield.h
-sci/sci_consumer.o: ../mstl/m_bitfield.ipp
 sci/sci_consumer.o: sci/sci_common.h
 sci/sci_consumer.o: db_consumer.h
 sci/sci_consumer.o: db_provider.h
@@ -3252,6 +3240,8 @@ sci/sci_consumer.o: ../mstl/m_list.ipp
 sci/sci_consumer.o: db_player.ipp
 sci/sci_consumer.o: ../mstl/m_bitset.h
 sci/sci_consumer.o: ../mstl/m_bitset_iterator.h
+sci/sci_consumer.o: ../mstl/m_bitfield.h
+sci/sci_consumer.o: ../mstl/m_bitfield.ipp
 sci/sci_consumer.o: ../mstl/m_bitset_iterator.ipp
 sci/sci_consumer.o: ../mstl/m_bitset.ipp
 sci/sci_consumer.o: ../mstl/m_chunk_allocator.h
@@ -3480,8 +3470,6 @@ sci/sci_encoder.o: ../mstl/m_construct.ipp
 sci/sci_encoder.o: sci/sci_encoder_position.ipp
 sci/sci_encoder.o: ../util/u_byte_stream.h
 sci/sci_encoder.o: ../util/u_byte_stream.ipp
-sci/sci_encoder.o: ../mstl/m_bitfield.h
-sci/sci_encoder.o: ../mstl/m_bitfield.ipp
 sci/sci_encoder.o: sci/sci_common.h
 sci/sci_encoder.o: db_move.h
 sci/sci_encoder.o: ../util/u_crc.h
@@ -3519,6 +3507,8 @@ sci/sci_encoder.o: db_signature.ipp
 sci/sci_encoder.o: db_board.ipp
 sci/sci_encoder.o: db_game_data.h
 sci/sci_encoder.o: db_tag_set.h
+sci/sci_encoder.o: ../mstl/m_bitfield.h
+sci/sci_encoder.o: ../mstl/m_bitfield.ipp
 sci/sci_encoder.o: db_tag_set.ipp
 sci/sci_encoder_position.o: sci/sci_encoder_position.h
 sci/sci_encoder_position.o: db_common.h
@@ -3609,8 +3599,6 @@ si3/si3_codec.o: ../mstl/m_list.ipp
 si3/si3_codec.o: ../mstl/m_pair.h
 si3/si3_codec.o: ../mstl/m_pair.ipp
 si3/si3_codec.o: db_player.ipp
-si3/si3_codec.o: ../mstl/m_map.h
-si3/si3_codec.o: ../mstl/m_map.ipp
 si3/si3_codec.o: ../mstl/m_bitset.h
 si3/si3_codec.o: ../mstl/m_bitset_iterator.h
 si3/si3_codec.o: ../mstl/m_bitfield.h
@@ -3677,6 +3665,8 @@ si3/si3_codec.o: db_consumer.h
 si3/si3_codec.o: db_provider.h
 si3/si3_codec.o: db_provider.ipp
 si3/si3_codec.o: db_comment.h
+si3/si3_codec.o: ../mstl/m_map.h
+si3/si3_codec.o: ../mstl/m_map.ipp
 si3/si3_codec.o: db_comment.ipp
 si3/si3_codec.o: db_annotation.h
 si3/si3_codec.o: db_annotation.ipp
@@ -3741,8 +3731,6 @@ si3/si3_consumer.o: ../mstl/m_algobase.ipp
 si3/si3_consumer.o: ../mstl/m_construct.h
 si3/si3_consumer.o: ../mstl/m_construct.ipp
 si3/si3_consumer.o: si3/si3_encoder_position.ipp
-si3/si3_consumer.o: ../mstl/m_bitfield.h
-si3/si3_consumer.o: ../mstl/m_bitfield.ipp
 si3/si3_consumer.o: si3/si3_common.h
 si3/si3_consumer.o: db_consumer.h
 si3/si3_consumer.o: db_provider.h
@@ -3799,6 +3787,8 @@ si3/si3_consumer.o: ../mstl/m_list.ipp
 si3/si3_consumer.o: db_player.ipp
 si3/si3_consumer.o: ../mstl/m_bitset.h
 si3/si3_consumer.o: ../mstl/m_bitset_iterator.h
+si3/si3_consumer.o: ../mstl/m_bitfield.h
+si3/si3_consumer.o: ../mstl/m_bitfield.ipp
 si3/si3_consumer.o: ../mstl/m_bitset_iterator.ipp
 si3/si3_consumer.o: ../mstl/m_bitset.ipp
 si3/si3_consumer.o: ../mstl/m_chunk_allocator.h
@@ -4026,8 +4016,6 @@ si3/si3_encoder.o: ../mstl/m_algobase.ipp
 si3/si3_encoder.o: ../mstl/m_construct.h
 si3/si3_encoder.o: ../mstl/m_construct.ipp
 si3/si3_encoder.o: si3/si3_encoder_position.ipp
-si3/si3_encoder.o: ../mstl/m_bitfield.h
-si3/si3_encoder.o: ../mstl/m_bitfield.ipp
 si3/si3_encoder.o: si3/si3_common.h
 si3/si3_encoder.o: db_move_node.h
 si3/si3_encoder.o: db_comment.h
@@ -4052,6 +4040,8 @@ si3/si3_encoder.o: ../mstl/m_algorithm.h
 si3/si3_encoder.o: ../mstl/m_algorithm.ipp
 si3/si3_encoder.o: db_move_node.ipp
 si3/si3_encoder.o: db_tag_set.h
+si3/si3_encoder.o: ../mstl/m_bitfield.h
+si3/si3_encoder.o: ../mstl/m_bitfield.ipp
 si3/si3_encoder.o: db_tag_set.ipp
 si3/si3_encoder.o: db_mark_set.h
 si3/si3_encoder.o: db_mark.h
@@ -4192,8 +4182,6 @@ si3/si3_name_list.o: ../mstl/m_list.ipp
 si3/si3_name_list.o: ../mstl/m_pair.h
 si3/si3_name_list.o: ../mstl/m_pair.ipp
 si3/si3_name_list.o: db_player.ipp
-si3/si3_name_list.o: ../mstl/m_map.h
-si3/si3_name_list.o: ../mstl/m_map.ipp
 si3/si3_name_list.o: db_namebase.ipp
 si3/si3_name_list.o: ../sys/sys_utf8_codec.h
 si3/si3_name_list.o: ../sys/sys_utf8_codec.ipp
@@ -4312,8 +4300,6 @@ cbh/cbh_codec.o: ../mstl/m_list.ipp
 cbh/cbh_codec.o: ../mstl/m_pair.h
 cbh/cbh_codec.o: ../mstl/m_pair.ipp
 cbh/cbh_codec.o: db_player.ipp
-cbh/cbh_codec.o: ../mstl/m_map.h
-cbh/cbh_codec.o: ../mstl/m_map.ipp
 cbh/cbh_codec.o: ../mstl/m_bitset.h
 cbh/cbh_codec.o: ../mstl/m_bitset_iterator.h
 cbh/cbh_codec.o: ../mstl/m_bitfield.h
@@ -4357,6 +4343,8 @@ cbh/cbh_codec.o: ../mstl/m_ofstream.h
 cbh/cbh_codec.o: ../mstl/m_ostream.h
 cbh/cbh_codec.o: ../mstl/m_ostream.ipp
 cbh/cbh_codec.o: ../mstl/m_ofstream.ipp
+cbh/cbh_codec.o: ../mstl/m_map.h
+cbh/cbh_codec.o: ../mstl/m_map.ipp
 cbh/cbh_codec.o: cbh/cbh_decoder.h
 cbh/cbh_codec.o: cbh/cbh_decoder_position.h
 cbh/cbh_codec.o: db_board.h

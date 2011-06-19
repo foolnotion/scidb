@@ -445,26 +445,32 @@ proc gameNew {parent {variant {}}} {
 
 
 proc gameSave {parent} {
-	::dialog::save::open $parent [::scidb::db::get name] -1
+	if {[::scidb::game::current] != 9} {
+		::dialog::save::open $parent [::scidb::db::get name] -1
+	}
 }
 
 
 proc gameReplace {parent} {
-	::dialog::save::open $parent [::scidb::db::get name] -1 [::scidb::game::number]
+	if {[::scidb::game::current] != 9} {
+		::dialog::save::open $parent [::scidb::db::get name] -1 [::scidb::game::number]
+	}
 }
 
 
 proc gameReplaceMoves {parent} {
-	set base [::scidb::db::get name]
+	if {[::scidb::game::current] != 9} {
+		set base [::scidb::db::get name]
 
-	if {[::scidb::db::get readonly? $base]} {
-		::dialog::info \
-			-parent $parent \
-			-message [format $::dialog::save::mc::CurrentBaseIsReadonly [::util::databaseName $base]] \
-			-title "[tk appname] - $::dialog::save::mc::ReplaceGame" \
-			;
-	} else {
-		::scidb::db::update moves $base [expr {[::scidb::game::number] - 1}]
+		if {[::scidb::db::get readonly? $base]} {
+			::dialog::info \
+				-parent $parent \
+				-message [format $::dialog::save::mc::CurrentBaseIsReadonly [::util::databaseName $base]] \
+				-title "[tk appname] - $::dialog::save::mc::ReplaceGame" \
+				;
+		} else {
+			::scidb::game::update moves $base [expr {[::scidb::game::number] - 1}]
+		}
 	}
 }
 

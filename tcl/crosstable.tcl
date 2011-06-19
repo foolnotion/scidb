@@ -173,7 +173,7 @@ variable Path .application.crosstable
 variable Geometry "1024x768"
 
 
-proc open {parent base index {view -1}} {
+proc open {parent base index view source} {
 	variable TiebreakList
 	variable OrderList
 	variable TypeList
@@ -184,14 +184,15 @@ proc open {parent base index {view -1}} {
 
 	set dlg $Path
 
-	if {$view == -1} {;# we assume a game index
-		set info [::scidb::db::fetch eventInfo $index $base]
-		set number $index
-	} else {				;# we assume an event index
+	if {$source eq "game"} {
+		set number [::scidb::db::get gameNumber $base $index $view]
+		set info [::scidb::db::fetch eventInfo $number $base]
+	} else { ;# $source eq "event"
 		set info [::scidb::db::get eventInfo $index $view $base]
 		set number [::scidb::db::get eventIndex $index $view $base]
 	}
-	lassign $info country site title type date mode timeMode
+
+	lassign $info title type date mode timeMode country site
 	set key [list $base $site $title $type $date $mode $timeMode]
 
 	if {$Vars(base) eq $base && $Vars(key) == $key} {
@@ -208,23 +209,27 @@ proc open {parent base index {view -1}} {
 	set Vars(base) $base
 	set Vars(view) $view
 	set Vars(index) $index
-	set Vars(number) $number
 	set Vars(info) $info
 	set Vars(key) $key
 	set Vars(warning) {}
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
+	set Vars(tooltip) ""
+
+	if {![winfo exists $dlg]} {
+		set Vars(viewId) [::scidb::view::new $base]
+	}
+
+	if {$source eq "game"} { set search gameevent } else { set search event }
+	::scidb::view::search $base $Vars(viewId) null none [list $search $number]
 
 	if {[winfo exists $dlg]} {
-		::scidb::crosstable::release $Vars(base) $Vars(handle)
-		if {$view < 0} { set type game } else { set type event }
-		set Vars(handle) [::scidb::crosstable::make $base $type $number]
+		::scidb::crosstable::release $base $Vars(viewId)
+		::scidb::crosstable::make $base $Vars(viewId)
 		Update 1
 		return
 	}
-
-	set Vars(tooltip) ""
 
 	toplevel $dlg -class Scidb
 	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W]]
@@ -339,7 +344,7 @@ proc open {parent base index {view -1}} {
 
 	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
 
-	if {$view >= 0} {
+	if {$source eq "event"} {
 		::widget::dialogButtons $dlg {close previous next} close
 		$dlg.previous configure -command [namespace code [list NextEvent -1]]
 		$dlg.next configure -command [namespace code [list NextEvent +1]]
@@ -348,8 +353,7 @@ proc open {parent base index {view -1}} {
 	}
 	$dlg.close configure -command [list destroy $dlg]
 
-	if {$view < 0} { set type game } else { set type event }
-	set Vars(handle) [::scidb::crosstable::make $base $type $number]
+	::scidb::crosstable::make $base $Vars(viewId)
 	Update 1
 
 	scan $Geometry "%dx%d" w h
@@ -375,10 +379,11 @@ proc RecordGeometry {dlg} {
 proc NextEvent {step} {
 	variable Vars
 
-	::scidb::crosstable::release $Vars(base) $Vars(handle)
+	::scidb::crosstable::release $Vars(base) $Vars(viewId)
 	incr Vars(index) $step
-	set Vars(number) [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
-	set Vars(handle) [::scidb::crosstable::make $Vars(base) event $Vars(number)]
+	set number [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
+	::scidb::view::search $Vars(base) $Vars(viewId) null none [list event $number]
+	::scidb::crosstable::make $Vars(base) $Vars(viewId)
 	set Vars(warning) 0
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
@@ -516,9 +521,8 @@ proc Update {{setup 0}} {
 
 	set w $Vars(html)
 	set base $Vars(base)
-	set view $Vars(view)
 	set index $Vars(index)
-	set handle $Vars(handle)
+	set viewId $Vars(viewId)
 
 	array unset ImageCache
 
@@ -550,7 +554,7 @@ proc Update {{setup 0}} {
 			if {$i >= 0} {
 				lassign [lindex $MostRecentHistory $i 1] bestMode tiebreaks
 			} else {
-				set bestMode [::scidb::crosstable::get bestMode $base $handle]
+				set bestMode [::scidb::crosstable::get bestMode $base $viewId]
 				set tiebreaks $RecentlyUsedTiebreaks($bestMode)
 			}
 		}
@@ -609,10 +613,10 @@ proc Update {{setup 0}} {
 
 	if {$Vars(bestMode) eq "Crosstable"} {
 		append preamble "\\let\\TableLimit\\$Defaults(crosstableLimit)"
-		set id [list $base $Vars(handle)]
+		set id [list $base $Vars(viewId)]
 
 		if {$Vars(warning) ne $id} {
-			set playerCount [::scidb::crosstable::get playerCount $base $handle]
+			set playerCount [::scidb::crosstable::get playerCount $base $viewId]
 
 			if {$playerCount > $Defaults(crosstableLimit)} {
 				set detail ""
@@ -629,7 +633,7 @@ proc Update {{setup 0}} {
 				if {$rc eq "cancel"} {
 					set Vars(bestMode) $Vars(lastMode)
 					if {[string length $Vars(prevMode)] == 0} {
-						set Vars(bestMode) [::scidb::crosstable::get bestMode $base $handle]
+						set Vars(bestMode) [::scidb::crosstable::get bestMode $base $viewId]
 						if {$Vars(bestMode) eq "Crosstable"} { set Vars(bestMode) RankingList }
 						set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $Vars(bestMode)]]
 						UpdateHistory
@@ -647,7 +651,7 @@ proc Update {{setup 0}} {
 
 	::widget::busyCursor on
 	set result [::scidb::crosstable::emit \
-						$base $handle $searchDir $script $bestMode $order $knockoutOrder $tiebreaks $preamble]
+						$base $viewId $searchDir $script $bestMode $order $knockoutOrder $tiebreaks $preamble]
 	lassign $result html Vars(output:log)
 
 	set i [string first "%date%" $html]
@@ -770,7 +774,8 @@ proc Destroy {dlg w} {
 	variable Defaults
 	variable ImageCache
 
-	::scidb::crosstable::release $Vars(base) $Vars(handle)
+	::scidb::crosstable::release $Vars(base) $Vars(viewId)
+	::scidb::view::close $Vars(base) $Vars(viewId)
 	array unset ImageCache
 	array unset Vars
 	array set Vars [array get Defaults]
@@ -781,14 +786,16 @@ proc Open {which gameIndex} {
 	variable Vars
 
 	set base $Vars(base)
-	set info [::scidb::db::get gameInfo $gameIndex -1 $base]
-	set path .application
+	set path $Vars(html)
 
 	if {$which eq "pgn"} {
 		::widget::busyOperation ::game::new $path $base $gameIndex
 	} else {
+		set viewId $Vars(viewId)
+		set index [::scidb::view::map game $base $viewId $gameIndex]
+		set info [::scidb::db::get gameInfo $index $viewId $base]
 		set Vars(${which}Id) \
-			[::widget::busyOperation ::${which}::load $path $base $info -1 $gameIndex $Vars(${which}Id)]
+			[::widget::busyOperation ::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]
 	}
 }
 
@@ -829,7 +836,7 @@ proc MouseEnter {node} {
 		set rank [$node attribute -default {} player]
 		if {[llength $rank]} {
 			set Vars(tooltip) $node
-			Tooltip [::scidb::crosstable::get playerName $Vars(base) $Vars(handle) $rank]
+			Tooltip [::scidb::crosstable::get playerName $Vars(base) $Vars(viewId) $rank]
 		}
 	}
 }
@@ -964,7 +971,7 @@ proc Mouse2Down {node} {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
 			MouseEnter $node
-			set info [::scidb::crosstable::get playerInfo $Vars(base) $Vars(handle) $rank]
+			set info [::scidb::crosstable::get playerInfo $Vars(base) $Vars(viewId) $rank]
 			::playertable::showInfo $Path $info
 		}
 	}
@@ -1003,15 +1010,21 @@ proc Mouse3Down {node} {
 	menu $m -tearoff false
 
 	$m add command \
+		-compound left \
+		-image $::icon::16x16::browse \
 		-label $::browser::mc::BrowseGame \
 		-command [namespace code [list Open browser $gameIndex]] \
 		;
 	$m add command \
+		-compound left \
+		-image $::icon::16x16::overview \
 		-label $::overview::mc::Overview \
 		-command [namespace code [list Open overview $gameIndex]] \
 		;
 	$m add command \
-		-label [string map {& {}} $::browser::mc::LoadGame] \
+		-compound left \
+		-image $::icon::16x16::document \
+		-label " $::browser::mc::LoadGame" \
 		-command [namespace code [list Open pgn $gameIndex]] \
 		;
 	# TODO: add Merge Game
@@ -1138,57 +1151,54 @@ namespace eval icon {
 namespace eval 32x32 {
 
 set go [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAABH5J
-	REFUWMPtl0tsFVUcxn9nZtrelmJpoVrE8hJFCPGRiEZjcl0Y3fkKiYqPECFG44IEFzbBqDy0
-	JCZujMawEHSDuqkufAQptJIgljcIgqXS0hbaAqWlnfuYmXP+Lmbuq1TkIrDRSU7uzZmZ//c7
-	3/nOyRn4r1+qmIc7tn/iWGVVC1MnmzvmLfps4GoAWMU8PNS5Y4tdUbfDTw52tDbOXnLdAbp2
-	NsVrTu1lFlWVVRMmbWhZXbepZc3UqusGEJx3KTv4I5V7W1jgVzPjpjueVRLs2/Zu7QPXBcBL
-	ADoJ4mF3H2FGzznurLt3VkWsvHXbqtqVLWvrrWsK4KYB44ElYIEaPcuk9iPcUz6npK5m+lrE
-	b25tnDXtmgFYgInEQwgBk6bk5FHmDmnm3bjg4VKnZH/rutueKBpARDDGXHoVJECMn3Ug25RB
-	DfVR23mcuyrqp1RXVje1rpvz8c/rbo9d9j7g/tLQNvxH88K+Y7soscMboykYSYKbUrge9A/A
-	a/H5xIbPRtQZehX+F0Ap9OSbOV1zA13Dpw5pbZ6LN7Qf/keAn5ZPkvhDj6OG+0ECMBoRg4gg
-	WiMmQMRQduEsVioRvmSiEhlxycFIWQUj0+o57p1PjqYSK0B9Gm9o/3uATc8gT989h9LkhfH3
-	SZFcZ3bkeb/mYhDBIqidSmeFRd/oYJNgLYs3tA+OmwEvAMTPhWtssykMX0EfYEvYsrkQlDKU
-	nOnl1v5B5pZPfqrUtg60Ns6OjwsQaBClC8OVFaOw2TmRi+7beXBKQAlW0qW2t5cFbvKWicZt
-	bnmvfk1r40wHwMk6oMM0Y8nF9itBlOT6rDFTYEV50NE0mCgLOurTgAmY4AbMR9udFYm3+pyy
-	+4FHswC+BpE02KGKZEZWYG0EocaJUlY4EjfkAYQQohVaqzAf2qPAAT8AywERE/ZmhO1IMGN5
-	vjtKhYpGQtHMyhAJQ2mTBRENrgi/jfi6zw3eF1GrCwE0UE5YLH/E2VBl5jTfAcnbB6RwKeoQ
-	QowgltAfGA4OJLvctPfioo/YnqlQ4ACO5AFIYRgzwvkAKhJDCpegCd8TI/gBHDvncex06qtA
-	y6uL1zOUP3lZgKl1MTwxaPGjIhLWk9A+UYJSivJyC8seE4Gx+4ERxMBoUrPnz9TIiQG9fOlG
-	Noy3E2YBFj44ve2bfV33pZJpHCs0wgtCZ7wgXCUKeOXJGNVVmWBEQ87Mv4TiWgsnz3gc6vB2
-	JdM8v3Qj7VflTPjmI8gbL8SYUmPnApkVD91KuIb9v6d1e7f5AHj75c/xL1XTKQbAsUE5UUbG
-	BFFroas7YPcBv8dN8tLSL9h2WTWLOkKr6A0nByBAImHY2eZz5LhpciyWvf4lg5c9qKIOJAqU
-	nXPACPT0ajZv9d2BQVbESlm//OvijmRFAUi07YoD6bTwa5vPjt1mXxCw+J3vOHolh9KiACaU
-	wUiykkSPy+YWz5zolg8di5WrfsC70lNxUQAz6xg5vGdwYstBektsljRuZsu//TApCiCR4rFS
-	h5kVZXy7+nsS/H9dhesv0bBGtUsVFSgAAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACAVBMVEUAAAACDw8LTlECDw8C
+	Dw8RbHECDw8CDw8CDw8CDw8CDw8CDw8CDw8NXmMCDw8CDw8CDw8CDw8CDw8OZmsCDw8CDw8D
+	FxgCDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8PaG0CDw8CDw8CDw8CDw8CDw8CDw8CDw8D
+	FxgOYmYCDw8GKiwCDw8CDw8CDw8CDw8GLzECDw8CDw8OYmYKSk0IODsOZWkOYmYNW18KRUkO
+	ZmsOY2gOZmsOZmsOZmsMVFcOZmsOYmYOZWkNXmMOZmsOZmsOZWkOYmYOZmsOZmsOZmsOZmsR
+	bHERbHEPam8RbHEOZmsWcXYXcncjfIEkfoIOZmsfeX4kfoIxiI01i5A9kZUOZmsUb3Qwh4wZ
+	dHlDlZlVoaVBlJhLm59orrJRn6NYpKhfqKwOZWkeeH0feX4gen8he4AjfIEkfoIlf4MmgIQo
+	gYUpgoYqg4cshIgthYouhoswh4wxiI0ziY41i5A3jJE4jpI6j5M7kJQ9kZVAk5dBlJhDlZlE
+	lptGl5xImJ1Jmp5Lm59MnKBOnaFQnqJToKRVoaVYpKhapalcpqpfqKxnrbForrJssLRusbVw
+	s7Z0tbh2trp4t7t8ur1+u76AvL+CvcCEvsKGwMOIwcSKwsWOxMeQxsiTx8qVyMuXycyZys2b
+	zM6ezc+gztGk0dOm0tRLVt61AAAAZ3RSTlMAAQECAwMEBQYHCAkKCgsMDQ4PDxARERITFBUW
+	FxgaGxwdHh8gIiMkJCUmJikqLC4uMjY5P0BFUV1gYGxxgIiKkpuytLW/yNbY4uft7vL09fb2
+	9vb29/f39/f3+Pj5+vr6+/v9/v7+GgnqVwAAAaVJREFUOMvNkt1qU0EUhdfaM2krJShFIjQW
+	RVAQBZEW9Eapr+BL+HA+gILQC2mlFRFRREFapBjpOfmpYAM987O3FzlJmwi51X23Nh+z1qwZ
+	4N+Pm5bPfGcGkBl9/ZHMB56ubTbnWWzcuNlbSb/mnKDlZvvu+rmFnwW0/8BeLr6ZLDgKX9Ty
+	yuMjtaXlF72dOA08FAIgIT/MdOnSq977/rTFIUkBCDPTYXiy679/OQ9YpsAIQoFs6ed975tv
+	z665cXUAgxnNYDmE0+rk2q3+5cMzYPUYAGnI1fDkNMRYDXCvbB9MLFJ0ApjmDKOoKMzU+XEG
+	j/SbQkeSAFWUaC9v9bZrwDUAkEIKaVBR+rWv3eKd1oB3AEnSEaSJykL7Q1l889lGAB1wR0AS
+	5IGqXGjtlcURRXKdwfBpXP26mFxsvu53hoCNi9L8fLHR8A0nvA2yxd2iEzWp5hoIkoQw846A
+	a30sumVKIcY0qboy1QVNzjHI6k63W2qKIYY8AazKOTnvRaBbg85xjjmmMPWaKQXvxHFlu/gc
+	NOeU/vpROQMU7O+ZjuL/R/MHYAPLcEBkVE0AAAAASUVORK5CYII=
 }]
 
 set reset [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE5UlEQVRYw+1XW2wUVRj+zpnZ
-	abvb3Xbpdku7ba1t2lJaUCLVguKFm7cHeRNRY0zUSHxVw4MaIGC8QNqABA1gNChEYhAwBhrA
-	0sCWtNKiFSLoFioWSm2h9LKzuzN7zu/DTGW3IJj08sSfnMzOOWfn++b/vvOfOcCdmKR44fjf
-	/p1/ReZ+ezHqSOznkwHuqz3wUteVa6Eytxbc3XntcOKYOqHAH+/zAPg00+95zj03F5ucJprO
-	ds6bFAK+D/fUANiRe3/p3eLBArQpAhQehnHlEiaUgK/2AIcRXaG5nSuznprlGCh0QTAGQFgT
-	YvrEEciuqw9Q3NzuKS98TF08HX1pKgADAAFwAERAdIIIZNfVP6M4U7Z5amZk6RVTEVGlPaIl
-	zDLGn0B2XX0qgPVawL885ZFyNjQlDRIAhGItM0Uk/8GWgIgYALAxgldBUXemVJdWoSoPJleS
-	X3hUKNFBGG/XAkxF8eyHUTNzegsbA/hynulZ73i0Ms30u2892SblIMJcYRUfIkJw7RZLguwt
-	x3OVlLTVS2cUPpGXpqqfneo+Mth/9d3eV+eEbgKcBc638tLCJfyBYsQUFTBHTXKMqnKGdTE1
-	hkZbdEZAvPsCuG/joVyKmy2BsqxXOsrc+c0lrqlF5ZlLFSlafBsPVYwCfxSu1J8x794lNKcU
-	ceU/LGRaTZqARLIHR8hYRohDhYiucpcV5HfPDKBLsxRJqZyCvKF874WWU+sAPO2rPaACWEkF
-	2StYTYUCLRVk4n+lHQkkuCOBiAMASagwoo+HSwKQw7DXK6BrCoaKcqC1hxbdtes3Jdx1fj9V
-	z1jIygMAs0jKm2AyogS33zguYgC3iY1MVREeVAQ5IPoBaQDctuVwxIAWDnPulRxGFBBxC3jU
-	m9PIk4wR+rfOijRtE6oEBoCjO9SY3toO3i8h+4H4ZUC5LKCeaEP4bHPw/LOVJgavPsnqD66h
-	/Y2CDwyDiEBEEDGCNHDbNuIJhC2i0rB/A1CcFbPa451nX8xLz0grd7kxlWKId7Qh3Lw3SrHo
-	83p780X96D6pH/u+wVVyXwOFzi+A051B6R7A5FaJF7bWAiC7MWnrJK/3kbCyRMLq58Efoejt
-	zVedJdP2Dnd3lvT09hT1docQ/eOnIA1dWda3c3NLYgb14/svuGY99AXrCBWzsFHJvH5IpoIE
-	s0w5GjQCkC0NEwDFCYwxQFr3vKUhuRIWvLNZoUiYd61/07ztrvfGmpfhz99A1YvSRU4OpMmT
-	zWkvt+umIzAQFC0GJgS4U4WyfdvYSrHvtfdKmcf7NaucVy2KKmEoGugWj+SRYWh76oDoIHiG
-	HyyroImNef9/faUDjK9WC6a9JavmKxGnFwQGeZPvPRYZQsp3a9H3+Uf/4ipjJaCfOCL1Ew2H
-	U4tKj6L7zIJ0t9cjU7yIC55sPgEopgnlXBP01qOrxv2jtG/b+w000HtPpOHL3a7TPyBT6mAG
-	XS+/Bix5KBlSwTiGfjIY0U8Gd2k5OZd4z+/zXf6AZsIDKZm9OgQc55qgtzaOfwaSsvHVhi1m
-	z5+zIwc3tWVdbkQGYqAYJW9EE30u6NvxyRnEonOGjn2zTm3bKn24hEBqBEjVJk6CGyT5tUXo
-	p1sPanmBpnjXLwtLivPdw9H44EDD7g8m9WTUt2vrIUg57UzHuWV6b9fiOwfVxPgHhYw89PDr
-	mYAAAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAABL5J
+	REFUWMPtl22IFVUYx//Pmbl79+5dZcU0E4tCyyzTYjXNLTHDUNNdX7JIwgwjUjI/RZEgFpUS
+	BFEfKiVZ3wI3lLTMt60kJMoF094k1EgtN2xX77o7d2bunPM8fZi5d6fr7t1V+xJ54DBn7j3n
+	/H/P2xwOcLX93xsBQH1tWor/kAtO6sn98HraYP3MimlC9NnCHQ5dDoCdH9S+uBakLEBZ2PHq
+	At8f0C8JnC8JsLE2vSzZp2qVl3Uu2wMqZjMyTVsB4R4XNcyDtaGuYk3f625YNXnxGykrkbxs
+	ALtTnyFG9wjQMG9Apedntw8ZUX3PqBmLUpZtX1EOqE59hrCGsOl28qY5qSG+nz00vGbafaNn
+	LEq5Jw6CA+/fAQg9EADctQfqZ1VUG7GP3PXQE0OH3j010X70SwSZMxBmAKIb5iF1RSEQNhAd
+	dOmB+tqK2rKyig/Hz3m6orJqILX/uAec80BgkGgIs50N0m0b6kR3ZlRkoV0GUha076W6qpTO
+	ALKBmNxFAOtnp5+vqOz/8viHl6Rs46Hjp0YIaxAEEAYphelLV0NEEsKcgHDoTWEIMzjwASLs
+	fn9lbzyQAyKAcq3tjTPT6/pde9Oj1XVPpfTZ43Caj4IAEASEUKjtwLowcdmERkR5JEaDtQbr
+	AP0mL+5FFUQAwhoQKiPmfYNHjhlx+8TZ5e6vBxGcOwVFAEhC6yMIiiwGG0AMWAyINZgNlGgI
+	NBS4FzkgBhx5QAg0fNyUkTeOmpDo+GE3jNMKBYAUQJQXjwAgkdcYwgaKDUQMSDTAGopNydLu
+	BNABRPsQ1pg44zGkr78tkfm2Aew7oeUWARICkDCgs5CcA9EuoHMQDiIhAsgCyAIpGwQrnN8T
+	gMlmELSeBvsOOlpOIzVoGMhOAk4rIBrCAQz7kCALaBcEhlIAUXighOEBIAKBBrOGGB9gACbX
+	ixwAwIEHzrk49M0BXHPypDe6Zmp59mgLguZjsBSgFCAK4ZhC8fyTKB/KsARJok9KIWw9ngXx
+	I1JyLc2nPm1q3OamRkxG+paaglhBOA9S9LRigCoG2p2e6gZMGv/Ac3+2tqz+emeDSwNvReWo
+	6SClChCqBERcXP3z01NWrNntSdLui71kp/vua5NwRu/a9va4B6am+o55BN7320CcK3ik8sHl
+	F4egqHNnBKxIM9cjQGBEAVDL92f3LB2rH9d7Pqkfc++kykHjFpD33RZQ0F4Q/ui9ty7l7Ml3
+	LgkQb+805Y7U3sxzhb/YcEf12P7Dxi9M+Ie3gJyzEYQEK77yZ588bzKRdUH0zBW9l66CeLMU
+	SUTJAMyOY/q3Uw7mPoumtR0X2obeWTM/aX7e3mkaUV5IR93E1ud7fM/SAOkyym9USKPDZ/Rf
+	L7Xp+a/oX97MZrM1E6bMKhcBCJCEBReAGwnrIhgd+930pgpQlVK6yJU+AO+sg7Zlu9xnjp34
+	fdPnHzd4vgn5kjblAVwAXjTfLwpFaYBBdcsL4+ED7VxsEy/qLgDXB5xl+7IrjzefW7F38xqX
+	hcoqk+QAyBZBeDGYPEDXObB3YzyTKVmVyXgxN9pRCVnxTH6h0f3g9ftxYnAftVU7uUwkVsib
+	mNu55L3gEu8RFIFQ0XopSjK5eu36T7S/AR5ziJulvhGVAAAAAElFTkSuQmCC
 }]
 
 } ;# namespace 32x32

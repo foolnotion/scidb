@@ -737,9 +737,7 @@ proc TableFill {path args} {
 
 				federation {
 					if {[string length $item] == 0} {
-						if {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailable
-						} elseif {$Options(country-code) eq "flags"} {
+						if {$Options(country-code) eq "flags"} {
 							lappend text [list @ {}]
 						} else {
 							lappend text {}

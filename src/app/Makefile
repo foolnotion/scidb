@@ -136,8 +136,6 @@ app_application.o: ../db/db_player.h
 app_application.o: ../mstl/m_pair.h
 app_application.o: ../mstl/m_pair.ipp
 app_application.o: ../db/db_player.ipp
-app_application.o: ../mstl/m_map.h
-app_application.o: ../mstl/m_map.ipp
 app_application.o: ../mstl/m_chunk_allocator.h
 app_application.o: ../mstl/m_stack.h
 app_application.o: ../mstl/m_stack.ipp
@@ -156,6 +154,8 @@ app_application.o: ../db/db_tree_cache.ipp
 app_application.o: ../db/db_database.ipp
 app_application.o: ../db/db_database_codec.h
 app_application.o: ../db/db_database_codec.ipp
+app_application.o: ../mstl/m_map.h
+app_application.o: ../mstl/m_map.ipp
 app_application.o: app_application.ipp
 app_application.o: app_cursor.h
 app_application.o: app_cursor.ipp
@@ -249,6 +249,14 @@ app_cursor.o: ../mstl/m_algobase.h
 app_cursor.o: ../mstl/m_algobase.ipp
 app_cursor.o: ../mstl/m_construct.h
 app_cursor.o: ../mstl/m_construct.ipp
+app_cursor.o: ../mstl/m_ref_counted_ptr.h
+app_cursor.o: ../mstl/m_ref_counted_traits.h
+app_cursor.o: ../mstl/m_ref_counted_traits.ipp
+app_cursor.o: ../mstl/m_ref_counted_ptr.ipp
+app_cursor.o: ../mstl/m_cast.h
+app_cursor.o: ../mstl/m_cast.ipp
+app_cursor.o: ../mstl/m_ref_counter.h
+app_cursor.o: ../mstl/m_ref_counter.ipp
 app_cursor.o: app_cursor.ipp
 app_cursor.o: app_application.h
 app_cursor.o: ../db/db_tree.h
@@ -284,14 +292,6 @@ app_cursor.o: ../mstl/m_list.h
 app_cursor.o: ../mstl/m_pointer_iterator.h
 app_cursor.o: ../mstl/m_pointer_iterator.ipp
 app_cursor.o: ../mstl/m_list.ipp
-app_cursor.o: ../mstl/m_ref_counter.h
-app_cursor.o: ../mstl/m_ref_counter.ipp
-app_cursor.o: ../mstl/m_ref_counted_ptr.h
-app_cursor.o: ../mstl/m_ref_counted_traits.h
-app_cursor.o: ../mstl/m_ref_counted_traits.ipp
-app_cursor.o: ../mstl/m_ref_counted_ptr.ipp
-app_cursor.o: ../mstl/m_cast.h
-app_cursor.o: ../mstl/m_cast.ipp
 app_cursor.o: ../db/db_tree.ipp
 app_cursor.o: ../db/db_database.h
 app_cursor.o: ../db/db_database_content.h
@@ -305,8 +305,6 @@ app_cursor.o: ../db/db_player.h
 app_cursor.o: ../mstl/m_pair.h
 app_cursor.o: ../mstl/m_pair.ipp
 app_cursor.o: ../db/db_player.ipp
-app_cursor.o: ../mstl/m_map.h
-app_cursor.o: ../mstl/m_map.ipp
 app_cursor.o: ../mstl/m_chunk_allocator.h
 app_cursor.o: ../mstl/m_stack.h
 app_cursor.o: ../mstl/m_stack.ipp
@@ -325,6 +323,8 @@ app_cursor.o: ../db/db_tree_cache.ipp
 app_cursor.o: ../db/db_database.ipp
 app_cursor.o: ../db/db_database_codec.h
 app_cursor.o: ../db/db_database_codec.ipp
+app_cursor.o: ../mstl/m_map.h
+app_cursor.o: ../mstl/m_map.ipp
 app_cursor.o: app_application.ipp
 app_cursor.o: app_view.h
 app_cursor.o: ../db/db_selector.h
@@ -531,8 +531,6 @@ app_view.o: ../db/db_date.ipp
 app_view.o: ../db/db_namebase_entry.ipp
 app_view.o: ../db/db_player.h
 app_view.o: ../db/db_player.ipp
-app_view.o: ../mstl/m_map.h
-app_view.o: ../mstl/m_map.ipp
 app_view.o: ../mstl/m_chunk_allocator.h
 app_view.o: ../mstl/m_stack.h
 app_view.o: ../mstl/m_stack.ipp
@@ -551,6 +549,8 @@ app_view.o: ../db/db_tree_cache.ipp
 app_view.o: ../db/db_database.ipp
 app_view.o: ../db/db_database_codec.h
 app_view.o: ../db/db_database_codec.ipp
+app_view.o: ../mstl/m_map.h
+app_view.o: ../mstl/m_map.ipp
 app_view.o: app_application.ipp
 app_view.o: ../db/db_game.h
 app_view.o: ../db/db_provider.h

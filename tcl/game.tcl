@@ -28,6 +28,7 @@ namespace eval game {
 namespace eval mc {
 
 set CloseAllGames				"Close all open games of database '%s'?"
+set SomeGamesAreModified	"Some games of database '%s' are modified. Close anyway?"
 set AllSlotsOccupied			"All game slots are occupied."
 set ReleaseOneGame			"Please release one of the games before loading a new one."
 set GameAlreadyOpen			"Game is already open but modified. Discard modified game?"
@@ -36,6 +37,8 @@ set GameHasChanged			"Game %s has changed (outside this session?)."
 set CorruptedHeader			"Corrupted header in recovery file '%s'."
 set RenamedFile				"Renamed this file to '%s.bak'."
 set CannotOpen					"Cannot open recovery file '%s'."
+set OldGameRestored			"One game restored."
+set OldGamesRestored			"%s games restored."
 set GameRestored				"One game from last session restored."
 set GamesRestored				"%s games from last session restored."
 set ErrorInRecoveryFile		"Error in recovery file '%s'"
@@ -64,8 +67,10 @@ variable Count				0
 array set Options {
 	askAgain:overwrite	1
 	askAgain:releaseAll	1
+	askAgain:closeAnyway	1
 	answer:overwrite		0
 	answer:releaseAll		0
+	answer:closeAnyway	0
 	game:max					9
 }
 
@@ -298,24 +303,56 @@ proc releaseAll {parent base} {
 	variable List
 	variable Options
 
-	set entries {}
+	set openGames {}
+	set modifiedGames {}
 	set pos 0
 
 	foreach entry $List {
 		lassign $entry time modified locked database crc tags
 		lassign $database name codec number
 
-		if {!$modified && $base eq $name} {
-			set index [::gamebar::getIndex [::application::pgn::gamebar] $pos]
-			lappend entries [list $pos $index $time $modified $locked $number $tags]
+		if {$base eq $name} {
+			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
+			set entry [list $pos $index $time $modified $locked $number $tags]
+			if {$modified} { lappend modifiedGames $entry } else { lappend openGames $entry }
 		}
 
 		incr pos
 	}
 
-	if {[llength $entries] == 0} { return 1 }
+	if {[llength $modifiedGames]} {
+		set modifiedGames [lsort -index 1 -integer $modifiedGames]
+		append msg [format $mc::SomeGamesAreModified [::util::::databaseName $base]]
+		append msg <embed>
+
+		set reply [::dialog::question \
+			-parent $parent \
+			-message $msg \
+			-check [namespace current]::Options(askAgain:closeAnyway) \
+			-buttons {yes no} \
+			-default yes \
+			-embed [namespace code [list EmbedReleaseMessage $modifiedGames]] \
+		]
+
+		if {$reply eq "cancel"} {
+			return 0
+		} elseif {$reply eq "yes"} {
+			set Options(answer:closeAnyway) 1
+		} else {
+			set Options(answer:closeAnyway) 0
+		}
+
+		if {!$Options(answer:closeAnyway)} {
+			return 0
+		}
+
+		unset msg
+	}
+
+	if {[llength $openGames] == 0} { return 1 }
 
 	if {$Options(askAgain:releaseAll)} {
+		set openGames [lsort -index 1 -integer $openGames]
 		append msg [format $mc::CloseAllGames [::util::::databaseName $base]]
 		append msg <embed>
 
@@ -324,7 +361,8 @@ proc releaseAll {parent base} {
 			-message $msg \
 			-check [namespace current]::Options(askAgain:releaseAll) \
 			-buttons {cancel yes no} \
-			-embed [namespace code [list EmbedReleaseMessage $entries]] \
+			-default yes \
+			-embed [namespace code [list EmbedReleaseMessage $openGames]] \
 		]
 
 		if {$reply eq "cancel"} {
@@ -340,7 +378,7 @@ proc releaseAll {parent base} {
 		return 1
 	}
 
-	foreach entry $entries {
+	foreach entry $openGames {
 		set pos [lindex $entry 0]
 		::application::pgn::release $pos
 		::scidb::game::release $pos	;# release scratch game
@@ -362,7 +400,8 @@ proc queryCloseApplication {parent} {
 		lassign $database name codec number
 
 		if {$modified} {
-			lappend games [list $pos $time $name $number $tags]
+			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
+			lappend games [list $pos $index $time $name $number $tags]
 		}
 
 		incr pos
@@ -443,8 +482,12 @@ proc recover {} {
 	variable List
 
 	set count 0
+	set pattern game-*.pgn
+	if {[::process::testOption recover-old]} { append pattern .bak }
 
-	foreach file [glob -directory $::scidb::dir::backup -nocomplain game-*.pgn] {
+	log::open $mc::Recovery
+
+	foreach file [glob -directory $::scidb::dir::backup -nocomplain $pattern] {
 		if {![::process::testOption dont-recover]} {
 			if {[file readable $file]} {
 				set position [string range $file 5 end-4]
@@ -473,7 +516,7 @@ proc recover {} {
 					} else {
 						lassign $header time key crc
 						set Current(file) $file
-						set Current(kex) $key
+						set Current(key) $key
 						::scidb::game::new $count
 						set tags [::scidb::game::tags $count]
 						lappend List [list $time 1 0 $key $crc $tags]
@@ -499,12 +542,28 @@ proc recover {} {
 			}
 		}
 
-		file rename -force $file $file.bak
+		if {![::process::testOption recover-old]} {
+			file rename -force $file $file.bak
+		}
 	}
 
+	log::close
+
 	if {$count > 0} {
-		if {$count == 1} { set msg $mc::GameRestored } else { set msg $mc::GamesRestored }
-		::dialog::info -parent .application -message [format $msg $count]
+		if {$count == 1} {
+			if {[::process::testOption recover-old]} {
+				set msg $mc::OldGameRestored
+			} else {
+				set msg $mc::GameRestored
+			}
+		} else {
+			if {[::process::testOption recover-old]} {
+				set msg [format $mc::OldGamesRestored $count]
+			} else {
+				set msg [format $mc::GamesRestored $count]
+			}
+		}
+		::dialog::info -parent .application -message $msg
 		::scidb::game::switch 0
 	}
 }
@@ -531,8 +590,7 @@ proc EmbedReleaseMessage {entries w infoFont alertFont} {
 		set col(1) "$white \u2212 $black"
 		set col(2) "(#[expr {$number + 1}])"
 
-		incr pos
-		grid [tk::label $w.line-$row-0 -image $digit($pos)] -row $row -column 0 -sticky w
+		grid [tk::label $w.line-$row-0 -image $digit($index)] -row $row -column 0 -sticky w
 		grid [tk::label $w.line-$row-1 -text $col(1) -font $infoFont] -row $row -column 2 -sticky w
 		grid [tk::label $w.line-$row-2 -text $col(2) -font $infoFont] -row $row -column 4 -sticky w
 
@@ -556,7 +614,7 @@ proc EmbedCloseMessage {games w infoFont alertFont} {
 	}
 
 	foreach entry $games {
-		lassign $entry pos time base number tags
+		lassign $entry pos index time base number tags
 
 		if {$prev ne $base} {
 			set prev $base
@@ -593,9 +651,7 @@ proc EmbedCloseMessage {games w infoFont alertFont} {
 			set col(2) "(#[expr {$number + 1}])"
 		}
 
-		incr pos
-	
-		grid [tk::label $w.line-$row-0 -image $digit($pos)] -row $row -column 1 -sticky w
+		grid [tk::label $w.line-$row-0 -image $digit($index)] -row $row -column 1 -sticky w
 		grid [tk::label $w.line-$row-1 -text $col(1) -font $infoFont] -row $row -column 3 -sticky w
 		grid [tk::label $w.line-$row-2 -text $col(2) -font $infoFont] -row $row -column 5 -sticky w
 
@@ -616,8 +672,8 @@ proc Log {_ arguments} {
 		append msg " #"
 		append msg [lindex $Current(key) 2]
 		append msg "):"
-		::log::error $mc::Recovery $msg
-		::log::info $mc::Recovery [::import::makeLog $arguments]
+		::log::error $msg
+		::log::info [::import::makeLog $arguments]
 	}
 }
 

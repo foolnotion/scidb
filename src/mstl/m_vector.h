@@ -130,6 +130,8 @@ public:
 	iterator erase(iterator position);
 	iterator erase(iterator first, iterator last);
 
+	void fill(value_type const& value);
+
 	void reserve(size_type n);
 	void reserve_exact(size_type n);
 	void resize(size_type n);

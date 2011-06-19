@@ -19,6 +19,7 @@
 #include "m_uninitialized.h"
 #include "m_algobase.h"
 #include "m_utility.h"
+#include "m_type_traits.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -793,6 +794,17 @@ vector<T>::vector(Iter* first, Iter* last)
 
 	for ( ; first < last; ++first)
 		mstl::bits::construct(this->m_finish++, T(*first));
+}
+
+
+template <typename T>
+void
+vector<T>::fill(value_type const& value)
+{
+	if (mstl::is_pod<value_type>::value)
+		mstl::uninitialized_fill_n(this->m_start, size(), value);
+	else
+		mstl::fill_n(this->m_start, size(), value);
 }
 
 } // namespace mstl

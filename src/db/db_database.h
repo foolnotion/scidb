@@ -53,6 +53,7 @@ class Statistic;
 class NamebaseEntry;
 class NamebasePlayer;
 class TournamentTable;
+class Filter;
 class Log;
 
 class Database : private DatabaseContent
@@ -185,8 +186,8 @@ public:
 	/// Recode content of database.
 	void recode(mstl::string const& encoding, Log& log);
 
-	/// Build tournament table for given event index.
-	TournamentTable* makeTournamentTable(NamebaseEvent const& event) const;
+	/// Build tournament table for selected games.
+	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;
 
 	/// Open an asynchronous game stream (block file) reader for findExactPositionAsync() operation.
 	void openAsyncReader();

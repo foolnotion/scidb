@@ -32,63 +32,74 @@ variable Welcome 0
 #array set NotYetImplemented {}
 
 
+proc Enc {s} { return [encoding convertfrom utf-8 $s] }
+
+
 proc welcomeToScidb {parent} {
 	variable Welcome
 
 	if {$Welcome} { return }
 
-	set hdr(de) "Willkommen zu Scidb!"
-	set hdr(en) "Welcome to Scidb!"
-	set hdr(es) "Welcome to Scidb!"
-	set hdr(it) "Welcome to Scidb!"
+	set hdr(de) [Enc "Willkommen zu Scidb!"]
+	set hdr(en) [Enc "Welcome to Scidb!"]
+	set hdr(es) [Enc "Welcome to Scidb!"]
+	set hdr(it) [Enc "Benvenuto su Scidb!"]
 
-	set msg(de) "Dies ist eine Vorabversion von Scidb zum Ausprobieren und Testen. Die erste Vollversion wird erst nach einer genügend langen Testphase erscheinen. Beim Ausprobieren dieser Version sollte folgendes berücksichtigt werden:
+	set msg(de) [Enc "Dies ist eine Vorabversion von Scidb zum Ausprobieren und Testen. Die erste Vollversion wird erst nach einer genÃ¼gend langen Testphase erscheinen. Beim Ausprobieren dieser Version sollte folgendes berÃ¼cksichtigt werden:
 
-1. Diese Version enthält viele Debugging-Informationen und ist an einigen Stellen noch entsprechend langsam.
+1. Diese Version enthÃ¤lt viele Debugging-Informationen und ist an einigen Stellen noch entsprechend langsam.
 
-2. Die Unterstützung der Scid-Datenbanken (.si3/.si4) erfolgt durch eine recht komplexe Emulation, die noch nicht genügend ausgetestet ist. Also bitte nicht die Original-Scid-Datenbanken mit diesem Programm bearbeiten. Standardmäßig werden die Scid-Datenbanken nur im Lesemodus, der natürlich unkritisch ist, geöffnet.
+2. Die UnterstÃ¼tzung der Scid-Datenbanken (.si3/.si4) erfolgt durch eine recht komplexe Emulation, die noch nicht genÃ¼gend ausgetestet ist. Also bitte nicht die Original-Scid-Datenbanken mit diesem Programm bearbeiten. StandardmÃ¤ÃŸig werden die Scid-Datenbanken nur im Lesemodus, der natÃ¼rlich unkritisch ist, geÃ¶ffnet.
 
-3. Das aktuelle Scidb-Format (.sci) wird spätestens mit der ersten Vollversion vollendet (d.h. Versionsnummer 1.0 erreichen, die aktuelle Versionsnummer ist 0.9). Das aktuelle Format ist aber bereits einsetzbar und es wird eine Upgrade-Möglichkeit geben.
+3. Das aktuelle Scidb-Format (.sci) wird spÃ¤testens mit der ersten Vollversion vollendet (d.h. Versionsnummer 1.0 erreichen, die aktuelle Versionsnummer ist 0.9). Das aktuelle Format ist aber bereits voll einsetzbar und es wird eine Upgrade-MÃ¶glichkeit geben.
 
-4. Die Unterstützung des ChessBase-Formats (.cbh) ist noch nicht vollendet. Zur Zeit können z.B. keine Schach-960 Partien gelesen werden.
+4. Die UnterstÃ¼tzung des ChessBase-Formats (.cbh) ist noch nicht vollendet. Zur Zeit kÃ¶nnen z.B. keine Schach-960 Partien gelesen werden.
 
-Viel Freude mit Scidb, dessen Entwicklung bisher bereits drei Jahre in Anspruch genommen hat!"
+5. Von Zeit zu Zeit wird eine aktuellere Testversion veröffentlicht werden.
+
+Viel Freude mit Scidb, dessen Entwicklung bisher bereits drei Jahre in Anspruch genommen hat!"]
 #-------------------------------------------------------------------------------------------------
-	set msg(en) "This is a preliminary version of Scidb for try-out and testing. The first fuill version will be released after a sufficiently long test period. Please consider while experimenting with Scidb:
+	set msg(en) [Enc "This is a preliminary version of Scidb for try-out and testing. The first full version will be released after a sufficiently long test period. Please consider while experimenting with Scidb:
+
+1. This version contains a lot of debugging information and is accordingly slow in several places.
+
+2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
+
+3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
+
+4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
+
+5. From time to time a newer test version will be released.
+
+Have a lot of fun with Scidb, whose development has already taken three years!"]
+#-------------------------------------------------------------------------------------------------
+	set msg(es) [Enc "This is a preliminary version of Scidb for try-out and testing. The first full version will be released after a sufficiently long test period. Please consider while experimenting with Scidb:
 
 1. This version contains a lot of debugging information and is accordingly slow at several places.
 
 2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
 
-3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already usable, and there will be offered an upgrade capability.
+3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
 
 4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
 
-Have a lot of fun with Scidb, whose development has already taken three years!"
+5. From time to time a newer test version will be released.
+
+Have a lot of fun with Scidb, whose development has already taken three years!"]
 #-------------------------------------------------------------------------------------------------
-	set msg(es) "This is a preliminary version of Scidb for try-out and testing. The first fuill version will be released after a sufficiently long test period. Please consider while experimenting with Scidb:
+	set msg(it) [Enc "Questa è una versione preliminare di Scidb per prove e test. La prima versione completa sarà rilasciata dopo un periodo sufficientemente lungo di test. Tieni a mente le seguenti cose quando fai esperimenti con Scidb:
 
-1. This version contains a lot of debugging information and is accordingly slow at several places.
+1. Questa versione contiene molte informazioni di debugging ed è quindi lenta in diversi punti.
 
-2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
+2. Il supporto al formato database di Scid (.si3/.si4) è reso possibile da una emulazione piuttosto complessa che non è stata ancora testata a sufficienza. Quindi per favore non modificare i tuoi database originali in formato Scid con questo programma. Per default i database Scid saranno aperti in modalità sola-lettura, che ovviamente non comporta problemi.
 
-3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already usable, and there will be offered an upgrade capability.
+3. Il formato di Scidb attuale (.sci) sarà finito al più tardi con il rilascio della prima versione completa (cioè quando sarà raggiunta la versione 1.0 o superiore, la versione corrente è la 0.9). Nonostante ciò il formato attuale è del tutto utilizzabile, e sarà possibile aggiornarlo in futuro.
 
-4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
+4. Il supporto al formato database di Chessbase (.cbh) non è ancora finito. Ad oggi questo programma non può aprire partite di Scacchi 960.
 
-Have a lot of fun with Scidb, whose development has already taken three years!"
-#-------------------------------------------------------------------------------------------------
-	set msg(it) "This is a preliminary version of Scidb for try-out and testing. The first fuill version will be released after a sufficiently long test period. Please consider while experimenting with Scidb:
+5. Col tempo saranno rilasciate nuove versioni di test.
 
-1. This version contains a lot of debugging information and is accordingly slow at several places.
-
-2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
-
-3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already usable, and there will be offered an upgrade capability.
-
-4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
-
-Have a lot of fun with Scidb, whose development has already taken three years!"
+Divertitevi con Scidb, il cui sviluppo ha richiesto già tre anni!"]
 
 	set reply [::dialog::info -message $hdr($::mc::langID) -detail $msg($::mc::langID) -parent $parent]
 	if {$reply eq "ok"} { set Welcome 1 }
@@ -100,15 +111,15 @@ proc notYetImplemented {parent what} {
 
 #	if {[info exists NotYetImplemented($what)]} { return }
 
-	set hdr(de) "Noch nicht implementiert."
-	set hdr(en) "Not yet implemented."
-	set hdr(es) "Not yet implemented."
-	set hdr(it) "Not yet implemented."
+	set hdr(de) [Enc "Noch nicht implementiert."]
+	set hdr(en) [Enc "Not yet implemented."]
+	set hdr(es) [Enc "Not yet implemented."]
+	set hdr(it) [Enc "Non ancora implementato."]
 
-	set msg(de) "Diese Funktionalität ist noch nicht implementiert worden, sie dient nur zur Voransicht."
-	set msg(en) "This functionality is not yet implemented. This is only a preview."
-	set msg(es) "This functionality is not yet implemented. This is only a preview."
-	set msg(it) "This functionality is not yet implemented. This is only a preview."
+	set msg(de) [Enc "Diese FunktionalitÃ¤t ist noch nicht implementiert worden, sie dient nur zur Voransicht."]
+	set msg(en) [Enc "This functionality is not yet implemented. This is only a preview."]
+	set msg(es) [Enc "This functionality is not yet implemented. This is only a preview."]
+	set msg(it) [Enc "Questa funzione non è ancora implementata. Questa è solo un'anteprima."]
 
 	::dialog::info -message $hdr($::mc::langID) -detail $msg($::mc::langID) -parent $parent
 #	set NotYetImplemented($what) 1
@@ -286,13 +297,12 @@ if {[file readable $::scidb::file::options]} {
 #	}
 #}
 
-::theme::setTheme $::menu::Theme
+::theme::setTheme $menu::Theme
 ::menu::setup
 ::board::setupTheme
 ::tooltip::init
 ::mc::selectLang
 ::font::useLanguage $mc::langID
-
 application::open
 
 # vi:set ts=3 sw=3:

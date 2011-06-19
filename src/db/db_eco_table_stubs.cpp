@@ -51,7 +51,17 @@ EcoTable::Successors::find(uint16_t) const
 }
 
 
+
+EcoTable::Entry const&
+EcoTable::getEntry(Eco code) const
+{
+	M_ASSERT(!"cannot execute stubs");
+	static Entry dummy;
+	return dummy;
+}
+
+
 uint8_t EcoTable::getStoredLine(Eco, Eco) const { return 0; }
-Eco EcoTable::lookup(Line const&, Eco&, unsigned*, Successors*, EcoSet*) const { return Eco(); }
+Eco EcoTable::lookup(Line const&, unsigned*, Successors*, EcoSet*) const { return Eco(); }
 
 // vi:set ts=3 sw=3:

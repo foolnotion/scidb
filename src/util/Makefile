@@ -21,8 +21,6 @@ SRC_CXX = \
 	u_byte_stream.cpp \
 	u_exception.cpp \
 	u_http.cpp \
-	u_lzo.cpp \
-	u_lzo_byte_stream.cpp \
 	u_misc.cpp \
 	u_path.cpp \
 	u_piped_progress.cpp \
@@ -156,37 +154,6 @@ u_http.o: ../mstl/m_bit_functions.h
 u_http.o: ../mstl/m_bit_functions.ipp
 u_http.o: ../mstl/m_static_check.h
 u_http.o: ../mstl/m_stdio.h
-u_lzo.o: u_lzo.h
-u_lzo.o: u_byte_stream.h
-u_lzo.o: u_base.h
-u_lzo.o: ../mstl/m_types.h
-u_lzo.o: u_byte_stream.ipp
-u_lzo.o: ../mstl/m_assert.h
-u_lzo.o: ../mstl/m_exception.h
-u_lzo.o: ../mstl/m_backtrace.h
-u_lzo.o: ../mstl/m_exception.ipp
-u_lzo.o: u_exception.h
-u_lzo.o: lzo/minilzo.h
-u_lzo.o: lzo/lzoconf.h
-u_lzo.o: lzo/lzodefs.h
-u_lzo_byte_stream.o: u_lzo_byte_stream.h
-u_lzo_byte_stream.o: u_byte_stream.h
-u_lzo_byte_stream.o: u_base.h
-u_lzo_byte_stream.o: ../mstl/m_types.h
-u_lzo_byte_stream.o: u_byte_stream.ipp
-u_lzo_byte_stream.o: ../mstl/m_assert.h
-u_lzo_byte_stream.o: ../mstl/m_exception.h
-u_lzo_byte_stream.o: ../mstl/m_backtrace.h
-u_lzo_byte_stream.o: ../mstl/m_exception.ipp
-u_lzo_byte_stream.o: u_lzo.h
-u_lzo_byte_stream.o: u_exception.h
-u_lzo_byte_stream.o: ../mstl/m_iostream.h
-u_lzo_byte_stream.o: ../mstl/m_istream.h
-u_lzo_byte_stream.o: ../mstl/m_ios.h
-u_lzo_byte_stream.o: ../mstl/m_ios.ipp
-u_lzo_byte_stream.o: ../mstl/m_istream.ipp
-u_lzo_byte_stream.o: ../mstl/m_ostream.h
-u_lzo_byte_stream.o: ../mstl/m_ostream.ipp
 u_misc.o: u_misc.h
 u_misc.o: ../mstl/m_string.h
 u_misc.o: ../mstl/m_types.h

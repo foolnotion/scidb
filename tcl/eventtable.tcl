@@ -165,12 +165,14 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]
+	::bind $path <<Language>>  		[namespace code [list BindAccelerators $path]]
 
 #	bind $path <ButtonPress-2>			[namespace code [list ShowMoves $path %x %y]]
 #	bind $path <ButtonRelease-2>		[namespace code [list hideMoves $path]]
 #	bind $path <ButtonPress-3>			+[namespace code [list hideMoves $path]]
 
 	set Vars(viewcmd) $getViewCmd
+	BindAccelerators $path
 
 	return $Vars(table)
 }
@@ -359,10 +361,10 @@ proc TableFill {path args} {
 
 				switch $id {
 					eventCountry {
-						if {[string length $item] == 0} {
-							if {$codec eq "si3" || $codec eq "si4"} {
-								lappend text $::mc::NotAvailable
-							} elseif {$Options(country-code) eq "flags"} {
+						if {$codec eq "si3" || $codec eq "si4"} {
+							lappend text $::mc::NotAvailable
+						} elseif {[string length $item] == 0} {
+							if {$Options(country-code) eq "flags"} {
 								lappend text [list @ {}]
 							} else {
 								lappend text {}
@@ -484,12 +486,37 @@ proc PopupMenu {path menu base index} {
 	variable ${path}::Vars
 
 	if {$index eq "none" || $index eq "outside"} { return }
-	set view [{*}$Vars(viewcmd) $base]
 
 	$menu add command \
-		-label $::gametable::mc::ShowTournamentTable \
-		-command [list ::crosstable::open $path $base $index $view] \
+		-compound left \
+		-image $::icon::16x16::crossTable \
+		-label " $::gametable::mc::ShowTournamentTable" \
+		-command [namespace code [list OpenCrosstable $path $index]] \
 		;
+}
+
+
+proc BindAccelerators {path} {
+	variable ${path}::Vars
+
+	foreach {accel proc} [list $::gametable::mc::AccelTournTable OpenCrosstable] {
+		set cmd [namespace code [list $proc $path]]
+		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
+		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
+	}
+}
+
+
+proc OpenCrosstable {path {index -1}} {
+	variable ${path}::Vars
+
+	if {$index == -1} { set index [::scrolledtable::active $path] }
+	if {$index == -1} { return }
+
+	set base [::scrolledtable::base $path]
+	set view [{*}$Vars(viewcmd) $base]
+
+	::crosstable::open $path $base $index $view event
 }
 
 

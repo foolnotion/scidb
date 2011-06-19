@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2010-2011 Gregor Cramer
+// Copyright: (C) 2011 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,43 +24,37 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_namebases_included
-#define _db_namebases_included
+#ifndef _tcl_obj_included
+#define _tcl_obj_included
 
-#include "db_namebase.h"
+#include <tcl.h>
 
-namespace db {
+namespace tcl {
 
-class Namebases
+class Obj
 {
 public:
 
-	typedef Namebase::Type Type;
+	Obj(Tcl_Obj* obj);
 
-	Namebases();
+	operator Tcl_Obj* () const;
 
-	Namebase& operator()(Type type);
-	Namebase const& operator()(Type type) const;
+	Tcl_Obj* operator()() const;
 
-	bool isModified() const;
+	bool operator==(Obj const& obj) const;
 
-	void update();
-	void clear();
-	void resetModified();
+	void ref();
+	void deref();
 
 private:
 
-	Namebase m_player;
-	Namebase m_site;
-	Namebase m_event;
-	Namebase m_annotator;
-	Namebase m_round;
+	Tcl_Obj* m_obj;
 };
 
-} // namespace db
+} // namespace tcl
 
-#include "db_namebases.ipp"
+#include "tcl_obj.ipp"
 
-#endif // _db_namebases_included
+#endif // _tcl_obj_included
 
 // vi:set ts=3 sw=3:

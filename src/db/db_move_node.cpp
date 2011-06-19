@@ -794,6 +794,18 @@ MoveNode::containsOtherLang() const
 }
 
 
+void
+MoveNode::unfold()
+{
+	MoveNode* node = this;
+
+	while (!node->atLineStart())
+		node = node->m_prev;
+
+	node->m_flags &= ~IsFolded;
+}
+
+
 bool MoveNode::checkHasMark() const			{ return !m_marks->isEmpty(); }
 bool MoveNode::checkHasAnnotation() const	{ return !m_annotation->isEmpty(); }
 

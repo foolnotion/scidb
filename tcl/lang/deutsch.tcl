@@ -94,6 +94,8 @@
 ::widget::mc::Revert		"Zurück&kehren"
 ::widget::mc::Previous	"&Vorherige"
 ::widget::mc::Next		"&Nächste"
+::widget::mc::First		"&Erste"
+::widget::mc::Last		"Le&tzte"
 
 ### menu ###############################################################
 ::menu::mc::File						"&Datei"
@@ -683,12 +685,14 @@
 ::gamebar::mc::Players					"Spieler"
 ::gamebar::mc::Event						"Turnier"
 ::gamebar::mc::Site						"Ort"
+::gamebar::mc::SeparateHeader			"Separater Partiekopf"
 ::gamebar::mc::ShowActiveAtBottom	"Sortiere aktive Partie nach unten"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Spielernamen untereinander anorden"
 ::gamebar::mc::DiscardChanges			"Diese Partie wurde geändert.\n\nSollen tatsächlich die Änderungen verworfen werden?"
 ::gamebar::mc::DiscardNewGame			"Soll diese Partie tatsächlich verworfen werden?"
 ::gamebar::mc::NewGameFstPart			"Neue"
 ::gamebar::mc::NewGameSndPart			"Partie"
+::gamebar::mc::Unlock					"Freigeben"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Partie-Browser"
@@ -702,6 +706,8 @@
 ::browser::mc::GotoEndOfGame		"Zum Partieende"
 ::browser::mc::IncreaseBoardSize	"Brett vergößern"
 ::browser::mc::DecreaseBoardSize	"Brett verkleinern"
+::browser::mc::GotoFirstGame		"Zur ersten Partie"
+::browser::mc::GotoLastGame		"Zur letzten Partie"
 
 ::browser::mc::LoadGame				"Partie laden"
 ::browser::mc::MergeGame			"Partie kombinieren"	;# einfügen
@@ -924,7 +930,7 @@
 ::export::mc::Option(pgn,include_varations)						"Varianten exportieren"
 ::export::mc::Option(pgn,include_comments)						"Kommentare exportieren"
 ::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
-::export::mc::Option(pgn,use_chessbase_format)					"Scidb-Import-Format benutzen"
+::export::mc::Option(pgn,use_scidb_import_format)				"Scidb-Import-Format benutzen"
 ::export::mc::Option(pgn,use_chessbase_format)					"ChessBase-Format benutzen"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Tag 'PlyCount' schreiben"
 ::export::mc::Option(pgn,include_termination_tag)				"Tag 'Termination' schreiben"
@@ -1035,6 +1041,7 @@
 
 ### game ###############################################################
 ::game::mc::CloseAllGames				"Alle offenen Partien der Datenbank '%s' schliessen?"
+::game::mc::SomeGamesAreModified		"Einige Partien der Datenbank '%s' sind modifiziert. Trotzdem schliessen?"
 ::game::mc::AllSlotsOccupied			"Alle Partieaufnahmeplätze sind belegt."
 ::game::mc::ReleaseOneGame				"Bitte eine der Partien freigeben bevor eine neue geladen werden kann."
 ::game::mc::GameAlreadyOpen			"Diese Partie ist bereits geöffnet. Soll die modifizierte Version verworfen werden?"
@@ -1045,6 +1052,8 @@
 ::game::mc::CannotOpen					"Die Wiederherstellungsdatei '%s' konnte nicht geöffnet werden."
 ::game::mc::GameRestored				"Es wurde eine Partie aus der letzten Sitzung wiederhergestellt."
 ::game::mc::GamesRestored				"Es wurde %s Partien aus der letzten Sitzung wiederhergestellt."
+::game::mc::OldGameRestored			"Es wurde eine Partie wiederhergestellt."
+::game::mc::OldGamesRestored			"Es wurde %s Partien wiederhergestellt."
 ::game::mc::ErrorInRecoveryFile		"Fehler in der Wiederherstellungsdatei '%s'"
 ::game::mc::Recovery						"Wiederherstellung"
 ::game::mc::UnsavedGames				"Es existieren ungesicherte Partieänderungen."
@@ -1168,7 +1177,7 @@
 ::info::mc::Testing					"Tester"
 ::info::mc::References				"Quellen"
 ::info::mc::System					"System"
-::info::mc::FontDesign				"Zeichensatzdesign"
+::info::mc::FontDesign				"Schachzeichensatzdesign"
 ::info::mc::ChessPieceDesign		"Schachfigurendesign"
 ::info::mc::BoardThemeDesign		"Schachbrettthemendesign"
 ::info::mc::FlagsDesign				"Miniaturflaggendesign"

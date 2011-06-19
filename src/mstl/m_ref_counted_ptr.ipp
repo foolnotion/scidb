@@ -109,7 +109,8 @@ ref_counted_ptr<T>::operator=(by_ref<T> ref)
 		if (m_p && mstl::ref_counted_traits<T>::release(m_p))
 			delete m_p;
 
-		m_p = ref.m_p;
+		if ((m_p = ref.m_p))
+			mstl::ref_counted_traits<T>::ref(m_p);
 	}
 
 	return *this;

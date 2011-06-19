@@ -290,7 +290,13 @@ proc build {parent menu width height} {
 	set Vars(lang:set) {}
 	set Vars(edit:comment) 0
 
+	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 	InitScratchGame
+}
+
+
+proc setActiveLang {code flag} {
+	set [namespace current]::Vars(lang:active:$code) $flag
 }
 
 
@@ -419,6 +425,7 @@ proc editComment {pos {position -1} {key {}} {lang {}}} {
 		if {[string length $lang] == 0} { set lang xx }
 	}
 
+	::scidb::game::variation unfold -force
 	Edit $position ::comment $key $pos $lang
 }
 
@@ -599,7 +606,7 @@ proc Align {w height} {
 	if {$height != $Vars(height)} {
 		set Vars(height) $height
 		set linespace [font metrics [$Vars(pgn:0) cget -font] -linespace]
-		set amounts [list $linespace [expr {($height - 2) % $linespace}]]
+		set amounts [list $linespace [expr {$linespace - 2}] [expr {($height - 2) % $linespace}]]
 		::gamebar::setAlignment $Vars(bar) $amounts
 	}
 }
@@ -616,6 +623,7 @@ proc GameBarEvent {action position} {
 			set w $Vars(pgn:$position)
 			$w tag configure $Vars(current:$position) -background $Colors(background)
 			foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+			unset -nocomplain Vars(lang:set:$position)
 
 			if {[::gamebar::empty? $Vars(bar)]} {
 				::widget::busyCursor on
@@ -716,6 +724,15 @@ proc UpdateLanguages {position languages} {
 
 	foreach lang $languages {
 		AddLanguageButton $lang
+	}
+}
+
+
+proc GameSwitched {position} {
+	variable Vars
+
+	if {[info exists Vars(lang:set:$position)]} {
+		UpdateLanguages $position $Vars(lang:set:$position)
 	}
 }
 
@@ -1859,7 +1876,9 @@ proc PopupMenu {parent position} {
 				;
 		}
 
-		if {$actual eq $scratchbaseName || [::scidb::db::get readonly? $actual]} {
+		if {	$actual eq $scratchbaseName
+			|| $actual eq $clipbaseName
+			|| [::scidb::db::get readonly? $actual]} {
 			set state disabled
 		} else {
 			set state normal

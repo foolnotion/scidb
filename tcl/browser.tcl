@@ -43,6 +43,9 @@ set IllegalMove			"Illegal move"
 set GameDataCorrupted	"Game data is corrupted."
 set NoCastlingRights		"no castling rights"
 
+set GotoFirstGame			"Goto first game"
+set GotoLastGame			"Goto last game"
+
 set LoadGame				"Load Game"
 set MergeGame				"Merge Game"
 
@@ -63,6 +66,7 @@ array set Options {
 	foreground:player		white
 	background:current	#ffdd76
 	foreground:result		black
+	foreground:empty		#666666
 }
 
 set Options(font:bold) [list \
@@ -134,7 +138,8 @@ proc open {parent base info view index {fen {}}} {
 		tk::button $w \
 			-image [set ::icon::22x22::control$control] \
 			-takefocus 0 \
-			-command [list event generate $w $key]
+			-command [list event generate $w $key] \
+			;
 		::tooltip::tooltip $w [namespace current]::mc::$tipvar
 		grid $w -row 0 -column $column
 	}
@@ -199,8 +204,8 @@ proc open {parent base info view index {fen {}}} {
 #	bind $buttons.mergeGame <ButtonRelease-1>  [list focus $buttons.close]
 	grid columnconfigure $buttons {1 3} -minsize $::theme::padding
 	$buttons.close configure -command [list destroy $dlg]
-	$buttons.backward configure -command [namespace code [list NextGame $dlg $position $fen -1]]
-	$buttons.forward configure -command [namespace code [list NextGame $dlg $position $fen +1]]
+	$buttons.backward configure -command [namespace code [list NextGame $dlg $position -1]]
+	$buttons.forward configure -command [namespace code [list NextGame $dlg $position +1]]
 
 	grid $controls	-row 1 -column 1 -sticky ew
 	grid $buttons	-row 1 -column 3
@@ -217,6 +222,7 @@ proc open {parent base info view index {fen {}}} {
 	$rt.header tag configure figurine -font $::font::figurine
 	$rt.pgn tag configure figurine -font $::font::figurine
 	$rt.pgn tag configure result -foreground $Options(foreground:result)
+	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
 	bind $dlg <Alt-Key>				[list tk::AltKeyInDialog $dlg %A]
 	bind $dlg <Return>				[namespace code [list ::widget::dialogButtonInvoke $buttons]]
@@ -231,7 +237,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Next>					[namespace code [list Goto $position +10]]
 	bind $dlg <Home>					[namespace code [list Goto $position -9999]]
 	bind $dlg <End>					[namespace code [list Goto $position +9999]]
-	bind $dlg <ButtonPress-3>		[namespace code [list PopupMenu $board $position]]
+	bind $dlg <ButtonPress-3>		[namespace code [list PopupMenu $dlg $board $position]]
 	bind $dlg <Key-plus>				[namespace code [list IncreaseBoardSize $position $lt.board +5]]
 	bind $dlg <Key-KP_Add>			[namespace code [list IncreaseBoardSize $position $lt.board +5]]
 	bind $dlg <Key-minus>			[namespace code [list IncreaseBoardSize $position $lt.board -5]]
@@ -266,22 +272,32 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(current) {}
 	set Vars(minsize) 0
 	set Vars(dlg) $dlg
+	set Vars(closed) 0
+	set Vars(fen) $fen
 
-	NextGame $dlg $position {}	;# too early for ::scidb::game::go
+	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
+	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
+	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
+	set Vars(subscribe:close) [list [namespace current]::Close $base $position]
 
-	bind $rt.header <<Language>> [namespace code [list UpdateHeader $position $info]]
+	NextGame $dlg $position	;# too early for ::scidb::game::go
+
+	bind $rt.header <<Language>> [namespace code [list LanguageChanged $position $info]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
 
 	::scidb::game::setup $position 240 80 0 0 no no no
-	::scidb::game::subscribe board $position [namespace current]::UpdateBoard
-	::scidb::game::subscribe pgn $position [namespace current]::UpdatePGN true
-	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close $position
+
+	::scidb::game::subscribe board {*}$Vars(subscribe:board)
+	::scidb::game::subscribe pgn {*}$Vars(subscribe:pgn)
+	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
+	::scidb::view::subscribe {*}$Vars(subscribe:close)
 
 	if {$view == [::scidb::tree::view $base]} {
-		::scidb::db::subscribe tree [namespace current]::UpdateTreeBase {} $position
+		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $position]
+		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
 	}
 
-	::scidb::game::go $position position $fen
+	::scidb::game::go $position position $Vars(fen)
 	return $position
 }
 
@@ -294,7 +310,7 @@ proc load {parent base info view index windowId} {
 	}
 
 	variable ${windowId}::Vars
-	NextGame $Vars(dlg) $windowId {} [expr {$index - $Vars(index)}]
+	NextGame $Vars(dlg) $windowId [expr {$index - $Vars(index)}]
 	return $windowId
 }
 
@@ -377,7 +393,7 @@ proc ConfigureButtons {position} {
 proc Update {position base {view -1} {index -1}} {
 	variable ${position}::Vars
 
-	if {$Vars(index) != -1 && $Vars(base) eq $base && $Vars(view) == $view} {
+	if {!$Vars(closed) && $Vars(base) eq $base && $Vars(view) == $view} {
 		after cancel $Vars(after)
 		set Vars(after) [after idle [namespace code [list Update2 $position $base]]]
 	}
@@ -388,16 +404,20 @@ proc Update2 {position base} {
 	variable ${position}::Vars
 
 	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $base]
+	set Vars(fen) [::scidb::game::fen]
 	ConfigureButtons $position
 }
 
 
-proc Close {position base} {
+proc Close {position base {view {}}} {
 	variable ${position}::Vars
 
-	set Vars(index) -1
-	ConfigureButtons $position
-	wm title [winfo toplevel $Vars(board)] "[tk appname] - $mc::BrowseGame"
+	if {[llength $view] == 0 || $view == $Vars(view)} {
+		set Vars(index) -1
+		set Vars(closed) 1
+		ConfigureButtons $position
+		SetTitle $position
+	}
 }
 
 
@@ -410,7 +430,29 @@ proc UpdateTreeBase {position base} {
 }
 
 
-proc NextGame {parent position fen {step 0}} {
+proc GotoFirstGame {parent position} {
+	variable ${position}::Vars
+
+	if {$Vars(index) > 0} {
+		set Vars(index) 0
+		NextGame $parent $position
+	}
+}
+
+
+proc GotoLastGame {parent position} {
+	variable ${position}::Vars
+
+	set index [expr {[scidb::view::count games $Vars(base) $Vars(view)] - 1}]
+
+	if {$Vars(index) < $index} {
+		set Vars(index) $index
+		NextGame $parent $position
+	}
+}
+
+
+proc NextGame {parent position {step 0}} {
 	variable ${position}::Vars
 	variable Priv
 
@@ -431,15 +473,24 @@ proc NextGame {parent position fen {step 0}} {
 		incr Priv($key:count)
 	}
 	ConfigureButtons $position
-	wm title [winfo toplevel $parent] "[tk appname] - $mc::BrowseGame ($Vars(name) #$Vars(number))"
+	SetTitle $position
 	set index [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
 
 	if {![::widget::busyOperation ::scidb::game::load $position $Vars(base) $index]} {
 		::dialog::error -parent $parent -message $::browser::mc::GameDataCorrupted
 	}
 
-	::scidb::game::go $position position $fen
+	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position $info
+}
+
+
+proc SetTitle {position} {
+	variable ${position}::Vars
+
+	set title "[tk appname] - $mc::BrowseGame"
+	if {$Vars(index) > 0} { append title " ($Vars(name) #$Vars(number))" }
+	wm title [winfo toplevel $Vars(board)] $title
 }
 
 
@@ -459,6 +510,23 @@ proc Goto {position step} {
 			set Vars(afterid) [after $Options(autoplay:delay) [namespace code [list Goto $position +1]]]
 		}
 	}
+}
+
+
+proc LanguageChanged {position info} {
+	variable ${position}::Vars
+
+	if {[::scidb::game::query $position empty?]} {
+		set w $Vars(pgn)
+		$w configure -state normal
+		$w delete 1.0 end
+		$w insert end "<$::application::pgn::mc::EmptyGame> " empty
+		$w insert end {*}$Vars(result)
+		$w configure -state disabled
+	}
+
+	UpdateHeader $position $info
+	SetTitle $position
 }
 
 
@@ -545,8 +613,7 @@ proc ShowPlayer {position side} {
 	variable ${position}::Vars
 
 	set base  $Vars(base)
-	set index $Vars(index)
-	set view  $Vars(view)
+	set index [expr $Vars(number) - 1]
 
 	set info [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
 	::playertable::showInfo $Vars(header) $info
@@ -611,8 +678,12 @@ proc UpdatePGN {position data} {
 
 			result {
 				set key $Vars(key)
+				set Vars(result) [list [::util::formatResult [lindex $node 1]] [list $key result]]
+				if {[::scidb::game::query $position empty?]} {
+					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
+				}
 				$w insert end " "
-				$w insert end [::util::formatResult [lindex $node 1]] [list $key result]
+				$w insert end {*}$Vars(result)
 				$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
 				$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
 				$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
@@ -722,9 +793,17 @@ proc Destroy {dlg position base} {
 	variable Priv
 
 	catch { destroy $dlg.__menu__ }
+
+#	::scidb::game::unsubscribe board {*}$Vars(subscribe:board)
+#	::scidb::game::unsubscribe pgn {*}$Vars(subscribe:pgn)
+	::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+	::scidb::view::unsubscribe {*}$Vars(subscribe:close)
+
+	if {[info exists Vars(subscribe:tree)]} {
+		::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
+	}
+
 	::scidb::game::release $position
-	::scidb::db::unsubscribe gameList [namespace current]::Update [namespace current]::Close $position
-	::scidb::db::unsubscribe tree [namespace current]::UpdateTreeBase {} $position
 	set key $Vars(base):$Vars(number):$Vars(view)
 	if {[incr Priv($key:count) -1] == 0} {
 		unset Priv($key)
@@ -764,7 +843,7 @@ proc SetMinSize {w position} {
 }
 
 
-proc PopupMenu {board position} {
+proc PopupMenu {parent board position} {
 	variable ${position}::Vars
 
 	set dlg [winfo toplevel $board]
@@ -775,13 +854,26 @@ proc PopupMenu {board position} {
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 
 	$menu add command \
-		-label $mc::LoadGame \
+		-compound left \
+		-image $::icon::16x16::document \
+		-label " $mc::LoadGame" \
 		-command [namespace code [list LoadGame $dlg $position]] \
 		-state $state \
 		;
+#	$menu add command \
+#		-label $mc::MergeGame \
+#		-command [namespace code [list MergeGame $dlg $position]] \
+#		-state $state \
+#		;
+	$menu add separator
 	$menu add command \
-		-label $mc::MergeGame \
-		-command [namespace code [list MergeGame $dlg $position]] \
+		-label $mc::GotoFirstGame \
+		-command [namespace code [list GotoFirstGame $parent $position]] \
+		-state $state \
+		;
+	$menu add command \
+		-label $mc::GotoLastGame \
+		-command [namespace code [list GotoLastGame $parent $position]] \
 		-state $state \
 		;
 	$menu add separator

@@ -44,6 +44,8 @@ public:
 	Filter();
 	Filter(unsigned size);
 
+	/// return true if filter is empty
+	bool isEmpty() const;
 	/// return true if the game is in the filter
 	bool contains(unsigned index) const;
 	/// return true if all games are selected

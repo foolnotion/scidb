@@ -30,6 +30,7 @@
 
 #include "app_application.h"
 #include "app_cursor.h"
+#include "app_view.h"
 
 #include "db_database.h"
 #include "db_tournament_table.h"
@@ -64,16 +65,16 @@ namespace {
 
 struct Key
 {
-	Key() :databaseid(0), eventHandle(0) {}
-	Key(Database const& db, intptr_t handle) :databaseid(db.id()), eventHandle(handle) {}
+	Key() :databaseid(0), viewId(0) {}
+	Key(Database const& db, unsigned view) :databaseid(db.id()), viewId(view) {}
 
 	bool operator==(Key const& key) const
 	{
-		return databaseid == key.databaseid && eventHandle == key.eventHandle;
+		return databaseid == key.databaseid && viewId == key.viewId;
 	}
 
 	unsigned	databaseid;
-	intptr_t	eventHandle;
+	unsigned	viewId;
 };
 
 typedef mstl::hash<Key,TournamentTable*> TableHash;
@@ -91,7 +92,7 @@ namespace mstl {
 template <>
 struct hash_key<Key>
 {
-	static size_t hash(Key const& key) { return key.databaseid ^ key.eventHandle; }
+	static size_t hash(Key const& key) { return key.databaseid ^ key.viewId; }
 };
 
 } // namespace mstl
@@ -100,9 +101,9 @@ static TableHash tableHash;
 
 
 static TournamentTable*
-getTable(char const* cmd, Database const& db, intptr_t handle)
+getTable(char const* cmd, Database const& db, unsigned view)
 {
-	if (TableHash::const_pointer ptr = tableHash.find(Key(db, handle)))
+	if (TableHash::const_pointer ptr = tableHash.find(Key(db, view)))
 		return *ptr;
 
 	error(cmd, 0, 0, "crosstable not exisiting in database %s", db.name().c_str());
@@ -113,27 +114,14 @@ getTable(char const* cmd, Database const& db, intptr_t handle)
 static int
 cmdMake(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	M_STATIC_CHECK(sizeof(long) == sizeof(intptr_t), Type_Mismatch);
-
 	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 1));
-	Database const& database = cursor.database();
-	char const* type = stringFromObj(objc, objv, 2);
-	unsigned index(unsignedFromObj(objc, objv, 3));
-	Namebase::EventEntry const* entry;
+	unsigned view = unsignedFromObj(objc, objv, 2);
 
-	if (::strcmp(type, "event") == 0)
-		entry = &database.event(index);
-	else if (::strcmp(type, "game") == 0)
-		entry = database.gameInfo(index).eventEntry();
-	else
-		return error(CmdMake, 0, 0, "unknown index type '%s'", type);
-
-	TableHash::reference ref = tableHash[Key(database, reinterpret_cast<intptr_t>(entry))];
+	TableHash::reference ref = tableHash[Key(cursor.database(), view)];
 
 	if (ref == 0)
-		ref = database.makeTournamentTable(*entry);
+		ref = cursor.view(view).makeTournamentTable();
 
-	setResult(reinterpret_cast<intptr_t>(entry));
 	return TCL_OK;
 }
 
@@ -144,10 +132,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] = { "bestMode", "playerName", "playerInfo", "playerCount", 0 };
 	static char const* args[] =
 	{
-		"<base> <handle>",
-		"<base> <handle> <ranking>",
-		"<base> <handle> <ranking>",
-		"<base> <handle>",
+		"<base> <view>",
+		"<base> <view> <ranking>",
+		"<base> <view> <ranking>",
+		"<base> <view>",
 		0
 	};
 	enum { Cmd_BestMode, Cmd_PlayerName, Cmd_PlayerInfo, Cmd_PlayerCount };
@@ -155,11 +143,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc < 4)
 		return usage(::CmdGet, 0, 0, subcommands, args);
 
-	int			cmd		= tcl::uniqueMatchObj(objv[1], subcommands);
-	char const* base		= stringFromObj(objc, objv, 2);
-	intptr_t		handle	= longFromObj(objc, objv, 3);
+	int			cmd	= tcl::uniqueMatchObj(objv[1], subcommands);
+	char const* base	= stringFromObj(objc, objv, 2);
+	unsigned		view	= longFromObj(objc, objv, 3);
 
-	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), handle);
+	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), view);
 
 	if (!table)
 		return TCL_ERROR;
@@ -210,8 +198,8 @@ static int
 cmdRelease(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	mstl::string databaseName(stringFromObj(objc, objv, 1));
-	intptr_t handle(longFromObj(objc, objv, 2));
-	Key key(Scidb.cursor(databaseName).database(), handle);
+	unsigned view(unsignedFromObj(objc, objv, 2));
+	Key key(Scidb.cursor(databaseName).database(), view);
 
 	if (TableHash::const_pointer p = tableHash.find(key))
 	{
@@ -233,9 +221,9 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 
 	char const* base		= stringFromObj(objc, objv, 1);
-	intptr_t		handle	= longFromObj(objc, objv, 2);
+	unsigned		view	= longFromObj(objc, objv, 2);
 
-	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), handle);
+	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), view);
 
 	if (!table)
 		return TCL_ERROR;

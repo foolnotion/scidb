@@ -36,6 +36,11 @@ public:
 	tuple(T0 const& t0, T1 const& t1);
 	tuple(T0 const& t0, T1 const& t1, T2 const& t2);
 
+	tuple& operator=(tuple const& t);
+
+	bool operator==(tuple const& t) const;
+	bool operator!=(tuple const& t) const;
+
 	template <int N> typename tl::type_at<type_list,N>::result const& get() const;
 	template <int N> typename tl::type_at<type_list,N>::result& get();
 

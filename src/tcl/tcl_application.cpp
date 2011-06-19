@@ -51,6 +51,7 @@ Application tcl::app::scidb;
 Application const& tcl::app::Scidb = tcl::app::scidb;
 
 static char const* CmdBases	= "::scidb::app::bases";
+static char const* CmdClose	= "::scidb::app::close";
 static char const* CmdCount	= "::scidb::app::count";
 static char const* CmdGet		= "::scidb::app::get";
 static char const* CmdLoad		= "::scidb::app::load";
@@ -346,10 +347,19 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	scidb.close();
+	return TCL_OK;
+}
+
+
 void
 tcl::app::init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdBases,		cmdBases);
+	createCommand(ti, CmdClose,		cmdClose);
 	createCommand(ti, CmdCount,		cmdCount);
 	createCommand(ti, CmdGet,		cmdGet);
 	createCommand(ti, CmdLoad,		cmdLoad);

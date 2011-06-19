@@ -293,15 +293,6 @@ proc newBase {parent file} {
 }
 
 
-proc closeAllBases {} {
-	variable Vars
-
-	foreach base $Vars(bases) {
-		::scidb::db::close [lindex $base 2]
-	}
-}
-
-
 proc refreshBase {base} {
 	variable Vars
 

@@ -583,6 +583,7 @@ proc setNags {group args} {
 	}
 
 	::scidb::game::update $group $key $text
+	::scidb::game::variation unfold -force
 }
 
 

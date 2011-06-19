@@ -278,7 +278,7 @@ proc makeLog {arguments} {
 	if {$column} {
 		append line " (" $mc::Column " " [::locale::formatNumber $column] ")"
 	}
-	if {$Priv(gameNo) && [llength $gameNo] && $gameNo > 0} {
+	if {[::info exists Priv(gameNo)] && $Priv(gameNo) && [llength $gameNo] && $gameNo > 0} {
 		append line " " $mc::GameNumber " " [::locale::formatNumber $gameNo]
 	}
 	append line ": "

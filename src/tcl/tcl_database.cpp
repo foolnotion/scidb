@@ -31,6 +31,7 @@
 #include "tcl_progress.h"
 #include "tcl_game.h"
 #include "tcl_log.h"
+#include "tcl_obj.h"
 #include "tcl_base.h"
 
 #include "app_application.h"
@@ -57,6 +58,7 @@
 #include "m_utility.h"
 #include "m_algorithm.h"
 #include "m_limits.h"
+#include "m_tuple.h"
 
 #include <tcl.h>
 #include <string.h>
@@ -195,19 +197,6 @@ getNamebaseType(Tcl_Obj* obj, char const* cmd)
 
 namespace {
 
-static bool
-equal(Tcl_Obj* lhs, Tcl_Obj* rhs)
-{
-	if (lhs == 0)
-		return rhs == 0;
-
-	if (rhs == 0)
-		return false;
-
-	return strcmp(Tcl_GetStringFromObj(lhs, 0), Tcl_GetStringFromObj(rhs, 0)) == 0;
-}
-
-
 struct Subscriber : public Application::Subscriber
 {
 	enum Type
@@ -222,44 +211,40 @@ struct Subscriber : public Application::Subscriber
 		Tree				= 1 << 7,
 	};
 
+	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
+
 	struct Args
 	{
 		Args(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 			:m_type(type)
-			,m_updateCmd(updateCmd)
-			,m_closeCmd(closeCmd)
-			,m_arg(arg)
+			,m_tuple(updateCmd, closeCmd, arg ? arg : Tcl_NewListObj(0, 0))
 		{
-			M_ASSERT(m_updateCmd);
-
-			if (m_arg == 0)
-				m_arg = Tcl_NewListObj(0, 0);
-
-			Tcl_IncrRefCount(m_updateCmd);
-			if (m_closeCmd)
-				Tcl_IncrRefCount(m_closeCmd);
-			Tcl_IncrRefCount(m_arg);
 		}
 
-		Type		m_type;
-		Tcl_Obj*	m_updateCmd;
-		Tcl_Obj*	m_closeCmd;
-		Tcl_Obj*	m_arg;
+		void ref()		{ m_tuple.get<0>().ref(); m_tuple.get<1>().ref(); m_tuple.get<2>().ref(); }
+		void deref()	{ m_tuple.get<0>().deref(); m_tuple.get<1>().deref(); m_tuple.get<2>().deref(); }
+
+		Type	m_type;
+		Tuple	m_tuple;
 
 		bool operator==(Args const& args) const
 		{
-			M_ASSERT(m_updateCmd);
-			M_ASSERT(args.m_updateCmd);
-
-			return	m_type == args.m_type
-					&& ::equal(m_updateCmd, args.m_updateCmd)
-					&& ::equal(m_closeCmd, args.m_closeCmd)
-					&& ::equal(m_arg, args.m_arg);
+			return m_type == args.m_type && m_tuple == args.m_tuple;
 		}
+
+		Tcl_Obj* getUpdate() const	{ return m_tuple.get<0>(); }
+		Tcl_Obj* getClose() const	{ return m_tuple.get<1>(); }
+		Tcl_Obj* getArg() const		{ return m_tuple.get<2>(); }
 	};
 
 	typedef vector<Args> ArgsList;
 	ArgsList m_list;
+
+	void setCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	{
+		m_list.push_back(Args(type, updateCmd, closeCmd, arg));
+		m_list.back().ref();
+	}
 
 	void unsetCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
@@ -267,48 +252,59 @@ struct Subscriber : public Application::Subscriber
 
 		ArgsList::iterator i = mstl::find(m_list.begin(), m_list.end(), args);
 
-		if (i != m_list.end())
+		if (i == m_list.end())
+		{
+			fprintf(	stderr,
+						"Warning: database::unsubscribe failed (%s, %s, %s)\n",
+						Tcl_GetStringFromObj(updateCmd, 0),
+						closeCmd ? Tcl_GetStringFromObj(closeCmd, 0) : "",
+						Tcl_GetStringFromObj(arg, 0));
+		}
+		else
+		{
+			i->deref();
 			m_list.erase(i);
+		}
 	}
 
 	void setDatabaseInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(DatabaseInfo, updateCmd, closeCmd, arg));
+		setCmd(DatabaseInfo, updateCmd, closeCmd, arg);
 	}
 
 	void setGameListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(GameList, updateCmd, closeCmd, arg));
+		setCmd(GameList, updateCmd, closeCmd, arg);
 	}
 
 	void setPlayerListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(PlayerList, updateCmd, closeCmd, arg));
+		setCmd(PlayerList, updateCmd, closeCmd, arg);
 	}
 
 	void setEventListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(EventList, updateCmd, closeCmd, arg));
+		setCmd(EventList, updateCmd, closeCmd, arg);
 	}
 
 	void setAnnotatorListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(AnnotatorList, updateCmd, closeCmd, arg));
+		setCmd(AnnotatorList, updateCmd, closeCmd, arg);
 	}
 
 	void setGameInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(GameInfo, updateCmd, closeCmd, arg));
+		setCmd(GameInfo, updateCmd, closeCmd, arg);
 	}
 
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
-		m_list.push_back(Args(GameSwitched, updateCmd, 0, 0));
+		setCmd(GameSwitched, updateCmd, 0, 0);
 	}
 
 	void setTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(Tree, updateCmd, closeCmd, arg));
+		setCmd(Tree, updateCmd, closeCmd, arg);
 	}
 
 	void unsetDatabaseInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
@@ -355,8 +351,8 @@ struct Subscriber : public Application::Subscriber
 
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
-			if (i->m_closeCmd)
-				invoke(__func__, i->m_closeCmd, i->m_arg, file, NULL);
+			if (i->getClose())
+				invoke(__func__, i->getClose(), i->getArg(), file, NULL);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -371,7 +367,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & DatabaseInfo)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), f, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -400,7 +396,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & GameList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -431,7 +427,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & PlayerList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -462,7 +458,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & EventList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -493,7 +489,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type & AnnotatorList)
-				invoke(__func__, i->m_updateCmd, i->m_arg, f, v, w, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, NULL);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -509,7 +505,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type == GameInfo)
-				invoke(__func__, i->m_updateCmd, i->m_arg, pos, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), pos, NULL);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -523,7 +519,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type == GameSwitched)
-				invoke(__func__, i->m_updateCmd, pos, NULL);
+				invoke(__func__, i->getUpdate(), pos, NULL);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -545,7 +541,7 @@ struct Subscriber : public Application::Subscriber
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
 			if (i->m_type == Tree)
-				invoke(__func__, i->m_updateCmd, i->m_arg, file, NULL);
+				invoke(__func__, i->getUpdate(), i->getArg(), file, NULL);
 		}
 
 		Tcl_DecrRefCount(file);

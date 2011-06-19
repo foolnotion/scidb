@@ -14,7 +14,8 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2011 Gregor Cramer
+# Copyright: (C) 2011 Gregor Cramer
+# Copyright: (C) 2011 Giovanni Ornaghi
 # ======================================================================
 
 # ======================================================================
@@ -51,7 +52,7 @@
 ::mc::Modify			"Cambia"
 ::mc::No					"no"
 ::mc::NotAvailable	"n/a"
-::mc::Number			"Number" ;# NEW
+::mc::Number			"Numero"
 ::mc::OK					"OK"
 ::mc::Paste				"Incolla"
 ::mc::PieceSet			"Set di Pezzi"
@@ -96,6 +97,8 @@
 ::widget::mc::Revert		"In&verti"
 ::widget::mc::Previous	"Prece&dente"
 ::widget::mc::Next		"Pro&ssima"
+::widget::mc::First		"Pri&ma"
+::widget::mc::Last		"&Ultima"
 
 ### menu ###############################################################
 ::menu::mc::File						"&File"
@@ -117,7 +120,7 @@
 ::menu::mc::GameNewShuffleSymm	"Nuova Pa&rtita: Mischiata (solo simmetrica)"
 ::menu::mc::GameSave					"&Salva Partita"
 ::menu::mc::GameReplace				"S&ostituisci Partita"
-::menu::mc::GameReplaceMoves		"Replace &Moves Only" ;# NEW
+::menu::mc::GameReplaceMoves		"Sostituisci So&lo Mosse"
 
 ::menu::mc::HelpInfo					"In&fo"
 ::menu::mc::HelpContents			"Conten&uti"
@@ -175,10 +178,10 @@
 ::application::mc::DockWindow				"Blocca Finestra"
 ::application::mc::UndockWindow			"Sblocca Finestra"
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
-::application::mc::Shutdown				"Shutdown..." ;# NEW
+::application::mc::Shutdown				"Spegni..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Show tournament table for this game" ;# NEW
+::application::board::mc::ShowCrosstable		"Mostra tabella torneo per questa partita"
 
 ::application::board::mc::Tools					"Strumenti"
 ::application::board::mc::Control				"Controllo"
@@ -222,7 +225,7 @@
 ::application::database::mc::DatabasePath				"Indirizzo Database"
 ::application::database::mc::DeletedGames				"Partite Eliminate"
 ::application::database::mc::Description				"Descrizione"
-::application::database::mc::Created					"Created" ;# NEW
+::application::database::mc::Created					"Creata"
 ::application::database::mc::LastModified				"Ultima Modifica"
 ::application::database::mc::Encoding					"Codifica"
 ::application::database::mc::YearRange					"Range Anni"
@@ -337,22 +340,22 @@
 
 ::application::pgn::mc::AddNewGame							"Salva: Aggiunti nuova partita a %s..."
 ::application::pgn::mc::ReplaceGame							"Salva: Rimpiazza partita in %s..."
-::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game" ;# NEW
+::application::pgn::mc::ReplaceMoves						"Salva: Sostituisci solo mosse nella partita"
 
 ::application::pgn::mc::ColumnStyle							"Stile colonna"
-::application::pgn::mc::UseParagraphSpacing				"Use Paragraph Spacing" ;# NEW
+::application::pgn::mc::UseParagraphSpacing				"Usa spaziatura di paragrafo"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Grassetto per mosse nella linea principale"
 ::application::pgn::mc::ShowDiagrams						"Mostra diagrammi"
-::application::pgn::mc::Languages							"Languages" ;# NEW
-::application::pgn::mc::CollapseVariations				"Collapse Variations" ;# NEW
-::application::pgn::mc::ExpandVariations					"Expand Variations" ;# NEW
-::application::pgn::mc::EmptyGame							"Empty Game" ;# NEW
+::application::pgn::mc::Languages							"Lingue"
+::application::pgn::mc::CollapseVariations				"Comprimi Varianti" ;# "collapse"
+::application::pgn::mc::ExpandVariations					"Espandi Varianti"
+::application::pgn::mc::EmptyGame							"Partita Vuota"
 
 ::application::pgn::mc::NumberOfMoves						"Numero di semimosse (nella linea principale):"
 ::application::pgn::mc::InvalidInput						"Input non valido '%d'."
 ::application::pgn::mc::MustBeEven							"Input deve essere un numero pari."
 ::application::pgn::mc::MustBeOdd							"Input deve essere un numero dispari."
-::application::pgn::mc::ReplaceMovesSucceeded			"Game moves successfully replaced." ;# NEW
+::application::pgn::mc::ReplaceMovesSucceeded			"Mosse nella partita sostituite con successo."
 
 ::application::pgn::mc::EditAnnotation						"Modifica annotazioni"
 ::application::pgn::mc::EditCommentBefore					"Modifica commento prima della mossa"
@@ -363,7 +366,6 @@
 ::application::pgn::mc::None									"nessuno"
 
 ### application::tree ##################################################
-
 ::application::tree::mc::Total							"Totale"
 ::application::tree::mc::Control							"Controllo"
 ::application::tree::mc::ChooseReferenceBase			"Scegli database di riferimento"
@@ -588,8 +590,8 @@
 ::gametable::mc::T_EventType				"Tipo dell'evento"
 ::gametable::mc::T_Chess960Pos			"Posizione Scacchi 960"
 ::gametable::mc::T_Deleted					"Eliminate"
-::gametable::mc::T_EngFlag					"English Language Flag" ;# NEW
-::gametable::mc::T_OthFlag					"Other Language Flag" ;# NEW
+::gametable::mc::T_EngFlag					"Identificatore Lingua Inglese"
+::gametable::mc::T_OthFlag					"Identificatori per Altre Lingue"
 ::gametable::mc::T_Idn						"Numero Posizione Scacchi 960"
 ::gametable::mc::T_Annotations			"Annotazioni"
 ::gametable::mc::T_Comments				"Commenti"
@@ -685,12 +687,14 @@
 ::gamebar::mc::Players					"Giocatori"
 ::gamebar::mc::Event						"Eventi"
 ::gamebar::mc::Site						"Sito"
+::gamebar::mc::SeparateHeader			"Separa intestazione"
 ::gamebar::mc::ShowActiveAtBottom	"Mostra partita attiva in basso"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Mostra giocatori su righe separate"
-::gamebar::mc::DiscardChanges			"This game has altered.\n\nDo you really want to discard the changes made to it?" ;# NEW
-::gamebar::mc::DiscardNewGame			"Do you really want to throw away this game?" ;# NEW
-::gamebar::mc::NewGameFstPart			"New" ;# NEW
-::gamebar::mc::NewGameSndPart			"Game" ;# NEW
+::gamebar::mc::DiscardChanges			"Questa partita è stata modificata.\n\nVuoi davvero annullare i cambiamenti fatti?"
+::gamebar::mc::DiscardNewGame			"Vuoi davvero buttare via questa partita?"
+::gamebar::mc::NewGameFstPart			"Nuovo"
+::gamebar::mc::NewGameSndPart			"Partita"
+::gamebar::mc::Unlock					"Sblocca"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"
@@ -704,6 +708,8 @@
 ::browser::mc::GotoEndOfGame		"Vai alla fine della partita"
 ::browser::mc::IncreaseBoardSize	"Aumenta grandezza scacchiera"
 ::browser::mc::DecreaseBoardSize	"Diminuisci grandezza scacchiera"
+::browser::mc::GotoFirstGame     "Vai alla prima partita"
+::browser::mc::GotoLastGame      "Vai all'ultima partita"
 
 ::browser::mc::LoadGame				"Carica partita"
 ::browser::mc::MergeGame			"Unisci partita"
@@ -824,11 +830,9 @@
 ::import::mc::DecodingFailed						"Decodifica fallita"
 ::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"
 ::import::mc::ValueTooLong							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
-::import::mc::CommentAtEndOfGame					"Comment at end of game inserted as sub-variation" ;# NEW
-#::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori"
-::import::mc::MaximalErrorCountExceeded		"Maximal error count exceeded; no more errors (of previous error type) will be reported" ;# NEW (change, see preceeding line)
-#::import::mc::MaximalWarningCountExceeded	"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti"
-::import::mc::MaximalWarningCountExceeded		"Maximal warning count exceeded; no more warnings (of previous warning type) will be reported" ;# NEW (change, see preceeding line)
+::import::mc::CommentAtEndOfGame					"Commenti alla fine della partita inseriti come sotto-varianti"
+::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori analoghi"
+::import::mc::MaximalWarningCountExceeded	"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti analoghi"
 ::import::mc::InvalidToken							"Token non valido"
 ::import::mc::InvalidMove							"Mossa non valida"
 ::import::mc::UnexpectedSymbol					"Simbolo inatteso"
@@ -928,7 +932,7 @@
 ::export::mc::Option(pgn,include_varations)						"Esporta variante"
 ::export::mc::Option(pgn,include_comments)						"Esporta commenti"
 ::export::mc::Option(pgn,include_marks)							"Esporta codici (come commenti)"
-::export::mc::Option(pgn,use_chessbase_format)					"Use Scidb Import Format" ;# NEW
+::export::mc::Option(pgn,use_scidb_import_format)				"Usa formato importazione Scidb" ;# [chessbase?]
 ::export::mc::Option(pgn,use_chessbase_format)					"Usa formato ChessBase"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Scrivi tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Scrivi tag 'Termination'"
@@ -1039,25 +1043,28 @@
 
 ### game ###############################################################
 ::game::mc::CloseAllGames				"Chiudere tutte le partite aperte del database '%s'?"
-::game::mc::AllSlotsOccupied			"All game slots are occupied." ;# NEW
-::game::mc::ReleaseOneGame				"Please release one of the games before loading a new one." ;# NEW
-::game::mc::GameAlreadyOpen			"Game is already open but modified. Discard modified version of this game?" ;# NEW
-::game::mc::GameAlreadyOpenDetail	"'%s' will open a new game." ;# NEW
-::game::mc::GameHasChanged				"Game %s has changed (outside this session)." ;# NEW
-::game::mc::CorruptedHeader			"Corrupted header in recovery file '%s'." ;# NEW
-::game::mc::RenamedFile					"Renamed this file to '%s.bak'." ;# NEW
-::game::mc::CannotOpen					"Cannot open recovery file '%s'." ;# NEW
-::game::mc::GameRestored				"One game from last session restored." ;# NEW
-::game::mc::GamesRestored				"%s games from last session restored." ;# NEW
-::game::mc::ErrorInRecoveryFile		"Error in recovery file '%s'" ;# NEW
-::game::mc::Recovery						"Recovery" ;# NEW
-::game::mc::UnsavedGames				"You have unsaved game changes." ;# NEW
-::game::mc::DiscardChanges				"'%s' will throw away all changes." ;# NEW
-::game::mc::ShouldRestoreGame			"Should this game be restored in next session?" ;# NEW
-::game::mc::ShouldRestoreGames		"Should these games be restored in next session?" ;# NEW
-::game::mc::NewGame						"New Game" ;# NEW
-::game::mc::NewGames						"New Games" ;# NEW
-::game::mc::Created						"created" ;# NEW
+::game::mc::SomeGamesAreModified		"Alcune partite nel database '%s' sono state modificate. Chiudo comunque?"
+::game::mc::AllSlotsOccupied			"Tutti i posti per le partite sono occupati."
+::game::mc::ReleaseOneGame				"Per favore chiudi una partita prima di caricarne un'altra."
+::game::mc::GameAlreadyOpen			"La partita è già aperta ma modificata. Annulla modifiche a questa partita?"
+::game::mc::GameAlreadyOpenDetail	"'%s' aprirà una nuova partita."
+::game::mc::GameHasChanged				"La partita %s è stata modificata (fuori da questa sessione)."
+::game::mc::CorruptedHeader			"Intestazione corrotta nel file di ripristino '%s'." ;#di ripristino? da ripristinare?
+::game::mc::RenamedFile					"File rinominato in '%s.bak'."
+::game::mc::CannotOpen					"Impossibile aprire file di ripristino '%s'."
+::game::mc::GameRestored				"Una partita dall'ultima sessione ripristinata."
+::game::mc::GamesRestored				"%s partite dall'ultima sessione ripristinate."
+::game::mc::OldGameRestored			"Una partita ripristinata."
+::game::mc::OldGamesRestored			"%s partite ripristinate."
+::game::mc::ErrorInRecoveryFile		"Errore nel file di ripristino '%s'"
+::game::mc::Recovery						"Ripristino"
+::game::mc::UnsavedGames				"Ci sono modifiche non salvate."
+::game::mc::DiscardChanges				"'%s' annullerà ogni modifica."
+::game::mc::ShouldRestoreGame			"Vuoi ripristinare questa partita nella prossima sessione?"
+::game::mc::ShouldRestoreGames		"Vuoi ripristinare queste partite nella prossima sessione?"
+::game::mc::NewGame						"Nuova partita"
+::game::mc::NewGames						"Nuove partite"
+::game::mc::Created						"creata" ;#creato?
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Oggi"
@@ -1172,7 +1179,7 @@
 ::info::mc::Testing				"Testing"
 ::info::mc::References			"Riferimenti"
 ::info::mc::System				"Sistema"
-::info::mc::FontDesign			"design del font"
+::info::mc::FontDesign			"design del font di scacchi"
 ::info::mc::ChessPieceDesign	"design dei pezzi"
 ::info::mc::BoardThemeDesign	"design della scacchiera"
 ::info::mc::FlagsDesign			"Design identificatori miniaturizzati"
@@ -1271,7 +1278,7 @@
 ::dialog::mc::Information	"Informazioni"
 ::dialog::mc::Question		"Domanda"
 
-::dialog::mc::DontAskAgain	"Don't ask again" ;# NEW
+::dialog::mc::DontAskAgain	"Non chiedere più"
 
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Base Colori"

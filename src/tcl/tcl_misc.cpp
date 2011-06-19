@@ -62,12 +62,41 @@ append(mstl::string& result, char const* s, unsigned len)
 
 	result.reserve(result.size() + len);
 
-	for ( ; s < e; ++s)
+	while (s < e)
 	{
-		if (*s == '{')
-			result += "<brace/>";
-		else
-			result += *s;
+		switch (*s)
+		{
+			case '{':
+				result += "<brace/>";
+				++s;
+				break;
+
+			case '&':
+				if (strncmp("&lt;", s, 4) == 0)
+				{
+					result += '<';
+					s += 4;
+				}
+				else if (strncmp("&gt;", s, 4) == 0)
+				{
+					result += '>';
+					s += 4;
+				}
+				else if (strncmp("&amp;", s, 4) == 0)
+				{
+					result += '&';
+					s += 5;
+				}
+				else
+				{
+					result += *s++;
+				}
+				break;
+
+			default:
+				result += *s++;
+				break;
+		}
 	}
 }
 

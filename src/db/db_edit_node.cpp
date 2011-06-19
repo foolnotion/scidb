@@ -1118,6 +1118,9 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 
 	if (work.isFolded)
 	{
+//		too confusing!
+//		if (node->atLineEnd() && !node->hasNote() && !node->prev()->hasNote())
+//			work.isFolded = false;
 		work.key.addPly(work.board.plyNumber() + 1);
 		result.push_back(new Move(work, node));
 		work.board.doMove(node->move());

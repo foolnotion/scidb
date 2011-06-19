@@ -30,6 +30,8 @@
 #include "db_common.h"
 
 #include "m_vector.h"
+#include "m_ref_counted_ptr.h"
+#include "m_ref_counter.h"
 
 namespace mstl { class string; }
 namespace util { class Progress; }
@@ -53,12 +55,21 @@ public:
 
 	static unsigned const BaseView = unsigned(-1);
 
+	struct Subscriber : public mstl::ref_counter
+	{
+		virtual ~Subscriber() throw();
+		virtual void close(unsigned view) = 0;
+	};
+
+	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
+
 	Cursor(Application& app, db::Database* database);
 	~Cursor();
 
 	bool isOpen() const;
 	bool isClosed() const;
 	bool isViewOpen(unsigned view) const;
+	bool isValidView(unsigned view) const;
 	bool isReferenceBase() const;
 	bool hasTreeView() const;
 
@@ -131,6 +142,9 @@ public:
 	/// Update the characteristics of a game.
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
 
+	SubscriberP subscriber() const;
+	void setSubscriber(SubscriberP subscriber);
+
 private:
 
 	friend class Application;
@@ -148,6 +162,7 @@ private:
 	IndexSet			m_freeSet;
 	int				m_treeView;
 	bool				m_isRefBase;
+	SubscriberP		m_subscriber;
 };
 
 } // namespace app

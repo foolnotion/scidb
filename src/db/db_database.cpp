@@ -789,13 +789,12 @@ Database::closeAsyncReader()
 
 
 TournamentTable*
-Database::makeTournamentTable(NamebaseEvent const& event) const
+Database::makeTournamentTable(Filter const& gameFilter) const
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(!gameFilter.isEmpty());
 
-	Filter filter(countGames());
-	filter.search(Query(new SearchEvent(&event)), content());
-	return new TournamentTable(*this, event, filter);
+	return new TournamentTable(*this, *(m_gameInfoList[gameFilter.next()]->eventEntry()), gameFilter);
 }
 
 // vi:set ts=3 sw=3:

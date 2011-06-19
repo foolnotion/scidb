@@ -150,6 +150,7 @@ public:
 	void prepareForSan(Board const& board);
 	void transpose();
 	void finish(Board const& board);
+	void unfold();
 
 	void deleteNext();
 	void deleteVariation(unsigned varNo);

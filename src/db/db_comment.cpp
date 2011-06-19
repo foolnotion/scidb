@@ -58,7 +58,7 @@ skipSpaces(char const* s)
 static bool
 isDelimChar(char c)
 {
-	return c == '\0' || ::strchr(" \t\n/.,;:!?", c);
+	return c == '\0' || ::strchr(" \t\n/.,;:!?<>&", c);
 }
 
 
@@ -1378,7 +1378,35 @@ Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
 	}
 	else
 	{
-		result.append(m_content);
+		char const* s = m_content.begin();
+		char const* e = m_content.end();
+
+		while (s < e)
+		{
+			if (*s != '&')
+			{
+				result.append(*s++);
+			}
+			else if (::strncmp("&lt;", s, 4) == 0)
+			{
+				result.append('<');
+				s += 4;
+			}
+			else if (::strncmp("&gt;", s, 4) == 0)
+			{
+				result.append('>');
+				s += 4;
+			}
+			else if (::strncmp("&amp;", s, 4) == 0)
+			{
+				result.append('&');
+				s += 4;
+			}
+			else
+			{
+				result.append(*s++);
+			}
+		}
 	}
 }
 
@@ -1405,9 +1433,9 @@ Comment::toHtml(mstl::string& result) const
 		{
 			switch (*s)
 			{
-				case '<':	++s; result += "&lt;"; break;
-				case '>':	++s; result += "&gt;"; break;
-				case '&':	++s; result += "&amp;"; break;
+				case '<':	++s; result.append("&lt;", 4); break;
+				case '>':	++s; result.append("&gt;", 4); break;
+				case '&':	++s; result.append("&amp;", 5); break;
 				case '\n':	++s; result += "<br/>"; break;
 
 				default:
@@ -1632,8 +1660,8 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 			{
 				switch (*s)
 				{
-					case '&': result.m_content += '\x01'; ++s; break;
-					case '>': result.m_content += '\x03'; ++s; break;
+					case '&': result.m_content.append("&amp;", 5); ++s; break;
+					case '>': result.m_content.append("&gt;", 4); ++s; break;
 
 					case '<':
 						if (	::islower(s[1])
@@ -1655,7 +1683,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 						}
 					else
 					{
-						result.m_content += '\x02';
+						result.m_content.append("&lt;", 4);
 						++s;
 					}
 					break;
@@ -1778,42 +1806,16 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 	{
 		mstl::string str;
 		str.swap(result.m_content);
+		str.rtrim();
 
 		result.m_content.append(::prefix);
 		result.m_content.append("<:>", 3);
-
-		for (unsigned i = 0; i < str.size(); ++i)
-		{
-			switch (char c = str[i])
-			{
-				case '\x01': result.m_content += "&amp;";  break;
-				case '\x02': result.m_content += "&lt;";   break;
-				case '\x03': result.m_content += "&gt;";   break;
-
-				default: result.m_content += c;
-			}
-		}
-
-		while (result.m_content.back() == ' ')
-			result.m_content.set_size(result.m_content.size() - 1);
-
+		result.m_content.append(str);
 		result.m_content.append("</:", 3);
 		result.m_content.append(lang);
 		result.m_content.append(">", 1);
 		result.m_content += ::suffix;
 		result.normalize('\0');
-	}
-	else
-	{
-		for (unsigned i = 0; i < result.m_content.size(); ++i)
-		{
-			switch (result.m_content[i])
-			{
-				case '\x01': result.m_content[i] = '&'; break;
-				case '\x02': result.m_content[i] = '<'; break;
-				case '\x03': result.m_content[i] = '>'; break;
-			}
-		}
 	}
 
 	return hasDiagram;

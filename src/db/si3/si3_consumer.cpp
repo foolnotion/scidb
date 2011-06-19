@@ -125,16 +125,9 @@ Consumer::endMoveSection(result::ID)
 void
 Consumer::pushComment(Comment const& comment)
 {
-	if (comment.isXml())
-	{
-		mstl::string text;
-		comment.flatten(text, m_encoding);
-		m_comments.push_back(text);
-	}
-	else
-	{
-		m_comments.push_back(comment.content());
-	}
+	mstl::string text;
+	comment.flatten(text, m_encoding);
+	m_comments.push_back(text);
 }
 
 

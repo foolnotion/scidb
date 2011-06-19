@@ -29,26 +29,32 @@
 namespace db {
 namespace si3 {
 
-inline bool NameList::isEmpty() const				{ return m_first == m_last; }
+inline bool NameList::isEmpty() const				{ return m_size == 0; }
 
 inline unsigned NameList::size() const				{ return m_size; }
-inline unsigned NameList::maxId() const			{ return m_lookup.size() - 1; }
 inline unsigned NameList::maxFrequency() const	{ return m_maxFrequency; }
 
-inline NameList::Node const* NameList::first() const	{ return m_first == m_last ? 0 : *m_first; }
-inline NameList::Node const* NameList::next() const	{ return ++m_first == m_last ? 0 : *m_first; }
+#ifdef DEBUG_SI4
+inline NameList::Node* NameList::back() { return m_list.back(); }
+#endif
 
 
 inline
-unsigned
+NameList::Node const*
+NameList::next() const
+{
+	return (++m_first == m_last) ? 0 : *m_first;
+}
+
+
+inline
+NameList::Node const*
 NameList::lookup(unsigned id) const
 {
-	M_REQUIRE(id <= maxId());
-
+	M_ASSERT(id < m_lookup.size());
 	M_ASSERT(m_lookup[id]);
-	M_ASSERT(m_lookup[id]->id < m_size);
 
-	return m_lookup[id]->id;
+	return m_lookup[id];
 }
 
 } // namespace si3

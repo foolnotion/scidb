@@ -96,6 +96,8 @@
 ::widget::mc::Revert		"&Revert"
 ::widget::mc::Previous	"&Previous"
 ::widget::mc::Next		"&Next"
+::widget::mc::First		"&First"
+::widget::mc::Last		"Las&t"
 
 ### menu ###############################################################
 ::menu::mc::File						"&File"
@@ -686,13 +688,14 @@
 ::gamebar::mc::Players					"Players"
 ::gamebar::mc::Event						"Event"
 ::gamebar::mc::Site						"Site"
+::gamebar::mc::SeparateHeader			"Separate header"
 ::gamebar::mc::ShowActiveAtBottom	"Show active game at bottom"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Show players on separate lines"
 ::gamebar::mc::DiscardChanges			"This game has altered.\n\nDo you really want to discard the changes made to it?"
 ::gamebar::mc::DiscardNewGame			"Do you really want to throw away this game?"
 ::gamebar::mc::NewGameFstPart			"New"
 ::gamebar::mc::NewGameSndPart			"Game"
-::gamebar::mc::Number					"Number"
+::gamebar::mc::Unlock					"Unlock"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Browse Game"
@@ -706,6 +709,8 @@
 ::browser::mc::GotoEndOfGame		"Go to end of game"
 ::browser::mc::IncreaseBoardSize	"Increase board size"
 ::browser::mc::DecreaseBoardSize	"Decrease board size"
+::browser::mc::GotoFirstGame		"Goto first game"
+::browser::mc::GotoLastGame		"Goto last game"
 
 ::browser::mc::LoadGame				"Load Game"
 ::browser::mc::MergeGame			"Merge Game"
@@ -928,7 +933,7 @@
 ::export::mc::Option(pgn,include_varations)						"Export variations"
 ::export::mc::Option(pgn,include_comments)						"Export comments"
 ::export::mc::Option(pgn,include_marks)							"Export marks (as comments)"
-::export::mc::Option(pgn,use_chessbase_format)					"Use Scidb Import Format"
+::export::mc::Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
 ::export::mc::Option(pgn,use_chessbase_format)					"Use ChessBase format"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Write tag 'Termination'"
@@ -1039,6 +1044,7 @@
 
 ### game ###############################################################
 ::game::mc::CloseAllGames				"Close all open games of database '%s'?"
+::game::mc::SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
 ::game::mc::AllSlotsOccupied			"All game slots are occupied."
 ::game::mc::ReleaseOneGame				"Please release one of the games before loading a new one."
 ::game::mc::GameAlreadyOpen			"Game is already open but modified. Discard modified version of this game?"
@@ -1049,6 +1055,8 @@
 ::game::mc::CannotOpen					"Cannot open recovery file '%s'."
 ::game::mc::GameRestored				"One game from last session restored."
 ::game::mc::GamesRestored				"%s games from last session restored."
+::game::mc::OldGameRestored			"One game restored."
+::game::mc::OldGamesRestored			"%s games restored."
 ::game::mc::ErrorInRecoveryFile		"Error in recovery file '%s'"
 ::game::mc::Recovery						"Recovery"
 ::game::mc::UnsavedGames				"You have unsaved game changes."
@@ -1172,7 +1180,7 @@
 ::info::mc::Testing				"Testing"
 ::info::mc::References			"References"
 ::info::mc::System				"System"
-::info::mc::FontDesign			"font design"
+::info::mc::FontDesign			"chess font design"
 ::info::mc::ChessPieceDesign	"chess piece design"
 ::info::mc::BoardThemeDesign	"Board theme design"
 ::info::mc::FlagsDesign			"Miniature flags design"

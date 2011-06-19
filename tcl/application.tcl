@@ -292,7 +292,7 @@ proc shutdown {} {
 	::widget::busyCursor on
 
 	::remote::cleanup
-	database::closeAllBases
+	::scidb::app::close
 	if {$backup} { ::game::backup }
 
 	::widget::busyCursor off
@@ -328,7 +328,7 @@ proc ChooseLanguage {parent} {
 				-text " $lang" \
 				-image $flag \
 				-compound left \
-				-command [list set ::mc::langID $code] \
+				-command [namespace code [list SetupLang $code]] \
 				;
 			pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
 			bind $top.$code <Return> "event generate %W <Key-space>; break"
@@ -348,6 +348,14 @@ proc ChooseLanguage {parent} {
 	::mc::setLang $mc::langID
 	wm protocol $parent WM_DELETE_WINDOW [namespace code shutdown]
 	focus -force .application
+}
+
+
+proc SetupLang {langID} {
+	pgn::setActiveLang $::mc::langID 0
+	set ::mc::langID $langID
+	::font::useLanguage $langID
+	pgn::setActiveLang $langID 1
 }
 
 

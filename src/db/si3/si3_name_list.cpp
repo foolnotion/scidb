@@ -32,9 +32,6 @@
 
 #include "m_algorithm.h"
 #include "m_string.h"
-#include "m_utility.h"
-#include "m_pair.h"
-#include "m_map.h"
 #include "m_assert.h"
 
 #include <ctype.h>
@@ -89,130 +86,174 @@ operator<(NameList::Node* lhs, mstl::string const& rhs)
 } // namespace db
 
 
-NameList::NameList(Namebase& base, sys::utf8::Codec& codec, mstl::bitset& usedIdSet)
-	:m_usedIdSet(usedIdSet)
-	,m_newIdSet(base.nextId())
-	,m_maxFrequency(0)
+NameList::NameList()
+	:m_maxFrequency(0)
 	,m_size(0)
+	,m_nextId(0)
 	,m_first(0)
 	,m_last(0)
 	,m_nodeAlloc(32768)
 	,m_stringAlloc(32768)
 {
-	M_REQUIRE(codec.hasEncoding());
-
 	m_nodeAlloc.set_zero();
-	m_lookup.resize(base.nextId());
-	m_list.reserve(base.nextId());
+}
 
-	if (m_usedIdSet.size() < base.nextId())
-		m_usedIdSet.resize(base.nextId());
 
-	buildList(base, codec);
-	renumber(base);
-	m_usedIdSet.swap(m_newIdSet);
-
-	M_ASSERT(m_size <= m_list.size());
+NameList::Node const*
+NameList::first() const
+{
+	M_ASSERT(m_list.size() == size());
 
 	m_first = m_list.begin();
-	m_last = m_first + m_size;
+	m_last = m_list.end();
+
+	return m_first == m_last ? 0 : *m_first;
 }
 
 
 void
-NameList::renumber(Namebase& base)
+NameList::reserve(unsigned size)
 {
-	typedef mstl::map<unsigned,unsigned> ChangedMap;
+	m_usedIdSet.resize(size);
+	m_newIdSet.resize(size);
+	m_list.reserve(size);
+	m_lookup.resize(size);
+	m_access.resize(size);
+}
 
-	unsigned count = m_newIdSet.count();
 
-	if (count == 0)
-		return;
+void
+NameList::update(Namebase& base, sys::utf8::Codec& codec)
+{
+	M_REQUIRE(codec.hasEncoding());
 
-	unsigned expectedMaxId	= count - 1;
-	unsigned maxUsedId		= (m_usedIdSet & m_newIdSet).find_last();
+	m_maxFrequency = 0;
+	m_newIdSet.clear();
 
-	if (maxUsedId != mstl::bitset::npos && maxUsedId > expectedMaxId)
-		expectedMaxId = maxUsedId;
-
-	Namebase::EntryMap map;
-	mstl::bitset exchangeSet(m_newIdSet.size());
-	mstl::bitset changedSet(m_newIdSet.size());
-	ChangedMap changedMap;
-	List* entryList = 0;
-
-	for (	unsigned id = m_newIdSet.find_next(expectedMaxId);
-			id != mstl::bitset::npos;
-			id = m_newIdSet.find_next(id))
+	for (unsigned i = 0; i < m_list.size(); ++i)
 	{
-		unsigned wantedId = m_newIdSet.find_first_not();
+		Node* node = m_list[i];
 
-		M_ASSERT(wantedId < id);
-
-		if (entryList == 0)
-		{
-			entryList = new List(m_newIdSet.size());
-
-			for (unsigned i = 0; i < m_list.size(); ++i)
-			{
-				unsigned id = m_list[i]->id;
-
-				M_ASSERT(m_lookup[m_list[i]->entry->id()]);
-				M_ASSERT((*entryList)[id] == 0);
-
-				(*entryList)[id] = m_list[i];
-			}
-		}
-
-		M_ASSERT((*entryList)[id]);
-
-		Node*		node		= (*entryList)[id];
-		unsigned	mappedId	= m_lookup[wantedId]->id;
-
-		changedMap[id] = mappedId;
-		changedMap[wantedId] = wantedId;
-		changedSet.set(id);
-		changedSet.set(wantedId);
-
-		exchangeSet.set(wantedId);
-		map[wantedId] = node->entry;
-
-		node->id = wantedId;
-		m_newIdSet.reset(id);
-		m_newIdSet.set(wantedId);
+		node->frequency = 0;
+		node->id = ::InvalidId;
 	}
 
-	if (entryList)
-	{
-		delete entryList;
-		base.exchangeId(exchangeSet, map);
-		m_size = m_newIdSet.find_last();
+	if (base.nextId() > m_lookup.size())
+		reserve(base.nextId());
 
-		if (m_size == mstl::bitset::npos)
-			m_size = 0;
-		else
-			++m_size;
+	m_nextId = m_usedIdSet.find_first_not();
+
+#ifndef NDEBUG
+	m_lookup.fill(0);
+#endif
+
+	buildList(base, codec);
+	m_usedIdSet = m_newIdSet;
+	renumber();
+	adjustListSize();
+}
+
+
+void
+NameList::adjustListSize()
+{
+	unsigned count = m_usedIdSet.count();
+
+	if (m_list.size() == m_size && count == m_size)
+		return;
+
+	List::reverse_iterator e = m_list.rend();
+
+	unsigned id = mstl::bitset::npos;
+
+	for (List::reverse_iterator i = m_list.rbegin(); i != e; ++i)
+	{
+		if ((*i)->id == ::InvalidId)
+		{
+			if (m_list.size() > m_size)
+			{
+				m_list.erase(i.base());
+
+				if (m_list.size() == m_size && count == m_size)
+					return;
+			}
+			else if (count < m_size)
+			{
+				if (id == mstl::bitset::npos)
+					id = m_usedIdSet.find_first_not();
+				else
+					id = m_usedIdSet.find_next_not(id);
+
+				M_ASSERT(id != mstl::bitset::npos);
+
+				(*i)->id = id;
+				m_usedIdSet.set(id);
+
+				if (++count == m_size)
+					return;
+			}
+		}
+	}
+
+	M_ASSERT(m_list.size() == size());
+	M_ASSERT(m_usedIdSet.count() == size());
+}
+
+
+void
+NameList::renumber()
+{
+	unsigned count = m_usedIdSet.count();
+
+	if (count == 0)
+	{
+		m_size = 0;
 	}
 	else
 	{
-		m_size = expectedMaxId + 1;
+		unsigned expectedMaxId = m_usedIdSet.find_last();
+
+		if (expectedMaxId < count)
+			return;
+
+		unsigned wantedId = m_usedIdSet.find_first_not();
+
+		for (	unsigned id = m_usedIdSet.find_next(expectedMaxId);
+				id != mstl::bitset::npos;
+				id = m_usedIdSet.find_next(id))
+		{
+			Node* node = m_access[id];
+
+			M_ASSERT(node);
+			M_ASSERT(node->id == id);
+			M_ASSERT(wantedId != mstl::bitset::npos);
+
+			node->id = wantedId;
+			m_usedIdSet.reset(id);
+			m_usedIdSet.set(wantedId);
+			m_access[wantedId] = node;
+			wantedId	= m_usedIdSet.find_next_not(wantedId);
+		}
+
+		m_size = m_usedIdSet.find_last() + 1;
 	}
 }
 
 
 NameList::Node*
-NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
+NameList::newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id)
 {
 	Node* node = m_nodeAlloc.alloc();
 
 	node->entry = entry;
 	node->frequency = entry->frequency();
+	node->id = id;
 
-	m_newIdSet.set(node->id = entry->id());
-	m_lookup[node->id] = node;
+	if (id >= m_size)
+		m_size = id + 1;
 
-	if (node->id >= m_size)
-		m_size = node->id + 1;
+	m_newIdSet.set(id);
+	m_lookup[entry->id()] = m_access[id] = node;
 
 	if (node->frequency > m_maxFrequency)
 		m_maxFrequency = node->frequency;
@@ -232,28 +273,70 @@ NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 }
 
 
-void
-NameList::copyNode(Node* node, NamebaseEntry* entry)
+NameList::Node*
+NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 {
-	unsigned id		= entry->id();
-	unsigned oldId	= node->id;
+	unsigned id = m_nextId;
 
-	if (!m_usedIdSet.test(oldId) && id < oldId)
+	if (id == mstl::string::npos)
 	{
-		M_ASSERT(id < m_size);
-		m_newIdSet.reset(oldId);
-		m_newIdSet.set(node->id = id);
-		node->entry = entry;
-	}
-	else if (id >= m_size)
-	{
-		m_size = id + 1;
+		unsigned n = m_usedIdSet.size();
+
+		id = n;
+		m_usedIdSet.resize(n + mstl::max(mstl::bitset::size_type(50), (n*9)/10));
+		m_newIdSet.resize(m_usedIdSet.size());
+		m_access.resize(m_usedIdSet.size());
 	}
 
-	m_lookup[id] = node;
+	m_usedIdSet.set(id);
+	m_nextId = m_usedIdSet.find_next_not(m_nextId);
+	return newNode(entry, str, id);
+}
+
+
+void
+NameList::reuseNode(Node* node, NamebaseEntry* entry)
+{
+	m_lookup[entry->id()] = node;
 
 	if ((node->frequency += entry->frequency()) > m_maxFrequency)
 		m_maxFrequency = node->frequency;
+}
+
+
+void
+NameList::add(unsigned originalId, NamebaseEntry* entry)
+{
+	M_ASSERT(m_lookup[originalId]);
+
+	unsigned id = entry->id();
+
+	if (id >= m_lookup.size())
+		reserve(id + 1);
+
+	m_lookup[id] = m_lookup[originalId];
+}
+
+
+void
+NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec)
+{
+	unsigned id = entry->id();
+	mstl::string const* str;
+
+	if (entry->name() == originalName)
+	{
+		str = &entry->name();
+	}
+	else
+	{
+		m_buf.assign(originalName);
+		str = &m_buf;
+	}
+
+	m_list.push_back(newNode(entry, str, entry->id()));
+	m_usedIdSet.set(m_list.back()->id);
+	m_size = mstl::max(m_size, id + 1);
 }
 
 
@@ -264,12 +347,11 @@ NameList::buildList(Namebase& base, Codec& codec)
 	{
 		NamebaseEntry* entry = base.entryAt(i);
 
-		if (entry->id() < base.nextId())
+		if (entry->used())
 		{
-			mstl::string const* str;
+			M_ASSERT(entry->id() < base.nextId());
 
-			if (entry->frequency() > m_maxFrequency)
-				m_maxFrequency = entry->frequency();
+			mstl::string const* str;
 
 			if (Codec::is7BitAscii(entry->name()))
 			{
@@ -283,19 +365,6 @@ NameList::buildList(Namebase& base, Codec& codec)
 				str = &m_buf;
 			}
 
-#ifdef SI3_NORMALIZE_ENTRIES
-			switch (int(base.type()))
-			{
-				case Namebase::Site:
-					prepareSite(static_cast<NamebaseSite const*>(entry), str);
-					break;
-
-				case Namebase::Player:
-					preparePlayer(static_cast<NamebasePlayer const*>(entry), str);
-					break;
-			}
-#endif
-
 			M_ASSERT(str->size() < 256);
 
 			if (m_list.empty())
@@ -304,7 +373,7 @@ NameList::buildList(Namebase& base, Codec& codec)
 			}
 			else
 			{
-				int cmp = ::compare(m_list.back()->encoded.c_str(), str->c_str());
+				int cmp = ::compare(m_list.back()->encoded.c_str(), *str);
 
 				if (cmp < 0)
 				{
@@ -316,135 +385,18 @@ NameList::buildList(Namebase& base, Codec& codec)
 
 					if (i == m_list.end())
 						m_list.push_back(makeNode(entry, str));
-					else if (::compare((*i)->encoded.c_str(), str->c_str()) != 0)
+					else if (::compare((*i)->encoded.c_str(), *str) != 0)
 						m_list.insert(m_list.begin() + (i - m_list.begin()), makeNode(entry, str));
 					else
-						copyNode(*i, entry);
+						reuseNode(*i, entry);
 				}
 				else // cmp == 0
 				{
-					copyNode(m_list.back(), entry);
+					reuseNode(m_list.back(), entry);
 				}
 			}
 		}
 	}
 }
-
-
-#ifdef SI3_NORMALIZE_ENTRIES
-
-void
-NameList::preparePlayer(NamebasePlayer const* entry, mstl::string const*& str)
-{
-	M_ASSERT(entry);
-	M_ASSERT(str);
-
-	if (entry->haveSex())
-	{
-		M_ASSERT(entry->sex() != sex::Unspecified);
-
-		if (str->size() < (256 - 4))
-		{
-			if (str != &m_buf)
-			{
-				m_buf = *str;
-				str = &m_buf;
-			}
-
-			::appendSpace(m_buf);
-			m_buf += '(';
-			m_buf += sex::toChar(entry->sex());
-			m_buf += ')';
-		}
-	}
-
-	if (entry->haveType() && entry->type() == species::Program)
-	{
-		if (str->size() < (256 - 11))
-		{
-			if (str != &m_buf)
-			{
-				m_buf = *str;
-				str = &m_buf;
-			}
-
-			::appendSpace(m_buf);
-			m_buf += "(computer)";
-		}
-	}
-
-	if (entry->haveTitle())
-	{
-		M_ASSERT(entry->title() != title::None);
-
-		mstl::string const& title = title::toString(entry->title());
-
-		if (str->size() < 255 - title.size())
-		{
-			if (str != &m_buf)
-			{
-				m_buf = *str;
-				str = &m_buf;
-			}
-
-			::appendSpace(m_buf);
-			m_buf += title;
-		}
-	}
-
-	if (entry->haveFederation())
-	{
-		M_ASSERT(entry->federation() != country::Unknown);
-
-		if (str->size() < (256 - 6))
-		{
-			if (str != &m_buf)
-			{
-				m_buf = *str;
-				str = &m_buf;
-			}
-
-			::appendSpace(m_buf);
-			m_buf += '(';
-			m_buf += country::toString(entry->federation());
-			m_buf += ')';
-		}
-	}
-}
-
-
-void
-NameList::prepareSite(NamebaseSite const* entry, mstl::string const*& str)
-{
-	M_ASSERT(entry);
-	M_ASSERT(str);
-
-	if (entry->country() != country::Unknown && str->size() < 256 - 4)
-	{
-		char const* country = country::toString(entry->country());
-
-		mstl::string::size_type n = str->find(country);
-
-		if (	n == mstl::string::npos
-			|| (n == 0
-					? str->size() > 3 && ::isalnum(str->at(3))
-					: 	::isalnum(str->at(n - 1))
-					|| (n + 3 < str->size() && ::isalnum(str->at(n + 3)))))
-		{
-			if (str != &m_buf)
-			{
-				m_buf = *str;
-				str = &m_buf;
-			}
-
-			M_ASSERT(::strlen(country) == 3);
-
-			::appendSpace(m_buf);
-			m_buf.append(country, 3);
-		}
-	}
-}
-
-#endif
 
 // vi:set ts=3 sw=3:

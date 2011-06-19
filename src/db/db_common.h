@@ -417,6 +417,8 @@ namespace tag
 {
 	enum ID
 	{
+//#define ORD(x) = x	// use this if the tags should be ordered alphabetically
+#define ORD(x)
 		// mandatory tags (seven tag roster)
 		Event				=  0,	///< Name of the tournament or match event
 		Site				=  1,	///< Location of the event
@@ -427,76 +429,77 @@ namespace tag
 		Result			=  6,	///< Result of the game
 
 		// event related information
-		EventDate		= 29,	///< Starting date of the event
-		EventCountry	= 28,	///< Country of the event (.e.g. "GER")
-		EventType		= 31,	///< Type of the event (.e.g. "tourn")
-		EventRounds		= 30,	///< Number of rounds of the event
-		EventCategory	= 27,	///< Category of the event
+		EventDate		ORD(29),	///< Starting date of the event
+		EventCountry	ORD(28),	///< Country of the event (.e.g. "GER")
+		EventType		ORD(31),	///< Type of the event (.e.g. "tourn")
+		EventRounds		ORD(30),	///< Number of rounds of the event
+		EventCategory	ORD(27),	///< Category of the event
 
 		// opening information
-		Eco				= 26,
-		Opening			= 34,
-		Variation		= 46,
-		SubVariation	= 41,
+		Eco				ORD(26),
+		Opening			ORD(34),
+		Variation		ORD(46),
+		SubVariation	ORD(41),
 
 		// chess variants
-		Variant			= 45,
+		Variant			ORD(45),
 
 		// alternative starting positions
-		SetUp				= 38,	///< Denotes the "set-up" status of the game
-		Fen				= 32,	///< Position at the start of the game
-		Idn				= 36,	///< Unique position IDentification Number (chess 960 position number)
+		SetUp				ORD(38),	///< Denotes the "set-up" status of the game
+		Fen				ORD(32),	///< Position at the start of the game
+		Idn				ORD(36),	///< Unique position IDentification Number (chess 960 position number)
 
 		// game conclusion
-		Termination		= 42,	///< Describes the reason for the conclusion of the game
+		Termination		ORD(42),	///< Describes the reason for the conclusion of the game
 
 		// time information
-		TimeControl		= 43,	///< Describes the time control.
-		TimeMode			= 44,	///< Describes the time mode (normal, rapid, blitz, corr)
+		TimeControl		ORD(43),	///< Describes the time control.
+		TimeMode			ORD(44),	///< Describes the time mode (normal, rapid, blitz, corr)
 
 		// player related information
-		WhiteCountry	= 48,	BlackCountry	=  9,
-		WhiteTitle		= 61,	BlackTitle		= 22,	///< Titles of the players
-		WhiteNA			= 55,	BlackNA			= 16,	///< E-mail or network addresses
-		WhiteType		= 62,	BlackType		= 23,	///< Player types ("human" or "program")
-		WhiteSex			= 58,	BlackSex			= 19,	///< Sex of the players ("m" or "f")
-		WhiteFideId		= 52,	BlackFideId		= 13,	///< Fide ID of the players
-		WhiteClock		= 47,	BlackClock		=  8,	///< Time at end of game
+		WhiteCountry	ORD(48),	BlackCountry	ORD( 9),
+		WhiteTitle		ORD(61),	BlackTitle		ORD(22),	///< Titles of the players
+		WhiteNA			ORD(55),	BlackNA			ORD(16),	///< E-mail or network addresses
+		WhiteType		ORD(62),	BlackType		ORD(23),	///< Player types ("human" or "program")
+		WhiteSex			ORD(58),	BlackSex			ORD(19),	///< Sex of the players ("m" or "f")
+		WhiteFideId		ORD(52),	BlackFideId		ORD(13),	///< Fide ID of the players
+		WhiteClock		ORD(47),	BlackClock		ORD( 8),	///< Time at end of game
 
 		// rating types; should be ordered due to rating type order
-		WhiteElo		= 51,	///< FIDE Rating
-		WhiteRating	= 57,	///< CCRL Computer Rating
-		WhiteRapid	= 56,	///< English Chess Federation Rapid Rating
-		WhiteICCF	= 53,	///< International Correspondence Chess Federation
-		WhiteUSCF	= 63,	///< United States Chess Federation
-		WhiteDWZ		= 49,	///< Deutsche Wertungszahl
-		WhiteECF		= 50,	///< English Chess Federation
-		WhiteIPS		= 54,	///< Individual Player Strength (Chess 960 Rating)
+		WhiteElo			ORD(51),	///< FIDE Rating
+		WhiteRating		ORD(57),	///< CCRL Computer Rating
+		WhiteRapid		ORD(56),	///< English Chess Federation Rapid Rating
+		WhiteICCF		ORD(53),	///< International Correspondence Chess Federation
+		WhiteUSCF		ORD(63),	///< United States Chess Federation
+		WhiteDWZ			ORD(49),	///< Deutsche Wertungszahl
+		WhiteECF			ORD(50),	///< English Chess Federation
+		WhiteIPS			ORD(54),	///< Individual Player Strength (Chess 960 Rating)
 
-		BlackElo		= 12,	///< FIDE Rating
-		BlackRating	= 18,	///< CCRL Computer Rating
-		BlackRapid	= 17,	///< English Chess Federation Rapid Rating
-		BlackICCF	= 14,	///< International Correspondence Chess Federation
-		BlackUSCF	= 24,	///< United States Chess Federation
-		BlackDWZ		= 10,	///< Deutsche Wertungszahl
-		BlackECF		= 11,	///< English Chess Federation
-		BlackIPS		= 15,	///< Individual Player Strength (Chess 960 Rating)
+		BlackElo			ORD(12),	///< FIDE Rating
+		BlackRating		ORD(18),	///< CCRL Computer Rating
+		BlackRapid		ORD(17),	///< English Chess Federation Rapid Rating
+		BlackICCF		ORD(14),	///< International Correspondence Chess Federation
+		BlackUSCF		ORD(24),	///< United States Chess Federation
+		BlackDWZ			ORD(10),	///< Deutsche Wertungszahl
+		BlackECF			ORD(11),	///< English Chess Federation
+		BlackIPS			ORD(15),	///< Individual Player Strength (Chess 960 Rating)
 
 		// team related information
-		WhiteTeam			= 59,	BlackTeam			= 20,
-		WhiteTeamCountry	= 60,	BlackTeamCountry	= 21,
+		WhiteTeam			ORD(59),	BlackTeam			ORD(20),
+		WhiteTeamCountry	ORD(60),	BlackTeamCountry	ORD(21),
 
 		// miscellaneous
-		Annotator	=  7,	///< Identifies the annotator or annotators of the game
-		Mode			= 33,	///< Playing mode of the game (e.g. "OTB" over the board)
-		Source		= 39,	///< The provider of the game annotation (e.g. "ChessBase")
-		SourceDate	= 40,	///< The date when the game is provided
-		PlyCount		= 35,	///< The number of ply (moves) in the game
-		Remark		= 37,	///< Any comment to this game
-		Board			= 25,	///< The board number
+		Annotator		ORD( 7),	///< Identifies the annotator or annotators of the game
+		Mode				ORD(33),	///< Playing mode of the game (e.g. "OTB" over the board)
+		Source			ORD(39),	///< The provider of the game annotation (e.g. "ChessBase")
+		SourceDate		ORD(40),	///< The date when the game is provided
+		PlyCount			ORD(35),	///< The number of ply (moves) in the game
+		Remark			ORD(37),	///< Any comment to this game
+		Board				ORD(25),	///< The board number
 
 		// # of tags
-		ExtraTag		= 64,
+		ExtraTag			ORD(64),
+#undef ORD
 	};
 
 	bool isMandatory(ID tag);

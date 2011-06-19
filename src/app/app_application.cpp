@@ -169,6 +169,7 @@ Application::Application()
 	,m_isUserSet(false)
 	,m_position(InvalidPosition)
 	,m_fallbackPosition(InvalidPosition)
+	,m_isClosed(false)
 	,m_subscriber(0)
 {
 	M_REQUIRE(!hasInstance());
@@ -432,6 +433,14 @@ Application::close(Cursor& cursor)
 
 
 void
+Application::close()
+{
+	closeAll(Including_Clipbase);
+	m_isClosed = true;
+}
+
+
+void
 Application::close(mstl::string const& name)
 {
 	M_REQUIRE(contains(name));
@@ -450,10 +459,15 @@ Application::closeAll(CloseMode mode)
 
 	for (CursorMap::iterator i = m_cursorMap.begin(); i != m_cursorMap.end(); ++i)
 	{
-		if (mode == Including_Clipbase || i->first != m_clipbaseName)
+		if (i->second != m_scratchBase && (mode == Including_Clipbase || i->second != m_clipBase))
 		{
+			moveGamesToScratchbase(*i->second);
+
 			if (m_subscriber)
 				m_subscriber->closeDatabase(i->second->name());
+
+			if (i->second == m_referenceBase)
+				setReferenceBase(mode == Including_Clipbase ? 0 : m_clipBase, false);
 
 			i->second->close();
 			delete i->second;
@@ -465,7 +479,6 @@ Application::closeAll(CloseMode mode)
 	}
 
 	m_cursorMap.swap(map);
-	setReferenceBase(mode == Including_Clipbase ? 0 : m_clipBase, false);
 }
 
 

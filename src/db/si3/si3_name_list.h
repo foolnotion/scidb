@@ -57,17 +57,25 @@ public:
 		unsigned			id;
 	};
 
-	NameList(Namebase& base, sys::utf8::Codec& codec, mstl::bitset& usedIdSet);
+	NameList();
 
 	bool isEmpty() const;
 
 	unsigned size() const;
-	unsigned maxId() const;
 	unsigned maxFrequency() const;
-	unsigned lookup(unsigned id) const;
+	Node const* lookup(unsigned id) const;
 
 	Node const* first() const;
 	Node const* next() const;
+
+#ifdef DEBUG_SI4
+	Node* back();
+#endif
+
+	void append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec);
+	void add(unsigned originalId, NamebaseEntry* entry);
+	void update(Namebase& base, sys::utf8::Codec& codec);
+	void reserve(unsigned size);
 
 private:
 
@@ -79,24 +87,23 @@ private:
 	typedef sys::utf8::Codec Codec;
 
 	void buildList(Namebase& base, Codec& codec);
-	void renumber(Namebase& base);
+	void renumber();
+	void adjustListSize();
 
-#ifdef SI3_NORMALIZE_ENTRIES
-	void preparePlayer(NamebasePlayer const* entry, mstl::string const*& str);
-	void prepareSite(NamebaseSite const* entry, mstl::string const*& str);
-#endif
-
-	void copyNode(Node* node, NamebaseEntry* entry);
+	void reuseNode(Node* node, NamebaseEntry* entry);
+	Node* newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id);
 	Node* makeNode(NamebaseEntry* entry, mstl::string const* str);
 
-	mstl::bitset&		m_usedIdSet;
+	mstl::bitset		m_usedIdSet;
 	mstl::bitset		m_newIdSet;
 	List					m_list;
+	List					m_lookup;
+	List					m_access;
 	unsigned				m_maxFrequency;
 	unsigned				m_size;
+	unsigned				m_nextId;
 	mutable Iterator	m_first;
 	mutable Iterator	m_last;
-	List					m_lookup;
 	NodeAlloc			m_nodeAlloc;
 	StringAlloc			m_stringAlloc;
 	mstl::string		m_buf;

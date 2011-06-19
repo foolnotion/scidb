@@ -863,7 +863,7 @@ proc GameSwitched {position} {
 proc ShowCrossTable {parent} {
 	set base [::scidb::game::query database]
 	set index [::scidb::game::index]
-	::crosstable::open .application $base $index
+	::crosstable::open .application $base $index -1 game
 }
 
 

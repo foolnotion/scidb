@@ -105,6 +105,7 @@ Namebase::Namebase(Type type)
 	,m_isConsistent(true)
 	,m_isPrepared(false)
 	,m_freeSetIsEmpty(true)
+	,m_isModified(false)
 	,m_stringAllocator(32768)
 {
 	switch (type)
@@ -288,6 +289,7 @@ Namebase::insertSite(mstl::string const& name,
 
 	entry->m_id = id == InvalidId ? nextFreeId() : id;
 	m_isConsistent = false;
+	m_isModified = true;
 	return entry;
 }
 
@@ -350,6 +352,7 @@ Namebase::insertEvent(	mstl::string const& name,
 
 	entry->m_id = id == InvalidId ? nextFreeId() : id;
 	m_isConsistent = false;
+	m_isModified = true;
 	return entry;
 }
 
@@ -484,6 +487,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 	M_ASSERT(size() == 1 || *playerAt(size() - 2) < *playerAt(size() - 1));
 
 	m_isConsistent = false;
+	m_isModified = true;
 	return entry;
 }
 
@@ -515,6 +519,7 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 
 	entry->m_id = id == InvalidId ? nextFreeId() : id;
 	m_isConsistent = false;
+	m_isModified = true;
 	return entry;
 }
 
@@ -533,6 +538,7 @@ Namebase::insert()
 		m_list.back()->m_id = 0;
 	}
 
+	m_isModified = true;
 	return m_list.front();
 }
 
@@ -551,6 +557,7 @@ Namebase::append(mstl::string const& name, unsigned id)
 
 	m_list.push_back(entry);
 	m_isConsistent = false;
+	m_isModified = true;
 	entry->m_id = id;
 	return entry;
 }
@@ -569,6 +576,7 @@ Namebase::clear()
 	m_maxUsage = 0;
 	m_isConsistent = true;
 	m_isPrepared = true;
+	m_isModified = true;
 
 	m_stringAllocator.clear();
 
@@ -611,6 +619,7 @@ Namebase::renumber()
 	m_reuseSet.resize(m_list.size());
 	m_reuseSet.reset();
 	m_freeSetIsEmpty = true;
+	m_isModified = true;
 
 	for (unsigned i = 0, n = m_list.size(); i < n; ++i)
 	{
@@ -670,8 +679,6 @@ Namebase::update()
 	m_maxUsage = 0;
 	m_nextId = 0;
 	m_used = 0;
-	m_isConsistent = true;
-	m_isPrepared = true;
 
 	m_freeSet.resize(m_list.size());
 	m_freeSet.reset();
@@ -743,21 +750,26 @@ Namebase::update()
 
 	if (!prepareSet.empty())
 	{
+		unsigned id = usedSet.find_first_not();
+
 		for (unsigned i = 0; i < prepareSet.size(); ++i)
 		{
-			unsigned id = usedSet.find_first_not();
 			M_ASSERT(id != IdSet::npos);
 			prepareSet[i]->m_id = id;
 			usedSet.set(id);
 			m_freeSet.reset(id);
 			m_nextId = mstl::max(m_nextId, id + 1);
+			id = usedSet.find_next_not(id);
 		}
 
 		m_freeSetIsEmpty = m_freeSet.count() == 0;
+		m_isModified = true;
 	}
 
 	m_reuseSet.reset();
 	m_map.resize(m_used);
+	m_isConsistent = true;
+	m_isPrepared = true;
 }
 
 
@@ -767,6 +779,7 @@ Namebase::setPrepared(unsigned maxFrequency, unsigned maxUsage)
 	m_used = m_list.size();
 	m_isConsistent = true;
 	m_isPrepared = true;
+	m_isModified = false;
 	m_maxFreq = maxFrequency;
 	m_maxUsage = maxUsage;
 	m_freeSet.resize(m_used);
@@ -803,58 +816,6 @@ Namebase::nextFreeId()
 	}
 
 	return id;
-}
-
-
-void
-Namebase::exchangeId(IdSet const& newIdSet, EntryMap const& entryMap)
-{
-	M_REQUIRE(isConsistent());
-	M_REQUIRE(newIdSet.none() || newIdSet.find_last() < nextId());
-	M_REQUIRE(newIdSet.count() == entryMap.size());
-
-	if (entryMap.empty())
-		return;
-
-	mstl::bitset remaining(newIdSet.size());
-
-	for (unsigned id = newIdSet.find_first(); id != mstl::bitset::npos; id = newIdSet.find_next(id))
-	{
-		if (m_freeSet.test(id))
-		{
-			M_REQUIRE(entryMap.find(id) != entryMap.end());
-
-			Entry* entry = entryMap.find(id)->second;
-
-			m_freeSet.reset(id);
-			m_freeSet.set(entry->m_id);
-			entry->m_id = id;
-		}
-		else
-		{
-			remaining.set(id);
-		}
-	}
-
-	if (!remaining.none())
-	{
-		m_nextId = 0;
-
-		for (unsigned i = 0; i < m_list.size(); ++i)
-		{
-			Entry* entry = m_list[i];
-
-			if (remaining.test(entry->m_id))
-			{
-				unsigned id = entry->m_id;
-				M_REQUIRE(entryMap.find(id) != entryMap.end());
-				mstl::swap(entry->m_id, entryMap.find(id)->second->m_id);
-			}
-
-			if (entry->used())
-				m_nextId = mstl::max(entry->m_id + 1, m_nextId);
-		}
-	}
 }
 
 // vi:set ts=3 sw=3:

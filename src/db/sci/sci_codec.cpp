@@ -1463,6 +1463,9 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 void
 Codec::writeNamebase(mstl::fstream& stream)
 {
+	if (!namebases().isModified())
+		return;
+
 #ifdef USE_LZO
 	LzoByteStream bstrm(stream);
 #else
@@ -1494,6 +1497,7 @@ Codec::writeNamebase(mstl::fstream& stream)
 	}
 
 	bstrm.flush();
+	namebases().resetModified();
 }
 
 
