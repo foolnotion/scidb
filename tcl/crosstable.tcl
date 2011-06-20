@@ -201,6 +201,8 @@ proc open {parent base index view source} {
 		return
 	}
 
+	if {[winfo exists $dlg]} { Destroy $dlg $dlg }
+
 	set top $dlg.top
 	set canv $top.canv
 	set html $canv.html
@@ -216,18 +218,16 @@ proc open {parent base index view source} {
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
 	set Vars(tooltip) ""
-
-	if {![winfo exists $dlg]} {
-		set Vars(viewId) [::scidb::view::new $base]
-	}
+	set Vars(viewId) [::scidb::view::new $base]
 
 	if {$source eq "game"} { set search gameevent } else { set search event }
 	::scidb::view::search $base $Vars(viewId) null none [list $search $number]
 
 	if {[winfo exists $dlg]} {
-		::scidb::crosstable::release $base $Vars(viewId)
 		::scidb::crosstable::make $base $Vars(viewId)
 		Update 1
+		raise $dlg
+		focus $dlg
 		return
 	}
 
@@ -777,7 +777,6 @@ proc Destroy {dlg w} {
 	::scidb::crosstable::release $Vars(base) $Vars(viewId)
 	::scidb::view::close $Vars(base) $Vars(viewId)
 	array unset ImageCache
-	array unset Vars
 	array set Vars [array get Defaults]
 }
 

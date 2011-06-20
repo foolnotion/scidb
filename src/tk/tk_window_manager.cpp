@@ -87,6 +87,7 @@ MWM_Hints;
 static char const* XA_MOTIF_WM_HINTS						= "_MOTIF_WM_HINTS";
 static char const* XA_KWM_WIN_DECORATION					= "KWM_WIN_DECORATION";
 static char const* XA_WIN_HINTS								= "_WIN_HINTS";
+static char const* XA_NET_ACTIVE_WINDOW					= "_NET_ACTIVE_WINDOW";
 static char const* XA_NET_WM_WINDOW_TYPE					= "_NET_WM_WINDOW_TYPE";
 static char const* XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE	= "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE";
 static char const* XA_NET_WM_WINDOW_TYPE_NORMAL			= "_NET_WM_WINDOW_TYPE_NORMAL";
@@ -101,6 +102,8 @@ static char const* XA_NET_WM_ACTION_MAXIMIZE_HORZ		= "_NET_WM_ACTION_MAXIMIZE_HO
 static char const* XA_NET_WM_ACTION_MAXIMIZE_VERT		= "_NET_WM_ACTION_MAXIMIZE_VERT";
 static char const* XA_NET_WM_ACTION_CLOSE					= "_NET_WM_ACTION_CLOSE";
 #endif
+
+static char const* XA_WM_CLIENT_LEADER = "WM_CLIENT_LEADER";
 
 
 static void
@@ -169,6 +172,84 @@ noDecor(Tk_Window tkwin, Window window)
 	return rc;
 }
 
+
+void
+setClientLeader(Tk_Window tkwin, Window window)
+{
+	static Window leader = 0;
+
+	Atom		clientLeader	= Tk_InternAtom(tkwin, XA_WM_CLIENT_LEADER);
+	Display*	display			= Tk_Display(tkwin);
+
+	if (leader == 0)
+	{
+		Window rootWindow = XRootWindow(display, Tk_ScreenNumber(tkwin));
+		leader = XCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0, 0);
+	}
+
+	changeProperty(display, window, clientLeader, &leader, 1);
+}
+
+
+void
+raiseWindow(Tk_Window tkwin, Window window)
+{
+	Atom		atom				= Tk_InternAtom(tkwin, XA_NET_ACTIVE_WINDOW);
+	Display*	display			= Tk_Display(tkwin);
+	Window	rootWindow		= XRootWindow(display, Tk_ScreenNumber(tkwin));
+	Window	activeWindow	= rootWindow;
+	XEvent	xev;
+
+	// NOTE: this function is not working although it should!
+
+	if (1)
+	{
+		Atom retAtom;
+		int actualFormatReturn;
+		unsigned long nitemsReturn;
+		unsigned long bytesAfterReturn;
+		unsigned char *data;
+
+		XGetWindowProperty(
+			display,
+			rootWindow,
+			atom,
+			0, 1024,
+			False,
+			XA_WINDOW,
+			&retAtom,
+			&actualFormatReturn,
+			&nitemsReturn,
+			&bytesAfterReturn,
+			&data);
+
+		activeWindow = *((Window *)data);
+		XFree(data);
+	}
+
+	::memset(&xev, 0, sizeof(xev));
+	xev.xclient.type = ClientMessage;
+//	xev.xclient.send_event = True;
+	xev.xclient.display = display;
+	xev.xclient.window = window;
+	xev.xclient.message_type = atom;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = CurrentTime;
+	xev.xclient.data.l[2] = activeWindow;
+
+	XSendEvent(	display,
+					rootWindow,
+					False,
+					SubstructureRedirectMask|SubstructureNotifyMask,
+					&xev);
+	XSync(display, False);
+
+	XRaiseWindow(display, window);
+	XSetInputFocus(display, window, RevertToParent, CurrentTime);
+	XFlush(display);
+}
+
 #endif
 
 
@@ -196,7 +277,7 @@ cmdWM(ClientData client_data __attribute__((unused)),
 		int objc,
 		Tcl_Obj* const objv[])
 {
-	char const* Usage = "Usage: ::scidb::tk::wm (noDecor | grid | sync) <window> ...";
+	char const* Usage = "Usage: ::scidb::tk::wm (noDecor | grid | setLeader | raise | sync) <window> ...";
 
 	if (objc < 2)
 		return tcl_error(ti, Usage);
@@ -213,7 +294,7 @@ cmdWM(ClientData client_data __attribute__((unused)),
 
 	if (strcmp(subcmd, "grid") == 0)
 	{
-		char const* Usage = "Usage: sc_wm grid <window> <baseWidth> <baseHeight> <widthInc> <heightInc>";
+		char const* Usage = "Usage: ::scidb::tk::wm grid <window> <baseWidth> <baseHeight> <widthInc> <heightInc>";
 
 		if (objc != 7)
 			return tcl_error(ti, Usage);
@@ -259,6 +340,14 @@ cmdWM(ClientData client_data __attribute__((unused)),
 			XFree(children);
 
 		rc = noDecor(tkmain, parent);
+	}
+	else if (strcmp(subcmd, "setLeader") == 0)
+	{
+		setClientLeader(tkwin, Tk_WindowId(tkwin));
+	}
+	else if (strcmp(subcmd, "raise") == 0)
+	{
+		raiseWindow(tkwin, Tk_WindowId(tkwin));
 	}
 	else if (strcmp(subcmd, "sync") == 0)
 	{

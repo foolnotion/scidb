@@ -91,6 +91,7 @@ public:
 
 	void putComment(Comment const& comment);
 	void putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void putFinalComment(Comment const& comment);
 	void putMove(Move const& move);
 	void putMove(	Move const& move,
 						Annotation const& annotation,
@@ -122,6 +123,7 @@ protected:
 	virtual void sendComment(	Comment const& comment,
 										Annotation const& annotation,
 										MarkSet const& marks) = 0;
+	virtual void sendFinalComment(Comment const& comment) = 0;
 	virtual bool sendMove(	Move const& move) = 0;
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,

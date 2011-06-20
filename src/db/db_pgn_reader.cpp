@@ -847,15 +847,8 @@ PgnReader::process(Progress& progress)
 				if (!m_comments.empty())
 				{
 					// We have a comment after the last variation has finished,
-					// but no more moves. As a workaround we add a variation.
-					consumer().startVariation();
-					m_move = Move::null();
-					if (consumer().board().blackToMove())
-						m_move.setColor(color::Black);
-					m_postIndex = m_comments.size();
-					putMove();
-					consumer().finishVariation();
-					warning(CommentAtEndOfGame);
+					::join(m_comments.begin(), m_comments.begin() + m_postIndex);
+					consumer().putFinalComment(m_comments[0]);
 				}
 
 				if (token == kError)
@@ -954,22 +947,20 @@ PgnReader::handleError(Error code, mstl::string const& message)
 	{
 		Comment comment(msg, false, false);
 
-		if (m_comments.empty())
+		if (m_move)
 		{
-			if (!m_move)
-				m_postIndex = 1;
-			m_comments.push_back(comment);
+			if (m_comments.empty())
+				m_comments.push_back(comment);
+			else
+				m_comments.back().append(comment, '\n');
+
+			m_hasNote = true;
+			putMove();
 		}
 		else
 		{
-			m_comments.back().append(comment, '\n');
+			consumer().putFinalComment(comment);
 		}
-
-		if (!m_move)
-			m_move = Move::null();
-
-		m_hasNote = true;
-		putMove();
 
 		while (consumer().variationLevel() > 0)
 			consumer().finishVariation();

@@ -76,6 +76,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_comments.clear();
 	m_move = Move::empty();
 	m_afterVar = false;
+	m_afterMove = true;
 	m_appendComment = false;
 
 	return true;
@@ -205,6 +206,7 @@ Consumer::sendComment(Comment const& comment,
 		m_strm.put(token::Comment);
 		pushComment(comment);
 		m_appendComment = true;
+		m_afterMove = false;
 	}
 }
 
@@ -213,6 +215,23 @@ void
 Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
 	sendComment(comment, annotation, marks, true);
+}
+
+
+void
+Consumer::sendFinalComment(Comment const& comment)
+{
+	if (m_afterMove)
+	{
+		m_strm.put(token::Comment);
+		pushComment(comment);
+		m_appendComment = true;
+		m_afterMove = false;
+	}
+	else
+	{
+		sendMove(Move::null(), Annotation(), MarkSet(), comment, Comment());
+	}
 }
 
 
@@ -227,6 +246,7 @@ Consumer::beginVariation()
 	m_strm.put(token::Start_Marker);
 	m_afterVar = false;
 	m_appendComment = false;
+	m_afterMove = true;
 }
 
 
@@ -241,6 +261,7 @@ Consumer::endVariation()
 	m_strm.put(token::End_Marker);
 	m_afterVar = true;
 	m_appendComment = false;
+	m_afterMove = false;
 }
 
 
@@ -282,6 +303,7 @@ Consumer::sendMove(Move const& move)
 	encodeMove(m_move = move);
 	m_appendComment = false;
 	m_afterVar = false;
+	m_afterMove = true;
 
 	return true;
 }
@@ -305,6 +327,7 @@ Consumer::sendMove(	Move const& move,
 	encodeMove(m_move = move);
 	m_appendComment = false;
 	m_afterVar = false;
+	m_afterMove = true;
 	sendComment(comment, annotation, marks, false);
 
 	return true;

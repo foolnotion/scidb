@@ -39,9 +39,6 @@
 using namespace db::si3;
 
 
-static unsigned const InvalidId = unsigned(-1);
-
-
 namespace db {
 namespace si3 {
 
@@ -128,15 +125,10 @@ NameList::update(Namebase& base, sys::utf8::Codec& codec)
 	M_REQUIRE(codec.hasEncoding());
 
 	m_maxFrequency = 0;
-	m_newIdSet.clear();
+	m_newIdSet.reset();
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
-	{
-		Node* node = m_list[i];
-
-		node->frequency = 0;
-		node->id = ::InvalidId;
-	}
+		m_list[i]->entry = 0;
 
 	if (base.nextId() > m_lookup.size())
 		reserve(base.nextId());
@@ -168,7 +160,7 @@ NameList::adjustListSize()
 
 	for (List::reverse_iterator i = m_list.rbegin(); i != e; ++i)
 	{
-		if ((*i)->id == ::InvalidId)
+		if ((*i)->entry == 0)
 		{
 			if (m_list.size() > m_size)
 			{
@@ -208,10 +200,13 @@ NameList::renumber()
 	if (count == 0)
 	{
 		m_size = 0;
+		m_list.clear();
 	}
 	else
 	{
 		unsigned expectedMaxId = m_usedIdSet.find_last();
+
+		m_size = expectedMaxId + 1;
 
 		if (expectedMaxId < count)
 			return;
@@ -248,9 +243,6 @@ NameList::newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id)
 	node->entry = entry;
 	node->frequency = entry->frequency();
 	node->id = id;
-
-	if (id >= m_size)
-		m_size = id + 1;
 
 	m_newIdSet.set(id);
 	m_lookup[entry->id()] = m_access[id] = node;
@@ -297,7 +289,9 @@ NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 void
 NameList::reuseNode(Node* node, NamebaseEntry* entry)
 {
+	node->entry = entry;
 	m_lookup[entry->id()] = node;
+	m_newIdSet.set(node->id);
 
 	if ((node->frequency += entry->frequency()) > m_maxFrequency)
 		m_maxFrequency = node->frequency;
@@ -335,7 +329,6 @@ NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::ut
 	}
 
 	m_list.push_back(newNode(entry, str, entry->id()));
-	m_usedIdSet.set(m_list.back()->id);
 	m_size = mstl::max(m_size, id + 1);
 }
 

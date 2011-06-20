@@ -167,7 +167,8 @@ Consumer::finishGame(TagSet const& tags)
 void
 Consumer::finishMoveSection(result::ID result)
 {
-	sendComment();	// send dangling pre-comment
+	if (!m_comment.isEmpty())
+		sendFinalComment(m_comment);	// send dangling pre-comment
 
 	if (m_terminated)
 	{

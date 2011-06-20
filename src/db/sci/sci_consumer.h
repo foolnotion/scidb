@@ -68,12 +68,14 @@ private:
 							Comment const& comment,
 							Annotation const& annotation,
 							MarkSet const& marks);
+	void sendFinalComment(Comment const& comment);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
 						Comment const& preComment,
 						Comment const& comment);
+	Byte writeComment(Byte position, Comment const& comment);
 
 	void beginMoveSection();
 	void endMoveSection(result::ID result);
@@ -88,9 +90,7 @@ private:
 	unsigned				m_runLength;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
-#ifndef NREQ
 	bool					m_putComment;
-#endif
 };
 
 } // namespace sci

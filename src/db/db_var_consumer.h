@@ -59,6 +59,7 @@ protected:
 	save::State endGame(TagSet const& tags);
 
 	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void sendFinalComment(Comment const& comment);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,

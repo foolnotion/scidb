@@ -749,7 +749,7 @@ Move::Move(Work& work, db::Comment const& comment)
 {
 	if (work.m_level == 0)
 	{
-		if (work.isEmpty)
+		if (work.isEmpty && comment.isEmpty())
 			m_list.push_back(new Space(Empty));
 		else
 			m_list.push_back(new Space(Start));

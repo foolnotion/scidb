@@ -124,7 +124,6 @@ array set Attr {
 
 array set Vars {
 	tabChanged	0
-	fullscreen	0
 }
 
 
@@ -135,6 +134,7 @@ proc open {} {
 	::move::setup
 
 	set app .application
+
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 1]
 	::ttk::notebook::enableTraversal $nb
@@ -241,7 +241,6 @@ proc open {} {
 
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]
 	bind $app <Destroy> [namespace code { Exit %W }]
-	bind $app <F11> [namespace code [list FullScreen $app]]
 	ComputeMinSize $main
 	::util::place $app center .
 	::widget::dialogSetTitle $app [namespace code Title]
@@ -356,14 +355,6 @@ proc SetupLang {langID} {
 	set ::mc::langID $langID
 	::font::useLanguage $langID
 	pgn::setActiveLang $langID 1
-}
-
-
-proc FullScreen {app} {
-	variable Vars
-
-	set Vars(fullscreen) [expr {!$Vars(fullscreen)}]
-	wm attributes $app -fullscreen $Vars(fullscreen)
 }
 
 

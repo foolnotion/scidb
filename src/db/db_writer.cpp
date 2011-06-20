@@ -101,6 +101,17 @@ Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSe
 
 
 void
+Writer::sendFinalComment(Comment const& comment)
+{
+	if (test(Flag_Include_Comments) && !comment.isEmpty())
+	{
+		writeComment(comment, MarkSet());
+		m_needSpace = true;
+	}
+}
+
+
+void
 Writer::beginVariation()
 {
 	++m_level;

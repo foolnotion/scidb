@@ -72,6 +72,7 @@ private:
 							Annotation const& annotation,
 							MarkSet const& marks,
 							bool isPreComment);
+	void sendFinalComment(Comment const& comment);
 
 	void sendPreComment(Comment const& comment);
 	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
@@ -100,6 +101,7 @@ private:
 	MoveStack			m_moveStack;
 	Move					m_move;
 	bool					m_afterVar;
+	bool					m_afterMove;
 	bool					m_appendComment;
 };
 

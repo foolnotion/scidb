@@ -124,6 +124,7 @@
 ::menu::mc::HelpBugReport			"&Fehlerbericht (im Web-Browser)"
 
 ::menu::mc::ViewShowLog				"&Log zeigen..."
+::menu::mc::ViewFullscreen			"Vollbild"
 
 ::menu::mc::OpenFile					"Eine Scidb-Datei öffnen"
 ::menu::mc::NewFile					"Eine Scidb-Datei anlegen"

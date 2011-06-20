@@ -66,6 +66,14 @@ Consumer::startGame(TagSet const& tags, Board const& board)
 	return startGame(tags, &board);
 }
 
+
+inline
+void
+Consumer::putFinalComment(Comment const& comment)
+{
+	sendFinalComment(comment);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

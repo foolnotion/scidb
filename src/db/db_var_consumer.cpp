@@ -82,6 +82,28 @@ VarConsumer::sendComment(	Comment const& comment,
 }
 
 
+void
+VarConsumer::sendFinalComment(Comment const& comment)
+{
+	if (!comment.isEmpty())
+	{
+		move::Position pos = m_current->atLineStart() ? move::Ante : move::Post;
+
+		if (m_current->comment(pos).isEmpty())
+		{
+			m_current->setComment(comment, pos);
+		}
+		else
+		{
+			Comment comm;
+			m_current->swapComment(comm, pos);
+			comm.append(comment, '\n');
+			m_current->swapComment(comm, pos);
+		}
+	}
+}
+
+
 bool
 VarConsumer::sendMove(Move const& move)
 {

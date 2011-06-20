@@ -55,6 +55,7 @@ set HelpBugReport			"&Bug Report (open in web browser)"
 set HelpFeatureRequest	"&Feature Request (open in web browser)"
 
 set ViewShowLog			"Show &Log..."
+set ViewFullscreen		"Full-Screen"
 
 set OpenFile				"Open a Scidb File"
 set NewFile					"Create a Scidb File"
@@ -99,6 +100,7 @@ set Defaults(iconsize)		medium
 set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
 set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
 
+variable Fullscreen		0
 variable Theme				default
 variable IconSize
 variable Entries
@@ -110,11 +112,14 @@ variable Entries
 proc CreateViewMenu {menu} {
 	variable Defaults
 	variable IconSize
+	variable Fullscreen
 	variable Theme
 
 	set m [menu $menu.mIconSize]
+	set pos -1
+
 	$menu add cascade -menu $m -label $::toolbar::mc::IconSize
-	widget::menuTextvarHook $menu 0 ::toolbar::mc::IconSize
+	widget::menuTextvarHook $menu [incr pos] ::toolbar::mc::IconSize
 	set IconSize $Defaults(iconsize)
 	set index 0
 	foreach size $::toolbar::iconSizes {
@@ -132,7 +137,7 @@ proc CreateViewMenu {menu} {
 
 	set m [menu $menu.mTheme]
 	$menu add cascade -menu $m -label $mc::Theme
-	widget::menuTextvarHook $menu 1 [namespace current]::mc::Theme
+	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::Theme
 	set Theme [::theme::currentTheme]
 	foreach style [ttk::style theme names] {
 		if {$style ne "classic"} {
@@ -147,10 +152,27 @@ proc CreateViewMenu {menu} {
 	}
 	
 	$menu add separator
+	incr pos
 	set cmd [list ::log::show]
-	$menu add command -accelerator "${mc::Ctrl}+L" -command $cmd
-	widget::menuTextvarHook $menu 3 [namespace current]::mc::ViewShowLog
+	$menu add command \
+		-compound left \
+		-image $::icon::16x16::log \
+		-accelerator "${mc::Ctrl}+L" \
+		-command $cmd \
+		;
+	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewShowLog
 	bind .application <Control-l> $cmd
+
+	$menu add separator
+	incr pos
+	$menu add checkbutton \
+		-compound left \
+		-image $::icon::16x16::fullscreen \
+		-command [namespace code viewFullscreen] \
+		-variable Fullscreen \
+		;
+	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewFullscreen
+	bind .application <F11> [namespace code [list viewFullscreen toggle]]
 }
 
 
@@ -487,6 +509,14 @@ proc featureRequest {parent} {
 
 proc stripAmpersand {text} {
 	return [string map {& {}} $text]
+}
+
+
+proc viewFullscreen {{toggle {}}} {
+	variable Fullscreen
+
+	if {[llength $toggle]} { set Fullscreen [expr {!$Fullscreen}] }
+	wm attributes .application -fullscreen $Fullscreen
 }
 
 } ;# namespace menu

@@ -126,6 +126,7 @@
 ::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
 
 ::menu::mc::ViewShowLog				"Show &Log..."
+::menu::mc::ViewFullscreen			"Full-Screen"
 
 ::menu::mc::OpenFile					"Open a Scidb File"
 ::menu::mc::NewFile					"Create a Scidb File"
