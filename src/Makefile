@@ -72,6 +72,7 @@ install: $(PROGRAM)
 
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
+	rm -f $(SHAREDIR)/scripts/plain.eXt
 	rm -f $(SHAREDIR)/data/eco.bin
 	for f in `ls data/*.*`; do \
 		rm -f $(SHAREDIR)/$$f; \
