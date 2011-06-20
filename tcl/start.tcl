@@ -94,6 +94,7 @@ if {[::process::testOption delete-recovery-files]} {
 
 if {[::process::testOption from-the-scratch]} {
 	file delete $::scidb::file::options
+	file copy [file join $share themes] $user
 	::process::setOption dont-recover
 	set ::scidb::dir::setup 1
 }

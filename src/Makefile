@@ -79,6 +79,9 @@ uninstall:
 	for d in `find $(SHAREDIR) -type d -empty`; do \
 		rmdir $$d; \
 	done
+	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then \
+		rmdir $(SHAREDIR); \
+	fi
 
 clean:
 	rm -f $(TARGETS) Makefile.bak
