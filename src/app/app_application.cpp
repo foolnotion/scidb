@@ -1452,13 +1452,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 		// TODO: should be transaction save
 		state = db.addGame(*g.game);
 		g.game->setIndex(g.index = db.countGames() - 1);
-
-		for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
-		{
-			if (cursor.isViewOpen(i))
-				cursor.view(i).update(View::AddNewGames);
-		}
-
+		cursor.updateViews();
 		info = &g.cursor->base().gameInfo(g.index);
 	}
 
@@ -1631,6 +1625,31 @@ Application::setupGame(	unsigned linebreakThreshold,
 
 		i->second.refresh = 1;
 	}
+}
+
+
+void
+Application::finalize()
+{
+	sys::thread::stop();
+
+	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	{
+		EditGame& game = i->second;
+
+		delete game.game;
+		delete game.backup;
+	}
+
+	for (CursorMap::iterator i = m_cursorMap.begin(); i != m_cursorMap.end(); ++i)
+	{
+		i->second->close();
+		delete i->second;
+	}
+
+	m_subscriber.release();
+	m_gameMap.clear();
+	m_cursorMap.clear();
 }
 
 // vi:set ts=3 sw=3:

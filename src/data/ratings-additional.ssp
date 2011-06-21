@@ -521,17 +521,14 @@ Stern, Adolf            #- GER [2483*] 1849.12.25--1907.08.24
 Traxler, Karel          #- CZE [....] 1866.??.??--1936.??.??
 
 ### Additional entries (Scidb developers/testers) ##################
-Atkinson, Steven        #- AUS [....] 1967
-   %Sex m
+Atkinson, Steven        #m AUS [....] 1967
    %FICS 1700
-Cramer, Gregor          #- GER [....] 1960
-   %Sex m
-Simpson, Matthew        #- ??? [....]
-   %Sex m
-Wagner, Alexander       #- GER [1779] 1960
-   %Sex m
-Tibenszky, Zoltán       #- HUN [1845] 1985
+Cramer, Gregor          #m GER [....] 1960
+Ekman, Lars             #m SWE [....] 1966
+   %BIO FIDEID 1719963
+Simpson, Matthew        #m ??? [....]
+Wagner, Alexander       #m GER [1779] 1960
+Tibenszky, Zoltán       #m HUN [1845] 1985
    %Bio FIDEID 739200
-   %Sex m
 
 # vi:set et sw=3 ts=3:

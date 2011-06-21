@@ -53,6 +53,14 @@ using namespace db;
 using namespace app;
 
 
+inline
+static Filter::ResizeMode
+map(View::UpdateMode mode)
+{
+	return mode == View::AddNewGames ? Filter::AddNewIndices : Filter::LeaveEmpty;
+}
+
+
 template
 unsigned
 View::exportGames<Database>(	Database& destination,
@@ -70,6 +78,34 @@ View::exportGames<Consumer>(	Consumer& destination,
 View::View(Application& app, Database& db)
 	:m_app(app)
 	,m_db(db)
+	,m_gameUpdateMode(AddNewGames)
+	,m_playerUpdateMode(AddNewGames)
+	,m_eventUpdateMode(AddNewGames)
+	,m_annotatorUpdateMode(AddNewGames)
+{
+	initialize();
+}
+
+
+View::View(	Application& app,
+				Database& db,
+				UpdateMode gameUpdateMode,
+				UpdateMode playerUpdateMode,
+				UpdateMode eventUpdateMode,
+				UpdateMode annotatorUpdateMode)
+	:m_app(app)
+	,m_db(db)
+	,m_gameUpdateMode(gameUpdateMode)
+	,m_playerUpdateMode(playerUpdateMode)
+	,m_eventUpdateMode(eventUpdateMode)
+	,m_annotatorUpdateMode(annotatorUpdateMode)
+{
+	initialize();
+}
+
+
+void
+View::initialize()
 {
 	m_gameFilter.resize(m_db.countGames(), Filter::LeaveEmpty);
 	m_gameFilter.set();
@@ -83,13 +119,11 @@ View::View(Application& app, Database& db)
 
 
 void
-View::update(UpdateMode mode)
+View::update()
 {
-	Filter::ResizeMode resizeMode = mode == AddNewGames ? Filter::AddNewIndices : Filter::LeaveEmpty;
-
-	m_gameFilter.resize(m_db.countGames(), resizeMode);
-	m_playerFilter.resize(m_db.countPlayers(), resizeMode);
-	m_eventFilter.resize(m_db.countEvents(), resizeMode);
+	m_gameFilter.resize(m_db.countGames(), ::map(m_gameUpdateMode));
+	m_playerFilter.resize(m_db.countPlayers(), ::map(m_playerUpdateMode));
+	m_eventFilter.resize(m_db.countEvents(), ::map(m_eventUpdateMode));
 
 	m_gameSelector.update(m_db.countGames());
 	m_playerSelector.update(m_db.countPlayers());

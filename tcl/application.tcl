@@ -293,6 +293,7 @@ proc shutdown {} {
 	::remote::cleanup
 	::scidb::app::close
 	if {$backup} { ::game::backup }
+	::scidb::app::finalize
 
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg

@@ -79,25 +79,34 @@ Cursor::isViewOpen(unsigned view) const
 
 
 unsigned
-Cursor::newView()
+Cursor::newView(	View::UpdateMode gameUpdateMode,
+						View::UpdateMode playerUpdateMode,
+						View::UpdateMode eventUpdateMode,
+						View::UpdateMode annotatorUpdateMode)
 {
 	M_REQUIRE(isOpen());
 
-	unsigned view;
+	unsigned	viewId;
+	View*		view = new View(	m_app,
+										*m_db,
+										gameUpdateMode,
+										playerUpdateMode,
+										eventUpdateMode,
+										annotatorUpdateMode);
 
 	if (m_freeSet.empty())
 	{
-		view = m_viewList.size() - 1;
-		m_viewList.push_back(new View(m_app, *m_db));
+		viewId = m_viewList.size() - 1;
+		m_viewList.push_back(view);
 	}
 	else
 	{
-		view = *m_freeSet.begin();
+		viewId = *m_freeSet.begin();
 		m_freeSet.erase(m_freeSet.begin());
-		m_viewList[view + 1] = new View(m_app, *m_db);
+		m_viewList[viewId + 1] = view;
 	}
 
-	return view;
+	return viewId;
 }
 
 
@@ -105,7 +114,7 @@ unsigned
 Cursor::newTreeView()
 {
 	M_REQUIRE(isReferenceBase());
-	return m_treeView = newView();
+	return m_treeView = newView(View::LeaveEmpty, View::LeaveEmpty, View::LeaveEmpty, View::LeaveEmpty);
 }
 
 
@@ -285,6 +294,19 @@ Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 }
 
 
+void
+Cursor::updateViews()
+{
+	for (unsigned i = 0; i < m_viewList.size(); ++i)
+	{
+		View* view = m_viewList[i];
+
+		if (view)
+			view->update();
+	}
+}
+
+
 unsigned
 Cursor::importGame(Producer& producer, unsigned index)
 {
@@ -294,7 +316,12 @@ Cursor::importGame(Producer& producer, unsigned index)
 	if (m_isRefBase)
 		Application::cancelUpdateTree();
 
-	return m_db->importGame(producer, index);
+	unsigned res = m_db->importGame(producer, index);
+
+	if (res > 0)
+		updateViews();	// XXX ok?
+
+	return res;
 }
 
 
@@ -309,15 +336,7 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 	unsigned res = m_db->importGames(producer, progress);
 
 	if (res > 0)
-	{
-		for (unsigned i = 0; i < m_viewList.size(); ++i)
-		{
-			View* view = m_viewList[i];
-
-			if (view)
-				view->update(i <= 1 ? View::AddNewGames : View::LeaveEmpty);
-		}
-	}
+		updateViews();
 
 	return res;
 }
@@ -333,7 +352,7 @@ Cursor::clearBase()
 		View* view = m_viewList[i];
 
 		if (view)
-			view->update(View::LeaveEmpty);
+			view->update();
 	}
 }
 

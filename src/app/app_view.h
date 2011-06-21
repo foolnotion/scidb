@@ -67,6 +67,12 @@ public:
 	static unsigned const DefaultView = 0;
 
 	View(Application& app, db::Database& db);
+	View(	Application& app,
+			db::Database& db,
+			UpdateMode gameUpdateMode,
+			UpdateMode playerUpdateMode,
+			UpdateMode eventUpdateMode,
+			UpdateMode annotatorUpdateMode);
 
 	/// Return application.
 	Application const& application() const;
@@ -153,7 +159,7 @@ public:
 	void filterEvents();
 
 	/// Reflect database changes (number of games),
-	void update(UpdateMode mode);
+	void update();
 	/// Set game filter.
 	void setGameFilter(db::Filter const& filter);
 
@@ -179,15 +185,21 @@ private:
 								db::Log& log,
 								util::Progress& progress);
 
+	void initialize();
+
 	Application&	m_app;
 	db::Database&	m_db;
+	UpdateMode		m_gameUpdateMode;
+	UpdateMode		m_playerUpdateMode;
+	UpdateMode		m_eventUpdateMode;
+	UpdateMode		m_annotatorUpdateMode;
 	db::Filter		m_gameFilter;
 	db::Filter		m_playerFilter;
 	db::Filter		m_eventFilter;
 	db::Selector	m_gameSelector;
 	db::Selector	m_playerSelector;
 	db::Selector	m_eventSelector;
-	db::Selector	m_annotatorSelector;
+	db::Selector	m_annotatorSelector;	// not yet used
 };
 
 } // namespace app

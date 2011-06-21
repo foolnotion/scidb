@@ -103,12 +103,12 @@ append(mstl::string& result, char const* s, unsigned len)
 
 namespace {
 
-class Callback : public db::Comment::Callback
+class ToList : public db::Comment::Callback
 {
 public:
 
-	Callback();
-	~Callback() throw();
+	ToList();
+	~ToList() throw();
 
 	Tcl_Obj* result();
 
@@ -142,10 +142,10 @@ private:
 };
 
 
-Tcl_Obj* Callback::result() { return m_result; }
+Tcl_Obj* ToList::result() { return m_result; }
 
 
-Callback::Callback()
+ToList::ToList()
 	:m_result(Tcl_NewListObj(0, 0))
 {
 	Tcl_IncrRefCount(m_result);
@@ -154,7 +154,7 @@ Callback::Callback()
 }
 
 
-Callback::~Callback() throw()
+ToList::~ToList() throw()
 {
 	Tcl_DecrRefCount(m_result);
 
@@ -164,7 +164,7 @@ Callback::~Callback() throw()
 
 
 void
-Callback::putTag(char const* tag, mstl::string const& content)
+ToList::putTag(char const* tag, mstl::string const& content)
 {
 	M_ASSERT(!m_stack.empty());
 
@@ -179,7 +179,7 @@ Callback::putTag(char const* tag, mstl::string const& content)
 
 
 void
-Callback::putContent()
+ToList::putContent()
 {
 	if (!m_content.empty())
 	{
@@ -190,7 +190,7 @@ Callback::putContent()
 
 
 void
-Callback::putTag(char const* tag)
+ToList::putTag(char const* tag)
 {
 	M_ASSERT(!m_stack.empty());
 
@@ -200,7 +200,7 @@ Callback::putTag(char const* tag)
 
 
 void
-Callback::startLanguage(mstl::string const& lang)
+ToList::startLanguage(mstl::string const& lang)
 {
 	putContent();
 
@@ -215,7 +215,7 @@ Callback::startLanguage(mstl::string const& lang)
 
 
 void
-Callback::endLanguage(mstl::string const&)
+ToList::endLanguage(mstl::string const&)
 {
 	M_ASSERT(!m_stack.empty());
 
@@ -225,7 +225,7 @@ Callback::endLanguage(mstl::string const&)
 
 
 void
-Callback::startAttribute(Attribute attr)
+ToList::startAttribute(Attribute attr)
 {
 	char const* tag = 0;
 
@@ -243,7 +243,7 @@ Callback::startAttribute(Attribute attr)
 
 
 void
-Callback::endAttribute(Attribute attr)
+ToList::endAttribute(Attribute attr)
 {
 	char const* tag = 0;
 
@@ -261,14 +261,14 @@ Callback::endAttribute(Attribute attr)
 
 
 void
-Callback::content(mstl::string const& s)
+ToList::content(mstl::string const& s)
 {
 	::append(m_content, s, s.size());
 }
 
 
 void
-Callback::nag(mstl::string const& s)
+ToList::nag(mstl::string const& s)
 {
 	putContent();
 	putTag("nag", s);
@@ -276,7 +276,7 @@ Callback::nag(mstl::string const& s)
 
 
 void
-Callback::symbol(char s)
+ToList::symbol(char s)
 {
 	putContent();
 	putTag("sym", mstl::string(1, s));
@@ -284,7 +284,7 @@ Callback::symbol(char s)
 
 
 void
-Callback::invalidXmlContent(mstl::string const& content)
+ToList::invalidXmlContent(mstl::string const& content)
 {
 	m_content.clear();
 	this->content(content);
@@ -292,14 +292,14 @@ Callback::invalidXmlContent(mstl::string const& content)
 
 
 void
-Callback::start()
+ToList::start()
 {
 	// no action
 }
 
 
 void
-Callback::finish()
+ToList::finish()
 {
 	M_ASSERT(!m_stack.empty());
 
@@ -542,7 +542,7 @@ static int
 cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
-	Callback callback;
+	ToList callback;
 
 	comment.parse(callback);
 	setResult(callback.result());

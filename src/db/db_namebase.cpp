@@ -569,14 +569,17 @@ Namebase::clear()
 	m_list.clear();
 	m_freeSet.clear();
 	m_reuseSet.clear();
-	m_freeSetIsEmpty = true;
 	m_map.clear();
 
 	m_maxFreq = 0;
 	m_maxUsage = 0;
+	m_used = 0;
+	m_nextId = 0;
+
 	m_isConsistent = true;
 	m_isPrepared = true;
 	m_isModified = true;
+	m_freeSetIsEmpty = true;
 
 	m_stringAllocator.clear();
 

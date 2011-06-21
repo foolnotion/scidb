@@ -1649,9 +1649,14 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 
 				s = e;
 			}
-			else if (::isprint(*s))
+			else if (::isgraph(*s))
 			{
 				result.m_content += *s++;
+			}
+			else
+			{
+				result.m_content += '?';
+				++s;
 			}
 		}
 		else

@@ -2327,11 +2327,11 @@ bind Text <Option-Down>		{ tk::TextSetCursorExt %W [tk::TextNextPara %W insert] 
 
 
 # TODO
-bind Text <Control-k> {}
-bind Text <Meta-d> {}
-bind Text <Meta-BackSpace> {}
-bind Text <Meta-Delete> {}
-bind Text <Control-h> {}
-bind Text <Control-o> {}
+bind Text <Control-k> {#}
+bind Text <Meta-d> {#}
+bind Text <Meta-BackSpace> {#}
+bind Text <Meta-Delete> {#}
+bind Text <Control-h> {#}
+bind Text <Control-o> {#}
 
 # vi:set ts=3 sw=3:

@@ -268,8 +268,11 @@ extractPlayerData(mstl::string& str,
 		char const* p = t;
 		char const* e = ++t;
 
-		if (*t == 'w')
-			sex = sex::Female;
+		switch (*t)
+		{
+			case 'w': sex = sex::Female; break;
+			case 'm': if (!::isalpha(t[1])) sex = sex::Male; break;
+		}
 
 		while (*e && !::isspace(*e))
 			++e;
@@ -1553,6 +1556,7 @@ Player::loadDone()
 //       name := start of line - first occurence of '#'
 //       right trim name
 //       skip '#'
+//       sex := next token (w, m)
 //       title := next token (wgm(+im)*, '-' -> None)
 //       country := next token YYY{/YYY}* (get the final one)
 //       elo := extract next token from [dddd] or [dddd*]; "[....]" -> 0
@@ -1677,6 +1681,11 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 //							}
 							break;
 
+						case 'F':
+							if (::strncmp(s, "%Federation ", 12) == 0)
+								player->setFederation(country::fromString(::skipSpaces(s + 12)));
+							break;
+
 //						case 'P':
 //							skip %Prefix
 //							break;
@@ -1685,44 +1694,9 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 //							skip %Infix
 //							break;
 //
-						case 'S':
-							switch (s[2])
-							{
-								case 'e':
-									if (::strncmp(s, "%Sex ", 5) == 0)
-									{
-										char const* t = ::skipSpaces(s + 5);
-
-										switch (*t)
-										{
-											case 'm':
-												player->setSex(sex::Male);
-												player->setType(species::Human);
-												break;
-
-											case 'f':
-												player->setSex(sex::Female);
-												player->setType(species::Human);
-												break;
-
-											case 'c':
-												player->setType(species::Program);
-												break;
-										}
-									}
-									break;
-
-								case 'u':
-									// skip %Suffix
-									break;
-							}
-							break;
-
-						case 'F':
-							if (::strncmp(s, "%Federation ", 12) == 0)
-								player->setFederation(country::fromString(::skipSpaces(s + 12)));
-							break;
-
+//						case 'S':
+//							// skip %Suffix
+//							break;
 //						case 'D':
 //							// skip %DiedCity
 //							break;
@@ -1780,7 +1754,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 					if (!line.empty())
 					{
 						country::Code federation = ::getFederation(federations);
-						country::Code	nativeCountry	= ::getNativeCountry(federations);
+						country::Code nativeCountry	= ::getNativeCountry(federations);
 						unsigned titleMask = ::getTitles(titles);
 						unsigned region = 0;
 

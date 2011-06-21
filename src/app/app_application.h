@@ -214,6 +214,7 @@ public:
 
 	void searchGames(Cursor& cursor, db::Query const& query, unsigned view = 0, unsigned filter = None);
 	void recode(Cursor& cursor, mstl::string const& encoding, db::Log& log);
+	void finalize();
 
 	void sort(	Cursor& cursor,
 					unsigned view,

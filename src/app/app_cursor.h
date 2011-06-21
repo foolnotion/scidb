@@ -27,6 +27,8 @@
 #ifndef _app_cursor_included
 #define _app_cursor_included
 
+#include "app_view.h"
+
 #include "db_common.h"
 
 #include "m_vector.h"
@@ -101,13 +103,18 @@ public:
 	int treeViewIdentifier() const;
 
 	/// Create new view and return the identifier.
-	unsigned newView();
+	unsigned newView(	View::UpdateMode gameUpdateMode,
+							View::UpdateMode playerUpdateMode,
+							View::UpdateMode eventUpdateMode,
+							View::UpdateMode annotatorUpdateMode);
 	/// Create new view for tree and return the identifier.
 	unsigned newTreeView();
 	/// Close an existing view.
 	void closeView(unsigned view);
 	/// Close an existing tree view.
 	void closeTreeView();
+	/// Update all open views.
+	void updateViews();
 
 	/// Return database object.
 	db::Database const& database() const;
