@@ -133,7 +133,8 @@ array set environment {
 }
 
 array set compiler {
-    simd {}
+    simd            {}
+    thread-support  {}
 }
 
 array set defaults {
@@ -752,53 +753,76 @@ fi
 }
 
 
+# TestSyncBuiltin.sh:
+#    Script used to test if the system supports the __sync builtin functions.
+#
+#   On some system the compiler is newer than the libc library. In this case
+#   it may happen that the __sync_val_compare_and_swap symbol is not contained
+#   in libc, but required for linking the application. In this case we forbid
+#   the usage of __sync_val_compare_and_swap().
+#
+set TestSyncBuiltin {#!/bin/sh
+cat <<EOF > testSyncBuiltin.c
+int main()
+{
+    int v;
+    __sync_val_compare_and_swap(&v, v, v);
+    return 1;
+}
+EOF
+
+__CC__ -o testSyncBuiltin testSyncBuiltin.c
+if [ -f testSyncBuiltin ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
 # checkGCC:
-#    Checks whether gcc/g++ is installed (with minimum version 3.4).
+#    Checks whether gcc/g++ is installed (minimum version is 3.4).
 proc checkGCC {cc} {
     global TestGCC
     global TestSSE2
+    global TestSyncBuiltin
     global environment
     global compiler
 
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
     flush stdout
-    if {[catch {open testgcc.sh w} f]} { return 0 }
+    if {[catch {open testgcc.sh w} f]} { return "" }
     puts $f [regsub -all __CC__ $TestGCC $environment($cc)]
     close $f
+    set version ""
     set result 0
     if {![catch {exec sh testgcc.sh} err]} { set result 1 }
+    catch {exec sh testgcc.sh} err
     catch { file delete -force testgcc.sh }
     catch { file delete -force testgcc.c }
     catch { file delete -force testgcc }
     if {[string length $err]} {
         puts "no,\n    '$environment($cc): command not found'"
     } else {
-        set ver ""
-        catch {exec $environment($cc) -v} ver
-        set i [string first "gcc version " $ver]
+        catch {exec $environment($cc) -v} version
+        set i [string first "gcc version " $version]
         if {$i >= 0} {
             incr i 12
-            set ver [string range $ver $i [expr {$i + 2}]]
+            set version [string range $version $i [expr {$i + 2}]]
         } else {
-            set ver ""
+            set result 0
+            set version ""
         }
         if {$result == 1} {
-                puts "yes (version $ver)."
-            if {[string length $ver]} {
-            } else {
-                puts "yes."
-            }
-        } elseif {$result == -1} {
-            puts "no."
-            set result 0
+            puts "yes (version $version)."
         } else {
-            if {[string length $ver]} {
-                puts "yes,\n    but existing $gcc version $ver is too old."
+            if {[string length $version]} {
+                puts "yes,\n    but existing $gcc version $version is too old."
             } else {
                 puts "yes,\n    but existing $gcc version is too old."
             }
-            set result 1
+            set version ""
         }
     }
     if {$result && $cc eq "CXX"} {
@@ -814,11 +838,23 @@ proc checkGCC {cc} {
                 puts "no."
             }
         }
+        puts -nonewline "    Checking if your system supports __sync_* builtin functions: "
+        flush stdout
+        if {![catch {open testSyncBuiltin.sh w} f]} {
+            puts $f [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]
+            close $f
+            if {![catch {exec sh testSyncBuiltin.sh}]} {
+                puts "yes."
+            } else {
+                set compiler(thread-support) -DDONT_USE_SYNC_BUILTIN
+                puts "no."
+            }
+        }
         catch { file delete -force testsse2.sh }
         catch { file delete -force testsse2.c }
         catch { file delete -force testsse2 }
     }
-    return $result
+    return $version
 }
 
 
@@ -1063,25 +1099,27 @@ puts "configure: Makefile configuration program for Scidb"
 
 # Parse command-line arguments:
 foreach arg $argv {
-    if {[string match --enable-* $arg]} {
-        set flag yes
-        lassign [split $arg =] feature flag
-        set feature([string range $feature 9 end]) $flag
-    } elseif {[string match --disable-* $arg]} {
-        set flag no
-        lassign [split $arg =] feature flag
-        set feature([string range $feature 10 end]) $flag
-    } elseif {[string match --with-* $arg]} {
-        lassign [split $arg =] feature arg
-        set package([string range $feature 7 end]) $flag
+    lassign [split $arg =] arg0 arg1
+    if {[string match --enable-* $arg0]} {
+        if {![info exists arg1]} { set arg1 yes }
+        set feature([string range $arg0 9 end]) $arg1
+    } elseif {[string match --disable-* $arg0]} {
+        if {![info exists arg1]} { set arg1 no }
+        set feature([string range $arg0 10 end]) $arg1
     } else {
-        set args [split $arg =]
-        if {[llength $args] == 1} {
+        if {![info exists arg1]} {
             puts "Invalid argument: $arg"
             usage 1
         }
-        set configure([lindex $args 0]) [lindex $args 1]
+        if {[string match --with-* $arg0]} {
+            set package([string range $arg0 7 end]) $arg1
+        } elseif {[info exists environment($arg0)]} {
+            set environment($arg0) $arg1
+        } else {
+            set configure($args0) $args1
+        }
     }
+    unset -nocomplain arg1
 }
 set configure(tk-version) $configure(tcl-version)
 
@@ -1097,14 +1135,23 @@ set tclv_nodot [expr round($tclv*10)]
 puts "    Tcl/Tk version: $tclv"
 puts "    Your operating system is: $tcl_platform(os) $tcl_platform(osVersion)"
 
-if {[checkGCC CC] && [checkGCC CXX]} {
-    checkZlib
-    checkZziplib
-    checkExpat
-    if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
-        writeMakefile
+set gxxVer ""
+set gccVer [checkGCC CC]
+if {[string length $gccVer]} { set gxxVer [checkGCC CXX] }
+
+if {[string length $gxxVer]} {
+    if {$gccVer eq $gxxVer} {
+        checkZlib
+        checkZziplib
+        checkExpat
+        if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
+            writeMakefile
+        }
+        exit 0
+    } else {
+        puts "Compiler version mismatch. Please configure CC and GXX with same versions."
     }
-    exit 0
+
 }
 
 exit 1
