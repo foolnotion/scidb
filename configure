@@ -853,6 +853,9 @@ proc checkGCC {cc} {
         catch { file delete -force testsse2.sh }
         catch { file delete -force testsse2.c }
         catch { file delete -force testsse2 }
+        catch { file delete -force testSyncBuiltin.sh }
+        catch { file delete -force testSyncBuiltin.c }
+        catch { file delete -force testSyncBuiltin }
     }
     return $version
 }
