@@ -127,7 +127,7 @@ atomic_test(atomic_t* v)
 	return *v == 1;
 }
 
-#elif __GNUC_PREREQ(4,1)
+#elif __GNUC_PREREQ(4,1) && !defined(DONT_USE_SYNC_BUILTIN)
 
 # define ATOMIC_INIT(x) { x }
 

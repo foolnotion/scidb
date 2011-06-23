@@ -18,7 +18,7 @@ include ../../Makefile.in
 INCLUDE		= -I. -I../util -I../tcl -I../mstl
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 LIBS			= mstl/libmstl.a
-CXXFLAGS		+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+CXXFLAGS		+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(THR_SUPPORT)
 
 SRC_CXX = \
 	sys_dl.cpp \
