@@ -56,6 +56,7 @@ SOURCES = \
 	widgets/countrybox.tcl \
 	widgets/eventmodebox.tcl \
 	widgets/eventtypebox.tcl \
+	widgets/fideidbox.tcl \
 	widgets/timemodebox.tcl \
 	widgets/titlebox.tcl \
 	widgets/resultbox.tcl \
