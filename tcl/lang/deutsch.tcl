@@ -97,6 +97,22 @@
 ::widget::mc::First		"&Erste"
 ::widget::mc::Last		"Le&tzte"
 
+### util ###############################################################
+
+::util::mc::IOErrorOccurred					"Ein Lese/Schreibfehler trat auf"
+
+::util::mc::IOError(OpenFailed)				"das Öffnen schlug fehl"
+::util::mc::IOError(ReadOnly)					"die Datenbank ist schreibgeschützt"
+::util::mc::IOError(UnknownVersion)			"unbekannte Dateiversion"
+::util::mc::IOError(UnexpectedVersion)		"unerwartete Dateiversion"
+::util::mc::IOError(Corrupted)				"die Datei ist beschädigt"
+::util::mc::IOError(WriteFailed)				"die Schreiboperation schlug fehl"
+::util::mc::IOError(InvalidData)				"ungültige Daten (möglicherweise eine beschädigte Datei)"
+::util::mc::IOError(ReadError)				"Fehler beim Schreiben"
+::util::mc::IOError(EncodingFailed)			"die Namebase konnte nicht erzeugt werden"
+::util::mc::IOError(MaxFileSizeExceeded)	"die maximale Dateigrösse wirde erreicht"
+::util::mc::IOError(LoadFailed)				"das Laden schlug fehl (zuviele Turnier-Einträge)"
+
 ### menu ###############################################################
 ::menu::mc::File						"&Datei"
 ::menu::mc::Game						"&Partie"
@@ -122,6 +138,7 @@
 ::menu::mc::HelpInfo					"&Information"
 ::menu::mc::HelpContents			"In&halt"
 ::menu::mc::HelpBugReport			"&Fehlerbericht (im Web-Browser)"
+::menu::mc::HelpFeatureRequest	"Funktions&wunsch (im Web-Browser)"
 
 ::menu::mc::ViewShowLog				"&Log zeigen..."
 ::menu::mc::ViewFullscreen			"Vollbild"
@@ -358,7 +375,8 @@
 ::application::pgn::mc::EditAnnotation						"Anmerkungen bearbeiten"
 ::application::pgn::mc::EditCommentBefore					"Kommentar (vor dem Zug) bearbeiten"
 ::application::pgn::mc::EditCommentAfter					"Kommentar (nach dem Zug) bearbeiten"
-::application::pgn::mc::EditCommentAtStart				"Kommentar (vor Variante) bearbeiten"
+::application::pgn::mc::EditPrecedingComment				"Vorangestellten Kommentar bearbeiten"
+::application::pgn::mc::EditTrailingComment				"Abschliessenden Kommentar bearbeiten"
 ::application::pgn::mc::EditMarks							"Markierungen bearbeiten"
 ::application::pgn::mc::Display								"Anzeige"
 ::application::pgn::mc::None									"keine"
@@ -651,6 +669,7 @@
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Nachname"
 ::playertable::mc::F_FirstName				"Vorname"
+::playertable::mc::F_FideID					"Fide ID"
 ::playertable::mc::F_Title						"Titel"
 ::playertable::mc::F_Frequency				"Häufigkeit"
 
@@ -814,6 +833,7 @@
 ::import::mc::InvalidCountryCode					"Ungültiger Länderkode"
 ::import::mc::InvalidRating						"Ungültige Wertungszahl"
 ::import::mc::InvalidNag							"Ungültiges NAG"
+::import::mc::BraceSeenOutsideComment			"\"\}\" ausserhalb eines Partiekommentars (wird ignoriert)""
 ::import::mc::MissingFen							"Kein FEN-Tag vorhanden (das Varianten-Tag wird ignoriert)"
 ::import::mc::UnknownEventType					"Unbekannter Ereignistyp"
 ::import::mc::UnknownTitle							"Unbekannter Titel (wird ignoriert)"
@@ -829,7 +849,6 @@
 ::import::mc::DecodingFailed						"Dekodierung ist fehlgeschlagen"
 ::import::mc::ResultDidNotMatchHeaderResult	"Ergebnis stimmte nicht mit Ergebnis-Tag überein"
 ::import::mc::ValueTooLong							"Der Tag-Wert ist zu lang und wird auf 255 Zeichen abgeschnitten"
-::import::mc::CommentAtEndOfGame					"Kommentar am Partieende wird als Variante eingefügt"
 ::import::mc::MaximalErrorCountExceeded		"Maximale Fehleranzahl ist überschritten; es werden keine weiteren (von diesem Typ) mehr angezeigt"
 ::import::mc::MaximalWarningCountExceeded		"Maximale Warnungsanzahl ist überschritten; es werden keine weiteren (von diesem Typ) mehr angezeigt"
 ::import::mc::InvalidToken							"Unerwartete Zeichenkette"
@@ -989,7 +1008,7 @@
 ::dialog::save::mc::Matches						"&Entsprechungen"
 ::dialog::save::mc::Tags							"&Tags"
 
-::dialog::save::mc::Name							"Name"
+::dialog::save::mc::Name							"Name/Fide ID"
 ::dialog::save::mc::Value							"Wert"
 ::dialog::save::mc::Title							"Title"
 ::dialog::save::mc::Rating							"Wertungszahl"
@@ -1201,7 +1220,8 @@
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar vor dem Zug"
 ::comment::mc::CommentAfterMove		"Kommentar nach dem Zug"
-::comment::mc::CommentAtStart			"Kommentar vor Variante"
+::comment::mc::PrecedingComment		"Vorangestellter Kommentar"
+::comment::mc::TrailingComment		"Abschliessender Kommentar"
 ::comment::mc::Language					"Sprache"
 ::comment::mc::AllLanguages			"Alle Sprachen"
 ::comment::mc::AddLanguage				"Sprache hinzufügen..."

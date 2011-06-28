@@ -28,6 +28,7 @@
 #include "tcl_exception.h"
 
 #include "db_comment.h"
+#include "db_player.h"
 
 #include "sys_utf8_codec.h"
 
@@ -49,6 +50,7 @@ static char const* CmdCrc32		= "::scidb::misc::crc32";
 static char const* CmdDebug		= "::scidb::misc::debug?";
 static char const* CmdFitsRegion	= "::scidb::misc::fitsRegion?";
 static char const* CmdIsAscii		= "::scidb::misc::isAscii?";
+static char const* CmdLookup		= "::scidb::misc::lookup";
 static char const* CmdToAscii		= "::scidb::misc::toAscii";
 static char const* CmdVersion		= "::scidb::misc::version";
 static char const* CmdXmlFromList	= "::scidb::misc::xmlFromList";
@@ -585,6 +587,19 @@ cmdDebug(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	db::Player const* player = db::Player::findPlayer(unsignedFromObj(objc, objv, 1));
+
+	if (player)
+		setResult(player->name());
+	else
+		setResult("");
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -594,6 +609,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdDebug,			cmdDebug);
 	createCommand(ti, CmdFitsRegion,	cmdFitsRegion);
 	createCommand(ti, CmdIsAscii,		cmdIsAscii);
+	createCommand(ti, CmdLookup,		cmdLookup);
 	createCommand(ti, CmdToAscii,		cmdToAscii);
 	createCommand(ti, CmdVersion,		cmdVersion);
 	createCommand(ti, CmdXmlFromList,	cmdXmlFromList);

@@ -1480,10 +1480,14 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	mstl::string const& whiteRatingType = rating::toString(info.findRatingType(color::White));
 	mstl::string const& blackRatingType = rating::toString(info.findRatingType(color::Black));
 
+	int32_t whiteFideID = info.findFideID(color::White);
+	int32_t blackFideID = info.findFideID(color::Black);
+
 #define SET(attr, value) objv[::attribute::game::attr] = value
 
 	SET(Number,               Tcl_NewIntObj(number));
 	SET(WhitePlayer,          Tcl_NewStringObj(whitePlayer, whitePlayer.size()));
+	SET(WhiteFideID,          whiteFideID ? Tcl_NewIntObj(whiteFideID) : Tcl_NewListObj(0, 0));
 	SET(WhiteRating1,         Tcl_NewIntObj(::findRating(info, color::White, ratings.first)));
 	SET(WhiteRating2,         Tcl_NewIntObj(::findRating(info, color::White, ratings.second)));
 	SET(WhiteRatingType,      Tcl_NewStringObj(whiteRatingType, whiteRatingType.size()));
@@ -1492,6 +1496,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	SET(WhiteType,            Tcl_NewStringObj(species::toString(info.findPlayerType(color::White)), -1));
 	SET(WhiteSex,             Tcl_NewStringObj(sex::toString(info.findSex(color::White)), -1));
 	SET(BlackPlayer,          Tcl_NewStringObj(blackPlayer, blackPlayer.size()));
+	SET(BlackFideID,          blackFideID ? Tcl_NewIntObj(blackFideID) : Tcl_NewListObj(0, 0));
 	SET(BlackRating1,         Tcl_NewIntObj(::findRating(info, color::Black, ratings.first)));
 	SET(BlackRating2,         Tcl_NewIntObj(::findRating(info, color::Black, ratings.second)));
 	SET(BlackRatingType,      Tcl_NewStringObj(blackRatingType, blackRatingType.size()));
@@ -2611,15 +2616,15 @@ cmdRecode(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 5)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<database> <encoding> <log-cmd> <log-arg>");
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> <encoding> <progress-cmd> <progress-arg>");
 		return TCL_ERROR;
 	}
 
 	char const* database	= stringFromObj(objc, objv, 1);
 	char const* encoding	= stringFromObj(objc, objv, 2);
 
-	tcl::Log log(objv[3], objv[4]);
-	scidb.recode(scidb.cursor(database), encoding, log);
+	Progress progress(objv[3], objv[4]);
+	scidb.recode(scidb.cursor(database), encoding, progress);
 
 	return TCL_OK;
 }
@@ -2732,7 +2737,7 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		NamebaseEntry const* entry = matches[i];
 
-		Tcl_Obj* objs[10];
+		Tcl_Obj* objs[11];
 		unsigned n = 0;
 
 		objs[n++] = Tcl_NewIntObj(entry->frequency());
@@ -2744,7 +2749,10 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				{
 					NamebasePlayer const* player = static_cast<NamebasePlayer const*>(entry);
 
+					uint32_t fideID = player->fideID();
+
 					objs[n++] = Tcl_NewStringObj(player->name(), -1);
+					objs[n++] = fideID ? Tcl_NewIntObj(player->fideID()) : Tcl_NewListObj(0, 0);
 					objs[n++] = Tcl_NewStringObj(species::toString(player->type()), -1);
 					objs[n++] = Tcl_NewStringObj(sex::toString(player->sex()), -1);
 					objs[n++] = Tcl_NewStringObj(country::toString(player->federation()), -1);
@@ -2805,10 +2813,12 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				Player const* player = playerMatches[i];
 				mstl::string const& ascii = player->asciiName();
+				uint32_t fideID = player->fideID();
 
 				objs[n++] = Tcl_NewIntObj(0);
 				objs[n++] = Tcl_NewStringObj(player->name(), player->name().size());
 				objs[n++] = Tcl_NewStringObj(ascii.empty() ? player->name() : ascii, -1);
+				objs[n++] = fideID ? Tcl_NewIntObj(player->fideID()) : Tcl_NewListObj(0, 0);
 				objs[n++] = Tcl_NewStringObj(species::toString(player->type()), -1);
 				objs[n++] = Tcl_NewStringObj(sex::toString(player->sex()), -1);
 				objs[n++] = Tcl_NewStringObj(country::toString(player->federation()), -1);;
@@ -2914,6 +2924,7 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 	char const*				federation(mstl::string::empty_string.c_str());
 	mstl::string const*	name(&player.name());
 	mstl::string			sex(sex::toString(player.sex()));
+	int32_t					fideID(player.fideID());
 	Player const*			p(player.player());
 
 	if (p)
@@ -2942,6 +2953,14 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 
 		if (idCard)
 			name = &p->name();
+
+		if (fideID == 0)
+		{
+			fideID = p->fideID();
+
+			if (!idCard)
+				fideID = -fideID;
+		}
 	}
 
 	if (title.empty())
@@ -2962,6 +2981,7 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 	mstl::string const ratingType = rating::toString(player.playerRatingType());
 
 	objv[attribute::player::Name      ] = Tcl_NewStringObj(*name, name->size());
+	objv[attribute::player::FideID    ] = fideID ? Tcl_NewIntObj(fideID) : Tcl_NewListObj(0, 0);
 	objv[attribute::player::Sex       ] = Tcl_NewStringObj(sex, -1);
 	objv[attribute::player::Rating1   ] = Tcl_NewListObj(2, ratingObj1);
 	objv[attribute::player::Rating2   ] = Tcl_NewListObj(2, ratingObj2);
@@ -2976,7 +2996,6 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 
 	if (info)
 	{
-		unsigned			fideID(0);
 		unsigned			viafID(0);
 		unsigned			iccfID(0);
 		mstl::string	dsbID;
@@ -2995,7 +3014,6 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 
 			dateOfBirth = p->dateOfBirth();
 			dateOfDeath = p->dateOfDeath();
-			fideID = p->fideID();
 			iccfID = p->iccfID();
 			dsbID = p->dsbID();
 			ecfID = p->ecfID();
@@ -3036,7 +3054,6 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 
 		objv[attribute::player::DateOfBirth  ] = Tcl_NewStringObj(dateOfBirth.asShortString(), -1);
 		objv[attribute::player::DateOfDeath  ] = Tcl_NewStringObj(dateOfDeath.asShortString(), -1);
-		objv[attribute::player::FideID       ] = fideID ? Tcl_NewIntObj(fideID) : Tcl_NewStringObj(0, 0);
 		objv[attribute::player::DsbID        ] = Tcl_NewStringObj(dsbID, dsbID.size());
 		objv[attribute::player::EcfID        ] = Tcl_NewStringObj(ecfID, ecfID.size());
 		objv[attribute::player::IccfID       ] = iccfID ? Tcl_NewIntObj(iccfID) : Tcl_NewStringObj(0, 0);

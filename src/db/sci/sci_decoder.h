@@ -56,21 +56,18 @@ public:
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
-	void doDecoding(/*unsigned flags, */GameData& data);
-	save::State doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags);
-
-	void recode(util::ByteStream& dst, sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec);
+	void doDecoding(GameData& data);
+	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
 
 private:
 
 	void decodeRun(unsigned count);
 	void decodeRun(unsigned count, Consumer& consumer);
-	void decodeVariation(/*unsigned flags*/);
-	void decodeVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text/*, unsigned flags*/);
+	void decodeVariation();
+	void decodeVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text);
 	void decodeComments(MoveNode* node, util::ByteStream& data);
 	void decodeTags(util::ByteStream& strm, TagSet& tags);
-	void skipTags();
-	void decodeTextSection(/*unsigned flags, */GameData& data);
+	void decodeTextSection(GameData& data);
 	void decodeMark();
 
 	unsigned decodeMove(Byte value, Move& move);

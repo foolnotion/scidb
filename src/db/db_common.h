@@ -1102,6 +1102,7 @@ namespace attribute
 		{
 			Number,
 			WhitePlayer,
+			WhiteFideID,
 			WhiteRating1,
 			WhiteRating2,
 			WhiteRatingType,
@@ -1110,6 +1111,7 @@ namespace attribute
 			WhiteType,
 			WhiteSex,
 			BlackPlayer,
+			BlackFideID,
 			BlackRating1,
 			BlackRating2,
 			BlackRatingType,
@@ -1170,6 +1172,7 @@ namespace attribute
 		enum ID
 		{
 			Name,
+			FideID,
 			Type,
 			Sex,
 			Rating1,
@@ -1183,7 +1186,6 @@ namespace attribute
 			// additional attributes
 			DateOfBirth,
 			DateOfDeath,
-			FideID,
 			DsbID,
 			EcfID,
 			IccfID,

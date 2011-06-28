@@ -63,24 +63,25 @@ private:
 	bool beginGame(TagSet const& tags);
 	save::State endGame(TagSet const& tags);
 
-	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
-	void sendComment(	Comment const& preComment,
-							Comment const& comment,
-							Annotation const& annotation,
-							MarkSet const& marks);
-	void sendFinalComment(Comment const& comment);
+	void sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void sendTrailingComment(Comment const& comment);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
 						Comment const& preComment,
 						Comment const& comment);
+
+	void writeComment(Comment const& preComment,
+							Comment const& comment,
+							Annotation const& annotation,
+							MarkSet const& marks);
 	Byte writeComment(Byte position, Comment const& comment);
 
 	void beginMoveSection();
 	void endMoveSection(result::ID result);
 	void beginVariation();
-	void endVariation();
+	void endVariation(bool isEmpty);
 
 	util::ByteStream	m_stream;
 	Byte					m_buffer[Block_Size];
@@ -90,7 +91,7 @@ private:
 	unsigned				m_runLength;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
-	bool					m_putComment;
+	bool					m_danglindEndMarker;
 };
 
 } // namespace sci

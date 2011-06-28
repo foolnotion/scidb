@@ -61,7 +61,7 @@ Consumer::Consumer(format::Type srcFormat, Codec& codec)
 	,m_runLength(0)
 	,m_endOfRun(false)
 	,m_danglingPop(false)
-	,m_putComment(true)
+	,m_danglindEndMarker(true)
 {
 }
 
@@ -92,7 +92,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_runLength = 0;
 	m_endOfRun = false;
 	m_danglingPop = false;
-	m_putComment = true;
+	m_danglindEndMarker = true;
 	return true;
 }
 
@@ -115,7 +115,12 @@ void Consumer::beginMoveSection() {}
 void
 Consumer::endMoveSection(result::ID)
 {
-	m_strm.put(token::End_Marker);
+	if (m_danglindEndMarker)
+	{
+		m_strm.put(token::End_Marker);
+		m_strm.put(token::End_Marker);
+	}
+
 	ByteStream(m_stream.base() + m_streamPos + 3, 2) << uint16_t(m_runLength);
 }
 
@@ -142,7 +147,7 @@ Consumer::writeComment(Byte position, Comment const& comment)
 
 
 void
-Consumer::sendComment(	Comment const& preComment,
+Consumer::writeComment(	Comment const& preComment,
 								Comment const& comment,
 								Annotation const& annotation,
 								MarkSet const& marks)
@@ -173,41 +178,33 @@ Consumer::sendComment(	Comment const& preComment,
 
 	if (flag)
 	{
-		M_ASSERT(m_putComment);
-
 		m_strm.put(token::Comment);
 		m_data.put(flag);
-
-		m_putComment = false;
 		m_endOfRun = true;
 	}
 }
 
 
 void
-Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+Consumer::sendPrecedingComment(	Comment const& comment,
+											Annotation const& annotation,
+											MarkSet const& marks)
 {
-	sendComment(Comment(), comment, annotation, marks);
+	writeComment(Comment(), comment, annotation, marks);
 }
 
 
 void
-Consumer::sendFinalComment(Comment const& comment)
+Consumer::sendTrailingComment(Comment const& comment)
 {
-	if (m_putComment)
-	{
-		if (Byte flag = writeComment(comm::Post, comment))
-		{
-			m_strm.put(token::Comment);
-			m_data.put(flag);
+	m_strm.put(token::End_Marker);
 
-			m_putComment = false;
-			m_endOfRun = true;
-		}
-	}
-	else if (!comment.isEmpty())
+	if (Byte flag = writeComment(comm::Post, comment))
 	{
-		sendMove(Move::null(), Annotation(), MarkSet(), comment, Comment());
+		m_strm.put(token::Comment);
+		m_data.put(flag);
+		m_endOfRun = true;
+		m_danglindEndMarker = false;
 	}
 }
 
@@ -232,7 +229,7 @@ Consumer::beginVariation()
 			m_position.push();
 		}
 
-		m_move = Move::empty();
+		m_move.clear();
 	}
 
 	if (!m_endOfRun)
@@ -245,21 +242,32 @@ Consumer::beginVariation()
 
 	m_position.push();
 	m_strm.put(token::Start_Marker);
-	m_putComment = true;
+	m_danglindEndMarker = true;
 }
 
 
 void
-Consumer::endVariation()
+Consumer::endVariation(bool isEmpty)
 {
-	if (m_danglingPop)
-		m_position.pop();
+	if (isEmpty)
+		putMove(Move::null());
 
-	m_position.pop();
-	m_strm.put(token::End_Marker);
-	m_move = Move::empty();
+	if (m_danglindEndMarker)
+	{
+		if (m_danglingPop)
+			m_position.pop();
+
+		m_position.pop();
+		m_strm.put(token::End_Marker);
+		m_strm.put(token::End_Marker);
+	}
+	else
+	{
+		m_danglindEndMarker = true;
+	}
+
+	m_move.clear();
 	m_danglingPop = true;
-	m_putComment = false;
 }
 
 
@@ -275,8 +283,6 @@ Consumer::sendMove(Move const& move)
 	{
 		m_position.doMove(m_move);
 	}
-
-	m_putComment = true;
 
 	if (!encodeMove(m_move = move))
 		m_endOfRun = true;
@@ -305,12 +311,10 @@ Consumer::sendMove(	Move const& move,
 		m_position.doMove(m_move);
 	}
 
-	m_putComment = true;
-
 	if (!encodeMove(m_move = move))
 		m_endOfRun = true;
 
-	sendComment(preComment, comment, annotation, marks);
+	writeComment(preComment, comment, annotation, marks);
 
 	if (!m_endOfRun)
 		++m_runLength;

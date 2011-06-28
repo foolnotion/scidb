@@ -239,6 +239,9 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_eventList(new NameList)
 	,m_siteList(new NameList)
 	,m_roundList(new NameList)
+	,m_progressFrequency(0)
+	,m_progressReportAfter(0)
+	,m_progressCount(0)
 {
 	M_ASSERT(m_indexEntrySize <= MaxIndexEntrySize);
 
@@ -351,13 +354,6 @@ Codec::filterTag(TagSet& tags, tag::ID tag) const
 }
 
 
-BlockFile*
-Codec::newBlockFile() const
-{
-	return new BlockFile(m_blockSize, BlockFile::RequireLength);
-}
-
-
 void
 Codec::reset()
 {
@@ -416,25 +412,25 @@ Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordL
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, *m_codec);
-	return decoder.doDecoding(consumer/*, flags*/, tags);
+	return decoder.doDecoding(consumer, tags);
 }
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
+Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 {
 	Decoder decoder(strm, *m_codec);
-	return decoder.doDecoding(consumer/*, flags*/, tags);
+	return decoder.doDecoding(consumer, tags);
 }
 
 
 void
-Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
@@ -443,7 +439,7 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 
 	M_ASSERT(strm.size() == info.gameRecordLength());
 
-	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));
+	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(data));
 
 	if (data.m_tags.contains(tag::Termination) && info.terminationReason() == termination::Unknown)
 		info.m_termination = termination::fromString(data.m_tags.value(tag::Termination));
@@ -555,7 +551,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 	if (m_gameStream.size() >= 8 && m_gameStream.read(buf, 8) && ::memcmp(buf, MagicGameFile, 8) == 0)
 		m_hasMagic = true;
 
-	readNamebase(namebaseStream, progress);
+	readNamebases(namebaseStream, progress);
 	readIndex(indexStream, progress);
 
 	// NOTE:
@@ -600,7 +596,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	m_gameData->sync();
 	m_hasMagic = true;
 
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -627,7 +623,7 @@ Codec::doClear(mstl::string const& rootname)
 	m_gameData = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength, m_magicGameFile);
 	m_hasMagic = true;
 
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -662,7 +658,7 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 
 	try
 	{
-		writeNamebase(namebaseStream);
+		writeNamebases(namebaseStream);
 		sys::file::rename(namebaseTempFilename, namebaseFilename);
 	}
 	catch (...)
@@ -724,7 +720,7 @@ Codec::update(mstl::string const& rootname)
 
 	try
 	{
-		writeNamebase(namebaseStream);
+		writeNamebases(namebaseStream);
 		sys::file::rename(namebaseTempFilename, namebaseFilename);
 	}
 	catch (...)
@@ -765,7 +761,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 		mstl::fstream namebaseStream;
 		checkPermissions(namebaseFilename);
 		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
-		writeNamebase(namebaseStream);
+		writeNamebases(namebaseStream);
 		sys::file::rename(namebaseTempFilename, namebaseFilename);
 	}
 	catch (...)
@@ -1070,7 +1066,6 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 	bstrm[119] = '\0';	// to be sure
 	setDescription(reinterpret_cast<char const*>(bstrm.data()));
 
-	m_roundLookup.resize(size);
 	decodeIndex(fstrm, progress);
 	fstrm.close();
 }
@@ -1080,6 +1075,8 @@ void
 Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 {
 	GameInfoList& infoList = gameInfoList();
+
+	m_roundLookup.resize(infoList.size());
 
 	unsigned frequency	= progress.frequency(infoList.size(), 20000);
 	unsigned reportAfter	= frequency;
@@ -1243,7 +1240,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 			IO_RAISE(Index, Load_Failed, "too many events; load aborted");
 		}
 
-		m_eventList->add(eventId, event);
+		m_eventList->addEntry(eventId, event);
 	}
 
 	round->ref();
@@ -1337,76 +1334,96 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 
 
 void
-Codec::readNamebase(mstl::fstream& stream, Progress& progress)
+Codec::reloadDescription(mstl::string const& rootname)
 {
+	char header[MaxIndexHeaderSize];
+
+	mstl::string	filename(rootname + m_extNamebase);
+	mstl::fstream	stream;
+
+	checkPermissions(filename);
+	openFile(stream, filename, MagicIndexFile);
+
+	if (!stream.read(header, m_headerSize))
+		IO_RAISE(Index, Corrupted, "unexpected end of file");
+
+	ByteStream bstrm(header, m_headerSize);
+
+	bstrm.skip(12);
+	bstrm[119] = '\0';	// to be sure
+	setDescription(reinterpret_cast<char const*>(bstrm.data()));
+}
+
+
+void
+Codec::reloadNamebases(mstl::string const& rootname, util::Progress& progress)
+{
+	mstl::string	filename(rootname + m_extNamebase);
+	mstl::fstream	stream;
+
+	checkPermissions(filename);
+	openFile(stream, filename, MagicNamebase);
+
 	unsigned count[Namebase::Round + 1];
 	unsigned maxFreq[Namebase::Round + 1];
-
-	M_STATIC_CHECK(Namebase::Player < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Event  < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Site   < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Round  < U_NUMBER_OF(count), Index_Out_Of_Range);
+	unsigned total = 0;
 
 	stream.set_bufsize(65536);
 	ByteIStream bstrm(stream);
 
 	bstrm.skip(4);	// skip timestamp
 
-	count[Namebase::Player] = bstrm.uint24();
-	count[Namebase::Event ] = bstrm.uint24();
-	count[Namebase::Site  ] = bstrm.uint24();
-	count[Namebase::Round ] = bstrm.uint24();
+	total += (count[Namebase::Player] = bstrm.uint24());
+	total += (count[Namebase::Event ] = bstrm.uint24());
+	total += (count[Namebase::Site  ] = bstrm.uint24());
+	bstrm.skip(3); // skip round
 
 	maxFreq[Namebase::Player]	= bstrm.uint24();
 	maxFreq[Namebase::Event]	= bstrm.uint24();
 	maxFreq[Namebase::Site]		= bstrm.uint24();
-	maxFreq[Namebase::Round]	= bstrm.uint24();
+	bstrm.skip(3); // skip round
 
-	progress.start(4);
-	readNamebase(	bstrm,
+	ProgressWatcher watcher(progress, total);
+
+	m_progressFrequency		= progress.frequency(total, 1000);
+	m_progressReportAfter	= m_progressFrequency;
+	m_progressCount			= 0;
+
+	reloadNamebase(bstrm,
 						namebase(Namebase::Player),
 						*m_playerList,
 						maxFreq[Namebase::Player],
 						count[Namebase::Player],
-						maxPlayerCount());
-	progress.update(1);
-	readNamebase(	bstrm,
+						progress);
+	m_progressCount += count[Namebase::Player];
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	reloadNamebase(bstrm,
 						namebase(Namebase::Event),
 						*m_eventList,
 						maxFreq[Namebase::Event],
 						count[Namebase::Event],
-						maxEventCount());
-	progress.update(2);
-	readNamebase(	bstrm,
+						progress);
+	m_progressCount += count[Namebase::Event];
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	reloadNamebase(bstrm,
 						namebase(Namebase::Site),
 						*m_siteList,
 						maxFreq[Namebase::Site],
 						count[Namebase::Site],
-						maxSiteCount());
-	progress.update(3);
-	readNamebase(	bstrm,
-						namebase(Namebase::Round),
-						*m_roundList,
-						maxFreq[Namebase::Round],
-						count[Namebase::Round],
-						::MaxRoundCount);
-	progress.update(4);
-	namebase(Namebase::Annotator).insert();
-	namebases().resetModified();
+						progress);
 }
 
 
 void
-Codec::readNamebase(	ByteIStream& bstrm,
-							Namebase& base,
-							NameList& shadowBase,
-							unsigned maxFreq,
-							unsigned count,
-							unsigned limit)
+Codec::reloadNamebase(	ByteIStream& bstrm,
+								Namebase& base,
+								NameList& shadowBase,
+								unsigned maxFreq,
+								unsigned count,
+								util::Progress& progress)
 {
 	typedef Namebase::Type Type;
 
-	M_ASSERT(count <= limit);
 	M_ASSERT(m_codec);
 
 	if (count == 0)
@@ -1414,18 +1431,19 @@ Codec::readNamebase(	ByteIStream& bstrm,
 
 	mstl::string name;
 	mstl::string str;
-	mstl::string in;
-	mstl::string out;
 
 	char buf[1024];
-	Type type(base.type());
 
-	base.reserve(count, limit);
-	shadowBase.reserve(count);
-	in.hook(buf, 1024);
+	str.hook(buf, 1024);
 
 	for (unsigned i = 0; i < count; ++i)
 	{
+		if (m_progressReportAfter == i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned index = (count >= 65536) ? bstrm.uint24() : bstrm.uint16();
 
 		__attribute__((unused))
@@ -1452,8 +1470,172 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			bstrm.get(buf + prefix, length - prefix);
 		}
 
-		in.set_size(length);
-		m_codec->toUtf8(in, out);
+		str.set_size(length);
+		m_codec->toUtf8(str, name);
+
+		if (!sys::utf8::Codec::is7BitAscii(name))
+		{
+			if (!sys::utf8::Codec::validateUtf8(name))
+			{
+				// the database is opened with wrong encoding
+				m_codec->forceValidUtf8(name);
+			}
+
+			base.rename(shadowBase.lookup(index)->entry, name);
+		}
+	}
+}
+
+
+void
+Codec::readNamebases(mstl::fstream& stream, Progress& progress)
+{
+	unsigned count[Namebase::Round + 1];
+	unsigned maxFreq[Namebase::Round + 1];
+	unsigned total = 0;
+
+	M_STATIC_CHECK(Namebase::Player < U_NUMBER_OF(count), Index_Out_Of_Range);
+	M_STATIC_CHECK(Namebase::Event  < U_NUMBER_OF(count), Index_Out_Of_Range);
+	M_STATIC_CHECK(Namebase::Site   < U_NUMBER_OF(count), Index_Out_Of_Range);
+	M_STATIC_CHECK(Namebase::Round  < U_NUMBER_OF(count), Index_Out_Of_Range);
+
+	stream.set_bufsize(65536);
+	ByteIStream bstrm(stream);
+
+	bstrm.skip(4);	// skip timestamp
+
+	total += (count[Namebase::Player] = bstrm.uint24());
+	total += (count[Namebase::Event ] = bstrm.uint24());
+	total += (count[Namebase::Site  ] = bstrm.uint24());
+	total += (count[Namebase::Round ] = bstrm.uint24());
+
+	maxFreq[Namebase::Player]	= bstrm.uint24();
+	maxFreq[Namebase::Event]	= bstrm.uint24();
+	maxFreq[Namebase::Site]		= bstrm.uint24();
+	maxFreq[Namebase::Round]	= bstrm.uint24();
+
+	ProgressWatcher watcher(progress, total);
+
+	m_progressFrequency		= progress.frequency(total, 1000);
+	m_progressReportAfter	= m_progressFrequency;
+	m_progressCount			= 0;
+
+	readNamebase(	bstrm,
+						namebase(Namebase::Player),
+						*m_playerList,
+						maxFreq[Namebase::Player],
+						count[Namebase::Player],
+						maxPlayerCount(),
+						progress);
+	m_progressCount += count[Namebase::Player];
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	readNamebase(	bstrm,
+						namebase(Namebase::Event),
+						*m_eventList,
+						maxFreq[Namebase::Event],
+						count[Namebase::Event],
+						maxEventCount(),
+						progress);
+	m_progressCount += count[Namebase::Event];
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	readNamebase(	bstrm,
+						namebase(Namebase::Site),
+						*m_siteList,
+						maxFreq[Namebase::Site],
+						count[Namebase::Site],
+						maxSiteCount(),
+						progress);
+	m_progressCount += count[Namebase::Site];
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	readNamebase(	bstrm,
+						namebase(Namebase::Round),
+						*m_roundList,
+						maxFreq[Namebase::Round],
+						count[Namebase::Round],
+						::MaxRoundCount,
+						progress);
+	namebase(Namebase::Annotator).insert();
+	namebases().resetModified();
+}
+
+
+void
+Codec::readNamebase(	ByteIStream& bstrm,
+							Namebase& base,
+							NameList& shadowBase,
+							unsigned maxFreq,
+							unsigned count,
+							unsigned limit,
+							util::Progress& progress)
+{
+	typedef Namebase::Type Type;
+
+	M_ASSERT(count <= limit);
+	M_ASSERT(m_codec);
+
+	if (count == 0)
+		return;
+
+	mstl::string name;
+	mstl::string str;
+	mstl::string tmp;
+
+	char buf[1024];
+	Type type(base.type());
+
+	base.reserve(count, limit);
+	shadowBase.reserve(count);
+	str.hook(buf, 1024);
+
+	for (unsigned i = 0; i < count; ++i)
+	{
+		if (m_progressReportAfter == i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
+		unsigned index = (count >= 65536) ? bstrm.uint24() : bstrm.uint16();
+
+		__attribute__((unused))
+		unsigned freq = (maxFreq >= 65536)
+								? bstrm.uint24()
+								: (maxFreq >= 256 ? bstrm.uint16() : bstrm.get());
+
+		if (index >= count)
+			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
+
+		unsigned length = bstrm.get();
+
+		if (i == 0)
+		{
+			bstrm.get(buf, length);
+		}
+		else
+		{
+			unsigned prefix = bstrm.get();
+
+			if (prefix > length)
+				IO_RAISE(Namebase, Corrupted, "namebase file is broken");
+
+			bstrm.get(buf + prefix, length - prefix);
+		}
+
+		str.set_size(length);
+		m_codec->toUtf8(str, name);
+
+		if (!sys::utf8::Codec::validateUtf8(name))
+		{
+			// the database is opened with wrong encoding
+			m_codec->forceValidUtf8(name);
+		}
+
+		if (name.readonly())
+		{
+			char* p = base.alloc(name.size());
+			::memcpy(p, name.c_str(), name.size() + 1);
+			name.hook(p);
+		}
 
 		switch (int(type))
 		{
@@ -1465,10 +1647,9 @@ Codec::readNamebase(	ByteIStream& bstrm,
 					species::ID		type		= species::Unspecified;
 					sex::ID			sex		= sex::Unspecified;
 
-					str.assign(out);
-					str.unhook();
+					tmp.assign(name);
 
-					while (PgnReader::Tag tag = PgnReader::extractPlayerData(str, value))
+					while (PgnReader::Tag tag = PgnReader::extractPlayerData(tmp, value))
 					{
 						switch (tag)
 						{
@@ -1500,67 +1681,30 @@ Codec::readNamebase(	ByteIStream& bstrm,
 						}
 					}
 
-					if (out.size() >= 256)
-						out.set_size(255);
-
-					char* s = base.alloc(out.size());
-					::memcpy(s, out.c_str(), out.size());
-					name.hook(s, out.size());
-
 					// NOTE: we don't trust the frequency value, it is
 					// probably faulty due to a bug in Scid.
 					shadowBase.append(
-						in,
-						base.insertPlayer(name, index, country, title, type, sex, limit),
+						str,
+						base.insertPlayer(name, index, country, title, type, sex, 0, limit),
 						*m_codec);
 				}
 				break;
 
 			case Namebase::Site:
-				{
-					str.assign(out);
-					str.unhook();
-
-					country::Code country = PgnReader::extractCountryFromSite(str);
-
-					if (out.size() >= 256)
-						out.set_size(255);
-
-					char* s = base.alloc(out.size());
-					::memcpy(s, out.c_str(), out.size());
-					name.hook(s, out.size());
-
-					shadowBase.append(in, base.insertSite(name, index, country, limit), *m_codec);
-				}
+				tmp.assign(name);
+				country::Code country = PgnReader::extractCountryFromSite(tmp);
+				shadowBase.append(str, base.insertSite(name, index, country, limit), *m_codec);
 				break;
 
 			case Namebase::Event:
-				{
-					if (out.size() >= 256)
-						out.set_size(255);
-
-					char* s = base.alloc(out.size());
-					::memcpy(s, out.c_str(), out.size());
-					name.hook(s, out.size());
-
-					shadowBase.append(
-						in,
-						base.insertEvent(name, index, limit, NamebaseEvent::emptySite()),
-						*m_codec);
-				}
+				shadowBase.append(
+					str,
+					base.insertEvent(name, index, limit, NamebaseEvent::emptySite()),
+					*m_codec);
 				break;
 
 			case Namebase::Round:
-				{
-					if (out.size() >= 256)
-						out.set_size(255);
-
-					char* s = base.alloc(out.size());
-					::memcpy(s, out.c_str(), out.size());
-					name.hook(s, out.size());
-
-					shadowBase.append(in, base.insert(name, index, limit), *m_codec);
-				}
+				shadowBase.append(str, base.insert(name, index, limit), *m_codec);
 				break;
 		}
 
@@ -1593,7 +1737,7 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 void
-Codec::writeNamebase(mstl::fstream& stream)
+Codec::writeNamebases(mstl::fstream& stream)
 {
 	stream.set_unbuffered();
 
@@ -1678,6 +1822,14 @@ Codec::writeNamebase(mstl::fstream& stream, NameList& base)
 }
 
 
+void
+Codec::releaseRoundEntry(unsigned index)
+{
+	if (NamebaseEntry* entry = m_roundLookup[index])
+		namebase(Namebase::Round).deref(entry);
+}
+
+
 bool
 Codec::saveRoundEntry(unsigned index, mstl::string const& value)
 {
@@ -1689,11 +1841,10 @@ Codec::saveRoundEntry(unsigned index, mstl::string const& value)
 		return false;
 
 	if (index >= m_roundLookup.size())
-		m_roundLookup.resize(index + 1);
-	else
-		namebase(Namebase::Round).deref(m_roundEntry = m_roundLookup[index]);
+		m_roundLookup.resize((index + mstl::max(20u, (9*index)/10)));
 
 	namebase(Namebase::Round).ref(entry);
+	m_roundEntry = m_roundLookup[index];
 	m_roundLookup[index] = entry;
 
 	return true;
@@ -1703,10 +1854,17 @@ Codec::saveRoundEntry(unsigned index, mstl::string const& value)
 void
 Codec::restoreRoundEntry(unsigned index)
 {
+	namebase(Namebase::Round).deref(m_roundLookup[index]);
+
 	if (m_roundEntry)
+	{
 		namebase(Namebase::Round).ref(m_roundEntry);
 
-	namebase(Namebase::Round).deref(m_roundLookup[index]);
+		if (m_roundLookup[index]->frequency() == 0)
+			m_roundLookup[index] = m_roundEntry;
+
+		m_roundEntry = 0;
+	}
 }
 
 

@@ -41,6 +41,8 @@ GameData::GameData()
 	m_tags.set(tag::White,	"?", 1);
 	m_tags.set(tag::Black,	"?", 1);
 	m_tags.set(tag::Result,	"*", 1);
+
+	m_startNode->setNext(new MoveNode);
 }
 
 GameData::~GameData() throw() { delete m_startNode; }

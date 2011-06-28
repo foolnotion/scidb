@@ -1748,6 +1748,66 @@ fitsRegion6(mstl::string const& s)
 }
 
 
+namespace validate {
+
+// adopted from Frank Yung-Fong Tang <http://people.netscape.com/ftang/utf8/isutf8.c>
+//
+// Valid octet sequences:
+// 00-7f
+//	c2-df	80-bf
+//	e0		a0-bf 80-bf
+//	e1-ec	80-bf 80-bf
+//	ed		80-9f 80-bf
+//	ee-ef	80-bf 80-bf
+//	f0		90-bf 80-bf 80-bf
+//	f1-f3	80-bf 80-bf 80-bf
+//	f4		80-8f 80-bf 80-bf
+
+enum State { Start, A, B, C, D, E, F, G, Error };
+
+static int const Byte_Class_Lookup_Tbl[256] =
+{
+//	00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 10
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 80
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, // 90
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // A0
+	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // B0
+	4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // C0
+	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // D0
+	6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, // E0
+	9,10,10,10,11, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, // F0
+};
+
+#define _ Error
+static enum State const State_Transition_Tbl[12][8] =
+{
+//	  Start  A      B      C      D      E      F      G
+	{ Start, _    , _    , _    , _    , _    , _    , _    }, //  0: 00-7f
+	{ _    , Start, A    , _    , A    , B    , _    , B    }, //  1: 80-8f
+	{ _    , Start, A    , _    , A    , B    , B    , _    }, //  2: 90-9f
+	{ _    , Start, A    , A    , _    , B    , B    , _    }, //  3: a0-bf
+	{ _    , _    , _    , _    , _    , _    , _    , _    }, //  4: c0-c1, f5-ff
+	{ A    , _    , _    , _    , _    , _    , _    , _    }, //  5: c2-df
+	{ C    , _    , _    , _    , _    , _    , _    , _    }, //  6: e0
+	{ B    , _    , _    , _    , _    , _    , _    , _    }, //  7: e1-ec, ee-ef
+	{ D    , _    , _    , _    , _    , _    , _    , _    }, //  8: ed
+	{ F    , _    , _    , _    , _    , _    , _    , _    }, //  9: f0
+	{ E    , _    , _    , _    , _    , _    , _    , _    }, // 10: f1-f3
+	{ G    , _    , _    , _    , _    , _    , _    , _    }, // 11: f4
+};
+#undef _
+
+} // namespace validate
+
+
 inline static int
 utfToUniChar(char const* s, Tcl_UniChar& ch)
 {
@@ -2395,74 +2455,62 @@ Codec::isLatin1(mstl::string const& s) const
 bool
 Codec::validateUtf8(char const* utf8, unsigned nbytes)
 {
-	// adopted from Frank Yung-Fong Tang <http://people.netscape.com/ftang/utf8/isutf8.c>
-	//
-	// Valid octet sequences:
-	// 00-7f
-	//	c2-df	80-bf
-	//	e0		a0-bf 80-bf
-	//	e1-ec	80-bf 80-bf
-	//	ed		80-9f 80-bf
-	//	ee-ef	80-bf 80-bf
-	//	f0		90-bf 80-bf 80-bf
-	//	f1-f3	80-bf 80-bf 80-bf
-	//	f4		80-8f 80-bf 80-bf
-
-	enum State { Start, A, B, C, D, E, F, G, Error };
-
-	static int const Byte_Class_Lookup_Tbl[256] =
-	{
-//		00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 10
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 80
-		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, // 90
-		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // A0
-		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // B0
-		4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // C0
-		5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // D0
-		6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, // E0
-		9,10,10,10,11, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, // F0
-	};
-
-#define _ Error
-	static enum State const State_Transition_Tbl[12][8] =
-	{
-//		  Start  A      B      C      D      E      F      G
-		{ Start, _    , _    , _    , _    , _    , _    , _    }, //  0: 00-7f
-		{ _    , Start, A    , _    , A    , B    , _    , B    }, //  1: 80-8f
-		{ _    , Start, A    , _    , A    , B    , B    , _    }, //  2: 90-9f
-		{ _    , Start, A    , A    , _    , B    , B    , _    }, //  3: a0-bf
-		{ _    , _    , _    , _    , _    , _    , _    , _    }, //  4: c0-c1, f5-ff
-		{ A    , _    , _    , _    , _    , _    , _    , _    }, //  5: c2-df
-		{ C    , _    , _    , _    , _    , _    , _    , _    }, //  6: e0
-		{ B    , _    , _    , _    , _    , _    , _    , _    }, //  7: e1-ec, ee-ef
-		{ D    , _    , _    , _    , _    , _    , _    , _    }, //  8: ed
-		{ F    , _    , _    , _    , _    , _    , _    , _    }, //  9: f0
-		{ E    , _    , _    , _    , _    , _    , _    , _    }, // 10: f1-f3
-		{ G    , _    , _    , _    , _    , _    , _    , _    }, // 11: f4
-	};
-#undef _
-
 	M_ASSERT(utf8);
 
-	State state = Start;
+	validate::State state = validate::Start;
 
 	for (char const* e = utf8 + nbytes; utf8 < e; ++utf8)
 	{
-		state = State_Transition_Tbl[Byte_Class_Lookup_Tbl[static_cast<unsigned char>(*utf8)]][state];
+		state = validate::State_Transition_Tbl[
+					validate::Byte_Class_Lookup_Tbl[static_cast<unsigned char>(*utf8)]][state];
 
-		if (state == Error)
+		if (state == validate::Error)
 			return false;
 	}
 
-	return state == Start;
+	return state == validate::Start;
+}
+
+
+void
+Codec::forceValidUtf8(mstl::string& str)
+{
+	mstl::string result;
+
+	char const* s = str.begin();
+	char const* e = str.end();
+	char const* p = s;
+
+	validate::State state = validate::Start;
+
+	for ( ; s < e; ++s)
+	{
+		state = validate::State_Transition_Tbl[
+					validate::Byte_Class_Lookup_Tbl[static_cast<unsigned char>(*s)]][state];
+
+		switch (int(state))
+		{
+			case validate::Error:
+				result += '?';
+				m_failed = true;
+				state = validate::Start;
+				p = s = p + 1;
+				break;
+
+			case validate::Start:
+				result.append(p, s + 1);
+				p = s + 1;
+				break;
+		}
+	}
+
+	if (state != validate::Error && state != validate::Start)
+	{
+		m_failed = true;
+		result += '?';
+	}
+
+	str.swap(result);
 }
 
 

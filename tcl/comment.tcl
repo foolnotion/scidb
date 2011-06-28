@@ -29,7 +29,8 @@ namespace eval mc {
 
 set CommentBeforeMove		"Comment before move"
 set CommentAfterMove			"Comment after move"
-set CommentAtStart			"Comment at start"
+set PrecedingComment			"Preceding comment"
+set TrailingComment			"Trailing comment"
 set Language					"Language"
 set AllLanguages				"All languages"
 set AddLanguage				"Add language..."
@@ -259,19 +260,10 @@ proc open {parent pos lang} {
 		-value xx \
 		;
 	
-	if {[::scidb::game::position atStart?]} {
-		set titleVar CommentAtStart
-	} elseif {$Vars(pos) eq "a"} {
-		set titleVar CommentBeforeMove
-	} else {
-		set titleVar CommentAfterMove
-	}
-
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
 	scan [wm grid $dlg] "%d %d" w h
 	wm minsize $dlg $w $h
-	wm title $dlg [set mc::$titleVar]
 	wm transient $dlg $parent
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
@@ -412,7 +404,7 @@ proc RecordGeometry {dlg parent} {
 proc Init {parent lang} {
 	variable Vars
 
-	MakeCountryList
+	LanguageChanged $Vars(dialog) $Vars(dialog)
 
 	set Vars(comment) [::scidb::game::query comment $Vars(pos)]
 	set Vars(langSet) [::scidb::game::query langSet]
@@ -698,10 +690,18 @@ proc TooltipHide {w key} {
 proc LanguageChanged {dlg w} {
 	variable Vars
 
-	if {$dlg eq $w} {
-		if {$Vars(pos) eq "a"} { set titleVar CommentBeforeMove } else { set titleVar CommentAfterMove }
-		wm title $dlg [set mc::$titleVar]
+	if {$dlg ne $w} { return }
+
+	if {[::scidb::game::position atStart?]} {
+		set titleVar PrecedingComment
+	} else {
+		switch $Vars(pos) {
+			a { set titleVar CommentBeforeMove }
+			p { set titleVar CommentAfterMove }
+			e { set titleVar TrailingComment }
+		}
 	}
+	wm title $dlg [set mc::$titleVar]
 
 	set Vars(lang:label) [LanguageName]
 	set Vars(countryList) {}

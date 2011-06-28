@@ -73,7 +73,7 @@ public:
 #endif
 
 	void append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec);
-	void add(unsigned originalId, NamebaseEntry* entry);
+	void addEntry(unsigned originalId, NamebaseEntry* entry);
 	void update(Namebase& base, sys::utf8::Codec& codec);
 	void reserve(unsigned size);
 
@@ -95,7 +95,6 @@ private:
 	Node* makeNode(NamebaseEntry* entry, mstl::string const* str);
 
 	mstl::bitset		m_usedIdSet;
-	mstl::bitset		m_newIdSet;
 	List					m_list;
 	List					m_lookup;
 	List					m_access;

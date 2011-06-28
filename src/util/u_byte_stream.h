@@ -160,6 +160,8 @@ private:
 
 	ByteStream& operator=(ByteStream const&);
 
+	Byte* searchEos();
+
 public:
 
 	ByteStream(ByRef ref);

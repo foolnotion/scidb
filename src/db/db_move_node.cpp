@@ -107,6 +107,22 @@ MoveNode::~MoveNode()
 }
 
 
+bool
+MoveNode::isEmptyLine() const
+{
+	if (hasNote())
+		return false;
+
+	if (atLineEnd())
+		return true;
+
+	if (!atLineStart())
+		return false;
+
+	return m_next->atLineEnd() && !m_next->hasNote();
+}
+
+
 void
 MoveNode::setMove(Board const& board, Move const& move)
 {
@@ -152,6 +168,18 @@ MoveNode::clearAnnotation()
 
 	m_annotation = const_cast<Annotation*>(Annotation::defaultSet(nag::Null));
 	m_flags &= ~HasAnnotation;
+}
+
+
+void
+MoveNode::clearMarks()
+{
+	if (m_marks != &::NoMarks)
+	{
+		delete m_marks;
+		m_marks = const_cast<MarkSet*>(&::NoMarks);
+		m_flags &= ~HasMark;
+	}
 }
 
 
@@ -434,7 +462,7 @@ MoveNode::countHalfMoves() const
 	MoveNode const* p = atLineStart() ? m_next : this;
 	unsigned count = 0;
 
-	for ( ; p; p = p->m_next)
+	for ( ; p->isBeforeLineEnd(); p = p->m_next)
 		++count;
 
 	return count;
@@ -447,7 +475,7 @@ MoveNode::countNodes() const
 	MoveNode const* p = atLineStart() ? m_next : this;
 	unsigned count = 0;
 
-	for ( ; p; p = p->m_next)
+	for ( ; p->isBeforeLineEnd(); p = p->m_next)
 	{
 		++count;
 
@@ -672,7 +700,7 @@ MoveNode::finish(Board const& board)
 
 	Board myBoard(board);
 
-	for (MoveNode* node = m_next; node; node = node->m_next)
+	for (MoveNode* node = m_next; node->isBeforeLineEnd(); node = node->m_next)
 	{
 		node->m_annotation->sort();
 
@@ -727,7 +755,7 @@ MoveNode::collectLanguages(LanguageSet& langSet) const
 bool
 MoveNode::containsIllegalMoves() const
 {
-	for (MoveNode const* p = atLineStart() ? m_next : this; p; p = p->m_next)
+	for (MoveNode const* p = atLineStart() ? m_next : this; p->isBeforeLineEnd(); p = p->m_next)
 	{
 		if (!p->m_move.isLegal())
 			return true;
@@ -797,12 +825,43 @@ MoveNode::containsOtherLang() const
 void
 MoveNode::unfold()
 {
+	getLineStart()->m_flags &= ~IsFolded;
+}
+
+
+MoveNode*
+MoveNode::getLineStart()
+{
 	MoveNode* node = this;
 
-	while (!node->atLineStart())
+	while (node->isAfterLineStart())
 		node = node->m_prev;
 
-	node->m_flags &= ~IsFolded;
+	return node;
+}
+
+
+MoveNode*
+MoveNode::getLineEnd()
+{
+	MoveNode* node = this;
+
+	while (node->isBeforeLineEnd())
+		node = node->m_next;
+
+	return node;
+}
+
+
+MoveNode*
+MoveNode::getOneBeforeLineEnd()
+{
+	MoveNode* node = this;
+
+	while (node->isBeforeLineEnd())
+		node = node->m_next;
+
+	return node->m_prev;
 }
 
 

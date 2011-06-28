@@ -121,18 +121,12 @@ public:
 	virtual Time modified(mstl::string const& rootname) const;
 	uint32_t created() const;
 	virtual util::crc::checksum_t computeChecksum(GameInfo const& info, unsigned crc) const;
-	virtual util::BlockFile* newBlockFile() const;
 
 	virtual void updateHeader(mstl::string const& rootname);
 	virtual void setEncoding(mstl::string const& encoding) = 0;
 	virtual void reset() = 0;
 
 	unsigned produce(Producer& producer, Consumer& consumer, util::Progress& progress);
-
-	virtual void recode(	GameInfo const& info,
-								util::ByteStream& dst,
-								sys::utf8::Codec& oldCodec,
-								sys::utf8::Codec& newCodec);
 
 	void open(DatabaseContent* db, mstl::string const& encoding);
 	void open(DatabaseContent* db, mstl::string const& rootname, mstl::string const& encoding);
@@ -148,6 +142,8 @@ public:
 	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
 	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	virtual void attach(mstl::string const& rootname, util::Progress& progress);
+	virtual void reloadDescription(mstl::string const& rootname);
+	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
 	virtual void close() = 0;
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
@@ -170,7 +166,6 @@ public:
 	save::State saveGame(util::ByteStream const& gameData, TagSet const& tags, Provider const& provider);
 	save::State updateCharacteristics(unsigned index, TagSet const& tags);
 	save::State saveMoves(util::ByteStream const& gameData, Provider const& provider);
-	virtual void replaceBlockFile(util::BlockFile* blockFile);
 	virtual void sync();
 
 	virtual void useAsyncReader(bool flag);

@@ -404,7 +404,8 @@ NamebasePlayer::Value::Value(	country::Code federation,
 										bool federationFlag,
 										bool titleFlag,
 										bool typeFlag,
-										bool sexFlag)
+										bool sexFlag,
+										bool fideIdFlag)
 	:m_federation(federation)
 	,m_title(title)
 	,m_sex(sex)
@@ -413,6 +414,7 @@ NamebasePlayer::Value::Value(	country::Code federation,
 	,m_titleFlag(titleFlag)
 	,m_sexFlag(sexFlag)
 	,m_speciesFlag(typeFlag)
+	,m_fideIdFlag(fideIdFlag)
 	,m_ignored_(0)
 	,m_unused_(0)
 {
@@ -439,17 +441,15 @@ NamebasePlayer::Key::Key(	mstl::string const& name,
 									bool federationFlag,
 									bool titleFlag,
 									bool typeFlag,
-									bool sexFlag)
+									bool sexFlag,
+									bool fideIdFlag)
 	:name(name)
-	,value(country, title, type, sex, federationFlag, titleFlag, typeFlag, sexFlag)
+	,value(country, title, type, sex, federationFlag, titleFlag, typeFlag, sexFlag, fideIdFlag)
 {
 }
 
 
-inline bool NamebasePlayer::haveType() const					{ return m_speciesFlag; }
-inline bool NamebasePlayer::haveSex() const					{ return m_sexFlag; }
-inline bool NamebasePlayer::haveFederation() const			{ return m_federationFlag; }
-inline bool NamebasePlayer::haveTitle() const				{ return m_titleFlag; }
+inline bool NamebasePlayer::haveFideId() const				{ return m_fideIdFlag; }
 inline bool NamebasePlayer::havePlayerInfo() const			{ return m_player; }
 
 inline uint16_t NamebasePlayer::elo() const					{ return m_rating[rating::Elo]; }
@@ -541,6 +541,15 @@ NamebasePlayer::sex() const
 
 
 inline
+uint32_t
+NamebasePlayer::fideID() const
+{
+	M_ASSERT(m_player != 0 || m_fideIdFlag == 0);
+	return m_fideIdFlag ? m_player->fideID() : 0;
+}
+
+
+inline
 bool
 NamebasePlayer::isEngine() const
 {
@@ -570,6 +579,17 @@ NamebasePlayer::findTitle() const
 		return title::ID(m_title);
 
 	return m_player ? title::best(m_player->titles()) : title::None;
+}
+
+
+inline
+int32_t
+NamebasePlayer::findFideID() const
+{
+	if (m_player == 0)
+		return 0;
+
+	return m_fideIdFlag ? int32_t(m_player->fideID()) : -int32_t(m_player->fideID());
 }
 
 

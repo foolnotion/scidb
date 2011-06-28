@@ -64,7 +64,8 @@ public:
 	void writeCommnentLine(mstl::string const& content);
 
 	void writeTag(mstl::string const& name, mstl::string const& value);
-	void writeComment(Comment const& comment, MarkSet const& marks);
+	void writePrecedingComment(Comment const& comment, MarkSet const& marks);
+	void writeTrailingComment(Comment const& comment);
 	void writeMove(Move const& move,
 						mstl::string const& moveNumber,
 						Annotation const& annotation,
@@ -86,9 +87,10 @@ public:
 
 private:
 
-	void writeComment(Comment const& comment);
-	void writeMarks(MarkSet const& marks);
-	void writeComment(mstl::string const& comment);
+	void putComment(Comment const& comment);
+	void putMarks(MarkSet const& marks);
+	void putComment(mstl::string const& comment);
+	void putComment(Comment const& comment, MarkSet const& marks);
 
 	void putSpace();
 	void putNewline();
@@ -104,8 +106,9 @@ private:
 	unsigned			m_lineLength;
 	unsigned			m_length;
 	unsigned			m_pendingSpace;
-	bool				m_hasPreComment;
+	bool				m_needPreComment;
 	bool				m_needPostComment;
+	bool				m_hasPostComment;
 };
 
 } // namespace db

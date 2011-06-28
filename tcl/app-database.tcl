@@ -262,60 +262,6 @@ proc activate {w menu flag} {
 
 
 proc openBase {parent file {encoding ""} {readonly -1}} {
-	::remote::busyOperation \
-		[list [namespace current]::OpenBase $parent $file $encoding $readonly]
-}
-
-
-proc closeBase {parent {file {}} {number -1}} {
-	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
-}
-
-
-proc newBase {parent file} {
-	variable Vars
-	variable Types
-
-	set file [file normalize $file]
-	if {[lsearch -exact -index 2 $Vars(bases) $file] == -1} {
-		set type Unspecific
-		::widget::busyCursor on
-		::scidb::db::new $file [lsearch -exact $Types(sci) $type]
-		::scidb::db::attach $file $file
-		set encoding [::scidb::db::get encoding $file]
-		AddBase $type $file $encoding 0
-		AddRecentFile $type $file $encoding 0
-		::widget::busyCursor off
-	} else {
-		::dialog::error -parent $parent -message [format $mc::DatabaseAlreadyOpen $file]
-	}
-	Switch $file
-}
-
-
-proc refreshBase {base} {
-	variable Vars
-
-	::scidb::db::switch $base
-	set index [lindex $Vars(bases) [lsearch -exact -index 2 $Vars(bases) $base] 0]
-	set count [::scidb::db::count games $base]
-	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
-	$Vars(canvas) itemconfigure size$index -text $count
-	LayoutSwitcher
-}
-
-
-proc selectEvent {base index} {
-	events::select [set [namespace current]::Vars(events)] $base $index
-}
-
-
-proc selectPlayer {base index} {
-	players::select [set [namespace current]::Vars(players)] $base $index
-}
-
-
-proc OpenBase {parent file encoding readonly} {
 	variable Vars
 	variable RecentFiles
 	variable Types
@@ -367,20 +313,14 @@ proc OpenBase {parent file encoding readonly} {
 				if {[llength $encoding]} { lappend args -encoding $encoding }
 				set cmd [list ::scidb::db::load $file]
 				set options [list -message $msg]
-				# TODO: use try - catch
-				::progress::start $parent.progress $cmd $args $options
+				if {[::util::catchIoError [list ::progress::start $parent.progress $cmd $args $options]]} {
+					return
+				}
 			}
 			.pgn - .gz - .zip {
-# XXX hack!
-set encoding iso8859-1
-				set rc [::import::open \
-							$parent \
-							$file \
-							[list $file] \
-							$msg \
-							$encoding \
-							[lsearch -exact $Types(sci) Temporary] \
-						]
+				set type [lsearch -exact $Types(sci) Temporary]
+				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
+				if {[::util::catchIoError $cmd rc]} { return }
 				if {!$rc} { return [::scidb::db::close $file] }
 				set readonly 1
 			}
@@ -397,6 +337,54 @@ set encoding iso8859-1
 	}
 
 	Switch $file
+}
+
+
+proc closeBase {parent {file {}} {number -1}} {
+	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
+}
+
+
+proc newBase {parent file} {
+	variable Vars
+	variable Types
+
+	set file [file normalize $file]
+	if {[lsearch -exact -index 2 $Vars(bases) $file] == -1} {
+		set type Unspecific
+		::widget::busyCursor on
+		::scidb::db::new $file [lsearch -exact $Types(sci) $type]
+		::scidb::db::attach $file $file
+		set encoding [::scidb::db::get encoding $file]
+		AddBase $type $file $encoding 0
+		AddRecentFile $type $file $encoding 0
+		::widget::busyCursor off
+	} else {
+		::dialog::error -parent $parent -message [format $mc::DatabaseAlreadyOpen $file]
+	}
+	Switch $file
+}
+
+
+proc refreshBase {base} {
+	variable Vars
+
+	::scidb::db::switch $base
+	set index [lindex $Vars(bases) [lsearch -exact -index 2 $Vars(bases) $base] 0]
+	set count [::scidb::db::count games $base]
+	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
+	$Vars(canvas) itemconfigure size$index -text $count
+	LayoutSwitcher
+}
+
+
+proc selectEvent {base index} {
+	events::select [set [namespace current]::Vars(events)] $base $index
+}
+
+
+proc selectPlayer {base index} {
+	players::select [set [namespace current]::Vars(players)] $base $index
 }
 
 
@@ -1025,11 +1013,13 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs command "$mc::EditDescription..." \
 				[list [namespace current]::EditDescription $canv $i] 1 0 {} {}
 		}
-		lappend specs	command \
-							"$mc::Recode..." \
-							[namespace code [list Recode $i $top]] \
-							0 1 {} {} \
-							;
+		if {$ext eq "si3" || $ext eq "si4" || $ext eq "cbh" || $ext eq "pgn"} {
+			lappend specs	command \
+								"$mc::Recode..." \
+								[namespace code [list Recode $i $top]] \
+								0 1 {} {} \
+								;
+		}
 		# TODO:
 		#	if {	[::scidb::view::count games $base 0] == [::scidb::db::count games $base]
 		#		&& [::scidb::view::query sorted]} {
@@ -1236,6 +1226,7 @@ proc ChangeIconSize {canv} {
 
 proc Recode {number parent} {
 	variable RecentFiles
+	variable Types
 	variable Vars
 
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
@@ -1247,25 +1238,25 @@ proc Recode {number parent} {
 	}
 	set encoding [::encoding::choose $parent $enc $defaultEncoding]
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }
-	update idletasks
 
-	if {[::scidb::db::get encodingState $file] ne "ok"} {
-		set readonly [::scidb::db::get readonly? $file]
-		closeBase $parent $file $number
-		::log::hide 1
-		openBase $parent $file $encoding $readonly
-		::log::hide 0
-	} else {
-		::widget::busyCursor on
-		::log::open $mc::Recode
-		::log::delay
-		::log::info [format $mc::RecodingDatabase $name $enc $encoding]
-		::scidb::db::recode $file $encoding ::log::error {}
-		update idletasks ;# be sure the following will be appended
-		::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
-		::log::close
-		::widget::busyCursor off
+	::log::open $mc::Recode
+	::log::info [format $mc::RecodingDatabase $name $enc $encoding]
+
+	switch $ext {
+		pgn {
+			::import::showOnlyEncodingWarnings true
+			closeBase $parent $file $index
+			openBase $parent $file $encoding true
+			::import::showOnlyEncodingWarnings false
+		}
+
+		default {
+			::progress::start $parent.progress [list ::scidb::db::recode $file $encoding] {} {}
+		}
 	}
+
+	::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
+	::log::close
 
 	CheckEncoding $parent $file $encoding
 	lset Vars(bases) $i 5 $encoding

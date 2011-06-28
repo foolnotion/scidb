@@ -139,6 +139,9 @@ public:
 	void setUnique(bool flag);
 
 	static bool isNormalized(mstl::string const& name);
+	static bool containsPlayer(mstl::string const& name, country::Code country, sex::ID sex);
+
+	static Player* findPlayer(uint32_t fideID);
 	static Player* findPlayer(	mstl::string const& name,
 										country::Code federation = country::Unknown,
 										sex::ID sex = sex::Unspecified);
@@ -148,6 +151,7 @@ public:
 	static void standardizeNames(mstl::string& name);
 	static unsigned findMatches(mstl::string const& name, Matches& result, unsigned maxMatches);
 	static unsigned countPlayers();
+	static Player* insertPlayer(uint32_t fideID, mstl::string const& name);
 
 	static void parseSpellcheckFile(mstl::istream& stream);
 	static void parseFideRating(mstl::istream& stream);

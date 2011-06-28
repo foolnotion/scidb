@@ -186,12 +186,6 @@ app_application.o: ../db/db_eco_table.ipp
 app_application.o: ../db/db_pgn_writer.h
 app_application.o: ../db/db_writer.h
 app_application.o: ../db/db_consumer.h
-app_application.o: ../db/db_annotation.h
-app_application.o: ../db/db_annotation.ipp
-app_application.o: ../db/db_mark_set.h
-app_application.o: ../db/db_mark.h
-app_application.o: ../db/db_mark.ipp
-app_application.o: ../db/db_mark_set.ipp
 app_application.o: ../db/db_consumer.ipp
 app_application.o: ../db/db_writer.ipp
 app_application.o: ../db/db_exception.h
@@ -568,12 +562,6 @@ app_view.o: ../db/db_game.ipp
 app_view.o: ../db/db_pgn_writer.h
 app_view.o: ../db/db_writer.h
 app_view.o: ../db/db_consumer.h
-app_view.o: ../db/db_annotation.h
-app_view.o: ../db/db_annotation.ipp
-app_view.o: ../db/db_mark_set.h
-app_view.o: ../db/db_mark.h
-app_view.o: ../db/db_mark.ipp
-app_view.o: ../db/db_mark_set.ipp
 app_view.o: ../db/db_home_pawns.h
 app_view.o: ../db/db_home_pawns.ipp
 app_view.o: ../db/db_consumer.ipp

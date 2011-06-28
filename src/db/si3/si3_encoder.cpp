@@ -142,9 +142,10 @@ void
 Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 {
 	mstl::string const& name	= tag::toName(tagID);
-	mstl::string const& value	= tags.value(tagID);
+	mstl::string value;
 
-	// TODO: use m_codec?
+	m_codec.fromUtf8(tags.value(tagID), value);
+
 	m_strm.put(name.size());
 	m_strm.put(name, name.size());
 	m_strm.put(value.size());
@@ -232,9 +233,10 @@ Encoder::encodeTags(TagSet const& tags)
 
 			if (key && tags.isUserSupplied(tag))
 			{
-				mstl::string const& value = tags.value(tag);
+				mstl::string value;
 
-				// TODO: use m_codec?
+				m_codec.fromUtf8(tags.value(tag), value);
+
 				m_strm.put(key);
 				m_strm.put(value.size());
 				m_strm.put(value, value.size());
@@ -248,12 +250,13 @@ Encoder::encodeTags(TagSet const& tags)
 		if (__builtin_expect(tags.extra(i).name.size() <= 240, 1))
 		{
 			mstl::string const& name	= tags.extra(i).name;
-			mstl::string const& value	= tags.extra(i).value;
+			mstl::string value;
+
+			m_codec.fromUtf8(tags.extra(i).value, value);
 
 			// we cannot store tag values with a length > 255
 			unsigned valueSize = mstl::min(size_t(255), value.size());
 
-			// TODO: use m_codec?
 			m_strm.put(name.size());
 			m_strm.put(name, name.size());
 			m_strm.put(valueSize);
@@ -474,7 +477,7 @@ Encoder::encodeMove(Move const& move)
 void
 Encoder::putComment(mstl::string& buf)
 {
-	m_codec.fromUtf8(buf, buf);
+	m_codec.fromUtf8(buf);
 //	PgnWriter::convertExtensions(buf, PgnWriter::Mode_Extended);
 	m_strm.put(buf, buf.size() + 1);
 	buf.clear();
@@ -493,45 +496,58 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 
 	for (node = node->next(); node; node = node->next())
 	{
-		if (node->hasComment(move::Ante))
-		{
-			if (!buf.empty())
-				buf += ' ';
-			node->comment(move::Ante).flatten(buf, encoding);
-		}
-
-		if (!buf.empty())
-			putComment(buf);
-
-		if (node->hasSupplement())
+		if (node->atLineEnd())
 		{
 			if (node->hasComment(move::Post))
-				node->comment(move::Post).flatten(buf, encoding);
+			{
+				if (!buf.empty())
+					buf += '\n';
 
-			if (node->hasMark())
+				node->comment(move::Post).flatten(buf, encoding);
+			}
+
+			if (!buf.empty())
+				putComment(buf);
+		}
+		else
+		{
+			if (node->hasComment(move::Ante))
 			{
 				if (!buf.empty())
 					buf += ' ';
-
-				MarkSet const& marks = node->marks();
-
-				for (unsigned i = 0; i < marks.count(); ++i)
-					marks[i].toString(buf);
+				node->comment(move::Ante).flatten(buf, encoding);
 			}
 
-			if (node->hasVariation())
-			{
-				if (!buf.empty())
-					putComment(buf);
+			if (!buf.empty())
+				putComment(buf);
 
-				for (unsigned i = 0; i < node->variationCount(); ++i)
-					encodeComments(node->variation(i), encoding);
+			if (node->hasSupplement())
+			{
+				if (node->hasComment(move::Post))
+					node->comment(move::Post).flatten(buf, encoding);
+
+				if (node->hasMark())
+				{
+					if (!buf.empty())
+						buf += ' ';
+
+					MarkSet const& marks = node->marks();
+
+					for (unsigned i = 0; i < marks.count(); ++i)
+						marks[i].toString(buf);
+				}
+
+				if (node->hasVariation())
+				{
+					if (!buf.empty())
+						putComment(buf);
+
+					for (unsigned i = 0; i < node->variationCount(); ++i)
+						encodeComments(node->variation(i), encoding);
+				}
 			}
 		}
 	}
-
-	if (!buf.empty())
-		putComment(buf);
 }
 
 
@@ -543,80 +559,97 @@ Encoder::encodeVariation(MoveNode const* node, unsigned level)
 
 	for (node = node->next(); node; node = node->next())
 	{
-		if (pendingComment || node->hasComment(move::Ante))
+		if (node->atLineEnd())
 		{
-			if (afterVariation)
+			if (pendingComment || node->hasComment(move::Post))
 			{
-				m_strm.put(token::Start_Marker);
-				m_strm.put(token::Comment);
-				m_strm.put(token::End_Marker);
-			}
-			else
-			{
-				m_strm.put(token::Comment);
-			}
-		}
-
-		encodeMove(node->move());
-		m_position.doMove(node->move());
-		afterVariation = false;
-
-		Annotation const& annotation = node->annotation();
-
-		if (node->hasAnnotation())
-		{
-			for (unsigned i = 0; i < annotation.count(); ++i)
-			{
-				int nag = nag::toScid3(annotation[i]);
-
-				if (nag != nag::Null)
+				if (afterVariation)
 				{
-					m_strm.put(token::Nag);
-					m_strm.put(nag);
+					m_strm.put(token::Start_Marker);
+					m_strm.put(token::Comment);
+					m_strm.put(token::End_Marker);
+				}
+				else
+				{
+					m_strm.put(token::Comment);
 				}
 			}
+
+			m_strm.put(level == 0 ? token::End_Game : token::End_Marker);
 		}
-
-		pendingComment = node->hasComment(move::Post) || node->hasMark();
-
-		if (node->hasVariation())
+		else
 		{
-			if (pendingComment)
+			if (pendingComment || node->hasComment(move::Ante))
 			{
-				m_strm.put(token::Comment);
-				pendingComment = false;
+				if (afterVariation)
+				{
+					m_strm.put(token::Start_Marker);
+					m_strm.put(token::Comment);
+					m_strm.put(token::End_Marker);
+				}
+				else
+				{
+					m_strm.put(token::Comment);
+				}
 			}
 
-			for (unsigned i = 0; i < node->variationCount(); ++i)
+			if (	node->move().isNull()
+				&& !node->hasNote()
+				&& level > 0
+				&& node->prev()->atLineStart()
+				&& node->next()->atLineEnd())
 			{
-				MoveNode const* var = node->variation(i);
-
-				m_position.push();
-				m_position.undoMove(node->move());
-				m_strm.put(token::Start_Marker);
-				encodeVariation(var, level + 1);
-				m_position.pop();
-			}
-
-			afterVariation = true;
-		}
-	}
-
-	if (pendingComment)
-	{
-		if (afterVariation)
-			{
-				m_strm.put(token::Start_Marker);
-				m_strm.put(token::Comment);
-				m_strm.put(token::End_Marker);
+				// ignore single null move
 			}
 			else
 			{
-				m_strm.put(token::Comment);
+				encodeMove(node->move());
+				m_position.doMove(node->move());
 			}
-	}
 
-	m_strm.put(level == 0 ? token::End_Game : token::End_Marker);
+			afterVariation = false;
+
+			Annotation const& annotation = node->annotation();
+
+			if (node->hasAnnotation())
+			{
+				for (unsigned i = 0; i < annotation.count(); ++i)
+				{
+					int nag = nag::toScid3(annotation[i]);
+
+					if (nag != nag::Null)
+					{
+						m_strm.put(token::Nag);
+						m_strm.put(nag);
+					}
+				}
+			}
+
+			pendingComment = node->hasComment(move::Post) || node->hasMark();
+
+			if (node->hasVariation())
+			{
+				if (pendingComment)
+				{
+					m_strm.put(token::Comment);
+					pendingComment = false;
+				}
+
+				for (unsigned i = 0; i < node->variationCount(); ++i)
+				{
+					MoveNode const* var = node->variation(i);
+
+					m_position.push();
+					m_position.undoMove(node->move());
+					m_strm.put(token::Start_Marker);
+					encodeVariation(var, level + 1);
+					m_position.pop();
+				}
+
+				afterVariation = true;
+			}
+		}
+	}
 }
 
 

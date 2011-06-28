@@ -52,6 +52,7 @@ set OpenChessgames			"chessgames.com collection"
 
 set F_LastName					"Last Name"
 set F_FirstName				"First Name"
+set F_FideID					"Fide ID"
 set F_Title						"Title"
 
 set T_Federation				"Federation"
@@ -75,6 +76,7 @@ namespace import ::tcl::mathfunc::max
 set Columns {
 	{ lastName		left		10		0		14			1			0			1			{}				}
 	{ firstName		left		10		0		14			1			0			1			{}				}
+	{ fideID			right		 0		0		10			0			1			1			{}				}
 	{ type			center	 0		0		14px		0			1			0			{}				}
 	{ sex				center	 0		0		14px		0			1			0			{}				}
 	{ rating1		center	 0		0		 6			0			1			1			darkblue		}
@@ -432,8 +434,9 @@ proc see {path position} {
 
 proc showInfo {path info} {
 	lassign $info \
-		name type sex elo unused unused country titles unused unused dateOfBirth dateOfDeath fideID
+		name fideID type sex elo unused unused country titles unused unused dateOfBirth dateOfDeath
 	if {[string length $name] == 0} { return }
+	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
 
 	set w $path.showinfo
 	catch { destroy $w }
@@ -477,7 +480,7 @@ proc showInfo {path info} {
 	foreach var {	name sex dateOfBirth dateOfDeath highestRating
 						mostRecentRating title federation fideID} {
 		set value [set $var]
-		if {[string length $value] == 0 || $value == 0} { set value "-" }
+		if {[string length $value] == 0 || $value == 0} { set value "\u2013" }
 		set attr [string toupper $var 0 0]
 		if {[info exists mc::T_$attr]} {
 			set text [set mc::T_$attr]
@@ -620,7 +623,6 @@ proc TableSelected {path index} {
 	if {[llength $Vars(selectcmd)]} {
 		set base [::scrolledtable::base $path.table]
 		set view [{*}$Vars(viewcmd) $base]
-		set player [scidb::db::get playerInfo $index $view $base]
 		set Vars($base:index) [::scidb::db::get playerIndex $index $view $base]
 		{*}$Vars(selectcmd) $base $view
 	}
@@ -668,6 +670,14 @@ proc TableFill {path args} {
 
 				firstName {
 					incr k -1
+				}
+
+				fideID {
+					if {[string index $item 0] eq "-"} {
+						lappend text "[string range $item 1 end]*"
+					} else {
+						lappend text "$item "
+					}
 				}
 
 				playerInfo {
@@ -788,7 +798,6 @@ proc TableVisit {path data} {
 
 	set view [{*}$Vars(viewcmd) $base]
 	set row  [::scrolledtable::rowToIndex $table $row]
-	set col  [lsearch -exact $Vars(columns) $id]
 	set item [::scidb::db::get playerInfo $row $view $base $col]
 
 	if {[llength $item] == 0} { return }
@@ -903,14 +912,16 @@ proc PopupMenu {table menu base index} {
 	set view [{*}$Vars(viewcmd) $base]
 	set info [scidb::db::get playerInfo $index $view $base -info]
 
-	set fideID    [lindex $info 12]
-	set dsbID     [lindex $info 13]
-	set ecfID     [lindex $info 14]
-	set iccfID    [lindex $info 15]
-	set viafID    [lindex $info 16]
-	set pndID     [lindex $info 17]
-	set cgdcID    [lindex $info 18]
-	set wikiLinks [lindex $info 19]
+	set fideID    [lindex $info  1]
+	set dsbID     [lindex $info 12]
+	set ecfID     [lindex $info 13]
+	set iccfID    [lindex $info 14]
+	set viafID    [lindex $info 15]
+	set pndID     [lindex $info 16]
+	set cgdcID    [lindex $info 17]
+	set wikiLinks [lindex $info 18]
+
+	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
 
 	if {	[string length $fideID]
 		|| [string length $iccfID]

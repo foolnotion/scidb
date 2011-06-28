@@ -76,18 +76,6 @@ Decoder::Decoder(ByteStream& strm, unsigned ensuredStreamSize)
 {
 }
 
-
-static void
-recode(mstl::string& s, sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec)
-{
-	if (sys::utf8::Codec::is7BitAscii(s))
-		return;
-
-	oldCodec.convertFromUtf8(s, s);
-	newCodec.convertToUtf8(s, s);
-}
-
-
 inline
 Move
 Decoder::decodeKing(sq::ID from, Byte nybble)
@@ -262,7 +250,7 @@ Decoder::decodeMove(Byte value, Move& move)
 
 
 void
-Decoder::decodeVariation(/*unsigned flags*/)
+Decoder::decodeVariation()
 {
 	unsigned	pieceNum = 0;	// satisfies the compiler
 	Move		move;
@@ -286,6 +274,13 @@ Decoder::decodeVariation(/*unsigned flags*/)
 		switch (b)
 		{
 			case token::End_Marker:
+				{
+					MoveNode* node = new MoveNode;
+					m_currentNode->setNext(node);
+
+					if (m_strm.get() == token::Comment)
+						node->setComment(move::Post);
+				}
 				return;
 
 			case token::Start_Marker:
@@ -295,7 +290,7 @@ Decoder::decodeVariation(/*unsigned flags*/)
 					m_position.push();
 					m_position.board().undoMove(move);
 					current->addVariation(m_currentNode = new MoveNode);
-					decodeVariation(/*flags*/);
+					decodeVariation();
 					m_currentNode = current;
 					m_position.pop();
 				}
@@ -307,13 +302,11 @@ Decoder::decodeVariation(/*unsigned flags*/)
 				break;
 
 			case token::Mark:
-//				if (flags & DatabaseCodec::Decode_Comments)
-					m_currentNode->setMark();
+				m_currentNode->setMark();
 				break;
 
 			case token::Comment:
-//				if (flags & DatabaseCodec::Decode_Comments)
-					m_currentNode->setComment(move::Post);
+				m_currentNode->setComment(move::Post);
 				break;
 		}
 	}
@@ -321,16 +314,17 @@ Decoder::decodeVariation(/*unsigned flags*/)
 
 
 void
-Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream& text/*, unsigned flags*/)
+Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream& text)
 {
-	MarkSet		marks;
-	Annotation	annotation;
-	Comment		comment;
-	Comment		preComment;
-	bool			hasNote(0);		// satisfies the compiler
-	unsigned		pieceNum(0);	// satisfies the compiler
-	Move			move;
-	Move			lastMove;
+	MarkSet			marks;
+	Annotation		annotation;
+	mstl::string	buf;
+	Comment			comment;
+	Comment			preComment;
+	bool				hasNote(false);	// satisfies the compiler
+	unsigned			pieceNum(0);		// satisfies the compiler
+	Move				move;
+	Move				lastMove;
 
 	while (true)
 	{
@@ -356,7 +350,6 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 
 				m_position.doMove(move, pieceNum);
 			}
-			// TODO: not needed if consumer.startVariation(DoNotTakeBackMove) was called
 			else
 			{
 				if (lastMove)
@@ -367,7 +360,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 
 				if (hasNote)
 				{
-					consumer.putComment(comment, annotation, marks);
+					consumer.putPrecedingComment(comment, annotation, marks);
 					marks.clear();
 					annotation.clear();
 					comment.clear();
@@ -382,21 +375,34 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 			switch (b)
 			{
 				case token::End_Marker:
-					if (hasNote)
+					if (move)
 					{
-						if (move)
+						if (hasNote)
+						{
 							consumer.putMove(move, annotation, preComment, comment, marks);
+							marks.clear();
+							annotation.clear();
+							comment.clear();
+							preComment.clear();
+							hasNote = false;
+						}
 						else
-							consumer.putComment(comment, annotation, marks);
+						{
+							consumer.putMove(move);
+						}
 					}
-					else if (move)
+					if (m_strm.get() == token::Comment)
 					{
-						consumer.putMove(move);
+						uint8_t flag = data.get();
+
+						buf.clear();
+						text.get(buf);
+						comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+						consumer.putTrailingComment(comment);
 					}
 					return;
 
 				case token::Start_Marker:
-					// TODO: not needed if consumer.startVariation(DoNotTakeBackMove) was called
 					if (move)
 					{
 						if (hasNote)
@@ -417,11 +423,12 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 						move.clear();
 					}
 
+					M_ASSERT(!hasNote);
+
 					m_position.push();
 					m_position.board().undoMove(lastMove);
-					// TODO: call consumer.startVariation(DoNotTakeBackMove) instead
 					consumer.startVariation();
-					decodeVariation(consumer, data, text/*, flags*/);
+					decodeVariation(consumer, data, text);
 					consumer.finishVariation();
 					m_position.pop();
 					break;
@@ -435,7 +442,6 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					break;
 
 				case token::Mark:
-//					if (flags & DatabaseCodec::Decode_Comments)
 					{
 						Mark mark;
 						mark.decode(data);
@@ -445,20 +451,19 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					break;
 
 				case token::Comment:
-//					if (flags & DatabaseCodec::Decode_Comments)
 					{
 						uint8_t flag = data.get();
 
 						if (flag & comm::Ante)
 						{
-							mstl::string buf;
+							buf.clear();
 							text.get(buf);
-							preComment.swap(buf, bool(flag & comm::Ante_Eng),bool(flag & comm::Ante_Oth));
+							preComment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
 						}
 
 						if (flag & comm::Post)
 						{
-							mstl::string buf;
+							buf.clear();
 							text.get(buf);
 							comment.swap(buf, bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
 						}
@@ -531,14 +536,14 @@ Decoder::decodeComments(MoveNode* node, ByteStream& data)
 				Comment			comment;
 				uint8_t			flag		= data.get();
 
-				if (flag & 1)
+				if (flag & comm::Ante)
 				{
 					m_strm.get(buf);
 					comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
 					node->swapComment(comment, move::Ante);
 				}
 
-				if (flag & 2)
+				if (flag & comm::Post)
 				{
 					m_strm.get(buf);
 					comment.swap(buf,  bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
@@ -589,22 +594,7 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 
 
 void
-Decoder::skipTags()
-{
-	M_ASSERT(m_strm.remaining());
-
-	for (tag::ID id = tag::ID(m_strm.get()); id; id = tag::ID(m_strm.get()))
-	{
-		m_strm.skip(::strlen(reinterpret_cast<char const*>(m_strm.data())) + 1);
-
-		if (id == tag::ExtraTag)
-			m_strm.skip(::strlen(reinterpret_cast<char const*>(m_strm.data())) + 1);
-	}
-}
-
-
-void
-Decoder::decodeTextSection(/*unsigned flags, */GameData& data)
+Decoder::decodeTextSection(GameData& data)
 {
 	if (m_strm.remaining() == 0)
 		return;
@@ -612,10 +602,7 @@ Decoder::decodeTextSection(/*unsigned flags, */GameData& data)
 	unsigned size = m_strm.uint24();
 	ByteStream dataStrm(m_strm.data() + size, m_strm.end());
 
-//	if ((flags & DatabaseCodec::Decode_Tags) || (flags & DatabaseCodec::Decode_Comments))
-		decodeTags(dataStrm, data.m_tags);
-//	else
-//		skipTags();
+	decodeTags(dataStrm, data.m_tags);
 
 	if (dataStrm.remaining())
 		decodeComments(data.m_startNode, dataStrm);
@@ -623,7 +610,7 @@ Decoder::decodeTextSection(/*unsigned flags, */GameData& data)
 
 
 save::State
-Decoder::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags)
+Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 {
 	uint16_t idn = m_strm.uint16();
 
@@ -641,7 +628,7 @@ Decoder::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags)
 	}
 
 	ByteStream text(m_strm.base() + m_strm.uint24(), m_strm.end());
-	ByteStream  data;
+	ByteStream data;
 
 	if (text.remaining())
 	{
@@ -657,14 +644,14 @@ Decoder::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags)
 
 	consumer.startMoveSection();
 	decodeRun(m_strm.uint16(), consumer);
-	decodeVariation(consumer, data, text/*, flags*/);
+	decodeVariation(consumer, data, text);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 	return consumer.finishGame(tags);
 }
 
 
 void
-Decoder::doDecoding(/*unsigned flags, */GameData& data)
+Decoder::doDecoding(GameData& data)
 {
 	uint16_t idn = m_strm.uint16();
 
@@ -687,8 +674,8 @@ Decoder::doDecoding(/*unsigned flags, */GameData& data)
 	M_ASSERT(m_currentNode);
 
 	decodeRun(m_strm.uint16());
-	decodeVariation(/*flags*/);
-	decodeTextSection(/*flags, */data);
+	decodeVariation();
+	decodeTextSection(data);
 }
 
 
@@ -710,6 +697,7 @@ Decoder::skipVariations()
 					break;
 
 				case token::End_Marker:
+					m_strm.skip(1);
 					if (--count == 0)
 						return;
 					break;
@@ -849,6 +837,8 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 
 						if (move)
 							return move;
+
+						m_strm.skip(1);
 					}
 					break;
 
@@ -860,67 +850,6 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 	}
 
 	return move;	// never reached
-}
-
-
-void
-Decoder::recode(ByteStream& dst, sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec)
-{
-	if (!m_strm.uint16())
-		m_strm.skipString();	// skip FEN
-
-	unsigned offset = m_strm.uint24();
-
-	dst.put(m_strm.base(), offset);
-	m_strm.seekg(offset);
-
-	if (m_strm.remaining())
-	{
-		mstl::string name;
-		mstl::string value;
-
-		Byte const* end = m_strm.data() + m_strm.uint24();
-
-		while (m_strm.data() < end)
-		{
-			name.clear();
-			m_strm.get(name);
-			::recode(name, oldCodec, newCodec);
-			dst.put(name);
-		}
-
-		if (m_strm.remaining())
-		{
-			for (tag::ID id = tag::ID(m_strm.get()); id; id = tag::ID(m_strm.get()))
-			{
-				dst.put(id);
-
-				if (id == tag::ExtraTag)
-				{
-					name.clear();
-					value.clear();
-					m_strm.get(name);
-					m_strm.get(value);
-					::recode(value, oldCodec, newCodec);
-					dst.put(name);
-					dst.put(value);
-				}
-				else
-				{
-					value.clear();
-					m_strm.get(value);
-					::recode(value, oldCodec, newCodec);
-					dst.put(value);
-				}
-			}
-
-			dst.put(0);
-		}
-
-		dst.put(m_strm.data(), m_strm.remaining());
-	}
-
-	dst.provide();
 }
 
 // vi:set ts=3 sw=3:

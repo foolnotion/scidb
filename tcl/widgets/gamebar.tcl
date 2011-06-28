@@ -351,9 +351,9 @@ proc remove {gamebar id {update yes}} {
 
 	$gamebar delete all$id
 	array unset Specs lookup:$Specs(size:$gamebar):$gamebar
-	array unset Specs locked:$Specs(size:$gamebar):$gamebar
-	array unset Specs modified:$Specs(size:$gamebar):$gamebar
-	foreach item {data tags state atclose} { array unset Specs $item:$id:$gamebar }
+	foreach item {data tags state atclose locked modified} {
+		array unset Specs $item:$id:$gamebar
+	}
 
 	switch $Specs(size:$gamebar) {
 		0 { set Specs(selected:$gamebar) {} }
@@ -365,7 +365,9 @@ proc remove {gamebar id {update yes}} {
 			if {$at == $Specs(size:$gamebar)} { set at 0 }
 			SetSelected $gamebar $Specs(lookup:$at:$gamebar)
 		} else {
-			Layout $gamebar
+			set sid $Specs(selected:$gamebar)
+			set Specs(selected:$gamebar) {}
+			SetSelected $gamebar $sid
 		}
 
 		foreach recv $Specs(receiver:$gamebar) {

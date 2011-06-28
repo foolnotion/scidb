@@ -79,6 +79,7 @@ inline void GameInfo::setFlags(unsigned flags)				{ m_gameFlags = flags; }
 inline species::ID GameInfo::playerType(color::ID color) const	{ return m_player[color]->type(); }
 inline sex::ID GameInfo::sex(color::ID color) const				{ return m_player[color]->sex(); }
 inline Player const* GameInfo::player(color::ID color) const	{ return m_player[color]->player(); }
+inline uint32_t GameInfo::fideID(color::ID color) const			{ return m_player[color]->fideID(); }
 
 inline NamebasePlayer const* GameInfo::playerEntry(color::ID color) const { return m_player[color]; }
 inline NamebaseEvent const* GameInfo::eventEntry() const { return m_event; }
@@ -207,6 +208,14 @@ country::Code
 GameInfo::findEventCountry() const
 {
 	return m_event->site()->findCountry();
+}
+
+
+inline
+int32_t
+GameInfo::findFideID(color::ID color) const
+{
+	return m_player[color]->findFideID();
 }
 
 

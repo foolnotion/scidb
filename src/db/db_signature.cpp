@@ -163,8 +163,8 @@ inline static bool isGreaterOrEq(T start, T target) { return !(target & ~start);
 bool
 Signature::isReachableFinalMaterial(Signature const& target) const
 {
-	M_REQUIRE(promotions() <= target.promotions());
-	M_REQUIRE(underPromotions() <= target.underPromotions());
+	M_REQUIRE(!hasPromotion() || target.hasPromotion());
+	M_REQUIRE(!hasUnderPromotion() || target.hasUnderPromotion());
 
 	if (target.hasPromotion())
 	{
@@ -190,11 +190,11 @@ bool
 Signature::isReachableFinalPosition(Signature const& target, uint16_t currentHpSig) const
 {
 	// cannot reach target position if we have more promotions than target
-	if (promotions() > target.promotions())
+	if (hasPromotion() && !target.hasPromotion())
 		return false;
 
 	// cannot reach target position if we have more under-promotions than target
-	if (underPromotions() > target.underPromotions())
+	if (hasUnderPromotion() && !target.hasUnderPromotion())
 		return false;
 
 	if (!isReachableFinalMaterial(target))
@@ -243,8 +243,8 @@ Signature::debug(unsigned spaces) const
 	homePawns.print(s);
 
 	::printf("%*cMaterial:          %s\n", spaces, ' ', material.c_str());
-	::printf("%*cPromotions:        %u\n", spaces, ' ', unsigned(promotions()));
-	::printf("%*cUnder-promotions:  %u\n", spaces, ' ', unsigned(underPromotions()));
+	::printf("%*cPromotions:        %u\n", spaces, ' ', unsigned(m_promotions));
+	::printf("%*cUnder-promotions:  %u\n", spaces, ' ', unsigned(m_underPromotions));
 	::printf("%*cCastling:          %s\n", spaces, ' ', castling.c_str());
 	::printf("%*cPawn progress (W): %s\n", spaces, ' ', progress[color::White].c_str());
 	::printf("%*cPawn progress (B): %s\n", spaces, ' ', progress[color::Black].c_str());

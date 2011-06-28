@@ -156,7 +156,7 @@ static mstl::string const MagicGameFile ("Scidb.g\0", 8);
 static mstl::string const MagicNamebase ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
-static uint16_t const FileVersion = 90;
+static uint16_t const FileVersion = 91;
 
 static char const* NamebaseTags[Namebase::Round];
 
@@ -358,6 +358,9 @@ Codec::gameFlags() const
 Codec::Codec()
 	:m_gameData(0)
 	,m_asyncReader(0)
+	,m_progressFrequency(0)
+	,m_progressReportAfter(0)
+	,m_progressCount(0)
 {
 	M_STATIC_CHECK(U_NUMBER_OF(m_lookup) <= Namebase::Round, Index_Out_Of_Range);
 
@@ -389,14 +392,7 @@ Codec::format() const
 void
 Codec::setEncoding(mstl::string const& encoding)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
-}
-
-
-BlockFile*
-Codec::newBlockFile() const
-{
-	return new BlockFile(Block_Size, BlockFile::ReadWriteLength);
+	// no action
 }
 
 
@@ -405,37 +401,6 @@ Codec::filterTag(TagSet& tags, tag::ID tag) const
 {
 	if (!Encoder::skipTag(tag))
 		tags.remove(tag);
-}
-
-
-void
-Codec::recode(	GameInfo const& info,
-					util::ByteStream& dst,
-					sys::utf8::Codec& oldCodec,
-					sys::utf8::Codec& newCodec)
-{
-	M_ASSERT(m_gameData);
-
-	ByteStream src;
-	getGameRecord(info, m_gameData->reader(), src);
-	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
-	decoder.recode(dst, oldCodec, newCodec);
-}
-
-
-void
-Codec::replaceBlockFile(util::BlockFile* blockFile)
-{
-	M_ASSERT(blockFile);
-	M_ASSERT(!m_gameStream.is_open());
-
-	if (m_gameData)
-	{
-		m_gameData->close();
-		delete m_gameData;
-	}
-
-	m_gameData = blockFile;
 }
 
 
@@ -508,7 +473,7 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 	m_gameData->sync();
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, attach ? Truncate : 0);
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndex(indexStream, start, progress);
 }
 
@@ -558,7 +523,7 @@ Codec::update(mstl::string const& rootname)
 	m_gameData->sync();
 	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase);
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	updateIndex(indexStream);
 }
 
@@ -587,7 +552,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 		checkPermissions(namebaseFilename);
 		openFile(namebaseStream, namebaseFilename, MagicNamebase);
-		writeNamebase(namebaseStream);
+		writeNamebases(namebaseStream);
 	}
 
 	GameInfo* info = gameInfoList()[index];
@@ -641,30 +606,30 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
-	return decoder.doDecoding(consumer/*, flags*/, tags);
+	return decoder.doDecoding(consumer, tags);
 }
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
+Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 {
 	Decoder decoder(strm);
-	return decoder.doDecoding(consumer/*, flags*/, tags);
+	return decoder.doDecoding(consumer, tags);
 }
 
 
 void
-Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
-	decoder.doDecoding(/*flags, */data);
+	decoder.doDecoding(data);
 }
 
 
@@ -717,7 +682,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 		openFile(namebaseStream, namebaseFilename, MagicNamebase);
 		checkFileVersion(namebaseStream, MagicNamebase, fileVersion);
 
-		readNamebase(namebaseStream, progress);
+		readNamebases(namebaseStream, progress);
 		decodeIndex(indexStream, progress);
 		m_gameData = new BlockFile(&m_gameStream, Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
 	}
@@ -772,7 +737,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	openFile(m_gameStream, gameFilename, Truncate);
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 	doOpen(encoding);
 }
@@ -791,7 +756,7 @@ Codec::doClear(mstl::string const& rootname)
 	openFile(m_gameStream, gameFilename, Truncate);
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
-	writeNamebase(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 
 	doOpen(sys::utf8::Codec::utf8());
@@ -914,7 +879,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_signature.m_homePawns.value	= bits->homePawns;
 	item.m_signature.m_progress.value		= bits->pawnProgress;
 	item.m_pd[0].langFlag					= bits->commentEngFlag;
-	item.m_pd[1].langFlag					= bits->commentEngFlag;
+	item.m_pd[1].langFlag					= bits->commentOthFlag;
 	item.m_variationCount					= bits->variationCount;
 	item.m_annotationCount					= bits->annotationCount;
 	item.m_commentCount						= bits->commentCount;
@@ -930,6 +895,10 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_positionId							= bits->positionId;
 	item.m_dateYear							= bits->dateYear;
 	item.m_positionData						= bits->positionData;
+	item.m_signature.m_promotions			= bits->promotion;
+	item.m_signature.m_underPromotions	= bits->underPromotion;
+	item.m_signature.m_castling				= bits->castling;
+	item.m_signature.m_hpCount				= bits->hpCount;
 }
 
 
@@ -1074,7 +1043,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 
 
 void
-Codec::readNamebase(mstl::fstream& stream, Progress& progress)
+Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 {
 #ifdef USE_LZO
 	LzoByteStream bstrm(stream);
@@ -1083,7 +1052,13 @@ Codec::readNamebase(mstl::fstream& stream, Progress& progress)
 	ByteIStream bstrm(stream);
 #endif
 
-	ProgressWatcher watcher(progress, U_NUMBER_OF(::NamebaseTags));
+	unsigned total = bstrm.uint32();
+
+	ProgressWatcher watcher(progress, total);
+
+	m_progressFrequency		= progress.frequency(total, 1000);
+	m_progressReportAfter	= m_progressFrequency;
+	m_progressCount			= 0;
 
 	for (unsigned i = 0; i < U_NUMBER_OF(::NamebaseTags); ++i)
 	{
@@ -1111,20 +1086,21 @@ Codec::readNamebase(mstl::fstream& stream, Progress& progress)
 
 		switch (i)
 		{
-			case Namebase::Event:	readEventbase(bstrm, namebase(type), size); break;
-			case Namebase::Site:		readSitebase(bstrm, namebase(type), size); break;
-			case Namebase::Player:	readPlayerbase(bstrm, namebase(type), size); break;
-			default:						readNamebase(bstrm, namebase(type), size); break;
+			case Namebase::Event:	readEventbase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Site:		readSitebase(bstrm, namebase(type), size, progress); break;
+			case Namebase::Player:	readPlayerbase(bstrm, namebase(type), size, progress); break;
+			default:						readNamebase(bstrm, namebase(type), size, progress); break;
 		}
 
+		m_progressCount += size;
+		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
 		base.setPrepared(maxFreq, maxUsage);
-		progress.update(i + 1);
 	}
 }
 
 
 void
-Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count)
+Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1164,7 +1140,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count)
 
 
 void
-Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count)
+Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1209,7 +1185,7 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count)
 
 
 void
-Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
+Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1344,7 +1320,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count)
 
 
 void
-Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
+Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1367,24 +1343,28 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 		// -------------------------------
 		// 0000 0111  species
 		// 0011 1000  sex
-		// 0100 0000  <unused>
-		// 1000 0000  extranouos data flag
+		// 0100 0000  country/title data flag
+		// 1000 0000  fide id flag
 		//
-		// extraneous data (16 bit)
+		// country/title data (16 bit)
 		// -------------------------------
 		// 0000 0001 1111 1111  country
-		// 0000 1111 0000 1111  title
+		// 0000 1111 0000 0000  title
 		// 1110 0000 0000 0000  <unused>
+		//
+		// fide id (32 bit)
+		// -------------------------------
+		// 1111 1111 1111 1111  fide id
 
 		country::Code	country;
 		title::ID		title;
 
-		if (flags & 0x80)
+		if (flags & 0x40)
 		{
 			uint16_t extraneous = bstrm.uint16();
 
 			country = country::Code(extraneous & 0x01ff);
-			title = title::ID((extraneous >> 4) & 0x000f);
+			title = title::ID((extraneous >> 9) & 0x000f);
 		}
 		else
 		{
@@ -1397,7 +1377,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 								country,
 								title,
 								species::ID(flags & 0x03),
-								sex::ID((flags >> 3) & 0x03));
+								sex::ID((flags >> 3) & 0x03),
+								(flags & 0x80) ? bstrm.uint32() : 0); // fide id
 	}
 	else
 	{
@@ -1430,12 +1411,12 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 			country::Code	country;
 			title::ID		title;
 
-			if (flags & 0x80)
+			if (flags & 0x40)
 			{
 				uint16_t extraneous = bstrm.uint16();
 
 				country = country::Code(extraneous & 0x01ff);
-				title = title::ID((extraneous >> 4) & 0x0f);
+				title = title::ID((extraneous >> 9) & 0x0f);
 			}
 			else
 			{
@@ -1448,7 +1429,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 									country,
 									title,
 									species::ID(flags & 0x03),
-									sex::ID((flags >> 3) & 0x03));
+									sex::ID((flags >> 3) & 0x03),
+									(flags & 0x80) ? bstrm.uint32() : 0); // fide id
 		}
 		else
 		{
@@ -1461,7 +1443,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count)
 
 
 void
-Codec::writeNamebase(mstl::fstream& stream)
+Codec::writeNamebases(mstl::fstream& stream)
 {
 	if (!namebases().isModified())
 		return;
@@ -1473,7 +1455,13 @@ Codec::writeNamebase(mstl::fstream& stream)
 	ByteOStream		bstrm(stream, buf, sizeof(buf));
 #endif
 
+	unsigned total = 0;
+
+	for (unsigned i = 0; i < U_NUMBER_OF(::NamebaseTags); ++i)
+		total += namebase(Namebase::Type(i)).used();
+
 	bstrm << uint16_t(FileVersion);
+	bstrm << uint32_t(total);
 
 	for (unsigned i = 0; i < U_NUMBER_OF(::NamebaseTags); ++i)
 	{
@@ -1655,18 +1643,25 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 	bstrm.put(prev->name().size());
 	bstrm.put(prev->name(), prev->name().size());
 
-	Byte flags = (prev->type() & 0x03) | ((prev->sex() & 0x03) << 3);
+	Byte		flags		= (prev->type() & 0x03) | ((prev->sex() & 0x03) << 3);
+	uint32_t	fideID	= prev->fideID();
 
-	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x0f) << 4)
+	if (fideID)
+		flags |= 0x80;
+
+	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x0f) << 9)
 									 | uint16_t(prev->federation() & 0x01ff))
 	{
-		bstrm.put(flags | 0x80);
+		bstrm.put(flags | 0x40);
 		bstrm << extranouos;
 	}
 	else
 	{
 		bstrm.put(flags);
 	}
+
+	if (fideID)
+		bstrm << fideID;
 
 	for (unsigned i = 1; i < base.used(); ++i)
 	{
@@ -1685,16 +1680,22 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 
 		flags = (entry->type() & 0x03) | ((entry->sex() & 0x03) << 3);
 
-		if (uint16_t extranouos = (uint16_t(entry->title() & 0x0f) << 4)
+		if (fideID = entry->fideID())
+			flags |= 0x80;
+
+		if (uint16_t extranouos = (uint16_t(entry->title() & 0x0f) << 9)
 										 | uint16_t(entry->federation() & 0x01ff))
 		{
-			bstrm.put(flags | 0x80);
+			bstrm.put(flags | 0x40);
 			bstrm << extranouos;
 		}
 		else
 		{
 			bstrm.put(flags);
 		}
+
+		if (fideID)
+			bstrm << fideID;
 
 		prev = entry;
 	}

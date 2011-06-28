@@ -29,6 +29,7 @@
 #include "db_annotation.h"
 #include "db_mark_set.h"
 #include "db_game_info.h"
+#include "db_comment.h"
 
 #include "sys_utf8_codec.h"
 
@@ -54,7 +55,6 @@ Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
 	,m_codec(new sys::utf8::Codec(encoding))
 	,m_consumer(0)
 	,m_setupBoard(true)
-	,m_hasComment(false)
 	,m_commentEngFlag(false)
 	,m_commentOthFlag(false)
 {
@@ -126,7 +126,6 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_markCount = 0;
 	m_terminated = false;
 	m_line.length = 0;
-	m_hasComment = false;
 	m_commentEngFlag = false;
 	m_commentOthFlag = false;
 	m_homePawns.clear();
@@ -145,6 +144,7 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 
 	m_stack.dup();
 	m_stack.top().empty = true;
+	m_stack.top().move.clear();
 
 	return beginGame(tags);
 }
@@ -167,14 +167,11 @@ Consumer::finishGame(TagSet const& tags)
 void
 Consumer::finishMoveSection(result::ID result)
 {
-	if (!m_comment.isEmpty())
-		sendFinalComment(m_comment);	// send dangling pre-comment
-
 	if (m_terminated)
 	{
 		while (variationLevel() > 0)
 		{
-			endVariation();
+			endVariation(m_stack.top().move.isEmpty());
 			m_stack.pop();
 		}
 	}
@@ -190,49 +187,51 @@ Consumer::finishMoveSection(result::ID result)
 
 
 void
-Consumer::putComment(Comment const& comment)
+Consumer::putPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
-	m_comment.append(comment, '\n');
-	m_hasComment = !m_comment.isEmpty();
-}
-
-
-void
-Consumer::putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
-{
-	m_comment.append(comment, ' ');
-	m_preAnnotation.add(annotation);
-	m_preMarks.add(marks);
-	m_hasComment = !comment.isEmpty() || !annotation.isEmpty() || !marks.isEmpty();
-
-}
-
-
-void
-Consumer::sendComment()
-{
-	if (m_hasComment)
+	if (!m_terminated)
 	{
-		if (!m_terminated)
+		Entry& entry = m_stack.top();
+
+		if (entry.empty)
 		{
-			if (!m_comment.isEmpty())
-				++m_commentCount;
-			m_annotationCount += m_preAnnotation.count();
-			m_markCount += m_preMarks.count();
+			if (!isMainline())
+			{
+				++m_variationCount;
+				beginVariation();
+			}
 
-			if (m_comment.engFlag())
-				m_commentEngFlag = true;
-			if (m_comment.othFlag())
-				m_commentOthFlag = true;
-
-			sendComment(m_comment, m_preAnnotation, m_preMarks);
-
-			m_comment.clear();
-			m_preAnnotation.clear();
-			m_preMarks.clear();
+			entry.empty = false;
 		}
 
-		m_hasComment = false;
+		++m_commentCount;
+		if (comment.engFlag())
+			m_commentEngFlag = true;
+		if (comment.othFlag())
+			m_commentOthFlag = true;
+		m_annotationCount += annotation.count();
+		m_markCount += marks.count();
+
+		sendPrecedingComment(comment, annotation, marks);
+	}
+}
+
+
+void
+Consumer::putTrailingComment(Comment const& comment)
+{
+	M_REQUIRE(!comment.isEmpty());
+	M_REQUIRE(!variationIsEmpty());
+
+	if (!m_terminated)
+	{
+		++m_commentCount;
+		if (comment.engFlag())
+			m_commentEngFlag = true;
+		if (comment.othFlag())
+			m_commentOthFlag = true;
+
+		sendTrailingComment(comment);
 	}
 }
 
@@ -259,17 +258,7 @@ Consumer::putMove(Move const& move,
 			beginVariation();
 		}
 
-		sendComment();
 		entry.empty = false;
-	}
-
-	if (!comment.isEmpty())
-	{
-		if (comment.engFlag())
-			m_commentEngFlag = true;
-		if (comment.othFlag())
-			m_commentOthFlag = true;
-		++m_commentCount;
 	}
 
 	if (!preComment.isEmpty())
@@ -277,6 +266,15 @@ Consumer::putMove(Move const& move,
 		if (preComment.engFlag())
 			m_commentEngFlag = true;
 		if (preComment.othFlag())
+			m_commentOthFlag = true;
+		++m_commentCount;
+	}
+
+	if (!comment.isEmpty())
+	{
+		if (comment.engFlag())
+			m_commentEngFlag = true;
+		if (comment.othFlag())
 			m_commentOthFlag = true;
 		++m_commentCount;
 	}
@@ -327,7 +325,6 @@ Consumer::putMove(Move const& move)
 			beginVariation();
 		}
 
-		sendComment();
 		entry.empty = false;
 	}
 
@@ -366,8 +363,9 @@ Consumer::startVariation()
 
 	m_stack.dup();
 	Entry& entry = m_stack.top();
-	entry.empty = true;
 	entry.board.undoMove(entry.move);
+	entry.empty = true;
+	entry.move.clear();
 }
 
 
@@ -380,7 +378,7 @@ Consumer::finishVariation()
 		return;
 
 	if (!m_stack.top().empty)
-		endVariation();
+		endVariation(m_stack.top().move.isEmpty());
 
 	m_stack.pop();
 }

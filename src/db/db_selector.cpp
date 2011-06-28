@@ -392,6 +392,8 @@ compBlackCountry(unsigned const* lhs, unsigned const* rhs)
 
 DEF_COMPARE(WhitePlayer, playerName(White));
 DEF_COMPARE(BlackPlayer, playerName(Black));
+DEF_COMPARE(WhiteFideID, fideID(White));
+DEF_COMPARE(BlackFideID, fideID(Black));
 DEF_COMPARE(Event, event());
 DEF_COMPARE(Site, site());
 DEF_COMPARE(Date, date());
@@ -504,6 +506,7 @@ DEF_COMPARE(USCF)
 
 DEF_COMPARE(Sex, sex());
 DEF_COMPARE(Name, name());
+DEF_COMPARE(FideID, fideID());
 DEF_COMPARE(Elo, playerHighestElo());
 DEF_COMPARE(EloLatest, playerLatestElo());
 DEF_COMPARE(RatingType, playerRatingType());
@@ -566,6 +569,8 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Number:						break;
 		case attribute::game::WhitePlayer:				func = game::compWhitePlayer; break;
 		case attribute::game::BlackPlayer:				func = game::compBlackPlayer; break;
+		case attribute::game::WhiteFideID:				func = game::compWhiteFideID; break;
+		case attribute::game::BlackFideID:				func = game::compBlackFideID; break;
 		case attribute::game::Event:						func = game::compEvent; break;
 		case attribute::game::Site:						func = game::compSite; break;
 		case attribute::game::Date:						func = game::compDate; break;
@@ -716,6 +721,7 @@ Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, 
 	switch (attr)
 	{
 		case attribute::player::Name:				func = player::compName; break;
+		case attribute::player::FideID:			func = player::compFideID; break;
 		case attribute::player::Sex:				func = player::compSex; break;
 		case attribute::player::EloHighest:		func = player::compElo; break;
 		case attribute::player::EloLatest:		func = player::compEloLatest; break;
@@ -760,7 +766,6 @@ Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, 
 		case attribute::player::Rating2:
 		case attribute::player::DateOfBirth:
 		case attribute::player::DateOfDeath:
-		case attribute::player::FideID:
 		case attribute::player::DsbID:
 		case attribute::player::EcfID:
 		case attribute::player::IccfID:

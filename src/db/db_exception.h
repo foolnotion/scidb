@@ -67,7 +67,6 @@ public:
 		Unknown_Error_Type,
 		Open_Failed,
 		Read_Only,
-		Old_Format,
 		Unknown_Version,
 		Unexpected_Version,
 		Corrupted,

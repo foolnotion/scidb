@@ -234,25 +234,32 @@ ByteStream::get(Byte* buf, unsigned size)
 }
 
 
-void
-ByteStream::get(mstl::string& buf)
+ByteStream::Byte*
+ByteStream::searchEos()
 {
-	if (buf.capacity() == 0)
-		buf.reserve(200);
+	Byte* p = m_getp;
 
 	while (true)
 	{
-		if (m_getp == m_endp)
-			underflow(1);
-
-		if (*m_getp == '\0')
+		for ( ; p < m_endp ; ++p)
 		{
-			++m_getp;
-			return;
+			if (*p == 0)
+				return p;
 		}
 
-		buf += char(*m_getp++);
+		underflow(1);
 	}
+
+	return 0; // satisifies the compiler
+}
+
+
+void
+ByteStream::get(mstl::string& buf)
+{
+	Byte* eos = searchEos();
+	buf.append(reinterpret_cast<char const*>(m_getp), reinterpret_cast<char const*>(eos));
+	m_getp = eos + 1;
 }
 
 

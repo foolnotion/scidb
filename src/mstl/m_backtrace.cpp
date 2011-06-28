@@ -325,6 +325,7 @@ mstl::backtrace::is_debug_mode()
 
 					case ' ':
 					case '\t':
+					case '\0':
 						if (buf == "gdb")
 						{
 							debug = 1;

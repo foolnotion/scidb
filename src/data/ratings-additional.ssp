@@ -59,7 +59,7 @@ Minasian, Artashes      #gm URS/ARM [2620] 1967.01.21
 # country added, ELO corrected: http://de.wikipedia.org/wiki/Josef_Noa
 Noa, Josef              #- AUT/HUN [2583] 1856.10.21--1903.06.01
 # birth date corrected, Bio entry added
-Ornaghi, Giovanni       #- ITA [1680] 1987.09.30
+Ornaghi, Giovanni       #m ITA [1680] 1987.09.30
    %Bio http://blogchess.blogosfere.it
 # birth date corrected
 Pares Vives, Natalia    #- ??? [....] 1955.08.31
@@ -139,6 +139,8 @@ Forintos, Gyozo V
    + Forintos, Győző V
 Garcia Gonzales, Guillermo
    + García González, Guillermo
+Hromadka, Karel
+   + Hromádka, Karel
 Minasian, Artashes
    + Minasian, Artašes
 Morozevich, Alexander
@@ -529,6 +531,5 @@ Ekman, Lars             #m SWE [....] 1966
 Simpson, Matthew        #m ??? [....]
 Wagner, Alexander       #m GER [1779] 1960
 Tibenszky, Zoltán       #m HUN [1845] 1985
-   %Bio FIDEID 739200
 
 # vi:set et sw=3 ts=3:

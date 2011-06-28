@@ -158,12 +158,13 @@ public:
 											NamebaseSite* site);
 
 	PlayerEntry* insertPlayer(	mstl::string const& name);
-	PlayerEntry* insertPlayer(	mstl::string const& name, unsigned id, unsigned limit);
+	PlayerEntry* insertPlayer(	mstl::string const& name, uint32_t fideID, unsigned id, unsigned limit);
 	PlayerEntry* insertPlayer(	mstl::string const& name,
 										country::Code country,
 										title::ID title,
 										species::ID type,
 										sex::ID sex,
+										uint32_t fideID,
 										unsigned limit);
 	PlayerEntry* insertPlayer(	mstl::string const& name,
 										unsigned id,
@@ -171,6 +172,7 @@ public:
 										title::ID title,
 										species::ID type,
 										sex::ID sex,
+										uint32_t fideID,
 										unsigned limit);
 	PlayerEntry const* appendPlayer(mstl::string const& name, unsigned id);
 	PlayerEntry const* appendPlayer(	mstl::string const& name,
@@ -178,7 +180,9 @@ public:
 												country::Code country,
 												title::ID title,
 												species::ID type,
-												sex::ID sex);
+												sex::ID sex,
+												uint32_t fideID);
+	void rename(NamebaseEntry* entry, mstl::string const& name);
 
 	void update();
 	void setPrepared(unsigned maxFrequency, unsigned maxUsage);
@@ -239,7 +243,7 @@ private:
 		PlayerAllocator*	m_playerAllocator;
 	};
 
-	StringAllocator	m_stringAllocator;
+	StringAllocator m_stringAllocator;
 };
 
 } // namespace db

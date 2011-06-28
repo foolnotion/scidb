@@ -54,11 +54,13 @@ proc open {callee {show 1}} {
 	variable Log
 
 	if {![winfo exists $Log]} { Open }
+	if {[incr Priv(open)] > 1} { return }
 
 	set Priv(callee) $callee
 	set Priv(show) $show
 	set Priv(delay) 0
 	set Priv(force) 0
+	set Priv(newline) 0
 	set t $Log.top.text
 
 	if {[$t count -chars 1.0 2.0] > 1} {
@@ -66,6 +68,7 @@ proc open {callee {show 1}} {
 		$t insert end "\n"
 		$t configure -state disabled
 		$t yview moveto 1.0
+		set Priv(newline) 1
 	}
 }
 
@@ -73,6 +76,12 @@ proc open {callee {show 1}} {
 proc close {} {
 	variable Priv
 	variable Log
+
+	if {[incr Priv(open) -1] > 0} { return }
+
+	if {$Priv(newline)} {
+		$Log.top.text delete end-1
+	}
 
 	if {$Priv(hide)} {
 		set Priv(hide) 0
@@ -200,7 +209,7 @@ proc Print {type show args} {
 
 	$t configure -state disabled
 	$t yview moveto 1.0
-
+	set Priv(newline) 0
 }
 
 
@@ -265,6 +274,8 @@ proc Open {} {
 	set Priv(delay) 0
 	set Priv(hide) 0
 	set Priv(center) 1
+	set Priv(newline) 1
+	set Priv(open) 0
 	set Priv(transient) [expr {[tk windowingsystem] ne "win32"}]
 }
 

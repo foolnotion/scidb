@@ -28,6 +28,7 @@
 #include "db_annotation.h"
 #include "db_mark_set.h"
 #include "db_move.h"
+#include "db_comment.h"
 
 #include "sys_utf8_codec.h"
 
@@ -51,7 +52,6 @@ replaceCurlyBraces(mstl::string& s)
 
 	while (n != mstl::string::npos)
 	{
-		// TODO: replace with \{, \} ?
 		s[n] = (s[n] == '{' ? '[' : ']');
 		n = s.find_first_of("{}", n + 1);
 	}
@@ -70,7 +70,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	,m_lineLength(lineLength)
 	,m_length(0)
 	,m_pendingSpace(0)
-	,m_hasPreComment(false)
+	,m_needPreComment(false)
 	,m_needPostComment(false)
 {
 	if (test(Flag_Use_Scidb_Import_Format))
@@ -250,7 +250,7 @@ PgnWriter::writeBeginGame(unsigned number)
 
 	m_pendingSpace = 0;
 	m_length = 0;
-	m_hasPreComment = false;
+	m_needPreComment = false;
 	m_needPostComment = false;
 
 	m_move.clear();
@@ -311,7 +311,7 @@ PgnWriter::writeEndComment()
 
 
 void
-PgnWriter::writeComment(mstl::string const& comment)
+PgnWriter::putComment(mstl::string const& comment)
 {
 	unsigned indent = mstl::numeric_limits<unsigned>::max();
 
@@ -438,35 +438,76 @@ PgnWriter::writeComment(mstl::string const& comment)
 
 
 void
-PgnWriter::writeComment(Comment const& comment)
+PgnWriter::putComment(Comment const& comment)
 {
-	if (comment.isEmpty())
-		return;
-
 	mstl::string text;
 
-	if (test(Flag_Comment_To_Html))
+	if (!comment.isEmpty())
 	{
-		comment.toHtml(text);
-	}
-	else if (codec().isUtf8())
-	{
-		comment.flatten(text, encoding::Utf8);
-	}
-	else
-	{
-		comment.flatten(text, encoding::Latin1);
-		codec().fromUtf8(text);
+		if (test(Flag_Comment_To_Html))
+		{
+			comment.toHtml(text);
+
+			mstl::string::size_type n = text.find_first_of("{}");
+
+			if (n != mstl::string::npos)
+			{
+				do
+				{
+					text.replace(n, 1, text[n] == '{' ? "&#x7b;" : "&#x7d;", 6);
+					n = text.find_first_of("{}", n + 5);
+				}
+				while (n != mstl::string::npos);
+
+				text.insert(size_t(0), "<html>", 6);
+				text.append("</html>", 7);
+			}
+		}
+		else if (codec().isUtf8())
+		{
+			comment.flatten(text, encoding::Utf8);
+			replaceCurlyBraces(text);
+		}
+		else
+		{
+			comment.flatten(text, encoding::Latin1);
+			codec().fromUtf8(text);
+			replaceCurlyBraces(text);
+		}
 	}
 
-	replaceCurlyBraces(text);
-	writeComment(text);
+	putComment(text);
 	putSpace();
 }
 
 
 void
-PgnWriter::writeMarks(MarkSet const& marks)
+PgnWriter::putComment(Comment const& comment, MarkSet const& marks)
+{
+	if (comment.isEmpty())
+	{
+		if (!marks.isEmpty())
+		{
+			putMarks(marks);
+			putComment(m_marks);
+		}
+	}
+	else if (!marks.isEmpty())
+	{
+		putMarks(marks);
+		Comment buf(m_marks, false, false);
+		buf.append(comment, ' ');
+		putComment(buf);
+	}
+	else if (!comment.isEmpty())
+	{
+		putComment(comment);
+	}
+}
+
+
+void
+PgnWriter::putMarks(MarkSet const& marks)
 {
 	M_ASSERT(!marks.isEmpty());
 
@@ -483,29 +524,24 @@ PgnWriter::writeMarks(MarkSet const& marks)
 
 
 void
-PgnWriter::writeComment(Comment const& comment, MarkSet const& marks)
+PgnWriter::writePrecedingComment(Comment const& comment, MarkSet const& marks)
 {
-	if (comment.isEmpty())
+	if (!comment.isEmpty() || !marks.isEmpty())
+		m_needPreComment = true;
+
+	putComment(comment, marks);
+}
+
+
+void
+PgnWriter::writeTrailingComment(Comment const& comment)
+{
+	if (!comment.isEmpty())
 	{
-		if (!marks.isEmpty())
-		{
-			writeMarks(marks);
-			writeComment(m_marks);
-			m_hasPreComment = true;
-		}
-	}
-	else if (!marks.isEmpty())
-	{
-		writeMarks(marks);
-		Comment buf(m_marks, false, false);
-		buf.append(comment, ' ');
-		writeComment(buf);
-		m_hasPreComment = true;
-	}
-	else if (!comment.isEmpty())
-	{
-		writeComment(comment);
-		m_hasPreComment = true;
+		if (m_needPostComment)
+			putComment(mstl::string::empty_string);
+
+		putComment(comment);
 	}
 }
 
@@ -524,13 +560,13 @@ PgnWriter::writeMove(Move const& move,
 	m_annotation.clear();
 	m_move.clear();
 
-	if (m_hasPreComment || !preComment.isEmpty())
+	if (m_needPreComment || !preComment.isEmpty())
 	{
 		if (m_needPostComment)
-			writeComment(mstl::string::empty_string);
+			putComment(mstl::string::empty_string);
 
-		writeComment(preComment);
-		m_hasPreComment = false;
+		putComment(preComment);
+		m_needPreComment = false;
 	}
 
 	if (test(Flag_Space_After_Move_Number))
@@ -568,7 +604,7 @@ PgnWriter::writeMove(Move const& move,
 	}
 	else
 	{
-		writeComment(comment, marks);
+		putComment(comment, marks);
 		m_needPostComment = false;
 	}
 }
@@ -591,7 +627,7 @@ PgnWriter::writeBeginVariation(unsigned)
 	}
 
 	m_needPostComment = false;
-	m_hasPreComment = false;
+	m_needPreComment = false;
 
 	if (::SpaceAfterBracket)
 		putSpace();
@@ -606,7 +642,7 @@ PgnWriter::writeEndVariation(unsigned)
 
 	putDelim(')');
 	m_needPostComment = false;
-	m_hasPreComment = false;
+	m_needPreComment = false;
 
 	if (test(Flag_Indent_Variations))
 	{

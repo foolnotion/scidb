@@ -166,6 +166,8 @@ class Visitor : public edit::Visitor
 {
 public:
 
+	typedef edit::Comment::VarPos VarPos;
+
 	Visitor()
 		:m_objc(0)
 	{
@@ -203,12 +205,12 @@ public:
 			Tcl_IncrRefCount(m_open			= Tcl_NewStringObj("(",				-1));
 			Tcl_IncrRefCount(m_close		= Tcl_NewStringObj(")",				-1));
 			Tcl_IncrRefCount(m_fold			= Tcl_NewStringObj("+",				-1));
+			Tcl_IncrRefCount(m_a				= Tcl_NewStringObj("a",				-1));
 			Tcl_IncrRefCount(m_e				= Tcl_NewStringObj("e",				-1));
+			Tcl_IncrRefCount(m_p				= Tcl_NewStringObj("p",				-1));
 			Tcl_IncrRefCount(m_s				= Tcl_NewStringObj("s",				-1));
 			Tcl_IncrRefCount(m_blank		= Tcl_NewStringObj(" ",				-1));
 			Tcl_IncrRefCount(m_zero			= Tcl_NewIntObj(0));
-			Tcl_IncrRefCount(m_true			= Tcl_NewBooleanObj(1));
-			Tcl_IncrRefCount(m_false		= Tcl_NewBooleanObj(0));
 		}
 
 		Tcl_IncrRefCount(m_list = Tcl_NewListObj(0, 0));
@@ -425,14 +427,18 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
-	void comment(move::Position position, bool atStartOfVariation, Comment const& comment)
+	void comment(move::Position position, VarPos varPos, Comment const& comment)
 	{
-		Tcl_Obj* objv[4];
+		Tcl_Obj* objv[3];
 
 		objv[0] = m_comment;
-		objv[1] = (position == move::Ante) ? m_true : m_false;
-		objv[2] = atStartOfVariation ? m_true : m_false;
-		objv[3] = Tcl_NewStringObj(comment.content(), comment.content().size());
+		switch (varPos)
+		{
+			case edit::Comment::AtStart:	objv[1] = m_s; break;
+			case edit::Comment::AtEnd:		objv[1] = m_e; break;
+			case edit::Comment::Inside:	objv[1] = (position == move::Ante) ? m_a: m_p; break;
+		}
+		objv[2] = Tcl_NewStringObj(comment.content(), comment.content().size());
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
@@ -598,9 +604,9 @@ public:
 	static Tcl_Obj* m_fold;
 	static Tcl_Obj* m_blank;
 	static Tcl_Obj* m_zero;
-	static Tcl_Obj* m_true;
-	static Tcl_Obj* m_false;
+	static Tcl_Obj* m_a;
 	static Tcl_Obj* m_e;
+	static Tcl_Obj* m_p;
 	static Tcl_Obj* m_s;
 };
 
@@ -639,9 +645,9 @@ Tcl_Obj* Visitor::m_close			= 0;
 Tcl_Obj* Visitor::m_fold			= 0;
 Tcl_Obj* Visitor::m_blank			= 0;
 Tcl_Obj* Visitor::m_zero			= 0;
-Tcl_Obj* Visitor::m_true			= 0;
-Tcl_Obj* Visitor::m_false			= 0;
+Tcl_Obj* Visitor::m_a				= 0;
 Tcl_Obj* Visitor::m_e				= 0;
+Tcl_Obj* Visitor::m_p				= 0;
 Tcl_Obj* Visitor::m_s				= 0;
 
 
@@ -1845,7 +1851,16 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							case 'm':	// comment
 								{
 									char const* which = stringFromObj(objc, objv, nextArg);
-									setResult(Scidb.game(pos).comment(*which == 'a' ? move::Ante : move::Post));
+
+									if (*which == 'e')
+									{
+										setResult(Scidb.game(pos).trailingComment());
+									}
+									else
+									{
+										move::Position position = *which == 'a' ? move::Ante : move::Post;
+										setResult(Scidb.game(pos).comment(position));
+									}
 								}
 								break;
 
@@ -1916,12 +1931,14 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'l':	// langSet
 			if (objc >= 4)
 			{
-				char const* pos	= stringFromObj(objc, objv, nextArg);
-				char const* key	= stringFromObj(objc, objv, nextArg + 1);
-				char const* lang	= stringFromObj(objc, objv, nextArg + 2);
+				char const* pos(stringFromObj(objc, objv, nextArg));
+				char const* lang(stringFromObj(objc, objv, nextArg + 2));
+				edit::Key	key(stringFromObj(objc, objv, nextArg + 1));
 
 				move::Position p = *pos == 'a' ? move::Ante : move::Post;
-				setResult(Scidb.game().containsLanguage(edit::Key(key), p, lang));
+				if (*pos == 't')
+					key.incrementPly();
+				setResult(Scidb.game().containsLanguage(key, p, lang));
 			}
 			else
 			{
@@ -1965,7 +1982,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'e':
 			switch (cmd[1])
 			{
-				case 'm': setResult(Scidb.game(pos).isEmpty()); break;									// empty?
+				case 'm': setResult(Scidb.game(pos).plyCount() == 0); break;						// empty?
 				case 'c': setResult(Scidb.game(pos).computeEcoCode().asShortString()); break;	// eco
 
 				default: return error(CmdQuery, 0, 0, "invalid command %s", cmd);
@@ -2308,9 +2325,15 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			case Cmd_Comment:
 				{
-					char const* pos = stringFromObj(objc, objv, 3);
+					char const*		pos = stringFromObj(objc, objv, 3);
+					mstl::string	comment(stringFromObj(objc, objv, 4));
+
 					move::Position position = (*pos == 'a' ? move::Ante : move::Post);
-					game.setComment(stringFromObj(objc, objv, 4), position);
+
+					if (*pos == 'e')
+						game.setTrailingComment(comment);
+					else
+						game.setComment(comment, position);
 				}
 				break;
 

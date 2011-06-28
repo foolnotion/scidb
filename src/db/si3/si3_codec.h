@@ -91,7 +91,6 @@ public:
 	void filterTag(TagSet& tags, tag::ID tag) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
-	util::BlockFile* newBlockFile() const;
 
 	void doOpen(mstl::string const& encoding);
 	void doOpen(mstl::string const& rootname, mstl::string const& encoding);
@@ -108,21 +107,21 @@ public:
 	void update(mstl::string const& rootname);
 	void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	void updateHeader(mstl::string const& rootname);
+	void reloadDescription(mstl::string const& rootname);
+	void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
 	void close();
 	void sync();
 
-	save::State doDecoding(db::Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info);
-	save::State doDecoding(	db::Consumer& consumer,
-									util::ByteStream& strm,
-//									unsigned flags,
-									TagSet& tags);
-	void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info);
+	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info);
+	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags);
+	void doDecoding(GameData& data, GameInfo& info);
 
 	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	db::Consumer* getConsumer(format::Type srcFormat);
 
 	void reset();
 	void setEncoding(mstl::string const& encoding);
+	void releaseRoundEntry(unsigned index);
 	bool saveRoundEntry(unsigned index, mstl::string const& value);
 	void restoreRoundEntry(unsigned index);
 	sys::utf8::Codec& codec();
@@ -149,14 +148,21 @@ private:
 
 	void readIndex(mstl::fstream& fstrm, util::Progress& progress);
 
-	void readNamebase(mstl::fstream& stream, util::Progress& progress);
+	void readNamebases(mstl::fstream& stream, util::Progress& progress);
 	void readNamebase(ByteIStream& stream,
 							Namebase& base,
 							NameList& shadowBase,
 							unsigned maxFreq,
 							unsigned count,
-							unsigned limit);
-	void writeNamebase(mstl::fstream& stream);
+							unsigned limit,
+							util::Progress& progress);
+	void reloadNamebase(	ByteIStream& bstrm,
+								Namebase& base,
+								NameList& shadowBase,
+								unsigned maxFreq,
+								unsigned count,
+								util::Progress& progress);
+	void writeNamebases(mstl::fstream& stream);
 	void writeNamebase(mstl::fstream& stream, NameList& base);
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
@@ -183,6 +189,9 @@ private:
 	NameList*					m_siteList;
 	NameList*					m_roundList;
 	NamebaseEntry*				m_roundEntry;
+	unsigned						m_progressFrequency;
+	unsigned						m_progressReportAfter;
+	unsigned						m_progressCount;
 };
 
 } // namespace si3

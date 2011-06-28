@@ -361,8 +361,8 @@ proc verifyPath {w path} {
 proc dbNew {parent} {
 	set filetypes [list                             \
 		[list $mc::ScidbBases		.sci]             \
-		[list $mc::Scid3Bases		.si3]             \
 		[list $mc::Scid4Bases		.si4]             \
+		[list $mc::Scid3Bases		.si3]             \
 		[list $mc::AllScidBases		{.si3 .si4}]      \
 		[list $mc::AllScidbBases	{.sci .si3 .si4}] \
 	]

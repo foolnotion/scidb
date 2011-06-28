@@ -182,10 +182,10 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 
 	// NOTE: we assume normalized (unique) file names.
 
-	m_readOnly = false;
-	m_memoryOnly = false;
 	m_rootname = file::rootname(filename);
 	m_codec->attach(m_rootname, progress);
+	m_readOnly = false;
+	m_memoryOnly = false;
 }
 
 
@@ -203,6 +203,7 @@ Database::save(util::Progress& progress, unsigned start)
 	m_namebases.update();
 	m_codec->reset();
 	m_codec->save(m_rootname, start, progress);
+	m_codec->updateHeader(m_rootname);
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -216,7 +217,6 @@ Database::close()
 		if (!isMemoryOnly() && m_size != m_gameInfoList.size())		// should not happen
 		{
 			util::Progress progress;
-			m_namebases.update();
 			save(progress, m_size);
 		}
 
@@ -262,6 +262,35 @@ Database::clear()
 		m_codec->clear();
 	else
 		m_codec->clear(m_rootname);
+}
+
+
+void
+Database::reopen(mstl::string const& encoding, Progress& progress)
+{
+	M_REQUIRE(file::hasSuffix(name()));
+	M_REQUIRE(!isMemoryOnly());
+	M_REQUIRE(!usingAsyncReader());
+
+	m_gameInfoList.clear();
+	m_namebases.clear();
+	m_allocator.clear();
+	m_treeCache.clear();
+	m_encodingFailed = false;
+	m_encodingOk = true;
+	m_size = 0;
+	m_lastChange = sys::time::timestamp();
+	m_encoding = encoding;
+
+	delete m_codec;
+
+	mstl::string ext = file::suffix(name());
+
+	m_codec = DatabaseCodec::makeCodec(ext);
+	M_ASSERT(m_codec);
+	m_codec->open(this, m_rootname, m_encoding, progress);
+	m_size = m_gameInfoList.size();
+	setEncodingFailed(m_codec->encodingFailed());
 }
 
 
@@ -335,8 +364,12 @@ Database::addGame(Game const& game)
 	if (state == save::Ok)
 	{
 		if (!m_memoryOnly)
+		{
 			m_codec->update(m_rootname, m_gameInfoList.size() - 1, true);
+			m_codec->updateHeader(m_rootname);
+		}
 
+		m_size = m_gameInfoList.size();
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
 		m_treeCache.setIncomplete();
@@ -554,7 +587,11 @@ Database::importGame(Producer& producer, unsigned index)
 	m_statistic.add(*m_gameInfoList[index]);
 
 	if (!isMemoryOnly())
+	{
 		m_codec->update(m_rootname, index, true);
+		m_codec->updateHeader(m_rootname);
+		m_size = m_gameInfoList.size();
+	}
 
 	if (n)
 		m_treeCache.setIncomplete();
@@ -590,75 +627,23 @@ Database::importGames(Producer& producer, util::Progress& progress)
 
 
 void
-Database::recode(mstl::string const& encoding, Log& log)
+Database::recode(mstl::string const& encoding, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(encoding != sys::utf8::Codec::utf8() || file::suffix(name()) != "sci");
+	M_REQUIRE(!isMemoryOnly());
+	M_REQUIRE(encoding != sys::utf8::Codec::utf8() || format() != format::Scidb);
 	M_REQUIRE(!usingAsyncReader());
-
-	m_encodingFailed = false;
 
 	if (encoding == m_encoding)
 		return;
 
-	sys::utf8::Codec oldCodec(m_encoding);
-	sys::utf8::Codec newCodec(encoding);
+	m_encodingFailed = false;
 
-	for (unsigned i = 0; i < m_gameInfoList.size(); ++i)
-		m_gameInfoList[i]->recode(oldCodec, newCodec);
+	m_codec->setEncoding(m_encoding = encoding);
+	m_codec->reloadDescription(m_rootname);
+	m_codec->reloadNamebases(m_rootname, progress);
 
-	// XXX
-	// is this an appropriate action?
-	// possibly we should only set the encoding.
-	if (isMemoryOnly())
-	{
-		typedef mstl::auto_ptr<util::BlockFile> BlockFileP;
-		typedef mstl::vector<unsigned> Array;
-
-		unsigned char buffer[8192];
-
-		BlockFileP	blockFile(m_codec->newBlockFile());
-		Array			offsets(m_gameInfoList.size());
-		Array			recordLengths(m_gameInfoList.size());
-		Array			erased;
-		unsigned		maxRecordLength(m_codec->maxGameRecordLength());
-
-		for (unsigned i = 0, k = 0; i < m_gameInfoList.size(); ++i)
-		{
-			GameInfo const* info = m_gameInfoList[i];
-			ByteStream dst(buffer, sizeof(buffer));
-
-			m_codec->recode(*info, dst, oldCodec, newCodec);
-
-			if (dst.size() > maxRecordLength)
-			{
-				log.error(save::GameTooLong, i);
-				erased.push_back(i);
-			}
-			else
-			{
-				offsets[k] = blockFile->put(dst);
-				// XXX: put() should not fail!!
-				recordLengths[k] = dst.size();
-				k += 1;
-			}
-		}
-
-		for (int i = int(erased.size()) - 1; i >= 0; --i)
-			m_gameInfoList.erase(m_gameInfoList.begin() + i);
-
-		for (unsigned i = 0; i < m_gameInfoList.size(); ++i)
-			m_gameInfoList[i]->setRecord(offsets[i], recordLengths[i]);
-
-		m_codec->replaceBlockFile(blockFile.release());
-	}
-	else
-	{
-		m_codec->setEncoding(encoding);
-	}
-
-	m_encoding = encoding;
-	setEncodingFailed(oldCodec.failed() || newCodec.failed());
+	setEncodingFailed(m_codec->encodingFailed());
 }
 
 

@@ -51,6 +51,8 @@ public:
 	bool convertFromUtf8(mstl::string const& in, mstl::string& out);
 	bool convertToUtf8(mstl::string const& in, mstl::string& out);
 
+	void forceValidUtf8(mstl::string& str);
+
 	static mstl::string const& utf8();
 	static mstl::string const& latin1();
 

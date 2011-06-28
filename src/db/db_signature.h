@@ -46,8 +46,6 @@ public:
 	/// Return whether under-promotion(s) has been detected
 	bool hasUnderPromotion() const;
 
-	uint8_t promotions() const;
-	uint8_t underPromotions() const;
 	material::Signature material() const;
 	material::SigPart material(color::ID color) const;
 	pawns::Side progress(color::ID color) const;

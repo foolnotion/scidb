@@ -100,6 +100,22 @@
 ::widget::mc::First		"Pri&ma"
 ::widget::mc::Last		"&Ultima"
 
+### util ###############################################################
+
+::util::mc::IOErrorOccurred					"Errore Input/Output"
+
+::util::mc::IOError(OpenFailed)				"apertura fallita"
+::util::mc::IOError(ReadOnly)					"il database è in sola-lettura"
+::util::mc::IOError(UnknownVersion)			"versione del file sconosciuta"
+::util::mc::IOError(UnexpectedVersion)		"versione del file inattesa"
+::util::mc::IOError(Corrupted)				"file corrotto"
+::util::mc::IOError(WriteFailed)				"operazione di scrittura fallita"
+::util::mc::IOError(InvalidData)				"dato non valido (possibile corruzione file)"
+::util::mc::IOError(ReadError)				"errore di lettura"
+::util::mc::IOError(EncodingFailed)			"non posso scrivere il file di namebase" ;#namebase?
+::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
+::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
+
 ### menu ###############################################################
 ::menu::mc::File						"&File"
 ::menu::mc::Game						"&Partita"
@@ -125,6 +141,7 @@
 ::menu::mc::HelpInfo					"In&fo"
 ::menu::mc::HelpContents			"Conten&uti"
 ::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
+::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"
 
 ::menu::mc::ViewShowLog				"Mostra &Log..."
 ::menu::mc::ViewFullscreen			"Schermo intero"
@@ -361,7 +378,8 @@
 ::application::pgn::mc::EditAnnotation						"Modifica annotazioni"
 ::application::pgn::mc::EditCommentBefore					"Modifica commento prima della mossa"
 ::application::pgn::mc::EditCommentAfter					"Modifica commento dopo la mossa"
-::application::pgn::mc::EditCommentAtStart				"Modifica commento all'inizio"
+::application::pgn::mc::EditPrecedingComment				"Modifica commento precedente"
+::application::pgn::mc::EditTrailingComment				"Modifica commento successivo"
 ::application::pgn::mc::EditMarks							"Modifica codici"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"nessuno"
@@ -653,6 +671,7 @@
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Cognome"
 ::playertable::mc::F_FirstName				"Nome"
+::playertable::mc::F_FideID					"Fide ID"
 ::playertable::mc::F_Title						"Titolo"
 ::playertable::mc::F_Frequency				"Frequenza"
 
@@ -816,6 +835,7 @@
 ::import::mc::InvalidCountryCode					"Codice paese non valido"
 ::import::mc::InvalidRating						"Valore punteggio non valido"
 ::import::mc::InvalidNag							"NAG non valido"
+::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)" ;# NEW
 ::import::mc::MissingFen							"Manca FEN (tag variante sarà ignorata)"
 ::import::mc::UnknownEventType					"Tipo di evento sconosciuto"
 ::import::mc::UnknownTitle							"Titolo sconosciuto (ignorato)"
@@ -831,7 +851,6 @@
 ::import::mc::DecodingFailed						"Decodifica fallita"
 ::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"
 ::import::mc::ValueTooLong							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
-::import::mc::CommentAtEndOfGame					"Commenti alla fine della partita inseriti come sotto-varianti"
 ::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori analoghi"
 ::import::mc::MaximalWarningCountExceeded	"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti analoghi"
 ::import::mc::InvalidToken							"Token non valido"
@@ -991,7 +1010,7 @@
 ::dialog::save::mc::Matches						"&Match"
 ::dialog::save::mc::Tags							"&Tags"
 
-::dialog::save::mc::Name							"Nome"
+::dialog::save::mc::Name							"Nome/Fide ID"
 ::dialog::save::mc::Value							"Valore"
 ::dialog::save::mc::Title							"Titolo"
 ::dialog::save::mc::Rating							"Elo"
@@ -1203,7 +1222,8 @@
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Commento prima della mossa"
 ::comment::mc::CommentAfterMove		"Commento dopo mossa"
-::comment::mc::CommentAtStart			"Commento all'inizio"
+::comment::mc::PrecedingComment		"Commento precedente"
+::comment::mc::TrailingComment		"Commento successivo"
 ::comment::mc::Language					"Lingua"
 ::comment::mc::AllLanguages			"Tutte le lingue"
 ::comment::mc::AddLanguage				"Aggiungi lingua..."

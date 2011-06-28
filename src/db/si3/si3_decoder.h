@@ -57,14 +57,14 @@ public:
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
-	unsigned doDecoding(/*unsigned flags, */GameData& data);
-	save::State doDecoding(db::Consumer& consumer/*, unsigned flags*/, TagSet& tags);
+	unsigned doDecoding(GameData& data);
+	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
 
 	static type::ID decodeType(unsigned type);
 
 private:
 
-	void decodeVariation(/*unsigned flags, */unsigned level = 0);
+	void decodeVariation(unsigned level = 0);
 	Byte decodeMove(Byte value);
 	void decodeComments(MoveNode* node);
 	void decodeTags(TagSet& tags);

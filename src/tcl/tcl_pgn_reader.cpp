@@ -119,6 +119,7 @@ PgnReader::warning(	Warning code,
 		case InvalidCountryCode:				msg = "InvalidCountryCode"; break;
 		case InvalidRating:						msg = "InvalidRating"; break;
 		case InvalidNag:							msg = "InvalidNag"; break;
+		case BraceSeenOutsideComment:			msg = "BraceSeenOutsideComment"; break;
 		case MissingFen:							msg = "MissingFen"; break;
 		case UnknownEventType:					msg = "UnknownEventType"; break;
 		case UnknownTitle:						msg = "UnknownTitle"; break;
@@ -133,7 +134,6 @@ PgnReader::warning(	Warning code,
 		case IllegalMove:							msg = "IllegalMove"; break;
 		case ResultDidNotMatchHeaderResult: msg = "ResultDidNotMatchHeaderResult"; break;
 		case ValueTooLong:						msg = "ValueTooLong"; break;
-		case CommentAtEndOfGame:					msg = "CommentAtEndOfGame"; break;
 		case MaximalErrorCountExceeded:		msg = "MaximalErrorCountExceeded"; break;
 		case MaximalWarningCountExceeded:	msg = "MaximalWarningCountExceeded"; break;
 	}

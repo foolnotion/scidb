@@ -30,9 +30,6 @@
 #include "db_provider.h"
 #include "db_board.h"
 #include "db_line.h"
-#include "db_comment.h"
-#include "db_annotation.h"
-#include "db_mark_set.h"
 #include "db_home_pawns.h"
 #include "db_common.h"
 
@@ -43,6 +40,7 @@ namespace sys { namespace utf8 { class Codec; } }
 
 namespace db {
 
+class Comment;
 class TagSet;
 class MarkSet;
 class Annotation;
@@ -89,9 +87,8 @@ public:
 	bool startGame(TagSet const& tags, Board const& board);
 	save::State finishGame(TagSet const& tags);
 
-	void putComment(Comment const& comment);
-	void putComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
-	void putFinalComment(Comment const& comment);
+	void putPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void putTrailingComment(Comment const& comment);
 	void putMove(Move const& move);
 	void putMove(	Move const& move,
 						Annotation const& annotation,
@@ -120,10 +117,10 @@ protected:
 	virtual bool beginGame(TagSet const& tags) = 0;
 	virtual save::State endGame(TagSet const& tags) = 0;
 
-	virtual void sendComment(	Comment const& comment,
-										Annotation const& annotation,
-										MarkSet const& marks) = 0;
-	virtual void sendFinalComment(Comment const& comment) = 0;
+	virtual void sendPrecedingComment(Comment const& comment,
+												Annotation const& annotation,
+												MarkSet const& marks) = 0;
+	virtual void sendTrailingComment(Comment const& comment) = 0;
 	virtual bool sendMove(	Move const& move) = 0;
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,
@@ -135,7 +132,7 @@ protected:
 	virtual void endMoveSection(result::ID result) = 0;
 
 	virtual void beginVariation() = 0;
-	virtual void endVariation() = 0;
+	virtual void endVariation(bool isEmpty) = 0;
 
 	Board& getBoard();
 	void setStartBoard(Board const& board);
@@ -155,7 +152,6 @@ private:
 	void setup(Board const& startPosition);
 	void setup(mstl::string const& fen);
 	void setup(unsigned idn);
-	void sendComment();
 
 	friend class Producer;
 
@@ -171,13 +167,9 @@ private:
 	HomePawns			m_homePawns;
 	uint16_t				m_moveBuffer[opening::Max_Line_Length];
 	mstl::string		m_encoding;
-	Comment				m_comment;
-	Annotation			m_preAnnotation;
-	MarkSet				m_preMarks;
 	sys::utf8::Codec*	m_codec;
 	Consumer*			m_consumer;
 	bool					m_setupBoard;
-	bool					m_hasComment;
 	bool					m_commentEngFlag;
 	bool					m_commentOthFlag;
 };

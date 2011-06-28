@@ -51,7 +51,7 @@ proc welcomeToScidb {parent} {
 
 2. Die UnterstÃ¼tzung der Scid-Datenbanken (.si3/.si4) erfolgt durch eine recht komplexe Emulation, die noch nicht genÃ¼gend ausgetestet ist. Also bitte nicht die Original-Scid-Datenbanken mit diesem Programm bearbeiten. StandardmÃ¤ÃŸig werden die Scid-Datenbanken nur im Lesemodus, der natÃ¼rlich unkritisch ist, geÃ¶ffnet.
 
-3. Das aktuelle Scidb-Format (.sci) wird spÃ¤testens mit der ersten Vollversion vollendet (d.h. Versionsnummer 1.0 erreichen, die aktuelle Versionsnummer ist 0.9). Das aktuelle Format ist aber bereits voll einsetzbar und es wird eine Upgrade-MÃ¶glichkeit geben.
+3. Das aktuelle Scidb-Format (.sci) wird spÃ¤testens mit der ersten Vollversion vollendet (d.h. Versionsnummer 1.0 erreichen, die aktuelle Versionsnummer ist 0.91). Das aktuelle Format ist aber bereits voll einsetzbar und es wird eine Upgrade-MÃ¶glichkeit geben.
 
 4. Die UnterstÃ¼tzung des ChessBase-Formats (.cbh) ist noch nicht vollendet. Zur Zeit kÃ¶nnen z.B. keine Schach-960 Partien gelesen werden.
 
@@ -65,7 +65,7 @@ Viel Freude mit Scidb, dessen Entwicklung bisher bereits drei Jahre in Anspruch 
 
 2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
 
-3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
+3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.91). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
 
 4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
 
@@ -79,7 +79,7 @@ Have a lot of fun with Scidb, whose development has already taken three years!"]
 
 2. The support of Scid databases (.si3/.si4) is performed by a quite complex emulation which is not yet sufficiently tested. Therefore please do not edit your original Scid databases with this program. Per default the Scid databases will be opened in read-only mode, which is of course uncritical.
 
-3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.9). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
+3. The current Scidb format (.sci) will be finished at latest with the first full version (i.e. it will reach version 1.0 later, the current version is 0.91). Nevertheless the current format is already fully usable, and there will be offered an upgrade capability.
 
 4. The support of the ChessBase format (.cbh) is not yet finished. Currently this application cannot open Chess 960 games.
 
@@ -93,7 +93,7 @@ Have a lot of fun with Scidb, whose development has already taken three years!"]
 
 2. Il supporto al formato database di Scid (.si3/.si4) è reso possibile da una emulazione piuttosto complessa che non è stata ancora testata a sufficienza. Quindi per favore non modificare i tuoi database originali in formato Scid con questo programma. Per default i database Scid saranno aperti in modalità sola-lettura, che ovviamente non comporta problemi.
 
-3. Il formato di Scidb attuale (.sci) sarà finito al più tardi con il rilascio della prima versione completa (cioè quando sarà raggiunta la versione 1.0 o superiore, la versione corrente è la 0.9). Nonostante ciò il formato attuale è del tutto utilizzabile, e sarà possibile aggiornarlo in futuro.
+3. Il formato di Scidb attuale (.sci) sarà finito al più tardi con il rilascio della prima versione completa (cioè quando sarà raggiunta la versione 1.0 o superiore, la versione corrente è la 0.91). Nonostante ciò il formato attuale è del tutto utilizzabile, e sarà possibile aggiornarlo in futuro.
 
 4. Il supporto al formato database di Chessbase (.cbh) non è ancora finito. Ad oggi questo programma non può aprire partite di Scacchi 960.
 

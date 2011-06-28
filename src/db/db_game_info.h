@@ -145,6 +145,7 @@ public:
 	uint32_t gameOffset() const;
 	uint32_t gameRecordLength() const;
 	mstl::string const& playerName(color::ID color) const;
+	uint32_t fideID(color::ID color) const;
 	country::Code federation(color::ID color) const;
 	title::ID title(color::ID color) const;
 	unsigned round() const;
@@ -178,6 +179,7 @@ public:
 	uint16_t findRating(color::ID color, rating::Type type) const;
 	rating::Type findRatingType(color::ID color) const;
 	country::Code findEventCountry() const;
+	int32_t findFideID(color::ID color) const;
 
 	bool isGameRating(color::ID color, rating::Type type) const;
 	uint16_t playerElo(color::ID color) const;
@@ -219,7 +221,6 @@ public:
 					TagSet const& tags,
 					Namebases& namebases);
 	void update(Provider const& provider);
-	void recode(sys::utf8::Codec& oldCodec, sys::utf8::Codec& newCodec);
 	template <int N> void setPly(uint16_t move);
 	void setLanguageCount(unsigned count);
 	void setRecord(uint32_t offset, uint32_t length);

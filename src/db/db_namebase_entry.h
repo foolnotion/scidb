@@ -235,7 +235,7 @@ class NamebasePlayer : public NamebaseEntry
 {
 public:
 
-	static uint32_t const KeyMask = 0x007fffff;
+	static uint32_t const KeyMask = 0x00ffffff;
 
 	union Value
 	{
@@ -249,7 +249,8 @@ public:
 				bool federationFlag,
 				bool typeFlag,
 				bool sexFlag,
-				bool titleFlag);
+				bool titleFlag,
+				bool fideIdFlag);
 
 		bool operator<(Value value) const;
 
@@ -263,8 +264,9 @@ public:
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
+			uint32_t m_fideIdFlag:1;
 			uint32_t m_ignored_:4;
-			uint32_t m_unused_:5;
+			uint32_t m_unused_:4;
 		};
 
 		uint32_t m_key;
@@ -281,7 +283,8 @@ public:
 				bool federationFlag,
 				bool typeFlag,
 				bool sexFlag,
-				bool titleFlag);
+				bool titleFlag,
+				bool fideIdFlag);
 
 		static uint32_t makeValue(NamebasePlayer const& player);
 		static uint32_t makeValue(	country::Code federation,
@@ -304,10 +307,7 @@ public:
 
 	bool isEngine() const;
 
-	bool haveType() const;
-	bool haveSex() const;
-	bool haveFederation() const;
-	bool haveTitle() const;
+	bool haveFideId() const;
 	bool havePlayerInfo() const;
 
 	sex::ID sex() const;
@@ -318,6 +318,7 @@ public:
 	rating::Type ratingType() const;
 	country::Code federation() const;
 	title::ID title() const;
+	uint32_t fideID() const;
 
 	country::Code findFederation() const;
 	title::ID findTitle() const;
@@ -326,6 +327,7 @@ public:
 	uint16_t findElo() const;
 	uint16_t findRating(rating::Type type) const;
 	rating::Type findRatingType() const;
+	int32_t findFideID() const;
 
 	uint16_t playerHighestElo() const;
 	uint16_t playerLatestElo() const;
@@ -360,8 +362,9 @@ private:
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
+			uint32_t m_fideIdFlag:1;
 			uint32_t	m_ratingType:4;
-			uint32_t m_unused_:5;
+			uint32_t m_unused_:4;
 		};
 
 		uint32_t m_value;

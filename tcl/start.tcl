@@ -143,6 +143,23 @@ proc require {myNamespace requiredNamespaces} {
 
 
 namespace eval util {
+namespace eval mc {
+
+set IOErrorOccurred					"I/O Error occurred"
+
+set IOError(OpenFailed)				"open failed"
+set IOError(ReadOnly)				"database is read-only"
+set IOError(UnknownVersion)		"unknown file version"
+set IOError(UnexpectedVersion)	"unexpected file version"
+set IOError(Corrupted)				"corrupted file"
+set IOError(WriteFailed)			"write operation failed"
+set IOError(InvalidData)			"invalid data (file possibly corrupted)"
+set IOError(ReadError)				"read error"
+set IOError(EncodingFailed)		"cannot write namebase file"
+set IOError(MaxFileSizeExceeded)	"maximal file size reached"
+set IOError(LoadFailed)				"load failed (too many event entries)"
+
+}
 
 set Extensions {.sci .si4 .si3 .cbh .pgn .zip}
 
@@ -204,6 +221,38 @@ proc databasePath {file} {
 	}
 
 	return $file
+}
+
+
+proc catchIoError {cmd {resultVar {}}} {
+	if {[catch {{*}$cmd} result options]} {
+		array set opts $options
+		if {[string first %IO-Error% $opts(-errorinfo)] >= 0} {
+			lassign $opts(-errorinfo) type file error what
+			set descr ""
+			if {[info exists mc::IOError($error)]} {
+				set descr $mc::IOError($error)
+			} else {
+				set descr "???"
+			}
+			set msg $mc::IOErrorOccurred
+			if {[string length $descr]} {
+				append msg ": "
+				append msg $descr
+			}
+			set what [string toupper $what 0 0]
+			set i [string first "=== Backtrace" $what]
+			if {$i >= 0} { set what [string range $what 0 [incr i -1]] }
+			set what [string trim $what]
+			::dialog::error -parent .application -message $msg -detail [string toupper $what 0 0] -topmost 1
+			return 1
+		}
+		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
+	}
+	if {[llength $resultVar]} {
+		uplevel 1 [list set $resultVar $result]
+	}
+	return 0
 }
 
 } ;# namespace util

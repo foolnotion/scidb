@@ -56,6 +56,7 @@ using namespace db;
 # define DEBUG(stmt)
 #endif
 
+//#define USE_CONFLICT_MAP
 
 unsigned Player::m_minELO	= 1800;
 unsigned Player::m_minDWZ	= 1800;
@@ -112,6 +113,7 @@ typedef mstl::pair<mstl::string,Player const*> Entry;
 typedef mstl::vector<Player*> Players;
 
 typedef mstl::hash<mstl::string,Players> PlayerLookup;
+typedef mstl::hash<mstl::string,Player*> ConflictMap;
 typedef mstl::hash<Player*,StringList> AliasDict;
 typedef mstl::map<Player*,PndID> PndDict;
 typedef mstl::map<Player*,ViafID> ViafDict;
@@ -122,6 +124,7 @@ typedef mstl::hash<mstl::string,Lookup*> LangMap;
 typedef mstl::chunk_allocator<char> CAllocator;
 typedef mstl::chunk_allocator<Player> PAllocator;
 
+static Player InvalidEntry;
 static PlayerLookup playerLookup(unsigned(200000*(100/PlayerLookup::Load)));
 static AliasDict aliasDict(unsigned(150000*(100/AliasDict::Load)));
 static PlayerDict playerDict(unsigned(120000*(100/PlayerDict::Load)));
@@ -135,6 +138,9 @@ static LangMap langMap;
 static PndDict pndMap(250);
 static ViafDict viafMap(250);
 static StringList emptyList;
+#ifdef USE_CONFLICT_MAP
+static ConflictMap conflictMap;
+#endif
 
 
 namespace db {
@@ -452,24 +458,30 @@ getElo(mstl::string const& elo)
 }
 
 
+static bool
+hasTrailingCountryCode(mstl::string const& s)
+{
+	return	s.size() > 6
+			&& *(s.end() - 5) != ','
+			&& *(s.end() - 4) == ' '
+			&& ::isupper(*(s.end() - 3))
+			&& ::isupper(*(s.end() - 2))
+			&& ::isupper(*(s.end() - 1));
+}
+
+
 static mstl::string&
 stripCountryCode(mstl::string& s)
 {
+	M_ASSERT(hasTrailingCountryCode(s));
+
 	// strip country following name; e.g. "Mueller, Hans AUT"
-	if (	s.size() > 5
-		&& *(s.end() - 4) == ' '
-		&& ::isupper(*(s.end() - 3))
-		&& ::isupper(*(s.end() - 2))
-		&& ::isupper(*(s.end() - 1)))
-	{
-		unsigned size = s.size() - 4;
+	unsigned size = s.size() - 4;
 
-		while (size > 0 && s[size - 1] == ' ')
-			--size;
+	while (size > 0 && s[size - 1] == ' ')
+		--size;
 
-		s.set_size(size);
-	}
-
+	s.set_size(size);
 	return s;
 }
 
@@ -515,6 +527,58 @@ insertAlias(Player::StringList& sl, mstl::string const& alias)
 
 	sl.push_back();
 	::alloc(sl.back(), alias);
+}
+
+
+static bool
+containsPlayer(Players const& players, country::Code federation, sex::ID sex)
+{
+	M_ASSERT(players.size() >= 1);
+
+	if (federation != country::Unknown)
+	{
+		Player* possibleMatch = 0;
+
+		for (unsigned i = 0; i < players.size(); ++i)
+		{
+			Player* player = players[i];
+
+			if (sex == sex::Unspecified || player->sex() == sex::Unspecified || sex == player->sex())
+			{
+				if (player->federation() == country::Unknown)
+					return true;
+
+				if (federation == player->federation() || federation == player->nativeCountry())
+					return true;
+
+				if (	country::match(federation, player->federation())
+					|| country::match(federation, player->nativeCountry()))
+				{
+					possibleMatch = player;
+				}
+			}
+		}
+
+		return possibleMatch != 0;
+	}
+
+	if (sex != sex::Unspecified)
+	{
+		for (unsigned i = 0; i < players.size(); ++i)
+		{
+			Player* player = players[i];
+
+			if (player->sex() == sex::Unspecified)
+				return true;
+
+			if (player->sex() == sex)
+				return true;
+		}
+
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -718,6 +782,29 @@ Player::standardizeNames(mstl::string& name)
 }
 
 
+bool
+Player::containsPlayer(mstl::string const& name, country::Code federation, sex::ID sex)
+{
+	mstl::string key(name);
+	normalize(key);
+
+	::Players const* p = ::playerLookup.find(key);
+
+	if (p == 0)
+		return false;
+
+	return ::containsPlayer(*p, federation, sex);
+}
+
+
+Player*
+Player::findPlayer(uint32_t fideID)
+{
+	Player* const* playerEntry = ::playerDict.find(fideID);
+	return playerEntry ? *playerEntry : 0;
+}
+
+
 Player*
 Player::findPlayer(mstl::string const& name, country::Code federation, sex::ID sex)
 {
@@ -730,6 +817,22 @@ Player::findPlayer(mstl::string const& name, country::Code federation, sex::ID s
 		return 0;
 
 	return ::findPlayer(*p, federation, sex);
+}
+
+
+Player*
+Player::insertPlayer(uint32_t fideID, mstl::string const& name)
+{
+	M_REQUIRE(findPlayer(fideID) == 0);
+
+	Player* player = new Player;
+
+	::playerDict.insert_unique(fideID, player);
+
+	player->m_name = name;
+	player->setFideID(fideID);
+
+	return player;
 }
 
 
@@ -1177,7 +1280,10 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 	}
 
 	if (!found)
-		players.push_back(player);
+	{
+		if (mstl::find(players.begin(), players.end(), player) == players.end())
+			players.push_back(player);
+	}
 
 	::StringList& sl = ::aliasDict.find_or_insert(player, ::StringList());
 
@@ -1535,8 +1641,6 @@ Player::loadDone()
 {
 	typedef int (*Compare)(const void *, const void *);
 
-	::playerDict = PlayerDict();
-
 	::qsort(	playerList.begin(),
 				playerList.size(),
 				sizeof(PlayerList::value_type),
@@ -1733,7 +1837,15 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 						{
 							mstl::string name(s, e);
 
-							stripCountryCode(name);
+#ifndef USE_CONFLICT_MAP
+							if (::hasTrailingCountryCode(name))
+							{
+								mstl::string str(name);
+								str.unhook();
+								insertAlias(str, 0, player);
+								::stripCountryCode(name);
+							}
+#endif
 
 							if (c == '+')
 								replaceName(name, 0, player);
@@ -1761,10 +1873,19 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 						if (title::containsFemaleTtile(titleMask))
 							sex = sex::Female;
 
-						stripCountryCode(line);
-
 						if (nativeCountry != country::Unknown)
 							region = country::toRegion(nativeCountry);
+
+#ifndef USE_CONFLICT_MAP
+						mstl::string alias;
+
+						if (::hasTrailingCountryCode(line))
+						{
+							alias.assign(line);
+							alias.unhook();
+							::stripCountryCode(line);
+						}
+#endif
 
 						if ((player = insertPlayer(line, region, federation, sex)))
 						{
@@ -1791,12 +1912,49 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 
 							if (deathDate)
 								player->setDateOfDeath(deathDate);
+
+#ifdef USE_CONFLICT_MAP
+							if (::hasTrailingCountryCode(line))
+							{
+								mstl::string shortName(line);
+								::stripCountryCode(shortName);
+
+								ConflictMap::reference ref = ::conflictMap.find_or_insert(shortName, 0);
+
+								if (ref == 0)
+									ref = player;
+								else
+									ref = &::InvalidEntry;
+							}
+#else
+							if (!alias.empty())
+								insertAlias(alias, 0, player);
+#endif
 						}
 					}
 				}
 				break;
 		}
 	}
+
+#ifdef USE_CONFLICT_MAP
+
+	for (::ConflictMap::const_iterator i = ::conflictMap.begin(); i != ::conflictMap.end(); ++i)
+	{
+		mstl::string const& shortName = i->first;
+
+		db::Player* p = findPlayer(shortName);
+
+		if (p != 0)
+		{
+			mstl::string str(shortName);
+			replaceName(str, 0u, i->second);
+		}
+	}
+
+	::conflictMap.clear();
+
+#endif
 
 	DEBUG(::printf("-----------------------------------------------------\n"));
 	DEBUG(if (countViafIds) ::printf("VIAF-ID entries:     %u\n", countViafIds));
@@ -1903,9 +2061,7 @@ Player::parseFideRating(mstl::istream& stream)
 							|| (	country::isGermanSpeakingCountry(country)
 								&& sys::utf8::Codec::matchGerman(player->name(), name))))
 					{
-						Player const* p = findPlayer(name, country, sex);
-
-						if (p == 0)
+						if (!containsPlayer(name, country::Unknown, sex::Unspecified))
 						{
 							if (rating < m_minELO)
 								continue;
@@ -2295,10 +2451,20 @@ Player::parseIpsRatingList(mstl::istream& stream)
 				latin1.hook(line.data(), n);
 				codec.toUtf8(latin1, name);
 
-				DEBUG(if (findPlayer(name)) ++count);
+				Player* player = findPlayer(name);
+
+				if (player == 0)
+				{
+					if (!containsPlayer(name, country::Unknown, sex::Unspecified))
+					{
+						player = insertPlayer(name, 1);
+						DEBUG(++count);
+					}
+				}
+
 				DEBUG(++total);
 
-				if (Player* player = insertPlayer(name, 1))
+				if (player)
 				{
 					uint16_t	value = ::strtoul(::skipSpaces(line.c_str() + n + 1), 0, 10);
 

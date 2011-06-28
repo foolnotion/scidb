@@ -177,6 +177,8 @@ public:
 	void clear();
 	/// Compacts the database.
 	void compact();
+	/// Re-open the database.
+	void reopen(mstl::string const& encoding, util::Progress& progress);
 	/// Close database.
 	void close();
 	/// Attach database to a file.
@@ -184,7 +186,7 @@ public:
 	/// Update database files.
 	void save(util::Progress& progress, unsigned start = 0);
 	/// Recode content of database.
-	void recode(mstl::string const& encoding, Log& log);
+	void recode(mstl::string const& encoding, util::Progress& progress);
 
 	/// Build tournament table for selected games.
 	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;

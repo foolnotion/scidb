@@ -29,6 +29,7 @@
 #include "db_mark_set.h"
 #include "db_annotation.h"
 #include "db_move.h"
+#include "db_comment.h"
 
 #include "sys_utf8_codec.h"
 
@@ -80,20 +81,20 @@ Writer::conv(mstl::string const& comment)
 
 
 void
-Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+Writer::sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
 	if (test(Flag_Include_Comments))
 	{
 		if (	!m_needSpace
 			&& (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack)))
 		{
-			writeComment(Comment("#", false, false), MarkSet());
+			writePrecedingComment(Comment("#", false, false), MarkSet());
 			m_needSpace = true;
 		}
 
 		if (!comment.isEmpty() || !marks.isEmpty())
 		{
-			writeComment(comment, marks);
+			writePrecedingComment(comment, marks);
 			m_needSpace = true;
 		}
 	}
@@ -101,11 +102,11 @@ Writer::sendComment(Comment const& comment, Annotation const& annotation, MarkSe
 
 
 void
-Writer::sendFinalComment(Comment const& comment)
+Writer::sendTrailingComment(Comment const& comment)
 {
 	if (test(Flag_Include_Comments) && !comment.isEmpty())
 	{
-		writeComment(comment, MarkSet());
+		writeTrailingComment(comment);
 		m_needSpace = true;
 	}
 }
@@ -129,7 +130,7 @@ Writer::beginVariation()
 
 
 void
-Writer::endVariation()
+Writer::endVariation(bool)
 {
 	M_REQUIRE(level() > 0);
 
@@ -365,7 +366,7 @@ Writer::endMoveSection(result::ID result)
 
 	if (result == result::Lost && test(Flag_Convert_Lost_Result_To_Comment))
 	{
-		sendComment(::lostResult, Annotation(), MarkSet());
+		sendPrecedingComment(::lostResult, Annotation(), MarkSet());
 		result = result::Unknown;
 	}
 

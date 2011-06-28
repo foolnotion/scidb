@@ -42,20 +42,20 @@ using namespace db::si3;
 namespace db {
 namespace si3 {
 
-// This is the implementation of Scid's
-// asymmetric (and weird) comparison behaviour.
+// This is the implementation of Scid's weird comparison behaviour.
+// Why does it not use strcmp()?
 static int
 compare(char const* lhs, char const* rhs)
 {
 	if (*rhs == 0)
-		return -int(Byte(*lhs));
+		return int(Byte(*lhs));
 
-	if (*rhs != *lhs)
+	if (*lhs != *rhs)
 		return int(Byte(*lhs)) - int(Byte(*rhs));
 
 	for (++rhs, ++lhs; *rhs; ++lhs, ++rhs)
 	{
-		if (*rhs != *lhs)
+		if (*lhs != *rhs)
 			return int(*lhs) - int(*rhs);
 	}
 
@@ -112,7 +112,6 @@ void
 NameList::reserve(unsigned size)
 {
 	m_usedIdSet.resize(size);
-	m_newIdSet.resize(size);
 	m_list.reserve(size);
 	m_lookup.resize(size);
 	m_access.resize(size);
@@ -125,10 +124,12 @@ NameList::update(Namebase& base, sys::utf8::Codec& codec)
 	M_REQUIRE(codec.hasEncoding());
 
 	m_maxFrequency = 0;
-	m_newIdSet.reset();
 
 	for (unsigned i = 0; i < m_list.size(); ++i)
+	{
 		m_list[i]->entry = 0;
+		m_list[i]->frequency = 0;
+	}
 
 	if (base.nextId() > m_lookup.size())
 		reserve(base.nextId());
@@ -140,9 +141,55 @@ NameList::update(Namebase& base, sys::utf8::Codec& codec)
 #endif
 
 	buildList(base, codec);
-	m_usedIdSet = m_newIdSet;
 	renumber();
 	adjustListSize();
+}
+
+
+void
+NameList::renumber()
+{
+	unsigned count = m_usedIdSet.count();
+
+	if (count == 0)
+	{
+		m_size = 0;
+		m_nextId = 0;
+		m_list.clear();
+		m_usedIdSet.clear();
+		m_stringAlloc.clear();
+		m_nodeAlloc.clear();
+	}
+	else
+	{
+		unsigned expectedMaxId = m_usedIdSet.find_last();
+
+		m_size = expectedMaxId + 1;
+
+		if (expectedMaxId < count)
+			return;
+
+		unsigned wantedId = m_usedIdSet.find_first_not();
+
+		for (	unsigned id = m_usedIdSet.find_next(expectedMaxId);
+				id != mstl::bitset::npos;
+				id = m_usedIdSet.find_next(id))
+		{
+			Node* node = m_access[id];
+
+			M_ASSERT(node);
+			M_ASSERT(node->id == id);
+			M_ASSERT(wantedId != mstl::bitset::npos);
+
+			node->id = wantedId;
+			m_usedIdSet.reset(id);
+			m_usedIdSet.set(wantedId);
+			m_access[wantedId] = node;
+			wantedId	= m_usedIdSet.find_next_not(wantedId);
+		}
+
+		m_size = m_usedIdSet.find_last() + 1;
+	}
 }
 
 
@@ -192,49 +239,6 @@ NameList::adjustListSize()
 }
 
 
-void
-NameList::renumber()
-{
-	unsigned count = m_usedIdSet.count();
-
-	if (count == 0)
-	{
-		m_size = 0;
-		m_list.clear();
-	}
-	else
-	{
-		unsigned expectedMaxId = m_usedIdSet.find_last();
-
-		m_size = expectedMaxId + 1;
-
-		if (expectedMaxId < count)
-			return;
-
-		unsigned wantedId = m_usedIdSet.find_first_not();
-
-		for (	unsigned id = m_usedIdSet.find_next(expectedMaxId);
-				id != mstl::bitset::npos;
-				id = m_usedIdSet.find_next(id))
-		{
-			Node* node = m_access[id];
-
-			M_ASSERT(node);
-			M_ASSERT(node->id == id);
-			M_ASSERT(wantedId != mstl::bitset::npos);
-
-			node->id = wantedId;
-			m_usedIdSet.reset(id);
-			m_usedIdSet.set(wantedId);
-			m_access[wantedId] = node;
-			wantedId	= m_usedIdSet.find_next_not(wantedId);
-		}
-
-		m_size = m_usedIdSet.find_last() + 1;
-	}
-}
-
-
 NameList::Node*
 NameList::newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id)
 {
@@ -244,7 +248,6 @@ NameList::newNode(NamebaseEntry* entry, mstl::string const* str, unsigned id)
 	node->frequency = entry->frequency();
 	node->id = id;
 
-	m_newIdSet.set(id);
 	m_lookup[entry->id()] = m_access[id] = node;
 
 	if (node->frequency > m_maxFrequency)
@@ -270,13 +273,12 @@ NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 {
 	unsigned id = m_nextId;
 
-	if (id == mstl::string::npos)
+	if (id == mstl::string::npos || m_usedIdSet.size() <= id)
 	{
 		unsigned n = m_usedIdSet.size();
 
 		id = n;
-		m_usedIdSet.resize(n + mstl::max(mstl::bitset::size_type(50), (n*9)/10));
-		m_newIdSet.resize(m_usedIdSet.size());
+		m_usedIdSet.resize(n + mstl::max(50u, (n*9)/10));
 		m_access.resize(m_usedIdSet.size());
 	}
 
@@ -291,7 +293,7 @@ NameList::reuseNode(Node* node, NamebaseEntry* entry)
 {
 	node->entry = entry;
 	m_lookup[entry->id()] = node;
-	m_newIdSet.set(node->id);
+	m_usedIdSet.set(node->id);
 
 	if ((node->frequency += entry->frequency()) > m_maxFrequency)
 		m_maxFrequency = node->frequency;
@@ -299,7 +301,7 @@ NameList::reuseNode(Node* node, NamebaseEntry* entry)
 
 
 void
-NameList::add(unsigned originalId, NamebaseEntry* entry)
+NameList::addEntry(unsigned originalId, NamebaseEntry* entry)
 {
 	M_ASSERT(m_lookup[originalId]);
 
@@ -316,11 +318,12 @@ void
 NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec)
 {
 	unsigned id = entry->id();
+
 	mstl::string const* str;
 
 	if (entry->name() == originalName)
 	{
-		str = &entry->name();
+		str = 0;
 	}
 	else
 	{
@@ -328,7 +331,8 @@ NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::ut
 		str = &m_buf;
 	}
 
-	m_list.push_back(newNode(entry, str, entry->id()));
+	m_usedIdSet.set(id);
+	m_list.push_back(newNode(entry, str, id));
 	m_size = mstl::max(m_size, id + 1);
 }
 

@@ -621,14 +621,13 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case IOException::Unknown_Error_Type:		error = "UnknownErrorType"; break;
 			case IOException::Open_Failed:				error = "OpenFailed"; break;
 			case IOException::Read_Only:					error = "ReadOnly"; break;
-			case IOException::Old_Format:					error = "OldFormat"; break;
 			case IOException::Unknown_Version:			error = "UnknownVersion"; break;
 			case IOException::Unexpected_Version:		error = "UnexpectedVersion"; break;
 			case IOException::Corrupted:					error = "Corrupted"; break;
 			case IOException::Write_Failed:				error = "WriteFailed"; break;
 			case IOException::Invalid_Data:				error = "InvalidData"; break;
 			case IOException::Read_Error:					error = "ReadError"; break;
-			case IOException::Encoding_Failed:			error = "Encoding_Failed"; break;
+			case IOException::Encoding_Failed:			error = "EncodingFailed"; break;
 			case IOException::Max_File_Size_Exceeded:	error = "MaxFileSizeExceeded"; break;
 			case IOException::Load_Failed:				error = "LoadFailed"; break;
 		}

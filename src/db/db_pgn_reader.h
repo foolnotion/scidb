@@ -93,6 +93,7 @@ public:
 		InvalidCountryCode,
 		InvalidRating,
 		InvalidNag,
+		BraceSeenOutsideComment,
 		MissingFen,
 		UnknownEventType,
 		UnknownTitle,
@@ -107,7 +108,6 @@ public:
 		IllegalCastling,
 		IllegalMove,
 		ValueTooLong,
-		CommentAtEndOfGame,
 		MaximalErrorCountExceeded,
 		MaximalWarningCountExceeded,
 
@@ -237,6 +237,8 @@ private:
 	Token searchTag();
 	Token nextToken(Token prevToken);
 	Token resultToken(result::ID result);
+
+	bool partOfMove(Token token) const;
 
 	void checkTags();
 	bool checkTag(tag::ID tag, mstl::string& value);

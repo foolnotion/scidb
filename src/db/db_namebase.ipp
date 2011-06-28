@@ -376,6 +376,7 @@ Namebase::insertPlayer(mstl::string const& name)
 								title::None,
 								species::Unspecified,
 								sex::Unspecified,
+								0,
 								m_list.size() + 1);
 }
 
@@ -387,15 +388,16 @@ Namebase::insertPlayer(	mstl::string const& name,
 								title::ID title,
 								species::ID type,
 								sex::ID sex,
+								uint32_t fideID,
 								unsigned limit)
 {
-	return insertPlayer(name, InvalidId, country, title, type, sex, limit);
+	return insertPlayer(name, InvalidId, country, title, type, sex, fideID, limit);
 }
 
 
 inline
 Namebase::PlayerEntry*
-Namebase::insertPlayer(mstl::string const& name, unsigned id, unsigned limit)
+Namebase::insertPlayer(mstl::string const& name, uint32_t fideID, unsigned id, unsigned limit)
 {
 	return insertPlayer(	name,
 								id,
@@ -403,6 +405,7 @@ Namebase::insertPlayer(mstl::string const& name, unsigned id, unsigned limit)
 								title::None,
 								species::Unspecified,
 								sex::Unspecified,
+								fideID,
 								limit);
 }
 
@@ -414,9 +417,10 @@ Namebase::appendPlayer(	mstl::string const& name,
 								country::Code country,
 								title::ID title,
 								species::ID type,
-								sex::ID sex)
+								sex::ID sex,
+								uint32_t fideID)
 {
-	return insertPlayer(name, id, country, title, type, sex, 0);
+	return insertPlayer(name, id, country, title, type, sex, fideID, 0);
 }
 
 
@@ -430,6 +434,7 @@ Namebase::appendPlayer(mstl::string const& name, unsigned id)
 								title::None,
 								species::Unspecified,
 								sex::Unspecified,
+								0,
 								0);
 }
 

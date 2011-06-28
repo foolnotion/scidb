@@ -1521,6 +1521,12 @@ Comment::strip(LanguageSet const& set)
 bool
 Comment::fromHtml(mstl::string const& s)
 {
+	if (s.empty())
+	{
+		clear();
+		return true;
+	}
+
 	if (::strncmp(s, "<xml>", 5) == 0)
 		return false;
 
@@ -1565,7 +1571,7 @@ Comment::fromHtml(mstl::string const& s)
 				m_content.insert(m_content.begin(), ::prefix);
 				m_content.append(::suffix);
 			}
-			else
+			else if (!m_content.empty())
 			{
 				M_ASSERT(::strncmp(m_content, "<:>", 3) == 0);
 				m_content.erase(size_t(0), size_t(3));

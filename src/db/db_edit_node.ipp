@@ -41,9 +41,9 @@ inline Space::Space(unsigned level) :m_level(level), m_bracket(Blank) {}
 
 
 inline
-Comment::Comment(db::Comment const& comment, move::Position position, bool atStart)
+Comment::Comment(db::Comment const& comment, move::Position position, VarPos varPos)
 	:m_position(position)
-	,m_atStart(atStart)
+	,m_varPos(varPos)
 	,m_comment(comment)
 {
 }

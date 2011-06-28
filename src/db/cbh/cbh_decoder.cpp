@@ -535,9 +535,9 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 	M_ASSERT(node);
 
 	if (node->hasNote())
-		consumer.putComment(node->comment(move::Post), node->annotation(), node->marks());
+		consumer.putPrecedingComment(node->comment(move::Post), node->annotation(), node->marks());
 
-	for (node = node->next(); node; node = node->next())
+	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
 		if (node->hasNote())
 		{
@@ -563,7 +563,7 @@ Decoder::traverse(Consumer& consumer, MoveNode const* node)
 
 
 void
-Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position/*, unsigned flags*/)
+Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 {
 	M_ASSERT(node);
 
@@ -576,149 +576,149 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position/
 	uint16_t country = m_aStrm.uint16();
 	length -= 2;
 
-//	if (flags & DatabaseCodec::Decode_Comments)
+	unsigned char const* p = m_aStrm.data();
+
+	mstl::string str;
+
+	char const* lang = 0;
+
+	if (country < U_NUMBER_OF(::LangMap))
+		lang = ::LangMap[country];
+
+	bool useXml = lang != 0 || node->comment(position).isXml();
+
+	// BUG: ChessBase uses country code 0 for ALL and for Pol.
+	//      How should we distinguish between these countries?
+
+	str.reserve(length + 200);
+
+	unsigned i = 0;
+	while (::isspace(p[i]))
+		++i;
+
+	for ( ; i < length; ++i)
 	{
-		unsigned char const* p = m_aStrm.data();
+		Byte c = p[i];
 
-		mstl::string str;
-
-		char const* lang = 0;
-
-		if (country < U_NUMBER_OF(::LangMap))
-			lang = ::LangMap[country];
-
-		bool useXml = lang != 0 || node->comment(position).isXml();
-
-		// BUG: ChessBase uses country code 0 for ALL and for Pol.
-		//      How should we distinguish between these countries?
-
-		str.reserve(length + 200);
-
-		unsigned i = 0;
-		while (::isspace(p[i]))
-			++i;
-
-		for ( ; i < length; ++i)
+		if (::isprint(c))
 		{
-			Byte c = p[i];
-
-			if (::isprint(c))
+			switch (c)
 			{
-				switch (c)
-				{
-					case '<':	str.append("&lt;", 4); break;
-					case '>':	str.append("&gt;", 4); break;
-					case '&':	str.append("&amp;", 5); break;
-					default:		str += c; break;
-				}
+				case '<':	str.append("&lt;", 4); break;
+				case '>':	str.append("&gt;", 4); break;
+				case '&':	str.append("&amp;", 5); break;
+				default:		str += c; break;
 			}
-			else
+		}
+		else
+		{
+			nag::ID nag = nag::Null;
+
+			switch (c)
 			{
-				nag::ID nag = nag::Null;
+				case 0x01:
+				case 0x02:
+				case 0x03:
+					str.append('?');
+					break;
 
-				switch (c)
-				{
-					case 0x01:
-					case 0x02:
-					case 0x03:
-						str.append('?');
-						break;
+				case 0x0d:
+					str.append(0x0a);
+					if (p[i + 1] == 0x0a)
+						++i;
+					break;
 
-					case 0x0d:
-						str.append(0x0a);
-						if (p[i + 1] == 0x0a)
-							++i;
-						break;
+				case 0xa2: str.append("<sym>K</sym>", 12); useXml = true; break;
+				case 0xa3: str.append("<sym>Q</sym>", 12); useXml = true; break;
+				case 0xa4: str.append("<sym>N</sym>", 12); useXml = true; break;
+				case 0xa5: str.append("<sym>B</sym>", 12); useXml = true; break;
+				case 0xa6: str.append("<sym>R</sym>", 12); useXml = true; break;
+				case 0xa7: str.append("<sym>P</sym>", 12); useXml = true; break;
 
-					case 0xa2: str.append("<sym>K</sym>", 12); useXml = true; break;
-					case 0xa3: str.append("<sym>Q</sym>", 12); useXml = true; break;
-					case 0xa4: str.append("<sym>N</sym>", 12); useXml = true; break;
-					case 0xa5: str.append("<sym>B</sym>", 12); useXml = true; break;
-					case 0xa6: str.append("<sym>R</sym>", 12); useXml = true; break;
-					case 0xa7: str.append("<sym>P</sym>", 12); useXml = true; break;
-
-					case 0x82: nag = nag::Attack; break; 								// "->"
-					case 0x83: nag = nag::Initiative; break;							// "|^"
-					case 0x84: nag = nag::Counterplay; break;							// "<=>"
-					case 0x85: nag = nag::WithTheIdea; break;							// "/\"
-					case 0x86: nag = nag::Space; break; 								// "()"
-					case 0x87: nag = nag::Zugzwang; break;								// "(.)"
-					case 0x91: nag = nag::Line; break; 									// "<->"
-					case 0x92: nag = nag::Diagonal; break; 							// "/^"
-					case 0x93: nag = nag::Zeitnot; break;								// "(+)"
-					case 0x94: nag = nag::Center; break;								// "[+]"
-					case 0x99: nag = nag::SingularMove; break;						// "[]"
-					case 0xaa: nag = nag::With; break; 									// "|_"
-					case 0xab: nag = nag::Queenside; break; 							// "<<"
-					case 0xac: nag = nag::Endgame; break; 								// "_|_"
-					case 0xad: nag = nag::PairOfBishops; break; 						// "^^"
-					case 0xae: nag = nag::BishopsOfOppositeColor; break; 			// "^_"
-					case 0xaf: nag = nag::BishopsOfSameColor; break;				// "^="
-					case 0xb1: nag = nag::WhiteHasAModerateAdvantage; break; 	// "+/-"
-					case 0xb2: nag = nag::WhiteHasASlightAdvantage; break; 		// "+/="
-					case 0xb3: nag = nag::BlackHasASlightAdvantage; break; 		// "=/+"
-					case 0xb5: nag = nag::BlackHasAModerateAdvantage; break; 	// "-/+"
-					case 0xb9: nag = nag::BetterMove; break; 							// ">="
-					case 0xba: nag = nag::Without; break; 								// "_|"
-					case 0xbb: nag = nag::Kingside; break; 							// ">>"
-					case 0xd7: nag = nag::WeakPoint; break; 							// "><"
-					case 0xf7: nag = nag::UnclearPosition; break; 					// "~~"
-					case 0xfe: nag = nag::PassedPawn; break; 							// "o^"
+				case 0x82: nag = nag::Attack; break; 								// "->"
+				case 0x83: nag = nag::Initiative; break;							// "|^"
+				case 0x84: nag = nag::Counterplay; break;							// "<=>"
+				case 0x85: nag = nag::WithTheIdea; break;							// "/\"
+				case 0x86: nag = nag::Space; break; 								// "()"
+				case 0x87: nag = nag::Zugzwang; break;								// "(.)"
+				case 0x91: nag = nag::Line; break; 									// "<->"
+				case 0x92: nag = nag::Diagonal; break; 							// "/^"
+				case 0x93: nag = nag::Zeitnot; break;								// "(+)"
+				case 0x94: nag = nag::Center; break;								// "[+]"
+				case 0x99: nag = nag::SingularMove; break;						// "[]"
+				case 0xaa: nag = nag::With; break; 									// "|_"
+				case 0xab: nag = nag::Queenside; break; 							// "<<"
+				case 0xac: nag = nag::Endgame; break; 								// "_|_"
+				case 0xad: nag = nag::PairOfBishops; break; 						// "^^"
+				case 0xae: nag = nag::BishopsOfOppositeColor; break; 			// "^_"
+				case 0xaf: nag = nag::BishopsOfSameColor; break;				// "^="
+				case 0xb1: nag = nag::WhiteHasAModerateAdvantage; break; 	// "+/-"
+				case 0xb2: nag = nag::WhiteHasASlightAdvantage; break; 		// "+/="
+				case 0xb3: nag = nag::BlackHasASlightAdvantage; break; 		// "=/+"
+				case 0xb5: nag = nag::BlackHasAModerateAdvantage; break; 	// "-/+"
+				case 0xb9: nag = nag::BetterMove; break; 							// ">="
+				case 0xba: nag = nag::Without; break; 								// "_|"
+				case 0xbb: nag = nag::Kingside; break; 							// ">>"
+				case 0xd7: nag = nag::WeakPoint; break; 							// "><"
+				case 0xf7: nag = nag::UnclearPosition; break; 					// "~~"
+				case 0xfe: nag = nag::PassedPawn; break; 							// "o^"
 
 //					It seems to be impossible to use these symbols in ChessBase.
 //					case 0x??: nag = nag::WithCompensationForMaterial; break;	// "~/="
 //					case 0x??: nag = nag::Development; break;							// "@" ???
 
-					case 0x9e:
-						node->addAnnotation(nag::Diagram);								// "#"
-						break;
+				case 0x9e:
+					node->addAnnotation(nag::Diagram);								// "#"
+					break;
 
-					default:
-						str += c;
-						break;
-				}
+				default:
+					str += c;
+					break;
+			}
 
-				if (nag != nag::Null)
-				{
-					str.format("<nag>%u</nag>", unsigned(nag));
-					useXml = true;
-				}
+			if (nag != nag::Null)
+			{
+				str.format("<nag>%u</nag>", unsigned(nag));
+				useXml = true;
 			}
 		}
+	}
 
-		str.rtrim();
+	str.rtrim();
 
-		if (!str.empty())
+	if (!str.empty())
+	{
+		// TODO: use character encoding according to language code ?!
+		m_codec.toUtf8(str);
+
+		if (!sys::utf8::Codec::validateUtf8(str))
+			m_codec.forceValidUtf8(str);
+
+		if (useXml)
 		{
-			// TODO: use character encoding according to language code ?!
-			m_codec.toUtf8(str);
+			str.insert(str.begin(), mstl::string("<xml><:") + (lang ? lang : "") + '>');
+			str.append("</:");
+			if (lang)
+				str.append(lang);
+			str.append("></xml>");
+		}
 
-			if (useXml)
-			{
-				str.insert(str.begin(), mstl::string("<xml><:") + (lang ? lang : "") + '>');
-				str.append("</:");
-				if (lang)
-					str.append(lang);
-				str.append("></xml>");
-			}
+		bool isEnglish	= lang && ::strcmp(lang, "en") == 0;
+		bool isOther	= lang && !isEnglish;
 
-			bool isEnglish	= lang && ::strcmp(lang, "en") == 0;
-			bool isOther	= lang && !isEnglish;
+		Comment comment;
+		comment.swap(str, isEnglish, isOther);
 
-			Comment comment;
-			comment.swap(str, isEnglish, isOther);
-
-			if (node->hasComment(position))
-			{
-				Comment prefix;
-				node->swapComment(prefix, position);
-				prefix.append(comment, '\n');
-				node->swapComment(prefix, position);
-			}
-			else
-			{
-				node->setComment(comment, position);
-			}
+		if (node->hasComment(position))
+		{
+			Comment prefix;
+			node->swapComment(prefix, position);
+			prefix.append(comment, '\n');
+			node->swapComment(prefix, position);
+		}
+		else
+		{
+			node->setComment(comment, position);
 		}
 	}
 
@@ -823,7 +823,7 @@ Decoder::decodeArrows(MoveNode* node, unsigned length)
 
 
 void
-Decoder::getAnnotation(MoveNode* node, int moveNo/*, unsigned flags*/)
+Decoder::getAnnotation(MoveNode* node, int moveNo)
 {
 	M_ASSERT(moveNo != MaxMoveNo);
 	M_ASSERT(node);
@@ -849,13 +849,13 @@ Decoder::getAnnotation(MoveNode* node, int moveNo/*, unsigned flags*/)
 			case 0x82:	// text before move
 				if (!node->atLineStart())
 				{
-					decodeComment(node, length, move::Ante/*, flags*/);
+					decodeComment(node, length, move::Ante);
 					break;
 				}
 				// fallthru
 
 			case 0x02:	// text after move
-				decodeComment(node, length, move::Post/*, flags*/);
+				decodeComment(node, length, move::Post);
 				break;
 
 			case 0x03:	// symbols
@@ -889,8 +889,6 @@ Decoder::decodeMoves(Consumer& consumer)
 {
 	MoveNode	node;
 	Comment	comment;
-	Comment	preComment;
-	MarkSet	marks;
 	unsigned	count = 0;
 	Move		move;
 
@@ -901,11 +899,12 @@ Decoder::decodeMoves(Consumer& consumer)
 			case ::Move:
 				if (!move)
 					return;
-				getAnnotation(&node, int(count) - 1/*, 0*/);
+				getAnnotation(&node, int(count) - 1);
 				if (node.hasNote())
 				{
-					consumer.putMove(move, node.annotation(), preComment, comment, marks);
+					consumer.putMove(move, node.annotation(), comment, comment, node.marks());
 					node.clearAnnotation();
+					node.clearMarks();
 				}
 				else
 				{
@@ -925,7 +924,7 @@ Decoder::decodeMoves(Consumer& consumer)
 
 
 void
-Decoder::decodeMoves(MoveNode* root, /*unsigned flags, */unsigned& count)
+Decoder::decodeMoves(MoveNode* root, unsigned& count)
 {
 	typedef mstl::vector<MoveNode*> Vars;
 
@@ -962,25 +961,30 @@ Decoder::decodeMoves(MoveNode* root, /*unsigned flags, */unsigned& count)
 
 						for (unsigned i = 1; i < varList.size(); ++i)
 						{
-							if (varList[i]->atLineEnd())
+							MoveNode* var  = varList[i];
+							MoveNode* next = var->next();
+
+							if (next->atLineEnd())
 							{
 								// Scidb does not support empty variations,
 								// but we cannot delete the variation if a
-								// pre-comment/annotation/mark exists. As a
+								// comment/annotation/mark exists. As a
 								// workaround we insert a null move.
 								// Note: Possibly it isn't possible to enter
 								// empty variations in ChessBase, but we like
 								// to handle this case for safety reasons.
-								if (varList[i]->hasSupplement())
+								if (var->hasSupplement() || next->hasSupplement())
 								{
 									Move null(Move::null());
 									null.setColor(move.color());
-									varList[i]->setNext(new MoveNode(null));
+									next = new MoveNode(null);
+									next->setNext(var->removeNext());
+									var->setNext(next);
 								}
 							}
 
-							if (!varList[i]->atLineEnd())
-								root->addVariation(varList[i]);
+							if (next->isBeforeLineEnd())
+								root->addVariation(var);
 						}
 
 						root->addVariation(main);
@@ -988,23 +992,24 @@ Decoder::decodeMoves(MoveNode* root, /*unsigned flags, */unsigned& count)
 						varList.clear();
 					}
 
-					getAnnotation(node, int(count) - 1/*, flags*/);
+					getAnnotation(node, int(count) - 1);
 					root = node;
 				}
 				else
 				{
 					MoveNode dummy;
-					getAnnotation(&dummy, int(count) - 1/*, flags*/);
+					getAnnotation(&dummy, int(count) - 1);
 				}
 				break;
 
 			case ::Push:
 				node = new MoveNode;
 				varList.push_back(node);
-				decodeMoves(node, /*flags, */count);
+				decodeMoves(node, count);
 				break;
 
 			case ::Pop:
+				root->setNext(new MoveNode);
 				return;
 		}
 	}
@@ -1012,10 +1017,10 @@ Decoder::decodeMoves(MoveNode* root, /*unsigned flags, */unsigned& count)
 
 
 void
-Decoder::decodeMoves(MoveNode* root/*, unsigned flags*/)
+Decoder::decodeMoves(MoveNode* root)
 {
 	unsigned count = 0;
-	decodeMoves(root, /*flags, */count);
+	decodeMoves(root, count);
 }
 
 
@@ -1046,18 +1051,18 @@ Decoder::startDecoding(TagSet* tags)
 
 
 unsigned
-Decoder::doDecoding(/*unsigned flags, */GameData& data)
+Decoder::doDecoding(GameData& data)
 {
 	startDecoding(&data.m_tags);
 	data.m_startBoard = m_position.board();
 	unsigned plyNumber = m_position.board().plyNumber();
-	decodeMoves(data.m_startNode/*, flags*/);
+	decodeMoves(data.m_startNode);
 	return m_position.board().plyNumber() - plyNumber;
 }
 
 
 save::State
-Decoder::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info)
+Decoder::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	startDecoding(&tags);
 
@@ -1067,8 +1072,7 @@ Decoder::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameIn
 	unsigned plyNumber = m_position.board().plyNumber();
 	consumer.startMoveSection();
 
-	if (	info.countVariations() == 0
-		&& (info.countComments() == 0 /*|| !(flags & DatabaseCodec::Decode_Comments)*/))
+	if (info.countVariations() == 0 && info.countComments() == 0)
 	{
 		// fast decoding
 		decodeMoves(consumer);
@@ -1077,7 +1081,7 @@ Decoder::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameIn
 	{
 		// slow decoding
 		MoveNode root;
-		decodeMoves(&root/*, flags*/);
+		decodeMoves(&root);
 		traverse(consumer, &root);
 	}
 

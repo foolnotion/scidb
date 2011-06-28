@@ -79,6 +79,8 @@ set EditAnnotation					"Edit annotation"
 set EditCommentBefore				"Edit comment before move"
 set EditCommentAfter					"Edit comment after move"
 set EditCommentAtStart				"Edit comment at start"
+set EditPrecedingComment			"Edit preceding comment"
+set EditTrailingComment				"Edit trailing comment"
 set Display								"Display"
 set None									"none"
 
@@ -891,7 +893,6 @@ proc Update {position data} {
 					}
 					set Vars(result:$position) $result
 				}
-				# TODO: really needed?
 				# NOTE: very slow!!
 #				foreach mark $Vars(marks) { $w mark gravity $mark right }
 				$w mark gravity m-0 right
@@ -1005,6 +1006,8 @@ proc InsertMove {position w level key data} {
 		$w insert current "\u200b"
 	}
 
+	set havePly 0
+
 	foreach node $data {
 		switch [lindex $node 0] {
 			break {
@@ -1057,6 +1060,7 @@ proc InsertMove {position w level key data} {
 
 			ply {
 				PrintMove $position $w $level $key [lindex $node 1]
+				set havePly 1
 			}
 
 			annotation {
@@ -1080,7 +1084,7 @@ proc InsertMove {position w level key data} {
 				if {$count > 0} {
 					set marks [string map {"\[%" "" "\] " "\n" "\]" ""} [lindex $node 2]]
 					set tag marks:$key
-					$w insert current " "
+					if {$havePly} { $w insert current " " }
 					$w insert current "\u27f8" [list marks $tag]
 					$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $marks]]
 					$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
@@ -1090,7 +1094,7 @@ proc InsertMove {position w level key data} {
 
 			comment {
 				set startPos [$w index current]
-				PrintComment $position $w $level $key [lindex $node 1] [lindex $node 3]
+				PrintComment $position $w $level $key [lindex $node 1] [lindex $node 2]
 				if {$level == 0 && !($Options(column-style))} {
 					$w tag add indent1 $startPos current
 				}
@@ -1186,8 +1190,6 @@ proc PrintMove {position w level key data} {
 
 proc PrintComment {position w level key pos data} {
 	variable Vars
-
-	if {$pos} { set pos a } else { set pos p } ;# ante/post
 
 	set startPos {}
 	set keyTag comment:$key:$pos
@@ -1796,7 +1798,7 @@ proc PopupMenu {parent position} {
 			;
 		if {[::scidb::game::position atStart?]} {
 			$menu add command \
-				-label "$mc::EditCommentAtStart..." \
+				-label "$mc::EditPrecedingComment..." \
 				-command [namespace code [list editComment p $position]] \
 				;
 		} else {
@@ -1807,6 +1809,12 @@ proc PopupMenu {parent position} {
 			$menu add command \
 				-label "$mc::EditCommentBefore..." \
 				-command [namespace code [list editComment a $position]] \
+				;
+		}
+		if {[::scidb::game::position atEnd?] || [::scidb::game::query empty?]} {
+			$menu add command \
+				-label "$mc::EditTrailingComment..." \
+				-command [namespace code [list editComment e $position]] \
 				;
 		}
 		if {[::marks::open?]} { set state disabled } else { set state normal }
@@ -1857,6 +1865,10 @@ proc PopupMenu {parent position} {
 			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
 				if {$index >= 0} { set state normal } else { set state disabled }
 			} else {
+				set state disabled
+			}
+
+			if {$base eq "Clipbase" && [lindex [::scidb::game::sink? $position] 0] eq "Scratchbase"} {
 				set state disabled
 			}
 

@@ -546,7 +546,7 @@ PgnReader::~PgnReader() throw()
 bool
 PgnReader::encodingFailed() const
 {
-	return m_failed;
+	return m_codec.failed();
 }
 
 
@@ -815,6 +815,27 @@ PgnReader::process(Progress& progress)
 							if (consumer().variationLevel() == 0)
 								error(UnexpectedSymbol, m_prevPos, ")");
 
+							if (m_hasNote)
+							{
+								::join(m_comments.begin(), m_comments.end());
+
+								if (consumer().variationIsEmpty())
+								{
+									consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+									m_comments.clear();
+									m_annotation.clear();
+									m_marks.clear();
+								}
+								else if (!m_comments.empty())
+								{
+									consumer().putTrailingComment(m_comments[0]);
+									m_comments.clear();
+									m_postIndex = 0;
+								}
+
+								m_hasNote = false;
+							}
+
 							consumer().finishVariation();
 
 							if (nestedVar)
@@ -848,7 +869,7 @@ PgnReader::process(Progress& progress)
 				{
 					// We have a comment after the last variation has finished,
 					::join(m_comments.begin(), m_comments.begin() + m_postIndex);
-					consumer().putFinalComment(m_comments[0]);
+					consumer().putTrailingComment(m_comments[0]);
 				}
 
 				if (token == kError)
@@ -903,7 +924,10 @@ PgnReader::process(Progress& progress)
 			catch (Interruption const& exc)
 			{
 				if (!m_parsingTags)
+				{
+					putMove(true);
 					handleError(exc.error, exc.message);
+				}
 
 				token = kResult;
 			}
@@ -943,30 +967,16 @@ PgnReader::handleError(Error code, mstl::string const& message)
 		}
 	}
 
+	while (consumer().variationLevel() > 0)
+		consumer().finishVariation();
+
 	if (!msg.empty())
 	{
 		Comment comment(msg, false, false);
-
-		if (m_move)
-		{
-			if (m_comments.empty())
-				m_comments.push_back(comment);
-			else
-				m_comments.back().append(comment, '\n');
-
-			m_hasNote = true;
-			putMove();
-		}
-		else
-		{
-			consumer().putFinalComment(comment);
-		}
-
-		while (consumer().variationLevel() > 0)
-			consumer().finishVariation();
-
-		finishGame();
+		consumer().putTrailingComment(comment);
 	}
+
+	finishGame();
 
 	if (code == UnexpectedTag)
 	{
@@ -1215,6 +1225,12 @@ PgnReader::convertToUtf(mstl::string& s)
 {
 	m_codec.toUtf8(s);
 
+	if (!sys::utf8::Codec::validateUtf8(s))
+	{
+		// user has chosen wrong encoding
+		m_codec.forceValidUtf8(s);
+	}
+
 	if (__builtin_expect(m_codec.failed(), 0))
 	{
 		warning(EncodingFailed, m_prevPos, s);
@@ -1233,26 +1249,6 @@ PgnReader::putMove(bool lastMove)
 
 		if (m_hasNote)
 		{
-			if (m_atStart)
-			{
-				if (m_comments.empty() || m_postIndex <= 1)
-				{
-					if (!m_annotation.isEmpty() || !m_marks.isEmpty())
-						consumer().putComment(Comment(), m_annotation, m_marks);
-				}
-				else
-				{
-					consumer().putComment(m_comments[0], m_annotation, m_marks);
-					m_comments.erase(m_comments.begin());
-
-					if (m_postIndex > 0)
-						--m_postIndex;
-				}
-				m_marks.clear();
-				m_annotation.remove(nag::Diagram);
-				m_annotation.remove(nag::DiagramFromBlack);
-			}
-
 			if (m_postIndex > 0)
 			{
 				M_ASSERT(m_postIndex <= m_comments.size());
@@ -1264,32 +1260,46 @@ PgnReader::putMove(bool lastMove)
 					consumer().putMove(m_move, m_annotation, m_comments[0], Comment(), m_marks);
 					m_comments.clear();
 				}
-				else if (lastMove)
+				else if (!lastMove)
+				{
+					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
+					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
+				}
+				else if (m_modification == Raw && m_comments.size() - m_postIndex > 1)
+				{
+					::join(m_comments.begin() + m_postIndex, m_comments.end() - 1);
+					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
+					consumer().putTrailingComment(m_comments.back());
+					m_comments.clear();
+				}
+				else
 				{
 					::join(m_comments.begin() + m_postIndex, m_comments.end());
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
 					m_comments.clear();
 				}
-				else
-				{
-					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
-					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
-				}
 			}
-			else if (lastMove)
+			else if (!lastMove)
+			{
+				if (m_comments.empty())
+					m_comments.push_back();
+				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
+				m_comments.erase(m_comments.begin());
+			}
+			else if (m_modification == Raw && m_comments.size() > 1)
+			{
+				::join(m_comments.begin(), m_comments.end() - 1);
+				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
+				consumer().putTrailingComment(m_comments.back());
+				m_comments.clear();
+			}
+			else
 			{
 				::join(m_comments.begin(), m_comments.end());
 				if (m_comments.empty())
 					m_comments.push_back();
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
 				m_comments.clear();
-			}
-			else
-			{
-				if (m_comments.empty())
-					m_comments.push_back();
-				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
-				m_comments.erase(m_comments.begin());
 			}
 
 			m_marks.clear();
@@ -1304,10 +1314,27 @@ PgnReader::putMove(bool lastMove)
 		}
 
 		m_move.clear();
-		m_atStart = false;
 	}
 	else
 	{
+		if (m_atStart)
+		{
+			if (m_modification == Raw && m_comments.size() > 1)
+			{
+				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+				m_comments.erase(m_comments.begin());
+			}
+			else if (!m_annotation.isEmpty() || !m_marks.isEmpty())
+			{
+				consumer().putPrecedingComment(Comment(), m_annotation, m_marks);
+			}
+
+			m_marks.clear();
+			m_annotation.clear();
+			m_hasNote = !m_comments.empty();
+			m_atStart = false;
+		}
+
 		m_postIndex = m_comments.size();
 	}
 }
@@ -1426,6 +1453,9 @@ PgnReader::findNextEmptyLine(mstl::string& str)
 				return;
 
 			::addSpace(str);
+
+			if (d)
+				str += d;
 		}
 		else
 		{
@@ -2067,14 +2097,14 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			}
 			break;
 
-		case Event:
-		case Opening:
-		case Variation:
-		case SubVariation:
-		case Annotator:
-		case ExtraTag:
-			convertToUtf(value);
-			break;
+//		case Event:
+//		case Opening:
+//		case Variation:
+//		case SubVariation:
+//		case Annotator:
+//		case ExtraTag:
+//			convertToUtf(value);
+//			break;
 
 #if 0
 		case WhiteFideId:
@@ -2084,6 +2114,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 #endif
 
 		default:
+			convertToUtf(value);
 			break;
 	}
 
@@ -2416,6 +2447,13 @@ PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
 }
 
 
+bool
+PgnReader::partOfMove(Token token) const
+{
+	return bool(token & PartOfMove) && !m_move.isEmpty();
+}
+
+
 void
 PgnReader::setNullMove()
 {
@@ -2604,7 +2642,7 @@ PgnReader::parseComment(Token prevToken, int c)
 				switch (content[0])
 				{
 					case 'N':
-						if (prevToken & PartOfMove)
+						if (partOfMove(prevToken))
 						{
 							putNag(nag::Novelty);
 							return kNag;
@@ -2775,9 +2813,12 @@ PgnReader::parseComment(Token prevToken, int c)
 		comment.normalize();
 	}
 
-	m_hasNote = true;
-	m_comments.push_back();
-	m_comments.back().swap(comment);
+	if (m_modification == Raw || !comment.isEmpty())
+	{
+		m_hasNote = true;
+		m_comments.push_back();
+		m_comments.back().swap(comment);
+	}
 
 	return kComment;
 }
@@ -2807,7 +2848,7 @@ PgnReader::parseApostrophe(Token prevToken, int c)
 {
 	// Move suffix: "'"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "'");
 
 	putNag(nag::Without);
@@ -2820,7 +2861,7 @@ PgnReader::parseAtSign(Token prevToken, int)
 {
 	// Move suffix: "@"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "@");
 
 	putNag(nag::WhiteHasAModerateTimeAdvantage, nag::BlackHasAModerateTimeAdvantage);
@@ -2835,7 +2876,7 @@ PgnReader::parseBackslash(Token prevToken, int c)
 
 	m_prevPos = m_currPos;
 
-	if (!(prevToken & PartOfMove) || get() != '/')
+	if (!partOfMove(prevToken) || get() != '/')
 		error(UnexpectedSymbol, m_prevPos, "\\");
 
 	putNag(nag::AimedAgainst);
@@ -2848,7 +2889,7 @@ PgnReader::parseCaret(Token prevToken, int c)
 {
 	// Move suffix: "^^", "^_", "^=", "^"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "^");
 
 	m_prevPos = m_currPos;
@@ -2926,7 +2967,7 @@ PgnReader::parseCastling(Token prevToken, int c)
 
 	if (__builtin_expect(castle == 0, 0))
 	{
-		if ((prevToken & PartOfMove) && c == 'O')
+		if (partOfMove(prevToken) && c == 'O')
 		{
 			putNag(nag::WhiteHasAModerateSpaceAdvantage, nag::BlackHasAModerateSpaceAdvantage);
 			return kNag;
@@ -2959,7 +3000,7 @@ PgnReader::parseEqualsSign(Token prevToken, int)
 	// Move prefix: "="
 	// Move suffix: "=", "==", "=~", "=&", "=+", "=/+", "=/&", "=/~", "=/&", "=>", "=>/<="
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 	{
 		m_prefixAnnotation = nag::EquivalentMove;
 		return kMovePrefix;
@@ -3040,7 +3081,7 @@ PgnReader::parseExclamationMark(Token prevToken, int)
 {
 	// Move suffix: "!", "!?", "!!"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "!");
 
 	char c = get();
@@ -3065,7 +3106,7 @@ PgnReader::parseGraveAccent(Token prevToken, int c)
 {
 	// Move suffix: "`"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "`");
 
 	putNag(nag::Without);
@@ -3079,7 +3120,7 @@ PgnReader::parseGreaterThanSign(Token prevToken, int)
 	// Move prefix: ">"
 	// Move suffix: ">=", ">>", "><"
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		int c = get();
 
@@ -3191,7 +3232,7 @@ PgnReader::parseLowercaseE(Token prevToken, int c)
 {
 	// Skip en passant: "ep", "e.p."
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		switch (m_linePos[0])
 		{
@@ -3314,7 +3355,7 @@ PgnReader::parseMinusSign(Token prevToken, int)
 	switch (c)
 	{
 		case '-':
-			if (prevToken & PartOfMove)
+			if (partOfMove(prevToken))
 			{
 				if ((d = get()) == '+')
 				{
@@ -3333,13 +3374,13 @@ PgnReader::parseMinusSign(Token prevToken, int)
 			return kSan;
 
 		case '+':
-			if (!(prevToken & PartOfMove))
+			if (!partOfMove(prevToken))
 				error(UnexpectedSymbol, m_prevPos, "-");
 			putNag(nag::BlackHasADecisiveAdvantage);
 			return kNag;
 
 		case '/':
-			if (!(prevToken & PartOfMove))
+			if (!partOfMove(prevToken))
 				error(UnexpectedSymbol, m_prevPos, "/");
 			m_prevPos = m_currPos;
 			if ((c = get()) != '+')
@@ -3348,7 +3389,7 @@ PgnReader::parseMinusSign(Token prevToken, int)
 			return kNag;
 
 		case '>':
-			if (!(prevToken & PartOfMove))
+			if (!partOfMove(prevToken))
 				error(UnexpectedSymbol, m_prevPos, ">");
 			if ((d = get()) == '/')
 			{
@@ -3433,9 +3474,6 @@ PgnReader::parseNag(Token prevToken, int)
 {
 	// Nag value: [$][0-9]+
 
-	if (__builtin_expect(!(prevToken & PartOfMove), 0))
-		error(UnexpectedSymbol, "$");
-
 	unsigned	nag = 0;
 	char		c;
 
@@ -3448,16 +3486,28 @@ PgnReader::parseNag(Token prevToken, int)
 		nag = nag*10 + c - '0';
 	while (::isdigit(c = get()));
 
-	nag::ID myNag;
+	putback(c);
 
-	if (	(myNag = nag::fromScid3(nag::ID(nag))) == nag::Null
-		|| (myNag = nag::fromChessPad(nag::ID(nag))) == nag::Null)
+	nag::ID myNag = nag::fromChessPad(nag::fromScid3(nag::ID(nag)));
+
+	if (!partOfMove(prevToken))
+	{
+		if (myNag != nag::Diagram && myNag != nag::DiagramFromBlack)
+			error(UnexpectedSymbol, "$");
+
+		m_annotation.add(nag::ID(myNag));
+		m_hasNote = true;
+		return prevToken;
+	}
+	else if (myNag == nag::Null)
 	{
 		warning(InvalidNag, m_prevPos, mstl::string("$") + ::itos(nag));
 	}
+	else
+	{
+		putNag(myNag);
+	}
 
-	putNag(myNag);
-	putback(c);
 	return kNag;
 }
 
@@ -3582,7 +3632,7 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 	// (Double) check sign: "+", "++" (double check will be ignored)
 	// Move suffix: "+-", "+--", "++--", "+/-", "+=", "+/="
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "+");
 
 	m_prevPos = m_currPos;
@@ -3639,7 +3689,7 @@ PgnReader::parseQuestionMark(Token prevToken, int c)
 {
 	// Move suffix: "?", "??", "?!"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "?");
 
 	switch (c = get())
@@ -3663,7 +3713,7 @@ PgnReader::parseOpenParen(Token prevToken, int)
 	// Move suffix: "(.)", "(+)", "(?)", "()"
 	// Start of variation
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		int c = get();
 
@@ -3703,10 +3753,6 @@ PgnReader::parseOpenParen(Token prevToken, int)
 
 		putback(c);
 	}
-	else if (!(prevToken & (kStartVariation | kEndVariation)))
-	{
-		error(UnexpectedSymbol, "(");
-	}
 
 	return kStartVariation;
 }
@@ -3717,7 +3763,7 @@ PgnReader::parseSlash(Token prevToken, int)
 {
 	// Move suffix: "/\", "/^", "//"
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "/");
 
 	m_prevPos = m_currPos;
@@ -3740,7 +3786,7 @@ PgnReader::parseTag(Token prevToken, int)
 	// Move suffix: "[]", "[+]"
 	// Start of Tag
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		int c = get();
 
@@ -3776,7 +3822,7 @@ PgnReader::parseTilde(Token prevToken, int c)
 {
 	// Move suffix: "~", "~~", "~&", "~/=" "&", "&&", "&~", "&/="
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, mstl::string(1, c));
 
 	switch (char d = get())
@@ -3822,7 +3868,7 @@ PgnReader::parseUnderscore(Token prevToken, int c)
 
 	m_prevPos = m_currPos;
 
-	if (!(prevToken & PartOfMove) || (get() != '|' && get() != '_'))
+	if (!partOfMove(prevToken) || (get() != '|' && get() != '_'))
 		error(UnexpectedSymbol, m_prevPos, "_");
 
 	if ((c = get()) == '_')
@@ -3844,7 +3890,7 @@ PgnReader::parseUppercaseB(Token prevToken, int c)
 {
 	// Move prefix: "BB", "Bb"
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		switch (m_linePos[0])
 		{
@@ -3898,7 +3944,7 @@ PgnReader::parseUppercaseN(Token prevToken, int c)
 {
 	// Move prefix: "N"
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		if (!::isalnum(m_linePos[0]))
 		{
@@ -3916,7 +3962,7 @@ PgnReader::parseUppercaseR(Token prevToken, int c)
 {
 	// Move prefix: "RR"
 
-	if (prevToken & PartOfMove)
+	if (partOfMove(prevToken))
 	{
 		if (m_linePos[0] == 'R')
 		{
@@ -3951,7 +3997,7 @@ PgnReader::parseVerticalBar(Token prevToken, int)
 
 	m_prevPos = m_currPos;
 
-	if (!(prevToken & PartOfMove))
+	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, m_prevPos, "|");
 
 	switch (get())
@@ -4025,6 +4071,13 @@ PgnReader::skipWhiteSpace(Token prevToken, int)
 PgnReader::Token
 PgnReader::unexpectedSymbol(Token prevToken, int c)
 {
+	if (c == '}')
+	{
+		// We will not throw an error because Scid is writing invalid PGN files.
+		warning(BraceSeenOutsideComment, m_currPos);
+		return prevToken;
+	}
+
 	if (!(prevToken & kSan))
 		error(UnexpectedSymbol, m_currPos, mstl::string(::isprint(c) ? 1 : 0, c));
 
@@ -4419,6 +4472,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 					else
 						value.hook(s, e - s);
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Elo;
 				}
 
@@ -4426,6 +4480,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 				{
 					value.hook(s, e - s);
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Country;
 				}
 
@@ -4433,24 +4488,28 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 				{
 					value.hook(s, e - s);
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Title;
 				}
 
 				if (::isHuman(s, e))
 				{
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Human;
 				}
 
 				if (::isSex(s, e))
 				{
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Sex;
 				}
 
 				if (::isProgram(s, e))
 				{
 					::removeValue(data, s, '(');
+					*e = '\0';
 					return Program;
 				}
 			}
@@ -4467,6 +4526,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 			{
 				value.hook(s, e - s);
 				::removeValue(data, s, ' ');
+					*e = '\0';
 				return Country;
 			}
 
@@ -4474,6 +4534,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 			{
 				value.hook(s, e - s);
 				::removeValue(data, s, ' ');
+					*e = '\0';
 				return Title;
 			}
 		}
@@ -4484,6 +4545,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 			{
 				value.hook(s, e - s);
 				::removeValue(data, s, ' ');
+					*e = '\0';
 				return Title;
 			}
 		}

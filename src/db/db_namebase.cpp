@@ -176,7 +176,17 @@ Namebase::makeEntry(mstl::string const& name)
 	Entry* entry;
 
 	entry = m_entryAllocator->alloc();
-	entry->m_name = name;
+
+	if (name.readonly())
+	{
+		entry->m_name = name;
+	}
+	else
+	{
+		char* p = alloc(name.size());
+		::memcpy(p, name.c_str(), name.size() + 1);
+		entry->m_name.hook(p, name.size());
+	}
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -194,7 +204,17 @@ Namebase::makeEventEntry(mstl::string const& name)
 	EventEntry* entry;
 
 	entry = m_eventAllocator->alloc();
-	entry->m_name = name;
+
+	if (name.readonly())
+	{
+		entry->m_name = name;
+	}
+	else
+	{
+		char* p = alloc(name.size());
+		::memcpy(p, name.c_str(), name.size() + 1);
+		entry->m_name.hook(p, name.size());
+	}
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -212,8 +232,18 @@ Namebase::makeSiteEntry(mstl::string const& name, db::Site const* site)
 	SiteEntry* entry;
 
 	entry = m_siteAllocator->alloc();
-	entry->m_name = name;
 	entry->m_site = site;
+
+	if (name.readonly())
+	{
+		entry->m_name = name;
+	}
+	else
+	{
+		char* p = alloc(name.size());
+		::memcpy(p, name.c_str(), name.size() + 1);
+		entry->m_name.hook(p, name.size());
+	}
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -230,8 +260,18 @@ Namebase::makePlayerEntry(mstl::string const& name, db::Player const* player)
 
 	PlayerEntry* entry = m_playerAllocator->alloc();
 
-	entry->m_name = name;
 	entry->m_player = player;
+
+	if (name.readonly())
+	{
+		entry->m_name = name;
+	}
+	else
+	{
+		char* p = alloc(name.size());
+		::memcpy(p, name.c_str(), name.size() + 1);
+		entry->m_name.hook(p, name.size());
+	}
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -364,6 +404,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 								title::ID title,
 								species::ID type,
 								sex::ID sex,
+								uint32_t fideID,
 								unsigned limit)
 {
 	M_REQUIRE(this->type() == Player);
@@ -375,44 +416,57 @@ Namebase::insertPlayer(	mstl::string const& name,
 	bool titleFlag			= true;
 	bool typeFlag			= true;
 	bool sexFlag			= true;
+	bool fideIdFlag		= fideID != 0;
 
-	db::Player const* p = Player::findPlayer(name);
+	db::Player const* p;
 
-	if (p == 0)
+	if (fideIdFlag)
 	{
-		if (type == species::Program)
-		{
-			mstl::string shortName;
-			sys::utf8::Codec::makeShortName(name, shortName);
-			p = Player::findEngine(shortName);
-		}
-		else if (name.find(',') == mstl::string::npos)
-		{
-			mstl::string shortName;
+		p = Player::findPlayer(fideID);
 
-			sys::utf8::Codec::makeShortName(name, shortName);
+		if (p == 0)
+			p = Player::insertPlayer(fideID, name);
+	}
+	else
+	{
+		p = Player::findPlayer(name, federation, sex);
 
-			if ((p = Player::findEngine(shortName)) && type == species::Unspecified && !p->isUnique())
+		if (p == 0)
+		{
+			if (type == species::Program)
 			{
-				char const *p = name.c_str() + shortName.size();
+				mstl::string shortName;
+				sys::utf8::Codec::makeShortName(name, shortName);
+				p = Player::findEngine(shortName);
+			}
+			else if (name.find(',') == mstl::string::npos)
+			{
+				mstl::string shortName;
 
-				while (*p == '-' || *p == '_' || *p == '.' || ::isspace(*p))
-					++p;
+				sys::utf8::Codec::makeShortName(name, shortName);
 
-				if (::isdigit(*p) || islower(*p))
-					type = species::Program;
+				if ((p = Player::findEngine(shortName)) && type == species::Unspecified && !p->isUnique())
+				{
+					char const *p = name.c_str() + shortName.size();
+
+					while (*p == '-' || *p == '_' || *p == '.' || ::isspace(*p))
+						++p;
+
+					if (::isdigit(*p) || islower(*p))
+						type = species::Program;
+				}
+			}
+			else if (type == species::Unspecified)
+			{
+				type = species::Human;
+				typeFlag = false;
 			}
 		}
-		else if (type == species::Unspecified)
+		else if (type == species::Unspecified && name.find(',') != mstl::string::npos)
 		{
 			type = species::Human;
 			typeFlag = false;
 		}
-	}
-	else if (type == species::Unspecified && name.find(',') != mstl::string::npos)
-	{
-		type = species::Human;
-		typeFlag = false;
 	}
 
 	if (p)
@@ -454,7 +508,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 	if (limit)
 	{
 		NamebasePlayer::Key key(name, federation, title, type, sex,
-										federationFlag, titleFlag, typeFlag, sexFlag);
+										federationFlag, titleFlag, typeFlag, sexFlag, fideIdFlag);
 
 		List::iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
@@ -483,6 +537,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 	entry->m_titleFlag = titleFlag;
 	entry->m_speciesFlag = typeFlag;
 	entry->m_sexFlag = sexFlag;
+	entry->m_fideIdFlag = fideIdFlag;
 
 	M_ASSERT(size() == 1 || *playerAt(size() - 2) < *playerAt(size() - 1));
 
@@ -536,9 +591,9 @@ Namebase::insert()
 	{
 		m_list.push_back(m_entryAllocator->alloc());
 		m_list.back()->m_id = 0;
+		m_isModified = true;
 	}
 
-	m_isModified = true;
 	return m_list.front();
 }
 
@@ -819,6 +874,125 @@ Namebase::nextFreeId()
 	}
 
 	return id;
+}
+
+
+void
+Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
+{
+	M_REQUIRE(entry);
+
+	if (name == entry->name())
+		return;
+
+	List::iterator oldPos;
+
+	switch (type())
+	{
+		case Player:
+			M_REQUIRE(dynamic_cast<NamebasePlayer*>(entry));
+			{
+				PlayerEntry* e = static_cast<PlayerEntry*>(entry);
+				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebasePlayer::Key(*e));
+			}
+			break;
+
+		case Event:
+			M_REQUIRE(dynamic_cast<NamebaseEvent*>(entry));
+			{
+				EventEntry* e = static_cast<EventEntry*>(entry);
+				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebaseEvent::Key(*e));
+			}
+			break;
+
+		case Site:
+			M_REQUIRE(dynamic_cast<NamebaseSite*>(entry));
+			{
+				SiteEntry* e = static_cast<SiteEntry*>(entry);
+				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebaseSite::Key(*e));
+			}
+			break;
+
+		case Round:
+		case Annotator:
+			oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name);
+			break;
+	}
+
+	M_ASSERT(oldPos != m_list.end());
+
+	mstl::string oldName;
+
+	oldName.swap(entry->m_name);
+
+	if (name.readonly())
+	{
+		entry->m_name = name;
+	}
+	else
+	{
+		char* s = alloc(name.size());
+		::memcpy(s, name.c_str(), name.size() + 1);
+		entry->m_name.hook(s);
+	}
+
+	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
+		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
+
+	switch (type())
+	{
+		case Player:
+			{
+				NamebasePlayer::Key key(*static_cast<PlayerEntry*>(entry));
+				List::iterator newPos(mstl::lower_bound(m_list.begin(), m_list.end(), key));
+
+				if (oldPos != newPos)
+				{
+					m_list.erase(oldPos);
+					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
+				}
+			}
+			break;
+
+		case Event:
+			{
+				NamebaseEvent::Key key(*static_cast<EventEntry*>(entry));
+				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+				if (oldPos != newPos)
+				{
+					m_list.erase(oldPos);
+					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
+				}
+			}
+			break;
+
+		case Site:
+			{
+				NamebaseSite::Key key(*static_cast<SiteEntry*>(entry));
+				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+				if (oldPos != newPos)
+				{
+					m_list.erase(oldPos);
+					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
+				}
+			}
+			break;
+
+		case Round:
+		case Annotator:
+			{
+				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name);
+
+				if (oldPos != newPos)
+				{
+					m_list.erase(oldPos);
+					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name), entry);
+				}
+			}
+			break;
+	}
 }
 
 // vi:set ts=3 sw=3:

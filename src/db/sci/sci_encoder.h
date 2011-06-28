@@ -74,6 +74,7 @@ protected:
 	void encodeMainline(MoveNode const* node);
 	void encodeVariation(MoveNode const* node);
 	void encodeNote(MoveNode const* node);
+	void encodeComment(MoveNode const* node);
 
 	void setup(Board const& board);
 	Byte makeMoveByte(Square from, Byte value);

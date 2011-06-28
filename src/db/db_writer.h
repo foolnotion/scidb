@@ -86,8 +86,8 @@ public:
 	bool beginGame(TagSet const& tags);
 	save::State endGame(TagSet const& tags);
 
-	void sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
-	void sendFinalComment(Comment const& comment);
+	void sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
+	void sendTrailingComment(Comment const& comment);
 
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
@@ -100,7 +100,7 @@ public:
 	void endMoveSection(result::ID result);
 
 	void beginVariation();
-	void endVariation();
+	void endVariation(bool isEmpty);
 
 protected:
 
@@ -109,7 +109,8 @@ protected:
 
 	virtual void writeBeginGame(unsigned number) = 0;
 	virtual void writeEndGame() = 0;
-	virtual void writeComment(Comment const& comment, MarkSet const& marks) = 0;
+	virtual void writePrecedingComment(Comment const& comment, MarkSet const& marks) = 0;
+	virtual void writeTrailingComment(Comment const& comment) = 0;
 	virtual void writeTag(mstl::string const& name, mstl::string const& value) = 0;
 	virtual void writeTag(tag::ID tag, mstl::string const& value);
 	virtual void writeMove(	Move const& move,

@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2011 Gregor Cramer
+# Copyright: (C) 2011 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -24,12 +24,12 @@
 # (at your option) any later version.
 # ======================================================================
 
-proc ecobox {w args} {
-	return [::ecobox::Build $w {*}$args]
+proc fideidbox {w args} {
+	return [::fideidbox::Build $w {*}$args]
 }
 
 
-namespace eval ecobox {
+namespace eval fideidbox {
 
 proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
@@ -38,6 +38,7 @@ proc Build {w args} {
 	array set opts {
 		-textvar {}
 		-textvariable {}
+		-state normal
 	}
 	array set opts $args
 
@@ -49,17 +50,16 @@ proc Build {w args} {
 	}
 
 	ttk::entry $w \
-		-textvariable $opts(-textvariable) \
 		-exportselection no \
-		-width 4 \
+		-width 10 \
+		-textvariable $opts(-textvariable) \
 		-validate key \
-		-validatecommand [namespace code { ValidateEco %P %S }] \
+		-validatecommand [namespace code { ValidateFideId %P %S }] \
 		-invalidcommand { bell } \
+		-state $opts(-state) \
 		;
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
-	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
-	bind $w <<Language>> [namespace code [list LanguageChanged $w $opts(-textvariable)]]
 
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -74,36 +74,19 @@ proc WidgetProc {w command args} {
 			if {1 > [llength $args] || [llength $args] > 3} {
 				error "wrong # args: should be \"[namespace curent] bind <tag> ?<sequence>? ?<script?>\""
 			}
-			bind $w {*}$args
-			return
-		}
-
-		cget {
-			if {[llength $args] != 1} {
-				error "wrong # args: should be \"[namespace curent] cget <option>\""
-			}
-			if {[lindex $args 0] eq "-takefocus"} {
-				$w.__w__ instate disabled { return 0 }
-				return 1
-			}
-		}
-
-		valid? {
-			set value [string range [$w.__w__ get] 0 2]
-			return [regexp {([A-E][0-9][0-9])?} $value]
+			return [bind $w {*}$args]
 		}
 
 		value {
-			return [string range [$w.__w__ get] 0 2]
+			return [string trim [$w.__w__ get {*}$args]]
 		}
 
 		set {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] set <value>\""
 			}
-			set var [$w.__w__ cget -textvariable]
-			set $var [lindex $args 0]
-			Completion2 $w.__w__ $var no
+			$w.__w__ delete 0 end
+			$w.__w__ insert 0 [lindex $args 0]
 			return $w
 		}
 
@@ -123,61 +106,11 @@ proc WidgetProc {w command args} {
 }
 
 
-proc LanguageChanged {w var} {
-	Completion2 $w $var no
+proc ValidateFideId {id key} {
+	if {[string length $id] > 8} { return 0 }
+	return [string is integer $id]
 }
 
-
-proc ValidateEco {eco key} {
-	switch [string length $eco] {
-		0 { return 1 }
-		1 { return [string match {[A-Ea-e]} $eco] }
-		2 { return [string match {[A-Ea-e][0-9]} $eco] }
-		3 { return [string match {[A-Ea-e][0-9][0-9]} $eco] }
-	}
-
-	return 0
-}
-
-
-proc Completion {w code sym var} {
-	if {$sym eq "Tab"} {
-		after idle [namespace code [list Completion2 $w $var no]]
-	} elseif {[string is alnum -strict $code]} {
-		after idle [namespace code [list Completion2 $w $var yes]]
-	}
-}
-
-
-proc Completion2 {w var selection} {
-	set content [string toupper [set $var] 0 1]
-
-	if {[string length $content] >= 3} {
-		set content [string range $content 0 2]
-		lassign [::scidb::app::lookup ecoCode $content] opening shortOpening variation subvar
-		append content " \u2013 "
-		if {[string length $variation]} {
-			append content [::mc::translateEco $shortOpening]
-			append content ", "
-			append content [::mc::translateEco $variation]
-			if {[string length $subvar]} {
-				append content ", "
-				append content [::mc::translateEco $subvar]
-			}
-		} else {
-			append content [::mc::translateEco $opening]
-		}
-		set $var $content
-
-		if {$selection} {
-			$w selection clear
-			$w selection range 3 end
-		}
-	} else {
-		set $var [string range $content 0 2]
-	}
-}
-
-} ;# namespace ecobox
+} ;# namespace fideidbox
 
 # vi:set ts=3 sw=3:

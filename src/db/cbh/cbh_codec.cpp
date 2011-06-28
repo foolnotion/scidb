@@ -440,6 +440,8 @@ Codec::Codec()
 	,m_illegalEvent(0)
 	,m_illegalPlayer(0)
 	,m_siteId(0)
+	,m_numGames(0)
+	,m_highQuality(false)
 {
 }
 
@@ -500,6 +502,64 @@ Codec::reset()
 
 
 void
+Codec::toUtf8(mstl::string& str)
+{
+	m_codec->toUtf8(str);
+
+	if (!sys::utf8::Codec::validateUtf8(str))
+		m_codec->forceValidUtf8(str);
+}
+
+
+void
+Codec::mapPlayerName(mstl::string& str)
+{
+	if (str.empty())
+	{
+		str = '?';
+	}
+	else
+	{
+		mstl::vector<unsigned> indices;
+
+		for (unsigned i = 0; i < str.size(); ++i)
+		{
+			switch (Byte(str[i]))
+			{
+				case 0xa2: str[i] = 'K'; indices.push_back(i); break;
+				case 0xa3: str[i] = 'Q'; indices.push_back(i); break;
+				case 0xa4: str[i] = 'N'; indices.push_back(i); break;
+				case 0xa5: str[i] = 'B'; indices.push_back(i); break;
+				case 0xa6: str[i] = 'R'; indices.push_back(i); break;
+				case 0xa7: str[i] = 'P'; indices.push_back(i); break;
+			}
+		}
+
+		toUtf8(str);
+
+		mstl::string piece;
+		unsigned k = 0;
+
+		for (unsigned i = 0; i < indices.size(); ++i)
+		{
+			switch (str[indices[i] + k])
+			{
+				case 'K': piece = piece::utf8::asString(piece::King  ); break;
+				case 'Q': piece = piece::utf8::asString(piece::Queen ); break;
+				case 'R': piece = piece::utf8::asString(piece::Rook  ); break;
+				case 'B': piece = piece::utf8::asString(piece::Bishop); break;
+				case 'N': piece = piece::utf8::asString(piece::Knight); break;
+				case 'P': piece = piece::utf8::asString(piece::Pawn  ); break;
+			}
+
+			str.replace(indices[i] + k, 1, piece);
+			k += piece.size() - 1;
+		}
+	}
+}
+
+
+void
 Codec::close()
 {
 	if (m_gameStream.is_open())
@@ -514,21 +574,21 @@ Codec::close()
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
 {
-	ProgressWatcher watcher(progress, 5);
+	ProgressWatcher watcher(progress, 0);
 
 	setEncoding(encoding);
 
-	unsigned numGames = readHeader(rootname);
+	m_numGames = readHeader(rootname);
 
 	m_siteId = 0;
 
 	readIniData(rootname);
+	readSourceData(rootname, progress);
 	readPlayerData(rootname, progress);
 	readAnnotatorData(rootname, progress);
 	readTournamentData(rootname, progress);
-	readTeamData(rootname, numGames, progress);
-	readSourceData(rootname, progress);
-	readIndexData(rootname, numGames, progress);
+	readTeamData(rootname, progress);
+	readIndexData(rootname, progress);
 
 	// delete unused annotators (because we are discarding guiding text)
 	namebase(Namebase::Annotator).cleanup();
@@ -560,20 +620,22 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 {
 	M_ASSERT(m_codec);
 
+	static unsigned const RecordSize = 99;
+
 	mstl::string	filename(rootname + ".cbt");
 	mstl::string	name;
 	mstl::string	city;
 	mstl::fstream	strm;
-	mstl::string	str;
 
 	checkPermissions(filename);
 	openFile(strm, filename, Readonly);
-	str.assign(160, '\0');
+	name.assign(160, '\0');
+	city.assign(160, '\0');
 
 	uint32_t hdr[7];
 	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
 	uint32_t nrecs = mstl::bo::swapLE(hdr[0]);
-	strm.seekg((strm.size() % 99) - sizeof(hdr), mstl::ios_base::cur);
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
 
 	unsigned frequency	= progress.frequency(nrecs, 20000);
 	unsigned reportAfter	= frequency;
@@ -597,29 +659,22 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 
 		if (addr == ::Deleted)
 		{
-			strm.seekg(95, mstl::ios_base::cur);
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
 		}
 		else
 		{
 			strm.seekg(5, mstl::ios_base::cur);
-			strm.read(str.data(), 40);
+			strm.read(name.data(), 40);
 
-			str.set_size(::strlen(str.c_str()));
-			m_codec->toUtf8(str);
-			char* p = eventBase.alloc(str.size());
-			::strncpy(p, str, str.size());
-			name.hook(p, str.size());
+			name.set_size(::strlen(name.c_str()));
+			toUtf8(name);
 
-			strm.read(str.data(), 30);
-			str.set_size(::strlen(str.c_str()));
-			m_codec->toUtf8(str);
+			strm.read(city.data(), 30);
+			city.set_size(::strlen(city.c_str()));
+			toUtf8(city);
 
-			if (str.empty())
-				str = '?';
-
-			p = siteBase.alloc(str.size());
-			::strncpy(p, str, str.size());
-			city.hook(p, str.size());
+			if (city.empty())
+				city = '?';
 
 			unsigned char buf[6];
 			strm.read(buf, 6);
@@ -672,8 +727,6 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 
 			if (site->id() == m_siteId)
 				++m_siteId;
-			else
-				siteBase.shrink(str.size(), 0);
 
 			NamebaseEvent* event = eventBase.insertEvent(
 												name,
@@ -690,7 +743,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			m_eventMap[i] = event;
 			m_tournamentMap[event] = Tournament(category, rounds);
 
-			strm.seekg(10, mstl::ios_base::cur);
+			strm.seekg(RecordSize - 89, mstl::ios_base::cur);
 		}
 	}
 
@@ -703,7 +756,6 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 67;
 
-	mstl::string	name;
 	mstl::fstream	strm;
 	mstl::string	str;
 	mstl::string	filename(rootname + ".cbp");
@@ -742,6 +794,8 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 		}
 		else
 		{
+			uint32_t fideID = 0;
+
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 30);
 			str.set_size(::strlen(str.c_str()));
@@ -755,54 +809,15 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 			if (p + 2 == str.end())
 				str.resize(str.size() - 2);
 
-			if (str.empty())
+			mapPlayerName(str);
+
+			if (m_highQuality)
 			{
-				str = '?';
-			}
-			else
-			{
-				mstl::vector<unsigned> indices;
-
-				for (unsigned i = 0; i < str.size(); ++i)
-				{
-					switch (Byte(str[i]))
-					{
-						case 0xa2: str[i] = 'K'; indices.push_back(i); break;
-						case 0xa3: str[i] = 'Q'; indices.push_back(i); break;
-						case 0xa4: str[i] = 'N'; indices.push_back(i); break;
-						case 0xa5: str[i] = 'B'; indices.push_back(i); break;
-						case 0xa6: str[i] = 'R'; indices.push_back(i); break;
-						case 0xa7: str[i] = 'P'; indices.push_back(i); break;
-					}
-				}
-
-				m_codec->toUtf8(str);
-
-				mstl::string piece;
-				unsigned k = 0;
-
-				for (unsigned i = 0; i < indices.size(); ++i)
-				{
-					switch (str[indices[i] + k])
-					{
-						case 'K': piece = piece::utf8::asString(piece::King  ); break;
-						case 'Q': piece = piece::utf8::asString(piece::Queen ); break;
-						case 'R': piece = piece::utf8::asString(piece::Rook  ); break;
-						case 'B': piece = piece::utf8::asString(piece::Bishop); break;
-						case 'N': piece = piece::utf8::asString(piece::Knight); break;
-						case 'P': piece = piece::utf8::asString(piece::Pawn  ); break;
-					}
-
-					str.replace(indices[i] + k, 1, piece);
-					k += piece.size() - 1;
-				}
+				if (Player const* player = Player::findPlayer(str))
+					fideID = player->fideID();
 			}
 
-			p = base.alloc(str.size());
-			::strncpy(p, str, str.size());
-			name.hook(p, str.size());
-
-			m_playerMap[i] = base.insertPlayer(name, n++, nrecs);
+			m_playerMap[i] = base.insertPlayer(str, fideID, n++, nrecs);
 			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
 		}
 	}
@@ -816,7 +831,6 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 62;
 
-	mstl::string	name;
 	mstl::fstream	strm;
 	mstl::string	str;
 	mstl::string	filename(rootname + ".cbc");
@@ -861,13 +875,8 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 
 			if (!str.empty())
 			{
-				m_codec->toUtf8(str);
-
-				char* p = base.alloc(str.size());
-				::strncpy(p, str, str.size());
-				name.hook(p, str.size());
-
-				m_annotatorMap[i] = base.insert(name, n++, nrecs);
+				toUtf8(str);
+				m_annotatorMap[i] = base.insert(str, n++, nrecs);
 			}
 
 			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
@@ -888,7 +897,6 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 	if (!sys::file::access(filename, sys::file::Readable))
 		return;
 
-	mstl::string	name;
 	mstl::fstream	strm;
 	mstl::string	str;
 	Date				sourceDate;
@@ -936,18 +944,17 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 
 			if (!str.empty())
 			{
-				m_codec->toUtf8(str);
-
+				toUtf8(str);
 				::setDate(sourceDate, ByteStream(buf, 3).uint24LE());
-
-				char* p = m_sourceBase.alloc(str.size());
-				::strncpy(p, str, str.size());
-				name.hook(p, str.size());
-
-				m_sourceMap2[i] = new Source(name, sourceDate);
+				m_sourceMap2[i] = new Source(str, sourceDate);
 			}
 
-			strm.seekg(RecordSize - 57, mstl::ios_base::cur);
+			strm.seekg(4, mstl::ios_base::cur); // skip date and version
+
+			if (strm.get() == 1)
+				m_highQuality = true;
+
+			strm.seekg(RecordSize - 62, mstl::ios_base::cur);
 		}
 	}
 
@@ -956,7 +963,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 
 
 void
-Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progress& progress)
+Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 72;
 
@@ -969,7 +976,7 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progr
 		return;
 	openFile(m_teamStream, filenameJ, Readonly);
 
-	if (m_teamStream.size()/78 < numGames)
+	if (m_teamStream.size()/78 < m_numGames)
 	{
 		// Currently we cannot support the decoding of teams in all cases.
 		// ---------------------------------------------------------------
@@ -981,7 +988,6 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progr
 		return;
 	}
 
-	mstl::string	name;
 	mstl::fstream	strm;
 	mstl::string	str;
 	Date				sourceDate;
@@ -1025,7 +1031,7 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progr
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 45);
 			str.set_size(::strlen(str.c_str()));
-			m_codec->toUtf8(str);
+			toUtf8(str);
 
 			unsigned char buf[10];
 			strm.read(buf, 10);
@@ -1064,6 +1070,367 @@ Codec::readTeamData(mstl::string const& rootname, unsigned numGames, util::Progr
 }
 
 
+void
+Codec::reloadDescription(mstl::string const& rootname)
+{
+	readIniData(rootname);
+}
+
+
+void
+Codec::reloadNamebases(mstl::string const& rootname, util::Progress& progress)
+{
+	ProgressWatcher watcher(progress, 0);
+
+	reloadPlayerData(rootname, progress);
+	reloadAnnotatorData(rootname, progress);
+	reloadTournamentData(rootname, progress);
+	reloadTeamData(rootname, progress);
+	reloadSourceData(rootname, progress);
+}
+
+
+void
+Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progress)
+{
+	M_ASSERT(m_codec);
+
+	static unsigned const RecordSize = 99;
+
+	mstl::string	filename(rootname + ".cbt");
+	mstl::string	name;
+	mstl::string	city;
+	mstl::fstream	strm;
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+	name.assign(160, '\0');
+	city.assign(160, '\0');
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	uint32_t nrecs = mstl::bo::swapLE(hdr[0]);
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+	Namebase& eventBase	= namebase(Namebase::Event);
+	Namebase& siteBase	= namebase(Namebase::Site);
+
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 40);
+
+			name.set_size(::strlen(name.c_str()));
+			m_codec->toUtf8(name);
+
+			if (!sys::utf8::Codec::is7BitAscii(name))
+			{
+				if (!sys::utf8::Codec::validateUtf8(name))
+					m_codec->forceValidUtf8(name);
+
+				eventBase.rename(m_eventMap[i], name);
+			}
+
+			strm.read(city.data(), 30);
+			city.set_size(::strlen(city.c_str()));
+			m_codec->toUtf8(city);
+
+			if (!sys::utf8::Codec::is7BitAscii(city))
+			{
+				if (!sys::utf8::Codec::validateUtf8(city))
+					m_codec->forceValidUtf8(city);
+
+				siteBase.rename(static_cast<NamebaseEvent*>(m_eventMap[i])->site(), city);
+			}
+
+			strm.seekg(RecordSize - 79, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::reloadPlayerData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 67;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	filename(rootname + ".cbp");
+	Namebase&		base(namebase(Namebase::Player));
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(202, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 30);
+			name.set_size(::strlen(name.c_str()));
+
+			char* p = name.data() + name.size();
+
+			name.append(", ", 2);
+			strm.read(p + 2, 20);
+			name.set_size(::strlen(p + 2) +name.size());
+
+			if (p + 2 == name.end())
+				name.resize(name.size() - 2);
+
+			mapPlayerName(name);
+			base.rename(m_playerMap[i], name);
+			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::reloadAnnotatorData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 62;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	filename(rootname + ".cbc");
+	Namebase&		base(namebase(Namebase::Annotator));
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(200, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 45);
+			name.set_size(::strlen(name.c_str()));
+			m_codec->toUtf8(name);
+
+			if (!sys::utf8::Codec::is7BitAscii(name))
+			{
+				if (!sys::utf8::Codec::validateUtf8(name))
+					m_codec->forceValidUtf8(name);
+
+				base.rename(m_annotatorMap[i], name);
+			}
+
+			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::reloadSourceData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 68;
+
+	mstl::string filename(rootname + ".cbs");
+
+	if (!sys::file::access(filename, sys::file::Readable))
+		return;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+
+	openFile(strm, filename, Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(200, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 25);
+			name.set_size(::strlen(name.c_str()));
+			m_codec->toUtf8(name);
+
+			if (!sys::utf8::Codec::is7BitAscii(name))
+			{
+				mstl::string str;
+
+				if (!sys::utf8::Codec::validateUtf8(name))
+					m_codec->forceValidUtf8(name);
+
+				m_sourceBase.rename(m_sourceMap2[i], name);
+			}
+
+			strm.seekg(RecordSize - 34, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 72;
+
+	if (!m_teamStream.is_open())
+		return;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+
+	openFile(strm, rootname + ".cbe", Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(250, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 45);
+			name.set_size(::strlen(name.c_str()));
+			m_codec->toUtf8(name);
+
+			if (!sys::utf8::Codec::is7BitAscii(name))
+			{
+				if (!sys::utf8::Codec::validateUtf8(name))
+					m_codec->forceValidUtf8(name);
+
+				char* p = m_sourceBase.alloc(name.size());
+				::strncpy(p, name, name.size());
+				m_teamBase[i]->title.hook(p, name.size());
+			}
+
+			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
 unsigned
 Codec::readHeader(mstl::string const& rootname)
 {
@@ -1095,7 +1462,7 @@ Codec::readHeader(mstl::string const& rootname)
 
 
 void
-Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Progress& progress)
+Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 {
 	mstl::string	filename(rootname + ".cbh");
 	mstl::fstream	strm;
@@ -1106,19 +1473,19 @@ Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Prog
 	openFile(strm, filename, Readonly);
 	strm.seekg(sizeof(record));
 
-	ProgressWatcher watcher(progress, numGames);
+	ProgressWatcher watcher(progress, m_numGames);
 
-	unsigned frequency	= progress.frequency(numGames, 20000);
+	unsigned frequency	= progress.frequency(m_numGames, 20000);
 	unsigned reportAfter	= frequency;
 
 	GameInfoList& infoList = gameInfoList();
 
-	infoList.reserve(numGames);
-	m_sourceMap.reserve(numGames);
+	infoList.reserve(m_numGames);
+	m_sourceMap.reserve(m_numGames);
 	if (m_teamStream.is_open())
-		m_gameIndexLookup.reserve(numGames);
+		m_gameIndexLookup.reserve(m_numGames);
 
-	for (unsigned i = 0; i < numGames; ++i)
+	for (unsigned i = 0; i < m_numGames; ++i)
 	{
 		if (reportAfter == i)
 		{
@@ -1134,7 +1501,7 @@ Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Prog
 		if ((flags & 0x2) == 0)	// otherwise it is guiding text
 		{
 			infoList.push_back(allocGameInfo());
-			decodeIndex(bstrm, *infoList.back(), numGames);
+			decodeIndex(bstrm, *infoList.back());
 
 			if (m_teamStream.is_open())
 				m_gameIndexLookup[infoList.back()] = i;
@@ -1142,9 +1509,6 @@ Codec::readIndexData(mstl::string const& rootname, unsigned numGames, util::Prog
 	}
 
 	strm.close();
-	m_playerMap.clear();
-	m_eventMap.clear();
-	m_annotatorMap.clear();
 }
 
 
@@ -1264,7 +1628,7 @@ Codec::getPlayer(uint32_t ref)
 	if (m_illegalPlayer == 0)
 	{
 		m_illegalPlayer = namebase(Namebase::Player).insertPlayer(
-									"? (illegal reference)", m_playerMap.size(), m_playerMap.size() + 1);
+									"? (illegal reference)", 0, m_playerMap.size(), m_playerMap.size() + 1);
 	}
 
 	m_illegalPlayer->ref();
@@ -1340,7 +1704,7 @@ Codec::getSource(uint32_t ref)
 
 
 void
-Codec::decodeIndex(ByteStream& strm, GameInfo& info, unsigned numGames)
+Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 {
 	M_ASSERT(strm.size() == 46);
 
@@ -1443,8 +1807,7 @@ void
 Codec::startDecoding(ByteStream& gameStream,
 							ByteStream& annotationStream,
 							GameInfo const& info,
-							bool& isChess960/*,
-							unsigned flags*/)
+							bool& isChess960)
 {
 	if (!info.gameOffset())
 		IO_RAISE(Index, Corrupted, "no game data");
@@ -1475,37 +1838,30 @@ Codec::startDecoding(ByteStream& gameStream,
 	if (!m_gameStream.read(gameStream.base(), size))
 		IO_RAISE(Game, Corrupted, "unexpected end of file");
 
-//	if (flags == 0)
-//	{
-//		annotationStream.provide(0);
-//	}
-//	else
+	AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
+
+	if (i != m_annotationMap.end())
 	{
-		AnnotationMap::const_iterator i = m_annotationMap.find(info.gameOffset());
+		uint32_t address = i->second;
 
-		if (i != m_annotationMap.end())
-		{
-			uint32_t address = i->second;
+		if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
+			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-			if (!m_annotationStream.seekg(address + 10, mstl::ios_base::beg))
-				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+		if (!m_annotationStream.read(annotationStream.base(), 4))
+			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
 
-			if (!m_annotationStream.read(annotationStream.base(), 4))
-				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+		size = annotationStream.uint32() - 14;
 
-			size = annotationStream.uint32() - 14;
+		annotationStream.resetg();
+		annotationStream.reserve(size);
+		annotationStream.provide(size);
 
-			annotationStream.resetg();
-			annotationStream.reserve(size);
-			annotationStream.provide(size);
-
-			if (!m_annotationStream.read(annotationStream.base(), size))
-				IO_RAISE(Annotation, Corrupted, "unexpected end of file");
-		}
-		else
-		{
-			annotationStream.provide(0);
-		}
+		if (!m_annotationStream.read(annotationStream.base(), size))
+			IO_RAISE(Annotation, Corrupted, "unexpected end of file");
+	}
+	else
+	{
+		annotationStream.provide(0);
 	}
 }
 
@@ -1600,7 +1956,7 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 
 
 void
-Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info)
 {
 	Byte buf[2][32768];
 
@@ -1609,19 +1965,19 @@ Codec::doDecoding(/*unsigned flags, */GameData& data, GameInfo& info)
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960/*, flags*/);
+	startDecoding(gStrm, aStrm, info, isChess960);
 
 	addSourceTags(data.m_tags, info);
 	addEventTags(data.m_tags, info);
 	addTeamTags(data.m_tags, info);
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
-	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(/*flags, */data));
+	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(data));
 }
 
 
 save::State
-Codec::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo const& info)
+Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	Byte buf[2][32768];
 
@@ -1630,14 +1986,14 @@ Codec::doDecoding(Consumer& consumer, /*unsigned flags, */TagSet& tags, GameInfo
 
 	bool isChess960;
 
-	startDecoding(gStrm, aStrm, info, isChess960/*, flags*/);
+	startDecoding(gStrm, aStrm, info, isChess960);
 
 	addSourceTags(tags, info);
 	addEventTags(tags, info);
 	addTeamTags(tags, info);
 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
-	save::State state = decoder.doDecoding(consumer, /*flags, */tags, info);
+	save::State state = decoder.doDecoding(consumer, tags, info);
 
 	return state;
 }

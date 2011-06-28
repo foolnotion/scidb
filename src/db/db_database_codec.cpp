@@ -51,6 +51,7 @@
 #include "m_assert.h"
 
 #include <string.h>
+#include <stdio.h>
 
 using namespace db;
 using namespace util;
@@ -64,6 +65,7 @@ struct DatabaseCodec::InfoData
 	title::ID		whiteTitle, blackTitle;
 	species::ID		whiteType, blackType;
 	sex::ID			whiteSex, blackSex;
+	uint32_t			whiteFideID, blackFideID;
 	event::Type		eventType;
 	time::Mode		timeMode;
 	event::Mode		eventMode;
@@ -81,6 +83,8 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 	,blackType(species::Unspecified)
 	,whiteSex(sex::Unspecified)
 	,blackSex(sex::Unspecified)
+	,whiteFideID(0)
+	,blackFideID(0)
 	,eventType(event::Unknown)
 	,timeMode(time::Unknown)
 	,eventMode(event::Undetermined)
@@ -108,6 +112,12 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 
 	if (tags.contains(tag::BlackSex))
 		blackSex = sex::fromChar(*tags.value(tag::BlackSex));
+
+	if (tags.contains(tag::WhiteFideId))
+		whiteFideID = tags.asInt(tag::WhiteFideId);
+
+	if (tags.contains(tag::BlackFideId))
+		blackFideID = tags.asInt(tag::BlackFideId);
 
 	if (tags.contains(tag::EventType))
 		eventType = event::typeFromString(tags.value(tag::EventType));
@@ -197,13 +207,6 @@ DatabaseCodec::makeCodec(mstl::string const& suffix)
 }
 
 
-void
-DatabaseCodec::recode(GameInfo const&, ByteStream&, sys::utf8::Codec&, sys::utf8::Codec&)
-{
-	M_RAISE("should not be used");
-}
-
-
 unsigned
 DatabaseCodec::putGame(ByteStream const&)
 {
@@ -251,6 +254,20 @@ DatabaseCodec::update(mstl::string const&, unsigned, bool)
 
 void
 DatabaseCodec::attach(mstl::string const&, Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::reloadNamebases(mstl::string const&, util::Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::reloadDescription(mstl::string const& rootname)
 {
 	M_RAISE("should not be used");
 }
@@ -488,21 +505,6 @@ DatabaseCodec::doEncoding(util::ByteStream&, GameData const&, Signature const&)
 
 
 void
-DatabaseCodec::replaceBlockFile(util::BlockFile*)
-{
-	M_RAISE("should not be used");
-}
-
-
-util::BlockFile*
-DatabaseCodec::newBlockFile() const
-{
-	M_RAISE("should not be used");
-	return 0;
-}
-
-
-void
 DatabaseCodec::useAsyncReader(bool flag)
 {
 	M_RAISE("should not be used");
@@ -681,6 +683,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 										data.whiteTitle,
 										data.whiteType,
 										data.whiteSex,
+										data.whiteFideID,
 										maxPlayerCount);
 	Player	blackEntry		= namebase(Namebase::Player).insertPlayer(
 										tags.value(tag::Black),
@@ -688,6 +691,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 										data.blackTitle,
 										data.blackType,
 										data.blackSex,
+										data.blackFideID,
 										maxPlayerCount);
 	Site		siteEntry		= namebase(Namebase::Site).insertSite(
 										tags.value(tag::Site),
@@ -715,12 +719,19 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
-	if (format() != format::Scidb)
+	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 
-		if (!failed)
+		if (info == 0)
 		{
+			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
+				failed = true;
+		}
+		else if (m_storedInfo->round() != info->round() || m_storedInfo->subround() != info->subround())
+		{
+			static_cast<si3::Codec*>(this)->releaseRoundEntry(index);
+
 			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
 				failed = true;
 		}
@@ -828,6 +839,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 							info.title(color::White),
 							info.playerType(color::White),
 							info.sex(color::White),
+							info.fideID(color::White),
 							maxPlayerCount);
 	blackEntry = namebase(Namebase::Player).insertPlayer(
 							blackPlayer,
@@ -835,6 +847,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 							info.title(color::Black),
 							info.playerType(color::Black),
 							info.sex(color::Black),
+							info.fideID(color::Black),
 							maxPlayerCount);
 	siteEntry = namebase(Namebase::Site).insertSite(
 							site,
@@ -858,12 +871,11 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
-	if (format() != format::Scidb)
+	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 
-		if (	!failed
-			&& !static_cast<si3::Codec*>(this)->saveRoundEntry(m_db->m_gameInfoList.size(),
+		if (!static_cast<si3::Codec*>(this)->saveRoundEntry(	m_db->m_gameInfoList.size(),
 																				info.roundAsString()))
 		{
 			failed = true;
@@ -945,6 +957,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 										data.whiteTitle,
 										data.whiteType,
 										data.whiteSex,
+										data.whiteFideID,
 										maxPlayerCount);
 	Player	blackEntry		= namebase(Namebase::Player).insertPlayer(
 										tags.value(tag::Black),
@@ -952,6 +965,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 										data.blackTitle,
 										data.blackType,
 										data.blackSex,
+										data.blackFideID,
 										maxPlayerCount);
 	Site		siteEntry		= namebase(Namebase::Site).insertSite(
 										tags.value(tag::Site),
@@ -979,14 +993,16 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
-	if (format() != format::Scidb)
+	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 
-		if (	!failed
-			&& !static_cast<si3::Codec*>(this)->saveRoundEntry(index, info->roundAsString()))
+		if (m_storedInfo->round() != info->round() || m_storedInfo->subround() != info->subround())
 		{
-			failed = true;
+			static_cast<si3::Codec*>(this)->releaseRoundEntry(index);
+
+			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, info->roundAsString()))
+				failed = true;
 		}
 	}
 

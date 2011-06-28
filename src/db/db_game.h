@@ -187,6 +187,8 @@ public:
 	bool atLineStart() const;
 	/// Return whether the game is at the end position (of current variation or mainline)
 	bool atLineEnd() const;
+	/// Return whether the game is before the end position (of current variation or mainline)
+	bool isBeforeLineEnd() const;
 	/// Return whether the game is inside first (not empty) variation
 	bool isFirstVariation() const;
 	/// Return whether the game is inside last (not empty) variation
@@ -252,6 +254,8 @@ public:
 	uint16_t currentLine(Line& result);
 	/// Return comment at current position
 	Comment const& comment(move::Position position) const;
+	/// Return trailing comment at current position
+	Comment const& trailingComment() const;
 	/// Return infix annotation at current position
 	mstl::string& infix(mstl::string& result) const;
 	/// Return prefix annotation at current position
@@ -371,6 +375,8 @@ public:
 
 	/// Sets the comment associated with current move
 	void setComment(mstl::string const& comment, move::Position position);
+	/// Sets the comment associated with current move
+	void setTrailingComment(mstl::string const& comment);
 	/// Sets the annotation associated with current move
 	void setAnnotation(Annotation const& annotation);
 	/// Sets the marks associated with current move
@@ -495,6 +501,7 @@ private:
 	enum UndoAction
 	{
 		Set_Annotation,
+		Set_Trailing_Comment,
 		Replace_Node,
 		Truncate_Variation,
 		Swap_Variations,
@@ -538,6 +545,10 @@ private:
 							Comment const& oldComment,
 							Comment const& newComment,
 							move::Position position);
+	void insertUndo(	UndoAction action,
+							Command command,
+							Comment const& oldComment,
+							Comment const& newComment);
 	void insertUndo(	UndoAction action,
 							Command command,
 							MarkSet const& oldMarks,

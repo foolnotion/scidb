@@ -62,6 +62,7 @@ set InvalidTagName						"Invalid tag name"
 set InvalidCountryCode					"Invalid country code"
 set InvalidRating							"Invalid rating value"
 set InvalidNag								"Invalid NAG"
+set BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game"
 set MissingFen								"Missing FEN (variant tag will be ignored)"
 set UnknownEventType						"Unknown event type"
 set UnknownTitle							"Unknown title (ignored)"
@@ -78,7 +79,6 @@ set UnsupportedVariant					"Unsupported chess variant"
 set DecodingFailed						"Decoding failed"
 set ResultDidNotMatchHeaderResult	"Result did not match header result"
 set ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
-set CommentAtEndOfGame					"Comment at end of game inserted as sub-variation"
 set MaximalErrorCountExceeded			"Maximal error count (of previous error type) exceeded"
 set MaximalWarningCountExceeded		"Maximal warning count (of previous warning type) exceeded"
 set InvalidToken							"Invalid token"
@@ -210,6 +210,7 @@ proc openEdit {parent position {mode {}}} {
 	set Priv($position:mode) $mode
 	set Priv($position:varno) -1
 	set Priv($position:figurines) $fig
+	set Priv(showOnlyEncodingWarnings) 0
 
 	pack $top -expand yes -fill both
 
@@ -294,6 +295,12 @@ proc makeLog {arguments} {
 	}
 
 	return $line
+}
+
+
+proc showOnlyEncodingWarnings {flag} {
+	variable Priv
+	set Priv(showOnlyEncodingWarnings) $flag
 }
 
 
@@ -677,10 +684,18 @@ proc info {line}		{ Show info $line }
 
 
 proc Log {sink arguments} {
-	set type [lindex $arguments 0]
-	::${sink}::${type} [makeLog $arguments]
-	update idletasks
+	variable Priv
+
+	if {!$Priv(showOnlyEncodingWarnings) || [lindex $arguments 5] eq "EncodingFailed"} {
+		set type [lindex $arguments 0]
+		::${sink}::${type} [makeLog $arguments]
+		update idletasks
+	}
 }
+
+
+# setup
+showOnlyEncodingWarnings false
 
 } ;# namespace import
 

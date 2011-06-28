@@ -60,7 +60,7 @@ set EcoCode							"&ECO Code"
 set Matches							"&Matches"
 set Tags								"&Tags"
 
-set Name								"Name"
+set Name								"Name/Fide ID"
 set Value							"Value"
 set Title							"Title"
 set Rating							"Rating"
@@ -137,14 +137,16 @@ array set TagOrder {
 	EventType			14
 	Mode					15
 	TimeMode				16
-	WhiteTitle			17
-	BlackTitle			18
-	WhiteCountry		19
-	BlackCountry		20
-	WhiteType			21
-	BlackType			22
-	WhiteSex				23
-	BlackSex				24
+	WhiteFideId			17
+	BlackFideId			18
+	WhiteTitle			19
+	BlackTitle			20
+	WhiteCountry		21
+	BlackCountry		22
+	WhiteType			23
+	BlackType			24
+	WhiteSex				25
+	BlackSex				26
 
 	WhiteElo				50
 	BlackElo				51
@@ -164,7 +166,6 @@ array set TagOrder {
 	BlackRating			65
 
 	BlackClock			99
-	BlackFideId			99
 	BlackNA				99
 	BlackTeam			99
 	BlackTeamCountry	99
@@ -178,7 +179,6 @@ array set TagOrder {
 	TimeControl			99
 	Variation			99
 	WhiteClock			99
-	WhiteFideId			99
 	WhiteNA				99
 	WhiteTeam			99
 	WhiteTeamCountry	99
@@ -200,7 +200,8 @@ foreach type {Event Site Date Round White Black Result EventDate WhiteElo BlackE
 }
 
 foreach type { Annotator Termination EventDate EventCountry EventType Mode TimeMode WhiteTitle
-					BlackTitle WhiteCountry BlackCountry WhiteType BlackType WhiteSex BlackSex } {
+					WhiteFideId BlackFideId BlackTitle WhiteCountry BlackCountry WhiteType BlackType
+					WhiteSex BlackSex } {
 	set Mandatory($type,1) 1
 }
 
@@ -212,7 +213,7 @@ array set History {
 }
 
 array set Attrs {
-	player		{ freq name ascii species sex federation title elo rating score }
+	player		{ freq name ascii fideID species sex federation title elo rating score }
 	event			{ freq name site country date eventMode eventType timeMode }
 	site			{ freq name ascii country }
 	annotator	{ freq name }
@@ -243,6 +244,7 @@ proc open {parent base position {number 0}} {
 	variable Priv
 	variable Colors
 	variable MaxColumnLength
+	variable OnlyName
 
 	incr number -1
 
@@ -315,13 +317,28 @@ proc open {parent base position {number 0}} {
 		set color [string toupper $side 0 0]
 		ttk::labelbar $top.$side ::mc::[string toupper $side 0 0]
 
-		ttk::label $top.$side-name-l -textvar [namespace current]::mc::Name
+		if {$state eq "normal"} {
+			set textvar [namespace current]::mc::Name
+		} else {
+			set textvar [namespace current]::OnlyName
+			set OnlyName [lindex [split $mc::Name /] 0]
+		}
+
+		ttk::label $top.$side-player-l -textvar $textvar
 		ttk::label $top.$side-rating-l -textvar [namespace current]::mc::Rating
 		ttk::label $top.$side-title-l -textvar [namespace current]::mc::Title
 		ttk::label $top.$side-federation-l -textvar [namespace current]::mc::Federation
 		ttk::label $top.$side-sex-l -textvar [namespace current]::mc::Sex
 
-		entrybox $top.$side-name -width $maxlen -textvar [namespace current]::Priv(${side}-name)
+		if {$state eq "disabled"} {
+			bind $top.$side-player-l <<Language>> "set [namespace current]::OnlyName \[lindex \[split \[set [namespace current]::mc::Name] /] 0]"
+		}
+
+		ttk::frame $top.$side-player -borderwidth 0 -takefocus 0
+		entrybox $top.$side-name -textvar [namespace current]::Priv(${side}-name)
+		if {$state eq "normal"} {
+			fideidbox $top.$side-fideID -textvar [namespace current]::Priv(${side}-fideID) -state $state
+		}
 		ttk::frame $top.$side-rating -borderwidth 0 -takefocus 0
 		if {$twoRatings} {
 			ttk::label $top.$side-rating.l-elo -text "Elo"
@@ -346,6 +363,7 @@ proc open {parent base position {number 0}} {
 		genderbox $top.$side-sex -textvar [namespace current]::Priv(${side}-sex) -state $state
 
 		lappend fields [list $color $side-name]
+		if {$state eq "normal"} { lappend fields [list ${color}FideId $side-fideID] }
 		if {$twoRatings} { lappend fields [list ${color}Elo $side-rating.elo] }
 		lappend fields [list ${color}Rating ${side}-rating.type ${side}-rating.score]
 		lappend fields [list ${color}Title ${side}-title]
@@ -366,12 +384,39 @@ proc open {parent base position {number 0}} {
 		}
 
 		set Priv(${side}-name) {}
+		set Priv(${side}-fideID) {}
 
 		lappend rows [set $row]
 		grid $top.$side -row [set $row] -column $col -columnspan 3 -sticky ew
 		incr $row 2
 
-		foreach {attr tag} {name {} rating {} title Title federation Country sex Sex} {
+		grid $top.$side-player-l -row [set $row] -column $col -sticky w
+		grid $top.$side-player -row [set $row] -column [expr {$col + 2}] -sticky ew
+		incr $row 2
+
+		grid $top.$side-name -row 0 -column 0 -sticky ew -in $top.$side-player
+		grid columnconfigure $top.$side-player 0 -weight 1
+		if {$state eq "normal"} {
+			grid $top.$side-fideID -row 0 -column 2 -sticky w -in $top.$side-player
+			grid columnconfigure $top.$side-player 1 -minsize $::theme::padding
+		}
+
+		set list {name {}}
+		if {$state eq "normal"} { lappend list fideID FideId }
+
+		foreach {attr tag} $list {
+			bind $top.$side-$attr <FocusIn> \
+				[namespace code [list UpdateMatchList $top $base $side-name $side-$attr]]
+			bind $top.$side-$attr <FocusOut> \
+				[namespace code [list UpdateTags $top ${color}${tag} $side-$attr]]
+		}
+
+		if {$state eq "normal"} {
+			bind $top.$side-fideID <FocusOut> \
+				[namespace code [list UpdateName $top $side-name $side-fideID]]
+		}
+
+		foreach {attr tag} {rating {} title Title federation Country sex Sex} {
 			grid $top.$side-$attr-l -row [set $row] -column $col -sticky w
 			grid $top.$side-$attr -row [set $row] -column [expr {$col + 2}] -sticky ew
 			incr $row 2
@@ -407,6 +452,9 @@ proc open {parent base position {number 0}} {
 		lappend rows [set $row]
 
 		lappend Priv(select:$side) name entrybox $color $side-name
+		if {$state eq "normal"} {
+			lappend Priv(select:$side) fideID fideidbox ${color}FideId $side-fideID
+		}
 		if {$twoRatings} {
 			lappend Priv(select:$side) elo scorebox ${color}Elo $side-rating.elo
 		}
@@ -883,7 +931,9 @@ proc open {parent base position {number 0}} {
 		$top.white-rating.type set IPS
 		$top.black-rating.type set IPS
 	}
-	foreach attr {white-name black-name event-title event-site game-annotator} { set Priv($attr) "" }
+	foreach attr {white-name black-name event-title event-site game-annotator} {
+		set Priv($attr) ""
+	}
 	SetupTags $top $base $idn $position $number
 
 	# Tracing #################################################
@@ -897,6 +947,14 @@ proc open {parent base position {number 0}} {
 	$top.white-name selection range 0 end
 	ttk::notebook::enableTraversal $nb
 	return $dlg
+}
+
+
+proc UpdateName {top nameField fideIdField} {
+	set fideId [$top.$fideIdField get]
+	if {[string length $fideId] && [string length [$top.$nameField get]] == 0} {
+		$top.$nameField set [::scidb::misc::lookup $fideId]
+	}
 }
 
 
@@ -1495,34 +1553,43 @@ proc VisitMatch {lb data} {
 		}
 
 		name {
-			set aliases {}
+			if {1} { ;# show Fide ID
+				set item [lindex $data [lsearch $Attrs(player) fideID]]
+				if {[llength $item]} { set tip "$::playertable::mc::FideID: $item" }
+			} else { ;# show aliases
+				set aliases {}
 
-			switch $Priv(entry) {
-				event-site {
-					set attr site
-					set name [lindex $data [lsearch $Attrs(site) name]]
-					set country [lindex $data [lsearch $Attrs(site) country]]
-					set aliases [::scidb::app::lookup siteAlias $name $country]
+				switch $Priv(entry) {
+					event-site {
+						set attr site
+						set name [lindex $data [lsearch $Attrs(site) name]]
+						set country [lindex $data [lsearch $Attrs(site) country]]
+						set aliases [::scidb::app::lookup siteAlias $name $country]
+					}
+
+					white-name - black-name {
+						set attr player
+						set name [lindex $data [lsearch $Attrs(player) name]]
+						set aliases [::scidb::app::lookup playerAlias $name]
+					}
 				}
 
-				white-name - black-name {
-					set attr player
-					set name [lindex $data [lsearch $Attrs(player) name]]
-					set aliases [::scidb::app::lookup playerAlias $name]
-				}
-			}
-
-			if {[llength $aliases]} {
-				if {!$Priv(local)} {
-					set name [lindex $data [lsearch $Attrs($attr) ascii]]
-				}
-				set index [lsearch $aliases $name]
-				if {$index >= 0} { set aliases [lreplace $aliases $index $index] }
-				set aliases [lsort -dictionary -unique $aliases]
 				if {[llength $aliases]} {
-					set tip [join $aliases \n]
+					if {!$Priv(local)} {
+						set name [lindex $data [lsearch $Attrs($attr) ascii]]
+					}
+					set index [lsearch $aliases $name]
+					if {$index >= 0} { set aliases [lreplace $aliases $index $index] }
+					set aliases [lsort -dictionary -unique $aliases]
+					if {[llength $aliases]} {
+						set tip [join $aliases \n]
+					}
 				}
 			}
+		}
+
+		fideID {
+			set item [lindex $data [lsearch $Attrs(player) fideID]]
 		}
 
 		sex {
@@ -1853,7 +1920,6 @@ proc EnterMatch {top lb index complete} {
 
 	set field $Priv(entry)
 	if {[string length $field] == 0} { return }
-
 	set Priv(dont-match) 1
 
 	switch $field {
@@ -1884,99 +1950,110 @@ proc EnterMatch {top lb index complete} {
 		set value [lindex $data [lsearch -exact $attrs $id]]
 		set widget $top.$field
 
-		if {[llength $value] == 0 && $type eq "genderbox" && $species eq "program"} {
-			set value "c"
-		}
+		if {[$widget cget -state] eq "normal"} {
+			if {[llength $value] == 0 && $type eq "genderbox" && $species eq "program"} {
+				set value "c"
+			}
 
-		if {[llength $value]} {
-			switch $type {
-				entrybox {
-					$widget set $value
-					set Priv(skip:$attr) $value
-					UpdateTags $top $tag $field
-				}
+			if {[llength $value]} {
+				switch $type {
+					entrybox {
+						$widget set $value
+						set Priv(skip:$attr) $value
+						UpdateTags $top $tag $field
+					}
 
-				titlebox	 {
-					if {$complete} {
+					titlebox	 {
+						if {$complete} {
+							$widget set $value
+							UpdateTags $top $tag $field
+						}
+					}
+
+					countrybox {
+						if {$complete || $attr ne "player"} {
+							$widget set $value
+							UpdateTags $top $tag $field
+						}
+					}
+
+					ratingbox {
+						if {$freq > 0 && $acceptRating} {
+							$widget set $value
+							UpdateRatingTags $top $color $side-rating $side-score
+						}
+					}
+
+					scorebox {
+						if {$freq > 0 && ([string match *Elo $tag] || $acceptRating)} {
+							$widget set $value
+							if {$tag eq "${color}Elo"} {
+								UpdateTags $top $tag $field
+							} else {
+								UpdateRatingTags $top $color $side-rating $side-score
+							}
+						}
+					}
+
+					genderbox {
+						$widget set $value
+						UpdateSexTag $top $color $field
+					}
+
+					fideidbox {
+						$widget set $value
+						UpdateTags $top $tag $field
+					}
+
+					default {
 						$widget set $value
 						UpdateTags $top $tag $field
 					}
 				}
-
-				countrybox {
-					if {$complete || $attr ne "player"} {
-						$widget set $value
+			} elseif {$complete} {
+				switch $type {
+					entrybox {
+						$widget delete 0 end
 						UpdateTags $top $tag $field
 					}
-				}
 
-				ratingbox {
-					if {$freq > 0 && $acceptRating} {
-						$widget set $value
-						UpdateRatingTags $top $color $side-rating $side-score
+					genderbox {
+						$widget current 0
+						UpdateSexTag $top $color $field
 					}
-				}
 
-				scorebox {
-					if {$freq > 0 && ([string match *Elo $tag] || $acceptRating)} {
-						$widget set $value
+					datebox {
+						$widget set "????.??.??"
+						UpdateTags $top $tag $field
+					}
+
+					ratingbox {
+						# nothing to do
+					}
+
+					fideidbox {
+						$widget set ""
+						UpdateTags $top $tag $field
+					}
+
+					scorebox {
+						$widget set 0
 						if {$tag eq "${color}Elo"} {
 							UpdateTags $top $tag $field
 						} else {
 							UpdateRatingTags $top $color $side-rating $side-score
 						}
 					}
-				}
 
-				genderbox {
-					$widget set $value
-					UpdateSexTag $top $color $field
-				}
-
-				default {
-					$widget set $value
-					UpdateTags $top $tag $field
-				}
-			}
-		} elseif {$complete} {
-			switch $type {
-				entrybox {
-					$widget delete 0 end
-					UpdateTags $top $tag $field
-				}
-
-				genderbox {
-					$widget current 0
-					UpdateSexTag $top $color $field
-				}
-
-				datebox {
-					$widget set "????.??.??"
-					UpdateTags $top $tag $field
-				}
-
-				ratingbox {
-					# nothing to do
-				}
-
-				scorebox {
-					$widget set 0
-					if {$tag eq "${color}Elo"} {
+					default {
+						$widget current 0
 						UpdateTags $top $tag $field
-					} else {
-						UpdateRatingTags $top $color $side-rating $side-score
 					}
 				}
-
-
-				default {
-					$widget current 0
-					UpdateTags $top $tag $field
-				}
+			} elseif {$type eq "genderbox"} {
+				$widget current 0
+				UpdateSexTag $top $color $field
 			}
-		} elseif {$type eq "genderbox"} {
-			$widget current 0
-			UpdateSexTag $top $color $field
 		}
 	}
 
@@ -2078,16 +2155,26 @@ proc SetupTags {top base idn position number} {
 		}
 	}
 
-	if {[info exists Lookup(Event)] && $Lookup(Event) ne "?"}	{ $top.event-title set $Lookup(Event) }
-	if {[info exists Lookup(Site)] && $Lookup(Site) ne "?"}		{ $top.event-site set $Lookup(Site) }
-	if {[info exists Lookup(Date)]}										{ $top.game-date set $Lookup(Date) }
-	if {[info exists Lookup(Round)] && $Lookup(Round) ne "?"}	{ $top.game-round set $Lookup(Round) }
-	if {[info exists Lookup(White)] && $Lookup(White) ne "?"}	{ $top.white-name set $Lookup(White) }
-	if {[info exists Lookup(Black)] && $Lookup(Black) ne "?"}	{ $top.black-name set $Lookup(Black) }
-	if {[info exists Lookup(Result)]}									{ $top.game-result set $Lookup(Result) }
+	foreach {tag field} {Event event-title
+								Site event-site
+								Round game-round
+								White white-name
+								Black black-name} {
+		if {[info exists Lookup($tag)] && $Lookup($tag) ne "?"} {
+			$top.$field set $Lookup($tag)
+		}
+	}
+
+	foreach {tag field} {Date game-date Result game-result} {
+		if {[info exists Lookup($tag)]} {
+			$top.$field set $Lookup($tag)
+		}
+	}
 
 	foreach {field tag} {game-annotator Annotator
 								event-date EventDate
+								white-fideID WhiteFideId
+								black-fideID BlackFideId
 								white-federation WhiteCountry
 								black-federation BlackCountry
 								event-country EventCountry
@@ -2242,6 +2329,7 @@ proc Save {top title base number position fields} {
 
 				switch $field {
 					name			{ set tag $color }
+					fideID		{ set tag ${color}FideId }
 					species		{ set tag ${color}Type }
 					sex			{ set tag ${color}Sex }
 					federation	{ set tag ${color}Country }

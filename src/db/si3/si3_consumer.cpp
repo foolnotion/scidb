@@ -33,6 +33,7 @@
 #include "db_mark_set.h"
 #include "db_annotation.h"
 #include "db_move.h"
+#include "db_comment.h"
 
 #include "sys_utf8_codec.h"
 
@@ -212,16 +213,23 @@ Consumer::sendComment(Comment const& comment,
 
 
 void
-Consumer::sendComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
+Consumer::sendPrecedingComment(	Comment const& comment,
+											Annotation const& annotation,
+											MarkSet const& marks)
 {
 	sendComment(comment, annotation, marks, true);
 }
 
 
 void
-Consumer::sendFinalComment(Comment const& comment)
+Consumer::sendTrailingComment(Comment const& comment)
 {
-	if (m_afterMove)
+	if (m_appendComment)
+	{
+		m_comments.back() += '\n';
+		comment.flatten(m_comments.back(), m_encoding);
+	}
+	else if (m_afterMove)
 	{
 		m_strm.put(token::Comment);
 		pushComment(comment);
@@ -230,7 +238,10 @@ Consumer::sendFinalComment(Comment const& comment)
 	}
 	else
 	{
-		sendMove(Move::null(), Annotation(), MarkSet(), comment, Comment());
+		m_strm.put(token::Start_Marker);
+		m_strm.put(token::Comment);
+		m_strm.put(token::End_Marker);
+		pushComment(comment);
 	}
 }
 
@@ -251,7 +262,7 @@ Consumer::beginVariation()
 
 
 void
-Consumer::endVariation()
+Consumer::endVariation(bool)
 {
 	M_ASSERT(!m_moveStack.empty());
 

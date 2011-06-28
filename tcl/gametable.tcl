@@ -176,6 +176,8 @@ set F_Chess960Pos			"9"
 set F_ShuffleChessPos	"3"	;# TODO: use icon instead (dice)
 set F_WhiteRatingType	"RT \u26aa"
 set F_BlackRatingType	"RT \u26ab"
+set F_WhiteFideID			"ID \u26aa"
+set F_BlackFideID			"ID \u26ab"
 set F_WhiteCountry		"\u2690"	;# TODO: use [Scidb Symbol T1] \U+0152 or \U+00d4
 set F_BlackCountry		"\u2691"	;# TODO: use [Scidb Symbol T1] \U+0142
 set F_EventCountry		"\u2691"
@@ -191,6 +193,7 @@ namespace import ::tcl::mathfunc::abs
 variable Columns {
 	{ number				{}			right		 4		 9		 6			0			1			1			{}				}
 	{ white				white		left		10		 0		18			1			0			1			darkblue		}
+	{ whiteFideID		white		right		 0		 0		10			0			1			1			{}				}
 	{ whiteRating1		white		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ whiteRating2		white		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ whiteRatingType	white		left		 0		 0		 7			0			1			0			darkgreen	}
@@ -199,6 +202,7 @@ variable Columns {
 	{ whiteType			white		center	 0		 0		14px		0			1			0			{}				}
 	{ whiteSex			white		center	 0		 0		14px		0			1			0			{}				}
 	{ black				black		left		10		 0		18			1			0			1			darkblue		}
+	{ blackFideID		black		right		 0		 0		10			0			1			1			{}				}
 	{ blackRating1		black		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ blackRating2		black		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ blackRatingType	black		left		 0		 0		 7			0			1			0			darkgreen	}
@@ -751,6 +755,12 @@ proc RefreshHeader {path number} {
 	set rt $Defaults(rating:$number)
 	if {[info exists mc::RatingType($rt)]} { set rt $mc::RatingType($rt) }
 
+	set mc::F_WhiteFideID "$::playertable::mc::F_FideID \u26aa"
+	set mc::F_BlackFideID "$::playertable::mc::F_FideID \u26ab"
+
+	set mc::T_WhiteFideID "$::playertable::mc::F_FideID - $::mc::White"
+	set mc::T_BlackFideID "$::playertable::mc::F_FideID - $::mc::Black"
+
 	set mc::F_WhiteRating$number "$rt \u26aa"
 	set mc::F_BlackRating$number "$rt \u26ab"
 
@@ -990,6 +1000,14 @@ proc TableFill {path args} {
 
 					position {
 						if {$codec eq "sci"} { lappend text $item } else { lappend text $::mc::NotAvailable }
+					}
+
+					whiteFideID - blackFideID {
+						if {[string index $item 0] eq "-"} {
+							lappend text "[string range $item 1 end]*"
+						} else {
+							lappend text "$item "
+						}
 					}
 
 					whiteRating1 - blackRating1 - whiteRating2 - blackRating2 {

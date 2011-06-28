@@ -284,25 +284,30 @@ proc WidgetProc {w command args} {
 			}
 			set img [lindex $args 0]
 			if {[winfo ismapped $w]} {
-				if {[$w.__image__ itemcget image -image] ne $img} {
-					$w.__image__ delete image
-					$w.__image__ create image 0 0 -image $img -tag image -anchor nw
-					$w.__image__ configure -width [image width $img]
-					$w.__image__ configure -height [image height $img]
-				}
 				lassign [$w bbox [expr {[string length [$w get]] - 1}]] x y _ h
-				set x1 [expr {$x + 12}]
-				set y1 [expr {$y + ($h - [image height $img])/2}]
-				set x2 [expr {$x1 + [image width $img] + 2}]
-				set y2 [expr {$y1 + [image height $img]}]
-
-				if {$x2 <= [winfo width $w]} {
-					if {[string match *textarea [$w identify $x2 $y2]]} {
-						place $w.__image__ -x $x1 -y $y1
-						return 1
-					}
+				if {$y == 0} {
+					after 20 [list $w placeicon $img]
 				} else {
-					place forget $w.__image__
+					if {[$w.__image__ itemcget image -image] ne $img} {
+						$w.__image__ delete image
+						$w.__image__ create image 0 0 -image $img -tag image -anchor nw
+						$w.__image__ configure -width [image width $img]
+						$w.__image__ configure -height [image height $img]
+					}
+					set x1 [expr {$x + 12}]
+					set y1 [expr {$y + ($h - [image height $img])/2}]
+					set x2 [expr {$x1 + [image width $img] + 2}]
+					set y2 [expr {$y1 + [image height $img]}]
+
+					if {$x2 <= [winfo width $w]} {
+						set area [$w identify $x2 $y2]
+						if {[string match *textarea $area]} {
+							place $w.__image__ -x $x1 -y $y1
+							return 1
+						}
+					} else {
+						place forget $w.__image__
+					}
 				}
 			} else {
 				bind $w <Map> [list after idle [namespace code [list PlaceIcon $w $img]]]

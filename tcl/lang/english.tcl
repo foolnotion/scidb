@@ -99,6 +99,22 @@
 ::widget::mc::First		"&First"
 ::widget::mc::Last		"Las&t"
 
+### util ###############################################################
+
+::util::mc::IOErrorOccurred					"I/O Error occurred"
+
+::util::mc::IOError(OpenFailed)				"open failed"
+::util::mc::IOError(ReadOnly)					"database is read-only"
+::util::mc::IOError(UnknownVersion)			"unknown file version"
+::util::mc::IOError(UnexpectedVersion)		"unexpected file version"
+::util::mc::IOError(Corrupted)				"corrupted file"
+::util::mc::IOError(WriteFailed)				"write operation failed"
+::util::mc::IOError(InvalidData)				"invalid data (file possibly corrupted)"
+::util::mc::IOError(ReadError)				"read error"
+::util::mc::IOError(EncodingFailed)			"cannot write namebase file"
+::util::mc::IOError(MaxFileSizeExceeded)	"maximal file size reached"
+::util::mc::IOError(LoadFailed)				"load failed (too many event entries)"
+
 ### menu ###############################################################
 ::menu::mc::File						"&File"
 ::menu::mc::Game						"&Game"
@@ -124,6 +140,7 @@
 ::menu::mc::HelpInfo					"&Info"
 ::menu::mc::HelpContents			"&Contents"
 ::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
+::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)"
 
 ::menu::mc::ViewShowLog				"Show &Log..."
 ::menu::mc::ViewFullscreen			"Full-Screen"
@@ -360,7 +377,8 @@
 ::application::pgn::mc::EditAnnotation						"Edit annotation"
 ::application::pgn::mc::EditCommentBefore					"Edit comment before move"
 ::application::pgn::mc::EditCommentAfter					"Edit comment after move"
-::application::pgn::mc::EditCommentAtStart				"Edit comment at start"
+::application::pgn::mc::EditPrecedingComment				"Edit preceding comment"
+::application::pgn::mc::EditTrailingComment				"Edit trailing comment"
 ::application::pgn::mc::EditMarks							"Edit marks"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"none"
@@ -654,6 +672,7 @@
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Last Name"
 ::playertable::mc::F_FirstName				"First Name"
+::playertable::mc::F_FideID					"Fide ID"
 ::playertable::mc::F_Title						"Title"
 ::playertable::mc::F_Frequency				"Frequency"
 
@@ -817,6 +836,7 @@
 ::import::mc::InvalidCountryCode					"Invalid country code"
 ::import::mc::InvalidRating						"Invalid rating value"
 ::import::mc::InvalidNag							"Invalid NAG"
+::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
 ::import::mc::MissingFen							"Missing FEN (variant tag will be ignored)"
 ::import::mc::UnknownEventType					"Unknown event type"
 ::import::mc::UnknownTitle							"Unknown title (ignored)"
@@ -832,7 +852,6 @@
 ::import::mc::DecodingFailed						"Decoding failed"
 ::import::mc::ResultDidNotMatchHeaderResult	"Result did not match header result"
 ::import::mc::ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
-::import::mc::CommentAtEndOfGame					"Comment at end of game inserted as sub-variation"
 ::import::mc::MaximalErrorCountExceeded		"Maximal error count exceeded; no more errors (of previous error type) will be reported"
 ::import::mc::MaximalWarningCountExceeded		"Maximal warning count exceeded; no more warnings (of previous warning type) will be reported"
 ::import::mc::InvalidToken							"Invalid token"
@@ -992,7 +1011,7 @@
 ::dialog::save::mc::Matches						"&Matches"
 ::dialog::save::mc::Tags							"&Tags"
 
-::dialog::save::mc::Name							"Name"
+::dialog::save::mc::Name							"Name/Fide ID"
 ::dialog::save::mc::Value							"Value"
 ::dialog::save::mc::Title							"Title"
 ::dialog::save::mc::Rating							"Rating"
@@ -1204,7 +1223,8 @@
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Comment before move"
 ::comment::mc::CommentAfterMove		"Comment after move"
-::comment::mc::CommentAtStart			"Comment at start"
+::comment::mc::PrecedingComment		"Preceding comment"
+::comment::mc::TrailingComment		"Trailing comment"
 ::comment::mc::Language					"Language"
 ::comment::mc::AllLanguages			"All languages"
 ::comment::mc::AddLanguage				"Add language..."

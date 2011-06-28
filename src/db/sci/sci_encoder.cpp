@@ -73,6 +73,8 @@ struct TagLookup
 		m_lookup.set(tag::BlackType);
 		m_lookup.set(tag::WhiteSex);
 		m_lookup.set(tag::BlackSex);
+		m_lookup.set(tag::WhiteFideId);
+		m_lookup.set(tag::BlackFideId);
 		m_lookup.set(tag::EventDate);
 		m_lookup.set(tag::EventCountry);
 		m_lookup.set(tag::EventType);
@@ -342,7 +344,7 @@ Encoder::encodeMainline(MoveNode const* node)
 	{
 		node = node->next();
 
-		for ( ; node && !node->hasSupplement(); node = node->next())
+		for ( ; node->isBeforeLineEnd() && !node->hasSupplement(); node = node->next())
 		{
 			if (encodeMove(node->move()))
 			{
@@ -365,7 +367,7 @@ Encoder::encodeMainline(MoveNode const* node)
 void
 Encoder::encodeVariation(MoveNode const* node)
 {
-	for ( ; node; node = node->next())
+	for ( ; node->isBeforeLineEnd(); node = node->next())
 	{
 		encodeMove(node->move());
 
@@ -391,6 +393,11 @@ Encoder::encodeVariation(MoveNode const* node)
 	}
 
 	m_strm.put(token::End_Marker);
+
+	if (node->hasComment(move::Post))
+		encodeComment(node);
+	else
+		m_strm.put(token::End_Marker);
 }
 
 
@@ -420,36 +427,41 @@ Encoder::encodeNote(MoveNode const* node)
 	}
 
 	if (node->hasAnyComment())
+		encodeComment(node);
+}
+
+
+void
+Encoder::encodeComment(MoveNode const* node)
+{
+	uint8_t flag = 0;
+
+	if (node->hasComment(move::Ante))
 	{
-		uint8_t flag = 0;
-
-		if (node->hasComment(move::Ante))
-		{
-			flag |= comm::Ante;
-			if (node->comment(move::Ante).engFlag())
-				flag |= comm::Ante_Eng;
-			if (node->comment(move::Ante).othFlag())
-				flag |= comm::Ante_Oth;
-		}
-
-		if (node->hasComment(move::Post))
-		{
-			flag |= comm::Post;
-			if (node->comment(move::Post).engFlag())
-				flag |= comm::Post_Eng;
-			if (node->comment(move::Post).othFlag())
-				flag |= comm::Post_Oth;
-		}
-
-		if (flag & 1)
-			m_text.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
-
-		if (flag & 2)
-			m_text.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
-
-		m_data.put(flag);
-		m_strm.put(token::Comment);
+		flag |= comm::Ante;
+		if (node->comment(move::Ante).engFlag())
+			flag |= comm::Ante_Eng;
+		if (node->comment(move::Ante).othFlag())
+			flag |= comm::Ante_Oth;
 	}
+
+	if (node->hasComment(move::Post))
+	{
+		flag |= comm::Post;
+		if (node->comment(move::Post).engFlag())
+			flag |= comm::Post_Eng;
+		if (node->comment(move::Post).othFlag())
+			flag |= comm::Post_Oth;
+	}
+
+	if (flag & 1)
+		m_text.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
+
+	if (flag & 2)
+		m_text.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
+
+	m_data.put(flag);
+	m_strm.put(token::Comment);
 }
 
 

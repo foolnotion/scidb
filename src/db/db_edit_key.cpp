@@ -271,8 +271,12 @@ Key::setPosition(Game& game) const
 	while (*s)
 	{
 		unsigned num = ::strtoul(s, &e, 10) - plyNumber;
+		unsigned n   = game.forward(num);
 
-		if (game.forward(num) != num)
+		if (n == num -1)
+			return *e == '\0'; // trailing comment position
+
+		if (n != num)
 			return false;
 
 		s = *e == '.' ? e + 1 : e;
@@ -316,10 +320,8 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 
 		for ( ; plyNumber < nextPly; ++plyNumber)
 		{
-			// NOTE: plyNumber may be one position too high
-			// due to the logic of db_edit_node
 			if (!node->next())
-				return node;
+				return node;	// should not happen
 
 			node = node->next();
 		}
@@ -399,8 +401,9 @@ Key
 Key::successorKey(MoveNode const* node) const
 {
 	M_REQUIRE(node);
+	M_REQUIRE(node->isBeforeLineEnd());
 
-	if (node->atLineEnd())
+	if (node->next()->atLineEnd())
 	{
 		unsigned ply = plyNumber();
 

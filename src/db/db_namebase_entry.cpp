@@ -63,6 +63,7 @@ NamebasePlayer::NamebasePlayer()
 	,m_titleFlag(1)
 	,m_sexFlag(1)
 	,m_speciesFlag(1)
+	,m_fideIdFlag(0)
 	,m_ratingType(rating::Any)
 	,m_unused_(0)
 {

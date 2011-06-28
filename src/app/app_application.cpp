@@ -391,13 +391,10 @@ Application::open(mstl::string const& filename,
 	if (m_cursorMap.find(filename) != m_cursorMap.end())
 		return 0;
 
-	return m_cursorMap[filename] = new Cursor(
-												*this,
-												new Database(
-													filename,
-													encoding,
-													readOnly ? Database::ReadOnly : Database::ReadWrite,
-													progress));
+	mstl::auto_ptr<Database> database(new Database(
+		filename, encoding, readOnly ? Database::ReadOnly : Database::ReadWrite, progress));
+	mstl::auto_ptr<Cursor> cursor(new Cursor(*this, database.release()));
+	return m_cursorMap[filename] = cursor.release();
 }
 
 
@@ -407,8 +404,9 @@ Application::create(mstl::string const& name, mstl::string const& encoding, type
 	if (m_cursorMap.find(name) != m_cursorMap.end())
 		return 0;
 
-	return m_cursorMap[name] = new Cursor(	*this,
-														new Database(name, encoding, Database::MemoryOnly, type));
+	mstl::auto_ptr<Database> database(new Database(name, encoding, Database::MemoryOnly, type));
+	mstl::auto_ptr<Cursor> cursor(new Cursor(*this, database.release()));
+	return m_cursorMap[name] = cursor.release();
 }
 
 
@@ -811,9 +809,31 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::annotator::ID att
 
 
 void
-Application::recode(Cursor& cursor, mstl::string const& encoding, Log& log)
+Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress& progress)
 {
-	cursor.database().recode(encoding, log);
+	Database& base = cursor.base();
+
+	switch (base.format())
+	{
+		case format::Scidb:
+			if (!base.isMemoryOnly())
+				return;
+			if (cursor.isReferenceBase())
+				Application::stopUpdateTree();
+			// we have to use PGN reader!
+			base.reopen(encoding, progress);
+			break;
+
+		case format::Scid3:
+		case format::Scid4:
+		case format::ChessBase:
+			base.recode(encoding, progress);
+			break;
+
+		case format::Pgn:
+			// cannot happen
+			break;
+	}
 
 	if (m_subscriber)
 		m_subscriber->updateList(cursor.name());

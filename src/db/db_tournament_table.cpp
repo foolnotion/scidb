@@ -585,9 +585,9 @@ TournamentTable::computeScores()
 
 				player->medianScore += whiteMedianScore;
 				opponent->medianScore += blackMedianScore;
-			}
 
-			++m_resultCount[clash->result];
+				++m_resultCount[clash->result];
+			}
 		}
 	}
 }

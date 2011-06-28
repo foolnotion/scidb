@@ -80,14 +80,13 @@ public:
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& encoding,
 					util::Progress& progress);
+	void reloadDescription(mstl::string const& rootname);
+	void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
 
 	void close();
 
-	void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info);
-	save::State doDecoding(	Consumer& consumer,
-//									unsigned flags,
-									TagSet& tags,
-									GameInfo const& info);
+	void doDecoding(GameData& data, GameInfo& info);
+	save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info);
 
 	void reset();
 	void setEncoding(mstl::string const& encoding);
@@ -125,9 +124,8 @@ private:
 	void startDecoding(	util::ByteStream& gameStream,
 								util::ByteStream& annotationStream,
 								GameInfo const& info,
-								bool& isChess960/*,
-								unsigned flags = 0*/);
-	void decodeIndex(util::ByteStream& strm, GameInfo& info, unsigned numGames);
+								bool& isChess960);
+	void decodeIndex(util::ByteStream& strm, GameInfo& info);
 
 	unsigned readHeader(mstl::string const& rootname);
 
@@ -136,8 +134,14 @@ private:
 	void readTournamentData(mstl::string const& rootname, util::Progress& progress);
 	void readAnnotatorData(mstl::string const& rootname, util::Progress& progress);
 	void readSourceData(mstl::string const& rootname, util::Progress& progress);
-	void readTeamData(mstl::string const& rootname, unsigned numGames, util::Progress& progress);
-	void readIndexData(mstl::string const& rootname, unsigned numGames, util::Progress& progress);
+	void readTeamData(mstl::string const& rootname, util::Progress& progress);
+	void readIndexData(mstl::string const& rootname, util::Progress& progress);
+	void reloadPlayerData(mstl::string const& rootname, util::Progress& progress);
+	void reloadTournamentData(mstl::string const& rootname, util::Progress& progress);
+	void reloadAnnotatorData(mstl::string const& rootname, util::Progress& progress);
+	void reloadSourceData(mstl::string const& rootname, util::Progress& progress);
+	void reloadTeamData(mstl::string const& rootname, util::Progress& progress);
+	void reloadIndexData(mstl::string const& rootname, util::Progress& progress);
 
 	void addSourceTags(TagSet& tags, GameInfo const& info);
 	void addEventTags(TagSet& tags, GameInfo const& info);
@@ -148,6 +152,8 @@ private:
 	Source* getSource(uint32_t ref);
 
 	void addTeamTags(TagSet& tags, GameInfo const& info);
+	void mapPlayerName(mstl::string& str);
+	void toUtf8(mstl::string& str);
 
 	sys::utf8::Codec*	m_codec;
 	mstl::fstream		m_gameStream;
@@ -167,6 +173,8 @@ private:
 	NamebaseEvent*		m_illegalEvent;
 	NamebasePlayer*	m_illegalPlayer;
 	unsigned				m_siteId;
+	unsigned				m_numGames;
+	bool					m_highQuality;
 };
 
 } // namespace cbh

@@ -330,7 +330,10 @@ Game::insertUndo(	UndoAction action,
 	{
 		Undo* prev = prevUndo();
 
-		if (prev == 0 || prev->action != action || prev->key != m_currentKey || prev->position != position)
+		if (	prev == 0
+			|| prev->action != action
+			|| prev->key != m_currentKey
+			|| prev->position != position)
 		{
 			Undo& undo = newUndo(action, command);
 			undo.comment = new Comment(oldComment);
@@ -346,6 +349,42 @@ Game::insertUndo(	UndoAction action,
 					&& *prev->comment == newComment
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation())
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
+		{
+			prev->clear();
+
+			if (--m_undoIndex == 0 && !m_isIrreversible)
+				m_isModified = false;
+		}
+	}
+	else
+	{
+		m_isIrreversible = true;
+	}
+}
+
+
+void
+Game::insertUndo(	UndoAction action,
+						Command command,
+						Comment const& oldComment,
+						Comment const& newComment)
+{
+	M_ASSERT(action == Set_Trailing_Comment);
+
+	if (m_maxUndoLevel)
+	{
+		Undo* prev = prevUndo();
+
+		if (prev == 0 || prev->action != action)
+		{
+			Undo& undo = newUndo(action, command);
+			undo.comment = new Comment(oldComment);
+		}
+		else if (prev->comment == 0)
+		{
+			prev->comment = new Comment(oldComment);
+		}
+		else if (m_undoCommand == None && *prev->comment == newComment)
 		{
 			prev->clear();
 
@@ -589,6 +628,21 @@ Game::applyUndo(Undo& undo, bool redo)
 				updateSubscriber(flags);
 			}
 			break;
+
+		case Set_Trailing_Comment:
+			{
+				unsigned flags = UpdatePgn;
+				Comment comment(*undo.comment);
+				insertUndo(	Set_Trailing_Comment,
+								SetAnnotation,
+								m_currentNode->getLineEnd()->comment(undo.position),
+								comment);
+				m_currentNode->getLineEnd()->swapComment(comment, undo.position);
+				if (updateLanguageSet())
+					flags |= UpdateLanguageSet;
+				updateSubscriber(flags);
+			}
+			break;
 	}
 
 	if (!redo || undo.action != Set_Start_Position)
@@ -643,14 +697,14 @@ Game::redo()
 bool
 Game::isEmpty() const
 {
-	return m_startNode->next() == 0;
+	return m_startNode->isEmptyLine();
 }
 
 
 bool
 Game::atMainlineEnd() const
 {
-	return isMainline() && !m_currentNode->next();
+	return isMainline() && m_currentNode->isOneBeforeLineEnd();
 }
 
 
@@ -664,7 +718,14 @@ Game::atLineStart() const
 bool
 Game::atLineEnd() const
 {
-	return !m_currentNode->next();
+	return m_currentNode->isOneBeforeLineEnd();
+}
+
+
+bool
+Game::isBeforeLineEnd() const
+{
+	return m_currentNode->next() && m_currentNode->next()->isBeforeLineEnd();
 }
 
 
@@ -682,7 +743,7 @@ Game::isFirstVariation() const
 	MoveNode*	prev	= node->prev();
 	unsigned		n		= prev->variationNumber(node);
 
-	while (n > 0 && prev->variation(n - 1)->atLineEnd())
+	while (n > 0 && prev->variation(n - 1)->isEmptyLine())
 		--n;
 
 	return n == 0;
@@ -703,7 +764,7 @@ Game::isLastVariation() const
 	MoveNode*	prev	= node->prev();
 	unsigned		n		= prev->variationNumber(node) + 1;
 
-	while (n < prev->variationCount() && prev->variation(n)->atLineEnd())
+	while (n < prev->variationCount() && prev->variation(n)->isEmptyLine())
 		++n;
 
 	return n == prev->variationCount();
@@ -713,16 +774,16 @@ Game::isLastVariation() const
 Board const&
 Game::getFinalBoard() const
 {
+	M_ASSERT(m_startNode->next());
+
 	if (!m_finalBoardIsValid)
 	{
-		MoveNode const* node = m_startNode;
 		HomePawns hp;
 
 		m_finalBoard = m_startBoard;
 
-		while (!node->atLineEnd())
+		for (MoveNode const* node = m_startNode->next(); node->isBeforeLineEnd(); node = node->next())
 		{
-			node = node->next();
 			m_finalBoard.doMove(node->move());
 			hp.move(node->move());
 		}
@@ -751,7 +812,7 @@ Game::currentMove() const
 Move const&
 Game::nextMove() const
 {
-	return m_currentNode->next() ? m_currentNode->next()->move() : Move::empty();
+	return isBeforeLineEnd() ? m_currentNode->next()->move() : Move::empty();
 }
 
 
@@ -773,6 +834,13 @@ Comment const&
 Game::comment(move::Position position) const
 {
 	return m_currentNode->comment(position);
+}
+
+
+Comment const&
+Game::trailingComment() const
+{
+	return m_currentNode->getLineEnd()->comment(move::Post);
 }
 
 
@@ -868,7 +936,7 @@ Game::printSan(mstl::string& result, unsigned flags) const
 mstl::string
 Game::getNextMove(unsigned flags)
 {
-	M_ASSERT(!atLineEnd());
+	M_ASSERT(isBeforeLineEnd());
 
 	mstl::string san;
 
@@ -894,6 +962,29 @@ Game::setComment(mstl::string const& comment, move::Position position)
 	{
 		insertUndo(Set_Annotation, SetAnnotation, m_currentNode->comment(position), comm, position);
 		m_currentNode->setComment(comm, position);
+
+		unsigned flags = UpdatePgn | UpdateBoard;
+
+		if (updateLanguageSet())
+			flags |= UpdateLanguageSet;
+
+		updateSubscriber(flags);
+	}
+}
+
+
+void
+Game::setTrailingComment(mstl::string const& comment)
+{
+	Comment comm(comment, false, false);
+	comm.normalize();
+
+	MoveNode* node = m_currentNode->getLineEnd();
+
+	if (comm != node->comment(move::Post))
+	{
+		insertUndo(Set_Trailing_Comment, SetAnnotation, node->comment(move::Post), comm);
+		node->setComment(comm, move::Post);
 
 		unsigned flags = UpdatePgn | UpdateBoard;
 
@@ -954,8 +1045,10 @@ Game::undoMove()
 bool
 Game::forward()
 {
-	if (!m_currentNode->next())
+	if (atLineEnd())
 		return false;
+
+	M_ASSERT(isBeforeLineEnd());
 
 	m_currentNode = m_currentNode->next();
 	doMove();
@@ -966,7 +1059,7 @@ Game::forward()
 bool
 Game::backward()
 {
-	if (m_currentNode->atLineStart())
+	if (atLineStart())
 		return false;
 
 	undoMove();
@@ -1063,7 +1156,7 @@ Game::goToCurrentMove() const
 void
 Game::goToCurrentMove(bool forward) const
 {
-	M_ASSERT(forward || m_currentNode->next());
+	M_ASSERT(forward || isBeforeLineEnd());
 
 	if (m_subscriber)
 	{
@@ -1105,8 +1198,6 @@ Game::moveTo(edit::Key const& key)
 		currentKey.setPosition(*this);
 		DB_RAISE("invalid key '%s'", key.id().c_str());
 	}
-
-	m_currentKey = wantedKey;
 }
 
 
@@ -1134,7 +1225,7 @@ Game::getMoves(StringList& result, unsigned flags)
 	{
 		enterVariation(i);
 
-		if (!atLineEnd())
+		if (isBeforeLineEnd())
 		{
 			forward();
 			result.push_back();
@@ -1163,7 +1254,7 @@ Game::getKeys(StringList& result)
 	{
 		enterVariation(i);
 
-		if (!atLineEnd())
+		if (isBeforeLineEnd())
 		{
 			forward();
 			result.push_back(m_currentKey.id());
@@ -1186,7 +1277,7 @@ Game::variationCount() const
 unsigned
 Game::subVariationCount() const
 {
-	return m_currentNode->atLineEnd() ? 0 : m_currentNode->next()->variationCount();
+	return isBeforeLineEnd() ? m_currentNode->next()->variationCount() : 0;
 }
 
 
@@ -1215,12 +1306,7 @@ Game::countHalfMoves(unsigned varNo) const
 unsigned
 Game::lengthOfCurrentLine() const
 {
-	MoveNode const* n = m_currentNode;
-
-	while (!n->atLineStart())
-		n = n->prev();
-
-	return n->countHalfMoves();
+	return m_currentNode->getLineStart()->countHalfMoves();
 }
 
 
@@ -1255,16 +1341,12 @@ Game::countVariations() const
 unsigned
 Game::variationNumber() const
 {
+	M_REQUIRE(isVariation());
+
 	if (m_currentKey.level() == 0)
 		return 0;
 
-	MoveNode* node = m_currentNode;
-
-	while (!node->atLineStart())
-		node = node->prev();
-
-	M_ASSERT(node->prev());
-
+	MoveNode* node = m_currentNode->getLineStart();
 	MoveNode* prev = node->prev();
 	return prev->variationNumber(node);
 }
@@ -1414,7 +1496,7 @@ Game::goBackward(unsigned count)
 void
 Game::goIntoVariation(unsigned variationNumber)
 {
-	M_REQUIRE(!atLineEnd());
+	M_REQUIRE(isBeforeLineEnd());
 
 	forward();
 	enterVariation(variationNumber);
@@ -1433,7 +1515,7 @@ Game::goOutOfVariation()
 void
 Game::goIntoNextVariation()
 {
-	if (m_currentKey.level() == 0 && m_currentNode->atLineEnd())
+	if (m_currentKey.level() == 0 && atLineEnd())
 		return;
 
 	if (m_currentKey.level() == 0 && m_currentNode->next()->variationCount() == 0)
@@ -1452,14 +1534,13 @@ Game::goIntoNextVariation()
 			if (m_currentKey.level() > 0)
 				exitVariation();
 
-			while (!node->atLineStart())
-				node = node->prev();
+			node = node->getLineStart();
 
 			if (node->prev() == m_currentNode)
 			{
 				n = m_currentNode->variationNumber(node) + 1;
 
-				while (n < m_currentNode->variationCount() && m_currentNode->variation(n)->atLineEnd())
+				while (n < m_currentNode->variationCount())
 					++n;
 			}
 		}
@@ -1489,21 +1570,13 @@ Game::goIntoPrevVariation()
 	{
 		backward();
 
-		MoveNode*	node	= m_currentNode;
+		MoveNode*	node	= m_currentNode->getLineStart();
 		unsigned		n		= 0;
 
 		exitVariation();
 
-		while (!node->atLineStart())
-			node = node->prev();
-
 		if (node->prev() == m_currentNode)
-		{
 			n = m_currentNode->variationNumber(node);
-
-			while (n > 0 && m_currentNode->variation(n - 1)->atLineEnd())
-				--n;
-		}
 
 		if (n > 0)
 		{
@@ -1567,12 +1640,12 @@ Game::replaceNode(MoveNode* newNode, Command command)
 {
 	M_ASSERT(newNode);
 
-	bool truncate = m_currentNode->next();
+	bool truncate = m_currentNode->next()->isEmptyLine();
 
 	if (truncate)
-		insertUndo(Replace_Node, command, m_currentNode->removeNext());
-	else
 		insertUndo(Truncate_Variation, command);
+	else
+		insertUndo(Replace_Node, command, m_currentNode->removeNext());
 
 	m_currentNode->setNext(newNode);
 
@@ -1590,7 +1663,7 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 {
 	M_ASSERT(variation);
 	M_ASSERT(!atLineStart());
-//	M_ASSERT(!atLineEnd());
+//	M_ASSERT(isBeforeLineEnd());
 
 	mstl::auto_ptr<MoveNode> node(variation);
 
@@ -1612,7 +1685,7 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 bool
 Game::exchangeMove(Move move, Force flag)
 {
-	M_REQUIRE(!atLineEnd());
+	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(currentBoard().checkMove(move));
 
 	if (move == m_currentNode->next()->move())
@@ -1646,7 +1719,10 @@ Game::addMove(Move const& move)
 	M_REQUIRE(m_currentBoard.checkMove(move));
 
 	insertUndo(Truncate_Variation, AddMove);
-	m_currentNode->setNext(new MoveNode(m_currentBoard, move));
+
+	MoveNode* node = new MoveNode(m_currentBoard, move);
+	node->setNext(m_currentNode->removeNext());
+	m_currentNode->setNext(node);
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
 
@@ -1675,10 +1751,11 @@ bool
 Game::isValidVariation(MoveNode const* node) const
 {
 	M_REQUIRE(node);
+	M_REQUIRE(node->atLineStart());
 
 	Board board(m_currentBoard);
 
-	for (node = node->next(); node; node = node->next())
+	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
 		if (!board.isValidMove(node->move()))
 			return false;
@@ -1693,8 +1770,8 @@ Game::isValidVariation(MoveNode const* node) const
 unsigned
 Game::addVariation(MoveNodeP node)
 {
-	M_REQUIRE(!atLineEnd());
 	M_REQUIRE(node);
+	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(isValidVariation(node.get()));
 
 	forward();
@@ -1703,7 +1780,7 @@ Game::addVariation(MoveNodeP node)
 
 	Board board(m_currentBoard);
 
-	for (MoveNode* n = node->next(); n; n = n->next())
+	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
 		board.prepareForSan(n->move());
@@ -1722,12 +1799,14 @@ Game::addVariation(MoveNodeP node)
 unsigned
 Game::addVariation(Move const& move)
 {
-	M_REQUIRE(!atLineEnd());
+	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(currentBoard().checkMove(move));
 
-	MoveNodeP varNode(new MoveNode);
-	varNode->setNext(new MoveNode(m_currentBoard, move));
-	return addVariation(varNode);
+	MoveNode* node = new MoveNode(m_currentBoard, move);
+	node->setNext(new MoveNode);
+	MoveNodeP var(new MoveNode(node));
+
+	return addVariation(var);
 }
 
 
@@ -1741,7 +1820,7 @@ Game::addVariation(mstl::string const& san)
 void
 Game::newMainline(MoveNode* node)
 {
-	M_REQUIRE(!atLineEnd());
+	M_REQUIRE(isBeforeLineEnd());
 
 	edit::Key currentKey = m_currentKey;
 
@@ -1759,12 +1838,12 @@ Game::newMainline(MoveNode* node)
 void
 Game::newMainline(Move const& move)
 {
-	M_REQUIRE(!atLineEnd());
+	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(currentBoard().checkMove(move));
 
-	MoveNode* varNode = new MoveNode;
-	varNode->setNext(new MoveNode(m_currentBoard, move));
-	newMainline(varNode);
+	MoveNode* node = new MoveNode(m_currentBoard, move);
+	node->setNext(new MoveNode);
+	newMainline(new MoveNode(node));
 }
 
 
@@ -1800,14 +1879,12 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 
 	while (1)
 	{
-		if (node->move())
-		{
-			node->move().setLegalMove(board.isValidMove(node->move(), move::DontAllowIllegalMove));
-			board.doMove(node->move());
-		}
-
-		if (!(node = node->next()))
+		if (node->atLineEnd())
 			return true;
+
+		M_ASSERT(node->move());
+
+		node->move().setLegalMove(board.isValidMove(node->move(), move::DontAllowIllegalMove));
 
 		if (!board.isValidMove(node->move(), node->constraint()))
 		{
@@ -1818,28 +1895,34 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 
 			if (truncate)
 			{
-				node->prev()->deleteNext();
+				node = node->prev();
+				node->deleteNext();
+				node->setNext(new MoveNode);
 				return true;
 			}
 		}
 
 		for (unsigned i = 0; i < node->variationCount(); ++i)
 		{
-			if (!node->variation(i)->atLineEnd())
+			M_ASSERT(node->variation(i)->next());
+
+			if (node->variation(i)->isEmptyLine())
+			{
+				if (i-- > 0)
+					node->swapVariations(i, node->variationCount() - 1);
+				node->deleteVariation(node->variationCount() - 1);
+			}
+			else
 			{
 				Board b(board);
 
 				if (!checkConsistency(node->variation(i)->next(), b, flag))
 					return false;
-
-				if (node->variation(i)->atLineEnd())
-				{
-					if (i-- > 0)
-						node->swapVariations(i, node->variationCount() - 1);
-					node->deleteVariation(node->variationCount() - 1);
-				}
 			}
 		}
+
+		board.doMove(node->move());
+		node = node->next();
 	}
 
 	return true; // shut up the compiler
@@ -1887,10 +1970,7 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 {
 	M_ASSERT(oldVariationNumber < variationCount());
 	M_ASSERT(newVariationNumber < variationCount());
-
-	// we cannot promote if variation is empty.
-	if (m_currentNode->variation(oldVariationNumber)->next() == 0)
-		return;
+	M_ASSERT(!m_currentNode->variation(oldVariationNumber)->isOneBeforeLineEnd());
 
 	MoveNode* variation	= m_currentNode->removeVariation(oldVariationNumber);
 	MoveNode* parent		= m_currentNode->prev();
@@ -1904,6 +1984,11 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 	parent->setNext(next);
 	variation->setNext(m_currentNode);
 	next->addVariation(variation);
+
+	Comment comment;
+	variation->swapComment(comment, move::Post);
+	parent->getLineStart()->swapComment(comment, move::Post);
+	variation->swapComment(comment, move::Post);
 
 	while (m_currentNode->hasVariation())
 		next->addVariation(m_currentNode->removeVariation(0));
@@ -1964,26 +2049,21 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 	m_currentNode->variation(variationNumber)->setFolded(false);
 
 	MoveNode* curr = m_currentNode->clone();
-	MoveNode* node = curr->removeVariation(variationNumber);
-	MoveNode* last = node;
+	MoveNode* root = curr->removeVariation(variationNumber);
+	MoveNode* node = root->removeNext();
 
-	while (last->next())
-		last = last->next();
+	delete root;
+	node->getOneBeforeLineEnd()->setNext(curr);
 
-	last->setNext(curr);
-
-	MoveNode root(node->removeNext());
-
-	delete node;
 	board = m_currentBoard;
 	board.undoMove(m_currentNode->move());
 
-	if (!checkConsistency(&root, board, flag))
+	if (!checkConsistency(node, board, flag))
 		return false;
 
 	backward();
 	insertUndo(Replace_Node, InsertMoves, m_currentNode->removeNext());
-	m_currentNode->setNext(root.removeNext());
+	m_currentNode->setNext(node);
 	moveTo(m_currentKey);
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
@@ -2013,12 +2093,9 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 
 	MoveNode* curr = m_currentNode->clone();
 	MoveNode* node = curr->removeVariation(variationNumber);
-	MoveNode* last = node;
+	MoveNode* last = node->getOneBeforeLineEnd();
 
 	node->setFolded(false);
-
-	while (last->next())
-		last = last->next();
 
 	MoveNode* tail = curr;
 
@@ -2028,20 +2105,19 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 	MoveNode* line = node->removeNext();
 
 	last->setNext(tail->removeNext());
+	tail->setNext(new MoveNode);
 	node->setNext(curr);
 	line->addVariation(node);
-
-	MoveNode root(line);
 
 	board = m_currentBoard;
 	board.undoMove(node->next()->move());
 
-	if (!checkConsistency(&root, board, flag))
+	if (!checkConsistency(line, board, flag))
 		return false;
 
 	backward();
 	insertUndo(Replace_Node, ExchangeMoves, m_currentNode->removeNext());
-	m_currentNode->setNext(root.removeNext());
+	m_currentNode->setNext(line);
 	moveTo(m_currentKey);
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
@@ -2063,7 +2139,9 @@ Game::truncateVariation(move::Position position)
 	if (atLineEnd())
 		return;
 
-	insertUndo(Replace_Node, TruncateVariation, m_currentNode->removeNext());
+	MoveNode* node = m_currentNode->removeNext();
+	insertUndo(Replace_Node, TruncateVariation, node);
+	m_currentNode->setNext(node->getLineEnd()->clone());
 
 	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet;
 
@@ -2079,14 +2157,14 @@ Game::truncateVariation(move::Position position)
 void
 Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 {
-	M_REQUIRE(!atLineEnd());
 	M_REQUIRE(node);
+	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(isValidVariation(node.get()));
 	M_REQUIRE(variationNumber < subVariationCount());
 
 	Board board(m_currentBoard);
 
-	for (MoveNode* n = node->next(); n; n = n->next())
+	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
 		board.prepareForSan(n->move());
@@ -2107,9 +2185,15 @@ Game::replaceVariation(Move const& move)
 	M_REQUIRE(currentBoard().checkMove(move));
 
 	if (atLineEnd())
+	{
 		addMove(move);
+	}
 	else
-		replaceNode(new MoveNode(m_currentBoard, move), ReplaceVariation);
+	{
+		MoveNode* node = new MoveNode(m_currentBoard, move);
+		node->setNext(new MoveNode);
+		replaceNode(node, ReplaceVariation);
+	}
 }
 
 
@@ -2131,9 +2215,11 @@ Game::stripMoves(move::Position position)
 	if (atLineStart())
 		return false;
 
+	MoveNode* last = m_currentNode->getLineEnd();
+
 	insertUndo(Strip_Moves, StripMoves, m_startNode->removeNext(), m_startBoard);
-	if (m_currentNode->next())
-		m_startNode->setNext(m_currentNode->removeNext());
+	m_startNode->setNext(m_currentNode->removeNext());
+	m_startNode->getLineEnd()->setComment(last->comment(move::Post), move::Post);
 	m_startBoard = m_currentBoard;
 	moveTo(m_currentKey);
 
@@ -2150,15 +2236,15 @@ Game::stripMoves(move::Position position)
 void
 Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const& key)
 {
-	MoveNode* last = startNode;
+	M_ASSERT(startNode->next());
 
-	startNode->setFolded(false);
+	MoveNode* last = startNode;
 
 	while (last->next())
 		last = last->next();
 
-	if (m_startNode->next())
-		last->setNext(m_startNode->removeNext());
+	startNode->setFolded(false);
+	last->setNext(m_startNode->removeNext());
 	m_startNode->setNext(startNode);
 	m_startBoard = startBoard;
 	moveTo(key);
@@ -2286,7 +2372,7 @@ Game::resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const&)
 	startNode->setFolded(false);
 	m_startNode = startNode;
 	m_startBoard = startBoard;
-	if (node->next() && !board.isEqualPosition(m_startBoard))
+	if (!node->isEmptyLine() && !board.isEqualPosition(m_startBoard))
 		insertUndo(Set_Start_Position, Clear, node, board);
 	moveToMainlineStart();
 	updateSubscriber(UpdateAll);
@@ -2297,9 +2383,10 @@ void
 Game::clear(Board const* startPosition)
 {
 	moveToMainlineStart();
-	if (m_startNode->next())
+	if (!m_startNode->isEmptyLine())
 		insertUndo(Set_Start_Position, Clear, m_startNode, m_startBoard);
 	m_startNode = m_currentNode = new MoveNode();
+	m_startNode->setNext(new MoveNode);
 	if (startPosition)
 		m_startBoard = *startPosition;
 	m_currentBoard = m_startBoard;
@@ -2313,7 +2400,8 @@ Game::resetForNextLoad()
 	delete m_startNode;
 	delete m_editNode;
 
-	m_startNode = m_currentNode = new MoveNode();
+	m_startNode = m_currentNode = new MoveNode;
+	m_startNode->setNext(new MoveNode);
 	m_editNode = 0;
 	m_currentKey.clear();
 	m_undoList.clear();
@@ -2377,19 +2465,16 @@ Game::setStartPosition(unsigned idn)
 unsigned
 Game::dumpMoves(mstl::string& result, unsigned length)
 {
-	result.clear();
-
-	if (atLineStart())
-	{
-		if (!m_currentNode->next())
-			return 0;
-	}
+	if (atLineEnd())
+		return 0;
 
 	unsigned n = 0;
 
+	result.clear();
+
 	while (length--)
 	{
-		if (m_currentNode->next() == 0)
+		if (m_currentNode->next()->atLineEnd())
 			return n;
 
 		m_currentNode = m_currentNode->next();
@@ -2419,10 +2504,10 @@ Game::finishLoad()
 
 	Board board(m_startBoard);
 
-	bool ok = checkConsistency(m_startNode, board, OnlyIfRemainsConsistent);
+	bool ok = checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent);
 
 	if (!ok)
-		checkConsistency(m_startNode, board, TruncateIfNeccessary);
+		checkConsistency(m_startNode->next(), board, TruncateIfNeccessary);
 
 	m_startNode->finish(m_startBoard);
 	m_currentBoard = m_startBoard;
@@ -2497,7 +2582,7 @@ Game::updateLine()
 		unsigned	i = 0;
 
 		for (	MoveNode const* node = m_startNode->next();
-				node && !node->move().isNull() && i < opening::Max_Line_Length;
+				node->isBeforeLineEnd() && !node->move().isNull() && i < opening::Max_Line_Length;
 				node = node->next(), ++i)
 		{
 			lineBuf[i] = node->move().index();
@@ -2548,7 +2633,7 @@ Game::computeEcoCode() const
 	unsigned	i = 0;
 
 	for (	MoveNode const* node = m_startNode->next();
-			node && i < opening::Max_Line_Length;
+			node->isBeforeLineEnd() && i < opening::Max_Line_Length;
 			node = node->next(), ++i)
 	{
 		lineBuf[i] = node->move().index();
@@ -2598,7 +2683,7 @@ Game::transpose(Force flag)
 		root->transpose();
 		board.transpose();
 
-		if (!checkConsistency(root.get(), board, flag))
+		if (!checkConsistency(root.get()->next(), board, flag))
 			return false;
 
 		insertUndo(Revert_Game, Transpose, m_startNode);
@@ -2675,10 +2760,7 @@ Game::setFolded(edit::Key const& key, bool flag)
 	if (key.level() == 0)
 		return;
 
-	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
-
-	while (!node->atLineStart())
-		node = node->prev();
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber())->getLineStart();
 
 	if (flag && node->contains(m_currentNode))
 		goToFirst();
@@ -2694,12 +2776,8 @@ Game::toggleFolded(edit::Key const& key)
 	M_REQUIRE(isValidKey(key));
 	M_REQUIRE(key.level() > 0);
 
-	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
-
-	while (!node->atLineStart())
-		node = node->prev();
-
-	bool flag = !node->isFolded();
+	MoveNode*	node = key.findPosition(m_startNode, m_startBoard.plyNumber())->getLineStart();
+	bool			flag = !node->isFolded();
 
 	if (flag && node->contains(m_currentNode))
 		goToFirst();

@@ -28,9 +28,6 @@
 
 namespace db {
 
-inline uint8_t Signature::promotions() const			{ return m_promotions; }
-inline uint8_t Signature::underPromotions() const	{ return m_underPromotions; }
-
 inline bool Signature::hasPromotion() const			{ return m_promotions; }
 inline bool Signature::hasUnderPromotion() const	{ return m_underPromotions; }
 

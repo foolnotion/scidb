@@ -28,8 +28,11 @@
 
 namespace db {
 
-inline bool MoveNode::atLineStart() const					{ return m_prev == 0 || m_prev->m_next != this;}
+inline bool MoveNode::atLineStart() const					{ return m_prev == 0 || m_prev->m_next != this; }
 inline bool MoveNode::atLineEnd() const					{ return m_next == 0; }
+inline bool MoveNode::isBeforeLineEnd() const			{ return m_next != 0; }
+inline bool MoveNode::isOneBeforeLineEnd() const		{ return m_next != 0 && m_next->m_next == 0; }
+inline bool MoveNode::isAfterLineStart() const			{ return m_prev != 0 && m_prev->m_next == this; }
 inline bool MoveNode::hasAnyComment() const				{ return m_flags & (HasComment | HasPreComment); }
 inline bool MoveNode::hasMark() const						{ return m_flags & HasMark; }
 inline bool MoveNode::hasAnnotation() const				{ return m_flags & HasAnnotation; }
@@ -52,7 +55,7 @@ inline MoveNode* MoveNode::clone() const					{ return clone(0); }
 
 inline Comment const& MoveNode::comment(move::Position position) const { return m_comment[position]; }
 
-inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
+inline void MoveNode::setComment(move::Position position)	{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
 
 

@@ -291,8 +291,8 @@ public:
 	typedef Node::List List;
 
 	Move(Work& work, MoveNode const* move);
+	Move(Work& work, MoveNode const* move, bool isEmptyGame);
 	Move(Work& work, db::Comment const& comment);
-	Move(Work& work);
 
 	Move(Key const& key);
 	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move);
@@ -339,7 +339,9 @@ class Comment : public Node
 {
 public:
 
-	Comment(db::Comment const& comment, move::Position position, bool atStart = false);
+	enum VarPos { Inside, AtStart, AtEnd };
+
+	Comment(db::Comment const& comment, move::Position position, VarPos varPos = Inside);
 
 	bool operator==(Node const* node) const;
 
@@ -350,7 +352,7 @@ public:
 private:
 
 	move::Position	m_position;
-	bool				m_atStart;
+	VarPos			m_varPos;
 	db::Comment		m_comment;
 };
 
@@ -417,6 +419,7 @@ public:
 
 	typedef Node::LanguageSet LanguageSet;
 	typedef Node::Bracket Bracket;
+	typedef Comment::VarPos VarPos;
 
 	virtual ~Visitor() throw();
 
@@ -430,7 +433,7 @@ public:
 	virtual void languages(LanguageSet const& languages) = 0;
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
-	virtual void comment(move::Position position, bool atStartOfVariation, db::Comment const& comment) = 0;
+	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
 	virtual void marks(MarkSet const& marks) = 0;
 	virtual void space(Bracket bracket) = 0;
