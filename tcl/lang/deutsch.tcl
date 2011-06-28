@@ -833,7 +833,7 @@
 ::import::mc::InvalidCountryCode					"Ungültiger Länderkode"
 ::import::mc::InvalidRating						"Ungültige Wertungszahl"
 ::import::mc::InvalidNag							"Ungültiges NAG"
-::import::mc::BraceSeenOutsideComment			"\"\}\" ausserhalb eines Partiekommentars (wird ignoriert)""
+::import::mc::BraceSeenOutsideComment			"\"\}\" ausserhalb eines Partiekommentars (wird ignoriert)"
 ::import::mc::MissingFen							"Kein FEN-Tag vorhanden (das Varianten-Tag wird ignoriert)"
 ::import::mc::UnknownEventType					"Unbekannter Ereignistyp"
 ::import::mc::UnknownTitle							"Unbekannter Titel (wird ignoriert)"

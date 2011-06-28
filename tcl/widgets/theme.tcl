@@ -447,6 +447,7 @@ proc ComboboxSelected {w} {
 	if {[currentTheme] ne "clam"} { $w selection clear }
 }
 
+option add *background #efefef
 
 option add *Spinbox.background white
 option add *Spinbox.selectForeground white

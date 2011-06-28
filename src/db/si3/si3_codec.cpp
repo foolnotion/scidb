@@ -1691,9 +1691,11 @@ Codec::readNamebase(	ByteIStream& bstrm,
 				break;
 
 			case Namebase::Site:
-				tmp.assign(name);
-				country::Code country = PgnReader::extractCountryFromSite(tmp);
-				shadowBase.append(str, base.insertSite(name, index, country, limit), *m_codec);
+				{
+					tmp.assign(name);
+					country::Code country = PgnReader::extractCountryFromSite(tmp);
+					shadowBase.append(str, base.insertSite(name, index, country, limit), *m_codec);
+				}
 				break;
 
 			case Namebase::Event:

@@ -1680,7 +1680,7 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 
 		flags = (entry->type() & 0x03) | ((entry->sex() & 0x03) << 3);
 
-		if (fideID = entry->fideID())
+		if ((fideID = entry->fideID()))
 			flags |= 0x80;
 
 		if (uint16_t extranouos = (uint16_t(entry->title() & 0x0f) << 9)
