@@ -161,7 +161,7 @@ GameInfo::GameInfo(Initializer const&)
 	,m_dateDay(0)
 	,m_result(result::Unknown)
 {
-	M_STATIC_CHECK(sizeof(GameInfo) == 64, XXX);
+//	M_STATIC_CHECK(sizeof(GameInfo) == 64, Should_Be_64_Bytes);
 
 	m_pd[White].value = m_pd[Black].value = 0;
 	m_player[White] = m_player[Black] = &g_player;

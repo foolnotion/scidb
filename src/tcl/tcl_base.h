@@ -21,8 +21,6 @@
 
 #include <stdarg.h>
 
-#define TCL_PREREQ(maj, min) ((TCL_MAJOR_VERSION << 16) + TCL_MINOR_VERSION >= ((maj) << 16) + (min))
-
 extern "C"
 {
 	struct Tcl_Interp;
@@ -36,9 +34,7 @@ namespace mstl { class string; }
 
 namespace tcl {
 
-namespace bits { extern Tcl_Interp* interp; }
-
-inline Tcl_Interp* interp() { return bits::interp; }
+Tcl_Interp* interp();
 
 void init(Tcl_Interp* ti);
 

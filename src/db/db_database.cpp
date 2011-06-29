@@ -512,7 +512,7 @@ Database::exportGame(unsigned index, Consumer& consumer)
 
 	try
 	{
-		rc = m_codec->exportGame(consumer, /*DatabaseCodec::Decode_All, */tags, *info);
+		rc = m_codec->exportGame(consumer, tags, *info);
 	}
 	catch (DecodingFailedException const& exc)
 	{

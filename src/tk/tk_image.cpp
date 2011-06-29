@@ -48,6 +48,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+using namespace tcl;
+
 //#define DEBUG(expr) expr
 
 #ifndef DEBUG
@@ -60,6 +62,7 @@
 #define BGR		2,1,0,0
 #define RGBA	0,1,2,3
 #define BGRA	2,1,0,3
+
 
 namespace {
 
@@ -1178,7 +1181,7 @@ tcl_error(char const* subcmd, char const* format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int rc = tcl::error(Tcl_GetCommandName(tcl::interp(), tk_cmd_image), subcmd, 0, format, args);
+	int rc = tcl::error(Tcl_GetCommandName(interp(), tk_cmd_image), subcmd, 0, format, args);
 	va_end(args);
 	return rc;
 }
@@ -1187,7 +1190,7 @@ tcl_error(char const* subcmd, char const* format, ...)
 static int
 tcl_usage(char const* subcmd, char const** options, char const** args)
 {
-	return ::tcl::usage(Tcl_GetCommandName(tcl::interp(), tk_cmd_image), subcmd, 0, options, args);
+	return ::tcl::usage(Tcl_GetCommandName(interp(), tk_cmd_image), subcmd, 0, options, args);
 }
 
 

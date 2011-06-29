@@ -44,6 +44,7 @@ LIBS = \
 
 SRC = \
 	best_move.cpp \
+	cbh2si4.cpp \
 	code2eco.cpp \
 	dump_eco.cpp \
 	eco2code.cpp \
@@ -56,9 +57,9 @@ ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MI
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress $(PROGRAM)
+TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
 
-all: recursive $(PROGRAM)
+all: recursive cbh2si4 $(PROGRAM)
 
 install: $(PROGRAM)
 	install -m 755 -d $(BINDIR)
@@ -190,6 +191,10 @@ pgn_split_eco: pgn_split_eco.o $(LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
+cbh2si4: cbh2si4.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+
 $(PROGRAM): tkscidb.o $(LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
@@ -197,6 +202,10 @@ $(PROGRAM): tkscidb.o $(LIBS)
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
 	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+
+cbh2si4.o: cbh2si4.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) -DSHAREDIR=\"$(SHAREDIR)\" $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -281,6 +290,133 @@ best_move.o: mstl/m_ifstream.h
 best_move.o: mstl/m_file.h
 best_move.o: mstl/m_file.ipp
 best_move.o: mstl/m_ifstream.ipp
+cbh2si4.o: db/db_eco_table.h
+cbh2si4.o: db/db_eco.h
+cbh2si4.o: util/u_base.h
+cbh2si4.o: mstl/m_types.h
+cbh2si4.o: mstl/m_string.h
+cbh2si4.o: mstl/m_string.ipp
+cbh2si4.o: mstl/m_assert.h
+cbh2si4.o: mstl/m_exception.h
+cbh2si4.o: mstl/m_backtrace.h
+cbh2si4.o: mstl/m_exception.ipp
+cbh2si4.o: db/db_eco.ipp
+cbh2si4.o: mstl/m_static_check.h
+cbh2si4.o: db/db_line.h
+cbh2si4.o: db/db_line.ipp
+cbh2si4.o: mstl/m_utility.h
+cbh2si4.o: mstl/m_utility.ipp
+cbh2si4.o: mstl/m_limits.h
+cbh2si4.o: mstl/m_bit_functions.h
+cbh2si4.o: mstl/m_bit_functions.ipp
+cbh2si4.o: db/db_home_pawns.h
+cbh2si4.o: db/db_common.h
+cbh2si4.o: db/db_common.ipp
+cbh2si4.o: db/db_home_pawns.ipp
+cbh2si4.o: mstl/m_map.h
+cbh2si4.o: mstl/m_vector.h
+cbh2si4.o: mstl/m_type_traits.h
+cbh2si4.o: mstl/m_type_traits.ipp
+cbh2si4.o: mstl/m_memblock.h
+cbh2si4.o: mstl/m_memblock.ipp
+cbh2si4.o: mstl/m_vector.ipp
+cbh2si4.o: mstl/m_uninitialized.h
+cbh2si4.o: mstl/m_uninitialized.ipp
+cbh2si4.o: mstl/m_algobase.h
+cbh2si4.o: mstl/m_algobase.ipp
+cbh2si4.o: mstl/m_construct.h
+cbh2si4.o: mstl/m_construct.ipp
+cbh2si4.o: mstl/m_pair.h
+cbh2si4.o: mstl/m_pair.ipp
+cbh2si4.o: mstl/m_map.ipp
+cbh2si4.o: mstl/m_hash.h
+cbh2si4.o: mstl/m_hash.ipp
+cbh2si4.o: mstl/m_bitset.h
+cbh2si4.o: mstl/m_bitset_iterator.h
+cbh2si4.o: mstl/m_bitfield.h
+cbh2si4.o: mstl/m_bitfield.ipp
+cbh2si4.o: mstl/m_bitset_iterator.ipp
+cbh2si4.o: mstl/m_bitset.ipp
+cbh2si4.o: mstl/m_chunk_allocator.h
+cbh2si4.o: mstl/m_stack.h
+cbh2si4.o: mstl/m_stack.ipp
+cbh2si4.o: mstl/m_chunk_allocator.ipp
+cbh2si4.o: db/db_eco_table.ipp
+cbh2si4.o: db/db_database.h
+cbh2si4.o: db/db_database_content.h
+cbh2si4.o: db/db_namebases.h
+cbh2si4.o: db/db_namebase.h
+cbh2si4.o: db/db_namebase_entry.h
+cbh2si4.o: db/db_date.h
+cbh2si4.o: db/db_date.ipp
+cbh2si4.o: db/db_namebase_entry.ipp
+cbh2si4.o: db/db_player.h
+cbh2si4.o: mstl/m_list.h
+cbh2si4.o: mstl/m_pointer_iterator.h
+cbh2si4.o: mstl/m_pointer_iterator.ipp
+cbh2si4.o: mstl/m_list.ipp
+cbh2si4.o: db/db_player.ipp
+cbh2si4.o: db/db_namebase.ipp
+cbh2si4.o: db/db_namebases.ipp
+cbh2si4.o: db/db_game_info.h
+cbh2si4.o: db/db_signature.h
+cbh2si4.o: db/db_signature.ipp
+cbh2si4.o: util/u_crc.h
+cbh2si4.o: util/u_crc.ipp
+cbh2si4.o: mstl/m_byte_order.h
+cbh2si4.o: mstl/m_byte_order.ipp
+cbh2si4.o: db/db_game_info.ipp
+cbh2si4.o: db/db_move.h
+cbh2si4.o: db/db_move.ipp
+cbh2si4.o: db/db_statistic.h
+cbh2si4.o: db/db_time.h
+cbh2si4.o: sys/sys_time.h
+cbh2si4.o: db/db_time.ipp
+cbh2si4.o: db/db_database_content.ipp
+cbh2si4.o: db/db_tree_cache.h
+cbh2si4.o: db/db_board.h
+cbh2si4.o: db/db_move_list.h
+cbh2si4.o: db/db_move_list.ipp
+cbh2si4.o: db/db_board.ipp
+cbh2si4.o: db/db_tree_cache.ipp
+cbh2si4.o: db/db_database.ipp
+cbh2si4.o: db/db_database_codec.h
+cbh2si4.o: db/db_database_codec.ipp
+cbh2si4.o: db/db_log.h
+cbh2si4.o: db/si3/si3_consumer.h
+cbh2si4.o: db/si3/si3_encoder.h
+cbh2si4.o: db/si3/si3_encoder_position.h
+cbh2si4.o: db/si3/si3_encoder_position.ipp
+cbh2si4.o: db/si3/si3_common.h
+cbh2si4.o: db/db_consumer.h
+cbh2si4.o: db/db_provider.h
+cbh2si4.o: db/db_provider.ipp
+cbh2si4.o: db/db_consumer.ipp
+cbh2si4.o: util/u_byte_stream.h
+cbh2si4.o: util/u_byte_stream.ipp
+cbh2si4.o: db/si3/si3_codec.h
+cbh2si4.o: mstl/m_fstream.h
+cbh2si4.o: mstl/m_ifstream.h
+cbh2si4.o: mstl/m_istream.h
+cbh2si4.o: mstl/m_ios.h
+cbh2si4.o: mstl/m_ios.ipp
+cbh2si4.o: mstl/m_istream.ipp
+cbh2si4.o: mstl/m_file.h
+cbh2si4.o: mstl/m_file.ipp
+cbh2si4.o: mstl/m_ifstream.ipp
+cbh2si4.o: mstl/m_ofstream.h
+cbh2si4.o: mstl/m_ostream.h
+cbh2si4.o: mstl/m_ostream.ipp
+cbh2si4.o: mstl/m_ofstream.ipp
+cbh2si4.o: db/si3/si3_codec.ipp
+cbh2si4.o: util/u_progress.h
+cbh2si4.o: util/u_progress.ipp
+cbh2si4.o: sys/sys_utf8_codec.h
+cbh2si4.o: sys/sys_utf8_codec.ipp
+cbh2si4.o: sys/sys_base.h
+cbh2si4.o: sys/sys_base.ipp
+cbh2si4.o: tcl/tcl_base.h
+cbh2si4.o: tcl/tcl_base.ipp
 code2eco.o: db/db_eco.h
 code2eco.o: util/u_base.h
 code2eco.o: mstl/m_types.h

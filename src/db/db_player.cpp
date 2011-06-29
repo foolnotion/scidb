@@ -1737,7 +1737,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 
 						::exclude.assign(s, t);
 
-						if (exclude.find_first_of('\'') == mstl::string::npos)
+						if (exclude.find('\'') == mstl::string::npos)
 							::exclude += '\'';	// forgotten character
 					}
 				}

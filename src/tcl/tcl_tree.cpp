@@ -48,6 +48,7 @@ using namespace app;
 using namespace tcl;
 using namespace tcl::app;
 
+
 static char const* CmdFetch		= "::scidb::tree::fetch";
 static char const* CmdFinish		= "::scidb::tree::finish";
 static char const* CmdGet			= "::scidb::tree::get";

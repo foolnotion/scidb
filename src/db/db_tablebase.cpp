@@ -138,7 +138,7 @@ Tablebase::getOnlineQuery(Board const& board, Move& result)
 	if (http.get(url, answer) <= 0)
 		return tb::Not_Found;
 
-	mstl::string::size_type n = answer.find_first_of(NextColor);
+	mstl::string::size_type n = answer.find(NextColor);
 
 	if (n == mstl::string::npos)
 		return tb::Broken;

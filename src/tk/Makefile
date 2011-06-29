@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../util -I../util/zlib -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
+INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
 CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)

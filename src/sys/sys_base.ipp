@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2011 Gregor Cramer
+// Copyright: (C) 2011 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -16,23 +16,14 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "tcl_http.h"
-#include "tcl_exception.h"
 #include "tcl_base.h"
 
-#include <tcl.h>
+namespace sys {
+namespace tcl {
 
-using namespace tcl;
+inline Tcl_Interp* interp() { return ::tcl::bits::interp; }
 
-static int const PortNumber = 80;
-
-
-Http::Http(char const* host)
-{
-	m_chan = Tcl_OpenTcpClient(interp(), ::PortNumber, host, 0, 0, true);
-
-	if (!m_chan)
-		TCL_RAISE("Tcl_OpenTcpClient() failed");
-}
+} // namespace tcl
+} // namespace sys
 
 // vi:set ts=3 sw=3:

@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "sys_process.h"
+#include "sys_base.h"
 
 #include "tcl_exception.h"
 #include "tcl_base.h"
@@ -143,18 +144,18 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 {
 	DString cmd, dir, cwd;
 
-	Tcl_TranslateFileName(tcl::interp(), command, cmd);
-	Tcl_TranslateFileName(tcl::interp(), directory, dir);
+	Tcl_TranslateFileName(::sys::tcl::interp(), command, cmd);
+	Tcl_TranslateFileName(::sys::tcl::interp(), directory, dir);
 
 	if (!directory.empty())
 	{
-		Tcl_GetCwd(tcl::interp(), cwd);
+		Tcl_GetCwd(::sys::tcl::interp(), cwd);
 		Tcl_Chdir(dir);
 	}
 
 	char const* argv[1] = { command.c_str() };
 
-	m_chan = Tcl_OpenCommandChannel(	tcl::interp(),
+	m_chan = Tcl_OpenCommandChannel(	::sys::tcl::interp(),
 												1, argv,
 												TCL_STDIN | TCL_STDOUT | TCL_STDERR | TCL_ENFORCE_MODE);
 
@@ -162,7 +163,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 		Tcl_Chdir(cwd);
 
 	if (!m_chan)
-		TCL_RAISE("cannot create process: %s", Tcl_PosixError(tcl::interp()));
+		TCL_RAISE("cannot create process: %s", Tcl_PosixError(::sys::tcl::interp()));
 
 #ifdef Tcl_PidObjCmd__is_not_hidden
 
@@ -170,7 +171,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 	Tcl_Obj* channelName = Tcl_NewStringObj(Tcl_GetChannelName(m_chan), -1);
 	Tcl_IncrRefCount(channelName);
-	m_pid = Tcl_PidObjCmd(0, tcl::interp(), 1, &channelName);
+	m_pid = Tcl_PidObjCmd(0, ::sys::tcl::interp(), 1, &channelName);
 	Tcl_DecrRefCount(channelName);
 
 #else
@@ -181,14 +182,14 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 	if (result == 0)
 		TCL_RAISE("tcl::invoke(\"%s\") failed", pidCmd);
-	if (Tcl_GetLongFromObj(tcl::interp(), result, &m_pid) != TCL_OK)
+	if (Tcl_GetLongFromObj(::sys::tcl::interp(), result, &m_pid) != TCL_OK)
 		TCL_RAISE("%s should return long (instead of '%s')", pidCmd, Tcl_GetStringFromObj(result, 0));
 
 #endif
 
 	// XXX should be "-buffering", "none" ?
-	Tcl_SetChannelOption(tcl::interp(), m_chan, "-buffering", "line");
-	Tcl_SetChannelOption(tcl::interp(), m_chan, "-blocking", "0");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "0");
 	Tcl_CreateChannelHandler(m_chan, TCL_READABLE, ::readHandler, this);
 	Tcl_CreateCloseHandler(m_chan, ::closeHandler, this);
 }
@@ -243,7 +244,7 @@ Process::gets(mstl::string& result)
 		if (!isAlive())
 			return -1;
 
-		TCL_RAISE("read error occured: %s", Tcl_PosixError(tcl::interp()));
+		TCL_RAISE("read error occured: %s", Tcl_PosixError(::sys::tcl::interp()));
 	}
 
 	result.assign(static_cast<char const*>(buf), buf.length());
@@ -284,7 +285,7 @@ Process::kill() throw()
 	{
 		Tcl_DeleteChannelHandler(m_chan, ::readHandler, this);
 		Tcl_DeleteCloseHandler(m_chan, ::closeHandler, this);
-		Tcl_Close(tcl::interp(), m_chan);
+		Tcl_Close(::sys::tcl::interp(), m_chan);
 		m_chan = 0;
 	}
 }
@@ -300,7 +301,7 @@ Process::write(char const* msg, int size)
 		if (!isAlive())
 			return -1;
 
-		TCL_RAISE("write error occured: %s", Tcl_PosixError(tcl::interp()));
+		TCL_RAISE("write error occured: %s", Tcl_PosixError(::sys::tcl::interp()));
 	}
 
 	return bytesWritten;

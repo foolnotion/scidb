@@ -18,6 +18,9 @@
 
 #include <string.h>
 
+namespace tcl { namespace bits { extern Tcl_Interp* interp; } }
+
+inline Tcl_Interp* tcl::interp() { return bits::interp; }
 
 inline
 bool

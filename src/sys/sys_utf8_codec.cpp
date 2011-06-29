@@ -17,14 +17,15 @@
 // ======================================================================
 
 #include "sys_utf8_codec.h"
+#include "sys_base.h"
+
+#include "tcl_base.h"
 
 #include "m_string.h"
 #include "m_utility.h"
 #include "m_assert.h"
 
 #include "u_base.h"
-
-#include "tcl_base.h"
 
 #include <tcl.h>
 #include <ctype.h>
@@ -1827,7 +1828,7 @@ isSpace(char c)
 
 
 Codec::Codec(mstl::string const& encoding)
-	:m_codec(Tcl_GetEncoding(interp(), encoding))
+	:m_codec(Tcl_GetEncoding(::sys::tcl::interp(), encoding))
 	,m_buf(4095, ' ')
 	,m_encoding(encoding)
 	,m_failed(false)

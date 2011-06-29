@@ -17,8 +17,8 @@
 // ======================================================================
 
 #include "sys_timer.h"
-
-#include "tcl_base.h"
+#include "sys_base.h"
+#include "sys_base.h"
 
 #include <tcl.h>
 
@@ -42,7 +42,7 @@ Timer::~Timer() throw()
 bool
 Timer::expired() const
 {
-	return m_expired || Tcl_LimitExceeded(tcl::interp());
+	return m_expired || Tcl_LimitExceeded(::sys::tcl::interp());
 }
 
 

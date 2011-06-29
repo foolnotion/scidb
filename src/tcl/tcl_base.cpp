@@ -33,12 +33,10 @@
 #include <assert.h>
 
 extern "C" { extern int Treectrl_Init(Tcl_Interp*); }
+extern "C" { static Tcl_FreeProc* __tcl_static = TCL_STATIC; }
 
 using namespace ::tcl;
 using namespace ::db;
-
-
-extern "C" { static Tcl_FreeProc* __tcl_static = TCL_STATIC; }
 
 Tcl_Interp* tcl::bits::interp = 0;
 
@@ -799,7 +797,7 @@ namespace crosstable	{ void init(Tcl_Interp* interp); }
 void
 tcl::init(Tcl_Interp* ti)
 {
-	bits::interp = ti;
+	::tcl::bits::interp = ti;
 
 	Treectrl_Init(ti);
 

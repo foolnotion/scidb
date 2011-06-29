@@ -749,7 +749,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 	if (i == mstl::string::npos)
 		return;
 
-	mstl::string::size_type k = option.find_first_of(' ', i);
+	mstl::string::size_type k = option.find(' ', i);
 
 	if (k == mstl::string::npos)
 		k = option.size();
@@ -787,7 +787,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 	else if (type == "spin" || type == "slider")
 	{
 		// feature option="NAME -spin VALUE MIN MAX"
-		i = args.find_first_of(' ');
+		i = args.find(' ');
 
 		if (i == mstl::string::npos)
 			return;
@@ -795,7 +795,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 		while (::isspace(args[i]))
 			++i;
 
-		k = args.find_first_of(' ', i);
+		k = args.find(' ', i);
 
 		if (k == mstl::string::npos)
 			++k;

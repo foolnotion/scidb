@@ -863,7 +863,6 @@ proc checkGCC {cc} {
 
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
-#    Also creates tcl/config.tcl
 #
 proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir
@@ -990,6 +989,13 @@ proc writeMakefile {{type ""}} {
         puts "Not all settings could be determined!"
         puts "The default Makefile.in was written."
         puts "You will need to edit it before you can compile Scidb."
+
+        if {![info exists option(TCL_INCLUDE)] || ![info exists option(TK_INCLUDE)]} {
+            puts ""
+            puts "Possibly you have to install Tcl/Tk. On Ubuntu/Debian systems use:"
+            puts "  sudo apt-get install tcl8.5"
+            puts "  sudo apt-get install tk8.5"
+        }
     }
 }
 
