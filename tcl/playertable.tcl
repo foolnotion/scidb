@@ -506,7 +506,7 @@ proc showInfo {path info} {
 		grid $lbl -column 1 -row 1
 	}
 
-	set icon [countryFlag $country]
+	set icon [::country::countryFlag $country]
 	if {[llength $icon]} {
 		if {![winfo exists $top.lt]} { tk::frame $top.lt -background $bg -borderwidth 0 }
 		set lbl [tk::label $top.lt.flag -background $bg -image $icon -borderwidth 0]
@@ -530,17 +530,6 @@ proc showInfo {path info} {
 
 proc hideInfo {path} {
 	::tooltip::popdown $path.showinfo
-}
-
-
-proc countryFlag {code} {
-	variable _Flags
-
-	if {[llength $code] == 0} { return {} }
-	if {[info exists _Flags($code)]} { return [set _Flags($code)] }
-	set file [file join $::scidb::dir::share flags $code.png]
-	if {[catch {set _Flags($code) [image create photo -file $file]}]} { return {} }
-	return [set _Flags($code)]
 }
 
 
@@ -913,13 +902,13 @@ proc PopupMenu {table menu base index} {
 	set info [scidb::db::get playerInfo $index $view $base -info]
 
 	set fideID    [lindex $info  1]
-	set dsbID     [lindex $info 12]
-	set ecfID     [lindex $info 13]
-	set iccfID    [lindex $info 14]
-	set viafID    [lindex $info 15]
-	set pndID     [lindex $info 16]
-	set cgdcID    [lindex $info 17]
-	set wikiLinks [lindex $info 18]
+	set dsbID     [lindex $info 13]
+	set ecfID     [lindex $info 14]
+	set iccfID    [lindex $info 15]
+	set viafID    [lindex $info 16]
+	set pndID     [lindex $info 17]
+	set cgdcID    [lindex $info 18]
+	set wikiLinks [lindex $info 19]
 
 	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
 
@@ -1008,7 +997,7 @@ proc PopupMenu {table menu base index} {
 	foreach {lang name} $wikiLinks {
 		set flag ""
 		catch { set flag $::country::icon::flag($::mc::langToCountry($lang)) }
-		if {[string length $flag] == 0} { set flag ::icon::16x16::none }
+		if {[string length $flag] == 0} { set flag $::icon::16x16::none }
 		set url [string map [list %lang% $lang %name% $name] $Options(url:wikipedia)]
 		$sub add command \
 			-label " [::encoding::languageName $lang]" \

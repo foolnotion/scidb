@@ -269,7 +269,7 @@ ResFree(v1, v2)
         for (i = 0; i < pRec->nStack; i++) {
             ckfree((char *)pRec->aStack[i]);
         }
-        ckfree((char *)pRec->aStack);
+       ckfree((char *)pRec->aStack);
         ckfree((char *)pRec);
 
         Tcl_DeleteHashEntry(pEntry);
@@ -467,7 +467,7 @@ freeMallocHash(p, nBytes)
 
     if (aData[0] == 0) {
         Tcl_DeleteHashEntry(pEntryMalloc);
-        ckfree((char *)aData);
+       ckfree((char *)aData);
     }
     Tcl_DeleteHashEntry(pEntryAllocationType);
 }

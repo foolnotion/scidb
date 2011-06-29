@@ -60,7 +60,8 @@ set EcoCode							"&ECO Code"
 set Matches							"&Matches"
 set Tags								"&Tags"
 
-set Name								"Name/Fide ID"
+set Name								"Name"
+set NameFideID						"Name/Fide ID"
 set Value							"Value"
 set Title							"Title"
 set Rating							"Rating"
@@ -244,7 +245,6 @@ proc open {parent base position {number 0}} {
 	variable Priv
 	variable Colors
 	variable MaxColumnLength
-	variable OnlyName
 
 	incr number -1
 
@@ -318,10 +318,9 @@ proc open {parent base position {number 0}} {
 		ttk::labelbar $top.$side ::mc::[string toupper $side 0 0]
 
 		if {$state eq "normal"} {
-			set textvar [namespace current]::mc::Name
+			set textvar [namespace current]::mc::NameFideID
 		} else {
-			set textvar [namespace current]::OnlyName
-			set OnlyName [lindex [split $mc::Name /] 0]
+			set textvar [namespace current]::mc::Name
 		}
 
 		ttk::label $top.$side-player-l -textvar $textvar
@@ -329,10 +328,6 @@ proc open {parent base position {number 0}} {
 		ttk::label $top.$side-title-l -textvar [namespace current]::mc::Title
 		ttk::label $top.$side-federation-l -textvar [namespace current]::mc::Federation
 		ttk::label $top.$side-sex-l -textvar [namespace current]::mc::Sex
-
-		if {$state eq "disabled"} {
-			bind $top.$side-player-l <<Language>> "set [namespace current]::OnlyName \[lindex \[split \[set [namespace current]::mc::Name] /] 0]"
-		}
 
 		ttk::frame $top.$side-player -borderwidth 0 -takefocus 0
 		entrybox $top.$side-name -textvar [namespace current]::Priv(${side}-name)
@@ -1553,37 +1548,37 @@ proc VisitMatch {lb data} {
 		}
 
 		name {
-			if {1} { ;# show Fide ID
-				set item [lindex $data [lsearch $Attrs(player) fideID]]
-				if {[llength $item]} { set tip "$::playertable::mc::FideID: $item" }
-			} else { ;# show aliases
-				set aliases {}
+			set aliases {}
 
-				switch $Priv(entry) {
-					event-site {
-						set attr site
-						set name [lindex $data [lsearch $Attrs(site) name]]
-						set country [lindex $data [lsearch $Attrs(site) country]]
-						set aliases [::scidb::app::lookup siteAlias $name $country]
-					}
+			switch $Priv(entry) {
+				event-site {
+					set attr site
+					set name [lindex $data [lsearch $Attrs(site) name]]
+					set country [lindex $data [lsearch $Attrs(site) country]]
+					set aliases [::scidb::app::lookup siteAlias $name $country]
+				}
 
-					white-name - black-name {
+				white-name - black-name {
+					if {1} { ;# show Fide ID
+						set item [lindex $data [lsearch $Attrs(player) fideID]]
+						if {[llength $item]} { set tip "$::playertable::mc::FideID: $item" }
+					} else { ;# show aliases
 						set attr player
 						set name [lindex $data [lsearch $Attrs(player) name]]
 						set aliases [::scidb::app::lookup playerAlias $name]
 					}
 				}
+			}
 
+			if {[llength $aliases]} {
+				if {!$Priv(local)} {
+					set name [lindex $data [lsearch $Attrs($attr) ascii]]
+				}
+				set index [lsearch $aliases $name]
+				if {$index >= 0} { set aliases [lreplace $aliases $index $index] }
+				set aliases [lsort -dictionary -unique $aliases]
 				if {[llength $aliases]} {
-					if {!$Priv(local)} {
-						set name [lindex $data [lsearch $Attrs($attr) ascii]]
-					}
-					set index [lsearch $aliases $name]
-					if {$index >= 0} { set aliases [lreplace $aliases $index $index] }
-					set aliases [lsort -dictionary -unique $aliases]
-					if {[llength $aliases]} {
-						set tip [join $aliases \n]
-					}
+					set tip [join $aliases \n]
 				}
 			}
 		}

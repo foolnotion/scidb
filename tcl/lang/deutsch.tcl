@@ -175,7 +175,7 @@
 
 ::load::mc::ECOFile					"ECO-Datei"
 ::load::mc::EngineFile				"Engine-Datei"
-::load::mc::SpellcheckFile			"Rechtschreibprüfungsdatei"
+::load::mc::SpellcheckFile			"Spielerinformationendatei"
 ::load::mc::LocalizationFile		"Lokalisierungsdatei"
 ::load::mc::RatingList				"%s-Wertungszahlenliste"
 ::load::mc::WikipediaLinks			"Verknüpfungen zu Wikipedia"
@@ -1008,7 +1008,8 @@
 ::dialog::save::mc::Matches						"&Entsprechungen"
 ::dialog::save::mc::Tags							"&Tags"
 
-::dialog::save::mc::Name							"Name/Fide ID"
+::dialog::save::mc::Name							"Name"
+::dialog::save::mc::NameFideID					"Name/Fide-ID"
 ::dialog::save::mc::Value							"Wert"
 ::dialog::save::mc::Title							"Title"
 ::dialog::save::mc::Rating							"Wertungszahl"

@@ -657,6 +657,17 @@ proc iso {code} {
 }
 
 
+proc countryFlag {code} {
+	variable _Flags
+
+	if {[llength $code] == 0} { return {} }
+	if {[info exists _Flags($code)]} { return [set _Flags($code)] }
+	set file [file join $::scidb::dir::share flags $code.png]
+	if {[catch {set _Flags($code) [image create photo -file $file]}]} { return {} }
+	return [set _Flags($code)]
+}
+
+
 proc makeToolbarIcon {countryCode} {
 	variable Icons
 
@@ -6403,6 +6414,10 @@ if {[::scidb::misc::debug?]} {
 			}
 			if {![info exists icon::flag($code)]} {
 				error "Missing flag for country code $code"
+			}
+			set file [file join $::scidb::dir::share flags $code.png]
+			if {![file readable $file]} {
+				puts "File $file is missing"
 			}
 			set exists($code) 1
 		}

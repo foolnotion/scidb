@@ -215,6 +215,13 @@ proc WidgetProc {w command args} {
 			SetDate $w [list $y $m $d]
 			return $w
 		}
+
+		cget {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] cget <option>\""
+			}
+			if {[lindex $args 0] eq "-state"} { return "normal" }
+		}
 	}
 
 	return [$w.__w__ $command {*}$args]
