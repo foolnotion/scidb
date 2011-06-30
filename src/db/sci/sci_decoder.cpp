@@ -378,18 +378,13 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					if (move)
 					{
 						if (hasNote)
-						{
 							consumer.putMove(move, annotation, preComment, comment, marks);
-							marks.clear();
-							annotation.clear();
-							comment.clear();
-							preComment.clear();
-							hasNote = false;
-						}
 						else
-						{
 							consumer.putMove(move);
-						}
+					}
+					else if (hasNote)
+					{
+						consumer.putPrecedingComment(comment, annotation, marks);
 					}
 					if (m_strm.get() == token::Comment)
 					{

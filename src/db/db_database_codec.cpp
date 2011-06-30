@@ -519,10 +519,10 @@ DatabaseCodec::sync()
 
 
 void
-DatabaseCodec::decodeGame(/*unsigned flags, */GameData& data, GameInfo& info)
+DatabaseCodec::decodeGame(GameData& data, GameInfo& info)
 {
 	M_REQUIRE(isOpen());
-	doDecoding(/*flags, */data, info);
+	doDecoding(data, info);
 }
 
 
@@ -537,16 +537,16 @@ DatabaseCodec::encodeGame(util::ByteStream& strm, GameData const& data, Signatur
 
 
 save::State
-DatabaseCodec::exportGame(Consumer& consumer, ByteStream& strm/*, unsigned flags*/, TagSet& tags)
+DatabaseCodec::exportGame(Consumer& consumer, ByteStream& strm, TagSet& tags)
 {
-	return doDecoding(consumer, strm/*, flags*/, tags);
+	return doDecoding(consumer, strm, tags);
 }
 
 
 save::State
-DatabaseCodec::exportGame(Consumer& consumer/*, unsigned flags*/, TagSet& tags, GameInfo const& info)
+DatabaseCodec::exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
-	return doDecoding(consumer/*, flags*/, tags, info);
+	return doDecoding(consumer, tags, info);
 }
 
 

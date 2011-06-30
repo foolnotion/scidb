@@ -67,12 +67,14 @@ install: $(PROGRAM)
 	install -m 755 -d $(SHAREDIR)/data
 	install -m 755 -d $(SHAREDIR)/scripts
 	install -m 755 -p $(PROGRAM) $(BINDIR)
+	install -m 755 -p cbh2si4 $(BINDIR)
 	install -m 644 -p data/eco.bin $(SHAREDIR)/data
 	install -m 644 -p data/*.* $(SHAREDIR)/data
 	install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
 
 uninstall:
 	rm -f $(BINDIR)/$(PROGRAM)
+	rm -f $(BINDIR)/cbh2si4
 	rm -f $(SHAREDIR)/scripts/plain.eXt
 	rm -f $(SHAREDIR)/data/eco.bin
 	for f in `ls data/*.*`; do \

@@ -964,6 +964,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count)
 							MoveNode* var  = varList[i];
 							MoveNode* next = var->next();
 
+#ifndef ALLOW_EMPTY_VARS
 							if (next->atLineEnd())
 							{
 								// Scidb does not support empty variations,
@@ -982,6 +983,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count)
 									var->setNext(next);
 								}
 							}
+#endif
 
 							if (next->isBeforeLineEnd())
 								root->addVariation(var);

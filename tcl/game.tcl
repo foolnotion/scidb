@@ -399,7 +399,7 @@ proc queryCloseApplication {parent} {
 		lassign $entry time modified locked database crc tags
 		lassign $database name codec number
 
-		if {$modified} {
+		if {$modified && ![::scidb::game::query $pos empty?]} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
 			lappend games [list $pos $index $time $name $number $tags]
 		}

@@ -68,7 +68,7 @@ private:
 	bool beginGame(TagSet const& tags);
 	save::State endGame(TagSet const& tags);
 
-	void sendTrailingComment(Comment const& comment);
+	void sendTrailingComment(Comment const& comment, bool variationIsEmpty);
 	void sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,

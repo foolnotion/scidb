@@ -863,14 +863,7 @@ PgnReader::process(Progress& progress)
 					}
 				}
 
-				putMove(true);
-
-				if (!m_comments.empty())
-				{
-					// We have a comment after the last variation has finished,
-					::join(m_comments.begin(), m_comments.begin() + m_postIndex);
-					consumer().putTrailingComment(m_comments[0]);
-				}
+				putLastMove();
 
 				if (token == kError)
 					unexpectedSymbol(kError, get());
@@ -925,7 +918,7 @@ PgnReader::process(Progress& progress)
 			{
 				if (!m_parsingTags)
 				{
-					putMove(true);
+					putLastMove();
 					handleError(exc.error, exc.message);
 				}
 
@@ -1336,6 +1329,39 @@ PgnReader::putMove(bool lastMove)
 		}
 
 		m_postIndex = m_comments.size();
+	}
+}
+
+
+void
+PgnReader::putLastMove()
+{
+	if (m_move)
+	{
+		putMove(true);
+	}
+	else if (m_hasNote)
+	{
+		if (consumer().variationIsEmpty())
+		{
+			if (m_modification == Raw && m_comments.size() > 1)
+			{
+				::join(m_comments.begin() + 1, m_comments.end());
+				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+				consumer().putTrailingComment(m_comments[1]);
+			}
+			else
+			{
+				::join(m_comments.begin(), m_comments.end());
+				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+			}
+		}
+		else if (!m_comments.empty())
+		{
+			// We have a comment after the last variation has finished,
+			::join(m_comments.begin(), m_comments.end());
+			consumer().putTrailingComment(m_comments[0]);
+		}
 	}
 }
 

@@ -222,7 +222,7 @@ Consumer::sendPrecedingComment(	Comment const& comment,
 
 
 void
-Consumer::sendTrailingComment(Comment const& comment)
+Consumer::sendTrailingComment(Comment const& comment, bool)
 {
 	if (m_appendComment)
 	{

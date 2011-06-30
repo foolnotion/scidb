@@ -38,6 +38,7 @@ VarConsumer::VarConsumer(Board const& startBoard, mstl::string const& encoding)
 	:Consumer(format::Pgn, encoding)
 	,m_result(new MoveNode)
 	,m_current(m_result)
+	,m_nullMoveInserted(false)
 {
 	setStartBoard(startBoard);
 }
@@ -85,11 +86,17 @@ VarConsumer::sendPrecedingComment(Comment const& comment,
 
 
 void
-VarConsumer::sendTrailingComment(Comment const& comment)
+VarConsumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 {
 	if (!comment.isEmpty())
 	{
 		move::Position pos = m_current->atLineStart() ? move::Ante : move::Post;
+
+		if (variationIsEmpty)
+		{
+			sendMove(Move::null());
+			m_nullMoveInserted = true;
+		}
 
 		if (m_current->comment(pos).isEmpty())
 		{
@@ -146,18 +153,22 @@ VarConsumer::beginVariation()
 	MoveNode* node = new MoveNode;
 	m_current->addVariation(node);
 	m_current = node;
+	m_nullMoveInserted = false;
 }
 
 
 void
 VarConsumer::endVariation(bool isEmpty)
 {
-	if (isEmpty)
+#ifndef ALLOW_EMPTY_VARS
+	if (isEmpty && !m_nullMoveInserted)
 		sendMove(Move::null());
+#endif
 
 	m_current = m_current->getLineStart();
 	M_ASSERT(m_current->prev());
 	m_current = m_current->prev();
+	m_nullMoveInserted = false;
 }
 
 

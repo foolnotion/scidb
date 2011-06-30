@@ -349,7 +349,7 @@ private:
 //#endif
 ;
 
-// NOTE: 64 bytes on all platforms (63 bytes if packed on Intel based platforms)
+// NOTE: 64 bytes on all 32 bit platforms (63 bytes if packed on Intel based platforms)
 // NOTE: IndexEntry (Scid) has 48 bytes
 
 } // namespace db

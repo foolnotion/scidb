@@ -28,8 +28,8 @@ class byte_buf
 public:
 
 	typedef unsigned char byte;
-
 	typedef size_t size_type;
+
 	typedef byte value_type;
 
 	byte_buf(size_type size);

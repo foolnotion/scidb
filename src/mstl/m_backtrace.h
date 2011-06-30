@@ -37,7 +37,7 @@ public:
 	bool empty() const;
 
 	backtrace const& operator=(backtrace const& v);
-	void text_write(ostringstream& os, size_t skip = 0) const;
+	void text_write(ostringstream& os, unsigned skip = 0) const;
 
 	static bool is_debug_mode();
 

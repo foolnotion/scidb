@@ -252,6 +252,7 @@ private:
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
 	void putMove(bool lastMove = false);
+	void putLastMove();
 	void setNullMove();
 	void handleError(Error code, mstl::string const& message);
 	void finishGame();

@@ -699,7 +699,7 @@ mstl::backtrace::symbols()
 
 
 void
-mstl::backtrace::text_write(ostringstream& os, size_t skip) const
+mstl::backtrace::text_write(ostringstream& os, unsigned skip) const
 {
 	unsigned i = 0;
 

@@ -93,6 +93,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_endOfRun = false;
 	m_danglingPop = false;
 	m_danglindEndMarker = true;
+
 	return true;
 }
 
@@ -195,12 +196,21 @@ Consumer::sendPrecedingComment(	Comment const& comment,
 
 
 void
-Consumer::sendTrailingComment(Comment const& comment)
+Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 {
-	m_strm.put(token::End_Marker);
-
-	if (Byte flag = writeComment(comm::Post, comment))
+	if (!comment.isEmpty())
 	{
+#ifndef ALLOW_EMPTY_VARS
+		if (variationIsEmpty)
+			putMove(m_move = Move::null());
+#endif
+
+		m_strm.put(token::End_Marker);
+
+		Byte flag = writeComment(comm::Post, comment);
+
+		M_ASSERT(flag);
+
 		m_strm.put(token::Comment);
 		m_data.put(flag);
 		m_endOfRun = true;
@@ -214,7 +224,6 @@ Consumer::beginVariation()
 {
 	if (m_danglingPop)
 	{
-		M_ASSERT(!m_move);
 		m_danglingPop = false;
 	}
 	else
@@ -249,8 +258,10 @@ Consumer::beginVariation()
 void
 Consumer::endVariation(bool isEmpty)
 {
+#ifndef ALLOW_EMPTY_VARS
 	if (isEmpty)
 		putMove(Move::null());
+#endif
 
 	if (m_danglindEndMarker)
 	{
@@ -266,7 +277,6 @@ Consumer::endVariation(bool isEmpty)
 		m_danglindEndMarker = true;
 	}
 
-	m_move.clear();
 	m_danglingPop = true;
 }
 

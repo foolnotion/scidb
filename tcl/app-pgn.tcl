@@ -1811,7 +1811,7 @@ proc PopupMenu {parent position} {
 				-command [namespace code [list editComment a $position]] \
 				;
 		}
-		if {[::scidb::game::position atEnd?] || [::scidb::game::query empty?]} {
+		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {
 			$menu add command \
 				-label "$mc::EditTrailingComment..." \
 				-command [namespace code [list editComment e $position]] \
@@ -2215,7 +2215,7 @@ proc LanguageChanged {} {
 	variable Vars 
 
 	foreach position [::game::usedPositions?] {
-		if {[::scidb::game::query $position empty]} {
+		if {[::scidb::game::query $position length] == 0} {
 			::scidb::game::refresh $position -radical
 		} else {
 			set w $Vars(pgn:$position)

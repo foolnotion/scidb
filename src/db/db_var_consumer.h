@@ -59,7 +59,7 @@ protected:
 	save::State endGame(TagSet const& tags);
 
 	void sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
-	void sendTrailingComment(Comment const& comment);
+	void sendTrailingComment(Comment const& comment, bool variationIsEmpty);
 	bool sendMove(Move const& move);
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
@@ -80,8 +80,9 @@ private:
 							Annotation const& annotation,
 							MarkSet const& marks);
 
-	MoveNode* m_result;
-	MoveNode* m_current;
+	MoveNode*	m_result;
+	MoveNode*	m_current;
+	bool			m_nullMoveInserted;
 };
 
 } // namespace db

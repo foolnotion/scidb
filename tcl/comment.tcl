@@ -692,15 +692,13 @@ proc LanguageChanged {dlg w} {
 
 	if {$dlg ne $w} { return }
 
-	if {[::scidb::game::position atStart?]} {
-		set titleVar PrecedingComment
-	} else {
-		switch $Vars(pos) {
-			a { set titleVar CommentBeforeMove }
-			p { set titleVar CommentAfterMove }
-			e { set titleVar TrailingComment }
-		}
+	switch $Vars(pos) {
+		a { set titleVar CommentBeforeMove }
+		p { set titleVar CommentAfterMove }
+		s { set titleVar PrecedingComment }
+		e { set titleVar TrailingComment }
 	}
+
 	wm title $dlg [set mc::$titleVar]
 
 	set Vars(lang:label) [LanguageName]

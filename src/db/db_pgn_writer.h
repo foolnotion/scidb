@@ -108,7 +108,7 @@ private:
 	unsigned			m_pendingSpace;
 	bool				m_needPreComment;
 	bool				m_needPostComment;
-	bool				m_hasPostComment;
+	bool				m_hasPrecedingComment;
 };
 
 } // namespace db

@@ -31,7 +31,7 @@ struct bitset_iterator
 	typedef bitfield::reference				reference;
 	typedef bitfield::value_type				value_type;
 	typedef bitset_iterator						iterator;
-	typedef size_t									size_type;
+	typedef unsigned								size_type;
 
 	// structors
 	bitset_iterator();
@@ -74,7 +74,7 @@ struct bitset_const_iterator
 	typedef mstl::bitfield<unsigned long>	bitfield;
 	typedef bool									reference;
 	typedef bitset_const_iterator				const_iterator;
-	typedef size_t									size_type;
+	typedef unsigned								size_type;
 
 	// structors
 	bitset_const_iterator();

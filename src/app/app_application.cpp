@@ -820,7 +820,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 				return;
 			if (cursor.isReferenceBase())
 				Application::stopUpdateTree();
-			// we have to use PGN reader!
+			// we have to use PGN reader
 			base.reopen(encoding, progress);
 			break;
 

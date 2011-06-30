@@ -102,7 +102,7 @@ Writer::sendPrecedingComment(Comment const& comment, Annotation const& annotatio
 
 
 void
-Writer::sendTrailingComment(Comment const& comment)
+Writer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 {
 	if (test(Flag_Include_Comments) && !comment.isEmpty())
 	{

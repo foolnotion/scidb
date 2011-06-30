@@ -1928,31 +1928,40 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			}
 			break;
 
-		case 'l':	// langSet
-			if (objc >= 4)
+		case 'l':
+			switch (cmd[1])
 			{
-				char const* pos(stringFromObj(objc, objv, nextArg));
-				char const* lang(stringFromObj(objc, objv, nextArg + 2));
-				edit::Key	key(stringFromObj(objc, objv, nextArg + 1));
+				case 'a':	// langSet
+					if (objc >= 4)
+					{
+						char const* pos(stringFromObj(objc, objv, nextArg));
+						char const* lang(stringFromObj(objc, objv, nextArg + 2));
+						edit::Key	key(stringFromObj(objc, objv, nextArg + 1));
 
-				move::Position p = *pos == 'a' ? move::Ante : move::Post;
-				if (*pos == 't')
-					key.incrementPly();
-				setResult(Scidb.game().containsLanguage(key, p, lang));
-			}
-			else
-			{
-				Game::LanguageSet const& langSet = Scidb.game().languageSet();
-				mstl::string languages;
+						move::Position p = *pos == 'a' ? move::Ante : move::Post;
+						if (*pos == 't')
+							key.incrementPly();
+						setResult(Scidb.game().containsLanguage(key, p, lang));
+					}
+					else
+					{
+						Game::LanguageSet const& langSet = Scidb.game().languageSet();
+						mstl::string languages;
 
-				for (Game::LanguageSet::const_iterator i = langSet.begin(); i != langSet.end(); ++i)
-				{
-					if (!languages.empty())
-						languages += ' ';
-					languages += i->first;
-				}
+						for (Game::LanguageSet::const_iterator i = langSet.begin(); i != langSet.end(); ++i)
+						{
+							if (!languages.empty())
+								languages += ' ';
+							languages += i->first;
+						}
 
-				setResult(languages);
+						setResult(languages);
+					}
+					break;
+
+				case 'e':	// length
+					setResult(Scidb.game(pos).plyCount());
+					break;
 			}
 			break;
 
@@ -1982,7 +1991,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'e':
 			switch (cmd[1])
 			{
-				case 'm': setResult(Scidb.game(pos).plyCount() == 0); break;						// empty?
+				case 'm': setResult(Scidb.game(pos).isEmpty()); break;									// empty?
 				case 'c': setResult(Scidb.game(pos).computeEcoCode().asShortString()); break;	// eco
 
 				default: return error(CmdQuery, 0, 0, "invalid command %s", cmd);

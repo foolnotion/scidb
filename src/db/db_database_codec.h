@@ -148,17 +148,11 @@ public:
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
-	void decodeGame(/*unsigned flags, */GameData& data, GameInfo& info);
+	void decodeGame(GameData& data, GameInfo& info);
 	void encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature);
 
-	save::State exportGame(	Consumer& consumer,
-//									unsigned flags,
-									TagSet& tags,
-									GameInfo const& info);
-	save::State exportGame(	Consumer& consumer,
-									util::ByteStream& strm,
-//									unsigned flags,
-									TagSet& tags);
+	save::State exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info);
+	save::State exportGame(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
 
 	virtual util::ByteStream getGame(GameInfo const& info);
 	save::State addGame(util::ByteStream const& gameData, GameInfo const& info);
@@ -196,15 +190,9 @@ protected:
 								util::Progress& progress) = 0;
 	virtual void doClear(mstl::string const& rootname);
 
-	virtual void doDecoding(/*unsigned flags, */GameData& data, GameInfo& info) = 0;
-	virtual save::State doDecoding(	Consumer& consumer,
-												util::ByteStream& strm,
-//												unsigned flags,
-												TagSet& tags);
-	virtual save::State doDecoding(	Consumer& consumer,
-//												unsigned flags,
-												TagSet& tags,
-												GameInfo const& info) = 0;
+	virtual void doDecoding(GameData& data, GameInfo& info) = 0;
+	virtual save::State doDecoding(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
+	virtual save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info) = 0;
 	virtual void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	virtual unsigned putGame(util::ByteStream const& data);
 	virtual unsigned putGame(	util::ByteStream const& strm,

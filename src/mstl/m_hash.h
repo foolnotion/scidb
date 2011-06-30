@@ -41,8 +41,8 @@ public:
 	typedef value_type const&	const_reference;
 	typedef value_type*			pointer;
 	typedef value_type const*	const_pointer;
-	typedef size_t					size_type;
 	typedef pair<Key,Value>		assoc_t;
+	typedef size_t					size_type;
 
 	class const_iterator
 	{

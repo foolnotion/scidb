@@ -363,11 +363,13 @@ Decoder::decodeVariation(unsigned level)
 								if (	!m_currentNode->annotation().isEmpty()
 									|| m_strm.peek() == token::Start_Marker)
 								{
+#ifndef DONT_ALLOW_EMPTY_VARS
 									// As a workaround we insert a null move.
 
 									MoveNode* node = new MoveNode(m_position.board().makeNullMove());
 									node->setNext(m_currentNode->removeNext());
 									m_currentNode->setNext(node);
+#endif
 								}
 								else
 								{

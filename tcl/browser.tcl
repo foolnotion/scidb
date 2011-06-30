@@ -516,7 +516,7 @@ proc Goto {position step} {
 proc LanguageChanged {position info} {
 	variable ${position}::Vars
 
-	if {[::scidb::game::query $position empty?]} {
+	if {[::scidb::game::query $position length] == 0} {
 		set w $Vars(pgn)
 		$w configure -state normal
 		$w delete 1.0 end
@@ -679,7 +679,7 @@ proc UpdatePGN {position data} {
 			result {
 				set key $Vars(key)
 				set Vars(result) [list [::util::formatResult [lindex $node 1]] [list $key result]]
-				if {[::scidb::game::query $position empty?]} {
+				if {[::scidb::game::query $position length] == 0} {
 					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
 				}
 				$w insert end " "

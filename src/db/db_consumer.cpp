@@ -221,7 +221,6 @@ void
 Consumer::putTrailingComment(Comment const& comment)
 {
 	M_REQUIRE(!comment.isEmpty());
-	M_REQUIRE(!variationIsEmpty());
 
 	if (!m_terminated)
 	{
@@ -231,7 +230,8 @@ Consumer::putTrailingComment(Comment const& comment)
 		if (comment.othFlag())
 			m_commentOthFlag = true;
 
-		sendTrailingComment(comment);
+		sendTrailingComment(comment, m_stack.top().empty);
+		m_stack.top().move = Move::null();
 	}
 }
 

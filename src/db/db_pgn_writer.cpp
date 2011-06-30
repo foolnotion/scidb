@@ -72,6 +72,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	,m_pendingSpace(0)
 	,m_needPreComment(false)
 	,m_needPostComment(false)
+	,m_hasPrecedingComment(false)
 {
 	if (test(Flag_Use_Scidb_Import_Format))
 	{
@@ -252,6 +253,7 @@ PgnWriter::writeBeginGame(unsigned number)
 	m_length = 0;
 	m_needPreComment = false;
 	m_needPostComment = false;
+	m_hasPrecedingComment = false;
 
 	m_move.clear();
 	m_annotation.clear();
@@ -526,8 +528,15 @@ PgnWriter::putMarks(MarkSet const& marks)
 void
 PgnWriter::writePrecedingComment(Comment const& comment, MarkSet const& marks)
 {
-	if (!comment.isEmpty() || !marks.isEmpty())
+	if (!comment.isEmpty())
+	{
+		m_hasPrecedingComment = true;
 		m_needPreComment = true;
+	}
+	else if (!marks.isEmpty())
+	{
+		m_needPreComment = true;
+	}
 
 	putComment(comment, marks);
 }
@@ -538,7 +547,7 @@ PgnWriter::writeTrailingComment(Comment const& comment)
 {
 	if (!comment.isEmpty())
 	{
-		if (m_needPostComment)
+		if (m_needPostComment || !m_hasPrecedingComment)
 			putComment(mstl::string::empty_string);
 
 		putComment(comment);
@@ -598,6 +607,8 @@ PgnWriter::writeMove(Move const& move,
 	putTokens(m_annotation);
 	putSpace();
 
+	m_hasPrecedingComment = false;
+
 	if (comment.isEmpty() && marks.isEmpty())
 	{
 		m_needPostComment = true;
@@ -628,6 +639,7 @@ PgnWriter::writeBeginVariation(unsigned)
 
 	m_needPostComment = false;
 	m_needPreComment = false;
+	m_hasPrecedingComment = false;
 
 	if (::SpaceAfterBracket)
 		putSpace();
@@ -643,6 +655,7 @@ PgnWriter::writeEndVariation(unsigned)
 	putDelim(')');
 	m_needPostComment = false;
 	m_needPreComment = false;
+	m_hasPrecedingComment = false;
 
 	if (test(Flag_Indent_Variations))
 	{

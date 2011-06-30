@@ -75,7 +75,7 @@ fill(ForwardIterator first, ForwardIterator last, T const& value)
 template <typename OutputIterator, typename T>
 inline
 OutputIterator
-fill_n(OutputIterator first, size_t count, T const& value)
+fill_n(OutputIterator first, unsigned count, T const& value)
 {
 	for ( ; count; --count, ++first)
 		*first = value;
