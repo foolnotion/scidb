@@ -55,7 +55,7 @@ inline MoveNode* MoveNode::clone() const					{ return clone(0); }
 
 inline Comment const& MoveNode::comment(move::Position position) const { return m_comment[position]; }
 
-inline void MoveNode::setComment(move::Position position)	{ m_flags |= (1 << position); }
+inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
 
 

@@ -193,7 +193,7 @@ proc BuildContributionsFrame {w} {
 
 	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
 	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
-#	$t insert end [Enc "Fernando González ([::encoding::languageName es]), "]
+	$t insert end [Enc "Fernando González ([::encoding::languageName es]), "]
 	$t insert end [Enc "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"]
 
 	$t insert end [Enc "\n\n"]
@@ -201,7 +201,7 @@ proc BuildContributionsFrame {w} {
 	$t insert end [Enc "Steven Atkinson, "]
 	$t insert end [Enc "Paolo Casaschi, "]
 	$t insert end [Enc "Lars Ekman, "]
-#	$t insert end [Enc "Fernando González, "]
+	$t insert end [Enc "Fernando González, "]
 	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
 	$t insert end [Enc "Matthew Simpson, "]

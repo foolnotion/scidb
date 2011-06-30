@@ -1239,6 +1239,33 @@ Board::removeCastlingRights()
 
 
 void
+Board::removeCastlingRights(color::ID color)
+{
+	hashCastling(color::ID(color));
+	destroyCastle(color::ID(color));
+	m_castleRookCurrent[::kingSideIndex(color)] = Null;
+	m_castleRookCurrent[::queenSideIndex(color)] = Null;
+}
+
+
+void
+Board::removeCastlingRights(Square rook)
+{
+	M_REQUIRE(piece(rook) == piece::Rook);
+
+	Byte castling = m_destroyCastle[rook];
+
+	if (m_castle & ~castling)
+	{
+		Index index = Index(lsb(uint8_t(~castling)));
+		hashCastling(index);
+		m_castle &= castling;
+		m_castleRookCurrent[index] = Null;
+	}
+}
+
+
+void
 Board::setCastlingFyle(color::ID color, Fyle fyle)
 {
 	// IMPORTANT NOTE: This function is not updating the hash code.

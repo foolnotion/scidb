@@ -1252,6 +1252,8 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 
 	if (::runnable)
 	{
+		::runnable->m_database.closeAsyncReader();
+
 		if (Runnable::TreeP tree = ::runnable->m_tree)
 		{
 			tree->compressFilter();
@@ -1261,8 +1263,6 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 		delete ::runnable;
 		::runnable = 0;
 	}
-
-	base.openAsyncReader();
 
 	Runnable::TreeP tree(Tree::lookup(base, g.game->currentBoard(), mode, ratingType));
 
@@ -1274,6 +1274,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 		tree->uncompressFilter();
 	}
 
+	base.openAsyncReader();
 	::runnable = new Runnable(tree, *g.game, base, mode, ratingType, progress);
 	sys::thread::start(mstl::function<void ()>(&Runnable::operator(), ::runnable));
 
@@ -1291,6 +1292,8 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 	if (::runnable)
 	{
 		tree = ::runnable->m_tree;
+
+		::runnable->m_database.closeAsyncReader();
 
 		if (tree)
 		{
@@ -1384,12 +1387,11 @@ Application::stopUpdateTree()
 
 	sys::thread::stop();
 
-	if (m_instance->m_referenceBase)
-		m_instance->m_referenceBase->base().closeAsyncReader();
-
 	if (::runnable)
 	{
 		Runnable::TreeP tree = ::runnable->m_tree;
+
+		::runnable->m_database.closeAsyncReader();
 
 		if (tree)
 		{
@@ -1410,8 +1412,8 @@ Application::cancelUpdateTree()
 
 	sys::thread::stop();
 
-	if (m_instance->m_referenceBase)
-		m_instance->m_referenceBase->base().closeAsyncReader();
+	if (::runnable)
+		::runnable->m_database.closeAsyncReader();
 
 	delete ::runnable;
 	::runnable = 0;

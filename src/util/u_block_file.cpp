@@ -752,9 +752,9 @@ BlockFile::openAsyncReader()
 void
 BlockFile::closeAsyncReader(Reader*& reader)
 {
-	M_REQUIRE(reader == 0 || viewIsActive(reader));
+	M_REQUIRE(reader == 0 || viewIsActive(reader) || isClosed());
 
-	if (reader)
+	if (reader && !isClosed())
 	{
 		if (m_stream)
 			delete [] reader->m_buffer.m_data;

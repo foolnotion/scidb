@@ -303,6 +303,10 @@ public:
 	void setCastlingFyle(color::ID color, sq::Fyle fyle);
 	/// Remove all castling rights
 	void removeCastlingRights();
+	/// Remove castling rights for given color
+	void removeCastlingRights(color::ID color);
+	/// Remove castling rights for given rook
+	void removeCastlingRights(Square rook);
 	/// Fix bad castling rights (may happen in Scid or in PGN files)
 	void fixBadCastlingRights();
 
