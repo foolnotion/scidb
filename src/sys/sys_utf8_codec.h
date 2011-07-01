@@ -20,10 +20,9 @@
 #define _sys_utf8_codec_included
 
 #include "m_string.h"
+#include "m_list.h"
 
 extern "C" { struct Tcl_Encoding_; };
-
-namespace mstl { class string; }
 
 namespace sys {
 namespace utf8 {
@@ -31,6 +30,8 @@ namespace utf8 {
 class Codec
 {
 public:
+
+	typedef mstl::list<mstl::string> EncodingList;
 
 	Codec(mstl::string const& encoding);
 	~Codec();
@@ -52,6 +53,8 @@ public:
 	bool convertToUtf8(mstl::string const& in, mstl::string& out);
 
 	void forceValidUtf8(mstl::string& str);
+
+	void reset();
 
 	static mstl::string const& utf8();
 	static mstl::string const& latin1();
@@ -86,8 +89,8 @@ public:
 	static mstl::string const& convertToNonDiacritics(	unsigned region,
 																		mstl::string const& s,
 																		mstl::string& buffer);
-
-	void reset();
+	static bool checkEncoding(mstl::string const& name);
+	static unsigned getEncodingList(EncodingList& result);
 
 private:
 

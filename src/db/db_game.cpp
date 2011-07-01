@@ -149,7 +149,8 @@ Game::Undo::clear()
 
 
 Game::Game()
-	:GameData()
+	:Provider(format::Scidb)
+	,GameData()
 	,m_currentNode(m_startNode)
 	,m_editNode(0)
 	,m_currentBoard(m_startBoard)
@@ -175,7 +176,8 @@ Game::Game()
 
 
 Game::Game(Game const& game)
-	:GameData()
+	:Provider(format::Scidb)
+	,GameData()
 	,m_editNode(0)
 	,m_line(m_lineBuf[0])
 {

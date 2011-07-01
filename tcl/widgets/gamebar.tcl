@@ -500,7 +500,9 @@ proc getIdList {gamebar} {
 
 	set result {}
 	foreach key [array names Specs -glob lookup:*:$gamebar] {
-		lappend result $Specs($key)
+		set id $Specs($key)
+		if {$id != -1} {lappend result $id }
+
 	}
 
 	return $result

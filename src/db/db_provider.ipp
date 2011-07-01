@@ -27,8 +27,9 @@
 
 namespace db {
 
-inline int Provider::index() const			{ return m_index; }
-inline void Provider::setIndex(int index)	{ m_index = index; }
+inline format::Type Provider::sourceFormat() const	{ return m_format; }
+inline int Provider::index() const						{ return m_index; }
+inline void Provider::setIndex(int index)				{ m_index = index; }
 
 } // namespace db
 

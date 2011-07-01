@@ -77,13 +77,13 @@
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
 ::locale::Pattern(thousandsSep)	","
-::locale::Pattern(dateY)			"A"
-::locale::Pattern(dateM)			"M A"
-::locale::Pattern(dateD)			"G M, A"
-::locale::Pattern(time)				"G M, A, h:m"
-::locale::Pattern(normal:dateY)	"A"
-::locale::Pattern(normal:dateM)	"M/A"
-::locale::Pattern(normal:dateD)	"G/M/A"
+::locale::Pattern(dateY)			"Y"
+::locale::Pattern(dateM)			"M Y"
+::locale::Pattern(dateD)			"D M, Y"
+::locale::Pattern(time)				"D M, Y, h:m"
+::locale::Pattern(normal:dateY)	"Y"
+::locale::Pattern(normal:dateM)	"M/Y"
+::locale::Pattern(normal:dateD)	"D/M/Y"
 
 ### widget #############################################################
 ::widget::mc::Apply		"&Applica"

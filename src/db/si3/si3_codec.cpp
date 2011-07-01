@@ -1647,8 +1647,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 					species::ID		type		= species::Unspecified;
 					sex::ID			sex		= sex::Unspecified;
 
-					tmp.assign(name);
-					tmp.unhook();
+					tmp.assign(name.c_str(), name.size());
 
 					while (PgnReader::Tag tag = PgnReader::extractPlayerData(tmp, value))
 					{
@@ -1684,8 +1683,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 
 			case Namebase::Site:
 				{
-					tmp.assign(name);
-					tmp.unhook();
+					tmp.assign(name.c_str(), name.size());
 					country::Code country = PgnReader::extractCountryFromSite(tmp);
 					shadowBase.append(str, index, base.insertSite(name, index, country, limit), *m_codec);
 				}

@@ -225,6 +225,7 @@ Consumer::beginVariation()
 	if (m_danglingPop)
 	{
 		m_danglingPop = false;
+		m_move.clear();
 	}
 	else
 	{
@@ -232,13 +233,12 @@ Consumer::beginVariation()
 		{
 			m_position.push();
 			m_position.doMove(m_position.previous(), m_move);
+			m_move.clear();
 		}
 		else
 		{
 			m_position.push();
 		}
-
-		m_move.clear();
 	}
 
 	if (!m_endOfRun)

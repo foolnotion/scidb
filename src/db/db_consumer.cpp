@@ -42,7 +42,7 @@ using namespace db;
 
 
 Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
-	:m_format(srcFormat)
+	:Provider(srcFormat)
 	,m_stack(1)
 	,m_variationCount(0)
 	,m_commentCount(0)

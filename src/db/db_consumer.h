@@ -60,7 +60,6 @@ public:
 	bool commentEngFlag() const;
 	bool commentOthFlag() const;
 
-	format::Type sourceFormat() const;
 	virtual format::Type format() const = 0;
 
 	unsigned variationLevel() const;
@@ -155,7 +154,6 @@ private:
 
 	friend class Producer;
 
-	format::Type		m_format;
 	Stack					m_stack;
 	unsigned				m_variationCount;
 	unsigned				m_commentCount;

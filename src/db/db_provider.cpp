@@ -28,7 +28,7 @@
 
 using namespace db;
 
-Provider::Provider() : m_index(-1) {}
+Provider::Provider(format::Type srcFormat) :m_format(srcFormat), m_index(-1) {}
 Provider::~Provider() throw() {}
 
 // vi:set ts=3 sw=3:

@@ -29,6 +29,7 @@
 #include "db_producer.h"
 #include "db_game_info.h"
 #include "db_tag_set.h"
+#include "db_pgn_reader.h"
 #include "db_exception.h"
 
 #include "sci_codec.h"
@@ -55,6 +56,26 @@
 
 using namespace db;
 using namespace util;
+
+
+static mstl::string const&
+normalizePlayerName(mstl::string const& name, mstl::string& result)
+{
+	mstl::string value;
+	result.assign(name.c_str(), name.size());
+	while (PgnReader::extractPlayerData(result, value))
+		;
+	return result;
+}
+
+
+static mstl::string const&
+normalizeSiteName(mstl::string const& name, mstl::string& result)
+{
+	result.assign(name.c_str(), name.size());
+	PgnReader::extractCountryFromSite(result);
+	return result;
+}
 
 
 struct DatabaseCodec::InfoData
@@ -572,7 +593,7 @@ DatabaseCodec::addGame(ByteStream& gameData, TagSet const& tags, Consumer& consu
 	{
 		TagSet myTags(tags);
 		GameInfo::setupTags(myTags, consumer);
-		state = exportGame(*consumer.consumer(), gameData, /*DatabaseCodec::Decode_All, */myTags);
+		state = exportGame(*consumer.consumer(), gameData, myTags);
 	}
 	else
 	{
@@ -677,35 +698,72 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 
 	InfoData data(tags);
 
-	Player	whiteEntry		= namebase(Namebase::Player).insertPlayer(
-										tags.value(tag::White),
-										data.whiteCountry,
-										data.whiteTitle,
-										data.whiteType,
-										data.whiteSex,
-										data.whiteFideID,
-										maxPlayerCount);
-	Player	blackEntry		= namebase(Namebase::Player).insertPlayer(
-										tags.value(tag::Black),
-										data.blackCountry,
-										data.blackTitle,
-										data.blackType,
-										data.blackSex,
-										data.blackFideID,
-										maxPlayerCount);
-	Site		siteEntry		= namebase(Namebase::Site).insertSite(
-										tags.value(tag::Site),
-										data.eventCountry,
-										maxSiteCount());
-	Event		eventEntry		= namebase(Namebase::Event).insertEvent(
-										tags.value(tag::Event),
-										data.eventDate,
-										data.eventType,
-										data.timeMode,
-										data.eventMode,
-										maxEventCount(),
-										siteEntry ? siteEntry : NamebaseEvent::emptySite());
-	Entry		annotatorEntry	= 0;
+	Player	whiteEntry;
+	Player	blackEntry;
+	Site		siteEntry;
+
+	switch (provider.sourceFormat())
+	{
+		case format::Scid3:
+		case format::Scid4:
+			{
+				mstl::string name;
+
+				whiteEntry = namebase(Namebase::Player).insertPlayer(
+									::normalizePlayerName(tags.value(tag::White), name),
+									data.whiteCountry,
+									data.whiteTitle,
+									data.whiteType,
+									data.whiteSex,
+									data.whiteFideID,
+									maxPlayerCount);
+				blackEntry = namebase(Namebase::Player).insertPlayer(
+									::normalizePlayerName(tags.value(tag::Black), name),
+									data.blackCountry,
+									data.blackTitle,
+									data.blackType,
+									data.blackSex,
+									data.blackFideID,
+									maxPlayerCount);
+				siteEntry = namebase(Namebase::Site).insertSite(
+									::normalizeSiteName(tags.value(tag::Site), name),
+									data.eventCountry,
+									maxSiteCount());
+			}
+			break;
+
+		default:
+			whiteEntry	= namebase(Namebase::Player).insertPlayer(
+									tags.value(tag::White),
+									data.whiteCountry,
+									data.whiteTitle,
+									data.whiteType,
+									data.whiteSex,
+									data.whiteFideID,
+									maxPlayerCount);
+			blackEntry	= namebase(Namebase::Player).insertPlayer(
+									tags.value(tag::Black),
+									data.blackCountry,
+									data.blackTitle,
+									data.blackType,
+									data.blackSex,
+									data.blackFideID,
+									maxPlayerCount);
+			siteEntry	= namebase(Namebase::Site).insertSite(
+									tags.value(tag::Site),
+									data.eventCountry,
+									maxSiteCount());
+	}
+
+	Event eventEntry = namebase(Namebase::Event).insertEvent(
+								tags.value(tag::Event),
+								data.eventDate,
+								data.eventType,
+								data.timeMode,
+								data.eventMode,
+								maxEventCount(),
+								siteEntry ? siteEntry : NamebaseEvent::emptySite());
+	Entry annotatorEntry	= 0;
 
 	if (maxAnnotatorCount)
 	{

@@ -126,6 +126,29 @@ printHelpAndExit(int rc)
 	::printf("  --encoded <encoding>\n");
 	::printf("                The encoding of the ChessBase database\n");
 	::printf("                (default is cp1252)\n");
+	::printf("  --list-encodings\n");
+	::printf("                List all known encodings\n");
+	::printf("\n");
+	::exit(rc);
+}
+
+
+static void
+printEncodingsAndExit(int rc)
+{
+	sys::utf8::Codec::EncodingList encodings;
+	unsigned n = sys::utf8::Codec::getEncodingList(encodings);
+
+	printf("Existing encodings: ");
+
+	for (unsigned i = 0; i < n; ++i)
+	{
+		::printf(encodings[i].c_str());
+		if (i + 1 < n)
+			::printf(", ");
+	}
+
+	::printf("\n");
 	::exit(rc);
 }
 
@@ -189,12 +212,17 @@ main(int argc, char* argv[])
 			if (++i == argc)
 				printHelpAndExit(1);
 			encoding.assign(argv[i]);
+
 		}
 		else if (::strcmp(argv[i], "--encoded") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
 			encoded.assign(argv[i]);
+		}
+		else if (::strcmp(argv[i], "--list-encodings") == 0)
+		{
+			printEncodingsAndExit(0);
 		}
 		else if (::strcmp(argv[i], "--force") == 0)
 		{
@@ -205,6 +233,18 @@ main(int argc, char* argv[])
 			::fprintf(stderr, "Unrecognized option '%s'.\n\n", argv[i]);
 			printHelpAndExit(1);
 		}
+	}
+
+	if (!sys::utf8::Codec::checkEncoding(encoding))
+	{
+		::fprintf(stderr, "Unknown encoding '%s'.\n\n", encoding.c_str());
+		printEncodingsAndExit(1);
+	}
+
+	if (!sys::utf8::Codec::checkEncoding(encoded))
+	{
+		::fprintf(stderr, "Unknown encoding '%s'.\n\n", encoded.c_str());
+		printEncodingsAndExit(1);
 	}
 
 	if (i == argc)

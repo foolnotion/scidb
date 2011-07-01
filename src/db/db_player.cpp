@@ -1840,8 +1840,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 #ifndef USE_CONFLICT_MAP
 							if (::hasTrailingCountryCode(name))
 							{
-								mstl::string str(name);
-								str.unhook();
+								mstl::string str(name.c_str(), name.size());
 								insertAlias(str, 0, player);
 								::stripCountryCode(name);
 							}
@@ -1881,8 +1880,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 
 						if (::hasTrailingCountryCode(line))
 						{
-							alias.assign(line);
-							alias.unhook();
+							alias.assign(line.c_str(), line.size());
 							::stripCountryCode(line);
 						}
 #endif

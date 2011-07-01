@@ -2281,14 +2281,16 @@ proc Save {top title base number position fields} {
 				[list %white $Tags(White) %black $Tags(Black) %event $Tags(Event) %base $base] \
 				$mc::SavingGameLogInfo]
 			set replace [expr {$number >= 0}]
-			if {[::scidb::game::save \
-						$base \
-						[array get Tags] \
-						$WhiteRating \
-						$BlackRating \
-						[namespace current]::Log {} \
-						-replace $replace \
-			]} {
+			set cmd [list ::scidb::game::save \
+				$base \
+				[array get Tags] \
+				$WhiteRating \
+				$BlackRating \
+				[namespace current]::Log {} \
+				-replace $replace \
+			]
+			if {[::util::catchIoError $cmd rc]} { return }
+			if {$rc} {
 				::log::hide
 			} else {
 				::dialog::error \

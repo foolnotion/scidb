@@ -27,6 +27,8 @@
 #ifndef _db_provider_included
 #define _db_provider_included
 
+#include "db_common.h"
+
 #include "u_base.h"
 
 namespace db {
@@ -38,8 +40,10 @@ class Provider
 {
 public:
 
-	Provider();
+	Provider(format::Type srcFormat);
 	virtual ~Provider() throw() = 0;
+
+	format::Type sourceFormat() const;
 
 	virtual Board const& getFinalBoard() const = 0;
 	virtual Board const& getStartBoard() const = 0;
@@ -62,7 +66,8 @@ public:
 
 private:
 
-	int m_index;
+	format::Type	m_format;
+	int				m_index;
 };
 
 } // namespace db

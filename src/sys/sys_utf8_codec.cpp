@@ -29,6 +29,7 @@
 
 #include <tcl.h>
 #include <ctype.h>
+#include <string.h>
 
 using namespace sys::utf8;
 using namespace tcl;
@@ -1809,6 +1810,14 @@ static enum State const State_Transition_Tbl[12][8] =
 } // namespace validate
 
 
+static int
+compareEncodings(void const* lhs, void const* rhs)
+{
+	return ::strcmp(	Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(lhs), 0),
+							Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(rhs), 0));
+}
+
+
 inline static int
 utfToUniChar(char const* s, Tcl_UniChar& ch)
 {
@@ -2694,6 +2703,43 @@ Codec::convertToNonDiacritics(unsigned region, mstl::string const& s, mstl::stri
 	}
 
 	return buffer;
+}
+
+
+unsigned
+Codec::getEncodingList(EncodingList& result)
+{
+	Tcl_GetEncodingNames(::sys::tcl::interp());
+
+	Tcl_Obj*		list = Tcl_GetObjResult(::sys::tcl::interp());
+	Tcl_Obj**	objv;
+	int			objc;
+
+	Tcl_ListObjGetElements(::sys::tcl::interp(), list, &objc, &objv);
+	::qsort(objv, objc, sizeof(Tcl_Obj*), ::compareEncodings);
+
+	result.clear();
+
+	for (int i = 0; i < objc; ++i)
+	{
+		result.push_back();
+		result.back().assign(Tcl_GetStringFromObj(objv[i], 0));
+	}
+
+	return objc;
+}
+
+
+bool
+Codec::checkEncoding(mstl::string const& name)
+{
+	if (Tcl_Encoding enc = Tcl_GetEncoding(::sys::tcl::interp(), name))
+	{
+		Tcl_FreeEncoding(enc);
+		return true;
+	}
+
+	return false;
 }
 
 // vi:set ts=3 sw=3:
