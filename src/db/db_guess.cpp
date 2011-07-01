@@ -80,17 +80,6 @@ typedef db::Guess::Score Score;
 typedef db::Guess::Transposition Transposition;
 typedef int ScoreList[MoveList::Maximum_Moves];
 
-struct TransEntry
-{
-	uint64_t key;
-	uint16_t move;
-	int16_t  score;
-	uint16_t depth;
-	uint16_t flags;
-
-	TransEntry() : key(0), move(0), score(0), depth(0), flags(0) {}
-};
-
 } // namespace
 
 
@@ -100,6 +89,17 @@ struct TransEntry
 class db::Guess::Transposition
 {
 public:
+
+	struct TransEntry
+	{
+		uint64_t key;
+		uint16_t move;
+		int16_t  score;
+		uint16_t depth;
+		uint16_t flags;
+
+		TransEntry() : key(0), move(0), score(0), depth(0), flags(0) {}
+	};
 
 	enum { Lower = 1, Upper = 2, Exact = 3 };
 

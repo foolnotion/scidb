@@ -61,7 +61,7 @@ TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move
 
 all: recursive cbh2si4 $(PROGRAM)
 
-install: $(PROGRAM)
+install: recursive cbh2si4 $(PROGRAM)
 	install -m 755 -d $(BINDIR)
 	install -m 755 -d $(SHAREDIR)
 	install -m 755 -d $(SHAREDIR)/data

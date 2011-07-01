@@ -315,10 +315,11 @@ NameList::addEntry(unsigned originalId, NamebaseEntry* entry)
 
 
 void
-NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec)
+NameList::append(	mstl::string const& originalName,
+						unsigned id,
+						NamebaseEntry* entry,
+						sys::utf8::Codec& codec)
 {
-	unsigned id = entry->id();
-
 	mstl::string const* str;
 
 	if (entry->name() == originalName)
@@ -333,6 +334,7 @@ NameList::append(mstl::string const& originalName, NamebaseEntry* entry, sys::ut
 
 	m_usedIdSet.set(id);
 	m_list.push_back(newNode(entry, str, id));
+	m_lookup[id] = m_list.back();
 	m_size = mstl::max(m_size, id + 1);
 }
 

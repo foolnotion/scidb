@@ -72,7 +72,10 @@ public:
 	Node* back();
 #endif
 
-	void append(mstl::string const& originalName, NamebaseEntry* entry, sys::utf8::Codec& codec);
+	void append(mstl::string const& originalName,
+					unsigned id,
+					NamebaseEntry* entry,
+					sys::utf8::Codec& codec);
 	void addEntry(unsigned originalId, NamebaseEntry* entry);
 	void update(Namebase& base, sys::utf8::Codec& codec);
 	void reserve(unsigned size);

@@ -1648,22 +1648,13 @@ Codec::readNamebase(	ByteIStream& bstrm,
 					sex::ID			sex		= sex::Unspecified;
 
 					tmp.assign(name);
+					tmp.unhook();
 
 					while (PgnReader::Tag tag = PgnReader::extractPlayerData(tmp, value))
 					{
 						switch (tag)
 						{
-							case PgnReader::Elo:
-//									// this is unexpected and will be reversed
-//									if (out.size() < (256 - 7))
-//									{
-//										out += ' ';
-//										out += '(';
-//										out.append(value, value.size());
-//										out += ')';
-//									}
-								break;
-
+							case PgnReader::Elo:			break; // cannot be used
 							case PgnReader::Country:	country = country::fromString(value); break;
 							case PgnReader::Human:		type = species::Human; break;
 							case PgnReader::Program:	type = species::Program; break;
@@ -1685,6 +1676,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 					// probably faulty due to a bug in Scid.
 					shadowBase.append(
 						str,
+						index,
 						base.insertPlayer(name, index, country, title, type, sex, 0, limit),
 						*m_codec);
 				}
@@ -1693,20 +1685,22 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			case Namebase::Site:
 				{
 					tmp.assign(name);
+					tmp.unhook();
 					country::Code country = PgnReader::extractCountryFromSite(tmp);
-					shadowBase.append(str, base.insertSite(name, index, country, limit), *m_codec);
+					shadowBase.append(str, index, base.insertSite(name, index, country, limit), *m_codec);
 				}
 				break;
 
 			case Namebase::Event:
 				shadowBase.append(
 					str,
+					index,
 					base.insertEvent(name, index, limit, NamebaseEvent::emptySite()),
 					*m_codec);
 				break;
 
 			case Namebase::Round:
-				shadowBase.append(str, base.insert(name, index, limit), *m_codec);
+				shadowBase.append(str, index, base.insert(name, index, limit), *m_codec);
 				break;
 		}
 

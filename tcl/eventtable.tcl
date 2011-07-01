@@ -361,9 +361,7 @@ proc TableFill {path args} {
 
 				switch $id {
 					eventCountry {
-						if {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailable
-						} elseif {[string length $item] == 0} {
+						if {[string length $item] == 0} {
 							if {$Options(country-code) eq "flags"} {
 								lappend text [list @ {}]
 							} else {

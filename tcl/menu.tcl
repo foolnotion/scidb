@@ -388,8 +388,8 @@ proc dbOpen {parent} {
 		[list $mc::AllScidbBases	{.sci .si3 .si4 .cbh}]                   \
 		[list $mc::ScidbBases		.sci]                                    \
 		[list $mc::AllScidBases		{.si4 .si3}]                             \
-		[list $mc::Scid3Bases		.si3]                                    \
 		[list $mc::Scid4Bases		.si4]                                    \
+		[list $mc::Scid3Bases		.si3]                                    \
 		[list $mc::ChessBaseBases	.cbh]                                    \
 		[list $mc::PGNFiles			{.pgn .pgn.gz}]                          \
 		[list $mc::PGNFiles			.zip]                                    \
