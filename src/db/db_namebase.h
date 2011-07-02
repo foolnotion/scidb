@@ -68,6 +68,9 @@ public:
 	bool isPrepared() const;
 	bool isConsistent() const;
 	bool isModified() const;
+	bool isChanged() const;
+	bool isOriginal() const;
+	bool isReadonly() const;
 
 	Type type() const;
 
@@ -187,9 +190,9 @@ public:
 	void update();
 	void setPrepared(unsigned maxFrequency, unsigned maxUsage);
 	void reserve(unsigned size, unsigned limit);
-	void renumber();
 	void clear();
 	void setModified(bool flag);
+	void setReadonly(bool flag = true);
 
 	unsigned findMatches(mstl::string const& name, Matches& result, unsigned maxMatches = 9) const;
 
@@ -234,6 +237,8 @@ private:
 	bool		m_isPrepared;
 	bool		m_freeSetIsEmpty;
 	bool		m_isModified;
+	bool		m_isOriginal;
+	bool		m_isReadonly;
 
 	union
 	{

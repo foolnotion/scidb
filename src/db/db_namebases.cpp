@@ -57,6 +57,39 @@ Namebases::isModified() const
 }
 
 
+bool
+Namebases::isChanged() const
+{
+	return	m_player.isChanged()
+			|| m_site.isChanged()
+			|| m_event.isChanged()
+			|| m_annotator.isChanged()
+			|| m_round.isChanged();
+}
+
+
+bool
+Namebases::isOriginal() const
+{
+	return	m_player.isOriginal()
+			&& m_site.isOriginal()
+			&& m_event.isOriginal()
+			&& m_annotator.isOriginal()
+			&& m_round.isOriginal();
+}
+
+
+void
+Namebases::setReadonly(bool flag)
+{
+	m_player.setReadonly(flag);
+	m_site.setReadonly(flag);
+	m_event.setReadonly(flag);
+	m_annotator.setReadonly(flag);
+	m_round.setReadonly(flag);
+}
+
+
 void
 Namebases::resetModified()
 {

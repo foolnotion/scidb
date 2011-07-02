@@ -867,7 +867,7 @@ proc checkGCC {cc} {
 proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir
 
-    set option(EXTRA_CFLAGS) "-pipe"
+    set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
 
     set success [findTclTkPaths]
 

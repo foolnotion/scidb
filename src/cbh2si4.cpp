@@ -119,11 +119,11 @@ printHelpAndExit(int rc)
 	::printf("Options:\n");
 	::printf("  --            Only file names after this\n");
 	::printf("  --help        Print Help (this message) and exit\n");
-	::printf("  --force       overwrite existing destination files\n");
-	::printf("  --encoding <encoding>\n");
+	::printf("  --force       Overwrite existing destination files\n");
+	::printf("  --convertto <encoding>\n");
 	::printf("                Use this encoding for output database\n");
 	::printf("                (default is iso8859-1)\n");
-	::printf("  --encoded <encoding>\n");
+	::printf("  --convertfrom <encoding>\n");
 	::printf("                The encoding of the ChessBase database\n");
 	::printf("                (default is cp1252)\n");
 	::printf("  --list-encodings\n");
@@ -192,8 +192,8 @@ main(int argc, char* argv[])
 {
 	::tcl::bits::interp = Tcl_CreateInterp();
 
-	mstl::string	encoding("iso8859-1");
-	mstl::string	encoded("cp1252");
+	mstl::string	convertto("iso8859-1");
+	mstl::string	convertfrom("cp1252");
 	bool				force(false);
 
 	int i = 1;
@@ -207,18 +207,18 @@ main(int argc, char* argv[])
 		{
 			printHelpAndExit(0);
 		}
-		else if (::strcmp(argv[i], "--encoding") == 0)
+		else if (::strcmp(argv[i], "--convertto") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
-			encoding.assign(argv[i]);
+			convertto.assign(argv[i]);
 
 		}
-		else if (::strcmp(argv[i], "--encoded") == 0)
+		else if (::strcmp(argv[i], "--convertfrom") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
-			encoded.assign(argv[i]);
+			convertfrom.assign(argv[i]);
 		}
 		else if (::strcmp(argv[i], "--list-encodings") == 0)
 		{
@@ -235,15 +235,15 @@ main(int argc, char* argv[])
 		}
 	}
 
-	if (!sys::utf8::Codec::checkEncoding(encoding))
+	if (!sys::utf8::Codec::checkEncoding(convertto))
 	{
-		::fprintf(stderr, "Unknown encoding '%s'.\n\n", encoding.c_str());
+		::fprintf(stderr, "Unknown encoding '%s'.\n\n", convertto.c_str());
 		printEncodingsAndExit(1);
 	}
 
-	if (!sys::utf8::Codec::checkEncoding(encoded))
+	if (!sys::utf8::Codec::checkEncoding(convertfrom))
 	{
-		::fprintf(stderr, "Unknown encoding '%s'.\n\n", encoded.c_str());
+		::fprintf(stderr, "Unknown encoding '%s'.\n\n", convertfrom.c_str());
 		printEncodingsAndExit(1);
 	}
 
@@ -294,9 +294,9 @@ main(int argc, char* argv[])
 
 		Progress	progress;
 
-		Database	src(cbhPath, encoded, Database::ReadOnly, progress);
-		Database	dst(si4Path, encoding, Database::OnDisk);
-		si3::Consumer consumer(format::Scid4, dynamic_cast<si3::Codec&>(dst.codec()), encoding);
+		Database	src(cbhPath, convertfrom, Database::ReadOnly, progress);
+		Database	dst(si4Path, convertto, Database::OnDisk);
+		si3::Consumer consumer(format::Scid4, dynamic_cast<si3::Codec&>(dst.codec()), convertto);
 
 		dst.setType(src.type());
 		unsigned numGames = exportGames(src, consumer, progress);

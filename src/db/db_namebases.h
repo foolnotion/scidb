@@ -43,9 +43,12 @@ public:
 	Namebase const& operator()(Type type) const;
 
 	bool isModified() const;
+	bool isChanged() const;
+	bool isOriginal() const;
 
 	void update();
 	void clear();
+	void setReadonly(bool flag = true);
 	void resetModified();
 
 private:

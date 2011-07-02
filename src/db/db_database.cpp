@@ -633,6 +633,7 @@ Database::recode(mstl::string const& encoding, util::Progress& progress)
 	M_REQUIRE(!isMemoryOnly());
 	M_REQUIRE(encoding != sys::utf8::Codec::utf8() || format() != format::Scidb);
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(namebases().isOriginal());
 
 	if (encoding == m_encoding)
 		return;

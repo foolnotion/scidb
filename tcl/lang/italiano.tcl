@@ -25,9 +25,13 @@
 # (at your option) any later version.
 # ======================================================================
 
+# ======================================================================
+# File encoding: utf-8
+# ======================================================================
+
 ### global #############################################################
-::mc::SortMapping		{Å A   à a   è e   é e   ì i   ò o  ù u}
-::mc::AsciiMapping	{Å A   à a   è e   é e   ì i   ò o  ù u}
+::mc::SortMapping		{Å A à a À A á a Á A è e È E é e É E ì i Ì i í i Í I ò o Ò O ó o Ó O ù u Ù U ú u Ú U}
+::mc::AsciiMapping	{Å A à a À A á a Á A è e È E é e É E ì i Ì i í i Í I ò o Ò O ó o Ó O ù u Ù U ú u Ú U}
 
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"

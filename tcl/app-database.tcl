@@ -298,6 +298,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 			switch $ext {
 				.si3 - .si4 - .pgn - .gz - .zip	{ set encoding $::encoding::defaultEncoding }
 				.cbh										{ set encoding $::encoding::windowsEncoding }
+				.sci										{ set encoding utf-8 }
 			}
 		}
 		switch $ext {
@@ -327,9 +328,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		}
 		::scidb::db::set readonly $file $readonly
 		set type [::scidb::db::get type $file]
-		# XXX does not work if .pgn (because .sci always has utf-8)
-		set encoding [::scidb::db::get encoding $file]
-		AddBase $type $file $encoding $readonly
+		AddBase $type $file [::scidb::db::get encoding $file] $readonly
 		AddRecentFile $type $file $encoding $readonly
 		CheckEncoding $parent $file $encoding
 	} else {
@@ -1040,8 +1039,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs separator {} {} {} {} {} {}
 		}
 	}
-	lappend specs command $::menu::mc::FileNew ::menu::dbNew 0 0 docNew {}
-	lappend specs command $::menu::mc::FileOpen ::menu::dbOpen 0 0 docOpen {}
+	lappend specs command "$::menu::mc::FileNew..." ::menu::dbNew 0 0 docNew {}
+	lappend specs command "$::menu::mc::FileOpen..." ::menu::dbOpen 0 0 docOpen {}
 
 	foreach {type text cmd writableOnly notSci icon var} $specs {
 		if {$type eq "separator"} {

@@ -15,8 +15,8 @@ include ../Makefile.in
 .SUFFIXES: .cpp
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iapp -Itcl -Itk -Isys
-ALL_ICLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
+ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
 MAKEFLAGS += --no-print-directory
@@ -203,11 +203,11 @@ $(PROGRAM): tkscidb.o $(LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 cbh2si4.o: cbh2si4.cpp
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(TCL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $(INCLUDE) $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

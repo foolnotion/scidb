@@ -827,7 +827,10 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scid3:
 		case format::Scid4:
 		case format::ChessBase:
-			base.recode(encoding, progress);
+			if (base.namebases().isOriginal())
+				base.recode(encoding, progress);
+			else
+				base.reopen(encoding, progress);
 			break;
 
 		case format::Pgn:
