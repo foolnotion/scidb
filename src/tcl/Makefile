@@ -995,6 +995,10 @@ tcl_pgn_reader.o: ../db/db_log.h
 tcl_pgn_reader.o: tcl_base.h
 tcl_pgn_reader.o: tcl_base.ipp
 tcl_pgn_reader.o: ../sys/sys_utf8_codec.h
+tcl_pgn_reader.o: ../mstl/m_list.h
+tcl_pgn_reader.o: ../mstl/m_pointer_iterator.h
+tcl_pgn_reader.o: ../mstl/m_pointer_iterator.ipp
+tcl_pgn_reader.o: ../mstl/m_list.ipp
 tcl_pgn_reader.o: ../sys/sys_utf8_codec.ipp
 tcl_pgn_reader.o: ../mstl/m_istream.h
 tcl_pgn_reader.o: ../mstl/m_ios.h

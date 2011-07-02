@@ -207,7 +207,7 @@ $(PROGRAM): tkscidb.o $(LIBS)
 
 cbh2si4.o: cbh2si4.cpp
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) -DSHAREDIR=\"$(SHAREDIR)\" $(INCLUDE) $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(TCL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -415,8 +415,6 @@ cbh2si4.o: util/u_progress.h
 cbh2si4.o: util/u_progress.ipp
 cbh2si4.o: sys/sys_utf8_codec.h
 cbh2si4.o: sys/sys_utf8_codec.ipp
-cbh2si4.o: sys/sys_base.h
-cbh2si4.o: sys/sys_base.ipp
 cbh2si4.o: tcl/tcl_base.h
 cbh2si4.o: tcl/tcl_base.ipp
 code2eco.o: db/db_eco.h
@@ -739,6 +737,10 @@ pgn_split_eco.o: mstl/m_ostream.ipp
 pgn_split_eco.o: util/u_progress.h
 pgn_split_eco.o: util/u_progress.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.h
+pgn_split_eco.o: mstl/m_list.h
+pgn_split_eco.o: mstl/m_pointer_iterator.h
+pgn_split_eco.o: mstl/m_pointer_iterator.ipp
+pgn_split_eco.o: mstl/m_list.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.ipp
 pgn_split_eco.o: mstl/m_ifstream.h
 pgn_split_eco.o: mstl/m_file.h
