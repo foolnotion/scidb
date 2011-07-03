@@ -215,6 +215,7 @@ inline
 void
 stack<T>::pop()
 {
+	M_REQUIRE(!empty());
 	::mstl::bits::destroy(this->m_finish--);
 }
 
