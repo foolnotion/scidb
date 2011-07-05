@@ -397,9 +397,11 @@ Codec::setEncoding(mstl::string const& encoding)
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag) const
+Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
 {
-	if (!Encoder::skipTag(tag))
+	bool gameTagsOnly = section == GameTags;
+
+	if (Encoder::skipTag(tag) == gameTagsOnly)
 		tags.remove(tag);
 }
 

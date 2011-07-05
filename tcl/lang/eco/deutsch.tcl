@@ -24,7 +24,9 @@
 # (at your option) any later version.
 # ======================================================================
 
-# encoding: iso8859-1
+# ======================================================================
+# File encoding: iso8859-1
+# ======================================================================
 
 "Aachen Gambit"												"Aachener Gambit"
 "Abbazia (Scandinavian) Defence"							"Abbazia (Skandinavische) Verteidigung"

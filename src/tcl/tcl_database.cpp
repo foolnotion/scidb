@@ -1796,7 +1796,7 @@ static int
 getTags(int index, char const* database)
 {
 	TagSet tags;
-	Scidb.cursor(database).database().getTags(index, tags);
+	Scidb.cursor(database).database().getInfoTags(index, tags);
 	return getTags(tags, false);
 }
 

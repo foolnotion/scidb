@@ -49,6 +49,7 @@ namespace import ::tcl::mathfunc::min
 variable iconSizes {medium small large}
 
 variable Counter	0
+variable Initialize 1
 variable HaveTooltips 1
 variable Lookup [dict create]
 variable Map [dict create]
@@ -82,13 +83,15 @@ array set Defaults {
 	floating:focusmodel			active
 	drag:color:snapping			red
 	drag:color:floating			black
-	icons:size						medium
 	icons:x11Hack					true
 	dialog:class					*Dialog*
 	dialog:snapping:x				35
 	dialog:snapping:y				35
 }
 
+array set Options {
+	icons:size						medium
+}
 
 
 event add <<ToolbarHide>> ToolbarHide
@@ -102,7 +105,9 @@ proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
 
 proc toolbar {parent args} {
 	variable Specs
+	variable Initialize
 	variable Defaults
+	variable Options
 	variable Counter
 	variable Lookup
 	variable Map
@@ -143,7 +148,7 @@ proc toolbar {parent args} {
 		keepoptions:$toolbar	1                       \
 		side:$toolbar			top                     \
 		state:$toolbar			show                    \
-		default:$toolbar		$Defaults(icons:size)   \
+		default:$toolbar		$Options(icons:size)    \
 		iconsize:$toolbar		default                 \
 		id:$toolbar				$id                     \
 		position:$toolbar		{}                      \
@@ -290,6 +295,11 @@ proc toolbar {parent args} {
 	switch $Specs(state:$toolbar) {
 		flat - hide	{ Hide $toolbar $Specs(state:$toolbar) }
 		show			{ Show $toolbar $alignment }
+	}
+
+	if {$Initialize} {
+		trace add variable [namespace current]::Options(icons:size) write [namespace code SetIconSize]
+		set Initialize 0
 	}
 
 	lappend Specs(toolbars) $toolbar
@@ -723,16 +733,6 @@ proc lookupClone {child w} {
 }
 
 
-proc setIconSize {size} {
-	variable Specs
-
-	foreach toolbar $Specs(toolbars) {
-		set Specs(default:$toolbar) $size
-		ChangeIcons $toolbar
-	}
-}
-
-
 proc totalheight {parent} {
 	set slaves [pack slaves $parent]
 	set height 0
@@ -770,6 +770,17 @@ proc toolbarDialogs {} {
 	}
 
 	return $result
+}
+
+
+proc SetIconSize {args} {
+	variable Specs
+	variable Options
+
+	foreach toolbar $Specs(toolbars) {
+		set Specs(default:$toolbar) $Options(icons:size)
+		ChangeIcons $toolbar
+	}
 }
 
 

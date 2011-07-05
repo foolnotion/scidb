@@ -76,7 +76,7 @@ public:
 
 	unsigned gameFlags() const;
 
-	void filterTag(TagSet& tags, tag::ID tag) const;
+	void filterTag(TagSet& tags, tag::ID tag, Section section) const;
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
 

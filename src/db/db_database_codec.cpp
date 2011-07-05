@@ -332,13 +332,6 @@ DatabaseCodec::getConsumer(format::Type)
 
 
 void
-DatabaseCodec::filterTag(TagSet&, tag::ID) const
-{
-	M_RAISE("should not be used");
-}
-
-
-void
 DatabaseCodec::checkPermissions(mstl::string const& filename)
 {
 	M_ASSERT(isOpen());

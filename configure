@@ -994,7 +994,9 @@ proc writeMakefile {{type ""}} {
             puts ""
             puts "Possibly you have to install Tcl/Tk. On Ubuntu/Debian systems use:"
             puts "  sudo apt-get install tcl8.5"
+            puts "  sudo apt-get install tcl8.5-dev"
             puts "  sudo apt-get install tk8.5"
+            puts "  sudo apt-get install tk8.5-dev"
         }
     }
 }

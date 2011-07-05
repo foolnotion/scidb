@@ -387,7 +387,7 @@ proc ClickLink {w xpos ypos} {
 	$w tag add $url {*}$range
 	$w tag configure $url -foreground red
 	update idletasks
-	::web::open $url
+	::web::open $w $url
 }
 
 

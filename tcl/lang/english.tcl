@@ -25,7 +25,7 @@
 # ======================================================================
 
 # ======================================================================
-# File encoding: is08859-1
+# File encoding: iso8859-1
 # ======================================================================
 
 ### global #############################################################
@@ -1306,6 +1306,10 @@
 ::dialog::mc::Question		"Question"
 
 ::dialog::mc::DontAskAgain	"Don't ask again"
+
+### web ################################################################
+::web::mc::CannotFindBrowser			"Couldn't find a suitable web browser."
+::web::mc::CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser."
 
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Base Color"

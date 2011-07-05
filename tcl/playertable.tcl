@@ -934,35 +934,35 @@ proc PopupMenu {table menu base index} {
 		-state [expr {[string length $fideID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::Fide \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $fideID] $Options(url:fide)]] \
+		-command [list ::web::open $table [string map [list %id% $fideID] $Options(url:fide)]] \
 		;
 	$m add command \
 		-label " [format $mc::OpenPlayerCard ICCF]" \
 		-state [expr {[string length $iccfID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::ICCF \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $iccfID] $Options(url:iccf)]] \
+		-command [list ::web::open $table [string map [list %id% $iccfID] $Options(url:iccf)]] \
 		;
 #	$m add command \
 #		-label " [format $mc::OpenPlayerCard USCF]" \
 #		-state [expr {[string length $uscfID] ? "normal" : "disabled"}] \
 #		-image $icon::16x16::USCF \
 #		-compound left \
-#		-command [list ::web::open [string map [list %id% $uscfID] $Options(url:uscf)]] \
+#		-command [list ::web::open $table [string map [list %id% $uscfID] $Options(url:uscf)]] \
 #		;
 	$m add command \
 		-label " [format $mc::OpenFileCard DWZ]" \
 		-state [expr {[string length $dsbID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::DSB \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $dsbID] $Options(url:dsb)]] \
+		-command [list ::web::open $table [string map [list %id% $dsbID] $Options(url:dsb)]] \
 		;
 	$m add command \
 		-label " [format $mc::OpenPlayerCard ECF]" \
 		-state [expr {[string length $ecfID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::ECF \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $ecfID] $Options(url:ecf)]] \
+		-command [list ::web::open $table [string map [list %id% $ecfID] $Options(url:ecf)]] \
 		;
 	set sub [menu $m.wiki -tearoff false]
 	$m add cascade \
@@ -977,21 +977,21 @@ proc PopupMenu {table menu base index} {
 		-state [expr {[string length $viafID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::VIAF \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $viafID] $Options(url:viaf)]] \
+		-command [list ::web::open $table [string map [list %id% $viafID] $Options(url:viaf)]] \
 		;
 	$m add command \
 		-label " $mc::OpenPndCatalog" \
 		-state [expr {[string length $pndID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::PND \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $pndID] $Options(url:pnd)]] \
+		-command [list ::web::open $table [string map [list %id% $pndID] $Options(url:pnd)]] \
 		;
 	$m add command \
 		-label " $mc::OpenChessgames" \
 		-state [expr {[string length $cgdcID] ? "normal" : "disabled"}] \
 		-image $icon::16x16::ChessgamesDotCom \
 		-compound left \
-		-command [list ::web::open [string map [list %id% $cgdcID] $Options(url:chessgames)]] \
+		-command [list ::web::open $table [string map [list %id% $cgdcID] $Options(url:chessgames)]] \
 		;
 	
 	foreach {lang name} $wikiLinks {
@@ -1003,7 +1003,7 @@ proc PopupMenu {table menu base index} {
 			-label " [::encoding::languageName $lang]" \
 			-image $flag \
 			-compound left \
-			-command [list ::web::open $url] \
+			-command [list ::web::open $table $url] \
 			;
 	}
 

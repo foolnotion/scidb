@@ -339,13 +339,13 @@ private:
 	Modification		m_modification;
 	bool					m_parsingFirstHdr;
 	bool					m_parsingTags;
-	bool					m_failed;
 	bool					m_eof;
 	bool					m_hasNote;
 	bool					m_atStart;
 	bool					m_parsingComment;
 	bool					m_sourceIsPossiblyChessBase;
 	bool					m_sourceIsChessOK;
+	bool					m_encodingFailed;
 	unsigned				m_postIndex;
 	variant::Type		m_variant;
 	mstl::string		m_figurine;

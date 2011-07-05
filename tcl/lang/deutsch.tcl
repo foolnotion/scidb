@@ -1304,6 +1304,10 @@
 
 ::dialog::mc::DontAskAgain	"Nicht mehr abfragen"
 
+### web ################################################################
+::web::mc::CannotFindBrowser			"Es konnte kein geeigneter Webbrowser gefunden werden."
+::web::mc::CannotFindBrowserDetail	"Setze die Umbegungsvariable BROWSER auf den gewünschten browser."
+
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Grundfarbe"
 ::colormenu::mc::UserColor			"Benutzerfarbe"

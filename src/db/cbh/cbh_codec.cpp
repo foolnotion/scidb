@@ -49,6 +49,7 @@
 #include "m_byte_order.h"
 #include "m_vector.h"
 #include "m_stdio.h"
+#include "m_bitfield.h"
 #include "m_static_check.h"
 
 #include <string.h>
@@ -62,6 +63,8 @@ using namespace util;
 
 enum { Deleted = -999 };
 
+
+static mstl::bitfield<uint64_t> m_lookup;
 
 static country::Code NationMap[] =
 {
@@ -443,6 +446,27 @@ Codec::Codec()
 	,m_numGames(0)
 	,m_highQuality(false)
 {
+	if (::m_lookup.none())
+	{
+		M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(uint64_t), BitSet_Size_Exceeded);
+
+		::m_lookup.set(tag::Event);
+		::m_lookup.set(tag::Site);
+		::m_lookup.set(tag::Date);
+		::m_lookup.set(tag::Round);
+		::m_lookup.set(tag::White);
+		::m_lookup.set(tag::Black);
+		::m_lookup.set(tag::Result);
+		::m_lookup.set(tag::Annotator);
+		::m_lookup.set(tag::Eco);
+		::m_lookup.set(tag::WhiteElo);
+		::m_lookup.set(tag::BlackElo);
+		::m_lookup.set(tag::EventDate);
+		::m_lookup.set(tag::EventCountry);
+		::m_lookup.set(tag::EventType);
+		::m_lookup.set(tag::Mode);
+		::m_lookup.set(tag::TimeMode);
+	}
 }
 
 
@@ -508,6 +532,16 @@ Codec::toUtf8(mstl::string& str)
 
 	if (!sys::utf8::Codec::validateUtf8(str))
 		m_codec->forceValidUtf8(str);
+}
+
+
+void
+Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
+{
+	bool gameTagsOnly = section == GameTags;
+
+	if (::m_lookup.test(tag) == gameTagsOnly)
+		tags.remove(tag);
 }
 
 

@@ -76,6 +76,7 @@ public:
 
 	mstl::string const& extension() const;
 	mstl::string const& encoding() const;
+	void filterTag(TagSet& tags, tag::ID tag, Section section) const;
 
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& encoding,

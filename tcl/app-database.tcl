@@ -160,6 +160,8 @@ proc build {tab menu width height} {
 	variable ClipbaseType
 	variable Vars
 
+	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
+
 	set main [panedwindow $tab.main \
 		-orient vertical \
 		-opaqueresize true \
@@ -281,7 +283,6 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
 	if {$i == -1} {
-		set name [file rootname [file tail $file]]
 		set ext [file extension $file]
 		if {[llength $encoding] == 0} {
 			set k [FindRecentFile $file]
@@ -292,8 +293,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 				}
 			}
 		}
-		if {$ext eq ".gz" || $ext eq ".zip"} { set name [file rootname $name] }
-		set msg [format $mc::LoadMessage $name]
+		set msg [format $mc::LoadMessage [::util::databaseName $file]]
 		if {[llength $encoding] == 0} {
 			switch $ext {
 				.si3 - .si4 - .pgn - .gz - .zip	{ set encoding $::encoding::defaultEncoding }
@@ -328,7 +328,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		}
 		::scidb::db::set readonly $file $readonly
 		set type [::scidb::db::get type $file]
-		AddBase $type $file [::scidb::db::get encoding $file] $readonly
+		AddBase $type $file $encoding $readonly
 		AddRecentFile $type $file $encoding $readonly
 		CheckEncoding $parent $file $encoding
 	} else {
@@ -605,30 +605,17 @@ proc AddBase {type file encoding readonly} {
 	set canv $Vars(canvas)
 	set img [set [namespace current]::icons::${type}(${Defaults(iconsize)}x${Defaults(iconsize)})]
 	set i $Counter; incr Counter
-	set name [file rootname [file tail $file]]
 	set ext [file extension $file]
-	switch $ext {
-		.gz {
-			set ext .pgn
-			set name [file rootname $name]
-		}
-		.zip {
-			set ext .pgn
-		}
-	}
+	switch $ext { .gz - .zip { set ext .pgn } }
 	if {[llength $ext] == 0} { set ext sci } else { set ext [string range $ext 1 end] }
 	set Vars(active) $i
 	set Vars(selection) $i
 	if {[llength $encoding] == 0} { set encoding [::scidb::db::get codec] }
-	lappend Vars(bases) [list $i $type $file $name $ext $encoding $readonly]
+	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
 	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
 	set count [::locale::formatNumber $count]
-	if {$name eq $clipbaseName } {
-		set name [set [namespace current]::mc::T_Clipbase]
-	} else {
-		set name [encoding convertfrom utf-8 $name]
-	}
+	set name [::util::databaseName $file]
 
 	switch $ext {
 		sci { set icon $::icon::16x16::filetypeScidbBase }
@@ -673,17 +660,17 @@ proc AddBase {type file encoding readonly} {
 
 proc UpdateSwitcher {canv base} {
 	variable Counter
-	variable clipbaseName
+	variable ClipbaseType
 	variable Vars
 
 	foreach info $Vars(bases) {
-		lassign $info i type file name
+		lassign $info i type file
 		if {$file eq $base} {
 			set count [::scidb::db::count games $file]
 			if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
 			$canv itemconfigure size$i -text $count
-			if {$name eq $clipbaseName} {
-				$canv itemconfigure name$i -text [set [namespace current]::mc::T_Clipbase]
+			if {$type eq $ClipbaseType} {
+				$canv itemconfigure name$i -text $::util::clipbaseName
 			}
 		}
 	}
@@ -746,12 +733,11 @@ proc Switch {filename} {
 	$Vars(notebook) tab $Vars(annotators) -state $state
 
 	foreach base $Vars(bases) {
-		lassign $base i type file name
+		lassign $base i type file
 
 		if {$file eq $filename} {
 			set Vars(selection) $i
 			set background $Defaults(selected)
-			set file [encoding convertfrom utf-8 $file]
 			set [namespace current]::_CloseDatabase [format $mc::CloseDatabase [::util::databaseName $file]]
 		} else {
 			set background $Vars(background)
@@ -787,11 +773,12 @@ proc RefreshSwitcher {} {
 proc LanguageChanged {} {
 	variable Vars
 
+	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
+
 	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
 
 	if {$i >= 0} {
 		set name [::util::databaseName [lindex $Vars(bases) $i 2]]
-		set name [encoding convertfrom utf-8 $name]
 		set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
 	}
 }
@@ -955,6 +942,7 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 	variable IgnoreNext
 	variable clipbaseName
+	variable ClipbaseType
 	variable RecentFiles
 	variable Defaults
 	variable Vars
@@ -975,13 +963,13 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 
 	if {$index >= 0} {
 		set k [lsearch -integer -index 0 $Vars(bases) $index]
-		lassign [lindex $Vars(bases) $k] i type file name ext
+		lassign [lindex $Vars(bases) $k] i type file ext
 		set readonly [::scidb::db::get readonly? $file]
 		set isSciFormat [expr {$ext eq "sci"}]
-		set isClipbase [expr {$name eq $clipbaseName}]
-		if {$isClipbase} { set name [set [namespace current]::mc::T_Clipbase] }
+		set isClipbase [expr {$type eq $ClipbaseType}]
+		set name [::util::databaseName $file]
 		$menu add command                                    \
-			-label " [encoding convertfrom utf-8 $name]"      \
+			-label " $name"                                   \
 			-image $::icon::16x16::none                       \
 			-compound left                                    \
 			-background $options(menu:headerbackground)       \
@@ -999,18 +987,16 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		if {$file ne $clipbaseName} {
 			lappend specs command $::menu::mc::FileClose \
 				[namespace code [list closeBase $canv $file $i]] 0 0 close {}
-		}
-		if {$file eq $clipbaseName} {
+			lappend specs command "$mc::ChangeIcon..." \
+				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {}
+			lappend specs command "$mc::EditDescription..." \
+				[list [namespace current]::EditDescription $canv $i] 1 0 {} {}
+		} else {
 			lappend specs command \
 				$mc::EmptyClipbase \
 				[list [namespace current]::EmptyClipbase $canv] \
 				0 0 trash {} \
 				;
-		} else {
-			lappend specs command "$mc::ChangeIcon..." \
-				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {}
-			lappend specs command "$mc::EditDescription..." \
-				[list [namespace current]::EditDescription $canv $i] 1 0 {} {}
 		}
 		if {$ext eq "si3" || $ext eq "si4" || $ext eq "cbh" || $ext eq "pgn"} {
 			lappend specs	command \
@@ -1081,12 +1067,9 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-compound left
 		foreach entry $recentFiles {
 			lassign $entry type file encoding readonly
-			set name [file rootname $file]
-			if {[string match *.pgn $name]} { set name [file rootname $name] }
-			set n [encoding convertfrom utf-8 [lindex [file split $name] end]]
-			set f [encoding convertfrom utf-8 $file]
+			set name [::util::databaseName $file]
 			$m add command \
-				-label " $n ($f)" \
+				-label " $name \u2726 $file" \
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase \
@@ -1096,7 +1079,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 
 #	if {$index == -1 && [::scidb::db::get name] ne $clipbaseName} {
 #		$menu add separator
-#		set name [file rootname [file tail [::scidb::db::get name]]]
+#		set name [::util::databaseName [::scidb::db::get name]]
 #		set text [format [set [namespace current]::mc::Close] $name]
 #		set cmd [namespace code [list closeBase $canv]]
 #		$menu add command -label " $text" -image $::icon::16x16::close -compound left -command $cmd
@@ -1154,7 +1137,6 @@ proc EditDescription {canv index} {
 
 	set i [lsearch -integer -index 0 $Vars(bases) $index]
 	set file [lindex $Vars(bases) $i 2]
-	set name [lindex $Vars(bases) $i 3]
 	set Vars(description) [::scidb::db::get description $file]
 
 	set dlg [toplevel $canv.descr -class Dialog]
@@ -1168,7 +1150,7 @@ proc EditDescription {canv index} {
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $canv]
 	wm withdraw $dlg
-	wm title $dlg "$mc::EditDescription ($name)"
+	wm title $dlg "$mc::EditDescription ([::util::databaseName $file])"
 	wm resizable $dlg false false
 	::util::place $dlg below $canv
 	wm deiconify $dlg
@@ -1229,7 +1211,7 @@ proc Recode {number parent} {
 	variable Vars
 
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file name ext enc
+	lassign [lindex $Vars(bases) $i] index type file ext enc
 	if {$ext eq "cbh"} {
 		set defaultEncoding $::encoding::windowsEncoding
 	} else {
@@ -1239,7 +1221,7 @@ proc Recode {number parent} {
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }
 
 	::log::open $mc::Recode
-	::log::info [format $mc::RecodingDatabase $name $enc $encoding]
+	::log::info [format $mc::RecodingDatabase [::util::databaseName $file] $enc $encoding]
 
 	switch $ext {
 		pgn {
@@ -1257,7 +1239,6 @@ proc Recode {number parent} {
 	::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
 	::log::close
 
-	CheckEncoding $parent $file $encoding
 	lset Vars(bases) $i 5 $encoding
 	set i [lsearch -exact -index 1 $RecentFiles $file]
 	if {$i >= 0} { lset RecentFiles $i 2 $encoding }
@@ -1283,7 +1264,7 @@ proc ChangeIcon {number parent} {
 	$list addcol text -id text -expand yes
 
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file name ext
+	lassign [lindex $Vars(bases) $i] index type file ext
 	foreach t $Types($ext) {
 		$list insert [list [set [namespace current]::icons::${t}(48x48)] [set mc::T_$t]]
 	}
@@ -1328,7 +1309,7 @@ proc SetIcon {w number} {
 	variable RecentFiles
 	
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file name ext
+	lassign [lindex $Vars(bases) $i] index type file ext
 	set selection [lsearch -exact $Types(sci) [lindex $Types($ext) $Vars(icon)]]
 	set type [lindex $Types(sci) $selection]
 	lset Vars(bases) $i 1 $type
@@ -1358,12 +1339,12 @@ proc ShowDescription {index} {
 
 proc Properties {index popup} {
 	variable Vars
-	variable clipbaseName
+	variable ClipbaseType
 	variable PropBackground
 
 	set canv $Vars(canvas)
 	set i [lsearch -integer -index 0 $Vars(bases) $index]
-	lassign [lindex $Vars(bases) $i] i type file name ext encoding
+	lassign [lindex $Vars(bases) $i] i type file ext encoding
 
 	if {$popup} {
 		set dlg $canv.properties
@@ -1397,7 +1378,7 @@ proc Properties {index popup} {
 	} else {
 		toplevel $dlg -class Scidb
 		tk::frame $f -takefocus 0 -background $PropBackground
-		wm title $dlg "$::scidb::app - $name"
+		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
 		wm resizable $dlg false false
 		set label ::ttk::label
 		set options {}
@@ -1439,10 +1420,10 @@ proc Properties {index popup} {
 	set descr [::scidb::db::get description $file]
 	if {[llength $descr] == 0} { set descr "--" }
 	grid $f.lpath $f.tpath $f.ldescr $f.tdescr
-	$f.tpath configure -text [encoding convertfrom utf-8 $file]
+	$f.tpath configure -text $file
 	$f.tdescr configure -text $descr
 
-	if {$file eq $clipbaseName} {
+	if {$type eq $ClipbaseType} {
 		foreach name {path readonly created lastModified} {
 			grid remove $f.l$name $f.t$name
 		}

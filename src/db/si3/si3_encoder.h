@@ -56,7 +56,6 @@ public:
 	void doEncoding(Signature const& signature, GameData const& data);
 
 	static unsigned encodeType(db::type::ID type);
-
 	static bool skipTag(tag::ID tag);
 
 protected:

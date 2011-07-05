@@ -71,9 +71,15 @@ struct ExactPosition : public Position
 	Byte		__alignment;				// needed for alignment (otherwise memcmp() won't work)
 };
 
+struct UniquePosition : public ExactPosition
+{
+	uint16_t	m_halfMoveClock;			// number of moves since last pawn move or capture
+	uint16_t	m_plyNumber;				// ply number in game (incremented after each half move)
+};
+
 } // namespace board
 
-class Board : protected board::ExactPosition, protected Signature
+class Board : protected board::UniquePosition, protected Signature
 {
 public:
 
@@ -222,6 +228,8 @@ public:
 	bool notDerivableFromChess960() const;
 	/// Return true if making move would put oneself into check
 	bool isIntoCheck(Move const& move) const;
+	/// Checker whether given castling is unambiguous
+	bool isUnambiguous(castling::Index castling) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
 	Status checkState() const;
@@ -267,6 +275,8 @@ public:
 	board::Position const& position() const;
 	/// Return exact board position (includes castling rights, en passant, side to move)
 	board::ExactPosition const& exactPosition() const;
+	/// Return unique board position(castling rights, en passant, side to move, ply number, e.p. fyle)
+	board::UniquePosition const& uniquePosition() const;
 	/// Return material count.
 	material::Count materialCount(color::ID color) const;
 	/// Return square of castling square (maybe Null).
@@ -459,8 +469,6 @@ private:
 	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous
 	Square		m_ksq[2];					// square of the kings
 	Square		m_epSquareFen;				// square of a fictive ep capture
-	uint16_t		m_halfMoveClock;			// number of moves since last pawn move or capture
-	uint16_t		m_plyNumber;				// ply number in game (incremented after each half move)
 	uint64_t		m_hash;						// hash value
 	uint64_t		m_pawnHash;					// pawn hash value
 	Material		m_matCount[2];				// material count (per side)

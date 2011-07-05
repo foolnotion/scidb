@@ -139,7 +139,8 @@ public:
 	/// Returns the annotator at given index.
 	NamebaseEntry const& annotator(unsigned index) const;
 	/// Collect tags specific for current database format.
-	void getTags(unsigned index, TagSet& tags) const;
+	void getInfoTags(unsigned index, TagSet& tags) const;
+	void getGameTags(unsigned index, TagSet& tags) const;
 
 	/// Returns the codec.
 	DatabaseCodec& codec();

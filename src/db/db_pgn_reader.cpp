@@ -519,13 +519,13 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_modification(modification)
 	,m_parsingFirstHdr(true)
 	,m_parsingTags(false)
-	,m_failed(false)
 	,m_eof(false)
 	,m_hasNote(false)
 	,m_atStart(true)
 	,m_parsingComment(false)
 	,m_sourceIsPossiblyChessBase(false)
 	,m_sourceIsChessOK(false)
+	,m_encodingFailed(false)
 	,m_postIndex(0)
 	,m_variant(variant::Unknown)
 	,m_codec(codec)
@@ -1226,9 +1226,12 @@ PgnReader::convertToUtf(mstl::string& s)
 
 	if (__builtin_expect(m_codec.failed(), 0))
 	{
-		warning(EncodingFailed, m_prevPos, s);
-		m_codec.reset();
-		m_failed = true;
+		if (!m_encodingFailed)
+		{
+			warning(EncodingFailed, m_prevPos);
+			m_codec.reset();
+			m_encodingFailed = true;
+		}
 	}
 }
 

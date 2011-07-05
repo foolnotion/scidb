@@ -17,58 +17,113 @@
 # ======================================================================
 
 namespace eval web {
+namespace eval mc {
+	set CannotFindBrowser			"Couldn't find a suitable web browser."
+	set CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser."
+}
 
-variable Browsers {iexplorer opera lynx konqueror w3m links epiphan galeon mosaic amaya browsex elinks}
+variable Browsers {google-chrome iceweasel firefox iexplorer opera konqueror epiphany galeon mosaic amaya browsex}
+variable Excluded {}
 
 
-# borrowed from scid-4.1/tcl/htext.tcl
-proc open {url} {
-	global tcl_platform
-
-	::widget::busyCursor on
+proc open {parent url} {
 	regsub -all " " $url "%20" url
 
-	if {![catch {tk windowingsystem} wsystem] && $wsystem eq "aqua"} {
-		catch {exec open $url &}
-	} elseif {$tcl_platform(platform) eq "windows"} {
-		if {$tcl_platform(os) eq "Windows NT"} {
-			catch {exec $::env(COMSPEC) /c start $url &}
-		} else {
-			catch {exec start $url &}
+	::widget::busyCursor on
+
+	switch -- [tk windowingsystem] {
+		"aqua" {
+			catch {exec open $url &}
 		}
-	} else {	;# unix
-		if {[file executable [auto_execok iceweasel]]} {
-			if {[catch {exec /bin/sh -c "$::auto_execs(iceweasel) -remote 'openURL($url)'"}]} {
-				catch {exec /bin/sh -c "$::auto_execs(iceweasel) '$url'" &}
+
+		"win32" {
+			if {$::tcl_platform(os) eq "Windows NT"} {
+				catch {exec $::env(COMSPEC) /c start $url &}
+			} else {
+				catch {exec start $url &}
 			}
-		} elseif {[file executable [auto_execok firefox]]} {
-			if {[catch {exec /bin/sh -c "$::auto_execs(firefox) -remote 'openURL($url)'"}]} {
-				catch {exec /bin/sh -c "$::auto_execs(firefox) '$url'" &}
+		}
+
+		"x11" {
+			variable DefaultBrowser
+			variable Excluded
+
+			if {![info exists DefaultBrowser]} {
+				set DefaultBrowser [FindDefaultBrowser]
 			}
-		} elseif {[file executable [auto_execok mozilla]]} {
-			if {[catch {exec /bin/sh -c "$::auto_execs(mozilla) -remote 'openURL($url)'"}]} {
-				catch {exec /bin/sh -c "$::auto_execs(mozilla) '$url'" &}
+			while {[llength $DefaultBrowser]} {
+				if {![catch {exec /bin/sh -c "$DefaultBrowser '$url'" &}]} { break }
+				lappend Excluded $DefaultBrowser
+				set DefaultBrowser [FindDefaultBrowser]
 			}
-		} elseif {[file executable [auto_execok www-browser]]} {
-			catch {exec /bin/sh -c "$::auto_execs(www-browser) '$url'" &}
-		} elseif {[file executable [auto_execok netscape]]} {
-			if {[catch {exec /bin/sh -c "$::auto_execs(netscape) -raise -remote 'openURL($url)'"}]} {
-				catch {exec /bin/sh -c "$::auto_execs(netscape) '$url'" &}
-			}
-		} else {
-			variable Browsers
-			foreach executable $Browsers {
-				set executable [auto_execok $executable]
-				if [string length $executable] {
-					set command [list $executable $url &]
-					catch {exec /bin/sh -c "$executable '$url'" &}
-					break
-				}
+			if {[llength $DefaultBrowser] == 0} {
+				::dialog::error \
+					-parent $parent \
+					-message $mc::CannotFindBrowser \
+					-detail $mc::CannotFindBrowserDetail \
+					;
 			}
 		}
 	}
 
 	::widget::busyCursor off
+}
+
+
+proc FindDefaultBrowser {} {
+	global env
+	variable Browsers
+
+	if {[info exists env(BROWSER)]} {
+		foreach browser [split $env(BROWSER) :] {
+			set browser [auto_execok $browser]
+			if {![IsExcluded $browser] && [IsX11Browser $browser]} { return $browser }
+		}
+	}
+
+	set browser [auto_execok x-www-browser]
+	if {[llength $browser] && ![IsExcluded $browser]} { return $browser }
+
+	set htmlviewrc [file join $::scidb::dir::home .htmlviewrc]
+	if {[file readable $htmlviewrc]} {
+		set chan [::open $htmlviewrc]
+
+		while {[gets $chan line] >= 0} {
+			if {[string range $line 0 9] eq "X11BROWSER"} {
+				set browser [auto_execok [string trim [lindex [split $line =] 1]]]
+				if {[llength $browser] && ![IsExcluded $browser]} { return $browser }
+			}
+		}
+
+		close $chan
+	}
+
+	foreach browser $Browsers {
+		set browser [auto_execok $browser]
+		if {[llength $browser] && ![IsExcluded $browser]} { return $browser }
+	}
+
+	return ""
+}
+
+
+proc IsX11Browser {browser} {
+	variable Browsers
+
+	if {[llength $browser]} {
+		foreach b $Browsers {
+			if {[string match [list *$b*] $browser]} { return 1 }
+		}
+	}
+
+	return 0
+}
+
+
+proc IsExcluded {browser} {
+	variable Excluded
+
+	return [expr {[lsearch $Excluded $browser] >= 0}]
 }
 
 } ;# namespace web

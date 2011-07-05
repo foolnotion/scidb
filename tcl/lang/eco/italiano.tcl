@@ -24,7 +24,9 @@
 # (at your option) any later version.
 # ======================================================================
 
-# encoding: utf-8
+# ======================================================================
+# File encoding: utf-8
+# ======================================================================
 
 # 1. unusual descriptions
 "Anderssen's Opening"			"Apertura di Anderssen"
@@ -599,5 +601,6 @@
 "* Gambit Declined"	"Gambetto %1 Rifiutato"
 "* Deferred"		"%1 Ritardato"
 "Reversed *"		"%1 Invertita"
+"* Game"		"Partita del %1"
 
 # vi:set ts=8 sw=8:

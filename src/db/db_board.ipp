@@ -58,6 +58,7 @@ inline Signature& Board::signature()											{ return *this; }
 inline Signature const& Board::signature() const							{ return *this; }
 inline board::Position const& Board::position() const						{ return *this; }
 inline board::ExactPosition const& Board::exactPosition() const		{ return *this; }
+inline board::UniquePosition const& Board::uniquePosition() const		{ return *this; }
 inline material::Count Board::materialCount(color::ID color) const	{ return m_matCount[color]; }
 inline Square Board::kingSquare(color::ID color) const					{ return m_ksq[color]; }
 
@@ -85,6 +86,14 @@ inline void Board::swapToMove()								{ m_stm ^= 1; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
 inline void Board::setEnPassantSquare(Square sq)		{ setEnPassantSquare(sideToMove(), sq); }
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
+
+
+inline
+bool
+Board::isUnambiguous(castling::Index castling) const
+{
+	return m_unambiguous[castling];
+}
 
 
 inline

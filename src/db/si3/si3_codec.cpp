@@ -337,19 +337,24 @@ Codec::encoding() const
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag) const
+Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
 {
-	if (tag == tag::EventDate)
-	{
-		unsigned dy = Date(tags.value(tag::Date)).year();
-		unsigned ey = Date(tags.value(tag::EventDate)).year();
+	bool gameTagsOnly = section == GameTags;
 
-		if (mstl::abs(dy - ey) > 3)
-			tags.remove(tag::EventDate);
-	}
-	else if (!Encoder::skipTag(tag))
+	if (Encoder::skipTag(tag) == gameTagsOnly)
 	{
-		tags.remove(tag);
+		if (tag == tag::EventDate)
+		{
+			unsigned dy = Date(tags.value(tag::Date)).year();
+			unsigned ey = Date(tags.value(tag::EventDate)).year();
+
+			if (mstl::abs(dy - ey) > 3)
+				tags.remove(tag::EventDate);
+		}
+		else
+		{
+			tags.remove(tag);
+		}
 	}
 }
 

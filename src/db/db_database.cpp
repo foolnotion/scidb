@@ -228,7 +228,7 @@ Database::close()
 
 
 void
-Database::getTags(unsigned index, TagSet& tags) const
+Database::getInfoTags(unsigned index, TagSet& tags) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
@@ -237,7 +237,21 @@ Database::getTags(unsigned index, TagSet& tags) const
 	m_gameInfoList[index]->setupTags(tags);
 
 	for (unsigned i = 0; i < tag::ExtraTag; ++i)
-		m_codec->filterTag(tags, tag::ID(i));
+		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::InfoTags);
+}
+
+
+void
+Database::getGameTags(unsigned index, TagSet& tags) const
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(index < countGames());
+
+	tags.clear();
+	m_gameInfoList[index]->setupTags(tags);
+
+	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::GameTags);
 }
 
 

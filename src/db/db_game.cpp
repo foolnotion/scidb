@@ -2414,9 +2414,10 @@ Game::resetForNextLoad()
 	m_isModified = false;
 	m_wasModified = false;
 	m_finalBoardIsValid = false;
+	m_startBoard = Board::standardBoard();
 	m_currentBoard = m_startBoard;
-	m_tags.clear();
 	m_finalBoard.clear();
+	m_tags.clear();
 	m_flags = 0;
 	m_eco = Eco();
 	m_undoCommand = None;
@@ -2429,9 +2430,11 @@ Game::resetForNextLoad()
 util::crc::checksum_t
 Game::computeChecksum(util::crc::checksum_t crc) const
 {
-	crc = util::crc::compute(crc, reinterpret_cast<unsigned char const*>(&m_startBoard), sizeof(Board));
+	crc = util::crc::compute(
+				crc,
+				reinterpret_cast<unsigned char const*>(&m_startBoard.uniquePosition()),
+				sizeof(board::UniquePosition));
 	crc = m_startNode->computeChecksum(crc);
-	crc = m_tags.computeChecksum(crc);
 
 	return crc;
 }

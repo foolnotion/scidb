@@ -96,13 +96,11 @@ if {[info exists ::i18n::languages]} {
 }
 
 
-set Defaults(iconsize)		medium
 set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
 set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
 
 variable Fullscreen		0
 variable Theme				default
-variable IconSize
 variable Entries
 
 
@@ -110,8 +108,7 @@ variable Entries
 
 
 proc CreateViewMenu {menu} {
-	variable Defaults
-	variable IconSize
+	variable ::application::Options
 	variable Fullscreen
 	variable Theme
 
@@ -120,17 +117,16 @@ proc CreateViewMenu {menu} {
 
 	$menu add cascade -menu $m -label $::toolbar::mc::IconSize
 	widget::menuTextvarHook $menu [incr pos] ::toolbar::mc::IconSize
-	set IconSize $Defaults(iconsize)
 	set index 0
 	foreach size $::toolbar::iconSizes {
 		set var ::toolbar::mc::[string toupper $size 0 0]
 		set text [set $var]
 		$m add radiobutton \
 			-label $text \
-			-variable [namespace current]::IconSize \
+			-variable ::toolbar::Options(icons:size) \
 			-value $size \
-			-command [namespace code { SetIconSize }]
-			::theme::configureRadioEntry $m $text
+			;
+		::theme::configureRadioEntry $m $text
 		widget::menuTextvarHook $m $index $var
 		incr index
 	}
@@ -173,19 +169,6 @@ proc CreateViewMenu {menu} {
 		;
 	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewFullscreen
 	bind .application <F11> [namespace code [list viewFullscreen toggle]]
-}
-
-
-proc SetIconSize {} {
-	variable Defaults
-	variable IconSize
-
-	if {$IconSize == 0} {
-		set IconSize $Defaults(iconsize)
-	} else {
-		set Defaults(iconsize) $IconSize
-		::toolbar::setIconSize $IconSize
-	}
 }
 
 
@@ -451,8 +434,17 @@ proc dbImportOne {parent} {
 }
 
 
-proc dbClose {parent} { ::application::database::closeBase $parent }
-proc dbExport {parent} { ::export::open $parent }
+proc dbClose {parent} {
+	::application::database::closeBase $parent
+}
+
+
+proc dbExport {parent} {
+	set base [::scidb::db::get name]
+	set type [::scidb::db::get type]
+	set name [::util::databaseName $base]
+	::export::open $parent $base $type $name 0
+}
 
 
 proc gameNew {parent {variant {}}} {
@@ -475,7 +467,7 @@ proc gameSave {parent} {
 
 proc gameReplace {parent} {
 	if {[::scidb::game::current] != 9} {
-		::application::replaceMoves $parent
+		::application::pgn::replaceMoves $parent
 	}
 }
 
@@ -491,19 +483,19 @@ proc gameReplaceMoves {parent} {
 				-title "[tk appname] - $::dialog::save::mc::ReplaceGame" \
 				;
 		} else {
-			::application::replaceMoves $parent
+			::application::pgn::replaceMoves $parent
 		}
 	}
 }
 
 
 proc bugReport {parent} {
-	::web::open [set [namespace current]::BugTracker]
+	::web::open $parent [set [namespace current]::BugTracker]
 }
 
 
 proc featureRequest {parent} {
-	::web::open [set [namespace current]::FeatureRequestTracker]
+	::web::open $parent [set [namespace current]::FeatureRequestTracker]
 }
 
 

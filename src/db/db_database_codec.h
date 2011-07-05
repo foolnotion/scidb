@@ -88,6 +88,8 @@ public:
 
 	typedef format::Type Format;
 
+	enum Section { InfoTags, GameTags };
+
 //	static unsigned const Decode_Tags		= 1 << 0;
 //	static unsigned const Decode_Comments	= 1 << 1;
 //	static unsigned const Decode_All			= Decode_Tags | Decode_Comments;
@@ -115,7 +117,7 @@ public:
 	virtual unsigned maxDescriptionLength() const = 0;
 	virtual unsigned gameFlags() const = 0;
 
-	virtual void filterTag(TagSet& tags, tag::ID tag) const;
+	virtual void filterTag(TagSet& tags, tag::ID tag, Section section) const = 0;
 	virtual mstl::string const& extension() const = 0;
 	virtual mstl::string const& encoding() const = 0;
 	virtual Time modified(mstl::string const& rootname) const;

@@ -675,7 +675,7 @@
 ### playertable ########################################################
 ::playertable::mc::F_LastName					"Cognome"
 ::playertable::mc::F_FirstName				"Nome"
-::playertable::mc::F_FideID					"Fide ID"
+::playertable::mc::F_FideID					"ID Fide"
 ::playertable::mc::F_Title						"Titolo"
 ::playertable::mc::F_Frequency				"Frequenza"
 
@@ -989,7 +989,7 @@
 ::dialog::save::mc::GameData						"Dati Partita"
 ::dialog::save::mc::Event							"Evento"
 
-::dialog::save::mc::MatchesExtraTags			"Tag Matche / Estranee"
+::dialog::save::mc::MatchesExtraTags			"Concordanze Tag / Estranee"
 ::dialog::save::mc::PressToSelect				"Premi da Ctrl+0 a Ctrl+9 (o tasto sinistro del mouse) per selezionare"
 ::dialog::save::mc::PressForWhole				"Premi da Alt-0 a Alt-9 (o tasto centrale del mouse) per l'intera selezione dati"
 ::dialog::save::mc::EditTags						"Modifica Tag"
@@ -1204,11 +1204,11 @@
 ::info::mc::Testing				"Testing"
 ::info::mc::References			"Riferimenti"
 ::info::mc::System				"Sistema"
-::info::mc::FontDesign			"design del font di scacchi"
-::info::mc::ChessPieceDesign	"design dei pezzi"
-::info::mc::BoardThemeDesign	"design della scacchiera"
+::info::mc::FontDesign			"Design del font di scacchi"
+::info::mc::ChessPieceDesign	"Design dei pezzi"
+::info::mc::BoardThemeDesign	"Design della scacchiera"
 ::info::mc::FlagsDesign			"Design identificatori miniaturizzati"
-::info::mc::IconDesign			"design icone"
+::info::mc::IconDesign			"Design icone"
 
 ::info::mc::Version				"Versione"
 ::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."
@@ -1305,6 +1305,10 @@
 ::dialog::mc::Question		"Domanda"
 
 ::dialog::mc::DontAskAgain	"Non chiedere più"
+
+### web ################################################################
+::web::mc::CannotFindBrowser			"Couldn't find a suitable web browser." ;# NEW
+::web::mc::CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser." ;# NEW
 
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Base Colori"

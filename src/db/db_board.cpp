@@ -1408,10 +1408,7 @@ Board::fixBadCastlingRights()
 		}
 	}
 
-	m_unambiguous[0] = true;
-	m_unambiguous[1] = true;
-	m_unambiguous[2] = true;
-	m_unambiguous[3] = true;
+	::memset(m_unambiguous, true, sizeof(m_unambiguous));
 }
 
 
@@ -1654,8 +1651,8 @@ Board::setup(char const* fen)
 
 				case 'K': setCastleShort(White); break;
 				case 'k': setCastleShort(Black); break;
-				case 'Q': setCastleLong(White); break;
-				case 'q': setCastleLong(Black); break;
+				case 'Q': setCastleLong(White);  break;
+				case 'q': setCastleLong(Black);  break;
 
 				default: return false;
 			}

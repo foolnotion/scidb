@@ -27,8 +27,6 @@
 #include "tk_init.h"
 #include "tcl_base.h"
 
-#include "db_annotation.h"
-
 #include "u_zstream.h"
 
 #include "m_exception.h"

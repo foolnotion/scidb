@@ -259,11 +259,14 @@ Application::insertScratchGame(unsigned position)
 		index = i->second;
 	}
 
+	TagSet tags;
+	base.getGameTags(index, tags);
+
 	game.cursor = m_scratchBase;
 	game.index = index;
 	game.game->setUndoLevel(::undoLevel);
 	game.crcIndex = base.gameInfo(index).computeChecksum();
-	game.crcMoves = game.game->computeChecksum();
+	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
 	game.refresh = 0;
@@ -858,6 +861,9 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 
 	GameInfo const& info = base.gameInfo(index);
 
+	TagSet tags;
+	base.getGameTags(index, tags);
+
 	// TODO: compress scratch base (we need fast compress)
 
 	game.game->setUndoLevel(::undoLevel);
@@ -865,7 +871,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.index = index;
 	bool ok = base.loadGame(index, *game.game);
 	game.crcIndex = info.computeChecksum();
-	game.crcMoves = game.game->computeChecksum();
+	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 	game.game->updateSubscriber(Game::UpdateAll);
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
@@ -1485,9 +1491,13 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (state == save::Ok)
 	{
+		TagSet tags;
+		db.getGameTags(g.index, tags);
+
 		info->setDirty(false);
 		g.game->setIsModified(false);
-		g.crcMoves = g.game->computeChecksum();
+		// TODO: update game tags
+		g.crcMoves = tags.computeChecksum(g.game->computeChecksum());
 		g.crcIndex = info->computeChecksum();
 		g.sourceBase = cursor.name();
 		g.sourceIndex = g.game->index();
@@ -1559,8 +1569,11 @@ Application::updateMoves()
 
 		if (state == save::Ok)
 		{
+			TagSet tags;
+			cursor.base().getGameTags(game.sourceIndex, tags);
+
 			game.game->setIsModified(false);
-			game.crcMoves = game.game->computeChecksum();
+			game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 			m_subscriber->updateDatabaseInfo(name);
 
 			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)

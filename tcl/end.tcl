@@ -200,6 +200,7 @@ proc WriteOptions {chan} {
 	::options::writeItem $chan ::dialog::fsbox::showHiddenBtn
 	::options::writeItem $chan ::table::options
 	::options::writeItem $chan ::menu::Theme
+	::options::writeItem $chan ::toolbar::Options
 	puts $chan "::dialog::fsbox::setBookmarks {[::dialog::fsbox::getBookmarks]}"
 }
 ::options::hookWriter [namespace current]::WriteOptions
