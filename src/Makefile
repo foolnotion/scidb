@@ -203,11 +203,11 @@ $(PROGRAM): tkscidb.o $(LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) $<
 
 cbh2si4.o: cbh2si4.cpp
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
