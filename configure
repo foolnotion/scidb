@@ -135,6 +135,7 @@ array set environment {
 array set compiler {
     simd            {}
     thread-support  {}
+    stack-protector {}
 }
 
 array set defaults {
@@ -738,10 +739,7 @@ fi
 #
 set TestSSE2 {#!/bin/sh
 cat <<EOF > testsse2.c
-int main()
-{
-    return 1;
-}
+int main() { return 1; }
 EOF
 
 __CC__ -o testsse2 testsse2.c -msse2
@@ -780,12 +778,30 @@ fi
 }
 
 
+# TestNoStackProtector.sh:
+#    Script used to test if the compiler has an -fno-stack-protector option
+#
+set TestNoStackProtector {#!/bin/sh
+cat <<EOF > testNoStackProtector.c
+int main() { return 1; }
+EOF
+
+__CC__ -fno-stack-protector -o testNoStackProtector testNoStackProtector.c
+if [ -f testNoStackProtector ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
 # checkGCC:
 #    Checks whether gcc/g++ is installed (minimum version is 3.4).
 proc checkGCC {cc} {
     global TestGCC
     global TestSSE2
     global TestSyncBuiltin
+    global TestNoStackProtector
     global environment
     global compiler
 
@@ -850,12 +866,20 @@ proc checkGCC {cc} {
                 puts "no."
             }
         }
-        catch { file delete -force testsse2.sh }
-        catch { file delete -force testsse2.c }
-        catch { file delete -force testsse2 }
-        catch { file delete -force testSyncBuiltin.sh }
-        catch { file delete -force testSyncBuiltin.c }
-        catch { file delete -force testSyncBuiltin }
+        # we check silently if the compiler has an -fno-stack-protector option
+        if {![catch {open testNoStackProtector.sh w} f]} {
+            puts $f [regsub -all __CC__ $TestNoStackProtector $environment($cc)]
+            close $f
+            if {![catch {exec sh testNoStackProtector.sh}]} {
+                set compiler(stack-protector) -fno-stack-protector
+            }
+        }
+
+        foreach file {testsse2 testSyncBuiltin testNoStackProtector} {
+            catch [list file delete -force $file.sh]
+            catch [list file delete -force $file.c]
+            catch [list file delete -force $file]
+        }
     }
     return $version
 }
@@ -868,6 +892,10 @@ proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir
 
     set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
+    if {[llength $compiler(stack-protector)]} {
+        append option(EXTRA_CFLAGS) " "
+        append option(EXTRA_CFLAGS) $compiler(stack-protector)
+    }
 
     set success [findTclTkPaths]
 

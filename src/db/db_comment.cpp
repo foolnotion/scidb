@@ -1024,16 +1024,13 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 					&& attr[1][2] == '\0')
 				{
 					if (data->putLang == 2)
-					{
 						data->result.append("</:>", 4);
-						data->putLang = 0;
-					}
 
-					checkLang(data);
 					data->result.append("<:", 2);
 					data->result.append(attr[1]);
 					data->result.append(">", 1);
 					data->lang.assign(attr[1], 2);
+					data->putLang = 0;
 					data->isXml = true;
 
 					if (attr[1][0] == 'e' && attr[1][1] == 'n')

@@ -209,7 +209,7 @@ proc setup {} {
 	unset lst
 
 	lappend Menu \
-		Help	{	Contents			1	F1			help		{ puts "Help contents" }
+		Help	{	Contents			1	F1			help		{ ::beta::notYetImplemented .application help }
 					BugReport		1	{}			bug		{ ::menu::bugReport .application }
 					FeatureRequest	1	{}			question	{ ::menu::featureRequest .application }
 					Info				1	{}			info		{ ::info::openDialog .application }

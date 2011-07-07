@@ -1069,7 +1069,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lassign $entry type file encoding readonly
 			set name [::util::databaseName $file]
 			$m add command \
-				-label " $name \u2726 $file" \
+				-label " $name  \u25b8  $file" \
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase \
@@ -1114,7 +1114,7 @@ proc ToggleReadOnly {file index} {
 	::scidb::db::set readonly $_ReadOnly
 
 	set k [lsearch -integer -index 0 $Vars(bases) $index]
-	lset Vars(bases) $k 6 $_ReadOnly
+	lset Vars(bases) $k 5 $_ReadOnly
 
 	set k [FindRecentFile $file]
 	if {$k >= 0} { lset RecentFiles $k 3 $_ReadOnly }
@@ -1239,7 +1239,7 @@ proc Recode {number parent} {
 	::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
 	::log::close
 
-	lset Vars(bases) $i 5 $encoding
+	lset Vars(bases) $i 4 $encoding
 	set i [lsearch -exact -index 1 $RecentFiles $file]
 	if {$i >= 0} { lset RecentFiles $i 2 $encoding }
 }

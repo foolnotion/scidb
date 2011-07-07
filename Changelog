@@ -1,7 +1,21 @@
 [July 2011]
 
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #70)
+------------------------------------------------------------------------------
+* startHtmlElement() fixed (game recovery should be correct now).
+
+* Game header of recovered games ok now.
+
+* Problem with black castling on main board fixed (bug item #3356896).
+
+* The configure script will now add -fno-stack-protector option if supported;
+Ubuntu 11.04 has stack protection on per default, but I dont want this; makes
+the program slower and is satisfying only the paranoid people.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #69)
--------------------------
+------------------------------------------------------------------------------
 * Game list: Shift-Double-Button-1 will switch to the board tab after loading
 the game (see feature request #3349617).
 
@@ -13,4 +27,8 @@ the game (see feature request #3349617).
 
 * Encoding problems with PGN files fixed (default encoding is ISO8859-1).
 
-* Checksum computation fixed
+* Checksum computation fixed: the game bar should not load anymore an already
+open game.
+
+* <Shift-Double-Button-1> bound to game list on database tab: switch to the
+main board when loading a game.

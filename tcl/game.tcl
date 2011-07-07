@@ -96,7 +96,6 @@ proc new {parent {base {}} {index -1}} {
 	if {[llength $base] == 0} { set base Scratchbase }
 	set codec [::scidb::db::get codec $base]
 	set id [list $base $codec $index]
-puts "$id -- [lindex $List 0 3]"
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
 	set entry [list $time 0 0 $id]
 	set tags {}
@@ -114,7 +113,6 @@ puts "$id -- [lindex $List 0 3]"
 		set crc [load $parent $loadPos $base $index]
 		if {[llength $crc] == 0} { return -1 }
 
-puts "crc: $crc"
 		if {$crc ne [lindex $List $pos 4]} {
 			::dialog::warning -parent $parent -message [format $mc::GameHasChanged $index]
 			set pos -1
@@ -527,6 +525,8 @@ proc recover {} {
 							-variation 0 \
 							-scidb 1 \
 							;
+						Update _ $count
+						set tags [lindex $List $count 5]
 						set base [lindex $key 0]
 						set index [lindex $key 2]
 						::scidb::game::sink $count $base $index
@@ -692,7 +692,6 @@ proc Update {_ position} {
 		lset List $position 3 2 [::scidb::game::index $position]
 		lset List $position 1 [::scidb::game::query $position modified?]
 		lset List $position 4 [::scidb::game::query $position checksum]
-puts "Update: [::scidb::game::query $position checksum]"
 		lset List $position 5 [::scidb::game::tags $position]
 	}
 }

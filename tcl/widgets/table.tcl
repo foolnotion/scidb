@@ -1314,6 +1314,7 @@ proc PopupMenu {table x y X Y} {
 	if {$action eq ""} {
 		set id [$table.t identify $x $y]
 		if {[lindex $id 0] ne "header"} {
+			::focus $table.t
 			event generate $table <<TableMenu>> -x $x -y $y -rootx $X -rooty $Y
 			return
 		}

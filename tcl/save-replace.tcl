@@ -303,6 +303,7 @@ proc open {parent base position {number 0}} {
 	set Priv(match:event-site) {}
 	set Priv(match:game-annotator) {}
 	set Priv(characteristics-only) [expr {[llength $position] == 0}]
+	set Priv(game-eco-flag) 0
 
 	if {$Priv(characteristics-only)} {
 		set Priv(tags) [::scidb::db::get tags $number $base]
