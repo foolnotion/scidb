@@ -51,6 +51,13 @@ using namespace db;
 static unsigned rejected = 0;
 
 
+struct TclInterpreter
+{
+	TclInterpreter()	{ ::tcl::bits::interp = Tcl_CreateInterp(); }
+	~TclInterpreter()	{ Tcl_DeleteInterp(::tcl::bits::interp); }
+};
+
+
 struct Progress : public util::Progress
 {
 	void update(unsigned progress)
@@ -190,8 +197,7 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 int
 main(int argc, char* argv[])
 {
-	::tcl::bits::interp = Tcl_CreateInterp();
-
+	TclInterpreter	tclInterpreter;
 	mstl::string	convertto("iso8859-1");
 	mstl::string	convertfrom("cp1252");
 	bool				force(false);

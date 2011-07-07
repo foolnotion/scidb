@@ -71,6 +71,7 @@ template <typename T>
 inline
 stack<T>::~stack() throw()
 {
+	M_ASSERT((begin() == 0) == (end() == 0));
 	::mstl::bits::destroy(begin(), end());
 }
 

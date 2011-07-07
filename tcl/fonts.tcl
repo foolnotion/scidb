@@ -1135,6 +1135,35 @@ proc splitAnnotation {text} {
 	return $result
 }
 
+
+proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
+	if {![file isdirectory $windowsFontDir]} {
+		::dialog::error -parent $parent -message [format $mc::CannotFindDirectory $windowsFontDir]
+		return 0
+	}
+
+	set fontDir $::scidb::dir::home/.fonts
+	if {![file isdirectory $fontDir]} {
+		if {[catch { file mkdir $fontDir }]} {
+			::dialog::error -parent $parent -message [format $mc::CannotCreateDirectory $fontDir]
+			return 0
+		}
+	}
+
+	set count 0
+
+	foreach font {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
+						SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
+						SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg} {
+		if {[file readable $font.ttf]} {
+			file copy -force $font.ttf $fontDir
+			incr count
+		}
+	}
+
+	return $count
+}
+
 # setup ###############################################################################
 
 if {$UseFigurines && [::tk windowingsystem] eq "x11"} {

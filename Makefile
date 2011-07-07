@@ -13,23 +13,29 @@
 MAKEFLAGS += --no-print-directory
 
 all:
+	@$(MAKE) -C engines
+	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
 
 depend:
+	@$(MAKE) -C engines depend
 	@$(MAKE) -C src depend
 	@$(MAKE) -C tcl depend
 
 clean:
+	@$(MAKE) -C engines clean
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tcl clean
 
 install:
+	@$(MAKE) -C engines install
 	@$(MAKE) -C src install
 	@$(MAKE) -C tcl install
 
 uninstall:
+	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C src uninstall
 	@$(MAKE) -C tcl uninstall
 

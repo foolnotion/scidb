@@ -202,11 +202,16 @@ proc open {} {
 #	}
 
 	set pgn [tk::frame $right.pgn -class Frame -width $Attr(pgn,width)]
-#	set analysis [tk::frame $right.analysis -class Frame -width $Attr(analysis,width)]
+
+if {$::test::useAnalysis} {
+	set analysis [tk::frame $right.analysis -class Frame -width $Attr(analysis,width)]
+}
 
 	grid $pgn -row 0 -column 0 -sticky nsew
-#	grid [::ttk::separator $right.sep -orient horizontal] -row 1 -column 0 -sticky ew
-#	grid $analysis -row 2 -column 0 -sticky nsew
+if {$::test::useAnalysis} {
+	grid [::ttk::separator $right.sep -orient horizontal] -row 1 -column 0 -sticky ew
+	grid $analysis -row 2 -column 0 -sticky nsew
+}
 	grid rowconfigure $right 0 -weight 1
 	grid columnconfigure $right 0 -weight 1
 
@@ -236,7 +241,9 @@ proc open {} {
 	pgn::build $right.pgn $app.menu.mSettings $Attr(pgn,width) $Attr(pgn,height)
 	tree::build $bottom.tree $app.menu.mSettings $Attr(tree,width) $Attr(tree,height)
 	tree::games::build $bottom.games $app.menu.mSettings $Attr(games,width) $Attr(games,height)
-#	analysis::build $right.analysis $app.menu.mSettings $Attr(analysis,width) $Attr(analysis,height)
+if {$::test::useAnalysis} {
+	analysis::build $right.analysis $app.menu.mSettings $Attr(analysis,width) $Attr(analysis,height)
+}
 #[winfo parent $bottom] forget $bottom
 
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]

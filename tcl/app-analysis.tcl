@@ -239,9 +239,10 @@ proc build {parent menu width height} {
 					-command [namespace code [list LinesPerPV $tree]] \
 				]
 	::toolbar::addSeparator $tbControl
+	if {[llength [::engine::engines]] == 0} { set state disabled } else { set state readonly }
 	set switcher [::toolbar::add $tbSwitcher ::ttk::tcombobox \
 		-exportselection no \
-		-state readonly \
+		-state $state \
 		-width 15 \
 		-textvariable [namespace current]::Options(engine:current) \
 		-tooltipvar [namespace current]::mc::Engine \

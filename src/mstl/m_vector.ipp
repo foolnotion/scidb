@@ -374,6 +374,7 @@ template <typename T>
 inline
 vector<T>::~vector() throw()
 {
+	M_ASSERT((begin() == 0) == (end() == 0));
 	mstl::bits::destroy(begin(), end());
 }
 
