@@ -1,6 +1,15 @@
 [July 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #71)
+------------------------------------------------------------------------------
+* Correction of variation folding: a folded variation does not show comments
+anymore.
+
+* Eco translation from Fernando integrated. Both translation now are macRoman
+encoded.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #70)
 ------------------------------------------------------------------------------
 * startHtmlElement() fixed (game recovery should be correct now).

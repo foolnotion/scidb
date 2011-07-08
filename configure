@@ -889,7 +889,7 @@ proc checkGCC {cc} {
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
 proc writeMakefile {{type ""}} {
-    global option defaults environment package compiler feature configure subdir
+    global option defaults environment package compiler feature configure subdir tcl_platform
 
     set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
     if {[llength $compiler(stack-protector)]} {
@@ -954,16 +954,20 @@ proc writeMakefile {{type ""}} {
     }
     set option(DATADIR) $dir/$option(SCRIPT)
 
-    # XXX not working for MacOS
-    if {[string match {/usr/local*} $configure(prefix)] && [file isdirectory /usr/local/share/fonts]} {
-        set prefix /usr/local
+    if {"$tcl_platform(os)" eq "Darwin"} {
+        set option(FONTDIR) /Library/Fonts/
     } else {
-        set prefix /usr
-    }
-    if {![file isdirectory $prefix/share/fonts]} {
-        set option(FONTDIR) "~/.fonts"
-    } else {
-        set option(FONTDIR) $prefix/share/fonts/truetype/Scidb
+        if {  [string match {/usr/local*} $configure(prefix)]
+           && [file isdirectory /usr/local/share/fonts]} {
+            set prefix /usr/local
+        } else {
+            set prefix /usr
+        }
+        if {![file isdirectory $prefix/share/fonts]} {
+            set option(FONTDIR) "~/.fonts"
+        } else {
+            set option(FONTDIR) $prefix/share/fonts/truetype/Scidb
+        }
     }
 
     foreach name [array names option] {

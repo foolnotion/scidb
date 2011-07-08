@@ -144,105 +144,101 @@ install: $(SCRIPT)
 	install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
 	install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
 	install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
-	for i in dark lite tile; do \
-		for k in marble misc wood; do \
-			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k; \
+	for i in dark lite tile; do                                              \
+		for k in marble misc wood; do                                         \
+			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k;                    \
 			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
-		done; \
+		done;                                                                 \
 	done
-	if [ "`id -u`" -eq 0 ]; then \
-		install -m 755 -d $(FONTDIR); \
-		install -m 644 -p fonts/*.ttf $(FONTDIR); \
-	else \
-		install -m 755 -d ~/.fonts; \
-		install -m 644 -p fonts/*.ttf ~/.fonts; \
-	fi
-	@if [ ! -z "`which fc-cache`" ]; then \
-		if [ "`id -u`" -eq 0 ]; then \
-			fc-cache -fv $(FONTDIR); \
-		else \
-			fc-cache -fv ~/.fonts; \
-		fi; \
-	else \
-		echo "Don't know how to setup truetype fonts (fc-cache not available)."; \
-		echo "Please contact your system administrator."; \
+	if [ "`uname -s`" = "Darwin" ]; then                                           \
+		if [ "`id -u`" -eq 0 ]; then                                                \
+			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
+		else                                                                        \
+			install -m 644 -p fonts/*.ttf ~/Library/Fonts;                           \
+		fi;                                                                         \
+	else                                                                           \
+		if [ "`id -u`" -eq 0 ]; then                                                \
+			install -m 755 -d $(FONTDIR);                                            \
+			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
+		else                                                                        \
+			install -m 755 -d ~/.fonts;                                              \
+			install -m 644 -p fonts/*.ttf ~/.fonts;                                  \
+		fi;                                                                         \
+		if [ ! -z "`which fc-cache`" ]; then                                        \
+			if [ "`id -u`" -eq 0 ]; then                                             \
+				fc-cache -fv $(FONTDIR);                                              \
+			else                                                                     \
+				fc-cache -fv ~/.fonts;                                                \
+			fi                                                                       \
+		else                                                                        \
+			echo "Don't know how to setup truetype fonts (fc-cache not available)."; \
+			echo "Please contact your system administrator.";                        \
+		fi;                                                                         \
 	fi
 
 uninstall:
 	rm -f $(BINDIR)/$(SCRIPT)
-	for f in `ls pieces/*.tcl`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls cursor/*.xbm`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls cursor/*.xcur`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls flags/*.png`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls lang/*.tcl`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls lang/eco/*.*`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls photos/*.sp?`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls themes/*.dat`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls themes/piece/*.dat`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls themes/square/*.dat`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for f in `ls scripts/*.eXt`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for i in dark lite tile; do \
-		for k in marble misc wood; do \
+	for f in `ls pieces/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls cursor/*.xbm`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls lang/eco/*.*`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls photos/*.sp?`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done
+	for i in dark lite tile; do                \
+		for k in marble misc wood; do           \
 			for f in `ls textures/$$i/$$k/*`; do \
-				rm -f $(SHAREDIR)/$$f; \
-			done; \
-		done; \
+				rm -f $(SHAREDIR)/$$f;            \
+			done;                                \
+		done;                                   \
 	done
 	# repeat 3 times (directory level is 3)
-	for d in `find $(SHAREDIR) -type d -empty`; do \
-		rmdir $$d; \
-	done
-	for d in `find $(SHAREDIR) -type d -empty`; do \
-		rmdir $$d; \
-	done
-	for d in `find $(SHAREDIR) -type d -empty`; do \
-		rmdir $$d; \
-	done
-	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then \
-		rmdir $(SHAREDIR); \
-	fi
-	if [ "`id -u`" -eq 0 ]; then \
-		for f in `ls fonts/*.ttf`; do \
-			rm -f $(FONTDIR)/`basename $$f`; \
-		done; \
-		if [ ! -z "`which fc-cache`" ]; then \
-			fc-cache -fv $(FONTDIR); \
-		fi; \
-		if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then \
-			rmdir $(FONTDIR); \
-		fi; \
-	else \
-		for f in `ls fonts/*.ttf`; do \
-			rm -f ~/.$$f; \
-		done; \
-		if [ ! -z "`which fc-cache`" ]; then \
-			fc-cache -fv ~/.fonts; \
-		fi; \
-		if [ "`find ~/.fonts -type d -empty`" = "`ls -d ~/.fonts`" ]; then \
-			rmdir ~/.fonts; \
-		fi; \
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+	if [ "`uname -s`" = "Darwin" ]; then                                                   \
+		if [ "`id -u`" -eq 0 ]; then                                                        \
+			for f in `ls fonts/*.ttf`; do                                                    \
+				rm -f $(FONTDIR)/`basename $$f`;                                              \
+			done;                                                                            \
+			if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then                   \
+				rmdir $(FONTDIR);                                                             \
+			fi;                                                                              \
+		else                                                                                \
+			for f in `ls fonts/*.ttf`; do                                                    \
+				rm -f ~/Library/Fonts/`basename $$f`;                                         \
+			done;                                                                            \
+			if [ "`find ~/Library/Fonts -type d -empty`" = "`ls -d ~/Library/Fonts`" ]; then \
+				rmdir ~/Library/Fonts;                                                        \
+			fi;                                                                              \
+		fi;                                                                                 \
+	else                                                                                   \
+		if [ "`id -u`" -eq 0 ]; then                                                        \
+			for f in `ls fonts/*.ttf`; do                                                    \
+				rm -f $(FONTDIR)/`basename $$f`;                                              \
+			done;                                                                            \
+			if [ ! -z "`which fc-cache`" ]; then                                             \
+				fc-cache -fv $(FONTDIR);                                                      \
+			fi;                                                                              \
+			if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then                   \
+				rmdir $(FONTDIR);                                                             \
+			fi;                                                                              \
+		else                                                                                \
+			for f in `ls fonts/*.ttf`; do                                                    \
+				rm -f ~/.$$f;                                                                 \
+			done;                                                                            \
+			if [ ! -z "`which fc-cache`" ]; then                                             \
+				fc-cache -fv ~/.fonts;                                                        \
+			fi;                                                                              \
+			if [ "`find ~/.fonts -type d -empty`" = "`ls -d ~/.fonts`" ]; then               \
+				rmdir ~/.fonts;                                                               \
+			fi;                                                                              \
+		fi;                                                                                 \
 	fi
 
 $(SCRIPT): $(SOURCES)

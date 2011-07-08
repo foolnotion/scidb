@@ -873,7 +873,7 @@ Move::Move(Work& work, db::Comment const& comment)
 	:KeyNode(work.key)
 	,m_ply(0)
 {
-	if (!comment.isEmpty())
+	if (!work.isFolded && !comment.isEmpty())
 	{
 		db::Comment comm(comment);
 		comm.strip(*work.wantedLanguages);

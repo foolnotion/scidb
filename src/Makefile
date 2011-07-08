@@ -77,15 +77,9 @@ uninstall:
 	rm -f $(BINDIR)/cbh2si4
 	rm -f $(SHAREDIR)/scripts/plain.eXt
 	rm -f $(SHAREDIR)/data/eco.bin
-	for f in `ls data/*.*`; do \
-		rm -f $(SHAREDIR)/$$f; \
-	done
-	for d in `find $(SHAREDIR) -type d -empty`; do \
-		rmdir $$d; \
-	done
-	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then \
-		rmdir $(SHAREDIR); \
-	fi
+	for f in `ls data/*.*`; do rm -f $(SHAREDIR)/$$f; done
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
 
 clean:
 	rm -f $(TARGETS) Makefile.bak
@@ -97,16 +91,16 @@ clean:
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
 	@if [ -h Makefile.bak ]; then \
-		cp Makefile Makefile.bak; \
-		mv Makefile.bak Makefile; \
+		cp Makefile Makefile.bak;  \
+		mv Makefile.bak Makefile;  \
 	fi
-	@for dir in $(SUBDIRS); do \
+	@for dir in $(SUBDIRS); do  \
 		$(MAKE) -C $$dir depend; \
 	done
 
 recursive:
-	@for dir in $(SUBDIRS); do \
-		$(MAKE) -C $$dir; \
+	@for dir in $(SUBDIRS); do           \
+		$(MAKE) -C $$dir;                 \
 		if [ $$? != 0 ]; then exit 1; fi; \
 	done
 
