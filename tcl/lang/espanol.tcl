@@ -14,7 +14,8 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2011 Gregor Cramer
+# Copyright: (C) 2011 Gregor Cramer
+# Copyright: (C) 2011 Carlos Fernando Gonzalez
 # ======================================================================
 
 # ======================================================================
@@ -24,9 +25,13 @@
 # (at your option) any later version.
 # ======================================================================
 
+# ======================================================================
+# File encoding: macRoman
+# ======================================================================
+
 ### global #############################################################
-::mc::SortMapping		{}
-::mc::AsciiMapping	{}
+::mc::SortMapping		{á a Á A é e É E í i Í I ñ n Ñ N ó o Ó O ú u Ú U ü u Ü U}
+::mc::AsciiMapping	{á a Á A é e É E í i Í I ñ n Ñ N ó o Ó O ú u Ú U ü u Ü U}
 
 ::mc::Alignment		"Alineación"
 ::mc::Apply				"Aplicar"
@@ -52,7 +57,7 @@
 ::mc::No					"no"
 ::mc::NotAvailable	"n/d"
 ::mc::Number			"Número"
-::mc::OK					"OK"
+::mc::OK					"Aceptar"
 ::mc::Paste				"Pegar"
 ::mc::PieceSet			"Piezas"
 ::mc::Preview			"Vista previa"
@@ -89,31 +94,31 @@
 ::widget::mc::Cancel		"&Cancelar"
 ::widget::mc::Clear		"&Vaciar"
 ::widget::mc::Close		"C&errar"
-::widget::mc::Ok			"&OK"
+::widget::mc::Ok			"Acep&tar"
 ::widget::mc::Reset		"&Restablecer"
 ::widget::mc::Update		"Ac&tualizar"
 ::widget::mc::Import		"&Importar"
 ::widget::mc::Revert		"Re&vertir"
 ::widget::mc::Previous	"&Previo"
 ::widget::mc::Next		"Pró&ximo"
-::widget::mc::First		"&First" ;# NEW
-::widget::mc::Last		"Las&t" ;# NEW
+::widget::mc::First		"Pr&imero" 
+::widget::mc::Last		"Últi&mo" 
 
 ### util ###############################################################
 
-::util::mc::IOErrorOccurred					"I/O Error occurred" ;# NEW
+::util::mc::IOErrorOccurred					"Hubo un error de I/O"
 
-::util::mc::IOError(OpenFailed)				"open failed" ;# NEW
-::util::mc::IOError(ReadOnly)					"database is read-only" ;# NEW
-::util::mc::IOError(UnknownVersion)			"unknown file version" ;# NEW
-::util::mc::IOError(UnexpectedVersion)		"unexpected file version" ;# NEW
-::util::mc::IOError(Corrupted)				"corrupted file" ;# NEW
-::util::mc::IOError(WriteFailed)				"write operation failed" ;# NEW
-::util::mc::IOError(InvalidData)				"invalid data (file possibly corrupted)" ;# NEW
-::util::mc::IOError(ReadError)				"read error" ;# NEW
-::util::mc::IOError(EncodingFailed)			"cannot write namebase file" ;# NEW
-::util::mc::IOError(MaxFileSizeExceeded)	"maximal file size reached" ;# NEW
-::util::mc::IOError(LoadFailed)				"load failed (too many event entries)" ;# NEW
+::util::mc::IOError(OpenFailed)				"apertura fallida"
+::util::mc::IOError(ReadOnly)					"la base es de sólo-lectura"
+::util::mc::IOError(UnknownVersion)			"versión desconocida del archivo"
+::util::mc::IOError(UnexpectedVersion)		"versión no esperada del archivo"
+::util::mc::IOError(Corrupted)				"archivo corrupto"
+::util::mc::IOError(WriteFailed)				"operación de escritura fallida"
+::util::mc::IOError(InvalidData)				"datos no válidos (archivo probablemente corrupto)" 
+::util::mc::IOError(ReadError)				"error de lectura"
+::util::mc::IOError(EncodingFailed)			"no se puede escribir el nombre" 
+::util::mc::IOError(MaxFileSizeExceeded)	"se alcanzó el tamaño máximo de archivo" 
+::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
 
 ### menu ###############################################################
 ::menu::mc::File						"&Archivo"
@@ -140,10 +145,10 @@
 ::menu::mc::HelpInfo					"&Información"
 ::menu::mc::HelpContents			"Con&tenidos"
 ::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
-::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)" ;# NEW
+::menu::mc::HelpFeatureRequest	"&Solicitud de característica (abrir en navegador web)"
 
 ::menu::mc::ViewShowLog				"Mostrar bitáco&ra..."
-::menu::mc::ViewFullscreen			"Full-Screen" ;# NEW
+::menu::mc::ViewFullscreen			"Pantalla completa" 
 
 ::menu::mc::OpenFile					"Abrir un archivo Scidb"
 ::menu::mc::NewFile					"Crear un archivo Scidb"
@@ -194,7 +199,7 @@
 
 ::application::mc::DockWindow				"Ventana acoplada"
 ::application::mc::UndockWindow			"Ventana desacoplada"
-::application::mc::ChessInfoDatabase	"Base de Información Ajedrecística"
+::application::mc::ChessInfoDatabase	"Base de Datos Ajedrecística"
 ::application::mc::Shutdown				"Cierre..."
 
 ### application::board #################################################
@@ -377,8 +382,8 @@
 ::application::pgn::mc::EditAnnotation						"Editar nota"
 ::application::pgn::mc::EditCommentBefore					"Editar comentario antes de la jugada"
 ::application::pgn::mc::EditCommentAfter					"Editar comentario tras la jugada"
-::application::pgn::mc::EditPrecedingComment				"Edit preceding comment" ;# NEW
-::application::pgn::mc::EditTrailingComment				"Edit trailing comment" ;# NEW
+::application::pgn::mc::EditPrecedingComment				"Editar el comentario precedente"
+::application::pgn::mc::EditTrailingComment				"Editar último comentario" 
 ::application::pgn::mc::EditMarks							"Editar marcador"
 ::application::pgn::mc::Display								"Mostrar"
 ::application::pgn::mc::None									"ninguno"
@@ -417,7 +422,7 @@
 ::application::tree::mc::F_AverageYear					"\u00f8 Año"
 ::application::tree::mc::F_LastYear						"Última partida jugada"
 ::application::tree::mc::F_BestPlayer					"Mejor jugador"
-::application::tree::mc::F_FrequentPlayer				"Jugador frecuente"
+::application::tree::mc::F_FrequentPlayer				"Jugador más frecuente"
 
 ::application::tree::mc::T_Number						"Numeración"
 ::application::tree::mc::T_AverageYear					"Año promedio"
@@ -708,7 +713,7 @@
 ::gamebar::mc::Players					"Jugadores"
 ::gamebar::mc::Event						"Evento"
 ::gamebar::mc::Site						"Lugar"
-::gamebar::mc::SeparateHeader			"Separate header" ;# NEW
+::gamebar::mc::SeparateHeader			"Encabezado separado"
 ::gamebar::mc::ShowActiveAtBottom	"Mostrar la partida activa al pie"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Mostrar los jugadores en líneas separadas"
 ::gamebar::mc::DiscardChanges			"Esta partida ha cambiado.\n\n¿Quiere realmente descartar los cambios realizados?"
@@ -729,8 +734,8 @@
 ::browser::mc::GotoEndOfGame		"Ir al final de la partida"
 ::browser::mc::IncreaseBoardSize	"Agrandar el tablero"
 ::browser::mc::DecreaseBoardSize	"Achicar el tablero"
-::browser::mc::GotoFirstGame		"Goto first game" ;# NEW
-::browser::mc::GotoLastGame		"Goto last game" ;# NEW
+::browser::mc::GotoFirstGame		"Ir a la primera partida"
+::browser::mc::GotoLastGame		"Ir a la última partida"
 
 ::browser::mc::LoadGame				"Cargar partida"
 ::browser::mc::MergeGame			"Fusionar partida"
@@ -836,7 +841,7 @@
 ::import::mc::InvalidCountryCode					"Código de país no válido"
 ::import::mc::InvalidRating						"Número de rating no válido"
 ::import::mc::InvalidNag							"NAG no válido"
-::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)" ;# NEW
+::import::mc::BraceSeenOutsideComment			"\"\}\" fuera de un comentario en la partida (se ignorarán)" 
 ::import::mc::MissingFen							"FEN desconocido (el encabezado de variante se ignorará)"
 ::import::mc::UnknownEventType					"Tipo de evento desconocido"
 ::import::mc::UnknownTitle							"Título desconocido (ignored)"
@@ -1065,7 +1070,7 @@
 
 ### game ###############################################################
 ::game::mc::CloseAllGames				"¿Cerrar todas las partidas abiertas de la base '%s'?"
-::game::mc::SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?" ;# NEW
+::game::mc::SomeGamesAreModified		"Se modificaron algunas partidas de la base '%s'. ¿Cerrar de todos modos?" 
 ::game::mc::AllSlotsOccupied			"Todos los espacios para partidas están ocupados."
 ::game::mc::ReleaseOneGame				"Por favor,  saque una de las partidas antes de cargar otra."
 ::game::mc::GameAlreadyOpen			"La partida ya está abierta pero fue modificada. ¿Descartar la versión modificada de esta partida?"
@@ -1076,8 +1081,8 @@
 ::game::mc::CannotOpen					"No se puede abrir el archivo de recuperación '%s'."
 ::game::mc::GameRestored				"Una partida restablecida de la última sesión."
 ::game::mc::GamesRestored				"%s partidas restablecidas de la última sesión."
-::game::mc::OldGameRestored			"One game restored." ;# NEW
-::game::mc::OldGamesRestored			"%s games restored." ;# NEW
+::game::mc::OldGameRestored			"Una partida restablecida."
+::game::mc::OldGamesRestored			"%s partidas restablecidas."
 ::game::mc::ErrorInRecoveryFile		"Error en el archivo de recuperación '%s'"
 ::game::mc::Recovery						"Recuperación"
 ::game::mc::UnsavedGames				"Usted tiene cambios en la partida que no se han guardado."
@@ -1096,8 +1101,8 @@
 ::widget::datebox::mc::Day			"Día"
 
 ### genderbox ##########################################################
-::genderbox::mc::Gender(m) "Hombre"
-::genderbox::mc::Gender(f) "Mujer"
+::genderbox::mc::Gender(m) "Masculino"
+::genderbox::mc::Gender(f) "Femenino"
 ::genderbox::mc::Gender(c) "Computadora"
 
 ### terminationbox #####################################################
@@ -1143,11 +1148,11 @@
 ::crosstable::mc::Games					"partidas"
 ::crosstable::mc::Game					"partida"
 
-::crosstable::mc::Tiebreak				"Tie-Break"
+::crosstable::mc::Tiebreak				"Desempate"
 ::crosstable::mc::Settings				"Configuraciones"
 ::crosstable::mc::RevertToStart		"Volver a los valores iniciales"
 ::crosstable::mc::UpdateDisplay		"Actualizar el visor"
-::crosstable::mc::CannotOpenScript	"No se puede abrir el script '%s'."
+::crosstable::mc::CannotOpenScript	"No se puede abrir el guión '%s'."
 
 ::crosstable::mc::None					"Ninguno"
 ::crosstable::mc::Buchholz				"Buchholz"
@@ -1224,8 +1229,8 @@
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Comentario antes de la jugada"
 ::comment::mc::CommentAfterMove		"Comentario tras la jugada"
-::comment::mc::PrecedingComment		"Preceding comment" ;# NEW
-::comment::mc::TrailingComment		"Trailing comment" ;# NEW
+::comment::mc::PrecedingComment		"Comentario precedente"
+::comment::mc::TrailingComment		"Último comentario"
 ::comment::mc::Language					"Idioma"
 ::comment::mc::AllLanguages			"Todos los idiomas"
 ::comment::mc::AddLanguage				"Agregar idioma..."
@@ -1288,12 +1293,12 @@
 ::titlebox::mc::Title(CIM)	"Maestro Internacional por Correspondencia (ICCF)"
 
 ### messagebox #########################################################
-::dialog::mc::Ok				"&OK"
+::dialog::mc::Ok				"&Aceptar"
 ::dialog::mc::Cancel			"&Cancelar"
 ::dialog::mc::Yes				"&Sí"
 ::dialog::mc::No				"&No"
 ::dialog::mc::Retry			"&Reintentar"
-::dialog::mc::Abort			"&Abortar"
+::dialog::mc::Abort			"A&bortar"
 ::dialog::mc::Ignore			"&Ignorar"
 
 ::dialog::mc::Error			"Error"
@@ -1302,6 +1307,10 @@
 ::dialog::mc::Question		"Pregunta"
 
 ::dialog::mc::DontAskAgain	"No pregunte nuevamente"
+
+### web ################################################################
+::web::mc::CannotFindBrowser			"Couldn't find a suitable web browser." ;# NEW
+::web::mc::CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser." ;# NEW
 
 ### colormenu ##########################################################
 ::colormenu::mc::BaseColor			"Color base"
@@ -1314,7 +1323,7 @@
 ::colormenu::mc::Close				"Cerrar"
 
 ### table ##############################################################
-::table::mc::Ok							"&Ok"
+::table::mc::Ok							"&Aceptar"
 ::table::mc::Cancel						"&Cancelar"
 ::table::mc::Column						"Columna"
 ::table::mc::Table						"Tabla"
@@ -1344,7 +1353,7 @@
 ::table::mc::AccelSqueezeColumns		"Ctrl+#"
 
 ### choosecolor ########################################################
-::dialog::choosecolor::mc::Ok					"&OK"
+::dialog::choosecolor::mc::Ok					"&Aceptar"
 ::dialog::choosecolor::mc::Cancel			"&Cancelar"
 
 ::dialog::choosecolor::mc::BaseColors		"Colores base"
@@ -1373,7 +1382,7 @@
 ::dialog::choosefont::mc::FixedOnly			"Sólo fuentes m&onoespaciadas/fijas"
 ::dialog::choosefont::mc::Family				"Fam&ilia"
 ::dialog::choosefont::mc::Font				"&Fuente"
-::dialog::choosefont::mc::Ok					"&OK"
+::dialog::choosefont::mc::Ok					"Ac&eptar"
 ::dialog::choosefont::mc::Reset				"&Reajustar"
 ::dialog::choosefont::mc::Size				"&Tamaño"
 ::dialog::choosefont::mc::Strikeout			"Tach&ado"
@@ -1396,7 +1405,7 @@
 ::dialog::fsbox::mc::Filename				"&Nombre del archivo:"
 ::dialog::fsbox::mc::Filenames			"&Nombres de archivo:"
 ::dialog::fsbox::mc::FilesType			"&Tipo de archivos:"
-::dialog::fsbox::mc::Ok						"&Ok"
+::dialog::fsbox::mc::Ok						"Ac&eptar"
 ::dialog::fsbox::mc::Open					"&Abrir"
 ::dialog::fsbox::mc::Remove				"&Quitar"
 ::dialog::fsbox::mc::Save					"&Guardar"
@@ -1668,7 +1677,7 @@
 ::country::mc::Benin													"Benin"
 ::country::mc::Bermuda												"Bermuda"
 ::country::mc::Bhutan												"Bhutan"
-::country::mc::Bosnia_and_Herzegovina							"Bosnia / Herzegovina"
+::country::mc::Bosnia_and_Herzegovina							"Bosnia y Herzegovina"
 ::country::mc::Belize												"Belice"
 ::country::mc::Belarus												"Bielorrusia"
 ::country::mc::Bolivia												"Bolivia"
@@ -1733,7 +1742,7 @@
 ::country::mc::Equatorial_Guinea									"Guinea Ecuatorial"
 ::country::mc::Germany												"Alemania"
 ::country::mc::Ghana													"Ghana"
-::country::mc::Guadeloupe											"Guadelupe"
+::country::mc::Guadeloupe											"Guadalupe"
 ::country::mc::Greece												"Grecia"
 ::country::mc::Grenada												"Grenada"
 ::country::mc::Greenland											"Groenlandia"
@@ -1844,7 +1853,7 @@
 ::country::mc::At_Sea												"En el mar"
 ::country::mc::Senegal												"Senegal"
 ::country::mc::Seychelles											"Seychelles"
-::country::mc::South_Georgia_and_South_Sandwich_Islands	"South Georgia and South Sandwich Islands"
+::country::mc::South_Georgia_and_South_Sandwich_Islands	"Isla Georgia y Sandwich del Sur"
 ::country::mc::Saint_Helena										"Santa Helena"
 ::country::mc::Singapore											"Singapur"
 ::country::mc::Jan_Mayen_and_Svalbard							"Svalbard y Jan Mayen"
