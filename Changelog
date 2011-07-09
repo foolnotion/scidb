@@ -1,6 +1,12 @@
 [July 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #76)
+------------------------------------------------------------------------------
+* configure script changed, hopefully it may now detect the versions of
+the gnu compilers >= 4.5.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #71)
 ------------------------------------------------------------------------------
 * Correction of variation folding: a folded variation does not show comments

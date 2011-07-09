@@ -150,7 +150,7 @@ install: $(SCRIPT)
 			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
 		done;                                                                 \
 	done
-	if [ "`uname -s`" = "Darwin" ]; then                                           \
+	@if [ "`uname -s`" = "Darwin" ]; then                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                \
 			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
 		else                                                                        \
@@ -201,7 +201,7 @@ uninstall:
 	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
 	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
 	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
-	if [ "`uname -s`" = "Darwin" ]; then                                                   \
+	@if [ "`uname -s`" = "Darwin" ]; then                                                  \
 		if [ "`id -u`" -eq 0 ]; then                                                        \
 			for f in `ls fonts/*.ttf`; do                                                    \
 				rm -f $(FONTDIR)/`basename $$f`;                                              \

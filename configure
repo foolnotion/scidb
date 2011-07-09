@@ -714,22 +714,14 @@ proc checkExpat {} {
 #
 set TestGCC {#!/bin/sh
 cat <<EOF > testgcc.c
-#define GNUC_PREREQ(maj,min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
-int main()
-{
-#if GNUC_PREREQ(3,4)
-    return 0;
-#endif
-    return 1;
-}
+int main() { return 0; }
 EOF
 
 __CC__ -o testgcc testgcc.c -lz
 if [ -f testgcc ]; then
-    rc=`./testgcc`
-    exit $rc
+    exit 0
 else
-    exit -1
+    exit 1
 fi
 }
 
@@ -765,7 +757,7 @@ int main()
 {
     int v;
     __sync_val_compare_and_swap(&v, v, v);
-    return 1;
+    return 0;
 }
 EOF
 
@@ -813,7 +805,6 @@ proc checkGCC {cc} {
     close $f
     set version ""
     set result 0
-    if {![catch {exec sh testgcc.sh} err]} { set result 1 }
     catch {exec sh testgcc.sh} err
     catch { file delete -force testgcc.sh }
     catch { file delete -force testgcc.c }
@@ -821,11 +812,13 @@ proc checkGCC {cc} {
     if {[string length $err]} {
         puts "no,\n    '$environment($cc): command not found'"
     } else {
-        catch {exec $environment($cc) -v} version
-        set i [string first "gcc version " $version]
-        if {$i >= 0} {
-            incr i 12
+        catch {exec $environment($cc) --version} version
+        for {set i 0} {$i < [string length $version]} {incr i} {
+            if {[string is integer [string index $version $i]]} { break }
+        }
+        if {$i < [string length $version]} {
             set version [string range $version $i [expr {$i + 2}]]
+            if {[string compare $version "3.4"] >= 0} { set result 1 }
         } else {
             set result 0
             set version ""
