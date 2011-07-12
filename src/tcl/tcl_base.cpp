@@ -465,6 +465,9 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 int
 tcl::invoke(char const* callee, char const* cmd, ...)
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
 	Tcl_SavedResult state;
 	Tcl_SaveResult(interp(), &state);
 
@@ -481,6 +484,9 @@ tcl::invoke(char const* callee, char const* cmd, ...)
 int
 tcl::invoke(char const* callee, Tcl_Obj* cmd, ...)
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
 	Tcl_SavedResult state;
 	Tcl_SaveResult(interp(), &state);
 
@@ -499,6 +505,9 @@ tcl::invoke(char const* callee,
 				Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2,
 				int objc, Tcl_Obj* const objv[])
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
 	int rc;
 
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
@@ -519,6 +528,9 @@ tcl::invoke(char const* callee,
 Tcl_Obj*
 tcl::call(char const* callee, char const* cmd, ...)
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
 	Tcl_SavedResult state;
 	Tcl_SaveResult(interp(), &state);
 
@@ -538,6 +550,9 @@ tcl::call(char const* callee, char const* cmd, ...)
 Tcl_Obj*
 tcl::call(char const* callee, Tcl_Obj* cmd, ...)
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
 	Tcl_SavedResult state;
 	Tcl_SaveResult(interp(), &state);
 
@@ -549,6 +564,48 @@ tcl::call(char const* callee, Tcl_Obj* cmd, ...)
 	Tcl_Obj* result = rc == TCL_OK ? Tcl_GetObjResult(interp()) : 0;
 	if (result)
 		Tcl_IncrRefCount(result);
+	Tcl_RestoreResult(interp(), &state);
+	return result;
+}
+
+
+Tcl_Obj* call(	char const* callee,
+					Tcl_Obj* cmd,
+					int objc, Tcl_Obj* const objv[])
+{
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+
+	Tcl_SavedResult state;
+	Tcl_SaveResult(interp(), &state);
+
+	Tcl_Obj* result;
+	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
+
+	result = call(callee, cmd, list, NULL);
+
+	Tcl_RestoreResult(interp(), &state);
+	return result;
+}
+
+
+Tcl_Obj*
+tcl::call(	char const* callee,
+				Tcl_Obj* cmd, Tcl_Obj* arg1,
+				int objc, Tcl_Obj* const objv[])
+{
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+	M_REQUIRE(arg1);
+
+	Tcl_SavedResult state;
+	Tcl_SaveResult(interp(), &state);
+
+	Tcl_Obj* result;
+	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
+
+	result = call(callee, cmd, arg1, list, NULL);
+
 	Tcl_RestoreResult(interp(), &state);
 	return result;
 }
@@ -572,6 +629,31 @@ tcl::call(	char const* callee,
 	else
 		result = call(callee, cmd, list, NULL);
 
+	Tcl_RestoreResult(interp(), &state);
+	return result;
+}
+
+
+Tcl_Obj*
+tcl::call(	char const* callee,
+				Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2, Tcl_Obj* arg3,
+				int objc, Tcl_Obj* const objv[])
+{
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+	M_REQUIRE(arg1);
+	M_REQUIRE(arg2);
+	M_REQUIRE(arg3);
+
+	Tcl_SavedResult state;
+	Tcl_SaveResult(interp(), &state);
+
+	Tcl_Obj* result;
+	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
+
+	result = call(callee, cmd, arg1, arg2, arg3, list, NULL);
+
+	Tcl_RestoreResult(interp(), &state);
 	return result;
 }
 

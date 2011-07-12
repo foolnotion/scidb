@@ -60,6 +60,15 @@ proc build {parent menu width height} {
 	variable Options
 	variable Vars
 
+	set engines [::engine::engines]
+	if {[lsearch -index 0 $engines $Options(engine:current)] == -1} {
+		if {[llength $engines] == 0} {
+			set Options(engine:current) ""
+		} else {
+			set Options(engine:current) [lindex $Options(engine:current) 0]
+		}
+	}
+
 	array set fopt [font configure $Options(font)]
 	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(font:figurine) [list $::font::defaultFigurineFont $fopt(-size)]

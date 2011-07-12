@@ -25,6 +25,7 @@
 # ======================================================================
 
 package require Tk 8.5
+package require tktwm 1.0
 if {[catch { package require tkpng }]} { package require Img }
 package provide twm 1.0
 
@@ -54,17 +55,17 @@ if {![catch {package require tooltip}]} {
 
 
 proc twm {parent} {
-	set twm $parent.twm
+	if {$parent eq "."} { set twm .twm } else { set twm $parent.twm }
 
 	namespace eval [namespace current]::$twm {}
-	variable $twm::Vars
-	variable $twm::Options
+	variable ${twm}::Vars
+	variable ${twm}::Options
 
-	ttk::frame -class TwmToplevelFrame $twm
-	$twm bind <Destroy> [namespace code { Destroy %W }]
+	ttk::frame $twm -class TwmToplevelFrame
+	bind $twm <Destroy> [namespace code { Destroy %W }]
 
 	rename ::$twm $twm.__twm_frame__
-	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
+	proc ::$twm {command args} "[namespace current]::WidgetProc $twm \$command {*}\$args"
 
 	foreach side {left right top bottom} {
 		set Vars(childs:$side) {}
@@ -90,9 +91,9 @@ proc WidgetProc {twm command args} {
 }
 
 
-proc Add {twm tlw args} {
-	variable $twm::Vars
-	variable $twm::Options
+proc Add {twm w args} {
+	variable ${twm}::Vars
+	variable ${twm}::Options
 
 	array set opts {
 		-expand		none
@@ -108,30 +109,30 @@ proc Add {twm tlw args} {
 
 	array set opts $args
 
-	foreach {key val} [array get Options *:$tlw] {
+	foreach {key val} [array get Options *:$w] {
 		set opts($key) $val
 	}
 
 	set textVar $opts(-textVar)
 	if {[llength $textVar] == 0} {
-		set Vars(textVar:$tlw) $opts(-text)
-		set textVar [namespace current]::$twm::Vars(textVar:$tlw)
+		set Vars(textVar:$w) $opts(-text)
+		set textVar [namespace current]::${twm}::Vars(textVar:$w)
 	}
 	
-	lappend Vars(childs:$opts(-side)) $tlw
+	lappend Vars(childs:$opts(-side)) $w
 	set Vars(childs:$opts(-side)) \
 		[lsort -command [namespace code [list Compare $twm]] $Vars(childs:$opts(-side))]
-	set Vars(arranged:$tlw) 0
+	set Vars(arranged:$w) 0
 
 	switch $opts(-side) {
 		left - right {
-			set Vars(orientation:$tlw) vert
-			set Vars(resizable:$tlw) [expr {$expand eq "y" || $expand eq "both"}]
+			set Vars(orientation:$w) vert
+			set Vars(resizable:$w) [expr {$expand eq "y" || $expand eq "both"}]
 		}
 
 		top - bottom {
-			set Vars(orientation:$tlw) horz
-			set Vars(resizable:$tlw) [expr {$expand eq "x" || $expand eq "both"}]
+			set Vars(orientation:$w) horz
+			set Vars(resizable:$w) [expr {$expand eq "x" || $expand eq "both"}]
 		}
 	}
 
@@ -142,8 +143,8 @@ proc Add {twm tlw args} {
 
 
 proc Display {twm} {
-	variable $twm::Vars
-	variable $twm::Options
+	variable ${twm}::Vars
+	variable ${twm}::Options
 
 	foreach w $Vars(childs) {
 		if {!$Vars(arranged:$w)} {
@@ -160,8 +161,8 @@ proc GetChild {node index} {
 
 
 proc InsertLeaf {twm w pred curr} {
-	variable $twm::Vars
-	variable $twm::Options
+	variable ${twm}::Vars
+	variable ${twm}::Options
 
 	# graph:
 	#	type in {leaf, frame, panedWindow, notebook}
@@ -194,7 +195,7 @@ proc InsertLeaf {twm w pred curr} {
 
 
 proc Compare {twm lhs rhs} {
-	variable $twm::Options
+	variable ${twm}::Options
 	return [expr {$Options(-position:$lhs) - $Options(-position:$rhs)}]
 }
 
@@ -241,6 +242,27 @@ proc Destroy {twm} {
 	}
 }
 
+
+namespace eval callback {
+
+proc Create {twm name type opts} {
+	switch $type {
+		frame			{ return $twm }
+		pane			{}
+		notebook		{}
+		panedwindow	{}
+	}
+}
+
+
+proc Pack {twm path opts} {
+}
+
+
+proc Unpack {twm path} {
+}
+
+} ;# namespace callback
 
 namespace eval icon {
 namespace eval 12x12 {

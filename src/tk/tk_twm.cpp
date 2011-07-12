@@ -33,6 +33,7 @@
 #include "m_list.h"
 #include "m_string.h"
 #include "m_algorithm.h"
+#include "m_map.h"
 #include "m_limits.h"
 #include "m_utility.h"
 #include "m_assert.h"
@@ -151,7 +152,7 @@ releaseWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin)
 
 # error "not yet implemented"
 
-#else
+#else // if defined(__unix__)
 
 		parent = XRootWindow(winPtr->display, winPtr->screenNum);
 		XReparentWindow(winPtr->display, winPtr->window, parent, 0, 0);
@@ -227,7 +228,7 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 
 # error "not yet implemented"
 
-#else
+#else // if defined(__unix__)
 
 		TkWmDeadWindow(winPtr);
 		XUnmapWindow(winPtr->display, winPtr->window);
@@ -246,9 +247,9 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 	UnmanageGeometry(tkwin);
 
 	// Can't delete the TopLevelEventProc, because this definition only exists
-	// in tkWinWm or tkUnixWm.c Is having this event handler around really cause
+	// in tkWinWm or tkUnixWm.c. Is having this event handler around really cause
 	// a problem?
-//		Tk_DeleteEventHandler(tkwin, StructureNotifyMask, TopLevelEventProc, winPtr);
+//	Tk_DeleteEventHandler(tkwin, StructureNotifyMask, TopLevelEventProc, winPtr);
 
 	return 1;
 }
@@ -258,126 +259,140 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 using namespace tcl;
 
 
-static char const* KeyPosition	= "-position";
-static char const* KeyExpand		= "-expand";
-static char const* KeySide			= "-side";
-
-
 namespace {
 
 struct Node;
 typedef mstl::vector<Node*> Childs;
 typedef mstl::list<mstl::string> Commands;
 
-enum Type	{ Widget, PanedWindow, Notebook };
-enum Side	{ Center, Left, Right, Top, Bottom};
+enum Type	{ Frame, Pane, PanedWindow, Notebook };
 enum Expand	{ None, X = 1, Y = 2 };
 enum Orient	{ Horizontal = X, Vertical = Y };
+
+
+// ================================================================
+// Some examples of a node list structure:
+// ================================================================
+//
+// (horz (vert (horz 1 0) 2) 3)			(horz 1 (vert (horz 0 3) 2))
+// +---+-----------+---+					+---+-----------+---+
+// |   |           |   |					|   |           |   |
+// | 1 |     0     | 3 |					| 1 |     0     | 3 |
+// |   |           |   |					|   |           |   |
+// +---+-----------+   |					|   |-----------+---|
+// |         2     |   |					|   |      2        |
+// +---------------+---+					+---+---------------+
+//
+//
+// (vert (horz 1 0 3) 2)					(horz 1 (vert 0 2) 3)
+// +---+-----------+---+					+---+-----------+---+
+// |   |           |   |					|   |           |   |
+// | 1 |     0     | 3 |					| 1 |     0     | 3 |
+// |   |           |   |					|   |           |   |
+// +---+-----------+---+					|   +-----------+   |
+// |         2         |					|   |     2     |   |
+// +-------------------+					+---+-----------+---+
 
 
 class Node
 {
 public:
 
-	static int const MinPos		= INT_MIN;
-	static int const MaxPos		= INT_MAX;
-	static int const Increment	= 10;
+	typedef mstl::map<mstl::string,Node*> Lookup;
 
 	Node();
 	Node(Type type);
-	Node(Tcl_Obj* name, Tcl_Obj* opts);
+	Node(Tcl_Obj* path);
 	~Node() throw();
 
 	bool isEmpty() const;
 	bool isExpandable(Orient orient) const;
+	bool contains(Node const* node) const;
 
-	char const* name() const;
+	mstl::string const& name() const;
+	char const* pathName() const;
+	Tcl_Obj* path() const;
 	Type type() const;
-	Side side() const;
-	int position() const;
-	int minPosition() const;
-	int maxPosition() const;
 	int expand() const;
 	Node* parent() const;
 	Node* child(unsigned index) const;
 	Node* firstChild() const;
 	Node* lastChild() const;
+	Node* root() const;
 	Childs const& childs() const;
 	unsigned size() const;
 
-	Node* find(int position);
-
-	int findPosition(int position) const;
-
+	void create(int n, Tcl_Obj** opts);
 	void pack(Node* node);
 	void pack(Childs const& childs);
-	void unpack(unsigned index);
+	void packBefore(Node* node, Node const* succ);
+	void packAfter(Node* node, Node const* pred);
+	void unpack(Node const* node);
 	void unpack();
-
-	void renumber();
 
 	static Tcl_Obj* makeCommands();
 	static void clearCommands();
 
-	static Node			m_root;
-	static Commands	m_commands;
+	static Node* lookupRoot(char const* path);
+	static void initialize();
 
 private:
 
 	Tcl_Obj* getValue(char const* key) const;
 
-	void updatePositions();
-	void computeExtrema();
-	void packAndTrace(Node* node);
-	void unpackAndTrace(unsigned index);
-	int renumber(int n);
+	void unpack(unsigned index);
 
-	Type		m_type;
-	Tcl_Obj*	m_name;
-	Tcl_Obj*	m_opts;
-	int		m_minPos;
-	int		m_maxPos;
-	Childs	m_childs;
-	Node*		m_parent;
+	Type				m_type;
+	mstl::string	m_name;
+	Tcl_Obj*			m_path;
+	Tcl_Obj*			m_opts;
+	Childs			m_childs;
+	Node*				m_parent;
+
+	static Lookup m_lookup;
+
+	static Tcl_Obj* m_objPanedWindow;
+	static Tcl_Obj* m_objNotebook;
+	static Tcl_Obj* m_objPane;
+	static Tcl_Obj* m_objFrame;
+	static Tcl_Obj* m_objCreateCmd;
+	static Tcl_Obj* m_objPackCmd;
+	static Tcl_Obj* m_objUnpackCmd;
+	static Tcl_Obj* m_objBefore;
+	static Tcl_Obj* m_objAfter;
 };
 
-Node Node::m_root;
-Commands Node::m_commands;
+Tcl_Obj* Node::m_objPanedWindow = 0;
+Tcl_Obj* Node::m_objNotebook = 0;
+Tcl_Obj* Node::m_objPane = 0;
+Tcl_Obj* Node::m_objFrame = 0;
+Tcl_Obj* Node::m_objCreateCmd = 0;
+Tcl_Obj* Node::m_objPackCmd = 0;
+Tcl_Obj* Node::m_objUnpackCmd = 0;
+Tcl_Obj* Node::m_objBefore = 0;
+Tcl_Obj* Node::m_objAfter = 0;
+
+Node::Lookup Node::m_lookup;
 
 } // namespace
 
 
-namespace mstl {
-
-bool operator<(Node const* lhs, Node const& rhs)
-{
-	return lhs->maxPosition() < rhs.minPosition();
-}
-
-} // namespace mstl
-
-
 namespace {
 
-Type Node::type() const					{ return m_type; }
-Childs const& Node::childs() const	{ return m_childs; }
-unsigned Node::size() const			{ return m_childs.size(); }
-bool Node::isEmpty() const				{ return m_childs.empty(); }
+Type Node::type() const			{ return m_type; }
+unsigned Node::size() const	{ return m_childs.size(); }
+bool Node::isEmpty() const		{ return m_childs.empty(); }
+Node* Node::parent() const		{ return m_parent; }
+Tcl_Obj* Node::path() const	{ return m_path; }
 
-void Node::renumber()					{ renumber(0); }
-void Node::clearCommands()				{ m_commands.clear(); }
-
-int Node::minPosition() const			{ return m_minPos; }
-int Node::maxPosition() const			{ return m_maxPos; }
-int Node::position() const				{ return m_minPos; }
+Childs const& Node::childs() const		{ return m_childs; }
+mstl::string const& Node::name() const	{ return m_name; }
+char const* Node::pathName() const		{ return Tcl_GetStringFromObj(m_path, 0); }
 
 
 Node::Node()
-	:m_type(Widget)
-	,m_name(0)
+	:m_type(Pane)
 	,m_opts(0)
-	,m_minPos(MaxPos)
-	,m_maxPos(MinPos)
 	,m_parent(0)
 {
 }
@@ -385,34 +400,19 @@ Node::Node()
 
 Node::Node(Type type)
 	:m_type(type)
-	,m_name(0)
 	,m_opts(0)
-	,m_minPos(MaxPos)
-	,m_maxPos(MinPos)
 	,m_parent(0)
 {
 }
 
 
-Node::Node(Tcl_Obj* name, Tcl_Obj* opts)
-	:m_type(Widget)
-	,m_name(name)
-	,m_opts(opts)
-	,m_minPos(MaxPos)
-	,m_maxPos(MinPos)
+Node::Node(Tcl_Obj* path)
+	:m_type(Frame)
+	,m_path(path)
+	,m_opts(0)
+	,m_parent(0)
 {
-	M_ASSERT(name);
-	M_ASSERT(opts);
-
-	Tcl_IncrRefCount(m_name);
-	Tcl_IncrRefCount(m_opts);
-
-	int pos;
-
-	if (Tcl_GetIntFromObj(interp(), getValue(KeyPosition), &pos) != TCL_OK)
-		TCL_RAISE("integer expected for option '%s'", KeyPosition);
-
-	m_minPos = m_maxPos = pos;
+	m_lookup[Tcl_GetStringFromObj(path, 0)] = this;
 }
 
 
@@ -420,9 +420,87 @@ Node::~Node() throw()
 {
 	if (m_opts)
 		Tcl_DecrRefCount(m_opts);
+	if (m_path)
+		Tcl_IncrRefCount(m_path);
 
 	for (unsigned i = 0; i < m_childs.size(); ++i)
 		delete m_childs[i];
+}
+
+
+void
+Node::initialize()
+{
+	if (m_objCreateCmd == 0)
+	{
+		m_objCreateCmd = Tcl_NewStringObj("::twm::callback::Create", -1);
+		m_objPackCmd = Tcl_NewStringObj("::twm::callback::Pack", -1);
+		m_objUnpackCmd = Tcl_NewStringObj("::twm::callback::Unpack", -1);
+		m_objPanedWindow = Tcl_NewStringObj("panedwindow", -1);
+		m_objNotebook = Tcl_NewStringObj("notebook", -1);
+		m_objPane = Tcl_NewStringObj("pane", -1);
+		m_objFrame = Tcl_NewStringObj("frame", -1);
+		m_objBefore = Tcl_NewStringObj("-before", -1);
+		m_objAfter = Tcl_NewStringObj("-after", -1);
+	}
+}
+
+
+bool
+Node::contains(Node const* node) const
+{
+	return mstl::find(m_childs.begin(), m_childs.end(), node) != m_childs.end();
+}
+
+
+Node*
+Node::root() const
+{
+	Node* parent = m_parent;
+
+	while (parent)
+		parent = parent->m_parent;
+
+	return parent;
+}
+
+
+void
+Node::create(int n, Tcl_Obj** opts)
+{
+	M_ASSERT(opts);
+	M_ASSERT(n > 0);
+
+	Tcl_Obj* type;
+
+	switch (m_type)
+	{
+		case PanedWindow:	type = m_objPanedWindow; break;
+		case Notebook:		type = m_objNotebook; break;
+		case Pane:			type = m_objPane; break;
+		case Frame:			type = m_objFrame; break;
+	}
+
+	m_name.assign(Tcl_GetStringFromObj(opts[0], 0));
+	m_opts = Tcl_NewListObj(n, opts);
+	m_path = call(	__func__,
+						m_objCreateCmd,
+						root()->path(),
+						opts[0],
+						type,
+						n, opts);
+
+	Tcl_IncrRefCount(m_opts);
+	Tcl_IncrRefCount(m_path);
+}
+
+
+Node*
+Node::lookupRoot(char const* path)
+{
+	Lookup::const_iterator i = m_lookup.find(path);
+	M_ASSERT(i != m_lookup.end());
+	return i->second;
 }
 
 
@@ -440,57 +518,26 @@ Node::getValue(char const* key) const
 			return objv[i + 1];
 	}
 
-	TCL_RAISE("cannot find option '%s'", key);
-	return 0;	// never reached
-}
-
-
-Side
-Node::side() const
-{
-	char const* value = Tcl_GetStringFromObj(getValue(KeySide), 0);
-
-	switch (value[0])
-	{
-		case 'c': return Center;
-		case 'l': return Left;
-		case 'r': return Right;
-		case 't': return Top;
-		case 'b': return Bottom;
-	}
-
-	return Center;	// should not be reached
+	return 0;
 }
 
 
 int
 Node::expand() const
 {
-	char const* value = Tcl_GetStringFromObj(getValue(KeyExpand), 0);
+	char const* value = Tcl_GetStringFromObj(getValue("-expand"), 0);
 
-	switch (value[0])
+	if (value)
 	{
-		case 'x': return X;
-		case 'y': return Y;
-		case 'b': return X | Y;
+		switch (value[0])
+		{
+			case 'x': return X;
+			case 'y': return Y;
+			case 'b': return X | Y;
+		}
 	}
 
 	return None;
-}
-
-
-Node*
-Node::parent() const
-{
-	return m_parent;
-}
-
-
-char const*
-Node::name() const
-{
-	M_ASSERT(m_name);
-	return Tcl_GetStringFromObj(m_name, 0);
 }
 
 
@@ -518,29 +565,15 @@ Node::lastChild() const
 }
 
 
-Node*
-Node::find(int position)
-{
-	for (unsigned i = 0; i < m_childs.size(); ++i)
-	{
-		Node* child = m_childs[i];
-
-		if (child->m_minPos <= position && position <= child->m_maxPos)
-			return child->find(position);
-	}
-
-	return position == m_minPos && position == m_maxPos ? this : 0;
-}
-
-
 bool
 Node::isExpandable(Orient orient) const
 {
 	switch (m_type)
 	{
-		case Widget:
+		case Pane:
 			return expand() & orient;
 
+		case Frame:
 		case PanedWindow:
 		case Notebook:
 			for (unsigned i = 0; i < m_childs.size(); ++i)
@@ -555,71 +588,47 @@ Node::isExpandable(Orient orient) const
 }
 
 
-int
-Node::findPosition(int position) const
+void
+Node::packBefore(Node* node, Node const* succ)
 {
-	for (unsigned i = 0; i < m_childs.size(); ++i)
-	{
-		if (position == m_childs[i]->position())
-			return i;
-	}
+	M_ASSERT(node);
+	M_ASSERT(m_type != Pane && m_type != Frame);
+	M_ASSERT(contains(succ));
 
-	return -1;
-}
+	Tcl_Obj* opts = Tcl_NewListObj(0, 0);
 
+	Tcl_IncrRefCount(opts);
+	Tcl_ListObjAppendList(tcl::interp(), opts, m_opts);
+	Tcl_ListObjAppendElement(tcl::interp(), opts, m_objBefore);
+	Tcl_ListObjAppendElement(tcl::interp(), opts, succ->path());
 
-Tcl_Obj*
-Node::makeCommands()
-{
-	Tcl_Obj* objv[m_commands.size()];
+	node->m_parent = this;
+	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), opts, NULL);
+	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), succ), node);
 
-	for (unsigned i = 0; i < m_commands.size(); ++i)
-		objv[i] = Tcl_NewStringObj(m_commands[i], m_commands[i].size());
-
-	return Tcl_NewListObj(m_commands.size(), objv);
+	Tcl_DecrRefCount(opts);
 }
 
 
 void
-Node::packAndTrace(Node* node)
+Node::packAfter(Node* node, Node const* pred)
 {
 	M_ASSERT(node);
+	M_ASSERT(m_type != Pane && m_type != Frame);
+	M_ASSERT(contains(pred));
 
-	mstl::string cmd;
+	Tcl_Obj* opts = Tcl_NewListObj(0, 0);
 
-	if (node->m_name == 0)
-	{
-		mstl::string name(this->name());
-
-		name += '.';
-		name += "notebook";
-		name.format("%p", node);
-
-		node->m_name = Tcl_NewStringObj(name, name.size());
-	}
-
-	m_childs.insert(mstl::lower_bound(m_childs.begin(), m_childs.end(), *node), node);
+	Tcl_IncrRefCount(opts);
+	Tcl_ListObjAppendList(tcl::interp(), opts, m_opts);
+	Tcl_ListObjAppendElement(tcl::interp(), opts, m_objAfter);
+	Tcl_ListObjAppendElement(tcl::interp(), opts, pred->path());
 
 	node->m_parent = this;
+	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), opts, NULL);
+	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), pred) + 1, node);
 
-	cmd += "pack ";
-	cmd += name();
-	cmd += ' ';
-	cmd += node->name();
-	cmd += ' ';
-
-	switch (expand())
-	{
-		case X:		cmd += "{ x }"; break;
-		case Y:		cmd += "{ y }"; break;
-		case X | Y:	cmd += "{ both }"; break;
-		default:		cmd += "{}"; break;
-	}
-
-	m_commands.push_back(cmd);
-
-	m_minPos = mstl::min(m_minPos, node->m_minPos);
-	m_maxPos = mstl::max(m_maxPos, node->m_maxPos);
+	Tcl_DecrRefCount(opts);
 }
 
 
@@ -627,120 +636,58 @@ void
 Node::pack(Node* node)
 {
 	M_ASSERT(node);
+	M_ASSERT(m_type != Pane && m_type != Frame);
 
-	packAndTrace(node);
-	updatePositions();
+	node->m_parent = this;
+	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), m_opts, NULL);
+	m_childs.push_back(node);
 }
 
 
 void
 Node::pack(Childs const& childs)
 {
+	M_ASSERT(m_type != Pane && m_type != Frame);
+
 	for (Childs::const_iterator i = childs.begin(); i != childs.end(); ++i)
-		packAndTrace(*i);
-
-	updatePositions();
-}
-
-
-void
-Node::unpackAndTrace(unsigned index)
-{
-	M_ASSERT(index < m_childs.size());
-
-	Childs::iterator i = m_childs.begin() + index;
-	mstl::string cmd;
-
-	(*i)->m_parent = 0;
-
-	cmd += "unpack ";
-	cmd += name();
-	cmd += ' ';
-	cmd += (*i)->name();
-
-	m_commands.push_back(cmd);
+		pack(*i);
 }
 
 
 void
 Node::unpack(unsigned index)
 {
+	M_ASSERT(m_type != Pane && m_type != Frame);
 	M_ASSERT(index < m_childs.size());
 
-	unpackAndTrace(index);
-	m_childs.erase(m_childs.begin() + index);
+	m_childs[index]->m_parent = 0;
+	tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), m_childs[index]->path(), NULL);
+}
 
-	m_minPos = MaxPos;
-	m_maxPos = MinPos;
 
-	for (Childs::const_iterator i = m_childs.begin(); i != m_childs.end(); ++i)
-	{
-		m_minPos = mstl::min(m_minPos, (*i)->m_minPos);
-		m_maxPos = mstl::max(m_maxPos, (*i)->m_maxPos);
-	}
+void
+Node::unpack(Node const* node)
+{
+	M_ASSERT(m_type != Pane && m_type != Frame);
+	M_ASSERT(contains(node));
+
+	Childs::iterator i = mstl::find(m_childs.begin(), m_childs.end(), node);
+	unpack(i - m_childs.begin());
+	m_childs.erase(i);
 }
 
 
 void
 Node::unpack()
 {
-	for (unsigned i = 0; i < m_childs.size(); ++i)
-		unpackAndTrace(i);
-
 	m_childs.clear();
 
-	m_minPos = MaxPos;
-	m_maxPos = MinPos;
+	if (m_type == Notebook || m_type == PanedWindow)
+		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), NULL);
 }
 
 
-void
-Node::updatePositions()
-{
-	if (m_parent)
-	{
-		m_parent->m_minPos = mstl::min(m_parent->m_minPos, m_minPos);
-		m_parent->m_maxPos = mstl::max(m_parent->m_maxPos, m_maxPos);
-		m_parent->updatePositions();
-	}
-}
-
-
-int
-Node::renumber(int n)
-{
-	if (m_type == Widget)
-	{
-		m_minPos = m_maxPos = n;
-		n += Increment;
-	}
-	else
-	{
-		for (Childs::iterator i = m_childs.begin(); i != m_childs.end(); ++i)
-			n = (*i)->renumber(n);
-	}
-
-	return n;
-}
-
-
-void
-Node::computeExtrema()
-{
-	if (m_type != Widget)
-	{
-		m_minPos = MaxPos;
-		m_maxPos = MinPos;
-
-		for (Childs::iterator i = m_childs.begin(); i != m_childs.end(); ++i)
-		{
-			(*i)->computeExtrema();
-
-			m_minPos = mstl::min(m_minPos, (*i)->m_minPos);
-			m_maxPos = mstl::max(m_maxPos, (*i)->m_maxPos);
-		}
-	}
-}
+enum Relation { Successor, Predecessor, Ancestor };
 
 } // namespace
 
@@ -749,92 +696,87 @@ static char const* CmdTwm = "::scidb::tk::twm";
 
 
 static void
-insertNode(Node* pred, Node* curr, Node* node)
+insertNode(Node* root, Node* relative, Relation relation, Node* node)
 {
-	M_ASSERT(pred);
-	M_ASSERT(curr);
+	M_ASSERT(root);
+	M_ASSERT(relative);
 	M_ASSERT(node);
-	M_ASSERT(node->type() == Widget);
+	M_ASSERT(node->type() == Pane);
 
-	int position = node->position();
-
-	if (position >= curr->minPosition() && curr->maxPosition() >= position)
+	switch (relation)
 	{
-		switch (curr->type())
-		{
-			case Widget:
-				{
-					Node* nobk = new Node(Notebook);
-
-					pred->unpack();
-					nobk->pack(curr);
-					nobk->pack(node);
-					pred->pack(nobk);
-				}
-				break;
-
-			case PanedWindow:
-				{
-					int childIndex = curr->findPosition(position);
-
-					if (childIndex >= 0)
+		case Predecessor:
+			switch (root->type())
+			{
+				case Pane:
+				case Frame:
+				case Notebook:
 					{
-						Node* widg = curr->child(childIndex);
+						Node* panw = new Node(PanedWindow);
+						Node* pane = root->child(0);
 
-						if (widg->type() == Notebook)
-						{
-							widg->pack(node);
-						}
-						else
-						{
-							Node* nobk = new Node(Notebook);
-
-							curr->unpack(childIndex);
-							nobk->pack(node);
-							nobk->pack(widg);
-							curr->pack(nobk);
-						}
+						root->unpack();
+						root->pack(panw);
+						panw->pack(node);
+						panw->pack(pane);
 					}
-					else
+					break;
+
+				case PanedWindow:
+					root->packBefore(node, relative);
+					break;
+			}
+			break;
+
+		case Successor:
+			switch (root->type())
+			{
+				case Pane:
+				case Frame:
+				case Notebook:
 					{
-						curr->pack(node);
+						Node* panw = new Node(PanedWindow);
+						Node* pane = root->child(0);
+
+						root->unpack();
+						root->pack(panw);
+						panw->pack(pane);
+						panw->pack(node);
 					}
-				}
-				break;
+					break;
 
-			case Notebook:
-				curr->pack(node);
-				break;
-		}
+				case PanedWindow:
+					root->packAfter(node, relative);
+					break;
+			}
+			break;
+
+		case Ancestor:
+			switch (root->type())
+			{
+				case Pane:
+				case Frame:
+					{
+						Node* nobk = new Node(Notebook);
+						Node* pane = root->child(0);
+
+						root->unpack();
+						root->pack(nobk);
+						nobk->pack(pane);
+						nobk->pack(node);
+					}
+					break;
+
+				case Notebook:
+					root->pack(node);
+					break;
+
+				case PanedWindow:
+					M_RAISE("%s: paned window cannot be an ancestor", __func__);
+					break;
+			}
+			break;
 	}
-	else
-	{
-		switch (curr->type())
-		{
-			case Widget:
-			case Notebook:
-				{
-					Node* pane = new Node(PanedWindow);
-
-					pred->unpack();
-					pane->pack(node);
-					pane->pack(curr);
-					pred->pack(pane);
-				}
-				break;
-
-			case PanedWindow:
-				curr->pack(node);
-				break;
-		}
-	}
-}
-
-
-static int
-cmdInit(int objc, Tcl_Obj* const objv[])
-{
-	return TCL_OK;
 }
 
 
@@ -882,12 +824,64 @@ cmdRelease(int objc, Tcl_Obj* const objv[])
 }
 
 
+static void
+traverseList(Node* root, Node* parent, Tcl_Obj* list)
+{
+	M_ASSERT(root);
+	M_ASSERT(parent);
+	M_ASSERT(list);
+
+	Tcl_Obj**	objv;
+	int			objc;
+
+	if (Tcl_ListObjGetElements(interp(), list, &objc, &objv) != TCL_OK)
+		M_RAISE("%s: list object expected", __func__);
+	if (objc == 0)
+		M_RAISE("%s: list too short", __func__);
+
+	Tcl_Obj**	args;
+	int			argc;
+
+	if (Tcl_ListObjGetElements(interp(), objv[1], &argc, &args) != TCL_OK)
+		M_RAISE("%s: list object expected", __func__);
+	if (argc == 0)
+		M_RAISE("%s: list too short", __func__);
+
+	char const*	what = stringFromObj(argc, args, 0);
+	Type			type = Pane;
+
+	switch (what[0])
+	{
+		case 'p': type = (::strcmp(what, "pane") == 0) ? Pane : PanedWindow; break;
+		case 'f': type = Frame; break;
+		case 'n': type = Notebook; break;
+	}
+
+	Node* node = new Node(type);
+	node->create(argc - 1, args + 1);
+	root->pack(node);
+
+	for (int i = 1; i < objc; ++i)
+		traverseList(root, node, objv[i]);
+}
+
+
+static int
+cmdInit(int objc, Tcl_Obj* const objv[])
+{
+	Node::initialize();
+	Node* root = new Node(objectFromObj(objc, objv, 0));
+	traverseList(root, root, objectFromObj(objc, objv, 1));
+	return TCL_OK;
+}
+
+
 static int
 cmdAdd(int objc, Tcl_Obj* const objv[])
 {
+#if 0
 	Node* newn = new Node(objectFromObj(objc, objv, 1), objectFromObj(objc, objv, 2));
-	Node* root = &Node::m_root;
-	Side	side = newn->side();
+	Node* root = Node::lookupRoot(stringFromObj(objc, objv, 0));
 
 	root->clearCommands();
 
@@ -915,7 +909,7 @@ cmdAdd(int objc, Tcl_Obj* const objv[])
 			Node* pane = new Node(PanedWindow);
 			Node* chld = root->child(0);
 
-			root->unpack(0);
+			root->unpack(chld);
 			pane->pack(chld);
 			pane->pack(newn);
 			root->pack(pane);
@@ -923,9 +917,8 @@ cmdAdd(int objc, Tcl_Obj* const objv[])
 	}
 
 	setResult(root->makeCommands());
-
-	root->renumber();
 	root->clearCommands();
+#endif
 
 	return TCL_OK;
 }
@@ -934,7 +927,8 @@ cmdAdd(int objc, Tcl_Obj* const objv[])
 static int
 cmdRemove(int objc, Tcl_Obj* const objv[])
 {
-	int	pos	= intFromObj(objc, objv, 1);
+#if 0
+	int	pos	= Node::positionFromName(stringFromObj(objc, objv, 1));
 	Node* root	= &Node::m_root;
 	Node*	node	= root->find(pos);
 
@@ -947,6 +941,7 @@ cmdRemove(int objc, Tcl_Obj* const objv[])
 	node->parent()->unpack(node->position());
 	setResult(root->makeCommands());
 	root->clearCommands();
+#endif
 
 	return TCL_OK;
 }
@@ -958,9 +953,9 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] = { "init", "add", "remove", "capture", "release", 0 };
 	struct { char const* usage; int min_args; } const definitions[] =
 	{
-		{ "<left-list> <right-list> <top-list> <bottom-list>", 4 },
-		{ "<widget> ?left|right|above|below|before|after|at <widget>?", 2 },
-		{ "<position>", 1 },
+		{ "<root> <node-list>", 1 },
+		{ "<root> <widget> ?left|right|above|below|before|after|at <widget>?", 2 },
+		{ "<root> <widget>", 1 },
 		{ "<widget> <new-parent>", 2 },
 		{ "<widget>", 1 },
 	};
@@ -1003,6 +998,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 void
 tk::twm_init(Tcl_Interp* ti)
 {
+	Tcl_PkgProvide(ti, "tktwm", "1.0");
 	createCommand(ti, CmdTwm, cmdTwm);
 }
 

@@ -514,6 +514,10 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	variable Dim
 	variable Vars
 
+	if {$bordersize > 0} {
+		::update idletasks
+	}
+
 	set distance		[expr {max(1, min($canvWidth, $canvHeight)/150)}]
 	set width			[expr {$canvWidth - $distance}]
 	set height			[expr {$canvHeight - $distance}]

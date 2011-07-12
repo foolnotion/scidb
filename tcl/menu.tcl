@@ -165,6 +165,7 @@ proc CreateViewMenu {menu} {
 		-compound left \
 		-image $::icon::16x16::fullscreen \
 		-command [namespace code viewFullscreen] \
+		-accelerator "F11" \
 		-variable Fullscreen \
 		;
 	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewFullscreen

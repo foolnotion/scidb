@@ -517,6 +517,7 @@
 "Noah's Ark"													"Arche Noah"
 "Opening"														"Eröffnung"
 "Penguin"														"Pinguin"
+"Phoenix"														"Phönix"
 "QGA"																"Angen. Damengambit"
 "QGD"																"Abgel. Damengambit"
 "Retort"															"Entgegnung"

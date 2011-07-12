@@ -27,7 +27,7 @@
 # --- Special features -------------------------------------------------
 
 namespace eval test {
-	set useAnalysis 0
+	set useAnalysis 1
 }
 
 # --- Special popups for BETA version only -----------------------------
