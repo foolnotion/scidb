@@ -519,7 +519,6 @@ proc BuildSwitcher {pane} {
 	bind $canv <Down> [namespace code { Traverse +line }]
 	bind $canv <Up> [namespace code { Traverse -line }]
 	bind $canv <space> [namespace code ActivateBase]
-	bind $canv <<Language>> [namespace code [list UpdateSwitcher $canv $clipbaseName]]
 	::scidb::db::subscribe dbInfo [namespace current]::UpdateSwitcher {} $canv
 }
 
@@ -772,8 +771,10 @@ proc RefreshSwitcher {} {
 
 proc LanguageChanged {} {
 	variable Vars
+	variable clipbaseName
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
+	UpdateSwitcher $Vars(canvas) $clipbaseName
 
 	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
 

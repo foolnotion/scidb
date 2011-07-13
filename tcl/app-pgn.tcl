@@ -1594,7 +1594,6 @@ proc ResetGame {position tags} {
 proc PopupMenu {parent position} {
 	variable ::annotation::mc::Nag
 	variable ::annotation::LastNag
-	variable [namespace parent]::database::mc::T_Clipbase
 	variable [namespace parent]::database::clipbaseName
 	variable [namespace parent]::database::scratchbaseName
 	variable Options

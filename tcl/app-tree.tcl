@@ -1178,13 +1178,12 @@ proc SetReferenceBase {w} {
 
 
 proc FillSwitcher {w} {
-	variable [namespace parent]::database::mc::T_Clipbase
 	variable Vars
 
 	set w [::toolbar::realpath $w]
 
 	$w clear
-	$w listinsert [list $T_Clipbase]
+	$w listinsert [list $::util::clipbaseName]
 
 	set list {}
 	foreach base [::scidb::tree::list] { lappend list [list [::util::databaseName $base] $base] }
@@ -1199,13 +1198,12 @@ proc FillSwitcher {w} {
 
 
 proc SetSwitcher {base} {
-	variable [namespace parent]::database::mc::T_Clipbase
 	variable [namespace parent]::database::clipbaseName
 	variable Vars
 
 	set Vars(current) $base
 	set name [::util::databaseName $base]
-	if {$name eq $clipbaseName} { set name $T_Clipbase }
+	if {$name eq $clipbaseName} { set name $::util::clipbaseName }
 	set Vars(name) $name
 }
 
@@ -1224,7 +1222,6 @@ proc LockBase {} {
 
 
 proc PopupMenu {table x y} {
-	variable [namespace parent]::database::mc::T_Clipbase
 	variable [namespace parent]::database::clipbaseName
 	variable Vars
 	variable _Current
@@ -1271,7 +1268,7 @@ proc PopupMenu {table x y} {
 	}
 
 	$n add radiobutton \
-		-label $T_Clipbase \
+		-label $::util::clipbaseName \
 		-value $clipbaseName \
 		-variable [namespace current]::_Current \
 		-command [list ::scidb::tree::set $clipbaseName] \

@@ -27,7 +27,10 @@
 # --- Special features -------------------------------------------------
 
 namespace eval test {
-	set useAnalysis 1
+	set useAnalysis 0
+	if {[pwd] eq "/home/gregor/development/c++/scidb/tcl"} {
+		set useAnalysis 1
+	}
 }
 
 # --- Special popups for BETA version only -----------------------------
