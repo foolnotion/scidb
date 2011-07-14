@@ -1645,7 +1645,8 @@ proc PopupMenu {parent position} {
 		$menu.strip add command \
 			-label $mc::Command(strip:moves) \
 			-state $state \
-			-command [list ::widget::busyOperation ::scidb::game::strip moves]
+			-command [list ::widget::busyOperation ::scidb::game::strip moves] \
+			;
 		set state "normal"
 		if {	[::scidb::game::position atEnd?]
 			|| (![::scidb::game::position isMainline?] && [::scidb::game::position atStart?])} {

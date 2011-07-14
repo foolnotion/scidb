@@ -36,6 +36,15 @@ public:
 	~Exception() throw();
 };
 
+class Error : public util::Exception
+{
+public:
+
+	Error();
+	Error(util::Exception& exc);
+	~Error() throw();
+};
+
 } // namespace tcl
 
 #endif // _tcl_exception_included

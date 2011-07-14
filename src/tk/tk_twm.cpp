@@ -314,6 +314,8 @@ public:
 	Tcl_Obj* path() const;
 	Type type() const;
 	int expand() const;
+	unsigned minWidth() const;
+	unsigned maxWidth() const;
 	Node* parent() const;
 	Node* child(unsigned index) const;
 	Node* firstChild() const;
@@ -322,7 +324,8 @@ public:
 	Childs const& childs() const;
 	unsigned size() const;
 
-	void create(int n, Tcl_Obj** opts);
+	void create(Node* parent, int n, Tcl_Obj** opts);
+	void configure();
 	void pack(Node* node);
 	void pack(Childs const& childs);
 	void packBefore(Node* node, Node const* succ);
@@ -341,6 +344,7 @@ private:
 	Tcl_Obj* getValue(char const* key) const;
 
 	void unpack(unsigned index);
+	void configure(unsigned& minw, unsigned& maxw);
 
 	Type				m_type;
 	mstl::string	m_name;
@@ -358,8 +362,11 @@ private:
 	static Tcl_Obj* m_objCreateCmd;
 	static Tcl_Obj* m_objPackCmd;
 	static Tcl_Obj* m_objUnpackCmd;
+	static Tcl_Obj* m_objConfigureCmd;
 	static Tcl_Obj* m_objBefore;
 	static Tcl_Obj* m_objAfter;
+	static Tcl_Obj* m_objMinsize;
+	static Tcl_Obj* m_objMaxsize;
 };
 
 Tcl_Obj* Node::m_objPanedWindow = 0;
@@ -369,8 +376,11 @@ Tcl_Obj* Node::m_objFrame = 0;
 Tcl_Obj* Node::m_objCreateCmd = 0;
 Tcl_Obj* Node::m_objPackCmd = 0;
 Tcl_Obj* Node::m_objUnpackCmd = 0;
+Tcl_Obj* Node::m_objConfigureCmd = 0;
 Tcl_Obj* Node::m_objBefore = 0;
 Tcl_Obj* Node::m_objAfter = 0;
+Tcl_Obj* Node::m_objMinsize = 0;
+Tcl_Obj* Node::m_objMaxsize = 0;
 
 Node::Lookup Node::m_lookup;
 
@@ -436,12 +446,15 @@ Node::initialize()
 		m_objCreateCmd = Tcl_NewStringObj("::twm::callback::Create", -1);
 		m_objPackCmd = Tcl_NewStringObj("::twm::callback::Pack", -1);
 		m_objUnpackCmd = Tcl_NewStringObj("::twm::callback::Unpack", -1);
+		m_objConfigureCmd = Tcl_NewStringObj("::twm::callback::Configure", -1);
 		m_objPanedWindow = Tcl_NewStringObj("panedwindow", -1);
 		m_objNotebook = Tcl_NewStringObj("notebook", -1);
 		m_objPane = Tcl_NewStringObj("pane", -1);
 		m_objFrame = Tcl_NewStringObj("frame", -1);
 		m_objBefore = Tcl_NewStringObj("-before", -1);
 		m_objAfter = Tcl_NewStringObj("-after", -1);
+		m_objMinsize = Tcl_NewStringObj("-minsize", -1);
+		m_objMaxsize = Tcl_NewStringObj("-maxsize", -1);
 	}
 }
 
@@ -466,7 +479,7 @@ Node::root() const
 
 
 void
-Node::create(int n, Tcl_Obj** opts)
+Node::create(Node* parent, int n, Tcl_Obj** opts)
 {
 	M_ASSERT(opts);
 	M_ASSERT(n > 0);
@@ -482,10 +495,11 @@ Node::create(int n, Tcl_Obj** opts)
 	}
 
 	m_name.assign(Tcl_GetStringFromObj(opts[0], 0));
-	m_opts = Tcl_NewListObj(n, opts);
+	m_opts = Tcl_NewListObj(n - 1, opts + 1);
 	m_path = call(	__func__,
 						m_objCreateCmd,
 						root()->path(),
+						parent->path(),
 						opts[0],
 						type,
 						n, opts);
@@ -525,11 +539,9 @@ Node::getValue(char const* key) const
 int
 Node::expand() const
 {
-	char const* value = Tcl_GetStringFromObj(getValue("-expand"), 0);
-
-	if (value)
+	if (Tcl_Obj* v = getValue("-expand"))
 	{
-		switch (value[0])
+		switch (*Tcl_GetStringFromObj(v, 0))
 		{
 			case 'x': return X;
 			case 'y': return Y;
@@ -538,6 +550,34 @@ Node::expand() const
 	}
 
 	return None;
+}
+
+
+unsigned
+Node::minWidth() const
+{
+	if (Tcl_Obj* v = getValue("-minwidth"))
+	{
+		int value;
+		Tcl_GetIntFromObj(tcl::interp(), v, &value);
+		return value;
+	}
+
+	return 0;
+}
+
+
+unsigned
+Node::maxWidth() const
+{
+	if (Tcl_Obj* v = getValue("-maxwidth"))
+	{
+		int value;
+		Tcl_GetIntFromObj(tcl::interp(), v, &value);
+		return value;
+	}
+
+	return mstl::numeric_limits<unsigned>::max();
 }
 
 
@@ -589,6 +629,50 @@ Node::isExpandable(Orient orient) const
 
 
 void
+Node::configure(unsigned& minw, unsigned& maxw)
+{
+	for (unsigned i = 0; i < m_childs.size(); ++i)
+		m_childs[i]->configure(minw, maxw);
+
+	switch (m_type)
+	{
+		case PanedWindow:
+		case Notebook:
+			// nothing to do
+			break;
+
+		case Frame:
+		case Pane:
+			minw = mstl::min(minw, minWidth());
+			maxw = mstl::min(maxw, maxWidth());
+			break;
+	}
+
+	Tcl_Obj* objv[4];
+
+	objv[0] = m_objMinsize;
+	objv[1] = Tcl_NewIntObj(minw);
+	objv[2] = m_objMaxsize;
+	objv[3] = Tcl_NewIntObj(maxw);
+
+	tcl::call(__func__, m_objConfigureCmd, root()->path(), m_parent->path(), path(), 4, objv);
+}
+
+
+void
+Node::configure()
+{
+	if (!m_childs.empty())
+	{
+		unsigned minw = 0;
+		unsigned maxw = mstl::numeric_limits<unsigned>::max();
+
+		m_childs[0]->configure(minw, maxw);
+	}
+}
+
+
+void
 Node::packBefore(Node* node, Node const* succ)
 {
 	M_ASSERT(node);
@@ -603,7 +687,7 @@ Node::packBefore(Node* node, Node const* succ)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, succ->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, NULL);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), succ), node);
 
 	Tcl_DecrRefCount(opts);
@@ -625,7 +709,7 @@ Node::packAfter(Node* node, Node const* pred)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, pred->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, NULL);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), pred) + 1, node);
 
 	Tcl_DecrRefCount(opts);
@@ -639,7 +723,7 @@ Node::pack(Node* node)
 	M_ASSERT(m_type != Pane && m_type != Frame);
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), node->path(), m_opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), m_opts, NULL);
 	m_childs.push_back(node);
 }
 
@@ -661,7 +745,7 @@ Node::unpack(unsigned index)
 	M_ASSERT(index < m_childs.size());
 
 	m_childs[index]->m_parent = 0;
-	tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), m_childs[index]->path(), NULL);
+	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), NULL);
 }
 
 
@@ -836,7 +920,7 @@ traverseList(Node* root, Node* parent, Tcl_Obj* list)
 
 	if (Tcl_ListObjGetElements(interp(), list, &objc, &objv) != TCL_OK)
 		M_RAISE("%s: list object expected", __func__);
-	if (objc == 0)
+	if (objc < 2)
 		M_RAISE("%s: list too short", __func__);
 
 	Tcl_Obj**	args;
@@ -847,7 +931,7 @@ traverseList(Node* root, Node* parent, Tcl_Obj* list)
 	if (argc == 0)
 		M_RAISE("%s: list too short", __func__);
 
-	char const*	what = stringFromObj(argc, args, 0);
+	char const*	what = stringFromObj(objc, objv, 0);
 	Type			type = Pane;
 
 	switch (what[0])
@@ -858,10 +942,10 @@ traverseList(Node* root, Node* parent, Tcl_Obj* list)
 	}
 
 	Node* node = new Node(type);
-	node->create(argc - 1, args + 1);
+	node->create(root, argc, args);
 	root->pack(node);
 
-	for (int i = 1; i < objc; ++i)
+	for (int i = 2; i < objc; ++i)
 		traverseList(root, node, objv[i]);
 }
 
@@ -872,6 +956,7 @@ cmdInit(int objc, Tcl_Obj* const objv[])
 	Node::initialize();
 	Node* root = new Node(objectFromObj(objc, objv, 0));
 	traverseList(root, root, objectFromObj(objc, objv, 1));
+	root->configure();
 	return TCL_OK;
 }
 
@@ -879,6 +964,7 @@ cmdInit(int objc, Tcl_Obj* const objv[])
 static int
 cmdAdd(int objc, Tcl_Obj* const objv[])
 {
+insertNode(0, 0, Ancestor, 0);
 #if 0
 	Node* newn = new Node(objectFromObj(objc, objv, 1), objectFromObj(objc, objv, 2));
 	Node* root = Node::lookupRoot(stringFromObj(objc, objv, 0));

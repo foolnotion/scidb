@@ -49,4 +49,21 @@ Exception::~Exception() throw()
 {
 }
 
+
+Error::Error()
+	:util::Exception()
+{
+}
+
+
+Error::Error(util::Exception& exc)
+	:util::Exception(exc)
+{
+}
+
+
+Error::~Error() throw()
+{
+}
+
 // vi:set ts=3 sw=3:

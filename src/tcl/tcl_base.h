@@ -88,6 +88,9 @@ Tcl_Obj* call(	char const* callee,
 Tcl_Obj* call(	char const* callee,
 					Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2, Tcl_Obj* arg3,
 					int objc, Tcl_Obj* const objv[]);
+Tcl_Obj* call(	char const* callee,
+					Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2, Tcl_Obj* arg3, Tcl_Obj* arg4,
+					int objc, Tcl_Obj* const objv[]);
 
 Tcl_Command_* createCommand(Tcl_Interp* ti, char const* cmdName, Tcl_ObjCmdProc* proc);
 

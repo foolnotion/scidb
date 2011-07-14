@@ -35,7 +35,7 @@ set First		"Firs&t"
 
 } ;# namespace mc
 
-set Priv(busy:state)		{}
+set Priv(busy:state)		0
 set Priv(sbset:cmd)		{}
 set Priv(sbset:orient)	{}
 
@@ -249,24 +249,28 @@ proc buttonSetText {w var args} {
 
 
 proc busyCursor {w {state on}} {
+	variable BusyCmd
 	variable Priv
 
 	if {[string index $w 0] ne "."} {
 		set state $w
-		set w {}
 	}
-
-	if {$Priv(busy:state) eq $state} { return }
-	set Priv(busy:state) $state
-	set Priv(busy:except) $w
 
 	if {$state eq "on"} {
-		SaveCursors .
-		BusyCursor . watch
-		update idletasks
+		if {[incr Priv(busy:state)] != 1} { return }
+		set action hold
 	} else {
-		BusyCursor .
+		if {[incr Priv(busy:state) -1] != 0} { return }
+		set action forget
 	}
+
+	::scidb::tk::busy $action .application
+
+#	foreach tlv [winfo children .] {
+#		if {![string match *__* $tlv] && ![string match *#* $tlv] && ![string match *_Busy* $tlv]} {
+#			::scidb::tk::busy $action $tlv
+#		}
+#	}
 }
 
 
@@ -275,37 +279,18 @@ proc unbusyCursor {{w {}}} {
 }
 
 
-if {[info tclversion] >= "8.6"} {
+proc busyOperation {args} {
+	busyCursor on
 
-	rename [namespace current]::busyCursor [namespace current]::busyCursor_
-
-	proc busyCursor {w {state on}} {
-		if {[string index $w 0] ne "."} {
-			variable Priv
-
-			set state $w
-			if {$Priv(busy:state) eq $state} { return }
-
-			if {$state eq "on"} {
-				tk_busy hold .
-				update idletasks
-			} else {
-				tk_busy forget .
-			}
-		} else {
-			busyCursor_ $w $state
-		}
+	if {[catch {{*}$args} result options]} {
+		busyCursor off
+		array set opts $options
+		lassign $opts(-errorinfo) type file error what
+		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
 	}
 
-} ;# [info tclversion] >= "8.6"
-
-
-proc busyOperation {args} {
-	# TODO use try/catch/finally
-	busyCursor on
-	set rc [{*}$args]
 	busyCursor off
-	return $rc
+	return $result
 }
 
 
@@ -376,37 +361,6 @@ proc SetMenuLabel {m index var args} {
 	} else {
 		$m entryconfigure $index -label $text
 	}
-}
-
-
-proc SaveCursors {w} {
-	variable Priv
-
-	if {![winfo exists $w]} { return }
-	if {$w eq $Priv(busy:except)} { return }
-	if {[winfo class $w] eq "Menu"} { return }
-	set Priv(busy:$w) [$w cget -cursor]
-	if {[winfo class $w] eq "Html"} { return }
-	foreach child [winfo children $w] { SaveCursors $child }
-}
-
-
-proc BusyCursor {w {cursor {}}} {
-	variable Priv
-
-	if {![winfo exists $w]} { return }
-	if {$w eq $Priv(busy:except)} { return }
-	if {[winfo class $w] eq "Menu"} { return }
-	if {[winfo class $w] eq "Html"} { return }
-
-	if {[llength $cursor] == 0} {
-		catch { $w configure -cursor $Priv(busy:$w) }
-	} else {
-		catch { $w configure -cursor $cursor }
-	}
-
-	if {[winfo class $w] eq "Html"} { return }
-	foreach child [winfo children $w] { BusyCursor $child $cursor }
 }
 
 

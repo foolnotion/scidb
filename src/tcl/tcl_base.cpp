@@ -305,7 +305,7 @@ invocationError(char const* callee, int argc, char const* argv[])
 	}
 
 	Tcl_AddErrorInfo(interp(), msg.c_str());
-	Tcl_BackgroundError(interp());
+	M_THROW(Error());
 }
 
 
@@ -328,7 +328,7 @@ invocationError(char const* callee, int objc, Tcl_Obj* const objv[])
 	}
 
 	Tcl_AddErrorInfo(interp(), msg.c_str());
-	Tcl_BackgroundError(interp());
+	M_THROW(Error());
 }
 
 
@@ -425,7 +425,7 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 		Tcl_GetStringResult(interp());
 		decrRefCount(objc, objv);
 		if (result != TCL_OK)
-			::invocationError(callee, objc, objv);
+			invocationError(callee, objc, objv);
 	}
 	else
 	{
@@ -455,7 +455,7 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 		decrRefCount(argc, objv);
 		Tcl_DecrRefCount(cmd);
 		if (result != TCL_OK)
-			::invocationError(callee, argc, argv);
+			invocationError(callee, argc, argv);
 	}
 
 	return result;
@@ -543,6 +543,10 @@ tcl::call(char const* callee, char const* cmd, ...)
 	if (result)
 		Tcl_IncrRefCount(result);
 	Tcl_RestoreResult(interp(), &state);
+
+	if (rc != TCL_OK)
+		invocationError(callee, 1, &cmd);
+
 	return result;
 }
 
@@ -565,6 +569,10 @@ tcl::call(char const* callee, Tcl_Obj* cmd, ...)
 	if (result)
 		Tcl_IncrRefCount(result);
 	Tcl_RestoreResult(interp(), &state);
+
+	if (rc != TCL_OK)
+		invocationError(callee, 1, &cmd);
+
 	return result;
 }
 
@@ -616,18 +624,18 @@ tcl::call(	char const* callee,
 				Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2,
 				int objc, Tcl_Obj* const objv[])
 {
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+	M_REQUIRE(arg1);
+	M_REQUIRE(arg2);
+
 	Tcl_SavedResult state;
 	Tcl_SaveResult(interp(), &state);
 
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	if (arg1 && arg2)
-		result = call(callee, cmd, arg1, arg2, list, NULL);
-	else if (arg1)
-		result = call(callee, cmd, arg1, list, NULL);
-	else
-		result = call(callee, cmd, list, NULL);
+	result = call(callee, cmd, arg1, arg2, list, NULL);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -658,6 +666,31 @@ tcl::call(	char const* callee,
 }
 
 
+Tcl_Obj*
+tcl::call(	char const* callee,
+				Tcl_Obj* cmd, Tcl_Obj* arg1, Tcl_Obj* arg2, Tcl_Obj* arg3, Tcl_Obj* arg4,
+				int objc, Tcl_Obj* const objv[])
+{
+	M_REQUIRE(callee);
+	M_REQUIRE(cmd);
+	M_REQUIRE(arg1);
+	M_REQUIRE(arg2);
+	M_REQUIRE(arg3);
+	M_REQUIRE(arg4);
+
+	Tcl_SavedResult state;
+	Tcl_SaveResult(interp(), &state);
+
+	Tcl_Obj* result;
+	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
+
+	result = call(callee, cmd, arg1, arg2, arg3, arg4, list, NULL);
+
+	Tcl_RestoreResult(interp(), &state);
+	return result;
+}
+
+
 static void
 callRemoteUpdate(ClientData)
 {
@@ -681,6 +714,10 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	try
 	{
 		rc = Cast(clientData).proc_(0, ti, objc, objv);
+	}
+	catch (Error const&)
+	{
+		rc = TCL_ERROR;
 	}
 	catch (IOException const& exc)
 	{

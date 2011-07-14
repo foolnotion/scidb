@@ -27,7 +27,6 @@
 package require Tk 8.5
 package require tktwm 1.0
 if {[catch { package require tkpng }]} { package require Img }
-package provide twm 1.0
 
 namespace eval twm {
 namespace eval mc {
@@ -102,7 +101,6 @@ proc Add {twm w args} {
 		-minwidth	50
 		-minheight	50
 		-side			right
-		-position	0
 		-text			""
 		-textVar		{}
 	}
@@ -200,11 +198,11 @@ proc Compare {twm lhs rhs} {
 }
 
 
-proc MakeFrame {twm textVar} {
+proc MakeFrame {parent text args} {
 	variable Defaults
 
-	set top [ttk::frame $twm.top]
-	set hdr [tk::frame $twm.top.header \
+	set top [ttk::frame $parent.top {*}$args]
+	set hdr [tk::frame $parent.top.header \
 					-background $Defaults(header:background) \
 					-borderwidth 1 \
 					-relief raised \
@@ -219,12 +217,19 @@ proc MakeFrame {twm textVar} {
 	tooltip $hdr.close  Close
 	tooltip $hdr.undock Undock
 
+	set opts {}
+	if {[info exists $text]} {
+		lappend opts -textvar $text
+	} else {
+		lappend opts -text $text
+	}
+
 	set headerFont [list [font configure $Defaults(header:font) -family] $Defaults(header:fontsize) bold]
 	tk::label $hdr.label \
-		-textvar $textVar \
 		-background $Defaults(header:background) \
 		-foreground $Defaults(header:foreground) \
 		-font $headerFont \
+		{*}$opts \
 		;
 
 	grid $hdr.close	-column 4 -row 0
@@ -245,21 +250,122 @@ proc Destroy {twm} {
 
 namespace eval callback {
 
-proc Create {twm name type opts} {
+proc Create {twm name parent type opts} {
 	switch $type {
-		frame			{ return $twm }
-		pane			{}
-		notebook		{}
-		panedwindow	{}
+		frame {
+			return $twm
+		}
+
+		pane {
+			array set args $opts
+			return [MakeFrame $parent $name
+				-width $args(-width) \
+				-height $args(-height) \
+			]
+		}
+
+		notebook {
+			array set args $opts
+			return [ttk::notebook $parent.$name \
+				-width $args(-width) \
+				-height $args(-height) \
+			]
+		}
+
+		panedwindow {
+			array set args $opts
+			return [tk::panedwindow $parent.$name \
+				-orient $args(-orient) \
+				-width $args(-width) \
+				-height $args(-height) \
+			]
+		}
 	}
 }
 
 
-proc Pack {twm path opts} {
+proc Configure {twm parent path opts} {
+	if {[string match *PanedWindow [winfo class $parent]} {
+		$parent paneconfigure $path {*}$opts
+	}
 }
 
 
-proc Unpack {twm path} {
+proc Pack {twm parent path opts} {
+	switch -glob -- [winfo class $parent] {
+		*PanedWindow {
+			$parent add $path
+			set options {}
+
+			if {[info exists args(-after)]} {
+				lappend options -after $args(-after)
+			} elseif {[info exists args(-before)]} {
+				lappend options -before $args(-before)
+			}
+			if {[info exists args(-minsize)]} {
+				lappend options -minsize $args(-minsize)
+			}
+			if {[info exists args(-sticky)]} {
+				lappend options -minsize $args(-sticky)
+			}
+			if {[info exists args(-expand)]} {
+				switch -- $args(-expand) {
+					none	{ lappend options -stretch never }
+					both	{ lappend options -stretch always }
+					x		{ if {$args(-orient) eq "horz"} { lappend options -stretch always } }
+					y		{ if {$args(-orient) eq "vert"} { lappend options -stretch always } }
+				}
+			}
+
+			$parent paneconfigure $path {*}$options
+		}
+
+		*Notebook {
+			array set args $opts
+			set options {}
+
+			if {[info exists args(-after)]} {
+				set pos [$parent index $args(-after)]
+				if {$pos == [$parent index end]} { set pos end }
+			} elseif {[info exists args(-before)]} {
+				set pos [$parent index $args(-before)]
+			} else {
+				set pos end
+			}
+			if {[info exists args(-sticky)]} {
+				lappend options -sticky $args(-sticky)
+			}
+
+			$parent insert $pos $path -text [lindex [split $path .] end] {*}$options
+		}
+
+		*Frame {
+			set options {}
+
+			if {[info exists args(-sticky)]} {
+				lappend options -sticky $args(-sticky)
+			}
+
+			grid $path -column 1 -row 1 {*}$options
+
+			if {[info exists args(-expand)} {
+				switch -- $args(-expand) {
+					both {
+						grid rowconfigure $parent 1 -weight 1
+						grid columnconfigure $parent 1 -weight 1
+					}
+
+					x { grid columnconfigure $parent 1 -weight 1 }
+					y { grid rowconfigure $parent 1 -weight 1 }
+				}
+			}
+		}
+	}
+}
+
+
+proc Unpack {twm parent path} {
+	$parent forget $path
 }
 
 } ;# namespace callback

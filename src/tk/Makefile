@@ -15,12 +15,13 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
+INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itcl$(TCL_VERSION) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
 CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
+	tk_busy.cpp \
 	tk_image.cpp \
 	tk_init.cpp \
 	tk_jpeg.cpp \
@@ -61,6 +62,42 @@ $(LIB).a: $(OBJS)
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+tk_busy.o: tk_init.h
+tk_busy.o: ../tcl/tcl_base.h
+tk_busy.o: ../tcl/tcl_base.ipp
+tk_busy.o: ../mstl/m_hash.h
+tk_busy.o: ../mstl/m_vector.h
+tk_busy.o: ../mstl/m_type_traits.h
+tk_busy.o: ../mstl/m_type_traits.ipp
+tk_busy.o: ../mstl/m_types.h
+tk_busy.o: ../mstl/m_memblock.h
+tk_busy.o: ../mstl/m_memblock.ipp
+tk_busy.o: ../mstl/m_utility.h
+tk_busy.o: ../mstl/m_utility.ipp
+tk_busy.o: ../mstl/m_limits.h
+tk_busy.o: ../mstl/m_bit_functions.h
+tk_busy.o: ../mstl/m_bit_functions.ipp
+tk_busy.o: ../mstl/m_static_check.h
+tk_busy.o: ../mstl/m_assert.h
+tk_busy.o: ../mstl/m_exception.h
+tk_busy.o: ../mstl/m_backtrace.h
+tk_busy.o: ../mstl/m_exception.ipp
+tk_busy.o: ../mstl/m_vector.ipp
+tk_busy.o: ../mstl/m_uninitialized.h
+tk_busy.o: ../mstl/m_uninitialized.ipp
+tk_busy.o: ../mstl/m_algobase.h
+tk_busy.o: ../mstl/m_algobase.ipp
+tk_busy.o: ../mstl/m_construct.h
+tk_busy.o: ../mstl/m_construct.ipp
+tk_busy.o: ../mstl/m_pair.h
+tk_busy.o: ../mstl/m_pair.ipp
+tk_busy.o: ../mstl/m_hash.ipp
+tk_busy.o: ../mstl/m_string.h
+tk_busy.o: ../mstl/m_string.ipp
+tk_busy.o: tk8.5/tkInt.h
+tk_busy.o: tk8.5/tkPort.h
+tk_busy.o: tk8.5/tkUnixPort.h
+tk_busy.o: tk8.5/tkIntDecls.h
 tk_image.o: tk_init.h
 tk_image.o: svg/svg_path_renderer.h
 tk_image.o: svg/svg_path_tokenizer.h
@@ -186,6 +223,10 @@ tk_twm.o: ../mstl/m_string.h
 tk_twm.o: ../mstl/m_string.ipp
 tk_twm.o: ../mstl/m_algorithm.h
 tk_twm.o: ../mstl/m_algorithm.ipp
+tk_twm.o: ../mstl/m_map.h
+tk_twm.o: ../mstl/m_pair.h
+tk_twm.o: ../mstl/m_pair.ipp
+tk_twm.o: ../mstl/m_map.ipp
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h
 tk_twm.o: tk8.5/tkUnixPort.h

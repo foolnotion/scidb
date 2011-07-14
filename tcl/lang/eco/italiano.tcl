@@ -426,6 +426,7 @@
 "Pawn Storm Variation"					"Variante Tempesta di Pedoni"
 "Pelikán (Lasker/Sveshnikov) Variation"		"Variante Pelikán (Lasker/Sveshnikov)"
 "Penguin Variation"					"Variante Pinguino"
+"Phoenix Attack"					"Attacco della fenice"
 "Piece-Sac Line"					"Linea con Sacrificio di Pezzo"
 "Pin Variation"						"Variante con Inchiodatura"
 "Pin Variation (Sicilian Counterattack)"		"Variante con Inchiodatura (Contrattacco Siciliano)"
