@@ -120,6 +120,9 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"se alcanz— el tama–o m‡ximo de archivo" 
 ::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
 
+### progress ###########################################################
+::progress::mc::Progress "Progreso"
+
 ### menu ###############################################################
 ::menu::mc::File						"&Archivo"
 ::menu::mc::Game						"&Partida"

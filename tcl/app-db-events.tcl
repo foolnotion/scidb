@@ -163,7 +163,10 @@ proc InitBase {path base} {
 	variable ${path}::Vars
 	variable Defaults
 
+	if {[info exists Vars($base:initializing)]} { return }
+
 	if {![info exists Vars($base:view)]} {
+		set Vars($base:initializing) 1
 		set Vars($base:view) [::scidb::view::new $base slave slave master slave]
 		set Vars($base:update:events) 1
 		set Vars($base:sort:events) $Defaults(sort:events)

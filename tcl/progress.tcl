@@ -25,50 +25,59 @@
 # ======================================================================
 
 namespace eval progress {
+namespace eval mc {
 
-proc start {path cmd args options {close 1}} {
+set Progress "Progress"
+
+} ;# namespace mc
+
+proc start {parent cmd args options {close 1}} {
 	variable Priv
 
 	set Priv(options) $options
 	set Priv(close) $close
 
-	return [eval $cmd [namespace current]::DoCmd $path $args]
+	return [eval $cmd [namespace current]::DoCmd $parent $args]
 }
 
 
-proc close {path} {
-	if {[winfo exists $path]} {
-		::widget::unbusyCursor $path
-		ttk::releaseGrab $path
-		destroy $path
+proc close {} {
+	if {[winfo exists .progress]} {
+		::widget::unbusyCursor .progress
+		ttk::releaseGrab .progress
+		destroy .progress
 	}
 }
 
 
-proc DoCmd {cmd path {value 0}} {
+proc DoCmd {cmd parent {value 0}} {
 	variable Priv
 
 	switch $cmd {
 		open {
-			if {![winfo exists $path]} {
+			if {![winfo exists .progress]} {
 				lappend Priv(options) -variable [namespace current]::Priv(value)
 				lappend Priv(options) -maximum $value
-				::dialog::progressbar::open $path {*}$Priv(options) -close no
-				ttk::grabWindow $path
-				::widget::busyCursor $path
+				lappend Priv(options) -close no
+				lappend Priv(options) -parent $parent
+				lappend Priv(options) -title $mc::Progress
+				::dialog::progressbar::open .progress {*}$Priv(options)
+				focus -force .progress
+				ttk::grabWindow .progress
+				::widget::busyCursor .progress
 				::log::delay
 			}
 		}
 
 		close {
 			if {$Priv(close)} {
-				close $path
+				close
 			}
 		}
 
 		start {
 			set Priv(value) 0
-			::dialog::progressbar::setMaximum $path $value
+			::dialog::progressbar::setMaximum .progress $value
 			update
 		}
 
@@ -87,7 +96,7 @@ proc DoCmd {cmd path {value 0}} {
 		}
 
 		interrupted? {
-			return [::dialog::progressbar::interrupted? $path]
+			return [::dialog::progressbar::interrupted? .progress]
 		}
 	}
 }

@@ -120,6 +120,9 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
 
+### progress ###########################################################
+::progress::mc::Progress "Progressi"
+
 ### menu ###############################################################
 ::menu::mc::File						"&File"
 ::menu::mc::Game						"&Partita"

@@ -117,6 +117,9 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"die maximale Dateigrösse wirde erreicht"
 ::util::mc::IOError(LoadFailed)				"das Laden schlug fehl (zuviele Turnier-Einträge)"
 
+### progress ###########################################################
+::progress::mc::Progress "Fortschritt"
+
 ### menu ###############################################################
 ::menu::mc::File						"&Datei"
 ::menu::mc::Game						"&Partie"

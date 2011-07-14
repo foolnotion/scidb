@@ -1,6 +1,16 @@
 [July 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #80)
+------------------------------------------------------------------------------
+* Busy cursor stuff reimplemention refined.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #79)
+------------------------------------------------------------------------------
+* Busy cursor stuff reimplemented.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #77)
 ------------------------------------------------------------------------------
 * Bug with bottom space underneath board (hopefully) fixed (bug item #3349601)
@@ -8,13 +18,13 @@ Scidb 1.0 BETA (rev. #77)
 * Engines added (MicroMax and TogaII-1.3.1).
 
 * tkmenu.tcl changed: modernized menu behavior, but only available under
-windoze (modern does not mean "better").
+windoze (modernized does not mean "better").
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #76)
 ------------------------------------------------------------------------------
-* configure script changed, hopefully it may now detect the versions of
-the gnu compilers >= 4.5.
+* configure script changed, hopefully it will now detect versions >= 4.5 of
+the gnu compiler.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #71)

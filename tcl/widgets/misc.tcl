@@ -265,6 +265,7 @@ proc busyCursor {w {state on}} {
 	}
 
 	::scidb::tk::busy $action .application
+	if {$action eq "hold"} { ::update idletasks }
 
 #	foreach tlv [winfo children .] {
 #		if {![string match *__* $tlv] && ![string match *#* $tlv] && ![string match *_Busy* $tlv]} {

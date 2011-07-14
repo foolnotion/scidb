@@ -314,7 +314,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 				if {[llength $encoding]} { lappend args -encoding $encoding }
 				set cmd [list ::scidb::db::load $file]
 				set options [list -message $msg]
-				if {[::util::catchIoError [list ::progress::start $parent.progress $cmd $args $options]]} {
+				if {[::util::catchIoError [list ::progress::start $parent $cmd $args $options]]} {
 					return
 				}
 			}
@@ -1233,7 +1233,7 @@ proc Recode {number parent} {
 		}
 
 		default {
-			::progress::start $parent.progress [list ::scidb::db::recode $file $encoding] {} {}
+			::progress::start $parent [list ::scidb::db::recode $file $encoding] {} {}
 		}
 	}
 

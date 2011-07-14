@@ -1832,7 +1832,7 @@ proc SaveScidb {parent dlg file} {
 	::log::open "$formatName $mc::Export"
 	::log::delay
 	::log::info [format $mc::ExportingDatabase $Info(name) $file]
-	set count [::progress::start $parent.progress $cmd $args $options]
+	set count [::progress::start $parent $cmd $args $options]
 	update idletasks ;# be sure the following will be appended
 	::log::info [format $mc::ExportedGames [::locale::formatNumber $count]]
 	::log::close

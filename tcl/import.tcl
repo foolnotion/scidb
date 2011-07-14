@@ -326,7 +326,7 @@ proc Open {parent base files msg encoding type useLog} {
 		::log::info [format $mc::ImportingPgnFile $file]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
 		set options [list -message $msg -log $useLog]
-		set count [::progress::start $parent.progress $cmd [list -encoding $encoding] $options 0]
+		set count [::progress::start $parent $cmd [list -encoding $encoding] $options 0]
 		update idletasks	;# be sure the following will be appended
 
 		if {$count == 0} {
@@ -339,7 +339,7 @@ proc Open {parent base files msg encoding type useLog} {
 	}
 
 	set cmd [list ::scidb::db::save $base $ngames]
-	::progress::start $parent.progress $cmd {} {} 1
+	::progress::start $parent $cmd {} {} 1
 	::log::close
 
 	return $Priv(ok)

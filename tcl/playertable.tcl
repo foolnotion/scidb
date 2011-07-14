@@ -610,10 +610,12 @@ proc TableSelected {path index} {
 	variable ${path}::Vars
 
 	if {[llength $Vars(selectcmd)]} {
+		::widget::busyCursor on
 		set base [::scrolledtable::base $path.table]
 		set view [{*}$Vars(viewcmd) $base]
 		set Vars($base:index) [::scidb::db::get playerIndex $index $view $base]
 		{*}$Vars(selectcmd) $base $view
+		::widget::busyCursor off
 	}
 }
 

@@ -60,20 +60,30 @@ proc open {args} {
 		-class		Dialog
 		-variable	{}
 		-command		{}
+		-parent		{}
 	}
 	array set opts [lrange $args 1 end]
 
 	set w [lindex $args 0]
 	toplevel $w -relief solid -class $opts(-class)
-	set parent [winfo parent $w]
+	set parent $opts(-parent)
+	if {[llength $parent] == 0} {
+		set parent [winfo parent $w]
+	}
 	set title [tk appname]
 	set Priv(interrupted:$w) 0
-	if {[llength $opts(-title)]} { append title ": $opts(-title)" }
+	if {[llength $opts(-title)]} { append title " - $opts(-title)" }
    wm title $w $title
 	wm iconname $w ""
 	wm resizable $w false false
 	wm protocol $w WM_DELETE_WINDOW {}
-	wm transient $w [winfo toplevel $parent]
+	if {[string length $parent]} {
+		wm transient $w $parent
+		wm group $w $parent
+	} else {
+		wm transient $w [winfo toplevel $parent]
+		wm group $w [winfo toplevel $parent]
+	}
 	wm attributes $w -topmost $opts(-topmost)
 	
 	tk::label $w.l \
@@ -125,7 +135,7 @@ proc open {args} {
 	tkwait visibility $w
 	if {[llength $opts(-command)] == 0} { return }
 	after idle [namespace code [list Start $w $opts(-command) $opts(-close)]]
-	focus $w
+	focus -force $w
 	ttk::grabWindow $w
 	tkwait window $w
 	ttk::releaseGrab $w
