@@ -343,7 +343,7 @@ FreeWindowInternalRep(
 static int SetWindowFromAny(Tcl_Interp *interp, Tcl_Obj *objPtr);
 
 static const Tcl_ObjType windowObjType = {
-    "window",                   /* name */
+    const_cast<char*>("window"),/* name */
     FreeWindowInternalRep,      /* freeIntRepProc */
     DupWindowInternalRep,       /* dupIntRepProc */
     NULL,                       /* updateStringProc */
