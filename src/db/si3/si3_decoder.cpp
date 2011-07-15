@@ -478,6 +478,16 @@ Decoder::decodeTags(TagSet& tags)
 						}
 						break;
 
+					case tag::EventDate:
+						// this case happens if a tag like "Eventdate" is detetcted
+						{
+							Date date;
+							date.parseFromString(reinterpret_cast<char const*>(m_strm.data()), b);
+							if (date)
+								tags.set(tag::EventDate, date.asString());
+						}
+						break;
+
 					default:
 						{
 							mstl::string in;
@@ -508,22 +518,13 @@ Decoder::decodeTags(TagSet& tags)
 			{
 				case 245:	// event date
 					{
-						char const*	data	= reinterpret_cast<char const*>(m_strm.data());
-						Date			date;
+						char const*	data = reinterpret_cast<char const*>(m_strm.data());
+						Date date;
 
 						b = m_strm.get();
-
-						if (date.parseFromString(data, b))
-						{
-							tags.set(tag::EventDate,
-										reinterpret_cast<char const*>(m_strm.data()),
-										b);
-						}
-						else
-						{
+						date.parseFromString(data, b);
+						if (date)
 							tags.set(tag::EventDate, date.asString());
-						}
-
 						m_strm.skip(b);
 					}
 					break;
@@ -534,7 +535,8 @@ Decoder::decodeTags(TagSet& tags)
 						Date		date;
 
 						date.setYMD(value >> 9, (value >> 5) & 15, value & 31);
-						tags.set(tag::EventDate, mstl::string(date.asString(), b));
+						if (date)
+							tags.set(tag::EventDate, mstl::string(date.asString(), b));
 					}
 					break;
 

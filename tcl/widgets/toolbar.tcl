@@ -1795,6 +1795,7 @@ proc Tooltip {mode w} {
 
 	set toolbar [winfo parent $w]
 
+	if {![info exists Specs(tooltip:$w:$toolbar)]} { return }
 	if {![llength $Specs(tooltip:$w:$toolbar)] && ![llength $Specs(tooltipvar:$w:$toolbar)]} { return }
 
 	if {	$mode eq "show"

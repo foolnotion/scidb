@@ -1161,6 +1161,10 @@ proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
 		}
 	}
 
+	if {$count} {
+		catch { exec fc-cache -f $fontDir }
+	}
+
 	return $count
 }
 
