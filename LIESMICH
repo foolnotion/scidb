@@ -1,0 +1,233 @@
+=====================================================================
+   _/|            __
+  // o\         /    )           ,        /    /
+  || ._)    ----\---------__----------__-/----/__-
+  //__\          \      /   '  /    /   /    /   )
+  )___(     _(____/____(___ __/____(___/____(___/_
+=====================================================================
+
+*Scidb is a *Chess *Information *Data *Base
+=====================================================================
+
+http://scidb.sourceforge.net
+http://sourceforge.net/projects/scidb/
+
+Email-Adresse des Autors:
+gcramer@users.sourceforge.net
+
+=====================================================================
+
+Die erste Testversion enthaelt folgende Funktionalitaeten:
+
+   - Datenbanken lesen/schreiben:
+      - .sci      Scidb Format
+      - .si3      Scid 3.x Format
+      - .si4      Scid 4.x Format
+      - .cbh      ChessBase Format (nur lesend)
+      - .pgn      PGN Format
+      - .pgn.gz   komprimiertes PGN-Format
+      - .zip      Zip-Archiv
+   
+   - Datenbanken anlegen (nur .sci, .si3, .si4)
+
+   - Datenbanken exportieren: Konvertierung zwischen allen Formaten
+     (ausser .cbh: nur lesend)
+
+   - konfigurierbare Partienliste mit Sortierungsfunktionen
+
+   - konfigurierbare Spielerliste mit Sortierungsfunktionen und
+     weiteren Spielerinformationen
+
+   - konfigurierbare Kommentatorliste mit Sortierungsfunktionen
+
+   - Schach 960 und Shuffle Chess Unterstuetzung
+
+   - Internationalisierung (Multiple Encoding Support)
+
+   - Lokalisierung: Deutsch, Englisch, Italienisch und Spanisch
+
+   - konfigurierbare Brettansicht
+
+   - 25 verschiedene SVG/TrueType Figurensaetze
+
+   - Dialoge zur Erstellung eigener Brett- und Figurenthemen
+
+   - Datenbanken-Fenster zur Auswahl der aktiven Datenbank
+
+   - Partiennotations-Fenster
+      - zahlreiche Edierungsmoeglichkeiten
+         - Anmerkungen (!, ?, +/-, etc.)
+         - Kommentare
+         - Markierungen (Pfeile, Feldmarkierungen)
+         - Undo/Redo
+         - und vieles mehr
+      - auffaltbare Varianten
+      - zwei verschiedene Ansichten
+      - graphische Figuren und Symbole
+      - automatische ECO Berechnung
+
+   - Bis zu 9 Partien koennen gleichzeitig geoeffnet und bearbeitet
+     werden
+
+   - Intelligenter Zugassistent zur Erleichterung der Zugeingabe
+     (mit Hilfe eines internen Schachprogramms)
+
+   - Setup-Dialog fuer die Startposition
+
+   - Eroeffnungsbaum-Fenster fuer eine Referenzdatenbank mit Erkennung
+     aller Zugumstellungen
+
+   - Kibietz-Fenster (Analyse-Fenster) fuer externe Schachprogramme
+     (noch in Entwicklung; eine Verschiebung ist moeglich)
+
+   - Einfacher Suchdialog - wird in folgenden Versionen erweitert
+     (noch in Entwicklung; eine Verschiebung ist moeglich)
+
+   - Einfacher Hilfe-Dialog
+     (noch in Entwicklung; eine Verschiebung ist moeglich)
+
+   - Modernes Look & Feel
+
+   - Unterstuetzung aller Linux/Unix Plattformen
+     (Windows-Unnterstuetzung ist noch in Entwicklung)
+     (zur Mac-Unterstuetzung werden Freiwillige benoetigt)
+
+Ein weiteres Feature von Scidb: es existieren keine Abhaengigkeiten
+zu externen Laufzeitbibliotheken (DLL's) ausser Tcl/Tk (und natuerlich
+den zwingenden plattformspezifischen Bibliotheken).
+
+Fuer Ende 2011 ist die erste Vollversion geplant; mit weiteren
+Funktionalitaeten (sofern bis dahin realisierbar):
+
+   - Komplexer Suchdialog
+   - Ausfuehrliche Hilfe
+   - Tagestips (Tip of the Day)
+   - HTML-Export
+   - LaTeX-Export
+   - Windows-Plattform Unterstuetzung
+   - Dialog zur Rechtschreibkorrektur von Spielernamen
+   - Datenbankkompression
+
+Eine spaetere Version soll PDF-Export anbieten.
+
+---------------------------------------------------------------------
+Gesucht:
+---------------------------------------------------------------------
+Gesucht werden Tester fuer die Vorabversion. Interessenten melden sich
+bitte mit Hilfe einer Message, damit das Testen koordiniert werden kann.
+
+So kann eine Message gesendet werden:
+
+   1. Eine Mitgliedschaft bei Sourceforge ist erforderlich
+      (<https://sourceforge.net/account/registration/> oeffnen).
+      Die Mitgliedschaft ist Gebuehren- und Verpflichtungsfrei.
+   2. <http://sourceforge.net/project/memberlist.php?group_id=307371> oeffnen
+   3. "gcramer at users.sourceforge.net" anklicken
+
+Fuer weitere gewuenschte Funktionalitaeten koennen "Feature Requests"
+eingetragen werden. Diese Eintragungen dienen als eine der
+Entscheidungsgrundlagen fuer die Weiterentwicklung.
+
+So koennen Eintragungen vorgenommen werden:
+
+   1. <http://sourceforge.net/tracker/?group_id=307371&atid=1294800> oeffnen
+   2. "Add new" anklicken
+
+Die Requests sollten beruecksichtigen, dass Scidb eine reines Datenbank-
+programm bleiben wird, d.h. folgende Funktionalitaeten sind nicht in
+Scidb vorgesehen:
+
+   - FICS Anbindung
+   - Fern/Email-Schach-Unterstuetzung
+   - automatisierte Partienanalyse
+   - Schachtraining
+   - das Spielen gegen externe Schachprogramme
+   - andere schachprogrammspezifische Aufgaben
+
+Fuer solche Aufgaben ist eine anderes Projekt vorgesehen:
+<http://sourceforge.net/projects/jessy>. Damit wird eine Ueberlastung
+der Datenbankapplikation Scidb unterbunden. Jessy wird eine Anbindung
+an die Scidb-Datenbank besitzen.
+
+---------------------------------------------------------------------
+Wie enstand Scidb?
+---------------------------------------------------------------------
+Zuerst versuchte der Autor das bestehend Programm Scid zu ueberarbeiten
+-- die aktuelle Version gefaellt dem Autor aus verschiedenen Gruenden
+nicht so sehr -- stellte jedoch nach wochenlangen Taetigkeiten fest, dass
+dies voraussichtlich ebenso viel Aufwand erfordert wie die Entwicklung
+eines neuen Programms.
+
+Scidb kann dabei auf die hervorragende Pionierarbeit von Shane Hudson
+zurueckgreifen, und macht Gebrauch von neuen und verbesserten
+Programmbibliotheken, die Shane Hudson noch nicht zur Verfuegung standen.
+Der Autor moechte mit Scidb mindestens die gleiche Stabilitaet und
+Fehlersicherheit anbieten wie sie Shane Hudson anbieten konnte -- die
+neueren Scid-Versionen bieten dies definitiv nicht. Weitere Ziele sind
+Einfachheit, Benutzerfreundlichkeit, sowie schoenes Design.
+
+---------------------------------------------------------------------
+Welchen Weg geht Scidb?
+---------------------------------------------------------------------
+Scidb geht grundsaetzlich den Weg von Scid; der gewaehlte Name Scidb
+deutet darauf hin. Scidb wird deshalb auch kein ChessBase-Klon werden.
+ChessBase hat seine Vorteile, wie z.B. das blitzschnelle Oeffnen
+grosser Datenbanken, handelt sich damit jedoch auch Nachteile ein
+(dies resultiert aus den erforderlichen Programmiertechniken),
+die Scidb genauso umgeht wie sie Scid umgangen hat. Welche Vorteile
+geschaetzt werden und welche Nachteile man in Kauf nehmen moechte,
+haengt von den Anspruechen des jeweiligen Benutzers ab. Keine Applikation
+ist deshalb besser oder schlechter. Allerdings wird sich Scidb auch
+von Scid abheben, und Aehnlichkeiten bei gewissen Dialogen zu ChessBase
+sind unumgaenglich.
+
+Scidb ist auschliesslich als eine Schachdatenbank angelegt, d.h. Scidb
+wird nicht geeignet sein, um gegen ein externes Schachprogramm zu
+spielen, oder im Internet Schach zu spielen. Dafuer ist ein weiteres
+Projekt (http://sourceforge.net/projects/jessy) vorgesehen, das ueber
+eine Schnittstelle zu den Scidb-Datenbanken verfuegen wird, und
+ein sehr aehnliches Look & Feel haben soll. Diese Applikation ist in
+Vorbereitung, wird aber erst 2011 veroeffentlicht werden. Scidb
+soll einfach zu bedienen sein; dazu gehoert, das es nicht mit
+Funktionalitaeten ueberlastet wird. Die Funktionen, die Scidb anbieten
+will, sollen benutzerfreundlich und mit groesster Zuverlaessigkeit
+ausgefuehrt werden.
+
+---------------------------------------------------------------------
+Warum wieder Tcl/Tk?
+---------------------------------------------------------------------
+Oft wurden Verbesserungsvorschlaege fuer Scid gefordert wie z.B. die
+Umstellung von Tcl/Tk auf andere GUI Bibliotheken; darunter Gtk und
+Qt. Der Autor, der mittelerweile ueber 25 Jahre Programmiererfahrung
+verfuegt, kam nach einer Analyse zu dem Schluss, das Tcl/Tk einer der
+besten Alternativen (fuer nicht-kommerzielle Programmentwicklung)
+darstellt. Man handelt sich keine Abhaengigkeiten zu riesenhaften
+Bibliotheken ein, und die gennanten Tools sind nicht so anpassungs-
+und erweiterungsfaehig wie Tcl/Tk. Die Moeglichkeiten des Text-Widgets
+sowie des Canvas-Widgets in Tk suchen ihresgleichen. Auch das
+Tree-Control (http://tktreectrl.sourceforge.net) fuer Tk setzt einen
+Standard.
+
+Zudem ist der Entwicklungszyklus mit einer Scriptsprache viel schneller
+als mit C oder C++. Ein Beispiel duerfte das Projekt ChessX
+(http://chessx.sourceforge.net) sein, das nach jahrelanger Entwicklung
+mit mehreren Entwicklern niemals soweit kamen, wie es das Projekt Scidb
+jetzt schon ist. Die meisten Entwicklungen fuer die Vorabversion von
+Scidb sind bereits geschehen oder am Abschluss. Ein Nachteil von
+Tcl/Tk ist jedoch, dass nur relativ wenige brauchbare Erweiterungen
+im Internet zu finden sind, und dass das Entwicklungsteam von Tcl/Tk
+kaum zur Fehlerbereinigung bereit ist. Der Autor meldete mehrere, zum
+Teil relativ schwerwiegende, Fehler an das Team von Tcl/Tk. Sie wurden
+zu einem recht grossen Teil einfach ignoriert, oder nur unzureichend bis
+gar nicht bearbeitet. Der Autor ist dazu uebergangen, die Fehler selbst
+zu bereinigen -- sofern es innerhalb der Skriptsprache moeglich ist --
+oder Workarounds (d.h. Umgehungen) zu programmieren. Man kann nur darauf
+warten, dass sich auch das Entwicklungsteam von Tcl/Tk mehr Qualitaet
+wuenscht. Z. Zt. ist angesichts dieser Lage Tcl/Tk fuer den Einsatz
+in kommerziellen Programmen wohl uninteressant.
+
+Die Screenshots von Scidb (siehe
+<http://scidb.sourceforge.net/screenshots.html>) zeigen, das Tcl/Tk
+im Look & Feel durchaus mithalten kann.
+
+= vi:set et sw=3 ts=3: =
