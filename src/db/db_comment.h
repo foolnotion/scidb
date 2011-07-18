@@ -70,6 +70,16 @@ public:
 	Comment();
 	Comment(mstl::string const& content, bool engFlag, bool othFlag);
 
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	Comment(Comment const&) = default;
+	Comment& operator=(Comment const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	Comment(Comment&& comment);
+	Comment& operator=(Comment&& comment);
+#endif
+
 	operator mstl::string const& () const;
 
 	bool operator==(Comment const& comment) const;

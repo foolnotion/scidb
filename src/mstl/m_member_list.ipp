@@ -16,6 +16,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
+
 namespace mstl {
 namespace tl {
 namespace bits {
@@ -29,7 +31,6 @@ member_list< type_list<Head, Tail> >::member_list(T0 const& t0, T1 const& t1, T2
 {
 }
 
-
 template <typename Head>
 template <typename T0, typename T1, typename T2>
 inline
@@ -38,6 +39,46 @@ member_list< type_list<Head, null_type> >::member_list(T0 const& t0, T1 const&, 
 {
 }
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename Head, typename Tail>
+inline
+member_list< type_list<Head, Tail> >::member_list(member_list&& ml)
+	:m_head(mstl::move(ml.m_head))
+	,m_tail(mstl::move(ml.m_tail))
+{
+}
+
+
+template <typename Head, typename Tail>
+inline
+member_list< type_list<Head, Tail> >&
+member_list< type_list<Head, Tail> >::operator=(member_list&& ml)
+{
+	m_head = mstl::move(ml.m_head);
+	m_tail = mstl::move(ml.m_tail);
+	return *this;
+}
+
+
+template <typename Head>
+inline
+member_list< type_list<Head, null_type> >::member_list(member_list&& ml)
+	:m_head(mstl::move(ml.m_head))
+{
+}
+
+
+template <typename Head>
+inline
+member_list< type_list<Head, null_type> >&
+member_list< type_list<Head, null_type> >::operator=(member_list&& ml)
+{
+	m_head = mstl::move(ml.m_head);
+	return *this;
+}
+
+#endif
 
 template <typename MemberList, int N>
 inline

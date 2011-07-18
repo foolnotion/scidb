@@ -3088,7 +3088,7 @@ Board::doMove(Move const& m)
 				return;
 
 			case Move::Promote:
-				M_STATIC_CHECK(sizeof(m_progress.side[0].rank) < 7, ImplementPawnProgress);
+				static_assert(sizeof(m_progress.side[0].rank) < 7, "reimplement pawn progress");
 				m_halfMoveClock = 0;
 				m_pawns ^= fromMask;
 				++m_promotions;
@@ -3378,7 +3378,7 @@ Board::undoMove(Move const& m)
 				return;
 
 			case Move::Promote:
-				M_STATIC_CHECK(sizeof(m_progress.side[0].rank) < 7, ImplementPawnProgress);
+				static_assert(sizeof(m_progress.side[0].rank) < 7, "reimplement pawn progress");
 				m_pawns ^= fromMask;
 				m_piece[from] = piece::Pawn;
 				--m_promotions;

@@ -137,7 +137,7 @@ ostream::vformat(char const* fmt, va_list args)
 
 	if (size >= (int)sizeof(buffer))
 	{
-		char* buf = NULL;
+		char* buf = nullptr;
 		size = ::vasprintf(&buf, fmt, args);
 		if (size)
 			write(buf, size);

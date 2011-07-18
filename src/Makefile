@@ -16,7 +16,7 @@ include ../Makefile.in
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
 MAKEFLAGS += --no-print-directory
@@ -197,11 +197,11 @@ $(PROGRAM): tkscidb.o $(LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) $<
 
 cbh2si4.o: cbh2si4.cpp
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
-	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -218,11 +218,12 @@ best_move.o: mstl/m_exception.h
 best_move.o: mstl/m_backtrace.h
 best_move.o: mstl/m_exception.ipp
 best_move.o: mstl/m_utility.h
+best_move.o: mstl/m_type_traits.h
+best_move.o: mstl/m_type_traits.ipp
 best_move.o: mstl/m_utility.ipp
 best_move.o: mstl/m_limits.h
 best_move.o: mstl/m_bit_functions.h
 best_move.o: mstl/m_bit_functions.ipp
-best_move.o: mstl/m_static_check.h
 best_move.o: util/u_crc.h
 best_move.o: util/u_crc.ipp
 best_move.o: mstl/m_byte_order.h
@@ -245,8 +246,6 @@ best_move.o: db/db_home_pawns.h
 best_move.o: db/db_home_pawns.ipp
 best_move.o: mstl/m_map.h
 best_move.o: mstl/m_vector.h
-best_move.o: mstl/m_type_traits.h
-best_move.o: mstl/m_type_traits.ipp
 best_move.o: mstl/m_memblock.h
 best_move.o: mstl/m_memblock.ipp
 best_move.o: mstl/m_vector.ipp
@@ -292,27 +291,26 @@ cbh2si4.o: util/u_base.h
 cbh2si4.o: mstl/m_types.h
 cbh2si4.o: mstl/m_string.h
 cbh2si4.o: mstl/m_string.ipp
+cbh2si4.o: mstl/m_utility.h
+cbh2si4.o: mstl/m_type_traits.h
+cbh2si4.o: mstl/m_type_traits.ipp
+cbh2si4.o: mstl/m_utility.ipp
+cbh2si4.o: mstl/m_limits.h
+cbh2si4.o: mstl/m_bit_functions.h
+cbh2si4.o: mstl/m_bit_functions.ipp
 cbh2si4.o: mstl/m_assert.h
 cbh2si4.o: mstl/m_exception.h
 cbh2si4.o: mstl/m_backtrace.h
 cbh2si4.o: mstl/m_exception.ipp
 cbh2si4.o: db/db_eco.ipp
-cbh2si4.o: mstl/m_static_check.h
 cbh2si4.o: db/db_line.h
 cbh2si4.o: db/db_line.ipp
-cbh2si4.o: mstl/m_utility.h
-cbh2si4.o: mstl/m_utility.ipp
-cbh2si4.o: mstl/m_limits.h
-cbh2si4.o: mstl/m_bit_functions.h
-cbh2si4.o: mstl/m_bit_functions.ipp
 cbh2si4.o: db/db_home_pawns.h
 cbh2si4.o: db/db_common.h
 cbh2si4.o: db/db_common.ipp
 cbh2si4.o: db/db_home_pawns.ipp
 cbh2si4.o: mstl/m_map.h
 cbh2si4.o: mstl/m_vector.h
-cbh2si4.o: mstl/m_type_traits.h
-cbh2si4.o: mstl/m_type_traits.ipp
 cbh2si4.o: mstl/m_memblock.h
 cbh2si4.o: mstl/m_memblock.ipp
 cbh2si4.o: mstl/m_vector.ipp
@@ -416,12 +414,18 @@ code2eco.o: util/u_base.h
 code2eco.o: mstl/m_types.h
 code2eco.o: mstl/m_string.h
 code2eco.o: mstl/m_string.ipp
+code2eco.o: mstl/m_utility.h
+code2eco.o: mstl/m_type_traits.h
+code2eco.o: mstl/m_type_traits.ipp
+code2eco.o: mstl/m_utility.ipp
+code2eco.o: mstl/m_limits.h
+code2eco.o: mstl/m_bit_functions.h
+code2eco.o: mstl/m_bit_functions.ipp
 code2eco.o: mstl/m_assert.h
 code2eco.o: mstl/m_exception.h
 code2eco.o: mstl/m_backtrace.h
 code2eco.o: mstl/m_exception.ipp
 code2eco.o: db/db_eco.ipp
-code2eco.o: mstl/m_static_check.h
 dump_eco.o: db/db_board.h
 dump_eco.o: db/db_move_list.h
 dump_eco.o: db/db_move.h
@@ -434,11 +438,12 @@ dump_eco.o: mstl/m_exception.h
 dump_eco.o: mstl/m_backtrace.h
 dump_eco.o: mstl/m_exception.ipp
 dump_eco.o: mstl/m_utility.h
+dump_eco.o: mstl/m_type_traits.h
+dump_eco.o: mstl/m_type_traits.ipp
 dump_eco.o: mstl/m_utility.ipp
 dump_eco.o: mstl/m_limits.h
 dump_eco.o: mstl/m_bit_functions.h
 dump_eco.o: mstl/m_bit_functions.ipp
-dump_eco.o: mstl/m_static_check.h
 dump_eco.o: util/u_crc.h
 dump_eco.o: util/u_crc.ipp
 dump_eco.o: mstl/m_byte_order.h
@@ -459,8 +464,6 @@ dump_eco.o: db/db_home_pawns.h
 dump_eco.o: db/db_home_pawns.ipp
 dump_eco.o: mstl/m_map.h
 dump_eco.o: mstl/m_vector.h
-dump_eco.o: mstl/m_type_traits.h
-dump_eco.o: mstl/m_type_traits.ipp
 dump_eco.o: mstl/m_memblock.h
 dump_eco.o: mstl/m_memblock.ipp
 dump_eco.o: mstl/m_vector.ipp
@@ -507,12 +510,18 @@ eco2code.o: util/u_base.h
 eco2code.o: mstl/m_types.h
 eco2code.o: mstl/m_string.h
 eco2code.o: mstl/m_string.ipp
+eco2code.o: mstl/m_utility.h
+eco2code.o: mstl/m_type_traits.h
+eco2code.o: mstl/m_type_traits.ipp
+eco2code.o: mstl/m_utility.ipp
+eco2code.o: mstl/m_limits.h
+eco2code.o: mstl/m_bit_functions.h
+eco2code.o: mstl/m_bit_functions.ipp
 eco2code.o: mstl/m_assert.h
 eco2code.o: mstl/m_exception.h
 eco2code.o: mstl/m_backtrace.h
 eco2code.o: mstl/m_exception.ipp
 eco2code.o: db/db_eco.ipp
-eco2code.o: mstl/m_static_check.h
 extend_eco.o: db/db_board.h
 extend_eco.o: db/db_move_list.h
 extend_eco.o: db/db_move.h
@@ -525,11 +534,12 @@ extend_eco.o: mstl/m_exception.h
 extend_eco.o: mstl/m_backtrace.h
 extend_eco.o: mstl/m_exception.ipp
 extend_eco.o: mstl/m_utility.h
+extend_eco.o: mstl/m_type_traits.h
+extend_eco.o: mstl/m_type_traits.ipp
 extend_eco.o: mstl/m_utility.ipp
 extend_eco.o: mstl/m_limits.h
 extend_eco.o: mstl/m_bit_functions.h
 extend_eco.o: mstl/m_bit_functions.ipp
-extend_eco.o: mstl/m_static_check.h
 extend_eco.o: util/u_crc.h
 extend_eco.o: util/u_crc.ipp
 extend_eco.o: mstl/m_byte_order.h
@@ -545,8 +555,6 @@ extend_eco.o: db/db_eco.h
 extend_eco.o: db/db_eco.ipp
 extend_eco.o: mstl/m_map.h
 extend_eco.o: mstl/m_vector.h
-extend_eco.o: mstl/m_type_traits.h
-extend_eco.o: mstl/m_type_traits.ipp
 extend_eco.o: mstl/m_memblock.h
 extend_eco.o: mstl/m_memblock.ipp
 extend_eco.o: mstl/m_vector.ipp
@@ -593,11 +601,12 @@ permute_eco.o: mstl/m_exception.h
 permute_eco.o: mstl/m_backtrace.h
 permute_eco.o: mstl/m_exception.ipp
 permute_eco.o: mstl/m_utility.h
+permute_eco.o: mstl/m_type_traits.h
+permute_eco.o: mstl/m_type_traits.ipp
 permute_eco.o: mstl/m_utility.ipp
 permute_eco.o: mstl/m_limits.h
 permute_eco.o: mstl/m_bit_functions.h
 permute_eco.o: mstl/m_bit_functions.ipp
-permute_eco.o: mstl/m_static_check.h
 permute_eco.o: util/u_crc.h
 permute_eco.o: util/u_crc.ipp
 permute_eco.o: mstl/m_byte_order.h
@@ -610,8 +619,6 @@ permute_eco.o: db/db_eco.h
 permute_eco.o: db/db_eco.ipp
 permute_eco.o: mstl/m_map.h
 permute_eco.o: mstl/m_vector.h
-permute_eco.o: mstl/m_type_traits.h
-permute_eco.o: mstl/m_type_traits.ipp
 permute_eco.o: mstl/m_memblock.h
 permute_eco.o: mstl/m_memblock.ipp
 permute_eco.o: mstl/m_vector.ipp
@@ -647,11 +654,12 @@ pgn_split_eco.o: mstl/m_exception.h
 pgn_split_eco.o: mstl/m_backtrace.h
 pgn_split_eco.o: mstl/m_exception.ipp
 pgn_split_eco.o: mstl/m_utility.h
+pgn_split_eco.o: mstl/m_type_traits.h
+pgn_split_eco.o: mstl/m_type_traits.ipp
 pgn_split_eco.o: mstl/m_utility.ipp
 pgn_split_eco.o: mstl/m_limits.h
 pgn_split_eco.o: mstl/m_bit_functions.h
 pgn_split_eco.o: mstl/m_bit_functions.ipp
-pgn_split_eco.o: mstl/m_static_check.h
 pgn_split_eco.o: db/db_producer.ipp
 pgn_split_eco.o: db/db_consumer.h
 pgn_split_eco.o: db/db_provider.h
@@ -680,8 +688,6 @@ pgn_split_eco.o: mstl/m_memblock.ipp
 pgn_split_eco.o: mstl/m_stack.ipp
 pgn_split_eco.o: mstl/m_uninitialized.h
 pgn_split_eco.o: mstl/m_uninitialized.ipp
-pgn_split_eco.o: mstl/m_type_traits.h
-pgn_split_eco.o: mstl/m_type_traits.ipp
 pgn_split_eco.o: mstl/m_algobase.h
 pgn_split_eco.o: mstl/m_algobase.ipp
 pgn_split_eco.o: mstl/m_construct.h
@@ -767,7 +773,6 @@ tkscidb.o: mstl/m_utility.ipp
 tkscidb.o: mstl/m_limits.h
 tkscidb.o: mstl/m_bit_functions.h
 tkscidb.o: mstl/m_bit_functions.ipp
-tkscidb.o: mstl/m_static_check.h
 tkscidb.o: mstl/m_assert.h
 tkscidb.o: mstl/m_vector.ipp
 tkscidb.o: mstl/m_uninitialized.h

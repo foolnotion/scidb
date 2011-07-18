@@ -302,7 +302,7 @@ byte_buf::operator=(byte_buf const& buf)
 	{
 		if (m_size < buf.m_size)
 		{
-			delete m_data;
+			delete [] m_data;
 			m_data = new value_type[buf.m_size];
 		}
 

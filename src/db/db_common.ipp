@@ -26,7 +26,6 @@
 
 #include "m_assert.h"
 #include "m_utility.h"
-#include "m_static_check.h"
 
 #include <string.h>
 
@@ -194,11 +193,11 @@ inline
 unsigned
 value(ID result)
 {
-	M_STATIC_CHECK(Unknown == 0, ReimplementationNeeded);
-	M_STATIC_CHECK(White == 1, ReimplementationNeeded);
-	M_STATIC_CHECK(Black == 2, ReimplementationNeeded);
-	M_STATIC_CHECK(Draw == 3, ReimplementationNeeded);
-	M_STATIC_CHECK(Lost == 4, ReimplementationNeeded);
+	static_assert(Unknown == 0, "reimplementation required");
+	static_assert(White == 1, "reimplementation required");
+	static_assert(Black == 2, "reimplementation required");
+	static_assert(Draw == 3, "reimplementation required");
+	static_assert(Lost == 4, "reimplementation required");
 
 	static unsigned const Value[5] = { 0, 2, 0, 1, 0 };
 
@@ -214,7 +213,7 @@ inline
 bool
 Side::test(uint8_t r, uint8_t f)
 {
-	M_STATIC_CHECK(sizeof(rank) == 2, ReimplementationNeeded);
+	static_assert(sizeof(rank) == 2, "reimplementation required");
 	return ((1 << r) & ((1 << sq::Rank2) | (1 << sq::Rank3))) && rank[r - 1] & (1 << f);
 }
 
@@ -229,7 +228,7 @@ inline
 void
 Side::add(uint8_t s)
 {
-	M_STATIC_CHECK(sizeof(rank) == 2, ReimplementationNeeded);
+	static_assert(sizeof(rank) == 2, "reimplementation required");
 
 	sq::Rank r = sq::rank(s);
 
@@ -241,7 +240,7 @@ inline
 void
 Side::remove(uint8_t s)
 {
-	M_STATIC_CHECK(sizeof(rank) == 2, ReimplementationNeeded);
+	static_assert(sizeof(rank) == 2, "reimplementation required");
 
 	sq::Rank r = sq::rank(s);
 

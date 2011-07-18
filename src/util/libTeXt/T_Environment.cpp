@@ -37,7 +37,6 @@
 #include "T_ReadAgainProducer.h"
 #include "T_TextConsumer.h"
 
-#include "m_static_check.h"
 #include "m_assert.h"
 #include "m_cast.h"
 #include "m_limits.h"
@@ -223,19 +222,19 @@ public:
 	{
 	}
 
-	Source source() const
+	Source source() const override
 	{
 		return m_tokenizer.source();
 	}
 
-	TokenP next(Environment& env);
+	TokenP next(Environment& env) override;
 
-	mstl::string currentDescription() const
+	mstl::string currentDescription() const override
 	{
 		return m_tokenizer.currentDescription();
 	}
 
-	unsigned lineno() const
+	unsigned lineno() const override
 	{
 		return m_tokenizer.lineno();
 	}
@@ -254,22 +253,22 @@ class EmptyProducer : public Producer
 {
 public:
 
-	unsigned lineno() const
+	unsigned lineno() const override
 	{
 		return 0;
 	}
 
-	Source source() const
+	Source source() const override
 	{
 		return File;	// it doesn't matter
 	}
 
-	TokenP next(Environment&)
+	TokenP next(Environment&) override
 	{
 		return TokenP();
 	}
 
-	mstl::string currentDescription() const
+	mstl::string currentDescription() const override
 	{
 		return mstl::string::empty_string;
 	}
@@ -282,23 +281,23 @@ public:
 
 	struct Exception {};
 
-	unsigned lineno() const
+	unsigned lineno() const override
 	{
 		return 0;
 	}
 
-	Source source() const
+	Source source() const override
 	{
 		return File;	// it doesn't matter
 	}
 
-	TokenP next(Environment&)
+	TokenP next(Environment&) override
 	{
 		throw Exception();
 		return TokenP();
 	}
 
-	mstl::string currentDescription() const
+	mstl::string currentDescription() const override
 	{
 		return mstl::string::empty_string;
 	}
@@ -307,11 +306,11 @@ public:
 
 struct MyConsumer : public Consumer
 {
-	void put(unsigned char)					{ M_RAISE("no consumer"); }
-	void put(mstl::string const&)			{ M_RAISE("no consumer"); }
+	void put(unsigned char) override					{ M_RAISE("no consumer"); }
+	void put(mstl::string const&) override			{ M_RAISE("no consumer"); }
 
-	void out(mstl::string const&)			{ M_RAISE("no consumer"); }
-	void log(mstl::string const&, bool)	{ M_RAISE("no consumer"); }
+	void out(mstl::string const&) override			{ M_RAISE("no consumer"); }
+	void log(mstl::string const&, bool) override	{ M_RAISE("no consumer"); }
 };
 
 
@@ -323,17 +322,17 @@ public:
 
 	MyFilter(ConsumerP& consumer) :OutputFilter(0), m_consumer(consumer) {}
 
-	void put(Environment&, unsigned char c)
+	void put(Environment&, unsigned char c) override
 	{
 		m_consumer->put(c);
 	}
 
-	void put(Environment&, mstl::string const& s)
+	void put(Environment&, mstl::string const& s) override
 	{
 		m_consumer->put(s);
 	}
 
-	void put(Environment&, Value number)
+	void put(Environment&, Value number) override
 	{
 		m_consumer->put(mstl::string::cast(number));
 	}
@@ -349,7 +348,7 @@ struct PrimitiveTokenGenerator : public TokenBuffer::TokenGenerator
 	PrimitiveTokenGenerator(RefID id) :m_id(id) {}
 	RefID m_id;
 
-	Token* newToken(mstl::string const& name, RefID) const
+	Token* newToken(mstl::string const& name, RefID) const override
 	{
 		return new UndefinedToken(name, m_id);
 	}
@@ -358,7 +357,7 @@ struct PrimitiveTokenGenerator : public TokenBuffer::TokenGenerator
 
 struct UndefinedTokenGenerator : public TokenBuffer::TokenGenerator
 {
-	Token* newToken(mstl::string const& name, RefID refID) const
+	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
 		return new UndefinedToken(name, mstl::max(refID, RefID(Token::T_FirstGenericType)));
 	}
@@ -367,7 +366,7 @@ struct UndefinedTokenGenerator : public TokenBuffer::TokenGenerator
 
 struct ParameterTokenGenerator : public TokenBuffer::TokenGenerator
 {
-	Token* newToken(mstl::string const& name, RefID refID) const
+	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
 		return new ParameterToken(name, refID);
 	}
@@ -376,7 +375,7 @@ struct ParameterTokenGenerator : public TokenBuffer::TokenGenerator
 
 struct VariableTokenGenerator : public TokenBuffer::TokenGenerator
 {
-	Token* newToken(mstl::string const& name, RefID refID) const
+	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
 		return new VariableToken(name, refID);
 	}
@@ -718,7 +717,7 @@ Environment::Impl::bindMacro(mstl::string const& name, TokenP token, Value defau
 
 	if (type == Token::T_Generic || type == Token::T_Value)
 	{
-		M_STATIC_CHECK(sizeof(TokenType) >= sizeof(RefID), Possible_Overflow);
+		static_assert(sizeof(TokenType) >= sizeof(RefID), "possible overflow");
 		dynamic_cast<Generic*>(token.get())->setType(type = TokenType(refID));
 	}
 

@@ -34,6 +34,7 @@
 
 #include "m_map.h"
 #include "m_chunk_allocator.h"
+#include "m_utility.h"
 
 namespace TeXt { class Receptacle; }
 
@@ -44,7 +45,7 @@ class NamebaseEvent;
 class NamebasePlayer;
 class Filter;
 
-class TournamentTable
+class TournamentTable : public mstl::noncopyable
 {
 public:
 

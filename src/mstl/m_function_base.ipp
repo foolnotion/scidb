@@ -16,7 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "m_static_check.h"
+#include "m_types.h"
 
 namespace mstl {
 namespace fn_ {
@@ -26,7 +26,7 @@ function_base::function_base(void* p)
 	:p_(p)
 	,m_(0)
 {
-	M_STATIC_CHECK(sizeof(p_) == sizeof(f_), Implementation_Problem);
+	static_assert(sizeof(p_) == sizeof(f_), "implementation problem");
 }
 
 
@@ -35,7 +35,7 @@ function_base::function_base(void (*f)())
 	:f_(f)
 	,m_(0)
 {
-	M_STATIC_CHECK(sizeof(p_) == sizeof(f_), Implementation_Problem);
+	static_assert(sizeof(p_) == sizeof(f_), "implementation problem");
 }
 
 
@@ -44,7 +44,7 @@ function_base::function_base(void (function_base::*m)(), void* p)
 	:p_(p)
 	,m_(m)
 {
-	M_STATIC_CHECK(sizeof(p_) == sizeof(f_), Implementation_Problem);
+	static_assert(sizeof(p_) == sizeof(f_), "implementation problem");
 }
 
 

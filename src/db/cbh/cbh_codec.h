@@ -57,42 +57,44 @@ public:
 	Codec();
 	~Codec() throw();
 
-	bool encodingFailed() const;
+	bool encodingFailed() const override;
 
-	Format format() const;
+	Format format() const override;
 
-	unsigned maxGameRecordLength() const;
-	unsigned maxGameLength() const;
-	unsigned maxGameCount() const;
-	unsigned maxPlayerCount() const;
-	unsigned maxEventCount() const;
-	unsigned maxSiteCount() const;
-	unsigned maxAnnotatorCount() const;
-	unsigned minYear() const;
-	unsigned maxYear() const;
-	unsigned maxDescriptionLength() const;
+	unsigned maxGameRecordLength() const override;
+	unsigned maxGameLength() const override;
+	unsigned maxGameCount() const override;
+	unsigned maxPlayerCount() const override;
+	unsigned maxEventCount() const override;
+	unsigned maxSiteCount() const override;
+	unsigned maxAnnotatorCount() const override;
+	unsigned minYear() const override;
+	unsigned maxYear() const override;
+	unsigned maxDescriptionLength() const override;
 
-	unsigned gameFlags() const;
+	unsigned gameFlags() const override;
 
-	mstl::string const& extension() const;
-	mstl::string const& encoding() const;
-	void filterTag(TagSet& tags, tag::ID tag, Section section) const;
+	mstl::string const& extension() const override;
+	mstl::string const& encoding() const override;
+	void filterTag(TagSet& tags, tag::ID tag, Section section) const override;
 
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& encoding,
-					util::Progress& progress);
-	void reloadDescription(mstl::string const& rootname);
-	void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
+					util::Progress& progress) override;
+	void reloadDescription(mstl::string const& rootname) override;
+	void reloadNamebases(mstl::string const& rootname, util::Progress& progress) override;
 
-	void close();
+	void close() override;
 
-	void doDecoding(GameData& data, GameInfo& info);
-	save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info);
+	void doDecoding(GameData& data, GameInfo& info) override;
+	save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 
-	void reset();
-	void setEncoding(mstl::string const& encoding);
+	void reset() override;
+	void setEncoding(mstl::string const& encoding) override;
 
-	Move findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations);
+	Move findExactPositionAsync(	GameInfo const& info,
+											Board const& position,
+											bool skipVariations) override;
 
 private:
 

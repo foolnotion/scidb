@@ -30,12 +30,12 @@ public:
 
 	InvalidToken(unsigned char c);
 
-	Type type() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
-	Value value() const;
+	Type type() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
+	Value value() const override;
 
-	void perform(Environment& env);
+	void perform(Environment& env) override;
 
 private:
 

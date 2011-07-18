@@ -36,10 +36,11 @@
 #include "m_vector.h"
 #include "m_string.h"
 #include "m_chunk_allocator.h"
+#include "m_utility.h"
 
 namespace db {
 
-class DatabaseContent
+class DatabaseContent : public mstl::noncopyable
 {
 public:
 
@@ -65,11 +66,6 @@ public:
 	mstl::string		m_description;
 	Allocator 			m_allocator;
 	Statistic			m_statistic;
-
-private:
-
-	DatabaseContent(DatabaseContent const&);
-	DatabaseContent& operator=(DatabaseContent const&);
 };
 
 } // namespace db

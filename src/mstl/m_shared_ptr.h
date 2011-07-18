@@ -48,6 +48,11 @@ public:
 	template <class U> shared_ptr(shared_ptr<U> const& sp);
 	template <class U> shared_ptr(auto_ptr<U>& ap);
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	shared_ptr(shared_ptr&& p);
+	shared_ptr& operator=(shared_ptr&& p);
+#endif
+
 	// assignment
 	shared_ptr& operator=(shared_ptr const& sp);
 	template <class U> shared_ptr<T>& operator=(shared_ptr<U> const& sp);

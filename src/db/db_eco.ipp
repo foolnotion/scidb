@@ -25,7 +25,6 @@
 // ======================================================================
 
 #include "m_assert.h"
-#include "m_static_check.h"
 
 namespace db {
 
@@ -33,7 +32,7 @@ inline
 Eco::Eco()
 	:m_code(0)
 {
-	M_STATIC_CHECK(Bit_Size_Per_Subcode >= 16, Not_Enough_Room_For_16bit_Move);
+	static_assert(Bit_Size_Per_Subcode >= 16, "not enough room for 16bit move");
 }
 
 

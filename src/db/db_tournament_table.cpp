@@ -42,7 +42,6 @@
 #include "m_ref_counted_ptr.h"
 #include "m_ref_counter.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 #include "m_bitset.h"
 #include "m_limits.h"
 #include "m_algorithm.h"

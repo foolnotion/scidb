@@ -30,11 +30,11 @@ public:
 
 	LeftBraceToken();
 
-	Type type() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
+	Type type() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
 
-	void perform(Environment& env);
+	void perform(Environment& env) override;
 };
 
 } // namespace TeXt

@@ -59,31 +59,31 @@ public:
 					unsigned flags = Default_Flags,
 					unsigned lineLength = 80);
 
-	format::Type format() const;
+	format::Type format() const override;
 
 	void writeCommnentLine(mstl::string const& content);
 
-	void writeTag(mstl::string const& name, mstl::string const& value);
-	void writePrecedingComment(Comment const& comment, MarkSet const& marks);
-	void writeTrailingComment(Comment const& comment);
+	void writeTag(mstl::string const& name, mstl::string const& value) override;
+	void writePrecedingComment(Comment const& comment, MarkSet const& marks) override;
+	void writeTrailingComment(Comment const& comment) override;
 	void writeMove(Move const& move,
 						mstl::string const& moveNumber,
 						Annotation const& annotation,
 						MarkSet const& marks,
 						Comment const& preComment,
-						Comment const& comment);
+						Comment const& comment) override;
 
-	void writeBeginGame(unsigned number);
-	void writeEndGame();
-	void writeBeginMoveSection();
-	void writeEndMoveSection(result::ID result);
-	void writeBeginVariation(unsigned level);
-	void writeEndVariation(unsigned level);
-	void writeBeginComment();
-	void writeEndComment();
+	void writeBeginGame(unsigned number) override;
+	void writeEndGame() override;
+	void writeBeginMoveSection() override;
+	void writeEndMoveSection(result::ID result) override;
+	void writeBeginVariation(unsigned level) override;
+	void writeEndVariation(unsigned level) override;
+	void writeBeginComment() override;
+	void writeEndComment() override;
 
-	void start();
-	void finish();
+	void start() override;
+	void finish() override;
 
 private:
 

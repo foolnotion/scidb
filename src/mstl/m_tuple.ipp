@@ -16,7 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "m_static_check.h"
+#include "m_utility.h"
 
 namespace mstl {
 
@@ -32,7 +32,7 @@ inline
 tuple<T0,T1,T2>::tuple(T0 const& t0)
 	:m_members(t0, null_type(), null_type())
 {
-	M_STATIC_CHECK(tl::length<type_list>::Value == 1, Wrong_Numbers_Of_Arguments);
+	static_assert(tl::length<type_list>::Value == 1, "wrong numbers of arguments");
 }
 
 
@@ -41,7 +41,7 @@ inline
 tuple<T0,T1,T2>::tuple(T0 const& t0, T1 const& t1)
 	:m_members(t0, t1, null_type())
 {
-	M_STATIC_CHECK(tl::length<type_list>::Value == 2, Wrong_Numbers_Of_Arguments);
+	static_assert(tl::length<type_list>::Value == 2, "wrong numbers of arguments");
 }
 
 
@@ -50,19 +50,7 @@ inline
 tuple<T0,T1,T2>::tuple(T0 const& t0, T1 const& t1, T2 const& t2)
 	:m_members(t0, t1, t2)
 {
-	M_STATIC_CHECK(tl::length<type_list>::Value == 3, Wrong_Numbers_Of_Arguments);
-}
-
-
-template <typename T0, typename T1, typename T2>
-inline
-tuple<T0,T1,T2>&
-tuple<T0,T1,T2>::operator=(tuple const& t)
-{
-	get<0>() = t.get<0>();
-	get<1>() = t.get<1>();
-	get<2>() = t.get<2>();
-	return *this;
+	static_assert(tl::length<type_list>::Value == 3, "wrong numbers of arguments");
 }
 
 
@@ -72,8 +60,8 @@ inline
 typename tl::type_at<typename tuple<T0,T1,T2>::type_list,N>::result const&
 tuple<T0,T1,T2>::get() const
 {
-	M_STATIC_CHECK(N >= 0, Negative_Index_Not_Allowed);
-	M_STATIC_CHECK(N < tl::length<type_list>::Value, Index_Too_Large);
+	static_assert(N >= 0, "negative index is not allowed");
+	static_assert(N < tl::length<type_list>::Value, "index too large");
 
 	return tl::bits::accessor<members,N>::get(m_members);
 }
@@ -85,8 +73,8 @@ inline
 typename tl::type_at<typename tuple<T0,T1,T2>::type_list,N>::result&
 tuple<T0,T1,T2>::get()
 {
-	M_STATIC_CHECK(N >= 0, Negative_Index_Not_Allowed);
-	M_STATIC_CHECK(N < tl::length<type_list>::Value, Index_Too_Large);
+	static_assert(N >= 0, "negative index is not allowed");
+	static_assert(N < tl::length<type_list>::Value, "index too large");
 
 	return tl::bits::accessor<members,N>::get(m_members);
 }
@@ -108,6 +96,25 @@ tuple<T0,T1,T2>::operator!=(tuple const& t) const
 {
 	return !operator==(t);
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename T0, typename T1, typename T2>
+inline
+tuple<T0,T1,T2>::tuple(tuple&& t) : m_members(mstl::move(t.m_members)) {}
+
+
+template <typename T0, typename T1, typename T2>
+inline
+tuple<T0,T1,T2>&
+tuple<T0,T1,T2>::operator=(tuple&& t)
+{
+	m_members = mstl::move(t.m_members);
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

@@ -43,7 +43,6 @@
 #include "m_bitfield.h"
 #include "m_assert.h"
 #include "m_stdio.h"
-#include "m_static_check.h"
 
 #include <string.h>
 

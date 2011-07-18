@@ -130,6 +130,28 @@ auto_ptr<T>::operator by_ref()
 	return by_ref(p);
 }
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <class T>
+inline
+auto_ptr<T>::auto_ptr(auto_ptr&& p)
+	:m_p(p.m_p)
+{
+	p.m_p = 0;
+}
+
+
+template <class T>
+inline
+auto_ptr<T>&
+auto_ptr<T>::operator=(auto_ptr&& p)
+{
+	swap(m_p, p.m_p);
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

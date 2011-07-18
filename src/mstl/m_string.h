@@ -69,6 +69,11 @@ public:
 	explicit string(size_type n);
 	~string() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	string(string&& str);
+	string& operator=(string&& str);
+#endif
+
 	operator const_pointer () const;
 
 	// NOTE: we have to use 'int' instead of 'size_type', otherwise

@@ -36,7 +36,6 @@
 
 #include "m_bitfield.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 using namespace db;
 using namespace db::sci;
@@ -52,7 +51,7 @@ struct TagLookup
 {
 	TagLookup()
 	{
-		M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(uint64_t), BitSet_Size_Exceeded);
+		static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 		m_lookup.set(tag::Event);
 		m_lookup.set(tag::Site);
@@ -292,11 +291,11 @@ Encoder::encodePawn(Move const& move)
 		// move.promotedPiece() must be Queen=2, Rook=3, Bishop=4 or Knight=5.
 		// We add 3 for Queen, 6 for Rook, 9 for Bishop, 12 for Knight.
 
-		M_STATIC_CHECK(	piece::Queen == 2
+		static_assert(	piece::Queen == 2
 							&& piece::Rook == 3
 							&& piece::Bishop == 4
 							&& piece::Knight == 5,
-							Reimplementation_Needed);
+							"reimplementation required");
 
 		M_ASSERT(2 <= move.promoted() && move.promoted() <= 5);
 		value += 3*(move.promoted() - 1);

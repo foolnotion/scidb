@@ -33,9 +33,9 @@ public:
 
 	UserInput(mstl::string const& text);
 
-	Source source() const;
+	Source source() const override;
 
-	bool readNextLine(mstl::string& result);
+	bool readNextLine(mstl::string& result) override;
 
 private:
 

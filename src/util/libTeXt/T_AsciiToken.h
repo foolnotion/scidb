@@ -29,15 +29,15 @@ public:
 
 	AsciiToken(unsigned char c);
 
-	Type type() const;
-	RefID refID() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
-	Value value() const;
+	Type type() const override;
+	RefID refID() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
+	Value value() const override;
 
-	void traceCommand(Environment& env) const;
-	TokenP performThe(Environment& env);
-	void perform(Environment& env);
+	void traceCommand(Environment& env) const override;
+	TokenP performThe(Environment& env) override;
+	void perform(Environment& env) override;
 
 private:
 

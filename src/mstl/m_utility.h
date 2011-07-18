@@ -19,7 +19,8 @@
 #ifndef _mstl_utility_included
 #define _mstl_utility_included
 
-#include <stddef.h>
+#include "m_types.h"
+#include "m_type_traits.h"
 
 namespace mstl {
 
@@ -27,15 +28,23 @@ namespace noncopyable_	// protection from unintended ADL
 {
 	class noncopyable
 	{
-		protected:
+	protected:
 
-			noncopyable() {}
-			~noncopyable() {}
+		noncopyable() {}
+		~noncopyable() {}
 
-		private:
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 
-			noncopyable( const noncopyable& );
-			const noncopyable& operator=( const noncopyable& );
+		noncopyable(noncopyable&&) = delete;
+		noncopyable& operator=(noncopyable&&) = delete;
+
+#else
+
+	private:
+
+		noncopyable(noncopyable const&);
+		const noncopyable& operator=(noncopyable const&);
+#endif
 	};
 }
 
@@ -67,9 +76,22 @@ template <typename T> unsigned log2_ceil(T x);
 template <typename T> bool is_between(T x, T a, T b);
 
 template <typename T> void swap(T& a, T& b);
+template <typename T, size_t N> void swap(T(& a)[N], T(& b)[N]);
 template <typename T> T advance(T i, size_t offset);
 template <typename T> T align(T n, size_t grain);
 template <typename T> ptrdiff_t distance(T first, T last);
+
+#if __GNUC_PREREQ(4,3)
+
+template<typename T> typename mstl::remove_reference<T>::type&& move(T&& t);
+
+# define M_CXX_MOVE(x) ::mstl::move(x)
+
+#else
+
+# define M_CXX_MOVE(x) (x)
+
+#endif
 
 } // namespace mstl
 

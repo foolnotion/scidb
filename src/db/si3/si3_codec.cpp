@@ -50,7 +50,6 @@
 #include "m_fstream.h"
 #include "m_utility.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include "m_stdio.h"
 
@@ -910,9 +909,9 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 {
 	M_ASSERT(item.gameRecordLength() <= maxGameRecordLength());
 
-	M_STATIC_CHECK(GameInfo::Flag_Deleted == 1 <<  0, Flags_Have_Changed);
-	M_STATIC_CHECK(GameInfo::Flag_User1   == 1 << 13, Flags_Have_Changed);
-	M_STATIC_CHECK(GameInfo::Flag_User6   == 1 << 18, Flags_Have_Changed);
+	static_assert(GameInfo::Flag_Deleted == 1 <<  0, "GameInfo flags have changed");
+	static_assert(GameInfo::Flag_User1   == 1 << 13, "GameInfo flags have changed");
+	static_assert(GameInfo::Flag_User6   == 1 << 18, "GameInfo flags have changed");
 
 	uint16_t flags = (item.m_gameFlags & ((1 << 13) - 1)) << 3;
 
@@ -1107,9 +1106,9 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 void
 Codec::decodeIndex(ByteStream& strm, unsigned index)
 {
-	M_STATIC_CHECK(GameInfo::Flag_Deleted == 1 <<  0, Flags_Have_Changed);
-	M_STATIC_CHECK(GameInfo::Flag_User1   == 1 << 13, Flags_Have_Changed);
-	M_STATIC_CHECK(GameInfo::Flag_User6   == 1 << 18, Flags_Have_Changed);
+	static_assert(GameInfo::Flag_Deleted == 1 <<  0, "GameInfo flags have changed");
+	static_assert(GameInfo::Flag_User1   == 1 << 13, "GameInfo flags have changed");
+	static_assert(GameInfo::Flag_User6   == 1 << 18, "GameInfo flags have changed");
 
 	GameInfo& item = gameInfo(index);
 
@@ -1496,10 +1495,10 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 	unsigned maxFreq[Namebase::Round + 1];
 	unsigned total = 0;
 
-	M_STATIC_CHECK(Namebase::Player < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Event  < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Site   < U_NUMBER_OF(count), Index_Out_Of_Range);
-	M_STATIC_CHECK(Namebase::Round  < U_NUMBER_OF(count), Index_Out_Of_Range);
+	static_assert(Namebase::Player < U_NUMBER_OF(count), "index out of range");
+	static_assert(Namebase::Event  < U_NUMBER_OF(count), "index out of range");
+	static_assert(Namebase::Site   < U_NUMBER_OF(count), "index out of range");
+	static_assert(Namebase::Round  < U_NUMBER_OF(count), "index out of range");
 
 	stream.set_bufsize(65536);
 	ByteIStream bstrm(stream);

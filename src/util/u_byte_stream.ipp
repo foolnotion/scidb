@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace util {
@@ -194,6 +195,38 @@ ByteStream::seekg(unsigned offset)
 	M_REQUIRE(offset <= capacity());
 	m_getp = m_base + offset;
 }
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+ByteStream::ByteStream(ByteStream&& strm)
+	:m_base(strm.m_base)
+	,m_getp(strm.m_getp)
+	,m_putp(strm.m_putp)
+	,m_endp(strm.m_endp)
+	,m_owner(strm.m_owner)
+{
+	strm.m_owner = false;
+}
+
+
+inline
+ByteStream&
+ByteStream::operator=(ByteStream&& strm)
+{
+	if (this != &strm)
+	{
+		mstl::swap(m_base, strm.m_base);
+		m_getp = strm.m_getp;
+		m_putp = strm.m_putp;
+		m_endp = strm.m_endp;
+		mstl::swap(m_owner, strm.m_owner);
+	}
+
+	return *this;
+}
+
+#endif
 
 } // namespace db
 

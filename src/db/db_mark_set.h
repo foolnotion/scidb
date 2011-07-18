@@ -41,6 +41,16 @@ public:
 
 	MarkSet();
 
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	MarkSet(MarkSet const&) = default;
+	MarkSet& operator=(MarkSet const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	MarkSet(MarkSet&& set);
+	MarkSet& operator=(MarkSet&& set);
+#endif
+
 	bool operator==(MarkSet const& marks) const;
 	bool operator!=(MarkSet const& marks) const;
 

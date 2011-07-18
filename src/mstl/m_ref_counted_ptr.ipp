@@ -269,6 +269,29 @@ swap(ref_counted_ptr<T>& lhs, ref_counted_ptr<T>& rhs)
 	lhs.swap(rhs);
 }
 
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <class T>
+inline
+ref_counted_ptr<T>::ref_counted_ptr(ref_counted_ptr&& p)
+	:m_p(p.m_p)
+{
+	p.m_p = 0;
+}
+
+
+template <class T>
+inline
+ref_counted_ptr<T>&
+ref_counted_ptr<T>::operator=(ref_counted_ptr&& p)
+{
+	mstl::swap(m_p, p.m_p);
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

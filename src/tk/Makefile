@@ -57,7 +57,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -65,35 +65,6 @@ $(LIB).a: $(OBJS)
 tk_busy.o: tk_init.h
 tk_busy.o: ../tcl/tcl_base.h
 tk_busy.o: ../tcl/tcl_base.ipp
-tk_busy.o: ../mstl/m_hash.h
-tk_busy.o: ../mstl/m_vector.h
-tk_busy.o: ../mstl/m_type_traits.h
-tk_busy.o: ../mstl/m_type_traits.ipp
-tk_busy.o: ../mstl/m_types.h
-tk_busy.o: ../mstl/m_memblock.h
-tk_busy.o: ../mstl/m_memblock.ipp
-tk_busy.o: ../mstl/m_utility.h
-tk_busy.o: ../mstl/m_utility.ipp
-tk_busy.o: ../mstl/m_limits.h
-tk_busy.o: ../mstl/m_bit_functions.h
-tk_busy.o: ../mstl/m_bit_functions.ipp
-tk_busy.o: ../mstl/m_static_check.h
-tk_busy.o: ../mstl/m_assert.h
-tk_busy.o: ../mstl/m_exception.h
-tk_busy.o: ../mstl/m_backtrace.h
-tk_busy.o: ../mstl/m_exception.ipp
-tk_busy.o: ../mstl/m_vector.ipp
-tk_busy.o: ../mstl/m_uninitialized.h
-tk_busy.o: ../mstl/m_uninitialized.ipp
-tk_busy.o: ../mstl/m_algobase.h
-tk_busy.o: ../mstl/m_algobase.ipp
-tk_busy.o: ../mstl/m_construct.h
-tk_busy.o: ../mstl/m_construct.ipp
-tk_busy.o: ../mstl/m_pair.h
-tk_busy.o: ../mstl/m_pair.ipp
-tk_busy.o: ../mstl/m_hash.ipp
-tk_busy.o: ../mstl/m_string.h
-tk_busy.o: ../mstl/m_string.ipp
 tk_busy.o: tk8.5/tkInt.h
 tk_busy.o: tk8.5/tkPort.h
 tk_busy.o: tk8.5/tkUnixPort.h
@@ -121,7 +92,6 @@ tk_image.o: ../mstl/m_utility.ipp
 tk_image.o: ../mstl/m_limits.h
 tk_image.o: ../mstl/m_bit_functions.h
 tk_image.o: ../mstl/m_bit_functions.ipp
-tk_image.o: ../mstl/m_static_check.h
 tk_image.o: ../mstl/m_assert.h
 tk_image.o: ../mstl/m_exception.h
 tk_image.o: ../mstl/m_backtrace.h
@@ -188,6 +158,10 @@ tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h
 tk_twm.o: tk_init.h
+tk_twm.o: tk8.5/tkInt.h
+tk_twm.o: tk8.5/tkPort.h
+tk_twm.o: tk8.5/tkUnixPort.h
+tk_twm.o: tk8.5/tkIntDecls.h
 tk_twm.o: ../tcl/tcl_exception.h
 tk_twm.o: ../util/u_exception.h
 tk_twm.o: ../mstl/m_exception.h
@@ -206,7 +180,6 @@ tk_twm.o: ../mstl/m_utility.ipp
 tk_twm.o: ../mstl/m_limits.h
 tk_twm.o: ../mstl/m_bit_functions.h
 tk_twm.o: ../mstl/m_bit_functions.ipp
-tk_twm.o: ../mstl/m_static_check.h
 tk_twm.o: ../mstl/m_assert.h
 tk_twm.o: ../mstl/m_vector.ipp
 tk_twm.o: ../mstl/m_uninitialized.h
@@ -227,10 +200,6 @@ tk_twm.o: ../mstl/m_map.h
 tk_twm.o: ../mstl/m_pair.h
 tk_twm.o: ../mstl/m_pair.ipp
 tk_twm.o: ../mstl/m_map.ipp
-tk_twm.o: tk8.5/tkInt.h
-tk_twm.o: tk8.5/tkPort.h
-tk_twm.o: tk8.5/tkUnixPort.h
-tk_twm.o: tk8.5/tkIntDecls.h
 tk_window_manager.o: tk_init.h
 tk_window_manager.o: ../util/u_base.h
 tk_window_manager.o: ../mstl/m_types.h

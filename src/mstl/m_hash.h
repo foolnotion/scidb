@@ -33,7 +33,7 @@ private:
 
 public:
 
-	static double const Load = 70.0;
+	static double constexpr Load = 70.0;
 
 	typedef Value					value_type;
 	typedef Key						key_type;
@@ -73,6 +73,11 @@ public:
 	hash(size_type capacity = 8);
 	hash(hash const& h);
 	~hash() throw();
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	hash(hash&& h);
+	hash& operator=(hash&& h);
+#endif
 
 	hash& operator=(hash const& h);
 

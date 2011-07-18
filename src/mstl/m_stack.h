@@ -43,6 +43,11 @@ public:
 	stack(stack const& v);
 	~stack() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	stack(stack&& v);
+	stack& operator=(stack&& v);
+#endif
+
 	stack& operator=(stack const& v);
 
 	bool empty() const;

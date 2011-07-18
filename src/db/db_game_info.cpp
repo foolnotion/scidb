@@ -162,7 +162,7 @@ GameInfo::GameInfo(Initializer const&)
 	,m_result(result::Unknown)
 {
 #if defined(__i386__)
-	M_STATIC_CHECK(sizeof(GameInfo) == 64, Should_Be_64_Bytes);
+	static_assert(sizeof(GameInfo) == 64, "should be 64 bytes");
 #endif
 
 	m_pd[White].value = m_pd[Black].value = 0;
@@ -545,10 +545,10 @@ GameInfo::setup(	uint32_t gameOffset,
 	if (tags.contains(tag::BlackElo))
 		blackPlayer->setElo(m_pd[Black].elo = tags.asInt(tag::BlackElo));
 
-	M_STATIC_CHECK(rating::Last == 8, Reimplementation_Needed);
+	static_assert(rating::Last == 8, "reimplementation required");
 
 	setupRating(tags, White, rating::Rating,	tag::WhiteRating);
-	setupRating(tags, White, rating::Rapid,		tag::WhiteRapid);
+	setupRating(tags, White, rating::Rapid,	tag::WhiteRapid);
 	setupRating(tags, White, rating::ICCF,		tag::WhiteICCF);
 	setupRating(tags, White, rating::USCF,		tag::WhiteUSCF);
 	setupRating(tags, White, rating::DWZ,		tag::WhiteDWZ);
@@ -556,7 +556,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	setupRating(tags, White, rating::IPS,		tag::WhiteIPS);
 
 	setupRating(tags, Black, rating::Rating,	tag::BlackRating);
-	setupRating(tags, Black, rating::Rapid,		tag::BlackRapid);
+	setupRating(tags, Black, rating::Rapid,	tag::BlackRapid);
 	setupRating(tags, Black, rating::ICCF,		tag::BlackICCF);
 	setupRating(tags, Black, rating::USCF,		tag::BlackUSCF);
 	setupRating(tags, Black, rating::DWZ,		tag::BlackDWZ);

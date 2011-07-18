@@ -633,6 +633,42 @@ hash<K,V>::operator[](key_type const& i)
 	return find_or_insert(i, value_type());
 }
 
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename K, typename V>
+inline
+hash<K,V>::hash(hash&& h)
+	:m_size(h.m_size)
+	,m_modulo(h.m_modulo)
+	,m_used(h.m_used)
+	,m_first(h.m_first)
+	,m_last(h.m_last)
+	,m_buckets(mstl::move(h.m_buckets))
+{
+}
+
+
+template <typename K, typename V>
+inline
+hash<K,V>&
+hash<K,V>::operator=(hash&& h)
+{
+	if (this != &h)
+	{
+		m_size = h.m_size;
+		m_modulo = h.m_modulo;
+		m_used = h.m_used;
+		m_first = h.m_first;
+		m_last = h.m_last;
+		m_buckets = mstl::move(h.m_buckets);
+	}
+
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

@@ -16,6 +16,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
+
 namespace mstl {
 
 template <typename T> inline void swap(list<T>& lhs, list<T>& rhs) { lhs.swap(rhs); }
@@ -319,6 +321,23 @@ list<T>::base()
 {
 	return m_vec;
 }
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+//template <typename T>
+//inline list<T>::list(list&& v) : mstl::move(m_vec) {}
+
+
+template <typename T>
+inline
+list<T>&
+list<T>::operator=(list&& v)
+{
+	m_vec = mstl::move(v.m_vec);
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

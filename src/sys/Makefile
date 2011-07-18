@@ -54,7 +54,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -67,6 +67,13 @@ sys_dl.o: ../tcl/tcl_base.ipp
 sys_dl.o: ../mstl/m_string.h
 sys_dl.o: ../mstl/m_types.h
 sys_dl.o: ../mstl/m_string.ipp
+sys_dl.o: ../mstl/m_utility.h
+sys_dl.o: ../mstl/m_type_traits.h
+sys_dl.o: ../mstl/m_type_traits.ipp
+sys_dl.o: ../mstl/m_utility.ipp
+sys_dl.o: ../mstl/m_limits.h
+sys_dl.o: ../mstl/m_bit_functions.h
+sys_dl.o: ../mstl/m_bit_functions.ipp
 sys_dl.o: ../mstl/m_assert.h
 sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
@@ -94,7 +101,6 @@ sys_file.o: ../mstl/m_utility.ipp
 sys_file.o: ../mstl/m_limits.h
 sys_file.o: ../mstl/m_bit_functions.h
 sys_file.o: ../mstl/m_bit_functions.ipp
-sys_file.o: ../mstl/m_static_check.h
 sys_file.o: ../mstl/m_vector.ipp
 sys_file.o: ../mstl/m_uninitialized.h
 sys_file.o: ../mstl/m_uninitialized.ipp
@@ -125,18 +131,24 @@ sys_process.o: ../mstl/m_types.h
 sys_process.o: ../mstl/m_exception.ipp
 sys_process.o: ../mstl/m_string.h
 sys_process.o: ../mstl/m_string.ipp
+sys_process.o: ../mstl/m_utility.h
+sys_process.o: ../mstl/m_type_traits.h
+sys_process.o: ../mstl/m_type_traits.ipp
+sys_process.o: ../mstl/m_utility.ipp
+sys_process.o: ../mstl/m_limits.h
+sys_process.o: ../mstl/m_bit_functions.h
+sys_process.o: ../mstl/m_bit_functions.ipp
 sys_process.o: ../mstl/m_assert.h
 sys_signal.o: sys_signal.h
 sys_thread.o: sys_thread.h
 sys_thread.o: ../mstl/m_function.h
 sys_thread.o: ../mstl/m_function_base.h
 sys_thread.o: ../mstl/m_function_base.ipp
-sys_thread.o: ../mstl/m_static_check.h
+sys_thread.o: ../mstl/m_types.h
 sys_thread.o: ../mstl/m_function.ipp
 sys_thread.o: ../mstl/m_assert.h
 sys_thread.o: ../mstl/m_exception.h
 sys_thread.o: ../mstl/m_backtrace.h
-sys_thread.o: ../mstl/m_types.h
 sys_thread.o: ../mstl/m_exception.ipp
 sys_thread.o: ../mstl/m_stdio.h
 sys_time.o: sys_time.h
@@ -151,22 +163,21 @@ sys_utf8_codec.o: sys_utf8_codec.h
 sys_utf8_codec.o: ../mstl/m_string.h
 sys_utf8_codec.o: ../mstl/m_types.h
 sys_utf8_codec.o: ../mstl/m_string.ipp
+sys_utf8_codec.o: ../mstl/m_utility.h
+sys_utf8_codec.o: ../mstl/m_type_traits.h
+sys_utf8_codec.o: ../mstl/m_type_traits.ipp
+sys_utf8_codec.o: ../mstl/m_utility.ipp
+sys_utf8_codec.o: ../mstl/m_limits.h
+sys_utf8_codec.o: ../mstl/m_bit_functions.h
+sys_utf8_codec.o: ../mstl/m_bit_functions.ipp
 sys_utf8_codec.o: ../mstl/m_assert.h
 sys_utf8_codec.o: ../mstl/m_exception.h
 sys_utf8_codec.o: ../mstl/m_backtrace.h
 sys_utf8_codec.o: ../mstl/m_exception.ipp
 sys_utf8_codec.o: ../mstl/m_list.h
 sys_utf8_codec.o: ../mstl/m_vector.h
-sys_utf8_codec.o: ../mstl/m_type_traits.h
-sys_utf8_codec.o: ../mstl/m_type_traits.ipp
 sys_utf8_codec.o: ../mstl/m_memblock.h
 sys_utf8_codec.o: ../mstl/m_memblock.ipp
-sys_utf8_codec.o: ../mstl/m_utility.h
-sys_utf8_codec.o: ../mstl/m_utility.ipp
-sys_utf8_codec.o: ../mstl/m_limits.h
-sys_utf8_codec.o: ../mstl/m_bit_functions.h
-sys_utf8_codec.o: ../mstl/m_bit_functions.ipp
-sys_utf8_codec.o: ../mstl/m_static_check.h
 sys_utf8_codec.o: ../mstl/m_vector.ipp
 sys_utf8_codec.o: ../mstl/m_uninitialized.h
 sys_utf8_codec.o: ../mstl/m_uninitialized.ipp

@@ -44,7 +44,6 @@
 #include "m_fstream.h"
 #include "m_byte_order.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include "sys_utf8_codec.h"
 
@@ -129,7 +128,8 @@ namespace
 
 		void swapBytes(uint16_t idn)
 		{
-			M_STATIC_CHECK(sizeof(IndexEntry) == 56, Error_In_Struct);
+			static_assert(sizeof(IndexEntry) == 56, "error in struct");
+
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 //			u64[ 0] = mstl::bo::swap(u64[ 1]);	// dont swap homepawns
 			u64[ 1] = mstl::bo::swap(u64[ 1]);
@@ -362,7 +362,7 @@ Codec::Codec()
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(m_lookup) <= Namebase::Round, Index_Out_Of_Range);
+	static_assert(U_NUMBER_OF(m_lookup) <= Namebase::Round, "index out of range");
 
 	m_magicGameFile = MagicGameFile;
 	m_magicGameFile.resize(MagicGameFile.size() + 2);

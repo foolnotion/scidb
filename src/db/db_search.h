@@ -28,6 +28,8 @@
 #define _db_search_included
 
 #include "m_string.h"
+#include "m_ref_counter.h"
+#include "m_ref_counted_ptr.h"
 
 namespace db {
 
@@ -36,7 +38,7 @@ class NamebasePlayer;
 class NamebaseEvent;
 class NamebaseAnnotator;
 
-class Search
+class Search : public mstl::ref_counter
 {
 public:
 
@@ -48,7 +50,7 @@ class SearchOpAnd : public Search
 {
 public:
 
-	bool match(GameInfo const& info) const;
+	bool match(GameInfo const& info) const override;
 	void append(Search* search);
 };
 
@@ -56,7 +58,7 @@ class SearchOpOr : public Search
 {
 public:
 
-	bool match(GameInfo const& info) const;
+	bool match(GameInfo const& info) const override;
 	void append(Search* search);
 };
 
@@ -64,14 +66,26 @@ class SearchOpNot : public Search
 {
 public:
 
-	SearchOpNot(Search* search);
+	typedef mstl::ref_counted_ptr<Search> SearchP;
+
+	SearchOpNot(SearchP const& search);
 	~SearchOpNot() throw();
 
-	bool match(GameInfo const& info) const;
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	SearchOpNot(SearchOpNot const&) = default;
+	SearchOpNot& operator=(SearchOpNot const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	SearchOpNot(SearchOpNot&& search);
+	SearchOpNot& operator=(SearchOpNot&& search);
+#endif
+
+	bool match(GameInfo const& info) const override;
 
 private:
 
-	Search* m_search;
+	SearchP m_search;
 };
 
 class SearchPlayer : public Search
@@ -80,7 +94,7 @@ public:
 
 	SearchPlayer(NamebasePlayer const* entry);
 
-	bool match(GameInfo const& info) const;
+	bool match(GameInfo const& info) const override;
 
 private:
 
@@ -93,7 +107,7 @@ public:
 
 	SearchEvent(NamebaseEvent const* entry);
 
-	bool match(GameInfo const& info) const;
+	bool match(GameInfo const& info) const override;
 
 private:
 
@@ -106,7 +120,7 @@ public:
 
 	SearchAnnotator(mstl::string const& name);
 
-	bool match(GameInfo const& info) const;
+	bool match(GameInfo const& info) const override;
 
 private:
 
@@ -121,7 +135,7 @@ public:
 	Search(unsigned minRatingW, unsigned maxRatingW, unsigned minRatingB, unsigned maxRatingB);
 
 	Type type() const;
-	bool match(GameInfo const& info);
+	bool match(GameInfo const& info) override;
 
 private:
 

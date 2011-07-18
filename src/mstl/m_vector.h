@@ -85,6 +85,11 @@ public:
 	template <typename Iter> vector(Iter* first, Iter* last);
 	~vector() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	vector(vector&& v);
+	vector& operator=(vector&& v);
+#endif
+
 	vector& operator=(vector const& v);
 
 	bool operator==(vector const& v) const;

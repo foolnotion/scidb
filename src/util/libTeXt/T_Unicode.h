@@ -38,7 +38,7 @@ private:
 
 	typedef mstl::ref_counted_ptr<UnicodeFilter> FilterP;
 
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 
 	void performUcPref(Environment& env);
 	void performUcSuff(Environment& env);

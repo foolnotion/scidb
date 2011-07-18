@@ -32,7 +32,7 @@ public:
 	Log(Tcl_Obj* cmd, Tcl_Obj* arg);
 	~Log() throw();
 
-	bool error(::db::save::State code, unsigned gameNumber);
+	bool error(::db::save::State code, unsigned gameNumber) override;
 
 private:
 

@@ -41,8 +41,8 @@ public:
 	using ifstream::mtime;
 	using ifstream::filename;
 
-	void open(char const* filename);
-	void open(char const* filename, openmode mode);
+	void open(char const* filename) override;
+	void open(char const* filename, openmode mode) override;
 	using ifstream::close;
 
 	using ifstream::set_unbuffered;

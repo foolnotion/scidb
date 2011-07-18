@@ -65,17 +65,19 @@ private:
 	void start();
 	void finish();
 
-	bool beginGame(TagSet const& tags);
-	save::State endGame(TagSet const& tags);
+	bool beginGame(TagSet const& tags) override;
+	save::State endGame(TagSet const& tags) override;
 
-	void sendTrailingComment(Comment const& comment, bool variationIsEmpty);
-	void sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
-	bool sendMove(Move const& move);
+	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendPrecedingComment(	Comment const& comment,
+										Annotation const& annotation,
+										MarkSet const& marks) override;
+	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
 						MarkSet const& marks,
 						Comment const& preComment,
-						Comment const& comment);
+						Comment const& comment) override;
 
 	void sendPreComment(Comment const& comment);
 	void sendComment( Comment const& comment,
@@ -83,10 +85,10 @@ private:
 							MarkSet const& marks,
 							bool isPreComment);
 
-	void beginMoveSection();
-	void endMoveSection(result::ID result);
-	void beginVariation();
-	void endVariation(bool isEmpty);
+	void beginMoveSection() override;
+	void endMoveSection(result::ID result) override;
+	void beginVariation() override;
+	void endVariation(bool isEmpty) override;
 
 	void pushComment(Comment const& comment);
 

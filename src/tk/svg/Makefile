@@ -48,7 +48,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -79,7 +79,6 @@ svg_gradient.o: ../../mstl/m_utility.ipp
 svg_gradient.o: ../../mstl/m_limits.h
 svg_gradient.o: ../../mstl/m_bit_functions.h
 svg_gradient.o: ../../mstl/m_bit_functions.ipp
-svg_gradient.o: ../../mstl/m_static_check.h
 svg_gradient.o: ../../mstl/m_assert.h
 svg_gradient.o: ../../mstl/m_exception.h
 svg_gradient.o: ../../mstl/m_backtrace.h
@@ -119,7 +118,6 @@ svg_parser.o: ../../mstl/m_utility.ipp
 svg_parser.o: ../../mstl/m_limits.h
 svg_parser.o: ../../mstl/m_bit_functions.h
 svg_parser.o: ../../mstl/m_bit_functions.ipp
-svg_parser.o: ../../mstl/m_static_check.h
 svg_parser.o: ../../mstl/m_assert.h
 svg_parser.o: ../../mstl/m_exception.h
 svg_parser.o: ../../mstl/m_backtrace.h
@@ -190,7 +188,6 @@ svg_path_renderer.o: ../../mstl/m_utility.ipp
 svg_path_renderer.o: ../../mstl/m_limits.h
 svg_path_renderer.o: ../../mstl/m_bit_functions.h
 svg_path_renderer.o: ../../mstl/m_bit_functions.ipp
-svg_path_renderer.o: ../../mstl/m_static_check.h
 svg_path_renderer.o: ../../mstl/m_assert.h
 svg_path_renderer.o: ../../mstl/m_exception.h
 svg_path_renderer.o: ../../mstl/m_backtrace.h

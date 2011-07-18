@@ -31,7 +31,7 @@ public:
 
 private:
 
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 	void performCsname(Environment& env);
 
 	Token::Type m_endcsname;

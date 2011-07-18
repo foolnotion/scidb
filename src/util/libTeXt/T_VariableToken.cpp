@@ -21,7 +21,6 @@
 #include "T_Messages.h"
 
 #include "m_assert.h"
-#include "m_static_check.h"
 #include "m_string.h"
 
 using namespace TeXt;
@@ -60,7 +59,7 @@ VariableToken::type() const
 Value
 VariableToken::value() const
 {
-	M_STATIC_CHECK((sizeof(Value) >= sizeof(m_refID)), Illegal_Return_Type);
+	static_assert((sizeof(Value) >= sizeof(m_refID)), "illegal return type");
 	return m_refID;
 }
 

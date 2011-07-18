@@ -38,6 +38,16 @@ struct Line
 	Line();
 	Line(uint16_t const* moves, unsigned length = 0);
 
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	Line(Line const&) = default;
+	Line& operator=(Line const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	Line(Line&& line);
+	Line& operator=(Line&& line);
+#endif
+
 	bool operator==(Line const& line) const;
 	bool operator!=(Line const& line) const;
 	bool operator<=(Line const& line) const;

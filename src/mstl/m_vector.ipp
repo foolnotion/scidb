@@ -808,6 +808,24 @@ vector<T>::fill(value_type const& value)
 		mstl::fill_n(this->m_start, size(), value);
 }
 
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename T>
+inline vector<T>::vector(vector&& v) : memblock<T>(mstl::move(*this)) {}
+
+
+template <typename T>
+inline
+vector<T>&
+vector<T>::operator=(vector&& v)
+{
+	static_cast<memblock<T>&>(*this) = mstl::move(*this);
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

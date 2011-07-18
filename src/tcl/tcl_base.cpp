@@ -514,11 +514,11 @@ tcl::invoke(char const* callee,
 	Tcl_IncrRefCount(list);
 
 	if (arg1 && arg2)
-		rc = invoke(callee, cmd, arg1, arg2, list, NULL);
+		rc = invoke(callee, cmd, arg1, arg2, list, nullptr);
 	else if (arg1)
-		rc = invoke(callee, cmd, arg1, list, NULL);
+		rc = invoke(callee, cmd, arg1, list, nullptr);
 	else
-		rc = invoke(callee, cmd, list, NULL);
+		rc = invoke(callee, cmd, list, nullptr);
 
 	Tcl_DecrRefCount(list);
 	return rc;
@@ -590,7 +590,7 @@ Tcl_Obj* call(	char const* callee,
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	result = call(callee, cmd, list, NULL);
+	result = call(callee, cmd, list, nullptr);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -612,7 +612,7 @@ tcl::call(	char const* callee,
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	result = call(callee, cmd, arg1, list, NULL);
+	result = call(callee, cmd, arg1, list, nullptr);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -635,7 +635,7 @@ tcl::call(	char const* callee,
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	result = call(callee, cmd, arg1, arg2, list, NULL);
+	result = call(callee, cmd, arg1, arg2, list, nullptr);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -659,7 +659,7 @@ tcl::call(	char const* callee,
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	result = call(callee, cmd, arg1, arg2, arg3, list, NULL);
+	result = call(callee, cmd, arg1, arg2, arg3, list, nullptr);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -684,7 +684,7 @@ tcl::call(	char const* callee,
 	Tcl_Obj* result;
 	Tcl_Obj*	list = Tcl_NewListObj(objc, objv);
 
-	result = call(callee, cmd, arg1, arg2, arg3, arg4, list, NULL);
+	result = call(callee, cmd, arg1, arg2, arg3, arg4, list, nullptr);
 
 	Tcl_RestoreResult(interp(), &state);
 	return result;
@@ -694,7 +694,7 @@ tcl::call(	char const* callee,
 static void
 callRemoteUpdate(ClientData)
 {
-	invoke(__func__, "::remote::update", NULL);
+	invoke(__func__, "::remote::update", nullptr);
 }
 
 

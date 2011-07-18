@@ -41,27 +41,27 @@ public:
 	{
 	}
 
-	bool finished() const
+	bool finished() const override
 	{
 		return m_producer->finished();
 	}
 
-	Source source() const
+	Source source() const override
 	{
 		return Parameter;
 	}
 
-	TokenP next(Environment& env)
+	TokenP next(Environment& env) override
 	{
 		return m_producer->next(env);
 	}
 
-	mstl::string currentDescription() const
+	mstl::string currentDescription() const override
 	{
 		return m_producer->currentDescription();
 	}
 
-	bool reset()
+	bool reset() override
 	{
 		return m_producer->reset();
 	}

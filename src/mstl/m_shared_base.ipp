@@ -17,7 +17,6 @@
 // ======================================================================
 
 #include "m_assert.h"
-#include "m_static_check.h"
 #include "m_cast.h"
 #include "m_utility.h"
 
@@ -186,7 +185,7 @@ shared_base<T,Counter,Deleter>::shared_base(T* p)
 	,m_count(m_p ? new sbd_::counter() : 0)
 {
 #ifdef HAVE_WEAK_PTR
-	M_STATIC_CHECK(sbd_::is_shared_counter<Counter>::Value, Not_Allowed_For_Weak_Pointer);
+	static_assert(sbd_::is_shared_counter<Counter>::Value, "type not allowed for shared pointer");
 #endif
 	M_ASSERT(class_invariant());
 }
@@ -231,7 +230,7 @@ shared_base<T,Counter,Deleter>::shared_base(shared_base<U,shared_counter,Deleter
 	,m_count(sb.m_count)
 {
 #ifdef HAVE_WEAK_PTR
-	M_STATIC_CHECK(sbd_::is_shared_counter<Counter>::Value, Not_Allowed_For_Weak_Pointer);
+	static_assert(sbd_::is_shared_counter<Counter>::Value, "type not allowed for shared pointer");
 #endif
 
 	if (m_count)
@@ -254,7 +253,7 @@ shared_base<T,Counter,Deleter>&
 shared_base<T,Counter,Deleter>::operator=(shared_base<T,weak_counter,Deleter> const& sb)
 {
 #ifdef HAVE_WEAK_PTR
-	M_STATIC_CHECK(sbd_::is_weak_counter<Counter>::Value, Not_Allowed_For_Shared_Pointer);
+	static_assert(sbd_::is_weak_counter<Counter>::Value, "type not allowed for weak pointer");
 #endif
 
 	if (m_p != sb.m_p)
@@ -327,7 +326,7 @@ void
 shared_base<T,Counter,Deleter>::reset(T* p)
 {
 #ifdef HAVE_WEAK_PTR
-	M_STATIC_CHECK(sbd_::is_shared_counter<Counter>::Value, Not_Allowed_For_Weak_Pointer);
+	static_assert(sbd_::is_shared_counter<Counter>::Value, "type not allowed for shared pointer");
 #endif
 	M_REQUIRE(p == 0 || m_p != p);
 
@@ -423,6 +422,31 @@ shared_base<T,Counter,Deleter>::swap(shared_base& sb)
 	mstl::swap(m_count, sb.m_count);
 }
 
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <class T, class Counter, class Deleter>
+inline
+shared_base<T,Counter,Deleter>::shared_base(shared_base&& sb)
+	:m_p(sb.m_p)
+	,m_count(sb.m_count)
+{
+	sb.m_p = 0;
+	sb.m_count = 0;
+}
+
+
+template <class T, class Counter, class Deleter>
+inline
+shared_base<T,Counter,Deleter>&
+shared_base<T,Counter,Deleter>::operator=(shared_base&& sb)
+{
+	swap(sb);
+	return *this;
+}
+
+#endif
+
 } // namespace detail
 
 
@@ -433,7 +457,6 @@ delete_ptr::dispose(T* p)
 {
 	delete p;
 }
-
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

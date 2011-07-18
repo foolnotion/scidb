@@ -46,9 +46,68 @@ trim(mstl::string& s)
 
 TagSet::TagSet()
 {
-	M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(BitSet), BitSet_Size_Exceeded);
+	static_assert(tag::ExtraTag <= 8*sizeof(BitSet), "BitField size exceeded");
 	::memset(m_significance, 0, sizeof(m_significance));
 }
+
+
+TagSet::TagSet(TagSet const& set)
+	:m_extra(set.m_extra)
+	,m_isUserSupplied(set.m_isUserSupplied)
+	,m_set(set.m_set)
+{
+	for (unsigned i = 0; i < U_NUMBER_OF(m_values); ++i)
+		m_values[i] = set.m_values[i];
+
+	::memcpy(m_significance, set.m_significance, sizeof(m_significance));
+}
+
+
+TagSet&
+TagSet::operator=(TagSet const& set)
+{
+	for (unsigned i = 0; i < U_NUMBER_OF(m_values); ++i)
+		m_values[i] = set.m_values[i];
+
+	::memcpy(m_significance, set.m_significance, sizeof(m_significance));
+	m_extra = set.m_extra;
+	m_isUserSupplied = set.m_isUserSupplied;
+	m_set = set.m_set;
+
+	return *this;
+}
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+# include "m_utility.h"
+
+TagSet::TagSet(TagSet&& set)
+	:m_values(mstl::move(set.m_values))
+	,m_extra(mstl::move(set.m_extra))
+	,m_isUserSupplied(set.m_isUserSupplied)
+	,m_set(mstl::move(set.m_set))
+{
+	::memcpy(m_significance, set.m_significance, sizeof(m_significance));
+}
+
+
+TagSet&
+TagSet::operator=(TagSet&& set)
+{
+	if (this != &set)
+	{
+		swap(m_values, set.m_values);
+		::memcpy(m_significance, set.m_significance, sizeof(m_significance));
+		swap(m_extra, set.m_extra);
+		m_isUserSupplied = set.m_isUserSupplied;
+		m_set = mstl::move(set.m_set);
+	}
+
+	return *this;
+}
+
+#endif
 
 
 int

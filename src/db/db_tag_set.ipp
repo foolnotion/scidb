@@ -25,7 +25,6 @@
 // ======================================================================
 
 #include "m_assert.h"
-#include "m_static_check.h"
 
 namespace db {
 
@@ -41,7 +40,7 @@ inline
 tag::ID
 TagSet::findFirst() const
 {
-	M_STATIC_CHECK(tag::ExtraTag < 0xff, Reimplementation_Needed);
+	static_assert(tag::ExtraTag < 0xff, "reimplementation required");
 	return tag::ID(m_set.find_first() & 0xff);
 }
 
@@ -50,7 +49,7 @@ inline
 tag::ID
 TagSet::findNext(tag::ID prev) const
 {
-	M_STATIC_CHECK(tag::ExtraTag < 0xff, Reimplementation_Needed);
+	static_assert(tag::ExtraTag < 0xff, "reimplementation required");
 	return tag::ID(m_set.find_next(prev) & 0xff);
 }
 

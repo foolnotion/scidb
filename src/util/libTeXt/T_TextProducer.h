@@ -33,13 +33,13 @@ public:
 
 	TextProducer(mstl::string const& text);
 
-	bool finished() const;
+	bool finished() const override;
 
-	mstl::string currentDescription() const;
-	Source source() const;
+	mstl::string currentDescription() const override;
+	Source source() const override;
 
-	TokenP next(Environment& env);
-	bool reset();
+	TokenP next(Environment& env) override;
+	bool reset() override;
 
 private:
 

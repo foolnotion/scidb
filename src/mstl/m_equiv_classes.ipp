@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -58,6 +59,39 @@ equiv_classes::get_group(unsigned a) const
 
 	return m_lookup[a];
 }
+
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+equiv_classes::equiv_classes(equiv_classes&& eqcl)
+	:m_list(mstl::move(eqcl.m_list))
+	,m_storage(mstl::move(eqcl.m_storage))
+	,m_lookup(mstl::move(eqcl.m_lookup))
+	,m_dimension(mstl::move(eqcl.m_dimension))
+	,m_ngroups(eqcl.m_ngroups)
+{
+}
+
+
+inline
+equiv_classes&
+equiv_classes::operator=(equiv_classes&& eqcl)
+{
+	if (this != &eqcl)
+	{
+		m_list = mstl::move(eqcl.m_list);
+		m_storage = mstl::move(eqcl.m_storage);
+		m_lookup = mstl::move(eqcl.m_lookup);
+		m_dimension = mstl::move(eqcl.m_dimension);
+		m_ngroups = eqcl.m_ngroups;
+	}
+
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

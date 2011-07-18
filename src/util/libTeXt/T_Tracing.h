@@ -25,7 +25,7 @@ namespace TeXt {
 
 class Tracing : public Package
 {
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 };
 
 } // namespace TeXt

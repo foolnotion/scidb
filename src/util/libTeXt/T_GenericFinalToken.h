@@ -32,10 +32,10 @@ public:
 
 	GenericFinalToken(mstl::string const& name, Func func, Type type = T_Generic);
 
-	Type type() const;
-	bool isFinal() const;
-	mstl::string name() const;
-	void perform(Environment& env);
+	Type type() const override;
+	bool isFinal() const override;
+	mstl::string name() const override;
+	void perform(Environment& env) override;
 };
 
 } // namespace TeXt

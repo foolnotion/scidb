@@ -29,20 +29,20 @@ public:
 
 	NumberToken(Value value);
 
-	bool operator==(Token const& token) const;
+	bool operator==(Token const& token) const override;
 
-	bool isNumber() const;
+	bool isNumber() const override;
 
-	Type type() const;
-	mstl::string name() const;
-	mstl::string name(Environment& env) const;
-	mstl::string meaning() const;
-	mstl::string description(Environment& env) const;
-	Value value() const;
-	RefID refID() const;
-	TokenP performThe(Environment& env) const;
+	Type type() const override;
+	mstl::string name() const override;
+	mstl::string name(Environment& env) const override;
+	mstl::string meaning() const override;
+	mstl::string description(Environment& env) const override;
+	Value value() const override;
+	RefID refID() const override;
+	TokenP performThe(Environment& env) const override;
 
-	void perform(Environment& env);
+	void perform(Environment& env) override;
 
 	void setup(Value value);
 	void increment();

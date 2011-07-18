@@ -231,9 +231,6 @@ private:
 	NamebaseEntry const* insertSite(mstl::string const& name);
 	NamebaseEntry const* insertAnnotator(mstl::string const& name);
 
-	Database(Database const&);
-	Database& operator=(Database const&);
-
 	DatabaseCodec*	m_codec;
 	mstl::string	m_name;
 	mstl::string	m_rootname;

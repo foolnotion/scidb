@@ -20,6 +20,7 @@
 #define _mstl_ref_counted_ptr_included
 
 #include "m_ref_counted_traits.h"
+#include "m_types.h"
 
 namespace mstl {
 
@@ -40,6 +41,11 @@ public:
 	ref_counted_ptr(ref_counted_ptr const& sp);
 	template <class U> ref_counted_ptr(ref_counted_ptr<U> const& sp);
 	~ref_counted_ptr();
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	ref_counted_ptr(ref_counted_ptr&& p);
+	ref_counted_ptr& operator=(ref_counted_ptr&& p);
+#endif
 
 	// assignment
 	ref_counted_ptr& operator=(ref_counted_ptr const& sp);
@@ -89,12 +95,10 @@ public:
 	// accessors
 	template <class U> operator by_ref<U>();
 
-#if (__GNUC__ >= 3)
 private:
 
 	// friends
 	template <class> friend class ref_counted_ptr;
-#endif
 
 	// attributes
 	T* m_p;

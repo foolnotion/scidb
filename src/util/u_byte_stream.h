@@ -56,6 +56,11 @@ public:
 	ByteStream(ByteStream& strm);
 	virtual ~ByteStream() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	ByteStream(ByteStream&& strm);
+	ByteStream& operator=(ByteStream&& strm);
+#endif
+
 	bool isEmpty() const;
 	bool isFull() const;
 

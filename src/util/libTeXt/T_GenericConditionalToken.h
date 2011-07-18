@@ -32,9 +32,9 @@ public:
 
 	GenericConditionalToken(mstl::string const& name, Func func);
 
-	Type type() const;
-	mstl::string name() const;
-	void perform(Environment& env);
+	Type type() const override;
+	mstl::string name() const override;
+	void perform(Environment& env) override;
 };
 
 } // namespace TeXt

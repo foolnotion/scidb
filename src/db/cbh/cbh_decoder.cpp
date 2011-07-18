@@ -731,7 +731,7 @@ Decoder::decodeSymbols(MoveNode* node, unsigned length)
 {
 #define NAG(code) wtm ? nag::White##code : nag::Black##code
 
-	M_STATIC_CHECK(Annotation::Max_Nags >= 4, CbNeedAtLeastFour);
+	static_assert(Annotation::Max_Nags >= 4, "ChessBase need at least four entries");
 
 	if (length == 0)
 		return;

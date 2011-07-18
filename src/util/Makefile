@@ -50,7 +50,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
@@ -59,6 +59,13 @@ u_block_file.o: u_byte_stream.h
 u_block_file.o: u_base.h
 u_block_file.o: ../mstl/m_types.h
 u_block_file.o: u_byte_stream.ipp
+u_block_file.o: ../mstl/m_utility.h
+u_block_file.o: ../mstl/m_type_traits.h
+u_block_file.o: ../mstl/m_type_traits.ipp
+u_block_file.o: ../mstl/m_utility.ipp
+u_block_file.o: ../mstl/m_limits.h
+u_block_file.o: ../mstl/m_bit_functions.h
+u_block_file.o: ../mstl/m_bit_functions.ipp
 u_block_file.o: ../mstl/m_assert.h
 u_block_file.o: ../mstl/m_exception.h
 u_block_file.o: ../mstl/m_backtrace.h
@@ -66,16 +73,8 @@ u_block_file.o: ../mstl/m_exception.ipp
 u_block_file.o: ../mstl/m_string.h
 u_block_file.o: ../mstl/m_string.ipp
 u_block_file.o: ../mstl/m_vector.h
-u_block_file.o: ../mstl/m_type_traits.h
-u_block_file.o: ../mstl/m_type_traits.ipp
 u_block_file.o: ../mstl/m_memblock.h
 u_block_file.o: ../mstl/m_memblock.ipp
-u_block_file.o: ../mstl/m_utility.h
-u_block_file.o: ../mstl/m_utility.ipp
-u_block_file.o: ../mstl/m_limits.h
-u_block_file.o: ../mstl/m_bit_functions.h
-u_block_file.o: ../mstl/m_bit_functions.ipp
-u_block_file.o: ../mstl/m_static_check.h
 u_block_file.o: ../mstl/m_vector.ipp
 u_block_file.o: ../mstl/m_uninitialized.h
 u_block_file.o: ../mstl/m_uninitialized.ipp
@@ -103,6 +102,13 @@ u_bit_stream.o: u_bit_stream.h
 u_bit_stream.o: u_base.h
 u_bit_stream.o: ../mstl/m_types.h
 u_bit_stream.o: u_bit_stream.ipp
+u_bit_stream.o: ../mstl/m_utility.h
+u_bit_stream.o: ../mstl/m_type_traits.h
+u_bit_stream.o: ../mstl/m_type_traits.ipp
+u_bit_stream.o: ../mstl/m_utility.ipp
+u_bit_stream.o: ../mstl/m_limits.h
+u_bit_stream.o: ../mstl/m_bit_functions.h
+u_bit_stream.o: ../mstl/m_bit_functions.ipp
 u_bit_stream.o: ../mstl/m_assert.h
 u_bit_stream.o: ../mstl/m_exception.h
 u_bit_stream.o: ../mstl/m_backtrace.h
@@ -111,17 +117,18 @@ u_byte_stream.o: u_byte_stream.h
 u_byte_stream.o: u_base.h
 u_byte_stream.o: ../mstl/m_types.h
 u_byte_stream.o: u_byte_stream.ipp
+u_byte_stream.o: ../mstl/m_utility.h
+u_byte_stream.o: ../mstl/m_type_traits.h
+u_byte_stream.o: ../mstl/m_type_traits.ipp
+u_byte_stream.o: ../mstl/m_utility.ipp
+u_byte_stream.o: ../mstl/m_limits.h
+u_byte_stream.o: ../mstl/m_bit_functions.h
+u_byte_stream.o: ../mstl/m_bit_functions.ipp
 u_byte_stream.o: ../mstl/m_assert.h
 u_byte_stream.o: ../mstl/m_exception.h
 u_byte_stream.o: ../mstl/m_backtrace.h
 u_byte_stream.o: ../mstl/m_exception.ipp
 u_byte_stream.o: u_exception.h
-u_byte_stream.o: ../mstl/m_utility.h
-u_byte_stream.o: ../mstl/m_utility.ipp
-u_byte_stream.o: ../mstl/m_limits.h
-u_byte_stream.o: ../mstl/m_bit_functions.h
-u_byte_stream.o: ../mstl/m_bit_functions.ipp
-u_byte_stream.o: ../mstl/m_static_check.h
 u_byte_stream.o: ../mstl/m_string.h
 u_byte_stream.o: ../mstl/m_string.ipp
 u_exception.o: u_exception.h
@@ -134,6 +141,13 @@ u_http.o: u_http.h
 u_http.o: ../mstl/m_string.h
 u_http.o: ../mstl/m_types.h
 u_http.o: ../mstl/m_string.ipp
+u_http.o: ../mstl/m_utility.h
+u_http.o: ../mstl/m_type_traits.h
+u_http.o: ../mstl/m_type_traits.ipp
+u_http.o: ../mstl/m_utility.ipp
+u_http.o: ../mstl/m_limits.h
+u_http.o: ../mstl/m_bit_functions.h
+u_http.o: ../mstl/m_bit_functions.ipp
 u_http.o: ../mstl/m_assert.h
 u_http.o: ../mstl/m_exception.h
 u_http.o: ../mstl/m_backtrace.h
@@ -147,17 +161,18 @@ u_http.o: ../mstl/m_ios.ipp
 u_http.o: ../mstl/m_ostream.ipp
 u_http.o: ../mstl/m_istream.h
 u_http.o: ../mstl/m_istream.ipp
-u_http.o: ../mstl/m_utility.h
-u_http.o: ../mstl/m_utility.ipp
-u_http.o: ../mstl/m_limits.h
-u_http.o: ../mstl/m_bit_functions.h
-u_http.o: ../mstl/m_bit_functions.ipp
-u_http.o: ../mstl/m_static_check.h
 u_http.o: ../mstl/m_stdio.h
 u_misc.o: u_misc.h
 u_misc.o: ../mstl/m_string.h
 u_misc.o: ../mstl/m_types.h
 u_misc.o: ../mstl/m_string.ipp
+u_misc.o: ../mstl/m_utility.h
+u_misc.o: ../mstl/m_type_traits.h
+u_misc.o: ../mstl/m_type_traits.ipp
+u_misc.o: ../mstl/m_utility.ipp
+u_misc.o: ../mstl/m_limits.h
+u_misc.o: ../mstl/m_bit_functions.h
+u_misc.o: ../mstl/m_bit_functions.ipp
 u_misc.o: ../mstl/m_assert.h
 u_misc.o: ../mstl/m_exception.h
 u_misc.o: ../mstl/m_backtrace.h
@@ -166,6 +181,13 @@ u_path.o: u_path.h
 u_path.o: ../mstl/m_string.h
 u_path.o: ../mstl/m_types.h
 u_path.o: ../mstl/m_string.ipp
+u_path.o: ../mstl/m_utility.h
+u_path.o: ../mstl/m_type_traits.h
+u_path.o: ../mstl/m_type_traits.ipp
+u_path.o: ../mstl/m_utility.ipp
+u_path.o: ../mstl/m_limits.h
+u_path.o: ../mstl/m_bit_functions.h
+u_path.o: ../mstl/m_bit_functions.ipp
 u_path.o: ../mstl/m_assert.h
 u_path.o: ../mstl/m_exception.h
 u_path.o: ../mstl/m_backtrace.h
@@ -178,12 +200,13 @@ u_piped_progress.o: ../sys/sys_thread.h
 u_piped_progress.o: ../mstl/m_function.h
 u_piped_progress.o: ../mstl/m_function_base.h
 u_piped_progress.o: ../mstl/m_function_base.ipp
-u_piped_progress.o: ../mstl/m_static_check.h
+u_piped_progress.o: ../mstl/m_types.h
 u_piped_progress.o: ../mstl/m_function.ipp
 u_piped_progress.o: ../mstl/m_utility.h
+u_piped_progress.o: ../mstl/m_type_traits.h
+u_piped_progress.o: ../mstl/m_type_traits.ipp
 u_piped_progress.o: ../mstl/m_utility.ipp
 u_piped_progress.o: ../mstl/m_limits.h
-u_piped_progress.o: ../mstl/m_types.h
 u_piped_progress.o: ../mstl/m_bit_functions.h
 u_piped_progress.o: ../mstl/m_bit_functions.ipp
 u_piped_progress.o: ../mstl/m_assert.h
@@ -193,12 +216,17 @@ u_piped_progress.o: ../mstl/m_exception.ipp
 u_progress.o: u_progress.h
 u_progress.o: u_progress.ipp
 u_progress.o: ../mstl/m_utility.h
+u_progress.o: ../mstl/m_types.h
+u_progress.o: ../mstl/m_type_traits.h
+u_progress.o: ../mstl/m_type_traits.ipp
 u_progress.o: ../mstl/m_utility.ipp
 u_progress.o: ../mstl/m_limits.h
-u_progress.o: ../mstl/m_types.h
 u_progress.o: ../mstl/m_bit_functions.h
 u_progress.o: ../mstl/m_bit_functions.ipp
-u_progress.o: ../mstl/m_static_check.h
+u_progress.o: ../mstl/m_assert.h
+u_progress.o: ../mstl/m_exception.h
+u_progress.o: ../mstl/m_backtrace.h
+u_progress.o: ../mstl/m_exception.ipp
 u_zstream.o: u_zstream.h
 u_zstream.o: ../mstl/m_istream.h
 u_zstream.o: ../mstl/m_ios.h
@@ -220,7 +248,6 @@ u_zstream.o: ../mstl/m_utility.ipp
 u_zstream.o: ../mstl/m_limits.h
 u_zstream.o: ../mstl/m_bit_functions.h
 u_zstream.o: ../mstl/m_bit_functions.ipp
-u_zstream.o: ../mstl/m_static_check.h
 u_zstream.o: ../mstl/m_assert.h
 u_zstream.o: ../mstl/m_vector.ipp
 u_zstream.o: ../mstl/m_uninitialized.h

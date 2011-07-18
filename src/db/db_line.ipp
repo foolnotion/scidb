@@ -26,7 +26,6 @@
 
 #include "m_utility.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include <string.h>
 
@@ -50,7 +49,7 @@ Line::copy(Line const& line)
 	M_REQUIRE(moves);
 
 	length = line.length;
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	::memcpy(const_cast<uint16_t*>(moves), line.moves, length << 1);
 }
 
@@ -62,7 +61,7 @@ Line::copy(Line const& line, unsigned maxLength)
 	M_REQUIRE(moves);
 
 	length = mstl::min(line.length, maxLength);
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	::memcpy(const_cast<uint16_t*>(moves), line.moves, length << 1);
 }
 
@@ -79,7 +78,7 @@ inline
 bool
 Line::operator==(Line const& line) const
 {
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	return length == line.length && ::memcmp(moves, line.moves, length << 1) == 0;
 }
 
@@ -88,7 +87,7 @@ inline
 bool
 Line::operator!=(Line const& line) const
 {
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	return length != line.length || ::memcmp(moves, line.moves, length << 1) != 0;
 }
 
@@ -97,7 +96,7 @@ inline
 bool
 Line::operator<=(Line const& line) const
 {
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	return length <= line.length && ::memcmp(moves, line.moves, length << 1) <= 0;
 }
 
@@ -107,7 +106,7 @@ bool
 Line::partialMatch(Line const& line) const
 {
 	M_REQUIRE(length <= line.length);
-	M_STATIC_CHECK(sizeof(moves[0]) == 2, Memcmp_Cannot_Work);
+	static_assert(sizeof(moves[0]) == 2, "memcmp() cannot work");
 	return ::memcmp(moves, line.moves, length << 1) == 0;
 }
 
@@ -119,6 +118,29 @@ Line::operator[](unsigned n) const
 	M_REQUIRE(n < length);
 	return moves[n];
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+Line::Line(Line&& line)
+	:moves(line.moves)
+	,length(line.length)
+{
+	line.moves = 0;
+}
+
+
+inline
+Line&
+Line::operator=(Line&& line)
+{
+	mstl::swap(moves, line.moves);
+	length = line.length;
+	return *this;
+}
+
+#endif
 
 } // namespace db
 

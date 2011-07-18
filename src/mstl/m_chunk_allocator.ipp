@@ -20,7 +20,6 @@
 #include "m_bit_functions.h"
 #include "m_construct.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -111,7 +110,7 @@ inline
 void
 chunk_allocator<T>::set_zero()
 {
-	M_STATIC_CHECK(is_pod<T>::value, Value_Type_Not_Plain_Old_Data);
+	static_assert(is_pod<T>::value, "value type not POD");
 
 	m_zero = true;
 	::memset(m_chunk_list.top().base, 0, m_chunk_size);
@@ -172,7 +171,7 @@ T*
 chunk_allocator<T>::alloc(size_t length)
 {
 	// otherwise uninitialized_fill_n(p, length, T()) is required
-	M_STATIC_CHECK(is_pod<T>::value, Value_Type_Not_Plain_Old_Data);
+	static_assert(is_pod<T>::value, "value type not POD");
 	M_REQUIRE(length <= chunk_size());
 	M_ASSERT(!m_chunk_list.empty());
 
@@ -205,7 +204,7 @@ template <typename T>
 void
 chunk_allocator<T>::shrink(size_t allocatedLength, size_t newLength)
 {
-	M_STATIC_CHECK(is_pod<T>::value, Value_Type_Not_Plain_Old_Data);
+	static_assert(is_pod<T>::value, "value type not POD");
 	M_REQUIRE(newLength <= allocatedLength);
 	M_ASSERT(!m_chunk_list.empty());
 

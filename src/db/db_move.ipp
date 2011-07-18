@@ -31,7 +31,6 @@
 #include "u_crc.h"
 
 #include "m_assert.h"
-#include "m_static_check.h"
 
 namespace db {
 namespace detail {
@@ -207,7 +206,7 @@ inline
 bool
 Move::isCaptureOrPromotion() const
 {
-	M_STATIC_CHECK(piece::None == 0, Reimplementation_Needed);
+	static_assert(piece::None == 0, "reimplementation required");
 	return (((m >> Shift_Capture) | (m >> Shift_Promotion)) & Mask_PieceType) != piece::None;
 }
 
@@ -292,10 +291,10 @@ inline
 piece::Type
 Move::promoted() const
 {
-	M_STATIC_CHECK(piece::Queen  >= 2 && piece::Queen  <= 5, Reimplementation_Needed);
-	M_STATIC_CHECK(piece::Rook   >= 2 && piece::Rook   <= 5, Reimplementation_Needed);
-	M_STATIC_CHECK(piece::Bishop >= 2 && piece::Bishop <= 5, Reimplementation_Needed);
-	M_STATIC_CHECK(piece::Knight >= 2 && piece::Knight <= 5, Reimplementation_Needed);
+	static_assert(piece::Queen  >= 2 && piece::Queen  <= 5, "reimplementation required");
+	static_assert(piece::Rook   >= 2 && piece::Rook   <= 5, "reimplementation required");
+	static_assert(piece::Bishop >= 2 && piece::Bishop <= 5, "reimplementation required");
+	static_assert(piece::Knight >= 2 && piece::Knight <= 5, "reimplementation required");
 
 	return piece::Type(((m >> Shift_Promotion) & Mask_Promoted) + 2);
 }

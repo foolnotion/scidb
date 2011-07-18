@@ -27,7 +27,7 @@ class ConditionalToken : public ExpandableToken
 {
 public:
 
-	bool isConditional() const;
+	bool isConditional() const override;
 
 protected:
 

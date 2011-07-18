@@ -47,6 +47,11 @@ public:
 	list(list const& v);
 	~list() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	list(list&& v);
+	list& operator=(list&& v);
+#endif
+
 	list& operator=(list const& v);
 
 	reference operator[](size_type n);

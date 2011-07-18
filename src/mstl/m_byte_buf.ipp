@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -49,6 +50,33 @@ byte_buf::byte_buf(byte_buf const& buf)
 {
 	::memcpy(m_data, buf.m_data, m_size);
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+byte_buf::byte_buf(byte_buf&& buf)
+	:m_data(buf.m_data)
+	,m_size(buf.m_size)
+{
+	buf.m_data = 0;
+}
+
+
+inline
+byte_buf&
+byte_buf::operator=(byte_buf&& buf)
+{
+	if (this != &buf)
+	{
+		swap(m_data, buf.m_data);
+		m_size = buf.m_size;
+	}
+
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

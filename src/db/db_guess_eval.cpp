@@ -212,7 +212,7 @@ namespace bonus
 namespace mate
 {
 	// dark squares
-	static int8_t const BishopKnightSquare[64] =
+	static uint8_t const BishopKnightSquare[64] =
 	{
 		99, 90, 80, 70, 60, 50, 40, 30,
 		90, 80, 70, 60, 50, 40, 30, 40,
@@ -224,7 +224,7 @@ namespace mate
 		30, 40, 50, 60, 70, 80, 90, 99,
 	};
 
-	static int8_t const Square[64] =
+	static uint8_t const Square[64] =
 	{
 		200, 180, 160, 140, 140, 160, 180, 200,
 		180, 160, 140, 120, 120, 140, 160, 180,
@@ -333,22 +333,22 @@ namespace pawn
 		Score(100, 100),
 	};
 
-	static int8_t const PassedPawnValue[8] =
+	static uint8_t const PassedPawnValue[8] =
 	{
 		0, 0, 0, 20, 80, 120, 200, 0,
 	};
 
-	static int8_t const OpenFyle[8] =
+	static uint8_t const OpenFyle[8] =
 	{
 		6, 5, 4, 4, 4, 4, 5, 6,
 	};
 
-	static int8_t const HalfOpenFyle[8] =
+	static uint8_t const HalfOpenFyle[8] =
 	{
 		4, 4, 3, 3, 3, 3, 4, 4,
 	};
 
-	static int8_t const Defects[8] =
+	static uint8_t const Defects[8] =
 	{
 		0, 0, 3, 2, 1, 0, 0, 0,
 	};

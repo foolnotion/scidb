@@ -42,6 +42,8 @@ template <typename T> struct is_pod;
 template <typename T> struct has_trivial_destructor;
 template <typename T> struct is_movable;
 
+template <typename T> struct remove_reference;
+
 } // namespace mstl
 
 #include "m_type_traits.ipp"

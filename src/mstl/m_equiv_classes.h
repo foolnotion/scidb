@@ -30,6 +30,11 @@ public:
 	equiv_classes(unsigned n);
 	~equiv_classes() throw();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	equiv_classes(equiv_classes&& eqcl);
+	equiv_classes& operator=(equiv_classes&& eqcl);
+#endif
+
 	unsigned size() const;
 	unsigned ngroups() const;
 	unsigned count(unsigned group) const;

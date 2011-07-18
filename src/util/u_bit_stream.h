@@ -31,6 +31,11 @@ public:
 
 	BitStream(Byte const* buf, unsigned size);
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	BitStream(BitStream&& strm);
+	BitStream& operator=(BitStream&& strm);
+#endif
+
 	unsigned bitsLeft() const;
 
 	Byte peek(unsigned n);

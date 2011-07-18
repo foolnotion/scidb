@@ -176,9 +176,9 @@ public:
 									move::Position position,
 									mstl::string const& lang) const;
 	/// Return whether any comment contains English language.
-	bool commentEngFlag() const;
+	bool commentEngFlag() const override;
 	/// Return whether any comment contains any other language than English.
-	bool commentOthFlag() const;
+	bool commentOthFlag() const override;
 	/// Return whether the game is currently at the start position of the mainline
 	bool atMainlineStart() const;
 	/// Return whether the game is at the end of the mainline
@@ -225,13 +225,13 @@ public:
 	/// Return current ply number
 	unsigned plyNumber() const;
 	/// Return current ply count
-	unsigned plyCount() const;
+	unsigned plyCount() const override;
 	/// Return current variation level (mainline is 0)
 	unsigned variationLevel() const;
 	/// Return current variation number (0 for mainline)
 	unsigned variationNumber() const;
 	/// Return game flags
-	uint32_t flags() const;
+	uint32_t flags() const override;
 	/// Return subscriber.
 	Subscriber* subscriber() const;
 	/// Print current move in short algebraic notation
@@ -243,7 +243,7 @@ public:
 	/// Return unique position number of curent board.
 	uint16_t idn() const;
 	/// Return current opening line.
-	Line const& openingLine() const;
+	Line const& openingLine() const override;
 	/// Return current ECO code
 	Eco const& ecoCode() const;
 	/// Return current opening
@@ -277,13 +277,13 @@ public:
 	/// Counts the length of current line (from start)
 	unsigned lengthOfCurrentLine() const;
 	/// Counts the number of annotations
-	unsigned countAnnotations() const;
+	unsigned countAnnotations() const override;
 	/// Counts the number of marks
-	unsigned countMarks() const;
+	unsigned countMarks() const override;
 	/// Counts the number of comments
-	unsigned countComments() const;
+	unsigned countComments() const override;
 	/// Counts the number of variations
-	unsigned countVariations() const;
+	unsigned countVariations() const override;
 	/// Get set of tags
 	TagSet const& tags() const;
 	/// Get marks at current position
@@ -482,8 +482,8 @@ public:
 					unsigned linebreakMinCommentLength,
 					unsigned displayStyle);
 
-	Board const& getFinalBoard() const;
-	Board const& getStartBoard() const;
+	Board const& getFinalBoard() const override;
+	Board const& getStartBoard() const override;
 
 	unsigned dumpMoves(mstl::string& result);
 	unsigned dumpMoves(mstl::string& result, unsigned length);

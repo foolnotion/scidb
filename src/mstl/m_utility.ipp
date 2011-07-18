@@ -16,9 +16,10 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_type_traits.h"
 #include "m_limits.h"
 #include "m_bit_functions.h"
-#include "m_static_check.h"
+#include "m_assert.h"
 
 namespace mstl {
 namespace bits {
@@ -61,6 +62,19 @@ struct signed_arithmetic<0>
 };
 
 } // namespace bits
+
+
+#if __GNUC_PREREQ(4,3)
+
+template<typename T>
+inline
+typename mstl::remove_reference<T>::type&&
+move(T&& t)
+{
+	return static_cast<typename mstl::remove_reference<T>::type&&>(t);
+}
+
+#endif
 
 
 template <typename T>
@@ -111,10 +125,30 @@ max(T a, T b, T c)
 
 template <typename T> inline T sqr(T x) { return x*x; }
 
-template <typename T> inline void swap(T& a, T& b)	{ T x = a; a = b; b = x; }
 
 template <typename T> inline T advance(T i, size_t offset)			{ return i + offset; }
 template <typename T> inline ptrdiff_t distance(T first, T last)	{ return last - first; }
+
+
+template <typename T>
+inline
+void
+swap(T& a, T& b)
+{
+	T x = M_CXX_MOVE(a);
+	a = M_CXX_MOVE(b);
+	b = M_CXX_MOVE(x);
+}
+
+
+template <typename T, size_t N>
+inline
+void
+swap(T(& a)[N], T(& b)[N])
+{
+	for (size_t n = 0; n < N; ++n)
+		swap(a[n], b[n]);
+}
 
 
 inline
@@ -149,7 +183,7 @@ inline
 bool
 is_odd(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mod2(x) != 0;
 }
 
@@ -159,7 +193,7 @@ inline
 bool
 is_even(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mod2(x) == 0;
 }
 
@@ -169,7 +203,7 @@ inline
 bool
 is_pow_2(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return x && !(x & (x - 1));
 }
 
@@ -179,7 +213,7 @@ inline
 bool
 is_not_pow_2(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return x & (x - 1);
 }
 
@@ -189,7 +223,7 @@ inline
 T
 abs(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::abs(x);
 }
 
@@ -199,7 +233,7 @@ inline
 T
 signum(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return (0 < x) - (x < 0);
 }
 
@@ -209,7 +243,7 @@ inline
 T
 div2(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::div2(x);
 }
 
@@ -219,7 +253,7 @@ inline
 T
 div4(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integer);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::div4(x);
 }
 
@@ -229,7 +263,7 @@ inline
 T
 mod2(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mod2(x);
 }
 
@@ -239,7 +273,7 @@ inline
 T
 mod4(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integer);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mod4(x);
 }
 
@@ -249,7 +283,7 @@ inline
 T
 mul2(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integral);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mul2(x);
 }
 
@@ -259,7 +293,7 @@ inline
 T
 mul4(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integer);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	return bits::signed_arithmetic<numeric_limits<T>::is_signed>::mul4(x);
 }
 
@@ -269,7 +303,7 @@ inline
 unsigned
 log2_floor(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integer);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	M_REQUIRE(x > 0);
 
 	return bf::msb_index(x);
@@ -281,7 +315,7 @@ inline
 unsigned
 log2_ceil(T x)
 {
-	M_STATIC_CHECK(numeric_limits<T>::is_integer, Template_Parameter_Not_Integer);
+	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
 	M_REQUIRE(x > 0);
 
 	T n = bf::msb_index(x);

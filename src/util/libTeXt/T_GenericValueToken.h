@@ -32,12 +32,12 @@ public:
 
 	GenericValueToken(mstl::string const& name, Type type = T_Value);
 
-	mstl::string description(Environment& env) const;
-	TokenP performThe(Environment& env) const;
+	mstl::string description(Environment& env) const override;
+	TokenP performThe(Environment& env) const override;
 
-	Type type() const;
-	mstl::string name() const;
-	void perform(Environment& env);
+	Type type() const override;
+	mstl::string name() const override;
+	void perform(Environment& env) override;
 };
 
 } // namespace TeXt

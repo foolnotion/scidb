@@ -23,6 +23,7 @@
 
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_utility.h"
 
 namespace mstl { class fstream; }
 namespace mstl { class ofstream; }
@@ -64,7 +65,7 @@ private:
 };
 
 
-class BlockFile
+class BlockFile : public mstl::noncopyable
 {
 public:
 
@@ -152,9 +153,6 @@ private:
 	void putMagic(mstl::string const& magic);
 
 	void copy(ByteStream const& buf, unsigned offset, unsigned nbytes);
-
-	BlockFile(BlockFile const&);
-	BlockFile& operator=(BlockFile const&);
 
 	mstl::fstream*	m_stream;
 

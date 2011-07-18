@@ -38,6 +38,11 @@ public:
 	path(mstl::string const& name);
 	explicit path(char const* name);
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	path(path&& p);
+	path& operator=(path&& p);
+#endif
+
 	bool isRelative() const;	// Tcl_GetPathType
 	bool isAbsolute() const;	// Tcl_GetPathType
 

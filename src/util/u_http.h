@@ -20,12 +20,13 @@
 #define _util_http_included
 
 #include "m_string.h"
+#include "m_utility.h"
 
 namespace mstl { class ostream; }
 
 namespace util {
 
-class Http
+class Http  : public mstl::noncopyable
 {
 public:
 

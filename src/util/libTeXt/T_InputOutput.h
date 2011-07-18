@@ -34,7 +34,7 @@ public:
 
 private:
 
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 };
 
 } // namespace TeXt

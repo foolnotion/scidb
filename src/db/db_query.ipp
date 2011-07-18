@@ -26,6 +26,7 @@
 
 #include "db_search.h"
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace db {
@@ -41,6 +42,29 @@ Query::match(GameInfo const& info) const
 	M_REQUIRE(!empty());
 	return m_search->match(info);
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+Query::Query(Query&& query)
+	:m_op(query.m_op)
+	,m_search(mstl::move(query.m_search))
+{
+}
+
+
+inline
+Query
+Query::operator=(Query&& query)
+{
+	m_op = query.m_op;
+	m_search = mstl::move(query.m_search);
+
+	return *this;
+}
+
+#endif
 
 } // namespace db
 

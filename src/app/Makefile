@@ -50,7 +50,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -65,11 +65,12 @@ app_application.o: ../mstl/m_exception.h
 app_application.o: ../mstl/m_backtrace.h
 app_application.o: ../mstl/m_exception.ipp
 app_application.o: ../mstl/m_utility.h
+app_application.o: ../mstl/m_type_traits.h
+app_application.o: ../mstl/m_type_traits.ipp
 app_application.o: ../mstl/m_utility.ipp
 app_application.o: ../mstl/m_limits.h
 app_application.o: ../mstl/m_bit_functions.h
 app_application.o: ../mstl/m_bit_functions.ipp
-app_application.o: ../mstl/m_static_check.h
 app_application.o: ../db/db_tree.h
 app_application.o: ../db/db_tree_info.h
 app_application.o: ../db/db_move.h
@@ -82,8 +83,6 @@ app_application.o: ../mstl/m_string.ipp
 app_application.o: ../db/db_move.ipp
 app_application.o: ../db/db_eco.h
 app_application.o: ../db/db_eco.ipp
-app_application.o: ../mstl/m_type_traits.h
-app_application.o: ../mstl/m_type_traits.ipp
 app_application.o: ../db/db_tree_info.ipp
 app_application.o: ../db/db_filter.h
 app_application.o: ../mstl/m_bitset.h
@@ -231,19 +230,18 @@ app_cursor.o: ../mstl/m_exception.ipp
 app_cursor.o: ../mstl/m_bit_functions.h
 app_cursor.o: ../mstl/m_bit_functions.ipp
 app_cursor.o: ../mstl/m_limits.h
-app_cursor.o: ../mstl/m_static_check.h
 app_cursor.o: ../mstl/m_bitset_iterator.ipp
 app_cursor.o: ../mstl/m_bitset.ipp
+app_cursor.o: ../mstl/m_utility.h
+app_cursor.o: ../mstl/m_type_traits.h
+app_cursor.o: ../mstl/m_type_traits.ipp
+app_cursor.o: ../mstl/m_utility.ipp
 app_cursor.o: ../db/db_filter.ipp
 app_cursor.o: ../db/db_selector.h
 app_cursor.o: ../db/db_common.h
 app_cursor.o: ../util/u_base.h
 app_cursor.o: ../db/db_common.ipp
-app_cursor.o: ../mstl/m_utility.h
-app_cursor.o: ../mstl/m_utility.ipp
 app_cursor.o: ../mstl/m_vector.h
-app_cursor.o: ../mstl/m_type_traits.h
-app_cursor.o: ../mstl/m_type_traits.ipp
 app_cursor.o: ../mstl/m_memblock.h
 app_cursor.o: ../mstl/m_memblock.ipp
 app_cursor.o: ../mstl/m_vector.ipp
@@ -337,11 +335,12 @@ app_engine.o: ../mstl/m_exception.h
 app_engine.o: ../mstl/m_backtrace.h
 app_engine.o: ../mstl/m_exception.ipp
 app_engine.o: ../mstl/m_utility.h
+app_engine.o: ../mstl/m_type_traits.h
+app_engine.o: ../mstl/m_type_traits.ipp
 app_engine.o: ../mstl/m_utility.ipp
 app_engine.o: ../mstl/m_limits.h
 app_engine.o: ../mstl/m_bit_functions.h
 app_engine.o: ../mstl/m_bit_functions.ipp
-app_engine.o: ../mstl/m_static_check.h
 app_engine.o: ../util/u_crc.h
 app_engine.o: ../util/u_crc.ipp
 app_engine.o: ../mstl/m_byte_order.h
@@ -352,8 +351,6 @@ app_engine.o: ../db/db_move.ipp
 app_engine.o: ../db/db_move_list.ipp
 app_engine.o: ../mstl/m_list.h
 app_engine.o: ../mstl/m_vector.h
-app_engine.o: ../mstl/m_type_traits.h
-app_engine.o: ../mstl/m_type_traits.ipp
 app_engine.o: ../mstl/m_memblock.h
 app_engine.o: ../mstl/m_memblock.ipp
 app_engine.o: ../mstl/m_vector.ipp
@@ -402,11 +399,12 @@ app_uci_engine.o: ../mstl/m_exception.h
 app_uci_engine.o: ../mstl/m_backtrace.h
 app_uci_engine.o: ../mstl/m_exception.ipp
 app_uci_engine.o: ../mstl/m_utility.h
+app_uci_engine.o: ../mstl/m_type_traits.h
+app_uci_engine.o: ../mstl/m_type_traits.ipp
 app_uci_engine.o: ../mstl/m_utility.ipp
 app_uci_engine.o: ../mstl/m_limits.h
 app_uci_engine.o: ../mstl/m_bit_functions.h
 app_uci_engine.o: ../mstl/m_bit_functions.ipp
-app_uci_engine.o: ../mstl/m_static_check.h
 app_uci_engine.o: ../util/u_crc.h
 app_uci_engine.o: ../util/u_crc.ipp
 app_uci_engine.o: ../mstl/m_byte_order.h
@@ -417,8 +415,6 @@ app_uci_engine.o: ../db/db_move.ipp
 app_uci_engine.o: ../db/db_move_list.ipp
 app_uci_engine.o: ../mstl/m_list.h
 app_uci_engine.o: ../mstl/m_vector.h
-app_uci_engine.o: ../mstl/m_type_traits.h
-app_uci_engine.o: ../mstl/m_type_traits.ipp
 app_uci_engine.o: ../mstl/m_memblock.h
 app_uci_engine.o: ../mstl/m_memblock.ipp
 app_uci_engine.o: ../mstl/m_vector.ipp
@@ -453,19 +449,18 @@ app_view.o: ../mstl/m_exception.ipp
 app_view.o: ../mstl/m_bit_functions.h
 app_view.o: ../mstl/m_bit_functions.ipp
 app_view.o: ../mstl/m_limits.h
-app_view.o: ../mstl/m_static_check.h
 app_view.o: ../mstl/m_bitset_iterator.ipp
 app_view.o: ../mstl/m_bitset.ipp
+app_view.o: ../mstl/m_utility.h
+app_view.o: ../mstl/m_type_traits.h
+app_view.o: ../mstl/m_type_traits.ipp
+app_view.o: ../mstl/m_utility.ipp
 app_view.o: ../db/db_filter.ipp
 app_view.o: ../db/db_selector.h
 app_view.o: ../db/db_common.h
 app_view.o: ../util/u_base.h
 app_view.o: ../db/db_common.ipp
-app_view.o: ../mstl/m_utility.h
-app_view.o: ../mstl/m_utility.ipp
 app_view.o: ../mstl/m_vector.h
-app_view.o: ../mstl/m_type_traits.h
-app_view.o: ../mstl/m_type_traits.ipp
 app_view.o: ../mstl/m_memblock.h
 app_view.o: ../mstl/m_memblock.ipp
 app_view.o: ../mstl/m_vector.ipp
@@ -614,11 +609,12 @@ app_winboard_engine.o: ../mstl/m_exception.h
 app_winboard_engine.o: ../mstl/m_backtrace.h
 app_winboard_engine.o: ../mstl/m_exception.ipp
 app_winboard_engine.o: ../mstl/m_utility.h
+app_winboard_engine.o: ../mstl/m_type_traits.h
+app_winboard_engine.o: ../mstl/m_type_traits.ipp
 app_winboard_engine.o: ../mstl/m_utility.ipp
 app_winboard_engine.o: ../mstl/m_limits.h
 app_winboard_engine.o: ../mstl/m_bit_functions.h
 app_winboard_engine.o: ../mstl/m_bit_functions.ipp
-app_winboard_engine.o: ../mstl/m_static_check.h
 app_winboard_engine.o: ../util/u_crc.h
 app_winboard_engine.o: ../util/u_crc.ipp
 app_winboard_engine.o: ../mstl/m_byte_order.h
@@ -629,8 +625,6 @@ app_winboard_engine.o: ../db/db_move.ipp
 app_winboard_engine.o: ../db/db_move_list.ipp
 app_winboard_engine.o: ../mstl/m_list.h
 app_winboard_engine.o: ../mstl/m_vector.h
-app_winboard_engine.o: ../mstl/m_type_traits.h
-app_winboard_engine.o: ../mstl/m_type_traits.ipp
 app_winboard_engine.o: ../mstl/m_memblock.h
 app_winboard_engine.o: ../mstl/m_memblock.ipp
 app_winboard_engine.o: ../mstl/m_vector.ipp

@@ -30,16 +30,16 @@ public:
 	TextToken();
 	TextToken(mstl::string const& str);
 
-	Type type() const;
-	RefID refID() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
-	mstl::string const& content() const;
-	bool isEqualTo(Token const& token) const;
-	bool isEmpty() const;
+	Type type() const override;
+	RefID refID() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
+	mstl::string const& content() const override;
+	bool isEqualTo(Token const& token) const override;
+	bool isEmpty() const override;
 
-	TokenP performThe(Environment& env) const;
-	void perform(Environment& env);
+	TokenP performThe(Environment& env) const override;
+	void perform(Environment& env) override;
 
 private:
 

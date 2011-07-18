@@ -50,7 +50,6 @@
 #include "m_vector.h"
 #include "m_stdio.h"
 #include "m_bitfield.h"
-#include "m_static_check.h"
 
 #include <string.h>
 
@@ -448,7 +447,7 @@ Codec::Codec()
 {
 	if (::m_lookup.none())
 	{
-		M_STATIC_CHECK(tag::ExtraTag <= 8*sizeof(uint64_t), BitSet_Size_Exceeded);
+		static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 		::m_lookup.set(tag::Event);
 		::m_lookup.set(tag::Site);

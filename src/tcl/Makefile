@@ -60,7 +60,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -76,11 +76,12 @@ tcl_application.o: ../mstl/m_exception.h
 tcl_application.o: ../mstl/m_backtrace.h
 tcl_application.o: ../mstl/m_exception.ipp
 tcl_application.o: ../mstl/m_utility.h
+tcl_application.o: ../mstl/m_type_traits.h
+tcl_application.o: ../mstl/m_type_traits.ipp
 tcl_application.o: ../mstl/m_utility.ipp
 tcl_application.o: ../mstl/m_limits.h
 tcl_application.o: ../mstl/m_bit_functions.h
 tcl_application.o: ../mstl/m_bit_functions.ipp
-tcl_application.o: ../mstl/m_static_check.h
 tcl_application.o: ../db/db_tree.h
 tcl_application.o: ../db/db_tree_info.h
 tcl_application.o: ../db/db_move.h
@@ -93,8 +94,6 @@ tcl_application.o: ../mstl/m_string.ipp
 tcl_application.o: ../db/db_move.ipp
 tcl_application.o: ../db/db_eco.h
 tcl_application.o: ../db/db_eco.ipp
-tcl_application.o: ../mstl/m_type_traits.h
-tcl_application.o: ../mstl/m_type_traits.ipp
 tcl_application.o: ../db/db_tree_info.ipp
 tcl_application.o: ../db/db_filter.h
 tcl_application.o: ../mstl/m_bitset.h
@@ -210,11 +209,12 @@ tcl_base.o: ../util/u_base.h
 tcl_base.o: ../db/db_common.ipp
 tcl_base.o: ../mstl/m_assert.h
 tcl_base.o: ../mstl/m_utility.h
+tcl_base.o: ../mstl/m_type_traits.h
+tcl_base.o: ../mstl/m_type_traits.ipp
 tcl_base.o: ../mstl/m_utility.ipp
 tcl_base.o: ../mstl/m_limits.h
 tcl_base.o: ../mstl/m_bit_functions.h
 tcl_base.o: ../mstl/m_bit_functions.ipp
-tcl_base.o: ../mstl/m_static_check.h
 tcl_base.o: ../mstl/m_pair.h
 tcl_base.o: ../mstl/m_pair.ipp
 tcl_base.o: tcl_application.h
@@ -231,8 +231,6 @@ tcl_base.o: ../mstl/m_string.ipp
 tcl_base.o: ../db/db_move.ipp
 tcl_base.o: ../db/db_eco.h
 tcl_base.o: ../db/db_eco.ipp
-tcl_base.o: ../mstl/m_type_traits.h
-tcl_base.o: ../mstl/m_type_traits.ipp
 tcl_base.o: ../db/db_tree_info.ipp
 tcl_base.o: ../db/db_filter.h
 tcl_base.o: ../mstl/m_bitset.h
@@ -311,6 +309,13 @@ tcl_board.o: tcl_board.h
 tcl_board.o: ../mstl/m_string.h
 tcl_board.o: ../mstl/m_types.h
 tcl_board.o: ../mstl/m_string.ipp
+tcl_board.o: ../mstl/m_utility.h
+tcl_board.o: ../mstl/m_type_traits.h
+tcl_board.o: ../mstl/m_type_traits.ipp
+tcl_board.o: ../mstl/m_utility.ipp
+tcl_board.o: ../mstl/m_limits.h
+tcl_board.o: ../mstl/m_bit_functions.h
+tcl_board.o: ../mstl/m_bit_functions.ipp
 tcl_board.o: ../mstl/m_assert.h
 tcl_board.o: ../mstl/m_exception.h
 tcl_board.o: ../mstl/m_backtrace.h
@@ -323,12 +328,6 @@ tcl_board.o: ../db/db_move.h
 tcl_board.o: ../db/db_common.h
 tcl_board.o: ../util/u_base.h
 tcl_board.o: ../db/db_common.ipp
-tcl_board.o: ../mstl/m_utility.h
-tcl_board.o: ../mstl/m_utility.ipp
-tcl_board.o: ../mstl/m_limits.h
-tcl_board.o: ../mstl/m_bit_functions.h
-tcl_board.o: ../mstl/m_bit_functions.ipp
-tcl_board.o: ../mstl/m_static_check.h
 tcl_board.o: ../util/u_crc.h
 tcl_board.o: ../util/u_crc.ipp
 tcl_board.o: ../mstl/m_byte_order.h
@@ -351,11 +350,12 @@ tcl_crosstable.o: ../mstl/m_exception.h
 tcl_crosstable.o: ../mstl/m_backtrace.h
 tcl_crosstable.o: ../mstl/m_exception.ipp
 tcl_crosstable.o: ../mstl/m_utility.h
+tcl_crosstable.o: ../mstl/m_type_traits.h
+tcl_crosstable.o: ../mstl/m_type_traits.ipp
 tcl_crosstable.o: ../mstl/m_utility.ipp
 tcl_crosstable.o: ../mstl/m_limits.h
 tcl_crosstable.o: ../mstl/m_bit_functions.h
 tcl_crosstable.o: ../mstl/m_bit_functions.ipp
-tcl_crosstable.o: ../mstl/m_static_check.h
 tcl_crosstable.o: ../db/db_tree.h
 tcl_crosstable.o: ../db/db_tree_info.h
 tcl_crosstable.o: ../db/db_move.h
@@ -368,8 +368,6 @@ tcl_crosstable.o: ../mstl/m_string.ipp
 tcl_crosstable.o: ../db/db_move.ipp
 tcl_crosstable.o: ../db/db_eco.h
 tcl_crosstable.o: ../db/db_eco.ipp
-tcl_crosstable.o: ../mstl/m_type_traits.h
-tcl_crosstable.o: ../mstl/m_type_traits.ipp
 tcl_crosstable.o: ../db/db_tree_info.ipp
 tcl_crosstable.o: ../db/db_filter.h
 tcl_crosstable.o: ../mstl/m_bitset.h
@@ -491,11 +489,12 @@ tcl_database.o: ../mstl/m_exception.h
 tcl_database.o: ../mstl/m_backtrace.h
 tcl_database.o: ../mstl/m_exception.ipp
 tcl_database.o: ../mstl/m_utility.h
+tcl_database.o: ../mstl/m_type_traits.h
+tcl_database.o: ../mstl/m_type_traits.ipp
 tcl_database.o: ../mstl/m_utility.ipp
 tcl_database.o: ../mstl/m_limits.h
 tcl_database.o: ../mstl/m_bit_functions.h
 tcl_database.o: ../mstl/m_bit_functions.ipp
-tcl_database.o: ../mstl/m_static_check.h
 tcl_database.o: ../mstl/m_pair.h
 tcl_database.o: ../mstl/m_pair.ipp
 tcl_database.o: tcl_tree.h
@@ -513,8 +512,6 @@ tcl_database.o: ../mstl/m_string.ipp
 tcl_database.o: ../db/db_move.ipp
 tcl_database.o: ../db/db_eco.h
 tcl_database.o: ../db/db_eco.ipp
-tcl_database.o: ../mstl/m_type_traits.h
-tcl_database.o: ../mstl/m_type_traits.ipp
 tcl_database.o: ../db/db_tree_info.ipp
 tcl_database.o: ../db/db_filter.h
 tcl_database.o: ../mstl/m_bitset.h
@@ -671,11 +668,12 @@ tcl_game.o: ../mstl/m_exception.h
 tcl_game.o: ../mstl/m_backtrace.h
 tcl_game.o: ../mstl/m_exception.ipp
 tcl_game.o: ../mstl/m_utility.h
+tcl_game.o: ../mstl/m_type_traits.h
+tcl_game.o: ../mstl/m_type_traits.ipp
 tcl_game.o: ../mstl/m_utility.ipp
 tcl_game.o: ../mstl/m_limits.h
 tcl_game.o: ../mstl/m_bit_functions.h
 tcl_game.o: ../mstl/m_bit_functions.ipp
-tcl_game.o: ../mstl/m_static_check.h
 tcl_game.o: tcl_board.h
 tcl_game.o: ../mstl/m_string.h
 tcl_game.o: ../mstl/m_string.ipp
@@ -694,8 +692,6 @@ tcl_game.o: ../mstl/m_byte_order.ipp
 tcl_game.o: ../db/db_move.ipp
 tcl_game.o: ../db/db_eco.h
 tcl_game.o: ../db/db_eco.ipp
-tcl_game.o: ../mstl/m_type_traits.h
-tcl_game.o: ../mstl/m_type_traits.ipp
 tcl_game.o: ../db/db_tree_info.ipp
 tcl_game.o: ../db/db_filter.h
 tcl_game.o: ../mstl/m_bitset.h
@@ -854,11 +850,12 @@ tcl_log.o: ../mstl/m_exception.h
 tcl_log.o: ../mstl/m_backtrace.h
 tcl_log.o: ../mstl/m_exception.ipp
 tcl_log.o: ../mstl/m_utility.h
+tcl_log.o: ../mstl/m_type_traits.h
+tcl_log.o: ../mstl/m_type_traits.ipp
 tcl_log.o: ../mstl/m_utility.ipp
 tcl_log.o: ../mstl/m_limits.h
 tcl_log.o: ../mstl/m_bit_functions.h
 tcl_log.o: ../mstl/m_bit_functions.ipp
-tcl_log.o: ../mstl/m_static_check.h
 tcl_log.o: tcl_base.h
 tcl_log.o: tcl_base.ipp
 tcl_misc.o: tcl_base.h
@@ -875,17 +872,16 @@ tcl_misc.o: ../util/u_base.h
 tcl_misc.o: ../db/db_common.ipp
 tcl_misc.o: ../mstl/m_assert.h
 tcl_misc.o: ../mstl/m_utility.h
+tcl_misc.o: ../mstl/m_type_traits.h
+tcl_misc.o: ../mstl/m_type_traits.ipp
 tcl_misc.o: ../mstl/m_utility.ipp
 tcl_misc.o: ../mstl/m_limits.h
 tcl_misc.o: ../mstl/m_bit_functions.h
 tcl_misc.o: ../mstl/m_bit_functions.ipp
-tcl_misc.o: ../mstl/m_static_check.h
 tcl_misc.o: ../mstl/m_string.h
 tcl_misc.o: ../mstl/m_string.ipp
 tcl_misc.o: ../mstl/m_map.h
 tcl_misc.o: ../mstl/m_vector.h
-tcl_misc.o: ../mstl/m_type_traits.h
-tcl_misc.o: ../mstl/m_type_traits.ipp
 tcl_misc.o: ../mstl/m_memblock.h
 tcl_misc.o: ../mstl/m_memblock.ipp
 tcl_misc.o: ../mstl/m_vector.ipp
@@ -928,11 +924,12 @@ tcl_pgn_reader.o: ../mstl/m_exception.h
 tcl_pgn_reader.o: ../mstl/m_backtrace.h
 tcl_pgn_reader.o: ../mstl/m_exception.ipp
 tcl_pgn_reader.o: ../mstl/m_utility.h
+tcl_pgn_reader.o: ../mstl/m_type_traits.h
+tcl_pgn_reader.o: ../mstl/m_type_traits.ipp
 tcl_pgn_reader.o: ../mstl/m_utility.ipp
 tcl_pgn_reader.o: ../mstl/m_limits.h
 tcl_pgn_reader.o: ../mstl/m_bit_functions.h
 tcl_pgn_reader.o: ../mstl/m_bit_functions.ipp
-tcl_pgn_reader.o: ../mstl/m_static_check.h
 tcl_pgn_reader.o: ../db/db_producer.ipp
 tcl_pgn_reader.o: ../db/db_consumer.h
 tcl_pgn_reader.o: ../db/db_provider.h
@@ -961,8 +958,6 @@ tcl_pgn_reader.o: ../mstl/m_memblock.ipp
 tcl_pgn_reader.o: ../mstl/m_stack.ipp
 tcl_pgn_reader.o: ../mstl/m_uninitialized.h
 tcl_pgn_reader.o: ../mstl/m_uninitialized.ipp
-tcl_pgn_reader.o: ../mstl/m_type_traits.h
-tcl_pgn_reader.o: ../mstl/m_type_traits.ipp
 tcl_pgn_reader.o: ../mstl/m_algobase.h
 tcl_pgn_reader.o: ../mstl/m_algobase.ipp
 tcl_pgn_reader.o: ../mstl/m_construct.h
@@ -1016,11 +1011,12 @@ tcl_position.o: ../mstl/m_exception.h
 tcl_position.o: ../mstl/m_backtrace.h
 tcl_position.o: ../mstl/m_exception.ipp
 tcl_position.o: ../mstl/m_utility.h
+tcl_position.o: ../mstl/m_type_traits.h
+tcl_position.o: ../mstl/m_type_traits.ipp
 tcl_position.o: ../mstl/m_utility.ipp
 tcl_position.o: ../mstl/m_limits.h
 tcl_position.o: ../mstl/m_bit_functions.h
 tcl_position.o: ../mstl/m_bit_functions.ipp
-tcl_position.o: ../mstl/m_static_check.h
 tcl_position.o: ../db/db_tree.h
 tcl_position.o: ../db/db_tree_info.h
 tcl_position.o: ../db/db_move.h
@@ -1033,8 +1029,6 @@ tcl_position.o: ../mstl/m_string.ipp
 tcl_position.o: ../db/db_move.ipp
 tcl_position.o: ../db/db_eco.h
 tcl_position.o: ../db/db_eco.ipp
-tcl_position.o: ../mstl/m_type_traits.h
-tcl_position.o: ../mstl/m_type_traits.ipp
 tcl_position.o: ../db/db_tree_info.ipp
 tcl_position.o: ../db/db_filter.h
 tcl_position.o: ../mstl/m_bitset.h
@@ -1135,11 +1129,11 @@ tcl_position.o: ../db/db_guess.ipp
 tcl_progress.o: tcl_progress.h
 tcl_progress.o: ../util/u_progress.h
 tcl_progress.o: ../util/u_progress.ipp
+tcl_progress.o: ../mstl/m_types.h
 tcl_progress.o: tcl_exception.h
 tcl_progress.o: ../util/u_exception.h
 tcl_progress.o: ../mstl/m_exception.h
 tcl_progress.o: ../mstl/m_backtrace.h
-tcl_progress.o: ../mstl/m_types.h
 tcl_progress.o: ../mstl/m_exception.ipp
 tcl_progress.o: tcl_base.h
 tcl_progress.o: tcl_base.ipp
@@ -1157,11 +1151,12 @@ tcl_tree.o: ../mstl/m_exception.h
 tcl_tree.o: ../mstl/m_backtrace.h
 tcl_tree.o: ../mstl/m_exception.ipp
 tcl_tree.o: ../mstl/m_utility.h
+tcl_tree.o: ../mstl/m_type_traits.h
+tcl_tree.o: ../mstl/m_type_traits.ipp
 tcl_tree.o: ../mstl/m_utility.ipp
 tcl_tree.o: ../mstl/m_limits.h
 tcl_tree.o: ../mstl/m_bit_functions.h
 tcl_tree.o: ../mstl/m_bit_functions.ipp
-tcl_tree.o: ../mstl/m_static_check.h
 tcl_tree.o: ../db/db_tree.h
 tcl_tree.o: ../db/db_tree_info.h
 tcl_tree.o: ../db/db_move.h
@@ -1174,8 +1169,6 @@ tcl_tree.o: ../mstl/m_string.ipp
 tcl_tree.o: ../db/db_move.ipp
 tcl_tree.o: ../db/db_eco.h
 tcl_tree.o: ../db/db_eco.ipp
-tcl_tree.o: ../mstl/m_type_traits.h
-tcl_tree.o: ../mstl/m_type_traits.ipp
 tcl_tree.o: ../db/db_tree_info.ipp
 tcl_tree.o: ../db/db_filter.h
 tcl_tree.o: ../mstl/m_bitset.h
@@ -1277,22 +1270,23 @@ tcl_tree.o: ../sys/sys_pipe.h
 tcl_view.o: tcl_progress.h
 tcl_view.o: ../util/u_progress.h
 tcl_view.o: ../util/u_progress.ipp
+tcl_view.o: ../mstl/m_types.h
 tcl_view.o: tcl_application.h
 tcl_view.o: ../app/app_application.h
 tcl_view.o: ../db/db_common.h
 tcl_view.o: ../util/u_base.h
-tcl_view.o: ../mstl/m_types.h
 tcl_view.o: ../db/db_common.ipp
 tcl_view.o: ../mstl/m_assert.h
 tcl_view.o: ../mstl/m_exception.h
 tcl_view.o: ../mstl/m_backtrace.h
 tcl_view.o: ../mstl/m_exception.ipp
 tcl_view.o: ../mstl/m_utility.h
+tcl_view.o: ../mstl/m_type_traits.h
+tcl_view.o: ../mstl/m_type_traits.ipp
 tcl_view.o: ../mstl/m_utility.ipp
 tcl_view.o: ../mstl/m_limits.h
 tcl_view.o: ../mstl/m_bit_functions.h
 tcl_view.o: ../mstl/m_bit_functions.ipp
-tcl_view.o: ../mstl/m_static_check.h
 tcl_view.o: ../db/db_tree.h
 tcl_view.o: ../db/db_tree_info.h
 tcl_view.o: ../db/db_move.h
@@ -1305,8 +1299,6 @@ tcl_view.o: ../mstl/m_string.ipp
 tcl_view.o: ../db/db_move.ipp
 tcl_view.o: ../db/db_eco.h
 tcl_view.o: ../db/db_eco.ipp
-tcl_view.o: ../mstl/m_type_traits.h
-tcl_view.o: ../mstl/m_type_traits.ipp
 tcl_view.o: ../db/db_tree_info.ipp
 tcl_view.o: ../db/db_filter.h
 tcl_view.o: ../mstl/m_bitset.h

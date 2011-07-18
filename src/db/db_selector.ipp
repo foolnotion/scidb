@@ -24,6 +24,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
+
 namespace db {
 
 inline unsigned Selector::size() const { return m_map.size(); }
@@ -43,6 +45,29 @@ Selector::lookup(unsigned index) const
 {
 	return index < m_list.size() ? m_list[index] : index;
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+Selector::Selector(Selector&& sel)
+	:m_map(mstl::move(sel.m_map))
+	,m_list(mstl::move(sel.m_list))
+{
+}
+
+
+inline
+Selector&
+Selector::operator=(Selector&& sel)
+{
+	m_map = mstl::move(sel.m_map);
+	m_list = mstl::move(sel.m_list);
+
+	return *this;
+}
+
+#endif
 
 } // namespace db
 

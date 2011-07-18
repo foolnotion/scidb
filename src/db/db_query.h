@@ -27,6 +27,8 @@
 #ifndef _db_query_included
 #define _db_query_included
 
+#include "m_ref_counted_ptr.h"
+
 namespace db {
 
 class Search;
@@ -36,10 +38,19 @@ class Query
 {
 public:
 
+	typedef mstl::ref_counted_ptr<Search> SearchP;
+
 	enum Operator { Null, Not, And, Or, Reset, Remove };
 
-	Query(Search* search, Operator op = Null);
-	~Query() throw();
+	Query(SearchP const& search, Operator op = Null);
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	Query(Query const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	Query(Query&& query);
+	Query operator=(Query&& query);
+#endif
 
 	bool empty() const;
 
@@ -50,7 +61,7 @@ public:
 private:
 
 	Operator	m_op;
-	Search*	m_search;
+	SearchP	m_search;
 };
 
 } // namespace db

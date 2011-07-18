@@ -20,7 +20,6 @@
 #include "T_Environment.h"
 #include "T_Producer.h"
 
-#include "m_static_check.h"
 #include "m_assert.h"
 #include "m_cast.h"
 #include "m_algorithm.h"
@@ -41,28 +40,28 @@ public:
 	{
 	}
 
-	bool finished() const
+	bool finished() const override
 	{
 		return fIter == fToken->m_tokenList.end();
 	}
 
-	Source source() const
+	Source source() const override
 	{
 		return List;
 	}
 
-	TokenP next(Environment&)
+	TokenP next(Environment&) override
 	{
 		return (fIter == fToken->m_tokenList.end()) ? TokenP() : *(fIter++);
 	}
 
-	bool reset()
+	bool reset() override
 	{
 		fIter = fToken->m_tokenList.begin();
 		return true;
 	}
 
-	mstl::string currentDescription() const
+	mstl::string currentDescription() const override
 	{
 		if (fIter == fToken->m_tokenList.begin())
 			return mstl::string::empty_string;

@@ -41,6 +41,17 @@ class Selector
 {
 public:
 
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	Selector() = default;
+	Selector(Selector const&) = default;
+	Selector& operator=(Selector const&) = default;
+#endif
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	Selector(Selector&& sel);
+	Selector& operator=(Selector&& sel);
+#endif
+
 	unsigned size() const;
 
 	unsigned map(unsigned index) const;

@@ -197,6 +197,24 @@ set<T>::assign(const_iterator first, const_iterator last)
 	insert(first, last);
 }
 
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename T>
+inline set<T>::set(set&& v) : m_v(mstl::move(v.m_v)) {}
+
+
+template <typename T>
+inline
+set<T>&
+set<T>::operator=(set&& v)
+{
+	m_v = mstl::move(v.m_v);
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

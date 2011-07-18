@@ -37,7 +37,6 @@
 #include "m_bitset.h"
 #include "m_limits.h"
 #include "m_ref_counted_ptr.h"
-#include "m_static_check.h"
 
 #include <string.h>
 
@@ -763,7 +762,7 @@ Tree::buildTreeStart(unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		M_STATIC_CHECK(::Empty == 0, Reimplement);
+		static_assert(::Empty == 0, "reimplementation required");
 
 		if (info.idn() == myIdn)
 			add(info, Eco(), info.ply<0>(), myPosition);

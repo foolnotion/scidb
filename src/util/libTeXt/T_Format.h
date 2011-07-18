@@ -40,7 +40,7 @@ private:
 	typedef mstl::ref_counted_ptr<FormatFilter> FormatFilterP;
 	typedef mstl::ref_counted_ptr<NumberFilter> NumberFilterP;
 
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 	void performIgnorecase(Environment& env);
 	void performNoshowpos(Environment& env);
 	void performDec(Environment& env);

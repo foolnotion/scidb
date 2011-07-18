@@ -144,11 +144,11 @@ public:
 					ResultMode resultMode = UseResultTag);
 	virtual ~PgnReader() throw();
 
-	bool encodingFailed() const;
+	bool encodingFailed() const override;
 
-	mstl::string const& encoding() const;
+	mstl::string const& encoding() const override;
 
-	unsigned process(util::Progress& progress);
+	unsigned process(util::Progress& progress) override;
 
 	void setFigurine(mstl::string const& figurine);
 

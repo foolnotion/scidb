@@ -44,6 +44,7 @@
 #include "m_algorithm.h"
 #include "m_tuple.h"
 #include "m_map.h"
+#include "m_ref_counted_ptr.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -98,7 +99,7 @@ struct Subscriber : public Cursor::Subscriber
 		}
 	}
 
-	void close(unsigned view)
+	void close(unsigned view) override
 	{
 		Tcl_Obj* v = Tcl_NewIntObj(view);
 		Tcl_IncrRefCount(v);
@@ -108,9 +109,9 @@ struct Subscriber : public Cursor::Subscriber
 			Tuple const& data = m_list[i];
 
 			if (data.get<2>())
-				invoke(__func__, data.get<0>()(), data.get<2>()(), data.get<1>()(), v, NULL);
+				invoke(__func__, data.get<0>()(), data.get<2>()(), data.get<1>()(), v, nullptr);
 			else
-				invoke(__func__, data.get<0>()(), data.get<1>()(), v, NULL);
+				invoke(__func__, data.get<0>()(), data.get<1>()(), v, nullptr);
 		}
 
 		Tcl_DecrRefCount(v);
@@ -124,13 +125,14 @@ struct Subscriber : public Cursor::Subscriber
 
 typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
 typedef mstl::map<mstl::string, SubscriberP> SubscriberMap;
+typedef mstl::ref_counted_ptr<Search> SearchP;
 
 static SubscriberMap subscriberMap;
 
 } // namespace
 
 
-static Search*
+static SearchP
 buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 {
 	int objc;
@@ -141,7 +143,7 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 	if (objc < 2)
 	{
 		error(CmdSearch, 0, 0, "invalid query");
-		return 0;
+		return SearchP();
 	}
 
 	static char const* subcommands[] =
@@ -157,20 +159,20 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 		OR, AND, NOT, Player, Event, GameEvent, Annotator
 	};
 
-	Search* search = 0;
+	SearchP search;
 
 	switch (tcl::uniqueMatchObj(objv[0], subcommands))
 	{
 		case OR:
 		case AND:
 			// TODO
-			return 0;
+			return search;
 
 		case NOT:
 			if (objc != 2)
 			{
 				error(CmdSearch, "NOT", 0, "invalid query");
-				return 0;
+				return search;
 			}
 			search = new SearchOpNot(buildSearch(db, ti, objv[1]));
 			break;
@@ -179,7 +181,7 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			if (objc != 2)
 			{
 				error(CmdSearch, "player", 0, "invalid query");
-				return 0;
+				return search;
 			}
 			search = new SearchPlayer(&db.player(unsignedFromObj(2, objv, 1)));
 			break;
@@ -188,7 +190,7 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			if (objc != 2)
 			{
 				error(CmdSearch, "event", 0, "invalid query");
-				return 0;
+				return search;
 			}
 			search = new SearchEvent(&db.event(unsignedFromObj(2, objv, 1)));
 			break;
@@ -197,7 +199,7 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			if (objc != 2)
 			{
 				error(CmdSearch, "gameevent", 0, "invalid query");
-				return 0;
+				return search;
 			}
 			search = new SearchEvent(db.gameInfo(unsignedFromObj(2, objv, 1)).eventEntry());
 			break;
@@ -206,14 +208,14 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			if (objc != 2)
 			{
 				error(CmdSearch, "annotator", 0, "invalid query");
-				return 0;
+				return search;
 			}
 			search = new SearchAnnotator(Tcl_GetStringFromObj(objv[1], 0));
 			break;
 
 		default:
 			usage(CmdSearch, Tcl_GetStringFromObj(objv[0], 0), 0, subcommands, args);
-			return 0;
+			return search;
 	}
 
 	return search;
@@ -396,12 +398,15 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	// TODO: we don't like to interrupt tree search!
 	Cursor& cursor = scidb.cursor(database);
 
-	Search* search = objc < 6 ? 0 : buildSearch(cursor.database(), ti, objv[5]);
+	SearchP search;
 
-	if (search == 0 && objc == 6)
+	if (objc >= 6)
+		search = buildSearch(cursor.database(), ti, objv[5]);
+
+	if (!search && objc == 6)
 		return TCL_ERROR;
 
-	scidb.searchGames(cursor, Query(search, op), view, filter);
+	scidb.searchGames(cursor, Query(mstl::ref_counted_ptr<Search>(search), op), view, filter);
 
 	return TCL_OK;
 }

@@ -24,6 +24,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace db {
@@ -100,6 +101,22 @@ MarkSet::swap(MarkSet& marks)
 {
 	m_marks.swap(marks.m_marks);
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline MarkSet::MarkSet(MarkSet&& set) : m_marks(mstl::move(set.m_marks)) {}
+
+
+inline
+MarkSet&
+MarkSet::operator=(MarkSet&& set)
+{
+	m_marks = mstl::move(set.m_marks);
+	return *this;
+}
+
+#endif
 
 } // namespace db
 

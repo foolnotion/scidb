@@ -44,7 +44,6 @@
 #include "m_bit_functions.h"
 #include "m_utility.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include <string.h>
 
@@ -297,7 +296,7 @@ Decoder::decodeVariation()
 				break;
 
 			case token::Nag:
-				M_STATIC_CHECK(Annotation::Max_Nags >= 7, ScidbNeedsAtLeastSeven);
+				static_assert(Annotation::Max_Nags >= 7, "Scidb needs at least seven entries");
 				m_currentNode->addAnnotation(nag::ID(m_strm.get()));
 				break;
 
@@ -479,7 +478,7 @@ Decoder::decodeRun(unsigned count)
 
 	for ( ; count > 0; --count)
 	{
-		M_STATIC_CHECK((1 << 16)/* Maximal Run Size */ <= Block_Size, UnsafeGet_Is_Unsafe);
+		static_assert((1 << 16)/* Maximal Run Size */ <= Block_Size, "unsafeGet() is unsafe");
 
 		// unsafeGet() is ok because the block file is buffered with doubled size
 		m_position.doMove(move, decodeMove(m_strm.unsafeGet(), move));
@@ -497,7 +496,7 @@ Decoder::decodeRun(unsigned count, Consumer& consumer)
 
 	for (unsigned i = 0; i < count; ++i)
 	{
-		M_STATIC_CHECK((1 << 16)/* Maximal Run Size */ <= Block_Size, UnsafeGet_Is_Unsafe);
+		static_assert((1 << 16)/* Maximal Run Size */ <= Block_Size, "unsafeGet() is unsafe");
 
 		// unsafeGet() is ok because the block file is buffered with doubled size
 		unsigned pieceNum = decodeMove(m_strm.unsafeGet(), move);
@@ -776,7 +775,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 	for ( ; runLength > 0; --runLength)
 	{
-		M_STATIC_CHECK((1 << 16)/* Maximal Run Size */ <= Block_Size, UnsafeGet_Is_Unsafe);
+		static_assert((1 << 16)/* Maximal Run Size */ <= Block_Size, "unsafeGet() is unsafe");
 
 		// unsafeGet() is ok because the block file is buffered with doubled size
 		m_position.doMove(move, decodeMove(m_strm.unsafeGet(), move));

@@ -26,6 +26,10 @@
 
 #include "tk_init.h"
 
+#define namespace namespace_	// bug in tcl8.6/tkInt.h
+#include <tkInt.h>
+#undef namespace
+
 #include "tcl_exception.h"
 #include "tcl_base.h"
 
@@ -40,9 +44,6 @@
 
 #include <string.h>
 #include <tcl.h>
-#define namespace namespace_	// bug in tcl8.6/tkInt.h
-#include <tkInt.h>
-#undef namespace
 
 
 extern "C" { void TkpWmSetState(TkWindow* winPtr, int state); }
@@ -145,8 +146,8 @@ releaseWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin)
 
 #ifdef WIN32
 
-		// Reparent to NULL so UpdateWrapper won't delete our original parent window
-		SetParent(TkWinGetHWND(winPtr->window), 0);
+		// Reparent to nullptr so UpdateWrapper won't delete our original parent window
+		SetParent(TkWinGetHWND(winPtr->window), nullptr);
 
 #elif defined(__MacOSX__)
 
@@ -687,7 +688,7 @@ Node::packBefore(Node* node, Node const* succ)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, succ->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), succ), node);
 
 	Tcl_DecrRefCount(opts);
@@ -709,7 +710,7 @@ Node::packAfter(Node* node, Node const* pred)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, pred->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), pred) + 1, node);
 
 	Tcl_DecrRefCount(opts);
@@ -723,7 +724,7 @@ Node::pack(Node* node)
 	M_ASSERT(m_type != Pane && m_type != Frame);
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), m_opts, NULL);
+	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), m_opts, nullptr);
 	m_childs.push_back(node);
 }
 
@@ -745,7 +746,7 @@ Node::unpack(unsigned index)
 	M_ASSERT(index < m_childs.size());
 
 	m_childs[index]->m_parent = 0;
-	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), NULL);
+	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), nullptr);
 }
 
 
@@ -767,7 +768,7 @@ Node::unpack()
 	m_childs.clear();
 
 	if (m_type == Notebook || m_type == PanedWindow)
-		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), NULL);
+		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), nullptr);
 }
 
 

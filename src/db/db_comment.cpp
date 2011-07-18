@@ -123,20 +123,27 @@ struct Collector : public Comment::Callback
 {
 	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_set[mstl::string::empty_string]) {}
 
-	void start()  {}
-	void finish() {}
+	void start() override  {}
+	void finish() override {}
 
-	void startLanguage(mstl::string const& lang)	{ m_length = &m_set[lang]; }
-	void endLanguage(mstl::string const& lang)	{ m_length = &m_set[mstl::string::empty_string]; }
+	void startLanguage(mstl::string const& lang) override
+	{
+		m_length = &m_set[lang];
+	}
 
-	void startAttribute(Attribute attr)				{}
-	void endAttribute(Attribute attr)				{}
+	void endLanguage(mstl::string const& lang) override
+	{
+		m_length = &m_set[mstl::string::empty_string];
+	}
 
-	void content(mstl::string const& s)				{ *m_length += s.size(); }
-	void nag(mstl::string const& s)					{ *m_length += 1; }
-	void symbol(char s)									{ *m_length += 1; }
+	void startAttribute(Attribute attr) override	{}
+	void endAttribute(Attribute attr) override	{}
 
-	void invalidXmlContent(mstl::string const& content)
+	void content(mstl::string const& s) override	{ *m_length += s.size(); }
+	void nag(mstl::string const& s) override		{ *m_length += 1; }
+	void symbol(char s) override						{ *m_length += 1; }
+
+	void invalidXmlContent(mstl::string const& content) override
 	{
 		m_set.clear();
 		m_set[mstl::string::empty_string] = content.size();
@@ -154,20 +161,27 @@ struct Split : public Comment::Callback
 
 	Split() :m_current(&m_result[mstl::string::empty_string]) {}
 
-	void start()  {}
-	void finish() {}
+	void start() override  {}
+	void finish() override {}
 
-	void startLanguage(mstl::string const& lang)	{ m_current = &m_result[lang]; }
-	void endLanguage(mstl::string const& lang)	{ m_current = &m_result[mstl::string::empty_string]; }
+	void startLanguage(mstl::string const& lang) override
+	{
+		m_current = &m_result[lang];
+	}
 
-	void startAttribute(Attribute attr)
+	void endLanguage(mstl::string const& lang) override
+	{
+		m_current = &m_result[mstl::string::empty_string];
+	}
+
+	void startAttribute(Attribute attr) override
 	{
 		m_current->append('<');
 		m_current->append(attr);
 		m_current->append('>');
 	}
 
-	void endAttribute(Attribute attr)
+	void endAttribute(Attribute attr) override
 	{
 		m_current->append('<');
 		m_current->append('/');
@@ -175,7 +189,7 @@ struct Split : public Comment::Callback
 		m_current->append('>');
 	}
 
-	void content(mstl::string const& s)
+	void content(mstl::string const& s) override
 	{
 		if (s.size() == 1)
 		{
@@ -193,21 +207,21 @@ struct Split : public Comment::Callback
 		}
 	}
 
-	void symbol(char s)
+	void symbol(char s) override
 	{
 		m_current->append("<sym>", 5);
 		m_current->append(s);
 		m_current->append("</sym>", 6);
 	}
 
-	void nag(mstl::string const& s)
+	void nag(mstl::string const& s) override
 	{
 		m_current->append("<nag>", 5);
 		m_current->append(s);
 		m_current->append("</nag>", 6);
 	}
 
-	void invalidXmlContent(mstl::string const& content) {}
+	void invalidXmlContent(mstl::string const& content) override {}
 
 	static void join(mstl::string& result, LangMap const& lhs, LangMap const& rhs, char delim)
 	{
@@ -374,9 +388,9 @@ struct Normalize : public Comment::Callback
 		m_engFlag = m_othFlag = false;
 	}
 
-	void start() { endLanguage(mstl::string::empty_string); }
+	void start() override { endLanguage(mstl::string::empty_string); }
 
-	void finish()
+	void finish() override
 	{
 		m_result.clear();
 
@@ -421,7 +435,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void startLanguage(mstl::string const& lang)
+	void startLanguage(mstl::string const& lang) override
 	{
 		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
 		{
@@ -442,7 +456,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void endLanguage(mstl::string const& lang)
+	void endLanguage(mstl::string const& lang) override
 	{
 		if (m_wanted == 0 || m_wanted->find(mstl::string::empty_string) != m_wanted->end())
 			m_lang = &m_map[mstl::string::empty_string];
@@ -450,7 +464,7 @@ struct Normalize : public Comment::Callback
 			m_lang = 0;
 	}
 
-	void startAttribute(Attribute attr)
+	void startAttribute(Attribute attr) override
 	{
 		if (m_lang && ++m_attr[attr] == 1)
 		{
@@ -461,7 +475,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void endAttribute(Attribute attr)
+	void endAttribute(Attribute attr) override
 	{
 		if (m_lang && --m_attr[attr] == 0)
 		{
@@ -472,7 +486,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void content(mstl::string const& s)
+	void content(mstl::string const& s) override
 	{
 		if (m_lang)
 		{
@@ -495,7 +509,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void symbol(char s)
+	void symbol(char s) override
 	{
 		if (m_lang)
 		{
@@ -507,7 +521,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void nag(mstl::string const& s)
+	void nag(mstl::string const& s) override
 	{
 		if (m_lang)
 		{
@@ -519,7 +533,7 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
-	void invalidXmlContent(mstl::string const& content)
+	void invalidXmlContent(mstl::string const& content) override
 	{
 		if (m_lang)
 		{
@@ -544,10 +558,10 @@ struct Flatten : public Comment::Callback
 {
 	Flatten(mstl::string& result, encoding::CharSet encoding) :m_result(result), m_encoding(encoding) {}
 
-	void start()	{}
-	void finish()	{}
+	void start() override	{}
+	void finish() override	{}
 
-	void startLanguage(mstl::string const& lang)
+	void startLanguage(mstl::string const& lang) override
 	{
 		if (!m_result.empty())
 			m_result += ' ';
@@ -561,14 +575,14 @@ struct Flatten : public Comment::Callback
 		}
 	}
 
-	void endLanguage(mstl::string const& lang)	{}
+	void endLanguage(mstl::string const& lang) override	{}
 
-	void startAttribute(Attribute attr)				{}
-	void endAttribute(Attribute attr)				{}
+	void startAttribute(Attribute attr) override				{}
+	void endAttribute(Attribute attr) override				{}
 
-	void content(mstl::string const& s)				{ m_result += s; }
+	void content(mstl::string const& s) override				{ m_result += s; }
 
-	void symbol(char s)
+	void symbol(char s) override
 	{
 		if (m_encoding == encoding::Utf8)
 			m_result += piece::utf8::asString(piece::fromLetter(s));
@@ -576,7 +590,7 @@ struct Flatten : public Comment::Callback
 			m_result += s;
 	}
 
-	void nag(mstl::string const& s)
+	void nag(mstl::string const& s) override
 	{
 		nag::ID		nag = nag::ID(::strtoul(s, 0, 10));
 		char const*	sym = nag::toSymbol(nag);
@@ -592,7 +606,7 @@ struct Flatten : public Comment::Callback
 		}
 	}
 
-	void invalidXmlContent(mstl::string const& content) { m_result = content; }
+	void invalidXmlContent(mstl::string const& content) override { m_result = content; }
 
 	mstl::string&		m_result;
 	encoding::CharSet	m_encoding;
@@ -603,10 +617,10 @@ struct HtmlConv : public Comment::Callback
 {
 	HtmlConv(mstl::string& result) :m_result(result) {}
 
-	void start()	{}
-	void finish()	{}
+	void start() override	{}
+	void finish() override	{}
 
-	void startLanguage(mstl::string const& lang)
+	void startLanguage(mstl::string const& lang) override
 	{
 		if (!lang.empty())
 		{
@@ -616,13 +630,13 @@ struct HtmlConv : public Comment::Callback
 		}
 	}
 
-	void endLanguage(mstl::string const& lang)
+	void endLanguage(mstl::string const& lang) override
 	{
 		if (!lang.empty())
 			m_result.append("</lang>", 7);
 	}
 
-	void startAttribute(Attribute attr)
+	void startAttribute(Attribute attr) override
 	{
 		switch (attr)
 		{
@@ -632,7 +646,7 @@ struct HtmlConv : public Comment::Callback
 		}
 	}
 
-	void endAttribute(Attribute attr)
+	void endAttribute(Attribute attr) override
 	{
 		switch (attr)
 		{
@@ -642,7 +656,7 @@ struct HtmlConv : public Comment::Callback
 		}
 	}
 
-	void content(mstl::string const& str)
+	void content(mstl::string const& str) override
 	{
 		char const* s = str.begin();
 		char const* e = str.end();
@@ -660,7 +674,7 @@ struct HtmlConv : public Comment::Callback
 		}
 	}
 
-	void symbol(char s)
+	void symbol(char s) override
 	{
 		char const* code = 0; // satisfies the compiler
 
@@ -677,14 +691,14 @@ struct HtmlConv : public Comment::Callback
 		m_result.append(code, 8);
 	}
 
-	void nag(mstl::string const& s)
+	void nag(mstl::string const& s) override
 	{
 		m_result.append("<nag>", 5);
 		m_result.append(s);
 		m_result.append("</nag>", 6);
 	}
 
-	void invalidXmlContent(mstl::string const& content) { m_result = content; }
+	void invalidXmlContent(mstl::string const& content) override { m_result = content; }
 
 	mstl::string& m_result;
 };

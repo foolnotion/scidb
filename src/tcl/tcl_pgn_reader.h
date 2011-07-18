@@ -61,14 +61,14 @@ public:
 						unsigned column,
 						unsigned gameNo,
 						mstl::string const& info,
-						mstl::string const& item);
+						mstl::string const& item) override;
 	void error(		Error code,
 						unsigned lineNo,
 						unsigned column,
 						int gameNo,
 						mstl::string const& message,
 						mstl::string const& info,
-						mstl::string const& item);
+						mstl::string const& item) override;
 
 private:
 

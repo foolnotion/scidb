@@ -29,11 +29,11 @@ public:
 
 	TextConsumer(mstl::string& result, Consumer* next = 0);
 
-	void put(unsigned char c);
-	void put(mstl::string const& s);
+	void put(unsigned char c) override;
+	void put(mstl::string const& s) override;
 
-	void out(mstl::string const& text);
-	void log(mstl::string const& text, bool copyToOut);
+	void out(mstl::string const& text) override;
+	void log(mstl::string const& text, bool copyToOut) override;
 
 private:
 

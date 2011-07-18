@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -336,6 +337,33 @@ swap(string::reference lhs, string::reference rhs)
 	lhs = static_cast<string::value_type>(rhs);
 	rhs = c;
 }
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+string::string(string&& str)
+	:m_size(str.m_size)
+	,m_capacity(str.m_capacity)
+	,m_data(str.m_data)
+{
+	str.m_data = 0;
+}
+
+
+inline
+string& string::operator=(string&& str)
+{
+	if (this != &str)
+	{
+		m_size = str.m_size;
+		mstl::swap(m_capacity, str.m_capacity);
+		mstl::swap(m_data, str.m_data);
+	}
+
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

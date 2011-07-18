@@ -41,19 +41,19 @@ public:
 					TokenP const& body,
 					int nestingLevel);
 
-	bool isEqualTo(Token const& token) const;
-	bool isEmpty() const;
+	bool isEqualTo(Token const& token) const override;
+	bool isEmpty() const override;
 
-	Type type() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
-	Value value() const;
+	Type type() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
+	Value value() const override;
 
 	mstl::string parameterDescription() const;
 	Producer* getProducer() const;
 
-	void traceCommand(Environment& env) const;
-	void perform(Environment& env);
+	void traceCommand(Environment& env) const override;
+	void perform(Environment& env) override;
 
 private:
 

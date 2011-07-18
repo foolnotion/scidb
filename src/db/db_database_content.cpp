@@ -27,8 +27,6 @@
 #include "db_database_content.h"
 #include "db_game_info.h"
 
-#include "m_static_check.h"
-
 using namespace db;
 
 

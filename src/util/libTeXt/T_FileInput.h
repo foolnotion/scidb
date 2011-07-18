@@ -36,9 +36,9 @@ public:
 
 	FileInput& operator=(FileInput const& stream);
 
-	Source source() const;
+	Source source() const override;
 
-	bool readNextLine(mstl::string& result);
+	bool readNextLine(mstl::string& result) override;
 
 private:
 

@@ -39,18 +39,18 @@ public:
 	ListToken(Environment& env, mstl::string const& text);
 	template <class Iterator> ListToken(Iterator const& first, Iterator const& last);
 
-	bool isEqualTo(Token const& token) const;
-	bool isEmpty() const;
+	bool isEqualTo(Token const& token) const override;
+	bool isEmpty() const override;
 
-	Type type() const;
-	mstl::string name() const;
-	mstl::string meaning() const;
-	mstl::string description(Environment& env) const;
+	Type type() const override;
+	mstl::string name() const override;
+	mstl::string meaning() const override;
+	mstl::string description(Environment& env) const override;
 	Producer* getProducer(TokenP const& self) const;
 	Value length() const;
-	TokenP performThe(Environment& env) const;
-	void perform(Environment& env);
-	void traceCommand(Environment& env) const;
+	TokenP performThe(Environment& env) const override;
+	void perform(Environment& env) override;
+	void traceCommand(Environment& env) const override;
 
 	void append(Token* token);
 	void append(TokenP const& token);
@@ -73,7 +73,7 @@ public:
 	Value find(TokenP const& token) const;
 	void appendTo(ListToken& list) const;
 	void set(Value index, TokenP const& token);
-	void bind(Environment& env);
+	void bind(Environment& env) override;
 
 	unsigned size() const;
 	void resize(unsigned n, TokenP value = TokenP());

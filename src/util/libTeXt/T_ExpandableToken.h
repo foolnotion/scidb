@@ -27,10 +27,10 @@ class ExpandableToken : public Token
 {
 public:
 
-	void bind(Environment& env);
-	void resolve(Environment& env);
-	void expand(Environment& env);
-	void execute(Environment& env);
+	void bind(Environment& env) override;
+	void resolve(Environment& env) override;
+	void expand(Environment& env) override;
+	void execute(Environment& env) override;
 
 protected:
 

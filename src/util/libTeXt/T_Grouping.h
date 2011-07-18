@@ -25,7 +25,7 @@ namespace TeXt {
 
 class Grouping : public Package
 {
-	void doRegister(Environment& env);
+	void doRegister(Environment& env) override;
 
 	void performBegingroup(Environment& env);
 	void performEndgroup(Environment& env);

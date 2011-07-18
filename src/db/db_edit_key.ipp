@@ -24,6 +24,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
+
 namespace db {
 namespace edit {
 
@@ -38,6 +40,26 @@ inline bool operator==(mstl::string const& lhs, Key const& rhs) { return lhs == 
 inline bool operator!=(mstl::string const& lhs, Key const& rhs) { return lhs != rhs.id(); }
 inline bool operator==(Key const& lhs, mstl::string const& rhs) { return lhs.id() == rhs; }
 inline bool operator!=(Key const& lhs, mstl::string const& rhs) { return lhs.id() != rhs; }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+Key::Key(Key&& key)
+	:m_id(mstl::move(key.m_id))
+{
+}
+
+
+inline
+Key&
+Key::operator=(Key&& key)
+{
+	m_id = mstl::move(key.m_id);
+	return *this;
+}
+
+#endif
 
 } // namespace edit
 } // namespace db

@@ -31,8 +31,6 @@
 
 using namespace db;
 
-
-Query::Query(Search* search, Operator op)	: m_op(op), m_search(search) {}
-Query::~Query() throw() { delete m_search; }
+Query::Query(SearchP const& search, Operator op) :m_op(op), m_search(search) {}
 
 // vi:set ts=3 sw=3:

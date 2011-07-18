@@ -29,12 +29,12 @@ public:
 
 	ReadAgainProducer(TokenP const& token);
 
-	bool finished() const;
+	bool finished() const override;
 
-	mstl::string currentDescription() const;
-	Source source() const;
+	mstl::string currentDescription() const override;
+	Source source() const override;
 
-	TokenP next(Environment& env);
+	TokenP next(Environment& env) override;
 
 private:
 

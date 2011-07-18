@@ -131,9 +131,9 @@ public:
 	Action(Command command, unsigned level, Key const& beforeKey);
 	Action(Command command, unsigned level, Key const& startKey, Key const& endKey);
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -151,9 +151,9 @@ public:
 	Root();
 	~Root() throw();
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 	void difference(Root const* root, List& nodes) const;
 
 	static Root* makeList(	TagSet const& tags,
@@ -201,9 +201,9 @@ public:
 
 	bool operator==(Node const* node) const;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -221,10 +221,10 @@ public:
 
 	bool operator==(Node const* node) const;
 
-	Type type() const;
+	Type type() const override;
 	LanguageSet const& langSet() const;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -240,17 +240,17 @@ public:
 	Variation(Key const& key, Key const& succ);
 	~Variation() throw();
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
 	bool empty() const;
 
-	Type type() const;
+	Type type() const override;
 
-	Key const& startKey() const;
-	Key const& endKey() const;
+	Key const& startKey() const override;
+	Key const& endKey() const override;
 	Key const& successor() const;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -271,11 +271,11 @@ public:
 
 	bool operator==(Node const* node) const;
 
-	Type type() const;
+	Type type() const override;
 	unsigned moveNo() const;
 	db::Move const& move() const;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -299,13 +299,13 @@ public:
 
 	~Move() throw();
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
 	Ply const* ply() const;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -322,11 +322,11 @@ public:
 
 	Diagram(Work& work, color::ID fromColor);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -343,11 +343,11 @@ public:
 
 	Comment(db::Comment const& comment, move::Position position, VarPos varPos = Inside);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -363,11 +363,11 @@ public:
 
 	Annotation(db::Annotation const& annotation, bool deleteDiagram = false);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -381,11 +381,11 @@ public:
 
 	Marks(MarkSet const& marks);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 
@@ -400,11 +400,11 @@ public:
 	Space(Bracket bracket = Blank);
 	Space(unsigned level);
 
-	bool operator==(Node const* node) const;
+	bool operator==(Node const* node) const override;
 
-	Type type() const;
+	Type type() const override;
 
-	void visit(Visitor& visitor) const;
+	void visit(Visitor& visitor) const override;
 
 private:
 

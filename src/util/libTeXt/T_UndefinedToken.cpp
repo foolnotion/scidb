@@ -20,7 +20,6 @@
 #include "T_Environment.h"
 #include "T_Messages.h"
 
-#include "m_static_check.h"
 #include "m_assert.h"
 
 #include <string>

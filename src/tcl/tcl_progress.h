@@ -21,6 +21,8 @@
 
 #include "u_progress.h"
 
+#include "m_types.h" // for keyword 'override'
+
 extern "C" { struct Tcl_Obj; }
 
 namespace tcl {
@@ -32,12 +34,12 @@ public:
 	Progress(Tcl_Obj* cmd, Tcl_Obj* arg);
 	~Progress() throw();
 
-	bool interrupted();
-	unsigned ticks() const;
+	bool interrupted() override;
+	unsigned ticks() const override;
 
-	void start(unsigned total);
-	void update(unsigned progress);
-	void finish();
+	void start(unsigned total) override;
+	void update(unsigned progress) override;
+	void finish() override;
 
 private:
 

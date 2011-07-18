@@ -30,7 +30,6 @@
 #include "m_algorithm.h"
 #include "m_bitfield.h"
 #include "m_bit_functions.h"
-#include "m_static_check.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -1166,9 +1165,9 @@ namespace tag
 
 	Initializer::Initializer()
 	{
-		M_STATIC_CHECK(U_NUMBER_OF(NameLookup) == ExtraTag, NameLookupExpired)
-		M_STATIC_CHECK(U_NUMBER_OF(NameMap) - 2 == ExtraTag, NameMapExpired)
-		M_STATIC_CHECK(ExtraTag <= 8*sizeof(uint64_t), BitField_Size_Exceeded);
+		static_assert(U_NUMBER_OF(NameLookup) == ExtraTag, "NameLookup expired")
+		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired")
+		static_assert(ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 #ifndef NDEBUG
 		::memset(NameLookup, 0, sizeof(NameLookup));
@@ -1895,7 +1894,7 @@ result::fromString(mstl::string const& s)
 termination::Reason
 termination::fromString(mstl::string const& s)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(Lookup) == Unterminated + 1, LookupExpired)
+	static_assert(U_NUMBER_OF(Lookup) == Unterminated + 1, "termination::Lookup expired")
 
 	for (unsigned i = 1; i < U_NUMBER_OF(Lookup); ++i)
 	{
@@ -1918,7 +1917,7 @@ termination::toString(Reason reason)
 mstl::string const&
 time::toString(Mode time)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(Lookup) == Corr + 1, LookupExpired);
+	static_assert(U_NUMBER_OF(Lookup) == Corr + 1, "time::Lookup expired");
 	M_ASSERT(time < int(U_NUMBER_OF(Lookup)));
 
 	return Lookup[time];
@@ -1928,7 +1927,7 @@ time::toString(Mode time)
 time::Mode
 time::fromString(mstl::string const& s)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(Lookup) == Corr + 1, LookupExpired);
+	static_assert(U_NUMBER_OF(Lookup) == Corr + 1, "time::Lookup expired");
 
 	switch (::tolower(s.c_str()[0]))
 	{
@@ -3733,7 +3732,7 @@ pawns::print(Progress progress, color::ID color, mstl::string& result)
 event::Mode
 event::modeFromString(mstl::string const& s)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(ModeLookup) == Composition + 1, LookupExpired);
+	static_assert(U_NUMBER_OF(ModeLookup) == Composition + 1, "event::Lookup expired");
 
 	mstl::string const Corr("corr");
 	mstl::string const Tournament("tournament");
@@ -3785,7 +3784,7 @@ event::modeFromString(mstl::string const& s)
 mstl::string const&
 event::toString(Mode mode)
 {
-	M_STATIC_CHECK(U_NUMBER_OF(ModeLookup) == Composition + 1, LookupExpired);
+	static_assert(U_NUMBER_OF(ModeLookup) == Composition + 1, "event::Lookup expired");
 	M_ASSERT(mode < int(U_NUMBER_OF(ModeLookup)));
 
 	return ModeLookup[mode];

@@ -48,6 +48,10 @@ public:
 	exception(exception const& exc);
 	virtual ~exception () throw();
 
+#if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	exception& operator=(exception const&) = delete;
+#endif
+
 	virtual char const* what() const throw();
 	::mstl::backtrace const& backtrace() const;
 
@@ -61,7 +65,9 @@ private:
 	friend void bits::prepare_msg(exception& exc, char const*, unsigned, char const*, char const*);
 #endif
 
+#if !HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	exception& operator=(exception const&);
+#endif
 
 	string* m_msg;
 	::mstl::backtrace	m_backtrace;

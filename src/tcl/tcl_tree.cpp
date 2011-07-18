@@ -104,12 +104,12 @@ struct MyPipedProgress : public util::PipedProgress
 		Tcl_IncrRefCount(m_arg);
 	}
 
-	void available(unsigned char c)
+	void available(unsigned char c) override
 	{
 		Tcl_Obj* n = Tcl_NewIntObj(c);
 
 		Tcl_IncrRefCount(n);
-		invoke(__func__, m_cmd, m_arg, n, NULL);
+		invoke(__func__, m_cmd, m_arg, n, nullptr);
 		Tcl_DecrRefCount(n);
 	}
 

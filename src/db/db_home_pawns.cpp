@@ -33,7 +33,6 @@
 #include "m_bitfield.h"
 #include "m_string.h"
 #include "m_utility.h"
-#include "m_static_check.h"
 #include "m_stdio.h"
 
 #include <string.h>

@@ -19,7 +19,6 @@
 #include "m_string.h"
 #include "m_utility.h"
 #include "m_memblock.h"
-#include "m_static_check.h"
 #include "m_type_traits.h"
 #include "m_bit_functions.h"
 #include "m_ios.h"
@@ -121,7 +120,7 @@ string::string(const_pointer s)
 	,m_capacity(0)
 	,m_data(0)
 {
-	M_STATIC_CHECK(mstl::is_pod<value_type>::value, Value_Type_Must_Be_POD);
+	static_assert(mstl::is_pod<value_type>::value, "value type must be POD");
 	M_REQUIRE(s);
 
 	init(s, ::strlen(s));
@@ -789,7 +788,7 @@ string::vformat(const_pointer fmt, va_list args)
 
 	if (size >= (int)sizeof(buffer))
 	{
-		value_type* buf = NULL;
+		value_type* buf = nullptr;
 		size = ::vasprintf(&buf, fmt, args);
 		if (size)
 			append(buf, size);

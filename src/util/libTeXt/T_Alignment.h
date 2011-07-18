@@ -38,8 +38,8 @@ private:
 
 	typedef mstl::ref_counted_ptr<AlignmentFilter> FilterP;
 
-	void doRegister(Environment& env);
-	void doFinish(Environment& env);
+	void doRegister(Environment& env) override;
+	void doFinish(Environment& env) override;
 
 	void performCrcr(Environment& env);
 	void performSpace(Environment& env);

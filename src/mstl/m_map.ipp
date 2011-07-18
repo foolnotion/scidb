@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -256,6 +257,25 @@ map<K,V>::swap(map& m)
 {
 	m_v.swap(m.m_v);
 }
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename K, typename V>
+inline
+map<K,V>::map(map&& m) : m_v(mstl::move(m.m_v)) {}
+
+
+template <typename K, typename V>
+inline
+map<K,V>&
+map<K,V>::operator=(map&& m)
+{
+	mstl::swap(m_v, m.m_v);
+	return *this;
+}
+
+#endif
 
 } // namespace mstl
 

@@ -43,6 +43,11 @@ public:
 	template <class U> shared_base(shared_base<U,shared_counter,Deleter> const& sb);
 	~shared_base();
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	shared_base(shared_base&& sb);
+	shared_base& operator=(shared_base&& sb);
+#endif
+
 	// assignment
 	shared_base& operator=(shared_base<T,weak_counter,Deleter> const& sb);
 	shared_base& operator=(shared_base<T,shared_counter,Deleter> const& sb);

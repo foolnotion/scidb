@@ -158,7 +158,7 @@ namespace {
 struct SingleProgress : public util::Progress
 {
 	SingleProgress() { setFrequency(1); }
-	bool interrupted() { return true; }
+	bool interrupted() override { return true; }
 };
 
 
@@ -221,12 +221,12 @@ public:
 		Tcl_DecrRefCount(m_list);
 	}
 
-	void start(result::ID)
+	void start(result::ID) override
 	{
 		Tcl_ListObjAppendElement(0, m_list, m_start);
 	}
 
-	void finish(result::ID result)
+	void finish(result::ID result) override
 	{
 		Tcl_Obj* objv[2];
 
@@ -236,7 +236,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
 
-	void clear()
+	void clear() override
 	{
 		Tcl_Obj* objv_1[2];
 
@@ -246,7 +246,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_1), objv_1));
 	}
 
-	void insert(unsigned level, edit::Key const& beforeKey)
+	void insert(unsigned level, edit::Key const& beforeKey) override
 	{
 		Tcl_Obj* objv_1[3];
 
@@ -262,7 +262,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
 	}
 
-	void replace(unsigned level, edit::Key const& startKey, edit::Key const& endKey)
+	void replace(unsigned level, edit::Key const& startKey, edit::Key const& endKey) override
 	{
 		Tcl_Obj* objv_1[4];
 
@@ -279,7 +279,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
 	}
 
-	void remove(unsigned level, edit::Key const& startKey, edit::Key const& endKey)
+	void remove(unsigned level, edit::Key const& startKey, edit::Key const& endKey) override
 	{
 		Tcl_Obj* objv_1[4];
 
@@ -296,7 +296,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
 	}
 
-	void finish(unsigned level)
+	void finish(unsigned level) override
 	{
 		Tcl_Obj* objv_1[2];
 
@@ -311,7 +311,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
 	}
 
-	void opening(Board const& startBoard, uint16_t idn, Eco const& eco)
+	void opening(Board const& startBoard, uint16_t idn, Eco const& eco) override
 	{
 		mstl::string openingLong, openingShort, variation, subvariation, position;
 		EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvariation);
@@ -367,7 +367,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_8), objv_8));
 	}
 
-	void languages(LanguageSet const& languages)
+	void languages(LanguageSet const& languages) override
 	{
 		Tcl_Obj*  objv_1[languages.size()];
 		Tcl_Obj** p(&objv_1[0]);
@@ -386,7 +386,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2));
 	}
 
-	void move(unsigned moveNo, Move const& move)
+	void move(unsigned moveNo, Move const& move) override
 	{
 		mstl::string san;
 
@@ -408,7 +408,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
-	void position(::db::Board const& board, color::ID fromColor)
+	void position(::db::Board const& board, color::ID fromColor) override
 	{
 		mstl::string position = tcl::board::toBoard(board);
 
@@ -427,7 +427,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2);
 	}
 
-	void comment(move::Position position, VarPos varPos, Comment const& comment)
+	void comment(move::Position position, VarPos varPos, Comment const& comment) override
 	{
 		Tcl_Obj* objv[3];
 
@@ -444,7 +444,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void annotation(Annotation const& annotation)
+	void annotation(Annotation const& annotation) override
 	{
 		mstl::string prefix, infix, suffix;
 
@@ -463,7 +463,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void marks(MarkSet const& marks)
+	void marks(MarkSet const& marks) override
 	{
 		mstl::string str;
 		marks.toString(str);
@@ -478,7 +478,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void space(Bracket bracket)
+	void space(Bracket bracket) override
 	{
 		Tcl_Obj* objv[2];
 
@@ -498,7 +498,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void linebreak(unsigned level)
+	void linebreak(unsigned level) override
 	{
 		Tcl_Obj* objv[2];
 
@@ -509,7 +509,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void startVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey)
+	void startVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey) override
 	{
 		Tcl_Obj* objv[4];
 
@@ -521,7 +521,7 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
 
-	void endVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey)
+	void endVariation(edit::Key const& key, edit::Key const& startKey, edit::Key const& endKey) override
 	{
 		Tcl_Obj* objv[4];
 
@@ -533,11 +533,11 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
 
-	void startMove(edit::Key const& key)
+	void startMove(edit::Key const& key) override
 	{
 	}
 
-	void endMove(edit::Key const& key)
+	void endMove(edit::Key const& key) override
 	{
 		Tcl_Obj* objv[3];
 
@@ -549,11 +549,11 @@ public:
 		m_objc = 0;
 	}
 
-	void startDiagram(edit::Key const& key)
+	void startDiagram(edit::Key const& key) override
 	{
 	}
 
-	void endDiagram(edit::Key const& key)
+	void endDiagram(edit::Key const& key) override
 	{
 		Tcl_Obj* objv[3];
 
@@ -732,15 +732,15 @@ struct Subscriber : public Game::Subscriber
 			Tcl_IncrRefCount(m_state = obj);
 	}
 
-	bool mainlineOnly() { return m_mainlineOnly; }
+	bool mainlineOnly() override { return m_mainlineOnly; }
 
-	void stateChanged(bool locked)
+	void stateChanged(bool locked) override
 	{
 		if (m_state)
-			invoke(__func__, m_state, m_position, locked ? m_true : m_false, NULL);
+			invoke(__func__, m_state, m_position, locked ? m_true : m_false, nullptr);
 	}
 
-	void updateEditor(edit::Root const* node)
+	void updateEditor(edit::Root const* node) override
 	{
 		M_ASSERT(node);
 
@@ -748,21 +748,21 @@ struct Subscriber : public Game::Subscriber
 		{
 			Visitor visitor;
 			node->visit(visitor);
-			invoke(__func__, m_pgn, m_position, visitor.m_list, NULL);
+			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
 	}
 
-	void updateEditor(Game::DiffList const& nodes, TagSet const& tags)
+	void updateEditor(Game::DiffList const& nodes, TagSet const& tags) override
 	{
 		if (m_pgn)
 		{
 			Visitor visitor;
 			edit::Node::visit(visitor, nodes, tags);
-			invoke(__func__, m_pgn, m_position, visitor.m_list, NULL);
+			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
 	}
 
-	void boardSetup(Board const& board)
+	void boardSetup(Board const& board) override
 	{
 		if (m_board)
 		{
@@ -770,14 +770,14 @@ struct Subscriber : public Game::Subscriber
 			pos::dumpBoard(board, pos);
 
 			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
-			invoke(__func__, m_board, m_position, m_set, b, NULL);
+			invoke(__func__, m_board, m_position, m_set, b, nullptr);
 		}
 
 		if (m_tree)
-			invoke(__func__, m_tree, m_position, NULL);
+			invoke(__func__, m_tree, m_position, nullptr);
 	}
 
-	void boardMove(Board const& board, Move const& move, bool forward)
+	void boardMove(Board const& board, Move const& move, bool forward) override
 	{
 		if (m_board)
 		{
@@ -853,10 +853,10 @@ struct Subscriber : public Game::Subscriber
 		pos::resetMoveCache();
 
 		if (m_tree)
-			invoke(__func__, m_tree, m_position, NULL);
+			invoke(__func__, m_tree, m_position, nullptr);
 	}
 
-	void updateMarks(mstl::string const& marks)
+	void updateMarks(mstl::string const& marks) override
 	{
 		if (m_pgn)
 		{
@@ -872,11 +872,11 @@ struct Subscriber : public Game::Subscriber
 
 			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), NULL);
+			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), nullptr);
 		}
 	}
 
-	void gotoMove(mstl::string const& key, mstl::string const& succKey)
+	void gotoMove(mstl::string const& key, mstl::string const& succKey) override
 	{
 		if (m_pgn)
 		{
@@ -893,7 +893,7 @@ struct Subscriber : public Game::Subscriber
 
 			Tcl_Obj* objv_3[1] = { Tcl_NewListObj(U_NUMBER_OF(objv_2), objv_2) };
 
-			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), NULL);
+			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(1, objv_3), nullptr);
 		}
 
 		pos::resetMoveCache();

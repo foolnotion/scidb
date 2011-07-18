@@ -25,8 +25,6 @@
 
 #include "tk_ogl.h"
 
-#include "m_assert.h"
-
 #include <tkInt.h>
 
 #if defined(WIN32)
@@ -71,6 +69,8 @@
 #endif
 
 # include <GL/glx.h>
+
+#include "m_assert.h"
 
 #include <assert.h>
 #include <stdlib.h>

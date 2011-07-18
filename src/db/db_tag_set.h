@@ -48,6 +48,14 @@ public:
 	};
 
 	TagSet();
+	TagSet(TagSet const& set);
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+	TagSet(TagSet&& set);
+	TagSet& operator=(TagSet&& set);
+#endif
+
+	TagSet& operator=(TagSet const& set);
 
 	bool contains(tag::ID tag) const;
 	bool contains(mstl::string const& tag) const;

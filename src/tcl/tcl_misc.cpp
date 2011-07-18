@@ -114,20 +114,20 @@ public:
 
 	Tcl_Obj* result();
 
-	void start();
-	void finish();
+	void start() override;
+	void finish() override;
 
-	void startLanguage(mstl::string const& lang);
-	void endLanguage(mstl::string const& lang);
+	void startLanguage(mstl::string const& lang) override;
+	void endLanguage(mstl::string const& lang) override;
 
-	void startAttribute(Attribute attr);
-	void endAttribute(Attribute attr);
+	void startAttribute(Attribute attr) override;
+	void endAttribute(Attribute attr) override;
 
-	void content(mstl::string const& s);
-	void nag(mstl::string const& s);
-	void symbol(char s);
+	void content(mstl::string const& s) override;
+	void nag(mstl::string const& s) override;
+	void symbol(char s) override;
 
-	void invalidXmlContent(mstl::string const& content);
+	void invalidXmlContent(mstl::string const& content) override;
 
 private:
 

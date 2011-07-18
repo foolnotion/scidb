@@ -37,7 +37,6 @@
 #include "m_utility.h"
 #include "m_assert.h"
 #include "m_stdio.h"
-#include "m_static_check.h"
 
 #include <string.h>
 #include <stdlib.h>

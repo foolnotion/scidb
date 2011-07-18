@@ -91,6 +91,33 @@ memblock<T>::compute_capacity(size_t old_capacity, size_t wanted_size, size_t mi
 	return mstl::max(min_capacity, wanted_size);
 }
 
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+template <typename T>
+inline
+memblock<T>::memblock(memblock&& mb)
+	:m_start(mb.m_start)
+	,m_finish(mb.m_finish)
+	,m_end_of_storage(mb.m_end_of_storage)
+{
+	mb.m_start = 0;
+}
+
+
+template <typename T>
+inline
+memblock<T>&
+memblock<T>::operator=(memblock&& mb)
+{
+	mstl::swap(m_start, mb.m_start);
+	m_finish = mb.m_finish;
+	m_end_of_storage = mb.m_end_of_storage;
+
+	return *this;
+}
+
+#endif
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

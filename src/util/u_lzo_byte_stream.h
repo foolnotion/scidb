@@ -35,12 +35,12 @@ public:
 	LzoByteStream(mstl::iostream& strm);
 	~LzoByteStream() throw();
 
-	void flush();
+	void flush() override;
 
 protected:
 
-	void underflow(unsigned size);
-	void overflow(unsigned size);
+	void underflow(unsigned size) override;
+	void overflow(unsigned size) override;
 
 private:
 

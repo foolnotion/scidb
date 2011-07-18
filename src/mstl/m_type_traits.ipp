@@ -127,7 +127,13 @@ struct is_function { enum { value = !is_convertible<T*, volatile void const*>::v
 template <typename T> struct is_class { enum { value = bits::is_class<T>::value }; };
 
 template <typename T> struct has_trivial_destructor	{ enum { value = is_pod<T>::value }; };
-template <typename T> struct is_movable						{ enum { value = is_pod<T>::value }; };
+template <typename T> struct is_movable					{ enum { value = is_pod<T>::value }; };
+
+template <typename T> struct remove_reference		{ typedef T type; };
+template <typename T> struct remove_reference<T&>	{ typedef T type; };
+#if __GNUC_PREREQ(4,3)
+template <typename T> struct remove_reference<T&&>	{ typedef T type; };
+#endif
 
 } // namespace mstl
 

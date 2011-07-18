@@ -43,7 +43,6 @@
 #include "m_sstream.h"
 #include "m_hash.h"
 #include "m_assert.h"
-#include "m_static_check.h"
 
 #include <tcl.h>
 #include <string.h>

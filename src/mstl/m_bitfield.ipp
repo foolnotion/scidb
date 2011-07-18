@@ -19,7 +19,6 @@
 #include "m_assert.h"
 #include "m_bit_functions.h"
 #include "m_limits.h"
-#include "m_static_check.h"
 
 namespace mstl {
 
@@ -140,8 +139,8 @@ inline
 bitfield<Bits>::bitfield()
 	:m_bits(0)
 {
-	M_STATIC_CHECK(numeric_limits<Bits>::is_integer, Template_Parameter_Not_Integer);
-	M_STATIC_CHECK(numeric_limits<Bits>::is_unsigned, Template_Parameter_Not_Unsigned);
+	static_assert(numeric_limits<Bits>::is_integer, "template parameter is not integer");
+	static_assert(numeric_limits<Bits>::is_unsigned, "template parameter is not unsigned integer");
 }
 
 
@@ -150,8 +149,8 @@ inline
 bitfield<Bits>::bitfield(value_type n)
 	:m_bits(n)
 {
-	M_STATIC_CHECK(numeric_limits<Bits>::is_integer, Template_Parameter_Not_Integer);
-	M_STATIC_CHECK(numeric_limits<Bits>::is_unsigned, Template_Parameter_Not_Unsigned);
+	static_assert(numeric_limits<Bits>::is_integer, "template parameter is not integer");
+	static_assert(numeric_limits<Bits>::is_unsigned, "template parameter is not unsigned integer");
 }
 
 
@@ -159,8 +158,8 @@ template <class Bits>
 inline
 bitfield<Bits>::bitfield(unsigned from, unsigned to)
 {
-	M_STATIC_CHECK(numeric_limits<Bits>::is_integer, Template_Parameter_Not_Integer);
-	M_STATIC_CHECK(numeric_limits<Bits>::is_unsigned, Template_Parameter_Not_Unsigned);
+	static_assert(numeric_limits<Bits>::is_integer, "template parameter is not integer");
+	static_assert(numeric_limits<Bits>::is_unsigned, "template parameter is not unsigned integer");
 
 	set(from, to);
 }
