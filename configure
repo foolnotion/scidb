@@ -138,6 +138,10 @@ array set compiler {
     stack-protector {}
 }
 
+array set option {
+    EXTRA_CXXFLAGS {}
+}
+
 array set defaults {
     tcl-inc     -I/usr/include
     tcl-lib     -ltcl\$(TCL_VERSION)
@@ -796,6 +800,7 @@ proc checkGCC {cc} {
     global TestNoStackProtector
     global environment
     global compiler
+    global option
 
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
@@ -835,6 +840,9 @@ proc checkGCC {cc} {
         }
     }
     if {$result && $cc eq "CXX"} {
+        if {[string compare $version "4.3"] >= 0} {
+            set option(EXTRA_CXXFLAGS) "-std=c++0x"
+        }
         puts -nonewline "    Checking if your compiler supports SSE2: "
         flush stdout
         if {![catch {open testsse2.sh w} f]} {
