@@ -1165,8 +1165,8 @@ namespace tag
 
 	Initializer::Initializer()
 	{
-		static_assert(U_NUMBER_OF(NameLookup) == ExtraTag, "NameLookup expired")
-		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired")
+		static_assert(U_NUMBER_OF(NameLookup) == ExtraTag, "NameLookup expired");
+		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired");
 		static_assert(ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 #ifndef NDEBUG
@@ -1894,7 +1894,7 @@ result::fromString(mstl::string const& s)
 termination::Reason
 termination::fromString(mstl::string const& s)
 {
-	static_assert(U_NUMBER_OF(Lookup) == Unterminated + 1, "termination::Lookup expired")
+	static_assert(U_NUMBER_OF(Lookup) == Unterminated + 1, "termination::Lookup expired");
 
 	for (unsigned i = 1; i < U_NUMBER_OF(Lookup); ++i)
 	{

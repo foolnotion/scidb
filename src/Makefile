@@ -16,7 +16,7 @@ include ../Makefile.in
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
 MAKEFLAGS += --no-print-directory
