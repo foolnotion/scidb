@@ -1095,6 +1095,16 @@ proc FinishEditTag {t item column} {
 	$t item element configure $item name elemText -text $name
 	$t item element configure $item value elemText -text $value
 
+	foreach s [array names TagOrder] {
+		if {[string compare -nocase $s $name] == 0} {
+			if {$name ne $s} {
+				$t item element configure $item name elemText -text $s
+				set name $s
+			}
+			break
+		}
+	}
+
 	if {[string length $name]} {
 		if {	($Priv(twoRatings) && ($name eq "WhiteElo" || $name eq "BlackElo"))
 			|| ([info exists TagOrder($name)] && $TagOrder($name) < 50)} {

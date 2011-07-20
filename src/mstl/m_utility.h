@@ -35,8 +35,8 @@ namespace noncopyable_	// protection from unintended ADL
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 
-		noncopyable(noncopyable&&) = delete;
-		noncopyable& operator=(noncopyable&&) = delete;
+		noncopyable(noncopyable&) = delete;
+		noncopyable& operator=(noncopyable&) = delete;
 
 #else
 

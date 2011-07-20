@@ -204,7 +204,6 @@ proc BuildContributionsFrame {w} {
 	$t insert end [Enc "Fernando González, "]
 	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
-	$t insert end [Enc "Matthew Simpson, "]
 	$t insert end [Enc "Zoltan Tibensky, "]
 	$t insert end [Enc "Natalia Parés Vives"]
 

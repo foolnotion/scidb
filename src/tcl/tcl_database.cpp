@@ -1668,9 +1668,9 @@ getEventInfo(int index, int view, char const* database, unsigned which)
 
 
 static int
-getEventInfo(NamebaseEvent const& event)
+getEventInfo(NamebaseEvent const& event, Database const* database = nullptr)
 {
-	Tcl_Obj* objv[attribute::event::LastColumn];
+	Tcl_Obj* objv[attribute::event::LastColumn + (database ? 3 : 0)];
 
 	mstl::string const& country = country::toString(event.site()->country());
 
@@ -1683,7 +1683,18 @@ getEventInfo(NamebaseEvent const& event)
 	objv[attribute::event::TimeMode ] = Tcl_NewStringObj(time::toString(event.timeMode()), -1);
 	objv[attribute::event::Frequency] = Tcl_NewIntObj(event.frequency());
 
-	M_ASSERT(::checkNonZero(objv, attribute::event::LastColumn));
+	if (database)
+	{
+		unsigned averageElo;
+		unsigned category;
+		unsigned attendants = database->countPlayers(event, averageElo, category);
+
+		objv[attribute::event::Frequency + 1] = Tcl_NewIntObj(attendants);
+		objv[attribute::event::Frequency + 2] = Tcl_NewIntObj(averageElo);
+		objv[attribute::event::Frequency + 3] = Tcl_NewIntObj(category);
+	}
+
+	M_ASSERT(::checkNonZero(objv, attribute::event::LastColumn + (database ? 3 : 0)));
 
 	setResult(U_NUMBER_OF(objv), objv);
 	return TCL_OK;
@@ -1691,14 +1702,14 @@ getEventInfo(NamebaseEvent const& event)
 
 
 static int
-getEventInfo(int index, int view)
+getEventInfo(int index, int view, bool idCard)
 {
 	Cursor const& cursor = Scidb.cursor();
 
 	if (view >= 0)
 		index = cursor.eventIndex(index, view);
 
-	return getEventInfo(cursor.database().event(index));
+	return getEventInfo(cursor.database().event(index), idCard ? &cursor.database() : nullptr);
 }
 
 
@@ -1853,7 +1864,25 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (int idx = tcl::uniqueMatchObj(objv[1], subcommands))
 	{
 		case Cmd_EventInfo:
-			return getEventInfo(*info.eventEntry());
+			{
+				bool idCard = false;
+
+				if (objc > 4)
+				{
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+
+					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
+					{
+						if (::strcmp(lastArg, "-card") != 0)
+							return error(::CmdGet, 0, 0, "invalid argument %s", lastArg);
+
+						idCard = true;
+					}
+				}
+
+				return getEventInfo(*info.eventEntry(), idCard ? &cursor.database() : nullptr);
+			}
+			break;
 
 		case Cmd_WhitePlayerInfo:
 		case Cmd_BlackPlayerInfo: // fallthru
@@ -2115,13 +2144,37 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			// not reached
 
 		case Cmd_EventInfo:
-			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
-			if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
-			if (objc < 6)
-				return getEventInfo(index, view);
-			return getEventInfo(index, view, stringFromObj(objc, objv, 4), unsignedFromObj(objc, objv, 5));
+			{
+				bool idCard = false;
+
+				if (objc >= 3)
+				{
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+
+					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
+					{
+						if (::strcmp(lastArg, "-card") != 0)
+							return error(::CmdGet, 0, 0, "invalid argument %s", lastArg);
+
+						idCard = true;
+						--objc;
+					}
+				}
+
+				if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
+					return usage(::CmdGet, 0, 0, subcommands, args);
+
+				if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
+					return usage(::CmdGet, 0, 0, subcommands, args);
+
+				if (objc < 6)
+					return getEventInfo(index, view, idCard);
+
+				char const*	database	= stringFromObj(objc, objv, 4);
+				unsigned		which		= unsignedFromObj(objc, objv, 5);
+
+				return getEventInfo(index, view, database, which);
+			}
 
 		case Cmd_Annotator:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)

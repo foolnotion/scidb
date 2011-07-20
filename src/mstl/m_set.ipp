@@ -138,6 +138,21 @@ set<T>::insert(const_reference v)
 
 template <typename T>
 inline
+bool
+set<T>::insert_unique(const_reference v)
+{
+	iterator i = mstl::lower_bound(begin(), end(), v);
+
+	if (i != end() && !(v < *i))
+		return false;
+
+	m_v.insert(i, v);
+	return true;
+}
+
+
+template <typename T>
+inline
 void
 set<T>::insert(const_iterator first, const_iterator last)
 {

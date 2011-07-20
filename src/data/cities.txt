@@ -629,7 +629,7 @@ BAS
 BDI
 #--------------------------------------------------------
 	Burundi
-		= Uburundi,
+		= Uburundi
 #		= Republic of Burundi
 #		= Republika y'Uburundi
 #--------------------------------------------------------

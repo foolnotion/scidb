@@ -28,45 +28,47 @@ namespace eval application {
 namespace eval tree {
 namespace eval mc {
 
-set Total							"Total"
-set Control							"Control"
-set ChooseReferenceBase			"Choose reference database"
-set ReferenceBaseSwitcher		"Reference database switcher"
-set Numeric							"Numeric"
-set Bar								"Bar"
-set StartSearch					"Start search"
-set StopSearch						"Stop search"
-set UseExactMode					"Use position search mode"
-set UseFastMode					"Use accelerated mode"
-set UseQuickMode					"Use quick mode"
-set AutomaticSearch				"Automatic search"
-set LockReferenceBase			"Lock reference database"
-set TransparentBar				"Transparent bar"
-set NoGamesFound					"No games found"
+set Total								"Total"
+set Control								"Control"
+set ChooseReferenceBase				"Choose reference database"
+set ReferenceBaseSwitcher			"Reference database switcher"
+set Numeric								"Numeric"
+set Bar									"Bar"
+set StartSearch						"Start search"
+set StopSearch							"Stop search"
+set UseExactMode						"Use position search mode"
+set UseFastMode						"Use accelerated mode"
+set UseQuickMode						"Use quick mode"
+set AutomaticSearch					"Automatic search"
+set LockReferenceBase				"Lock reference database"
+set TransparentBar					"Transparent bar"
+set NoGamesFound						"No games found"
 
-set FromWhitesPerspective		"From whites perspective"
-set FromBlacksPerspective		"From blacks perspective"
-set FromSideToMovePerspective	"From side to move perspective"
+set FromWhitesPerspective			"From whites perspective"
+set FromBlacksPerspective			"From blacks perspective"
+set FromSideToMovePerspective		"From side to move perspective"
+set FromWhitesPerspectiveTip		"Score from whites perspective"
+set FromBlacksPerspectiveTip		"Score from blacks perspective"
 
-set TooltipAverageRating		"Average Rating (%s)"
-set TooltipBestRating			"Best Rating (%s)"
+set TooltipAverageRating			"Average Rating (%s)"
+set TooltipBestRating				"Best Rating (%s)"
 
-set F_Number						"#"
-set F_Move							"Move"
-set F_Eco							"ECO"
-set F_Frequency					"Frequency"
-set F_Ratio							"Ratio"
-set F_Score							"Score"
-set F_Draws							"Draws"
-set F_Performance					"Performance"
-set F_AverageYear					"\u00f8 Year"
-set F_LastYear						"Last Played"
-set F_BestPlayer					"Best Player"
-set F_FrequentPlayer				"Frequent Player"
+set F_Number							"#"
+set F_Move								"Move"
+set F_Eco								"ECO"
+set F_Frequency						"Frequency"
+set F_Ratio								"Ratio"
+set F_Score								"Score"
+set F_Draws								"Draws"
+set F_Performance						"Performance"
+set F_AverageYear						"\u00f8 Year"
+set F_LastYear							"Last Played"
+set F_BestPlayer						"Best Player"
+set F_FrequentPlayer					"Frequent Player"
 
-set T_Number						"Numeration"
-set T_AverageYear					"Average Year"
-set T_FrequentPlayer				"Most Frequent Player"
+set T_Number							"Numeration"
+set T_AverageYear						"Average Year"
+set T_FrequentPlayer					"Most Frequent Player"
 
 } ;# namespace mc
 
@@ -404,7 +406,7 @@ proc build {parent menu width height} {
 		-alignment left \
 		-justify right \
 		-allow {top bottom} \
-		]
+	]
 	set progress [::toolbar::add $tbProgress frame -width 130 -height 7 -borderwidth 1 -relief sunken]
 	tk::frame $progress.bar -background $Defaults(progress:color) -height 5
 	$switcher addcol text -id name
@@ -801,8 +803,13 @@ proc RefreshRatingLabel {} {
 	}
 
 	if {$Vars(side) != $side} {
-		::toolbar::childconfigure $Vars(stm) -image $Vars(${side}Knob)
 		set Vars(side) $side
+		::toolbar::childconfigure $Vars(stm) -image $Vars(${side}Knob)
+		switch $side {
+			white { set var FromWhitesPerspectiveTip }
+			black { set var FromBlacksPerspectiveTip }
+		}
+		::toolbar::childconfigure $Vars(stm) -tooltipvar [namespace current]::mc::$var
 	}
 }
 

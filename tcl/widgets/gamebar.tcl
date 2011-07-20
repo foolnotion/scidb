@@ -229,6 +229,18 @@ proc insert {gamebar at id tags} {
 		-text [lindex $data 2] \
 		-state hidden \
 		;
+	$gamebar create rectangle 0 0 0 0 \
+		-fill {} \
+		-outline {} \
+		-tags [list line1bg$id all$id] \
+		-state $state \
+		;
+	$gamebar create rectangle 0 0 0 0 \
+		-fill {} \
+		-outline {} \
+		-tags [list line1Input$id all$id] \
+		-state $state \
+		;
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-justify left \
@@ -274,6 +286,15 @@ proc insert {gamebar at id tags} {
 		-state $state \
 		;
 
+	set tag line1Input$id
+
+	$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowEvent $gamebar $id]]
+	$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HideEvent $gamebar $id]]
+	$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupMenu $gamebar $id]]
+
+	$gamebar bind $tag <Enter>	[namespace code [list EnterEvent $gamebar $id]]
+	$gamebar bind $tag <Leave>	[namespace code [list LeaveEvent $gamebar $id]]
+
 	foreach side {white black} {
 		set tag ${side}Input${id}
 
@@ -290,6 +311,12 @@ proc insert {gamebar at id tags} {
 		$gamebar bind $tag <Leave> [namespace code [list LeaveFlag $gamebar $id]]
 		$gamebar bind $tag <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
 	}
+
+	set tag ${side}CountryInput${id}
+
+	$gamebar bind $tag <Enter> [namespace code [list EnterFlag $gamebar $id $side]]
+	$gamebar bind $tag <Leave> [namespace code [list LeaveFlag $gamebar $id]]
+	$gamebar bind $tag <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
 
 	$gamebar bind close:input$id <ButtonPress-1> [namespace code [list Press $gamebar $id close:]]
 	$gamebar bind close:input$id <ButtonRelease-1> [namespace code [list Release $gamebar $id close:]]
@@ -316,6 +343,10 @@ proc insert {gamebar at id tags} {
 		}
 	}
 
+	if {$Specs(size:$gamebar) == 1 && $Options(separateColumn)} {
+		PrepareAsHeader $gamebar -1
+	}
+
 	set Specs(lookup:$at:$gamebar) $id
 	if {$at >= 0} {
 		incr Specs(size:$gamebar)
@@ -334,6 +365,7 @@ proc replace {gamebar id tags} {
 
 proc remove {gamebar id {update yes}} {
 	variable Specs
+	variable Options
 	variable icon::15x15::digit
 
 	set at [getIndex $gamebar $id]
@@ -353,6 +385,10 @@ proc remove {gamebar id {update yes}} {
 	array unset Specs lookup:$Specs(size:$gamebar):$gamebar
 	foreach item {data tags state atclose locked modified} {
 		array unset Specs $item:$id:$gamebar
+	}
+
+	if {$Specs(size:$gamebar) == 1 && $Options(separateColumn)} {
+		PrepareAsButton $gamebar -1
 	}
 
 	switch $Specs(size:$gamebar) {
@@ -517,6 +553,15 @@ proc normalizePlayer {player} {
 	set player [regsub -all {,([^ ])} $player {, \1}]
 
 	return $player
+}
+
+
+proc popupMenu {parent} {
+	set menu $parent._new_game_menu_
+	catch { destroy $menu }
+	menu $menu -tearoff 0
+	AddNewGameMenuEntries $menu
+	tk_popup $menu {*}[winfo pointerxy .]
 }
 
 
@@ -822,6 +867,8 @@ proc PrepareAsSunkenButton {gamebar id} {
 	$gamebar itemconfigure whiteInput$id -state hidden
 	$gamebar itemconfigure blackInput$id -state hidden
 	foreach i {1 2} { $gamebar itemconfigure line$i$id -state hidden }
+	$gamebar itemconfigure line1Input$id -state hidden
+	$gamebar itemconfigure line1bg$id -state hidden
 	$gamebar itemconfigure whiteCountry$id -state hidden
 	$gamebar itemconfigure blackCountry$id -state hidden
 	$gamebar itemconfigure whiteCountryInput$id -state hidden
@@ -861,6 +908,8 @@ proc PrepareAsButton {gamebar id} {
 	$gamebar itemconfigure whiteInput$id -state hidden
 	$gamebar itemconfigure blackInput$id -state hidden
 	foreach i {1 2} { $gamebar itemconfigure line$i$id -state hidden }
+	$gamebar itemconfigure line1Input$id -state hidden
+	$gamebar itemconfigure line1bg$id -state hidden
 	foreach item {bg whitebg blackbg} {
 		$gamebar itemconfigure $item$id -fill $normal -outline $normal
 	}
@@ -873,6 +922,7 @@ proc PrepareAsButton {gamebar id} {
 	$gamebar itemconfigure hyphen$id -state hidden
 	$gamebar raise blackbg$id
 	$gamebar raise black$id
+	$gamebar raise line1$id
 	$gamebar raise digit$id
 	$gamebar raise close$id
 	$gamebar raise input$id
@@ -890,7 +940,7 @@ proc PrepareAsHeader {gamebar id} {
 
 	if {$id eq "-1"} {
 		foreach item {	white black lighter darker bg whitebg
-							whiteInput blackInput line1 line2 input} {
+							whiteInput blackInput line1 line1Input line1bg line2 input} {
 			$gamebar itemconfigure ${item}-1 -state normal
 		}
 		foreach item {close:lighter close:darker close:bg} {
@@ -903,6 +953,8 @@ proc PrepareAsHeader {gamebar id} {
 
 	$gamebar itemconfigure blackbg$id -state normal
 	foreach i {1 2} { $gamebar itemconfigure line$i$id -state normal }
+	$gamebar itemconfigure line1Input$id -state normal
+	$gamebar itemconfigure line1bg$id -state normal
 	foreach item {bg whitebg blackbg} {
 		$gamebar itemconfigure $item$id -fill $selected -outline $selected
 	}
@@ -929,6 +981,9 @@ proc PrepareAsHeader {gamebar id} {
 	$gamebar raise blackbg$id
 	$gamebar raise black$id
 	$gamebar raise blackInput$id
+	$gamebar raise line1bg$id
+	$gamebar raise line1$id
+	$gamebar raise line1Input$id
 	$gamebar raise close$id
 
 	if {$id eq $Specs(selected:$gamebar)} {
@@ -994,83 +1049,112 @@ proc ShowSeparateColumn {gamebar {flag -1}} {
 }
 
 
+proc AddNewGameMenuEntries {m} {
+	$m add command \
+		-label [::menu::stripAmpersand $::menu::mc::GameNew] \
+		-accelerator "Ctrl+X" \
+		-image $::icon::16x16::document \
+		-compound left \
+		-command [list ::menu::gameNew [winfo parent $m]] \
+		;
+	$m add command \
+		-label [::menu::stripAmpersand $::menu::mc::GameNewShuffle] \
+		-accelerator "Ctrl+Shift+X" \
+		-image $::icon::16x16::dice \
+		-compound left \
+		-command [list ::menu::gameNew [winfo parent $m] frc] \
+		;
+	$m add command \
+		-label [::menu::stripAmpersand $::menu::mc::GameNewShuffleSymm] \
+		-accelerator "Ctrl+Shift+Y" \
+		-image $::icon::16x16::symmetric \
+		-compound left \
+		-command [list ::menu::gameNew [winfo parent $m] sfrc] \
+		;
+}
+
+
 proc PopupMenu {gamebar {id ""}} {
 	variable Specs
 	variable Options
 
 	HideTags $gamebar
-	if {$Specs(size:$gamebar) == 0} { return }
 
 	set menu $gamebar.menu
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
-	if {[llength $id] && $id ne "-1"} {
-		if {$Specs(locked:$id:$gamebar) && !$Specs(modified:$id:$gamebar)} {
-			set count 0
-			foreach key [array names Specs -glob locked:*:$gamebar] {
-				if {$Specs($key)} { incr count }
-			}
-			if {$count == $Specs(size:$gamebar)} {
-				$menu add command \
-					-compound left \
-					-image $icon::15x15::close(unlocked) \
-					-label " $mc::Unlock" \
-					-command [namespace code [list SetState $gamebar $id unlocked]] \
-					;
-				$menu add separator
+	AddNewGameMenuEntries $menu
+	$menu add separator
+
+	if {$Specs(size:$gamebar) > 0} {
+		if {[llength $id] && $id ne "-1"} {
+			if {$Specs(locked:$id:$gamebar) && !$Specs(modified:$id:$gamebar)} {
+				set count 0
+				foreach key [array names Specs -glob locked:*:$gamebar] {
+					if {$Specs($key)} { incr count }
+				}
+				if {$count == $Specs(size:$gamebar)} {
+					$menu add command \
+						-compound left \
+						-image $icon::15x15::close(unlocked) \
+						-label " $mc::Unlock" \
+						-command [namespace code [list SetState $gamebar $id unlocked]] \
+						;
+					$menu add separator
+				}
 			}
 		}
+
+#	 currently not working
+#		foreach {num text} [list 0 $mc::Players 2 $mc::Event 3 $mc::Site] {
+#			$menu add radiobutton \
+#				-label $text \
+#				-value $num \
+#				-variable [namespace current]::Specs(line:$gamebar) \
+#				-command [namespace code [list SelectLine $gamebar]]
+#		}
+#		$menu add separator
+
+		menu $menu.alignment -tearoff no
+		$menu add cascade -label $mc::Alignment -menu $menu.alignment
+
+		foreach item {left center} {
+			$menu.alignment add radiobutton \
+				-label [set ::toolbar::mc::[string toupper $item 0 0]] \
+				-value $item \
+				-variable [namespace current]::Options(alignment) \
+				-command [namespace code [list Layout $gamebar]]
+		}
+
+		menu $menu.layout -tearoff no
+		$menu add cascade -label $::mc::Layout -menu $menu.layout
+
+		if {$Options(separateColumn)} { set state disabled } else { set state normal }
+
+		$menu.layout add checkbutton \
+			-label $mc::SeparateHeader \
+			-onvalue 1 \
+			-offvalue 0 \
+			-variable [namespace current]::Options(separateColumn) \
+			-command [namespace code [list ShowSeparateColumn $gamebar]] \
+			;
+		$menu.layout add checkbutton \
+			-label $mc::ShowActiveAtBottom \
+			-onvalue 1 \
+			-offvalue 0 \
+			-variable [namespace current]::Options(selectedAtBottom) \
+			-command [namespace code [list ShowAtBottom $gamebar]] \
+			-state $state \
+			;
+		$menu.layout add checkbutton \
+			-label $mc::ShowPlayersOnSeparateLines \
+			-onvalue 1 \
+			-offvalue 0 \
+			-variable [namespace current]::Options(separateLines) \
+			-command [namespace code [list ShowAtSeparateLines $gamebar]] \
+			;
 	}
-
-# currently not working
-#	foreach {num text} [list 0 $mc::Players 2 $mc::Event 3 $mc::Site] {
-#		$menu add radiobutton \
-#			-label $text \
-#			-value $num \
-#			-variable [namespace current]::Specs(line:$gamebar) \
-#			-command [namespace code [list SelectLine $gamebar]]
-#	}
-#	$menu add separator
-
-	menu $menu.alignment -tearoff no
-	$menu add cascade -label $mc::Alignment -menu $menu.alignment
-
-	foreach item {left center} {
-		$menu.alignment add radiobutton \
-			-label [set ::toolbar::mc::[string toupper $item 0 0]] \
-			-value $item \
-			-variable [namespace current]::Options(alignment) \
-			-command [namespace code [list Layout $gamebar]]
-	}
-
-	menu $menu.layout -tearoff no
-	$menu add cascade -label $::mc::Layout -menu $menu.layout
-
-	if {$Options(separateColumn)} { set state disabled } else { set state normal }
-
-	$menu.layout add checkbutton \
-		-label $mc::SeparateHeader \
-		-onvalue 1 \
-		-offvalue 0 \
-		-variable [namespace current]::Options(separateColumn) \
-		-command [namespace code [list ShowSeparateColumn $gamebar]] \
-		;
-	$menu.layout add checkbutton \
-		-label $mc::ShowActiveAtBottom \
-		-onvalue 1 \
-		-offvalue 0 \
-		-variable [namespace current]::Options(selectedAtBottom) \
-		-command [namespace code [list ShowAtBottom $gamebar]] \
-		-state $state \
-		;
-	$menu.layout add checkbutton \
-		-label $mc::ShowPlayersOnSeparateLines \
-		-onvalue 1 \
-		-offvalue 0 \
-		-variable [namespace current]::Options(separateLines) \
-		-command [namespace code [list ShowAtSeparateLines $gamebar]] \
-		;
 
 	tk_popup $menu {*}[winfo pointerxy .]
 }
@@ -1423,6 +1507,8 @@ proc Layout {gamebar} {
 			incr height [expr {$pady + $adjust/2}]
 		}
 		$gamebar coords line1$id [expr {max(2, ($lineWidth - $width1)/2)}] $height
+		$gamebar coords line1bg$id {*}[$gamebar bbox line1$id]
+		$gamebar coords line1Input$id {*}[$gamebar bbox line1$id]
 		incr height $height1
 		if {$Options(separateLines)} {
 			set x [expr {max(2, ($lineWidth - $width0)/2)}]
@@ -1457,6 +1543,41 @@ proc Layout {gamebar} {
 	if {$Specs(height:$gamebar) != $barHeight} {
 		set $Specs(height:$gamebar) $barHeight
 		$gamebar configure -height $barHeight
+	}
+}
+
+
+proc EnterEvent {gamebar id} {
+	variable Specs
+	variable Defaults
+
+	set sid $Specs(selected:$gamebar)
+
+	if {$id eq $sid || $id eq "-1"} {
+		set name [GetEventName $gamebar $sid]
+		if {$name eq "?" || $name eq "-"} { set name "" }
+
+		if {[string length $name]} {
+			$gamebar itemconfigure line1bg${id} \
+				-fill $Defaults(color:player) \
+				-outline $Defaults(color:player) \
+				;
+		}
+	}
+}
+
+
+proc LeaveEvent {gamebar id} {
+	variable Specs
+	variable Defaults
+
+	set sid $Specs(selected:$gamebar)
+
+	if {$id eq $sid || $id eq "-1"} {
+		$gamebar itemconfigure line1bg${id} \
+			-fill $Defaults(color:selected) \
+			-outline $Defaults(color:selected) \
+			;
 	}
 }
 
@@ -1519,6 +1640,48 @@ proc LeaveFlag {gamebar id} {
 
 	set sid $Specs(selected:$gamebar)
 	if {$id eq $sid || $id eq "-1"} { ::tooltip::hide true }
+}
+
+
+proc GetEventInfo {gamebar id} {
+	lassign [::scidb::game::sink? $id] base index
+	return [scidb::db::fetch eventInfo $index $base -card]
+}
+
+
+proc GetEventName {gamebar id} {
+	return [lindex [GetEventInfo $gamebar $id] 0]
+}
+
+
+proc ShowEvent {gamebar id} {
+	variable Specs
+
+	set sid $Specs(selected:$gamebar)
+	set info [GetEventInfo $gamebar $sid]
+	set name [lindex $info 0]
+	if {$name eq "?" || $name eq "-"} { set name "" }
+
+	if {[string length $name]} {
+		::eventtable::showInfo $gamebar $info
+	} else {
+		ShowTags $gamebar $id
+	}
+}
+
+
+proc HideEvent {gamebar id} {
+	variable Specs
+
+	set sid $Specs(selected:$gamebar)
+	set name [GetEventName $gamebar $sid]
+	if {$name eq "?" || $name eq "-"} { set name "" }
+
+	if {[string length $name]} {
+		::eventtable::hideInfo $gamebar
+	} else {
+		HideTags $gamebar
+	}
 }
 
 

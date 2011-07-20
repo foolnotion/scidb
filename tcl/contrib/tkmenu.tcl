@@ -205,10 +205,16 @@ if {[tk windowingsystem] eq "x11"} {
 }
 
 
+### MODERNIZE begin ##########################################################
+
 switch [tk windowingsystem] {
     win32   { set ::tk::MODERNIZE 1 }
     default { set ::tk::MODERNIZE 0 }
 }
+
+namespace eval tk { set MenuDelay 200 }
+
+### MODERNIZE end ############################################################
 
 
 # ::tk::MbEnter --
@@ -616,15 +622,15 @@ proc ::tk::MenuMotion {menu x y state} {
             if {$index ne $activeindex && [$menu type $index] eq "cascade"} {
                 set mode [option get $menu clickToFocus ClickToFocus]
                 if {$mode eq "" || ([string is boolean $mode] && !$mode)} {
-                    set delay [expr {[$menu cget -type] eq "menubar"? 0 : 50}]
+                    set delay [expr {[$menu cget -type] eq "menubar"? 0 : $::tk::MenuDelay}]
                     set Priv(menuActivatedTimer) \
-                        [after $delay [::tk::PostCascade $menu]]
+                        [after $delay [list ::tk::PostCascade $menu]]
                     set Priv(activeindex) -1
                 }
             } elseif {$index ne $activeindex
                             && [$menu type $activeindex] eq "cascade"
                             && [$menu cget -type] ne "menubar"} {
-                after 200 [list ::tk::DeactiveMenu $menu $activeindex]
+                after $::tk::MenuDelay [list ::tk::DeactiveMenu $menu $activeindex]
                 set Priv(activeindex) $index
             }
         }
@@ -636,6 +642,7 @@ proc ::tk::MenuMotion {menu x y state} {
 }
 
 ### MODERNIZE begin ##########################################################
+
 proc ::tk::DeactiveMenu {menu index} {
     variable ::tk::Priv
 
@@ -653,8 +660,10 @@ proc ::tk::DeactiveMenu {menu index} {
 proc ::tk::PostCascade menu {
     variable ::tk::Priv
 
-    set Priv(postCascade) [$menu entrycget active -menu]
-    $menu postcascade active
+    catch {
+        set Priv(postCascade) [$menu entrycget active -menu]
+        $menu postcascade active
+    }
 }
 
 ### MODERNIZE end ############################################################

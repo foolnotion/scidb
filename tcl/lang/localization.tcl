@@ -33,6 +33,7 @@ set languages {
    { English   en    iso8859-1   english.tcl  }
    { Español  es    macRoman    espanol.tcl  }
    { Italiano  it    utf-8       italiano.tcl }
+   { Magyar    hu    utf-8       magyar.tcl }
 }
 
 } ;# namespace i18n

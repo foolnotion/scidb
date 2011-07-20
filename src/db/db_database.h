@@ -103,6 +103,8 @@ public:
 	unsigned countEvents() const;
 	/// Count the number of annotators in the database.
 	unsigned countAnnotators() const;
+	/// Count number of attendants of given event.
+	unsigned countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigned& category) const;
 	/// Returns name of database (may be a file name)
 	mstl::string const& name() const;
 	/// Returns extension of database name (codec type)
@@ -140,6 +142,7 @@ public:
 	NamebaseEntry const& annotator(unsigned index) const;
 	/// Collect tags specific for current database format.
 	void getInfoTags(unsigned index, TagSet& tags) const;
+	/// Collect tags specific for current database format.
 	void getGameTags(unsigned index, TagSet& tags) const;
 
 	/// Returns the codec.

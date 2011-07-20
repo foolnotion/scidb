@@ -54,6 +54,7 @@
 #include "m_ifstream.h"
 #include "m_auto_ptr.h"
 #include "m_stdio.h"
+#include "m_map.h"
 
 using namespace db;
 using namespace util;
@@ -795,6 +796,52 @@ Database::makeTournamentTable(Filter const& gameFilter) const
 	M_REQUIRE(!gameFilter.isEmpty());
 
 	return new TournamentTable(*this, *(m_gameInfoList[gameFilter.next()]->eventEntry()), gameFilter);
+}
+
+
+unsigned
+Database::countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigned& category) const
+{
+	typedef mstl::map<unsigned,uint16_t> EloSet;
+
+	unsigned	eloCount	= 0;
+	EloSet	eloSet;
+
+	eloSet.reserve(200);
+	averageElo = 0;
+	category = 0;
+
+	for (unsigned i = 0, n = m_gameInfoList.size(); i < n; ++i)
+	{
+		GameInfo const* info = m_gameInfoList[i];
+
+		if (info->eventEntry() == &event)
+		{
+			for (unsigned side = 0; side < 2; ++side)
+			{
+				NamebasePlayer const* player = info->playerEntry(color::ID(side));
+				EloSet::result_t res = eloSet.insert(EloSet::value_type(player->id(), 0));
+				res.first->second = mstl::max(res.first->second, info->findElo(color::ID(side)));
+			}
+		}
+	}
+
+	for (EloSet::const_iterator i = eloSet.begin(); i != eloSet.end(); ++i)
+	{
+		if (unsigned elo = i->second)
+		{
+			averageElo += elo;
+			++eloCount;
+		}
+	}
+
+	if (eloCount)
+	{
+		averageElo = ((averageElo*10) + 5)/(eloCount*10);
+		category = TournamentTable::fideCategory(averageElo);
+	}
+
+	return eloSet.size();
 }
 
 // vi:set ts=3 sw=3:

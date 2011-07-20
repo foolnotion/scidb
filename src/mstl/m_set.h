@@ -68,6 +68,7 @@ public:
 	void push_back(const_reference v);
 	iterator insert(const_reference v);
 	void insert(const_iterator first, const_iterator last);
+	bool insert_unique(const_reference v);
 	void erase(const_reference v);
 	iterator erase(iterator i);
 	iterator erase(iterator first, iterator last);

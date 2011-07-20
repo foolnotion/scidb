@@ -497,7 +497,7 @@ proc showInfo {path info} {
 		incr row 2
 	}
 	grid columnconfigure $f 4 -minsize $::theme::padding
-	grid columnconfigure $f {2 4 6} -minsize 2
+	grid columnconfigure $f {2 6} -minsize 2
 	grid rowconfigure $f [list 0 [incr row -1]] -minsize 2
 
 	if {[FindPlayerPhoto $name $info]} {
@@ -886,7 +886,7 @@ proc ShowInfo {path x y} {
 	if {![string is digit $index]} { return }
 	::scrolledtable::focus $table
 	::scrolledtable::activate $table [::scrolledtable::indexToRow $table $index]
-	set base [::scrolledtable::base $path.table]
+	set base [::scrolledtable::base $table]
 	set view [{*}$Vars(viewcmd) $base]
 	set info [scidb::db::get playerInfo $index $view $base -card -ratings {Elo Elo}]
 	showInfo $path $info

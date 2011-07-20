@@ -216,6 +216,10 @@ proc build {parent menu width height} {
 	place $hist.logo -x 0 -y 0
 	bind $hist <Configure> [namespace code [list CenterIcon $hist.icon $hist.logo %w %h]]
 
+	foreach sub {{} .icon .logo} {
+		bind ${hist}${sub} <Button-3> [namespace code [list ::gamebar::popupMenu $hist]]
+	}
+
 	set Vars(hist) $hist
 	set Vars(edit) $edit
 
@@ -1591,7 +1595,7 @@ proc ResetGame {position tags} {
 }
 
 
-proc PopupMenu {parent position} {
+proc PopupMenu {parent position -1} {
 	variable ::annotation::mc::Nag
 	variable ::annotation::LastNag
 	variable [namespace parent]::database::clipbaseName

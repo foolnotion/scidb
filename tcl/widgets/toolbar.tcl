@@ -199,6 +199,10 @@ proc toolbar {parent args} {
 	lappend Specs(remember:$parent) $toolbar
 
 	if {$haveId} {
+		dict set Lookup $parent:$Specs(id:$toolbar) $toolbar
+		dict set Map $toolbar $Specs(id:$toolbar)
+		lappend Specs(idlist:$parent) $id
+
 		if {[info exists Specs(options:$parent)]} {
 			if {![info exists Specs(idlist:$parent)]} {
 				setOptions $parent $Specs(options:$parent)
@@ -222,20 +226,24 @@ proc toolbar {parent args} {
 				set childs {}
 			}
 			if {[info exists Specs(childs:id:$tbf)]} {
+				set index -1
 				foreach i $Specs(childs:id:$tbf) {
 					if {[dict exists $Lookup $parent:$i]} { 
 						set child [dict get $Lookup $parent:$i]
+						set order([incr index]) $child
 						if {$child ni $childs} { lappend childs $child }
 					}
 				}
-				set Specs(childs:$tbf) $childs
+				set Specs(childs:$tbf) {}
+				set n [llength $Specs(childs:id:$tbf)]
+				for {set i 0} {$i < $n} {incr i} {
+					if {[info exists order($i)] && $order($i) in $childs} {
+						lappend Specs(childs:$tbf) $order($i)
+					}
+				}
 			}
 			set alignment ""
 		}
-
-		dict set Lookup $parent:$Specs(id:$toolbar) $toolbar
-		dict set Map $toolbar $Specs(id:$toolbar)
-		lappend Specs(idlist:$parent) $id
 	}
 
 	set Specs(lookup:$Specs(id:$toolbar):$toolbar) $toolbar

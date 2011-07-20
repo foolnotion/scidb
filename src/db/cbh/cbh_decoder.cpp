@@ -616,12 +616,6 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 			switch (c)
 			{
-				case 0x01:
-				case 0x02:
-				case 0x03:
-					str.append('?');
-					break;
-
 				case 0x0d:
 					str.append(0x0a);
 					if (p[i + 1] == 0x0a)
@@ -663,9 +657,9 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 				case 0xf7: nag = nag::UnclearPosition; break; 					// "~~"
 				case 0xfe: nag = nag::PassedPawn; break; 							// "o^"
 
-//					It seems to be impossible to use these symbols in ChessBase.
-//					case 0x??: nag = nag::WithCompensationForMaterial; break;	// "~/="
-//					case 0x??: nag = nag::Development; break;							// "@" ???
+//				It seems to be impossible to use these symbols in ChessBase.
+//				case 0x??: nag = nag::WithCompensationForMaterial; break;	// "~/="
+//				case 0x??: nag = nag::Development; break;							// "@" ???
 
 				case 0x9e:
 					node->addAnnotation(nag::Diagram);								// "#"

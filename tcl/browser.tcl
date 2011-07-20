@@ -230,7 +230,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Configure>			[namespace code [list Configure %W $position]]
 	bind $dlg <Control-a>			[namespace code [list ToggleAutoPlay $position]]
 	bind $dlg <Control-r>			[namespace code [list RotateBoard $board]]
-	bind $dlg <Destroy>				[namespace code [list Destroy $dlg $position $base]]
+	bind $dlg <Destroy>				[namespace code [list Destroy $dlg %W $position $base]]
 	bind $dlg <Left>					[namespace code [list Goto $position -1]]
 	bind $dlg <Right>					[namespace code [list Goto $position +1]]
 	bind $dlg <Prior>					[namespace code [list Goto $position -10]]
@@ -459,15 +459,14 @@ proc NextGame {parent position {step 0}} {
 	if {$Vars(index) == -1} { return }
 	incr Vars(index) $step
 	set info [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
-	set Vars(result) [::gametable::column $info result]
-	set Vars(result) [::util::formatResult $Vars(result)]
+	set Vars(result) [::util::formatResult [::gametable::column $info result]]
+	set Vars(number) [::gametable::column $info number]
 	if {$step} {
 		set key $Vars(base):$Vars(number):$Vars(view)
 		if {[incr Priv($key:count) -1] == 0} {
 			unset Priv($key)
 			unset Priv($key:count)
 		}
-		set Vars(number) [::gametable::column $info number]
 		set key $Vars(base):$Vars(number):$Vars(view)
 		set Priv($key) [winfo toplevel $parent]
 		incr Priv($key:count)
@@ -489,7 +488,7 @@ proc SetTitle {position} {
 	variable ${position}::Vars
 
 	set title "[tk appname] - $mc::BrowseGame"
-	if {$Vars(index) > 0} { append title " ($Vars(name) #$Vars(number))" }
+	if {$Vars(index) >= 0} { append title " ($Vars(name) #$Vars(number))" }
 	wm title [winfo toplevel $Vars(board)] $title
 }
 
@@ -560,17 +559,24 @@ proc UpdateHeader {position {info {}}} {
 	append evline $site
 	if {[llength $evline] && [llength $date]} { append evline ", " }
 	append evline $date
-	if {[llength $evline]} { append evline "\n" }
 
 	$text delete 1.0 end
-	$text insert end $evline
+	if {[string length $evline]} {
+		$text insert end $evline event
+		$text insert end \n
+	}
 	$text insert end $white {bold white}
 	$text insert end " - " bold
 	$text insert end $black {bold black}
 
+	$text tag bind event <Any-Enter>			[namespace code [list EnterItem $position event]]
+	$text tag bind event <Any-Leave>			[namespace code [list LeaveItem $position event]]
+	$text tag bind event <ButtonPress-2>	[namespace code [list ShowEvent $position]]
+	$text tag bind event <ButtonRelease-2>	[namespace code [list HideEvent $position]]
+
 	foreach side {white black} {
-		$text tag bind $side <Any-Enter>			[namespace code [list EnterPlayer $position $side]]
-		$text tag bind $side <Any-Leave>			[namespace code [list LeavePlayer $position $side]]
+		$text tag bind $side <Any-Enter>			[namespace code [list EnterItem $position $side]]
+		$text tag bind $side <Any-Leave>			[namespace code [list LeaveItem $position $side]]
 		$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayer $position $side]]
 		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayer $position $side]]
 	}
@@ -590,22 +596,39 @@ proc UpdateHeader {position {info {}}} {
 }
 
 
-proc EnterPlayer {position side} {
+proc ShowEvent {position} {
+	variable ${position}::Vars
+
+	set base  $Vars(base)
+	set index [expr $Vars(number) - 1]
+
+	set info [scidb::db::fetch eventInfo $index $base -card]
+	::eventtable::showInfo $Vars(header) $info
+}
+
+
+proc HideEvent {position} {
+	variable ${position}::Vars
+	::eventtable::hideInfo $Vars(header)
+}
+
+
+proc EnterItem {position item} {
 	variable ${position}::Vars
 	variable Options
 
-	$Vars(header) tag configure $side \
+	$Vars(header) tag configure $item \
 		-background $Options(background:player) \
 		-foreground $Options(foreground:player) \
 		;
 }
 
 
-proc LeavePlayer {position side} {
+proc LeaveItem {position item} {
 	variable ${position}::Vars
 	variable Options
 
-	$Vars(header) tag configure $side -background $Options(background:header) -foreground black
+	$Vars(header) tag configure $item -background $Options(background:header) -foreground black
 }
 
 
@@ -786,13 +809,11 @@ proc RotateBoard {board} {
 }
 
 
-proc Destroy {dlg position base} {
-	if {![namespace exists [namespace current]::${position}]} { return }
+proc Destroy {dlg w position base} {
+	if {$w ne $dlg} { return }
 
 	variable ${position}::Vars
 	variable Priv
-
-	catch { destroy $dlg.__menu__ }
 
 #	::scidb::game::unsubscribe board {*}$Vars(subscribe:board)
 #	::scidb::game::unsubscribe pgn {*}$Vars(subscribe:pgn)

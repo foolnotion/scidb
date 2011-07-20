@@ -393,43 +393,46 @@
 
 ### application::tree ##################################################
 
-::application::tree::mc::Total							"Total"
-::application::tree::mc::Control							"Control"
-::application::tree::mc::ChooseReferenceBase			"Elegir base de referencia"
-::application::tree::mc::ReferenceBaseSwitcher		"Selector de base de referencia"
-::application::tree::mc::Numeric							"NumŽrico"
-::application::tree::mc::Bar								"Barras"
-::application::tree::mc::StartSearch					"Iniciar bœsqueda"
-::application::tree::mc::StopSearch						"Suspender bœsqueda"
-::application::tree::mc::UseExactMode					"Usar posici—n de bœsqueda"
-::application::tree::mc::UseFastMode					"Usar bœsqueda acelerada"
-::application::tree::mc::UseQuickMode					"Usar bœsqueda r‡pida"
-::application::tree::mc::AutomaticSearch				"Busqueda autom‡tica"
-::application::tree::mc::LockReferenceBase			"Bloquear base de referencia"
-::application::tree::mc::TransparentBar				"Barras transparentes"
+::application::tree::mc::Total								"Total"
+::application::tree::mc::Control								"Control"
+::application::tree::mc::ChooseReferenceBase				"Elegir base de referencia"
+::application::tree::mc::ReferenceBaseSwitcher			"Selector de base de referencia"
+::application::tree::mc::Numeric								"NumŽrico"
+::application::tree::mc::Bar									"Barras"
+::application::tree::mc::StartSearch						"Iniciar bœsqueda"
+::application::tree::mc::StopSearch							"Suspender bœsqueda"
+::application::tree::mc::UseExactMode						"Usar posici—n de bœsqueda"
+::application::tree::mc::UseFastMode						"Usar bœsqueda acelerada"
+::application::tree::mc::UseQuickMode						"Usar bœsqueda r‡pida"
+::application::tree::mc::AutomaticSearch					"Busqueda autom‡tica"
+::application::tree::mc::LockReferenceBase				"Bloquear base de referencia"
+::application::tree::mc::TransparentBar					"Barras transparentes"
 
-::application::tree::mc::FromWhitesPerspective		"Desde el lado de las Blancas"
-::application::tree::mc::FromBlacksPerspective		"Desde el lado de las Negras"
-::application::tree::mc::FromSideToMovePerspective	"Desde el lado que mueve"
-::application::tree::mc::TooltipAverageRating		"Rating promedio (%s)"
-::application::tree::mc::TooltipBestRating			"Mejor rating (%s)"
+::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
+::application::tree::mc::FromBlacksPerspective			"Desde el lado de las Negras"
+::application::tree::mc::FromSideToMovePerspective		"Desde el lado que mueve"
+::application::tree::mc::FromWhitesPerspectiveTip		"Score from whites perspective" ;# NEW
+::application::tree::mc::FromBlacksPerspectiveTip		"Score from blacks perspective" ;# NEW
 
-::application::tree::mc::F_Number						"#"
-::application::tree::mc::F_Move							"Jugada"
-::application::tree::mc::F_Eco							"ECO"
-::application::tree::mc::F_Frequency					"Frecuencia"
-::application::tree::mc::F_Ratio							"Proporci—n"
-::application::tree::mc::F_Score							"Resultado"
-::application::tree::mc::F_Draws							"Tablas"
-::application::tree::mc::F_Performance					"Desempe–o"
-::application::tree::mc::F_AverageYear					"\u00f8 A–o"
-::application::tree::mc::F_LastYear						"òltima partida jugada"
-::application::tree::mc::F_BestPlayer					"Mejor jugador"
-::application::tree::mc::F_FrequentPlayer				"Jugador m‡s frecuente"
+::application::tree::mc::TooltipAverageRating			"Rating promedio (%s)"
+::application::tree::mc::TooltipBestRating				"Mejor rating (%s)"
 
-::application::tree::mc::T_Number						"Numeraci—n"
-::application::tree::mc::T_AverageYear					"A–o promedio"
-::application::tree::mc::T_FrequentPlayer				"Jugador m‡s frecuente"
+::application::tree::mc::F_Number							"#"
+::application::tree::mc::F_Move								"Jugada"
+::application::tree::mc::F_Eco								"ECO"
+::application::tree::mc::F_Frequency						"Frecuencia"
+::application::tree::mc::F_Ratio								"Proporci—n"
+::application::tree::mc::F_Score								"Resultado"
+::application::tree::mc::F_Draws								"Tablas"
+::application::tree::mc::F_Performance						"Desempe–o"
+::application::tree::mc::F_AverageYear						"\u00f8 A–o"
+::application::tree::mc::F_LastYear							"òltima partida jugada"
+::application::tree::mc::F_BestPlayer						"Mejor jugador"
+::application::tree::mc::F_FrequentPlayer					"Jugador m‡s frecuente"
+
+::application::tree::mc::T_Number							"Numeraci—n"
+::application::tree::mc::T_AverageYear						"A–o promedio"
+::application::tree::mc::T_FrequentPlayer					"Jugador m‡s frecuente"
 
 ### board ##############################################################
 ::board::mc::CannotReadFile		"No se puede leer el archivo '%s':"
@@ -710,6 +713,9 @@
 ::playertable::mc::OpenViafCatalog			"Abrir el cat‡logo VIAF"
 ::playertable::mc::OpenPndCatalog			"Abrir el cat‡logo de la Deutsche Nationalbibliothek"
 ::playertable::mc::OpenChessgames			"Colecci—n de partidas de chessgames.com"
+
+### eventtable #########################################################
+::eventtable::mc::Attendance	"Attendance" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Iniciar posici—n"

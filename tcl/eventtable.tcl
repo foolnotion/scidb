@@ -25,6 +25,11 @@
 # ======================================================================
 
 namespace eval eventtable {
+namespace eval mc {
+
+set Attendance "Attendance"
+
+}
 
 #		ID   		Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
 #	----------------------------------------------------------------------------------
@@ -167,9 +172,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]
 	::bind $path <<Language>>  		[namespace code [list BindAccelerators $path]]
 
-#	bind $path <ButtonPress-2>			[namespace code [list ShowMoves $path %x %y]]
-#	bind $path <ButtonRelease-2>		[namespace code [list hideMoves $path]]
-#	bind $path <ButtonPress-3>			+[namespace code [list hideMoves $path]]
+	bind $path <ButtonPress-2>			[namespace code [list ShowInfo $path %x %y]]
+	bind $path <ButtonRelease-2>		[namespace code [list hideInfo $path]]
+	bind $path <ButtonPress-3>			+[namespace code [list hideInfo $path]]
 
 	set Vars(viewcmd) $getViewCmd
 	BindAccelerators $path
@@ -300,6 +305,81 @@ proc bind {path sequence script} {
 
 proc see {path position} {
 	::scrolledtable::see $path $position
+}
+
+
+proc showInfo {path info} {
+	set w $path.showinfo
+	catch { destroy $w }
+	toplevel $w -background white -class Tooltip
+	wm withdraw $w
+	if {[tk windowingsystem] eq "aqua"} {
+		::tk::unsupported::MacWindowStyle style $w help none
+	} else {
+		wm overrideredirect $w true
+	}
+	wm attributes $w -topmost true
+
+	set bg [::tooltip::background]
+	set top [tk::frame $w.f -relief solid -borderwidth 0 -background $bg]
+	pack $top -padx 2 -pady 2
+
+	set f [tk::frame $top.f -borderwidth 0 -background $bg]
+	grid $f -column 3 -row 1
+
+	set columns {event type eventDate mode timeMode
+					country site frequency attendance averageRating category}
+	lassign $info {*}$columns
+	set countryCode $country
+	set country [::country::name $country]
+	set type $::eventtypebox::mc::Type($type)
+	set timeMode $::timemodebox::mc::Mode($timeMode)
+	set eventDate [::locale::formatDate $eventDate]
+	if {[string length $mode ] > 1} { set mode [set ::eventmodebox::mc::$mode] }
+	set row 1
+	foreach var $columns {
+		if {$var ne "frequency"} {
+			set value [set $var]
+			if {[string length $value] == 0 || $value == 0} { set value "\u2013" }
+			set attr [string toupper $var 0 0]
+			if {[info exists ::gametable::mc::F_$attr]} {
+				set text [set ::gametable::mc::F_$attr]
+			} elseif {[info exists ::dialog::save::mc::$attr]} {
+				set text [set ::dialog::save::mc::$attr]
+			} elseif {[info exists ::crosstable::mc::$attr]} {
+				set text [set ::crosstable::mc::$attr]
+			} else {
+				set text [set mc::$attr]
+			}
+			tk::label $f.lbl$row -background $bg -text "$text:"
+			tk::label $f.val$row -background $bg -text $value -justify left
+			grid $f.lbl$row -row $row -column 3 -sticky nw
+			grid $f.val$row -row $row -column 5 -sticky w
+#			grid rowconfigure $f [expr {$row + 1}] -minsize $::theme::padding
+			incr row 2
+		}
+	}
+	grid columnconfigure $f 4 -minsize $::theme::padding
+	grid columnconfigure $f {2 6} -minsize 2
+	grid rowconfigure $f [list 0 [incr row -1]] -minsize 2
+
+	set icon [::country::countryFlag $countryCode]
+	if {[llength $icon]} {
+		if {![winfo exists $top.lt]} { tk::frame $top.lt -background $bg -borderwidth 0 }
+		set lbl [tk::label $top.lt.flag -background $bg -image $icon -borderwidth 0]
+		grid $lbl -column 1 -row 3 -sticky n
+		grid $top.lt -column 1 -row 1
+		grid columnconfigure $top 0 -minsize 2
+		grid columnconfigure $top 2 -minsize $::theme::padding
+		grid rowconfigure $top {0 2} -minsize 2
+	}
+
+	::tooltip::popup $path $w cursor
+}
+
+
+proc hideInfo {path} {
+	::tooltip::popdown $path.showinfo
 }
 
 
@@ -479,6 +559,21 @@ proc SortColumn {path id dir {rating {}}} {
 	}
 	::widget::busyCursor off
 	::scrolledtable::updateColumn $path $selection $see
+}
+
+
+proc ShowInfo {path x y} {
+	variable ${path}::Vars
+
+	set table $path
+	set index [::scrolledtable::at $table $y]
+	if {![string is digit $index]} { return }
+	::scrolledtable::focus $table
+	::scrolledtable::activate $table [::scrolledtable::indexToRow $table $index]
+	set base [::scrolledtable::base $table]
+	set view [{*}$Vars(viewcmd) $base]
+	set info [scidb::db::get eventInfo $index $view $base -card]
+	showInfo $path $info
 }
 
 

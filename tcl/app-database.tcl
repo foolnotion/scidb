@@ -1015,7 +1015,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs separator {} {} {} {} {} {}
 
 		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
-			variable _ReadOnly [::scidb::db::get readonly?]
+			variable _ReadOnly $readonly
 			lappend specs \
 				checkbutton \
 				$mc::ReadOnly \

@@ -29,7 +29,7 @@
 // http://talkchess.com/forum/viewtopic.php?topic_view=threads&p=287896&t=29468&sid=a535ba2e9a17395e2582bdddf57c2425
 
 // Required files:	.cba .cbc .cbg .cbh .cbp .cbt
-// Used files:			.cba .cbc .cbg .cbh .cbp .cbt .cbs .ini
+// Used files:			.cba .cbc .cbg .cbh .cbp .cbt .cbs .cbe .cbj .ini
 
 #include "cbh_codec.h"
 #include "cbh_decoder.h"
@@ -740,7 +740,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 				if (	countryCode == country::Jersey
 					&& (	::strstr(city, "Guernsey") != 0
 						|| ::strstr(city, "Dgernesy") != 0
-						|| ::strstr(city, "Dgèrnésy") != 0
+						|| ::strstr(city, "DgÃ¨rnÃ©sy") != 0	// "Dgèrnésy"
 						|| ::strstr(city, "Peter Port") != 0))
 				{
 					countryCode = country::Guernsey;
@@ -845,7 +845,12 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 			if (m_highQuality)
 			{
 				if (Player const* player = Player::findPlayer(str))
+				{
 					fideID = player->fideID();
+
+					if (::strchr(str, ',') == nullptr)
+						str = player->name();
+				}
 			}
 
 			m_playerMap[i] = base.insertPlayer(str, fideID, n++, nrecs);
