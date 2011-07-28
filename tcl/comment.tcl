@@ -773,7 +773,17 @@ proc ParseContent {lang} {
 			text {
 				if {$token eq "str"} {
 					if {[incr n] == 1} {
-						if {$fst == 1} { set value [string trimleft $value] }
+						if {$n == $count} {
+							if {$lst == 1 && $fst == 1} {
+								set value [string trim $value]
+							} elseif {$fst == 1} {
+								set value [string trimleft $value]
+							} elseif {$lst == 1} {
+								set value [string trimright $value]
+							}
+						} elseif {$fst == 1} {
+							set value [string trimleft $value]
+						}
 					} elseif {$n == $count} {
 						if {$lst == 1} { set value [string trimright $value] }
 					}

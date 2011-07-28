@@ -42,6 +42,9 @@
 #include <assert.h>
 #include <X11/Xutil.h>
 
+#ifdef USE_DOUBLE_BUFFERING
+# include "tkInt.h"
+#endif
 
 /*-------------------------------------------------------------------------
  * OVERVIEW:
@@ -698,7 +701,7 @@ windowsRepair(pTree, pCanvas)
          * widget is being destroyed (pTree==0) unmap the window and remove it
          * from the HtmlTree.pMapped linked-list.
          */
-	if (!pTree || p->clipped || iWidth <= 0 || iHeight <= 0) {
+        if (!pTree || p->clipped || iWidth <= 0 || iHeight <= 0) {
             if (Tk_IsMapped(control)) {
                 Tk_UnmapWindow(control);
             }
@@ -1653,7 +1656,7 @@ printf("%s\n", Tcl_GetString(HtmlNodeCommand(pQuery->pTree, p->pItem->pNode)));
                     , p->pmw, p->pmh
                 );
                 p->pixmap = Tk_GetPixmap(
-    		    Tk_Display(win), Tk_WindowId(win),
+                Tk_Display(win), Tk_WindowId(win),
                     p->pmw, p->pmh,
                     Tk_Depth(win)
                 );
@@ -2095,14 +2098,14 @@ drawBox(pQuery, pItem, pBox, drawable, x, y, w, h, xview, yview, flags)
 
 #ifdef WIN32
             /*
-	     * Todo: On windows, using XFillRectangle() to draw the image
-	     * doesn't seem to work. This is probably a shortcoming of the Tk
-	     * porting layer, but this hasn't been checked properly yet. For
+             * Todo: On windows, using XFillRectangle() to draw the image
+             * doesn't seem to work. This is probably a shortcoming of the Tk
+             * porting layer, but this hasn't been checked properly yet. For
              * now, disable the XFillRectangle() optimization.
              */
             int isAlpha = 1;
 #else
-	    /* Update: Maybe the XFillRectangle() optimization is less helpful
+            /* Update: Maybe the XFillRectangle() optimization is less helpful
              * than it seems.
              */
 #if 0
@@ -2175,11 +2178,11 @@ drawBox(pQuery, pItem, pBox, drawable, x, y, w, h, xview, yview, flags)
                 }
                 Tk_RedrawImage(img, 0, 0, iWidth, iHeight, ipix, 0, 0);
 
-		/* Draw a rectangle to the drawable with origin (bg_x, bg_y).
-		 * The size of the rectangle is (bg_w *  bg_h). The background
-		 * image is tiled across the region with a relative origin
-		 * point as defined by (gc_values.ts_x_origin,
-		 * gc_values.ts_y_origin).
+                /* Draw a rectangle to the drawable with origin (bg_x, bg_y).
+                 * The size of the rectangle is (bg_w *  bg_h). The background
+                 * image is tiled across the region with a relative origin
+                 * point as defined by (gc_values.ts_x_origin,
+                 * gc_values.ts_y_origin).
                  */
                 gc_values.ts_x_origin = iPosX;
                 gc_values.ts_y_origin = iPosY;
@@ -2442,6 +2445,269 @@ drawText(pQuery, pItem, drawable, x, y)
     }
 }
 
+/*
+ *---------------------------------------------------------------------------
+ *
+ * HtmlUpdateHiliteRegion --
+ *
+ *     Set hilite background immediately.
+ *
+ * Results:
+ *     None.
+ *
+ * Side effects:
+ *     None.
+ *
+ *---------------------------------------------------------------------------
+ */
+//#define MEASURE_TIME
+
+#ifdef MEASURE_TIME
+
+#include <sys/time.h>
+#include <time.h>
+
+static struct timeval TimerStart;
+static struct timeval TimerEnd;
+
+int
+timeval_subtract(result, x, y)
+    struct timeval *result, *x, *y;
+{
+    if (x->tv_usec < y->tv_usec) {
+        int nsec = (y->tv_usec - x->tv_usec) / 1000000 + 1;
+        y->tv_usec -= 1000000 * nsec;
+        y->tv_sec += nsec;
+    }
+    if (x->tv_usec - y->tv_usec > 1000000) {
+        int nsec = (x->tv_usec - y->tv_usec) / 1000000;
+        y->tv_usec += 1000000 * nsec;
+        y->tv_sec -= nsec;
+    }
+
+    result->tv_sec = x->tv_sec - y->tv_sec;
+    result->tv_usec = x->tv_usec - y->tv_usec;
+
+    return x->tv_sec < y->tv_sec;
+}
+
+static void
+restart_time()
+{
+    gettimeofday(&TimerStart, NULL);
+}
+
+static unsigned long
+elapsed_time()
+{
+    struct timeval result;
+    gettimeofday(&TimerEnd, NULL);
+    timeval_subtract(&result, &TimerEnd, &TimerStart);
+    return result.tv_sec*1000000ul + result.tv_usec;
+}
+
+#endif
+
+static void
+updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h)
+    HtmlTree *pTree;
+    Pixmap pixmap;
+    GC gc;
+    int x, y, w, h;
+{
+#ifdef USE_DOUBLE_BUFFERING
+    if (pTree->options.doublebuffer)
+    {
+        XRectangle rect;
+
+        rect.x = MAX(x, pTree->bufferRect.x);
+        rect.y = MAX(y, pTree->bufferRect.y);
+        rect.width = MIN(w, pTree->bufferRect.width);
+        rect.height = MIN(h, pTree->bufferRect.height);
+
+        if (rect.width > 0 && rect.height > 0)
+        {
+            XCopyArea(
+                Tk_Display(pTree->docwin), pixmap, pTree->buffer, gc,
+                0, 0, rect.width, rect.height,
+                rect.x - pTree->bufferRect.x, rect.y - pTree->bufferRect.y
+            );
+
+            TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+        }
+    }
+#endif
+}
+
+static void
+updateRegions(pTree, pElem, drawable, dx, dy)
+    HtmlTree *pTree;
+    HtmlElementNode *pElem;
+    Drawable drawable;
+    int dx, dy;
+{
+    int ii;
+
+    for (ii = 0; ii < pElem->nChild; ii++) {
+        HtmlNode *pNode = pElem->apChildren[ii];
+
+        if (HtmlNodeIsText(pNode)) {
+            HtmlColor *pColor = colorFromNode(pNode);
+
+            if (pColor->xcolor) {
+                HtmlTextNode* pTextNode = (HtmlTextNode*)pNode;
+                HtmlTextIter sIter;
+                char buf[1024];
+                int len = 0;
+                int size = 0;
+                int kk;
+
+                for (
+                    HtmlTextIterFirst(pTextNode, &sIter);
+                    HtmlTextIterIsValid(&sIter);
+                    HtmlTextIterNext(&sIter)
+                ) {
+                    int nData = HtmlTextIterLength(&sIter);
+
+                    if (len + nData < sizeof(buf)) {
+                        char const *zData = HtmlTextIterData(&sIter);
+                        int eType = HtmlTextIterType(&sIter);
+
+                        switch (eType) {
+                            case HTML_TEXT_TOKEN_TEXT:
+                                memcpy(buf + len, zData, nData);
+                                len += nData;
+                                break;
+
+                            case HTML_TEXT_TOKEN_NEWLINE:
+                            case HTML_TEXT_TOKEN_SPACE:
+                                buf[len++] = ' ';
+                                break;
+                        }
+                    }
+                }
+
+                for (kk = 0; kk < len; ++kk)
+                {
+                    if (buf[kk] != ' ')
+                        size = len;
+                }
+
+                if (size)
+                {
+                    HtmlFont *font = fontFromNode(pNode);
+                    Display *display = Tk_Display(pTree->tkwin);
+                    GC gc = 0;
+                    XGCValues gc_values;
+                    int mask;
+                    int x, y, w, h;
+
+                    HtmlWidgetNodeBox(pTree, pNode, &x, &y, &w, &h);
+                    y += font->metrics.ascent;
+                    x -= dx;
+                    y -= dy;
+
+                    mask = GCForeground | GCFont;
+                    gc_values.foreground = pColor->xcolor->pixel;
+                    gc_values.font = Tk_FontId(font->tkfont);
+                    gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
+#ifdef MEASURE_TIME
+restart_time();
+#endif
+                    Tk_DrawChars(display, drawable, gc, font->tkfont, buf, len, x, y);
+#ifdef MEASURE_TIME
+buf[len] = '\0';
+printf("drawChars(%d): %lu\n", size, elapsed_time());
+#endif
+                    Tk_FreeGC(display, gc);
+                }
+            }
+        } else {
+            updateRegions(pTree, (HtmlElementNode*)pNode, drawable, dx, dy);
+        }
+    }
+}
+
+void
+HtmlUpdateHiliteRegion(pTree, pNode, color)
+    HtmlTree *pTree;
+    HtmlNode *pNode;
+    XColor* color;
+{
+    int x, y, w, h;
+    HtmlElementNode *pElem = (HtmlElementNode *)pNode;
+
+    HtmlWidgetNodeBox(pTree, pNode, &x, &y, &w, &h);
+
+    if (pElem->pBox->type == CANVAS_BOX) {
+        HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
+        CanvasBox *pBox = &(pElem->pBox->x.box);
+
+        int tw = ((pV->eBorderTopStyle != CSS_CONST_NONE) ? pV->border.iTop : 0);
+        int bw = ((pV->eBorderBottomStyle != CSS_CONST_NONE)?pV->border.iBottom:0);
+        int rw = ((pV->eBorderRightStyle != CSS_CONST_NONE) ? pV->border.iRight :0);
+        int lw = ((pV->eBorderLeftStyle != CSS_CONST_NONE) ? pV->border.iLeft : 0);
+
+        XColor *tc = pV->cBorderTopColor->xcolor;
+        XColor *rc = pV->cBorderRightColor->xcolor;
+        XColor *bc = pV->cBorderBottomColor->xcolor;
+        XColor *lc = pV->cBorderLeftColor->xcolor;
+
+        if (pBox->flags & CANVAS_BOX_OPEN_LEFT)  { lw = 0; }
+        if (pBox->flags & CANVAS_BOX_OPEN_RIGHT) { rw = 0; }
+        if (tw > 0 && tc) { y += tw; h -= tw; }
+        if (lw > 0 && lc) { x += lw; w -= lw; }
+        if (bw > 0 && bc) { h -= bw; }
+        if (rw > 0 && rc) { w -= rw; }
+    }
+
+    if (w > 0 && h > 0) {
+        GC gc;
+        XGCValues gc_values;
+        Pixmap pixmap;
+        Tk_Window win = pTree->tkwin;
+        Display *display = Tk_Display(win);
+
+        Tk_MakeWindowExist(win);
+        pixmap = Tk_GetPixmap(display, Tk_WindowId(win), w, h, Tk_Depth(win));
+        gc_values.foreground = color->pixel;
+#ifdef MEASURE_TIME
+restart_time();
+#endif
+        gc = Tk_GetGC(win, GCForeground, &gc_values);
+#ifdef MEASURE_TIME
+printf("getGC: %lu\n", elapsed_time());
+#endif
+#ifdef MEASURE_TIME
+restart_time();
+#endif
+        XFillRectangle(display, pixmap, gc, 0, 0, w, h);
+#ifdef MEASURE_TIME
+printf("fillRectangle: %lu\n", elapsed_time());
+#endif
+        Tk_FreeGC(display, gc);
+
+        updateRegions(pTree, pElem, pixmap, x, y);
+
+        memset(&gc_values, 0, sizeof(XGCValues));
+        gc = Tk_GetGC(win, 0, &gc_values);
+#ifdef MEASURE_TIME
+restart_time();
+#endif
+        XCopyArea(
+            display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h,
+            x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin)
+        );
+
+        updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+
+#ifdef MEASURE_TIME
+printf("copyArea: %lu\n", elapsed_time());
+#endif
+        Tk_FreeGC(display, gc);
+        Tk_FreePixmap(display, pixmap);
+    }
+}
 
 /*
  *---------------------------------------------------------------------------
@@ -2485,7 +2751,6 @@ searchCanvas(pTree, ymin, ymax, xFunc, clientData, requireOverflow)
 
     /* Debugging variables to support assert() statements */
     int nOrigin = 0;
-    int bSeenFixedMarker = 0;
 
     for (pItem = pCanvas->pFirst; pItem; pItem = (pSkip?pSkip:pItem->pNext)) {
 
@@ -2518,13 +2783,11 @@ searchCanvas(pTree, ymin, ymax, xFunc, clientData, requireOverflow)
 
             case CANVAS_MARKER: {
                 if(pItem->x.marker.flags == MARKER_FIXED){
-                    assert(bSeenFixedMarker == 0);
                     assert(nOrigin == 0);
                     assert(origin_x == 0);
                     assert(origin_y == 0);
                     origin_x = pTree->iScrollX;
                     origin_y = pTree->iScrollY;
-                    bSeenFixedMarker = 1;
                 }
                 break;
             }
@@ -3339,8 +3602,8 @@ int HtmlLayoutImage(clientData, interp, objc, objv)
         Tk_FreePixmap(Tk_Display(pTree->tkwin), pixmap);
     } else {
         /* If the width or height is zero, then the image is empty. So just
-	 * run the following simple script to set the interpreter result to
-	 * an empty image.
+         * run the following simple script to set the interpreter result to
+         * an empty image.
          */
         Tcl_Eval(interp, "image create photo");
     }
@@ -4410,6 +4673,8 @@ widgetRepair(pTree, x, y, w, h, g)
         x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin)
     );
 
+    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+
     Tk_FreePixmap(pDisp, pixmap);
     Tk_FreeGC(pDisp, gc);
 }
@@ -4498,7 +4763,7 @@ HtmlWidgetSetViewport(pTree, scroll_x, scroll_y, force_redraw)
              iShiftX > 20000 || iShiftX < -20000
         ) {
             /* If moving the window more than 20000 pixels in either the
-	     * horizontal or vertical direction, make sure the entire viewport
+             * horizontal or vertical direction, make sure the entire viewport
              * is redrawn.
              */
             HtmlCallbackDamage(pTree, 0, 0, 100000, 100000);
@@ -4610,3 +4875,4 @@ HtmlDrawGetMarker(pCanvas, pMarker, pX, pY)
     return 1;
 }
 
+// vi:set et ts=4 sw=4:

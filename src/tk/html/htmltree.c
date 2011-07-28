@@ -2350,7 +2350,7 @@ nodeCommand(clientData, interp, objc, objv)
 
     enum NODE_enum {
         NODE_ATTRIBUTE, NODE_CHILDREN, NODE_DESTROY, NODE_DYNAMIC,
-        NODE_HTML,
+        NODE_HTML, NODE_HILITE,
         NODE_INSERT, NODE_OVERRIDE, NODE_PARENT, NODE_PROPERTY,
         NODE_REMOVE, NODE_REPLACE, NODE_STACKING, NODE_TAG, NODE_TEXT,
         NODE_XVIEW, NODE_YVIEW
@@ -2366,6 +2366,7 @@ nodeCommand(clientData, interp, objc, objv)
         {"destroy",   NODE_DESTROY,   0},
         {"dynamic",   NODE_DYNAMIC,   0},
         {"html",      NODE_HTML,      0},
+        {"hilite",    NODE_HILITE,    0},
         {"insert",    NODE_INSERT,    0},
         {"override",  NODE_OVERRIDE,  0},
         {"parent",    NODE_PARENT,    0},
@@ -2482,6 +2483,52 @@ node_attr_usage:
                 Tcl_GetString(objv[1]), " ",
                 "? ?-default DEFAULT-VALUE? ATTR-NAME ?NEW-VAL??", 0);
             return TCL_ERROR;
+        }
+
+        /*
+         * nodeHandle hilite COLOR-NAME
+         *
+         * This is a alternative for 'nodeHandle attribute bgcolor COLOR-NAME'.
+         */
+        case NODE_HILITE: {
+            if (objc != 3) {
+                Tcl_ResetResult(interp);
+                Tcl_AppendResult(interp, "Usage: ",
+                    Tcl_GetString(objv[0]), " ",
+                    Tcl_GetString(objv[1]), " ",
+                    "? ?COLOR-NAME?", 0);
+                return TCL_ERROR;
+            }
+
+            if (!HtmlNodeIsText(pNode)) {
+                char const* zColorName = Tcl_GetString(objv[2]);
+                HtmlElementNode *pElem = (HtmlElementNode *)pNode;
+                HtmlComputedValues *pV = pElem->pPropertyValues;
+                XColor* xcolor;
+                const char *zColor;
+
+                if (strcmp(zColorName, "none") == 0) {
+                    if (pV->zColor) {
+                        zColor = pV->zColor;
+                    } else {
+                        zColor = "#ffffff";
+                    }
+               } else {
+                    if (pV->zColor) {
+                        HtmlFree(pV->zColor);
+                    }
+                    pV->zColor = HtmlAlloc("tmp", strlen(pV->cBackgroundColor->zColor) + 1);
+                    strcpy(pV->zColor, pV->cBackgroundColor->zColor);
+                    zColor = zColorName;
+                }
+
+                setNodeAttribute(pNode, "bgcolor", zColor);
+                HtmlStyleApply(pTree, pNode);
+
+                xcolor = pElem->pPropertyValues->cBackgroundColor->xcolor;
+					 HtmlUpdateHiliteRegion(pTree, pNode, xcolor);
+            }
+            break;
         }
 
         /*

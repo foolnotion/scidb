@@ -52,6 +52,10 @@
 
 #include <time.h>
 
+#ifdef USE_DOUBLE_BUFFERING
+# include "tkInt.h"
+#endif
+
 #include "htmldefaultstyle.c"
 
 #define LOG if (pTree->options.logcmd)
@@ -1095,6 +1099,10 @@ deleteWidget(clientData)
         HtmlFree(pDamage);
     }
 
+#ifdef USE_DOUBLE_BUFFERING
+    TkDestroyRegion(pTree->bufferRegion);
+#endif
+
     /* Delete the structure itself */
     HtmlFree(pTree);
 }
@@ -1198,6 +1206,64 @@ docwinEventHandler(clientData, pEvent)
                 "Docwin Expose: x=%d y=%d width=%d height=%d",
                 p->x, p->y, p->width, p->height
             );
+
+#ifdef USE_DOUBLE_BUFFERING
+            if (pTree->options.doublebuffer)
+            {
+                Tk_Window win = pTree->docwin;
+                Display *display = Tk_Display(win);
+
+                if (TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height))
+                {
+                    GC gc;
+                    XGCValues gc_values;
+
+                    Tk_MakeWindowExist(win);
+
+                    memset(&gc_values, 0, sizeof(XGCValues));
+                    gc = Tk_GetGC(win, 0, &gc_values);
+
+                    XCopyArea(
+                        display, pTree->buffer, Tk_WindowId(win), gc,
+                        p->x - pTree->bufferRect.x, p->y - pTree->bufferRect.y,
+                        p->width, p->height, p->x - Tk_X(win), p->y - Tk_Y(win)
+                    );
+
+                    Tk_FreeGC(display, gc);
+
+                    return;
+                }
+
+                int w = MIN(p->width  - p->x, WidthOfScreen (Tk_Screen(win)));
+                int h = MIN(p->height - p->y, HeightOfScreen(Tk_Screen(win)));
+
+                w = MAX(w, pTree->bufferRect.width);
+                h = MAX(h, pTree->bufferRect.height);
+
+                if (   p->x < pTree->bufferRect.x
+					     || p->y < pTree->bufferRect.y
+					     || pTree->bufferRect.width  - pTree->bufferRect.x < w
+                    || pTree->bufferRect.height - pTree->bufferRect.y < h)
+                {
+                    Pixmap buffer = Tk_GetPixmap(display, Tk_WindowId(win), w, h, Tk_Depth(win));
+                    GC gc;
+                    XGCValues gc_values;
+
+                    memset(&gc_values, 0, sizeof(XGCValues));
+                    gc = Tk_GetGC(win, 0, &gc_values);
+
+                    XCopyArea(
+                        display, pTree->buffer, buffer, gc,
+                        0, 0, pTree->bufferRect.width, pTree->bufferRect.height,
+                        MAX(0, pTree->bufferRect.x - p->x), MAX(0, pTree->bufferRect.y - p->y)
+                    );
+
+                    Tk_FreeGC(display, gc);
+                    Tk_FreePixmap(display, pTree->buffer);
+                    pTree->buffer = buffer;
+                }
+            }
+#endif
 
             HtmlCallbackDamage(pTree,
                 p->x + Tk_X(pTree->docwin), p->y + Tk_Y(pTree->docwin),
@@ -1345,6 +1411,9 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(layoutcache, "layoutCache", "LayoutCache", "1", S_MASK),
         BOOLEAN(forcefontmetrics, "forceFontMetrics", "ForceFontMetrics", "1", F_MASK),
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
+#ifdef USE_DOUBLE_BUFFERING
+        BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
+#endif
 
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
 
@@ -1525,7 +1594,7 @@ static int cgetCmd(clientData, interp, objc, objv)
         Tcl_SetObjResult(interp, pRet);
     } else {
         char * zOpt = Tcl_GetString(objv[2]);
-        Tcl_AppendResult( interp, "unknown option \"", zOpt, "\"", 0);
+        Tcl_AppendResult(interp, "unknown option \"", zOpt, "\"", 0);
         return TCL_ERROR;
     }
     return TCL_OK;
@@ -2584,7 +2653,7 @@ int widgetCmd(clientData, interp, objc, objv)
         {"yview",        yviewCmd},
 
         /* The following are for debugging only. May change at any time.
-	 * They are not included in the documentation. Just don't touch Ok? :)
+         * They are not included in the documentation. Just don't touch Ok? :)
          */
         {"_delay",       delayCmd},
         {"_force",       forceCmd},
@@ -2656,7 +2725,7 @@ newWidget(clientData, interp, objc, objv)
         return TCL_ERROR;
     }
     Tk_MakeWindowExist(pTree->docwin);
-    Tk_ResizeWindow(pTree->docwin, 30000, 30000);
+    Tk_ResizeWindow(pTree->docwin, 12000, 30000);
     Tk_MapWindow(pTree->docwin);
 
     pTree->interp = interp;
@@ -2702,6 +2771,14 @@ newWidget(clientData, interp, objc, objv)
     /* Load the default style-sheet, ready for the first document. */
     doLoadDefaultStyle(pTree);
     pTree->isSequenceOk = 1;
+
+#ifdef USE_DOUBLE_BUFFERING
+    pTree->bufferRegion = TkCreateRegion();
+    pTree->bufferRect.x = 0;
+    pTree->bufferRect.y = 0;
+    pTree->bufferRect.width = 0;
+    pTree->bufferRect.height = 0;
+#endif
 
 #ifdef TKHTML_ENABLE_PROFILE
     if (1) {
@@ -2912,7 +2989,7 @@ htmlCharOffsetCmd(clientData, interp, objc, objv)
 DLL_EXPORT int Tkhtml_Init(interp)
     Tcl_Interp *interp;
 {
-    int rc;
+    int rc __attribute__((unused));
 
     /* Require stubs libraries version 8.4 or greater. */
 #ifdef USE_TCL_STUBS
@@ -2979,3 +3056,5 @@ DLL_EXPORT int Tkhtml_SafeInit(interp)
 {
     return Tkhtml_Init(interp);
 }
+
+// vi:set et ts=4 sw=4:

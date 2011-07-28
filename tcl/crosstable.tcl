@@ -237,7 +237,11 @@ proc open {parent base index view source} {
 
 	ttk::frame $top
 	ttk::frame $canv
-	::html $html -nodehandler [namespace current]::NodeHandler -imagecmd [namespace code GetImage]
+	::html $html \
+		-nodehandler [namespace current]::NodeHandler \
+		-imagecmd [namespace code GetImage] \
+		-delay 10 \
+		;
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
 
 	set tb [::toolbar::toolbar $dlg \
@@ -784,6 +788,8 @@ proc Destroy {dlg w} {
 proc Open {which gameIndex} {
 	variable Vars
 
+	Tooltip hide
+
 	set base $Vars(base)
 	set path $Vars(html)
 
@@ -881,7 +887,7 @@ proc EnterNode {id} {
 	catch {
 		set node $Nodes($id)
 		if {![info exists Marks($node)]} {
-			$node attribute bgcolor $Colors(highlighted)
+			$node hilite $Colors(highlighted)
 		}
 		incr Highlighted($node)
 	}
@@ -900,7 +906,7 @@ proc LeaveNode {id} {
 		if {$Highlighted($node) > 0} {
 			if {[incr Highlighted($node) -1] == 0} {
 				if {![info exists Marks($node)]} {
-					$node attribute bgcolor $Colors(background)
+					$node hilite none
 				}
 			}
 		}
@@ -918,9 +924,9 @@ proc Hilite {idList} {
 
 	foreach node [array names Marks] {
 		lappend oldIdList $Marks($node)
-		set attr background
-		catch { if {$Highlighted($node) > 0} { set attr highlighted } }
-		$node attribute bgcolor $Colors($attr)
+		set color none
+		catch { if {$Highlighted($node) > 0} { set color $Colors(highlighted) } }
+		$node hilite $color
 	}
 	array unset Marks
 
@@ -930,7 +936,7 @@ proc Hilite {idList} {
 			catch {
 				set node $Nodes($id)
 				set Marks($node) $id
-				$node attribute bgcolor $Colors(mark)
+				$node hilite $Colors(mark)
 			}
 		}
 	}

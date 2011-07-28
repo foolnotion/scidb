@@ -89,6 +89,16 @@ append(mstl::string& result, char const* s, unsigned len)
 					result += '&';
 					s += 5;
 				}
+				else if (strncmp("&apos;", s, 6) == 0)
+				{
+					result += '\'';
+					s += 6;
+				}
+				else if (strncmp("&quot;", s, 4) == 0)
+				{
+					result += '"';
+					s += 6;
+				}
 				else
 				{
 					result += *s++;
@@ -441,10 +451,12 @@ Parser::parse()
 									{
 										switch (str[j])
 										{
-											case '<': m_xml.append("&lt;", 4); break;
-											case '>': m_xml.append("&gt;", 4); break;
-											case '&': m_xml.append("&amp;", 5); break;
-											default:  m_xml += str[j]; break;
+											case '<':	m_xml.append("&lt;",   4); break;
+											case '>':	m_xml.append("&gt;",   4); break;
+											case '&':	m_xml.append("&amp;",  5); break;
+											case '\'':	m_xml.append("&apos;", 6); break;
+											case '"':	m_xml.append("&quot;", 6); break;
+											default:		m_xml += str[j]; break;
 										}
 									}
 								}

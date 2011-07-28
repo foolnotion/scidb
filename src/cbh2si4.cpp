@@ -51,6 +51,9 @@ using namespace db;
 static unsigned rejected = 0;
 
 
+namespace tcl { namespace bits { Tcl_Interp* interp; } }
+
+
 struct TclInterpreter
 {
 	TclInterpreter()	{ ::tcl::bits::interp = Tcl_CreateInterp(); }

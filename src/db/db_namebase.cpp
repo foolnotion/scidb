@@ -908,6 +908,9 @@ Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
 		case Annotator:
 			oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name);
 			break;
+		default:
+			oldPos = m_list.end(); // shut up the compiler
+			break;
 	}
 
 	M_ASSERT(oldPos != m_list.end());

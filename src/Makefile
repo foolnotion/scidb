@@ -28,16 +28,18 @@ LIBS_BASE = \
 	mstl/libmstl.a \
 
 LIBS = \
-	tk/libtk.a \
-	tcl/libtcl.a \
 	app/libapp.a \
 	db/libdb.a \
 	sys/libsys.a \
-	tk/svg/libsvg.a \
-	tk/svg/agg/libagg.a \
 	util/libutil.a \
 	util/libTeXt/libTeXt.a \
 	mstl/libmstl.a \
+
+TK_LIBS = \
+	tcl/libtcl.a \
+	tk/libtk.a \
+	tk/svg/libsvg.a \
+	tk/svg/agg/libagg.a \
 	tk/jpeg/libjpegd.a \
 	tk/treectrl/libtreectrl.a \
 	tk/html/libTkhtml3.a \
@@ -53,7 +55,8 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-ALL_LIBS = $(LIBS) $(X_LIBRARY) $(TK_LIBRARY) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
+ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
+ALL_TK_LIBS = $(TK_LIBS) $(X_LIBRARY) $(TK_LIBRARY)
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt $(LIB_SUBDIRS)
 
@@ -191,9 +194,9 @@ cbh2si4: cbh2si4.o $(LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
-$(PROGRAM): tkscidb.o $(LIBS)
+$(PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"

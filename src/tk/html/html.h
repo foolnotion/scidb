@@ -71,9 +71,14 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "htmltokens.h"
 #include "htmlmacros.h"
+
+#ifdef USE_DOUBLE_BUFFERING
+struct TkRegion_;
+#endif
 
 /*
  * Version information for the package mechanism.
@@ -91,9 +96,9 @@
  * to be the limiting factor.
  */
 typedef unsigned char  Html_u8;      /* 8-bit unsigned integer */
-typedef short          Html_16;      /* 16-bit signed integer */
-typedef unsigned short Html_u16;     /* 16-bit unsigned integer */
-typedef int            Html_32;      /* 32-bit signed integer */
+typedef int16_t        Html_16;      /* 16-bit signed integer */
+typedef uint16_t       Html_u16;     /* 16-bit unsigned integer */
+typedef int32_t        Html_32;      /* 32-bit signed integer */
 
 /*
  * Linux doesn't have a stricmp() function and windows doesn't have
@@ -414,6 +419,9 @@ struct HtmlOptions {
     Tcl_Obj  *fonttable;
     int       forcefontmetrics;
     int       forcewidth;
+#ifdef USE_DOUBLE_BUFFERING
+    int       doublebuffer;
+#endif
     Tcl_Obj  *imagecmd;
     int       imagecache;
     int       mode;                      /* One of the HTML_MODE_XXX values */
@@ -659,6 +667,12 @@ struct HtmlTree {
      */
     HtmlText *pText;
 
+#ifdef USE_DOUBLE_BUFFERING
+    Pixmap buffer;
+    XRectangle bufferRect;
+    struct TkRegion_ *bufferRegion;
+#endif
+
 #ifdef TKHTML_ENABLE_PROFILE
     /*
      * Client data from instrument command ([::tkhtml::instrument]).
@@ -780,6 +794,8 @@ void HtmlDrawCanvasItemReference(HtmlCanvasItem *);
 
 void HtmlWidgetDamageText(HtmlTree *, HtmlNode *, int, HtmlNode *, int);
 int HtmlWidgetNodeTop(HtmlTree *, HtmlNode *);
+
+void HtmlUpdateHiliteRegion(HtmlTree *, HtmlNode *, XColor *);
 
 HtmlTokenMap *HtmlMarkup(int);
 CONST char * HtmlMarkupName(int);
@@ -994,3 +1010,4 @@ void *HtmlInstrumentCall2(ClientData, int, void*(*)(ClientData), ClientData);
 
 #endif
 
+// vi:set et ts=4 sw=4:

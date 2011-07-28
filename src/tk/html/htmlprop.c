@@ -1650,7 +1650,7 @@ getPrototypeCreator(pTree, pMask, piCopyBytes)
         values = (char *)pValues;
 
 	/* Initialise the CUSTOM properties. */
-	pValues->eVerticalAlign = CSS_CONST_BASELINE;
+	     pValues->eVerticalAlign = CSS_CONST_BASELINE;
         pValues->iLineHeight = PIXELVAL_NORMAL;
         pValues->iZIndex = PIXELVAL_AUTO;
         propertyValuesSetFontSize(p, &Medium);
@@ -1659,6 +1659,7 @@ getPrototypeCreator(pTree, pMask, piCopyBytes)
         /* Initialise the 'color' and 'background-color' properties */
         propertyValuesSetColor(p, &p->values.cColor, &Black);
         propertyValuesSetColor(p, &p->values.cBackgroundColor, &Trans);
+        p->values.zColor = 0;
 
         for (i = 0; i < sizeof(propdef) / sizeof(PropertyDef); i++) {
             PropertyDef *pDef = &propdef[i];
@@ -2627,6 +2628,9 @@ HtmlComputedValuesRelease(pTree, pValues)
             pEntry = Tcl_FindHashEntry(&pTree->aValues, (CONST char *)pValues);
             assert(pValues == &pTree->pPrototypeCreator->values || pEntry);
 
+            if (pValues->zColor) {
+                HtmlFree(pValues->zColor);
+            }
             HtmlFontRelease(pTree, pValues->fFont);
             decrementColorRef(pTree, pValues->cColor);
             decrementColorRef(pTree, pValues->cBackgroundColor);

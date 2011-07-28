@@ -1,6 +1,17 @@
 [July 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #89)
+------------------------------------------------------------------------------
+* First speed improvement of the Html widget (highlighting). The slowness
+seems to be a general problem if a large window is involved, but this needs
+further investigation.
+
+* Comment parsing and tokenizing fixed.
+
+* Update problem with game header fixed.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #87)
 ------------------------------------------------------------------------------
 * Event info popup implemented (ButtonPress-2).

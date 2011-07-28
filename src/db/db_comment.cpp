@@ -75,6 +75,51 @@ appendDelim(mstl::string& str, char delim)
 }
 
 
+static void
+flatten(mstl::string const& src, mstl::string& dst)
+{
+	char const* s = src.begin();
+	char const* e = src.end();
+
+	while (s < e)
+	{
+		if (*s != '&')
+		{
+			dst.append(*s++);
+		}
+		else if (::strncmp("&lt;", s, 4) == 0)
+		{
+			dst.append('<');
+			s += 4;
+		}
+		else if (::strncmp("&gt;", s, 4) == 0)
+		{
+			dst.append('>');
+			s += 4;
+		}
+		else if (::strncmp("&amp;", s, 5) == 0)
+		{
+			dst.append('&');
+			s += 5;
+		}
+		else if (::strncmp("&apos;", s, 6) == 0)
+		{
+			dst.append('\'');
+			s += 6;
+		}
+		else if (::strncmp("&quot;", s, 6) == 0)
+		{
+			dst.append('"');
+			s += 6;
+		}
+		else
+		{
+			dst.append(*s++);
+		}
+	}
+}
+
+
 namespace {
 
 struct XmlData
@@ -123,7 +168,7 @@ struct Collector : public Comment::Callback
 {
 	Collector(Comment::LanguageSet& set) :m_set(set), m_length(&m_set[mstl::string::empty_string]) {}
 
-	void start() override  {}
+	void start()  override {}
 	void finish() override {}
 
 	void startLanguage(mstl::string const& lang) override
@@ -161,7 +206,7 @@ struct Split : public Comment::Callback
 
 	Split() :m_current(&m_result[mstl::string::empty_string]) {}
 
-	void start() override  {}
+	void start()  override {}
 	void finish() override {}
 
 	void startLanguage(mstl::string const& lang) override
@@ -195,9 +240,11 @@ struct Split : public Comment::Callback
 		{
 			switch (s[0])
 			{
-				case '<':	m_current->append("&lt;", 4); break;
-				case '>':	m_current->append("&gt;", 4); break;
-				case '&':	m_current->append("&amp;", 5); break;
+				case '<':	m_current->append("&lt;",   4); break;
+				case '>':	m_current->append("&gt;",   4); break;
+				case '&':	m_current->append("&amp;",  5); break;
+				case '\'':	m_current->append("&apos;", 6); break;
+				case '"':	m_current->append("&quot;", 6); break;
 				default:		m_current->append(s[0]); break;
 			}
 		}
@@ -405,7 +452,7 @@ struct Normalize : public Comment::Callback
 			if (!m_isXml)
 			{
 				m_map[mstl::string::empty_string]; // ensure existence
-				m_result = m_map.find(mstl::string::empty_string)->second.str;
+				::flatten(m_map.find(mstl::string::empty_string)->second.str, m_result);
 			}
 			else
 			{
@@ -494,9 +541,11 @@ struct Normalize : public Comment::Callback
 			{
 				switch (s[0])
 				{
-					case '<':	m_lang->str.append("&lt;", 4); break;
-					case '>':	m_lang->str.append("&gt;", 4); break;
-					case '&':	m_lang->str.append("&amp;", 5); break;
+					case '<':	m_lang->str.append("&lt;",   4); break;
+					case '>':	m_lang->str.append("&gt;",   4); break;
+					case '&':	m_lang->str.append("&amp;",  5); break;
+					case '\'':	m_lang->str.append("&apos;", 6); break;
+					case '"':	m_lang->str.append("&quot;", 6); break;
 					default:		m_lang->str.append(s[0]); break;
 				}
 			}
@@ -558,8 +607,8 @@ struct Flatten : public Comment::Callback
 {
 	Flatten(mstl::string& result, encoding::CharSet encoding) :m_result(result), m_encoding(encoding) {}
 
-	void start() override	{}
-	void finish() override	{}
+	void start()  override {}
+	void finish() override {}
 
 	void startLanguage(mstl::string const& lang) override
 	{
@@ -617,8 +666,8 @@ struct HtmlConv : public Comment::Callback
 {
 	HtmlConv(mstl::string& result) :m_result(result) {}
 
-	void start() override	{}
-	void finish() override	{}
+	void start()  override {}
+	void finish() override {}
 
 	void startLanguage(mstl::string const& lang) override
 	{
@@ -668,9 +717,21 @@ struct HtmlConv : public Comment::Callback
 			s = sys::utf8::Codec::utfNextChar(s, code);
 
 			if (code < 128)
-				m_result += char(code);
+			{
+				switch (code)
+				{
+					case '&':	m_result.append("&amp;",  5); break;
+					case '<':	m_result.append("&lt;",   4); break;
+					case '>':	m_result.append("&gt;",   4); break;
+					case '\'':	m_result.append("&apos;", 6); break;
+					case '"':	m_result.append("&quot;", 6); break;
+					default:		m_result.append(char(code)); break;
+				}
+			}
 			else
+			{
 				m_result.format("&#x%04x;", code);
+			}
 		}
 	}
 
@@ -725,11 +786,19 @@ xmlContent(void* cbData, XML_Char const* s, int len)
 			break;
 
 		case XmlData::Nag:
-			data->cb.nag(mstl::string(s, len));
+			{
+				mstl::string str;
+				str.hook(const_cast<char*>(s), len);
+				data->cb.nag(str);
+			}
 			break;
 
 		case XmlData::Content:
-			data->cb.content(mstl::string(s, len));
+			{
+				mstl::string str;
+				str.hook(const_cast<char*>(s), len);
+				data->cb.content(str);
+			}
 			break;
 	}
 }
@@ -981,7 +1050,17 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 					}
 				}
 #else
-				data->result += *s++;
+				switch (*s)
+				{
+					case '<':	data->result.append("&lt;",   4); break;
+					case '>':	data->result.append("&gt;",   4); break;
+					case '&':	data->result.append("&amp;",  5); break;
+					case '\'':	data->result.append("&apos;", 6); break;
+					case '"':	data->result.append("&quot;", 6); break;
+					default:		data->result.append(*s); break;
+				}
+
+				++s;
 #endif
 			}
 			else if (isspace(*s++))
@@ -1389,35 +1468,7 @@ Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
 	}
 	else
 	{
-		char const* s = m_content.begin();
-		char const* e = m_content.end();
-
-		while (s < e)
-		{
-			if (*s != '&')
-			{
-				result.append(*s++);
-			}
-			else if (::strncmp("&lt;", s, 4) == 0)
-			{
-				result.append('<');
-				s += 4;
-			}
-			else if (::strncmp("&gt;", s, 4) == 0)
-			{
-				result.append('>');
-				s += 4;
-			}
-			else if (::strncmp("&amp;", s, 4) == 0)
-			{
-				result.append('&');
-				s += 4;
-			}
-			else
-			{
-				result.append(*s++);
-			}
-		}
+		::flatten(m_content, result);
 	}
 }
 
@@ -1444,9 +1495,11 @@ Comment::toHtml(mstl::string& result) const
 		{
 			switch (*s)
 			{
-				case '<':	++s; result.append("&lt;", 4); break;
-				case '>':	++s; result.append("&gt;", 4); break;
-				case '&':	++s; result.append("&amp;", 5); break;
+				case '<':	++s; result.append("&lt;",   4); break;
+				case '>':	++s; result.append("&gt;",   4); break;
+				case '&':	++s; result.append("&amp;",  5); break;
+				case '\'':	++s; result.append("&apos;", 6); break;
+				case '"':	++s; result.append("&quot;", 6); break;
 				case '\n':	++s; result += "<br/>"; break;
 
 				default:
@@ -1585,8 +1638,14 @@ Comment::fromHtml(mstl::string const& s)
 			else if (!m_content.empty())
 			{
 				M_ASSERT(::strncmp(m_content, "<:>", 3) == 0);
+
+				mstl::string str;
+
 				m_content.erase(size_t(0), size_t(3));
 				m_content.erase(m_content.size() - 4, size_t(4));
+
+				::flatten(m_content, str);
+				m_content.swap(str);
 			}
 		}
 	}
@@ -1682,8 +1741,10 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 			{
 				switch (*s)
 				{
-					case '&': result.m_content.append("&amp;", 5); ++s; break;
-					case '>': result.m_content.append("&gt;", 4); ++s; break;
+					case '&':	result.m_content.append("&amp;",  5); ++s; break;
+					case '>':	result.m_content.append("&gt;",   4); ++s; break;
+					case '\'':	result.m_content.append("&apos;", 6); ++s; break;
+					case '"':	result.m_content.append("&quot;", 6); ++s; break;
 
 					case '<':
 						if (	::islower(s[1])

@@ -395,7 +395,7 @@ proc dbOpen {parent} {
 
 
 proc dbOpenUrl {parent} {
-	puts "not yet implemented"
+	::beta::notYetImplemented .application OpenUrl
 	# TODO: download a PGN file from the internet (may be zipped)
 }
 
@@ -430,6 +430,7 @@ set encoding iso8859-1
 proc dbImportOne {parent} {
 	set pos [::game::new $parent]
 	if {$pos >= 0} {
+		::application::switchTab board
 		::import::openEdit $parent $pos
 	}
 }
@@ -455,6 +456,8 @@ proc gameNew {parent {variant {}}} {
 		} else {
 			::scidb::game::clear [::setup::shuffle $variant]
 		}
+
+		::application::switchTab board
 	}
 }
 

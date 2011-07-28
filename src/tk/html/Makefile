@@ -16,7 +16,7 @@ include ../../../Makefile.in
 
 INCLUDE		= -I. -I../tcl$(TCL_VERSION) -I../tk$(TCL_VERSION)
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
-CFLAGS		+= $(C_DEBUG) $(OPTIMIZE) $(PROFILING)
+CFLAGS		+= $(C_DEBUG) $(OPTIMIZE) $(PROFILING) #-DUSE_DOUBLE_BUFFERING
 
 SRC_C	= \
 	css.c \
@@ -70,6 +70,8 @@ $(LIB).a: $(OBJS)
 
 #========================================================================
 
+LEMON_CFLAGS = $(CFLAGS) -Wno-uninitialized
+
 TCLSH	= tclsh$(TCL_VERSION)
 
 htmltokens.c:	tokenlist.txt
@@ -88,8 +90,8 @@ cssprop.c: cssprop.h
 LEMON = lemon
 
 $(LEMON): tools/lemon.c
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
-	@$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $< -o $(LEMON)
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(LEMON_CFLAGS:  = )]"
+	@$(CC) $(LEMON_CFLAGS) $(EXTRA_CFLAGS) $< -o $(LEMON)
 
 cssparse.c: cssparse.lem lemon
 	@ln -sf tools/lempar.c .

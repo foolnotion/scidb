@@ -75,20 +75,20 @@ set T_FrequentPlayer					"Most Frequent Player"
 #		ID   			Adjustment	Min	Max	Width	Stretch	Removable	Ellipsis	Color
 #	----------------------------------------------------------------------------------------
 set Columns {
-	{ number				right		3		3		 3			0			1			0			{}				}
-	{ move				left		7		8		 7			0			0			0			{}				}
-	{ eco					left		4		4		 4			0			1			0			darkgreen	}
-	{ frequency			right		5		9		 9			0			1			0			{}				}
-	{ ratio				right		55px	6		 6			0			1			0			{}				}
-	{ score				right		55px	6		 6			0			1			0			darkred		}
-	{ draws				right		55px	6		 6			0			1			0			{}				}
-	{ averageRating	right		5		5		 5			0			1			0			darkblue		}
-	{ performance		right		5		5		 5			0			1			0			{}				}
-	{ bestRating		right		5		5		 5			0			1			0			{}				}
-	{ averageYear		right		5		5		 5			0			1			0			{}				}
-	{ lastYear			right		5		5		 5			0			1			0			{}				}
-	{ bestPlayer		left		6		0		12			0			1			1			{}				}
-	{ frequentPlayer	left		6		0		12			0			1			1			{}				}
+	{ number				right		3		 3		 3			0			1			0			{}				}
+	{ move				left		7		 8		 7			0			0			0			{}				}
+	{ eco					left		4		 4		 4			0			1			0			darkgreen	}
+	{ frequency			right		5		10		 9			0			1			0			{}				}
+	{ ratio				right		55px	 6		 6			0			1			0			{}				}
+	{ score				right		55px	 6		 6			0			1			0			darkred		}
+	{ draws				right		55px	 6		 6			0			1			0			{}				}
+	{ averageRating	right		5		 5		 5			0			1			0			darkblue		}
+	{ performance		right		5		 5		 5			0			1			0			{}				}
+	{ bestRating		right		5		 5		 5			0			1			0			{}				}
+	{ averageYear		right		5		 5		 5			0			1			0			{}				}
+	{ lastYear			right		5		 5		 5			0			1			0			{}				}
+	{ bestPlayer		left		6		 0		12			0			1			1			{}				}
+	{ frequentPlayer	left		6		 0		12			0			1			1			{}				}
 }
 
 array set Options {

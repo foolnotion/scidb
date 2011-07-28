@@ -289,8 +289,12 @@ proc busyOperation {args} {
 	if {[catch {{*}$args} result options]} {
 		busyCursor off
 		array set opts $options
-		lassign $opts(-errorinfo) type file error what
-		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
+		return \
+			-code $opts(-code) \
+			-errorinfo $opts(-errorinfo) \
+			-errorcode $opts(-errorcode) \
+			-rethrow 1 \
+			$result
 	}
 
 	busyCursor off

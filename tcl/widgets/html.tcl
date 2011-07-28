@@ -58,6 +58,8 @@ proc Build {w args} {
 		-relief			{}
 		-imagecmd		{}
 		-nodehandler	{}
+		-doublebuffer	no
+		-delay			0
 	}
 
 	array set opts $args
@@ -73,10 +75,10 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-nodehandler {
+			-nodehandler - -delay {
 			}
 
-			-imagecmd {
+			-imagecmd - -doublebuffer {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
 			}
@@ -109,12 +111,14 @@ proc Build {w args} {
 		onmouseup2		{}
 		onmousedown3	{}
 		onmouseup3		{}
-		lastNode			{}
+		nodeList			{}
+		afterId			{}
 	}
 
 	set options {}
 	set Priv(bbox) {}
 	set Priv(pointer) {0 0}
+	set Priv(delay) $opts(-delay)
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -144,7 +148,7 @@ proc WidgetProc {w command args} {
 			array unset [namespace current]::ActiveNodes1
 			array unset [namespace current]::ActiveNodes2
 			array unset [namespace current]::ActiveNodes3
-			set Priv(lastNode) {}
+			set Priv(nodeList) {}
 			$f.html reset
 			$f.html configure -width $MaxWidth
 			update idletasks
@@ -176,7 +180,7 @@ proc WidgetProc {w command args} {
 
 		stimulate {
 			array unset HoverNodes
-			set Priv(lastNode) {}
+			set Priv(nodeList) {}
 			set x [expr {[winfo pointerx .] - [winfo rootx $f.html]}]
 			set y [expr {[winfo pointery .] - [winfo rooty $f.html]}]
 			event generate $f.html <Motion> -x $x -y $y
@@ -239,15 +243,32 @@ proc CombineBox {box1 box2} {
 
 
 proc Motion {w x y state} {
-	variable [winfo parent $w]::HoverNodes
 	variable [winfo parent $w]::Priv
 
 	set Priv(pointer) [list $x $y]
 	if {$state >= 256} { return }
 
 	set nodelist [lindex [$w node $x $y] end]
-	if {$Priv(lastNode) eq $nodelist} { return }
-	set Priv(lastNode) $nodelist
+	if {$Priv(nodeList) eq $nodelist} { return }
+
+	if {[llength $Priv(afterId)]} {
+		after cancel $Priv(afterId)
+		set Priv(afterId) {}
+	}
+
+	if {$Priv(delay)} {
+		set Priv(afterId) [after $Priv(delay) [namespace code [list HandleMotion $w $nodelist]]]
+	} else {
+		HandleMotion $w $nodelist
+	}
+}
+
+
+proc HandleMotion {w nodelist} {
+	variable [winfo parent $w]::HoverNodes
+	variable [winfo parent $w]::Priv
+
+	set Priv(nodeList) $nodelist
 	set events(onmouseover) {}
 
 	foreach node $nodelist {
@@ -270,9 +291,10 @@ proc Motion {w x y state} {
 
 	array unset HoverNodes
 	array set HoverNodes [array get hoverNodes]
+
 	set eventlist {}
 
-	foreach key {onmouseover onmouseout} {
+	foreach key {onmouseout onmouseover} {
 		foreach node $events($key) {
 			lappend eventlist $key $node
 		}
@@ -284,6 +306,12 @@ proc Motion {w x y state} {
 
 proc Leave {w} {
 	variable [winfo parent $w]::HoverNodes
+	variable [winfo parent $w]::Priv
+
+	if {[llength $Priv(afterId)]} {
+		after cancel $Priv(afterId)
+		set Priv(afterId) {}
+	}
 
 	set eventlist {}
 

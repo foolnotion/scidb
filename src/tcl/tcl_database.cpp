@@ -2861,7 +2861,7 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Namebase::Player:
 			for (unsigned i = 0; i < playerMatches.size(); ++i)
 			{
-				Tcl_Obj* objs[10];
+				Tcl_Obj* objs[11];
 				unsigned n = 0;
 
 				Player const* player = playerMatches[i];
@@ -2902,6 +2902,7 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				result[matches.size() + i] = Tcl_NewListObj(n, objs);
+				M_ASSERT(n <= U_NUMBER_OF(objs));
 			}
 
 		case Namebase::Site:

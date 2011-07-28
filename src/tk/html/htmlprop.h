@@ -221,6 +221,7 @@ struct HtmlComputedValues {
     HtmlFourSides position;           /* (pixels, %, AUTO) */
 
     HtmlColor *cBackgroundColor;      /* 'background-color' */
+    char *zColor;
 
     unsigned char eTextDecoration;    /* 'text-decoration' */
 

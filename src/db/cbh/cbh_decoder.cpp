@@ -604,9 +604,11 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 		{
 			switch (c)
 			{
-				case '<':	str.append("&lt;", 4); break;
-				case '>':	str.append("&gt;", 4); break;
-				case '&':	str.append("&amp;", 5); break;
+				case '<':	str.append("&lt;",   4); break;
+				case '>':	str.append("&gt;",   4); break;
+				case '&':	str.append("&amp;",  5); break;
+				case '\'':	str.append("&apos;", 6); break;
+				case '"':	str.append("&quot;", 6); break;
 				default:		str += c; break;
 			}
 		}

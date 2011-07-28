@@ -488,7 +488,9 @@ proc SetTitle {position} {
 	variable ${position}::Vars
 
 	set title "[tk appname] - $mc::BrowseGame"
-	if {$Vars(index) >= 0} { append title " ($Vars(name) #$Vars(number))" }
+	if {$Vars(index) >= 0} {
+		append title " ($Vars(name) #$Vars(number))"
+	}
 	wm title [winfo toplevel $Vars(board)] $title
 }
 
