@@ -592,7 +592,6 @@ extend_eco.o: mstl/m_chunk_allocator.h
 extend_eco.o: mstl/m_stack.h
 extend_eco.o: mstl/m_stack.ipp
 extend_eco.o: mstl/m_chunk_allocator.ipp
-extend_eco.o: guess/guess.h
 permute_eco.o: db/db_move_list.h
 permute_eco.o: db/db_move.h
 permute_eco.o: db/db_common.h
