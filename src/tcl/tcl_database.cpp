@@ -1673,9 +1673,21 @@ getEventInfo(NamebaseEvent const& event, Database const* database = nullptr)
 	Tcl_Obj* objv[attribute::event::LastColumn + (database ? 3 : 0)];
 
 	mstl::string const& country = country::toString(event.site()->country());
+	mstl::string siteName;
+
+#if 0
+	if (database)
+	{
+		if (Site const* site = Site::findSite(event.site()->name()))
+			siteName = site->name();
+	}
+
+	if (siteName.empty())
+#endif
+		siteName = event.site()->name();
 
 	objv[attribute::event::Country  ] = Tcl_NewStringObj(country, country.size());
-	objv[attribute::event::Site     ] = Tcl_NewStringObj(event.site()->name(), -1);
+	objv[attribute::event::Site     ] = Tcl_NewStringObj(siteName, siteName.size());
 	objv[attribute::event::Title    ] = Tcl_NewStringObj(event.name(), -1);
 	objv[attribute::event::Type     ] = Tcl_NewStringObj(event::toString(event.type()), -1);
 	objv[attribute::event::Date     ] = Tcl_NewStringObj(event.date().asShortString(), -1);

@@ -60,9 +60,15 @@
 // C++Ox standard (reference: http://gcc.gnu.org/projects/cxx0x.html)
 ///////////////////////////////////////////////////////////////////////////////
 
-#if __GNUC_PREREQ(4,3) ////////////////////////////////////////////////////////
+#ifndef USE_0X_STANDARD
+// IMPORTANT NOTE: not really working with compiler versions < 4.6
+# define USE_0X_STANDARD __GNUC_PREREQ(4,6)
+#endif
+
+#if __GNUC_PREREQ(4,3) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_INITIALIZATION_OF_CLASS_OBJECTS_BY_RVALUES 1
 #define HAVE_0X_NON_STATIC_DATA_MEMBER_INITIALIZERS 0
+#define HAVE_0X_CONSTANT_EXPRESSIONS 1
 #define HAVE_0X_TEMPLATE_ALIASES 0
 #define HAVE_0X_EXTERN_TEMPLATES 1
 #define HAVE_0X_GENERALIZED_ATTRIBUTES 0
@@ -84,10 +90,9 @@
 #endif ////////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC_PREREQ(4,3) ////////////////////////////////////////////////////////
+#if __GNUC_PREREQ(4,3) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR 1
 #define HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS 1
-#define HAVE_0X_CONSTANT_EXPRESSIONS 1
 #define HAVE_0X_RVALUE_REFERENCES 1
 #define HAVE_0X_VARIADIC_TEMPLATES 1
 #define HAVE_0X_STATIC_ASSERTIONS 1
@@ -97,7 +102,7 @@
 #endif ////////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC_PREREQ(4,4) ////////////////////////////////////////////////////////
+#if __GNUC_PREREQ(4,4) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_EXTENDED_VARIADIC_TEMPLATE_PARAMETERS 1
 #define HAVE_0X_INITIALIZER_LISTS 1
 #define HAVE_0X_AUTO_TYPED_VARIABLES 1
@@ -115,7 +120,7 @@
 #endif ///////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC_PREREQ(4,5) ////////////////////////////////////////////////////////
+#if __GNUC_PREREQ(4,5) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_NEW_WORDING_FOR_LAMBDAS 1
 #define HAVE_0X_EXPLICIT_CONVERSION_OPERATORS 1
 #define HAVE_0X_UNICODE_STRING_LITERALS 1
@@ -126,7 +131,7 @@
 #endif ///////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC_PREREQ(4,6) ////////////////////////////////////////////////////////
+#if __GNUC_PREREQ(4,6) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_NULL_POINTER_CONSTANT 1
 #define HAVE_0X_FORWARD_DECLARATIONS_FOR_ENUMS 1
 #define HAVE_0X_GENERALIZED_CONSTANT_EXPRESSIONS 1
@@ -137,7 +142,7 @@
 #endif ///////////////////////////////////////////////////////////////////////
 
 
-#if __GNUC_PREREQ(4,7) ////////////////////////////////////////////////////////
+#if __GNUC_PREREQ(4,7) && USE_0X_STANDARD /////////////////////////////////////
 #define HAVE_0X_EXTENDED_FRIEND_DECLARATIONS 1
 #define HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES 1
 #endif ///////////////////////////////////////////////////////////////////////

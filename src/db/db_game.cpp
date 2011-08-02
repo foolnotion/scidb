@@ -224,7 +224,7 @@ Game::operator=(Game const& game)
 		m_linebreakThreshold				= game.m_linebreakThreshold;
 		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
 		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
-		m_linebreakMinCommentLength		= game.m_linebreakMinCommentLength;
+		m_linebreakMinCommentLength	= game.m_linebreakMinCommentLength;
 		m_displayStyle						= game.m_displayStyle;
 
 		m_line.copy(game.m_line);

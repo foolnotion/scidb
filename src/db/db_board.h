@@ -489,6 +489,7 @@ template <typename T> struct is_pod;
 template <> struct is_pod<db::Board> 						{ enum { value = 1 }; };
 template <> struct is_pod<db::board::Position>			{ enum { value = 1 }; };
 template <> struct is_pod<db::board::ExactPosition>	{ enum { value = 1 }; };
+template <> struct is_pod<db::board::UniquePosition>	{ enum { value = 1 }; };
 
 } // namespace mstl
 

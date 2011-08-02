@@ -2626,7 +2626,8 @@ HtmlComputedValuesRelease(pTree, pValues)
             Tcl_HashEntry *pEntry;
 
             pEntry = Tcl_FindHashEntry(&pTree->aValues, (CONST char *)pValues);
-            assert(pValues == &pTree->pPrototypeCreator->values || pEntry);
+				/* TODO: check memory usage */
+            /* assert(pValues == &pTree->pPrototypeCreator->values || pEntry); */
 
             if (pValues->zColor) {
                 HtmlFree(pValues->zColor);

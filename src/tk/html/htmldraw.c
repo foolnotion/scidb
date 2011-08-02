@@ -2522,8 +2522,10 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h)
 
         rect.x = MAX(x, pTree->bufferRect.x);
         rect.y = MAX(y, pTree->bufferRect.y);
-        rect.width = MIN(w, pTree->bufferRect.width);
-        rect.height = MIN(h, pTree->bufferRect.height);
+        rect.width = MIN(w, pTree->bufferRect.x + pTree->bufferRect.width - x);
+        rect.height = MIN(h, pTree->bufferRect.y + pTree->bufferRect.height - y);
+        rect.width = MIN(rect.width, pTree->bufferRect.width);
+        rect.height = MIN(rect.height, pTree->bufferRect.height);
 
         if (rect.width > 0 && rect.height > 0)
         {
@@ -2694,11 +2696,7 @@ printf("fillRectangle: %lu\n", elapsed_time());
 #ifdef MEASURE_TIME
 restart_time();
 #endif
-        XCopyArea(
-            display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h,
-            x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin)
-        );
-
+        XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
         updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
 
 #ifdef MEASURE_TIME
@@ -4673,7 +4671,7 @@ widgetRepair(pTree, x, y, w, h, g)
         x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin)
     );
 
-    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+    updateDoubleBuffer(pTree, pixmap, gc, x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin), w, h);
 
     Tk_FreePixmap(pDisp, pixmap);
     Tk_FreeGC(pDisp, gc);

@@ -40,8 +40,6 @@
 #include "m_algorithm.h"
 #include "m_chunk_allocator.h"
 
-#include "guess/guess.h"
-
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -548,8 +546,7 @@ checkLines()
 
 	for (Map::iterator i = map.begin(); i != map.end(); ++i)
 	{
-		Eco	eco	= i->first;
-		List&	list	= i->second;
+		List& list = i->second;
 
 		for (unsigned k = 0; k < list.size(); ++k)
 		{

@@ -81,7 +81,7 @@ template <typename T> T advance(T i, size_t offset);
 template <typename T> T align(T n, size_t grain);
 template <typename T> ptrdiff_t distance(T first, T last);
 
-#if __GNUC_PREREQ(4,3)
+#if USE_0X_STANDARD
 
 template<typename T> typename mstl::remove_reference<T>::type&& move(T&& t);
 

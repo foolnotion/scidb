@@ -20,9 +20,8 @@
 #include "T_Environment.h"
 #include "T_Messages.h"
 
+#include "m_string.h"
 #include "m_assert.h"
-
-#include <string>
 
 
 using namespace TeXt;

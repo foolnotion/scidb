@@ -267,9 +267,9 @@ an analysis that Tcl/Tk is one of the best alternatives (for
 non-commercial software development). It does not bring dependencies
 to gigantic libraries, and the refered tools are not as flexible
 and expandable as Tcl/Tk. The possibilities of the text widget
-as well of the canvas widget in Tk can't be beat hardly. And the
-tree control (http://tktreectrl.sourceforge.net) for Tk sets new
-standards.
+as well of the canvas widget in Tk is almosst unsurpassable. And the
+tree control (http://tktreectrl.sourceforge.net) for Tk is setting
+new standards.
 
 Furtermore the development cycle with a script language is much
 faster than with C or C++. One example might be the project ChessX

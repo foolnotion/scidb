@@ -2248,8 +2248,8 @@ PgnReader::readTags()
 										case 'U': ignore = (name == "UniqID"); break;
 
 										case 'L':
-											ignore = (name == "LastMoves");
-											m_sourceIsChessOK = true;
+											if ((ignore = (name == "LastMoves")))
+												m_sourceIsChessOK = true;
 											break;
 									}
 								}

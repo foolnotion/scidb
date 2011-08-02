@@ -2523,7 +2523,7 @@ node_attr_usage:
                 }
 
                 setNodeAttribute(pNode, "bgcolor", zColor);
-                HtmlStyleApply(pTree, pNode);
+                HtmlStyleApplyImmediately(pTree, pNode);
 
                 xcolor = pElem->pPropertyValues->cBackgroundColor->xcolor;
 					 HtmlUpdateHiliteRegion(pTree, pNode, xcolor);

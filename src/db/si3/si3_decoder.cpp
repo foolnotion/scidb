@@ -479,7 +479,7 @@ Decoder::decodeTags(TagSet& tags)
 						break;
 
 					case tag::EventDate:
-						// this case happens if a tag like "Eventdate" is detetcted
+						// this case happens if a tag like "Eventdate" is detected
 						{
 							Date date;
 							date.parseFromString(reinterpret_cast<char const*>(m_strm.data()), b);

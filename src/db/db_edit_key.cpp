@@ -311,7 +311,7 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 		return node;
 
 	s += 2;
-;
+
 	char* e = 0;
 
 	while (*s)

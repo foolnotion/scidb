@@ -268,6 +268,15 @@ Engine::send(mstl::string const& message)
 }
 
 
+void
+Engine::send(char const* message)
+{
+	mstl::string str;
+	str.hook(const_cast<char*>(message), ::strlen(message));
+	send(str);
+}
+
+
 Engine::Result
 Engine::probe(unsigned timeout)
 {

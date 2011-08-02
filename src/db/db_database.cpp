@@ -316,7 +316,7 @@ Database::computeChecksum(unsigned index) const
 	M_REQUIRE(index < countGames());
 
 	GameInfo const& info = *m_gameInfoList[index];
-	return m_codec->computeChecksum(/*DatabaseCodec::Decode_All, */info, info.computeChecksum());
+	return m_codec->computeChecksum(info, info.computeChecksum());
 }
 
 
@@ -328,7 +328,7 @@ Database::loadGame(unsigned index, Game& game)
 
 	GameInfo* info = m_gameInfoList[index];
 	m_codec->reset();
-	m_codec->decodeGame(/*DatabaseCodec::Decode_All, */game, *info);
+	m_codec->decodeGame(game, *info);
 	setEncodingFailed(m_codec->encodingFailed());
 	game.moveToMainlineStart();
 	bool ok = game.finishLoad();
@@ -419,7 +419,6 @@ Database::updateGame(Game const& game)
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
 
-		// TODO: only an update is needed
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
 									Statistic::Reset);
@@ -474,7 +473,6 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 		m_gameInfoList[index]->setDirty(false);
 		m_lastChange = sys::time::timestamp();
 
-		// TODO: only an update is needed
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
 									Statistic::Reset);

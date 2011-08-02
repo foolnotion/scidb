@@ -1,44 +1,52 @@
 ### .subversion format:
 [auto-props]
-*.c   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-csrc
-*.h   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-chdr
+*.bin = svn:mime-type=application/octet-stream
+*.zip = svn:mime-type=application/zip
+
 *.cpp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
-*.ipp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
-*.tcl = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-tcl
-*.pl  = svn:eol-style=native; svn:mime-type=text/x-perl
+*.css = svn:eol-style=native; svn:mime-type=text/css
+*.c   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-csrc
 *.dat = svn:eol-style=native; svn:mime-type=text/plain
-*.txt = svn:eol-style=native; svn:mime-type=text/plain
 *.eXt = svn:eol-style=native; svn:mime-type=text/x-tex
+*.h   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-chdr
+*.ipp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
+*.lem = svn:eol-style=native; svn:mime-type=text/x-csrc
+*.n   = svn:eol-style=LF; svn:mime-type=application/x-troff-man
+*.pl  = svn:eol-style=native; svn:mime-type=text/x-perl
 *.sfd = svn:eol-style=native; svn:mime-type=text/plain
+*.sh  = svn:eol-style=LF; svn:mime-type=application/x-csh
+*.spa = svn:eol-style=LF; svn:mime-type=text/plain
 *.spf = svn:eol-style=native; svn:mime-type=text/plain
 *.spi = svn:eol-style=native; svn:mime-type=text/plain
-*.lem = svn:eol-style=native; svn:mime-type=text/x-csrc
-*.css = svn:eol-style=native; svn:mime-type=text/css
-*.spa = svn:eol-style=LF; svn:mime-type=text/plain
-*.n   = svn:eol-style=LF; svn:mime-type=application/x-troff-man
+*.ssp = svn:eol-style=native; svn:mime-type=text/plain
+*.tcl = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-tcl
+*.txt = svn:eol-style=native; svn:mime-type=text/plain
 
-*.png = svn:mime-type=image/png
-*.jpg = svn:mime-type=image/jpeg
-*.xbm = svn:mime-type=image/x-xbitmap
-*.ico = svn:mime-type=image/vnd.microsoft.icon
-*.ttf = svn:mime-type=application/x-font-truetype
 *.cur = svn:mime-type=image/x-win-bitmap
+*.ico = svn:mime-type=image/vnd.microsoft.icon
+*.jpg = svn:mime-type=image/jpeg
+*.png = svn:mime-type=image/png
+*.ttf = svn:mime-type=application/x-font-truetype
+*.xbm = svn:mime-type=image/x-xbitmap
 *.xcur= svn:mime-type=image/x-xcursor
 
 *.rc  = svn:eol-style=CRLF; svn:mime-type=text/plain
 *.rtf = svn:eol-style=CRLF; svn:mime-type=text/richtext
 
-Makefile   = svn:eol-style=LF; svn:mime-type=text/x-makefile
-magic      = svn:eol-style=LF; svn:mime-type=text/plain
-
-COPYING    = svn:eol-style=native; svn:mime-type=text/plain
-copying    = svn:eol-style=native; svn:mime-type=text/plain
-ChangeLog  = svn:eol-style=native; svn:mime-type=text/plain
-README     = svn:eol-style=native; svn:mime-type=text/plain
-TODO       = svn:eol-style=native; svn:mime-type=text/plain
-URL        = svn:eol-style=native; svn:mime-type=text/plain
-auto-props = svn:eol-style=native; svn:mime-type=text/plain
-copyright  = svn:eol-style=native; svn:mime-type=text/plain
-COPYRIGHT  = svn:eol-style=native; svn:mime-type=text/plain
-readme     = svn:eol-style=native; svn:mime-type=text/plain
-spf2spi    = svn:eol-style=native; svn:mime-type=text/x-tcl
+auto-props    = svn:eol-style=native; svn:mime-type=text/plain
+ChangeLog     = svn:eol-style=native; svn:mime-type=text/plain
+configure     = svn:eol-style=LF; svn:mime-type=application/x-csh
+copying       = svn:eol-style=native; svn:mime-type=text/plain
+COPYING       = svn:eol-style=native; svn:mime-type=text/plain
+copyright     = svn:eol-style=native; svn:mime-type=text/plain
+COPYRIGHT     = svn:eol-style=native; svn:mime-type=text/plain
+license.terms = svn:eol-style=native; svn:mime-type=text/plain
+LIESMICH      = svn:eol-style=native; svn:mime-type=text/plain
+magic         = svn:eol-style=LF; svn:mime-type=text/plain
+Makefile      = svn:eol-style=LF; svn:mime-type=text/x-makefile
+Makefile.*    = svn:eol-style=LF; svn:mime-type=text/x-makefile
+readme        = svn:eol-style=native; svn:mime-type=text/plain
+README        = svn:eol-style=native; svn:mime-type=text/plain
+spf2spi       = svn:eol-style=native; svn:mime-type=text/x-tcl
+TODO          = svn:eol-style=native; svn:mime-type=text/plain
+URL           = svn:eol-style=native; svn:mime-type=text/plain

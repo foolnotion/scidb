@@ -254,6 +254,7 @@ proc busyCursor {w {state on}} {
 
 	if {[string index $w 0] ne "."} {
 		set state $w
+		set w --
 	}
 
 	if {$state eq "on"} {
@@ -263,6 +264,8 @@ proc busyCursor {w {state on}} {
 		if {[incr Priv(busy:state) -1] != 0} { return }
 		set action forget
 	}
+
+	if {$action eq "hold"} { ::update }
 
 	::scidb::tk::busy $action .application
 
@@ -274,7 +277,7 @@ proc busyCursor {w {state on}} {
 		}
 	}
 
-	if {$action eq "hold"} { ::update idletasks }
+	if {$action eq "hold"} { ::update }
 }
 
 

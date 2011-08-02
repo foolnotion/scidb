@@ -1100,6 +1100,9 @@ deleteWidget(clientData)
     }
 
 #ifdef USE_DOUBLE_BUFFERING
+    if (pTree->buffer) {
+        Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
+    }
     TkDestroyRegion(pTree->bufferRegion);
 #endif
 
@@ -1212,13 +1215,11 @@ docwinEventHandler(clientData, pEvent)
             {
                 Tk_Window win = pTree->docwin;
                 Display *display = Tk_Display(win);
+                int rc = TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height);
 
-                if (TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height))
-                {
+                if (rc == RectangleIn) {
                     GC gc;
                     XGCValues gc_values;
-
-                    Tk_MakeWindowExist(win);
 
                     memset(&gc_values, 0, sizeof(XGCValues));
                     gc = Tk_GetGC(win, 0, &gc_values);
@@ -1226,7 +1227,7 @@ docwinEventHandler(clientData, pEvent)
                     XCopyArea(
                         display, pTree->buffer, Tk_WindowId(win), gc,
                         p->x - pTree->bufferRect.x, p->y - pTree->bufferRect.y,
-                        p->width, p->height, p->x - Tk_X(win), p->y - Tk_Y(win)
+                        p->width, p->height, p->x, p->y
                     );
 
                     Tk_FreeGC(display, gc);
@@ -1234,33 +1235,70 @@ docwinEventHandler(clientData, pEvent)
                     return;
                 }
 
-                int w = MIN(p->width  - p->x, WidthOfScreen (Tk_Screen(win)));
-                int h = MIN(p->height - p->y, HeightOfScreen(Tk_Screen(win)));
+                int w = MIN(p->width,  WidthOfScreen (Tk_Screen(win)));
+                int h = MIN(p->height, HeightOfScreen(Tk_Screen(win)));
 
-                w = MAX(w, pTree->bufferRect.width);
-                h = MAX(h, pTree->bufferRect.height);
+                if (w > 0 && h > 0) {
+                    int px = MIN(pTree->bufferRect.x, p->x);
+                    int py = MIN(pTree->bufferRect.y, p->y);
+                    int pw = MAX(p->x + w, pTree->bufferRect.x + pTree->bufferRect.width);
+                    int ph = MAX(p->y + h, pTree->bufferRect.y + pTree->bufferRect.height);
 
-                if (   p->x < pTree->bufferRect.x
-					     || p->y < pTree->bufferRect.y
-					     || pTree->bufferRect.width  - pTree->bufferRect.x < w
-                    || pTree->bufferRect.height - pTree->bufferRect.y < h)
-                {
-                    Pixmap buffer = Tk_GetPixmap(display, Tk_WindowId(win), w, h, Tk_Depth(win));
-                    GC gc;
-                    XGCValues gc_values;
+                    if (   px < pTree->bufferRect.x
+                        || py < pTree->bufferRect.y
+                        || pTree->bufferRect.x + pTree->bufferRect.width < pw
+                        || pTree->bufferRect.y + pTree->bufferRect.height < ph)
+                    {
+                        px = MAX(pw - WidthOfScreen (Tk_Screen(win)), px);
+                        py = MAX(ph - HeightOfScreen(Tk_Screen(win)), py);
 
-                    memset(&gc_values, 0, sizeof(XGCValues));
-                    gc = Tk_GetGC(win, 0, &gc_values);
+                        {
+                            Pixmap buffer = Tk_GetPixmap(display, Tk_WindowId(win),
+                                                         pw - px, ph - py, Tk_Depth(win));
 
-                    XCopyArea(
-                        display, pTree->buffer, buffer, gc,
-                        0, 0, pTree->bufferRect.width, pTree->bufferRect.height,
-                        MAX(0, pTree->bufferRect.x - p->x), MAX(0, pTree->bufferRect.y - p->y)
-                    );
+                            if (   pTree->buffer
+                                && pTree->bufferRect.width > 0
+                                && pTree->bufferRect.height > 0) {
 
-                    Tk_FreeGC(display, gc);
-                    Tk_FreePixmap(display, pTree->buffer);
-                    pTree->buffer = buffer;
+                                GC gc;
+                                XGCValues gc_values;
+
+                                memset(&gc_values, 0, sizeof(XGCValues));
+                                gc = Tk_GetGC(win, 0, &gc_values);
+
+                                XCopyArea(
+                                    display, pTree->buffer, buffer, gc,
+                                    0, 0,
+                                    pTree->bufferRect.width,
+                                    pTree->bufferRect.height,
+                                    MAX(0, pTree->bufferRect.x - px),
+                                    MAX(0, pTree->bufferRect.y - py)
+                                );
+
+                                Tk_FreeGC(display, gc);
+                                Tk_FreePixmap(display, pTree->buffer);
+                            }
+
+                            // TODO: shift pTree->bufferRegion
+                            pTree->buffer = buffer;
+                            pTree->bufferRect.x = px;
+                            pTree->bufferRect.y = py;
+                            pTree->bufferRect.width = pw - px;
+                            pTree->bufferRect.height = ph - py;
+                        }
+
+                        XRectangle r;
+                        TkRegion region = TkCreateRegion();
+
+                        r.x = px;
+                        r.y = py;
+                        r.width = pw - px;
+                        r.height = ph - py;
+
+                        TkUnionRectWithRegion(&r, region, region);
+                        TkIntersectRegion(region, pTree->bufferRegion, pTree->bufferRegion);
+                        TkDestroyRegion(region);
+                    }
                 }
             }
 #endif
@@ -1411,9 +1449,7 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(layoutcache, "layoutCache", "LayoutCache", "1", S_MASK),
         BOOLEAN(forcefontmetrics, "forceFontMetrics", "ForceFontMetrics", "1", F_MASK),
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
-#ifdef USE_DOUBLE_BUFFERING
         BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
-#endif
 
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
 
@@ -2773,6 +2809,7 @@ newWidget(clientData, interp, objc, objv)
     pTree->isSequenceOk = 1;
 
 #ifdef USE_DOUBLE_BUFFERING
+    pTree->buffer = 0;
     pTree->bufferRegion = TkCreateRegion();
     pTree->bufferRect.x = 0;
     pTree->bufferRect.y = 0;

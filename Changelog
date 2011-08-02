@@ -1,6 +1,30 @@
 [July 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #92) (not yet released)
+------------------------------------------------------------------------------
+* Second speed improvement of the Html widget: double buffering implemented.
+But this feature needs testing.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #91)
+------------------------------------------------------------------------------
+* m_types.h updated: g++ versions < 4.6 are not really ready for C++0x
+standard (previous patch failed).
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #90)
+------------------------------------------------------------------------------
+* m_types.h updated: g++ versions < 4.6 are not really ready for C++0x
+standard.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #90)
+------------------------------------------------------------------------------
+* Second speed improvement of the Html widget: double buffering implemented.
+But this feature needs testing.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #89)
 ------------------------------------------------------------------------------
 * First speed improvement of the Html widget (highlighting). The slowness

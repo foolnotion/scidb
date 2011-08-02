@@ -176,6 +176,7 @@ protected:
 	void kill();
 
 	// Sends a message to the chess engine
+	void send(char const* message);
 	void send(mstl::string const& message);
 
 	void addFeature(unsigned feature);

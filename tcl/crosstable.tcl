@@ -357,6 +357,7 @@ proc open {parent base index view source} {
 	}
 	$dlg.close configure -command [list destroy $dlg]
 
+	::update
 	::scidb::crosstable::make $base $Vars(viewId)
 	Update 1
 

@@ -64,7 +64,7 @@ struct signed_arithmetic<0>
 } // namespace bits
 
 
-#if __GNUC_PREREQ(4,3)
+#if USE_0X_STANDARD
 
 template<typename T>
 inline

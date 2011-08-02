@@ -367,8 +367,8 @@ MoveNode::swapData(MoveNode* node)
 	mstl::swap(m_flags,			node->m_flags);
 	mstl::swap(m_annotation,	node->m_annotation);
 	mstl::swap(m_marks,			node->m_marks);
-	mstl::swap(m_comment[0],		node->m_comment[0]);
-	mstl::swap(m_comment[1],		node->m_comment[1]);
+	mstl::swap(m_comment[0],	node->m_comment[0]);
+	mstl::swap(m_comment[1],	node->m_comment[1]);
 }
 
 

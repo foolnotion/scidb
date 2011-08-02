@@ -286,8 +286,9 @@ cmpRating(void const* lhs, void const* rhs)
 static int
 cmpFederation(void const* lhs, void const* rhs)
 {
-	return country::compare((*static_cast<TournamentTable::Player* const*>(lhs))->entry->findFederation(),
-									(*static_cast<TournamentTable::Player* const*>(rhs))->entry->findFederation());
+	return country::compare(
+				(*static_cast<TournamentTable::Player* const*>(lhs))->entry->findFederation(),
+				(*static_cast<TournamentTable::Player* const*>(rhs))->entry->findFederation());
 }
 
 
@@ -782,7 +783,7 @@ TournamentTable::guessBestMode()
 		case event::Schev:		m_bestMode = Scheveningen; break;
 	}
 
-	if (m_missingRoundInfo && (m_bestMode == Knockout || Knockout == Swiss))
+	if (m_missingRoundInfo && (m_bestMode == Knockout || m_bestMode == Swiss))
 		m_bestMode = RankingList;
 
 	m_mode = m_bestMode;

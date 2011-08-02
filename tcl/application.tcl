@@ -276,13 +276,15 @@ proc shutdown {} {
 
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
 
+	set dlg .application.shutdown
+	if {[winfo exists $dlg]} { return }
+
 	switch [::game::queryCloseApplication .application] {
 		restore	{ set backup 1 }
 		discard	{ set backup 0 }
 		cancel	{ return }
 	}
 
-	set dlg .application.shutdown
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	pack [tk::frame $dlg.f -border 2 -relief raised]

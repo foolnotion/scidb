@@ -851,8 +851,10 @@ Move::Move(Work& work, MoveNode const* move)
 					work.pushSpace();
 				else
 					work.pushSpaceOrParagraph(Spacing::Comment);
+
 				work.pop(m_list);
 				m_list.push_back(new Comment(comment, move::Post));
+
 				if (	comment.length() <= work.linebreakMinCommentLength
 					&& (work.m_displayStyle & display::CompactStyle))
 				{

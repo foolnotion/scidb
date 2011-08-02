@@ -483,6 +483,102 @@ printf("Stack %d: %s %s\n", iTmp,
  *---------------------------------------------------------------------------
  */
 static int
+styleNodeImmediately(pTree, pNode, clientData)
+    HtmlTree *pTree;
+    HtmlNode *pNode;
+    ClientData clientData;
+{
+    CONST char *zStyle;      /* Value of "style" attribute for node */
+    int trashDynamics = (int)clientData;
+
+    if (!HtmlNodeIsText(pNode)) {
+        HtmlElementNode *pElem = (HtmlElementNode *)pNode;
+        HtmlComputedValues *pV = pElem->pPropertyValues;
+        pElem->pPropertyValues = 0;
+        HtmlDelStackingInfo(pTree, pElem);
+
+        /* If the clientData was set to a non-zero value, then the
+         * stylesheet configuration has changed. In this case we need to
+         * recalculate the nodes list of dynamic conditions.
+         */
+        if (trashDynamics) {
+            HtmlCssFreeDynamics(pElem);
+        }
+
+        /* If there is a "style" attribute on this node, parse the attribute
+         * value and put the resulting mini-stylesheet in pNode->pStyle.
+         *
+         * We assume that if the pStyle attribute is not NULL, then this node
+         * has been styled before. The stylesheet configuration may have
+         * changed since then, so we have to recalculate pNode->pProperties,
+         * but the "style" attribute is constant so pStyle is never invalid.
+         *
+         * Actually, the style attribute can be modified by the user, using
+         * the [$node attribute style "new-value] command. In this case
+         * the style attribute is treated as a special case and the
+         * pElem->pStyle structure is invalidated/recalculated as required.
+         */
+        if (!pElem->pStyle) {
+            zStyle = HtmlNodeAttr(pNode, "style");
+            if (zStyle) {
+                HtmlCssInlineParse(pTree, -1, zStyle, &pElem->pStyle);
+            }
+        }
+
+        /* Recalculate the properties for this node */
+        HtmlCssStyleSheetApply(pTree, pNode);
+        HtmlComputedValuesRelease(pTree, pElem->pPreviousValues);
+        pElem->pPreviousValues = pV;
+
+        /* Regenerate any :before and :after content */
+        if (pElem->pBefore || pElem->pAfter) {
+            HtmlCallbackLayout(pTree, pNode);
+            HtmlNodeClearGenerated(pTree, pElem);
+        }
+        HtmlCssStyleSheetGenerated(pTree, pElem);
+
+        addStackingInfo(pTree, pElem);
+
+        if (pElem->pBefore) {
+            ((HtmlElementNode *)(pElem->pBefore))->pStack = pElem->pStack;
+            pElem->pBefore->pParent = pNode;
+            pElem->pBefore->iNode = -1;
+        }
+        if (pElem->pAfter) {
+            ((HtmlElementNode *)(pElem->pAfter))->pStack = pElem->pStack;
+            pElem->pAfter->pParent = pNode;
+            pElem->pAfter->iNode = -1;
+        }
+
+        /* If there has been a style-callback configured (-stylecmd option to
+         * the [nodeHandle replace] command) for this node, invoke it now.
+         */
+        if (pElem->pReplacement && pElem->pReplacement->pStyleCmd) {
+            Tcl_Obj *pCmd = pElem->pReplacement->pStyleCmd;
+            int rc = Tcl_EvalObjEx(pTree->interp, pCmd, TCL_EVAL_GLOBAL);
+            if (rc != TCL_OK) {
+                Tcl_BackgroundError(pTree->interp);
+            }
+        }
+    }
+
+    return HTML_WALK_DESCEND;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * styleNode --
+ *
+ * Results:
+ *     None.
+ *
+ * Side effects:
+ *     None.
+ *
+ *---------------------------------------------------------------------------
+ */
+static int
 styleNode(pTree, pNode, clientData)
     HtmlTree *pTree;
     HtmlNode *pNode;
@@ -623,6 +719,30 @@ HtmlStyleApply(pTree, pNode)
     int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
     HtmlLog(pTree, "STYLEENGINE", "START");
     HtmlWalkTree(pTree, pNode, styleNode, (ClientData)isRoot);
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * HtmlStyleApplyImmediately --
+ *
+ * Results:
+ *     None.
+ *
+ * Side effects:
+ *     None.
+ *
+ *---------------------------------------------------------------------------
+ */
+int
+HtmlStyleApplyImmediately(pTree, pNode)
+    HtmlTree *pTree;
+    HtmlNode *pNode;
+{
+    int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
+    HtmlLog(pTree, "STYLEENGINE", "START");
+    HtmlWalkTree(pTree, pNode, styleNodeImmediately, (ClientData)isRoot);
     return TCL_OK;
 }
 
