@@ -58,7 +58,7 @@ proc Build {w args} {
 		-relief			{}
 		-imagecmd		{}
 		-nodehandler	{}
-		-doublebuffer	no
+		-doublebuffer	yes
 		-delay			0
 	}
 

@@ -1341,7 +1341,20 @@ getGameInfo(int index, int view, char const* database, unsigned which)
 					eco = info.ecoKey();
 
 				if (info.idn() == chess960::StandardIdn && eco)
+				{
 					EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvar);
+
+					if (eco.basic() == info.ecoKey().basic())
+					{
+						mstl::string unused;
+						EcoTable::specimen().getOpening(info.ecoKey(), unused, unused, variation, subvar);
+					}
+					else
+					{
+						variation.clear();
+						subvar.clear();
+					}
+				}
 
 				if (info.idn())
 					shuffle::utf8::position(info.idn(), position);
@@ -1445,7 +1458,20 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 		eco = eop;
 
 	if (info.idn() == chess960::StandardIdn && eco)
+	{
 		EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvariation);
+
+		if (info.eco().basic() == info.ecoKey().basic())
+		{
+			mstl::string unused;
+			EcoTable::specimen().getOpening(info.ecoKey(), unused, unused, variation, subvariation);
+		}
+		else
+		{
+			variation.clear();
+			subvariation.clear();
+		}
+	}
 
 	mstl::string flags;
 	mstl::string overview;

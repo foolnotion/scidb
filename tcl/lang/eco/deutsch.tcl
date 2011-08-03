@@ -224,7 +224,7 @@
 "Landstrasse Gambit Accepted"								"Angenommenes Landstrasse Gambit"
 "Lasker Simul Special"										"Laskers Simultan-Spezialität"
 "Lasker Trap"													"Lasker's Falle"
-"Last Exit Gambit"											"Letzter Ausweg-Gambit"
+"Last Exit Gambit"											"Letzte Ausfahrt-Gambit"
 "Latvian Gambit"												"Lettisches Gambit"
 "Leningrad (Matulovic) Variation"						"Leningrader Variante (Matulovic Variante)"
 "Leningrad (Russian) Variation"							"Leningrader Variante (Russische Variante)"

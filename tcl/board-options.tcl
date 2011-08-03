@@ -600,7 +600,7 @@ proc SaveTheme {parent} {
 	if {[[namespace parent]::isWorkingSet square]} {
 		set msg [format	$mc::CannotUseSquareWorkingSet \
 								[set [namespace parent]::mc::WorkingSet]]
-		::dialog::info -parent $parent -message $msg -detail $ChooseAnotherSquareStyle
+		::dialog::info -parent $parent -message $msg -detail $mc::ChooseAnotherSquareStyle
 		return
 	}
 

@@ -894,10 +894,14 @@ GameInfo::setupTags(TagSet& tags) const
 		{
 			mstl::string opening, variation, subvariation;
 			EcoTable::specimen().getOpening(eco, opening, variation, subvariation);
-			tags.add(tag::Opening,			opening);
+			tags.add(tag::Opening, opening);
+
 #ifdef GAME_INFO_VAR
-			tags.add(tag::Variation,		variation);
-			tags.add(tag::SubVariation,	subvariation);
+			if (eco == Eco(m_ecoKey))
+			{
+				tags.add(tag::Variation,		variation);
+				tags.add(tag::SubVariation,	subvariation);
+			}
 #endif
 		}
 	}
