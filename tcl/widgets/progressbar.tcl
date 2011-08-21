@@ -21,7 +21,7 @@ namespace eval progressbar {
 
 proc build {parent} {
 	set w $parent._progress_
-	canvas $w -width 259 -height 20 -bh white -relief sunken -border 2
+	tk::canvas $w -width 259 -height 20 -bh white -relief sunken -border 2
 	$w create rectangle 0 0 0 16 -fill blue -outline blue -tags bar
 	return $w
 }

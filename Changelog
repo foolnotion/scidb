@@ -1,10 +1,23 @@
 [August 2011]
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #93) (not yet released)
+Scidb 1.0 BETA (rev. #95) (not yet released)
 ------------------------------------------------------------------------------
 * Second speed improvement of the Html widget: double buffering implemented.
 But this feature needs testing.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #94)
+------------------------------------------------------------------------------
+* Severe error with marks in si3::Consumer and si3::Encoder fixed.
+* Severe errors in overview.tcl and browser.tcl fixed.
+
+* On Fedora systems the truetype fonts will be installed in /usr (not
+/usr/local).
+
+* Database upgrade implemented (not yet used).
+
+* Focus problem in tree game list solved.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #92)

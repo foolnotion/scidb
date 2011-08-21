@@ -256,7 +256,7 @@ proc popup {parent args} {
 						-borderwidth 0 \
 						-width 22 \
 						-height 22]
-			set b [canvas $f.b -relief solid -borderwidth 1 -width 16 -height 16]
+			set b [tk::canvas $f.b -relief solid -borderwidth 1 -width 16 -height 16]
 			set tooltip [lindex $texture 1]
 			set texture [lindex $texture 0]
 			if {[llength $texture]} { $b create image 1 1 -image $texture -anchor nw }

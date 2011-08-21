@@ -87,7 +87,7 @@ proc build {path columns args} {
 	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
 	
 	if {$opts(-useScale)} {
-		tk::scale $sc                                        \
+		tk::scale $sc                                    \
 			-orient horizontal                            \
 			-from 0                                       \
 			-showvalue 0                                  \

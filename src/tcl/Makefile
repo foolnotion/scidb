@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3
+INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../app -I../db -I../db/si3 -I../db/sci
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 DEFINES	= -DSHAREDIR=\"$(SHAREDIR)\"
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(DEFINES)
@@ -633,13 +633,21 @@ tcl_database.o: ../db/si3/si3_decoder_position.ipp
 tcl_database.o: ../db/si3/si3_encoder.h
 tcl_database.o: ../db/si3/si3_encoder_position.h
 tcl_database.o: ../db/si3/si3_encoder_position.ipp
-tcl_database.o: ../util/u_zstream.h
+tcl_database.o: ../db/sci/sci_codec.h
+tcl_database.o: ../mstl/m_fstream.h
+tcl_database.o: ../mstl/m_ifstream.h
 tcl_database.o: ../mstl/m_istream.h
 tcl_database.o: ../mstl/m_ios.h
 tcl_database.o: ../mstl/m_ios.ipp
 tcl_database.o: ../mstl/m_istream.ipp
+tcl_database.o: ../mstl/m_file.h
+tcl_database.o: ../mstl/m_file.ipp
+tcl_database.o: ../mstl/m_ifstream.ipp
+tcl_database.o: ../mstl/m_ofstream.h
 tcl_database.o: ../mstl/m_ostream.h
 tcl_database.o: ../mstl/m_ostream.ipp
+tcl_database.o: ../mstl/m_ofstream.ipp
+tcl_database.o: ../util/u_zstream.h
 tcl_database.o: ../sys/sys_utf8_codec.h
 tcl_database.o: ../sys/sys_utf8_codec.ipp
 tcl_database.o: ../mstl/m_algorithm.h

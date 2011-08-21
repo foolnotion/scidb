@@ -33,7 +33,7 @@ proc open {} {
 	wm title .splash $::scidb::app
 	wm attributes .splash -alpha 0.8
 	tk::frame .splash.f -relief raised -borderwidth 1
-	canvas .splash.f.c -borderwidth 0 -width [image width $Picture] -height [image height $Picture]
+	tk::canvas .splash.f.c -borderwidth 0 -width [image width $Picture] -height [image height $Picture]
 	.splash.f.c create image 0 0 -image $Picture -anchor nw
 	ttk::label .splash.f.text -padding {1 0 0 0}
 	pack .splash.f.c

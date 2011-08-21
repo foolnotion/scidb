@@ -42,6 +42,8 @@
 
 #include "sys_file.h"
 
+#include "u_misc.h"
+
 #include "m_string.h"
 #include "m_fstream.h"
 #include "m_ifstream.h"
@@ -56,6 +58,8 @@
 
 using namespace db;
 using namespace util;
+
+namespace file = util::misc::file;
 
 
 static mstl::string const&
@@ -208,9 +212,11 @@ DatabaseCodec::hasCodecFor(mstl::string const& suffix)
 
 
 DatabaseCodec*
-DatabaseCodec::makeCodec(mstl::string const& suffix)
+DatabaseCodec::makeCodec(mstl::string const& name)
 {
-	if (suffix == "si4")
+	mstl::string ext(file::suffix(name));
+
+	if (ext == "si4")
 	{
 		CustomFlags* flags = new CustomFlags;
 		DatabaseCodec* codec = new si3::Codec(flags);
@@ -218,13 +224,36 @@ DatabaseCodec::makeCodec(mstl::string const& suffix)
 		return codec;
 	}
 
-	if (suffix == "si3")
+	if (ext == "si3")
 		return new si3::Codec();
 
-	if (suffix == "cbh")
+	if (ext == "cbh")
 		return new cbh::Codec();
 
-	return new sci::Codec;
+	if (ext.empty())
+		return new sci::Codec;
+
+	M_ASSERT(ext == "sci");
+
+	return sci::Codec::makeCodec(name);
+}
+
+
+int
+DatabaseCodec::getNumberOfGames(mstl::string const& filename)
+{
+	mstl::string ext(file::suffix(filename));
+
+	if (ext == "sci")
+		return sci::Codec::getNumberOfGames(filename);
+
+	if (ext == "cbh")
+		return cbh::Codec::getNumberOfGames(filename);
+
+	if (ext == "si3" || ext == "si4")
+		return si3::Codec::getNumberOfGames(filename);
+
+	return PgnReader::getNumberOfGames(filename);
 }
 
 

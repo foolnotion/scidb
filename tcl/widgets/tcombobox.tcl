@@ -132,7 +132,7 @@ proc Build {w args} {
 	::ttk::combobox $w -class TTCombobox {*}$cbopts
 	bind $w <<PasteSelection>> {+ %W forgeticon }	;# global binding is not working
 
-	::canvas $w.__image__ -borderwidth 0 -background $listopts(-background) -takefocus 0
+	tk::canvas $w.__image__ -borderwidth 0 -background $listopts(-background) -takefocus 0
 
 	foreach {ev c} {	ButtonPress-1 ""
 							Shift-ButtonPress-1 "s"

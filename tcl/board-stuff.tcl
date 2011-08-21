@@ -79,7 +79,13 @@ proc new {w size {borderSize 0} {flipped 0}} {
 
    set boardSize [expr {8*$size}]
    tk::frame $w -class Board
-   canvas $w.c -width $boardSize -height $boardSize -borderwidth $borderSize -relief raised -takefocus 0
+   tk::canvas $w.c \
+		-width $boardSize \
+		-height $boardSize \
+		-borderwidth $borderSize \
+		-relief raised \
+		-takefocus 0 \
+		;
    pack $w.c
 
 	$w.c xview moveto 0

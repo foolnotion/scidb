@@ -29,6 +29,7 @@
 
 #include "db_comment.h"
 #include "db_player.h"
+#include "db_database_codec.h"
 
 #include "sys_utf8_codec.h"
 
@@ -51,6 +52,7 @@ static char const* CmdDebug		= "::scidb::misc::debug?";
 static char const* CmdFitsRegion	= "::scidb::misc::fitsRegion?";
 static char const* CmdIsAscii		= "::scidb::misc::isAscii?";
 static char const* CmdLookup		= "::scidb::misc::lookup";
+static char const* CmdSize			= "::scidb::misc::size";
 static char const* CmdToAscii		= "::scidb::misc::toAscii";
 static char const* CmdVersion		= "::scidb::misc::version";
 static char const* CmdXmlFromList	= "::scidb::misc::xmlFromList";
@@ -612,6 +614,14 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(db::DatabaseCodec::getNumberOfGames(stringFromObj(objc, objv, 1)));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -627,6 +637,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdXmlFromList,	cmdXmlFromList);
 	createCommand(ti, CmdXmlToList,	cmdXmlToList);
 	createCommand(ti, CmdCrc32,			cmdCrc32);
+	createCommand(ti, CmdSize,			cmdSize);
 }
 
 } // namespace misc

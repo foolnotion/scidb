@@ -43,6 +43,7 @@ set Empty						"empty"
 set None							"none"
 set Failed						"failed"
 set LoadMessage				"Opening Database %s"
+set UpgradeMessage			"Upgrading Database %s"
 set CannotOpenFile			"Cannot open file '%s'."
 set EncodingFailed			"Encoding %s failed."
 set DatabaseAlreadyOpen		"Database '%s' is already open."
@@ -115,6 +116,9 @@ set CloseDatabase				"Close Database '%s'"
 set OpenReadonly				"Open readonly"
 set OpenWriteable				"Open writeable"
 
+set UpgradeDatabase			"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
+set UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you cannot set it writeable."
+
 }
 
 array set Vars {
@@ -162,7 +166,7 @@ proc build {tab menu width height} {
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
 
-	set main [panedwindow $tab.main \
+	set main [tk::panedwindow $tab.main \
 		-orient vertical \
 		-opaqueresize true \
 		-borderwidth 0 \
@@ -293,7 +297,8 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 				}
 			}
 		}
-		set msg [format $mc::LoadMessage [::util::databaseName $file]]
+		set name [::util::databaseName $file]
+		set msg [format $mc::LoadMessage $name]
 		if {[llength $encoding] == 0} {
 			switch $ext {
 				.si3 - .si4 - .pgn - .gz - .zip	{ set encoding $::encoding::defaultEncoding }
@@ -326,10 +331,34 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 				set readonly 1
 			}
 		}
+		set ro $readonly
+		if {![::scidb::db::get writeable? $file]} {
+			set readonly 1
+			if {$ext eq ".sci"} {
+				set rc [::dialog::question \
+							-parent $parent \
+							-message [format $mc::UpgradeDatabase $name] \
+							-detail $mc::UpgradeDatabaseDetail \
+						 ]
+				if {$rc eq "yes"} {
+		 			set cmd [list ::scidb::db::upgrade $file]
+					set options [list -message [format $mc::UpgradeMessage $name]]
+					if {![::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
+						::scidb::db::close $file
+						set cmd [list ::scidb::db::load $file]
+						set options [list -message $msg]
+						if {[::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
+							return
+						}
+						set readonly $ro
+					}
+				}
+			}
+		}
 		::scidb::db::set readonly $file $readonly
 		set type [::scidb::db::get type $file]
 		AddBase $type $file $encoding $readonly
-		AddRecentFile $type $file $encoding $readonly
+		AddRecentFile $type $file $encoding $ro
 		CheckEncoding $parent $file $encoding
 	} else {
 		SeeSymbol [lindex $Vars(bases) $i 0]
@@ -498,7 +527,7 @@ proc BuildSwitcher {pane} {
 
 	set height $Defaults(iconsize)
 	incr height 14
-	set canv [canvas $pane.canv \
+	set canv [tk::canvas $pane.canv \
 		-takefocus 1 \
 		-background white \
 		-height $height \
@@ -1020,7 +1049,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 				checkbutton \
 				$mc::ReadOnly \
 				[namespace code [list ToggleReadOnly $file $index]] \
-				0 0 lock \
+				[expr {![::scidb::db::get writeable? $file]}] \
+				0 lock \
 				[namespace current]::_ReadOnly \
 				;
 			lappend specs separator {} {} {} {} {} {}

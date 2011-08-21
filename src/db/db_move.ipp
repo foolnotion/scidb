@@ -25,7 +25,7 @@
 // ======================================================================
 
 // ======================================================================
-// The implementation is losely based on chessx/src/database/move.h
+// The implementation is loosely based on chessx/src/database/move.h
 // ======================================================================
 
 #include "u_crc.h"

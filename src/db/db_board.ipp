@@ -25,7 +25,7 @@
 // ======================================================================
 
 // ======================================================================
-// This implementation is losely based on chessx/src/database/bitboard.h
+// This implementation is loosely based on chessx/src/database/bitboard.h
 // ======================================================================
 
 #include "m_utility.h"

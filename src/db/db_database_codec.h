@@ -98,6 +98,7 @@ public:
 	virtual ~DatabaseCodec() throw();
 
 	bool isOpen() const;
+	virtual bool isWriteable() const = 0;
 	virtual bool encodingFailed() const = 0;
 
 	virtual Format format() const = 0;
@@ -172,8 +173,10 @@ public:
 	GameInfo* allocGameInfo();
 
 	static bool hasCodecFor(mstl::string const& suffix);
-	static DatabaseCodec* makeCodec(mstl::string const& suffix);
+	static DatabaseCodec* makeCodec(mstl::string const& name);
 	static DatabaseCodec* makeCodec();
+
+	static int getNumberOfGames(mstl::string const& filename);
 
 protected:
 

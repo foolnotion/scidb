@@ -57,6 +57,7 @@ public:
 	Codec();
 	~Codec() throw();
 
+	bool isWriteable() const override;
 	bool encodingFailed() const override;
 
 	Format format() const override;
@@ -95,6 +96,8 @@ public:
 	Move findExactPositionAsync(	GameInfo const& info,
 											Board const& position,
 											bool skipVariations) override;
+
+	static int getNumberOfGames(mstl::string const& filename);
 
 private:
 

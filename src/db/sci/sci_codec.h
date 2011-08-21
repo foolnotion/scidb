@@ -59,6 +59,7 @@ public:
 	Codec();
 	~Codec() throw();
 
+	bool isWriteable() const override;
 	bool encodingFailed() const override;
 
 	Format format() const override;
@@ -113,6 +114,11 @@ public:
 	Move findExactPositionAsync(	GameInfo const& info,
 											Board const& position,
 											bool skipVariations) override;
+
+	static DatabaseCodec* makeCodec(mstl::string const& name);
+	static void rename(mstl::string const& oldName, mstl::string const& newName);
+	static void remove(mstl::string const& fileName);
+	static int getNumberOfGames(mstl::string const& filename);
 
 private:
 

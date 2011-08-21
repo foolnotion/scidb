@@ -394,7 +394,7 @@ proc open {parent} {
 	if {[info exists Vars(BoardSize)]} { ::board::unregisterSize $Vars(BoardSize) }
 	set Vars(BoardSize) $squareSize
 	set size [expr {$squareSize*8 + 2*$BorderThickness + $edge}]
-	set canv [canvas $top.board -width $size -height $size -takefocus 0]
+	set canv [tk::canvas $top.board -width $size -height $size -takefocus 0]
 	::theme::configureCanvas $canv
 	set board [::board::stuff::new $canv.board $squareSize $BorderThickness]
 	::board::stuff::update $board $Vars(pos)

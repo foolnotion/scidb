@@ -194,13 +194,25 @@ Consumer::sendComment(Comment const& comment,
 
 	if (!marks.isEmpty())
 	{
-		pushComment(comment);
-		mstl::string& text = m_comments.back();
+		if (comment.isEmpty())
+		{
+			mstl::string text;
+			marks.toString(text);
+			m_comments.push_back(text);
+		}
+		else
+		{
+			pushComment(comment);
 
-		if (!text.empty())
-			text += ' ';
-		marks.toString(text);
+			mstl::string& text = m_comments.back();
+
+			if (!text.empty())
+				text += ' ';
+			marks.toString(text);
+		}
+
 		m_appendComment = true;
+		m_strm.put(token::Comment);
 	}
 	else if (!comment.isEmpty())
 	{

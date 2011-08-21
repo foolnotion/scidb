@@ -525,7 +525,7 @@ proc MakeSquareFrame {f which} {
 	variable Widget
 
 	ttk::frame $f.texture -borderwidth 2 -relief groove
-	set Widget(texture,$which) [canvas $f.texture.c -width $designSize -height $designSize]
+	set Widget(texture,$which) [tk::canvas $f.texture.c -width $designSize -height $designSize]
 	pack $f.texture.c -expand yes -fill both
 	$f.texture.c create rectangle 0 0 $designSize $designSize \
 		-width 1 -outline [$f.texture.c cget -background]
@@ -727,7 +727,7 @@ proc MakePreview {type which path} {
 	variable Vars
 
 	set f [ttk::labelframe $path.lf -labelwidget [ttk::label $path.llf -textvar ::mc::Preview]]
-	set canv [canvas $f.square -width $designSize -height $designSize -borderwidth 2 -relief sunken]
+	set canv [tk::canvas $f.square -width $designSize -height $designSize -borderwidth 2 -relief sunken]
 	$canv xview moveto 0
 	$canv yview moveto 0
 	pack $f -expand yes -fill both

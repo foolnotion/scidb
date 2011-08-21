@@ -316,7 +316,7 @@ proc forget {path base} {
 	variable ${path}::Vars
 
 	::scrolledtable::forget $path.table $base
-	unset Vars($base:index)
+	unset -nocomplain Vars($base:index)
 }
 
 

@@ -435,7 +435,7 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 
 	foreach {type name} $colorFrames {
 		set fcolor [ttk::frame $lt.f$type -relief sunken -borderwidth 2]
-		set ccolor [canvas $lt.$type -highlightthickness 0 -width 10 -height 10]
+		set ccolor [tk::canvas $lt.$type -highlightthickness 0 -width 10 -height 10]
 		if {$oldcolor ne ""} {
 			$lt.$type create text 5 5 -anchor nw -text [Tr $name] -tags label
 		}
@@ -913,13 +913,13 @@ proc MakeFrame {container} {
 	set size 218
 	set Size 0
 
-	set cchoose1 [canvas $container.hs \
+	set cchoose1 [tk::canvas $container.hs \
 							-width $size \
 							-height $size \
 							-borderwidth 2 \
 							-relief sunken \
 							-highlightthickness 1]
-	set cchoose2 [canvas $container.v \
+	set cchoose2 [tk::canvas $container.v \
 							-width 15 \
 							-height $size \
 							-borderwidth 2 \
@@ -1300,7 +1300,7 @@ proc MakeFrame {container} {
 		set Value($which) "0"
 		set Value(current,$which) "0"
 		tk::frame $f.f$which -borderwidth 2 -relief sunken
-		canvas $f.c$which -width 100 -height $height
+		tk::canvas $f.c$which -width 100 -height $height
 		bind $f.c$which <FocusIn> "
 			$f.c$which itemconfigure target -state hidden
 			$f.c$which itemconfigure active -state normal
@@ -1700,7 +1700,7 @@ proc MakeFrame {container} {
 	set f [tk::frame $container.f -relief flat]
 	pack $f -anchor n -expand yes -fill both -padx 5 -pady 5
 	set bg [::ttk::style lookup $::ttk::currentTheme -background]
-	set Widget [canvas $f.buttons \
+	set Widget [tk::canvas $f.buttons \
 						-height 100 \
 						-width 100 \
 						-highlightthickness 1 \
@@ -1969,7 +1969,7 @@ proc MakeFrame {container} {
 	set height	[expr {$NotebookSize(y) - 6}]
 	set width	[expr {$NotebookSize(x) - 6}]
 
-	set canvas [canvas $container.list \
+	set canvas [tk::canvas $container.list \
   						-yscrollcommand [ list $container.vsb set] \
 						-yscrollincrement $CellHeight \
 						-highlightthickness 1 \

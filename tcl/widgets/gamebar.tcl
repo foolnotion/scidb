@@ -73,7 +73,7 @@ proc gamebar {path} {
 
 	set font TkTextFont
 	set bold [list [font configure $font -family] [font configure $font -size] bold]
-	set gamebar [canvas $path -borderwidth 0]
+	set gamebar [tk::canvas $path -borderwidth 0]
 
 	$gamebar bind header <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
 
@@ -169,7 +169,8 @@ proc insert {gamebar at id tags} {
 		-outline {} \
 		-state hidden \
 		;
-	$gamebar create text 0 0 -anchor nw \
+	$gamebar create text 0 0 \
+		-anchor nw \
 		-justify left \
 		-font $Specs(font:$gamebar) \
 		-tags [list hyphen$id all$id] \

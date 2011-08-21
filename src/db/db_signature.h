@@ -33,6 +33,7 @@ namespace db {
 
 class GameInfo;
 
+namespace sci { namespace v91  { class Codec; } }
 namespace sci { class Codec; }
 namespace si3 { class Codec; }
 namespace cbh { class Codec; }
@@ -77,6 +78,7 @@ public:
 
 	static void initialize();
 
+	friend class sci::v91::Codec;
 	friend class sci::Codec;
 	friend class si3::Codec;
 	friend class cbh::Codec;

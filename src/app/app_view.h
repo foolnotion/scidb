@@ -56,7 +56,7 @@ class View
 {
 public:
 
-	enum FileMode		{ Create, Append };
+	enum FileMode		{ Create, Append, Upgrade };
 	enum UpdateMode	{ AddNewGames, LeaveEmpty };
 	enum GameMode		{ AllGames, ExcludeIllegal };
 

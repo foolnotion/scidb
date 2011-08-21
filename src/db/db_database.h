@@ -82,6 +82,8 @@ public:
 
 	/// Returns whether the database is read-only or not.
 	bool isReadOnly() const;
+	/// Returns whether the database is petentially writeable or not.
+	bool isWriteable() const;
 	/// Returns whether the database is memory-only or not.
 	bool isMemoryOnly() const;
 	/// Returns whether the database is open.

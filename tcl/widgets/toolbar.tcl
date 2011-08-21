@@ -1412,10 +1412,10 @@ proc CreateHandle {toolbar handle {size 0}} {
 	tk::frame $handle -class ToolbarHandle -borderwidth 0
 
 	if {$Specs(orientation:[winfo parent $handle]) eq "horz"} {
-		set decor [canvas $handle.c -width $Defaults(handle:size) -height $size -borderwidth 0]
+		set decor [tk::canvas $handle.c -width $Defaults(handle:size) -height $size -borderwidth 0]
 		pack $decor -fill y -side left -expand yes
 	} else {
-		set decor [canvas $handle.c -width $size -height $Defaults(handle:size) -borderwidth 0]
+		set decor [tk::canvas $handle.c -width $size -height $Defaults(handle:size) -borderwidth 0]
 		pack $decor -fill x -side top -expand yes
 	}
 

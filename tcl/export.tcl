@@ -1105,25 +1105,26 @@ proc ConfigureStyle {w} {
 	$w.t configure -treecolumn item
 	$w.t element create elemTxt text -lines 1
 	$w.t element create elemSel rect -fill {#ffdd76 selected} -showfocus 1
+
 	$w.t style create style
 	$w.t style elements style {elemSel elemTxt}
 	$w.t style layout style elemTxt -padx {4 0}
 	$w.t style layout style elemSel -union {elemTxt} -ipadx 2
 
+	set parent(0) root
 	foreach entry $StyleLayout($Values(type)) {
 		lassign $entry depth name
 		if {$depth == 0} {
 			$w.t item style set root item style
 			$w.t item element configure root item elemTxt -text [set mc::$name]
-			set parentList {root {} {} {} {} {} {}}
 		} else {
 			incr depth -1
 			set item [$w.t item create -button 1]
 			$w.t item style set $item item style
 			$w.t item element configure $item item elemTxt -text [set mc::$name]
-			$w.t item lastchild [lindex $parentList $depth] $item
+			$w.t item lastchild $parent($depth) $item
 			incr depth
-			set parentList [lreplace $parentList $depth $depth $item]
+			set parent($depth) $item
 		}
 	}
 	$w.t selection add 0

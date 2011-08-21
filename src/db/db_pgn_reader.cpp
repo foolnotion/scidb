@@ -35,6 +35,7 @@
 #include "db_eco.h"
 
 #include "u_progress.h"
+#include "u_zstream.h"
 
 #include "m_algorithm.h"
 #include "m_istream.h"
@@ -494,6 +495,13 @@ appendSpace(mstl::string& str)
 }
 
 
+static unsigned
+estimateNumberOfGames(unsigned fileSize)
+{
+	return mstl::max(1u, unsigned(::ceil(fileSize/696.0)));
+}
+
+
 PgnReader::Interruption::Interruption(Error code, mstl::string const& msg) :error(code), message(msg) {}
 PgnReader::Pos::Pos() : line(0), column(0) {}
 
@@ -743,7 +751,7 @@ PgnReader::process(Progress& progress)
 	try
 	{
 		Token		token				= m_firstGameNumber < 0 ? kTag : searchTag();
-		unsigned	numGames			= mstl::max(1u, unsigned(::ceil(m_stream.size()/696.0)));// an estimation
+		unsigned	numGames			= ::estimateNumberOfGames(m_stream.size());
 		unsigned	frequency		= progress.frequency(numGames, 1000);
 		unsigned	reportAfter		= frequency;
 		unsigned	count				= 0;
@@ -2838,7 +2846,7 @@ PgnReader::parseComment(Token prevToken, int c)
 	{
 		convertToUtf(content);
 		Comment::convertCommentToXml(
-			content, comment, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
+			content, comment, encoding::Utf8);
 		comment.normalize();
 	}
 
@@ -4833,6 +4841,18 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 			++s;
 		}
 	}
+}
+
+
+int
+PgnReader::getNumberOfGames(mstl::string const& filename)
+{
+	int64_t fileSize;
+
+	if (!ZStream::size(filename, fileSize, 0))
+		return -1;
+
+	return ::estimateNumberOfGames(fileSize);
 }
 
 // vi:set ts=3 sw=3:

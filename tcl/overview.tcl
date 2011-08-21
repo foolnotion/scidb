@@ -219,12 +219,13 @@ proc NextGame {nb base {step 0}} {
 	variable Priv
 
 	if {$Vars(index) == -1} { return }
+	set number $Vars(number)
 	incr Vars(index) $step
 	ConfigureButtons $nb
 	set info [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
 	set Vars(number) [::gametable::column $info number]
 	if {$step} {
-		set key $Vars(base):$Vars(number):$Vars(view)
+		set key $Vars(base):$number:$Vars(view)
 		if {[incr Priv($key:count) -1] == 0} {
 			unset Priv($key)
 			unset Priv($key:count)

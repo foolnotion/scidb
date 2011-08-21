@@ -131,8 +131,8 @@ proc open {args} {
 	}
 	wm geometry $w ${x}${y}
 	wm deiconify $w
-	if {[llength $opts(-command)]} { busyCursor $w on }
 	tkwait visibility $w
+	if {[llength $opts(-command)]} { busyCursor $w on }
 	if {[llength $opts(-command)] == 0} { return }
 	after idle [namespace code [list Start $w $opts(-command) $opts(-close)]]
 	focus -force $w

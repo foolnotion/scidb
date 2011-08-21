@@ -25,7 +25,7 @@
 // ======================================================================
 
 // ======================================================================
-// The implementation is losely based on chessx/src/database/bitboard.cpp
+// The implementation is loosely based on chessx/src/database/bitboard.cpp
 //   (C) 2003 Sune Fischer
 //   (C) 2005-2006 Marius Roets <roets.marius@gmail.com>
 //   (C) 2005-2009 Michal Rudolf <mrudolf@kdewebdev.org>

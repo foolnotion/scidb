@@ -320,6 +320,13 @@ Codec::format() const
 
 
 bool
+Codec::isWriteable() const
+{
+	return true;
+}
+
+
+bool
 Codec::encodingFailed() const
 {
 	M_ASSERT(m_codec);
@@ -1890,6 +1897,21 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	getGameRecord(info, *m_asyncReader, src);
 	Decoder decoder(src, *m_codec);
 	return decoder.findExactPosition(position, skipVariations);
+}
+
+
+int
+Codec::getNumberOfGames(mstl::string const& filename)
+{
+	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+
+	char header[17];
+
+	if (!strm.read(header, sizeof(header)))
+		return -1;
+
+	ByteStream bstrm(header + 14, sizeof(header) - 14);
+	return bstrm.uint24();
 }
 
 // vi:set ts=3 sw=3:

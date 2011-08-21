@@ -25,7 +25,7 @@
 // ======================================================================
 
 // ======================================================================
-// This class is losely based on chessx/src/database/bitboard.h
+// This class is loosely based on chessx/src/database/bitboard.h
 // ======================================================================
 
 #ifndef _db_board_included

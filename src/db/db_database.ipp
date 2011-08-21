@@ -32,6 +32,7 @@ namespace db {
 
 inline bool Database::isOpen() const							{ return m_codec; }
 inline bool Database::isReadOnly() const						{ return m_readOnly; }
+inline bool Database::isWriteable() const						{ return codec().isWriteable(); }
 inline bool Database::isMemoryOnly() const					{ return m_memoryOnly; }
 inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }
 inline bool Database::encodingFailed() const					{ return m_encodingFailed; }
@@ -120,6 +121,8 @@ void
 Database::setReadOnly(bool flag)
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(flag || codec().isWriteable());
+
 	m_readOnly = flag;
 }
 

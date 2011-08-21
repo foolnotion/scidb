@@ -490,19 +490,40 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 
 	mstl::string buf;
 
-	if (node->hasComment(move::Post))
-		node->comment(move::Post).flatten(buf, encoding);
+	if (node->hasSupplement())
+	{
+		if (node->hasMark())
+		{
+			mstl::string buf2;
+			node->marks().toString(buf2);
+
+			if (node->hasComment(move::Post))
+			{
+				buf2 += ' ';
+				node->comment(move::Post).flatten(buf2, encoding);
+			}
+
+			putComment(buf2);
+		}
+		else if (node->hasComment(move::Post))
+		{
+			node->comment(move::Post).flatten(buf, encoding);
+		}
+	}
 
 	for (node = node->next(); node; node = node->next())
 	{
 		if (node->atLineEnd())
 		{
-			if (node->hasComment(move::Post))
+			if (node->hasSupplement())
 			{
-				if (!buf.empty())
-					buf += '\n';
+				if (node->hasComment(move::Post))
+				{
+					if (!buf.empty())
+						buf += '\n';
 
-				node->comment(move::Post).flatten(buf, encoding);
+					node->comment(move::Post).flatten(buf, encoding);
+				}
 			}
 
 			if (!buf.empty())
@@ -522,18 +543,14 @@ Encoder::encodeComments(MoveNode* node, encoding::CharSet encoding)
 
 			if (node->hasSupplement())
 			{
-				if (node->hasComment(move::Post))
-					node->comment(move::Post).flatten(buf, encoding);
-
 				if (node->hasMark())
+					node->marks().toString(buf);
+
+				if (node->hasComment(move::Post))
 				{
 					if (!buf.empty())
 						buf += ' ';
-
-					MarkSet const& marks = node->marks();
-
-					for (unsigned i = 0; i < marks.count(); ++i)
-						marks[i].toString(buf);
+					node->comment(move::Post).flatten(buf, encoding);
 				}
 
 				if (node->hasVariation())
@@ -560,7 +577,7 @@ Encoder::encodeVariation(MoveNode const* node, unsigned level)
 	{
 		if (node->atLineEnd())
 		{
-			if (pendingComment || node->hasComment(move::Post))
+			if (pendingComment || node->hasComment(move::Post) || node->hasMark())
 			{
 				if (afterVariation)
 				{

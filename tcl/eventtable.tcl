@@ -191,7 +191,7 @@ proc init {path base} {
 
 proc forget {path base} {
 	::scrolledtable::forget $path $base
-	unset [namespace current]::${path}::Vars($base:index)
+	unset -nocomplain [namespace current]::${path}::Vars($base:index)
 }
 
 

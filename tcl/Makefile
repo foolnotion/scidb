@@ -68,6 +68,7 @@ SOURCES = \
 	widgets/labelbar.tcl \
 	widgets/scrolledframe.tcl \
 	widgets/html.tcl \
+	widgets/choosedir.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \

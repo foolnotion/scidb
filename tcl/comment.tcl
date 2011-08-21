@@ -885,7 +885,7 @@ proc PopupSymbolTable {w text} {
 	for {set x 0} {$x < $ncols} {incr x} {
 		for {set y 0} {$y < $nrows} {incr y} {
 			set canv $top.c_${x}_${y}
-			canvas $canv -width $size -height $size -highlightthickness 1 -highlightbackground $bg
+			tk::canvas $canv -width $size -height $size -highlightthickness 1 -highlightbackground $bg
 			bind $canv <Enter> [list $canv configure -background #ffdd76]
 			bind $canv <Leave> [list $canv configure -background $bg]
 			grid $canv -row $y -column $x

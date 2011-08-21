@@ -39,7 +39,7 @@ variable Tables {}
 proc build {parent} {
 	variable Tables
 
-	set top [panedwindow $parent.top \
+	set top [tk::panedwindow $parent.top \
 		-orient horizontal \
 		-opaqueresize true \
 		-borderwidth 0]
@@ -48,7 +48,7 @@ proc build {parent} {
 
 	set lt ${top}.events
 
-	set rt [panedwindow $top.info \
+	set rt [tk::panedwindow $top.info \
 		-orient vertical \
 		-opaqueresize true \
 		-borderwidth 0]

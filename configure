@@ -959,7 +959,9 @@ proc writeMakefile {{type ""}} {
         set option(FONTDIR) /Library/Fonts/
     } else {
         if {  [string match {/usr/local*} $configure(prefix)]
-           && [file isdirectory /usr/local/share/fonts]} {
+           && [file isdirectory /usr/local/share/fonts]
+           && [llength [auto_execok fedora_release]] == 0} {
+            # don't use /usr/local/ on Fedora systems
             set prefix /usr/local
         } else {
             set prefix /usr

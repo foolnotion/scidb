@@ -565,7 +565,7 @@ proc SelectTexture {parent which} {
 	grid rowconfigure $top 1 -weight 1
 
 	ttk::frame $lt.texture -borderwidth 2 -relief groove
-	set Widget(texture,$which) [canvas $lt.texture.c -width $designSize -height $designSize]
+	set Widget(texture,$which) [tk::canvas $lt.texture.c -width $designSize -height $designSize]
 	pack $lt.texture.c -expand yes -fill both
 	$lt.texture.c create rectangle 0 0 $designSize $designSize \
 		-width 1 -outline [$lt.texture.c cget -background]
@@ -800,7 +800,7 @@ proc MakePreview {var which path} {
 	}
 
 	set f [ttk::labelframe $path.lf -labelwidget [ttk::label $path.llf -textvar ::mc::Preview]]
-	set canv [canvas $f.piece \
+	set canv [tk::canvas $f.piece \
 					-width $designSize \
 					-height $designSize \
 					-borderwidth 2 \
@@ -1002,7 +1002,7 @@ proc SelectGradient {which} {
 	pack $grad -padx $::theme::padx -pady $::theme::pady
 
 	set Widget(gradient,preview) [ \
-		canvas $grad.preview \
+		tk::canvas $grad.preview \
 			-width $csize \
 			-height $csize \
 			-borderwidth 2 \
@@ -1320,7 +1320,7 @@ proc MakePieceFrame {f which} {
 	variable Widget
 
 	ttk::frame $f.piece -borderwidth 2 -relief groove
-	set Widget(piece,$which) [canvas $f.piece.c -width $designSize -height $designSize]
+	set Widget(piece,$which) [tk::canvas $f.piece.c -width $designSize -height $designSize]
 	pack $f.piece.c -expand yes -fill both
 	$f.piece.c create image 0 0 -image photo_Square($SquareStyle($which),config) -anchor nw
 	$f.piece.c create image 0 0 \

@@ -213,7 +213,7 @@ proc SetupCurrentTheme {} {
 
 	# 4. Set theme options
 #	option add *Frame.background $Settings(tk:background)
-	option add *Button.background $background
+#	option add *Button.background $background
 	option add *Spinbox.selectBackground [::ttk::style lookup $currentTheme -selectbackground]
 	option add *Spinbox.disabledBackground $background
 	option add *Scale.highlightBackground $background

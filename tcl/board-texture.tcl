@@ -185,7 +185,7 @@ proc makePopup {} {
 	toplevel $w -class Scidb -relief raised -borderwidth 2
 	wm withdraw $w
 	wm overrideredirect $w 1
-	canvas $w.texture
+	tk::canvas $w.texture
 	pack $w.texture
 	$w.texture create image 0 0 -anchor nw -tag img
 	$w.texture create rectangle 0 0 1 1 -tags {view dark} -state hidden -width 1 -outline black
@@ -447,7 +447,7 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 	set height [expr {$Browser(nrows)*$Browser(incr) + 1}]
 	set provideSwitch [expr {[llength $Browser(other)] && [info exists preferences($Browser(other))]}]
 
-	canvas $w.container \
+	tk::canvas $w.container \
 		-borderwidth 2 \
 		-relief groove \
 		-takefocus 1 \

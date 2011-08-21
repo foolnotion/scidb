@@ -681,7 +681,7 @@ proc ::TreeCtrl::ButtonPress1 {w x y} {
 
     set Priv(buttonMode) normal
 #   BeginSelect $w $item
-    return
+    return $item
 }
 
 proc ::TreeCtrl::ButtonPress1Header {w id x y {columnDragOffset 5}} {
@@ -1324,11 +1324,23 @@ proc ::TreeCtrl::UpDown {w item n} {
     }
     scan $rnc "%d %d" row col
     set Priv(keyNav,row,$w) [expr {$row + $n}]
-    if {![info exists Priv(keyNav,rnc,$w)] || $rnc ne $Priv(keyNav,rnc,$w)} {
-	set Priv(keyNav,col,$w) $col
-    }
+    set Priv(keyNav,col,$w) $col
     set item2 [$w item id "rnc $Priv(keyNav,row,$w) $Priv(keyNav,col,$w)"]
     if {[$w item compare $item == $item2]} {
+	if {[$w cget -orient] eq "vertical" && [$w cget -wrap] eq "window"} {
+	    if {$n > 0} { set row 0 } else { set row 1000 }
+	    set col [expr {$col + $n}]
+	    set item3 [$w item id "rnc $row $col"]
+	    if {[$w item compare $item != $item3]} {
+		set rnc [$w item rnc $item3]
+		scan $rnc "%d %d" r c
+		if {$c == $col} {
+		    set Priv(keyNav,col,$w) $col
+		    set Priv(keyNav,row,$w) $r
+		    return $item3
+		}
+	    }
+	}
 	set Priv(keyNav,row,$w) $row
 	if {![$w item enabled $item2]} {
 	    return ""
@@ -1363,19 +1375,54 @@ proc ::TreeCtrl::LeftRight {w item n} {
     }
     scan $rnc "%d %d" row col
     set Priv(keyNav,col,$w) [expr {$col + $n}]
-    if {![info exists Priv(keyNav,rnc,$w)] || $rnc ne $Priv(keyNav,rnc,$w)} {
-	set Priv(keyNav,row,$w) $row
-    }
+    set Priv(keyNav,row,$w) $row
     set item2 [$w item id "rnc $Priv(keyNav,row,$w) $Priv(keyNav,col,$w)"]
     if {[$w item compare $item == $item2]} {
+	if {[$w cget -orient] eq "vertical" && [$w cget -wrap] eq "window"} {
+	    if {$n > 0} { set col 0 } else { set col 1000 }
+	    set row [expr {$row + $n}]
+	    set item3 [$w item id "rnc $row $col"]
+	    if {[$w item compare $item != $item3]} {
+		set rnc [$w item rnc $item3]
+		scan $rnc "%d %d" r c
+		if {$r == $row} {
+		    set Priv(keyNav,col,$w) $c
+		    set Priv(keyNav,row,$w) $row
+		    return $item3
+		} elseif {$col == 1000 && $row > 1 && $c > 0} {
+		    set col [expr {$c - 1}]
+		    set item3 [$w item id "rnc $row $col"]
+		    scan [$w item rnc $item3] "%d %d" r c
+		    if {$c == $col && $r == $row} {
+			return $item3
+		    }
+		}
+	    }
+	}
 	set Priv(keyNav,col,$w) $col
 	if {![$w item enabled $item2]} {
 	    return ""
 	}
     } else {
-	set Priv(keyNav,rnc,$w) [$w item rnc $item2]
-	if {![$w item enabled $item2]} {
-	    return [LeftRight $w $item2 $n]
+	scan [$w item rnc $item2] "%d %d" row col
+	if {$n > 0 && $row < $Priv(keyNav,row,$w)} {
+	    set col 0
+	    set row [expr {$Priv(keyNav,row,$w) + 1}]
+	    set item3 [$w item id "rnc $row $col"]
+	    scan [$w item rnc $item3] "%d %d" r c
+	    if { $r > $Priv(keyNav,row,$w)} {
+		set Priv(keyNav,row,$w) $row
+		set Priv(keyNav,col,$w) $col
+		set item2 $item3
+	    } else {
+		set item2 $item
+	    }
+	    set Priv(keyNav,rnc,$w) [$w item rnc $item2]
+	} else {
+	    set Priv(keyNav,rnc,$w) [$w item rnc $item2]
+	    if {![$w item enabled $item2]} {
+		return [LeftRight $w $item2 $n]
+	    }
 	}
     }
     return $item2

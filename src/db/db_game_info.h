@@ -39,6 +39,7 @@ namespace sys  { namespace utf8 { class Codec; } }
 
 namespace db {
 
+namespace sci  { namespace v91 { class Codec; } }
 namespace sci  { class Codec; }
 namespace si3  { class Codec; }
 namespace cbh  { class Codec; }
@@ -274,6 +275,7 @@ private:
 		};
 	};
 
+	friend class sci::v91::Codec;
 	friend class sci::Codec;
 	friend class si3::Codec;
 	friend class cbh::Codec;

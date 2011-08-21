@@ -60,7 +60,7 @@ proc build {parent} {
 	variable Tables
 	variable Find
 
-	set top [panedwindow $parent.top \
+	set top [tk::panedwindow $parent.top \
 		-orient horizontal \
 		-opaqueresize true \
 		-borderwidth 0]

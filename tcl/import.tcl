@@ -142,7 +142,7 @@ proc openEdit {parent position {mode {}}} {
 					-width 26 \
 				]
 	set lab [ttk::label $top.encodingText -textvar ::encoding::mc::Encoding]
-	set enc [tk::entry $top.encoding \
+	set enc [ttk::entry $top.encoding \
 		-state readonly \
 		-textvar [namespace current]::Priv($position:encoding) \
 	]
@@ -150,9 +150,10 @@ proc openEdit {parent position {mode {}}} {
 					-height 13 \
 					-image $::icon::15x13::list \
 					-command [namespace code [list ChooseEncoding $top.choose $position]] \
+					-background [::theme::getBackgroundColor] \
 				]
 	::theme::configureBackground $but
-	set main [panedwindow $top.main -orient vertical -opaqueresize true]
+	set main [tk::panedwindow $top.main -orient vertical -opaqueresize true]
 	::tooltip::tooltip $but [namespace current]::mc::SelectEncoding
 
 	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine

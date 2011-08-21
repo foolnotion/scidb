@@ -233,6 +233,7 @@
 ::application::database::mc::None						"nessuno"
 ::application::database::mc::Failed						"fallito"
 ::application::database::mc::LoadMessage				"Sto aprendo il database %s"
+::application::database::mc::UpgradeMessage			"Upgrading Database %s" ;# NEW
 ::application::database::mc::CannotOpenFile			"Non è possibile aprire il file '%s'."
 ::application::database::mc::EncodingFailed			"Codifica di %s fallita."
 ::application::database::mc::DatabaseAlreadyOpen	"Il database '%s' è già aperto."
@@ -304,6 +305,9 @@
 
 ::application::database::mc::OpenReadonly				"Apri sola lettura"
 ::application::database::mc::OpenWriteable			"Apri scrivibile"
+
+::application::database::mc::UpgradeDatabase			"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?" ;# NEW
+::application::database::mc::UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you cannot set it writeable." ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Controllo"
@@ -1307,6 +1311,7 @@
 ::dialog::mc::Retry			"&Riprova"
 ::dialog::mc::Abort			"&Interrompi"
 ::dialog::mc::Ignore			"I&gnora"
+::dialog::mc::Continue		"Con&tinue" ;# NEW
 
 ::dialog::mc::Error			"Errore"
 ::dialog::mc::Warning		"Avvertenza"

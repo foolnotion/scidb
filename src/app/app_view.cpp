@@ -512,7 +512,7 @@ View::exportGames(mstl::string const& filename,
 		destination.setDescription(description);
 		destination.setType(type);
 
-		if (m_db.format() == format::Scidb)
+		if (m_db.format() == format::Scidb && fmode != Upgrade)
 		{
 			count = exportGames(destination, gameMode, log, progress);
 		}

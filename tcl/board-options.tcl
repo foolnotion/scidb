@@ -311,7 +311,7 @@ proc makeBasicFrame {path} {
 		-command [namespace code [list EditStyles $f.editList theme]]
 	set Widget(theme,save) $f.save
 	set Widget(theme,edit) $f.editList
-#	if {!$workingSet(Modified)} { $f.save configure -state disabled }
+	ConfigThemeSelectionFrame
 
 	grid $f.list		-row 1 -column 1 -sticky nswe
 	grid $f.save		-row 3 -column 1 -sticky nswe
@@ -807,7 +807,7 @@ proc makeFrame {path} {
 	# Preview ######################################
 	set f [::ttk::labelframe $top.preview \
 				-labelwidget [::ttk::label $top.lpreview -textvar ::mc::Preview]]
-	set Widget(canv,preview) [canvas $f.board -width $BoardSize -borderwidth 1 -relief solid]
+	set Widget(canv,preview) [tk::canvas $f.board -width $BoardSize -borderwidth 1 -relief solid]
 	::theme::configureCanvas $f.board
 	$f.board xview moveto 0
 	$f.board yview moveto 0
@@ -1533,8 +1533,8 @@ proc DrawBoard {h w} {
 	set y2 [expr {$y1 + 4*$SquareSize}]
 
 	# board window #################################
-	set bord [canvas $canv.border -relief raised]
-	set board [canvas $bord.board -borderwidth 0]
+	set bord [tk::canvas $canv.border -relief raised]
+	set board [tk::canvas $bord.board -borderwidth 0]
 	$canv create window 0 0 -anchor nw -window $bord -tag board
 	$bord create window 0 0 -anchor nw -window $board -tag board
 	set Widget(canv,border) $bord
@@ -1781,7 +1781,7 @@ proc MakePreview {path} {
 	variable [namespace parent]::layout
 
 	set f [::ttk::labelframe $path.lf -labelwidget [::ttk::label $path.llf -textvar ::mc::Preview]]
-	set canv [canvas $f.coords -width 150 -height 20 -borderwidth 2 -relief sunken]
+	set canv [tk::canvas $f.coords -width 150 -height 20 -borderwidth 2 -relief sunken]
 	if {$layout(border)} {
 		if {[llength $colors(hint,border-tile)]} {
 			setTile $canv border

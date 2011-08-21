@@ -78,7 +78,7 @@ static unsigned Counter = 0;
 
 Database::Database(mstl::string const& name, mstl::string const& encoding, Storage storage, Type type)
 	:DatabaseContent(type)
-	,m_codec(DatabaseCodec::makeCodec(file::suffix(name)))
+	,m_codec(DatabaseCodec::makeCodec(name))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
@@ -96,6 +96,9 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 	m_type = type;
 	m_memoryOnly = storage == MemoryOnly;
 	m_created = sys::time::time();
+
+	if (!m_codec->isWriteable())
+		m_readOnly = true;
 
 	if (m_memoryOnly)
 		m_codec->open(this, encoding);
@@ -128,7 +131,7 @@ Database::Database(	mstl::string const& name,
 	mstl::string ext = file::suffix(m_name);
 
 	m_readOnly = mode == ReadOnly;
-	m_codec = DatabaseCodec::makeCodec(ext);
+	m_codec = DatabaseCodec::makeCodec(m_name);
 
 	if (m_codec == 0)
 	{
@@ -137,6 +140,9 @@ Database::Database(	mstl::string const& name,
 
 		DB_RAISE("unknown file format (.%s)", ext.c_str());
 	}
+
+	if (!m_codec->isWriteable())
+		m_readOnly = true;
 
 	m_codec->open(this, m_rootname, m_encoding, progress);
 	m_size = m_gameInfoList.size();
@@ -163,6 +169,7 @@ Database::Database(mstl::string const& name, Producer& producer, Progress& progr
 
 	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec();
+	M_ASSERT(m_codec->isWriteable());
 	m_codec->open(this, sys::utf8::Codec::utf8(), producer, progress);
 	m_size = m_gameInfoList.size();
 	m_readOnly = true;
@@ -185,6 +192,7 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 
 	m_rootname = file::rootname(filename);
 	m_codec->attach(m_rootname, progress);
+	M_ASSERT(m_codec->isWriteable());
 	m_readOnly = false;
 	m_memoryOnly = false;
 }
@@ -215,7 +223,7 @@ Database::close()
 {
 	if (m_codec)
 	{
-		if (!isMemoryOnly() && m_size != m_gameInfoList.size())		// should not happen
+		if (!isMemoryOnly() && !m_readOnly && m_size != m_gameInfoList.size()) // should not happen
 		{
 			util::Progress progress;
 			save(progress, m_size);
@@ -299,9 +307,7 @@ Database::reopen(mstl::string const& encoding, Progress& progress)
 
 	delete m_codec;
 
-	mstl::string ext = file::suffix(name());
-
-	m_codec = DatabaseCodec::makeCodec(ext);
+	m_codec = DatabaseCodec::makeCodec(name());
 	M_ASSERT(m_codec);
 	m_codec->open(this, m_rootname, m_encoding, progress);
 	m_size = m_gameInfoList.size();

@@ -139,7 +139,7 @@ proc open {} {
 	set nb [::ttk::notebook $app.nb -takefocus 1]
 	::ttk::notebook::enableTraversal $nb
 	set db [::ttk::frame $nb.database]
-	set main [panedwindow $nb.main -orient vertical -opaqueresize true]
+	set main [tk::panedwindow $nb.main -orient vertical -opaqueresize true]
 	$nb add $db -sticky nsew
 	$nb add $main -sticky nsew
 	::widget::notebookTextvarHook $nb $db [namespace current]::mc::Database
@@ -152,7 +152,7 @@ proc open {} {
 	pack $nb -fill both -expand yes
 
 	foreach {sub} {top bottom} {
-		set $sub [panedwindow $main.$sub -orient horizontal -opaqueresize true]
+		set $sub [tk::panedwindow $main.$sub -orient horizontal -opaqueresize true]
 		$main paneconfigure $main.$sub \
 			-sticky nswe \
 			-minsize $Attr($sub,minHeight) \
@@ -183,7 +183,7 @@ proc open {} {
 #		}
 	}
 
-#	set right [panedwindow $right.pw -orient vertical -opaqueresize true]
+#	set right [tk::panedwindow $right.pw -orient vertical -opaqueresize true]
 #	pack $right -fill both -expand yes
 
 #	foreach {sub class} {pgn Frame analysis Frame} {

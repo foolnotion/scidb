@@ -62,13 +62,13 @@ proc MakeFrame {container} {
 	set width 225
 	set height 195
 	
-	set cchoose1	[canvas $container.hs \
+	set cchoose1	[tk::canvas $container.hs \
 							-width $width \
 							-height $height \
 							-borderwidth 2 \
 							-relief sunken \
 							-highlightthickness 1]
-	set cchoose2	[canvas $container.v \
+	set cchoose2	[tk::canvas $container.v \
 							-width $width \
 							-height 15 \
 							-borderwidth 2 \

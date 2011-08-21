@@ -172,6 +172,7 @@ public:
 	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
 	static event::Mode getEventMode(char const* event, char const* site);
 	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
+	static int getNumberOfGames(mstl::string const& filename);
 
 private:
 

@@ -53,6 +53,13 @@ proc panedwindow {args} {
 }
 
 
+namespace eval tk {
+
+proc panedwindow {args} { return [::panedwindow {*}$args] }
+
+} ;# namespace tk
+
+
 namespace eval panedwindow {
 
 bind PanedWindowFrame <Destroy> [namespace code { DestroyHandler %W }]

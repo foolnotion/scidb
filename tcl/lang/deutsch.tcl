@@ -230,6 +230,7 @@
 ::application::database::mc::None						"keine"
 ::application::database::mc::Failed						"fehlgeschlagen"
 ::application::database::mc::LoadMessage				"Datenbank %s öffnen"
+::application::database::mc::UpgradeMessage			"Datenbank %s aktualisieren"
 ::application::database::mc::CannotOpenFile			"Die Datei '%s' kann nicht geöffnet werden."
 ::application::database::mc::EncodingFailed			"Die Enkodierung %s ist fehlgeschlagen."
 ::application::database::mc::DatabaseAlreadyOpen	"Die Datenbank '%s' ist bereits geöffnet."
@@ -301,6 +302,9 @@
 
 ::application::database::mc::OpenReadonly				"Schreibgeschützt öffnen"
 ::application::database::mc::OpenWriteable			"Schreibberechtigt öffnen"
+
+::application::database::mc::UpgradeDatabase			"%s ist eine Datenbank im alten Format und kann nicht schreibbar geöffnet werden.\n\nEine Aktualisierung wird eine neue Version der Datenbank erstellen und danach die alten Dateien entfernen.\n\nDieser Vorgang kann eine Zeitlang dauern, muß aber nur einmal durchgeführt werden.\n\nSoll die Aktualisierung der Datenbank jetzt durchgeführt werden?"
+::application::database::mc::UpgradeDatabaseDetail	"\"Nein\" öffnet die Datenbank schreibgeschützt, und sie kann nicht schreibbar gesetzt werden."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Steuerung"
@@ -1304,6 +1308,7 @@
 ::dialog::mc::Retry			"&Wiederholung"
 ::dialog::mc::Abort			"&Abbruch"
 ::dialog::mc::Ignore			"&Ignorieren"
+::dialog::mc::Continue		"&Fortsetzen"
 
 ::dialog::mc::Error			"Fehler"
 ::dialog::mc::Warning		"Warnung"

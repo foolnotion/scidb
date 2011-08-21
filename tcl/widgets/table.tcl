@@ -640,7 +640,9 @@ proc active {table} {
 
 
 proc focus {table} {
-	::focus $table.t
+	if {[$table.t cget -takefocus]} {
+		::focus $table.t
+	}
 }
 
 
@@ -1087,9 +1089,7 @@ proc Highlight {table x y} {
 	variable ${table}::Vars
 	variable ${table}::Options
 
-	if {[$table.t cget -takefocus]} {
-		::focus $table.t
-	}
+	focus $table
 	::tooltip::hide
 	set Vars(header) 0
 	set id [$table.t identify $x $y]
@@ -1314,7 +1314,7 @@ proc PopupMenu {table x y X Y} {
 	if {$action eq ""} {
 		set id [$table.t identify $x $y]
 		if {[lindex $id 0] ne "header"} {
-			::focus $table.t
+			focus $table
 			event generate $table <<TableMenu>> -x $x -y $y -rootx $X -rooty $Y
 			return
 		}
@@ -1716,7 +1716,7 @@ proc ConfigureDialog {table id dlg} {
 
 proc MakePreview {foreground background preview path} {
 	set text [set [namespace current]::mc::Preview]
-	set canv [canvas $path.coords -width 150 -height 20 -borderwidth 2 -relief sunken]
+	set canv [tk::canvas $path.coords -width 150 -height 20 -borderwidth 2 -relief sunken]
 	$canv configure -background $background
 	$canv create text 75 10 -text $text -fill $foreground -tag abcd -font TkDefaultFont
 	if {$preview eq "foreground"} {

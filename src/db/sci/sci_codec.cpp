@@ -30,6 +30,8 @@
 #include "sci_consumer.h"
 #include "sci_common.h"
 
+#include "sci_v91_codec.h"
+
 #include "db_game_info.h"
 #include "db_consumer.h"
 #include "db_producer.h"
@@ -39,6 +41,7 @@
 #include "u_byte_stream.h"
 #include "u_block_file.h"
 #include "u_progress.h"
+#include "u_misc.h"
 
 #include "m_string.h"
 #include "m_fstream.h"
@@ -46,6 +49,7 @@
 #include "m_assert.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include <string.h>
 
@@ -156,7 +160,7 @@ static mstl::string const MagicGameFile ("Scidb.g\0", 8);
 static mstl::string const MagicNamebase ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
-static uint16_t const FileVersion = 91;
+static uint16_t const FileVersion = 92;
 
 static char const* NamebaseTags[Namebase::Round];
 
@@ -379,6 +383,13 @@ Codec::~Codec() throw()
 		m_gameData->closeAsyncReader(m_asyncReader);
 
 	delete m_gameData;
+}
+
+
+bool
+Codec::isWriteable() const
+{
+	return true;
 }
 
 
@@ -653,6 +664,45 @@ Codec::doOpen(mstl::string const& encoding)
 }
 
 
+DatabaseCodec*
+Codec::makeCodec(mstl::string const& name)
+{
+#if 1 // OLD XXX
+	return new v91::Codec;
+#endif
+
+	mstl::fstream strm;
+
+	strm.open(name, mstl::ios_base::in | mstl::ios_base::binary);
+
+	if (strm)
+	{
+		strm.exceptions(mstl::ios_base::badbit | mstl::ios_base::eofbit | mstl::ios_base::failbit);
+
+		char header[120];
+
+		if (!strm.read(header, sizeof(header)))
+			IO_RAISE(Index, Corrupted, "unexpected end of index file");
+
+		strm.close();
+
+		ByteStream bstrm(header, sizeof(header));
+
+#ifndef CODEBLOCKS
+
+		bstrm.skip(8); // skip magic
+		unsigned fileVersion	= bstrm.uint16();
+
+		if (fileVersion == 91)
+			return new v91::Codec;
+
+#endif
+	}
+
+	return new Codec;
+}
+
+
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
 {
@@ -879,13 +929,13 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.setMaterial(bits->material);
 
 	item.m_signature.m_homePawns.value	= bits->homePawns;
-	item.m_signature.m_progress.value		= bits->pawnProgress;
+	item.m_signature.m_progress.value	= bits->pawnProgress;
 	item.m_pd[0].langFlag					= bits->commentEngFlag;
 	item.m_pd[1].langFlag					= bits->commentOthFlag;
 	item.m_variationCount					= bits->variationCount;
 	item.m_annotationCount					= bits->annotationCount;
 	item.m_commentCount						= bits->commentCount;
-	item.m_termination							= bits->termination;
+	item.m_termination						= bits->termination;
 	item.m_gameFlags							= bits->gameFlags;
 	item.m_round								= bits->round;
 	item.m_subround							= bits->subround;
@@ -899,7 +949,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_positionData						= bits->positionData;
 	item.m_signature.m_promotions			= bits->promotion;
 	item.m_signature.m_underPromotions	= bits->underPromotion;
-	item.m_signature.m_castling				= bits->castling;
+	item.m_signature.m_castling			= bits->castling;
 	item.m_signature.m_hpCount				= bits->hpCount;
 }
 
@@ -1731,6 +1781,51 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	getGameRecord(info, *m_asyncReader, src);
 	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
 	return decoder.findExactPosition(position, skipVariations);
+}
+
+
+void
+Codec::rename(mstl::string const& oldName, mstl::string const& newName)
+{
+	mstl::string oldBase(::util::misc::file::basename(oldName));
+	mstl::string newBase(::util::misc::file::basename(newName));
+
+	oldBase.erase(oldBase.end() - 4, oldBase.end());
+	newBase.erase(newBase.end() - 4, newBase.end());
+
+	::sys::file::rename(oldBase + ".scn", newBase + ".scn");
+	::sys::file::rename(oldBase + ".scg", newBase + ".scg");
+	::sys::file::rename(oldBase + ".sci", newBase + ".sci");
+}
+
+
+void
+Codec::remove(mstl::string const& fileName)
+{
+	mstl::string base(::util::misc::file::basename(fileName));
+
+	base.erase(base.end() - 4, base.end());
+
+	::sys::file::deleteIt(base + ".scn");
+	::sys::file::deleteIt(base + ".scg");
+	::sys::file::deleteIt(base + ".sci");
+}
+
+
+int
+Codec::getNumberOfGames(mstl::string const& filename)
+{
+	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+
+	char header[13];
+
+	if (!strm.read(header, sizeof(header)))
+		return -1;
+
+	strm.close();
+
+	ByteStream bstrm(header + 10, sizeof(header) - 10);
+	return bstrm.uint24();
 }
 
 // vi:set ts=3 sw=3:

@@ -25,7 +25,7 @@
 // ======================================================================
 
 // ======================================================================
-// This class is losely based on chessx/src/database/move.h
+// This class is loosely based on chessx/src/database/move.h
 // ======================================================================
 
 #ifndef _db_move_included

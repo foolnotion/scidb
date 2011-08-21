@@ -49,6 +49,7 @@
 
 #include "si3_decoder.h"
 #include "si3_encoder.h"
+#include "sci_codec.h"
 
 #include "u_zstream.h"
 
@@ -91,6 +92,7 @@ static char const* CmdSubscribe		= "::scidb::db::subscribe";
 static char const* CmdSwitch			= "::scidb::db::switch";
 static char const* CmdUnsubscribe	= "::scidb::db::unsubscribe";
 static char const* CmdUpdate			= "::scidb::db::update";
+static char const* CmdUpgrade			= "::scidb::db::upgrade";
 
 
 static char const User1 = GameInfo::mapFlag(GameInfo::Flag_User1);
@@ -1142,6 +1144,14 @@ getReadonly(char const* database = 0)
 
 
 static int
+getWriteable(char const* database = 0)
+{
+	::tcl::setResult(Scidb.cursor(database).database().isWriteable());
+	return TCL_OK;
+}
+
+
+static int
 getDescription(char const* database = 0)
 {
 	::tcl::setResult(Scidb.cursor(database).database().description());
@@ -1986,7 +1996,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "idn", "eco", "ratingTypes",
-		"lookupPlayer", "lookupEvent",
+		"lookupPlayer", "lookupEvent", "writeable?",
 		0
 	};
 	static char const* args[] =
@@ -2027,6 +2037,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<number> ?<database>?",
 		"<index> ?<view>? ?<database>?",
 		"<index> ?<view>? ?<database>?",
+		"?<database>?",
 		0
 	};
 	enum
@@ -2037,6 +2048,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
 		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
 		Cmd_Tags, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
+		Cmd_Writeable,
 	};
 
 	if (objc < 2)
@@ -2275,6 +2287,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (objc < 3)
 				return getReadonly();
 			return getReadonly(stringFromObj(objc, objv, 2));
+
+		case Cmd_Writeable:
+			if (objc < 3)
+				return getWriteable();
+			return getWriteable(stringFromObj(objc, objv, 2));
 
 		case Cmd_Open:
 			setResult(Scidb.contains(stringFromObj(objc, objv, 2)));
@@ -3003,6 +3020,56 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> <progress-cmd> <progress-arg>");
+		return TCL_ERROR;
+	}
+
+	struct Log : public ::db::Log
+	{
+		bool error(save::State code, unsigned gameNumber) override { return true; }
+	};
+
+	mstl::string database(stringFromObj(objc, objv, 1));
+	mstl::string filename(database);
+
+	filename += ".partial-293t83873xx878.sci";
+
+	Progress		progress(objv[2], objv[3]);
+	Cursor&		cursor(scidb.cursor(database));
+	Database&	db(cursor.database());
+	View&			v(cursor.view());
+	Log			log;
+	type::ID		type(db.type());
+
+	try
+	{
+		setResult(v.exportGames(filename,
+										sys::utf8::Codec::utf8(),
+										db.description(),
+										type,
+										0,
+										View::AllGames,
+										log,
+										progress,
+										View::Upgrade));
+
+		::db::sci::Codec::rename(filename, database);
+	}
+	catch (...)
+	{
+		::db::sci::Codec::remove(filename);
+		throw;
+	}
+
+	return TCL_OK;
+}
+
+
 int
 tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, bool info, bool idCard)
 {
@@ -3181,10 +3248,10 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdAttach,		cmdAttach);
-	createCommand(ti, CmdClear,		cmdClear);
-	createCommand(ti, CmdClose,		cmdClose);
-	createCommand(ti, CmdCount,		cmdCount);
-	createCommand(ti, CmdFetch,		cmdFetch);
+	createCommand(ti, CmdClear,			cmdClear);
+	createCommand(ti, CmdClose,			cmdClose);
+	createCommand(ti, CmdCount,			cmdCount);
+	createCommand(ti, CmdFetch,			cmdFetch);
 	createCommand(ti, CmdImport,		cmdImport);
 	createCommand(ti, CmdLoad,			cmdLoad);
 	createCommand(ti, CmdNew,			cmdNew);
@@ -3199,6 +3266,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSwitch,		cmdSwitch);
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 	createCommand(ti, CmdUpdate,		cmdUpdate);
+	createCommand(ti, CmdUpgrade,		cmdUpgrade);
 }
 
 } // namespace db
