@@ -1,7 +1,7 @@
 [August 2011]
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #95) (not yet released)
+Scidb 1.0 BETA (rev. #96) (not yet released)
 ------------------------------------------------------------------------------
 * Second speed improvement of the Html widget: double buffering implemented.
 But this feature needs testing.
