@@ -53,6 +53,7 @@ public:
 	virtual unsigned countVariations() const = 0;
 	virtual unsigned countComments() const = 0;
 	virtual unsigned countAnnotations() const = 0;
+	virtual unsigned countMoveInfo() const = 0;
 	virtual unsigned countMarks() const = 0;
 	virtual unsigned plyCount() const = 0;
 	virtual uint32_t flags() const = 0;

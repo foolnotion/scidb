@@ -1,4 +1,4 @@
-# # ======================================================================
+# ======================================================================
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -48,6 +48,7 @@
 ::mc::Delete			"Löschen"
 ::mc::Edit				"Bearbeiten"
 ::mc::Escape			"Esc"
+::mc::From				"Von"
 ::mc::Game				"Partie"
 ::mc::Layout			"Layout"
 ::mc::Lite				"Hell"
@@ -64,6 +65,7 @@
 ::mc::SelectAll		"Alles selektieren"
 ::mc::Texture			"Textur"
 ::mc::Theme				"Thema"
+::mc::To					"Nach"
 ::mc::Undo				"Rückgängig"
 ::mc::White				"Weiß"
 ::mc::Yes				"ja"
@@ -136,8 +138,9 @@
 ::menu::mc::FileQuit					"&Beenden"
 
 ::menu::mc::GameNew					"&Neue Partie"
-::menu::mc::GameNewShuffle			"Neue Partie: &Mischen"
-::menu::mc::GameNewShuffleSymm	"Neue Partie: M&ischen (nur symmetrische)"
+::menu::mc::GameNewChess960		"Neue &Partie: Schach 960"
+::menu::mc::GameNewChess960Sym	"Neue P&artie: Schach 960 (nur symmetrische)"
+::menu::mc::GameNewShuffle			"Neue Pa&rtie: Shuffle-Schach"
 ::menu::mc::GameSave					"Partie &hinzufügen"
 ::menu::mc::GameReplace				"Partie &ersetzen"
 ::menu::mc::GameReplaceMoves		"Partie&züge ersetzen"
@@ -160,12 +163,12 @@
 
 ::menu::mc::AllScidbFiles			"Alle Scidb Dateien"
 ::menu::mc::AllScidbBases			"Alle Scidb Datenbanken"
-::menu::mc::AllScidBases			"Alle Scid Datenbanken"
+::menu::mc::ScidBases				"Scid Datenbanken"
 ::menu::mc::ScidbBases				"Scidb Datenbanken"
-::menu::mc::Scid4Bases				"Scid 4 Datenbanken"
-::menu::mc::Scid3Bases				"Scid 3 Datenbanken"
 ::menu::mc::ChessBaseBases			"ChessBase Datenbanken"
+::menu::mc::PGNFilesArchives		"PGN Dateien/Archive"
 ::menu::mc::PGNFiles					"PGN Dateien"
+::menu::mc::PGNArchives				"PGN Archive"
 
 ::menu::mc::FileNotAllowed			"Dateiname '%s' ist nicht erlaubt"
 ::menu::mc::TwoOrMoreDots			"Enthält zwei oder mehr aufeinanderfolgende Punkte."
@@ -203,7 +206,7 @@
 ::application::mc::Shutdown				"Schließung..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Zeige Turniertabelle für die aktuelle Partie"
+::application::board::mc::ShowCrosstable		"Zeige Turniertabelle zur aktuellen Partie"
 
 ::application::board::mc::Tools					"Werkzeuge"
 ::application::board::mc::Control				"Steuerung"
@@ -299,6 +302,8 @@
 ::application::database::mc::OpenDatabase				"Datenbank öffnen"
 ::application::database::mc::NewDatabase				"Neue Datenbank anlegen"
 ::application::database::mc::CloseDatabase			"Datenbank '%s' schliessen"
+::application::database::mc::SetReadonly				"Datenbank '%s' schreibgeschützt setzen"
+::application::database::mc::SetWriteable				"Datenbank '%s' schreibberechtigt setzen"
 
 ::application::database::mc::OpenReadonly				"Schreibgeschützt öffnen"
 ::application::database::mc::OpenWriteable			"Schreibberechtigt öffnen"
@@ -338,6 +343,7 @@
 ::application::pgn::mc::Command(move:marks)				"Markierung setzen"
 ::application::pgn::mc::Command(move:annotation)		"Anmerkung/Kommentar/Markierung setzen"
 ::application::pgn::mc::Command(move:append)				"Zug anfügen"
+::application::pgn::mc::Command(move:nappend)			"Züge anfügen"
 ::application::pgn::mc::Command(move:exchange)			"Zug ersetzen"
 ::application::pgn::mc::Command(variation:new)			"Variante hinzufügen"
 ::application::pgn::mc::Command(variation:replace)		"Züge ersetzen"
@@ -351,9 +357,12 @@
 ::application::pgn::mc::Command(strip:moves)				"Züge ab Partieanfang"
 ::application::pgn::mc::Command(strip:truncate)			"Züge bis Ende"
 ::application::pgn::mc::Command(strip:annotations)		"Anmerkungen"
+::application::pgn::mc::Command(strip:info)				"Zuginformationen"
 ::application::pgn::mc::Command(strip:marks)				"Markierungen"
 ::application::pgn::mc::Command(strip:comments)			"Kommentare"
 ::application::pgn::mc::Command(strip:variations)		"Varianten"
+::application::pgn::mc::Command(copy:comments)			"Kommentare kopieren"
+::application::pgn::mc::Command(move:comments)			"Kommentare verschieben"
 ::application::pgn::mc::Command(game:clear)				"Partie leeren"
 ::application::pgn::mc::Command(game:transpose)			"Partie transponieren"
 
@@ -363,6 +372,7 @@
 ::application::pgn::mc::InsertDiagram						"Diagramm einfügen"
 ::application::pgn::mc::InsertDiagramFromBlack			"Diagramm aus schwarzer Sicht einfügen"
 ::application::pgn::mc::SuffixCommentaries				"Suffix-Kommentierungen"
+::application::pgn::mc::StripOriginalComments			"Ursprungskommentare entfernen"
 
 ::application::pgn::mc::AddNewGame							"Partie speichern in %s..."
 ::application::pgn::mc::ReplaceGame							"Partie ersetzen in %s..."
@@ -370,6 +380,7 @@
 
 ::application::pgn::mc::ColumnStyle							"Spaltenanzeige"
 ::application::pgn::mc::UseParagraphSpacing				"Absatzformatierung"
+::application::pgn::mc::ShowMoveInfo						"Zuginformationen anzeigen"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Fettdruck für Hauptfortsetzung"
 ::application::pgn::mc::ShowDiagrams						"Diagramme zeigen"
 ::application::pgn::mc::Languages							"Sprachen"
@@ -384,6 +395,7 @@
 ::application::pgn::mc::ReplaceMovesSucceeded			"Die Partiezüge wurden erfolgreich ersetzt."
 
 ::application::pgn::mc::EditAnnotation						"Anmerkungen bearbeiten"
+::application::pgn::mc::EditMoveInformation				"Zuginformationen bearbeiten"
 ::application::pgn::mc::EditCommentBefore					"Kommentar (vor dem Zug) bearbeiten"
 ::application::pgn::mc::EditCommentAfter					"Kommentar (nach dem Zug) bearbeiten"
 ::application::pgn::mc::EditPrecedingComment				"Vorangestellten Kommentar bearbeiten"
@@ -556,6 +568,7 @@
 ::gametable::mc::SortOnNumber				"Sortieren nach Partienummer (aufsteigend)"
 ::gametable::mc::ReverseOrder				"Sortierung umdrehen"
 ::gametable::mc::NoMoves					"Keine Züge"
+::gametable::mc::NoMoreMoves				"Keine weiteren Züge"
 ::gametable::mc::WhiteRating				"Wertungszahl Weiß"
 ::gametable::mc::BlackRating				"Wertungszahl Schwarz"
 
@@ -730,6 +743,9 @@
 ::gamebar::mc::NewGameSndPart			"Partie"
 ::gamebar::mc::Unlock					"Freigeben"
 
+::gamebar::mc::LockGame					"Partie sperren"
+::gamebar::mc::CloseGame				"Partie schliessen"
+
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Partie-Browser"
 ::browser::mc::StartAutoplay		"Automtisches Vorspielen starten"
@@ -749,7 +765,6 @@
 ::browser::mc::MergeGame			"Partie kombinieren"	;# einfügen
 
 ::browser::mc::IllegalMove			"Regelwidriger Zug"
-::browser::mc::GameDataCorrupted	"Die Partiedaten sind korrupt."
 ::browser::mc::NoCastlingRights	"keine Rochaderechte"
 
 ### overview ###########################################################
@@ -769,6 +784,11 @@
 ::encoding::mc::SystemEncoding		"System-Enkodierung:"
 
 ### setup ##############################################################
+::setup::mc::Chess960Position			"Schach-960-Position"
+::setup::mc::SymmChess960Position	"Symmetrische Schach-960-Position"
+::setup::mc::ShuffleChessPosition	"Shuffle-Schach-Position"
+
+### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Startpositionseingabe"
 ::setup::position::mc::UsePreviousPosition	"Vorhergenhende Position benutzen"
 
@@ -782,9 +802,6 @@
 ::setup::board::mc::Clear							"Leeren"
 ::setup::board::mc::CopyFen						"FEN in die Ablage kopieren"
 ::setup::board::mc::Shuffle						"Mischen..."
-::setup::board::mc::Chess960Position			"Schach-960-Position"
-::setup::board::mc::SymmChess960Position		"Symmetrische Schach-960-Position"
-::setup::board::mc::ShuffleChessPosition		"Shuffle-Schach-Position"
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Schach-960-Rochade"
 
@@ -830,6 +847,9 @@
 ::import::mc::AbortImport							"PGN-Import abbrechen?"
 ::import::mc::SelectEncoding						"Enkodierung wählen"
 
+::import::mc::DifferentEncoding					"Die ausgewählte Enkodierung %src stimmt nicht mit der Dateienkodierung %dst überein."
+::import::mc::DifferentEncodingDetails			"Eine Umkodierung wird danach nicht mehr erfolgreich sein."
+
 ::import::mc::EnterOrPaste							"Eingabe oder Kopieren einer %s im PGN-Format in das obige Textfenster.\nHier werden die Fehler beim Importieren der %s angezeigt."
 ::import::mc::EnterOrPaste-Game					"Partie"
 ::import::mc::EnterOrPaste-Variation			"Variante"
@@ -862,7 +882,7 @@
 ::import::mc::IllegalCastling						"Regelwidrige Rochade"
 ::import::mc::IllegalMove							"Regelwidriger Zug"
 ::import::mc::UnsupportedVariant					"Unzulässige Schachvariante"
-::import::mc::DecodingFailed						"Dekodierung ist fehlgeschlagen"
+::import::mc::DecodingFailed						"Eine Dekodierung dieser Partie war nicht möglich"
 ::import::mc::ResultDidNotMatchHeaderResult	"Ergebnis stimmte nicht mit Ergebnis-Tag überein"
 ::import::mc::ValueTooLong							"Der Tag-Wert ist zu lang und wird auf 255 Zeichen abgeschnitten"
 ::import::mc::MaximalErrorCountExceeded		"Maximale Fehleranzahl ist überschritten; es werden keine weiteren (von diesem Typ) mehr angezeigt"
@@ -896,7 +916,6 @@
 ::export::mc::PageSetup						"&Seiteneinstellung"
 ::export::mc::Style							"St&il"
 ::export::mc::Encoding						"&Enkodierung"
-::export::mc::AddGamesToExisitingFile	"&Partien an existierende Datei anhängen"
 
 ::export::mc::Notation						"Notation"
 ::export::mc::Graphic						"Grafisch"	;# ???
@@ -908,6 +927,10 @@
 ::export::mc::FontHandling					"Zeichensatzhandhabung"
 ::export::mc::EmebedTruetypeFonts		"TrueType-Zeichensätze einbetten"
 ::export::mc::UseBuiltinFonts				"Built-in Zeichensätze benutzen"	;# ???
+::export::mc::SelectExportedTags			"Auswahl der zu exportierenden Tags"
+::export::mc::ExcludeAllTags				"Alle Tags ausschliessen"
+::export::mc::IncludeAllTags				"Alle Tags einschliessen"
+::export::mc::ExtraTags						"Alle anderen Zusatz-Tags"
 
 ::export::mc::PdfFiles						"PDF-Dateien"
 ::export::mc::HtmlFiles						"HTML-Dateien"
@@ -919,7 +942,6 @@
 ::export::mc::Export							"Export"
 ::export::mc::ExportedGames				"%s Partie(n) exportiert"
 ::export::mc::NoGamesForExport			"Keine Partie zum exportieren."
-::export::mc::OverwriteDatabase			"Sie wollen eine existierende Datenbank überschreiben. Sind sie sicher?"
 ::export::mc::ResetDefaults				"Auf Standardwerte zurücksetzen"
 ::export::mc::UnsupportedEncoding		"Die Enkodierung %s kann nicht für PDF-Dokumente benutzt werden. Wählen sie bitte eine alternative Enkodierung."
 ::export::mc::DatabaseIsOpen				"Die Datenbank '%s' ist geöffnet. Sie muß zuvor geschlossen werden."
@@ -965,6 +987,8 @@
 
 ::export::mc::Option(pgn,include_varations)						"Varianten exportieren"
 ::export::mc::Option(pgn,include_comments)						"Kommentare exportieren"
+::export::mc::Option(pgn,include_moveinfo)						"Zuginformationen exportieren (als Kommentar)"
+::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
 ::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Scidb-Import-Format benutzen"
 ::export::mc::Option(pgn,use_chessbase_format)					"ChessBase-Format benutzen"
@@ -977,7 +1001,6 @@
 ::export::mc::Option(pgn,include_position_tag)					"Tag 'Position' schreiben (sofern benötigt)"
 ::export::mc::Option(pgn,include_time_mode_tag)					"Tag 'TimeMode' schreiben (sofern benötigt)"
 ::export::mc::Option(pgn,exclude_extra_tags)						"Extra-Tag ausschliessen"
-::export::mc::Option(pgn,add_country_after_player)				"Land an Spielernamen anhängen"
 ::export::mc::Option(pgn,indent_variations)						"Varianten einrücken"
 ::export::mc::Option(pgn,indent_comments)							"Kommentare einrücken"
 ::export::mc::Option(pgn,column_style)								"Tabellarisch (ein Zug pro Zeile)"
@@ -1016,6 +1039,7 @@
 ::dialog::save::mc::SaveGameFailedDetail		"Siehe Log-Dialog für Details."
 ::dialog::save::mc::SavingGameLogInfo			"Partie (%white - %black, %event) in Datenbank '%base' speichern"
 ::dialog::save::mc::CurrentBaseIsReadonly		"Die aktuelle Datenbank '%s' ist schreibgeschützt."
+::dialog::save::mc::CurrentGameHasTrialMode	"Die aktuelle Partie befindet sich im Variantentest und kann nicht gespeichert werden."
 
 ::dialog::save::mc::LocalName						"&Heimatl. Name"
 ::dialog::save::mc::EnglishName					"E&nglischer Name"
@@ -1076,14 +1100,19 @@
 ::dialog::save::mc::InvalidEventDate			"Das eingegebene Turnierdatum kann nicht akzeptiert werden: Die Differenz zwischen dem Partiejahr und dem Turnierjahr muss kleiner als 4 sein (eine Beschränkung in Scid's Datenbankformat)."
 ::dialog::save::mc::TagIsEmpty					"Das Tag '%s' ist leer (und wird ausgesondert)"
 
+### gamehistory ########################################################
+::game::history::mc::GameHistory	"Partienhistorie"
+
 ### game ###############################################################
+::game::mc::CloseDatabase				"Datenbank schliessen"
 ::game::mc::CloseAllGames				"Alle offenen Partien der Datenbank '%s' schliessen?"
 ::game::mc::SomeGamesAreModified		"Einige Partien der Datenbank '%s' sind modifiziert. Trotzdem schliessen?"
 ::game::mc::AllSlotsOccupied			"Alle Partieaufnahmeplätze sind belegt."
 ::game::mc::ReleaseOneGame				"Bitte eine der Partien freigeben bevor eine neue geladen werden kann."
 ::game::mc::GameAlreadyOpen			"Diese Partie ist bereits geöffnet. Soll die modifizierte Version verworfen werden?"
 ::game::mc::GameAlreadyOpenDetail	"'%s' wird eine neue Partie öffnen."
-::game::mc::GameHasChanged				"Die Partie ist verändert (außerhalb dieser Sitzung?)."
+::game::mc::GameHasChanged				"Die Partie ist verändert."
+::game::mc::GameHasChangedDetail		"Dies ist möglicherweise nicht die erwartete Partie aufgrund von Datenbankveränderungen."
 ::game::mc::CorruptedHeader			"Korrumpierte Kopfzeile in der Wiederherstellungsdatei '%s'."
 ::game::mc::RenamedFile					"Diese wurde umbenannt in '%s.bak'."
 ::game::mc::CannotOpen					"Die Wiederherstellungsdatei '%s' konnte nicht geöffnet werden."
@@ -1100,6 +1129,10 @@
 ::game::mc::NewGame						"Neue Partie"
 ::game::mc::NewGames						"Neue Partien"
 ::game::mc::Created						"erstellt"
+::game::mc::ClearHistory				"Historie leeren"
+::game::mc::RemoveSelectedGame		"Ausgewählte Partie aus der Historie entfernen"
+::game::mc::GameDataCorrupted			"Die Partiedaten sind korrupt."
+::game::mc::GameDecodingFailed		"Die Dekodierung dieser Partie war nicht möglich."
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Heute"
@@ -1115,6 +1148,7 @@
 
 ### terminationbox #####################################################
 ::terminationbox::mc::Normal				"Normal"
+::terminationbox::mc::Unplayed			"Nicht gespielt"
 ::terminationbox::mc::Abandoned			"Abgebrochen"
 ::terminationbox::mc::Adjudication		"Abgeschätzt"
 ::terminationbox::mc::Death				"Tod"
@@ -1150,58 +1184,64 @@
 ::timemodebox::mc::Mode(corr)		"Fernschach"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable	"Turniertabelle"
-::crosstable::mc::AverageRating		"Durchschnittswertung"
-::crosstable::mc::Category				"Kategorie"
-::crosstable::mc::Games					"Partien"
-::crosstable::mc::Game					"Partie"
+::crosstable::mc::TournamentTable		"Turniertabelle"
+::crosstable::mc::AverageRating			"Durchschnittswertung"
+::crosstable::mc::Category					"Kategorie"
+::crosstable::mc::Games						"Partien"
+::crosstable::mc::Game						"Partie"
 
-::crosstable::mc::Tiebreak				"Feinwertung"
-::crosstable::mc::Settings				"Einstellungen"
-::crosstable::mc::RevertToStart		"Zu den Startwerten zurückkehren"
-::crosstable::mc::UpdateDisplay		"Anzeige aktualisieren"
-::crosstable::mc::CannotOpenScript	"Skript '%s' kann nicht geöffnet werden."
+::crosstable::mc::ScoringSystem			"Wertungssystem"
+::crosstable::mc::Tiebreak					"Feinwertung"
+::crosstable::mc::Settings					"Einstellungen"
+::crosstable::mc::RevertToStart			"Zu den Startwerten zurückkehren"
+::crosstable::mc::UpdateDisplay			"Anzeige aktualisieren"
 
-::crosstable::mc::None					"Keine"
-::crosstable::mc::Buchholz				"Buchholz"
-::crosstable::mc::MedianBuchholz		"Median-Buchholz"
+::crosstable::mc::Traditional				"Traditionell"
+::crosstable::mc::Bilbao					"Bilbao"
+
+::crosstable::mc::None						"Keine"
+::crosstable::mc::Buchholz					"Buchholz"
+::crosstable::mc::MedianBuchholz			"Median-Buchholz"
 ::crosstable::mc::ModifiedMedianBuchholz "Abgew. Median-Buchholz"
-::crosstable::mc::RefinedBuchholz	"Verfeinerte Buchholz"
-::crosstable::mc::SonnebornBerger	"Sonneborn-Berger"
-::crosstable::mc::Progressive			"Fortschrittswertung"
-::crosstable::mc::KoyaSystem			"Koya-System"
-::crosstable::mc::GamesWon				"Gewinnpunkte-Wertung"
+::crosstable::mc::RefinedBuchholz		"Verfeinerte Buchholz"
+::crosstable::mc::SonnebornBerger		"Sonneborn-Berger"
+::crosstable::mc::Progressive				"Fortschrittswertung"
+::crosstable::mc::KoyaSystem				"Koya-System"
+::crosstable::mc::GamesWon					"Gewinnpunkte-Wertung"
+::crosstable::mc::GamesWonWithBlack		"Gewinnpunkte mit Schwarz"
+::crosstable::mc::ParticularResult		"Einzelresultat"
+::crosstable::mc::TraditionalScoring	"Traditionelle Wertung"
 
-::crosstable::mc::Crosstable			"Kreuztabelle"
-::crosstable::mc::Scheveningen		"Scheveningen"
-::crosstable::mc::Swiss					"Schweitzer System"
-::crosstable::mc::Match					"Wettkampf"
-::crosstable::mc::Knockout				"K.O.-System"
-::crosstable::mc::RankingList			"Rangliste"
+::crosstable::mc::Crosstable				"Kreuztabelle"
+::crosstable::mc::Scheveningen			"Scheveningen"
+::crosstable::mc::Swiss						"Schweitzer System"
+::crosstable::mc::Match						"Wettkampf"
+::crosstable::mc::Knockout					"K.O.-System"
+::crosstable::mc::RankingList				"Rangliste"
 
-::crosstable::mc::Order					"Sortierung"
-::crosstable::mc::Type					"Tabellentyp"
-::crosstable::mc::Score					"Ergebnis"
-::crosstable::mc::Alphabetical		"Alphabetisch"
-::crosstable::mc::Rating				"Wertungszahl"
-::crosstable::mc::Federation			"Nation"
+::crosstable::mc::Order						"Sortierung"
+::crosstable::mc::Type						"Tabellentyp"
+::crosstable::mc::Score						"Ergebnis"
+::crosstable::mc::Alphabetical			"Alphabetisch"
+::crosstable::mc::Rating					"Wertungszahl"
+::crosstable::mc::Federation				"Nation"
 
-::crosstable::mc::Debugging			"Debugging"
-::crosstable::mc::Display				"Anzeige"
-::crosstable::mc::Style					"Gestaltung"
-::crosstable::mc::Spacing				"Linienabstand"
-::crosstable::mc::Padding				"Leerraum"
-::crosstable::mc::ShowLog				"Log zeigen"
-::crosstable::mc::ShowHtml				"HTML zeigen"
-::crosstable::mc::ShowRating			"Wertungszahl"
-::crosstable::mc::ShowPerformance	"Erfolgszahl"
-::crosstable::mc::ShowTiebreak		"Feinwertung"
-::crosstable::mc::ShowOpponent		"Opponent (als Kurzinfo)"
-::crosstable::mc::KnockoutStyle		"K.O.-Tabellentyp"
-::crosstable::mc::Pyramid				"Pyramide"
-::crosstable::mc::Triangle				"Triangle"
+::crosstable::mc::Debugging				"Debugging"
+::crosstable::mc::Display					"Anzeige"
+::crosstable::mc::Style						"Gestaltung"
+::crosstable::mc::Spacing					"Linienabstand"
+::crosstable::mc::Padding					"Leerraum"
+::crosstable::mc::ShowLog					"Log zeigen"
+::crosstable::mc::ShowHtml					"HTML zeigen"
+::crosstable::mc::ShowRating				"Wertungszahl"
+::crosstable::mc::ShowPerformance		"Erfolgszahl"
+::crosstable::mc::ShowTiebreak			"Feinwertung"
+::crosstable::mc::ShowOpponent			"Opponent (als Kurzinfo)"
+::crosstable::mc::KnockoutStyle			"K.O.-Tabellentyp"
+::crosstable::mc::Pyramid					"Pyramide"
+::crosstable::mc::Triangle					"Triangle"
 
-::crosstable::mc::CrosstableLimit	"Das Limit der Kreuztabelle von %d Spielern wird überschritten."
+::crosstable::mc::CrosstableLimit		"Das Limit der Kreuztabelle von %d Spielern wird überschritten."
 ::crosstable::mc::CrosstableLimitDetail "'%s' wählt einen anderen Tabellenmodus."
 
 ### info ###############################################################
@@ -1244,6 +1284,7 @@
 ::comment::mc::AddLanguage				"Sprache hinzufügen..."
 ::comment::mc::SwitchLanguage			"Sprache wechseln"
 ::comment::mc::FormatText				"Text formatieren"
+::comment::mc::CopyText					"Text kopieren nach"
 
 ::comment::mc::Bold						"Fett"
 ::comment::mc::Italic					"Kursiv"
@@ -1407,44 +1448,72 @@
 ::dialog::choosefont::mc::FontSelection	"Zeichensatzauswahl"
 ::dialog::choosefont::mc::Wait				"Fortschritt"
 
+### choosedir ##########################################################
+::choosedir::mc::FileSystem		"Dateisystem"
+::choosedir::mc::ShowPredecessor	"Show Predecessor"
+::choosedir::mc::ShowTail			"Show Tail"
+::choosedir::mc::Folder				"Ordner"
+
 ### fsbox ##############################################################
-::dialog::fsbox::mc::Add					"&Hinzufügen"
-::dialog::fsbox::mc::Cancel				"&Abbrechen"
-::dialog::fsbox::mc::Directory			"&Verzeichnis:"
-::dialog::fsbox::mc::Filename				"Datei&name:"
-::dialog::fsbox::mc::Filenames			"Datei&namen:"
-::dialog::fsbox::mc::FilesType			"Datei&typen:"
-::dialog::fsbox::mc::Ok						"&Ok"
-::dialog::fsbox::mc::Open					"&Öffnen"
-::dialog::fsbox::mc::Remove				"&Löschen"
-::dialog::fsbox::mc::Save					"&Speichern"
-::dialog::fsbox::mc::Selection			"&Asuwahl:"
-::dialog::fsbox::mc::ShowHiddenDirs		"&Zeige versteckte Dateien"
-::dialog::fsbox::mc::ShowHiddenFiles	"&Zeige versteckte Dateien und Verzeichnisse"
+::fsbox::mc::Name								"Name"
+::fsbox::mc::Size								"Größe"
+::fsbox::mc::Modified						"Modifziert"
 
-::dialog::fsbox::mc::ChooseDirectory	"Verzeichnisauswahl"
-::dialog::fsbox::mc::CreateFolder		"Verzeichnis anlegen"
-::dialog::fsbox::mc::Desktop				"Arbeitsfläche"
-::dialog::fsbox::mc::FileSystem			"Dateisystem"
-::dialog::fsbox::mc::Folder				"Verzeichnis:"
-::dialog::fsbox::mc::HomeFolder			"Heimverzeichnis"
-::dialog::fsbox::mc::TitleOpen			"Öffnen"
-::dialog::fsbox::mc::TitleSaveAs			"Speichern unter"
+::fsbox::mc::Forward							"Wechsle zu '%s'"
+::fsbox::mc::Backward						"Zurück zu '%s'"
+::fsbox::mc::Delete							"Löschen"
+::fsbox::mc::Rename							"Umbenennen"
+::fsbox::mc::NewFolder						"Neuer Ordner"
+::fsbox::mc::ListLayout						"Spaltenanzeige"
+::fsbox::mc::Layout							"Layout"
+::fsbox::mc::DetailedLayout				"Detailanzeige"
+::fsbox::mc::ShowHiddenDirs				"Zeige versteckte Verzeichnisse"
+::fsbox::mc::ShowHiddenFiles				"Zeige versteckte Dateien und Verzeichnisse"
+::fsbox::mc::AppendToExisitingFile		"&Partien an existierende Datei anhängen"
+::fsbox::mc::Cancel							"&Abbrechen"
+::fsbox::mc::Save								"&Speichern"
+::fsbox::mc::Open								"&Öffnen"
 
-::dialog::fsbox::mc::AddFolder			"Verzeichnis '%s' zu den Lesezeichen hinzufügen"
-::dialog::fsbox::mc::CannotChangeDir	"Kann nicht in das Verzeichnis \"%s\" wechseln.\nKeine ausreichenden Rechte vorhanden."
-::dialog::fsbox::mc::CannotCreate		"Der Ornder \"%s\" konnte nicht angelegt werden.\nKeine ausreichenden Rechte vorhanden."
-::dialog::fsbox::mc::DirDoesNotExist	"Das Verzeichnis \"%s\" existiert nicht."
-::dialog::fsbox::mc::DirectoryRemoved	"Kann nicht in das Verzeichnis \"%s\" wechseln.\nDas Verzeichnis ist nicht mehr vorhanden."
-::dialog::fsbox::mc::FileAlreadyExists	"Die Datei \"%s\" ist bereits vorhanden.\nWollen sie diese überschreiben?"
-::dialog::fsbox::mc::FileDoesNotExist	"Die Datei \"%s\" ist nicht vorhanden."
-::dialog::fsbox::mc::FileExists			"Der Ornder \"%s\" konnte nicht angelegt werden.\nEs existiert eine gleichnamige Datei."
-::dialog::fsbox::mc::GotoParentDir		"Wechsel zum übergeordneten Verzeichnis"
-::dialog::fsbox::mc::InvalidDirectory	"Das Verzeichnis \"%s\" existiert nicht. Trotzdem öffen?"
-::dialog::fsbox::mc::InvalidFilename	"Unzulässiger Dateiname \"%s\"."
-::dialog::fsbox::mc::InvalidFileExt		"Unzulässige Dateierweiterung \"%s\"."
-::dialog::fsbox::mc::RemoveBookmark		"Löschen des Lesezeichens '%s'"
-::dialog::fsbox::mc::SelectWhichType	"Auswahl der anzuzeigenden Dateitypen"
+::fsbox::mc::AddBookmark					"Lesezeichen '%s' hinzufügen"
+::fsbox::mc::RemoveBookmark				"Lesezeichen '%s' löschen"
+
+::fsbox::mc::Filename						"Datei&name:"
+::fsbox::mc::FilesType						"Datei&typus:"
+::fsbox::mc::FileEncoding					"Datei&enkodierung:"
+
+::fsbox::mc::Favorites						"Favoriten"
+::fsbox::mc::LastVisited					"Zuletzt besucht"
+::fsbox::mc::FileSystem						"Dateisystem"
+::fsbox::mc::Desktop							"Arbeitsfläche"
+::fsbox::mc::Home								"Heimverzeichnis"
+
+::fsbox::mc::SelectWhichType				"Auswahl der anzuzeigenden Dateitypen"
+::fsbox::mc::SelectEncoding				"Enkodierung wählen"
+::fsbox::mc::TimeFormat						"%d.%m.%Y %H:%M"
+
+::fsbox::mc::CannotChangeDir				"Kann nicht in das Verzeichnis '%s' wechseln.\nKeine ausreichenden Rechte vorhanden."
+::fsbox::mc::DirectoryRemoved				"Kann nicht in das Verzeichnis '%s' wechseln.\nDas Verzeichnis ist nicht mehr vorhanden."
+::fsbox::mc::ReallyMove(file)				"Soll tatsächlich die Datei '%s' in den Papierkorb verschoben werden?"
+::fsbox::mc::ReallyMove(folder)			"Soll tatsächlich der Ordner '%s' in den Papierkorb verschoben werden?"
+::fsbox::mc::ReallyDelete(file)			"Soll tatsächlich die Datei '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
+::fsbox::mc::ReallyDelete(folder)		"Soll tatsächlich der Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
+::fsbox::mc::DeleteFailed					"Das Löschen von '%s' schlug fehl."
+::fsbox::mc::CommandFailed					"Das Kommando '%s' schlug fehl."
+::fsbox::mc::ErrorRenaming(folder)		"Fehler beim Umbennenen des Ordners '%old' in '%new': keine ausreichenden Rechte vorhanden."
+::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."
+::fsbox::mc::InvalidFileExt				"Aufgrund einer unerlaubten Dateiendung kann nicht in '%s' umbenannt werden."
+::fsbox::mc::CannotRename					"Die Umbennenung in '%s' ist nicht möglich, diese(r) Datei/Ordner existiert bereits."
+::fsbox::mc::CannotCreate					"Der Ordner '%s' kann nicht angelegt werden, ein gleichnamiger Ordner existiert bereits."
+::fsbox::mc::ErrorCreate					"Fehler beim Anlegen des Ordners: keine ausreichenden Rechte vorhanden."
+::fsbox::mc::FilenameNotAllowed			"'%s' ist nicht als Dateiname erlaubt."
+::fsbox::mc::ContainsTwoDots				"Er enthält zwei aufeinanderfolgende Punkte."
+::fsbox::mc::InvalidFileExtension		"Ungültige Dateiendung in '%s'."
+::fsbox::mc::MissingFileExtension		"'%s' hat keine Dateiendung."
+::fsbox::mc::FileAlreadyExists			"Die Datei '%s' ist bereits vorhanden.\nWollen sie diese überschreiben?"
+::fsbox::mc::CannotOverwriteDirectory	"Das Verzeichnis '%s' kann nicht überschrieben werden."
+::fsbox::mc::FileDoesNotExist				"Die Datei '%s' ist nicht vorhanden."
+::fsbox::mc::DirectoryDoesNotExist		"Das Verzeichnis '%s' ist nicht vorhanden."
+::fsbox::mc::CannotOpenOrCreate			"'%s' kann nicht geöffnet/angelegt werden. Bitte zuvor eine Verzeichnis wählen."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Werkzeugleiste"

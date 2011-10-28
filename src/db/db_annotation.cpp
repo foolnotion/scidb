@@ -452,4 +452,11 @@ Annotation::sort()
 	}
 }
 
+
+util::crc::checksum_t
+Annotation::computeChecksum(util::crc::checksum_t crc) const
+{
+	return ::util::crc::compute(crc, m_annotation, m_count);
+}
+
 // vi:set ts=3 sw=3:

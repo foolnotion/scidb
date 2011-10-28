@@ -27,6 +27,8 @@
 #include "app_uci_engine.h"
 #include "app_exception.h"
 
+#include "db_game.h"
+
 #include "m_list.h"
 #include "m_stdio.h"
 
@@ -154,9 +156,31 @@ endsWithPath(mstl::string const& s)
 
 
 uci::Engine::Engine()
-	:m_needChess960(false)
+	:m_maxMultiPV(1)
+	,m_needChess960(false)
 	,m_uciok(false)
+	,m_hasMultiPV(false)
+	,m_hasAnalyseMode(false)
+	,m_hasChess960(false)
+	,m_hasLimitStrength(false)
+	,m_hasOwnBook(false)
+	,m_hasShowCurrLine(false)
+	,m_hasPonder(false)
 {
+}
+
+
+void
+uci::Engine::doMove(db::Game const& game, db::Move const&)
+{
+	if (isAnalyzing())
+	{
+		startAnalysis(game, false);
+	}
+	else
+	{
+		// TODO
+	}
 }
 
 
@@ -174,8 +198,27 @@ uci::Engine::probeResult() const
 }
 
 
+unsigned
+uci::Engine::maxVariations() const
+{
+	return m_maxMultiPV;
+}
+
+
+void
+uci::Engine::sendNumberOfVariations()
+{
+	if (isActive() && m_hasMultiPV)
+	{
+		m_waitingOn = "multiPV";
+		send("stop");
+		send("isready");
+	}
+}
+
+
 bool
-uci::Engine::startAnalysis(Board const& board)
+uci::Engine::prepareStartAnalysis(Board const& board)
 {
 	if (!isActive())
 		return false;
@@ -191,13 +234,60 @@ uci::Engine::startAnalysis(Board const& board)
 			APP_RAISE("Chess 960 not supported");
 	}
 
+	return true;
+}
+
+
+void
+uci::Engine::setupPosition(Board const& board)
+{
+	if (board.isStandardPosition())
+	{
+		m_position = "startpos";
+	}
+	else
+	{
+		m_position = "fen";
+		m_position.append(board.toFen(
+			hasFeature(app::Engine::Feature_Chess_960) ? Board::Shredder : Board::XFen));
+	}
+}
+
+
+bool
+uci::Engine::startAnalysis(Board const& board)
+{
+	if (!prepareStartAnalysis(board))
+		return false;
+
 	m_board = board;
-	m_fen = board.toFen(
-		hasFeature(app::Engine::Feature_Chess_960) ? Board::Shredder : Board::XFen);
-	m_waitingOn = "ucinewgame";
+	m_waitingOn = "position";
+	setupPosition(board);
 
 	send("stop");
-	send("ucinewgame");
+	send("ucinewgame"); // clear's all states
+	send("isready");
+
+	return true;
+}
+
+
+bool
+uci::Engine::startAnalysis(Game const& game, bool isNewGame)
+{
+	if (!prepareStartAnalysis(game.startBoard()))
+		return false;
+
+	setupPosition(game.startBoard());
+	m_position.append(" moves");
+	game.dumpHistory(m_position);
+
+	m_board = game.currentBoard();
+	m_waitingOn = "position";
+
+	send("stop");
+	if (isNewGame)
+		send("ucinewgame"); // clear's all states
 	send("isready");
 
 	return true;
@@ -259,36 +349,56 @@ uci::Engine::processMessage(mstl::string const& message)
 				if (m_waitingOn == "uciok")
 				{
 					// engine is now initialised and ready to go
-					m_waitingOn = "";
 //					setReady(true);
 					// now we can send our options
-					send("setoption name MultiPv value " + ::toStr(numVariations()));
-					//send("setoption name OwnBook value false");
-					//send("setoption name BookFile value false");
-					send("setoption name UCI_AnalyseMode value true");
-					send("setoption name UCI_Chess960 value " + ::toStr(m_needChess960));
+					if (m_hasMultiPV)
+						send("setoption name MultiPV value " + ::toStr(numVariations()));
+					if (m_hasOwnBook)
+						send("setoption name OwnBook value false");
+					if (m_hasChess960)
+						send("setoption name UCI_Chess960 value " + ::toStr(m_needChess960));
+					if (m_hasShowCurrLine)
+						send("setoption name UCI_ShowCurrLine value false");
+					if (m_hasShowRefutations)
+						send("setoption name UCI_ShowRefutations value false");
+					if (m_hasPonder)
+						send("setoption name Ponder value true");
 
-					if (limitedStrength())
+					if (m_hasLimitStrength)
 					{
-						send("setoption name UCI_LimitStrength value true");
-						send("setoption name UCI_Elo value " + ::toStr(limitedStrength()));
-					}
-					else
-					{
-						send("setoption name UCI_LimitStrength value false");
+						if (limitedStrength())
+						{
+							send("setoption name UCI_LimitStrength value true");
+							send("setoption name UCI_Elo value " + ::toStr(limitedStrength()));
+						}
+						else
+						{
+							send("setoption name UCI_LimitStrength value false");
+						}
 					}
 				}
-				else if (m_waitingOn == "ucinewgame")
+				else if (m_waitingOn == "position")
 				{
 					// engine is now ready to analyse a new position
 					m_waitingOn = "";
-					send("position fen " + m_fen);
+					if (m_hasAnalyseMode)
+						send("setoption name UCI_AnalyseMode value true");
+					send("position " + m_position);
 
 					if (searchMate() > 0)
 						send("go mate=" + ::toStr(searchMate()));
 					else
 						send("go infinite");
+
+					// NOTE: probably we like to use something like
+					// "go wtime 55857 btime 58611 winc 1000 binc 1000"
 				}
+				else if (m_waitingOn == "multiPV")
+				{
+					send("setoption name MultiPV value " + ::toStr(numVariations()));
+				}
+
+				m_waitingOn = "";
 			}
 			break;
 
@@ -476,7 +586,7 @@ uci::Engine::parseOption(char const* msg)
 		else								::append(*value,  key);
 	}
 
-	if (name.empty() || name == "Ponder")
+	if (name.empty())
 		return;
 
 	if (name == "UCI_Chess960")
@@ -485,16 +595,78 @@ uci::Engine::parseOption(char const* msg)
 		return;
 	}
 
-	if (	::strncmp(name, "UCI_", 4) == 0
-		&& (name != "UCI_LimitStrength" && name != "UCI_Elo" && name != "UCI_ShredderbasesPath"))
+	if (::strncmp(name, "UCI_", 4) == 0)
 	{
-		return;
+		switch (name[4])
+		{
+			case 'A':
+				if (name == "UCI_AnalyseMode")
+				{
+					m_hasAnalyseMode = true;
+					break;
+				}
+				// fallthru
+			case 'C':
+				if (name == "UCI_Chess960")
+				{
+					m_hasChess960 = true;
+					break;
+				}
+				// fallthru
+			case 'L':
+				if (name == "UCI_LimitStrength")
+				{
+					m_hasLimitStrength = true;
+					break;
+				}
+				// fallthru
+			case 'E':
+				if (name == "UCI_Elo")
+					break;
+				if (name == "UCI_EngineAbout")
+					break;
+				// fallthru
+			case 'S':
+				if (name == "UCI_ShredderbasesPath")
+				{
+					break;
+				}
+				if (name == "UCI_ShowCurrLine")
+				{
+					m_hasShowCurrLine = true;
+					break;
+				}
+				if (name == "UCI_ShowRefutations")
+				{
+					m_hasShowRefutations = true;
+					break;
+				}
+				// fallthru
+			default:
+				return;
+		}
 	}
 
 	if (type == "check")
 	{
 		if (dflt != "true" && dflt != "false")
 			return;
+
+		if (name == "Ponder")
+		{
+			// this means that the engine is able to ponder
+			// should be enabled by default?
+			m_hasPonder = true;
+			return;
+		}
+		if (name == "OwnBook")
+		{
+			// this means that the engine has its own book
+			// if this is set, the engine takes care of the opening book and
+			// the GUI will never execute a move out of its book for the engine
+			m_hasOwnBook = true;
+			return;
+		}
 
 		addOption(name, type, dflt);
 	}
@@ -504,6 +676,23 @@ uci::Engine::parseOption(char const* msg)
 			return;
 
 		addOption(name, type, dflt, min, max);
+
+		switch (name[0])
+		{
+//			case 'H':
+//				if (name == "Hash")
+//				{
+//				}
+//				break;
+
+			case 'M':
+				if (name == "MultiPV")
+				{
+					m_hasMultiPV = true;
+					m_maxMultiPV = mstl::max(1ul, ::strtoul(max, nullptr, 10));
+				}
+				break;
+		}
 	}
 	else if (type == "combo")
 	{
@@ -527,11 +716,11 @@ uci::Engine::parseOption(char const* msg)
 		if (found)
 			addOption(name, type, dflt, var);
 	}
-//	ignore buttons, not usable for configuration
-//	else if (type == "button")
-//	{
-//		addOption(name, type);
-//	}
+	else if (type == "button")
+	{
+		// Possibly we should skip: "Clear Hash", "Clear PosLearning"
+		addOption(name, type);
+	}
 	else if (type == "string")
 	{
 		if (::endsWithPath(name))

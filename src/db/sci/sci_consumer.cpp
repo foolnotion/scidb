@@ -31,11 +31,14 @@
 #include "db_game_info.h"
 #include "db_tag_set.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 #include "db_annotation.h"
 #include "db_move.h"
 #include "db_pgn_reader.h"
 
 #include "sys_utf8_codec.h"
+
+#include <ctype.h>
 
 #ifdef NREQ
 # define DEBUG(x)
@@ -52,9 +55,9 @@ namespace sci {
 typedef ByteStream::uint24_t uint24_t;
 
 
-Consumer::Consumer(format::Type srcFormat, Codec& codec)
+Consumer::Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedTags, bool allowExtraTags)
 	:Encoder(m_stream)
-	,db::Consumer(srcFormat, sys::utf8::Codec::utf8())
+	,db::InfoConsumer(srcFormat, sys::utf8::Codec::utf8(), allowedTags, allowExtraTags)
 	,m_stream(m_buffer, sizeof(m_buffer))
 	,m_codec(codec)
 	,m_streamPos(0)
@@ -85,9 +88,8 @@ Consumer::beginGame(TagSet const& tags)
 	m_text.resetp();
 	Encoder::setup(board());
 	m_streamPos = m_strm.tellp();
-	m_strm << uint24_t(0);	// place holder for offset to text section
-	m_strm << uint16_t(0);	// place holder for run length
-	encodeTags(tags);
+	m_strm << uint24_t(0);			// place holder for offset to text section
+	m_strm << uint16_t(0);			// place holder for run length
 	m_move = Move::empty();
 	m_runLength = 0;
 	m_endOfRun = false;
@@ -101,8 +103,13 @@ Consumer::beginGame(TagSet const& tags)
 save::State
 Consumer::endGame(TagSet const& tags)
 {
-	encodeTextSection(m_streamPos);
-	encodeDataSection();
+	unsigned dataOffset = m_strm.tellp();
+
+	encodeTextSection();
+	encodeDataSection(engines());
+	encodeTags(tags, allowedTags(), allowExtraTags());
+	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
+
 	m_stream.provide();
 	return m_codec.addGame(m_stream, tags, *this);
 }
@@ -122,7 +129,7 @@ Consumer::endMoveSection(result::ID)
 		m_strm.put(token::End_Marker);
 	}
 
-	ByteStream(m_stream.base() + m_streamPos + 3, 2) << uint16_t(m_runLength);
+	ByteStream::set(m_stream.base() + m_streamPos + 3, uint16_t(m_runLength));
 }
 
 
@@ -140,6 +147,7 @@ Consumer::writeComment(Byte position, Comment const& comment)
 		if (comment.othFlag())
 			flag |= comm::Ante_Oth;
 		flag |= position;
+
 		m_text.put(comment.content(), comment.size() + 1);
 	}
 
@@ -216,6 +224,59 @@ Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 		m_endOfRun = true;
 		m_danglindEndMarker = false;
 	}
+}
+
+
+void
+Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
+{
+	for (unsigned i = 0; i < moveInfo.count(); ++i)
+	{
+		m_strm.put(token::Mark);
+		moveInfo[i].encode(m_data);
+
+		if (!m_endOfRun)
+		{
+			m_endOfRun = true;
+
+			if (m_runLength)
+				--m_runLength;	// otherwise sci_decoder::decodeVariation() won't work
+		}
+	}
+}
+
+
+void
+Consumer::preparseComment(mstl::string& comment)
+{
+	char const* str = comment;
+
+	if (	str[0] == 'S'
+		&& str[1] == 'P'
+		&& str[2] == ' '
+		&& ::isdigit(str[3])
+		&& ::isdigit(str[4])
+		&& ::isdigit(str[5])
+		&& (str[6] == ' ' || str[6] == '\0'))
+	{
+		// Eliminate this silly "SP 386" comment from "Week in chess" PGN files.
+		if (str[6] == '\0')
+		{
+			comment.clear();
+			return;
+		}
+
+		str += 6;
+		while (*str == ' ' || *str == '-')
+			++str;
+
+		comment.erase(comment.begin(), str);
+
+		if (comment.empty())
+			return;
+	}
+
+	InfoConsumer::preparseComment(comment);
 }
 
 

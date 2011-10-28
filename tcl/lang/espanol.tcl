@@ -139,8 +139,9 @@
 ::menu::mc::FileQuit					"&Salir"
 
 ::menu::mc::GameNew					"N&ueva partida"
-::menu::mc::GameNewShuffle			"Nu&eva partida: Shuffle"
-::menu::mc::GameNewShuffleSymm	"Nue&va partida: Shuffle (sólo simétrico)"
+::menu::mc::GameNewChess960		"Nue&va partida: Ajedrez 960"
+::menu::mc::GameNewChess960Sym	"Nuev&a partida: Ajedrez 960 (sólo simétrico)"
+::menu::mc::GameNewShuffle			"Nu&eva partida: Ajedrez Shuffle"
 ::menu::mc::GameSave					"Guar&dar partida"
 ::menu::mc::GameReplace				"Ree&mplazar partida"
 ::menu::mc::GameReplaceMoves		"Reemp&lazar sólo jugadas"
@@ -163,12 +164,12 @@
 
 ::menu::mc::AllScidbFiles			"Todos los archivos Scidb"
 ::menu::mc::AllScidbBases			"Todas las bases Scidb"
-::menu::mc::AllScidBases			"Todas las bases Scid"
+::menu::mc::ScidBases				"Bases Scid"
 ::menu::mc::ScidbBases				"Bases Scidb"
-::menu::mc::Scid4Bases				"Bases Scid 4"
-::menu::mc::Scid3Bases				"Bases Scid 3"
 ::menu::mc::ChessBaseBases			"Bases ChessBase"
-::menu::mc::PGNFiles					"archivos PGN"
+::menu::mc::PGNFilesArchives		"PGN files/archives" ;# NEW
+::menu::mc::PGNFiles					"Archivos PGN"
+::menu::mc::PGNArchives				"PGN archives" ;# NEW
 
 ::menu::mc::FileNotAllowed			"Nombre de archivo '%s' no permitido"
 ::menu::mc::TwoOrMoreDots			"Contiene dos o más puntos consecutivos."
@@ -243,6 +244,7 @@
 ::application::database::mc::DescriptionTooLarge	"Descripción demasiado grande."
 ::application::database::mc::DescrTooLargeDetail	"La entrada contiene %d caracteres, pero sólo se permiten %d."
 ::application::database::mc::ClipbaseDescription	"Base temporal, no se guarda al disco."
+::application::database::mc::ClearHistory				"Clear History" ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Recodificar %s de %s a %s"
 ::application::database::mc::RecodedGames				"%s partida(s) recodificadas"
@@ -341,6 +343,7 @@
 ::application::pgn::mc::Command(move:marks)				"Agregar marcador"
 ::application::pgn::mc::Command(move:annotation)		"Agregar Nota/Comentario/Marcador"
 ::application::pgn::mc::Command(move:append)				"Agregar jugada"
+::application::pgn::mc::Command(move:nappend)			"Add Moves" ;# NEW
 ::application::pgn::mc::Command(move:exchange)			"Cambiar jugada"
 ::application::pgn::mc::Command(variation:new)			"Agregar variante"
 ::application::pgn::mc::Command(variation:replace)		"Reemplazar jugadas"
@@ -733,7 +736,10 @@
 ::gamebar::mc::DiscardNewGame			"¿Realmente quiere descartar esta partida?"
 ::gamebar::mc::NewGameFstPart			"Nueva"
 ::gamebar::mc::NewGameSndPart			"Partida"
-::gamebar::mc::Number					"Número"
+::gamebar::mc::Unlock					"Unlock" ;# NEW
+
+::gamebar::mc::LockGame					"Lock Game" ;# NEW
+::gamebar::mc::CloseGame				"Close Game" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Buscar partida"
@@ -774,6 +780,11 @@
 ::encoding::mc::SystemEncoding		"Codificación del sistema:"
 
 ### setup ##############################################################
+::setup::board::mc::Chess960Position		"Posición de Chess 960"
+::setup::board::mc::SymmChess960Position	"Posición simétrica de chess 960"
+::setup::board::mc::ShuffleChessPosition	"Posición de ajedrez Shuffle"
+
+### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Configurar una posición inicial"
 ::setup::position::mc::UsePreviousPosition	"Usar una posición previa"
 
@@ -787,9 +798,6 @@
 ::setup::board::mc::Clear							"Vaciar"
 ::setup::board::mc::CopyFen						"Copiar FEN al portapapeles"
 ::setup::board::mc::Shuffle						"Shuffle..."
-::setup::board::mc::Chess960Position			"Posición de Chess 960"
-::setup::board::mc::SymmChess960Position		"Posición simétrica de chess 960"
-::setup::board::mc::ShuffleChessPosition		"Posición de ajedrez Shuffle"
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
 
@@ -834,6 +842,9 @@
 ::import::mc::TextIsEmpty							"El texto PGN está vacío."
 ::import::mc::AbortImport							"¿Abortar importación de PGN?"
 ::import::mc::SelectEncoding						"Elija codificación"
+
+::import::mc::DifferentEncoding					"Selected encoding %src does not match file encoding %dst." ;# NEW
+::import::mc::DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action." ;# NEW
 
 ::import::mc::EnterOrPaste							"Ingrese o pegue en formato PGN %s en el cuadro de arriba.\nCualquier falla al importar el %s se mostrará aquí."
 ::import::mc::EnterOrPaste-Game					"partida"
@@ -1081,14 +1092,19 @@
 ::dialog::save::mc::InvalidEventDate			"No se puede aceptar la fecha de evento suministrada: La diferencia entre el año de la partida y el año del evento debería ser menor a 4 (restricción del formato de base de datos de Scid)."
 ::dialog::save::mc::TagIsEmpty					"La etiqueta '%s' está vacía (se descartará)."
 
+### gamehistory ########################################################
+::game::history::mc::GameHistory	"Game History" ;# NEW
+
 ### game ###############################################################
+::game::mc::CloseDatabase				"Cerrar Base"
 ::game::mc::CloseAllGames				"¿Cerrar todas las partidas abiertas de la base '%s'?"
 ::game::mc::SomeGamesAreModified		"Se modificaron algunas partidas de la base '%s'. ¿Cerrar de todos modos?" 
 ::game::mc::AllSlotsOccupied			"Todos los espacios para partidas están ocupados."
 ::game::mc::ReleaseOneGame				"Por favor,  saque una de las partidas antes de cargar otra."
 ::game::mc::GameAlreadyOpen			"La partida ya está abierta pero fue modificada. ¿Descartar la versión modificada de esta partida?"
 ::game::mc::GameAlreadyOpenDetail	"'%s' abrirá una nueva partida."
-::game::mc::GameHasChanged				"La partida %s se ha modificado (fuera de esta sesión)."
+::game::mc::GameHasChanged				"La partida %s se ha modificado."
+::game::mc::GameHasChangedDetail		"Probably this is not the expected game due to database changes."
 ::game::mc::CorruptedHeader			"Encabezado corrupto en el archivo de recuperación '%s'."
 ::game::mc::RenamedFile					"Renombrar este archivo como '%s.bak'."
 ::game::mc::CannotOpen					"No se puede abrir el archivo de recuperación '%s'."
@@ -1120,6 +1136,7 @@
 
 ### terminationbox #####################################################
 ::terminationbox::mc::Normal				"Normal"
+::terminationbox::mc::Unplayed			"Unplayed" ;# NEW
 ::terminationbox::mc::Abandoned			"Abandona"
 ::terminationbox::mc::Adjudication		"Adjudicación"
 ::terminationbox::mc::Death				"Muerte"
@@ -1412,44 +1429,71 @@
 ::dialog::choosefont::mc::FontSelection	"Selección de fuente"
 ::dialog::choosefont::mc::Wait				"Espere"
 
+### choosedir ##########################################################
+::choosedir::mc::FileSystem		"Sistema de archivos"
+::choosedir::mc::ShowPredecessor	"Show Predecessor" ;# NEW
+::choosedir::mc::ShowTail			"Show Tail" ;# NEW
+::choosedir::mc::Folder				"Folder" ;# NEW
+
 ### fsbox ##############################################################
-::dialog::fsbox::mc::Add					"&Agregar"
-::dialog::fsbox::mc::Cancel				"&Cancelar"
-::dialog::fsbox::mc::Directory			"&Directorio:"
-::dialog::fsbox::mc::Filename				"&Nombre del archivo:"
-::dialog::fsbox::mc::Filenames			"&Nombres de archivo:"
-::dialog::fsbox::mc::FilesType			"&Tipo de archivos:"
-::dialog::fsbox::mc::Ok						"Ac&eptar"
-::dialog::fsbox::mc::Open					"&Abrir"
-::dialog::fsbox::mc::Remove				"&Quitar"
-::dialog::fsbox::mc::Save					"&Guardar"
-::dialog::fsbox::mc::Selection			"&Selección:"
-::dialog::fsbox::mc::ShowHiddenDirs		"&Mostrar directorios ocultos"
-::dialog::fsbox::mc::ShowHiddenFiles	"&Mostrar archivos y directorios ocultos"
+::fsbox::mc::Name								"Nombre"
+::fsbox::mc::Size								"Tamaño"
+::fsbox::mc::Modified						"Modified" ;# NEW
 
-::dialog::fsbox::mc::ChooseDirectory	"Elegir directorio"
-::dialog::fsbox::mc::CreateFolder		"Crear carpeta"
-::dialog::fsbox::mc::Desktop				"Escritorio"
-::dialog::fsbox::mc::FileSystem			"Sistema de archivos"
-::dialog::fsbox::mc::Folder				"Carpeta:"
-::dialog::fsbox::mc::HomeFolder			"Carpeta Home"
-::dialog::fsbox::mc::TitleOpen			"Abrir"
-::dialog::fsbox::mc::TitleSaveAs			"Guardar como"
+::fsbox::mc::Forward							"Forward to '%s'" ;# NEW
+::fsbox::mc::Backward						"Backward to '%s'" ;# NEW
+::fsbox::mc::Delete							"Eliminar"
+::fsbox::mc::Rename							"Rename" ;# NEW
+::fsbox::mc::NewFolder						"New Folder" ;# NEW
+::fsbox::mc::Layout							"Disposición"
+::fsbox::mc::ListLayout						"List Layout" ;# NEW
+::fsbox::mc::DetailedLayout				"Detailed Layout" ;# NEW
+::fsbox::mc::ShowHiddenDirs				"&Mostrar directorios ocultos"
+::fsbox::mc::ShowHiddenFiles				"&Mostrar archivos y directorios ocultos"
+::fsbox::mc::Cancel							"&Cancelar"
+::fsbox::mc::Save								"&Guardar"
+::fsbox::mc::Open								"&Abrir"
 
-::dialog::fsbox::mc::AddFolder			"Agregar la carpeta '%s' a los favoritos"
-::dialog::fsbox::mc::CannotChangeDir	"No se puede cambiar al directorio \"%s\".\nPermiso denegado."
-::dialog::fsbox::mc::CannotCreate		"No puede crearse la carpeta \"%s\". Permiso denegado."
-::dialog::fsbox::mc::DirDoesNotExist	"El directorio \"%s\" no existe."
-::dialog::fsbox::mc::DirectoryRemoved	"No se puede cambiar al directorio \"%s\".\nEl directorio fue eliminado."
-::dialog::fsbox::mc::FileAlreadyExists	"El archivo \"%s\" ya existe.\n¿Quiere sobreescribirlo?"
-::dialog::fsbox::mc::FileDoesNotExist	"El archivo \"%s\" no existe."
-::dialog::fsbox::mc::FileExists			"La carpeta \"%s\" no puede crearse. El archivo ya existe."
-::dialog::fsbox::mc::GotoParentDir		"Ir al directorio superior"
-::dialog::fsbox::mc::InvalidDirectory	"El directorio \"%s\" no existe. ¿Abrirlo de todos modos?"
-::dialog::fsbox::mc::InvalidFilename	"Nombre de archivo \"%s\" no válido."
-::dialog::fsbox::mc::InvalidFileExt		"Extensión de archivo \"%s\" no válida."
-::dialog::fsbox::mc::RemoveBookmark		"Eliminar la marca de favorito en '%s'"
-::dialog::fsbox::mc::SelectWhichType	"Elegir qué tipo de archivo mostrar"
+::fsbox::mc::AddBookmark					"Add Bookmark '%s'" ;# NEW
+::fsbox::mc::RemoveBookmark				"Remove Bookmark '%s'" ;# NEW
+
+::fsbox::mc::Filename						"&Nombre del archivo:"
+::fsbox::mc::FilesType						"&Tipo de archivos:"
+::fsbox::mc::FileEncoding					"File &encoding:" ;# NEW
+
+::fsbox::mc::Favorites						"Favorites" ;# NEW
+::fsbox::mc::LastVisited					"Last Visited" ;# NEW
+::fsbox::mc::FileSystem						"Sistema de archivos"
+::fsbox::mc::Desktop							"Escritorio"
+::fsbox::mc::Home								"Home" ;# NEW
+
+::fsbox::mc::SelectWhichType				"Elegir qué tipo de archivo mostrar"
+::fsbox::mc::SelectEncoding				"Elija codificación"
+::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p" ;# NEW
+
+::fsbox::mc::CannotChangeDir				"No se puede cambiar al directorio '%s'.\nPermiso denegado."
+::fsbox::mc::DirectoryRemoved				"No se puede cambiar al directorio '%s'.\nEl directorio fue eliminado."
+::fsbox::mc::ReallyMove(file)				"Really move file '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(folder)			"Really move folder '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyDelete(file)			"Really delete file '%s' to trash? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(folder)		"Really delete folder '%s' to trash? You cannot undo this operation." ;# NEW
+::fsbox::mc::DeleteFailed					"Deletion of '%s' failed." ;# NEW
+::fsbox::mc::CommandFailed					"Command '%s' failed." ;# NEW
+::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied." ;# NEW
+::fsbox::mc::ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied." ;# NEW
+::fsbox::mc::InvalidFileExt				"Cannot rename because '%s' has an invalid file extension." ;# NEW
+::fsbox::mc::CannotRename					"Cannot rename to '%s' because this folder/file already exists." ;# NEW
+::fsbox::mc::CannotCreate					"Cannot create folder '%s' because this folder/file already exists." ;# NEW
+::fsbox::mc::ErrorCreate					"Error creating folder: permission denied." ;# NEW
+::fsbox::mc::FilenameNotAllowed			"Filename '%s' is not allowed." ;# NEW
+::fsbox::mc::ContainsTwoDots				"Contains two consecutive dots." ;# NEW
+::fsbox::mc::InvalidFileExtension		"Invalid file extension in '%s'." ;# NEW
+::fsbox::mc::MissingFileExtension		"Missing file extension in '%s'." ;# NEW
+::fsbox::mc::FileAlreadyExists			"El archivo '%s' ya existe.\n¿Quiere sobreescribirlo?"
+::fsbox::mc::CannotOverwriteDirectory	"Cannot overwite directory '%s'." ;# NEW
+::fsbox::mc::FileDoesNotExist				"El archivo '%s' no existe."
+::fsbox::mc::DirectoryDoesNotExist		"Directory '%s' does not exist." ;# NEW
+::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"

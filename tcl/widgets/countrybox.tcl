@@ -82,7 +82,7 @@ proc Build {w args} {
 	bind $w <<ComboBoxUnposted>> [list set [namespace current]::${w}::IgnoreKey 0]
 	bind $w <<ComboBoxUnposted>> +[list set [namespace current]::${w}::Key ""]
 	bind $w <<ComboboxCurrent>> [namespace code [list ShowCountry $w]]
-	bind $w <<Language>> [namespace code [list LanguageChanged $w]]
+	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 
 	SetupList $w
 

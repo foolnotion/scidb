@@ -45,6 +45,14 @@ Mark::square(unsigned index) const
 }
 
 
+inline
+void
+Mark::clear()
+{
+	*this = Mark();
+}
+
+
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline

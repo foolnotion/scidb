@@ -27,7 +27,7 @@
 #ifndef _sci_v91_encoder_included
 #define _sci_v91_encoder_included
 
-#include "sci_encoder_position.h"
+#include "sci_v91_encoder_position.h"
 
 #include "u_byte_stream.h"
 

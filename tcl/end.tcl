@@ -24,15 +24,6 @@
 # (at your option) any later version.
 # ======================================================================
 
-# --- Special features -------------------------------------------------
-
-namespace eval test {
-	set useAnalysis 0
-	if {[pwd] eq "/home/gregor/development/c++/scidb/tcl"} {
-		set useAnalysis 1
-	}
-}
-
 # --- Special popups for BETA version only -----------------------------
 
 namespace eval beta {
@@ -177,28 +168,12 @@ proc ::dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc ::calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
 
-proc ::scrolledframe::sbset {w first last} { ::widget::sbset $w $first $last }
-
-set ::dialog::fsbox::showHiddenBtn	1
-set ::dialog::fsbox::showHiddenVar	0
-set ::dialog::fsbox::destroyOnExit	1
-set ::dialog::fsbox::iconAdd			$icon::iconAdd
-set ::dialog::fsbox::iconRemove		$icon::iconRemove
-set ::dialog::fsbox::iconSave			$icon::iconSave
-set ::dialog::fsbox::iconCancel		$icon::iconCancel
-set ::dialog::fsbox::iconOpen			$icon::iconOpen
-
-proc ::dialog::fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
-proc ::dialog::fsbox::tooltip {args} { ::tooltip::tooltip {*}$args }
-proc ::dialog::fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
-
-dialog::fsbox::setupIcon ".sci"	$::icon::16x16::filetypeScidbBase
-dialog::fsbox::setupIcon ".si4"	$::icon::16x16::filetypeScid4Base
-dialog::fsbox::setupIcon ".si3"	$::icon::16x16::filetypeScid3Base
-dialog::fsbox::setupIcon ".cbh"	$::icon::16x16::filetypeChessBase
-dialog::fsbox::setupIcon ".pgn"	$::icon::16x16::filetypePGN
-dialog::fsbox::setupIcon ".gz"	$::icon::16x16::filetypePGN
-dialog::fsbox::setupIcon ".zip"	$::icon::16x16::filetypeZipFile
+proc ::fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
+proc ::fsbox::tooltip {args} { return [::tooltip::tooltip {*}$args] }
+proc ::fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
+proc ::fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
+proc ::fsbox::busy {args} { ::widget::busyCursor on }
+proc ::fsbox::unbusy {args} { ::widget::busyCursor off }
 
 proc ::dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state }
 
@@ -206,11 +181,12 @@ proc ::colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc WriteOptions {chan} {
 	::options::writeList $chan ::dialog::choosecolor::UserColorList
-	::options::writeItem $chan ::dialog::fsbox::showHiddenBtn
 	::options::writeItem $chan ::table::options
 	::options::writeItem $chan ::menu::Theme
 	::options::writeItem $chan ::toolbar::Options
-	puts $chan "::dialog::fsbox::setBookmarks {[::dialog::fsbox::getBookmarks]}"
+	::options::writeItem $chan ::fsbox::bookmarks::Bookmarks
+	::options::writeItem $chan ::fsbox::Options
+	::options::writeItem $chan ::scidb::revision
 }
 ::options::hookWriter [namespace current]::WriteOptions
 
@@ -219,6 +195,16 @@ proc WriteOptions {chan} {
 if {[file readable $::scidb::file::options]} {
 	::load::source $::scidb::file::options -message $::load::mc::ReadingOptionsFile -encoding utf-8
 }
+
+switch $::scidb::revision {
+	83 {
+		set ::export::RecentlyUsedHistory	{}
+		set ::export::RecentlyUsedTiebreaks	{}
+		set ::game::History {}
+	}
+}
+
+set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------
 

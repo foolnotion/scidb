@@ -422,10 +422,14 @@ struct Normalize : public Comment::Callback
 					bool& engFlag,
 					bool& othFlag,
 					char delim,
-					LanguageSet const* wanted = 0)
+					LanguageSet const* wanted = 0,
+					mstl::string const* fromLang = 0,
+					mstl::string const* toLang = 0)
 		:m_result(result)
 		,m_delim(delim)
 		,m_wanted(wanted)
+		,m_fromLang(fromLang)
+		,m_toLang(toLang)
 		,m_lang(0)
 		,m_engFlag(engFlag)
 		,m_othFlag(othFlag)
@@ -449,6 +453,31 @@ struct Normalize : public Comment::Callback
 					m_isXml = true;
 			}
 
+			if (m_fromLang)
+			{
+				M_ASSERT(m_toLang);
+
+				LangMap::const_iterator i = m_map.find(*m_fromLang);
+
+				if (i != m_map.end())
+				{
+					Content& content = m_map[*m_toLang];
+
+					content.str += i->second.str;
+					content.length += i->second.length;
+
+					if (!m_toLang->empty())
+					{
+						m_isXml = true;
+
+						if (*m_toLang == "en")
+							m_engFlag = true;
+						else
+							m_othFlag = true;
+					}
+				}
+			}
+
 			if (!m_isXml)
 			{
 				m_map[mstl::string::empty_string]; // ensure existence
@@ -462,7 +491,9 @@ struct Normalize : public Comment::Callback
 				{
 					if (i->second.length > 0)
 					{
-						M_ASSERT(m_wanted == 0 || m_wanted->find(i->first) != m_wanted->end());
+						M_ASSERT(	m_wanted == 0
+									|| m_wanted->find(i->first) != m_wanted->end()
+									|| (m_toLang && *m_toLang == i->first));
 
 						m_result += '<';
 						m_result += ':';
@@ -497,6 +528,21 @@ struct Normalize : public Comment::Callback
 					m_othFlag = true;
 			}
 		}
+		else if (m_fromLang && lang == *m_fromLang)
+		{
+			M_ASSERT(m_toLang);
+
+			m_lang = &m_map[*m_toLang];
+			m_lang->length += ::appendDelim(m_lang->str, m_delim);
+
+			if (!m_toLang->empty())
+			{
+				if (*m_toLang == "en")
+					m_engFlag = true;
+				else
+					m_othFlag = true;
+			}
+		}
 		else
 		{
 			m_lang = 0;
@@ -506,6 +552,8 @@ struct Normalize : public Comment::Callback
 	void endLanguage(mstl::string const& lang) override
 	{
 		if (m_wanted == 0 || m_wanted->find(mstl::string::empty_string) != m_wanted->end())
+			m_lang = &m_map[mstl::string::empty_string];
+		else if (m_fromLang && lang == *m_fromLang)
 			m_lang = &m_map[mstl::string::empty_string];
 		else
 			m_lang = 0;
@@ -594,6 +642,8 @@ struct Normalize : public Comment::Callback
 	mstl::string&			m_result;
 	char						m_delim;
 	LanguageSet const*	m_wanted;
+	mstl::string const*	m_fromLang;
+	mstl::string const*	m_toLang;
 	Content*					m_lang;
 	LangMap					m_map;
 	bool&						m_engFlag;
@@ -641,7 +691,7 @@ struct Flatten : public Comment::Callback
 
 	void nag(mstl::string const& s) override
 	{
-		nag::ID		nag = nag::ID(::strtoul(s, 0, 10));
+		nag::ID		nag = nag::ID(::strtoul(s, nullptr, 10));
 		char const*	sym = nag::toSymbol(nag);
 
 		if (sym)
@@ -1425,6 +1475,13 @@ Comment::length() const
 }
 
 
+util::crc::checksum_t
+Comment::computeChecksum(util::crc::checksum_t crc) const
+{
+	return util::crc::compute(crc, m_content, m_content.size());
+}
+
+
 void
 Comment::swap(Comment& comment)
 {
@@ -1579,6 +1636,29 @@ Comment::strip(LanguageSet const& set)
 	}
 
 	m_languageSet.clear();
+}
+
+
+void
+Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal)
+{
+	if (fromLang != toLang)
+	{
+		if (stripOriginal)
+		{
+			if (m_languageSet.empty())
+				collect();
+			m_languageSet.erase(fromLang);
+			Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', &m_languageSet, &fromLang, &toLang);
+			parse(normalize);
+		}
+		else
+		{
+			Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', nullptr, &fromLang, &toLang);
+			parse(normalize);
+			m_languageSet.clear();
+		}
+	}
 }
 
 

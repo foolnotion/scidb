@@ -48,7 +48,7 @@ static Comment const lostResult("The game was declared lost for both players", f
 
 
 Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding)
-	:Consumer(srcFormat, encoding)
+	:Consumer(srcFormat, encoding, TagBits(true), true)
 	,m_flags(flags)
 	,m_count(0)
 	,m_level(0)
@@ -60,7 +60,6 @@ Writer::Writer(format::Type srcFormat, unsigned flags, mstl::string const& encod
 	if (test(Flag_Use_ChessBase_Format))
 	{
 		m_flags &= ~Flag_Convert_Lost_Result_To_Comment;
-		m_flags &= ~Flag_Include_Country_Inside_Player;
 		m_flags &= ~Flag_Convert_Null_Moves_To_Comments;
 
 		m_flags |= Flag_Use_Shredder_FEN;
@@ -107,6 +106,31 @@ Writer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 	if (test(Flag_Include_Comments) && !comment.isEmpty())
 	{
 		writeTrailingComment(comment);
+		m_needSpace = true;
+	}
+}
+
+
+
+void
+Writer::sendComment(Comment const& comment)
+{
+	// Normally this method shouldn't be called
+
+	if (test(Flag_Include_Comments) && !comment.isEmpty())
+	{
+		writeTrailingComment(comment);
+		m_needSpace = true;
+	}
+}
+
+
+void
+Writer::sendMoveInfo(MoveInfoSet const& moveInfo)
+{
+	if (test(Flag_Include_Move_Info) && !moveInfo.isEmpty())
+	{
+		writeMoveInfo(moveInfo);
 		m_needSpace = true;
 	}
 }
@@ -191,23 +215,9 @@ Writer::beginGame(TagSet const& tags)
 			case tag::White:
 			case tag::Black:
 				if (isEmpty)
-				{
 					writeTag(tag::ID(i), query);
-				}
-				else if (	test(Flag_Include_Country_Inside_Player)
-							&& tags.contains(i == tag::White ? tag::WhiteCountry : tag::BlackCountry))
-				{
-					mstl::string player = value;
-					player += " (";
-					player += tags.value(i == tag::White ? tag::WhiteCountry : tag::BlackCountry);
-					player += ")";
-
-					writeTag(tag::ID(i), player);
-				}
 				else
-				{
 					writeTag(tag::ID(i), value);
-				}
 				break;
 
 			case tag::WhiteCountry:
@@ -216,7 +226,7 @@ Writer::beginGame(TagSet const& tags)
 				{
 					if (test(Flag_Use_ChessBase_Format))
 						writeTag(tag::ID(i), country::toChessBaseCode(country::fromString(value)));
-					else if (!test(Flag_Include_Country_Inside_Player))
+					else
 						writeTag(tag::ID(i), value);
 				}
 				break;
@@ -251,7 +261,7 @@ Writer::beginGame(TagSet const& tags)
 					mstl::string buf;
 					buf.format(	"%s %s",
 									value.c_str(),
-									shuffle::position(::strtoul(value.c_str(), 0, 10)).c_str());
+									shuffle::position(::strtoul(value.c_str(), nullptr, 10)).c_str());
 					writeTag(tag::ID(i), buf);
 				}
 				break;

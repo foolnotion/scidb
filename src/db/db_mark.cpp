@@ -130,6 +130,20 @@ Mark::operator==(Mark const& mark) const
 }
 
 
+int
+Mark::compare(Mark const& m) const
+{
+	if (int cmp = int(m_command) - int(m.m_command)) return cmp;
+	if (int cmp = int(m_type)    - int(m.m_type)   ) return cmp;
+	if (int cmp = int(m_text)    - int(m.m_text)   ) return cmp;
+	if (int cmp = int(m_color)   - int(m.m_color)  ) return cmp;
+	if (int cmp = int(m_square1) - int(m.m_square1)) return cmp;
+	if (int cmp = int(m_square2) - int(m.m_square2)) return cmp;
+
+	return ::strcmp(m_caption, m.m_caption);
+}
+
+
 bool
 Mark::match(Mark const& mark) const
 {
@@ -142,6 +156,8 @@ Mark::match(Mark const& mark) const
 char const*
 Mark::parseDiagramMarker(char const* s)
 {
+	M_REQUIRE(s);
+
 	if (*s != '#')
 		return s;
 
@@ -200,7 +216,7 @@ Mark::parseScidbMark(char const* s)
 		p = s;
 	}
 
-	return p;
+	return ::skipSpaces(p);
 }
 
 
@@ -226,7 +242,7 @@ Mark::parseScidFormat(char const* s)
 	if (::isalpha(*s))
 		s = parseColor(s);
 
-	return s;
+	return ::skipSpaces(s);
 }
 
 
@@ -262,7 +278,7 @@ Mark::parsePgnFormat(char const* s)
 	if (*s == ',')
 		s = parseColor(s + 1);
 
-	return s;
+	return ::skipSpaces(s);
 }
 
 
@@ -342,6 +358,8 @@ Mark::parseType(char const* s)
 char const*
 Mark::parseChessBaseMark(char const* s, mark::Type type)
 {
+	M_REQUIRE(s);
+
 	s = ::skipSpaces(s);
 
 	switch (*s)
@@ -349,7 +367,7 @@ Mark::parseChessBaseMark(char const* s, mark::Type type)
 		case 'R':	m_color = mark::Red; break;
 		case 'G':	m_color = mark::Green; break;
 		case 'Y':	m_color = mark::Yellow; break;
-		default:		return s;
+		default:		m_color = mark::Red; break;
 	}
 
 	if ((m_square1 = ::parseSquare(++s)) == sq::Null)
@@ -366,7 +384,7 @@ Mark::parseChessBaseMark(char const* s, mark::Type type)
 	m_type = type;
 	m_command = mark::Draw;
 
-	return s;
+	return ::skipSpaces(s);
 }
 
 
@@ -458,6 +476,20 @@ Mark::dump()
 	mstl::string s;
 	print(s);
 	printf("%s\n", s.c_str());
+}
+
+
+util::crc::checksum_t
+Mark::computeChecksum(util::crc::checksum_t crc) const
+{
+	crc = ::util::crc::compute(crc, Byte(m_command));
+	crc = ::util::crc::compute(crc, Byte(m_type));
+	crc = ::util::crc::compute(crc, uint16_t(m_color));
+	crc = ::util::crc::compute(crc, Byte(m_square1));
+	crc = ::util::crc::compute(crc, Byte(m_square2));
+	crc = ::util::crc::compute(crc, m_caption.c_str(), m_caption.size());
+
+	return crc;
 }
 
 

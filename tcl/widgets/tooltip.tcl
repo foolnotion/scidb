@@ -119,6 +119,7 @@ namespace eval ::tooltip {
 
 namespace export -clear tooltip show hide init
 namespace import ::tcl::mathfunc::int
+namespace import ::tcl::mathfunc::max
 
 variable tooltip
 variable tooltipvar
@@ -126,6 +127,7 @@ variable G
 
 array set G {
 	font					TkTooltipFont
+	bold					{}
 	background			lightyellow
 	exposureTime		3500
 	delay					500
@@ -147,34 +149,43 @@ array set G {
 switch [tk windowingsystem] {
 	x11 {
 		array set G {
-			fade					0
-			fadeStep				0.2
-			shadowThickness	1
-			shadowOffset		5
-			shadowColor			gray50
-			shadowAlpha			1.0
+			fade							0
+			fadestep						0.2
+			shadowthickness			1
+			shadowthickness2			2
+			shadowthresholdheight	40
+			shadowthresholdwidth		200
+			shadowoffset				5
+			shadowcolor					gray50
+			shadowalpha					1.0
 		}
 	}
 
 	win32 {
 		array set G {
-			fade					1
-			fadeStep				0.2
-			shadowThickness	2
-			shadowOffset		5
-			shadowColor			black
-			shadowAlpha			0.6
+			fade							1
+			fadestep						0.2
+			shadowthickness			2
+			shadowthickness2			2
+			shadowthresholdheight	99999
+			shadowthresholdwidth		99999
+			shadowoffset				5
+			shadowcolor					black
+			shadowalpha					0.6
 		}
 	}
 
 	aqua {
 		array set G {
-			fade					0
-			fadeStep				0.2
-			shadowThickness	2
-			shadowOffset		5
-			shadowColor			black
-			shadowAlpha			0.6
+			fade							0
+			fadestep						0.2
+			shadowthickness			2
+			shadowthickness2			2
+			shadowthresholdheight	99999
+			shadowthresholdwidth		99999
+			shadowoffset				5
+			shadowcolor					black
+			shadowalpha					0.6
 		}
 	}
 }
@@ -222,16 +233,22 @@ proc init {} {
 		catch { wm attributes $b -alpha 0.99 }
 	}
 	catch { wm attributes $b -topmost 1 }
+	catch { wm attributes $b -type tooltip }
 	wm positionfrom $b program
 	wm withdraw $b
 
-	tk::label $b.label \
-		-highlightthickness 0 \
-		-relief solid \
-		-borderwidth 1 \
-		-background $G(background) \
-		-fg black
-	pack $b.label -ipadx 1
+	pack [tk::frame $b.top -relief solid -borderwidth 1 -background $G(background)]
+
+	for {set i 0} {$i < 5} {incr i} {
+		tk::label $b.top.label-$i \
+			-highlightthickness 0 \
+			-borderwidth 0 \
+			-background $G(background) \
+			-foreground black \
+			;
+	}
+
+	pack $b.top.label-0 -ipadx 1 -anchor w
 
 	set G(init) 0
 }
@@ -241,6 +258,25 @@ proc background	{} { return [set [namespace current]::G(background)] }
 proc delay			{} { return [set [namespace current]::G(delay)] }
 proc enabled		{} { return [set [namespace current]::G(enabled)] }
 proc font			{} { return [set [namespace current]::G(font)] }
+
+
+proc bold {{font {}}} {
+	if {[llength $font]} {
+		set family [::font configure $font -family]
+		set size [::font configure $font -size]
+		return [::font create -family $family -size $size -weight bold]
+	}
+
+	variable G
+
+	if {[llength $G(bold)] == 0} {
+		set family [::font configure $G(font) -family]
+		set size [::font configure $G(font) -size]
+		set G(bold) [::font create -family $family -size $size -weight bold]
+	}
+
+	return $G(bold)
+}
 
 
 proc tooltip {w {args {}}} {
@@ -326,6 +362,10 @@ proc tooltip {w {args {}}} {
 			enable [lindex $args 0]
 		}
 
+		show {
+			show {*}$args
+		}
+
 		default {
 			init
 			set i $w
@@ -367,7 +407,7 @@ proc showvar {w var {i cursor} {font {}}} {
 }
 
 
-proc popup {w b {i {}}} {
+proc popup {w b {at {}}} {
 	variable G
 
 	update idletasks
@@ -381,16 +421,16 @@ proc popup {w b {i {}}} {
 
 	# When adjusting for being on the screen boundary, check that we are
 	# near the "edge" already, as Tk handles multiple monitors oddly
-	if {$i eq "cursor"} {
+	if {$at eq "cursor"} {
 		set y [expr {[winfo pointery $w] + 20}]
 		if {($y < $screenh) && ($y + $reqh) > $screenh} {
 			set y [expr {[winfo pointery $w] - $reqh - 5}]
 		}
-	} elseif {$i ne ""} {
-		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [$w yposition $i] + 25}]
+	} elseif {$at ne ""} {
+		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [$w yposition $at] + 25}]
 		if {($y < $screenh) && ($y + $reqh) > $screenh} {
 			# show above if we would be offscreen
-			set y [expr {[winfo rooty $w] + [$w yposition $i] - $reqh - 5}]
+			set y [expr {[winfo rooty $w] + [$w yposition $at] - $reqh - 5}]
 		}
 	} else {
 		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [winfo height $w] + 5}]
@@ -400,7 +440,7 @@ proc popup {w b {i {}}} {
 		}
 	}
 
-	if {$i eq "cursor"} {
+	if {$at eq "cursor"} {
 		set x [winfo pointerx $w]
 	} else {
 		set x [expr {[winfo rootx $w] + [winfo vrootx $w] + ([winfo width $w] - $reqw)/2}]
@@ -417,27 +457,32 @@ proc popup {w b {i {}}} {
 		set focus [focus]
 	}
 
-	if {$G(shadowThickness)} {
-		set bw [expr {$reqw - $G(shadowOffset)}]
-		set bh $G(shadowThickness)
-		set rw $G(shadowThickness)
-		set rh [expr {$reqh - $G(shadowOffset) + $G(shadowThickness)}]
+	set shadowthickness $G(shadowthickness)
+
+	if {$shadowthickness} {
+		if {$reqh >= $G(shadowthresholdheight) && $reqw >= $G(shadowthresholdwidth)} {
+			set shadowthickness $G(shadowthickness2)
+		}
+		set bw [expr {$reqw - $G(shadowoffset)}]
+		set bh $shadowthickness
+		set rw $shadowthickness
+		set rh [expr {$reqh - $G(shadowoffset) + $shadowthickness}]
 		if {![winfo exists $b.__shadow__b__]} {
-			set options [list -background $G(shadowColor) -borderwidth 0 -relief flat -highlightthickness 0]
+			set options [list -background $G(shadowcolor) -borderwidth 0 -relief flat -highlightthickness 0]
 			toplevel $b.__shadow__b__ -width $bw -height $bh {*}$options
 			toplevel $b.__shadow__r__ -width $rw -height $rh {*}$options
 			wm withdraw $b.__shadow__b__
 			wm withdraw $b.__shadow__r__
 			wm overrideredirect $b.__shadow__b__ 1
 			wm overrideredirect $b.__shadow__r__ 1
-			catch { wm attributes $b.__shadow__b__ -alpha $G(shadowAlpha) }
-			catch { wm attributes $b.__shadow__r__ -alpha $G(shadowAlpha) }
+			catch { wm attributes $b.__shadow__b__ -alpha $G(shadowalpha) }
+			catch { wm attributes $b.__shadow__r__ -alpha $G(shadowalpha) }
 		} else {
 			$b.__shadow__b__ configure -width $bw -height $bh
 			$b.__shadow__r__ configure -width $rw -height $rh
 		}
-		wm geometry $b.__shadow__b__ +[expr {$x + $G(shadowOffset)}]+[expr {$y + $reqh}]
-		wm geometry $b.__shadow__r__ +[expr {$x + $reqw}]+[expr {$y + $G(shadowOffset)}]
+		wm geometry $b.__shadow__b__ +[expr {$x + $G(shadowoffset)}]+[expr {$y + $reqh}]
+		wm geometry $b.__shadow__r__ +[expr {$x + $reqw}]+[expr {$y + $G(shadowoffset)}]
 		wm deiconify $b.__shadow__b__
 		wm deiconify $b.__shadow__r__
 		raise $b.__shadow__b__
@@ -446,6 +491,7 @@ proc popup {w b {i {}}} {
 
 	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
 	catch { wm attributes $b -alpha 0.99 }
+	catch { wm attributes -type tooltip }
 	wm geometry $b +$x+$y
 	wm deiconify $b
 	raise $b
@@ -486,7 +532,7 @@ proc hide {{fadeOk 0}} {
 			wm withdraw $w.__shadow__b__
 			wm withdraw $w.__shadow__r__
 		}
-		Fade $w $G(fadeStep)
+		Fade $w $G(fadestep)
 	} else {
 		popdown $G(toplevel)
 	}
@@ -698,12 +744,27 @@ proc Show {w var msg {i {}} {font {}}} {
 	after cancel $G(exposureId)
 	set b $G(toplevel)
 
-	if {[llength $font] == 0} { set font $G(font) }
+	set labelFont $font
+	if {[llength $labelFont] == 0} { set labelFont $G(font) }
+	for {set k 1} {$k < 5} {incr k} { pack forget $b.top.label-$k }
 
 	if {[llength $var]} {
-		$b.label configure -textvar $var -justify left -font $font
+		$b.top.label-0 configure -textvar $var -justify left -font $labelFont
+	} elseif {[string match *<b>* $msg]} {
+		set k 0
+		foreach line [split $msg "\n"] {
+			if {[string match <b>* $line]} {
+				set f [bold $font]
+				set line [string range $line 3 end]
+			} else {
+				set f $labelFont
+			}
+			$b.top.label-$k configure -textvar {} -text $line -justify left -font $f
+			pack $b.top.label-$k -ipadx 1 -anchor w
+			incr k
+		}
 	} else {
-		$b.label configure -textvar {} -text $msg -justify left -font $font
+		$b.top.label-0 configure -textvar {} -text $msg -justify left -font $labelFont
 	}
 
 	popup $w $b $i

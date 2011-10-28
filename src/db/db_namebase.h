@@ -109,15 +109,15 @@ public:
 	Entry const* append(mstl::string const& name, unsigned id);
 
 	SiteEntry* insertSite(mstl::string const& name);
-	SiteEntry* insertSite(	mstl::string const& name,
-									unsigned id,
-									country::Code country,
-									unsigned limit);
 	SiteEntry* insertSite(mstl::string const& name, country::Code country, unsigned limit);
+	SiteEntry* insertSite(mstl::string const& name, unsigned id, country::Code country, unsigned limit);
 	SiteEntry* appendSite(mstl::string const& name, unsigned id);
 	SiteEntry* appendSite(mstl::string const& name, unsigned id, country::Code country);
 
 	EventEntry* insertEvent(	mstl::string const& name,
+										NamebaseSite* site);
+	EventEntry* insertEvent(	mstl::string const& name,
+										unsigned limit,
 										NamebaseSite* site);
 	EventEntry* insertEvent(	mstl::string const& name,
 										unsigned id,
@@ -161,7 +161,7 @@ public:
 											NamebaseSite* site);
 
 	PlayerEntry* insertPlayer(	mstl::string const& name);
-	PlayerEntry* insertPlayer(	mstl::string const& name, uint32_t fideID, unsigned id, unsigned limit);
+	PlayerEntry* insertPlayer(	mstl::string const& name, uint32_t fideID, unsigned limit);
 	PlayerEntry* insertPlayer(	mstl::string const& name,
 										country::Code country,
 										title::ID title,

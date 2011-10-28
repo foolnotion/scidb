@@ -30,7 +30,8 @@ template <
 	typename T9  = null_type, typename T10 = null_type, typename T11 = null_type,
 	typename T12 = null_type, typename T13 = null_type, typename T14 = null_type,
 	typename T15 = null_type, typename T16 = null_type, typename T17 = null_type,
-	typename T18 = null_type, typename T19 = null_type>
+	typename T18 = null_type, typename T19 = null_type, typename T20 = null_type,
+	typename T21 = null_type, typename T22 = null_type, typename T23 = null_type>
 struct make_type_list;
 
 } // namespace mstl

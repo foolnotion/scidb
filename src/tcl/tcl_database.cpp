@@ -52,6 +52,7 @@
 #include "sci_codec.h"
 
 #include "u_zstream.h"
+#include "u_misc.h"
 
 #include "sys_utf8_codec.h"
 
@@ -192,7 +193,7 @@ getNamebaseType(Tcl_Obj* obj, char const* cmd)
 		case Type_Annotator:	return Namebase::Annotator;
 	}
 
-	error(cmd, 0, 0, "unknown namebase type '%s'", Tcl_GetStringFromObj(obj, 0));
+	error(cmd, nullptr, nullptr, "unknown namebase type '%s'", Tcl_GetStringFromObj(obj, nullptr));
 	return Namebase::Player;	// never reached
 }
 
@@ -258,9 +259,9 @@ struct Subscriber : public Application::Subscriber
 		{
 			fprintf(	stderr,
 						"Warning: database::unsubscribe failed (%s, %s, %s)\n",
-						Tcl_GetStringFromObj(updateCmd, 0),
-						closeCmd ? Tcl_GetStringFromObj(closeCmd, 0) : "",
-						Tcl_GetStringFromObj(arg, 0));
+						Tcl_GetStringFromObj(updateCmd, nullptr),
+						closeCmd ? Tcl_GetStringFromObj(closeCmd, nullptr) : "",
+						Tcl_GetStringFromObj(arg, nullptr));
 		}
 		else
 		{
@@ -724,9 +725,16 @@ static int
 convToType(char const* cmd, Tcl_Obj* typeObj, int* type)
 {
 	if (Tcl_GetIntFromObj(interp(), typeObj, type) != TCL_OK)
-		return error(cmd, 0, 0, "integer expected for type (given: %s)", Tcl_GetStringFromObj(typeObj, 0));
+	{
+		return error(	cmd,
+							nullptr,
+							nullptr,
+							"integer expected for type (given: %s)",
+							Tcl_GetStringFromObj(typeObj, nullptr));
+	}
+
 	if (*type < 0 || *type >= 32)
-		return error(cmd, 0, 0, "given type exceeds range 0-31");
+		return error(cmd, nullptr, nullptr, "given type exceeds range 0-31");
 
 	return TCL_OK;
 }
@@ -779,7 +787,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			appendResult("unexpected option '%s'", stringFromObj(objc, objv, 4));
 			return TCL_ERROR;
 		}
-		encoding = Tcl_GetStringFromObj(objv[5], 0);
+		encoding = Tcl_GetStringFromObj(objv[5], nullptr);
 	}
 
 	Progress	progress(objv[2], objv[3]);
@@ -859,9 +867,9 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 3)
+	if (objc != 3 && objc != 4)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<file> <type>");
+		Tcl_WrongNumArgs(ti, 1, objv, "<file> <type> ?<encoding>?");
 		return TCL_ERROR;
 	}
 
@@ -871,8 +879,13 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (convToType(::CmdSet, objv[2], &type) != TCL_OK)
 		return TCL_ERROR;
 
-	if (scidb.create(path, sys::utf8::Codec::utf8(), type::ID(type)) == 0)
-		return error(::CmdNew, 0, 0, "database '%s' already exists", path);
+	mstl::string encoding(sys::utf8::Codec::utf8());
+
+	if (objc == 4)
+		encoding = stringFromObj(objc, objv, 3);
+
+	if (scidb.create(path, encoding, type::ID(type)) == 0)
+		return error(::CmdNew, nullptr, nullptr, "database '%s' already exists", path);
 
 	return TCL_OK;
 }
@@ -896,7 +909,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum { Cmd_Type, Cmd_Description, Cmd_Readonly, Cmd_Delete, Cmd_Flag };
 
 	if (objc < 2)
-		return usage(::CmdSet, 0, 0, subcommands, args);
+		return usage(::CmdSet, nullptr, nullptr, subcommands, args);
 
 	int cmd = tcl::uniqueMatchObj(objv[1], subcommands);
 
@@ -975,7 +988,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return usage(::CmdSet, 0, 0, subcommands, args);
+			return usage(::CmdSet, nullptr, nullptr, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -1025,11 +1038,11 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events };
 
 	if (objc < 2)
-		return usage(::CmdCount, 0, 0, subcommands, args);
+		return usage(::CmdCount, nullptr, nullptr, subcommands, args);
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
-	char const* base = objc < 3 ? 0 : Tcl_GetStringFromObj(objv[2], 0);
+	char const* base = objc < 3 ? 0 : Tcl_GetStringFromObj(objv[2], nullptr);
 
 	switch (index)
 	{
@@ -1039,7 +1052,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Events:		return countEvents(base);
 	}
 
-	return usage(::CmdCount, 0, 0, subcommands, args);
+	return usage(::CmdCount, nullptr, nullptr, subcommands, args);
 }
 
 
@@ -1051,7 +1064,7 @@ getClipbaseAttr(Tcl_Interp*, char const* attr)
 	else if (strcmp(attr, "type") == 0)
 		setResult(lookupType(type::Clipbase));
 	else
-		return error(::CmdGet, "clipbase", 0, "invalid subcommand '%s'", attr);
+		return error(::CmdGet, "clipbase", nullptr, "invalid subcommand '%s'", attr);
 
 	return TCL_OK;
 }
@@ -1063,7 +1076,7 @@ getScratchbaseAttr(Tcl_Interp*, char const* attr)
 	if (strcmp(attr, "name") == 0)
 		setResult(Scidb.scratchbaseName());
 	else
-		return error(::CmdGet, "scratchbase", 0, "invalid subcommand '%s'", attr);
+		return error(::CmdGet, "scratchbase", nullptr, "invalid subcommand '%s'", attr);
 
 	return TCL_OK;
 }
@@ -1433,7 +1446,7 @@ getGameInfo(int index, int view, char const* database, unsigned which)
 			break;
 
 		default:
-			return error(::CmdGet, "gameInfo", 0, "cannot access number %u", which);
+			return error(::CmdGet, "gameInfo", nullptr, "cannot access number %u", which);
 	}
 
 	setResult(obj);
@@ -1462,7 +1475,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	mstl::string openingLong, openingShort, variation, subvariation;
 
 	Eco eco = info.eco();
-	Eco eop = info.ecoKey();
+	Eco eop = info.idn() == chess960::StandardIdn ? info.ecoKey() : Eco();
 
 	if (!eco && format == format::Scidb)
 		eco = eop;
@@ -1642,7 +1655,7 @@ getPlayerInfo(int index, int view, char const* database, unsigned which)
 			break;
 
 		default:
-			return error(::CmdGet, "playerInfo", 0, "cannot access number %u", which);
+			return error(::CmdGet, "playerInfo", nullptr, "cannot access number %u", which);
 	}
 
 	setResult(obj);
@@ -1695,7 +1708,7 @@ getEventInfo(int index, int view, char const* database, unsigned which)
 			break;
 
 		default:
-			return error(::CmdGet, "eventInfo", 0, "cannot access number %u", which);
+			return error(::CmdGet, "eventInfo", nullptr, "cannot access number %u", which);
 	}
 
 	setResult(obj);
@@ -1917,12 +1930,12 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (objc > 4)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
 						if (::strcmp(lastArg, "-card") != 0)
-							return error(::CmdGet, 0, 0, "invalid argument %s", lastArg);
+							return error(::CmdGet, nullptr, nullptr, "invalid argument %s", lastArg);
 
 						idCard = true;
 					}
@@ -1943,10 +1956,10 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				while (parseOptions && objc > 4)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
 
 					if (*lastArg != '-')
-						lastArg = Tcl_GetStringFromObj(objv[objc - 2], 0);
+						lastArg = Tcl_GetStringFromObj(objv[objc - 2], nullptr);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -1965,7 +1978,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						}
 						else
 						{
-							return error(::CmdFetch, 0, 0, "invalid argument %s", lastArg);
+							return error(::CmdFetch, nullptr, nullptr, "invalid argument %s", lastArg);
 						}
 
 						--objc;
@@ -1982,7 +1995,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 	}
 
-	return usage(::CmdFetch, 0, 0, subcommands, args);
+	return usage(::CmdFetch, nullptr, nullptr, subcommands, args);
 }
 
 
@@ -2052,7 +2065,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 
 	if (objc < 2)
-		return usage(::CmdGet, 0, 0, subcommands, args);
+		return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 	int index	= tcl::uniqueMatchObj(objv[1], subcommands);
 	int view		= View::DefaultView;
@@ -2061,23 +2074,23 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		case Cmd_Clipbase:
 			if (objc != 3)
-				return usage(::CmdGet, 0, 0, subcommands, args);
-			return getClipbaseAttr(ti, Tcl_GetStringFromObj(objv[2], 0));
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+			return getClipbaseAttr(ti, Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Scratchbase:
 			if (objc != 3)
-				return usage(::CmdGet, 0, 0, subcommands, args);
-			return getScratchbaseAttr(ti, Tcl_GetStringFromObj(objv[2], 0));
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+			return getScratchbaseAttr(ti, Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Types:
 			if (objc != 3)
-				return usage(::CmdGet, 0, 0, subcommands, args);
-			return getTypes(ti, Tcl_GetStringFromObj(objv[2], 0));
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+			return getTypes(ti, Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Type:
 			if (objc < 3)
 				return getType();
-			return getType(Tcl_GetStringFromObj(objv[2], 0));
+			return getType(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Name:
 			return getName();
@@ -2085,22 +2098,22 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Codec:
 			if (objc < 3)
 				return getCodec();
-			return getCodec(Tcl_GetStringFromObj(objv[2], 0));
+			return getCodec(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Encoding:
 			if (objc < 3)
 				return getEncoding();
-			return getEncoding(Tcl_GetStringFromObj(objv[2], 0));
+			return getEncoding(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Created:
 			if (objc < 3)
 				return getCreated();
-			return getCreated(Tcl_GetStringFromObj(objv[2], 0));
+			return getCreated(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Modified:
 			if (objc < 3)
 				return getModified();
-			return getModified(Tcl_GetStringFromObj(objv[2], 0));
+			return getModified(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_GameInfo:
 			{
@@ -2114,9 +2127,9 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 				if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 				char const* database = objc < 5 ? 0 : stringFromObj(objc, objv, 4);
 
@@ -2139,10 +2152,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				while (parseOptions && objc >= 3)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
 
 					if (*lastArg != '-')
-						lastArg = Tcl_GetStringFromObj(objv[objc - 2], 0);
+						lastArg = Tcl_GetStringFromObj(objv[objc - 2], nullptr);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -2161,7 +2174,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						}
 						else
 						{
-							return error(::CmdGet, 0, 0, "invalid argument %s", lastArg);
+							return error(::CmdGet, nullptr, nullptr, "invalid argument %s", lastArg);
 						}
 
 						--objc;
@@ -2173,10 +2186,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 				if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 				if (objc >= 6)
 				{
@@ -2199,12 +2212,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (objc >= 3)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], 0);
+					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
 						if (::strcmp(lastArg, "-card") != 0)
-							return error(::CmdGet, 0, 0, "invalid argument %s", lastArg);
+							return error(::CmdGet, nullptr, nullptr, "invalid argument %s", lastArg);
 
 						idCard = true;
 						--objc;
@@ -2212,10 +2225,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 				if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-					return usage(::CmdGet, 0, 0, subcommands, args);
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
 				if (objc < 6)
 					return getEventInfo(index, view, idCard);
@@ -2228,49 +2241,49 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Annotator:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			if (objc == 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getAnnotator(index, view);
 
 		case Cmd_GameIndex:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getGameIndex(index, view, objc == 5 ? stringFromObj(objc, objv, 4) : 0);
 
 		case Cmd_PlayerIndex:
 			if (objc < 3 || (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK))
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getPlayerIndex(	unsignedFromObj(objc, objv, 2),
 											view,
 											objc == 5 ? stringFromObj(objc, objv, 4) : 0);
 
 		case Cmd_LookupPlayer:
 			if (objc < 3 || (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK))
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getLookupPlayer(	unsignedFromObj(objc, objv, 2),
 											view,
 											objc == 5 ? stringFromObj(objc, objv, 4) : 0);
 
 		case Cmd_EventIndex:
 			if (objc < 3 || (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK))
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getEventIndex(	unsignedFromObj(objc, objv, 2),
 											view,
 											objc == 5 ? stringFromObj(objc, objv, 4) : 0);
 
 		case Cmd_LookupEvent:
 			if (objc < 3 || (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK))
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getLookupEvent(	unsignedFromObj(objc, objv, 2),
 											view,
 											objc == 5 ? stringFromObj(objc, objv, 4) : 0);
 
 		case Cmd_AnnotatorIndex:
 			if (objc < 3 || (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK))
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getAnnotatorIndex(	stringFromObj(objc, objv, 2),
 												view,
 												objc == 5 ? stringFromObj(objc, objv, 4) : 0);
@@ -2278,7 +2291,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Description:
 			if (objc < 3)
 				return getDescription();
-			return getDescription(Tcl_GetStringFromObj(objv[2], 0));
+			return getDescription(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Stats:
 			return getStats(stringFromObj(objc, objv, 2));
@@ -2300,7 +2313,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_EncodingState:
 			if (objc < 3)
 				return getEncodingState(0);
-			return getEncodingState(Tcl_GetStringFromObj(objv[2], 0));
+			return getEncodingState(Tcl_GetStringFromObj(objv[2], nullptr));
 
 		case Cmd_Deleted:
 			return getDeleted(intFromObj(objc, objv, 2),
@@ -2392,26 +2405,26 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Tags:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getTags(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_Idn:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getIdn(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_Eco:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getEco(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_RatingTypes:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
-				return usage(::CmdGet, 0, 0, subcommands, args);
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getRatingTypes(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 	}
 
-	return usage(::CmdGet, 0, 0, subcommands, args);
+	return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 }
 
 
@@ -2488,9 +2501,9 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		default:
 			return error(	::CmdSubscribe,
-								0, 0,
+								nullptr, nullptr,
 								"invalid argument %s",
-								static_cast<char const*>(Tcl_GetStringFromObj(objv[1], 0)));
+								static_cast<char const*>(Tcl_GetStringFromObj(objv[1], nullptr)));
 	}
 
 	return TCL_OK;
@@ -2559,7 +2572,11 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return error(::CmdUnsubscribe, 0, 0, "invalid argument %s", Tcl_GetStringFromObj(objv[1], 0));
+			return error(	::CmdUnsubscribe,
+								nullptr,
+								nullptr,
+								"invalid argument %s",
+								Tcl_GetStringFromObj(objv[1], nullptr));
 	}
 
 	return TCL_OK;
@@ -2575,7 +2592,7 @@ cmdSwitch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.switchBase(Tcl_GetStringFromObj(objv[1], 0));
+	scidb.switchBase(Tcl_GetStringFromObj(objv[1], nullptr));
 	return TCL_OK;
 }
 
@@ -2589,7 +2606,7 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.close(Tcl_GetStringFromObj(objv[1], 0));
+	scidb.close(Tcl_GetStringFromObj(objv[1], nullptr));
 	return TCL_OK;
 }
 
@@ -2603,7 +2620,7 @@ cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.clearBase(scidb.cursor(Tcl_GetStringFromObj(objv[1], 0)));
+	scidb.clearBase(scidb.cursor(Tcl_GetStringFromObj(objv[1], nullptr)));
 	return TCL_OK;
 }
 
@@ -2622,7 +2639,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Annotator };
 
 	if (objc < 4)
-		return usage(::CmdSort, 0, 0, subcommands, args);
+		return usage(::CmdSort, nullptr, nullptr, subcommands, args);
 
 	int			view		= View::DefaultView;
 	int			index		= tcl::uniqueMatchObj(objv[1], subcommands);
@@ -2643,7 +2660,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	if (objc < 4 || 5 < objc)
-		return usage(::CmdSort, 0, 0, subcommands, args);
+		return usage(::CmdSort, nullptr, nullptr, subcommands, args);
 
 	if (objc == 5)
 		view = intFromObj(objc, objv, 4);
@@ -2661,15 +2678,15 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			else if (::strcmp(opt, "-descending") == 0)
 				order = order::Descending;
 			else if (::strcmp(opt, "-ratings") != 0)
-				return error(::CmdSort, 0, 0, "illegal option %s", opt);
+				return error(::CmdSort, nullptr, nullptr, "illegal option %s", opt);
 			else if (i == optCount - 1)
-				return error(::CmdSort, 0, 0, "missing rating types");
+				return error(::CmdSort, nullptr, nullptr, "missing rating types");
 			else
 				ratings = convRatings(stringFromObj(optCount, objv + objc, ++i));
 		}
 		else
 		{
-			return usage(::CmdSort, 0, 0, subcommands, args);
+			return usage(::CmdSort, nullptr, nullptr, subcommands, args);
 		}
 	}
 
@@ -2712,7 +2729,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return usage(::CmdSort, 0, 0, subcommands, args);
+			return usage(::CmdSort, nullptr, nullptr, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -2752,14 +2769,14 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Annotator };
 
 	if (objc < 3 || 4 < objc)
-		return usage(::CmdReverse, 0, 0, subcommands, args);
+		return usage(::CmdReverse, nullptr, nullptr, subcommands, args);
 
 	int			view		= View::DefaultView;
 	int			index		= tcl::uniqueMatchObj(objv[1], subcommands);
-	char const*	database	= Tcl_GetStringFromObj(objv[2], 0);
+	char const*	database	= Tcl_GetStringFromObj(objv[2], nullptr);
 
 	if (objc == 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-		return error(::CmdReverse, 0, 0, "integer expected for view argument");
+		return error(::CmdReverse, nullptr, nullptr, "integer expected for view argument");
 
 	switch (index)
 	{
@@ -2780,7 +2797,7 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return usage(::CmdReverse, 0, 0, subcommands, args);
+			return usage(::CmdReverse, nullptr, nullptr, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -3035,16 +3052,17 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 
 	mstl::string database(stringFromObj(objc, objv, 1));
-	mstl::string filename(database);
+	mstl::string filename(::util::misc::file::rootname(database));
 
 	filename += ".partial-293t83873xx878.sci";
 
-	Progress		progress(objv[2], objv[3]);
-	Cursor&		cursor(scidb.cursor(database));
-	Database&	db(cursor.database());
-	View&			v(cursor.view());
-	Log			log;
-	type::ID		type(db.type());
+	Progress			progress(objv[2], objv[3]);
+	Cursor&			cursor(scidb.cursor(database));
+	Database&		db(cursor.database());
+	View&				v(cursor.view());
+	Log				log;
+	type::ID			type(db.type());
+	View::FileMode	fmode(DatabaseCodec::upgradeIndexOnly() ? View::Create : View::Upgrade);
 
 	try
 	{
@@ -3054,9 +3072,11 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										type,
 										0,
 										View::AllGames,
+										View::TagBits(true),
+										true,
 										log,
 										progress,
-										View::Upgrade));
+										fmode));
 
 		::db::sci::Codec::rename(filename, database);
 	}

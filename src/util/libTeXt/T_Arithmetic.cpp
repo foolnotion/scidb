@@ -123,7 +123,7 @@ performLog10(Environment& env)
 	if (token->value() <= 0)
 		Messages::errmessage(env, "Logarithm undefined (argument <= 0)", Messages::Incorrigible);
 
-	env.putFinalToken(TokenP(new NumberToken(Value(log10(token->value())))));
+	env.putFinalToken(TokenP(new NumberToken(Value(log10(token->value()))))); // MEMORY
 }
 
 
@@ -140,7 +140,7 @@ performPow2(Environment& env)
 	if (size_t(exp) >= (sizeof(Value)*8 - 1))
 		Messages::errmessage(env, "Arithmetic overflow", Messages::Incorrigible);
 
-	env.putFinalToken(TokenP(new NumberToken(Value(1 << exp))));
+	env.putFinalToken(TokenP(new NumberToken(Value(1 << exp)))); // MEMORY
 }
 
 

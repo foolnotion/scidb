@@ -29,6 +29,8 @@
 
 #include "db_common.h"
 
+#include "u_crc.h"
+
 namespace mstl { class string; }
 
 namespace db {
@@ -59,6 +61,7 @@ public:
 	unsigned count() const;
 
 	uint8_t const* data() const;
+	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	bool add(nag::ID nag);
 	bool add(char const* str);

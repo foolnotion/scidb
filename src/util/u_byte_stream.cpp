@@ -28,6 +28,12 @@
 using namespace util;
 
 
+ByteStream::UnexpectedEndOfStreamException::UnexpectedEndOfStreamException()
+	:Exception("unexpected end of stream")
+{
+}
+
+
 ByteStream::ByteStream(ByteStream& strm)
 	:m_base(strm.m_base)
 	,m_getp(strm.m_getp)
@@ -154,7 +160,7 @@ ByteStream::overflow(unsigned size)
 void
 ByteStream::underflow(unsigned)
 {
-	U_RAISE("unexpected end of stream");
+	M_THROW(UnexpectedEndOfStreamException());
 }
 
 
@@ -331,7 +337,6 @@ uint32_t
 ByteStream::uint32()
 {
 	skip(4);
-
 	return	(uint32_t(m_getp[-4]) << 24)
 			 | (uint32_t(m_getp[-3]) << 16)
 			 | (uint32_t(m_getp[-2]) << 8)
@@ -343,7 +348,6 @@ uint32_t
 ByteStream::uint32LE()
 {
 	skip(4);
-
 	return	(uint32_t(m_getp[-1]) << 24)
 			 | (uint32_t(m_getp[-2]) << 16)
 			 | (uint32_t(m_getp[-3]) << 8)
@@ -355,7 +359,6 @@ uint64_t
 ByteStream::uint48()
 {
 	skip(6);
-
 	return  (uint64_t(m_getp[-6]) << 40)
 			| (uint64_t(m_getp[-5]) << 32)
 			| (uint64_t(m_getp[-4]) << 24)
@@ -369,7 +372,6 @@ uint64_t
 ByteStream::uint64()
 {
 	skip(8);
-
 	return  (uint64_t(m_getp[-8]) << 56)
 			| (uint64_t(m_getp[-7]) << 48)
 			| (uint64_t(m_getp[-6]) << 40)
@@ -404,7 +406,6 @@ ByteStream&
 ByteStream::operator<<(uint16_t i)
 {
 	advance(2);
-
 	m_putp[-2] = i >> 8;
 	m_putp[-1] = i;
 
@@ -416,7 +417,6 @@ ByteStream&
 ByteStream::operator<<(uint24_t i)
 {
 	advance(3);
-
 	m_putp[-3] = i >> 16;
 	m_putp[-2] = i >> 8;
 	m_putp[-1] = i;
@@ -429,7 +429,6 @@ ByteStream&
 ByteStream::operator<<(uint32_t i)
 {
 	advance(4);
-
 	m_putp[-4] = i >> 24;
 	m_putp[-3] = i >> 16;
 	m_putp[-2] = i >> 8;
@@ -443,7 +442,6 @@ ByteStream&
 ByteStream::operator<<(uint48_t i)
 {
 	advance(6);
-
 	m_putp[-6] = i >> 40;
 	m_putp[-5] = i >> 32;
 	m_putp[-4] = i >> 24;
@@ -459,7 +457,6 @@ ByteStream&
 ByteStream::operator<<(uint64_t i)
 {
 	advance(8);
-
 	m_putp[-8] = i >> 56;
 	m_putp[-7] = i >> 48;
 	m_putp[-6] = i >> 40;

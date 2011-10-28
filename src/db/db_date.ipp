@@ -107,6 +107,14 @@ operator>=(const Date& d1, const Date& d2)
 	return d1.m_value >= d2.m_value;
 }
 
+
+inline
+int
+Date::compare(Date const& date) const
+{
+	return int(m_value) - int(date.m_value);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

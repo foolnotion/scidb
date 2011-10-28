@@ -58,7 +58,7 @@ proc Build {w args} {
 		-relief			{}
 		-imagecmd		{}
 		-nodehandler	{}
-		-doublebuffer	no
+		-doublebuffer	yes
 		-delay			0
 	}
 
@@ -128,7 +128,7 @@ proc Build {w args} {
 	if {[llength $opts(-nodehandler)]} {
 		$html handler node td $opts(-nodehandler)
 	}
-	grid $html -row 0 -column 0
+	grid $html
 	grid anchor $parent center
 
 	return $w

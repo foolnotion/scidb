@@ -112,7 +112,7 @@ HtmlDelStackingInfo(pTree, pElem)
         }
         assert(!pTree->pStack || !pTree->pStack->pPrev);
 
-        HtmlFree(pStack);
+        HtmlFree(pStack); // XXX memory error?
         pTree->nStack--;
     }
     pElem->pStack = 0;

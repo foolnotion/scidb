@@ -40,7 +40,6 @@ set IncreaseBoardSize	"Increase board size"
 set DecreaseBoardSize	"Decrease board size"
 
 set IllegalMove			"Illegal move"
-set GameDataCorrupted	"Game data is corrupted."
 set NoCastlingRights		"no castling rights"
 
 set GotoFirstGame			"Goto first game"
@@ -62,8 +61,8 @@ array set Options {
 	repeat:interval		300
 	background:pgn			white
 	background:header		#ebf4f5
-	background:player		"cornflower blue"
-	foreground:player		white
+	background:hilite		cornflowerblue
+	foreground:hilite		white
 	background:current	#ffdd76
 	foreground:result		black
 	foreground:empty		#666666
@@ -115,6 +114,8 @@ proc open {parent base info view index {fen {}}} {
 
 	grid columnconfigure $top 1 -weight 1
 
+	set background [::theme::getBackgroundColor]
+
 	# board
 	set board [::board::stuff::new $lt.board $Options(board:size) 1]
 	grid $board -column 0 -row 0 -sticky nsew -padx $::theme::padding -pady $::theme::padding
@@ -123,6 +124,7 @@ proc open {parent base info view index {fen {}}} {
 	set controls [tk::frame $bot.controls]
 	tk::button $controls.rotateBoard \
 		-takefocus 0 \
+		-background $background \
 		-image $::icon::22x22::rotateBoard \
 		-command [namespace code [list RotateBoard $board]] \
 		;
@@ -137,6 +139,7 @@ proc open {parent base info view index {fen {}}} {
 		set w $controls.[string tolower $control 0 0]
 		tk::button $w \
 			-image [set ::icon::22x22::control$control] \
+			-background $background \
 			-takefocus 0 \
 			-command [list event generate $w $key] \
 			;
@@ -149,6 +152,7 @@ proc open {parent base info view index {fen {}}} {
 	}
 	tk::button $controls.autoplay \
 		-takefocus 0 \
+		-background $background \
 		-image $::icon::22x22::playerStart \
 		-command [namespace code [list ToggleAutoPlay $position 1]] \
 		;
@@ -172,7 +176,7 @@ proc open {parent base info view index {fen {}}} {
 		;
 	tk::text $rt.pgn \
 		-height 0 -width 0 \
-		-yscrollcommand [list ::widget::sbset $rt.sb] \
+		-yscrollcommand [list ::scrolledframe::sbset $rt.sb] \
 		-state disabled \
 		-takefocus 0 \
 		-exportselection 0 \
@@ -282,10 +286,10 @@ proc open {parent base info view index {fen {}}} {
 
 	NextGame $dlg $position	;# too early for ::scidb::game::go
 
-	bind $rt.header <<Language>> [namespace code [list LanguageChanged $position $info]]
+	bind $rt.header <<LanguageChanged>> [namespace code [list LanguageChanged $position $info]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
 
-	::scidb::game::setup $position 240 80 0 0 no no no
+	::scidb::game::setup $position 240 80 0 0 no no no no
 
 	::scidb::game::subscribe board {*}$Vars(subscribe:board)
 	::scidb::game::subscribe pgn {*}$Vars(subscribe:pgn)
@@ -359,7 +363,7 @@ if {0} {
 		lappend opening2 [::font::translate $position] figurine
 		append opening3 ")"
 		if {$idn > 960} {
-			append opening3 " $mc::NoCastlingRights"
+			append opening3 " \[$mc::NoCastlingRights\]"
 		}
 	} elseif {$idn == 0 && [llength $position]} {
 		append opening1 "FEN: "
@@ -475,11 +479,7 @@ proc NextGame {parent position {step 0}} {
 	ConfigureButtons $position
 	SetTitle $position
 	set index [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
-
-	if {![::widget::busyOperation ::scidb::game::load $position $Vars(base) $index]} {
-		::dialog::error -parent $parent -message $::browser::mc::GameDataCorrupted
-	}
-
+	::widget::busyOperation ::game::load $parent $position $Vars(base) $index
 	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position $info
 }
@@ -561,7 +561,7 @@ proc UpdateHeader {position {info {}}} {
 	if {[llength $event] && [llength $site]} { append evline ", " }
 	append evline $site
 	if {[llength $evline] && [llength $date]} { append evline ", " }
-	append evline $date
+	append evline [::locale::formatNormalDate $date]
 
 	$text delete 1.0 end
 	if {[string length $evline]} {
@@ -569,7 +569,7 @@ proc UpdateHeader {position {info {}}} {
 		$text insert end \n
 	}
 	$text insert end $white {bold white}
-	$text insert end " - " bold
+	$text insert end " \u2013 " bold
 	$text insert end $black {bold black}
 
 	$text tag bind event <Any-Enter>			[namespace code [list EnterItem $position event]]
@@ -621,8 +621,8 @@ proc EnterItem {position item} {
 	variable Options
 
 	$Vars(header) tag configure $item \
-		-background $Options(background:player) \
-		-foreground $Options(foreground:player) \
+		-background $Options(background:hilite) \
+		-foreground $Options(foreground:hilite) \
 		;
 }
 
@@ -789,13 +789,13 @@ proc ToggleAutoPlay {position {hide 0}} {
 
 	set w $Vars(autoplay:control)
 
-	if {[$w cget -image] eq $::icon::22x22::playerStart} {
-		$w configure -image $::icon::22x22::playerStop
+	if {[$w cget -image] eq $::icon::22x22::hiliteStart} {
+		$w configure -image $::icon::22x22::hiliteStop
 		set Vars(autoplay) 1
 		Goto $position +1
 		set tooltipVar StopAutoplay
 	} else {
-		$w configure -image $::icon::22x22::playerStart
+		$w configure -image $::icon::22x22::hiliteStart
 		set Vars(autoplay) 0
 		after cancel $Vars(afterid)
 		set Vars(afterid) {}
@@ -874,6 +874,7 @@ proc PopupMenu {parent board position} {
 	set menu $dlg.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff 0
+	catch { wm attributes $m -type popup_menu }
 
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 

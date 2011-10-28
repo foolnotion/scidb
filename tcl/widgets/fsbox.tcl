@@ -16,19 +16,8 @@
 # (at your option) any later version.
 # ======================================================================
 
-source /home/gregor/development/c++/scidb/tcl/contrib/treectrl.tcl
-source /home/gregor/development/c++/scidb/tcl/contrib/filelist-bindings.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/theme.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/tooltip.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/toolbar.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/choosedir.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/tlistbox.tcl
-source /home/gregor/development/c++/scidb/tcl/widgets/tcombobox.tcl
-theme::setTheme default
-
 package require Tk 8.5
 package require tktreectrl 2.2
-package require tooltip
 package require toolbar
 package require choosedir
 package require tcombobox
@@ -36,57 +25,94 @@ if {[catch { package require tkpng }]} { package require Img }
 package provide fxbox 1.0
 
 
-proc fsbox {w args} { return [fsbox::fsbox $w {*}$args] }
+proc fsbox {w type args} { return [fsbox::fsbox $w $type {*}$args] }
 
 
 namespace eval fsbox {
 namespace eval mc {
 
-set Name					"Name"
-set Size					"Size"
-set Modified			"Modified"
+set Name								"Name"
+set Size								"Size"
+set Modified						"Modified"
 
-set Forward				"Forward"
-set Backward			"Backward"
-set Delete				"Delete"
-set Rename				"Rename"
-set NewFolder			"New Folder"
-set ListLayout			"List Layout"
-set DetailedLayout	"Detailed Layout"
-set ShowHiddenDirs	"Show Hidden Directories"
-set ShowHiddenFiles	"Show Hidden Files and Directories"
-set Cancel				"Cancel"
-set Save					"Save"
+set Forward							"Forward to '%s'"
+set Backward						"Backward to '%s'"
+set Delete							"Delete"
+set Rename							"Rename"
+set NewFolder						"New Folder"
+set Layout							"Layout"
+set ListLayout						"List Layout"
+set DetailedLayout				"Detailed Layout"
+set ShowHiddenDirs				"Show Hidden Directories"
+set ShowHiddenFiles				"Show Hidden Files and Directories"
+set AppendToExisitingFile		"&Append to an existing file"
+set Cancel							"&Cancel"
+set Save								"&Save"
+set Open								"&Open"
 
-set AddBookmark		"Add Bookmark '%s'"
-set RemoveBookmark	"Remove Bookmark '%s'"
+set AddBookmark					"Add Bookmark '%s'"
+set RemoveBookmark				"Remove Bookmark '%s'"
 
-set Filename			"File &name:"
-set FilesType			"Files of &type:"
-set FileEncoding		"File &encoding:"
+set Filename						"File &name:"
+set FilesType						"Files of &type:"
+set FileEncoding					"File &encoding:"
 
-set Favorites			"Favorites"
-set LastVisited		"Last Visited"
-set FileSystem			"File System"
-set Desktop				"Desktop"
-set Home					"Home"
+set Favorites						"Favorites"
+set LastVisited					"Last Visited"
+set FileSystem						"File System"
+set Desktop							"Desktop"
+set Home								"Home"
 
-set SelectWhichType	"Select which type of file are shown"
+set SelectWhichType				"Select which type of file are shown"
+set SelectEncoding				"Select encoding"
+set TimeFormat						"%d/%m/%y %I:%M %p"
+
+set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
+set DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
+set ReallyMove(file)				"Really move file '%s' to trash?"
+set ReallyMove(folder)			"Really move folder '%s' to trash?"
+set ReallyDelete(file)			"Really delete file '%s' to trash?"
+set ReallyDelete(folder)		"Really delete folder '%s' to trash?"
+set DeleteFailed					"Deletion of '%s' failed."
+set CommandFailed					"Command '%s' failed."
+set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
+set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
+set InvalidFileExt				"Cannot rename because '%s' has an invalid file extension."
+set CannotRename					"Cannot rename to '%s' because this folder/file already exists."
+set CannotCreate					"Cannot create folder '%s' because this folder/file already exists."
+set ErrorCreate					"Error creating folder: permission denied."
+set FilenameNotAllowed			"Filename '%s' is not allowed."
+set ContainsTwoDots				"Contains two consecutive dots."
+set InvalidFileExtension		"Invalid file extension in '%s'."
+set MissingFileExtension		"Missing file extension in '%s'."
+set FileAlreadyExists			"File \"%s\" already exists.\n\nDo you want to overwrite it?"
+set CannotOverwriteDirectory	"Cannot overwite directory '%s'."
+set FileDoesNotExist				"File \"%s\" does not exist."
+set DirectoryDoesNotExist		"Directory \"%s\" does not exist."
+set CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 
 }
 
 namespace import ::tcl::mathfunc::max
 
+variable HaveTooltips 1
+if {[catch {package require tooltip}]} { set HaveTooltips 0 }
+
 array set Options {
-	show:hidden		0
-	show:details	1
-	show:list		0
+	show:hidden	0
+	show:layout	details
+	show:filetypeicons 1
+	pane:favorites 120
 }
 
 
-proc fsbox {w args} {
-	variable Vars
+proc fsbox {w type args} {
 	variable Options
+
+	if {![namespace exists [namespace current]::${w}]} {
+		namespace eval [namespace current]::${w} {}
+	}
+	variable ${w}::Vars
 
 	array set opts {
 		-font							TkTextFont
@@ -101,23 +127,32 @@ proc fsbox {w args} {
 		-borderwidth				1
 		-relief						sunken
 		-doublebuffer				window
+		-savemode					0
 		-initialdir					{}
+		-initialfile				{}
 		-showhidden					{}
-		-timeformat					"%d/%m/%y %I:%M %p"
-		-defaultextension			.sci
+		-defaultextension			{}
 		-filetypes					{}
 		-fileicons					{}
 		-sizecommand				{}
+		-validatecommand			{}
 		-selectencodingcommand	{}
 		-fileencodings				{}
+		-deletecommand				{}
+		-renamecommand				{}
+		-okcommand					{}
+		-cancelcommand				{}
+		-multiple					0
 	}
 
 	array set opts $args
+	if {$opts(-multiple)} { set opts(-selectmode) extended } else { set opts(-selectmode) single }
 
-	foreach option {	selectionbackground selectionforeground font timeformat
+	foreach option {	selectionbackground selectionforeground font multiple savemode
 							activebackground activeforeground defaultextension
 							inactivebackground inactiveforeground filetypes fileencodings
-							fileicons showhidden sizecommand selectencodingcommand} {
+							fileicons showhidden sizecommand selectencodingcommand validatecommand
+							deletecommand renamecommand okcommand cancelcommand initialfile} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -125,96 +160,94 @@ proc fsbox {w args} {
 	if {[llength $Vars(showhidden)]} {
 		set Options(show:hidden) $Vars(showhidden)
 	}
-
-	if {[llength $Vars(filetypes)] && [string length $Vars(defaultextension)] == 0} {
-		set Vars(defaultextension) [lindex $Vars(filetypes) 0 1 0]
+	if {[llength $Vars(sizecommand)] == 0} {
+		set Vars(sizecommand) [namespace code GetFileSize]
+	}
+	if {[llength $Vars(validatecommand)] == 0} {
+		set Vars(validatecommand) [namespace code ValidateFile]
 	}
 
-	set Vars(extensions) [lindex $Vars(filetypes) 0 1]
+	set Vars(type) $type
+	set Vars(glob) Files
+	set Vars(folder:home) [file nativename ~]
+	set Vars(folder:desktop) [file join $Vars(folder:home) Desktop]
+	if {![file isdirectory $Vars(folder:desktop)]} { set Vars(folder:desktop) "" }
+	set Vars(folder:filesystem) "/"
+	set Vars(bookmark:folder) ""
+	set Vars(edit:active) 0
 
-	set Vars(dir) $opts(-initialdir)
+	set Vars(folder) $opts(-initialdir)
+	set Vars(prevFolder) ""
 	array unset opts -initialdir
-	if {[string length $Vars(dir)] == 0} {
-		set Vars(dir) [pwd]
+	if {[string length $Vars(folder)] == 0 || ![file isdirectory $Vars(folder)]} {
+		set Vars(folder) [pwd]
+		set Vars(lastFolder) ""
+	} else {
+		set Vars(lastFolder) $Vars(folder)
 	}
 
-	set fileicons {}
-	set nameList {}
-	foreach {extensions name} $Vars(fileicons) {
-		foreach ext $extensions {
-			if {$ext ni $fileicons} {
-				lappend fileicons $ext
-				set Vars(fti:$ext) $name
-				if {$name ni $nameList} {
-					lappend nameList $name
-				}
-			}
-		}
-	}
-
-	set filetypeCount 0
-	set secondFiletypeCount 0
-	foreach entry $Vars(filetypes) {
-		lassign $entry name extensions
-		set iconList {}
-		foreach ext $extensions {
-			if {$ext in $fileicons} {
-				if {$Vars(fti:$ext) ni $iconList} {
-					lappend iconList $Vars(fti:$ext)
-				}
-			}
-		}
-		set filetypeCount [max $filetypeCount [llength $iconList]]
-	}
-
+	set Vars(widget:main) $w
 	tk::frame $w -takefocus 0
 	set top [ttk::frame $w.top -takefocus 0]
 	pack $top -fill both -expand yes
-	choosedir $top.dir -initialdir $Vars(dir) -showlabel 1
+	set Vars(choosedir) [choosedir $top.folder -initialdir $Vars(folder) -showlabel 1]
+	bind $Vars(choosedir) <<SetDirectory>> [namespace code [list ChangeDir $w %d]]
 
-	tk::panedwindow $top.main \
-		-sashwidth 7 \
-		-background [ttk::style lookup $::ttk::currentTheme -background] \
-		;
-
-	bookmarks::Build $top.main.fav {*}[array get opts]
-	filelist::Build $top.main.list {*}[array get opts]
-
-	$top.main add $top.main.fav  -minsize 0 -sticky nsew -stretch last
-	$top.main add $top.main.list -minsize 300 -sticky nsew -stretch always
+	tk::panedwindow $top.main -sashwidth 7 -sashrelief flat
+	set Vars(widget:panedwindow) $top.main
 
 	::tk::AmpWidget ttk::label $top.lbl_filename -text [Tr Filename]
-	set Vars(widget:filename) [ttk::entry $top.ent_filename -cursor xterm]
+	set Vars(widget:filename) [ttk::entry $top.ent_filename \
+		-cursor xterm \
+		-textvariable [namespace current]::${w}::Vars(initialfile) \
+	]
+	$top.ent_filename icursor end
 	bind $top.lbl_filename <<AltUnderlined>> [list focus $top.ent_filename]
+	bind $top.ent_filename <FocusIn> [namespace code { FocusIn %W }]
+	bind $top.ent_filename <FocusOut> [namespace code { FocusOut %W }]
+	bind $top.ent_filename <Return> [namespace code [list Activate $w]]
+	bind $top.ent_filename <Return> {+ break }
+	bind $top.ent_filename <Any-KeyRelease> [namespace code [list CheckFileEncoding $w]]
 
 	if {[llength $Vars(selectencodingcommand)]} {
+		set Vars(encodingDefault) ""
+		set Vars(encodingVar) ""
 		::tk::AmpWidget ttk::label $top.lbl_encoding -text [Tr FileEncoding]
 		set Vars(widget:encoding) [ttk::entry $top.ent_encoding \
 			-state readonly \
-			-textvar [namespace current]::Vars(encodingVar) \
+			-textvar [namespace current]::${w}::Vars(encodingVar) \
 			-width 14 \
 			-foreground #808080 \
 		]
 		bind $top.ent_encoding <ButtonPress-1> [namespace code [list SelectEncoding $w]]
+		tooltip $top.ent_encoding [Tr SelectEncoding]
 	}
 
 	if {[llength $Vars(filetypes)]} {
 		::tk::AmpWidget ttk::label $top.lbl_filetype -text [Tr FilesType]
-		ttk::tcombobox $top.ent_filetype                       \
-			-state readonly                                   \
-			-textvariable $Vars(filetypes)                    \
-			-format "%1 (%2)"                                 \
-			-showcolumns [list 0 [expr {$filetypeCount + 1}]] \
-			-padding 1                                        \
+		ttk::tcombobox $top.ent_filetype  \
+			-state readonly                \
+			-format "%1 (%2)"              \
+			-padding 1                     \
 			;
 		bind $top.ent_filetype <<ComboboxSelected>> [namespace code [list SelectFileTypes $w %W]]
 		bind $top.lbl_filetype <<AltUnderlined>> [list focus $top.ent_filetype]
-		tooltip $top.lbl_filetype [Tr SelectWhichType]
 		set Vars(widget:filetypes:combobox) $top.ent_filetype
+		tooltip $top.ent_filetype [Tr SelectWhichType]
 
-		tk::canvas $top.cnv_filetype -width 1 -height 1 -relief sunken -borderwidth 1 -takefocus 0
-		bind $top.cnv_filetype <Configure> [namespace code SetFileTypes]
-		set Vars(widget:filetypes:canvas) $top.cnv_filetype
+		if {$Options(show:filetypeicons)} {
+			tk::canvas $top.cnv_filetype -width 1 -height 1 -relief sunken -borderwidth 1 -takefocus 0
+			bind $top.cnv_filetype <Configure> [namespace code [list SetFileTypes $w]]
+#			bind $top.cnv_filetype <ButtonPress-1> [list $top.ent_filetype post]
+			set Vars(widget:filetypes:canvas) $top.cnv_filetype
+#			tooltip $top.cnv_filetype [Tr SelectWhichType]
+		}
+	}
+
+	if {[llength $Vars(selectencodingcommand)] == 0 && [llength $Vars(filetypes)] > 0} {
+		set cspan {-columnspan 4}
+	} else {
+		set cspan {}
 	}
 
 	grid columnconfigure $top {3} -weight 1
@@ -222,7 +255,7 @@ proc fsbox {w args} {
 	grid rowconfigure $top {3} -weight 1
 	grid rowconfigure $top {0 2 4 6} -minsize 5
 
-	grid $top.dir  			-row 1 -column 1 -sticky ew -columnspan 7
+	grid $top.folder 			-row 1 -column 1 -sticky ew -columnspan 7
 	grid $top.main				-row 3 -column 1 -sticky nsew -columnspan 7
 	grid $top.lbl_filename	-row 5 -column 1 -sticky w
 	grid $top.ent_filename	-row 5 -column 3 -sticky ew
@@ -231,91 +264,305 @@ proc fsbox {w args} {
 		grid $top.ent_encoding -row 5 -column 7
 		grid columnconfigure $top {6} -minsize 5
 		grid columnconfigure $top {4} -minsize 10
+	} elseif {[llength $Vars(filetypes)]} {
+		grid $top.ent_filename -columnspan 5
+		grid columnconfigure $top {7} -minsize 92
 	}
 	if {[llength $Vars(filetypes)]} {
 		grid $top.lbl_filetype	-row 7 -column 1 -sticky w
 		grid $top.ent_filetype	-row 7 -column 3 -sticky ew -columnspan 5
-		grid $top.cnv_filetype -row 7 -column 7 -sticky nsew
-		grid columnconfigure $top {6} -minsize 5
 		grid rowconfigure $top {8} -minsize 5
-		grid configure $top.ent_filetype -columnspan 3
+		if {$Options(show:filetypeicons)} {
+			grid $top.ent_filetype -columnspan 3
+			grid $top.cnv_filetype -row 7 -column 7 -sticky nsew
+			grid columnconfigure $top {6} -minsize 5
+		}
 	} else {
 		grid rowconfigure $top {4} -minsize 10
 	}
 
-	bind $top.main <<ThemeChanged>> [namespace code [list ThemeChanged $top.main]]
-
 	set buttons [tk::frame $w.buttons -takefocus 0]
 	pack [ttk::separator $w.sep] -fill x
-	pack $buttons -fill x
+	pack $buttons -fill x -expand no
 	ttk::style configure fsbox.TButton -anchor w
-	set Vars(button:cancel) [tk::AmpWidget ttk::button $buttons.cancel  \
-		-class TButton \
-		-default normal \
-		-compound left \
-		-image $icon::16x16::iconCancel \
-	]
+	if {$type eq "save"} {
+		set Vars(button:mode) [tk::AmpWidget ttk::checkbutton $buttons.mode  \
+			-variable [namespace current]::${w}::Vars(savemode:value) \
+			-text $mc::AppendToExisitingFile \
+			-command [namespace code [list SetupSaveMode $w]] \
+			-onvalue append \
+			-offvalue overwrite \
+		]
+	}
 	set Vars(button:ok) [tk::AmpWidget ttk::button $buttons.ok \
 		-class TButton \
 		-default active \
 		-compound left \
-		-image $icon::16x16::folder \
+		-command [namespace code [list Activate $w]] \
 	]
+	set Vars(button:cancel) [tk::AmpWidget ttk::button $buttons.cancel  \
+		-class TButton \
+		-default normal \
+		-compound left \
+		-image $icon::16x16::cancel \
+		-command [namespace code [list Cancel $w]] \
+	]
+	set utype [string toupper $Vars(type) 0 0]
+	if {$utype eq "Dir"} { set utype Open }
 	tk::SetAmpText $buttons.cancel " [Tr Cancel]"
-	tk::SetAmpText $buttons.ok " [Tr Save]"
+	tk::SetAmpText $buttons.ok " [Tr $utype]"
+	changeFileDialogType $w $type
 
-	pack $Vars(button:ok) -pady 5 -padx 5 -fill x -side right
+	bind $Vars(button:ok) <Return> [namespace code { InvokeOk %W }]
+	bind $Vars(button:cancel) <Return> [namespace code [list Cancel $w]]
+
+	if {$type eq "save"} { useSaveMode $w $Vars(savemode) }
 	pack $Vars(button:cancel) -pady 5 -padx 5 -fill x -side right
+	pack $Vars(button:ok) -pady 5 -padx 5 -fill x -side right
 
-	if {[llength $Vars(filetypes)]} {
-		$top.ent_filetype addcol text -id name -type text
-		for {set i 0} {$i < $filetypeCount} {incr i} {
-			$top.ent_filetype addcol image -id icon$i -type image
+	bind $top.main <<ThemeChanged>> [namespace code [list ThemeChanged $w]]
+	bind [winfo toplevel $top] <Escape> [list $Vars(button:cancel) invoke]
+	bind [winfo toplevel $top] <Return> [list $Vars(button:ok) invoke]
+
+	array unset Vars widget:filelist
+	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
+
+	bookmarks::Build $w $top.main.fav {*}[array get opts]
+	filelist::Build $w $top.main.list {*}[array get opts]
+	set Vars(widget:favorites) $top.main.fav
+
+	$top.main add $top.main.fav  -minsize 0 -sticky nsew -stretch last
+	$top.main add $top.main.list -minsize 300 -sticky nsew -stretch always
+
+	bind $top.main.fav <Configure> [namespace code { ConfigurePane %w }]
+
+	if {[string length $Vars(initialfile)]} {
+		set t $Vars(widget:list:file)
+		set i [expr {[llength $Vars(list:folder)] + 1}]
+		set sel 0
+		foreach file $Vars(list:file) {
+			set file [lindex [file split $file] end]
+			if {$file eq $Vars(initialfile)} { set sel $i }
+			incr i
 		}
-		$top.ent_filetype addcol text -id extensions -type text
-
-		foreach entry $Vars(filetypes) {
-			lassign $entry name extensions
-			set types {}
-			set icons {}
-
-			foreach ext $extensions {
-				if {[info exists Vars(fti:$ext)]} {
-					set img $Vars(fti:$ext)
-					if {$img ni $icons} {
-						lappend icons $img
-					}
-				}
-				if {[string length $types] > 0} { append types ", " }
-				append types "*$ext"
-			}
-
-			while {[llength $icons] < $filetypeCount} {
-				lappend icons {}
-			}
-			$top.ent_filetype listinsert [list $name {*}$icons $types]
-		}
-
-		$top.ent_filetype resize
-		SetFileTypes 0
+		$t selection add $sel
+		$t activate $sel
+		$t see $sel
+		filelist::SelectFiles $w [list $sel]
 	}
 
-	ChangeDir $w
+	DirChanged $w
 	focus $top.ent_filename
 	return $w
 }
 
 
+proc reset {w type args} {
+	variable ${w}::Vars
+
+	array set opts { -multiple 0 }
+	array set opts $args
+
+	if {$opts(-multiple)} { set mode extended } else { set mode single }
+	$Vars(widget:list:file) configure -selectmode $mode
+
+	foreach option {	multiple defaultextension filetypes fileencodings showhidden
+							sizecommand selectencodingcommand deletecommand renamecommand
+							okcommand cancelcommand initialfile} {
+		if {[info exists opts(-$option)]} {
+			set Vars($option) $opts(-$option)
+		}
+	}
+	if {[llength $Vars(sizecommand)] == 0} {
+		set Vars(sizecommand) [namespace code GetFileSize]
+	}
+	if {[llength $Vars(validatecommand)] == 0} {
+		set Vars(validatecommand) [namespace code ValidateFile]
+	}
+
+	# Enable these lines if you want to reset the column ordering
+#	$Vars(widget:list:file) column configure $Vars(sort-column) -arrow none
+#	set Vars(sort-column) name
+#	set Vars(sort-order) increasing
+
+	set Vars(type) $type
+
+	set utype [string toupper $Vars(type) 0 0]
+	if {$utype eq "Dir"} { set utype Open }
+	tk::SetAmpText $Vars(button:ok) " [Tr $utype]"
+
+	$Vars(widget:list:bookmark) selection clear
+	$Vars(widget:list:file) selection clear
+	$Vars(widget:filename) delete 0 end
+	set Vars(encodingVar) ""
+
+	changeFileDialogType $w $type
+	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
+	filelist::RefreshFileList $w
+	focus $Vars(widget:filename)
+}
+
+
+proc useSaveMode {w {flag 1}} {
+	variable ${w}::Vars
+
+	set Vars(savemode:value) overwrite
+
+	if {$flag} {
+		pack $Vars(button:mode) -pady 5 -padx 5 -fill x -side left
+	} else {
+		pack forget $Vars(button:mode)
+	}
+
+	SetupSaveMode $w
+}
+
+
+proc saveMode {w} {
+	return [set [namespace current]::${w}::Vars(savemode:value)]
+}
+
+
+proc changeFileDialogType {w type} {
+	variable ${w}::Vars
+
+	set Vars(type) $type
+
+	switch $type {
+		dir - open	{ set icon folder }
+		save			{ set icon disk }
+	}
+
+	$Vars(button:ok) configure -image [set icon::16x16::$icon]
+}
+
+
+proc setFileTypes {w filetypes {defaultextension ""}} {
+	variable ${w}::Vars
+
+	set Vars(defaultextension) $defaultextension
+	set Vars(filetypes) $filetypes
+	set Vars(extensions) [lindex $filetypes 0 1]
+#	set Vars(initialfile) ""
+
+	if {[llength $filetypes] && [string length $Vars(defaultextension)] == 0} {
+		set Vars(defaultextension) [lindex $filetypes 0 1 0]
+	}
+
+	set fileiconlist {}
+	foreach {extensions name} $Vars(fileicons) {
+		foreach ext $extensions {
+			if {$ext ni $fileiconlist} {
+				lappend fileiconlist $ext
+				set Vars(fti:$ext) $name
+			}
+		}
+	}
+
+	set filetypeCount 0
+
+	foreach entry $filetypes {
+		lassign $entry name extensions
+		set iconList {}
+		foreach ext $extensions {
+			if {$ext in $fileiconlist} {
+				if {$Vars(fti:$ext) ni $iconList} {
+					lappend iconList $Vars(fti:$ext)
+				}
+			}
+		}
+		set filetypeCount [max $filetypeCount [llength $iconList]]
+	}
+
+	set cb $Vars(widget:filetypes:combobox)
+	if {[winfo exists $cb]} {
+		$cb showcolumns [list 0 [expr {$filetypeCount + 1}]]
+		$cb columns clear
+
+		if {[llength $filetypes]} {
+			$cb configure -state readonly
+			$cb addcol text -id name -type text
+			for {set i 0} {$i < $filetypeCount} {incr i} {
+				$cb addcol image -id icon$i -type image
+			}
+			$cb addcol text -id extensions -type text
+
+			foreach entry $filetypes {
+				lassign $entry name extensions
+				set types {}
+				set icons {}
+
+				foreach ext $extensions {
+					if {[info exists Vars(fti:$ext)]} {
+						set img $Vars(fti:$ext)
+						if {$img ni $icons} {
+							lappend icons $img
+						}
+					}
+					if {[string length $types] > 0} { append types ", " }
+					append types "*$ext"
+				}
+
+				while {[llength $icons] < $filetypeCount} {
+					lappend icons {}
+				}
+				$cb listinsert [list $name {*}$icons $types]
+			}
+
+			$cb resize
+			SetFileTypes $w 0
+		} else {
+			$cb configure -state disabled
+		}
+	}
+
+	if {[info exists Vars(widget:filelist)]} {
+		filelist::RefreshFileList $w
+	}
+}
+
+
+proc lastFolder {w} {
+	variable ${w}::Vars
+
+	if {[info exists Vars(lastFolder)]} { return $Vars(lastFolder) }
+	return ""
+}
+
+
+proc validatePath {path} {
+	if {[string length $path] == 0} { return 1 }
+	foreach c [list $path] {
+		if {[string is control $c]} { return 0 }
+	}
+	if {[string match {*[\"\*:<>\?\|]*} $path]} {
+		return 0
+	}
+	return 1
+}
+
+
+proc verifyPath {path} {
+	if {$path eq "."} { return oneDot }
+	# we do not allow two or more consecutive dots in filename
+	if {[string first ".." $path] >= 0} {
+		return twoDots
+	}
+	# be sure filename is portable (since we support unix, win32 and mac)
+	if {![validatePath $path]} { return forbiddenChars }
+	return {}
+}
+
+
 proc tooltip {args} {}
 proc mc {msg args} { return [::msgcat::mc [set $msg] {*}$args] }
+proc messageBox {args} { return [tk_messageBox {*}$args] }
+proc busy {w} {}
+proc unbusy {w} {}
 
 
 proc makeStateSpecificIcons {img} {
-	# XXX preliminary
-	set disabledImg [image create photo -width 0 -height 0]
-	::scidb::tk::image disable $img $disabledImg
-	return [list $img disabled $disabledImg]
-	return $img ;# how to do?
+	return $img ;# XXX how to do?
 }
 
 
@@ -324,8 +571,57 @@ proc Tr {tok {args {}}} {
 }
 
 
+proc GetFileSize {file} {
+	set size [expr {[file size $file]/1024 + 1}]
+}
+
+
+proc SetupSaveMode {w} {
+	variable ${w}::Vars
+
+	if {$Vars(savemode:value) eq "append"} { set type open } else { set type save }
+	changeFileDialogType $w $type
+}
+
+
+proc ValidateFile {file {size {}}} {
+	return 1
+}
+
+
+proc CheckEncoding {w file} {
+	variable ${w}::Vars
+
+	set Vars(encodingVar) ""
+	set Vars(encodingDefault) ""
+
+	if {[llength $Vars(selectencodingcommand)] && [string length $Vars(encoding)] == 0} {
+		foreach {ext encoding} $Vars(fileencodings) {
+			if {[string match *$ext $file]} {
+				set Vars(encodingVar) $encoding
+				set Vars(encodingDefault) $encoding
+			}
+		}
+	}
+}
+
+
+proc CheckFileEncoding {w} {
+	variable ${w}::Vars
+
+	set file [$Vars(widget:filename) get]
+
+	if {[llength $file]} {
+		if {[string length [file extension $file]] == 0 && [string length $Vars(defaultextension)]} {
+			append file $Vars(defaultextension)
+		}
+		CheckEncoding $w $file
+	}
+}
+
+
 proc SelectFileTypes {w combo} {
-	variable Vars
+	variable ${w}::Vars
 
 	set selection [$combo get]
 	set i [string last " (" $selection]
@@ -333,13 +629,14 @@ proc SelectFileTypes {w combo} {
 	set i [lsearch -index 0 -exact $Vars(filetypes) $selection]
 	set Vars(extensions) [lindex $Vars(filetypes) $i 1]
 
-	SetFileTypes
-	filelist::RefreshFileList $Vars(widget:table-2)
+	SetFileTypes $w
+	filelist::RefreshFileList $w
 }
 
 
-proc SetFileTypes {{index -1}} {
-	variable Vars
+proc SetFileTypes {w {index -1}} {
+	variable ${w}::Vars
+	variable Options
 
 	if {$index >= 0} {
 		$Vars(widget:filetypes:combobox) current $index
@@ -347,11 +644,13 @@ proc SetFileTypes {{index -1}} {
 		set index [$Vars(widget:filetypes:combobox) current]
 	}
 
-	if {[llength $Vars(filetypes)]} {
+	set Vars(defaultextension) [lindex $Vars(filetypes) $index 1 0]
+
+	if {$Options(show:filetypeicons) && [llength $Vars(filetypes)]} {
 		set icons {}
 		set x 2
 		set i 0
-		set w $Vars(widget:filetypes:canvas)
+		set t $Vars(widget:filetypes:canvas)
 		set y -1000
 
 		foreach ext [lindex $Vars(filetypes) $index 1] {
@@ -359,14 +658,14 @@ proc SetFileTypes {{index -1}} {
 				set img $Vars(fti:$ext)
 				if {$img ni $icons} {
 					incr x 2
-					if {[llength [$w gettags ft:$i]] == 0} {
-						$w create image 0 0 -anchor nw -tag ft:$i
+					if {[llength [$t gettags ft:$i]] == 0} {
+						$t create image 0 0 -anchor nw -tag ft:$i
 					}
 					if {$y == -1000} {
-						set y [expr {(([winfo height $w] + 1) - [image height $img])/2}]
+						set y [expr {(([winfo height $t] + 1) - [image height $img])/2}]
 					}
-					$w coords ft:$i $x $y
-					$w itemconfigure ft:$i -image $img -state normal
+					$t coords ft:$i $x $y
+					$t itemconfigure ft:$i -image $img -state normal
 					lappend icons $img
 					incr x [image width $img]
 					incr i
@@ -374,8 +673,8 @@ proc SetFileTypes {{index -1}} {
 			}
 		}
 
-		while {[llength [$w gettags ft:$i]] > 0} {
-			$w itemconfigure ft:$i -state hidden
+		while {[llength [$t gettags ft:$i]] > 0} {
+			$t itemconfigure ft:$i -state hidden
 			incr i
 		}
 	}
@@ -383,37 +682,86 @@ proc SetFileTypes {{index -1}} {
 
 
 proc SelectEncoding {w} {
-	variable Vars
+	variable ${w}::Vars
 
-	set encoding [{*}$Vars(selectencodingcommand) $w]
-	$Vars(widget:encoding) configure -foreground black
-	set Vars(encodingVar) $encoding
-	set Vars(encoding) $encoding
+	set current $Vars(encodingVar)
+	if {[string length $current] == 0} { set current iso8859-1 }
+	set encoding [{*}$Vars(selectencodingcommand) $w $current $Vars(encodingDefault)]
+
+	if {[string length $encoding]} {
+		$Vars(widget:encoding) configure -foreground black
+		set Vars(encodingVar) $encoding
+		set Vars(encoding) $encoding
+	}
 }
 
 
-proc ThemeChanged {pw} {
-	variable Vars
+proc ThemeChanged {w} {
+	variable ${w}::Vars
 
 	set background [ttk::style lookup $::ttk::currentTheme -background]
 
-	foreach n {1 2} {
-		set w $Vars(widget:table-$n)
-		foreach id [$w column list] {
-			$w column configure $id -background $background
+	foreach n {bookmark file} {
+		set t $Vars(widget:list:$n)
+		foreach id [$t column list] {
+			$t column configure $id -background $background
 		}
 	}
 
-	$pw configure -background $background
+	$Vars(widget:panedwindow) configure -background $background
 }
 
 
-proc VisitItem {w mode item} {
+proc ConfigurePane {width} {
+	variable Options
+
+	set Options(pane:favorites) $width
+}
+
+
+proc VisitItem {w t mode item} {
+	variable ${w}::Vars
+
+	if {$Vars(edit:active)} { return }
+
+	# Note: this function may be invoked with non-existing items
 	if {[string length $item]} {
 		switch $mode {
-			enter { $w item state set $item {hilite} }
-			leave { $w item state set $item {!hilite} }
+			enter { catch { $t item state set $item {hilite}  } }
+			leave { catch { $t item state set $item {!hilite} } }
 		}
+	}
+}
+
+
+proc SetActiveItem {w item state} {
+	variable ::TreeCtrl::Priv
+
+	if {[string length $item] == 0} { return  }
+
+	if {[$w cget -selectmode] eq "extended"} {
+		if {[expr {$state & 4}]} { ;# Ctrl is held down
+			$w activate $item
+			$w selection anchor $item
+			$w see $item
+			if {$item in [$w selection get]} {
+				$w selection clear $item
+			} else {
+				$w selection add $item
+			}
+			set Priv(selection) ""
+			set Priv(prev) ""
+		} elseif {[expr {$state & 1}] && [llength [$w selection get]]} { ;# Shift is held down
+			TreeCtrl::DataExtend $w $item
+		} else {
+			set Priv(prev) ""
+			set Priv(selection) ""
+			TreeCtrl::SetActiveItem $w $item
+		}
+	} else {
+		set Priv(prev) ""
+		set Priv(selection) ""
+		TreeCtrl::SetActiveItem $w $item
 	}
 }
 
@@ -428,18 +776,372 @@ proc SbSet {sb first last} {
 }
 
 
-proc ChangeDir {w} {
-	variable Vars
+proc DirChanged {w {useHistory 1}} {
+	variable ${w}::Vars
+	variable bookmarks::Bookmarks
+	variable bookmarks::BookmarkSize
 
-	foreach dir $Vars(folders) {
-		if {$Vars(dir) eq $dir} {
+	if {$Vars(glob) eq "Files"} {
+		set folder $Vars(folder)
+	} else {
+		set folder $Vars(glob)
+	}
+
+	if {$useHistory} {
+		set Vars(undo:history) [lrange $Vars(undo:history) 0 $Vars(undo:current)]
+		set Vars(undo:current) [llength $Vars(undo:history)]
+		lappend Vars(undo:history) $folder
+		if {[llength $Vars(undo:history)] > 1} {
+			filelist::SetTooltip $w Backward $Vars(prevFolder)
+			::toolbar::childconfigure $Vars(button:backward) -state normal -tooltip $Vars(tip:backward)
+		}
+		::toolbar::childconfigure $Vars(button:forward) -state disabled
+		set Vars(tip:forward) ""
+
+		if {$Vars(glob) eq "Files" && $folder ne "/"} {
+			set i [lsearch -exact $Bookmarks(lastvisited) $folder]
+			if {$i >= 0} {
+				set Bookmarks(lastvisited) [lreplace $Bookmarks(lastvisited) $i $i]
+			}
+			if {[llength $Bookmarks(lastvisited)] >= $BookmarkSize} {
+				set erange [expr {$BookmarkSize - 2}]
+				set Bookmarks(lastvisited) [lrange $Bookmarks(lastvisited) 0 $erange]
+			}
+			set Bookmarks(lastvisited) [linsert $Bookmarks(lastvisited) 0 $folder]
+
+			set i [lsearch -exact -index 0 $Bookmarks(favorites) $folder]
+			if {$i == -1} {
+				if {[llength $Bookmarks(favorites)] >= $BookmarkSize} {
+					set erange [expr {$BookmarkSize - 2}]
+					set Bookmarks(favorites) [lrange $Bookmarks(favorites) 0 $erange]
+				}
+				lappend Bookmarks(favorites) [list $folder 1]
+			} else {
+				set count [lindex $Bookmarks(favorites) $i 1]
+				set Bookmarks(favorites) [lreplace $Bookmarks(favorites) $i $i]
+				lappend Bookmarks(favorites) [list $folder [incr count]]
+			}
+			set Bookmarks(favorites) [lsort -index 1 -decreasing -integer $Bookmarks(favorites)]
+		}
+	}
+
+	set Vars(bookmark:folder) ""
+
+	foreach f {home desktop filesystem} {
+		if {$Vars(folder) eq $Vars(folder:$f)} {
 			::toolbar::childconfigure $Vars(button:add) -state disabled
 			return
 		}
 	}
 
-	set tip [format $mc::AddBookmark [file tail $Vars(dir)]]
+	if {$Vars(glob) ne "Files"} {
+		::toolbar::childconfigure $Vars(button:add) -state disabled
+		return
+	} else {
+		foreach f $Bookmarks(user) {
+			if {$Vars(folder) eq $f} {
+				::toolbar::childconfigure $Vars(button:add) -state disabled
+				return
+			}
+		}
+	}
+
+	set Vars(bookmark:folder) $folder
+	set tip [format $mc::AddBookmark [file tail $folder]]
 	::toolbar::childconfigure $Vars(button:add) -state normal -tooltip $tip
+}
+
+
+proc ChangeDir {w path {useHistory 1}} {
+	variable ${w}::Vars
+	variable bookmarks::Bookmarks
+
+	set Vars(prevFolder) $Vars(folder)
+	if {[string length $Vars(prevFolder)] == 0} {
+		set Vars(prevFolder) $Vars(glob)
+	}
+
+	switch $path {
+		Favorites {
+			set Vars(glob) $path
+			set Vars(folder) {}
+			set subfolders {}
+			foreach entry $Bookmarks([string tolower $path]) {
+				lappend subfolders [lindex $entry 0]
+			}
+			$Vars(choosedir) setfolder [Tr $path] $subfolders
+		}
+
+		LastVisited {
+			set Vars(glob) $path
+			set Vars(folder) {}
+			$Vars(choosedir) setfolder [Tr $path] $Bookmarks([string tolower $path])
+		}
+
+		default {
+			set Vars(glob) Files
+			set appPWD [pwd]
+
+			if {[catch {cd $path}]} {
+				if {[file isdirectory $path]} {
+					set message [Tr CannotChangeDir $path]
+				} else {
+					set message [Tr DirectoryRemoved $path]
+				}
+				$Vars(choosedir) set $appPWD
+				messageBox -type ok -parent $Vars(widget:main) -icon warning -message $message
+				return
+			}
+
+			set Vars(folder) [pwd]
+			cd $appPWD
+			$Vars(choosedir) set $Vars(folder)
+			set Vars(lastFolder) $Vars(folder)
+		}
+	}
+
+	$Vars(widget:filelist) item delete all
+	filelist::Glob $w yes
+	if {$Vars(prevFolder) ne $Vars(folder)} {
+		DirChanged $w $useHistory
+	}
+}
+
+
+proc FocusIn {w} {
+	if {[$w get] ne ""} {
+		$w selection range 0 end
+		$w icursor end
+	} else {
+		$w selection clear
+	}
+}
+
+
+proc FocusOut {w} {
+	$w selection clear
+}
+
+
+proc InvokeOk {w} {
+	if {[$w cget -state] eq "normal"} {
+		$w invoke
+	}
+}
+
+
+proc Cancel {w} {
+	variable ${w}::Vars
+
+	if {[llength $Vars(cancelcommand)]} {
+		{*}$Vars(cancelcommand)
+	}
+}
+
+
+proc Activate {w} {
+	variable ${w}::Vars
+
+	switch $Vars(glob) {
+		Files			{ set complete Join }
+		Favorites	{ set complete SearchFavorite }
+		LastVisited	{ set complete SearchLastVisited }
+	}
+
+	set files {}
+	set selected {}
+
+	if {$Vars(multiple)} {
+		foreach file [string trim [split [$Vars(widget:filename) get] "\""]] {
+			if {[string length $file]} {
+				lappend selected [[namespace current]::$complete $w $file]
+			}
+		}
+	} else {
+		set file [string trim [$Vars(widget:filename) get]]
+		if {[string length $file]} {
+			lappend selected [[namespace current]::$complete $w $file]
+		}
+	}
+
+	if {[llength $selected] == 0} { return }
+
+	foreach file $selected {
+		if {[lindex [file split $file] 0] ne "/"} {
+			set msg [format [Tr CannotOpenOrCreate] $file]
+			messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+			return
+		}
+	}
+
+	if {$Vars(type) eq "save"} {
+		foreach file $selected {
+			if {![CheckPath $w $file]} { return }
+		}
+	}
+
+	foreach file $selected {
+		if {[llength $Vars(filetypes)]} {
+			if {[string length [file extension $file]]} {
+				if {$Vars(type) eq "save"} {
+					set found 0
+					foreach entry $Vars(filetypes) {
+						foreach ext [lindex $entry 1] {
+							if {[string match *$ext $file]} {
+								set found 1
+							}
+						}
+					}
+					if {!$found} {
+						set msg [format [Tr InvalidFileExtension] [file tail $file]]
+						messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+						return
+					}
+				}
+			} elseif {[string length $Vars(defaultextension)]} {
+				append file $Vars(defaultextension)
+			} else {
+				set msg [format [Tr MissingFileExtension] [file tail $file]]
+				messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+				return
+			}
+		}
+		lappend files $file
+	}
+
+	switch $Vars(type) {
+		dir {
+			foreach dir $files {
+				if {![file isdirectory $dir]} {
+					set msg [format [Tr DirectoryDoesNotExist] $file]
+					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					return
+				}
+			}
+		}
+
+		open {
+			foreach file $files {
+				if {![file exists $file]} {
+					set msg [format [Tr FileDoesNotExist] $file]
+					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					return
+				}
+			}
+		}
+
+		save {
+			foreach file $files {
+				if {[file isdirectory $file]} {
+					set msg [format [Tr CannotOverwriteDirectory] [file tail $file]]
+					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					return
+				}
+				if {[file exists $file]} {
+					set msg [format [Tr FileAlreadyExists] [file tail $file]]
+					set reply [messageBox \
+									-type yesno \
+									-icon question \
+									-parent $Vars(widget:main) \
+									-message $msg \
+					]
+					if {$reply ne "yes"} { return }
+				}
+			}
+		}
+	}
+
+	if {[llength $Vars(okcommand)]} {
+		if {!$Vars(multiple)} { set files [lindex $files 0] }
+		if {[llength $Vars(selectencodingcommand)]} {
+			{*}$Vars(okcommand) $files $Vars(encodingVar)
+		} else {
+			{*}$Vars(okcommand) $files
+		}
+	}
+}
+
+
+proc Join {w filename} {
+	variable ${w}::Vars
+	return [file join $Vars(folder) $filename]
+}
+
+
+proc SearchFavorite {w dir} {
+	variable bookmarks::Bookmarks
+
+	foreach entry $Bookmarks(favorites) {
+		set d [lindex $entry 0]
+		if {[file tail $d] eq $dir} {
+			return $d
+		}
+	}
+
+	return $dir
+}
+
+
+proc SearchLastVisited {w dir} {
+	variable bookmarks::Bookmarks
+
+	foreach d $Bookmarks(lastvisited) {
+		set d [lindex $entry 0]
+		if {[file tail $d] eq $dir} {
+			return $d
+		}
+	}
+
+	return $dir
+}
+
+
+proc CheckPath {w path} {
+	variable ${w}::Vars
+
+	switch [verifyPath $path] {
+		oneDot {
+			messageBox \
+				-type ok \
+				-icon error \
+				-parent $Vars(widget:main) \
+				-message [format [Tr FilenameNotAllowed] $path] \
+				;
+			return 0
+		}
+
+		twoDots {
+			messageBox \
+				-type ok \
+				-icon error \
+				-parent $Vars(widget:main) \
+				-message [format [Tr FilenameNotAllowed] $path] \
+				-detail [Tr ContainsTwoDots] \
+				;
+			return 0
+		}
+	}
+
+	return 1
+}
+
+
+proc Stimulate {w} {
+	variable ${w}::Vars
+
+	set Vars(edit:active) 0
+
+	foreach type {bookmark file} {
+		set t $Vars(widget:list:$type)
+		foreach item [$t item children root] { $t item state set $item {!hilite} }
+		set x [expr {[winfo pointerx .] - [winfo rootx $t]}]
+		set y [expr {[winfo pointery .] - [winfo rooty $t]}]
+		lassign [$t identify $x $y] what item
+
+		if {$what eq "item"} {
+			$t item state set $item {hilite}
+		}
+	}
 }
 
 
@@ -451,73 +1153,95 @@ array set Bookmarks {
 	user			{}
 }
 
+set BookmarkSize 15
 
-proc Build {w args} {
-	variable [namespace parent]::Vars
 
-	array set opts {
-		-width 120
+proc Tr {tok args} { return [[namespace parent]::Tr $tok {*}$args] }
+
+
+proc Build {w path args} {
+	variable [namespace parent]::${w}::Vars
+	variable [namespace parent]::Options
+	variable Bookmarks
+
+	if {![info exists [namespace current]::icon::16x16::iconAdd]} {
+		foreach {icon img} {Add plus Minus minus} {
+			set [namespace current]::icon::16x16::icon$icon \
+				[list [[namespace parent]::makeStateSpecificIcons \
+					[set [namespace current]::icon::16x16::$img]]]
+		}
 	}
+
+	set opts(-width) 120
+	set opts(-selectmode) single
 	array set opts $args
+	array unset opts -rows
 
-	set height [font metrics $Vars(font) -linespace]
-	if {$height < 20} { set height 20 }
+	set linespace [font metrics $Vars(font) -linespace]
+	if {$linespace < 20} { set linespace 20 }
 
-	::tk::frame $w -borderwidth 0 -takefocus 0
+	::tk::frame $path -borderwidth 0 -takefocus 0 -width $Options(pane:favorites)
+	pack propagate $path 0
 
-	set tb [::toolbar::toolbar $w -id toolbar -hide 0 -side top]
+	set tb [::toolbar::toolbar $path -id toolbar -hide 0 -side bottom]
 
-	set Vars(button:add) [::toolbar::add $tb button \
-		-image $icon::16x16::iconAdd                 \
-		-command [namespace code AddFavorite]        \
+	set Vars(button:add) [::toolbar::add $tb button    \
+		-image $icon::16x16::iconAdd                    \
+		-command [namespace code [list AddBookmark $w]] \
+		-state disabled                                 \
 	]
-	set Vars(button:minus) [::toolbar::add $tb button \
-		-image $icon::16x16::iconMinus                 \
-		-command [namespace code RemoveFavorite]       \
+	set Vars(button:minus) [::toolbar::add $tb button     \
+		-image $icon::16x16::iconMinus                     \
+		-command [namespace code [list RemoveBookmark $w]] \
+		-state disabled                                    \
 	]
 	
-	tk::frame $w.f -borderwidth 0 -takefocus 0
-	pack $w.f -fill both -expand yes
+	tk::frame $path.f -borderwidth 0 -takefocus 0
+	pack $path.f -fill both -expand yes
 
-	set tc $w.f.list
-	set sb $w.f.vscroll
-	set Vars(widget:table-1) $tc
+	set t $path.f.list
+	set sb $path.f.vscroll
+	set Vars(widget:list:bookmark) $t
+	set yscrollcmd [list [namespace parent]::SbSet $sb]
 
-	treectrl $tc {*}[array get opts] \
-		-class FSBox                 \
-		-highlightthickness 0        \
-		-showroot no                 \
-		-showheader no               \
-		-showbuttons no              \
-		-showlines no                \
-		-takefocus 1                 \
-		-itemheight $height          \
-		-yscrollcommand [list [namespace parent]::SbSet $sb] \
+	treectrl $t {*}[array get opts]  \
+		-class FSBox                   \
+		-highlightthickness 0          \
+		-showroot no                   \
+		-showheader no                 \
+		-showbuttons no                \
+		-showlines no                  \
+		-takefocus 1                   \
+		-itemheight $linespace         \
+		-yscrollcommand $yscrollcmd    \
 		;
+	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
 
 	ttk::scrollbar $sb           \
 		-orient vertical          \
 		-takefocus 0              \
-		-command [list $tc yview] \
+		-command [list $t yview] \
 		;
 
-	grid $tc -row 0 -column 0 -sticky nsew
+	grid $t -row 0 -column 0 -sticky nsew
 	grid $sb -row 0 -column 1 -sticky ns
-	grid columnconfigure $w.f {0} -weight 1
-	grid rowconfigure $w.f {0} -weight 1
+	grid columnconfigure $path.f {0} -weight 1
+	grid rowconfigure $path.f {0} -weight 1
 
-	$tc state define hilite
+	$t state define hilite
 
-	$tc notify install <Item-enter>
-	$tc notify install <Item-leave>
-	$tc notify bind $tc <Item-enter> [list [namespace parent]::VisitItem $tc enter %I]
-	$tc notify bind $tc <Item-leave> [list [namespace parent]::VisitItem $tc leave %I]
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Item-enter> +[namespace code [list VisitItem $w enter %I]]
+	$t notify bind $t <Item-leave> +[namespace code [list VisitItem $w leave %I]]
 
-	$tc column create -tags root
-	$tc configure -treecolumn root
+	$t column create -tags root
+	$t configure -treecolumn root
 
-	$tc element create elemImg image
-	$tc element create elemTxt text                    \
+	$t element create elemImg image
+	$t element create elemTxt text                    \
 		-fill [list                                     \
 			$Vars(selectionforeground) {selected focus}  \
 			$Vars(selectionforeground) {selected hilite} \
@@ -526,31 +1250,35 @@ proc Build {w args} {
 		]                                               \
 		-lines 1                                        \
 		;
-	$tc element create elemSel rect                    \
+	$t element create elemSel rect                    \
 		-fill [list                                     \
 			$Vars(selectionbackground) {selected focus}  \
 			$Vars(selectionbackground) {selected hilite} \
 			$Vars(inactivebackground) {selected !focus}  \
 			$Vars(activebackground) {hilite}             \
 		]
-	$tc element create elemBrd border         \
+	$t element create elemBrd border         \
 		-filled no                             \
 		-relief raised                         \
 		-thickness 1                           \
 		-background {#e5e5e5 {selected} {} {}} \
 		;
 
-	set s [$tc style create style]
-	$tc style elements $s {elemSel elemImg elemBrd elemTxt}
-	$tc style layout $s elemImg -expand ns -padx {4 0}
-	$tc style layout $s elemTxt -padx {6 4} -expand ns -squeeze x
-	$tc style layout $s elemSel -union {elemTxt} -iexpand nsew
-	$tc style layout $s elemBrd -iexpand xy -detach yes
+	set s [$t style create style]
+	$t style elements $s {elemSel elemImg elemBrd elemTxt}
+	$t style layout $s elemImg -expand ns -padx {4 0}
+	$t style layout $s elemTxt -padx {6 4} -expand ns -squeeze x
+	$t style layout $s elemSel -union {elemTxt} -iexpand nsew
+	$t style layout $s elemBrd -iexpand xy -detach yes
 
-	$tc element create elemDiv rect -fill black -height 1
-	$tc style create styLine
-	$tc style elements styLine {elemDiv}
-	$tc style layout styLine elemDiv -pady {3 2} -padx {4 4} -iexpand x -expand ns
+	$t element create elemDiv rect -fill black -height 1
+	$t style create styLine
+	$t style elements styLine {elemDiv}
+	$t style layout styLine elemDiv -pady {3 2} -padx {4 4} -iexpand x -expand ns
+
+	bind $t <Double-Button-1>	[namespace code [list InvokeBookmark $w %x %y]]
+	bind $t <Key-space>	[namespace code [list InvokeBookmark $w]]
+	bind $t <Return> [namespace code [list InvokeBookmark $w]]
 
 	set Vars(bookmarks) {
 		{ star			Favorites	}
@@ -558,60 +1286,213 @@ proc Build {w args} {
 		{ divider		""				}
 		{ filesystem	FileSystem	}
 	}
-	if {[file isdirectory [file join [file nativename "~"] Desktop]]} {
+	if {[string length $Vars(folder:desktop)]} {
 		lappend Vars(bookmarks) { desktop Desktop }
 	}
-	lappend Vars(bookmarks) \
+	lappend Vars(bookmarks)         \
 		{ home			Home			} \
 		{ divider		""				} \
 		;
-	set Vars(folders) { Bases }
+
+	LayoutBookmarks $w
+
+	$t activate 0
+	$t notify bind $t <Selection> [namespace code [list Selected $w %S]]
+
+	Selected $w {}
+}
+
+
+proc LayoutBookmarks {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+	$t item delete all
+	$t xview moveto 0.0
+	$t yview moveto 0.0
 
 	foreach entry $Vars(bookmarks) {
 		lassign $entry icon text
-		set item [$tc item create]
+		set item [$t item create]
 		if {$icon eq "divider"} {
-			$tc item style set $item root styLine
-			$tc item enabled $item false
+			$t item style set $item root styLine
+			$t item enabled $item false
 		} else {
 			set icon [set [namespace parent]::icon::16x16::$icon]
-			$tc item style set $item root style
-			$tc item element configure $item root elemImg \
-				-image $icon + elemTxt \
-				-text [set [namespace parent]::mc::$text] \
+			$t item style set $item root style
+			$t item element configure $item root \
+				elemImg -image $icon + \
+				elemTxt -text [set [namespace parent]::mc::$text] \
 				;
 		}
-		$tc item lastchild root $item
+		$t item lastchild root $item
 	}
 
-	foreach folder $Vars(folders) {
+	set bookmarks {}
+	foreach folder $Bookmarks(user) {
+		if {[file isdirectory $folder]} {
+			lappend bookmarks $folder
+		}
+	}
+	set Bookmarks(user) $bookmarks
+	array unset Vars bookmark:tooltip:*
+
+	set index 0
+	foreach folder $Bookmarks(user) {
 		set icon [set [namespace parent]::icon::16x16::folder]
-		set item [$tc item create]
-		$tc item style set $item root style
-		$tc item element configure $item root elemImg -image $icon + elemTxt -text [file tail $folder]
-		$tc item lastchild root $item
+		set item [$t item create]
+		$t item style set $item root style
+		$t item element configure $item root elemImg -image $icon + elemTxt -text [file tail $folder]
+		$t item lastchild root $item
+		set Vars(bookmark:tooltip:$item) $index
+		incr index
 	}
+}
 
-	$tc activate 0
-	$tc notify bind $tc <Selection> [namespace code [list Selected $tc %S]]
 
-	Selected $tc {}
+proc AddBookmark {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	lappend Bookmarks(user) $Vars(folder)
+	set list {}
+	set index -1
+	foreach folder $Bookmarks(user) {
+		lappend list [list [incr index] [string tolower [file tail $folder]]]
+	}
+	set list [lsort -dictionary -index 1 $list]
+	set bookmarks {}
+	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
+	set Bookmarks(user) $bookmarks
+	LayoutBookmarks $w
+	[namespace parent]::DirChanged $w 0
+}
+
+
+proc RemoveBookmark {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+	set sel [expr {[$t item id active] - 1}]
+	set sel [expr {$sel - [llength $Vars(bookmarks)]}]
+	set Bookmarks(user) [lreplace $Bookmarks(user) $sel $sel]
+	LayoutBookmarks $w
+	[namespace parent]::DirChanged $w 0
 }
 
 
 proc Selected {w sel} {
-	variable [namespace parent]::Vars
-	
-	set state disabled
-	set tip ""
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
 
 	if {[string is integer -strict $sel] && $sel > [llength $Vars(bookmarks)]} {
-		set state normal
-		set dir [lindex $Vars(folders) [expr {$sel - [llength $Vars(bookmarks)] - 1}]]
-		set tip [format [set [namespace parent]::mc::RemoveBookmark] [file tail $dir]]
+		set folder [lindex $Bookmarks(user) [expr {$sel - [llength $Vars(bookmarks)] - 1}]]
+		set tip [format [set [namespace parent]::mc::RemoveBookmark] [file tail $folder]]
+		::toolbar::childconfigure $Vars(button:minus) -state normal -tooltip $tip
+	} else {
+		::toolbar::childconfigure $Vars(button:minus) -state disabled
+	}
+}
+
+
+proc VisitItem {w mode item} {
+	variable [namespace parent]::${w}::Vars
+	variable [namespace parent]::HaveTooltips
+	variable Bookmarks
+
+	if {$HaveTooltips && [string length $item]} {
+		switch $mode {
+			enter {
+				catch {
+					::tooltip::show $w [lindex $Bookmarks(user) $Vars(bookmark:tooltip:$item)]
+				}
+			}
+			leave {
+				::tooltip::hide
+			}
+		}
+	}
+}
+
+
+proc InvokeBookmark {w args} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+
+	if {[llength $args] == 2} {
+		lassign $args x y
+		set id [$t identify $x $y]
+		if {[lindex $id 0] eq "header"} { return }
+		if {[lindex $id 1] eq ""} { return }
+		set sel [$t item order [lindex $id 1] -visible]
+	} else {
+		set sel [expr {[$t item id active] - 1}]
 	}
 
-	::toolbar::childconfigure $Vars(button:minus) -state $state -tooltip $tip
+	if {$sel < [llength $Vars(bookmarks)]} {
+		switch [lindex $Vars(bookmarks) $sel 1] {
+			Favorites	{ [namespace parent]::ChangeDir $w Favorites }
+			LastVisited	{ [namespace parent]::ChangeDir $w LastVisited }
+			FileSystem	{ [namespace parent]::ChangeDir $w $Vars(folder:filesystem) }
+			Desktop		{ [namespace parent]::ChangeDir $w $Vars(folder:desktop) }
+			Home			{ [namespace parent]::ChangeDir $w $Vars(folder:home) }
+		}
+	} else {
+		set i [expr {$sel - [llength $Vars(bookmarks)]}]
+		if {$i < [llength $Bookmarks(user)]} {
+			[namespace parent]::ChangeDir $w [lindex $Bookmarks(user) $i]
+		}
+	}
+}
+
+
+proc PopupMenu {w x y} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+	if {[lindex [$t identify $x $y] 0] eq "header"} { return }
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+
+	set m $w.menu
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	set count 0
+
+	if {[string length $Vars(folder)]} {
+		if {[string length $Vars(bookmark:folder)]} { set state normal } else { set state disabled }
+		set text [format [Tr AddBookmark] [file tail $Vars(folder)]]
+		$m add command \
+			-compound left \
+			-image $icon::16x16::plus \
+			-label " $text" \
+			-command [namespace code [list AddBookmark $w]] \
+			-state $state \
+			;
+		incr count
+	}
+
+	set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
+	if {$sel >= 0} {
+		set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
+		$m add command                                        \
+			-compound left                                     \
+			-image $icon::16x16::minus                         \
+			-label " $text"                                    \
+			-command [namespace code [list RemoveBookmark $w]] \
+			;
+		incr count
+	}
+
+	if {$count > 0} {
+		set Vars(edit:active) 1
+		tk_popup $m {*}[winfo pointerxy $w]
+		bind $m <<MenuUnpost>> [list [namespace parent]::Stimulate $w]
+	}
 }
 
 
@@ -640,9 +1521,6 @@ set plus [image create photo -data {
 	BAAvnAXUrgypTQAAAABJRU5ErkJggg==
 }]
 
-set iconAdd		[list [fsbox::makeStateSpecificIcons $plus]]
-set iconMinus	[list [fsbox::makeStateSpecificIcons $minus]]
-
 } ;# namespace 16x16
 } ;# namespace icon
 } ;# namespace bookmarks
@@ -651,10 +1529,23 @@ namespace eval filelist {
 
 namespace import ::tcl::mathfunc::max
 
+array set FileSizeCache {}
 
-proc Build {w args} {
-	variable [namespace parent]::Vars
+
+proc Tr {tok args} { return [[namespace parent]::Tr $tok {*}$args] }
+
+
+proc Build {w path args} {
+	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
+
+	if {![info exists [namespace current]::icon::16x16::iconAdd]} {
+		foreach {icon img} {Delete delete Modify modify Add folder_add Backward backward Forward forward} {
+			set [namespace current]::icon::16x16::icon$icon \
+				[list [[namespace parent]::makeStateSpecificIcons \
+					[set [namespace current]::icon::16x16::$img]]]
+		}
+	}
 
 	array set opts {
 		-width			300
@@ -674,158 +1565,182 @@ proc Build {w args} {
 		array unset opts -$option
 	}
 
+	if {[info exists opts(-rows)]} {
+		set Vars(rows) $opts(-rows)
+		array unset opts -rows
+	}
+
 	set Vars(sort-column) name
+	set Vars(sort-order) increasing
 	set Vars(encoding) ""
-	set Vars(selected:dirs) {}
+	set Vars(selected:folders) {}
 	set Vars(selected:files) {}
 	set Vars(lock:selection) 0
+	set Vars(undo:history) {}
+	set Vars(undo:current) -1
+	set Vars(tip:forward) ""
+	set Vars(tip:backward) ""
 
-	tk::frame $w -borderwidth 0 -takefocus 0
-	tk::frame $w.f -borderwidth 0 -takefocus 0
-	pack $w.f -fill both -expand yes
+	tk::frame $path -borderwidth 0 -takefocus 0
+	tk::frame $path.f -borderwidth 0 -takefocus 0
+	pack $path.f -fill both -expand yes
 
-	set sv $w.f.vscroll
-	set sh $w.f.hscroll
-	set tc $w.f.files
-	set tb [::toolbar::toolbar $w -id toolbar -hide 0 -side top]
+	set sv $path.f.vscroll
+	set sh $path.f.hscroll
+	set t  $path.f.files
+	set tb [::toolbar::toolbar $path -id toolbar -hide 0 -side left]
 
-	::toolbar::add $tb button                       \
-		-image $icon::16x16::iconBackward            \
-		-command [namespace code Backward]           \
-		-tooltipvar [namespace parent]::mc::Backward \
-		-state disabled                              \
-		;
-	::toolbar::add $tb button                      \
-		-image $icon::16x16::iconForward            \
-		-command [namespace code Forward]           \
-		-tooltipvar [namespace parent]::mc::Forward \
-		-state disabled                             \
-		;
+	set Vars(button:backward) [::toolbar::add $tb button \
+		-image $icon::16x16::iconBackward                 \
+		-command [namespace code [list Undo $w]]          \
+		-state disabled                                   \
+	]
+	set Vars(button:forward) [::toolbar::add $tb button \
+		-image $icon::16x16::iconForward                 \
+		-command [namespace code [list Redo $w]]         \
+		-state disabled                                  \
+	]
 
 	::toolbar::add $tb separator
 
 	set Vars(button:delete) [::toolbar::add $tb button \
 		-image $icon::16x16::iconDelete                 \
 		-command [namespace code [list DeleteFile $w]]  \
-		-tooltipvar [namespace parent]::mc::Delete      \
+		-tooltip [Tr Delete]                            \
 		-state disabled                                 \
 	]
 	set Vars(button:rename) [::toolbar::add $tb button \
 		-image $icon::16x16::iconModify                 \
-		-command [namespace code [list RenameFile $tc]] \
-		-tooltipvar [namespace parent]::mc::Rename      \
+		-command [namespace code [list RenameFile $w]]  \
+		-tooltip [Tr Rename]                            \
 		-state disabled                                 \
 	]
-	::toolbar::add $tb button                         \
-		-image $icon::16x16::folder_add                \
-		-command [namespace code [list NewFolder $tc]] \
-		-tooltipvar [namespace parent]::mc::NewFolder  \
-		;
+	set Vars(button:new) [::toolbar::add $tb button   \
+		-image $icon::16x16::iconAdd                   \
+		-command [namespace code [list NewFolder $w]] \
+		-tooltip [Tr NewFolder]                        \
+	]
 
 	::toolbar::add $tb separator
 
-	if {$Options(show:details)} {
-		set layout list
+	if {$Options(show:layout) eq "list"} {
 		set tooltip ListLayout
-	} else {
+		set Vars(layout:list) 0
 		set layout details
+	} else {
 		set tooltip DetailedLayout
+		set Vars(layout:list) 1
+		set layout list
 	}
-	set Vars(widget:layout) [::toolbar::add $tb button  \
-		-image [set icon::16x16::$layout]                \
-		-command [namespace code SwitchLayout]           \
-		-tooltipvar [namespace parent]::mc::$tooltip     \
-		-variable [namespace parent]::Options(show:list) \
+	set Vars(widget:layout) [::toolbar::add $tb button       \
+		-image [set icon::16x16::$layout]                     \
+		-command [namespace code [list SwitchLayout $w]]      \
+		-tooltip [Tr $tooltip]                                \
+		-variable [namespace parent]::${w}::Vars(layout:list) \
 	]
 	if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
 	set Vars(widget:hidden) [::toolbar::add $tb checkbutton \
 		-image [set icon::16x16::${ipref}locked]             \
-		-command [namespace code [list SwitchHidden $tc]]    \
-		-tooltipvar [namespace parent]::mc::ShowHiddenFiles  \
+		-command [namespace code [list SwitchHidden $w]]     \
+		-tooltip [Tr ShowHiddenFiles]                        \
 		-variable [namespace parent]::Options(show:hidden)   \
 		-padx 1                                              \
 	]
 
-	set Vars(widget:table-2) $tc
+	set Vars(widget:list:file) $t
 	set Vars(xscrollcmd) [list [namespace parent]::SbSet $sh]
-	set Vars(yscrollcmd) [list [namespace parent]::SbSet $sv]
+	set Vars(yscrollcmd) [list $sv set]
 	set Vars(widget:xscrollbar) $sh
 	set Vars(widget:yscrollbar) $sv
 
-	treectrl $tc {*}[array get opts] \
-		-class FSBox                  \
-		-takefocus 1                  \
-		-highlightthickness 0         \
-		-showheader yes               \
-		-showbuttons no               \
-		-showroot no                  \
-		-showlines no                 \
-		-showrootlines no             \
-		-columnresizemode realtime    \
-		-xscrollincrement 1           \
-		-keepuserwidth no             \
+	treectrl $t {*}[array get opts] \
+		-class FSBox                 \
+		-takefocus 1                 \
+		-highlightthickness 0        \
+		-showheader yes              \
+		-showbuttons no              \
+		-showroot no                 \
+		-showlines no                \
+		-showrootlines no            \
+		-columnresizemode realtime   \
+		-xscrollincrement 1          \
+		-keepuserwidth no            \
+		-orient vertical             \
 		;
-	set Vars(widget:filelist) $tc
+	set Vars(widget:filelist) $t
+	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
 
 	ttk::scrollbar $sv           \
 		-orient vertical          \
 		-takefocus 0              \
-		-command [list $tc yview] \
+		-command [list $t yview] \
 		;
 	ttk::scrollbar $sh           \
 		-orient horizontal        \
 		-takefocus 0              \
-		-command [list $tc xview] \
+		-command [list $t xview] \
 		;
 
-	grid $tc -row 0 -column 0 -sticky nsew
+	grid $t  -row 0 -column 0 -sticky nsew
 	grid $sh -row 1 -column 0 -sticky ew
 	grid $sv -row 0 -column 1 -sticky ns
-	grid columnconfigure $w.f {0} -weight 1
-	grid rowconfigure $w.f {0} -weight 1
+	grid columnconfigure $path.f {0} -weight 1
+	grid rowconfigure $path.f {0} -weight 1
 
-	SetColumnBackground $tc tail $Vars(stripes) $opts(-background)
-	set height [max [font metrics [$tc cget -font] -linespace] 20]
-	set Vars(charwidth) [font measure [$tc cget -font] "0"]
-	$tc configure -itemheight $height
+	SetColumnBackground $t tail $Vars(stripes) $opts(-background)
 
-	$tc state define hilite
+	set linespace [max [font metrics [$t cget -font] -linespace] 20]
+	set Vars(charwidth) [font measure [$t cget -font] "0"]
+	$t configure -itemheight $linespace
 
-	set Vars(layout) ""
-	if {$Options(show:details)} { set layout details } else { set layout list }
-	SwitchLayout details
+	$t state define hilite
 
-	TreeCtrl::SetEditable  $tc { {name styName txtName} }
-	TreeCtrl::SetSensitive $tc { {name styName elemImg txtName} }
-#	TreeCtrl::SetDragImage $tc { {name styName elemImg txtName} }
+	SwitchLayout $w
 
-	$tc notify install <Edit-begin>
-	$tc notify install <Edit-accept>
-	$tc notify install <Edit-end>
-	$tc notify install <Item-enter>
-	$tc notify install <Item-leave>
-	$tc notify install <Header-invoke>
+	TreeCtrl::SetEditable  $t { {name styName txtName} }
+#	TreeCtrl::SetSensitive $t { {name styName elemImg txtName} }
+#	TreeCtrl::SetDragImage $t { {name styName elemImg txtName} }
 
-	$tc state define edit
-	$tc style layout styName txtName -draw {no edit}
-	$tc style layout styName elemSel -draw {no edit}
-	$tc notify bind $tc <Edit-begin> { %T item state set %I ~edit }
-	$tc notify bind $tc <Edit-accept> { %T item element configure %I %C %E -text %t }
-	$tc notify bind $tc <Edit-end> { %T item state set %I ~edit }
-	$tc notify bind $tc <Item-enter> [list [namespace parent]::VisitItem $tc enter %I]
-	$tc notify bind $tc <Item-leave> [list [namespace parent]::VisitItem $tc leave %I]
+	$t notify install <Edit-begin>
+	$t notify install <Edit-accept>
+	$t notify install <Edit-end>
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+	$t notify install <Header-invoke>
+	$t notify install <Column-resized>
 
-	$tc notify bind $tc <Header-invoke> [namespace code { SortColumn %T %C }]
+	$t state define edit
+	$t style layout styName txtName -draw {no edit}
+	$t style layout styName elemSel -draw {no edit}
+	$t notify bind $t <Edit-begin> { %T item state set %I ~edit }
+	$t notify bind $t <Edit-accept> { %T item element configure %I %C %E -text %t }
+	$t notify bind $t <Edit-accept> +[namespace code [list EditAccept $w]]
+	$t notify bind $t <Edit-end> { %T item state set %I ~edit }
+	$t notify bind $t <Edit-end> +[namespace code [list FinishEdit $w]]
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Column-resized> [namespace code [list ColumnResized $w %C]]
 
-	$tc notify bind $tc <Selection> [namespace code [list SelectFiles $tc %S]]
-	bind $tc <Double-ButtonPress-1> [namespace code { DoubleButton %W %x %y }]
+	$t notify bind $t <Header-invoke> [namespace code [list SortColumn $w %C]]
+	$t notify bind $t <Selection> [namespace code [list SelectFiles $w %S]]
 
-	CheckDir $tc
+	bind $t <Double-Button-1>	[namespace code [list InvokeFile $w %x %y]]
+	bind $t <Double-Button-1>	{+ break }
+	bind $t <Key-space> [namespace code [list InvokeFile $w]]
+	bind $t <Return> [namespace code [list InvokeFile $w]]
+
+	CheckDir $t
+
+	if {[info exists Vars(rows)]} {
+		update idletasks
+		set h [expr {[$t headerheight] + max($Vars(rows),1)*$linespace}]
+		$t configure -height $h
+	}
 }
 
 
 proc SwitchHidden {w} {
-	variable [namespace parent]::Vars
+	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
 	set Options(show:hidden) [expr {!$Options(show:hidden)}]
@@ -836,24 +1751,36 @@ proc SwitchHidden {w} {
 
 
 proc DetailsLayout {w} {
-	variable [namespace parent]::Vars
+	variable [namespace parent]::${w}::Vars
 
-	$w configure -itemwidthequal no
-	$w configure -orient vertical -wrap {}
-	$w configure -showheader yes
-	$w configure -yscrollcommand $Vars(yscrollcmd)
-	$w configure -xscrollcommand {}
+	set t $Vars(widget:filelist)
+
+	$t configure -itemwidthequal no
+	$t configure -wrap {}
+	$t configure -showheader yes
+	$t configure -yscrollcommand $Vars(yscrollcmd)
+	$t configure -xscrollcommand $Vars(xscrollcmd)
 	grid remove $Vars(widget:xscrollbar)
+	grid $Vars(widget:yscrollbar)
 
-	catch { $w item delete 1 end }
-	foreach col [$w column list] { $w column delete $col }
-	$w style delete {*}[$w style names]
-	$w element delete {*}[$w element names]
+	catch { $t item delete 1 end }
+	foreach col [$t column list] { $t column delete $col }
+	$t style delete {*}[$t style names]
+	$t element delete {*}[$t element names]
 
-	$w column create                            \
+	if {[info exists Vars(column:name)]} {
+		set copts(name) [list -width $Vars(column:name)]
+		set copts(size) [list -width $Vars(column:size)]
+		set copts(modified) [list -width $Vars(column:modified)]
+	} else {
+		set copts(name) {}
+		set copts(size) {}
+		set copts(modified) {}
+	}
+
+	$t column create                            \
 		-text [set [namespace parent]::mc::Name] \
 		-tags name                               \
-		-width [expr {25*$Vars(charwidth)}]      \
 		-minwidth [expr {10*$Vars(charwidth)}]   \
 		-arrow up                                \
 		-borderwidth $Vars(borderwidth)          \
@@ -863,12 +1790,13 @@ proc DetailsLayout {w} {
 		-font $Vars(font)                        \
 		-expand yes                              \
 		-squeeze yes                             \
+		{*}$copts(name)                          \
 		;
-	$w column create                            \
+	$t column create                            \
 		-text [set [namespace parent]::mc::Size] \
 		-tags size                               \
 		-justify right                           \
-		-width [expr {10*$Vars(charwidth)}]      \
+		-width [expr {11*$Vars(charwidth)}]      \
 		-minwidth [expr {6*$Vars(charwidth)}]    \
 		-arrowside left                          \
 		-arrowgravity right                      \
@@ -877,8 +1805,9 @@ proc DetailsLayout {w} {
 		-textpadx $Vars(textpadx)                \
 		-textpady $Vars(textpady)                \
 		-font $Vars(font)                        \
+		{*}$copts(size)                          \
 		;
-	$w column create                                \
+	$t column create                                \
 		-text [set [namespace parent]::mc::Modified] \
 		-tags modified                               \
 		-width [expr {18*$Vars(charwidth)}]          \
@@ -888,54 +1817,47 @@ proc DetailsLayout {w} {
 		-textpadx $Vars(textpadx)                    \
 		-textpady $Vars(textpady)                    \
 		-font $Vars(font)                            \
+		{*}$copts(modified)                          \
 		;
 	
-	if {[llength $Vars(sizecommand)]} {
-		set sizefmt "%d"
-	} else {
-		set sizefmt "%d KB"
-	}
-	
-	$w element create elemImg image -image [set [namespace parent]::icon::16x16::folder]
-	$w element create txtName text \
-		-fill [list \
-			$Vars(selectionforeground) {selected focus} \
+	$t element create elemImg image -image [set [namespace parent]::icon::16x16::folder]
+	$t element create txtName text                     \
+		-fill [list                                     \
+			$Vars(selectionforeground) {selected focus}  \
 			$Vars(selectionforeground) {selected hilite} \
 			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite} \
-		] \
-		-lines 1 \
+			$Vars(activeforeground) {hilite}             \
+		]                                               \
+		-lines 1                                        \
 		;
-	$w element create txtSize text \
-		-fill [list \
-			$Vars(selectionforeground) {selected focus} \
+	$t element create txtSize text                     \
+		-fill [list                                     \
+			$Vars(selectionforeground) {selected focus}  \
 			$Vars(selectionforeground) {selected hilite} \
 			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite} \
-		] \
-		-datatype integer \
-		-format $sizefmt \
-		-lines 1 \
+			$Vars(activeforeground) {hilite}             \
+		]                                               \
+		-lines 1                                        \
 		;
-	$w element create txtDate text \
-		-fill [list \
-			$Vars(selectionforeground) {selected focus} \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite} \
-		] \
-		-datatype time \
-		-format $Vars(timeformat) \
-		-lines 1 \
+	$t element create txtDate text                      \
+		-fill [list                                      \
+			$Vars(selectionforeground) {selected focus}   \
+			$Vars(selectionforeground) {selected hilite}  \
+			$Vars(inactiveforeground)  {selected !focus}  \
+			$Vars(activeforeground) {hilite}              \
+		]                                                \
+		-datatype time                                   \
+		-format [set [namespace parent]::mc::TimeFormat] \
+		-lines 1                                         \
 		;
-	$w element create elemSel rect \
-		-fill [list \
-			$Vars(selectionbackground) {selected focus} \
+	$t element create elemSel rect                     \
+		-fill [list                                     \
+			$Vars(selectionbackground) {selected focus}  \
 			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground) {selected !focus} \
-			$Vars(activebackground) {hilite} \
+			$Vars(inactivebackground) {selected !focus}  \
+			$Vars(activebackground) {hilite}             \
 		] 
-	$w element create elemBrd border          \
+	$t element create elemBrd border          \
 		-filled no                             \
 		-relief raised                         \
 		-thickness 1                           \
@@ -943,166 +1865,199 @@ proc DetailsLayout {w} {
 		;
 	
 	# column 0: icon + text
-	set s [$w style create styName -orient horizontal]
-	$w style elements $s {elemSel elemImg elemBrd txtName}
-	$w style layout $s elemImg -padx {2 0} -expand ns
-	$w style layout $s txtName -squeeze x -expand ns -padx {4 0}
-	$w style layout $s elemSel -union {txtName} -ipadx 2 -iexpand nsew
-	$w style layout $s elemBrd -iexpand xy -detach yes
+	set s [$t style create styName -orient horizontal]
+	$t style elements $s {elemSel elemImg elemBrd txtName}
+	$t style layout $s elemImg -padx {2 0} -expand ns
+	$t style layout $s txtName -squeeze x -expand ns -padx {4 0}
+	$t style layout $s elemSel -union {txtName} -ipadx 2 -iexpand nsew
+	$t style layout $s elemBrd -iexpand xy -detach yes
 
 	# column 1: text
-	set s [$w style create stySize]
-	$w style elements $s {elemSel elemBrd txtSize}
-	$w style layout $s txtSize -padx {4 4} -squeeze x -expand ns
-	$w style layout $s elemSel -union {txtSize} -ipadx 2 -iexpand nsew
-	$w style layout $s elemBrd -iexpand xy -detach yes
+	set s [$t style create stySize]
+	$t style elements $s {elemSel elemBrd txtSize}
+	$t style layout $s txtSize -padx {4 4} -squeeze x -expand ns
+	$t style layout $s elemSel -union {txtSize} -ipadx 2 -iexpand nsew
+	$t style layout $s elemBrd -iexpand xy -detach yes
 
 	# column 2: text
-	set s [$w style create styDate]
-	$w style elements $s {elemSel elemBrd txtDate}
-	$w style layout $s txtDate -padx {4 4} -squeeze x -expand ns
-	$w style layout $s elemSel -union {txtDate} -ipadx 2 -iexpand nsew
-	$w style layout $s elemBrd -iexpand xy -detach yes
+	set s [$t style create styDate]
+	$t style elements $s {elemSel elemBrd txtDate}
+	$t style layout $s txtDate -padx {4 4} -squeeze x -expand ns
+	$t style layout $s elemSel -union {txtDate} -ipadx 2 -iexpand nsew
+	$t style layout $s elemBrd -iexpand xy -detach yes
 
 	set Vars(scriptDir) {
-		set item [$w item create -open no]
-		$w item style set $item name styName size stySize modified styDate
-		$w item element configure $item \
-			name txtName -text [file tail $dir] , \
-			modified txtDate -data [file mtime $dir]
-		$w item lastchild root $item
+		set item [$t item create -open no]
+		$t item style set $item name styName size stySize modified styDate
+		$t item element configure $item \
+			name txtName -text [file tail $folder] , \
+			modified txtDate -data [file mtime $folder]
+		$t item lastchild root $item
+	}
+
+	set Vars(scriptNew) {
+		set item [$t item create -open no]
+		$t item style set $item name styName size stySize modified styDate
+		$t item element configure $item name txtName -text [file tail $folder]
+		$t item lastchild root $item
 	}
 
 	set Vars(scriptFile) {
-		set item [$w item create -open no]
-		$w item style set $item name styName size stySize modified styDate
-		set icon [GetFileIcon $file]
-		if {[llength $Vars(sizecommand)]} {
+		set modified -1
+		set mtime [file mtime $file]
+		catch { lassign $::fsbox::filelist::FileSizeCache($file) size modified }
+		if {$modified != $mtime} {
 			set size [{*}$Vars(sizecommand) $file]
-		} else {
-			set size [expr {[file size $file]/1024 + 1}]
+			set ::fsbox::filelist::FileSizeCache($file) [list $size $mtime]
 		}
-		$w item element configure $item \
-			name elemImg -image $icon , \
-			name txtName -text [file tail $file] , \
-			size txtSize -data $size , \
-			modified txtDate -data [file mtime $file]
-		$w item lastchild root $item
+		if {[{*}$Vars(validatecommand) $file $size]} {
+			set item [$t item create -open no]
+			$t item style set $item name styName size stySize modified styDate
+			set icon [GetFileIcon $w $file]
+			$t item element configure $item \
+				name elemImg -image $icon , \
+				name txtName -text [file tail $file] , \
+				size txtSize -text $size , \
+				modified txtDate -data $mtime
+			$t item lastchild root $item
+		}
 	}
 }
 
 
 proc ListLayout {w} {
-	variable [namespace parent]::Vars
+	variable [namespace parent]::${w}::Vars
 
-	$w configure -itemwidthequal yes
-	$w configure -orient vertical -wrap window
-	$w configure -showheader no
-	$w configure -yscrollcommand {}
-	$w configure -xscrollcommand $Vars(xscrollcmd)
+	set t $Vars(widget:filelist)
+
+	$t configure -itemwidthequal yes
+	$t configure -wrap window
+	$t configure -showheader no
+	$t configure -yscrollcommand {}
+	$t configure -xscrollcommand $Vars(xscrollcmd)
 	grid remove $Vars(widget:yscrollbar)
 
-	catch { $w item delete 1 end }
-	foreach col [$w column list] { $w column delete $col }
-	foreach sty [$w style names] { $w style delete $sty }
-	foreach elm [$w element names] { $w element delete $elm }
+	catch { $t item delete 1 end }
+	foreach col [$t column list] { $t column delete $col }
+	foreach sty [$t style names] { $t style delete $sty }
+	foreach elm [$t element names] { $t element delete $elm }
 
-	$w column create -tags name -steady yes
+	$t column create -tags name -steady yes
 
-	$w element create elemImg image -image [set [namespace parent]::icon::16x16::folder]
-	$w element create elemTxt text \
-		-fill [list \
-			$Vars(selectionforeground) {selected focus} \
+	$t element create elemImg image -image [set [namespace parent]::icon::16x16::folder]
+	$t element create txtName text                     \
+		-fill [list                                     \
+			$Vars(selectionforeground) {selected focus}  \
 			$Vars(selectionforeground) {selected hilite} \
 			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite} \
-		] \
-		-lines 1 \
+			$Vars(activeforeground) {hilite}             \
+		]                                               \
+		-lines 1                                        \
 		;
-	$w element create elemSel rect \
-		-fill [list \
-			$Vars(selectionbackground) {selected focus} \
+	$t element create elemSel rect                     \
+		-fill [list                                     \
+			$Vars(selectionbackground) {selected focus}  \
 			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground) {selected !focus} \
-			$Vars(activebackground) {hilite} \
+			$Vars(inactivebackground) {selected !focus}  \
+			$Vars(activebackground) {hilite}             \
 		] 
-	$w element create elemBrd border          \
+	$t element create elemBrd border          \
 		-filled no                             \
 		-relief raised                         \
 		-thickness 1                           \
 		-background {#e5e5e5 {selected} {} {}} \
 		;
 	
-	set s [$w style create styName]
-	$w style elements $s {elemSel elemImg elemBrd elemTxt}
-	$w style layout $s elemImg -expand ns -padx {3 0}
-	$w style layout $s elemTxt -squeeze x -expand ns -padx {2 3}
-	$w style layout $s elemSel -iexpand xy -detach yes
-	$w style layout $s elemBrd -iexpand xy -detach yes
+	set s [$t style create styName]
+	$t style elements $s {elemSel elemImg elemBrd txtName}
+	$t style layout $s elemImg -expand ns -padx {3 0}
+	$t style layout $s txtName -squeeze x -expand ns -padx {2 3}
+	$t style layout $s elemSel -iexpand xy -detach yes
+	$t style layout $s elemBrd -iexpand xy -detach yes
 
 	set Vars(scriptDir) {
-		set item [$w item create -open no]
-		$w item style set $item name styName
-		$w item text $item name [file tail $dir]
-		$w item lastchild root $item
+		set item [$t item create -open no]
+		$t item style set $item name styName
+		$t item text $item name [file tail $folder]
+		$t item lastchild root $item
 	}
 
+	set Vars(scriptNew) $Vars(scriptDir)
+
 	set Vars(scriptFile) {
-		set item [$w item create -open no]
-		$w item style set $item name styName
-		set icon [GetFileIcon $file]
-		$w item element configure $item name \
-			elemImg -image $icon + \
-			elemTxt -text [file tail $file]
-		$w item lastchild root $item
+		if {[{*}$Vars(validatecommand) $file]} {
+			set item [$t item create -open no]
+			$t item style set $item name styName
+			set icon [GetFileIcon $w $file]
+			$t item element configure $item name \
+				elemImg -image $icon + \
+				txtName -text [file tail $file]
+			$t item lastchild root $item
+		}
 	}
 }
 
 
-proc SwitchLayout {{layout {}}} {
-	variable [namespace parent]::Vars
+proc SwitchLayout {w {layout {}}} {
+	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
 	if {[llength $layout] == 0} {
-		set Options(show:details) [expr {!$Options(show:details)}]
-		set Options(show:list) [expr {!$Options(show:list)}]
-		if {$Options(show:details)} {
-			set layout list
-			set tooltip ListLayout
-		} else {
-			set layout details
+		set Vars(layout:list) [expr {!$Vars(layout:list)}]
+		if {$Vars(layout:list)} {
 			set tooltip DetailedLayout
+			set Options(show:layout) list
+			set layout details
+		} else {
+			set tooltip ListLayout
+			set Options(show:layout) details
+			set layout list
 		}
 		::toolbar::childconfigure $Vars(widget:layout) \
 			-image [set icon::16x16::$layout] \
-			-tooltipvar [namespace parent]::mc::$tooltip \
+			-tooltip [Tr $tooltip] \
 			;
-		if {$Options(show:details)} { set layout details } else { set layout list }
+	} elseif {$layout eq $Options(show:layout)} {
+		return
+	}
+	
+	set t $Vars(widget:filelist)
+	set selection [$t selection get]
+
+	switch $Options(show:layout) {
+		details {
+			DetailsLayout $w
+			$t xview moveto 0.0
+		}
+		list {
+			ListLayout $w
+		}
 	}
 
-	if {$layout eq $Vars(layout)} { return }
-	set Vars(layout) $layout
-	set w $Vars(widget:filelist)
-	set selection [$w selection get]
-
-	switch $layout {
-		details	{ DetailsLayout $w }
-		list		{ ListLayout $w }
-	}
-
-	Glob $w 0
-	$w see 1
-	$w activate 0
+	Glob $w no
+	catch { $t see 1 }
+	$t activate 0
 	foreach sel $selection {
-		$w selection add $sel
-		$w activate $sel
-		$w see $sel
+		$t selection add $sel
+		$t activate $sel
+		$t see $sel
 	}
 }
 
 
-proc GetFileIcon {filename} {
-	variable [namespace parent]::Vars
+proc ColumnResized {w col} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:filelist)
+
+	foreach id {name size modified} {
+		set Vars(column:$id) [$t column width $id]
+	}
+}
+
+
+proc GetFileIcon {w filename} {
+	variable [namespace parent]::${w}::Vars
 
 	foreach {ext icon} $Vars(fileicons) {
 		if {[string match *$ext $filename]} {
@@ -1114,234 +2069,313 @@ proc GetFileIcon {filename} {
 }
 
 
-proc SortColumn {w column} {
-	variable [namespace parent]::Vars
+proc SortColumn {w {column ""}} {
+	variable [namespace parent]::${w}::Vars
 
-	if {[$w column compare $column == $Vars(sort-column)]} {
-		if {[$w column cget $Vars(sort-column) -arrow] eq "down"} {
-			set order -increasing
-			set arrow up
-		} else {
-			set order -decreasing
-			set arrow down
-		}
+	set t $Vars(widget:filelist)
+
+	if {[string length $column] == 0} {
+		set column $Vars(sort-column)
+		if {[$t column cget $column -arrow] eq "none"} { return }
 	} else {
-		if {[$w column cget $Vars(sort-column) -arrow] eq "down"} {
-			set order -decreasing
-			set arrow down
+		set column [lindex [$t column tag names $column] 0]
+		set arrow [$t column cget $Vars(sort-column) -arrow]
+		if {$column eq $Vars(sort-column) || $arrow eq "none"} {
+			if {$arrow eq "up"} { set order decreasing } else { set order increasing }
 		} else {
-			set order -increasing
-			set arrow up
+			if {$arrow eq "up"} { set order increasing } else { set order decreasing }
 		}
-		$w column configure $Vars(sort-column) -arrow none
+		$t column configure $Vars(sort-column) -arrow none
 		set Vars(sort-column) $column
+		set Vars(sort-order) $order
+		switch $order {
+			increasing { set arrow up }
+			decreasing { set arrow down }
+		}
+		$t column configure $column -arrow $arrow
 	}
 
-	$w column configure $column -arrow $arrow
-	set dirCount [llength $Vars(dirList)]
-	set fileCount [expr {[$w item count] - 1 - $dirCount}]
+	set dirCount [llength $Vars(list:folder)]
+	set fileCount [expr {[$t item count] - 1 - $dirCount}]
 	set totalCount [expr {$dirCount + $fileCount}]
 	set lastDir [expr {$dirCount - 1}]
 
-	switch [$w column cget $column -tags] {
+	switch [$t column cget $column -tags] {
 		name {
 			if {$dirCount} {
-				$w item sort root $order \
-					-last [list root child $lastDir] \
-					-column $column \
-					-dictionary \
+				$t item sort root -$Vars(sort-order) \
+					-last [list root child $lastDir]  \
+					-column $column                   \
+					-dictionary                       \
 					;
 			}
 			if {$fileCount} {
-				$w item sort root $order \
-					-first [list root child [expr {$lastDir + 1}]] \
+				$t item sort root -$Vars(sort-order)                \
+					-first [list root child [expr {$lastDir + 1}]]   \
 					-last [list root child [expr {$totalCount - 1}]] \
-					-column $column \
-					-dictionary \
+					-column $column                                  \
+					-dictionary                                      \
 					;
 			}
 		}
 
 		size {
 			if {$fileCount} {
-				$w item sort root $order \
-					-first [list root child [expr {$lastDir + 1}]] \
-					-last [list root child [expr {$totalCount - 1}]] \
-					-column $column \
-					-integer \
-					-column name \
-					-dictionary \
+				$t item sort root -$Vars(sort-order)                          \
+					-first [list root child [expr {$lastDir + 1}]]             \
+					-last [list root child [expr {$totalCount - 1}]]           \
+					-column $column                                            \
+					-command [namespace code CompSize $Vars(widget:list:file)] \
+					-column name                                               \
+					-dictionary                                                \
 					;
 			}
 		}
 
 		modified {
 			if {$dirCount} {
-				$w item sort root $order \
-					-last [list root child $lastDir] \
-					-column $column  \
-					-integer \
-					-column name \
-					-dictionary \
+				$t item sort root -$Vars(sort-order) \
+					-last [list root child $lastDir]  \
+					-column $column                   \
+					-integer                          \
+					-column name                      \
+					-dictionary                       \
 					;
 			}
 			if {$fileCount} {
-				$w item sort root $order \
-					-first [list root child [expr {$lastDir + 1}]] \
+				$t item sort root -$Vars(sort-order)                \
+					-first [list root child [expr {$lastDir + 1}]]   \
 					-last [list root child [expr {$totalCount - 1}]] \
-					-column $column  \
-					-integer \
-					-column name \
-					-dictionary \
+					-column $column                                  \
+					-integer                                         \
+					-column name                                     \
+					-dictionary                                      \
 					;
 			}
+		}
+	}
+
+	if {!$Vars(multiple)} {
+		foreach sel [$t selection get] {
+			$t see $sel
 		}
 	}
 }
 
 
-proc SetColumnBackground {w id stripes background} {
+proc CompSize {t lhs rhs} {
+	set lsize [regsub -all {[^0-9]} [$t item element cget $lhs 1 txtSize -text] ""]
+	set rsize [regsub -all {[^0-9]} [$t item element cget $rhs 1 txtSize -text] ""]
+	return [expr {int($lsize) - int($rsize)}]
+}
+
+
+proc SetColumnBackground {t id stripes background} {
 	if {[llength $stripes]} {
-		$w column configure $id -itembackground [list $stripes $background]
+		$t column configure $id -itembackground [list $stripes $background]
 	} else {
-		$w column configure $id -itembackground $background
+		$t column configure $id -itembackground $background
 	}
 }
 
 
 proc Glob {w refresh} {
-	variable [namespace parent]::Vars
+	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
-	if {$refresh || ![info exists Vars(dirList)]} {
-		set filter *
-		if {$Options(show:hidden)} { lappend filter .* }
-		set dirs [glob -nocomplain -directory $Vars(dir) -types d {*}$filter]
-		set Vars(dirList) {}
+	if {$refresh || ![info exists Vars(list:folder)]} {
+		[namespace parent]::busy $w
 
-		foreach dir [lsort -dictionary $dirs] {
-			set d [file tail $dir]
-			if {$d ne "." && $d ne ".."} {
-				lappend Vars(dirList) $dir
+		switch $Vars(glob) {
+			Files {
+				switch $Vars(sort-order) {
+					increasing { set arrow up }
+					decreasing { set arrow down }
+				}
+				set state normal
+				set filter *
+				if {$Options(show:hidden)} { lappend filter .* }
+				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
+				set folders [lsort -dictionary $folders]
 			}
-		}
 
-		set filter *
-		if {$Options(show:hidden)} { lappend filter .* }
-		set files [glob -nocomplain -directory $Vars(dir) -types f {*}$filter]
-		set Vars(fileList) {}
+			Favorites {
+				variable [namespace parent]::bookmarks::Bookmarks
 
-		foreach file [lsort -dictionary -unique $files] {
-			set match 0
-
-			if {[llength $Vars(extensions)] == 0} {
-				set match 1
-			} else {
-				foreach ext $Vars(extensions) {
-					if {[string match *$ext $file]} {
-						set match 1
+				set arrow none
+				set state disabled
+				set bookmarks {}
+				foreach entry $Bookmarks(favorites) {
+					if {[file isdirectory [lindex $entry 0]]} {
+						lappend bookmarks $entry
+					}
+				}
+				set Bookmarks(favorites) $bookmarks
+				set folders {}
+				foreach entry $Bookmarks(favorites) {
+					set folder [lindex $entry 0]
+					if {[string index $folder 0] ne "." || $Options(show:hidden)} { 
+						lappend folders $folder
 					}
 				}
 			}
 
-			if {$match} {
-				lappend Vars(fileList) $file
+			LastVisited {
+				variable [namespace parent]::bookmarks::Bookmarks
+
+				set arrow none
+				set state disabled
+				set bookmarks {}
+				foreach entry $Bookmarks(lastvisited) {
+					if {[file isdirectory $entry]} {
+						lappend bookmarks $entry
+					}
+				}
+				set Bookmarks(lastvisited) $bookmarks
+				set folders {}
+				foreach folder $Bookmarks(lastvisited) {
+					if {[string index $folder 0] ne "." || $Options(show:hidden)} { 
+						lappend folders $folder
+					}
+				}
 			}
 		}
+
+		$Vars(widget:filelist) column configure $Vars(sort-column) -arrow $arrow
+		::toolbar::childconfigure $Vars(button:new) -state $state
+
+		set Vars(list:folder) {}
+		set Vars(list:file) {}
+
+		foreach folder $folders {
+			set d [file tail $folder]
+			if {$d ne "." && $d ne ".."} {
+				lappend Vars(list:folder) $folder
+			}
+		}
+
+		if {$Vars(glob) eq "Files" && $Vars(type) ne "dir"} {
+			set filter *
+			if {$Options(show:hidden)} { lappend filter .* }
+			set files [glob -nocomplain -directory $Vars(folder) -types f {*}$filter]
+
+			foreach file [lsort -dictionary -unique $files] {
+				set match 0
+
+				if {[llength $Vars(extensions)] == 0} {
+					set match 1
+				} else {
+					foreach ext $Vars(extensions) {
+						if {[string match *$ext $file]} {
+							set match 1
+						}
+					}
+				}
+
+				if {$match} {
+					lappend Vars(list:file) $file
+				}
+			}
+		}
+
+		[namespace parent]::unbusy $w
 	}
 
-	foreach dir $Vars(dirList) $Vars(scriptDir)
-	$w item tag add "root children" directory
-	foreach file $Vars(fileList) { eval $Vars(scriptFile) }
+	set t $Vars(widget:filelist)
+	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	if {[llength $Vars(list:folder)]} {
+		$Vars(widget:filelist) item tag add "root children" directory
+	}
+	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
+
+	if {$Vars(glob) eq "Files" && ($Vars(sort-column) ne "name" || $Vars(sort-order) ne "increasing")} {
+		SortColumn $w
+	}
 }
 
 
-proc DoubleButton {w x y} {
-	variable [namespace parent]::Vars
+proc InvokeFile {w args} {
+	variable [namespace parent]::${w}::Vars
 
-	set id [$w identify $x $y]
-	if {![TreeCtrl::IsSensitive $w $x $y]} { return }
+	set t $Vars(widget:filelist)
 
-	set item [lindex $id 1]
-	set column [lindex $id 3]
-	if {![$w item tag expr $item directory]} { return }
+	if {[llength $args] == 2} {
+		lassign $args x y
+		set id [$t identify $x $y]
+		if {[lindex $id 0] eq "header"} { return }
+		set sel [$t item order [lindex $id 1] -visible]
+	} else {
+		set sel [expr {[$t item id active] - 1}]
+	}
 
-	set name [$w item text $item $column]
-	set Vars(dir) [file join $Vars(dir) $name]
+	if {$sel < 0} { return }
+
+	if {$sel >= [llength $Vars(list:folder)]} {
+		SelectFiles $w [expr {$sel - [llength $Vars(list:folder)]}]]
+		if {!$Vars(multiple)} { [namespace parent]::Activate $w }
+	} elseif {$Vars(type) ne "dir"} {
+		[namespace parent]::VisitItem $w $t leave [expr {$sel + 1}]
+		set folder [lindex $Vars(list:folder) $sel]
+		[namespace parent]::ChangeDir $w $folder
+		after idle [list [namespace parent]::VisitItem $w $t enter [expr {$sel + 1}]]
+	} else {
+		SelectFiles $w $sel
+		if {!$Vars(multiple)} { [namespace parent]::Activate $w }
+	}
 }
 
 
 proc RefreshFileList {w} {
-	variable [namespace parent]::Vars
+	variable [namespace parent]::${w}::Vars
 
+	set t $Vars(widget:list:file)
 	set Vars(lock:selection) 1
-	$w item delete all
-	set Vars(lock:selection) 0
-	Glob $w 1
-	set n "root firstchild"
-	$w xview moveto 0.0
-	$w yview moveto 0.0
-	set dirs $Vars(selected:dirs)
+	$t item delete all
+	Glob $w yes
+	set n "root"
+	$t xview moveto 0.0
+	$t yview moveto 0.0
+	set folders $Vars(selected:folders)
 	set files $Vars(selected:files)
-	set Vars(selected:dirs) {}
+	set Vars(selected:folders) {}
 	set Vars(selected:files) {}
 
-	foreach dir $dirs {
-		set i [lsearch -exact $Vars(dirList) $dir]
+	foreach folder $folders {
+		set i [lsearch -exact $Vars(list:folder) $folder]
 		if {$i >= 0} {
 			set n [expr {$i + 1}]
-			$w selection add $n
-			lappend Vars(selected:dirs) $dir
+			$t selection add $n
+			lappend Vars(selected:folders) $folder
 		}
 	}
 
 	foreach file $files {
-		set i [lsearch -exact $Vars(fileList) $file]
+		set i [lsearch -exact $Vars(list:file) $file]
 		if {$i >= 0} {
-			set n [expr {$i + 1 + [llength $Vars(dirList)]}]
-			$w selection add $n
-			$w activate $n
+			set n [expr {$i + 1 + [llength $Vars(list:folder)]}]
+			$t selection add $n
+			$t activate $n
 			lappend Vars(selected:files) $file
 		}
 	}
 
-	$w activate $n
+	set Vars(lock:selection) 0
+	$t activate $n
 
 	if {[string is integer $n]} {
-		$w see $n
+		$t see $n
 	}
+
+	ConfigureButtons $w
 }
 
 
-proc SelectFiles {w selection} {
-	variable [namespace parent]::Vars
+proc ConfigureButtons {w} {
+	variable [namespace parent]::${w}::Vars
 
-	if {$Vars(lock:selection)} { return }
-
-	set Vars(selected:dirs) {}
-	set Vars(selected:files) {}
-
-	foreach n $selection {
-		if {$n <= [llength $Vars(dirList)]} {
-			set dir [lindex $Vars(dirList) [expr {$n - 1}]]
-			lappend Vars(selected:dirs) $dir
-			CheckDir $w $dir
-			CheckFile $w
-		} else {
-			if {[llength $Vars(selected:files)] == 0} {
-				$Vars(widget:filename) delete 0 end
-			} else {
-				Vars(widget:filename) insert end "; "
-			}
-			set file [lindex $Vars(fileList) [expr {$n - [llength $Vars(dirList)] - 1}]]
-			$Vars(widget:filename) insert end [file tail $file]
-			lappend Vars(selected:files) $file
-			CheckDir $w
-			CheckFile $w $file
-		}
-	}
-
-	if {[llength $Vars(selected:dirs)] + [llength $Vars(selected:files)] == 1} {
+	if {$Vars(glob) ne "Files"} {
+		set state disabled
+	} elseif {[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 1} {
 		set state normal
 	} else {
 		set state disabled
@@ -1351,38 +2385,516 @@ proc SelectFiles {w selection} {
 }
 
 
-proc CheckFile {w {file ""}} {
-	variable [namespace parent]::Vars
+proc SelectFiles {w selection} {
+	variable [namespace parent]::${w}::Vars
 
-	if {[llength $Vars(selectencodingcommand)] && [string length $Vars(encoding)] == 0} {
-		foreach {ext encoding} $Vars(fileencodings) {
-			if {[string match *$ext $file]} {
-				set Vars(encodingVar) $encoding
-			}
+	if {$Vars(lock:selection)} { return }
+
+	set Vars(selected:folders) {}
+	set Vars(selected:files) {}
+
+	set selection [lsort -integer -unique [$Vars(widget:filelist) selection get]]
+
+	foreach n $selection {
+		if {$n <= [llength $Vars(list:folder)]} {
+			set folder [lindex $Vars(list:folder) [expr {$n - 1}]]
+			lappend Vars(selected:folders) $folder
+			CheckDir $w $folder
+			CheckFile $w
+		} else {
+			set file [lindex $Vars(list:file) [expr {$n - [llength $Vars(list:folder)] - 1}]]
+			lappend Vars(selected:files) $file
+			CheckDir $w
+			CheckFile $w $file
 		}
 	}
+
+	switch $Vars(type) {
+		dir		{ set type folders }
+		default	{ set type files }
+	}
+
+	set filenames ""
+	foreach file $Vars(selected:$type) {
+		if {[llength $Vars(selected:$type)] > 1 && [string first " " $file] >= 0} {
+			set delim "\""
+		} else {
+			set delim ""
+		}
+		if {[string length $filenames]} { append filenames " " }
+		append filenames $delim
+		append filenames [file tail $file]
+		append filenames $delim
+	}
+	if {[string length $filenames]} {
+		set Vars(initialfile) $filenames
+	}
+
+	ConfigureButtons $w
 }
 
 
-proc CheckDir {w {dir  ""}} {
+proc CheckFile {w {file ""}} {
+	if {[llength $file]} { [namespace parent]::CheckEncoding $w $file }
+}
+
+
+proc CheckDir {w {folder  ""}} {
 	# nothing to do
 }
 
 
 proc DeleteFile {w} {
-	# KDE: exec 'kioclient move $file trash:/'
-	# KDE: exec 'kfmclient move $file trash:/'
+	variable [namespace parent]::${w}::Vars
 
-	# Probably look if 'kfmclient --commands' contains 'kfmclient move',
-	# otherwise kioclient has to be used.
+	[namespace parent]::busy $w
+	set t $Vars(widget:filelist)
+	set sel [expr {[$t item id active] - 1}]
+
+	if {$sel < [llength $Vars(list:folder)]} {
+		set type folder
+	} else {
+		set sel [expr {$sel - [llength $Vars(list:folder)]}]
+		set type file
+	}
+
+	if {![info exists Vars(iskde)]} {
+		if {[tk windowingsystem] eq "x11"} {
+			set atoms {}
+			catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
+			set Vars(iskde) [expr {[llength $atoms] > 0}]
+		} else {
+			set Vars(iskde) 0
+		}
+		if {$Vars(iskde)} {
+			set Vars(exec:delete) [auto_execok kioclient]
+			if {[llength $Vars(exec:delete)] == 0} {
+				set Vars(exec:delete) [auto_execok kfmclient]
+			}
+		}
+	}
+
+	set file [lindex $Vars(list:$type) $sel]
+	if {$Vars(iskde)} { set var ReallyMove($type) } else { set var ReallyDelete($type) }
+	set msg [format [Tr $var] [lindex [file split $file] end]]
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	set reply [[namespace parent]::messageBox \
+					-type yesno                   \
+					-icon question                \
+					-parent $Vars(widget:main)    \
+					-message $msg                 \
+					-default no                   \
+	]
+	after idle [list [namespace parent]::Stimulate $w]
+
+	if {$reply ne "yes" } {
+		[namespace parent]::unbusy $w
+		return
+	}
+
+	if {$Vars(iskde)} {
+		if {$type eq "file" && [llength $Vars(deletecommand)] > 0} {
+			set cmd "$Vars(exec:delete) move "
+			set delim ""
+			foreach f [{*}$Vars(deletecommand) $file] {
+				if {[file exists $f]} {
+					append cmd $delim
+					append cmd "\"$f\""
+					set delim " "
+				}
+			}
+			append cmd " trash:/"
+		} else {
+			set cmd "$Vars(exec:delete) move \"$file\" trash:/"
+		}
+
+		if {[catch {exec /bin/sh -c $cmd}]} {
+			# Oops, kioclient is always returning an error
+		}
+	} elseif {$type eq "file"} {
+		if {[llength $Vars(deletecommand)] > 0} {
+			set files {}
+			set delim ""
+			foreach f [{*}$Vars(deletecommand) $file] {
+				if {[file exists $f]} { lappend files $f }
+			}
+		} else {
+			set files [list $file]
+		}
+
+		if {[catch {file delete {*}$files}]} {
+			# XXX error: what should we do?
+		}
+	} elseif {[catch {file delete -force $file}]} {
+		# XXX error: what should we do?
+	} else {
+		[namespace parent]::bookmarks::LayoutBookmarks $w
+	}
+
+	RefreshFileList $w
+	[namespace parent]::unbusy $w
+
+	if {$file in $Vars(list:$type)} {
+		set msg [format [Tr DeleteFailed] $file]
+		set detail [format [Tr CommandFailed] $cmd]
+		[namespace parent]::messageBox \
+			-type ok                    \
+			-icon error                 \
+			-parent $Vars(widget:main)  \
+			-message $msg               \
+			-detail $detail             \
+			;
+	}
 }
 
 
 proc RenameFile {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:filelist)
+	set sel [$t item id active]
+	$t selection clear
+	set Vars(edit:active) 1
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	OpenEdit $w $sel rename
 }
 
 
 proc NewFolder {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:filelist)
+	$t item delete all
+	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	foreach folder [list [Tr NewFolder]] $Vars(scriptNew)
+	$t item tag add "root children" directory
+	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
+	set sel [expr {[llength $Vars(list:folder)] + 1}]
+	$t see $sel
+	set Vars(edit:active) 1
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	OpenEdit $w $sel new
+}
+
+
+proc OpenEdit {w sel mode} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:filelist)
+	set e [::TreeCtrl::EntryExpanderOpen $t $sel 0 txtName 0 [namespace code [list SelectFileName $w]]]
+	set vcmd { return [::fsbox::validatePath %P] }
+	$e configure                \
+		-validate key            \
+		-validatecommand $vcmd   \
+		-invalidcommand { bell } \
+		;
+	set Vars(edit:sel) $sel
+	set Vars(edit:mode) $mode
+	set Vars(edit:accept) 0
+	::TreeCtrl::TryEvent $t Edit begin [list I $sel C 0 E txtName]
+}
+
+
+proc SelectFileName {w e file} {
+	variable [namespace parent]::${w}::Vars
+
+	set end -1
+
+	foreach ext $Vars(extensions) {
+		if {[string match *$ext $file]} {
+			set end [max $end [expr {[string length $file] - [string length $ext]}]]
+		}
+	}
+
+	if {$end == -1} { set end end }
+	$e selection range 0 $end
+	$e icursor $end
+}
+
+
+proc EditAccept {w} {
+	variable [namespace parent]::${w}::Vars
+	set Vars(edit:accept) 1
+}
+
+
+proc FinishEdit {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:filelist)
+	set sel $Vars(edit:sel)
+	set name [string trim [$t item element cget $sel 0 txtName -text]]
+
+	switch $Vars(edit:mode) {
+		rename	{ FinishRenameFile $w $sel $name }
+		new		{ FinishNewFolder $w $sel $name }
+	}
+
+	after idle [list [namespace parent]::Stimulate $w]
+}
+
+
+proc FinishRenameFile {w sel name} {
+	variable [namespace parent]::${w}::Vars
+
+	set Vars(edit:active) 0
+	set name [string trim $name]
+	set t $Vars(widget:filelist)
+	$t selection add $sel
+	set i [expr {$sel - 1}]
+	if {$i < [llength $Vars(list:folder)]} {
+		set type folder
+	} else {
+		set i [expr {$i - [llength $Vars(list:folder)]}]
+		set type file
+	}
+	set oldName [lindex $Vars(list:$type) $i]
+	if {[string length $name]} {
+		set newName [file join $Vars(folder) $name]
+	} else {
+		set newName [lindex [file split $oldName] end]
+		set name $newName
+	}
+	if {$oldName ne $newName} {
+		if {[[namespace parent]::CheckPath $w $name]} {
+			set k [lsearch $Vars(list:folder) $newName]
+			if {$k == -1} { set k [lsearch $Vars(list:file) $newName] }
+			if {$k >= 0} {
+				[namespace parent]::messageBox \
+					-type ok \
+					-icon error \
+					-parent $Vars(widget:main) \
+					-message [format [Tr CannotRename] $name] \
+					;
+				set name [lindex [file split $oldName] end]
+			} else {
+				set ok 1
+				if {$type eq "file" && [llength $Vars(renamecommand)] > 0} {
+					set files [{*}$Vars(renamecommand) $oldName $newName]
+					if {[llength $files] == 0} {
+						set ok 0
+						set new $newName
+					} else {
+						set undoList {}
+						foreach {old new} $files {
+							if {[file exists $old]} {
+								if {[catch {file rename $old $new}]} {
+									foreach {f g} $undoList { catch { file rename $g $f } }
+									set ok 0
+									break
+								} else {
+									lappend undoList $old $new
+								}
+							}
+						}
+					}
+				} elseif {[catch {file rename $oldName $newName}]} {
+					set old [lindex [file split $oldName] end]
+					set new [lindex [file split $newName] end]
+					set ok 0
+				}
+				if {$ok} {
+					lset Vars(list:$type) $i $newName
+				} else {
+					if {[llength $files] == 0} {
+						set msg [format [Tr InvalidFileExt] $new]
+					} else {
+						set msg [Tr ErrorRenaming($type)]
+						set msg [string map [list %old $old %new $new] $msg]
+					}
+					[namespace parent]::messageBox \
+						-type ok                    \
+						-icon error                 \
+						-parent $Vars(widget:main)  \
+						-message $msg               \
+						;
+					set name [lindex [file split $oldName] end]
+				}
+			}
+		} else {
+			set name [lindex [file split $oldName] end]
+		}
+	}
+	$t item element configure $sel 0 txtName -text $name
+}
+
+
+proc FinishNewFolder {w sel name} {
+	variable [namespace parent]::${w}::Vars
+
+	set name [string trim $name]
+
+	if {$Vars(edit:accept) && [string length $name]} {
+		set folder [file join $Vars(folder) $name]
+		set k [lsearch $Vars(list:folder) $folder]
+		if {$k == -1} { set k [lsearch $Vars(list:file) $folder] }
+		if {$k >= 0} {
+			[namespace parent]::messageBox               \
+				-type ok                                  \
+				-icon error                               \
+				-parent $Vars(widget:main)                \
+				-message [format [Tr CannotCreate] $name] \
+				;
+			RefreshFileList $w
+		} elseif {[catch {file mkdir $folder}]} {
+			[namespace parent]::messageBox      \
+				-type ok                         \
+				-icon error                      \
+				-parent $Vars(widget:main)       \
+				-message [Tr ErrorCreate($type)] \
+				;
+			RefreshFileList $w
+		} elseif {[[namespace parent]::CheckPath $w $name]} {
+			$Vars(widget:filelist) item element configure $sel 0 txtName -text $name
+			lappend Vars(list:folder) $folder
+		} else {
+			RefreshFileList $w
+		}
+	} else {
+		RefreshFileList $w
+	}
+}
+
+
+proc SetTooltip {w which folder} {
+	variable [namespace parent]::${w}::Vars
+
+	if {$folder eq "Favorites" || $folder eq "LastVisited"} {
+		set folder [Tr $folder]
+	}
+	set Vars(tip:[string tolower $which]) [format [Tr $which] $folder]
+}
+
+
+proc Undo {w} {
+	variable [namespace parent]::${w}::Vars
+
+	if {$Vars(undo:current) >= 1} {
+		set folder [lindex $Vars(undo:history) $Vars(undo:current)]
+		incr Vars(undo:current) -1
+		[namespace parent]::ChangeDir $w [lindex $Vars(undo:history) $Vars(undo:current)] 0
+		if {$Vars(undo:current) == 0} {
+			::toolbar::childconfigure $Vars(button:backward) -state disabled
+			set Vars(tip:backward) ""
+		} else {
+			SetTooltip $w Backward [lindex $Vars(undo:history) [expr {$Vars(undo:current) - 1}]]
+			::toolbar::childconfigure $Vars(button:backward) -tooltip $Vars(tip:backward)
+			after idle [[namespace parent]::tooltip show $Vars(button:backward) $Vars(tip:backward)]
+		}
+		SetTooltip $w Forward $folder
+		::toolbar::childconfigure $Vars(button:forward) -state normal -tooltip $Vars(tip:forward)
+	}
+}
+
+
+proc Redo {w} {
+	variable [namespace parent]::${w}::Vars
+
+	if {$Vars(undo:current) < [llength $Vars(undo:history)] - 1} {
+		set folder [lindex $Vars(undo:history) $Vars(undo:current)]
+		incr Vars(undo:current)
+		[namespace parent]::ChangeDir $w [lindex $Vars(undo:history) $Vars(undo:current)] 0
+		if {$Vars(undo:current) == [llength $Vars(undo:history)] - 1} {
+			::toolbar::childconfigure $Vars(button:forward) -state disabled
+			set Vars(tip:forward) ""
+		} else {
+			SetTooltip $w Forward [lindex $Vars(undo:history) [expr {$Vars(undo:current) + 1}]]
+			::toolbar::childconfigure $Vars(button:forward) -tooltip $Vars(tip:forward)
+			after idle [[namespace parent]::tooltip show $Vars(button:forward) $Vars(tip:forward)]
+		}
+		SetTooltip $w Backward $folder
+		::toolbar::childconfigure $Vars(button:backward) -state normal -tooltip $Vars(tip:backward)
+	}
+}
+
+
+proc PopupMenu {w x y} {
+	variable [namespace parent]::${w}::Vars
+	variable [namespace parent]::Options
+
+	set t $Vars(widget:filelist)
+	if {[lindex [$t identify $x $y] 0] eq "header"} { return }
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+
+	set m $w.menu
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+
+	if {$Vars(glob) eq "Files"} {
+		set sel [$t item id active]
+		if {$sel in [$t selection get]} {
+			$m add command                                    \
+				-compound left                                 \
+				-image $icon::16x16::delete                    \
+				-label " [Tr Delete]"                          \
+				-command [namespace code [list DeleteFile $w]] \
+				;
+			$m add command                                    \
+				-compound left                                 \
+				-image $icon::16x16::modify                    \
+				-label " [Tr Rename]"                          \
+				-command [namespace code [list RenameFile $w]] \
+				;
+		}
+		$m add command                                   \
+			-compound left                                \
+			-image $icon::16x16::folder_add               \
+			-label " [Tr NewFolder]"                      \
+			-command [namespace code [list NewFolder $w]] \
+			;
+		$m add separator
+	}
+	set count 0
+	if {[string length $Vars(tip:backward)]} {
+		$m add command                              \
+			-compound left                           \
+			-image $icon::16x16::backward            \
+			-label " $Vars(tip:backward)"            \
+			-command [namespace code [list Undo $w]] \
+			;
+		incr count
+	}
+	if {[string length $Vars(tip:forward)]} {
+		$m add command                              \
+			-compound left                           \
+			-image $icon::16x16::forward             \
+			-label " $Vars(tip:forward)"             \
+			-command [namespace code [list Redo $w]] \
+			;
+		incr count
+	}
+	if {$count} { $m add separator }
+	set sub [menu $m.layout -tearoff false]
+	$m add cascade -menu $sub -label " [Tr Layout]"
+	$sub add radiobutton                                     \
+		-compound left                                        \
+		-image $icon::16x16::list                             \
+		-label " [Tr DetailedLayout]"                         \
+		-variable [namespace parent]::Options(show:layout)    \
+		-command [namespace code [list SwitchLayout $w list]] \
+		-value details                                        \
+		;
+	$sub add radiobutton                                        \
+		-compound left                                           \
+		-image $icon::16x16::details                             \
+		-label " [Tr ListLayout]"                                \
+		-variable [namespace parent]::Options(show:layout)       \
+		-command [namespace code [list SwitchLayout $w details]] \
+		-value list                                              \
+		;
+	if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
+	variable _ShowHidden $Options(show:hidden)
+	$m add checkbutton                                  \
+		-compound left                                   \
+		-image [set icon::16x16::${ipref}locked]         \
+		-label " [Tr ShowHiddenFiles]"                   \
+		-command [namespace code [list SwitchHidden $w]] \
+		-variable [namespace current]::_ShowHidden       \
+		;
+
+	set Vars(edit:active) 1
+	tk_popup $m {*}[winfo pointerxy $w]
+	bind $m <<MenuUnpost>> [list [namespace parent]::Stimulate $w]
 }
 
 
@@ -1511,11 +3023,6 @@ set unlocked [image create photo -data {
 	1hmUBNTWobeagAggIgFTADElIAUQKT7+AC43KOeMM+MXlHHy8/n2TAflCOu93/NsBWU8HGOM
 	rRugHFVfjiVVDZSzbTyN1uoJylcAth38A1SfODLjSYFtAAAAAElFTkSuQmCC
 }]
-
-set iconDelete		[list [fsbox::makeStateSpecificIcons $delete]]
-set iconModify		[list [fsbox::makeStateSpecificIcons $modify]]
-set iconBackward	[list [fsbox::makeStateSpecificIcons $backward]]
-set iconForward	[list [fsbox::makeStateSpecificIcons $forward]]
 
 } ;# namespace 16x16
 } ;# namespace icon
@@ -1649,23 +3156,23 @@ set document [image create photo -data {
 	RK5CYII=
 }]
 
-set ok [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-	CXBIWXMAAABIAAAASABGyWs+AAACp0lEQVQ4y42TT0gUYRjGn2/mm53Z2XHdXbc1U9HV/kiB
-	JZZ0COoSJIKhYVaHLtI/KDoUBUV2KKIiIsqrh6jsz8WQDtalTkEURVoGIbGs7j/Ndt1dd2d2
-	5vu+DlERFfqeXnh5Hl54fo+MJYykU7irDdXXsIzZRQvcZL9u8lIM1CoP9DbfHWNtsJ/bdq3k
-	kUuhlppY7kta0KUYyG6pMrStoaulb6dWx8LN5F3yzPiT5zFAnJAWFWsUvqbg8aqeJk0mCrwu
-	L9ZvbIM/GPRnW3KRRT8oa6qoUbeWH5MNBQIClmNh8NrV9As6ultqk95QAFBUBXrAAJM5mMVQ
-	nM0DAPRqL8gKcim4v85gsGGxPO6fuxiLhD+1Q8eE3k8ZDW6uoQS806GsVTNUTRDpgTQmvy7l
-	LahhvdnXG9onFA6bm3h7fTiTrI10MG5/VM6CLyzkQfOzmd5Al+9uoN0PYgBz9+YO8km+zu3x
-	ROlyesHY4ZcZL2Fq8H0xoUR2sXL2QT+v8OzXDGALyGWNgUnmWAeMTYYHLgJttebKxvMpl6ES
-	o8d72dXoJumHCTs2G9krtcrP5FMlVpxegGDiByOFz/NF5NXbPMsAR0DySOCErbF95g19i0Hm
-	R2ZYfDraJzaQEXa6wHiKg3P+OyXBOKiszBCvOKSGNQJKkB1Krwr1VdU7sRKSrxIn0UkH+eEC
-	41EGZjl/UsodDl3Tx4oTxThMALZA5dEqg1ZQJIZjQ6KX3pKvOAwZAlHif8UsAYAtO8LJiHdY
-	EIAJqLUupAbiY6JHOSI/YtwczQuetf/dEwD4NpaCE7VfOnEHIieQHEjErXZ0+01/QTxmHOL/
-	oJGfS3XHyvpcbnZcECSsPeh2pkoT4qbFFUdBybQWN/DWBWAxKwgJ82y7YPQpuDldWLRo3wEp
-	ZjhR3++h3QAAAABJRU5ErkJggg==
-}]
+#set ok [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+#	CXBIWXMAAABIAAAASABGyWs+AAACp0lEQVQ4y42TT0gUYRjGn2/mm53Z2XHdXbc1U9HV/kiB
+#	JZZ0COoSJIKhYVaHLtI/KDoUBUV2KKIiIsqrh6jsz8WQDtalTkEURVoGIbGs7j/Ndt1dd2d2
+#	5vu+DlERFfqeXnh5Hl54fo+MJYykU7irDdXXsIzZRQvcZL9u8lIM1CoP9DbfHWNtsJ/bdq3k
+#	kUuhlppY7kta0KUYyG6pMrStoaulb6dWx8LN5F3yzPiT5zFAnJAWFWsUvqbg8aqeJk0mCrwu
+#	L9ZvbIM/GPRnW3KRRT8oa6qoUbeWH5MNBQIClmNh8NrV9As6ultqk95QAFBUBXrAAJM5mMVQ
+#	nM0DAPRqL8gKcim4v85gsGGxPO6fuxiLhD+1Q8eE3k8ZDW6uoQS806GsVTNUTRDpgTQmvy7l
+#	LahhvdnXG9onFA6bm3h7fTiTrI10MG5/VM6CLyzkQfOzmd5Al+9uoN0PYgBz9+YO8km+zu3x
+#	ROlyesHY4ZcZL2Fq8H0xoUR2sXL2QT+v8OzXDGALyGWNgUnmWAeMTYYHLgJttebKxvMpl6ES
+#	o8d72dXoJumHCTs2G9krtcrP5FMlVpxegGDiByOFz/NF5NXbPMsAR0DySOCErbF95g19i0Hm
+#	R2ZYfDraJzaQEXa6wHiKg3P+OyXBOKiszBCvOKSGNQJKkB1Krwr1VdU7sRKSrxIn0UkH+eEC
+#	41EGZjl/UsodDl3Tx4oTxThMALZA5dEqg1ZQJIZjQ6KX3pKvOAwZAlHif8UsAYAtO8LJiHdY
+#	EIAJqLUupAbiY6JHOSI/YtwczQuetf/dEwD4NpaCE7VfOnEHIieQHEjErXZ0+01/QTxmHOL/
+#	oJGfS3XHyvpcbnZcECSsPeh2pkoT4qbFFUdBybQWN/DWBWAxKwgJ82y7YPQpuDldWLRo3wEp
+#	ZjhR3++h3QAAAABJRU5ErkJggg==
+#}]
 
 set cancel [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
@@ -1685,26 +3192,36 @@ set cancel [image create photo -data {
 	AABJRU5ErkJggg==
 }]
 
-set iconCancel	[fsbox::makeStateSpecificIcons $cancel]
-set iconOk		[fsbox::makeStateSpecificIcons $ok]
+set disk [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABZElEQVQ4y8WSzU7CQBSFT38o
+	PzaQKq3AaiIhcUNciMEYfAIfh40biQ+hT2SiwSU/GxdSqYiNpJ0KKrR06gIlaTBAwsKbTHIX
+	93xzz5nhksnkGSHkiGfsoKgoSaxRDcuigSA0DcO45w5LpZvjcrmSDoBLaq+jRy2VgsXzuKvX
+	b8WJ68KmFLFsDri+WgswqlZhmyZc12WiqqqmpmkAAF3Xoev6UjEhBACgaRpUVTV5bFj/DxB/
+	G8Z8EELmHpfeyvPwfT8MyOxmcFGrgeOFFWIOirKNweAtDOi/9jfPwLZsiKKwcCJSBLK8Bd+b
+	wugaf2cAAGltB47jgON4VE5PQoPNRhv5QgGf4y88GwZYECxu4HlTxOIJJOLxhVXZT2gAIEWj
+	cCfuDPAxHMY8z1vplSGY95RS5PN7MwuMsfN2q7Uvy/J7Npcpdh47AjgOghh+jZdeL6A2ZQ6l
+	U0mSRk/dLtzx+GHTf4Rvr/6GjnFu/ZQAAAAASUVORK5CYII=
+}]
 
 } ;# namespace 16x16
 } ;# namespace icon
 } ;# namespace fsbox
 
 
-bind FSBox <KeyPress-Up>		{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active -1] }
-bind FSBox <KeyPress-Down>		{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active +1] }
-bind FSBox <KeyPress-Left>		{ TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active -1] }
-bind FSBox <KeyPress-Right>	{ TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active +1] }
-bind FSBox <KeyPress-Home>		{ TreeCtrl::SetActiveItem %W [%W item id {first visible state enabled}] }
-bind FSBox <KeyPress-End>		{ TreeCtrl::SetActiveItem %W [%W item id {last visible state enabled}] }
-bind FSBox <KeyPress-space>	{ TreeCtrl::SetActiveItem %W [%W item id active] }
-bind FSBox <ButtonPress-1>		{ TreeCtrl::SetActiveItem %W [TreeCtrl::ButtonPress1 %W %x %y] }
-bind FSBox <ButtonRelease-1>	{ TreeCtrl::Release1 %W %x %y }
-bind FSBox <Button1-Motion>	{ TreeCtrl::Motion1 %W %x %y }
-bind FSBox <Button1-Leave>		{ TreeCtrl::Leave1 %W %x %y }
-bind FSBox <Button1-Enter>		{ TreeCtrl::Enter1 %W %x %y }
+bind FSBox <KeyPress-Up>			{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active -1] }
+bind FSBox <KeyPress-Down>			{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active +1] }
+bind FSBox <KeyPress-Left>			{ TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active -1] }
+bind FSBox <KeyPress-Right>		{ TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active +1] }
+bind FSBox <KeyPress-Home>			{ TreeCtrl::SetActiveItem %W [%W item id {first visible state enabled}]}
+bind FSBox <KeyPress-End>			{ TreeCtrl::SetActiveItem %W [%W item id {last visible state enabled}] }
+bind FSBox <KeyPress-space>		{ TreeCtrl::SetActiveItem %W [%W item id active] }
+bind FSBox <Shift-KeyPress-Down>	{ TreeCtrl::Extend %W below }
+bind FSBox <Shift-KeyPress-Up>	{ TreeCtrl::Extend %W above }
+bind FSBox <ButtonPress-1>			{ fsbox::SetActiveItem %W [TreeCtrl::ButtonPress1 %W %x %y] %s }
+bind FSBox <ButtonRelease-1>		{ TreeCtrl::Release1 %W %x %y }
+bind FSBox <Button1-Motion>		{ TreeCtrl::Motion1 %W %x %y }
+bind FSBox <Button1-Leave>			{ TreeCtrl::Leave1 %W %x %y }
+bind FSBox <Button1-Enter>			{ TreeCtrl::Enter1 %W %x %y }
 
 bind FSBox <Motion> {
     TreeCtrl::CursorCheck %W %x %y
@@ -1717,143 +3234,5 @@ bind FSBox <Leave> {
     TreeCtrl::MotionInHeader %W
     TreeCtrl::MotionInItems %W
 }
-
-
-####### T E S T #############################################
-if {1} {
-	set filetypeScidbBase [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-		CXBIWXMAAABIAAAASABGyWs+AAACH0lEQVQ4y11SLW9VQRScc9++fpJAQgCBAomChB+AoAaN
-		QPMLcPwFHBaDQFGBIBgUAkGCAkJSQQWFUEQb0kLfe9y9ez4GsfteW26y92ZvMnPmzIw8e7N1
-		7cvuwePDad7IxWRQw1AMuSiuXDqLR/dvYX1lCSRBEhEBAArg+Ww2e5h29o4eHEzy7WlfpJih
-		qKGoIxfFoIYIYv64O8wMZjY2s3vDMHxNe4fT69N+6Io61B3mAXOHeyCiTvz/uDtUdcnMNtKs
-		L6NcDNbAahXsDexuMO0Q5AIcEfN1VlNWk6K2mGoesAgE6zRVgyZpAMLdF4ckUil1b2uSfSGV
-		CBKqCh0BJBakcxURgdQXRT9o/UGADegR1Qc3uMuJFAhGACBEiHTn5tXjfefs7vAIrC0lfPp2
-		ABFp5gbMrJptdQUppXwYj8c3IgKmiqIKLQVmih+/pth8v4tJr8hqyENVm4d6T5187AAsChJz
-		me1LokoGgVYHaS9p3ejIY2fjZESNdDCHWpVf460Gk5UxkYSZnYrH3cEgPIhcDLkYzBxqtSve
-		1AaJNAeHBzxOEtR7bjt7BEojmbd0NBak7Z2ffy9fPAcAp6qKFlkuBbkYPNhSqAl1ApxZW+67
-		1++2Xm5/3z8aNKBOqpNOYUjHgNCD9CDZnBURptEI66vLf5ZT2kyv3n5+sj8Nv3B+/y6DKxEG
-		6Wr1fk8myIOi+YWuE4gIuk76NOpeAHj6D9V8jTqtYkCiAAAAAElFTkSuQmCC
-	}]
-	set filetypeScid3Base [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABy1BMVEUAAACAQEA5HBw5HDlN
-		MxoUFDtJJBKAQCCASiBLJg85KkBKJRWARSCASCBMLBYlIl4kIWBJKBR9RSAnIGB1Qx4iHlk9
-		JCBrOx0/JipIJxN2TBllOhomIV5wSB8mIFwkIV9IJxOWcCiDXSORbCZsPRx/WiCMbiVcNheZ
-		eSenhiuScB+VbxkkIV9NKhQlIV9HJhSphixGJhNKKRNAJzNINkbLpx62ly60li89JShIJxNH
-		JxPkuhi4mi4nIl1zX0DvxRUqJV/vxhMmImEqIlYrI1YwKl0wK10xK1wxLF0zLVs0JD80Lls1
-		L1s8NFhANlZBJB9CJRxCOVdIJxNPRFFQRFJTRk1ZS01ZTE5dTktpWEdsWklsW0VtW0RuXkhw
-		XkR0YkB6Zj19aEKAaj2CbDqDbj6GbziGbzuRej2VfjiYfjecgTKehTSfhDaiiDOojDapiy+s
-		jzSskDSvkzOxki6ylS+2mDC4mzG5mCi5mS+5mzG6nDC+ny7AoCrDoizEoyvJpiHJpynKqSjN
-		qiPOqyTQriXSriTVsSLXsyHZtCHatBzatSHeuB/huhrjuxnjvBfnvhnovhnpwBfuxRbvxRbw
-		xhb2yxH4zBL5zRH////A4/h4AAAAQnRSTlMABAkJCg0OEBgiJDAwQEZMTU1gb294gYWGkZGf
-		oqapsbG0tbW5ubq8vL3Aw8zNz9DS1NbX2N7j5Ovt8PX3+vv9/v463iK3AAAAAWJLR0SYdtEG
-		PgAAAOlJREFUGBkFwYNCBEAUQNEbNtu222zXZNdk23a9jM1ua363cwCAiDpjHkRODQDgnba9
-		b7u5t93ZAcAhulKGlp9mPx4FAIKKbNfng6tfwxsCgFvmrzE/ux0rx517AIRWGGOeNxvnrxYH
-		ALwyPu1/Zqll8uCsbwEgskR2JnrHj25n2qffgICUw9HWkcvXsa6p9RMB16Ti/qa1i63mufdv
-		EQGf/AJVmJhbW11jXkQEPHWD6tFtqjQrNTkhPh0cw1RVXnm96tZaa62BQJXt5KFUSHhcTpnW
-		QKyKwU8pC+Ds7u8CUdZgfK1WCwDwD3trP00R9KcNAAAAAElFTkSuQmCC
-	}]
-	set filetypeScid4Base $filetypeScid3Base
-	set filetypeChessBase [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACQUlEQVQ4y62ST0tUcRSGn/O7
-		944zXkVnKnJmrLmSSRslIr9C2Ub9CCW0lITWEiTiLqggXSYuQslaVB/CdKRwUbbyVgsXNTVz
-		J2nuv9NCJYVa1QvncDbn5X0OB/5RAuD1ntHZuTl6ikVuT01x78F91tZe82R+nusdefKWhR7f
-		axHHSxPv3t4UgMXHi+r7O6BQKpXwfZ92t51T2Ryy8gxp/gCR3+uqINKa2KpmDYDneSRxgu/7
-		lMol6vU6QRDgVSq0ZxyM6p/StwEYgFuTk3iex9WREWbvzjA6Nkqp3Mud6WnqX2s4Ihj07zfY
-		WF/X1aerBEHA2Pg4K8vLlHvLDA9cYO/hI9JGQGSESARFDhGY2KqKDbBRrdJdKGBnMrzf3qbS
-		10eSpvi+z+k0xUJBBQVi0WNZDMDSzCzns1muDQ3xcn6BK4OD9LsuzxcWCOsNMirYqjiq2HoQ
-		+yjCZmVAc52d4Dh8CRrkurtpJQnfm00yxpAYQ4gQGYhECBESEW4cIvQoRI2ASOCksQhr30CE
-		E8YQKkSqqMBB20c4iGED2JqiIqgKmiaoCBiBVFExKPv8mIPZwOEhbABLFXv4Mm2FPK2Pn/hZ
-		q2GJwUJxK2cxxR5qm28IVXEEwjhhrxn8NkAMVqmI5bo4ly7i2jZRo0ESRkghD50d5PrPkaqi
-		jkN9x8d/8eqIQZqQ7vhIVxfq+6SuSxpFpI5D8rmNGCURQxxFpLZNa3cXhyMIuC7p9gfCMCSO
-		YxLZf5pjZYRQDJFALAa1DP9FvwCukf19pHFc/gAAAABJRU5ErkJggg==
-	}]
-	set filetypePGN [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADb0lEQVQ4y12TT0xbBQCHv/de
-		y2tf6dqOP22gCBzIQLCJwsoFSDAOOLioyYwsJsboWY03F81MjImJUfDMwYSxg4cxwqZjiRKY
-		ZoJM/IMT6ypUcIRS2kFfy3uv7w/Pg1mifqff4fsdP4H/sba29ojruq9UjMqTgiC0+HwyPr8/
-		4zjOV6ZpfppIJHb+7QsPx8LCgqjr+sXc3t5b0WhM3traYvHWIgBnnz5LIpHAsi1d07T3/H7/
-		h93d3ccAIsDk5KSYTqcv3/lu5d3+gQG5r7+PeFMcRVHw+/2EI2HiTXFCoZBf1/UPcrncxMTE
-		hADgAdjP5S5kMpnzj3Z2ks1myefzyLLMwMAArutimiZLS0tomsb21jZtbW2vejyeX4FxYWxs
-		vGFleXnjtTde9xUKBebn54lEIiSTSYaGhnBdl6mpKebm5jBNk9HRUZqbm0nfS5eze3utYjqd
-		fjkej/sURUGWZQC8Xi+Hh4eYpollWViWheu6GIaBbVlIkoTf76/O5/MvCsNDw182NcWf6u7p
-		IRKO4DgOgeoAxWIRr9cLQKVSQVVVdF3HcRx0TcesVLAd55oUrY++c/eXuzWZzQzNLS2cGTpD
-		LBYjlUoxMzPD+vo67e3tDA4O0trayo0vbvD59euk02lisZjmsS3LtSyLTCbDwcED8vk8oihi
-		2zaiICBXyZimSalUwrIsNO0ITdMIBoMUi0WE3mTvzce6uoYlSUKSJJzjY2RZJhQKIftkcEHX
-		NdSiilGpIAgCggBV3ipSv6dmRFEU5uvq63nmuWfxer1cnZ7m2uwshUKe5OkkyeRpdnZ2mJ2d
-		5er0NLW1NZw79zzBYBDDMObFUCh8+dvbt48URSFy8iSBQIByuUxJLaEWi6hFlXKpjGEYnAiF
-		qKmpxeORWFxcVJVA4DMBoKe75+329lPvd3V1oSgKRqXC7u4u2d0sggCNjXGisSg+n49SqcTq
-		ne/JZP58c/XH1U8kgAeHxorI8SmPx9P5wvlROjo62Ll/n+WlJQ4ODujr72NkZITGxkamr1xh
-		Y2Pz0g8/py7iWo4EYNu6kysc3SyXVPmbr289Lkmix3VddMMgHAnT0NDAb+vrjH88pm1mtj+6
-		98dfF2xL1f9T4z9tKr7auponTlT7XqrySL2SJNW5uDi2s2fZx8vqkXEpv7//E65ReXj5Gx20
-		nJFFtL/NAAAAAElFTkSuQmCC
-	}]
-	set filetypeZipFile [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACg0lEQVQ4y8VTzUtUcRQ99/d7
-		b0ad8WNEKc3GSkdwIWZhWH6k4dgiSgIXQQQJQVSLkBYGpW6rRZ8LQ4gwSaKQIiTJSsoPtDSt
-		xtSaUiTzY/QlvplxHGfe77UY1Owf8C4P595z7rlcYKOLeq9cz7Udsp8izldBZeQ7em/fQV7N
-		GXRU34Vncm5dkxQR3nDS0d0GAPS2spoS9mUHSVEY+3eIcxSukQFs3rMNzmd98EwurKkS+aQw
-		Y2n5cO8r+vzgUVpsUe632bYO+Ho+CSbLOhERiABdpyX/H8iJflIcCgJuBiIGMALj3BdtTTrK
-		y+KTKqIy0guMKclY6Osi2xEv87kYBX2CAI0kbiBryUEkZGVCV7wwx1pgtlhgiomWNdV9QCqu
-		u3l5ID/noiElmc+P9UB1Khh8asaym1Yta7ZIhAU0OJ63rA8QNC7dqGvLjytM5WOt7ZhI2KvP
-		OyUsZhlBRMQI4OEMhpgIABxkPwzOJBARGBFUg7lFej/0u6AgOxGJ+3PQ7AqnE/ZBdA5lY94d
-		FVLRl+DmowhqhKmMEug6g9B1MCIsuH3nCADuP+4Kpm018au1jSgv+ohLD3Oh+owgEGTSUH94
-		Gl9dHDWd8f+tgG7pWk9jevEWK3/yZhC0Q4imqV16XKYJ8UTEQDCCSKizZDZGYmfhdhARVtLR
-		TctNUut0f7k9LhOleTaoqf3suNWDLx4T1KAhxBICw7Uq5N2bcCzHFIJ0gBEw4fVXSK/HP1RW
-		kSGqKrXs9Muf7UgPuHDhhwVzAQ4QIAsdDcKPe1MOvHjngCbEin3InM9ION+uN9/CWZdXmZG0
-		GWvDrwAmFoMAgiGiAGQS0ASgibXT6gCWNa1+w58RfwHx5/Q7dmRBnQAAAABJRU5ErkJggg==
-	}]
-	
-	set filetypes {
-		{ "All Scidb databases"	{.sci .si3 .si4 .cbh .pgn .pgn.gz .zip} }
-		{ "Scidb databases"		.sci }
-		{ "Scid databases"		{.si3 .si4} }
-		{ "ChessBase databases"	{.cbh} }
-		{ "PGN files"				{.pgn .pgn.gz .zip} }
-	}
-	set fileicons [list         \
-		.sci	$filetypeScidbBase \
-		.si4	$filetypeScid4Base \
-		.si3	$filetypeScid3Base \
-		.cbh	$filetypeChessBase \
-		.pgn	$filetypePGN       \
-		.gz	$filetypePGN       \
-		.zip	$filetypeZipFile   \
-	]
-	switch -glob -- $tcl_platform(os) {
-		MacOS - Darwin	{ set scidEncoding macRoman }
-		Win*				{ set scidEncoding cp1252 }
-		default			{ set scidEncoding iso8859-1 }
-	}
-	set fileencodings [list \
-		.sci {} \
-		.si4 $scidEncoding \
-		.si3 $scidEncoding \
-		.cbh cp1252 \
-		.pgn iso8859-1 \
-		.gz  iso8859-1 \
-		.zip iso8859-1 \
-	]
-
-	proc GetSize {filename} { return [::scidb::misc::size $filename] }
-	proc SelectEncoding {parent} { return utf-8 }
-
-	wm withdraw .
-	fsbox .fav \
-		-defaultextension .sci \
-		-filetypes $filetypes \
-		-fileicons $fileicons \
-		-sizecommand GetSize \
-		-timeformat "%d.%m.%Y %H:%M" \
-		-selectencodingcommand ::SelectEncoding \
-		-fileencodings $fileencodings \
-		-initialdir /home/gregor/development/c++/scidb/tcl/Bases \
-		;
-	pack .fav -expand yes -fill both
-	focus .fav
-	wm geometry . 650x600+400+400
-	wm deiconify .
-}
-#############################################################
 
 # vi:set ts=3 sw=3:

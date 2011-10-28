@@ -73,12 +73,12 @@ readNumber(Environment& env, BigValue& value)
 		TokenP token = env.getFinalToken(nullability);
 
 		if (!token || token->type() != Token::T_Ascii)
-			return env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token)));
+			return env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token))); // MEMORY
 
 		char c = token->value();
 
 		if (!::isdigit(c))
-			return env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token)));
+			return env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token))); // MEMORY
 
 		value *= 10;
 		value += c - '0';
@@ -99,7 +99,7 @@ performNumber(Environment& env)
 	switch (token->type())
 	{
 		case Token::T_Number:
-			env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token)));
+			env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token))); // MEMORY
 			break;
 
 		case Token::T_Ascii:
@@ -121,14 +121,14 @@ performNumber(Environment& env)
 							value = - value;
 
 						return env.pushProducer(
-									Environment::ProducerP(new ReadAgainProducer(env.numberToken(value))));
+									Environment::ProducerP(new ReadAgainProducer(env.numberToken(value)))); // MEMORY
 					}
 				}
 			}
 			// fallthru
 
 		default:
-			env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token)));
+			env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token))); // MEMORY
 			Messages::errmessage(env, "Missing number, treated as zero", Messages::Corrigible);
 			break;
 	}
@@ -206,7 +206,7 @@ performLength(Environment& env)
 {
 	MyConsumer consumer(env);
 	env.perform(env.getExpandableToken());
-	env.putFinalToken(TokenP(new NumberToken(consumer.m_result.size())));
+	env.putFinalToken(TokenP(new NumberToken(consumer.m_result.size()))); // MEMORY
 }
 
 
@@ -224,22 +224,22 @@ Miscellaneous::getTextToken(Environment& env)
 				break;
 
 			case Token::T_Ascii:
-				token.reset(new TextToken(token->name()));
+				token.reset(new TextToken(token->name())); // MEMORY
 				break;
 
 			case Token::T_Number:
-				token.reset(new TextToken(token->description(env)));
+				token.reset(new TextToken(token->description(env))); // MEMORY
 				break;
 
 			default:
 				switch (token->type())
 				{
 					case Token::T_List:			token = token->performThe(env); break;
-					case Token::T_LeftBrace:	token.reset(new ListToken(env)); break;
-					default:							token.reset(new ListToken(token)); break;
+					case Token::T_LeftBrace:	token.reset(new ListToken(env)); break; // MEMORY
+					default:							token.reset(new ListToken(token)); break; // MEMORY
 				}
 				static_cast<ListToken*>(token.get())->flatten();
-				token.reset(new TextToken(token->description(env)));
+				token.reset(new TextToken(token->description(env))); // MEMORY
 				break;
 		}
 	}

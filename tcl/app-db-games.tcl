@@ -83,10 +83,10 @@ proc build {parent} {
 	set Vars(after)		{}
 	set Vars(resizing)	0
 
-	bind $tb <<TableMinSize>>	[namespace code [list TableMinSize $tb %d]]
-	bind $tb <<TableLayout>>	[namespace code [list TableLayout $tb]]
-	bind $tb <<TableResized>>	[namespace code [list TableResized $tb %d]]
-	bind $tb <<Language>>		[namespace code [list ::scrolledtable::refresh $tb]]
+	bind $tb <<TableMinSize>>		[namespace code [list TableMinSize $tb %d]]
+	bind $tb <<TableLayout>>		[namespace code [list TableLayout $tb]]
+	bind $tb <<TableResized>>		[namespace code [list TableResized $tb %d]]
+	bind $tb <<LanguageChanged>>	[namespace code [list ::scrolledtable::refresh $tb]]
 
 	set tbGameNo [::toolbar::toolbar $parent \
 		-id gameno \

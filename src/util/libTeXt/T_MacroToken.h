@@ -20,10 +20,12 @@
 #define _TeXt_MacroToken_included
 
 #include "T_ExpandableToken.h"
+#include "T_Producer.h"
+#include "T_Object.h"
 
-#include "m_ref_counted_ptr.h"
-#include "m_ref_counter.h"
 #include "m_vector.h"
+#include "m_string.h"
+#include "m_scoped_ptr.h"
 
 namespace TeXt {
 
@@ -35,6 +37,29 @@ class MacroToken : public ExpandableToken
 public:
 
 	typedef mstl::vector<TokenP> TokenList;
+
+	class TokenProducer : public Producer
+	{
+	public:
+
+		typedef mstl::ref_counted_ptr<MacroToken> MacroTokenP;
+
+		TokenProducer(TokenP const& macro);
+
+		bool finished() const override;
+		bool reset() override;
+
+		Source source() const override;
+		TokenP next(Environment& env) override;
+		mstl::string currentDescription() const override;
+
+	private:
+
+		typedef mstl::scoped_ptr<Producer> ProducerP;
+
+		MacroTokenP	m_macro;
+		ProducerP	m_producer;
+	};
 
 	MacroToken(	mstl::string const& name,
 					TokenList const& paramList,
@@ -55,18 +80,16 @@ public:
 	void traceCommand(Environment& env) const override;
 	void perform(Environment& env) override;
 
-private:
-
-	struct Data : protected mstl::ref_counter
+	struct Data : public Object
 	{
 		Data(TokenList const& paramList, TokenP const& body, int nestingLevel);
 
 		TokenList	m_parameters;
 		TokenP		m_body;
 		unsigned		m_nestingLevel;
-
-		friend class mstl::ref_counted_traits<Data>;
 	};
+
+private:
 
 	typedef mstl::ref_counted_ptr<Data> DataP;
 	typedef mstl::vector<bool> ListMarkers;

@@ -43,15 +43,19 @@ public:
 	Engine();
 
 	bool startAnalysis(db::Board const& board) override;
+	bool startAnalysis(db::Game const& game, bool isNewGame) override;
 	bool stopAnalysis() override;
 
 protected:
 
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
+	void sendNumberOfVariations() override;
 	void processMessage(mstl::string const& message) override;
+	void doMove(db::Game const& game, db::Move const& lastMove) override;
 
 	Result probeResult() const override;
+	unsigned maxVariations() const override;
 
 private:
 
@@ -60,12 +64,23 @@ private:
 	void parseBestMove(char const* msg);
 	void parseInfo(char const* msg);
 	void parseOption(char const* msg);
+	bool prepareStartAnalysis(db::Board const& board);
+	void setupPosition(db::Board const& board);
 
 	db::Board		m_board;
-	mstl::string	m_fen;
+	mstl::string	m_position;
 	mstl::string	m_waitingOn;
+	unsigned			m_maxMultiPV;
 	bool				m_needChess960;
 	bool				m_uciok;
+	bool				m_hasMultiPV;
+	bool				m_hasAnalyseMode;
+	bool				m_hasChess960;
+	bool				m_hasLimitStrength;
+	bool				m_hasOwnBook;
+	bool				m_hasShowCurrLine;
+	bool				m_hasShowRefutations;
+	bool				m_hasPonder;
 };
 
 } // namespace uci

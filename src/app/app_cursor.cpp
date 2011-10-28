@@ -124,7 +124,7 @@ Cursor::closeView(unsigned view)
 	M_REQUIRE(view != BaseView);
 	M_REQUIRE(isValidView(view));
 
-	if (view != 0 && m_viewList[view])
+	if (view != 0 && m_viewList[view + 1])
 	{
 		m_freeSet.push_back(view);
 		delete m_viewList[view + 1];

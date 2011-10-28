@@ -178,7 +178,7 @@ public:
 		if (0 <= value && value < Value(kNumNumberTokens))
 			return m_numberToken[value];
 
-		return TokenP(new NumberToken(value));
+		return TokenP(new NumberToken(value)); // MEMORY
 	}
 
 private:
@@ -209,41 +209,6 @@ private:
 	TokenP			m_rightBraceToken;
 	Packages			m_packages;
 	PackageMap		m_packageMap;
-};
-
-
-class Environment::MyProducer : public Producer
-{
-public:
-
-	MyProducer(Environment::Impl& impl, Tokenizer& tokenizer)
-		:m_impl(impl)
-		,m_tokenizer(tokenizer)
-	{
-	}
-
-	Source source() const override
-	{
-		return m_tokenizer.source();
-	}
-
-	TokenP next(Environment& env) override;
-
-	mstl::string currentDescription() const override
-	{
-		return m_tokenizer.currentDescription();
-	}
-
-	unsigned lineno() const override
-	{
-		return m_tokenizer.lineno();
-	}
-
-private:
-
-	Environment::Impl&	m_impl;
-	Tokenizer&				m_tokenizer;
-	mstl::string			m_name;
 };
 
 
@@ -350,7 +315,7 @@ struct PrimitiveTokenGenerator : public TokenBuffer::TokenGenerator
 
 	Token* newToken(mstl::string const& name, RefID) const override
 	{
-		return new UndefinedToken(name, m_id);
+		return new UndefinedToken(name, m_id); // MEMORY
 	}
 };
 
@@ -359,7 +324,7 @@ struct UndefinedTokenGenerator : public TokenBuffer::TokenGenerator
 {
 	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
-		return new UndefinedToken(name, mstl::max(refID, RefID(Token::T_FirstGenericType)));
+		return new UndefinedToken(name, mstl::max(refID, RefID(Token::T_FirstGenericType))); // MEMORY
 	}
 };
 
@@ -368,7 +333,7 @@ struct ParameterTokenGenerator : public TokenBuffer::TokenGenerator
 {
 	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
-		return new ParameterToken(name, refID);
+		return new ParameterToken(name, refID); // MEMORY
 	}
 };
 
@@ -377,7 +342,7 @@ struct VariableTokenGenerator : public TokenBuffer::TokenGenerator
 {
 	Token* newToken(mstl::string const& name, RefID refID) const override
 	{
-		return new VariableToken(name, refID);
+		return new VariableToken(name, refID); // MEMORY
 	}
 };
 
@@ -387,19 +352,19 @@ struct VariableTokenGenerator : public TokenBuffer::TokenGenerator
 Environment::Impl::Impl(Environment& env, ErrorMode errorMode)
 	:m_env(env)
 	,m_errorMode(errorMode)
-	,m_leftBraceToken(new LeftBraceToken)
-	,m_rightBraceToken(new RightBraceToken)
+	,m_leftBraceToken(new LeftBraceToken) // MEMORY
+	,m_rightBraceToken(new RightBraceToken) // MEMORY
 {
 	m_contextStack.push(Context(TokenP(), 0, 0));
 	m_producerStack.push(
-		ProducerStack::value_type(ProducerP(new MyProducer(*this, m_tokenizer)), false));
+		ProducerStack::value_type(ProducerP(new TokenProducer(*this, m_tokenizer)), false)); // MEMORY
 
 	for (size_t i = 0; i < kNumAsciiTokens; ++i)
-		m_asciiToken[i].reset(new AsciiToken(i));
+		m_asciiToken[i].reset(new AsciiToken(i)); // MEMORY
 	for (size_t i = 0; i < kNumInvalidTokens; ++i)
-		m_invalidToken[i].reset(new InvalidToken(i));
+		m_invalidToken[i].reset(new InvalidToken(i)); // MEMORY
 	for (size_t i = 0; i < kNumNumberTokens; ++i)
-		m_numberToken[i].reset(new NumberToken(i));
+		m_numberToken[i].reset(new NumberToken(i)); // MEMORY
 
 	for (size_t i = 0; i < kNumAsciiTokens; ++i)
 	{
@@ -556,7 +521,7 @@ void
 Environment::Impl::terminateProduction()
 {
 	m_producerStack.clear();
-	m_producerStack.push(ProducerStack::value_type(ProducerP(new EmptyProducer), false));
+	m_producerStack.push(ProducerStack::value_type(ProducerP(new EmptyProducer), false)); // MEMORY
 	m_token.reset();
 }
 
@@ -1126,8 +1091,37 @@ Environment::Impl::getPackage(mstl::string const& name)
 }
 
 
+
+Environment::TokenProducer::TokenProducer(Environment::Impl& impl, Tokenizer& tokenizer)
+	:m_impl(impl)
+	,m_tokenizer(tokenizer)
+{
+}
+
+
+Producer::Source
+Environment::TokenProducer::source() const
+{
+	return m_tokenizer.source();
+}
+
+
+mstl::string
+Environment::TokenProducer::currentDescription() const
+{
+	return m_tokenizer.currentDescription();
+}
+
+
+unsigned
+Environment::TokenProducer::lineno() const
+{
+	return m_tokenizer.lineno();
+}
+
+
 TokenP
-Environment::MyProducer::next(Environment&)
+Environment::TokenProducer::next(Environment&)
 {
 	m_name.clear();
 
@@ -1181,7 +1175,7 @@ Environment::MyProducer::next(Environment&)
 			return m_impl.lookupMacro(RefID(static_cast<unsigned char>(m_name[0])));
 
 		case Tokenizer::Unicode:
-			return TokenP(new TextToken(m_name));
+			return TokenP(new TextToken(m_name)); // MEMORY
 
 		case Tokenizer::Empty:
 			return TokenP();
@@ -1757,7 +1751,7 @@ Environment::perform(TokenP const& token)
 {
 	M_REQUIRE(token);
 
-	ProducerP producer(new EndOfExecutionProducer());
+	ProducerP producer(new EndOfExecutionProducer()); // MEMORY
 	m_impl->pushProducer(producer);
 
 	try
@@ -1785,10 +1779,10 @@ Environment::perform(TokenP const& token, mstl::string& result)
 	M_REQUIRE(token);
 
 	ConsumerP oldConsumer = m_consumer;
-	ConsumerP newConsumer(new TextConsumer(result));
+	ConsumerP newConsumer(new TextConsumer(result)); // MEMORY
 	m_consumer = newConsumer;
 
-	ProducerP producer(new EndOfExecutionProducer());
+	ProducerP producer(new EndOfExecutionProducer()); // MEMORY
 	m_impl->pushProducer(producer);
 
 	try

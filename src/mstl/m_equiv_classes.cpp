@@ -85,29 +85,35 @@ equiv_classes::add_relation(unsigned a, unsigned b)
 	if (a < b)
 		mstl::swap(a, b);
 
-	if (m_list[a]->next == 0 && m_list[b]->next == 0)
+	if (m_list[a]->next == 0)
 	{
-		m_list[a]->next = new_link(new_link(b), a);
-		m_list[b]->next = m_list[a]->next;
+		if (m_list[b]->next == 0)
+		{
+			m_list[a]->next = new_link(new_link(b), a);
+			m_list[b]->next = m_list[a]->next;
+		}
+		else
+		{
+			m_list[b]->last()->next = new_link(a);
+			m_list[a]->next = m_list[b]->next;
+		}
 	}
-	else if (m_list[a]->next != 0 && m_list[b]->next == 0)
+	else
 	{
-		m_list[a]->last()->next = new_link(b);
-		m_list[b]->next = m_list[a]->next;
-	}
-	else if (m_list[a]->next == 0 && m_list[b]->next != 0)
-	{
-		m_list[b]->last()->next = new_link(a);
-		m_list[a]->next = m_list[b]->next;
-	}
-	else if (m_list[a]->next != m_list[b]->next)
-	{
-		link* nextb = m_list[b]->next;
+		if (m_list[b]->next == 0)
+		{
+			m_list[a]->last()->next = new_link(b);
+			m_list[b]->next = m_list[a]->next;
+		}
+		else if (m_list[a]->next != m_list[b]->next)
+		{
+			link* nextb = m_list[b]->next;
 
-		for (link* cur = m_list[b]->next; cur; cur = cur->next)
-			m_list[cur->data]->next = m_list[a]->next;
+			for (link* cur = m_list[b]->next; cur; cur = cur->next)
+				m_list[cur->data]->next = m_list[a]->next;
 
-		m_list[a]->last()->next = nextb;
+			m_list[a]->last()->next = nextb;
+		}
 	}
 }
 

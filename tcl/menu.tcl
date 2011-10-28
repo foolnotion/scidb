@@ -43,8 +43,9 @@ set FileClose				"&Close"
 set FileQuit				"&Quit"
 
 set GameNew					"&New Game"
-set GameNewShuffle		"N&ew Game: Shuffle"
-set GameNewShuffleSymm	"Ne&w Game: Shuffle (symmetrical only)"
+set GameNewChess960		"N&ew Game: Chess 960"
+set GameNewChess960Sym	"Ne&w Game: Chess 960 (symmetrical only)"
+set GameNewShuffle		"New &Game: Shuffle"
 set GameSave				"&Save Game"
 set GameReplace			"&Replace Game"
 set GameReplaceMoves		"Replace &Moves Only"
@@ -67,12 +68,12 @@ set Shift					"Shift"
 
 set AllScidbFiles			"All Scidb files"
 set AllScidbBases			"All Scidb databases"
-set AllScidBases			"All Scid databases"
+set ScidBases				"Scid databases"
 set ScidbBases				"Scidb databases"
-set Scid4Bases				"Scid 4 databases"
-set Scid3Bases				"Scid 3 databases"
 set ChessBaseBases		"ChessBase databases"
+set PGNFilesArchives		"PGN files/archives"
 set PGNFiles				"PGN files"
+set PGNArchives			"PGN archives"
 
 set FileNotAllowed		"Filename '%s' not allowed"
 set TwoOrMoreDots			"Contains two or more consecutive dots."
@@ -187,16 +188,17 @@ proc setup {} {
 					Export			1	Ctrl+X			fileExport		{ ::menu::dbExport .application }
 					Import			1	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
 					ImportOne		1	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
-					Close				0	Ctrl+C			close				{ ::menu::dbClose .application }
+					Close				0	Ctrl+W			close				{ ::menu::dbClose .application }
 					--------------	-	-------------	--------------	---------------------------------
 					Quit				0	Ctrl+Q			exit				{ ::application::shutdown }
 				} \
 		Game	{	New				1	Ctrl+X			document			{ ::menu::gameNew .application }
-					NewShuffle		1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
-					NewShuffleSymm	1	Ctrl+Shift+Y	symmetric		{ ::menu::gameNew .application sfrc }
-					Save				1	Ctrl+S			save				{ ::menu::gameSave .application }
-					Replace			1	Ctrl+R			saveAs			{ ::menu::gameReplace .application }
-					ReplaceMoves	1	Ctrl+M			saveAs			{ ::menu::gameReplaceMoves .application }
+					NewChess960		1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
+					NewChess960Sym	1	Ctrl+Shift+Y	dice				{ ::menu::gameNew .application sfrc }
+					NewShuffle		1	Ctrl+Shift+Z	dice				{ ::menu::gameNew .application shuffle }
+					Save				1	Ctrl+S			save				{ ::game::save .application }
+					Replace			1	Ctrl+R			saveAs			{ ::game::replace .application }
+					ReplaceMoves	1	Ctrl+Shift+M	saveAs			{ ::game::replaceMoves .application }
 				} \
 		View	CreateViewMenu
 
@@ -256,7 +258,7 @@ proc setup {} {
 							set acc {}
 							set shift 0
 							foreach k $keys {
-								if {[string length $key] > 0 && [string index $key end] != "-"} {
+								if {[string length $key] > 0 && [string index $key end] != "\u2013"} {
 									append key "-"
 								}
 								if {[string length $acc] > 0 && [string index $acc end] != "+"} {
@@ -304,24 +306,6 @@ proc entryconfigure {menu index {var {}} {unused {}} {unused {}}} {
 }
 
 
-proc verifyDatabaseName {w path} {
-	set path [verifyPath $w $path]
-#	if {[string length $path]} {
-#		set ext [file extension $path]
-#		if {[string length $ext] == 0} { set ext . }
-#		switch $ext {
-#			.sci - .si3 - .si4 {}
-#
-#			default {
-#				if {[string index $path end] ne "."} { append path . }
-#				append path sci
-#			}
-#		}
-#	}
-	return $path
-}
-
-
 proc verifyPath {w path} {
 	# we do not allow two or more consecutive dots in filename
 	if {[string first ".." $path] >= 0} {
@@ -349,51 +333,46 @@ proc verifyPath {w path} {
 proc dbNew {parent} {
 	set filetypes [list                             \
 		[list $mc::ScidbBases		.sci]             \
-		[list $mc::Scid4Bases		.si4]             \
-		[list $mc::Scid3Bases		.si3]             \
-		[list $mc::AllScidBases		{.si3 .si4}]      \
-		[list $mc::AllScidbBases	{.sci .si3 .si4}] \
+		[list $mc::ScidBases			{.si4 .si3}]      \
+		[list $mc::AllScidbBases	{.sci .si4 .si3}] \
 	]
-	set f [::dialog::saveFile \
+	set result [::dialog::saveFile \
 				-parent $parent \
 				-filetypes $filetypes \
 				-geometry lastsize \
-				-verifycmd [namespace current]::verifyDatabaseName \
 				-defaultextension .sci \
-				-title [set [namespace current]::mc::NewFile]]
+				-needencoding 1 \
+				-title [set [namespace current]::mc::NewFile] \
+	]
 
-	set f [string trim $f]
-	if {[llength $f]} {
-		set f [encoding convertto utf-8 $f]
-		::application::database::newBase $parent $f
+	if {[llength $result]} {
+		::application::database::newBase $parent {*}$result
 	}
 }
 
 
 proc dbOpen {parent} {
-	set filetypes [list                                                    \
-		[list $mc::AllScidbFiles	{.sci .si3 .si4 .cbh .pgn .pgn.gz .zip}] \
-		[list $mc::AllScidbBases	{.sci .si3 .si4 .cbh}]                   \
-		[list $mc::ScidbBases		.sci]                                    \
-		[list $mc::AllScidBases		{.si4 .si3}]                             \
-		[list $mc::Scid4Bases		.si4]                                    \
-		[list $mc::Scid3Bases		.si3]                                    \
-		[list $mc::ChessBaseBases	.cbh]                                    \
-		[list $mc::PGNFiles			{.pgn .pgn.gz}]                          \
-		[list $mc::PGNFiles			.zip]                                    \
+	set filetypes [list                                                       \
+		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .pgn .pgn.gz .zip}] \
+		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh}]                   \
+		[list $mc::ScidbBases			.sci]                                    \
+		[list $mc::ScidBases				{.si4 .si3}]                             \
+		[list $mc::ChessBaseBases		.cbh]                                    \
+		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                     \
+		[list $mc::PGNFiles				{.pgn .pgn.gz}]                          \
+		[list $mc::PGNArchives			{.zip}]                                  \
 	]
-	set f [::dialog::openFile \
+	set result [::dialog::openFile \
 				-parent $parent \
 				-filetypes $filetypes \
 				-defaultextension .sci \
+				-needencoding 1 \
 				-geometry lastsize \
 				-title [set [namespace current]::mc::OpenFile] \
-			]
+	]
 	
-	set f [string trim $f]
-	if {[llength $f]} {
-		set f [encoding convertto utf-8 $f]
-		::application::database::openBase $parent $f
+	if {[llength $result]} {
+		::application::database::openBase $parent {*}$result
 	}
 }
 
@@ -405,26 +384,24 @@ proc dbOpenUrl {parent} {
 
 
 proc dbImport {parent} {
-	set filetypes [list [list $mc::PGNFiles {.pgn .pgn.gz .zip}]]
+	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
+								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
+								[list $mc::PGNArchives			{.zip}] \
+	]
 	set title [set [namespace current]::mc::ImportFiles]
-	set files [::dialog::openFile \
+	set result [::dialog::openFile \
 					-parent $parent \
 					-filetypes $filetypes \
 					-defaultextension .pgn \
+					-needencoding 1 \
 					-geometry lastsize \
 					-title $title \
 					-multiple yes \
-				]
+	]
 	
-	if {[llength $files]} {
-		set oldfiles $files
-		set files {}
-		foreach file $oldfiles {
-			lappend files [encoding convertto utf-8 $file]
-		}
+	if {[llength $result]} {
 		set base [::scidb::db::get name]
-# XXX hack!
-set encoding iso8859-1
+		lassign $result files encoding
 		::import::open $parent $base $files $title $encoding
 		::application::database::refreshBase $base
 	}
@@ -462,37 +439,6 @@ proc gameNew {parent {variant {}}} {
 		}
 
 		::application::switchTab board
-	}
-}
-
-
-proc gameSave {parent} {
-	if {[::scidb::game::current] != 9} {
-		::dialog::save::open $parent [::scidb::db::get name] -1
-	}
-}
-
-
-proc gameReplace {parent} {
-	if {[::scidb::game::current] != 9} {
-		::application::pgn::replaceMoves $parent
-	}
-}
-
-
-proc gameReplaceMoves {parent} {
-	if {[::scidb::game::current] != 9} {
-		set base [::scidb::db::get name]
-
-		if {[::scidb::db::get readonly? $base]} {
-			::dialog::info \
-				-parent $parent \
-				-message [format $::dialog::save::mc::CurrentBaseIsReadonly [::util::databaseName $base]] \
-				-title "[tk appname] - $::dialog::save::mc::ReplaceGame" \
-				;
-		} else {
-			::application::pgn::replaceMoves $parent
-		}
 	}
 }
 

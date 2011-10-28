@@ -271,28 +271,28 @@ enum Expand	{ None, X = 1, Y = 2 };
 enum Orient	{ Horizontal = X, Vertical = Y };
 
 
-// ================================================================
+// ===========================================================================
 // Some examples of a node list structure:
-// ================================================================
+// ===========================================================================
 //
-// (horz (vert (horz 1 0) 2) 3)			(horz 1 (vert (horz 0 3) 2))
-// +---+-----------+---+					+---+-----------+---+
-// |   |           |   |					|   |           |   |
-// | 1 |     0     | 3 |					| 1 |     0     | 3 |
-// |   |           |   |					|   |           |   |
-// +---+-----------+   |					|   |-----------+---|
-// |         2     |   |					|   |      2        |
-// +---------------+---+					+---+---------------+
+// (horz (vert (horz 1 0) (tabs 2 3) 4)	(horz 1 (vert (horz 0 4) (tabs 2 3))
+// +---+-----------+---+						+---+-----------+---+
+// |   |           |   |						|   |           |   |
+// | 1 |     0     | 4 |						| 1 |     0     | 4 |
+// |   |           |   |						|   |           |   |
+// +---+-----------+   |						|   |-----------+---|
+// |       2/3     |   |						|   |      2/3      |
+// +---------------+---+						+---+---------------+
 //
 //
-// (vert (horz 1 0 3) 2)					(horz 1 (vert 0 2) 3)
-// +---+-----------+---+					+---+-----------+---+
-// |   |           |   |					|   |           |   |
-// | 1 |     0     | 3 |					| 1 |     0     | 3 |
-// |   |           |   |					|   |           |   |
-// +---+-----------+---+					|   +-----------+   |
-// |         2         |					|   |     2     |   |
-// +-------------------+					+---+-----------+---+
+// (vert (horz 1 0 4) (tabs 2 3))			(horz 1 (vert 0 (tabs 2 3)) 4)
+// +---+-----------+---+						+---+-----------+---+
+// |   |           |   |						|   |           |   |
+// | 1 |     0     | 4 |						| 1 |     0     | 4 |
+// |   |           |   |						|   |           |   |
+// +---+-----------+---+						|   +-----------+   |
+// |        2/3        |						|   |    2/3    |   |
+// +-------------------+						+---+-----------+---+
 
 
 class Node
@@ -398,7 +398,7 @@ Tcl_Obj* Node::path() const	{ return m_path; }
 
 Childs const& Node::childs() const		{ return m_childs; }
 mstl::string const& Node::name() const	{ return m_name; }
-char const* Node::pathName() const		{ return Tcl_GetStringFromObj(m_path, 0); }
+char const* Node::pathName() const		{ return Tcl_GetStringFromObj(m_path, nullptr); }
 
 
 Node::Node()
@@ -423,7 +423,7 @@ Node::Node(Tcl_Obj* path)
 	,m_opts(0)
 	,m_parent(0)
 {
-	m_lookup[Tcl_GetStringFromObj(path, 0)] = this;
+	m_lookup[Tcl_GetStringFromObj(path, nullptr)] = this;
 }
 
 
@@ -485,7 +485,7 @@ Node::create(Node* parent, int n, Tcl_Obj** opts)
 	M_ASSERT(opts);
 	M_ASSERT(n > 0);
 
-	Tcl_Obj* type;
+	Tcl_Obj* type = 0; // shut up the compiler
 
 	switch (m_type)
 	{
@@ -495,7 +495,7 @@ Node::create(Node* parent, int n, Tcl_Obj** opts)
 		case Frame:			type = m_objFrame; break;
 	}
 
-	m_name.assign(Tcl_GetStringFromObj(opts[0], 0));
+	m_name.assign(Tcl_GetStringFromObj(opts[0], nullptr));
 	m_opts = Tcl_NewListObj(n - 1, opts + 1);
 	m_path = call(	__func__,
 						m_objCreateCmd,
@@ -529,7 +529,7 @@ Node::getValue(char const* key) const
 
 	for (int i = 0; i < objc - 1; i += 2)
 	{
-		if (::strcmp(Tcl_GetStringFromObj(objv[i], 0), key) == 0)
+		if (::strcmp(Tcl_GetStringFromObj(objv[i], nullptr), key) == 0)
 			return objv[i + 1];
 	}
 
@@ -542,7 +542,7 @@ Node::expand() const
 {
 	if (Tcl_Obj* v = getValue("-expand"))
 	{
-		switch (*Tcl_GetStringFromObj(v, 0))
+		switch (*Tcl_GetStringFromObj(v, nullptr))
 		{
 			case 'x': return X;
 			case 'y': return Y;
@@ -781,7 +781,7 @@ static char const* CmdTwm = "::scidb::tk::twm";
 
 
 static void
-insertNode(Node* root, Node* relative, Relation relation, Node* node)
+insertNode(Node* root, Node* relative, Relation relation, Orient orientation, Node* node)
 {
 	M_ASSERT(root);
 	M_ASSERT(relative);
@@ -793,6 +793,14 @@ insertNode(Node* root, Node* relative, Relation relation, Node* node)
 		case Predecessor:
 			switch (root->type())
 			{
+				case PanedWindow:
+					if (root->isExpandable(orientation))
+					{
+						root->packBefore(node, relative);
+						break;
+					}
+					// fallthru
+
 				case Pane:
 				case Frame:
 				case Notebook:
@@ -805,10 +813,6 @@ insertNode(Node* root, Node* relative, Relation relation, Node* node)
 						panw->pack(node);
 						panw->pack(pane);
 					}
-					break;
-
-				case PanedWindow:
-					root->packBefore(node, relative);
 					break;
 			}
 			break;
@@ -816,6 +820,14 @@ insertNode(Node* root, Node* relative, Relation relation, Node* node)
 		case Successor:
 			switch (root->type())
 			{
+				case PanedWindow:
+					if (root->isExpandable(orientation))
+					{
+						root->packAfter(node, relative);
+						break;
+					}
+					// fallthru
+
 				case Pane:
 				case Frame:
 				case Notebook:
@@ -828,10 +840,6 @@ insertNode(Node* root, Node* relative, Relation relation, Node* node)
 						panw->pack(pane);
 						panw->pack(node);
 					}
-					break;
-
-				case PanedWindow:
-					root->packAfter(node, relative);
 					break;
 			}
 			break;
@@ -965,7 +973,7 @@ cmdInit(int objc, Tcl_Obj* const objv[])
 static int
 cmdAdd(int objc, Tcl_Obj* const objv[])
 {
-insertNode(0, 0, Ancestor, 0);
+insertNode(0, 0, Ancestor, Horizontal, 0);
 #if 0
 	Node* newn = new Node(objectFromObj(objc, objv, 1), objectFromObj(objc, objv, 2));
 	Node* root = Node::lookupRoot(stringFromObj(objc, objv, 0));

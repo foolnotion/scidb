@@ -47,6 +47,7 @@ set SortOnDate				"Sort on date (descending)"
 set SortOnNumber			"Sort on game number (asscending)"
 set ReverseOrder			"Reverse order"
 set NoMoves					"No moves"
+set NoMoreMoves			"No (more) moves"
 set WhiteRating			"White Rating"
 set BlackRating			"Black Rating"
 
@@ -254,7 +255,7 @@ array set Defaults {
 	monochrome		0
 	showIDN			0
 	relief			0
-	transparent		1
+	transparent		0
 	opening-index	1
 	exclude-elo		1
 	include-type	0
@@ -503,9 +504,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	bind $path <ButtonPress-3>			+[namespace code [list hideGame $path]]
 
 	BindAccelerators $path
-	::bind $path <<Language>>  [namespace code [list BindAccelerators $path]]
-	::bind $path <<Language>> +[namespace code [list RefreshHeader $path 1]]
-	::bind $path <<Language>> +[namespace code [list RefreshHeader $path 2]]
+	::bind $path <<LanguageChanged>>  [namespace code [list BindAccelerators $path]]
+	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 1]]
+	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 2]]
 	set Vars(viewcmd) $getViewCmd
 
 	return $Vars(table)
@@ -664,19 +665,21 @@ proc bind {path sequence script} {
 
 proc showGame {path base view index {pos {}}} {
 	set info [::scidb::db::get gameInfo $index $view $base]
+	set length [lindex $info [columnIndex length]]
 	set result [lindex $info [columnIndex result]]
+#	set result [::util::formatResult $result]
 	if {$result eq "1/2-1/2"} { set result "1/2" }
-	showMoves $path [lindex [::scidb::game::dump $base $view $index $pos] 1] $result
+	showMoves $path [lindex [::scidb::game::dump $base $view $index $pos] 1] $result [expr {$length == 0}]
 }
 
 
 proc hideGame {path} { hideMoves $path }
 
 
-proc showMoves {path moves {result ""}} {
+proc showMoves {path moves {result ""} {empty 0}} {
 	set w $path.showmoves
 	if {![winfo exists $w]} {
-		toplevel $w -background white -class Tooltip
+		toplevel $w -class Tooltip
 		wm withdraw $w
 		if {[tk windowingsystem] eq "aqua"} {
 			::tk::unsupported::MacWindowStyle style $w help none
@@ -697,7 +700,8 @@ proc showMoves {path moves {result ""}} {
 	$w.text delete 1.0 end
 	set moves [::font::splitMoves $moves]
 	if {[llength $moves] == 0} {
-		$w.text insert end $mc::NoMoves
+		if {$empty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
+		$w.text insert end $text
 		$w.text insert end " "
 	} else {
 		foreach {move tag} $moves { $w.text insert end $move $tag }
@@ -998,9 +1002,26 @@ proc TableFill {path args} {
 
 					idn {
 						if {$codec eq "sci"} {
-							if {$item} { lappend text $item } else { lappend text "" }
+							if {$item} {
+								lappend text $item
+								set idn $item
+							} else {
+								lappend text ""
+								set idn ""
+							}
 						} else {
 							lappend text $::mc::NotAvailable
+							set idn ""
+						}
+					}
+
+					eco {
+						if {[string length $item]} {
+							lappend text $item
+						} elseif {$Options(showIDN) && $idn} {
+							lappend text $idn
+						} else {
+							lappend text ""
 						}
 					}
 
@@ -1190,7 +1211,7 @@ proc TableFill {path args} {
 				}
 			} else {
 				switch $id {
-					whiteType - blackType { set $id [lindex $line $k] }
+					whiteType - blackType - idn { set $id [lindex $line $k] }
 				}
 				lappend text ""
 			}
@@ -1437,9 +1458,10 @@ proc PopupMenu {path menu base index} {
 
 	if {$index eq "none"} { return }
 
-	if {$index ne "outside"} {
-		set view [{*}$Vars(viewcmd) $base]
+	set view [{*}$Vars(viewcmd) $base]
+	if {[scidb::view::count games $base $view] == 0} { return }
 
+	if {$index ne "outside"} {
 		if {$Vars(listmode)} {
 			$menu add command \
 				-compound left \
@@ -1500,16 +1522,10 @@ proc PopupMenu {path menu base index} {
 			$menu add separator
 			set flag [::scidb::db::get deleted? $index $view $base]
 
-			if {$flag} {
-				set text $mc::UndeleteGame
-				set icon ${::icon::16x16::delete}
-			} else {
-				set text $mc::DeleteGame
-				set icon $::icon::16x16::delete
-			}
+			if {$flag} { set text $mc::UndeleteGame } else { set text $mc::DeleteGame }
 			$menu add command \
 				-compound left \
-				-image $icon \
+				-image $::icon::16x16::remove \
 				-label " $text" \
 				-command [namespace code [list DeleteGame $base $index $view [expr {!$flag}]]] \
 				;

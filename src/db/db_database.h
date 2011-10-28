@@ -157,7 +157,7 @@ public:
 	TreeCache& treeCache();
 
 	/// Loads a game from the given position.
-	bool loadGame(unsigned index, Game& game);
+	load::State loadGame(unsigned index, Game& game);
 	/// Saves a game at the given position.
 	void replaceGame(unsigned index, Game const& game);
 	/// Adds a game to the database.

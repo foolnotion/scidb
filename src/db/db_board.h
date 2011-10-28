@@ -315,6 +315,8 @@ public:
 	void removeCastlingRights();
 	/// Remove castling rights for given color
 	void removeCastlingRights(color::ID color);
+	/// Remove castling rights for given castling index
+	void removeCastlingRights(castling::Index index);
 	/// Remove castling rights for given rook
 	void removeCastlingRights(Square rook);
 	/// Fix bad castling rights (may happen in Scid or in PGN files)
@@ -458,21 +460,21 @@ private:
 	static void initialize();
 
 	// Additional board data
-	uint64_t	m_occupied;						// square is empty or holds a piece
-	uint64_t	m_occupiedL90;					// rotated counter clockwise 90 deg
-	uint64_t	m_occupiedL45;					// an odd transformation, to straighten out diagonals
-	uint64_t	m_occupiedR45;					// the opposite odd transformation, just as messy
+	uint64_t	m_occupied;					// square is empty or holds a piece
+	uint64_t	m_occupiedL90;				// rotated counter clockwise 90 deg
+	uint64_t	m_occupiedL45;				// an odd transformation, to straighten out diagonals
+	uint64_t	m_occupiedR45;				// the opposite odd transformation, just as messy
 
 	// Extra state data
-	Byte			m_piece[64];				// type of piece on this square
-	Byte			m_destroyCastle[64];		// inverted castle mask for each square
-	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous
-	Square		m_ksq[2];					// square of the kings
-	Square		m_epSquareFen;				// square of a fictive ep capture
-	uint64_t		m_hash;						// hash value
-	uint64_t		m_pawnHash;					// pawn hash value
-	Material		m_matCount[2];				// material count (per side)
-	Square		m_castleRookAtStart[4];	// initial squares of the castling rooks
+	Byte		m_piece[64];				// type of piece on this square
+	Byte		m_destroyCastle[64];		// inverted castle mask for each square
+	Byte		m_unambiguous[4];			// whether castling rook fyles are unambiguous
+	Square	m_ksq[2];					// square of the kings
+	Square	m_epSquareFen;				// square of a fictive ep capture
+	uint64_t	m_hash;						// hash value
+	uint64_t	m_pawnHash;					// pawn hash value
+	Material	m_matCount[2];				// material count (per side)
+	Square	m_castleRookAtStart[4];	// initial squares of the castling rooks
 
 	// Class data
 	static Board m_emptyBoard;

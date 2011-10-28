@@ -66,7 +66,7 @@ private:
 
 	void decodeVariation(unsigned level = 0);
 	Byte decodeMove(Byte value);
-	void decodeComments(MoveNode* node);
+	void decodeComments(MoveNode* node, Consumer* consumer = 0);
 	void decodeTags(TagSet& tags);
 	void skipTags();
 
@@ -80,7 +80,7 @@ private:
 	void decodeVariation(Consumer& consumer, MoveNode const* node);
 
 	Move nextMove();
-	void skipVariations();
+	void skipVariation();
 	void checkVariant(TagSet& tags);
 
 	Decoder(Decoder const&);

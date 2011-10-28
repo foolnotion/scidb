@@ -28,6 +28,7 @@
 #include "db_move_node.h"
 #include "db_annotation.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 
 #include "m_assert.h"
 
@@ -35,7 +36,7 @@ using namespace db;
 
 
 VarConsumer::VarConsumer(Board const& startBoard, mstl::string const& encoding)
-	:Consumer(format::Pgn, encoding)
+	:InfoConsumer(format::Pgn, encoding, TagBits(true), true)
 	,m_result(new MoveNode)
 	,m_current(m_result)
 	,m_nullMoveInserted(false)
@@ -70,9 +71,9 @@ VarConsumer::sendComment(	Comment const& preComment,
 	if (!comment.isEmpty())
 		m_current->setComment(comment, move::Post);
 	if (!annotation.isEmpty())
-		m_current->setAnnotation(annotation);
+		m_current->replaceAnnotation(annotation);
 	if (!marks.isEmpty())
-		m_current->setMarks(marks);
+		m_current->replaceMarks(marks);
 }
 
 
@@ -110,6 +111,13 @@ VarConsumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 			m_current->swapComment(comm, pos);
 		}
 	}
+}
+
+
+void
+VarConsumer::sendMoveInfo(MoveInfoSet const& moveInfo)
+{
+	m_current->replaceMoveInfo(moveInfo);
 }
 
 

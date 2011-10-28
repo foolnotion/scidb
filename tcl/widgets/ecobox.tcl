@@ -59,7 +59,7 @@ proc Build {w args} {
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
-	bind $w <<Language>> [namespace code [list LanguageChanged $w $opts(-textvariable)]]
+	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w $opts(-textvariable)]]
 
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"

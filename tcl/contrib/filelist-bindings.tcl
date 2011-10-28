@@ -574,7 +574,7 @@ proc ::TreeCtrl::EntryOpen {T item column element} {
 }
 
 # Like EntryOpen, but Entry widget expands/shrinks during typing
-proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0}} {
+proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0} {selcmd {}}} {
 
     variable Priv
 
@@ -607,7 +607,10 @@ proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0}} {
     # Create the Entry widget if needed
     set e $T.entry
     if {[winfo exists $e]} {
+	set vcmd [$e cget -validatecommand]
+	$e configure -validatecommand {}
 	$e delete 0 end
+	$e configure -validatecommand $vcmd
     } else {
 	entry $e -borderwidth 1 -highlightthickness 0 \
 	    -selectborderwidth 0 -relief solid -selectforeground white
@@ -624,12 +627,15 @@ proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0}} {
 
     $e configure -font $font -background [$T cget -background]
     $e insert end $text
-    $e selection range 0 end
+    if {[llength $selcmd]} {
+       {*}$selcmd $e $text
+    } else {
+       $e selection range 0 end
+    }
 
     set ebw [$e cget -borderwidth]
     set ex [expr {$x - $ebw - 1}]
-    place $e -x $ex -y [expr {$y - $ebw - 1}] \
-	-bordermode outside
+    place $e -x $ex -y [expr {$y - $ebw - 1}] -bordermode outside
 
     if {$fullWidth} {
        set width [$T column width $column]

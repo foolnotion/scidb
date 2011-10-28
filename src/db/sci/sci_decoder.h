@@ -44,6 +44,7 @@ class GameData;
 class MoveNode;
 class Consumer;
 class TagSet;
+class EngineList;
 
 namespace sci {
 
@@ -63,11 +64,11 @@ private:
 
 	void decodeRun(unsigned count);
 	void decodeRun(unsigned count, Consumer& consumer);
-	void decodeVariation();
+	void decodeVariation(util::ByteStream& data);
 	void decodeVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text);
-	void decodeComments(MoveNode* node, util::ByteStream& data);
+	void decodeEngines(util::ByteStream& strm, EngineList& engines);
 	void decodeTags(util::ByteStream& strm, TagSet& tags);
-	void decodeTextSection(GameData& data);
+	void decodeTextSection(MoveNode* node, util::ByteStream& text);
 	void decodeMark();
 
 	unsigned decodeMove(Byte value, Move& move);

@@ -29,6 +29,8 @@
 
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 #include "m_map.h"
 
@@ -94,6 +96,7 @@ public:
 	unsigned size() const;
 	unsigned length() const;
 	mstl::string const& content() const;
+	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	void append(Comment const& comment, char delim = '\0');
 	void remove(mstl::string const& lang);
@@ -101,6 +104,7 @@ public:
 	bool fromHtml(mstl::string const& s);
 	void swap(Comment& comment);
 	void swap(mstl::string& content, bool engFlag, bool othFlag);
+	void copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal = false);
 	void normalize(char delim = '\n');
 	void clear();
 

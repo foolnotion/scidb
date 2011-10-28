@@ -16,8 +16,8 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _TeXt_Generic_included
-#define _TeXt_Generic_included
+#ifndef _TeXt_GenericToken_included
+#define _TeXt_GenericToken_included
 
 #include "T_Token.h"
 
@@ -57,6 +57,6 @@ private:
 
 } // namespace TeXt
 
-#endif // _TeXt_Generic_included
+#endif // _TeXt_GenericToken_included
 
 // vi:set ts=3 sw=3:

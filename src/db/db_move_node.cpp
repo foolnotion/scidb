@@ -27,6 +27,7 @@
 #include "db_move_node.h"
 #include "db_annotation.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 #include "db_board.h"
 
 #include "u_crc.h"
@@ -41,6 +42,7 @@ using namespace db;
 
 
 static MarkSet const NoMarks;
+static MoveInfoSet const NoMoveInfo;
 
 
 MoveNode::MoveNode(Move const& move)
@@ -49,7 +51,9 @@ MoveNode::MoveNode(Move const& move)
 	,m_prev(0)
 	,m_annotation(const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
 	,m_marks(const_cast<MarkSet*>(&::NoMarks))
+	,m_moveInfo(const_cast<MoveInfoSet*>(&::NoMoveInfo))
 	,m_move(move)
+	,m_commentFlag(0)
 {
 }
 
@@ -60,7 +64,9 @@ MoveNode::MoveNode(Board const& board, Move const& move)
 	,m_prev(0)
 	,m_annotation(const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
 	,m_marks(const_cast<MarkSet*>(&::NoMarks))
+	,m_moveInfo(const_cast<MoveInfoSet*>(&::NoMoveInfo))
 	,m_move(move)
+	,m_commentFlag(0)
 {
 	M_REQUIRE(board.isValidMove(move));
 
@@ -75,6 +81,8 @@ MoveNode::MoveNode(MoveNode* node)
 	,m_prev(0)
 	,m_annotation(const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
 	,m_marks(const_cast<MarkSet*>(&::NoMarks))
+	,m_moveInfo(const_cast<MoveInfoSet*>(&::NoMoveInfo))
+	,m_commentFlag(0)
 {
 	M_REQUIRE(node);
 	m_next->m_prev = this;
@@ -87,6 +95,8 @@ MoveNode::MoveNode(Annotation* set)
 	,m_prev(0)
 	,m_annotation(set ? set : const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
 	,m_marks(const_cast<MarkSet*>(&::NoMarks))
+	,m_moveInfo(const_cast<MoveInfoSet*>(&::NoMoveInfo))
+	,m_commentFlag(0)
 {
 }
 
@@ -98,6 +108,9 @@ MoveNode::~MoveNode()
 
 	if (m_marks != &::NoMarks)
 		delete m_marks;
+
+	if (m_moveInfo != &::NoMoveInfo)
+		delete m_moveInfo;
 
 	for (unsigned i = 0; i < m_variations.size(); ++i)
 		delete m_variations[i];
@@ -194,6 +207,17 @@ MoveNode::addMark(Mark const& mark)
 
 
 void
+MoveNode::addMoveInfo(MoveInfo const& moveInfo)
+{
+	if (m_moveInfo == &::NoMoveInfo)
+		m_moveInfo = new MoveInfoSet;
+
+	m_moveInfo->add(moveInfo);
+	m_flags |= HasMoveInfo;
+}
+
+
+void
 MoveNode::setupAnnotation(Annotation const& annotation)
 {
 	if (annotation.isEmpty())
@@ -228,7 +252,7 @@ MoveNode::setupAnnotation(Annotation const& annotation)
 
 
 void
-MoveNode::setAnnotation(Annotation const& annotation)
+MoveNode::replaceAnnotation(Annotation const& annotation)
 {
 	setupAnnotation(annotation);
 	m_annotation->sort();
@@ -236,14 +260,44 @@ MoveNode::setAnnotation(Annotation const& annotation)
 
 
 void
-MoveNode::setMarks(MarkSet const& marks)
+MoveNode::swapMoveInfo(MoveInfoSet& moveInfo)
 {
-	M_REQUIRE(!hasMark());
-
-	if (!marks.isEmpty())
+	if (m_moveInfo != &::NoMoveInfo)
 	{
-		m_marks = new MarkSet(marks);
-		m_flags |= HasMark;
+		m_moveInfo->swap(moveInfo);
+
+		if (m_moveInfo->isEmpty())
+			m_flags &= ~HasMoveInfo;
+		else
+			m_flags |= HasMoveInfo;
+	}
+	else if (!moveInfo.isEmpty())
+	{
+		m_moveInfo = new MoveInfoSet;
+		m_moveInfo->swap(moveInfo);
+		m_flags |= HasMoveInfo;
+	}
+}
+
+
+void
+MoveNode::replaceMoveInfo(MoveInfoSet const& moveInfo)
+{
+	M_REQUIRE(!hasMoveInfo());
+
+	if (moveInfo.isEmpty())
+	{
+		if (m_moveInfo != &::NoMoveInfo)
+			delete m_moveInfo;
+
+		m_moveInfo = const_cast<MoveInfoSet*>(&::NoMoveInfo);
+		m_flags &= HasMoveInfo;
+	}
+	else
+	{
+		m_moveInfo = new MoveInfoSet(moveInfo);
+		m_moveInfo->sort();
+		m_flags |= HasMoveInfo;
 	}
 }
 
@@ -283,6 +337,7 @@ MoveNode::replaceMarks(MarkSet const& marks)
 	else
 	{
 		m_marks = new MarkSet(marks);
+		m_marks->sort();
 		m_flags |= HasMark;
 	}
 }
@@ -367,6 +422,7 @@ MoveNode::swapData(MoveNode* node)
 	mstl::swap(m_flags,			node->m_flags);
 	mstl::swap(m_annotation,	node->m_annotation);
 	mstl::swap(m_marks,			node->m_marks);
+	mstl::swap(m_moveInfo,		node->m_moveInfo);
 	mstl::swap(m_comment[0],	node->m_comment[0]);
 	mstl::swap(m_comment[1],	node->m_comment[1]);
 }
@@ -407,29 +463,42 @@ MoveNode::replaceVariation(unsigned varNo, MoveNode* node)
 MoveNode*
 MoveNode::clone(MoveNode* prev) const
 {
-	MoveNode* node = new MoveNode;
+	MoveNode* root = 0;
 
-	if (m_next)
-		node->m_next = m_next->clone(node);
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		MoveNode* node = new MoveNode;
 
-	if ((node->m_prev = prev))
-		node->m_prev->m_next = node;
+		if (root == 0)
+			root = node;
 
-	if (!m_annotation->isEmpty())
-		node->setupAnnotation(*m_annotation);
+		if (prev)
+		{
+			prev->m_next = node;
+			node->m_prev = prev;
+		}
 
-	node->m_comment[0] = m_comment[0];
-	node->m_comment[1] = m_comment[1];
-	node->m_move = m_move;
-	node->m_flags = m_flags;
+		prev = node;
 
-	if (!m_marks->isEmpty())
-		node->m_marks = new MarkSet(*m_marks);
+		if (!n->m_annotation->isEmpty())
+			node->setupAnnotation(*n->m_annotation);
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		node->addVariation(m_variations[i]->clone());
+		if (!n->m_marks->isEmpty())
+			node->m_marks = new MarkSet(*n->m_marks);
 
-	return node;
+		if (!n->m_moveInfo->isEmpty())
+			node->m_moveInfo = new MoveInfoSet(*n->m_moveInfo);
+
+		node->m_comment[0] = n->m_comment[0];
+		node->m_comment[1] = n->m_comment[1];
+		node->m_move = n->m_move;
+		node->m_flags = n->m_flags;
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			node->addVariation(n->m_variations[i]->clone());
+	}
+
+	return root;
 }
 
 
@@ -492,13 +561,32 @@ MoveNode::countNodes() const
 unsigned
 MoveNode::countAnnotations() const
 {
-	unsigned result = m_annotation->count();
+	unsigned result = 0;
 
-	if (m_next)
-		result += m_next->countAnnotations();
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += n->m_annotation->count();
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		result += m_variations[i]->countAnnotations();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countAnnotations();
+	}
+
+	return result;
+}
+
+
+unsigned
+MoveNode::countMoveInfo() const
+{
+	unsigned result = 0;
+
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += n->m_moveInfo->count();
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countMoveInfo();
+	}
 
 	return result;
 }
@@ -507,13 +595,15 @@ MoveNode::countAnnotations() const
 unsigned
 MoveNode::countMarks() const
 {
-	unsigned result = m_marks->count();
+	unsigned result = 0;
 
-	if (m_next)
-		result += m_next->countMarks();
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += n->m_marks->count();
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		result += m_variations[i]->countMarks();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countMarks();
+	}
 
 	return result;
 }
@@ -522,13 +612,15 @@ MoveNode::countMarks() const
 unsigned
 MoveNode::countComments() const
 {
-	unsigned result = (m_comment[0].isEmpty() ? 0 : 1) + (m_comment[1].isEmpty() ? 0 : 1);
+	unsigned result = 0;
 
-	if (m_next)
-		result += m_next->countComments();
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += (n->m_comment[0].isEmpty() ? 0 : 1) + (n->m_comment[1].isEmpty() ? 0 : 1);
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		result += m_variations[i]->countComments();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countComments();
+	}
 
 	return result;
 }
@@ -539,11 +631,14 @@ MoveNode::countComments(mstl::string const& lang) const
 {
 	unsigned result = (m_comment[0].countLength(lang) ? 1 : 0) + (m_comment[1].countLength(lang) ? 1 : 0);
 
-	if (m_next)
-		result += m_next->countComments(lang);
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += (n->m_comment[0].countLength(lang) ? 1 : 0);
+		result += (n->m_comment[1].countLength(lang) ? 1 : 0);
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		result += m_variations[i]->countComments(lang);
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countComments(lang);
+	}
 
 	return result;
 }
@@ -552,10 +647,10 @@ MoveNode::countComments(mstl::string const& lang) const
 unsigned
 MoveNode::countVariations() const
 {
-	unsigned result = m_variations.size();
+	unsigned result = 0;
 
-	if (m_next)
-		result += m_next->countVariations();
+	for (MoveNode const* n = this; n; n = n->m_next)
+		result += n->m_variations.size();
 
 	return result;
 }
@@ -579,99 +674,136 @@ MoveNode::unfoldedVariationCount() const
 void
 MoveNode::stripAnnotations()
 {
-	if (!m_annotation->isDefaultSet())
-		delete m_annotation;
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		if (!n->m_annotation->isDefaultSet())
+			delete n->m_annotation;
 
-	m_annotation = const_cast<Annotation*>(Annotation::defaultSet(nag::Null));
-	m_flags &= ~HasAnnotation;
+		n->m_annotation = const_cast<Annotation*>(Annotation::defaultSet(nag::Null));
+		n->m_flags &= ~HasAnnotation;
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i]->stripAnnotations();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripAnnotations();
+	}
+}
 
-	if (m_next)
-		m_next->stripAnnotations();
+
+void
+MoveNode::stripMoveInfo()
+{
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		n->m_flags &= ~HasMoveInfo;
+
+		if (n->m_moveInfo != &::NoMoveInfo)
+		{
+			delete n->m_moveInfo;
+			n->m_moveInfo = const_cast<MoveInfoSet*>(&::NoMoveInfo);
+		}
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripMoveInfo();
+	}
 }
 
 
 void
 MoveNode::stripMarks()
 {
-	m_flags &= ~HasMark;
-
-	if (m_marks != &::NoMarks)
+	for (MoveNode* n = this; n; n = n->m_next)
 	{
-		delete m_marks;
-		m_marks = const_cast<MarkSet*>(&::NoMarks);
+		n->m_flags &= ~HasMark;
+
+		if (n->m_marks != &::NoMarks)
+		{
+			delete n->m_marks;
+			n->m_marks = const_cast<MarkSet*>(&::NoMarks);
+		}
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripMarks();
 	}
-
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i]->stripMarks();
-
-	if (m_next)
-		m_next->stripMarks();
 }
 
 
 void
 MoveNode::stripComments()
 {
-	m_comment[0].clear();
-	m_comment[1].clear();
-	m_flags &= ~(HasComment | IsPrepared);
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		n->m_comment[0].clear();
+		n->m_comment[1].clear();
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i]->stripComments();
+		n->m_flags &= ~(HasComment | HasPreComment | IsPrepared);
 
-	if (m_next)
-		m_next->stripComments();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripComments();
+	}
 }
 
 
 void
 MoveNode::stripComments(mstl::string const& lang)
 {
-	m_comment[0].remove(lang);
-	m_comment[1].remove(lang);
-	m_flags &= ~IsPrepared;
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		n->m_comment[move::Ante].remove(lang);
+		n->m_comment[move::Post].remove(lang);
 
-	if (m_comment[move::Ante].isEmpty())
-		m_flags &= ~HasPreComment;
-	if (m_comment[move::Post].isEmpty())
-		m_flags &= ~HasComment;
+		n->m_flags &= ~IsPrepared;
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i]->stripComments(lang);
+		if (n->m_comment[move::Ante].isEmpty())
+			n->m_flags &= ~HasPreComment;
+		if (n->m_comment[move::Post].isEmpty())
+			n->m_flags &= ~HasComment;
 
-	if (m_next)
-		m_next->stripComments(lang);
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->stripComments(lang);
+	}
+}
+
+
+void
+MoveNode::copyComments(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal)
+{
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		if (!n->m_comment[move::Ante].isEmpty())
+			n->m_comment[move::Ante].copy(fromLang, toLang, stripOriginal);
+		if (!n->m_comment[move::Post].isEmpty())
+			n->m_comment[move::Post].copy(fromLang, toLang, stripOriginal);
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->copyComments(fromLang, toLang, stripOriginal);
+	}
 }
 
 
 void
 MoveNode::stripVariations()
 {
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		delete m_variations[i];
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			delete n->m_variations[i];
 
-	m_variations.clear();
-	m_flags &= ~HasVariation;
-
-	if (m_next)
-		m_next->stripVariations();
+		n->m_variations.clear();
+		n->m_flags &= ~HasVariation;
+	}
 }
 
 
 void
 MoveNode::fold(bool flag)
 {
-	for (MoveNode* p = this; p; p = p->m_next)
+	for (MoveNode* n = this; n; n = n->m_next)
 	{
-		if (p->hasVariation())
+		if (n->hasVariation())
 		{
-			for (unsigned i = 0; i < p->m_variations.size(); ++i)
+			for (unsigned i = 0; i < n->m_variations.size(); ++i)
 			{
-				p->m_variations[i]->setFolded(flag);
-				p->m_variations[i]->fold(flag);
+				n->m_variations[i]->setFolded(flag);
+				n->m_variations[i]->fold(flag);
 			}
 		}
 	}
@@ -681,14 +813,14 @@ MoveNode::fold(bool flag)
 void
 MoveNode::transpose()
 {
-	if (m_move)
-		m_move.transpose();
+	for (MoveNode* n = this; n; n = n->m_next)
+	{
+		if (n->m_move)
+			n->m_move.transpose();
 
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i]->transpose();
-
-	if (m_next)
-		m_next->transpose();
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			n->m_variations[i]->transpose();
+	}
 }
 
 
@@ -702,6 +834,8 @@ MoveNode::finish(Board const& board)
 	for (MoveNode* node = m_next; node->isBeforeLineEnd(); node = node->m_next)
 	{
 		node->m_annotation->sort();
+		node->m_marks->sort();
+		node->m_moveInfo->sort();
 
 		for (unsigned i = 0; i < node->m_variations.size(); ++i)
 			node->m_variations[i]->finish(myBoard);
@@ -722,16 +856,25 @@ MoveNode::setMark()
 
 
 util::crc::checksum_t
-MoveNode::computeChecksum(util::crc::checksum_t crc) const
+MoveNode::computeChecksum(EngineList const& engines, util::crc::checksum_t crc) const
 {
 	if (m_move)
 		crc = m_move.computeChecksum(crc);
 
+	crc = m_annotation->computeChecksum(crc);
+	crc = m_marks->computeChecksum(crc);
+	crc = m_moveInfo->computeChecksum(engines, crc);
+
+	if (!m_comment[move::Ante].isEmpty())
+		crc = m_comment[move::Ante].computeChecksum(crc);
+	if (!m_comment[move::Post].isEmpty())
+		crc = m_comment[move::Post].computeChecksum(crc);
+
 	if (m_next)
-		crc = m_next->computeChecksum(crc);
+		crc = m_next->computeChecksum(engines, crc);
 
 	for (unsigned i = 0; i < variationCount(); ++i)
-		crc = variation(i)->computeChecksum(crc);
+		crc = variation(i)->computeChecksum(engines, crc);
 
 	return crc;
 }
@@ -740,14 +883,14 @@ MoveNode::computeChecksum(util::crc::checksum_t crc) const
 void
 MoveNode::collectLanguages(LanguageSet& langSet) const
 {
-	m_comment[0].collectLanguages(langSet);
-	m_comment[1].collectLanguages(langSet);
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		n->m_comment[move::Ante].collectLanguages(langSet);
+		n->m_comment[move::Post].collectLanguages(langSet);
 
-	if (m_next)
-		m_next->collectLanguages(langSet);
-
-	for (unsigned i = 0; i < variationCount(); ++i)
-		variation(i)->collectLanguages(langSet);
+		for (unsigned i = 0; i < n->variationCount(); ++i)
+			n->variation(i)->collectLanguages(langSet);
+	}
 }
 
 

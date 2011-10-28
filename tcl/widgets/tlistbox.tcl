@@ -51,20 +51,22 @@ bind TListBox <Prior>		[namespace code { Prior %W }]
 bind TListBox <Next>			[namespace code { Next %W }]
 bind TListBox <Up>			[namespace code { Up %W }]
 bind TListBox <Down>			[namespace code { Down %W }]
+bind TListBox <Left>			[namespace code { Left %W }]
+bind TListBox <Right>		[namespace code { Right %W }]
 bind TListBox <Key-space>	[namespace code { SelectActive %W }]
 
 bind TListBox <<PasteSelection>>	{ break }
 
 
 bind TListBox <Motion> {
-    TreeCtrl::CursorCheck %W %x %y
-    TreeCtrl::MotionInHeader %W %x %y
-    TreeCtrl::MotionInItems %W %x %y
+	TreeCtrl::CursorCheck %W %x %y
+	TreeCtrl::MotionInHeader %W %x %y
+	TreeCtrl::MotionInItems %W %x %y
 }
 bind TListBox <Leave> {
-    TreeCtrl::CursorCancel %W
-    TreeCtrl::MotionInHeader %W
-    TreeCtrl::MotionInItems %W
+	TreeCtrl::CursorCancel %W
+	TreeCtrl::MotionInHeader %W
+	TreeCtrl::MotionInItems %W
 }
 
 
@@ -92,7 +94,7 @@ proc Build {w args} {
 		-usescroll				1
 		-padx						2
 		-pady						2
-		-ipady					2
+		-ipady					0
 		-padding					5
 		-height					10
 		-width					0
@@ -100,6 +102,7 @@ proc Build {w args} {
 		-maxwidth				0
 		-linespace				0
 		-skiponeunit			1
+		-columns					1
 	}
 	array set opts $args
 
@@ -110,6 +113,10 @@ proc Build {w args} {
 	}
 	if {$opts(-focusmodel) eq "hover"} {
 		set opts(-selectmode) single
+	}
+	if {$opts(-columns) > 1} {
+		set opts(-usescroll) 0
+		set opts(-skiponeunit) 0
 	}
 
 	::ttk::frame $w -class TListBoxFrame -takefocus 0 {*}$style
@@ -152,6 +159,9 @@ proc Build {w args} {
 		bind $w.vsb <Button-1> [list focus $t]
 		grid $w.vsb -row 0 -column 1 -sticky ns
 	}
+	if {$opts(-columns) > 1} {
+		$t configure -itemwidthequal yes -orient vertical -wrap window
+	}
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
@@ -191,8 +201,10 @@ proc Build {w args} {
 	} else {
 		set Priv(linespace) [font metrics $opts(-font) -linespace]
 	}
+	set Priv(numcolumns) [expr {max(1,$opts(-columns))}]
 
 	set Priv(columns) {}
+	set Priv(types) {}
 	foreach attr {padx pady ipady padding height width skiponeunit} {
 		set Priv($attr) $opts(-$attr)
 	}
@@ -256,7 +268,13 @@ proc WidgetProc {w command args} {
 			lappend Priv(addcol) $args
 			array set opts [lrange $args 1 end]
 			set id $opts(-id)
-			if {$opts(-expand)} { set Priv(expand) $id }
+			if {$Priv(numcolumns) > 1} {
+				set opts(-expand) no
+				set opts(-squeeze) no
+				set opts(-steady) no
+			} elseif {$opts(-expand)} {
+				set Priv(expand) $id
+			}
 			$t column create                \
 				-tag $id                     \
 				-itemjustify $opts(-justify) \
@@ -281,6 +299,7 @@ proc WidgetProc {w command args} {
 			}
 			lappend Priv(colwidth) $width
 			lappend Priv(columns) $id
+			lappend Priv(types) $type
 			set Priv(foreground:$id) $opts(-foreground)
 			set Priv(font:$id) $opts(-font)
 			set Priv(font2:$id) $opts(-font2)
@@ -459,7 +478,14 @@ proc WidgetProc {w command args} {
 				}
 			}
 			if {![$t item enabled $index]} { return " " }
-			return [$t item text $index $column]
+			set result ""
+			if {[lindex $Priv(types) $column] ne "text"} {
+				set result [$t item image $index $column]
+			}
+			if {[string length $result] == 0} {
+				set result [$t item text $index $column]
+			}
+			return $result
 		}
 
 		size {
@@ -611,7 +637,27 @@ proc WidgetProc {w command args} {
 		}
 
 		columns {
-			return $Priv(columns)
+			if {[llength $args] > 1} {
+				error "wrong # args: should be \"[namespace current] columns ?clear?\""
+			}
+			if {[llength $args] == 0} {
+				return $Priv(columns)
+			}
+			set cmd [lindex $args 0]
+			if {$cmd ne "clear"} {
+				error "bad command \"$cmd\": must be clear"
+			}
+			catch { $t item delete 1 end }
+			foreach col [$t column list] { $t column delete $col }
+			foreach style [$t style names] {
+				if {![string match sel* $style]} { $t style delete $style }
+			}
+			set Priv(last) -1
+			set Priv(index) 0
+			set Priv(addcol) {}
+			set Priv(columns) {}
+			set Priv(expand) ""
+			return $t
 		}
 
 		yview {
@@ -789,9 +835,9 @@ proc ComputeGeometry {cb} {
 		} else {
 			set width [max $width $minwidth]
 		}
-		incr width [expr {2*[$t cget -borderwidth]}]
+		set width [expr {$Priv(numcolumns)*$width}]
 		$t configure -width $width
-		if {$Priv(expand) eq [lindex $Priv(columns) end]} {
+		if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {
 			$t column expand $Priv(expand)
 		}
 	}
@@ -826,28 +872,36 @@ proc MakeStyles {w} {
 		set id [lindex $Priv(columns) $i]
 
 		set padx $Priv(padx)
-		if {$i > 0} { set padx [list [expr {$padx + $Priv(padding)}] $padx] }
+		if {$i > 0} {
+			if {$Priv(numcolumns) == 1} {
+				set padx [list [expr {$padx + $Priv(padding)}] $padx]
+			} else {
+				incr padx $Priv(padding)
+				set padx [list $padx $padx]
+			}
+		}
+		set ipady [list $Priv(ipady) $Priv(ipady)]
 	
 		switch -- $Priv(type:$id) {
 			elemCom {
 				set s [$t style create style$id -orient vertical]
 				$t style elements $s [list sel$dir elemImg elemTxt]
-				$t style layout $s elemImg -pady $Priv(pady) -padx $padx -expand nsew
-				$t style layout $s elemTxt -expand we -ipady [list 0 $Priv(ipady)] -padx $padx -squeeze x
+				$t style layout $s elemImg -ipadx $padx -pady $Priv(pady) -expand nsew
+				$t style layout $s elemTxt -ipadx $padx -expand we -ipady $ipady -squeeze x
 			}
 
 			elemTxt {
 				set s [$t style create style$id]
 				$t style elements $s [list sel$dir elemTxt elemImg]
-				$t style layout $s elemTxt -padx $padx -pady $Priv(pady) -expand ns
-				$t style layout $s elemImg -padx $padx -pady $Priv(pady) -expand nsew -detach yes
+				$t style layout $s elemTxt -ipadx $padx -pady $Priv(pady) -expand ns
+				$t style layout $s elemImg -ipadx $padx -pady $Priv(pady) -expand nsew -detach yes
 			}
 
 			elemImg {
 				set s [$t style create style$id]
 				$t style elements $s [list sel$dir elemImg elemTxt]
-				$t style layout $s elemTxt -padx $padx -pady $Priv(pady) -expand nsew -detach yes
-				$t style layout $s elemImg -padx $padx -pady $Priv(pady) -expand nsew
+				$t style layout $s elemTxt -ipadx $padx -pady $Priv(pady) -expand nsew -detach yes
+				$t style layout $s elemImg -ipadx $padx -pady $Priv(pady) -expand nsew -ipady $ipady
 			}
 		}
 		$t style layout $s sel$dir -detach yes -iexpand xy
@@ -886,7 +940,8 @@ proc Activate {t x y select {isDoubleClick 0}} {
 	if {[lindex $info 0] eq "item" && [$t item enabled [lindex $info 1]]} {
 		SetActive $t [lindex $info 1] $select $isDoubleClick
 	}
-	focus $t
+
+	if {[winfo exists $t]} { focus $t }
 }
 
 
@@ -906,12 +961,13 @@ proc SetActive {t index select {isDoubleClick 0}} {
 		$t selection add $index
 		$t activate $index
 		if {$isDoubleClick} { set data "" } else { set data [expr {$index - 1}] }
-		event generate [winfo parent $t] <<ListboxSelect>> -data $data
 		set Priv(selected) $index
+		event generate [winfo parent $t] <<ListboxSelect>> -data $data
 	} else {
 		$t activate $index
 	}
-	$t see $index
+
+	if {[winfo exists $t]} { $t see $index }
 }
 
 
@@ -921,7 +977,7 @@ proc Home {t} {
 
 	set cur 1
 	while {$cur <= $Priv(last) && ![$t item enabled $cur]} { incr cur }
-	if {$cur <= $Priv(last)} { SetActive $t $cur no }
+	if {$cur <= $Priv(last)} { SetActive $t $cur [expr {$Priv(numcolumns) > 1}] }
 }
 
 
@@ -931,7 +987,7 @@ proc End {t} {
 
 	set cur [expr {[$t item count] - 1}]
 	while {$cur > 0 && ![$t item enabled $cur]} { incr cur -1 }
-	if {$cur > 0} { SetActive $t $cur no }
+	if {$cur > 0} { SetActive $t $cur [expr {$Priv(numcolumns) > 1}] }
 }
 
 
@@ -939,17 +995,21 @@ proc Down {t} {
 	set w [winfo parent $t]
 	variable [namespace current]::${w}::Priv
 
-	set active [$t item id active]
-	if {$active <= $Priv(last)} {
-		set first [$t item id {nearest 0 0}]
-		set last [$t item id [list nearest 0 [winfo height $t]]]
-		if {$first <= $active && $active <= $last} {
-			set cur [expr {$active + 1}]
-		} else {
-			set cur $first
+	if {$Priv(numcolumns) == 1} {
+		set active [$t item id active]
+		if {$active <= $Priv(last)} {
+			set first [$t item id {nearest 0 0}]
+			set last [$t item id [list nearest 0 [winfo height $t]]]
+			if {$first <= $active && $active <= $last} {
+				set cur [expr {$active + 1}]
+			} else {
+				set cur $first
+			}
+			while {$cur <= $Priv(last) && ![$t item enabled $cur]} { incr cur }
+			if {$cur <= $Priv(last)} { SetActive $t $cur no }
 		}
-		while {$cur <= $Priv(last) && ![$t item enabled $cur]} { incr cur }
-		if {$cur <= $Priv(last)} { SetActive $t $cur no }
+	} else {
+		TreeCtrl::SetActiveItem $t [TreeCtrl::UpDown $t active 1]
 	}
 }
 
@@ -958,17 +1018,41 @@ proc Up {t} {
 	set w [winfo parent $t]
 	variable [namespace current]::${w}::Priv
 
-	set active [$t item id active]
-	set last [$t item id [list nearest 0 [winfo height $t]]]
-	if {$active > 0} {
-		set first [$t item id {nearest 0 0}]
-		if {$first <= $active && $active <= $last} {
-			set cur [expr {$active - 1}]
-		} else {
-			set cur $last
+	if {$Priv(numcolumns) == 1} {
+		set active [$t item id active]
+		set last [$t item id [list nearest 0 [winfo height $t]]]
+		if {$active > 0} {
+			set first [$t item id {nearest 0 0}]
+			if {$first <= $active && $active <= $last} {
+				set cur [expr {$active - 1}]
+			} else {
+				set cur $last
+			}
+			while {$cur > 0 && ![$t item enabled $cur]} { incr cur -1 }
+			if {$cur > 0} { SetActive $t $cur no }
 		}
-		while {$cur > 0 && ![$t item enabled $cur]} { incr cur -1 }
-		if {$cur > 0} { SetActive $t $cur no }
+	} else {
+		TreeCtrl::SetActiveItem $t [TreeCtrl::UpDown $t active -1]
+	}
+}
+
+
+proc Left {t} {
+	set w [winfo parent $t]
+	variable [namespace current]::${w}::Priv
+
+	if {$Priv(numcolumns) > 1} {
+		TreeCtrl::SetActiveItem $t [TreeCtrl::LeftRight $t active -1]
+	}
+}
+
+
+proc Right {t} {
+	set w [winfo parent $t]
+	variable [namespace current]::${w}::Priv
+
+	if {$Priv(numcolumns) > 1} {
+		TreeCtrl::SetActiveItem $t [TreeCtrl::LeftRight $t active 1]
 	}
 }
 
@@ -983,9 +1067,11 @@ proc Next {t} {
 		if {[$t cget -selectmode] eq "browse"} {
 			$t selection clear
 		}
-		$t yview scroll 1 pages
-		if {$Priv(skiponeunit)} {
-			$t yview scroll 1 unit
+		if {$Priv(numcolumns) == 1} {
+			$t yview scroll 1 pages
+			if {$Priv(skiponeunit)} {
+				$t yview scroll 1 unit
+			}
 		}
 		set cur [$t item id [list nearest 0 [winfo height $t]]]
 		set count 0
@@ -1000,7 +1086,9 @@ proc Next {t} {
 				incr count -1
 			}
 		}
-		$t yview scroll $count unit
+		if {$Priv(numcolumns) == 1} {
+			$t yview scroll $count unit
+		}
 		SetActive $t $cur no
 	} else {
 		while {$last <= $Priv(last) && ![$t item enabled $last]} { incr last }
@@ -1019,10 +1107,12 @@ proc Prior {t} {
 		if {[$t cget -selectmode] eq "browse"} {
 			$t selection clear
 		}
-		$t yview scroll -1 pages
-		set last [$t item id [list nearest 0 [winfo height $t]]]
-		if {$first != $last} {
-			$t yview scroll -1 units
+		if {$Priv(numcolumns) == 1} {
+			$t yview scroll -1 pages
+			set last [$t item id [list nearest 0 [winfo height $t]]]
+			if {$first != $last} {
+				$t yview scroll -1 units
+			}
 		}
 		set cur [$t item id [list nearest 0 0]]
 		set count 0
@@ -1037,7 +1127,9 @@ proc Prior {t} {
 				incr count
 			}
 		}
-		$t yview scroll $count unit
+		if {$Priv(numcolumns) == 1} {
+			$t yview scroll $count unit
+		}
 		SetActive $t $cur no
 	} else {
 		while {$first > 0 && ![$t item enabled $first]} { incr first -1 }

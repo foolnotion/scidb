@@ -37,6 +37,8 @@ namespace mstl	{ class ostream; }
 namespace db
 {
 	class Board;
+	class Game;
+	class Move;
 	class MoveList;
 }
 
@@ -71,14 +73,18 @@ public:
 		virtual ~Concrete() throw();
 
 		virtual bool startAnalysis(db::Board const& board) = 0;
+		virtual bool startAnalysis(db::Game const& game, bool isNewGame) = 0;
 		virtual bool stopAnalysis() = 0;
 
 		virtual void protocolStart(bool isProbing) = 0;
 		virtual void protocolEnd() = 0;
 
 		virtual void processMessage(mstl::string const& message) = 0;
+		virtual void sendNumberOfVariations() override = 0;
+		virtual void doMove(db::Game const& game, db::Move const& lastMove) = 0;
 
 		virtual Result probeResult() const = 0;
+		virtual unsigned maxVariations() const;
 
 		friend class Engine;
 
@@ -158,9 +164,11 @@ public:
 
 	Result probe(unsigned timeout);
 
-	virtual bool startAnalysis(db::Board const& board);
-	virtual bool stopAnalysis();
-	virtual void analysisStopped() = 0;
+	bool startAnalysis(db::Board const& board);
+	bool startAnalysis(db::Game const& game, bool isNewGame);
+	bool stopAnalysis();
+	unsigned setNumberOfVariations(unsigned n);
+	void doMove(db::Game const& game, db::Move const& lastMove);
 
 	friend class uci::Engine;
 	friend class winboard::Engine;

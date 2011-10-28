@@ -32,6 +32,7 @@
 #ifndef _db_date_included
 #define _db_date_included
 
+#include "u_crc.h"
 #include "u_base.h"
 
 #include "m_string.h"
@@ -84,6 +85,12 @@ public:
 	unsigned day() const;
 	/// Return hash code
 	unsigned hash() const;
+	/// Returns an integer less than, equal to, or greater than zero if 'this' is found, respectively,
+	/// to be less than, to match, or be greater than the argument.
+	int compare(Date const& date) const;
+
+	/// Return computed checksum.
+	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	/// Sets year, month, and day.
 	bool setYMD(unsigned y, unsigned m, unsigned d);
@@ -93,6 +100,8 @@ public:
 	bool parseFromString(mstl::string const& s);
 	/// Sets date from string in PGN date format although date is illegal.
 	bool parseFromString(char const* s, unsigned size);
+	/// Set date from string in %ccsnt format.
+	char const* parseCorrespondenceDate(char const* s);
 	/// Reset to empty date,
 	void clear();
 

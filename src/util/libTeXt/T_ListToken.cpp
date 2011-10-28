@@ -28,54 +28,50 @@
 using namespace TeXt;
 
 
-class ListToken::MyProducer : public Producer
+ListToken::TokenProducer::TokenProducer(TokenP const& token)
+	:fToken(token)
+	,fIter(fToken->m_tokenList.begin())
 {
-public:
+}
 
-	typedef mstl::ref_counted_ptr<ListToken> ListTokenP;
 
-	MyProducer(TokenP const& token)
-		:fToken(token)
-		,fIter(fToken->m_tokenList.begin())
-	{
-	}
+bool
+ListToken::TokenProducer::finished() const
+{
+	return fIter == fToken->m_tokenList.end();
+}
 
-	bool finished() const override
-	{
-		return fIter == fToken->m_tokenList.end();
-	}
 
-	Source source() const override
-	{
-		return List;
-	}
+Producer::Source
+ListToken::TokenProducer::source() const
+{
+	return List;
+}
 
-	TokenP next(Environment&) override
-	{
-		return (fIter == fToken->m_tokenList.end()) ? TokenP() : *(fIter++);
-	}
 
-	bool reset() override
-	{
-		fIter = fToken->m_tokenList.begin();
-		return true;
-	}
+TokenP
+ListToken::TokenProducer::next(Environment&)
+{
+	return (fIter == fToken->m_tokenList.end()) ? TokenP() : *(fIter++);
+}
 
-	mstl::string currentDescription() const override
-	{
-		if (fIter == fToken->m_tokenList.begin())
-			return mstl::string::empty_string;
 
-		return fToken->meaning(fIter - 1);
-	}
+bool
+ListToken::TokenProducer::reset()
+{
+	fIter = fToken->m_tokenList.begin();
+	return true;
+}
 
-private:
 
-	typedef ListToken::TokenList::const_iterator Iter;
+mstl::string
+ListToken::TokenProducer::currentDescription() const
+{
+	if (fIter == fToken->m_tokenList.begin())
+		return mstl::string::empty_string;
 
-	ListTokenP	fToken;
-	Iter			fIter;
-};
+	return fToken->meaning(fIter - 1);
+}
 
 
 ListToken::ListToken()
@@ -92,7 +88,7 @@ ListToken::ListToken(Environment& env)
 		switch (token->type())
 		{
 			case Token::T_LeftBrace:
-				token.reset(new ListToken(env));
+				token.reset(new ListToken(env)); // MEMORY
 				break;
 
 			case Token::T_RightBrace:
@@ -289,14 +285,14 @@ ListToken::getProducer(TokenP const& self) const
 {
 	M_REQUIRE(self.get() == this);
 
-	return new MyProducer(self);
+	return new TokenProducer(self); // MEMORY
 }
 
 
 TokenP
 ListToken::performThe(Environment& env) const
 {
-	mstl::ref_counted_ptr<ListToken> result(new ListToken);
+	mstl::ref_counted_ptr<ListToken> result(new ListToken); // MEMORY
 
 	for (TokenList::const_iterator i = m_tokenList.begin(), e = m_tokenList.end(); i != e; ++i)
 	{
@@ -356,7 +352,7 @@ ListToken::append(Token* token)
 void
 ListToken::append(Value value1, Value value2)
 {
-	ListToken* list = new ListToken;
+	ListToken* list = new ListToken; // MEMORY
 	list->append(value1);
 	list->append(value2);
 	append(list);
@@ -366,7 +362,7 @@ ListToken::append(Value value1, Value value2)
 void
 ListToken::append(Value value1, Value value2, Value value3)
 {
-	ListToken* list = new ListToken;
+	ListToken* list = new ListToken; // MEMORY
 	list->append(value1);
 	list->append(value2);
 	list->append(value3);
@@ -377,7 +373,7 @@ ListToken::append(Value value1, Value value2, Value value3)
 void
 ListToken::append(Value value1, Value value2, Value value3, Value value4)
 {
-	ListToken* list = new ListToken;
+	ListToken* list = new ListToken; // MEMORY
 	list->append(value1);
 	list->append(value2);
 	list->append(value3);
@@ -392,7 +388,7 @@ ListToken::append(Value const* first, Value const* last)
 	M_REQUIRE(first || last == 0);
 	M_REQUIRE(first <= last);
 
-	ListToken* list = new ListToken;
+	ListToken* list = new ListToken; // MEMORY
 
 	for ( ; first < last; ++first)
 			list->append(*first);

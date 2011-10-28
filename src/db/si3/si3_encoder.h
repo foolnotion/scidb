@@ -29,7 +29,10 @@
 
 #include "si3_encoder_position.h"
 
+#include "db_consumer.h"
 #include "db_common.h"
+
+#include "m_bitfield.h"
 
 namespace util { class ByteStream; }
 namespace mstl { class string; }
@@ -53,10 +56,14 @@ public:
 
 	Encoder(util::ByteStream& strm, sys::utf8::Codec& codec);
 
-	void doEncoding(Signature const& signature, GameData const& data);
+	void doEncoding(	Signature const& signature,
+							GameData const& data,
+							db::Consumer::TagBits const& allowedTags,
+							bool allowExtraTags);
 
 	static unsigned encodeType(db::type::ID type);
 	static bool skipTag(tag::ID tag);
+	static bool isExtraTag(tag::ID tag);
 
 protected:
 
@@ -65,7 +72,7 @@ protected:
 	void encodeVariation(MoveNode const* node, unsigned level = 0);
 	void encodeComments(MoveNode* node, encoding::CharSet encoding);
 	void encodeTag(TagSet const& tags, tag::ID tagID);
-	void encodeTags(TagSet const& tags);
+	void encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
 	void encodeNullMove(Move const& move);
 	void encodeKing(Move const& move);
 	void encodeQueen(Move const& move);

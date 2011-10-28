@@ -27,6 +27,12 @@
 #set tcl_traceExec 1
 
 namespace eval scidb {
+
+set revision 83 ;# first revision ever
+
+variable clipbaseName		[::scidb::db::get clipbase name]
+variable scratchbaseName	[::scidb::db::get scratchbase name]
+
 namespace eval dir {
 
 if {$tcl_platform(platform) eq "windows"} {
@@ -107,16 +113,15 @@ if {[::process::testOption from-the-scratch]} {
 
 namespace eval mc {}
 
-wm withdraw .
 tk appname $scidb::app
 
 toplevel .application -class $::scidb::app
 wm withdraw .application
 
 if {[::scidb::misc::debug?]} {
-	proc grab {args} {}
 	::process::setOption single-process
 	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::wm sync }
+	if {![::process::testOption force-grab]} { proc grab {args} {} }
 }
 
 ### need to predefine some namespaces ################################

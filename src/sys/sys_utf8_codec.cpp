@@ -1813,8 +1813,8 @@ static enum State const State_Transition_Tbl[12][8] =
 static int
 compareEncodings(void const* lhs, void const* rhs)
 {
-	return ::strcmp(	Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(lhs), 0),
-							Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(rhs), 0));
+	return ::strcmp(	Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(lhs), nullptr),
+							Tcl_GetStringFromObj(*static_cast<Tcl_Obj*const*>(rhs), nullptr));
 }
 
 
@@ -2723,7 +2723,7 @@ Codec::getEncodingList(EncodingList& result)
 	for (int i = 0; i < objc; ++i)
 	{
 		result.push_back();
-		result.back().assign(Tcl_GetStringFromObj(objv[i], 0));
+		result.back().assign(Tcl_GetStringFromObj(objv[i], nullptr));
 	}
 
 	return objc;

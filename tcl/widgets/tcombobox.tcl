@@ -257,6 +257,14 @@ proc WidgetProc {w command args} {
 			}
 		}
 
+		search {
+			if {[llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <column> <char>\""
+			}
+			variable Priv
+			return [$w.popdown.l search {*}$args $Priv($w:mapping1) $Priv($w:mapping2)]
+		}
+
 		instate {
 			if {[llength $args] != 1 && [llength $args] != 2} {
 				error "wrong # args: should be \"[namespace current] $command <statespec> ?<script>?\""
@@ -276,6 +284,22 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-background)]} {
 				$w.__image__ configure -background $opts(-background)
 			}
+		}
+
+		showcolumns {
+			variable Priv
+
+			if {[llength $args] > 1} {
+				error "wrong # args: should be \"[namespace current] $command ?<list-of-columns>?\""
+			}
+			if {[llength $args] == 1} {
+				set Priv($w:showcolumns) [lindex $args 0]
+			}
+			return $Priv($w:showcolumns)
+		}
+
+		columns {
+			return [$w.popdown.l columns {*}$args]
 		}
 
 		placeicon {

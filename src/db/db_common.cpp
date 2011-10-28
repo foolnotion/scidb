@@ -1156,9 +1156,9 @@ namespace tag
 {
 	static mstl::string const* NameLookup[ExtraTag];
 
-	mstl::bitfield<uint64_t> IsWhiteRating(ExtraTag);
-	mstl::bitfield<uint64_t> IsBlackRating(ExtraTag);
-	mstl::bitfield<uint64_t> IsRating(ExtraTag);
+	mstl::bitfield<uint64_t> IsWhiteRating;
+	mstl::bitfield<uint64_t> IsBlackRating;
+	mstl::bitfield<uint64_t> IsRating;
 
 	struct Initializer { Initializer(); };
 	static Initializer initializer;

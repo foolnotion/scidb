@@ -14,7 +14,7 @@
 # default program to execute is just tclsh.
 # The backslashes at the end of these lines are needed: \
 tclsh=tclsh; \
-for tclver in 85 8.5 86 8.6; do \
+for tclver in 86 8.6 85 8.5; do \
     IFS=:; \
     for dir in $PATH; do \
         if [ -x $dir/tclsh$tclver ]; \
@@ -34,7 +34,7 @@ proc stripDot {version} { return "[string index $version 0][string index $versio
 proc findBestTclVersion {} {
     global env
 
-    set versions {8.6 8.5}
+    set versions {8.5 8.6}
 
     foreach version $versions {
         lappend paths                                \
@@ -298,11 +298,27 @@ proc findTclTkPaths {} {
         /usr/local/X/lib
         /usr/lib
         /usr/lib64
-        /usr/lib/i386-linux-gnu
-        /usr/lib/x86_64-linux-gnu
         /usr/X11/lib
         /usr/X11R6/lib
         /usr/X/lib
+        /usr/lib/alpha-linux-gnu
+        /usr/lib/arm-linux-gnueabi
+        /usr/lib/arm-linux-gnueabihf
+        /usr/lib/i386-gnu
+        /usr/lib/i386-kfreebsd-gnu
+        /usr/lib/i386-linux-gnu
+        /usr/lib/ia64-linux-gnu
+        /usr/lib/mips-linux-gnu
+        /usr/lib/mipsel-linux-gnu
+        /usr/lib/powerpc-linux-gnu
+        /usr/lib/powerpc-linux-gnuspe
+        /usr/lib/s390-linux-gnu
+        /usr/lib/s390x-linux-gnu
+        /usr/lib/sh4-linux-gnu
+        /usr/lib/sparc-linux-gnu
+        /usr/lib/sparc64-linux-gnu
+        /usr/lib/x86_64-kfreebsd-gnu
+        /usr/lib/x86_64-linux-gnu
         /usr/openwin/lib
     }
 
@@ -921,7 +937,7 @@ proc writeMakefile {{type ""}} {
     if { $feature(symbols)}         { Append option(C_DEBUG) "-g" }
     if { $feature(symbols)}         { Append option(CXX_DEBUG) "-g" }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
-    if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ -DNASSERT" }
+    if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ" }
     if { $feature(gprof-profiling)} { Append option(PROFILING) "-pg" }
     if { $feature(gcov-coverage)}   { Append option(PROFILING) "-coverage" }
     if { $feature(debug-si4)}       { Append option(EXTRA_DEBUG_FLAGS) "-DDEBUG_SI4" }
@@ -1028,10 +1044,10 @@ proc writeMakefile {{type ""}} {
         if {![info exists option(TCL_INCLUDE)] || ![info exists option(TK_INCLUDE)]} {
             puts ""
             puts "Possibly you have to install Tcl/Tk. On Ubuntu/Debian systems use:"
-            puts "  sudo apt-get install tcl8.5"
-            puts "  sudo apt-get install tcl8.5-dev"
-            puts "  sudo apt-get install tk8.5"
-            puts "  sudo apt-get install tk8.5-dev"
+            puts "  sudo apt-get install tcl${configure(tcl-version)}"
+            puts "  sudo apt-get install tcl${configure(tcl-version)}-dev"
+            puts "  sudo apt-get install tk${configure(tk-version)}"
+            puts "  sudo apt-get install tk${configure(tk-version)}-dev"
         }
     }
 }
@@ -1150,19 +1166,28 @@ foreach arg $argv {
         if {![info exists arg1]} { set arg1 yes }
         set feature([string range $arg0 9 end]) $arg1
     } elseif {[string match --disable-* $arg0]} {
-        if {![info exists arg1]} { set arg1 no }
+        if {![info exists arg1]} {
+            set arg1 no
+        } elseif {[string match y* $arg1]} {
+            set arg1 no
+        } else {
+            set arg1 yes
+        }
         set feature([string range $arg0 10 end]) $arg1
     } else {
         if {![info exists arg1]} {
-            puts "Invalid argument: $arg"
+            puts "Invalid argument: $arg\n"
             usage 1
         }
         if {[string match --with-* $arg0]} {
             set package([string range $arg0 7 end]) $arg1
         } elseif {[info exists environment($arg0)]} {
             set environment($arg0) $arg1
+        } elseif {[string match --* $arg0]} {
+            set configure([string range $arg0 2 end]) $arg1
         } else {
-            set configure($args0) $args1
+            puts "Invalid argument: $arg\n"
+            usage 1
         }
     }
     unset -nocomplain arg1

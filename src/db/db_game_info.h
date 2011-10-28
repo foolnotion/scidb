@@ -251,7 +251,7 @@ private:
 
 	struct PlayerData
 	{
-		union
+		union __attribute__((packed))
 		{
 			struct
 			{
@@ -301,12 +301,7 @@ private:
 	union
 	{
 		NamebaseEntry*	m_annotator;	// Scid: n/a
-
-		struct
-		{
-			unsigned long m_recordLengthFlag:1;	// should be lsb!
-			unsigned long m_recordLength:(U_BITS_OF(long) - 1);
-		};
+		unsigned long	m_recordLength;
 	};
 
 	PlayerData	m_pd[2];
@@ -325,7 +320,7 @@ private:
 	uint64_t m_dateYear			:10;
 	uint64_t m_dateMonth			: 4;
 
-	union
+	union __attribute__((packed))
 	{
 		struct
 		{
@@ -334,7 +329,7 @@ private:
 			uint32_t m_rest		: 3;
 		};
 
-		uint8_t  m_ply[4];
+		uint16_t m_ply[2];
 		uint32_t m_positionData;
 	};
 

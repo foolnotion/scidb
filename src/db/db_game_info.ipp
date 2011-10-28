@@ -36,7 +36,7 @@ template <int N>
 struct Accessor
 {
 	static uint16_t ply(GameInfo const& info) { return info.m_ply[N]; }
-	static void set(GameInfo& info, uint16_t move) { info.m_ply[N] = Move::compress<N>(move); }
+	static void set(GameInfo& info, uint16_t move) { info.m_ply[N] = move; }
 };
 
 } // namespace bits
@@ -46,8 +46,8 @@ inline bool GameInfo::isDirty() const							{ return m_gameFlags & Flag_Dirty; }
 inline bool GameInfo::isChanged() const						{ return m_gameFlags & Flag_Changed; }
 inline bool GameInfo::hasPromotion() const					{ return m_signature.hasPromotion(); }
 inline bool GameInfo::hasUnderPromotion() const				{ return m_signature.hasUnderPromotion(); }
-inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLengthFlag; }
 inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag_Illegal_Move; }
+inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLength & 1; }
 inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId; }
 inline bool GameInfo::hasChess960Position() const			{ return m_positionId <= 960; }
 inline bool GameInfo::hasStandardPosition() const			{ return m_positionId == chess960::StandardIdn;}
@@ -124,7 +124,7 @@ inline
 mstl::string const&
 GameInfo::annotator() const
 {
-	return m_recordLengthFlag ? mstl::string::empty_string : m_annotator->name();
+	return hasGameRecordLength() ? mstl::string::empty_string : m_annotator->name();
 }
 
 
@@ -132,6 +132,7 @@ inline
 Eco
 GameInfo::ecoKey() const
 {
+	M_REQUIRE(m_positionId == chess960::StandardIdn);
 	return Eco(m_ecoKey);
 }
 
@@ -140,7 +141,7 @@ inline
 uint32_t
 GameInfo::gameRecordLength() const
 {
-	return m_recordLengthFlag ? m_recordLength : 0;
+	return hasGameRecordLength() ? m_recordLength >> 1 : 0;
 }
 
 
@@ -148,8 +149,7 @@ inline
 void
 GameInfo::setGameRecordLength(unsigned length)
 {
-	m_recordLength = length;
-	m_recordLengthFlag = 1;
+	m_recordLength = (length << 1) | 1u;
 }
 
 

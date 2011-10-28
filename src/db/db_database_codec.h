@@ -34,6 +34,8 @@
 #include "u_crc.h"
 
 #include "m_string.h"
+#include "m_vector.h"
+#include "m_bitfield.h"
 
 namespace sys
 {
@@ -69,6 +71,9 @@ class Signature;
 class DatabaseCodec
 {
 public:
+
+	typedef mstl::vector<mstl::string>	StringList;
+	typedef mstl::bitfield<uint64_t>		TagBits;
 
 	class CustomFlags
 	{
@@ -153,6 +158,11 @@ public:
 
 	void decodeGame(GameData& data, GameInfo& info);
 	void encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature);
+	void encodeGame(	util::ByteStream& strm,
+							GameData const& data,
+							Signature const& signature,
+							TagBits const& allowedTags,
+							bool allowExtraTags);
 
 	save::State exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info);
 	save::State exportGame(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
@@ -173,10 +183,12 @@ public:
 	GameInfo* allocGameInfo();
 
 	static bool hasCodecFor(mstl::string const& suffix);
+	static bool upgradeIndexOnly();
 	static DatabaseCodec* makeCodec(mstl::string const& name);
 	static DatabaseCodec* makeCodec();
 
 	static int getNumberOfGames(mstl::string const& filename);
+	static void getSuffixes(mstl::string const& filename, StringList& result);
 
 protected:
 
@@ -198,7 +210,11 @@ protected:
 	virtual void doDecoding(GameData& data, GameInfo& info) = 0;
 	virtual save::State doDecoding(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
 	virtual save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info) = 0;
-	virtual void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
+	virtual void doEncoding(util::ByteStream& strm,
+									GameData const& data,
+									Signature const& signature,
+									TagBits const& allowedTags,
+									bool allowExtraTags) override;
 	virtual unsigned putGame(util::ByteStream const& data);
 	virtual unsigned putGame(	util::ByteStream const& strm,
 										unsigned prevOffset,

@@ -92,6 +92,7 @@ move(Board const& position, uint16_t m)
 }
 
 
+#if 0
 static bool
 match1(uint8_t const* line, GameInfo const& info)
 {
@@ -137,6 +138,74 @@ match4(uint8_t const* line, GameInfo const& info)
 
 	return false;
 }
+
+
+static bool
+possiblyMatch1(uint8_t const* line, GameInfo const& info)
+{
+	return line[0] == 0 ? info.ply<0>() == 0 : false;
+}
+
+
+static bool
+possiblyMatch2(uint8_t const* line, GameInfo const& info)
+{
+	if (line[0] == 0)
+		return info.ply<0>() == 0;
+
+	if (line[1] == 0)
+		return info.ply<1>() == 0;
+
+	return false;
+}
+
+
+static bool
+possiblyMatch3(uint8_t const* line, GameInfo const& info)
+{
+	if (line[0] == 0)
+	{
+		if (line[2] == 0)
+			return info.ply<0>() == 0 && info.ply<2>() == 0;
+
+		return (info.ply<0>() == 0) != (info.ply<2>() == 0);
+	}
+
+	if (line[1] == 0)
+		return info.ply<1>() == 0;
+
+	return false;
+}
+
+
+static bool
+possiblyMatch4(uint8_t const* line, GameInfo const& info)
+{
+	if (line[0] == 0)
+	{
+		if (line[2] == 0)
+		{
+			if (info.ply<0>() != 0 || info.ply<2>() != 0)
+				return false;
+		}
+		else
+		{
+			if ((info.ply<0>() == 0) == (info.ply<2>() == 0))
+				return false;
+		}
+	}
+
+	if (line[1] == 0)
+	{
+		if (line[3] == 0)
+			return info.ply<1>() == 0 && info.ply<3>() == 0;
+
+		return (info.ply<1>() == 0) != (info.ply<3>() == 0);
+	}
+
+	return false;
+}
+#endif
 
 
 Tree::Key::Key()
@@ -199,6 +268,11 @@ Tree::add(GameInfo const& info, Eco eco, uint16_t move, Board const& myPosition)
 	}
 
 	tinfo->add(info, myPosition.sideToMove(), m_key.ratingType());
+
+#ifdef BUILD_VARIATION_LIST
+	if (m_buildVariationList && eco.ecoKey())
+		addToVariation(eco, info.ecoKey());
+#endif
 }
 
 
@@ -431,13 +505,6 @@ Tree::buildTree960(	unsigned myIdn,
 	M_ASSERT(myIdn != chess960::StandardIdn);
 	M_ASSERT(!myPosition.isStandardPosition());
 
-	uint8_t cline[4] = { 0, 0, 0, 0 };
-
-	if (0 < myLine.length) cline[0] = Move::compress<0>(myLine[0]);
-	if (1 < myLine.length) cline[1] = Move::compress<1>(myLine[1]);
-	if (2 < myLine.length) cline[2] = Move::compress<2>(myLine[2]);
-	if (3 < myLine.length) cline[3] = Move::compress<3>(myLine[3]);
-
 	unsigned reportAfter = m_index + frequency;
 
 	for ( ; m_index < numGames; ++m_index)
@@ -468,30 +535,20 @@ Tree::buildTree960(	unsigned myIdn,
 							case 0: break;
 
 							case 1:
-								if (::match1(cline, info))
-								{
-									if (cline[0] == 0 || info.ply<0>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), ::Empty, myPosition);
-								}
+								if (myLine[0] == info.ply<0>())
+									add(info, Eco(), ::Empty, myPosition);
 								break;
 
 							case 2:
-								if (::match1(cline, info))
-								{
-									if (cline[0] == 0 || info.ply<0>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), Move::uncompress<1>(info.ply<1>()), myPosition);
-								}
+								if (myLine[0] == info.ply<0>())
+									add(info, Eco(), info.ply<1>(), myPosition);
 								break;
 
 							default:
-								if (!::match1(cline, info) || cline[0] == 0 || info.ply<0>() == 0)
-									possiblyAdd(base, info, Eco(), myPosition);
+									if (myLine[0] == info.ply<0>())
+									add(info, Eco(), info.ply<1>(), myPosition);
 								else
-									add(info, Eco(), Move::uncompress<1>(info.ply<1>()), myPosition);
+									possiblyAdd(base, info, Eco(), myPosition);
 								break;
 						}
 						break;
@@ -503,152 +560,22 @@ Tree::buildTree960(	unsigned myIdn,
 							case 1: break;
 
 							case 2:
-								if (cline[0] == 0 || info.ply<0>() == 0)
+								if (myLine[0] == info.ply<0>() && myLine[1] == info.ply<1>())
 								{
-									possiblyAdd(base, info, Eco(), myPosition);
+									add(info, Eco(), ::Empty, myPosition);
+									break;
 								}
-								else if (::match2(cline, info))
-								{
-									if (cline[1] == 0 || info.ply<1>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), ::Empty, myPosition);
-								}
-								break;
-
-							case 3:
-								if (cline[0] == 0 || info.ply<0>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (::match2(cline, info))
-								{
-									if (cline[1] == 0 || info.ply<1>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), Move::uncompress<2>(info.ply<2>()), myPosition);
-								}
-								break;
+								// fallthru
 
 							default:
-								if (	cline[0] == 0 || info.ply<0>() == 0
-									|| !match2(cline, info)
-									|| cline[1] == 0 || info.ply<1>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else
-								{
-									add(info, Eco(), Move::uncompress<2>(info.ply<2>()), myPosition);
-								}
-								break;
-						}
-						break;
-
-					case 3:
-						switch (info.plyCount())
-						{
-							case 0: break;
-							case 1: break;
-							case 2: break;
-
-							case 3:
-								if (cline[0] == 0 || info.ply<0>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (cline[1] == 0 || info.ply<1>() == 0)
-								{
-									if (::match1(cline, info))
-										possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (::match3(cline, info))
-								{
-									if (cline[2] == 0 || info.ply<2>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), ::Empty, myPosition);
-								}
-								break;
-
-							case 4:
-								if (cline[0] == 0 || info.ply<0>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (cline[1] == 0 || info.ply<1>() == 0)
-								{
-									if (::match1(cline, info))
-										possiblyAdd(base, info, Eco(), myPosition);
-								}
-								if (::match3(cline, info))
-								{
-									if (cline[2] == 0 || info.ply<2>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), Move::uncompress<3>(info.ply<3>()), myPosition);
-								}
-								break;
-
-							default:
-								if (	!::match3(cline, info)
-									|| cline[0] == 0 || info.ply<0>() == 0
-									|| cline[1] == 0 || info.ply<1>() == 0
-									|| cline[2] == 0 || info.ply<2>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else
-								{
-									add(info, Eco(), Move::uncompress<3>(info.ply<3>()), myPosition);
-								}
+								possiblyAdd(base, info, Eco(), myPosition);
 								break;
 						}
 						break;
 
 					default:
-						switch (info.plyCount())
-						{
-							case 0: break;
-							case 1: break;
-							case 2: break;
-							case 3: break;
-
-							case 4:
-								if (cline[0] == 0 || info.ply<0>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (cline[1] == 0 || info.ply<1>() == 0)
-								{
-									if (::match1(cline, info))
-										possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (cline[2] == 0 || info.ply<2>() == 0)
-								{
-									if (::match2(cline, info))
-										possiblyAdd(base, info, Eco(), myPosition);
-								}
-								else if (::match4(cline, info))
-								{
-									if (cline[3] == 0 || info.ply<3>() == 0)
-										possiblyAdd(base, info, Eco(), myPosition);
-									else
-										add(info, Eco(), ::Empty, myPosition);
-								}
-								break;
-
-							default:
-								if (	::match4(cline, info)
-									|| cline[0] == 0 || info.ply<0>() == 0
-									|| cline[1] == 0 || info.ply<1>() == 0
-									|| cline[2] == 0 || info.ply<2>() == 0
-									|| cline[3] == 0 || info.ply<3>() == 0)
-								{
-									possiblyAdd(base, info, Eco(), myPosition);
-								}
-								break;
-						}
+						if (info.plyCount() > 2)
+							possiblyAdd(base, info, Eco(), myPosition);
 						break;
 				}
 			}
@@ -765,9 +692,18 @@ Tree::buildTreeStart(unsigned myIdn,
 		static_assert(::Empty == 0, "reimplementation required");
 
 		if (info.idn() == myIdn)
-			add(info, Eco(), info.ply<0>(), myPosition);
+		{
+			if (info.plyCount() == 0)
+				add(info, Eco(), ::Empty, myPosition);
+			else if (info.ply<0>() == 0)
+				possiblyAdd(base, info, Eco(), myPosition);
+			else
+				add(info, Eco(), info.ply<0>(), myPosition);
+		}
 		else if (info.idn() == 0)	// match is really possible?
+		{
 			possiblyAdd(base, info, Eco(), myPosition);
+		}
 	}
 
 	return true;

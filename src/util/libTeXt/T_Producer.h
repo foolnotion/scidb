@@ -20,15 +20,15 @@
 #define _TeXt_Producer_included
 
 #include "T_TokenP.h"
+#include "T_Object.h"
 
-#include "m_ref_counter.h"
 #include "m_string.h"
 
 namespace TeXt {
 
 class Environment;
 
-class Producer : public mstl::ref_counter
+class Producer : public Object
 {
 public:
 

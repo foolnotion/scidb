@@ -34,6 +34,7 @@ void window_manager_init(Tcl_Interp*);
 void twm_init(Tcl_Interp*);
 void xcursor_init(Tcl_Interp*);
 void busy_init(Tcl_Interp*);
+void multiwindow_init(Tcl_Interp*);
 
 }
 

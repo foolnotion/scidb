@@ -589,7 +589,7 @@ Decoder::decodeTags(TagSet& tags)
 
 
 void
-Decoder::decodeComments(MoveNode* node)
+Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 {
 	mstl::string buffer;
 
@@ -602,20 +602,22 @@ Decoder::decodeComments(MoveNode* node)
 		buffer.clear();
 		m_strm.get(content);
 		marks.extractFromComment(content);
+		node->swapMarks(marks);
 		m_codec.toUtf8(content, buffer);
 
-		if (!sys::utf8::Codec::validateUtf8(buffer))
-			m_codec.forceValidUtf8(buffer);
+		if (!content.empty())
+		{
+			if (!sys::utf8::Codec::validateUtf8(buffer))
+				m_codec.forceValidUtf8(buffer);
 
-		if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
-			node->addAnnotation(nag::Diagram);
+			if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
+				node->addAnnotation(nag::Diagram);
 
-		node->swapMarks(marks);
-
-		if (node->next()->atLineEnd())
-			node->swapComment(comment, move::Post);
-		else
-			node->swapComment(comment, move::Ante);
+			if (node->next()->atLineEnd())
+				node->swapComment(comment, move::Post);
+			else
+				node->swapComment(comment, move::Ante);
+		}
 	}
 
 	for (node = node->next(); node; node = node->next())
@@ -624,31 +626,38 @@ Decoder::decodeComments(MoveNode* node)
 		{
 			if (node->hasComment(move::Ante))
 			{
-				mstl::string content;
-				Comment comment;
+				mstl::string	content;
+				Comment			comment;
+				MarkSet			marks;
 
-				buffer.clear();
 				m_strm.get(content);
-				m_codec.toUtf8(content, buffer);
+				marks.extractFromComment(content);
+				node->swapMarks(marks);
 
-				if (!sys::utf8::Codec::validateUtf8(buffer))
-					m_codec.forceValidUtf8(buffer);
-
-				if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
-					node->addAnnotation(nag::Diagram);
-
-				if (	node->prev()->atLineStart()
-					&& node->isBeforeLineEnd()
-					&& node->prev()->hasComment(move::Ante))
+				if (!content.empty())
 				{
-					Comment total;
-					node->prev()->swapComment(total, move::Ante);
-					total.append(comment, ' ');
-					node->swapComment(total, move::Ante);
-				}
-				else
-				{
-					node->swapComment(comment, move::Ante);
+					buffer.clear();
+					m_codec.toUtf8(content, buffer);
+
+					if (!sys::utf8::Codec::validateUtf8(buffer))
+						m_codec.forceValidUtf8(buffer);
+
+					if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
+						node->addAnnotation(nag::Diagram);
+
+					if (	node->prev()->atLineStart()
+						&& node->isBeforeLineEnd()
+						&& node->prev()->hasComment(move::Ante))
+					{
+						Comment total;
+						node->prev()->swapComment(total, move::Ante);
+						total.append(comment, ' ');
+						node->swapComment(total, move::Ante);
+					}
+					else
+					{
+						node->swapComment(comment, move::Ante);
+					}
 				}
 			}
 			else if (	node->prev()->atLineStart()
@@ -669,20 +678,37 @@ Decoder::decodeComments(MoveNode* node)
 				buffer.clear();
 				m_strm.get(content);
 				marks.extractFromComment(content);
-				m_codec.toUtf8(content, buffer);
-
-				if (!sys::utf8::Codec::validateUtf8(buffer))
-					m_codec.forceValidUtf8(buffer);
-
-				if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
-					node->addAnnotation(nag::Diagram);
-
 				node->swapMarks(marks);
-				node->swapComment(comment, move::Post);
+
+				if (consumer)
+				{
+					consumer->preparseComment(content);
+
+					if (!consumer->moveInfo().isEmpty())
+					{
+						MoveInfoSet moveInfo;
+
+						consumer->swapMoveInfo(moveInfo);
+						node->swapMoveInfo(moveInfo);
+					}
+				}
+
+				if (!content.empty())
+				{
+					m_codec.toUtf8(content, buffer);
+
+					if (!sys::utf8::Codec::validateUtf8(buffer))
+						m_codec.forceValidUtf8(buffer);
+
+					if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
+						node->addAnnotation(nag::Diagram);
+
+					node->swapComment(comment, move::Post);
+				}
 			}
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
-				decodeComments(node->variation(i));
+				decodeComments(node->variation(i), consumer);
 		}
 		else if (	node->prev()->atLineStart()
 					&& node->isBeforeLineEnd()
@@ -751,7 +777,7 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	m_currentNode = &start;
 
 	decodeVariation();
-	decodeComments(&start);
+	decodeComments(&start, &consumer);
 	decodeVariation(consumer, &start);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 
@@ -833,6 +859,9 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 				consumer.putMove(node->move());
 			}
 
+			if (node->hasMoveInfo())
+				consumer.putMoveInfo(node->moveInfo());
+
 			for (unsigned i = 0; i < node->variationCount(); ++i)
 			{
 				consumer.startVariation();
@@ -845,7 +874,7 @@ Decoder::decodeVariation(Consumer& consumer, MoveNode const* node)
 
 
 void
-Decoder::skipVariations()
+Decoder::skipVariation()
 {
 	unsigned count = 1;
 
@@ -902,7 +931,7 @@ Decoder::nextMove()
 				// not reached
 
 			case token::Start_Marker:
-				skipVariations();
+				skipVariation();
 				break;
 
 			case token::Nag:
@@ -973,7 +1002,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 				case token::Start_Marker:
 					if (skipVariations)
 					{
-						this->skipVariations();
+						this->skipVariation();
 					}
 					else
 					{

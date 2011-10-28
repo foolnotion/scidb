@@ -27,55 +27,62 @@
 namespace eval crosstable {
 namespace eval mc {
 
-set TournamentTable	"Tournament Table"
-set AverageRating		"Average Rating"
-set Category			"Category"
-set Games				"games"
-set Game					"game"
+set TournamentTable		"Tournament Table"
+set AverageRating			"Average Rating"
+set Category				"Category"
+set Games					"games"
+set Game						"game"
 
-set Tiebreak			"Tie-break Rule"
-set Settings			"Settings"
-set RevertToStart		"Revert to initial values"
-set UpdateDisplay		"Update display"
+set ScoringSystem			"Scoring System"
+set Tiebreak				"Tie-break Rule"
+set Settings				"Settings"
+set RevertToStart			"Revert to initial values"
+set UpdateDisplay			"Update display"
 
-set None					"None"
-set Buchholz			"Buchholz"
-set MedianBuchholz	"Median-Buchholz"
+set Traditional			"Traditional"
+set Bilbao					"Bilbao"
+
+set None						"None"
+set Buchholz				"Buchholz"
+set MedianBuchholz		"Median-Buchholz"
 set ModifiedMedianBuchholz "Mod. Median Buchholz"
-set RefinedBuchholz	"Refined-Buchholz"
-set SonnebornBerger	"Sonneborn-Berger"
-set Progressive		"Progressive Score"
-set KoyaSystem			"Koya-System"
-set GamesWon			"Number of Games Won"
+set RefinedBuchholz		"Refined-Buchholz"
+set SonnebornBerger		"Sonneborn-Berger"
+set Progressive			"Progressive Score"
+set KoyaSystem				"Koya-System"
+set GamesWon				"Number of Games Won"
+set GamesWonWithBlack	"Number of Games Won with Black"
+set ParticularResult		"Particular Result"
+set TraditionalScoring	"Traditional Scoring"
 
-set Crosstable			"Crosstable"
-set Scheveningen		"Scheveningen"
-set Swiss				"Swiss System"
-set Match				"Match"
-set Knockout			"Knockout"
-set RankingList		"Ranking List"
+set Crosstable				"Crosstable"
+set Scheveningen			"Scheveningen"
+set Swiss					"Swiss System"
+set Match					"Match"
+set Knockout				"Knockout"
+set RankingList			"Ranking List"
 
-set Order				"Order"
-set Type					"Table Type"
-set Score				"Score"
-set Alphabetical		"Alphabetical"
-set Rating				"Rating"
-set Federation			"Federation"
+set Order					"Order"
+set Type						"Table Type"
+set Score					"Score"
+set Alphabetical			"Alphabetical"
+set Rating					"Rating"
+set Federation				"Federation"
 
-set Debugging			"Debugging"
-set Display				"Display"
-set Style				"Style"
-set Spacing				"Spacing"
-set Padding				"Padding"
-set ShowLog				"Show Log"
-set ShowHtml			"Show HTML"
-set ShowRating			"Show Rating"
-set ShowPerformance	"Show Performance"
-set ShowTiebreak		"Show Tiebreak"
-set ShowOpponent		"Show Opponent (as Tooltip)"
-set KnockoutStyle		"Knockout Table Style"
-set Pyramid				"Pyramid"
-set Triangle			"Triangle"
+set Debugging				"Debugging"
+set Display					"Display"
+set Style					"Style"
+set Spacing					"Spacing"
+set Padding					"Padding"
+set ShowLog					"Show Log"
+set ShowHtml				"Show HTML"
+set ShowRating				"Show Rating"
+set ShowPerformance		"Show Performance"
+set ShowTiebreak			"Show Tiebreak"
+set ShowOpponent			"Show Opponent (as Tooltip)"
+set KnockoutStyle			"Knockout Table Style"
+set Pyramid					"Pyramid"
+set Triangle				"Triangle"
 
 set CrosstableLimit	"The crosstable limit of %d players will be exceeded."
 set CrosstableLimitDetail "'%s' is choosing another table mode."
@@ -95,52 +102,69 @@ array set Colors {
 }
 
 array set Scripts {
-	Crosstable		"crosstable.eXt"
-	Scheveningen	"scheveningen.eXt"
-	Swiss				"swiss.eXt"
-	Match				"match.eXt"
-	Knockout			"knockout.eXt"
-	RankingList		"rankingList.eXt"
+	crosstable		"crosstable.eXt"
+	scheveningen	"scheveningen.eXt"
+	swiss				"swiss.eXt"
+	match				"match.eXt"
+	knockout			"knockout.eXt"
+	rankingList		"rankingList.eXt"
 }
 
 set TypeList {
-	Crosstable
-	Scheveningen
-	Swiss
-	Match
-	Knockout
-	RankingList
+	crosstable
+	scheveningen
+	swiss
+	match
+	knockout
+	rankingList
+}
+
+set ScoringList {
+	traditional
+	bilbao
 }
 
 set TiebreakList {
-	None
-	SonnebornBerger
-	Buchholz
-	MedianBuchholz
-	ModifiedMedianBuchholz
-	RefinedBuchholz
-	Progressive
-	KoyaSystem
-	GamesWon
+	none
+	sonnebornBerger
+	buchholz
+	medianBuchholz
+	modifiedMedianBuchholz
+	refinedBuchholz
+	progressive
+	koyaSystem
+	gamesWon
+	gamesWonWithBlack
+	particularResult
+	traditionalScoring
 }
 
 set OrderList {
-	Score
-	Alphabetical
-	Rating
-	Federation
+	score
+	alphabetical
+	rating
+	federation
 }
 
 variable RecentlyUsedHistory {}
 variable MostRecentHistory {}
 
 array set RecentlyUsedTiebreaks {
-	Crosstable		SonnebornBerger
-	Swiss				Buchholz
-	Scheveningen	{}
-	Match				{}
-	Knockout			{}
-	RankingList		{}
+	crosstable		sonnebornBerger
+	swiss				buchholz
+	scheveningen	{}
+	match				{}
+	knockout			{}
+	rankingList		{}
+}
+
+array set RecentlyUsedScoring {
+	crosstable		traditional
+	swiss				traditional
+	scheveningen	traditional
+	match				traditional
+	knockout			traditional
+	rankingList		traditional
 }
 
 array set Defaults {
@@ -148,9 +172,10 @@ array set Defaults {
 	index					-1
 	number				-1
 	frozen				0
+	scoring				traditional
 	tiebreaks			{}
-	bestMode				RankingList
-	order					Score
+	bestMode				rankingList
+	order					score
 	browserId			{}
 	overviewId			{}
 	crosstableLimit	60
@@ -175,6 +200,7 @@ variable Geometry "1024x768"
 
 proc open {parent base index view source} {
 	variable TiebreakList
+	variable ScoringList
 	variable OrderList
 	variable TypeList
 	variable Vars
@@ -201,7 +227,9 @@ proc open {parent base index view source} {
 		return
 	}
 
-	if {[winfo exists $dlg]} { Destroy $dlg $dlg }
+	set Vars(closed) 0
+	if {[winfo exists $dlg]} { Destroy $dlg $dlg 0 }
+	set Vars(closed) 0
 
 	set top $dlg.top
 	set canv $top.canv
@@ -217,22 +245,31 @@ proc open {parent base index view source} {
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
+	set Vars(prevScoring) ""
 	set Vars(tooltip) ""
 	set Vars(viewId) [::scidb::view::new $base slave slave slave slave]
+	set Vars(subscribe) [list [namespace current]::Close $base $dlg]
 
 	if {$source eq "game"} { set search gameevent } else { set search event }
 	::scidb::view::search $base $Vars(viewId) null none [list $search $number]
 
 	if {[winfo exists $dlg]} {
-		::scidb::crosstable::make $base $Vars(viewId)
+		set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
 		Update 1
 		raise $dlg
 		focus $dlg
 		return
 	}
 
+	::scidb::view::subscribe {*}$Vars(subscribe)
+
+	set Vars(tiebreakList) {}
+	set Vars(orderList) {}
+	set Vars(typeList) {}
+	set Vars(scoringList) {}
+
 	toplevel $dlg -class Scidb
-	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W]]
+	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W 1]]
 	wm withdraw $dlg
 
 	ttk::frame $top
@@ -251,37 +288,20 @@ proc open {parent base index view source} {
 				-padx 4 \
 				-pady 2 \
 			]
-	foreach entry $TiebreakList { lappend Vars(tiebreakList) [set mc::$entry] }
-	foreach entry $OrderList { lappend Vars(orderList) [set mc::$entry] }
-	foreach entry $TypeList { lappend Vars(typeList) [set mc::$entry] }
+	foreach entry $TiebreakList { lappend Vars(tiebreakList) [set mc::[string toupper $entry 0 0]] }
+	foreach entry $ScoringList { lappend Vars(scoringList) [set mc::[string toupper $entry 0 0]] }
+	foreach entry $OrderList { lappend Vars(orderList) [set mc::[string toupper $entry 0 0]] }
+	foreach entry $TypeList { lappend Vars(typeList) [set mc::[string toupper $entry 0 0]] }
 	set Vars(value:order) [lindex $Vars(orderList) 0]
 	set Vars(value:type) [lindex $Vars(typeList) 0]
+	set Vars(value:scoring) [lindex $Vars(scoringList) 0]
 
 	set f1 [::toolbar::add $tb frame]
 	set f2 [::toolbar::add $tb frame]
 	set f3 [::toolbar::add $tb frame]
 
-	foreach i {1 2 3 4} {
-		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
-		set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
-		set f [set f[expr {($i - 1)/2 + 1}]]
-		set r [expr {(1 - ($i%2))*2 + 1}]
-		tk::label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
-		::ttk::combobox $f.choose$i \
-			-takefocus 0 \
-			-exportselection 0 \
-			-state readonly  \
-			-values $Vars(tiebreakList) \
-			-textvar [namespace current]::Vars(value:tiebreak$i) \
-			-width 21 \
-			;
-		set Vars(widget:tiebreak$i) $f.choose$i
-		grid $f.label$i  -row $r -column 1 -sticky w
-		grid $f.choose$i -row $r -column 3 -sticky ew
-	}
-
-	tk::label $f3.label_type -textvar [namespace current]::mc::Type
-	::ttk::combobox  $f3.choose_type \
+	tk::label $f1.label_type -textvar [namespace current]::mc::Type
+	::ttk::combobox  $f1.choose_type \
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
@@ -289,10 +309,10 @@ proc open {parent base index view source} {
 		-textvar [namespace current]::Vars(value:type) \
 		-width 16 \
 		;
-	set Vars(widget:type) $f3.choose_type
+	set Vars(widget:type) $f1.choose_type
 
-	tk::label $f3.label_order -textvar [namespace current]::mc::Order
-	::ttk::combobox $f3.choose_order \
+	tk::label $f1.label_order -textvar [namespace current]::mc::Order
+	::ttk::combobox $f1.choose_order \
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
@@ -300,29 +320,64 @@ proc open {parent base index view source} {
 		-textvar [namespace current]::Vars(value:order) \
 		-width 12 \
 		;
-	set Vars(widget:order) $f3.choose_order
+	set Vars(widget:order) $f1.choose_order
+
+	tk::label $f1.scoring_label -textvar [namespace current]::mc::ScoringSystem
+	set Vars(widget:scoring) $f1.choose_scoring
+	::ttk::combobox $Vars(widget:scoring) \
+		-takefocus 0 \
+		-exportselection 0 \
+		-state readonly  \
+		-values $Vars(scoringList) \
+		-textvar [namespace current]::Vars(value:scoring) \
+		-width 12 \
+		;
 
 	::toolbar::add $tb separator
 	::toolbar::add $tb button \
 		-image $icon::32x32::go \
 		-command [namespace code Refresh] \
 		-tooltipvar [namespace current]::mc::UpdateDisplay \
+		-padx 4 \
 		;
 	::toolbar::add $tb button \
 		-image $icon::32x32::reset \
 		-command [namespace code Reset] \
 		-tooltipvar [namespace current]::mc::RevertToStart \
+		-padx 4 \
 		;
 
-	grid $f3.label_type   -row 1 -column 1 -sticky w
-	grid $f3.choose_type  -row 1 -column 3 -sticky ew
-	grid $f3.label_order  -row 3 -column 1 -sticky w
-	grid $f3.choose_order -row 3 -column 3 -sticky ew
+	grid $f1.label_type     -row 1 -column 1 -sticky w
+	grid $f1.choose_type    -row 1 -column 3 -sticky ew
+	grid $f1.label_order    -row 3 -column 1 -sticky w
+	grid $f1.choose_order   -row 3 -column 3 -sticky ew
+	grid $f1.scoring_label  -row 5 -column 1 -sticky w
+	grid $f1.choose_scoring -row 5 -column 3 -sticky ew
+
+	foreach i {1 2 3 4 5 6} {
+		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
+		set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
+		set f [set f[expr {($i - 1)/3 + 2}]]
+		set r [expr {($i*2 - 1)%6}]
+		tk::label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
+		set Vars(widget:tiebreak$i) $f.choose$i
+		::ttk::combobox $Vars(widget:tiebreak$i) \
+			-takefocus 0 \
+			-exportselection 0 \
+			-state readonly  \
+			-values $Vars(tiebreakList) \
+			-textvar [namespace current]::Vars(value:tiebreak$i) \
+			-width 23 \
+			-height [llength $TiebreakList] \
+			;
+		grid $f.label$i  -row $r -column 1 -sticky w
+		grid $f.choose$i -row $r -column 3 -sticky ew
+	}
 
 	foreach i {1 2 3} {
 		set f [set f$i]
 		grid columnconfigure $f 2 -minsize $::theme::padding
-		grid rowconfigure $f {0 2 4} -minsize 3
+		grid rowconfigure $f {0 2 4 6} -minsize 3
 	}
 
 	grid columnconfigure $f2 0 -minsize $::theme::padX
@@ -346,7 +401,7 @@ proc open {parent base index view source} {
 	grid columnconfigure $canv 0 -weight 1
 	grid rowconfigure $canv 0 -weight 1
 
-	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
+	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {$source eq "event"} {
 		::widget::dialogButtons $dlg {close previous next} close
@@ -358,7 +413,7 @@ proc open {parent base index view source} {
 	$dlg.close configure -command [list destroy $dlg]
 
 	::update
-	::scidb::crosstable::make $base $Vars(viewId)
+	set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
 	Update 1
 
 	scan $Geometry "%dx%d" w h
@@ -376,6 +431,16 @@ proc open {parent base index view source} {
 }
 
 
+proc Close {dlg base {view {}}} {
+	variable Vars
+
+	if {!$Vars(closed) && $base eq $Vars(base) && ([llength $view] == 0 || $view == $Vars(viewId))} {
+		set Vars(closed) 1
+		destroy $dlg
+	}
+}
+
+
 proc RecordGeometry {dlg} {
 	set [namespace current]::Geometry [lindex [split [wm geometry $dlg] +] 0]
 }
@@ -384,15 +449,17 @@ proc RecordGeometry {dlg} {
 proc NextEvent {step} {
 	variable Vars
 
-	::scidb::crosstable::release $Vars(base) $Vars(viewId)
+	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 	incr Vars(index) $step
 	set number [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
 	::scidb::view::search $Vars(base) $Vars(viewId) null none [list event $number]
-	::scidb::crosstable::make $Vars(base) $Vars(viewId)
+	set Vars(info) [::scidb::db::get eventInfo $Vars(index) $Vars(viewId) $Vars(base)]
+	set Vars(tableId) [::scidb::crosstable::make $Vars(base) $Vars(viewId)]
 	set Vars(warning) 0
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
+	set Vars(prevScoring) ""
 	Update 1
 }
 
@@ -400,15 +467,17 @@ proc NextEvent {step} {
 proc LanguageChanged {dlg w} {
 	variable Vars
 	variable TiebreakList
+	variable ScoringList
 	variable OrderList
 	variable TypeList
 
 	if {$dlg ne $w} { return }
-	wm title $dlg "$::scidb::app: $mc::TournamentTable$Vars(eventName)"
+
+	SetTitle $dlg
 
 	set parent $Vars(widget:tiebreak1)
-	foreach entry $TiebreakList { lappend tiebreakList [set mc::$entry] }
-	foreach i {1 2 3 4} {
+	foreach entry $TiebreakList { lappend tiebreakList [set mc::[string toupper $entry 0 0]] }
+	foreach i {1 2 3 4 5 6} {
 		set n [lsearch $Vars(tiebreakList) $Vars(value:tiebreak$i)]
 		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
 		$Vars(widget:tiebreak$i) configure -values $tiebreakList
@@ -418,8 +487,16 @@ proc LanguageChanged {dlg w} {
 	}
 	set Vars(tiebreakList) $tiebreakList
 
+	set n [lsearch $Vars(scoringList) $Vars(value:scoring)]
+	foreach entry $ScoringList { lappend scoringList [set mc::[string toupper $entry 0 0]] }
+	$Vars(widget:scoring) configure -values $scoringList
+	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:scoring)] $Vars(widget:scoring)]
+	if {[llength $clone]} { $clone configure -values $scoringList }
+	if {$n >= 0} { set Vars(value:scoring) [lindex $scoringList $n] }
+	set Vars(scoringList) $scoringList
+
 	set n [lsearch $Vars(orderList) $Vars(value:order)]
-	foreach entry $OrderList { lappend orderList [set mc::$entry] }
+	foreach entry $OrderList { lappend orderList [set mc::[string toupper $entry 0 0]] }
 	$Vars(widget:order) configure -values $orderList
 	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:order)] $Vars(widget:order)]
 	if {[llength $clone]} { $clone configure -values $orderList }
@@ -427,7 +504,7 @@ proc LanguageChanged {dlg w} {
 	set Vars(orderList) $orderList
 
 	set n [lsearch $Vars(typeList) $Vars(value:type)]
-	foreach entry $TypeList { lappend typeList [set mc::$entry] }
+	foreach entry $TypeList { lappend typeList [set mc::[string toupper $entry 0 0]] }
 	$Vars(widget:type) configure -values $typeList
 	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:type)] $Vars(widget:type)]
 	if {[llength $clone]} { $clone configure -values $typeList }
@@ -435,6 +512,12 @@ proc LanguageChanged {dlg w} {
 	set Vars(typeList) $typeList
 
 	Update
+}
+
+
+proc SetTitle {dlg} {
+	variable Vars
+	wm title $dlg "$::scidb::app: $mc::TournamentTable$Vars(eventName)"
 }
 
 
@@ -455,9 +538,8 @@ proc GetImage {code} {
 proc Reset {} {
 	variable Vars
 
-	foreach attr {	tiebreaks bestMode value:type value:tiebreak1
-						value:tiebreak2 value:tiebreak3 value:tiebreak4} {
-		set Vars($attr) $Vars(reset:$attr)
+	foreach attr [array names Vars reset:*] {
+		set Vars([string range $attr 6 end]) $Vars($attr)
 	}
 	Refresh
 }
@@ -468,13 +550,16 @@ proc Refresh {} {
 	variable TypeList
 	variable OrderList
 	variable TiebreakList
+	variable ScoringList
 
 	set Vars(prevMode) $Vars(bestMode)
 	set Vars(prevTiebreaks) $Vars(tiebreaks)
+	set Vars(prevScoring) $Vars(scoring)
 	set Vars(order) [lindex $OrderList [lsearch $Vars(orderList) $Vars(value:order)]]
 	set Vars(bestMode) [lindex $TypeList [lsearch $Vars(typeList) $Vars(value:type)]]
+	set Vars(scoring) [lindex $ScoringList [lsearch $Vars(scoringList) $Vars(value:scoring)]]
 	set Vars(tiebreaks) {}
-	for {set i 1} {$i <= 4} {incr i} {
+	for {set i 1} {$i <= 6} {incr i} {
 		set n [lsearch $Vars(tiebreakList) $Vars(value:tiebreak$i)]
 		if {$n > 0} { lappend Vars(tiebreaks) [lindex $TiebreakList $n] }
 	}
@@ -486,13 +571,17 @@ proc Refresh {} {
 
 proc UpdateHistory {} {
 	variable RecentlyUsedTiebreaks
+	variable RecentlyUsedScoring
 	variable RecentlyUsedHistory
 	variable MostRecentHistory
 	variable Vars
 
 	set RecentlyUsedTiebreaks($Vars(bestMode)) $Vars(tiebreaks)
+	set RecentlyUsedScoring($Vars(bestMode)) $Vars(scoring)
 
-	if {$Vars(prevMode) ne $Vars(bestMode) || $Vars(prevTiebreaks) ne $Vars(tiebreaks)} {
+	if {	$Vars(prevMode) ne $Vars(bestMode)
+		|| $Vars(prevScoring) ne $Vars(scoring)
+		|| $Vars(prevTiebreaks) ne $Vars(tiebreaks)} {
 		set event $Vars(event)
 		set i [lsearch -index 0 $RecentlyUsedHistory $event]
 
@@ -507,7 +596,7 @@ proc UpdateHistory {} {
 			set MostRecentHistory $hist
 		}
 
-		set entry [list $Vars(bestMode) $Vars(tiebreaks)]
+		set entry [list $Vars(bestMode) $Vars(tiebreaks) $Vars(scoring)]
 		set RecentlyUsedHistory [linsert $RecentlyUsedHistory 0 [list $event $entry]]
 	}
 }
@@ -523,6 +612,7 @@ proc Update {{setup 0}} {
 	variable Marks
 	variable Nodes
 	variable TypeList
+	variable ScoringList
 
 	set w $Vars(html)
 	set base $Vars(base)
@@ -533,10 +623,11 @@ proc Update {{setup 0}} {
 
 	if {$setup} {
 		variable TiebreakList
-		variable RecentlyUsedTiebreaks
 		variable OrderList
 		variable TypeList
 		variable RecentlyUsedHistory
+		variable RecentlyUsedScoring
+		variable RecentlyUsedTiebreaks
 		variable MostRecentHistory
 
 		set info $Vars(info)
@@ -552,15 +643,16 @@ proc Update {{setup 0}} {
 		set i [lsearch -index 0 $RecentlyUsedHistory $Vars(event)]
 
 		if {$i >= 0} {
-			lassign [lindex $RecentlyUsedHistory $i 1] bestMode tiebreaks
+			lassign [lindex $RecentlyUsedHistory $i 1] bestMode tiebreaks scoring
 		} else {
 			set i [lsearch -index 0 $MostRecentHistory $Vars(event)]
 
 			if {$i >= 0} {
-				lassign [lindex $MostRecentHistory $i 1] bestMode tiebreaks
+				lassign [lindex $MostRecentHistory $i 1] bestMode tiebreaks scoring
 			} else {
-				set bestMode [::scidb::crosstable::get bestMode $base $viewId]
+				set bestMode [string tolower [::scidb::crosstable::get bestMode $Vars(tableId) $viewId] 0 0]
 				set tiebreaks $RecentlyUsedTiebreaks($bestMode)
+				set scoring $RecentlyUsedScoring($bestMode)
 			}
 		}
 
@@ -568,19 +660,19 @@ proc Update {{setup 0}} {
 		foreach tb $tiebreaks {
 			set Vars(value:tiebreak[incr i]) [lindex $Vars(tiebreakList) [lsearch $TiebreakList $tb]]
 		}
-		for {incr i} {$i <= 4} {incr i} {
+		for {incr i} {$i <= 6} {incr i} {
 			set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
 		}
+		set Vars(value:scoring) [lindex $Vars(scoringList) [lsearch $ScoringList $scoring]]
 		set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $bestMode]]
 		set Vars(bestMode) $bestMode
 		set Vars(tiebreaks) $tiebreaks
-
+		set Vars(scoring) $scoring
 		foreach attr {	tiebreaks bestMode value:type value:tiebreak1
 							value:tiebreak2 value:tiebreak3 value:tiebreak4} {
 			set Vars(reset:$attr) $Vars($attr)
 		}
-
-		wm title [winfo toplevel $w] "$::scidb::app: $mc::TournamentTable$Vars(eventName)"
+		SetTitle [winfo toplevel $w]
 		ConfigureButtons
 	}
 
@@ -590,6 +682,7 @@ proc Update {{setup 0}} {
 	set linespace $metrics(-linespace)
 	set charWidth [font measure $font "0"]
 	set order $Vars(order)
+	set scoring $Vars(scoring)
 	set tiebreaks $Vars(tiebreaks)
 	set bestMode $Vars(bestMode)
 	set searchDir [file join $::scidb::dir::share scripts]
@@ -616,12 +709,12 @@ proc Update {{setup 0}} {
 		\\let\\ShowCountry\\1
 	"
 
-	if {$Vars(bestMode) eq "Crosstable"} {
+	if {$Vars(bestMode) eq "crosstable"} {
 		append preamble "\\let\\TableLimit\\$Defaults(crosstableLimit)"
 		set id [list $base $Vars(viewId)]
 
 		if {$Vars(warning) ne $id} {
-			set playerCount [::scidb::crosstable::get playerCount $base $viewId]
+			set playerCount [::scidb::crosstable::get playerCount $Vars(tableId) $viewId]
 
 			if {$playerCount > $Defaults(crosstableLimit)} {
 				set detail ""
@@ -638,8 +731,8 @@ proc Update {{setup 0}} {
 				if {$rc eq "cancel"} {
 					set Vars(bestMode) $Vars(lastMode)
 					if {[string length $Vars(prevMode)] == 0} {
-						set Vars(bestMode) [::scidb::crosstable::get bestMode $base $viewId]
-						if {$Vars(bestMode) eq "Crosstable"} { set Vars(bestMode) RankingList }
+						set Vars(bestMode) [::scidb::crosstable::get bestMode $Vars(tableId) $viewId]
+						if {$Vars(bestMode) eq "crosstable"} { set Vars(bestMode) rankingList }
 						set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $Vars(bestMode)]]
 						UpdateHistory
 						after idle [namespace code Update]
@@ -656,14 +749,16 @@ proc Update {{setup 0}} {
 
 	::widget::busyCursor on
 	set result [::scidb::crosstable::emit \
-						$base $viewId $searchDir $script $bestMode $order $knockoutOrder $tiebreaks $preamble]
+		$Vars(tableId) $viewId $searchDir $script $bestMode $order \
+		$knockoutOrder $scoring $tiebreaks $preamble \
+	]
 	lassign $result html Vars(output:log)
 
 	set i [string first "%date%" $html]
 	while {$i >= 0} {
 		set e [expr {$i + 15}]
 		set date [string range $html [expr {$i + 6}] $e]
-		set html [string replace $html $i $e [::locale::formatNormalDate $date]]
+		set html [string replace $html $i $e [::locale::formatDate $date]]
 		set i [string first "%date%" $html]
 	}
 
@@ -772,15 +867,19 @@ proc ToggleTrace {which} {
 }
 
 
-proc Destroy {dlg w} {
+proc Destroy {dlg w unsubscribe} {
 	if {$w ne $dlg} { return }
 
 	variable Vars
 	variable Defaults
 	variable ImageCache
 
-	::scidb::crosstable::release $Vars(base) $Vars(viewId)
-	::scidb::view::close $Vars(base) $Vars(viewId)
+	if {$unsubscribe} { ::scidb::view::unsubscribe {*}$Vars(subscribe) }
+	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
+	if {!$Vars(closed)} {
+		set Vars(closed) 1
+		::scidb::view::close $Vars(base) $Vars(viewId)
+	}
 	array unset ImageCache
 	array set Vars [array get Defaults]
 }
@@ -842,7 +941,7 @@ proc MouseEnter {node} {
 		set rank [$node attribute -default {} player]
 		if {[llength $rank]} {
 			set Vars(tooltip) $node
-			Tooltip [::scidb::crosstable::get playerName $Vars(base) $Vars(viewId) $rank]
+			Tooltip [::scidb::crosstable::get playerName $Vars(tableId) $Vars(viewId) $rank]
 		}
 	}
 }
@@ -977,7 +1076,7 @@ proc Mouse2Down {node} {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
 			MouseEnter $node
-			set info [::scidb::crosstable::get playerInfo $Vars(base) $Vars(viewId) $rank]
+			set info [::scidb::crosstable::get playerInfo $Vars(tableId) $Vars(viewId) $rank]
 			::playertable::showInfo $Path $info
 		}
 	}
@@ -1014,6 +1113,7 @@ proc Mouse3Down {node} {
 	set m $Path.popup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
 
 	$m add command \
 		-compound left \
@@ -1052,7 +1152,7 @@ proc BuildMenu {m} {
 
 	set sub [menu $m.display]
 
-	if {$Vars(bestMode) eq "Knockout"} { set state disabled } else { set state normal }
+	if {$Vars(bestMode) eq "knockout"} { set state disabled } else { set state normal }
 	foreach opt {rating performance tiebreak} {
 		$sub add checkbutton \
 			-label [set mc::Show[string toupper $opt 0 0]] \
@@ -1062,7 +1162,7 @@ proc BuildMenu {m} {
 			;
 	}
 
-	if {$Vars(bestMode) eq "Swiss"} { set state normal } else { set state disabled }
+	if {$Vars(bestMode) eq "swiss"} { set state normal } else { set state disabled }
 	$sub add checkbutton \
 		-label $mc::ShowOpponent \
 		-variable [namespace current]::Options(show:opponent) \
@@ -1094,7 +1194,7 @@ proc BuildMenu {m} {
 			;
 	}
 
-	if {$Vars(bestMode) eq "Knockout"} { set state normal } else { set state disabled }
+	if {$Vars(bestMode) eq "knockout"} { set state normal } else { set state disabled }
 
 	$sub add cascade -label $mc::Spacing -menu $sub.spacing
 	$sub add cascade -label $mc::Padding -menu $sub.padding
@@ -1136,6 +1236,7 @@ proc PopupMenu {} {
 	set m $Path.popup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
 	BuildMenu $m
 	bind $m <<MenuUnpost>> [list $Vars(html) stimulate]
 	bind $m <<MenuUnpost>> +::tooltip::hide
@@ -1147,6 +1248,7 @@ proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::RecentlyUsedHistory
 	::options::writeList $chan [namespace current]::MostRecentHistory
 	::options::writeItem $chan [namespace current]::RecentlyUsedTiebreaks
+	::options::writeItem $chan [namespace current]::RecentlyUsedScoring
 	::options::writeItem $chan [namespace current]::Options
 }
 
@@ -1156,28 +1258,55 @@ proc WriteOptions {chan} {
 namespace eval icon {
 namespace eval 32x32 {
 
+#set go [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACAVBMVEUAAAACDw8LTlECDw8C
+#	Dw8RbHECDw8CDw8CDw8CDw8CDw8CDw8CDw8NXmMCDw8CDw8CDw8CDw8CDw8OZmsCDw8CDw8D
+#	FxgCDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8PaG0CDw8CDw8CDw8CDw8CDw8CDw8CDw8D
+#	FxgOYmYCDw8GKiwCDw8CDw8CDw8CDw8GLzECDw8CDw8OYmYKSk0IODsOZWkOYmYNW18KRUkO
+#	ZmsOY2gOZmsOZmsOZmsMVFcOZmsOYmYOZWkNXmMOZmsOZmsOZWkOYmYOZmsOZmsOZmsOZmsR
+#	bHERbHEPam8RbHEOZmsWcXYXcncjfIEkfoIOZmsfeX4kfoIxiI01i5A9kZUOZmsUb3Qwh4wZ
+#	dHlDlZlVoaVBlJhLm59orrJRn6NYpKhfqKwOZWkeeH0feX4gen8he4AjfIEkfoIlf4MmgIQo
+#	gYUpgoYqg4cshIgthYouhoswh4wxiI0ziY41i5A3jJE4jpI6j5M7kJQ9kZVAk5dBlJhDlZlE
+#	lptGl5xImJ1Jmp5Lm59MnKBOnaFQnqJToKRVoaVYpKhapalcpqpfqKxnrbForrJssLRusbVw
+#	s7Z0tbh2trp4t7t8ur1+u76AvL+CvcCEvsKGwMOIwcSKwsWOxMeQxsiTx8qVyMuXycyZys2b
+#	zM6ezc+gztGk0dOm0tRLVt61AAAAZ3RSTlMAAQECAwMEBQYHCAkKCgsMDQ4PDxARERITFBUW
+#	FxgaGxwdHh8gIiMkJCUmJikqLC4uMjY5P0BFUV1gYGxxgIiKkpuytLW/yNbY4uft7vL09fb2
+#	9vb29/f39/f3+Pj5+vr6+/v9/v7+GgnqVwAAAaVJREFUOMvNkt1qU0EUhdfaM2krJShFIjQW
+#	RVAQBZEW9Eapr+BL+HA+gILQC2mlFRFRREFapBjpOfmpYAM987O3FzlJmwi51X23Nh+z1qwZ
+#	4N+Pm5bPfGcGkBl9/ZHMB56ubTbnWWzcuNlbSb/mnKDlZvvu+rmFnwW0/8BeLr6ZLDgKX9Ty
+#	yuMjtaXlF72dOA08FAIgIT/MdOnSq977/rTFIUkBCDPTYXiy679/OQ9YpsAIQoFs6ed975tv
+#	z665cXUAgxnNYDmE0+rk2q3+5cMzYPUYAGnI1fDkNMRYDXCvbB9MLFJ0ApjmDKOoKMzU+XEG
+#	j/SbQkeSAFWUaC9v9bZrwDUAkEIKaVBR+rWv3eKd1oB3AEnSEaSJykL7Q1l889lGAB1wR0AS
+#	5IGqXGjtlcURRXKdwfBpXP26mFxsvu53hoCNi9L8fLHR8A0nvA2yxd2iEzWp5hoIkoQw846A
+#	a30sumVKIcY0qboy1QVNzjHI6k63W2qKIYY8AazKOTnvRaBbg85xjjmmMPWaKQXvxHFlu/gc
+#	NOeU/vpROQMU7O+ZjuL/R/MHYAPLcEBkVE0AAAAASUVORK5CYII=
+#}]
+
 set go [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACAVBMVEUAAAACDw8LTlECDw8C
-	Dw8RbHECDw8CDw8CDw8CDw8CDw8CDw8CDw8NXmMCDw8CDw8CDw8CDw8CDw8OZmsCDw8CDw8D
-	FxgCDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8PaG0CDw8CDw8CDw8CDw8CDw8CDw8CDw8D
-	FxgOYmYCDw8GKiwCDw8CDw8CDw8CDw8GLzECDw8CDw8OYmYKSk0IODsOZWkOYmYNW18KRUkO
-	ZmsOY2gOZmsOZmsOZmsMVFcOZmsOYmYOZWkNXmMOZmsOZmsOZWkOYmYOZmsOZmsOZmsOZmsR
-	bHERbHEPam8RbHEOZmsWcXYXcncjfIEkfoIOZmsfeX4kfoIxiI01i5A9kZUOZmsUb3Qwh4wZ
-	dHlDlZlVoaVBlJhLm59orrJRn6NYpKhfqKwOZWkeeH0feX4gen8he4AjfIEkfoIlf4MmgIQo
-	gYUpgoYqg4cshIgthYouhoswh4wxiI0ziY41i5A3jJE4jpI6j5M7kJQ9kZVAk5dBlJhDlZlE
-	lptGl5xImJ1Jmp5Lm59MnKBOnaFQnqJToKRVoaVYpKhapalcpqpfqKxnrbForrJssLRusbVw
-	s7Z0tbh2trp4t7t8ur1+u76AvL+CvcCEvsKGwMOIwcSKwsWOxMeQxsiTx8qVyMuXycyZys2b
-	zM6ezc+gztGk0dOm0tRLVt61AAAAZ3RSTlMAAQECAwMEBQYHCAkKCgsMDQ4PDxARERITFBUW
-	FxgaGxwdHh8gIiMkJCUmJikqLC4uMjY5P0BFUV1gYGxxgIiKkpuytLW/yNbY4uft7vL09fb2
-	9vb29/f39/f3+Pj5+vr6+/v9/v7+GgnqVwAAAaVJREFUOMvNkt1qU0EUhdfaM2krJShFIjQW
-	RVAQBZEW9Eapr+BL+HA+gILQC2mlFRFRREFapBjpOfmpYAM987O3FzlJmwi51X23Nh+z1qwZ
-	4N+Pm5bPfGcGkBl9/ZHMB56ubTbnWWzcuNlbSb/mnKDlZvvu+rmFnwW0/8BeLr6ZLDgKX9Ty
-	yuMjtaXlF72dOA08FAIgIT/MdOnSq977/rTFIUkBCDPTYXiy679/OQ9YpsAIQoFs6ed975tv
-	z665cXUAgxnNYDmE0+rk2q3+5cMzYPUYAGnI1fDkNMRYDXCvbB9MLFJ0ApjmDKOoKMzU+XEG
-	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
+	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
+	AAAAAElFTkSuQmCC
 }]
 
 set reset [image create photo -data {

@@ -94,10 +94,12 @@ array set Options {
 }
 
 
-event add <<ToolbarHide>> ToolbarHide
-event add <<ToolbarFlat>> ToolbarFlat
-event add <<ToolbarShow>> ToolbarShow
-event add <<ToolbarIcon>> ToolbarIcon
+event add <<ToolbarHide>>		ToolbarHide
+event add <<ToolbarFlat>>		ToolbarFlat
+event add <<ToolbarShow>>		ToolbarShow
+event add <<ToolbarIcon>>		ToolbarIcon
+event add <<ToolbarDisabled>>	ToolbarDisabled
+event add <<ToolbarEnabled>>	ToolbarEnabled
 
 
 proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
@@ -146,6 +148,7 @@ proc toolbar {parent args} {
 		padx:$toolbar			0                       \
 		pady:$toolbar			0                       \
 		keepoptions:$toolbar	1                       \
+		enabled:$toolbar		1                       \
 		side:$toolbar			top                     \
 		state:$toolbar			show                    \
 		default:$toolbar		$Options(icons:size)    \
@@ -186,6 +189,7 @@ proc toolbar {parent args} {
 			-padx				{ set Specs(padx:$toolbar) $val }
 			-pady				{ set Specs(pady:$toolbar) $val }
 			-keepoptions	{ set Specs(keepoptions:$toolbar) $val }
+			-enabled			{ set Specs(enabled:$toolbar) $val }
 			-id				{ ;# skip }
 			default			{ lappend options $arg $val }
 		}
@@ -298,7 +302,9 @@ proc toolbar {parent args} {
 		bind $toolbar <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
 	}
 
-	pack $widgets {*}$widgetOptions
+	if {$Specs(enabled:$toolbar)} {
+		pack $widgets {*}$widgetOptions
+	}
 
 	switch $Specs(state:$toolbar) {
 		flat - hide	{ Hide $toolbar $Specs(state:$toolbar) }
@@ -382,10 +388,12 @@ proc add {toolbar widgetCommand args} {
 	if {[winfo class $w] eq "Button"} {
 		set Specs(active:$w:$toolbar) [$w cget -activebackground]
 		set Specs(command:$w:$toolbar) [$w cget -command]
+		set Specs(button1:$w:$toolbar) ::tooltip::hide
+		set Specs(entercmd:$w:$toolbar) {}
 		if {[$w cget -state] eq "normal"} {
 			$w configure -overrelief $Specs(overrelief:$w:$toolbar)
 		}
-		bind $w <ButtonPress-1> ::tooltip::hide
+		bind $w <ButtonPress-1> $Specs(button1:$w:$toolbar)
 	}
 
 	if {[llength $variable]} {
@@ -441,9 +449,13 @@ proc add {toolbar widgetCommand args} {
 	}
 	if {$widgetCommand eq "button"} {
 		bind $w <Enter> +[namespace code [list EnterButton $toolbar $w]]
+		set Specs(entercmd:$w:$toolbar) [bind $w <Enter>]
 	}
 	if {$Specs(usehandle:$toolbar)} {
 		bind $w <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
+		if {[string match *frame $widgetCommand]} {
+			bind $w <Configure> [namespace code [list BindMenuToChilds $toolbar $w]]
+		}
 	}
 
 	PackWidget $toolbar $w
@@ -644,9 +656,40 @@ proc setOptions {parent options} {
 
 proc show {toolbar} { Show $toolbar "" }
 
+proc getState {toolbar} { return [set [namespace current]::Specs(state:$toolbar)] }
+
 
 proc setState {toolbar state} {
+	variable Specs
+
 	switch $state {
+		enabled {
+			if {$Specs(enabled:$toolbar)} { return }
+			set Specs(enabled:$toolbar) 1
+
+			switch $Specs(state:$toolbar) {
+				float	{ UndockToolbar $toolbar [winfo rootx $toolbar] [winfo rooty $toolbar] }
+				flat	{ Hide $toolbar flat }
+				show	{ show $toolbar }
+			}
+
+			event generate $toolbar <<ToolbarEnabled>>
+		}
+
+		disabled {
+			if {$Specs(enabled:$toolbar)} {
+				set Specs(enabled:$toolbar) 0
+				set state $Specs(state:$toolbar)
+				if {[winfo exists $toolbar.floating]} {
+					destroy $toolbar.floating
+				}
+				RemoveFlatHandle $toolbar
+				Forget $toolbar
+				set Specs(state:$toolbar) $state
+				event generate $toolbar <<ToolbarDisabled>>
+			}
+		}
+
 		float	{ UndockToolbar $toolbar [winfo rootx $toolbar] [winfo rooty $toolbar] }
 		flat	{ Hide $toolbar flat }
 		hide	{ Hide $toolbar hide }
@@ -826,6 +869,14 @@ proc SetMenuLabel {m index var {unused {}} {unused {}}} {
 }
 
 
+proc BindMenuToChilds {toolbar w} {
+	foreach child [winfo children $w] {
+		bind $child <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
+	}
+	bind $w <Configure> {#}
+}
+
+
 proc Cleanup {toolbar} {
 	variable Specs
 
@@ -950,7 +1001,9 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 	variable Specs
 	variable Defaults
 
+	if {!$Specs(enabled:$toolbar)} { return }
 	set parent [winfo parent $toolbar]
+	if {![info exists Specs(side:$toolbar)]} { return }
 	set tbf [Join $parent __tbf__$Specs(side:$toolbar)]
 
 	if {![winfo exists $tbf]} {
@@ -1050,7 +1103,7 @@ proc Finish {parent} {
 	scan [winfo geometry [winfo toplevel $parent]] "%dx%d+%d+%d" tw th tx ty
 
 	foreach toolbar $Specs(count:$parent) {
-		if {$Specs(finish:$toolbar)} {
+		if {$Specs(enabled:$toolbar) && $Specs(finish:$toolbar)} {
 			lassign $Specs(position:$toolbar) fx fy
 			if {[llength $fy] == 0} {
 				set fx 500
@@ -1258,11 +1311,15 @@ proc SetState {toolbar v w state} {
 				set relief $Specs(relief:$v:$toolbar)
 				set activebackground $Specs(active:$v:$toolbar)
 				set command $Specs(command:$v:$toolbar)
+				bind $w <ButtonPress-1> $Specs(button1:$w:$toolbar)
+				bind $w <Enter> $Specs(entercmd:$w:$toolbar)
 			} else {
 				set overrelief flat
 				set relief flat
 				set activebackground [$w cget -background]
 				set command {}
+				bind $w <ButtonPress-1> { break }
+				bind $w <Enter> { break }
 			}
 			set iconsize $Specs(iconsize:$toolbar)
 			if {$iconsize eq "default"} { set iconsize $Specs(default:$toolbar) }
@@ -1398,7 +1455,7 @@ proc ReplaceIcons {toolbar} {
 		}
 	}
 
-	if {$resize && $Specs(state:$toolbar) eq "show"} {
+	if {$resize && $Specs(enabled:$toolbar) && $Specs(state:$toolbar) eq "show"} {
 		event generate $toolbar <<ToolbarIcon>>
 	}
 }
@@ -1447,11 +1504,16 @@ proc Show {toolbar alignment} {
 
 	if {[winfo exists $toolbar.floating]} { return }
 
-	RemoveFlatHandle $toolbar
-	PackToolbar $toolbar "" $alignment
+	if {$Specs(enabled:$toolbar)} {
+		RemoveFlatHandle $toolbar
+		PackToolbar $toolbar "" $alignment
+	}
 	set Specs(state:$toolbar) "show"
-	set Specs(position:$toolbar) {}
-	event generate $toolbar <<ToolbarShow>>
+#	set Specs(position:$toolbar) {}
+
+	if {$Specs(enabled:$toolbar)} {
+		event generate $toolbar <<ToolbarShow>>
+	}
 }
 
 
@@ -1726,13 +1788,12 @@ proc FindNearest {toolbar dir x y region} {
 	if {![winfo exists $tbf]} { return "" }
 	set childs [pack slaves $tbf]
 	if {[llength $childs] == 0} { return "" }
-	scan [winfo geometry [winfo toplevel $toolbar]] "%dx%d+%d+%d" sw sh sx sy
+	set sx [winfo rootx $parent]
+	set sy [winfo rooty $parent]
 
 	if {$dir eq "left" || $dir eq "right"} {
-		set y [expr {$y - [winfo rooty $parent] + [winfo rooty [winfo toplevel $toolbar]]}]
 		if {$y < [winfo rooty [lindex $childs 0]]} { return [lindex $childs 0] }
 	} else {
-		set x [expr {$x - [winfo rootx $parent] + [winfo rootx [winfo toplevel $toolbar]]}]
 		if {$x < [winfo rootx [lindex $childs 0]]} { return [lindex $childs 0] }
 	}
 
@@ -2151,14 +2212,21 @@ proc Hide {toolbar event} {
 	}
 
 	set Specs(state:$toolbar) $event
-	RemoveFlatHandle $toolbar
-	Forget $toolbar
+
+	if {$Specs(enabled:$toolbar)} {
+		RemoveFlatHandle $toolbar
+		Forget $toolbar
+	}
 
 	if {$event == "flat"} {
 		PackFlatHandle $toolbar
-		event generate $toolbar <<ToolbarFlat>>
+		set ev <<ToolbarFlat>>
 	} else {
-		event generate $toolbar <<ToolbarHide>>
+		set ev <<ToolbarHide>>
+	}
+
+	if {$Specs(enabled:$toolbar)} {
+		event generate $toolbar $ev
 	}
 }
 
@@ -2197,12 +2265,14 @@ proc ChangeState {toolbar event {caller menu}} {
 proc ShowToolbar {toolbar} {
 	variable Specs
 
-	if {$Specs(hidden:$toolbar)} {
-		Hide $toolbar hide
-	} else {
-		set Specs(menu:$toolbar) show
-		set Specs(state:$toolbar) show
-		ChangeState $toolbar show
+	if {$Specs(enabled:$toolbar)} {
+		if {$Specs(hidden:$toolbar)} {
+			Hide $toolbar hide
+		} else {
+			set Specs(menu:$toolbar) show
+			set Specs(state:$toolbar) show
+			ChangeState $toolbar show
+		}
 	}
 }
 
@@ -2221,6 +2291,8 @@ proc UndockToolbar {toolbar x y} {
 	variable Defaults
 	variable iconSizes
 	variable HaveTooltips
+
+	if {!$Specs(enabled:$toolbar)} { return }
 
 	set haveNoWindowDecor false
 	if {[tk windowingsystem] eq "x11"} {
@@ -2277,10 +2349,14 @@ proc UndockToolbar {toolbar x y} {
 
 	foreach child [pack slaves $toolbar.widgets] {
 		if {$Specs(float:$child:$toolbar)} { CloneWidget $toolbar $child }
+		if {[string match *Frame [winfo class $child]]} {
+			bind $child <Configure> [namespace code [list BindMenuToChilds $toolbar $child]]
+		}
 	}
 
 	wm withdraw $win
 	wm transient $win [winfo toplevel $toolbar]
+	catch { wm attributes $win -type toolbar }
 	wm focusmodel $win $Defaults(floating:focusmodel)
 #	NOTE: we cannot handle WM_TAKE_FOCUS correctly (we need the X server time stamp to set the focus)
 #	if {$Specs(takefocus:$toolbar)} {

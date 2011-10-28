@@ -43,9 +43,9 @@ performExpandafter(Environment& env)
 //	}
 
 	if (token3)
-		env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token3)));
+		env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token3))); // MEMORY
 
-	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token1)));
+	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token1))); // MEMORY
 }
 
 

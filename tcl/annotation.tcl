@@ -243,7 +243,7 @@ array set sections {
 }
 
 set ranges {
-	{ MoveAssesments					  1   8 }
+	{ MoveAssesments					  1   9 }
 	{ PositionalAssessments			 10 135 }
 	{ TimePressureCommentaries		136 139 }
 	{ PrefixedCommentaries			140 145 }
@@ -353,7 +353,7 @@ proc open {parent} {
 
 	set top [::ttk::frame $dlg.top -relief raised -borderwidth 2]
 	pack $dlg.top -fill both -expand yes
-	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
+	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {[tk windowingsystem] ne "win32"} {
 		set decor [tk::label $top.decor -justify left -text $title -font TkSmallCaptionFont]
@@ -498,6 +498,7 @@ proc open {parent} {
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $dlg plainDBox {}
 	} elseif {[tk windowingsystem] eq "win32"} {
+		catch { wm attributes $dlg -type utility }
 		wm attributes $dlg -toolwindow
 		wm title $dlg $title
 	} else {
@@ -555,6 +556,15 @@ proc hide {flag} {
 			wm state $Vars(dialog) normal
 			set Vars(hidden) 0
 		}
+	}
+}
+
+
+proc deactivate {} {
+	variable Vars
+
+	if {[llength $Vars(dialog)] && [winfo exists $Vars(dialog)]} {
+		Init $Vars(dialog)
 	}
 }
 
@@ -619,25 +629,39 @@ proc Init {dlg} {
 
 	set Value(155) 0	;# hack
 	set Value(156) 0	;# hack
-	foreach type {prefix infix suffix} {
-		ConfigureButtons $dlg $type $entered
-	}
-
-	set atStart [::scidb::game::position atStart?]
-
-	if {$atStart != $Vars(atStart)} {
-		set Vars(atStart) $atStart
-
-		if {$atStart} { set state "disabled" } else { set state "readonly" }
+	if {[::scidb::game::current] == 9} {
 		for {set i 0} {$i < $MaxNags} {incr i} {
-			$Vars(cb:$i) configure -state $state
+			$Vars(cb:$i) configure -state disabled
 		}
-
-		if {$atStart} { set state "disabled" } else { set state "normal" }
 		foreach group {0 1 2 3 4 5} {
 			foreach child [winfo children $dlg.top.std.f${group}] {
-				if {![string match {*.15[56]} $child]} {
-					$child configure -state $state
+				$child configure -state disabled
+			}
+		}
+		set Vars(atStart) ""
+	} else {
+		foreach type {prefix infix suffix} {
+			ConfigureButtons $dlg $type $entered
+		}
+
+		set atStart [::scidb::game::position atStart?]
+
+		if {$atStart != $Vars(atStart)} {
+			set Vars(atStart) $atStart
+
+			if {$atStart} { set state "disabled" } else { set state "readonly" }
+			for {set i 0} {$i < $MaxNags} {incr i} {
+				$Vars(cb:$i) configure -state $state
+			}
+
+			if {$atStart} { set state "disabled" } else { set state "normal" }
+			foreach group {0 1 2 3 4 5} {
+				foreach child [winfo children $dlg.top.std.f${group}] {
+					if {[string match {*.15[56]} $child]} {
+						$child configure -state normal
+					} else {
+						$child configure -state $state
+					}
 				}
 			}
 		}
@@ -849,6 +873,7 @@ proc Configured {cb} {
 proc KeyStroke {cb code sym} {
 	variable LastNag
 	variable Current
+	variable ranges
 
 	if {[string is integer -strict $code]} {
 		if {$Current == 0} {
@@ -862,11 +887,9 @@ proc KeyStroke {cb code sym} {
 			set current 0
 		} else {
 			set current $Current
-			if {$current >   0} { incr current }
-			if {$current >   9} { incr current }
-			if {$current > 135} { incr current }
-			if {$current > 139} { incr current }
-			if {$current > 145} { incr current }
+			foreach range $ranges {
+				if {$current >= [lindex $range 1]} { incr current }
+			}
 		}
 
 		$cb select $current

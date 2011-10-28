@@ -146,6 +146,14 @@ bitfield<Bits>::bitfield()
 
 template <class Bits>
 inline
+bitfield<Bits>::bitfield(bool flag)
+	:m_bits(flag ? ~0u : 0u)
+{
+}
+
+
+template <class Bits>
+inline
 bitfield<Bits>::bitfield(value_type n)
 	:m_bits(n)
 {

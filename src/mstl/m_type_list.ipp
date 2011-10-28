@@ -218,6 +218,20 @@ struct reverse< type_list<Head, Tail> >
 	typedef typename append<typename reverse<Tail>::result, Head>::result result;
 };
 
+// size_of				/////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+struct size_of< type_list<T, null_type> >
+{
+	enum { value = sizeof(T) };
+};
+
+template <typename Head, typename Tail>
+struct size_of< type_list<Head, Tail> >
+{
+	enum { value = sizeof(Head) < size_of<Tail>::value ? size_of<Tail>::value : sizeof(Head) };
+};
+
 #if 0
 // most_derived			/////////////////////////////////////////////////////////////////////////////////
 

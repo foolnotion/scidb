@@ -20,9 +20,9 @@
 #define _TeXt_Token_included
 
 #include "T_Base.h"
+#include "T_Object.h"
 #include "T_TokenP.h"
 
-#include "m_ref_counter.h"
 #include "m_string.h"
 
 namespace TeXt {
@@ -30,7 +30,7 @@ namespace TeXt {
 class Environment;
 
 
-class Token : public mstl::ref_counter
+class Token : public Object
 {
 public:
 

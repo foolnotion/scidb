@@ -18,6 +18,8 @@
 
 # This implementation is adopted from BWidget/utils.tcl.
 
+# Due to centering problems on window, see http://wiki.tcl.tk/20773
+
 package provide place 1.0
 
 namespace eval util {

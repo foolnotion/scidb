@@ -27,6 +27,8 @@
 #ifndef _db_clock_included
 #define _db_clock_included
 
+#include "u_crc.h"
+
 #include "m_types.h"
 
 namespace db {
@@ -38,17 +40,34 @@ public:
 	Clock();
 	Clock(uint8_t hour, uint8_t minute, uint8_t second);
 
+	bool isEmpty() const;
+
 	uint8_t hour() const;
 	uint8_t minute() const;
 	uint8_t second() const;
 
-	void set(uint8_t hour, uint8_t minute, uint8_t second);
+	int compare(Clock const& clock) const;
+	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
+
+	void setHMS(uint8_t hour, uint8_t minute, uint8_t second);
+
+	char const* parse(char const* s);
+
+	void dump() const;
 
 private:
 
-	uint8_t m_hour;
-	uint8_t m_minute;
-	uint8_t m_second;
+	union
+	{
+		struct
+		{
+			uint8_t m_second;
+			uint8_t m_minute;
+			uint8_t m_hour;
+		};
+
+		uint32_t m_value;
+	};
 };
 
 } // namespace db

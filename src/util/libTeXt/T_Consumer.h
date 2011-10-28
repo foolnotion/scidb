@@ -19,13 +19,13 @@
 #ifndef _TeXt_Consumer_included
 #define _TeXt_Consumer_included
 
-#include "m_ref_counter.h"
+#include "T_Object.h"
 
 namespace mstl { class string; }
 
 namespace TeXt {
 
-class Consumer : public mstl::ref_counter
+class Consumer : public Object
 {
 public:
 

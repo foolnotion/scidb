@@ -30,7 +30,7 @@
 #include "sci_encoder.h"
 #include "sci_common.h"
 
-#include "db_consumer.h"
+#include "db_info_consumer.h"
 #include "db_move.h"
 
 #include "u_byte_stream.h"
@@ -47,11 +47,11 @@ namespace sci {
 
 class Codec;
 
-class Consumer : private Encoder, public db::Consumer
+class Consumer : private Encoder, public db::InfoConsumer
 {
 public:
 
-	Consumer(format::Type srcFormat, Codec& codec);
+	Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedTags, bool allowExtraTags);
 
 private:
 
@@ -67,6 +67,7 @@ private:
 										Annotation const& annotation,
 										MarkSet const& marks) override;
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendMoveInfo(MoveInfoSet const& moveInfo) override;
 	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
@@ -80,6 +81,7 @@ private:
 							MarkSet const& marks);
 	Byte writeComment(Byte position, Comment const& comment);
 
+	void preparseComment(mstl::string& comment) override;
 	void beginMoveSection() override;
 	void endMoveSection(result::ID result) override;
 	void beginVariation() override;

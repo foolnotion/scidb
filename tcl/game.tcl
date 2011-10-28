@@ -27,29 +27,35 @@
 namespace eval game {
 namespace eval mc {
 
-set CloseAllGames				"Close all open games of database '%s'?"
-set SomeGamesAreModified	"Some games of database '%s' are modified. Close anyway?"
-set AllSlotsOccupied			"All game slots are occupied."
-set ReleaseOneGame			"Please release one of the games before loading a new one."
-set GameAlreadyOpen			"Game is already open but modified. Discard modified game?"
-set GameAlreadyOpenDetail	"'%s' will open a new game."
-set GameHasChanged			"Game %s has changed (outside this session?)."
-set CorruptedHeader			"Corrupted header in recovery file '%s'."
-set RenamedFile				"Renamed this file to '%s.bak'."
-set CannotOpen					"Cannot open recovery file '%s'."
-set OldGameRestored			"One game restored."
-set OldGamesRestored			"%s games restored."
-set GameRestored				"One game from last session restored."
-set GamesRestored				"%s games from last session restored."
-set ErrorInRecoveryFile		"Error in recovery file '%s'"
-set Recovery					"Recovery"
-set UnsavedGames				"You have unsaved game changes."
-set DiscardChanges			"'%s' will throw away all changes."
-set ShouldRestoreGame		"Should this game be restored in next session?"
-set ShouldRestoreGames		"Should these games be restored in next session?"
-set NewGame						"New Game"
-set NewGames					"New Games"
-set Created						"created"
+set CloseDatabase					"Close Database"
+set CloseAllGames					"Close all open games of database '%s'?"
+set SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
+set AllSlotsOccupied				"All game slots are occupied."
+set ReleaseOneGame				"Please release one of the games before loading a new one."
+set GameAlreadyOpen				"Game is already open but modified. Discard modified game?"
+set GameAlreadyOpenDetail		"'%s' will open a new game."
+set GameHasChanged				"Game %s has changed."
+set GameHasChangedDetail		"Probably this is not the expected game due to database changes."
+set CorruptedHeader				"Corrupted header in recovery file '%s'."
+set RenamedFile					"Renamed this file to '%s.bak'."
+set CannotOpen						"Cannot open recovery file '%s'."
+set OldGameRestored				"One game restored."
+set OldGamesRestored				"%s games restored."
+set GameRestored					"One game from last session restored."
+set GamesRestored					"%s games from last session restored."
+set ErrorInRecoveryFile			"Error in recovery file '%s'"
+set Recovery						"Recovery"
+set UnsavedGames					"You have unsaved game changes."
+set DiscardChanges				"'%s' will throw away all changes."
+set ShouldRestoreGame			"Should this game be restored in next session?"
+set ShouldRestoreGames			"Should these games be restored in next session?"
+set NewGame							"New Game"
+set NewGames						"New Games"
+set Created							"created"
+set ClearHistory					"Clear history"
+set RemoveSelectedGame			"Remove selected game from history"
+set GameDataCorrupted			"Game data is corrupted."
+set GameDecodingFailed			"Decoding of this game was not possible."
 
 } ;# namespace mc
 
@@ -76,9 +82,8 @@ array set Options {
 
 
 proc new {parent {base {}} {index -1}} {
+	variable ::scidb::scratchbaseName
 	variable MaxPosition
-	variable History
-	variable HistorySize
 	variable List
 	variable Options
 	variable Count
@@ -93,13 +98,13 @@ proc new {parent {base {}} {index -1}} {
 	} else {
 		set lock 0
 	}
-	if {[llength $base] == 0} { set base Scratchbase }
+	if {[llength $base] == 0} { set base $scratchbaseName }
 	set codec [::scidb::db::get codec $base]
 	set id [list $base $codec $index]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
 	set entry [list $time 0 0 $id]
 	set tags {}
-	if {$base eq "Scratchbase"} {
+	if {$base eq $scratchbaseName} {
 		set pos -1
 	} else {
 		set pos [lsearch -exact -index 3 $List $id]
@@ -110,11 +115,14 @@ proc new {parent {base {}} {index -1}} {
 	if {$pos >= 0} {
 		set loadPos [expr {$MaxPosition + 1}]
 		::scidb::game::release $loadPos
-		set crc [load $parent $loadPos $base $index]
-		if {[llength $crc] == 0} { return -1 }
+		if {![load $parent $loadPos $base $index]} { return -1 }
+		set crc [::scidb::game::query $loadPos checksum]
 
 		if {$crc ne [lindex $List $pos 4]} {
-			::dialog::warning -parent $parent -message [format $mc::GameHasChanged $index]
+			# TODO: open new slot iff only crc-index differs
+			set msg [format $mc::GameHasChanged [expr {$index + 1}]]
+			set det $mc::GameHasChangedDetail
+			::dialog::warning -buttons {ok} -parent $parent -message $msg -detail $det
 			set pos -1
 		} elseif {[lindex $List $pos 1]} {
 			set reply [::dialog::question \
@@ -125,8 +133,8 @@ proc new {parent {base {}} {index -1}} {
 				-default no
 			]
 			switch $reply {
-				cancel	{ return -1 }
-				no			{ set pos -1 }
+				cancel	{ return -2 }
+				no			{ set pos -2 }
 				yes		{ set cmd replace }
 			}
 		}
@@ -141,18 +149,16 @@ proc new {parent {base {}} {index -1}} {
 			for {set i 0} {$i < [llength $List]} {incr i} {
 				set elem [lindex $List $i]
 				if {![lindex $elem 1] && ![lindex $elem 2]} {
-					if {$pos == -1} {
-						set pos $i
-					} elseif {[llength [lindex $elem 0]]} {
+					if {$pos < 0 || [llength [lindex $elem 0]]} {
 						set pos $i
 					}
 				}
 			}
-			if {$pos == -1} {
+			if {$pos < 0} {
 				set pos [llength $List]
 				if {$pos == $Options(game:max)} {
 					::dialog::info -parent $parent -message $mc::AllSlotsOccupied -detail $mc::ReleaseOneGame
-					return -1
+					return -2
 				}
 				lappend List $entry	;# only a placeholder
 				set cmd add
@@ -164,9 +170,9 @@ proc new {parent {base {}} {index -1}} {
 		}
 
 		if {$loadPos == -1} {
-			::scidb::game::release $pos	;# release scratch game
-			set crc [load $parent $pos $base $index]
-			if {[llength $crc] == 0} { return -1 }
+			::scidb::game::release $pos ;# release scratch game
+			if {![load $parent $pos $base $index]} { return -1 }
+			set crc [::scidb::game::query $pos checksum]
 		} else {
 			::scidb::game::swap $pos $loadPos
 			::scidb::game::release $loadPos
@@ -188,22 +194,7 @@ proc new {parent {base {}} {index -1}} {
 		::scidb::db::subscribe gameInfo [namespace current]::Update
 	}
 
-	if {[llength $tags]} {
-		foreach pair $tags {
-			lassign $pair name value
-			set lookup($name) $value
-		}
-		set info {}
-		foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
-		set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4]]
-		set i [lsearch -index 0 $History $info]
-		if {$i == -1 && [llength $History] < $HistorySize} {
-			lappend History $entry
-		} else {
-			if {$i == -1} { set i end }
-			set History [linsert [lreplace $History $i $i] 0 $entry]
-		}
-	}
+	UpdateHistory $pos $base $tags
 
 	return $pos
 }
@@ -265,14 +256,22 @@ proc lockChanged {position locked} {
 
 
 proc load {parent position base index} {
-	if {$base eq "Scratchbase"} {
+	variable ::scidb::scratchbaseName
+
+	set rc 0
+
+	if {$base eq $scratchbaseName} {
 		::scidb::game::new $position [::scidb::pos::fen]
-	} elseif {![::scidb::game::load $position $base $index]} {
-		::dialog::error -parent $parent -message $::browser::mc::GameDataCorrupted
-		return {}
+		set rc 1
+	} else {
+		switch [::scidb::game::load $position $base $index] {
+			 0 { set rc 1 }
+			-1 { ::dialog::info  -parent [winfo toplevel $parent] -message $mc::GameDecodingFailed }
+			-2 { ::dialog::error -parent [winfo toplevel $parent] -message $mc::GameDataCorrupted }
+		}
 	}
 
-	return [::scidb::game::query $position checksum]
+	return $rc
 }
 
 
@@ -295,7 +294,7 @@ proc release {position} {
 
 	update ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {{} 0 0 {{} {} {}} {0 0} {}}
+	lset List $position {{} 0 0 {{} {} {} {}} {0 0} {}}
 }
 
 
@@ -353,11 +352,14 @@ proc releaseAll {parent base} {
 
 	if {$Options(askAgain:releaseAll)} {
 		set openGames [lsort -index 1 -integer $openGames]
-		append msg [format $mc::CloseAllGames [::util::::databaseName $base]]
+		set name [::util::::databaseName $base]
+		append msg [format $mc::CloseAllGames $name]
 		append msg <embed>
+		set base
 
 		set reply [::dialog::question \
 			-parent $parent \
+			-title "$::scidb::app: $mc::CloseDatabase" \
 			-message $msg \
 			-check [namespace current]::Options(askAgain:releaseAll) \
 			-buttons {cancel yes no} \
@@ -445,16 +447,63 @@ proc resize {n} {
 
 proc startTrialMode {{pos -1}} {
 	::scidb::game::push $pos
+	::gamebar::setEmphasized [::application::pgn::gamebar] 1
 }
 
 
 proc endTrialMode {{pos -1}} {
 	::scidb::game::pop $pos
+	::gamebar::setEmphasized [::application::pgn::gamebar] 0
 }
 
 
 proc trialMode? {{pos -1}} {
 	return [::scidb::game::query trial]
+}
+
+
+proc save {parent} {
+	if {[::scidb::game::current] != 9} {
+		::dialog::save::open $parent [::scidb::db::get name] -1
+	}
+}
+
+
+proc replace {parent} {
+	if {[::scidb::game::current] != 9} {
+		::dialog::save::open $parent [::scidb::db::get name] -1 [::scidb::game::number]
+	}
+}
+
+
+proc replaceMoves {parent} {
+	if {[::scidb::game::current] != 9} {
+		set base [::scidb::db::get name]
+		set number [::scidb::game::number]
+
+		if {[::dialog::save::checkIfWriteable $parent $base -1 $number]} {
+			::application::pgn::replaceMoves $parent
+		}
+	}
+}
+
+
+proc clearHistory {} {
+	set [namespace current]::History {}
+	::application::pgn::historyChanged
+}
+
+
+proc removeHistoryEntry {index} {
+	variable History
+
+	set History [lreplace $History $index $index]
+	::application::pgn::historyChanged
+}
+
+
+proc historyIsEmpty? {} {
+	return [expr {[llength [set [namespace current]::History]] == 0}]
 }
 
 
@@ -571,6 +620,71 @@ proc recover {} {
 }
 
 
+proc traverseHistory {headerScript gameScript} {
+	variable History
+	variable List
+
+	set myList {}
+	set count 0
+
+	foreach entry $History {
+		if {[lsearch -index 3 $List [lindex $entry 1]] == -1} {
+			lassign $entry tags key 
+			set base [lindex $key 0]
+			set i [lsearch $myList $base]
+			if {$i == -1} { lappend myList $base }
+			lappend data($base) $tags $count
+		}
+
+		incr count
+	}
+
+	set count 0
+
+	foreach base $myList {
+		eval $headerScript
+		foreach {tags index} $data($base) {
+			eval $gameScript
+			incr count
+		}
+
+		incr count
+	}
+}
+
+
+proc openGame {parent index} {
+	variable History
+	variable List
+
+	lassign [lindex $History $index] tags base crcHist encoding
+	lassign $base base codec number
+	set rc 1
+	set parent [winfo toplevel $parent]
+
+	if {[::application::database::openBase $parent $base $encoding]} {
+		set pos [new $parent $base $number]
+		if {$pos >= 0} {
+			set crcLoad [lindex $List $pos 4]
+			if {$crcLoad ne $crcHist} {
+				# TODO: open new slot iff only crc-index differs
+				set msg [format $mc::GameHasChanged [expr {$number + 1}]]
+				set det $mc::GameHasChangedDetail
+				::dialog::warning -buttons {ok} -parent $parent -message $msg -detail $det
+			}
+		} elseif {$pos == -1} {
+			set rc 0
+		}
+	} else {
+		set rc 0
+	}
+
+	if {!$rc} {
+		set History [lreplace $History $index $index]
+	}
+}
+
+
 proc EmbedReleaseMessage {entries w infoFont alertFont} {
 	variable ::gamebar::icon::15x15::digit
 
@@ -589,7 +703,7 @@ proc EmbedReleaseMessage {entries w infoFont alertFont} {
 			}
 		}
 
-		set col(1) "$white \u2212 $black"
+		set col(1) "$white \u2013 $black"
 		set col(2) "(#[expr {$number + 1}])"
 
 		grid [tk::label $w.line-$row-0 -image $digit($index)] -row $row -column 0 -sticky w
@@ -603,6 +717,7 @@ proc EmbedReleaseMessage {entries w infoFont alertFont} {
 
 proc EmbedCloseMessage {games w infoFont alertFont} {
 	variable ::gamebar::icon::15x15::digit
+	variable ::scidb::scratchbaseName
 
 	grid columnconfigure $w 0 -minsize 10
 	grid columnconfigure $w {2 4} -minsize 5
@@ -612,7 +727,7 @@ proc EmbedCloseMessage {games w infoFont alertFont} {
 	set count 0
 
 	foreach entry $games {
-		if {[lindex $entry 2] eq "Scratchbase"} { incr count }
+		if {[lindex $entry 2] eq $scratchbaseName} { incr count }
 	}
 
 	foreach entry $games {
@@ -624,7 +739,7 @@ proc EmbedCloseMessage {games w infoFont alertFont} {
 				grid rowconfigure $w $row -minsize 8
 				incr row
 			}
-			if {$base ne "Scratchbase"} {
+			if {$base ne $scratchbaseName} {
 				set title [::util::databaseName $base]
 			} elseif {$count == 1} {
 				set title $mc::NewGame
@@ -645,11 +760,11 @@ proc EmbedCloseMessage {games w infoFont alertFont} {
 			}
 		}
 
-		if {$prev eq "Scratchbase"} {
+		if {$prev eq $scratchbaseName} {
 			set col(1) "$mc::Created: [::locale::formatTime $time]"
 			set col(2) ""
 		} else {
-			set col(1) "$white \u2212 $black"
+			set col(1) "$white \u2013 $black"
 			set col(2) "(#[expr {$number + 1}])"
 		}
 
@@ -682,18 +797,64 @@ proc Log {_ arguments} {
 
 proc Update {_ position} {
 	variable List
+	variable History
 	variable MaxPosition
 
 	if {$position <= $MaxPosition} {
+		set key [lindex $List $position 3]
+		set i [lsearch -index 1 $History $key]
+		if {$i >= 0} { set History [lreplace $History $i $i] }
+
 		set base [::scidb::game::query $position database]
+		set tags [::scidb::game::tags $position]
 
 		lset List $position 3 0 $base
 		lset List $position 3 1 [::scidb::db::get codec $base]
 		lset List $position 3 2 [::scidb::game::index $position]
 		lset List $position 1 [::scidb::game::query $position modified?]
 		lset List $position 4 [::scidb::game::query $position checksum]
-		lset List $position 5 [::scidb::game::tags $position]
+		lset List $position 5 $tags
+
+		UpdateHistory $position $base $tags
 	}
+}
+
+
+proc UpdateHistory {pos base tags} {
+	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
+	variable List
+	variable History
+	variable HistorySize
+
+	if {[llength $tags] == 0} { return }
+	if {$base eq $scratchbaseName} { return }
+	if {$base eq $clipbaseName} { return }
+
+	foreach pair $tags {
+		lassign $pair name value
+		set lookup($name) $value
+	}
+	set info {}
+	set encoding [::scidb::db::get encoding $base]
+	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
+	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
+	set i [lsearch -index 0 $History $info]
+	if {$i >= 0 || [llength $History] >= $HistorySize} {
+		if {$i == -1} { set i end }
+		set History [lreplace $History $i $i]
+	}
+	set History [linsert $History 0 $entry]
+}
+
+
+proc GameInTrialMode {parent title} {
+	set name [::util::databaseName [::scidb::db::get name]]
+	::dialog::info \
+		-parent $parent \
+		-message [format $mc::CurrentGameHasTrialMode $name] \
+		-title "[tk appname] - $title" \
+		;
 }
 
 

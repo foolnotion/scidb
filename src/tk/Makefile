@@ -25,6 +25,7 @@ SRC_CXX = \
 	tk_image.cpp \
 	tk_init.cpp \
 	tk_jpeg.cpp \
+	tk_multiwindow.cpp \
 	tk_png.cpp \
 	tk_twm.cpp \
 	tk_window_manager.cpp \
@@ -50,10 +51,6 @@ $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
 	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	@$(RANLIB) $(LIB).a
-
-.c.o:
-	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
@@ -154,6 +151,13 @@ tk_jpeg.o: jpeg/jpeg_image.h
 tk_jpeg.o: jpeg/jpeg_scanline.h
 tk_jpeg.o: jpeg/jpeg_reader.h
 tk_jpeg.o: jpeg/jpeg_exception.h
+tk_multiwindow.o: tk_init.h
+tk_multiwindow.o: ../tcl/tcl_base.h
+tk_multiwindow.o: ../tcl/tcl_base.ipp
+tk_multiwindow.o: tk8.5/tkInt.h
+tk_multiwindow.o: tk8.5/tkPort.h
+tk_multiwindow.o: tk8.5/tkUnixPort.h
+tk_multiwindow.o: tk8.5/tkIntDecls.h
 tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h

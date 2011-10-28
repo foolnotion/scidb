@@ -66,6 +66,7 @@ mstl::string Application::m_scratchbaseName("Scratchbase");
 Application* Application::m_instance = 0;
 
 static unsigned undoLevel = 20;
+static unsigned undoCombinePredecessingMoves = 9999;
 
 
 namespace app {
@@ -264,7 +265,7 @@ Application::insertScratchGame(unsigned position)
 
 	game.cursor = m_scratchBase;
 	game.index = index;
-	game.game->setUndoLevel(::undoLevel);
+	game.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
 	game.crcIndex = base.gameInfo(index).computeChecksum();
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 	game.sourceBase = base.name();
@@ -846,7 +847,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 }
 
 
-bool
+load::State
 Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 {
 	M_REQUIRE(position != InvalidPosition);
@@ -866,25 +867,28 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 
 	// TODO: compress scratch base (we need fast compress)
 
-	game.game->setUndoLevel(::undoLevel);
+	game.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
 	game.cursor = &cursor;
 	game.index = index;
-	bool ok = base.loadGame(index, *game.game);
+
+	load::State state = base.loadGame(index, *game.game);
+
 	game.crcIndex = info.computeChecksum();
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
-	game.game->updateSubscriber(Game::UpdateAll);
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
 	game.refresh = 0;
 
+	game.game->updateSubscriber(Game::UpdateAll);
+
 	if (m_subscriber && !isNew)
 		m_subscriber->updateGameInfo(position);
 
-	return ok;
+	return state;
 }
 
 
-bool
+load::State
 Application::loadGame(unsigned position)
 {
 	return loadGame(position, *m_scratchBase, indexAt(position));
@@ -1250,7 +1254,7 @@ bool
 Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress& progress)
 {
 	if (m_referenceBase == 0 || !haveCurrentGame())
-		return false;
+		return true;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
 
@@ -1621,9 +1625,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 			{
 				if (cursor.isViewOpen(i))
 				{
-					if (game)
-						m_subscriber->updateGameList(name, i, index);
-
+					m_subscriber->updateGameList(name, i, index);
 					m_subscriber->updatePlayerList(name, i);
 					m_subscriber->updateEventList(name, i);
 					m_subscriber->updateAnnotatorList(name, i);
@@ -1663,6 +1665,17 @@ Application::setupGame(	unsigned linebreakThreshold,
 
 		i->second.refresh = 1;
 	}
+}
+
+
+void
+Application::setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves)
+{
+	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+		i->second.game->setUndoLevel(undoLevel, combinePredecessingMoves);
+
+	::undoLevel = undoLevel;
+	::undoCombinePredecessingMoves = combinePredecessingMoves;
 }
 
 

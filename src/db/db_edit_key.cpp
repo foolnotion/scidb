@@ -152,7 +152,7 @@ Key::incrementPly()
 	while (s > t && s[-1] != '.')
 		--s;
 
-	unsigned number = ::strtoul(s, 0, 10);
+	unsigned number = ::strtoul(s, nullptr, 10);
 
 	m_id.resize(s - m_id.begin());
 	m_id.format("%u", number + 1);
@@ -263,7 +263,7 @@ Key::setPosition(Game& game) const
 		return true;
 
 	s += 2;
-;
+
 	char* e = 0;
 
 	int plyNumber = game.startBoard().plyNumber();
@@ -448,7 +448,7 @@ Key::plyNumber() const
 
 	while (s > t && s[-1] != '.')
 		--s;
-	return ::strtoul(s, 0, 10);
+	return ::strtoul(s, nullptr, 10);
 }
 
 

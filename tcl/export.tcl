@@ -32,7 +32,6 @@ set Options							"&Options"
 set PageSetup						"&Page Setup"
 set Style							"Sty&le"
 set Encoding						"&Encoding"
-set AddGamesToExisitingFile	"&Add games to an existing file"
 
 set Notation						"Notation"
 set Figurines						"Figurines"
@@ -45,6 +44,10 @@ set Telegraphic					"Telegraphic"
 set FontHandling					"Font handling"
 set EmebedTruetypeFonts			"Embed TrueType fonts"
 set UseBuiltinFonts				"Use built-in fonts"
+set SelectExportedTags			"Selection of exported tags"
+set ExcludeAllTags				"Exclude all tags"
+set IncludeAllTags				"Include all tags"
+set ExtraTags						"All other extra tags"
 
 set PdfFiles						"PDF Files"
 set HtmlFiles						"HTML Files"
@@ -56,11 +59,9 @@ set ExportingDatabase			"Exporting %s to file %s"
 set Export							"Export"
 set ExportedGames					"%s game(s) exported"
 set NoGamesForExport				"No games for export."
-set OverwriteDatabase			"You are about to overwrite original database %s. Are you sure?"
 set ResetDefaults					"Reset to defaults"
 set UnsupportedEncoding			"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
 set DatabaseIsOpen				"Database '%s' is open. You have to close it first."
-set CannotExportToMyself		"Cannot export database '%s' to myself."
 
 set BasicStyle						"Basic Style"
 set GameInfo						"Game Info"
@@ -102,6 +103,7 @@ set FormatName(ps)		"Postscript"
 
 set Option(pgn,include_varations)						"Export variations"
 set Option(pgn,include_comments)							"Export comments"
+set Option(pgn,include_moveinfo)							"Export move information (as comments)"
 set Option(pgn,include_marks)								"Export marks (as comments)"
 set Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
 set Option(pgn,use_chessbase_format)					"Use ChessBase format"
@@ -114,7 +116,6 @@ set Option(pgn,include_variant_tag)						"Write tag 'Variant' (if needed)"
 set Option(pgn,include_position_tag)					"Write tag 'Position' (if needed)"
 set Option(pgn,include_time_mode_tag)					"Write tag 'TimeMode' (if needed)"
 set Option(pgn,exclude_extra_tags)						"Exclude extraneous tags"
-set Option(pgn,add_country_after_player)				"Add country after player name"
 set Option(pgn,indent_variations)						"Indent variations"
 set Option(pgn,indent_comments)							"Indent comments"
 set Option(pgn,column_style)								"Column style (one move per line)"
@@ -128,7 +129,7 @@ set Option(pgn,append_mode_to_event_type)				"Add mode after event type"
 set Option(pgn,comment_to_html)							"Write comment in HTML style"
 set Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
 
-}
+} ;# namespace mc
 
 #set Random {}
 #while {[llength $Random] < 30} { lappend Random [expr {min(1.0, rand() + 0.15)}] }
@@ -301,6 +302,22 @@ array set Colors {
 	highlight	#fff5d6
 }
 
+array set DefaultTags {
+	Board					1
+	EventCountry		1
+	EventType			1
+	Mode					1
+	Remark				1
+	TimeControl			1
+	TimeMode				1
+	White/BlackClock	1
+	White/BlackFideId	1
+	White/BlackTeam	1
+	White/BlackTitle	1
+}
+
+array set Tags [array get DefaultTags]
+
 set Margin(mm)	15
 set Margin(in)	0.59
 set Margin(pt)	42.48
@@ -313,16 +330,16 @@ array set Flags {
 	pgn,include_varations						 0
 	pgn,include_comments							 1
 	pgn,include_annotation						 2
-	pgn,include_marks								 3
-	pgn,include_termination_tag				 4
-	pgn,include_mode_tag							 5
+	pgn,include_moveinfo							 3
+	pgn,include_marks								 4
+	pgn,include_termination_tag				 5
+	pgn,include_mode_tag							 6
 	pgn,include_opening_tag						 7
-	pgn,include_setup_tag						 9
-	pgn,include_variant_tag						10
-	pgn,include_position_tag					11
-	pgn,include_time_mode_tag					12
-	pgn,exclude_extra_tags						13
-	pgn,add_country_after_player				14
+	pgn,include_setup_tag						10
+	pgn,include_variant_tag						11
+	pgn,include_position_tag					12
+	pgn,include_time_mode_tag					13
+	pgn,exclude_extra_tags						14
 	pgn,indent_variations						15
 	pgn,indent_comments							16
 	pgn,column_style								17
@@ -342,6 +359,7 @@ array set Flags {
 array set Defaults {
 	pgn,include_varations						1
 	pgn,include_comments							1
+	pgn,include_moveinfo							1
 	pgn,include_marks								1
 	pgn,include_termination_tag				0
 	pgn,include_mode_tag							0
@@ -351,7 +369,6 @@ array set Defaults {
 	pgn,include_position_tag					1
 	pgn,include_time_mode_tag					1
 	pgn,exclude_extra_tags						0
-	pgn,add_country_after_player				0
 	pgn,indent_variations						1
 	pgn,indent_comments							0
 	pgn,column_style								0
@@ -385,10 +402,9 @@ array set Defaults {
 
 array set Values [array get Defaults]
 
+set Values(Type)				scidb
 set Values(notation)			short
 set Values(figurines)		graphic
-set Values(type)				scidb
-set Values(append)			0
 
 set Values(pgn,encoding)	iso8859-1
 set Values(scid,encoding)	iso8859-1
@@ -421,9 +437,9 @@ set Values(tex,columns)			1
 if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
 
 array set Fields {
-	pgn	{	include_varations include_comments include_marks indent_variations indent_comments
-				convert_lost_result_to_comment use_scidb_import_format use_chessbase_format
-				add_country_after_player append_mode_to_event_type symbolic_annotation_style
+	pgn	{	include_varations include_comments include_moveinfo include_marks indent_variations
+				indent_comments convert_lost_result_to_comment use_scidb_import_format
+				use_chessbase_format append_mode_to_event_type symbolic_annotation_style
 				extended_symbolic_style shredder_fen column_style convert_null_moves comment_to_html
 				space_after_move_number include_termination_tag include_mode_tag include_opening_tag
 				include_setup_tag include_variant_tag include_position_tag include_time_mode_tag
@@ -443,6 +459,7 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	variable icon::32x32::IconPS
 	variable icon::36x36::IconPGN
 	variable icon::37x21::IconTeX
+	variable ::scidb::clipbaseName
 	variable PdfEncodingList
 	variable Types
 	variable Icons
@@ -499,21 +516,19 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	bind $nb <ButtonPress-1> [list focus $nb]
 	ttk::notebook::enableTraversal $nb
 	set initialfile [file rootname [file tail $base]]
-	if {$initialfile eq $::application::database::clipbaseName} { set initialfile $::util::clipbaseName }
-	lappend opts -ok [namespace code [list SaveScidb $parent $dlg]]
-	lappend opts -cancel [list destroy $dlg]
+	if {$initialfile eq $clipbaseName} { set initialfile $::util::clipbaseName }
+	lappend opts -okcommand [namespace code [list DoExport $parent $dlg]]
+	lappend opts -cancelcommand [list destroy $dlg]
 	lappend opts -parent $nb
 	lappend opts -embed 1
-	lappend opts -verifycmd [namespace code VerifyPath]
+	# XXX verifymcd needed?
+#	lappend opts -verifycmd [namespace code VerifyPath]
 	lappend opts -initialfile $initialfile
+	lappend opts -filetypes {{dummy .___}}
+	lappend opts -width 720
 	set Info(fsbox) [::dialog::saveFile {*}$opts]
 	$nb add $Info(fsbox) -sticky nsew
 	::widget::notebookTextvarHook $nb $Info(fsbox) [namespace current]::mc::FileSelection
-
-	set fmode [tk::AmpWidget ttk::checkbutton $top.fmode  \
-		-variable [namespace current]::Values(append) \
-		-text $mc::AddGamesToExisitingFile \
-		-command [namespace code SetupFileMode]]
 
 	foreach {tab text} {	options Options
 								style Style
@@ -528,19 +543,18 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	set Info(configure-encoding-pgn) 1
 	set Info(configure-encoding-pdf) 1
 
-	foreach type {pgn pdf} {
+	foreach type {pgn pdf scid} {
 		grid [BuildOptionsFrame_$type $nb.options.$type] -row 1 -column 1 -sticky nsew
 	}
 	grid rowconfigure $nb.options 1 -weight 1
 
 	grid $list	-row 1 -column 1 -sticky ns
 	grid $nb		-row 1 -column 3 -sticky nsew
-	grid $fmode	-row 1 -column 3 -sticky ne
 	
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padding
 	grid rowconfigure $top {0 2} -minsize $::theme::padding
 
-	set index [lsearch -exact $Types $Values(type)]
+	set index [lsearch -exact $Types $Values(Type)]
 	Select $nb $index
 	$list select $index
 
@@ -563,7 +577,7 @@ proc VerifyPath {w args} {
 
 	set path "$args"
 
-	switch $Values(type) {
+	switch $Values(Type) {
 		scidb - scid	{ set path [::menu::verifyDatabaseName $w $path] }
 		default			{ set path [::menu::verifyPath $w $path] }
 	}
@@ -580,6 +594,89 @@ proc Exclude {type flag} {
 	variable Flags
 
 	set Info($type,flags) [expr {$Info($type,flags) & ~[Pow2 $Flags($type,$flag)]}]
+}
+
+
+proc BuildOptionsFrame_scid {w} {
+	variable Tags
+
+	set extraTags [lsort [::scidb::misc::extraTags]]
+	set tagList {}
+
+	foreach tag $extraTags {
+		if {[string match White* $tag]} {
+			set blackTag "Black[string range $tag 5 end]"
+			if {$blackTag in $extraTags} {
+				lappend tagList "White/$blackTag"
+			} else {
+				lappend tagList $tag
+			}
+		} elseif {[string match Black* $tag]} {
+			set whiteTag "White[string range $tag 5 end]"
+			if {$whiteTag ni $extraTags} { lappend tagList $tag }
+		} else {
+			lappend tagList $tag
+		}
+	}
+	lappend tagList ExtraTag
+
+	::ttk::frame $w
+	::ttk::label $w.header -textvar [namespace current]::mc::SelectExportedTags
+	set font [$w.header cget -font]
+	if {[llength $font] == 0} { set font TkDefaultFont }
+	$w.header configure -font [list [font configure $font -family]  [font configure $font -size] bold]
+	grid $w.header -row 1 -column 1 -columnspan 5 -sticky w
+
+	set nrows [expr {([llength $tagList] + 2)/3}]
+	set count 0
+
+	foreach tag $tagList {
+		if {![info exists Tags($tag)]} { set Tags($tag) 0 }
+		set btn $w.[string tolower $tag 0 0]
+		if {$tag eq "ExtraTag"} { set text $mc::ExtraTags } else { set text $tag }
+		::ttk::checkbutton $btn \
+			-text $text \
+			-variable [namespace current]::Tags($tag) \
+			;
+		set row [expr {2*($count % $nrows) + 3}]
+		set col [expr {2*($count / $nrows) + 1}]
+		grid $btn -row $row -column $col -sticky w
+		incr count
+	}
+	set lastRow [expr {2*$nrows + 3}]
+
+	foreach tag [array names Tags] {
+		if {$tag ni $tagList} { array unset Tags $tag }
+	}
+
+	::ttk::frame $w.buttons
+	grid $w.buttons -row $lastRow -column 1 -columnspan 5 -sticky w
+
+	ttk::button $w.buttons.include \
+		-textvar [namespace current]::mc::IncludeAllTags \
+		-command [namespace code [list ResetTags 1]] \
+		;
+	ttk::button $w.buttons.exclude \
+		-textvar [namespace current]::mc::ExcludeAllTags \
+		-command [namespace code [list ResetTags 0]] \
+		;
+	ttk::button $w.buttons.reset \
+		-textvar [namespace current]::mc::ResetDefaults \
+		-command [namespace code [list ResetTags -1]] \
+		;
+	grid $w.buttons.include -row 0 -column 0
+	grid $w.buttons.exclude -row 0 -column 2
+	grid $w.buttons.reset   -row 0 -column 4
+	grid columnconfigure $w.buttons {1 3} -minsize $::theme::padding
+
+	for {set i 2} {$i <= $lastRow} {incr i 2} { lappend rows $i }
+	grid rowconfigure $w $rows -minsize $::theme::padding
+	set rows [list 0 2 [expr {$lastRow - 1}] [expr {$lastRow + 1}]]
+	grid rowconfigure $w $rows -minsize [expr {2*$::theme::padding}]
+	grid columnconfigure $w {0 6} -minsize $::theme::padding
+	grid columnconfigure $w {2 4} -minsize [expr {4*$::theme::padding}]
+
+	return $w
 }
 
 
@@ -711,6 +808,19 @@ proc BuildOptionsFrame_pdf {w} {
 }
 
 
+proc ResetTags {value} {
+	variable Tags
+	variable DefaultTags
+
+	if {$value == -1} {
+		foreach tag [array names Tags] { set Tags($tag) 0 }
+		array set Tags [array get DefaultTags]
+	} else {
+		foreach tag [array names Tags] { set Tags($tag) $value }
+	}
+}
+
+
 proc UseBuiltinFonts {} {
 	variable Values
 
@@ -743,7 +853,7 @@ proc SetupOptions {pane} {
 	$pane.pdf.notation.list.lb selection set $index
 	SetNotation $pane.pdf.notation
 
-	if {$Values(type) eq "pdf"} {
+	if {$Values(Type) eq "pdf"} {
 		grid $pane.pdf.options
 	} else {
 		grid remove $pane.pdf.options
@@ -874,16 +984,6 @@ proc SetupFlags {w type} {
 }
 
 
-proc SetupFileMode {} {
-	variable Values
-	variable Info
-
-	set type save
-	if {$Values(type) eq "pgn" && $Values(append)} { set type open }
-	::dialog::fsbox::changeFileDialogType $Info(fsbox) $type
-}
-
-
 proc HideTab {nb tab} { $nb tab $tab -state hidden }
 proc ShowTab {nb tab} { $nb tab $tab -state normal }
 
@@ -895,13 +995,13 @@ proc Select {nb index} {
 	variable Values
 
 	if {[llength $index] == 0} { return }	;# ignore double click
-	set fmode [winfo parent $nb].fmode
-	set Values(type) [lindex $Types $index]
-	if {$Values(type) eq "pgn"} { grid $fmode } else { grid remove $fmode }
+	set Values(Type) [lindex $Types $index]
+	set savemode 0
 	grid remove $nb.options.pgn
 	grid remove $nb.options.pdf
+	grid remove $nb.options.scid
 
-	switch $Values(type) {
+	switch $Values(Type) {
 		scidb {
 			HideTab $nb $nb.options
 			HideTab $nb $nb.setup_pdf
@@ -916,13 +1016,14 @@ proc Select {nb index} {
 			HideTab $nb $nb.setup_pdf
 			HideTab $nb $nb.setup_tex
 			HideTab $nb $nb.style
-			HideTab $nb $nb.options
-			if {$Values(type) eq "scidb"} {
+			ShowTab $nb $nb.options
+			if {$Values(Type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
 			}
-			set var $::menu::mc::AllScidBases
+			grid $nb.options.scid
+			set var $::menu::mc::ScidBases
 			set ext {.si4 .si3}
 		}
 
@@ -931,14 +1032,16 @@ proc Select {nb index} {
 			HideTab $nb $nb.setup_pdf
 			HideTab $nb $nb.setup_tex
 			HideTab $nb $nb.style
-			if {$Values(type) eq "scidb"} {
+			if {$Values(Type) eq "scidb"} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
 			}
 			grid $nb.options.pgn
+			SetupOptions $nb.options
 			set var $::menu::mc::PGNFiles
 			set ext {.pgn .pgn.gz .zip}
+			set savemode 1
 		}
 
 		pdf {
@@ -946,7 +1049,7 @@ proc Select {nb index} {
 			ShowTab $nb $nb.setup_pdf
 			HideTab $nb $nb.setup_tex
 			ShowTab $nb $nb.style
-			if {$Values(type) eq "scidb" || $Info(pdf-encoding)} {
+			if {$Values(Type) eq "scidb" || $Info(pdf-encoding)} {
 				ShowTab $nb $nb.encoding
 			} else {
 				HideTab $nb $nb.encoding
@@ -990,6 +1093,8 @@ proc Select {nb index} {
 		}
 	}
 
+	::dialog::fsbox::useSaveMode $Info(fsbox) $savemode
+
 	if {[$nb tab $nb.setup_pdf -state] eq "normal"} {
 		if {$Info(configure-setup_pdf)} {
 			ConfigureSetup $nb.setup_pdf
@@ -1012,17 +1117,17 @@ proc Select {nb index} {
 	}
 
 	if {[$nb tab $nb.encoding -state] eq "normal"} {
-		if {$Values(type) eq "pdf"} { set encTab pdf } else { set encTab pgn }
+		if {$Values(Type) eq "pdf"} { set encTab pdf } else { set encTab pgn }
 		if {$Info(configure-encoding-$encTab)} {
-			if {$Values(type) eq "pdf"} { set encList $PdfEncodingList } else { set encList {} }
+			if {$Values(Type) eq "pdf"} { set encList $PdfEncodingList } else { set encList {} }
 			bind $nb.encoding <Configure> \
 				+[namespace code [list ConfigureEncoding $nb.encoding $encTab $encList]]
 			set Info(configure-encoding-$encTab) 0
 		} elseif {[winfo exists $nb.encoding.$encTab]} {
-			if {$Values(type) eq "pdf" && $Info(pdf-encoding)} {
+			if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
 				set encoding $Info(encoding)
 			} else {
-				set encoding $Values($Values(type),encoding)
+				set encoding $Values($Values(Type),encoding)
 			}
 			raise $nb.encoding.$encTab
 			focus $nb.encoding.$encTab
@@ -1030,8 +1135,7 @@ proc Select {nb index} {
 		}
 	}
 
-	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]]
-	SetupFileMode
+	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
 }
 
 
@@ -1042,15 +1146,15 @@ proc ConfigureEncoding {w tab encList} {
 
 	if {[winfo exists $w.$tab]} { return }
 
-	if {$Values(type) eq "pdf" && $Info(pdf-encoding)} {
+	if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
 		set encoding $Info(encoding)
 	} else {
-		set encoding $Values($Values(type),encoding)
+		set encoding $Values($Values(Type),encoding)
 	}
 
-	if {$Values(type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
+	if {$Values(Type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
 	::encoding::build $w.$tab $currentEncoding $Defaults(encoding) [winfo width $w] {} $encList
-	if {$Values(type) eq "pdf" && $Info(pdf-encoding)} {
+	if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
 		::encoding::activate $w.$tab $Defaults(encoding)
 	} else {
 		::encoding::select $w.$tab $encoding
@@ -1067,10 +1171,10 @@ proc SetEncoding {encoding} {
 	variable Info
 
 	if {[llength $encoding]} {
-		if {$Values(type) eq "pdf" && $Info(pdf-encoding)} {
+		if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
 			set Info(encoding) $encoding
 		} else {
-			set Values($Values(type),encoding) $encoding
+			set Values($Values(Type),encoding) $encoding
 		}
 	}
 }
@@ -1112,7 +1216,7 @@ proc ConfigureStyle {w} {
 	$w.t style layout style elemSel -union {elemTxt} -ipadx 2
 
 	set parent(0) root
-	foreach entry $StyleLayout($Values(type)) {
+	foreach entry $StyleLayout($Values(Type)) {
 		lassign $entry depth name
 		if {$depth == 0} {
 			$w.t item style set root item style
@@ -1132,14 +1236,14 @@ proc ConfigureStyle {w} {
 	$w.t notify bind $w.t <Selection> [namespace code [list StyleSelected $w.t %S]]
 
 	ttk::scrollbar $w.sh -orient horizontal -command [list $w.t xview]
-	$w.t notify bind $w.sh <Scroll-x> { ::widget::sbset %W %l %u }
+	$w.t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
 	bind $w.sh <ButtonPress-1> [list focus $w.t]
 	ttk::scrollbar $w.sv -orient vertical -command [list $w.t yview]
-	$w.t notify bind $w.sv <Scroll-y> { ::widget::sbset %W %l %u }
+	$w.t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
 	bind $w.sv <ButtonPress-1> [list focus $w.t]
 
-	set type $Values(type)
-	set Values(style) [lindex $StyleLayout($Values(type)) 0 1]
+	set type $Values(Type)
+	set Values(style) [lindex $StyleLayout($Values(Type)) 0 1]
 	set basic $Styles($type,$Values(style))
 	lassign $basic family size weight slant color
 	set font [font create -family $family -size $size -weight $weight -slant $slant]
@@ -1192,11 +1296,11 @@ proc StyleSelected {tree index} {
 	variable Styles
 	variable Values
 
-	set type $Values(type)
+	set type $Values(Type)
 	set style ""
 	set parent $index
 	while {[llength $parent]} {
-		set style [join [list [lindex $StyleLayout($Values(type)) $parent 1] {*}$style] ","]
+		set style [join [list [lindex $StyleLayout($Values(Type)) $parent 1] {*}$style] ","]
 		set parent [$tree item parent $parent]
 	}
 	set Values(style) $style
@@ -1225,7 +1329,7 @@ proc StyleSelected {tree index} {
 	if {[llength $l]} { set slant  $l }
 	if {[llength $c]} { set color  $c }
 
-	set Values(fontType) [lindex $StyleLayout($Values(type)) $index 1]
+	set Values(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
 
 	switch -glob -- $Values(fontType) {
 		Figurines	{ set fonts $::font::chessFigurineFonts }
@@ -1289,11 +1393,11 @@ proc FontSelected {fontInfo} {
 	variable Styles
 	variable Values
 
-	set type $Values(type)
+	set type $Values(Type)
 	lassign $fontInfo family size weight slant
 	set color [lindex $Styles($type,$Values(style)) 4]
 
-	if {$Values(style) ne [lindex $StyleLayout($Values(type)) 0 1]} {
+	if {$Values(style) ne [lindex $StyleLayout($Values(Type)) 0 1]} {
 		foreach item {family size weight slant} {
 			if {[set $item] eq $Values($type,$item)} { set $item {} }
 		}
@@ -1308,7 +1412,7 @@ proc FontColor {color} {
 	variable Values
 	variable Styles
 
-	set type $Values(type)
+	set type $Values(Type)
 	set color [::dialog::choosecolor::getActualColor $color]
 	if {$color eq $Values($type,color)} { set color {} }
 	lset Styles($type,$Values(style)) 4 $color
@@ -1322,7 +1426,7 @@ proc ConfigureSetup {w} {
 	variable Values
 	variable Colors
 
-	set type $Values(type)
+	set type $Values(Type)
 	set Info($type,formats) {}
 	foreach format $Paper($type) {
 		lassign $format id width height units
@@ -1512,7 +1616,7 @@ proc RefreshPreview {w} {
 	if {[winfo width $w.c] <= 1} { return }
 	bind $w.c <Configure> {}
 	after cancel $Info(after)
-	set type $Values(type)
+	set type $Values(Type)
 
 	foreach dir {top bottom left right} {
 		if {[string match {*[0-9]*} $Info($type,paper,$dir)]} {
@@ -1632,7 +1736,7 @@ proc GetUnits {} {
 	variable Info
 	variable Values
 
-	set type $Values(type)
+	set type $Values(Type)
 
 	if {$Values($type,paper) == [llength $Paper($type)]} {
 		set units $Info($type,paper,units,textvar)
@@ -1670,7 +1774,7 @@ proc MarginChanged {w dir value} {
 	variable Values
 
 	set ok [SizeChanged $w $value]
-	set type $Values(type)
+	set type $Values(Type)
 
 	if {$ok && $Info($type,paper,$dir) != $value} {
 		set Values($type,paper,$dir) [string trim $value]
@@ -1688,7 +1792,7 @@ proc ConfigureWidgets {w {action {}}} {
 	variable Info
 	variable Defaults
 
-	set type $Values(type)
+	set type $Values(Type)
 	set Values($type,paper) [lsearch -exact $Info($type,formats) [$w.paper.cbformat get]]
 
 	if {$Values(useCustom)} {
@@ -1753,7 +1857,7 @@ proc ResetPaper {w} {
 	variable Info
 	variable Values
 
-	set type $Values(type)
+	set type $Values(Type)
 	set Values($type,paper) 2
 	set Values($type,orientation) Potrait
 	set Values($type,justification) 0
@@ -1771,11 +1875,12 @@ proc ResetPaper {w} {
 }
 
 
-proc SaveScidb {parent dlg file} {
+proc DoExport {parent dlg file} {
 	variable PdfEncodingList
 	variable PdfEncodingMap
 	variable Info
 	variable Values
+	variable Tags
 
 	set file [string trim $file]
 	if {[string length $file] == 0} { return }
@@ -1791,12 +1896,12 @@ proc SaveScidb {parent dlg file} {
 		return
 	}
 
-	if {$Values(type) ne "scidb"} {
-		set encoding $Values($Values(type),encoding)
+	if {$Values(Type) ne "scidb"} {
+		set encoding $Values($Values(Type),encoding)
 	} else {
 		set encoding $Info(encoding)
 	}
-	if {$Values(type) eq "pdf"} {
+	if {$Values(Type) eq "pdf"} {
 		if {$encoding ni $PdfEncodingList} {
 			$dlg.top.nb select $dlg.top.nb.encoding
 			::dialog::info -parent $dlg -message [format $mc::UnsupportedEncoding $encoding]
@@ -1804,10 +1909,32 @@ proc SaveScidb {parent dlg file} {
 		}
 		set encoding $PdfEncodingMap($encoding)
 	}
-	if {$Values(type) eq "pgn"} {
+	if {$Values(Type) eq "pgn"} {
 		set excludeGamesWithIllegalMoves $Values(pgn,exclude_games_with_illegal_moves)
 	} else {
 		set excludeGamesWithIllegalMoves 0
+	}
+
+	set tagList {}
+
+	if {$Values(Type) eq "scid"} {
+		foreach tag [array names Tags] {
+			if {$Tags($tag)} {
+				lappend tagList $tag
+				if {[string match White/Black* $tag]} {
+					set name [string range $tag 11 end]
+					lappend tagList White$name
+					lappend tagList Black$name
+				} else {
+					lappend tagList $tag
+				}
+			}
+		}
+	}
+
+	switch [::dialog::fsbox::saveMode $Info(fsbox)] {
+		append		{ set append 1 }
+		overwrite	{ set append 0 }
 	}
 
 	destroy $dlg
@@ -1816,17 +1943,18 @@ proc SaveScidb {parent dlg file} {
 					$Info(base) \
 					$Info(view) \
 					$file \
-					$Info($Values(type),flags) \
-					$Values(append) \
+					$Info($Values(Type),flags) \
+					$append \
 					$encoding \
 					$excludeGamesWithIllegalMoves \
+					$tagList \
 				]
 	set options [list -message $mc::ExportDatabase -log 0]
 	lappend args [namespace current]::Log {}
 
 	# XXX text widget may overflow (too many messages)
 	set parent [winfo toplevel $parent]
-	set formatName $mc::FormatName($Values(type))
+	set formatName $mc::FormatName($Values(Type))
 	if {$formatName eq "scid"} {
 		append formatName " " [string index $file end]
 	}
@@ -1862,6 +1990,14 @@ proc CloseView {} {
 	variable Info
 	::scidb::view::close $Info(base) $Info(view)
 }
+
+
+proc WriteOptions {chan} {
+	options::writeItem $chan [namespace current]::Values
+	options::writeItem $chan [namespace current]::Tags no
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 namespace eval icon {
 namespace eval 32x32 {

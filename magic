@@ -27,7 +27,7 @@
 
 0	string		SBK		Scidlet opening book
 
-0	search/1	[Event\x20"	Portable Game Notation (PGN)
+0	search/1	[Event\x20"	PGN chess game notation
 
 0	string		\x00\x00\x2c\x00\x2e\x01	ChessBase header file,
 >6	ubelong-1	x				%d game(s)

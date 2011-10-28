@@ -103,7 +103,6 @@ array set Defaults {
 	-fillcolumn					0
 	-fullstripes				1
 	-listmode					0
-	-setgrid						0
 	-takefocus          		1
 	-fixedrows					0
 	-imagepadx					{2 2}
@@ -226,7 +225,7 @@ proc table {args} {
 	::bind $table.t <Next>					[namespace code [list Scroll $table next]]
 	::bind $table.t <Up>						[namespace code [list Scroll $table up]]
 	::bind $table.t <Down>					[namespace code [list Scroll $table down]]
-	::bind $table.t <Key-space>			[namespace code [list SetSelection $table]]
+	::bind $table.t <Key-space>			[namespace code [list SetSelection $table %s]]
 	::bind $table.t <<ThemeChanged>>		[namespace code [list ThemeChanged $table]]
 
 	set toplevel [winfo toplevel $parent]
@@ -1125,13 +1124,14 @@ proc SetSelection {table args} {
 
 	set invoke 0
 
-	if {[llength $args] == 2} {
-		lassign $args x y
+	if {[llength $args] == 3} {
+		lassign $args x y state
 		set id [$table.t identify $x $y]
 		if {[lindex $id 0] eq "header"} { return }
 		set row [$table.t item order [lindex $id 1] -visible]
 		if {$row >= $Vars(rows)} { return }
-	} elseif {[lindex $args 2] & 1} {
+		if {$state & 1} { set invoke 1 }
+	} elseif {[lindex $args 0] & 1} {
 		set invoke 1
 	}
 
@@ -1344,6 +1344,7 @@ proc PopupMenu {table x y X Y} {
 		-activebackground $options(menu:headerbackground) \
 		-activeforeground $options(menu:headerforeground) \
 		-font $options(menu:headerfont)                   \
+		-state disabled                                   \
 		;
 	$menu add separator
 

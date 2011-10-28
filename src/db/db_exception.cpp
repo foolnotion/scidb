@@ -67,6 +67,22 @@ IOException::IOException(	FileType fileType,
 }
 
 
+IOException::IOException(	FileType fileType,
+									ErrorType errorType,
+									mstl::backtrace const& backtrace,
+									char const* fmt, ...)
+	:Exception()
+	,m_fileType(fileType)
+	,m_errorType(errorType)
+{
+	va_list args;
+	va_start(args, fmt);
+	set_message(fmt, args);
+	set_backtrace(backtrace);
+	va_end(args);
+}
+
+
 IOException::FileType IOException::fileType() const	{ return m_fileType; }
 IOException::ErrorType IOException::errorType() const	{ return m_errorType; }
 

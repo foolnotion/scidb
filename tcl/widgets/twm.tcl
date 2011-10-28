@@ -432,6 +432,7 @@ if {0} {
 			pack $w
 		} else {
 			::scidb::tk::twm release $w
+			::update idle ;# is reducing flickering
 			wm geometry $w +100+100
 			wm state $w normal
 		}

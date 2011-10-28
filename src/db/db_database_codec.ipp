@@ -95,6 +95,14 @@ DatabaseCodec::CustomFlags::get(unsigned n) const
 	return m_text[n];
 }
 
+
+inline
+void
+DatabaseCodec::encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature)
+{
+	encodeGame(strm, data, signature, TagBits(true), true);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

@@ -159,7 +159,6 @@ proc TableUpdate {table base {view -1} {index -1}} {
 	variable Vars
 
 	if {[::scidb::tree::isRefBase? $base]} {
-
 		if {$view == [::scidb::tree::view]} {
 			after cancel $Vars(after)
 

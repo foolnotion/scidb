@@ -359,7 +359,7 @@ int
 TagSet::asInt(tag::ID tag) const
 {
 	mstl::string const& v = value(tag);
-	return ::strtoul(v.c_str(), 0, 10);
+	return ::strtoul(v.c_str(), nullptr, 10);
 }
 
 

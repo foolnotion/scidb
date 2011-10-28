@@ -41,7 +41,6 @@
 
 #include "sys_utf8_codec.h"
 
-#include "m_bitfield.h"
 #include "m_bit_functions.h"
 #include "m_assert.h"
 
@@ -67,8 +66,6 @@ struct TagLookup
 {
 	TagLookup()
 	{
-		static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
-
 		m_lookup.set(tag::Event);
 		m_lookup.set(tag::Site);
 		m_lookup.set(tag::Date);
@@ -81,12 +78,12 @@ struct TagLookup
 		m_lookup.set(tag::BlackElo);
 	}
 
-	static mstl::bitfield<uint64_t> m_lookup;
+	static db::Consumer::TagBits m_lookup;
 
 	bool skipTag(tag::ID tag) const { return m_lookup.test(tag); }
 };
 
-mstl::bitfield<uint64_t> TagLookup::m_lookup;
+db::Consumer::TagBits TagLookup::m_lookup;
 static TagLookup tagLookup;
 
 } // namespace
@@ -96,6 +93,7 @@ Encoder::Encoder(ByteStream& strm, sys::utf8::Codec& codec)
 	:m_strm(strm)
 	,m_codec(codec)
 {
+	static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 }
 
 
@@ -117,7 +115,10 @@ Encoder::setup(Board const& board)
 
 
 void
-Encoder::doEncoding(Signature const& signature, GameData const& data)
+Encoder::doEncoding(	Signature const& signature,
+							GameData const& data,
+							db::Consumer::TagBits const& allowedTags,
+							bool allowExtraTags)
 {
 	Byte flags = 0;
 
@@ -129,7 +130,7 @@ Encoder::doEncoding(Signature const& signature, GameData const& data)
 		flags |= flags::Under_Promotion;
 
 	setup(data.m_startBoard);
-	encodeTags(data.m_tags);
+	encodeTags(data.m_tags, allowedTags, allowExtraTags);
 	m_strm.put(flags);
 	encodeVariation(data.m_startNode);
 	encodeComments(data.m_startNode, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
@@ -159,25 +160,54 @@ Encoder::skipTag(tag::ID tag)
 }
 
 
+bool
+Encoder::isExtraTag(tag::ID tag)
+{
+	switch (int(tag))
+	{
+		case tag::Fen:
+		case tag::Idn:
+		case tag::WhiteCountry:
+		case tag::BlackCountry:
+		case tag::Annotator:
+		case tag::PlyCount:
+		case tag::Opening:
+		case tag::Variation:
+		case tag::Source:
+		case tag::SetUp:
+		case tag::EventDate:
+			return false;
+
+		case tag::ExtraTag:
+			return true;
+	}
+
+	return !skipTag(tag);
+}
+
+
 void
-Encoder::encodeTags(TagSet const& tags)
+Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags)
 {
 	mstl::string buf;
 
 	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		if (tag::isRatingTag(tag))
+		if (allowedTags.test(tag))
 		{
-			switch (tags.significance(tag))
+			if (tag::isRatingTag(tag))
 			{
-				case 1:
-					if (tag != tag::WhiteIPS && tag != tag::BlackIPS)
-						break;
-					// fallthru
+				switch (tags.significance(tag))
+				{
+					case 1:
+						if (tag != tag::WhiteIPS && tag != tag::BlackIPS)
+							break;
+						// fallthru
 
-				case 2:
-					encodeTag(tags, tag);
-					break;
+					case 2:
+						encodeTag(tags, tag);
+						break;
+				}
 			}
 		}
 	}
@@ -225,8 +255,12 @@ Encoder::encodeTags(TagSet const& tags)
 
 				// extra tag
 				default:
-					if (tags.isUserSupplied(tag) && (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
+					if (	allowedTags.test(tag)
+						&& tags.isUserSupplied(tag)
+						&& (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
+					{
 						encodeTag(tags, tag);
+					}
 					break;
 			}
 
@@ -243,23 +277,26 @@ Encoder::encodeTags(TagSet const& tags)
 		}
 	}
 
-	for (unsigned i = 0; i < tags.countExtra(); ++i)
+	if (allowExtraTags)
 	{
-		// we cannot store tags with a key length > 240 (should never happen)
-		if (__builtin_expect(tags.extra(i).name.size() <= 240, 1))
+		for (unsigned i = 0; i < tags.countExtra(); ++i)
 		{
-			mstl::string const& name	= tags.extra(i).name;
-			mstl::string value;
+			// we cannot store tags with a key length > 240 (should never happen)
+			if (__builtin_expect(tags.extra(i).name.size() <= 240, 1))
+			{
+				mstl::string const& name	= tags.extra(i).name;
+				mstl::string value;
 
-			m_codec.fromUtf8(tags.extra(i).value, value);
+				m_codec.fromUtf8(tags.extra(i).value, value);
 
-			// we cannot store tag values with a length > 255
-			unsigned valueSize = mstl::min(size_t(255), value.size());
+				// we cannot store tag values with a length > 255
+				unsigned valueSize = mstl::min(size_t(255), value.size());
 
-			m_strm.put(name.size());
-			m_strm.put(name, name.size());
-			m_strm.put(valueSize);
-			m_strm.put(value, valueSize);
+				m_strm.put(name.size());
+				m_strm.put(name, name.size());
+				m_strm.put(valueSize);
+				m_strm.put(value, valueSize);
+			}
 		}
 	}
 
@@ -619,6 +656,7 @@ Encoder::encodeVariation(MoveNode const* node, unsigned level)
 			}
 			else
 			{
+node->move().dump();
 				encodeMove(node->move());
 				m_position.doMove(node->move());
 			}

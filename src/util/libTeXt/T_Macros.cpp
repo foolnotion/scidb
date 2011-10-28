@@ -146,7 +146,7 @@ popParameterTokens(Environment& env, TokenList& result)
 															Messages::Incorrigible);
 				}
 
-				result.push_back(TokenP(new ParameterToken(token->name(), token->refID(), position++)));
+				result.push_back(TokenP(new ParameterToken(token->name(), token->refID(), position++))); // MEMORY
 				break;
 
 			default:
@@ -228,7 +228,7 @@ popBodyTokens(	Environment& env,
 	}
 	while (level > 0);
 
-	return TokenP(new ListToken(tokenList.begin(), tokenList.end()));
+	return TokenP(new ListToken(tokenList.begin(), tokenList.end())); // MEMORY
 }
 
 
@@ -257,10 +257,10 @@ define(Environment& env, PopToken const& popToken)
 	}
 
 	TokenP body(popBodyTokens(env, paramList, cs, popToken));
-	TokenP macro(new MacroToken(cs->name(), paramList, body, env.nestingLevel() + 1));
+	TokenP macro(new MacroToken(cs->name(), paramList, body, env.nestingLevel() + 1)); // MEMORY
 
 	if (isChar)
-		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), macro)));
+		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), macro))); // MEMORY
 	else
 		Macros::bindMacro(env, cs, macro);
 }
@@ -273,7 +273,7 @@ performLet(Environment& env)
 
 	if (cs->type() == Token::T_Number || cs->type() == Token::T_Ascii)
 	{
-		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), env.getExpandableToken())));
+		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), env.getExpandableToken()))); // MEMORY
 	}
 	else
 	{
@@ -314,7 +314,7 @@ performXlet(Environment& env)
 	}
 
 	if (isChar)
-		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), arg)));
+		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), arg))); // MEMORY
 	else
 		Macros::bindMacro(env, cs, arg);
 }
@@ -334,12 +334,12 @@ performFuturelet(Environment& env)
 	TokenP token2 = env.getExpandableToken();
 
 	if (isChar)
-		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), token2)));
+		env.bindMacro(cs->value(), TokenP(new ActiveToken(cs->value(), token2))); // MEMORY
 	else
 		Macros::bindMacro(env, cs, token2);
 
-	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token2)));
-	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token1)));
+	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token2))); // MEMORY
+	env.pushProducer(Environment::ProducerP(new ReadAgainProducer(token1))); // MEMORY
 }
 
 
@@ -384,12 +384,12 @@ performXdef(Environment& env)
 	}
 
 	TokenP body(popBodyTokens(env, paramList, cs, PopUnboundToken()));
-	TokenP macro(new MacroToken(cs->name(), paramList, body, env.nestingLevel() + 1));
+	TokenP macro(new MacroToken(cs->name(), paramList, body, env.nestingLevel() + 1)); // MEMORY
 
 	MyConsumer consumer(env);
 	env.perform(macro);
 
-	TokenP result(new TextToken(consumer.m_result));
+	TokenP result(new TextToken(consumer.m_result)); // MEMORY
 
 	if (isChar)
 		env.bindMacro(cs->value(), result);

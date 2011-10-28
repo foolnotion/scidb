@@ -40,19 +40,27 @@ set NewGameFstPart		"New"
 set NewGameSndPart		"Game"
 set Unlock					"Unlock"
 
+set LockGame				"Lock Game"
+set CloseGame				"Close Game"
+
 } ;# namespace mc
 
 array set Defaults {
-	color:normal	#d9d9d9
-	color:selected	white
-	color:active	#efefef
-	color:darker	#828282
-	color:shadow	#e6e6e6
-	color:lighter	white
-	color:player	#ebf4f5
-	width				18
-	padx				5
-	pady				3
+	background:normal		#d9d9d9
+	foreground:normal		black
+	background:selected	white
+	background:emphasize	linen
+	background:active		#efefef
+	background:darker		#828282
+	background:shadow		#e6e6e6
+	background:lighter	white
+	background:hilite		#ebf4f5
+	foreground:hilite		black
+	background:hilite2	cornflowerblue
+	foreground:hilite2	white
+	width						18
+	padx						5
+	pady						3
 }
 
 array set Options {
@@ -79,7 +87,7 @@ proc gamebar {path} {
 
 	bind $gamebar <Destroy> [namespace code [list array unset Specs *:$gamebar]]
 	bind $gamebar <Configure> [namespace code { Configure %W %w }]
-	bind $gamebar <<Language>> [namespace code [list LanguageChanged $gamebar]]
+	bind $gamebar <<LanguageChanged>> [namespace code [list LanguageChanged $gamebar]]
 	bind $gamebar <<ThemeChanged>> [namespace code [list Layout $gamebar]]
 
 	set Specs(height:$gamebar) 0
@@ -97,7 +105,7 @@ proc gamebar {path} {
 
 	insert $gamebar -1 -1 {}
 	::tooltip::tooltip exclude $gamebar input-1
-	::tooltip::tooltip exclude $gamebar close:input-1
+#	::tooltip::tooltip exclude $gamebar close:input-1
 
 	::scidb::db::subscribe gameInfo [namespace current]::Update $gamebar
 
@@ -116,9 +124,10 @@ proc insert {gamebar at id tags} {
 	variable icon::15x15::digit	;# alternative: or U+2776, U+2777, ... (or U+278A, U+278B)
 
 	if {$at eq "end"} { set at $Specs(size:$gamebar) }
-	set normal $Defaults(color:normal)
-	set lighter $Defaults(color:lighter)
-	set darker $Defaults(color:darker)
+	set normal $Defaults(background:normal)
+	set lighter $Defaults(background:lighter)
+	set darker $Defaults(background:darker)
+	set foreground $Defaults(foreground:normal)
 	set bold $Specs(bold:$gamebar)
 
 	if {$at >= 0} {
@@ -174,7 +183,7 @@ proc insert {gamebar at id tags} {
 		-justify left \
 		-font $Specs(font:$gamebar) \
 		-tags [list hyphen$id all$id] \
-		-text " \u2212 " \
+		-text " \u2013 " \
 		-state $state \
 		;
 	$gamebar create rectangle 0 0 0 0 \
@@ -208,6 +217,7 @@ proc insert {gamebar at id tags} {
 		-font $Specs(font:$gamebar) \
 		-tags [list black$id all$id] \
 		-text [lindex $data 1] \
+		-fill $foreground \
 		-state $state \
 		;
 	$gamebar create rectangle 0 0 0 0 \
@@ -228,6 +238,7 @@ proc insert {gamebar at id tags} {
 		-font $Specs(font:$gamebar) \
 		-tags [list line1$id all$id] \
 		-text [lindex $data 2] \
+		-fill $foreground \
 		-state hidden \
 		;
 	$gamebar create rectangle 0 0 0 0 \
@@ -248,6 +259,7 @@ proc insert {gamebar at id tags} {
 		-font $Specs(font:$gamebar) \
 		-tags [list line2$id all$id] \
 		-text [lindex $data 3] \
+		-fill $foreground \
 		-state hidden \
 		;
 	$gamebar create rectangle 0 0 0 0 \
@@ -349,6 +361,7 @@ proc insert {gamebar at id tags} {
 	}
 
 	set Specs(lookup:$at:$gamebar) $id
+	set Specs(emphasize:$id:$gamebar) 0
 	if {$at >= 0} {
 		incr Specs(size:$gamebar)
 		Setup $gamebar $at $id $tags $data
@@ -359,6 +372,7 @@ proc insert {gamebar at id tags} {
 proc replace {gamebar id tags} {
 	variable Specs
 
+	Reset $gamebar $id
 	Setup $gamebar [getIndex $gamebar $id] $id $tags [MakeData $gamebar $id $tags]
 	$gamebar itemconfigure close:icon$id -image $icon::15x15::close(unlocked)
 	Update $gamebar $id
@@ -385,9 +399,7 @@ proc remove {gamebar id {update yes}} {
 
 	$gamebar delete all$id
 	array unset Specs lookup:$Specs(size:$gamebar):$gamebar
-	foreach item {data tags state atclose locked modified} {
-		array unset Specs $item:$id:$gamebar
-	}
+	Reset $gamebar $id
 
 	if {$Specs(size:$gamebar) == 1 && $Options(separateColumn)} {
 		PrepareAsButton $gamebar -1
@@ -432,6 +444,22 @@ proc setState {gamebar id modified} {
 		$gamebar itemconfigure close:icon$id -image $close($state)
 		set Specs(modified:$id:$gamebar) $modified
 		set Specs(state:$id:$gamebar) $state
+		SetTooltip $gamebar $id
+	}
+}
+
+
+proc setEmphasized {gamebar flag} {
+	variable Specs
+
+	set id $Specs(selected:$gamebar)
+	set Specs(emphasize:$id:$gamebar) $flag
+
+	if {[UseSeparateColumn $gamebar]} {
+		set Specs(emphasize:-1:$gamebar) $flag
+		PrepareAsHeader $gamebar -1
+	} else {
+		PrepareAsHeader $gamebar $id
 	}
 }
 
@@ -558,11 +586,11 @@ proc normalizePlayer {player} {
 }
 
 
-proc popupMenu {parent} {
-	set menu $parent._new_game_menu_
+proc popupMenu {parent {addGameHistory 1} {remove -1}} {
+	set menu $parent._gamebar_menu_
 	catch { destroy $menu }
 	menu $menu -tearoff 0
-	AddNewGameMenuEntries $menu
+	AddGameMenuEntries $menu $addGameHistory 2 $remove
 	tk_popup $menu {*}[winfo pointerxy .]
 }
 
@@ -582,6 +610,16 @@ proc LanguageChanged {gamebar} {
 }
 
 
+proc Reset {gamebar id} {
+	variable Specs
+
+	foreach item {data tags state atclose locked modified count} {
+		array unset Specs $item:$id:$gamebar
+	}
+	set Specs(emphasize:$id:$gamebar) 0
+}
+
+
 proc SetState {gamebar id state} {
 	variable Specs
 	variable icon::15x15::close
@@ -590,12 +628,25 @@ proc SetState {gamebar id state} {
 	$gamebar itemconfigure close:icon$id -image $close($state)
 	set Specs(state:$id:$gamebar) $state
 	set Specs(locked:$id:$gamebar) [expr {$state eq "locked"}]
+	SetTooltip $gamebar $id
 
 	if {$locked != $Specs(locked:$id:$gamebar)} {
 		foreach recv $Specs(receiver:$gamebar) {
 			eval $recv lock $id
 		}
 	}
+}
+
+
+proc SetTooltip {gamebar id} {
+	variable Specs
+
+	switch $Specs(state:$id:$gamebar) {
+		unlocked				{ set var LockGame  }
+		modified - locked	{ set var CloseGame }
+	}
+
+	::tooltip::tooltip $gamebar -item close:input$id [namespace current]::mc::$var
 }
 
 
@@ -617,19 +668,19 @@ proc Enter {gamebar id {pref {}}} {
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "raised"} {
 		$gamebar itemconfigure ${pref}lighter${id} \
-			-fill $Defaults(color:darker) \
-			-outline $Defaults(color:darker) \
+			-fill $Defaults(background:darker) \
+			-outline $Defaults(background:darker) \
 			;
 		$gamebar itemconfigure ${pref}darker${id} \
-			-fill $Defaults(color:lighter) \
-			-outline $Defaults(color:lighter) \
+			-fill $Defaults(background:lighter) \
+			-outline $Defaults(background:lighter) \
 			;
 		set Specs(buttonstate:$id:$gamebar) "sunken"
 	} else {
 		foreach item {bg whitebg blackbg} {
 			$gamebar itemconfigure $pref$item$id \
-				-fill $Defaults(color:active) \
-				-outline $Defaults(color:active) \
+				-fill $Defaults(background:active) \
+				-outline $Defaults(background:active) \
 				;
 		}
 	}
@@ -644,19 +695,19 @@ proc Leave {gamebar id {pref {}}} {
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "sunken"} {
 		$gamebar itemconfigure ${pref}lighter${id} \
-			-fill $Defaults(color:lighter) \
-			-outline $Defaults(color:lighter) \
+			-fill $Defaults(background:lighter) \
+			-outline $Defaults(background:lighter) \
 			;
 		$gamebar itemconfigure ${pref}darker${id} \
-			-fill $Defaults(color:darker) \
-			-outline $Defaults(color:darker) \
+			-fill $Defaults(background:darker) \
+			-outline $Defaults(background:darker) \
 			;
 		set Specs(buttonstate:$id:$gamebar) "raised"
 	} else {
 		foreach item {bg whitebg blackbg} {
 			$gamebar itemconfigure $pref$item$id \
-				-fill $Defaults(color:normal) \
-				-outline $Defaults(color:normal) \
+				-fill $Defaults(background:normal) \
+				-outline $Defaults(background:normal) \
 				;
 		}
 	}
@@ -672,14 +723,15 @@ proc Press {gamebar id {pref {}}} {
 	if {[llength $pref] == 0 && ($id eq "-1" || $id eq $Specs(selected:$gamebar))} { return }
 
 	$gamebar itemconfigure ${pref}lighter${id} \
-		-fill $Defaults(color:darker) -outline $Defaults(color:darker)
+		-fill $Defaults(background:darker) -outline $Defaults(background:darker)
 	$gamebar itemconfigure ${pref}darker${id} \
-		-fill $Defaults(color:lighter) -outline $Defaults(color:lighter)
+		-fill $Defaults(background:lighter) -outline $Defaults(background:lighter)
 	set Specs(buttonstate:$id:$gamebar) "sunken"
 }
 
 
 proc Release {gamebar id {pref {}}} {
+	variable ::scidb::scratchbaseName
 	variable Specs
 
 	if {[llength $pref] == 0 && ($id eq "-1" || $id eq $Specs(selected:$gamebar))} { return }
@@ -691,7 +743,7 @@ proc Release {gamebar id {pref {}}} {
 		} elseif {$Specs(state:$id:$gamebar) eq "unlocked"} {
 			SetState $gamebar $id locked
 		} else {
-			if {[lindex [::scidb::game::link? $id] 0] eq "Scratchbase"} {
+			if {[lindex [::scidb::game::link? $id] 0] eq $scratchbaseName} {
 				set question $mc::DiscardNewGame
 			} else {
 				set question $mc::DiscardChanges
@@ -707,7 +759,7 @@ proc Release {gamebar id {pref {}}} {
 	}
 
 	::tooltip::tooltip clear input$id
-	::tooltip::tooltip clear close:input$id
+#	::tooltip::tooltip clear close:input$id
 	::tooltip::tooltip on
 
 	set Specs(buttonstate:$id:$gamebar) normal
@@ -716,8 +768,8 @@ proc Release {gamebar id {pref {}}} {
 
 proc ShowTags {gamebar id} {
 	variable ::application::database::mc::T_Clipbase
-	variable ::application::database::clipbaseName
-	variable ::application::database::scratchbaseName
+	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
 	variable Specs
 
 	if {$id eq "-1"} { set id $Specs(selected:$gamebar) }
@@ -790,6 +842,8 @@ proc Setup {gamebar at id tags data} {
 	set Specs(locked:$id:$gamebar) 0
 	set Specs(modified:$id:$gamebar) 0
 	set Specs(state:$id:$gamebar) unlocked
+	set Specs(emphasize:$id:$gamebar) 0
+	SetTooltip $gamebar $id
 
 	set tooltip [lindex $data 0]
 	append tooltip " - "
@@ -803,7 +857,7 @@ proc Setup {gamebar at id tags data} {
 	}
 
 	::tooltip::tooltip $gamebar -item input$id $tooltip
-	::tooltip::tooltip $gamebar -item close:input$id $tooltip
+#	::tooltip::tooltip $gamebar -item close:input$id $tooltip
 	set Specs(tooltip:$id:$gamebar) $tooltip
 
 	if {[llength $Specs(selected:$gamebar)] == 0} {
@@ -816,6 +870,7 @@ proc Setup {gamebar at id tags data} {
 		if {$Options(separateColumn) && $Specs(size:$gamebar) == 2} {
 			SetSelected $gamebar $id
 		} else {
+			PrepareAsHeader $gamebar $Specs(selected:$gamebar)
 			Update $gamebar $id
 		}
 	}
@@ -832,14 +887,16 @@ proc SetSelected {gamebar id} {
 
 	if {[llength $oldid]} {
 		PrepareAsButton $gamebar $oldid
+		::tooltip::tooltip include $gamebar input$oldid
 	}
 
+	::tooltip::tooltip exclude $gamebar input$id
+
 	if {[UseSeparateColumn $gamebar]} {
+		set Specs(emphasize:-1:$gamebar) $Specs(emphasize:$id:$gamebar)
 		PrepareAsSunkenButton $gamebar $id
 		PrepareSeparateColumn $gamebar $id
-		if {[$gamebar itemcget white-1 -state] eq "hidden"} {
-			PrepareAsHeader $gamebar -1
-		}
+		PrepareAsHeader $gamebar -1
 	} else {
 		PrepareAsHeader $gamebar $id
 	}
@@ -857,9 +914,9 @@ proc PrepareAsSunkenButton {gamebar id} {
 	variable Defaults
 	variable Specs
 
-	set lighter		$Defaults(color:lighter)
-	set darker		$Defaults(color:darker)
-	set selected	$Defaults(color:active)
+	set lighter		$Defaults(background:lighter)
+	set darker		$Defaults(background:darker)
+	set selected	$Defaults(background:active)
 	set line			$Specs(line:$gamebar)
 
 	$gamebar itemconfigure lighter$id -fill $darker -outline $darker
@@ -894,9 +951,9 @@ proc PrepareAsButton {gamebar id} {
 	variable Defaults
 	variable Specs
 
-	set lighter	$Defaults(color:lighter)
-	set darker	$Defaults(color:darker)
-	set normal	$Defaults(color:normal)
+	set lighter	$Defaults(background:lighter)
+	set darker	$Defaults(background:darker)
+	set normal	$Defaults(background:normal)
 	set line		$Specs(line:$gamebar)
 
 	::tooltip::tooltip include $gamebar input$id
@@ -936,9 +993,11 @@ proc PrepareAsHeader {gamebar id} {
 	variable Options
 	variable Specs
 
-	set darker		$Defaults(color:darker)
-	set shadow		$Defaults(color:shadow)
-	set selected	$Defaults(color:selected)
+	if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
+
+	set darker		$Defaults(background:darker)
+	set shadow		$Defaults(background:shadow)
+	set selected	$Defaults(background:$color)
 
 	if {$id eq "-1"} {
 		foreach item {	white black lighter darker bg whitebg
@@ -957,7 +1016,7 @@ proc PrepareAsHeader {gamebar id} {
 	foreach i {1 2} { $gamebar itemconfigure line$i$id -state normal }
 	$gamebar itemconfigure line1Input$id -state normal
 	$gamebar itemconfigure line1bg$id -state normal
-	foreach item {bg whitebg blackbg} {
+	foreach item {bg whitebg blackbg line1bg} {
 		$gamebar itemconfigure $item$id -fill $selected -outline $selected
 	}
 	$gamebar itemconfigure white$id -font $Specs(bold:$gamebar)
@@ -990,7 +1049,7 @@ proc PrepareAsHeader {gamebar id} {
 
 	if {$id eq $Specs(selected:$gamebar)} {
 		::tooltip::tooltip exclude $gamebar input$id
-		::tooltip::tooltip exclude $gamebar close:input$id
+#		::tooltip::tooltip exclude $gamebar close:input$id
 		after 10 { ::tooltip::hide }
 	}
 }
@@ -1051,28 +1110,121 @@ proc ShowSeparateColumn {gamebar {flag -1}} {
 }
 
 
-proc AddNewGameMenuEntries {m} {
+proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
+	variable ::game::history::mc::GameHistory
+
+	if {[::game::historyIsEmpty?]} {
+		set clearHistory 0
+	}
+
+	set sub $m.__history__
+	menu $sub -tearoff 0
+	$sub configure -disabledforeground black
+
+	if {$addGameHistory} {
+		set headerScript {
+			upvar sub n
+
+			uplevel { incr count }
+
+			$n add command \
+				-label [::util::databaseName $base] \
+				-background "#d3d3d3" \
+				-foreground black \
+				-activebackground "#d3d3d3" \
+				-activeforeground black \
+				-font $::table::options(menu:headerfont) \
+				-state disabled \
+				;
+		}
+
+		set gameScript {
+			upvar sub n
+
+			set lbl ""
+
+			append lbl [lindex $tags 4]
+			append lbl " - "
+			append lbl [lindex $tags 5]
+
+			$n add command \
+				-label $lbl \
+				-command [list ::game::openGame [winfo parent $n] $index] \
+				;
+		}
+
+		set count 0
+		::game::traverseHistory $headerScript $gameScript
+
+		if {$count > 0} {
+			$m add cascade \
+				-menu $sub \
+				-label " $GameHistory" \
+				-image $::icon::16x16::folder \
+				-compound left \
+				;
+		} else {
+			destroy $sub
+			set clearHistory 0
+		}
+	}
+
+	if {$clearHistory == 1} {
+		$m add command \
+			-label " $::game::mc::ClearHistory" \
+			-image $::icon::16x16::clear \
+			-compound left \
+			-command ::game::clearHistory \
+			;
+		$m add separator
+	}
+
 	$m add command \
-		-label [::menu::stripAmpersand $::menu::mc::GameNew] \
+		-label " [::menu::stripAmpersand $::menu::mc::GameNew]" \
 		-accelerator "Ctrl+X" \
 		-image $::icon::16x16::document \
 		-compound left \
 		-command [list ::menu::gameNew [winfo parent $m]] \
 		;
 	$m add command \
-		-label [::menu::stripAmpersand $::menu::mc::GameNewShuffle] \
+		-label " [::menu::stripAmpersand $::menu::mc::GameNewChess960]" \
 		-accelerator "Ctrl+Shift+X" \
 		-image $::icon::16x16::dice \
 		-compound left \
 		-command [list ::menu::gameNew [winfo parent $m] frc] \
 		;
 	$m add command \
-		-label [::menu::stripAmpersand $::menu::mc::GameNewShuffleSymm] \
+		-label " [::menu::stripAmpersand $::menu::mc::GameNewChess960Sym]" \
 		-accelerator "Ctrl+Shift+Y" \
-		-image $::icon::16x16::symmetric \
+		-image $::icon::16x16::dice \
 		-compound left \
 		-command [list ::menu::gameNew [winfo parent $m] sfrc] \
 		;
+	$m add command \
+		-label " [::menu::stripAmpersand $::menu::mc::GameNewShuffle]" \
+		-accelerator "Ctrl+Shift+Z" \
+		-image $::icon::16x16::dice \
+		-compound left \
+		-command [list ::menu::gameNew [winfo parent $m] shuffle] \
+		;
+	
+	if {$clearHistory == 2} {
+		$m add separator
+		if {$remove >= 0} {
+			$m add command \
+				-label " $::game::mc::RemoveSelectedGame" \
+				-image $::icon::16x16::remove \
+				-compound left \
+				-command [list ::game::removeHistoryEntry $remove] \
+				;
+		}
+		$m add command \
+			-label " $::game::mc::ClearHistory" \
+			-image $::icon::16x16::clear \
+			-compound left \
+			-command ::game::clearHistory \
+			;
+	}
 }
 
 
@@ -1086,7 +1238,7 @@ proc PopupMenu {gamebar {id ""}} {
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
-	AddNewGameMenuEntries $menu
+	AddGameMenuEntries $menu 1 0 -1
 	$menu add separator
 
 	if {$Specs(size:$gamebar) > 0} {
@@ -1097,13 +1249,15 @@ proc PopupMenu {gamebar {id ""}} {
 					if {$Specs($key)} { incr count }
 				}
 				if {$count == $Specs(size:$gamebar)} {
-					$menu add command \
-						-compound left \
-						-image $icon::15x15::close(unlocked) \
-						-label " $mc::Unlock" \
-						-command [namespace code [list SetState $gamebar $id unlocked]] \
-						;
-					$menu add separator
+					if {$Specs(state:$id:$gamebar) ne "modified"} {
+						$menu add command \
+							-compound left \
+							-image $icon::15x15::close(unlocked) \
+							-label " $mc::Unlock" \
+							-command [namespace code [list SetState $gamebar $id unlocked]] \
+							;
+						$menu add separator
+					}
 				}
 			}
 		}
@@ -1239,12 +1393,13 @@ proc UpdateLine {gamebar id} {
 
 
 proc MakeData {gamebar id tags} {
+	variable ::scidb::scratchbaseName
 	variable Specs
 
 	lassign {"N.N." "N.N." "?" "?" "" "" ""} white black event site date whiteCountry blackCountry
 	lassign [::scidb::game::link? $id] base
 
-	if {$base eq "Scratchbase"} {
+	if {$base eq $scratchbaseName} {
 		if {![info exists Specs(count:$id:$gamebar)]} {
 			set Specs(count:$id:$gamebar) [incr Specs(counter:game)]
 		}
@@ -1270,8 +1425,7 @@ proc MakeData {gamebar id tags} {
 		set whiteCountry [::scidb::game::query $id country white]
 		set blackCountry [::scidb::game::query $id country black]
 
-		set date [string map {".??" ""} $date]
-		if {$date eq "????"} { set date "" }
+		set date [::locale::formatNormalDate $date]
 
 		if {[string length $date]} {
 			if {[string length $site]} { append site ", " }
@@ -1560,10 +1714,12 @@ proc EnterEvent {gamebar id} {
 		if {$name eq "?" || $name eq "-"} { set name "" }
 
 		if {[string length $name]} {
+			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
 			$gamebar itemconfigure line1bg${id} \
-				-fill $Defaults(color:player) \
-				-outline $Defaults(color:player) \
+				-fill $Defaults(background:$color) \
+				-outline $Defaults(background:$color) \
 				;
+			$gamebar itemconfigure line1${id} -fill $Defaults(foreground:$color)
 		}
 	}
 }
@@ -1576,10 +1732,12 @@ proc LeaveEvent {gamebar id} {
 	set sid $Specs(selected:$gamebar)
 
 	if {$id eq $sid || $id eq "-1"} {
+		if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
 		$gamebar itemconfigure line1bg${id} \
-			-fill $Defaults(color:selected) \
-			-outline $Defaults(color:selected) \
+			-fill $Defaults(background:$color) \
+			-outline $Defaults(background:$color) \
 			;
+		$gamebar itemconfigure line1${id} -fill $Defaults(foreground:normal)
 	}
 }
 
@@ -1595,10 +1753,12 @@ proc EnterPlayer {gamebar id side} {
 		if {$name eq "?" || $name eq "-"} { set name "" }
 
 		if {[string length $name]} {
+			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
 			$gamebar itemconfigure ${side}bg${id} \
-				-fill $Defaults(color:player) \
-				-outline $Defaults(color:player) \
+				-fill $Defaults(background:$color) \
+				-outline $Defaults(background:$color) \
 				;
+			$gamebar itemconfigure ${side}${id} -fill $Defaults(foreground:$color)
 		}
 	}
 }
@@ -1611,10 +1771,12 @@ proc LeavePlayer {gamebar id side} {
 	set sid $Specs(selected:$gamebar)
 
 	if {$id eq $sid || $id eq "-1"} {
+		if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
 		$gamebar itemconfigure ${side}bg${id} \
-			-fill $Defaults(color:selected) \
-			-outline $Defaults(color:selected) \
+			-fill $Defaults(background:$color) \
+			-outline $Defaults(background:$color) \
 			;
+		$gamebar itemconfigure ${side}${id} -fill $Defaults(foreground:normal)
 	}
 }
 

@@ -99,7 +99,7 @@ PndID::set(char const* id)
 	char c = id[8];
 
 	const_cast<char*>(id)[8] = '\0';
-	prefix = ::strtoul(id, 0, 10);
+	prefix = ::strtoul(id, nullptr, 10);
 	suffix = c == 'X' ? 10 : c - '0';
 	const_cast<char*>(id)[8] = c;
 }
@@ -273,11 +273,8 @@ extractPlayerData(mstl::string& str,
 		char const* p = t;
 		char const* e = ++t;
 
-		switch (*t)
-		{
-			case 'w': sex = sex::Female; break;
-			case 'm': if (!::isalpha(t[1])) sex = sex::Male; break;
-		}
+		if (*t == 'w')
+			sex = sex::Female;
 
 		while (*e && !::isspace(*e))
 			++e;
@@ -442,7 +439,7 @@ getElo(mstl::string const& elo)
 		&& (	elo[5] == ']'
 			|| (elo.size() >= 7 && elo[5] == '*' && elo[6] == ']')))
 	{
-		int value = strtoul(elo.c_str() + 1, 0, 10);
+		int value = strtoul(elo.c_str() + 1, nullptr, 10);
 
 		if (value <= rating::Max_Value)
 		{
@@ -1547,7 +1544,7 @@ Player::setEcfID(char* id)
 
 	char c = id[6];
 	id[6] = '\0';
-	m_ecfPrefix = ::strtoul(id, 0, 10);
+	m_ecfPrefix = ::strtoul(id, nullptr, 10);
 	id[6] = c;
 }
 
@@ -1573,8 +1570,8 @@ Player::setDsbID(char const* zps, char const* nr)
 	M_REQUIRE(('0' <= *zps && *zps <= '9') || ('A' <= *zps && *zps <= 'L'));
 
 	m_zpsPrefix = ::isdigit(*zps) ? *zps - '0' : *zps - 'A' + 10;
-	m_zpsSuffix = ::strtoul(zps + 1, 0, 10);
-	m_dsbMglNr = ::strtoul(nr, 0, 10);
+	m_zpsSuffix = ::strtoul(zps + 1, nullptr, 10);
+	m_dsbMglNr = ::strtoul(nr, nullptr, 10);
 }
 
 
@@ -1757,7 +1754,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 									case 'F':
 										if (::strncmp(t, "FIDEID ", 7) == 0)
 										{
-											player->setFideID(::strtoul(t + 7, 0, 10));
+											player->setFideID(::strtoul(t + 7, nullptr, 10));
 											::playerDict.insert_unique(player->fideID(), player);
 										}
 										break;
@@ -1765,7 +1762,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 									case 'V':
 										if (::strncmp(t, "VIAF ", 5) == 0)
 										{
-											player->setViafID(::strtoul(t + 5, 0, 10));
+											player->setViafID(::strtoul(t + 5, nullptr, 10));
 											DEBUG(++countViafIds);
 										}
 										break;
@@ -1857,7 +1854,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 			default:
 				if (section == Player)
 				{
-					sex::ID sex = sex::Unspecified;
+					sex::ID sex = sex::Male;
 					::extractPlayerData(line, sex, titles, federations, elo, birthDate, deathDate);
 					line.trim();
 
@@ -1997,7 +1994,7 @@ Player::parseFideRating(mstl::istream& stream)
 		{
 			char const* s = line.c_str();
 
-			unsigned rating = ::isdigit(line[53]) ? ::strtoul(s + 53, 0, 10) : 0;
+			unsigned rating = ::isdigit(line[53]) ? ::strtoul(s + 53, nullptr, 10) : 0;
 
 			char const* t = s + 10;
 			char const* e = s + 42;
@@ -2015,7 +2012,7 @@ Player::parseFideRating(mstl::istream& stream)
 				federation.assign(s + 48, 3);
 				::toupper(federation);
 
-				unsigned			fideID	= ::strtoul(s, 0, 10);
+				unsigned			fideID	= ::strtoul(s, nullptr, 10);
 				country::Code	country	= country::fromString(federation);
 				sex::ID			sex		= s[70] == 'w' ? sex::Female : sex::Male;
 				unsigned			titles	= 0;
@@ -2111,7 +2108,7 @@ Player::parseFideRating(mstl::istream& stream)
 
 				DEBUG(++total);
 
-				unsigned	year = ::isdigit(s[64]) ? ::strtoul(s + 64, 0, 10) : 0;
+				unsigned	year = ::isdigit(s[64]) ? ::strtoul(s + 64, nullptr, 10) : 0;
 
 				DEBUG(if (year && player->dateOfBirth() && player->dateOfBirth().year() != year)
 							::printf("birth date mismatch: %s (%u)\n", name.c_str(), fideID));
@@ -2165,8 +2162,8 @@ Player::parseEcfRating(mstl::istream& stream)
 	{
 		if (line.size() >= 23 && ::isdigit(line[19]) && 'A' <= line[6] && line[6] <= 'L')
 		{
-			unsigned		fideID	= ::strtoul(line.c_str() + 8, 0, 10);
-			unsigned		rating	= ::strtoul(line.c_str() + 19, 0, 10);
+			unsigned		fideID	= ::strtoul(line.c_str() + 8, nullptr, 10);
+			unsigned		rating	= ::strtoul(line.c_str() + 19, nullptr, 10);
 			sex::ID		sex		= sex::Unspecified;
 			db::Player*	player	= 0;
 
@@ -2256,7 +2253,7 @@ Player::parseDwzRating(mstl::istream& stream)
 			&& ::isdigit(line[27])
 			&& (('0' <= *line && *line <= '9') || ('A' <= *line && *line <= 'L')))
 		{
-			unsigned		fideID	= ::strtoul(line.c_str() + 11, 0, 10);
+			unsigned		fideID	= ::strtoul(line.c_str() + 11, nullptr, 10);
 			sex::ID		sex		= sex::Unspecified;
 			db::Player*	player	= 0;
 
@@ -2268,7 +2265,7 @@ Player::parseDwzRating(mstl::istream& stream)
 					player = *playerEntry;
 			}
 
-			unsigned rating = ::strtoul(line.c_str() + 27, 0, 10);
+			unsigned rating = ::strtoul(line.c_str() + 27, nullptr, 10);
 
 			if (player == 0)
 			{
@@ -2315,7 +2312,7 @@ Player::parseDwzRating(mstl::istream& stream)
 				DEBUG(++count);
 			}
 
-			unsigned yearOfBirth = ::isdigit(line[22]) ? ::strtoul(line.c_str() + 22, 0, 10) : 0;
+			unsigned yearOfBirth = ::isdigit(line[22]) ? ::strtoul(line.c_str() + 22, nullptr, 10) : 0;
 
 			if (yearOfBirth && player->dateOfBirth().year() == 0)
 				player->setDateOfBirth(Date(yearOfBirth));
@@ -2367,7 +2364,7 @@ Player::parseIccfRating(mstl::istream& stream)
 	{
 		if (line.size() >= 21 && ::isdigit(line[14]))
 		{
-			unsigned rating = ::strtoul(line.c_str() + 14, 0, 10);
+			unsigned rating = ::strtoul(line.c_str() + 14, nullptr, 10);
 
 			if (rating >= m_minICCF)
 			{
@@ -2384,7 +2381,7 @@ Player::parseIccfRating(mstl::istream& stream)
 
 				if (db::Player* player = insertPlayer(name, 0, federation, sex))
 				{
-					unsigned id = ::strtoul(line.c_str(), 0, 10);
+					unsigned id = ::strtoul(line.c_str(), nullptr, 10);
 
 					DEBUG(if (player->latestRating() == 0) ++count);
 					DEBUG(++total);
@@ -2463,7 +2460,7 @@ Player::parseIpsRatingList(mstl::istream& stream)
 
 				if (player)
 				{
-					uint16_t	value = ::strtoul(::skipSpaces(line.c_str() + n + 1), 0, 10);
+					uint16_t	value = ::strtoul(::skipSpaces(line.c_str() + n + 1), nullptr, 10);
 
 					player->setLatestRating(rating::IPS, value);
 					player->setHighestRating(rating::IPS, value);

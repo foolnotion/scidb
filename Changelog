@@ -1,15 +1,88 @@
-[August 2011]
+[September/Oktober 2011]
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #96) (not yet released)
+Scidb 1.0 BETA (rev. #96)
 ------------------------------------------------------------------------------
+* Severe bug in block file buffer fixed. This means that storing of games in
+databases should work now.
+
 * Second speed improvement of the Html widget: double buffering implemented.
 But this feature needs testing.
+
+* Third improvement of the Html widget: memory allocator implemented in
+libTeXt.
+
+* Game history implemented.
+
+* Reading CBH database fixed (problem with namebases).
+
+* Correction of character encoding handling.
+
+* Correction of PGN view box ("see" method).
+
+* Implementation of modernized menues finished. Probably this feature will
+be optionally usable in a later version.
+
+* Severe bug in position tree building fixed (Chess 960 search algorithm
+reimplemented).  This fix has required a change of the .sci database format
+(index data only). Ths version of the database format has increased to 0.92.
+The database upgrade at opening time of the database is enabled (but an
+upgrade is not mandatory although the old format is causing errors).
+
+* Problem with castling in FRC positions fixed.
+
+* Problem with generation of castling moves in internal engine fixed.
+
+* Undo/redo problems in PGN editor fixed.
+
+* Additional ports needed to locate the architecture dependent libX11.so libs
+added to configure script.
+
+* Animation of castling moves fixed.
+
+* Current game now will be highlighted if in trial mode.
+
+* Storing/retrieving move information (analysis information, players clock,
+elapsed game/move time, time information, evaluation information, etc...)
+is prepared. This change requires an update of the Scidb database.
+
+* Speed up of save/replace dialog (popup time).
+
+* Magic file corrected, will now show a string like "Scidb index, version
+0.92, 14820 game(s)"
+
+* Bug in configure script fixed: "./configure --tcl-version=8.6" should work
+now.
+
+* Tournament table enhanced: new version includes additional tie-breaks
+"Games won with Black", "Particular Result", "Traditional Scoring"; new
+scoring system "Bilbao" (three points for a win).
+
+* Export to .si3/si4: Additional tab for selection of the exported tags. This
+is necessary to limit the database size, which affects the search time of the
+opening tree.
+
+* Problem with game loading fixed.
+
+* Bug in annotation window fixed; all buttons will be disabled if no game is
+open.
+
+* Formating error in PGN window fixed (db_edit_node.cpp:pushParagraph()).
+
+* Change database icon dialog improved.
+
+* Comment editor improved.
+
+* New function in PGN editor: copy/move comments from one language code to
+another language code.
+
+[August 2011]
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #94)
 ------------------------------------------------------------------------------
 * Severe error with marks in si3::Consumer and si3::Encoder fixed.
+
 * Severe errors in overview.tcl and browser.tcl fixed.
 
 * On Fedora systems the truetype fonts will be installed in /usr (not

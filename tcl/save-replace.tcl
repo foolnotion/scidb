@@ -35,7 +35,7 @@ set EditCharacteristics			"Edit Characteristics"
 set GameData						"Game Data"
 set Event							"Event"
 
-set MatchesExtraTags				"Matches / Extraneous Tags"
+set MatchesExtraTags				"Matches / Extra Tags"
 set PressToSelect					"Press Ctrl+0 to Ctrl+9 (or left mouse button) to select"
 set PressForWhole					"Press Alt-0 to Alt-9 (or middle mouse button) for whole data set"
 set EditTags						"Edit Tags"
@@ -52,6 +52,7 @@ set SaveGameFailed				"Save of game failed."
 set SaveGameFailedDetail		"See log for details."
 set SavingGameLogInfo			"Saving game (%white - %black, %event) into database '%base'"
 set CurrentBaseIsReadonly		"Current database '%s' is read-only."
+set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 
 set LocalName						"&Local Name"
 set EnglishName					"E&nglish Name"
@@ -238,33 +239,130 @@ array set Colors {
 	matchlistHeaderBackground	#dfe7e8
 }
 
+array set Options {
+	unicode	0
+}
+
 variable MaxColumnLength 380
+variable Characteristics -1
 
 
 proc open {parent base position {number 0}} {
-	variable Priv
-	variable Colors
-	variable MaxColumnLength
-
+	if {![checkIfWriteable $parent $base $position $number]} { return }
 	incr number -1
 
+	set characteristicsOnly [expr {[llength $position] == 0}]
+	set codec [::scidb::db::get codec $base]
+	if {$codec eq "si4"} { set codec "si3" }
+	if {$codec eq "sci"} {
+		set characteristics 0
+	} else {
+		set characteristics $characteristicsOnly
+	}
+#	set dlg $parent.saveReplace_${characteristics}_${codec}
+	set dlg [winfo toplevel $parent].saveReplace_${characteristics}_${codec}
+
+	Destroy $dlg
+
+	if {![winfo exists $dlg]} {
+		namespace eval ::$dlg {}
+	}
+	variable ::${dlg}::Priv
+
+	if {$characteristicsOnly} {
+		set Priv(tags) [::scidb::db::get tags $number $base]
+	} else {
+		set Priv(tags) [::scidb::game::tags $position -userSuppliedOnly yes]
+	}
+
+	set Priv(game-eco) ""
+	set Priv(title) [GetTitle $base $position $number]
+	set Priv(characteristics-only) $characteristicsOnly
+	set Priv(codec) $codec
+	set Priv(white-score) 0
+	set Priv(black-score) 0
+	set Priv(white-rating) Elo
+	set Priv(black-rating) Elo
+
+	if {![winfo exists $dlg]} {
+		Build $dlg $base $position $number
+	}
+
+	# Show Dialog #############################################
+	wm transient $dlg [winfo toplevel $parent]
+	catch { wm attributes $dlg -type dialog }
+	wm title $dlg $Priv(title)
+	wm resizable $dlg no no
+	wm protocol $dlg WM_DELETE_WINDOW [list wm withdraw $dlg]
+	::util::place $dlg center [winfo toplevel $parent]
+	wm deiconify $dlg
+
+	# Finalization ############################################
+	if {[llength $position]} {
+		set idn [::scidb::game::query $position idn]
+	} else {
+		set idn [::scidb::db::get idn $number $base]
+	}
+	if {$idn > 0 && $idn != 518} {
+		$dlg.top.white-rating.type set IPS
+		$dlg.top.black-rating.type set IPS
+	}
+	if {$idn == 518} { set state normal } else { set state disabled }
+	$dlg.top.game-eco configure -state $state
+	$dlg.top.game-eco-l configure -state $state
+	foreach attr {white-name black-name event-title event-site game-annotator} {
+		set Priv($attr) ""
+	}
+	$Priv(taglist) item delete 0 end
+	SetupTags $dlg.top $base $idn $position $number
+
+	# Finalization ############################################
+	focus $dlg.top.white-name
+	$dlg.top.white-name selection range 0 end
+	return $dlg
+}
+
+
+proc checkIfWriteable {parent base position number} {
+	if {[::scidb::db::get readonly? $base]} {
+		set msg [format $mc::CurrentBaseIsReadonly [::util::databaseName $base]]
+		::dialog::info -parent $parent -message $msg -title [GetTitle $base $position $number]
+		return 0
+	}
+	if {[::scidb::game::query trial]} {
+		set msg [format $mc::CurrentGameHasTrialMode [::util::databaseName $base]]
+		::dialog::info -parent $parent -message $msg -title [GetTitle $base $position $number]
+		return 0
+	}
+	return 1
+}
+
+
+proc GetTitle {base position number} {
 	set title "[tk appname] - "
 	if {[llength $position] == 0} {
 		append title $mc::EditCharacteristics
-	} elseif {$number < 0} {
+		set characteristicsOnly 1
+	} elseif {$number <= 0} {
 		append title $mc::SaveGame
+		set characteristicsOnly 0
 	} else {
 		append title $mc::ReplaceGame
+		set characteristicsOnly 0
 	}
 	append title " ([::util::databaseName $base])"
 
-	if {[::scidb::db::get readonly? $base]} {
-		set msg [format $mc::CurrentBaseIsReadonly [::util::databaseName $base]]
-		::dialog::info -parent $parent -message $msg -title $title
-		return
-	}
+	return $title
+}
 
-	switch [::scidb::db::get codec $base] {
+
+proc Build {dlg base position number} {
+	variable ::${dlg}::Priv
+	variable Colors
+	variable MaxColumnLength
+	variable Options
+
+	switch $Priv(codec) {
 		si3 -
 		si4 { set excludelost 1; set twoRatings 0; set playertype 0 }
 		sci { set excludelost 0; set twoRatings 1; set playertype 1 }
@@ -274,13 +372,8 @@ proc open {parent base position {number 0}} {
 	set Priv(format) [expr {$twoRatings ? "sci" : "si3"}]
 	if {[llength $base] == 0} { set base [::scidb::db::get name] }
 
-	set dlg $parent.saveReplace
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
-	bind $dlg <Destroy> +[list array unset [namespace current]::Priv]
-	bind $dlg <Destroy> +[list array unset [namespace current]::Lookup]
-	bind $dlg <Destroy> +[list array unset [namespace current]::Item]
-	bind $dlg <Destroy> +[list unset -nocomplain [namespace current]::TagOrder(PlyCount)]
 
 	set top [ttk::frame $dlg.top -takefocus 0]
 	set ltrow 1
@@ -291,6 +384,7 @@ proc open {parent base position {number 0}} {
 	set charwidth [font measure TkTextFont "0"]
 	set maxlen [expr {$MaxColumnLength/$charwidth}]
 	set fields {}
+	set disabled {}
 
 	set Priv(entry) ""
 	set Priv(focus) ""
@@ -302,16 +396,9 @@ proc open {parent base position {number 0}} {
 	set Priv(match:event-title) {}
 	set Priv(match:event-site) {}
 	set Priv(match:game-annotator) {}
-	set Priv(characteristics-only) [expr {[llength $position] == 0}]
 	set Priv(game-eco-flag) 0
 
-	if {$Priv(characteristics-only)} {
-		set Priv(tags) [::scidb::db::get tags $number $base]
-		if {$playertype} { set state normal } else { set state disabled }
-	} else {
-		set Priv(tags) [::scidb::game::tags $position -userSuppliedOnly yes]
-		set state normal
-	}
+	if {$Priv(characteristics-only) && !$playertype} { set state disabled } else { set state normal }
 
 	# White + Black Player ####################################
 	foreach {side row col} {white ltrow 1 black rtrow 5} {
@@ -331,32 +418,33 @@ proc open {parent base position {number 0}} {
 		ttk::label $top.$side-sex-l -textvar [namespace current]::mc::Sex
 
 		ttk::frame $top.$side-player -borderwidth 0 -takefocus 0
-		entrybox $top.$side-name -textvar [namespace current]::Priv(${side}-name)
+		entrybox $top.$side-name -textvar ::${dlg}::Priv(${side}-name)
 		if {$state eq "normal"} {
-			fideidbox $top.$side-fideID -textvar [namespace current]::Priv(${side}-fideID) -state $state
+			fideidbox $top.$side-fideID -textvar ::${dlg}::Priv(${side}-fideID) -state $state
 		}
 		ttk::frame $top.$side-rating -borderwidth 0 -takefocus 0
 		if {$twoRatings} {
 			ttk::label $top.$side-rating.l-elo -text "Elo"
-			scorebox $top.$side-rating.elo -textvar [namespace current]::Priv(${side}-elo)
+			scorebox $top.$side-rating.elo -textvar ::${dlg}::Priv(${side}-elo)
 		}
-		ratingbox $top.$side-rating.type \
-			-format $Priv(format) \
-			-textvar [namespace current]::Priv(${side}-rating) \
-			;
-		scorebox $top.$side-rating.score -textvar [namespace current]::Priv(${side}-score)
+		ratingbox $top.$side-rating.type -format $Priv(format) -textvar ::${dlg}::Priv(${side}-rating)
+		scorebox $top.$side-rating.score -textvar ::${dlg}::Priv(${side}-score)
 		titlebox $top.$side-title \
 			-width $maxlen \
-			-textvar [namespace current]::Priv(${side}-title) \
+			-textvar ::${dlg}::Priv(${side}-title) \
 			-state $state \
 			;
 		countrybox $top.$side-federation \
 			-height 20 \
 			-width $maxlen \
-			-textvar [namespace current]::Priv(${side}-federation) \
+			-textvar ::${dlg}::Priv(${side}-federation) \
 			-state $state \
 			;
-		genderbox $top.$side-sex -textvar [namespace current]::Priv(${side}-sex) -state $state
+		genderbox $top.$side-sex -textvar ::${dlg}::Priv(${side}-sex) -state $state
+
+		if {$state eq "disabled"} {
+			lappend disabled ${side}-fideID ${side}-title ${side}-federation ${side}-sex
+		}
 
 		lappend fields [list $color $side-name]
 		if {$state eq "normal"} { lappend fields [list ${color}FideId $side-fideID] }
@@ -442,8 +530,8 @@ proc open {parent base position {number 0}} {
 			bind $top.$side-rating.$attr <FocusOut> \
 				[namespace code [list UpdateRatingTags $top $color $side-rating $side-score]]
 		}
-		bind $top.$side-rating.type <<ComboboxPosted>> [list set [namespace current]::Priv(posted) 1]
-		bind $top.$side-rating.type <<ComboboxUnposted>> [list set [namespace current]::Priv(posted) 0]
+		bind $top.$side-rating.type <<ComboboxPosted>> [list set ::${dlg}::Priv(posted) 1]
+		bind $top.$side-rating.type <<ComboboxUnposted>> [list set ::${dlg}::Priv(posted) 0]
 
 		lappend rows [set $row]
 
@@ -465,6 +553,8 @@ proc open {parent base position {number 0}} {
 		BindMatchKeys $top $side
 	}
 
+	bind $top.white-player-l <Destroy> [list wm withdraw $dlg]
+
 	# Game Data ###############################################
 	ttk::labelbar $top.game [namespace current]::mc::GameData
 
@@ -475,27 +565,31 @@ proc open {parent base position {number 0}} {
 	ttk::label $top.game-annotator-l -textvar [namespace current]::mc::Annotator
 
 	::widget::datebox $top.game-date -minYear $minYear -maxYear $maxYear
-	resultbox $top.game-result -excludelost $excludelost -textvar [namespace current]::Priv(game-result)
-	roundbox $top.game-round -width 10 -textvar [namespace current]::Priv(event-round)
+	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result)
+	roundbox $top.game-round -width 10 -textvar ::${dlg}::Priv(event-round)
 	terminationbox $top.game-termination \
-		-textvar [namespace current]::Priv(game-termination) \
+		-textvar ::${dlg}::Priv(game-termination) \
 		-state $state \
 		;
 	entrybox $top.game-annotator \
 		-width $maxlen \
-		-textvar [namespace current]::Priv(game-annotator) \
+		-textvar ::${dlg}::Priv(game-annotator) \
 		-state $state \
 		;
 	ttk::checkbutton $top.game-eco-l \
-		-variable [namespace current]::Priv(game-eco-flag) \
+		-variable ::${dlg}::Priv(game-eco-flag) \
 		-command [namespace code [list UpdateEcoTag $top game-eco]] \
 		;
-	ecobox $top.game-eco -textvar [namespace current]::Priv(game-eco)
+	ecobox $top.game-eco -textvar ::${dlg}::Priv(game-eco)
 	SetEcoCodeText $top.game-eco-l
 
 	bind $top.game-eco-l <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $top.game-date <<DateChanged>> \
 		[namespace code [list UpdateEventDate $top.game-date $top.event-date]]
+	
+	if {$state eq "disabled"} {
+		lappend disabled game-termination game-annotator
+	}
 
 	lappend fields [list Date game-date]
 	lappend fields [list Result game-result]
@@ -542,7 +636,6 @@ proc open {parent base position {number 0}} {
 		name entrybox Annotator game-annotator \
 	]
 	BindMatchKeys $top annotator
-	set Priv(game-eco) ""
 
 	# Event Data ##############################################
 	ttk::labelbar $top.event [namespace current]::mc::Event
@@ -555,12 +648,12 @@ proc open {parent base position {number 0}} {
 	ttk::label $top.event-eventType-l -textvar [namespace current]::mc::Type
 	ttk::label $top.event-timeMode-l -textvar [namespace current]::mc::TimeMode
 
-	entrybox $top.event-title -width $maxlen -textvar [namespace current]::Priv(event-title)
-	entrybox $top.event-site -width $maxlen -textvar [namespace current]::Priv(event-site)
+	entrybox $top.event-title -width $maxlen -textvar ::${dlg}::Priv(event-title)
+	entrybox $top.event-site -width $maxlen -textvar ::${dlg}::Priv(event-site)
 	countrybox $top.event-country \
 		-height 20 \
 		-width $maxlen \
-		-textvar [namespace current]::Priv(event-country) \
+		-textvar ::${dlg}::Priv(event-country) \
 		-state $state \
 		;
 	::widget::datebox $top.event-date \
@@ -568,9 +661,13 @@ proc open {parent base position {number 0}} {
 		-maxYear $maxYear \
 		-tooltip [namespace current]::mc::SetToGameDate \
 		;
-	eventmodebox $top.event-eventMode -textvar [namespace current]::Priv(event-eventMode) -state $state
-	eventtypebox $top.event-eventType -textvar [namespace current]::Priv(event-eventType) -state $state
-	timemodebox $top.event-timeMode -textvar [namespace current]::Priv(event-timeMode) -state $state
+	eventmodebox $top.event-eventMode -textvar ::${dlg}::Priv(event-eventMode) -state $state
+	eventtypebox $top.event-eventType -textvar ::${dlg}::Priv(event-eventType) -state $state
+	timemodebox $top.event-timeMode -textvar ::${dlg}::Priv(event-timeMode) -state $state
+
+	if {$state eq "disabled"} {
+		lappend disabled event-country event-eventMode event-eventType event-timeMode
+	}
 
 	lappend fields [list Event event-title]
 	lappend fields [list Site event-site]
@@ -640,30 +737,30 @@ proc open {parent base position {number 0}} {
 
 	set opts [ttk::frame $nb.matches.options -borderwidth 0 -takefocus 0]
 
-	set Priv(local) 0
 	tk::AmpWidget ttk::radiobutton $opts.ascii \
 		-value 0 \
 		-text $mc::EnglishName \
-		-variable [namespace current]::Priv(local) \
+		-variable [namespace current]::Options(unicode) \
 		-command [namespace code [list RefreshMatchList $top $base]] \
 		;
 	tk::AmpWidget ttk::radiobutton $opts.local \
 		-value 1 \
 		-text $mc::LocalName \
-		-variable [namespace current]::Priv(local) \
+		-variable [namespace current]::Options(unicode) \
 		-command [namespace code [list RefreshMatchList $top $base]] \
 		;
 
 	set Priv(ratingType) Elo
 	ttk::label $opts.ratingtype
-	ratingbox $opts.ratingbox -textvar [namespace current]::Priv(ratingType) -format all
+	ratingbox $opts.ratingbox -textvar ::${dlg}::Priv(ratingType) -format all
 	SetRatingTypeText $opts.ratingtype $opts.ratingbox
 	bind $opts.ratingbox <FocusOut> [namespace code [list RefreshMatchList $top $base $opts.ratingbox]]
 	bind $opts.ratingbox <<ComboboxSelected>> [namespace code [list RefreshMatchList $top $base]]
-	bind $opts.ascii <<Language>> "tk::SetAmpText $opts.ascii \$[namespace current]::mc::EnglishName"
-	bind $opts.local <<Language>> \
+	bind $opts.ascii <<LanguageChanged>> \
+		"tk::SetAmpText $opts.ascii \$[namespace current]::mc::EnglishName"
+	bind $opts.local <<LanguageChanged>> \
 		"tk::SetAmpText $opts.local \$[namespace current]::mc::LocalName"
-	bind $opts.ratingtype <<Language>> \
+	bind $opts.ratingtype <<LanguageChanged>> \
 		[namespace code [list SetRatingTypeText $opts.ratingtype $opts.ratingbox]]
 
 	grid $opts.ascii			-row 1 -column 1 -sticky w
@@ -704,8 +801,8 @@ proc open {parent base position {number 0}} {
 		bind $lb <<ItemVisit>> [namespace code [list VisitMatch $lb %d]]
 		bind $lb <<ListboxSelect>> [namespace code [list SelectMatch $top $lb %d 0]]
 		$lb bind <ButtonPress-2> [namespace code [list SelectActive $top $lb]]
-		$lb bind <ButtonRelease-1> +[namespace code SetFocus]
-		$lb bind <ButtonRelease-2> +[namespace code SetFocus]
+		$lb bind <ButtonRelease-1> +[namespace code [list SetFocus $dlg]]
+		$lb bind <ButtonRelease-2> +[namespace code [list SetFocus $dlg]]
 		$lb addcol text -id number -justify right -width 1 -foreground $Colors(number)
 		$lb addcol text -id freq -justify right -width $digits -foreground $Colors(frequency)
 		$lb addcol text -id name -squeeze yes -weight 1 -steady no
@@ -769,6 +866,7 @@ proc open {parent base position {number 0}} {
 	set t $tags.list
 	set highlight lightblue
 	set charwidth [font measure TkTextFont "0"]
+	set Priv(taglist) $t
 
 	# create treectrl + columns
 	treectrl $t \
@@ -857,7 +955,7 @@ proc open {parent base position {number 0}} {
 	$t notify install <Edit-end>
 
 	$t notify bind $t <Edit-begin>	{ %T item state set %I ~edit }
-	$t notify bind $t <Edit-begin>	[list set [namespace current]::Priv(edit) 1]
+	$t notify bind $t <Edit-begin>	[list set ::${dlg}::Priv(edit) 1]
 	$t notify bind $t <Edit-accept>	{ %T item element configure %I %C %E -text %t }
 	$t notify bind $t <Edit-end>		{ %T item state set %I ~edit }
 	$t notify bind $t <Edit-end>		+[namespace code { FinishEditTag %T %I %C }]
@@ -865,7 +963,7 @@ proc open {parent base position {number 0}} {
 
 	ttk::scrollbar $tags.vsb -orient vertical -takefocus 0 -command [list $t yview]
 	ttk::scrollbar $tags.hsb -orient horizontal -takefocus 0 -command [list $t xview]
-	$t notify bind $tags.hsb <Scroll-x> [namespace code { ::widget::sbset %W %l %u }]
+	$t notify bind $tags.hsb <Scroll-x> [namespace code { ::scrolledframe::sbset %W %l %u }]
 	if {!$Priv(characteristics-only)} {
 		bind $t <ButtonPress-3> [namespace code [list PopupTagMenu $t]]
 		bind $tags.vsb <ButtonPress-1> [list focus $t]
@@ -899,57 +997,44 @@ proc open {parent base position {number 0}} {
 
 	set cmd +[namespace code [list AdjustDateBox $top]]
 	bind $top.game-date <Configure> $cmd
-	bind $top.game-date <<Language>> $cmd
+	bind $top.game-date <<LanguageChanged>> $cmd
 
 	# Dialog Buttons ##########################################
 	::widget::dialogButtons $dlg {ok cancel} ok
-	$dlg.ok configure -command [namespace code [list Save $top $title $base $number $position $fields]]
-	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.ok configure -command [namespace code [list Save $top $base $number $position $fields]]
+	$dlg.cancel configure -command [list wm withdraw $dlg]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
-
-	# Show Dialog #############################################
-	wm transient $dlg [winfo toplevel $parent]
-	wm title $dlg $title
-	wm resizable $dlg no no
-	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	bind $dlg <Escape> "$dlg.cancel invoke"
-	::util::place $dlg center [winfo toplevel $parent]
-	wm deiconify $dlg
-
-	# Finalization ############################################
-	if {[llength $position]} {
-		set idn [::scidb::game::query $position idn]
-	} else {
-		set idn [::scidb::db::get idn $number $base]
-	}
-	if {$idn > 0 && $idn != 518} {
-		$top.white-rating.type set IPS
-		$top.black-rating.type set IPS
-	}
-	foreach attr {white-name black-name event-title event-site game-annotator} {
-		set Priv($attr) ""
-	}
-	SetupTags $top $base $idn $position $number
+	bind $dlg <Escape> [list $dlg.cancel invoke]
 
 	# Tracing #################################################
 	foreach attr {white-name black-name event-title event-site game-annotator} {
-		trace variable [namespace current]::Priv($attr) w  \
+		trace variable ::${dlg}::Priv($attr) w  \
 			[namespace code [list UpdateMatchList $top $base $attr $attr]]
 	}
 
 	# Finalization ############################################
-	focus $top.white-name
-	$top.white-name selection range 0 end
-	ttk::notebook::enableTraversal $nb
-	return $dlg
+	set Priv(disabled) $disabled
+}
+
+
+proc Destroy {dlg} {
+	variable Lookup
+	variable Item
+	variable TagOrder
+
+	array unset Lookup
+	array unset Item
+	array unset TagOrder PlyCount
 }
 
 
 proc UpdateName {top nameField fideIdField} {
+	variable Options
+
 	set fideId [$top.$fideIdField get]
 	if {[string length $fideId] && [string length [$top.$nameField get]] == 0} {
-		$top.$nameField set [::scidb::misc::lookup $fideId]
+		$top.$nameField set [::scidb::misc::lookup $fideId -unicode $Options(unicode)]
 	}
 }
 
@@ -1050,7 +1135,7 @@ proc OpenEntry {t item column} {
 
 proc EditTag {t x y} {
 	variable Colors
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 
 	if {$Priv(edit)} { return }
 	set id [$t identify $x $y]
@@ -1083,7 +1168,7 @@ proc NewTag {t item {name ""}} {
 
 
 proc FinishEditTag {t item column} {
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 	variable Lookup
 	variable TagOrder
 	variable Item
@@ -1139,7 +1224,7 @@ proc AddExtraTags {t m item} {
 	variable TagOrder
 	variable RatingTagOrder
 	variable Lookup
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 
 	menu $m.white -tearoff 0
 	menu $m.black -tearoff 0
@@ -1222,6 +1307,7 @@ proc ActivateElement {t item} {
 		set m $t.m
 		catch { destroy $m }
 		menu $m -tearoff 0
+		catch { wm attributes $m -type popup_menu }
 		AddExtraTags $t $m $item
 		$m add separator
 		$m add command -label $mc::OtherTag -command [namespace code [list NewTag $t $item]]
@@ -1299,14 +1385,15 @@ proc SetCurrentElement {t item column} {
 
 
 proc PopupTagMenu {t} {
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 	variable TagOrder
 	variable Item
 
 	set item [lindex [$t item children 0] end]
 	set m $t.tagm
 	catch { destroy $m }
-	menu $m
+	menu $m -tearoff 0
+	catch { wm attributes $m -type popup_menu }
 	menu $m.new -tearoff 0
 	$m add cascade -menu $m.new -label $mc::NewTag
 	AddExtraTags $t $m.new $item
@@ -1333,7 +1420,7 @@ proc PopupTagMenu {t} {
 proc DeleteTag {t name {showWarning 0}} {
 	variable Item
 	variable Lookup
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 	variable TagOrder
 	variable Mandatory
 
@@ -1353,7 +1440,7 @@ proc DeleteTag {t name {showWarning 0}} {
 
 
 proc UpdateRatingTags {top color typeField scoreField} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	variable Lookup
 	variable RatingTagOrder
 	variable TagOrder
@@ -1397,7 +1484,7 @@ proc UpdateRatingTags {top color typeField scoreField} {
 
 
 proc UpdateEcoTag {top field} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	variable Lookup
 
 	set t $top.nb.tags.list
@@ -1435,13 +1522,13 @@ proc UpdateSexTag {top color field} {
 
 
 proc UpdateTags {top name field} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	UpdateTagList $top.nb.tags.list $name [string trim [$top.$field value]]
 }
 
 
 proc UpdateTagList {t name value} {
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 	variable Lookup
 	variable Item
 	variable TagOrder
@@ -1495,7 +1582,7 @@ proc AdjustDateBox {top} {
 
 
 proc BindMatchKeys {top attr} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 
 	foreach {id type tag w} $Priv(select:$attr) {
 		for {set z 1} {$z <= 9} {incr z} {
@@ -1509,7 +1596,7 @@ proc BindMatchKeys {top attr} {
 
 
 proc ChooseMatch {top index complete} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 
 	set lb $Priv(lb)
 	if {[string length $lb] == 0} { return }
@@ -1544,8 +1631,9 @@ proc VisitMatch {lb data} {
 		}
 	}
 
-	variable Priv
+	variable ::[winfo toplevel $lb]::Priv
 	variable Attrs
+	variable Options
 
 	set tip ""
 	set data [lindex $Priv(list) $number]
@@ -1582,7 +1670,7 @@ proc VisitMatch {lb data} {
 			}
 
 			if {[llength $aliases]} {
-				if {!$Priv(local)} {
+				if {!$Options(unicode)} {
 					set name [lindex $data [lsearch $Attrs($attr) ascii]]
 				}
 				set index [lsearch $aliases $name]
@@ -1647,9 +1735,9 @@ proc VisitMatch {lb data} {
 }
 
 
-proc MakeMatchEntry {index entry attr} {
+proc MakeMatchEntry {top index entry attr} {
 	variable Attrs
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 
 	set attrs $Attrs($attr)
 	lassign $entry {*}$attrs
@@ -1711,7 +1799,7 @@ proc MakeMatchEntry {index entry attr} {
 
 
 proc RefreshMatchList {top base {ratingbox {}}} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 
 	if {[llength $ratingbox] && ![$ratingbox valid?]} {
 		$ratingbox set Elo
@@ -1743,7 +1831,8 @@ proc UpdateMatchList {top base field item args} {
 	variable History
 	variable Attrs
 	variable Colors
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
+	variable Options
 
 	if {$Priv(dont-match)} { return }
 
@@ -1807,7 +1896,7 @@ proc UpdateMatchList {top base field item args} {
 				lset matches $i $s [expr {abs([lindex $entry $s])}]
 
 				# probably we want ASCII converted names
-				if {!$Priv(local)} { lset matches $i $n [lindex $entry $a] }
+				if {!$Options(unicode)} { lset matches $i $n [lindex $entry $a] }
 
 				incr i
 			}
@@ -1817,7 +1906,7 @@ proc UpdateMatchList {top base field item args} {
 			set a [lsearch -exact $Attrs(site) ascii]
 			set i -1
 
-			if {!$Priv(local)} {
+			if {!$Options(unicode)} {
 				# we want ASCII converted names
 				foreach entry $matches { lset matches [incr i] $n [lindex $entry $a] }
 			}
@@ -1826,7 +1915,7 @@ proc UpdateMatchList {top base field item args} {
 
 	foreach entry $matches {
 		lappend Priv(list) $entry
-		set data [MakeMatchEntry $index $entry $attr]
+		set data [MakeMatchEntry $top $index $entry $attr]
 		if {[lindex $entry 0] == 0} {
 			if {!$playerbase} {
 				$lb insert [list {} {} $title] \
@@ -1870,7 +1959,7 @@ proc UpdateMatchList {top base field item args} {
 
 
 proc ClearMatchList {top {field ""}} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 
 	if {[string length $field] == 0} {
 		set field $Priv(entry)
@@ -1921,7 +2010,7 @@ proc SelectMatch {top lb index complete} {
 
 
 proc EnterMatch {top lb index complete} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	variable Attrs
 
 	set field $Priv(entry)
@@ -2069,8 +2158,8 @@ proc EnterMatch {top lb index complete} {
 }
 
 
-proc SetFocus {} {
-	variable Priv
+proc SetFocus {dlg} {
+	variable ::${dlg}::Priv
 
 	if {[llength $Priv(focus)]} {
 		if {[catch { $Priv(focus) focus }]} {
@@ -2102,7 +2191,7 @@ proc CompareTag {lhs rhs} {
 
 
 proc AddEmptyTag {t} {
-	variable Priv
+	variable ::[winfo toplevel $t]::Priv
 
 	if {$Priv(characteristics-only)} { return }
 
@@ -2146,7 +2235,7 @@ proc NewItem {t name value} {
 
 
 proc SetupTags {top base idn position number} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	variable TagOrder
 	variable RatingTagOrder
 	variable Lookup
@@ -2167,20 +2256,20 @@ proc SetupTags {top base idn position number} {
 								White white-name
 								Black black-name} {
 		if {[info exists Lookup($tag)] && $Lookup($tag) ne "?"} {
-			$top.$field set $Lookup($tag)
+			set value $Lookup($tag)
+		} else {
+			set value ""
 		}
+		$top.$field set $value
 	}
 
 	foreach {tag field} {Date game-date Result game-result} {
-		if {[info exists Lookup($tag)]} {
-			$top.$field set $Lookup($tag)
-		}
+		if {[info exists Lookup($tag)]} { set value $Lookup($tag) } else { set value "" }
+		$top.$field set $value
 	}
 
 	foreach {field tag} {game-annotator Annotator
 								event-date EventDate
-								white-fideID WhiteFideId
-								black-fideID BlackFideId
 								white-federation WhiteCountry
 								black-federation BlackCountry
 								event-country EventCountry
@@ -2192,8 +2281,18 @@ proc SetupTags {top base idn position number} {
 								event-eventType EventType
 								event-eventMode Mode
 								event-timeMode TimeMode} {
-		if {[info exists Lookup($tag)]} { $top.$field set $Lookup($tag) }
+		if {[info exists Lookup($tag)]} { set value $Lookup($tag) } else { set value "" }
+		$top.$field set $value
 	}
+
+	foreach {field tag} {white-fideID WhiteFideId black-fideID BlackFideId} {
+		if [winfo exists $top.$field] {
+			if {[info exists Lookup($tag)]} { set value $Lookup($tag) } else { set value "" }
+			$top.$field set $value
+		}
+	}
+
+	foreach entry $Priv(disabled) { set Priv($entry) "" }
 
 	if {[info exists Lookup(WhiteType)] && $Lookup(WhiteType) eq "program"} { $top.white-sex set c }
 	if {[info exists Lookup(BlackType)] && $Lookup(BlackType) eq "program"} { $top.black-sex set c }
@@ -2246,9 +2345,6 @@ proc SetupTags {top base idn position number} {
 			$top.game-eco set $eco
 			set Priv(game-eco-flag) 0
 		}
-	} else {
-		$top.game-eco configure -state disabled
-		$top.game-eco-l configure -state disabled
 	}
 
 	set Priv(tags) [lsort -command [namespace current]::CompareTag $Priv(tags)]
@@ -2270,19 +2366,21 @@ proc ExpandLastColumn {t width} {
 }
 
 
-proc Save {top title base number position fields} {
-	variable Priv
+proc Save {top base number position fields} {
+	variable ::[winfo toplevel $top]::Priv
 	variable Tags
 	variable WhiteRating
 	variable BlackRating
 	variable Attrs
 	variable History
 
+	set title $Priv(title)
 	set Priv(dont-match) 1
 	set rc [CheckFields $top $title $fields]
 	set Priv(dont-match) 0
 
 	if {$rc} {
+		::widget::busyCursor on
 		if {$Priv(characteristics-only)} {
 			::scidb::db::update $base $number [array get Tags] 
 		} else {
@@ -2300,7 +2398,11 @@ proc Save {top title base number position fields} {
 				[namespace current]::Log {} \
 				-replace $replace \
 			]
-			if {[::util::catchIoError $cmd rc]} { return }
+			if {[::util::catchIoError $cmd rc]} {
+				::widget::busyCursor off
+				return
+			}
+			::widget::busyCursor off
 			if {$rc} {
 				::log::hide
 			} else {
@@ -2443,8 +2545,9 @@ proc Save {top title base number position fields} {
 	array unset Tags
 	unset WhiteRating
 	unset BlackRating
-	
-	if {$rc} { destroy [winfo toplevel $top] }
+
+	::widget::busyCursor off
+	if {$rc} { wm withdraw [winfo toplevel $top] }
 }
 
 
@@ -2464,7 +2567,7 @@ proc Truncate {str} {
 
 
 proc CheckFields {top title fields} {
-	variable Priv
+	variable ::[winfo toplevel $top]::Priv
 	variable Lookup
 	variable Tags
 	variable WhiteRating
@@ -2782,6 +2885,7 @@ proc CheckFields {top title fields} {
 
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Colors
+	options::writeItem $chan [namespace current]::Options
 	options::writeItem $chan [namespace current]::History
 }
 

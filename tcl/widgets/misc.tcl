@@ -36,32 +36,10 @@ set First		"Firs&t"
 } ;# namespace mc
 
 set Priv(busy:state)		0
-set Priv(sbset:cmd)		{}
-set Priv(sbset:orient)	{}
 
 
 set ButtonOrder { previous next update clear close ok apply cancel reset revert }
 	
-
-bind TScrollbar <ButtonPress-1>	{+ set ::widget::Priv(sbset:orient) [%W cget -orient] }
-bind TScrollbar <ButtonPress-2>	{+ set ::widget::Priv(sbset:orient) [%W cget -orient] }
-
-bind TScrollbar <ButtonRelease-1> +[namespace code SbSet]
-bind TScrollbar <ButtonRelease-3> +[namespace code SbSet]
-
-
-proc sbset {sb first last} {
-	variable Priv
-
-	set afterScroll [expr {[llength $Priv(sbset:orient)] == 0}]
-
-	if {!$afterScroll && [$sb cget -orient] ne $Priv(sbset:orient)} {
-		set Priv(sbset:cmd) [list $sb $first $last]
-	} else {
-		DoSbSet $sb $first $last
-	}
-}
-
 
 proc textLineScroll {w cmd args} {
 	switch $cmd {
@@ -88,7 +66,7 @@ proc textLineScroll {w cmd args} {
 
 proc notebookTextvarHook {nb id var {args {}}} {
 	SetNotebookLabel $nb $id $var $args
-	set cmd "[namespace current]::SetNotebookLabel $nb $id $var $args"
+	set cmd [list [namespace current]::SetNotebookLabel $nb $id $var $args]
 	trace add variable $var write $cmd
 	bind $nb <Destroy> "+
 		if {{$nb} eq {%W}} { trace remove variable $var write {$cmd} }
@@ -98,9 +76,11 @@ proc notebookTextvarHook {nb id var {args {}}} {
 
 proc menuTextvarHook {m index var {args {}}} {
 	SetMenuLabel $m $index $var $args
-	set cmd "[namespace current]::SetMenuLabel $m $index $var $args"
+	set cmd [list [namespace current]::SetMenuLabel $m $index $var $args]
 	trace add variable $var write $cmd
-	bind $m <Destroy> +[list trace remove variable $var write "$cmd"]
+#	For some reasons this callback will be called although the menu is not destroyed
+#	(possibly some kind of copy operation).
+#	bind $m <Destroy> +[list trace remove variable $var write $cmd]
 }
 
 
@@ -227,7 +207,7 @@ proc dialogButtonInvoke {parent} {
 
 proc dialogSetTitle {dlg cmd} {
 	SetDialogTitle $dlg $cmd
-	bind $dlg <<Language>> [namespace code [list SetDialogTitle $dlg $cmd]]
+	bind $dlg <<LanguageChanged>> [namespace code [list SetDialogTitle $dlg $cmd]]
 }
 
 
@@ -271,9 +251,7 @@ proc busyCursor {w {state on}} {
 
 	if {[tk windowingsystem] eq "x11"} {
 		foreach tlv [winfo children .application] {
-			if {$w ne $tlv && [winfo toplevel $tlv] eq $tlv} {
-				BusyCursor $action $tlv
-			}
+			BusyCursor $action $tlv $w
 		}
 	}
 
@@ -333,35 +311,15 @@ proc menuItemHighlightSecond {menu} {
 }
 
 
-proc BusyCursor {action w} {
-	catch { ::scidb::tk::busy $action $w }
-
-	foreach tlv [winfo children $w] {
-		catch { BusyCursor $action $tlv }
+proc BusyCursor {action w ignore} {
+	if {$w ne $ignore} {
+		if {[winfo toplevel $w] eq $w} {
+			catch { ::scidb::tk::busy $action $w }
+		}
+		foreach tlv [winfo children $w] {
+			BusyCursor $action $tlv $ignore
+		}
 	}
-}
-
-
-proc SbSet {} {
-	variable Priv
-
-	set Priv(sbset:orient) {}
-	if {[llength $Priv(sbset:cmd)] == 0} { return }
-	DoSbSet {*}$Priv(sbset:cmd)
-	set Priv(sbset:cmd) {}
-}
-
-
-proc DoSbSet {sb first last} {
-	variable Priv
-
-	if {$first <= 0 && $last >= 1} {
-		grid remove $sb
-	} else {
-		grid $sb
-	}
-
-	$sb set $first $last
 }
 
 

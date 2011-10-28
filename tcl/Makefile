@@ -22,7 +22,6 @@ SOURCES = \
 	dialogs/choosecolor.tcl \
 	dialogs/choosecolor-cube.tcl \
 	dialogs/choosefont.tcl \
-	dialogs/fileselectionbox.tcl \
 	widgets/theme.tcl \
 	widgets/misc.tcl \
 	options.tcl \
@@ -32,6 +31,7 @@ SOURCES = \
 	fonts.tcl \
 	icons.tcl \
 	encoding.tcl \
+	dialogs/fileselectionbox.tcl \
 	contrib/tkmenu.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \
@@ -46,7 +46,9 @@ SOURCES = \
 	widgets/tcombobox.tcl \
 	widgets/colormenu.tcl \
 	widgets/table.tcl \
+	widgets/scrolledframe.tcl \
 	widgets/gamebar.tcl \
+	widgets/gamehistory.tcl \
 	widgets/scrolledtable.tcl \
 	widgets/panedwindow.tcl \
 	widgets/calendar.tcl \
@@ -66,8 +68,9 @@ SOURCES = \
 	widgets/terminationbox.tcl \
 	widgets/ecobox.tcl \
 	widgets/labelbar.tcl \
-	widgets/scrolledframe.tcl \
 	widgets/html.tcl \
+	widgets/choosedir.tcl \
+	widgets/fsbox.tcl \
 	widgets/choosedir.tcl \
 	gametable.tcl \
 	playertable.tcl \

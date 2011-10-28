@@ -36,6 +36,7 @@ set AllLanguages				"All languages"
 set AddLanguage				"Add language..."
 set SwitchLanguage			"Switch language"
 set FormatText					"Format text"
+set CopyText					"Copy text to"
 
 set Bold							"Bold"
 set Italic						"Italic"
@@ -131,7 +132,7 @@ proc open {parent pos lang} {
 
 	set top [ttk::frame $dlg.top]
 	pack $dlg.top -fill both -expand yes
-	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
+	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 
 	set Vars(widget:text) $top.text
@@ -146,7 +147,7 @@ proc open {parent pos lang} {
 		-font $Fonts(normal) \
 		-wrap word \
 		-setgrid 1 \
-		-yscrollcommand [list ::widget::sbset $top.sb] \
+		-yscrollcommand [list ::scrolledframe::sbset $top.sb] \
 		-undo $UndoIsWorking \
 		-maxundo 0 \
 		;
@@ -265,6 +266,7 @@ proc open {parent pos lang} {
 	scan [wm grid $dlg] "%d %d" w h
 	wm minsize $dlg $w $h
 	wm transient $dlg $parent
+	catch { wm attributes $dlg -type dialog }
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
 	if {[llength $Geometry] == 4} {
@@ -359,7 +361,9 @@ proc Clear {} {
 	if {[$w count -chars 1.0 end] >= 1} {
 		$w delete 1.0 end
 		focus $w
+		set lang $Vars(lang)
 		set Vars(count) 0
+		set Vars(content:$lang) ""
 	}
 }
 
@@ -371,7 +375,13 @@ proc Revert {dlg} {
 
 	if {[$w edit modified]} {
 		$w delete 1.0 end
-		InsertComment $Vars(lang)
+		foreach entry $Vars(content) {
+			lassign $entry lang comment
+			if {[string length $lang] == 0} { set lang xx }
+			if {$lang eq $Vars(lang)} {
+				SetupComment $lang $comment
+			}
+		}
 		focus $w
 	}
 }
@@ -396,7 +406,6 @@ proc RecordGeometry {dlg parent} {
 
 	scan [wm geometry $dlg] "%dx%d+%d+%d" fw fh fx fy
 	scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d+%d+%d" tw th tx ty
-	scan [wm grid $dlg] "%d %d %d %d" bw bh wi hi
 	set Geometry [list [expr {$fx - $tx}] [expr {$fy - $ty}] $fw $fh]
 }
 
@@ -432,12 +441,7 @@ proc Update {{setup 1}} {
 	}
 
 	foreach entry $Vars(content) {
-		lassign $entry lang comm
-		if {$lang eq ""} { set lang xx }
-		set Vars(content:$lang) $comm
-		if {$lang eq $Vars(lang)} {
-			InsertComment $lang
-		}
+		SetupComment {*}$entry
 	}
 
 	if {$UndoIsWorking} {
@@ -447,6 +451,17 @@ proc Update {{setup 1}} {
 	$w edit reset
 	$w edit modified no
 	UpdateFormatButtons $w
+}
+
+
+proc SetupComment {lang comment} {
+	variable Vars
+
+	if {$lang eq ""} { set lang xx }
+	set Vars(content:$lang) $comment
+	if {$lang eq $Vars(lang)} {
+		InsertComment $lang
+	}
 }
 
 
@@ -573,6 +588,10 @@ proc InsertChar {w ch} {
 
 proc PasteText {w str} {
 	variable Symbols
+
+	if {[tk windowingsystem] ne "x11"} {
+		catch { $w delete sel.first sel.last }
+	}
 
 	set n [string length $str]
 	set i 0
@@ -705,6 +724,14 @@ proc LanguageChanged {dlg w} {
 	set Vars(countryList) {}
 
 	MakeCountryList
+}
+
+
+proc MakeCountryList {} {
+	variable Vars
+
+	if {[llength $Vars(countryList)]} { return }
+	set Vars(countryList) [::country::makeCountryList]
 }
 
 
@@ -1037,7 +1064,7 @@ proc PopupSymbolTable {w text} {
 	wm deiconify $m
 	raise $m
 	focus $m
-	if {[tk windowingsystem] == "x11"} {
+	if {[tk windowingsystem] eq "x11"} {
 		tkwait visibility $m
 		::update idletasks
 	}
@@ -1071,9 +1098,11 @@ proc PopupMenu {parent} {
 	variable UndoIsWorking
 	variable Vars
 
+	set w $parent
 	set m $parent.langMenu
 	catch { destroy $m }
 	menu $m -tearoff no
+	catch { wm attributes $m -type popup_menu }
 
 	if {[llength [$parent tag ranges sel]] == 0} {
 		set state disabled
@@ -1081,11 +1110,41 @@ proc PopupMenu {parent} {
 		set state normal
 	}
 
+	set sel ""
+	set selrange [$w tag ranges sel]
+	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
+		set sel [string map {"\n" "\n\u00b6"} $sel]
+	}
+	
+	set count 0
+
+	if {$state eq "normal"} {
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::clipboardIn \
+			-label " $::mc::Copy" \
+			-command [list tk_textCopy $w] \
+			;
+		incr count
+	}
+	if {[string length $sel]} {
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::clipboardOut \
+			-label " $::mc::Paste" \
+			-command [namespace code [list PasteText $w $sel]] \
+			;
+		incr count
+	}
+	if {$count > 0} {
+		$m add separator
+	}
+
 	menu $m.symbol -tearoff no
 	$m add cascade \
 		-compound left \
 		-image $icon::16x16::blackPawn \
-		-label [::menu::stripAmpersand $mc::InsertSymbol] \
+		-label [string map {"..." ""} [::menu::stripAmpersand $mc::InsertSymbol]] \
 		-menu $m.symbol \
 		;
 	MakeSymbolMenu $parent $m.symbol
@@ -1107,9 +1166,32 @@ proc PopupMenu {parent} {
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
 	}
+	if {[llength $Vars(langSet)] && [string length $Vars(content:$Vars(lang))]} {
+		set state normal
+	} else {
+		set state disabled
+	}
+	menu $m.copy -tearoff no
+	$m add cascade \
+		-compound left \
+		-image $::icon::16x16::copy \
+		-label $mc::CopyText \
+		-menu $m.copy \
+		-state $state \
+		;
+	foreach lang [list xx {*}$Vars(langSet)] {
+		if {$lang ne $Vars(lang)} {
+			$m.copy add command \
+				-compound left \
+				-image $::country::icon::flag([::mc::countryForLang $lang]) \
+				-label " [LanguageName $lang]" \
+				-command [namespace code [list CopyText $Vars(lang) $lang]] \
+				;
+		}
+	}
 
 	if {$UndoIsWorking} {
-		if {[$Vars(widget:text) edit modified]} { set state normal } else { set state disabled }
+		if {[$w edit modified]} { set state normal } else { set state disabled }
 		$m add separator
 		$m add command \
 			-compound left \
@@ -1309,6 +1391,7 @@ proc PopupLanguageMenu {dlg} {
 	variable Options
 
 	MakeLanguageMenu $dlg.langMenu
+	catch { wm attributes $dlg.langMenu -type popup_menu }
 
 	scan [winfo geometry $Vars(addLang)] "%dx%d+%d+%d" tw th tx ty
 	set x [expr {[winfo rootx $Vars(addLang)]}]
@@ -1372,8 +1455,8 @@ proc PopdownLaguages {dlg} {
 
 	bind $lb <<ItemVisit>> 		[namespace code [list Activate $lb %d]]
 
-	$lb bind <KeyPress-Escape>	[namespace code [list UnpostPopdown $popdown]]
-	$lb bind <KeyPress-Return>	[namespace code [list Selected $popdown]]
+	$lb bind <Escape>				[namespace code [list UnpostPopdown $popdown]]
+	$lb bind <Return>				[namespace code [list Selected $popdown]]
 	$lb bind <ButtonRelease-1>	[namespace code [list Selected $popdown]]
 	$lb bind <Any-KeyPress>		[namespace code [list Search $popdown %A %K]]
 
@@ -1429,25 +1512,6 @@ proc UnpostPopdown {popdown} {
 }
 
 
-proc MakeCountryList {} {
-	variable Vars
-
-	if {[llength $Vars(countryList)]} { return }
-
-	set list {}
-	foreach lang [array names ::mc::langToCountry] {
-		if {$lang ne "xx"} {
-			set country $::mc::langToCountry($lang)
-			set flag $::country::icon::flag($country)
-			set name [::encoding::languageName $lang]
-			lappend list [list $flag $name $lang]
-		}
-	}
-
-	set Vars(countryList) [lsort -index 1 -dictionary $list]
-}
-
-
 proc Activate {lb data} {
 	if {[lindex $data 0] eq "enter"} {
 		$lb select [lindex $data 2]
@@ -1475,6 +1539,7 @@ proc NewLanguage {lang} {
 		lappend Vars(langSet) $lang
 		SwitchLanguage $lang
 		MakeLanguageButtons
+		set Vars(content:$lang) ""
 	}
 }
 
@@ -1485,11 +1550,19 @@ proc Search {popdown code sym} {
 }
 
 
-proc LanguageName {} {
+proc LanguageName {{lang {}}} {
 	variable Vars
 
-	if {$Vars(lang) eq "xx" } { return $mc::AllLanguages }
-	return [::encoding::languageName $Vars(lang)]
+	if {[llength $lang] == 0} { set lang $Vars(lang) }
+	if {$lang eq "xx" } { return $mc::AllLanguages }
+	return [::encoding::languageName $lang]
+}
+
+
+proc CopyText {fromLang toLang} {
+	variable Vars
+
+	lappend Vars(content:$toLang) {*}$Vars(content:$fromLang)
 }
 
 
@@ -1950,10 +2023,6 @@ proc tk_textPaste {w} {
 #			$w edit separator
 #		}
 
-		if {[tk windowingsystem] ne "x11"} {
-			catch { $w delete sel.first sel.last }
-		}
-
 		set sel [string map {"\n" "\n\u00b6"} $sel]
 		::comment::PasteText $w $sel
 
@@ -2057,9 +2126,14 @@ proc TextButton1 {w x y} {
 	TextButton1_comment_ $w $x $y
 
 	if {$w eq $Vars(widget:text)} {
-		set c [$w get insert]
-		if {$c eq "\n"} {
-			$w mark set insert insert-1c
+		if {[$w compare insert != end-1c]} {
+			set c [$w get insert]
+			if {[lindex [split [$w index insert] .] 1] > 0} {
+				while {$c eq "\n"} {
+					$w mark set insert insert-1c
+					set c [$w get insert]
+				}
+			}
 		}
 		::comment::UpdateFormatButtons $w
 	}

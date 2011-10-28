@@ -43,6 +43,9 @@ set TextIsEmpty							"PGN text is empty."
 set AbortImport							"Abort PGN import?"
 set SelectEncoding						"Select encoding"
 
+set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
+set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
+
 set EnterOrPaste							"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
 set EnterOrPaste-Game					"game"
 set EnterOrPaste-Variation				"variation"
@@ -76,7 +79,7 @@ set TooManyNags							"Too many NAG's (latter ignored)"
 set IllegalCastling						"Illegal castling"
 set IllegalMove							"Illegal move"
 set UnsupportedVariant					"Unsupported chess variant"
-set DecodingFailed						"Decoding failed"
+set DecodingFailed						"Decoding of this game was not possible"
 set ResultDidNotMatchHeaderResult	"Result did not match header result"
 set ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
 set MaximalErrorCountExceeded			"Maximal error count (of previous error type) exceeded"
@@ -146,15 +149,9 @@ proc openEdit {parent position {mode {}}} {
 		-state readonly \
 		-textvar [namespace current]::Priv($position:encoding) \
 	]
-	set but [tk::button $top.choose \
-					-height 13 \
-					-image $::icon::15x13::list \
-					-command [namespace code [list ChooseEncoding $top.choose $position]] \
-					-background [::theme::getBackgroundColor] \
-				]
-	::theme::configureBackground $but
+	bind $top.encoding <ButtonPress-1> [namespace code [list ChooseEncoding $top.encoding $position]]
+	::tooltip::tooltip $top.encoding [namespace current]::mc::SelectEncoding
 	set main [tk::panedwindow $top.main -orient vertical -opaqueresize true]
-	::tooltip::tooltip $but [namespace current]::mc::SelectEncoding
 
 	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine
 	$fig addcol image -id flag
@@ -166,7 +163,7 @@ proc openEdit {parent position {mode {}}} {
 	set recv [namespace code [list GamebarChanged $dlg $position]]
 	::gamebar::addReceiver $gamebar $recv
 	bind $dlg <Destroy> [list ::gamebar::removeReceiver $gamebar $recv]
-	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W $position]]
+	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W $position]]
 
 	# text editor
 	set edit [ttk::frame $main.edit]
@@ -215,18 +212,16 @@ proc openEdit {parent position {mode {}}} {
 
 	pack $top -expand yes -fill both
 
-	grid $lbl  -row 1 -column 0 -sticky w
-	grid $fig  -row 1 -column 2 -sticky w
-	grid $lab  -row 1 -column 4 -sticky w
-	grid $enc  -row 1 -column 6 -sticky w
-	grid $but  -row 1 -column 8 -sticky wns
-	grid $main -row 3 -column 0 -sticky ewns -columnspan 10
+	grid $lbl  -row 1 -column 1 -sticky w
+	grid $fig  -row 1 -column 3 -sticky w
+	grid $lab  -row 1 -column 5 -sticky w
+	grid $enc  -row 1 -column 7 -sticky w
+	grid $main -row 3 -column 0 -sticky ewns -columnspan 9
 	grid rowconfigure $top 3 -weight 1
 	grid rowconfigure $top {0 2} -minsize 5
-	grid columnconfigure $top 9 -weight 1
-	grid columnconfigure $top {1 5} -minsize $::theme::padding
-	grid columnconfigure $top 7 -minsize 4
-	grid columnconfigure $top 3 -minsize [expr {2*$::theme::padding}]
+	grid columnconfigure $top 4 -weight 1
+	grid columnconfigure $top {0 2 6 8} -minsize $::theme::padding
+	grid columnconfigure $top 4 -minsize [expr {2*$::theme::padding}]
 
 	::widget::dialogButtons $dlg {import close} import
 	bind $dlg <Return> {}
@@ -317,11 +312,27 @@ proc Open {parent base files msg encoding type useLog} {
 	}
 
 	if {[llength $type]} {
-		::scidb::db::new $base $type
+		::scidb::db::new $base $type $encoding
 	}
 	::log::open $mc::PgnImport
 
 	set ngames [::scidb::db::count games $base]
+
+	switch [::scidb::db::get codec $base] {
+		si3 - si4 {
+			set fileEncoding [::scidb::db::get encoding]
+			if {$encoding ne $fileEncoding} {
+				set msg [string map [list %src $encoding %dst $fileEncoding] $mc::DifferentEncoding]
+				set reply [::dialog::warning \
+					-parent $parent \
+					-message $msg \
+					-detail $mc::DifferentEncodingDetails \
+					-buttons {cancel continue} \
+				]
+				if {$reply eq "cancel"} { return }
+			}
+		}
+	}
 
 	foreach file $files {
 		::log::info [format $mc::ImportingPgnFile $file]
@@ -352,6 +363,7 @@ proc PopupMenu {edit position x y} {
 	set m $edit.menu
 	catch { destroy $m }
 	menu $m -tearoff 0
+	catch { wm attributes $m -type popup_menu }
 	$m add command -label $mc::Cut -command [list tk_textCut $edit.text]
 	$m add command -label $mc::Copy -command [list tk_textCopy $edit.text]
 	$m add command -label $mc::Paste -command [namespace code [list TextPaste $position $edit.text]]

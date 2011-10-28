@@ -210,11 +210,11 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 				error(CmdSearch, "annotator", 0, "invalid query");
 				return search;
 			}
-			search = new SearchAnnotator(Tcl_GetStringFromObj(objv[1], 0));
+			search = new SearchAnnotator(Tcl_GetStringFromObj(objv[1], nullptr));
 			break;
 
 		default:
-			usage(CmdSearch, Tcl_GetStringFromObj(objv[0], 0), 0, subcommands, args);
+			usage(CmdSearch, Tcl_GetStringFromObj(objv[0], nullptr), nullptr, subcommands, args);
 			return search;
 	}
 
@@ -259,7 +259,7 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (Tcl_GetIntFromObj(ti, objv[2], &view) != TCL_OK)
 		return error(CmdClose, 0, 0, "unsigned integer expected for view");
 
-	scidb.cursor(Tcl_GetStringFromObj(objv[1], 0)).closeView(view);
+	scidb.cursor(Tcl_GetStringFromObj(objv[1], nullptr)).closeView(view);
 	return TCL_OK;
 }
 
@@ -272,7 +272,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events };
 
 	if (objc != 4)
-		return usage(CmdCount, 0, 0, subcommands, args);
+		return usage(CmdCount, nullptr, nullptr, subcommands, args);
 
 	char const* database = stringFromObj(objc, objv, 2);
 
@@ -298,7 +298,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return TCL_OK;
 	}
 
-	return usage(CmdCount, 0, 0, subcommands, args);
+	return usage(CmdCount, nullptr, nullptr, subcommands, args);
 }
 
 
@@ -317,8 +317,8 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
-	char const*	database	= Tcl_GetStringFromObj(objv[2], 0);
-	char const* name		= Tcl_GetStringFromObj(objv[4], 0);
+	char const*	database	= Tcl_GetStringFromObj(objv[2], nullptr);
+	char const* name		= Tcl_GetStringFromObj(objv[4], nullptr);
 
 	int view;
 
@@ -342,7 +342,7 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return usage(CmdCount, 0, 0, subcommands, args);
+			return usage(CmdCount, nullptr, nullptr, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -358,8 +358,8 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	char const*	database	= Tcl_GetStringFromObj(objv[1], 0);
-	char const*	ops		= Tcl_GetStringFromObj(objv[3], 0);
+	char const*	database	= Tcl_GetStringFromObj(objv[1], nullptr);
+	char const*	ops		= Tcl_GetStringFromObj(objv[3], nullptr);
 
 	Query::Operator op;
 
@@ -378,7 +378,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdSearch, 0, 0, "invalid operator %s", ops);
 
-	char const* f = Tcl_GetStringFromObj(objv[4], 0);
+	char const* f = Tcl_GetStringFromObj(objv[4], nullptr);
 	unsigned filter = Application::None;
 
 	switch (f[0])
@@ -415,12 +415,12 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 12)
+	if (objc != 13)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"<database> <view> <file> <flags> <mode> <encoding> <exclude-illegal-games-flag> "
-			"<progress-cmd> <progress-arg> <log-cmd> <log-arg>");
+			"<exported-tags> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}
 
@@ -431,16 +431,41 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	View::FileMode	mode				= boolFromObj(objc, objv, 5) ? View::Append : View::Create;
 	char const*		encoding			= stringFromObj(objc, objv, 6);
 	bool				excludeIllegal	= boolFromObj(objc, objv, 7);
+	Tcl_Obj*			allowedTags		= objv[8];
+	bool				extraTags		= false;
 
-	Progress		progress(objv[8], objv[9]);
-	tcl::Log		log(objv[10], objv[11]);
-	Cursor&		cursor(scidb.cursor(database));
-	Database&	db(cursor.database());
-	View&			v(cursor.view(view));
-	type::ID		type(db.type());
+	Progress			progress(objv[9], objv[10]);
+	tcl::Log			log(objv[11], objv[12]);
+	Cursor&			cursor(scidb.cursor(database));
+	Database&		db(cursor.database());
+	View&				v(cursor.view(view));
+	type::ID			type(db.type());
+	View::TagBits	tagBits;
+	Tcl_Obj**		tags;
 
 	if (type == type::Temporary)
 		type = type::Unspecific;
+
+	if (Tcl_ListObjGetElements(ti, allowedTags, &objc, &tags) != TCL_OK)
+		error(CmdExport, 0, 0, "invalid tag list");
+
+	if (objc == 0)
+	{
+		tagBits.set();
+		extraTags = true;
+	}
+	else
+	{
+		for (int i = 0; i < objc; ++i)
+		{
+			tag::ID tag = tag::fromName(Tcl_GetStringFromObj(tags[i], nullptr));
+
+			if (tag == tag::ExtraTag)
+				extraTags = true;
+			else
+				tagBits.set(tag);
+		}
+	}
 
 	setResult(v.exportGames(filename,
 									encoding,
@@ -448,6 +473,8 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									type,
 									flags,
 									excludeIllegal ? View::ExcludeIllegal : View::AllGames,
+									tagBits,
+									extraTags,
 									log,
 									progress,
 									mode));
@@ -485,7 +512,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
 
 	// XXX we don't want cancelling tree search
-	mstl::string basename(Tcl_GetStringFromObj(base, 0));
+	mstl::string basename(Tcl_GetStringFromObj(base, nullptr));
 	Cursor& cursor = scidb.cursor(basename);
 
 	SubscriberP& subscriber = ::subscriberMap[basename];
@@ -509,7 +536,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
 	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
 
-	mstl::string basename(Tcl_GetStringFromObj(base, 0));
+	mstl::string basename(Tcl_GetStringFromObj(base, nullptr));
 	SubscriberMap::iterator i = ::subscriberMap.find(basename);
 
 	if (i != subscriberMap.end())

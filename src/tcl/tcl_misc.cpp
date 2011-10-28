@@ -31,6 +31,8 @@
 #include "db_player.h"
 #include "db_database_codec.h"
 
+#include "si3_codec.h"
+
 #include "sys_utf8_codec.h"
 
 #include "u_crc.h"
@@ -45,18 +47,22 @@
 
 using namespace tcl;
 
-static char const* ScidbVersion = "1.0 BETA";
+static char const* ScidbVersion	= "1.0 BETA";
+static char const* ScidbRevision	= "96";
 
-static char const* CmdCrc32		= "::scidb::misc::crc32";
-static char const* CmdDebug		= "::scidb::misc::debug?";
-static char const* CmdFitsRegion	= "::scidb::misc::fitsRegion?";
-static char const* CmdIsAscii		= "::scidb::misc::isAscii?";
-static char const* CmdLookup		= "::scidb::misc::lookup";
-static char const* CmdSize			= "::scidb::misc::size";
-static char const* CmdToAscii		= "::scidb::misc::toAscii";
-static char const* CmdVersion		= "::scidb::misc::version";
+static char const* CmdCrc32			= "::scidb::misc::crc32";
+static char const* CmdDebug			= "::scidb::misc::debug?";
+static char const* CmdExtraTags		= "::scidb::misc::extraTags";
+static char const* CmdFitsRegion		= "::scidb::misc::fitsRegion?";
+static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
+static char const* CmdLookup			= "::scidb::misc::lookup";
+static char const* CmdRevision		= "::scidb::misc::revision";
+static char const* CmdSize				= "::scidb::misc::size";
+static char const* CmdSuffixes		= "::scidb::misc::suffixes";
+static char const* CmdToAscii			= "::scidb::misc::toAscii";
+static char const* CmdVersion			= "::scidb::misc::version";
 static char const* CmdXmlFromList	= "::scidb::misc::xmlFromList";
-static char const* CmdXmlToList	= "::scidb::misc::xmlToList";
+static char const* CmdXmlToList		= "::scidb::misc::xmlToList";
 
 
 static void
@@ -415,7 +421,7 @@ Parser::parse()
 		if (argc != 2)
 			M_RAISE("invalid xml list");
 
-		char const* lang = Tcl_GetStringFromObj(argv[0], 0);
+		char const* lang = Tcl_GetStringFromObj(argv[0], nullptr);
 
 		m_xml.format("<:%s>", lang);
 		Tcl_ListObjGetElements(0, argv[1], &argc, &argv);
@@ -430,7 +436,7 @@ Parser::parse()
 			if (objn == 0)
 				M_RAISE("invalid xml list");
 
-			char const* token = Tcl_GetStringFromObj(objs[0], 0);
+			char const* token = Tcl_GetStringFromObj(objs[0], nullptr);
 
 			switch (*token)
 			{
@@ -468,7 +474,7 @@ Parser::parse()
 						case 'y':	// "sym"
 							processModes();
 							m_xml.append("<sym>", 5);
-							m_xml += *Tcl_GetStringFromObj(objs[1], 0);
+							m_xml += *Tcl_GetStringFromObj(objs[1], nullptr);
 							m_xml.append("</sym>", 6);
 							break;
 
@@ -483,7 +489,7 @@ Parser::parse()
 
 					processModes();
 					m_xml.append("<nag>", 5);
-					m_xml += Tcl_GetStringFromObj(objs[1], 0);
+					m_xml += Tcl_GetStringFromObj(objs[1], nullptr);
 					m_xml.append("</nag>", 6);
 					break;
 
@@ -594,6 +600,14 @@ cmdVersion(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdRevision(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(::ScidbRevision);
+	return TCL_OK;
+}
+
+
+static int
 cmdDebug(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	setResult(int(mstl::backtrace::is_debug_mode()));
@@ -605,11 +619,23 @@ static int
 cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	db::Player const* player = db::Player::findPlayer(unsignedFromObj(objc, objv, 1));
+	bool unicodeFlag = false;
 
-	if (player)
+	if (objc > 2)
+	{
+		if (!strcmp(stringFromObj(objc, objv, 2), "-unicode"))
+			error(CmdLookup, 0, 0, "unknown option '%s'", stringFromObj(objc, objv, 2));
+
+		unicodeFlag = boolFromObj(objc, objv, 3);
+	}
+
+	if (!player)
+		setResult("");
+	else if (unicodeFlag)
 		setResult(player->name());
 	else
-		setResult("");
+		setResult(player->asciiName());
+
 	return TCL_OK;
 }
 
@@ -622,22 +648,58 @@ cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	db::DatabaseCodec::StringList result;
+	db::DatabaseCodec::getSuffixes(stringFromObj(objc, objv, 1), result);
+
+	Tcl_Obj* objs[result.size()];
+
+	for (unsigned i = 0; i < result.size(); ++i)
+		objs[i] = Tcl_NewStringObj(result[i], -1);
+
+	setResult(result.size(), objs);
+	return TCL_OK;
+}
+
+
+static int
+cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tcl_Obj* objs[db::tag::ExtraTag];
+	unsigned count = 0;
+
+	for (unsigned i = 0; i < db::tag::ExtraTag; ++i)
+	{
+		if (::db::si3::Codec::isExtraTag(db::tag::ID(i)))
+			objs[count++] = Tcl_NewStringObj(db::tag::toName(db::tag::ID(i)), -1);
+	}
+
+	setResult(count, objs);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdDebug,			cmdDebug);
-	createCommand(ti, CmdFitsRegion,	cmdFitsRegion);
-	createCommand(ti, CmdIsAscii,		cmdIsAscii);
-	createCommand(ti, CmdLookup,		cmdLookup);
-	createCommand(ti, CmdToAscii,		cmdToAscii);
-	createCommand(ti, CmdVersion,		cmdVersion);
-	createCommand(ti, CmdXmlFromList,	cmdXmlFromList);
-	createCommand(ti, CmdXmlToList,	cmdXmlToList);
 	createCommand(ti, CmdCrc32,			cmdCrc32);
-	createCommand(ti, CmdSize,			cmdSize);
+	createCommand(ti, CmdDebug,			cmdDebug);
+	createCommand(ti, CmdExtraTags,		cmdExtraTags);
+	createCommand(ti, CmdFitsRegion,		cmdFitsRegion);
+	createCommand(ti, CmdIsAscii,			cmdIsAscii);
+	createCommand(ti, CmdLookup,			cmdLookup);
+	createCommand(ti, CmdRevision,			cmdRevision);
+	createCommand(ti, CmdSize,				cmdSize);
+	createCommand(ti, CmdSuffixes,		cmdSuffixes);
+	createCommand(ti, CmdToAscii,			cmdToAscii);
+	createCommand(ti, CmdVersion,			cmdVersion);
+	createCommand(ti, CmdXmlFromList,	cmdXmlFromList);
+	createCommand(ti, CmdXmlToList,		cmdXmlToList);
 }
 
 } // namespace misc

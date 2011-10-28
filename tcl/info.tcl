@@ -183,7 +183,7 @@ proc BuildContributionsFrame {w} {
 		-width 0 -height 0 \
 		-wrap word \
 		-font TkTextFont \
-		-yscrollcommand [list ::widget::sbset $w.s] \
+		-yscrollcommand [list ::scrolledframe::sbset $w.s] \
 	]
 	set s [ttk::scrollbar $w.s -command [list $t yview]]
 	grid $t -row 0 -column 0 -sticky nsew
@@ -200,12 +200,12 @@ proc BuildContributionsFrame {w} {
 	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
 	$t insert end [Enc "Steven Atkinson, "]
 	$t insert end [Enc "Paolo Casaschi, "]
-	$t insert end [Enc "Lars Ekman, "]
-	$t insert end [Enc "Fernando González, "]
-	$t insert end [Enc "Austen Green, "]
+#	$t insert end [Enc "Lars Ekman, "]
+#	$t insert end [Enc "Fernando González, "]
+#	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
-	$t insert end [Enc "Zoltan Tibensky, "]
-	$t insert end [Enc "Natalia Parés Vives"]
+	$t insert end [Enc "Zoltan Tibensky"]
+#	$t insert end [Enc "Natalia Parés Vives"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "TrueType [set [namespace current]::mc::FontDesign]:\n"] caption
@@ -258,7 +258,7 @@ proc BuildReferencesFrame {w} {
 		-width 0 -height 16 \
 		-font TkTextFont \
 		-wrap word \
-		-yscrollcommand [list ::widget::sbset $w.s] \
+		-yscrollcommand [list ::scrolledframe::sbset $w.s] \
 	]
 	set s [ttk::scrollbar $w.s -command [list $t yview]]
 	grid $t -row 0 -column 0 -sticky nsew

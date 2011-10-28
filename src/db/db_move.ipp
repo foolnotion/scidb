@@ -30,20 +30,34 @@
 
 #include "u_crc.h"
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace db {
 namespace detail {
 
+// move compression:
+// -------------------------------------
+// 11100000 fyle from
+// 00011000 fyle to ^ fyle from
+// 00000110 rank from
+// 00000001 rank to - rank from - 1
+
 inline
 uint8_t
 compressWhiteMove(uint8_t fromFyle, uint8_t fromRank, uint8_t toFyle, uint8_t toRank)
 {
-	M_REQUIRE(fromRank <= sq::Rank2);
-	M_REQUIRE(sq::Rank2 < toRank);
-	M_REQUIRE(toRank <= sq::Rank4);
+	static_assert(sq::Rank1 == 0 && sq::Rank8 == 7, "algorithm cannot work");
 
-	return (fromFyle << 5) | (toFyle << 2) | ((fromRank - sq::Rank1) << 1) | (toRank - sq::Rank3);
+	M_REQUIRE(mstl::abs(toFyle - fromFyle) <= 1);
+	M_REQUIRE(fromRank <= sq::Rank4);
+	M_REQUIRE(fromRank < toRank);
+	M_REQUIRE(toRank - fromRank <= 2);
+
+	return	(fromFyle << 5)
+			 | (uint8_t(int8_t(toFyle) - int8_t(fromFyle) + 1) << 3)
+			 | (fromRank << 1)
+			 | (toRank - fromRank - 1);
 }
 
 
@@ -51,11 +65,17 @@ inline
 uint8_t
 compressBlackMove(uint8_t fromFyle, uint8_t fromRank, uint8_t toFyle, uint8_t toRank)
 {
-	M_REQUIRE(fromRank >= sq::Rank7);
-	M_REQUIRE(sq::Rank7 > toRank);
-	M_REQUIRE(toRank >= sq::Rank5);
+	static_assert(sq::Rank1 == 0 && sq::Rank8 == 7, "algorithm cannot work");
 
-	return (fromFyle << 5) | (toFyle << 2) | ((fromRank - sq::Rank7) << 1) | (toRank - sq::Rank5);
+	M_REQUIRE(mstl::abs(toFyle - fromFyle) <= 1);
+	M_REQUIRE(fromRank >= sq::Rank5);
+	M_REQUIRE(fromRank > toRank);
+	M_REQUIRE(fromRank - toRank <= 2);
+
+	return	(fromFyle << 5)
+			 | (uint8_t(int8_t(toFyle) - int8_t(fromFyle) + 1) << 3)
+			 | ((uint8_t(sq::Rank8) - fromRank) << 1)
+			 | (fromRank - toRank - 1);
 }
 
 
@@ -65,8 +85,11 @@ uncompressWhiteMove(uint8_t m)
 {
 	M_ASSERT(m);
 
-	return	uint16_t(sq::make(m >> 5, sq::Rank1 + ((m >> 1) & 1)))
-			 | (uint16_t(sq::make((m >> 2) & 7, sq::Rank3 + (m & 1)) << 6));
+	uint8_t fromFyle = m >> 5;
+	uint8_t fromRank = (m >> 1) & 3;
+
+	return	(uint16_t(sq::make(fromFyle, fromRank)))
+			 | (uint16_t(sq::make(fromFyle + ((m >> 3) & 3) - 1, fromRank + (m & 1) + 1)) << 6);
 }
 
 
@@ -76,8 +99,11 @@ uncompressBlackMove(uint8_t m)
 {
 	M_ASSERT(m);
 
-	return	uint16_t(sq::make(m >> 5, sq::Rank7 + ((m >> 1) & 1)))
-			 | (uint16_t(sq::make((m >> 2) & 7, sq::Rank5 + (m & 1)) << 6));
+	uint8_t fromFyle = m >> 5;
+	uint8_t fromRank = uint8_t(sq::Rank8) - ((m >> 1) & 3);
+
+	return	(uint16_t(sq::make(fromFyle, fromRank)))
+			 | (uint16_t(sq::make(fromFyle + ((m >> 3) & 3) - 1, fromRank - (m & 1) - 1)) << 6);
 }
 
 } // namespace detail
@@ -478,6 +504,7 @@ Move::computeChecksum(util::crc::checksum_t crc) const
 }
 
 
+// NOTE: we have to inline due to compiler problems!
 template <>
 inline
 uint8_t
@@ -486,13 +513,18 @@ Move::compress<0>(uint16_t m)
 	if (m == 0)
 		return 0;
 
-	return detail::compressWhiteMove(sq::fyle(m & 0x3f),
-												sq::rank(m & 0x3f),
-												sq::fyle((m >> 6) & 0x3f),
-												sq::rank((m >> 6) & 0x3f));
+	sq::Rank fromRank	= sq::rank(m & 0x3f);
+	sq::Rank toRank	= sq::rank((m >> 6) & 0x3f);
+
+	// we cannot compress castling moves
+	if (fromRank == toRank)
+		return 0;
+
+	return detail::compressWhiteMove(sq::fyle(m & 0x3f), fromRank, sq::fyle((m >> 6) & 0x3f), toRank);
 }
 
 
+// NOTE: we have to inline due to compiler problems!
 template <>
 inline
 uint8_t
@@ -501,48 +533,66 @@ Move::compress<1>(uint16_t m)
 	if (m == 0)
 		return 0;
 
-	return detail::compressBlackMove(sq::fyle(m & 0x3f),
-												sq::rank(m & 0x3f),
-												sq::fyle((m >> 6) & 0x3f),
-												sq::rank((m >> 6) & 0x3f));
+	sq::Rank fromRank	= sq::rank(m & 0x3f);
+	sq::Rank toRank	= sq::rank((m >> 6) & 0x3f);
+
+	// we cannot compress castling moves
+	if (fromRank == toRank)
+		return 0;
+
+	return detail::compressBlackMove(sq::fyle(m & 0x3f), fromRank, sq::fyle((m >> 6) & 0x3f), toRank);
 }
 
 
+// NOTE: we have to inline due to compiler problems!
 template <>
 inline
 uint8_t
 Move::compress<2>(uint16_t m)
 {
-	sq::Rank from = sq::rank(m & 0x3f);
-
-	if (from > sq::Rank2)
+	if (m == 0)
 		return 0;
 
-	sq::Rank to = sq::rank((m >> 6) & 0x3f);
+	sq::Rank fromRank	= sq::rank(m & 0x3f);
+	sq::Fyle fromFyle	= sq::fyle(m & 0x3f);
+	sq::Rank toRank	= sq::rank((m >> 6) & 0x3f);
+	sq::Fyle toFyle	= sq::fyle((m >> 6) & 0x3f);
 
-	if (to <= sq::Rank2 || sq::Rank4 < to)
+	if (	fromRank > sq::Rank4
+		|| fromRank >= toRank
+		|| toRank - fromRank > 2
+		|| mstl::abs(toFyle - fromFyle) > 1)
+	{
 		return 0;
+	}
 
-	return detail::compressWhiteMove(sq::fyle(m & 0x3f), from, sq::fyle((m >> 6) & 0x3f), to);
+	return detail::compressWhiteMove(fromFyle, fromRank, toFyle, toRank);
 }
 
 
+// NOTE: we have to inline due to compiler problems!
 template <>
 inline
 uint8_t
 Move::compress<3>(uint16_t m)
 {
-	sq::Rank from = sq::rank(m & 0x3f);
-
-	if (from < sq::Rank7)
+	if (m == 0)
 		return 0;
 
-	sq::Rank to = sq::rank((m >> 6) & 0x3f);
+	sq::Rank fromRank	= sq::rank(m & 0x3f);
+	sq::Fyle fromFyle	= sq::fyle(m & 0x3f);
+	sq::Rank toRank	= sq::rank((m >> 6) & 0x3f);
+	sq::Fyle toFyle	= sq::fyle((m >> 6) & 0x3f);
 
-	if (to >= sq::Rank7 || sq::Rank4 > to)
+	if (	fromRank < sq::Rank5
+		|| fromRank <= toRank
+		|| fromRank - toRank > 2
+		|| mstl::abs(toFyle - fromFyle) > 1)
+	{
 		return 0;
+	}
 
-	return detail::compressBlackMove(sq::fyle(m & 0x3f), from, sq::fyle((m >> 6) & 0x3f), to);
+	return detail::compressBlackMove(fromFyle, fromRank, toFyle, toRank);
 }
 
 

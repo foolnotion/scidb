@@ -102,6 +102,7 @@ public:
 		None,
 		SetAnnotation,
 		AddMove,
+		AddMoves,
 		ExchangeMove,
 		NewMainline,
 		AddVariation,
@@ -115,14 +116,18 @@ public:
 		StripMoves,
 		StripAnnotations,
 		StripComments,
+		StripMoveInfo,
 		StripMarks,
 		StripVariations,
+		CopyComments,
+		MoveComments,
 		Clear,
 		Transpose,
 	};
 
 	typedef mstl::list<mstl::string> StringList;
 	typedef mstl::vector<edit::Node const*> DiffList;
+	typedef mstl::vector<Move> History;
 	typedef Comment::LanguageSet LanguageSet;
 
 	struct Subscriber : public mstl::ref_counter
@@ -278,6 +283,8 @@ public:
 	unsigned lengthOfCurrentLine() const;
 	/// Counts the number of annotations
 	unsigned countAnnotations() const override;
+	/// Counts the number of move information
+	unsigned countMoveInfo() const override;
 	/// Counts the number of marks
 	unsigned countMarks() const override;
 	/// Counts the number of comments
@@ -288,6 +295,8 @@ public:
 	TagSet const& tags() const;
 	/// Get marks at current position
 	MarkSet const& marks() const;
+	/// Get marks at given position
+	MarkSet const& marks(edit::Key const& key) const;
 	/// Get current language set.
 	LanguageSet const& languageSet() const;
 
@@ -429,6 +438,12 @@ public:
 	bool stripComments();
 	/// Remove all comments of given language code.
 	bool stripComments(mstl::string const& lang);
+	/// Copy comments from one language code to another language code.
+	bool copyComments(mstl::string const& fromLang,
+							mstl::string const& toLang,
+							bool stripOriginal = false);
+	/// Remove all move information.
+	bool stripMoveInfo();
 	/// Remove all marks.
 	bool stripMarks();
 	/// Remove all variations.
@@ -465,7 +480,7 @@ public:
 	/// Traverse whole game.
 	void refreshSubscriber();
 	/// Set undo level.
-	void setUndoLevel(unsigned level);
+	void setUndoLevel(unsigned level, unsigned combinePredecessingMoves);
 	/// Set game tags.
 	void setTags(TagSet const& tags);
 	/// Set game flags (should coincide with game flags in GameInfo).
@@ -476,6 +491,9 @@ public:
 	void setLanguages(LanguageSet const& set);
 	/// Set whether game is modified anymore.
 	void setIsModified(bool flag);
+	/// Clear undo stack.
+	void clearUndo();
+
 	void setup(	unsigned linebreakThreshold,
 					unsigned linebreakMaxLineLengthMain,
 					unsigned linebreakMaxLineLengthVar,
@@ -487,10 +505,10 @@ public:
 
 	unsigned dumpMoves(mstl::string& result);
 	unsigned dumpMoves(mstl::string& result, unsigned length);
+	unsigned dumpHistory(mstl::string& result) const;
+	void getHistory(History& result) const;
 
 	bool finishLoad();
-
-	static unsigned undoLevel;
 
 	friend class Database;
 
@@ -526,12 +544,13 @@ private:
 	void doMove();
 	void undoMove();
 	void goToCurrentMove(bool forward) const;
+	void tryToMoveTo(edit::Key const& key);
 
 	void getMoves(StringList& resul, unsigned flags);
 	void getKeys(StringList& result);
 
 	Undo& newUndo(UndoAction action, Command command);
-	Undo* prevUndo();
+	Undo* prevUndo(unsigned back = 1);
 	void applyUndo(Undo& undo, bool redo);
 
 	void insertUndo(UndoAction action, Command command);
@@ -593,6 +612,7 @@ private:
 	LanguageSet		m_wantedLanguages;
 	unsigned			m_undoIndex;
 	unsigned			m_maxUndoLevel;
+	unsigned			m_combinePredecessingMoves;
 	Command			m_undoCommand;
 	Command			m_redoCommand;
 	uint32_t			m_flags;

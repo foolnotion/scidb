@@ -32,6 +32,7 @@
 
 #include "db_consumer.h"
 #include "db_move.h"
+#include "db_comment.h"
 
 #include "u_byte_stream.h"
 
@@ -53,12 +54,16 @@ class Consumer : private Encoder, public db::Consumer
 {
 public:
 
-	Consumer(format::Type srcFormat, Codec& codec, mstl::string const& encoding);
+	Consumer(format::Type srcFormat,
+				Codec& codec,
+				mstl::string const& encoding,
+				TagBits const& allowedTags,
+				bool allowExtraTags);
 
 private:
 
-	typedef mstl::vector<mstl::string>	Comments;
-	typedef mstl::stack<Move>				MoveStack;
+	typedef mstl::vector<Comment>	Comments;
+	typedef mstl::stack<Move>		MoveStack;
 
 	format::Type format() const;
 
@@ -69,9 +74,11 @@ private:
 	save::State endGame(TagSet const& tags) override;
 
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendComment(Comment const& comment) override;
 	void sendPrecedingComment(	Comment const& comment,
 										Annotation const& annotation,
 										MarkSet const& marks) override;
+	void sendMoveInfo(MoveInfoSet const& moveInfo) override;
 	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,
@@ -89,8 +96,6 @@ private:
 	void endMoveSection(result::ID result) override;
 	void beginVariation() override;
 	void endVariation(bool isEmpty) override;
-
-	void pushComment(Comment const& comment);
 
 	bool checkMove(Move const& move);
 

@@ -212,7 +212,7 @@ switch [tk windowingsystem] {
     default { set ::tk::MODERNIZE 0 }
 }
 
-namespace eval tk { set MenuDelay 200 }
+namespace eval tk { set MenuDelay 250 }
 
 ### MODERNIZE end ############################################################
 
@@ -442,9 +442,10 @@ proc ::tk::MenuUnpost menu {
     # what was posted.
 
     if {$::tk::MODERNIZE} {
-        after cancel [array get Priv menuActivatedTimer]
+        incr Priv(afterCount)
         unset -nocomplain Priv(menuActivated)
         unset -nocomplain Priv(postCascade)
+        unset -nocomplain Priv($menu:postIndex)
     }
 
     catch {
@@ -613,25 +614,43 @@ proc ::tk::MenuMotion {menu x y state} {
 	} else {
 	    $menu activate @$x,$y
 	    GenerateMenuSelect $menu
+            if {$::tk::MODERNIZE} {
+                if {[info exists Priv(postCascade)] && $menu eq $Priv(postCascade)} {
+                    incr Priv(afterCount)
+                }
+                if {[$menu index @$x,$y] ne $activeindex} {
+                    if {[info exists Priv($menu:postIndex)] && $Priv($menu:postIndex) ne "none"} {
+                        set Priv(activeindex) $Priv($menu:postIndex)
+                        after $::tk::MenuDelay [list ::tk::DeactiveMenu $menu]
+                        set Priv($menu:postIndex) none
+                    } elseif {[info exists Priv(postCascade)]} {
+                        set n [CountLevel $menu]
+                        set k [CountLevel $Priv(postCascade)]
+                        if {$k - $n >= 2} {
+                            after $::tk::MenuDelay [list ::tk::UnpostCascade $menu]
+                            set Priv($menu:postIndex) none
+                        }
+                    }
+                }
+            }
 	}
     }
 
     if {$::tk::MODERNIZE && [info exists activeindex]} {
         set index [$menu index @$x,$y]
-        if {[info exists Priv(menuActivated)] && $index ne "none"} {
-            if {$index ne $activeindex && [$menu type $index] eq "cascade"} {
-                set mode [option get $menu clickToFocus ClickToFocus]
-                if {$mode eq "" || ([string is boolean $mode] && !$mode)} {
-                    set delay [expr {[$menu cget -type] eq "menubar"? 0 : $::tk::MenuDelay}]
-                    set Priv(menuActivatedTimer) \
-                        [after $delay [list ::tk::PostCascade $menu]]
-                    set Priv(activeindex) -1
-                }
-            } elseif {$index ne $activeindex
-                            && [$menu type $activeindex] eq "cascade"
-                            && [$menu cget -type] ne "menubar"} {
-                after $::tk::MenuDelay [list ::tk::DeactiveMenu $menu $activeindex]
-                set Priv(activeindex) $index
+        if {[info exists Priv(menuActivated)] &&
+                $index ne "none" &&
+                $activeindex ne "none" &&
+                ($index ne $activeindex ||
+                    ![info exists Priv($menu:postIndex)] ||
+                    $index ne $Priv($menu:postIndex)) &&
+                [$menu type $index] eq "cascade"} {
+            set mode [option get $menu clickToFocus ClickToFocus]
+            if {$mode eq "" || ([string is boolean $mode] && !$mode)} {
+                set delay [expr {[$menu cget -type] eq "menubar"? 0 : $::tk::MenuDelay}]
+                incr Priv(afterCount)
+                after $delay [list ::tk::PostCascade $menu $Priv(afterCount)]
+                set Priv(activeindex) -1
             }
         }
     } else {
@@ -643,26 +662,40 @@ proc ::tk::MenuMotion {menu x y state} {
 
 ### MODERNIZE begin ##########################################################
 
-proc ::tk::DeactiveMenu {menu index} {
+proc ::tk::CountLevel {w} {
+    return [expr {[string length $w] - [string length [string map {. ""} $w]]}]
+}
+
+proc ::tk::DeactiveMenu {menu} {
     variable ::tk::Priv
 
     if {[winfo exists $menu] && $menu eq $Priv(window)} {
         lassign [winfo pointerxy $menu] x y
         if {$Priv(activeindex) != -1 && [$menu index @$x,$y] != $Priv(activeindex)} {
             $menu postcascade none
+            set Priv(activeindex) -1
         }
     }
-    set Priv(activeindex) -1
-    unset -nocomplain Priv(postCascade)
 }
 
-
-proc ::tk::PostCascade menu {
+proc ::tk::UnpostCascade {menu} {
     variable ::tk::Priv
 
-    catch {
-        set Priv(postCascade) [$menu entrycget active -menu]
-        $menu postcascade active
+    if {[winfo exists $menu] && $menu eq $Priv(window)} {
+        $menu postcascade none
+        set Priv(activeindex) -1
+    }
+}
+
+proc ::tk::PostCascade {menu id} {
+    variable ::tk::Priv
+
+    if {$id == $Priv(afterCount)} {
+        catch {
+            set Priv(postCascade) [$menu entrycget active -menu]
+            set Priv($menu:postIndex) [$menu index active]
+            $menu postcascade active
+        }
     }
 }
 
@@ -715,7 +748,7 @@ proc ::tk::MenuButtonDown menu {
 	    }
             if {$::tk::MODERNIZE} {
                 if {[$menu type active] eq "cascade"} {
-                    set Priv(menuActivated) 1
+                    set Priv(menuActivated) $menu
                 }
             }
         }
@@ -931,6 +964,7 @@ proc ::tk::MenuNextMenu {menu direction} {
             if {$::tk::MODERNIZE} {
                 set Priv(activeindex) -1
                 unset -nocomplain Priv(postCascade)
+                unset -nocomplain Priv($menu:postIndex)
             }
 	    $menu postcascade active
 	    set m2 [$menu entrycget active -menu]
@@ -960,6 +994,7 @@ proc ::tk::MenuNextMenu {menu direction} {
 
             if {$::tk::MODERNIZE} {
                 unset -nocomplain Priv(postCascade)
+                unset -nocomplain Priv($menu:postIndex)
             }
 	    $m2 postcascade none
 
@@ -1472,7 +1507,7 @@ proc ::tk_popup {menu x y {entry {}}} {
     ### FIX end ######################################################################
     if {$::tk::MODERNIZE} { 
         set Priv(activeindex) -1
-        set Priv(menuActivated) 1
+        set Priv(menuActivated) $menu
     }
     tk::PostOverPoint $menu $x $y $entry
     if {[tk windowingsystem] eq "x11" && [winfo viewable $menu]} {

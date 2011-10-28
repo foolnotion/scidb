@@ -70,7 +70,7 @@ $(LIB).a: $(OBJS)
 
 #========================================================================
 
-LEMON_CFLAGS = $(CFLAGS) -Wno-uninitialized
+LEMON_CFLAGS = $(CFLAGS) -Wno-uninitialized -fno-strict-aliasing
 
 TCLSH	= tclsh$(TCL_VERSION)
 

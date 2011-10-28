@@ -33,7 +33,6 @@
 #include "db_edit_key.h"
 #include "db_comment.h"
 #include "db_annotation.h"
-#include "db_mark_set.h"
 
 #include "m_vector.h"
 #include "m_map.h"
@@ -46,6 +45,7 @@ class Annotation;
 class MarkSet;
 class MoveNode;
 class TagSet;
+class EngineList;
 
 namespace edit {
 
@@ -169,6 +169,7 @@ public:
 									db::Board const& startBoard,
 									LanguageSet const& langSet,
 									LanguageSet const& wantedLanguages,
+									db::EngineList const& engines,
 									MoveNode const* node,
 									unsigned linebreakThreshold,
 									unsigned linebreakMaxLineLength,
@@ -311,6 +312,8 @@ private:
 
 	friend class Root;
 
+	void getMoveInfo(Work& work, db::MoveNode const* move, mstl::string& result);
+
 	List	m_list;
 	Ply*	m_ply;
 };
@@ -339,7 +342,7 @@ class Comment : public Node
 {
 public:
 
-	enum VarPos { Inside, AtStart, AtEnd };
+	enum VarPos { Inside, AtStart, AtEnd, Finally };
 
 	Comment(db::Comment const& comment, move::Position position, VarPos varPos = Inside);
 
@@ -389,7 +392,7 @@ public:
 
 private:
 
-	db::MarkSet m_marks;
+	bool m_hasMarks;
 };
 
 
@@ -435,7 +438,7 @@ public:
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
 	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
-	virtual void marks(MarkSet const& marks) = 0;
+	virtual void marks(bool hasMarks) = 0;
 	virtual void space(Bracket bracket) = 0;
 	virtual void linebreak(unsigned level) = 0;
 

@@ -127,6 +127,17 @@ Date::setYMD(unsigned y, unsigned m, unsigned d)
 }
 
 
+::util::crc::checksum_t
+Date::computeChecksum(util::crc::checksum_t crc) const
+{
+	crc = ::util::crc::compute(crc, m_year);
+	crc = ::util::crc::compute(crc, m_month);
+	crc = ::util::crc::compute(crc, m_day);
+
+	return crc;
+}
+
+
 bool
 Date::parseYear(char const* s)
 {

@@ -736,9 +736,17 @@ Board::shortCastlingWhiteIsLegal() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
-	uint64_t mask = (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1);
 
-	return !(m_occupied & mask & ~king & ~rook) && !isAttackedBy(Black, mask);
+	if (m_occupied & RankMask1 & (rook - 1) & ~(king - 1) & ~king)	// (king+1)...(rook-1)
+		return false;
+
+	if (m_ksq[White] >= g1)
+		return !isAttackedBy(Black, (G1 | H1) & (king | (king - 1)));	// G1...king
+
+	if (m_occupied & (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(rook | (rook - 1)) & ~king)	// rook...G1
+		return false;
+
+	return !isAttackedBy(Black, (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1));	// king...G1
 }
 
 
@@ -749,9 +757,17 @@ Board::shortCastlingBlackIsLegal() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
-	uint64_t mask = (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1);
 
-	return !(m_occupied & mask & ~king & ~rook) && !isAttackedBy(White, mask);
+	if (m_occupied & RankMask8 & (rook - 1) & ~(king - 1) & ~king)	// (king+1)...(rook-1)
+		return false;
+
+	if (m_ksq[Black] >= g8)
+		return !isAttackedBy(White, (G8 | H8) & (king | (king - 1)));	// G8...king
+
+	if (m_occupied & (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(rook | (rook - 1)) & ~king)	// rook...G8
+		return false;
+
+	return !isAttackedBy(White, (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1));	// king...G8
 }
 
 
@@ -762,9 +778,19 @@ Board::longCastlingWhiteIsLegal() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
-	uint64_t mask = (C1 | D1 | E1 | F1 | G1 | H1) & (king | (king - 1));
 
-	return !(m_occupied & mask & ~king & ~rook) && !isAttackedBy(Black, mask);
+	if (m_occupied & RankMask1 & (king - 1) & ~(rook - 1) & ~rook)	// (rook+1)...(king-1)
+		return false;
+
+	if (m_ksq[White] <= c1)
+	{
+		if (m_occupied & (A1 | B1 | C1 | D1) & ~(king - 1) & ~king)	// (king+1)...D1
+			return false;
+
+		return !isAttackedBy(Black, (A1 | B1 | C1) & ~(king - 1));	// king...C1
+	}
+
+	return !isAttackedBy(Black, (C1 | D1 | E1 | F1 | G1 | H1) & (king | (king - 1)));	// C8...king
 }
 
 
@@ -775,9 +801,19 @@ Board::longCastlingBlackIsLegal() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
-	uint64_t mask = (C8 | D8 | E8 | F8 | G8 | H8) & (king | (king - 1));
 
-	return !(m_occupied & mask & ~king & ~rook) && !isAttackedBy(White, mask);
+	if (m_occupied & RankMask8 & (king - 1) & ~(rook - 1) & ~rook)	// (rook+1)...(king-1)
+		return false;
+
+	if (m_ksq[Black] <= c8)
+	{
+		if (m_occupied & (A8 | B8 | C8 | D8) & ~(king - 1) & ~king)	// (king+1)...D8
+			return false;
+
+		return !isAttackedBy(White, (A8 | B8 | C8) & ~(king - 1));	// king...C8
+	}
+
+	return !isAttackedBy(White, (C8 | D8 | E8 | F8 | G8 | H8) & (king | (king - 1)));	// C8...king
 }
 
 
@@ -788,9 +824,11 @@ Board::shortCastlingWhiteIsPossible() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
-	uint64_t mask = (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1);
 
-	return !(m_occupied & mask & ~king & ~rook);
+	if (m_occupied & (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(rook | (rook - 1)) & ~king)	// rook...G1
+		return false;
+
+	return !(m_occupied & RankMask1 & (rook - 1) & ~(king - 1) & ~king);	// (king+1)...(rook-1)
 }
 
 
@@ -801,9 +839,11 @@ Board::shortCastlingBlackIsPossible() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
-	uint64_t mask = (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1);
 
-	return !(m_occupied & mask & ~king & ~rook);
+	if (m_occupied & (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(rook | (rook - 1)) & ~king)	// rook...G8
+		return false;
+
+	return !(m_occupied & RankMask8 & (rook - 1) & ~(king - 1) & ~king);	// (king+1)...(rook-1)
 }
 
 
@@ -814,9 +854,11 @@ Board::longCastlingWhiteIsPossible() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
-	uint64_t mask = (C1 | D1 | E1 | F1 | G1 | H1) & (king | (king - 1));
 
-	return !(m_occupied & mask & ~king & ~rook);
+	if (m_occupied & (A1 | B1 | C1 | D1) & ~(king - 1) & ~king)	// (king+1)...D1
+		return false;
+
+	return !(m_occupied & RankMask1 & (king - 1) & ~(rook - 1) & ~rook);	// (rook+1)...(king-1)
 }
 
 
@@ -827,9 +869,11 @@ Board::longCastlingBlackIsPossible() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
-	uint64_t mask = (C8 | D8 | E8 | F8 | G8 | H8) & (king | (king - 1));
 
-	return !(m_occupied & mask & ~king & ~rook);
+	if (m_occupied & (A8 | B8 | C8 | D8) & ~(king - 1) & ~king)	// (king+1)...D8
+		return false;
+
+	return !(m_occupied & RankMask8 & (king - 1) & ~(rook - 1) & ~rook);	// (rook+1)...(king-1)
 }
 
 
@@ -1220,20 +1264,15 @@ Board::setCastleLong(color::ID color)
 
 
 void
-Board::removeCastlingRights()
+Board::removeCastlingRights(castling::Index index)
 {
-	for (unsigned i = 0; i < 4; ++i)
+	if (m_castle & (1 << index))
 	{
-		if (m_castle & (1 << i))
-		{
-			M_ASSERT(m_castleRookCurrent[i] != Null);
-
-			hashCastling(castling::Index(i));
-			m_destroyCastle[m_castleRookCurrent[i]] = 0xff;
-			m_castleRookCurrent[i] = Null;
-			m_castleRookAtStart[i] = Null;
-			m_unambiguous[i] = false;
-		}
+		hashCastling(index);
+		m_destroyCastle[m_castleRookCurrent[index]] = 0xff;
+		m_castleRookCurrent[index] = Null;
+		m_castleRookAtStart[index] = Null;
+		m_unambiguous[index] = false;
 	}
 }
 
@@ -1241,10 +1280,18 @@ Board::removeCastlingRights()
 void
 Board::removeCastlingRights(color::ID color)
 {
-	hashCastling(color::ID(color));
-	destroyCastle(color::ID(color));
-	m_castleRookCurrent[::kingSideIndex(color)] = Null;
-	m_castleRookCurrent[::queenSideIndex(color)] = Null;
+	removeCastlingRights(kingSideIndex(color));
+	removeCastlingRights(queenSideIndex(color));
+}
+
+
+void
+Board::removeCastlingRights()
+{
+	removeCastlingRights(WhiteKS);
+	removeCastlingRights(WhiteQS);
+	removeCastlingRights(BlackKS);
+	removeCastlingRights(BlackQS);
 }
 
 
@@ -1256,12 +1303,7 @@ Board::removeCastlingRights(Square rook)
 	Byte castling = m_destroyCastle[rook];
 
 	if (m_castle & ~castling)
-	{
-		Index index = Index(lsb(uint8_t(~castling)));
-		hashCastling(index);
-		m_castle &= castling;
-		m_castleRookCurrent[index] = Null;
-	}
+		removeCastlingRights(Index(lsb(uint8_t(~castling))));
 }
 
 
@@ -1697,10 +1739,14 @@ Board::setup(char const* fen)
 	// Move number
 	if (!::isdigit(*fen))
 		return false;
-	unsigned moveNo = ::strtoul(fen, 0, 10);
+	unsigned moveNo = ::strtoul(fen, nullptr, 10);
 	if (moveNo & (~unsigned(0) << 12))
 		moveNo = 0;	// silently fix broken move numbers (sg3/sg4 may contain broken FEN's)
 	setMoveNumber(moveNo);
+
+	// IMPORTANT NOTE:
+	// The FEN has one weakness:
+	// it does not provide information for detecting 3-fold repetition.
 
 	return true;
 }

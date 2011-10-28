@@ -73,6 +73,8 @@ proc Build {w args} {
 	set Vars(padx) $opts(-padx)
 	set Vars(pady) $opts(-pady)
 	set Vars(initialdir) $opts(-initialdir)
+	set Vars(subfolders) {}
+	set Vars(user) 0
 
 	set Vars(linespace) [font metrics $opts(-font) -linespace]
 	set Vars(activebackground) $opts(-activebackground)
@@ -89,7 +91,15 @@ proc Build {w args} {
 	tk::frame $w -takefocus 0 {*}[array get opts]
 
 	if {$Vars(showlabel)} {
-		tk::label $w.label -text "[Tr Folder]:"
+		tk::button $w.label \
+			-text "[Tr Folder]:" \
+			-pady 2 \
+			-padx 2 \
+			-relief flat \
+			-overrelief flat \
+			-activebackground [$w cget -background] \
+			;
+		bind $w.label <ButtonPress-1> { break }
 	}
 
 	tk::button $w.prev                           \
@@ -115,14 +125,14 @@ proc Build {w args} {
 		-command [namespace code [list PopupDirs $w $w.image--1 -1]] \
 		-takefocus 0                                                 \
 		;
+	bind $w.image--1 <Leave> { %W configure -relief flat }
 	tooltip $w.next [Tr ShowTail]
 	if {$Vars(showlabel)} {
-		grid $w.label -column 1  -row 1
-		grid columnconfigure $w {0 2} -minsize $Vars(padx)
+		grid $w.label -column 1 -row 1 -sticky ns
 	}
-	grid $w.prev -column 3 -row 1
-	grid $w.image--1 -column 5 -row 1
-	grid $w.next -column 1000 -row 1
+	grid $w.prev -column 3 -row 1 -sticky ns
+	grid $w.image--1 -column 5 -row 1 -sticky ns
+	grid $w.next -column 1000 -row 1 -sticky ns
 	grid rowconfigure $w {0 2} -minsize $Vars(pady)
 	grid columnconfigure $w {2 4 1001} -minsize $Vars(padx)
 
@@ -142,19 +152,41 @@ proc WidgetProc {w command args} {
 	switch -- $command {
 		set {
 			if {[llength $args] != 1} {
-				error "wrong # args: should be \"[namespace current] set <dir>\""
+				error "wrong # args: should be \"[namespace current] $command <dir>\""
 			}
 			variable ${w}::Vars
 
-			if {[lindex $args 0] ne $Vars(dir)} {
-				set Vars(dir) [lindex $args 0]
+			set folder [lindex $args 0]
+			if {$folder ne $Vars(dir)} {
+				set Vars(dir) $folder
 				set Vars(components) [file split $Vars(dir)]
 				if {[llength $Vars(components)] <= 1} {
-					set Vars(components) { "" }
+					set Vars(components) {}
 				} else {
 					set Vars(components) [lreplace $Vars(components) 0 0]
 				}
 				set Vars(start) [llength $Vars(components)]
+				set Vars(subfolders) {}
+				set Vars(user) 0
+				Layout $w
+			}
+
+			return $w
+		}
+
+		setfolder {
+			if {[llength $args] != 1 && [llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <folder> ?<sub-folders>?\""
+			}
+			variable ${w}::Vars
+
+			lassign $args folder subfolders
+			if {$folder ne $Vars(dir)} {
+				set Vars(dir) $folder
+				set Vars(components) [list $folder]
+				set Vars(start) 1
+				set Vars(subfolders) $subfolders
+				set Vars(user) 1
 				Layout $w
 			}
 
@@ -232,7 +264,7 @@ proc Layout {w} {
 		bind $w.image-$i <Leave> { %W configure -relief flat }
 		set col [expr {4*($i + 2)}]
 		grid $w.text-$i -column [incr col] -row 1
-		grid $w.image-$i -column [incr col] -row 1
+		grid $w.image-$i -column [incr col] -row 1 -sticky ns
 	}
 
 	for {set i 0} {$i < $n} {incr i} {
@@ -248,7 +280,11 @@ proc Layout {w} {
 
 	update idletasks
 
-	set iwd [winfo width $w.image-0]
+	if {[winfo exists $w.image-0]} {
+		set iwd [winfo width $w.image-0]
+	} else {
+		set iwd 0
+	}
 	set bwd [$w.__choosedir__ cget -borderwidth]
 	set twd [expr {[winfo width $w] - 2*$bwd - [winfo width $w.prev] - 3*$Vars(padx)}]
 	if {!$removeLast} { set twd [expr {$twd - $iwd}] }
@@ -304,9 +340,16 @@ proc Layout {w} {
 		}
 	}
 
-	grid $w.image--1
-	if {$removeLast} { grid remove $w.image-[expr {$n - 1}] }
-	if {$e < $n} { grid $w.next } else { grid remove $w.next }
+	if {$Vars(user)} {
+		grid remove $w.image--1
+		grid remove $w.prev
+		if {[llength $Vars(subfolders)] == 0} { grid remove $w.image-0 }
+	} else {
+		grid $w.image--1
+		grid $w.prev
+		if {$removeLast} { grid remove $w.image-[expr {$n - 1}] }
+		if {$e < $n} { grid $w.next } else { grid remove $w.next }
+	}
 }
 
 
@@ -323,11 +366,12 @@ proc ButtonEnter {w} {
 proc Invoke {w btn i} {
 	variable ${w}::Vars
 
-	set Vars(components) [lrange $Vars(components) 0 $i]
-	set Vars(dir) [file join "/" {*}$Vars(components)]
-	event generate $w <<SetDirectory>> -data $Vars(dir)
-	set Vars(start) [llength $Vars(components)]
-	Layout $w
+	if {$Vars(user)} {
+		event generate $w <<SetFolder>> -data $Vars(dir)
+	} else {
+		set components [lrange $Vars(components) 0 $i]
+		event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
+	}
 	after idle [namespace code [list ButtonEnter $btn]]
 }
 
@@ -335,17 +379,24 @@ proc Invoke {w btn i} {
 proc PopupDirs {w btn i} {
 	variable ${w}::Vars
 
-	set rootdir [file join "/" {*}[lrange $Vars(components) 0 $i]]
-	set subdirs [glob -nocomplain -tails -dir $rootdir -types d *]
-	set subdirs [lsort -dictionary -unique $subdirs]
+	if {$Vars(user)} {
+		set subdirs $Vars(subfolders)
+	} else {
+		set rootdir [file join "/" {*}[lrange $Vars(components) 0 $i]]
+		set subdirs [glob -nocomplain -tails -dir $rootdir -types d *]
+		set subdirs [lsort -dictionary -unique $subdirs]
+	}
 
 	set m $w.popup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 
-	if {[llength $subdirs] == 0} {
-	} else {
+	if {[llength $subdirs]} {
 		foreach dir $subdirs {
+			if {$Vars(user)} {
+				set rootdir [file dirname $dir]
+				set dir [lindex [file split $dir] end]
+			}
 			$m add command -label $dir -command [namespace code [list ChangeDir $w $rootdir $dir]]
 		}
 	}
@@ -356,13 +407,7 @@ proc PopupDirs {w btn i} {
 
 
 proc ChangeDir {w rootdir subdir} {
-	variable ${w}::Vars
-
-	set Vars(dir) [file join $rootdir $subdir]
-	event generate $w <<SetDirectory>> -data $Vars(dir)
-	set Vars(components) [lrange [file split $Vars(dir)] 1 end]
-	set Vars(start) [llength $Vars(components)]
-	Layout $w
+	event generate $w <<SetDirectory>> -data [file join $rootdir $subdir]
 }
 
 

@@ -48,7 +48,7 @@ perform(Environment& env)
 //
 //	mstl::string date;
 //	date.format("%02u.%02u.%u", day->value(), month->value(), year->value());	// TODO
-//	env.pushProducer(Environment::ProducerP(new TextProducer(date)));
+//	env.pushProducer(Environment::ProducerP(new TextProducer(date))); // MEMORY
 //}
 
 

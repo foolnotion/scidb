@@ -42,6 +42,7 @@
 #include "u_byte_stream.h"
 #include "u_block_file.h"
 #include "u_progress.h"
+#include "u_misc.h"
 
 #include "sys_time.h"
 #include "sys_file.h"
@@ -271,7 +272,9 @@ Codec::~Codec() throw()
 
 unsigned Codec::maxGameRecordLength() const	{ return m_blockSize - 1; }
 unsigned Codec::maxGameLength() const			{ return (1 << 10) - 1; }
-unsigned Codec::maxGameCount() const			{ return 16000000; }
+// IMPORTANT NOTE:
+// Scid-vs-PC supports 2^(3*8)-2 games, but mainline Scid supports only 16,000,000 games.
+unsigned Codec::maxGameCount() const			{ return (1 << 24) - 2; }
 unsigned Codec::maxPlayerCount() const			{ return (1 << 20) - 1; }
 unsigned Codec::maxEventCount() const			{ return (1 << 19) - 1; }
 unsigned Codec::maxSiteCount() const			{ return (1 << 19) - 1; }
@@ -362,6 +365,13 @@ Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
 			tags.remove(tag);
 		}
 	}
+}
+
+
+bool
+Codec::isExtraTag(tag::ID tag)
+{
+	return Encoder::isExtraTag(tag);
 }
 
 
@@ -1718,7 +1728,11 @@ Codec::readNamebase(	ByteIStream& bstrm,
 
 
 void
-Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature)
+Codec::doEncoding(util::ByteStream& strm,
+						GameData const& data,
+						Signature const& signature,
+						TagBits const& allowedTags,
+						bool allowExtraTags)
 {
 	M_ASSERT(gameInfoList().size() <= maxGameCount());
 	M_ASSERT(namebase(Namebase::Player).size() <= maxPlayerCount());
@@ -1727,14 +1741,14 @@ Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const&
 	M_ASSERT(namebase(Namebase::Round).size() <= ::MaxRoundCount);
 
 	Encoder encoder(strm, *m_codec);
-	encoder.doEncoding(signature, data);
+	encoder.doEncoding(signature, data, allowedTags, allowExtraTags);
 }
 
 
 db::Consumer*
 Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(srcFormat, *this, encoding());
+	return new Consumer(srcFormat, *this, encoding(), Consumer::TagBits(true), true);
 }
 
 
@@ -1912,6 +1926,20 @@ Codec::getNumberOfGames(mstl::string const& filename)
 
 	ByteStream bstrm(header + 14, sizeof(header) - 14);
 	return bstrm.uint24();
+}
+
+
+void
+Codec::getSuffixes(mstl::string const& filename, StringList& result)
+{
+	mstl::string ext(::util::misc::file::suffix(filename));
+
+	result.push_back(ext);
+	ext[1] = 'g';
+	result.push_back(ext);
+	ext[1] = 'n';
+	result.push_back(ext);
+	result.push_back("ssc");
 }
 
 // vi:set ts=3 sw=3:

@@ -658,8 +658,10 @@ mstl::backtrace::symbols()
 	if (is_debug_mode())
 		return;
 
+# ifdef USE_GDB
 	if (symbols_gdb())
 		return;
+# endif
 
 	if (symbols_linux())
 		return;

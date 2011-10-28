@@ -30,7 +30,9 @@
 #include "app_engine.h"
 
 #include "db_board.h"
+#include "db_move.h"
 
+#include "m_vector.h"
 #include "m_string.h"
 #include "m_auto_ptr.h"
 
@@ -49,6 +51,7 @@ public:
 	~Engine() throw();	// gcc complains w/o explicit destructor
 
 	bool startAnalysis(db::Board const& board) override;
+	bool startAnalysis(db::Game const& game, bool isNew) override;
 	bool stopAnalysis() override;
 
 	void timeout();
@@ -56,19 +59,22 @@ public:
 protected:
 
 	void setupBoard(db::Board const& board);
-	void doMove(db::Move const& move);
 	void reset();
 
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
+	void sendNumberOfVariations() override;
 	void processMessage(mstl::string const& message) override;
+	void doMove(db::Game const& game, db::Move const& lastMove) override;
 
 	Result probeResult() const override;
 
 private:
 
 	class Timer;
-	typedef mstl::auto_ptr<Timer> TimerP;
+
+	typedef mstl::auto_ptr<Timer>		TimerP;
+	typedef mstl::vector<db::Move>	History;
 
 	void featureDone(bool done);
 	void parseAnalysis(mstl::string const& msg);
@@ -76,6 +82,11 @@ private:
 	void parseOption(mstl::string const& option);
 	void parseFeatures(char const* msg);
 	void detectFeatures(char const* identifier);
+	void startAnalysis(	db::Board const& startBoard,
+								db::Board const& currentBoard,
+								History const& moves,
+								bool isNew);
+	void doMove(db::Move const& move);
 
 	db::Board		m_board;
 	TimerP			m_timer;

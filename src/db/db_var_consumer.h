@@ -27,7 +27,7 @@
 #ifndef _db_var_consumer_included
 #define _db_var_consumer_included
 
-#include "db_consumer.h"
+#include "db_info_consumer.h"
 
 #include "m_vector.h"
 
@@ -36,7 +36,7 @@ namespace db {
 class Board;
 class MoveNode;
 
-class VarConsumer : public Consumer
+class VarConsumer : public InfoConsumer
 {
 public:
 
@@ -62,6 +62,7 @@ protected:
 										Annotation const& annotation,
 										MarkSet const& marks) override;
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendMoveInfo(MoveInfoSet const& moveInfo) override;
 	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,

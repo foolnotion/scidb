@@ -53,9 +53,6 @@
 using namespace db;
 
 
-unsigned Game::undoLevel = 20;
-
-
 namespace {
 
 struct UndoApplyWatcher
@@ -157,6 +154,7 @@ Game::Game()
 	,m_idn(0)
 	,m_undoIndex(0)
 	,m_maxUndoLevel(0)
+	,m_combinePredecessingMoves(0)
 	,m_undoCommand(None)
 	,m_redoCommand(None)
 	,m_flags(0)
@@ -217,14 +215,15 @@ Game::operator=(Game const& game)
 		m_finalBoardIsValid				= false;
 		m_subscriber						= game.m_subscriber;
 		m_undoIndex							= 0;
-		m_maxUndoLevel						= 0;
+		m_maxUndoLevel						= game.m_maxUndoLevel;
+		m_combinePredecessingMoves		= game.m_combinePredecessingMoves;
 		m_undoCommand						= None;
 		m_redoCommand						= None;
 		m_flags								= game.m_flags;
 		m_linebreakThreshold				= game.m_linebreakThreshold;
 		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
 		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
-		m_linebreakMinCommentLength	= game.m_linebreakMinCommentLength;
+		m_linebreakMinCommentLength		= game.m_linebreakMinCommentLength;
 		m_displayStyle						= game.m_displayStyle;
 
 		m_line.copy(game.m_line);
@@ -293,17 +292,18 @@ Game::newUndo(UndoAction action, Command command)
 
 
 Game::Undo*
-Game::prevUndo()
+Game::prevUndo(unsigned back)
 {
 	M_ASSERT(m_maxUndoLevel > 0);
+	M_ASSERT(back > 0);
 
 	if (m_undoCommand != None)
-		return m_undoIndex < m_undoList.size() ? m_undoList[m_undoIndex] : 0;
+		return m_undoIndex + 1 - back < m_undoList.size() ? m_undoList[m_undoIndex - back] : 0;
 
-	if (m_undoIndex == 0)
+	if (m_undoIndex < back)
 		return 0;
 
-	return m_undoList[m_undoIndex - 1];
+	return m_undoList[m_undoIndex - back];
 }
 
 
@@ -313,9 +313,33 @@ Game::insertUndo(UndoAction action, Command command)
 	M_ASSERT(action == Unstrip_Moves || action == Truncate_Variation || action == Remove_Mainline);
 
 	if (m_maxUndoLevel)
+	{
+		Undo* prev = prevUndo();
+
+		if (prev && prev->command == AddMove)
+		{
+			// Combine precedent AddMove's, in this way
+			// we prevent a quick fill of the undo slots.
+
+			Undo* pprev = prevUndo(2);
+
+			if (	pprev
+				&& (pprev->command == AddMove || pprev->command == AddMoves)
+				&& prev->key.level() == m_currentKey.level()
+				&& unsigned(m_currentKey.computeDistance(pprev->key)) <= m_combinePredecessingMoves)
+			{
+				prev->key = m_currentKey;
+				pprev->command = AddMoves;
+				return;
+			}
+		}
+
 		newUndo(action, command);
+	}
 	else
+	{
 		m_isIrreversible = true;
+	}
 }
 
 
@@ -346,8 +370,13 @@ Game::insertUndo(	UndoAction action,
 			prev->comment = new Comment(oldComment);
 			prev->position = position;
 		}
-		else if (	m_undoCommand == None
-					&& prev->position == position
+		else if (m_undoCommand != None)
+		{
+			Undo& undo = newUndo(action, command);
+			undo.comment = new Comment(oldComment);
+			undo.position = position;
+		}
+		else if (	prev->position == position
 					&& *prev->comment == newComment
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation())
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
@@ -386,7 +415,12 @@ Game::insertUndo(	UndoAction action,
 		{
 			prev->comment = new Comment(oldComment);
 		}
-		else if (m_undoCommand == None && *prev->comment == newComment)
+		else if (m_undoCommand != None)
+		{
+			Undo& undo = newUndo(action, command);
+			undo.comment = new Comment(oldComment);
+		}
+		else if (*prev->comment == newComment)
 		{
 			prev->clear();
 
@@ -418,8 +452,11 @@ Game::insertUndo(UndoAction action, Command command, MarkSet const& oldMarks, Ma
 		{
 			prev->marks = new MarkSet(oldMarks);
 		}
-		else if (	m_undoCommand == None
-					&& *prev->marks == newMarks
+		else if (m_undoCommand != None)
+		{
+			newUndo(action, command).marks = new MarkSet(oldMarks);
+		}
+		else if (	*prev->marks == newMarks
 					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment(prev->position))
 					&& (prev->annotation == 0 || *prev->annotation == m_currentNode->annotation()))
 		{
@@ -456,8 +493,11 @@ Game::insertUndo(	UndoAction action,
 		{
 			prev->annotation = new Annotation(oldAnnotation);
 		}
-		else if (	m_undoCommand == None
-					&& *prev->annotation == newAnnotation
+		else if (m_undoCommand != None)
+		{
+			newUndo(action, command).annotation = new Annotation(oldAnnotation);
+		}
+		else if (	*prev->annotation == newAnnotation
 					&& (prev->comment == 0 || *prev->comment == m_currentNode->comment(prev->position))
 					&& (prev->marks == 0 || *prev->marks == m_currentNode->marks()))
 		{
@@ -578,10 +618,18 @@ Game::redoCommand() const
 
 
 void
+Game::clearUndo()
+{
+	m_undoList.clear();
+	m_undoIndex= 0;
+}
+
+
+void
 Game::applyUndo(Undo& undo, bool redo)
 {
 	if (redo || undo.action != Set_Start_Position)
-		moveTo(undo.key);
+		tryToMoveTo(undo.key);
 
 	switch (undo.action)
 	{
@@ -606,7 +654,7 @@ Game::applyUndo(Undo& undo, bool redo)
 				{
 					Annotation annotation(*undo.annotation);
 					insertUndo(Set_Annotation, SetAnnotation, m_currentNode->annotation(), annotation);
-					m_currentNode->setAnnotation(annotation);
+					m_currentNode->replaceAnnotation(annotation);
 				}
 				if (undo.comment)
 				{
@@ -624,7 +672,7 @@ Game::applyUndo(Undo& undo, bool redo)
 				{
 					MarkSet marks(*undo.marks);
 					insertUndo(Set_Annotation, SetAnnotation, m_currentNode->marks(), marks);
-					m_currentNode->swapMarks(marks);
+					m_currentNode->replaceMarks(marks);
 				}
 
 				updateSubscriber(flags);
@@ -648,12 +696,13 @@ Game::applyUndo(Undo& undo, bool redo)
 	}
 
 	if (!redo || undo.action != Set_Start_Position)
-		moveTo(undo.key);
+		tryToMoveTo(undo.key);
 
 	switch (int(undo.action))
 	{
 		case Promote_Variation:
 		case Remove_Variation:
+		case Insert_Variation:
 			backward();
 			break;
 	}
@@ -663,6 +712,7 @@ Game::applyUndo(Undo& undo, bool redo)
 		switch (int(undo.command))
 		{
 			case AddMove:
+			case AddMoves:
 			case ReplaceVariation:
 				forward();
 				break;
@@ -874,6 +924,18 @@ Game::marks() const
 }
 
 
+MarkSet const&
+Game::marks(edit::Key const& key) const
+{
+	M_REQUIRE(isValidKey(key));
+
+	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
+
+	M_ASSERT(node);
+	return node->marks();
+}
+
+
 mstl::string&
 Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigned flags)
 {
@@ -1023,7 +1085,7 @@ Game::setAnnotation(Annotation const& annotation)
 		return;
 
 	insertUndo(Set_Annotation, SetAnnotation, m_currentNode->annotation(), annotation);
-	m_currentNode->setAnnotation(annotation);
+	m_currentNode->replaceAnnotation(annotation);
 	updateSubscriber(UpdatePgn | UpdateBoard);
 }
 
@@ -1041,6 +1103,21 @@ Game::undoMove()
 {
 	m_currentBoard.undoMove(m_currentNode->move());
 	m_currentKey.exchangePly(m_currentBoard.plyNumber());
+}
+
+
+void
+Game::tryToMoveTo(edit::Key const& key)
+{
+	M_REQUIRE(isValidKey(key));
+
+	edit::Key wantedKey(key);
+	edit::Key currentKey(m_currentKey);
+
+	moveToMainlineStart();
+
+	if (!wantedKey.setPosition(*this))
+		currentKey.setPosition(*this);
 }
 
 
@@ -1316,6 +1393,13 @@ unsigned
 Game::countAnnotations() const
 {
 	return m_startNode->countAnnotations();
+}
+
+
+unsigned
+Game::countMoveInfo() const
+{
+	return m_startNode->countMoveInfo();
 }
 
 
@@ -1694,10 +1778,10 @@ Game::exchangeMove(Move move, Force flag)
 		return true;
 
 	Board board(m_currentBoard);
+
 	mstl::auto_ptr<MoveNode> node(m_currentNode->next()->clone());
 	node->setMove(m_currentBoard, move);
 
-	board = m_currentBoard;
 	if (!checkConsistency(node.get(), board, flag))
 		return false;
 
@@ -1897,9 +1981,13 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 
 			if (truncate)
 			{
+				MoveNode* last = node->getLineEnd();
+
 				node = node->prev();
 				node->deleteNext();
 				node->setNext(new MoveNode);
+				node->next()->setComment(last->comment(move::Post), move::Post);
+
 				return true;
 			}
 		}
@@ -2217,11 +2305,8 @@ Game::stripMoves(move::Position position)
 	if (atLineStart())
 		return false;
 
-	MoveNode* last = m_currentNode->getLineEnd();
-
 	insertUndo(Strip_Moves, StripMoves, m_startNode->removeNext(), m_startBoard);
 	m_startNode->setNext(m_currentNode->removeNext());
-	m_startNode->getLineEnd()->setComment(last->comment(move::Post), move::Post);
 	m_startBoard = m_currentBoard;
 	moveTo(m_currentKey);
 
@@ -2240,10 +2325,7 @@ Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const
 {
 	M_ASSERT(startNode->next());
 
-	MoveNode* last = startNode;
-
-	while (last->next())
-		last = last->next();
+	MoveNode* last = startNode->getLineEnd();
 
 	startNode->setFolded(false);
 	last->setNext(m_startNode->removeNext());
@@ -2287,7 +2369,13 @@ Game::stripComments()
 	m_startNode = m_startNode->clone();
 	m_startNode->stripComments();
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet);
+
+	unsigned flags = UpdatePgn | UpdateBoard;
+
+	if (updateLanguageSet())
+		flags |= UpdateLanguageSet;
+
+	updateSubscriber(flags);
 
 	return true;
 }
@@ -2303,7 +2391,51 @@ Game::stripComments(mstl::string const& lang)
 	m_startNode = m_startNode->clone();
 	m_startNode->stripComments(lang);
 	moveTo(m_currentKey);
-	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet);
+
+	unsigned flags = UpdatePgn | UpdateBoard;
+
+	if (updateLanguageSet())
+		flags |= UpdateLanguageSet;
+
+	updateSubscriber(flags);
+
+	return true;
+}
+
+
+bool
+Game::copyComments(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal)
+{
+	if (m_startNode->countComments(fromLang) == 0)
+		return false;
+
+	insertUndo(Revert_Game, stripOriginal ? MoveComments : CopyComments, m_startNode);
+	m_startNode = m_startNode->clone();
+	m_startNode->copyComments(fromLang, toLang, stripOriginal);
+	moveTo(m_currentKey);
+
+	unsigned flags = UpdatePgn | UpdateBoard;
+
+	if (updateLanguageSet())
+		flags |= UpdateLanguageSet;
+
+	updateSubscriber(flags);
+
+	return true;
+}
+
+
+bool
+Game::stripMoveInfo()
+{
+	if (m_startNode->countMoveInfo() == 0)
+		return false;
+
+	insertUndo(Revert_Game, StripMoveInfo, m_startNode);
+	m_startNode = m_startNode->clone();
+	m_startNode->stripMoveInfo();
+	moveTo(m_currentKey);
+	updateSubscriber(UpdatePgn);
 
 	return true;
 }
@@ -2360,6 +2492,7 @@ Game::revertGame(MoveNode* startNode, Command command)
 	}
 
 	moveTo(m_currentKey);
+	updateLanguageSet();
 	updateSubscriber(UpdateAll);
 }
 
@@ -2434,7 +2567,7 @@ Game::computeChecksum(util::crc::checksum_t crc) const
 				crc,
 				reinterpret_cast<unsigned char const*>(&m_startBoard.uniquePosition()),
 				sizeof(board::UniquePosition));
-	crc = m_startNode->computeChecksum(crc);
+	crc = m_startNode->computeChecksum(m_engines, crc);
 
 	return crc;
 }
@@ -2499,6 +2632,39 @@ unsigned
 Game::dumpMoves(mstl::string& result)
 {
 	return dumpMoves(result, mstl::numeric_limits<unsigned>::max());
+}
+
+
+void
+Game::getHistory(History& result) const
+{
+	result.clear();
+	result.reserve(100);
+
+	for (MoveNode* node = m_currentNode; node; node = node->prev())
+	{
+		if (!node->atLineStart() && !node->atLineEnd())
+			result.push_back(node->move());
+	}
+}
+
+
+unsigned
+Game::dumpHistory(mstl::string& result) const
+{
+	History hist;
+	getHistory(hist);
+
+	result.reserve(result.size() + hist.size()*6);
+
+	for (int i = hist.size() - 1; i >= 0; i--)
+	{
+		if (!result.empty())
+			result.append(' ');
+		hist[i].printAlgebraic(result);
+	}
+
+	return hist.size();
 }
 
 
@@ -2650,9 +2816,10 @@ Game::computeEcoCode() const
 
 
 void
-Game::setUndoLevel(unsigned level)
+Game::setUndoLevel(unsigned level, unsigned combinePredecessingMoves)
 {
 	m_maxUndoLevel = level;
+	m_combinePredecessingMoves = combinePredecessingMoves;
 
 	if (m_undoList.size() > m_maxUndoLevel)
 	{
@@ -2748,12 +2915,7 @@ Game::isFolded(edit::Key const& key) const
 {
 	M_REQUIRE(isValidKey(key));
 
-	MoveNode* node = key.findPosition(m_startNode, m_startBoard.plyNumber());
-
-	while (!node->atLineStart())
-		node = node->prev();
-
-	return node->isFolded();
+	return key.findPosition(m_startNode, m_startBoard.plyNumber())->getLineStart()->isFolded();
 }
 
 
@@ -2890,6 +3052,7 @@ Game::updateSubscriber(unsigned action)
 															m_startBoard,
 															m_languageSet,
 															m_wantedLanguages,
+															m_engines,
 															m_startNode,
 															m_linebreakThreshold,
 															m_linebreakMaxLineLengthMain,
@@ -2952,7 +3115,7 @@ Game::setup(unsigned linebreakThreshold,
 	m_linebreakThreshold				= linebreakThreshold;
 	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
 	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
-	m_linebreakMinCommentLength	= linebreakMinCommentLength;
+	m_linebreakMinCommentLength		= linebreakMinCommentLength;
 	m_displayStyle						= displayStyle;
 }
 

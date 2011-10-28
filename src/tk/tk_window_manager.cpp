@@ -200,7 +200,7 @@ raiseWindow(Tk_Window tkwin, Window window)
 	Window	activeWindow	= rootWindow;
 	XEvent	xev;
 
-	// NOTE: this function is not working although it should!
+	// NOTE: this function is not working although it should (seems to be a KDE problem)
 
 	if (1)
 	{
@@ -282,8 +282,8 @@ cmdWM(ClientData client_data __attribute__((unused)),
 	if (objc < 2)
 		return tcl_error(ti, Usage);
 
-	char const*	subcmd	= Tcl_GetStringFromObj(objv[1], 0);
-	char const*	path		= objc <= 2 ? 0 : Tcl_GetStringFromObj(objv[2], 0);
+	char const*	subcmd	= Tcl_GetStringFromObj(objv[1], nullptr);
+	char const*	path		= objc <= 2 ? 0 : Tcl_GetStringFromObj(objv[2], nullptr);
 	Tk_Window	tkmain	= Tk_MainWindow(ti);
 	Tk_Window	tkwin		= path ? Tk_NameToWindow(ti, path, tkmain) : tkmain;
 

@@ -317,7 +317,7 @@ Namebase::insertSite(mstl::string const& name,
 		entry = makeSiteEntry(name, p);
 		entry->m_value = key.value;
 		unsigned index = i - m_list.begin();
-		reserve(m_list.size() + 1, limit);
+		reserve(index + 1, limit);
 		m_list.insert(m_list.begin() + index, entry);
 
 		M_ASSERT(index == 0 || *siteAt(index - 1) < *siteAt(index));
@@ -374,7 +374,7 @@ Namebase::insertEvent(	mstl::string const& name,
 		entry = makeEventEntry(name);
 		entry->m_value = key.value;
 		unsigned index = i - m_list.begin();
-		reserve(m_list.size() + 1, limit);
+		reserve(index + 1, limit);
 		m_list.insert(m_list.begin() + index, entry);
 
 		M_ASSERT(index == 0 || *eventAt(index - 1) < *eventAt(index));
@@ -434,6 +434,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 	}
 	else
 	{
+		// TODO: strip prefix "Comp " for player search (used by ChessBase)
 		p = Player::findPlayer(name, federation, sex);
 
 		if (p == 0)
@@ -457,7 +458,10 @@ Namebase::insertPlayer(	mstl::string const& name,
 					while (*p == '-' || *p == '_' || *p == '.' || ::isspace(*p))
 						++p;
 
-					if (::isdigit(*p) || islower(*p))
+					while (::isdigit(*p) || islower(*p))
+						++p;
+
+					if (*p == '\0')
 						type = species::Program;
 				}
 			}
@@ -525,7 +529,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 		entry = makePlayerEntry(name, p);
 		unsigned index = i - m_list.begin();
-		reserve(m_list.size() + 1, limit);
+		reserve(index + 1, limit);
 		m_list.insert(m_list.begin() + index, entry);
 	}
 	else
@@ -573,7 +577,7 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 	Entry* entry = makeEntry(name);
 
 	unsigned index = i - m_list.begin();
-	reserve(m_list.size() + 1, limit);
+	reserve(index + 1, limit);
 	m_list.insert(m_list.begin() + index, entry);
 
 	M_ASSERT(size() == 1 || *this->entryAt(size() - 2) < *this->entryAt(size() - 1));

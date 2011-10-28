@@ -65,6 +65,7 @@ namespace {
 struct Key
 {
 	Key() :databaseid(0), viewId(0) {}
+	Key(unsigned baseId, unsigned view) :databaseid(baseId), viewId(view) {}
 	Key(Database const& db, unsigned view) :databaseid(db.id()), viewId(view) {}
 
 	bool operator==(Key const& key) const
@@ -100,12 +101,12 @@ static TableHash tableHash;
 
 
 static TournamentTable*
-getTable(char const* cmd, Database const& db, unsigned view)
+getTable(char const* cmd, unsigned dbId, unsigned view)
 {
-	if (TableHash::const_pointer ptr = tableHash.find(Key(db, view)))
+	if (TableHash::const_pointer ptr = tableHash.find(Key(dbId, view)))
 		return *ptr;
 
-	error(cmd, 0, 0, "crosstable not exisiting in database %s", db.name().c_str());
+	error(cmd, nullptr, nullptr, "crosstable not exisiting in database %u", dbId);
 	return 0; // not reached
 }
 
@@ -121,6 +122,7 @@ cmdMake(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (ref == 0)
 		ref = cursor.view(view).makeTournamentTable();
 
+	setResult(cursor.database().id());
 	return TCL_OK;
 }
 
@@ -131,22 +133,22 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] = { "bestMode", "playerName", "playerInfo", "playerCount", 0 };
 	static char const* args[] =
 	{
-		"<base> <view>",
-		"<base> <view> <ranking>",
-		"<base> <view> <ranking>",
-		"<base> <view>",
+		"<baseId> <view>",
+		"<baseId> <view> <ranking>",
+		"<baseId> <view> <ranking>",
+		"<baseId> <view>",
 		0
 	};
 	enum { Cmd_BestMode, Cmd_PlayerName, Cmd_PlayerInfo, Cmd_PlayerCount };
 
 	if (objc < 4)
-		return usage(::CmdGet, 0, 0, subcommands, args);
+		return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 
-	int			cmd	= tcl::uniqueMatchObj(objv[1], subcommands);
-	char const* base	= stringFromObj(objc, objv, 2);
-	unsigned		view	= longFromObj(objc, objv, 3);
+	int		cmd		= tcl::uniqueMatchObj(objv[1], subcommands);
+	unsigned	baseId	= unsignedFromObj(objc, objv, 2);
+	unsigned	view		= longFromObj(objc, objv, 3);
 
-	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), view);
+	TournamentTable* table = getTable(CmdGet, baseId, view);
 
 	if (!table)
 		return TCL_ERROR;
@@ -176,7 +178,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				tcl::db::Ratings ratings(rating::Elo, rating::Elo);
 				NamebasePlayer const* player = table->getPlayer(ranking - 1);
 				if (!player)
-					return error(CmdGet, 0, 0, "invalid ranking number %u", ranking);
+					return error(CmdGet, nullptr, nullptr, "invalid ranking number %u", ranking);
 				return tcl::db::getPlayerInfo(*player, ratings, true, true);
 			}
 			break;
@@ -186,7 +188,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		default:
-			return usage(::CmdGet, 0, 0, subcommands, args);
+			return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 	}
 
 	return TCL_OK;
@@ -196,9 +198,9 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdRelease(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	mstl::string databaseName(stringFromObj(objc, objv, 1));
+	unsigned databaseId(unsignedFromObj(objc, objv, 1));
 	unsigned view(unsignedFromObj(objc, objv, 2));
-	Key key(Scidb.cursor(databaseName).database(), view);
+	Key key(databaseId, view);
 
 	if (TableHash::const_pointer p = tableHash.find(key))
 	{
@@ -219,10 +221,10 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	char const* base		= stringFromObj(objc, objv, 1);
-	unsigned		view	= longFromObj(objc, objv, 2);
+	unsigned baseId	= unsignedFromObj(objc, objv, 1);
+	unsigned view		= longFromObj(objc, objv, 2);
 
-	TournamentTable* table = getTable(CmdGet, Scidb.cursor(base).database(), view);
+	TournamentTable* table = getTable(CmdGet, baseId, view);
 
 	if (!table)
 		return TCL_ERROR;
@@ -231,11 +233,13 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	TeXt::Controller controller(stringFromObj(objc, objv, 3), TeXt::Controller::AbortMode, myLog);
 	TournamentTable::Order order = TournamentTable::Score;
 	TournamentTable::KnockoutOrder knockoutOrder = TournamentTable::Triangle;
+	TournamentTable::ScoringSystem scoringSystem = TournamentTable::Traditional;
 	TournamentTable::Mode mode = TournamentTable::Auto;
 
 	TournamentTable::TiebreakRules tiebreakRules =
 	{
-		TournamentTable::None, TournamentTable::None, TournamentTable::None, TournamentTable::None,
+		TournamentTable::None, TournamentTable::None, TournamentTable::None,
+		TournamentTable::None, TournamentTable::None, TournamentTable::None,
 	};
 
 	{
@@ -269,7 +273,7 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else if (::strcasecmp(tableOrder, "Federation") == 0)
 			order = TournamentTable::Federation;
 		else
-			return error(CmdEmit, 0, 0, "unknown order '%s'", tableOrder);
+			return error(CmdEmit, nullptr, nullptr, "unknown order '%s'", tableOrder);
 	}
 
 	{
@@ -279,17 +283,30 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			knockoutOrder = TournamentTable::Pyramid;
 		else if (::strcasecmp(koOrder, "Triangle") == 0)
 			knockoutOrder = TournamentTable::Triangle;
+		else
+			return error(CmdEmit, nullptr, nullptr, "unknown order '%s'", koOrder);
+	}
+
+	{
+		char const* system = stringFromObj(objc, objv, 8);
+
+		if (::strcasecmp(system, "Traditional") == 0)
+			scoringSystem = TournamentTable::Traditional;
+		else if (::strcasecmp(system, "Bilbao") == 0)
+			scoringSystem = TournamentTable::Bilbao;
+		else
+			return error(CmdEmit, nullptr, nullptr, "unknown scoring system '%s'", system);
 	}
 
 	{
 		int argc;
 		Tcl_Obj** argv;
 
-		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 8), &argc, &argv) != TCL_OK)
-			return error(CmdEmit, 0, 0, "list of tiebreak rules expected");
+		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 9), &argc, &argv) != TCL_OK)
+			return error(CmdEmit, nullptr, nullptr, "list of tiebreak rules expected");
 
 		if (size_t(argc) > U_NUMBER_OF(tiebreakRules))
-			return error(CmdEmit, 0, 0, "too many rules");
+			return error(CmdEmit, nullptr, nullptr, "too many rules");
 
 		for (int i = 0; i < argc; ++i)
 		{
@@ -311,16 +328,22 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				tiebreakRules[i] = TournamentTable::KoyaSystem;
 			else if (::strcasecmp(rule, "GamesWon") == 0)
 				tiebreakRules[i] = TournamentTable::GamesWon;
+			else if (::strcasecmp(rule, "GamesWonWithBlack") == 0)
+				tiebreakRules[i] = TournamentTable::GamesWonWithBlack;
 			else if (::strcasecmp(rule, "RefinedBuchholz") == 0)
 				tiebreakRules[i] = TournamentTable::RefinedBuchholz;
+			else if (::strcasecmp(rule, "ParticularResult") == 0)
+				tiebreakRules[i] = TournamentTable::ParticularResult;
+			else if (::strcasecmp(rule, "TraditionalScoring") == 0)
+				tiebreakRules[i] = TournamentTable::TraditionalScoring;
 			else
-				return error(CmdEmit, 0, 0, "unknown tiebreak rule '%s'", rule);
+				return error(CmdEmit, nullptr, nullptr, "unknown tiebreak rule '%s'", rule);
 		}
 	}
 
-	table->emit(controller.receptacle(), tiebreakRules, order, knockoutOrder, mode);
+	table->emit(controller.receptacle(), scoringSystem, tiebreakRules, order, knockoutOrder, mode);
 
-	mstl::string preamble(stringFromObj(objc, objv, 9));
+	mstl::string preamble(stringFromObj(objc, objv, 10));
 	mstl::istringstream src(preamble);
 	mstl::ostringstream dst;
 	mstl::ostringstream out;

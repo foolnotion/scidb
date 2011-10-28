@@ -104,7 +104,11 @@ public:
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info) override;
 
-	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature) override;
+	void doEncoding(	util::ByteStream& strm,
+							GameData const& data,
+							Signature const& signature,
+							TagBits const& allowedTags,
+							bool allowExtraTags) override;
 	Consumer* getConsumer(format::Type srcFormat) override;
 
 	void reset() override;
@@ -119,6 +123,8 @@ public:
 	static void rename(mstl::string const& oldName, mstl::string const& newName);
 	static void remove(mstl::string const& fileName);
 	static int getNumberOfGames(mstl::string const& filename);
+	static void getSuffixes(mstl::string const& filename, StringList& result);
+	static bool upgradeIndexOnly();
 
 private:
 
@@ -133,7 +139,7 @@ private:
 	void readNamebase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 	void readSitebase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 	void readEventbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
-	void readPlayerbase(util::ByteStream& bstrm, Namebase& base, unsigned count,util::Progress& progress);
+	void readPlayerbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 
 	void updateIndex(mstl::fstream& fstrm);
 	void writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress);

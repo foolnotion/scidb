@@ -39,6 +39,7 @@ tk::init(Tcl_Interp* ti)
 	jpeg_init(ti);
 	xcursor_init(ti);
 	busy_init(ti);
+	multiwindow_init(ti);
 
 	Tkhtml_Init(ti);
 //	Tcl_SetVar(ti, "tcl_rcFileName", "~/.scidb", TCL_GLOBAL_ONLY)

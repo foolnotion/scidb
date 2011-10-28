@@ -31,7 +31,7 @@ static void
 performMeaning(Environment& env)
 {
 	env.pushProducer(
-		Environment::ProducerP(new TextProducer(env.getExpandableToken()->meaning())));
+		Environment::ProducerP(new TextProducer(env.getExpandableToken()->meaning()))); // MEMORY
 }
 
 
@@ -41,9 +41,9 @@ performString(Environment& env)
 	TokenP token = env.getUndefinedToken();
 
 	if (token->type() == Token::T_List)
-		env.putUnboundToken(TokenP(new TextToken(token->name(env))));
+		env.putUnboundToken(TokenP(new TextToken(token->name(env)))); // MEMORY
 	else
-		env.pushProducer(Environment::ProducerP(new TextProducer(token->name(env))));
+		env.pushProducer(Environment::ProducerP(new TextProducer(token->name(env)))); // MEMORY
 }
 
 

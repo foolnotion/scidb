@@ -98,7 +98,7 @@ proc Build {w args} {
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 #	bind $w <FocusOut> [namespace code [list Completion $w]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
-	bind $w <<Language>> [namespace code [list LanguageChanged $w]]
+	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 	bind $w <<ComboboxPosted>> [list set [namespace current]::${w}::IgnoreKey 1]
 	bind $w <<ComboboxUnposted>> [list set [namespace current]::${w}::IgnoreKey 0]
 

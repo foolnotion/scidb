@@ -74,6 +74,12 @@ public:
 		Pyramid,
 	};
 
+	enum ScoringSystem
+	{
+		Traditional,
+		Bilbao,			// 3 points for a win, 1 for a draw, 0 for lose
+	};
+
 	enum Tiebreak
 	{
 		Buchholz,					// swiss
@@ -83,14 +89,17 @@ public:
 		Progressive,				// swiss
 		KoyaSystem,					// all-play-all
 		GamesWon,					// all-play-all
+		GamesWonWithBlack,		// all-play-all
 		RefinedBuchholz,			// swiss
+		ParticularResult,			// (result of the individual game between the tied players)
+		TraditionalScoring,		// (useful for Bilbao scoring system)
 		None,
 
 		LastBuchholz = SonnebornBerger,
-		LastTiebreak = RefinedBuchholz,
+		LastTiebreak = TraditionalScoring,
 	};
 
-	typedef Tiebreak TiebreakRules[4];
+	typedef Tiebreak TiebreakRules[6];
 
 	TournamentTable(Database const& db, NamebaseEvent const& event, Filter const& gameFilter);
 	~TournamentTable() throw();
@@ -103,6 +112,7 @@ public:
 	NamebasePlayer const* getPlayer(unsigned ranking) const;
 
 	void emit(	TeXt::Receptacle& receptacle,
+					ScoringSystem scoringSystem,
 					TiebreakRules const& tiebreakRules,
 					Order order,
 					KnockoutOrder koOrder = Triangle,
@@ -147,7 +157,7 @@ private:
 	void computePerformance();
 	void guessBestMode();
 	void computeTiebreaks();
-	void sort(TiebreakRules const& tiebreakRules, Order order, Mode mode);
+	void sort(ScoringSystem scoringSystem, TiebreakRules const& tiebreakRules, Order order, Mode mode);
 
 	void emitCrossTable(TeXt::Receptacle& receptacle, bool isScheveningen);
 	void emitSwissTable(TeXt::Receptacle& receptacle);

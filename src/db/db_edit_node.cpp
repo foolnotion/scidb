@@ -29,7 +29,9 @@
 #include "db_board.h"
 #include "db_annotation.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 #include "db_tag_set.h"
+#include "db_engine_list.h"
 
 #include "sys_utf8_codec.h"
 
@@ -56,7 +58,7 @@ deleteList(List& list)
 struct Node::Spacing
 {
 	enum Type		{ Zero, Space, Open, Close, Break, Para };
-	enum Context	{ None, Comment, PreComment, Diagram, Variation };
+	enum Context	{ None, Comment, PreComment, Diagram, StartVariation, EndVariation };
 
 	struct Token
 	{
@@ -81,6 +83,7 @@ struct Node::Spacing
 	void pushOpen();
 	void pushClose();
 	void pushBreak();
+	void pushBreak(unsigned level);
 	void pushParagraph(Context context);
 	void pushSpaceOrParagraph(Context context);
 
@@ -159,7 +162,7 @@ Node::Spacing::pushSpace()
 
 
 void
-Node::Spacing::pushBreak()
+Node::Spacing::pushBreak(unsigned level)
 {
    if (	!m_isVirgin
    	&& m_tokenList.top() != Break
@@ -169,9 +172,16 @@ Node::Spacing::pushBreak()
    	if (m_tokenList.top() == Space)
    		m_tokenList.pop();
 
-		m_tokenList.push(Token(m_level, Break));
+		m_tokenList.push(Token(level, Break));
 		m_plyCount = 0;
    }
+}
+
+
+void
+Node::Spacing::pushBreak()
+{
+	pushBreak(m_level);
 }
 
 
@@ -195,6 +205,10 @@ Node::Spacing::pushParagraph(Context context)
 					m_tokenList.push(Token(m_level, Para, context));
 				else if (context != None && m_tokenList.top().context == context)
 					m_tokenList.top() = Token(m_level, Break);
+			}
+			else if (context == EndVariation)
+			{
+				pushBreak(m_level + 1);
 			}
 			else
 			{
@@ -246,20 +260,22 @@ struct Node::Work : public Node::Spacing
 
 	LanguageSet const* wantedLanguages;
 
-	db::Board	board;
-	Languages*	languages;
-	Key			key;
-	bool			needMoveNo;
-	bool			isFolded;
-	bool			isEmpty;
-	unsigned		linebreakMaxLineLengthVar;
-	unsigned		linebreakMinCommentLength;
+	db::Board			board;
+	Languages*			languages;
+	EngineList const*	engineList;
+	Key					key;
+	bool					needMoveNo;
+	bool					isFolded;
+	bool					isEmpty;
+	unsigned				linebreakMaxLineLengthVar;
+	unsigned				linebreakMinCommentLength;
 };
 
 
 Node::Work::Work()
 	:wantedLanguages(0)
 	,languages(0)
+	,engineList(0)
 	,needMoveNo(true)
 	,isFolded(false)
 	,isEmpty(true)
@@ -294,7 +310,7 @@ void Languages::visit(Visitor& visitor) const	{ visitor.languages(m_langSet); }
 void Ply::visit(Visitor& visitor) const			{ visitor.move(m_moveNo, m_move); }
 void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_position, m_varPos, m_comment); }
 void Annotation::visit(Visitor& visitor) const	{ visitor.annotation(m_annotation); }
-void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_marks); }
+void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_hasMarks); }
 
 
 inline bool KeyNode::operator<(KeyNode const* node) const { return m_key < node->m_key; }
@@ -398,13 +414,19 @@ Annotation::operator==(Node const* node) const
 }
 
 
+Marks::Marks(MarkSet const& marks)
+	:m_hasMarks(!marks.isEmpty())
+{
+}
+
+
 bool
 Marks::operator==(Node const* node) const
 {
 	M_ASSERT(node);
 	M_ASSERT(dynamic_cast<Marks const*>(node));
 
-	return m_marks == static_cast<Marks const*>(node)->m_marks;
+	return m_hasMarks == static_cast<Marks const*>(node)->m_hasMarks;
 }
 
 
@@ -657,8 +679,9 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 						++rhsLast;
 					}
 
-					Key const& before = rhs->endKey();
-					Key const& after = rhsLast == var->m_list.end() ? endKey : (*rhsLast)->startKey();
+					Key const& before	= rhs->endKey();
+					Key const& after	= rhsLast == var->m_list.end() ? endKey : (*rhsLast)->startKey();
+
 					nodes.push_back(root->newAction(Action::Replace, level, before, after));
 					nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
 					nodes.push_back(root->newAction(Action::Finish, level));
@@ -771,20 +794,40 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame)
 		work.pushSpace();
 	}
 
-	if (!move->comment(move::Post).isEmpty())
+	bool needSpace = false;
+
+	mstl::string info;
+	getMoveInfo(work, move, info);
+
+	if (move->hasComment(move::Post))
 	{
 		db::Comment comm(move->comment(move::Post));
 		comm.strip(*work.wantedLanguages);
 
 		if (!comm.isEmpty())
 		{
+			work.pop(m_list);
 			m_list.push_back(new Comment(comm, move::Post, Comment::AtStart));
-			work.m_isVirgin = false;
-//			work.pushParagraph(Spacing::PreComment);
-			if (!move->hasMark())
-				work.pushSpaceOrParagraph(Spacing::Comment);
-			work.needMoveNo = true;
+			needSpace = true;
 		}
+	}
+
+	if (!info.empty())
+	{
+		if (needSpace)
+			work.pushSpace();
+		work.pop(m_list);
+		m_list.push_back(new Comment(db::Comment(info, false, false), move::Post, Comment::Finally));
+		needSpace = true;
+	}
+
+	if (needSpace)
+	{
+		work.m_isVirgin = false;
+//		work.pushParagraph(Spacing::PreComment);
+		if (!move->hasMark())
+			work.pushSpaceOrParagraph(Spacing::Comment);
+		work.needMoveNo = true;
 	}
 }
 
@@ -819,54 +862,76 @@ Move::Move(Work& work, MoveNode const* move)
 	}
 
 	work.pop(m_list);
+
+	if (!work.isFolded && move->hasAnnotation())
+	{
+		m_list.push_back(new Annotation(
+			move->annotation(),
+			bool(work.m_displayStyle & display::ShowDiagrams)));
+	}
+
 	m_ply = work.needMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
 	m_list.push_back(m_ply);
 	work.incrPlyCount();
 	work.needMoveNo = false;
 	work.pushSpace();
 
-	if (!work.isFolded)
+	if (work.isFolded)
+		return;
+
+	if (move->hasMark())
 	{
-		if (move->hasAnnotation())
-		{
-			m_list.push_back(new Annotation(
-				move->annotation(),
-				bool(work.m_displayStyle & display::ShowDiagrams)));
-		}
+		m_list.push_back(new Marks(move->marks()));
+		work.pushSpace();
+	}
 
-		if (move->hasMark())
+	mstl::string info;
+	getMoveInfo(work, move, info);
+
+	bool needSpace = false;
+
+	if (move->hasComment(move::Post))
+	{
+		db::Comment comment(move->comment(move::Post));
+		comment.strip(*work.wantedLanguages);
+
+		if (!comment.isEmpty())
 		{
-			m_list.push_back(new Marks(move->marks()));
+			bool isShort =		info.empty()
+								&& comment.length() <= work.linebreakMinCommentLength
+								&& bool(work.m_displayStyle & display::CompactStyle);
+
+			if (isShort)
+				work.pushSpace();
+			else
+				work.pushSpaceOrParagraph(Spacing::Comment);
+
+			work.pop(m_list);
+			m_list.push_back(new Comment(comment, move::Post));
+
+			if (isShort)
+				work.pushSpace();
+			else
+				needSpace = true;
+		}
+	}
+
+	if (!info.empty())
+	{
+		if (needSpace)
 			work.pushSpace();
-		}
+		else
+			work.pushSpaceOrParagraph(Spacing::Comment);
 
-		if (move->hasComment(move::Post))
-		{
-			db::Comment comment(move->comment(move::Post));
-			comment.strip(*work.wantedLanguages);
+		work.pop(m_list);
+		m_list.push_back(new Comment(db::Comment(info, false, false), move::Post, Comment::Finally));
+		needSpace = true;
+	}
 
-			if (!comment.isEmpty())
-			{
-				if (comment.length() <= work.linebreakMinCommentLength)
-					work.pushSpace();
-				else
-					work.pushSpaceOrParagraph(Spacing::Comment);
-
-				work.pop(m_list);
-				m_list.push_back(new Comment(comment, move::Post));
-
-				if (	comment.length() <= work.linebreakMinCommentLength
-					&& (work.m_displayStyle & display::CompactStyle))
-				{
-					work.pushSpace();
-				}
-				else
-				{
-					work.pushSpaceOrParagraph(Spacing::Comment);
-				}
-				work.needMoveNo = true;
-			}
-		}
+	if (needSpace)
+	{
+		work.pushSpaceOrParagraph(Spacing::Comment);
+		work.needMoveNo = true;
 	}
 }
 
@@ -908,15 +973,33 @@ Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const
 	spacing.pushSpace();
 	spacing.pop(m_list);
 
+	if (move->hasAnnotation())
+		m_list.push_back(new Annotation(move->annotation()));
+
 	m_ply = color::isWhite(move->move().color()) ? new Ply(move, moveNumber) : new Ply(move);
 	m_list.push_back(m_ply);
 	spacing.incrPlyCount();
 
-	if (move->hasAnnotation())
-		m_list.push_back(new Annotation(move->annotation()));
-
 	if (move->hasMark())
 		m_list.push_back(new Marks(move->marks()));
+}
+
+
+void
+Move::getMoveInfo(Work& work, MoveNode const* move, mstl::string& result)
+{
+	if (bool(work.m_displayStyle & display::ShowMoveInfo) && move->hasMoveInfo())
+	{
+		M_ASSERT(work.engineList);
+
+		move->moveInfo().print(*work.engineList, result, MoveInfo::Text);
+
+		if (!result.empty())
+		{
+			result.insert(result.begin(), "<xml><b>", 8);
+			result.append("</b></xml>", 10);
+		}
+	}
 }
 
 
@@ -1074,6 +1157,7 @@ Root::makeList(TagSet const& tags,
 					db::Board const& startBoard,
 					LanguageSet const& langSet,
 					LanguageSet const& wantedLanguages,
+					EngineList const& engines,
 					MoveNode const* node,
 					unsigned linebreakThreshold,
 					unsigned linebreakMaxLineLength,
@@ -1090,6 +1174,7 @@ Root::makeList(TagSet const& tags,
 	Work work;
 	work.board = startBoard;
 	work.languages = new Languages(node);
+	work.engineList = &engines;
 	work.wantedLanguages = &wantedLanguages;
 	work.linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
 	work.linebreakMinCommentLength = linebreakMinCommentLength;
@@ -1181,7 +1266,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 
 			if (node->hasVariation())
 			{
-				work.pushParagraph(Spacing::Variation);
+				work.pushParagraph(Spacing::StartVariation);
 
 				for (unsigned i = 0; i < node->variationCount(); ++i)
 				{
@@ -1226,7 +1311,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 					work.board = board;
 				}
 
-				work.pushParagraph(Spacing::Variation);
+				work.pushParagraph(Spacing::EndVariation);
 				work.needMoveNo = true;
 			}
 

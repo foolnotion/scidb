@@ -668,6 +668,27 @@ proc countryFlag {code} {
 }
 
 
+proc makeCountryList {{languages {}}} {
+	variable Vars
+
+	if {[llength $languages] == 0} {
+		set languages [array names ::mc::langToCountry]
+	}
+
+	set result {}
+	foreach lang $languages {
+		if {$lang ne "xx"} {
+			set country $::mc::langToCountry($lang)
+			set flag $icon::flag($country)
+			set name [::encoding::languageName $lang]
+			lappend result [list $flag $name $lang]
+		}
+	}
+
+	return [lsort -index 1 -dictionary $result]
+}
+
+
 proc makeToolbarIcon {countryCode} {
 	variable Icons
 

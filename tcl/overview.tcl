@@ -77,7 +77,7 @@ proc open {parent base info view index {fen {}}} {
 
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
-	bind $nb <<Language>> [namespace code [list SetTitle $nb]]
+	bind $nb <<LanguageChanged>> [namespace code [list SetTitle $nb]]
 	bind $dlg <Key-[string tolower $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
 	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base]]
 
@@ -236,17 +236,19 @@ proc NextGame {nb base {step 0}} {
 	}
 	set idn [::gametable::column $info idn]
 	SetTitle $nb
-	set showError 1
+	set failed 0
 
 	foreach {boardSize nrows ncols} $Vars(tabs) {
+		if {$failed} { continue }
 		set num [expr {$ncols*$nrows}]
-		set result [::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num]
-		if {![lindex $result 0]} {
-			if {$showError} {
-				after idle [list ::dialog::error -parent $nb -message $::browser::mc::GameDataCorrupted]
-			}
+		set result \
+			[::widget::busyOperation ::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num]
+		set failed 1
+		switch [lindex $result 0] {
+			 0 { set failed 0 }
+			-1 { after idle [list ::dialog::info  -parent $nb -message $::game::mc::GameDecodingFailed] }
+			-2 { after idle [list ::dialog::error -parent $nb -message $::game::mc::GameDataCorrupted] }
 		}
-		set showError 0
 		set result [lreplace $result 0 0]
 		set length [expr {[llength $result]/2}]
 
@@ -364,6 +366,7 @@ proc PopupMenu {nb base} {
 	set menu $nb.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff 0
+	catch { wm attributes $menu -type popup_menu }
 
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 

@@ -354,6 +354,16 @@ Namebase::insertEvent(	mstl::string const& name,
 
 
 inline
+Namebase::EventEntry*
+Namebase::insertEvent(	mstl::string const& name,
+								unsigned limit,
+								NamebaseSite* site)
+{
+	return insertEvent(name, InvalidId, limit, site);
+}
+
+
+inline
 Namebase::EventEntry const*
 Namebase::appendEvent(	mstl::string const& name,
 								unsigned id,
@@ -408,10 +418,10 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 inline
 Namebase::PlayerEntry*
-Namebase::insertPlayer(mstl::string const& name, uint32_t fideID, unsigned id, unsigned limit)
+Namebase::insertPlayer(mstl::string const& name, uint32_t fideID, unsigned limit)
 {
 	return insertPlayer(	name,
-								id,
+								InvalidId,
 								country::Unknown,
 								title::None,
 								species::Unspecified,
@@ -419,6 +429,21 @@ Namebase::insertPlayer(mstl::string const& name, uint32_t fideID, unsigned id, u
 								fideID,
 								limit);
 }
+
+
+//inline
+//Namebase::PlayerEntry*
+//Namebase::insertPlayer(mstl::string const& name, uint32_t fideID, unsigned id, unsigned limit)
+//{
+//	return insertPlayer(	name,
+//								id,
+//								country::Unknown,
+//								title::None,
+//								species::Unspecified,
+//								sex::Unspecified,
+//								fideID,
+//								limit);
+//}
 
 
 inline

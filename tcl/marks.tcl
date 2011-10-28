@@ -80,7 +80,7 @@ proc open {parent} {
 
 	set top [ttk::frame $dlg.top -relief raised -borderwidth 2]
 	pack $dlg.top -fill both -expand yes
-	bind $dlg <<Language>> [namespace code [list LanguageChanged $dlg %W]]
+	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {[tk windowingsystem] ne "win32"} {
 		set decor [tk::label $top.decor -justify left -text $title -font TkSmallCaptionFont]
@@ -209,6 +209,7 @@ proc open {parent} {
 	SetMarkType $top.shapes $State(markType)
 
 	wm transient $dlg $parent
+	catch { wm attributes $dlg -type utility }
 	wm focusmodel $dlg $Defaults(floating:focusmodel)
 	if {[tk windowingsystem] ne "win32"} {
 		if {$Defaults(floating:overrideredirect)} {

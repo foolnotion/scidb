@@ -35,7 +35,6 @@ inline KeyNode::KeyNode(Key const& key, char prefix) :m_key(key, prefix) {}
 inline Variation::Variation(Key const& key) :KeyNode(key) {}
 inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_succ(succ) {}
 inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
-inline Marks::Marks(MarkSet const& marks) :m_marks(marks) {}
 inline Space::Space(Bracket bracket) :m_level(-1), m_bracket(bracket) {}
 inline Space::Space(unsigned level) :m_level(level), m_bracket(Blank) {}
 

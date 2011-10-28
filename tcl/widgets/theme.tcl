@@ -222,7 +222,7 @@ proc SetupCurrentTheme {} {
 	option add *Listbox.disabledForeground [::ttk::style lookup $currentTheme -foreground disabled]
 #	option add *Listbox.selectBackground [::ttk::style lookup $currentTheme -selectbackground]
 #	option add *Listbox.selectForeground [::ttk::style lookup $currentTheme -selectforeground]
-	option add *Panedwindow.background [GetTroughColor]
+#	option add *Panedwindow.background [GetTroughColor]
 
 	if {$strongTtk} {
 		option add *Frame.background $background
@@ -246,7 +246,7 @@ proc ConfigureListbox {list} {
 
 
 proc ConfigurePanedWindowBackground {win} {
-	$win configure -background [GetTroughColor]
+#	$win configure -background [GetTroughColor]
 }
 
 

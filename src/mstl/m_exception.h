@@ -58,6 +58,7 @@ public:
 protected:
 
 	void set_message(char const* fmt, va_list args);
+	void set_backtrace(::mstl::backtrace const& backtrace);
 
 private:
 

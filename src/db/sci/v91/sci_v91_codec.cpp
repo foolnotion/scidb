@@ -389,15 +389,10 @@ Codec::format() const
 }
 
 
-
 bool
 Codec::isWriteable() const
 {
-#if 1 // OLD XXX
-	return true;
-#else
 	return false;
-#endif
 }
 
 
@@ -650,7 +645,7 @@ Codec::doDecoding(GameData& data, GameInfo& info)
 void
 Codec::doOpen(mstl::string const& encoding)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 
 	if (m_gameData)
 	{
@@ -668,7 +663,7 @@ Codec::doOpen(mstl::string const& encoding)
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 	M_ASSERT(m_gameData == 0);
 
 	mstl::string indexFilename(rootname + ".sci");
@@ -737,7 +732,7 @@ Codec::checkFileVersion(mstl::fstream& fstrm, mstl::string const& magic, uint16_
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 
 	mstl::string indexFilename(rootname + ".sci");
 	mstl::string gameFilename(rootname + ".scg");
@@ -1135,6 +1130,12 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned index 	= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1176,6 +1177,12 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1273,6 +1280,12 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1403,6 +1416,12 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::P
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();

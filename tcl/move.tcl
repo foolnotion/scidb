@@ -292,6 +292,11 @@ proc addMove {san noMoveCmd {force no}} {
 			::scidb::game::go 1
 		}
 
+		trial {
+			::widget::busyOperation ::scidb::game::trial $san
+			::scidb::game::go 1
+		}
+
 		exchange {
 			variable ::application::board::board
 			doDestructiveCommand \
@@ -369,6 +374,7 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 	if {[scidb::pos::promotion? $sq1 $sq2 $allowIllegalMove]} {
 		if {![winfo exists $board.popup_promotion]} {
 			set m [menu $board.popup_promotion -tearoff false]
+			catch { wm attributes $m -type popup_menu }
 			$m add command -image $::icon::22x22::piece(bq) -command [namespace code { set _promoted 2 }]
 			$m add command -image $::icon::22x22::piece(br) -command [namespace code { set _promoted 3 }]
 			$m add command -image $::icon::22x22::piece(bb) -command [namespace code { set _promoted 4 }]
@@ -408,6 +414,7 @@ proc ConfirmReplaceMove {} {
 	catch { destroy $m }
 	variable _action cancel
 	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
 	foreach {label action} [list	[namespace current]::mc::ReplaceMove		replace   \
 											[namespace current]::mc::AddNewVariation	variation \
 											[namespace current]::mc::NewMainLine		mainline  \
@@ -433,7 +440,6 @@ proc ConfirmReplaceMove {} {
 
 	if {$_action eq "trial"} {
 		::game::startTrialMode
-		set _action "replace"
 	}
 
 	return $_action

@@ -35,18 +35,10 @@
 using namespace db;
 
 
-static mstl::string&
-trim(mstl::string& s)
+static int
+compare(void const* lhs, void const* rhs)
 {
-	while (::isspace(s.front()))
-		s.erase(s.begin());
-
-	int n = s.size() - 1;
-
-	while (n >= 0 && ::isspace(s[n]))
-		s.resize(n--);
-
-	return s;
+	return static_cast<Mark const*>(lhs)->compare(*static_cast<Mark const*>(rhs));
 }
 
 
@@ -94,9 +86,18 @@ MarkSet::add(MarkSet const& set)
 }
 
 
+void
+MarkSet::sort()
+{
+	::qsort(m_marks.begin(), m_marks.size(), sizeof(Marks::value_type), ::compare);
+}
+
+
 bool
 MarkSet::extractFromComment(mstl::string& comment)
 {
+	M_REQUIRE(comment.writeable() || comment.empty());
+
 	mstl::string result;
 
 	Mark mark;
@@ -111,7 +112,7 @@ MarkSet::extractFromComment(mstl::string& comment)
 	{
 		if (q[1] == '%')
 		{
-			if (q[2] == 'c' && q[3] == 'a' && q[4] == 'l' && q[5] == ' ')
+			if (q[2] == 'c' && (q[3] == 'a' || q[3] == 's') && q[4] == 'l' && q[5] == ' ')
 			{
 				char const* e = 0;
 
@@ -121,11 +122,11 @@ MarkSet::extractFromComment(mstl::string& comment)
 					case 's': e = parseChessBaseMark(q + 5, mark::Full); break;
 				}
 
-				if (e)
+				if (e && *e == ']')
 				{
 					result.append(p, q - p);
-					p = e;
-					q = ::strchr(e, '[');
+					p = e + 1;
+					q = ::strchr(p, '[');
 				}
 				else
 				{
@@ -165,12 +166,11 @@ MarkSet::extractFromComment(mstl::string& comment)
 	if (rc)
 	{
 		result.append(p, comment.end());
-		comment = result;
+		comment.swap(result);
+		comment.trim();
 	}
 
 	M_ASSERT(!isEmpty() || result.empty());
-
-	::trim(comment);
 
 	return rc;
 }
@@ -179,7 +179,7 @@ MarkSet::extractFromComment(mstl::string& comment)
 char const*
 MarkSet::parseChessBaseMark(char const* s, mark::Type type)
 {
-	while (1)
+	do
 	{
 		Mark mark;
 
@@ -191,9 +191,6 @@ MarkSet::parseChessBaseMark(char const* s, mark::Type type)
 		add(mark);
 	}
 	while (*s == ',');
-
-	if (*++s == ']')
-		++s;
 
 	return s;
 }
@@ -226,6 +223,16 @@ MarkSet::print(mstl::string& result) const
 	}
 
 	return result;
+}
+
+
+util::crc::checksum_t
+MarkSet::computeChecksum(util::crc::checksum_t crc) const
+{
+	for (unsigned i = 0; i < m_marks.size(); ++i)
+		crc = m_marks[i].computeChecksum(crc);
+
+	return crc;
 }
 
 // vi:set ts=3 sw=3:

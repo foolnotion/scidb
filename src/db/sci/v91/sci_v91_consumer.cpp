@@ -55,7 +55,7 @@ typedef ByteStream::uint24_t uint24_t;
 
 Consumer::Consumer(format::Type srcFormat, Codec& codec)
 	:Encoder(m_stream)
-	,db::Consumer(srcFormat, sys::utf8::Codec::utf8())
+	,db::Consumer(srcFormat, sys::utf8::Codec::utf8(), TagBits(true), true)
 	,m_stream(m_buffer, sizeof(m_buffer))
 	,m_codec(codec)
 	,m_streamPos(0)

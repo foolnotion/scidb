@@ -100,7 +100,7 @@ proc Build {w args} {
 	Setup $w
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
-	bind $w.keys <<Language>> [namespace code [list LanguageChanged $w]]
+	bind $w.keys <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 	bind $w.__w__ <Any-Key> [list after idle [namespace code [list Select $w %A]]]
 	bind $w.__w__ <<ComboboxCurrent>> [namespace code [list ShowIcon $w]]
 

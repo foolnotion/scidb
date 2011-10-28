@@ -36,15 +36,15 @@ inline
 bool
 MoveInfo::hasTimeInfo() const
 {
-	return m_content != AnalysisInformation && m_content != None;
+	return m_content != Evaluation && m_content != None;
 }
 
 
 inline
 bool
-MoveInfo::hasAnalysisInfo() const
+MoveInfo::hasEvaluationInfo() const
 {
-	return m_content == AnalysisInformation;
+	return m_content == Evaluation;
 }
 
 
@@ -70,8 +70,8 @@ inline
 unsigned
 MoveInfo::engine() const
 {
-	M_REQUIRE(hasAnalysisInfo());
-	return m_analysis.m_engine;
+	M_REQUIRE(hasTimeInfo() || hasEvaluationInfo());
+	return m_engine;
 }
 
 
@@ -79,7 +79,7 @@ inline
 unsigned
 MoveInfo::depth() const
 {
-	M_REQUIRE(hasAnalysisInfo());
+	M_REQUIRE(hasEvaluationInfo());
 	return m_analysis.m_depth;
 }
 
@@ -88,7 +88,7 @@ inline
 unsigned
 MoveInfo::pawns() const
 {
-	M_REQUIRE(hasAnalysisInfo());
+	M_REQUIRE(hasEvaluationInfo());
 	return m_analysis.m_pawns;
 }
 
@@ -97,7 +97,7 @@ inline
 unsigned
 MoveInfo::centipawns() const
 {
-	M_REQUIRE(hasAnalysisInfo());
+	M_REQUIRE(hasEvaluationInfo());
 	return m_analysis.m_centipawns;
 }
 
@@ -106,8 +106,56 @@ inline
 float
 MoveInfo::value() const
 {
-	M_REQUIRE(hasAnalysisInfo());
+	M_REQUIRE(hasEvaluationInfo());
 	return float(m_analysis.m_pawns) + float(m_analysis.m_centipawns)/100.0f;
+}
+
+
+inline
+char const*
+MoveInfo::parsePlayersClock(char const* s)
+{
+	return parseTime(PlayersClock, s);
+}
+
+
+inline
+char const*
+MoveInfo::parseDigitalClockTime(char const* s)
+{
+	return parseTime(DigitalClockTime, s);
+}
+
+
+inline
+char const*
+MoveInfo::parseMechanicalClockTime(char const* s)
+{
+	return parseTime(MechanicalClockTime, s);
+}
+
+
+inline
+char const*
+MoveInfo::parseElapsedGameTime(char const* s)
+{
+	return parseTime(ElapsedGameTime, s);
+}
+
+
+inline
+char const*
+MoveInfo::parseElapsedMoveTime(char const* s)
+{
+	return parseTime(ElapsedMoveTime, s);
+}
+
+
+inline
+void
+MoveInfo::clear()
+{
+	*this = MoveInfo();
 }
 
 } // namespace db

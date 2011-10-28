@@ -29,6 +29,8 @@
 
 #include "sci_encoder_position.h"
 
+#include "db_consumer.h"
+
 #include "u_byte_stream.h"
 
 namespace util { class ByteStream; }
@@ -37,6 +39,8 @@ namespace db {
 
 class Move;
 class MoveNode;
+class MoveInfoTable;
+class EngineList;
 class Signature;
 class GameData;
 class Board;
@@ -50,7 +54,10 @@ public:
 
 	Encoder(util::ByteStream& strm);
 
-	void doEncoding(Signature const& signature, GameData const& data);
+	void doEncoding(	Signature const& signature,
+							GameData const& data,
+							db::Consumer::TagBits const& allowedTags,
+							bool allowExtraTags);
 
 	static bool skipTag(tag::ID tag);
 
@@ -68,9 +75,9 @@ protected:
 
 	bool encodeMove(Move const& move);
 	void encodeTag(TagSet const& tags, tag::ID tagID);
-	void encodeTags(TagSet const& tags);
-	void encodeDataSection();
-	void encodeTextSection(unsigned offset);
+	void encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
+	void encodeTextSection();
+	void encodeDataSection(EngineList const& engines);
 	void encodeMainline(MoveNode const* node);
 	void encodeVariation(MoveNode const* node);
 	void encodeNote(MoveNode const* node);

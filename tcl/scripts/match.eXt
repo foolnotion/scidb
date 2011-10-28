@@ -65,7 +65,7 @@
 \def\width#1{\let@n\CharWidth\mul@n#1@n}
 
 \def\let-digits#1#2{%
-	\if#2\0 \let@n\0 \else \xlet@n\log10#2\add@n\1 \fi
+	\ifgreater#2\0 \xlet@n\log10#2\add@n\1 \else \let@n\0 \fi
 	\let#1@n
 }
 
@@ -185,8 +185,8 @@
 \def\print-results{%
 	\def\print-result##result{%
 		\ifcase##result%
-			\when \2 \let##result\0
-			\when \3 \def##result{\fraction-one-half}%
+			\when \2 \let##result\1
+			\when \1 \def##result{\fraction-one-half}%
 			\when\-1 \let##result\thick-space
 		\fi
 		##result%
@@ -269,14 +269,14 @@
 				\begin-row
 				\expandafter\lassign\lindex\ndigits-tiebreaks\k{\ndigits-pts\ndigits-frc}%
 				\def\col-align{right}%
+				\def\col-width{\width\ndigits-pts}%
 				\iflist\tb
-					\def\col-width{\width\ndigits-pts}%
 					\lassign\tb{\pts\frac}%
 					\begin-col-end\pts
 					\def\col-width{\width\ndigits-frc}%
 					\begin-col-end{\DecimalPoint{\adjustnum\ndigits-frc \frac}}%
 				\else
-					\def\col-width{\width\ndigits-pts}%
+					\iflower\tb\0\let\tb\empty\fi
 					\begin-col-end\tb
 				\fi
 				\incr\k
@@ -314,15 +314,19 @@
 <nobr><p>\cr
 <big>
 <font color="blue">\event</font> \site
-\unless\ifempty\country\ <img src="\country"/>\fi\cr
+\let\comma\empty
+\unless\ifempty\site\ \site\def\comma{, }\fi
+\unless\ifempty\country\ <img src="\country"/>\let\comma\empty\fi
 \unless\ifempty\startDate
 	\edef\startDate{\FormatDate\startDate}
 	\edef\endDate{\FormatDate\endDate}
-	\startDate
 	\expandafter\if\length\endDate\8
+		\cr\startDate
 		\unless\ifx\startDate\endDate
 			\ \endash\ \endDate
 		\fi
+	\else
+		\comma\ \startDate
 	\fi
 \fi
 </big>\cr

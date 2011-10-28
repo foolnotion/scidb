@@ -79,6 +79,15 @@ MarkSet::add(char const* s)
 
 
 inline
+Mark&
+MarkSet::add()
+{
+	m_marks.push_back();
+	return m_marks.back();
+}
+
+
+inline
 void
 MarkSet::remove(unsigned index)
 {

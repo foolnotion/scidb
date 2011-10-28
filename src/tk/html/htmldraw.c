@@ -1207,7 +1207,7 @@ HtmlDrawBox(pCanvas, x, y, w, h, pNode, flags, size_only, pCandidate)
     HtmlCanvasItem *pCandidate;
 {
     if (!size_only) {
-        int x1, y1, w1, h1;
+        int x1 = 0, y1 = 0, w1 = 0, h1 = 0;
         HtmlCanvasItem *pItem;
         HtmlComputedValues *pComputed = HtmlNodeComputedValues(pNode);
 
@@ -1605,7 +1605,7 @@ setClippingDrawable(pQuery, pItem, pDrawable, pX, pY)
 #if !USE_XLIB_CLIPPING
     Overflow *p = pQuery->pCurrentOverflow;
     if (p && *pDrawable != p->pixmap) {
-        int x, y, w, h;
+        int x = 0, y = 0, w = 0, h = 0;
         int ii;
 
         if (
@@ -2508,6 +2508,8 @@ elapsed_time()
 
 #endif
 
+#ifdef USE_DOUBLE_BUFFERING
+
 static void
 updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h)
     HtmlTree *pTree;
@@ -2515,31 +2517,74 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h)
     GC gc;
     int x, y, w, h;
 {
-#ifdef USE_DOUBLE_BUFFERING
-    if (pTree->options.doublebuffer)
-    {
+    if (pTree->options.doublebuffer) {
+        Tk_Window  win     = pTree->docwin;
+        Display   *display = Tk_Display(win);
         XRectangle rect;
 
-        rect.x = MAX(x, pTree->bufferRect.x);
-        rect.y = MAX(y, pTree->bufferRect.y);
-        rect.width = MIN(w, pTree->bufferRect.x + pTree->bufferRect.width - x);
-        rect.height = MIN(h, pTree->bufferRect.y + pTree->bufferRect.height - y);
-        rect.width = MIN(rect.width, pTree->bufferRect.width);
-        rect.height = MIN(rect.height, pTree->bufferRect.height);
+        if (   x < pTree->bufferRect.x
+            || y < pTree->bufferRect.y
+            || pTree->bufferRect.x + pTree->bufferRect.width  < x + w
+            || pTree->bufferRect.y + pTree->bufferRect.height < y + h) {
 
-        if (rect.width > 0 && rect.height > 0)
-        {
-            XCopyArea(
-                Tk_Display(pTree->docwin), pixmap, pTree->buffer, gc,
-                0, 0, rect.width, rect.height,
-                rect.x - pTree->bufferRect.x, rect.y - pTree->bufferRect.y
-            );
+            rect.x      = Tk_X(win);
+            rect.y      = Tk_Y(win);
+            rect.width  = Tk_Width (win);
+            rect.height = Tk_Height(win);
 
-            TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+            Pixmap buffer = Tk_GetPixmap(display,
+                                        Tk_WindowId(win),
+                                        rect.width, rect.height,
+                                        Tk_Depth(win));
+
+            if (buffer) {
+                int sx = MAX(rect.x - pTree->bufferRect.x, 0);
+                int sy = MAX(rect.y - pTree->bufferRect.y, 0);
+                int dx = MAX(pTree->bufferRect.x - rect.x, 0);
+                int dy = MAX(pTree->bufferRect.y - rect.y, 0);
+                int sw = MIN(pTree->bufferRect.width  - sx, rect.width  - dx);
+                int sh = MIN(pTree->bufferRect.height - sy, rect.height - dy);
+
+                if (sw > 0 && sh > 0)
+                    XCopyArea(display, pTree->buffer, buffer, gc, sx, sy, sw, sh, dx, dy);
+
+                memcpy(&pTree->bufferRect, &rect, sizeof(rect));
+
+                rect.x += dx;
+                rect.y += dy;
+                rect.width  = sw;
+                rect.height = sh;
+                TkIntersectRegion(pTree->bufferRegion, pTree->bufferRegion, pTree->bufferRegion);
+                TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+
+                if (pTree->buffer)
+                    Tk_FreePixmap(display, pTree->buffer);
+                pTree->buffer = buffer;
+            }
+        }
+
+        if (pTree->buffer) {
+            rect.x      = MAX(x, pTree->bufferRect.x);
+            rect.y      = MAX(y, pTree->bufferRect.y);
+            rect.width  = MIN(w, pTree->bufferRect.x + pTree->bufferRect.width  - x);
+            rect.height = MIN(h, pTree->bufferRect.y + pTree->bufferRect.height - y);
+            rect.width  = MIN(rect.width, pTree->bufferRect.width);
+            rect.height = MIN(rect.height, pTree->bufferRect.height);
+
+            if (rect.width > 0 && rect.height > 0) {
+                XCopyArea(
+                    display, pixmap, pTree->buffer, gc,
+                    0, 0, rect.width, rect.height,
+                    rect.x - pTree->bufferRect.x, rect.y - pTree->bufferRect.y
+                );
+
+                TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+            }
         }
     }
-#endif
 }
+
+#endif
 
 static void
 updateRegions(pTree, pElem, drawable, dx, dy)
@@ -2697,7 +2742,9 @@ printf("fillRectangle: %lu\n", elapsed_time());
 restart_time();
 #endif
         XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
+#ifdef USE_DOUBLE_BUFFERING
         updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+#endif
 
 #ifdef MEASURE_TIME
 printf("copyArea: %lu\n", elapsed_time());
@@ -2831,7 +2878,7 @@ searchCanvas(pTree, ymin, ymax, xFunc, clientData, requireOverflow)
                 nTest++;
 
                 if (ymax >= 0 || ymin >= 0) {
-                    int x, y, w, h;
+                    int x, y = 0, w, h = 0;
                     int ymin2 = ymin;
                     int ymax2 = ymax;
                     itemToBox(pItem, origin_x, origin_y, &x, &y, &w, &h);
@@ -2998,10 +3045,10 @@ static void damageSlot(pTree, pSlot, pX1, pY1, pX2, pY2, isOld)
     int *pY2;
     int isOld;
 {
-    int x;
-    int y;
-    int h;
-    int w;
+    int x = 0;
+    int y = 0;
+    int h = 0;
+    int w = 0;
     itemToBox(pSlot->pItem, pSlot->x, pSlot->y, &x, &y, &w, &h);
     if (isOld && pSlot->pItem->type == CANVAS_BOX) {
         x -= pSlot->pItem->x.box.x;
@@ -3858,7 +3905,7 @@ layoutNodeCb(pItem, origin_x, origin_y, pOverflow, clientData)
     Overflow *pOverflow;
     ClientData clientData;
 {
-    int x, y, w, h;
+    int x = 0, y = 0, w = 0, h = 0;
     NodeQuery *pQuery = (NodeQuery *)clientData;
     HtmlNode *pNode;
 
@@ -4071,7 +4118,7 @@ bboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
         (pItem->type == CANVAS_BOX || pItem->type == CANVAS_TEXT)
     ) {
         HtmlNode *pNode = pItem->x.generic.pNode;
-        int x, y, w, h;
+        int x = 0, y = 0, w = 0, h = 0;
         itemToBox(pItem, origin_x, origin_y, &x, &y, &w, &h);
         if (pItem->x.generic.pNode == p->pPrevNode) {
             pNode->iBboxX = MIN(pNode->iBboxX, x);
@@ -4472,7 +4519,7 @@ scrollToNodeCb(pItem, origin_x, origin_y, pOverflow, clientData)
     Overflow *pOverflow;
     ClientData clientData;
 {
-    int x, y, w, h;
+    int x, y = 0, w, h;
     ScrollToQuery *pQuery = (ScrollToQuery *)clientData;
     HtmlNode *pNode;
     int iMaxNode = pQuery->iMaxNode;
@@ -4559,7 +4606,7 @@ layoutBboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
     Overflow *pOverflow;
     ClientData clientData;
 {
-    int x, y, w, h;
+    int x = 0, y = 0, w = 0, h = 0;
     LayoutBboxQuery *pQuery = (LayoutBboxQuery *)clientData;
     HtmlNode *pNode;
 
@@ -4666,12 +4713,14 @@ widgetRepair(pTree, x, y, w, h, g)
     gc = Tk_GetGC(pTree->tkwin, 0, &gc_values);
     assert(Tk_WindowId(win));
 
-    XCopyArea(
-        pDisp, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h,
-        x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin)
-    );
+    x -= Tk_X(pTree->docwin);
+    y -= Tk_Y(pTree->docwin);
 
-    updateDoubleBuffer(pTree, pixmap, gc, x - Tk_X(pTree->docwin), y - Tk_Y(pTree->docwin), w, h);
+    XCopyArea(pDisp, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
+
+#ifdef USE_DOUBLE_BUFFERING
+    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
+#endif
 
     Tk_FreePixmap(pDisp, pixmap);
     Tk_FreeGC(pDisp, gc);

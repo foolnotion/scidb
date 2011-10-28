@@ -112,6 +112,8 @@ set T_OpeningsBlack			"Openings Black"
 set OpenDatabase				"Open Database"
 set NewDatabase				"New Database"
 set CloseDatabase				"Close Database '%s'"
+set SetReadonly				"Set Database '%s' readonly"
+set SetWriteable				"Set Database '%s' writeable"
 
 set OpenReadonly				"Open readonly"
 set OpenWriteable				"Open writeable"
@@ -125,6 +127,8 @@ array set Vars {
 	pixels		0
 	selection	0
 	icon			0
+	ignore-next	0
+	counter		0
 }
 
 array set Defaults {
@@ -139,20 +143,19 @@ array set Defaults {
 }
 # lightsteelblue
 
-variable clipbaseName		[::scidb::db::get clipbase name]
-variable scratchbaseName	[::scidb::db::get scratchbase name]
+array set Options {
+	visible				10
+	prop:background	#fff5d6
+}
 
-variable IgnoreNext			0
-variable Visible				10
-variable ClipbaseType		[::scidb::db::get clipbase type]
-variable PreOpen				[list Clipbase $clipbaseName {}]
-variable RecentFiles			{ {} {} {} {} {} }
-variable Counter				0
-variable PropBackground		#fff5d6
+variable ClipbaseType	[::scidb::db::get clipbase type]
+variable PreOpen			[list Clipbase $::scidb::clipbaseName {}]
+variable RecentFiles		{}
+variable MaxHistory		10
 
-set Types(sci)					[::scidb::db::get types sci]
-set Types(si3)					[::scidb::db::get types si3]
-set Types(si4)					[::scidb::db::get types si4]
+set Types(sci)				[::scidb::db::get types sci]
+set Types(si3)				[::scidb::db::get types si3]
+set Types(si4)				[::scidb::db::get types si4]
 
 namespace import ::tcl::mathfunc::max
 namespace import ::tcl::mathfunc::min
@@ -160,7 +163,7 @@ namespace import ::tcl::mathfunc::min
 
 proc build {tab menu width height} {
 	variable PreOpen
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 	variable ClipbaseType
 	variable Vars
 
@@ -173,14 +176,24 @@ proc build {tab menu width height} {
 		-sashcmd [namespace code SashCmd] \
 		]
 	pack $main -fill both -expand yes
+
 	set switcher [::ttk::frame $main.switcher -borderwidth 1]
-	set contents [::ttk::notebook $tab.contents -takefocus 1]
+	set database [::tk::multiwindow $main.database -background beige] ;# ivory
+	set contents [::ttk::notebook $database.contents -takefocus 1]
+#	set history  [::tk::frame $database.history -borderwidth 1 -takefocus 1 -background beige]
+#	set blank    [::tk::frame $database.blank  -borderwidth 1 -takefocus 0]
+
+#	bind $history <Configure> [namespace code [list MakePhoto $history.background]]
+
+	$database add $contents
+#	$database paneconfigure $blank -sticky ""
+
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
 	BuildSwitcher $switcher
 
 	$main add $switcher
-	$main add $contents
+	$main add $database
 
 	foreach tab {games players events annotators} {
 		::ttk::frame $contents.$tab
@@ -192,9 +205,9 @@ proc build {tab menu width height} {
 	}
 
 	$main paneconfigure $switcher -sticky nsew -stretch middle
-	$main paneconfigure $contents -sticky nsew -stretch always
+	$main paneconfigure $database -sticky nsew -stretch always
 
-	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $contents %d]]
+	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $database %d]]
 
 	bind $main <Double-Button-1>	{ break }
 	bind $main <Double-Button-2>	{ break }
@@ -211,26 +224,39 @@ proc build {tab menu width height} {
 	::toolbar::add $tbFile button \
 		-image $::icon::toolbarDocNew \
 		-tooltipvar [namespace current]::mc::NewDatabase \
-		-command [list ::menu::dbNew $main]
+		-command [list ::menu::dbNew $main] \
+		;
 	::toolbar::add $tbFile button \
 		-image $::icon::toolbarDocOpen \
 		-tooltipvar [namespace current]::mc::OpenDatabase \
-		-command [list ::menu::dbOpen $main]
-	set Vars(close) [::toolbar::add $tbFile button \
-							-image $::icon::toolbarDocClose \
-							-tooltipvar [namespace current]::_CloseDatabase \
-							-command [list ::menu::dbClose $main]]
+		-command [list ::menu::dbOpen $main] \
+		;
+	set Vars(button:close) [::toolbar::add $tbFile button \
+		-image $::icon::toolbarDocClose \
+		-tooltipvar [namespace current]::_CloseDatabase \
+		-command [list ::menu::dbClose $main] \
+	]
+	set Vars(flag:readonly) 0
+	set Vars(button:readonly) [::toolbar::add $tbFile checkbutton \
+		-image $::icon::toolbarLock \
+		-tooltipvar [namespace current]::_Readonly \
+		-variable [namespace current]::Vars(flag:readonly) \
+		-command [namespace code [list ToggleReadOnly 1]] \
+	]
 
 	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
 	after idle [namespace code [list ToolbarShow $switcher]]
 
 	set Vars(bases) {}
 	set Vars(switcher) $switcher
-	set Vars(notebook) $contents
-	set Vars(tab) games
-	set Vars(games) $contents.games
+	set Vars(contents) $contents
+#	set Vars(history) $history
+#	set Vars(blank) $blank
+	set Vars(database) $database
+	set Vars(current:tab) games
 	set Vars(selection) 0
 	set Vars(after) {}
+	set Vars(lock:minsize) 0
 
 	foreach {type file encoding readonly} $PreOpen {
 		if {[llength $encoding] && $encoding ni [encoding names]} {
@@ -241,7 +267,7 @@ proc build {tab menu width height} {
 			if {$file ne $clipbaseName} { ::scidb::db::attach $clipbaseName $file }
 			AddBase $ClipbaseType $file $encoding $readonly
 			SetClipbaseDescription
-			bind $contents <<Language>> [namespace code SetClipbaseDescription]
+			bind $contents <<LanguageChanged>> [namespace code SetClipbaseDescription]
 			Switch $clipbaseName
 		} else {
 			::log::hide 1
@@ -251,7 +277,9 @@ proc build {tab menu width height} {
 	}
 
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
-	bind $contents <<Language>> +[namespace code LanguageChanged]
+	bind $contents <<LanguageChanged>> +[namespace code LanguageChanged]
+
+	RaisePane
 }
 
 
@@ -259,7 +287,7 @@ proc activate {w menu flag} {
 	variable Vars
 
 	set Vars(menu) $menu
-	set tab [lindex [split [$Vars(notebook) select] .] end]
+	set tab [lindex [split [$Vars(contents) select] .] end]
 	::toolbar::activate $Vars(switcher) $flag
 	[namespace current]::${tab}::activate $Vars($tab) $menu $flag
 	::annotation::hide $flag
@@ -280,24 +308,23 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 			lappend RecentFiles {}
 		}
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
-		return
+		return 0
 	}
 
 	set file [file normalize $file]
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
 	if {$i == -1} {
-		set ext [file extension $file]
 		if {[llength $encoding] == 0} {
 			set k [FindRecentFile $file]
-			if {$k >= 0} {
-				set encoding [lindex $RecentFiles $k 2]
-				if {$readonly == -1} {
-					set readonly [lindex $RecentFiles $k 3]
-				}
-			}
+			if {$k >= 0} { set encoding [lindex $RecentFiles $k 2] }
+		}
+		if {$readonly == -1} {
+			set k [FindRecentFile $file]
+			if {$k >= 0} { set readonly [lindex $RecentFiles $k 3] }
 		}
 		set name [::util::databaseName $file]
+		set ext [file extension $file]
 		set msg [format $mc::LoadMessage $name]
 		if {[llength $encoding] == 0} {
 			switch $ext {
@@ -320,14 +347,17 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 				set cmd [list ::scidb::db::load $file]
 				set options [list -message $msg]
 				if {[::util::catchIoError [list ::progress::start $parent $cmd $args $options]]} {
-					return
+					return 0
 				}
 			}
 			.pgn - .gz - .zip {
 				set type [lsearch -exact $Types(sci) Temporary]
 				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
-				if {[::util::catchIoError $cmd rc]} { return }
-				if {!$rc} { return [::scidb::db::close $file] }
+				if {[::util::catchIoError $cmd rc]} { return 0 }
+				if {!$rc} {
+					::scidb::db::close $file
+					return 0
+				}
 				set readonly 1
 			}
 		}
@@ -348,7 +378,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 						set cmd [list ::scidb::db::load $file]
 						set options [list -message $msg]
 						if {[::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
-							return
+							return 0
 						}
 						set readonly $ro
 					}
@@ -365,6 +395,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 	}
 
 	Switch $file
+	return 1
 }
 
 
@@ -373,7 +404,7 @@ proc closeBase {parent {file {}} {number -1}} {
 }
 
 
-proc newBase {parent file} {
+proc newBase {parent file {encoding ""}} {
 	variable Vars
 	variable Types
 
@@ -381,7 +412,7 @@ proc newBase {parent file} {
 	if {[lsearch -exact -index 2 $Vars(bases) $file] == -1} {
 		set type Unspecific
 		::widget::busyCursor on
-		::scidb::db::new $file [lsearch -exact $Types(sci) $type]
+		::scidb::db::new $file [lsearch -exact $Types(sci) $type] {*}$encoding
 		::scidb::db::attach $file $file
 		set encoding [::scidb::db::get encoding $file]
 		AddBase $type $file $encoding 0
@@ -416,9 +447,14 @@ proc selectPlayer {base index} {
 }
 
 
+proc setFocus {} {
+	focus [set [namespace current]::Vars(switcher)]
+}
+
+
 proc CloseBase {parent file number} {
 	variable Vars
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 
 	if {[llength $file] == 0} {
 		set file [::scidb::db::get name]
@@ -433,11 +469,13 @@ proc CloseBase {parent file number} {
 		::scidb::db::close $file
 		::widget::busyCursor off
 	}
+
+	RaisePane
 }
 
 
 proc SetClipbaseDescription {} {
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 
 	::scidb::db::set description $clipbaseName $mc::ClipbaseDescription
 }
@@ -447,12 +485,12 @@ proc TabChanged {} {
 	variable Vars
 
 	if {![info exists Vars(menu)]} { return }
-	set tab [lindex [split [$Vars(notebook) select] .] end]
-	if {$tab ne $Vars(tab)} {
-		[namespace current]::[set Vars(tab)]::activate $Vars($Vars(tab)) $Vars(menu) 0
+	set tab [lindex [split [$Vars(contents) select] .] end]
+	if {$tab ne $Vars(current:tab)} {
+		[namespace current]::[set Vars(current:tab)]::activate $Vars($Vars(current:tab)) $Vars(menu) 0
 	}
 	[namespace current]::${tab}::activate $Vars($tab) $Vars(menu) 1
-	set Vars(tab) $tab
+	set Vars(current:tab) $tab
 }
 
 
@@ -497,11 +535,15 @@ proc ToolbarShow {pane} {
 proc TableMinSize {main pane sizeInfo} {
 	variable Vars
 
-	lassign $sizeInfo minwidth minheight [namespace current]::Vars(incr)
+	lassign $sizeInfo minwidth minheight Vars(incr)
+
 	incr minheight [winfo height $pane]
-	incr minheight [expr {-[winfo height $pane.games]}]
-	incr minheight [expr {2*[games::borderwidth $pane.games]}]
-	$main paneconfigure $pane -minsize $minheight
+	incr minheight [expr {-[winfo height $Vars(games)]}]
+	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
+
+	if {!$Vars(lock:minsize)} {
+		$main paneconfigure $pane -minsize $minheight
+	}
 
 	set h [expr {(([winfo height $pane] - $minheight)/$Vars(incr))*$Vars(incr) + $minheight}]
 	if {$h > [winfo height $pane]} { incr h [expr {-$Vars(incr)}] }
@@ -523,7 +565,6 @@ proc TableMinSize {main pane sizeInfo} {
 proc BuildSwitcher {pane} {
 	variable Vars
 	variable Defaults
-	variable clipbaseName
 
 	set height $Defaults(iconsize)
 	incr height 14
@@ -626,19 +667,17 @@ proc DeleteBase {number} {
 
 proc AddBase {type file encoding readonly} {
 	variable Vars
-	variable Counter
 	variable Defaults
-	variable clipbaseName
 
 	set canv $Vars(canvas)
 	set img [set [namespace current]::icons::${type}(${Defaults(iconsize)}x${Defaults(iconsize)})]
-	set i $Counter; incr Counter
+	set i $Vars(counter); incr Vars(counter)
 	set ext [file extension $file]
 	switch $ext { .gz - .zip { set ext .pgn } }
 	if {[llength $ext] == 0} { set ext sci } else { set ext [string range $ext 1 end] }
 	set Vars(active) $i
 	set Vars(selection) $i
-	if {[llength $encoding] == 0} { set encoding [::scidb::db::get codec] }
+	if {[llength $encoding] == 0} { set encoding [::scidb::db::get encoding] }
 	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
 	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
@@ -683,11 +722,11 @@ proc AddBase {type file encoding readonly} {
 
 	$canv yview moveto 1.0
 	LayoutSwitcher
+	SeeSymbol $i
 }
 
 
 proc UpdateSwitcher {canv base} {
-	variable Counter
 	variable ClipbaseType
 	variable Vars
 
@@ -711,6 +750,7 @@ proc SeeSymbol {number} {
 	variable Vars
 	variable Defaults
 
+	if {![info exists Vars(canv-height)]} { return }
 	set pad $Defaults(symbol-padding)
 	set canv $Vars(canvas)
 	set topFraction [lindex [$canv yview] 0]
@@ -742,23 +782,35 @@ proc DoSwitch {filename number x y} {
 proc Switch {filename} {
 	variable Vars
 	variable Defaults
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 
 	games::prepareSwitch $Vars(games) [::scidb::db::get codec $filename]
 	::scidb::db::switch $filename
 	set canv $Vars(canvas)
+	set readonly [::scidb::db::get readonly? $filename]
+	set name [::util::databaseName $filename]
 
-	if {$filename eq $clipbaseName} {
-		::menu::configureCloseBase disabled
-		::toolbar::childconfigure $Vars(close) -state disabled
+	if {$filename eq $clipbaseName} { set state disabled } else { set state normal }
+	if {$filename eq $clipbaseName || ![::scidb::db::get writeable? $filename]} {
+		set roState disabled
 	} else {
-		::menu::configureCloseBase normal
-		::toolbar::childconfigure $Vars(close) -state normal
+		switch [file extension $filename] {
+			.sci - .si3 - .si4	{ set roState normal }
+			default					{ set roState disabled }
+		}
+
+		::toolbar::childconfigure $Vars(button:readonly) -tooltip $roState
 	}
+
+	::menu::configureCloseBase $state
+	::toolbar::childconfigure $Vars(button:close) -state $state
+	::toolbar::childconfigure $Vars(button:readonly) -state $roState
+
+	set Vars(flag:readonly) $readonly
 
 	set codec [::scidb::db::get codec]
 	if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
-	$Vars(notebook) tab $Vars(annotators) -state $state
+	$Vars(contents) tab $Vars(annotators) -state $state
 
 	foreach base $Vars(bases) {
 		lassign $base i type file
@@ -766,13 +818,17 @@ proc Switch {filename} {
 		if {$file eq $filename} {
 			set Vars(selection) $i
 			set background $Defaults(selected)
-			set [namespace current]::_CloseDatabase [format $mc::CloseDatabase [::util::databaseName $file]]
+			if {$readonly} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
+			set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
+			set [namespace current]::_Readonly [format $str $name]
 		} else {
 			set background $Vars(background)
 		}
 
 		$canv itemconfigure content$i -fill $background
 	}
+
+	RaisePane
 }
 
 
@@ -783,6 +839,27 @@ proc Update {path base {view 0} {index -1}} {
 		after cancel $Vars(after)
 		set Vars(after) [after idle [namespace code { RefreshSwitcher }]]
 	}
+}
+
+
+proc RaisePane {} {
+return	;# XXX
+	variable Vars
+	variable RecentFiles
+	variable ::scidb::clipbaseName
+
+	if {[llength $Vars(bases)] > 1 || [::scidb::db::count games $clipbaseName] > 0} {
+		set what contents
+		set Vars(lock:minsize) 0
+	} elseif {[llength [lindex $RecentFiles 0]] == 0} {
+		set what blank
+		set Vars(lock:minsize) 1
+	} else {
+		set what history
+		set Vars(lock:minsize) 1
+	}
+
+	$Vars(database) raise $Vars($what)
 }
 
 
@@ -800,7 +877,7 @@ proc RefreshSwitcher {} {
 
 proc LanguageChanged {} {
 	variable Vars
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
 	UpdateSwitcher $Vars(canvas) $clipbaseName
@@ -808,8 +885,10 @@ proc LanguageChanged {} {
 	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
 
 	if {$i >= 0} {
+		if {[::scidb::db::get readonly?]} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
 		set name [::util::databaseName [lindex $Vars(bases) $i 2]]
 		set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
+		set [namespace current]::_Readonly [format $str $name]
 	}
 }
 
@@ -822,6 +901,7 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 	variable Defaults
 
 	if {[llength $Vars(bases)] == 0} { return }
+
 	set canv $Vars(canvas)
 	if {$w == -1} {
 		set w [winfo width $canv]
@@ -970,22 +1050,22 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 
 
 proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
-	variable IgnoreNext
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 	variable ClipbaseType
 	variable RecentFiles
 	variable Defaults
 	variable Vars
 	variable ::table::options
 
-	if {$IgnoreNext} {
-		set IgnoreNext 0
+	if {$Vars(ignore-next)} {
+		set Vars(ignore-next) 0
 		return
 	}
-	if {$ignoreNext} { set IgnoreNext 1 }
+	if {$ignoreNext} { set Vars(ignore-next) 1 }
 	set menu $canv.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff 0
+	catch { wm attributes $menu -type popup_menu }
 	set top [winfo toplevel $canv]
 	set specs {}
 	set readonly 0
@@ -1044,14 +1124,13 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs separator {} {} {} {} {} {}
 
 		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
-			variable _ReadOnly $readonly
 			lappend specs \
 				checkbutton \
 				$mc::ReadOnly \
-				[namespace code [list ToggleReadOnly $file $index]] \
+				[namespace code [list ToggleReadOnly 0]] \
 				[expr {![::scidb::db::get writeable? $file]}] \
 				0 lock \
-				[namespace current]::_ReadOnly \
+				[namespace current]::Vars(flag:readonly) \
 				;
 			lappend specs separator {} {} {} {} {} {}
 		}
@@ -1084,7 +1163,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 
 	set recentFiles {}
 	foreach entry $RecentFiles {
-		if {[llength $entry] && [lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} {
+		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} {
 			lappend recentFiles $entry
 		}
 	}
@@ -1094,8 +1173,9 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		$menu add cascade \
 			-menu $m \
 			-label " [::menu::stripAmpersand $::menu::mc::FileOpenRecent]" \
-			-image $::icon::16x16::none \
-			-compound left
+			-image $::icon::16x16::docOpen \
+			-compound left \
+			;
 		foreach entry $recentFiles {
 			lassign $entry type file encoding readonly
 			set name [::util::databaseName $file]
@@ -1104,8 +1184,16 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase \
-								[winfo parent [winfo parent $canv]] $file $encoding $readonly]]
+								[winfo parent [winfo parent $canv]] $file $encoding $readonly]] \
+				;
 		}
+		$m add separator
+		$m add command \
+			-label " $::game::mc::ClearHistory" \
+			-image $::icon::16x16::clear \
+			-compound left \
+			-command [list set [namespace current]::RecentFiles {}] \
+			;
 	}
 
 #	if {$index == -1 && [::scidb::db::get name] ne $clipbaseName} {
@@ -1122,14 +1210,16 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		-menu $m                    \
 		-label " $mc::SymbolSize"   \
 		-image $::icon::16x16::none \
-		-compound left
+		-compound left              \
+		;
 	foreach {name size} {Large 48 Medium 32 Small 24 Tiny 16} {
 		$m add checkbutton                                   \
 			-label [set mc::$name]                            \
 			-onvalue $size                                    \
 			-offvalue $size                                   \
 			-variable [namespace current]::Defaults(iconsize) \
-			-command [namespace code [list ChangeIconSize $canv]]
+			-command [namespace code [list ChangeIconSize $canv]] \
+			;
 	}
 
 	::tooltip::hide
@@ -1137,23 +1227,28 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 }
 
 
-proc ToggleReadOnly {file index} {
+proc ToggleReadOnly {toggle} {
 	variable Vars
-	variable _ReadOnly
 	variable RecentFiles
 
-	::scidb::db::set readonly $_ReadOnly
+	if {$toggle} { set Vars(flag:readonly) [expr {!$Vars(flag:readonly)}] }
 
-	set k [lsearch -integer -index 0 $Vars(bases) $index]
-	lset Vars(bases) $k 5 $_ReadOnly
+	set file [::scidb::db::get name]
+	::scidb::db::set readonly $Vars(flag:readonly)
+
+	set k [lsearch -exact -index 2 $Vars(bases) $file]
+	lset Vars(bases) $k 5 $Vars(flag:readonly)
 
 	set k [FindRecentFile $file]
-	if {$k >= 0} { lset RecentFiles $k 3 $_ReadOnly }
+	if {$k >= 0} { lset RecentFiles $k 3 $Vars(flag:readonly) }
+
+	if {$Vars(flag:readonly)} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
+	set [namespace current]::_Readonly [format $str [::util::databaseName $file]]
 }
 
 
 proc EmptyClipbase {parent} {
-	variable clipbaseName
+	variable ::scidb::clipbaseName
 
 	if {[::game::releaseAll $parent $clipbaseName]} {
 		::widget::busyCursor on
@@ -1285,17 +1380,28 @@ proc CheckEncoding {parent file encoding} {
 
 proc ChangeIcon {number parent} {
 	variable Types
-	variable Visible
+	variable Options
 	variable Vars
 
 	set dlg [toplevel $parent.changeIcon -class Dialog]
-	set list [::tlistbox $dlg.list -setgrid 1 -visible $Visible -linespace 48 -skiponeunit no]
-	pack $list -expand yes -fill both
-	$list addcol image -id image
-	$list addcol text -id text -expand yes
-
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
 	lassign [lindex $Vars(bases) $i] index type file ext
+	set cols 2
+	do {
+		set rows [expr {([llength $Types($ext)] + [incr cols] - 1)/$cols}]
+	} while {$rows > $cols*$cols}
+	set list [::tlistbox $dlg.list \
+		-visible $Options(visible) \
+		-linespace 48 \
+		-skiponeunit no \
+		-columns $cols \
+		-height $rows \
+		-ipady 5 \
+	]
+	pack $list -expand yes -fill both
+	$list addcol image -id image
+	$list addcol text -id text
+
 	foreach t $Types($ext) {
 		$list insert [list [set [namespace current]::icons::${t}(48x48)] [set mc::T_$t]]
 	}
@@ -1312,7 +1418,7 @@ proc ChangeIcon {number parent} {
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
-	wm title $dlg $mc::ChangeIcon
+	wm title $dlg "$mc::ChangeIcon ([::util::databaseName $file])"
 	wm resizable $dlg false true
 	::util::place $dlg center $parent
 	wm deiconify $dlg
@@ -1353,8 +1459,8 @@ proc SetIcon {w number} {
 
 
 proc ConfigureIconList {w} {
-	variable Visible
-	set Visible [$w cget -height]
+	variable Options
+	set Options(visible) [$w cget -height]
 }
 
 
@@ -1371,7 +1477,7 @@ proc ShowDescription {index} {
 proc Properties {index popup} {
 	variable Vars
 	variable ClipbaseType
-	variable PropBackground
+	variable Options
 
 	set canv $Vars(canvas)
 	set i [lsearch -integer -index 0 $Vars(bases) $index]
@@ -1408,7 +1514,7 @@ proc Properties {index popup} {
 		pack $f -fill x -expand yes -padx 2 -pady 2
 	} else {
 		toplevel $dlg -class Scidb
-		tk::frame $f -takefocus 0 -background $PropBackground
+		tk::frame $f -takefocus 0 -background $Options(prop:background)
 		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
 		wm resizable $dlg false false
 		set label ::ttk::label
@@ -1432,8 +1538,8 @@ proc Properties {index popup} {
 		}
 		$label $f.t$name -justify left {*}$options
 		if {!$popup} {
-			$f.l$name configure -background $PropBackground
-			$f.t$name configure -background $PropBackground
+			$f.l$name configure -background $Options(prop:background)
+			$f.t$name configure -background $Options(prop:background)
 		}
 		grid $f.l$name -row $row -column 1 -sticky wn
 		grid $f.t$name -row $row -column 3 -sticky wn
@@ -1580,10 +1686,12 @@ proc PopdownProps {} {
 
 proc AddRecentFile {type file encoding readonly} {
 	variable RecentFiles
+	variable MaxHistory
 
 	set i [FindRecentFile $file]
-	if {$i == -1} { set i end }
-	set RecentFiles [linsert [lreplace $RecentFiles $i $i] 0 [list $type $file $encoding $readonly]]
+	if {$i >= 0} { set RecentFiles [lreplace $RecentFiles $i $i] }
+	set RecentFiles [linsert $RecentFiles 0 [list $type $file $encoding $readonly]]
+	if {[llength $RecentFiles] > $MaxHistory} { set RecentFiles [lrange $RecentFiles 0 9] }
 }
 
 
@@ -1592,11 +1700,59 @@ proc FindRecentFile {file} {
 
 	set i 0
 	foreach entry $RecentFiles {
-		if {[llength $entry] && [lindex $entry 1] eq $file} { return $i }
+		if {[lindex $entry 1] eq $file} { return $i }
 		incr i
 	}
 	return -1
 }
+
+
+#proc MakePhoto {path} {
+#	set parent [join [lrange [split $path .] 0 end-1] .]
+#	if {[winfo width $parent] <= 1} { return }
+#	pack [::tk::canvas $path -borderwidth 0]
+#	set src [image create photo -file "SunergosGreyWallpaper-0.0.1-full.jpg"]
+#	set dst [image create photo -width  [winfo width $parent] -height [winfo height $parent]]
+#	::scidb::tk::image copy $src $dst
+#	$path create image 0 0 -anchor nw -image $dst
+#	$path configure -width [image width $dst] -height [image height $dst]
+#	bind [winfo parent $path] <Configure> {#}
+#}
+#
+#
+#proc MakePhoto {path} {
+#	pack [::tk::canvas $path -borderwidth 0]
+#	set img [::splash::picture]
+#	$path create image 0 0 -anchor nw -image $img
+#	$path configure -width [image width $img] -height [image height $img]
+#	bind [winfo parent $path] <Configure> {#}
+#}
+#
+#
+#proc MakeBackground {path} {
+#	variable Vars
+#
+#	if {[winfo exists $path]} {
+#		set img $Vars(tile)
+#	} else {
+#		pack [::tk::canvas $path] -fill both -expand yes
+#		set img [image create photo -file "chessboard-tile.png"]
+#		set Vars(tile) $img
+#	}
+#
+#	set ih [image height $img]
+#	set iw [image width  $img]
+#	set ch [winfo height [winfo parent $path]]
+#	set cw [winfo width  [winfo parent $path]]
+#
+#	for {set x 0} {$x < $cw} {incr x $iw} {
+#		for {set y 0} {$y < $ch} {incr y $ih} {
+#			if {[llength [$path find withtag tile:$x:$y]] == 0} {
+#				$path create image $x $y -anchor nw -image $img -tags [list tile tile:$x:$y]
+#			}
+#		}
+#	}
+#}
 
 
 proc WriteOptions {chan} {

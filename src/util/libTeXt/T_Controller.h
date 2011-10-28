@@ -21,6 +21,8 @@
 
 #include "T_Receptacle.h"
 #include "T_TokenP.h"
+#include "T_Consumer.h"
+#include "T_Config.h"
 
 #include "m_scoped_ptr.h"
 #include "m_ref_counted_ptr.h"
@@ -52,6 +54,27 @@ public:
 	{
 		virtual ~Log() throw();
 		virtual void error(mstl::string const& msg) = 0;
+	};
+
+	class TokenConsumer : public Consumer
+	{
+	public:
+
+		TokenConsumer(mstl::ostream& dst, mstl::ostream* out, mstl::ostream* log);
+
+		int count() const;
+
+		void put(unsigned char c) override;
+		void put(mstl::string const& s) override;
+		void out(mstl::string const& text) override;
+		void log(mstl::string const& text, bool copyToOut) override;
+
+	private:
+
+		mstl::ostream&	fDst;
+		mstl::ostream*	fOut;
+		mstl::ostream*	fLog;
+		int				fCount;
 	};
 
 	typedef mstl::ref_counted_ptr<Log> LogP;
@@ -88,6 +111,10 @@ public:
 
 private:
 
+#ifdef USE_MEM_BLOCKS
+	struct Destroy { ~Destroy(); };
+#endif
+
 	typedef mstl::scoped_ptr<Receptacle>	ReceptacleP;
 	typedef mstl::scoped_ptr<Environment>	EnvironmentP;
 
@@ -101,6 +128,9 @@ private:
 	void addPackage(Package* package);
 	void addPackages();
 
+#ifdef USE_MEM_BLOCKS
+	Destroy			m_destroy;
+#endif
 	EnvironmentP	m_env;
 	ReceptacleP		m_receptacle;
 	LogP				m_log;

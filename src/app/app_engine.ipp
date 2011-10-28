@@ -24,6 +24,9 @@ inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive()
 inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyzing(); }
 inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
 
+inline bool Engine::startAnalysis(db::Board const& board)	{ return m_engine->startAnalysis(board); }
+inline bool Engine::stopAnalysis()									{ return m_engine->stopAnalysis(); }
+
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
@@ -46,6 +49,14 @@ inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
 
 inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
+
+
+inline
+void
+Engine::doMove(db::Game const& game, db::Move const& lastMove)
+{
+	m_engine->doMove(game, lastMove);
+}
 
 
 inline

@@ -42,6 +42,7 @@ set Database		"Database"
 set Delete			"Delete"
 set Edit				"Edit"
 set Escape			"Esc"
+set From				"From"
 set Game				"Game"
 set Layout			"Layout"
 set Lite				"Light"
@@ -58,6 +59,7 @@ set Reset			"Reset"
 set SelectAll		"Select all"
 set Texture			"Texture"
 set Theme			"Theme"
+set To				"To"
 set Undo				"Undo"
 set Variation		"Variation"
 set White			"White"
@@ -81,7 +83,7 @@ set encodingEnglish		iso8859-1
 
 set input(English)		english.tcl
 
-event add <<Language>>	Language
+event add <<LanguageChanged>>	Language
 
 array set langToCountry {
 	az	AZE
@@ -538,7 +540,7 @@ proc SetVar {str var {unused {}} {unused {}}} {
 
 proc InvokeLang {w lang} {
 	if {![winfo exists $w]} { return }
-	event generate $w <<Language>> -data $lang
+	event generate $w <<LanguageChanged>> -data $lang
 	foreach child [winfo children $w] { InvokeLang $child $lang }
 }
 

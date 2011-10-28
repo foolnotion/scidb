@@ -32,6 +32,7 @@ proc open {} {
 	toplevel .splash -class Scidb
 	wm title .splash $::scidb::app
 	wm attributes .splash -alpha 0.8
+	catch { wm attributes .splash -type splash }
 	tk::frame .splash.f -relief raised -borderwidth 1
 	tk::canvas .splash.f.c -borderwidth 0 -width [image width $Picture] -height [image height $Picture]
 	.splash.f.c create image 0 0 -image $Picture -anchor nw
@@ -77,12 +78,17 @@ proc print {msg} {
 }
 
 
+proc picture {} {
+	return [set [namespace current]::Picture]
+}
+
+
 proc Close {} {
 	variable Picture
 
 	if {[winfo exists .splash]} {
 		destroy .splash
-		image delete $Picture
+#		image delete $Picture
 	}
 }
 

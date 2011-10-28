@@ -23,6 +23,7 @@
 #include "T_InputOutput.h"
 #include "T_TokenP.h"
 #include "T_Messages.h"
+#include "T_Memory.h"
 
 #include "m_string.h"
 #include "m_assert.h"
@@ -50,64 +51,12 @@
 using namespace TeXt;
 
 
+#ifdef USE_MEM_BLOCKS
+static unsigned m_countControllers = 0;
+#endif
+
+
 namespace {
-
-class MyConsumer : public Consumer
-{
-public:
-
-	MyConsumer(mstl::ostream& dst, mstl::ostream* out, mstl::ostream* log)
-		:fDst(dst)
-		,fOut(out)
-		,fLog(log)
-		,fCount(0)
-	{
-		if (fOut == 0)
-			fOut = &mstl::cerr;
-	}
-
-	int count() const { return fCount; }
-
-	void put(unsigned char c) override
-	{
-		fDst.put(c);
-
-		if (c != '\n')
-			++fCount;
-	}
-
-	void put(mstl::string const& s) override
-	{
-		fDst.write(s);
-		fCount += s.size();
-	}
-
-	void out(mstl::string const& text) override
-	{
-		if (fOut && fOut != fLog)
-		{
-			fOut->write(text);
-			fOut->flush();
-		}
-	}
-
-	void log(mstl::string const& text, bool copyToOut) override
-	{
-		if (fLog)
-			fLog->write(text);
-
-		if (copyToOut)
-			out(text);
-	}
-
-private:
-
-	mstl::ostream&	fDst;
-	mstl::ostream*	fOut;
-	mstl::ostream*	fLog;
-	int				fCount;
-};
-
 
 struct MyReceptacle : public Receptacle
 {
@@ -126,6 +75,75 @@ struct MyReceptacle : public Receptacle
 };
 
 } // namespace
+
+
+#ifdef USE_MEM_BLOCKS
+
+Controller::Destroy::~Destroy()
+{
+	if (--m_countControllers == 0)
+		Memory::cleanup();
+}
+
+#endif
+
+
+Controller::TokenConsumer::TokenConsumer(mstl::ostream& dst, mstl::ostream* out, mstl::ostream* log)
+	:fDst(dst)
+	,fOut(out)
+	,fLog(log)
+	,fCount(0)
+{
+	if (fOut == 0)
+		fOut = &mstl::cerr;
+}
+
+
+int
+Controller::TokenConsumer::count() const
+{
+	return fCount;
+}
+
+
+void
+Controller::TokenConsumer::put(unsigned char c)
+{
+	fDst.put(c);
+
+	if (c != '\n')
+		++fCount;
+}
+
+
+void
+Controller::TokenConsumer::put(mstl::string const& s)
+{
+	fDst.write(s);
+	fCount += s.size();
+}
+
+
+void
+Controller::TokenConsumer::out(mstl::string const& text)
+{
+	if (fOut && fOut != fLog)
+	{
+		fOut->write(text);
+		fOut->flush();
+	}
+}
+
+
+void
+Controller::TokenConsumer::log(mstl::string const& text, bool copyToOut)
+{
+	if (fLog)
+		fLog->write(text);
+
+	if (copyToOut)
+		out(text);
+}
 
 
 static Environment::ErrorMode
@@ -154,6 +172,10 @@ Controller::Controller(mstl::string const& searchDirs, ErrorMode errorMode, LogP
 	,m_continued(false)
 {
 	addPackages();
+
+#ifdef USE_MEM_BLOCKS
+	++m_countControllers;
+#endif
 }
 
 
@@ -170,10 +192,38 @@ Controller::receptacle()
 }
 
 
+mstl::string
+Controller::setupStream(mstl::string const& inputPath, mstl::ifstream& inStream)
+{
+	mstl::string const& ioSuffix(InputOutput::suffix());
+
+	mstl::string inPath(inputPath);
+	mstl::string fullPath(inPath);
+
+	if (	!InputOutput::searchFile(m_env->searchDirs(), inPath)
+		&& inPath.size() > ioSuffix.size()
+		&& inPath.substr(inPath.size() - ioSuffix.size()) != ioSuffix)
+	{
+		inPath += ioSuffix;
+		InputOutput::searchFile(m_env->searchDirs(), inPath);
+	}
+
+	inStream.open(inPath);
+
+	if (inStream)
+		return inPath;
+
+	if (m_log)
+		m_log->error("[TeXt::Controller] cannot open input file '" + inPath + "'");
+
+	return mstl::string::empty_string;
+}
+
+
 int
 Controller::processInput(mstl::istream& inp, mstl::ostream& dst, mstl::ostream* out, mstl::ostream* log)
 {
-	mstl::ref_counted_ptr<MyConsumer> consumer(new MyConsumer(dst, out, log));
+	mstl::ref_counted_ptr<TokenConsumer> consumer(new TokenConsumer(dst, out, log));
 
 	m_env->setConsumer(consumer);
 	m_env->pushInput(Environment::InputP(new FileInput(&inp)));
@@ -309,34 +359,6 @@ Controller::processInput(	mstl::istream& inp,
 		out->writenl(msg);
 
 	return count;
-}
-
-
-mstl::string
-Controller::setupStream(mstl::string const& inputPath, mstl::ifstream& inStream)
-{
-	mstl::string const& ioSuffix(InputOutput::suffix());
-
-	mstl::string inPath(inputPath);
-	mstl::string fullPath(inPath);
-
-	if (	!InputOutput::searchFile(m_env->searchDirs(), inPath)
-		&& inPath.size() > ioSuffix.size()
-		&& inPath.substr(inPath.size() - ioSuffix.size()) != ioSuffix)
-	{
-		inPath += ioSuffix;
-		InputOutput::searchFile(m_env->searchDirs(), inPath);
-	}
-
-	inStream.open(inPath);
-
-	if (inStream)
-		return inPath;
-
-	if (m_log)
-		m_log->error("[TeXt::Controller] cannot open input file '" + inPath + "'");
-
-	return mstl::string::empty_string;
 }
 
 

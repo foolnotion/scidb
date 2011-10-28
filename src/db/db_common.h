@@ -1044,6 +1044,17 @@ namespace save
 	};
 }
 
+
+namespace load
+{
+	enum State
+	{
+		Ok,
+		Failed,
+		Corrupted,
+	};
+};
+
 namespace display
 {
 	enum
@@ -1052,6 +1063,7 @@ namespace display
 		ColumnStyle			= 1 << 1,
 		ParagraphSpacing	= 1 << 2,
 		ShowDiagrams		= 1 << 3,
+		ShowMoveInfo		= 1 << 4,
 	};
 };
 

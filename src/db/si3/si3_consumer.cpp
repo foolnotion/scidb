@@ -42,9 +42,13 @@ using namespace util;
 namespace db {
 namespace si3 {
 
-Consumer::Consumer(format::Type srcFormat, Codec& codec, mstl::string const& encoding)
+Consumer::Consumer(	format::Type srcFormat,
+							Codec& codec,
+							mstl::string const& encoding,
+							TagBits const& allowedTags,
+							bool allowExtraTags)
 	:Encoder(m_stream, codec.codec())
-	,db::Consumer(srcFormat, encoding)
+	,db::Consumer(srcFormat, encoding, allowedTags, allowExtraTags)
 	,m_stream(m_buffer, codec.blockSize())
 	,m_codec(codec)
 	,m_flagPos(0)
@@ -70,7 +74,7 @@ Consumer::beginGame(TagSet const& tags)
 
 	m_stream.reset(m_codec.blockSize());
 	m_stream.resetp();
-	encodeTags(tags);
+	encodeTags(tags, allowedTags(), allowExtraTags());
 	m_flagPos = m_strm.tellp();
 	m_strm.put(0);	// place holder for flags
 	Encoder::setup(board());
@@ -87,15 +91,18 @@ Consumer::beginGame(TagSet const& tags)
 save::State
 Consumer::endGame(TagSet const& tags)
 {
-	mstl::vector<mstl::string>::iterator i = m_comments.begin();
-	mstl::vector<mstl::string>::iterator e = m_comments.end();
+	Comments::iterator i = m_comments.begin();
+	Comments::iterator e = m_comments.end();
 
 	mstl::string buf;
+	mstl::string str;
 
 	for ( ; i != e; ++i)
 	{
-		m_codec.codec().fromUtf8(*i, buf);
+		i->flatten(str, m_encoding);
+		m_codec.codec().fromUtf8(str, buf);
 		m_strm.put(buf.c_str(), buf.size() + 1);
+		str.clear();
 	}
 
 	if (!startBoard().isStandardPosition())
@@ -125,15 +132,6 @@ Consumer::endMoveSection(result::ID)
 
 
 void
-Consumer::pushComment(Comment const& comment)
-{
-	mstl::string text;
-	comment.flatten(text, m_encoding);
-	m_comments.push_back(text);
-}
-
-
-void
 Consumer::sendPreComment(Comment const& comment)
 {
 	if (!comment.isEmpty())
@@ -144,16 +142,15 @@ Consumer::sendPreComment(Comment const& comment)
 			m_strm.put(token::Comment);
 			m_strm.put(token::End_Marker);
 			m_appendComment = false;
-			pushComment(comment);
+			m_comments.push_back(comment);
 		}
 		else if (m_appendComment)
 		{
-			m_comments.back() += ' ';
-			comment.flatten(m_comments.back(), m_encoding);
+			m_comments.back().append(comment, ' ');
 		}
 		else
 		{
-			pushComment(comment);
+			m_comments.push_back(comment);
 			m_strm.put(token::Comment);
 			m_appendComment = true;
 		}
@@ -174,7 +171,7 @@ Consumer::sendComment(Comment const& comment,
 			if (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack))
 			{
 				m_strm.put(token::Comment);
-				m_comments.push_back("D");
+				m_comments.push_back(Comment("D", false, false));
 			}
 		}
 		else
@@ -194,22 +191,12 @@ Consumer::sendComment(Comment const& comment,
 
 	if (!marks.isEmpty())
 	{
-		if (comment.isEmpty())
-		{
-			mstl::string text;
-			marks.toString(text);
-			m_comments.push_back(text);
-		}
-		else
-		{
-			pushComment(comment);
+		mstl::string text;
+		marks.toString(text);
 
-			mstl::string& text = m_comments.back();
-
-			if (!text.empty())
-				text += ' ';
-			marks.toString(text);
-		}
+		Comment buf(text, false, false);
+		buf.append(comment, ' ');
+		m_comments.push_back(buf);
 
 		m_appendComment = true;
 		m_strm.put(token::Comment);
@@ -217,7 +204,7 @@ Consumer::sendComment(Comment const& comment,
 	else if (!comment.isEmpty())
 	{
 		m_strm.put(token::Comment);
-		pushComment(comment);
+		m_comments.push_back(comment);
 		m_appendComment = true;
 		m_afterMove = false;
 	}
@@ -238,13 +225,12 @@ Consumer::sendTrailingComment(Comment const& comment, bool)
 {
 	if (m_appendComment)
 	{
-		m_comments.back() += '\n';
-		comment.flatten(m_comments.back(), m_encoding);
+		m_comments.back().append(comment, '\n');
 	}
 	else if (m_afterMove)
 	{
 		m_strm.put(token::Comment);
-		pushComment(comment);
+		m_comments.push_back(comment);
 		m_appendComment = true;
 		m_afterMove = false;
 	}
@@ -253,8 +239,37 @@ Consumer::sendTrailingComment(Comment const& comment, bool)
 		m_strm.put(token::Start_Marker);
 		m_strm.put(token::Comment);
 		m_strm.put(token::End_Marker);
-		pushComment(comment);
+		m_comments.push_back(comment);
 	}
+}
+
+
+void
+Consumer::sendComment(Comment const& comment)
+{
+	if (m_appendComment)
+	{
+		Comment buf(comment);
+		buf.append(m_comments.back(), '\n');
+		m_comments.back().swap(buf);
+	}
+	else
+	{
+		sendTrailingComment(comment, false);
+	}
+}
+
+
+void
+Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
+{
+	mstl::string info;
+
+	moveInfo.print(m_engines, info, MoveInfo::Text);
+	sendComment(Comment(info, false, false));
+
+	if (!m_appendComment)
+		incrementCommentCount();
 }
 
 
@@ -308,7 +323,7 @@ Consumer::checkMove(Move const& move)
 	board.prepareForSan(m);
 	m.printSan(msg);
 	m_strm.put(token::Comment);
-	m_comments.push_back(msg);
+	m_comments.push_back(Comment(msg, false, false)); // set english flag?
 
 	return false;
 }

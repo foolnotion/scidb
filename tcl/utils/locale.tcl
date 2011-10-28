@@ -63,10 +63,14 @@ proc formatNumber {n {kilo false}} {
 proc formatNormalDate {date} {
 	variable Pattern
 
-	lassign {?? ?? ??} y m d
+	lassign {???? ?? ??} y m d
 	lassign [split $date "."] y m d
 
-	if {$y eq "??"} {
+	if {[string length $y] != 4} { set y "????" }
+	if {[string length $m] != 2} { set m "??" }
+	if {[string length $d] != 2} { set d "??" }
+
+	if {$y eq "????"} {
 		return ""
 	}
 	set y [string trimleft $y "0"]

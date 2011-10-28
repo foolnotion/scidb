@@ -30,9 +30,11 @@
 #include "db_move.h"
 #include "db_move_node.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 #include "db_annotation.h"
 #include "db_board.h"
 #include "db_game_data.h"
+#include "db_exception.h"
 
 #include "m_bitfield.h"
 #include "m_assert.h"
@@ -96,7 +98,7 @@ static TagLookup tagLookup;
 Encoder::Encoder(ByteStream& strm)
 	:m_strm(strm)
 	,m_data(m_buffer[0], sizeof(m_buffer[0]))
-	,m_text(m_buffer[1], sizeof(m_buffer[2]))
+	,m_text(m_buffer[1], sizeof(m_buffer[1]))
 	,m_runLength(0)
 {
 }
@@ -130,7 +132,7 @@ Encoder::encodeKing(Move const& move)
 	// To convert this to a value in the range [1-9], we add 9 and
 	// then look up the Value[] table.
 
-	static const Byte Value[] =
+	static Byte const Value[] =
 	{
 	//-9  -8  -7  -6  -5  -4  -3  -2  -1   0   1   2   3   4   5   6   7   8   9
 		6,  7,  8,  0,  0,  0,  0,  0,  9,  0, 10,  0,  0,  0,  0,  0, 11, 12, 13
@@ -142,10 +144,7 @@ Encoder::encodeKing(Move const& move)
 
 	if (move.isCastling())
 	{
-		if (move.isShortCastling())
-			m_strm.put(14);
-		else
-			m_strm.put(15);
+		m_strm.put(move.isShortCastling() ? 14 : 15);
 	}
 	else
 	{
@@ -291,7 +290,7 @@ Encoder::encodePawn(Move const& move)
 		// move.promotedPiece() must be Queen=2, Rook=3, Bishop=4 or Knight=5.
 		// We add 3 for Queen, 6 for Rook, 9 for Bishop, 12 for Knight.
 
-		static_assert(	piece::Queen == 2
+		static_assert(		piece::Queen == 2
 							&& piece::Rook == 3
 							&& piece::Bishop == 4
 							&& piece::Knight == 5,
@@ -425,6 +424,17 @@ Encoder::encodeNote(MoveNode const* node)
 		}
 	}
 
+	if (node->hasMoveInfo())
+	{
+		MoveInfoSet const& moveInfo = node->moveInfo();
+
+		for (unsigned i = 0; i < moveInfo.count(); ++i)
+		{
+			m_strm.put(token::Mark);
+			moveInfo[i].encode(m_data);
+		}
+	}
+
 	if (node->hasAnyComment())
 		encodeComment(node);
 }
@@ -453,10 +463,10 @@ Encoder::encodeComment(MoveNode const* node)
 			flag |= comm::Post_Oth;
 	}
 
-	if (flag & 1)
+	if (flag & comm::Ante)
 		m_text.put(node->comment(move::Ante).content(), node->comment(move::Ante).size() + 1);
 
-	if (flag & 2)
+	if (flag & comm::Post)
 		m_text.put(node->comment(move::Post).content(), node->comment(move::Post).size() + 1);
 
 	m_data.put(flag);
@@ -464,62 +474,10 @@ Encoder::encodeComment(MoveNode const* node)
 }
 
 
-void
-Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
-{
-	M_ASSERT(tagID != 0);
-
-	mstl::string const& value = tags.value(tagID);
-
-	m_data.put(tagID);
-	m_data.put(value, value.size() + 1);
-}
-
-
 bool
 Encoder::skipTag(tag::ID tag)
 {
 	return ::tagLookup.skipTag(tag);
-}
-
-
-void
-Encoder::encodeTags(TagSet const& tags)
-{
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
-	{
-		if (!::tagLookup.skipTag(tag))
-		{
-			switch (tag)
-			{
-				// not needed
-				case tag::SetUp:		break;
-				case tag::Fen:			break;
-				case tag::Idn:			break;
-				case tag::PlyCount:	break;
-
-				// makes the compiler shut up
-				case tag::ExtraTag:	break;
-
-				default:
-					if (tags.isUserSupplied(tag) && (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
-						encodeTag(tags, tag);
-					break;
-			}
-		}
-	}
-
-	for (unsigned i = 0; i < tags.countExtra(); ++i)
-	{
-		mstl::string const& name  = tags.extra(i).name;
-		mstl::string const& value = tags.extra(i).value;
-
-		m_data.put(tag::ExtraTag);
-		m_data.put(name, name.size() + 1);
-		m_data.put(value, value.size() + 1);
-	}
-
-	m_data.put(0);
 }
 
 
@@ -545,44 +503,142 @@ Encoder::setup(Board const& board)
 
 
 void
-Encoder::encodeTextSection(unsigned offset)
+Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 {
-	M_ASSERT(offset + 3 <= m_strm.tellp());
-	M_ASSERT(m_strm.tellp() < (1 << 24));
+	M_ASSERT(tagID != 0);
 
-	ByteStream(m_strm.base() + offset, 3) << uint24_t(m_strm.tellp());
+	mstl::string const& value = tags.value(tagID);
 
-	if (m_text.tellp() > 0 || m_data.tellp() > 1)
+	m_data.put(tagID);
+	m_data.put(value, value.size() + 1);
+}
+
+
+void
+Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags)
+{
+	m_data.resetp();
+	allowedTags -= ::tagLookup.m_lookup;
+
+	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		m_strm << uint24_t(m_text.tellp());
-		m_strm.put(m_text.base(), m_text.tellp());
+		if (allowedTags.test(tag))
+		{
+			switch (tag)
+			{
+				// not needed
+				case tag::SetUp:		break;
+				case tag::Fen:			break;
+				case tag::Idn:			break;
+				case tag::PlyCount:	break;
+
+				// makes the compiler shut up
+				case tag::ExtraTag:	break;
+
+				default:
+					if (tags.isUserSupplied(tag) && (!tag::isRatingTag(tag) || tags.significance(tag) == 0))
+						encodeTag(tags, tag);
+					break;
+			}
+		}
+	}
+
+	if (allowExtraTags)
+	{
+		for (unsigned i = 0; i < tags.countExtra(); ++i)
+		{
+			mstl::string const& name  = tags.extra(i).name;
+			mstl::string const& value = tags.extra(i).value;
+
+			m_strm.put(tag::ExtraTag);
+			m_strm.put(name, name.size() + 1);
+			m_strm.put(value, value.size() + 1);
+		}
+	}
+
+	unsigned size = m_data.tellp();
+
+	if (size > 0)
+	{
+		m_strm.put(m_data.base(), size);
+		m_strm.put(0);
 	}
 }
 
 
 void
-Encoder::encodeDataSection()
+Encoder::encodeTextSection()
 {
-	M_ASSERT(m_strm.tellp() < (1 << 24));
+	unsigned size = m_text.tellp();
 
-	if (m_data.tellp() > 1)
-		m_strm.put(m_data.base(), m_data.tellp());
+	if (size > 0)
+	{
+		unsigned textOffset = m_strm.tellp();
+
+		if (textOffset < (1 << 24))
+		{
+			if (size < (1 << 24))
+			{
+				ByteStream::set(m_strm.base(), uint16_t(ByteStream::uint16(m_strm.base()) | 0x8000));
+
+				m_strm << uint24_t(size);
+				m_strm.put(m_text.base(), size);
+			}
+			else
+			{
+				IO_RAISE(Game, Encoding_Failed, "text section is too large");
+			}
+		}
+		else
+		{
+			IO_RAISE(Game, Encoding_Failed, "move data section is too large");
+		}
+	}
 }
 
 
 void
-Encoder::doEncoding(Signature const&, GameData const& data)
+Encoder::encodeDataSection(EngineList const& engines)
+{
+	if (engines.count())
+	{
+		m_strm.put(engines.count());
+		ByteStream::set(m_strm.base(), uint16_t(ByteStream::uint16(m_strm.base()) | 0x7000));
+
+		for (unsigned i = 0; i < engines.count(); ++i)
+			m_strm.put(engines[i]);
+	}
+
+	m_strm.put(m_data.base(), m_data.tellp());
+}
+
+
+void
+Encoder::doEncoding(	Signature const&,
+							GameData const& data,
+							db::Consumer::TagBits const& allowedTags,
+							bool allowExtraTags)
 {
 	m_runLength = 0;
+
 	setup(data.m_startBoard);
+
 	unsigned offset = m_strm.tellp();
-	m_strm << uint24_t(0);	// place holder for offset to text section
+
+	m_strm << uint24_t(0);	// place holder for offset to data section
 	m_strm << uint16_t(0);	// place holder for run length
-	encodeTags(data.m_tags);
+
 	encodeMainline(data.m_startNode);
-	ByteStream(m_strm.base() + offset + 3, 2) << m_runLength;
-	encodeTextSection(offset);
-	encodeDataSection();
+
+	ByteStream::set(m_strm.base() + offset + 3, uint16_t(m_runLength));
+
+	unsigned dataOffset = m_strm.tellp();
+
+	encodeTextSection();
+	encodeDataSection(data.m_engines);
+	encodeTags(data.m_tags, allowedTags, allowExtraTags);
+	ByteStream::set(m_strm.base() + offset, uint24_t(dataOffset));
+
 	m_strm.provide();
 }
 

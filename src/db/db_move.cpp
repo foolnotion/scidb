@@ -76,7 +76,7 @@ Move::printAlgebraic(mstl::string& s) const
 		s += sq::printAlgebraic(to());
 
 		if (isPromotion())
-			s += char(::tolower(piece::print(promoted())));
+			s += char(::tolower(piece::print(promoted())));	// the UCI protocoll requires lower case
 	}
 
 	return s;

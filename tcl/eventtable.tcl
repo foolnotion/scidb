@@ -170,7 +170,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]
-	::bind $path <<Language>>  		[namespace code [list BindAccelerators $path]]
+	::bind $path <<LanguageChanged>> [namespace code [list BindAccelerators $path]]
 
 	bind $path <ButtonPress-2>			[namespace code [list ShowInfo $path %x %y]]
 	bind $path <ButtonRelease-2>		[namespace code [list hideInfo $path]]

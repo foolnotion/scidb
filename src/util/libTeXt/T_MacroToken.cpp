@@ -27,7 +27,6 @@
 #include "T_Producer.h"
 #include "T_Messages.h"
 
-#include "m_scoped_ptr.h"
 #include "m_assert.h"
 #include "m_cast.h"
 #include "m_vector.h"
@@ -37,60 +36,56 @@
 using namespace TeXt;
 
 
-namespace {
-
-class MyProducer : public Producer
+MacroToken::TokenProducer::TokenProducer(TokenP const& macro)
+	:m_macro(macro)
+	,m_producer(m_macro->getProducer())
 {
-public:
+}
 
-	typedef mstl::ref_counted_ptr<MacroToken> MacroTokenP;
 
-	MyProducer(TokenP const& macro)
-		:m_macro(macro)
-		,m_producer(m_macro->getProducer())
-	{
-	}
+bool
+MacroToken::TokenProducer::finished() const
+{
+	return m_producer->finished();
+}
 
-	bool finished() const override
-	{
-		return m_producer->finished();
-	}
 
-	Source source() const override
-	{
-		return Macro;
-	}
+Producer::Source
+MacroToken::TokenProducer::source() const
+{
+	return Macro;
+}
 
-	TokenP next(Environment& env) override
-	{
-		return m_producer->next(env);
-	}
 
-	mstl::string currentDescription() const override
-	{
-		mstl::string descr = m_producer->currentDescription();
+TokenP
+MacroToken::TokenProducer::next(Environment& env)
+{
+	return m_producer->next(env);
+}
 
-		if (descr.empty())
-			return mstl::string::empty_string;
 
-		return m_macro->name() + " " + m_macro->parameterDescription() + "->" + descr;
-	}
+mstl::string
+MacroToken::TokenProducer::currentDescription() const
+{
+	mstl::string descr = m_producer->currentDescription();
 
-	bool reset() override
-	{
-		bool rc = m_producer->reset();
-		M_ASSERT(rc);
-		return rc;
-	}
+	if (descr.empty())
+		return mstl::string::empty_string;
 
-private:
+	return m_macro->name() + " " + m_macro->parameterDescription() + "->" + descr;
+}
 
-	typedef mstl::scoped_ptr<Producer> ProducerP;
 
-	MacroTokenP	m_macro;
-	ProducerP	m_producer;
-};
+bool
+MacroToken::TokenProducer::reset()
+{
+	bool rc = m_producer->reset();
+	M_ASSERT(rc);
+	return rc;
+}
 
+
+namespace {
 
 struct Match
 {
@@ -123,7 +118,7 @@ static TokenP
 popList(Environment& env)
 {
 	unsigned level = 0;
-	mstl::ref_counted_ptr<ListToken> result(new ListToken);
+	mstl::ref_counted_ptr<ListToken> result(new ListToken); // MEMORY
 
 	while (true)
 	{
@@ -296,7 +291,7 @@ MacroToken::MacroToken(	mstl::string const& ident,
 								TokenP const& body,
 								int nestingLevel)
 	:m_ident(ident)
-	,m_data(new Data(paramList, body, nestingLevel))
+	,m_data(new Data(paramList, body, nestingLevel)) // MEMORY
 {
 	M_REQUIRE(body);
 }
@@ -395,18 +390,18 @@ MacroToken::bindParameter(	Environment& env,
 
 	if (first == last)
 	{
-		list.reset(new ListToken);
+		list.reset(new ListToken); // MEMORY
 	}
 	else if (first + 1 == last)
 	{
 		if (*firstMarker)
 			list = *first;
 		else
-			list.reset(new ListToken(*first));
+			list.reset(new ListToken(*first)); // MEMORY
 	}
 	else
 	{
-		list.reset(new ListToken);
+		list.reset(new ListToken); // MEMORY
 
 		for ( ; first != last; ++first, ++firstMarker)
 		{
@@ -479,13 +474,13 @@ MacroToken::perform(Environment& env)
 
 	if (tailRecursionDetected)
 	{
-		dynamic_cast<MyProducer&>(env.producer()).reset();
+		dynamic_cast<TokenProducer&>(env.producer()).reset();
 	}
 	else
 	{
 		M_ASSERT(env.currentToken() == this);
 
-		env.pushProducer(	Environment::ProducerP(new MyProducer(env.currentToken())),
+		env.pushProducer(	Environment::ProducerP(new TokenProducer(env.currentToken())), // MEMORY
 								env.currentToken(),
 								m_data->m_nestingLevel);
 	}

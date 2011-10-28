@@ -264,7 +264,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 					m_round = ::strtoul(s, &s, 10);
 					if (*s == '.')
-						m_subround = ::strtoul(s + 1, 0, 10);
+						m_subround = ::strtoul(s + 1, nullptr, 10);
 				}
 				break;
 
@@ -436,7 +436,7 @@ GameInfo::setup(uint32_t gameOffset, uint32_t gameRecordLength)
 {
 	m_gameOffset = gameOffset;
 
-	if (m_recordLengthFlag)
+	if (hasGameRecordLength())
 		setGameRecordLength(gameRecordLength);
 }
 
@@ -516,11 +516,13 @@ GameInfo::setup(	uint32_t gameOffset,
 	char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 	m_round = ::strtoul(s, &s, 10);
 	if (*s == '.')
-		m_subround = ::strtoul(s + 1, 0, 10);
+		m_subround = ::strtoul(s + 1, nullptr, 10);
 
 	m_variationCount  = ::encodeCount(provider.countVariations());
 	m_commentCount    = ::encodeCount(provider.countComments());
-	m_annotationCount = ::encodeCount(provider.countAnnotations() + provider.countMarks());
+	m_annotationCount = ::encodeCount(	provider.countAnnotations()
+												 + provider.countMoveInfo()
+												 + provider.countMarks());
 
 	{
 		material::Count matCount;
@@ -641,12 +643,10 @@ GameInfo::reset(Namebases& namebases)
 
 		unsigned gameOffset = m_gameOffset;
 
-		if (m_recordLengthFlag)
+		if (unsigned recordLength = gameRecordLength())
 		{
-			unsigned recordLength = m_recordLength;
 			*this = m_initializer;
-			m_recordLength = recordLength;
-			m_recordLengthFlag = true;
+			setGameRecordLength(recordLength);
 		}
 		else
 		{
@@ -669,7 +669,7 @@ GameInfo::resetCharacteristics(Namebases& namebases)
 	namebases(Namebase::Site  ).deref(m_event->site());
 	namebases(Namebase::Event ).deref(m_event);
 
-	if (!m_recordLengthFlag)
+	if (!hasGameRecordLength())
 		namebases(Namebase::Annotator).deref(m_annotator);
 
 	m_dateYear	= Date::Zero10Bits;
@@ -692,7 +692,7 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 	namebases(Namebase::Site  ).ref(m_event->site());
 	namebases(Namebase::Event ).ref(m_event);
 
-	if (!m_recordLengthFlag)
+	if (!hasGameRecordLength())
 		namebases(Namebase::Annotator).ref(m_annotator);
 }
 
@@ -747,7 +747,7 @@ GameInfo::reallocate(Namebases& namebases)
 		namebase.insertEvent(
 			name, entry->date(), entry->type(), entry->timeMode(), entry->eventMode(), Limit, site);
 	}
-	if (!m_recordLengthFlag)
+	if (!hasGameRecordLength())
 	{
 		Namebase& namebase = namebases(Namebase::Annotator);
 		NamebaseEntry* entry = m_annotator;
@@ -801,14 +801,27 @@ GameInfo::setupTags(TagSet& tags) const
 {
 	tags.set(tag::Event,		m_event->name());
 	tags.set(tag::Site,		m_event->site()->name());
+
+	if (m_dateYear == Date::Zero10Bits)
+	{
+		tags.set(tag::Date, "????.??.??", 10);
+	}
+	else
+	{
+		tags.set(tag::Date,
+					Date(Date::decodeYearFrom10Bits(m_dateYear), m_dateMonth, m_dateDay).asString());
+	}
+
+	if (m_round)
+		tags.set(tag::Round, roundAsString());
+	else
+		tags.set(tag::Round, "?", 1);
+
 	tags.set(tag::White,		m_player[White]->name());
 	tags.set(tag::Black,		m_player[Black]->name());
 	tags.set(tag::Result,	result::toString(result::ID(m_result)));
 
-	if (m_round)
-		tags.set(tag::Round, roundAsString());
-
-	if (!m_recordLengthFlag)
+	if (!hasGameRecordLength())
 		tags.set(tag::Annotator, m_annotator->name());
 
 	if (m_event->type() != event::Unknown)
@@ -835,16 +848,6 @@ GameInfo::setupTags(TagSet& tags) const
 		tags.set(tag::WhiteFideId, m_player[White]->fideID());
 	if (m_player[Black]->haveFideId())
 		tags.set(tag::BlackFideId, m_player[Black]->fideID());
-
-	if (m_dateYear == Date::Zero10Bits)
-	{
-		tags.set(tag::Date, "????.??.??", 10);
-	}
-	else
-	{
-		tags.set(tag::Date,
-					Date(Date::decodeYearFrom10Bits(m_dateYear), m_dateMonth, m_dateDay).asString());
-	}
 
 	if (m_event->hasDate())
 		tags.set(tag::EventDate, m_event->date().asString());
@@ -952,7 +955,7 @@ GameInfo::setRecord(uint32_t offset, uint32_t length)
 {
 	m_gameOffset = offset;
 
-	if (m_recordLengthFlag)
+	if (hasGameRecordLength())
 		setGameRecordLength(length);
 }
 

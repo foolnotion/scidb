@@ -99,7 +99,7 @@ static char const* Phrases200[] =
 {
 	/* 200 */ 0,
 	/* 201 */ "<xml><:de>Eine Ungenauigkeit.</:de><:en>An inaccuracy.</:en><:es>Una inexactitud.</:es><:fr>Une imprecision.</:fr><:it>Poco precisa.</:it><:ru>Неточность.</:ru></xml>",
-	/* 202 */ "<xml><:de>Ein Fehler.</:de><:en>An error.</:en>Error.<:es>Une erreur.</:es><:fr></:fr><:it>Un errore.</:it><:ru>Ошибка.</:ru></xml>",
+	/* 202 */ "<xml><:de>Ein Fehler.</:de><:en>An error.</:en><:es>Une erreur.</:es><:fr></:fr><:it>Un errore.</:it><:ru>Ошибка.</:ru></xml>",
 	/* 203 */ "<xml><:de>Ein Patzer.</:de><:en>A blunder.</:en><:es>Grave error</:es><:fr>Une gaffe.</:fr><:it>Una svista.</:it><:ru>Грубая ошибка.</:ru></xml>",
 	/* 204 */ "<xml><:de>Der zweite Fehler in Folge.</:de><:en>The second error in a row.</:en><:es>Segundo error consecutivo.</:es><:fr>Une 2eme erreur d'affile.</:fr><:it>Il secondo errore di fila.</:it><:ru>Вторая ошибка подряд.</:ru></xml>",
 	/* 205 */ "<xml><:de>Nicht die beste Fortsetzung.</:de><:en>Not the best continuation.</:en><:es>No es la mejor jugada.</:es><:fr>Ce n'est pas la meilleure suite.</:fr><:it>Non è la continuazione migliore.</:it><:ru>Не лучшее продолжение.</:ru></xml>",
@@ -212,61 +212,70 @@ static char const* Phrases500[] =
 
 
 static
-bool
+void
 parseChessOkComment(mstl::string& s)
 {
 	switch (*s.c_str())
 	{
 		case '<':
-			// convert comments like {<font color=red>-12.13|d11</font>}
+			// strip html tags from comments like {<font color=red>-12.13|d11</font>}
 			if (::strncmp(s, "<font color=", 11) == 0 && ::strncmp(s.end() - 7, "</font>", 7) == 0)
 			{
 				mstl::string::size_type n = s.find('>');
 
 				if (n != mstl::string::npos)
 				{
-					s.replace(0, n + 1, "<xml><b>", 8);
-					s.replace(s.size() - 7, 7, "</b></xml>", 10);
-					return true;
+					s.replace(0, n + 1, "[%eval ", 7);
+					s.replace(s.size() - 7, 7, "]", 1);
 				}
 			}
 			break;
 
 		case '&':
-			// convert comments like {&lt;font color=red&gt;-12.13|d11&lt;/font&gt;}
-			if (	::strncmp(s, "&lt;font color=", 15) == 0
-				&& ::strncmp(s.end() - 13, "&lt;/font&gt;", 13) == 0)
+			// strip html tags from comments like {&lt;font color=red&gt;-12.13|d11&lt;/font&gt;}
+			if (	strncmp(s, "&lt;font color=", 15) == 0
+				&& strncmp(s.end() - 13, "&lt;/font&gt;", 13) == 0)
 			{
 				mstl::string::size_type n = s.find("&gt;");
 
 				if (n != mstl::string::npos && n < s.size() - 4)
 				{
-					s.replace(0, n + 4, "<xml><b>", 8);
-					s.replace(s.size() - 13, 13, "</b></xml>", 10);
-					return true;
+					s.replace(0, n + 4, "[%eval ", 7);
+					s.replace(s.size() - 13, 13, "]", 1);
 				}
 			}
 			break;
 
-		case 'R':
-			// strip comments like {Rybka Aquarium (0:00:08)}
-			if (::strncmp(s, "Rybka Aquarium (", 16) == 0)
+		case '-':
+		case '+':
+			// handle comments like {-0.78}
+			if (isdigit(s[1]) && s[2] == '.' && isdigit(s[3]) && isdigit(s[4]) && s.size() == 5)
 			{
-				char const* p = s.c_str() + 16;
-
-				while (*p == ':' || ::isdigit(*p))
-					++p;
-
-				if (*p == ')')
-				{
-					s.erase(s.begin(), p + 1);
-					s.ltrim();
-				}
+				mstl::string t;
+				t.append("[%eval ", 7);
+				t.append(s);
+				t.append(']');
+				t.swap(s);
 			}
 			break;
-	}
 
-	return false;
+//		case 'R':
+//			// strip comments like {Rybka Aquarium (0:00:08)}
+//			if (strncmp(s, "Rybka Aquarium (", 16) == 0)
+//			{
+//				char const* p = s.c_str() + 16;
+//
+//				while (*p == ':' || isdigit(*p))
+//					++p;
+//
+//				if (*p == ')')
+//				{
+//					s.erase(s.begin(), p + 1);
+//					s.ltrim();
+//				}
+//			}
+//			break;
+	}
 }
 
 
@@ -498,6 +507,9 @@ appendSpace(mstl::string& str)
 static unsigned
 estimateNumberOfGames(unsigned fileSize)
 {
+	if (fileSize == 0)
+		return 0;
+
 	return mstl::max(1u, unsigned(::ceil(fileSize/696.0)));
 }
 
@@ -665,6 +677,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 				if (m_linePos > m_line.begin() && ::strncmp(item, m_linePos, item.size()) != 0)
 					advanceLinePos(-1);
 			}
+			break;
 	}
 
 	if (m_countErrors[code] < MaxErrors)
@@ -2114,7 +2127,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					if (value[0] == '0')
 						value.erase(size_t(0), size_t(1));
 
-					int rat = ::strtoul(value, 0, 10);
+					int rat = ::strtoul(value, nullptr, 10);
 
 					if (rat == 0)
 					{
@@ -2440,19 +2453,19 @@ PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
 
 		if ((n = value.find('/', field)) < nextDelim)
 		{
-			moves += ::strtoul(value.c_str() + field, 0, 10);
-			seconds += ::strtoul(value.c_str() + n + 1, 0, 10);
+			moves += ::strtoul(value.c_str() + field, nullptr, 10);
+			seconds += ::strtoul(value.c_str() + n + 1, nullptr, 10);
 		}
 		else
 		{
 			if (value[field] == '*')
 				++field;
 
-			seconds += ::strtoul(value.c_str() + field, 0, 10);
+			seconds += ::strtoul(value.c_str() + field, nullptr, 10);
 
 			if ((n = value.find('+', field)) < nextDelim)
 			{
-				unsigned increment = ::strtoul(value.c_str() + n + 1, 0, 10);
+				unsigned increment = ::strtoul(value.c_str() + n + 1, nullptr, 10);
 				seconds += mstl::max(0, 60 - int(moves))*increment;
 			}
 		}
@@ -2723,17 +2736,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		if (m_sourceIsChessOK)
 		{
-			if (::parseChessOkComment(content))
-			{
-				Comment comment(content, false, false);
-				m_hasNote = true;
-				m_comments.push_back();
-				m_comments.back().swap(comment);
-				return kComment;
-			}
-
-			if (content.empty())
-				return kComment;
+			::parseChessOkComment(content);
 
 			char const* s = content;
 
@@ -2796,7 +2799,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 			if (*s == '\0')
 			{
-				unsigned nag = ::strtoul(content.c_str() + 1, 0, 10);
+				unsigned nag = ::strtoul(content.c_str() + 1, nullptr, 10);
 
 				if (nag < nag::Pgn_Last)
 				{
@@ -2836,9 +2839,11 @@ PgnReader::parseComment(Token prevToken, int c)
 			}
 		}
 
-		if (content.empty())
-			return kComment;
+		consumer().preparseComment(content);
 	}
+
+	if (content.empty())
+		return kComment;
 
 	Comment comment;
 
@@ -3246,6 +3251,17 @@ PgnReader::parseLessThanSign(Token prevToken, int)
 			}
 			putback(d);
 			break;
+	}
+
+	if (m_modification == Raw)
+	{
+		mstl::string str(1, c);
+
+		while ((c = get()) != '>')
+			str += c;
+
+		consumer().preparseComment(str);
+		return kComment;
 	}
 
 	// The PGN standard says that '<' is a token, although
@@ -4502,7 +4518,7 @@ PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
 
 			if (s < e)
 			{
-				if (::isElo(s, e) && strtoul(s, 0, 10) <= rating::Max_Value)
+				if (::isElo(s, e) && strtoul(s, nullptr, 10) <= rating::Max_Value)
 				{
 					if (*s == '0')
 						value.hook(s + 1, e - (s + 1));
@@ -4685,6 +4701,11 @@ PgnReader::getEventMode(char const* event, char const* site)
 				}
 				break;
 
+			case 'O':
+				if (::strncmp(site, "OCC", 3) == 0 && ::isdelim(site[3]))
+					mode = event::Internet;
+				break;
+
 			case 'U':
 				switch (site[1])
 				{
@@ -4851,6 +4872,9 @@ PgnReader::getNumberOfGames(mstl::string const& filename)
 
 	if (!ZStream::size(filename, fileSize, 0))
 		return -1;
+
+	if (fileSize < 0)
+		return fileSize;
 
 	return ::estimateNumberOfGames(fileSize);
 }

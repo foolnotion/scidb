@@ -63,6 +63,8 @@ using namespace TeXt;
 enum { MaxRounds = 255 };
 
 
+static unsigned const InvalidScore = mstl::numeric_limits<unsigned>::max();
+
 static TournamentTable::Tiebreak m_tiebreakRule = TournamentTable::None;
 
 
@@ -105,24 +107,27 @@ struct TournamentTable::Player
 	unsigned oppAvgRating() const;
 	unsigned percentage() const;
 
+	int resultScore(TournamentTable::Clash const* clash) const;
+
 	NamebasePlayer const* entry;
 
-	unsigned		ranking;
-	unsigned		group;
-	unsigned		elo;
-	unsigned		performance;
-	int			change;
-	unsigned		score;
-	unsigned		medianScore;
-	unsigned		lastProgress;
-	unsigned		maxRound;
-	unsigned		tiebreak[LastTiebreak];
-	unsigned		refinedBuchholz[LastBuchholz];
-	unsigned		oppEloCount;
-	unsigned		oppEloTotal;
-	unsigned		oppEloScore;
-	ClashList	clashList;
-	Lookup		lookup;
+	unsigned			ranking;
+	unsigned			group;
+	unsigned			elo;
+	unsigned			performance;
+	int				ratingChange;
+	unsigned			score[2];
+	unsigned			medianScore;
+	unsigned			lastProgress;
+	unsigned			maxRound;
+	unsigned			tiebreak[LastTiebreak + 1];
+	unsigned			refinedBuchholz[LastBuchholz + 1];
+	unsigned			oppEloCount;
+	unsigned			oppEloTotal;
+	unsigned			oppEloScore;
+	ScoringSystem	scoringSystem;
+	ClashList		clashList;
+	Lookup			lookup;
 };
 
 
@@ -153,13 +158,14 @@ debugPlayer(TournamentTable::Player const* player)
 	printf("Name:           %s\n", player->entry->name().c_str());
 	printf("Ranking:        %u\n", player->ranking);
 	printf("Group:          %u\n", player->group);
-	printf("Score:          %u\n", player->score);
+	printf("Trad. Score:    %u\n", player->score[TournamentTable::Traditional]);
+	printf("Bilbao Score:   %u\n", player->score[TournamentTable::Bilbao]);
 	printf("Median Score:   %u\n", player->medianScore);
 	printf("Max.Round:      %u\n", player->maxRound);
 	printf("Game Count:     %u\n", player->clashList.size());
 	printf("Elo:            %u\n", player->elo);
 	printf("Performance:    %u\n", player->performance);
-	printf("Change:         %d\n", player->change);
+	printf("Rating Change:  %d\n", player->ratingChange);
 	printf("Tiebreak:      ");
 	for (unsigned i = 0; i < unsigned(TournamentTable::LastTiebreak); ++i)
 		printf(" %u", player->tiebreak[i]);
@@ -210,17 +216,43 @@ TournamentTable::Player::Player(NamebasePlayer const* entry, unsigned ranking)
 	,group(0)
 	,elo(0)
 	,performance(0)
-	,change(0)
-	,score(0)
+	,ratingChange(0)
 	,medianScore(0)
+	,lastProgress(0)
 	,maxRound(0)
 	,oppEloCount(0)
 	,oppEloTotal(0)
 	,oppEloScore(0)
 {
+	::memset(score, 0, sizeof(score));
 	::memset(lookup, 0, sizeof(lookup));
 	::memset(tiebreak, 0, sizeof(tiebreak));
 	::memset(refinedBuchholz, 0, sizeof(refinedBuchholz));
+}
+
+
+int
+TournamentTable::Player::resultScore(TournamentTable::Clash const* clash) const
+{
+	M_ASSERT(clash);
+
+	switch (scoringSystem)
+	{
+		case TournamentTable::Traditional:
+			return result::value(clash->result);	// return white=2, draw=1, black=0
+
+		case TournamentTable::Bilbao:
+			switch (int(clash->result))
+			{
+				case result::White:	return 3;
+				case result::Black:	return 0;
+				case result::Draw:	return 2;
+				case result::Lost:	return 0;
+			}
+			break;
+	}
+
+	return -1; // never reached
 }
 
 
@@ -298,8 +330,11 @@ cmpScore(void const* lhs, void const* rhs)
 	TournamentTable::Player const* pl = *static_cast<TournamentTable::Player* const*>(lhs);
 	TournamentTable::Player const* pr = *static_cast<TournamentTable::Player* const*>(rhs);
 
-	if (pl->score != pr->score)
-		return int(pr->score) - int(pl->score);
+	unsigned lscore = pl->score[pl->scoringSystem];
+	unsigned rscore = pr->score[pr->scoringSystem];
+
+	if (lscore != rscore)
+		return int(rscore) - int(lscore);
 
 	return int(pl->clashList.size()) - int(pr->clashList.size());
 }
@@ -550,22 +585,26 @@ TournamentTable::computeScores()
 				switch (int(clash->result))
 				{
 					case result::White:
-						player->score += 2;
+						player->score[Traditional] += 2;
+						player->score[Bilbao] += 6;
 						whiteMedianScore = 2;
 						if (opponent->elo > 0)
 							player->oppEloScore += 2;
 						break;
 
 					case result::Black:
-						opponent->score += 2;
+						opponent->score[Traditional] += 2;
+						opponent->score[Bilbao] += 6;
 						blackMedianScore = 2;
 						if (player->elo > 0)
 							opponent->oppEloScore += 2;
 						break;
 
 					case result::Draw:
-						++player->score;
-						++opponent->score;
+						player->score[Traditional] += 1;
+						player->score[Bilbao] += 2;
+						opponent->score[Traditional] += 1;
+						opponent->score[Bilbao] += 2;
 						whiteMedianScore = 1;
 						blackMedianScore = 1;
 						if (opponent->elo > 0)
@@ -650,10 +689,10 @@ TournamentTable::computePerformance()
 			if (player->elo)
 			{
 				player->performance = performance;
-				player->change = ratingChange(player->elo,
-														oppAvgRating,
-														percentage,
-														player->oppEloCount);
+				player->ratingChange = ratingChange(player->elo,
+																oppAvgRating,
+																percentage,
+																player->oppEloCount);
 			}
 		}
 
@@ -793,9 +832,8 @@ TournamentTable::guessBestMode()
 void
 TournamentTable::computeTiebreaks()
 {
-	static unsigned const InvalidScore = mstl::numeric_limits<unsigned>::max();
-
 	mstl::bitset used(m_playerMap.size());
+	mstl::bitset particular(m_playerMap.size());
 
 	unsigned nrounds = m_maxRound*m_maxSubround;
 
@@ -804,20 +842,22 @@ TournamentTable::computeTiebreaks()
 		Player* player = i->second;
 		Player::ClashList const& clashList = player->clashList;
 
-		unsigned lowestScore				= InvalidScore;
-		unsigned secondLowestScore		= InvalidScore;
+		unsigned lowestScore				= ::InvalidScore;
+		unsigned secondLowestScore		= ::InvalidScore;
 		unsigned highestScore			= 0;
 		unsigned secondHighestScore	= 0;
 		unsigned progressiveScore		= 0;
 
 		used.reset();
 
+		player->tiebreak[TraditionalScoring] = player->score[Traditional];
+
 		for (unsigned k = 0; k < clashList.size(); ++k)
 		{
 			Clash const*	clash		= clashList[k];
-			Player const*	opponent	= clash->opponent->player;
+			Player*			opponent	= clash->opponent->player;
 
-			unsigned oppScore = opponent->score;
+			unsigned oppScore = opponent->score[Traditional];
 
 			if (!used.test_and_set(opponent->ranking))
 			{
@@ -839,6 +879,13 @@ TournamentTable::computeTiebreaks()
 					player->tiebreak[GamesWon] += 1;
 					if (oppScore >= nrounds)
 						player->tiebreak[KoyaSystem] += 2;
+					if (clash->color == color::Black)
+						player->tiebreak[GamesWonWithBlack] += 1;
+					if (oppScore == player->score[Traditional])
+					{
+						player->tiebreak[ParticularResult] += 2;
+						particular.set(player->ranking);
+					}
 					break;
 
 				case result::Draw:
@@ -846,27 +893,35 @@ TournamentTable::computeTiebreaks()
 					player->tiebreak[SonnebornBerger] += oppScore;
 					if (oppScore >= nrounds)
 						player->tiebreak[KoyaSystem] += 1;
+					if (oppScore == player->score[Traditional])
+					{
+						player->tiebreak[ParticularResult] += 1;
+						particular.set(player->ranking);
+					}
 					break;
 			}
 
 			player->tiebreak[Progressive] += progressiveScore;
 		}
 
-		if (lowestScore != InvalidScore)
+		if (!particular.test(player->ranking))
+			player->tiebreak[ParticularResult] = ::InvalidScore;
+
+		if (lowestScore != ::InvalidScore)
 		{
 			player->tiebreak[MedianBuchholz] -= lowestScore + highestScore;
 
-			if (nrounds >= 9 && secondLowestScore != InvalidScore)
+			if (nrounds >= 9 && secondLowestScore != ::InvalidScore)
 				player->tiebreak[MedianBuchholz] -= secondLowestScore + secondHighestScore;
 
-			if (player->score > nrounds)
+			if (player->score[Traditional] > nrounds)
 			{
 				player->tiebreak[ModifiedMedianBuchholz] -= lowestScore;
 
-				if (nrounds >= 9 && secondLowestScore != InvalidScore)
+				if (nrounds >= 9 && secondLowestScore != ::InvalidScore)
 					player->tiebreak[ModifiedMedianBuchholz] -= secondLowestScore;
 			}
-			else if (player->score < nrounds)
+			else if (player->score[Traditional] < nrounds)
 			{
 				player->tiebreak[ModifiedMedianBuchholz] -= highestScore;
 
@@ -900,13 +955,22 @@ TournamentTable::computeTiebreaks()
 
 
 void
-TournamentTable::sort(TiebreakRules const& tiebreakRules, Order order, Mode mode)
+TournamentTable::sort(	ScoringSystem scoringSystem,
+								TiebreakRules const& tiebreakRules,
+								Order order,
+								Mode mode)
 {
 	unsigned size = m_playerMap.size();
 	Player* playerList[size];
 
 	for (unsigned i = 0; i < size; ++i)
-		(playerList[i] = m_playerMap.container()[i].second)->ranking = i;
+	{
+		Player* player = m_playerMap.container()[i].second;
+
+		playerList[i] = player;
+		player->ranking = i;
+		player->scoringSystem = scoringSystem;
+	}
 
 	::qsort(playerList, size, sizeof(Player*), ::cmpName);
 
@@ -1009,6 +1073,7 @@ TournamentTable::sort(TiebreakRules const& tiebreakRules, Order order, Mode mode
 
 void
 TournamentTable::emit(	TeXt::Receptacle& receptacle,
+								ScoringSystem scoringSystem,
 								TiebreakRules const& tiebreakRules,
 								Order order,
 								KnockoutOrder koOrder,
@@ -1016,7 +1081,7 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 {
 	typedef mstl::ref_counted_ptr<TeXt::ListToken> List;
 
-	sort(tiebreakRules, order, m_mode = (mode == Auto) ? m_bestMode : mode);
+	sort(scoringSystem, tiebreakRules, order, m_mode = (mode == Auto) ? m_bestMode : mode);
 
 	char const* descr = 0;
 
@@ -1097,10 +1162,10 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 		data->append(country::toString(entry->findFederation()));
 		data->append(entry->name());
 		data->append(player->elo);
-		data->append(player->score);
+		data->append(player->score[scoringSystem]);
 		data->append(player->clashList.size());
 		data->append(player->performance);
-		data->append(player->change);
+		data->append(player->ratingChange);
 		data->append(tiebreaks);
 
 		Tiebreak lastRule = None;
@@ -1126,15 +1191,25 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 						tiebreaks->append(player->tiebreak[rule]/4, (player->tiebreak[rule]%4)*25);
 						break;
 
+					case ParticularResult:
+						if (player->tiebreak[rule] == ::InvalidScore)
+						{
+							tiebreaks->append(-1);
+							break;
+						}
+						// fallthru
+
 					case Buchholz:
 					case MedianBuchholz:
 					case ModifiedMedianBuchholz:
 					case KoyaSystem:
 					case Progressive:
+					case TraditionalScoring:
 						tiebreaks->append(player->tiebreak[rule]/2, (player->tiebreak[rule]%2)*5);
 						break;
 
 					case GamesWon:
+					case GamesWonWithBlack:
 						tiebreaks->append(player->tiebreak[rule]);
 						break;
 
@@ -1228,7 +1303,7 @@ TournamentTable::emitCrossTable(TeXt::Receptacle& receptacle, bool isScheveninge
 					parity = 0;
 				}
 
-				resultList[oppId][parity] = clash->result;
+				resultList[oppId][parity] = player->resultScore(clash);
 				indices[oppId][parity] = clash->gameIndex + 1;
 			}
 
@@ -1277,7 +1352,7 @@ TournamentTable::emitSwissTable(TeXt::Receptacle& receptacle)
 			{
 				row->append(clash->opponent->player->ranking,
 								clash->color,
-								clash->result,
+								player->resultScore(clash),
 								clash->gameIndex + 1);
 			}
 			else
@@ -1314,7 +1389,7 @@ TournamentTable::emitMatchTable(TeXt::Receptacle& receptacle)
 		for (unsigned k = 0; k < clashList.size(); ++k)
 		{
 			Clash const* clash = clashList[k];
-			row->append(clash->result, clash->gameIndex + 1);
+			row->append(player->resultScore(clash), clash->gameIndex + 1);
 		}
 	}
 
@@ -1438,7 +1513,7 @@ TournamentTable::emitKnockoutTable(TeXt::Receptacle& receptacle, KnockoutOrder o
 						&& (*i)->opponent->player == clash->opponent->player
 						&& (*i)->round == clash->round)
 				{
-					results->append((*i)->result, (*i)->gameIndex + 1);
+					results->append((*i)->player->resultScore((*i)), (*i)->gameIndex + 1);
 					++i;
 				}
 			}

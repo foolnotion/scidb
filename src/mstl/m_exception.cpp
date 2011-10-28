@@ -61,6 +61,13 @@ exception::set_message(char const* fmt, va_list args)
 }
 
 
+void
+exception::set_backtrace(::mstl::backtrace const& backtrace)
+{
+	m_backtrace = backtrace;
+}
+
+
 #ifndef __OPTIMIZE__
 
 #ifdef __GNUC__

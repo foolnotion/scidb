@@ -69,6 +69,8 @@ typedef ByteStream::uint48_t uint48_t;
 
 namespace
 {
+#ifdef USE_BITFIELDS // non-portable between different platforms!
+
 	// 56 bytes (Scid: 46 bytes)
 	struct IndexEntry
 	{
@@ -83,9 +85,9 @@ namespace
 				uint64_t plyCount				:12;
 				uint64_t termination			: 4;
 				//----------------------------- 64 bit
-				uint32_t pawnProgress;
-				//----------------------------- 32 bit
 				uint32_t positionData;
+				//----------------------------- 32 bit
+				uint32_t pawnProgress;
 				//----------------------------- 32 bit
 				uint32_t gameOffset;
 				//----------------------------- 32 bit
@@ -126,38 +128,163 @@ namespace
 			struct
 			{
 				uint64_t u64[2];
-				uint32_t u32[10];
+
+				union
+				{
+					struct { uint32_t u32[10]; };
+					struct { uint16_t u16[20]; };
+				};
 			};
 		};
 
-		void swapBytes(uint16_t idn)
-		{
-			static_assert(sizeof(IndexEntry) == 56, "error in struct");
+		void swapBytes(uint16_t idn);
+		void swapBytes();
+	};
+
+#else
+
+struct IndexEntry
+{
+	void swapBytes(uint16_t idn);
+	void swapBytes();
+
+	union
+	{
+		struct { uint64_t u64[ 7]; };
+		struct { uint32_t u32[14]; };
+		struct { uint16_t u16[28]; };
+	};
+};
+
+#define SET_HOME_PAWNS(item,value)			item->u64[ 0]  = value
+#define SET_WHITE_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ffffff) << 8
+#define SET_BLACK_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ff0000) >> 16, \
+														item->u32[ 3] |= (value & 0x0000ffff) << 16
+#define SET_PLY_COUNT(item,value)			item->u32[ 3] |= (value & 0x00000fff) << 4
+#define SET_TERMINATION(item,value)			item->u32[ 3] |= value & 0x0000000f
+#define SET_POSITION_DATA(item,value)		item->u32[ 4]  = value
+#define SET_PLY_0(item,value)					item->u16[ 8]  = value
+#define SET_PLY_1(item,value)					item->u16[ 9]  = value
+#define SET_PAWN_PROGRESS(item,value)		item->u32[ 5]  = value
+#define SET_GAME_OFFSET(item,value)			item->u32[ 6]  = value
+#define SET_ANNOTATOR(item,value)			item->u32[ 7] |= (value & 0x00ffffff) << 8
+#define SET_VARIATION_COUNT(item,value)	item->u32[ 7] |= (value & 0x0000000f) << 4
+#define SET_COMMENT_COUNT(item,value)		item->u32[ 7] |= (value & 0x0000000f)
+#define SET_EVENT(item,value)					item->u32[ 8] |= (value & 0x00ffffff) << 8
+#define SET_ROUND(item,value)					item->u32[ 8] |= value & 0x000000ff
+#define SET_MATERIAL(item,value)				item->u32[ 9] |= (value & 0x00ffffff) << 8
+#define SET_HP_COUNT(item,value)				item->u32[ 9] |= (value & 0x0000000f) << 4
+#define SET_BLACK_RATING_TYPE(item,value)	item->u32[ 9] |= (value & 0x00000007) << 1
+#define SET_UNDER_PROMOTION(item,value)	item->u32[ 9] |= value & 0x00000001
+#define SET_GAME_FLAGS(item,value)			item->u32[10] |= (value & 0x00ffffff) << 8
+#define SET_CASTLING(item,value)				item->u32[10] |= (value & 0x0000000f) << 4
+#define SET_WHITE_RATING_TYPE(item,value)	item->u32[10] |= (value & 0x00000007) << 1
+#define SET_PROMOTION(item,value)			item->u32[10] |= value & 0x00000001
+#define SET_WHITE_RATING(item,value)		item->u32[11] |= (value & 0x00000fff) << 20
+#define SET_POSITION_ID(item,value)			item->u32[11] |= (value & 0x00000fff) << 8
+#define SET_SUBROUND(item,value)				item->u32[11] |= value & 0x000000ff
+#define SET_BLACK_ELO(item,value)			item->u32[12] |= (value & 0x00000fff) << 20
+#define SET_BLACK_RATING(item,value)		item->u32[12] |= (value & 0x00000fff) << 8
+#define SET_DATE_MONTH(item,value)			item->u32[12] |= (value & 0x0000000f) << 4
+#define SET_ANNOTATION_COUNT(item,value)	item->u32[12] |= value & 0x0000000f
+#define SET_WHITE_ELO(item,value)			item->u32[13] |= (value & 0x00000fff) << 20
+#define SET_DATE_YEAR(item,value)			item->u32[13] |= (value & 0x000003ff) << 10
+#define SET_DATE_DAY(item,value)				item->u32[13] |= (value & 0x0000001f) << 5
+#define SET_RESULT(item,value)				item->u32[13] |= (value & 0x00000007) << 2
+#define SET_COMMENT_ENG_FLAG(item,value)	item->u32[13] |= (value & 0x00000001) << 1
+#define SET_COMMENT_OTH_FLAG(item,value)	item->u32[13] |= value & 0x00000001
+
+#define GET_HOME_PAWNS(item)					item->u64[0]
+#define GET_WHITE_PLAYER(item)				((item->u32[2] >>  8) & 0x00ffffff)
+#define GET_BLACK_PLAYER(item)				((item->u32[2] & 0x000000ff) << 16) | \
+														((item->u32[3] >> 16) & 0x0000ffff)
+#define GET_PLY_COUNT(item)					((item->u32[3] >>  4) & 0x00000fff)
+#define GET_TERMINATION(item)					(item->u32[3] & 0x0000000f)
+#define GET_POSITION_DATA(item)				item->u32[4]
+#define GET_PLY_0(item)							item->u16[8]
+#define GET_PLY_1(item)							item->u16[9]
+#define GET_PAWN_PROGRESS(item)				item->u32[5]
+#define GET_GAME_OFFSET(item)					item->u32[6]
+#define GET_ANNOTATOR(item)					((item->u32[7] >> 8) & 0x00ffffff)
+#define GET_VARIATION_COUNT(item)			((item->u32[7] >> 4) & 0x0000000f)
+#define GET_COMMENT_COUNT(item)				(item->u32[7] & 0x0000000f)
+#define GET_EVENT(item)							((item->u32[8] >> 8) & 0x00ffffff)
+#define GET_ROUND(item)							(item->u32[8] & 0x000000ff)
+#define GET_MATERIAL(item)						((item->u32[9] >> 8) & 0x00ffffff)
+#define GET_HP_COUNT(item)						((item->u32[9] >> 4) & 0x0000000f)
+#define GET_BLACK_RATING_TYPE(item)			((item->u32[9] >> 1) & 0x00000007)
+#define GET_UNDER_PROMOTION(item)			(item->u32[9] & 0x00000001)
+#define GET_GAME_FLAGS(item)					((item->u32[10] >> 8) & 0x00ffffff)
+#define GET_CASTLING(item)						((item->u32[10] >> 4) & 0x0000000f)
+#define GET_WHITE_RATING_TYPE(item)			((item->u32[10] >> 1) & 0x00000007)
+#define GET_PROMOTION(item)					(item->u32[10] & 0x00000001)
+#define GET_WHITE_RATING(item)				((item->u32[11] >> 20) & 0x00000fff)
+#define GET_POSITION_ID(item)					((item->u32[11] >>  8) & 0x00000fff)
+#define GET_SUBROUND(item)						(item->u32[11] & 0x000000ff)
+#define GET_BLACK_ELO(item)					((item->u32[12] >> 20) & 0x00000fff)
+#define GET_BLACK_RATING(item)				((item->u32[12] >>  8) & 0x00000fff)
+#define GET_DATE_MONTH(item)					((item->u32[12] >>  4) & 0x0000000f)
+#define GET_ANNOTATION_COUNT(item)			(item->u32[12] & 0x0000000f)
+#define GET_WHITE_ELO(item)					((item->u32[13] >> 20) & 0x00000fff)
+#define GET_DATE_YEAR(item)					((item->u32[13] >> 10) & 0x000003ff)
+#define GET_DATE_DAY(item)						((item->u32[13] >>  5) & 0x0000001f)
+#define GET_RESULT(item)						((item->u32[13] >>  2) & 0x00000007)
+#define GET_COMMENT_ENG_FLAG(item)			((item->u32[13] >> 1) & 0x00000001)
+#define GET_COMMENT_OTH_FLAG(item)			(item->u32[13] & 0x00000001)
+
+#endif
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-//			u64[ 0] = mstl::bo::swap(u64[ 1]);	// dont swap homepawns
-			u64[ 1] = mstl::bo::swap(u64[ 1]);
-//			u32[ 0] = mstl::bo::swap(u32[ 0]);	// dont swap pawn progression
-			if (idn == 518)
-			u32[ 1] = mstl::bo::swap(u32[ 1]);	// only swap if eco data is used
-			u32[ 2] = mstl::bo::swap(u32[ 2]);
-			u32[ 3] = mstl::bo::swap(u32[ 3]);
-			u32[ 4] = mstl::bo::swap(u32[ 4]);
-			u32[ 5] = mstl::bo::swap(u32[ 5]);
-			u32[ 6] = mstl::bo::swap(u32[ 6]);
-			u32[ 7] = mstl::bo::swap(u32[ 7]);
-			u32[ 8] = mstl::bo::swap(u32[ 8]);
-			u32[ 9] = mstl::bo::swap(u32[ 9]);
-			u32[10] = mstl::bo::swap(u32[10]);
+
+// NOTE dont swap homepawns:			u64[ 0] = mstl::bo::swap(u64[ 0]);
+// NOTE dont swap pawn progression:	u32[ 5] = mstl::bo::swap(u32[ 5]);
+
+# define SWAP_BYTES(idn)               \
+	u32[ 2] = mstl::bo::swap(u32[ 2]);  \
+	u32[ 3] = mstl::bo::swap(u32[ 3]);  \
+	u32[ 6] = mstl::bo::swap(u32[ 6]);  \
+	u32[ 7] = mstl::bo::swap(u32[ 7]);  \
+	u32[ 8] = mstl::bo::swap(u32[ 8]);  \
+	u32[ 9] = mstl::bo::swap(u32[ 9]);  \
+	u32[10] = mstl::bo::swap(u32[10]);  \
+	u32[11] = mstl::bo::swap(u32[11]);  \
+	u32[12] = mstl::bo::swap(u32[12]);  \
+	u32[13] = mstl::bo::swap(u32[13]);  \
+                                       \
+	if (idn == 518)                     \
+	{                                   \
+		u32[4] = mstl::bo::swap(u32[4]); \
+	}                                   \
+	else                                \
+	{                                   \
+		u16[8] = mstl::bo::swap(u16[8]); \
+		u16[9] = mstl::bo::swap(u16[9]); \
+	}                                   \
+
+#else
+
+# define SWAP_BYTES (idn)
+
 #endif
-		};
-	};
-}
+
+void
+IndexEntry::swapBytes(uint16_t idn)
+{
+	SWAP_BYTES(idn);
+};
+
+void
+IndexEntry::swapBytes()
+{
+	SWAP_BYTES(GET_POSITION_ID(this));
+};
+
+} // namespace
 
 
-static mstl::string const MagicIndexFile("Scidb.i\0", 8);
-static mstl::string const MagicGameFile ("Scidb.g\0", 8);
-static mstl::string const MagicNamebase ("Scidb.n\0", 8);
+static mstl::string const MagicIndexFile ("Scidb.i\0", 8);
+static mstl::string const MagicGameFile  ("Scidb.g\0", 8);
+static mstl::string const MagicNamebase  ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
 static uint16_t const FileVersion = 92;
@@ -362,7 +489,6 @@ Codec::gameFlags() const
 Codec::Codec()
 	:m_gameData(0)
 	,m_asyncReader(0)
-	,m_progressFrequency(0)
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
 {
@@ -390,6 +516,13 @@ bool
 Codec::isWriteable() const
 {
 	return true;
+}
+
+
+bool
+Codec::upgradeIndexOnly()
+{
+	return false;
 }
 
 
@@ -599,7 +732,11 @@ Codec::updateHeader(mstl::string const& rootname)
 
 
 void
-Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature)
+Codec::doEncoding(util::ByteStream& strm,
+						GameData const& data,
+						Signature const& signature,
+						TagBits const& allowedTags,
+						bool allowExtraTags)
 {
 	M_ASSERT(gameInfoList().size() <= maxGameCount());
 	M_ASSERT(namebase(Namebase::Player).size() <= maxPlayerCount());
@@ -607,14 +744,14 @@ Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const&
 	M_ASSERT(namebase(Namebase::Event).size() <= maxEventCount());
 
 	Encoder encoder(strm);
-	encoder.doEncoding(signature, data);
+	encoder.doEncoding(signature, data, allowedTags, allowExtraTags);
 }
 
 
 db::Consumer*
 Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(srcFormat, *this);
+	return new Consumer(srcFormat, *this, Consumer::TagBits(true), true);
 }
 
 
@@ -649,7 +786,7 @@ Codec::doDecoding(GameData& data, GameInfo& info)
 void
 Codec::doOpen(mstl::string const& encoding)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 
 	if (m_gameData)
 	{
@@ -667,10 +804,6 @@ Codec::doOpen(mstl::string const& encoding)
 DatabaseCodec*
 Codec::makeCodec(mstl::string const& name)
 {
-#if 1 // OLD XXX
-	return new v91::Codec;
-#endif
-
 	mstl::fstream strm;
 
 	strm.open(name, mstl::ios_base::in | mstl::ios_base::binary);
@@ -706,7 +839,7 @@ Codec::makeCodec(mstl::string const& name)
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 	M_ASSERT(m_gameData == 0);
 
 	mstl::string indexFilename(rootname + ".sci");
@@ -775,7 +908,7 @@ Codec::checkFileVersion(mstl::fstream& fstrm, mstl::string const& magic, uint16_
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 {
-	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
+//	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 
 	mstl::string indexFilename(rootname + ".sci");
 	mstl::string gameFilename(rootname + ".scg");
@@ -894,9 +1027,11 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 {
 	IndexEntry* bits = reinterpret_cast<IndexEntry*>(strm.data());
 
-	bits->swapBytes(item.m_positionId);
+	bits->swapBytes();
 
-#define GET(type, field) \
+#ifdef USE_BITFIELDS
+
+# define GET(type, field) \
 	::get##type(namebase(Namebase::type), m_lookup[Namebase::type][bits->field])
 
 	NamebasePlayer* whitePlayer = GET(Player, whitePlayer);
@@ -916,7 +1051,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 		item.m_annotator					= annotator;
 	}
 
-#undef GET
+# undef GET
 
 	whitePlayer->setElo(item.m_pd[color::White].elo = bits->whiteElo);
 	blackPlayer->setElo(item.m_pd[color::Black].elo = bits->blackElo);
@@ -951,6 +1086,68 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_signature.m_underPromotions	= bits->underPromotion;
 	item.m_signature.m_castling			= bits->castling;
 	item.m_signature.m_hpCount				= bits->hpCount;
+
+#else
+
+# define GET(type, accessor) \
+	::get##type(namebase(Namebase::type), m_lookup[Namebase::type][accessor(bits)])
+
+	NamebasePlayer* whitePlayer = GET(Player, GET_WHITE_PLAYER);
+	NamebasePlayer* blackPlayer = GET(Player, GET_BLACK_PLAYER);
+
+	whitePlayer->ref(); blackPlayer->ref();
+
+	{
+		NamebaseEvent* event			= GET(Event, GET_EVENT);
+		NamebaseEntry* annotator	= GET(Annotator, GET_ANNOTATOR);
+
+		event->ref(); annotator->ref();
+
+		item.m_player[color::White]	= whitePlayer;
+		item.m_player[color::Black]	= blackPlayer;
+		item.m_event						= event;
+		item.m_annotator					= annotator;
+	}
+
+# undef GET
+
+	whitePlayer->setElo(item.m_pd[color::White].elo = GET_WHITE_ELO(bits));
+	blackPlayer->setElo(item.m_pd[color::Black].elo = GET_BLACK_ELO(bits));
+
+	whitePlayer->setRating(
+		rating::Type(item.m_pd[color::White].ratingType = GET_WHITE_RATING_TYPE(bits)),
+		item.m_pd[color::White].rating = GET_WHITE_RATING(bits));
+	blackPlayer->setRating(
+		rating::Type(item.m_pd[color::Black].ratingType = GET_BLACK_RATING_TYPE(bits)),
+		item.m_pd[color::Black].rating = GET_BLACK_RATING(bits));
+
+	item.setMaterial(GET_MATERIAL(bits));
+
+	item.m_signature.m_homePawns.value	= GET_HOME_PAWNS(bits);
+	item.m_signature.m_progress.value	= GET_PAWN_PROGRESS(bits);
+	item.m_pd[0].langFlag					= GET_COMMENT_ENG_FLAG(bits);
+	item.m_pd[1].langFlag					= GET_COMMENT_OTH_FLAG(bits);
+	item.m_variationCount					= GET_VARIATION_COUNT(bits);
+	item.m_annotationCount					= GET_ANNOTATION_COUNT(bits);
+	item.m_commentCount						= GET_COMMENT_COUNT(bits);
+	item.m_termination						= GET_TERMINATION(bits);
+	item.m_gameFlags							= GET_GAME_FLAGS(bits);
+	item.m_round								= GET_ROUND(bits);
+	item.m_subround							= GET_SUBROUND(bits);
+	item.m_dateYear							= GET_DATE_YEAR(bits);
+	item.m_dateMonth							= GET_DATE_MONTH(bits);
+	item.m_dateDay								= GET_DATE_DAY(bits);
+	item.m_result								= GET_RESULT(bits);
+	item.m_gameOffset							= GET_GAME_OFFSET(bits);
+	item.m_plyCount							= GET_PLY_COUNT(bits);
+	item.m_positionId							= GET_POSITION_ID(bits);
+	item.m_positionData						= GET_POSITION_DATA(bits);
+	item.m_signature.m_promotions			= GET_PROMOTION(bits);
+	item.m_signature.m_underPromotions	= GET_UNDER_PROMOTION(bits);
+	item.m_signature.m_castling			= GET_CASTLING(bits);
+	item.m_signature.m_hpCount				= GET_HP_COUNT(bits);
+
+#endif
 }
 
 
@@ -1055,6 +1252,8 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 {
 	IndexEntry* bits = reinterpret_cast<IndexEntry*>(strm.buffer());
 
+#ifdef USE_BITFIELDS
+
 	bits->whitePlayer			= item.m_player[color::White]->id();
 	bits->blackPlayer			= item.m_player[color::Black]->id();
 	bits->event					= item.m_event->id();
@@ -1089,6 +1288,83 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	bits->commentEngFlag		= item.m_pd[0].langFlag;
 	bits->commentOthFlag		= item.m_pd[1].langFlag;
 	bits->positionData		= item.m_positionData;
+
+#else
+
+	// first we have to zero the item!
+	::memset(bits, 0, sizeof(IndexEntry));
+
+	SET_WHITE_PLAYER		(bits, item.m_player[color::White]->id());
+	SET_BLACK_PLAYER		(bits, item.m_player[color::Black]->id());
+	SET_EVENT				(bits, item.m_event->id());
+	SET_ANNOTATOR			(bits, item.m_annotator->id());
+	SET_GAME_OFFSET		(bits, item.m_gameOffset);
+	SET_HOME_PAWNS			(bits, item.m_signature.m_homePawns.value);
+	SET_PAWN_PROGRESS		(bits, item.m_signature.m_progress.value);
+	SET_MATERIAL			(bits, item.material().value);
+	SET_ROUND				(bits, item.m_round);
+	SET_SUBROUND			(bits, item.m_subround);
+	SET_GAME_FLAGS			(bits, item.m_gameFlags);
+	SET_PROMOTION			(bits, item.m_signature.hasPromotion());
+	SET_UNDER_PROMOTION	(bits, item.m_signature.hasUnderPromotion());
+	SET_CASTLING			(bits, item.m_signature.m_castling);
+	SET_HP_COUNT			(bits, item.m_signature.m_hpCount);
+	SET_PLY_COUNT			(bits, item.m_plyCount);
+	SET_POSITION_ID		(bits, item.m_positionId);
+	SET_VARIATION_COUNT	(bits, item.m_variationCount);
+	SET_COMMENT_COUNT		(bits, item.m_commentCount);
+	SET_ANNOTATION_COUNT	(bits, item.m_annotationCount);
+	SET_DATE_DAY			(bits, item.m_dateDay);
+	SET_DATE_MONTH			(bits, item.m_dateMonth);
+	SET_DATE_YEAR			(bits, item.m_dateYear);
+	SET_RESULT				(bits, item.m_result);
+	SET_TERMINATION		(bits, item.m_termination);
+	SET_WHITE_ELO			(bits, item.m_pd[color::White].elo);
+	SET_BLACK_ELO			(bits, item.m_pd[color::Black].elo);
+	SET_WHITE_RATING		(bits, item.m_pd[color::White].rating);
+	SET_BLACK_RATING		(bits, item.m_pd[color::Black].rating);
+	SET_WHITE_RATING_TYPE(bits, item.m_pd[color::White].ratingType);
+	SET_BLACK_RATING_TYPE(bits, item.m_pd[color::Black].ratingType);
+	SET_COMMENT_ENG_FLAG	(bits, item.m_pd[0].langFlag);
+	SET_COMMENT_OTH_FLAG	(bits, item.m_pd[1].langFlag);
+	SET_POSITION_DATA		(bits, item.m_positionData);
+
+	M_ASSERT(item.m_player[color::White]->id()		== GET_WHITE_PLAYER(bits));
+	M_ASSERT(item.m_player[color::Black]->id()		== GET_BLACK_PLAYER(bits));
+	M_ASSERT(item.m_event->id()							== GET_EVENT(bits));
+	M_ASSERT(item.m_annotator->id()						== GET_ANNOTATOR(bits));
+	M_ASSERT(item.m_gameOffset								== GET_GAME_OFFSET(bits));
+	M_ASSERT(item.m_signature.m_homePawns.value		== GET_HOME_PAWNS(bits));
+	M_ASSERT(item.m_signature.m_progress.value		== GET_PAWN_PROGRESS(bits));
+	M_ASSERT(item.material().value						== GET_MATERIAL(bits));
+	M_ASSERT(item.m_round									== GET_ROUND(bits));
+	M_ASSERT(item.m_subround								== GET_SUBROUND(bits));
+	M_ASSERT(item.m_gameFlags								== GET_GAME_FLAGS(bits));
+	M_ASSERT(item.m_signature.hasPromotion()			== GET_PROMOTION(bits));
+	M_ASSERT(item.m_signature.hasUnderPromotion()	== GET_UNDER_PROMOTION(bits));
+	M_ASSERT(item.m_signature.m_castling				== GET_CASTLING(bits));
+	M_ASSERT(item.m_signature.m_hpCount					== GET_HP_COUNT(bits));
+	M_ASSERT(item.m_plyCount								== GET_PLY_COUNT(bits));
+	M_ASSERT(item.m_positionId								== GET_POSITION_ID(bits));
+	M_ASSERT(item.m_variationCount						== GET_VARIATION_COUNT(bits));
+	M_ASSERT(item.m_commentCount							== GET_COMMENT_COUNT(bits));
+	M_ASSERT(item.m_annotationCount						== GET_ANNOTATION_COUNT(bits));
+	M_ASSERT(item.m_dateDay									== GET_DATE_DAY(bits));
+	M_ASSERT(item.m_dateMonth								== GET_DATE_MONTH(bits));
+	M_ASSERT(item.m_dateYear								== GET_DATE_YEAR(bits));
+	M_ASSERT(item.m_result									== GET_RESULT(bits));
+	M_ASSERT(item.m_termination							== GET_TERMINATION(bits));
+	M_ASSERT(item.m_pd[color::White].elo				== GET_WHITE_ELO(bits));
+	M_ASSERT(item.m_pd[color::Black].elo				== GET_BLACK_ELO(bits));
+	M_ASSERT(item.m_pd[color::White].rating			== GET_WHITE_RATING(bits));
+	M_ASSERT(item.m_pd[color::Black].rating			== GET_BLACK_RATING(bits));
+	M_ASSERT(item.m_pd[color::White].ratingType		== GET_WHITE_RATING_TYPE(bits));
+	M_ASSERT(item.m_pd[color::Black].ratingType		== GET_BLACK_RATING_TYPE(bits));
+	M_ASSERT(item.m_pd[0].langFlag						== GET_COMMENT_ENG_FLAG(bits));
+	M_ASSERT(item.m_pd[1].langFlag						== GET_COMMENT_OTH_FLAG(bits));
+	M_ASSERT(item.m_positionData							== GET_POSITION_DATA(bits));
+
+#endif
 
 	bits->swapBytes(item.m_positionId);
 }
@@ -1133,8 +1409,9 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		unsigned size = bstrm.uint24();
 		unsigned maxFreq = bstrm.uint24();
 		unsigned maxUsage = bstrm.uint24();
+		unsigned maxId = mstl::max(bstrm.uint24(), size);	// catch integer overflow
 
-		m_lookup[i].resize(size);
+		m_lookup[i].resize(maxId);
 
 		switch (i)
 		{
@@ -1152,7 +1429,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 
 void
-Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
+Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1173,6 +1450,12 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned index 	= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1192,7 +1475,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 
 void
-Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
+Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1214,6 +1497,12 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1237,7 +1526,7 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pro
 
 
 void
-Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
+Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1311,6 +1600,12 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1372,7 +1667,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Pr
 
 
 void
-Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
+Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1441,6 +1736,12 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::P
 
 	for (unsigned i = 1; i < count; ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned	index		= bstrm.uint24();
 		unsigned prefix	= bstrm.get();
 		unsigned length	= bstrm.get();
@@ -1523,6 +1824,7 @@ Codec::writeNamebases(mstl::fstream& stream)
 		bstrm << uint24_t(base.used());
 		bstrm << uint24_t(base.maxFrequency());
 		bstrm << uint24_t(base.maxUsage());
+		bstrm << uint24_t(base.nextId());	// NOTE: may cause integer overflow (that means 1<<24 == 0)
 
 		if (base.used() > 0)
 		{
@@ -1787,11 +2089,8 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 void
 Codec::rename(mstl::string const& oldName, mstl::string const& newName)
 {
-	mstl::string oldBase(::util::misc::file::basename(oldName));
-	mstl::string newBase(::util::misc::file::basename(newName));
-
-	oldBase.erase(oldBase.end() - 4, oldBase.end());
-	newBase.erase(newBase.end() - 4, newBase.end());
+	mstl::string oldBase(::util::misc::file::rootname(oldName));
+	mstl::string newBase(::util::misc::file::rootname(newName));
 
 	::sys::file::rename(oldBase + ".scn", newBase + ".scn");
 	::sys::file::rename(oldBase + ".scg", newBase + ".scg");
@@ -1802,9 +2101,7 @@ Codec::rename(mstl::string const& oldName, mstl::string const& newName)
 void
 Codec::remove(mstl::string const& fileName)
 {
-	mstl::string base(::util::misc::file::basename(fileName));
-
-	base.erase(base.end() - 4, base.end());
+	mstl::string base(::util::misc::file::rootname(fileName));
 
 	::sys::file::deleteIt(base + ".scn");
 	::sys::file::deleteIt(base + ".scg");
@@ -1826,6 +2123,15 @@ Codec::getNumberOfGames(mstl::string const& filename)
 
 	ByteStream bstrm(header + 10, sizeof(header) - 10);
 	return bstrm.uint24();
+}
+
+
+void
+Codec::getSuffixes(mstl::string const&, StringList& result)
+{
+	result.push_back("sci");
+	result.push_back("scg");
+	result.push_back("scn");
 }
 
 // vi:set ts=3 sw=3:

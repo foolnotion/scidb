@@ -86,7 +86,7 @@ proc new {w size {borderSize 0} {flipped 0}} {
 		-relief raised \
 		-takefocus 0 \
 		;
-   pack $w.c
+   grid $w.c -column 0 -row 0
 
 	$w.c xview moveto 0
 	$w.c yview moveto 0
@@ -130,6 +130,12 @@ proc resize {w size {borderSize 0}} {
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 	}
+}
+
+
+proc alignBoard {w {background {}}} {
+	grid rowconfigure $w {1} -minsize 1
+	if {[llength $background]} { $w configure -background $background }
 }
 
 
@@ -263,19 +269,21 @@ proc move {w list} {
 		if {$squareFrom != $squareTo} {
 			set Board(animate,from) $squareFrom
 			set Board(animate,to) $squareTo
+			set Board(animate,rookFrom) $rookFrom
 			$w.c raise piece:$squareFrom
 			$w.c raise text
 			$w.c raise arrow
 			$w.c raise input
 
-			if {$rookFrom >= 0} {
-				# castling w/ moving king and w/ moving rook
-				set animation [expr {$animation/2.0}]
-			}
+#			if {$rookFrom >= 0} {
+#				# castling w/ moving king and w/ moving rook
+#				set animation [expr {$animation/2.0}]
+#			}
 		} elseif {$rookFrom >= 0} {
 			# castling w/o moving king, move rook instead
 			set Board(animate,from) $rookFrom
 			set Board(animate,to) $rookTo
+			set Board(animate,rookFrom) -1
 			$w.c raise piece:$rookFrom
 			$w.c raise text
 			$w.c raise arrow
@@ -289,7 +297,6 @@ proc move {w list} {
 		set Board(animate,end) [expr {$Board(animate,start) + $animation} ]
 		set Board(animate,after) $after
 		set Board(animate,move) $list
-		set Board(animate,rookFrom) $rookFrom
 		set Board(animate,rookTo) $rookTo
 		set Board(animate,time) $animation
 
@@ -538,6 +545,7 @@ proc drawBorderlines {border len} {
 
 
 proc drawText {canv squareSize color x y text} {
+	if {$text eq "-"} { set text "\u2212" }
 	set size [expr {int(double($squareSize)*0.6 + 0.5)}]
 	if {$squareSize % 2} { incr size }
 	set x0 [expr {$x + $squareSize/2}]
@@ -588,7 +596,8 @@ proc DrawPiece {w sq piece} {
 	$w.c create image {*}[$w.c coords square:$sq] \
 		-image photo_Piece($piece,$Board(size)) \
 		-anchor nw \
-		-tags [list piece piece:$sq]
+		-tags [list piece piece:$sq] \
+		;
 	
 	$w.c raise text
 	$w.c raise arrow
@@ -680,6 +689,9 @@ proc AnimateMove {w} {
 			return
 		}
 
+		# place king at right place
+		$w.c coords piece:$Board(animate,from) {*}[$w.c coords square:$Board(animate,to)]
+
 		# start rook animation (in case of castling)
 		set Board(animate,start) $now
 		set Board(animate,from) $Board(animate,rookFrom)
@@ -687,9 +699,6 @@ proc AnimateMove {w} {
 		set Board(animate,end) [expr {$Board(animate,end) + $Board(animate,time)} ]
 		set Board(animate,rookFrom) -1
 		set Board(animate,rookTo) -1
-
-		DrawPiece $w [lindex $Board(animate,move) 1] .
-		DrawPiece $w [lindex $Board(animate,move) 2] [lindex $Board(animate,move) 5]
 
 		$w.c raise piece:$Board(animate,from)
 		$w.c raise text

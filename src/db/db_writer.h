@@ -36,6 +36,7 @@ namespace db {
 
 class Move;
 class Annotation;
+class MoveInfoSet;
 class MarkSet;
 class TagSet;
 class Comment;
@@ -47,18 +48,18 @@ public:
 	static unsigned const Flag_Include_Variations						= 1 << 0;
 	static unsigned const Flag_Include_Comments							= 1 << 1;
 	static unsigned const Flag_Include_Annotation						= 1 << 2;
-	static unsigned const Flag_Include_Marks								= 1 << 3;
-	static unsigned const Flag_Include_Termination_Tag					= 1 << 4;
-	static unsigned const Flag_Include_Mode_Tag							= 1 << 5;
-	static unsigned const Flag_Include_Opening_Tag						= 1 << 6;
-	static unsigned const Flag_Include_Variation_Tag					= 1 << 7;
-	static unsigned const Flag_Include_Sub_Variation_Tag				= 1 << 8;
-	static unsigned const Flag_Include_Setup_Tag							= 1 << 9;
-	static unsigned const Flag_Include_Variant_Tag						= 1 << 10;
-	static unsigned const Flag_Include_Position_Tag						= 1 << 11;
-	static unsigned const Flag_Include_Time_Mode_Tag					= 1 << 12;
-	static unsigned const Flag_Exclude_Extra_Tags						= 1 << 13;
-	static unsigned const Flag_Include_Country_Inside_Player			= 1 << 14;
+	static unsigned const Flag_Include_Move_Info							= 1 << 3;
+	static unsigned const Flag_Include_Marks								= 1 << 4;
+	static unsigned const Flag_Include_Termination_Tag					= 1 << 5;
+	static unsigned const Flag_Include_Mode_Tag							= 1 << 6;
+	static unsigned const Flag_Include_Opening_Tag						= 1 << 7;
+	static unsigned const Flag_Include_Variation_Tag					= 1 << 8;
+	static unsigned const Flag_Include_Sub_Variation_Tag				= 1 << 9;
+	static unsigned const Flag_Include_Setup_Tag							= 1 << 10;
+	static unsigned const Flag_Include_Variant_Tag						= 1 << 11;
+	static unsigned const Flag_Include_Position_Tag						= 1 << 12;
+	static unsigned const Flag_Include_Time_Mode_Tag					= 1 << 13;
+	static unsigned const Flag_Exclude_Extra_Tags						= 1 << 14;
 	static unsigned const Flag_Indent_Variations							= 1 << 15;
 	static unsigned const Flag_Indent_Comments							= 1 << 16;
 	static unsigned const Flag_Column_Style								= 1 << 17;
@@ -89,7 +90,9 @@ public:
 	void sendPrecedingComment(	Comment const& comment,
 										Annotation const& annotation,
 										MarkSet const& marks) override;
+	void sendComment(Comment const& comment) override;
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendMoveInfo(MoveInfoSet const& moveInfo) override;
 
 	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
@@ -115,6 +118,7 @@ protected:
 	virtual void writeTrailingComment(Comment const& comment) = 0;
 	virtual void writeTag(mstl::string const& name, mstl::string const& value) = 0;
 	virtual void writeTag(tag::ID tag, mstl::string const& value);
+	virtual void writeMoveInfo(MoveInfoSet const& moveInfo) = 0;
 	virtual void writeMove(	Move const& move,
 									mstl::string const& moveNumber,
 									Annotation const& annotation,

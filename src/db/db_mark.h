@@ -29,6 +29,8 @@
 
 #include "db_common.h"
 
+#include "u_crc.h"
+
 #include "m_string.h"
 
 namespace util { class ByteStream; }
@@ -66,6 +68,11 @@ public:
 	char text() const;
 	mark::Color color() const;
 	Square square(unsigned index = 0) const;
+
+	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
+	int compare(Mark const& mark) const;
+
+	void clear();
 
 	char const* parseDiagramMarker(char const* s);
 	char const* parseScidbMark(char const* s);

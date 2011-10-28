@@ -88,7 +88,7 @@ TextToken::perform(Environment& env)
 TokenP
 TextToken::performThe(Environment& env) const
 {
-	return TokenP(new TextToken(m_str));
+	return TokenP(new TextToken(m_str)); // MEMORY
 }
 
 // vi:set ts=3 sw=3:

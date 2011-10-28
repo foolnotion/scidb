@@ -33,6 +33,7 @@ inline string& string::operator+=(const_reference c) { append(c); return *this; 
 
 inline bool string::empty() const		{ return m_size == 0; }
 inline bool string::readonly() const	{ return m_capacity == 0; }
+inline bool string::writeable() const	{ return m_capacity > 0; }
 
 inline string::value_type string::back() const	{ M_REQUIRE(!empty()); return m_data[m_size - 1]; }
 inline string::value_type& string::back()			{ M_REQUIRE(!empty()); return m_data[m_size - 1]; }

@@ -45,8 +45,9 @@ proc scrolledframe {path args} {
 	}
 	set parent [::ttk::frame $path {*}$myOpts]
 	set f $parent.__scrolledframe__
-	set h $parent.__vs__
-	set v $parent.__hs__
+	bind $parent <Map> [list after idle { ::scrolledframe::Map %W }]
+	set v $parent.__vs__
+	set h $parent.__hs__
 	::scrolledframe::scrolledframe $f \
 		{*}[array get opts] \
 		-xscrollcommand [list ::scrolledframe::sbset $h] \
@@ -56,8 +57,8 @@ proc scrolledframe {path args} {
 	::ttk::scrollbar $v -command [list $f yview] -orient vertical
 	::ttk::scrollbar $h -command [list $f xview] -orient horizontal
 	grid $f -row 0 -column 0 -sticky nsew
-	grid $v -row 0 -column 1 -sticky ns
-	grid $h -row 1 -column 0 -sticky ew
+#	grid $v -row 0 -column 1 -sticky ns
+#	grid $h -row 1 -column 0 -sticky ew
 	grid rowconfigure $parent 0 -weight 1
 	grid columnconfigure $parent 0 -weight 1
 	return $f.scrolled
@@ -65,7 +66,32 @@ proc scrolledframe {path args} {
 
 namespace eval scrolledframe {
 
-proc sbset {w first last} { $w set $first $last }
+set (sbset:cmd)		{}
+set (sbset:orient)	{}
+
+
+proc Map {w} {
+	# Due to a bug in the Tk library sometimes the
+	# mapping is forgotten if we grid too early.
+	grid $w.__vs__ -row 0 -column 1 -sticky ns
+	grid $w.__hs__ -row 1 -column 0 -sticky ew
+	resize $w force
+	bind $w <Map> {#}
+}
+
+
+proc sbset {sb first last} {
+	variable {}
+
+	set afterScroll [expr {[llength $(sbset:orient)] == 0}]
+
+	if {!$afterScroll && [$sb cget -orient] ne $(sbset:orient)} {
+		set (sbset:cmd) [list $sb $first $last]
+	} else {
+		DoSbSet $sb $first $last
+	}
+}
+
 
 # ==============================
 #
@@ -104,8 +130,13 @@ package provide scrolledframe $version
 # --------------
 proc scrolledframe {w args} {
 	variable {}
+
+	array set opts $args
 	# create a scrolled frame
 	tk::frame $w
+	if {[info exists opts(-background)]} {
+		$w configure -background $opts(-background)
+	}
 	# trap the reference
 	rename $w ::scrolledframe::_$w
 	# redirect to dispatch
@@ -421,6 +452,34 @@ proc Yview {w {cmd ""} args} {
 		}
 	}
 }
+
+
+proc SbSet {} {
+	variable {}
+
+	set (sbset:orient) {}
+	if {[llength $(sbset:cmd)] == 0} { return }
+	DoSbSet {*}$(sbset:cmd)
+	set (sbset:cmd) {}
+}
+
+
+proc DoSbSet {sb first last} {
+	if {$first <= 0 && $last >= 1} {
+		grid remove $sb
+	} else {
+		grid $sb
+	}
+
+	$sb set $first $last
+}
+
+
+bind TScrollbar <ButtonPress-1>	{+ set [namespace current]::(sbset:orient) [%W cget -orient] }
+bind TScrollbar <ButtonPress-2>	{+ set [namespace current]::(sbset:orient) [%W cget -orient] }
+
+bind TScrollbar <ButtonRelease-1> +[namespace code SbSet]
+bind TScrollbar <ButtonRelease-2> +[namespace code SbSet]
 
 } ;# namesspace scrolledframe
 

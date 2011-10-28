@@ -254,7 +254,7 @@ Alignment::performEverycr(Environment& env)
 	TokenP token = env.getUndefinedToken();
 
 	if (token->type() == Token::T_LeftBrace)
-		token.reset(new ListToken(env));
+		token.reset(new ListToken(env));	// MEMORY
 
 	env.bindMacro(m_filter->m_everycrContents, token);
 }

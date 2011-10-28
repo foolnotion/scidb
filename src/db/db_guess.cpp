@@ -355,10 +355,21 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 
 	if ((m_occupied & sqMask) && m_stm == (m_occupiedBy[White] & sqMask ? White : Black))
 	{
-		for (unsigned i = 0; i < moves.size(); ++i)
+		if (piece(square) == piece::Rook)
 		{
-			if (moves[i].from() == square)
-				result.append(moves[i]);
+			for (unsigned i = 0; i < moves.size(); ++i)
+			{
+				if ((moves[i].isCastling() ? moves[i].castlingRookFrom() : moves[i].from()) == square)
+					result.append(moves[i]);
+			}
+		}
+		else
+		{
+			for (unsigned i = 0; i < moves.size(); ++i)
+			{
+				if (moves[i].from() == square)
+					result.append(moves[i]);
+			}
 		}
 	}
 	else

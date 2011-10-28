@@ -381,8 +381,13 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 	} else {
 		toplevel $dlg -padx 10 -pady 10
 	}
+	set cancelCmd [list $dlg.buttons.cancel invoke]
+	switch $::tcl_platform(platform) {
+		macintosh	{ bind $dlg <Command-period> $cancelCmd }
+		windows		{ bind $dlg <Escape> $cancelCmd }
+		x11			{ bind $dlg <Escape> $cancelCmd; bind $dlg <Control-c> $cancelCmd }
+	}
 	bind $dlg <Configure>	[list [namespace current]::RecordGeometry %W]
-	bind $dlg <Escape>		[list $dlg.buttons.cancel invoke]
 	bind $dlg <Alt-Key>		[list tk::AltKeyInDialog $dlg %A]
 
 	BuildFrame $dlg 1 $font $enableEffects $receiver
@@ -475,6 +480,7 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 	if {[winfo viewable [winfo parent $dlg]]} {
 		wm transient $dlg [winfo toplevel [winfo parent $dlg]]
 	}
+	catch { wm attributes $dlg -type dialog }
 	wm iconname $dlg ""
 	wm withdraw $dlg
 	update idletasks

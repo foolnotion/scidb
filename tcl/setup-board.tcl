@@ -25,6 +25,13 @@
 # ======================================================================
 
 namespace eval setup {
+namespace eval mc {
+
+set Chess960Position			"Chess 960 position"
+set SymmChess960Position	"Symmetrical chess 960 position"
+set ShuffleChessPosition	"Shuffle chess position"
+
+}
 
 variable SFRC { 446 462 518 524 534 540 692 708 }
 
@@ -41,6 +48,29 @@ proc shuffle {variant} {
 	return $idn
 }
 
+
+proc popupShuffleMenu {ns w} {
+	set m $w.spopup
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
+
+	$m add command \
+		-label $mc::Chess960Position \
+		-command [list ${ns}::Shuffle frc] \
+		;
+	$m add command \
+		-label $mc::SymmChess960Position \
+		-command [list ${ns}::Shuffle sfrc] \
+		;
+	$m add command \
+		-label $mc::ShuffleChessPosition \
+		-command [list ${ns}::Shuffle shuffle] \
+		;
+	
+	tk_popup $m [winfo rootx $w] [expr {[winfo rooty $w] + [winfo height $w]}]
+}
+
 namespace eval board {
 namespace eval mc {
 
@@ -54,9 +84,6 @@ set Fen							"FEN"
 set Clear						"Clear"
 set CopyFen						"Copy FEN to clipboard"
 set Shuffle						"Shuffle..."
-set Chess960Position			"Chess 960 position"
-set SymmChess960Position	"Symmetrical chess 960 position"
-set ShuffleChessPosition	"Shuffle chess position"
 set StandardPosition			"Standard Position"
 set Chess960Castling			"Chess 960 castling"
 
@@ -182,7 +209,7 @@ proc open {parent} {
 		-width 2 \
 		;
 	bind $castling.blongsq <<ComboboxSelected>> [namespace code Update]
-	bind $castling.wshort <<Language>> [namespace code [list SetupCastlingButtons $castling]]
+	bind $castling.wshort <<LanguageChanged>> [namespace code [list SetupCastlingButtons $castling]]
 	SetupCastlingButtons $castling
 
 	grid $castling.wshort	-row 1 -column 1 -sticky ew
@@ -280,7 +307,7 @@ proc open {parent} {
 	::ttk::button $idn.shuffle \
 		-style icon.TButton \
 		-image $::icon::16x16::dice \
-		-command [namespace code [list PopupShuffleMenu [namespace current] $idn.shuffle]] \
+		-command [list [namespace parent]::popupShuffleMenu [namespace current] $idn.shuffle] \
 		;
 	::tooltip::tooltip $idn.standard [namespace current]::mc::StandardPosition
 	::tooltip::tooltip $idn.shuffle [namespace current]::mc::Shuffle
@@ -402,8 +429,8 @@ proc open {parent} {
 	set Vars(board) $board
 	$canv create window $edge 0 -window $board -anchor nw -tag board
 	::board::stuff::bind $board all <ButtonPress-1> [namespace code [list SetPiece %q]]
-	::board::stuff::bind $board all <ButtonPress-2> [namespace code PrevPiece]
-	::board::stuff::bind $board all <ButtonPress-3> [namespace code NextPiece]
+	::board::stuff::bind $board all <ButtonPress-3> [namespace code ChangeColor]
+	::board::stuff::bind $board all <ButtonPress-2> [namespace code NextPiece]
 	set Vars(board) $board
 
 	set x [expr {$edge/2}]
@@ -477,6 +504,7 @@ proc open {parent} {
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $parent]
+	catch { wm attributes $dlg -type dialog }
 	wm title $dlg "[tk appname] - $mc::SetStartBoard"
 	wm resizable $dlg false false
 	::util::place $dlg center $parent
@@ -631,6 +659,16 @@ proc NextPiece {} {
 }
 
 
+proc ChangeColor {} {
+	variable Vars
+
+	lassign [split $Vars(piece) {}] side piece
+	if {$side eq "w"} { set side b } else { set side w }
+	set Vars(piece) ${side}${piece}
+	SetCursor $Vars(piece)
+}
+
+
 proc SetPiece {square} {
 	variable Vars
 
@@ -690,29 +728,6 @@ proc SetupBoard {cmd} {
 	
 	Update
 }
-
-
-proc PopupShuffleMenu {ns w} {
-	set m $w.spopup
-	if {[winfo exists $m]} { destroy $m }
-	menu $m -tearoff false
-
-	$m add command \
-		-label $mc::Chess960Position \
-		-command [list ${ns}::Shuffle frc] \
-		;
-	$m add command \
-		-label $mc::SymmChess960Position \
-		-command [list ${ns}::Shuffle sfrc] \
-		;
-	$m add command \
-		-label $mc::ShuffleChessPosition \
-		-command [list ${ns}::Shuffle shuffle] \
-		;
-	
-	tk_popup $m [winfo rootx $w] [expr {[winfo rooty $w] + [winfo height $w]}]
-}
-
 
 proc Shuffle {variant} {
 	variable Vars

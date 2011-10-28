@@ -21,11 +21,17 @@
  * RCS: @(#) $Id: tkBusy.c,v 1.6 2008/12/10 00:34:51 das Exp $
  */
 
+// ======================================================================
+// Adaption by Gregor Cramer, 2011
+// ======================================================================
+
 #include "tk_init.h"
 
 #include "tcl_base.h"
 
 #include "tkInt.h"
+
+#include "m_types.h"
 
 #include <X11/Xlib.h>
 
@@ -95,7 +101,7 @@ TkpShowBusyWindow(Busy* busy)
     Display *display;
     Window window;
 
-    if (busyPtr->tkBusy != NULL) {
+    if (busyPtr->tkBusy != nullptr) {
 	Tk_MapWindow(busyPtr->tkBusy);
 	window = Tk_WindowId(busyPtr->tkBusy);
 	display = Tk_Display(busyPtr->tkBusy);
@@ -124,7 +130,7 @@ TkpHideBusyWindow(Busy* busy)
     Busy *busyPtr = (Busy *) busy;
     POINT point;
 
-    if (busyPtr->tkBusy != NULL) {
+    if (busyPtr->tkBusy != nullptr) {
 	Tk_UnmapWindow(busyPtr->tkBusy);
     }
 
@@ -151,9 +157,9 @@ TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
     DWORD exStyle = WS_EX_TRANSPARENT | WS_EX_TOPMOST;
 
 #define TK_WIN_CHILD_CLASS_NAME "TkChild"
-    hWnd = CreateWindowEx(exStyle, TK_WIN_CHILD_CLASS_NAME, NULL, style,
+    hWnd = CreateWindowEx(exStyle, TK_WIN_CHILD_CLASS_NAME, nullptr, style,
 	    Tk_X(tkwin), Tk_Y(tkwin), Tk_Width(tkwin), Tk_Height(tkwin),
-	    hParent, NULL, Tk_GetHINSTANCE(), NULL);
+	    hParent, nullptr, Tk_GetHINSTANCE(), nullptr);
     winPtr->window = Tk_AttachHWND(tkwin, hWnd);
 }
 
@@ -218,7 +224,7 @@ TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window 
 static void
 TkpShowBusyWindow(Busy* busy)
 {
-    if (busy->tkBusy != NULL) {
+    if (busy->tkBusy != nullptr) {
 	Tk_MapWindow(busy->tkBusy);
 
 	/*
@@ -235,7 +241,7 @@ TkpShowBusyWindow(Busy* busy)
 static void
 TkpHideBusyWindow(Busy* busy)
 {
-    if (busy->tkBusy != NULL) {
+    if (busy->tkBusy != nullptr) {
 	Tk_UnmapWindow(busy->tkBusy);
     }
 }
@@ -273,7 +279,7 @@ TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 #endif
 
 typedef struct WindowRep {
-    Tk_Window tkwin;            /* Cached window; NULL if not found. */
+    Tk_Window tkwin;            /* Cached window; nullptr if not found. */
     TkMainInfo *mainPtr;        /* MainWindow associated with tkwin. */
     long epoch;                 /* Value of mainPtr->deletionEpoch at last
                                  * successful lookup. */
@@ -326,7 +332,7 @@ DupWindowInternalRep(
  *
  * Side effects:
  *      Frees objPtr's internal representation and sets objPtr's internalRep
- *      to NULL.
+ *      to nullptr.
  *
  *----------------------------------------------------------------------
  */
@@ -336,8 +342,8 @@ FreeWindowInternalRep(
     Tcl_Obj *objPtr)            /* Window object with internal rep to free. */
 {
     ckfree(static_cast<char*>(objPtr->internalRep.otherValuePtr));
-    objPtr->internalRep.otherValuePtr = NULL;
-    objPtr->typePtr = NULL;
+    objPtr->internalRep.otherValuePtr = nullptr;
+    objPtr->typePtr = nullptr;
 }
 
 static int SetWindowFromAny(Tcl_Interp *interp, Tcl_Obj *objPtr);
@@ -346,7 +352,7 @@ static const Tcl_ObjType windowObjType = {
     const_cast<char*>("window"),/* name */
     FreeWindowInternalRep,      /* freeIntRepProc */
     DupWindowInternalRep,       /* dupIntRepProc */
-    NULL,                       /* updateStringProc */
+    nullptr,                    /* updateStringProc */
     SetWindowFromAny            /* setFromAnyProc */
 };
 
@@ -372,7 +378,7 @@ static const Tcl_ObjType windowObjType = {
 
 static int
 SetWindowFromAny(
-    Tcl_Interp *interp,         /* Used for error reporting if not NULL. */
+    Tcl_Interp *interp,         /* Used for error reporting if not nullptr. */
     Tcl_Obj *objPtr)   		/* The object to convert. */
 {
     const Tcl_ObjType *typePtr;
@@ -382,15 +388,15 @@ SetWindowFromAny(
      * Free the old internalRep before setting the new one.
      */
 
-    Tcl_GetStringFromObj(objPtr, NULL);
+    Tcl_GetStringFromObj(objPtr, nullptr);
     typePtr = objPtr->typePtr;
-    if ((typePtr != NULL) && (typePtr->freeIntRepProc != NULL)) {
+    if ((typePtr != nullptr) && (typePtr->freeIntRepProc != nullptr)) {
         typePtr->freeIntRepProc(objPtr);
     }
 
     winPtr = (WindowRep *) ckalloc(sizeof(WindowRep));
-    winPtr->tkwin = NULL;
-    winPtr->mainPtr = NULL;
+    winPtr->tkwin = nullptr;
+    winPtr->mainPtr = nullptr;
     winPtr->epoch = 0;
 
     objPtr->internalRep.otherValuePtr = winPtr;
@@ -423,7 +429,7 @@ TkNewWindowObj(Tk_Window tkwin)
     TkMainInfo *mainPtr = ((TkWindow *) tkwin)->mainPtr;
     WindowRep *winPtr;
 
-    SetWindowFromAny(NULL, objPtr);
+    SetWindowFromAny(nullptr, objPtr);
 
     winPtr = static_cast<WindowRep*>(objPtr->internalRep.otherValuePtr);
     winPtr->tkwin = tkwin;
@@ -449,7 +455,7 @@ static Tk_OptionSpec busyOptionSpecs[] = {
 	DEF_BUSY_CURSOR, -1, Tk_Offset(Busy, cursor),
 	TK_OPTION_NULL_OK, 0, 0},
 #endif
-    {TK_OPTION_END, NULL, NULL, NULL, NULL, 0, 0, 0, 0}
+    {TK_OPTION_END, nullptr, nullptr, nullptr, nullptr, 0, 0, 0, 0}
 };
 
 /*
@@ -511,8 +517,8 @@ NextChild(
 {
     struct TkWindow *winPtr = (struct TkWindow *) tkwin;
 
-    if (winPtr == NULL) {
-	return NULL;
+    if (winPtr == nullptr) {
+	return nullptr;
     }
     return (Tk_Window) winPtr->nextPtr;
 }
@@ -557,7 +563,7 @@ BusyCustodyProc(
     Tk_DeleteEventHandler(busyPtr->tkBusy, StructureNotifyMask, BusyEventProc,
 	    busyPtr);
     TkpHideBusyWindow(busyPtr);
-    busyPtr->tkBusy = NULL;
+    busyPtr->tkBusy = nullptr;
     Tcl_EventuallyFree(busyPtr, DestroyBusy);
 }
 
@@ -704,7 +710,7 @@ RefWinEventProc(
 	    if (busyPtr->tkParent != busyPtr->tkRef) {
 		Tk_Window tkwin;
 
-		for (tkwin = busyPtr->tkRef; (tkwin != NULL) &&
+		for (tkwin = busyPtr->tkRef; (tkwin != nullptr) &&
 			 (!Tk_IsTopLevel(tkwin)); tkwin = Tk_Parent(tkwin)) {
 		    if (tkwin == busyPtr->tkParent) {
 			break;
@@ -713,7 +719,7 @@ RefWinEventProc(
 		    y += Tk_Y(tkwin) + Tk_Changes(tkwin)->border_width;
 		}
 	    }
-	    if (busyPtr->tkBusy != NULL) {
+	    if (busyPtr->tkBusy != nullptr) {
 		Tk_MoveResizeWindow(busyPtr->tkBusy, x, y, busyPtr->width,
 			busyPtr->height);
 		TkpShowBusyWindow(busyPtr);
@@ -759,17 +765,17 @@ DestroyBusy(
 {
     Busy *busyPtr = (Busy *) data;
 
-    if (busyPtr->hashPtr != NULL) {
+    if (busyPtr->hashPtr != nullptr) {
 	Tcl_DeleteHashEntry(busyPtr->hashPtr);
     }
     Tk_DeleteEventHandler(busyPtr->tkRef, StructureNotifyMask,
 	    RefWinEventProc, busyPtr);
 
-    if (busyPtr->tkBusy != NULL) {
+    if (busyPtr->tkBusy != nullptr) {
 	Tk_FreeConfigOptions(data, busyPtr->optionTable, busyPtr->tkBusy);
 	Tk_DeleteEventHandler(busyPtr->tkBusy, StructureNotifyMask,
 		BusyEventProc, busyPtr);
-	Tk_ManageGeometry(busyPtr->tkBusy, NULL, busyPtr);
+	Tk_ManageGeometry(busyPtr->tkBusy, nullptr, busyPtr);
 	Tk_DestroyWindow(busyPtr->tkBusy);
     }
     ckfree(data);
@@ -804,7 +810,7 @@ BusyEventProc(
     Busy *busyPtr = static_cast<Busy*>(clientData);
 
     if (eventPtr->type == DestroyNotify) {
-	busyPtr->tkBusy = NULL;
+	busyPtr->tkBusy = nullptr;
 	Tcl_EventuallyFree(busyPtr, DestroyBusy);
     }
 }
@@ -876,7 +882,7 @@ MakeTransparentWindowExist(
 	 * Tk_RestackWindow.
 	 */
 
-	for (winPtr2 = winPtr->nextPtr; winPtr2 != NULL;
+	for (winPtr2 = winPtr->nextPtr; winPtr2 != nullptr;
 		winPtr2 = winPtr2->nextPtr) {
 	    if ((winPtr2->window != None) &&
 		    !(winPtr2->flags & (TK_TOP_HIERARCHY|TK_REPARENTED))) {
@@ -958,7 +964,7 @@ CreateBusy(
 
 	fmt = "%s_Busy";	/* Sibling */
 	tkParent = Tk_Parent(tkRef);
-	for (tkwin = tkRef; (tkwin != NULL) && !Tk_IsTopLevel(tkwin);
+	for (tkwin = tkRef; (tkwin != nullptr) && !Tk_IsTopLevel(tkwin);
 		tkwin = Tk_Parent(tkwin)) {
 	    if (tkwin == tkParent) {
 		break;
@@ -967,16 +973,16 @@ CreateBusy(
 	    y += Tk_Y(tkwin) + Tk_Changes(tkwin)->border_width;
 	}
     }
-    for (tkChild = FirstChild(tkParent); tkChild != NULL;
+    for (tkChild = FirstChild(tkParent); tkChild != nullptr;
 	    tkChild = NextChild(tkChild)) {
 	Tk_MakeWindowExist(tkChild);
     }
     sprintf(name, fmt, Tk_Name(tkRef));
-    tkBusy = Tk_CreateWindow(interp, tkParent, name, NULL);
+    tkBusy = Tk_CreateWindow(interp, tkParent, name, nullptr);
     ckfree(name);
 
-    if (tkBusy == NULL) {
-	return NULL;
+    if (tkBusy == nullptr) {
+	return nullptr;
     }
     Tk_MakeWindowExist(tkRef);
     busyPtr->display = Tk_Display(tkRef);
@@ -994,7 +1000,7 @@ CreateBusy(
     if (Tk_InitOptions(interp, (char *) busyPtr, busyPtr->optionTable,
 	    tkBusy) != TCL_OK) {
 	Tk_DestroyWindow(tkBusy);
-	return NULL;
+	return nullptr;
     }
     SetWindowInstanceData(tkBusy, busyPtr);
     winPtr = (Tk_FakeWin *) tkRef;
@@ -1059,7 +1065,7 @@ ConfigureBusy(
     Tk_Cursor oldCursor = busyPtr->cursor;
 
     if (Tk_SetOptions(interp, (char *) busyPtr, busyPtr->optionTable, objc,
-	    objv, busyPtr->tkBusy, NULL, NULL) != TCL_OK) {
+	    objv, busyPtr->tkBusy, nullptr, nullptr) != TCL_OK) {
 	return TCL_ERROR;
     }
     if (busyPtr->cursor != oldCursor) {
@@ -1085,7 +1091,7 @@ ConfigureBusy(
  *
  * Results:
  *	If path name represents a reference window with a busy window, a
- *	pointer to the busy window structure is returned. Otherwise, NULL is
+ *	pointer to the busy window structure is returned. Otherwise, nullptr is
  *	returned and an error message is left in interp->result.
  *
  * Side effects:
@@ -1105,13 +1111,13 @@ GetBusy(
 
     if (TkGetWindowFromObj(interp, Tk_MainWindow(interp), windowObj,
 	    &tkwin) != TCL_OK) {
-	return NULL;
+	return nullptr;
     }
     hPtr = Tcl_FindHashEntry(busyTablePtr, (char *) tkwin);
-    if (hPtr == NULL) {
+    if (hPtr == nullptr) {
 	Tcl_AppendResult(interp, "can't find busy window \"",
-		Tcl_GetString(windowObj), "\"", NULL);
-	return NULL;
+		Tcl_GetString(windowObj), "\"", nullptr);
+	return nullptr;
     }
     return static_cast<Busy*>(Tcl_GetHashValue(hPtr));
 }
@@ -1157,7 +1163,7 @@ HoldBusy(
     hPtr = Tcl_CreateHashEntry(busyTablePtr, (char *) tkwin, &isNew);
     if (isNew) {
 	busyPtr = CreateBusy(interp, tkwin);
-	if (busyPtr == NULL) {
+	if (busyPtr == nullptr) {
 	    return TCL_ERROR;
 	}
 	Tcl_SetHashValue(hPtr, busyPtr);
@@ -1213,7 +1219,7 @@ Tk_BusyObjCmd(
     Tcl_Obj *objPtr;
     int index, result = TCL_OK;
     static const char *optionStrings[] = {
-	"cget", "configure", "current", "forget", "hold", "status", NULL
+	"cget", "configure", "current", "forget", "hold", "status", nullptr
     };
     enum options {
 	BUSY_CGET, BUSY_CONFIGURE, BUSY_CURRENT, BUSY_FORGET, BUSY_HOLD,
@@ -1251,13 +1257,13 @@ Tk_BusyObjCmd(
 	    return TCL_ERROR;
 	}
 	busyPtr = GetBusy(interp, busyTablePtr, objv[2]);
-	if (busyPtr == NULL) {
+	if (busyPtr == nullptr) {
 	    return TCL_ERROR;
 	}
 	Tcl_Preserve(busyPtr);
 	objPtr = Tk_GetOptionValue(interp, (char *) busyPtr,
 		busyPtr->optionTable, objv[3], busyPtr->tkBusy);
-	if (objPtr == NULL) {
+	if (objPtr == nullptr) {
 	    result = TCL_ERROR;
 	} else {
 	    Tcl_SetObjResult(interp, objPtr);
@@ -1271,15 +1277,15 @@ Tk_BusyObjCmd(
 	    return TCL_ERROR;
 	}
 	busyPtr = GetBusy(interp, busyTablePtr, objv[2]);
-	if (busyPtr == NULL) {
+	if (busyPtr == nullptr) {
 	    return TCL_ERROR;
 	}
 	Tcl_Preserve(busyPtr);
 	if (objc <= 4) {
 	    objPtr = Tk_GetOptionInfo(interp, (char *) busyPtr,
-		    busyPtr->optionTable, (objc == 4) ? objv[3] : NULL,
+		    busyPtr->optionTable, (objc == 4) ? objv[3] : nullptr,
 		    busyPtr->tkBusy);
-	    if (objPtr == NULL) {
+	    if (objPtr == nullptr) {
 		result = TCL_ERROR;
 	    } else {
 		Tcl_SetObjResult(interp, objPtr);
@@ -1293,13 +1299,13 @@ Tk_BusyObjCmd(
     case BUSY_CURRENT: {
 	Tcl_HashEntry *hPtr;
 	Tcl_HashSearch cursor;
-	const char *pattern = (objc == 3 ? Tcl_GetString(objv[2]) : NULL);
+	const char *pattern = (objc == 3 ? Tcl_GetString(objv[2]) : nullptr);
 
 	objPtr = Tcl_NewObj();
-	for (hPtr = Tcl_FirstHashEntry(busyTablePtr, &cursor); hPtr != NULL;
+	for (hPtr = Tcl_FirstHashEntry(busyTablePtr, &cursor); hPtr != nullptr;
 		hPtr = Tcl_NextHashEntry(&cursor)) {
 	    busyPtr = static_cast<Busy*>(Tcl_GetHashValue(hPtr));
-	    if (pattern == NULL ||
+	    if (pattern == nullptr ||
 		    Tcl_StringMatch(Tk_PathName(busyPtr->tkRef), pattern)) {
 		Tcl_ListObjAppendElement(interp, objPtr,
 			TkNewWindowObj(busyPtr->tkRef));
@@ -1315,7 +1321,7 @@ Tk_BusyObjCmd(
 	    return TCL_ERROR;
 	}
 	busyPtr = GetBusy(interp, busyTablePtr, objv[2]);
-	if (busyPtr == NULL) {
+	if (busyPtr == nullptr) {
 	    return TCL_ERROR;
 	}
 	TkpHideBusyWindow(busyPtr);
@@ -1335,7 +1341,7 @@ Tk_BusyObjCmd(
 	    return TCL_ERROR;
 	}
 	Tcl_SetObjResult(interp, Tcl_NewBooleanObj(
-		GetBusy(interp, busyTablePtr, objv[2]) != NULL));
+		GetBusy(interp, busyTablePtr, objv[2]) != nullptr));
 	return TCL_OK;
     }
 

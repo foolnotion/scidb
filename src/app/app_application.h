@@ -173,8 +173,8 @@ public:
 	uint32_t checksumIndex(unsigned position = InvalidPosition) const;
 	uint32_t checksumMoves(unsigned position = InvalidPosition) const;
 
-	bool loadGame(unsigned position);
-	bool loadGame(unsigned position, Cursor& cursor, unsigned index);
+	db::load::State loadGame(unsigned position);
+	db::load::State loadGame(unsigned position, Cursor& cursor, unsigned index);
 	void newGame(unsigned position);
 	void deleteGame(Cursor& cursor, unsigned index, unsigned view = 0, bool flag = true);
 	void swapGames(unsigned position1, unsigned position2);
@@ -196,6 +196,7 @@ public:
 						unsigned linebreakMaxLineLengthVar,
 						unsigned linebreakMinCommentLength,
 						unsigned displayStyle);
+	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 
 	void clearBase(Cursor& cursor);
 	void setReferenceBase(Cursor* cursor);

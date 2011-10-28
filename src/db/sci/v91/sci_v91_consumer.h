@@ -27,8 +27,8 @@
 #ifndef _sci_v91_consumer_included
 #define _sci_v91_consumer_included
 
-#include "sci_encoder.h"
-#include "sci_common.h"
+#include "sci_v91_encoder.h"
+#include "sci_v91_common.h"
 
 #include "db_consumer.h"
 #include "db_move.h"
@@ -68,6 +68,7 @@ private:
 										Annotation const& annotation,
 										MarkSet const& marks) override;
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
+	void sendComment(Comment const& comment) override {} // for compilation only
 	bool sendMove(Move const& move) override;
 	bool sendMove(	Move const& move,
 						Annotation const& annotation,

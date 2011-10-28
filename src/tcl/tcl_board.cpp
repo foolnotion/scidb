@@ -226,13 +226,13 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	pos.clear();
 
 	if (::strlen(board) != 64)
-		return error(CmdMakeFen, 0, 0, "invalid board: %s", board);
+		return error(CmdMakeFen, nullptr, nullptr, "invalid board: %s", board);
 
 	for (unsigned i = 0; i < 64; ++i)
 		pos.setAt(i, piece::pieceFromLetter(board[i]));
 
 	pos.setToMove(toMove);
-	pos.setMoveNumber(::strtoul(moveNo, 0, 10));
+	pos.setMoveNumber(::strtoul(moveNo, nullptr, 10));
 
 	char epFyle = ::tolower(*ep);
 
@@ -277,7 +277,7 @@ cmdIdnToFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned idn = unsignedFromObj(objc, objv, 1);
 
 	if (idn < 1 || 4*960 < idn)
-		return error(CmdIdnToFen, 0, 0, "invalid IDN: %u", idn);
+		return error(CmdIdnToFen, nullptr, nullptr, "invalid IDN: %u", idn);
 
 	Board board;
 	board.setup(idn);

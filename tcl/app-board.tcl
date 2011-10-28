@@ -72,7 +72,6 @@ proc build {w menu width height} {
 	$canv create window 0 0 -window $border -anchor nw -tag board
 	$border create window 0 0 -window $board -anchor nw -tag board
 	set Vars(widget:border) $border
-	set Vars(widget:board) $board
 	set Vars(widget:frame) $canv
 	set Vars(widget:parent) $w
 	set Vars(autoplay) 0
@@ -80,6 +79,7 @@ proc build {w menu width height} {
 	$board configure -cursor crosshair
 	bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
 	bind $canv <Destroy> [namespace code [list activate $w $menu 0]]
+	bind $canv <FocusIn> [namespace code { GotFocus %W }]
 
 	::board::stuff::bind $board all <Enter>				{ ::move::enterSquare %q }
 	::board::stuff::bind $board all <Leave>				{ ::move::leaveSquare %q }
@@ -176,11 +176,11 @@ proc build {w menu width height} {
 	Bind <Control-Up>		[namespace code LoadPrevious]
 	Bind <<Undo>>			[namespace parent]::pgn::undo
 	Bind <<Redo>>			[namespace parent]::pgn::redo
-	Bind <ButtonPress-3>	[namespace code { PopupMenu %W %X %Y }]
+	Bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
 
 	for {set i 1} {$i <= 9} {incr i} {
 		Bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
-		# NOTE: whether the following works depends on actual keyboard bindings!
+		# NOTE: the working of the following depends on actual keyboard bindings!
 		Bind <Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 	}
 
@@ -197,7 +197,7 @@ proc build {w menu width height} {
 	set Vars(key:marks) $mc::KeyEditMarks
 
 	LanguageChanged
-	Bind <<Language>> [namespace code LanguageChanged]
+	Bind <<LanguageChanged>> [namespace code LanguageChanged]
 
 	BuildBoard $canv
 	ConfigureBoard $canv
@@ -232,6 +232,11 @@ proc activate {w menu flag} {
 	}
 
 	[namespace parent]::pgn::activate $w $menu $flag
+}
+
+
+proc setFocus {} {
+	focus [set [namespace current]::Vars(widget:frame)]
 }
 
 
@@ -299,14 +304,21 @@ proc LoadNext		{} { ;# TODO load next game from last used view }
 proc LoadPrevious	{} { ;# TODO }
 
 
+proc GotFocus {w} {
+	# we have to skip the focus if no game is open
+	if {[::application::pgn::empty?]} { focus [::tk_focusNext $w] }
+}
+
+
 proc Bind {key cmd} {
 	variable Vars
+	variable board
 
 	bind $Vars(widget:frame) $key $cmd
 	bind $Vars(widget:border) $key $cmd
 	bind $Vars(widget:frame) $key {+ break }
 	bind $Vars(widget:border) $key {+ break }
-	::board::stuff::bind $Vars(widget:board) $key $cmd
+	::board::stuff::bind $board $key $cmd
 }
 
 
@@ -352,12 +364,13 @@ proc SetBackground {canv which {width 0} {height 0}} {
 }
 
 
-proc PopupMenu {w x y} {
+proc PopupMenu {w} {
 	variable Vars
 
 	set m $w.popup_menu
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
 
 	$m add command \
 		-compound left \
@@ -433,6 +446,7 @@ proc Apply {canv} {
 proc RebuildBoard {canv width height} {
 	variable Dim
 	variable Vars
+	variable board
 
 	set squareSize $Dim(squaresize)
 	set edgeThickness $Dim(edgethickness)
@@ -448,9 +462,9 @@ proc RebuildBoard {canv width height} {
 
 	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
 		::update idletasks
-		::board::stuff::resize $Vars(widget:board) $Dim(squaresize) $Dim(edgethickness)
+		::board::stuff::resize $board $Dim(squaresize) $Dim(edgethickness)
 	} else {
-		::board::stuff::rebuild $Vars(widget:board)
+		::board::stuff::rebuild $board
 	}
 }
 
@@ -584,6 +598,7 @@ proc ConfigureBoard {canv} {
 	variable ::board::colors
 	variable Dim
 	variable Vars
+	variable board
 
 	set border $Vars(widget:border)
 
@@ -594,7 +609,7 @@ proc ConfigureBoard {canv} {
 
 	# configure side to move #######################
 	if {$layout(side-to-move)} {
-		if {[::board::stuff::flipped? $Vars(widget:board)]} {
+		if {[::board::stuff::flipped? $board]} {
 			set stmw stmb
 			set stmb stmw
 		} else {
@@ -673,7 +688,7 @@ proc ConfigureBoard {canv} {
 			set y [expr {$Dim(border:y1) + $Dim(edgethickness) + $Dim(squaresize)/2}]
 		}
 		set columns {8 7 6 5 4 3 2 1}
-		if {[::board::stuff::flipped? $Vars(widget:board)]} { set columns [lreverse $columns] }
+		if {[::board::stuff::flipped? $board]} { set columns [lreverse $columns] }
 		foreach r $columns {
 			foreach {k offs} {w -1 b 1 {} 0} {
 				$w coords ${k}coord${r} [expr {$x + $offs}] [expr {$y + $offs}]
@@ -782,10 +797,9 @@ proc BuildBoard {canv} {
 
 
 proc Rotate {canv} {
-	variable Vars
 	variable board
 
-	::board::stuff::rotate $Vars(widget:board)
+	::board::stuff::rotate $board
 	ConfigureBoard $canv
 }
 
@@ -853,8 +867,9 @@ proc StartAnalysis {} {
 
 proc GameSwitched {position} {
 	variable Vars
+	variable ::scidb::scratchbaseName
 
-	if {[lindex [::scidb::game::link?] 0] eq "Scratchbase"} {
+	if {[lindex [::scidb::game::link?] 0] eq $scratchbaseName} {
 		set state disabled
 	} else {
 		set state normal

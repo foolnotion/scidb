@@ -28,6 +28,7 @@
 #include "db_tag_set.h"
 #include "db_annotation.h"
 #include "db_mark_set.h"
+#include "db_move_info_set.h"
 #include "db_game_info.h"
 #include "db_comment.h"
 
@@ -41,12 +42,18 @@
 using namespace db;
 
 
-Consumer::Consumer(format::Type srcFormat, mstl::string const& encoding)
+Consumer::Consumer(	format::Type srcFormat,
+							mstl::string const& encoding,
+							TagBits const& allowedTags,
+							bool allowExtraTags)
 	:Provider(srcFormat)
+	,m_allowedTags(allowedTags)
+	,m_allowExtraTags(allowExtraTags)
 	,m_stack(1)
 	,m_variationCount(0)
 	,m_commentCount(0)
 	,m_annotationCount(0)
+	,m_moveInfoCount(0)
 	,m_markCount(0)
 	,m_terminated(false)
 	,m_flags(0)
@@ -114,6 +121,14 @@ Consumer::setup(mstl::string const& fen)
 }
 
 
+
+void
+Consumer::swapMoveInfo(MoveInfoSet& moveInfo)
+{
+	moveInfo.swap(m_moveInfoSet);
+}
+
+
 bool
 Consumer::startGame(TagSet const& tags, Board const* board)
 {
@@ -123,11 +138,14 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_variationCount = 0;
 	m_commentCount = 0;
 	m_annotationCount = 0;
+	m_moveInfoCount = 0;
 	m_markCount = 0;
 	m_terminated = false;
 	m_line.length = 0;
 	m_commentEngFlag = false;
 	m_commentOthFlag = false;
+	m_moveInfoSet.clear();
+	m_engines.clear();
 	m_homePawns.clear();
 
 	if (board)
@@ -135,7 +153,7 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	else if (tags.contains(tag::Fen))
 		setup(tags.value(tag::Fen));
 	else if (tags.contains(tag::Idn))
-		setup(::strtoul(tags.value(tag::Idn), 0, 10));
+		setup(::strtoul(tags.value(tag::Idn), nullptr, 10));
 	else if (m_setupBoard)
 		setup(Board::standardBoard());
 
@@ -287,6 +305,13 @@ Consumer::putMove(Move const& move,
 
 	if (sendMove(entry.move, annotation, marks, preComment, comment))
 	{
+		if (!m_moveInfoSet.isEmpty())
+		{
+			sendMoveInfo(m_moveInfoSet);
+			m_moveInfoCount += m_moveInfoSet.count();
+			m_moveInfoSet.clear();
+		}
+
 		entry.board.doMove(entry.move);
 
 		if (!move.isLegal())
@@ -333,6 +358,13 @@ Consumer::putMove(Move const& move)
 
 	if (sendMove(entry.move))
 	{
+		if (!m_moveInfoSet.isEmpty())
+		{
+			sendMoveInfo(m_moveInfoSet);
+			m_moveInfoCount += m_moveInfoSet.count();
+			m_moveInfoSet.clear();
+		}
+
 		entry.board.doMove(entry.move);
 
 		if (!move.isLegal())
@@ -389,6 +421,37 @@ Consumer::setStartBoard(Board const& board)
 {
 	m_stack.bottom().board = board;
 	m_setupBoard = false;
+}
+
+
+void
+Consumer::preparseComment(mstl::string&)
+{
+	// no action
+}
+
+
+void
+Consumer::setEngines(EngineList const& engines)
+{
+	m_engines = engines;
+}
+
+
+void
+Consumer::swapEngines(EngineList& engines)
+{
+	m_engines.swap(engines);
+}
+
+
+void
+Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
+{
+	mstl::string info;
+	moveInfo.print(m_engines, info);
+	sendComment(Comment(info, false, false));
+	++m_commentCount;
 }
 
 // vi:set ts=3 sw=3:

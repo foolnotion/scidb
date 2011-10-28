@@ -85,6 +85,7 @@ proc open {args} {
 		wm group $w [winfo toplevel $parent]
 	}
 	wm attributes $w -topmost $opts(-topmost)
+	catch { wm attributes $dlg -type dialog }
 	
 	tk::label $w.l \
 		-image $HourGlass \
@@ -131,7 +132,8 @@ proc open {args} {
 	}
 	wm geometry $w ${x}${y}
 	wm deiconify $w
-	tkwait visibility $w
+	# prevent error 'window ".progress" was deleted before its visibility changed'
+	catch { tkwait visibility $w }
 	if {[llength $opts(-command)]} { busyCursor $w on }
 	if {[llength $opts(-command)] == 0} { return }
 	after idle [namespace code [list Start $w $opts(-command) $opts(-close)]]

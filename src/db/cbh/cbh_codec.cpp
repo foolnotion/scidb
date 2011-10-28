@@ -441,7 +441,6 @@ Codec::Codec()
 	,m_sourceBase(Namebase::Annotator)
 	,m_illegalEvent(0)
 	,m_illegalPlayer(0)
-	,m_siteId(0)
 	,m_numGames(0)
 	,m_highQuality(false)
 {
@@ -620,8 +619,6 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 
 	m_numGames = readHeader(rootname);
 
-	m_siteId = 0;
-
 	readIniData(rootname);
 	readSourceData(rootname, progress);
 	readPlayerData(rootname, progress);
@@ -683,7 +680,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 	progress.start(nrecs);
 	eventBase.reserve(nrecs, (1 << 24) - 1);
 
-	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	for (unsigned i = 0; i < nrecs; ++i)
 	{
 		if (reportAfter == i)
 		{
@@ -718,7 +715,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			strm.read(buf, 6);
 
 			Date evDate;
-			::setDate(evDate, ByteStream(buf, 3).uint24LE());
+			::setDate(evDate, ByteStream::uint24LE(buf));
 
 			Byte eventType = buf[4];
 
@@ -761,14 +758,10 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			strm.get();	// skip
 			Byte rounds = strm.get();
 
-			NamebaseSite* site = siteBase.insertSite(city, m_siteId, countryCode, nrecs);
-
-			if (site->id() == m_siteId)
-				++m_siteId;
+			NamebaseSite* site = siteBase.insertSite(city, countryCode, nrecs);
 
 			NamebaseEvent* event = eventBase.insertEvent(
 												name,
-												n++,
 												evDate.year(),
 												evDate.month(),
 												evDate.day(),
@@ -814,7 +807,7 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 	str.assign(202, '\0');
 	progress.start(nrecs);
 
-	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	for (unsigned i = 0; i < nrecs; ++i)
 	{
 		if (reportAfter == i)
 		{
@@ -860,7 +853,7 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 				}
 			}
 
-			m_playerMap[i] = base.insertPlayer(str, fideID, n++, nrecs);
+			m_playerMap[i] = base.insertPlayer(str, fideID, nrecs);
 			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
 		}
 	}
@@ -894,7 +887,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 	str.assign(200, '\0');
 	progress.start(nrecs);
 
-	for (unsigned i = 0, n = 0; i < nrecs; ++i)
+	for (unsigned i = 0; i < nrecs; ++i)
 	{
 		if (reportAfter == i)
 		{
@@ -919,7 +912,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 			if (!str.empty())
 			{
 				toUtf8(str);
-				m_annotatorMap[i] = base.insert(str, n++, nrecs);
+				m_annotatorMap[i] = base.insert(str, nrecs);
 			}
 
 			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
@@ -988,7 +981,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 			if (!str.empty())
 			{
 				toUtf8(str);
-				::setDate(sourceDate, ByteStream(buf, 3).uint24LE());
+				::setDate(sourceDate, ByteStream::uint24LE(buf));
 				m_sourceMap2[i] = new Source(str, sourceDate);
 			}
 
@@ -1528,7 +1521,7 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	GameInfoList& infoList = gameInfoList();
 
 	infoList.reserve(m_numGames);
-	m_sourceMap.reserve(m_numGames);
+	m_sourceMap.reserve(unsigned(m_numGames*(100/SourceMap::Load)));
 	if (m_teamStream.is_open())
 		m_gameIndexLookup.reserve(m_numGames);
 
@@ -1632,7 +1625,7 @@ Codec::readIniData(mstl::string const& rootname)
 					case DescrCBG:
 						if (::strncmp(line, "Type=", 5) == 0)
 						{
-							unsigned type = ::strtoul(line.c_str() + 5, 0, 10);
+							unsigned type = ::strtoul(line.c_str() + 5, nullptr, 10);
 
 							if (type < U_NUMBER_OF(::TypeMap))
 								setType(::TypeMap[type]);
@@ -1675,7 +1668,7 @@ Codec::getPlayer(uint32_t ref)
 	if (m_illegalPlayer == 0)
 	{
 		m_illegalPlayer = namebase(Namebase::Player).insertPlayer(
-									"? (illegal reference)", 0, m_playerMap.size(), m_playerMap.size() + 1);
+									"? (illegal reference)", 0, m_playerMap.size() + 1);
 	}
 
 	m_illegalPlayer->ref();
@@ -1700,18 +1693,11 @@ Codec::getEvent(uint32_t ref)
 
 	if (m_illegalEvent == 0)
 	{
-		unsigned maxRef = 0;
-
-		for (BaseMap::const_iterator i = m_eventMap.begin(); i != m_eventMap.end(); ++i)
-			maxRef = mstl::max(maxRef, i->second->id());
-
 		m_illegalEvent = namebase(Namebase::Event).insertEvent(
 								"? (illegal reference)",
-								maxRef + 1,
 								m_eventMap.size() + 1,
 								namebase(Namebase::Site).insertSite(
 									mstl::string::empty_string,
-									m_siteId++,
 									country::Unknown,
 									m_eventMap.size() + 1));
 	}
@@ -1916,11 +1902,9 @@ Codec::startDecoding(ByteStream& gameStream,
 void
 Codec::addSourceTags(TagSet& tags, GameInfo const& info)
 {
-	SourceMap::const_iterator s = m_sourceMap.find(&info);
-
-	if (s != m_sourceMap.end())
+	if (SourceMap::const_pointer s = m_sourceMap.find(&info))
 	{
-		Source const* source = static_cast<Source const*>(s->second);
+		Source const* source = *s;
 
 		tags.set(tag::Source, source->name());
 
@@ -2089,6 +2073,43 @@ Codec::getNumberOfGames(mstl::string const& filename)
 
 	bstrm.skip(6);
 	return bstrm.uint32() - 1;
+}
+
+
+void
+Codec::getSuffixes(mstl::string const&, StringList& result)
+{
+	result.push_back("cba");
+	result.push_back("cbb");
+	result.push_back("cbc");
+	result.push_back("cbe");
+	result.push_back("cbg");
+	result.push_back("cbgi");
+	result.push_back("cbh");
+	result.push_back("cbj");
+	result.push_back("cbm");
+	result.push_back("cbp");
+	result.push_back("cbs");
+	result.push_back("cbt");
+	result.push_back("cbtt");
+	result.push_back("cib");
+	result.push_back("cit");
+	result.push_back("ck1");
+	result.push_back("ck2");
+	result.push_back("ck3");
+	result.push_back("ckn");
+	result.push_back("cko");
+	result.push_back("cp1");
+	result.push_back("cp2");
+	result.push_back("cp3");
+	result.push_back("cpn");
+	result.push_back("cpo");
+	result.push_back("flags");
+	result.push_back("ini");
+	result.push_back("rb0");
+	result.push_back("rb1");
+	result.push_back("rb2");
+
 }
 
 // vi:set ts=3 sw=3:

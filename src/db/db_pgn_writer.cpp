@@ -26,6 +26,7 @@
 
 #include "db_pgn_writer.h"
 #include "db_annotation.h"
+#include "db_move_info_set.h"
 #include "db_mark_set.h"
 #include "db_move.h"
 #include "db_comment.h"
@@ -79,6 +80,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Include_Variations);
 		addFlag(Flag_Include_Comments);
 		addFlag(Flag_Include_Annotation);
+		addFlag(Flag_Include_Move_Info);
 		addFlag(Flag_Include_Marks);
 		addFlag(Flag_Include_Termination_Tag);
 		addFlag(Flag_Include_Mode_Tag);
@@ -91,7 +93,6 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Comment_To_Html);
 
 		removeFlag(Flag_Exclude_Extra_Tags);
-		removeFlag(Flag_Include_Country_Inside_Player);
 		removeFlag(Flag_Symbolic_Annotation_Style);
 		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
 		removeFlag(Flag_Convert_Null_Moves_To_Comments);
@@ -117,7 +118,6 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Use_Shredder_FEN);
 
 		removeFlag(Flag_Exclude_Extra_Tags);
-		removeFlag(Flag_Include_Country_Inside_Player);
 		removeFlag(Flag_Symbolic_Annotation_Style);
 		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
 		removeFlag(Flag_Convert_Null_Moves_To_Comments);
@@ -313,7 +313,7 @@ PgnWriter::writeEndComment()
 
 
 void
-PgnWriter::putComment(mstl::string const& comment)
+PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 {
 	unsigned indent = mstl::numeric_limits<unsigned>::max();
 
@@ -343,9 +343,9 @@ PgnWriter::putComment(mstl::string const& comment)
 			--m_pendingSpace;
 		}
 
-		m_strm.put(insideComment() ? ' ' : '{');
+		m_strm.put(insideComment() ? ' ' : ldelim);
 		m_strm.write(comment, comment.size());
-		m_strm.put(insideComment() ? ' ' : '}');
+		m_strm.put(insideComment() ? ' ' : rdelim);
 		m_length += comment.size() + 2;
 	}
 	else
@@ -378,7 +378,7 @@ PgnWriter::putComment(mstl::string const& comment)
 		}
 
 		if (!insideComment())
-			m_strm.put('{');
+			m_strm.put(ldelim);
 		else if (m_length > 0)
 			m_strm.put(' ');
 
@@ -387,7 +387,7 @@ PgnWriter::putComment(mstl::string const& comment)
 
 		if ((s = t) == e)
 		{
-			m_strm.put(insideComment() ? ' ' : '}');
+			m_strm.put(insideComment() ? ' ' : rdelim);
 			++m_length;
 		}
 		else
@@ -427,7 +427,7 @@ PgnWriter::putComment(mstl::string const& comment)
 
 				if ((s = t) == e)
 				{
-					m_strm.put(insideComment() ? ' ' : '}');
+					m_strm.put(insideComment() ? ' ' : rdelim);
 					++m_length;
 				}
 			}
@@ -479,7 +479,6 @@ PgnWriter::putComment(Comment const& comment)
 	}
 
 	putComment(text);
-	putSpace();
 }
 
 
@@ -551,6 +550,35 @@ PgnWriter::writeTrailingComment(Comment const& comment)
 			putComment(mstl::string::empty_string);
 
 		putComment(comment);
+	}
+}
+
+
+void
+PgnWriter::writeMoveInfo(MoveInfoSet const& moveInfo)
+{
+	if (!moveInfo.isEmpty())
+	{
+		bool needSpace = this->needSpace();
+
+		for (unsigned i = 0; i < moveInfo.count(); ++i)
+		{
+			mstl::string result;
+
+			if (needSpace)
+				putSpace();
+
+			moveInfo[i].print(engines(), result, MoveInfo::Pgn);
+
+			if (test(Flag_Use_Scidb_Import_Format))
+				putComment(result, '<', '>');
+			else
+				putComment(result);
+
+			result.clear();
+		}
+
+		m_needPostComment = false;
 	}
 }
 

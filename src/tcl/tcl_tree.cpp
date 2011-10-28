@@ -72,7 +72,7 @@ parseArguments(int objc, Tcl_Obj* const objv[], rating::Type& ratingType, ::db::
 	ratingType = rating::fromString(stringFromObj(objc, objv, 1));
 
 	if (ratingType == rating::Last)
-		return error(CmdUpdate, 0, 0, "unknown rating type %s", stringFromObj(objc, objv, 1));
+		return error(CmdUpdate, nullptr, nullptr, "unknown rating type %s", stringFromObj(objc, objv, 1));
 
 	char const* which = stringFromObj(objc, objv, 2);
 
@@ -83,7 +83,7 @@ parseArguments(int objc, Tcl_Obj* const objv[], rating::Type& ratingType, ::db::
 	else if (::strcmp(which, "quick") == 0)
 		mode = ::db::tree::Rapid;
 	else
-		return error(CmdUpdate, 0, 0, "unknown mode '%s'", which);
+		return error(CmdUpdate, nullptr, nullptr, "unknown mode '%s'", which);
 
 	return TCL_OK;
 }
@@ -245,7 +245,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				|| column < 0
 				|| column >= attribute::tree::LastColumn)
 			{
-				return error(	CmdFetch, 0, 0,
+				return error(	CmdFetch, nullptr, nullptr,
 									"integer in range 0-%d expected",
 									attribute::tree::LastColumn - 1);
 			}
@@ -255,7 +255,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 		else
 		{
-			return error(CmdFetch, 0, 0, "unknown option '%s'", option);
+			return error(CmdFetch, nullptr, nullptr, "unknown option '%s'", option);
 		}
 	}
 
@@ -268,7 +268,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return rc;
 
 	if (sortColumn == attribute::tree::LastColumn)
-		return error(CmdFetch, 0, 0, "no sort column given");
+		return error(CmdFetch, nullptr, nullptr, "no sort column given");
 
 	Tree const* tree = scidb.finishUpdateTree(mode, ratingType, sortColumn);
 
@@ -376,7 +376,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			unsigned row = unsignedFromObj(objc, objv, 1);
 
 			if (row >= tree->size())
-				return error(CmdMove, 0, 0, "invalid row %u", row);
+				return error(CmdMove, nullptr, nullptr, "invalid row %u", row);
 
 			TreeInfo const& info = tree->info(row);
 
@@ -402,7 +402,7 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		NamebasePlayer const* player;
 
 		if (row > tree->size())
-			return error(CmdPlayer, 0, 0, "invalid row (%u)", row);
+			return error(CmdPlayer, nullptr, nullptr, "invalid row (%u)", row);
 
 		TreeInfo const& info = row == tree->size() ? tree->total() : tree->info(row);
 
@@ -413,12 +413,16 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else if (::strcmp(which, "frequentPlayer") == 0)
 			player = &info.mostFrequentPlayer();
 		else
-			return error(CmdFetch, 0, 0, "invalid id %s", stringFromObj(objc, objv, 2));
+			return error(CmdFetch, nullptr, nullptr, "invalid id %s", stringFromObj(objc, objv, 2));
 
 		rating::Type ratingType = rating::fromString(stringFromObj(objc, objv, 3));
 
 		if (ratingType == rating::Last)
-			return error(CmdFetch, 0, 0, "unknown rating type %s", stringFromObj(objc, objv, 3));
+			return error(	CmdFetch,
+								nullptr,
+								nullptr,
+								"unknown rating type %s",
+								stringFromObj(objc, objv, 3));
 
 		::tcl::db::Ratings ratings(ratingType, rating::Elo);
 		::tcl::db::getPlayerInfo(*player, ratings, true, true);
@@ -435,11 +439,7 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Scidb.haveReferenceBase())
-		setResult(Scidb.referenceBase().treeViewIdentifier());
-	else
-		setResult(-1);
-
+	setResult((Scidb.haveReferenceBase()) ? int(Scidb.referenceBase().treeViewIdentifier()) : -1);
 	return TCL_OK;
 }
 

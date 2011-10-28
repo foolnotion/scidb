@@ -27,7 +27,7 @@
 #ifndef _sci_v91_decoder_included
 #define _sci_v91_decoder_included
 
-#include "sci_decoder_position.h"
+#include "sci_v91_decoder_position.h"
 
 #include "db_common.h"
 #include "db_move.h"

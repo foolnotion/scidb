@@ -44,22 +44,6 @@ modulo(unsigned a, unsigned m)
 }
 
 
-inline static void
-putUint24(unsigned char* data, uint32_t size)
-{
-	data[0] = size >> 16;
-	data[1] = size >> 8;
-	data[2] = size;
-}
-
-
-inline static uint32_t
-getUint24(unsigned char const* data)
-{
-	return (unsigned(data[0]) << 16) | (unsigned(data[1]) << 8) | unsigned(data[2]);
-}
-
-
 BlockFileReader::Buffer::Buffer()
 	:m_capacity(0)
 	,m_size(0)
@@ -470,7 +454,7 @@ BlockFile::retrieve(View& view, unsigned blockNumber, unsigned offset)
 	if (unsigned rc = fetch(view, blockNumber, 1))
 		return rc;
 
-	return ::getUint24(view.m_buffer.m_data + offset);
+	return ByteStream::uint24(view.m_buffer.m_data + offset);
 }
 
 
@@ -478,12 +462,13 @@ void
 BlockFile::copy(ByteStream const& buf, unsigned offset, unsigned nbytes)
 {
 	M_ASSERT(isInSyncMode());
+	M_ASSERT(offset + nbytes <= m_view.m_buffer.m_capacity);
 
 	unsigned char* data = m_view.m_buffer.m_data + offset;
 
 	if (m_mode == ReadWriteLength)
 	{
-		::putUint24(data, nbytes);
+		ByteStream::set(data, ByteStream::uint24_t(nbytes));
 		::memcpy(data + 3, buf.data(), nbytes - 3);
 	}
 	else
@@ -513,11 +498,12 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 	M_ASSERT(m_view.m_buffer.m_data);
 	M_ASSERT(m_view.m_buffer.m_number != InvalidBlock);
 
-	unsigned blockNo = blockNumber(offset);
+	unsigned blockNo		= blockNumber(offset);
+	unsigned blockOffset	= this->blockOffset(offset);
 
 	if (m_mode == ReadWriteLength)
 	{
-		minSize = retrieve(m_view, blockNo, blockOffset(offset));
+		minSize = retrieve(m_view, blockNo, blockOffset);
 
 		if (minSize > MaxFileSize)
 			return minSize;	// it's an error code
@@ -531,8 +517,8 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 	if (nbytes <= minSize)
 	{
 		resize(m_view, newSpan);
-		copy(buf, offset, nbytes);
-		::zero(m_view.m_buffer.m_data + offset + minSize, minSize - nbytes);
+		copy(buf, blockOffset, nbytes);
+		::zero(m_view.m_buffer.m_data + blockOffset + minSize, minSize - nbytes);
 		m_isDirty = true;
 
 		if (newSpan < oldSpan)
@@ -563,17 +549,17 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 				m_sizeInfo[m_view.m_buffer.m_number] = 0;
 			}
 		}
-		else if (m_view.m_buffer.m_size == blockOffset(offset) + minSize)
+		else if (m_view.m_buffer.m_size == blockOffset + minSize)
 		{
 			m_sizeInfo[m_view.m_buffer.m_number] = (m_view.m_buffer.m_size -= minSize - nbytes);
 		}
 	}
 	else if (	blockNo == countBlocks() - 1
-				&& m_sizeInfo[blockNo] == blockOffset(offset) + minSize
+				&& m_sizeInfo[blockNo] == blockOffset + minSize
 				&& ::modulo(offset, m_mask) + nbytes <= m_blockSize)
 	{
 		resize(m_view, newSpan);
-		copy(buf, offset, nbytes);
+		copy(buf, blockOffset, nbytes);
 		m_isDirty = true;
 		m_sizeInfo[blockNo] = (m_view.m_buffer.m_size += nbytes - minSize);
 	}

@@ -43,6 +43,7 @@ template <typename TList> struct no_duplicates;
 template <typename TList, typename T, typename U> struct replace;
 template <typename TList, typename T, typename U> struct replace_all;
 template <typename TList> struct reverse;
+template <typename TList> struct size_of;
 #if 0
 template <typename TList, typename T> struct most_derived;
 template <typename TList> struct derived_to_front;

@@ -123,7 +123,7 @@ array set Vars {
 	after		{}
 }
 
-variable Bars
+array set Bars {}
 
 
 proc build {parent menu width height} {
@@ -338,7 +338,8 @@ proc build {parent menu width height} {
 	bind $tb <<TableVisit>>			[namespace code [list VisitItem $tb %d]]
 	bind $tb <<TableFill>>			[namespace code [list FillTable $tb]]
 	bind $tb <<TableMenu>>			[namespace code [list PopupMenu $tb %X %Y]]
-	bind $tb <<Language>>			[namespace code [list FillTable $tb]]
+	bind $tb <<LanguageChanged>>	[namespace code [list FillTable $tb]]
+	bind $tb <Destroy>				[namespace code [list Destroy $tb]]
 
 	TreeCtrl::finishBindings $tb
 
@@ -410,7 +411,7 @@ proc build {parent menu width height} {
 	set progress [::toolbar::add $tbProgress frame -width 130 -height 7 -borderwidth 1 -relief sunken]
 	tk::frame $progress.bar -background $Defaults(progress:color) -height 5
 	$switcher addcol text -id name
-	bind $switcher <<Language>> [namespace code LanguageChanged]
+	bind $switcher <<LanguageChanged>> [namespace code LanguageChanged]
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
 
 	set Vars(progress) $progress.bar
@@ -425,15 +426,14 @@ proc build {parent menu width height} {
 	set Vars(hidden) 1
 	set Vars(button) 0
 	set Vars(switcher) $switcher
-	set Vars(bases) {}
 	set Vars(name) {}
 	set Vars(current) {}
 	set Vars(list) {}
 	set Vars(stm) $stm
 	set Vars(side) {}
-	set Vars(parent) $parent
 
-	::scidb::db::subscribe tree [namespace current]::Update [namespace current]::Close $tb
+	set Vars(subscribe) [list tree [namespace current]::Update [namespace current]::Close $tb]
+	::scidb::db::subscribe {*}$Vars(subscribe)
 	::scidb::tree::init [namespace current]::Tick $tb
 	::scidb::tree::switch [expr {!$Options(base:lock)}]
 
@@ -507,11 +507,16 @@ proc Enabled {flag} {
 }
 
 
-proc View {pane base} {
-	set path [winfo parent $pane]
-	variable ${path}::Vars
+proc Destroy {tb} {
+	variable Vars
+	::scidb::db::unsubscribe {*}$Vars(subscribe)
+}
 
-	return 0	;# XXX
+
+proc View {pane base} {
+	set view [::scidb::tree::view]
+	if {$view == -1} { return 0 }
+	return $view
 }
 
 
@@ -551,7 +556,7 @@ proc DoSearch {table} {
 			place $Vars(progress) -x 1 -y 1 -width 127
 			set Vars(searching) 0
 		}
-		FetchResult $table
+		SearchResultAvailable $table
 	} else {
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
@@ -618,7 +623,7 @@ proc Tick {table n} {
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
 			$Vars(progress) configure -background $Defaults(progress:finished)
-			after idle [namespace code [list FetchResult $table]]
+			after idle [namespace code [list SearchResultAvailable $table]]
 		}
 	}
 }
@@ -811,6 +816,12 @@ proc RefreshRatingLabel {} {
 		}
 		::toolbar::childconfigure $Vars(stm) -tooltipvar [namespace current]::mc::$var
 	}
+}
+
+
+proc SearchResultAvailable {table} {
+	FetchResult $table
+	# [namespace parent]::vars::update
 }
 
 
@@ -1169,7 +1180,7 @@ proc Scrollbar {table state} {
 
 
 proc SetReferenceBase {w} {
-	variable [namespace parent]::database::clipbaseName
+	variable ::scidb::clipbaseName
 	variable Vars
 
 	set index [[::toolbar::realpath $w] current]
@@ -1205,7 +1216,7 @@ proc FillSwitcher {w} {
 
 
 proc SetSwitcher {base} {
-	variable [namespace parent]::database::clipbaseName
+	variable ::scidb::clipbaseName
 	variable Vars
 
 	set Vars(current) $base
@@ -1229,7 +1240,7 @@ proc LockBase {} {
 
 
 proc PopupMenu {table x y} {
-	variable [namespace parent]::database::clipbaseName
+	variable ::scidb::clipbaseName
 	variable Vars
 	variable _Current
 
@@ -1237,6 +1248,7 @@ proc PopupMenu {table x y} {
 	set m $table.popup_menu
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
 
 	$m add command \
 		-label $mc::StartSearch \

@@ -375,12 +375,16 @@ View::Result
 View::dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const
 {
 	Game game;
-	bool ok = m_db.loadGame(gameIndex(index), game);
+
+	load::State state = m_db.loadGame(gameIndex(index), game);
+
+	if (state != load::Ok)
+		return Result(state, 0);
 
 	if (!fen.empty())
 		game.goToPosition(fen);
 
-	return Result(ok, game.dumpMoves(result));
+	return Result(state, game.dumpMoves(result));
 }
 
 
@@ -394,7 +398,11 @@ View::dumpGame(unsigned index,
 	typedef mstl::vector<unsigned> LengthList;
 
 	Game game;
-	bool ok = m_db.loadGame(gameIndex(index), game);
+
+	load::State state = m_db.loadGame(gameIndex(index), game);
+
+	if (state != load::Ok)
+		return Result(state, 0);
 
 	if (!fen.empty())
 		game.goToPosition(fen);
@@ -445,7 +453,7 @@ View::dumpGame(unsigned index,
 		game.currentBoard().toFen(positions.back());
 	}
 
-	return Result(ok, count);
+	return Result(state, count);
 }
 
 
@@ -495,6 +503,8 @@ View::exportGames(mstl::string const& filename,
 						type::ID type,
 						unsigned flags,
 						GameMode gameMode,
+						TagBits const& allowedTags,
+						bool allowExtraTags,
 						Log& log,
 						util::Progress& progress,
 						FileMode fmode)
@@ -518,7 +528,10 @@ View::exportGames(mstl::string const& filename,
 		}
 		else
 		{
-			sci::Consumer consumer(m_db.format(), dynamic_cast<sci::Codec&>(destination.codec()));
+			sci::Consumer consumer(	m_db.format(),
+											dynamic_cast<sci::Codec&>(destination.codec()),
+											allowedTags,
+											allowExtraTags);
 			count = exportGames(consumer, gameMode, log, progress);
 		}
 
@@ -541,7 +554,11 @@ View::exportGames(mstl::string const& filename,
 //		else
 		{
 			format::Type format(ext == "si3" ? format::Scid3 : format::Scid4);
-			si3::Consumer consumer(format, dynamic_cast<si3::Codec&>(destination.codec()), encoding);
+			si3::Consumer consumer(	format,
+											dynamic_cast<si3::Codec&>(destination.codec()),
+											encoding,
+											allowedTags,
+											allowExtraTags);
 			count = exportGames(consumer, gameMode, log, progress);
 		}
 

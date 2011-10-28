@@ -1251,34 +1251,34 @@ ogl_objWidget(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj *const* o
 
 			for ( ; i < objc ; i++)
 			{
-				char const* optName = Tcl_GetStringFromObj(objv[i], 0);
+				char const* optName = Tcl_GetStringFromObj(objv[i], nullptr);
 
 				if (strncmp (optName, "-family", 7) == 0)
 				{
 					if (i < objc-1)
-						name = Tcl_GetStringFromObj(objv[++i], 0);
+						name = Tcl_GetStringFromObj(objv[++i], nullptr);
 				}
 				else if (strncmp (optName, "-slant", 6) == 0)
 				{
 					if (i < objc-1)
-						slant = Tcl_GetStringFromObj(objv[++i], 0);
+						slant = Tcl_GetStringFromObj(objv[++i], nullptr);
 				}
 				else if (strncmp (optName, "-weight", 7) == 0)
 				{
 					if (i < objc-1)
-						weight = Tcl_GetStringFromObj(objv[++i], 0);
+						weight = Tcl_GetStringFromObj(objv[++i], nullptr);
 				}
 				else if (strncmp (optName, "-size", 5) == 0)
 				{
 					if (i < objc-1)
-						size = Tcl_GetStringFromObj(objv[++i], 0);
+						size = Tcl_GetStringFromObj(objv[++i], nullptr);
 				}
 				else
 				{
 					// No option given. The supplied parameter should be a XLFD
 					// specification. We pass it over to ogl_loadBitmapFont, where
 					// it will be checked for correctness.
-					name = Tcl_GetStringFromObj(objv[i], 0);
+					name = Tcl_GetStringFromObj(objv[i], nullptr);
 					break;
 				}
 			}

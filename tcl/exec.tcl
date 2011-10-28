@@ -48,13 +48,33 @@ namespace eval scidb {
 }
 
 
-if {[string compare [::scidb::misc::version] $scidb::version]} {
+wm withdraw .
+
+if {[llength [info nameofexecutable]] == 0} {
+	# broken Tk library, e.g. 8.6b2
+	append msg "You've installed a broken Tk library (version [info patchlevel]). "
+	append msg "Please change the version (8.5 is recommended)."
+	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
+	exit 1
+}
+
+
+if {[info patchlevel] eq "8.5.10"} {
+	# broken Tk library, e.g. 8.5.10
+	append msg "You've installed a broken Tk library (patch level [info patchlevel]). "
+	append msg "Some crashes may occur with this Tk library.\n\n"
+	append msg "It is recommended to use a different patch level of this library."
+	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
+}
+
+
+if {[::scidb::misc::version] ne $scidb::version} {
 	wm withdraw .
 	if {$tcl_platform(platform) == "windows"} {
-		set msg    "This is $scidb::app version [::scidb::misc::version], but the scidb.gui "
+		append msg "This is $scidb::app version [::scidb::misc::version], but the scidb.gui "
 		append msg "data file has the version number $scidb::version."
 	} else {
-		set msg    "This is $scidb::app version '$scidb::version', but the "
+		append msg "This is $scidb::app version '$scidb::version', but the "
 		append msg "[file tail [info nameofexecutable]] program it uses is "
 		append msg "version '[::scidb::misc::version]'."
 	}
@@ -120,6 +140,7 @@ if {[testOption help]} {
 	puts "  --                      Only file names after this"
 	puts "  --help                  Print Help (this message) and exit"
 	puts "  --version               Print version information and exit"
+	puts "  --show-board            Switch to board tab immediately after startuo"
 	puts "  --print-recovery-files  Print recovery files from last session and exit"
 	puts "  --delete-recovery-files Delete recovery files and exit"
 	puts "  --dont-recover          Do not recover unsaved games from last session"
@@ -132,6 +153,8 @@ if {[testOption help]} {
 	puts "  --no-photos             Skip the load of the photo files"
 	puts "  --single-process        Forcing a single process of $::scidb::app"
 	puts "                          (you shouldn't use this option; only for testing)"
+	puts "  --force-grab            Do not suppress grabs in debug mode"
+	puts "                          (only for debugging)"
 	puts ""
 	puts "Options recognised by GUI (Tk) library:"
 	puts "  -geometry <geom>        Use <geom> for initial geometry"

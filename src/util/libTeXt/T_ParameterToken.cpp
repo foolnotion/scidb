@@ -22,7 +22,6 @@
 #include "T_Producer.h"
 #include "T_Messages.h"
 
-#include "m_scoped_ptr.h"
 #include "m_assert.h"
 #include "m_cast.h"
 #include "m_string.h"
@@ -30,50 +29,45 @@
 using namespace TeXt;
 
 
-namespace {
-
-class MyProducer : public Producer
+ParameterToken::TokenProducer::TokenProducer(TokenP const& token)
+	:m_producer(mstl::safe_cast_ref<ListToken const>(*token).getProducer(token))
 {
-public:
+}
 
-	MyProducer(TokenP const& token)
-		:m_producer(mstl::safe_cast_ref<ListToken const>(*token).getProducer(token))
-	{
-	}
 
-	bool finished() const override
-	{
-		return m_producer->finished();
-	}
+bool
+ParameterToken::TokenProducer::finished() const
+{
+	return m_producer->finished();
+}
 
-	Source source() const override
-	{
-		return Parameter;
-	}
 
-	TokenP next(Environment& env) override
-	{
-		return m_producer->next(env);
-	}
+Producer::Source
+ParameterToken::TokenProducer::source() const
+{
+	return Parameter;
+}
 
-	mstl::string currentDescription() const override
-	{
-		return m_producer->currentDescription();
-	}
 
-	bool reset() override
-	{
-		return m_producer->reset();
-	}
+TokenP
+ParameterToken::TokenProducer::next(Environment& env)
+{
+	return m_producer->next(env);
+}
 
-private:
 
-	typedef mstl::scoped_ptr<Producer> ProducerP;
+mstl::string
+ParameterToken::TokenProducer::currentDescription() const
+{
+	return m_producer->currentDescription();
+}
 
-	ProducerP m_producer;
-};
 
-} // namespace
+bool
+ParameterToken::TokenProducer::reset()
+{
+	return m_producer->reset();
+}
 
 
 ParameterToken::ParameterToken(mstl::string const& name, RefID id, unsigned position)
@@ -138,7 +132,7 @@ ParameterToken::bind(Environment& env)
 			M_ASSERT(dynamic_cast<ListToken*>(token.get()));
 
 			if (!token->isEmpty())
-				env.pushProducer(Environment::ProducerP(new MyProducer(token)));
+				env.pushProducer(Environment::ProducerP(new TokenProducer(token))); // MEMORY
 		}
 	}
 }

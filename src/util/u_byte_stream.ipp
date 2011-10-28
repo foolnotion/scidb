@@ -16,7 +16,6 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "m_utility.h"
 #include "m_assert.h"
 
 namespace util {
@@ -227,6 +226,145 @@ ByteStream::operator=(ByteStream&& strm)
 }
 
 #endif
+
+inline
+uint16_t
+ByteStream::uint16(Byte const* data)
+{
+	return (uint16_t(data[0]) << 8) | uint16_t(data[1]);
+}
+
+
+inline
+uint16_t
+ByteStream::uint16LE(Byte const* data)
+{
+	return (uint16_t(data[1]) << 8) | uint16_t(data[0]);
+}
+
+
+inline
+uint32_t
+ByteStream::uint24(Byte const* data)
+{
+	return (uint32_t(data[0]) << 16) | (uint32_t(data[1]) << 8) | uint32_t(data[2]);
+}
+
+
+inline
+uint32_t
+ByteStream::uint24LE(Byte const* data)
+{
+	return (uint32_t(data[2]) << 16) | (uint32_t(data[1]) << 8) | uint32_t(data[0]);
+}
+
+
+inline
+uint32_t
+ByteStream::uint32(Byte const* data)
+{
+	return	(uint32_t(data[0]) << 24)
+			 | (uint32_t(data[1]) << 16)
+			 | (uint32_t(data[2]) << 8)
+			 | (uint32_t(data[3]));
+}
+
+
+inline
+uint32_t
+ByteStream::uint32LE(Byte const* data)
+{
+	return	(uint32_t(data[3]) << 24)
+			 | (uint32_t(data[2]) << 16)
+			 | (uint32_t(data[1]) << 8)
+			 | (uint32_t(data[0]));
+}
+
+
+inline
+uint64_t
+ByteStream::uint48(Byte const* data)
+{
+	return  (uint64_t(data[0]) << 40)
+			| (uint64_t(data[1]) << 32)
+			| (uint64_t(data[2]) << 24)
+			| (uint64_t(data[3]) << 16)
+			| (uint64_t(data[4]) << 8)
+			| (uint64_t(data[5]));
+}
+
+
+inline
+uint64_t
+ByteStream::uint64(Byte const* data)
+{
+	return  (uint64_t(data[0]) << 56)
+			| (uint64_t(data[1]) << 48)
+			| (uint64_t(data[2]) << 40)
+			| (uint64_t(data[3]) << 32)
+			| (uint64_t(data[4]) << 24)
+			| (uint64_t(data[5]) << 16)
+			| (uint64_t(data[6]) << 8)
+			| (uint64_t(data[7]));
+}
+
+
+inline
+void
+ByteStream::set(Byte* data, uint16_t i)
+{
+	data[0] = i >> 8;
+	data[1] = i;
+}
+
+
+inline
+void
+ByteStream::set(Byte* data, uint24_t i)
+{
+	data[0] = i >> 16;
+	data[1] = i >> 8;
+	data[2] = i;
+}
+
+
+inline
+void
+ByteStream::set(Byte* data, uint32_t i)
+{
+	data[0] = i >> 24;
+	data[1] = i >> 16;
+	data[2] = i >> 8;
+	data[3] = i;
+}
+
+
+inline
+void
+ByteStream::set(Byte* data, uint48_t i)
+{
+	data[0] = i >> 40;
+	data[1] = i >> 32;
+	data[2] = i >> 24;
+	data[3] = i >> 16;
+	data[4] = i >> 8;
+	data[5] = i;
+}
+
+
+inline
+void
+ByteStream::set(Byte* data, uint64_t i)
+{
+	data[0] = i >> 56;
+	data[1] = i >> 48;
+	data[2] = i >> 40;
+	data[3] = i >> 32;
+	data[4] = i >> 24;
+	data[5] = i >> 16;
+	data[6] = i >> 8;
+	data[7] = i;
+}
 
 } // namespace db
 

@@ -73,6 +73,7 @@ public:
 
 	// structors
 	bitfield();
+	explicit bitfield(bool flag);
 	explicit bitfield(value_type n);
 	bitfield(unsigned from, unsigned to);
 

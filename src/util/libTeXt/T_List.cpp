@@ -70,18 +70,18 @@ getList(Environment& env, char const* msg)
 	switch (token->type())
 	{
 		case Token::T_LeftBrace:
-			token.reset(new ListToken(env));
+			token.reset(new ListToken(env)); // MEMORY
 			break;
 
 		case Token::T_List:
 			break;
 
 		case Token::T_Text:
-			token.reset(new ListToken(env, token->name()));
+			token.reset(new ListToken(env, token->name())); // MEMORY
 			break;
 
 		default:
-			token.reset(new ListToken(token));
+			token.reset(new ListToken(token)); // MEMORY
 			break;
 	}
 

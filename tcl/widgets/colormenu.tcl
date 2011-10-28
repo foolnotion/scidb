@@ -342,6 +342,7 @@ proc popup {parent args} {
 
 	Tooltip on $top*
 	wm transient $top [winfo toplevel [winfo parent $top]]
+	catch { wm attributes $top -type popup_menu }
 	util::place $top below $parent
 	wm deiconify $top
 	raise $top

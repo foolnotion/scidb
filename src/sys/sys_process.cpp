@@ -183,7 +183,11 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	if (result == 0)
 		TCL_RAISE("tcl::invoke(\"%s\") failed", pidCmd);
 	if (Tcl_GetLongFromObj(::sys::tcl::interp(), result, &m_pid) != TCL_OK)
-		TCL_RAISE("%s should return long (instead of '%s')", pidCmd, Tcl_GetStringFromObj(result, 0));
+	{
+		TCL_RAISE(	"%s should return long (instead of '%s')",
+						pidCmd,
+						Tcl_GetStringFromObj(result, nullptr));
+	}
 
 #endif
 

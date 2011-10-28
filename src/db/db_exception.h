@@ -33,6 +33,8 @@
 
 #define IO_RAISE(file, error, fmt, args...) \
 	M_THROW(::db::IOException(::db::IOException::file, ::db::IOException::error, fmt, ##args))
+#define IO_RAISE_BT(file, error, backtrace, fmt, args...) \
+	M_THROW(::db::IOException(::db::IOException::file, ::db::IOException::error, backtrace, fmt, ##args))
 
 
 namespace db {
@@ -81,6 +83,10 @@ public:
 	IOException(FileType fileType,
 					ErrorType errorType,
 					char const* fmt, ...) __attribute__((__format__(__printf__, 4, 5)));
+	IOException(FileType fileType,
+					ErrorType errorType,
+					mstl::backtrace const& backtrace,
+					char const* fmt, ...) __attribute__((__format__(__printf__, 5, 6)));
 
 	FileType fileType() const;
 	ErrorType errorType() const;

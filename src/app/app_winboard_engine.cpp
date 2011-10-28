@@ -27,6 +27,8 @@
 #include "app_winboard_engine.h"
 #include "app_exception.h"
 
+#include "db_game.h"
+
 #include "sys_signal.h"
 #include "sys_timer.h"
 
@@ -209,6 +211,13 @@ winboard::Engine::probeResult() const
 
 
 void
+winboard::Engine::sendNumberOfVariations()
+{
+	// nothing to do
+}
+
+
+void
 winboard::Engine::doMove(Move const& move)
 {
 	mstl::string s(m_featureUsermove ? "usermove " : "");
@@ -231,6 +240,13 @@ winboard::Engine::doMove(Move const& move)
 
 
 void
+winboard::Engine::doMove(db::Game const&, db::Move const& lastMove)
+{
+	doMove(lastMove);
+}
+
+
+void
 winboard::Engine::setupBoard(Board const& board)
 {
 	if (m_featureSetboard)
@@ -239,6 +255,9 @@ winboard::Engine::setupBoard(Board const& board)
 		// any specific FEN format for Chess 960.
 		// Thus we will assume that the engine is
 		// understanding X-Fen().
+		// IMPORTANT NOTE:
+		// The "setboard" command might not be appropriate,
+		// because it will clear the hash tables.
 		send("setboard " + board.toFen());
 	}
 	else
@@ -286,20 +305,45 @@ winboard::Engine::reset()
 bool
 winboard::Engine::startAnalysis(Board const& board)
 {
-	stopAnalysis();
-//	checkVariant(board);
-
 	if (!isActive())
 		return false;
 
-	if (board.notDerivableFromChess960())
+	startAnalysis(board, board, History(), true);
+	return true;
+}
+
+
+bool
+winboard::Engine::startAnalysis(db::Game const& game, bool isNew)
+{
+	if (!isActive())
+		return false;
+
+	History moves;
+	game.getHistory(moves);
+
+	startAnalysis(game.startBoard(), game.currentBoard(), moves, isNew);
+	return true;
+}
+
+
+void
+winboard::Engine::startAnalysis(	Board const& startBoard,
+											Board const& currentBoard,
+											History const& moves,
+											bool isNew)
+{
+	stopAnalysis();
+//	checkVariant(startBoard);
+
+	if (startBoard.notDerivableFromChess960())
 	{
 		// what should we do?
 	}
 
-	m_board = board;
-	m_mustUseChess960 = board.notDerivableFromStandardChess();
-	m_mustUseNoCastle = m_mustUseChess960 && board.castlingRights() == castling::NoRights;
+	m_board = currentBoard;
+	m_mustUseChess960 = startBoard.notDerivableFromStandardChess();
+	m_mustUseNoCastle = m_mustUseChess960 && startBoard.castlingRights() == castling::NoRights;
 
 	if (m_mustUseNoCastle)
 	{
@@ -316,20 +360,24 @@ winboard::Engine::startAnalysis(Board const& board)
 		send("variant " + m_variant);
 	}
 
-	if (m_featureSetboard)
+	if (m_featureSigint)
+		::sys::signal::sendInterrupt(pid());
+
+	send("new");
+	send("force");
+
+	if (moves.empty())
 	{
-		setupBoard(board);
+		if (!currentBoard.isStandardPosition())
+			setupBoard(currentBoard);
 	}
 	else
 	{
-		if (m_featureSigint)
-			::sys::signal::sendInterrupt(pid());
+		if (!startBoard.isStandardPosition())
+			setupBoard(startBoard);
 
-		send("new");
-		send("force");
-
-		if (!board.isStandardPosition())
-			setupBoard(board);
+		for (int i = moves.size() - 1; i >= 0; ++i)
+			doMove(moves[i]);
 	}
 
 	send("post");	// turn on thinking output
@@ -340,17 +388,15 @@ winboard::Engine::startAnalysis(Board const& board)
 	}
 	else
 	{
-      send("st 120000");
-      send("sd 50");
-		send("depth 50");	// some engines are expecting "depth" instead of "sd"
-      send("go");
+		send("sd 50");
+		send("depth 50");				// some engines are expecting "depth" instead of "sd"
+		send("level 1 120000 0");	// better than "st 120000"
+		send("go");
 
       // NOTE: GNU Chess 4 might expect "depth\n50" !!
 	}
 
 //	setAnalyzing(true);
-
-	return true;
 }
 
 
@@ -380,22 +426,21 @@ winboard::Engine::protocolStart(bool isProbing)
 
 	if (isProbing)
 	{
-		send("log off");	// turn off crafty logging, to reduce number of junk files
+		send("log off");		// turn off crafty logging, to reduce number of junk files
 		send("ping");
 		send("new");
 		send("sd 1");
-		send("depth 1");	// some engines are expecting "depth" instead of "sd"
-		send("st 1");
+		send("depth 1");		// some engines are expecting "depth" instead of "sd"
+		send("level 1 1 0");	// better than "st 1"
 		send("post");
-		send("go");
+		send("go");				// NOTE: don't send "go" if the user is to move
 		send("?");
 //		send("force");
 //		send("ponder off");
 //		send("hard");
 //		send("easy");
 
-      // NOTE: GNU Chess 4 might expect "depth\n1" !!
-      // NOTE: GNU Chess 4 does not understand "st 1"; it expects "level 1 1" instead
+		// NOTE: GNU Chess 4 might expect "depth\n1" !!
 	}
 	else
 	{
@@ -565,7 +610,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				switch (key[1])
 				{
 					case 'a':
-						if (::strncmp(key, "setboard=", 9) == 0)
+						if (::strncmp(key, "san=", 4) == 0)
 						{
 							m_featureSan = *val == '1';
 							accept = true;
@@ -713,6 +758,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 //	resetInfo();	not neccessary
 	setDepth(depth);
+	// NOTE: most engines do use >= 32767 as mating score
 	setScore(m_dontInvertScore || m_board.whiteToMove() ? score : -score);
 	setTime(m_wholeSeconds ? double(time) : time/100.0);
 	setNodes(nodes);
@@ -912,6 +958,8 @@ winboard::Engine::detectFeatures(char const* identifier)
 
 		send("log off");		// turn off crafty logging, to reduce number of junk files
 		send("noise 1000");	// set a fairly low noise value
+		send("egtb off");		// turn off end game table book
+		send("resign 0");		// turn off alarm
 
 		m_featureSetboard = true;
 		m_featureAnalyze = true;

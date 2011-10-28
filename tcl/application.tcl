@@ -203,12 +203,12 @@ proc open {} {
 
 	set pgn [tk::frame $right.pgn -class Frame -width $Attr(pgn,width)]
 
-if {$::test::useAnalysis} {
+if {[::process::testOption use-analysis]} {
 	set analysis [tk::frame $right.analysis -class Frame -width $Attr(analysis,width)]
 }
 
 	grid $pgn -row 0 -column 0 -sticky nsew
-if {$::test::useAnalysis} {
+if {[::process::testOption use-analysis]} {
 	grid [::ttk::separator $right.sep -orient horizontal] -row 1 -column 0 -sticky ew
 	grid $analysis -row 2 -column 0 -sticky nsew
 }
@@ -241,7 +241,7 @@ if {$::test::useAnalysis} {
 	pgn::build $right.pgn $app.menu.mSettings $Attr(pgn,width) $Attr(pgn,height)
 	tree::build $bottom.tree $app.menu.mSettings $Attr(tree,width) $Attr(tree,height)
 	tree::games::build $bottom.games $app.menu.mSettings $Attr(games,width) $Attr(games,height)
-if {$::test::useAnalysis} {
+if {[::process::testOption use-analysis]} {
 	analysis::build $right.analysis $app.menu.mSettings $Attr(analysis,width) $Attr(analysis,height)
 }
 #[winfo parent $bottom] forget $bottom
@@ -267,6 +267,10 @@ if {$::test::useAnalysis} {
 	}
 
 	::game::recover
+
+	if {[::process::testOption show-board]} {
+		after idle [namespace code [list switchTab board]]
+	}
 }
 
 
@@ -312,10 +316,12 @@ proc shutdown {} {
 
 proc switchTab {which} {
 	switch $which {
-		database	{ set which .application.nb.database }
-		board		{ set which .application.nb.main }
+		database	{ set tab .application.nb.database }
+		board		{ set tab .application.nb.main }
 	}
-	.application.nb select $which
+	.application.nb select $tab
+	update idletasks
+	${which}::setFocus
 }
 
 
