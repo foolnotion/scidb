@@ -95,16 +95,15 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 	char const* s = comment;
 	char const* p = ::strchr(s, '[');
-	char const* q = 0; // shut up the compiler
 
 	while (p)
 	{
 		if (p[1] == '%')
 		{
+			char const* q = 0;
+
 			switch (p[2])
 			{
-				q = 0;
-
 				case 'c':
 					switch (p[3])
 					{
@@ -201,7 +200,9 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 				return false;
 			}
 
-			if (!(q = info.parsePlayersClock(s)))
+			char const* q = info.parsePlayersClock(s);
+
+			if (!q)
 				q = info.parseEvaluation(s);
 
 			if (q == 0 || (delim ? q[0] != delim || q[1] : *q))
