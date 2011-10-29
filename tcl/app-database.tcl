@@ -178,22 +178,13 @@ proc build {tab menu width height} {
 	pack $main -fill both -expand yes
 
 	set switcher [::ttk::frame $main.switcher -borderwidth 1]
-	set database [::tk::multiwindow $main.database -background beige] ;# ivory
-	set contents [::ttk::notebook $database.contents -takefocus 1]
-#	set history  [::tk::frame $database.history -borderwidth 1 -takefocus 1 -background beige]
-#	set blank    [::tk::frame $database.blank  -borderwidth 1 -takefocus 0]
-
-#	bind $history <Configure> [namespace code [list MakePhoto $history.background]]
-
-	$database add $contents
-#	$database paneconfigure $blank -sticky ""
-
+	set contents [::ttk::notebook $tab.contents -takefocus 1]
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
 	BuildSwitcher $switcher
 
 	$main add $switcher
-	$main add $database
+	$main add $contents
 
 	foreach tab {games players events annotators} {
 		::ttk::frame $contents.$tab
@@ -205,9 +196,9 @@ proc build {tab menu width height} {
 	}
 
 	$main paneconfigure $switcher -sticky nsew -stretch middle
-	$main paneconfigure $database -sticky nsew -stretch always
+	$main paneconfigure $contents -sticky nsew -stretch always
 
-	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $database %d]]
+	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $contents %d]]
 
 	bind $main <Double-Button-1>	{ break }
 	bind $main <Double-Button-2>	{ break }
@@ -252,7 +243,6 @@ proc build {tab menu width height} {
 	set Vars(contents) $contents
 #	set Vars(history) $history
 #	set Vars(blank) $blank
-	set Vars(database) $database
 	set Vars(current:tab) games
 	set Vars(selection) 0
 	set Vars(after) {}
@@ -278,8 +268,6 @@ proc build {tab menu width height} {
 
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
 	bind $contents <<LanguageChanged>> +[namespace code LanguageChanged]
-
-	RaisePane
 }
 
 
@@ -469,8 +457,6 @@ proc CloseBase {parent file number} {
 		::scidb::db::close $file
 		::widget::busyCursor off
 	}
-
-	RaisePane
 }
 
 
@@ -827,8 +813,6 @@ proc Switch {filename} {
 
 		$canv itemconfigure content$i -fill $background
 	}
-
-	RaisePane
 }
 
 
@@ -839,27 +823,6 @@ proc Update {path base {view 0} {index -1}} {
 		after cancel $Vars(after)
 		set Vars(after) [after idle [namespace code { RefreshSwitcher }]]
 	}
-}
-
-
-proc RaisePane {} {
-return	;# XXX
-	variable Vars
-	variable RecentFiles
-	variable ::scidb::clipbaseName
-
-	if {[llength $Vars(bases)] > 1 || [::scidb::db::count games $clipbaseName] > 0} {
-		set what contents
-		set Vars(lock:minsize) 0
-	} elseif {[llength [lindex $RecentFiles 0]] == 0} {
-		set what blank
-		set Vars(lock:minsize) 1
-	} else {
-		set what history
-		set Vars(lock:minsize) 1
-	}
-
-	$Vars(database) raise $Vars($what)
 }
 
 
