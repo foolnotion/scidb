@@ -1104,6 +1104,7 @@ deleteWidget(clientData)
         Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
     }
     TkDestroyRegion(pTree->bufferRegion);
+    pTree->bufferRegion = 0;
 #endif
 
     /* Delete the structure itself */

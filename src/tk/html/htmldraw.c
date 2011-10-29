@@ -2529,13 +2529,13 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
 
             if (   x < pTree->bufferRect.x
                 || y < pTree->bufferRect.y
-                || pTree->bufferRect.x + pTree->bufferRect.width  < MIN(screenW, x + w)
-                || pTree->bufferRect.y + pTree->bufferRect.height < MIN(screenH, y + h)) {
+                || pTree->bufferRect.x + pTree->bufferRect.width  < x + w
+                || pTree->bufferRect.y + pTree->bufferRect.height < y + h) {
 
-                rect.x      = Tk_X(win);
-                rect.y      = Tk_Y(win);
-                rect.width  = MIN(screenW, Tk_Width (win) - rect.x);
-                rect.height = MIN(screenH, Tk_Height(win) - rect.y);
+                rect.width  = MIN(screenW, MAX(pTree->bufferRect.width,  w));
+                rect.height = MIN(screenH, MAX(pTree->bufferRect.height, h));
+                rect.x      = MAX(MIN(x, pTree->bufferRect.x), x + rect.width  - screenW);
+                rect.y      = MAX(MIN(y, pTree->bufferRect.y), y + rect.height - screenH);
 
                 Pixmap buffer = Tk_GetPixmap(display,
                                             Tk_WindowId(win),
@@ -2543,6 +2543,8 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
                                             Tk_Depth(win));
 
                 if (buffer) {
+                    TkRegion region = TkCreateRegion();
+
                     int sx = MAX(rect.x - pTree->bufferRect.x, 0);
                     int sy = MAX(rect.y - pTree->bufferRect.y, 0);
                     int dx = MAX(pTree->bufferRect.x - rect.x, 0);
@@ -2559,8 +2561,11 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
                     rect.y += dy;
                     rect.width  = sw;
                     rect.height = sh;
-                    TkIntersectRegion(pTree->bufferRegion, pTree->bufferRegion, pTree->bufferRegion);
-                    TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
+
+                    TkUnionRectWithRegion(&rect, region, region);
+                    TkIntersectRegion(region, pTree->bufferRegion, region);
+                    TkDestroyRegion(pTree->bufferRegion);
+                    pTree->bufferRegion = region;
 
                     if (pTree->buffer)
                         Tk_FreePixmap(display, pTree->buffer);
@@ -2572,9 +2577,9 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
         if (pTree->buffer) {
             rect.x      = MAX(x, pTree->bufferRect.x);
             rect.y      = MAX(y, pTree->bufferRect.y);
-            rect.width  = MIN(w, pTree->bufferRect.x + pTree->bufferRect.width  - x);
-            rect.height = MIN(h, pTree->bufferRect.y + pTree->bufferRect.height - y);
-            rect.width  = MIN(rect.width, pTree->bufferRect.width);
+            rect.width  = MIN(w, MAX(0, pTree->bufferRect.x + pTree->bufferRect.width  - rect.x));
+            rect.height = MIN(h, MAX(0, pTree->bufferRect.y + pTree->bufferRect.height - rect.y));
+            rect.width  = MIN(rect.width,  pTree->bufferRect.width);
             rect.height = MIN(rect.height, pTree->bufferRect.height);
 
             if (rect.width > 0 && rect.height > 0) {
