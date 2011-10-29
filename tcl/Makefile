@@ -32,6 +32,7 @@ SOURCES = \
 	icons.tcl \
 	encoding.tcl \
 	dialogs/fileselectionbox.tcl \
+	dialogs/fileselectionbox.tcl \
 	contrib/tkmenu.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \

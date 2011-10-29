@@ -1546,7 +1546,7 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 						}
 
 						if (i == mw->numSlaves)
-							Tcl_SetResult(interp, "not managed by this window", TCL_STATIC);
+							Tcl_SetResult(interp, const_cast<char*>("not managed by this window"), TCL_STATIC);
 
 						if (resultObj == nullptr)
 							result = TCL_ERROR;

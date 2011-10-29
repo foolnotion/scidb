@@ -26,6 +26,8 @@
 
 namespace db {
 
+inline MoveInfoSet::MoveInfoSet() {}
+
 inline bool MoveInfoSet::isEmpty() const		{ return m_row.empty(); }
 
 inline unsigned MoveInfoSet::count() const	{ return m_row.size(); }

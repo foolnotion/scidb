@@ -43,6 +43,8 @@ class MoveInfoSet
 {
 public:
 
+	MoveInfoSet();
+
 	bool isEmpty() const;
 
 	unsigned count() const;
