@@ -1103,7 +1103,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 		m_progressCount += size;
 		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
-		base.setPrepared(maxFreq, maxUsage);
+		base.setPrepared(maxFreq, size, maxUsage);
 	}
 }
 

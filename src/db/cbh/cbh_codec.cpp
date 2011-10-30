@@ -778,6 +778,8 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 		}
 	}
 
+	siteBase.setNextId(nrecs);
+	eventBase.setNextId(nrecs);
 	strm.close();
 }
 
@@ -858,6 +860,7 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 		}
 	}
 
+	base.setNextId(nrecs);
 	strm.close();
 }
 
@@ -919,6 +922,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 		}
 	}
 
+	base.setNextId(nrecs);
 	strm.close();
 }
 

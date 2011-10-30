@@ -47,6 +47,14 @@ inline void Namebase::setMaxUsage(unsigned usage)	{ m_maxUsage = usage; }
 inline void Namebase::setModified(bool flag)			{ m_isModified = false; }
 
 
+inline
+void
+Namebase::setNextId(unsigned id)
+{
+	m_nextId = id;
+}
+
+
 inline void
 Namebase::setReadonly(bool flag)
 {

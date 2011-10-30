@@ -371,19 +371,16 @@ proc Clear {} {
 proc Revert {dlg} {
 	variable Vars
 
-	set w $Vars(widget:text)
-
-	if {[$w edit modified]} {
-		$w delete 1.0 end
-		foreach entry $Vars(content) {
-			lassign $entry lang comment
-			if {[string length $lang] == 0} { set lang xx }
-			if {$lang eq $Vars(lang)} {
-				SetupComment $lang $comment
-			}
+	foreach entry [::scidb::misc::xmlToList [::scidb::game::query comment $Vars(pos)]] {
+		lassign $entry lang comment
+		if {[string length $lang] == 0} { set lang xx }
+		if {$lang eq $Vars(lang)} {
+			$Vars(widget:text) delete 1.0 end
+			SetupComment $lang $comment
 		}
-		focus $w
 	}
+
+	focus $Vars(widget:text)
 }
 
 
@@ -593,6 +590,8 @@ proc PasteText {w str} {
 		catch { $w delete sel.first sel.last }
 	}
 
+	SetUndoPoint $w
+
 	set n [string length $str]
 	set i 0
 
@@ -629,6 +628,8 @@ proc PasteText {w str} {
 			incr i
 		}
 	}
+
+	SetUndoPoint $w
 }
 
 
@@ -687,6 +688,26 @@ proc ParseSelection {w} {
 	}
 
 	return $content
+}
+
+
+proc SetUndoPoint {w} {
+	# TODO
+}
+
+
+proc EditUndo {w} {
+	# TODO
+}
+
+
+proc EditRedo {w} {
+	# TODO
+}
+
+
+proc ClearUndo {w} {
+	# TODO
 }
 
 
@@ -1197,7 +1218,7 @@ proc PopupMenu {parent} {
 			-compound left \
 			-image $::icon::16x16::undo \
 			-label $::mc::Undo \
-			-command [namespace code Undo] \
+			-command [namespace code EditUndo] \
 			-state $state \
 			;
 		if {$Vars(redo)} { set state normal } else { set state disabled }
@@ -1205,7 +1226,7 @@ proc PopupMenu {parent} {
 			-compound left \
 			-image $::icon::16x16::redo \
 			-label $::mc::Redo \
-			-command [namespace code Redo] \
+			-command [namespace code EditRedo] \
 			-state $state \
 			;
 	}
@@ -1648,7 +1669,7 @@ proc ToggleFormat {format} {
 }
 
 
-proc Undo {} {
+proc EditUndo {} {
 	variable Vars
 
 	catch {
@@ -1658,7 +1679,7 @@ proc Undo {} {
 }
 
 
-proc Redo {} {
+proc EditRedo {} {
 	variable Vars
 
 	catch {
@@ -2015,21 +2036,8 @@ proc tk_textPaste {w} {
 	if {$w ne $Vars(widget:text)} { return [tk_textPaste_comment_ $w] }
 
 	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
-		global tcl_platform
-
-#		set oldSeparator [$w cget -autoseparators]
-#		if {$oldSeparator} {
-#			$w configure -autoseparators 0
-#			$w edit separator
-#		}
-
 		set sel [string map {"\n" "\n\u00b6"} $sel]
 		::comment::PasteText $w $sel
-
-#		if {$oldSeparator} {
-#			$w edit separator
-#			$w configure -autoseparators 1
-#		}
 	}
 }
 
@@ -2085,12 +2093,7 @@ proc TextInsert {w s} {
 
 	if {[llength [set range [$w tag ranges sel]]]} {
 		if {[$w compare [lindex $range 0] <= insert] && [$w compare [lindex $range end] >= insert]} {
-			set oldSeparator [$w cget -autoseparators]
-			if {$oldSeparator} {
-				$w configure -autoseparators 0
-				$w edit separator
-				set compound 1
-			}
+			::comment::SetUndoPoint $w
 			$w delete [lindex $range 0] [lindex $range end]
 		}
 	}
@@ -2112,11 +2115,7 @@ proc TextInsert {w s} {
 	}
 
 	$w see insert
-
-	if {$compound && $oldSeparator} {
-		$w edit separator
-		$w configure -autoseparators 1
-	}
+	::comment::SetUndoPoint $w
 }
 
 
@@ -2136,6 +2135,10 @@ proc TextButton1 {w x y} {
 			}
 		}
 		::comment::UpdateFormatButtons $w
+	}
+
+	if {$w eq $Vars(widget:text)} {
+		::comment::SetUndoPoint $w
 	}
 }
 
@@ -2169,6 +2172,7 @@ proc TextSetCursor {w pos} {
 	TextSetCursor_comment_ $w $pos
 
 	if {$w eq $Vars(widget:text)} {
+		::comment::SetUndoPoint $w
 		::comment::UpdateFormatButtons $w
 	}
 }
@@ -2389,6 +2393,28 @@ bind Text <Control-n>		{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W 1] }
 bind Text <Control-p>		{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W -1] }
 bind Text <Meta-f>			{ tk::TextSetCursorExt %W [tk::TextNextWord %W insert] }
 bind Text <Meta-greater>	{ tk::TextSetCursorExt %W end-1c }
+
+
+bind Text <<Undo>> {
+	variable ::comment::Vars
+
+	if {"%W" eq $Vars(widget:text)} {
+		::comment::EditUndo %W
+	} else {
+		catch { %W edit undo }
+	}
+}
+
+
+bind Text <<Redo>> {
+	variable ::comment::Vars
+
+	if {"%W" eq $Vars(widget:text)} {
+		::comment::EditRedo %W
+	} else {
+		catch { %W edit redo }
+	}
+}
 
 
 bind Text <Meta-b> {

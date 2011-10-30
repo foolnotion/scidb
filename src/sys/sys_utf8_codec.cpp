@@ -1807,6 +1807,14 @@ static enum State const State_Transition_Tbl[12][8] =
 };
 #undef _
 
+
+inline
+static State
+nextState(State current, unsigned char c)
+{
+	return State_Transition_Tbl[Byte_Class_Lookup_Tbl[c]][current];
+}
+
 } // namespace validate
 
 
@@ -2471,8 +2479,7 @@ Codec::validateUtf8(char const* utf8, unsigned nbytes)
 
 	for (char const* e = utf8 + nbytes; utf8 < e; ++utf8)
 	{
-		state = validate::State_Transition_Tbl[
-					validate::Byte_Class_Lookup_Tbl[static_cast<unsigned char>(*utf8)]][state];
+		state = validate::nextState(state, *utf8);
 
 		if (state == validate::Error)
 			return false;
@@ -2495,8 +2502,7 @@ Codec::forceValidUtf8(mstl::string& str)
 
 	for ( ; s < e; ++s)
 	{
-		state = validate::State_Transition_Tbl[
-					validate::Byte_Class_Lookup_Tbl[static_cast<unsigned char>(*s)]][state];
+		state = validate::nextState(state, *s);
 
 		switch (int(state))
 		{
@@ -2504,7 +2510,11 @@ Codec::forceValidUtf8(mstl::string& str)
 				result += '?';
 				m_failed = true;
 				state = validate::Start;
-				p = s = p + 1;
+				while (*s && ((*s & 0xc0) == 0x80 || validate::nextState(state, *s) == validate::Error))
+					++s;
+				p = s;
+				if (*s)
+					--s;
 				break;
 
 			case validate::Start:

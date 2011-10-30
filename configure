@@ -37,19 +37,28 @@ proc findBestTclVersion {} {
     set versions {8.5 8.6}
 
     foreach version $versions {
-        lappend paths                                \
-            /usr/local/include/tk$version            \
-            /usr/local/include/tk[stripDot $version] \
+        lappend paths                                 \
+            /usr/local/include/tk$version             \
+            /usr/local/include/tcl$version            \
+            /usr/local/include/tk[stripDot $version]  \
+            /usr/local/include/tcl[stripDot $version] \
             ;
     }
-    lappend paths             \
-        /usr/local/tk/include \
+    lappend paths              \
+        /usr/local/tk/include  \
+        /usr/local/tcl/include \
         /usr/local/include     \
         ;
     foreach version $versions {
-        lappend paths                          \
-            /usr/include/tk$version            \
-            /usr/include/tk[stripDot $version] \
+        lappend paths                                 \
+            /usr/local/tk$version/generic             \
+            /usr/local/tcl$version/generic            \
+            /usr/local/tk[stripDot $version]/generic  \
+            /usr/local/tcl[stripDot $version]/generic \
+            /usr/include/tk$version                   \
+            /usr/include/tcl$version                  \
+            /usr/include/tk[stripDot $version]        \
+            /usr/include/tcl[stripDot $version]       \
             ;
     }
     lappend paths                \
@@ -68,7 +77,7 @@ proc findBestTclVersion {} {
             if {[file exists $dir/tk.h]} {
                 set f [open $dir/tk.h r]
                 while {[gets $f line] >= 0} {
-                    if {[string match {\#define*TK_VERSION*} $line]} {
+                    if {[string match {\#*define *TK_VERSION*} $line]} {
                         set ver [lindex [split $line \"] 1]
                         if {$ver in $versions} {
                             close $f
@@ -88,7 +97,7 @@ proc findBestTclVersion {} {
         }
     }
 
-    return [lindex $versions end]
+    return [lindex $versions 0]
 }
 
 
@@ -347,6 +356,7 @@ proc findTclTkPaths {} {
         /usr/X11R6/include                                    \
         /usr/local/X11/include                                \
         /opt/tcltk/include                                    \
+        /opt/include                                          \
         /usr/X11R/include                                     \
         /usr/$configure(exec-prefix)/tcl${tclv}/generic       \
         /usr/$configure(exec-prefix)/tcl${tclv_nodot}/generic \
@@ -388,6 +398,7 @@ proc findTclTkPaths {} {
         /usr/lib64                                         \
         /usr/X11R6/lib                                     \
         /opt/tcltk/lib                                     \
+        /opt/lib                                           \
     ]
 
     # Try to add tcl_library and auto_path values to path(tcl,libraries),

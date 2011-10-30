@@ -1,6 +1,18 @@
 [September/Oktober 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #101)
+------------------------------------------------------------------------------
+* Bug with re-opening the file selection box fixed.
+
+* Bug in namebase fixed (error case: encoding of .si4 namebase fails, which
+may result in id's higher than the number of entries).
+
+* Function forceValidUtf8() fixed.
+
+* Problem in configure script fixed.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #96)
 ------------------------------------------------------------------------------
 * Severe bug in block file buffer fixed. This means that storing of games in

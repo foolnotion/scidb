@@ -71,8 +71,8 @@ set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denie
 set DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
 set ReallyMove(file)				"Really move file '%s' to trash?"
 set ReallyMove(folder)			"Really move folder '%s' to trash?"
-set ReallyDelete(file)			"Really delete file '%s' to trash?"
-set ReallyDelete(folder)		"Really delete folder '%s' to trash?"
+set ReallyDelete(file)			"Really delete file '%s'?"
+set ReallyDelete(folder)		"Really delete folder '%s'?"
 set DeleteFailed					"Deletion of '%s' failed."
 set CommandFailed					"Command '%s' failed."
 set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
@@ -103,6 +103,7 @@ array set Options {
 	show:layout	details
 	show:filetypeicons 1
 	pane:favorites 120
+	encoding:foreground #808080
 }
 
 
@@ -217,7 +218,7 @@ proc fsbox {w type args} {
 			-state readonly \
 			-textvar [namespace current]::${w}::Vars(encodingVar) \
 			-width 14 \
-			-foreground #808080 \
+			-foreground $Options(encoding:foreground) \
 		]
 		bind $top.ent_encoding <ButtonPress-1> [namespace code [list SelectEncoding $w]]
 		tooltip $top.ent_encoding [Tr SelectEncoding]
@@ -359,6 +360,7 @@ proc fsbox {w type args} {
 
 proc reset {w type args} {
 	variable ${w}::Vars
+	variable Options
 
 	array set opts { -multiple 0 }
 	array set opts $args
@@ -394,7 +396,14 @@ proc reset {w type args} {
 	$Vars(widget:list:bookmark) selection clear
 	$Vars(widget:list:file) selection clear
 	$Vars(widget:filename) delete 0 end
+	$Vars(widget:encoding) configure -foreground $Options(encoding:foreground)
+
 	set Vars(encodingVar) ""
+	set Vars(encoding) ""
+	set Vars(undo:history) {}
+	set Vars(undo:current) -1
+	set Vars(tip:forward) ""
+	set Vars(tip:backward) ""
 
 	changeFileDialogType $w $type
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
@@ -592,14 +601,17 @@ proc ValidateFile {file {size {}}} {
 proc CheckEncoding {w file} {
 	variable ${w}::Vars
 
-	set Vars(encodingVar) ""
 	set Vars(encodingDefault) ""
 
-	if {[llength $Vars(selectencodingcommand)] && [string length $Vars(encoding)] == 0} {
-		foreach {ext encoding} $Vars(fileencodings) {
-			if {[string match *$ext $file]} {
-				set Vars(encodingVar) $encoding
-				set Vars(encodingDefault) $encoding
+	if {[string length $Vars(encoding)] == 0} {
+		set Vars(encodingVar) ""
+
+		if {[llength $Vars(selectencodingcommand)]} {
+			foreach {ext encoding} $Vars(fileencodings) {
+				if {[string match *$ext $file]} {
+					set Vars(encodingVar) $encoding
+					set Vars(encodingDefault) $encoding
+				}
 			}
 		}
 	}

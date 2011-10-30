@@ -1724,6 +1724,8 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		shadowBase.back()->entry->m_orig_freq = freq;
 #endif
 	}
+
+	base.setNextId(count);
 }
 
 
@@ -1926,7 +1928,7 @@ Codec::getNumberOfGames(mstl::string const& filename)
 
 	ByteStream bstrm(header + 14, sizeof(header) - 14);
 	return bstrm.uint24();
-} 
+}
 
 
 void

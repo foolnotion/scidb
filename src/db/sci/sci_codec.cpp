@@ -1409,7 +1409,9 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		unsigned size = bstrm.uint24();
 		unsigned maxFreq = bstrm.uint24();
 		unsigned maxUsage = bstrm.uint24();
-		unsigned maxId = mstl::max(bstrm.uint24(), size);	// catch integer overflow
+		unsigned maxId = bstrm.uint24();
+
+		M_ASSERT(maxId >= size);
 
 		m_lookup[i].resize(maxId);
 
@@ -1423,7 +1425,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 		m_progressCount += size;
 		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
-		base.setPrepared(maxFreq, maxUsage);
+		base.setPrepared(maxFreq, maxId, maxUsage);
 	}
 }
 

@@ -831,6 +831,8 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scid3:
 		case format::Scid4:
 		case format::ChessBase:
+			if (cursor.isReferenceBase())
+				Application::stopUpdateTree();
 			if (base.namebases().isOriginal())
 				base.recode(encoding, progress);
 			else

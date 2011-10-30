@@ -101,6 +101,7 @@ public:
 
 	void setMaxFrequency(unsigned frequency);
 	void setMaxUsage(unsigned usage);
+	void setNextId(unsigned id);
 
 	Entry* insert();
 	Entry* insert(mstl::string const& name);
@@ -188,7 +189,7 @@ public:
 	void rename(NamebaseEntry* entry, mstl::string const& name);
 
 	void update();
-	void setPrepared(unsigned maxFrequency, unsigned maxUsage);
+	void setPrepared(unsigned maxFrequency, unsigned maxId, unsigned maxUsage);
 	void reserve(unsigned size, unsigned limit);
 	void clear();
 	void setModified(bool flag);

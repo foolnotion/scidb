@@ -290,6 +290,7 @@ Namebase::insertSite(mstl::string const& name,
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Site);
+	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -352,6 +353,7 @@ Namebase::insertEvent(	mstl::string const& name,
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Event);
 	M_REQUIRE(site);
+	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -413,6 +415,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Player);
+	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -563,6 +566,7 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 	M_REQUIRE(this->type() != Site);
 	M_REQUIRE(this->type() != Event);
 	M_REQUIRE(this->type() != Player);
+	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
 
@@ -616,6 +620,7 @@ Namebase::append(mstl::string const& name, unsigned id)
 	M_REQUIRE(this->type() != Site);
 	M_REQUIRE(this->type() != Event);
 	M_REQUIRE(this->type() != Player);
+	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(isEmpty() || *entryAt(size() - 1) < name);
 	M_ASSERT(id != InvalidId);
@@ -722,8 +727,8 @@ Namebase::update()
 
 	unsigned index = 0;
 
-	IdSet usedSet(m_list.size());
-	List prepareSet;
+	IdSet	usedSet(mstl::max(m_nextId, m_list.size()));
+	List	prepareSet;
 
 	if (m_isModified)
 		m_isOriginal = false;
@@ -826,7 +831,7 @@ Namebase::update()
 
 
 void
-Namebase::setPrepared(unsigned maxFrequency, unsigned maxUsage)
+Namebase::setPrepared(unsigned maxFrequency, unsigned maxId, unsigned maxUsage)
 {
 	m_used = m_list.size();
 	m_isConsistent = true;
@@ -839,7 +844,7 @@ Namebase::setPrepared(unsigned maxFrequency, unsigned maxUsage)
 	m_reuseSet.resize(m_used);
 	m_freeSetIsEmpty = true;
 	m_map.resize(m_used);
-	m_nextId = m_used;
+	m_nextId = maxId + 1;
 
 	for (unsigned i = 0; i < m_used; ++i)
 		m_map[i] = i;
@@ -852,14 +857,18 @@ Namebase::nextFreeId()
 	M_ASSERT(!m_list.empty());
 
 	if (m_freeSetIsEmpty)
-		return m_list.size() - 1;
+	{
+		M_ASSERT(m_nextId + 1 == m_list.size());
+		return m_nextId++;
+	}
 
 	unsigned id = m_freeSet.find_first();
 
 	if (id == IdSet::npos)
 	{
 		m_freeSetIsEmpty = true;
-		id = m_list.size() - 1;
+		M_ASSERT(m_nextId + 1 == m_list.size());
+		return m_nextId++;
 	}
 	else
 	{
