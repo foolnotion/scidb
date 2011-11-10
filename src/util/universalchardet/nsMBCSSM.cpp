@@ -263,7 +263,7 @@ const SMModel EUCTWSMModel = {
    7,
   {eIdxSft4bits, eSftMsk4bits, eBitSft4bits, eUnitMsk4bits, EUCTW_st },
   EUCTWCharLenTable,
-  CS_X_EUC_TW",
+  CS_X_EUC_TW,
 };
 
 #endif /* CS_X_EUC_TW*/
