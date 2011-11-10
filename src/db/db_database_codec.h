@@ -231,6 +231,7 @@ protected:
 	void setType(DatabaseContent::Type type);
 	void setCreated(uint32_t time);
 	void setDescription(char const* description);
+	void useEncoding(mstl::string const& encoding);
 
 	void checkPermissions(mstl::string const& filename);
 

@@ -155,7 +155,9 @@ BlockFile::computeBlockCount()
 
 	if (size)
 	{
-		m_sizeInfo.insert(m_sizeInfo.end(), (size + m_blockSize - 1)/m_blockSize, m_blockSize);
+		m_sizeInfo.insert(m_sizeInfo.end(),
+								SizeInfo::size_type((size + m_blockSize - 1)/m_blockSize),
+								m_blockSize);
 		m_sizeInfo.back() = ::modulo(size, m_mask);
 	}
 }
@@ -665,7 +667,7 @@ BlockFile::put(ByteStream const& buf)
 		if (span >= 2)
 		{
 			m_sizeInfo.push_back(fileOffset(span));
-			m_sizeInfo.insert(m_sizeInfo.end(), span - 2, m_blockSize);
+			m_sizeInfo.insert(m_sizeInfo.end(), SizeInfo::size_type(span - 2), m_blockSize);
 		}
 
 		m_sizeInfo.push_back(0);

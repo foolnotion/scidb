@@ -1392,14 +1392,14 @@ proc UpdateLine {gamebar id} {
 }
 
 
-proc MakeData {gamebar id tags} {
+proc MakeData {gamebar id tags {update no}} {
 	variable ::scidb::scratchbaseName
 	variable Specs
 
 	lassign {"N.N." "N.N." "?" "?" "" "" ""} white black event site date whiteCountry blackCountry
 	lassign [::scidb::game::link? $id] base
 
-	if {$base eq $scratchbaseName} {
+	if {$base eq $scratchbaseName && !$update} {
 		if {![info exists Specs(count:$id:$gamebar)]} {
 			set Specs(count:$id:$gamebar) [incr Specs(counter:game)]
 		}
@@ -1441,9 +1441,11 @@ proc Update {gamebar id} {
 	variable Specs
 	variable Options
 
-	set data [MakeData $gamebar $id [::scidb::game::tags $id]]
+	set tags [::scidb::game::tags $id]
+	set data [MakeData $gamebar $id $tags yes]
+
 	set Specs(data:$id:$gamebar) $data
-	set Specs(tags:$id:$gamebar) [::scidb::game::tags $id]
+	set Specs(tags:$id:$gamebar) $tags
 
 	$gamebar itemconfigure line1$id -text [lindex $data 2]
 	$gamebar itemconfigure line2$id -text [lindex $data 3]

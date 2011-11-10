@@ -35,7 +35,7 @@ public:
 	typedef pointer				iterator;
 	typedef const_pointer		const_iterator;
 	typedef value_type			const_reference;
-	typedef size_t					size_type;
+	typedef bits::size_t			size_type;
 
 	class reference
 	{

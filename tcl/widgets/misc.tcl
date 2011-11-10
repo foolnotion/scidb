@@ -165,7 +165,7 @@ proc dialogButtonAdd {dlg type labelvar {icon {}}} {
 	if {[llength $icon]} {
 		$w configure -compound left -image $icon
 	}
-	dialogButtonsSetup $dlg $type $var
+	dialogButtonsSetup $dlg $type $labelvar
 	bind $w <Return> "event generate $w <Key-space>; break"
 	pack $w -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
 }

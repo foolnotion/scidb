@@ -774,9 +774,12 @@
 ::overview::mc::AcceleratorRotate	"R"
 
 ### encoding ###########################################################
+::encoding::mc::AutoDetect				"auto-detection" ;# NEW
+
 ::encoding::mc::Encoding				"Codifica"
 ::encoding::mc::Description			"Descrizione"
 ::encoding::mc::Languages				"Lingue (Fonts)"
+::encoding::mc::UseAutoDetection		"Use Auto-Detection" ;# NEW
 
 ::encoding::mc::ChooseEncodingTitle	"Scegli codifica"
 
@@ -846,10 +849,12 @@
 ::import::mc::ImportAborted						"Importazione interrotta."
 ::import::mc::TextIsEmpty							"Testo PGN vuoto."
 ::import::mc::AbortImport							"Annulla importazione PGN?"
-::import::mc::SelectEncoding						"Seleziona codifica"
 
 ::import::mc::DifferentEncoding					"La codifica selezionata %src non corrisponde alla codifica del file %dst."
 ::import::mc::DifferentEncodingDetails			"La ricodifica del database non avrà più successo dopo questa azione."
+::import::mc::CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set." ;# NEW
+::import::mc::CheckImportResult					"Please check whether the right figurine set is detected." ;# NEW
+::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities." ;# NEW
 
 ::import::mc::EnterOrPaste							"Inserisci o incolla un PGN %s nel campo in alto.\nErrori legati all'importazione di %s saranno mostrati qui."
 ::import::mc::EnterOrPaste-Game					"partita"
@@ -1478,6 +1483,7 @@
 ::fsbox::mc::RemoveBookmark				"Rimuovi il segnalibro '%s'"
 
 ::fsbox::mc::Filename						"Nom&e file:"
+::fsbox::mc::Filenames						"Nom&e file:" ;# NEW english "File names"
 ::fsbox::mc::FilesType						"File del &tipo:"
 ::fsbox::mc::FileEncoding					"&Codifica File:"
 
@@ -1488,7 +1494,6 @@
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectWhichType				"Selezione che tipo di file visualizzare"
-::fsbox::mc::SelectEncoding				"Seleziona codifica"
 ::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
 
 ::fsbox::mc::CannotChangeDir				"Non posso cambiare la cartella a '%s'.\nPermesso negato."

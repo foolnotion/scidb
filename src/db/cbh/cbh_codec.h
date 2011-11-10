@@ -30,6 +30,8 @@
 #include "db_database_codec.h"
 #include "db_date.h"
 
+#include "nsUniversalDetector.h"
+
 #include "m_fstream.h"
 #include "m_map.h"
 #include "m_vector.h"
@@ -51,7 +53,7 @@ class Date;
 
 namespace cbh {
 
-class Codec : public DatabaseCodec
+class Codec : public DatabaseCodec, public nsUniversalDetector
 {
 public:
 
@@ -150,6 +152,9 @@ private:
 	void reloadSourceData(mstl::string const& rootname, util::Progress& progress);
 	void reloadTeamData(mstl::string const& rootname, util::Progress& progress);
 	void reloadIndexData(mstl::string const& rootname, util::Progress& progress);
+	void preloadPlayerData(mstl::string const& rootname, util::Progress& progress);
+	void preloadTournamentData(mstl::string const& rootname, util::Progress& progress);
+	void preloadAnnotatorData(mstl::string const& rootname, util::Progress& progress);
 
 	void addSourceTags(TagSet& tags, GameInfo const& info);
 	void addEventTags(TagSet& tags, GameInfo const& info);
@@ -162,6 +167,8 @@ private:
 	void addTeamTags(TagSet& tags, GameInfo const& info);
 	void mapPlayerName(mstl::string& str);
 	void toUtf8(mstl::string& str);
+
+	void Report(char const* charset);
 
 	sys::utf8::Codec*	m_codec;
 	mstl::fstream		m_gameStream;
@@ -176,6 +183,7 @@ private:
 	TournamentMap		m_tournamentMap;
 	TeamBase				m_teamBase;
 	GameIndexLookup	m_gameIndexLookup;
+	mstl::string		m_encoding;
 	Allocator			m_allocator;
 	Namebase				m_sourceBase;
 	NamebaseEvent*		m_illegalEvent;

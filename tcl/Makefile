@@ -55,6 +55,7 @@ SOURCES = \
 	widgets/calendar.tcl \
 	widgets/datebox.tcl \
 	widgets/entrybox.tcl \
+	widgets/entrybuttonbox.tcl \
 	widgets/roundbox.tcl \
 	widgets/countrybox.tcl \
 	widgets/eventmodebox.tcl \

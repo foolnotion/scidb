@@ -6,6 +6,7 @@
 *.cpp = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
 *.css = svn:eol-style=native; svn:mime-type=text/css
 *.c   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-csrc
+*.tab = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-c++src
 *.dat = svn:eol-style=native; svn:mime-type=text/plain
 *.eXt = svn:eol-style=native; svn:mime-type=text/x-tex
 *.h   = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-chdr

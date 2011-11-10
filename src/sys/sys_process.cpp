@@ -186,7 +186,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	{
 		TCL_RAISE(	"%s should return long (instead of '%s')",
 						pidCmd,
-						Tcl_GetStringFromObj(result, nullptr));
+						Tcl_GetString(result));
 	}
 
 #endif

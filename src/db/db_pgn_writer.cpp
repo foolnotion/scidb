@@ -461,7 +461,7 @@ PgnWriter::putComment(Comment const& comment)
 				}
 				while (n != mstl::string::npos);
 
-				text.insert(size_t(0), "<html>", 6);
+				text.insert(mstl::string::size_type(0), "<html>", 6);
 				text.append("</html>", 7);
 			}
 		}

@@ -41,10 +41,12 @@ set ImportOK								"PGN text imported with no errors or warnings."
 set ImportAborted							"Import aborted."
 set TextIsEmpty							"PGN text is empty."
 set AbortImport							"Abort PGN import?"
-set SelectEncoding						"Select encoding"
 
 set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
+set CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set."
+set CheckImportResult					"Please check whether the right figurine set is detected."
+set CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
 set EnterOrPaste							"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
 set EnterOrPaste-Game					"game"
@@ -127,7 +129,8 @@ proc openEdit {parent position {mode {}}} {
 	variable HiliteBackground
 	variable ::log::colors
 
-	set Priv($position:encoding) iso8859-1
+	set Priv($position:encoding) $::encoding::autoEncoding
+	set Priv($position:encodingVar) $::encoding::mc::AutoDetect
 	if {[string length $mode]} {
 		set used 1
 	} else {
@@ -137,20 +140,18 @@ proc openEdit {parent position {mode {}}} {
 
 	set dlg [toplevel ${parent}.importOnePgnGame${position} -class Scidb]
 	set top [ttk::frame $dlg.top]
-	set lbl [ttk::label $top.figurinesText -textvar ::export::mc::Figurines]
+	set lbl [ttk::label $top.figurinesText -textvariable ::export::mc::Figurines]
 	set fig [ttk::tcombobox $top.figurines \
 					-state readonly \
 					-showcolumns {lang fig} \
 					-format "%1 (%2)" \
 					-width 26 \
 				]
-	set lab [ttk::label $top.encodingText -textvar ::encoding::mc::Encoding]
-	set enc [ttk::entry $top.encoding \
-		-state readonly \
-		-textvar [namespace current]::Priv($position:encoding) \
+	set lab [ttk::label $top.encodingText -textvariable ::encoding::mc::Encoding]
+	set enc [ttk::entrybuttonbox $top.encoding \
+		-textvariable [namespace current]::Priv($position:encodingVar) \
+		-command [namespace code [list ChooseEncoding $top.encoding $position]] \
 	]
-	bind $top.encoding <ButtonPress-1> [namespace code [list ChooseEncoding $top.encoding $position]]
-	::tooltip::tooltip $top.encoding [namespace current]::mc::SelectEncoding
 	set main [tk::panedwindow $top.main -orient vertical -opaqueresize true]
 
 	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine
@@ -204,7 +205,7 @@ proc openEdit {parent position {mode {}}} {
 	set Priv($position:log) $log.text
 	set Priv($position:txt) $edit.text
 	set Priv($position:used) $used
-	set Priv($position:values) {}
+	set Priv($position:sets) {}
 	set Priv($position:mode) $mode
 	set Priv($position:varno) -1
 	set Priv($position:figurines) $fig
@@ -230,9 +231,12 @@ proc openEdit {parent position {mode {}}} {
 	bind $dlg <Escape> [namespace code [list AskAbort $position $dlg.close]]
 
 	# editor bindings
+	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y]]
 	bind $edit.text <ButtonPress-3> [namespace code [list PopupMenu $edit $position %X %Y]]
-	bind $edit.text <<PasteSelection>> [namespace code [list TextPasteSelection $position %W %x %y]]
+	bind $edit.text <<PasteSelection>> $pastecmd
 	bind $edit.text <<PasteSelection>> {+ break }
+	bind $edit.text <<Paste>> $pastecmd
+	bind $edit.text <<Paste>> {+ break }
 	bind $edit.text <Key-Tab> {after idle { focus [::tk_focusNext %W] } }
 	bind $edit.text <Key-Tab> {+ break }
 	bind $edit.text <Shift-Tab> {after idle { focus [::tk_focusPrev %W] } }
@@ -307,8 +311,13 @@ proc Open {parent base files msg encoding type useLog} {
 
 	set Priv(ok) 1
 	set Priv(gameNo) 1
+	set codec [::scidb::db::get codec $base]
+
 	if {[llength $encoding] == 0} {
-		set encoding $::encoding::defaultEncoding
+		switch $codec {
+			sci - si3 - si4	{ set encoding utf-8 }
+			default				{ set encoding $::encoding::defaultEncoding }
+		}
 	}
 
 	if {[llength $type]} {
@@ -318,7 +327,7 @@ proc Open {parent base files msg encoding type useLog} {
 
 	set ngames [::scidb::db::count games $base]
 
-	switch [::scidb::db::get codec $base] {
+	switch $codec {
 		si3 - si4 {
 			set fileEncoding [::scidb::db::get encoding]
 			if {$encoding ne $fileEncoding} {
@@ -403,22 +412,45 @@ proc AskAbort {position closeButton} {
 }
 
 
-proc ConvertPastedText {position str} {
+proc ConvertPieces {position str} {
 	variable Priv
 
 	set figurine [$Priv($position:figurines) get fig]
-	set unicodeMap [list \
-		"\u2654" [string index $figurine 0] \
-		"\u2655" [string index $figurine 1] \
-		"\u2656" [string index $figurine 2] \
-		"\u2657" [string index $figurine 3] \
-		"\u2658" [string index $figurine 4] \
-		"\u2659" [string index $figurine 5] \
-	]
 
-	set str [string map $unicodeMap $str]
-	set str [string trimleft $str]
-	return [encoding convertfrom $Priv($position:encoding) $str]
+	if {$figurine ne $::encoding::mc::AutoDetect} {
+		set unicodeMap [list \
+			"\u2654" [string index $figurine 0] \
+			"\u2655" [string index $figurine 1] \
+			"\u2656" [string index $figurine 2] \
+			"\u2657" [string index $figurine 3] \
+			"\u2658" [string index $figurine 4] \
+			"\u2659" [string index $figurine 5] \
+		]
+		set str [string map $unicodeMap $str]
+	}
+
+	return [string trimleft $str]
+}
+
+
+proc ConvertPastedText {position w str} {
+	variable Priv
+
+	set str [ConvertPieces $position $str]
+	if {[string length $str] == 0} { return $str }
+	set encoding $Priv($position:encoding)
+
+	if {$encoding eq $::encoding::autoEncoding} {
+		set encoding [::scidb::misc::encoding $str]
+		if {[string length $encoding] == 0} {
+			set encoding iso8859-1
+		} else {
+			set Priv($position:encoding) $encoding
+			set Priv($position:encodingVar) $encoding
+		}
+	}
+
+	return [encoding convertfrom $encoding $str]
 }
 
 
@@ -429,21 +461,21 @@ proc TextPaste {position w} {
 		if {[tk windowingsystem] ne "x11"} {
 			catch { $w delete sel.first sel.last }
 		}
-		$w insert insert [ConvertPastedText $position $sel]
+		$w insert insert [ConvertPastedText $position $w $sel]
 		$w edit reset
 	}
 }
 
 
 proc TextPasteSelection {position w x y} {
-	if {![::info exists ::tk::Priv(mouseMoved)] || !$::tk::Priv(mouseMoved)} {
+#	if {![::info exists ::tk::Priv(mouseMoved)] || !$::tk::Priv(mouseMoved)} {
 		$w mark set insert [::tk::TextClosestGap $w $x $y]
 		if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
-			$w insert insert [ConvertPastedText $position $sel]
+			$w insert insert [ConvertPastedText $position $w $sel]
 			$w edit reset
 			if {[$w cget -state] eq "normal"} { focus $w }
 		}
-	}
+#	}
 }
 
 
@@ -476,33 +508,35 @@ proc SetFigurines {dlg position} {
 	variable Priv
 
 	set w $Priv($position:figurines)
-	set index [lsearch -exact -index 1 $Priv($position:values) [lindex [$w get] 0]]
-	set current [lindex $Priv($position:values) $index 0]
-	set Priv($position:values) {}
+	set index [lsearch -exact -index 1 $Priv($position:sets) [lindex [$w get] 0]]
+	set current [lindex $Priv($position:sets) $index 0]
+	set Priv($position:sets) {}
 	foreach {lang figurine} [array get ::font::figurines] {
 		switch $lang {
 			en - graphic {}
 
 			default {
 				if {[string bytelength $figurine] == 6} {
-					lappend Priv($position:values) [list $lang [::encoding::languageName $lang] $figurine]
+					lappend Priv($position:sets) [list $lang [::encoding::languageName $lang] $figurine]
 				}
 			}
 		}
 	}
-	set Priv($position:values) [lsort -index 1 -dictionary $Priv($position:values)]
+	set font [$w cget -font]
+	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
+	set Priv($position:sets) [lsort -index 1 -dictionary $Priv($position:sets)]
 	set value [list en [::encoding::languageName en] $::font::figurines(en)]
-	set Priv($position:values) [linsert $Priv($position:values) 0 $value]
-	set index [lsearch -index 0 -exact $Priv($position:values) $current]
+	set Priv($position:sets) [linsert $Priv($position:sets) 0 $value]
+	set index [lsearch -index 0 -exact $Priv($position:sets) $current]
 	if {$index == -1} { set index 0 }
 	set Figurines {}
-	set item 0
-	foreach entry $Priv($position:values) {
+	$w clear
+	$w listinsert [list $::encoding::mc::AutoDetect {} {}] -types {text} -span {fig 3} -font $bold
+	foreach entry $Priv($position:sets) {
 		lappend Figurines [lindex $entry 1]
 		lassign $entry id lang fig
 		set flag $::country::icon::flag($::mc::langToCountry($id))
-		$w listinsert [list $fig $flag $lang] -index $item
-		incr item
+		$w listinsert [list $fig $flag $lang]
 	}
 	$w resize
 	$w current $index
@@ -512,8 +546,16 @@ proc SetFigurines {dlg position} {
 proc ChooseEncoding {btn position} {
 	variable Priv
 
-	set encoding [::encoding::choose [winfo toplevel $btn] $Priv($position:encoding) iso8859-1]
-	if {[llength $encoding]} { set Priv($position:encoding) $encoding }
+	set encoding [::encoding::choose [winfo toplevel $btn] $Priv($position:encoding) iso8859-1 yes]
+
+	if {[llength $encoding]} {
+		set Priv($position:encoding) $encoding
+		if {$encoding eq $::encoding::autoEncoding} {
+			set Priv($position:encodingVar) $::encoding::mc::AutoDetect
+		} elseif {[llength $encoding]} {
+			set Priv($position:encodingVar) $encoding
+		}
+	}
 }
 
 
@@ -521,9 +563,12 @@ proc LanguageChanged {dlg w position} {
 	variable Priv
 
 	if {$dlg eq $w} {
-		GamebarChanged $dlg $position {}
 		SetFigurines $dlg $position
 		SetTitle $dlg $position
+
+		if {$Priv($position:encoding) eq $::encoding::autoEncoding} {
+			set Priv($position:encodingVar) $::encoding::mc::AutoDetect
+		}
 
 		set txt $Priv($position:txt)
 		set content [string trim [$txt get 1.0 end]]
@@ -571,8 +616,12 @@ proc Clear {position} {
 proc ShowCountry {w position} {
 	variable Priv
 
-	set i [lsearch -exact -index 1 $Priv($position:values) [$w get lang]]
-	$w placeicon $::country::icon::flag($::mc::langToCountry([lindex $Priv($position:values) $i 0]))
+	set i [lsearch -exact -index 1 $Priv($position:sets) [$w get lang]]
+	if {$i == -1} {
+		$w forgeticon
+	} else {
+		$w placeicon $::country::icon::flag($::mc::langToCountry([lindex $Priv($position:sets) $i 0]))
+	}
 }
 
 
@@ -595,15 +644,58 @@ proc Import {position dlg} {
 	set figurine [$Priv($position:figurines) get fig]
 	if {$Priv($position:mode) eq "game"} { set isVar 0 } else { set isVar 1 }
 
-	set n [::scidb::game::import \
+	if {$figurine eq $::encoding::mc::AutoDetect} {
+		set content [ConvertPieces $position $content]
+		set found {}
+		set successfull 0
+
+		foreach entry $Priv($position:sets) {
+			lassign $entry code _
+			set figurine $::font::figurines($code)
+
+			set ok [::scidb::game::import \
 				$position \
 				$content \
-				[namespace current]::Log import \
 				-encoding utf-8 \
 				-figurine $figurine \
 				-variation $isVar \
 				-varno $Priv($position:varno) \
+				-trial 1 \
 			]
+			if {$ok} { set successfull 1 }
+			if {$ok && $code eq "en"} { break }
+			lappend found $code
+		}
+
+		if {!$successfull} {
+			return [::dialog::error -parent $dlg -message $mc::CannotDetectFigurineSet]
+		}
+
+		if {[llength $found] >= 1} {
+			::dialog::warning \
+				-parent $dlg \
+				-message $mc::CheckImportResult \
+				-detail $mc::CheckImportResultDetail \
+				;
+			set code [lindex $found 0]
+		} else {
+			set code en
+		}
+
+		set index [lsearch -index 0 $Priv($position:sets) $code]
+		$Priv($position:figurines) current [incr index]
+	}
+
+	set n [::scidb::game::import \
+		$position \
+		$content \
+		[namespace current]::Log import \
+		-encoding utf-8 \
+		-figurine $figurine \
+		-variation $isVar \
+		-varno $Priv($position:varno) \
+		-trial 0 \
+	]
 	
 	if {$isVar && $n >= 0} {
 		set Priv($position:varno) $n

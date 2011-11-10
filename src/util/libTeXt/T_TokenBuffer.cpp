@@ -239,7 +239,8 @@ TokenBuffer::lookupToken(unsigned level, RefID refID) const
 	M_REQUIRE(refID < m_relList.size());
 	M_REQUIRE(!m_domainStack.empty());
 
-	Entry const* entry = lookup(mstl::min(size_t(level), m_domainStack.size() - 1), refID);
+	Entry const* entry = lookup(	mstl::min(DomainStack::size_type(level), m_domainStack.size() - 1),
+											refID);
 	return entry == 0 ? TokenP() : entry->get<idx::Token>();
 }
 

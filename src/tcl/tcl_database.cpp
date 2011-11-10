@@ -193,7 +193,7 @@ getNamebaseType(Tcl_Obj* obj, char const* cmd)
 		case Type_Annotator:	return Namebase::Annotator;
 	}
 
-	error(cmd, nullptr, nullptr, "unknown namebase type '%s'", Tcl_GetStringFromObj(obj, nullptr));
+	error(cmd, nullptr, nullptr, "unknown namebase type '%s'", Tcl_GetString(obj));
 	return Namebase::Player;	// never reached
 }
 
@@ -259,9 +259,9 @@ struct Subscriber : public Application::Subscriber
 		{
 			fprintf(	stderr,
 						"Warning: database::unsubscribe failed (%s, %s, %s)\n",
-						Tcl_GetStringFromObj(updateCmd, nullptr),
-						closeCmd ? Tcl_GetStringFromObj(closeCmd, nullptr) : "",
-						Tcl_GetStringFromObj(arg, nullptr));
+						Tcl_GetString(updateCmd),
+						closeCmd ? Tcl_GetString(closeCmd) : "",
+						Tcl_GetString(arg));
 		}
 		else
 		{
@@ -730,7 +730,7 @@ convToType(char const* cmd, Tcl_Obj* typeObj, int* type)
 							nullptr,
 							nullptr,
 							"integer expected for type (given: %s)",
-							Tcl_GetStringFromObj(typeObj, nullptr));
+							Tcl_GetString(typeObj));
 	}
 
 	if (*type < 0 || *type >= 32)
@@ -755,12 +755,12 @@ cmdAttach(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc >= 5)
 	{
 		Progress progress(objv[3], objv[4]);
-		scidb.cursor(database).database().attach(filename, progress);
+		scidb->cursor(database).database().attach(filename, progress);
 	}
 	else
 	{
 		util::Progress progress;
-		scidb.cursor(database).database().attach(filename, progress);
+		scidb->cursor(database).database().attach(filename, progress);
 	}
 
 	return TCL_OK;
@@ -787,11 +787,11 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			appendResult("unexpected option '%s'", stringFromObj(objc, objv, 4));
 			return TCL_ERROR;
 		}
-		encoding = Tcl_GetStringFromObj(objv[5], nullptr);
+		encoding = Tcl_GetString(objv[5]);
 	}
 
 	Progress	progress(objv[2], objv[3]);
-	Cursor*	cursor = scidb.open(stringFromObj(objc, objv, 1), encoding, false, progress);
+	Cursor*	cursor = scidb->open(stringFromObj(objc, objv, 1), encoding, false, progress);
 
 	if (cursor == 0)
 		return TCL_ERROR;
@@ -845,7 +845,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	{
 		char const*		db(stringFromObj(objc, objv, 1));
-		Cursor&			cursor(scidb.cursor(db));
+		Cursor&			cursor(scidb->cursor(db));
 		Encoder			encoder(encoding);
 		tcl::PgnReader	reader(	stream,
 										encoder,
@@ -884,7 +884,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc == 4)
 		encoding = stringFromObj(objc, objv, 3);
 
-	if (scidb.create(path, encoding, type::ID(type)) == 0)
+	if (scidb->create(path, encoding, type::ID(type)) == 0)
 		return error(::CmdNew, nullptr, nullptr, "database '%s' already exists", path);
 
 	return TCL_OK;
@@ -916,8 +916,8 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (cmd)
 	{
 		case Cmd_Delete:
-			scidb.deleteGame(
-				scidb.cursor(objc < 5 ? 0 : stringFromObj(objc, objv, 4)),
+			scidb->deleteGame(
+				scidb->cursor(objc < 5 ? 0 : stringFromObj(objc, objv, 4)),
 				intFromObj(objc, objv, 2),
 				objc < 5 ? 0 : intFromObj(objc, objv, 3),
 				intFromObj(objc, objv, objc < 5 ? 3 : 5));
@@ -930,7 +930,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				char const* base = objc < 6 ? 0 : stringFromObj(objc, objv, 4);
 
-				Cursor& cursor = scidb.cursor(base);
+				Cursor& cursor = scidb->cursor(base);
 				mstl::string flags(stringFromObj(objc, objv, objc < 6 ? 3 : 5));
 
 				if (cursor.database().format() == format::Scid4)
@@ -945,7 +945,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				else
 					oldFlags &= ~newFlags;
 
-				scidb.setGameFlags(cursor, index, view, oldFlags);
+				scidb->setGameFlags(cursor, index, view, oldFlags);
 			}
 			break;
 
@@ -954,13 +954,13 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				int type;
 				if (convToType(::CmdSet, objv[3], &type) != TCL_OK)
 					return TCL_ERROR;
-				scidb.cursor(stringFromObj(objc, objv, 2)).database().setType(type::ID(type));
+				scidb->cursor(stringFromObj(objc, objv, 2)).database().setType(type::ID(type));
 			}
 			break;
 
 		case Cmd_Description:
 			{
-				Database& db = scidb.cursor(stringFromObj(objc, objv, 2)).database();
+				Database& db = scidb->cursor(stringFromObj(objc, objv, 2)).database();
 				char const* descr = stringFromObj(objc, objv, 3);
 
 				if (strlen(descr) <= db.maxDescriptionLength())
@@ -978,12 +978,12 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Readonly:
 			if (objc == 4)
 			{
-				scidb.cursor(
+				scidb->cursor(
 					stringFromObj(objc, objv, 2)).database().setReadOnly(boolFromObj(objc, objv, 3));
 			}
 			else
 			{
-				scidb.cursor().database().setReadOnly(boolFromObj(objc, objv, 2));
+				scidb->cursor().database().setReadOnly(boolFromObj(objc, objv, 2));
 			}
 			break;
 
@@ -998,7 +998,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 countGames(char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).countGames());
+	::tcl::setResult(Scidb->cursor(database).countGames());
 	return TCL_OK;
 }
 
@@ -1006,7 +1006,7 @@ countGames(char const* database)
 static int
 countPlayers(char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).countPlayers());
+	::tcl::setResult(Scidb->cursor(database).countPlayers());
 	return TCL_OK;
 }
 
@@ -1014,7 +1014,7 @@ countPlayers(char const* database)
 static int
 countEvents(char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).countEvents());
+	::tcl::setResult(Scidb->cursor(database).countEvents());
 	return TCL_OK;
 }
 
@@ -1022,7 +1022,7 @@ countEvents(char const* database)
 static int
 countAnnotators(char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).countAnnotators());
+	::tcl::setResult(Scidb->cursor(database).countAnnotators());
 	return TCL_OK;
 }
 
@@ -1042,7 +1042,7 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
-	char const* base = objc < 3 ? 0 : Tcl_GetStringFromObj(objv[2], nullptr);
+	char const* base = objc < 3 ? 0 : Tcl_GetString(objv[2]);
 
 	switch (index)
 	{
@@ -1060,7 +1060,7 @@ static int
 getClipbaseAttr(Tcl_Interp*, char const* attr)
 {
 	if (strcmp(attr, "name") == 0)
-		setResult(Scidb.clipbaseName());
+		setResult(Scidb->clipbaseName());
 	else if (strcmp(attr, "type") == 0)
 		setResult(lookupType(type::Clipbase));
 	else
@@ -1074,7 +1074,7 @@ static int
 getScratchbaseAttr(Tcl_Interp*, char const* attr)
 {
 	if (strcmp(attr, "name") == 0)
-		setResult(Scidb.scratchbaseName());
+		setResult(Scidb->scratchbaseName());
 	else
 		return error(::CmdGet, "scratchbase", nullptr, "invalid subcommand '%s'", attr);
 
@@ -1111,7 +1111,7 @@ getTypes(Tcl_Interp* ti, char const* suffix)
 static int
 getName()
 {
-	::tcl::setResult(Scidb.cursor().name());
+	::tcl::setResult(Scidb->cursor().name());
 	return TCL_OK;
 }
 
@@ -1119,7 +1119,7 @@ getName()
 static int
 getCodec(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().extension());
+	::tcl::setResult(Scidb->cursor(database).database().extension());
 	return TCL_OK;
 }
 
@@ -1127,7 +1127,7 @@ getCodec(char const* database = 0)
 static int
 getEncoding(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().encoding());
+	::tcl::setResult(Scidb->cursor(database).database().encoding());
 	return TCL_OK;
 }
 
@@ -1135,7 +1135,7 @@ getEncoding(char const* database = 0)
 static int
 getCreated(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().created().asString());
+	::tcl::setResult(Scidb->cursor(database).database().created().asString());
 	return TCL_OK;
 }
 
@@ -1143,7 +1143,7 @@ getCreated(char const* database = 0)
 static int
 getModified(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().modified().asString());
+	::tcl::setResult(Scidb->cursor(database).database().modified().asString());
 	return TCL_OK;
 }
 
@@ -1151,7 +1151,7 @@ getModified(char const* database = 0)
 static int
 getReadonly(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().isReadOnly());
+	::tcl::setResult(Scidb->cursor(database).database().isReadOnly());
 	return TCL_OK;
 }
 
@@ -1159,7 +1159,7 @@ getReadonly(char const* database = 0)
 static int
 getWriteable(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().isWriteable());
+	::tcl::setResult(Scidb->cursor(database).database().isWriteable());
 	return TCL_OK;
 }
 
@@ -1167,7 +1167,7 @@ getWriteable(char const* database = 0)
 static int
 getDescription(char const* database = 0)
 {
-	::tcl::setResult(Scidb.cursor(database).database().description());
+	::tcl::setResult(Scidb->cursor(database).database().description());
 	return TCL_OK;
 }
 
@@ -1175,7 +1175,7 @@ getDescription(char const* database = 0)
 static int
 getType(char const* database = 0)
 {
-	::tcl::setResult(lookupType(Scidb.cursor(database).type()));
+	::tcl::setResult(lookupType(Scidb->cursor(database).type()));
 	return TCL_OK;
 }
 
@@ -1183,7 +1183,7 @@ getType(char const* database = 0)
 static int
 getGameIndex(int number, int view, char const* database)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 	View const& v = cursor.view(view);
 
 	if (number < int(v.totalGames()))
@@ -1198,7 +1198,7 @@ getGameIndex(int number, int view, char const* database)
 static int
 getPlayerIndex(unsigned index, int view, char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).view(view).playerIndex(index));
+	::tcl::setResult(Scidb->cursor(database).view(view).playerIndex(index));
 	return TCL_OK;
 }
 
@@ -1206,7 +1206,7 @@ getPlayerIndex(unsigned index, int view, char const* database)
 static int
 getLookupPlayer(unsigned index, int view, char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).view(view).lookupPlayer(index));
+	::tcl::setResult(Scidb->cursor(database).view(view).lookupPlayer(index));
 	return TCL_OK;
 }
 
@@ -1214,7 +1214,7 @@ getLookupPlayer(unsigned index, int view, char const* database)
 static int
 getEventIndex(unsigned index, int view, char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).view(view).eventIndex(index));
+	::tcl::setResult(Scidb->cursor(database).view(view).eventIndex(index));
 	return TCL_OK;
 }
 
@@ -1222,7 +1222,7 @@ getEventIndex(unsigned index, int view, char const* database)
 static int
 getLookupEvent(unsigned index, int view, char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).view(view).lookupEvent(index));
+	::tcl::setResult(Scidb->cursor(database).view(view).lookupEvent(index));
 	return TCL_OK;
 }
 
@@ -1230,7 +1230,7 @@ getLookupEvent(unsigned index, int view, char const* database)
 static int
 getAnnotatorIndex(char const* name, int view, char const* database)
 {
-	::tcl::setResult(Scidb.cursor(database).view(view).lookupAnnotator(name));
+	::tcl::setResult(Scidb->cursor(database).view(view).lookupAnnotator(name));
 	return TCL_OK;
 }
 
@@ -1238,7 +1238,7 @@ getAnnotatorIndex(char const* name, int view, char const* database)
 static int
 getStats(char const* database)
 {
-	Statistic const& statistic = Scidb.cursor(database).database().statistic();
+	Statistic const& statistic = Scidb->cursor(database).database().statistic();
 	Tcl_Obj*	objv[12];
 
 	objv[ 0] = Tcl_NewIntObj(statistic.deleted);
@@ -1289,7 +1289,7 @@ playerRatings(NamebasePlayer const& player, rating::Type type, int16_t* ratings)
 static int
 getGameInfo(int index, int view, char const* database, unsigned which)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
@@ -1598,7 +1598,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 static int
 getGameInfo(int index, int view, char const* database)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
@@ -1615,7 +1615,7 @@ getGameInfo(int index, int view, char const* database)
 static int
 getGameInfo(int index, int view, char const* database, Ratings const& ratings)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
@@ -1628,7 +1628,7 @@ getGameInfo(int index, int view, char const* database, Ratings const& ratings)
 static int
 getPlayerInfo(int index, int view, char const* database, unsigned which)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.playerIndex(index, view);
@@ -1666,7 +1666,7 @@ getPlayerInfo(int index, int view, char const* database, unsigned which)
 static int
 getPlayerInfo(	int index, int view, char const* database, Ratings const& ratings, bool info, bool idCard)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.playerIndex(index, view);
@@ -1681,7 +1681,7 @@ getPlayerInfo(	int index, int view, char const* database, Ratings const& ratings
 static int
 getEventInfo(int index, int view, char const* database, unsigned which)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.eventIndex(index, view);
@@ -1765,7 +1765,7 @@ getEventInfo(NamebaseEvent const& event, Database const* database = nullptr)
 static int
 getEventInfo(int index, int view, bool idCard)
 {
-	Cursor const& cursor = Scidb.cursor();
+	Cursor const& cursor = Scidb->cursor();
 
 	if (view >= 0)
 		index = cursor.eventIndex(index, view);
@@ -1781,7 +1781,7 @@ getAnnotator(int index, int view)
 
 	M_ASSERT(::memset(objv, 0, sizeof(objv)));
 
-	Cursor const& cursor = Scidb.cursor();
+	Cursor const& cursor = Scidb->cursor();
 
 	if (view >= 0)
 		index = cursor.annotatorIndex(index, view);
@@ -1801,7 +1801,7 @@ getAnnotator(int index, int view)
 static int
 getEncodingState(char const* database)
 {
-	Database const& base = Scidb.cursor(database).database();
+	Database const& base = Scidb->cursor(database).database();
 
 	if (base.encodingFailed())
 		setResult("failed");
@@ -1817,7 +1817,7 @@ getEncodingState(char const* database)
 static int
 getDeleted(int index, int view, char const* database)
 {
-	Cursor const& cursor = Scidb.cursor(database);
+	Cursor const& cursor = Scidb->cursor(database);
 
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
@@ -1868,7 +1868,7 @@ static int
 getTags(int index, char const* database)
 {
 	TagSet tags;
-	Scidb.cursor(database).database().getInfoTags(index, tags);
+	Scidb->cursor(database).database().getInfoTags(index, tags);
 	return getTags(tags, false);
 }
 
@@ -1876,7 +1876,7 @@ getTags(int index, char const* database)
 static int
 getIdn(int index, char const* database)
 {
-	setResult(Scidb.cursor(database).database().gameInfo(index).idn());
+	setResult(Scidb->cursor(database).database().gameInfo(index).idn());
 	return TCL_OK;
 }
 
@@ -1884,7 +1884,7 @@ getIdn(int index, char const* database)
 static int
 getEco(int index, char const* database)
 {
-	setResult(Scidb.cursor(database).database().gameInfo(index).eco().asShortString());
+	setResult(Scidb->cursor(database).database().gameInfo(index).eco().asShortString());
 	return TCL_OK;
 }
 
@@ -1892,7 +1892,7 @@ getEco(int index, char const* database)
 static int
 getRatingTypes(int index, char const* database)
 {
-	GameInfo const& info = Scidb.cursor(database).database().gameInfo(index);
+	GameInfo const& info = Scidb->cursor(database).database().gameInfo(index);
 
 	mstl::string const& wr = rating::toString(info.ratingType(color::White));
 	mstl::string const& br = rating::toString(info.ratingType(color::Black));
@@ -1919,7 +1919,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int index = intFromObj(objc, objv, 2);
 
-	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 3));
+	Cursor const& cursor = Scidb->cursor(stringFromObj(objc, objv, 3));
 	GameInfo const& info = cursor.database().gameInfo(index);
 
 	switch (int idx = tcl::uniqueMatchObj(objv[1], subcommands))
@@ -1930,7 +1930,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (objc > 4)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
+					char const*	lastArg	= Tcl_GetString(objv[objc - 1]);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -1956,10 +1956,10 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				while (parseOptions && objc > 4)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
+					char const*	lastArg	= Tcl_GetString(objv[objc - 1]);
 
 					if (*lastArg != '-')
-						lastArg = Tcl_GetStringFromObj(objv[objc - 2], nullptr);
+						lastArg = Tcl_GetString(objv[objc - 2]);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -2075,22 +2075,22 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Clipbase:
 			if (objc != 3)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
-			return getClipbaseAttr(ti, Tcl_GetStringFromObj(objv[2], nullptr));
+			return getClipbaseAttr(ti, Tcl_GetString(objv[2]));
 
 		case Cmd_Scratchbase:
 			if (objc != 3)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
-			return getScratchbaseAttr(ti, Tcl_GetStringFromObj(objv[2], nullptr));
+			return getScratchbaseAttr(ti, Tcl_GetString(objv[2]));
 
 		case Cmd_Types:
 			if (objc != 3)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
-			return getTypes(ti, Tcl_GetStringFromObj(objv[2], nullptr));
+			return getTypes(ti, Tcl_GetString(objv[2]));
 
 		case Cmd_Type:
 			if (objc < 3)
 				return getType();
-			return getType(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getType(Tcl_GetString(objv[2]));
 
 		case Cmd_Name:
 			return getName();
@@ -2098,22 +2098,22 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Codec:
 			if (objc < 3)
 				return getCodec();
-			return getCodec(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getCodec(Tcl_GetString(objv[2]));
 
 		case Cmd_Encoding:
 			if (objc < 3)
 				return getEncoding();
-			return getEncoding(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getEncoding(Tcl_GetString(objv[2]));
 
 		case Cmd_Created:
 			if (objc < 3)
 				return getCreated();
-			return getCreated(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getCreated(Tcl_GetString(objv[2]));
 
 		case Cmd_Modified:
 			if (objc < 3)
 				return getModified();
-			return getModified(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getModified(Tcl_GetString(objv[2]));
 
 		case Cmd_GameInfo:
 			{
@@ -2152,10 +2152,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				while (parseOptions && objc >= 3)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
+					char const*	lastArg	= Tcl_GetString(objv[objc - 1]);
 
 					if (*lastArg != '-')
-						lastArg = Tcl_GetStringFromObj(objv[objc - 2], nullptr);
+						lastArg = Tcl_GetString(objv[objc - 2]);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -2212,7 +2212,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (objc >= 3)
 				{
-					char const*	lastArg	= Tcl_GetStringFromObj(objv[objc - 1], nullptr);
+					char const*	lastArg	= Tcl_GetString(objv[objc - 1]);
 
 					if (lastArg[0] == '-' && !::isdigit(lastArg[1]))
 					{
@@ -2291,7 +2291,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Description:
 			if (objc < 3)
 				return getDescription();
-			return getDescription(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getDescription(Tcl_GetString(objv[2]));
 
 		case Cmd_Stats:
 			return getStats(stringFromObj(objc, objv, 2));
@@ -2307,13 +2307,13 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return getWriteable(stringFromObj(objc, objv, 2));
 
 		case Cmd_Open:
-			setResult(Scidb.contains(stringFromObj(objc, objv, 2)));
+			setResult(Scidb->contains(stringFromObj(objc, objv, 2)));
 			return TCL_OK;
 
 		case Cmd_EncodingState:
 			if (objc < 3)
 				return getEncodingState(0);
-			return getEncodingState(Tcl_GetStringFromObj(objv[2], nullptr));
+			return getEncodingState(Tcl_GetString(objv[2]));
 
 		case Cmd_Deleted:
 			return getDeleted(intFromObj(objc, objv, 2),
@@ -2323,14 +2323,14 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_LastChange:
 			{
 				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-				setResult(Tcl_NewWideIntObj(Scidb.cursor(base).database().lastChange()));
+				setResult(Tcl_NewWideIntObj(Scidb->cursor(base).database().lastChange()));
 			}
 			return TCL_OK;
 
 		case Cmd_CustomFlags:
 			{
 				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-				Database const& database = Scidb.cursor(base).database();
+				Database const& database = Scidb->cursor(base).database();
 
 				if (database.format() == format::Scid4)
 				{
@@ -2353,7 +2353,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_GameFlags:
 			{
 				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-				Database const& database = Scidb.cursor(base).database();
+				Database const& database = Scidb->cursor(base).database();
 				mstl::string flags;
 
 				GameInfo::flagsToString(database.codec().gameFlags(), flags);
@@ -2373,7 +2373,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				view = intFromObj(objc, objv, 4);
 
 				if (view >= 0)
-					index = Scidb.cursor(base).gameIndex(index, view);
+					index = Scidb->cursor(base).gameIndex(index, view);
 
 				setResult(index);
 			}
@@ -2382,14 +2382,14 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_MinYear:
 			{
 				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-				setResult(Scidb.cursor(base).database().codec().minYear());
+				setResult(Scidb->cursor(base).database().codec().minYear());
 			}
 			return TCL_OK;
 
 		case Cmd_MaxYear:
 			{
 				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-				setResult(Scidb.cursor(base).database().codec().maxYear());
+				setResult(Scidb->cursor(base).database().codec().maxYear());
 			}
 			return TCL_OK;
 
@@ -2399,7 +2399,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				Tcl_Obj* namebase = objectFromObj(objc, objv, objc < 4 ? 2 : 3);
 
 				Namebase::Type	type = getNamebaseType(namebase, ::CmdGet);
-				setResult(Scidb.cursor(base).database().namebase(type).maxUsage());
+				setResult(Scidb->cursor(base).database().namebase(type).maxUsage());
 			}
 			return TCL_OK;
 
@@ -2451,12 +2451,12 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_EventList, Cmd_GameInfo, Cmd_GameSwitch, Cmd_Tree,
 	};
 
-	Subscriber* subscriber = static_cast<Subscriber*>(scidb.subscriber());
+	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
 
 	if (subscriber == 0)
 	{
 		subscriber = new Subscriber;
-		scidb.setSubscriber(Application::SubscriberP(subscriber));
+		scidb->setSubscriber(Application::SubscriberP(subscriber));
 	}
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
@@ -2503,7 +2503,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return error(	::CmdSubscribe,
 								nullptr, nullptr,
 								"invalid argument %s",
-								static_cast<char const*>(Tcl_GetStringFromObj(objv[1], nullptr)));
+								static_cast<char const*>(Tcl_GetString(objv[1])));
 	}
 
 	return TCL_OK;
@@ -2530,7 +2530,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_AnnotatorList, Cmd_GameInfo, Cmd_Tree
 	};
 
-	Subscriber* subscriber = static_cast<Subscriber*>(scidb.subscriber());
+	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
 
 	if (subscriber == 0)
 		return TCL_OK;
@@ -2576,7 +2576,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								nullptr,
 								nullptr,
 								"invalid argument %s",
-								Tcl_GetStringFromObj(objv[1], nullptr));
+								Tcl_GetString(objv[1]));
 	}
 
 	return TCL_OK;
@@ -2592,7 +2592,7 @@ cmdSwitch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.switchBase(Tcl_GetStringFromObj(objv[1], nullptr));
+	scidb->switchBase(Tcl_GetString(objv[1]));
 	return TCL_OK;
 }
 
@@ -2606,7 +2606,7 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.close(Tcl_GetStringFromObj(objv[1], nullptr));
+	scidb->close(Tcl_GetString(objv[1]));
 	return TCL_OK;
 }
 
@@ -2620,7 +2620,7 @@ cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	scidb.clearBase(scidb.cursor(Tcl_GetStringFromObj(objv[1], nullptr)));
+	scidb->clearBase(scidb->cursor(Tcl_GetString(objv[1])));
 	return TCL_OK;
 }
 
@@ -2697,7 +2697,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::game::ID column = lookupGameInfo(objv[3], ratings, average);
 				if (column < 0)
 					return TCL_ERROR;
-				scidb.sort(scidb.cursor(database), view, column, order, ratings.first);
+				scidb->sort(scidb->cursor(database), view, column, order, ratings.first);
 			}
 			break;
 
@@ -2706,7 +2706,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::player::ID column = lookupPlayerBase(objv[3], ratings, latest);
 				if (column < 0)
 					return TCL_ERROR;
-				scidb.sort(scidb.cursor(database), view, column, order, ratings.first);
+				scidb->sort(scidb->cursor(database), view, column, order, ratings.first);
 			}
 			break;
 
@@ -2715,7 +2715,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::event::ID column = lookupEventBase(objv[3]);
 				if (column < 0)
 					return TCL_ERROR;
-				scidb.sort(scidb.cursor(database), view, column, order);
+				scidb->sort(scidb->cursor(database), view, column, order);
 			}
 			break;
 
@@ -2724,7 +2724,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::annotator::ID column = lookupAnnotatorBase(objv[3]);
 				if (column < 0)
 					return TCL_ERROR;
-				scidb.sort(scidb.cursor(database), view, column, order);
+				scidb->sort(scidb->cursor(database), view, column, order);
 			}
 			break;
 
@@ -2749,7 +2749,7 @@ cmdRecode(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* encoding	= stringFromObj(objc, objv, 2);
 
 	Progress progress(objv[3], objv[4]);
-	scidb.recode(scidb.cursor(database), encoding, progress);
+	scidb->recode(scidb->cursor(database), encoding, progress);
 
 	return TCL_OK;
 }
@@ -2773,7 +2773,7 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int			view		= View::DefaultView;
 	int			index		= tcl::uniqueMatchObj(objv[1], subcommands);
-	char const*	database	= Tcl_GetStringFromObj(objv[2], nullptr);
+	char const*	database	= Tcl_GetString(objv[2]);
 
 	if (objc == 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
 		return error(::CmdReverse, nullptr, nullptr, "integer expected for view argument");
@@ -2781,19 +2781,19 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_GameInfo:
-			scidb.reverse(scidb.cursor(database), view, attribute::game::Number);
+			scidb->reverse(scidb->cursor(database), view, attribute::game::Number);
 			break;
 
 		case Cmd_Player:
-			scidb.reverse(scidb.cursor(database), view, attribute::player::Name);
+			scidb->reverse(scidb->cursor(database), view, attribute::player::Name);
 			break;
 
 		case Cmd_Event:
-			scidb.reverse(scidb.cursor(database), view, attribute::event::Title);
+			scidb->reverse(scidb->cursor(database), view, attribute::event::Title);
 			break;
 
 		case Cmd_Annotator:
-			scidb.reverse(scidb.cursor(database), view, attribute::annotator::Name);
+			scidb->reverse(scidb->cursor(database), view, attribute::annotator::Name);
 			break;
 
 		default:
@@ -2836,7 +2836,7 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		ratingType = rating::Any;
 
 	Namebase::Matches matches;
-	Scidb.cursor(database).database().namebase(type).findMatches(suffix, matches, maximal);
+	Scidb->cursor(database).database().namebase(type).findMatches(suffix, matches, maximal);
 	M_ASSERT(matches.size() <= maximal);
 
 	unsigned resultSize = matches.size();
@@ -3012,7 +3012,7 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	char const*	db(stringFromObj(objc, objv, 1));
-	Cursor&		cursor(scidb.cursor(db));
+	Cursor&		cursor(scidb->cursor(db));
 	Progress		progress(objv[3], objv[4]);
 
 	cursor.save(progress, unsignedFromObj(objc, objv, 2));
@@ -3031,7 +3031,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	TagSet tags;
 
 	if ((rc = game::convertTags(tags, objectFromObj(objc, objv, 3))) == TCL_OK)
-		scidb.cursor(database).updateCharacteristics(index, tags);
+		scidb->cursor(database).updateCharacteristics(index, tags);
 
 	return rc;
 }
@@ -3057,7 +3057,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	filename += ".partial-293t83873xx878.sci";
 
 	Progress			progress(objv[2], objv[3]);
-	Cursor&			cursor(scidb.cursor(database));
+	Cursor&			cursor(scidb->cursor(database));
 	Database&		db(cursor.database());
 	View&				v(cursor.view());
 	Log				log;

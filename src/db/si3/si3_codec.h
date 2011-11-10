@@ -31,6 +31,8 @@
 #include "db_namebase.h"
 #include "db_common.h"
 
+#include "nsUniversalDetector.h"
+
 #include "u_crc.h"
 
 #include "m_fstream.h"
@@ -61,7 +63,7 @@ class StoredLine;
 class Consumer;
 class NameList;
 
-class Codec : public DatabaseCodec
+class Codec : public DatabaseCodec, public nsUniversalDetector
 {
 public:
 
@@ -163,6 +165,7 @@ private:
 	void readIndex(mstl::fstream& fstrm, util::Progress& progress);
 
 	void readNamebases(mstl::fstream& stream, util::Progress& progress);
+	void preloadNamebase(ByteIStream& bstrm, unsigned maxFreq, unsigned count, util::Progress& progress);
 	void readNamebase(ByteIStream& stream,
 							Namebase& base,
 							NameList& shadowBase,
@@ -181,6 +184,9 @@ private:
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
 
+	void setRecodedDescription(char const* description);
+	void Report(char const* charset);
+
 	unsigned						m_headerSize;
 	unsigned						m_indexEntrySize;
 	unsigned						m_fileVersion;
@@ -193,6 +199,7 @@ private:
 	mstl::fstream				m_gameStream2;
 	Lookup						m_roundLookup;
 	sys::utf8::Codec*			m_codec;
+	mstl::string				m_encoding;
 	CustomFlags*				m_customFlags;
 	util::BlockFile*			m_gameData;
 	util::BlockFileReader*	m_asyncReader;

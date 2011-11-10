@@ -28,12 +28,12 @@ class initializer_list
 {
 public:
 
-	typedef E			value_type;
-	typedef const E&	reference;
-	typedef const E&	const_reference;
-	typedef size_t		size_type;
-	typedef const E*	iterator;
-	typedef const E*	const_iterator;
+	typedef E				value_type;
+	typedef const E&		reference;
+	typedef const E&		const_reference;
+	typedef bits::size_t	size_type;
+	typedef const E*		iterator;
+	typedef const E*		const_iterator;
 
 	constexpr initializer_list();
 

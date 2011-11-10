@@ -50,11 +50,13 @@ public:
 					Tcl_Obj* arg,
 					Modification modification,
 					int firstGameNumber = 0,
-					unsigned lineOffset = 0);
+					unsigned lineOffset = 0,
+					bool trialMode = false);
 	~PgnReader() throw();
 
 	unsigned countErrors() const;
 	unsigned countWarnings() const;
+	Error lastErrorCode() const;
 
 	void warning(	Warning code,
 						unsigned lineNo,
@@ -79,6 +81,8 @@ private:
 	unsigned	m_lineOffset;
 	unsigned	m_countErrors;
 	unsigned	m_countWarnings;
+	bool		m_trialModeFlag;
+	Error		m_lastError;
 };
 
 } // namespace tcl

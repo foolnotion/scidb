@@ -47,7 +47,7 @@ public:
 	typedef type::ID Type;
 	typedef mstl::chunk_allocator<GameInfo> Allocator;
 
-	DatabaseContent(Type type = type::Unspecific);
+	DatabaseContent(mstl::string const& encoding, Type type = type::Unspecific);
 	virtual ~DatabaseContent() throw();
 
 	typedef mstl::vector<GameInfo*> GameInfoList;
@@ -64,6 +64,7 @@ public:
 	bool					m_readOnly;
 	bool					m_memoryOnly;
 	mstl::string		m_description;
+	mstl::string		m_encoding;
 	Allocator 			m_allocator;
 	Statistic			m_statistic;
 };

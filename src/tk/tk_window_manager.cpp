@@ -282,8 +282,8 @@ cmdWM(ClientData client_data __attribute__((unused)),
 	if (objc < 2)
 		return tcl_error(ti, Usage);
 
-	char const*	subcmd	= Tcl_GetStringFromObj(objv[1], nullptr);
-	char const*	path		= objc <= 2 ? 0 : Tcl_GetStringFromObj(objv[2], nullptr);
+	char const*	subcmd	= Tcl_GetString(objv[1]);
+	char const*	path		= objc <= 2 ? 0 : Tcl_GetString(objv[2]);
 	Tk_Window	tkmain	= Tk_MainWindow(ti);
 	Tk_Window	tkwin		= path ? Tk_NameToWindow(ti, path, tkmain) : tkmain;
 

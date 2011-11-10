@@ -16,6 +16,7 @@ INCLUDE	= -I. -I../mstl -I../sys -Izlib -Iminizip
 CXXFLAGS	+=  $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
+	u_base64_decoder.cpp \
 	u_block_file.cpp \
 	u_bit_stream.cpp \
 	u_byte_stream.cpp \
@@ -54,17 +55,21 @@ $(LIB).a: $(OBJS)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+u_base64_decoder.o: u_base64_decoder.h
+u_base64_decoder.o: ../mstl/m_types.h
+u_base64_decoder.o: u_exception.h
+u_base64_decoder.o: ../mstl/m_exception.h
+u_base64_decoder.o: ../mstl/m_backtrace.h
+u_base64_decoder.o: ../mstl/m_exception.ipp
 u_block_file.o: u_block_file.h
 u_block_file.o: u_byte_stream.h
 u_block_file.o: u_base.h
 u_block_file.o: ../mstl/m_types.h
-u_block_file.o: u_byte_stream.ipp
-u_block_file.o: ../mstl/m_assert.h
+u_block_file.o: u_exception.h
 u_block_file.o: ../mstl/m_exception.h
 u_block_file.o: ../mstl/m_backtrace.h
 u_block_file.o: ../mstl/m_exception.ipp
-u_block_file.o: ../mstl/m_string.h
-u_block_file.o: ../mstl/m_string.ipp
+u_block_file.o: u_byte_stream.ipp
 u_block_file.o: ../mstl/m_utility.h
 u_block_file.o: ../mstl/m_type_traits.h
 u_block_file.o: ../mstl/m_type_traits.ipp
@@ -72,6 +77,9 @@ u_block_file.o: ../mstl/m_utility.ipp
 u_block_file.o: ../mstl/m_limits.h
 u_block_file.o: ../mstl/m_bit_functions.h
 u_block_file.o: ../mstl/m_bit_functions.ipp
+u_block_file.o: ../mstl/m_assert.h
+u_block_file.o: ../mstl/m_string.h
+u_block_file.o: ../mstl/m_string.ipp
 u_block_file.o: ../mstl/m_vector.h
 u_block_file.o: ../mstl/m_memblock.h
 u_block_file.o: ../mstl/m_memblock.ipp
@@ -116,12 +124,11 @@ u_bit_stream.o: ../mstl/m_exception.ipp
 u_byte_stream.o: u_byte_stream.h
 u_byte_stream.o: u_base.h
 u_byte_stream.o: ../mstl/m_types.h
-u_byte_stream.o: u_byte_stream.ipp
-u_byte_stream.o: ../mstl/m_assert.h
+u_byte_stream.o: u_exception.h
 u_byte_stream.o: ../mstl/m_exception.h
 u_byte_stream.o: ../mstl/m_backtrace.h
 u_byte_stream.o: ../mstl/m_exception.ipp
-u_byte_stream.o: u_exception.h
+u_byte_stream.o: u_byte_stream.ipp
 u_byte_stream.o: ../mstl/m_utility.h
 u_byte_stream.o: ../mstl/m_type_traits.h
 u_byte_stream.o: ../mstl/m_type_traits.ipp
@@ -129,6 +136,7 @@ u_byte_stream.o: ../mstl/m_utility.ipp
 u_byte_stream.o: ../mstl/m_limits.h
 u_byte_stream.o: ../mstl/m_bit_functions.h
 u_byte_stream.o: ../mstl/m_bit_functions.ipp
+u_byte_stream.o: ../mstl/m_assert.h
 u_byte_stream.o: ../mstl/m_string.h
 u_byte_stream.o: ../mstl/m_string.ipp
 u_exception.o: u_exception.h

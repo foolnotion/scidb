@@ -83,7 +83,7 @@ tcl::uniqueMatch(char const* option, char const** options)
 int
 tcl::uniqueMatchObj(Tcl_Obj* obj, char const** options)
 {
-	return uniqueMatch(Tcl_GetStringFromObj(obj, nullptr), options);
+	return uniqueMatch(Tcl_GetString(obj), options);
 }
 
 
@@ -322,7 +322,7 @@ invocationError(char const* callee, int objc, Tcl_Obj* const objv[])
 
 	for (int i = 0; i < objc; ++i)
 	{
-		msg += Tcl_GetStringFromObj(objv[i], nullptr);
+		msg += Tcl_GetString(objv[i]);
 		if (i < objc - 1)
 			msg += ' ';
 	}
@@ -399,7 +399,7 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 	static unsigned const MaxArgs = 15;
 
 	Tcl_CmdInfo info;
-	if (!getCommandInfo(Tcl_GetStringFromObj(cmd, nullptr), info))
+	if (!getCommandInfo(Tcl_GetString(cmd), info))
 		return TCL_ERROR;
 
 	int result;
@@ -447,7 +447,7 @@ vinvoke(char const* callee, Tcl_Obj* cmd, va_list args)
 			}
 
 			Tcl_IncrRefCount(objv[argc] = arg);
-			argv[argc] = Tcl_GetStringFromObj(arg, nullptr);
+			argv[argc] = Tcl_GetString(arg);
 		}
 
 		argv[argc] = 0;
@@ -796,7 +796,7 @@ tcl::objectFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
 	return objv[index];
 }
@@ -808,9 +808,9 @@ tcl::stringFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
-	return Tcl_GetStringFromObj(objv[index], nullptr);
+	return Tcl_GetString(objv[index]);
 }
 
 
@@ -820,16 +820,12 @@ tcl::intFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
 	int value;
 
 	if (Tcl_GetIntFromObj(interp(), objv[index], &value) != TCL_OK)
-	{
-		TCL_RAISE(	"integer expected as %u. argument to %s",
-						index,
-						Tcl_GetStringFromObj(objv[0], nullptr));
-	}
+		TCL_RAISE("integer expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
 
 	return value;
 }
@@ -841,16 +837,12 @@ tcl::unsignedFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
 	int value;
 
 	if (Tcl_GetIntFromObj(interp(), objv[index], &value) != TCL_OK || value < 0)
-	{
-		TCL_RAISE(	"positive integer expected as %u. argument to %s",
-						index,
-						Tcl_GetStringFromObj(objv[0], nullptr));
-	}
+		TCL_RAISE("positive integer expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
 
 	return value;
 }
@@ -862,16 +854,12 @@ tcl::longFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
 	long value;
 
 	if (Tcl_GetLongFromObj(interp(), objv[index], &value) != TCL_OK)
-	{
-		TCL_RAISE(	"integer expected as %u. argument to %s",
-						index,
-						Tcl_GetStringFromObj(objv[0], nullptr));
-	}
+		TCL_RAISE("integer expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
 
 	return value;
 }
@@ -883,16 +871,12 @@ tcl::boolFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 	M_REQUIRE(objc > 0);
 
 	if (index >= objc)
-		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetStringFromObj(objv[0], nullptr));
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
 
 	int value;
 
 	if (Tcl_GetBooleanFromObj(interp(), objv[index], &value) != TCL_OK)
-	{
-		TCL_RAISE(	"boolean value expected as %u. argument to %s",
-						index,
-						Tcl_GetStringFromObj(objv[0], nullptr));
-	}
+		TCL_RAISE("boolean value expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
 
 	return value;
 }

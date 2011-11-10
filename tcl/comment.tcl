@@ -2396,9 +2396,7 @@ bind Text <Meta-greater>	{ tk::TextSetCursorExt %W end-1c }
 
 
 bind Text <<Undo>> {
-	variable ::comment::Vars
-
-	if {"%W" eq $Vars(widget:text)} {
+	if {"%W" eq $::comment::Vars(widget:text)} {
 		::comment::EditUndo %W
 	} else {
 		catch { %W edit undo }
@@ -2407,9 +2405,7 @@ bind Text <<Undo>> {
 
 
 bind Text <<Redo>> {
-	variable ::comment::Vars
-
-	if {"%W" eq $Vars(widget:text)} {
+	if {"%W" eq $::comment::Vars(widget:text)} {
 		::comment::EditRedo %W
 	} else {
 		catch { %W edit redo }

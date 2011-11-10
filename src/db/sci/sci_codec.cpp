@@ -798,6 +798,8 @@ Codec::doOpen(mstl::string const& encoding)
 		m_gameData = new BlockFile(&m_gameStream, Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
 	else
 		m_gameData = new BlockFile(Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
+
+	useEncoding(::sys::utf8::Codec::utf8());
 }
 
 
@@ -881,6 +883,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 
 	namebaseStream.close();
 	indexStream.close();
+	useEncoding(::sys::utf8::Codec::utf8());
 }
 
 
@@ -1165,7 +1168,9 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 	strm << uint8_t(type());						// base type
 	strm << uint32_t(created());					// creation time
 
-	strm.put(description(), mstl::min(description().size(), sizeof(header) - strm.tellp() - 1));
+	strm.put(description(),
+				mstl::min(	description().size(),
+								mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
 
 	if (!fstrm.seekp(8, mstl::ios_base::beg))	// skip magic
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");

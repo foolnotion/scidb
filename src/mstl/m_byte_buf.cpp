@@ -206,7 +206,7 @@ Codec::uncompress(byte_buf const& buf, byte* dst, unsigned dst_bytes)
 	if (*buf.data() == Flag_Copied)
 	{
 		M_ASSERT(dst_bytes + 1 == buf.size());
-		::memcpy(dst, buf.data() + 1, mstl::min(buf.size(), size_t(dst_bytes)));
+		::memcpy(dst, buf.data() + 1, mstl::min(buf.size(), byte_buf::size_type(dst_bytes)));
 		return;
 	}
 

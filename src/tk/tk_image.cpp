@@ -57,6 +57,7 @@ using namespace tcl;
 #endif
 
 //#define NEED_BGR
+#define ONLY_RGBA_NEEDED
 
 #define RGB		0,1,2,0
 #define BGR		2,1,0,0
@@ -636,9 +637,10 @@ template <class ImageFunc>
 void
 processImage(Tk_PhotoImageBlock& block, ImageFunc func)
 {
+#ifndef ONLY_RGBA_NEEDED
 	if (block.pixelSize == 3)
 	{
-#ifdef NEED_BGR
+# ifdef NEED_BGR
 		if (block.offset[0] != 0)
 		{
 			typedef pixbuf<BGR> pixbuf;
@@ -646,7 +648,7 @@ processImage(Tk_PhotoImageBlock& block, ImageFunc func)
 			func(pixb);
 		}
 		else
-#endif
+# endif
 		{
 			typedef pixbuf<RGB> pixbuf;
 			pixbuf pixb(block);
@@ -654,8 +656,9 @@ processImage(Tk_PhotoImageBlock& block, ImageFunc func)
 		}
 	}
 	else
+#endif
 	{
-#ifdef NEED_BGR
+#if defined(NEED_BGR) && !defined(ONLY_RGBA_NEEDED)
 		if (block.offset[0] != 0)
 		{
 			typedef pixbuf<BGRA> pixbuf;
@@ -677,9 +680,10 @@ template <class ImageFunc>
 void
 processImage(Tk_PhotoImageBlock const& srcBlock, Tk_PhotoImageBlock& dstBlock, ImageFunc func)
 {
+#ifndef ONLY_RGBA_NEEDED
 	if (dstBlock.pixelSize == 3)
 	{
-#ifdef NEED_BGR
+# ifdef NEED_BGR
 		if (dstBlock.offset[0] != 0)
 		{
 			typedef pixbuf<BGR> pixbuf;
@@ -688,7 +692,7 @@ processImage(Tk_PhotoImageBlock const& srcBlock, Tk_PhotoImageBlock& dstBlock, I
 			func(src_pixb, dst_pixb);
 		}
 		else
-#endif
+# endif
 		{
 			typedef pixbuf<RGB> pixbuf;
 			pixbuf src_pixb(srcBlock);
@@ -697,8 +701,9 @@ processImage(Tk_PhotoImageBlock const& srcBlock, Tk_PhotoImageBlock& dstBlock, I
 		}
 	}
 	else
+#endif
 	{
-#ifdef NEED_BGR
+#if defined(NEED_BGR) && !defined(ONLY_RGBA_NEEDED)
 		if (dstBlock.offset[0] != 0)
 		{
 			typedef pixbuf<BGRA> pixbuf;
@@ -1205,18 +1210,24 @@ match(int const lhs[4], int const rhs[4])
 static int
 check_image_format(char const* subcmd, Tcl_Interp* ti, Tk_PhotoImageBlock const& block)
 {
-	static int const offsRGB [4] = { RGB  };
 	static int const offsRGBA[4] = { RGBA };
 
-	if (match(offsRGB, block.offset) && match(offsRGBA, block.offset))
+	if (match(offsRGBA, block.offset))
 		return TCL_OK;
 
-#ifdef NEED_BGR
+#ifndef ONLY_RGBA_NEEDED
+	static int const offsRGB [4] = { RGB  };
+
+	if (match(offsRGB, block.offset));
+		return TCL_OK;
+
+# ifdef NEED_BGR
 	static int const offsBGR [4] = { BGR  };
 	static int const offsBGRA[4] = { BGRA };
 
-	if (match(offsBGR,  block.offset) && match(offsBGRA, block.offset))
+	if (match(offsBGR, block.offset) && match(offsBGRA, block.offset))
 		return TCL_OK;
+# endif
 #endif
 
 	return tcl_error(	subcmd,
@@ -1274,7 +1285,7 @@ tk_make_border(char const* subcmd,
 			case Opt_Type:
 				if (++i == objc)
 					return tcl_usage(subcmd, options, args);
-				type = Tcl_GetStringFromObj(objv[i], nullptr);
+				type = Tcl_GetString(objv[i]);
 				if (strcmp(type, "lite") && strcmp(type, "dark"))
 					return tcl_error(subcmd, "invalid argument: type should be either 'lite' or 'dark'");
 				break;
@@ -1390,11 +1401,11 @@ tk_set_alpha(	char const* subcmd,
 		if (arg == objc)
 			return tcl_usage(subcmd, options, args);
 
-		char const* option = Tcl_GetStringFromObj(objv[arg++], nullptr);
+		char const* option = Tcl_GetString(objv[arg++]);
 
 		if (strcmp(option, "-composite") == 0)
 		{
-			composite = Tcl_GetStringFromObj(objv[arg++], nullptr);
+			composite = Tcl_GetString(objv[arg++]);
 
 			if (strcmp(composite, "set") != 0 && strcmp(composite, "overlay") != 0)
 				return tcl_usage(subcmd, options, args);
@@ -1591,7 +1602,7 @@ tk_copy_image(	char const* subcmd,
 
 	for (int i = 0; i < objc; i++)
 	{
-		char const* option = Tcl_GetStringFromObj(objv[i], nullptr);
+		char const* option = Tcl_GetString(objv[i]);
 
 		switch (::tcl::uniqueMatch(option, options))
 		{
@@ -1796,7 +1807,7 @@ tk_create_image(	char const* subcmd,
 				if (++i == objc)
 					return tcl_usage(subcmd, options, args);
 				{
-					char const* color = Tcl_GetStringFromObj(objv[i], nullptr);
+					char const* color = Tcl_GetString(objv[i]);
 
 					if (*color)
 					{
@@ -1812,7 +1823,7 @@ tk_create_image(	char const* subcmd,
 				if (++i == objc)
 					return tcl_usage(subcmd, options, args);
 				{
-					char const* color = Tcl_GetStringFromObj(objv[i], nullptr);
+					char const* color = Tcl_GetString(objv[i]);
 
 					if (*color)
 					{
@@ -1895,8 +1906,8 @@ tk_create_image(	char const* subcmd,
 						svg::gradient::attr start;
 						svg::gradient::attr stop;
 
-						char const* startcolor	= Tcl_GetStringFromObj(objs[0], nullptr);
-						char const* stopcolor	= Tcl_GetStringFromObj(objs[1], nullptr);
+						char const* startcolor	= Tcl_GetString(objs[0]);
+						char const* stopcolor	= Tcl_GetString(objs[1]);
 
 						if (!parse_color(startcolor, start.color))
 							return tcl_error(subcmd, "invalid color name '%s'", startcolor);
@@ -2081,14 +2092,14 @@ tk_recolor_image(	char const* subcmd,
 
 	while (arg < objc)
 	{
-		char const* option = Tcl_GetStringFromObj(objv[arg++], nullptr);
+		char const* option = Tcl_GetString(objv[arg++]);
 
 		if (arg == objc)
 			return tcl_usage(subcmd, options, args);
 
 		if (strcmp(option, "-composite") == 0)
 		{
-			composite = Tcl_GetStringFromObj(objv[arg++], nullptr);
+			composite = Tcl_GetString(objv[arg++]);
 
 			if (strcmp(composite, "set") != 0 && strcmp(composite, "overlay") != 0)
 				return tcl_usage(subcmd, options, args);
@@ -2205,14 +2216,14 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		case Cmd_Border:
 			{
-				char const* str = Tcl_GetStringFromObj(objv[0], nullptr);
+				char const* str = Tcl_GetString(objv[0]);
 				return tk_make_border(subcommands[index], ti, str, objc - 1, objv + 1);
 			}
 
 		case Cmd_Copy:
 			{
-				char const* str0 = Tcl_GetStringFromObj(objv[0], nullptr);
-				char const* str1 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[1]);
 				return tk_copy_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
@@ -2224,26 +2235,26 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				{
 					return tcl_error(	subcommands[index],
 											"invalid argument: cannot find '%s'",
-											Tcl_GetStringFromObj(objv[0], nullptr));
+											Tcl_GetString(objv[0]));
 				}
 
 				int svg_len;
 				char const* svg_data = Tcl_GetStringFromObj(svg_obj, &svg_len);
-				char const* str1 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str1 = Tcl_GetString(objv[1]);
 				return tk_create_image(subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Recolor:
 			{
-				char const* str0 = Tcl_GetStringFromObj(objv[0], nullptr);
-				char const* str1 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[1]);
 				return tk_recolor_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Disable:
 			{
-				char const* str0 = Tcl_GetStringFromObj(objv[0], nullptr);
-				char const* str1 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[1]);
 				return tk_disable_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
@@ -2255,7 +2266,7 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return tcl_error(	subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
-				char const* str0 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str0 = Tcl_GetString(objv[1]);
 				return tk_set_alpha(subcommands[index], ti, value, str0, objc - 2, objv + 2);
 			}
 
@@ -2267,7 +2278,7 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return tcl_error(	subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
-				char const* str0 = Tcl_GetStringFromObj(objv[1], nullptr);
+				char const* str0 = Tcl_GetString(objv[1]);
 				return tk_diffuse(subcommands[index], ti, value, str0, objc - 2, objv + 2);
 			}
 
@@ -2284,15 +2295,15 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return tcl_error(	subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
-				char const* str0 = Tcl_GetStringFromObj(objv[2], nullptr);
+				char const* str0 = Tcl_GetString(objv[2]);
 				return tk_boost(subcommands[index], ti, min, max, str0, objc - 2, objv + 2);
 			}
 
 		case Cmd_Colorize:
 			{
 				double brighten;
-				char const* str0 = Tcl_GetStringFromObj(objv[0], nullptr);
-				char const* str1 = Tcl_GetStringFromObj(objv[2], nullptr);
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[2]);
 				if (Tcl_GetDoubleFromObj(ti, objv[1], &brighten) != TCL_OK)
 				{
 					return tcl_error(	subcommands[index],
@@ -2309,8 +2320,8 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return tcl_error(	subcommands[index], "invalid argument: type 'int' for radius expected");
 				if (radius < 0.0)
 					return tcl_error(	subcommands[index], "invalid argument: radius is negative");
-				char const* str0 = Tcl_GetStringFromObj(objv[2], nullptr);
-				char const* str1 = Tcl_GetStringFromObj(objv[3], nullptr);
+				char const* str0 = Tcl_GetString(objv[2]);
+				char const* str1 = Tcl_GetString(objv[3]);
 				return tk_blur(subcommands[index], ti, str0, str1, radius, objc - 2, objv + 2);
 			}
 	}

@@ -21,6 +21,7 @@ package require tktreectrl 2.2
 package require toolbar
 package require choosedir
 package require tcombobox
+package require entrybuttonbox
 if {[catch { package require tkpng }]} { package require Img }
 package provide fxbox 1.0
 
@@ -54,6 +55,7 @@ set AddBookmark					"Add Bookmark '%s'"
 set RemoveBookmark				"Remove Bookmark '%s'"
 
 set Filename						"File &name:"
+set Filenames						"File &names:"
 set FilesType						"Files of &type:"
 set FileEncoding					"File &encoding:"
 
@@ -64,7 +66,6 @@ set Desktop							"Desktop"
 set Home								"Home"
 
 set SelectWhichType				"Select which type of file are shown"
-set SelectEncoding				"Select encoding"
 set TimeFormat						"%d/%m/%y %I:%M %p"
 
 set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
@@ -103,7 +104,6 @@ array set Options {
 	show:layout	details
 	show:filetypeicons 1
 	pane:favorites 120
-	encoding:foreground #808080
 }
 
 
@@ -133,6 +133,7 @@ proc fsbox {w type args} {
 		-initialfile				{}
 		-showhidden					{}
 		-defaultextension			{}
+		-defaultencoding			{}
 		-filetypes					{}
 		-fileicons					{}
 		-sizecommand				{}
@@ -150,7 +151,7 @@ proc fsbox {w type args} {
 	if {$opts(-multiple)} { set opts(-selectmode) extended } else { set opts(-selectmode) single }
 
 	foreach option {	selectionbackground selectionforeground font multiple savemode
-							activebackground activeforeground defaultextension
+							activebackground activeforeground defaultextension defaultencoding
 							inactivebackground inactiveforeground filetypes fileencodings
 							fileicons showhidden sizecommand selectencodingcommand validatecommand
 							deletecommand renamecommand okcommand cancelcommand initialfile} {
@@ -197,7 +198,8 @@ proc fsbox {w type args} {
 	tk::panedwindow $top.main -sashwidth 7 -sashrelief flat
 	set Vars(widget:panedwindow) $top.main
 
-	::tk::AmpWidget ttk::label $top.lbl_filename -text [Tr Filename]
+	if {$Vars(multiple)} { set lbl [Tr Filenames] } else { set lbl [Tr Filename] }
+	::tk::AmpWidget ttk::label $top.lbl_filename -text $lbl
 	set Vars(widget:filename) [ttk::entry $top.ent_filename \
 		-cursor xterm \
 		-textvariable [namespace current]::${w}::Vars(initialfile) \
@@ -211,17 +213,15 @@ proc fsbox {w type args} {
 	bind $top.ent_filename <Any-KeyRelease> [namespace code [list CheckFileEncoding $w]]
 
 	if {[llength $Vars(selectencodingcommand)]} {
+		set Vars(encodingVar) $Vars(defaultencoding)
 		set Vars(encodingDefault) ""
-		set Vars(encodingVar) ""
+		set Vars(encodingUser) ""
 		::tk::AmpWidget ttk::label $top.lbl_encoding -text [Tr FileEncoding]
-		set Vars(widget:encoding) [ttk::entry $top.ent_encoding \
-			-state readonly \
-			-textvar [namespace current]::${w}::Vars(encodingVar) \
+		set Vars(widget:encoding) [ttk::entrybuttonbox $top.ent_encoding \
 			-width 14 \
-			-foreground $Options(encoding:foreground) \
+			-textvar [namespace current]::${w}::Vars(encodingVar) \
+			-command [namespace code [list SelectEncoding $w]] \
 		]
-		bind $top.ent_encoding <ButtonPress-1> [namespace code [list SelectEncoding $w]]
-		tooltip $top.ent_encoding [Tr SelectEncoding]
 	}
 
 	if {[llength $Vars(filetypes)]} {
@@ -396,10 +396,13 @@ proc reset {w type args} {
 	$Vars(widget:list:bookmark) selection clear
 	$Vars(widget:list:file) selection clear
 	$Vars(widget:filename) delete 0 end
-	$Vars(widget:encoding) configure -foreground $Options(encoding:foreground)
 
-	set Vars(encodingVar) ""
-	set Vars(encoding) ""
+	if {[llength $Vars(selectencodingcommand)]} {
+		set Vars(encodingVar) $Vars(defaultencoding)
+		set Vars(encodingDefault) ""
+		set Vars(encodingUser) ""
+	}
+
 	set Vars(undo:history) {}
 	set Vars(undo:current) -1
 	set Vars(tip:forward) ""
@@ -601,15 +604,15 @@ proc ValidateFile {file {size {}}} {
 proc CheckEncoding {w file} {
 	variable ${w}::Vars
 
-	set Vars(encodingDefault) ""
+	if {[llength $Vars(selectencodingcommand)]} {
+		if {[string length $Vars(encodingUser)] == 0} {
+			set Vars(encodingVar) $Vars(defaultencoding)
 
-	if {[string length $Vars(encoding)] == 0} {
-		set Vars(encodingVar) ""
-
-		if {[llength $Vars(selectencodingcommand)]} {
 			foreach {ext encoding} $Vars(fileencodings) {
 				if {[string match *$ext $file]} {
-					set Vars(encodingVar) $encoding
+					if {[string length $Vars(encodingVar)] == 0} {
+						set Vars(encodingVar) $encoding
+					}
 					set Vars(encodingDefault) $encoding
 				}
 			}
@@ -701,9 +704,8 @@ proc SelectEncoding {w} {
 	set encoding [{*}$Vars(selectencodingcommand) $w $current $Vars(encodingDefault)]
 
 	if {[string length $encoding]} {
-		$Vars(widget:encoding) configure -foreground black
 		set Vars(encodingVar) $encoding
-		set Vars(encoding) $encoding
+		set Vars(encodingUser) $encoding
 	}
 }
 
@@ -1541,8 +1543,6 @@ namespace eval filelist {
 
 namespace import ::tcl::mathfunc::max
 
-array set FileSizeCache {}
-
 
 proc Tr {tok args} { return [[namespace parent]::Tr $tok {*}$args] }
 
@@ -1584,7 +1584,6 @@ proc Build {w path args} {
 
 	set Vars(sort-column) name
 	set Vars(sort-order) increasing
-	set Vars(encoding) ""
 	set Vars(selected:folders) {}
 	set Vars(selected:files) {}
 	set Vars(lock:selection) 0
@@ -1915,14 +1914,11 @@ proc DetailsLayout {w} {
 	}
 
 	set Vars(scriptFile) {
-		set modified -1
 		set mtime [file mtime $file]
-		catch { lassign $::fsbox::filelist::FileSizeCache($file) size modified }
-		if {$modified != $mtime} {
-			set size [{*}$Vars(sizecommand) $file]
-			set ::fsbox::filelist::FileSizeCache($file) [list $size $mtime]
-		}
-		if {[{*}$Vars(validatecommand) $file $size]} {
+		set size [{*}$Vars(sizecommand) $file $mtime]
+		set valid [{*}$Vars(validatecommand) $file $size]
+		if {$valid} {
+			set valid 1
 			set item [$t item create -open no]
 			$t item style set $item name styName size stySize modified styDate
 			set icon [GetFileIcon $w $file]
@@ -1997,7 +1993,9 @@ proc ListLayout {w} {
 	set Vars(scriptNew) $Vars(scriptDir)
 
 	set Vars(scriptFile) {
-		if {[{*}$Vars(validatecommand) $file]} {
+		set valid [{*}$Vars(validatecommand) $file]
+		if {$valid} {
+			set valid 1
 			set item [$t item create -open no]
 			$t item style set $item name styName
 			set icon [GetFileIcon $w $file]
@@ -2257,7 +2255,7 @@ proc Glob {w refresh} {
 		::toolbar::childconfigure $Vars(button:new) -state $state
 
 		set Vars(list:folder) {}
-		set Vars(list:file) {}
+		set filelist {}
 
 		foreach folder $folders {
 			set d [file tail $folder]
@@ -2285,7 +2283,7 @@ proc Glob {w refresh} {
 				}
 
 				if {$match} {
-					lappend Vars(list:file) $file
+					lappend filelist $file
 				}
 			}
 		}
@@ -2298,7 +2296,12 @@ proc Glob {w refresh} {
 	if {[llength $Vars(list:folder)]} {
 		$Vars(widget:filelist) item tag add "root children" directory
 	}
-	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
+
+	set Vars(list:file) {}
+	foreach file $filelist {
+		eval $Vars(scriptFile)
+		if {$valid} { lappend Vars(list:file) $file }
+	}
 
 	if {$Vars(glob) eq "Files" && ($Vars(sort-column) ne "name" || $Vars(sort-order) ne "increasing")} {
 		SortColumn $w

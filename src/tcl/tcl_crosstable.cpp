@@ -114,7 +114,7 @@ getTable(char const* cmd, unsigned dbId, unsigned view)
 static int
 cmdMake(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Cursor const& cursor = Scidb.cursor(stringFromObj(objc, objv, 1));
+	Cursor const& cursor = Scidb->cursor(stringFromObj(objc, objv, 1));
 	unsigned view = unsignedFromObj(objc, objv, 2);
 
 	TableHash::reference ref = tableHash[Key(cursor.database(), view)];

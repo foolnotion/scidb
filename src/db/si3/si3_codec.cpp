@@ -39,6 +39,8 @@
 #include "db_eco_table.h"
 #include "db_exception.h"
 
+#include "nsError.h"
+
 #include "u_byte_stream.h"
 #include "u_block_file.h"
 #include "u_progress.h"
@@ -48,6 +50,7 @@
 #include "sys_file.h"
 #include "sys_utf8_codec.h"
 
+#include "m_function.h"
 #include "m_fstream.h"
 #include "m_utility.h"
 #include "m_assert.h"
@@ -156,16 +159,21 @@ writeId(ByteStream& bstrm, unsigned id, unsigned maxId)
 struct Codec::ByteIStream : public ByteStream
 {
 	ByteIStream(mstl::fstream& strm);
+
 	void underflow(unsigned size);
+	void reset();
+
 	mstl::istream& m_strm;
+	unsigned m_offset;
 };
 
 
 Codec::ByteIStream::ByteIStream(mstl::fstream& strm)
 	:ByteStream(strm.bufsize())
 	,m_strm(strm)
+	,m_offset(0)
 {
-	skip(strm.bufsize());	// force underflow()
+	m_getp = m_endp;	// force underflow
 }
 
 
@@ -182,6 +190,13 @@ Codec::ByteIStream::underflow(unsigned size)
 
 	if (__builtin_expect(m_getp >= m_endp, 0))
 		IO_RAISE(Namebase, Corrupted, "unexpected end of stream");
+}
+
+
+void
+Codec::ByteIStream::reset()
+{
+	m_getp = m_endp;	// force underflow
 }
 
 
@@ -231,6 +246,7 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_extNamebase(customFlags ? ".sn4" : ".sn3")
 	,m_blockSize(customFlags ? 131072 : 32768)
 	,m_codec(0)
+	,m_encoding(sys::utf8::Codec::utf8())
 	,m_customFlags(customFlags)
 	,m_gameData(0)
 	,m_asyncReader(0)
@@ -315,6 +331,13 @@ Codec::gameFlags() const
 }
 
 
+void
+Codec::Report(char const* charset)
+{
+	m_encoding.assign(charset);
+}
+
+
 Codec::Format
 Codec::format() const
 {
@@ -386,8 +409,8 @@ Codec::reset()
 void
 Codec::setEncoding(mstl::string const& encoding)
 {
-	delete m_codec;
-	m_codec = new sys::utf8::Codec(encoding);
+	M_ASSERT(m_codec);
+	m_codec->reset(encoding);
 }
 
 
@@ -435,6 +458,8 @@ Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordL
 save::State
 Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, *m_codec);
@@ -445,6 +470,8 @@ Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 save::State
 Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	Decoder decoder(strm, *m_codec);
 	return decoder.doDecoding(consumer, tags);
 }
@@ -453,6 +480,8 @@ Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 void
 Codec::doDecoding(GameData& data, GameInfo& info)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
 
@@ -531,11 +560,13 @@ Codec::doDecoding(GameData& data, GameInfo& info)
 void
 Codec::doOpen(mstl::string const& encoding)
 {
-	M_ASSERT(m_codec == 0 || encoding == m_codec->encoding());
+	M_ASSERT(	m_codec == 0
+				|| encoding == sys::utf8::Codec::automatic()
+				|| encoding == m_codec->encoding());
 	M_ASSERT(m_gameData == 0);
 
 	m_codec = new sys::utf8::Codec(encoding);
-	M_ASSERT(m_codec->hasEncoding());
+	M_ASSERT(encoding == sys::utf8::Codec::automatic() || m_codec->hasEncoding());
 	m_gameData = new BlockFile(m_blockSize, BlockFile::RequireLength, m_magicGameFile);
 	m_hasMagic = true;
 }
@@ -544,13 +575,15 @@ Codec::doOpen(mstl::string const& encoding)
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
 {
-	M_ASSERT(m_codec == 0);
+	M_ASSERT(	m_codec == 0
+				|| encoding == sys::utf8::Codec::automatic()
+				|| encoding == m_codec->encoding());
 	M_ASSERT(m_gameData == 0);
 
 	char buf[8];
 
 	m_codec = new sys::utf8::Codec(encoding);
-	M_ASSERT(m_codec->hasEncoding());
+	M_ASSERT(encoding == sys::utf8::Codec::automatic() || m_codec->hasEncoding());
 
 	mstl::string indexFilename(rootname + m_extIndex);
 	mstl::string gameFilename(rootname + m_extGame);
@@ -591,11 +624,13 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 void
 Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 {
-	M_ASSERT(m_codec == 0);
+	M_ASSERT(	m_codec == 0
+				|| encoding == sys::utf8::Codec::automatic()
+				|| encoding == m_codec->encoding());
 	M_ASSERT(m_gameData == 0);
 
 	m_codec = new sys::utf8::Codec(encoding);
-	M_ASSERT(m_codec->hasEncoding());
+	M_ASSERT(encoding == sys::utf8::Codec::automatic() || m_codec->hasEncoding());
 
 	mstl::string indexFilename(rootname + m_extIndex);
 	mstl::string gameFilename(rootname + m_extGame);
@@ -649,6 +684,8 @@ Codec::doClear(mstl::string const& rootname)
 void
 Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bool attach)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	if (!(m_gameStream.mode() & mstl::ios_base::out))
 		IO_RAISE(Game, Read_Only, "game file '%s' is read-only", (rootname + m_extGame).c_str());
 
@@ -690,15 +727,17 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 
 
 void
-Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progress)
+Codec::save(mstl::string const& rootname, unsigned start, Progress& progress)
 {
 	save(rootname, start, progress, false);
 }
 
 
 void
-Codec::attach(mstl::string const& rootname, util::Progress& progress)
+Codec::attach(mstl::string const& rootname, Progress& progress)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	static mstl::ios_base::openmode mode =
 		mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::trunc | mstl::ios_base::binary;
 
@@ -713,6 +752,8 @@ Codec::attach(mstl::string const& rootname, util::Progress& progress)
 void
 Codec::update(mstl::string const& rootname)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	if (!(m_gameStream.mode() & mstl::ios_base::out))
 		IO_RAISE(Game, Read_Only, "game file '%s' is read-only", (rootname + ".gi3").c_str());
 
@@ -754,6 +795,8 @@ Codec::update(mstl::string const& rootname)
 void
 Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebase*/)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	if (!(m_gameStream.mode() & mstl::ios_base::out))
 		IO_RAISE(Game, Read_Only, "game file '%s' is read-only", (rootname + m_extGame).c_str());
 
@@ -837,7 +880,10 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 	strm << uint32_t(Encoder::encodeType(type()));	// base type
 	strm << uint24_t(gameInfoList().size());			// number of games
 	strm << uint24_t(autoLoad);							// auto load
-	strm.put(description(), mstl::min(description().size(), size_t(119 - strm.tellp())));
+
+	strm.put(description(),
+				mstl::min(	description().size(),
+								mstl::string::size_type(119 - strm.tellp())));
 
 	if (!fstrm.seekp(8, mstl::ios_base::beg))	// skip magic
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
@@ -848,8 +894,10 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress)
+Codec::writeIndex(mstl::fstream& fstrm, unsigned start, Progress& progress)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	writeIndexHeader(fstrm);
 
 	if (start > 0 && !fstrm.seekp(start*m_indexEntrySize, mstl::ios_base::cur))
@@ -884,6 +932,8 @@ Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress
 void
 Codec::updateIndex(mstl::fstream& fstrm)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	// update header
 	{
 		if (!fstrm.seekp(14))
@@ -1082,7 +1132,7 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 	m_autoLoad = bstrm.uint24();
 
 	bstrm[119] = '\0';	// to be sure
-	setDescription(reinterpret_cast<char const*>(bstrm.data()));
+	setRecodedDescription(reinterpret_cast<char const*>(bstrm.data()));
 
 	decodeIndex(fstrm, progress);
 	fstrm.close();
@@ -1090,8 +1140,30 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 
 
 void
+Codec::setRecodedDescription(char const* description)
+{
+	mstl::string str;
+	mstl::string result;
+
+	char* data = const_cast<char*>(description);
+	str.hook(data, ::strlen(data));
+
+	m_codec->toUtf8(str, result);
+	if (!sys::utf8::Codec::validateUtf8(result))
+	{
+		// the database is opened with wrong encoding
+		m_codec->forceValidUtf8(result);
+	}
+
+	setDescription(result);
+}
+
+
+void
 Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	GameInfoList& infoList = gameInfoList();
 
 	m_roundLookup.resize(infoList.size());
@@ -1354,9 +1426,13 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 void
 Codec::reloadDescription(mstl::string const& rootname)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	char header[MaxIndexHeaderSize];
 
 	mstl::string	filename(rootname + m_extIndex);
+	mstl::string	descr;
+	mstl::string	str;
 	mstl::fstream	stream;
 
 	checkPermissions(filename);
@@ -1369,12 +1445,12 @@ Codec::reloadDescription(mstl::string const& rootname)
 
 	bstrm.skip(12);
 	bstrm[119] = '\0';	// to be sure
-	setDescription(reinterpret_cast<char const*>(bstrm.data()));
+	setRecodedDescription(reinterpret_cast<char const*>(bstrm.data()));
 }
 
 
 void
-Codec::reloadNamebases(mstl::string const& rootname, util::Progress& progress)
+Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
 {
 	mstl::string	filename(rootname + m_extNamebase);
 	mstl::fstream	stream;
@@ -1438,7 +1514,7 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 								NameList& shadowBase,
 								unsigned maxFreq,
 								unsigned count,
-								util::Progress& progress)
+								Progress& progress)
 {
 	typedef Namebase::Type Type;
 
@@ -1489,10 +1565,11 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 		}
 
 		str.set_size(length);
-		m_codec->toUtf8(str, name);
 
 		if (!sys::utf8::Codec::is7BitAscii(name))
 		{
+			m_codec->toUtf8(str, name);
+
 			if (!sys::utf8::Codec::validateUtf8(name))
 			{
 				// the database is opened with wrong encoding
@@ -1508,6 +1585,8 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 void
 Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 {
+	M_ASSERT(m_codec);
+
 	unsigned count[Namebase::Round + 1];
 	unsigned maxFreq[Namebase::Round + 1];
 	unsigned total = 0;
@@ -1537,6 +1616,28 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 	m_progressFrequency		= progress.frequency(total, 1000);
 	m_progressReportAfter	= m_progressFrequency;
 	m_progressCount			= 0;
+
+	if (!m_codec->hasEncoding())
+	{
+		preloadNamebase(bstrm, maxFreq[Namebase::Player], count[Namebase::Player], progress);
+		m_progressCount += count[Namebase::Player];
+		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+		preloadNamebase(bstrm, maxFreq[Namebase::Event], count[Namebase::Event], progress);
+		m_progressCount += count[Namebase::Event];
+		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+		preloadNamebase(bstrm, maxFreq[Namebase::Site], count[Namebase::Site], progress);
+		m_progressReportAfter = m_progressFrequency;
+		m_progressCount = 0;
+		progress.update(0);
+		stream.seekg(36, mstl::ios_base::beg);
+		bstrm.reset();
+		DataEnd();
+
+		if (m_encoding == sys::utf8::Codec::automatic())
+			m_encoding = sys::utf8::Codec::latin1();
+		m_codec->reset(m_encoding);
+		useEncoding(m_encoding);
+	}
 
 	readNamebase(	bstrm,
 						namebase(Namebase::Player),
@@ -1578,32 +1679,18 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 
 void
-Codec::readNamebase(	ByteIStream& bstrm,
-							Namebase& base,
-							NameList& shadowBase,
-							unsigned maxFreq,
-							unsigned count,
-							unsigned limit,
-							util::Progress& progress)
+Codec::preloadNamebase(ByteIStream& bstrm, unsigned maxFreq, unsigned count, Progress& progress)
 {
-	typedef Namebase::Type Type;
-
-	M_ASSERT(count <= limit);
-	M_ASSERT(m_codec);
-
 	if (count == 0)
 		return;
 
-	mstl::string name;
-	mstl::string str;
-	mstl::string tmp;
+	unsigned skipFreq = maxFreq >= 65536 ? 3 : (maxFreq >= 256 ? 2 : 1);
 
-	char buf[1024];
-	Type type(base.type());
+	mstl::function<uint32_t (void)> getCount(
+			count >= 65536 ? &ByteStream::getUint24 : &ByteStream::getUint16,
+			&bstrm);
 
-	base.reserve(count, limit);
-	shadowBase.reserve(count);
-	str.hook(buf, 1024);
+	char buf[256];
 
 	for (unsigned i = 0; i < count; ++i)
 	{
@@ -1613,15 +1700,89 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			m_progressReportAfter += m_progressFrequency;
 		}
 
-		unsigned index = (count >= 65536) ? bstrm.uint24() : bstrm.uint16();
-
-		__attribute__((unused))
-		unsigned freq = (maxFreq >= 65536)
-								? bstrm.uint24()
-								: (maxFreq >= 256 ? bstrm.uint16() : bstrm.get());
+		unsigned index = getCount();
 
 		if (index >= count)
 			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
+
+		bstrm.skip(skipFreq);
+
+		unsigned length = bstrm.get();
+
+		if (i == 0)
+		{
+			bstrm.get(buf, length);
+		}
+		else
+		{
+			unsigned prefix = bstrm.get();
+
+			if (prefix > length)
+				IO_RAISE(Namebase, Corrupted, "namebase file is broken");
+
+			bstrm.get(buf + prefix, length - prefix);
+		}
+
+		HandleData(buf, length);
+	}
+
+	progress.update(m_progressCount + count);
+}
+
+
+void
+Codec::readNamebase(	ByteIStream& bstrm,
+							Namebase& base,
+							NameList& shadowBase,
+							unsigned maxFreq,
+							unsigned count,
+							unsigned limit,
+							Progress& progress)
+{
+	typedef Namebase::Type Type;
+
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+	M_ASSERT(count <= limit);
+	M_ASSERT(m_codec);
+
+	if (count == 0)
+		return;
+
+	mstl::function<uint32_t (void)> getCount(
+			count >= 65536 ? &ByteStream::getUint24 : &ByteStream::getUint16,
+			&bstrm);
+	mstl::function<uint32_t (void)> getFreq(
+			maxFreq >= 65536
+				? &ByteStream::getUint24
+				: (maxFreq >= 256 ? &ByteStream::getUint16 : &ByteStream::getUint8),
+			&bstrm);
+
+	mstl::string name;
+	mstl::string str;
+	mstl::string tmp;
+
+	char buf[512];
+	Type type(base.type());
+
+	base.reserve(count, limit);
+	shadowBase.reserve(count);
+	str.hook(buf, sizeof(buf));
+
+	for (unsigned i = 0; i < count; ++i)
+	{
+		if (m_progressReportAfter == i)
+		{
+			progress.update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
+		unsigned index = getCount();
+
+		if (index >= count)
+			IO_RAISE(Namebase, Corrupted, "namebase file is broken");
+
+		__attribute__((unused))
+		unsigned freq = getFreq();
 
 		unsigned length = bstrm.get();
 
@@ -1725,6 +1886,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 #endif
 	}
 
+	progress.update(m_progressCount + count);
 	base.setNextId(count);
 }
 
@@ -1757,6 +1919,8 @@ Codec::getConsumer(format::Type srcFormat)
 void
 Codec::writeNamebases(mstl::fstream& stream)
 {
+	M_ASSERT(m_codec && m_codec->hasEncoding());
+
 	stream.set_unbuffered();
 
 	unsigned char buf[28];

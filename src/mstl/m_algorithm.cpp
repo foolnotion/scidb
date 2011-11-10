@@ -70,3 +70,5 @@ mstl::bits::rotate_fast(void* first, void* middle, void* last)
 		reverse(f, f == m ? l : m);
 	}
 }
+
+// vi:set ts=3 sw=3:

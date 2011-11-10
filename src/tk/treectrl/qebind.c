@@ -36,6 +36,9 @@
 
 #include <ctype.h>
 #include <string.h>
+#ifdef  HAVE_INTPTR_T
+#include <stdint.h>
+#endif
 #include <tcl.h>
 #include <tk.h>
 #include "qebind.h"
@@ -50,6 +53,21 @@ MODULE_SCOPE void dbwin(char *fmt, ...);
  */
 
 #define UCHAR(c) ((unsigned char) (c))
+/*
+ * Macros used to cast between pointers and integers (e.g. when storing an int
+ * in ClientData), on 64-bit architectures they avoid gcc warning about "cast
+ * to/from pointer from/to integer of different size".
+ */
+
+#if !defined(INT2PTR) && !defined(PTR2INT)
+#   if defined(HAVE_INTPTR_T) || defined(intptr_t)
+#	define INT2PTR(p) ((void *)(intptr_t)(p))
+#	define PTR2INT(p) ((int)(intptr_t)(p))
+#   else
+#	define INT2PTR(p) ((void *)(p))
+#	define PTR2INT(p) ((int)(p))
+#   endif
+#endif
 
 int debug_bindings = 0;
 
@@ -167,15 +185,8 @@ typedef struct PercentsData {
 static int DeleteBinding(BindingTable *bindPtr, BindValue *valuePtr);
 static EventInfo *FindEvent(BindingTable *bindPtr, int eventType);
 
-static int initialized = 0;
-
 int QE_BindInit(Tcl_Interp *interp)
 {
-	if (initialized)
-		return TCL_OK;
-
-	initialized = 1;
-
 	return TCL_OK;
 }
 
@@ -218,7 +229,7 @@ int QE_InstallEvent(QE_BindingTable bindingTable, char *name, QE_ExpandProc expa
 	type = bindPtr->nextEventId++;
 
 	eiPtr = (EventInfo *) Tcl_Alloc(sizeof(EventInfo));
-	eiPtr->name = Tcl_Alloc(strlen(name) + 1);
+	eiPtr->name = Tcl_Alloc((int) strlen(name) + 1);
 	strcpy(eiPtr->name, name);
 	eiPtr->type = type;
 	eiPtr->expandProc = expandProc;
@@ -231,7 +242,7 @@ int QE_InstallEvent(QE_BindingTable bindingTable, char *name, QE_ExpandProc expa
 
 	Tcl_SetHashValue(hPtr, (ClientData) eiPtr);
 
-	hPtr = Tcl_CreateHashEntry(&bindPtr->eventTableByType, (char *)(long) type, &isNew);
+	hPtr = Tcl_CreateHashEntry(&bindPtr->eventTableByType, (char *) INT2PTR(type), &isNew);
 	Tcl_SetHashValue(hPtr, (ClientData) eiPtr);
 
 	/* List of EventInfos */
@@ -355,7 +366,7 @@ int QE_UninstallEvent(QE_BindingTable bindingTable, int eventType)
 	int i, count = 0;
 
 	/* Find the event */
-	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *)(long) eventType);
+	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *) INT2PTR(eventType));
 	if (hPtr == NULL)
 		return TCL_ERROR;
 	eiPtr = (EventInfo *) Tcl_GetHashValue(hPtr);
@@ -462,7 +473,7 @@ static EventInfo *FindEvent(BindingTable *bindPtr, int eventType)
 {
 	Tcl_HashEntry *hPtr;
 
-	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *)(long) eventType);
+	hPtr = Tcl_FindHashEntry(&bindPtr->eventTableByType, (char *) INT2PTR(eventType));
 	if (hPtr == NULL) return NULL;
 	return (EventInfo *) Tcl_GetHashValue(hPtr);
 }
@@ -674,7 +685,7 @@ int QE_CreateBinding(QE_BindingTable bindingTable, ClientData object,
 	/* Append given command to any existing command */
 	if (append && cmdOld)
 	{
-		length = strlen(cmdOld) + strlen(command) + 2;
+		length = (int) (strlen(cmdOld) + strlen(command) + 2);
 		cmdNew = Tcl_Alloc((unsigned) length);
 		(void) sprintf(cmdNew, "%s\n%s", cmdOld, command);
 	}
@@ -1027,7 +1038,7 @@ static void ExpandPercents(BindingTable *bindPtr, ClientData object,
 		}
 		if (string != command)
 		{
-			Tcl_DStringAppend(result, command, string - command);
+			Tcl_DStringAppend(result, command, (int) (string - command));
 			command = string;
 		}
 		if (*command == 0)
@@ -1083,7 +1094,7 @@ static void BindEvent(BindingTable *bindPtr, QE_Event *eventPtr, int wantDetail,
 				value2Ptr->specific = 1;
 			}
 		}
-
+		
 		/*
 		 * If a binding for a more-specific event exists for this object
 		 * and event-type, and this is a binding for a less-specific
@@ -1951,7 +1962,8 @@ static void Percents_Command(QE_ExpandArgs *args)
 
 #if ALLOW_INSTALL
 
-static int QE_InstallCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_InstallCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2081,7 +2093,8 @@ static int QE_InstallCmd_New(QE_BindingTable bindingTable, int objOffset, int ob
 	return TCL_OK;
 }
 
-static int QE_InstallCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_InstallCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2202,7 +2215,8 @@ static int QE_InstallCmd_Old(QE_BindingTable bindingTable, int objOffset, int ob
 	return TCL_OK;
 }
 
-int QE_InstallCmd(QE_BindingTable bindingTable, int objOffset, int objc,
+int
+QE_InstallCmd(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2224,7 +2238,8 @@ int QE_InstallCmd(QE_BindingTable bindingTable, int objOffset, int objc,
 	return QE_InstallCmd_New(bindingTable, objOffset, objc, objv);
 }
 
-static int QE_UninstallCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_UninstallCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2266,7 +2281,8 @@ static int QE_UninstallCmd_New(QE_BindingTable bindingTable, int objOffset, int 
 	return QE_UninstallEvent(bindingTable, eiPtr->type);
 }
 
-static int QE_UninstallCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_UninstallCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2401,7 +2417,8 @@ int QE_UninstallCmd(QE_BindingTable bindingTable, int objOffset, int objc,
 	return QE_UninstallCmd_New(bindingTable, objOffset, objc, objv);
 }
 
-static int QE_LinkageCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_LinkageCmd_New(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;
@@ -2434,7 +2451,8 @@ static int QE_LinkageCmd_New(QE_BindingTable bindingTable, int objOffset, int ob
 	return TCL_OK;
 }
 
-static int QE_LinkageCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
+static int
+QE_LinkageCmd_Old(QE_BindingTable bindingTable, int objOffset, int objc,
 	Tcl_Obj *CONST objv[])
 {
 	int objC = objc - objOffset;

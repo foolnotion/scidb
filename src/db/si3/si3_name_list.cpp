@@ -273,7 +273,7 @@ NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 {
 	unsigned id = m_nextId;
 
-	if (id == mstl::string::npos || m_usedIdSet.size() <= id)
+	if (id == mstl::bitset::npos || m_usedIdSet.size() <= id)
 	{
 		unsigned n = m_usedIdSet.size();
 

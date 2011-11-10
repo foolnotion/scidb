@@ -24,8 +24,11 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "app_application.h"
+
 #include "tk_init.h"
 #include "tcl_base.h"
+#include "tcl_application.h"
 
 #include "u_zstream.h"
 
@@ -47,10 +50,11 @@ init(Tcl_Interp* ti)
 		if (Tcl_Init(ti) == TCL_ERROR || Tk_Init(ti) == TCL_ERROR)
 			return TCL_ERROR;
 
-		Tcl_PkgProvide(ti, "tkscidb", "1.0");
-
 		tcl::init(ti);
 		tk::init(ti);
+
+		Tcl_PkgProvide(ti, "tkscidb", "1.0");
+		tcl::app::setup(new app::Application);
 	}
 	catch (mstl::exception const& exc)
 	{

@@ -66,6 +66,7 @@ tk_busy.o: tk8.5/tkInt.h
 tk_busy.o: tk8.5/tkPort.h
 tk_busy.o: tk8.5/tkUnixPort.h
 tk_busy.o: tk8.5/tkIntDecls.h
+tk_busy.o: ../mstl/m_types.h
 tk_image.o: tk_init.h
 tk_image.o: svg/svg_path_renderer.h
 tk_image.o: svg/svg_path_tokenizer.h
@@ -151,6 +152,8 @@ tk_jpeg.o: jpeg/jpeg_image.h
 tk_jpeg.o: jpeg/jpeg_scanline.h
 tk_jpeg.o: jpeg/jpeg_reader.h
 tk_jpeg.o: jpeg/jpeg_exception.h
+tk_jpeg.o: ../util/u_base64_decoder.h
+tk_jpeg.o: ../mstl/m_types.h
 tk_multiwindow.o: tk_init.h
 tk_multiwindow.o: ../tcl/tcl_base.h
 tk_multiwindow.o: ../tcl/tcl_base.ipp
@@ -158,6 +161,7 @@ tk_multiwindow.o: tk8.5/tkInt.h
 tk_multiwindow.o: tk8.5/tkPort.h
 tk_multiwindow.o: tk8.5/tkUnixPort.h
 tk_multiwindow.o: tk8.5/tkIntDecls.h
+tk_multiwindow.o: ../mstl/m_types.h
 tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h

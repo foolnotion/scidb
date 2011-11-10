@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../sys -I../util -I../db -I../db/sci -I../db/si3
+INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/universalchardet -I../db -I../db/sci -I../db/si3
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
@@ -660,10 +660,13 @@ app_view.o: ../db/sci/sci_encoder.h
 app_view.o: ../db/sci/sci_encoder_position.h
 app_view.o: ../db/sci/sci_encoder_position.ipp
 app_view.o: ../util/u_byte_stream.h
+app_view.o: ../util/u_exception.h
 app_view.o: ../util/u_byte_stream.ipp
 app_view.o: ../db/sci/sci_common.h
 app_view.o: ../db/db_info_consumer.h
 app_view.o: ../db/si3/si3_codec.h
+app_view.o: ../util/universalchardet/nsUniversalDetector.h
+app_view.o: ../util/universalchardet/nstypes.h
 app_view.o: ../db/si3/si3_codec.ipp
 app_view.o: ../db/si3/si3_consumer.h
 app_view.o: ../db/si3/si3_encoder.h

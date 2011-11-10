@@ -27,6 +27,7 @@
 #include "tcl_application.h"
 #include "tcl_base.h"
 
+#include "app_application.h"
 #include "app_cursor.h"
 
 #include "db_database.h"
@@ -47,8 +48,8 @@ using namespace app;
 using namespace tcl;
 using namespace tcl::app;
 
-Application tcl::app::scidb;
-Application const& tcl::app::Scidb = tcl::app::scidb;
+Application* tcl::app::scidb = 0;
+Application const* tcl::app::Scidb = 0;
 
 static char const* CmdBases		= "::scidb::app::bases";
 static char const* CmdClose		= "::scidb::app::close";
@@ -184,11 +185,11 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_Games:
-			setResult(Scidb.countGames());
+			setResult(Scidb->countGames());
 			break;
 
 		case Cmd_Bases:
-			setResult(Scidb.countBases());
+			setResult(Scidb->countBases());
 			break;
 
 		default:
@@ -203,7 +204,7 @@ static int
 cmdBases(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Application::CursorList list;
-	Scidb.enumCursors(list);
+	Scidb->enumCursors(list);
 	objc = list.size();
 
 	Tcl_Obj* objs[objc];
@@ -351,7 +352,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.close();
+	scidb->close();
 	return TCL_OK;
 }
 
@@ -359,8 +360,16 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdFinalize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.finalize();
+	scidb->finalize();
 	return TCL_OK;
+}
+
+
+void
+tcl::app::setup(::app::Application* app)
+{
+	M_REQUIRE(app);
+	Scidb = scidb = app;
 }
 
 
@@ -371,9 +380,9 @@ tcl::app::init(Tcl_Interp* ti)
 	createCommand(ti, CmdClose,		cmdClose);
 	createCommand(ti, CmdCount,		cmdCount);
 	createCommand(ti, CmdFinalize,	cmdFinalize);
-	createCommand(ti, CmdGet,		cmdGet);
-	createCommand(ti, CmdLoad,		cmdLoad);
-	createCommand(ti, CmdLookup,	cmdLookup);
+	createCommand(ti, CmdGet,			cmdGet);
+	createCommand(ti, CmdLoad,			cmdLoad);
+	createCommand(ti, CmdLookup,		cmdLookup);
 }
 
 // vi:set ts=3 sw=3:

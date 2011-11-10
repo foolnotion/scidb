@@ -43,9 +43,9 @@ checkResult(int rc, Tcl_Obj* cmd, Tcl_Obj* subcmd, Tcl_Obj* arg)
 //	if (rc != TCL_OK)
 //	{
 //		TCL_RAISE(	"'%s %s %s' failed",
-//						Tcl_GetStringFromObj(cmd, nullptr),
-//						Tcl_GetStringFromObj(subcmd, nullptr),
-//						Tcl_GetStringFromObj(arg, nullptr));
+//						Tcl_GetString(cmd),
+//						Tcl_GetString(subcmd),
+//						Tcl_GetString(arg));
 //	}
 }
 

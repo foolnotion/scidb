@@ -29,6 +29,7 @@
 #include "tcl_application.h"
 #include "tcl_database.h"
 
+#include "app_application.h"
 #include "app_cursor.h"
 
 #include "db_tree.h"
@@ -147,7 +148,7 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	setResult(list);
 
 	Application::CursorList cursors;
-	Scidb.enumCursors(cursors);
+	Scidb->enumCursors(cursors);
 
 	for (unsigned i = 0; i < cursors.size(); ++i)
 	{
@@ -171,8 +172,8 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Scidb.haveReferenceBase())
-		setResult(Scidb.referenceBase().database().name());
+	if (Scidb->haveReferenceBase())
+		setResult(Scidb->referenceBase().database().name());
 	else
 		setResult("");
 
@@ -186,7 +187,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* base = stringFromObj(objc, objv, 1);
 
 	if (*base)
-		scidb.setReferenceBase(&scidb.cursor(base));
+		scidb->setReferenceBase(&scidb->cursor(base));
 
 	return TCL_OK;
 }
@@ -195,7 +196,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSwitch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.setSwitchReferenceBase(boolFromObj(objc, objv, 1));
+	scidb->setSwitchReferenceBase(boolFromObj(objc, objv, 1));
 	return TCL_OK;
 }
 
@@ -211,7 +212,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int rc = parseArguments(objc, objv, ratingType, mode);
 
 	if (rc == TCL_OK)
-		setResult(scidb.updateTree(mode, ratingType, *m_progress));
+		setResult(scidb->updateTree(mode, ratingType, *m_progress));
 
 	return rc;
 }
@@ -220,7 +221,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdStop(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	scidb.stopUpdateTree();
+	scidb->stopUpdateTree();
 	return TCL_OK;
 }
 
@@ -270,7 +271,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (sortColumn == attribute::tree::LastColumn)
 		return error(CmdFetch, nullptr, nullptr, "no sort column given");
 
-	Tree const* tree = scidb.finishUpdateTree(mode, ratingType, sortColumn);
+	Tree const* tree = scidb->finishUpdateTree(mode, ratingType, sortColumn);
 
 	char const* result = "";
 
@@ -281,7 +282,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			result = "empty";
 			m_key.clear();
 		}
-		else if (tree->isTreeFor(Scidb.referenceBase().database(), m_key))
+		else if (tree->isTreeFor(Scidb->referenceBase().database(), m_key))
 		{
 			result = "unchanged";
 		}
@@ -304,7 +305,7 @@ cmdFinish(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Tree const* tree = Scidb.currentTree();
+	Tree const* tree = Scidb->currentTree();
 
 	if (tree && !tree->isEmpty())
 	{
@@ -367,11 +368,11 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Tree const* tree = Scidb.currentTree())
+	if (Tree const* tree = Scidb->currentTree())
 	{
-		Board const& board = Scidb.game().currentBoard();
+		Board const& board = Scidb->game().currentBoard();
 
-		if (tree->isTreeFor(Scidb.cursor().database(), board))
+		if (tree->isTreeFor(Scidb->cursor().database(), board))
 		{
 			unsigned row = unsignedFromObj(objc, objv, 1);
 
@@ -396,7 +397,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Tree const* tree = Scidb.currentTree())
+	if (Tree const* tree = Scidb->currentTree())
 	{
 		unsigned row = unsignedFromObj(objc, objv, 1);
 		NamebasePlayer const* player;
@@ -439,7 +440,7 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult((Scidb.haveReferenceBase()) ? int(Scidb.referenceBase().treeViewIdentifier()) : -1);
+	setResult((Scidb->haveReferenceBase()) ? int(Scidb->referenceBase().treeViewIdentifier()) : -1);
 	return TCL_OK;
 }
 
@@ -447,7 +448,7 @@ cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Tree const* tree = Scidb.currentTree())
+	if (Tree const* tree = Scidb->currentTree())
 	{
 		Board board;
 		board.setup(tree->position());
@@ -463,9 +464,9 @@ cmdIsRefBase(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* base = stringFromObj(objc, objv, 1);
 
-	if (!Scidb.haveReferenceBase())
+	if (!Scidb->haveReferenceBase())
 		setResult(false);
-	else if (Scidb.referenceBase().database().name() == base)
+	else if (Scidb->referenceBase().database().name() == base)
 		setResult(true);
 	else
 		setResult(false);
@@ -477,7 +478,7 @@ cmdIsRefBase(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdIsUpToDate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb.treeIsUpToDate(m_key));
+	setResult(Scidb->treeIsUpToDate(m_key));
 	return TCL_OK;
 }
 

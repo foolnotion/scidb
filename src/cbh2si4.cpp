@@ -26,9 +26,11 @@
 
 #include "db_eco_table.h"
 #include "db_database.h"
+#include "db_pgn_reader.h"
 #include "db_log.h"
 
 #include "si3/si3_consumer.h"
+#include "si3/si3_encoder.h"
 #include "si3/si3_codec.h"
 
 #include "u_progress.h"
@@ -56,8 +58,8 @@ namespace tcl { namespace bits { Tcl_Interp* interp; } }
 
 struct TclInterpreter
 {
-	TclInterpreter()	{ ::tcl::bits::interp = Tcl_CreateInterp(); }
-	~TclInterpreter()	{ Tcl_DeleteInterp(::tcl::bits::interp); }
+	TclInterpreter()	{ tcl::bits::interp = Tcl_CreateInterp(); }
+	~TclInterpreter()	{ Tcl_DeleteInterp(tcl::bits::interp); }
 };
 
 
@@ -105,6 +107,34 @@ struct Log : public db::Log
 };
 
 
+typedef si3::Consumer::TagBits TagBits;
+
+
+static TagBits
+getDefaultTags()
+{
+	TagBits defaultTags;
+
+	defaultTags.set(tag::Board);
+	defaultTags.set(tag::EventCountry);
+	defaultTags.set(tag::EventType);
+	defaultTags.set(tag::Mode);
+	defaultTags.set(tag::Remark);
+	defaultTags.set(tag::TimeControl);
+	defaultTags.set(tag::TimeMode);
+	defaultTags.set(tag::WhiteClock);
+	defaultTags.set(tag::WhiteFideId);
+	defaultTags.set(tag::WhiteTeam);
+	defaultTags.set(tag::WhiteTitle);
+	defaultTags.set(tag::BlackClock);
+	defaultTags.set(tag::BlackFideId);
+	defaultTags.set(tag::BlackTeam);
+	defaultTags.set(tag::BlackTitle);
+
+	return defaultTags;
+}
+
+
 static void
 loadEcoFile()
 {
@@ -113,8 +143,8 @@ loadEcoFile()
 
 	if (!stream)
 	{
-		::fprintf(stderr, "cannot open ECO file '%s'", path.c_str());
-		::exit(1);
+		fprintf(stderr, "cannot open ECO file '%s'", path.c_str());
+		exit(1);
 	}
 
 	EcoTable::specimen().load(stream);
@@ -124,22 +154,39 @@ loadEcoFile()
 static void
 printHelpAndExit(int rc)
 {
-	::printf("Usage: cbh2si4 [options ...] <ChessBase database> [destination database]\n");
-	::printf("\n");
-	::printf("Options:\n");
-	::printf("  --            Only file names after this\n");
-	::printf("  --help        Print Help (this message) and exit\n");
-	::printf("  --force       Overwrite existing destination files\n");
-	::printf("  --convertto <encoding>\n");
-	::printf("                Use this encoding for output database\n");
-	::printf("                (default is iso8859-1)\n");
-	::printf("  --convertfrom <encoding>\n");
-	::printf("                The encoding of the ChessBase database\n");
-	::printf("                (default is cp1252)\n");
-	::printf("  --list-encodings\n");
-	::printf("                List all known encodings\n");
-	::printf("\n");
-	::exit(rc);
+	printf("Usage: cbh2si4 [options ...] <ChessBase database> [destination database]\n");
+	printf("\n");
+	printf("Options:\n");
+	printf("  --            Only file names after this\n");
+	printf("  --help        Print Help (this message) and exit\n");
+	printf("  --force       Overwrite existing destination files\n");
+	printf("  --convertto <encoding>\n");
+	printf("                Use this encoding for output database\n");
+	printf("                (default is iso8859-1)\n");
+	printf("  --convertfrom <encoding>\n");
+	printf("                The encoding of the ChessBase database\n");
+	printf("                (default is cp1252)\n");
+	printf("  --tags <comma-separated-tag-list>\n");
+	printf("                Export only the tags given with this list\n");
+	printf("                (but mandatory tags are always exported)\n");
+	printf("  --unusual-tags\n");
+	printf("                Export unusual tags (otherwise ignore these tags)\n");
+	printf("  --all-tags\n");
+	printf("                Export all tags (overrules option --tags)\n");
+	printf("                (but ignore unusual tags except --unusual-tags is given)\n");
+	printf("  --no-tags\n");
+	printf("                Do not export any tag (except mandatory tags)\n");
+	printf("                (overrules --tags, --all-tags, but not --unusual-tags)\n");
+	printf("  --list-encodings\n");
+	printf("                List all known encodings\n");
+	printf("  --list-mandatory-tags\n");
+	printf("                List all mandatory tags\n");
+	printf("  --list-default-tags\n");
+	printf("                List all default tags\n");
+	printf("  --list-usual-tags\n");
+	printf("                List all usual tags (includes mandatory tags)\n");
+	printf("\n");
+	exit(rc);
 }
 
 
@@ -153,13 +200,122 @@ printEncodingsAndExit(int rc)
 
 	for (unsigned i = 0; i < n; ++i)
 	{
-		::printf(encodings[i].c_str());
+		printf(encodings[i].c_str());
 		if (i + 1 < n)
-			::printf(", ");
+			printf(", ");
 	}
 
-	::printf("\n");
+	printf("\n");
+	exit(rc);
+}
+
+
+static void
+printDefaultTagsAndExit(int rc)
+{
+	char const* comma = "";
+	TagBits defaultTags = getDefaultTags();
+
+	for (unsigned i = 0; i < 64; ++i)
+	{
+		if (defaultTags.test(i))
+		{
+			printf("%s%s", comma, tag::toName(tag::ID(i)).c_str());
+			comma = ",";
+		}
+	}
+
+	printf("\n");
+	exit(rc);
+}
+
+
+static void
+printUsualTagsAndExit(int rc)
+{
+	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	{
+		if (i > 0)
+			printf(",");
+		printf("%s", tag::toName(tag::ID(i)).c_str());
+	}
+
+	printf("\n");
+	exit(rc);
+}
+
+
+static void
+printMandatoryTagsAndExit(int rc)
+{
+	mstl::string tagList;
+
+	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	{
+		if (si3::Encoder::skipTag(tag::ID(i)))
+		{
+			if (!tagList.empty())
+				tagList += ',';
+			tagList += tag::toName(tag::ID(i));
+		}
+	}
+
+	printf("%s\n", tagList.c_str());
 	::exit(rc);
+}
+
+
+static void
+checkTagList(mstl::string& tagList)
+{
+	char* s = tagList.data();
+	char* e = s;
+
+	while (true)
+	{
+		while (*e && *e != ',')
+			++e;
+
+		if (!PgnReader::validateTagName(s, e - s))
+		{
+			fprintf(stderr, "Invalid tag name '%s'.\n", mstl::string(s, e).c_str());
+			exit(1);
+		}
+
+		if (tag::fromName(s, e - s) == tag::ExtraTag)
+		{
+			fprintf(stderr, "'%s' is an unusual tag and cannot be included.\n", mstl::string(s, e).c_str());
+			fprintf(stderr, "Probably you might use option --unusual-tags.\n");
+			exit(1);
+		}
+
+		if (*e == '\0')
+			return;
+
+		s = ++e;
+	}
+}
+
+
+
+static void
+setTagList(TagBits& result, mstl::string const& tagList)
+{
+	char const* s = tagList;
+	char const* e = s;
+
+	while (true)
+	{
+		while (*e && *e != ',')
+			++e;
+
+		result.set(tag::fromName(s, e - s));
+
+		if (*e == '\0')
+			return;
+
+		s = ++e;
+	}
 }
 
 
@@ -204,75 +360,112 @@ main(int argc, char* argv[])
 	mstl::string	convertto("iso8859-1");
 	mstl::string	convertfrom("cp1252");
 	bool				force(false);
+	bool				allTags(false);
+	bool				noTags(false);
+	bool				defaultTags(true);
+	bool				extraTags(false);
+	mstl::string	givenTags;
 
 	int i = 1;
 
 	for ( ; i < argc && argv[i][0] == '-'; ++i)
 	{
-		if (::strcmp(argv[i], "--") == 0)
+		if (strcmp(argv[i], "--") == 0)
 			break;
 
-		if (::strcmp(argv[i], "--help") == 0)
+		if (strcmp(argv[i], "--help") == 0)
 		{
 			printHelpAndExit(0);
 		}
-		else if (::strcmp(argv[i], "--convertto") == 0)
+		else if (strcmp(argv[i], "--convertto") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
 			convertto.assign(argv[i]);
 
 		}
-		else if (::strcmp(argv[i], "--convertfrom") == 0)
+		else if (strcmp(argv[i], "--convertfrom") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
 			convertfrom.assign(argv[i]);
 		}
-		else if (::strcmp(argv[i], "--list-encodings") == 0)
+		else if (strcmp(argv[i], "--tags") == 0)
+		{
+			if (++i == argc)
+				printHelpAndExit(1);
+			givenTags = argv[i];
+			checkTagList(givenTags);
+			defaultTags = false;
+		}
+		else if (strcmp(argv[i], "--all-tags") == 0)
+		{
+			allTags = true;
+		}
+		else if (strcmp(argv[i], "--no-tags") == 0)
+		{
+			noTags = true;
+		}
+		else if (strcmp(argv[i], "--unusual-tags") == 0)
+		{
+			extraTags = true;
+		}
+		else if (strcmp(argv[i], "--list-encodings") == 0)
 		{
 			printEncodingsAndExit(0);
 		}
-		else if (::strcmp(argv[i], "--force") == 0)
+		else if (strcmp(argv[i], "--list-default-tags") == 0)
+		{
+			printDefaultTagsAndExit(0);
+		}
+		else if (strcmp(argv[i], "--list-mandatory-tags") == 0)
+		{
+			printMandatoryTagsAndExit(0);
+		}
+		else if (strcmp(argv[i], "--list-usual-tags") == 0)
+		{
+			printUsualTagsAndExit(0);
+		}
+		else if (strcmp(argv[i], "--force") == 0)
 		{
 			force = true;
 		}
 		else
 		{
-			::fprintf(stderr, "Unrecognized option '%s'.\n\n", argv[i]);
+			fprintf(stderr, "Unrecognized option '%s'.\n\n", argv[i]);
 			printHelpAndExit(1);
 		}
 	}
 
 	if (!sys::utf8::Codec::checkEncoding(convertto))
 	{
-		::fprintf(stderr, "Unknown encoding '%s'.\n\n", convertto.c_str());
+		fprintf(stderr, "Unknown encoding '%s'.\n\n", convertto.c_str());
 		printEncodingsAndExit(1);
 	}
 
 	if (!sys::utf8::Codec::checkEncoding(convertfrom))
 	{
-		::fprintf(stderr, "Unknown encoding '%s'.\n\n", convertfrom.c_str());
+		fprintf(stderr, "Unknown encoding '%s'.\n\n", convertfrom.c_str());
 		printEncodingsAndExit(1);
 	}
 
 	if (i == argc)
 	{
-		::fprintf(stderr, "No input database specified.\n\n");
+		fprintf(stderr, "No input database specified.\n\n");
 		printHelpAndExit(1);
 	}
 
 	mstl::string cbhPath(argv[i++]);
 
-	if (cbhPath.size() < 4 || ::strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbh") != 0)
+	if (cbhPath.size() < 4 || strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbh") != 0)
 		cbhPath.append(".cbh");
 
 	mstl::ifstream	stream(cbhPath);
 
 	if (!stream)
 	{
-		::fprintf(stderr, "Cannot open file '%s'.\n", cbhPath.c_str());
-		::exit(1);
+		fprintf(stderr, "Cannot open file '%s'.\n", cbhPath.c_str());
+		exit(1);
 	}
 
 	mstl::string si4Path;
@@ -284,17 +477,29 @@ main(int argc, char* argv[])
 	else
 	{
 		si4Path.append(cbhPath);
-		if (si4Path.size() >= 4 && ::strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbh") == 0)
+		if (si4Path.size() >= 4 && strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbh") == 0)
 			si4Path.erase(si4Path.size() - 4);
 	}
 
-	if (si4Path.size() < 4 || ::strcmp(si4Path.c_str() + si4Path.size() - 4, ".si4") != 0)
+	if (si4Path.size() < 4 || strcmp(si4Path.c_str() + si4Path.size() - 4, ".si4") != 0)
 		si4Path.append(".si4");
 	
-	if (!force && ::access(si4Path.c_str(), R_OK) == 0)
+	if (!force && access(si4Path.c_str(), R_OK) == 0)
 	{
-		::fprintf(stderr, "Database '%s' already exists.\n", si4Path.c_str());
-		::exit(1);
+		fprintf(stderr, "Database '%s' already exists.\n", si4Path.c_str());
+		exit(1);
+	}
+
+	TagBits tagList;
+
+	if (!noTags)
+	{
+		if (allTags)
+			tagList.set();
+		else if (defaultTags)
+			tagList = getDefaultTags();
+		else
+			setTagList(tagList, givenTags);
 	}
 
 	try
@@ -308,16 +513,16 @@ main(int argc, char* argv[])
 		si3::Consumer consumer(	format::Scid4,
 										dynamic_cast<si3::Codec&>(dst.codec()),
 										convertto,
-										si3::Consumer::TagBits(true),	// TODO: specifiy allowed tags
-										true);								// TODO: specifiy allowed tags
+										tagList,
+										extraTags);
 
 		dst.setType(src.type());
 		unsigned numGames = exportGames(src, consumer, progress);
 		dst.save(progress);
-		::printf("\n%u game(s) written.\n", numGames);
+		printf("\n%u game(s) written.\n", numGames);
 		if (rejected > 0)
-			::printf("%u game(s) rejected.\n", rejected);
-		::fflush(stdout);
+			printf("%u game(s) rejected.\n", rejected);
+		fflush(stdout);
 		dst.close();
 		src.close();
 	}

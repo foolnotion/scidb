@@ -5321,7 +5321,6 @@ TreeColumn_WidthOfItems(
 {
 	TreeCtrl *tree = column->tree;
 	TreeItem item;
-	TreeItemColumn itemColumn;
 	int width;
 
 	if (column->widthOfItems >= 0)
@@ -5332,20 +5331,20 @@ TreeColumn_WidthOfItems(
 	if (!TreeItem_ReallyVisible(tree, item))
 		item = TreeItem_NextVisible(tree, item);
 	while (item != NULL) {
-#ifdef EXPENSIVE_SPAN_WIDTH /* NOT USED */
-		width = TreeItem_NeededWidthOfColumn(tree, item, column->index);
-		if (column == tree->columnTree)
-			width += TreeItem_Indent(tree, item);
-		column->widthOfItems = MAX(column->widthOfItems, width);
-#else
-		itemColumn = TreeItem_FindColumn(tree, item, column->index);
-		if (itemColumn != NULL) {
-			width = TreeItemColumn_NeededWidth(tree, item, itemColumn);
+		if (tree->expensiveSpanWidth) {
+			width = TreeItem_NeededWidthOfColumn(tree, item, column->index);
 			if (column == tree->columnTree)
 				width += TreeItem_Indent(tree, item);
 			column->widthOfItems = MAX(column->widthOfItems, width);
+		} else {
+			TreeItemColumn itemColumn = TreeItem_FindColumn(tree, item, column->index);
+			if (itemColumn != NULL) {
+				width = TreeItemColumn_NeededWidth(tree, item, itemColumn);
+				if (column == tree->columnTree)
+					width += TreeItem_Indent(tree, item);
+				column->widthOfItems = MAX(column->widthOfItems, width);
+			}
 		}
-#endif
 		item = TreeItem_NextVisible(tree, item);
 	}
 

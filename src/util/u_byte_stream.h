@@ -132,6 +132,11 @@ public:
 	uint32_t uint24LE();
 	uint32_t uint32LE();
 
+	uint32_t getUint8();
+	uint32_t getUint16();
+	uint32_t getUint24();
+	uint32_t getUint32();
+
 	void resetp();
 	void resetg();
 	void skip(unsigned n);

@@ -356,6 +356,7 @@ ZStream::ZStream(char const* filename, Type type, Mode mode)
 void
 ZStream::setZipFileSuffixes(Strings const& suffixes)
 {
+	m_suffixes.clear();
 	m_suffixes.reserve(suffixes.size());
 
 	for (unsigned i = 0; i < suffixes.size(); ++i)

@@ -27,15 +27,17 @@
 #ifndef _tcl_application_included
 #define _tcl_application_included
 
-#include "app_application.h"
-
 extern "C" { struct Tcl_Interp; }
+
+namespace app { class Application; }
 
 namespace tcl {
 namespace app {
 
-extern ::app::Application scidb;
-extern ::app::Application const& Scidb;
+extern ::app::Application *scidb;
+extern ::app::Application const* Scidb;
+
+void setup(::app::Application* app);
 
 void init(Tcl_Interp* interp);
 

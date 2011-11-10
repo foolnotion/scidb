@@ -1,6 +1,22 @@
 [September/Oktober 2011]
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #102)
+------------------------------------------------------------------------------
+* Crash immediately after startup fixed, which occurred only on some systems.
+
+* cbh2si4 improved. The user may optionally determine the exported tags,
+because this affects position search time (size of the game file).
+
+* Sub-project universalchardet added (character set detector from
+Mozilla/Firefox).
+
+* Load database: auto-detection of character set implemented.
+
+* Import PGN game: auto-detection of character set implemented.
+* Import PGN game: auto-detection of figurine set implemented.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #101)
 ------------------------------------------------------------------------------
 * Bug with re-opening the file selection box fixed.

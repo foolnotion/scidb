@@ -398,7 +398,7 @@ Tcl_Obj* Node::path() const	{ return m_path; }
 
 Childs const& Node::childs() const		{ return m_childs; }
 mstl::string const& Node::name() const	{ return m_name; }
-char const* Node::pathName() const		{ return Tcl_GetStringFromObj(m_path, nullptr); }
+char const* Node::pathName() const		{ return Tcl_GetString(m_path); }
 
 
 Node::Node()
@@ -423,7 +423,7 @@ Node::Node(Tcl_Obj* path)
 	,m_opts(0)
 	,m_parent(0)
 {
-	m_lookup[Tcl_GetStringFromObj(path, nullptr)] = this;
+	m_lookup[Tcl_GetString(path)] = this;
 }
 
 
@@ -495,7 +495,7 @@ Node::create(Node* parent, int n, Tcl_Obj** opts)
 		case Frame:			type = m_objFrame; break;
 	}
 
-	m_name.assign(Tcl_GetStringFromObj(opts[0], nullptr));
+	m_name.assign(Tcl_GetString(opts[0]));
 	m_opts = Tcl_NewListObj(n - 1, opts + 1);
 	m_path = call(	__func__,
 						m_objCreateCmd,
@@ -529,7 +529,7 @@ Node::getValue(char const* key) const
 
 	for (int i = 0; i < objc - 1; i += 2)
 	{
-		if (::strcmp(Tcl_GetStringFromObj(objv[i], nullptr), key) == 0)
+		if (::strcmp(Tcl_GetString(objv[i]), key) == 0)
 			return objv[i + 1];
 	}
 
@@ -542,7 +542,7 @@ Node::expand() const
 {
 	if (Tcl_Obj* v = getValue("-expand"))
 	{
-		switch (*Tcl_GetStringFromObj(v, nullptr))
+		switch (*Tcl_GetString(v))
 		{
 			case 'x': return X;
 			case 'y': return Y;

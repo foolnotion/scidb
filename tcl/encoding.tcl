@@ -109,15 +109,18 @@ set Lang(zh)	"Chinese"			;# chi
 
 set Font(hi)	"Devanagari"		;# hin
 
-set Encoding			"Encoding"
-set Description		"Description"
-set Languages			"Languages (Fonts)"
+set AutoDetect				"auto-detection"
+
+set Encoding				"Encoding"
+set Description			"Description"
+set Languages				"Languages (Fonts)"
+set UseAutoDetection		"Use Auto-Detection"
 
 set ChooseEncodingTitle	"Choose Encoding"
 
-set CurrentEncoding	"Current encoding:"
-set DefaultEncoding	"Default encoding:"
-set SystemEncoding	"System encoding:"
+set CurrentEncoding		"Current encoding:"
+set DefaultEncoding		"Default encoding:"
+set SystemEncoding		"System encoding:"
 
 } ;# namespace mc
 
@@ -202,6 +205,7 @@ variable Encodings {
 	{ utf-8			{Unicode Transformation Format} {} }
 }
 
+variable autoEncoding auto
 variable defaultEncoding iso8859-1
 variable windowsEncoding cp1252
 variable macEncoding macRoman
@@ -218,7 +222,7 @@ array set Colors {
 }
 
 
-proc build {path encoding defaultEncoding {width 600} {height 400} {encodingList {}}} {
+proc build {path currentEncoding defaultEncoding {width 0} {height 0} {encodingList {}}} {
 	variable List
 	variable systemEncoding
 
@@ -228,11 +232,14 @@ proc build {path encoding defaultEncoding {width 600} {height 400} {encodingList
 	set table $f.list.t
 	ttk::frame $f.enc -takefocus 0
 	ttk::frame $f.list -takefocus 0
-	if {[llength $encoding]} {
+	if {[llength $currentEncoding]} {
 		set cur [ttk::button $f.enc.cur \
-			-text "$mc::CurrentEncoding\n$encoding" \
-			-command [namespace code [list select $f $encoding]] \
+			-text "$mc::CurrentEncoding\n$currentEncoding" \
+			-command [namespace code [list select $f $currentEncoding]] \
 		]
+		if {[lsearch $encodingList $currentEncoding] == -1} {
+			$cur configure -state disabled
+		}
 	}
 	set def [ttk::button $f.enc.def \
 		-text "$mc::DefaultEncoding\n$defaultEncoding" \
@@ -243,7 +250,7 @@ proc build {path encoding defaultEncoding {width 600} {height 400} {encodingList
 			-command [namespace code [list select $f $systemEncoding]] \
 	]
 
-	if {[llength $encoding]} {
+	if {[llength $currentEncoding]} {
 		grid $cur -row 1 -column 1 -sticky ew -ipady 2
 		lappend cols 1
 	}
@@ -263,7 +270,7 @@ proc build {path encoding defaultEncoding {width 600} {height 400} {encodingList
 	set Vars(pending-activate) {}
 
 	ttk::scrollbar $f.list.sb -orient vertical -command [list $table yview]
-	if {[llength $height]} {
+	if {$height > 0} {
 		BuildTable $table $width $height
 	} else {
 		bind $f.list <Configure> [namespace code [list ConfigureTable $table %w %h]]
@@ -284,15 +291,20 @@ proc build {path encoding defaultEncoding {width 600} {height 400} {encodingList
 }
 
 
-proc choose {parent currentEnc {defaultEnc {}}} {
+proc choose {parent currentEnc defaultEnc {autoDetectFlag no}} {
+	variable List
 	variable defaultEncoding
+	variable autoEncoding
 	variable _Encoding
 
+	set encodingList $List
+	if {$autoDetectFlag} { set encodingList [linsert $encodingList 0 $autoEncoding] }
 	set _Encoding $currentEnc
 	set dlg $parent.chooseEncoding
 	toplevel $dlg -class Dialog
 	if {[llength $defaultEnc] == 0} { set defaultEnc $defaultEncoding }
-	build $dlg.enc $currentEnc $defaultEnc
+	build $dlg.enc $currentEnc $defaultEnc 600 400 $encodingList
+	variable ${dlg}.enc.list.t::Vars
 	bind $dlg.enc <<TreeControlSelect>> [namespace code [list TreeControlSelect $dlg %d]]
 	pack $dlg.enc -fill both -expand yes
 	::widget::dialogButtons $dlg {ok cancel} ok
@@ -312,7 +324,9 @@ proc choose {parent currentEnc {defaultEnc {}}} {
 	wm deiconify $dlg
 	focus $dlg.enc.list.t
 	ttk::grabWindow $dlg
-	after idle [namespace code [list select $dlg.enc $currentEnc]]
+	set encoding $currentEnc
+	if {[lsearch $Vars(encodings) $encoding] == -1} { set encoding $defaultEnc }
+	after idle [namespace code [list select $dlg.enc $encoding]]
 	tkwait window $dlg
 	ttk::releaseGrab $dlg
 	return $_Encoding
@@ -390,6 +404,7 @@ proc BuildTable {table width height} {
 	variable Colors
 	variable BorderWidth
 	variable Encodings
+	variable autoEncoding
 
 	treectrl $table \
 		-takefocus 1 \
@@ -404,8 +419,10 @@ proc BuildTable {table width height} {
 		-showrootlines no \
 		-columnresizemode realtime \
 		-background white \
+		-yscrollincrement 1 \
 		-width [expr {$width - 2*$BorderWidth}] \
-		-height [expr {$height - 2*$BorderWidth}]
+		-height [expr {$height - 2*$BorderWidth} \
+	]
 
 	set parent [winfo parent $table]
 	set path [winfo parent $parent]
@@ -468,10 +485,19 @@ proc BuildTable {table width height} {
 
 	set row 1
 	foreach enc $Vars(list) {
-		set index [lsearch -index 0 -exact $Encodings $enc]
-		if {$index >= 0} {
-			lappend Vars(encodings) $enc
-			lassign [lindex $Encodings $index] id descr isocodes
+		set id ""
+		if {$enc eq $autoEncoding} {
+			set id $autoEncoding
+			set descr $mc::UseAutoDetection
+			set isocodes {}
+		} else {
+			set index [lsearch -index 0 -exact $Encodings $enc]
+			if {$index >= 0} {
+				lassign [lindex $Encodings $index] id descr isocodes
+			}
+		}
+		if {[string length $id]} {
+			lappend Vars(encodings) $id
 			set langs {}
 			foreach code $isocodes {
 				if {[string match f-* $code]} {

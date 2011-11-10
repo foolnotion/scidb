@@ -159,7 +159,7 @@ static Tk_ObjCustomOption stickyOption =
     SetSticky,			/* setProc */
     GetSticky,			/* getProc */
     RestoreSticky,	/* restoreProc */
-    nullptr,				/* freeProc */
+    nullptr,			/* freeProc */
     0
 };
 
@@ -174,76 +174,76 @@ static Tk_ObjCustomOption stickyOption =
 # error "unsupported platform"
 #endif
 
-#define DEF_PANEDWINDOW_BG_COLOR		NORMAL_BG
-#define DEF_PANEDWINDOW_BG_MONO		"#ffffff"
-#define DEF_PANEDWINDOW_BORDERWIDTH	"1"
-#define DEF_PANEDWINDOW_OVERLAY		"0"
-#define DEF_PANEDWINDOW_CURSOR		""
-#define DEF_PANEDWINDOW_HEIGHT		""
-#define DEF_PANEDWINDOW_RELIEF		"flat"
-#define DEF_PANEDWINDOW_WIDTH			""
+#define DEF_MULTIWINDOW_BG_COLOR		NORMAL_BG
+#define DEF_MULTIWINDOW_BG_MONO		"#ffffff"
+#define DEF_MULTIWINDOW_BORDERWIDTH	"1"
+#define DEF_MULTIWINDOW_OVERLAY		"0"
+#define DEF_MULTIWINDOW_CURSOR		""
+#define DEF_MULTIWINDOW_HEIGHT		""
+#define DEF_MULTIWINDOW_RELIEF		"flat"
+#define DEF_MULTIWINDOW_WIDTH			""
 
 static const Tk_OptionSpec optionSpecs[] =
 {
     {TK_OPTION_BORDER, "-background", "background", "Background",
-	 DEF_PANEDWINDOW_BG_COLOR, -1, Tk_Offset(MultiWindow, background),
-	 0, (ClientData)DEF_PANEDWINDOW_BG_MONO},
+	 DEF_MULTIWINDOW_BG_COLOR, -1, Tk_Offset(MultiWindow, background),
+	 0, (ClientData)DEF_MULTIWINDOW_BG_MONO},
     {TK_OPTION_SYNONYM, "-bd", nullptr, nullptr,
 	 nullptr, 0, -1, 0, (ClientData) "-borderwidth"},
     {TK_OPTION_SYNONYM, "-bg", nullptr, nullptr,
 	 nullptr, 0, -1, 0, (ClientData) "-background"},
     {TK_OPTION_PIXELS, "-borderwidth", "borderWidth", "BorderWidth",
-	 DEF_PANEDWINDOW_BORDERWIDTH, -1, Tk_Offset(MultiWindow, borderWidth),
+	 DEF_MULTIWINDOW_BORDERWIDTH, -1, Tk_Offset(MultiWindow, borderWidth),
 	 0, 0, GEOMETRY},
     {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor",
-	 DEF_PANEDWINDOW_CURSOR, -1, Tk_Offset(MultiWindow, cursor),
+	 DEF_MULTIWINDOW_CURSOR, -1, Tk_Offset(MultiWindow, cursor),
 	 TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_PIXELS, "-height", "height", "Height",
-	 DEF_PANEDWINDOW_HEIGHT, Tk_Offset(MultiWindow, heightObj),
+	 DEF_MULTIWINDOW_HEIGHT, Tk_Offset(MultiWindow, heightObj),
 	 Tk_Offset(MultiWindow, height), TK_OPTION_NULL_OK, 0, GEOMETRY},
 	 {TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
-	 DEF_PANEDWINDOW_OVERLAY, -1, Tk_Offset(MultiWindow, overlay),
+	 DEF_MULTIWINDOW_OVERLAY, -1, Tk_Offset(MultiWindow, overlay),
 	 0, 0, 0},
     {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
-	 DEF_PANEDWINDOW_RELIEF, -1, Tk_Offset(MultiWindow, relief), 0, 0, 0},
+	 DEF_MULTIWINDOW_RELIEF, -1, Tk_Offset(MultiWindow, relief), 0, 0, 0},
     {TK_OPTION_PIXELS, "-width", "width", "Width",
-	 DEF_PANEDWINDOW_WIDTH, Tk_Offset(MultiWindow, widthObj),
+	 DEF_MULTIWINDOW_WIDTH, Tk_Offset(MultiWindow, widthObj),
 	 Tk_Offset(MultiWindow, width), TK_OPTION_NULL_OK, 0, GEOMETRY},
     {TK_OPTION_END}
 };
 
 
-#define DEF_PANEDWINDOW_PANE_AFTER	""
-#define DEF_PANEDWINDOW_PANE_BEFORE	""
-#define DEF_PANEDWINDOW_PANE_HEIGHT	""
-#define DEF_PANEDWINDOW_PANE_HIDE	"0"
-#define DEF_PANEDWINDOW_PANE_PADX	"0"
-#define DEF_PANEDWINDOW_PANE_PADY	"0"
-#define DEF_PANEDWINDOW_PANE_STICKY	"nsew"
-#define DEF_PANEDWINDOW_PANE_WIDTH	""
+#define DEF_MULTIWINDOW_PANE_AFTER	""
+#define DEF_MULTIWINDOW_PANE_BEFORE	""
+#define DEF_MULTIWINDOW_PANE_HEIGHT	""
+#define DEF_MULTIWINDOW_PANE_HIDE	"0"
+#define DEF_MULTIWINDOW_PANE_PADX	"0"
+#define DEF_MULTIWINDOW_PANE_PADY	"0"
+#define DEF_MULTIWINDOW_PANE_STICKY	"nsew"
+#define DEF_MULTIWINDOW_PANE_WIDTH	""
 
 static const Tk_OptionSpec slaveOptionSpecs[] =
 {
     {TK_OPTION_WINDOW, "-after", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_AFTER, -1, Tk_Offset(Slave, after),
+	 DEF_MULTIWINDOW_PANE_AFTER, -1, Tk_Offset(Slave, after),
 	 TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_WINDOW, "-before", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_BEFORE, -1, Tk_Offset(Slave, before),
+	 DEF_MULTIWINDOW_PANE_BEFORE, -1, Tk_Offset(Slave, before),
 	 TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_PIXELS, "-height", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_HEIGHT, Tk_Offset(Slave, heightObj),
+	 DEF_MULTIWINDOW_PANE_HEIGHT, Tk_Offset(Slave, heightObj),
 	 Tk_Offset(Slave, height), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_BOOLEAN, "-hide", "hide", "Hide",
-	 DEF_PANEDWINDOW_PANE_HIDE, -1, Tk_Offset(Slave, hide), 0,0,GEOMETRY},
+	 DEF_MULTIWINDOW_PANE_HIDE, -1, Tk_Offset(Slave, hide), 0,0,GEOMETRY},
     {TK_OPTION_PIXELS, "-padx", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_PADX, -1, Tk_Offset(Slave, padx), 0, 0, 0},
+	 DEF_MULTIWINDOW_PANE_PADX, -1, Tk_Offset(Slave, padx), 0, 0, 0},
     {TK_OPTION_PIXELS, "-pady", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_PADY, -1, Tk_Offset(Slave, pady), 0, 0, 0},
+	 DEF_MULTIWINDOW_PANE_PADY, -1, Tk_Offset(Slave, pady), 0, 0, 0},
     {TK_OPTION_CUSTOM, "-sticky", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_STICKY, -1, Tk_Offset(Slave, sticky), 0,
+	 DEF_MULTIWINDOW_PANE_STICKY, -1, Tk_Offset(Slave, sticky), 0,
 	 (ClientData) &stickyOption, 0},
     {TK_OPTION_PIXELS, "-width", nullptr, nullptr,
-	 DEF_PANEDWINDOW_PANE_WIDTH, Tk_Offset(Slave, widthObj),
+	 DEF_MULTIWINDOW_PANE_WIDTH, Tk_Offset(Slave, widthObj),
 	 Tk_Offset(Slave, width), TK_OPTION_NULL_OK, 0, 0},
     {TK_OPTION_END}
 };
@@ -1943,8 +1943,7 @@ Tk_MultiWindowObjCmd(	ClientData clientData,	// nullptr
 		return TCL_ERROR;
 	}
 
-	tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp),
-	Tcl_GetStringFromObj(objv[1], nullptr), nullptr);
+	tkwin = Tk_CreateWindowFromPath(interp, Tk_MainWindow(interp), Tcl_GetString(objv[1]), nullptr);
 	if (tkwin == nullptr)
 		return TCL_ERROR;
 

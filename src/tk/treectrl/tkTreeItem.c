@@ -204,8 +204,6 @@ TreeItemColumn_NeededWidth(
 	return 0;
 }
 
-#ifdef EXPENSIVE_SPAN_WIDTH /* NOT USED */
-
 /*
  * When a style spans 2 or more columns, all of the requested width goes
  * to the first column in the span. Ideally the width needed by the style
@@ -315,8 +313,6 @@ if (0)
 
 	return width;
 }
-
-#endif /* EXPENSIVE_SPAN_WIDTH */
 
 /*
  *----------------------------------------------------------------------

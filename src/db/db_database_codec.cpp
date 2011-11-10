@@ -183,7 +183,7 @@ DatabaseCodec::CustomFlags::set(unsigned n, mstl::string const& text)
 {
 	M_REQUIRE(n < 6);
 
-	unsigned len = mstl::min(size_t(8), text.size());
+	unsigned len = mstl::min(mstl::string::size_type(8), text.size());
 	::memcpy(m_text[n], text, len);
 	m_text[n][len] = '\0';
 }
@@ -273,6 +273,14 @@ DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 		si3::Codec::getSuffixes(filename, result);
 	else
 		result.push_back(ext);
+}
+
+
+void
+DatabaseCodec::useEncoding(mstl::string const& encoding)
+{
+	M_ASSERT(isOpen());
+	m_db->m_encoding = encoding;
 }
 
 

@@ -77,14 +77,13 @@ static unsigned Counter = 0;
 
 
 Database::Database(mstl::string const& name, mstl::string const& encoding, Storage storage, Type type)
-	:DatabaseContent(type)
+	:DatabaseContent(encoding, type)
 	,m_codec(DatabaseCodec::makeCodec(name))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
-	,m_encoding(encoding)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -113,13 +112,13 @@ Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
 							Mode mode,
 							Progress& progress)
-	:m_codec(0)
+	:DatabaseContent(encoding)
+	,m_codec(0)
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
-	,m_encoding(encoding)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -154,13 +153,13 @@ Database::Database(	mstl::string const& name,
 
 
 Database::Database(mstl::string const& name, Producer& producer, Progress& progress)
-	:m_codec(0)
+	:DatabaseContent(producer.encoding())
+	,m_codec(0)
 	,m_name(name)
 	,m_rootname(name)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
-	,m_encoding(producer.encoding())
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)

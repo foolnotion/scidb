@@ -210,11 +210,11 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 				error(CmdSearch, "annotator", 0, "invalid query");
 				return search;
 			}
-			search = new SearchAnnotator(Tcl_GetStringFromObj(objv[1], nullptr));
+			search = new SearchAnnotator(Tcl_GetString(objv[1]));
 			break;
 
 		default:
-			usage(CmdSearch, Tcl_GetStringFromObj(objv[0], nullptr), nullptr, subcommands, args);
+			usage(CmdSearch, Tcl_GetString(objv[0]), nullptr, subcommands, args);
 			return search;
 	}
 
@@ -240,7 +240,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			error(CmdNew, 0, 0, "unknown resize mode '%s'", arg);
 	}
 
-	appendResult("%u", scidb.cursor(base).newView(mode[0], mode[1], mode[2], mode[3]));
+	appendResult("%u", scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3]));
 	return TCL_OK;
 }
 
@@ -259,7 +259,7 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (Tcl_GetIntFromObj(ti, objv[2], &view) != TCL_OK)
 		return error(CmdClose, 0, 0, "unsigned integer expected for view");
 
-	scidb.cursor(Tcl_GetStringFromObj(objv[1], nullptr)).closeView(view);
+	scidb->cursor(Tcl_GetString(objv[1])).closeView(view);
 	return TCL_OK;
 }
 
@@ -282,19 +282,19 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_Games:
-			appendResult("%u", Scidb.cursor(database).view(view).countGames());
+			appendResult("%u", Scidb->cursor(database).view(view).countGames());
 			return TCL_OK;
 
 		case Cmd_Players:
-			appendResult("%u", Scidb.cursor(database).view(view).countPlayers());
+			appendResult("%u", Scidb->cursor(database).view(view).countPlayers());
 			return TCL_OK;
 
 		case Cmd_Annotators:
-			appendResult("%u", Scidb.cursor(database).view(view).countAnnotators());
+			appendResult("%u", Scidb->cursor(database).view(view).countAnnotators());
 			return TCL_OK;
 
 		case Cmd_Events:
-			appendResult("%u", Scidb.cursor(database).view(view).countEvents());
+			appendResult("%u", Scidb->cursor(database).view(view).countEvents());
 			return TCL_OK;
 	}
 
@@ -317,15 +317,15 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
-	char const*	database	= Tcl_GetStringFromObj(objv[2], nullptr);
-	char const* name		= Tcl_GetStringFromObj(objv[4], nullptr);
+	char const*	database	= Tcl_GetString(objv[2]);
+	char const* name		= Tcl_GetString(objv[4]);
 
 	int view;
 
 	if (Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
 		return error(CmdFind, 0, 0, "unsigned integer expected for view");
 
-	View const& v = Scidb.cursor(database).view(view);
+	View const& v = Scidb->cursor(database).view(view);
 
 	switch (index)
 	{
@@ -358,8 +358,8 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	char const*	database	= Tcl_GetStringFromObj(objv[1], nullptr);
-	char const*	ops		= Tcl_GetStringFromObj(objv[3], nullptr);
+	char const*	database	= Tcl_GetString(objv[1]);
+	char const*	ops		= Tcl_GetString(objv[3]);
 
 	Query::Operator op;
 
@@ -378,7 +378,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdSearch, 0, 0, "invalid operator %s", ops);
 
-	char const* f = Tcl_GetStringFromObj(objv[4], nullptr);
+	char const* f = Tcl_GetString(objv[4]);
 	unsigned filter = Application::None;
 
 	switch (f[0])
@@ -396,7 +396,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdSearch, 0, 0, "unsigned integer expected for view");
 
 	// TODO: we don't like to interrupt tree search!
-	Cursor& cursor = scidb.cursor(database);
+	Cursor& cursor = scidb->cursor(database);
 
 	SearchP search;
 
@@ -406,7 +406,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (!search && objc == 6)
 		return TCL_ERROR;
 
-	scidb.searchGames(cursor, Query(mstl::ref_counted_ptr<Search>(search), op), view, filter);
+	scidb->searchGames(cursor, Query(mstl::ref_counted_ptr<Search>(search), op), view, filter);
 
 	return TCL_OK;
 }
@@ -436,7 +436,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Progress			progress(objv[9], objv[10]);
 	tcl::Log			log(objv[11], objv[12]);
-	Cursor&			cursor(scidb.cursor(database));
+	Cursor&			cursor(scidb->cursor(database));
 	Database&		db(cursor.database());
 	View&				v(cursor.view(view));
 	type::ID			type(db.type());
@@ -458,7 +458,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		for (int i = 0; i < objc; ++i)
 		{
-			tag::ID tag = tag::fromName(Tcl_GetStringFromObj(tags[i], nullptr));
+			tag::ID tag = tag::fromName(Tcl_GetString(tags[i]));
 
 			if (tag == tag::ExtraTag)
 				extraTags = true;
@@ -487,7 +487,7 @@ static int
 cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* attr = stringFromObj(objc, objv, 1);
-	Cursor const& cursor(Scidb.cursor(stringFromObj(objc, objv, 2)));
+	Cursor const& cursor(Scidb->cursor(stringFromObj(objc, objv, 2)));
 	View const& view = cursor.view(unsignedFromObj(objc, objv, 3));
 	unsigned index = unsignedFromObj(objc, objv, 4);
 
@@ -512,8 +512,8 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
 
 	// XXX we don't want cancelling tree search
-	mstl::string basename(Tcl_GetStringFromObj(base, nullptr));
-	Cursor& cursor = scidb.cursor(basename);
+	mstl::string basename(Tcl_GetString(base));
+	Cursor& cursor = scidb->cursor(basename);
 
 	SubscriberP& subscriber = ::subscriberMap[basename];
 
@@ -536,7 +536,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
 	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
 
-	mstl::string basename(Tcl_GetStringFromObj(base, nullptr));
+	mstl::string basename(Tcl_GetString(base));
 	SubscriberMap::iterator i = ::subscriberMap.find(basename);
 
 	if (i != subscriberMap.end())

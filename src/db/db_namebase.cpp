@@ -727,7 +727,7 @@ Namebase::update()
 
 	unsigned index = 0;
 
-	IdSet	usedSet(mstl::max(m_nextId, m_list.size()));
+	IdSet	usedSet(mstl::max(List::size_type(m_nextId), m_list.size()));
 	List	prepareSet;
 
 	if (m_isModified)
@@ -885,6 +885,7 @@ Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(entry);
+	M_REQUIRE(sys::utf8::Codec::validateUtf8(name));
 
 	if (name == entry->name())
 		return;

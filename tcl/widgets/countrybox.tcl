@@ -164,7 +164,7 @@ proc SetupList {w} {
 		}
 		set list [lsort -index 0 -dictionary $list]
 		foreach entry $list {
-			lassign $entry mapped code iso1 flag country options
+			lassign $entry _ code iso1 flag country options
 			$w listinsert [list $code $iso1 $flag $country] {*}$options -index [incr index]
 		}
 	}

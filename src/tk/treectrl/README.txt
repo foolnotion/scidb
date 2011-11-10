@@ -15,6 +15,11 @@ bug fixes, new options:
 		If set, keeps the width of a column resized by user.
 		If not set, the column width may change if the treectrl
 		has resized. Defaults to "yes".
+	
+	treeCtrl <pathName> -expensivespanwidth <boolean>
+	   If set, use expensive calculation considering column
+		spans. If not set, column spans will be discarded
+		during the calculation. Defaults to "no".
 		
 	<pathName> column create <columnDesc> -steady <boolean>
 		If set, keeps the width of a column after an element

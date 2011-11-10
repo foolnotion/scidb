@@ -407,7 +407,7 @@ set Values(notation)			short
 set Values(figurines)		graphic
 
 set Values(pgn,encoding)	iso8859-1
-set Values(scid,encoding)	iso8859-1
+set Values(scid,encoding)	utf-8
 set Values(scidb,encoding)	utf-8
 
 set Values(pdf,encoding)		iso8859-1
@@ -1153,7 +1153,7 @@ proc ConfigureEncoding {w tab encList} {
 	}
 
 	if {$Values(Type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
-	::encoding::build $w.$tab $currentEncoding $Defaults(encoding) [winfo width $w] {} $encList
+	::encoding::build $w.$tab $currentEncoding $Defaults(encoding) [winfo width $w] 0 $encList
 	if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
 		::encoding::activate $w.$tab $Defaults(encoding)
 	} else {

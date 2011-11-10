@@ -175,14 +175,20 @@ proc WidgetProc {w command args} {
 				if {[llength $columns] == 1} {
 					lappend values [$w.popdown.l get $i [lindex $columns 0]]
 				} else {
-					set value {}
+					set lastValue ""
 					set text [string range $Priv($w:format) 0 end]
 					set index 1
+					set count 0
 					foreach column $columns {
-						set value [$w.popdown.l get $i $column]
-						set text [string map [list %$index $value] $text]
+						set value [string trim [$w.popdown.l get $i $column]]
+						if {[string length $value]} {
+							set lastValue $value
+							set text [string map [list %$index $value] $text]
+							incr count
+						}
 						incr index
 					}
+					if {$count == 1} { set text $lastValue }
 					lappend values $text
 				}
 			}

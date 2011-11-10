@@ -77,7 +77,7 @@ Token::name(Environment& env) const
 		if (0 <= escapeChar && escapeChar <= 255)
 			result[0] = escapeChar;
 		else
-			result.erase(size_t(0), size_t(1));
+			result.erase(mstl::string::size_type(0), mstl::string::size_type(1));
 	}
 
 	return result;

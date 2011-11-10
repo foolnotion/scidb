@@ -60,6 +60,11 @@ inline ByteStream& ByteStream::operator>>(uint64_t& i)	{ i = uint64(); return *t
 inline void ByteStream::resetp() { m_putp = m_base; }
 inline void ByteStream::resetg() { m_getp = m_base; }
 
+inline uint32_t ByteStream::getUint8()		{ return uint8();  }
+inline uint32_t ByteStream::getUint16()	{ return uint16(); }
+inline uint32_t ByteStream::getUint24()	{ return uint24(); }
+inline uint32_t ByteStream::getUint32()	{ return uint32(); }
+
 
 inline
 ByteStream::Byte

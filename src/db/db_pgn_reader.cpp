@@ -2125,7 +2125,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				if (::isElo(value.begin(), value.end()))
 				{
 					if (value[0] == '0')
-						value.erase(size_t(0), size_t(1));
+						value.erase(mstl::string::size_type(0), mstl::string::size_type(1));
 
 					int rat = ::strtoul(value, nullptr, 10);
 
@@ -2347,6 +2347,8 @@ PgnReader::validateTagName(char* tag, unsigned len)
 			*tag = '_';
 		else if (!::isalnum(c))
 			return false;
+
+		++tag;
 	}
 
 	return true;

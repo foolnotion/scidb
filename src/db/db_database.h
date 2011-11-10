@@ -243,7 +243,6 @@ private:
 	unsigned			m_size;
 	uint64_t			m_lastChange;
 	TreeCache		m_treeCache;
-	mstl::string	m_encoding;
 	bool				m_encodingFailed;
 	bool				m_encodingOk;
 	bool				m_usingAsyncReader;

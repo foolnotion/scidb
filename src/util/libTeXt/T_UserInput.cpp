@@ -46,7 +46,7 @@ UserInput::readNextLine(mstl::string& result)
 	mstl::string::size_type n = m_text.find('\n');
 
 	result.assign(m_text, 0, n);
-	m_text.erase(size_t(0), n);
+	m_text.erase(mstl::string::size_type(0), n);
 
 	return true;
 }

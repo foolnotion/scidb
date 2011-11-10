@@ -370,6 +370,24 @@ static type::ID const TypeMap[] =
 };
 
 
+static void
+convPlayerName(mstl::string& str)
+{
+	for (unsigned i = 0; i < str.size(); ++i)
+	{
+		switch (Byte(str[i]))
+		{
+			case 0xa2: str[i] = 'K'; break;
+			case 0xa3: str[i] = 'Q'; break;
+			case 0xa4: str[i] = 'N'; break;
+			case 0xa5: str[i] = 'B'; break;
+			case 0xa6: str[i] = 'R'; break;
+			case 0xa7: str[i] = 'P'; break;
+		}
+	}
+}
+
+
 inline static unsigned
 convertEco(unsigned code)
 {
@@ -437,6 +455,7 @@ Codec::gameFlags() const
 
 Codec::Codec()
 	:m_codec(0)
+	,m_encoding(::sys::utf8::Codec::windows())
 	,m_allocator(32768)
 	,m_sourceBase(Namebase::Annotator)
 	,m_illegalEvent(0)
@@ -516,10 +535,22 @@ Codec::extension() const
 
 
 void
+Codec::Report(char const* charset)
+{
+	if (::sys::utf8::Codec::latin1() == charset)
+		m_encoding.assign(::sys::utf8::Codec::windows());
+	else
+		m_encoding.assign(charset);
+}
+
+
+void
 Codec::setEncoding(mstl::string const& encoding)
 {
-	delete m_codec;
-	m_codec = new sys::utf8::Codec(encoding);
+	if (m_codec == 0)
+		m_codec = new ::sys::utf8::Codec(encoding);
+	else
+		m_codec->reset(encoding);
 }
 
 
@@ -618,6 +649,19 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	setEncoding(encoding);
 
 	m_numGames = readHeader(rootname);
+
+	if (!m_codec->hasEncoding())
+	{
+		preloadPlayerData(rootname, progress);
+		preloadAnnotatorData(rootname, progress);
+		preloadTournamentData(rootname, progress);
+		DataEnd();
+
+		if (m_encoding == sys::utf8::Codec::automatic())
+			m_encoding = sys::utf8::Codec::windows(); // cannot be Latin-1
+		m_codec->reset(m_encoding);
+		useEncoding(m_encoding);
+	}
 
 	readIniData(rootname);
 	readSourceData(rootname, progress);
@@ -1135,6 +1179,177 @@ Codec::reloadNamebases(mstl::string const& rootname, util::Progress& progress)
 
 
 void
+Codec::preloadTournamentData(mstl::string const& rootname, util::Progress& progress)
+{
+	M_ASSERT(m_codec);
+
+	static unsigned const RecordSize = 99;
+
+	mstl::string	filename(rootname + ".cbt");
+	mstl::string	name;
+	mstl::string	city;
+	mstl::fstream	strm;
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+	name.assign(160, '\0');
+	city.assign(160, '\0');
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	uint32_t nrecs = mstl::bo::swapLE(hdr[0]);
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 40);
+			HandleData(name, ::strlen(name));
+
+			strm.read(city.data(), 30);
+			HandleData(city, ::strlen(city));
+
+			strm.seekg(RecordSize - 79, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::preloadPlayerData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 67;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	filename(rootname + ".cbp");
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size() % RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(202, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize - 4, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 30);
+			::convPlayerName(name);
+			HandleData(name, ::strlen(name));
+
+			strm.read(name.data(), 20);
+			::convPlayerName(name);
+			HandleData(name, ::strlen(name));
+
+			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
+Codec::preloadAnnotatorData(mstl::string const& rootname, util::Progress& progress)
+{
+	static unsigned const RecordSize = 62;
+
+	mstl::string	name;
+	mstl::fstream	strm;
+	mstl::string	filename(rootname + ".cbc");
+
+	checkPermissions(filename);
+	openFile(strm, filename, Readonly);
+
+	uint32_t hdr[7];
+	strm.read(reinterpret_cast<char*>(hdr), sizeof(hdr));
+	strm.seekg((strm.size()%RecordSize) - sizeof(hdr), mstl::ios_base::cur);
+	uint32_t nrecs	= mstl::bo::swapLE(hdr[0]);
+
+	unsigned frequency	= progress.frequency(nrecs, 20000);
+	unsigned reportAfter	= frequency;
+
+	name.assign(200, '\0');
+	progress.start(nrecs);
+
+	for (unsigned i = 0; i < nrecs; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		int32_t addr;
+		strm.read(reinterpret_cast<char*>(&addr), 4);
+		addr = mstl::bo::swapLE(addr);
+
+		if (addr == ::Deleted)
+		{
+			strm.seekg(RecordSize, mstl::ios_base::cur);
+		}
+		else
+		{
+			strm.seekg(5, mstl::ios_base::cur);
+			strm.read(name.data(), 45);
+			HandleData(name, ::strlen(name));
+
+			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
+		}
+	}
+
+	strm.close();
+}
+
+
+void
 Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progress)
 {
 	M_ASSERT(m_codec);
@@ -1606,6 +1821,9 @@ Codec::readIniData(mstl::string const& rootname)
 				}
 			}
 
+			m_codec->toUtf8(title);
+			if (!::sys::utf8::Codec::validateUtf8(title))
+				m_codec->forceValidUtf8(title);
 			setDescription(title);
 
 			return;

@@ -925,7 +925,9 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 	strm << uint8_t(type());						// base type
 	strm << uint32_t(created());					// creation time
 
-	strm.put(description(), mstl::min(description().size(), sizeof(header) - strm.tellp() - 1));
+	strm.put(description(),
+				mstl::min(	description().size(),
+								mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
 
 	if (!fstrm.seekp(8, mstl::ios_base::beg))	// skip magic
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");

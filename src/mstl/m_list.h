@@ -39,7 +39,7 @@ public:
 	typedef value_type&						reference;
 	typedef value_type const&				const_reference;
 	typedef ptrdiff_t							difference_type;
-	typedef size_t								size_type;
+	typedef bits::size_t						size_type;
 
 	list();
 	explicit list(size_type n);

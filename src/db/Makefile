@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -Isci -Isci/v91 -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../sys
+INCLUDE	= -I. -Isci -Isci/v91 -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../util/universalchardet -I../sys
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
@@ -744,6 +744,8 @@ db_database_codec.o: ../mstl/m_ostream.h
 db_database_codec.o: ../mstl/m_ostream.ipp
 db_database_codec.o: ../mstl/m_ofstream.ipp
 db_database_codec.o: si3/si3_codec.h
+db_database_codec.o: ../util/universalchardet/nsUniversalDetector.h
+db_database_codec.o: ../util/universalchardet/nstypes.h
 db_database_codec.o: si3/si3_codec.ipp
 db_database_codec.o: cbh/cbh_codec.h
 db_database_codec.o: ../mstl/m_hash.h
@@ -934,10 +936,6 @@ db_edit_node.o: ../mstl/m_map.ipp
 db_edit_node.o: db_comment.ipp
 db_edit_node.o: db_annotation.h
 db_edit_node.o: db_annotation.ipp
-db_edit_node.o: db_mark_set.h
-db_edit_node.o: db_mark.h
-db_edit_node.o: db_mark.ipp
-db_edit_node.o: db_mark_set.ipp
 db_edit_node.o: db_edit_node.ipp
 db_edit_node.o: db_move_node.h
 db_edit_node.o: ../mstl/m_set.h
@@ -945,6 +943,10 @@ db_edit_node.o: ../mstl/m_set.ipp
 db_edit_node.o: ../mstl/m_algorithm.h
 db_edit_node.o: ../mstl/m_algorithm.ipp
 db_edit_node.o: db_move_node.ipp
+db_edit_node.o: db_mark_set.h
+db_edit_node.o: db_mark.h
+db_edit_node.o: db_mark.ipp
+db_edit_node.o: db_mark_set.ipp
 db_edit_node.o: db_move_info_set.h
 db_edit_node.o: db_move_info.h
 db_edit_node.o: db_date.h
@@ -1706,6 +1708,7 @@ db_mark.o: ../mstl/m_string.h
 db_mark.o: ../mstl/m_string.ipp
 db_mark.o: db_mark.ipp
 db_mark.o: ../util/u_byte_stream.h
+db_mark.o: ../util/u_exception.h
 db_mark.o: ../util/u_byte_stream.ipp
 db_mark.o: ../mstl/m_stdio.h
 db_mark_set.o: db_mark_set.h
@@ -3103,6 +3106,7 @@ db_tree.o: ../mstl/m_hash.h
 db_tree.o: ../mstl/m_hash.ipp
 db_tree.o: db_eco_table.ipp
 db_tree.o: ../util/u_byte_stream.h
+db_tree.o: ../util/u_exception.h
 db_tree.o: ../util/u_byte_stream.ipp
 db_tree.o: ../util/u_progress.h
 db_tree.o: ../util/u_progress.ipp
@@ -3565,6 +3569,7 @@ sci/sci_codec.o: ../mstl/m_map.ipp
 sci/sci_codec.o: db_engine_list.ipp
 sci/sci_codec.o: db_consumer.ipp
 sci/sci_codec.o: ../util/u_byte_stream.h
+sci/sci_codec.o: ../util/u_exception.h
 sci/sci_codec.o: ../util/u_byte_stream.ipp
 sci/sci_codec.o: sci/sci_consumer.h
 sci/sci_codec.o: sci/sci_common.h
@@ -3576,7 +3581,6 @@ sci/sci_codec.o: db_game_data.h
 sci/sci_codec.o: db_tag_set.h
 sci/sci_codec.o: db_tag_set.ipp
 sci/sci_codec.o: db_exception.h
-sci/sci_codec.o: ../util/u_exception.h
 sci/sci_codec.o: ../util/u_block_file.h
 sci/sci_codec.o: ../util/u_block_file.ipp
 sci/sci_codec.o: ../util/u_progress.h
@@ -3655,6 +3659,7 @@ sci/sci_consumer.o: ../mstl/m_bitfield.h
 sci/sci_consumer.o: ../mstl/m_bitfield.ipp
 sci/sci_consumer.o: db_consumer.ipp
 sci/sci_consumer.o: ../util/u_byte_stream.h
+sci/sci_consumer.o: ../util/u_exception.h
 sci/sci_consumer.o: ../util/u_byte_stream.ipp
 sci/sci_consumer.o: sci/sci_common.h
 sci/sci_consumer.o: db_info_consumer.h
@@ -3953,6 +3958,7 @@ sci/sci_encoder.o: ../mstl/m_bitfield.h
 sci/sci_encoder.o: ../mstl/m_bitfield.ipp
 sci/sci_encoder.o: db_consumer.ipp
 sci/sci_encoder.o: ../util/u_byte_stream.h
+sci/sci_encoder.o: ../util/u_exception.h
 sci/sci_encoder.o: ../util/u_byte_stream.ipp
 sci/sci_encoder.o: sci/sci_common.h
 sci/sci_encoder.o: db_move_node.h
@@ -3973,7 +3979,6 @@ sci/sci_encoder.o: db_game_data.h
 sci/sci_encoder.o: db_tag_set.h
 sci/sci_encoder.o: db_tag_set.ipp
 sci/sci_encoder.o: db_exception.h
-sci/sci_encoder.o: ../util/u_exception.h
 sci/sci_encoder_position.o: sci/sci_encoder_position.h
 sci/sci_encoder_position.o: db_common.h
 sci/sci_encoder_position.o: ../util/u_base.h
@@ -4115,6 +4120,7 @@ sci/v91/sci_v91_codec.o: sci/v91/sci_v91_encoder.h
 sci/v91/sci_v91_codec.o: sci/v91/sci_v91_encoder_position.h
 sci/v91/sci_v91_codec.o: sci/v91/sci_v91_encoder_position.ipp
 sci/v91/sci_v91_codec.o: ../util/u_byte_stream.h
+sci/v91/sci_v91_codec.o: ../util/u_exception.h
 sci/v91/sci_v91_codec.o: ../util/u_byte_stream.ipp
 sci/v91/sci_v91_codec.o: sci/v91/sci_v91_consumer.h
 sci/v91/sci_v91_codec.o: sci/v91/sci_v91_common.h
@@ -4142,7 +4148,6 @@ sci/v91/sci_v91_codec.o: db_game_data.h
 sci/v91/sci_v91_codec.o: db_tag_set.h
 sci/v91/sci_v91_codec.o: db_tag_set.ipp
 sci/v91/sci_v91_codec.o: db_exception.h
-sci/v91/sci_v91_codec.o: ../util/u_exception.h
 sci/v91/sci_v91_codec.o: ../util/u_block_file.h
 sci/v91/sci_v91_codec.o: ../util/u_block_file.ipp
 sci/v91/sci_v91_codec.o: ../util/u_progress.h
@@ -4179,6 +4184,7 @@ sci/v91/sci_v91_consumer.o: ../mstl/m_construct.h
 sci/v91/sci_v91_consumer.o: ../mstl/m_construct.ipp
 sci/v91/sci_v91_consumer.o: sci/v91/sci_v91_encoder_position.ipp
 sci/v91/sci_v91_consumer.o: ../util/u_byte_stream.h
+sci/v91/sci_v91_consumer.o: ../util/u_exception.h
 sci/v91/sci_v91_consumer.o: ../util/u_byte_stream.ipp
 sci/v91/sci_v91_consumer.o: sci/v91/sci_v91_common.h
 sci/v91/sci_v91_consumer.o: db_consumer.h
@@ -4476,6 +4482,7 @@ sci/v91/sci_v91_encoder.o: ../mstl/m_construct.h
 sci/v91/sci_v91_encoder.o: ../mstl/m_construct.ipp
 sci/v91/sci_v91_encoder.o: sci/v91/sci_v91_encoder_position.ipp
 sci/v91/sci_v91_encoder.o: ../util/u_byte_stream.h
+sci/v91/sci_v91_encoder.o: ../util/u_exception.h
 sci/v91/sci_v91_encoder.o: ../util/u_byte_stream.ipp
 sci/v91/sci_v91_encoder.o: sci/v91/sci_v91_common.h
 sci/v91/sci_v91_encoder.o: db_move.h
@@ -4636,6 +4643,8 @@ si3/si3_codec.o: ../sys/sys_time.h
 si3/si3_codec.o: db_time.ipp
 si3/si3_codec.o: db_database_content.ipp
 si3/si3_codec.o: db_database_codec.ipp
+si3/si3_codec.o: ../util/universalchardet/nsUniversalDetector.h
+si3/si3_codec.o: ../util/universalchardet/nstypes.h
 si3/si3_codec.o: ../mstl/m_fstream.h
 si3/si3_codec.o: ../mstl/m_ifstream.h
 si3/si3_codec.o: ../mstl/m_istream.h
@@ -4687,6 +4696,7 @@ si3/si3_codec.o: si3/si3_common.h
 si3/si3_codec.o: db_comment.h
 si3/si3_codec.o: db_comment.ipp
 si3/si3_codec.o: ../util/u_byte_stream.h
+si3/si3_codec.o: ../util/u_exception.h
 si3/si3_codec.o: ../util/u_byte_stream.ipp
 si3/si3_codec.o: db_game_data.h
 si3/si3_codec.o: db_tag_set.h
@@ -4707,7 +4717,7 @@ si3/si3_codec.o: ../mstl/m_hash.h
 si3/si3_codec.o: ../mstl/m_hash.ipp
 si3/si3_codec.o: db_eco_table.ipp
 si3/si3_codec.o: db_exception.h
-si3/si3_codec.o: ../util/u_exception.h
+si3/si3_codec.o: ../util/universalchardet/nsError.h
 si3/si3_codec.o: ../util/u_block_file.h
 si3/si3_codec.o: ../util/u_block_file.ipp
 si3/si3_codec.o: ../util/u_progress.h
@@ -4716,6 +4726,10 @@ si3/si3_codec.o: ../util/u_misc.h
 si3/si3_codec.o: ../sys/sys_file.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.ipp
+si3/si3_codec.o: ../mstl/m_function.h
+si3/si3_codec.o: ../mstl/m_function_base.h
+si3/si3_codec.o: ../mstl/m_function_base.ipp
+si3/si3_codec.o: ../mstl/m_function.ipp
 si3/si3_codec.o: ../mstl/m_stdio.h
 si3/si3_consumer.o: si3/si3_consumer.h
 si3/si3_consumer.o: si3/si3_encoder.h
@@ -4790,6 +4804,7 @@ si3/si3_consumer.o: si3/si3_common.h
 si3/si3_consumer.o: db_comment.h
 si3/si3_consumer.o: db_comment.ipp
 si3/si3_consumer.o: ../util/u_byte_stream.h
+si3/si3_consumer.o: ../util/u_exception.h
 si3/si3_consumer.o: ../util/u_byte_stream.ipp
 si3/si3_consumer.o: si3/si3_codec.h
 si3/si3_consumer.o: db_database_codec.h
@@ -4822,6 +4837,8 @@ si3/si3_consumer.o: ../sys/sys_time.h
 si3/si3_consumer.o: db_time.ipp
 si3/si3_consumer.o: db_database_content.ipp
 si3/si3_consumer.o: db_database_codec.ipp
+si3/si3_consumer.o: ../util/universalchardet/nsUniversalDetector.h
+si3/si3_consumer.o: ../util/universalchardet/nstypes.h
 si3/si3_consumer.o: ../mstl/m_fstream.h
 si3/si3_consumer.o: ../mstl/m_ifstream.h
 si3/si3_consumer.o: ../mstl/m_istream.h
@@ -5118,6 +5135,7 @@ si3/si3_encoder.o: db_pgn_writer.h
 si3/si3_encoder.o: db_writer.h
 si3/si3_encoder.o: db_writer.ipp
 si3/si3_encoder.o: ../util/u_byte_stream.h
+si3/si3_encoder.o: ../util/u_exception.h
 si3/si3_encoder.o: ../util/u_byte_stream.ipp
 si3/si3_encoder.o: ../sys/sys_utf8_codec.h
 si3/si3_encoder.o: ../sys/sys_utf8_codec.ipp
@@ -5291,6 +5309,7 @@ si3/si3_stored_line.o: ../mstl/m_stack.ipp
 si3/si3_stored_line.o: ../mstl/m_chunk_allocator.ipp
 si3/si3_stored_line.o: db_eco_table.ipp
 si3/si3_stored_line.o: ../util/u_byte_stream.h
+si3/si3_stored_line.o: ../util/u_exception.h
 si3/si3_stored_line.o: ../util/u_byte_stream.ipp
 cbh/cbh_codec.o: cbh/cbh_codec.h
 cbh/cbh_codec.o: db_database_codec.h
@@ -5366,6 +5385,8 @@ cbh/cbh_codec.o: ../sys/sys_time.h
 cbh/cbh_codec.o: db_time.ipp
 cbh/cbh_codec.o: db_database_content.ipp
 cbh/cbh_codec.o: db_database_codec.ipp
+cbh/cbh_codec.o: ../util/universalchardet/nsUniversalDetector.h
+cbh/cbh_codec.o: ../util/universalchardet/nstypes.h
 cbh/cbh_codec.o: ../mstl/m_fstream.h
 cbh/cbh_codec.o: ../mstl/m_ifstream.h
 cbh/cbh_codec.o: ../mstl/m_istream.h

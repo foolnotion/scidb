@@ -35,7 +35,7 @@ public:
 	typedef const_pointer		const_iterator;
 	typedef value_type&			reference;
 	typedef value_type const&	const_reference;
-	typedef size_t					size_type;
+	typedef bits::size_t			size_type;
 
 	stack();
 	explicit stack(size_type n);

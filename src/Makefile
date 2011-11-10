@@ -14,7 +14,7 @@ include ../Makefile.in
 
 .SUFFIXES: .cpp
 
-INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iapp -Itcl -Itk -Isys
+INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
 ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
@@ -31,9 +31,10 @@ LIBS = \
 	app/libapp.a \
 	db/libdb.a \
 	sys/libsys.a \
-	util/libutil.a \
 	util/libTeXt/libTeXt.a \
 	mstl/libmstl.a \
+	util/libutil.a \
+	util/universalchardet/libchardet.a \
 
 TK_LIBS = \
 	tcl/libtcl.a \
@@ -58,7 +59,7 @@ SRC = \
 ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
 ALL_TK_LIBS = $(TK_LIBS) $(X_LIBRARY) $(TK_LIBRARY)
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt $(LIB_SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt util/universalchardet $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
 
@@ -127,6 +128,9 @@ util/libharu/libharu.a:
 
 util/libTeXt/libTeXt.a:
 	$(MAKE) -C util/libTeXt
+
+util/universalchardet/chardet.a:
+	$(MAKE) -C util/universalchardet
 
 tcl/libtcl.a:
 	$(MAKE) -C tcl
@@ -379,11 +383,10 @@ cbh2si4.o: db/db_tree_cache.ipp
 cbh2si4.o: db/db_database.ipp
 cbh2si4.o: db/db_database_codec.h
 cbh2si4.o: db/db_database_codec.ipp
-cbh2si4.o: db/db_log.h
-cbh2si4.o: db/si3/si3_consumer.h
-cbh2si4.o: db/si3/si3_encoder.h
-cbh2si4.o: db/si3/si3_encoder_position.h
-cbh2si4.o: db/si3/si3_encoder_position.ipp
+cbh2si4.o: db/db_pgn_reader.h
+cbh2si4.o: db/db_reader.h
+cbh2si4.o: db/db_producer.h
+cbh2si4.o: db/db_producer.ipp
 cbh2si4.o: db/db_consumer.h
 cbh2si4.o: db/db_provider.h
 cbh2si4.o: db/db_provider.ipp
@@ -396,12 +399,30 @@ cbh2si4.o: db/db_move_info_set.ipp
 cbh2si4.o: db/db_engine_list.h
 cbh2si4.o: db/db_engine_list.ipp
 cbh2si4.o: db/db_consumer.ipp
-cbh2si4.o: db/si3/si3_common.h
+cbh2si4.o: db/db_reader.ipp
+cbh2si4.o: db/db_annotation.h
+cbh2si4.o: db/db_annotation.ipp
+cbh2si4.o: db/db_tag_set.h
+cbh2si4.o: db/db_tag_set.ipp
+cbh2si4.o: db/db_mark_set.h
+cbh2si4.o: db/db_mark.h
+cbh2si4.o: db/db_mark.ipp
+cbh2si4.o: db/db_mark_set.ipp
 cbh2si4.o: db/db_comment.h
 cbh2si4.o: db/db_comment.ipp
+cbh2si4.o: db/db_log.h
+cbh2si4.o: db/si3/si3_consumer.h
+cbh2si4.o: db/si3/si3_encoder.h
+cbh2si4.o: db/si3/si3_encoder_position.h
+cbh2si4.o: db/si3/si3_encoder_position.ipp
+cbh2si4.o: db/si3/si3_common.h
 cbh2si4.o: util/u_byte_stream.h
+cbh2si4.o: util/u_exception.h
 cbh2si4.o: util/u_byte_stream.ipp
+cbh2si4.o: db/si3/si3_encoder.h
 cbh2si4.o: db/si3/si3_codec.h
+cbh2si4.o: util/universalchardet/nsUniversalDetector.h
+cbh2si4.o: util/universalchardet/nstypes.h
 cbh2si4.o: mstl/m_fstream.h
 cbh2si4.o: mstl/m_ifstream.h
 cbh2si4.o: mstl/m_istream.h
@@ -505,6 +526,7 @@ dump_eco.o: db/db_eco_table.ipp
 dump_eco.o: db/si3/si3_stored_line.h
 dump_eco.o: db/si3/si3_stored_line.ipp
 dump_eco.o: util/u_byte_stream.h
+dump_eco.o: util/u_exception.h
 dump_eco.o: util/u_byte_stream.ipp
 dump_eco.o: mstl/m_ifstream.h
 dump_eco.o: mstl/m_istream.h
@@ -771,31 +793,55 @@ pgn_split_eco.o: mstl/m_ifstream.ipp
 pgn_split_eco.o: mstl/m_ofstream.h
 pgn_split_eco.o: mstl/m_ofstream.ipp
 pgn_split_eco.o: mstl/m_sstream.h
-tkscidb.o: tk/tk_init.h
-tkscidb.o: tcl/tcl_base.h
-tkscidb.o: tcl/tcl_base.ipp
-tkscidb.o: util/u_zstream.h
-tkscidb.o: mstl/m_istream.h
-tkscidb.o: mstl/m_ios.h
+tkscidb.o: app/app_application.h
+tkscidb.o: db/db_common.h
+tkscidb.o: util/u_base.h
+tkscidb.o: mstl/m_types.h
+tkscidb.o: db/db_common.ipp
+tkscidb.o: mstl/m_assert.h
 tkscidb.o: mstl/m_exception.h
 tkscidb.o: mstl/m_backtrace.h
-tkscidb.o: mstl/m_types.h
 tkscidb.o: mstl/m_exception.ipp
-tkscidb.o: mstl/m_ios.ipp
-tkscidb.o: mstl/m_istream.ipp
-tkscidb.o: mstl/m_ostream.h
-tkscidb.o: mstl/m_ostream.ipp
-tkscidb.o: mstl/m_vector.h
+tkscidb.o: mstl/m_utility.h
 tkscidb.o: mstl/m_type_traits.h
 tkscidb.o: mstl/m_type_traits.ipp
-tkscidb.o: mstl/m_memblock.h
-tkscidb.o: mstl/m_memblock.ipp
-tkscidb.o: mstl/m_utility.h
 tkscidb.o: mstl/m_utility.ipp
 tkscidb.o: mstl/m_limits.h
 tkscidb.o: mstl/m_bit_functions.h
 tkscidb.o: mstl/m_bit_functions.ipp
-tkscidb.o: mstl/m_assert.h
+tkscidb.o: db/db_tree.h
+tkscidb.o: db/db_tree_info.h
+tkscidb.o: db/db_move.h
+tkscidb.o: util/u_crc.h
+tkscidb.o: util/u_crc.ipp
+tkscidb.o: mstl/m_byte_order.h
+tkscidb.o: mstl/m_byte_order.ipp
+tkscidb.o: mstl/m_string.h
+tkscidb.o: mstl/m_string.ipp
+tkscidb.o: db/db_move.ipp
+tkscidb.o: db/db_eco.h
+tkscidb.o: db/db_eco.ipp
+tkscidb.o: db/db_tree_info.ipp
+tkscidb.o: db/db_filter.h
+tkscidb.o: mstl/m_bitset.h
+tkscidb.o: mstl/m_bitset_iterator.h
+tkscidb.o: mstl/m_bitfield.h
+tkscidb.o: mstl/m_bitfield.ipp
+tkscidb.o: mstl/m_bitset_iterator.ipp
+tkscidb.o: mstl/m_bitset.ipp
+tkscidb.o: db/db_filter.ipp
+tkscidb.o: db/db_board.h
+tkscidb.o: db/db_move_list.h
+tkscidb.o: db/db_move_list.ipp
+tkscidb.o: db/db_signature.h
+tkscidb.o: db/db_signature.ipp
+tkscidb.o: db/db_board.ipp
+tkscidb.o: db/db_line.h
+tkscidb.o: db/db_line.ipp
+tkscidb.o: mstl/m_list.h
+tkscidb.o: mstl/m_vector.h
+tkscidb.o: mstl/m_memblock.h
+tkscidb.o: mstl/m_memblock.ipp
 tkscidb.o: mstl/m_vector.ipp
 tkscidb.o: mstl/m_uninitialized.h
 tkscidb.o: mstl/m_uninitialized.ipp
@@ -803,5 +849,59 @@ tkscidb.o: mstl/m_algobase.h
 tkscidb.o: mstl/m_algobase.ipp
 tkscidb.o: mstl/m_construct.h
 tkscidb.o: mstl/m_construct.ipp
-tkscidb.o: mstl/m_string.h
-tkscidb.o: mstl/m_string.ipp
+tkscidb.o: mstl/m_pointer_iterator.h
+tkscidb.o: mstl/m_pointer_iterator.ipp
+tkscidb.o: mstl/m_list.ipp
+tkscidb.o: mstl/m_ref_counter.h
+tkscidb.o: mstl/m_ref_counter.ipp
+tkscidb.o: mstl/m_ref_counted_ptr.h
+tkscidb.o: mstl/m_ref_counted_traits.h
+tkscidb.o: mstl/m_ref_counted_traits.ipp
+tkscidb.o: mstl/m_ref_counted_ptr.ipp
+tkscidb.o: mstl/m_cast.h
+tkscidb.o: mstl/m_cast.ipp
+tkscidb.o: db/db_tree.ipp
+tkscidb.o: db/db_database.h
+tkscidb.o: db/db_database_content.h
+tkscidb.o: db/db_namebases.h
+tkscidb.o: db/db_namebase.h
+tkscidb.o: db/db_namebase_entry.h
+tkscidb.o: db/db_date.h
+tkscidb.o: db/db_date.ipp
+tkscidb.o: db/db_namebase_entry.ipp
+tkscidb.o: db/db_player.h
+tkscidb.o: mstl/m_pair.h
+tkscidb.o: mstl/m_pair.ipp
+tkscidb.o: db/db_player.ipp
+tkscidb.o: mstl/m_chunk_allocator.h
+tkscidb.o: mstl/m_stack.h
+tkscidb.o: mstl/m_stack.ipp
+tkscidb.o: mstl/m_chunk_allocator.ipp
+tkscidb.o: db/db_namebase.ipp
+tkscidb.o: db/db_namebases.ipp
+tkscidb.o: db/db_game_info.h
+tkscidb.o: db/db_game_info.ipp
+tkscidb.o: db/db_statistic.h
+tkscidb.o: db/db_time.h
+tkscidb.o: sys/sys_time.h
+tkscidb.o: db/db_time.ipp
+tkscidb.o: db/db_database_content.ipp
+tkscidb.o: db/db_tree_cache.h
+tkscidb.o: db/db_tree_cache.ipp
+tkscidb.o: db/db_database.ipp
+tkscidb.o: db/db_database_codec.h
+tkscidb.o: db/db_database_codec.ipp
+tkscidb.o: mstl/m_map.h
+tkscidb.o: mstl/m_map.ipp
+tkscidb.o: app/app_application.ipp
+tkscidb.o: tk/tk_init.h
+tkscidb.o: tcl/tcl_base.h
+tkscidb.o: tcl/tcl_base.ipp
+tkscidb.o: tcl/tcl_application.h
+tkscidb.o: util/u_zstream.h
+tkscidb.o: mstl/m_istream.h
+tkscidb.o: mstl/m_ios.h
+tkscidb.o: mstl/m_ios.ipp
+tkscidb.o: mstl/m_istream.ipp
+tkscidb.o: mstl/m_ostream.h
+tkscidb.o: mstl/m_ostream.ipp

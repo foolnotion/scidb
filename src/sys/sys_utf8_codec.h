@@ -55,9 +55,12 @@ public:
 	void forceValidUtf8(mstl::string& str);
 
 	void reset();
+	void reset(mstl::string const& encoding);
 
+	static mstl::string const& automatic();
 	static mstl::string const& utf8();
 	static mstl::string const& latin1();
+	static mstl::string const& windows();
 
 	static bool is7BitAscii(mstl::string const& s);
 	static bool is7BitAscii(char const* s, unsigned nbytes);

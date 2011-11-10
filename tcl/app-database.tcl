@@ -299,6 +299,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		return 0
 	}
 
+	if {$encoding eq $::encoding::mc::AutoDetect} { set encoding $::encoding::autoEncoding }
 	set file [file normalize $file]
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
@@ -316,9 +317,8 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		set msg [format $mc::LoadMessage $name]
 		if {[llength $encoding] == 0} {
 			switch $ext {
-				.si3 - .si4 - .pgn - .gz - .zip	{ set encoding $::encoding::defaultEncoding }
-				.cbh										{ set encoding $::encoding::windowsEncoding }
-				.sci										{ set encoding utf-8 }
+				.sci - .si3 - .si4 - .cbh	{ set encoding auto }
+				.pgn - .gz - .zip				{ set encoding $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
@@ -375,6 +375,7 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		}
 		::scidb::db::set readonly $file $readonly
 		set type [::scidb::db::get type $file]
+		set encoding [::scidb::db::get encoding $file]
 		AddBase $type $file $encoding $readonly
 		AddRecentFile $type $file $encoding $ro
 		CheckEncoding $parent $file $encoding
@@ -1304,7 +1305,7 @@ proc Recode {number parent} {
 	if {$ext eq "cbh"} {
 		set defaultEncoding $::encoding::windowsEncoding
 	} else {
-		set defaultEncoding $::encoding::defaultEncoding
+		set defaultEncoding utf-8
 	}
 	set encoding [::encoding::choose $parent $enc $defaultEncoding]
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }

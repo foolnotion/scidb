@@ -1721,7 +1721,7 @@ Comment::fromHtml(mstl::string const& s)
 
 				mstl::string str;
 
-				m_content.erase(size_t(0), size_t(3));
+				m_content.erase(mstl::string::size_type(0), mstl::string::size_type(3));
 				m_content.erase(m_content.size() - 4, size_t(4));
 
 				::flatten(m_content, str);

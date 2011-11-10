@@ -149,6 +149,7 @@ proc Build {w args} {
 		-foreground $opts(-foreground)   \
 		-font $opts(-font)               \
 		-fullstripes 1                   \
+		-expensivespanwidth 1            \
 		;
 
 	if {$opts(-linespace)} { incr opts(-linespace) 4 }
@@ -352,7 +353,7 @@ proc WidgetProc {w command args} {
 				}
 				lappend styles $style
 			}
-			if {[llength opts(-span)]} {
+			if {[llength $opts(-span)]} {
 				$t item span $index {*}$opts(-span)
 			}
 			while {[llength $Priv(itembackgrounds)] < $index} {

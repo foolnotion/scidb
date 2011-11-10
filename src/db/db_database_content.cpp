@@ -33,11 +33,12 @@ using namespace db;
 DatabaseContent::~DatabaseContent() throw() {}
 
 
-DatabaseContent::DatabaseContent(Type type)
+DatabaseContent::DatabaseContent(mstl::string const& encoding, Type type)
 	:m_type(type)
 	,m_created(0)
 	,m_readOnly(false)
 	,m_memoryOnly(false)
+	,m_encoding(encoding)
 	,m_allocator(32768)
 {
 }

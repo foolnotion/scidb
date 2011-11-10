@@ -42,7 +42,7 @@ public:
 	typedef value_type*			pointer;
 	typedef value_type const*	const_pointer;
 	typedef pair<Key,Value>		assoc_t;
-	typedef size_t					size_type;
+	typedef bits::size_t			size_type;
 
 	class const_iterator
 	{

@@ -45,6 +45,7 @@ switch [tk windowingsystem] {
 namespace eval fsbox {
 
 array set Priv { lastFolder "" }
+array set FileSizeCache {}
 
 set FileIcons [list                        \
 	.sci	$::icon::16x16::filetypeScidbBase \
@@ -62,9 +63,9 @@ set FileIcons [list                        \
 ]
 
 set FileEncodings [list \
-	.sci {} \
-	.si4 $::encoding::systemEncoding \
-	.si3 $::encoding::systemEncoding \
+	.sci utf-8 \
+	.si4 utf-8 \
+	.si3 utf-8 \
 	.cbh $::encoding::windowsEncoding \
 	.pgn $::encoding::defaultEncoding \
 	.gz  $::encoding::defaultEncoding \
@@ -198,6 +199,7 @@ proc Open {type args} {
 		if {$data(-needencoding)} {
 			set opts(-selectencodingcommand) [namespace code SelectEncoding]
 			set opts(-fileencodings) [set [namespace current]::FileEncodings]
+			set opts(-defaultencoding) $::encoding::mc::AutoDetect
 		}
 
 		if {[string length $geometry] == 0} {
@@ -335,9 +337,23 @@ proc RenameFile {oldName newName} {
 }
 
 
-proc GetFileSize {filename} {
+proc FileSize {filename mtime} {
+	variable FileSizeCache
+
+	set modified -1
+	if {[llength $mtime] == 0} { set mtime [file mtime $filename] }
+	catch { lassign $FileSizeCache($filename) size modified }
+	if {$modified != $mtime} {
+		set size [::scidb::misc::size $filename]
+		set FileSizeCache($filename) [list $size $mtime]
+	}
+	return $size
+}
+
+
+proc GetFileSize {filename mtime} {
 	set result ""
-	set size [::scidb::misc::size $filename]
+	set size [FileSize $filename $mtime]
 
 	if {$size > 0} {
 		switch [file extension $filename] {
@@ -363,14 +379,21 @@ proc GetFileSize {filename} {
 
 proc ValidateFile {filename {size {}}} {
 	if {![string match *.zip $filename]} { return 1 }
-	if {[llength $size] == 0} { set size [::scidb::misc::size $filename] }
+	if {[llength $size] == 0} { set size [FileSize $filename [file mtime $filename]] }
 	if {$size >= 0} { return 1 }
 	return 0
 }
 
 
 proc SelectEncoding {parent encoding defaultEncoding} {
-	return [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding]
+	if {$encoding eq $::encoding::mc::AutoDetect} {
+		set encoding $::encoding::autoEncoding
+	}
+	set encoding [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding yes]
+	if {$encoding eq $::encoding::autoEncoding} {
+		set encoding $::encoding::mc::AutoDetect
+	}
+	return $encoding
 }
 
 

@@ -296,6 +296,18 @@ template <> struct compile_time_checker<true> {};
 
 #endif
 
+// Testing ////////////////////////////////////////////////////////////////////
+
+namespace mstl {
+	namespace bits {
+#ifdef TEST64
+		typedef uint64_t size_t;
+#else
+		typedef ::size_t size_t;
+#endif
+	}
+}
+
 #endif // _mstl_types_included
 
 // vi:set ts=3 sw=3:

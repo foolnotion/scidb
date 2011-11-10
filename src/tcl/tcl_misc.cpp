@@ -33,6 +33,8 @@
 
 #include "si3_codec.h"
 
+#include "nsUniversalDetector.h"
+
 #include "sys_utf8_codec.h"
 
 #include "u_crc.h"
@@ -52,6 +54,7 @@ static char const* ScidbRevision	= "96";
 
 static char const* CmdCrc32			= "::scidb::misc::crc32";
 static char const* CmdDebug			= "::scidb::misc::debug?";
+static char const* CmdEncoding		= "::scidb::misc::encoding";
 static char const* CmdExtraTags		= "::scidb::misc::extraTags";
 static char const* CmdFitsRegion		= "::scidb::misc::fitsRegion?";
 static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
@@ -122,6 +125,13 @@ append(mstl::string& result, char const* s, unsigned len)
 
 
 namespace {
+
+struct CharsetDetector : public nsUniversalDetector
+{
+	void Report(char const* charset) { encoding.assign(charset); }
+	mstl::string encoding;
+};
+
 
 class ToList : public db::Comment::Callback
 {
@@ -421,7 +431,7 @@ Parser::parse()
 		if (argc != 2)
 			M_RAISE("invalid xml list");
 
-		char const* lang = Tcl_GetStringFromObj(argv[0], nullptr);
+		char const* lang = Tcl_GetString(argv[0]);
 
 		m_xml.format("<:%s>", lang);
 		Tcl_ListObjGetElements(0, argv[1], &argc, &argv);
@@ -474,7 +484,7 @@ Parser::parse()
 						case 'y':	// "sym"
 							processModes();
 							m_xml.append("<sym>", 5);
-							m_xml += *Tcl_GetStringFromObj(objs[1], nullptr);
+							m_xml += *Tcl_GetString(objs[1]);
 							m_xml.append("</sym>", 6);
 							break;
 
@@ -489,7 +499,7 @@ Parser::parse()
 
 					processModes();
 					m_xml.append("<nag>", 5);
-					m_xml += Tcl_GetStringFromObj(objs[1], nullptr);
+					m_xml += Tcl_GetString(objs[1]);
 					m_xml.append("</nag>", 6);
 					break;
 
@@ -681,6 +691,20 @@ cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdEncoding(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* text = stringFromObj(objc, objv, 1);
+
+	CharsetDetector detector;
+	detector.HandleData(text, strlen(text));
+	detector.DataEnd();
+	setResult(detector.encoding);
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -689,6 +713,7 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdCrc32,			cmdCrc32);
 	createCommand(ti, CmdDebug,			cmdDebug);
+	createCommand(ti, CmdEncoding,		cmdEncoding);
 	createCommand(ti, CmdExtraTags,		cmdExtraTags);
 	createCommand(ti, CmdFitsRegion,		cmdFitsRegion);
 	createCommand(ti, CmdIsAscii,			cmdIsAscii);
