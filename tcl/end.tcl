@@ -200,6 +200,7 @@ switch $::scidb::revision {
 	83 {
 		set ::export::RecentlyUsedHistory	{}
 		set ::export::RecentlyUsedTiebreaks	{}
+		set ::application::database::RecentFiles {}
 		set ::game::History {}
 	}
 }

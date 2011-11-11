@@ -99,7 +99,7 @@ if {[::process::testOption delete-recovery-files]} {
 	exit 0
 }
 
-if {[::process::testOption from-the-scratch]} {
+if {[::process::testOption first-time]} {
 	foreach dir {{} piece square} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {

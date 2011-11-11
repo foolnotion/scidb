@@ -16,9 +16,6 @@
 *.pl  = svn:eol-style=native; svn:mime-type=text/x-perl
 *.sfd = svn:eol-style=native; svn:mime-type=text/plain
 *.sh  = svn:eol-style=LF; svn:mime-type=application/x-csh
-*.spa = svn:eol-style=LF; svn:mime-type=text/plain
-*.spf = svn:eol-style=native; svn:mime-type=text/plain
-*.spi = svn:eol-style=native; svn:mime-type=text/plain
 *.ssp = svn:eol-style=native; svn:mime-type=text/plain
 *.tcl = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-tcl
 *.txt = svn:eol-style=native; svn:mime-type=text/plain
@@ -48,6 +45,6 @@ Makefile      = svn:eol-style=LF; svn:mime-type=text/x-makefile
 Makefile.*    = svn:eol-style=LF; svn:mime-type=text/x-makefile
 readme        = svn:eol-style=native; svn:mime-type=text/plain
 README        = svn:eol-style=native; svn:mime-type=text/plain
-spf2spi       = svn:eol-style=native; svn:mime-type=text/x-tcl
+split         = svn:eol-style=native; svn:mime-type=text/x-tcl
 TODO          = svn:eol-style=native; svn:mime-type=text/plain
 URL           = svn:eol-style=native; svn:mime-type=text/plain

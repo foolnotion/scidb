@@ -263,7 +263,8 @@ if {[::process::testOption use-analysis]} {
 	set ::remote::blocked 0
 
 	foreach file [::process::arguments] {
-		::application::database::openBase .application [::util::databasePath $file]
+		::application::database::openBase \
+			.application [::util::databasePath $file] $::encoding::autoEncoding
 	}
 
 	::game::recover
