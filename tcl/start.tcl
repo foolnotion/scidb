@@ -45,6 +45,7 @@ set home		[file nativename "~"]
 set exec		[file dirname [info nameofexecutable]]
 set user		[file join $home .[string range [file tail [info nameofexecutable]] 2 end]]
 set data		[file join $share data]
+set photos	[file join $share photos]
 set backup	[file join $user backup]
 set config	[file join $user config]
 

@@ -194,7 +194,6 @@
 ::load::mc::WikipediaLinks			"Wikipedia linkek"
 ::load::mc::ChessgamesComLinks	"chessgames.com linkek"
 ::load::mc::Cities					"Városok"
-::load::mc::PhotoIndex				"Fénykép index"
 ::load::mc::PieceSet					"Bábukészlet"
 ::load::mc::Theme						"Téma"
 ::load::mc::Icons						"Ikonok"

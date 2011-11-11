@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# ======================================================================
+# Author : $Author$
+# Version: $Revision: 96 $
+# Date   : $Date: 2011-10-29 01:35:25 +0200 (Sat, 29 Oct 2011) $
+# Url    : $URL$
+# ======================================================================
+
+# ======================================================================
+#    _/|            __
+#   // o\         /    )           ,        /    /
+#   || ._)    ----\---------__----------__-/----/__-
+#   //__\          \      /   '  /    /   /    /   )
+#   )___(     _(____/____(___ __/____(___/____(___/_
+# ======================================================================
+
+# ======================================================================
+# Copyright: (C) 2011 Gregor Cramer
+# ======================================================================
+
+# ======================================================================
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# ======================================================================
+
+# \
+exec tclsh "$0" "$@"
+
+package require base64
+
+set photoFile [lindex $argv 0]
+
+if {$argc != 1 || [file extension $photoFile] ne ".spf"} {
+  puts stderr "ERROR: split called with wrong arguments!"
+  puts stderr ""
+  puts stderr " split:"
+  puts stderr "     Generate single photo files from the SPF file."
+  puts stderr ""
+  puts stderr " Usage:  split filename.spf"
+  exit 1
+}
+
+if {![file readable $photoFile]} {
+	puts stderr "ERROR: cannot open file '$photoFile'"
+	exit 1
+}
+
+proc preparePlayerName {data} {
+  set data [string map {. "" " " "" - ""} [string tolower $data]]
+  set index [string last ",dr" $data]
+  if {$index >= 0} { set data [string range $data 0 [expr {$index - 1}]] }
+  return $data
+}
+
+proc checkPath {path} {
+	if {[string length $path] == 0} { return 0 }
+	if {[string first ".." $path] >= 0} { return 0 }
+	foreach c [list $path] {
+		if {[string is control $c]} { return 0 }
+	}
+	if {[string match {*[\"\*:<>\?\|]*} $path]} {
+		return 0
+	}
+	return 1
+}
+
+set fd [open $photoFile r]
+set dirs {}
+
+while {[gets $fd line] >= 0} {
+	if {[string match photo* $line]} {
+		set name [lindex [split $line "\""] 1]
+		set data ""
+		while {[gets $fd line] >= 0 && [string index $line 0] ne "\}"} {
+			append data [string trim $line]
+		}
+		set type unknown
+		switch -- [string range $data 0 4] {
+			iVBOR   { set type png }
+			R0lGO   { set type gif }
+			/9j/4   { set type jpg }
+			default { puts stderr "$name: unknown image type" }
+		}
+		if {$type ne "unknown"} {
+			set path [preparePlayerName $name]
+			if {[checkPath $path]} {
+				set dir [string index $path 0]
+				if {![file isdirectory $dir]} {
+					lappend dirs $dir
+					file mkdir $dir
+				}
+				set file [open [file join $dir $path] wb]
+				puts -nonewline $file [::base64::decode $data]
+				close $file
+			} else {
+				puts stderr "'$path' would be an illegal path name"
+			}
+		}
+	}
+}
+
+close $fd
+
+if {[llength $dirs]} {
+	puts "new directories: $dirs (update make files)"
+}
+
+# vi:set ts=3 sw=3:

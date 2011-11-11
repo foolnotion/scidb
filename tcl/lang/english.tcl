@@ -193,7 +193,6 @@
 ::load::mc::WikipediaLinks			"Wikipedia links"
 ::load::mc::ChessgamesComLinks	"chessgames.com links"
 ::load::mc::Cities					"cities"
-::load::mc::PhotoIndex				"photo index"
 ::load::mc::PieceSet					"piece set"
 ::load::mc::Theme						"theme"
 ::load::mc::Icons						"icons"

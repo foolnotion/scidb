@@ -133,6 +133,7 @@ install: $(SCRIPT)
 	install -m 755 -d $(SHAREDIR)/lang
 	install -m 755 -d $(SHAREDIR)/lang/eco
 	install -m 755 -d $(SHAREDIR)/photos
+	install -m 755 -d $(SHAREDIR)/photos
 	install -m 755 -d $(SHAREDIR)/textures
 	install -m 755 -d $(SHAREDIR)/themes
 	install -m 755 -d $(SHAREDIR)/themes/square
@@ -145,11 +146,14 @@ install: $(SCRIPT)
 	install -m 644 -p flags/*.png $(SHAREDIR)/flags
 	install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
 	install -m 644 -p lang/eco/*.* $(SHAREDIR)/lang/eco
-	install -m 644 -p photos/*.sp? $(SHAREDIR)/photos
 	install -m 644 -p themes/*.dat $(SHAREDIR)/themes
 	install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
 	install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
 	install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
+	for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
+		install -m 755 -d $(SHAREDIR)/photos/$$i;                     \
+		install -m 644 -p photos/$$i/* $(SHAREDIR)/photos/$$i;        \
+	done
 	for i in dark lite tile; do                                              \
 		for k in marble misc wood; do                                         \
 			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k;                    \
@@ -190,11 +194,14 @@ uninstall:
 	for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls lang/eco/*.*`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls photos/*.sp?`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done
+	for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
+		for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;   \
+	done
+	for d in `find $(SHAREDIR)/photos -type d -empty`; do rmdir $$d; done
 	for i in dark lite tile; do                \
 		for k in marble misc wood; do           \
 			for f in `ls textures/$$i/$$k/*`; do \

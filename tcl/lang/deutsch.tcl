@@ -191,7 +191,6 @@
 ::load::mc::WikipediaLinks			"Verknüpfungen zu Wikipedia"
 ::load::mc::ChessgamesComLinks	"Verknüpfungen zu chessgames.com"
 ::load::mc::Cities					"Städteliste"
-::load::mc::PhotoIndex				"Photoindex"
 ::load::mc::PieceSet					"Figurensatz"
 ::load::mc::Theme						"Thema"
 ::load::mc::Icons						"Icons"

@@ -1,5 +1,0 @@
-set photo_Player(atkinson,steven) [list $::load::photoFile 58380 21194]
-set photo_Player(wagner,alexander) [list $::load::photoFile 50481 7870]
-set photo_Player(paresvives,natalia) [list $::load::photoFile 28049 22402]
-set photo_Player(fischer,robertjames) [list $::load::photoFile 160 7928]
-set photo_Player(ornaghi,giovanni) [list $::load::photoFile 8118 19898]
