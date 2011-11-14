@@ -798,8 +798,6 @@ Codec::doOpen(mstl::string const& encoding)
 		m_gameData = new BlockFile(&m_gameStream, Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
 	else
 		m_gameData = new BlockFile(Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
-
-	useEncoding(::sys::utf8::Codec::utf8());
 }
 
 
@@ -883,7 +881,6 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 
 	namebaseStream.close();
 	indexStream.close();
-	useEncoding(::sys::utf8::Codec::utf8());
 }
 
 

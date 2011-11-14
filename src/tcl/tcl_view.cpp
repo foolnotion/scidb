@@ -429,7 +429,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*		filename			= stringFromObj(objc, objv, 3);
 	unsigned			flags				= unsignedFromObj(objc, objv, 4);
 	View::FileMode	mode				= boolFromObj(objc, objv, 5) ? View::Append : View::Create;
-	char const*		encoding			= stringFromObj(objc, objv, 6);
+	mstl::string	encoding			= stringFromObj(objc, objv, 6);
 	bool				excludeIllegal	= boolFromObj(objc, objv, 7);
 	Tcl_Obj*			allowedTags		= objv[8];
 	bool				extraTags		= false;

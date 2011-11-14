@@ -540,7 +540,7 @@ View::exportGames(mstl::string const& filename,
 	}
 	else if (ext == "si3" || ext == "si4")
 	{
-		Database destination(filename, encoding, Database::OnDisk);
+		Database destination(filename, sys::utf8::Codec::utf8(), Database::OnDisk);
 		destination.setDescription(description);
 		destination.setType(type);
 

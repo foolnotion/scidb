@@ -790,8 +790,13 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		encoding = Tcl_GetString(objv[5]);
 	}
 
+	mstl::string path(stringFromObj(objc, objv, 1));
+
+	if (util::misc::file::suffix(path) == "sci")
+		encoding = sys::utf8::Codec::utf8();
+
 	Progress	progress(objv[2], objv[3]);
-	Cursor*	cursor = scidb->open(stringFromObj(objc, objv, 1), encoding, false, progress);
+	Cursor*	cursor = scidb->open(path, encoding, false, progress);
 
 	if (cursor == 0)
 		return TCL_ERROR;
@@ -814,14 +819,17 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	char const* encoding = sys::utf8::Codec::utf8();
-	char const* option	= stringFromObj(objc, objv, objc - 2);
+	mstl::string	encoding	= sys::utf8::Codec::utf8();
+	char const*		option	= stringFromObj(objc, objv, objc - 2);
 
 	if (*option == '-')
 	{
 		if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
+
+			if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
+				encoding = sys::utf8::Codec::latin1();
 		}
 		else
 		{
@@ -840,9 +848,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		appendResult("cannot open file '%s'", file);
 		return TCL_ERROR;
 	}
-
-	if (::strcmp(encoding, "auto") == 0)
-		encoding = "iso8859-1";	// currently we do not have charset detection for PGN files
 
 	unsigned n;
 
@@ -883,14 +888,22 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (convToType(::CmdSet, objv[2], &type) != TCL_OK)
 		return TCL_ERROR;
 
-	mstl::string encoding(sys::utf8::Codec::utf8());
+	mstl::string encoding;
 
 	if (objc == 4)
-	{
-		char const* enc = stringFromObj(objc, objv, 3);
+		encoding = stringFromObj(objc, objv, 3);
 
-		if (*enc && ::strcmp(enc, "auto") != 0)
-			encoding = stringFromObj(objc, objv, 3);
+	mstl::string suffix(util::misc::file::suffix(path));
+
+	if (suffix == "pgn" || suffix == "gz" || suffix == "zip")
+	{
+		// currently we do not support charset detection for PGN files
+		if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
+			encoding = sys::utf8::Codec::latin1();
+	}
+	else if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
+	{
+		encoding = sys::utf8::Codec::utf8();
 	}
 
 	if (scidb->create(path, encoding, type::ID(type)) == 0)

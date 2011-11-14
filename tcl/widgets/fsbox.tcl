@@ -325,7 +325,7 @@ proc fsbox {w type args} {
 	bind [winfo toplevel $top] <Escape> [list $Vars(button:cancel) invoke]
 	bind [winfo toplevel $top] <Return> [list $Vars(button:ok) invoke]
 
-	array unset Vars widget:filelist
+	array unset Vars widget:list:file
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
 
 	bookmarks::Build $w $top.main.fav {*}[array get opts]
@@ -528,7 +528,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		}
 	}
 
-	if {[info exists Vars(widget:filelist)]} {
+	if {[info exists Vars(widget:list:file)]} {
 		filelist::RefreshFileList $w
 	}
 }
@@ -914,7 +914,7 @@ proc ChangeDir {w path {useHistory 1}} {
 		}
 	}
 
-	$Vars(widget:filelist) item delete all
+	$Vars(widget:list:file) item delete all
 	filelist::Glob $w yes
 	if {$Vars(prevFolder) ne $Vars(folder)} {
 		DirChanged $w $useHistory
@@ -1680,7 +1680,6 @@ proc Build {w path args} {
 		-keepuserwidth no            \
 		-orient vertical             \
 		;
-	set Vars(widget:filelist) $t
 	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
 
 	ttk::scrollbar $sv           \
@@ -1766,7 +1765,7 @@ proc SwitchHidden {w} {
 proc DetailsLayout {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 
 	$t configure -itemwidthequal no
 	$t configure -wrap {}
@@ -1938,7 +1937,7 @@ proc DetailsLayout {w} {
 proc ListLayout {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 
 	$t configure -itemwidthequal yes
 	$t configure -wrap window
@@ -2033,7 +2032,7 @@ proc SwitchLayout {w {layout {}}} {
 		return
 	}
 	
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set selection [$t selection get]
 
 	switch $Options(show:layout) {
@@ -2060,7 +2059,7 @@ proc SwitchLayout {w {layout {}}} {
 proc ColumnResized {w col} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 
 	foreach id {name size modified} {
 		set Vars(column:$id) [$t column width $id]
@@ -2084,7 +2083,7 @@ proc GetFileIcon {w filename} {
 proc SortColumn {w {column ""}} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 
 	if {[string length $column] == 0} {
 		set column $Vars(sort-column)
@@ -2253,7 +2252,7 @@ proc Glob {w refresh} {
 			}
 		}
 
-		$Vars(widget:filelist) column configure $Vars(sort-column) -arrow $arrow
+		$Vars(widget:list:file) column configure $Vars(sort-column) -arrow $arrow
 		::toolbar::childconfigure $Vars(button:new) -state $state
 
 		set Vars(list:folder) {}
@@ -2291,12 +2290,15 @@ proc Glob {w refresh} {
 		}
 
 		[namespace parent]::unbusy $w
+
+	} else {
+		set filelist $Vars(list:file)
 	}
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	foreach folder $Vars(list:folder) $Vars(scriptDir)
 	if {[llength $Vars(list:folder)]} {
-		$Vars(widget:filelist) item tag add "root children" directory
+		$Vars(widget:list:file) item tag add "root children" directory
 	}
 
 	set Vars(list:file) {}
@@ -2314,7 +2316,7 @@ proc Glob {w refresh} {
 proc InvokeFile {w args} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 
 	if {[llength $args] == 2} {
 		lassign $args x y
@@ -2345,8 +2347,8 @@ proc InvokeFile {w args} {
 proc RefreshFileList {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:list:file)
 	set Vars(lock:selection) 1
+	set t $Vars(widget:list:file)
 	$t item delete all
 	Glob $w yes
 	set n "root"
@@ -2410,7 +2412,7 @@ proc SelectFiles {w selection} {
 	set Vars(selected:folders) {}
 	set Vars(selected:files) {}
 
-	set selection [lsort -integer -unique [$Vars(widget:filelist) selection get]]
+	set selection [lsort -integer -unique [$Vars(widget:list:file) selection get]]
 
 	foreach n $selection {
 		if {$n <= [llength $Vars(list:folder)]} {
@@ -2465,7 +2467,7 @@ proc DeleteFile {w} {
 	variable [namespace parent]::${w}::Vars
 
 	[namespace parent]::busy $w
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set sel [expr {[$t item id active] - 1}]
 
 	if {$sel < [llength $Vars(list:folder)]} {
@@ -2568,7 +2570,7 @@ proc DeleteFile {w} {
 proc RenameFile {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set sel [$t item id active]
 	$t selection clear
 	set Vars(edit:active) 1
@@ -2580,7 +2582,7 @@ proc RenameFile {w} {
 proc NewFolder {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	$t item delete all
 	foreach folder $Vars(list:folder) $Vars(scriptDir)
 	foreach folder [list [Tr NewFolder]] $Vars(scriptNew)
@@ -2597,7 +2599,7 @@ proc NewFolder {w} {
 proc OpenEdit {w sel mode} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set e [::TreeCtrl::EntryExpanderOpen $t $sel 0 txtName 0 [namespace code [list SelectFileName $w]]]
 	set vcmd { return [::fsbox::validatePath %P] }
 	$e configure                \
@@ -2638,7 +2640,7 @@ proc EditAccept {w} {
 proc FinishEdit {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set sel $Vars(edit:sel)
 	set name [string trim [$t item element cget $sel 0 txtName -text]]
 
@@ -2656,7 +2658,7 @@ proc FinishRenameFile {w sel name} {
 
 	set Vars(edit:active) 0
 	set name [string trim $name]
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	$t selection add $sel
 	set i [expr {$sel - 1}]
 	if {$i < [llength $Vars(list:folder)]} {
@@ -2762,7 +2764,7 @@ proc FinishNewFolder {w sel name} {
 				;
 			RefreshFileList $w
 		} elseif {[[namespace parent]::CheckPath $w $name]} {
-			$Vars(widget:filelist) item element configure $sel 0 txtName -text $name
+			$Vars(widget:list:file) item element configure $sel 0 txtName -text $name
 			lappend Vars(list:folder) $folder
 		} else {
 			RefreshFileList $w
@@ -2829,7 +2831,7 @@ proc PopupMenu {w x y} {
 	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
-	set t $Vars(widget:filelist)
+	set t $Vars(widget:list:file)
 	set id [$t identify $x $y]
 	if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
