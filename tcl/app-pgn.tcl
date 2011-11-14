@@ -68,6 +68,7 @@ set InvalidInput						"Invalid input '%d'."
 set MustBeEven							"Input must be an even number."
 set MustBeOdd							"Input must be an odd number."
 set ReplaceMovesSucceeded			"Game moves successfully replaced."
+set CannotOpenCursorFiles			"Cannot open cursor files: %s"
 
 set StartTrialMode					"Start Trial Mode"
 set StopTrialMode						"Stop Trial Mode"
@@ -2655,6 +2656,8 @@ switch [tk windowingsystem] {
 					set Cursor(collapse) [::xcursor::loadCursor $file1]
 					set Cursor(expand)   [::xcursor::loadCursor $file2]
 				}
+			} else {
+				::log::info PGN-Editor [format $mc::CannotOpenCursorFiles "$file1 $file2"]
 			}
 		}
 	}
@@ -2667,11 +2670,13 @@ switch [tk windowingsystem] {
 				set Cursor(collapse) [::xcursor::loadCursor $file1]
 				set Cursor(expand)   [::xcursor::loadCursor $file2]
 			}
+		} else {
+			::log::info PGN-Editor [format $mc::CannotOpenCursorFiles "$file1 $file2"]
 		}
 	}
 
 	aqua {
-		# TODO
+		puts "custom cursors not yet implemented" ;# TODO
 	}
 }
 

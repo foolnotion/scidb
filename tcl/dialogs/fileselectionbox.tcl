@@ -302,6 +302,14 @@ proc Open {type args} {
 	wm withdraw $w
 
 	set Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
+
+	lassign $Priv(result) path encoding
+	if {[llength $path] == 0} { return {} }
+
+	if {$encoding eq $::encoding::mc::AutoDetect} {
+		return [list $path $::encoding::autoEncoding]
+	}
+
 	return $Priv(result)
 }
 

@@ -478,7 +478,7 @@ public:
 	/// Traverse whole game.
 	void updateSubscriber(unsigned action = UpdateBoard | UpdatePgn);
 	/// Traverse whole game.
-	void refreshSubscriber();
+	void refreshSubscriber(unsigned actions);
 	/// Set undo level.
 	void setUndoLevel(unsigned level, unsigned combinePredecessingMoves);
 	/// Set game tags.

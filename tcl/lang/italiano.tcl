@@ -393,6 +393,7 @@
 ::application::pgn::mc::MustBeEven							"Input deve essere un numero pari."
 ::application::pgn::mc::MustBeOdd							"Input deve essere un numero dispari."
 ::application::pgn::mc::ReplaceMovesSucceeded			"Mosse nella partita sostituite con successo."
+::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Modifica annotazioni"
 ::application::pgn::mc::EditMoveInformation				"Modifica informazioni mossa"

@@ -1090,7 +1090,7 @@ Application::switchGame(unsigned position)
 	if (game.refresh)
 	{
 		if (game.refresh == 2)
-			game.game->refreshSubscriber();
+			game.game->refreshSubscriber(Game::UpdateAll);
 		else
 			game.game->updateSubscriber(Game::UpdateBoard | Game::UpdatePgn | Game::UpdateOpening);
 
@@ -1151,7 +1151,7 @@ Application::refreshGame(unsigned position, bool radical)
 	EditGame& game = m_gameMap.find(position)->second;
 
 	if (position == m_position)
-		game.game->refreshSubscriber();
+		game.game->refreshSubscriber(Game::UpdateAll);
 	else
 		game.refresh = 2;
 }

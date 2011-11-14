@@ -370,7 +370,7 @@ proc dbOpen {parent} {
 				-geometry lastsize \
 				-title [set [namespace current]::mc::OpenFile] \
 	]
-	
+
 	if {[llength $result]} {
 		::application::database::openBase $parent {*}$result
 	}

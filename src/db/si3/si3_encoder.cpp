@@ -129,9 +129,9 @@ Encoder::doEncoding(	Signature const& signature,
 	if (signature.hasUnderPromotion())
 		flags |= flags::Under_Promotion;
 
-	setup(data.m_startBoard);
 	encodeTags(data.m_tags, allowedTags, allowExtraTags);
 	m_strm.put(flags);
+	setup(data.m_startBoard);
 	encodeVariation(data.m_startNode);
 	encodeComments(data.m_startNode, m_codec.isUtf8() ? encoding::Utf8 : encoding::Latin1);
 	m_strm.provide();

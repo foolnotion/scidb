@@ -394,6 +394,7 @@
 ::application::pgn::mc::MustBeEven							"Input must be an even number."
 ::application::pgn::mc::MustBeOdd							"Input must be an odd number."
 ::application::pgn::mc::ReplaceMovesSucceeded			"Game moves successfully replaced."
+::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s"
 
 ::application::pgn::mc::EditAnnotation						"Edit annotation"
 ::application::pgn::mc::EditMoveInformation				"Edit move information"

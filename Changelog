@@ -1,4 +1,13 @@
-[September/Oktober 2011]
+[Oktober 2011] ===============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #126)
+------------------------------------------------------------------------------
+* cbh2si4 tweaked.
+
+* Some bugs related to charset detection fixed.
+
+* Severe bug in si3 encoding fixed.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #103)
@@ -32,6 +41,8 @@ may result in id's higher than the number of entries).
 * Function forceValidUtf8() fixed.
 
 * Problem in configure script fixed.
+
+[September/Oktober 2011] =====================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #96)
@@ -109,7 +120,7 @@ open.
 * New function in PGN editor: copy/move comments from one language code to
 another language code.
 
-[August 2011]
+[August 2011] ================================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #94)
@@ -143,7 +154,7 @@ Scidb 1.0 BETA (rev. #90)
 * m_types.h updated: g++ versions < 4.6 are not really ready for C++0x
 standard.
 
-[July 2011]
+[July 2011] ==================================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #89)

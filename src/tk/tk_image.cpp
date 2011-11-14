@@ -723,7 +723,17 @@ processImage(Tk_PhotoImageBlock const& srcBlock, Tk_PhotoImageBlock& dstBlock, I
 }
 
 
-int align_pitch(int width) { return (width + 31) & ~31; }	// 32 bit alignment
+inline
+int
+compute_pitch(int width, int pixelSize)
+{
+	M_ASSERT(pixelSize <= 4);
+
+	if (pixelSize == 4)
+		return 4*width;
+	
+	return (pixelSize*width + pixelSize) & ~3; // 32 bit alignment
+}
 
 } // namespace
 
@@ -1312,7 +1322,7 @@ tk_make_border(char const* subcmd,
 
 	Tk_PhotoImageBlock block;
 	block.pixelSize = 4;
-	block.pitch = align_pitch(width*4);
+	block.pitch = compute_pitch(width, 4);
 	block.pixelPtr = new unsigned char[block.pitch*height];
 	block.width = width;
 	block.height = height;
@@ -1675,7 +1685,7 @@ tk_copy_image(	char const* subcmd,
 		dstBlock.width = wd;
 		dstBlock.height = ht;
 		dstBlock.pixelSize = srcBlock.pixelSize;
-		dstBlock.pitch = align_pitch(dstBlock.width*dstBlock.pixelSize);
+		dstBlock.pitch = compute_pitch(dstBlock.width, dstBlock.pixelSize);
 		dstBlock.pixelPtr = new unsigned char[dstBlock.pitch*dstBlock.height];
 		memcpy(&dstBlock.offset, &srcBlock.offset, sizeof(dstBlock.offset));
 
@@ -1695,7 +1705,7 @@ tk_copy_image(	char const* subcmd,
 		if (srcBlock.width == dstBlock.width && srcBlock.height == dstBlock.height)
 			dstBlock.pitch = srcBlock.pitch;
 		else
-			dstBlock.pitch = align_pitch(dstBlock.width*dstBlock.pixelSize);
+			dstBlock.pitch = compute_pitch(dstBlock.width, dstBlock.pixelSize);
 		dstBlock.pixelPtr = new unsigned char[dstBlock.pitch*dstBlock.height];
 		memcpy(&dstBlock.offset, &srcBlock.offset, sizeof(dstBlock.offset));
 
@@ -1977,7 +1987,7 @@ tk_create_image(	char const* subcmd,
 
 	block.pixelPtr = 0;
 	block.pixelSize = 4;
-	block.pitch = align_pitch(width*block.pixelSize);
+	block.pitch = compute_pitch(width, block.pixelSize);
 	block.width = width;
 	block.height = height;
 	block.offset[0] = 0;

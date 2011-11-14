@@ -841,12 +841,16 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
+	if (::strcmp(encoding, "auto") == 0)
+		encoding = "iso8859-1";	// currently we do not have charset detection for PGN files
+
 	unsigned n;
 
 	{
 		char const*		db(stringFromObj(objc, objv, 1));
 		Cursor&			cursor(scidb->cursor(db));
 		Encoder			encoder(encoding);
+
 		tcl::PgnReader	reader(	stream,
 										encoder,
 										objv[3],
@@ -882,7 +886,12 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string encoding(sys::utf8::Codec::utf8());
 
 	if (objc == 4)
-		encoding = stringFromObj(objc, objv, 3);
+	{
+		char const* enc = stringFromObj(objc, objv, 3);
+
+		if (*enc && ::strcmp(enc, "auto") != 0)
+			encoding = stringFromObj(objc, objv, 3);
+	}
 
 	if (scidb->create(path, encoding, type::ID(type)) == 0)
 		return error(::CmdNew, nullptr, nullptr, "database '%s' already exists", path);

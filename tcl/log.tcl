@@ -96,6 +96,7 @@ proc close {} {
 
 	update idletasks
 	$Log.top.text yview moveto 1.0
+	set Priv(callee) ""
 }
 
 

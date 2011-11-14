@@ -392,6 +392,7 @@
 ::application::pgn::mc::MustBeEven							"Die Eingabe muß eine gerade Zahl sein."
 ::application::pgn::mc::MustBeOdd							"Die Eingabe muß eine ungerade Zahl sein."
 ::application::pgn::mc::ReplaceMovesSucceeded			"Die Partiezüge wurden erfolgreich ersetzt."
+::application::pgn::mc::CannotOpenCursorFiles			"Die Cursor-Dateien konnten nicht geöffnet werden: %s"
 
 ::application::pgn::mc::EditAnnotation						"Anmerkungen bearbeiten"
 ::application::pgn::mc::EditMoveInformation				"Zuginformationen bearbeiten"

@@ -109,6 +109,9 @@ struct Log : public db::Log
 
 typedef si3::Consumer::TagBits TagBits;
 
+static char const* ConvertTo		= "utf-8";
+static char const* ConvertFrom	= "cp1252";
+
 
 static TagBits
 getDefaultTags()
@@ -157,36 +160,44 @@ printHelpAndExit(int rc)
 	printf("Usage: cbh2si4 [options ...] <ChessBase database> [destination database]\n");
 	printf("\n");
 	printf("Options:\n");
-	printf("  --            Only file names after this\n");
-	printf("  --help        Print Help (this message) and exit\n");
-	printf("  --force       Overwrite existing destination files\n");
+	printf("  --              Only file names after this\n");
+	printf("  --help          Print Help (this message) and exit\n");
+	printf("  --force         Overwrite existing destination files\n");
 	printf("  --convertto <encoding>\n");
-	printf("                Use this encoding for output database\n");
-	printf("                (default is iso8859-1)\n");
+	printf("                  Use this encoding for output database\n");
+	printf("                  (default is %s)\n", ConvertTo);
 	printf("  --convertfrom <encoding>\n");
-	printf("                The encoding of the ChessBase database\n");
-	printf("                (default is cp1252)\n");
+	printf("                  The encoding of the ChessBase database\n");
+	printf("                  (default is %s)\n", ::ConvertFrom);
 	printf("  --tags <comma-separated-tag-list>\n");
-	printf("                Export only the tags given with this list\n");
-	printf("                (but mandatory tags are always exported)\n");
-	printf("  --unusual-tags\n");
-	printf("                Export unusual tags (otherwise ignore these tags)\n");
-	printf("  --all-tags\n");
-	printf("                Export all tags (overrules option --tags)\n");
-	printf("                (but ignore unusual tags except --unusual-tags is given)\n");
-	printf("  --no-tags\n");
-	printf("                Do not export any tag (except mandatory tags)\n");
-	printf("                (overrules --tags, --all-tags, but not --unusual-tags)\n");
+	printf("                  Export only the tags given with this list\n");
+	printf("                  (but mandatory tags are always exported)\n");
+	printf("  --unusual-tags  Export unusual tags (otherwise ignore these tags)\n");
+	printf("  --all-tags      Export all tags (overrules option --tags)\n");
+	printf("                  (but ignore unusual tags except --unusual-tags is given)\n");
+	printf("  --no-tags       Do not export any tag (except mandatory tags)\n");
+	printf("                  (overrules --tags, --all-tags, but not --unusual-tags)\n");
 	printf("  --list-encodings\n");
-	printf("                List all known encodings\n");
+	printf("                  List all known encodings\n");
 	printf("  --list-mandatory-tags\n");
-	printf("                List all mandatory tags\n");
+	printf("                  List all mandatory tags\n");
 	printf("  --list-default-tags\n");
-	printf("                List all default tags\n");
+	printf("                  List all default tags\n");
 	printf("  --list-usual-tags\n");
-	printf("                List all usual tags (includes mandatory tags)\n");
+	printf("                  List all usual tags (includes mandatory tags)\n");
 	printf("\n");
 	exit(rc);
+}
+
+
+static bool
+isForbiddenEncoding(mstl::string const& encoding)
+{
+	return	encoding == "identity"
+			|| encoding == "dingbats"
+			|| encoding == "ebcdic"
+			|| encoding == "symbol"
+			|| encoding == "unicode";
 }
 
 
@@ -196,17 +207,41 @@ printEncodingsAndExit(int rc)
 	sys::utf8::Codec::EncodingList encodings;
 	unsigned n = sys::utf8::Codec::getEncodingList(encodings);
 
-	printf("Existing encodings: ");
-
 	for (unsigned i = 0; i < n; ++i)
 	{
-		printf(encodings[i].c_str());
-		if (i + 1 < n)
-			printf(", ");
+		if (!isForbiddenEncoding(encodings[i]))
+		{
+			printf(encodings[i].c_str());
+			if (i + 1 < n)
+				printf(", ");
+		}
 	}
 
 	printf("\n");
 	exit(rc);
+}
+
+
+static void
+checkEncoding(mstl::string const& encoding)
+{
+	if (isForbiddenEncoding(encoding))
+	{
+		fprintf(stderr, "Encoding '%s' is not allowed\n", encoding.c_str());
+		exit(1);
+	}
+
+	sys::utf8::Codec::EncodingList encodings;
+	unsigned n = sys::utf8::Codec::getEncodingList(encodings);
+
+	for (unsigned i = 0; i < n; ++i)
+	{
+		if (encodings[i] == encoding)
+			return;
+	}
+
+	fprintf(stderr, "Unknown encoding '%s'\n", encoding.c_str());
+	exit(1);
 }
 
 
@@ -297,7 +332,6 @@ checkTagList(mstl::string& tagList)
 }
 
 
-
 static void
 setTagList(TagBits& result, mstl::string const& tagList)
 {
@@ -357,8 +391,8 @@ int
 main(int argc, char* argv[])
 {
 	TclInterpreter	tclInterpreter;
-	mstl::string	convertto("iso8859-1");
-	mstl::string	convertfrom("cp1252");
+	mstl::string	convertto(::ConvertTo);
+	mstl::string	convertfrom(::ConvertFrom);
 	bool				force(false);
 	bool				allTags(false);
 	bool				noTags(false);
@@ -381,6 +415,7 @@ main(int argc, char* argv[])
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
+			checkEncoding(argv[i]);
 			convertto.assign(argv[i]);
 
 		}
@@ -388,6 +423,7 @@ main(int argc, char* argv[])
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
+			checkEncoding(argv[i]);
 			convertfrom.assign(argv[i]);
 		}
 		else if (strcmp(argv[i], "--tags") == 0)

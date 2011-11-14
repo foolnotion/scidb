@@ -1150,7 +1150,9 @@ proc Stimulate {w} {
 		foreach item [$t item children root] { $t item state set $item {!hilite} }
 		set x [expr {[winfo pointerx .] - [winfo rootx $t]}]
 		set y [expr {[winfo pointery .] - [winfo rooty $t]}]
-		lassign [$t identify $x $y] what item
+		set id [$t identify $x $y]
+		if {[llength $id] == 0} { return }
+		lassign $id what item
 
 		if {$what eq "item"} {
 			$t item state set $item {hilite}
@@ -1440,8 +1442,7 @@ proc InvokeBookmark {w args} {
 	if {[llength $args] == 2} {
 		lassign $args x y
 		set id [$t identify $x $y]
-		if {[lindex $id 0] eq "header"} { return }
-		if {[lindex $id 1] eq ""} { return }
+		if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
 		set sel [$t item order [lindex $id 1] -visible]
 	} else {
 		set sel [expr {[$t item id active] - 1}]
@@ -1469,7 +1470,8 @@ proc PopupMenu {w x y} {
 	variable Bookmarks
 
 	set t $Vars(widget:list:bookmark)
-	if {[lindex [$t identify $x $y] 0] eq "header"} { return }
+	set id [$t identify $x $y]
+	if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 
 	set m $w.menu
@@ -2317,7 +2319,7 @@ proc InvokeFile {w args} {
 	if {[llength $args] == 2} {
 		lassign $args x y
 		set id [$t identify $x $y]
-		if {[lindex $id 0] eq "header"} { return }
+		if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
 		set sel [$t item order [lindex $id 1] -visible]
 	} else {
 		set sel [expr {[$t item id active] - 1}]
@@ -2828,7 +2830,8 @@ proc PopupMenu {w x y} {
 	variable [namespace parent]::Options
 
 	set t $Vars(widget:filelist)
-	if {[lindex [$t identify $x $y] 0] eq "header"} { return }
+	set id [$t identify $x $y]
+	if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 
 	set m $w.menu
