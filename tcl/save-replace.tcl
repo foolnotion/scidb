@@ -248,6 +248,7 @@ variable Characteristics -1
 
 
 proc open {parent base position {number 0}} {
+	if {[llength $base] == 0} { set base [::scidb::db::get name] }
 	if {![checkIfWriteable $parent $base $position $number]} { return }
 	incr number -1
 
@@ -283,9 +284,19 @@ proc open {parent base position {number 0}} {
 	set Priv(black-score) 0
 	set Priv(white-rating) Elo
 	set Priv(black-rating) Elo
+	set Priv(base) $base
+	set Priv(position) $position
+	set Priv(number) $number
 
 	if {![winfo exists $dlg]} {
 		Build $dlg $base $position $number
+	}
+
+	foreach attr {player event site annotator} {
+		set maxUsage [::scidb::db::get maxUsage $base $attr]
+		set digits [expr {int(ceil(log10(max(1, $maxUsage)))) + 1}]
+		$Priv(table:$attr) configcol freq -width $digits
+		$Priv(table:$attr) resize
 	}
 
 	# Show Dialog #############################################
@@ -343,7 +354,7 @@ proc GetTitle {base position number} {
 	if {[llength $position] == 0} {
 		append title $mc::EditCharacteristics
 		set characteristicsOnly 1
-	} elseif {$number <= 0} {
+	} elseif {$number < 0} {
 		append title $mc::SaveGame
 		set characteristicsOnly 0
 	} else {
@@ -370,7 +381,6 @@ proc Build {dlg base position number} {
 
 	set Priv(twoRatings) $twoRatings
 	set Priv(format) [expr {$twoRatings ? "sci" : "si3"}]
-	if {[llength $base] == 0} { set base [::scidb::db::get name] }
 
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
@@ -490,7 +500,7 @@ proc Build {dlg base position number} {
 
 		foreach {attr tag} $list {
 			bind $top.$side-$attr <FocusIn> \
-				[namespace code [list UpdateMatchList $top $base $side-name $side-$attr]]
+				[namespace code [list UpdateMatchList $top $side-name $side-$attr]]
 			bind $top.$side-$attr <FocusOut> \
 				[namespace code [list UpdateTags $top ${color}${tag} $side-$attr]]
 		}
@@ -507,7 +517,7 @@ proc Build {dlg base position number} {
 
 			if {$attr ne "rating"} {
 				bind $top.$side-$attr <FocusIn> \
-					[namespace code [list UpdateMatchList $top $base $side-name $side-$attr]]
+					[namespace code [list UpdateMatchList $top $side-name $side-$attr]]
 
 				if {$attr ne "sex"} {
 					bind $top.$side-$attr <FocusOut> \
@@ -520,13 +530,13 @@ proc Build {dlg base position number} {
 
 		if {$twoRatings} {
 			bind $top.$side-rating.elo <FocusIn> \
-				[namespace code [list UpdateMatchList $top $base $side-name $side-rating.elo]]
+				[namespace code [list UpdateMatchList $top $side-name $side-rating.elo]]
 			bind $top.$side-rating.elo <FocusOut> \
 				[namespace code [list UpdateTags $top ${color}Elo $side-rating.elo]]
 		}
 		foreach attr {type score} {
 			bind $top.$side-rating.$attr <FocusIn> \
-				[namespace code [list UpdateMatchList $top $base $side-name $side-rating.$attr]]
+				[namespace code [list UpdateMatchList $top $side-name $side-rating.$attr]]
 			bind $top.$side-rating.$attr <FocusOut> \
 				[namespace code [list UpdateRatingTags $top $color $side-rating $side-score]]
 		}
@@ -612,7 +622,7 @@ proc Build {dlg base position number} {
 		switch $attr {
 			annotator {
 				bind $top.game-$attr <FocusIn> \
-					[namespace code [list UpdateMatchList $top $base game-$attr game-$attr]]
+					[namespace code [list UpdateMatchList $top game-$attr game-$attr]]
 				bind $top.game-$attr <FocusOut> \
 					[namespace code [list UpdateTags $top Annotator game-$attr]]
 			}
@@ -690,12 +700,12 @@ proc Build {dlg base position number} {
 		switch $attr {
 			site - country {
 				bind $top.event-$attr <FocusIn> \
-					[namespace code [list UpdateMatchList $top $base event-site event-$attr]]
+					[namespace code [list UpdateMatchList $top event-site event-$attr]]
 			}
 
 			default {
 				bind $top.event-$attr <FocusIn> \
-					[namespace code [list UpdateMatchList $top $base event-title event-$attr]]
+					[namespace code [list UpdateMatchList $top event-title event-$attr]]
 			}
 		}
 
@@ -741,21 +751,21 @@ proc Build {dlg base position number} {
 		-value 0 \
 		-text $mc::EnglishName \
 		-variable [namespace current]::Options(unicode) \
-		-command [namespace code [list RefreshMatchList $top $base]] \
+		-command [namespace code [list RefreshMatchList $top]] \
 		;
 	tk::AmpWidget ttk::radiobutton $opts.local \
 		-value 1 \
 		-text $mc::LocalName \
 		-variable [namespace current]::Options(unicode) \
-		-command [namespace code [list RefreshMatchList $top $base]] \
+		-command [namespace code [list RefreshMatchList $top]] \
 		;
 
 	set Priv(ratingType) Elo
 	ttk::label $opts.ratingtype
 	ratingbox $opts.ratingbox -textvar ::${dlg}::Priv(ratingType) -format all
 	SetRatingTypeText $opts.ratingtype $opts.ratingbox
-	bind $opts.ratingbox <FocusOut> [namespace code [list RefreshMatchList $top $base $opts.ratingbox]]
-	bind $opts.ratingbox <<ComboboxSelected>> [namespace code [list RefreshMatchList $top $base]]
+	bind $opts.ratingbox <FocusOut> [namespace code [list RefreshMatchList $top $opts.ratingbox]]
+	bind $opts.ratingbox <<ComboboxSelected>> [namespace code [list RefreshMatchList $top]]
 	bind $opts.ascii <<LanguageChanged>> \
 		"tk::SetAmpText $opts.ascii \$[namespace current]::mc::EnglishName"
 	bind $opts.local <<LanguageChanged>> \
@@ -772,16 +782,15 @@ proc Build {dlg base position number} {
 
 	grid $opts -row 1 -column 1 -sticky ew
 
-	set maxUsage(player)		[::scidb::db::get maxUsage $base player]
-	set maxUsage(event)		[::scidb::db::get maxUsage $base event]
-	set maxUsage(site)		[::scidb::db::get maxUsage $base site]
-	set maxUsage(annotator)	[::scidb::db::get maxUsage $base annotator]
+	set maxUsage(player)		9999
+	set maxUsage(event)		9999
+	set maxUsage(site)		9999
+	set maxUsage(annotator)	9999
 
 	set f TkTextFont
 	set bold [list [font configure $f -family] [font configure $f -size] bold]
 
 	foreach attr {player event site annotator} {
-		set digits [expr {int(ceil(log10(max(1, $maxUsage($attr))))) + 1}]
 		ttk::frame $nb.matches.$attr -borderwidth 1 -relief sunken -takefocus 0
 		bind $nb.matches.$attr <Configure> [namespace code [list SetMaxWidth $nb.matches.$attr %w]]
 		grid $nb.matches.$attr -row 3 -column 1 -sticky ew
@@ -804,9 +813,10 @@ proc Build {dlg base position number} {
 		$lb bind <ButtonRelease-1> +[namespace code [list SetFocus $dlg]]
 		$lb bind <ButtonRelease-2> +[namespace code [list SetFocus $dlg]]
 		$lb addcol text -id number -justify right -width 1 -foreground $Colors(number)
-		$lb addcol text -id freq -justify right -width $digits -foreground $Colors(frequency)
+		$lb addcol text -id freq -justify right -width 4 -foreground $Colors(frequency)
 		$lb addcol text -id name -squeeze yes -weight 1 -steady no
 		# -expand yes
+		set Priv(table:$attr) $lb
 	}
 
 	::ttk::label $nb.matches.footer1 -textvar [namespace current]::mc::PressToSelect -anchor center
@@ -854,7 +864,6 @@ proc Build {dlg base position number} {
 		set lb $nb.matches.$attr.lb
 		for {set i 0} {$i < 12} {incr i} { $lb insert { " " } -enabled 0 }
 		set Priv(skip:$attr) "\uffff"
-		$lb resize
 	}
 
 	# Tags ####################################################
@@ -1001,7 +1010,7 @@ proc Build {dlg base position number} {
 
 	# Dialog Buttons ##########################################
 	::widget::dialogButtons $dlg {ok cancel} ok
-	$dlg.ok configure -command [namespace code [list Save $top $base $number $position $fields]]
+	$dlg.ok configure -command [namespace code [list Save $top $fields]]
 	$dlg.cancel configure -command [list wm withdraw $dlg]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
@@ -1010,7 +1019,7 @@ proc Build {dlg base position number} {
 	# Tracing #################################################
 	foreach attr {white-name black-name event-title event-site game-annotator} {
 		trace variable ::${dlg}::Priv($attr) w  \
-			[namespace code [list UpdateMatchList $top $base $attr $attr]]
+			[namespace code [list UpdateMatchList $top $attr $attr]]
 	}
 
 	# Finalization ############################################
@@ -1798,7 +1807,7 @@ proc MakeMatchEntry {top index entry attr} {
 }
 
 
-proc RefreshMatchList {top base {ratingbox {}}} {
+proc RefreshMatchList {top {ratingbox {}}} {
 	variable ::[winfo toplevel $top]::Priv
 
 	if {[llength $ratingbox] && ![$ratingbox valid?]} {
@@ -1823,11 +1832,11 @@ proc RefreshMatchList {top base {ratingbox {}}} {
 		}
 	}
 
-	UpdateMatchList $top $base $Priv(entry) $item
+	UpdateMatchList $top $Priv(entry) $item
 }
 
 
-proc UpdateMatchList {top base field item args} {
+proc UpdateMatchList {top field item args} {
 	variable History
 	variable Attrs
 	variable Colors
@@ -1835,6 +1844,8 @@ proc UpdateMatchList {top base field item args} {
 	variable Options
 
 	if {$Priv(dont-match)} { return }
+
+	set base $Priv(base)
 
 	set attr ""
 	switch $field {
@@ -2366,7 +2377,16 @@ proc ExpandLastColumn {t width} {
 }
 
 
-proc Save {top base number position fields} {
+proc NormalizeDate {date} {
+	lassign [split $date "."] y m d
+	if {$y eq "????"} { return "" }
+	if {$m eq "??"} { return $y }
+	if {$d eq "??"} { return "$y.$m" }
+	return "$y.$m.$d"
+}
+
+
+proc Save {top fields} {
 	variable ::[winfo toplevel $top]::Priv
 	variable Tags
 	variable WhiteRating
@@ -2374,6 +2394,9 @@ proc Save {top base number position fields} {
 	variable Attrs
 	variable History
 
+	set base $Priv(base)
+	set number $Priv(number)
+	set position $Priv(position)
 	set title $Priv(title)
 	set Priv(dont-match) 1
 	set rc [CheckFields $top $title $fields]
@@ -2390,6 +2413,7 @@ proc Save {top base number position fields} {
 				[list %white $Tags(White) %black $Tags(Black) %event $Tags(Event) %base $base] \
 				$mc::SavingGameLogInfo]
 			set replace [expr {$number >= 0}]
+if {$replace} { puts "replace $number" } else { puts "save $number" }
 			set cmd [list ::scidb::game::save \
 				$base \
 				[array get Tags] \
@@ -2483,7 +2507,9 @@ proc Save {top base number position fields} {
 			}
 
 			if {[info exists Tags($tag)]} {
-				lset hist(event-title) $i $Tags($tag)
+				set value $Tags($tag)
+				if {$tag eq "EventDate"} { set value [NormalizeDate $value] }
+				lset hist(event-title) $i $value
 			}
 
 			incr i
