@@ -62,6 +62,7 @@ public:
 	Type				m_type;
 	uint32_t			m_created;
 	bool				m_readOnly;
+	bool				m_writeable;
 	bool				m_memoryOnly;
 	mstl::string	m_description;
 	mstl::string	m_encoding;

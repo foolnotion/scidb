@@ -497,7 +497,7 @@ Codec::~Codec() throw()
 
 
 bool
-Codec::isWriteable() const override
+Codec::isWriteable() const
 {
 	return false;
 }

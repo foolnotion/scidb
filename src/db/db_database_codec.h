@@ -103,6 +103,7 @@ public:
 	virtual ~DatabaseCodec() throw();
 
 	bool isOpen() const;
+	virtual bool isExpired() const;
 	virtual bool isWriteable() const = 0;
 	virtual bool encodingFailed() const = 0;
 

@@ -97,7 +97,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 	m_created = sys::time::time();
 
 	if (!m_codec->isWriteable())
-		m_readOnly = true;
+		m_writeable = false;
 
 	if (m_memoryOnly)
 		m_codec->open(this, encoding);
@@ -141,7 +141,7 @@ Database::Database(	mstl::string const& name,
 	}
 
 	if (!m_codec->isWriteable())
-		m_readOnly = true;
+		m_writeable = false;
 
 	m_codec->open(this, m_rootname, m_encoding, progress);
 	m_size = m_gameInfoList.size();
@@ -222,7 +222,7 @@ Database::close()
 {
 	if (m_codec)
 	{
-		if (!isMemoryOnly() && !m_readOnly && m_size != m_gameInfoList.size()) // should not happen
+		if (!isMemoryOnly() && !m_readOnly && m_writeable && m_size != m_gameInfoList.size())
 		{
 			util::Progress progress;
 			save(progress, m_size);

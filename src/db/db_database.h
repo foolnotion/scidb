@@ -80,7 +80,7 @@ public:
 	/// Cast
 	DatabaseContent const& content() const;
 
-	/// Returns whether the database is read-only or not.
+	/// Returns whether the database is set read-only or not.
 	bool isReadOnly() const;
 	/// Returns whether the database is petentially writeable or not.
 	bool isWriteable() const;
@@ -94,6 +94,8 @@ public:
 	bool encodingIsBroken() const;
 	/// Returns whether asynchronous reader is in use.
 	bool usingAsyncReader() const;
+	/// Returns whether the database format should be upgraded.
+	bool shouldUpgrade() const;
 
 	/// Returns an unique database id.
 	unsigned id() const;

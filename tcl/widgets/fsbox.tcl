@@ -70,10 +70,16 @@ set TimeFormat						"%d/%m/%y %I:%M %p"
 
 set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
 set DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
-set ReallyMove(file)				"Really move file '%s' to trash?"
-set ReallyMove(folder)			"Really move folder '%s' to trash?"
-set ReallyDelete(file)			"Really delete file '%s'?"
-set ReallyDelete(folder)		"Really delete folder '%s'?"
+set ReallyMove(file,w)			"Really move file '%s' to trash?"
+set ReallyMove(file,r)			"Really move write-protected file '%s' to trash?"
+set ReallyMove(folder,w)		"Really move folder '%s' to trash?"
+set ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?"
+set ReallyDelete(file,w)		"Really delete file '%s'? You cannot undo this operation."
+set ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation."
+set ReallyDelete(link,w)		"Really delete link to '%s'?"
+set ReallyDelete(link,r)		"Really delete link to '%s'?"
+set ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
+set ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
 set DeleteFailed					"Deletion of '%s' failed."
 set CommandFailed					"Command '%s' failed."
 set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
@@ -396,6 +402,9 @@ proc reset {w type args} {
 	$Vars(widget:list:bookmark) selection clear
 	$Vars(widget:list:file) selection clear
 	$Vars(widget:filename) delete 0 end
+
+	::toolbar::childconfigure $Vars(button:forward) -state disabled
+	::toolbar::childconfigure $Vars(button:backward) -state disabled
 
 	if {[llength $Vars(selectencodingcommand)]} {
 		set Vars(encodingVar) $Vars(defaultencoding)
@@ -741,7 +750,11 @@ proc VisitItem {w t mode item} {
 	# Note: this function may be invoked with non-existing items
 	if {[string length $item]} {
 		switch $mode {
-			enter { catch { $t item state set $item {hilite}  } }
+			enter {
+				foreach i [$t item children root] { $t item state set $i {!hilite} }
+				catch { $t item state set $item {hilite} }
+			}
+
 			leave { catch { $t item state set $item {!hilite} } }
 		}
 	}
@@ -1160,6 +1173,7 @@ proc Stimulate {w} {
 	}
 }
 
+###### B O O K M A R K S ######################################################
 
 namespace eval bookmarks {
 
@@ -1540,6 +1554,8 @@ set plus [image create photo -data {
 } ;# namespace 16x16
 } ;# namespace icon
 } ;# namespace bookmarks
+
+######  F I L E  L I S T ######################################################
 
 namespace eval filelist {
 
@@ -2471,31 +2487,46 @@ proc DeleteFile {w} {
 	set sel [expr {[$t item id active] - 1}]
 
 	if {$sel < [llength $Vars(list:folder)]} {
+		set file [lindex $Vars(list:folder) $sel]
 		set type folder
+		set ltype folder
 	} else {
 		set sel [expr {$sel - [llength $Vars(list:folder)]}]
-		set type file
+		set file [lindex $Vars(list:file) $sel]
+		switch [file type $file] {
+			link		{ set type link }
+			default	{ set type file }
+		}
+		set ltype file
 	}
 
-	if {![info exists Vars(iskde)]} {
-		if {[tk windowingsystem] eq "x11"} {
-			set atoms {}
-			catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
-			set Vars(iskde) [expr {[llength $atoms] > 0}]
-		} else {
-			set Vars(iskde) 0
-		}
-		if {$Vars(iskde)} {
-			set Vars(exec:delete) [auto_execok kioclient]
-			if {[llength $Vars(exec:delete)] == 0} {
-				set Vars(exec:delete) [auto_execok kfmclient]
+	if {$type eq "link"} {
+		set iskde 0
+		set dest [file link $file]
+	} else {
+		if {![info exists Vars(iskde)]} {
+			if {[tk windowingsystem] eq "x11"} {
+				set atoms {}
+				catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
+				set Vars(iskde) [expr {[llength $atoms] > 0}]
+			} else {
+				set Vars(iskde) 0
+			}
+			if {$Vars(iskde)} {
+				set Vars(exec:delete) [auto_execok kioclient]
+				if {[llength $Vars(exec:delete)] == 0} {
+					set Vars(exec:delete) [auto_execok kfmclient]
+				}
 			}
 		}
+		set iskde $Vars(iskde)
+		set dest $file
 	}
 
-	set file [lindex $Vars(list:$type) $sel]
-	if {$Vars(iskde)} { set var ReallyMove($type) } else { set var ReallyDelete($type) }
-	set msg [format [Tr $var] [lindex [file split $file] end]]
+	if {[file writable $file]} { set mode w } else { set mode r }
+	if {$iskde} { set which ReallyMove } else { set which ReallyDelete }
+	set fmt [Tr ${which}($type,$mode)]
+	set msg [format $fmt [lindex [file split $dest] end]]
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 	set reply [[namespace parent]::messageBox \
 					-type yesno                   \
@@ -2511,8 +2542,8 @@ proc DeleteFile {w} {
 		return
 	}
 
-	if {$Vars(iskde)} {
-		if {$type eq "file" && [llength $Vars(deletecommand)] > 0} {
+	if {$iskde} {
+		if {$ltype eq "file" && [llength $Vars(deletecommand)] > 0} {
 			set cmd "$Vars(exec:delete) move "
 			set delim ""
 			foreach f [{*}$Vars(deletecommand) $file] {
@@ -2530,7 +2561,7 @@ proc DeleteFile {w} {
 		if {[catch {exec /bin/sh -c $cmd}]} {
 			# Oops, kioclient is always returning an error
 		}
-	} elseif {$type eq "file"} {
+	} elseif {$ltype eq "file"} {
 		if {[llength $Vars(deletecommand)] > 0} {
 			set files {}
 			set delim ""
@@ -2541,19 +2572,15 @@ proc DeleteFile {w} {
 			set files [list $file]
 		}
 
-		if {[catch {file delete {*}$files}]} {
-			# XXX error: what should we do?
-		}
-	} elseif {[catch {file delete -force $file}]} {
-		# XXX error: what should we do?
-	} else {
+		catch {file delete {*}$files}
+	} elseif {![catch {file delete -force $file}]} {
 		[namespace parent]::bookmarks::LayoutBookmarks $w
 	}
 
 	RefreshFileList $w
 	[namespace parent]::unbusy $w
 
-	if {$file in $Vars(list:$type)} {
+	if {$file in $Vars(list:$ltype)} {
 		set msg [format [Tr DeleteFailed] $file]
 		set detail [format [Tr CommandFailed] $cmd]
 		[namespace parent]::messageBox \

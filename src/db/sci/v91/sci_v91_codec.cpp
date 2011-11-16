@@ -396,6 +396,13 @@ Codec::isWriteable() const
 }
 
 
+bool
+Codec::isExpired() const
+{
+	return true;
+}
+
+
 void
 Codec::setEncoding(mstl::string const& encoding)
 {

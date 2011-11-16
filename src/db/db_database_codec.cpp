@@ -167,6 +167,13 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 DatabaseCodec::CustomFlags::CustomFlags() { ::memset(m_text, 0, sizeof(m_text)); }
 
 
+bool
+DatabaseCodec::isExpired() const
+{
+	return false;
+}
+
+
 void
 DatabaseCodec::CustomFlags::set(unsigned n, char const* text)
 {
@@ -392,10 +399,13 @@ DatabaseCodec::checkPermissions(mstl::string const& filename)
 {
 	M_ASSERT(isOpen());
 
-	if (!m_db->m_readOnly && !sys::file::access(filename, sys::file::Writeable))
+	if (!isWriteable() || !sys::file::access(filename, sys::file::Writeable))
+	{
 		m_db->m_readOnly = true;
+		m_db->m_writeable = false;
+	}
 
-	if (m_db->m_readOnly && !sys::file::access(filename, sys::file::Readable))
+	if (!sys::file::access(filename, sys::file::Readable))
 		IO_RAISE(Unspecified, Open_Failed, "cannot open file: %s", filename.c_str());
 }
 

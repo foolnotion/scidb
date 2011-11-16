@@ -1498,10 +1498,16 @@
 
 ::fsbox::mc::CannotChangeDir				"Non posso cambiare la cartella a '%s'.\nPermesso negato."
 ::fsbox::mc::DirectoryRemoved				"Non posso passare alla cartella '%s'.\nLa cartella è rimossa."
-::fsbox::mc::ReallyMove(file)				"Vuoi davvero spostare il file '%s' nel cestino?"
-::fsbox::mc::ReallyMove(folder)			"Vuoi davvero spostare la cartella '%s' nel cestino?"
-::fsbox::mc::ReallyDelete(file)			"Vuoi davvero eliminare il file '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(folder)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
+::fsbox::mc::ReallyMove(file,r)			"Really move write-protected file '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(folder,w)		"Vuoi davvero spostare la cartella '%s' nel cestino?"
+::fsbox::mc::ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyDelete(file,w)		"Vuoi davvero eliminare il file '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(link,w)		"Really delete link to '%s'?" ;# NEW
+::fsbox::mc::ReallyDelete(link,r)		"Really delete link to '%s'?" ;# NEW
+::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation." ;# NEW
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."

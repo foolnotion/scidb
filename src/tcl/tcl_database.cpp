@@ -2031,7 +2031,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "idn", "eco", "ratingTypes",
-		"lookupPlayer", "lookupEvent", "writeable?",
+		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?",
 		0
 	};
 	static char const* args[] =
@@ -2073,6 +2073,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<index> ?<view>? ?<database>?",
 		"<index> ?<view>? ?<database>?",
 		"?<database>?",
+		"",
 		0
 	};
 	enum
@@ -2083,7 +2084,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
 		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
 		Cmd_Tags, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
-		Cmd_Writeable,
+		Cmd_Writeable, Cmd_Upgrade,
 	};
 
 	if (objc < 2)
@@ -2327,6 +2328,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (objc < 3)
 				return getWriteable();
 			return getWriteable(stringFromObj(objc, objv, 2));
+
+		case Cmd_Upgrade:
+			::tcl::setResult(Scidb->cursor().database().shouldUpgrade());
+			return TCL_OK;
 
 		case Cmd_Open:
 			setResult(Scidb->contains(stringFromObj(objc, objv, 2)));

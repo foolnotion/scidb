@@ -35,15 +35,15 @@ namespace noncopyable_	// protection from unintended ADL
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 
-		noncopyable(noncopyable&) = delete;
-		noncopyable& operator=(noncopyable&) = delete;
+		noncopyable(noncopyable const&) = delete;
+		noncopyable& operator=(noncopyable const&) = delete;
 
 #else
 
 	private:
 
 		noncopyable(noncopyable const&);
-		const noncopyable& operator=(noncopyable const&);
+		noncopyable& operator=(noncopyable const&);
 #endif
 	};
 }
