@@ -2093,12 +2093,18 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 void
 Codec::rename(mstl::string const& oldName, mstl::string const& newName)
 {
+	static char const Type[3] = { 'i', 'g', 'n' };
+
 	mstl::string oldBase(::util::misc::file::rootname(oldName));
 	mstl::string newBase(::util::misc::file::rootname(newName));
 
-	::sys::file::rename(oldBase + ".scn", newBase + ".scn");
-	::sys::file::rename(oldBase + ".scg", newBase + ".scg");
-	::sys::file::rename(oldBase + ".sci", newBase + ".sci");
+	for (unsigned i = 0; i < 3; ++i)
+	{
+		mstl::string oldFile(oldBase + ".sc" + Type[i]);
+		mstl::string newFile(newBase + ".sc" + Type[i]);
+
+		::sys::file::rename(oldFile, newFile, true);
+	}
 }
 
 

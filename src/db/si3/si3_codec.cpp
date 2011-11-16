@@ -714,7 +714,7 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	try
 	{
 		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename);
+		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
 	}
 	catch (...)
 	{
@@ -780,7 +780,7 @@ Codec::update(mstl::string const& rootname)
 	try
 	{
 		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename);
+		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
 	}
 	catch (...)
 	{
@@ -823,7 +823,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 		checkPermissions(namebaseFilename);
 		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename);
+		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
 	}
 	catch (...)
 	{

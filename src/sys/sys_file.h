@@ -38,7 +38,7 @@ bool access(char const* filename, Mode mode);
 long size(char const* filename);
 bool changed(char const* filename, uint32_t& time);
 
-void rename(char const* oldFilename, char const* newFilename);
+void rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs);
 void deleteIt(char const* filename);
 
 void* createMapping(char const* filename, Mode mode);

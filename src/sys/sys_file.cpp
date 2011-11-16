@@ -248,8 +248,18 @@ sys::file::unlock(int fd)
 
 
 void
-sys::file::rename(char const* oldFilename, char const* newFilename)
+sys::file::rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs)
 {
+#if defined(__unix__) || defined(__MacOSX__)
+	struct ::stat st;
+
+	if (preserveOldAttrs)
+	{
+		if (::stat(oldFilename, &st) == -1)
+			preserveOldAttrs = false;
+	}
+#endif
+
 	Tcl_Obj* src(Tcl_NewStringObj(oldFilename, -1));
 	Tcl_Obj* dst(Tcl_NewStringObj(newFilename, -1));
 
@@ -258,6 +268,14 @@ sys::file::rename(char const* oldFilename, char const* newFilename)
 	Tcl_FSRenameFile(src, dst);
 	Tcl_DecrRefCount(dst);
 	Tcl_DecrRefCount(src);
+
+#if defined(__unix__) || defined(__MacOSX__)
+	if (preserveOldAttrs)
+	{
+		::chmod(newFilename, st.st_mode & 0x07777);
+		::chown(newFilename, st.st_uid, st.st_gid);
+	}
+#endif
 }
 
 

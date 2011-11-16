@@ -192,6 +192,9 @@ proc WriteOptions {chan} {
 
 # --- Read options -----------------------------------------------------
 
+# prevent errors while parsing old config files (as long as we have a beta version)
+proc ::dialog::fsbox::setBookmarks {args} {}
+
 if {[file readable $::scidb::file::options]} {
 	::load::source $::scidb::file::options -message $::load::mc::ReadingOptionsFile -encoding utf-8
 }
