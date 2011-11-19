@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -15,6 +15,7 @@
  *
  */
 
+#include <string.h>
 #include "hpdf_conf.h"
 #include "hpdf_utils.h"
 #include "hpdf_objects.h"
@@ -144,7 +145,7 @@ HPDF_String_Write  (HPDF_String   obj,
 
         HPDF_Encoder_SetParseText (obj->encoder, &parse_state, src, len);
 
-        for (i = 0; i < len; i++) {
+        for (i = 0; (HPDF_INT32)i < len; i++) {
             HPDF_BYTE b = src[i];
             HPDF_UNICODE tmp_unicode;
             HPDF_ByteType btype = HPDF_Encoder_ByteType (obj->encoder,
@@ -162,7 +163,7 @@ HPDF_String_Write  (HPDF_String   obj,
             if (btype != HPDF_BYTE_TYPE_TRIAL) {
                 if (btype == HPDF_BYTE_TYPE_LEAD) {
                     HPDF_BYTE b2 = src[i + 1];
-                    HPDF_UINT16 char_code = (HPDF_UINT) b * 256 + b2;
+                    HPDF_UINT16 char_code = (HPDF_UINT16)((HPDF_UINT) b * 256 + b2);
 
                     tmp_unicode = HPDF_Encoder_ToUnicode (obj->encoder,
                                 char_code);
@@ -190,3 +191,12 @@ HPDF_String_Write  (HPDF_String   obj,
     return HPDF_OK;
 }
 
+
+HPDF_INT32
+HPDF_String_Cmp  (HPDF_String s1,
+                  HPDF_String s2)
+{
+    if (s1->len < s2->len) return -1;
+    if (s1->len > s2->len) return +1;
+    return memcmp(s1->value, s2->value, s1->len);
+}

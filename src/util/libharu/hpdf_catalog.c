@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -20,16 +20,18 @@
 #include "hpdf_catalog.h"
 #include "hpdf_pages.h"
 
-static const char *HPDF_PAGE_LAYOUT_NAMES[] = {
+static const char * const HPDF_PAGE_LAYOUT_NAMES[] = {
                         "SinglePage",
                         "OneColumn",
                         "TwoColumnLeft",
                         "TwoColumnRight",
+                        "TwoPageLeft",
+                        "TwoPageRight",
                         NULL
 };
 
 
-static const char *HPDF_PAGE_MODE_NAMES[] = {
+static const char * const HPDF_PAGE_MODE_NAMES[] = {
                         "UseNone",
                         "UseOutlines",
                         "UseThumbs",
@@ -81,6 +83,23 @@ HPDF_Catalog_GetRoot  (HPDF_Catalog  catalog)
         HPDF_SetError (catalog->error, HPDF_PAGE_CANNOT_GET_ROOT_PAGES, 0);
 
     return pages;
+}
+
+
+HPDF_NameDict
+HPDF_Catalog_GetNames  (HPDF_Catalog catalog)
+{
+    if (!catalog)
+        return NULL;
+    return HPDF_Dict_GetItem (catalog, "Names", HPDF_OCLASS_DICT);
+}
+
+
+HPDF_STATUS
+HPDF_Catalog_SetNames  (HPDF_Catalog catalog,
+                        HPDF_NameDict dict)
+{
+    return HPDF_Dict_Add (catalog, "Names", dict);
 }
 
 
@@ -292,6 +311,17 @@ HPDF_Catalog_SetViewerPreference  (HPDF_Catalog   catalog,
             return ret;
     } else {
         if ((ret = HPDF_Dict_RemoveElement (preferences, "CenterWindow")) !=
+                HPDF_OK)
+            if (ret != HPDF_DICT_ITEM_NOT_FOUND)
+                return ret;
+    }
+
+    if (value & HPDF_PRINT_SCALING_NONE) {
+        if ((ret = HPDF_Dict_AddName (preferences, "PrintScaling",
+                "None")) != HPDF_OK)
+            return ret;
+    } else {
+        if ((ret = HPDF_Dict_RemoveElement (preferences, "PrintScaling")) !=
                 HPDF_OK)
             if (ret != HPDF_DICT_ITEM_NOT_FOUND)
                 return ret;

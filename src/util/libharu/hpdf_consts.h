@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -100,6 +100,7 @@
 #define HPDF_HIDE_WINDOW_UI  4
 #define HPDF_FIT_WINDOW      8
 #define HPDF_CENTER_WINDOW   16
+#define HPDF_PRINT_SCALING_NONE   32
 
 
 /*---------------------------------------------------------------------------*/

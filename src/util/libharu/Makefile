@@ -19,6 +19,7 @@ DEFINES	= -DHPDF_NOPNGLIB
 CFLAGS	+= $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
+	hpdf_3dmeasure.c \
 	hpdf_annotation.c \
 	hpdf_array.c \
 	hpdf_binary.c \
@@ -33,6 +34,7 @@ SRC_C = \
 	hpdf_encoder_cnt.c \
 	hpdf_encoder_jp.c \
 	hpdf_encoder_kr.c \
+	hpdf_encoder_utf.c \
 	hpdf_encrypt.c \
 	hpdf_encryptdict.c \
 	hpdf_error.c \
@@ -52,11 +54,13 @@ SRC_C = \
 	hpdf_fontdef_type1.c \
 	hpdf_gstate.c \
 	hpdf_image.c \
+	hpdf_image_ccitt.c \
 	hpdf_image_png.c \
 	hpdf_info.c \
 	hpdf_list.c \
 	hpdf_mmgr.c \
 	hpdf_name.c \
+	hpdf_namedict.c \
 	hpdf_null.c \
 	hpdf_number.c \
 	hpdf_objects.c \
@@ -64,6 +68,7 @@ SRC_C = \
 	hpdf_page_label.c \
 	hpdf_page_operator.c \
 	hpdf_pages.c \
+	hpdf_pdfa.c \
 	hpdf_real.c \
 	hpdf_streams.c \
 	hpdf_string.c \
@@ -98,12 +103,37 @@ $(LIB).a: $(OBJS)
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+hpdf_3dmeasure.o: hpdf_conf.h
+hpdf_3dmeasure.o: hpdf_utils.h
+hpdf_3dmeasure.o: hpdf_config.h
+hpdf_3dmeasure.o: hpdf_types.h
+hpdf_3dmeasure.o: hpdf_info.h
+hpdf_3dmeasure.o: hpdf_objects.h
+hpdf_3dmeasure.o: hpdf_encoder.h
+hpdf_3dmeasure.o: hpdf_consts.h
+hpdf_3dmeasure.o: hpdf_streams.h
+hpdf_3dmeasure.o: hpdf_list.h
+hpdf_3dmeasure.o: hpdf_error.h
+hpdf_3dmeasure.o: hpdf_mmgr.h
+hpdf_3dmeasure.o: hpdf_encrypt.h
+hpdf_3dmeasure.o: hpdf_3dmeasure.h
+hpdf_3dmeasure.o: hpdf.h
+hpdf_3dmeasure.o: hpdf_version.h
+hpdf_3dmeasure.o: hpdf_doc.h
+hpdf_3dmeasure.o: hpdf_catalog.h
+hpdf_3dmeasure.o: hpdf_image.h
+hpdf_3dmeasure.o: hpdf_pages.h
+hpdf_3dmeasure.o: hpdf_gstate.h
+hpdf_3dmeasure.o: hpdf_font.h
+hpdf_3dmeasure.o: hpdf_fontdef.h
+hpdf_3dmeasure.o: hpdf_ext_gstate.h
+hpdf_3dmeasure.o: hpdf_outline.h
+hpdf_3dmeasure.o: hpdf_pdfa.h
 hpdf_annotation.o: hpdf_conf.h
-hpdf_annotation.o: ../../mstl/m_stdio.h
 hpdf_annotation.o: hpdf_utils.h
 hpdf_annotation.o: hpdf_config.h
 hpdf_annotation.o: hpdf_types.h
-hpdf_annotation.o: hpdf_annotation.h
+hpdf_annotation.o: hpdf_info.h
 hpdf_annotation.o: hpdf_objects.h
 hpdf_annotation.o: hpdf_encoder.h
 hpdf_annotation.o: hpdf_consts.h
@@ -112,6 +142,7 @@ hpdf_annotation.o: hpdf_list.h
 hpdf_annotation.o: hpdf_error.h
 hpdf_annotation.o: hpdf_mmgr.h
 hpdf_annotation.o: hpdf_encrypt.h
+hpdf_annotation.o: hpdf_annotation.h
 hpdf_annotation.o: hpdf.h
 hpdf_annotation.o: hpdf_version.h
 hpdf_annotation.o: hpdf_doc.h
@@ -123,8 +154,8 @@ hpdf_annotation.o: hpdf_font.h
 hpdf_annotation.o: hpdf_fontdef.h
 hpdf_annotation.o: hpdf_ext_gstate.h
 hpdf_annotation.o: hpdf_outline.h
+hpdf_annotation.o: hpdf_pdfa.h
 hpdf_array.o: hpdf_conf.h
-hpdf_array.o: ../../mstl/m_stdio.h
 hpdf_array.o: hpdf_utils.h
 hpdf_array.o: hpdf_config.h
 hpdf_array.o: hpdf_types.h
@@ -137,7 +168,6 @@ hpdf_array.o: hpdf_error.h
 hpdf_array.o: hpdf_mmgr.h
 hpdf_array.o: hpdf_encrypt.h
 hpdf_binary.o: hpdf_conf.h
-hpdf_binary.o: ../../mstl/m_stdio.h
 hpdf_binary.o: hpdf_utils.h
 hpdf_binary.o: hpdf_config.h
 hpdf_binary.o: hpdf_types.h
@@ -161,7 +191,6 @@ hpdf_boolean.o: hpdf_error.h
 hpdf_boolean.o: hpdf_mmgr.h
 hpdf_boolean.o: hpdf_encrypt.h
 hpdf_catalog.o: hpdf_conf.h
-hpdf_catalog.o: ../../mstl/m_stdio.h
 hpdf_catalog.o: hpdf_utils.h
 hpdf_catalog.o: hpdf_config.h
 hpdf_catalog.o: hpdf_types.h
@@ -180,7 +209,6 @@ hpdf_catalog.o: hpdf_font.h
 hpdf_catalog.o: hpdf_fontdef.h
 hpdf_catalog.o: hpdf_ext_gstate.h
 hpdf_destination.o: hpdf_conf.h
-hpdf_destination.o: ../../mstl/m_stdio.h
 hpdf_destination.o: hpdf_utils.h
 hpdf_destination.o: hpdf_config.h
 hpdf_destination.o: hpdf_types.h
@@ -203,8 +231,8 @@ hpdf_destination.o: hpdf_font.h
 hpdf_destination.o: hpdf_fontdef.h
 hpdf_destination.o: hpdf_ext_gstate.h
 hpdf_destination.o: hpdf_outline.h
+hpdf_destination.o: hpdf_pdfa.h
 hpdf_dict.o: hpdf_conf.h
-hpdf_dict.o: ../../mstl/m_stdio.h
 hpdf_dict.o: hpdf_utils.h
 hpdf_dict.o: hpdf_config.h
 hpdf_dict.o: hpdf_types.h
@@ -217,7 +245,6 @@ hpdf_dict.o: hpdf_error.h
 hpdf_dict.o: hpdf_mmgr.h
 hpdf_dict.o: hpdf_encrypt.h
 hpdf_doc.o: hpdf_conf.h
-hpdf_doc.o: ../../mstl/m_stdio.h
 hpdf_doc.o: hpdf_utils.h
 hpdf_doc.o: hpdf_config.h
 hpdf_doc.o: hpdf_types.h
@@ -230,6 +257,7 @@ hpdf_doc.o: hpdf_list.h
 hpdf_doc.o: hpdf_error.h
 hpdf_doc.o: hpdf_mmgr.h
 hpdf_doc.o: hpdf_encrypt.h
+hpdf_doc.o: hpdf_namedict.h
 hpdf_doc.o: hpdf_destination.h
 hpdf_doc.o: hpdf_info.h
 hpdf_doc.o: hpdf_page_label.h
@@ -244,8 +272,8 @@ hpdf_doc.o: hpdf_font.h
 hpdf_doc.o: hpdf_fontdef.h
 hpdf_doc.o: hpdf_ext_gstate.h
 hpdf_doc.o: hpdf_outline.h
+hpdf_doc.o: hpdf_pdfa.h
 hpdf_doc_png.o: hpdf_conf.h
-hpdf_doc_png.o: ../../mstl/m_stdio.h
 hpdf_doc_png.o: hpdf_utils.h
 hpdf_doc_png.o: hpdf_config.h
 hpdf_doc_png.o: hpdf_types.h
@@ -268,8 +296,8 @@ hpdf_doc_png.o: hpdf_font.h
 hpdf_doc_png.o: hpdf_fontdef.h
 hpdf_doc_png.o: hpdf_ext_gstate.h
 hpdf_doc_png.o: hpdf_outline.h
+hpdf_doc_png.o: hpdf_pdfa.h
 hpdf_encoder.o: hpdf_conf.h
-hpdf_encoder.o: ../../mstl/m_stdio.h
 hpdf_encoder.o: hpdf_utils.h
 hpdf_encoder.o: hpdf_config.h
 hpdf_encoder.o: hpdf_types.h
@@ -292,8 +320,8 @@ hpdf_encoder.o: hpdf_font.h
 hpdf_encoder.o: hpdf_fontdef.h
 hpdf_encoder.o: hpdf_ext_gstate.h
 hpdf_encoder.o: hpdf_outline.h
+hpdf_encoder.o: hpdf_pdfa.h
 hpdf_encoder_cns.o: hpdf_conf.h
-hpdf_encoder_cns.o: ../../mstl/m_stdio.h
 hpdf_encoder_cns.o: hpdf_utils.h
 hpdf_encoder_cns.o: hpdf_config.h
 hpdf_encoder_cns.o: hpdf_types.h
@@ -316,8 +344,8 @@ hpdf_encoder_cns.o: hpdf_font.h
 hpdf_encoder_cns.o: hpdf_fontdef.h
 hpdf_encoder_cns.o: hpdf_ext_gstate.h
 hpdf_encoder_cns.o: hpdf_outline.h
+hpdf_encoder_cns.o: hpdf_pdfa.h
 hpdf_encoder_cnt.o: hpdf_conf.h
-hpdf_encoder_cnt.o: ../../mstl/m_stdio.h
 hpdf_encoder_cnt.o: hpdf_utils.h
 hpdf_encoder_cnt.o: hpdf_config.h
 hpdf_encoder_cnt.o: hpdf_types.h
@@ -340,8 +368,8 @@ hpdf_encoder_cnt.o: hpdf_font.h
 hpdf_encoder_cnt.o: hpdf_fontdef.h
 hpdf_encoder_cnt.o: hpdf_ext_gstate.h
 hpdf_encoder_cnt.o: hpdf_outline.h
+hpdf_encoder_cnt.o: hpdf_pdfa.h
 hpdf_encoder_jp.o: hpdf_conf.h
-hpdf_encoder_jp.o: ../../mstl/m_stdio.h
 hpdf_encoder_jp.o: hpdf_utils.h
 hpdf_encoder_jp.o: hpdf_config.h
 hpdf_encoder_jp.o: hpdf_types.h
@@ -364,8 +392,8 @@ hpdf_encoder_jp.o: hpdf_font.h
 hpdf_encoder_jp.o: hpdf_fontdef.h
 hpdf_encoder_jp.o: hpdf_ext_gstate.h
 hpdf_encoder_jp.o: hpdf_outline.h
+hpdf_encoder_jp.o: hpdf_pdfa.h
 hpdf_encoder_kr.o: hpdf_conf.h
-hpdf_encoder_kr.o: ../../mstl/m_stdio.h
 hpdf_encoder_kr.o: hpdf_utils.h
 hpdf_encoder_kr.o: hpdf_config.h
 hpdf_encoder_kr.o: hpdf_types.h
@@ -388,8 +416,32 @@ hpdf_encoder_kr.o: hpdf_font.h
 hpdf_encoder_kr.o: hpdf_fontdef.h
 hpdf_encoder_kr.o: hpdf_ext_gstate.h
 hpdf_encoder_kr.o: hpdf_outline.h
+hpdf_encoder_kr.o: hpdf_pdfa.h
+hpdf_encoder_utf.o: hpdf_conf.h
+hpdf_encoder_utf.o: hpdf_utils.h
+hpdf_encoder_utf.o: hpdf_config.h
+hpdf_encoder_utf.o: hpdf_types.h
+hpdf_encoder_utf.o: hpdf_encoder.h
+hpdf_encoder_utf.o: hpdf_consts.h
+hpdf_encoder_utf.o: hpdf_streams.h
+hpdf_encoder_utf.o: hpdf_list.h
+hpdf_encoder_utf.o: hpdf_error.h
+hpdf_encoder_utf.o: hpdf_mmgr.h
+hpdf_encoder_utf.o: hpdf_encrypt.h
+hpdf_encoder_utf.o: hpdf.h
+hpdf_encoder_utf.o: hpdf_version.h
+hpdf_encoder_utf.o: hpdf_doc.h
+hpdf_encoder_utf.o: hpdf_catalog.h
+hpdf_encoder_utf.o: hpdf_objects.h
+hpdf_encoder_utf.o: hpdf_image.h
+hpdf_encoder_utf.o: hpdf_pages.h
+hpdf_encoder_utf.o: hpdf_gstate.h
+hpdf_encoder_utf.o: hpdf_font.h
+hpdf_encoder_utf.o: hpdf_fontdef.h
+hpdf_encoder_utf.o: hpdf_ext_gstate.h
+hpdf_encoder_utf.o: hpdf_outline.h
+hpdf_encoder_utf.o: hpdf_pdfa.h
 hpdf_encrypt.o: hpdf_conf.h
-hpdf_encrypt.o: ../../mstl/m_stdio.h
 hpdf_encrypt.o: hpdf_consts.h
 hpdf_encrypt.o: hpdf_utils.h
 hpdf_encrypt.o: hpdf_config.h
@@ -398,7 +450,6 @@ hpdf_encrypt.o: hpdf_encrypt.h
 hpdf_encrypt.o: hpdf_mmgr.h
 hpdf_encrypt.o: hpdf_error.h
 hpdf_encryptdict.o: hpdf_conf.h
-hpdf_encryptdict.o: ../../mstl/m_stdio.h
 hpdf_encryptdict.o: hpdf_utils.h
 hpdf_encryptdict.o: hpdf_config.h
 hpdf_encryptdict.o: hpdf_types.h
@@ -413,14 +464,30 @@ hpdf_encryptdict.o: hpdf_encrypt.h
 hpdf_encryptdict.o: hpdf_encryptdict.h
 hpdf_encryptdict.o: hpdf_info.h
 hpdf_error.o: hpdf_conf.h
-hpdf_error.o: ../../mstl/m_stdio.h
 hpdf_error.o: hpdf_utils.h
 hpdf_error.o: hpdf_config.h
 hpdf_error.o: hpdf_types.h
 hpdf_error.o: hpdf_error.h
 hpdf_error.o: hpdf_consts.h
+hpdf_error.o: hpdf.h
+hpdf_error.o: hpdf_version.h
+hpdf_error.o: hpdf_doc.h
+hpdf_error.o: hpdf_catalog.h
+hpdf_error.o: hpdf_objects.h
+hpdf_error.o: hpdf_encoder.h
+hpdf_error.o: hpdf_streams.h
+hpdf_error.o: hpdf_list.h
+hpdf_error.o: hpdf_mmgr.h
+hpdf_error.o: hpdf_encrypt.h
+hpdf_error.o: hpdf_image.h
+hpdf_error.o: hpdf_pages.h
+hpdf_error.o: hpdf_gstate.h
+hpdf_error.o: hpdf_font.h
+hpdf_error.o: hpdf_fontdef.h
+hpdf_error.o: hpdf_ext_gstate.h
+hpdf_error.o: hpdf_outline.h
+hpdf_error.o: hpdf_pdfa.h
 hpdf_ext_gstate.o: hpdf_conf.h
-hpdf_ext_gstate.o: ../../mstl/m_stdio.h
 hpdf_ext_gstate.o: hpdf_utils.h
 hpdf_ext_gstate.o: hpdf_config.h
 hpdf_ext_gstate.o: hpdf_types.h
@@ -443,8 +510,8 @@ hpdf_ext_gstate.o: hpdf_gstate.h
 hpdf_ext_gstate.o: hpdf_font.h
 hpdf_ext_gstate.o: hpdf_fontdef.h
 hpdf_ext_gstate.o: hpdf_outline.h
+hpdf_ext_gstate.o: hpdf_pdfa.h
 hpdf_font.o: hpdf_conf.h
-hpdf_font.o: ../../mstl/m_stdio.h
 hpdf_font.o: hpdf_utils.h
 hpdf_font.o: hpdf_config.h
 hpdf_font.o: hpdf_types.h
@@ -467,8 +534,8 @@ hpdf_font.o: hpdf_font.h
 hpdf_font.o: hpdf_fontdef.h
 hpdf_font.o: hpdf_ext_gstate.h
 hpdf_font.o: hpdf_outline.h
+hpdf_font.o: hpdf_pdfa.h
 hpdf_font_cid.o: hpdf_conf.h
-hpdf_font_cid.o: ../../mstl/m_stdio.h
 hpdf_font_cid.o: hpdf_utils.h
 hpdf_font_cid.o: hpdf_config.h
 hpdf_font_cid.o: hpdf_types.h
@@ -483,7 +550,6 @@ hpdf_font_cid.o: hpdf_error.h
 hpdf_font_cid.o: hpdf_mmgr.h
 hpdf_font_cid.o: hpdf_encrypt.h
 hpdf_font_tt.o: hpdf_conf.h
-hpdf_font_tt.o: ../../mstl/m_stdio.h
 hpdf_font_tt.o: hpdf_utils.h
 hpdf_font_tt.o: hpdf_config.h
 hpdf_font_tt.o: hpdf_types.h
@@ -498,7 +564,6 @@ hpdf_font_tt.o: hpdf_error.h
 hpdf_font_tt.o: hpdf_mmgr.h
 hpdf_font_tt.o: hpdf_encrypt.h
 hpdf_font_type1.o: hpdf_conf.h
-hpdf_font_type1.o: ../../mstl/m_stdio.h
 hpdf_font_type1.o: hpdf_utils.h
 hpdf_font_type1.o: hpdf_config.h
 hpdf_font_type1.o: hpdf_types.h
@@ -513,7 +578,6 @@ hpdf_font_type1.o: hpdf_error.h
 hpdf_font_type1.o: hpdf_mmgr.h
 hpdf_font_type1.o: hpdf_encrypt.h
 hpdf_fontdef.o: hpdf_conf.h
-hpdf_fontdef.o: ../../mstl/m_stdio.h
 hpdf_fontdef.o: hpdf_utils.h
 hpdf_fontdef.o: hpdf_config.h
 hpdf_fontdef.o: hpdf_types.h
@@ -527,7 +591,6 @@ hpdf_fontdef.o: hpdf_error.h
 hpdf_fontdef.o: hpdf_mmgr.h
 hpdf_fontdef.o: hpdf_encrypt.h
 hpdf_fontdef_base14.o: hpdf_conf.h
-hpdf_fontdef_base14.o: ../../mstl/m_stdio.h
 hpdf_fontdef_base14.o: hpdf_utils.h
 hpdf_fontdef_base14.o: hpdf_config.h
 hpdf_fontdef_base14.o: hpdf_types.h
@@ -541,7 +604,6 @@ hpdf_fontdef_base14.o: hpdf_error.h
 hpdf_fontdef_base14.o: hpdf_mmgr.h
 hpdf_fontdef_base14.o: hpdf_encrypt.h
 hpdf_fontdef_cid.o: hpdf_conf.h
-hpdf_fontdef_cid.o: ../../mstl/m_stdio.h
 hpdf_fontdef_cid.o: hpdf_utils.h
 hpdf_fontdef_cid.o: hpdf_config.h
 hpdf_fontdef_cid.o: hpdf_types.h
@@ -555,7 +617,6 @@ hpdf_fontdef_cid.o: hpdf_error.h
 hpdf_fontdef_cid.o: hpdf_mmgr.h
 hpdf_fontdef_cid.o: hpdf_encrypt.h
 hpdf_fontdef_cns.o: hpdf_conf.h
-hpdf_fontdef_cns.o: ../../mstl/m_stdio.h
 hpdf_fontdef_cns.o: hpdf_utils.h
 hpdf_fontdef_cns.o: hpdf_config.h
 hpdf_fontdef_cns.o: hpdf_types.h
@@ -578,8 +639,8 @@ hpdf_fontdef_cns.o: hpdf_font.h
 hpdf_fontdef_cns.o: hpdf_fontdef.h
 hpdf_fontdef_cns.o: hpdf_ext_gstate.h
 hpdf_fontdef_cns.o: hpdf_outline.h
+hpdf_fontdef_cns.o: hpdf_pdfa.h
 hpdf_fontdef_cnt.o: hpdf_conf.h
-hpdf_fontdef_cnt.o: ../../mstl/m_stdio.h
 hpdf_fontdef_cnt.o: hpdf_utils.h
 hpdf_fontdef_cnt.o: hpdf_config.h
 hpdf_fontdef_cnt.o: hpdf_types.h
@@ -602,8 +663,8 @@ hpdf_fontdef_cnt.o: hpdf_font.h
 hpdf_fontdef_cnt.o: hpdf_fontdef.h
 hpdf_fontdef_cnt.o: hpdf_ext_gstate.h
 hpdf_fontdef_cnt.o: hpdf_outline.h
+hpdf_fontdef_cnt.o: hpdf_pdfa.h
 hpdf_fontdef_jp.o: hpdf_conf.h
-hpdf_fontdef_jp.o: ../../mstl/m_stdio.h
 hpdf_fontdef_jp.o: hpdf_utils.h
 hpdf_fontdef_jp.o: hpdf_config.h
 hpdf_fontdef_jp.o: hpdf_types.h
@@ -626,8 +687,8 @@ hpdf_fontdef_jp.o: hpdf_font.h
 hpdf_fontdef_jp.o: hpdf_fontdef.h
 hpdf_fontdef_jp.o: hpdf_ext_gstate.h
 hpdf_fontdef_jp.o: hpdf_outline.h
+hpdf_fontdef_jp.o: hpdf_pdfa.h
 hpdf_fontdef_kr.o: hpdf_conf.h
-hpdf_fontdef_kr.o: ../../mstl/m_stdio.h
 hpdf_fontdef_kr.o: hpdf_utils.h
 hpdf_fontdef_kr.o: hpdf_config.h
 hpdf_fontdef_kr.o: hpdf_types.h
@@ -650,8 +711,8 @@ hpdf_fontdef_kr.o: hpdf_font.h
 hpdf_fontdef_kr.o: hpdf_fontdef.h
 hpdf_fontdef_kr.o: hpdf_ext_gstate.h
 hpdf_fontdef_kr.o: hpdf_outline.h
+hpdf_fontdef_kr.o: hpdf_pdfa.h
 hpdf_fontdef_tt.o: hpdf_conf.h
-hpdf_fontdef_tt.o: ../../mstl/m_stdio.h
 hpdf_fontdef_tt.o: hpdf_utils.h
 hpdf_fontdef_tt.o: hpdf_config.h
 hpdf_fontdef_tt.o: hpdf_types.h
@@ -665,7 +726,6 @@ hpdf_fontdef_tt.o: hpdf_error.h
 hpdf_fontdef_tt.o: hpdf_mmgr.h
 hpdf_fontdef_tt.o: hpdf_encrypt.h
 hpdf_fontdef_type1.o: hpdf_conf.h
-hpdf_fontdef_type1.o: ../../mstl/m_stdio.h
 hpdf_fontdef_type1.o: hpdf_utils.h
 hpdf_fontdef_type1.o: hpdf_config.h
 hpdf_fontdef_type1.o: hpdf_types.h
@@ -679,7 +739,6 @@ hpdf_fontdef_type1.o: hpdf_error.h
 hpdf_fontdef_type1.o: hpdf_mmgr.h
 hpdf_fontdef_type1.o: hpdf_encrypt.h
 hpdf_gstate.o: hpdf_conf.h
-hpdf_gstate.o: ../../mstl/m_stdio.h
 hpdf_gstate.o: hpdf_utils.h
 hpdf_gstate.o: hpdf_config.h
 hpdf_gstate.o: hpdf_types.h
@@ -695,7 +754,6 @@ hpdf_gstate.o: hpdf_error.h
 hpdf_gstate.o: hpdf_mmgr.h
 hpdf_gstate.o: hpdf_encrypt.h
 hpdf_image.o: hpdf_conf.h
-hpdf_image.o: ../../mstl/m_stdio.h
 hpdf_image.o: hpdf_utils.h
 hpdf_image.o: hpdf_config.h
 hpdf_image.o: hpdf_types.h
@@ -718,8 +776,33 @@ hpdf_image.o: hpdf_font.h
 hpdf_image.o: hpdf_fontdef.h
 hpdf_image.o: hpdf_ext_gstate.h
 hpdf_image.o: hpdf_outline.h
+hpdf_image.o: hpdf_pdfa.h
+hpdf_image_ccitt.o: hpdf_conf.h
+hpdf_image_ccitt.o: hpdf_utils.h
+hpdf_image_ccitt.o: hpdf_config.h
+hpdf_image_ccitt.o: hpdf_types.h
+hpdf_image_ccitt.o: hpdf.h
+hpdf_image_ccitt.o: hpdf_version.h
+hpdf_image_ccitt.o: hpdf_consts.h
+hpdf_image_ccitt.o: hpdf_doc.h
+hpdf_image_ccitt.o: hpdf_catalog.h
+hpdf_image_ccitt.o: hpdf_objects.h
+hpdf_image_ccitt.o: hpdf_encoder.h
+hpdf_image_ccitt.o: hpdf_streams.h
+hpdf_image_ccitt.o: hpdf_list.h
+hpdf_image_ccitt.o: hpdf_error.h
+hpdf_image_ccitt.o: hpdf_mmgr.h
+hpdf_image_ccitt.o: hpdf_encrypt.h
+hpdf_image_ccitt.o: hpdf_image.h
+hpdf_image_ccitt.o: hpdf_pages.h
+hpdf_image_ccitt.o: hpdf_gstate.h
+hpdf_image_ccitt.o: hpdf_font.h
+hpdf_image_ccitt.o: hpdf_fontdef.h
+hpdf_image_ccitt.o: hpdf_ext_gstate.h
+hpdf_image_ccitt.o: hpdf_outline.h
+hpdf_image_ccitt.o: hpdf_pdfa.h
+hpdf_image_ccitt.o: t4.h
 hpdf_image_png.o: hpdf_conf.h
-hpdf_image_png.o: ../../mstl/m_stdio.h
 hpdf_image_png.o: hpdf_utils.h
 hpdf_image_png.o: hpdf_config.h
 hpdf_image_png.o: hpdf_types.h
@@ -733,7 +816,6 @@ hpdf_image_png.o: hpdf_error.h
 hpdf_image_png.o: hpdf_mmgr.h
 hpdf_image_png.o: hpdf_encrypt.h
 hpdf_info.o: hpdf_conf.h
-hpdf_info.o: ../../mstl/m_stdio.h
 hpdf_info.o: hpdf_utils.h
 hpdf_info.o: hpdf_config.h
 hpdf_info.o: hpdf_types.h
@@ -747,7 +829,6 @@ hpdf_info.o: hpdf_error.h
 hpdf_info.o: hpdf_mmgr.h
 hpdf_info.o: hpdf_encrypt.h
 hpdf_list.o: hpdf_conf.h
-hpdf_list.o: ../../mstl/m_stdio.h
 hpdf_list.o: hpdf_utils.h
 hpdf_list.o: hpdf_config.h
 hpdf_list.o: hpdf_types.h
@@ -756,7 +837,6 @@ hpdf_list.o: hpdf_list.h
 hpdf_list.o: hpdf_error.h
 hpdf_list.o: hpdf_mmgr.h
 hpdf_mmgr.o: hpdf_conf.h
-hpdf_mmgr.o: ../../mstl/m_stdio.h
 hpdf_mmgr.o: hpdf_consts.h
 hpdf_mmgr.o: hpdf_mmgr.h
 hpdf_mmgr.o: hpdf_types.h
@@ -764,7 +844,6 @@ hpdf_mmgr.o: hpdf_error.h
 hpdf_mmgr.o: hpdf_utils.h
 hpdf_mmgr.o: hpdf_config.h
 hpdf_name.o: hpdf_conf.h
-hpdf_name.o: ../../mstl/m_stdio.h
 hpdf_name.o: hpdf_utils.h
 hpdf_name.o: hpdf_config.h
 hpdf_name.o: hpdf_types.h
@@ -776,6 +855,19 @@ hpdf_name.o: hpdf_list.h
 hpdf_name.o: hpdf_error.h
 hpdf_name.o: hpdf_mmgr.h
 hpdf_name.o: hpdf_encrypt.h
+hpdf_namedict.o: hpdf_conf.h
+hpdf_namedict.o: hpdf_utils.h
+hpdf_namedict.o: hpdf_config.h
+hpdf_namedict.o: hpdf_types.h
+hpdf_namedict.o: hpdf_consts.h
+hpdf_namedict.o: hpdf_namedict.h
+hpdf_namedict.o: hpdf_objects.h
+hpdf_namedict.o: hpdf_encoder.h
+hpdf_namedict.o: hpdf_streams.h
+hpdf_namedict.o: hpdf_list.h
+hpdf_namedict.o: hpdf_error.h
+hpdf_namedict.o: hpdf_mmgr.h
+hpdf_namedict.o: hpdf_encrypt.h
 hpdf_null.o: hpdf_utils.h
 hpdf_null.o: hpdf_config.h
 hpdf_null.o: hpdf_types.h
@@ -799,7 +891,6 @@ hpdf_number.o: hpdf_error.h
 hpdf_number.o: hpdf_mmgr.h
 hpdf_number.o: hpdf_encrypt.h
 hpdf_objects.o: hpdf_conf.h
-hpdf_objects.o: ../../mstl/m_stdio.h
 hpdf_objects.o: hpdf_utils.h
 hpdf_objects.o: hpdf_config.h
 hpdf_objects.o: hpdf_types.h
@@ -812,7 +903,6 @@ hpdf_objects.o: hpdf_error.h
 hpdf_objects.o: hpdf_mmgr.h
 hpdf_objects.o: hpdf_encrypt.h
 hpdf_outline.o: hpdf_conf.h
-hpdf_outline.o: ../../mstl/m_stdio.h
 hpdf_outline.o: hpdf_utils.h
 hpdf_outline.o: hpdf_config.h
 hpdf_outline.o: hpdf_types.h
@@ -836,8 +926,8 @@ hpdf_outline.o: hpdf_font.h
 hpdf_outline.o: hpdf_fontdef.h
 hpdf_outline.o: hpdf_ext_gstate.h
 hpdf_outline.o: hpdf_outline.h
+hpdf_outline.o: hpdf_pdfa.h
 hpdf_page_label.o: hpdf_conf.h
-hpdf_page_label.o: ../../mstl/m_stdio.h
 hpdf_page_label.o: hpdf_utils.h
 hpdf_page_label.o: hpdf_config.h
 hpdf_page_label.o: hpdf_types.h
@@ -861,8 +951,8 @@ hpdf_page_label.o: hpdf_font.h
 hpdf_page_label.o: hpdf_fontdef.h
 hpdf_page_label.o: hpdf_ext_gstate.h
 hpdf_page_label.o: hpdf_outline.h
+hpdf_page_label.o: hpdf_pdfa.h
 hpdf_page_operator.o: hpdf_conf.h
-hpdf_page_operator.o: ../../mstl/m_stdio.h
 hpdf_page_operator.o: hpdf_utils.h
 hpdf_page_operator.o: hpdf_config.h
 hpdf_page_operator.o: hpdf_types.h
@@ -885,8 +975,8 @@ hpdf_page_operator.o: hpdf_doc.h
 hpdf_page_operator.o: hpdf_catalog.h
 hpdf_page_operator.o: hpdf_image.h
 hpdf_page_operator.o: hpdf_outline.h
+hpdf_page_operator.o: hpdf_pdfa.h
 hpdf_pages.o: hpdf_conf.h
-hpdf_pages.o: ../../mstl/m_stdio.h
 hpdf_pages.o: hpdf_utils.h
 hpdf_pages.o: hpdf_config.h
 hpdf_pages.o: hpdf_types.h
@@ -909,10 +999,36 @@ hpdf_pages.o: hpdf_font.h
 hpdf_pages.o: hpdf_fontdef.h
 hpdf_pages.o: hpdf_ext_gstate.h
 hpdf_pages.o: hpdf_outline.h
+hpdf_pages.o: hpdf_pdfa.h
 hpdf_pages.o: hpdf_annotation.h
 hpdf_pages.o: hpdf_destination.h
+hpdf_pages.o: hpdf_3dmeasure.h
+hpdf_pages.o: hpdf_exdata.h
+hpdf_pages.o: hpdf_u3d.h
+hpdf_pdfa.o: hpdf_utils.h
+hpdf_pdfa.o: hpdf_config.h
+hpdf_pdfa.o: hpdf_types.h
+hpdf_pdfa.o: hpdf.h
+hpdf_pdfa.o: hpdf_version.h
+hpdf_pdfa.o: hpdf_consts.h
+hpdf_pdfa.o: hpdf_doc.h
+hpdf_pdfa.o: hpdf_catalog.h
+hpdf_pdfa.o: hpdf_objects.h
+hpdf_pdfa.o: hpdf_encoder.h
+hpdf_pdfa.o: hpdf_streams.h
+hpdf_pdfa.o: hpdf_list.h
+hpdf_pdfa.o: hpdf_error.h
+hpdf_pdfa.o: hpdf_mmgr.h
+hpdf_pdfa.o: hpdf_encrypt.h
+hpdf_pdfa.o: hpdf_image.h
+hpdf_pdfa.o: hpdf_pages.h
+hpdf_pdfa.o: hpdf_gstate.h
+hpdf_pdfa.o: hpdf_font.h
+hpdf_pdfa.o: hpdf_fontdef.h
+hpdf_pdfa.o: hpdf_ext_gstate.h
+hpdf_pdfa.o: hpdf_outline.h
+hpdf_pdfa.o: hpdf_pdfa.h
 hpdf_real.o: hpdf_conf.h
-hpdf_real.o: ../../mstl/m_stdio.h
 hpdf_real.o: hpdf_utils.h
 hpdf_real.o: hpdf_config.h
 hpdf_real.o: hpdf_types.h
@@ -925,7 +1041,6 @@ hpdf_real.o: hpdf_error.h
 hpdf_real.o: hpdf_mmgr.h
 hpdf_real.o: hpdf_encrypt.h
 hpdf_streams.o: hpdf_conf.h
-hpdf_streams.o: ../../mstl/m_stdio.h
 hpdf_streams.o: hpdf_consts.h
 hpdf_streams.o: hpdf_utils.h
 hpdf_streams.o: hpdf_config.h
@@ -936,7 +1051,6 @@ hpdf_streams.o: hpdf_error.h
 hpdf_streams.o: hpdf_mmgr.h
 hpdf_streams.o: hpdf_encrypt.h
 hpdf_string.o: hpdf_conf.h
-hpdf_string.o: ../../mstl/m_stdio.h
 hpdf_string.o: hpdf_utils.h
 hpdf_string.o: hpdf_config.h
 hpdf_string.o: hpdf_types.h
@@ -953,7 +1067,6 @@ hpdf_utils.o: hpdf_config.h
 hpdf_utils.o: hpdf_types.h
 hpdf_utils.o: hpdf_consts.h
 hpdf_xref.o: hpdf_conf.h
-hpdf_xref.o: ../../mstl/m_stdio.h
 hpdf_xref.o: hpdf_utils.h
 hpdf_xref.o: hpdf_config.h
 hpdf_xref.o: hpdf_types.h

@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -21,6 +21,7 @@
 
 #define HPDF_SIG_BYTES 0x41504446L
 
+#include "hpdf_config.h"
 #include "hpdf_catalog.h"
 #include "hpdf_image.h"
 #include "hpdf_pages.h"
@@ -29,6 +30,10 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+#if LIBHPDF_HAVE_FONTCONFIG_H
+struct _FcConfig;
 #endif
 
 #define HPDF_VER_DEFAULT  HPDF_VER_12
@@ -73,6 +78,10 @@ typedef struct _HPDF_Doc_Rec {
 
     /* buffer for saving into memory stream */
     HPDF_Stream       stream;
+
+#if LIBHPDF_HAVE_FONTCONFIG_H
+    struct _FcConfig *fc_config;
+#endif
 } HPDF_Doc_Rec;
 
 typedef struct _HPDF_Doc_Rec  *HPDF_Doc;

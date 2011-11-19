@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -18,9 +18,16 @@
 #ifndef _HPDF_CONF_H
 #define _HPDF_CONF_H
 
-#include "m_stdio.h"
-
 #include <stdlib.h>
+#include <stdio.h>
+#if defined(_MSC_VER)
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES 1
+#endif /* _USE_MATH_DEFINES */
+#endif
+#ifndef __USE_XOPEN
+#define __USE_XOPEN /* for M_PI */
+#endif /* __USE_XOPEN */
 #include <math.h>
 
 /*----------------------------------------------------------------------------*/

@@ -1,5 +1,5 @@
 /*
- * << Haru Free PDF Library >> -- hpdf_page_label.h
+ * << Haru Free PDF Library >> -- hpdf_annotation.h
  *
  * URL: http://libharu.org
  *
@@ -15,24 +15,27 @@
  *
  */
 
-#ifndef _HPDF_PAGE_LABEL_H
-#define _HPDF_PAGE_LABEL_H
+#ifndef _HPDF_EXDATA_H
+#define _HPDF_EXDATA_H
 
-#include "hpdf.h"
+#include "hpdf_objects.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-HPDF_Dict
-HPDF_PageLabel_New  (HPDF_Doc             pdf,
-                     HPDF_PageNumStyle    style,
-                     HPDF_INT             first_page,
-                     const char          *prefix);
+/*----------------------------------------------------------------------------*/
+/*------ HPDF_ExData -----------------------------------------------------*/
+
+HPDF_ExData
+HPDF_3DAnnotExData_New(HPDF_MMgr mmgr,
+					   HPDF_Xref xref );
+
+         
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif
+#endif /* _HPDF_EXDATA_H */
 

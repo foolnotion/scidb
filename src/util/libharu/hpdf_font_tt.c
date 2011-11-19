@@ -4,7 +4,7 @@
  * URL: http://libharu.org
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
- * Copyright (c) 2007-2008 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -247,7 +247,7 @@ CharWidth (HPDF_Font  font,
 }
 
 
-HPDF_TextWidth
+static HPDF_TextWidth
 TextWidth  (HPDF_Font         font,
             const HPDF_BYTE  *text,
             HPDF_UINT         len)
@@ -283,7 +283,7 @@ TextWidth  (HPDF_Font         font,
 }
 
 
-HPDF_UINT
+static HPDF_UINT
 MeasureText (HPDF_Font          font,
              const HPDF_BYTE   *text,
              HPDF_UINT          len,
@@ -307,14 +307,14 @@ MeasureText (HPDF_Font          font,
             tmp_len = i + 1;
 
             if (real_width)
-                *real_width = w;
+                *real_width = (HPDF_REAL)w;
 
             w += word_space;
         } else if (!wordwrap) {
             tmp_len = i;
 
             if (real_width)
-                *real_width = w;
+                *real_width = (HPDF_REAL)w;
         }
 
         w += (HPDF_DOUBLE)CharWidth (font, b) * font_size / 1000;
@@ -329,7 +329,7 @@ MeasureText (HPDF_Font          font,
 
     /* all of text can be put in the specified width */
     if (real_width)
-        *real_width = w;
+        *real_width = (HPDF_REAL)w;
     return len;
 }
 
@@ -347,7 +347,7 @@ OnWrite  (HPDF_Dict    obj,
     char *pbuf = buf;
     char *eptr = buf + 127;
 
-    HPDF_PTRACE ((" HPDF_TTFont_OnWrite\n"));
+    HPDF_PTRACE ((" HPDF_Font_OnWrite\n"));
 
     /* Widths entry */
     if ((ret = HPDF_Stream_WriteEscapeName (stream, "Widths")) != HPDF_OK)
