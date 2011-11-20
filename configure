@@ -142,9 +142,11 @@ array set environment {
 }
 
 array set compiler {
-    simd            {}
-    thread-support  {}
-    stack-protector {}
+    simd                        {}
+    thread-support              {}
+    no-stack-protector          {}
+    var-tracking                {}
+    var-tracking-assignments    {}
 }
 
 array set option {
@@ -183,12 +185,16 @@ proc MakeOption {prefix path} {
 
 
 proc Append {var str} {
-    if {[string length $str]} {
-        if {[string length $var] > 0} {
-            uplevel { append var " " }
+    upvar 1 $var s
+
+    if {[info exists s]} {
+        if {[string length $str]} {
+            if {[string length $s] > 0} {
+                uplevel [list append $var " "]
+            }
         }
-        uplevel [list append $var $str ]
     }
+    uplevel [list append $var $str ]
 }
 
 
@@ -801,16 +807,16 @@ fi
 }
 
 
-# TestNoStackProtector.sh:
-#    Script used to test if the compiler has an -fno-stack-protector option
+# TestCompilerFlag.sh:
+#    Script used to test which options the compiler supports.
 #
-set TestNoStackProtector {#!/bin/sh
-cat <<EOF > testNoStackProtector.c
+set TestCompilerFlag {#!/bin/sh
+cat <<EOF > testCompilerFlag.c
 int main() { return 1; }
 EOF
 
-__CC__ -fno-stack-protector -o testNoStackProtector testNoStackProtector.c
-if [ -f testNoStackProtector ]; then
+__CC__ -g -f%FLAG% -o testCompilerFlag testCompilerFlag.c
+if [ -f testCompilerFlag ]; then
     exit 0
 else
     exit 1
@@ -824,7 +830,7 @@ proc checkGCC {cc} {
     global TestGCC
     global TestSSE2
     global TestSyncBuiltin
-    global TestNoStackProtector
+    global TestCompilerFlag
     global environment
     global compiler
     global option
@@ -894,19 +900,27 @@ proc checkGCC {cc} {
                 puts "no."
             }
         }
-        # we check silently if the compiler has an -fno-stack-protector option
-        if {![catch {open testNoStackProtector.sh w} f]} {
-            puts $f [regsub -all __CC__ $TestNoStackProtector $environment($cc)]
-            close $f
-            if {![catch {exec sh testNoStackProtector.sh}]} {
-                set compiler(stack-protector) -fno-stack-protector
-            }
-        }
-
-        foreach file {testsse2 testSyncBuiltin testNoStackProtector} {
+        foreach file {testsse2 testSyncBuiltin} {
             catch [list file delete -force $file.sh]
             catch [list file delete -force $file.c]
             catch [list file delete -force $file]
+        }
+        # we check silently whichn options the compiler supports
+        # don't use var-tracking*, compile time is too long
+#       foreach opt {no-stack-protector var-tracking var-tracking-assignments}
+        foreach opt {no-stack-protector} {
+            if {![catch {open testCompilerFlag.sh w} f]} {
+                set script [regsub -all %FLAG% $TestCompilerFlag $opt]
+                set script [regsub -all __CC__ $script $environment($cc)]
+                puts $f $script
+                close $f
+                if {![catch {exec sh testCompilerFlag.sh} msg]} {
+                    set compiler($opt) -f$opt
+                }
+            }
+            catch { file delete -force testCompilerFlag.sh }
+            catch { file delete -force testCompilerFlag.c }
+            catch { file delete -force testCompilerFlag }
         }
     }
     return $version
@@ -920,9 +934,8 @@ proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir tcl_platform
 
     set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
-    if {[llength $compiler(stack-protector)]} {
-        append option(EXTRA_CFLAGS) " "
-        append option(EXTRA_CFLAGS) $compiler(stack-protector)
+    if {[llength $compiler(no-stack-protector)]} {
+        Append option(EXTRA_CFLAGS) $compiler(no-stack-protector)
     }
 
     set success [findTclTkPaths]
@@ -945,8 +958,15 @@ proc writeMakefile {{type ""}} {
         }
     }
 
-    if { $feature(symbols)}         { Append option(C_DEBUG) "-g" }
-    if { $feature(symbols)}         { Append option(CXX_DEBUG) "-g" }
+    if { $feature(symbols)} {
+        Append option(C_DEBUG) "-g"
+        foreach opt {var-tracking var-tracking-assignments} {
+            if {[llength $compiler($opt)]} {
+                Append option(EXTRA_DEBUG_FLAGS) $compiler($opt)
+            }
+        }
+        set option(CXX_DEBUG) $option(C_DEBUG)
+    }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
     if {!$feature(assertions)}      { Append option(CXX_DEBUG) "-DNREQ" }
     if { $feature(gprof-profiling)} { Append option(PROFILING) "-pg" }
