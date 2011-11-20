@@ -230,6 +230,8 @@ private:
 	size_type	m_size;
 	size_type	m_capacity;
 	pointer		m_data;
+
+	static char const* m_empty;
 };
 
 bool operator==(string const& lhs, string const& rhs);

@@ -27,7 +27,7 @@ inline string::reference::reference(string& str, size_type pos) : m_str(str), m_
 
 inline string::reference::operator value_type() const { return m_str.m_data[m_pos]; }
 
-inline string::string() :m_size(0), m_capacity(0), m_data(empty_string.m_data) {}
+inline string::string() :m_size(0), m_capacity(0), m_data(const_cast<char*>(m_empty)) {}
 
 inline string& string::operator+=(const_reference c) { append(c); return *this; }
 
@@ -40,7 +40,6 @@ inline string::value_type& string::back()			{ M_REQUIRE(!empty()); return m_data
 
 inline string::size_type string::size() const				{ return m_size; }
 inline string::size_type string::capacity() const			{ return m_capacity - 1; }
-inline string::const_pointer string::c_str() const			{ return m_data ? m_data : empty_string.m_data;}
 inline string::pointer string::data()							{ return m_data; }
 inline string::const_pointer string::begin() const			{ return m_data; }
 inline string::pointer string::begin()							{ return m_data; }
@@ -63,6 +62,13 @@ string::operator+=(string const& s)
 
 inline string operator+(char lhs, string const& rhs)			{ return string(1, lhs) += rhs; }
 inline string operator+(char const* lhs, string const& rhs)	{ return string(lhs) += rhs; }
+
+
+inline
+string::const_pointer string::c_str() const
+{
+	return m_data ? m_data : const_cast<char*>(m_empty);
+}
 
 
 inline

@@ -233,7 +233,7 @@ bool
 Move::isCaptureOrPromotion() const
 {
 	static_assert(piece::None == 0, "reimplementation required");
-	return (m >> Shift_Capture) | (m & Bit_Promote) != 0;
+	return ((m >> Shift_Capture) | (m & Bit_Promote)) != 0;
 }
 
 

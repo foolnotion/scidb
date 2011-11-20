@@ -5,6 +5,7 @@
  *
  * Copyright (c) 1999-2006 Takeshi Kanno <takeshi_kanno@est.hi-ho.ne.jp>
  * Copyright (c) 2007-2009 Antony Dovgal <tony@daylessday.org>
+ * Copyright (c) 2011 Gregor Cramer <gcramer@gmx.net>
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,
@@ -1416,44 +1417,30 @@ GetDataFromHFONT (HFONT hf,
                   char** outFontBuffer,
                   HPDF_UINT32* outFontBufferLen)
 {
-    HGDIOBJ oldFont;
-    HDC     hdc = GetDC (0);
+    HGDIOBJ   oldFont;
+    HDC       hdc = GetDC (0);
+    HPDF_BOOL state = HPDF_FALSE;
 
-    if (hdc == NULL)
+    if (hdc)
     {
-        DeleteObject (hf);
-        return HPDF_FALSE;
-    }
+        oldFont = SelectObject (hdc, hf);
+        *outFontBufferLen = GetFontData (hdc, 0, 0, 0, 0);
 
-    oldFont = SelectObject (hdc, hf);
-    *outFontBufferLen = GetFontData (hdc, 0, 0, 0, 0);
+        if (*outFontBufferLen != GDI_ERROR)
+        {
+            *outFontBuffer = (char*) malloc (*outFontBufferLen);
 
-    if (*outFontBufferLen == GDI_ERROR)
-    {
+            if (GetFontData (hdc, 0, 0, *outFontBuffer, (DWORD) *outFontBufferLen) != GDI_ERROR)
+                state = HPDF_TRUE;
+        }
+
         SelectObject (hdc, oldFont);
         ReleaseDC (0, hdc);
-        DeleteObject (hf);
-        return HPDF_FALSE;
     }
 
-    *outFontBuffer = (char*) malloc (*outFontBufferLen);
-
-    if (GetFontData (hdc, 0, 0, *outFontBuffer, (DWORD) *outFontBufferLen) == GDI_ERROR)
-    {
-        free (*outFontBuffer);
-        *outFontBuffer = NULL;
-        outFontBufferLen = 0;
-        SelectObject (hdc, oldFont);
-        ReleaseDC (0, hdc);
-        DeleteObject (hf);
-        return HPDF_FALSE;
-    }
-
-    SelectObject (hdc, oldFont);
-    ReleaseDC (0, hdc);
     DeleteObject (hf);
 
-    return HPDF_TRUE;
+    return state;
 }
 
 
@@ -1470,6 +1457,7 @@ GetDataFromLPFONT (const LOGFONTA* inFont,
     return GetDataFromHFONT (hf, outFontBuffer, outFontBufferLen);
 }
 
+
 HPDF_EXPORT(const char*)
 HPDF_LoadFont (HPDF_Doc     pdf,
                const char  *family_name,
@@ -1478,8 +1466,8 @@ HPDF_LoadFont (HPDF_Doc     pdf,
                HPDF_BOOL    embedding)
 {
     LOGFONTA     lf;
-    char        *buffer;
     HPDF_UINT32  len;
+    char        *buffer = NULL;
     const char  *ret = NULL;
 
     if (strlen (family_name) >= LF_FACESIZE)
@@ -1506,14 +1494,12 @@ HPDF_LoadFont (HPDF_Doc     pdf,
         strcpy (lf.lfFaceName, family_name);
 
         if (GetDataFromLPFONT (&lf, &buffer, &len))
-        {
-            ret = HPDF_LoadTTFontFromFile (pdf, buffer, embedding);
-            free (buffer);
-        }
+            ret = HPDF_LoadTTFontFromFile (pdf, &buffer, embedding);
         else
-        {
             HPDF_SetError (&pdf->error, HPDF_UNKOWN_FONT, 0);
-        }
+
+        if (buffer)
+            free (buffer);
     }
 
     return ret;
@@ -1572,6 +1558,7 @@ HPDF_LoadFont (HPDF_Doc     pdf,
                 const char *glyph_file = (char*) v.u.s;
                 HPDF_UINT   len;
 
+                HPDF_Error_Reset (&pdf->error);
                 len = strlen (glyph_file);
 
                 if (len >= 4 && glyph_file[len - 4] == '.')
@@ -1601,8 +1588,8 @@ HPDF_LoadFont (HPDF_Doc     pdf,
                         {
                             char* metrics_file = (char*) malloc (len + 1);
 
-									 strncpy(metrics_file, glyph_file, len - 3);
-                            strcat (metrics_file, "afm");
+                            strncpy (metrics_file, glyph_file, len - 3);
+                            strcpy (metrics_file + len - 3, "afm");
                             if (!embedding)
                                 glyph_file = NULL;
                             ret = HPDF_LoadType1FontFromFile (pdf, metrics_file, glyph_file);
@@ -1614,8 +1601,10 @@ HPDF_LoadFont (HPDF_Doc     pdf,
                         break;
                 }
 
-                if (ret == NULL && HPDF_GetError(pdf) == HPDF_NOERROR)
+                if (ret == NULL && HPDF_GetError (pdf) == HPDF_NOERROR)
+                {
                     HPDF_SetError (&pdf->error, HPDF_PAGE_INVALID_FONT, 0);
+                }
             }
         }
 

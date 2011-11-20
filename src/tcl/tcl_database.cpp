@@ -532,7 +532,7 @@ struct Subscriber : public Application::Subscriber
 
 	void updateTree(mstl::string const& filename) override
 	{
-		static mstl::string prevFilename(mstl::string::empty_string);
+		static mstl::string prevFilename;
 
 		if (filename != prevFilename)
 		{

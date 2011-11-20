@@ -48,6 +48,7 @@
 using namespace mstl;
 
 
+char const* string::m_empty = "";
 string const string::empty_string(static_cast<__EMPTY__ const&>(string::__EMPTY__()));
 
 
@@ -111,7 +112,7 @@ inline static void fill(char* dst, size_t n, char value)			{ memset(dst, value, 
 string::string(__EMPTY__)
 	:m_size(0)
 	,m_capacity(0)
-	,m_data(const_cast<char *>(""))
+	,m_data(const_cast<char *>(m_empty))
 {
 }
 
@@ -162,7 +163,7 @@ string::string(size_type n, const_reference c)
 	}
 	else
 	{
-		m_data = empty_string.m_data;
+		m_data = const_cast<char *>(m_empty);
 	}
 }
 
@@ -201,7 +202,7 @@ string::string(string const& s, size_type len)
 
 	if (len == 0 || (len == npos && s.empty()))
 	{
-		m_data = empty_string.m_data;
+		m_data = const_cast<char *>(m_empty);
 	}
 	else
 	{
@@ -229,7 +230,7 @@ string::string(string const& s, size_type pos, size_type len)
 
 	if (len == 0 || (len == npos && s.empty()))
 	{
-		m_data = empty_string.m_data;
+		m_data = const_cast<char *>(m_empty);
 	}
 	else if (pos == 0 && s.m_capacity == 0)
 	{
@@ -259,7 +260,7 @@ string::string(size_type n)
 	}
 	else
 	{
-		m_data = empty_string.m_data;
+		m_data = const_cast<char *>(m_empty);
 	}
 }
 
@@ -399,7 +400,7 @@ string::init(const_pointer s, size_type len)
 	}
 	else
 	{
-		m_data = empty_string.m_data;
+		m_data = const_cast<char *>(m_empty);
 	}
 }
 
@@ -592,7 +593,7 @@ string::clear()
 	{
 		if (!empty())
 		{
-			m_data = empty_string.m_data;
+			m_data = const_cast<char *>(m_empty);
 			m_size = 0;
 			m_capacity = 0;
 		}

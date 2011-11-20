@@ -132,7 +132,7 @@ static Lookup chessgamesDict(8192);
 static CAllocator charAllocator(1024);
 static PAllocator playerAllocator(32768);
 static PlayerList playerList;
-static mstl::string exclude(mstl::string::empty_string);
+static mstl::string exclude;
 static LangMap langMap;
 static PndDict pndMap(250);
 static ViafDict viafMap(250);
