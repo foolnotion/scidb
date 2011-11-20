@@ -273,22 +273,22 @@ HPDF_GetFont  (HPDF_Doc     pdf,
                const char  *encoding_name);
 
 
+#if LIBHPDF_HAVE_WINDOWS_H || LIBHPDF_HAVE_FONTCONFIG_H
+
+HPDF_EXPORT(const char*)
+HPDF_LoadFont (HPDF_Doc     pdf,
+               const char  *family_name,
+               HPDF_BOOL    bold,
+               HPDF_BOOL    italic,
+					HPDF_BOOL    embedding);
+
+#endif
+
 HPDF_EXPORT(const char*)
 HPDF_LoadType1FontFromFile  (HPDF_Doc     pdf,
                              const char  *afm_file_name,
                              const char  *data_file_name);
 
-
-#if LIBHPDF_HAVE_WINDOWS_H || LIBHPDF_HAVE_FONTCONFIG_H
-
-HPDF_EXPORT(HPDF_FontDef)
-HPDF_GetTTFontDef (HPDF_Doc     pdf,
-                   const char  *family_name,
-                   HPDF_BOOL    bold,
-                   HPDF_BOOL    italic,
-                   HPDF_BOOL    embedding);
-
-#endif
 
 HPDF_EXPORT(HPDF_FontDef)
 HPDF_GetTTFontDefFromFile (HPDF_Doc     pdf,

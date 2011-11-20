@@ -60,6 +60,7 @@ namespace util
 namespace db {
 
 class Board;
+class Database;
 class GameData;
 class GameInfo;
 class TagSet;
@@ -67,6 +68,7 @@ class Consumer;
 class Producer;
 class NamebaseEntry;
 class Signature;
+class Time;
 
 class DatabaseCodec
 {

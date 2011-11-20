@@ -49,6 +49,7 @@ class GameInfo;
 class Namebase;
 class Consumer;
 class TagSet;
+class Time;
 
 namespace sci {
 
@@ -89,7 +90,9 @@ public:
 	void doClear(mstl::string const& rootname) override;
 
 	unsigned putGame(util::ByteStream const& strm) override;
-	unsigned putGame(util::ByteStream const& strm, unsigned prevOffset, unsigned prevRecordLength) override;
+	unsigned putGame(	util::ByteStream const& strm,
+							unsigned prevOffset,
+							unsigned prevRecordLength) override;
 	util::ByteStream getGame(GameInfo const& info) override;
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress) override;
 	void attach(mstl::string const& rootname, util::Progress& progress) override;

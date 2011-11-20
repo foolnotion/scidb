@@ -698,6 +698,21 @@ callRemoteUpdate(ClientData)
 }
 
 
+int
+tcl::ioError(mstl::string const& file, mstl::string const& error, mstl::string const& message)
+{
+	Tcl_Obj* objs[4];
+
+	objs[0] = Tcl_NewStringObj("%IO-Error%", -1);
+	objs[1] = Tcl_NewStringObj(file, -1);
+	objs[2] = Tcl_NewStringObj(error, -1);
+	objs[3] = Tcl_NewStringObj(message, -1);
+
+	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	return TCL_ERROR;
+}
+
+
 static int
 safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -749,15 +764,7 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			case IOException::Load_Failed:				error = "LoadFailed"; break;
 		}
 
-		Tcl_Obj* objs[4];
-
-		objs[0] = Tcl_NewStringObj("%IO-Error%", -1);
-		objs[1] = Tcl_NewStringObj(file, -1);
-		objs[2] = Tcl_NewStringObj(error, -1);
-		objs[3] = Tcl_NewStringObj(exc.what(), -1);
-
-		setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
-		rc = TCL_ERROR;
+		rc = tcl::ioError(file, error, exc.what());
 	}
 	catch (mstl::exception const& exc)
 	{

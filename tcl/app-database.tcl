@@ -53,8 +53,10 @@ set MissingEncoding			"Missing encoding %s (using %s instead)"
 set DescriptionTooLarge		"Description is too large."
 set DescrTooLargeDetail		"The entry contains %d characters, but only %d characters are allowed."
 set ClipbaseDescription		"Temporary database, not kept on disk."
+set HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
+set HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."
 
-set RecodingDatabase			"Recoding %s from %s to %s"
+set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
 
 set GameCount					"Games"
@@ -261,7 +263,7 @@ proc build {tab menu width height} {
 			Switch $clipbaseName
 		} else {
 			::log::hide 1
-			openBase $main $file $encoding $readonly
+			openBase $main $file no $encoding $readonly
 			::log::hide 0
 		} 
 	}
@@ -283,7 +285,7 @@ proc activate {w menu flag} {
 }
 
 
-proc openBase {parent file {encoding ""} {readonly -1}} {
+proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 	variable Vars
 	variable RecentFiles
 	variable Types
@@ -303,6 +305,22 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
 	if {$i == -1} {
+		set ext [string range [file extension $file] 1 end]
+		foreach entry $Vars(bases) {
+			if {$ext eq [lindex $entry 3]} {
+				set f [lindex $entry 2]
+				if {[::scidb::misc::hardLinked? $file $f]} {
+					set msg [string map [list "%file1" $file "%file2" $f] $mc::HardLinkDetected]
+					::dialog::error \
+						-parent .application \
+						-message $msg \
+						-detail $mc::HardLinkDetectedDetail \
+						-topmost 1 \
+						;
+					return 0
+				}
+			}
+		}
 		if {[llength $encoding] == 0 || $encoding eq $::encoding::autoEncoding} {
 			set k [FindRecentFile $file]
 			if {$k >= 0} { set encoding [lindex $RecentFiles $k 2] }
@@ -312,35 +330,34 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 			if {$k >= 0} { set readonly [lindex $RecentFiles $k 3] }
 		}
 		set name [::util::databaseName $file]
-		set ext [file extension $file]
 		set msg [format $mc::LoadMessage $name]
 		if {[llength $encoding] == 0} {
 			switch $ext {
-				.sci - .si3 - .si4 - .cbh	{ set encoding auto }
-				.pgn - .gz - .zip				{ set encoding $::encoding::defaultEncoding }
+				sci - si3 - si4 - cbh	{ set encoding auto }
+				pgn - gz - .ip				{ set encoding $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
-			.sci - .si3 - .si4 - .cbh {
+			sci - si3 - si4 - cbh {
 				set args {}
 				if {$readonly == -1} {
 					switch $ext {
-						.cbh			{ set readonly 1 }
-						.si3 - .si4	{ set readonly $Defaults(si4-readonly) }
+						cbh			{ set readonly 1 }
+						si3 - si4	{ set readonly $Defaults(si4-readonly) }
 						default		{ set readonly 0 }
 					}
 				}
 				if {[llength $encoding]} { lappend args -encoding $encoding }
 				set cmd [list ::scidb::db::load $file]
 				set options [list -message $msg]
-				if {[::util::catchIoError [list ::progress::start $parent $cmd $args $options]]} {
+				if {[::util::catchIoError $file [list ::progress::start $parent $cmd $args $options]]} {
 					return 0
 				}
 			}
 			.pgn - .gz - .zip {
 				set type [lsearch -exact $Types(sci) Temporary]
 				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
-				if {[::util::catchIoError $cmd rc]} { return 0 }
+				if {[::util::catchIoError $file $cmd rc]} { return 0 }
 				if {!$rc} {
 					::scidb::db::close $file
 					return 0
@@ -359,11 +376,11 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 			if {$rc eq "yes"} {
 				set cmd [list ::scidb::db::upgrade $file]
 				set options [list -message [format $mc::UpgradeMessage $name]]
-				if {![::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
+				if {![::util::catchIoError $file [list ::progress::start $parent $cmd {} $options]]} {
 					::scidb::db::close $file
 					set cmd [list ::scidb::db::load $file]
 					set options [list -message $msg]
-					if {[::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
+					if {[::util::catchIoError $file [list ::progress::start $parent $cmd {} $options]]} {
 						return 0
 					}
 					set readonly $ro
@@ -378,6 +395,10 @@ proc openBase {parent file {encoding ""} {readonly -1}} {
 		CheckEncoding $parent $file [::scidb::db::get encoding $file]
 	} else {
 		SeeSymbol [lindex $Vars(bases) $i 0]
+		if {$byUser} {
+			set msg [format $mc::DatabaseAlreadyOpen [::util::databaseName $file]]
+			::dialog::info -parent $parent -message $msg
+		}
 	}
 
 	Switch $file
@@ -405,7 +426,8 @@ proc newBase {parent file {encoding ""}} {
 		AddRecentFile $type $file $encoding 0
 		::widget::busyCursor off
 	} else {
-		::dialog::error -parent $parent -message [format $mc::DatabaseAlreadyOpen $file]
+		set msg [format $mc::DatabaseAlreadyOpen  [::util::databaseName $file]]
+		::dialog::error -parent $parent -message $msg
 	}
 	Switch $file
 }
@@ -1145,7 +1167,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase \
-								[winfo parent [winfo parent $canv]] $file $encoding $readonly]] \
+								[winfo parent [winfo parent $canv]] $file yes $encoding $readonly]] \
 				;
 		}
 		$m add separator
@@ -1308,13 +1330,14 @@ proc Recode {number parent} {
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }
 
 	::log::open $mc::Recode
-	::log::info [format $mc::RecodingDatabase [::util::databaseName $file] $enc $encoding]
+	set name [::util::databaseName $file]
+	::log::info [string map [list "%base" $name "%from" $enc "%to" $encoding] $mc::RecodingDatabase]
 
 	switch $ext {
 		pgn {
 			::import::showOnlyEncodingWarnings true
 			closeBase $parent $file $index
-			openBase $parent $file $encoding true
+			openBase $parent $file no $encoding true
 			::import::showOnlyEncodingWarnings false
 		}
 

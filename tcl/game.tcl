@@ -81,7 +81,7 @@ array set Options {
 }
 
 
-proc new {parent {base {}} {index -1}} {
+proc new {parent {base {}} {index -1} {fen {}}} {
 	variable ::scidb::scratchbaseName
 	variable MaxPosition
 	variable List
@@ -192,6 +192,10 @@ proc new {parent {base {}} {index -1}} {
 
 	if {$init} {
 		::scidb::db::subscribe gameInfo [namespace current]::Update
+	}
+
+	if {[llength $fen]} {
+		::scidb::game::go $pos position $fen
 	}
 
 	UpdateHistory $pos $base $tags
@@ -662,7 +666,7 @@ proc openGame {parent index} {
 	set rc 1
 	set parent [winfo toplevel $parent]
 
-	if {[::application::database::openBase $parent $base $encoding]} {
+	if {[::application::database::openBase $parent $base no $encoding]} {
 		set pos [new $parent $base $number]
 		if {$pos >= 0} {
 			set crcLoad [lindex $List $pos 4]

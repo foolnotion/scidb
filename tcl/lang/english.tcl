@@ -244,8 +244,10 @@
 ::application::database::mc::DescriptionTooLarge	"Description is too large."
 ::application::database::mc::DescrTooLargeDetail	"The entry contains %d characters, but only %d characters are allowed."
 ::application::database::mc::ClipbaseDescription	"Temporary database, not kept on disk."
+::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
+::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads."
 
-::application::database::mc::RecodingDatabase		"Recoding %s from %s to %s"
+::application::database::mc::RecodingDatabase		"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames				"%s game(s) recoded"
 
 ::application::database::mc::GameCount					"Games"

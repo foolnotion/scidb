@@ -237,7 +237,7 @@ proc databasePath {file} {
 }
 
 
-proc catchIoError {cmd {resultVar {}}} {
+proc catchIoError {base cmd {resultVar {}}} {
 	if {[catch {{*}$cmd} result options]} {
 		array set opts $options
 		if {[string first %IO-Error% $opts(-errorinfo)] >= 0} {
@@ -257,7 +257,12 @@ proc catchIoError {cmd {resultVar {}}} {
 			set i [string first "=== Backtrace" $what]
 			if {$i >= 0} { set what [string range $what 0 [incr i -1]] }
 			set what [string trim $what]
-			::dialog::error -parent .application -message $msg -detail [string toupper $what 0 0] -topmost 1
+			::dialog::error \
+				-parent .application \
+				-message $msg \
+				-detail [string toupper $what 0 0] \
+				-topmost 1 \
+				;
 			return 1
 		}
 		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
@@ -278,7 +283,7 @@ proc openBase {pathList} {
 
 	if {[llength $pathList]} {
 		foreach path $pathList {
-			::application::database::openBase .application [::util::databasePath $path]
+			::application::database::openBase .application [::util::databasePath $path] no
 		}
 	}
 

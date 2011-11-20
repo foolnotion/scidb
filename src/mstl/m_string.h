@@ -216,6 +216,9 @@ public:
 	static string cast(uint32_t value);
 	static string cast(uint64_t value);
 
+	struct __EMPTY__ {};
+	string(__EMPTY__); // don't use!
+
 private:
 
 	friend class reference;
@@ -223,10 +226,6 @@ private:
 	void clone();
 	void copy();
 	void init(const_pointer s, size_type len);
-
-	struct initializer { initializer(); };
-	static initializer m_initializer;
-	friend class initializer;
 
 	size_type	m_size;
 	size_type	m_capacity;

@@ -137,6 +137,18 @@ private:
 
 } // namespace db
 
+namespace mstl {
+
+template <typename T> struct is_pod;
+
+template <>
+struct is_pod<db::MoveInfo>
+{
+	enum { value = is_pod<db::Clock>::value && is_pod<db::Date>::value };
+};
+
+} // namespace mstl
+
 #include "db_move_info.ipp"
 
 #endif // _db_move_info_included

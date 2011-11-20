@@ -35,10 +35,12 @@ enum Mode
 };
 
 bool access(char const* filename, Mode mode);
+
 long size(char const* filename);
 bool changed(char const* filename, uint32_t& time);
+bool isHardLinked(char const* filename1, char const* filename2);
 
-void rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs);
+void rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs = false);
 void deleteIt(char const* filename);
 
 void* createMapping(char const* filename, Mode mode);

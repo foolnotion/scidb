@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "db_database_codec.h"
+#include "db_database.h"
 #include "db_consumer.h"
 #include "db_producer.h"
 #include "db_game_info.h"

@@ -36,6 +36,7 @@ struct Time
 	uint8_t  second;
 };
 
+
 /// Returns the time since the Epoch (00:00:00 UTC, January 1, 1970), measured in seconds.
 uint32_t time();
 
@@ -47,6 +48,13 @@ void localtime(uint32_t time, Time& tm);
 
 } // namespace time
 } // namespace sys
+
+namespace mstl {
+
+template <typename T> struct is_pod;
+template <> struct is_pod<sys::time::Time> { enum { value = 1 }; };
+
+} // namespace mstl
 
 #endif // _sys_time_included
 

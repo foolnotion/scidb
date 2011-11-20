@@ -57,6 +57,8 @@ void setResult(bool result);
 void setResult(long result);
 void setResult(unsigned long result);
 
+int ioError(mstl::string const& file, mstl::string const& error, mstl::string const& message);
+
 int
 __attribute__((__format__(__printf__, 4, 5)))
 error(

@@ -552,6 +552,8 @@ tcl_database.o: ../db/db_selector.h
 tcl_database.o: ../db/db_selector.ipp
 tcl_database.o: ../app/app_view.ipp
 tcl_database.o: ../app/app_cursor.ipp
+tcl_database.o: ../db/db_exception.h
+tcl_database.o: ../util/u_exception.h
 tcl_database.o: ../db/db_site.h
 tcl_database.o: ../db/db_site.ipp
 tcl_database.o: ../db/db_eco_table.h
@@ -907,6 +909,7 @@ tcl_misc.o: ../mstl/m_ofstream.ipp
 tcl_misc.o: ../db/si3/si3_codec.ipp
 tcl_misc.o: ../sys/sys_utf8_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.ipp
+tcl_misc.o: ../sys/sys_file.h
 tcl_pgn_reader.o: tcl_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_reader.h

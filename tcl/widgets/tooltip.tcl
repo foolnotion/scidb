@@ -491,7 +491,7 @@ proc popup {w b {at {}}} {
 
 	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
 	catch { wm attributes $b -alpha 0.99 }
-	catch { wm attributes -type tooltip }
+	catch { wm attributes $b -type tooltip }
 	wm geometry $b +$x+$y
 	wm deiconify $b
 	raise $b

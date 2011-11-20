@@ -333,11 +333,10 @@ private:
 	// - move is empty if all bits are zero
 	// - move is null if only the legality status is set
 	// - the first 12/14 bits are usable as a short move value
-	// - fill bit 15 ensures that isCaptureOrPromotion() works
 	// 00000000 00000000 00000000 00111111 = from square     = bits  1-6
 	// 00000000 00000000 00001111 11000000 = to square       = bits  7-12
 	// 00000000 00000000 00110000 00000000 = promotion piece = bits 13-14
-	// 00000000 00000000 01000000 00000000 = <fill bit>      = bits 15
+	// 00000000 00000000 01000000 00000000 = <unused>        = bits 15
 	// 00000000 00000011 10000000 00000000 = piece type      = bits 16-18
 	// 00000000 00000100 00000000 00000000 = castle          = bit  19
 	// 00000000 00001000 00000000 00000000 = pawn 2 forward  = bit  20

@@ -123,8 +123,10 @@ public:
 	mstl::string const& encoding() const;
 	/// Returns date of last modification.
 	Time modified() const;
-	/// Returns date of creation.
+	/// Returns time of creation.
 	Time created() const;
+	/// Return timestamp of creation.
+	uint32_t creationTimestamp() const;
 	/// Returns statistic of database
 	Statistic const& statistic() const;
 	/// Returh maximal length of description.

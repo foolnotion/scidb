@@ -2060,6 +2060,14 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				case 'm': setResult(Scidb->game(pos).isEmpty()); break;									// empty?
 				case 'c': setResult(Scidb->game(pos).computeEcoCode().asShortString()); break;	// eco
 
+				case 'l':	// elo
+					{
+						char const* side = stringFromObj(objc, objv, nextArg);
+						color::ID color = *side == 'w' ? color::White : color::Black;
+						setResult(Scidb->gameInfoAt(pos).findElo(color));
+					}
+					break;
+
 				default: return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
 			}
 			break;

@@ -138,7 +138,10 @@ proc CreateViewMenu {menu} {
 	$menu add cascade -menu $m -label $mc::Theme
 	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::Theme
 	set Theme [::theme::currentTheme]
-	foreach style [ttk::style theme names] {
+	set styles [lsort -dictionary [ttk::style theme names]]
+	set i [lsearch $styles default]
+	if {$i >= 0} { set styles [linsert [lreplace $styles $i $i] 0 default] }
+	foreach style $styles {
 		if {$style ne "classic"} {
 			$m add radiobutton \
 				-label $style \
@@ -372,7 +375,8 @@ proc dbOpen {parent} {
 	]
 
 	if {[llength $result]} {
-		::application::database::openBase $parent {*}$result
+		lassign $result file encoding
+		::application::database::openBase $parent $file yes $encoding
 	}
 }
 

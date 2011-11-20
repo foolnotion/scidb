@@ -200,7 +200,7 @@ proc BuildContributionsFrame {w} {
 	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
 	$t insert end [Enc "Steven Atkinson, "]
 	$t insert end [Enc "Paolo Casaschi, "]
-#	$t insert end [Enc "Lars Ekman, "]
+	$t insert end [Enc "Lars Ekman, "]
 #	$t insert end [Enc "Fernando González, "]
 #	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]

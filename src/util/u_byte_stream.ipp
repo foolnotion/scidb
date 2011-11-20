@@ -372,6 +372,22 @@ ByteStream::set(Byte* data, uint64_t i)
 	data[7] = i;
 }
 
+
+inline
+void
+ByteStream::setup(char* buf, char* end)
+{
+	return setup(reinterpret_cast<Byte*>(buf), reinterpret_cast<Byte*>(end));
+}
+
+
+inline
+void
+ByteStream::setup(char* buf, unsigned size)
+{
+	return setup(reinterpret_cast<Byte*>(buf), size);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

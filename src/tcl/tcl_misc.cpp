@@ -36,6 +36,7 @@
 #include "nsUniversalDetector.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include "u_crc.h"
 
@@ -57,6 +58,7 @@ static char const* CmdDebug			= "::scidb::misc::debug?";
 static char const* CmdEncoding		= "::scidb::misc::encoding";
 static char const* CmdExtraTags		= "::scidb::misc::extraTags";
 static char const* CmdFitsRegion		= "::scidb::misc::fitsRegion?";
+static char const* CmdHardLinked		= "::scidb::misc::hardLinked?";
 static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
 static char const* CmdLookup			= "::scidb::misc::lookup";
 static char const* CmdRevision		= "::scidb::misc::revision";
@@ -705,6 +707,14 @@ cmdEncoding(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdHardLinked(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(::sys::file::isHardLinked(stringFromObj(objc, objv, 1), stringFromObj(objc, objv, 2)));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -716,6 +726,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdEncoding,		cmdEncoding);
 	createCommand(ti, CmdExtraTags,		cmdExtraTags);
 	createCommand(ti, CmdFitsRegion,		cmdFitsRegion);
+	createCommand(ti, CmdHardLinked,		cmdHardLinked);
 	createCommand(ti, CmdIsAscii,			cmdIsAscii);
 	createCommand(ti, CmdLookup,			cmdLookup);
 	createCommand(ti, CmdRevision,			cmdRevision);

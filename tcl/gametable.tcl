@@ -724,13 +724,12 @@ proc TableSelected {path index} {
 	set base [::scrolledtable::base $path]
 	set view [{*}$Vars(viewcmd) $base]
 	set info [::scidb::db::get gameInfo $index $view $base]
+	set fen  {}
+
+	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 
 	set pos [::widget::busyOperation \
-					::game::new $path $base [expr {[column $info number] - 1}]]
-
-	if {$pos >= 0 && [llength $Vars(positioncmd)]} {
-		::scidb::game::go $pos position [{*}$Vars(positioncmd)]
-	}
+					::game::new $path $base [expr {[column $info number] - 1}] $fen]
 }
 
 

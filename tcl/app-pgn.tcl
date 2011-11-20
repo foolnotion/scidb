@@ -527,7 +527,7 @@ proc redo {} { Undo redo }
 
 
 proc replaceMoves {parent} {
-	if {![::util::catchIoError [list ::scidb::game::update moves]]} {
+	if {![::util::catchIoError [::scidb::db::get name] [list ::scidb::game::update moves]]} {
 		::dialog::info -parent $parent -message $mc::ReplaceMovesSucceeded
 	}
 }

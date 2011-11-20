@@ -150,6 +150,8 @@ public:
 
 	void setup(Byte* buf, Byte* end);
 	void setup(Byte* buf, unsigned size);
+	void setup(char* buf, char* end);
+	void setup(char* buf, unsigned size);
 	void reserve(unsigned size);
 	void swap(ByteStream& strm);
 

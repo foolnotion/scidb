@@ -58,6 +58,7 @@ array set Defaults {
 	foreground:hilite		black
 	background:hilite2	cornflowerblue
 	foreground:hilite2	white
+	foreground:elo			darkblue
 	width						18
 	padx						5
 	pady						3
@@ -102,6 +103,7 @@ proc gamebar {path} {
 	set Specs(bold:$gamebar) $bold
 	set Specs(adjustment:$gamebar) {1 0 0}
 	set Specs(linewidth:$gamebar) 0
+	set Specs(spacewidth:$gamebar) [font measure $font " "]
 
 	insert $gamebar -1 -1 {}
 	::tooltip::tooltip exclude $gamebar input-1
@@ -176,6 +178,20 @@ proc insert {gamebar at id tags} {
 		-tags [list blackCountryInput$id all$id] \
 		-fill {} \
 		-outline {} \
+		-state hidden \
+		;
+	$gamebar create text 0 0 \
+		-anchor nw \
+		-font $Specs(font:$gamebar) \
+		-fill $Defaults(foreground:elo) \
+		-tags [list whiteElo$id all$id] \
+		-state hidden \
+		;
+	$gamebar create text 0 0 \
+		-anchor nw \
+		-font $Specs(font:$gamebar) \
+		-fill $Defaults(foreground:elo) \
+		-tags [list blackElo$id all$id] \
 		-state hidden \
 		;
 	$gamebar create text 0 0 \
@@ -832,9 +848,6 @@ proc Setup {gamebar at id tags data} {
 	variable Options
 	variable Specs
 
-	SetCountryFlag $gamebar $id $data white
-	SetCountryFlag $gamebar $id $data black
-
 	set Specs(data:$id:$gamebar) $data
 	set Specs(tags:$id:$gamebar) $tags
 	set Specs(buttonstate:$id:$gamebar) normal
@@ -843,7 +856,11 @@ proc Setup {gamebar at id tags data} {
 	set Specs(modified:$id:$gamebar) 0
 	set Specs(state:$id:$gamebar) unlocked
 	set Specs(emphasize:$id:$gamebar) 0
+
 	SetTooltip $gamebar $id
+	SetCountryFlag $gamebar $id $data white
+	SetCountryFlag $gamebar $id $data black
+	ConfigureElo $gamebar $id
 
 	set tooltip [lindex $data 0]
 	append tooltip " - "
@@ -932,6 +949,8 @@ proc PrepareAsSunkenButton {gamebar id} {
 	$gamebar itemconfigure blackCountry$id -state hidden
 	$gamebar itemconfigure whiteCountryInput$id -state hidden
 	$gamebar itemconfigure blackCountryInput$id -state hidden
+	$gamebar itemconfigure whiteElo$id -state hidden
+	$gamebar itemconfigure blackElo$id -state hidden
 	if {$Specs(size:$gamebar) > 1} {
 		$gamebar itemconfigure digit$id -state normal
 	}
@@ -978,6 +997,8 @@ proc PrepareAsButton {gamebar id} {
 	$gamebar itemconfigure blackCountry$id -state hidden
 	$gamebar itemconfigure whiteCountryInput$id -state hidden
 	$gamebar itemconfigure blackCountryInput$id -state hidden
+	$gamebar itemconfigure whiteElo$id -state hidden
+	$gamebar itemconfigure blackElo$id -state hidden
 	$gamebar itemconfigure hyphen$id -state hidden
 	$gamebar raise blackbg$id
 	$gamebar raise black$id
@@ -1032,6 +1053,8 @@ proc PrepareAsHeader {gamebar id} {
 	$gamebar itemconfigure blackInput$id -state normal
 	$gamebar itemconfigure lighter$id -fill $darker -outline $darker
 	$gamebar itemconfigure darker$id -fill $shadow -outline $shadow
+	ConfigureElo $gamebar $id
+
 	$gamebar raise digit$id
 	$gamebar raise input$id
 	$gamebar raise whiteCountryInput$id
@@ -1065,7 +1088,7 @@ proc PrepareSeparateColumn {gamebar id} {
 	$gamebar itemconfigure black-1 -text [$gamebar itemcget black$id -text]
 
 	if {$Options(separateLines)} {
-		foreach side {white black} {
+		foreach {side eloIdx} {white 6 black 7} {
 			set country [$gamebar itemcget ${side}Country${id} -image]
 			if {[string length $country]} {
 				$gamebar itemconfigure ${side}Country-1 -image $country
@@ -1073,10 +1096,14 @@ proc PrepareSeparateColumn {gamebar id} {
 			} else {
 				$gamebar itemconfigure ${side}Country-1 -state hidden
 			}
+			if {[lindex $Specs(data:$id:$gamebar) $eloIdx]} { set state normal } else { set state hidden }
+			$gamebar itemconfigure ${side}Elo-1 -state $state
 		}
 	} else {
 		$gamebar itemconfigure whiteCountry-1 -state hidden
 		$gamebar itemconfigure blackCountry-1 -state hidden
+		$gamebar itemconfigure whiteElo-1 -state hidden
+		$gamebar itemconfigure blackElo-1 -state hidden
 	}
 }
 
@@ -1330,6 +1357,7 @@ proc ShowAtSeparateLines {gamebar} {
 	$gamebar itemconfigure blackCountry$id -state $state
 	$gamebar itemconfigure whiteCountryInput$id -state $state
 	$gamebar itemconfigure blackCountryInput$id -state $state
+	ConfigureElo $gamebar $id
 
 	Layout $gamebar
 }
@@ -1396,7 +1424,8 @@ proc MakeData {gamebar id tags {update no}} {
 	variable ::scidb::scratchbaseName
 	variable Specs
 
-	lassign {"N.N." "N.N." "?" "?" "" "" ""} white black event site date whiteCountry blackCountry
+	lassign {"N.N." "N.N." "?" "?" "" "" "" 0 0} \
+		white black event site date whiteCountry blackCountry whiteElo blackElo
 	lassign [::scidb::game::link? $id] base
 
 	if {$base eq $scratchbaseName && !$update} {
@@ -1424,6 +1453,8 @@ proc MakeData {gamebar id tags {update no}} {
 
 		set whiteCountry [::scidb::game::query $id country white]
 		set blackCountry [::scidb::game::query $id country black]
+		set whiteElo [::scidb::game::query $id elo white]
+		set blackElo [::scidb::game::query $id elo black]
 
 		set date [::locale::formatNormalDate $date]
 
@@ -1433,7 +1464,7 @@ proc MakeData {gamebar id tags {update no}} {
 		}
 	}
 
-	return [list $white $black $event $site $whiteCountry $blackCountry]
+	return [list $white $black $event $site $whiteCountry $blackCountry $whiteElo $blackElo]
 }
 
 
@@ -1449,12 +1480,17 @@ proc Update {gamebar id} {
 
 	$gamebar itemconfigure line1$id -text [lindex $data 2]
 	$gamebar itemconfigure line2$id -text [lindex $data 3]
+	$gamebar itemconfigure whiteElo$id -text [lindex $data 6]
+	$gamebar itemconfigure blackElo$id -text [lindex $data 7]
 
 	$gamebar itemconfigure line1-1 -text [lindex $data 2]
 	$gamebar itemconfigure line2-1 -text [lindex $data 3]
+	$gamebar itemconfigure whiteElo-1 -text [lindex $data 6]
+	$gamebar itemconfigure blackElo-1 -text [lindex $data 7]
 
 	SetCountryFlag $gamebar $id $data white
 	SetCountryFlag $gamebar $id $data black
+	ConfigureElo $gamebar $id
 
 	UpdateLine $gamebar $id
 	Layout $gamebar
@@ -1478,6 +1514,7 @@ proc Layout {gamebar} {
 			default	{ set scrollWidth 17 }
 		}
 
+		set spacewidth		$Specs(spacewidth:$gamebar)
 		set useSepColumn	[UseSeparateColumn $gamebar]
 		set line				$Specs(line:$gamebar)
 		set padx				$Defaults(padx)
@@ -1494,6 +1531,8 @@ proc Layout {gamebar} {
 		set barHeight		0
 		set height			0
 		set flagSep			5
+		set eloWidth1		0
+		set eloWidth2		0
 
 		set Specs(linewidth:$gamebar) $lineWidth
 		if {$useSepColumn} { set id -1 } else { set id $Specs(selected:$gamebar) }
@@ -1520,22 +1559,31 @@ proc Layout {gamebar} {
 			incr selHeight [expr {$y2 - $y1}]
 			set width0 [expr {max($width0, $blackWd)}]
 			set flagWd 0
-			lassign [$gamebar bbox whiteCountry$id] wx1 _ wx2 _
-			lassign [$gamebar bbox blackCountry$id] bx1 _ bx2 _
+			set flagHt 0
+			lassign [$gamebar bbox whiteCountry$id] wx1 wy1 wx2 wy2
+			lassign [$gamebar bbox blackCountry$id] bx1 by1 bx2 by2
 			if {[llength $wx2]} { set flagWd [expr {$wx2 - $wx1}] }
 			if {[llength $bx2]} { set flagWd [expr {max($flagWd, $bx2 - $bx1)}] }
+			if {[llength $wy2]} { set flagHt [expr {$wy2 - $wy1}] }
+			if {[llength $by2]} { set flagHt [expr {$by2 - $by1}] }
 			if {$flagWd > 0} { incr flagWd $flagSep }
 			set width0 [expr {$width0 - $flagWd}]
+			if {[$gamebar itemcget whiteElo$id -state] eq "normal"} {
+				lassign [$gamebar bbox whiteElo$id] wx1 _ wx2 _
+				set eloWidth1 [expr {$wx2 - $wx1 + $spacewidth}]
+			}
+			if {[$gamebar itemcget blackElo$id -state] eq "normal"} {
+				lassign [$gamebar bbox blackElo$id] wx1 _ wx2 _
+				set eloWidth2 [expr {$wx2 - $wx1 + $spacewidth}]
+			}
+			foreach i {1 2} { set width0 [expr {max($width0, [set width$i] + [set eloWidth$i])}] }
+			set width1 $width0
+			set width2 $width0
 		} else {
 			lassign [$gamebar bbox hyphen$id] x1 y1 x2 y2
 			set hyphenWd [expr {$x2 - $x1}]
 			incr width0 $blackWd
 			incr width0 $hyphenWd
-		}
-		if {$Options(separateLines)} {
-			foreach i {1 2} { set width0 [expr {max($width0, [set width$i])}] }
-			set width1 $width0
-			set width2 $width0
 		}
 
 		if {$Specs(size:$gamebar) > 1} {
@@ -1672,13 +1720,21 @@ proc Layout {gamebar} {
 			set x [expr {max(2, ($lineWidth - $width0)/2)}]
 			if {$flagWd > 0} {
 				set fx [expr {$x - $flagWd}]
-				$gamebar coords whiteCountry$id $fx $height
-				$gamebar coords blackCountry$id $fx [expr {$height + $height0}]
+				set fy [expr {$height - ($flagHt - $height0)/2}]
+				$gamebar coords whiteCountry$id $fx $fy
+				$gamebar coords blackCountry$id $fx [expr {$fy + $height0}]
 				$gamebar coords whiteCountryInput$id {*}[$gamebar bbox whiteCountry$id]
 				$gamebar coords blackCountryInput$id {*}[$gamebar bbox blackCountry$id]
 			}
+			set eloX [expr {$x + max($whiteWd,$blackWd) + max($eloWidth1,$eloWidth2) + $spacewidth}]
+			if {$eloWidth1 > 0} {
+				$gamebar coords whiteElo$id [expr {$eloX - $eloWidth1}] $height
+			}
 			$gamebar coords white$id $x $height
 			incr height $height0
+			if {$eloWidth2 > 0} {
+				$gamebar coords blackElo$id [expr {$eloX - $eloWidth2}] $height
+			}
 			$gamebar coords black$id $x $height
 			incr height $height0
 		} else {
@@ -1900,6 +1956,27 @@ proc Adjustment {gamebar height} {
 	set f [expr {($height - $incr - $delta + $align + 3)/$align}]
 	set h [expr {$f*$align + $incr + $delta}]
 	return [expr {$h - $height}]
+}
+
+
+proc ConfigureElo {gamebar id} {
+	variable Specs
+	variable Options
+
+	if {$Options(separateLines)} {
+		foreach {side index} {white 6 black 7} {
+			set elo [lindex $Specs(data:$id:$gamebar) $index]
+
+			if {$elo} {
+				$gamebar itemconfigure ${side}Elo${id} -text $elo -state normal
+			} else {
+				$gamebar itemconfigure ${side}Elo${id} -state hidden
+			}
+		}
+	} else {
+		$gamebar itemconfigure whiteElo${id} -state hidden
+		$gamebar itemconfigure blackElo${id} -state hidden
+	}
 }
 
 

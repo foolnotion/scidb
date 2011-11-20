@@ -1,6 +1,26 @@
 [November 2011] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #132)
+------------------------------------------------------------------------------
+* Elo added in game info of PGN editor.
+
+* Problem with hard links solved. It is not allowed to open a database twice
+- the application may crash - and to open an already loaded database will be
+denied. To accomplish this the detection of hard links is required.
+
+* Bug in browser and overview related to game loading fixed.
+
+* Hopefully a problem with initialization order of static objects solved.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #131)
+------------------------------------------------------------------------------
+* libharu: upgraded to version 2.3 (libharu.org).
+
+* libharu: HPDF_GetTTFontDef() implemented.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #130)
 ------------------------------------------------------------------------------
 * Upgrading of databases tweaked.

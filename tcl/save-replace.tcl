@@ -2413,7 +2413,6 @@ proc Save {top fields} {
 				[list %white $Tags(White) %black $Tags(Black) %event $Tags(Event) %base $base] \
 				$mc::SavingGameLogInfo]
 			set replace [expr {$number >= 0}]
-if {$replace} { puts "replace $number" } else { puts "save $number" }
 			set cmd [list ::scidb::game::save \
 				$base \
 				[array get Tags] \
@@ -2422,7 +2421,7 @@ if {$replace} { puts "replace $number" } else { puts "save $number" }
 				[namespace current]::Log {} \
 				-replace $replace \
 			]
-			if {[::util::catchIoError $cmd rc]} {
+			if {[::util::catchIoError $base $cmd rc]} {
 				::widget::busyCursor off
 				return
 			}

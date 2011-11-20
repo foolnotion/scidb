@@ -72,6 +72,13 @@ private:
 
 } // namespace db
 
+namespace mstl {
+
+template <typename T> struct is_pod;
+template <> struct is_pod<db::Clock> { enum { value = 1 }; };
+
+} // namespace mstl
+
 #include "db_clock.ipp"
 
 #endif // _db_clock_included

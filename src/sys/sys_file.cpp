@@ -24,12 +24,16 @@
 #include <tcl.h>
 #include <time.h>
 
-#if !TCL_PREREQ(8,5)
-# error  "unsupported TCL version"
+# include <sys/stat.h>
+# include <sys/types.h>
+
+#ifdef WIN32
+# define stat	_stat
+# define chmod	_chmod
 #endif
 
-#if !TCL_PREREQ(8,6)
-# include <sys/stat.h>
+#if !TCL_PREREQ(8,5)
+# error  "unsupported TCL version"
 #endif
 
 
@@ -162,7 +166,6 @@ sys::file::closeMapping(void*& address)
 # include <unistd.h>
 # include <errno.h>
 
-# include <sys/stat.h>
 # include <sys/mman.h>
 
 
@@ -250,15 +253,16 @@ sys::file::unlock(int fd)
 void
 sys::file::rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs)
 {
-#if defined(__unix__) || defined(__MacOSX__)
-	struct ::stat st;
+	M_REQUIRE(oldFilename);
+	M_REQUIRE(newFilename);
+
+	struct stat st;
 
 	if (preserveOldAttrs)
 	{
-		if (::stat(oldFilename, &st) == -1)
+		if (stat(oldFilename, &st) == -1)
 			preserveOldAttrs = false;
 	}
-#endif
 
 	Tcl_Obj* src(Tcl_NewStringObj(oldFilename, -1));
 	Tcl_Obj* dst(Tcl_NewStringObj(newFilename, -1));
@@ -269,19 +273,45 @@ sys::file::rename(char const* oldFilename, char const* newFilename, bool preserv
 	Tcl_DecrRefCount(dst);
 	Tcl_DecrRefCount(src);
 
-#if defined(__unix__) || defined(__MacOSX__)
 	if (preserveOldAttrs)
 	{
-		::chmod(newFilename, st.st_mode & 0x07777);
-		::chown(newFilename, st.st_uid, st.st_gid);
-	}
+#if defined(WIN32)
+		st.st_mode &= _S_IREAD | _S_IWRITE;
+#else
+		st.st_mode &= 0x07777;
 #endif
+
+		chmod(newFilename, st.st_mode);
+
+#if defined(__unix__) || defined(__MacOSX__)
+		chown(newFilename, st.st_uid, st.st_gid);
+#endif
+	}
+}
+
+
+bool
+sys::file::isHardLinked(char const* filename1, char const* filename2)
+{
+	M_REQUIRE(filename1);
+	M_REQUIRE(filename2);
+
+	struct stat st1, st2;
+
+	if (stat(filename1, &st1) == -1)
+		return false;
+	if (stat(filename2, &st2) == -1)
+		return false;
+
+	return st1.st_ino == st2.st_ino;
 }
 
 
 void
 sys::file::deleteIt(char const* filename)
 {
+	M_REQUIRE(filename);
+
 	Tcl_Obj* fn(Tcl_NewStringObj(filename, -1));
 
 	Tcl_IncrRefCount(fn);

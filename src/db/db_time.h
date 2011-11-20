@@ -73,7 +73,7 @@ bool operator!=(const Time& d1, const Time& d2);
 namespace mstl {
 
 template <typename T> struct is_pod;
-template <> struct is_pod<db::Time> { enum { value = 1 }; };
+template <> struct is_pod<db::Time> { enum { value = is_pod<sys::time::Time>::value }; };
 
 } // namespace mstl
 

@@ -453,19 +453,13 @@ proc TabChanged {nb} {
 
 proc LoadGame {nb} {
 	variable ${nb}::Vars
-
-	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-	set tags  [::scidb::db::get tags $index $Vars(view) $Vars(base)]
-
-	::widget::busyOperation ::game::new $nb $Vars(base) $tags $index
+	::widget::busyOperation ::game::new $nb $Vars(base) [expr {$Vars(number) - 1}] $Vars(fen)
 }	
 
 
 proc MergeGame {nb} {
 	variable ${nb}::Vars
-
-	set index [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-puts "MergeGame $index"	;# TODO
+puts "MergeGame [expr {$Vars(number) - 1}]"	;# TODO
 }
 
 } ;# namespace overview

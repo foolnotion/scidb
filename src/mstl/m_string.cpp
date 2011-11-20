@@ -48,8 +48,7 @@
 using namespace mstl;
 
 
-string const string::empty_string;
-string::initializer string::m_initializer;
+string const string::empty_string(static_cast<__EMPTY__ const&>(string::__EMPTY__()));
 
 
 template <typename T>
@@ -109,9 +108,11 @@ inline static void move(char* dst, char const* src, size_t n)	{ memmove(dst, src
 inline static void fill(char* dst, size_t n, char value)			{ memset(dst, value, n); }
 
 
-string::initializer::initializer()
+string::string(__EMPTY__)
+	:m_size(0)
+	,m_capacity(0)
+	,m_data(const_cast<char *>(""))
 {
-	const_cast<string&>(empty_string).m_data = const_cast<char *>("");
 }
 
 

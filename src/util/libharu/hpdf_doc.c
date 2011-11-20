@@ -25,7 +25,7 @@
 #include "hpdf_page_label.h"
 #include "hpdf.h"
 
-#ifdef USE_FONTCONFIG
+#ifdef LIBHPDF_HAVE_FONTCONFIG_H
 # include <fontconfig/fontconfig.h>
 #endif
 
@@ -35,6 +35,7 @@
 #endif
 
 #include <string.h>
+#include <ctype.h>
 
 static const char * const HPDF_VERSION_STR[6] = {
                 "%PDF-1.2\012%\267\276\255\252\012",
@@ -187,6 +188,10 @@ HPDF_NewEx  (HPDF_Error_Handler    user_error_fn,
     /* switch the error-object of memory-manager */
     mmgr->error = &pdf->error;
 
+#if LIBHPDF_HAVE_FONTCONFIG_H
+    pdf->fc_config = NULL;
+#endif
+
     if (HPDF_NewDoc (pdf) != HPDF_OK) {
         HPDF_Free (pdf);
         HPDF_CheckError (&tmp_error);
@@ -194,10 +199,6 @@ HPDF_NewEx  (HPDF_Error_Handler    user_error_fn,
     }
 
     pdf->error.error_fn = user_error_fn;
-
-#if LIBHPDF_HAVE_FONTCONFIG_H
-    pdf->fc_config = NULL;
-#endif
 
     return pdf;
 }
@@ -214,6 +215,11 @@ HPDF_Free  (HPDF_Doc  pdf)
         HPDF_FreeDocAll (pdf);
 
         pdf->sig_bytes = 0;
+
+#if LIBHPDF_HAVE_FONTCONFIG_H
+        if (pdf->fc_config)
+            FcConfigDestroy (pdf->fc_config);
+#endif
 
         HPDF_FreeMem (mmgr, pdf);
         HPDF_MMgr_Free (mmgr);
@@ -325,11 +331,6 @@ HPDF_FreeDoc  (HPDF_Doc  pdf)
 
         pdf->encrypt_dict = NULL;
         pdf->info = NULL;
-
-#if LIBHPDF_HAVE_FONTCONFIG_H
-        if (pdf->fc_config)
-            FcConfigDestroy (pdf->fc_config);
-#endif
 
         HPDF_Error_Reset (&pdf->error);
 
@@ -1408,6 +1409,225 @@ HPDF_GetFont  (HPDF_Doc          pdf,
     return font;
 }
 
+#if LIBHPDF_HAVE_WINDOWS_H
+
+static HPDF_BOOL
+GetDataFromHFONT (HFONT hf,
+                  char** outFontBuffer,
+                  HPDF_UINT32* outFontBufferLen)
+{
+    HGDIOBJ oldFont;
+    HDC     hdc = GetDC (0);
+
+    if (hdc == NULL)
+    {
+        DeleteObject (hf);
+        return HPDF_FALSE;
+    }
+
+    oldFont = SelectObject (hdc, hf);
+    *outFontBufferLen = GetFontData (hdc, 0, 0, 0, 0);
+
+    if (*outFontBufferLen == GDI_ERROR)
+    {
+        SelectObject (hdc, oldFont);
+        ReleaseDC (0, hdc);
+        DeleteObject (hf);
+        return HPDF_FALSE;
+    }
+
+    *outFontBuffer = (char*) malloc (*outFontBufferLen);
+
+    if (GetFontData (hdc, 0, 0, *outFontBuffer, (DWORD) *outFontBufferLen) == GDI_ERROR)
+    {
+        free (*outFontBuffer);
+        *outFontBuffer = NULL;
+        outFontBufferLen = 0;
+        SelectObject (hdc, oldFont);
+        ReleaseDC (0, hdc);
+        DeleteObject (hf);
+        return HPDF_FALSE;
+    }
+
+    SelectObject (hdc, oldFont);
+    ReleaseDC (0, hdc);
+    DeleteObject (hf);
+
+    return HPDF_TRUE;
+}
+
+
+static HPDF_BOOL
+GetDataFromLPFONT (const LOGFONTA* inFont,
+                   char** outFontBuffer,
+                   HPDF_UINT32* outFontBufferLen)
+{
+    HFONT hf;
+
+    if ((hf = CreateFontIndirectA (inFont)) == NULL)
+        return HPDF_FALSE;
+
+    return GetDataFromHFONT (hf, outFontBuffer, outFontBufferLen);
+}
+
+HPDF_EXPORT(const char*)
+HPDF_LoadFont (HPDF_Doc     pdf,
+               const char  *family_name,
+               HPDF_BOOL    bold,
+               HPDF_BOOL    italic,
+               HPDF_BOOL    embedding)
+{
+    LOGFONTA     lf;
+    char        *buffer;
+    HPDF_UINT32  len;
+    const char  *ret = NULL;
+
+    if (strlen (family_name) >= LF_FACESIZE)
+    {
+        HPDF_SetError (&pdf->error, HPDF_FAMILY_NAME_TOO_LONG, 0);
+    }
+    else
+    {
+        lf.lfHeight         = 0;
+        lf.lfWidth          = 0;
+        lf.lfEscapement     = 0;
+        lf.lfOrientation    = 0;
+        lf.lfWeight         = bold ? FW_BOLD : 0;
+        lf.lfItalic         = italic ? 1 : 0;
+        lf.lfUnderline      = 0;
+        lf.lfStrikeOut      = 0;
+        lf.lfCharSet        = DEFAULT_CHARSET;
+        lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
+        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+        lf.lfQuality        = DEFAULT_QUALITY;
+        lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+
+        memset (&lf.lfFaceName, 0, LF_FACESIZE);
+        strcpy (lf.lfFaceName, family_name);
+
+        if (GetDataFromLPFONT (&lf, &buffer, &len))
+        {
+            ret = HPDF_LoadTTFontFromFile (pdf, buffer, embedding);
+            free (buffer);
+        }
+        else
+        {
+            HPDF_SetError (&pdf->error, HPDF_UNKOWN_FONT, 0);
+        }
+    }
+
+    return ret;
+}
+
+#endif
+
+#if LIBHPDF_HAVE_FONTCONFIG_H
+
+HPDF_EXPORT(const char*)
+HPDF_LoadFont (HPDF_Doc     pdf,
+               const char  *family_name,
+               HPDF_BOOL    bold,
+               HPDF_BOOL    italic,
+               HPDF_BOOL    embedding)
+{
+    FcPattern  *pattern;
+    const char *ret = NULL;
+
+    if (pdf->fc_config == NULL)
+        pdf->fc_config = FcInitLoadConfigAndFonts();
+
+    pattern = FcPatternBuild (NULL,
+                              FC_FAMILY,
+                              FcTypeString,
+                              family_name,
+                              FC_WEIGHT,
+                              FcTypeInteger,
+                              bold ? FC_WEIGHT_BOLD : FC_WEIGHT_MEDIUM,
+                              FC_SLANT,
+                              FcTypeInteger,
+                              italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN,
+                              NULL);
+    FcDefaultSubstitute (pattern);
+
+    if (FcConfigSubstitute (pdf->fc_config, pattern, FcMatchFont))
+    {
+        FcResult   result = FcResultMatch;
+        FcPattern *matched = FcFontMatch (pdf->fc_config, pattern, &result);
+
+        if (result == FcResultNoMatch)
+        {
+            HPDF_SetError (&pdf->error, HPDF_UNKOWN_FONT, 0);
+        }
+        else
+        {
+            typedef enum { Unknown, TrueType, Type1 } FontType;
+
+            FcValue  v;
+            FontType font_type = Unknown;
+
+            result = FcPatternGet (matched, FC_FILE, 0, &v);
+
+            if (result == FcResultMatch)
+            {
+                const char *glyph_file = (char*) v.u.s;
+                HPDF_UINT   len;
+
+                len = strlen (glyph_file);
+
+                if (len >= 4 && glyph_file[len - 4] == '.')
+                {
+                    const char* ext = glyph_file + len - 3;
+
+                    if (toupper (ext[0]) == 'T' && toupper (ext[1]) == 'T')
+                    {
+                        if (toupper (ext[2]) == 'F')
+                            font_type = TrueType;
+                    }
+                    else if (   toupper (ext[0]) == 'P'
+                             && toupper (ext[1]) == 'F'
+                             && (toupper (ext[2]) == 'A' || toupper (ext[2]) == 'B'))
+                    {
+                        font_type = Type1;
+                    }
+                }
+
+                switch (font_type)
+                {
+                    case TrueType:
+                        ret = HPDF_LoadTTFontFromFile (pdf, glyph_file, embedding);
+                        break;
+
+                    case Type1:
+                        {
+                            char* metrics_file = (char*) malloc (len + 1);
+
+									 strncpy(metrics_file, glyph_file, len - 3);
+                            strcat (metrics_file, "afm");
+                            if (!embedding)
+                                glyph_file = NULL;
+                            ret = HPDF_LoadType1FontFromFile (pdf, metrics_file, glyph_file);
+                            free (metrics_file);
+                        }
+                        break;
+
+                    case Unknown:
+                        break;
+                }
+
+                if (ret == NULL && HPDF_GetError(pdf) == HPDF_NOERROR)
+                    HPDF_SetError (&pdf->error, HPDF_PAGE_INVALID_FONT, 0);
+            }
+        }
+
+        FcPatternDestroy (matched);
+    }
+
+    FcPatternDestroy (pattern);
+
+    return ret;
+}
+
+#endif
 
 HPDF_EXPORT(const char*)
 HPDF_LoadType1FontFromFile  (HPDF_Doc     pdf,
@@ -1479,124 +1699,6 @@ LoadType1FontFromStream  (HPDF_Doc      pdf,
     }
     return NULL;
 }
-
-#if LIBHPDF_HAVE_WINDOWS_H
-
-static HPDF_BOOL
-GetDataFromLPFONT (const LOGFONTA* inFont,
-                   char** outFontBuffer,
-                   HPDF_UINT32* outFontBufferLen)
-{
-    HFONT hf;
-
-    if ((hf = CreateFontIndirectA (inFont)) == NULL)
-        return HPDF_FALSE;
-
-    return GetDataFromHFONT (hf, outFontBuffer, outFontBufferLen);
-}
-
-HPDF_EXPORT(HPDF_FontDef)
-HPDF_GetTTFontDef (HPDF_Doc     pdf,
-                   const char  *family_name,
-                   HPDF_BOOL    bold,
-                   HPDF_BOOL    italic,
-                   HPDF_BOOL    embedding)
-{
-    LOGFONTA     lf;
-    char        *buffer;
-    HPDF_UINT32  len;
-	HPDF_FontDef def = NULL;
-
-    if (strlen (family_name) >= LF_FACESIZE)
-    {
-        HPDF_SetError (&pdf->error, HPDF_FAMILY_NAME_TOO_LONG, 0);
-    }
-    else
-    {
-        lf.lfHeight         = 0;
-        lf.lfWidth          = 0;
-        lf.lfEscapement     = 0;
-        lf.lfOrientation    = 0;
-        lf.lfWeight         = bold ? FW_BOLD : 0;
-        lf.lfItalic         = italic ? 1 : 0;
-        lf.lfUnderline      = 0;
-        lf.lfStrikeOut      = 0;
-        lf.lfCharSet        = DEFAULT_CHARSET;
-        lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
-        lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-        lf.lfQuality        = DEFAULT_QUALITY;
-        lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
-
-        memset (&lf.lfFaceName, 0, LF_FACESIZE);
-        strcpy (lf.lfFaceName, family_name);
-
-        if (GetDataFromLPFONT (&lf, &buffer, &len))
-        {
-            def = HPDF_GetTTFontDefFromFile (pdf, buffer, embedding);
-            free(buffer);
-        }
-        else
-        {
-            HPDF_SetError (&pdf->error, HPDF_UNKOWN_FONT, 0);
-        }
-    }
-
-    return def;
-}
-
-#elif LIBHPDF_HAVE_FONTCONFIG_H
-
-HPDF_EXPORT(HPDF_FontDef)
-HPDF_GetTTFontDef (HPDF_Doc     pdf,
-                   const char  *family_name,
-                   HPDF_BOOL    bold,
-                   HPDF_BOOL    italic,
-                   HPDF_BOOL    embedding)
-{
-    FcPattern   *pattern;
-	HPDF_FontDef def = NULL;
-
-    if (pdf->fc_config == NULL)
-        pdf->fc_config = FcInitLoadConfigAndFonts();
-
-    pattern = FcPatternBuild (NULL,
-                              FC_FAMILY,
-                              FcTypeString,
-                              family_name,
-                              FC_WEIGHT,
-                              FcTypeInteger,
-                              bold ? FC_WEIGHT_BOLD : FC_WEIGHT_MEDIUM,
-                              FC_SLANT,
-                              FcTypeInteger,
-                              italic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN,
-                              NULL);
-    FcDefaultSubstitute (pattern);
-
-    if (FcConfigSubstitute (pdf->fc_config, pattern, FcMatchFont))
-    {
-        FcResult   result = FcResultMatch;
-        FcPattern *matched = FcFontMatch (pdf->fc_config, pattern, &result);
-
-        if (result == FcResultNoMatch)
-        {
-            HPDF_SetError (&pdf->error, HPDF_UNKOWN_FONT, 0);
-        }
-        else
-        {
-            FcValue v;
-            result = FcPatternGet (matched, FC_FILE, 0, &v);
-            def = HPDF_GetTTFontDefFromFile (pdf, (char*)v.u.s, embedding);
-        }
-
-        FcPatternDestroy (matched);
-    }
-
-    FcPatternDestroy (pattern);
-
-    return def;
-}
-
-#endif
 
 HPDF_EXPORT(HPDF_FontDef)
 HPDF_GetTTFontDefFromFile (HPDF_Doc      pdf,
