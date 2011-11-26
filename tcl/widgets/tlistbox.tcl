@@ -87,7 +87,7 @@ proc Build {w args} {
 		-focusmodel				click
 		-selectmode				single
 		-borderwidth			2
-		-takefocus				1
+		-takefocus				{}
 		-showfocus				1
 		-setgrid					0
 		-orientation			horizontal
@@ -103,6 +103,7 @@ proc Build {w args} {
 		-linespace				0
 		-skiponeunit			1
 		-columns					1
+		-state					normal
 	}
 	array set opts $args
 
@@ -110,6 +111,10 @@ proc Build {w args} {
 	if {[info exists opts(-style)]} {
 		set style [list -style $opts(-style)]
 		unset opts(-style)
+	}
+	if {[info exists opts(-state)]} {
+		set state $opts(-state)
+		unset opts(-state)
 	}
 	if {$opts(-focusmodel) eq "hover"} {
 		set opts(-selectmode) single
@@ -203,6 +208,7 @@ proc Build {w args} {
 		set Priv(linespace) [font metrics $opts(-font) -linespace]
 	}
 	set Priv(numcolumns) [expr {max(1,$opts(-columns))}]
+	set Priv(state) $state
 
 	set Priv(columns) {}
 	set Priv(types) {}
@@ -222,6 +228,7 @@ proc Build {w args} {
 	set Priv(expand) ""
 	set Priv(itembackgrounds) {}
 	set Priv(background:normal) $opts(-background)
+	set Priv(foreground:disabled) $opts(-disabledforeground)
 	set Priv(addcol) {}
 
 	foreach attr {disabled highlight} {
@@ -233,7 +240,7 @@ proc Build {w args} {
 	if {$opts(-setgrid)} {
 		wm grid [winfo toplevel $w] $opts(-width) [expr {max(1, $opts(-height))}] 1 $Priv(linespace)
 	}
-	if {$opts(-takefocus)} {
+	if {[llength $opts(-takefocus)] && $opts(-takefocus)} {
 		focus $t
 	}
 
@@ -388,7 +395,10 @@ proc WidgetProc {w command args} {
 			while {[llength $Priv(itembackgrounds)] < $index} {
 				lappend Priv(itembackgrounds) $Priv(background:normal)
 			}
-			$t item enabled $index $opts(-enabled)
+			set Priv(enabled:$index) $opts(-enabled)
+			set enabled $opts(-enabled)
+			if {$Priv(state) eq "disabled"} { set enabled 0 }
+			$t item enabled $index $enabled
 			if {$opts(-highlight)} {
 				$t item state set $index highlight
 				if {[llength $opts(-foreground)] == 0} { set opts(-foreground) $Priv(foreground:highlight) }
@@ -410,10 +420,11 @@ proc WidgetProc {w command args} {
 				set textOpts {}
 				if {[llength $style] == 0} { set style $Priv(type:$id) }
 				if {[string length $Priv(foreground:$id)] && [llength $opts(-span)] == 0} {
-					set fill $Priv(foreground:$id)
+					set fill [list $Priv(foreground:$id) enabled]
 				} else {
-					set fill $opts(-foreground)
+					set fill [list $opts(-foreground) enabled]
 				}
+				lappend fill $Priv(foreground:disabled) !enabled
 				if {[string length $Priv(font:$id)] && [llength $opts(-span)] == 0} {
 					set font $Priv(font:$id)
 				} else {
@@ -475,6 +486,7 @@ proc WidgetProc {w command args} {
 				}
 
 				set Priv(resized) 1
+				SetState $t
 			}
 		}
 
@@ -724,6 +736,14 @@ proc WidgetProc {w command args} {
 				set Priv(width) $width
 #				unset opts(-width)
 			}
+			if {[info exists opts(-state)]} {
+				set state $opts(-state)
+				unset opts(-state)
+				if {$state ne $Priv(state)} {
+					set Priv(state) $state
+					SetState $t
+				}
+			}
 			set args [array get opts]
 			if {[llength $args]} {
 				$w.__tlistbox_frame__ configure {*}$args
@@ -737,8 +757,9 @@ proc WidgetProc {w command args} {
 			set arg [lindex $args 0]
 			switch -- $arg {
 				-height		{ return $Priv(height) }
-				-takefocus	{ return 0 ;# otherwise ::tk::FocusOK wouldn't work }
+				-takefocus	{ return [$t cget $arg] }
 				-cursor		{ return [$w.__tlistbox_frame__ cget $arg] }
+				-state		{ return $Priv(state) }
 			}
 			if {[catch {$t cget $arg} result]} {
 				error "unknown option \"$arg\""
@@ -1164,6 +1185,18 @@ proc Prior {t} {
 	} else {
 		while {$first > 0 && ![$t item enabled $first]} { incr first -1 }
 		if {$first > 0} { SetActive $t $first no }
+	}
+}
+
+
+proc SetState {t} {
+	set w [winfo parent $t]
+	variable [namespace current]::${w}::Priv
+
+	if {$Priv(state) eq "disabled"} { set enabled 0 } else { set enabled 1 }
+
+	foreach item [$t item children root] {
+		if {$Priv(enabled:$item)} { $t item enabled $item $enabled }
 	}
 }
 

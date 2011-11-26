@@ -95,7 +95,7 @@ private:
 	unsigned				m_runLength;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
-	bool					m_danglindEndMarker;
+	unsigned				m_danglingEndMarker;
 };
 
 } // namespace sci

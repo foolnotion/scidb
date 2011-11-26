@@ -251,7 +251,7 @@ public:
 	castling::Rights castlingRights(color::ID color) const;
 	/// Return piece sitting at given square on the board
 	piece::ID pieceAt(Square s) const;
-	/// Return pisece type sitting at given square on the board
+	/// Return piece type sitting at given square on the board
 	piece::Type piece(Square s) const;
 	/// Return square where en passant capture may occur, or null square
 	Square enPassantSquare() const;

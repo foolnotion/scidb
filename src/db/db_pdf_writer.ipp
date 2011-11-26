@@ -6,6 +6,14 @@
 // ======================================================================
 
 // ======================================================================
+//    _/|            __
+//   // o\         /    )           ,        /    /
+//   || ._)    ----\---------__----------__-/----/__-
+//   //__\          \      /   '  /    /   /    /   )
+//   )___(     _(____/____(___ __/____(___/____(___/_
+// ======================================================================
+
+// ======================================================================
 // Copyright: (C) 2009-2011 Gregor Cramer
 // ======================================================================
 
@@ -16,42 +24,31 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _util_misc_included
-#define _util_misc_included
+namespace db {
 
-#include "m_string.h"
-
-namespace util {
-namespace misc {
-
-namespace file
+inline
+void
+PdfWriter::loadPiece(Part part, mstl::string const& id)
 {
-	bool hasSuffix(mstl::string const& path);
-	mstl::string basename(mstl::string const& path);
-	mstl::string rootname(mstl::string const& path);
-	mstl::string suffix(mstl::string const& path);
-
-	char pathSeparator();
+	loadImage(part, m_boardStyle, m_pieceSet, id);
 }
 
-namespace time
-{
-	struct tm
-	{
-		unsigned sec;
-		unsigned min;
-		unsigned hour;
-		unsigned mday;
-		unsigned mon;
-		unsigned year;
-	};
 
-	bool getCurrentTime(struct tm& result);
+inline
+void
+PdfWriter::loadSquare(Part part, mstl::string const& id)
+{
+	loadImage(part, m_boardStyle, mstl::string::empty_string, id);
 }
 
-} // namespace misc
-} // namespace util
 
-#endif // _util_misc_included
+inline
+void
+PdfWriter::loadBorder(Part part, mstl::string const& id)
+{
+	loadImage(part, m_boardStyle, mstl::string::empty_string, id);
+}
+
+} // namespace db
 
 // vi:set ts=3 sw=3:

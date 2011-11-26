@@ -49,6 +49,7 @@ set OpenWikipedia				"Wikipedia biographie"
 set OpenViafCatalog			"VIAF catalog"
 set OpenPndCatalog			"catalog of Deutsche Nationalbibliothek"
 set OpenChessgames			"chessgames.com collection"
+set SeachIn365ChessCom		"Search in 365Chess.com"
 
 set F_LastName					"Last Name"
 set F_FirstName				"First Name"
@@ -111,6 +112,7 @@ array set Options {
 	url:pnd			"http://d-nb.info/gnd/%id%"
 	url:wikipedia	"http://%lang%.wikipedia.org/wiki/%name%"
 	url:chessgames	"http://chessgames.com/player/%id%.html"
+	url:365Chess	"http://www.365chess.com/search_result.php?wlname=%lastname%&wname=%firstname%&open=&blname=&bname=&eco=&nocolor=on&yeari=&yeare=&sply=1&ply=&res=&submit_search=1"
 }
 
 variable Find {}
@@ -533,6 +535,136 @@ proc hideInfo {path} {
 }
 
 
+proc popupMenu {menu info} {
+	variable Options
+
+	set parent    [winfo toplevel $menu]
+	set name      [column $info lastName]
+	set lastName  [string trim [lindex [split $name ,] 0]]
+	set firstName [string trim [lindex [split $name ,] 1]]
+	set fideID    [lindex $info  1]
+	set dsbID     [lindex $info 13]
+	set ecfID     [lindex $info 14]
+	set iccfID    [lindex $info 15]
+	set viafID    [lindex $info 16]
+	set pndID     [lindex $info 17]
+	set cgdcID    [lindex $info 18]
+	set wikiLinks [lindex $info 19]
+
+	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
+
+	if {	[string length $fideID]
+		|| [string length $iccfID]
+		|| [string length $dsbID]
+		|| [string length $ecfID]
+		|| [llength $wikiLinks]
+		|| [string length $viafID]
+		|| [string length $pndID]
+		|| [string length $cgdcID]} {
+
+		set state normal
+	} else {
+		set state disabled
+	}
+
+	set m [menu $menu.web -tearoff false]
+	$menu add cascade -menu $m -state $state -label " $mc::OpenInWebBrowser"
+	
+	$m add command \
+		-label " [format $mc::OpenPlayerCard Fide]" \
+		-state [expr {[string length $fideID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::Fide \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $fideID] $Options(url:fide)]] \
+		;
+	$m add command \
+		-label " [format $mc::OpenPlayerCard ICCF]" \
+		-state [expr {[string length $iccfID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::ICCF \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $iccfID] $Options(url:iccf)]] \
+		;
+#	$m add command \
+#		-label " [format $mc::OpenPlayerCard USCF]" \
+#		-state [expr {[string length $uscfID] ? "normal" : "disabled"}] \
+#		-image $icon::16x16::USCF \
+#		-compound left \
+#		-command [list ::web::open $parent [string map [list %id% $uscfID] $Options(url:uscf)]] \
+#		;
+	$m add command \
+		-label " [format $mc::OpenFileCard DWZ]" \
+		-state [expr {[string length $dsbID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::DSB \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $dsbID] $Options(url:dsb)]] \
+		;
+	$m add command \
+		-label " [format $mc::OpenPlayerCard ECF]" \
+		-state [expr {[string length $ecfID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::ECF \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $ecfID] $Options(url:ecf)]] \
+		;
+	set sub [menu $m.wiki -tearoff false]
+	$m add cascade \
+		-menu $sub \
+		-label " $mc::OpenWikipedia" \
+		-state [expr {[llength $wikiLinks] ? "normal" : "disabled"}] \
+		-image $icon::16x16::Wikipedia \
+		-compound left \
+		;
+	$m add command \
+		-label " $mc::OpenViafCatalog" \
+		-state [expr {[string length $viafID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::VIAF \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $viafID] $Options(url:viaf)]] \
+		;
+	$m add command \
+		-label " $mc::OpenPndCatalog" \
+		-state [expr {[string length $pndID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::PND \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $pndID] $Options(url:pnd)]] \
+		;
+	$m add command \
+		-label " $mc::OpenChessgames" \
+		-state [expr {[string length $cgdcID] ? "normal" : "disabled"}] \
+		-image $icon::16x16::ChessgamesDotCom \
+		-compound left \
+		-command [list ::web::open $parent [string map [list %id% $cgdcID] $Options(url:chessgames)]] \
+		;
+	set url [string map [list %lastname% $lastName %firstname% $firstName] $Options(url:365Chess)]
+	$m add command \
+		-label " $mc::SeachIn365ChessCom" \
+		-image $icon::16x16::365ChessCom \
+		-compound left \
+		-command [list ::web::open $parent $url]
+		;
+	
+	foreach {lang name} $wikiLinks {
+		set flag ""
+		catch { set flag $::country::icon::flag($::mc::langToCountry($lang)) }
+		if {[string length $flag] == 0} { set flag $::icon::16x16::none }
+		set url [string map [list %lang% $lang %name% $name] $Options(url:wikipedia)]
+		$sub add command \
+			-label " [::encoding::languageName $lang]" \
+			-image $flag \
+			-compound left \
+			-command [list ::web::open $parent $url] \
+			;
+	}
+
+#	if {![::scidb::db::get readonly? $base]} {
+#		$menu add separator
+#		$menu add command \
+#			-label " $::mc::Edit..." \
+#			-command [namespace code [list RenamePlayer $parent $index]] \
+#			;
+#	}
+}
+
+
 proc RefreshHeader {number} {
 	variable Options
 
@@ -901,119 +1033,7 @@ proc PopupMenu {table menu base index} {
 	set view [{*}$Vars(viewcmd) $base]
 	set info [scidb::db::get playerInfo $index $view $base -info]
 
-	set fideID    [lindex $info  1]
-	set dsbID     [lindex $info 13]
-	set ecfID     [lindex $info 14]
-	set iccfID    [lindex $info 15]
-	set viafID    [lindex $info 16]
-	set pndID     [lindex $info 17]
-	set cgdcID    [lindex $info 18]
-	set wikiLinks [lindex $info 19]
-
-	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
-
-	if {	[string length $fideID]
-		|| [string length $iccfID]
-		|| [string length $dsbID]
-		|| [string length $ecfID]
-		|| [llength $wikiLinks]
-		|| [string length $viafID]
-		|| [string length $pndID]
-		|| [string length $cgdcID]} {
-
-		set state normal
-	} else {
-		set state disabled
-	}
-
-	set m [menu $menu.web -tearoff false]
-	$menu add cascade -menu $m -state $state -label " $mc::OpenInWebBrowser"
-	
-	$m add command \
-		-label " [format $mc::OpenPlayerCard Fide]" \
-		-state [expr {[string length $fideID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::Fide \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $fideID] $Options(url:fide)]] \
-		;
-	$m add command \
-		-label " [format $mc::OpenPlayerCard ICCF]" \
-		-state [expr {[string length $iccfID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::ICCF \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $iccfID] $Options(url:iccf)]] \
-		;
-#	$m add command \
-#		-label " [format $mc::OpenPlayerCard USCF]" \
-#		-state [expr {[string length $uscfID] ? "normal" : "disabled"}] \
-#		-image $icon::16x16::USCF \
-#		-compound left \
-#		-command [list ::web::open $table [string map [list %id% $uscfID] $Options(url:uscf)]] \
-#		;
-	$m add command \
-		-label " [format $mc::OpenFileCard DWZ]" \
-		-state [expr {[string length $dsbID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::DSB \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $dsbID] $Options(url:dsb)]] \
-		;
-	$m add command \
-		-label " [format $mc::OpenPlayerCard ECF]" \
-		-state [expr {[string length $ecfID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::ECF \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $ecfID] $Options(url:ecf)]] \
-		;
-	set sub [menu $m.wiki -tearoff false]
-	$m add cascade \
-		-menu $sub \
-		-label " $mc::OpenWikipedia" \
-		-state [expr {[llength $wikiLinks] ? "normal" : "disabled"}] \
-		-image $icon::16x16::Wikipedia \
-		-compound left \
-		;
-	$m add command \
-		-label " $mc::OpenViafCatalog" \
-		-state [expr {[string length $viafID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::VIAF \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $viafID] $Options(url:viaf)]] \
-		;
-	$m add command \
-		-label " $mc::OpenPndCatalog" \
-		-state [expr {[string length $pndID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::PND \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $pndID] $Options(url:pnd)]] \
-		;
-	$m add command \
-		-label " $mc::OpenChessgames" \
-		-state [expr {[string length $cgdcID] ? "normal" : "disabled"}] \
-		-image $icon::16x16::ChessgamesDotCom \
-		-compound left \
-		-command [list ::web::open $table [string map [list %id% $cgdcID] $Options(url:chessgames)]] \
-		;
-	
-	foreach {lang name} $wikiLinks {
-		set flag ""
-		catch { set flag $::country::icon::flag($::mc::langToCountry($lang)) }
-		if {[string length $flag] == 0} { set flag $::icon::16x16::none }
-		set url [string map [list %lang% $lang %name% $name] $Options(url:wikipedia)]
-		$sub add command \
-			-label " [::encoding::languageName $lang]" \
-			-image $flag \
-			-compound left \
-			-command [list ::web::open $table $url] \
-			;
-	}
-
-#	if {![::scidb::db::get readonly? $base]} {
-#		$menu add separator
-#		$menu add command \
-#			-label " $::mc::Edit..." \
-#			-command [namespace code [list RenamePlayer $table $index]] \
-#			;
-#	}
+	popupMenu $menu $info
 }
 
 
@@ -1163,6 +1183,24 @@ set ECF [image create photo -data {
 set ChessgamesDotCom [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX///+AAAC098j+AAAA
 	AXRSTlMAQObYZgAAABNJREFUCNdj4OdngKMPHxAIhzgAKl8P8bapubgAAAAASUVORK5CYII=
+}]
+
+set 365ChessCom [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAABIAAAASABGyWs+AAACs0lEQVQ4y42TPWxTVxTHf/e+L9uxE8dNsEJicJKGqqCi
+	VlAJKJ8SBVoQC526shQGJCp16VbW7jBX6tIutFIlxAQVCIkGxEAFIYRgi8RJbMfEBn+89+69
+	j4HiEAoSRzrD+frrp6NzhFKauVr765ly56TS9PAeJiX+hox3cTwb/8UuLT/f+/fDzh8I4QDY
+	QvNhRhBqw6MVi3yvwnUsHtcMQ0mIuTaFmqJU18e0Co09u1A/iog5r9QtETGa7UUpja+ekx9I
+	kIjH8IMa+cEEyUSc+ZVlgkjImYX6CVtp7STbReJhlUrvNgQAAs/z+HTU62J/kh8AIIqibs4P
+	wh7pmCZ7Hpxl58MfSTcfEBpJodxAKY020RtuKCzVaWurK2IrmeDe8En62rM04qMYJNNVje0E
+	lDvWmuUlbc1cVWOwVwVWAiFz5Sn67SIRguHaFdY3JxlK7mNj/ksQottstGax1sLXoE1EJ4yw
+	s4+vWk5qiCA9zpYbP5Dfvxtn5BvsxUk6t87jf3YKA2gDSsNUJeB+NWS5pdmaDrAHh7O0lpq0
+	Ags5foDi7Sf4F87g7vgKkc7SnpqGdWNdisJTzXxjlUrKjZuJ2s8wz2qIgfX4Ny9BFBH8cxkr
+	Nwblwpo9JByxJrbVv9eQmRymViKcvNwtCMcFpVjwHVpPo/9uBFKeBMwqgSnPQU8KOTKBnr7d
+	Lbi7jhNO38HktmKJl8NSwP5NKfJ9rxGIniTCiyN704i+NFG1gjW2BZn7CL+0yPC6Ptaay/YR
+	l0I9eClgPj4QmplJTKmIe+Q0MjMAgaJy5SLtQ99Do/W/Z2oFCoCYTdP2gsaf9cr8d4nBoXjn
+	13MI10F8kOXnwZ/wr3fe+ZEx/PCLXPSbUEpx687dw8XC7LfBo7ueSKUR8SRT7QxaOG8dtiyh
+	d070/3Vw9+e/vwABiS7BVQ8I3wAAAABJRU5ErkJggg==
 }]
 
 } ;# namespace 16x16

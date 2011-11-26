@@ -29,11 +29,26 @@
 #include "db_mark_set.h"
 #include "db_move.h"
 
+#include "u_misc.h"
+
+#include "sys_utf8_codec.h"
+
 #include "hpdf.h"
 
 #include "m_stdio.h"
+#include "m_assert.h"
+
+#include <string.h>
 
 using namespace db;
+
+
+static double pixelsToPoints(double pixels)
+{
+	// NOTE: We assume a resolution of 600dpi.
+	// size in points = size in pixels * (points per inch / dots per inch)
+	return pixels*(72.0/600.0);
+}
 
 
 static void
@@ -46,17 +61,66 @@ errorHandler(HPDF_STATUS errorNo, HPDF_STATUS detailNo, void* user_data)
 
 PdfWriter::PdfWriter(format::Type srcFormat,
 							mstl::string fname,
-							mstl::string const& encoding, unsigned flags)
+							mstl::string const& encoding,
+							unsigned flags)
 	:Writer(srcFormat, flags, encoding)
 	,m_fname(fname)
 	,m_doc(HPDF_New(::errorHandler, this))
+	,m_page(nullptr)
+	,m_currentStyle(LAST)
 {
+	::memset(m_font, 0, sizeof(m_font));
+	::memset(m_fontSize, 0, sizeof(m_fontSize));
+	::memset(m_image, 0, sizeof(m_image));
+
+	HPDF_SetCompressionMode(m_doc, HPDF_COMP_ALL);
+
+	if (encoding == ::sys::utf8::Codec::utf8())
+		HPDF_UseUTFEncodings(m_doc);
+
+	char const* fontName = HPDF_LoadFont(	m_doc,
+														"Scidb Chess Traveller",
+														HPDF_FALSE,
+														HPDF_FALSE,
+														HPDF_TRUE);
+
+	m_font[Move_Figurine_MainLine] =
+	m_font[Move_Figurine_Variation] =
+	m_font[Move_Figurine_SubVariation] = HPDF_GetFont(m_doc, fontName, "UTF-8");
+
+	m_font[GameInfo] = HPDF_GetFont(m_doc, "Helvetica", NULL);
+	m_font[Move_Text_MainLine] =
+	m_font[Move_Text_Variation] =
+	m_font[Move_Text_SubVariation] =
+	m_font[Move_Symbol_MainLine] =
+	m_font[Move_Symbol_Variation] =
+	m_font[Move_Symbol_SubVariation] =
+	m_font[Comment_MainLine] =
+	m_font[Comment_Variation] =
+	m_font[Comment_SubVariation] =
+	m_font[Result] = m_font[GameInfo];
+
+	for (unsigned i = 0; i < LAST; ++i)
+		m_fontSize[i] = 12;
 }
 
 
 PdfWriter::~PdfWriter() throw()
 {
 	HPDF_Free(m_doc);
+}
+
+
+void
+PdfWriter::setFont(Style style)
+{
+	M_ASSERT(m_page);
+
+	if (style != m_currentStyle)
+	{
+		HPDF_Page_SetFontAndSize(m_page, m_font[style], m_fontSize[style]);
+		m_currentStyle = style;
+	}
 }
 
 
@@ -80,6 +144,44 @@ PdfWriter::writeMove(Move const& move,
 							Comment const& preComment,
 							Comment const& comment)
 {
+	M_ASSERT(m_page);
+
+	mstl::string str;
+
+	if (m_font[Move_Figurine_MainLine])
+	{
+		move.printSan(str, encoding::Utf8);
+		char const* s = str;
+
+		while (*s)
+		{
+			unsigned len = ::sys::utf8::Codec::utfCharLength(s);
+
+			if (len > 1)
+			{
+				setFont(Move_Figurine_MainLine);
+				HPDF_Page_ShowText(m_page, s, len);
+				s += len;
+			}
+			else
+			{
+				char const* t = s + 1;
+
+				while (t < s && ::sys::utf8::Codec::utfCharLength(t) == 1)
+					++t;
+
+				setFont(Move_Text_MainLine);
+				HPDF_Page_ShowText(m_page, s, t - s);
+				s = t;
+			}
+		}
+	}
+	else
+	{
+		move.printSan(str, encoding::Latin1);
+		setFont(Move_Text_Variation);
+		HPDF_Page_ShowText(m_page, str, str.size());
+	}
 }
 
 
@@ -131,6 +233,81 @@ PdfWriter::writeEndComment()
 }
 
 
+void
+PdfWriter::writeDiagram(Board const& board, double x, double y)
+{
+	M_ASSERT(m_page);
+
+	if (m_font[Diagram])
+	{
+	}
+	else
+	{
+		loadImages();
+
+		double wd	= ::pixelsToPoints(HPDF_Image_GetWidth(m_image[Square_Lite]));
+		double ht	= ::pixelsToPoints(HPDF_Image_GetHeight(m_image[Square_Lite]));
+		double bht	= ::pixelsToPoints(HPDF_Image_GetHeight(m_image[Border_Top]));
+		double bwd	= ::pixelsToPoints(HPDF_Image_GetWidth(m_image[Border_Left]));
+
+		y += 8.0*ht + 2.0*bht;
+
+		double x0 = x;
+		double y0 = y - bht;
+		double x1 = x0 + 8*wd + bwd;
+		double y1 = y0 - 7*ht - bht;
+
+		for (unsigned i = 0; i < 8u; ++i)
+		{
+			double x2 = x0 + i*wd + bwd;
+
+			HPDF_Page_DrawImage(m_page, m_image[Border_Top], x2, y0 + ht, wd, bht);
+			HPDF_Page_DrawImage(m_page, m_image[Border_Bottom], x2, y1, wd, bht);
+			HPDF_Page_DrawImage(m_page, m_image[Border_Left], x0, y0 - i*ht, bwd, ht);
+			HPDF_Page_DrawImage(m_page, m_image[Border_Right], x1, y0 - i*ht, bwd, ht);
+		}
+
+		HPDF_Page_DrawImage(m_page, m_image[Border_TopLeft], x0, y0 + ht, bwd, bht);
+		HPDF_Page_DrawImage(m_page, m_image[Border_BottomLeft], x0, y1, bwd, bht);
+		HPDF_Page_DrawImage(m_page, m_image[Border_TopRight], x1, y0 + ht, bwd, bht);
+		HPDF_Page_DrawImage(m_page, m_image[Border_BottomRight], x1, y1, bwd, bht);
+
+		y -= bht;
+		x += bwd;
+
+		x0 = x;
+		y0 = y;
+
+		color::ID color = color::White;
+
+		for (unsigned i = 0; i < 64; ++i)
+		{
+			piece::ID piece = board.pieceAt(sq::ID(i));
+
+			if (i > 0 && i % 8 == 0)
+			{
+				x0 = x;
+				y0 -= ht;
+			}
+			else
+			{
+				color = color::opposite(color);
+			}
+
+			Part part;
+
+			if (piece == piece::Empty)
+				part = color::isWhite(color) ? Square_Lite : Square_Dark;
+			else
+				part = color::isWhite(color) ? Part(piece) : Part(piece << 4);
+
+			HPDF_Page_DrawImage(m_page, m_image[part], x0, y0, wd, ht);
+			x0 += wd;
+		}
+	}
+}
+
+
 void PdfWriter::start() {}
 
 
@@ -138,6 +315,77 @@ void
 PdfWriter::finish()
 {
 	HPDF_SaveToFile(m_doc, m_fname);
+}
+
+
+void
+PdfWriter::loadImages()
+{
+	if (m_image[Piece_LiteWK])
+		return;
+
+	loadPiece(Piece_LiteWK, "lwk");
+	loadPiece(Piece_LiteWQ, "lwq");
+	loadPiece(Piece_LiteWR, "lwr");
+	loadPiece(Piece_LiteWB, "lwb");
+	loadPiece(Piece_LiteWN, "lwn");
+	loadPiece(Piece_LiteWP, "lwp");
+	loadPiece(Piece_LiteBK, "lbk");
+	loadPiece(Piece_LiteBQ, "lbq");
+	loadPiece(Piece_LiteBR, "lbr");
+	loadPiece(Piece_LiteBB, "lbb");
+	loadPiece(Piece_LiteBN, "lbn");
+	loadPiece(Piece_LiteBP, "lbp");
+	loadPiece(Piece_DarkWK, "dwk");
+	loadPiece(Piece_DarkWQ, "dwq");
+	loadPiece(Piece_DarkWR, "dwr");
+	loadPiece(Piece_DarkWB, "dwb");
+	loadPiece(Piece_DarkWN, "dwn");
+	loadPiece(Piece_DarkWP, "dwp");
+	loadPiece(Piece_DarkBK, "dbk");
+	loadPiece(Piece_DarkBQ, "dbq");
+	loadPiece(Piece_DarkBR, "dbr");
+	loadPiece(Piece_DarkBB, "dbb");
+	loadPiece(Piece_DarkBN, "dbn");
+	loadPiece(Piece_DarkBP, "dbp");
+
+	loadSquare(Square_Lite,  			"empty-l");
+	loadSquare(Square_Dark,  			"empty-d");
+
+	loadBorder(Border_Top,				"border-t");
+	loadBorder(Border_Bottom, 			"border-b");
+	loadBorder(Border_Left, 			"border-l");
+	loadBorder(Border_Right, 			"border-r");
+
+	loadBorder(Border_TopLeft, 		"edge-tl");
+	loadBorder(Border_TopRight, 		"edge-tr");
+	loadBorder(Border_BottomLeft,		"edge-bl");
+	loadBorder(Border_BottomRight,	"edge-br");
+}
+
+
+void
+PdfWriter::loadImage(Part part,
+							mstl::string const& style,
+							mstl::string const& pieceSet,
+							mstl::string const& id)
+{
+	mstl::string filename(m_imagePath);
+
+	filename += ::util::misc::file::pathSeparator();
+	filename += style;
+	filename += ::util::misc::file::pathSeparator();
+
+	if (!pieceSet.empty())
+	{
+		filename += pieceSet;
+		filename += ::util::misc::file::pathSeparator();
+	}
+
+	filename += id;
+	filename += ".jpg"; // XXX
+
+	m_image[part] = HPDF_LoadJpegImageFromFile(m_doc, filename);
 }
 
 

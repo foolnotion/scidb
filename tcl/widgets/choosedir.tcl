@@ -59,11 +59,20 @@ proc Build {w args} {
 		-pady					5
 		-relief				raised
 		-font					TkTextFont
-		-activebackground	#d9d9d9
+		-activebackground	{}
 		-initialdir			{}
 		-showlabel			0
 	}
 	array set opts $args
+
+	if {[llength $opts(-activebackground)] == 0} {
+		set opts(-activebackground) [::theme::getActiveBackgroundColor]
+		if {[llength $opts(-activebackground)] == 0} {
+			tk::button $w
+			set opts(-activebackground) [$w cget -activebackground]
+			destroy $w
+		}
+	}
 
 	set Vars(dir) ""
 	set Vars(components) { "" }
@@ -87,17 +96,19 @@ proc Build {w args} {
 	array unset opts -showlabel
 
 	set opts(-height) [expr {$Vars(linespace) + 2*$Vars(pady)}]
+	set bg [::theme::getBackgroundColor]
 
-	tk::frame $w -takefocus 0 {*}[array get opts]
+	tk::frame $w -background $bg -takefocus 0 {*}[array get opts]
 
 	if {$Vars(showlabel)} {
-		tk::button $w.label \
-			-text "[Tr Folder]:" \
-			-pady 2 \
-			-padx 2 \
-			-relief flat \
-			-overrelief flat \
-			-activebackground [$w cget -background] \
+		tk::button $w.label      \
+			-text "[Tr Folder]:"  \
+			-pady 2               \
+			-padx 2               \
+			-relief flat          \
+			-overrelief flat      \
+			-background $bg       \
+			-activebackground $bg \
 			;
 		bind $w.label <ButtonPress-1> { break }
 	}
@@ -106,6 +117,7 @@ proc Build {w args} {
 		-image $icon::14x14::PrevComponent        \
 		-relief flat                              \
 		-overrelief raised                        \
+		-background $bg                           \
 		-activebackground $Vars(activebackground) \
 		-takefocus 0                              \
 		;
@@ -113,6 +125,7 @@ proc Build {w args} {
 		-image $icon::14x14::NextComponent        \
 		-relief flat                              \
 		-overrelief raised                        \
+		-background $bg                           \
 		-activebackground $Vars(activebackground) \
 		-takefocus 0                              \
 		;
@@ -121,6 +134,7 @@ proc Build {w args} {
 		-relief flat                                                 \
 		-pady 2                                                      \
 		-overrelief raised                                           \
+		-background $bg                                              \
 		-activebackground $Vars(activebackground)                    \
 		-command [namespace code [list PopupDirs $w $w.image--1 -1]] \
 		-takefocus 0                                                 \
@@ -237,6 +251,7 @@ proc WidgetProc {w command args} {
 proc Layout {w} {
 	variable ${w}::Vars
 
+	set bg [::theme::getBackgroundColor]
 	set n [llength $Vars(components)]
 
 	for {set i $Vars(size)} {$i < $n} {incr i} {
@@ -246,6 +261,7 @@ proc Layout {w} {
 			-pady 2                                                  \
 			-relief flat                                             \
 			-overrelief raised                                       \
+			-background $bg                                          \
 			-activebackground $Vars(activebackground)                \
 			-command [namespace code [list Invoke $w $w.text-$i $i]] \
 			-takefocus 0                                             \
@@ -255,6 +271,7 @@ proc Layout {w} {
 			-relief flat                                                 \
 			-pady 2                                                      \
 			-overrelief raised                                           \
+			-background $bg                                              \
 			-activebackground $Vars(activebackground)                    \
 			-command [namespace code [list PopupDirs $w $w.image-$i $i]] \
 			-takefocus 0                                                 \

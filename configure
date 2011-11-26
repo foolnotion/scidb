@@ -101,6 +101,34 @@ proc findBestTclVersion {} {
 }
 
 
+proc isInsaneUnixRelease {} {
+    global insaneRelease
+
+    # check if we build on Ubuntu 11.10 or higher.
+    if {![info exists insaneRelease]} {
+        set insaneRelease ""
+        if {[file exists /etc/lsb-release]} {
+            set isUbuntu 0
+            set release ""
+            if {![catch { open /etc/lsb-release } f]} {
+                while {[gets $f line] >= 0} {
+                    if {[string match {DISTRIB_ID=Ubuntu*} $line]} {
+                        set isUbuntu 1
+                    } elseif {[string match {DISTRIB_RELEASE=*} $line]} {
+                        set release [lindex [split $line =] 1]
+                    }
+                }
+                close $f
+            }
+            if {$isUbuntu && $release >= "11.10"} {
+                set insaneRelease $release
+            }
+        }
+    }
+    return [expr {[llength $insaneRelease] > 0}]
+}
+
+
 # Default values for Makefile settings:
 
 array set configure {
@@ -109,6 +137,7 @@ array set configure {
     program-suffix  {}
 }
 set configure(tcl-version) [findBestTclVersion]
+set configure(gcc-version) ""
 
 array set package {
     zlib-inc     {}
@@ -168,6 +197,9 @@ array set subdir {
     zziplib {}
     expat   {}
 }
+
+set instableTkLibrary ""
+
 
 foreach name [array names environment] {
     if {[info exists env($name)]} {
@@ -292,9 +324,11 @@ proc findTclTkPaths {} {
     }
 
     # IMPORTANT NOTE:
-    # Ubuntu 11.04 (Natty Narwhal) has severe bugs: missing link
-    # libXcursor.so to libXcursor.so.1.0.2, missing links from /usr/lib
+    # Ubuntu 11.04 (and higher) has severe system bugs: missing link from
+    # libXcursor.so to libXcursor.so.1.0.2, missing link from /usr/lib
     # to /usr/local/lib/i386-linux-gnu (and /usr/local/lib/x86_64-linux-gnu).
+    # On such insane Unix systems tha application cannot be build in a normal
+    # way.
 
     # X header path: List of possible locations for X.h
     set path(x,includes) {
@@ -303,39 +337,39 @@ proc findTclTkPaths {} {
     }
 
     # X library path: List of possible locations of X library.
-    set path(x,libraries) {
+    set path(x,libraries,local) {
         /usr/local/lib
         /usr/local/lib64
-        /usr/local/lib/i386-linux-gnu
-        /usr/local/lib/x86_64-linux-gnu
         /usr/local/X11/lib
         /usr/local/X11R6/lib
         /usr/local/X/lib
+    }
+    set path(x,libraries,usr) {
         /usr/lib
         /usr/lib64
         /usr/X11/lib
         /usr/X11R6/lib
         /usr/X/lib
-        /usr/lib/alpha-linux-gnu
-        /usr/lib/arm-linux-gnueabi
-        /usr/lib/arm-linux-gnueabihf
-        /usr/lib/i386-gnu
-        /usr/lib/i386-kfreebsd-gnu
-        /usr/lib/i386-linux-gnu
-        /usr/lib/ia64-linux-gnu
-        /usr/lib/mips-linux-gnu
-        /usr/lib/mipsel-linux-gnu
-        /usr/lib/powerpc-linux-gnu
-        /usr/lib/powerpc-linux-gnuspe
-        /usr/lib/s390-linux-gnu
-        /usr/lib/s390x-linux-gnu
-        /usr/lib/sh4-linux-gnu
-        /usr/lib/sparc-linux-gnu
-        /usr/lib/sparc64-linux-gnu
-        /usr/lib/x86_64-kfreebsd-gnu
-        /usr/lib/x86_64-linux-gnu
-        /usr/openwin/lib
     }
+    # NOTE: All these entries below are required for the corrupted Unix
+    # systems (Ubuntu >= 11.04, and others). Sane Unix systems have
+    # common links (like above).
+    foreach dir {alpha-linux-gnu
+                 arm-linux-gnueabi arm-linux-gnueabihf
+                 i386-gnu i386-kfreebsd-gnu i386-linux-gnu
+                 ia64-linux-gnu
+                 mips-linux-gnu
+                 mipsel-linux-gnu
+                 powerpc-linux-gnu powerpc-linux-gnuspe
+                 s390-linux-gnu s390x-linux-gnu
+                 sh4-linux-gnu
+                 sparc-linux-gnu sparc64-linux-gnu
+                 x86_64-kfreebsd-gnu x86_64-linux-gnu} {
+        lappend path(x,libraries,usr) /usr/lib/$dir
+        lappend path(x,libraries,local) /usr/local/lib/$dir
+    }
+
+    set path(x,libraries) [concat $path(x,libraries,local) $path(x,libraries,usr) /usr/openwin/lib]
 
     # Tcl/Tk header path: List of possible locations for tcl.h and tk.h
     set path(tcl,includes) [list                              \
@@ -436,6 +470,21 @@ proc findTclTkPaths {} {
             } else {
                 set package($module-inc) [MakeOption -I $configure($module-includes)]
                 puts $configure($module-includes)
+
+                if {$module eq "tk"} {
+                    # we have to check the patch level; some insane Unix systems like
+                    # Ubuntu 11.10 do provide instable Tk libraries.
+                    if {![catch [list open [file join $configure($module-includes) $module.h]] f]} {
+                        while {[gets $f line] >= 0} {
+                            if {[string match {\#define TK_PATCH_LEVEL*} $line]} {
+                                set pl [lindex [split $line \"] 1]
+                                if {$pl eq "8.5.10"} { set ::instableTkLibrary $pl }
+                                break
+                            }
+                        }
+                        close $f
+                    }
+                }
             }
         }
     }
@@ -495,7 +544,7 @@ proc findTclTkPaths {} {
         if {[string length $configure(xcursor-libraries)] == 0} {
             puts "not found"
         } else {
-            # Because of an Ubuntu 11.04 (Natty Narwhal) bug we have
+            # Because of an Ubuntu 11.04 (and higher) system bug we have
             # to check the library path.
             if {[file exists $configure(xcursor-libraries)/libXcursor.so]} {
                 # this is the normal case
@@ -503,12 +552,12 @@ proc findTclTkPaths {} {
                 append package(xcursor-lib) " -lXcursor"
                 puts $configure(xcursor-libraries)
             } else {
-                # special case on Ubuntu 11.04
+                # special case on Ubuntu 11.04 (and higher)
                 set files [glob -directory $configure(xcursor-libraries) -nocomplain libXcursor.so.*]
                 if {[llength $files] == 0} {
                     puts "not found"
                 } else {
-                    # only libXursor.so.1.0.2 is existing
+                    # only libXursor.so.1.0.2 is existing; a hack is required.
                     set package(xcursor-lib) [lindex $files 0]
                     puts $package(xcursor-lib)
                 }
@@ -824,6 +873,24 @@ fi
 }
 
 
+proc probe {file script} {
+    if {[catch {open $file.sh w} f]} {
+        puts "Severe error: Unable to write file '$file.sh' in current directory."
+        puts "Aborted."
+        exit 1
+    }
+    puts $f $script
+    close $f
+    set err ""
+    catch [list exec sh $file.sh] err
+    catch [list file delete -force $file.sh]
+    catch [list file delete -force $file.c]
+    catch [list file delete -force $file]
+    if {[llength $err]} { return 0 }
+    return 1
+}
+
+
 # checkGCC:
 #    Checks whether gcc/g++ is installed (minimum version is 3.4).
 proc checkGCC {cc} {
@@ -832,22 +899,29 @@ proc checkGCC {cc} {
     global TestSyncBuiltin
     global TestCompilerFlag
     global environment
+    global configure
     global compiler
     global option
 
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
     flush stdout
-    if {[catch {open testgcc.sh w} f]} { return "" }
-    puts $f [regsub -all __CC__ $TestGCC $environment($cc)]
-    close $f
+    set found 0
+    if {[llength $configure(gcc-version)]} {
+        set gccexe $gcc-$configure(gcc-version)
+        set found [probe testgcc [regsub -all __CC__ $TestGCC $gccexe]]
+        if {$found} {
+            set environment($cc) $gccexe
+        } else {
+            set configure(gcc-version) ""
+        }
+    }
+    if {[llength $configure(gcc-version)] == 0} {
+        set found [probe testgcc [regsub -all __CC__ $TestGCC $environment($cc)]]
+    }
     set version ""
     set result 0
-    catch {exec sh testgcc.sh} err
-    catch { file delete -force testgcc.sh }
-    catch { file delete -force testgcc.c }
-    catch { file delete -force testgcc }
-    if {[string length $err]} {
+    if {!$found} {
         puts "no,\n    '$environment($cc): command not found'"
     } else {
         catch {exec $environment($cc) --version} version
@@ -878,49 +952,29 @@ proc checkGCC {cc} {
         }
         puts -nonewline "    Checking if your compiler supports SSE2: "
         flush stdout
-        if {![catch {open testsse2.sh w} f]} {
-            puts $f [regsub -all __CC__ $TestSSE2 $environment($cc)]
-            close $f
-            if {![catch {exec sh testsse2.sh}]} {
-                set compiler(simd) -msse2
-                puts "yes."
-            } else {
-                puts "no."
-            }
+        if {[probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
+            set compiler(simd) -msse2
+            puts "yes."
+        } else {
+            puts "no."
         }
         puts -nonewline "    Checking if your system supports __sync_* builtin functions: "
         flush stdout
-        if {![catch {open testSyncBuiltin.sh w} f]} {
-            puts $f [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]
-            close $f
-            if {![catch {exec sh testSyncBuiltin.sh}]} {
-                puts "yes."
-            } else {
-                set compiler(thread-support) -DDONT_USE_SYNC_BUILTIN
-                puts "no."
-            }
+        if {[probe testSyncBuiltin [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]]} {
+            puts "yes."
+        } else {
+            set compiler(thread-support) -DDONT_USE_SYNC_BUILTIN
+            puts "no."
         }
-        foreach file {testsse2 testSyncBuiltin} {
-            catch [list file delete -force $file.sh]
-            catch [list file delete -force $file.c]
-            catch [list file delete -force $file]
-        }
-        # we check silently whichn options the compiler supports
-        # don't use var-tracking*, compile time is too long
-#       foreach opt {no-stack-protector var-tracking var-tracking-assignments}
+        # we check silently which options the compiler supports.
+        # don't use var-tracking*, compile time is too long.
+        # foreach opt {no-stack-protector var-tracking var-tracking-assignments}
         foreach opt {no-stack-protector} {
-            if {![catch {open testCompilerFlag.sh w} f]} {
-                set script [regsub -all %FLAG% $TestCompilerFlag $opt]
-                set script [regsub -all __CC__ $script $environment($cc)]
-                puts $f $script
-                close $f
-                if {![catch {exec sh testCompilerFlag.sh} msg]} {
-                    set compiler($opt) -f$opt
-                }
+            set script [regsub -all %FLAG% $TestCompilerFlag $opt]
+            set script [regsub -all __CC__ $script $environment($cc)]
+            if {[probe testCompilerFlag $script]} {
+                set compiler($opt) -f$opt
             }
-            catch { file delete -force testCompilerFlag.sh }
-            catch { file delete -force testCompilerFlag.c }
-            catch { file delete -force testCompilerFlag }
         }
     }
     return $version
@@ -1138,6 +1192,13 @@ proc usage {rc} {
     puts "  --x-libraries=DIR        X library files are in DIR"
     puts "  --xcursor-libraries=DIR  Xcursor library files are in DIR"
     puts ""
+    puts "GNU compiler features:"
+    if {[llength $configure(gcc-version)]} {
+    puts "  --gcc-version=VER        GNU compiler version \[$configure(gcc-version)\]"
+    } else {
+    puts "  --gcc-version=VER        GNU compiler version"
+    }
+    puts ""
     puts "Packages:"
     puts "  --with-zlib-inc=DIR      path to Zlib compression library headers"
     puts "  --with-zlib-lib=DIR      link options for Zlib compression library"
@@ -1242,18 +1303,39 @@ set gccVer [checkGCC CC]
 if {[string length $gccVer]} { set gxxVer [checkGCC CXX] }
 
 if {[string length $gxxVer]} {
-    if {$gccVer eq $gxxVer} {
-        checkZlib
-        checkZziplib
-        checkExpat
-        if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
-            writeMakefile
-        }
-        exit 0
-    } else {
-        puts "Compiler version mismatch. Please configure CC and GXX with same versions."
+    if {$gccVer ne $gxxVer} {
+        puts "Compiler version mismatch. Please configure CC and GXX with same versions,"
+        puts "or set option --gcc-version properly."
+        exit 1
     }
 
+     checkZlib
+     checkZziplib
+     checkExpat
+     if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
+         writeMakefile
+     }
+
+    if {[llength $instableTkLibrary]} {
+        # it seems that we build on an insane Unix system (like Ubuntu 11.10)
+        puts ""
+        puts "IMPORTANT NOTE:"
+        puts "You're about to run Scidb on an insane Unix version. Scidb may"
+        puts "crash with the pre-installed Tk library $instableTkLibrary. It is highly"
+        puts "recommended to install and use a stable Tk version (e.g. 8.5.6)"
+        puts "before building Scidb."
+    }
+
+    if {[isInsaneUnixRelease]} {
+        # it seems that we build on an insane Unix system (like Ubuntu 11.10)
+        puts ""
+        puts "IMPORTANT NOTE:"
+        puts "You're about to build Scidb on an insane Unix version (like"
+        puts "Ubuntu 11.10). Scidb may crash immediately after startup."
+        puts "No fix or workaround yet."
+    }
+
+    exit 0
 }
 
 exit 1

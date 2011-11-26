@@ -728,6 +728,7 @@
 ::playertable::mc::OpenViafCatalog			"Apri catalogo VIAF"
 ::playertable::mc::OpenPndCatalog			"Apri catalogo della Deutsche Nationalbibliothek"
 ::playertable::mc::OpenChessgames			"Collezione partite chessgames.com"
+::playertable::mc::SeachIn365ChessCom		"Search in 365Chess.com" ;# NEW
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"  ;#Attendance
@@ -933,6 +934,8 @@
 ::export::mc::Correspondence				"Corrispondenza"
 ::export::mc::Telegraphic					"Telegrafico"
 ::export::mc::FontHandling					"Gestione caratteri"
+::export::mc::DiagramStyle					"Diagram Style" ;# NEW
+::export::mc::UseImagesForDiagram		"Use images for diagram generation" ;# NEW
 ::export::mc::EmebedTruetypeFonts		"Inserisci fond TrueType"
 ::export::mc::UseBuiltinFonts				"Usa caratteri nativi"
 ::export::mc::SelectExportedTags			"Selezione dei tag per l'esportazione"

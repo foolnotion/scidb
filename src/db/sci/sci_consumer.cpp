@@ -64,7 +64,7 @@ Consumer::Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedT
 	,m_runLength(0)
 	,m_endOfRun(false)
 	,m_danglingPop(false)
-	,m_danglindEndMarker(true)
+	,m_danglingEndMarker(0)
 {
 }
 
@@ -94,7 +94,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_runLength = 0;
 	m_endOfRun = false;
 	m_danglingPop = false;
-	m_danglindEndMarker = true;
+	m_danglingEndMarker = 1;
 
 	return true;
 }
@@ -123,7 +123,7 @@ void Consumer::beginMoveSection() {}
 void
 Consumer::endMoveSection(result::ID)
 {
-	if (m_danglindEndMarker)
+	while (m_danglingEndMarker--)
 	{
 		m_strm.put(token::End_Marker);
 		m_strm.put(token::End_Marker);
@@ -213,7 +213,11 @@ Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 			putMove(m_move = Move::null());
 #endif
 
-		m_strm.put(token::End_Marker);
+		if (m_danglingEndMarker)
+		{
+			m_strm.put(token::End_Marker);
+			m_danglingEndMarker--;
+		}
 
 		Byte flag = writeComment(comm::Post, comment);
 
@@ -222,7 +226,6 @@ Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 		m_strm.put(token::Comment);
 		m_data.put(flag);
 		m_endOfRun = true;
-		m_danglindEndMarker = false;
 	}
 }
 
@@ -312,7 +315,7 @@ Consumer::beginVariation()
 
 	m_position.push();
 	m_strm.put(token::Start_Marker);
-	m_danglindEndMarker = true;
+	m_danglingEndMarker++;
 }
 
 
@@ -324,7 +327,7 @@ Consumer::endVariation(bool isEmpty)
 		putMove(Move::null());
 #endif
 
-	if (m_danglindEndMarker)
+	if (m_danglingEndMarker > 1)
 	{
 		if (m_danglingPop)
 			m_position.pop();
@@ -332,10 +335,7 @@ Consumer::endVariation(bool isEmpty)
 		m_position.pop();
 		m_strm.put(token::End_Marker);
 		m_strm.put(token::End_Marker);
-	}
-	else
-	{
-		m_danglindEndMarker = true;
+		m_danglingEndMarker--;
 	}
 
 	m_danglingPop = true;

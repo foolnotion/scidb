@@ -550,9 +550,9 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 			mstl::string const& name  = tags.extra(i).name;
 			mstl::string const& value = tags.extra(i).value;
 
-			m_strm.put(tag::ExtraTag);
-			m_strm.put(name, name.size() + 1);
-			m_strm.put(value, value.size() + 1);
+			m_data.put(tag::ExtraTag);
+			m_data.put(name, name.size() + 1);
+			m_data.put(value, value.size() + 1);
 		}
 	}
 

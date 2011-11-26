@@ -28,12 +28,16 @@
 #define _db_pdf_writer_included
 
 #include "db_writer.h"
+#include "db_common.h"
 
 #include "m_string.h"
 
 extern "C" { struct _HPDF_Doc_Rec; }
+extern "C" { struct _HPDF_Dict_Rec; }
 
 namespace db {
+
+class Board;
 
 class PdfWriter : public Writer
 {
@@ -45,7 +49,8 @@ public:
 
 	PdfWriter(	format::Type srcFormat,
 					mstl::string fname,
-					mstl::string const& encoding, unsigned flags = Default_Flags);
+					mstl::string const& encoding,
+					unsigned flags = Default_Flags);
 	~PdfWriter() throw();
 
 	void writeTag(mstl::string const& name, mstl::string const& value) override;
@@ -75,14 +80,110 @@ public:
 
 private:
 
-	mstl::string	m_fname;
-	mstl::string	m_move;
-	mstl::string	m_annotation;
-	mstl::string	m_marks;
-	_HPDF_Doc_Rec*	m_doc;
+	enum Style
+	{
+		// Game Info
+		GameInfo,
+
+		// Game Text - Moves
+		Move_Text_MainLine,
+		Move_Text_Variation,
+		Move_Text_SubVariation,
+		Move_Figurine_MainLine,
+		Move_Figurine_Variation,
+		Move_Figurine_SubVariation,
+		Move_Symbol_MainLine,
+		Move_Symbol_Variation,
+		Move_Symbol_SubVariation,
+
+		// Game Text - Comments
+		Comment_MainLine,
+		Comment_Variation,
+		Comment_SubVariation,
+
+		// Game Text - Result
+		Result,
+
+		// Diagram
+		Diagram,
+
+		// MARKER
+		LAST,
+	};
+
+	enum Part
+	{
+		Piece_LiteWK = piece::WK,
+		Piece_LiteWQ = piece::WQ,
+		Piece_LiteWR = piece::WR,
+		Piece_LiteWB = piece::WB,
+		Piece_LiteWN = piece::WN,
+		Piece_LiteWP = piece::WP,
+
+		Piece_LiteBK = piece::BK,
+		Piece_LiteBQ = piece::BQ,
+		Piece_LiteBR = piece::BR,
+		Piece_LiteBB = piece::BB,
+		Piece_LiteBN = piece::BN,
+		Piece_LiteBP = piece::BP,
+
+		Piece_DarkWK = piece::WK << 4,
+		Piece_DarkWQ = piece::WQ << 4,
+		Piece_DarkWR = piece::WR << 4,
+		Piece_DarkWB = piece::WB << 4,
+		Piece_DarkWN = piece::WN << 4,
+		Piece_DarkWP = piece::WP << 4,
+
+		Piece_DarkBK = piece::BK << 4,
+		Piece_DarkBQ = piece::BQ << 4,
+		Piece_DarkBR = piece::BR << 4,
+		Piece_DarkBB = piece::BB << 4,
+		Piece_DarkBN = piece::BN << 4,
+		Piece_DarkBP = piece::BP << 4,
+
+		Square_Lite = piece::Empty,
+		Square_Dark = 255,
+
+		Border_Top         = 240,
+		Border_Bottom      = 241,
+		Border_Left        = 242,
+		Border_Right       = 243,
+		Border_TopLeft     = 244,
+		Border_TopRight    = 245,
+		Border_BottomLeft  = 246,
+		Border_BottomRight = 247,
+	};
+
+	void writeDiagram(Board const& board, double x0, double y0);
+	void setFont(Style style);
+	void loadImages();
+
+	void loadImage(Part part,
+						mstl::string const& style,
+						mstl::string const& pieceSet,
+						mstl::string const& id);
+	void loadPiece(Part part, mstl::string const& id);
+	void loadSquare(Part part, mstl::string const& id);
+	void loadBorder(Part part, mstl::string const& id);
+
+	mstl::string		m_fname;
+	mstl::string		m_move;
+	mstl::string		m_annotation;
+	mstl::string		m_marks;
+	_HPDF_Doc_Rec*		m_doc;
+	_HPDF_Dict_Rec*	m_page;
+	_HPDF_Dict_Rec*	m_font[LAST];
+	unsigned				m_fontSize[LAST];
+	_HPDF_Dict_Rec*	m_image[256];
+	Style					m_currentStyle;
+	mstl::string		m_imagePath;
+	mstl::string		m_boardStyle;
+	mstl::string		m_pieceSet;
 };
 
 } // namespace db
+
+#include "db_pdf_writer.ipp"
 
 #endif // _db_pdf_writer_included
 

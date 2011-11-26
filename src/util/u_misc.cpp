@@ -38,6 +38,9 @@ static char Separator = '/';
 using namespace util;
 
 
+char util::misc::file::pathSeparator() { return Separator; }
+
+
 bool
 util::misc::file::hasSuffix(mstl::string const& path)
 {

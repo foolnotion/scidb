@@ -16,7 +16,7 @@ include ../../../Makefile.in
 
 INCLUDE	= -I. -I../../mstl
 DEFINES	= -DHPDF_NOPNGLIB
-CFLAGS	+= $(OPTIMIZE) $(DEFINES)
+CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
 	hpdf_3dmeasure.c \
@@ -38,6 +38,7 @@ SRC_C = \
 	hpdf_encrypt.c \
 	hpdf_encryptdict.c \
 	hpdf_error.c \
+	hpdf_exdata.c \
 	hpdf_ext_gstate.c \
 	hpdf_font.c \
 	hpdf_font_cid.c \
@@ -72,6 +73,7 @@ SRC_C = \
 	hpdf_real.c \
 	hpdf_streams.c \
 	hpdf_string.c \
+	hpdf_u3d.c \
 	hpdf_utils.c \
 	hpdf_xref.c \
 
@@ -487,6 +489,32 @@ hpdf_error.o: hpdf_fontdef.h
 hpdf_error.o: hpdf_ext_gstate.h
 hpdf_error.o: hpdf_outline.h
 hpdf_error.o: hpdf_pdfa.h
+hpdf_exdata.o: hpdf_conf.h
+hpdf_exdata.o: hpdf_utils.h
+hpdf_exdata.o: hpdf_config.h
+hpdf_exdata.o: hpdf_types.h
+hpdf_exdata.o: hpdf_info.h
+hpdf_exdata.o: hpdf_objects.h
+hpdf_exdata.o: hpdf_encoder.h
+hpdf_exdata.o: hpdf_consts.h
+hpdf_exdata.o: hpdf_streams.h
+hpdf_exdata.o: hpdf_list.h
+hpdf_exdata.o: hpdf_error.h
+hpdf_exdata.o: hpdf_mmgr.h
+hpdf_exdata.o: hpdf_encrypt.h
+hpdf_exdata.o: hpdf_exdata.h
+hpdf_exdata.o: hpdf.h
+hpdf_exdata.o: hpdf_version.h
+hpdf_exdata.o: hpdf_doc.h
+hpdf_exdata.o: hpdf_catalog.h
+hpdf_exdata.o: hpdf_image.h
+hpdf_exdata.o: hpdf_pages.h
+hpdf_exdata.o: hpdf_gstate.h
+hpdf_exdata.o: hpdf_font.h
+hpdf_exdata.o: hpdf_fontdef.h
+hpdf_exdata.o: hpdf_ext_gstate.h
+hpdf_exdata.o: hpdf_outline.h
+hpdf_exdata.o: hpdf_pdfa.h
 hpdf_ext_gstate.o: hpdf_conf.h
 hpdf_ext_gstate.o: hpdf_utils.h
 hpdf_ext_gstate.o: hpdf_config.h
@@ -1062,6 +1090,30 @@ hpdf_string.o: hpdf_list.h
 hpdf_string.o: hpdf_error.h
 hpdf_string.o: hpdf_mmgr.h
 hpdf_string.o: hpdf_encrypt.h
+hpdf_u3d.o: hpdf_conf.h
+hpdf_u3d.o: hpdf_utils.h
+hpdf_u3d.o: hpdf_config.h
+hpdf_u3d.o: hpdf_types.h
+hpdf_u3d.o: hpdf.h
+hpdf_u3d.o: hpdf_version.h
+hpdf_u3d.o: hpdf_consts.h
+hpdf_u3d.o: hpdf_doc.h
+hpdf_u3d.o: hpdf_catalog.h
+hpdf_u3d.o: hpdf_objects.h
+hpdf_u3d.o: hpdf_encoder.h
+hpdf_u3d.o: hpdf_streams.h
+hpdf_u3d.o: hpdf_list.h
+hpdf_u3d.o: hpdf_error.h
+hpdf_u3d.o: hpdf_mmgr.h
+hpdf_u3d.o: hpdf_encrypt.h
+hpdf_u3d.o: hpdf_image.h
+hpdf_u3d.o: hpdf_pages.h
+hpdf_u3d.o: hpdf_gstate.h
+hpdf_u3d.o: hpdf_font.h
+hpdf_u3d.o: hpdf_fontdef.h
+hpdf_u3d.o: hpdf_ext_gstate.h
+hpdf_u3d.o: hpdf_outline.h
+hpdf_u3d.o: hpdf_pdfa.h
 hpdf_utils.o: hpdf_utils.h
 hpdf_utils.o: hpdf_config.h
 hpdf_utils.o: hpdf_types.h

@@ -104,6 +104,8 @@ proc gamebar {path} {
 	set Specs(adjustment:$gamebar) {1 0 0}
 	set Specs(linewidth:$gamebar) 0
 	set Specs(spacewidth:$gamebar) [font measure $font " "]
+	set Specs(player:locked) 0
+	set Specs(event:locked) 0
 
 	insert $gamebar -1 -1 {}
 	::tooltip::tooltip exclude $gamebar input-1
@@ -319,7 +321,7 @@ proc insert {gamebar at id tags} {
 
 	$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowEvent $gamebar $id]]
 	$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HideEvent $gamebar $id]]
-	$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupMenu $gamebar $id]]
+	$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupEventMenu $gamebar $id]]
 
 	$gamebar bind $tag <Enter>	[namespace code [list EnterEvent $gamebar $id]]
 	$gamebar bind $tag <Leave>	[namespace code [list LeaveEvent $gamebar $id]]
@@ -329,7 +331,7 @@ proc insert {gamebar at id tags} {
 
 		$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowPlayer $gamebar $id $side]]
 		$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HidePlayer $gamebar $id $side]]
-		$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupMenu $gamebar $id]]
+		$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupPlayerMenu $gamebar $id $side]]
 
 		$gamebar bind $tag <Enter>	[namespace code [list EnterPlayer $gamebar $id $side]]
 		$gamebar bind $tag <Leave>	[namespace code [list LeavePlayer $gamebar $id $side]]
@@ -1255,16 +1257,58 @@ proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
 }
 
 
-proc PopupMenu {gamebar {id ""}} {
+proc PopupEventMenu {gamebar id} {
 	variable Specs
-	variable Options
-
-	HideTags $gamebar
 
 	set menu $gamebar.menu
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
+	set base [lindex [::scidb::game::link? $id] 0]
+
+	if {[::scidb::db::get open? $base]} {
+		set Specs(event:locked) 1
+		lassign [::scidb::game::sink? $id] base index
+		::eventtable::popupMenu $gamebar $menu $base 0 $index game
+		$menu add separator
+	}
+
+	BuildMenu $gamebar $id {} $menu
+}
+
+
+proc PopupPlayerMenu {gamebar id side} {
+	variable Specs
+
+	set menu $gamebar.menu
+	catch { destroy $menu }
+	menu $menu -tearoff 0
+
+	set base [lindex [::scidb::game::link? $id] 0]
+
+	if {[::scidb::db::get open? $base]} {
+		set Specs(player:locked) 1
+		::playertable::popupMenu $menu [GetPlayerInfo $gamebar $id $side]
+		$menu add separator
+	}
+
+	BuildMenu $gamebar $id $side $menu
+}
+
+
+proc PopupMenu {gamebar {id ""}} {
+	set menu $gamebar.menu
+	catch { destroy $menu }
+	menu $menu -tearoff 0
+	BuildMenu $gamebar $id {} $menu
+}
+
+
+proc BuildMenu {gamebar id side menu} {
+	variable Specs
+	variable Options
+
+	HideTags $gamebar
 	AddGameMenuEntries $menu 1 0 -1
 	$menu add separator
 
@@ -1339,6 +1383,11 @@ proc PopupMenu {gamebar {id ""}} {
 			;
 	}
 
+	if {$Specs(player:locked)} {
+		bind $menu <<MenuUnpost>> [namespace code [list LeavePlayer $gamebar $id $side yes]]
+	} elseif {$Specs(event:locked)} {
+		bind $menu <<MenuUnpost>> [namespace code [list LeaveEvent $gamebar $id yes]]
+	}
 	tk_popup $menu {*}[winfo pointerxy .]
 }
 
@@ -1783,9 +1832,15 @@ proc EnterEvent {gamebar id} {
 }
 
 
-proc LeaveEvent {gamebar id} {
+proc LeaveEvent {gamebar id {unlock no}} {
 	variable Specs
 	variable Defaults
+
+	if {$Specs(event:locked)} {
+		if {!$unlock} { return }
+		set Specs(event:locked) 0
+		if {[winfo containing {*}[winfo pointerxy $gamebar]] eq $gamebar} { return }
+	}
 
 	set sid $Specs(selected:$gamebar)
 
@@ -1822,9 +1877,15 @@ proc EnterPlayer {gamebar id side} {
 }
 
 
-proc LeavePlayer {gamebar id side} {
+proc LeavePlayer {gamebar id side {unlock no}} {
 	variable Specs
 	variable Defaults
+
+	if {$Specs(player:locked)} {
+		if {!$unlock} { return }
+		set Specs(player:locked) 0
+		if {[winfo containing {*}[winfo pointerxy $gamebar]] eq $gamebar} { return }
+	}
 
 	set sid $Specs(selected:$gamebar)
 

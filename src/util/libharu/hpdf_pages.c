@@ -166,13 +166,13 @@ HPDF_Page_InsertBefore  (HPDF_Page   page,
     HPDF_PTRACE((" HPDF_Page_InsertBefore\n"));
 
     if (!target)
-        return HPDF_INVALID_PARAMETER;
+        return HPDF_SetError (parent->error, HPDF_INVALID_PARAMETER, 0);
 
     attr = (HPDF_PageAttr )target->attr;
     parent = attr->parent;
 
     if (!parent)
-        return HPDF_PAGE_CANNOT_SET_PARENT;
+        return HPDF_SetError (parent->error, HPDF_PAGE_CANNOT_SET_PARENT, 0);
 
     if (HPDF_Dict_GetItem (page, "Parent", HPDF_OCLASS_DICT))
         return HPDF_SetError (parent->error, HPDF_PAGE_CANNOT_SET_PARENT, 0);
@@ -708,12 +708,15 @@ AddAnnotation  (HPDF_Page        page,
 
 HPDF_EXPORT(HPDF_REAL)
 HPDF_Page_TextWidth  (HPDF_Page        page,
-                      const char      *text)
+                      const char      *text,
+							 HPDF_INT         len)
 {
     HPDF_PageAttr attr;
     HPDF_TextWidth tw;
     HPDF_REAL ret = 0;
-    HPDF_UINT len = HPDF_StrLen(text, HPDF_LIMIT_MAX_STRING_LEN + 1);
+
+    if (len < 0)
+        len = HPDF_StrLen(text, HPDF_LIMIT_MAX_STRING_LEN + 1);
 
     HPDF_PTRACE((" HPDF_Page_TextWidth\n"));
 

@@ -88,13 +88,16 @@ proc writeList {chan var} {
 proc writeArray {chan arr {lowercaseOnly 1}} {
 	set maxlength 0
 	foreach {key val} $arr {
-		set maxlength [max $maxlength [string length $key]]
+		set length [string length $key]
+		if {[llength $key] > 1} { incr length 2 }
+		set maxlength [max $maxlength $length]
 	}
 	set lst {}
 	foreach {key val} $arr { lappend lst [list $key $val] }
 	foreach elem [lsort -index 0 $lst] {
 		lassign $elem key val
 		if {!$lowercaseOnly || ![string is upper [string index $key 0]]} {
+			if {[llength $key] > 1} { set key [list $key] }
 			set spaces [string repeat " " [expr {$maxlength - [string length $key] + 1}]]
 			if {[llength $val] == 0} {
 				puts $chan "  $key$spaces{}"

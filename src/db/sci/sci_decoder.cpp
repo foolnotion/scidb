@@ -277,8 +277,15 @@ Decoder::decodeVariation(ByteStream& data)
 					MoveNode* node = new MoveNode;
 					m_currentNode->setNext(node);
 
-					if (m_strm.get() == token::Comment)
-						node->setCommentFlag(data.get());
+					switch (m_strm.get())
+					{
+						case token::Comment:
+							node->setCommentFlag(data.get());
+							break;
+
+						case token::End_Marker: break;
+						default: IO_RAISE(Game, Corrupted, "unexpected token");
+					}
 				}
 				return;
 
@@ -416,14 +423,21 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 						consumer.putPrecedingComment(comment, annotation, marks);
 						hasNote = false;
 					}
-					if (m_strm.get() == token::Comment)
+					switch (m_strm.get())
 					{
-						uint8_t flag = data.get();
+						case token::Comment:
+							{
+								uint8_t flag = data.get();
 
-						buf.clear();
-						text.get(buf);
-						comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
-						consumer.putTrailingComment(comment);
+								buf.clear();
+								text.get(buf);
+								comment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
+								consumer.putTrailingComment(comment);
+								break;
+							}
+
+						case token::End_Marker: break;
+						default: IO_RAISE(Game, Corrupted, "unexpected token");
 					}
 					return;
 

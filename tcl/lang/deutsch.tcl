@@ -727,6 +727,7 @@
 ::playertable::mc::OpenViafCatalog			"VIAF-Katalog"
 ::playertable::mc::OpenPndCatalog			"Katalog der Deutschen Nationalbibliothek"
 ::playertable::mc::OpenChessgames			"chessgames.com Partiensammlung"
+::playertable::mc::SeachIn365ChessCom		"Suche in 365Chess.com"
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Teilnehmerzahl"
@@ -932,8 +933,10 @@
 ::export::mc::Correspondence				"Korrespondenz"
 ::export::mc::Telegraphic					"Telegraphie"
 ::export::mc::FontHandling					"Zeichensatzhandhabung"
+::export::mc::DiagramStyle					"Diagrammstil"
+::export::mc::UseImagesForDiagram		"Benutze Vorlagen zur Diagrammerstellung"
 ::export::mc::EmebedTruetypeFonts		"TrueType-Zeichensätze einbetten"
-::export::mc::UseBuiltinFonts				"Built-in Zeichensätze benutzen"	;# ???
+::export::mc::UseBuiltinFonts				"Integrierte Zeichensätze benutzen"
 ::export::mc::SelectExportedTags			"Auswahl der zu exportierenden Tags"
 ::export::mc::ExcludeAllTags				"Alle Tags ausschliessen"
 ::export::mc::IncludeAllTags				"Alle Tags einschliessen"

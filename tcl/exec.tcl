@@ -50,23 +50,14 @@ namespace eval scidb {
 
 wm withdraw .
 
+
 if {[llength [info nameofexecutable]] == 0} {
 	# broken Tk library, e.g. 8.6b2
 	append msg "You've installed a broken Tk library (version [info patchlevel]). "
-	append msg "Please change the version (8.5 is recommended)."
+	append msg "Please change the version (8.5.6 is recommended)."
 	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
 	exit 1
 }
-
-
-if {[info patchlevel] eq "8.5.10"} {
-	# broken Tk library, e.g. 8.5.10
-	append msg "You've installed a broken Tk library (patch level [info patchlevel]). "
-	append msg "Some crashes may occur with this Tk library.\n\n"
-	append msg "It is recommended to use a different patch level of this library."
-	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
-}
-
 
 if {[::scidb::misc::version] ne $scidb::version} {
 	wm withdraw .
@@ -80,6 +71,15 @@ if {[::scidb::misc::version] ne $scidb::version} {
 	}
 	tk_messageBox -type ok -icon error -title "$scidb::app: version error" -message $msg
 	exit 1
+}
+
+if {[info patchlevel] eq "8.5.10"} {
+	# broken Tk library (e.g. Ubuntu 11.10)
+	append msg "You've installed a broken Tk library (patch level [info patchlevel]). "
+	append msg "Some crashes may occur with this Tk library.\n\n"
+	append msg "It is recommended to use a different patch level of this library."
+	append msg "(Version 8.5.6 is recommended.)"
+	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
 }
 
 

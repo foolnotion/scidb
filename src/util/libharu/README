@@ -1,0 +1,10 @@
+The original distribution is available at <libharu.org>.
+
+This is not the original distribution. I've mixed in a derivation,
+found at <https://github.com/kdeforche/libharu/tree/>. The UTF-8
+support of the original distribution is a mess, this derivation has
+a working UTF-8 support.
+
+Furthermore I've changed the footprint of a few functions, and added an
+important function: HPDF_LoadFont(). This function is loading a font
+given by the family name.

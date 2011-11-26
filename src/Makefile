@@ -32,6 +32,7 @@ LIBS = \
 	db/libdb.a \
 	sys/libsys.a \
 	util/libTeXt/libTeXt.a \
+	util/libharu/libharu.a \
 	mstl/libmstl.a \
 	util/libutil.a \
 	util/universalchardet/libchardet.a \
@@ -59,7 +60,7 @@ SRC = \
 ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
 ALL_TK_LIBS = $(TK_LIBS) $(X_LIBRARY) $(TK_LIBRARY)
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt util/universalchardet $(LIB_SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt util/libharu util/universalchardet $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
 

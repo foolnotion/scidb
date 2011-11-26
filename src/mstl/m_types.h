@@ -60,6 +60,8 @@
 // C++Ox standard (reference: http://gcc.gnu.org/projects/cxx0x.html)
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
 #ifndef USE_0X_STANDARD
 // IMPORTANT NOTE: not really working with compiler versions < 4.6
 # define USE_0X_STANDARD __GNUC_PREREQ(4,6)
@@ -147,6 +149,7 @@
 #define HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES 1
 #endif ///////////////////////////////////////////////////////////////////////
 
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #ifndef HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 # define HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR 0

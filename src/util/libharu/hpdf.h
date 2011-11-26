@@ -983,7 +983,8 @@ HPDF_ExtGState_SetBlendMode  (HPDF_ExtGState   ext_gstate,
 
 HPDF_EXPORT(HPDF_REAL)
 HPDF_Page_TextWidth  (HPDF_Page    page,
-                      const char  *text);
+                      const char  *text,
+							 HPDF_INT     len);
 
 
 HPDF_EXPORT(HPDF_UINT)
@@ -1388,21 +1389,24 @@ HPDF_Page_MoveToNextLine  (HPDF_Page  page);
 /* Tj */
 HPDF_EXPORT(HPDF_STATUS)
 HPDF_Page_ShowText  (HPDF_Page    page,
-                     const char  *text);
+                     const char  *text,
+							HPDF_INT     len);
 
 /* TJ */
 
 /* ' */
 HPDF_EXPORT(HPDF_STATUS)
 HPDF_Page_ShowTextNextLine  (HPDF_Page    page,
-                             const char  *text);
+                             const char  *text,
+									  HPDF_INT     len);
 
 /* " */
 HPDF_EXPORT(HPDF_STATUS)
 HPDF_Page_ShowTextNextLineEx  (HPDF_Page    page,
                                HPDF_REAL    word_space,
                                HPDF_REAL    char_space,
-                               const char  *text);
+                               const char  *text,
+										 HPDF_INT     len);
 
 
 /*--- Color showing ------------------------------------------------------*/
@@ -1521,7 +1525,8 @@ HPDF_EXPORT(HPDF_STATUS)
 HPDF_Page_TextOut  (HPDF_Page    page,
                     HPDF_REAL    xpos,
                     HPDF_REAL    ypos,
-                    const char  *text);
+                    const char  *text,
+						  HPDF_INT     len);
 
 
 HPDF_EXPORT(HPDF_STATUS)

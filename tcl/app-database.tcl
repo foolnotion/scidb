@@ -354,7 +354,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 					return 0
 				}
 			}
-			.pgn - .gz - .zip {
+			pgn - gz - zip {
 				set type [lsearch -exact $Types(sci) Temporary]
 				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
 				if {[::util::catchIoError $file $cmd rc]} { return 0 }

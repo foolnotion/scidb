@@ -387,6 +387,16 @@ proc hideInfo {path} {
 }
 
 
+proc popupMenu {parent menu base view index source} {
+	$menu add command \
+		-compound left \
+		-image $::icon::16x16::crossTable \
+		-label " $::gametable::mc::ShowTournamentTable" \
+		-command [namespace code [list OpenCrosstable $parent $source $base $view $index]] \
+		;
+}
+
+
 proc Refresh {path} {
 	::scrolledtable::refresh $path
 }
@@ -585,13 +595,7 @@ proc PopupMenu {path menu base index} {
 	variable ${path}::Vars
 
 	if {$index eq "none" || $index eq "outside"} { return }
-
-	$menu add command \
-		-compound left \
-		-image $::icon::16x16::crossTable \
-		-label " $::gametable::mc::ShowTournamentTable" \
-		-command [namespace code [list OpenCrosstable $path $index]] \
-		;
+	popupMenu $path $menu $base [{*}$Vars(viewcmd) $base] $index event
 }
 
 
@@ -599,23 +603,24 @@ proc BindAccelerators {path} {
 	variable ${path}::Vars
 
 	foreach {accel proc} [list $::gametable::mc::AccelTournTable OpenCrosstable] {
-		set cmd [namespace code [list $proc $path]]
+		set cmd [namespace code [list $proc $path event]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 	}
 }
 
 
-proc OpenCrosstable {path {index -1}} {
-	variable ${path}::Vars
+proc OpenCrosstable {path source {base {}} {view -1} {index -1}} {
+	if {$index == -1}				{ set index [::scrolledtable::active $path] }
+	if {$index == -1}				{ return }
+	if {[llength $base] == 0}	{ set base [::scrolledtable::base $path] }
 
-	if {$index == -1} { set index [::scrolledtable::active $path] }
-	if {$index == -1} { return }
+	if {$view == -1} {
+		variable ${path}::Vars
+		set view [{*}$Vars(viewcmd) $base]
+	}
 
-	set base [::scrolledtable::base $path]
-	set view [{*}$Vars(viewcmd) $base]
-
-	::crosstable::open $path $base $index $view event
+	::crosstable::open $path $base $index $view $source
 }
 
 

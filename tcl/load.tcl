@@ -95,7 +95,14 @@ proc load {msg type path} {
 
 	if {[catch {::scidb::app::load $type $path} err]} {
 		set msg [format $mc::FileIsCorrupt $path]
-		lappend Log error $msg error $err
+		if {$type eq "eco"} {
+			set msg "Severe error during load of ECO file:\n$msg\n\n"
+			append msg "Program is aborting."
+			dialog::error -message $msg
+			exit 1
+		} else {
+			lappend Log error $msg error $err
+		}
 		puts "$msg -- $err"
 	} else {
 		lappend Log info "$msg: $path"

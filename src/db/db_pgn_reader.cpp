@@ -976,6 +976,13 @@ PgnReader::handleError(Error code, mstl::string const& message)
 		if (!::isEmpty(rest))
 		{
 			msg += "\nRest of game: \"";
+
+			if (m_move && !board().isValidMove(m_move))
+			{
+				m_move.printSan(msg);
+				msg += ' ';
+			}
+
 			msg += rest;
 			msg += '"';
 		}
@@ -1362,7 +1369,8 @@ PgnReader::putLastMove()
 {
 	if (m_move)
 	{
-		putMove(true);
+		if (board().isValidMove(m_move))
+			putMove(true);
 	}
 	else if (m_hasNote)
 	{

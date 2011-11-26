@@ -139,6 +139,8 @@ install: $(SCRIPT)
 	install -m 755 -d $(SHAREDIR)/themes/square
 	install -m 755 -d $(SHAREDIR)/themes/piece
 	install -m 755 -d $(SHAREDIR)/scripts
+	install -m 755 -d $(SHAREDIR)/pdf
+	install -m 755 -d $(SHAREDIR)/pdf/sets
 	install -m 755 -p $(SCRIPT) $(BINDIR)
 	install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
 	install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
@@ -159,6 +161,20 @@ install: $(SCRIPT)
 			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k;                    \
 			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
 		done;                                                                 \
+	done
+	for i in `ls pdf/sets/`; do                                        \
+		ip=pdf/sets/$$i;                                                \
+		install -m 755 -d $(SHAREDIR)/$$ip;                             \
+		for k in `ls $$ip`; do                                          \
+			kp=$$ip/$$k;                                                 \
+			install -m 755 -d $(SHAREDIR)/$$kp;                          \
+			install -m 644 -p $$kp/*.png $$kp/*.jpg $(SHAREDIR)/$$kp;    \
+			for j in `ls $$kp/pieces`; do                                \
+				jp=$$kp/pieces/$$j;                                       \
+				install -m 755 -d $(SHAREDIR)/$$jp;                       \
+				install -m 644 -p $$jp/*.png $$jp/*.jpg $(SHAREDIR)/$$jp; \
+			done;                                                        \
+		done;                                                           \
 	done
 	@if [ "`uname -s`" = "Darwin" ]; then                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                \
@@ -209,7 +225,20 @@ uninstall:
 			done;                                \
 		done;                                   \
 	done
-	# repeat 3 times (directory level is 3)
+	for i in `ls pdf/sets/`; do                                   \
+		for k in `ls pdf/sets/$$i`; do                             \
+			kp=$$ip/$$k;                                            \
+			rm -f $(SHAREDIR)/$$kp/*.png $(SHAREDIR)/$$kp/*.jpg;    \
+			for j in `ls $$kp/pieces`; do                           \
+				jp=$$kp/pieces/$$j;                                  \
+				rm -f $(SHAREDIR)/$$jp/*.png $(SHAREDIR)/$$jp/*.jpg; \
+			done;                                                   \
+		done;                                                      \
+	done
+	# repeat 6 times (directory level is 6)
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
 	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
 	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
 	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done

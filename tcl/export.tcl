@@ -42,6 +42,8 @@ set Algebraic						"Algebraic"
 set Correspondence				"Correspondence"
 set Telegraphic					"Telegraphic"
 set FontHandling					"Font handling"
+set DiagramStyle					"Diagram Style"
+set UseImagesForDiagram			"Use images for diagram generation"
 set EmebedTruetypeFonts			"Embed TrueType fonts"
 set UseBuiltinFonts				"Use built-in fonts"
 set SelectExportedTags			"Selection of exported tags"
@@ -164,6 +166,7 @@ array set PdfEncodingMap {
 	cp1256		CP1256
 	cp1257		CP1257
 	cp1258		CP1258
+	utf-8			UTF-8
 }
 # cannot handle multi-byte encodings (will be implemented later)
 #	koi8-r		KOI8-R
@@ -318,10 +321,6 @@ array set DefaultTags {
 
 array set Tags [array get DefaultTags]
 
-set Margin(mm)	15
-set Margin(in)	0.59
-set Margin(pt)	42.48
-
 variable Types	{scidb scid pgn pdf html tex}
 variable Info
 
@@ -385,17 +384,28 @@ array set Defaults {
 	pgn,use_scidb_import_format				0
 	pgn,exclude_games_with_illegal_moves	0
 
-	tex,margins,A2								{ 15 15 15 15 }
-	tex,margins,A3								{ 15 15 15 15 }
-	tex,margins,A4								{ 15 15 15 15 }
-	tex,margins,A5								{ 15 15 15 15 }
-	tex,margins,A6								{ 15 15 15 15 }
-	tex,margins,B3								{ 15 15 15 15 }
-	tex,margins,B4								{ 15 15 15 15 }
-	tex,margins,B5								{ 15 15 15 15 }
-	tex,margins,Letter						{  1  1  1  1 }
-	tex,margins,Legal							{  1  1  1  1 }
-	tex,margins,Executive					{  1  1  1  1 }
+	pdf,use-images									0
+	pdf,diagram										{Default Merida}
+	pdf,image-size									200
+
+	pdf,margins,A2									{ 40    53     44    44    }
+	pdf,margins,A3									{ 38    44     31    31    }
+	pdf,margins,A4									{ 20    27     22    22    }
+	pdf,margins,A5									{ 14    19     15    15    }
+	pdf,margins,A6									{ 10    13     11    11    }
+	pdf,margins,B3									{ 33    45     37    37    }
+	pdf,margins,B4									{ 23    32     26    26    }
+	pdf,margins,B5									{ 17    22     18    18    }
+	pdf,margins,Letter							{  0.74  1.00   0.89  0.89 }
+	pdf,margins,Legal								{  0.94  1.26   0.89  0.89 }
+	pdf,margins,Executive						{  0.70  0.95   0.76  0.76 }
+	{pdf,margins,Half Letter}					{  0.57  0.76   0.57  0.57 }
+	{pdf,margins,US B}							{  1.14  1.53   1.15  1.15 }
+	{pdf,margins,US C}							{  1.47  1.98   1.78  1.78 }
+	{pdf,margins,US 4x6}							{  0.40  0.54   0.42  0.42 }
+	{pdf,margins,US 4x8}							{  0.54  0.72   0.42  0.42 }
+	{pdf,margins,US 5x7}							{  0.50  0.63   0.52  0.52 }
+	{pdf,margins,COMM 10}						{  0.64  0.85   0.43  0.43 }
 
 	encoding iso8859-1
 }
@@ -413,7 +423,6 @@ set Values(scidb,encoding)	utf-8
 set Values(pdf,encoding)		iso8859-1
 set Values(pdf,embed)			1
 set Values(pdf,builtin)			0
-set Values(pdf,fonts)			{}
 set Values(pdf,paper)			[lsearch -exact -index 0 $Paper(pdf) A4]
 set Values(pdf,paper,top)		0
 set Values(pdf,paper,bottom)	0
@@ -479,6 +488,7 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	set Info(after) {}
 	set Info(encoding) [::scidb::db::get encoding $base]
 	set Info(pdf-encoding) 0
+	set Info(fonts) {}
 
 	if {$type ne "scidb" && $Info(encoding) ni $PdfEncodingList} {
 		set Info(pdf-encoding) 1
@@ -724,12 +734,15 @@ proc BuildOptionsFrame_pgn {w} {
 
 
 proc BuildOptionsFrame_pdf {w} {
+	variable DiagramStyles
+	variable DiagramSizes
 	variable Notation
 	variable NotationList
 	variable Figurines
 	variable FigurinesList
 	variable Values
 	variable Colors
+	variable Info
 
 	ttk::frame $w
 
@@ -758,10 +771,11 @@ proc BuildOptionsFrame_pdf {w} {
 		tk::listbox $w.$what.list.lb \
 			-selectmode single \
 			-exportselection false \
-			-listvariable [namespace current]::${var}List
+			-listvariable [namespace current]::${var}List \
+			;
 		bind $w.$what.list.lb <<ListboxSelect>> [namespace code [list Set$var $w.$what]]
 		bind $w.$what.list <Configure> [namespace code [list ConfigureListbox $w.$what.list %h]]
-		tk::label $w.$what.sample -borderwidth 2 -relief sunken
+		tk::label $w.$what.sample -borderwidth 1 -relief sunken
 		tk::label $w.$what.sample.text -background white
 		pack $w.$what.sample.text -fill both -expand yes
 		pack propagate $w.$what.sample 0
@@ -795,16 +809,148 @@ proc BuildOptionsFrame_pdf {w} {
 	grid $w.options.builtin -column 1 -row 1 -sticky w
 	grid $w.options.embed   -column 1 -row 3 -sticky w
 	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
-	grid rowconfigure $w.options {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.options {0 2 4} -minsize $::theme::padding
 
-	grid $w.figurines -row 1 -column 1 -sticky ns
-	grid $w.notation  -row 1 -column 3 -sticky ns
-	grid $w.options   -row 1 -column 5 -sticky ns
-	grid rowconfigure $w {0 2} -minsize $::theme::padding
-	grid rowconfigure $w 1 -weight 1
+	ttk::checkbutton $w.use \
+		-text $mc::UseImagesForDiagram \
+		-variable [namespace current]::Values(pdf,use-images) \
+		;
+	ttk::labelframe $w.diagram -labelwidget $w.use
+	SearchDiagramStyles
+	set selbox [::tlistbox $w.diagram.selection \
+		-height [llength $DiagramStyles] \
+		-borderwidth 1 \
+		-disabledbackground [::theme::getBackgroundColor] \
+		-disabledforeground [::theme::getDisabledColor] \
+	]
+	$selbox addcol image -id icon
+	$selbox addcol text -id text -expand yes
+	set Info(diagram:list) {}
+	foreach entry $DiagramStyles {
+		lassign $entry sample style set sizes
+		catch {
+			set img [image create photo -file $sample]
+			set name "$style - $set"
+			$selbox insert [list $img $name]
+			lappend Info(diagram:list) [list [list $style $set] $sizes]
+		}
+	}
+	$selbox resize
+	set f [ttk::frame $w.diagram.sizes -borderwidth 0]
+	ttk::label $f.size -text "$mc::Size:"
+	grid $f.size -column 1 -row 1
+	set col 2
+	foreach size $DiagramSizes {
+		ttk::radiobutton $f.$size \
+			-text [expr {int(double($size)*0.12 + 0.5)}] \
+			-variable [namespace current]::Values(pdf,image-size) \
+			-value $size \
+			;
+		grid columnconfigure $f $col -minsize $::theme::padding
+		grid $f.$size -column [incr col] -row 1
+		incr col
+	}
+	ToggleUseImages $selbox $f
+	$w.use configure -command [namespace code [list ToggleUseImages $selbox $f]]
+	bind $selbox <<ListboxSelect>> [namespace code [list UseDiagram %d $f]]
+	grid columnconfigure $f $col -minsize $::theme::padding
+	grid $w.diagram.selection -column 1 -row 1 -sticky ew
+	grid $w.diagram.sizes -column 1 -row 3 -sticky w
+	grid columnconfigure $w.diagram {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.diagram {0 4} -minsize $::theme::padding
+	grid rowconfigure $w.diagram 2 -minsize [expr {2*$::theme::padding}]
+
+	grid $w.figurines -row 1 -column 1 -sticky ns -rowspan 3
+	grid $w.notation  -row 1 -column 3 -sticky ns -rowspan 3
+	grid $w.options   -row 1 -column 5 -sticky nsew
+	grid $w.diagram   -row 3 -column 5 -sticky nsew
+	grid rowconfigure $w {0 2 4} -minsize $::theme::padding
+	grid rowconfigure $w {1 3} -weight 1
 	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
 
 	return $w
+}
+
+
+proc ToggleUseImages {selbox sizes} {
+	variable Values
+	variable Info
+
+	set index [lsearch -index 0 $Info(diagram:list) $Values(pdf,diagram)]
+	if {$Values(pdf,use-images)} { set state normal } else { set state disabled }
+	$selbox configure -state $state
+	$selbox select none
+	$selbox select $index
+
+	if {$state eq "disabled"} {
+		set usedSizes {}
+	} else {
+		set usedSizes [lindex $Info(diagram:list) $index 1]
+	}
+	CheckSizes $sizes $usedSizes
+}
+
+
+proc CheckSizes {sizes usedSizes} {
+	variable DiagramSizes
+	variable Values
+
+	foreach size $DiagramSizes {
+		if {$size in $usedSizes} { set state normal } else { set state disabled }
+		$sizes.$size configure -state $state
+	}
+
+	if {[llength $usedSizes] && $Values(pdf,image-size) ni $usedSizes} {
+		$sizes.[lindex $usedSizes end] invoke
+	}
+}
+
+
+proc UseDiagram {index sizes} {
+	variable Info
+	variable Values
+
+	set Values(pdf,diagram) [lindex $Info(diagram:list) $index 0]
+	CheckSizes $sizes [lindex $Values(pdf,diagram) 2]
+}
+
+
+proc SearchDiagramStyles {} {
+	variable DiagramStyles
+	variable DiagramSizes
+
+	if {[info exists DiagramStyles]} { return }
+
+	set diagramStyles {}
+	set DiagramStyles {}
+	set DiagramSizes {}
+	set path [file join $scidb::dir::share pdf sets]
+
+	foreach sub1 [glob -directory $path -nocomplain -types d *] {
+		foreach sub2 [glob -directory $sub1 -nocomplain -types d *] {
+			set size [file tail $sub2]
+			if {$size ni $DiagramSizes} { lappend DiagramSizes $size }
+			foreach sub3 [glob -directory $sub2 -nocomplain -types d *] {
+				foreach sub4 [glob -directory $sub3 -nocomplain -types d *] {
+					set style [file tail $sub1]
+					set pieces [file tail $sub4]
+					set sample [file join $sub4 sample.png]
+					if {[file exists $sample]} {
+						lappend diagramStyles [list $sample $style $pieces]
+					}
+					lappend sizes($style,$pieces) $size
+				}
+			}
+		}
+	}
+
+	foreach entry $diagramStyles {
+		lassign $entry sample style pieces
+		lappend DiagramStyles [list $sample $style $pieces $sizes($style,$pieces)]
+	}
+
+	set DiagramSizes [lsort -integer $DiagramSizes]
+	set DiagramStyles [lsort -dictionary -index 0 $DiagramStyles]
 }
 
 
@@ -823,12 +969,13 @@ proc ResetTags {value} {
 
 proc UseBuiltinFonts {} {
 	variable Values
+	variable Info
 
 	if {$Values(pdf,builtin)} {
-		set Values(pdf,fonts) {Courier Helvetica Times-Roman}
+		set Info(fonts) {Courier Helvetica Times-Roman}
 		# TODO map fonts
 	} else {
-		set Values(pdf,fonts) {}
+		set Info(fonts) {}
 		# TODO map fonts
 	}
 
@@ -855,8 +1002,10 @@ proc SetupOptions {pane} {
 
 	if {$Values(Type) eq "pdf"} {
 		grid $pane.pdf.options
+		grid $pane.pdf.diagram
 	} else {
 		grid remove $pane.pdf.options
+		grid remove $pane.pdf.diagram
 	}
 }
 
@@ -865,8 +1014,9 @@ proc ConfigureListbox {list height} {
 	array set metrics [font metrics [$list.lb cget -font]]
 	set linespace [expr {$metrics(-linespace) + 1}]
 	set nrows [expr {$height/$linespace}]
-	$list.lb configure -height $nrows
-	bind $list <Configure> {}
+	if {$nrows > [$list.lb cget -height]} {
+		$list.lb configure -height $nrows
+	}
 }
 
 
@@ -1060,7 +1210,6 @@ proc Select {nb index} {
 			set Info(configure-style) 1
 			set var $mc::PdfFiles
 			set ext .pdf
-			::beta::notYetImplemented $nb pdf
 		}
 
 		html {
@@ -1136,6 +1285,7 @@ proc Select {nb index} {
 	}
 
 	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
+	if {$Values(Type) eq "pdf" && $Values(pdf,builtin)} { UseBuiltinFonts }
 }
 
 
@@ -1295,6 +1445,7 @@ proc StyleSelected {tree index} {
 	variable StyleLayout
 	variable Styles
 	variable Values
+	variable Info
 
 	set type $Values(Type)
 	set style ""
@@ -1335,7 +1486,7 @@ proc StyleSelected {tree index} {
 		Figurines	{ set fonts $::font::chessFigurineFonts }
 		Diagram		{ set fonts $::font::chessDiagramFonts }
 		Symbols		{ set fonts $::font::chessSymbolFonts }
-		default		{ set fonts $Values(pdf,fonts) }
+		default		{ set fonts $Info(fonts) }
 	}
 
 	::dialog::::choosefont::setFonts $Values(fontsel) $fonts
@@ -1421,7 +1572,6 @@ proc FontColor {color} {
 
 proc ConfigureSetup {w} {
 	variable Paper
-	variable Margin
 	variable Info
 	variable Values
 	variable Colors
@@ -1466,7 +1616,8 @@ proc ConfigureSetup {w} {
 	ttk::combobox $w.paper.cbformat \
 		-state readonly \
 		-values $Info($type,formats) \
-		-textvariable [namespace current]::Info($type,paper,textvar)
+		-textvariable [namespace current]::Info($type,paper,textvar) \
+		;
 	bind $w.paper.cbformat <<ComboboxSelected>> [namespace code [list ConfigureWidgets $w paper]]
 
 	grid $w.paper.lformat	-row 1 -column 1 -sticky w
@@ -1510,10 +1661,11 @@ proc ConfigureSetup {w} {
 		} else {
 			set units [lindex $Paper($type) $Values($type,paper) 3]
 		}
-		set margin $Margin($units)
 		foreach {dir row col} {top 1 1 bottom 3 1 left 1 5 right 3 5} {
 			set text [string toupper $dir 0 0]
-			if {$Info($type,paper,$dir) == 0} { set Info($type,paper,$dir) $margin }
+			if {$Info($type,paper,$dir) == 0} {
+				set Info($type,paper,$dir) [DefaultMargin $dir $type $units]
+			}
 			ttk::label $w.margins.l$dir -text [set mc::$text]
 			ttk::entry $w.margins.s$dir -width 5 -textvariable [namespace current]::Info($type,paper,$dir)
 			::validate::entryFloat $w.margins.s$dir
@@ -1619,7 +1771,8 @@ proc RefreshPreview {w} {
 	set type $Values(Type)
 
 	foreach dir {top bottom left right} {
-		if {[string match {*[0-9]*} $Info($type,paper,$dir)]} {
+		if {	[string match {*[0-9]*} $Info($type,paper,$dir)] ||
+				[string match {*[0-9].[0-9][0-9]*} $Info($type,paper,$dir)]} {
 			set margin($dir) $Info($type,paper,$dir)
 		} else {
 			set margin($dir) 0
@@ -1685,7 +1838,8 @@ proc RefreshPreview {w} {
 		lassign {0 0 0 0 0} rx0 rx1 ry0 ry1
 		set dirs {l}
 	} else {
-		set gap [expr {min(6, round(0.05*($x1 - $x0)))}]
+#		set gap [expr {min(6, round(0.05*($x1 - $x0)))}]
+		set gap [expr {max(6,round(min($l,$r)/2.0))}]
 		if {$gap % 2} { incr gap -1 }
 		set xm [expr {$x0 + ($x1 - $x0)/2}]
 		set rx0 [expr {min($lx1, $xm + $gap/2)}]
@@ -1786,6 +1940,34 @@ proc MarginChanged {w dir value} {
 }
 
 
+proc Round {x units} {
+	set n [round $x]
+	if {$units ne "in"} { return $n }
+	if {abs($n - $x) < 0.02} { return $n }
+	return [expr {round($x*100.0)/100.0}]
+}
+
+
+proc MapUnits {value from to} {
+	switch $from->$to {
+		mm->in  { set factor [expr {1.0/25.4}] }
+		mm->pt  { set factor [expr {72.0/25.4}] }
+		in->mm  { set factor 25.4 }
+		in->pt  { set factor 72.0 }
+		pt->mm  { set factor [expr {25.4/72.0}] }
+		pt->in  { set factor [expr {1.0/72.0}] }
+		default { return $value }
+	}
+
+	set x [expr {$factor*double($value)}]
+	set n [round $x]
+
+	if {$to ne "in"} { return $n }
+	if {abs($n - $x) < 0.02} { return $n }
+	return [expr {round($x*100.0)/100.0}]
+}
+
+
 proc ConfigureWidgets {w {action {}}} {
 	variable Paper
 	variable Values
@@ -1800,41 +1982,38 @@ proc ConfigureWidgets {w {action {}}} {
 			$w.paper.width configure -state normal
 			$w.paper.height configure -state normal
 			$w.paper.units configure -state readonly
-			set units $Info($type,paper,units,textvar)
+			set wantedUnits $Info($type,paper,units,textvar)
 		} else {
 			foreach name {width height units} {
 				$w.paper.$name configure -state disabled
 			}
-			set units [lindex $Paper($type) $Values($type,paper) 3]
+			set wantedUnits [lindex $Paper($type) $Values($type,paper) 3]
 		}
 
-		if {$action ne "reset" && $Info($type,paper,units) ne $units} {
-			switch $Info($type,paper,units)->$units {
-				mm->in { set factor [expr {1.0/25.4}] }
-				mm->pt { set factor [expr {72.0/25.4}] }
-				in->mm { set factor 25.4 }
-				in->pt { set factor 72.0 }
-				pt->mm { set factor [expr {25.4/72.0}] }
-				pt->in { set factor [expr {1.0/72.0}] }
-			}
-
-			set Info($type,paper,units) $units
+		if {$action ne "reset"} {
+			set origUnits $Info($type,paper,units)
+			set Info($type,paper,units) $wantedUnits
 
 			if {$action ne "paper" && $Values($type,paper) == [llength $Paper($type)]} {
 				foreach attr {width height} {
-					set Info($type,paper,$attr) [Round [expr {$Info($type,paper,$attr)*$factor}] $units]
+					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
 				}
 			}
 
 			foreach attr {top bottom left right} {
-				set Info($type,paper,$attr) [Round [expr {$Info($type,paper,$attr)*$factor}] $units]
-				set Values($type,paper,$attr) [Round [expr {$Values($type,paper,$attr)*$factor}] $units]
+				if {$Values($type,paper,$attr) == 0} {
+					set Info($type,paper,$attr) [DefaultMargin $attr $type $wantedUnits]
+				} else {
+					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
+					set Values($type,paper,$attr) \
+						[MapUnits $Values($type,paper,$attr) $origUnits $wantedUnits]
+				}
 			}
 		}
 
-		$w.margins configure -text "$mc::Margin ($units)"
+		$w.margins configure -text "$mc::Margin ($wantedUnits)"
 	} else {
-		lassign $Defaults(tex,margins,[lindex $Paper($type) $Values($type,paper) 0]) \
+		lassign $Defaults(pdf,margins,[lindex $Paper($type) $Values($type,paper) 0]) \
 			Info($type,paper,top) Info($type,paper,bottom) \
 			Info($type,paper,left) Info($type,paper,right)
 	}
@@ -1843,19 +2022,11 @@ proc ConfigureWidgets {w {action {}}} {
 }
 
 
-proc Round {x units} {
-	set n [round $x]
-	if {$units ne "in"} { return $n }
-	if {abs($n - $x) < 0.02} { return $n }
-	return [expr {round($x*100.0)/100.0}]
-}
-
-
 proc ResetPaper {w} {
 	variable Paper
-	variable Margin
 	variable Info
 	variable Values
+	variable Defaults
 
 	set type $Values(Type)
 	set Values($type,paper) 2
@@ -1865,13 +2036,30 @@ proc ResetPaper {w} {
 	set Info($type,paper,textvar) [lindex $Info($type,formats) $Values($type,paper)]
 	set Info($type,paper,units) [GetUnits]
 
-	set margin $Margin([lindex $Paper($type) $Values($type,paper) 3])
+	set wantedUnits [lindex $Paper($type) $Values($type,paper) 3]
 	foreach dir {top bottom left right} {
 		set Values($type,paper,$dir) 0
-		set Info($type,paper,$dir) $margin
+		set Info($type,paper,$dir) [DefaultMargin $dir $type $wantedUnits]
 	}
 
 	ConfigureWidgets $w reset
+}
+
+
+proc DefaultMargin {dir type units} {
+	variable Defaults
+	variable Values
+	variable Paper
+	variable Info
+
+	if {$Values($type,paper) == [llength $Paper($type)]} {
+		set format A4
+	} else {
+		set format [lindex $Paper($type) $Values($type,paper) 0]
+	}
+
+	lassign $Defaults(pdf,margins,$format) m(top) m(bottom) m(left) m(right)
+	return [MapUnits $m($dir) $Info($type,paper,units) $units]
 }
 
 
@@ -1909,6 +2097,7 @@ proc DoExport {parent dlg file} {
 		}
 		set encoding $PdfEncodingMap($encoding)
 	}
+
 	if {$Values(Type) eq "pgn"} {
 		set excludeGamesWithIllegalMoves $Values(pgn,exclude_games_with_illegal_moves)
 	} else {
@@ -1930,6 +2119,42 @@ proc DoExport {parent dlg file} {
 				}
 			}
 		}
+	}
+
+	if {$Values(Type) eq "pdf"} {
+		# Values(pdf,encoding)
+		# Values(pdf,embed)
+		# Values(pdf,builtin)
+		# Values(pdf,paper)
+		# Values(pdf,paper,top)
+		# Values(pdf,paper,bottom)
+		# Values(pdf,paper,left)
+		# Values(pdf,paper,right)
+		# Values(pdf,custom)
+		# Values(pdf,orientation)
+		# Values(pdf,justification)
+		# Values(pdf,columns)
+		# Values(pdf,use-images)
+		# Values(pdf,diagram)
+		# Values(pdf,imageSize)
+		# Values(notation)
+		# Values(figurines)
+
+		# pdf,BasicStyle
+		# pdf,BasicStyle,GameInfo
+		# pdf,BasicStyle,GameText
+		# pdf,BasicStyle,GameText,Moves
+		# pdf,BasicStyle,GameText,Moves,MainLine
+		# pdf,BasicStyle,GameText,Moves,Variation
+		# pdf,BasicStyle,GameText,Moves,Subvariation
+		# pdf,BasicStyle,GameText,Moves,Figurines
+		# pdf,BasicStyle,GameText,Moves,Symbols
+		# pdf,BasicStyle,GameText,Comments
+		# pdf,BasicStyle,GameText,Comments,MainLine
+		# pdf,BasicStyle,GameText,Comments,Variation
+		# pdf,BasicStyle,GameText,Comments,Subvariation
+		# pdf,BasicStyle,GameText,Result
+		# pdf,BasicStyle,Diagram
 	}
 
 	switch [::dialog::fsbox::saveMode $Info(fsbox)] {

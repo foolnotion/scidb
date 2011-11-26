@@ -620,21 +620,21 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		bind $w.l${var}s <<ListboxSelect>> [namespace code [list Click $w $var]]
 	}
 	bind $w.lfonts <Home> [namespace code {
-		variable S
-		set S(font) [lindex $S(fonts) 0]
+		set w [winfo parent %W]
+		set ${w}::S(font) [lindex [set ${w}::S(fonts)] 0]
 	}]
 	bind $w.lfonts <End> [namespace code {
-		variable S
-		set S(font) [lindex $S(fonts) end]
+		set w [winfo parent %W]
+		set ${w}::S(font) [lindex [set ${w}::S(fonts)] end]
 	}]
 	bind $w.lfonts <KeyPress> [namespace code {
-		if {%s == 0 && [string length %K] == 1 && [string is alpha %K]} {
-			variable S
-			set n [lsearch -glob -nocase $S(fonts) %K*]
+		if {%s <= 1 && [string length %K] == 1 && [string is alnum %K]} {
+			set w [winfo parent %W]
+			set n [lsearch -glob -nocase [set ${w}::S(fonts)] %K*]
 			if {$n == -1} {
 				bell
 			} else {
-				set S(font) [lindex $S(fonts) $n]
+				set ${w}::S(font) [lindex [set ${w}::S(fonts)] $n]
 			}
 		}
 	}]
@@ -696,7 +696,7 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 
 	set WS $w.sample
 	ttk::labelframe $WS -text [Tr Sample]
-	tk::label $WS.fsample -borderwidth 2 -relief sunken
+	tk::label $WS.fsample -borderwidth 1 -relief sunken
 	tk::label $WS.fsample.sample -text $Vars(sample) -background white
 	if {[llength $color]} { $WS.fsample.sample configure -foreground $color }
 	set S(sample) $WS.fsample.sample

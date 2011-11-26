@@ -514,7 +514,9 @@ proc makeHiliteRect {canv which tag size x1 y1 {color {}}} {
 }
 
 
-proc drawBorderlines {border len} {
+proc drawBorderlines {border wd {ht 0}} {
+	if {$ht <= 0} { set ht $wd }
+
 	foreach n {0 1 2} {
 		set hl photo_Borderline(hl$n:$border)
 		set vl photo_Borderline(vl$n:$border)
@@ -526,10 +528,10 @@ proc drawBorderlines {border len} {
 		catch { image delete $hd }
 		catch { image delete $vd }
 
-		image create photo $hl -width [expr {$len - 2*$n - 1}] -height 1
-		image create photo $vl -width 1 -height [expr {$len - 2*$n - 2}]
-		image create photo $hd -width [expr {$len - 2*$n}] -height 1
-		image create photo $vd -width 1 -height [expr {$len - 2*$n - 1}]
+		image create photo $hl -width [expr {$wd - 2*$n - 1}] -height 1
+		image create photo $vl -width 1 -height [expr {$ht - 2*$n - 2}]
+		image create photo $hd -width [expr {$wd - 2*$n}] -height 1
+		image create photo $vd -width 1 -height [expr {$ht - 2*$n - 1}]
 
 		$hl copy photo_Borderline(horz,lite,$n)
 		$vl copy photo_Borderline(vert,lite,$n)
@@ -538,8 +540,8 @@ proc drawBorderlines {border len} {
 
 		$border create image $n $n -anchor nw -image $hl -tag shadow
 		$border create image $n [expr {$n + 1}] -anchor nw -image $vl -tag shadow
-		$border create image $n [expr {$len - $n - 1}] -anchor nw -image $hd -tag shadow
-		$border create image [expr {$len - $n - 1}] $n -anchor nw -image $vd -tag shadow
+		$border create image $n [expr {$ht - $n - 1}] -anchor nw -image $hd -tag shadow
+		$border create image [expr {$wd - $n - 1}] $n -anchor nw -image $vd -tag shadow
 	}
 }
 
