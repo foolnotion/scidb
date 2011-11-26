@@ -166,7 +166,7 @@ HPDF_Page_InsertBefore  (HPDF_Page   page,
     HPDF_PTRACE((" HPDF_Page_InsertBefore\n"));
 
     if (!target)
-        return HPDF_SetError (parent->error, HPDF_INVALID_PARAMETER, 0);
+        return HPDF_INVALID_PARAMETER;
 
     attr = (HPDF_PageAttr )target->attr;
     parent = attr->parent;
