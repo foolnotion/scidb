@@ -278,7 +278,7 @@ sys::file::rename(char const* oldFilename, char const* newFilename, bool preserv
 #if defined(WIN32)
 		st.st_mode &= _S_IREAD | _S_IWRITE;
 #else
-		st.st_mode &= 0x07777;
+		st.st_mode &= 0x0fff;
 #endif
 
 		chmod(newFilename, st.st_mode);

@@ -332,7 +332,7 @@ proc Open {parent base files msg encoding type useLog} {
 	switch $codec {
 		si3 - si4 {
 			set fileEncoding [::scidb::db::get encoding]
-			if {$encoding ne $fileEncoding} {
+			if {$encoding ne $::encoding::autoEncoding && $encoding ne $fileEncoding} {
 				set msg [string map [list %src $encoding %dst $fileEncoding] $mc::DifferentEncoding]
 				set reply [::dialog::warning \
 					-parent $parent \

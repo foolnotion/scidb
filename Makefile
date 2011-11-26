@@ -12,7 +12,7 @@
 
 MAKEFLAGS += --no-print-directory
 
-all:
+all: Makefile.in
 	@$(MAKE) -C engines
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
@@ -38,5 +38,9 @@ uninstall:
 	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C src uninstall
 	@$(MAKE) -C tcl uninstall
+
+Makefile.in:
+	@echo "****** Please use the 'configure' script before building Scidb ******"
+	@exit 1
 
 # vi:set ts=3 sw=3:
