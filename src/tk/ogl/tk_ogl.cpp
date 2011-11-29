@@ -25,7 +25,9 @@
 
 #include "tk_ogl.h"
 
+#define namespace namespace_	// bug in tcl8.6/tkInt.h
 #include <tkInt.h>
+#undef namespace
 
 #if defined(WIN32)
 
