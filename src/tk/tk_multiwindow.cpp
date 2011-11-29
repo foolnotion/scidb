@@ -20,7 +20,9 @@
 
 #include "tcl_base.h"
 
+#define namespace namespace_	// bug in tcl8.6/tkInt.h
 #include "tkInt.h"
+#undef namespace
 
 #include "m_types.h"
 

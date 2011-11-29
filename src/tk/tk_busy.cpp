@@ -29,7 +29,9 @@
 
 #include "tcl_base.h"
 
+#define namespace namespace_	// bug in tcl8.6/tkInt.h
 #include "tkInt.h"
+#undef namespace
 
 #include "m_types.h"
 
@@ -66,7 +68,7 @@ typedef struct Busy {
 #ifdef WIN32
 
 static void
-TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
+ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
 {
     Busy *busyPtr = (Busy *) busy;
 
@@ -93,7 +95,7 @@ TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window 
 }
 
 static void
-TkpShowBusyWindow(Busy* busy)
+ScShowBusyWindow(Busy* busy)
 {
     Busy *busyPtr = (Busy *) busy;
     HWND hWnd;
@@ -125,7 +127,7 @@ TkpShowBusyWindow(Busy* busy)
 }
 
 static void
-TkpHideBusyWindow(Busy* busy)
+ScHideBusyWindow(Busy* busy)
 {
     Busy *busyPtr = (Busy *) busy;
     POINT point;
@@ -149,7 +151,7 @@ TkpHideBusyWindow(Busy* busy)
 }
 
 static void
-TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
+ScMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 {
     TkWindow *winPtr = (TkWindow *) tkwin;
     HWND hParent = (HWND) parent, hWnd;
@@ -166,22 +168,22 @@ TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 #elif defined(__MacOSX__)
 
 static void
-TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
+ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
 {
 }
 
 static void
-TkpShowBusyWindow(Busy* busy)
+ScShowBusyWindow(Busy* busy)
 {
 }
 
 static void
-TkpHideBusyWindow(Busy* busy)
+ScHideBusyWindow(Busy* busy)
 {
 }
 
 static void
-TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
+ScMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 {
 }
 
@@ -204,7 +206,7 @@ GetParent(
 }
 
 static void
-TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
+ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
 {
     if (winPtr->flags & TK_REPARENTED) {
 	/*
@@ -222,7 +224,7 @@ TkpCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window 
 }
 
 static void
-TkpShowBusyWindow(Busy* busy)
+ScShowBusyWindow(Busy* busy)
 {
     if (busy->tkBusy != nullptr) {
 	Tk_MapWindow(busy->tkBusy);
@@ -239,7 +241,7 @@ TkpShowBusyWindow(Busy* busy)
 }
 
 static void
-TkpHideBusyWindow(Busy* busy)
+ScHideBusyWindow(Busy* busy)
 {
     if (busy->tkBusy != nullptr) {
 	Tk_UnmapWindow(busy->tkBusy);
@@ -247,7 +249,7 @@ TkpHideBusyWindow(Busy* busy)
 }
 
 static void
-TkpMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
+ScMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 {
     TkWindow *winPtr = (TkWindow *) tkwin;
     long int mask = CWDontPropagate | CWEventMask;
@@ -408,7 +410,7 @@ SetWindowFromAny(
 /*
  *----------------------------------------------------------------------
  *
- * TkNewWindowObj --
+ * NewWindowObj --
  *
  *      This function allocates a new Tcl_Obj that refers to a particular to a
  *      particular Tk window.
@@ -423,7 +425,7 @@ SetWindowFromAny(
  */
 
 static Tcl_Obj *
-TkNewWindowObj(Tk_Window tkwin)
+NewWindowObj(Tk_Window tkwin)
 {
     Tcl_Obj *objPtr = Tcl_NewStringObj(Tk_PathName(tkwin), -1);
     TkMainInfo *mainPtr = ((TkWindow *) tkwin)->mainPtr;
@@ -562,7 +564,7 @@ BusyCustodyProc(
 
     Tk_DeleteEventHandler(busyPtr->tkBusy, StructureNotifyMask, BusyEventProc,
 	    busyPtr);
-    TkpHideBusyWindow(busyPtr);
+    ScHideBusyWindow(busyPtr);
     busyPtr->tkBusy = nullptr;
     Tcl_EventuallyFree(busyPtr, DestroyBusy);
 }
@@ -722,20 +724,20 @@ RefWinEventProc(
 	    if (busyPtr->tkBusy != nullptr) {
 		Tk_MoveResizeWindow(busyPtr->tkBusy, x, y, busyPtr->width,
 			busyPtr->height);
-		TkpShowBusyWindow(busyPtr);
+		ScShowBusyWindow(busyPtr);
 	    }
 	}
 	break;
 
     case MapNotify:
 	if (busyPtr->tkParent != busyPtr->tkRef) {
-	    TkpShowBusyWindow(busyPtr);
+	    ScShowBusyWindow(busyPtr);
 	}
 	break;
 
     case UnmapNotify:
 	if (busyPtr->tkParent != busyPtr->tkRef) {
-	    TkpHideBusyWindow(busyPtr);
+	    ScHideBusyWindow(busyPtr);
 	}
 	break;
     }
@@ -859,7 +861,7 @@ MakeTransparentWindowExist(
      * Create a transparent window and put it on top.
      */
 
-    TkpMakeTransparentWindowExist(tkwin, parent);
+    ScMakeTransparentWindowExist(tkwin, parent);
 
     dispPtr = winPtr->dispPtr;
     hPtr = Tcl_CreateHashEntry(&dispPtr->winTable, (char *) winPtr->window,
@@ -1005,7 +1007,7 @@ CreateBusy(
     SetWindowInstanceData(tkBusy, busyPtr);
     winPtr = (Tk_FakeWin *) tkRef;
 
-    TkpCreateBusy(winPtr, tkRef, &parent, tkParent, busyPtr);
+    ScCreateBusy(winPtr, tkRef, &parent, tkParent, busyPtr);
 
     MakeTransparentWindowExist(tkBusy, parent);
 
@@ -1181,9 +1183,9 @@ HoldBusy(
      */
 
     if (Tk_IsMapped(busyPtr->tkRef)) {
-	TkpShowBusyWindow(busyPtr);
+	ScShowBusyWindow(busyPtr);
     } else {
-	TkpHideBusyWindow(busyPtr);
+	ScHideBusyWindow(busyPtr);
     }
     return result;
 }
@@ -1191,7 +1193,7 @@ HoldBusy(
 /*
  *----------------------------------------------------------------------
  *
- * Tk_BusyObjCmd --
+ * ScBusyObjCmd --
  *
  *	This function is invoked to process the "tk busy" Tcl command. See the
  *	user documentation for details on what it does.
@@ -1206,7 +1208,7 @@ HoldBusy(
  */
 
 static int
-Tk_BusyObjCmd(
+ScBusyObjCmd(
     ClientData clientData,	/* Main window associated with interpreter. */
     Tcl_Interp *interp,		/* Current interpreter. */
     int objc,			/* Number of arguments. */
@@ -1308,7 +1310,7 @@ Tk_BusyObjCmd(
 	    if (pattern == nullptr ||
 		    Tcl_StringMatch(Tk_PathName(busyPtr->tkRef), pattern)) {
 		Tcl_ListObjAppendElement(interp, objPtr,
-			TkNewWindowObj(busyPtr->tkRef));
+			NewWindowObj(busyPtr->tkRef));
 	    }
 	}
 	Tcl_SetObjResult(interp, objPtr);
@@ -1324,7 +1326,7 @@ Tk_BusyObjCmd(
 	if (busyPtr == nullptr) {
 	    return TCL_ERROR;
 	}
-	TkpHideBusyWindow(busyPtr);
+	ScHideBusyWindow(busyPtr);
 	Tcl_EventuallyFree(busyPtr, DestroyBusy);
 	return TCL_OK;
 
@@ -1354,7 +1356,7 @@ void
 tk::busy_init(Tcl_Interp* ti)
 {
     Tcl_PkgProvide(ti, "tkbusy", "1.0");
-    ::tcl::createCommand(ti, "::scidb::tk::busy", Tk_BusyObjCmd);
+    ::tcl::createCommand(ti, "::scidb::tk::busy", ScBusyObjCmd);
 }
 
 // vi:set ts=8 sw=4 et:
