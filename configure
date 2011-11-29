@@ -244,7 +244,7 @@ proc FindDir {f path {exp ""}} {
     foreach dir $path {
         set p [file join $dir $f]
         if {![catch {glob $p}]} {
-            if {$best == ""} { set best $p }
+            if {$best == ""} { set best $dir }
             if {$exp != ""} {
                 if {[catch {exec grep -c $exp $p}] == 0} {
                     return $dir
@@ -461,7 +461,9 @@ proc findTclTkPaths {} {
     set exp(x)   ""
 
     foreach module {tcl tk} {
-        if {![info exists configure($module-includes)]} {
+        if {[info exists configure($module-includes)]} {
+            set package($module-inc) [MakeOption -I $configure($module-includes)]
+        } else {
             set file "$module.h"
             puts -nonewline "    Location of $file: "
             set configure($module-includes) [FindDir $file $path($module,includes) $exp($module)]
@@ -490,7 +492,9 @@ proc findTclTkPaths {} {
     }
 
     foreach module {tcl tk} {
-        if {![info exists configure($module-libraries)]} {
+        if {[info exists configure($module-libraries)]} {
+            set package($module-lib) [MakeOption -L $configure($module-libraries)]
+        } else {
             set libPaths $path($module,libraries)
             set configure($module-libraries) [FindDir "lib${module}${tclv}.*" $libPaths]
             if {[string length $configure($module-libraries)] == 0} {
@@ -499,7 +503,7 @@ proc findTclTkPaths {} {
                     set package($module-lib) $configure($module-libraries)
                 }
             } else {
-                 set package($module-lib) [MakeOption -L $configure($module-libraries)]
+                set package($module-lib) [MakeOption -L $configure($module-libraries)]
             }
             puts -nonewline "    Location of [string toupper $module 0 0] $tclv library: "
             if {[info exists package($module-lib)]} {
@@ -512,7 +516,9 @@ proc findTclTkPaths {} {
         }
     }
 
-    if {![info exists configure(x-includes)]} {
+    if {[info exists configure(x-includes)]} {
+        set package(x-inc) [MakeOption -I $configure(x-includes)]
+    } else {
         set file X11/Xlib.h
         puts -nonewline "    Location of $file: "
         set configure(x-includes) [FindDir $file $path(x,includes) $exp($module)]
@@ -526,7 +532,9 @@ proc findTclTkPaths {} {
         }
     }
 
-    if {![info exists configure(x-libraries)]} {
+    if {[info exists configure(x-libraries)]} {
+        set package(x-lib) [MakeOption -L $configure(x-libraries)]
+    } else {
         set configure(x-libraries) [FindDir "libX11*" $path(x,libraries)]
         puts -nonewline "    Location of X11 library: "
         if {[string length $configure(x-libraries)] == 0} {
@@ -538,7 +546,9 @@ proc findTclTkPaths {} {
         }
     }
 
-    if {![info exists configure(xcursor-libraries)]} {
+    if {[info exists configure(xcursor-libraries)]} {
+        set package(xcursor-lib) [MakeOption -L $configure(xcursor-libraries)]
+    } else {
         set configure(xcursor-libraries) [FindDir "libXcursor*" $path(x,libraries)]
         puts -nonewline "    Location of Xcursor library: "
         if {[string length $configure(xcursor-libraries)] == 0} {
