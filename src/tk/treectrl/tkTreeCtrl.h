@@ -264,7 +264,8 @@ struct TreeCtrl
 	Tcl_Obj *buttonThicknessObj;/* -buttonthickness */
 	int buttonThickness;		/* -buttonthickness */
 	int keepUserWidth;			/* -keepuserwidth */
-	int fullStripes;				/* -fullStripes */
+	int fullStripes;			/* -fullStripes */
+	int stateMask;
 	XColor *lineColor;			/* -linecolor */
 	Tcl_Obj *lineThicknessObj;	/* -linethickness */
 	int lineThickness;			/* -linethickness */
@@ -273,6 +274,7 @@ struct TreeCtrl
 	int lineStyle;				/* -linestyle */
 	int vertical;				/* -orient */
 	Tcl_Obj *wrapObj;			/* -wrap */
+	Tcl_Obj *stateObj;			/* -state */
 	PerStateInfo buttonImage;	/* -buttonimage */
 	PerStateInfo buttonBitmap;	/* -buttonbitmap */
 	char *backgroundImageString; /* -backgroundimage */
@@ -457,6 +459,7 @@ struct TreeCtrl
 #define TREE_CONF_DEFSTYLE 0x4000
 #define TREE_CONF_BG_IMAGE 0x8000
 #define TREE_CONF_THEME 0x00010000
+#define TREE_CONF_STATE 0x00020000
 
 MODULE_SCOPE void Tree_AddItem(TreeCtrl *tree, TreeItem item);
 MODULE_SCOPE void Tree_RemoveItem(TreeCtrl *tree, TreeItem item);
@@ -564,6 +567,8 @@ MODULE_SCOPE int TreeItem_GetState(TreeCtrl *tree, TreeItem item_);
 
 #define CS_DISPLAY 0x01
 #define CS_LAYOUT 0x02
+MODULE_SCOPE void TreeItem_Enable(TreeCtrl *tree, TreeItem item_);
+MODULE_SCOPE void TreeItem_Disable(TreeCtrl *tree, TreeItem item_);
 MODULE_SCOPE int TreeItem_ChangeState(TreeCtrl *tree, TreeItem item_, int stateOff, int stateOn);
 
 MODULE_SCOPE void TreeItem_UndefineState(TreeCtrl *tree, TreeItem item_, int state);

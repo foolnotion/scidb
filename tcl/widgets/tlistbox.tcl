@@ -112,10 +112,6 @@ proc Build {w args} {
 		set style [list -style $opts(-style)]
 		unset opts(-style)
 	}
-	if {[info exists opts(-state)]} {
-		set state $opts(-state)
-		unset opts(-state)
-	}
 	if {$opts(-focusmodel) eq "hover"} {
 		set opts(-selectmode) single
 	}
@@ -155,6 +151,7 @@ proc Build {w args} {
 		-font $opts(-font)               \
 		-fullstripes 1                   \
 		-expensivespanwidth 1            \
+		-state $opts(-state)             \
 		;
 
 	if {$opts(-linespace)} { incr opts(-linespace) 4 }
@@ -162,7 +159,7 @@ proc Build {w args} {
 	if {$opts(-usescroll)} {
 		$t configure -yscrollcommand [list $w.vsb set]
 		::ttk::scrollbar $w.vsb -orient vertical -command [list $t yview] -takefocus 0
-		bind $w.vsb <Button-1> [list focus $t]
+		bind $w.vsb <Button-1> [namespace code [list Focus $t]]
 		grid $w.vsb -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-columns) > 1} {
@@ -208,7 +205,6 @@ proc Build {w args} {
 		set Priv(linespace) [font metrics $opts(-font) -linespace]
 	}
 	set Priv(numcolumns) [expr {max(1,$opts(-columns))}]
-	set Priv(state) $state
 
 	set Priv(columns) {}
 	set Priv(types) {}
@@ -240,8 +236,9 @@ proc Build {w args} {
 	if {$opts(-setgrid)} {
 		wm grid [winfo toplevel $w] $opts(-width) [expr {max(1, $opts(-height))}] 1 $Priv(linespace)
 	}
+
 	if {[llength $opts(-takefocus)] && $opts(-takefocus)} {
-		focus $t
+		Focus $t
 	}
 
 	return $w
@@ -397,7 +394,6 @@ proc WidgetProc {w command args} {
 			}
 			set Priv(enabled:$index) $opts(-enabled)
 			set enabled $opts(-enabled)
-			if {$Priv(state) eq "disabled"} { set enabled 0 }
 			$t item enabled $index $enabled
 			if {$opts(-highlight)} {
 				$t item state set $index highlight
@@ -486,7 +482,7 @@ proc WidgetProc {w command args} {
 				}
 
 				set Priv(resized) 1
-				SetState $t
+#				SetState $t
 			}
 		}
 
@@ -739,10 +735,7 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-state)]} {
 				set state $opts(-state)
 				unset opts(-state)
-				if {$state ne $Priv(state)} {
-					set Priv(state) $state
-					SetState $t
-				}
+				$t configure -state $state
 			}
 			set args [array get opts]
 			if {[llength $args]} {
@@ -759,7 +752,7 @@ proc WidgetProc {w command args} {
 				-height		{ return $Priv(height) }
 				-takefocus	{ return [$t cget $arg] }
 				-cursor		{ return [$w.__tlistbox_frame__ cget $arg] }
-				-state		{ return $Priv(state) }
+				-state		{ return [$t cget -state] }
 			}
 			if {[catch {$t cget $arg} result]} {
 				error "unknown option \"$arg\""
@@ -977,6 +970,7 @@ proc MakeItems {w first last} {
 
 
 proc VisitItem {t mode column item {x {}} {y {}}} {
+	if {[$t cget -state] eq "disabled"} { return }
 	set index [expr {$item - 1}]
 	set id [$t column tag names $column]
 	event generate [winfo parent $t] <<ItemVisit>> -data [list $mode $id $index $column]
@@ -986,6 +980,8 @@ proc VisitItem {t mode column item {x {}} {y {}}} {
 proc Activate {t x y select {isDoubleClick 0}} {
 	set w [winfo parent $t]
 	variable [namespace current]::${w}::Priv
+
+	if {[$t cget -state] eq "disabled"} { return }
 
 	set info [$t identify $x $y]
 	if {[lindex $info 0] eq "item" && [$t item enabled [lindex $info 1]]} {
@@ -997,6 +993,8 @@ proc Activate {t x y select {isDoubleClick 0}} {
 
 
 proc SetActive {t index select {isDoubleClick 0}} {
+	if {[$t cget -state] eq "disabled"} { return }
+
 	if {$index eq "end"} {
 		set index [expr {[$t item count] - 1}]
 	}
@@ -1189,15 +1187,8 @@ proc Prior {t} {
 }
 
 
-proc SetState {t} {
-	set w [winfo parent $t]
-	variable [namespace current]::${w}::Priv
-
-	if {$Priv(state) eq "disabled"} { set enabled 0 } else { set enabled 1 }
-
-	foreach item [$t item children root] {
-		if {$Priv(enabled:$item)} { $t item enabled $item $enabled }
-	}
+proc Focus {t} {
+	if {[$t cget -state] ne "disabled"} { focus $t }
 }
 
 

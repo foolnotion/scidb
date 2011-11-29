@@ -200,7 +200,7 @@ TreeItemColumn_NeededWidth(
 
 	if (self->style != NULL)
 		return TreeStyle_NeededWidth(tree, self->style,
-				item->state | self->cstate);
+				(item->state & tree->stateMask) | self->cstate);
 	return 0;
 }
 
@@ -278,7 +278,7 @@ TreeItem_NeededWidthOfColumn(
 	column = spans[spanStart].itemColumn;
 	if (column != NULL && column->style != NULL) {
 		width = TreeStyle_NeededWidth(tree, column->style,
-				item->state | column->cstate);
+				(item->state & tree->stateMask) | column->cstate);
 		if (width > fixedWidth && span > 0) {
 			width -= fixedWidth;
 			while (width > 0) {
@@ -618,9 +618,9 @@ Item_Alloc(
 		panic("Tk_InitOptions() failed in Item_Alloc()");
 	item->state =
 		STATE_OPEN |
-		STATE_ENABLED;
+		(tree->stateMask & STATE_ENABLED);
 	if (tree->gotFocus)
-		item->state |= STATE_FOCUS;
+		item->state |= (tree->stateMask & STATE_FOCUS);
 	item->indexVis = -1;
 	/* In the typical case all spans are 1. */
 	item->flags |= ITEM_FLAG_SPANS_SIMPLE;
@@ -653,7 +653,7 @@ Item_AllocRoot(
 
 	item = Item_Alloc(tree);
 	item->depth = -1;
-	item->state |= STATE_ACTIVE;
+	item->state |= (tree->stateMask & STATE_ACTIVE);
 	return item;
 }
 
@@ -704,7 +704,7 @@ TreeItem_GetState(
 	TreeItem item				/* Item token. */
 	)
 {
-	return item->state;
+	return item->state & tree->stateMask;
 }
 
 /*
@@ -748,10 +748,11 @@ Column_ChangeState(
 	state = item->state | column->cstate;
 	state &= ~stateOff;
 	state |= stateOn;
+	state &= tree->stateMask;
 
 	if (column->style != NULL) {
 		sMask = TreeStyle_ChangeState(tree, column->style,
-				item->state | column->cstate, state);
+				(item->state & tree->stateMask) | column->cstate, state);
 		if (sMask) {
 			if (sMask & CS_LAYOUT)
 				Tree_InvalidateColumnWidth(tree, treeColumn);
@@ -771,6 +772,24 @@ Column_ChangeState(
 	column->cstate = cstate;
 
 	return iMask;
+}
+
+void
+TreeItem_Enable(
+	TreeCtrl *tree,				/* Widget info. */
+	TreeItem item)				/* Item token. */
+{
+	if (item->state & STATE_ENABLED)
+		TreeItem_ChangeState(tree, item, STATE_ENABLED, 0);
+}
+
+void
+TreeItem_Disable(
+	TreeCtrl *tree,				/* Widget info. */
+	TreeItem item)				/* Item token. */
+{
+	if (item->state & STATE_ENABLED)
+		TreeItem_ChangeState(tree, item, 0, STATE_ENABLED);
 }
 
 /*
@@ -808,18 +827,18 @@ TreeItem_ChangeState(
 	state &= ~stateOff;
 	state |= stateOn;
 
-	if (state == item->state)
+	if ((state & tree->stateMask) == item->state)
 		return 0;
-
+	
 	treeColumn = tree->columns;
 	column = item->columns;
 	while (column != NULL) {
 		if (column->style != NULL) {
-			cstate = item->state | column->cstate;
+			cstate = (item->state & tree->stateMask) | column->cstate;
 			cstate &= ~stateOff;
 			cstate |= stateOn;
 			sMask = TreeStyle_ChangeState(tree, column->style,
-					item->state | column->cstate, cstate);
+					(item->state & tree->stateMask) | column->cstate, cstate);
 			if (sMask) {
 				if (sMask & CS_LAYOUT) {
 					if (!Tree_IsSteadyColumn(treeColumn)) {
@@ -856,13 +875,14 @@ TreeItem_ChangeState(
 		 */
 
 		/* image > bitmap > theme > draw */
-		image1 = PerStateImage_ForState(tree, &tree->buttonImage, item->state, NULL);
+		image1 = PerStateImage_ForState(tree, &tree->buttonImage, item->state & tree->stateMask, NULL);
 		if (image1 != NULL) {
 			Tk_SizeOfImage(image1, &w1, &h1);
 			ptr1 = image1;
 		}
 		if (ptr1 == NULL) {
-			bitmap1 = PerStateBitmap_ForState(tree, &tree->buttonBitmap, item->state, NULL);
+			bitmap1 = PerStateBitmap_ForState(tree, &tree->buttonBitmap,
+					item->state & tree->stateMask, NULL);
 			if (bitmap1 != None) {
 				Tk_SizeOfBitmap(tree->display, bitmap1, &w1, &h1);
 				ptr1 = (void *) bitmap1;
@@ -881,13 +901,13 @@ TreeItem_ChangeState(
 		}
 
 		/* image > bitmap > theme > draw */
-		image2 = PerStateImage_ForState(tree, &tree->buttonImage, state, NULL);
+		image2 = PerStateImage_ForState(tree, &tree->buttonImage, state & tree->stateMask, NULL);
 		if (image2 != NULL) {
 			Tk_SizeOfImage(image2, &w2, &h2);
 			ptr2 = image2;
 		}
 		if (ptr2 == NULL) {
-			bitmap2 = PerStateBitmap_ForState(tree, &tree->buttonBitmap, state, NULL);
+			bitmap2 = PerStateBitmap_ForState(tree, &tree->buttonBitmap, state & tree->stateMask, NULL);
 			if (bitmap2 != None) {
 				Tk_SizeOfBitmap(tree->display, bitmap2, &w2, &h2);
 				ptr2 = (void *) bitmap2;
@@ -1104,7 +1124,7 @@ TreeItem_GetEnabled(
 	TreeItem item				/* Item token. */
 	)
 {
-	return (item->state & STATE_ENABLED) != 0;
+	return (item->state & tree->stateMask & STATE_ENABLED) != 0;
 }
 
 /*
@@ -1129,7 +1149,7 @@ TreeItem_GetSelected(
 	TreeItem item				/* Item token. */
 	)
 {
-	return (item->state & STATE_SELECTED) != 0;
+	return (item->state & tree->stateMask & STATE_SELECTED) != 0;
 }
 
 /*
@@ -1727,9 +1747,9 @@ Qualifies(
 		return 0;
 	else if ((q->visible == 0) && TreeItem_ReallyVisible(tree, (TreeItem) item))
 		return 0;
-	if (q->states[STATE_OP_OFF] & item->state)
+	if (q->states[STATE_OP_OFF] & item->state & tree->stateMask)
 		return 0;
-	if ((q->states[STATE_OP_ON] & item->state) != q->states[STATE_OP_ON])
+	if ((q->states[STATE_OP_ON] & item->state & tree->stateMask) != q->states[STATE_OP_ON])
 		return 0;
 	if (q->exprOK && !TagExpr_Eval(&q->expr, item->tagInfo))
 		return 0;
@@ -3361,7 +3381,7 @@ Item_HeightOfStyles(
 
 	while (column != NULL) {
 		if (TreeColumn_Visible(treeColumn) && (column->style != NULL)) {
-			drawArgs.state = item->state | column->cstate;
+			drawArgs.state = (item->state & tree->stateMask) | column->cstate;
 			drawArgs.style = column->style;
 			drawArgs.indent = (treeColumn == tree->columnTree) ?
 				TreeItem_Indent(tree, item) : 0;
@@ -3419,7 +3439,7 @@ int TreeItem_Height(
 
 	/* Can't have less height than our button */
 	if (TreeItem_HasButton(tree, item)) {
-		buttonHeight = Tree_ButtonHeight(tree, item->state);
+		buttonHeight = Tree_ButtonHeight(tree, item->state & tree->stateMask);
 	}
 
 	/* User specified a fixed height for this item */
@@ -4085,10 +4105,10 @@ TreeItem_WalkSpans(
 			continue;
 
 		if (itemColumn != NULL) {
-			drawArgs.state = item->state | itemColumn->cstate;
+			drawArgs.state = (item->state & tree->stateMask) | itemColumn->cstate;
 			drawArgs.style = itemColumn->style; /* may be NULL */
 		} else {
-			drawArgs.state = item->state;
+			drawArgs.state = item->state & tree->stateMask;
 			drawArgs.style = NULL;
 		}
 		if (treeColumn == tree->columnTree)
@@ -4420,7 +4440,7 @@ TreeItem_DrawButton(
 	/* Left edge of button/line area */
 	left = x /* + tree->columnTreeLeft */ + indent - tree->useIndent;
 
-	image = PerStateImage_ForState(tree, &tree->buttonImage, item->state, NULL);
+	image = PerStateImage_ForState(tree, &tree->buttonImage, item->state & tree->stateMask, NULL);
 	if (image != NULL) {
 		int imgW, imgH;
 		Tk_SizeOfImage(image, &imgW, &imgH);
@@ -4430,7 +4450,7 @@ TreeItem_DrawButton(
 		return;
 	}
 
-	bitmap = PerStateBitmap_ForState(tree, &tree->buttonBitmap, item->state, NULL);
+	bitmap = PerStateBitmap_ForState(tree, &tree->buttonBitmap, item->state & tree->stateMask, NULL);
 	if (bitmap != None) {
 		int bmpW, bmpH;
 		int bx, by;
@@ -5243,7 +5263,7 @@ ItemElementCmd(
 				result = TCL_ERROR;
 				break;
 			}
-			state = item->state | column->cstate;
+			state = (item->state & tree->stateMask) | column->cstate;
 			if (objc == 9) {
 				int states[3];
 
@@ -6863,14 +6883,14 @@ doneFORC:
 							SFO_NOT_OFF | SFO_NOT_TOGGLE) != TCL_OK)
 					return TCL_ERROR;
 				Tcl_SetObjResult(interp,
-						Tcl_NewBooleanObj((item->state & states[STATE_OP_ON]) != 0));
+						Tcl_NewBooleanObj((item->state & tree->stateMask & states[STATE_OP_ON]) != 0));
 				break;
 			}
 			listObj = Tcl_NewListObj(0, NULL);
 			for (i = 0; i < 32; i++) {
 				if (tree->stateNames[i] == NULL)
 					continue;
-				if (item->state & (1L << i)) {
+				if (item->state & tree->stateMask & (1L << i)) {
 					Tcl_ListObjAppendElement(interp, listObj,
 							Tcl_NewStringObj(tree->stateNames[i], -1));
 				}
@@ -6911,8 +6931,8 @@ doneFORC:
 			ITEM_FOR_EACH(item, &itemList, &item2List, &iter) {
 				stateOn = states[STATE_OP_ON];
 				stateOff = states[STATE_OP_OFF];
-				stateOn |= ~item->state & states[STATE_OP_TOGGLE];
-				stateOff |= item->state & states[STATE_OP_TOGGLE];
+				stateOn |= ~(item->state & tree->stateMask) & states[STATE_OP_TOGGLE];
+				stateOff |= (item->state & tree->stateMask) & states[STATE_OP_TOGGLE];
 				TreeItem_ChangeState(tree, item, stateOff, stateOn);
 			}
 			if (iter.error)
@@ -7808,7 +7828,7 @@ TreeItemCmd(
 					goto errorExit;
 				}
 				Tcl_SetObjResult(interp,
-						Tcl_NewBooleanObj(item->state & STATE_ENABLED));
+						Tcl_NewBooleanObj(item->state & tree->stateMask & STATE_ENABLED));
 				break;
 			}
 			if (Tcl_GetBooleanFromObj(interp, objv[4], &enabled) != TCL_OK)

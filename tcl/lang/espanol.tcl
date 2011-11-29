@@ -1267,10 +1267,6 @@
 ::comment::mc::SwitchLanguage			"Cambiar idioma"
 ::comment::mc::FormatText				"Dar formato al texto"
 
-::comment::mc::Bold						"Negrita"
-::comment::mc::Italic					"It‡lica"
-::comment::mc::Underline				"Subrayado"
-
 ::comment::mc::InsertSymbol			"&Insertar s’mbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simbolos miscel‡neos"
 ::comment::mc::Figurine					"Figurines"
@@ -1419,7 +1415,12 @@
 ::dialog::choosefont::mc::Strikeout			"Tach&ado"
 ::dialog::choosefont::mc::Style				"Es&tilo"
 ::dialog::choosefont::mc::Underline			"S&ubrayado"
-::dialog::choosefont::mc::Color				"Color"
+::dialog::choosefont::mc::Color				"Co&lor"
+
+::dialog::choosefont::mc::Regular			"Regular" ;# NEW
+::dialog::choosefont::mc::Bold				"Negrita"
+::dialog::choosefont::mc::Italic				"It‡lica"
+{::dialog::choosefont::mc::Bold Italic}	"Bold Italic" ;# NEW
 
 ::dialog::choosefont::mc::Effects			"Efectos"
 ::dialog::choosefont::mc::Filter				"Filtro"

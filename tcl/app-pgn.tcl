@@ -274,13 +274,13 @@ proc build {parent menu width height} {
 	]
 	set Vars(button:new) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarDocument \
-		-tooltip [::menu::stripAmpersand $::menu::mc::GameNew] \
+		-tooltip [::mc::stripAmpersand $::menu::mc::GameNew] \
 		-compound left \
 		-command [list ::menu::gameNew $top] \
 	]
 	set Vars(button:shuffle) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarDice \
-		-tooltip "[::menu::stripAmpersand $::menu::mc::GameNew:] $::setup::board::mc::Shuffle" \
+		-tooltip "[::mc::stripAmpersand $::menu::mc::GameNew:] $::setup::board::mc::Shuffle" \
 		-compound left \
 		-command [namespace code NewGame] \
 	]
@@ -2629,9 +2629,9 @@ proc LanguageChanged {} {
 		}
 	}
 
-	::toolbar::childconfigure $Vars(button:new) -tooltip [::menu::stripAmpersand $::menu::mc::GameNew]
+	::toolbar::childconfigure $Vars(button:new) -tooltip [::mc::stripAmpersand $::menu::mc::GameNew]
 	::toolbar::childconfigure $Vars(button:shuffle) \
-		-tooltip "[::menu::stripAmpersand $::menu::mc::GameNew:] $::setup::board::mc::Shuffle"
+		-tooltip "[::mc::stripAmpersand $::menu::mc::GameNew:] $::setup::board::mc::Shuffle"
 }
 
 

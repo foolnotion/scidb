@@ -272,6 +272,20 @@ proc var {var str} {
 }
 
 
+proc stripped {var} {
+	if {![info exists ${var}_()]} {
+		set ${var}_() [stripAmpersand [set $var]]
+		trace add variable $var write [namespace current]::SetStripped
+	}
+	return ${var}_()
+}
+
+
+proc stripAmpersand {str} {
+	return [string map {& {}} $str]
+}
+
+
 proc translate {str} {
 	return [set $str]
 }
@@ -535,6 +549,11 @@ proc TranslateWord {str} {
 
 proc SetVar {str var {unused {}} {unused {}}} {
 	set ${var}_($str) "[set $var]$str"
+}
+
+
+proc SetStripped {var {unused {}} {unused {}}} {
+	set ${var}_() [stripAmpersand [set $var]]
 }
 
 

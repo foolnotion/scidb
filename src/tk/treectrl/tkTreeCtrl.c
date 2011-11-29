@@ -259,6 +259,10 @@ static Tk_OptionSpec optionSpecs[] = {
 	{TK_OPTION_BOOLEAN, "-showrootchildbuttons", "showRootChildButtons",
 	 "ShowRootChildButtons", "1", -1, Tk_Offset(TreeCtrl, showRootChildButtons),
 	 0, (ClientData) NULL, TREE_CONF_RELAYOUT},
+	{TK_OPTION_STRING, "-state", "state", "State",
+	 (char *) NULL, Tk_Offset(TreeCtrl, stateObj), -1,
+	 TK_OPTION_NULL_OK, (ClientData) NULL,
+	 TREE_CONF_STATE | TREE_CONF_REDISPLAY},
 	{TK_OPTION_STRING, "-takefocus", "takeFocus", "TakeFocus",
 	 DEF_LISTBOX_TAKE_FOCUS, -1, Tk_Offset(TreeCtrl, takeFocus),
 	 TK_OPTION_NULL_OK, 0, 0},
@@ -420,6 +424,7 @@ TreeObjCmd(
 	tree->prevVisWidth		= 0;
 	tree->prevColumnCount	= 0;
 	tree->alwaysSqueeze		= 0;
+	tree->stateMask			= ~0;
 
 	tree->stateNames[0]	= "open";
 	tree->stateNames[1]	= "selected";
@@ -1265,6 +1270,8 @@ TreeConfigure(
 #endif
 				if (tree->wrapObj != NULL)
 					mask |= TREE_CONF_WRAP;
+				if (tree->stateObj != NULL)
+					mask |= TREE_CONF_STATE;
 				if (!ObjectIsEmpty(tree->itemWidthObj))
 					mask |= TREE_CONF_ITEMSIZE;
 				if (!ObjectIsEmpty(tree->itemWidMultObj))
@@ -1389,6 +1396,44 @@ badWrap:
 							goto badWrap;
 					}
 				}
+			}
+
+			if (mask & TREE_CONF_STATE) {
+				ItemForEach iter;
+				TreeItemList items;
+				TreeItem item;
+				int j, count, enabled;
+
+				if (tree->stateObj == NULL) {
+					enabled = 1;
+					tree->stateMask = ~0;
+				} else if (strcmp(Tcl_GetString(tree->stateObj), "disabled") == 0) {
+					enabled = 0;
+					tree->stateMask = ~STATE_ENABLED;
+				} else {
+					enabled = 1;
+					tree->stateMask = ~0;
+				}
+
+				TreeItemList_Init(tree, &items, 0);
+
+				ITEM_FOR_EACH(item, &items, NULL, &iter) {
+					TreeItemList_Append(&items, item);
+					if (!iter.all)
+						TreeItem_ListDescendants(tree, item, &items);
+				}
+
+				count = TreeItemList_Count(&items);
+
+				if (enabled) {
+					for (j = 0; j < count; j++)
+						TreeItem_Enable(tree, TreeItemList_Nth(&items, j));
+				} else {
+					for (j = 0; j < count; j++)
+						TreeItem_Disable(tree, TreeItemList_Nth(&items, j));
+				}
+
+				TreeItemList_Free(&items);
 			}
 
 			/*

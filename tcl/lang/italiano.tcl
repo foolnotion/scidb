@@ -1296,10 +1296,6 @@
 ::comment::mc::FormatText				"Formatta testo"
 ::comment::mc::CopyText					"Copia testo in" ;#Copy text to
 
-::comment::mc::Bold						"Grassetto"
-::comment::mc::Italic					"Corsivo"
-::comment::mc::Underline				"Sottolinea"
-
 ::comment::mc::InsertSymbol			"&Inserisci Simbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simboli vari"
 ::comment::mc::Figurine					"Figurine"
@@ -1448,7 +1444,12 @@
 ::dialog::choosefont::mc::Strikeout			"Can&cellato"
 ::dialog::choosefont::mc::Style				"&Stile"
 ::dialog::choosefont::mc::Underline			"S&ottolinea"
-::dialog::choosefont::mc::Color				"Colore"
+::dialog::choosefont::mc::Color				"Co&lore"
+
+::dialog::choosefont::mc::Regular			"Regular" ;# NEW
+::dialog::choosefont::mc::Bold				"Grassetto"
+::dialog::choosefont::mc::Italic				"Corsivo"
+{::dialog::choosefont::mc::Bold Italic}	"Bold Italic" ;# NEW
 
 ::dialog::choosefont::mc::Effects			"Effetti"
 ::dialog::choosefont::mc::Filter				"Filtro"

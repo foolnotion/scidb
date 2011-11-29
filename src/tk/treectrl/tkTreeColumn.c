@@ -4300,7 +4300,7 @@ doneDELETE:
 				COLUMN_FOR_EACH(column, &columns, NULL, &citer) {
 					count++;
 				}
-			}
+		}
 			Tcl_SetObjResult(interp, Tcl_NewIntObj(count));
 			break;
 		}

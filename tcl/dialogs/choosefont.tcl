@@ -44,7 +44,12 @@ set Size					"&Size"
 set Strikeout			"Stri&keout"
 set Style				"S&tyle"
 set Underline			"&Underline"
-set Color				"Color"
+set Color				"Co&lor"
+
+set Regular				"Regular"
+set Bold					"Bold"
+set Italic				"Italic"
+set {Bold Italic}		"Bold Italic"
 
 set Effects				"Effects"
 set Filter				"Filter"
@@ -292,6 +297,7 @@ proc select {w args} {
 	}
 
 	set S(style) [Style $weight $slant]
+	set S(style:tr) [set mc::$S(style)]
 	foreach var {font size style} { set S(prev,$var) $S($var) }
 
 	SetColor $w $S(color)
@@ -554,11 +560,17 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 	set S(fontobj) $font
 	set S(color) $color
 	set S(map) 0
+	set S(locked) 0
 
 	SearchFonts
 	foreach var {fonts styles sizes} {
 		set S($var) $Vars($var)
 		set S($var,lcase) $Vars($var,lcase)
+	}
+
+	set S(styles) {}
+	foreach style $Vars(styles) {
+		lappend S(styles) [set mc::$style]
 	}
 
 	if {$isDialog} {
@@ -590,12 +602,12 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		-highlightthickness 0 \
 		-setgrid 1
 	tk::entry $w.estyle \
-		-textvariable [namespace current]::${w}::S(style) \
+		-textvariable [namespace current]::${w}::S(style:tr) \
 		-background white \
 		-takefocus 0 \
 		-width 0
 	tk::listbox $w.lstyles \
-		-listvariable [namespace current]::Vars(styles) \
+		-listvariable [namespace current]::${w}::S(styles) \
 		-height $height \
 		-width 0 \
 		-background white \
@@ -643,8 +655,10 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		package require colormenu
 
 		set WC $w.color
-		ttk::labelframe $WC -text [Tr Color]
-		ttk::button $WC.select -text [Tr Color] -command [namespace code [list SelectColor $w]]
+		tk::AmpWidget ttk::labelframe $WC -text [Tr Color]
+		tk::AmpWidget ttk::button $WC.select \
+			-text [Tr Color] \
+			-command [namespace code [list SelectColor $w]]
 		ttk::label $WC.name \
 			-text [::dialog::choosecolor::getActualColor $color] \
 			-relief ridge \
@@ -756,9 +770,9 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 
 	foreach item {font size style} { set S(prev,$item) {} }
 
-	trace variable [namespace current]::${w}::S(font)  w [namespace code [list Tracer $w]]
-	trace variable [namespace current]::${w}::S(size)  w [namespace code [list Tracer $w]]
-	trace variable [namespace current]::${w}::S(style) w [namespace code [list Tracer $w]]
+	trace variable [namespace current]::${w}::S(font)  	w [namespace code [list Tracer $w]]
+	trace variable [namespace current]::${w}::S(size)  	w [namespace code [list Tracer $w]]
+	trace variable [namespace current]::${w}::S(style:tr) w [namespace code [list Tracer $w]]
 }
 
 
@@ -949,6 +963,7 @@ proc Init {w} {
 	set S(style) [Style $F(-weight) $F(-slant)]
 	set S(strike) $F(-overstrike)
 	set S(under) $F(-underline)
+	set S(style:tr) [set mc::$S(style)]
 
 	if {![info exists S(color)]} {
 		set S(color) black
@@ -966,7 +981,15 @@ proc Init {w} {
 proc Click {w who} {
 	variable ${w}::S
 
-	set S($who) [$w.l${who}s get [$w.l${who}s curselection]]
+	set value [$w.l${who}s get [$w.l${who}s curselection]]
+
+	if {$who eq "style"} {
+		set S($who:tr) $value
+		MapStyle $w
+	} else {
+		set S($who) $value
+	}
+
 	Show $w
 }
 
@@ -974,8 +997,11 @@ proc Click {w who} {
 proc Select {w} {
 	variable ${w}::S
 
+	if {$S(locked)} { return }
+
 	set changed {}
 	set nstate normal
+	set S(locked) 1 ;# avoid recursive calls
 
 	# Make selection in each listbox
 	foreach var {font style size} {
@@ -1004,7 +1030,16 @@ proc Select {w} {
 		catch { $w.buttons.apply configure -state $nstate }
 	}
 
+	set S(locked) 0
 	return $changed
+}
+
+
+proc MapStyle {w} {
+	variable Vars
+	variable ${w}::S
+
+	set S(style) [lindex $Vars(styles) [lsearch $S(styles) $S(style:tr)]]
 }
 
 
@@ -1012,6 +1047,8 @@ proc Tracer {w {var1 ""} {var2 ""} {op ""}} {
 	variable ${w}::S
 
 	if {![info exists S(strike)]} { return }
+
+	MapStyle $w
 
 	foreach var [Select $w] {
 		if {$S(prev,$var) ne $S($var)} {

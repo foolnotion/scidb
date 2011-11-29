@@ -1300,10 +1300,6 @@
 ::comment::mc::FormatText				"Format text"
 ::comment::mc::CopyText					"Copy text to" ;# NEW
 
-::comment::mc::Bold						"Bold"
-::comment::mc::Italic					"Italic"
-::comment::mc::Underline				"Underline"
-
 ::comment::mc::InsertSymbol			"&Insert Symbol..."
 ::comment::mc::MiscellaneousSymbols	"Miscellaneous Symbols"
 ::comment::mc::Figurine					"Figurine"
@@ -1452,7 +1448,12 @@
 ::dialog::choosefont::mc::Strikeout			"Stri&keout"
 ::dialog::choosefont::mc::Style				"S&tyle"
 ::dialog::choosefont::mc::Underline			"&Underline"
-::dialog::choosefont::mc::Color				"Color"
+::dialog::choosefont::mc::Color				"Co&lor"
+
+::dialog::choosefont::mc::Regular			"Regular"
+::dialog::choosefont::mc::Bold				"Bold"
+::dialog::choosefont::mc::Italic				"Italic"
+{::dialog::choosefont::mc::Bold Italic}	"Bold Italic"
 
 ::dialog::choosefont::mc::Effects			"Effects"
 ::dialog::choosefont::mc::Filter				"Filter"

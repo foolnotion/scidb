@@ -719,7 +719,7 @@ proc Update {{setup 0}} {
 			if {$playerCount > $Defaults(crosstableLimit)} {
 				set detail ""
 				if {[string length $Vars(prevMode)] == 0} {
-					set cancel [::menu::stripAmpersand $::dialog::mc::Cancel]
+					set cancel [::mc::stripAmpersand $::dialog::mc::Cancel]
 					set detail [format $mc::CrosstableLimitDetail $cancel]
 				}
 				set rc [::dialog::warning \

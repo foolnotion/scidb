@@ -427,7 +427,7 @@ proc queryCloseApplication {parent} {
 	set reply [::dialog::question \
 		-parent $parent \
 		-message $msg \
-		-detail [format $mc::DiscardChanges [::menu::stripAmpersand $::dialog::mc::No]] \
+		-detail [format $mc::DiscardChanges [::mc::stripAmpersand $::dialog::mc::No]] \
 		-buttons {cancel yes no} \
 		-embed [namespace code [list EmbedCloseMessage $games]] \
 	]

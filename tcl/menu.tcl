@@ -457,11 +457,6 @@ proc featureRequest {parent} {
 }
 
 
-proc stripAmpersand {text} {
-	return [string map {& {}} $text]
-}
-
-
 proc viewFullscreen {{toggle {}}} {
 	variable Fullscreen
 

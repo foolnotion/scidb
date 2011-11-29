@@ -20,6 +20,12 @@ bug fixes, new options:
 	   If set, use expensive calculation considering column
 		spans. If not set, column spans will be discarded
 		during the calculation. Defaults to "no".
+
+	treeCtrl <pathName> -state normal|disabled
+		Set one of the states for the treectrl. If set to
+		state normal the item/columns state will not be
+		superseeded, but if set to disabled the item/column
+		state will be superseeded. Defaults to "normal".
 		
 	<pathName> column create <columnDesc> -steady <boolean>
 		If set, keeps the width of a column after an element

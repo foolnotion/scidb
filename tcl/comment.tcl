@@ -38,10 +38,6 @@ set SwitchLanguage			"Switch language"
 set FormatText					"Format text"
 set CopyText					"Copy text to"
 
-set Bold							"Bold"
-set Italic						"Italic"
-set Underline					"Underline"
-
 set InsertSymbol				"&Insert Symbol..."
 set MiscellaneousSymbols	"Miscellaneous Symbols"
 set Figurine					"Figurine"
@@ -242,7 +238,7 @@ proc open {parent pos lang} {
 		set Vars(format:$fmt) 0
 		::toolbar::add $tb checkbutton \
 			-image [set icon::toolbar$format] \
-			-tooltipvar [namespace current]::mc::$format \
+			-tooltipvar [::mc::stripped ::dialog::choosefont::mc::$format] \
 			-variable [namespace current]::Vars(format:$fmt) \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
@@ -1165,7 +1161,7 @@ proc PopupMenu {parent} {
 	$m add cascade \
 		-compound left \
 		-image $icon::16x16::blackPawn \
-		-label [string map {"..." ""} [::menu::stripAmpersand $mc::InsertSymbol]] \
+		-label [string map {"..." ""} [::mc::stripAmpersand $mc::InsertSymbol]] \
 		-menu $m.symbol \
 		;
 	MakeSymbolMenu $parent $m.symbol
@@ -1183,7 +1179,7 @@ proc PopupMenu {parent} {
 		$m.format add command \
 			-compound left \
 			-image [set ::icon::12x12::text-$fmt] \
-			-label [set mc::$format] \
+			-label [::mc::stripAmpersand [set ::dialog::choosefont::mc::$format]] \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
 	}
@@ -1272,13 +1268,13 @@ proc PopupMenu {parent} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::clear \
-		-label " [::menu::stripAmpersand $::widget::mc::Clear]" \
+		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
 		-command [namespace code Clear] \
 		;
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::reset \
-		-label " [::menu::stripAmpersand $::widget::mc::Revert]" \
+		-label " [::mc::stripAmpersand $::widget::mc::Revert]" \
 		-command [namespace code [list Revert [winfo toplevel $parent]]] \
 		;
 	

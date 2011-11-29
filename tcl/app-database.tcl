@@ -1134,7 +1134,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			}
 			set entry {}
 			lappend entry $type
-			lappend entry -label " [::menu::stripAmpersand $text]"
+			lappend entry -label " [::mc::stripAmpersand $text]"
 			lappend entry -image [set ::icon::16x16::$icon]
 			lappend entry -compound left
 			lappend entry -command [list {*}$cmd]
@@ -1155,7 +1155,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		set m [menu $menu.mOpenRecent -tearoff false]
 		$menu add cascade \
 			-menu $m \
-			-label " [::menu::stripAmpersand $::menu::mc::FileOpenRecent]" \
+			-label " [::mc::stripAmpersand $::menu::mc::FileOpenRecent]" \
 			-image $::icon::16x16::docOpen \
 			-compound left \
 			;
