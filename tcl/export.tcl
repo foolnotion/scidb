@@ -443,7 +443,7 @@ set Values(tex,orientation)	Potrait
 set Values(tex,justification)	0
 set Values(tex,columns)			1
 
-if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
+#if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
 
 array set Fields {
 	pgn	{	include_varations include_comments include_moveinfo include_marks indent_variations
@@ -512,7 +512,7 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	]
 	set bwd 2
 
-	set list [::tlistbox $top.list -height [llength $Types] -usescroll no -padx 10 -pady 8]
+	set list [::tlistbox $top.list -height [llength $Types] -usescroll no -padx 10 -pady 7 -ipady 4]
 	pack $list -expand yes -fill both
 	$list addcol combined -id item
 	foreach type $Types {
@@ -908,10 +908,8 @@ proc CheckSizes {sizes usedSizes} {
 
 proc UseDiagram {index sizes} {
 	variable Info
-	variable Values
 
-	set Values(pdf,diagram) [lindex $Info(diagram:list) $index 0]
-	CheckSizes $sizes [lindex $Values(pdf,diagram) 2]
+	CheckSizes $sizes [lindex $Info(diagram:list) $index 1]
 }
 
 

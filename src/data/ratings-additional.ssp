@@ -15,71 +15,45 @@
 @PLAYER "., -_*'"
 
 ### Additional attributes /Corrections of attributes ###############
-# country corrected, alias added (http://en.wikipedia.org/wiki/Teodors_Bergs)
+# alias added (http://en.wikipedia.org/wiki/Teodors_Bergs)
 Bergs, Teodors          #- GER [2510*] 1902.07.27--1966.10.03
    = Berg, Theodore
    %Federation LAT
-# birth date corrected, correction of Elo (http://de.wikipedia.org/wiki/Arthur_Bisguier)
-Bisguier, Arthur B      #gm USA [2634] 1929.10.08
-# country addded, events added, correction of best Elo (http://de.wikipedia.org/wiki/Berthold_Englisch)
-Englisch, Berthold      #- AUT [2690]
+# correction of Elo (http://de.wikipedia.org/wiki/Arthur_Bisguier)
+Bisguier, Arthur B      #gm USA [2634] 1929
+# events added, correction of best Elo (http://de.wikipedia.org/wiki/Berthold_Englisch)
+Englisch, Berthold      #- AUT [2690*]
    %Bio Leipzig 1879
    %Bio Wiesbaden 1880
-# country added, event added, correction of Elo (http://de.wikipedia.org/wiki/Hans_Fahrni)
-Fahrni, Hans            #- SUI [2557] 1874.10.01--1939.05.28
+# event added
+Fahrni, Hans            #- SUI [2557*] 1874.10.01--1939.05.28
    %Bio San Remo 1911
-# country added, birth date and death date added
-Flechsig, Ernst         #- GER [....] 1852.10.05--1890.10.11
-# country added, birth date and death date added
-Fox, Albert             #- USA [....] 1881.04.29--1964.04.29
-# country added, birth date and death date added
-Franke, August          #- GER [....] 1663.03.22--1727.06.18
-# ancient chess player
-Perrin, Frederic        #- USA [....] 1815.12.05–-1889.01.27
-   = Perrin, Frederick
+# alias added
+Perrin, Frederick        #- ENG/USA [....] 1815.12.05--1889.01.27
+   = Perrin, Frederic
 # birth and death date corrected
 Gothilf, Solomon Borisovich #-    URS [....] 1903.01.??-1967.12.??
-# country added, birth date added
-Hasenfuss, Wolfgang     #- LAT [....] 1900
 # correction of VIAF ID
 Kasparov, Garry
    %Bio VIAF 99874643
-# birth date corrected
-Konstantinopolsky, Alex #gm+cgm+hgm URS [2520] 1910.02.19
-# birth date corrected, country added
-Lichtenhein, Theodore   #- USA [....] 1829.01.??--1874.05.19
-# birth date corrected
-Mäder, Karl-Heinz       #fm+cgm BRD/GER [2400] 1948.10.17
-# country added, events added
+# alias added
+Konstantinopolsky, Alexander #gm+hgm+cim URS [2520*] 1910.02.19--1990.09.21
+   = Konstantinopolsky, Alex
+# events added
 Metger, Johannes        #- GER [2410] 1851.12.15--1926.01.24
    %Bio Rostock 1884
    %Bio Wismar 1886
-# birth date corrected
-Minasian, Artashes      #gm URS/ARM [2620] 1967.01.21
-# country added, ELO corrected: http://de.wikipedia.org/wiki/Josef_Noa
-Noa, Josef              #- AUT/HUN [2583] 1856.10.21--1903.06.01
-# birth date corrected, Bio entry added
-Ornaghi, Giovanni       #m ITA [1680] 1987.09.30
+# Bio entry added
+Ornaghi, Giovanni       #m ITA [1680] 1987
    %Bio http://blogchess.blogosfere.it
-# birth date corrected
-Pares Vives, Natalia    #- ??? [....] 1955.08.31
-# country added, ELO corrected: http://de.wikipedia.org/wiki/Julius_Perlis_(Schachspieler)
+# ELO corrected: http://de.wikipedia.org/wiki/Julius_Perlis_(Schachspieler)
 Perlis, Julius          #- AUT [2648] 1880.01.19--1913.09.11
-# country added, ELO corrected: http://de.wikipedia.org/wiki/Vladimirs_Petrovs
-Petrovs, Vladimirs      #- LAT [2647] 1907.09.27--1945.03.15
-# country and death data added
-Pitschel, Karl          #- AUT [....] 1829.??.??--1883.01.29
 # typo in alias corrected (delete "Pollock, William Henry Krause"
 Pollock, William
    = Pollock, William Henry Kraus
-# country added
-Romi, Massimiliano      #- ITA
-# country added
-Schwarz, Adolf          #- AUT
-# country, birth date, and death date added
-Trenchard, Herbert      #- ENG [....] 1857.09.08--1934-04-15
-# death date corrected
-Wolf, Heinrich          #- AUT [2500*] 1875.10.20--1943.12.??
+# ELO added, Bio added
+Stern, Adolf            #- GER [2483*] 1849.12.25--1907.08.24
+   %Bio Baden-Baden 1870
 
 ### Wrong entries (should be replaced) #############################
 ### typo errors corrected
@@ -92,7 +66,7 @@ Olano Aizpurua, José Maria #-   ESP [....] ????
 Vieito Soria, Luis Maria   #-   ESP [2038] 1965
    %Bio FIDEID 22202749
    = Vieito Soria, Luis M
-Yates, Frederic D
+Yates, Frederic D          #-   ENG [2470*] 1884.01.16--1932.11.11
    + Yates, Frederick D
 ### wrong country order ############################################
 Belić, Jordanka         #wgm SRB/GER [2389] 1964
@@ -109,6 +83,7 @@ Mikènas, Alius           #cim LTU/URS [2240] 1955
 ### renamed ########################################################
 Gaponenko, Inna
    + Yanovska, Inna
+   %Bio FIDEID 13702050
 
 ### UTF-8 name added ###############################################
 Aaskov. Jorgen
@@ -480,33 +455,20 @@ Zaitsev, Igor A
    = Saizew, IN
 
 ### Additional entries #############################################
-Cutri, Giovanni Leonardo da #- ITA [....] 1552.??.??--1597
+Cutri, Giovanni Leonardo da #- ITA [....] 1552.??.??--1597.??.??
    = Cutri, Giovanni Leonardo
    = Cutri, Giovanni L
-Diemer, Emil Josef      #- GER [2360] 1908.??.??--1990.??.??
-   = Diemer, Emil J
 Dyckhoff, Eduard        #- GER [....] 1880.11.14--1949.03.02
 Fiske, Willard          #- USA [....] 1831.11.11--1904.09.17
    = Fiske, Daniel Willard
    = Fiske, Daniel W
-Fleissig, Miksa         #- AUT/HUN [....] 1845.11.10
-   = Fleissig, Max
-   = Fleissig, Maximilian
 Fuller, William James   #- AUS [....] 1822.04.08--1929.03.12
    = Fuller, William James Appleton
 Göring, Carl Theodor   #- GER [2534] 1841.04.28--1879.04.02
    = Goering, Carl Theodor
    = Göring, Carl T
    = Goering, Carl T
-Geiger, Hans Dr         #- AUT [....] 1899.01.01-????.??.??
-   = Geiger, Dr Hans
 Lolli, Giambattista     #- ITA [....] 1698.??.??--1769.06.04
-Marquez Sterling, Manuel
-   = Marquez Sterling, M   #- CUB [....] 1872.08.28--1934-12.09
-Mattison, Hermanis      #- LAT [2631] 1894.12.28--1932.12.16
-   = Mattison, Herrmann
-Meek, Alexander Beaufort   #- USA [....] 1814.07.17--1865.11.30
-   = Meek, Alexander B
 Montgomery, Hardman Philips #- USA [....] 1834.09.25--1870.01.22
 Ponziani, Domenico Lorenzo #- ITA [....] 1719.11.09--1796.07.15
    = Ponziani, Domenico L
@@ -515,12 +477,7 @@ Popławski, Artur        #- POL [....] 1860.??.??--1980.08.10
    = Popławski, Artur Władysław Kamil
    = Popławski, AWK
    = Popławski, A
-Rinder, Friedl          #- GER [....] 1905.11.20--2001.06.03
-Salvio, Alessandro      #- ITA [....] 1570-1640
-Schudel, Hans Jakob     #- SUI [....] 1915.08.28--2004.02.02
-Stern, Adolf            #- GER [2483*] 1849.12.25--1907.08.24
-   %Bio Baden-Baden 1870
-Traxler, Karel          #- CZE [....] 1866.??.??--1936.??.??
+Salvio, Alessandro      #- ITA [....] 1570.??.??-1640.??.??
 
 ### Additional entries (Scidb developers/testers) ##################
 Atkinson, Steven        #m AUS [....] 1967
@@ -528,7 +485,7 @@ Atkinson, Steven        #m AUS [....] 1967
 Cramer, Gregor          #m GER [....] 1960
 Ekman, Lars             #m SWE [....] 1966
    %BIO FIDEID 1719963
-González, Carlos Fernando #m ARG [....] 1969.07.14
+González, Carlos Fernando #m ARG [....] 1969
 Wagner, Alexander       #m GER [1779] 1960
 Tibenszky, Zoltán       #m HUN [1845] 1985
 

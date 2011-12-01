@@ -924,7 +924,7 @@ proc MakeStyles {w} {
 				set padx [list $padx $padx]
 			}
 		}
-		set ipady [list $Priv(ipady) $Priv(ipady)]
+		set ipady [list 0 $Priv(ipady)]
 	
 		switch -- $Priv(type:$id) {
 			elemCom {

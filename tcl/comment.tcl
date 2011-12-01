@@ -59,10 +59,9 @@ array set Vars {
 	format		{}
 	wantedLang	{}
 	countryList	{}
+	insert		1.0
 	lang			xx
 	count			0
-	undo			0
-	redo			0
 }
 
 array set Fonts {
@@ -104,14 +103,7 @@ foreach section {prefix suffix} {
 }
 
 
-# Currently the undo/redo mechanism of the text widget is not working properly
-# (and quite useless). The Tk team does not like to handle this problem (see
-# bug item #3192483).
-variable UndoIsWorking 0
-
-
 proc open {parent pos lang} {
-	variable UndoIsWorking
 	variable Annotations
 	variable Geometry
 	variable Fonts
@@ -136,6 +128,10 @@ proc open {parent pos lang} {
 	set Vars(pos) $pos
 	set Vars(lang) xx
 
+	# Currently the undo/redo mechanism of the text widget is not working properly
+	# (and quite useless). The Tk team does not like to handle this problem (see
+	# bug item #3192483). This comment widget has his own undo/redo implementation -
+	# the Tcl/Tk team is a looser team.
 	tk::text $top.text \
 		-height 6 \
 		-width 0 \
@@ -144,7 +140,7 @@ proc open {parent pos lang} {
 		-wrap word \
 		-setgrid 1 \
 		-yscrollcommand [list ::scrolledframe::sbset $top.sb] \
-		-undo $UndoIsWorking \
+		-undo no \
 		-maxundo 0 \
 		;
 	ttk::scrollbar $top.sb -command [namespace code [list ::widget::textLineScroll $top.text]]
@@ -169,7 +165,6 @@ proc open {parent pos lang} {
 	bind $top.text <Any-Button>		+[list ::tooltip::tooltip hide]
 	bind $top.text <Tab>					 "focus \[tk_focusNext $top.text]; break"
 	bind $top.text <Shift-Tab>			 "focus \[tk_focusPrev $top.text]; break"
-	bind $top.text <<Modified>>		 [list set [namespace current]::Vars(redo) 0]
 
 	set butts [ttk::frame $top.buttons]
 	ttk::button $butts.symbol \
@@ -331,12 +326,10 @@ proc MakeLanguageButtons {} {
 proc Accept {} {
 	variable Vars
 
+	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
 	set Vars(comment) [::scidb::misc::xmlFromList $Vars(content)]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
-	$Vars(widget:text) edit reset
-	$Vars(widget:text) edit modified no
-	set Vars(redo) 0
 }
 
 
@@ -355,6 +348,7 @@ proc Clear {} {
 	set w $Vars(widget:text)
 
 	if {[$w count -chars 1.0 end] >= 1} {
+		SetUndoPoint $w
 		$w delete 1.0 end
 		focus $w
 		set lang $Vars(lang)
@@ -367,16 +361,20 @@ proc Clear {} {
 proc Revert {dlg} {
 	variable Vars
 
+	set w $Vars(widget:text)
+
 	foreach entry [::scidb::misc::xmlToList [::scidb::game::query comment $Vars(pos)]] {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} { set lang xx }
 		if {$lang eq $Vars(lang)} {
-			$Vars(widget:text) delete 1.0 end
+			SetUndoPoint $w
+			$w delete 1.0 end
 			SetupComment $lang $comment
+			SetUndoPoint $w
 		}
 	}
 
-	focus $Vars(widget:text)
+	focus $w
 }
 
 
@@ -418,31 +416,31 @@ proc Init {parent lang} {
 
 
 proc Update {{setup 1}} {
-	variable UndoIsWorking
 	variable Vars
 
 	set w $Vars(widget:text)
 	$w delete 1.0 end
+	set Vars(count) 0
 
-	if {$UndoIsWorking} {
-		$w configure -undo no
-	}
 	array unset Vars content:*
+	array unset Vars symbol:*
 
 	if {$setup} {
+		array unset Vars undoStack:*
+		array unset Vars undoStackIndex:*
 		set Vars(content) [::scidb::misc::xmlToList $Vars(comment)]
 	}
 
 	foreach entry $Vars(content) {
-		SetupComment {*}$entry
+		lassign $entry lang comment
+		SetupComment $lang $comment
+
+		if {$setup} {
+			if {[string length $lang] == 0} { set lang xx }
+			SetUndoPoint $w $lang
+		}
 	}
 
-	if {$UndoIsWorking} {
-		$w configure -undo yes
-		set Vars(redo) 0
-	}
-	$w edit reset
-	$w edit modified no
 	UpdateFormatButtons $w
 }
 
@@ -453,15 +451,16 @@ proc SetupComment {lang comment} {
 	if {$lang eq ""} { set lang xx }
 	set Vars(content:$lang) $comment
 	if {$lang eq $Vars(lang)} {
-		InsertComment $lang
+		if {[info exists Vars(content:$lang)]} {
+			InsertComment $lang $Vars(content:$lang)
+			set Vars(insert) [$Vars(widget:text) index insert]
+		}
 	}
 }
 
 
-proc InsertComment {lang} {
+proc InsertComment {lang content} {
 	variable Vars
-
-	if {![info exists Vars(content:$lang)]} { return }
 
 	set flags 0
 	set underline 0
@@ -469,7 +468,7 @@ proc InsertComment {lang} {
 	set Vars(symbols) {}
 	set Vars(count) 0
 
-	foreach comment $Vars(content:$lang) {
+	foreach comment $content {
 		lassign $comment code text
 		set text [string map {"<brace/>" "\{" "\n" "\u00b6\n"} $text]
 
@@ -629,10 +628,9 @@ proc PasteText {w str} {
 }
 
 
-proc ParseSelection {w} {
+proc ParseDump {dump} {
 	variable Vars
 
-	set dump [$w dump -tag -text sel.first sel.last]
 	set token str
 	set content ""
 	set num 0
@@ -687,23 +685,62 @@ proc ParseSelection {w} {
 }
 
 
-proc SetUndoPoint {w} {
-	# TODO
+proc SetUndoPoint {w {lang {}}} {
+	variable Vars
+
+	if {[string length $lang] == 0} { set lang $Vars(lang) }
+	set dump [$w dump -tag -text 1.0 end]
+	set text [ParseDump $dump]
+
+	if {[info exists Vars(undoStack:$lang)]} {
+		if {$text eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 1]} {
+			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $Vars(insert)
+			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2 [DumpToComment $dump]
+			return
+		}
+		set Vars(undoStack:$lang) [lrange $Vars(undoStack:$lang) 0 $Vars(undoStackIndex:$lang)]
+		incr Vars(undoStackIndex:$lang)
+	} else {
+		set Vars(undoStackIndex:$lang) 0
+	}
+
+	lappend Vars(undoStack:$lang) [list $Vars(insert) $text [DumpToComment $dump]]
 }
 
 
-proc EditUndo {w} {
-	# TODO
+proc DoUndo {lang inc} {
+	variable Vars
+
+	set w $Vars(widget:text)
+	incr Vars(undoStackIndex:$lang) $inc
+	lassign [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang)] mark text content
+	$w delete 1.0 end
+	InsertComment $lang $content
+	$w mark set insert $mark
+	$w see insert
 }
 
 
-proc EditRedo {w} {
-	# TODO
+proc EditUndo {} {
+	variable Vars
+
+	set lang $Vars(lang)
+	if {![info exists Vars(undoStack:$lang)]} { return }
+	if {$Vars(undoStackIndex:$lang) == 0} { return }
+
+	SetUndoPoint $Vars(widget:text)
+	DoUndo $lang -1
 }
 
 
-proc ClearUndo {w} {
-	# TODO
+proc EditRedo {} {
+	variable Vars
+
+	set lang $Vars(lang)
+	if {![info exists Vars(undoStack:$lang)]} { return }
+	if {$Vars(undoStackIndex:$lang) >= [llength $Vars(undoStack:$lang)] - 1} { return }
+
+	DoUndo $lang +1
 }
 
 
@@ -761,6 +798,7 @@ proc SwitchLanguage {lang} {
 
 	if {$lang eq $Vars(lang)} { return }
 
+	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
 	set Vars(lang) $lang
 	set Vars(lang:label) [LanguageName]
@@ -769,11 +807,9 @@ proc SwitchLanguage {lang} {
 }
 
 
-proc ParseContent {lang} {
+proc DumpToComment {dump} {
 	variable Vars
 
-	set w $Vars(widget:text)
-	set dump [$w dump -tag -text 1.0 end]
 	set count 0
 	set fst 0
 	set lst 0
@@ -884,6 +920,16 @@ proc ParseContent {lang} {
 		}
 	}
 
+	return [string map {\u00b6 ""} $content]
+}
+
+
+proc ParseContent {lang} {
+	variable Vars
+
+	set w $Vars(widget:text)
+	set content [DumpToComment [$w dump -tag -text 1.0 end]]
+
 	set languages ""
 	foreach name [array names Vars content:*] {
 		lappend languages [string range $name 8 9]
@@ -893,7 +939,6 @@ proc ParseContent {lang} {
 	}
 
 	set result ""
-	set content [string map {\u00b6 ""} $content]
 	foreach l $languages {
 		if {$l eq "xx"} { set code "" } else { set code $l }
 		if {$lang eq $l} { set value $content } else { set value $Vars(content:$l) }
@@ -1112,7 +1157,6 @@ proc ExitInsertSymbol {w x y} {
 
 
 proc PopupMenu {parent} {
-	variable UndoIsWorking
 	variable Vars
 
 	set w $parent
@@ -1120,6 +1164,7 @@ proc PopupMenu {parent} {
 	catch { destroy $m }
 	menu $m -tearoff no
 	catch { wm attributes $m -type popup_menu }
+	SetUndoPoint $w
 
 	if {[llength [$parent tag ranges sel]] == 0} {
 		set state disabled
@@ -1134,6 +1179,7 @@ proc PopupMenu {parent} {
 	}
 	
 	set count 0
+	set lang $Vars(lang)
 
 	if {$state eq "normal"} {
 		$m add command \
@@ -1183,7 +1229,7 @@ proc PopupMenu {parent} {
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
 	}
-	if {[llength $Vars(langSet)] && [string length $Vars(content:$Vars(lang))]} {
+	if {[llength $Vars(langSet)] && [string length $Vars(content:$lang)]} {
 		set state normal
 	} else {
 		set state disabled
@@ -1196,37 +1242,51 @@ proc PopupMenu {parent} {
 		-menu $m.copy \
 		-state $state \
 		;
-	foreach lang [list xx {*}$Vars(langSet)] {
-		if {$lang ne $Vars(lang)} {
+	foreach code [list xx {*}$Vars(langSet)] {
+		if {$code ne $lang} {
 			$m.copy add command \
 				-compound left \
-				-image $::country::icon::flag([::mc::countryForLang $lang]) \
-				-label " [LanguageName $lang]" \
-				-command [namespace code [list CopyText $Vars(lang) $lang]] \
+				-image $::country::icon::flag([::mc::countryForLang $code]) \
+				-label " [LanguageName $code]" \
+				-command [namespace code [list CopyText $lang $code]] \
 				;
 		}
 	}
+	$m add separator
 
-	if {$UndoIsWorking} {
-		if {[$w edit modified]} { set state normal } else { set state disabled }
-		$m add separator
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::undo \
-			-label $::mc::Undo \
-			-command [namespace code EditUndo] \
-			-state $state \
-			;
-		if {$Vars(redo)} { set state normal } else { set state disabled }
-		$m add command \
-			-compound left \
-			-image $::icon::16x16::redo \
-			-label $::mc::Redo \
-			-command [namespace code EditRedo] \
-			-state $state \
-			;
+	if {$Vars(undoStackIndex:$lang) == 0} { set state disabled } else { set state normal }
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::undo \
+		-label $::mc::Undo \
+		-command [namespace code EditUndo] \
+		-state $state \
+		;
+	if {$Vars(undoStackIndex:$lang) < [llength $Vars(undoStack:$lang)] - 1} {
+		set state normal
+	} else {
+		set state disabled
 	}
-
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::redo \
+		-label $::mc::Redo \
+		-command [namespace code EditRedo] \
+		-state $state \
+		;
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::clear \
+		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
+		-command [namespace code Clear] \
+		;
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::reset \
+		-label " [::mc::stripAmpersand $::widget::mc::Revert]" \
+		-command [namespace code [list Revert [winfo toplevel $parent]]] \
+		;
+	
 	if {[llength $Vars(langSet)]} { set state normal } else { set state disabled }
 	$m add separator
 	menu $m.switch -tearoff no
@@ -1264,20 +1324,7 @@ proc PopupMenu {parent} {
 		-label " [lindex [split $mc::AddLanguage .] 0]" \
 		-menu $m.languages \
 		;
-	$m add separator
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::clear \
-		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
-		-command [namespace code Clear] \
-		;
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::reset \
-		-label " [::mc::stripAmpersand $::widget::mc::Revert]" \
-		-command [namespace code [list Revert [winfo toplevel $parent]]] \
-		;
-	
+
 	tk_popup $m {*}[winfo pointerxy $parent]
 }
 
@@ -1579,6 +1626,7 @@ proc LanguageName {{lang {}}} {
 proc CopyText {fromLang toLang} {
 	variable Vars
 
+	SetUndoPoint $Vars(widget:text) $toLang
 	lappend Vars(content:$toLang) {*}$Vars(content:$fromLang)
 }
 
@@ -1661,26 +1709,6 @@ proc ToggleFormat {format} {
 
 	if {$Vars(format:underline)} {
 		lappend Vars(format) underline
-	}
-}
-
-
-proc EditUndo {} {
-	variable Vars
-
-	catch {
-		$Vars(widget:text) edit undo
-		incr Vars(redo)
-	}
-}
-
-
-proc EditRedo {} {
-	variable Vars
-
-	catch {
-		$Vars(widget:text) edit redo
-		if {$Vars(redo) > 0} { incr Vars(redo) -1 }
 	}
 }
 
@@ -2044,9 +2072,11 @@ proc tk_textCopy {w} {
 	if {$w ne $Vars(widget:text)} { return [tk_textCopy_comment_ $w] }
 
 	if {[llength [$w tag ranges sel]]} {
-		set data [::comment::ParseSelection $w]
+		set data [::comment::ParseDump [$w dump -tag -text sel.first sel.last]]
+		::comment::SetUndoPoint $w
 		clipboard clear -displayof $w
 		clipboard append -displayof $w $data
+		::comment::SetUndoPoint $w
 	}
 }
 
@@ -2057,12 +2087,14 @@ proc tk_textCut {w} {
 	if {$w ne $Vars(widget:text)} { return [tk_textCut_comment_ $w] }
 
 	if {[llength [$w tag ranges sel]]} {
-		set data [::comment::ParseSelection $w]
+		set data [::comment::ParseDump [$w dump -tag -text sel.first sel.last]]
+		::comment::SetUndoPoint $w
 		clipboard clear -displayof $w
 		clipboard append -displayof $w $data
 		if {[$w get sel.first] eq "\n"} { set decr -1c } else { set decr "" }
 		if {[$w get sel.last] eq "\u00b6"} { set incr +1c } else { set incr "" }
 		$w delete sel.first$decr sel.last$incr
+		::comment::SetUndoPoint $w
 	}
 }
 
@@ -2082,7 +2114,6 @@ proc TextInsert {w s} {
 	variable ::comment::Vars
 
 	if {$w ne $Vars(widget:text)} { return [TextInsert_comment_ $w $s] }
-
 	if {$s eq "" || [$w cget -state] eq "disabled"} { return }
 
 	set compound 0
@@ -2097,6 +2128,7 @@ proc TextInsert {w s} {
 	set c [$w get insert]
 
 	if {$s eq "\n"} {
+		::comment::SetUndoPoint $w
 		set c [$w get insert]
 		if {$c eq " "} {
 			$w replace insert insert+1c "\u00b6\n"
@@ -2111,7 +2143,7 @@ proc TextInsert {w s} {
 	}
 
 	$w see insert
-	::comment::SetUndoPoint $w
+	set Vars(insert) [$w index insert]
 }
 
 
@@ -2128,6 +2160,7 @@ proc TextButton1 {w x y} {
 					$w mark set insert insert-1c
 					set c [$w get insert]
 				}
+				$w see insert
 			}
 		}
 		::comment::UpdateFormatButtons $w
@@ -2294,7 +2327,7 @@ proc TextDelete {w} {
 			set c [$w get insert]
 			if {$c eq "\n"} {
 				if {[$w compare insert == end-1c]} {
-					# special case, seems to be Tk bug
+					# special case, seems to be a Tk bug
 					$w delete insert-2c insert
 				} elseif {	[$w compare insert == 1.1]
 							|| [string is space [$w get insert-2c]]
@@ -2337,6 +2370,7 @@ proc TextClear {w} {
 	variable ::comment::Vars
 
 	if {$w eq $Vars(widget:text)} {
+		::comment::SetUndoPoint $w
 		set c [$w get sel.last]
 		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
 		set c [$w get sel.first]
@@ -2361,6 +2395,7 @@ proc TextControlD {w} {
 		}
 	}
 	$w delete insert
+	$w see insert
 }
 
 } ;# namespace tk
@@ -2393,18 +2428,29 @@ bind Text <Meta-greater>	{ tk::TextSetCursorExt %W end-1c }
 
 bind Text <<Undo>> {
 	if {"%W" eq $::comment::Vars(widget:text)} {
-		::comment::EditUndo %W
+		::comment::EditUndo
 	} else {
 		catch { %W edit undo }
 	}
 }
 
 
-bind Text <<Redo>> {
+bind Text <Control-Key-y> { ;# the <<Redo>> binding is not working!
 	if {"%W" eq $::comment::Vars(widget:text)} {
-		::comment::EditRedo %W
+		::comment::EditRedo
 	} else {
 		catch { %W edit redo }
+	}
+}
+
+
+if {[tk windowingsystem] eq "x11"} {
+	bind Text <Control-Key-Z> { ;# the <<Redo>> binding is not working!
+		if {"%W" eq $::comment::Vars(widget:text)} {
+			::comment::EditRedo
+		} else {
+			catch { %W edit redo }
+		}
 	}
 }
 
