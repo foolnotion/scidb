@@ -533,8 +533,8 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	}
 
 	set distance		[expr {max(1, min($canvWidth, $canvHeight)/150)}]
-	set width			[expr {$canvWidth - $distance}]
-	set height			[expr {$canvHeight - $distance}]
+	set width			[expr {$canvWidth - 2*$distance}]
+	set height			[expr {$canvHeight - 2*$distance}]
 
 	if {$layout(side-to-move) || $layout(material-values)} {
 		if {$layout(side-to-move)} { set minsize 64 } else { set minsize 34 }
