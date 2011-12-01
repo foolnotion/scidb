@@ -37,6 +37,8 @@ set AddLanguage				"Add language..."
 set SwitchLanguage			"Switch language"
 set FormatText					"Format text"
 set CopyText					"Copy text to"
+set OverwriteContent			"Overwrite existing content?"
+set AppendContent				"If \"no\" the text will be appended."
 
 set InsertSymbol				"&Insert Symbol..."
 set MiscellaneousSymbols	"Miscellaneous Symbols"
@@ -353,7 +355,7 @@ proc Clear {} {
 		focus $w
 		set lang $Vars(lang)
 		set Vars(count) 0
-		set Vars(content:$lang) ""
+		set Vars(content:$lang) {}
 	}
 }
 
@@ -726,9 +728,8 @@ proc EditUndo {} {
 
 	set lang $Vars(lang)
 	if {![info exists Vars(undoStack:$lang)]} { return }
-	if {$Vars(undoStackIndex:$lang) == 0} { return }
-
 	SetUndoPoint $Vars(widget:text)
+	if {$Vars(undoStackIndex:$lang) == 0} { return }
 	DoUndo $lang -1
 }
 
@@ -739,7 +740,6 @@ proc EditRedo {} {
 	set lang $Vars(lang)
 	if {![info exists Vars(undoStack:$lang)]} { return }
 	if {$Vars(undoStackIndex:$lang) >= [llength $Vars(undoStack:$lang)] - 1} { return }
-
 	DoUndo $lang +1
 }
 
@@ -1627,6 +1627,23 @@ proc CopyText {fromLang toLang} {
 	variable Vars
 
 	SetUndoPoint $Vars(widget:text) $toLang
+
+	if {[llength $Vars(content:$toLang)]} {
+		set reply [::dialog::question \
+			-parent [winfo toplevel $Vars(widget:text)] \
+			-title $::scidb::app \
+			-message $mc::OverwriteContent \
+			-detail $mc::AppendContent \
+			-default no \
+		]
+		if {$reply eq "yes"} {
+			set Vars(content:$toLang) {}
+		}
+	}
+
+	if {[llength $Vars(content:$toLang)]} {
+		lappend Vars(content:$toLang) {str \n}
+	}
 	lappend Vars(content:$toLang) {*}$Vars(content:$fromLang)
 }
 
@@ -2317,8 +2334,9 @@ proc TextDelete {w} {
 	variable ::comment::Vars
 
 	if {$w eq $Vars(widget:text)} {
+		::comment::SetUndoPoint $w
 		if {[$w tag nextrange sel 1.0 end] ne ""} {
-			set c [$w get sel.last]
+			set c [$w get sel.last-1c]
 			if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
 			set c [$w get sel.first]
 			if {$c eq "\n" } { set decr -1c } else { set decr "" }
