@@ -111,7 +111,7 @@ proc open {parent} {
 	# Top subframe: color (radio)buttons ##################################################
 	set canv $top.colors
 	set height [expr {$buttonSize + 2*$Border}]
-	tk::canvas $canv -height $height -width $width -highlightthickness 0 -borderwidth 0
+	tk::canvas $canv -height $height -width $width -borderwidth 0
 	::theme::configureCanvas $canv
 	set imageSize [expr {$ShapeSize - 2}]
 
@@ -147,7 +147,7 @@ proc open {parent} {
 	set rows [llength $ShapeList]
 	set canv $top.shapes
 	set height [expr {$rows*$buttonSize + ($rows + 1)*$Border}]
-	tk::canvas $canv -height $height -width $width -highlightthickness 0 -borderwidth 0
+	tk::canvas $canv -height $height -width $width -borderwidth 0
 	::theme::configureCanvas $canv
 
 	# this board size is not too large; we want to avoid the black borderline

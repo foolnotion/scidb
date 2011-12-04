@@ -965,6 +965,8 @@
 ::export::mc::Variation						"Variante"
 ::export::mc::Subvariation					"Sottovariante"
 ::export::mc::Figurines						"Figurines"
+::export::mc::Hyphenation					"Hyphenation" ;# NEW
+::export::mc::None							"(nessuno)"
 ::export::mc::Symbols						"Simboli"
 ::export::mc::Comments						"Commenti"
 ::export::mc::Result							"Risultato"
@@ -987,6 +989,11 @@
 ::export::mc::Columns						"Colonne"
 ::export::mc::One								"Uno"
 ::export::mc::Two								"Due"
+
+::export::mc::DocumentStyle				"Document Style" ;# NEW
+::export::mc::Article						"Article" ;# NEW
+::export::mc::Report							"Report" ;# NEW
+::export::mc::Book							"Book" ;# NEW
 
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
@@ -1295,6 +1302,8 @@
 ::comment::mc::SwitchLanguage			"Cambia lingua"
 ::comment::mc::FormatText				"Formatta testo"
 ::comment::mc::CopyText					"Copia testo in" ;#Copy text to
+::comment::mc::OverwriteContent		"Overwrite existing content?" ;# NEW
+::comment::mc::AppendContent			"If \"no\" the text will be appended." ;# NEW
 
 ::comment::mc::InsertSymbol			"&Inserisci Simbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simboli vari"
@@ -2041,6 +2050,7 @@
 ::encoding::mc::Lang(cy)	"Gallese"
 ::encoding::mc::Lang(da)	"Danese"
 ::encoding::mc::Lang(de)	"Tedesco"
+::encoding::mc::Lang(de+)	"Deutsch (reformed)" ;# NEW
 ::encoding::mc::Lang(el)	"Greco"
 ::encoding::mc::Lang(en)	"Inglese"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -2103,6 +2113,8 @@
 ::encoding::mc::Lang(vi)	"Vietnamese"
 ::encoding::mc::Lang(wa)	"Vallone"
 ::encoding::mc::Lang(wen)	"Lusaziano"
+::encoding::mc::Lang(hsb)	"Upper Sorbian" ;# NEW
+::encoding::mc::Lang(dsb)	"Lower Sorbian" ;# NEW
 ::encoding::mc::Lang(zh)	"Cinese"
 
 ::encoding::mc::Font(hi)	"Devanagari"

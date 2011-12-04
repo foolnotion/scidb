@@ -27,87 +27,90 @@
 namespace eval encoding {
 namespace eval mc {
 
-# Iso-639-2/Iso-639-3
+# Iso-639-1/Iso-639-2/Iso-639-3
 
-set Lang(FI)	"Fide"				;#
-set Lang(af)	"Afrikaans"			;# afr
-set Lang(ar)	"Arabic"				;# ara
-set Lang(ast)	"Leonese"			;# ast
-set Lang(az)	"Azerbaijani"		;# aze
-set Lang(bat)	"Baltic"				;# bat
-set Lang(be)	"Belarusian"		;# bel
-set Lang(bg)	"Bulgarian"			;# bul
-set Lang(br)	"Breton"				;# bre
-set Lang(bs)	"Bosnian"			;# bos
-set Lang(ca)	"Catalan"			;# cat
-set Lang(cs)	"Czech"				;# cze
-set Lang(cy)	"Welsh"				;# wel
-set Lang(da)	"Danish"				;# dan
-set Lang(de)	"German"				;# ger
-set Lang(el)	"Greek"				;# gre
-set Lang(en)	"English"			;# eng
-set Lang(eo)	"Esperanto"			;# epo
-set Lang(es)	"Spanish"			;# spa
-set Lang(et)	"Estonian"			;# est
-set Lang(eu)	"Basque"				;# baq
-set Lang(fi)	"Finnish"			;# fin
-set Lang(fo)	"Faroese"			;# fao
-set Lang(fr)	"French"				;# fre
-set Lang(ga)	"Irish"				;# gle
-set Lang(gd)	"Scottish"			;# sco
-set Lang(gl)	"Galician"			;# glg
-set Lang(he)	"Hebrew"				;# heb
-set Lang(hi)	"Hindi"				;# hin
-set Lang(hr)	"Croatian"			;# scr
-set Lang(hu)	"Hungarian"			;# hun
-set Lang(hy)	"Armenian"			;# hye
-set Lang(ia)	"Interlingua"		;# ina
-set Lang(is)	"Icelandic"			;# ice
-set Lang(it)	"Italian"			;# ita
-set Lang(iu)	"Inuktitut"			;# iku
-set Lang(ja)	"Japanese"			;# jpn
-set Lang(ka)	"Georgian"			;# kat
-set Lang(kk)	"Kazakh"				;# kaz
-set Lang(kl)	"Greenlandic"		;# kal
-set Lang(ko)	"Korean"				;# kor
-set Lang(ku)	"Kurdish"			;# kur
-set Lang(ky)	"Kirghiz"			;# kir
-set Lang(la)	"Latin"				;# lat
-set Lang(lb)	"Luxembourgish"	;# ltz
-set Lang(lt)	"Lithuanian"		;# lit
-set Lang(lv)	"Latvian"			;# lav
-set Lang(mk)	"Macedonian"		;# mac
-set Lang(mo)	"Moldovan"			;# ron
-set Lang(ms)	"Malay"				;# may
-set Lang(mt)	"Maltese"			;# mlt
-set Lang(nl)	"Dutch"				;# dut
-set Lang(no)	"Norwegian"			;# nor
-set Lang(oc)	"Occitan"			;# oci
-set Lang(pl)	"Polish"				;# pol
-set Lang(pt)	"Portuguese"		;# por
-set Lang(rm)	"Romansh"			;# roh
-set Lang(ro)	"Romanian"			;# rum
-set Lang(ru)	"Russian"			;# rus
-set Lang(se)	"Sami"				;# smi
-set Lang(sk)	"Slovak"				;# slo
-set Lang(sl)	"Slovenian"			;# slv
-set Lang(sq)	"Albanian"			;# alb
-set Lang(sr)	"Serbian"			;# scc
-set Lang(sv)	"Swedish"			;# swe
-set Lang(sw)	"Swahili"			;# swa
-set Lang(tg)	"Tajik"				;# tgk
-set Lang(th)	"Thai"				;# tha
-set Lang(tk)	"Turkmen"			;# tuk
-set Lang(tl)	"Tagalog"			;# tgl
-set Lang(tr)	"Turkish"			;# tur
-set Lang(uk)	"Ukrainian"			;# ukr
-set Lang(uz)	"Uzbek"				;# uzb
-set Lang(vi)	"Vietnamese"		;# vie
-set Lang(wa)	"Walloon"			;# wln
-set Lang(wen)	"Sorbian"			;# wen
-set Lang(zh)	"Chinese"			;# chi
+set Lang(FI)	"Fide"					;#
+set Lang(af)	"Afrikaans"				;# afr
+set Lang(ar)	"Arabic"					;# ara
+set Lang(ast)	"Leonese"				;# ast
+set Lang(az)	"Azerbaijani"			;# aze
+set Lang(bat)	"Baltic"					;# bat
+set Lang(be)	"Belarusian"			;# bel
+set Lang(bg)	"Bulgarian"				;# bul
+set Lang(br)	"Breton"					;# bre
+set Lang(bs)	"Bosnian"				;# bos
+set Lang(ca)	"Catalan"				;# cat
+set Lang(cs)	"Czech"					;# cze
+set Lang(cy)	"Welsh"					;# wel
+set Lang(da)	"Danish"					;# dan
+set Lang(de)	"German"					;# ger
+set Lang(de+)	"German (reformed)"	;# ger
+set Lang(el)	"Greek"					;# gre
+set Lang(en)	"English"				;# eng
+set Lang(eo)	"Esperanto"				;# epo
+set Lang(es)	"Spanish"				;# spa
+set Lang(et)	"Estonian"				;# est
+set Lang(eu)	"Basque"					;# baq
+set Lang(fi)	"Finnish"				;# fin
+set Lang(fo)	"Faroese"				;# fao
+set Lang(fr)	"French"					;# fre
+set Lang(ga)	"Irish"					;# gle
+set Lang(gd)	"Scottish"				;# sco
+set Lang(gl)	"Galician"				;# glg
+set Lang(he)	"Hebrew"					;# heb
+set Lang(hi)	"Hindi"					;# hin
+set Lang(hr)	"Croatian"				;# scr
+set Lang(hu)	"Hungarian"				;# hun
+set Lang(hy)	"Armenian"				;# hye
+set Lang(ia)	"Interlingua"			;# ina
+set Lang(is)	"Icelandic"				;# ice
+set Lang(it)	"Italian"				;# ita
+set Lang(iu)	"Inuktitut"				;# iku
+set Lang(ja)	"Japanese"				;# jpn
+set Lang(ka)	"Georgian"				;# kat
+set Lang(kk)	"Kazakh"					;# kaz
+set Lang(kl)	"Greenlandic"			;# kal
+set Lang(ko)	"Korean"					;# kor
+set Lang(ku)	"Kurdish"				;# kur
+set Lang(ky)	"Kirghiz"				;# kir
+set Lang(la)	"Latin"					;# lat
+set Lang(lb)	"Luxembourgish"		;# ltz
+set Lang(lt)	"Lithuanian"			;# lit
+set Lang(lv)	"Latvian"				;# lav
+set Lang(mk)	"Macedonian"			;# mac
+set Lang(mo)	"Moldovan"				;# ron
+set Lang(ms)	"Malay"					;# may
+set Lang(mt)	"Maltese"				;# mlt
+set Lang(nl)	"Dutch"					;# dut
+set Lang(no)	"Norwegian"				;# nor
+set Lang(oc)	"Occitan"				;# oci
+set Lang(pl)	"Polish"					;# pol
+set Lang(pt)	"Portuguese"			;# por
+set Lang(rm)	"Romansh"				;# roh
+set Lang(ro)	"Romanian"				;# rum
+set Lang(ru)	"Russian"				;# rus
+set Lang(se)	"Sami"					;# smi
+set Lang(sk)	"Slovak"					;# slo
+set Lang(sl)	"Slovenian"				;# slv
+set Lang(sq)	"Albanian"				;# alb
+set Lang(sr)	"Serbian"				;# scc
+set Lang(sv)	"Swedish"				;# swe
+set Lang(sw)	"Swahili"				;# swa
+set Lang(tg)	"Tajik"					;# tgk
+set Lang(th)	"Thai"					;# tha
+set Lang(tk)	"Turkmen"				;# tuk
+set Lang(tl)	"Tagalog"				;# tgl
+set Lang(tr)	"Turkish"				;# tur
+set Lang(uk)	"Ukrainian"				;# ukr
+set Lang(uz)	"Uzbek"					;# uzb
+set Lang(vi)	"Vietnamese"			;# vie
+set Lang(wa)	"Walloon"				;# wln
+set Lang(wen)	"Sorbian"				;# wen
+set Lang(hsb)	"Upper Sorbian"		;# hsb
+set Lang(dsb)	"Lower Sorbian"		;# dsb
+set Lang(zh)	"Chinese"				;# chi
 
-set Font(hi)	"Devanagari"		;# hin
+set Font(hi)	"Devanagari"			;# hin
 
 set AutoDetect				"auto-detection"
 
@@ -408,7 +411,6 @@ proc BuildTable {table width height} {
 
 	treectrl $table \
 		-takefocus 1 \
-		-highlightthickness 0 \
 		-borderwidth $BorderWidth \
 		-relief sunken \
 		-showheader yes \

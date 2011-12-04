@@ -922,57 +922,68 @@ if {$defaultSymbolFont   ni $fonts} { set defaultSymbolFont   [string tolower $d
 # 	http://en.wikipedia.org/wiki/Algebraic_chess_notation
 # 	http://www.geocities.com/timessquare/metro/9154/nap-pieces.htm
 #
-# José uses some different letters:
-#	et(pawn)=P, fi(pawn)=P, hu(pawn)=G
-#
 # Alternatives:
-#	ru: "\u0420\u0424\u041b\u0421\u041a\u041f"
-#	sr: "\u041a\u0414\u0422\u041b\u0421\u041f"
+#	ru	{K F L S N P}
+#	sr	{K D T L S P}
+#	he	{mele malkah tseriya rats para ragl}
 array set figurines {
-	graphic	"\u2654\u2655\u2656\u2657\u2658\u2659"
-	az			SVTFAP
-	bg			"\u0426\u0414\u0422\u041e\u041a\u041f"
-	ca			RDTACP
-	cs			KDVSJP
-	cy			TBCEMG
-	da			KDTLSB
-	de			KDTLSB
-	el			"\u03a1\u0392\u03a0\u0391\u0399\u03a3"
-	en			KQRBNP
-	es			RDTACP
-	et			KLVORE
-	eu			EDGZSP
-	fi			KDTLRS
-	fr			RDTFCP
-	ga			RBCEDF
-	hr			KDTLSP
-	hu			KVBFHP
-	is			KDHBRP
-	it			RDTACP
-	lb			KDTLPB
-	lt			"KVBR\u017dP"
-	lv			KDTLZB
-	nl			KDTLPO
-	no			KDTLSB
-	pl			KHWGSP
-	pt			RDTBCP
-	ro			RDTNCP
-	ru			KFLSNP
-	sk			KDVSJP
-	sl			KDTLSP
-	sr			KDTLSP
-	sv			KDTLSB
-	tr			"\u015eVKFAP"
-	uk			"\u0420\u0424T\u0421\u041a\u041f"
+	graphic	{\u2654 \u2655 \u2656 \u2657 \u2658 \u2659}
+	az			{S V T F A P}
+	bg			{\u0426 \u0414 \u0422 \u041e \u041a \u041f}
+	ca			{R D T A C P}
+	cs			{K D V S J P}
+	cy			{T B C E M G}
+	da			{K D T L S B}
+	de			{K D T L S B}
+	el			{\u03a1 \u0392 \u03a0 \u0391 \u0399 \u03a3}
+	en			{K Q R B N P}
+	eo			{R D T K C \u0108}
+	es			{R D T A C P}
+	et			{K L V O R E}
+	eu			{E D G Z S P}
+	fi			{K D T L R S}
+	fr			{R D T F C P}
+	ga			{R B C E D F}
+	gl			{R D T B C P}
+	he			{\u05de "\u05d4\u05de" \u05e6 \u05e8 \u05e4 "\u05d9\u05dc\u05d2\u05e8"}
+	hr			{K D T L S P}
+	hu			{K V B F H G}
+	ia			{R G T E C P}
+	is			{K D H B R P}
+	it			{R D T A C P}
+	la			{K G T E Q P}
+	lb			{K D T L P B}
+	lt			{K V B R \u017d P}
+	lv			{K D T L Z B}
+	ms			{R M T K G A}
+	nl			{K D T L P O}
+	no			{K D T L S B}
+	pl			{K H W G S P}
+	pt			{R D T B C P}
+	ro			{R D T N C P}
+	ru			{\u0420 \u0424 \u041b \u0421 \u041a \u041f}
+	sk			{K D V S J P}
+	sl			{K D T L S P}
+	sr			{\u041a \u0414 \u0422 \u041b \u0421 \u041f}
+	sv			{K D T L S B}
+	tr			{\u015e V K F A P}
+	uk			{\u0420 \u0424T \u0421 \u041a \u041f}
 }
+# TODO ------------------------------------------
+#	sq			------	Albanian			Mbret	Mbretëreshë Top  	Oficier  	Kal  	 	Pion
+#	br			------	Breton			roue 	rouanez 		tour 	marc'heg 	furlukin	pezh-gwerin
+#	gl			------	Galician			rei 	raíña 		torre cabalo 		bispo 	peón
+#	ku			------	Kurdish			ah 	abanî 		birc 	metran 		siwar 	piyon
+#	se			------	Sami
+#	gd			------	Scotish
+#	dsb		------	Lower Sorbian	kral 	dama 			torm 	bga 			kónik 	burik
+#	hsb		------	Upper Sorbian	kral 	dama 			wa 	bhar 			konik 	burik
+# Auxiliary -------------------------------------
 #	af			KDTLRP
-#	eo			"RDTKC\u0108"
 #	FI			KDTSNP
 #	fy			KDSFHB
-#	gl			RDTBCP
 #	hi			RVHOGP
-#	ia			RGTECP
-#	la			KGTEQP
+# -----------------------------------------------
 
 variable UnicodeMap {
 	"\u2654" "&*\u2654&" \

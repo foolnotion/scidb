@@ -968,6 +968,8 @@
 ::export::mc::Variation						"Variation"
 ::export::mc::Subvariation					"Subvariation"
 ::export::mc::Figurines						"Figurines"
+::export::mc::Hyphenation					"Hyphenation"
+::export::mc::None							"(none)"
 ::export::mc::Symbols						"Symbols"
 ::export::mc::Comments						"Comments"
 ::export::mc::Result							"Result"
@@ -990,6 +992,11 @@
 ::export::mc::Columns						"Columns"
 ::export::mc::One								"One"
 ::export::mc::Two								"Two"
+
+::export::mc::DocumentStyle				"Document Style"
+::export::mc::Article						"Article"
+::export::mc::Report							"Report"
+::export::mc::Book							"Book"
 
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
@@ -1298,6 +1305,8 @@
 ::comment::mc::SwitchLanguage			"Switch language"
 ::comment::mc::FormatText				"Format text"
 ::comment::mc::CopyText					"Copy text to"
+::comment::mc::OverwriteContent		"Overwrite existing content?"
+::comment::mc::AppendContent			"If \"no\" the text will be appended."
 
 ::comment::mc::InsertSymbol			"&Insert Symbol..."
 ::comment::mc::MiscellaneousSymbols	"Miscellaneous Symbols"
@@ -2044,6 +2053,7 @@
 ::encoding::mc::Lang(cy)	"Welsh"
 ::encoding::mc::Lang(da)	"Danish"
 ::encoding::mc::Lang(de)	"German"
+::encoding::mc::Lang(de+)	"Deutsch (reformed)"
 ::encoding::mc::Lang(el)	"Greek"
 ::encoding::mc::Lang(en)	"English"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -2106,6 +2116,8 @@
 ::encoding::mc::Lang(vi)	"Vietnamese"
 ::encoding::mc::Lang(wa)	"Walloon"
 ::encoding::mc::Lang(wen)	"Sorbian"
+::encoding::mc::Lang(hsb)	"Upper Sorbian"
+::encoding::mc::Lang(dsb)	"Lower Sorbian"
 ::encoding::mc::Lang(zh)	"Chinese"
 
 ::encoding::mc::Font(hi)	"Devanagari"

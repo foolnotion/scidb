@@ -62,10 +62,12 @@ proc build {w menu width height} {
 
 	Preload $width $height
 
-	set canv [tk::canvas $w.c -width $width -height $height -takefocus 1]
+	set canv [tk::canvas $w.c -width $width -height $height -takefocus 1 -borderwidth 0]
 	pack $canv -fill both -expand yes
+	$canv xview moveto 0
+	$canv yview moveto 0
 	SetBackground $canv window $width $height
-	set border [tk::canvas $canv.border -takefocus 0]
+	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
 	set board [::board::stuff::new $border.board $Dim(squaresize) $Dim(edgethickness)]
@@ -454,7 +456,14 @@ proc RebuildBoard {canv width height} {
 	SetBackground $canv window $width $height
 	$canv coords board $Dim(border:x1) $Dim(border:y1)
 	$Vars(widget:border) coords board $Dim(borderthickness) $Dim(borderthickness)
-	$Vars(widget:border) configure -width $Dim(bordersize) -height $Dim(bordersize)
+	set bordersize [expr {$Dim(bordersize) + $Dim(border:gap)}]
+	$Vars(widget:border) configure -width $bordersize -height $bordersize
+
+	if {$Dim(border:gap) > 0} {
+		$Vars(widget:border) configure -background black
+	} else {
+		$Vars(widget:border) configure -background [$canv cget -background]
+	}
 
 	BuildBoard $canv
 	ConfigureBoard $canv
@@ -568,7 +577,21 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	set height					[expr {$height - 2*$Dim(offset)}]
 	set boardsize				[expr {min($width, $height)}]
 	set Dim(edgethickness)	[expr {$Dim(borderthickness) ? 0 : ($boardsize/8 < 65 ? 1 : 2)}]
-	set Dim(squaresize)		[expr {($boardsize - 2*($Dim(edgethickness)))/8}]
+	set Dim(squaresize)		[expr {($boardsize - 2*$Dim(edgethickness))/8}]
+	set Dim(border:gap)		[::board::computeGap $Dim(squaresize)]
+
+	if {$Dim(border:gap) > 0} {
+		if {[::board::borderlineGap] > 0 || $layout(border)} {
+			set Dim(border:gap)		0
+		} else {
+			set height					[expr {$height - $Dim(border:gap)}]
+			set width					[expr {$width - $Dim(border:gap)}]
+			set boardsize				[expr {min($width, $height)}]
+			set Dim(squaresize)		[expr {$boardsize/8}]
+			set Dim(edgethickness)	0
+		}
+	}
+
 	set Dim(boardsize)		[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
 	set Dim(bordersize)		[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
 	set Dim(border:x1)		[expr {($canvWidth - $Dim(bordersize))/2}]

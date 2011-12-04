@@ -305,40 +305,20 @@ array set needRefresh {
 }
 
 
-proc RefreshSquare {which size} {
-	variable square::style
-	variable texture
-
-	set iw [image width $texture($which)]
-	set ih [image height $texture($which)]
-	set x1 $style($which,x1)
-	set x2 $style($which,x2)
-	set y1 $style($which,y1)
-	set y2 $style($which,y2)
-
-	if {$x2 > $iw} { set x2 $iw }
-	if {$y2 > $ih} { set y2 $ih }
-	if {$x2 - $x1 > $y2 - $y1} { set x2 [expr {$x1 + $y2 - $y1}] }
-	if {$y2 - $y1 > $x2 - $x1} { set y2 [expr {$y1 + $x2 - $x1}] }
-
-	::scidb::tk::image copy $texture($which) photo_Square($which,$size) \
-		-from $x1 $y1 $x2 $y2 \
-		-rotate [expr {$style($which,rotation)/90}]
-	photo_Square($which,$size) copy photo_Borderline($size)
-}
-
-
-proc RefreshBorder {size} {
+proc computeGap {size} {
 	variable square::style
 
 	set gap $style(borderline,gap)
 	set width [expr {int(round($style(borderline,width)*$size + 0.2))}]
 	if {$width == 0 && $style(borderline,width) > 0} { set gap 1 }
 
-	::scidb::tk::image border photo_Borderline($size) \
-		-gap		$gap \
-		-width	$width \
-		-opacity	[expr {$style(borderline,opacity)/255.0}]
+	return $gap
+}
+
+
+proc borderlineGap {} {
+	variable square::style
+	return $style(borderline,gap)
 }
 
 
@@ -749,21 +729,6 @@ proc setPieceSet {identifier {size all}} {
 }
 
 
-proc ChangeToWorkingSet {} {
-	variable theme::Working
-	variable theme::style
-	variable currentTheme
-	variable workingSetId
-
-	set currentTheme $workingSetId
-	set Working(piece-style) $style(piece-style)
-	set Working(square-style) $style(square-style)
-	set Working(piece-set) $style(piece-set)
-
-	upvar 0 [namespace current]::theme::Working [namespace current]::theme::style
-}
-
-
 proc setTheme {identifier {size all}} {
 	variable theme::StyleDict
 	variable theme::NameLookup
@@ -932,46 +897,6 @@ proc copyToWorkingSet {{which theme}} {
 
 	upvar 0 Working [namespace current]::${which}::style
 	ChangeToWorkingSet
-}
-
-
-proc BuildNameList {which} {
-	variable ${which}::NameMap
-	variable ${which}::NameLookup
-	variable ${which}::NameOrder
-	variable ${which}::Working
-	variable ${which}::Default
-	variable ${which}::styleNames
-	variable defaultId
-	variable workingSetId
-
-	set nameList {}
-	set idList {}
-	dict for {key var} $NameMap {
-		if {$key ne $workingSetId && $key ne $defaultId} {
-			lappend nameList $var
-		}
-	}
-	set nameList [lsort -dictionary $nameList]
-	foreach name $nameList { lappend idList [dict get $NameLookup $name] }
-	set orderedList {}
-
-	set count 100000
-	foreach id $idList {
-		set order($id) $count
-		incr count
-	}
-
-	set count 0
-	foreach id $NameOrder {
-		set order($id) $count
-		incr count
-	}
-
-	foreach name $idList { lappend orderedList $order($name) }
-	set indices [lsort -dictionary -integer -indices $orderedList]
-	set styleNames [list $mc::WorkingSet $mc::Default]
-	foreach index $indices { lappend styleNames [lindex $nameList $index] }
 }
 
 
@@ -1166,6 +1091,94 @@ proc saveWorkingSet {name {which theme}} {
 	close $chan
 
 	return $identifier
+}
+
+
+proc RefreshSquare {which size} {
+	variable square::style
+	variable texture
+
+	set iw [image width $texture($which)]
+	set ih [image height $texture($which)]
+	set x1 $style($which,x1)
+	set x2 $style($which,x2)
+	set y1 $style($which,y1)
+	set y2 $style($which,y2)
+
+	if {$x2 > $iw} { set x2 $iw }
+	if {$y2 > $ih} { set y2 $ih }
+	if {$x2 - $x1 > $y2 - $y1} { set x2 [expr {$x1 + $y2 - $y1}] }
+	if {$y2 - $y1 > $x2 - $x1} { set y2 [expr {$y1 + $x2 - $x1}] }
+
+	::scidb::tk::image copy $texture($which) photo_Square($which,$size) \
+		-from $x1 $y1 $x2 $y2 \
+		-rotate [expr {$style($which,rotation)/90}]
+	photo_Square($which,$size) copy photo_Borderline($size)
+}
+
+
+proc RefreshBorder {size} {
+	variable square::style
+
+	::scidb::tk::image border photo_Borderline($size) \
+		-gap		[computeGap $size] \
+		-width	[expr {int(round($style(borderline,width)*$size + 0.2))}] \
+		-opacity	[expr {$style(borderline,opacity)/255.0}]
+}
+
+
+proc ChangeToWorkingSet {} {
+	variable theme::Working
+	variable theme::style
+	variable currentTheme
+	variable workingSetId
+
+	set currentTheme $workingSetId
+	set Working(piece-style) $style(piece-style)
+	set Working(square-style) $style(square-style)
+	set Working(piece-set) $style(piece-set)
+
+	upvar 0 [namespace current]::theme::Working [namespace current]::theme::style
+}
+
+
+proc BuildNameList {which} {
+	variable ${which}::NameMap
+	variable ${which}::NameLookup
+	variable ${which}::NameOrder
+	variable ${which}::Working
+	variable ${which}::Default
+	variable ${which}::styleNames
+	variable defaultId
+	variable workingSetId
+
+	set nameList {}
+	set idList {}
+	dict for {key var} $NameMap {
+		if {$key ne $workingSetId && $key ne $defaultId} {
+			lappend nameList $var
+		}
+	}
+	set nameList [lsort -dictionary $nameList]
+	foreach name $nameList { lappend idList [dict get $NameLookup $name] }
+	set orderedList {}
+
+	set count 100000
+	foreach id $idList {
+		set order($id) $count
+		incr count
+	}
+
+	set count 0
+	foreach id $NameOrder {
+		set order($id) $count
+		incr count
+	}
+
+	foreach name $idList { lappend orderedList $order($name) }
+	set indices [lsort -dictionary -integer -indices $orderedList]
+	set styleNames [list $mc::WorkingSet $mc::Default]
+	foreach index $indices { lappend styleNames [lindex $nameList $index] }
 }
 
 

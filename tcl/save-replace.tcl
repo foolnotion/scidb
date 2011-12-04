@@ -885,7 +885,6 @@ proc Build {dlg base position number} {
 		-showrootlines no \
 		-xscrollincrement 1 \
 		-takefocus 1 \
-		-highlightthickness 0 \
 		-borderwidth 1 \
 		-relief sunken \
 		-background $Colors(taglistBackground) \

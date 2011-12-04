@@ -114,7 +114,6 @@ proc open {parent} {
 	canvas $rank \
 		-width [expr {8*$squareSize + 2*$borderSize}] \
 		-height [expr {$squareSize + $edge + 2*$borderSize}] \
-		-highlightthickness 0 \
 		-borderwidth 0 \
 		;
 	::theme::configureCanvas $rank

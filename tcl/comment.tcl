@@ -94,7 +94,7 @@ variable DingbatSet {
 }
 variable Colors {darkgreen darkred darkblue darkgreen darkred darkblue}
 
-set Symbols $font::figurines(graphic)
+set Symbols [join $font::figurines(graphic)]
 foreach section {prefix suffix} {
 	foreach nag $NagSet($section) {
 		set c $::font::SymbolUtfEncoding($nag)
@@ -1503,7 +1503,6 @@ proc PopdownLaguages {dlg} {
 		-height 10 \
 		-usescroll yes \
 		-relief flat \
-		-highlightthickness 0 \
 		-selectmode browse \
 		-borderwidth 1 \
 		-showfocus 0 \

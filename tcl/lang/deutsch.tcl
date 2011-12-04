@@ -922,7 +922,7 @@
 ::export::mc::FileSelection				"&Dateiauswahl"
 ::export::mc::Options						"&Optionen"
 ::export::mc::PageSetup						"&Seiteneinstellung"
-::export::mc::Style							"St&il"
+::export::mc::Style							"St&ilauswahl"
 ::export::mc::Encoding						"&Enkodierung"
 
 ::export::mc::Notation						"Notation"
@@ -964,6 +964,8 @@
 ::export::mc::Variation						"Variante"
 ::export::mc::Subvariation					"Untervariante"
 ::export::mc::Figurines						"Figurensatz"
+::export::mc::Hyphenation					"Silbentrennung"
+::export::mc::None							"(keine)"
 ::export::mc::Symbols						"Symbole"
 ::export::mc::Comments						"Kommentare"
 ::export::mc::Result							"Ergebnis"
@@ -986,6 +988,11 @@
 ::export::mc::Columns						"Spalten"
 ::export::mc::One								"Eins"
 ::export::mc::Two								"Zwei"
+
+::export::mc::DocumentStyle				"Dokumentenstil"
+::export::mc::Article						"Artikel"
+::export::mc::Report							"Bericht"
+::export::mc::Book							"Buch"
 
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
@@ -1295,6 +1302,8 @@
 ::comment::mc::SwitchLanguage			"Sprache wechseln"
 ::comment::mc::FormatText				"Text formatieren"
 ::comment::mc::CopyText					"Text kopieren nach"
+::comment::mc::OverwriteContent		"Vorhandenen Inhalt überschreiben?"
+::comment::mc::AppendContent			"Falls \"nein\" wird der Text angefügt."
 
 ::comment::mc::InsertSymbol			"Symbol &einfügen..."
 ::comment::mc::MiscellaneousSymbols	"Verschiedene Symbole"
@@ -2041,6 +2050,7 @@
 ::encoding::mc::Lang(cy)	"Kymrisch"
 ::encoding::mc::Lang(da)	"Dänisch"
 ::encoding::mc::Lang(de)	"Deutsch"
+::encoding::mc::Lang(de+)	"Deutsch (reformiert)"
 ::encoding::mc::Lang(el)	"Griechisch"
 ::encoding::mc::Lang(en)	"Englisch"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -2103,6 +2113,8 @@
 ::encoding::mc::Lang(vi)	"Vietnamesisch"
 ::encoding::mc::Lang(wa)	"Wallonisch"
 ::encoding::mc::Lang(wen)	"Sorbisch"
+::encoding::mc::Lang(hsb)	"Obersorbisch"
+::encoding::mc::Lang(dsb)	"Niedersorbisch"
 ::encoding::mc::Lang(zh)	"Chinesisch"
 
 ::encoding::mc::Font(hi)	"Devanagari"

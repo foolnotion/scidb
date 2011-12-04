@@ -27,73 +27,80 @@
 namespace eval export {
 namespace eval mc {
 
-set FileSelection					"&File Selection"
-set Options							"&Options"
-set PageSetup						"&Page Setup"
-set Style							"Sty&le"
-set Encoding						"&Encoding"
+set FileSelection			"&File Selection"
+set Options					"&Options"
+set PageSetup				"&Page Setup"
+set Style					"Sty&le"
+set Encoding				"&Encoding"
 
-set Notation						"Notation"
-set Figurines						"Figurines"
-set Graphic							"Graphic"
-set Short							"Short"
-set Long								"Long"
-set Algebraic						"Algebraic"
-set Correspondence				"Correspondence"
-set Telegraphic					"Telegraphic"
-set FontHandling					"Font handling"
-set DiagramStyle					"Diagram Style"
-set UseImagesForDiagram			"Use images for diagram generation"
-set EmebedTruetypeFonts			"Embed TrueType fonts"
-set UseBuiltinFonts				"Use built-in fonts"
-set SelectExportedTags			"Selection of exported tags"
-set ExcludeAllTags				"Exclude all tags"
-set IncludeAllTags				"Include all tags"
-set ExtraTags						"All other extra tags"
+set Notation				"Notation"
+set Figurines				"Figurines"
+set Hyphenation			"Hyphenation"
+set None						"(none)"
+set Graphic					"Graphic"
+set Short					"Short"
+set Long						"Long"
+set Algebraic				"Algebraic"
+set Correspondence		"Correspondence"
+set Telegraphic			"Telegraphic"
+set FontHandling			"Font handling"
+set DiagramStyle			"Diagram Style"
+set UseImagesForDiagram	"Use images for diagram generation"
+set EmebedTruetypeFonts	"Embed TrueType fonts"
+set UseBuiltinFonts		"Use built-in fonts"
+set SelectExportedTags	"Selection of exported tags"
+set ExcludeAllTags		"Exclude all tags"
+set IncludeAllTags		"Include all tags"
+set ExtraTags				"All other extra tags"
 
-set PdfFiles						"PDF Files"
-set HtmlFiles						"HTML Files"
-set TeXFiles						"TeX Files"
+set PdfFiles				"PDF Files"
+set HtmlFiles				"HTML Files"
+set TeXFiles				"TeX Files"
 
-set ExportDatabase				"Export %s Database"
-set ExportDatabaseTitle			"Export Database '%s'"
-set ExportingDatabase			"Exporting %s to file %s"
-set Export							"Export"
-set ExportedGames					"%s game(s) exported"
-set NoGamesForExport				"No games for export."
-set ResetDefaults					"Reset to defaults"
-set UnsupportedEncoding			"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
-set DatabaseIsOpen				"Database '%s' is open. You have to close it first."
+set ExportDatabase		"Export %s Database"
+set ExportDatabaseTitle	"Export Database '%s'"
+set ExportingDatabase	"Exporting %s to file %s"
+set Export					"Export"
+set ExportedGames			"%s game(s) exported"
+set NoGamesForExport		"No games for export."
+set ResetDefaults			"Reset to defaults"
+set UnsupportedEncoding	"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
+set DatabaseIsOpen		"Database '%s' is open. You have to close it first."
 
-set BasicStyle						"Basic Style"
-set GameInfo						"Game Info"
-set GameText						"Game Text"
-set Moves							"Moves"
-set MainLine						"Main Line"
-set Variation						"Variation"
-set Subvariation					"Subvariation"
-set Symbols							"Symbols"
-set Comments						"Comments"
-set Result							"Result"
-set Diagram							"Diagram"
+set BasicStyle				"Basic Style"
+set GameInfo				"Game Info"
+set GameText				"Game Text"
+set Moves					"Moves"
+set MainLine				"Main Line"
+set Variation				"Variation"
+set Subvariation			"Subvariation"
+set Symbols					"Symbols"
+set Comments				"Comments"
+set Result					"Result"
+set Diagram					"Diagram"
 
-set Paper							"Paper"
-set Orientation					"Orientation"
-set Margin							"Margin"
-set Format							"Format"
-set Size								"Size"
-set Custom							"Custom"
-set Potrait							"Potrait"
-set Landscape						"Landscape"
-set Top								"Top"
-set Bottom							"Bottom"
-set Left								"Left"
-set Right							"Right"
-set Justification					"Justification"
-set Even								"Even"
-set Columns							"Columns"
-set One								"One"
-set Two								"Two"
+set Paper					"Paper"
+set Orientation			"Orientation"
+set Margin					"Margin"
+set Format					"Format"
+set Size						"Size"
+set Custom					"Custom"
+set Potrait					"Potrait"
+set Landscape				"Landscape"
+set Top						"Top"
+set Bottom					"Bottom"
+set Left						"Left"
+set Right					"Right"
+set Justification			"Justification"
+set Even						"Even"
+set Columns					"Columns"
+set One						"One"
+set Two						"Two"
+
+set DocumentStyle			"Document Style"
+set Article					"Article"
+set Report					"Report"
+set Book						"Book"
 
 set FormatName(scidb)	"Scidb"
 set FormatName(scid)		"Scid"
@@ -183,17 +190,11 @@ foreach key [array names PdfEncodingMap] { lappend PdfEncodingList $key }
 set PdfEncodingList [lsort -dictionary $PdfEncodingList]
 
 set Paper(tex) {
-	{ A2 420 594 mm }
-	{ A3 297 420 mm }
 	{ A4 210 297 mm }
 	{ A5 148 210 mm }
-	{ A6 105 148 mm }
-	{ B3 353 500 mm }
-	{ B4 250 353 mm }
 	{ B5 176 250 mm }
 	{ Letter 8.5 11 in }
 	{ Legal 8.5 14 in }
-	{ Executive 7.25 10.5 in }
 }
 
 set Paper(pdf) {
@@ -299,10 +300,20 @@ array set Styles {
 	html,BasicStyle,Diagram									{{Scidb Diagram Merida} 20 normal roman {}}
 }
 
+set DocumentStyle {
+	Article
+	Report
+	Book
+}
+
+set Languages {
+	bg br ca cs cy da de de+ dsb el en eo es et eu fi fr ga gd gl he hr
+	hsb hu ia is it ku la ms nl no pl pt ro ru se sk sl sq sr sv tr uk
+}
+
 array set Colors {
-	shadow		#999999
-	text			#c0c0c0
-	highlight	#fff5d6
+	shadow	#999999
+	text		#c0c0c0
 }
 
 array set DefaultTags {
@@ -384,10 +395,6 @@ array set Defaults {
 	pgn,use_scidb_import_format				0
 	pgn,exclude_games_with_illegal_moves	0
 
-	pdf,use-images									0
-	pdf,diagram										{Default Merida}
-	pdf,image-size									200
-
 	pdf,margins,A2									{ 40    53     44    44    }
 	pdf,margins,A3									{ 38    44     31    31    }
 	pdf,margins,A4									{ 20    27     22    22    }
@@ -406,42 +413,50 @@ array set Defaults {
 	{pdf,margins,US 4x8}							{  0.54  0.72   0.42  0.42 }
 	{pdf,margins,US 5x7}							{  0.50  0.63   0.52  0.52 }
 	{pdf,margins,COMM 10}						{  0.64  0.85   0.43  0.43 }
+}
 
-	encoding iso8859-1
+array set Setup {
+	tex,notation									short
+	tex,figurines									graphic
+	tex,primary-lang								en
+
+	pdf,embed										1
+	pdf,builtin										0
+	pdf,notation									short
+	pdf,figurines									graphic
+	pdf,use-images									0
+	pdf,diagram										{Default Merida}
+	pdf,image-size									200
+}
+
+array set SetupPaper {
+	tex,document									Article
+	tex,format										A4
+	tex,orientation								Potrait
+	tex,columns										2
+	tex,justification								1
+
+	pdf,format										A4
+	pdf,custom										{ 210 297 mm }
+	pdf,orientation								Potrait
+	pdf,columns										2
+	pdf,justification								0
+	pdf,paper,top									0
+	pdf,paper,bottom								0
+	pdf,paper,left									0
+	pdf,paper,right								0
 }
 
 array set Values [array get Defaults]
+array set Values [array get Setup]
+array set Values [array get SetupPaper]
 
-set Values(Type)				scidb
-set Values(notation)			short
-set Values(figurines)		graphic
+set Values(Type)					scidb
 
-set Values(pgn,encoding)	iso8859-1
-set Values(scid,encoding)	utf-8
-set Values(scidb,encoding)	utf-8
-
+set Values(pgn,encoding)		iso8859-1
+set Values(scid,encoding)		utf-8
+set Values(scidb,encoding)		utf-8
 set Values(pdf,encoding)		iso8859-1
-set Values(pdf,embed)			1
-set Values(pdf,builtin)			0
-set Values(pdf,paper)			[lsearch -exact -index 0 $Paper(pdf) A4]
-set Values(pdf,paper,top)		0
-set Values(pdf,paper,bottom)	0
-set Values(pdf,paper,left)		0
-set Values(pdf,paper,right)	0
-set Values(pdf,custom)			{ 210 297 mm }
-set Values(pdf,orientation)	Potrait
-set Values(pdf,justification)	0
-set Values(pdf,columns)			1
-
-set Values(tex,paper)			[lsearch -exact -index 0 $Paper(tex) A4]
-set Values(tex,paper,top)		0
-set Values(tex,paper,bottom)	0
-set Values(tex,paper,left)		0
-set Values(tex,paper,right)	0
-set Values(tex,custom)			{ 210 297 mm }
-set Values(tex,orientation)	Potrait
-set Values(tex,justification)	0
-set Values(tex,columns)			1
 
 #if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
 
@@ -465,9 +480,8 @@ namespace import ::tcl::mathfunc::min
 proc open {parent base type name view {closeViewAfterExit 0}} {
 	variable icon::32x32::IconPDF
 	variable icon::32x32::IconHtml
-	variable icon::32x32::IconPS
-	variable icon::36x36::IconPGN
-	variable icon::37x21::IconTeX
+	variable icon::32x32::IconPGN
+	variable icon::32x32::IconTeX
 	variable ::scidb::clipbaseName
 	variable PdfEncodingList
 	variable Types
@@ -505,10 +519,9 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 		scidb	$::icon::32x32::logo  \
 		scid	$::icon::32x32::scid3 \
 		pgn	$IconPGN              \
-		pdf	$IconPDF              \
-		html	$IconHtml             \
 		tex	$IconTeX              \
-		ps		$IconPS               \
+		html	$IconHtml             \
+		pdf	$IconPDF              \
 	]
 	set bwd 2
 
@@ -553,7 +566,7 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	set Info(configure-encoding-pgn) 1
 	set Info(configure-encoding-pdf) 1
 
-	foreach type {pgn pdf scid} {
+	foreach type {pgn pdf tex scid} {
 		grid [BuildOptionsFrame_$type $nb.options.$type] -row 1 -column 1 -sticky nsew
 	}
 	grid rowconfigure $nb.options 1 -weight 1
@@ -634,7 +647,8 @@ proc BuildOptionsFrame_scid {w} {
 	::ttk::label $w.header -textvar [namespace current]::mc::SelectExportedTags
 	set font [$w.header cget -font]
 	if {[llength $font] == 0} { set font TkDefaultFont }
-	$w.header configure -font [list [font configure $font -family]  [font configure $font -size] bold]
+	set bold [list [font configure $font -family]  [font configure $font -size] bold]
+	$w.header configure -font $bold
 	grid $w.header -row 1 -column 1 -columnspan 5 -sticky w
 
 	set nrows [expr {([llength $tagList] + 2)/3}]
@@ -643,7 +657,12 @@ proc BuildOptionsFrame_scid {w} {
 	foreach tag $tagList {
 		if {![info exists Tags($tag)]} { set Tags($tag) 0 }
 		set btn $w.[string tolower $tag 0 0]
-		if {$tag eq "ExtraTag"} { set text $mc::ExtraTags } else { set text $tag }
+		if {$tag eq "ExtraTag"} {
+			set text $mc::ExtraTags
+			incr count
+		} else {
+			set text $tag
+		}
 		::ttk::checkbutton $btn \
 			-text $text \
 			-variable [namespace current]::Tags($tag) \
@@ -733,18 +752,12 @@ proc BuildOptionsFrame_pgn {w} {
 }
 
 
-proc BuildOptionsFrame_pdf {w} {
-	variable DiagramStyles
-	variable DiagramSizes
+proc BuildNotationAndFigurineList {w} {
 	variable Notation
 	variable NotationList
 	variable Figurines
 	variable FigurinesList
-	variable Values
 	variable Colors
-	variable Info
-
-	ttk::frame $w
 
 	set Notation {}
 	foreach entry {short long algebraic correspondence telegraphic} {
@@ -764,40 +777,67 @@ proc BuildOptionsFrame_pdf {w} {
 	set FigurinesList {}
 	foreach entry $Figurines { lappend FigurinesList [lindex $entry 1] }
 
-	foreach {what hasScrollbar} {figurines 1 notation 0} {
-		set var [string toupper $what 0 0]
-		ttk::labelframe $w.$what -text [set mc::$var]
-		ttk::frame $w.$what.list
-		tk::listbox $w.$what.list.lb \
-			-selectmode single \
-			-exportselection false \
-			-listvariable [namespace current]::${var}List \
-			;
-		bind $w.$what.list.lb <<ListboxSelect>> [namespace code [list Set$var $w.$what]]
-		bind $w.$what.list <Configure> [namespace code [list ConfigureListbox $w.$what.list %h]]
-		tk::label $w.$what.sample -borderwidth 1 -relief sunken
-		tk::label $w.$what.sample.text -background white
-		pack $w.$what.sample.text -fill both -expand yes
-		pack propagate $w.$what.sample 0
-		pack $w.$what.list.lb -side left
-		if {$hasScrollbar} {
-			$w.$what.list.lb configure -yscrollcommand "$w.$what.list.sb set"
-			::ttk::scrollbar $w.$what.list.sb -orient vertical -command "$w.$what.list.lb yview"
-			pack $w.$what.list.sb -side left -fill y -expand yes
-			incr lastcol
-		}
-		grid $w.$what.list   -row 1 -column 1 -sticky ns
-		grid $w.$what.sample -row 3 -column 1 -sticky ew
-		grid rowconfigure $w.$what 0 -minsize 2
-		grid rowconfigure $w.$what 2 -minsize $::theme::padding
-		grid rowconfigure $w.$what {2 4} -weight 1
-		grid rowconfigure $w.$what 1 -weight 1000000
-		grid rowconfigure $w.$what 4 -minsize [expr {$::theme::padding + 2}]
-		grid columnconfigure $w.$what {0 2} -minsize [expr {$::theme::padding + 2}]
+	### Figurine #############################################################################
+	ttk::labelframe $w.figurines -text [set mc::Figurines]
+	set list [ttk::frame $w.figurines.list]
+	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 180]
+	$selbox addcol image -id icon
+	$selbox addcol text -id text -expand yes
+	foreach entry $Figurines {
+		lassign $entry lang name
+		set img $::country::icon::flag([::mc::countryForLang $lang])
+		$selbox insert [list $img $name]
 	}
+	$selbox resize
+	pack $selbox -anchor s
+	bind $selbox <<ListboxSelect>> [namespace code [list SetFigurines $w]]
+	bind $list <Configure> [namespace code { ConfigureTListbox %W %h }]
+	set sample [tk::label $w.figurines.sample -borderwidth 1 -relief sunken]
+	tk::label $w.figurines.sample.text -background white
+	pack $w.figurines.sample.text -fill both -expand yes
+	pack propagate $sample 0
 
-	$w.figurines.list.lb itemconfigure 0 -background $Colors(highlight)
+	grid $list   -row 1 -column 1 -sticky ns
+	grid $sample -row 3 -column 1 -sticky ew
+	grid rowconfigure $w.figurines {0 2 4} -minsize $::theme::padding
+	grid rowconfigure $w.figurines {1} -weight 1
+	grid columnconfigure $w.figurines {0 2} -minsize $::theme::padding
 
+	### Notation #############################################################################
+	ttk::labelframe $w.notation -text [set mc::Notation]
+	set list [ttk::frame $w.notation.list]
+	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 165]
+	$selbox addcol text -id text
+	foreach name $NotationList { $selbox insert [list $name] }
+	$selbox resize
+	pack $selbox -anchor s
+	bind $selbox <<ListboxSelect>> [namespace code [list SetNotation $w]]
+	bind $list <Configure> [namespace code { ConfigureTListbox %W %h }]
+	set sample [tk::label $w.notation.sample -borderwidth 1 -relief sunken]
+	tk::label $w.notation.sample.text -background white
+	pack $w.notation.sample.text -fill both -expand yes
+	pack propagate $sample 0
+
+	grid $list   -row 1 -column 1 -sticky ns
+	grid $sample -row 3 -column 1 -sticky ew
+	grid rowconfigure $w.notation {0 2 4} -minsize $::theme::padding
+	grid rowconfigure $w.notation {1} -weight 1
+	grid columnconfigure $w.notation {0 2} -minsize $::theme::padding
+}
+
+
+proc BuildOptionsFrame_pdf {w} {
+	variable DiagramStyles
+	variable DiagramSizes
+	variable Values
+	variable Info
+
+	ttk::frame $w
+
+	### Notation + Figurine #################################################################
+	BuildNotationAndFigurineList $w
+
+	### Font Handling #######################################################################
 	ttk::labelframe $w.options -text $mc::FontHandling
 	ttk::checkbutton $w.options.builtin \
 		-text $mc::UseBuiltinFonts \
@@ -811,6 +851,7 @@ proc BuildOptionsFrame_pdf {w} {
 	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
 	grid rowconfigure $w.options {0 2 4} -minsize $::theme::padding
 
+	### Diagram Style #######################################################################
 	ttk::checkbutton $w.use \
 		-text $mc::UseImagesForDiagram \
 		-variable [namespace current]::Values(pdf,use-images) \
@@ -837,7 +878,7 @@ proc BuildOptionsFrame_pdf {w} {
 	}
 	$selbox resize
 	set f [ttk::frame $w.diagram.sizes -borderwidth 0]
-	ttk::label $f.size -text "$mc::Size:"
+	ttk::label $f.size -text "$mc::Size (pt):"
 	grid $f.size -column 1 -row 1
 	set col 2
 	foreach size $DiagramSizes {
@@ -860,6 +901,7 @@ proc BuildOptionsFrame_pdf {w} {
 	grid rowconfigure $w.diagram {0 4} -minsize $::theme::padding
 	grid rowconfigure $w.diagram 2 -minsize [expr {2*$::theme::padding}]
 
+	### Layout ##############################################################################
 	grid $w.figurines -row 1 -column 1 -sticky ns -rowspan 3
 	grid $w.notation  -row 1 -column 3 -sticky ns -rowspan 3
 	grid $w.options   -row 1 -column 5 -sticky nsew
@@ -869,6 +911,63 @@ proc BuildOptionsFrame_pdf {w} {
 	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
 
 	return $w
+}
+
+
+proc BuildOptionsFrame_tex {w} {
+	variable Languages
+	variable Values
+	variable Info
+
+	ttk::frame $w
+
+	### Notation + Figurine #################################################################
+	BuildNotationAndFigurineList $w
+
+	### Default Language ####################################################################
+	set Info(languages) [list [list none $mc::None]]
+	foreach lang $Languages {
+		lappend Info(languages) [list $lang [::encoding::languageName $lang]]
+	}
+	set Info(languages) [lsort -dictionary -index 1 $Info(languages)]
+	ttk::labelframe $w.language -text $mc::Hyphenation
+	ttk::frame $w.language.list
+	set selbox [::tlistbox $w.language.list.selection -borderwidth 1 -pady 1 -minwidth 180]
+	$selbox addcol image -id icon
+	$selbox addcol text -id name -expand yes
+	foreach entry $Info(languages) {
+		lassign $entry lang name
+		if {$lang eq "none"} {
+			set img {}
+		} else {
+			set img $::country::icon::flag([::mc::countryForLang $lang])
+		}
+		$selbox insert [list $img $name]
+	}
+	$selbox resize
+	pack $selbox -anchor s
+	pack $w.language.list -padx $::theme::padding -pady $::theme::padding -fill y -expand yes
+	bind $w.language.list <Configure> [namespace code { ConfigureTListbox %W %h }]
+	bind $selbox <<ListboxSelect>> [namespace code [list SetLanguage %d]]
+	$selbox select [lsearch -index 0 $Info(languages) $Values(tex,primary-lang)]
+
+	### Layout ##############################################################################
+	grid $w.figurines -row 1 -column 1 -sticky ns
+	grid $w.notation  -row 1 -column 3 -sticky ns
+	grid $w.language  -row 1 -column 5 -sticky ns
+	grid rowconfigure $w {0 2} -minsize $::theme::padding
+	grid rowconfigure $w {1} -weight 1
+	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
+
+	return $w
+}
+
+
+proc SetLanguage {index} {
+	variable Info
+	variable Values
+
+	set Values(tex,primary-lang) [lindex $Info(languages) $index 0]
 }
 
 
@@ -908,8 +1007,11 @@ proc CheckSizes {sizes usedSizes} {
 
 proc UseDiagram {index sizes} {
 	variable Info
+	variable Values
 
-	CheckSizes $sizes [lindex $Info(diagram:list) $index 1]
+	lassign [lindex $Info(diagram:list) $index] value usedSizes
+	set Values(pdf,diagram) $value
+	CheckSizes $sizes $usedSizes
 }
 
 
@@ -966,19 +1068,10 @@ proc ResetTags {value} {
 
 
 proc UseBuiltinFonts {} {
-	variable Values
 	variable Info
 
-	if {$Values(pdf,builtin)} {
-		set Info(fonts) {Courier Helvetica Times-Roman}
-		# TODO map fonts
-	} else {
-		set Info(fonts) {}
-		# TODO map fonts
-	}
-
-	if {[info exists Values(fontsel)]} {
-		StyleSelected $Values(fonttree) 0
+	if {[info exists Info(fontsel)]} {
+		StyleSelected $Info(fonttree) 0
 	}
 }
 
@@ -988,49 +1081,45 @@ proc SetupOptions {pane} {
 	variable Figurines
 	variable Notation
 
-	set index [lsearch -exact -index 0 $Figurines $Values(figurines)]
-	$pane.pdf.figurines.list.lb selection clear 0 end
-	$pane.pdf.figurines.list.lb selection set $index
-	SetFigurines $pane.pdf.figurines
+	set type [lindex [split $pane .] end]
 
-	set index [lsearch -exact -index 0 $Notation $Values(notation)]
-	$pane.pdf.notation.list.lb selection clear 0 end
-	$pane.pdf.notation.list.lb selection set $index
-	SetNotation $pane.pdf.notation
+	set index [lsearch -exact -index 0 $Figurines $Values($type,figurines)]
+	$pane.figurines.list.selection select $index
 
-	if {$Values(Type) eq "pdf"} {
-		grid $pane.pdf.options
-		grid $pane.pdf.diagram
-	} else {
-		grid remove $pane.pdf.options
-		grid remove $pane.pdf.diagram
-	}
+	set index [lsearch -exact -index 0 $Notation $Values($type,notation)]
+	$pane.notation.list.selection select $index
+
+	SetFigurines $pane
 }
 
 
-proc ConfigureListbox {list height} {
-	array set metrics [font metrics [$list.lb cget -font]]
-	set linespace [expr {$metrics(-linespace) + 1}]
+proc ConfigureTListbox {list height} {
+	set linespace [$list.selection cget -linespace]
 	set nrows [expr {$height/$linespace}]
-	if {$nrows > [$list.lb cget -height]} {
-		$list.lb configure -height $nrows
+	if {$nrows > [$list.selection cget -height]} {
+		$list.selection configure -height $nrows
 	}
 }
 
 
 proc SetNotation {w} {
 	variable Notation
+	variable Figurines
 	variable Values
 
-	set notation [lindex $Notation [$w.list.lb curselection] 0]
-	set Values(pdf,notation) $notation
+	set type [lindex [split $w .] end]
+	set notation [lindex $Notation [$w.notation.list.selection curselection] 0]
+	set Values($type,notation) $notation
+
+	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
+	if {$lang eq "graphic"} { set n N } else { set n [lindex $::font::figurines($lang) 4] }
 
 	switch $notation {
-		short				{ $w.sample.text configure -text "1.e4 Nf6" }
-		long				{ $w.sample.text configure -text "1.e2-e4 g8-f6" }
-		algebraic		{ $w.sample.text configure -text "1.e2e4 g8f6" }
-		correspondence	{ $w.sample.text configure -text "1.5254 7866" }
-		telegraphic		{ $w.sample.text configure -text "1.GEGO WATI" }
+		short				{ $w.notation.sample.text configure -text "1.e4 ${n}f6" }
+		long				{ $w.notation.sample.text configure -text "1.e2-e4 ${n}g8-f6" }
+		algebraic		{ $w.notation.sample.text configure -text "1.e2e4 g8f6" }
+		correspondence	{ $w.notation.sample.text configure -text "1.5254 7866" }
+		telegraphic		{ $w.notation.sample.text configure -text "1.GEGO WATI" }
 	}
 }
 
@@ -1039,14 +1128,16 @@ proc SetFigurines {w} {
 	variable Figurines
 	variable Values
 
-	set lang [lindex $Figurines [$w.list.lb curselection] 0]
-	set Values(pdf,figurines) $lang
+	set type [lindex [split $w .] end]
+	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
+	set Values($type,figurines) $lang
 	if {$lang eq "graphic"} {
-		$w.sample.text configure -font ::font::figurine
+		$w.figurines.sample.text configure -font ::font::figurine
 	} else {
-		$w.sample.text configure -font TkTextFont
+		$w.figurines.sample.text configure -font TkTextFont
 	}
-	$w.sample.text configure -text [join [split $::font::figurines($lang) {}] " "]
+	$w.figurines.sample.text configure -text [join $::font::figurines($lang) " "]
+	if {[$w.notation.list.selection curselection] >= 0} { SetNotation $w }
 }
 
 
@@ -1147,6 +1238,7 @@ proc Select {nb index} {
 	set savemode 0
 	grid remove $nb.options.pgn
 	grid remove $nb.options.pdf
+	grid remove $nb.options.tex
 	grid remove $nb.options.scid
 
 	switch $Values(Type) {
@@ -1186,7 +1278,6 @@ proc Select {nb index} {
 				HideTab $nb $nb.encoding
 			}
 			grid $nb.options.pgn
-			SetupOptions $nb.options
 			set var $::menu::mc::PGNFiles
 			set ext {.pgn .pgn.gz .zip}
 			set savemode 1
@@ -1203,11 +1294,12 @@ proc Select {nb index} {
 				HideTab $nb $nb.encoding
 			}
 			grid $nb.options.pdf
-			SetupOptions $nb.options
-			set Values(useCustom) 1
+			SetupOptions $nb.options.pdf
+			set Info(useCustom) 1
 			set Info(configure-style) 1
 			set var $mc::PdfFiles
 			set ext .pdf
+			::beta::notYetImplemented $nb tex
 		}
 
 		html {
@@ -1217,7 +1309,7 @@ proc Select {nb index} {
 			ShowTab $nb $nb.style
 			HideTab $nb $nb.encoding
 			grid $nb.options.pdf
-			SetupOptions $nb.options
+			SetupOptions $nb.options.pdf
 			set Info(configure-style) 1
 			set var $mc::HtmlFiles
 			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
@@ -1226,17 +1318,16 @@ proc Select {nb index} {
 
 		tex {
 			ShowTab $nb $nb.options
-			HideTab $nb $nb.setup_pdf
 			ShowTab $nb $nb.setup_tex
+			HideTab $nb $nb.setup_pdf
 			ShowTab $nb $nb.style
 			HideTab $nb $nb.encoding
-			grid $nb.options.pdf
-			SetupOptions $nb.options
+			grid $nb.options.tex
+			SetupOptions $nb.options.tex
 			set Info(configure-style) 1
-			set Values(useCustom) 0
+			set Info(useCustom) 0
 			set var $mc::TeXFiles
 			set ext {.tex .ltx}
-			::beta::notYetImplemented $nb tex
 		}
 	}
 
@@ -1293,17 +1384,18 @@ proc ConfigureEncoding {w tab encList} {
 	variable Defaults
 
 	if {[winfo exists $w.$tab]} { return }
+	set type $Values(Type)
 
-	if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
+	if {$type eq "pdf" && $Info(pdf-encoding)} {
 		set encoding $Info(encoding)
 	} else {
-		set encoding $Values($Values(Type),encoding)
+		set encoding $Values($type,encoding)
 	}
 
 	if {$Values(Type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
-	::encoding::build $w.$tab $currentEncoding $Defaults(encoding) [winfo width $w] 0 $encList
-	if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
-		::encoding::activate $w.$tab $Defaults(encoding)
+	::encoding::build $w.$tab $currentEncoding iso8859-1 [winfo width $w] 0 $encList
+	if {$type eq "pdf" && $Info(pdf-encoding)} {
+		::encoding::activate $w.$tab iso8859-1
 	} else {
 		::encoding::select $w.$tab $encoding
 	}
@@ -1332,13 +1424,13 @@ proc ConfigureStyle {w} {
 	variable StyleLayout
 	variable Styles
 	variable Values
+	variable Info
 
 	if {[winfo exists $w.t]} {
 		foreach child [winfo children $w] { destroy $child }
 	}
 
 	treectrl $w.t \
-		-highlightthickness 0 \
 		-borderwidth 1 \
 		-relief sunken \
 		-background white \
@@ -1391,29 +1483,30 @@ proc ConfigureStyle {w} {
 	bind $w.sv <ButtonPress-1> [list focus $w.t]
 
 	set type $Values(Type)
-	set Values(style) [lindex $StyleLayout($Values(Type)) 0 1]
-	set basic $Styles($type,$Values(style))
+	set Info(style) [lindex $StyleLayout($Values(Type)) 0 1]
+	set basic $Styles($type,$Info(style))
 	lassign $basic family size weight slant color
 	set font [font create -family $family -size $size -weight $weight -slant $slant]
 	if {$family eq "Helvetica"} {
-		variable ::dialog::choosefont::Helvetica
+		variable ::dialog::choosefont::fontFamilies
+		set helvetica $fontFamilies(Helvetica)
 		array set attrs [font actual $font]
 		set index 0
-		while {$index < [llength $Helvetica] && [string compare -nocase $attrs(-family) $family]} {
-			set family [lindex $Helvetica $index]
+		while {$index < [llength $helvetica] && [string compare -nocase $attrs(-family) $family]} {
+			set family [lindex $helvetica $index]
 			set font [font create -family $family -size $size -weight $weight -slant $slant]
 			array set attrs [font actual $font]
 		}
 		if {[string compare -nocase $attrs(-family) $family] == 0} {
-			lset Styles($type,$Values(style)) 0 $family
+			lset Styles($type,$Info(style)) 0 $family
 		}
 	}
 	::dialog::::choosefont::build $w.fontsel $font {} $color
 	bind $w.fontsel <<FontSelected>> [namespace code [list FontSelected %d]]
 	bind $w.fontsel <<FontColor>> [namespace code [list FontColor %d]]
 
-	set Values(fontsel) $w.fontsel
-	set Values(fonttree) $w.t
+	set Info(fontsel) $w.fontsel
+	set Info(fonttree) $w.t
 	StyleSelected $w.t 0
 
 	grid $w.t  			-row 1 -column 1 -sticky nsew
@@ -1452,7 +1545,7 @@ proc StyleSelected {tree index} {
 		set style [join [list [lindex $StyleLayout($Values(Type)) $parent 1] {*}$style] ","]
 		set parent [$tree item parent $parent]
 	}
-	set Values(style) $style
+	set Info(style) $style
 
 	lassign {{} {} {} {} {}} family size weight slant color
 	set style [join [lreplace [split $style ","] end end] ","]
@@ -1471,25 +1564,43 @@ proc StyleSelected {tree index} {
 	set Values($type,slant)  $slant
 	set Values($type,color)  $color
 
-	lassign $Styles($type,$Values(style)) f s w l c
+	lassign $Styles($type,$Info(style)) f s w l c
 	if {[llength $f]} { set family $f }
 	if {[llength $s]} { set size   $s }
 	if {[llength $w]} { set weight $w }
 	if {[llength $l]} { set slant  $l }
 	if {[llength $c]} { set color  $c }
 
-	set Values(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
+	set Info(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
 
-	switch -glob -- $Values(fontType) {
+	switch -glob -- $Info(fontType) {
 		Figurines	{ set fonts $::font::chessFigurineFonts }
 		Diagram		{ set fonts $::font::chessDiagramFonts }
 		Symbols		{ set fonts $::font::chessSymbolFonts }
-		default		{ set fonts $Info(fonts) }
+
+		default		{
+			if {$type eq "tex"} {
+				set Info(fonts) {{Avant Garde} Bookman Chancery Charter Courier Fixed Fourier \
+										Helvetica {Latin Modern} {New Century} Palatino Times}
+			} elseif {$Values(pdf,builtin)} {
+				set Info(fonts) {Courier Helvetica Times-Roman}
+			} else {
+				set Info(fonts) {}
+			}
+			set fonts $Info(fonts)
+		}
 	}
 
-	::dialog::::choosefont::setFonts $Values(fontsel) $fonts
+	if {$type eq "tex"} {
+		set sizes {8 9 10 11 12 14 17 20 25}
+	} else {
+		set sizes {}
+	}
+
+	::dialog::::choosefont::setFonts $Info(fontsel) $fonts
+	::dialog::::choosefont::setSizes $Info(fontsel) $sizes
 	UpdateSample $family
-	::dialog::::choosefont::select $Values(fontsel) \
+	::dialog::::choosefont::select $Info(fontsel) \
 		-family $family \
 		-size $size \
 		-weight $weight \
@@ -1500,10 +1611,11 @@ proc StyleSelected {tree index} {
 
 proc UpdateSample {family} {
 	variable Values
+	variable Info
 
 	set sample ""
 
-	switch $Values(fontType) {
+	switch $Info(fontType) {
 		Diagram {
 			upvar 0 ::font::[set ::font::chessDiagramFontsMap($family)] encoding
 			foreach code {lite,wk lite,wq lite,wr lite,wb lite,wn lite,wp} {
@@ -1533,7 +1645,7 @@ proc UpdateSample {family} {
 		}
 	}
 
-	::dialog::::choosefont::setSample $Values(fontsel) $sample
+	::dialog::::choosefont::setSample $Info(fontsel) $sample
 }
 
 
@@ -1541,19 +1653,20 @@ proc FontSelected {fontInfo} {
 	variable StyleLayout
 	variable Styles
 	variable Values
+	variable Info
 
 	set type $Values(Type)
 	lassign $fontInfo family size weight slant
-	set color [lindex $Styles($type,$Values(style)) 4]
+	set color [lindex $Styles($type,$Info(style)) 4]
 
-	if {$Values(style) ne [lindex $StyleLayout($Values(Type)) 0 1]} {
+	if {$Info(style) ne [lindex $StyleLayout($Values(Type)) 0 1]} {
 		foreach item {family size weight slant} {
 			if {[set $item] eq $Values($type,$item)} { set $item {} }
 		}
 	}
 
-	set Styles($type,$Values(style)) [list $family $size $weight $slant $color]
-	switch $Values(fontType) { Symbols - Diagram - Figurines { UpdateSample $family } }
+	set Styles($type,$Info(style)) [list $family $size $weight $slant $color]
+	switch $Info(fontType) { Symbols - Diagram - Figurines { UpdateSample $family } }
 }
 
 
@@ -1564,7 +1677,7 @@ proc FontColor {color} {
 	set type $Values(Type)
 	set color [::dialog::choosecolor::getActualColor $color]
 	if {$color eq $Values($type,color)} { set color {} }
-	lset Styles($type,$Values(style)) 4 $color
+	lset Styles($type,$Info(style)) 4 $color
 }
 
 
@@ -1573,6 +1686,7 @@ proc ConfigureSetup {w} {
 	variable Info
 	variable Values
 	variable Colors
+	variable DocumentStyle
 
 	set type $Values(Type)
 	set Info($type,formats) {}
@@ -1580,13 +1694,18 @@ proc ConfigureSetup {w} {
 		lassign $format id width height units
 		lappend Info($type,formats) "$id ($width x $height $units)"
 	}
-	set Info($type,paper,textvar) [lindex $Info($type,formats) $Values($type,paper)]
-	if {$Values(useCustom)} {
+	if {$Info(useCustom)} {
 		lassign $Values($type,custom) \
 			Info($type,paper,width) Info($type,paper,height) Info($type,paper,units)
 		lappend Info($type,formats) $mc::Custom
 		set Info($type,paper,units,textvar) $Info($type,paper,units)
 	}
+	if {$Values($type,format) eq "_Custom_"} {
+		set n [llength $Paper($type)]
+	} else {
+		set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+	}
+	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
 
 	canvas $w.c \
 		-borderwidth 2 \
@@ -1602,15 +1721,35 @@ proc ConfigureSetup {w} {
 	$w.c create rectangle 0 0 0 0 -tag left -fill white -outline $Colors(text)
 	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline $Colors(text)
 
+	if {$type eq "tex"} {
+		set Info(tex,document-styles) {}
+		foreach style $DocumentStyle {
+			lappend Info(tex,document-styles) [set mc::$style]
+		}
+		set n [lsearch $DocumentStyle $Values(tex,document)]
+		set Info(tex,document) [lindex $Info(tex,document-styles) $n]
+		ttk::labelframe $w.doc -text $mc::DocumentStyle
+		ttk::combobox $w.doc.style \
+			-state readonly \
+			-values $Info(tex,document-styles) \
+			-textvariable [namespace current]::Info(tex,document)
+		bind $w.doc.style <<ComboboxSelected>> [namespace code [list SelectDocumentStyle $w]]
+		grid $w.doc.style -row 1 -column 1 -sticky ew
+		grid rowconfigure $w.doc {0 2} -minsize $::theme::padding
+		grid columnconfigure $w.doc {0 2} -minsize $::theme::padding
+		grid columnconfigure $w.doc {1} -weight 1
+	}
 	ttk::labelframe $w.paper -text $mc::Paper
-	if {$Values(useCustom)} {
+	if {$Info(useCustom)} {
 		ttk::labelframe $w.margins -text $mc::Margin
 	}
 	ttk::labelframe $w.orient -text $mc::Orientation
 	ttk::labelframe $w.just -text $mc::Justification
 	ttk::labelframe $w.columns -text $mc::Columns
 
-	ttk::label $w.paper.lformat -text $mc::Format
+	if {$Info(useCustom)} {
+		ttk::label $w.paper.lformat -text $mc::Format
+	}
 	ttk::combobox $w.paper.cbformat \
 		-state readonly \
 		-values $Info($type,formats) \
@@ -1618,10 +1757,12 @@ proc ConfigureSetup {w} {
 		;
 	bind $w.paper.cbformat <<ComboboxSelected>> [namespace code [list ConfigureWidgets $w paper]]
 
-	grid $w.paper.lformat	-row 1 -column 1 -sticky w
-	grid $w.paper.cbformat	-row 1 -column 3 -sticky ew -columnspan 7
+	if {$Info(useCustom)} {
+		grid $w.paper.lformat	-row 1 -column 1 -sticky w
+	}
+	grid $w.paper.cbformat		-row 1 -column 3 -sticky ew -columnspan 7
 
-	if {$Values(useCustom)} {
+	if {$Info(useCustom)} {
 		ttk::label $w.paper.lsize -text $mc::Size
 		ttk::entry $w.paper.width -width 5 -textvariable [namespace current]::Info($type,paper,width)
 		::validate::entryFloat $w.paper.width
@@ -1642,22 +1783,27 @@ proc ConfigureSetup {w} {
 		grid $w.paper.x			-row 3 -column 5 -sticky ew
 		grid $w.paper.height		-row 3 -column 7 -sticky ew
 		grid $w.paper.units		-row 3 -column 9 -sticky ew
+
+		grid columnconfigure $w.paper {0 2 10} -minsize $::theme::padding
+	} else {
+		grid columnconfigure $w.paper {0 10} -minsize $::theme::padding
 	}
 
 	grid rowconfigure $w.paper {0 2 4} -minsize $::theme::padding
-	grid columnconfigure $w.paper {0 2 10} -minsize $::theme::padding
 	grid columnconfigure $w.paper {4 6 8} -minsize 2
 	grid columnconfigure $w.paper {3 7} -weight 1
 
-	foreach dir {top bottom left right} {
-		set Info($type,paper,$dir) $Values($type,paper,$dir)
+	if {$type eq "pdf"} {
+		foreach dir {top bottom left right} {
+			set Info($type,paper,$dir) $Values($type,paper,$dir)
+		}
 	}
 
-	if {$Values(useCustom)} {
-		if {$Values($type,paper) == [llength $Paper($type)]} {
+	if {$Info(useCustom)} {
+		if {$Values($type,format) eq "_Custom_"} {
 			set units [lindex $Values($type,custom) 2]
 		} else {
-			set units [lindex $Paper($type) $Values($type,paper) 3]
+			set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,format)] 3]
 		}
 		foreach {dir row col} {top 1 1 bottom 3 1 left 1 5 right 3 5} {
 			set text [string toupper $dir 0 0]
@@ -1731,28 +1877,44 @@ proc ConfigureSetup {w} {
 
 	ttk::button $w.reset -text $mc::ResetDefaults -command [namespace code [list ResetPaper $w]]
 
-	grid $w.paper		-row  2 -column 1 -sticky ew -columnspan 3
-	if {$Values(useCustom)} {
-		grid $w.margins	-row  4 -column 1 -sticky ew -columnspan 3
+	if {$type eq "tex"} {
+		grid $w.doc			-row  1 -column 1 -sticky ew -columnspan 3
 	}
-	grid $w.orient		-row  6 -column 1 -sticky ew -columnspan 3
-	grid $w.just		-row  8 -column 1 -sticky ew
-	grid $w.columns	-row  8 -column 3 -sticky ew
-	grid $w.reset		-row 10 -column 1 -sticky w -columnspan 3
-	grid $w.c			-row  1 -column 5 -sticky nsew -rowspan 11
+	grid $w.paper			-row  3 -column 1 -sticky ew -columnspan 3
+	if {$Info(useCustom)} {
+		grid $w.margins	-row  5 -column 1 -sticky ew -columnspan 3
+	}
+	grid $w.orient			-row  7 -column 1 -sticky ew -columnspan 3
+	grid $w.just			-row  9 -column 1 -sticky ew
+	grid $w.columns		-row  9 -column 3 -sticky ew
+	grid $w.reset			-row 11 -column 1 -sticky w -columnspan 3
+	grid $w.c				-row  1 -column 5 -sticky nsew -rowspan 12
 
-	if {$Values(useCustom)} {
-		grid rowconfigure $w {0 3 5 7 11 13} -minsize $::theme::padding
+	if {$type eq "tex"} {
+		set rows {0 2 6 8 10 13}
+	} elseif {$Info(useCustom)} {
+		set rows {0 4 6 8 10 13}
 	} else {
-		grid rowconfigure $w {0 3 7 11 13} -minsize $::theme::padding
+		set rows {0 6 8 10 13}
 	}
-	grid rowconfigure $w 9 -minsize [expr {2*$::theme::padding}]
-	grid rowconfigure $w 11 -weight 1
+	grid rowconfigure $w $rows -minsize $::theme::padding
+	grid rowconfigure $w 10 -minsize [expr {2*$::theme::padding}]
+	grid rowconfigure $w 12 -weight 1
 	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
 	grid columnconfigure $w 5 -weight 1
 
 	ConfigureWidgets $w
 	bind $w.c <Configure> [namespace code [list RefreshPreview $w]]
+}
+
+
+proc SelectDocumentStyle {w} {
+	variable Info
+	variable Values
+	variable DocumentStyle
+
+	set n [lsearch $Info(tex,document-styles) $Info(tex,document)]
+	set Values(tex,document) [lindex $DocumentStyle $n]
 }
 
 
@@ -1777,13 +1939,14 @@ proc RefreshPreview {w} {
 		}
 	}
 
-	if {$Values(useCustom) && $Values($type,paper) == [llength $Paper($type)]} {
+	if {$Values($type,format) eq "_Custom_"} {
 		set pw $Info($type,paper,width)
 		set ph $Info($type,paper,height)
 		set units $Info($type,paper,units)
 		set Values($type,custom) [list $pw $ph $units]
 	} else {
-		lassign [lindex $Paper($type) $Values($type,paper)] id pw ph units
+		set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+		lassign [lindex $Paper($type) $n] id pw ph units
 	}
 	if {[llength $pw] == 0} { set pw 0 }
 	if {[llength $ph] == 0} { set ph 0 }
@@ -1890,10 +2053,10 @@ proc GetUnits {} {
 
 	set type $Values(Type)
 
-	if {$Values($type,paper) == [llength $Paper($type)]} {
+	if {$Values($type,format) eq "_Custom_"} {
 		set units $Info($type,paper,units,textvar)
 	} else {
-		set units [lindex $Paper($type) $Values($type,paper) 3]
+		set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,format)]]
 	}
 
 	return $units
@@ -1973,10 +2136,15 @@ proc ConfigureWidgets {w {action {}}} {
 	variable Defaults
 
 	set type $Values(Type)
-	set Values($type,paper) [lsearch -exact $Info($type,formats) [$w.paper.cbformat get]]
+	set n [lsearch -exact $Info($type,formats) [$w.paper.cbformat get]]
+	if {$n == [llength $Paper($type)]} {
+		set Values($type,format) _Custom_
+	} else {
+		set Values($type,format) [lindex $Paper($type) $n 0]
+	}
 
-	if {$Values(useCustom)} {
-		if {$Values($type,paper) == [llength $Paper($type)]} {
+	if {$Info(useCustom)} {
+		if {$Values($type,format) eq "_Custom_"} {
 			$w.paper.width configure -state normal
 			$w.paper.height configure -state normal
 			$w.paper.units configure -state readonly
@@ -1985,14 +2153,15 @@ proc ConfigureWidgets {w {action {}}} {
 			foreach name {width height units} {
 				$w.paper.$name configure -state disabled
 			}
-			set wantedUnits [lindex $Paper($type) $Values($type,paper) 3]
+			set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+			set wantedUnits [lindex $Paper($type) $n 3]
 		}
 
 		if {$action ne "reset"} {
 			set origUnits $Info($type,paper,units)
 			set Info($type,paper,units) $wantedUnits
 
-			if {$action ne "paper" && $Values($type,paper) == [llength $Paper($type)]} {
+			if {$action ne "paper" && $Values($type,format) eq "_Custom_"} {
 				foreach attr {width height} {
 					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
 				}
@@ -2011,7 +2180,7 @@ proc ConfigureWidgets {w {action {}}} {
 
 		$w.margins configure -text "$mc::Margin ($wantedUnits)"
 	} else {
-		lassign $Defaults(pdf,margins,[lindex $Paper($type) $Values($type,paper) 0]) \
+		lassign $Defaults(pdf,margins,$Values($type,format)) \
 			Info($type,paper,top) Info($type,paper,bottom) \
 			Info($type,paper,left) Info($type,paper,right)
 	}
@@ -2025,16 +2194,23 @@ proc ResetPaper {w} {
 	variable Info
 	variable Values
 	variable Defaults
+	variable DocumentStyle
+	variable SetupPaper
 
 	set type $Values(Type)
-	set Values($type,paper) 2
-	set Values($type,orientation) Potrait
-	set Values($type,justification) 0
-	set Values($type,columns) 1
-	set Info($type,paper,textvar) [lindex $Info($type,formats) $Values($type,paper)]
+
+	array set Values [array get SetupPaper $type,*]
+
+	set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
 	set Info($type,paper,units) [GetUnits]
 
-	set wantedUnits [lindex $Paper($type) $Values($type,paper) 3]
+	if {$type eq "tex"} {
+		set n [lsearch $DocumentStyle $Values(tex,document)]
+		set Info(tex,document) [lindex $Info(tex,document-styles) $n]
+	}
+
+	set wantedUnits [lindex $Paper($type) $n 3]
 	foreach dir {top bottom left right} {
 		set Values($type,paper,$dir) 0
 		set Info($type,paper,$dir) [DefaultMargin $dir $type $wantedUnits]
@@ -2050,10 +2226,10 @@ proc DefaultMargin {dir type units} {
 	variable Paper
 	variable Info
 
-	if {$Values($type,paper) == [llength $Paper($type)]} {
+	if {[lsearch -index 0 $Paper($type) $Values($type,format)] == -1} {
 		set format A4
 	} else {
-		set format [lindex $Paper($type) $Values($type,paper) 0]
+		set format $Values($type,format)
 	}
 
 	lassign $Defaults(pdf,margins,$format) m(top) m(bottom) m(left) m(right)
@@ -2104,55 +2280,142 @@ proc DoExport {parent dlg file} {
 
 	set tagList {}
 
-	if {$Values(Type) eq "scid"} {
-		foreach tag [array names Tags] {
-			if {$Tags($tag)} {
-				lappend tagList $tag
-				if {[string match White/Black* $tag]} {
-					set name [string range $tag 11 end]
-					lappend tagList White$name
-					lappend tagList Black$name
-				} else {
+	switch $Values(Type) {
+		scid {
+			foreach tag [array names Tags] {
+				if {$Tags($tag)} {
 					lappend tagList $tag
+					if {[string match White/Black* $tag]} {
+						set name [string range $tag 11 end]
+						lappend tagList White$name
+						lappend tagList Black$name
+					} else {
+						lappend tagList $tag
+					}
 				}
 			}
 		}
-	}
 
-	if {$Values(Type) eq "pdf"} {
-		# Values(pdf,encoding)
-		# Values(pdf,embed)
-		# Values(pdf,builtin)
-		# Values(pdf,paper)
-		# Values(pdf,paper,top)
-		# Values(pdf,paper,bottom)
-		# Values(pdf,paper,left)
-		# Values(pdf,paper,right)
-		# Values(pdf,custom)
-		# Values(pdf,orientation)
-		# Values(pdf,justification)
-		# Values(pdf,columns)
-		# Values(pdf,use-images)
-		# Values(pdf,diagram)
-		# Values(pdf,imageSize)
-		# Values(notation)
-		# Values(figurines)
+		pdf {
+			# Values(pdf,encoding)
+			# Values(pdf,embed)
+			# Values(pdf,builtin)
+			# Values(pdf,format)
+			# Values(pdf,paper,top)
+			# Values(pdf,paper,bottom)
+			# Values(pdf,paper,left)
+			# Values(pdf,paper,right)
+			# Values(pdf,custom)
+			# Values(pdf,orientation)
+			# Values(pdf,justification)
+			# Values(pdf,columns)
+			# Values(pdf,use-images)
+			# Values(pdf,diagram)
+			# Values(pdf,imageSize)
+			# Values(pdf,notation)
+			# Values(pdf,figurines)
 
-		# pdf,BasicStyle
-		# pdf,BasicStyle,GameInfo
-		# pdf,BasicStyle,GameText
-		# pdf,BasicStyle,GameText,Moves
-		# pdf,BasicStyle,GameText,Moves,MainLine
-		# pdf,BasicStyle,GameText,Moves,Variation
-		# pdf,BasicStyle,GameText,Moves,Subvariation
-		# pdf,BasicStyle,GameText,Moves,Figurines
-		# pdf,BasicStyle,GameText,Moves,Symbols
-		# pdf,BasicStyle,GameText,Comments
-		# pdf,BasicStyle,GameText,Comments,MainLine
-		# pdf,BasicStyle,GameText,Comments,Variation
-		# pdf,BasicStyle,GameText,Comments,Subvariation
-		# pdf,BasicStyle,GameText,Result
-		# pdf,BasicStyle,Diagram
+			# pdf,BasicStyle
+			# pdf,BasicStyle,GameInfo
+			# pdf,BasicStyle,GameText
+			# pdf,BasicStyle,GameText,Moves
+			# pdf,BasicStyle,GameText,Moves,MainLine
+			# pdf,BasicStyle,GameText,Moves,Variation
+			# pdf,BasicStyle,GameText,Moves,Subvariation
+			# pdf,BasicStyle,GameText,Moves,Figurines
+			# pdf,BasicStyle,GameText,Moves,Symbols
+			# pdf,BasicStyle,GameText,Comments
+			# pdf,BasicStyle,GameText,Comments,MainLine
+			# pdf,BasicStyle,GameText,Comments,Variation
+			# pdf,BasicStyle,GameText,Comments,Subvariation
+			# pdf,BasicStyle,GameText,Result
+			# pdf,BasicStyle,Diagram
+		}
+	
+		tex {
+			# tex,BasicStyle
+			# tex,BasicStyle,GameInfo
+			# tex,BasicStyle,GameText
+			# tex,BasicStyle,GameText,Moves
+			# tex,BasicStyle,GameText,Moves,MainLine
+			# tex,BasicStyle,GameText,Moves,Variation
+			# tex,BasicStyle,GameText,Moves,Subvariation
+			# tex,BasicStyle,GameText,Comments
+			# tex,BasicStyle,GameText,Comments,MainLine
+			# tex,BasicStyle,GameText,Comments,Variation
+			# tex,BasicStyle,GameText,Comments,Subvariation
+			# tex,BasicStyle,GameText,Result
+
+			# Values(tex,notation)
+			# Values(tex,figurines)
+
+			# column style for main line moves (default)
+			#-------------------------------------------
+			# list of language codes for comments
+			#-------------------------------------------
+			# show all diagrams from white's perspective
+			# show all diagrams from black's perspective
+			# show diagram movers (default)
+			# board size (10pt, 15pt, 20pt, 30pt) (default is 20pt)
+			#-------------------------------------------
+			# map unknown NAG's to comments (en,de,it,es) (default is current language)
+			# map all NAG's to comments (en,de,it,es) (default is current language)
+
+			# NAG mapping:
+			# --------------
+			# 7 -> 8
+			# --------------
+			# 11 -> 10
+			# 12 -> 10
+			# --------------
+			# 22/23 -> 176
+			# --------------
+			# 24/25 -> 164
+			# 26/27 -> 164
+			# 28/29 -> 164
+			# --------------
+			# 30/31 -> 175
+			# 32/33 -> 175
+			# 34/35 -> 175
+			# --------------
+			# 36/37 -> 179
+			# 38/39 -> 179
+			# --------------
+			# 40/41 -> 178
+			# --------------
+			# 44/45 -> 181
+			# --------------
+			# 48/49 -> 167
+			# 50/51 -> 167
+			# 52/53 -> 167
+			# --------------
+			# 54/55 -> 183		(60/61 -> 184)
+			# 56/57 -> 183		(62/63 -> 184)
+			# 58/59 -> 183		(64/65 -> 184)
+			# --------------
+			# 130/131 -> 180
+			# 132/133 -> 180
+			# 134/135 -> 180
+			# --------------
+			# 151/152 -> 182
+
+			set families {}
+			foreach style [array names Values tex,BasicStyle,*] {
+				lassign $Values($style) family size weight slant color
+				set name [string range $style 4 end]
+				append preamble "\\def\\$name\${{$family} \\$size {$weight} {$slant} {$color}}"
+			}
+			
+			set preamble "
+				\\def\\DocumentStyle{[string tolower $Values(tex,document)]}
+				\\def\\Hyphenation{$Values(tex,primary-lang)}
+				\\let\\FontSize\\[lindex $Values(tex,BasicStyle) 1]
+				\\def\\PageStyle{$Values(tex,format)}
+				\\def\\ColumnStyle{[expr {$Values(tex,columns) == 1 ? onecolumn : twocolumn}]}
+				\\def\\Orientation{$Values(tex,orientation)}
+				\\let\\Justification\\$Values(tex,justification)
+			"
+		}
 	}
 
 	switch [::dialog::fsbox::saveMode $Info(fsbox)] {
@@ -2298,111 +2561,144 @@ set IconHtml [image create photo -data {
 	Z89a+H8a/wFQq0OtunEjdgAAAABJRU5ErkJggg==
 }]
 
-set IconPS [image create photo -data {
-	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
+set IconPGN [image create photo -data {
+	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
+	AABJRU5ErkJggg==
 }]
 
-} ;# namespace 32x32
+#set IconPS [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAANkE3LLaAgAABb5J
+#	REFUeJy1lstvVMkVxn/16Ot+OHYzpDO0bTFx7Eg48owCFiLyLtZIiBBFKJJJdl4QpCwMGjaR
+#	4A/IZJMtCyKxYMECsmFnFKEgkUV2M4mEsIdIjBTGBI8ZP9rdfV9VZxbX3TZ2d9uDlCOVbune
+#	qvt99Z1HHcP/1/rn5+d/WavV0tXV1W86LVC9dt+4cePT6enpn3nv3wXcl0qlYzMzMz+5c+fO
+#	X+fm5mY7LbI9fqCmpqZ+fv78+TPvgi4iLC8v8+bNG6IoKnZb14uAbGxsNA8D5pwjTVOcc+25
+#	iNBoNCgUCgDynQgUi8VjIyMj4/l8vnwQuPd+3xARRDJMpRRKdfe07vRydnb290+fPn0yPT39
+#	017gIvIWaCciB1lHBay1RWttT+Z7CfRS4TsT6OvrE4A0TQ8N7px7S4kWgYMO0dEFrU3Oua4b
+#	u5149/ydFWhZNwW6yd7J/wcp0JNAHMcd32stIALiQQtKBM3OUAjeCT2yrzeBKIqSzc0N1tbX
+#	Wf66yVotpR56wtijlZAzoJTgncOLJ3WeRjPFaI9CMMrTZz0Fm6IUeO+7BtM+ApVK5Vi1Wj0e
+#	Rw2W68d4+o8a48MFnBhyNkfOKkSy3JbtCBIFuaKQpEKSesQ7Fr+KiRoJ46MppVJpaHR09KMX
+#	L158AYS78VoOGrh+/fonMzMzH09OTk5WKpUjxhj+/nmD/64kfFDN47zgvMd7ydQn84AX8F5w
+#	XmWBt/3TeihE0Ra/O19lY32deqPhXr9+/eXz58//9fDhw7/dvn37L4CzgLp169aty5cv/2av
+#	GkFOWF2PwWWxoHMar8E5T+oF7wXvQURlMohGoUCg1vQc6c/ON1guM1gum6GhobGTJ0+OXbx4
+#	8df5fL588+bNP6nh4eGPlpaWPiuVSvtS8p+LIXcfLVMpvMEYEFvABQOIZFGeOkG8wjlwDnyq
+#	UBiKQcA3G8KJDxTzF97v6PvFxcWvJiYmPrSnTp063QkcIN+nebUZ82IlRHBgY5wO0RqUgv58
+#	wMZWQhgJSQxxDM2mIKmh1Fdi8kdHO4IDjI+PD09MTHxoK5VKZ4qAtYrh4e+jc2WcpNhcloJa
+#	g0LRXwjYqCU0Q08SQxRCGILylrBpsMZ0JWCtZWBgoGp7NRtBoPnyfytoFVEsGXIWrAGtsjKw
+#	4gQniiSBeBs8DKFRF1bXhF9MHe/6bwCllGmn4d7SqbWi3G84eiTg3/95TXFL0Wchp8HojIAT
+#	iB1EaQbcbEKzAVtbwnvfe4+R9wMgC9a91sKykNX8RqOxr2yWFPzhV0N8sXIEvCMwCqO3FSBL
+#	wdRD4rZHDFGcPY8fDZj6oader7P3ShARrLU7BOI4ptnc3/woBT+wUB3RgOlaWNWuiQJQgvcx
+#	iYN6fWfX7uak5XoLEEXRvrqfz+cJgqAzUA9rwSkDgdlRt3XQNE3J5/Pt9dZ7TxzHbxEIgoDH
+#	jx/z5MmTrkAH3XKQST06OsqFCxfaMaa1Jk3TNl7bBa0XWmvq9TrXrl3j5cuXhzjzwTY0NMSZ
+#	M2dwzqG1xjm3QyAMw0Ycx0RRBIAxhs3NTcrlMqdPn2ZwcPCt+33vs9tcKUWapiwsLPDq1SuS
+#	JKHZbOK9R2tNPp9HRLSt1Wp1rTVBELRbqEKhwJUrVzh79ixadyyShzJrLQ8ePGB4eBgRwRiD
+#	MaYdjHEcN1UQBD+em5v7Y7VaHXHOiVLKR1Gkzp07d2psbCzfrSk5jBljWFtbk3v37n0WBEFD
+#	RAxALpdTS0tLS3fv3r2hyIJ7EOjf3hedOHHi40ePHt3J5XK2V1/Y6gFNl5KrlKJYLHLp0qVP
+#	79+//2egsOvzBlDTZJmzDrzcHl/Pz8/PFotFG4YhSZLsGy1VgiBga2uLRqPR7ox3j1a0X716
+#	9bdAYxfGS6AGnVsys7Cw8PmzZ89skiRdLwpjTDs+kiTpqpLWWsdxvEKm8L5q1ymZFdAH5Dt8
+#	exdTQLwNvu9A3wL/t44r9rJkdQAAAABJRU5ErkJggg==
+#}]
 
-namespace eval 36x36 {
-
-set IconPGN [image create photo -data {
-	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
-	AElFTkSuQmCC
+set IconTeX [image create photo -data {
+	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
 }]
 
 } ;# namespace 32x32
 
 namespace eval 37x21 {
 
-set IconTeX [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAACUAAAAVCAYAAADB5CeuAAADQ0lEQVRIx73WW4hVZRQH8N85
-	nZqmrT0YVlO7IoouU5ANFJF0V4TuIdhtUy9GBMKU2UOUCWWUhUIZXYxusLsrPTQPTUSEkQ9S
-	DQX2UhbC1oqwsGk7U5NOL+vAZnPGuUCz4MD5vm/ttf/rv9b6f7uRZuUCfIz5Dm0fYAX6ijwZ
-	MEVLs7IHn+IUvIln8WeRJ7vSrOzGW1iMVdiDj5q4eAqA4CaMYXkEm6pdgrPQjeV4Er1pVp6J
-	x3EjElyKEaxoYi8GsG+CoGPYhRfxF/owbxqgzsHmyvpqLMJduDf2RvEQrsGpLQxFBjfjOLxR
-	CfAPzscFmIut2B00T9UG0IUyGIGVNZ8nIv49uLARdV8StJ6HRsV5CHdiO77At1hb5Mnv0wAl
-	zco1AezBDsd7cDoGMVTkSX8LijwZxGCala0oV9uODrZ2FnmyyMztaWzEd+itnX2Iq3AGroPW
-	JMHmRq/1dMj+yPjbE34nBcs/FXmyo+pb5Mn+NCtfw8kdQB0Ve+uLPNnXCVRaW8/Hb5VekGZl
-	E29j2QSJjKdZuQ6PFnkyUtlvBCN1W4bXo4SgWXOog2wUeXIg+qFtCw8BqP3yEbxcS+SZWr+2
-	rSv6+Zc0K3s7gfh7kobtxol1ZrAtxvoPfI6XMIwsfJ6KKW7btQFmS6zb031bmpWr66DqWnUw
-	zcpqdmeHZlXtRyxulyrNynl4rD0wcWPcX/F/PqZ6LZ6LWwLWhHYtrYMaDl1ZEiyuDzUeq7Ay
-	XHvmNOxPs7K9/jr8V1eGZUcwvBkPxNXSincNBHO/Btj3m7UpGcfOQH8C3sU7kR38gDmTTGwf
-	7o5kYGlo3bEhki/E2a1xM7waA3ZliGdXs0PQh3FRgPskfqvirAy2JrIDeCSuoztibxPWRWt8
-	E317WZEnw9Hg54ZW7cb1WNmYpjIfHoC3VrY3ob/Ik9HovwV4BSNFniycidI2p+l/TE0ehIZt
-	SLNyHAfxFb7HDTOV/9Y0/RP8W9u7vSYpX2JDyIPZYKo7JGF0gvOuENcr4lNnVkD9HFfFLVGi
-	0ShZ1bbjs4pw/r+gijzZG8p8PC6P7685aBV50ijypBHl3BhTOys9BffF2G8LnWnhiDQrD6t8
-	Rb6H/pmC+g9X8ueXA3L0+AAAAABJRU5ErkJggg==
-}]
+#set IconTeX [image create photo -data {
+#	iVBORw0KGgoAAAANSUhEUgAAACUAAAAVCAYAAADB5CeuAAADQ0lEQVRIx73WW4hVZRQH8N85
+#	nZqmrT0YVlO7IoouU5ANFJF0V4TuIdhtUy9GBMKU2UOUCWWUhUIZXYxusLsrPTQPTUSEkQ9S
+#	DQX2UhbC1oqwsGk7U5NOL+vAZnPGuUCz4MD5vm/ttf/rv9b6f7uRZuUCfIz5Dm0fYAX6ijwZ
+#	MEVLs7IHn+IUvIln8WeRJ7vSrOzGW1iMVdiDj5q4eAqA4CaMYXkEm6pdgrPQjeV4Er1pVp6J
+#	x3EjElyKEaxoYi8GsG+CoGPYhRfxF/owbxqgzsHmyvpqLMJduDf2RvEQrsGpLQxFBjfjOLxR
+#	CfAPzscFmIut2B00T9UG0IUyGIGVNZ8nIv49uLARdV8StJ6HRsV5CHdiO77At1hb5Mnv0wAl
+#	zco1AezBDsd7cDoGMVTkSX8LijwZxGCala0oV9uODrZ2FnmyyMztaWzEd+itnX2Iq3AGroPW
+#	JMHmRq/1dMj+yPjbE34nBcs/FXmyo+pb5Mn+NCtfw8kdQB0Ve+uLPNnXCVRaW8/Hb5VekGZl
+#	E29j2QSJjKdZuQ6PFnkyUtlvBCN1W4bXo4SgWXOog2wUeXIg+qFtCw8BqP3yEbxcS+SZWr+2
+#	rSv6+Zc0K3s7gfh7kobtxol1ZrAtxvoPfI6XMIwsfJ6KKW7btQFmS6zb031bmpWr66DqWnUw
+#	zcpqdmeHZlXtRyxulyrNynl4rD0wcWPcX/F/PqZ6LZ6LWwLWhHYtrYMaDl1ZEiyuDzUeq7Ay
+#	XHvmNOxPs7K9/jr8V1eGZUcwvBkPxNXSincNBHO/Btj3m7UpGcfOQH8C3sU7kR38gDmTTGwf
+#	7o5kYGlo3bEhki/E2a1xM7waA3ZliGdXs0PQh3FRgPskfqvirAy2JrIDeCSuoztibxPWRWt8
+#	E317WZEnw9Hg54ZW7cb1WNmYpjIfHoC3VrY3ob/Ik9HovwV4BSNFniycidI2p+l/TE0ehIZt
+#	SLNyHAfxFb7HDTOV/9Y0/RP8W9u7vSYpX2JDyIPZYKo7JGF0gvOuENcr4lNnVkD9HFfFLVGi
+#	0ShZ1bbjs4pw/r+gijzZG8p8PC6P7685aBV50ijypBHl3BhTOys9BffF2G8LnWnhiDQrD6t8
+#	Rb6H/pmC+g9X8ueXA3L0+AAAAABJRU5ErkJggg==
+#}]
 
 } ;# namespace 37x21
 } ;# namespace icon

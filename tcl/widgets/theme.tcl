@@ -467,6 +467,8 @@ option add *Menu.activeForeground white
 option add *Menu.activeBorderWidth 0
 option add *Text.background white
 option add *Button.highlightThickness 0
+option add *Canvas.highlightThickness 0
+option add *TreeCtrl.highlightThickness 0
 
 option add *TCombobox.exportSelection 0
 option add *TSpinbox.wrap 0

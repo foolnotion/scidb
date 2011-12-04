@@ -151,7 +151,6 @@ proc build {parent menu width height} {
 	set tree $w.tree
 	treectrl $tree \
 		-takefocus 0 \
-		-highlightthickness 0 \
 		-borderwidth 1 \
 		-relief sunken \
 		-showheader no \

@@ -579,7 +579,6 @@ proc BuildSwitcher {pane} {
 		-background white \
 		-height $height \
 		-borderwidth 0 \
-		-highlightthickness 0 \
 		-yscrollcommand [list $pane.sb set]]
 	set Vars(canvas) $canv
 	set Vars(active) 0

@@ -68,67 +68,135 @@ variable iconApply {}
 variable iconReset {}
 #################################################################
 
-set Helvetica {
-	{Bitstream Vera Sans}
-	{DejaVu Sans}
-	{Arial}
-	{Verdana}
-	{Albany AMT}
-	{Nimbus Sans L}
-	{Luxi Sans}
-	{Lucida}
-	{Lucida Sans Unicode}
-	{Tahoma}
-	{FreeSans}
-	{MgOpen Modata}
-	{Helvetica}
+array set fontFamilies {
+	{Avant Garde} {
+		{Avant Garde Medium BT}
+		{AvantGarde Bk BT}
+		{Avant Garde Medium Oblique BT}
+		{AvantGarde}
+		{Avant Garde Gothic}
+		{Century Gothic}
+		{URW Gothic L}
+		{Futura}
+	}
+
+	Bookman {
+		{Bookman}
+		{Bookman L}
+		{Bookman Old Style}
+		{URW Bookman L}
+		{ITC Bookman}
+	}
+
+	Chancery {
+		{Zapf Chancery}
+		{ITC Zapf Chancery}
+		{BlackChancery}
+		{URW Chancery L}
+	}
+
+	Charter {
+		{Charter}
+		{Bitstream Charter}
+		{Charis SIL}
+		{Bitstream Vera Serif}
+		{DejaVu Serif}
+		{FreeSerif}
+		{Times New Roman}
+	}
+
+	Courier {
+		{Bitstream Vera Sans}
+		{DejaVu Sans}
+		{Cumberland AMT}
+		{Lucida Console}
+	}
+
+	Fixed {
+		{Bitstream Vera Sans Mono}
+		{DejaVu Sans Mono}
+		{Lucida Console}
+		{Andale Mono}
+		{Courier New}
+		{Luxi Mono}
+		{Nimbus Mono L}
+		{FreeMono}
+		{Mono}
+		{Fonotone}
+		{Courier}
+	}
+
+	Fourier {
+		{Utopia}
+		{Bitstream Vera Serif}
+		{DejaVu Serif}
+		{Times New Roman}
+		{Times}
+	}
+
+	Helvetica {
+		{Bitstream Vera Sans}
+		{DejaVu Sans}
+		{Arial}
+		{Verdana}
+		{Albany AMT}
+		{Nimbus Sans L}
+		{Luxi Sans}
+		{Lucida}
+		{Lucida Sans Unicode}
+		{Tahoma}
+		{FreeSans}
+		{MgOpen Modata}
+		{Helvetica}
+		{Arial Unicode MS}
+	}
+
+	{Latin Modern} {
+		{BaKoMa}
+		{CM Unicode}
+		{Latin Modern Roman}
+		{TeX Tyre Germes}
+		{Bitstream Vera Serif}
+		{DejaVu Serif}
+		{Times New Roman}
+		{Times}
+	}
+
+	{New Century} {
+		{New Century Schoolbook}
+		{Century Schoolbook}
+		{Century Schoolbook L}
+	}
+
+	Palatino {
+		{Palatino}
+		{Palatino Linotype}
+		{URW Palladio L}
+	}
+
+	Times {
+		{Bitstream Vera Serif}
+		{DejaVu Serif}
+		{Times New Roman}
+		{Nimbus Roman No9 L}
+		{Charter}
+		{Georgia}
+		{Luxi Serif}
+		{Lucida Bright}
+		{New Century Schoolbook}
+		{Tom's New Roman}
+		{Utopia}
+		{Thryomanes}
+		{FreeSerif}
+		{MgOpen Canonica}
+		{Times}
+	}
 }
 
-set Times {
-	{Bitstream Vera Serif}
-	{DejaVu Serif}
-	{Times New Roman}
-	{Nimbus Roman No9 L}
-	{Charter}
-	{Georgia}
-	{Luxi Serif}
-	{LucidaBright}
-	{New Century Schoolbook}
-	{Tom's New Roman}
-	{Utopia}
-	{Thryomanes}
-	{Palatino Linotype}
-	{FreeSerif}
-	{MgOpen Canonica}
-	{Times}
-}
-
-set Courier {
-	{Bitstream Vera Sans Mono}
-	{DejaVu Sans Mono}
-	{Courier New}
-	{Lucida Console}
-	{Andale Mono}
-	{Luxi Mono}
-	{Cumberland AMT}
-	{Nimbus Mono L}
-	{FreeMono}
-	{Courier}
-}
-
-set Fixed {
-	{Bitstream Vera Sans Mono}
-	{Lucida Console}
-	{Courier New}
-	{Nimbus Mono L}
-	{FreeMono}
-	{Courier}
-}
-
-foreach fam $Helvetica	{ set BuiltinFontMap($fam) Helvetica }
-foreach fam $Times		{ set BuiltinFontMap($fam) Times }
-foreach fam $Courier		{ set BuiltinFontMap($fam) Courier }
-foreach fam $Fixed		{ set BuiltinFontMap($fam) Fixed }
+#foreach fam [array names fontFamilies] {
+#	foreach f $fontFamilies($fam) { set BuiltinFontMap($f) $fam }
+#}
+#unset f fam
 
 array set Vars {
 	open				0
@@ -299,10 +367,11 @@ proc select {w args} {
 	set S(style) [Style $weight $slant]
 	set S(style:tr) [set mc::$S(style)]
 	foreach var {font size style} { set S(prev,$var) $S($var) }
+	foreach var {font size style:tr} { set S(current,$var) $S($var) }
 
 	SetColor $w $S(color)
 	Apply $w 
-	Select $w
+	Tracer $w
 }
 
 
@@ -312,20 +381,18 @@ proc setFonts {w {fonts {}}} {
 
 	set S(map) 0
 
-	if {[llength $fonts]} {
+	if {[llength $fonts] > 0} {
 		set lcase {}
 		set fonts [lsort -unique -dictionary $fonts]
 		foreach font $fonts { lappend lcase [string tolower $font] }
 		set state disabled
 
-		if {[llength $fonts] <= 4} {
-			set S(map) 1
+		if {[llength $fonts] <= 30} {
+			variable fontFamilies
 
-			foreach fam $fonts {
-				switch -glob -- $fam {
-					Helvetica* - Sans* - Swiss* - Times* - Serif* - Courier* - Monospace* - Fixed* {}
-					default { set S(map) 0 }
-				}
+			set S(map) 1
+			foreach fam $lcase {
+				if {[llength [MapFamily $fam]] == 0} { set S(map) 0 }
 			}
 		}
 	} elseif {$S(fixed)} {
@@ -341,6 +408,21 @@ proc setFonts {w {fonts {}}} {
 	set S(fonts) $fonts
 	set S(fonts,lcase) $lcase
 	$w.filter.fixed configure -state $state
+}
+
+
+proc setSizes {w {sizes {}}} {
+	variable ${w}::S
+	variable Vars
+
+	if {[llength $sizes] == 0} {
+		set sizes $Vars(sizes)
+	} else {
+		set sizes [lsort -unique -integer $sizes]
+	}
+
+	set S(sizes) $sizes
+	set S(sizes,lcase) $sizes
 }
 
 
@@ -569,8 +651,10 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 	}
 
 	set S(styles) {}
+	set S(styles,lcase) {}
 	foreach style $Vars(styles) {
 		lappend S(styles) [set mc::$style]
+		lappend S(styles,lcase) [string tolower [set mc::$style]]
 	}
 
 	if {$isDialog} {
@@ -588,9 +672,12 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 	}
 
 	set height 8
-	tk::entry $w.efont \
+	ttk::entry $w.efont \
 		-textvariable [namespace current]::${w}::S(font) \
-		-background white
+		-exportselection no \
+		-background white \
+		-validatecommand [namespace code [list Validate $w %P %d font]] \
+		-validate key
 	ttk::scrollbar $w.sbfonts -command [list $w.lfonts yview]
 	tk::listbox $w.lfonts \
 		-listvariable [namespace current]::${w}::S(fonts) \
@@ -601,10 +688,12 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		-exportselection 0 \
 		-highlightthickness 0 \
 		-setgrid 1
-	tk::entry $w.estyle \
+	ttk::entry $w.estyle \
 		-textvariable [namespace current]::${w}::S(style:tr) \
+		-exportselection no \
 		-background white \
-		-takefocus 0 \
+		-validatecommand [namespace code [list Validate $w %P %d style:tr]] \
+		-validate key \
 		-width 0
 	tk::listbox $w.lstyles \
 		-listvariable [namespace current]::${w}::S(styles) \
@@ -613,14 +702,16 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		-background white \
 	   -exportselection 0 \
 		-highlightthickness 0
-	tk::entry $w.esize \
+	ttk::entry $w.esize \
 		-textvariable [namespace current]::${w}::S(size) \
+		-exportselection no \
 		-background white \
-		-takefocus 0 \
+		-validatecommand [namespace code [list Validate $w %P %d size]] \
+		-validate key \
 		-width 0
 	ttk::scrollbar $w.sbsizes -command [list $w.lsizes yview]
 	tk::listbox $w.lsizes \
-		-listvariable [namespace current]::Vars(sizes) \
+		-listvariable [namespace current]::${w}::S(sizes) \
 	   -yscroll [list $w.sbsizes set] \
 		-width 6 \
 		-height $height \
@@ -628,25 +719,35 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 		-exportselection 0 \
 		-highlightthickness 0
 
+	bind $w.efont  <FocusIn>  { %W selection range 0 end }
+	bind $w.estyle <FocusIn>  { %W selection range 0 end }
+	bind $w.esize  <FocusIn>  { %W selection range 0 end }
+	bind $w.efont  <FocusOut> [namespace code [list FocusOut $w font]]
+	bind $w.estyle <FocusOut> [namespace code [list FocusOut $w style]]
+	bind $w.esize  <FocusOut> [namespace code [list FocusOut $w size]]
+
 	foreach var {font style size} {
 		bind $w.l${var}s <<ListboxSelect>> [namespace code [list Click $w $var]]
 	}
 	bind $w.lfonts <Home> [namespace code {
 		set w [winfo parent %W]
 		set ${w}::S(font) [lindex [set ${w}::S(fonts)] 0]
+		Tracer $w
 	}]
 	bind $w.lfonts <End> [namespace code {
 		set w [winfo parent %W]
 		set ${w}::S(font) [lindex [set ${w}::S(fonts)] end]
+		Tracer $w
 	}]
 	bind $w.lfonts <KeyPress> [namespace code {
 		if {%s <= 1 && [string length %K] == 1 && [string is alnum %K]} {
 			set w [winfo parent %W]
-			set n [lsearch -glob -nocase [set ${w}::S(fonts)] %K*]
+			set n [lsearch -glob [set ${w}::S(fonts,lcase)] [string tolower %K]*]
 			if {$n == -1} {
 				bell
 			} else {
 				set ${w}::S(font) [lindex [set ${w}::S(fonts)] $n]
+				Tracer $w
 			}
 		}
 	}]
@@ -769,10 +870,36 @@ proc BuildFrame {w isDialog font enableEffects receiver {color {}}} {
 	}
 
 	foreach item {font size style} { set S(prev,$item) {} }
+}
 
-	trace variable [namespace current]::${w}::S(font)  	w [namespace code [list Tracer $w]]
-	trace variable [namespace current]::${w}::S(size)  	w [namespace code [list Tracer $w]]
-	trace variable [namespace current]::${w}::S(style:tr) w [namespace code [list Tracer $w]]
+
+proc FocusOut {w attr} {
+	variable ${w}::S
+
+	$w.e$attr selection clear
+	set n [$w.l${attr}s curselection]
+
+	if {$attr eq "style"} {
+		if {[llength $n] == 0} {
+			if {$S(style:tr) ni $S(styles)} {
+				set S(style) $S(prev,style)
+				set S(style:tr) [set mc::$S(style)]
+				Tracer $w
+			}
+		} else {
+			set S(style:tr) [lindex $S(styles) $n]
+			MapStyle $w
+		}
+	} else {
+		if {[llength $n] == 0} {
+			if {$S($attr) ni $S(${attr}s)} {
+				set S($attr) $S(prev,$attr)
+				Tracer $w
+			}
+		} else {
+			set S($attr) [lindex $S(${attr}s) $n]
+		}
+	}
 }
 
 
@@ -864,7 +991,12 @@ proc Reset {dlg} {
 	variable ${dlg}::S
 	variable Vars
 
-	foreach var {font size style strike under color} { set S($var) $S(init,$var) }
+	foreach var {font size style strike under color} {
+		set S($var) $S(init,$var)
+		set S(prev,$var) $S($var)
+	}
+
+	set S(style:tr) [set mc::$S(style)]
 
 	if {$S(fixed) && [string tolower $S(font)] ni $S(fonts)} {
 		set S(fixed) 0
@@ -972,7 +1104,14 @@ proc Init {w} {
 	# sometimes "font actual" gives a negative size
 	if {$S(size) < 0} { set S(size) [expr {-$S(size)}] }
 
-	foreach var {font size style strike under color} { set S(init,$var) $S($var) }
+	foreach var {font size style strike under color} {
+		set S(init,$var) $S($var)
+		set S(prev,$var) $S($var)
+	}
+
+	foreach var {font size style:tr} {
+		set S(current,$var) $S($var)
+	}
 
 	Tracer $w
 }
@@ -981,6 +1120,7 @@ proc Init {w} {
 proc Click {w who} {
 	variable ${w}::S
 
+	if {$S(locked)} { return }
 	set value [$w.l${who}s get [$w.l${who}s curselection]]
 
 	if {$who eq "style"} {
@@ -991,10 +1131,11 @@ proc Click {w who} {
 	}
 
 	Show $w
+	if {[llength $S(recv)]} { event generate $S(recv) <<FontSelected>> -data [Result $w] }
 }
 
 
-proc Select {w} {
+proc Select {w {autoComplete 0}} {
 	variable ${w}::S
 
 	if {$S(locked)} { return }
@@ -1004,23 +1145,46 @@ proc Select {w} {
 	set S(locked) 1 ;# avoid recursive calls
 
 	# Make selection in each listbox
-	foreach var {font style size} {
-	   set value [string tolower $S($var)]
-	   $w.l${var}s selection clear 0 end
-	   set n [lsearch -exact $S(${var}s,lcase) $value]
-	   $w.l${var}s selection set $n
-	   if {$n != -1} {
-			$w.l${var}s activate $n
-	      set S($var) [lindex $S(${var}s) $n]
-	      $w.e$var icursor end
-	      $w.e$var selection clear
-			lappend changed $var
-	   } else {	;# No match, try prefix
-	      # Size is weird
-	      set n [lsearch -glob $S(${var}s,lcase) "$value*"]
-			set nstate disabled
-	   }
-	   $w.l${var}s see $n
+	foreach {attr var} {font font style style:tr size size} {
+		set e $w.e${attr}
+		set l $w.l${attr}s
+		$l selection clear 0 end
+		if {[$e selection present]} {
+			$e delete sel.first sel.last
+		}
+	   set value [string tolower $S(current,$var)]
+
+		if {[string length $value] > 0} {
+			set n [lsearch -exact $S(${attr}s,lcase) $value]
+			if {$n != -1} {
+				lappend changed $attr
+			} elseif {$attr ne "size"} {	;# No match, try prefix
+				set n [lsearch -glob $S(${attr}s,lcase) "$value*"]
+				if {	$n == -1
+					|| [string match "$value*" [lindex $S(${attr}s,lcase) [expr {$n + 1}]]]} {
+					set nstate disabled
+				}
+			} else {
+				set nstate disabled
+			}
+
+			if {$n != -1} {
+				$l selection set $n
+				$l activate $n
+				$l see $n
+
+				if {$autoComplete && $nstate eq "normal"} {
+					$e delete 0 end
+					$e insert 0 [lindex $S(${attr}s) $n]
+					$e selection clear
+					$e selection range [string length $value] end
+					$e icursor [string length $value]
+				}
+			} else {
+				$e icursor end
+				$e selection clear
+			}
+		}
 	}
 
 	if {[llength $changed]} { Show $w }
@@ -1043,14 +1207,38 @@ proc MapStyle {w} {
 }
 
 
-proc Tracer {w {var1 ""} {var2 ""} {op ""}} {
+proc Validate {w content action var} {
 	variable ${w}::S
 
+	if {$S(locked)} { return 1 }
+
+	foreach attr {font style:tr size} {
+		set S(current,$attr) $S($attr)
+	}
+	set S(current,$var) $content
+
+	foreach var [Select $w [expr {$action == 1}]] {
+		if {$S(prev,$var) ne $S($var)} {
+			set S(prev,$var) $S($var)
+			if {[llength $S(recv)]} { event generate $S(recv) <<FontSelected>> -data [Result $w] }
+		}
+	}
+
+	return 1
+}
+
+
+proc Tracer {w args} {
+	variable ${w}::S
+
+	if {$S(locked)} { return }
 	if {![info exists S(strike)]} { return }
 
-	MapStyle $w
+	foreach var {font style:tr size} {
+		set S(current,$var) $S($var)
+	}
 
-	foreach var [Select $w] {
+	foreach var [Select $w no] {
 		if {$S(prev,$var) ne $S($var)} {
 			set S(prev,$var) $S($var)
 			if {[llength $S(recv)]} { event generate $S(recv) <<FontSelected>> -data [Result $w] }
@@ -1062,8 +1250,13 @@ proc Tracer {w {var1 ""} {var2 ""} {op ""}} {
 proc Result {w {fam {}}} {
 	variable ${w}::S
 
+	MapStyle $w
 	if {[llength $fam] == 0} { set fam $S(font) }
-	set S(result) [list $fam $S(size)]
+	if {$S(size) in $S(sizes)} {
+		set S(result) [list $fam $S(size)]
+	} else {
+		set S(result) [list $fam $S(prev,size)]
+	}
 	switch $S(style) {
 		"Regular"		{ lappend S(result) normal roman }
 		"Bold"			{ lappend S(result) bold roman }
@@ -1080,28 +1273,48 @@ proc Result {w {fam {}}} {
 proc Show {w} {
 	variable ${w}::S
 	variable Vars
+	variable fontFamilies
+
+	set family ""
 
 	if {$S(map)} {
-		switch -glob -- $S(font) {
-			Helvetica* - Sans* - Swiss*	{ variable Helvetica; set families $Helvetica }
-			Times* - Serif*					{ variable Times; set families $Times }
-			Courier*								{ variable Courier; set families $Courier }
-			Monospace* - Fixed*				{ variable Fixed; set families $Fixed }
-		}
+		set fam [MapFamily $S(font)]
 
-		set index 0
-		set n -1
+		if {[llength $fam] > 0} {
+			set index 0
+			set n -1
+			set families $fontFamilies($fam)
 
-		while {$n == -1 && $index < [llength $families]} {
-			set family [string tolower [lindex $families 0]]
-			set n [lsearch -exact $Vars(fonts,lcase) $family]
+			while {$n == -1 && $index < [llength $families]} {
+				set fam [string tolower [lindex $families $index]]
+				set n [lsearch -exact $Vars(fonts,lcase) $fam]
+				incr index
+			}
+			if {$n >= 0} { set family $fam }
 		}
-		if {$n >= 0} {
-			$S(sample) configure -font [Result $w $family]
-		}
-	} else {
-		$S(sample) configure -font [Result $w]
 	}
+
+	$S(sample) configure -font [Result $w $family]
+}
+
+
+proc MapFamily {fam} {
+	switch -glob -- [string map {" " ""} [string tolower $fam]] {
+		avantgarde*								{ return {Avant Garde} }
+		bookman*									{ return Bookman }
+		chancery* - zapfchancery*			{ return Chancery }
+		charter*									{ return Charter }
+		courier*									{ return Courier }
+		fixed* - monospace*					{ return Fixed }
+		fourier* - utopia*					{ return Fourier }
+		latinmodern* - computermodern*	{ return {Latin Modern} }
+		helvetica* - sans* - swiss*		{ return Helvetica }
+		newcentury* - century*				{ return {New Century} }
+		palatino*								{ return Palatino }
+		times* - serif*						{ return Times }
+	}
+
+	return ""
 }
 
 } ;# namespace choosefont

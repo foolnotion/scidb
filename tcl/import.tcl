@@ -518,6 +518,7 @@ proc SetFigurines {dlg position} {
 			en - graphic {}
 
 			default {
+				set figurine [string map {" " ""} $figurine]
 				if {[string bytelength $figurine] == 6} {
 					lappend Priv($position:sets) [list $lang [::encoding::languageName $lang] $figurine]
 				}
@@ -527,7 +528,7 @@ proc SetFigurines {dlg position} {
 	set font [$w cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
 	set Priv($position:sets) [lsort -index 1 -dictionary $Priv($position:sets)]
-	set value [list en [::encoding::languageName en] $::font::figurines(en)]
+	set value [list en [::encoding::languageName en] [string map {" " ""}  $::font::figurines(en)]]
 	set Priv($position:sets) [linsert $Priv($position:sets) 0 $value]
 	set index [lsearch -index 0 -exact $Priv($position:sets) $current]
 	if {$index == -1} { set index 0 }
@@ -652,8 +653,7 @@ proc Import {position dlg} {
 		set successfull 0
 
 		foreach entry $Priv($position:sets) {
-			lassign $entry code _
-			set figurine $::font::figurines($code)
+			lassign $entry code _ figurine
 
 			set ok [::scidb::game::import \
 				$position \

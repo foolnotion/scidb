@@ -96,7 +96,7 @@ proc Build {w args} {
 		-pady						2
 		-ipady					0
 		-padding					5
-		-height					10
+		-height					-1
 		-width					0
 		-minwidth				0
 		-maxwidth				0
@@ -131,6 +131,13 @@ proc Build {w args} {
 	rename ::$w $w.__tlistbox_frame__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
+	if {$opts(-height) < 0} {
+		set opts(-height) 10
+		set Priv(minheight) 0
+	} else {
+		set Priv(minheight) $opts(-height)
+	}
+
 	set t $w.__tlistbox__
 
 	treectrl $t                         \
@@ -154,7 +161,6 @@ proc Build {w args} {
 		-state $opts(-state)             \
 		;
 
-	if {$opts(-linespace)} { incr opts(-linespace) 4 }
 	if {$opts(-width)} { $t configure -width $opts(-width) }
 	if {$opts(-usescroll)} {
 		$t configure -yscrollcommand [list $w.vsb set]
@@ -200,9 +206,11 @@ proc Build {w args} {
 	grid rowconfigure $w 0 -weight 1
 
 	if {$opts(-linespace)} {
-		set Priv(linespace) $opts(-linespace)
+		set Priv(linespace) [expr {$opts(-linespace) + 2*$opts(-pady) + $opts(-ipady)}]
+		$t configure -itemheight $Priv(linespace)
 	} else {
-		set Priv(linespace) [font metrics $opts(-font) -linespace]
+		set linespace [font metrics $opts(-font) -linespace]
+		set Priv(linespace) [expr {$linespace + 2*$opts(-pady) + $opts(-ipady)}]
 	}
 	set Priv(numcolumns) [expr {max(1,$opts(-columns))}]
 
@@ -234,7 +242,7 @@ proc Build {w args} {
 	}
 
 	if {$opts(-setgrid)} {
-		wm grid [winfo toplevel $w] $opts(-width) [expr {max(1, $opts(-height))}] 1 $Priv(linespace)
+		wm grid [winfo toplevel $w] $opts(-width) [expr {max(1, $Priv(minheight))}] 1 $Priv(linespace)
 	}
 
 	if {[llength $opts(-takefocus)] && $opts(-takefocus)} {
@@ -737,6 +745,12 @@ proc WidgetProc {w command args} {
 				unset opts(-state)
 				$t configure -state $state
 			}
+			if {[info exists opts(-height)]} {
+				set Priv(height) $opts(-height)
+				set Priv(minheight) $Priv(height)
+				$w resize -force
+				unset opts(-height)
+			}
 			set args [array get opts]
 			if {[llength $args]} {
 				$w.__tlistbox_frame__ configure {*}$args
@@ -750,6 +764,7 @@ proc WidgetProc {w command args} {
 			set arg [lindex $args 0]
 			switch -- $arg {
 				-height		{ return $Priv(height) }
+				-linespace	{ return $Priv(linespace) }
 				-takefocus	{ return [$t cget $arg] }
 				-cursor		{ return [$w.__tlistbox_frame__ cget $arg] }
 				-state		{ return [$t cget -state] }
@@ -891,6 +906,9 @@ proc ComputeGeometry {cb} {
 	for {set i 1} {$i <= $last} {incr i} {
 		lassign [$t item bbox $i] x0 y0 x1 y1
 		incr height [expr {$y1 - $y0}]
+	}
+	if {$last < $Priv(minheight)} {
+		set height [expr {$height + ($Priv(minheight) - $last)*$Priv(linespace)}]
 	}
 	$t configure -height $height
 }
@@ -1200,6 +1218,7 @@ proc SelectActive {t} {
 	if {$active > 0} {
 		$t selection clear
 		$t selection add $active
+		set Priv(selected) $active
 		event generate $w <<ListboxSelect>> -data [expr {$active - 1}]
 	}
 }

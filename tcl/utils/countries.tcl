@@ -638,6 +638,7 @@ foreach rgn $regions {
 		set info($code) [list $iso1 $iso2 $lang $active $country]
 	}
 }
+unset rgn
 
 
 proc name {code} {
@@ -672,7 +673,7 @@ proc makeCountryList {{languages {}}} {
 	variable Vars
 
 	if {[llength $languages] == 0} {
-		set languages [array names ::mc::langToCountry]
+		set languages $::mc::countries
 	}
 
 	set result {}
