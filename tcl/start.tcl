@@ -71,6 +71,16 @@ namespace eval file {
 set options [file join [set [namespace parent]::dir::config] options.dat]
 
 } ;# namespace file
+
+proc updateThemes {} {
+	foreach dir {{} piece square} {
+		set themesDir [file join $::scidb::dir::user themes $dir]
+		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
+			catch { file copy -force $file $themesDir }
+		}
+	}
+}
+
 } ;# namespace scidb
 
 
@@ -100,12 +110,7 @@ if {[::process::testOption delete-recovery-files]} {
 }
 
 if {[::process::testOption first-time]} {
-	foreach dir {{} piece square} {
-		set themesDir [file join $::scidb::dir::user themes $dir]
-		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
-			catch { file copy $file $themesDir }
-		}
-	}
+	::scidb::updateThemes
 	file delete $::scidb::file::options
 	::process::setOption dont-recover
 	set ::scidb::dir::setup 1
