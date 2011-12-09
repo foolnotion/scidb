@@ -28,39 +28,42 @@ package require Tk 8.5
 package require Ttk
 
 proc scrolledframe {path args} {
+	array set opts { -expand none -padding 2 }
 	array set opts $args
-	set myOpts {}
+	set frameOpts {}
 	foreach key [array names opts] {
 		switch -- $key {
-			-background {
+			-background - -padding {
 			}
 			-width - -height {
-				lappend myOpts $key $opts($key)
+				lappend frameOpts $key $opts($key)
 			}
-			-class - -style - -borderwidth - -relief - -padding {
-				lappend myOpts $key $opts($key)
-				array unset opts($key)
+			-class - -style - -borderwidth - -relief {
+				lappend frameOpts $key $opts($key)
+				array unset opts $key
 			}
 		}
 	}
-	set parent [::ttk::frame $path {*}$myOpts]
-	set f $parent.__scrolledframe__
-	bind $parent <Map> [list after idle { ::scrolledframe::Map %W }]
-	set v $parent.__vs__
-	set h $parent.__hs__
-	::scrolledframe::scrolledframe $f \
-		{*}[array get opts] \
-		-xscrollcommand [list ::scrolledframe::sbset $h] \
-		-yscrollcommand [list ::scrolledframe::sbset $v] \
-		-borderwidth 0 \
-		;
-	::ttk::scrollbar $v -command [list $f yview] -orient vertical
-	::ttk::scrollbar $h -command [list $f xview] -orient horizontal
+	ttk::frame $path {*}$frameOpts
+	set f $path.__scrolledframe__
+	bind $path <Map> [list after idle { ::scrolledframe::Map %W }]
+	set scrollopts {}
+	if {$opts(-expand) ne "y"} {
+		set v $path.__vs__
+		scrolledframe::Scrollbar $v -command [list $f yview] -orient vertical
+		lappend scrollopts -yscrollcommand [list ::scrolledframe::sbset $v]
+	}
+	if {$opts(-expand) ne "x"} {
+		set h $path.__hs__
+		scrolledframe::Scrollbar $h -command [list $f xview] -orient horizontal
+		lappend scrollopts -xscrollcommand [list ::scrolledframe::sbset $h]
+	}
+	::scrolledframe::scrolledframe $f {*}$scrollopts {*}[array get opts]
 	grid $f -row 0 -column 0 -sticky nsew
-#	grid $v -row 0 -column 1 -sticky ns
-#	grid $h -row 1 -column 0 -sticky ew
-	grid rowconfigure $parent 0 -weight 1
-	grid columnconfigure $parent 0 -weight 1
+	grid rowconfigure $path 0 -weight 1
+	grid columnconfigure $path 0 -weight 1
+	rename $f.scrolled ::scrolledframe::_$path
+	interp alias {} $f.scrolled {} ::scrolledframe::Dispatch $f
 	return $f.scrolled
 }
 
@@ -68,16 +71,6 @@ namespace eval scrolledframe {
 
 set (sbset:cmd)		{}
 set (sbset:orient)	{}
-
-
-proc Map {w} {
-	# Due to a bug in the Tk library sometimes the
-	# mapping is forgotten if we grid too early.
-	grid $w.__vs__ -row 0 -column 1 -sticky ns
-	grid $w.__hs__ -row 1 -column 0 -sticky ew
-	resize $w force
-	bind $w <Map> {#}
-}
 
 
 proc sbset {sb first last} {
@@ -96,7 +89,7 @@ proc sbset {sb first last} {
 # ==============================
 #
 # scrolledframe
-set version 0.9.1
+set version 1.0
 set (debug,place) 0
 #
 # a scrolled frame
@@ -138,9 +131,9 @@ proc scrolledframe {w args} {
 		$w configure -background $opts(-background)
 	}
 	# trap the reference
-	rename $w ::scrolledframe::_$w
+	rename $w [namespace current]::_$w
 	# redirect to dispatch
-	interp alias {} $w {} ::scrolledframe::Dispatch $w
+	interp alias {} $w {} [namespace current]::Dispatch $w
 	# create scrollable internal frame
 	tk::frame $w.scrolled
 	# place it
@@ -157,14 +150,31 @@ proc scrolledframe {w args} {
 	set ($w:height) 0
 	set ($w:fillx) 0
 	set ($w:filly) 0
+	set ($w:expandx) 0
+	set ($w:expandy) 0
 	# configure
-	if {$args != ""} { uplevel 1 ::scrolledframe::Config $w $args }
+	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
 	# bind <Configure>
-	bind $w <Configure> [namespace code [list resize $w]]
-	bind $w.scrolled <Configure> [namespace code [list resize $w]]
+	bind $w <Configure> [namespace code [list Resize $w]]
+	bind $w.scrolled <Configure> [namespace code [list Resize $w]]
 	# return widget ref
 	return $w
 }
+
+
+proc Map {w} {
+	# Due to a bug in the Tk library sometimes the
+	# mapping is forgotten if we grid too early.
+	if {[winfo exists $w.__vs__]} {
+		grid $w.__vs__ -row 0 -column 1 -sticky ns
+	}
+	if {[winfo exists $w.__hs__]} {
+		grid $w.__hs__ -row 1 -column 0 -sticky ew
+	}
+	Resize $w.__scrolledframe__ force
+	bind $w <Map> {#}
+}
+
 
 # --------------
 #
@@ -176,14 +186,16 @@ proc scrolledframe {w args} {
 # parm2: operation args
 # --------------
 proc Dispatch {w cmd args} {
-	variable {}
 	switch -- $cmd {
+		resize		{ Resize $w }
+		see			{ See $w [lindex $args 0] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
 		xview       { uplevel 1 [linsert $args 0 ::scrolledframe::Xview $w] }
 		yview       { uplevel 1 [linsert $args 0 ::scrolledframe::Yview $w] }
 		default     { uplevel 1 [linsert $args 0 ::scrolledframe::_$w $cmd] }
 	}
 }
+
 
 # --------------
 # configure operation
@@ -202,22 +214,22 @@ proc Config {w args} {
 			-fill {
 				# new fill option: what should the scrolled object do if it is
 				# smaller than the viewing window?
-				if {$value == "none"} {
+				if {$value eq "none"} {
 					 set ($w:fillx) 0
 					 set ($w:filly) 0
-				} elseif {$value == "x"} {
+				} elseif {$value eq "x"} {
 					 set ($w:fillx) 1
 					 set ($w:filly) 0
-				} elseif {$value == "y"} {
+				} elseif {$value eq "y"} {
 					 set ($w:fillx) 0
 					 set ($w:filly) 1
-				} elseif {$value == "both"} {
+				} elseif {$value eq "both"} {
 					 set ($w:fillx) 1
 					 set ($w:filly) 1
 				} else {
 					 error "invalid value: should be \"$w configure -fill value\", where \"value\" is \"x\", \"y\", \"none\", or \"both\""
 				}
-				resize $w force
+				Resize $w force
 				set flag 1
 			}
 			-xscrollcommand {
@@ -232,16 +244,39 @@ proc Config {w args} {
 			}
 			-background {
 				$w.scrolled configure -background $value
+				if {[llength $($w:yscroll)]} { [lindex $($w:yscroll) 1] background $value }
+				if {[llength $($w:xscroll)]} { [lindex $($w:xscroll) 1] background $value }
+			}
+			-expand {
+				if {$value eq "none"} {
+					 set ($w:expandx) 0
+					 set ($w:expandy) 0
+				} elseif {$value eq "x"} {
+					 set ($w:expandx) 1
+					 set ($w:expandy) 0
+				} elseif {$value eq "y"} {
+					 set ($w:expandx) 0
+					 set ($w:expandy) 1
+				} else {
+					 error "invalid value: should be \"$w configure -expand value\", where \"value\" is \"x\", \"y\", or \"none\""
+				}
+				Resize $w force
+				set flag 1
+			}
+			-padding {
+				if {[llength $($w:yscroll)]} { [lindex $($w:yscroll) 1] padding $value }
+				if {[llength $($w:xscroll)]} { [lindex $($w:xscroll) 1] padding $value }
 			}
 			default { lappend options $key $value }
 		}
 	}
 	# check if needed
-	if {!$flag || $options != ""} {
+	if {!$flag || [llength $options]} {
 		# call frame config
-		uplevel 1 [linsert $options 0 ::scrolledframe::_$w configure]
+		uplevel 1 [linsert $options 0 [namespace current]::_$w configure]
 	}
 }
+
 
 # --------------
 # Resize proc
@@ -256,13 +291,9 @@ proc Config {w args} {
 # parm1: widget name
 # parm2: pass anything to force resize even if dimensions are unchanged
 # --------------
-proc resize {w {force {}}} {
+proc Resize {w {force {}}} {
 	variable {}
 	set force [llength $force]
-
-	if {![string match *.__scrolledframe__ $w]} {
-		set w $w.__scrolledframe__
-	}
 
 	set _vheight      $($w:vheight)
 	set _vwidth       $($w:vwidth)
@@ -276,18 +307,26 @@ proc resize {w {force {}}} {
 	set ($w:height)   [winfo height $w] ;# gives the actual height of the viewing window
 	set ($w:width)    [winfo width  $w] ;# gives the actual width of the viewing window
 
-	if {$force || $($w:vheight) != $_vheight || $($w:height) != $_height} {
+	if {$($w:expandx)} {
+		$w configure -width $($w:vwidth)
+	}
+	if {$($w:expandy)} {
+		$w configure -height $($w:vheight)
+	}
+
+	if {!$($w:expandy) && ($force || $($w:vheight) != $_vheight || $($w:height) != $_height)} {
 		# resize the vertical scroll bar
 		Yview $w scroll 0 unit
 		# Yset $w
 	}
 
-	if {$force || $($w:vwidth) != $_vwidth || $($w:width) != $_width} {
+	if {!$($w:expandx) && ($force || $($w:vwidth) != $_vwidth || $($w:width) != $_width)} {
 		# resize the horizontal scroll bar
 		Xview $w scroll 0 unit
 		# Xset $w
 	}
 } ;# end proc resize
+
 
 # --------------
 # Xset proc
@@ -300,8 +339,9 @@ proc Xset {w} {
 	variable {}
 	# call the xscroll command
 	set cmd $($w:xscroll)
-	if {$cmd != ""} { catch { eval $cmd [Xview $w] } }
+	if {[llength $cmd]} { catch { eval $cmd [Xview $w] } }
 }
+
 
 # --------------
 # Yset proc
@@ -314,8 +354,9 @@ proc Yset {w} {
 	variable {}
 	# call the yscroll command
 	set cmd $($w:yscroll)
-	if {$cmd != ""} { catch { eval $cmd [Yview $w] } }
+	if {[llength $cmd]} { catch { eval $cmd [Yview $w] } }
 }
+
 
 # -------------
 # Xview
@@ -371,7 +412,7 @@ proc Xview {w {cmd ""} args} {
 	if {$vleft != $_vleft || $count == 0} {
 		set ($w:vleft) $vleft
 		Xset $w
-		if {$($w:fillx) && ($_vwidth < $_width || $($w:xscroll) == "") } {
+		if {$($w:fillx) && ($_vwidth < $_width || [llength $($w:xscroll)] == 0) } {
 			# "scrolled object" is not scrolled, because it is too small
 			# or because no scrollbar was requested.
 			# fillx means that, in these cases, we must tell the object what its width should be
@@ -384,6 +425,7 @@ proc Xview {w {cmd ""} args} {
 
 	}
 }
+
 
 # -------------
 # Yview
@@ -440,7 +482,7 @@ proc Yview {w {cmd ""} args} {
 	if {$vtop != $_vtop || $count == 0} {
 		set ($w:vtop) $vtop
 		Yset $w
-		if {$($w:filly) && ($_vheight < $_height || $($w:yscroll) == "")} {
+		if {$($w:filly) && ($_vheight < $_height || [llength $($w:yscroll)] == 0)} {
 			# "scrolled object" is not scrolled, because it is too small
 			# or because no scrollbar was requested.
 			# filly means that, in these cases, we must tell the object what its height should be
@@ -451,6 +493,80 @@ proc Yview {w {cmd ""} args} {
 			if {$(debug,place)} { puts "place $w.scrolled -in $w -y [expr {-$vtop}] -height {}" }
 		}
 	}
+}
+
+
+proc See {w child} {
+	set hs [winfo parent $w].__hs__
+	set vs [winfo parent $w].__vs__
+
+	if {[winfo exists $hs]} {
+		lassign [$hs get] first last
+		set wv [winfo width $w.scrolled]
+		set xc [winfo x $child]
+		set x0 [expr {round($first*$wv)}]
+		set x1 [expr {round($last*$wv)}]
+
+		if {$xc < $x0} {
+			$w xview moveto [expr {double($xc)/double($wv)}]
+		} elseif {$xc + [winfo width $child] > $x1} {
+			set x [expr {$xc + min(0, [winfo width $child] - [winfo width $w])}]
+			$w xview moveto [expr {double($x)/double($wv)}]
+		}
+	}
+
+	if {[winfo exists $vs]} {
+		lassign [$vs get] first last
+		set hv [winfo height $w.scrolled]
+		set yc [winfo y $child]
+		set y0 [expr {round($first*$hv)}]
+		set y1 [expr {round($last*$hv)}]
+
+		if {$yc < $y0} {
+			$w yview moveto [expr {double($yc)/double($hv)}]
+		} elseif {$yc + [winfo height $child] > $y1} {
+			set y [expr {$yc + min(0, [winfo height $child] - [winfo height $w])}]
+			$w yview moveto [expr {double($y)/double($hv)}]
+		}
+	}
+}
+
+
+proc Scrollbar {path args} {
+	tk::frame $path -borderwidth 0
+	ttk::scrollbar $path.sb {*}$args
+	if {[$path.sb cget -orient] eq "horizontal"} {
+		set dim column
+		set sticky we
+	} else {
+		set dim row
+		set sticky ns
+	}
+	grid $path.sb -row 1 -column 1 -sticky $sticky
+	grid ${dim}configure $path 1 -weight 1
+	rename $path [namespace current]::_$path
+	interp alias {} $path {} [namespace current]::ScrollbarProc $path
+}
+
+
+proc ScrollbarProc {w cmd args} {
+	switch $cmd {
+		configure - cget {
+			return [[namespace current]::_$w $cmd {*}$args]
+		}
+
+		padding {
+			if {[$w.sb cget -orient] eq "horizontal"} { set dim row } else { set dim column }
+			grid ${dim}configure $w 0 -minsize [lindex $args 0]
+			return
+		}
+
+		background {
+			return [[namespace current]::_$w configure -background [lindex $args 0]]
+		}
+	}
+
+	return [$w.sb $cmd {*}$args]
 }
 
 

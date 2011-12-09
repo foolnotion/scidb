@@ -249,15 +249,17 @@ array set encoding2Region {
 }
 
 
+set languages {}
 if {[info exists ::i18n::languages]} {
 	foreach entry $::i18n::languages {
-		lassign $entry language code encoding file
+		lassign $entry lang code encoding file
 		set f [file join $::scidb::dir::share lang $file]
 
 		if [file readable $f] {
-			set lang$language $code
-			set encoding$language $encoding
-			set input($language) $file
+			set lang$lang $code
+			set encoding$lang $encoding
+			set input($lang) $file
+			lappend languages $code
 		}
 	}
 }
@@ -334,6 +336,21 @@ proc selectLang {{lang {}}} {
 		close $f
 	}
 
+	set file [file join $::scidb::dir::share lang nag $mc::input($Language)]
+	if {[file readable $file]} {
+		set f [open $file r]
+		chan configure $f -encoding $encoding
+
+		while {[gets $f line] >= 0} {
+			if {[string length $line] > 0 && [string index $line 0] ne "#"} {
+				lassign [split $line \"] nag descr
+				set ::annotation::mc::Nag([string trim $nag]) $descr
+			}
+		}
+
+		close $f
+	}
+
 	array unset EcoTrans
 	array unset EcoMatch
 
@@ -346,7 +363,7 @@ proc selectLang {{lang {}}} {
 			if {[string length $line] > 0 && [string index $line 0] ne "#"} {
 				set key [lindex $line 0]
 				set val [lindex $line 1]
-				if {[string range $key 0 1] eq "* " && [string match {*%1*} $val]} {
+				if {[string match {\* *} $key] && [string match {*%1*} $val]} {
 					lappend EcoMatch $key $val
 				} else {
 					lappend EcoTrans([string index $key 0],[string length $key]) $key $val

@@ -121,7 +121,7 @@ proc Build {w args} {
 	set Priv(delay) $opts(-delay)
 
 	rename ::$w $w.__html__
-	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
+	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
 
 	__html_widget $html -shrink true {*}$htmlOptions -width $MaxWidth
 	$html style -id user $css
@@ -135,9 +135,8 @@ proc Build {w args} {
 }
 
 
-proc WidgetProc {w command args} {
-	set f ${w}.__scrolledframe__.scrolled
-	variable ${f}::Priv
+proc WidgetProc {w parent command args} {
+	variable ${parent}::Priv
 
 	switch -glob -- $command {
 		parse {
@@ -149,16 +148,16 @@ proc WidgetProc {w command args} {
 			array unset [namespace current]::ActiveNodes2
 			array unset [namespace current]::ActiveNodes3
 			set Priv(nodeList) {}
-			$f.html reset
-			$f.html configure -width $MaxWidth
+			$parent.html reset
+			$parent.html configure -width $MaxWidth
 			update idletasks
-			$f.html parse -final [lindex $args 0]
-			set Priv(bbox) [ComputeBoundingBox $f.html [$f.html node]]
+			$parent.html parse -final [lindex $args 0]
+			set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node]]
 			if {[llength $Priv(bbox)]} {
 				lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
-				$f.html configure -width [lindex $Priv(bbox) 2]
+				$parent.html configure -width [lindex $Priv(bbox) 2]
 				update idletasks
-				::scrolledframe::resize $w.__scrolledframe__
+				$parent resize
 			}
 			return
 		}
@@ -181,13 +180,13 @@ proc WidgetProc {w command args} {
 		stimulate {
 			array unset HoverNodes
 			set Priv(nodeList) {}
-			set x [expr {[winfo pointerx .] - [winfo rootx $f.html]}]
-			set y [expr {[winfo pointery .] - [winfo rooty $f.html]}]
-			event generate $f.html <Motion> -x $x -y $y
+			set x [expr {[winfo pointerx .] - [winfo rootx $parent.html]}]
+			set y [expr {[winfo pointery .] - [winfo rooty $parent.html]}]
+			event generate $parent.html <Motion> -x $x -y $y
 			return
 		}
 
-		drawable	{ return $f.html }
+		drawable	{ return $parent.html }
 		pointer	{ return $Priv(pointer) }
 		bbox		{ return $Priv(bbox) }
 		font		{ return HtmlFont }

@@ -32,7 +32,6 @@ set CommentAfterMove			"Comment after move"
 set PrecedingComment			"Preceding comment"
 set TrailingComment			"Trailing comment"
 set Language					"Language"
-set AllLanguages				"All languages"
 set AddLanguage				"Add language..."
 set SwitchLanguage			"Switch language"
 set FormatText					"Format text"
@@ -249,7 +248,7 @@ proc open {parent pos lang} {
 	::toolbar::add $Vars(tb) button \
 		-image [::country::makeToolbarIcon ZZX] \
 		-command [namespace code { SwitchLanguage xx }] \
-		-tooltipvar [namespace current]::mc::AllLanguages \
+		-tooltipvar ::languagebox::mc::AllLanguages \
 		-variable [namespace current]::Vars(lang) \
 		-value xx \
 		;
@@ -1301,7 +1300,7 @@ proc PopupMenu {parent} {
 	$m.switch add command \
 		-compound left \
 		-image $::country::icon::flag([::mc::countryForLang xx]) \
-		-label " $mc::AllLanguages" \
+		-label " $::languagebox::mc::AllLanguages" \
 		-command [namespace code [list SwitchLanguage xx]] \
 		-state $state \
 		;
@@ -1617,7 +1616,7 @@ proc LanguageName {{lang {}}} {
 	variable Vars
 
 	if {[llength $lang] == 0} { set lang $Vars(lang) }
-	if {$lang eq "xx" } { return $mc::AllLanguages }
+	if {$lang eq "xx" } { return $::languagebox::mc::AllLanguages }
 	return [::encoding::languageName $lang]
 }
 

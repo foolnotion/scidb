@@ -952,7 +952,7 @@ proc MoveRow {table x y} {
 	if {$Vars(drag:motion)} {
 		$table.t dragimage configure -visible no
 		$table.t dragimage clear
-		puts "MoveRow"
+		puts "MoveRow" ;# TODO
 	}
 
 	array unset Vars drag:*

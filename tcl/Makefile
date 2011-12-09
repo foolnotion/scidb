@@ -132,6 +132,7 @@ install: $(SCRIPT)
 	install -m 755 -d $(SHAREDIR)/flags
 	install -m 755 -d $(SHAREDIR)/lang
 	install -m 755 -d $(SHAREDIR)/lang/eco
+	install -m 755 -d $(SHAREDIR)/lang/nag
 	install -m 755 -d $(SHAREDIR)/photos
 	install -m 755 -d $(SHAREDIR)/photos
 	install -m 755 -d $(SHAREDIR)/textures
@@ -147,7 +148,8 @@ install: $(SCRIPT)
 	install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
 	install -m 644 -p flags/*.png $(SHAREDIR)/flags
 	install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
-	install -m 644 -p lang/eco/*.* $(SHAREDIR)/lang/eco
+	install -m 644 -p lang/eco/*.tcl $(SHAREDIR)/lang/eco
+	install -m 644 -p lang/nag/*.tcl $(SHAREDIR)/lang/nag
 	install -m 644 -p themes/*.dat $(SHAREDIR)/themes
 	install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
 	install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
@@ -209,7 +211,8 @@ uninstall:
 	for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls lang/eco/*.*`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls lang/eco/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	for f in `ls lang/nag/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
 	for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done

@@ -539,14 +539,17 @@ proc WidgetProc {w command args} {
 		}
 
 		see {
-			if {[llength $args] != 1} {
-				error "wrong # args: should be \"[namespace current] see <index>\""
+			if {[llength $args] > 0} {
+				set index [lindex $args 0]
+				if {![string is integer -strict $index]} {
+					error "wrong argument: index should be integer ('$index' is given)"
+				}
+				incr index
+			} elseif {$Priv(selected) > 1} {
+				set index $Priv(selected)
+			} else {
+				return
 			}
-			set index [lindex $args 0]
-			if {![string is integer -strict $index]} {
-				error "wrong argument: index should be integer ('$index' is given)"
-			}
-			incr index
 			if {$index <= $Priv(last)} { $t see $index }
 		}
 
@@ -590,7 +593,9 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] select <index>\""
 			}
-			$t selection clear
+			switch [$t cget -selectmode] {
+				single - browse { $t selection clear }
+			}
 			set index [lindex $args 0]
 			if {[string is integer -strict $index]} {
 				incr index
@@ -601,10 +606,15 @@ proc WidgetProc {w command args} {
 				set index [$t item id $index]
 			}
 			if {$index <= $Priv(last) && [$t item enabled $index]} {
-				$t selection add $index
+				if {[$t cget -selectmode] eq "multiple" && $index in [$t selection get]} {
+					$t selection clear $index $index
+					set Priv(selected) 0
+				} else {
+					$t selection add $index
+					set Priv(selected) $index
+				}
 				$t activate $index
 				$t see $index
-				set Priv(selected) $index
 				event generate $w <<ListboxSelect>> -data [expr {$index - 1}]
 			} else {
 				set Priv(selected) 0
@@ -613,6 +623,14 @@ proc WidgetProc {w command args} {
 
 		curselection {
 			return [expr {$Priv(selected) - 1}]
+		}
+
+		selection {
+			set result {}
+			foreach i [$t selection get] {
+				if {$i > 0} { lappend result [expr {$i - 1}] }
+			}
+			return $result
 		}
 
 		enabled? {
@@ -1023,12 +1041,23 @@ proc SetActive {t index select {isDoubleClick 0}} {
 	if {$index < 1} { set index 1 }
 	if {$index > $Priv(last)} { set index $Priv(last) }
 
-	if {$select || [$t cget -selectmode] eq "browse"} {
+	if {($select && [$t cget -selectmode] eq "single") || [$t cget -selectmode] eq "browse"} {
 		$t selection clear
 		$t selection add $index
 		$t activate $index
 		if {$isDoubleClick} { set data "" } else { set data [expr {$index - 1}] }
 		set Priv(selected) $index
+		event generate [winfo parent $t] <<ListboxSelect>> -data $data
+	} elseif {$select && [$t cget -selectmode] eq "multiple"} {
+		if {$index in [$t selection get]} {
+			$t selection clear $index $index
+			set Priv(selected) 0
+		} else {
+			$t selection add $index
+			set Priv(selected) $index
+		}
+		$t activate $index
+		if {$isDoubleClick} { set data "" } else { set data [expr {$index - 1}] }
 		event generate [winfo parent $t] <<ListboxSelect>> -data $data
 	} else {
 		$t activate $index
@@ -1216,9 +1245,22 @@ proc SelectActive {t} {
 
 	set active [$t item id active]
 	if {$active > 0} {
-		$t selection clear
-		$t selection add $active
-		set Priv(selected) $active
+		switch [$t cget -selectmode] {
+			browse - single {
+				$t selection clear
+				$t selection add $active
+				set Priv(selected) $active
+			}
+			multiple {
+				if {$active in [$t selection get]} {
+					$t selection clear $active $active
+					set Priv(selected) 0
+				} else {
+					$t selection add $active
+					set Priv(selected) $active
+				}
+			}
+		}
 		event generate $w <<ListboxSelect>> -data [expr {$active - 1}]
 	}
 }

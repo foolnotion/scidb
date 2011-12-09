@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2010-2011 Gregor Cramer
+# Copyright: (C) 2011 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -24,25 +24,36 @@
 # (at your option) any later version.
 # ======================================================================
 
-proc countrybox {w args} {
-	return [::countrybox::Build $w {*}$args]
+proc languagebox {w args} {
+	return [::languagebox::Build $w {*}$args]
 }
 
 
-namespace eval countrybox {
+namespace eval languagebox {
+namespace eval mc {
+
+set AllLanguages	"All languages"
+set None				"None"
+
+}
 
 proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content ""
 	variable ${w}::Key ""
 	variable ${w}::IgnoreKey 0
+	variable ${w}::List {}
+	variable ${w}::Values {}
+	variable ${w}::None 0
 
 	array set opts {
 		-height			15
-		-width			47
+		-width			20
 		-textvar			{}
 		-textvariable	{}
-		-state			normal
+		-state			readonly
+		-list				{}
+		-none				0
 	}
 	array set opts $args
 
@@ -52,27 +63,22 @@ proc Build {w args} {
 	if {[llength $opts(-textvariable)] == 0} {
 		set opts(-textvariable) [namespace current]::${w}::Content
 	}
-
-	set f TkTextFont
-	set bold [list [font configure $f -family] [font configure $f -size] bold]
+	set List $opts(-list)
+	set None $opts(-none)
 
 	ttk::tcombobox $w \
 		-height $opts(-height) \
-		-showcolumns {name code} \
-		-format "%1 (%2)" \
-		-empty {0} \
+		-showcolumns {flag name} \
+		-format "%2" \
 		-width $opts(-width) \
 		-textvariable $opts(-textvariable) \
 		-scrollcolumn name \
 		-exportselection no \
-		-disabledbackground #ebf4f5 \
-		-disabledforeground black \
-		-disabledfont $bold \
+		-disabledbackground white \
+		-disabledforeground grey60 \
 		-state $opts(-state) \
 		;
 
-	$w addcol text  -id code -foreground darkgreen -font TkFixedFont -width 3 -justify center
-	$w addcol text  -id iso  -foreground darkred -font TkFixedFont -width 3 -justify center
 	$w addcol image -id flag -width 20 -justify center
 	$w addcol text  -id name
 
@@ -103,9 +109,11 @@ proc WidgetProc {w command args} {
 		}
 
 		value {
-			set code [$w.__w__ get [$w.__w__ current] code]
-			if {$code eq "UNK"} { return "" }
-			return $code
+			set lang [$w.__w__ get [$w.__w__ current] name]
+			if {$lang eq $mc::None} { return "" }
+			variable ${w}::Values
+			set n [lsearch -index 1 $Values $lang]
+			return [lindex $Values $n 2]
 		}
 
 		valid? {
@@ -116,8 +124,16 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] set <value>\""
 			}
+			set lang [lindex $args 0]
+			if {[string length $lang] == 0} {
+				set lang $mc::None
+			} elseif {[string length $lang] == 2} {
+				variable ${w}::Values
+				set n [lsearch -index 2 $Values $lang]
+				if {$n >= 0} { set lang [lindex $Values $n 1] }
+			}
 			set var [$w.__w__ cget -textvariable]
-			set $var [lindex $args 0]
+			set $var $lang
 			Search $w $var 1
 			ShowCountry $w
 			return $w
@@ -140,33 +156,34 @@ proc WidgetProc {w command args} {
 
 
 proc SetupList {w} {
-	set index -1
+	variable ${w}::List
+	variable ${w}::None
+	variable ${w}::Values
 
-	foreach region $::country::regions {
-		if {$region ne "--"} {
-			$w listinsert [list [set ::country::mc::$region] {} {} {}] \
-				-types {text} -span {code 4} -enabled no -index [incr index]
+	set Values {}
+
+	foreach entry [::country::makeCountryList] {
+		if {[llength $List] == 0 || [lindex $entry 1] in $List} {
+			lappend Values $entry
 		}
-		set list {}
-		foreach entry $::country::region($region) {
-			lassign $entry code iso1 iso2 region active name
-			if {$iso1 eq "--"} { set iso1 "" }
-			set options {}
-			if {!$active} {
-				lappend options -foreground grey60
-			}
-#			elseif {$iso1 eq ""} {
-#				lappend options -foreground darkblue
-#			}
-			set country [set ::country::mc::$name]
-			set flag $::country::icon::flag($code)
-			lappend list [list [::mc::mapForSort $country] $code $iso1 $flag $country $options]
-		}
-		set list [lsort -index 0 -dictionary $list]
-		foreach entry $list {
-			lassign $entry _ code iso1 flag country options
-			$w listinsert [list $code $iso1 $flag $country] {*}$options -index [incr index]
-		}
+	}
+
+	set Values [lsort -index 1 -dictionary $Values]
+
+	if {"xx" in $List} {
+		set name $mc::AllLanguages
+		set flag $::country::icon::flag(ZZX)
+		set Values [linsert $Values 0 [list xx $name $flag]]
+	}
+	if {$None} {
+		set name $mc::None
+		set flag {}
+		set Values [linsert $Values 0 [list "  " $name $flag]]
+	}
+
+	foreach entry $Values {
+		lassign $entry flag name _
+		$w listinsert [list $flag $name]
 	}
 
 	$w resize -force
@@ -176,26 +193,23 @@ proc SetupList {w} {
 
 
 proc LanguageChanged {w} {
-	set content [$w get]
-	set code ""
+	variable ${w}::Values
 
-	if {[string length $content] && [$w find $content] >= 0} {
-		set code [string range $content end-3 end-1]
-	}
+	set lang ""
+	set content [$w get]
+	set n [lsearch -index 2 $Values $content]
+	if {$n >= 0} { set lang [lindex $Values $n 2] }
 
 	SetupList $w
 
-	if {[string length $code] == 0} {
-		$w current 0
-	} else {
-		$w current search code $code
+	if {[llength $lang]} {
+		set n [lsearch -index 0 $Values $lang]
+		if {$n >= 0} { $w set [lindex $Values $n 1] }
 	}
 
-	if {[string length $content] && [string length [$w get]] == 0} {
-		$w set $content
+	if {[$w state] ne "readonly"} {
+		$w icursor end
 	}
-
-	$w icursor end
 }
 
 
@@ -227,9 +241,7 @@ proc Completion {w code sym var} {
 proc Completion2 {w var prevContent} {
 	set content [string trimleft [set $var]]
 
-	if {	[string length $content]
-		&& (	[string range $content 0 end-1] eq $prevContent
-			|| [string match {*([A-Z][A-Z][A-Z])} $prevContent])} {
+	if {[string length $content] && [string range $content 0 end-1] eq $prevContent} {
 		Search $w $var 0
 	}
 
@@ -241,37 +253,29 @@ proc Search {w var full} {
 	set content [set $var]
 	if {[llength $content] == 0} { return }
 
-	if {[string length $content] == 2 && [string tolower $content] eq $content} {
-		$w current match iso $content
-		$w icursor end
-	} elseif {[string length $content] == 3 && [string toupper $content] eq $content} {
-		$w current match code [::scidb::app::lookup countryCode $content]
-		$w icursor end
-	} elseif {	[string length $content] > 1
-				&& [string is upper [string index $content 0]]
-				&& [string is lower [string index $content 1]]} {
-		if {$full} {
-			$w current search name $content
-		} else {
-			$w current match name $content
-			set newContent [$w get]
-			
-			if {$content ne $newContent} {
-				set k 0
-				set j 0
-				set n [string length $content]
-				while {$j < $n} {
-					set c [string index $newContent $k]
+	if {$full} {
+		$w current search name $content
+	} else {
+		$w current match name $content
+		set newContent [$w get]
+		
+		if {$content ne $newContent} {
+			set k 0
+			set j 0
+			set n [string length $content]
+			while {$j < $n} {
+				set c [string index $newContent $k]
 
-					if {$c eq [string index $content $j]} {
-						incr j
-					} else {
-						incr j [string length [::mc::mapForSort $c]]
-					}
-
-					incr k
+				if {$c eq [string index $content $j]} {
+					incr j
+				} else {
+					incr j [string length [::mc::mapForSort $c]]
 				}
 
+				incr k
+			}
+
+			if {[$w state] ne "readonly"} {
 				$w icursor $k
 				$w selection clear
 				$w selection range $k end
@@ -282,10 +286,14 @@ proc Search {w var full} {
 
 
 proc ShowCountry {cb} {
+	variable ${cb}::Values
+	variable ${cb}::None
+
 	set content [$cb get]
 	if {[string length $content]} {
-		if {[$cb find $content] >= 0} {
-			set code [string range $content end-3 end-1]
+		set n [lsearch -index 1 $Values $content]
+		if {$n >= 1 || (!$None && $n == 0)} {
+			set code [::mc::countryForLang [lindex $Values $n 2]]
 			if {[info exists ::country::icon::flag($code)]} {
 				if {[$cb placeicon $::country::icon::flag($code)]} {
 					return
@@ -297,6 +305,6 @@ proc ShowCountry {cb} {
 	$cb forgeticon
 }
 
-} ;# namespace countrybox
+} ;# namespace languagebox
 
 # vi:set ts=3 sw=3:

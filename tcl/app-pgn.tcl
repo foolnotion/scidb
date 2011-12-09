@@ -348,7 +348,7 @@ proc build {parent menu width height} {
 	::toolbar::add $tbLanguages checkbutton \
 		-image [::country::makeToolbarIcon ZZX] \
 		-command [namespace code [list ToggleLanguage xx]] \
-		-tooltipvar ::comment::mc::AllLanguages \
+		-tooltipvar ::languagebox::mc::AllLanguages \
 		-variable [namespace current]::Vars(lang:active:xx) \
 		-padx 1 \
 		;
@@ -1886,7 +1886,7 @@ proc PopupMenu {parent position} {
 			$menu.strip.comments add command \
 				-compound left \
 				-image $::country::icon::flag([::mc::countryForLang xx]) \
-				-label " $::comment::mc::AllLanguages" \
+				-label " $::languagebox::mc::AllLanguages" \
 				-command [list ::widget::busyOperation ::scidb::game::strip comments] \
 				;
 
@@ -2192,7 +2192,7 @@ proc PopupMenu {parent position} {
 	$menu.display.languages add checkbutton \
 		-compound left \
 		-image $::country::icon::flag([::mc::countryForLang xx]) \
-		-label " $::comment::mc::AllLanguages" \
+		-label " $::languagebox::mc::AllLanguages" \
 		-variable [namespace current]::Vars(lang:active:xx) \
 		-command [namespace code [list SetLanguages $Vars(index)]] \
 		;
@@ -2289,7 +2289,11 @@ proc CopyComments {parent} {
 	set top [::ttk::frame $dlg.top]
 	pack $dlg.top
 
-	set allLang [list $::country::icon::flag([::mc::countryForLang xx]) $::comment::mc::AllLanguages xx]
+	set allLang [list \
+		$::country::icon::flag([::mc::countryForLang xx]) \
+		$::languagebox::mc::AllLanguages \
+		xx \
+	]
 	if {[llength $Vars(lang:set)]} {
 		set langSet(src) [::country::makeCountryList $Vars(lang:set)]
 	} else {

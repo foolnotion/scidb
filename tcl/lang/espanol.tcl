@@ -49,6 +49,7 @@
 ::mc::Delete			"Eliminar"
 ::mc::Edit				"Editar"
 ::mc::Escape			"Esc"
+::mc::From				"From" ;# NEW
 ::mc::Game				"Partida"
 ::mc::Game				"Partida"
 ::mc::Layout			"Disposición"
@@ -66,6 +67,7 @@
 ::mc::SelectAll		"Seleccionar todo"
 ::mc::Texture			"Textura"
 ::mc::Theme				"Tema"
+::mc::To					"To" ;# NEW
 ::mc::Undo				"Deshacer"
 ::mc::Variation		"Variante"
 ::mc::White				"Blancas"
@@ -192,7 +194,6 @@
 ::load::mc::WikipediaLinks			"enlace a Wikipedia"
 ::load::mc::ChessgamesComLinks	"enlace a chessgames.com"
 ::load::mc::Cities					"ciudades"
-::load::mc::PhotoIndex				"índice de fotografías"
 ::load::mc::PieceSet					"piezas"
 ::load::mc::Theme						"tema"
 ::load::mc::Icons						"íconos"
@@ -244,9 +245,10 @@
 ::application::database::mc::DescriptionTooLarge	"Descripción demasiado grande."
 ::application::database::mc::DescrTooLargeDetail	"La entrada contiene %d caracteres, pero sólo se permiten %d."
 ::application::database::mc::ClipbaseDescription	"Base temporal, no se guarda al disco."
-::application::database::mc::ClearHistory				"Clear History" ;# NEW
+::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
+::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
 
-::application::database::mc::RecodingDatabase		"Recodificar %s de %s a %s"
+::application::database::mc::RecodingDatabase		"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames				"%s partida(s) recodificadas"
 
 ::application::database::mc::GameCount					"Partidas"
@@ -283,9 +285,9 @@
 ::application::database::mc::T_PlayerCollection		"Colección de jugadores"
 ::application::database::mc::T_Tournament				"Torneo"
 ::application::database::mc::T_TournamentSwiss		"Torneo suizo"
-::application::database::mc::T_GMGames					"partidas de GM"
-::application::database::mc::T_IMGames					"partidas de IM"
-::application::database::mc::T_BlitzGames				"partidas rápidas"
+::application::database::mc::T_GMGames					"Partidas de GM"
+::application::database::mc::T_IMGames					"Partidas de IM"
+::application::database::mc::T_BlitzGames				"Partidas rápidas"
 ::application::database::mc::T_Tactics					"Táctica"
 ::application::database::mc::T_Endgames				"Finales"
 ::application::database::mc::T_Analysis				"Análisis"
@@ -304,6 +306,8 @@
 ::application::database::mc::OpenDatabase				"Abrir Base"
 ::application::database::mc::NewDatabase				"Nueva Base"
 ::application::database::mc::CloseDatabase			"Cerrar Base '%s'"
+::application::database::mc::SetReadonly				"Set Database '%s' readonly" ;# NEW
+::application::database::mc::SetWriteable				"Set Database '%s' writeable" ;# NEW
 
 ::application::database::mc::OpenReadonly				"Abrir en solo-lectura"
 ::application::database::mc::OpenWriteable			"Abrir con permiso de escritura"
@@ -357,9 +361,12 @@
 ::application::pgn::mc::Command(strip:moves)				"Jugadas desde el principio"
 ::application::pgn::mc::Command(strip:truncate)			"Jugadas hasta el final"
 ::application::pgn::mc::Command(strip:annotations)		"Notas"
+::application::pgn::mc::Command(strip:info)				"Move Information" ;# NEW
 ::application::pgn::mc::Command(strip:marks)				"Marcadores"
 ::application::pgn::mc::Command(strip:comments)			"Comentarios"
 ::application::pgn::mc::Command(strip:variations)		"Variantes"
+::application::pgn::mc::Command(copy:comments)			"Copy Comments" ;# NEW
+::application::pgn::mc::Command(move:comments)			"Move Comments" ;# NEW
 ::application::pgn::mc::Command(game:clear)				"Vaciar partida"
 ::application::pgn::mc::Command(game:transpose)			"Partida transpuesta"
 
@@ -369,6 +376,7 @@
 ::application::pgn::mc::InsertDiagram						"Insertar diagrama"
 ::application::pgn::mc::InsertDiagramFromBlack			"Insertar diagrama desde la perspectiva de las Negras"
 ::application::pgn::mc::SuffixCommentaries				"Comentarios en los sufijos"
+::application::pgn::mc::StripOriginalComments			"Strip original comments" ;# NEW
 
 ::application::pgn::mc::AddNewGame							"Guardar: Agregar nueva partida a %s..."
 ::application::pgn::mc::ReplaceGame							"Guardar: Reemplazar partida en %s..."
@@ -376,6 +384,7 @@
 
 ::application::pgn::mc::ColumnStyle							"Estilo columna"
 ::application::pgn::mc::UseParagraphSpacing				"Usar espaciado en los párrafos"
+::application::pgn::mc::ShowMoveInfo						"Show Move Information" ;# NEW
 ::application::pgn::mc::BoldTextForMainlineMoves		"Negrita para las jugadas de la Línea principal"
 ::application::pgn::mc::ShowDiagrams						"Mostrar diagramas"
 ::application::pgn::mc::Languages							"Idiomas"
@@ -388,8 +397,10 @@
 ::application::pgn::mc::MustBeEven							"La entrada debe ser par."
 ::application::pgn::mc::MustBeOdd							"La entrada debe ser impar."
 ::application::pgn::mc::ReplaceMovesSucceeded			"Jugadas reemplazadas exitosamente."
+::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Editar nota"
+::application::pgn::mc::EditMoveInformation				"Edit move information" ;# NEW
 ::application::pgn::mc::EditCommentBefore					"Editar comentario antes de la jugada"
 ::application::pgn::mc::EditCommentAfter					"Editar comentario tras la jugada"
 ::application::pgn::mc::EditPrecedingComment				"Editar el comentario precedente"
@@ -563,6 +574,7 @@
 ::gametable::mc::ReverseOrder				"Invertir el orden"
 ::gametable::mc::NotAvailable				"n/d"
 ::gametable::mc::NoMoves					"Sin jugadas"
+::gametable::mc::NoMoreMoves				"No more moves" ;# NEW
 ::gametable::mc::WhiteRating				"Rating de las Blancas"
 ::gametable::mc::BlackRating				"Rating de las Negras"
 
@@ -720,6 +732,7 @@
 ::playertable::mc::OpenViafCatalog			"Abrir el catálogo VIAF"
 ::playertable::mc::OpenPndCatalog			"Abrir el catálogo de la Deutsche Nationalbibliothek"
 ::playertable::mc::OpenChessgames			"Colección de partidas de chessgames.com"
+::playertable::mc::SeachIn365ChessCom		"Search in 365Chess.com" ;# NEW
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
@@ -760,7 +773,6 @@
 ::browser::mc::MergeGame			"Fusionar partida"
 
 ::browser::mc::IllegalMove			"Jugada ilegal"
-::browser::mc::GameDataCorrupted	"Los datos de la partida son erróneos."
 ::browser::mc::NoCastlingRights	"no puede enrocar"
 
 ### overview ###########################################################
@@ -769,9 +781,12 @@
 ::overview::mc::AcceleratorRotate	"R"
 
 ### encoding ###########################################################
+::encoding::mc::AutoDetect				"auto-detection" ;# NEW
+
 ::encoding::mc::Encoding				"Codificar"
 ::encoding::mc::Description			"Descripción"
 ::encoding::mc::Languages				"Idiomas (Fuentes)"
+::encoding::mc::UseAutoDetection		"Use Auto-Detection" ;# NEW
 
 ::encoding::mc::ChooseEncodingTitle	"Elegir Código"
 
@@ -841,10 +856,12 @@
 ::import::mc::ImportAborted						"Importación abortada."
 ::import::mc::TextIsEmpty							"El texto PGN está vacío."
 ::import::mc::AbortImport							"¿Abortar importación de PGN?"
-::import::mc::SelectEncoding						"Elija codificación"
 
 ::import::mc::DifferentEncoding					"Selected encoding %src does not match file encoding %dst." ;# NEW
 ::import::mc::DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action." ;# NEW
+::import::mc::CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set." ;# NEW
+::import::mc::CheckImportResult					"Please check whether the right figurine set is detected." ;# NEW
+::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities." ;# NEW
 
 ::import::mc::EnterOrPaste							"Ingrese o pegue en formato PGN %s en el cuadro de arriba.\nCualquier falla al importar el %s se mostrará aquí."
 ::import::mc::EnterOrPaste-Game					"partida"
@@ -878,7 +895,7 @@
 ::import::mc::IllegalCastling						"Enroque ilegal"
 ::import::mc::IllegalMove							"Jugada ilegal"
 ::import::mc::UnsupportedVariant					"Variante de ajedrez no soportada"
-::import::mc::DecodingFailed						"Fracaso en la codificación"
+::import::mc::DecodingFailed						"Decoding of this game was not possible" ;# NEW
 ::import::mc::ResultDidNotMatchHeaderResult	"El resultado no es igual al resultado del encabezado"
 ::import::mc::ValueTooLong							"El encabezado es demasiado largo y se cortará a los 255 caracteres"
 ::import::mc::MaximalErrorCountExceeded		"Máximo de errores excedido; no se informarán más errores (del tipo de error previo)"
@@ -908,11 +925,27 @@
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selección de archivo"
-::export::mc::Options						"&Opciones"
+::export::mc::OptionsSetup					"&Opciones"
 ::export::mc::PageSetup						"&Configuración de página"
-::export::mc::Style							"&Estilo"
-::export::mc::Encoding						"Cod&ificación"
-::export::mc::AddGamesToExisitingFile	"&Agregar partidas a un archivo existente"
+::export::mc::DiagramSetup					"&Diagram Setup" ;# NEW
+::export::mc::StyleSetup					"&Estilo"
+::export::mc::EncodingSetup				"Cod&ificación"
+::export::mc::TagsSetup						"&Tags"
+::export::mc::NotationSetup				"&Notación"
+::export::mc::AnnotationSetup				"Not&as"
+::export::mc::CommentsSetup				"Co&mentarios"
+
+::export::mc::Visibility					"Visibility" ;# NEW
+::export::mc::HideDiagrams					"Hide Diagrams" ;# NEW
+::export::mc::AllFromWhitePersp			"All From White's Perspective" ;# NEW
+::export::mc::AllFromBlackPersp			"All From Black's Perspective" ;# NEW
+::export::mc::ShowCoordinates				"Mostrar coordenadas"
+::export::mc::ShowSideToMove				"Mostrar el lado que mueve"
+::export::mc::ShowArrows					"Show Arrows" ;# NEW
+::export::mc::ShowMarkers					"Show Markers" ;# NEW
+::export::mc::Layout							"Disposición"
+::export::mc::PostscriptSpecials			"Postscript Specialities" ;# NEW
+::export::mc::BoardSize						"Board Size" ;# NEW
 
 ::export::mc::Notation						"Notación"
 ::export::mc::Graphic						"Gráficos"
@@ -922,8 +955,24 @@
 ::export::mc::Correspondence				"Correspondencia"
 ::export::mc::Telegraphic					"Telegráfico"
 ::export::mc::FontHandling					"Manejo de fuentes"
+::export::mc::DiagramStyle					"Diagram Style" ;# NEW
+::export::mc::UseImagesForDiagram		"Use images for diagram generation" ;# NEW
 ::export::mc::EmebedTruetypeFonts		"Empotrar fuentes TrueType"
 ::export::mc::UseBuiltinFonts				"Usar fuentes incluidas"
+::export::mc::SelectExportedTags			"Selection of exported tags" ;# NEW
+::export::mc::ExcludeAllTags				"Exclude all tags" ;# NEW
+::export::mc::IncludeAllTags				"Include all tags" ;# NEW
+::export::mc::ExtraTags						"All other extra tags" ;# NEW
+::export::mc::NoComments					"No comments" ;# NEW
+::export::mc::AllLanguages					"All languages" ;# NEW
+::export::mc::Significant					"Significant" ;# NEW
+::export::mc::LanguageSelection			"Language selection" ;# NEW
+::export::mc::MapTo							"Map to" ;# NEW
+::export::mc::MapNagsToComment			"Map annotations to comments" ;# NEW
+::export::mc::UnusualAnnotation			"Unusual annotations" ;# NEW
+::export::mc::AllAnnotation				"All annotations" ;# NEW
+::export::mc::UseColumnStyle				"Use column style" ;# NEW
+::export::mc::MainlineStyle				"Main Line Style" ;# NEW
 
 ::export::mc::PdfFiles						"Archivos PDF"
 ::export::mc::HtmlFiles						"Archivos HTML"
@@ -935,7 +984,6 @@
 ::export::mc::Export							"Exportar"
 ::export::mc::ExportedGames				"%s partida(s) exportada(s)"
 ::export::mc::NoGamesForExport			"No hay partidas para exportar."
-::export::mc::OverwriteDatabase			"Está por sobreescribir la base %s original. ¿Está seguro?"
 ::export::mc::ResetDefaults				"Volver a los parámetros predeterminados"
 ::export::mc::UnsupportedEncoding		"No use la codificación %s para documentos PDF. Debe elegir una codificación alternativa."
 ::export::mc::DatabaseIsOpen				"La base '%s' está abierta. Debe cerrarla primero."
@@ -948,10 +996,13 @@
 ::export::mc::Variation						"Variante"
 ::export::mc::Subvariation					"Subvariante"
 ::export::mc::Figurines						"Figurines"
+::export::mc::Hyphenation					"Hyphenation" ;# NEW
+::export::mc::None							"(ninguno)"
 ::export::mc::Symbols						"Simbolos"
 ::export::mc::Comments						"Comentarios"
 ::export::mc::Result							"Resultado"
 ::export::mc::Diagram						"Diagrama"
+::export::mc::ColumnStyle					"Column Style" ;# NEW
 
 ::export::mc::Paper							"Papel"
 ::export::mc::Orientation					"Orientación"
@@ -971,6 +1022,11 @@
 ::export::mc::One								"Una"
 ::export::mc::Two								"Dos"
 
+::export::mc::DocumentStyle				"Document Style" ;# NEW
+::export::mc::Article						"Article" ;# NEW
+::export::mc::Report							"Report" ;# NEW
+::export::mc::Book							"Book" ;# NEW
+
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
 ::export::mc::FormatName(pgn)				"PGN"
@@ -981,6 +1037,7 @@
 
 ::export::mc::Option(pgn,include_varations)						"Exportar variantes"
 ::export::mc::Option(pgn,include_comments)						"Exportar comentarios"
+::export::mc::Option(pgn,include_moveinfo)						"Export move information (as comments)" ;# NEW
 ::export::mc::Option(pgn,include_marks)							"Exportar marcadores (como comentarios)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Usar el formato de importación de Scidb"
 ::export::mc::Option(pgn,use_chessbase_format)					"Usar formato ChessBase"
@@ -993,7 +1050,6 @@
 ::export::mc::Option(pgn,include_position_tag)					"Escribir etiqueta 'Position' (si es necesario)"
 ::export::mc::Option(pgn,include_time_mode_tag)					"Escribir etiqueta 'TimeMode' (si es necesario)"
 ::export::mc::Option(pgn,exclude_extra_tags)						"Excluir etiquetas superfluas"
-::export::mc::Option(pgn,add_country_after_player)				"Agregar el país luego del nombre del jugador"
 ::export::mc::Option(pgn,indent_variations)						"Sangrar variantes"
 ::export::mc::Option(pgn,indent_comments)							"Sangrar comentarios"
 ::export::mc::Option(pgn,column_style)								"Estilo columna (una jugada por línea)"
@@ -1015,7 +1071,7 @@
 ::dialog::save::mc::GameData						"Datos de la partida"
 ::dialog::save::mc::Event							"Evento"
 
-::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / superfluas"
+::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / Extra Tags" ;# NEW (changed)
 ::dialog::save::mc::PressToSelect				"Presione Ctrl+0 a Ctrl+9 (o el botón izquierdo del ratón) para seleccionar"
 ::dialog::save::mc::PressForWhole				"Presione Alt-0 a Alt-9 (o el botón medio del ratón) para grupo de datos completo"
 ::dialog::save::mc::EditTags						"Editar etiquetas"
@@ -1032,6 +1088,7 @@
 ::dialog::save::mc::SaveGameFailedDetail		"Ver bitácora para los detalles."
 ::dialog::save::mc::SavingGameLogInfo			"Guardar partida (%white - %black, %event) en base '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"La base actual '%s' es de sólo lectura."
+::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved." ;# NEW
 
 ::dialog::save::mc::LocalName						"&Nombre local"
 ::dialog::save::mc::EnglishName					"Nombre I&nglés"
@@ -1121,6 +1178,14 @@
 ::game::mc::NewGame						"Nueva partida"
 ::game::mc::NewGames						"Nuevas partidas"
 ::game::mc::Created						"creado"
+::game::mc::ClearHistory				"Clear History" ;# NEW
+::game::mc::RemoveSelectedGame		"Remove selected game from history" ;# NEW
+::game::mc::GameDataCorrupted			"Los datos de la partida son erróneos."
+::game::mc::GameDecodingFailed		"Decoding of this game was not possible." ;# NEW
+
+### languagebox ########################################################
+::languagebox::mc::AllLanguages	"Todos los idiomas"
+::languagebox::mc::None				"None" ;# NEW
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Hoy"
@@ -1172,58 +1237,64 @@
 ::timemodebox::mc::Mode(corr)		"Correspondencia"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable	"Grilla de torneo"
-::crosstable::mc::AverageRating		"Rating promedio"
-::crosstable::mc::Category				"Categoría"
-::crosstable::mc::Games					"partidas"
-::crosstable::mc::Game					"partida"
+::crosstable::mc::TournamentTable		"Grilla de torneo"
+::crosstable::mc::AverageRating			"Rating promedio"
+::crosstable::mc::Category					"Categoría"
+::crosstable::mc::Games						"partidas"
+::crosstable::mc::Game						"partida"
 
-::crosstable::mc::Tiebreak				"Desempate"
-::crosstable::mc::Settings				"Configuraciones"
-::crosstable::mc::RevertToStart		"Volver a los valores iniciales"
-::crosstable::mc::UpdateDisplay		"Actualizar el visor"
-::crosstable::mc::CannotOpenScript	"No se puede abrir el guión '%s'."
+::crosstable::mc::ScoringSystem			"Scoring System" ;# NEW
+::crosstable::mc::Tiebreak					"Desempate"
+::crosstable::mc::Settings					"Configuraciones"
+::crosstable::mc::RevertToStart			"Volver a los valores iniciales"
+::crosstable::mc::UpdateDisplay			"Actualizar el visor"
 
-::crosstable::mc::None					"Ninguno"
-::crosstable::mc::Buchholz				"Buchholz"
-::crosstable::mc::MedianBuchholz		"Buchholz-Mediano"
+::crosstable::mc::Traditional				"Traditional" ;# NEW
+::crosstable::mc::Bilbao					"Bilbao" ;# NEW
+
+::crosstable::mc::None						"Ninguno"
+::crosstable::mc::Buchholz					"Buchholz"
+::crosstable::mc::MedianBuchholz			"Buchholz-Mediano"
 ::crosstable::mc::ModifiedMedianBuchholz "Buchholz-Mediano Mod."
-::crosstable::mc::RefinedBuchholz	"Buchholz perfeccionado"
-::crosstable::mc::SonnebornBerger	"Sonneborn-Berger"
-::crosstable::mc::Progressive			"Puntajes progresivos"
-::crosstable::mc::KoyaSystem			"Sistema Koya"
-::crosstable::mc::GamesWon				"Número de partidas ganadas"
+::crosstable::mc::RefinedBuchholz		"Buchholz perfeccionado"
+::crosstable::mc::SonnebornBerger		"Sonneborn-Berger"
+::crosstable::mc::Progressive				"Puntajes progresivos"
+::crosstable::mc::KoyaSystem				"Sistema Koya"
+::crosstable::mc::GamesWon					"Número de partidas ganadas"
+::crosstable::mc::GamesWonWithBlack		"Games Won with Black" ; # NEW
+::crosstable::mc::ParticularResult		"Particular Result" ;# NEW
+::crosstable::mc::TraditionalScoring	"Traditional Scoring" ;# NEW
 
-::crosstable::mc::Crosstable			"Cuadro cruzado"
-::crosstable::mc::Scheveningen		"Scheveningen"
-::crosstable::mc::Swiss					"Sistema suizo"
-::crosstable::mc::Match					"Match"
-::crosstable::mc::Knockout				"Knockout"
-::crosstable::mc::RankingList			"Lista de Ranking"
+::crosstable::mc::Crosstable				"Cuadro cruzado"
+::crosstable::mc::Scheveningen			"Scheveningen"
+::crosstable::mc::Swiss						"Sistema suizo"
+::crosstable::mc::Match						"Match"
+::crosstable::mc::Knockout					"Knockout"
+::crosstable::mc::RankingList				"Lista de Ranking"
 
-::crosstable::mc::Order					"Orden"
-::crosstable::mc::Type					"Tipo tabla"
-::crosstable::mc::Score					"Puntuación"
-::crosstable::mc::Alphabetical		"Alfabético"
-::crosstable::mc::Rating				"Rating"
-::crosstable::mc::Federation			"Federación"
+::crosstable::mc::Order						"Orden"
+::crosstable::mc::Type						"Tipo tabla"
+::crosstable::mc::Score						"Puntuación"
+::crosstable::mc::Alphabetical			"Alfabético"
+::crosstable::mc::Rating					"Rating"
+::crosstable::mc::Federation				"Federación"
 
-::crosstable::mc::Debugging			"Depuración"
-::crosstable::mc::Display				"Visor"
-::crosstable::mc::Style					"Estilo"
-::crosstable::mc::Spacing				"Espaciado"
-::crosstable::mc::Padding				"Relleno"
-::crosstable::mc::ShowLog				"Mostrar bitácora"
-::crosstable::mc::ShowHtml				"Mostrar HTML"
-::crosstable::mc::ShowRating			"Rating"
-::crosstable::mc::ShowPerformance	"Desempeño"
-::crosstable::mc::ShowTiebreak		"Desempate"
-::crosstable::mc::ShowOpponent		"Oponente (como Tooltip)"
-::crosstable::mc::KnockoutStyle		"Estilo tabla de Knockout"
-::crosstable::mc::Pyramid				"Pirámide"
-::crosstable::mc::Triangle				"Triángulo"
+::crosstable::mc::Debugging				"Depuración"
+::crosstable::mc::Display					"Visor"
+::crosstable::mc::Style						"Estilo"
+::crosstable::mc::Spacing					"Espaciado"
+::crosstable::mc::Padding					"Relleno"
+::crosstable::mc::ShowLog					"Mostrar bitácora"
+::crosstable::mc::ShowHtml					"Mostrar HTML"
+::crosstable::mc::ShowRating				"Rating"
+::crosstable::mc::ShowPerformance		"Desempeño"
+::crosstable::mc::ShowTiebreak			"Desempate"
+::crosstable::mc::ShowOpponent			"Oponente (como Tooltip)"
+::crosstable::mc::KnockoutStyle			"Estilo tabla de Knockout"
+::crosstable::mc::Pyramid					"Pirámide"
+::crosstable::mc::Triangle					"Triángulo"
 
-::crosstable::mc::CrosstableLimit	"Se excederá el límite del cuadro cruzado de %d jugadores."
+::crosstable::mc::CrosstableLimit		"Se excederá el límite del cuadro cruzado de %d jugadores."
 ::crosstable::mc::CrosstableLimitDetail "'%s' está seleccionando otro modo de tabla."
 
 ### info ###############################################################
@@ -1262,17 +1333,23 @@
 ::comment::mc::PrecedingComment		"Comentario precedente"
 ::comment::mc::TrailingComment		"Último comentario"
 ::comment::mc::Language					"Idioma"
-::comment::mc::AllLanguages			"Todos los idiomas"
 ::comment::mc::AddLanguage				"Agregar idioma..."
 ::comment::mc::SwitchLanguage			"Cambiar idioma"
 ::comment::mc::FormatText				"Dar formato al texto"
+::comment::mc::CopyText					"Copy text to" ;# NEW
+::comment::mc::OverwriteContent		"Overwrite existing content?" ;# NEW
+::comment::mc::AppendContent			"If \"no\" the text will be appended." ;# NEW
+
+::comment::mc::Bold						"Negrita"
+::comment::mc::Italic					"Itálica"
+::comment::mc::Underline				"Subrayado"
 
 ::comment::mc::InsertSymbol			"&Insertar símbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simbolos misceláneos"
 ::comment::mc::Figurine					"Figurines"
 
 ### annotation #########################################################
-::annotation::mc::AnnotationEditor					"Comentario"
+::annotation::mc::AnnotationEditor					"Notas"
 ::annotation::mc::TooManyNags							"Demasiados comentarios (el último será ignorado)."
 ::annotation::mc::TooManyNagsDetail					"Se permite un máximo de %d comentarios por jugada individual."
 
@@ -1415,12 +1492,7 @@
 ::dialog::choosefont::mc::Strikeout			"Tach&ado"
 ::dialog::choosefont::mc::Style				"Es&tilo"
 ::dialog::choosefont::mc::Underline			"S&ubrayado"
-::dialog::choosefont::mc::Color				"Co&lor"
-
-::dialog::choosefont::mc::Regular			"Regular" ;# NEW
-::dialog::choosefont::mc::Bold				"Negrita"
-::dialog::choosefont::mc::Italic				"Itálica"
-{::dialog::choosefont::mc::Bold Italic}	"Bold Italic" ;# NEW
+::dialog::choosefont::mc::Color				"Color"
 
 ::dialog::choosefont::mc::Effects			"Efectos"
 ::dialog::choosefont::mc::Filter				"Filtro"
@@ -1451,6 +1523,7 @@
 ::fsbox::mc::DetailedLayout				"Detailed Layout" ;# NEW
 ::fsbox::mc::ShowHiddenDirs				"&Mostrar directorios ocultos"
 ::fsbox::mc::ShowHiddenFiles				"&Mostrar archivos y directorios ocultos"
+::fsbox::mc::AppendToExisitingFile		"&Agregar partidas a un archivo existente"
 ::fsbox::mc::Cancel							"&Cancelar"
 ::fsbox::mc::Save								"&Guardar"
 ::fsbox::mc::Open								"&Abrir"
@@ -1459,6 +1532,7 @@
 ::fsbox::mc::RemoveBookmark				"Remove Bookmark '%s'" ;# NEW
 
 ::fsbox::mc::Filename						"&Nombre del archivo:"
+::fsbox::mc::Filenames						"&Nombres del archivo:"
 ::fsbox::mc::FilesType						"&Tipo de archivos:"
 ::fsbox::mc::FileEncoding					"File &encoding:" ;# NEW
 
@@ -1469,15 +1543,20 @@
 ::fsbox::mc::Home								"Home" ;# NEW
 
 ::fsbox::mc::SelectWhichType				"Elegir qué tipo de archivo mostrar"
-::fsbox::mc::SelectEncoding				"Elija codificación"
 ::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p" ;# NEW
 
 ::fsbox::mc::CannotChangeDir				"No se puede cambiar al directorio '%s'.\nPermiso denegado."
 ::fsbox::mc::DirectoryRemoved				"No se puede cambiar al directorio '%s'.\nEl directorio fue eliminado."
-::fsbox::mc::ReallyMove(file)				"Really move file '%s' to trash?" ;# NEW
-::fsbox::mc::ReallyMove(folder)			"Really move folder '%s' to trash?" ;# NEW
-::fsbox::mc::ReallyDelete(file)			"Really delete file '%s' to trash? You cannot undo this operation." ;# NEW
-::fsbox::mc::ReallyDelete(folder)		"Really delete folder '%s' to trash? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyMove(file,w)			"Really move file '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(file,r)			"Really move write-protected file '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(folder,w)		"Really move folder '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyDelete(file,w)		"Really delete file '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(link,w)		"Really delete link to '%s'?" ;# NEW
+::fsbox::mc::ReallyDelete(link,r)		"Really delete link to '%s'?" ;# NEW
+::fsbox::mc::ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation." ;# NEW
 ::fsbox::mc::DeleteFailed					"Deletion of '%s' failed." ;# NEW
 ::fsbox::mc::CommandFailed					"Command '%s' failed." ;# NEW
 ::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied." ;# NEW
@@ -1518,193 +1597,6 @@
 ::toolbar::mc::Hide			"Oculto"
 
 ::toolbar::mc::Expand		"Expandir"
-
-### NAG's ##############################################################
-::annotation::mc::Nag(0)	"Comentario nulo"
-::annotation::mc::Nag(1)	"Buena jugada"
-::annotation::mc::Nag(2)	"Mala jugada"
-::annotation::mc::Nag(3)	"Jugada muy buena"
-::annotation::mc::Nag(4)	"Jugada muy mala"
-::annotation::mc::Nag(5)	"Jugada interesante"
-::annotation::mc::Nag(6)	"Jugada dudosa"
-::annotation::mc::Nag(7)	"Jugada forzada (todas las demás pierden rápidamente)"
-::annotation::mc::Nag(8)	"Única jugada (no hay alternativas razonables)"
-::annotation::mc::Nag(9)	"Peor jugada"
-::annotation::mc::Nag(10)	"Posición de tablas"
-::annotation::mc::Nag(11)	"Igualdad, posición tranquila"
-::annotation::mc::Nag(12)	"Igualdad, posición activa"
-::annotation::mc::Nag(13)	"Posición poco clara"
-::annotation::mc::Nag(14)	"Las Blancas tienen una ligera ventaja"
-::annotation::mc::Nag(15)	"Las Negras tienen una ligera ventaja"
-::annotation::mc::Nag(16)	"Las Blancas tienen una ventaja moderada"
-::annotation::mc::Nag(17)	"Las Negras tienen una ventaja moderada"
-::annotation::mc::Nag(18)	"Las Blancas tienen ventaja decisiva"
-::annotation::mc::Nag(19)	"Las Negras tienen ventaja decisiva"
-::annotation::mc::Nag(20)	"Las Blancas tienen una ventaja aplastante (las Negras deberían rendirse)"
-::annotation::mc::Nag(21)	"Las Negras tienen una ventaja aplastante (las Blancas deberían rendirse)"
-::annotation::mc::Nag(22)	"Las Blancas están en zugzwang"
-::annotation::mc::Nag(23)	"Las Negras están en zugzwang"
-::annotation::mc::Nag(24)	"Las Blancas tienen una ligera ventaja de espacio"
-::annotation::mc::Nag(25)	"Las Negras tienen una ligera ventaja de espacio"
-::annotation::mc::Nag(26)	"Las Blancas tienen una moderada ventaja de espacio"
-::annotation::mc::Nag(27)	"Las Negras tienen una moderada ventaja de espacio"
-::annotation::mc::Nag(28)	"Las Blancas tienen una ventaja de espacio decisiva"
-::annotation::mc::Nag(29)	"Las Negras tienen una ventaja de espacio decisiva"
-::annotation::mc::Nag(30)	"Las Blancas tienen una ligera ventaja en tiempo (desarrollo)"
-::annotation::mc::Nag(31)	"Las Negras tienen una ligera ventaja en tiempo (desarrollo)"
-::annotation::mc::Nag(32)	"Las Blancas tienen una moderada ventaja en tiempo (desarrollo)"
-::annotation::mc::Nag(33)	"Las Negras tienen una moderada ventaja en tiempo (desarrollo)"
-::annotation::mc::Nag(34)	"Las Blancas tienen una ventaja en tiempo (desarrollo) decisiva"
-::annotation::mc::Nag(35)	"Las Negras tienen una ventaja en tiempo (desarrollo) decisiva"
-::annotation::mc::Nag(36)	"Las Blancas tienen la iniciativa"
-::annotation::mc::Nag(37)	"Las Negras tienen la iniciativa"
-::annotation::mc::Nag(38)	"Las Blancas tienen una iniciativa duradera"
-::annotation::mc::Nag(39)	"Las Negras tienen una iniciativa duradera"
-::annotation::mc::Nag(40)	"Las Blancas tienen ataque"
-::annotation::mc::Nag(41)	"Las Negras tienen ataque"
-::annotation::mc::Nag(42)	"Las Blancas tienen una compensación insuficiente por su déficit material"
-::annotation::mc::Nag(43)	"Las Negras tienen una compensación insuficiente por su déficit material"
-::annotation::mc::Nag(44)	"Las Blancas tienen una compensación suficiente por su déficit material"
-::annotation::mc::Nag(45)	"Las Negras tienen una compensación suficiente por su déficit material"
-::annotation::mc::Nag(46)	"Las Blancas tienen una compensación más que adecuada por su déficit material"
-::annotation::mc::Nag(47)	"Las Negras tienen una compensación más que adecuada por su déficit material"
-::annotation::mc::Nag(48)	"Las Blancas tienen una ligera ventaja por su control del centro"
-::annotation::mc::Nag(49)	"Las Negras tienen una ligera ventaja por su control del centro"
-::annotation::mc::Nag(50)	"Las Blancas tienen una moderada ventaja por su control del centro"
-::annotation::mc::Nag(51)	"Las Negras tienen una moderada ventaja por su control del centro"
-::annotation::mc::Nag(52)	"Las Blancas tienen una ventaja decisiva por su control del centro"
-::annotation::mc::Nag(53)	"Las Negras tienen una ventaja decisiva por su control del centro"
-::annotation::mc::Nag(54)	"Las Blancas tienen una ligera ventaja por su control del flanco rey"
-::annotation::mc::Nag(55)	"Las Negras tienen una ligera ventaja por su control del flanco rey"
-::annotation::mc::Nag(56)	"Las Blancas tienen una moderada ventaja por su control del flanco rey"
-::annotation::mc::Nag(57)	"Las Negras tienen una moderada ventaja por su control del flanco rey"
-::annotation::mc::Nag(58)	"Las Blancas tienen una ventaja decisiva por su control del flanco rey"
-::annotation::mc::Nag(59)	"Las Negras tienen una ventaja decisiva por su control del flanco rey"
-::annotation::mc::Nag(60)	"Las Blancas tienen una ligera ventaja por su control del flanco dama"
-::annotation::mc::Nag(61)	"Las Negras tienen una ligera ventaja por su control del flanco dama"
-::annotation::mc::Nag(62)	"Las Blancas tienen una moderada ventaja por su control del flanco dama"
-::annotation::mc::Nag(63)	"Las Negras tienen una moderada ventaja por su control del flanco dama"
-::annotation::mc::Nag(64)	"Las Blancas tienen una ventaja decisiva por su control del flanco dama"
-::annotation::mc::Nag(65)	"Las Negras tienen una ventaja decisiva por su control del flanco dama"
-::annotation::mc::Nag(66)	"Las Blancas tienen una primera fila vulnerable"
-::annotation::mc::Nag(67)	"Las Negras tienen una primera fila vulnerable"
-::annotation::mc::Nag(68)	"Las Blancas tienen una primera fila bien protegida"
-::annotation::mc::Nag(69)	"Las Negras tienen una primera fila bien protegida"
-::annotation::mc::Nag(70)	"Las Blancas tienen un rey mal protegido"
-::annotation::mc::Nag(71)	"Las Negras tienen un rey mal protegido"
-::annotation::mc::Nag(72)	"Las Blancas tienen un rey bien protegido"
-::annotation::mc::Nag(73)	"Las Negras tienen un rey bien protegido"
-::annotation::mc::Nag(74)	"Las Blancas tienen un rey mal ubicado"
-::annotation::mc::Nag(75)	"Las Negras tienen un rey mal ubicado"
-::annotation::mc::Nag(76)	"Las Blancas tienen un rey bien ubicado"
-::annotation::mc::Nag(77)	"Las Negras tienen un rey bien ubicado"
-::annotation::mc::Nag(78)	"Las Blancas tienen una estructura de peones muy débil"
-::annotation::mc::Nag(79)	"Las Negras tienen una estructura de peones muy débil"
-::annotation::mc::Nag(80)	"Las Blancas tienen una estructura de peones moderadamente débil"
-::annotation::mc::Nag(81)	"Las Negras tienen una estructura de peones moderadamente débil"
-::annotation::mc::Nag(82)	"Las Blancas tienen una estructura de peones moderadamente fuerte"
-::annotation::mc::Nag(83)	"Las Negras tienen una estructura de peones moderadamente fuerte"
-::annotation::mc::Nag(84)	"Las Blancas tienen una estructura de peones muy fuerte"
-::annotation::mc::Nag(85)	"Las Negras tienen una estructura de peones muy fuerte"
-::annotation::mc::Nag(86)	"Las Blancas tienen los caballos mal emplazados"
-::annotation::mc::Nag(87)	"Las Negras tienen los caballos mal emplazados"
-::annotation::mc::Nag(88)	"Las Blancas tienen los caballos bien emplazados"
-::annotation::mc::Nag(89)	"Las Negras tienen los caballos bien emplazados"
-::annotation::mc::Nag(90)	"Las Blancas tienen los alfiles mal ubicados"
-::annotation::mc::Nag(91)	"Las Negras tienen los alfiles mal ubicados"
-::annotation::mc::Nag(92)	"Las Blancas tienen bien ubicados los alfiles"
-::annotation::mc::Nag(93)	"Las Negras tienen bien ubicados los alfiles"
-::annotation::mc::Nag(94)	"Las Blancas tienen una mala colocación de las torres"
-::annotation::mc::Nag(95)	"Las Negras tienen una mala colocación de las torres"
-::annotation::mc::Nag(96)	"Las Blancas tienen las torres bien colocadas"
-::annotation::mc::Nag(97)	"Las Negras tienen las torres bien colocadas"
-::annotation::mc::Nag(98)	"Las Blancas tienen la dama mal ubicada"
-::annotation::mc::Nag(99)	"Las Negras tienen la dama mal ubicada"
-::annotation::mc::Nag(100)	"Las Blancas tienen la dama bien ubicada"
-::annotation::mc::Nag(101)	"Las Negras tienen la dama bien ubicada"
-::annotation::mc::Nag(102)	"Las Blancas tienen una mala coordinación de piezas"
-::annotation::mc::Nag(103)	"Las Negras tienen una mala coordinación de piezas"
-::annotation::mc::Nag(104)	"Las Blancas tienen una buena coordinación de piezas"
-::annotation::mc::Nag(105)	"Las Negras tienen una buena coordinación de piezas"
-::annotation::mc::Nag(106)	"Las Blancas jugaron muy mal la apertura"
-::annotation::mc::Nag(107)	"Las Negras jugaron muy mal la apertura"
-::annotation::mc::Nag(108)	"Las Blancas jugaron mal la apertura"
-::annotation::mc::Nag(109)	"Las Negras jugaron mal la apertura"
-::annotation::mc::Nag(110)	"Las Blancas jugaron bien la apertura"
-::annotation::mc::Nag(111)	"Las Negras jugaron bien la apertura"
-::annotation::mc::Nag(112)	"Las Blancas jugaron muy bien la apertura"
-::annotation::mc::Nag(113)	"Las Negras jugaron muy bien la apertura"
-::annotation::mc::Nag(114)	"Las Blancas jugaron muy mal el medio juego"
-::annotation::mc::Nag(115)	"Las Negras jugaron muy mal el medio juego"
-::annotation::mc::Nag(116)	"Las Blancas jugaron mal el medio juego"
-::annotation::mc::Nag(117)	"Las Negras jugaron mal el medio juego"
-::annotation::mc::Nag(118)	"Las Blancas jugaron bien el medio juego"
-::annotation::mc::Nag(119)	"Las Negras jugaron bien el medio juego"
-::annotation::mc::Nag(120)	"Las Blancas jugaron muy bien el medio juego"
-::annotation::mc::Nag(121)	"Las Negras jugaron muy bien el medio juego"
-::annotation::mc::Nag(122)	"Las Blancas jugaron muy mal el final"
-::annotation::mc::Nag(123)	"Las Negras jugaron muy mal el final"
-::annotation::mc::Nag(124)	"Las Blancas jugaron mal el final"
-::annotation::mc::Nag(125)	"Las Negras jugaron mal el final"
-::annotation::mc::Nag(126)	"Las Blancas jugaron bien el final"
-::annotation::mc::Nag(127)	"Las Negras jugaron bien el final"
-::annotation::mc::Nag(128)	"Las Blancas jugaron muy bien el final"
-::annotation::mc::Nag(129)	"Las Negras jugaron muy bien el final"
-::annotation::mc::Nag(130)	"Las Blancas tienen un ligero contrajuego"
-::annotation::mc::Nag(131)	"Las Negras tienen un ligero contrajuego"
-::annotation::mc::Nag(132)	"Las Blancas tienen un contrajuego moderado"
-::annotation::mc::Nag(133)	"Las Negras tienen un contrajuego moderado"
-::annotation::mc::Nag(134)	"Las Blancas tienen un contrajuego decisivo"
-::annotation::mc::Nag(135)	"Las Negras tienen un contrajuego decisivo"
-::annotation::mc::Nag(136)	"Las Blancas tienen un apuro de tiempo moderado"
-::annotation::mc::Nag(137)	"Las Negras tienen un apuro de tiempo moderado"
-::annotation::mc::Nag(138)	"Las Blancas están en severo apuro de tiempo"
-::annotation::mc::Nag(139)	"Las Negras están en severo apuro de tiempo"
-::annotation::mc::Nag(140)	"Con idea de"
-::annotation::mc::Nag(141)	"Dirigido contra"
-::annotation::mc::Nag(142)	"Es mejor"
-::annotation::mc::Nag(143)	"Es peor"
-::annotation::mc::Nag(144)	"Es equivalente"
-::annotation::mc::Nag(145)	"Observación del editor"
-::annotation::mc::Nag(146)	"novedad"
-::annotation::mc::Nag(147)	"Punto débil"
-::annotation::mc::Nag(148)	"Final"
-::annotation::mc::Nag(149)	"Línea"
-::annotation::mc::Nag(150)	"Diagonal"
-::annotation::mc::Nag(151)	"Las Blancas tienen el par de alfiles"
-::annotation::mc::Nag(152)	"Las Negras tienen el par de alfiles"
-::annotation::mc::Nag(153)	"Alfiles de distinto color"
-::annotation::mc::Nag(154)	"Alfiles del mismo color"
-::annotation::mc::Nag(155)	"Diagrama"
-::annotation::mc::Nag(156)	"Diagrama desde la perspectiva de las Negras"
-::annotation::mc::Nag(157)	"Peones aislados"
-::annotation::mc::Nag(158)	"Peones doblados"
-::annotation::mc::Nag(159)	"Peones conectados"
-::annotation::mc::Nag(160)	"Peón pasado"
-::annotation::mc::Nag(161)	"Peones colgantes"
-::annotation::mc::Nag(162)	"Peones atrasados"
-::annotation::mc::Nag(163)	"Más peones"
-::annotation::mc::Nag(164)	"Más espacio"
-::annotation::mc::Nag(165)	"Con"
-::annotation::mc::Nag(166)	"Sin"
-::annotation::mc::Nag(167)	"Centro"
-::annotation::mc::Nag(168)	"Columna"
-::annotation::mc::Nag(169)	"Fila"
-::annotation::mc::Nag(170)	"Ver"
-::annotation::mc::Nag(171)	"Varias alternativas"
-::annotation::mc::Nag(172)	"Etc."
-::annotation::mc::Nag(173)	"Espacio"
-::annotation::mc::Nag(174)	"Apuro de tiempo"
-::annotation::mc::Nag(175)	"Desarrollo"
-::annotation::mc::Nag(176)	"Zugzwang"
-::annotation::mc::Nag(177)	"Límite de tiempo"
-::annotation::mc::Nag(178)	"Ataque"
-::annotation::mc::Nag(179)	"Iniciativa"
-::annotation::mc::Nag(180)	"Contrajuego"
-::annotation::mc::Nag(181)	"Con compensación por el material"
-::annotation::mc::Nag(182)	"Par de alfiles"
-::annotation::mc::Nag(183)	"Flanco rey"
-::annotation::mc::Nag(184)	"Flanco dama"
 
 ### Countries ##########################################################
 ::country::mc::Afghanistan											"Afganistán"
@@ -2005,6 +1897,7 @@
 ::encoding::mc::Lang(cy)	"Galés"
 ::encoding::mc::Lang(da)	"Danés"
 ::encoding::mc::Lang(de)	"Alemán"
+::encoding::mc::Lang(de+)	"Deutsch (reformed)" ;# NEW
 ::encoding::mc::Lang(el)	"Griego"
 ::encoding::mc::Lang(en)	"Inglés"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -2067,6 +1960,8 @@
 ::encoding::mc::Lang(vi)	"Vietnamita"
 ::encoding::mc::Lang(wa)	"Walloon"
 ::encoding::mc::Lang(wen)	"Sorbian"
+::encoding::mc::Lang(hsb)	"Upper Sorbian" ;# NEW
+::encoding::mc::Lang(dsb)	"Lower Sorbian" ;# NEW
 ::encoding::mc::Lang(zh)	"Chino"
 
 ::encoding::mc::Font(hi)	"Devanagari"

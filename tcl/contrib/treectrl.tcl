@@ -680,6 +680,7 @@ proc ::TreeCtrl::ButtonPress1 {w x y} {
     }
 
     set Priv(buttonMode) normal
+    $w activate [lindex $id 1]
 #   BeginSelect $w $item
     return $item
 }

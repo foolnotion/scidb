@@ -28,10 +28,27 @@ namespace eval export {
 namespace eval mc {
 
 set FileSelection			"&File Selection"
-set Options					"&Options"
+set OptionsSetup			"&Options"
 set PageSetup				"&Page Setup"
-set Style					"Sty&le"
-set Encoding				"&Encoding"
+set DiagramSetup			"&Diagram Setup"
+set StyleSetup				"Sty&le"
+set EncodingSetup			"&Encoding"
+set TagsSetup				"&Tags"
+set NotationSetup			"&Notation"
+set AnnotationSetup		"&Annotation"
+set CommentsSetup			"&Comments"
+
+set Visibility				"Visibility"
+set HideDiagrams			"Hide Diagrams"
+set AllFromWhitePersp	"All From White's Perspective"
+set AllFromBlackPersp	"All From Black's Perspective"
+set ShowCoordinates		"Show Coordinates"
+set ShowSideToMove		"Show Side to Move"
+set ShowArrows				"Show Arrows"
+set ShowMarkers			"Show Markers"
+set Layout					"Layout"
+set PostscriptSpecials	"Postscript Specialities"
+set BoardSize				"Board Size"
 
 set Notation				"Notation"
 set Figurines				"Figurines"
@@ -52,6 +69,16 @@ set SelectExportedTags	"Selection of exported tags"
 set ExcludeAllTags		"Exclude all tags"
 set IncludeAllTags		"Include all tags"
 set ExtraTags				"All other extra tags"
+set NoComments				"No comments"
+set AllLanguages			"All languages"
+set Significant			"Significant"
+set LanguageSelection	"Language selection"
+set MapTo					"Map to"
+set MapNagsToComment		"Map annotations to comments"
+set UnusualAnnotation	"Unusual annotations"
+set AllAnnotation			"All annotations"
+set UseColumnStyle		"Use column style"
+set MainlineStyle			"Main Line Style"
 
 set PdfFiles				"PDF Files"
 set HtmlFiles				"HTML Files"
@@ -78,6 +105,7 @@ set Symbols					"Symbols"
 set Comments				"Comments"
 set Result					"Result"
 set Diagram					"Diagram"
+set ColumnStyle			"Column Style"
 
 set Paper					"Paper"
 set Orientation			"Orientation"
@@ -224,6 +252,7 @@ set StyleLayout(tex) {
 		{ 1 GameText }
 			{ 2 Moves }
 				{ 3 MainLine }
+					{ 4 ColumnStyle }
 				{ 3 Variation }
 				{ 3 Subvariation }
 			{ 2 Comments }
@@ -239,6 +268,7 @@ set StyleLayout(pdf) {
 		{ 1 GameText }
 			{ 2 Moves }
 				{ 3 MainLine }
+					{ 4 ColumnStyle }
 				{ 3 Variation }
 				{ 3 Subvariation }
 				{ 3 Figurines }
@@ -254,50 +284,53 @@ set StyleLayout(pdf) {
 set StyleLayout(html) $StyleLayout(pdf)
 
 array set Styles {
-	tex,BasicStyle												{Helvetica 12 normal roman #000000}
-	tex,BasicStyle,GameInfo									{{} {} bold {} {}}
-	tex,BasicStyle,GameText									{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Moves							{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Moves,MainLine				{{} {} bold {} {}}
-	tex,BasicStyle,GameText,Moves,Variation			{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Moves,Subvariation		{{} 10 {} {} {}}
-	tex,BasicStyle,GameText,Comments						{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Comments,MainLine			{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Comments,Variation		{{} {} {} {} {}}
-	tex,BasicStyle,GameText,Comments,Subvariation	{{} 10 {} {} {}}
-	tex,BasicStyle,GameText,Result						{{} {} bold {} {}}
+	tex,BasicStyle														{Helvetica 12 normal roman #000000}
+	tex,BasicStyle,GameInfo											{{} {} bold {} {}}
+	tex,BasicStyle,GameText											{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Moves									{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Moves,MainLine						{{} {} bold {} {}}
+	tex,BasicStyle,GameText,Moves,MainLine,ColumnStyle		{1}
+	tex,BasicStyle,GameText,Moves,Variation					{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Moves,Subvariation				{{} 10 {} {} {}}
+	tex,BasicStyle,GameText,Comments								{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Comments,MainLine					{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Comments,Variation				{{} {} {} {} {}}
+	tex,BasicStyle,GameText,Comments,Subvariation			{{} 10 {} {} {}}
+	tex,BasicStyle,GameText,Result								{{} {} bold {} {}}
 
-	pdf,BasicStyle												{Helvetica 12 normal roman #000000}
-	pdf,BasicStyle,GameInfo									{{} {} bold {} {}}
-	pdf,BasicStyle,GameText									{{} {} {} {} {}}
-	pdf,BasicStyle,GameText,Moves							{{} {} {} {} {}}
-	pdf,BasicStyle,GameText,Moves,MainLine				{{} {} bold {} {}}
-	pdf,BasicStyle,GameText,Moves,Variation			{{} {} {} {} {}}
-	pdf,BasicStyle,GameText,Moves,Subvariation		{{} 10 {} {} {}}
-	pdf,BasicStyle,GameText,Moves,Figurines			{{Scidb Chess Merida} {} {} {} {}}
-	pdf,BasicStyle,GameText,Moves,Symbols				{{Scidb Symbol Traveller} {} {} {} {}}
-	pdf,BasicStyle,GameText,Comments						{{} {} {} {} #000099}
-	pdf,BasicStyle,GameText,Comments,MainLine			{{} {} {} {} {}}
-	pdf,BasicStyle,GameText,Comments,Variation		{{} {} {} {} {}}
-	pdf,BasicStyle,GameText,Comments,Subvariation	{{} 10 {} {} {}}
-	pdf,BasicStyle,GameText,Result						{{} {} bold {} {}}
-	pdf,BasicStyle,Diagram									{{Scidb Diagram Merida} 20 normal roman {}}
+	pdf,BasicStyle														{Helvetica 12 normal roman #000000}
+	pdf,BasicStyle,GameInfo											{{} {} bold {} {}}
+	pdf,BasicStyle,GameText											{{} {} {} {} {}}
+	pdf,BasicStyle,GameText,Moves									{{} {} {} {} {}}
+	pdf,BasicStyle,GameText,Moves,MainLine						{{} {} bold {} {}}
+	pdf,BasicStyle,GameText,Moves,MainLine,ColumnStyle		{1}
+	pdf,BasicStyle,GameText,Moves,Variation					{{} {} {} {} {}}
+	pdf,BasicStyle,GameText,Moves,Subvariation				{{} 10 {} {} {}}
+	pdf,BasicStyle,GameText,Moves,Figurines					{{Scidb Chess Merida} {} {} {} {}}
+	pdf,BasicStyle,GameText,Moves,Symbols						{{Scidb Symbol Traveller} {} {} {} {}}
+	pdf,BasicStyle,GameText,Comments								{{} {} {} {} #000099}
+	pdf,BasicStyle,GameText,Comments,MainLine					{{} {} {} {} {}}
+	pdf,BasicStyle,GameText,Comments,Variation				{{} {} {} {} {}}
+	pdf,BasicStyle,GameText,Comments,Subvariation			{{} 10 {} {} {}}
+	pdf,BasicStyle,GameText,Result								{{} {} bold {} {}}
+	pdf,BasicStyle,Diagram											{{Scidb Diagram Merida} 20 normal roman {}}
 
-	html,BasicStyle											{Helvetica 12 normal roman #000000}
-	html,BasicStyle,GameInfo								{{} {} bold {} {}}
-	html,BasicStyle,GameText								{{} {} {} {} {}}
-	html,BasicStyle,GameText,Moves						{{} {} {} {} {}}
-	html,BasicStyle,GameText,Moves,MainLine			{{} {} bold {} {}}
-	html,BasicStyle,GameText,Moves,Variation			{{} {} {} {} {}}
-	html,BasicStyle,GameText,Moves,Subvariation		{{} 10 {} {} {}}
-	html,BasicStyle,GameText,Moves,Figurines			{{Scidb Chess Merida} {} {} {} {}}
-	html,BasicStyle,GameText,Moves,Symbols				{{Scidb Symbol Traveller} {} {} {} {}}
-	html,BasicStyle,GameText,Comments					{{} {} {} {} #000099}
-	html,BasicStyle,GameText,Comments,MainLine		{{} {} {} {} {}}
-	html,BasicStyle,GameText,Comments,Variation		{{} {} {} {} {}}
-	html,BasicStyle,GameText,Comments,Subvariation	{{} 10 {} {} {}}
-	html,BasicStyle,GameText,Result						{{} {} bold {} {}}
-	html,BasicStyle,Diagram									{{Scidb Diagram Merida} 20 normal roman {}}
+	html,BasicStyle													{Helvetica 12 normal roman #000000}
+	html,BasicStyle,GameInfo										{{} {} bold {} {}}
+	html,BasicStyle,GameText										{{} {} {} {} {}}
+	html,BasicStyle,GameText,Moves								{{} {} {} {} {}}
+	html,BasicStyle,GameText,Moves,MainLine					{{} {} bold {} {}}
+	html,BasicStyle,GameText,Moves,MainLine,ColumnStyle	{1}
+	html,BasicStyle,GameText,Moves,Variation					{{} {} {} {} {}}
+	html,BasicStyle,GameText,Moves,Subvariation				{{} 10 {} {} {}}
+	html,BasicStyle,GameText,Moves,Figurines					{{Scidb Chess Merida} {} {} {} {}}
+	html,BasicStyle,GameText,Moves,Symbols						{{Scidb Symbol Traveller} {} {} {} {}}
+	html,BasicStyle,GameText,Comments							{{} {} {} {} #000099}
+	html,BasicStyle,GameText,Comments,MainLine				{{} {} {} {} {}}
+	html,BasicStyle,GameText,Comments,Variation				{{} {} {} {} {}}
+	html,BasicStyle,GameText,Comments,Subvariation			{{} 10 {} {} {}}
+	html,BasicStyle,GameText,Result								{{} {} bold {} {}}
+	html,BasicStyle,Diagram											{{Scidb Diagram Merida} 20 normal roman {}}
 }
 
 set DocumentStyle {
@@ -328,6 +361,21 @@ array set DefaultTags {
 	White/BlackFideId	1
 	White/BlackTeam	1
 	White/BlackTitle	1
+}
+
+set NagMapping {
+	{   8 0 { 7 }				{} }
+	{  10 0 { 11 12 }			{} }
+	{ 164 1 { 24 26 28 }		{} }
+	{ 167 1 { 48 50 52 }		{} }
+	{ 175 1 { 30 32 34 }		{} }
+	{ 176 1 { 22 }				{} }
+	{ 178 1 { 40 }				{} }
+	{ 179 1 { 36  38 }		{} }
+	{ 180 1 { 130 132 134 }	{} }
+	{ 181 1 { 44 }				{} }
+	{ 182 1 { 151 }			{} }
+	{ 183 1 { 54 56 58 }		{ 184 { 60 62 64 } } }
 }
 
 array set Tags [array get DefaultTags]
@@ -367,89 +415,118 @@ array set Flags {
 }
 
 array set Defaults {
-	pgn,include_varations						1
-	pgn,include_comments							1
-	pgn,include_moveinfo							1
-	pgn,include_marks								1
-	pgn,include_termination_tag				0
-	pgn,include_mode_tag							0
-	pgn,include_opening_tag						1
-	pgn,include_setup_tag						1
-	pgn,include_variant_tag						1
-	pgn,include_position_tag					1
-	pgn,include_time_mode_tag					1
-	pgn,exclude_extra_tags						0
-	pgn,indent_variations						1
-	pgn,indent_comments							0
-	pgn,column_style								0
-	pgn,symbolic_annotation_style				1
-	pgn,extended_symbolic_style				0
-	pgn,convert_null_moves						0
-	pgn,space_after_move_number				0
-	pgn,shredder_fen								0
-	pgn,convert_lost_result_to_comment		1
-	pgn,map_lost_result_to_unknown			1
-	pgn,append_mode_to_event_type				0
-	pgn,use_chessbase_format					0
-	pgn,comment_to_html							0
-	pgn,use_scidb_import_format				0
-	pgn,exclude_games_with_illegal_moves	0
+	pgn,flag,include_varations						1
+	pgn,flag,include_comments						1
+	pgn,flag,include_moveinfo						1
+	pgn,flag,include_marks							1
+	pgn,flag,include_termination_tag				0
+	pgn,flag,include_mode_tag						0
+	pgn,flag,include_opening_tag					1
+	pgn,flag,include_setup_tag						1
+	pgn,flag,include_variant_tag					1
+	pgn,flag,include_position_tag					1
+	pgn,flag,include_time_mode_tag				1
+	pgn,flag,exclude_extra_tags					0
+	pgn,flag,indent_variations						1
+	pgn,flag,indent_comments						0
+	pgn,flag,column_style							0
+	pgn,flag,symbolic_annotation_style			1
+	pgn,flag,extended_symbolic_style				0
+	pgn,flag,convert_null_moves					0
+	pgn,flag,space_after_move_number				0
+	pgn,flag,shredder_fen							0
+	pgn,flag,convert_lost_result_to_comment	1
+	pgn,flag,map_lost_result_to_unknown			1
+	pgn,flag,append_mode_to_event_type			0
+	pgn,flag,use_chessbase_format					0
+	pgn,flag,comment_to_html						0
+	pgn,flag,use_scidb_import_format				0
+	pgn,flag,exclude_games_with_illegal_moves	0
 
-	pdf,margins,A2									{ 40    53     44    44    }
-	pdf,margins,A3									{ 38    44     31    31    }
-	pdf,margins,A4									{ 20    27     22    22    }
-	pdf,margins,A5									{ 14    19     15    15    }
-	pdf,margins,A6									{ 10    13     11    11    }
-	pdf,margins,B3									{ 33    45     37    37    }
-	pdf,margins,B4									{ 23    32     26    26    }
-	pdf,margins,B5									{ 17    22     18    18    }
-	pdf,margins,Letter							{  0.74  1.00   0.89  0.89 }
-	pdf,margins,Legal								{  0.94  1.26   0.89  0.89 }
-	pdf,margins,Executive						{  0.70  0.95   0.76  0.76 }
-	{pdf,margins,Half Letter}					{  0.57  0.76   0.57  0.57 }
-	{pdf,margins,US B}							{  1.14  1.53   1.15  1.15 }
-	{pdf,margins,US C}							{  1.47  1.98   1.78  1.78 }
-	{pdf,margins,US 4x6}							{  0.40  0.54   0.42  0.42 }
-	{pdf,margins,US 4x8}							{  0.54  0.72   0.42  0.42 }
-	{pdf,margins,US 5x7}							{  0.50  0.63   0.52  0.52 }
-	{pdf,margins,COMM 10}						{  0.64  0.85   0.43  0.43 }
-}
+	pdf,fonts,embed									1
+	pdf,fonts,builtin									0
 
-array set Setup {
-	tex,notation									short
-	tex,figurines									graphic
-	tex,primary-lang								en
+	pdf,moves,notation								short
+	pdf,moves,figurines								graphic
 
-	pdf,embed										1
-	pdf,builtin										0
-	pdf,notation									short
-	pdf,figurines									graphic
-	pdf,use-images									0
-	pdf,diagram										{Default Merida}
-	pdf,image-size									200
-}
+	pdf,diagram,board-size							160
+	pdf,diagram,hide									0
+	pdf,diagram,perspective							{}
+	pdf,diagram,show-coordinates					1
+	pdf,diagram,show-movers							0
+	pdf,diagram,show-arrows							0
+	pdf,diagram,show-markers						0
+	pdf,diagram,use-images							0
+	pdf,diagram,image-style							{Default Merida}
+	pdf,diagram,image-size							200
 
-array set SetupPaper {
-	tex,document									Article
-	tex,format										A4
-	tex,orientation								Potrait
-	tex,columns										2
-	tex,justification								1
+	pdf,comments,languages							{{* 1} {} {} {} {}}
+	pdf,comments,hyphenation						en
 
-	pdf,format										A4
-	pdf,custom										{ 210 297 mm }
-	pdf,orientation								Potrait
-	pdf,columns										2
-	pdf,justification								0
-	pdf,paper,top									0
-	pdf,paper,bottom								0
-	pdf,paper,left									0
-	pdf,paper,right								0
+	pdf,paper,format									A4
+	pdf,paper,custom									{ 210 297 mm }
+	pdf,paper,orientation							Potrait
+	pdf,paper,columns									2
+	pdf,paper,justification							0
+	pdf,paper,top										0
+	pdf,paper,bottom									0
+	pdf,paper,left										0
+	pdf,paper,right									0
+
+	pdf,margins,A2										{ 40    53     44    44    }
+	pdf,margins,A3										{ 38    44     31    31    }
+	pdf,margins,A4										{ 20    27     22    22    }
+	pdf,margins,A5										{ 14    19     15    15    }
+	pdf,margins,A6										{ 10    13     11    11    }
+	pdf,margins,B3										{ 33    45     37    37    }
+	pdf,margins,B4										{ 23    32     26    26    }
+	pdf,margins,B5										{ 17    22     18    18    }
+	pdf,margins,Letter								{  0.74  1.00   0.89  0.89 }
+	pdf,margins,Legal									{  0.94  1.26   0.89  0.89 }
+	pdf,margins,Executive							{  0.70  0.95   0.76  0.76 }
+	{pdf,margins,Half Letter}						{  0.57  0.76   0.57  0.57 }
+	{pdf,margins,US B}								{  1.14  1.53   1.15  1.15 }
+	{pdf,margins,US C}								{  1.47  1.98   1.78  1.78 }
+	{pdf,margins,US 4x6}								{  0.40  0.54   0.42  0.42 }
+	{pdf,margins,US 4x8}								{  0.54  0.72   0.42  0.42 }
+	{pdf,margins,US 5x7}								{  0.50  0.63   0.52  0.52 }
+	{pdf,margins,COMM 10}							{  0.64  0.85   0.43  0.43 }
+
+	tex,moves,notation								short
+	tex,moves,figurines								graphic
+
+	tex,nag,mapping									{}
+	tex,nag,lang										{}
+	tex,nag,all											0
+
+	tex,comments,languages							{{* 1} {} {} {} {}}
+	tex,comments,hyphenation						en
+
+	tex,paper,document								Article
+	tex,paper,format									A4
+	tex,paper,orientation							Potrait
+	tex,paper,columns									2
+	tex,paper,justification							1
+
+	tex,diagram,board-size							160
+	tex,diagram,hide									0
+	tex,diagram,perspective							{}
+	tex,diagram,show-coordinates					1
+	tex,diagram,show-movers							0
+	tex,diagram,show-arrows							0
+	tex,diagram,show-markers						0
+	tex,diagram,use-images							0
+	tex,diagram,image-style							{Default Merida}
+	tex,diagram,image-size							200
+
+	html,moves,notation								short
+	html,moves,figurines								graphic
+
+	html,comments,languages							{{* 1} {} {} {} {}}
+	html,comments,hyphenation						en
 }
 
 array set Values [array get Defaults]
-array set Values [array get Setup]
-array set Values [array get SetupPaper]
 
 set Values(Type)					scidb
 
@@ -458,7 +535,7 @@ set Values(scid,encoding)		utf-8
 set Values(scidb,encoding)		utf-8
 set Values(pdf,encoding)		iso8859-1
 
-#if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,embed) 0 }
+#if {$::tcl_platform(platform) eq "windows"} { set Values(pdf,fonts,embed) 0 }
 
 array set Fields {
 	pgn	{	include_varations include_comments include_moveinfo include_marks indent_variations
@@ -471,10 +548,6 @@ array set Fields {
 			}
 	scid	{}
 }
-
-namespace import ::tcl::mathfunc::double
-namespace import ::tcl::mathfunc::round
-namespace import ::tcl::mathfunc::min
 
 
 proc open {parent base type name view {closeViewAfterExit 0}} {
@@ -504,8 +577,9 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	set Info(pdf-encoding) 0
 	set Info(fonts) {}
 
-	if {$type ne "scidb" && $Info(encoding) ni $PdfEncodingList} {
-		set Info(pdf-encoding) 1
+	switch $type {
+		scidb - tex {}
+		default { if {$Info(encoding) ni $PdfEncodingList} { set Info(pdf-encoding) 1 } }
 	}
 
 	set dlg [toplevel $parent.export -class Dialog]
@@ -545,7 +619,6 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	lappend opts -parent $nb
 	lappend opts -embed 1
 	# XXX verifymcd needed?
-#	lappend opts -verifycmd [namespace code VerifyPath]
 	lappend opts -initialfile $initialfile
 	lappend opts -filetypes {{dummy .___}}
 	lappend opts -width 720
@@ -553,22 +626,25 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	$nb add $Info(fsbox) -sticky nsew
 	::widget::notebookTextvarHook $nb $Info(fsbox) [namespace current]::mc::FileSelection
 
-	foreach {tab text} {	options Options
-								style Style
-								setup_pdf PageSetup
-								setup_tex PageSetup
-								encoding Encoding} {
+	foreach {tab var} {	options OptionsSetup
+								tags TagsSetup
+								style StyleSetup
+								page_pdf PageSetup
+								page_tex PageSetup
+								notation NotationSetup
+								diagram DiagramSetup
+								comment CommentsSetup
+								annotation AnnotationSetup
+								encoding EncodingSetup} {
 		set f [ttk::frame $nb.$tab]
 		$nb add $f -sticky nsew
-		::widget::notebookTextvarHook $nb $f [namespace current]::mc::$text
-		set Info(configure-$tab) 1
+		::widget::notebookTextvarHook $nb $f [namespace current]::mc::$var
+		set Info(build-$tab) 1
 	}
-	set Info(configure-encoding-pgn) 1
-	set Info(configure-encoding-pdf) 1
+	set Info(build-encoding-pgn) 1
+	set Info(build-encoding-pdf) 1
 
-	foreach type {pgn pdf tex scid} {
-		grid [BuildOptionsFrame_$type $nb.options.$type] -row 1 -column 1 -sticky nsew
-	}
+	grid [options::BuildFrame $nb.options.f] -row 1 -column 1 -sticky nsew
 	grid rowconfigure $nb.options 1 -weight 1
 
 	grid $list	-row 1 -column 1 -sticky ns
@@ -595,33 +671,137 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 }
 
 
-proc VerifyPath {w args} {
-	variable Values
-
-	set path "$args"
-
-	switch $Values(Type) {
-		scidb - scid	{ set path [::menu::verifyDatabaseName $w $path] }
-		default			{ set path [::menu::verifyPath $w $path] }
-	}
-
-	return $path
-}
-
+namespace eval options {
 
 proc Pow2 {x} { return [expr {1 << $x}] }
 
 
 proc Exclude {type flag} {
-	variable Info
-	variable Flags
+	variable [namespace parent]::Info
+	variable [namespace parent]::Flags
 
 	set Info($type,flags) [expr {$Info($type,flags) & ~[Pow2 $Flags($type,$flag)]}]
 }
 
 
-proc BuildOptionsFrame_scid {w} {
-	variable Tags
+proc BuildFrame {w} {
+	variable [namespace parent]::Flags
+	variable [namespace parent]::Values
+	variable [namespace parent]::Fields
+	variable [namespace parent]::Info
+
+	ttk::frame $w
+	set flags [Pow2 $Flags(pgn,include_annotation)]
+	set count 0
+	set nrows [expr {([llength $Fields(pgn)] + 1)/2}]
+
+	foreach field $Fields(pgn) {
+		ttk::checkbutton $w.$field \
+			-variable [namespace parent]::Values(pgn,flag,$field) \
+			-text [set [namespace parent]::mc::Option(pgn,$field)] \
+			-command [namespace code [list SetupFlags $w pgn]] \
+			;
+		set row [expr {2*($count % $nrows) + 3}]
+		set col [expr {2*($count / $nrows) + 1}]
+		grid $w.$field -row $row -column $col -sticky w
+		incr count
+	}
+	set Info(options:nrows) $nrows
+	set b [ttk::frame $w.buttons]
+	set var [namespace parent]::mc::ResetDefaults
+	ttk::button $b.reset -text [set $var] -command [namespace code [list ResetFlags $w pgn]]
+	if {$count % 2} { incr count }
+	incr count 2
+	grid $b.reset -row 0 -column 0 -sticky w
+	grid columnconfigure $b 1 -minsize $::theme::padding
+	grid $b -row [expr {$count + 1}] -column 1 -columnspan 3 -sticky w
+
+	for {set i 0} {$i < $count} {incr i 2} { lappend rows $i }
+	grid rowconfigure $w $rows -minsize $::theme::padding
+	grid rowconfigure $w $count -minsize [expr {2*$::theme::padding}]
+	grid rowconfigure $w [expr {$count + 2}] -minsize $::theme::padding
+	grid columnconfigure $w {0 4} -minsize $::theme::padding
+	grid columnconfigure $w 2 -minsize [expr {2*$::theme::padding}]
+	SetupFlags $w pgn
+
+	return $w
+}
+
+
+proc ResetFlags {w type} {
+	variable [namespace parent]::Defaults
+	variable [namespace parent]::Values
+
+	foreach field [array names Defaults -glob $type,flag,*] {
+		set Values($field) $Defaults($field)
+	}
+
+	switch $type {
+		pgn { SetupFlags $w $type }
+	}
+}
+
+
+proc SetupFlags {w type} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Flags
+	variable [namespace parent]::Fields
+
+	set flags 0
+	foreach field $Fields($type) {
+		if {$Values($type,flag,$field)} {
+			set flags [expr {$flags | [Pow2 $Flags($type,$field)]}]
+		}
+	}
+	set Info($type,flags) $flags
+
+	switch $type {
+		pgn {
+			if {$Values(pgn,flag,use_chessbase_format) || $Values(pgn,flag,use_scidb_import_format)} {
+				if {$Values(pgn,flag,use_chessbase_format)} {
+					$w.use_chessbase_format configure -state normal
+					$w.use_scidb_import_format configure -state disabled
+				} else {
+					$w.use_chessbase_format configure -state disabled
+					$w.use_scidb_import_format configure -state normal
+				}
+				foreach field $Fields(pgn) {
+					switch $field {
+						use_chessbase_format -
+						use_scidb_import_format -
+						exclude_games_with_illegal_moves -
+						column_style -
+						indent_comments -
+						indent_variations -
+						space_after_move_number -
+						include_opening_tag {}
+						default { $w.$field configure -state disabled }
+					}
+				}
+			} else {
+				foreach field $Fields(pgn) { $w.$field configure -state normal }
+				if {$Values(pgn,flag,symbolic_annotation_style)} {
+					$w.extended_symbolic_style configure -state normal
+				} else {
+					$w.extended_symbolic_style configure -state disabled
+					Exclude pgn extended_symbolic_style
+				}
+				if {$Values(pgn,flag,exclude_games_with_illegal_moves)} {
+					set flags [expr {$flags & ~[Pow2 $Flags($type,$field)]}]
+				}
+			}
+		}
+	}
+}
+
+} ;# namespace options
+
+
+namespace eval tags {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::Tags
 
 	set extraTags [lsort [::scidb::misc::extraTags]]
 	set tagList {}
@@ -643,8 +823,7 @@ proc BuildOptionsFrame_scid {w} {
 	}
 	lappend tagList ExtraTag
 
-	::ttk::frame $w
-	::ttk::label $w.header -textvar [namespace current]::mc::SelectExportedTags
+	ttk::label $w.header -textvar [namespace parent]::mc::SelectExportedTags
 	set font [$w.header cget -font]
 	if {[llength $font] == 0} { set font TkDefaultFont }
 	set bold [list [font configure $font -family]  [font configure $font -size] bold]
@@ -658,14 +837,14 @@ proc BuildOptionsFrame_scid {w} {
 		if {![info exists Tags($tag)]} { set Tags($tag) 0 }
 		set btn $w.[string tolower $tag 0 0]
 		if {$tag eq "ExtraTag"} {
-			set text $mc::ExtraTags
+			set text [set [namespace parent]::mc::ExtraTags]
 			incr count
 		} else {
 			set text $tag
 		}
-		::ttk::checkbutton $btn \
+		ttk::checkbutton $btn \
 			-text $text \
-			-variable [namespace current]::Tags($tag) \
+			-variable [namespace parent]::Tags($tag) \
 			;
 		set row [expr {2*($count % $nrows) + 3}]
 		set col [expr {2*($count / $nrows) + 1}]
@@ -678,19 +857,19 @@ proc BuildOptionsFrame_scid {w} {
 		if {$tag ni $tagList} { array unset Tags $tag }
 	}
 
-	::ttk::frame $w.buttons
+	ttk::frame $w.buttons
 	grid $w.buttons -row $lastRow -column 1 -columnspan 5 -sticky w
 
 	ttk::button $w.buttons.include \
-		-textvar [namespace current]::mc::IncludeAllTags \
+		-textvar [namespace parent]::mc::IncludeAllTags \
 		-command [namespace code [list ResetTags 1]] \
 		;
 	ttk::button $w.buttons.exclude \
-		-textvar [namespace current]::mc::ExcludeAllTags \
+		-textvar [namespace parent]::mc::ExcludeAllTags \
 		-command [namespace code [list ResetTags 0]] \
 		;
 	ttk::button $w.buttons.reset \
-		-textvar [namespace current]::mc::ResetDefaults \
+		-textvar [namespace parent]::mc::ResetDefaults \
 		-command [namespace code [list ResetTags -1]] \
 		;
 	grid $w.buttons.include -row 0 -column 0
@@ -709,59 +888,36 @@ proc BuildOptionsFrame_scid {w} {
 }
 
 
-proc BuildOptionsFrame_pgn {w} {
-	variable Flags
-	variable Values
-	variable Fields
-	variable Info
+proc ResetTags {value} {
+	variable [namespace parent]::Tags
+	variable [namespace parent]::DefaultTags
 
-	ttk::frame $w
-
-	set flags [Pow2 $Flags(pgn,include_annotation)]
-	set count 0
-	set nrows [expr {([llength $Fields(pgn)] + 1)/2}]
-
-	foreach field $Fields(pgn) {
-		ttk::checkbutton $w.$field \
-			-variable [namespace current]::Values(pgn,$field) \
-			-text $mc::Option(pgn,$field) \
-			-command [namespace code [list SetupFlags $w pgn]] \
-			;
-		set row [expr {2*($count % $nrows) + 3}]
-		set col [expr {2*($count / $nrows) + 1}]
-		grid $w.$field -row $row -column $col -sticky w
-		incr count
+	if {$value == -1} {
+		foreach tag [array names Tags] { set Tags($tag) 0 }
+		array set Tags [array get DefaultTags]
+	} else {
+		foreach tag [array names Tags] { set Tags($tag) $value }
 	}
-	set b [ttk::frame $w.buttons]
-	ttk::button $b.reset -text $mc::ResetDefaults -command [namespace code [list Reset $w pgn]]
-	if {$count % 2} { incr count }
-	incr count 2
-	grid $b.reset -row 0 -column 0 -sticky w
-	grid columnconfigure $b 1 -minsize $::theme::padding
-	grid $b -row [expr {$count + 1}] -column 1 -columnspan 3 -sticky w
-
-	for {set i 0} {$i < $count} {incr i 2} { lappend rows $i }
-	grid rowconfigure $w $rows -minsize $::theme::padding
-	grid rowconfigure $w $count -minsize [expr {2*$::theme::padding}]
-	grid rowconfigure $w [expr {$count + 2}] -minsize $::theme::padding
-	grid columnconfigure $w {0 4} -minsize $::theme::padding
-	grid columnconfigure $w 2 -minsize [expr {2*$::theme::padding}]
-	SetupFlags $w pgn
-
-	return $w
 }
 
+} ;# namespace tags
 
-proc BuildNotationAndFigurineList {w} {
-	variable Notation
-	variable NotationList
-	variable Figurines
-	variable FigurinesList
-	variable Colors
 
+namespace eval notation {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Notation
+	variable [namespace parent]::NotationList
+	variable [namespace parent]::Figurines
+	variable [namespace parent]::FigurinesList
+	variable [namespace parent]::Colors
+
+	### Notation + Figurine #################################################################
 	set Notation {}
 	foreach entry {short long algebraic correspondence telegraphic} {
-		lappend Notation [list $entry [set mc::[string toupper $entry 0 0]]]
+		lappend Notation [list $entry [set [namespace parent]::mc::[string toupper $entry 0 0]]]
 	}
 	set NotationList {}
 	foreach entry $Notation { lappend NotationList [lindex $entry 1] }
@@ -773,12 +929,12 @@ proc BuildNotationAndFigurineList {w} {
 		}
 	}
 	set Figurines [lsort -index 1 -dictionary $Figurines]
-	set Figurines [linsert $Figurines 0 [list graphic $mc::Graphic]]
+	set Figurines [linsert $Figurines 0 [list graphic [set [namespace parent]::mc::Graphic]]]
 	set FigurinesList {}
 	foreach entry $Figurines { lappend FigurinesList [lindex $entry 1] }
 
 	### Figurine #############################################################################
-	ttk::labelframe $w.figurines -text [set mc::Figurines]
+	ttk::labelframe $w.figurines -text [set [namespace parent]::mc::Figurines]
 	set list [ttk::frame $w.figurines.list]
 	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 180]
 	$selbox addcol image -id icon
@@ -791,7 +947,7 @@ proc BuildNotationAndFigurineList {w} {
 	$selbox resize
 	pack $selbox -anchor s
 	bind $selbox <<ListboxSelect>> [namespace code [list SetFigurines $w]]
-	bind $list <Configure> [namespace code { ConfigureTListbox %W %h }]
+	bind $list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
 	set sample [tk::label $w.figurines.sample -borderwidth 1 -relief sunken]
 	tk::label $w.figurines.sample.text -background white
 	pack $w.figurines.sample.text -fill both -expand yes
@@ -804,7 +960,7 @@ proc BuildNotationAndFigurineList {w} {
 	grid columnconfigure $w.figurines {0 2} -minsize $::theme::padding
 
 	### Notation #############################################################################
-	ttk::labelframe $w.notation -text [set mc::Notation]
+	ttk::labelframe $w.notation -text [set [namespace parent]::mc::Notation]
 	set list [ttk::frame $w.notation.list]
 	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 165]
 	$selbox addcol text -id text
@@ -812,7 +968,7 @@ proc BuildNotationAndFigurineList {w} {
 	$selbox resize
 	pack $selbox -anchor s
 	bind $selbox <<ListboxSelect>> [namespace code [list SetNotation $w]]
-	bind $list <Configure> [namespace code { ConfigureTListbox %W %h }]
+	bind $list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
 	set sample [tk::label $w.notation.sample -borderwidth 1 -relief sunken]
 	tk::label $w.notation.sample.text -background white
 	pack $w.notation.sample.text -fill both -expand yes
@@ -823,42 +979,187 @@ proc BuildNotationAndFigurineList {w} {
 	grid rowconfigure $w.notation {0 2 4} -minsize $::theme::padding
 	grid rowconfigure $w.notation {1} -weight 1
 	grid columnconfigure $w.notation {0 2} -minsize $::theme::padding
+
+	### Style ################################################################################
+	ttk::labelframe $w.style -text [set [namespace parent]::mc::MainlineStyle]
+	ttk::checkbutton $w.style.format \
+		-text [set [namespace parent]::mc::UseColumnStyle] \
+		-variable [namespace parent]::Info(column-style) \
+		;
+	grid $w.style.format -row 1 -column 1
+	grid rowconfigure $w.style {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.style {2} -weight 1
+	grid columnconfigure $w.style {0 2} -minsize $::theme::padding
+	trace add variable [namespace parent]::Info(column-style) write [namespace code UpdateColumnStyle]
+
+	### Layout ##############################################################################
+	grid $w.figurines -row 1 -column 1 -sticky ns
+	grid $w.notation  -row 1 -column 3 -sticky ns
+	grid $w.style     -row 1 -column 5 -sticky ns
+	grid rowconfigure $w {0 2} -minsize $::theme::padding
+	grid rowconfigure $w {1} -weight 1
+	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
+
+	return $w
 }
 
 
-proc BuildOptionsFrame_pdf {w} {
-	variable DiagramStyles
-	variable DiagramSizes
-	variable Values
-	variable Info
+proc SetFigurines {w} {
+	variable [namespace parent]::Figurines
+	variable [namespace parent]::Values
 
-	ttk::frame $w
+	set type $Values(Type)
+	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
+	set Values($type,moves,figurines) $lang
+	if {$lang eq "graphic"} {
+		$w.figurines.sample.text configure -font ::font::figurine
+	} else {
+		$w.figurines.sample.text configure -font TkTextFont
+	}
+	$w.figurines.sample.text configure -text [join $::font::figurines($lang) " "]
+	if {[$w.notation.list.selection curselection] >= 0} { SetNotation $w }
+}
 
-	### Notation + Figurine #################################################################
-	BuildNotationAndFigurineList $w
 
-	### Font Handling #######################################################################
-	ttk::labelframe $w.options -text $mc::FontHandling
-	ttk::checkbutton $w.options.builtin \
-		-text $mc::UseBuiltinFonts \
-		-variable [namespace current]::Values(pdf,builtin) \
-		-command [namespace code UseBuiltinFonts]
-	ttk::checkbutton $w.options.embed \
-		-text $mc::EmebedTruetypeFonts \
-		-variable [namespace current]::Values(pdf,embed)
-	grid $w.options.builtin -column 1 -row 1 -sticky w
-	grid $w.options.embed   -column 1 -row 3 -sticky w
-	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
-	grid rowconfigure $w.options {0 2 4} -minsize $::theme::padding
+proc SetNotation {w} {
+	variable [namespace parent]::Notation
+	variable [namespace parent]::Figurines
+	variable [namespace parent]::Values
 
-	### Diagram Style #######################################################################
-	ttk::checkbutton $w.use \
-		-text $mc::UseImagesForDiagram \
-		-variable [namespace current]::Values(pdf,use-images) \
+	set type $Values(Type)
+	set notation [lindex $Notation [$w.notation.list.selection curselection] 0]
+	set Values($type,moves,notation) $notation
+
+	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
+	if {$lang eq "graphic"} { set n N } else { set n [lindex $::font::figurines($lang) 4] }
+
+	switch $notation {
+		short				{ $w.notation.sample.text configure -text "1.e4 ${n}f6" }
+		long				{ $w.notation.sample.text configure -text "1.e2-e4 ${n}g8-f6" }
+		algebraic		{ $w.notation.sample.text configure -text "1.e2e4 g8f6" }
+		correspondence	{ $w.notation.sample.text configure -text "1.5254 7866" }
+		telegraphic		{ $w.notation.sample.text configure -text "1.GEGO WATI" }
+	}
+}
+
+
+proc UpdateColumnStyle {args} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Styles
+
+	set Styles($Values(Type),BasicStyle,GameText,Moves,MainLine,ColumnStyle) $Info(column-style)
+}
+
+
+proc Setup {pane} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Figurines
+	variable [namespace parent]::Notation
+	variable [namespace parent]::Styles
+
+	set type $Values(Type)
+	$pane.notation.list.selection select none
+
+	set index [lsearch -exact -index 0 $Figurines $Values($type,moves,figurines)]
+	$pane.figurines.list.selection select $index
+
+	set index [lsearch -exact -index 0 $Notation $Values($type,moves,notation)]
+	$pane.notation.list.selection select $index
+
+	set Info(column-style) $Styles($type,BasicStyle,GameText,Moves,MainLine,ColumnStyle)
+}
+
+} ;# namespace notation
+
+
+namespace eval diagram {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::DiagramStyles
+	variable [namespace parent]::DiagramSizes
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+
+	set lt [ttk::frame $w.lt -borderwidth 0]
+	set rt [ttk::labelframe $w.rt -text [set [namespace parent]::mc::PostscriptSpecials]]
+
+	### Layout ##################################################################
+	ttk::labelframe $lt.layout -text [set [namespace parent]::mc::Layout]
+	ttk::checkbutton $lt.layout.coords \
+		-text [set [namespace parent]::mc::ShowCoordinates] \
+		-variable [namespace parent]::Values($type,diagram,show-coordinates) \
 		;
-	ttk::labelframe $w.diagram -labelwidget $w.use
+	ttk::checkbutton $lt.layout.white \
+		-text [set [namespace parent]::mc::AllFromWhitePersp] \
+		-variable [namespace parent]::Info(diagram,white-perspective) \
+		-command [namespace code [list SetPerspective white]] \
+		;
+	ttk::checkbutton $lt.layout.black \
+		-text [set [namespace parent]::mc::AllFromBlackPersp] \
+		-variable [namespace parent]::Info(diagram,black-perspective) \
+		-command [namespace code [list SetPerspective black]] \
+		;
+	grid $lt.layout.coords -row 1 -column 1 -sticky w
+	grid $lt.layout.white  -row 3 -column 1 -sticky w
+	grid $lt.layout.black  -row 5 -column 1 -sticky w
+	grid rowconfigure $lt.layout {0 2 4 6} -minsize $::theme::padding
+	grid rowconfigure $lt.layout {6} -weight 1
+	grid columnconfigure $lt.layout {0 2} -minsize $::theme::padding
+
+	### Board Size ##############################################################
+	ttk::labelframe $lt.size -text "[set [namespace parent]::mc::BoardSize] (pt)"
+	set col 1
+	foreach size {80 120 160 240} {
+		ttk::radiobutton $lt.size.$size \
+			-text $size \
+			-value $size \
+			-variable [namespace parent]::Values($type,diagram,board-size) \
+			;
+		grid $lt.size.$size -row 1 -column $col -sticky w
+		incr col 2
+	}
+	grid rowconfigure $lt.size {0 2} -minsize $::theme::padding
+	grid rowconfigure $lt.size {2} -weight 1
+	grid columnconfigure $lt.size {0 2 4 6 8} -minsize $::theme::padding
+
+	### Visibility ##############################################################
+	ttk::labelframe $lt.vis -text [set [namespace parent]::mc::Visibility]
+	ttk::checkbutton $lt.vis.hide \
+		-text [set [namespace parent]::mc::HideDiagrams] \
+		-variable [namespace parent]::Values($type,diagram,hide)
+		;
+	grid $lt.vis.hide -row 1 -column 1 -sticky w
+	grid rowconfigure $lt.vis {0 2} -minsize $::theme::padding
+	grid rowconfigure $lt.vis {2} -weight 1
+	grid columnconfigure $lt.vis {0 2} -minsize $::theme::padding
+
+	### Postscript ##############################################################
+	ttk::checkbutton $rt.movers \
+		-text [set [namespace parent]::mc::ShowSideToMove] \
+		-variable [namespace parent]::Values($type,diagram,show-movers) \
+		;
+	ttk::checkbutton $rt.arrows \
+		-text [set [namespace parent]::mc::ShowArrows] \
+		-variable [namespace parent]::Values($type,diagram,show-arrows) \
+		;
+	ttk::checkbutton $rt.markers \
+		-text [set [namespace parent]::mc::ShowMarkers] \
+		-variable [namespace parent]::Values($type,diagram,show-markers) \
+		;
+
+	### Images ##################################################################
 	SearchDiagramStyles
-	set selbox [::tlistbox $w.diagram.selection \
+	ttk::separator $rt.sep
+	ttk::frame $rt.images -borderwidth 0
+	ttk::checkbutton $rt.images.use \
+		-text [set [namespace parent]::mc::UseImagesForDiagram] \
+		-variable [namespace parent]::Values($type,diagram,use-images) \
+		;
+	set selbox [::tlistbox $rt.images.selection \
 		-height [llength $DiagramStyles] \
 		-borderwidth 1 \
 		-disabledbackground [::theme::getBackgroundColor] \
@@ -877,147 +1178,59 @@ proc BuildOptionsFrame_pdf {w} {
 		}
 	}
 	$selbox resize
-	set f [ttk::frame $w.diagram.sizes -borderwidth 0]
-	ttk::label $f.size -text "$mc::Size (pt):"
+	set f [ttk::frame $rt.images.sizes -borderwidth 0]
+	ttk::label $f.size -text "[set [namespace parent]::mc::BoardSize] (pt):"
 	grid $f.size -column 1 -row 1
 	set col 2
 	foreach size $DiagramSizes {
 		ttk::radiobutton $f.$size \
-			-text [expr {int(double($size)*0.12 + 0.5)}] \
-			-variable [namespace current]::Values(pdf,image-size) \
+			-text [expr {int(double($size)*0.96 + 0.5)}] \
+			-variable [namespace parent]::Values($type,diagram,image-size) \
 			-value $size \
 			;
 		grid columnconfigure $f $col -minsize $::theme::padding
 		grid $f.$size -column [incr col] -row 1
 		incr col
 	}
-	ToggleUseImages $selbox $f
-	$w.use configure -command [namespace code [list ToggleUseImages $selbox $f]]
+	ToggleUseImages $selbox $f $lt.size
+	$rt.images.use configure -command [namespace code [list ToggleUseImages $selbox $f $lt.size]]
 	bind $selbox <<ListboxSelect>> [namespace code [list UseDiagram %d $f]]
-	grid columnconfigure $f $col -minsize $::theme::padding
-	grid $w.diagram.selection -column 1 -row 1 -sticky ew
-	grid $w.diagram.sizes -column 1 -row 3 -sticky w
-	grid columnconfigure $w.diagram {0 2} -minsize $::theme::padding
-	grid rowconfigure $w.diagram {0 4} -minsize $::theme::padding
-	grid rowconfigure $w.diagram 2 -minsize [expr {2*$::theme::padding}]
 
-	### Layout ##############################################################################
-	grid $w.figurines -row 1 -column 1 -sticky ns -rowspan 3
-	grid $w.notation  -row 1 -column 3 -sticky ns -rowspan 3
-	grid $w.options   -row 1 -column 5 -sticky nsew
-	grid $w.diagram   -row 3 -column 5 -sticky nsew
-	grid rowconfigure $w {0 2 4} -minsize $::theme::padding
-	grid rowconfigure $w {1 3} -weight 1
-	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
+	grid $rt.images.use -column 1 -row 1 -sticky w
+	grid $rt.images.selection -column 1 -row 3 -sticky ew
+	grid $rt.images.sizes -column 1 -row 5 -sticky w
+	grid rowconfigure $rt.images {2 4} -minsize $::theme::padding
 
-	return $w
-}
+	### Gridding ################################################################
+	grid $lt.layout -row 1 -column 1 -sticky nsew
+	grid $lt.size   -row 3 -column 1 -sticky nsew
+	grid $lt.vis    -row 5 -column 1 -sticky nsew
+	grid rowconfigure $lt {2 4} -minsize $::theme::padding
+	grid rowconfigure $lt {1 3 5} -weight 1
 
+	grid $rt.movers  -row 1 -column 1 -sticky w
+	grid $rt.arrows  -row 3 -column 1 -sticky w
+	grid $rt.markers -row 5 -column 1 -sticky w
+	grid $rt.sep     -row 7 -column 1 -sticky ew
+	grid $rt.images  -row 9 -column 1 -sticky nsew
+	grid rowconfigure $rt {0 2 4 10} -minsize $::theme::padding
+	grid rowconfigure $rt {6 8} -minsize [expr {2*$::theme::padding}]
+	grid rowconfigure $rt {6 10} -weight 1
+	grid columnconfigure $rt {0 2} -minsize $::theme::padding
 
-proc BuildOptionsFrame_tex {w} {
-	variable Languages
-	variable Values
-	variable Info
-
-	ttk::frame $w
-
-	### Notation + Figurine #################################################################
-	BuildNotationAndFigurineList $w
-
-	### Default Language ####################################################################
-	set Info(languages) [list [list none $mc::None]]
-	foreach lang $Languages {
-		lappend Info(languages) [list $lang [::encoding::languageName $lang]]
-	}
-	set Info(languages) [lsort -dictionary -index 1 $Info(languages)]
-	ttk::labelframe $w.language -text $mc::Hyphenation
-	ttk::frame $w.language.list
-	set selbox [::tlistbox $w.language.list.selection -borderwidth 1 -pady 1 -minwidth 180]
-	$selbox addcol image -id icon
-	$selbox addcol text -id name -expand yes
-	foreach entry $Info(languages) {
-		lassign $entry lang name
-		if {$lang eq "none"} {
-			set img {}
-		} else {
-			set img $::country::icon::flag([::mc::countryForLang $lang])
-		}
-		$selbox insert [list $img $name]
-	}
-	$selbox resize
-	pack $selbox -anchor s
-	pack $w.language.list -padx $::theme::padding -pady $::theme::padding -fill y -expand yes
-	bind $w.language.list <Configure> [namespace code { ConfigureTListbox %W %h }]
-	bind $selbox <<ListboxSelect>> [namespace code [list SetLanguage %d]]
-	$selbox select [lsearch -index 0 $Info(languages) $Values(tex,primary-lang)]
-
-	### Layout ##############################################################################
-	grid $w.figurines -row 1 -column 1 -sticky ns
-	grid $w.notation  -row 1 -column 3 -sticky ns
-	grid $w.language  -row 1 -column 5 -sticky ns
+	grid $lt -row 1 -column 1 -sticky ns
+	grid $rt -row 1 -column 3 -sticky ns
 	grid rowconfigure $w {0 2} -minsize $::theme::padding
 	grid rowconfigure $w {1} -weight 1
-	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
-
-	return $w
-}
-
-
-proc SetLanguage {index} {
-	variable Info
-	variable Values
-
-	set Values(tex,primary-lang) [lindex $Info(languages) $index 0]
-}
-
-
-proc ToggleUseImages {selbox sizes} {
-	variable Values
-	variable Info
-
-	set index [lsearch -index 0 $Info(diagram:list) $Values(pdf,diagram)]
-	if {$Values(pdf,use-images)} { set state normal } else { set state disabled }
-	$selbox configure -state $state
-	$selbox select none
-	$selbox select $index
-
-	if {$state eq "disabled"} {
-		set usedSizes {}
-	} else {
-		set usedSizes [lindex $Info(diagram:list) $index 1]
-	}
-	CheckSizes $sizes $usedSizes
-}
-
-
-proc CheckSizes {sizes usedSizes} {
-	variable DiagramSizes
-	variable Values
-
-	foreach size $DiagramSizes {
-		if {$size in $usedSizes} { set state normal } else { set state disabled }
-		$sizes.$size configure -state $state
-	}
-
-	if {[llength $usedSizes] && $Values(pdf,image-size) ni $usedSizes} {
-		$sizes.[lindex $usedSizes end] invoke
-	}
-}
-
-
-proc UseDiagram {index sizes} {
-	variable Info
-	variable Values
-
-	lassign [lindex $Info(diagram:list) $index] value usedSizes
-	set Values(pdf,diagram) $value
-	CheckSizes $sizes $usedSizes
+	grid columnconfigure $w {0 4} -minsize $::theme::padding
+	grid columnconfigure $w {2} -minsize [expr {2*$::theme::padding}]
 }
 
 
 proc SearchDiagramStyles {} {
-	variable DiagramStyles
-	variable DiagramSizes
+	variable [namespace parent]::DiagramStyles
+	variable [namespace parent]::DiagramSizes
+	variable [namespace parent]::Info
 
 	if {[info exists DiagramStyles]} { return }
 
@@ -1054,377 +1267,321 @@ proc SearchDiagramStyles {} {
 }
 
 
-proc ResetTags {value} {
-	variable Tags
-	variable DefaultTags
+proc UseDiagram {index sizes} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
 
-	if {$value == -1} {
-		foreach tag [array names Tags] { set Tags($tag) 0 }
-		array set Tags [array get DefaultTags]
+	set type $Values(Type)
+	lassign [lindex $Info(diagram:list) $index] value usedSizes
+	set Values($type,diagram,image-style) $value
+	CheckSizes $sizes $usedSizes
+}
+
+
+proc ToggleUseImages {selbox sizes {sizeFrame {}}} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	set index [lsearch -index 0 $Info(diagram:list) $Values($type,diagram,image-style)]
+	if {$Values($type,diagram,use-images)} { set state normal } else { set state disabled }
+	$selbox configure -state $state
+	$selbox select none
+	$selbox select $index
+
+	if {$state eq "disabled"} {
+		set usedSizes {}
 	} else {
-		foreach tag [array names Tags] { set Tags($tag) $value }
+		set usedSizes [lindex $Info(diagram:list) $index 1]
+	}
+	CheckSizes $sizes $usedSizes
+
+	if {[llength $sizeFrame]} {
+		if {$state eq "normal"} { set state disabled } else { set state normal }
+		foreach w [winfo children $sizeFrame] { $w configure -state $state }
 	}
 }
 
 
-proc UseBuiltinFonts {} {
-	variable Info
+proc CheckSizes {sizes usedSizes} {
+	variable [namespace parent]::DiagramSizes
+	variable [namespace parent]::Values
 
-	if {[info exists Info(fontsel)]} {
-		StyleSelected $Info(fonttree) 0
-	}
-}
-
-
-proc SetupOptions {pane} {
-	variable Values
-	variable Figurines
-	variable Notation
-
-	set type [lindex [split $pane .] end]
-
-	set index [lsearch -exact -index 0 $Figurines $Values($type,figurines)]
-	$pane.figurines.list.selection select $index
-
-	set index [lsearch -exact -index 0 $Notation $Values($type,notation)]
-	$pane.notation.list.selection select $index
-
-	SetFigurines $pane
-}
-
-
-proc ConfigureTListbox {list height} {
-	set linespace [$list.selection cget -linespace]
-	set nrows [expr {$height/$linespace}]
-	if {$nrows > [$list.selection cget -height]} {
-		$list.selection configure -height $nrows
-	}
-}
-
-
-proc SetNotation {w} {
-	variable Notation
-	variable Figurines
-	variable Values
-
-	set type [lindex [split $w .] end]
-	set notation [lindex $Notation [$w.notation.list.selection curselection] 0]
-	set Values($type,notation) $notation
-
-	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
-	if {$lang eq "graphic"} { set n N } else { set n [lindex $::font::figurines($lang) 4] }
-
-	switch $notation {
-		short				{ $w.notation.sample.text configure -text "1.e4 ${n}f6" }
-		long				{ $w.notation.sample.text configure -text "1.e2-e4 ${n}g8-f6" }
-		algebraic		{ $w.notation.sample.text configure -text "1.e2e4 g8f6" }
-		correspondence	{ $w.notation.sample.text configure -text "1.5254 7866" }
-		telegraphic		{ $w.notation.sample.text configure -text "1.GEGO WATI" }
-	}
-}
-
-
-proc SetFigurines {w} {
-	variable Figurines
-	variable Values
-
-	set type [lindex [split $w .] end]
-	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
-	set Values($type,figurines) $lang
-	if {$lang eq "graphic"} {
-		$w.figurines.sample.text configure -font ::font::figurine
-	} else {
-		$w.figurines.sample.text configure -font TkTextFont
-	}
-	$w.figurines.sample.text configure -text [join $::font::figurines($lang) " "]
-	if {[$w.notation.list.selection curselection] >= 0} { SetNotation $w }
-}
-
-
-proc ConfigureHeight {w h} {
-	if {$h <= 1} { return }
-	array set metrics [font metrics [$w.list cget -font]]
-	$w.list configure -height [expr {($h - 2*$::theme::padding)/($metrics(-linespace) + 1)}]
-	bind $w <Configure> {}
-}
-
-
-proc SetEncoding {w} {
-	variable Values
-	set Values(scid,encoding) [lindex $Values(encoding-list) [$w curselection]]
-}
-
-
-proc Reset {w type} {
-	variable Defaults
-	variable Values
-
-	foreach field [array names Defaults -glob $type,*] {
-		set Values($field) $Defaults($field)
-	}
-
-	switch $type {
-		pgn { SetupFlags $w $type }
-	}
-}
-
-
-proc SetupFlags {w type} {
-	variable Values
-	variable Info
-	variable Flags
-	variable Fields
-
-	set flags 0
-	foreach field $Fields($type) {
-		if {$Values($type,$field)} {
-			set flags [expr {$flags | [Pow2 $Flags($type,$field)]}]
-		}
-	}
-	set Info($type,flags) $flags
-
-	switch $type {
-		pgn {
-			if {$Values(pgn,use_chessbase_format) || $Values(pgn,use_scidb_import_format)} {
-				if {$Values(pgn,use_chessbase_format)} {
-					$w.use_chessbase_format configure -state normal
-					$w.use_scidb_import_format configure -state disabled
-				} else {
-					$w.use_chessbase_format configure -state disabled
-					$w.use_scidb_import_format configure -state normal
-				}
-				foreach field $Fields(pgn) {
-					switch $field {
-						use_chessbase_format -
-						use_scidb_import_format -
-						exclude_games_with_illegal_moves -
-						column_style -
-						indent_comments -
-						indent_variations -
-						space_after_move_number -
-						include_opening_tag {}
-						default { $w.$field configure -state disabled }
-					}
-				}
-			} else {
-				foreach field $Fields(pgn) { $w.$field configure -state normal }
-				if {$Values(pgn,symbolic_annotation_style)} {
-					$w.extended_symbolic_style configure -state normal
-				} else {
-					$w.extended_symbolic_style configure -state disabled
-					Exclude pgn extended_symbolic_style
-				}
-				if {$Values(pgn,exclude_games_with_illegal_moves)} {
-					set flags [expr {$flags & ~[Pow2 $Flags($type,$field)]}]
-				}
-			}
-		}
-	}
-}
-
-
-proc HideTab {nb tab} { $nb tab $tab -state hidden }
-proc ShowTab {nb tab} { $nb tab $tab -state normal }
-
-
-proc Select {nb index} {
-	variable PdfEncodingList
-	variable Types
-	variable Info
-	variable Values
-
-	if {[llength $index] == 0} { return }	;# ignore double click
-	set Values(Type) [lindex $Types $index]
-	set savemode 0
-	grid remove $nb.options.pgn
-	grid remove $nb.options.pdf
-	grid remove $nb.options.tex
-	grid remove $nb.options.scid
-
-	switch $Values(Type) {
-		scidb {
-			HideTab $nb $nb.options
-			HideTab $nb $nb.setup_pdf
-			HideTab $nb $nb.setup_tex
-			HideTab $nb $nb.style
-			HideTab $nb $nb.encoding
-			set var $::menu::mc::ScidbBases
-			set ext .sci
-		}
-
-		scid {
-			HideTab $nb $nb.setup_pdf
-			HideTab $nb $nb.setup_tex
-			HideTab $nb $nb.style
-			ShowTab $nb $nb.options
-			if {$Values(Type) eq "scidb"} {
-				ShowTab $nb $nb.encoding
-			} else {
-				HideTab $nb $nb.encoding
-			}
-			grid $nb.options.scid
-			set var $::menu::mc::ScidBases
-			set ext {.si4 .si3}
-		}
-
-		pgn {
-			ShowTab $nb $nb.options
-			HideTab $nb $nb.setup_pdf
-			HideTab $nb $nb.setup_tex
-			HideTab $nb $nb.style
-			if {$Values(Type) eq "scidb"} {
-				ShowTab $nb $nb.encoding
-			} else {
-				HideTab $nb $nb.encoding
-			}
-			grid $nb.options.pgn
-			set var $::menu::mc::PGNFiles
-			set ext {.pgn .pgn.gz .zip}
-			set savemode 1
-		}
-
-		pdf {
-			ShowTab $nb $nb.options
-			ShowTab $nb $nb.setup_pdf
-			HideTab $nb $nb.setup_tex
-			ShowTab $nb $nb.style
-			if {$Values(Type) eq "scidb" || $Info(pdf-encoding)} {
-				ShowTab $nb $nb.encoding
-			} else {
-				HideTab $nb $nb.encoding
-			}
-			grid $nb.options.pdf
-			SetupOptions $nb.options.pdf
-			set Info(useCustom) 1
-			set Info(configure-style) 1
-			set var $mc::PdfFiles
-			set ext .pdf
-			::beta::notYetImplemented $nb tex
-		}
-
-		html {
-			ShowTab $nb $nb.options
-			HideTab $nb $nb.setup_pdf
-			HideTab $nb $nb.setup_tex
-			ShowTab $nb $nb.style
-			HideTab $nb $nb.encoding
-			grid $nb.options.pdf
-			SetupOptions $nb.options.pdf
-			set Info(configure-style) 1
-			set var $mc::HtmlFiles
-			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
-			::beta::notYetImplemented $nb html
-		}
-
-		tex {
-			ShowTab $nb $nb.options
-			ShowTab $nb $nb.setup_tex
-			HideTab $nb $nb.setup_pdf
-			ShowTab $nb $nb.style
-			HideTab $nb $nb.encoding
-			grid $nb.options.tex
-			SetupOptions $nb.options.tex
-			set Info(configure-style) 1
-			set Info(useCustom) 0
-			set var $mc::TeXFiles
-			set ext {.tex .ltx}
-		}
-	}
-
-	::dialog::fsbox::useSaveMode $Info(fsbox) $savemode
-
-	if {[$nb tab $nb.setup_pdf -state] eq "normal"} {
-		if {$Info(configure-setup_pdf)} {
-			ConfigureSetup $nb.setup_pdf
-			set Info(configure-setup_pdf) 0
-		}
-	}
-
-	if {[$nb tab $nb.setup_tex -state] eq "normal"} {
-		if {$Info(configure-setup_tex)} {
-			ConfigureSetup $nb.setup_tex
-			set Info(configure-setup_tex) 0
-		}
-	}
-
-	if {[$nb tab $nb.style -state] eq "normal"} {
-		if {$Info(configure-style)} {
-			ConfigureStyle $nb.style
-			set Info(configure-style) 0
-		}
-	}
-
-	if {[$nb tab $nb.encoding -state] eq "normal"} {
-		if {$Values(Type) eq "pdf"} { set encTab pdf } else { set encTab pgn }
-		if {$Info(configure-encoding-$encTab)} {
-			if {$Values(Type) eq "pdf"} { set encList $PdfEncodingList } else { set encList {} }
-			bind $nb.encoding <Configure> \
-				+[namespace code [list ConfigureEncoding $nb.encoding $encTab $encList]]
-			set Info(configure-encoding-$encTab) 0
-		} elseif {[winfo exists $nb.encoding.$encTab]} {
-			if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
-				set encoding $Info(encoding)
-			} else {
-				set encoding $Values($Values(Type),encoding)
-			}
-			raise $nb.encoding.$encTab
-			focus $nb.encoding.$encTab
-			::encoding::select $nb.encoding.$encTab $encoding
-		}
-	}
-
-	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
-	if {$Values(Type) eq "pdf" && $Values(pdf,builtin)} { UseBuiltinFonts }
-}
-
-
-proc ConfigureEncoding {w tab encList} {
-	variable Info
-	variable Values
-	variable Defaults
-
-	if {[winfo exists $w.$tab]} { return }
 	set type $Values(Type)
 
-	if {$type eq "pdf" && $Info(pdf-encoding)} {
-		set encoding $Info(encoding)
-	} else {
-		set encoding $Values($type,encoding)
+	foreach size $DiagramSizes {
+		if {$size in $usedSizes} { set state normal } else { set state disabled }
+		$sizes.$size configure -state $state
 	}
 
-	if {$Values(Type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
-	::encoding::build $w.$tab $currentEncoding iso8859-1 [winfo width $w] 0 $encList
-	if {$type eq "pdf" && $Info(pdf-encoding)} {
-		::encoding::activate $w.$tab iso8859-1
-	} else {
-		::encoding::select $w.$tab $encoding
+	if {[llength $usedSizes] && $Values($type,diagram,image-size) ni $usedSizes} {
+		$sizes.[lindex $usedSizes end] invoke
 	}
-	bind $w.$tab <<TreeControlSelect>> [namespace code [list SetEncoding %d]]
-	grid $w.$tab -row 0 -column 0 -sticky nsew
-	grid columnconfigure $w 0 -weight 1
-	grid rowconfigure $w 0 -weight 1
 }
 
 
-proc SetEncoding {encoding} {
-	variable Values
-	variable Info
+proc SetPerspective {side} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
 
-	if {[llength $encoding]} {
-		if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
-			set Info(encoding) $encoding
-		} else {
-			set Values($Values(Type),encoding) $encoding
+	set type $Values(Type)
+
+	if {$Info(diagram,$side-perspective)} {
+		if {$side eq "white"} { set side black } else { set side white }
+		set Info(diagram,$side-perspective) 0
+	}
+
+	if {$Info(diagram,white-perspective)} {
+		set Values($type,diagram,perspective) white
+	} elseif {$Info(diagram,black-perspective)} {
+		set Values($type,diagram,perspective) black
+	} else {
+		set Values($type,diagram,perspective) {}
+	}
+}
+
+
+proc Setup {pane} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	set Info(diagram,white-perspective) 0
+	set Info(diagram,black-perspective) 0
+
+	switch $Values($type,diagram,perspective) {
+		white { set Info(diagram,white-perspective) 1 }
+		black { set Info(diagram,black-perspective) 1 }
+	}
+}
+
+} ;# namespace diagram
+
+
+namespace eval annotation {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::NagMapping
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set languages {}
+	foreach code $::mc::languages {
+		lappend languages [list $code $::encoding::mc::Lang($code)]
+	}
+	set languages [lsort -index 1 $languages]
+
+	set f $w.lang
+	ttk::checkbutton $w.use \
+		-text "[set [namespace parent]::mc::MapNagsToComment]" \
+		-command [namespace code ToggleNagsToComments] \
+		-variable [namespace parent]::Info(nag,lang,use) \
+		;
+	ttk::labelframe $f -labelwidget $w.use
+	set Info(nag:lang) {}
+
+	set top [ttk::frame $f.top]
+	set spacing {0}
+	set column 1
+	foreach entry $languages {
+		lassign $entry lang name
+		set flag $::country::icon::flag([set ::mc::langToCountry($lang)])
+		ttk::radiobutton $top.$lang \
+			-text $name \
+			-image [::icon::makeStateSpecificIcons $flag] \
+			-compound left \
+			-value $lang \
+			-variable [namespace parent]::Info(nag,lang) \
+			-command [namespace code UpdateLanguage] \
+			;
+		grid $top.$lang -row 1 -column $column -sticky w
+		lappend Info(nag:lang) $top.$lang
+		lappend spacing [incr column]
+		incr column
+	}
+	grid columnconfigure $top $spacing -minsize $::theme::padding
+
+	set bot [ttk::frame $f.bot]
+	ttk::radiobutton $bot.unusual \
+		-text [set [namespace parent]::mc::UnusualAnnotation] \
+		-variable [namespace parent]::Info(nag,lang,all) \
+		-command [namespace code UpdateLanguage] \
+		-value 0 \
+		;
+	lappend Info(nag:lang) $bot.unusual
+	ttk::radiobutton $bot.all \
+		-text [set [namespace parent]::mc::AllAnnotation] \
+		-variable [namespace parent]::Info(nag,lang,all) \
+		-command [namespace code UpdateLanguage] \
+		-value 1 \
+		;
+	lappend Info(nag:lang) $bot.all
+	grid $bot.unusual -row 1 -column 1
+	grid $bot.all     -row 1 -column 3
+	grid columnconfigure $bot {0 2 4} -minsize $::theme::padding
+
+	grid $f.top -row 1 -column 1
+	grid $f.bot -row 3 -column 1 -sticky w
+	grid rowconfigure $f {0 2 4} -minsize $::theme::padding
+
+	set scrolled [::scrolledframe $w.mapping \
+		-background [::theme::getBackgroundColor] \
+		-borderwidth 1 \
+		-relief sunken \
+		-expand x \
+	]
+	set f [ttk::frame $scrolled.f -borderwidth 0]
+	grid $f -sticky nsew
+	set index 0
+	set row 1
+	set spacing1 {0}
+	set spacing2 {}
+
+	foreach group $NagMapping {
+		lassign $group to black from related
+		ttk::label $f.to$to \
+			-text "[set [namespace parent]::mc::MapTo]: $::annotation::mc::Nag($to) (\$$to)"
+			;
+		if {![info exists bold]} {
+			set font [$f.to$to cget -font]
+			if {[llength $font] == 0} { set font TkDefaultFont }
+			set bold [list [font configure $font -family]  [font configure $font -size] bold]
+		}
+		$f.to$to configure -font $bold
+		grid $f.to$to -row $row -column 1 -sticky ew
+		incr row
+		foreach nag $from {
+			set Info(mapping,$nag) 0
+			ttk::checkbutton $f.from$nag \
+				-text "$::annotation::mc::Nag($nag) (\$$nag)" \
+				-variable [namespace parent]::Info(mapping,$nag) \
+				-onvalue $to \
+				-offvalue 0 \
+				-command [namespace code [list MappingSelected $nag $group]] \
+				;
+			bind $f.from$nag <FocusIn> [namespace code [list $scrolled see %W]]
+			lappend spacing1 $row
+			grid $f.from$nag -row [incr row] -column 1 -sticky ew
+			incr row
+		}
+		lappend spacing2 $row
+		incr row
+		incr index
+	}
+
+	lappend spacing1 [lindex $spacing2 end]
+	set spacing2 [lreplace $spacing2 end end]
+	grid rowconfigure $f $spacing1 -minsize $::theme::padding
+	grid rowconfigure $f $spacing2 -minsize [expr {2*$::theme::padding}]
+	grid columnconfigure $f {0 2} -minsize $::theme::padding
+
+	grid $w.lang     -row 1 -column 1 -sticky nsew
+	grid $w.mapping  -row 3 -column 1 -sticky nsew
+	grid rowconfigure $w {0 4} -minsize $::theme::padding
+	grid rowconfigure $w {2} -minsize [expr {2*$::theme::padding}]
+	grid rowconfigure $w {3} -weight 1
+	grid columnconfigure $w {0 2} -minsize $::theme::padding
+}
+
+
+proc ToggleNagsToComments {} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+
+	if {$Info(nag,lang,use)} {
+		set state normal
+		set Values($type,nag,lang) $Info(nag,lang)
+	} else {
+		set state disabled
+		set Values($type,nag,lang) {}
+	}
+
+	foreach w $Info(nag:lang) { $w configure -state $state }
+}
+
+
+proc UpdateLanguage {} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	set Values($type,nag,all) $Info(nag,lang,all)
+	set Values($type,nag,lang) $Info(nag,lang)
+}
+
+
+proc MappingSelected {nag group} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	lassign $group to black from related
+
+	if {$black} {
+		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $to }
+		set Info(mapping,[expr {$nag + 1}]) $val
+	}
+
+	if {[llength $related]} {
+		set i [lsearch -integer $from $nag]
+		set rto [lindex $related 0]
+		set rnag [lindex $related 1 $i]
+		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $rto }
+		set Info(mapping,$rnag) $val
+
+		if {$black} {
+			if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $rto }
+			set Info(mapping,[expr {$rnag + 1}]) $val
 		}
 	}
+
+	set type $Values(Type)
+	set mapping {}
+
+	foreach key [array names Info mapping,*] {
+		if {$Info($key)} {
+			lappend mapping [list [lindex [split $key ,] 1] $Info($key)]
+		}
+	}
+
+	set Values($type,nag,mapping) $mapping
 }
 
 
-proc ConfigureStyle {w} {
-	variable StyleLayout
-	variable Styles
-	variable Values
-	variable Info
+proc Setup {pane} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	foreach key [array names Info mapping,*] { set Info($key) 0 }
+
+	foreach pair $Values($type,nag,mapping) {
+		lassign $pair from to
+		set Info(mapping,$from) $to
+	}
+
+	set Info(nag,lang) $Values($type,nag,lang)
+	set Info(nag,lang,use) [expr {[llength $Values($type,nag,lang)] > 0}]
+	if {[llength $Info(nag,lang)] == 0} { set Info(nag,lang) $::mc::langID }
+	set Info(nag,lang,all) $Values($type,nag,all)
+
+	ToggleNagsToComments
+}
+
+} ;# namespace annotation
+
+
+namespace eval style {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::StyleLayout
+	variable [namespace parent]::Styles
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::icon::13x13::checked
+	variable [namespace parent]::icon::13x13::unchecked
 
 	if {[winfo exists $w.t]} {
 		foreach child [winfo children $w] { destroy $child }
@@ -1437,43 +1594,53 @@ proc ConfigureStyle {w} {
 		-linestyle solid \
 		-showheader 0 \
 		-showbuttons no \
-		-width 175 \
+		-width 200 \
 		-takefocus 1 \
+		-xscrollincrement 1 \
 		;
 	bind $w.t <ButtonPress-1> [namespace code [list SelectStyle %W %x %y]]
 	set height [font metrics [$w.t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
 	$w.t configure -itemheight $height
+	$w.t state define CHECK
 
 	$w.t column create -tags item
 	$w.t configure -treecolumn item
 	$w.t element create elemTxt text -lines 1
 	$w.t element create elemSel rect -fill {#ffdd76 selected} -showfocus 1
+	$w.t element create elemCheck image -image [list $checked CHECK $unchecked {}]
 
-	$w.t style create style
-	$w.t style elements style {elemSel elemTxt}
-	$w.t style layout style elemTxt -padx {4 0}
-	$w.t style layout style elemSel -union {elemTxt} -ipadx 2
+	$w.t style create styText
+	$w.t style elements styText {elemSel elemTxt}
+	$w.t style layout styText elemTxt -padx {4 0}
+	$w.t style layout styText elemSel -union {elemTxt} -ipadx 2
+
+	$w.t style create styCheck
+	$w.t style elements styCheck [list elemSel elemCheck elemTxt]
+	$w.t style layout styCheck elemCheck -expand nws -padx {4 0}
+	$w.t style layout styCheck elemTxt -padx {4 0}
+	$w.t style layout styCheck elemSel -union {elemCheck elemTxt} -ipadx 2
 
 	set parent(0) root
 	foreach entry $StyleLayout($Values(Type)) {
 		lassign $entry depth name
 		if {$depth == 0} {
-			$w.t item style set root item style
-			$w.t item element configure root item elemTxt -text [set mc::$name]
+			$w.t item style set root item styText
+			$w.t item element configure root item elemTxt -text [set [namespace parent]::mc::$name]
 		} else {
 			incr depth -1
-			set item [$w.t item create -button 1]
-			$w.t item style set $item item style
-			$w.t item element configure $item item elemTxt -text [set mc::$name]
+			set item [$w.t item create -button 1 -tags $name]
+			if {$name eq "ColumnStyle"} { set style styCheck } else { set style styText }
+			$w.t item style set $item item $style
+			$w.t item element configure $item item elemTxt -text [set [namespace parent]::mc::$name]
 			$w.t item lastchild $parent($depth) $item
 			incr depth
 			set parent($depth) $item
 		}
 	}
-	$w.t selection add 0
-	$w.t activate 0
 	$w.t notify bind $w.t <Selection> [namespace code [list StyleSelected $w.t %S]]
+	bind $w.t <ButtonPress-1> +[namespace code { ToggleCheck %W %x %y }]
+	bind $w.t <Key-space> [namespace code { ToggleCheck %W }]
 
 	ttk::scrollbar $w.sh -orient horizontal -command [list $w.t xview]
 	$w.t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
@@ -1483,7 +1650,11 @@ proc ConfigureStyle {w} {
 	bind $w.sv <ButtonPress-1> [list focus $w.t]
 
 	set type $Values(Type)
+	set Info(column-style) $Styles($type,BasicStyle,GameText,Moves,MainLine,ColumnStyle)
+	trace add variable [namespace parent]::Info(column-style) \
+		write [namespace code [list UpdateColumnStyle $w.t]]
 	set Info(style) [lindex $StyleLayout($Values(Type)) 0 1]
+	set Info(fontstyle) $Info(style)
 	set basic $Styles($type,$Info(style))
 	lassign $basic family size weight slant color
 	set font [font create -family $family -size $size -weight $weight -slant $slant]
@@ -1507,7 +1678,6 @@ proc ConfigureStyle {w} {
 
 	set Info(fontsel) $w.fontsel
 	set Info(fonttree) $w.t
-	StyleSelected $w.t 0
 
 	grid $w.t  			-row 1 -column 1 -sticky nsew
 	grid $w.sv			-row 1 -column 2 -sticky ns
@@ -1522,21 +1692,49 @@ proc ConfigureStyle {w} {
 }
 
 
-proc SelectStyle {tree x y} {
-	set id [$tree identify $x $y]
-	if {[string length $id] == 0} { return }
-	if {[lindex $id 0] eq "header"} { return }
-	set item [lindex $id 1]
-	$tree selection anchor $item
-	$tree selection modify $item all
+proc UpdateColumnStyle {tree args} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Styles
+
+	if {$Info(column-style)} { set inv {} } { set inv ! }
+	$tree item state set [$tree item id ColumnStyle] ${inv}CHECK
+	set Styles($Values(Type),BasicStyle,GameText,Moves,MainLine,ColumnStyle) $Info(column-style)
+}
+
+
+proc UpdateCheck {tree item} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Styles
+
+	if {[$tree item id $item] == [$tree item id ColumnStyle]} {
+		set Info(column-style) [expr {!$Info(column-style)}]
+	}
+}
+
+
+proc ToggleCheck {tree {x {}} {y {}}} {
+	if {[llength $x]} {
+		set id [$tree identify $x $y]
+
+		if {[llength $id] && [lindex $id 0] ne "header"} {
+			set item [lindex $id 1]
+			if {$item == [$tree item id ColumnStyle]} {
+				UpdateCheck $tree $item
+			}
+		}
+	} else {
+		UpdateCheck $tree active
+	}
 }
 
 
 proc StyleSelected {tree index} {
-	variable StyleLayout
-	variable Styles
-	variable Values
-	variable Info
+	variable [namespace parent]::StyleLayout
+	variable [namespace parent]::Styles
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
 
 	set type $Values(Type)
 	set style ""
@@ -1547,71 +1745,75 @@ proc StyleSelected {tree index} {
 	}
 	set Info(style) $style
 
-	lassign {{} {} {} {} {}} family size weight slant color
-	set style [join [lreplace [split $style ","] end end] ","]
-	while {[llength $style]} {
-		lassign $Styles($type,$style) f s w l c
-		set style [join [lreplace [split $style ","] end end] ","]
-		if {[llength $family] == 0} { set family $f }
-		if {[llength $size  ] == 0} { set size   $s }
-		if {[llength $weight] == 0} { set weight $w }
-		if {[llength $slant ] == 0} { set slant  $l }
-		if {[llength $color ] == 0} { set color  $c }
-	}
-	set Values($type,family) $family
-	set Values($type,size)   $size
-	set Values($type,weight) $weight
-	set Values($type,slant)  $slant
-	set Values($type,color)  $color
-
-	lassign $Styles($type,$Info(style)) f s w l c
-	if {[llength $f]} { set family $f }
-	if {[llength $s]} { set size   $s }
-	if {[llength $w]} { set weight $w }
-	if {[llength $l]} { set slant  $l }
-	if {[llength $c]} { set color  $c }
-
-	set Info(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
-
-	switch -glob -- $Info(fontType) {
-		Figurines	{ set fonts $::font::chessFigurineFonts }
-		Diagram		{ set fonts $::font::chessDiagramFonts }
-		Symbols		{ set fonts $::font::chessSymbolFonts }
-
-		default		{
-			if {$type eq "tex"} {
-				set Info(fonts) {{Avant Garde} Bookman Chancery Charter Courier Fixed Fourier \
-										Helvetica {Latin Modern} {New Century} Palatino Times}
-			} elseif {$Values(pdf,builtin)} {
-				set Info(fonts) {Courier Helvetica Times-Roman}
-			} else {
-				set Info(fonts) {}
-			}
-			set fonts $Info(fonts)
-		}
-	}
-
-	if {$type eq "tex"} {
-		set sizes {8 9 10 11 12 14 17 20 25}
+	if {[string match *,ColumnStyle $style]} {
+		set Info(fontstyle) [join [lrange [split $style ","] 0 end-1] ","]
 	} else {
-		set sizes {}
-	}
+		set Info(fontstyle) $Info(style)
+		lassign {{} {} {} {} {}} family size weight slant color
+		set style [join [lreplace [split $style ","] end end] ","]
+		while {[llength $style]} {
+			lassign $Styles($type,$style) f s w l c
+			set style [join [lreplace [split $style ","] end end] ","]
+			if {[llength $family] == 0} { set family $f }
+			if {[llength $size  ] == 0} { set size   $s }
+			if {[llength $weight] == 0} { set weight $w }
+			if {[llength $slant ] == 0} { set slant  $l }
+			if {[llength $color ] == 0} { set color  $c }
+		}
+		set Info($type,font,family) $family
+		set Info($type,font,size)   $size
+		set Info($type,font,weight) $weight
+		set Info($type,font,slant)  $slant
+		set Info($type,font,color)  $color
 
-	::dialog::::choosefont::setFonts $Info(fontsel) $fonts
-	::dialog::::choosefont::setSizes $Info(fontsel) $sizes
-	UpdateSample $family
-	::dialog::::choosefont::select $Info(fontsel) \
-		-family $family \
-		-size $size \
-		-weight $weight \
-		-slant $slant \
-		-color $color
+		lassign $Styles($type,$Info(fontstyle)) f s w l c
+		if {[llength $f]} { set family $f }
+		if {[llength $s]} { set size   $s }
+		if {[llength $w]} { set weight $w }
+		if {[llength $l]} { set slant  $l }
+		if {[llength $c]} { set color  $c }
+
+		set Info(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
+
+		switch -glob -- $Info(fontType) {
+			Figurines	{ set fonts $::font::chessFigurineFonts }
+			Diagram		{ set fonts $::font::chessDiagramFonts }
+			Symbols		{ set fonts $::font::chessSymbolFonts }
+
+			default		{
+				if {$type eq "tex"} {
+					set Info(fonts) {{Avant Garde} Bookman Chancery Charter Courier Fixed Fourier \
+											Helvetica {Latin Modern} {New Century} Palatino Times}
+				} elseif {$Values(pdf,fonts,builtin)} {
+					set Info(fonts) {Courier Helvetica Times-Roman}
+				} else {
+					set Info(fonts) {}
+				}
+				set fonts $Info(fonts)
+			}
+		}
+
+		if {$type eq "tex"} {
+			set sizes {8 9 10 11 12 14 17 20 25}
+		} else {
+			set sizes {}
+		}
+
+		::dialog::::choosefont::setFonts $Info(fontsel) $fonts
+		::dialog::::choosefont::setSizes $Info(fontsel) $sizes
+		UpdateSample $family
+		::dialog::::choosefont::select $Info(fontsel) \
+			-family $family \
+			-size $size \
+			-weight $weight \
+			-slant $slant \
+			-color $color
+	}
 }
 
 
 proc UpdateSample {family} {
-	variable Values
-	variable Info
+	variable [namespace parent]::Info
 
 	set sample ""
 
@@ -1622,6 +1824,7 @@ proc UpdateSample {family} {
 				append sample $encoding($code)
 			}
 		}
+
 		Symbols {
 			set sample ""
 			upvar 0 ::font::[set ::font::chessSymbolFontsMap($family)] encoding
@@ -1634,12 +1837,14 @@ proc UpdateSample {family} {
 			set i [expr {[string length $sample]/2}]
 			set sample [string replace $sample $i [expr {$i + 1}] "\n"]
 		}
+
 		Figurines {
 			variable ::font::chessFigurineFontsMap
 			set encoding $chessFigurineFontsMap($family)
 			set sample [join [split $::font::figurines(graphic) {}] " "]
 			if {[llength $encoding]} { set sample [string map $encoding $sample] }
 		}
+
 		default {
 			set sample {}
 		}
@@ -1649,44 +1854,274 @@ proc UpdateSample {family} {
 }
 
 
+proc FontColor {color} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Styles
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	set color [::dialog::choosecolor::getActualColor $color]
+	if {$color eq $Info($type,font,color)} { set color {} }
+	lset Styles($type,$Info(fontstyle)) 4 $color
+}
+
+
 proc FontSelected {fontInfo} {
-	variable StyleLayout
-	variable Styles
-	variable Values
-	variable Info
+	variable [namespace parent]::StyleLayout
+	variable [namespace parent]::Styles
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
 
 	set type $Values(Type)
 	lassign $fontInfo family size weight slant
-	set color [lindex $Styles($type,$Info(style)) 4]
+	set color [lindex $Styles($type,$Info(fontstyle)) 4]
 
-	if {$Info(style) ne [lindex $StyleLayout($Values(Type)) 0 1]} {
+	if {$Info(fontstyle) ne [lindex $StyleLayout($Values(Type)) 0 1]} {
 		foreach item {family size weight slant} {
-			if {[set $item] eq $Values($type,$item)} { set $item {} }
+			if {[set $item] eq $Info($type,font,$item)} { set $item {} }
 		}
 	}
 
-	set Styles($type,$Info(style)) [list $family $size $weight $slant $color]
+	set Styles($type,$Info(fontstyle)) [list $family $size $weight $slant $color]
 	switch $Info(fontType) { Symbols - Diagram - Figurines { UpdateSample $family } }
 }
 
 
-proc FontColor {color} {
-	variable Values
-	variable Styles
-
-	set type $Values(Type)
-	set color [::dialog::choosecolor::getActualColor $color]
-	if {$color eq $Values($type,color)} { set color {} }
-	lset Styles($type,$Info(style)) 4 $color
+proc SelectStyle {tree x y} {
+	set id [$tree identify $x $y]
+	if {[string length $id] == 0} { return }
+	if {[lindex $id 0] eq "header"} { return }
+	set item [lindex $id 1]
+	$tree selection anchor $item
+	$tree selection modify $item all
 }
 
 
-proc ConfigureSetup {w} {
-	variable Paper
+proc UseBuiltinFonts {} {
 	variable Info
-	variable Values
-	variable Colors
-	variable DocumentStyle
+
+	if {[info exists Info(fontsel)]} {
+		StyleSelected $Info(fonttree) 0
+	}
+}
+
+
+proc Setup {pane} {
+	variable [namespace parent]::Info
+
+	$Info(fonttree) activate 0
+	$Info(fonttree) select clear
+	$Info(fonttree) select add 0
+}
+
+} ;# namespace style
+
+
+namespace eval comment {
+
+proc BuildFrame {pane} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+	variable [namespace parent]::Languages
+
+	set type $Values(Type)
+
+	set lt [ttk::labelframe $pane.lt -text [set [namespace parent]::mc::LanguageSelection]]
+	set rt [ttk::labelframe $pane.rt -text [set [namespace parent]::mc::Hyphenation]]
+
+	### Choose Languages ####################################################################
+	set sel [ttk::frame $lt.selection -borderwidth 0]
+	set row 1
+	for {set i 1} {$i < [llength $Values($type,comments,languages)]} {incr i} {
+		set Info(lang:box$i) $sel.list$i
+		ttk::label $sel.no$i -text "$i."
+		::languagebox $sel.list$i -none [expr {$i > 1}] -width 0
+		bind $sel.list$i <<ComboboxCurrent>> +[namespace code [list UpdateLanguages $i]]
+		grid $sel.no$i   -row $row -column 1 -sticky w
+		grid $sel.list$i -row $row -column 3 -sticky ew
+		incr row 2
+	}
+	grid rowconfigure $sel {2 4 6} -minsize $::theme::padding
+	grid columnconfigure $sel {2} -minsize $::theme::padding
+	grid columnconfigure $sel {3} -weight 1
+
+	set sig [ttk::frame $lt.significant -borderwidth 0]
+	ttk::label $sig.lbl -text "[set [namespace parent]::mc::Significant]:"
+	ttk::spinbox $sig.num \
+		-command [namespace code SetSignificant] \
+		-state readonly \
+		-width 2 \
+		-from 1 \
+		-to 4 \
+		;
+	set Info(lang:num) $sig.num
+	grid $sig.lbl -row 1 -column 1 -sticky w
+	grid $sig.num -row 1 -column 3 -sticky w
+	grid columnconfigure $sig {2} -minsize $::theme::padding
+	grid columnconfigure $sig {3} -weight 1
+
+	ttk::separator $lt.sep
+	ttk::checkbutton $lt.none \
+		-text [set [namespace parent]::mc::NoComments] \
+		-variable [namespace parent]::Info(lang,none) \
+		-command [namespace code { ConfigureWidgets none }] \
+		;
+	ttk::checkbutton $lt.all \
+		-text [set [namespace parent]::mc::AllLanguages] \
+		-variable [namespace parent]::Info(lang,all) \
+		-command [namespace code { ConfigureWidgets all }] \
+		;
+
+	grid $sel     -row 1 -column 1 -sticky we
+	grid $sig     -row 3 -column 1 -sticky we
+	grid $lt.sep  -row 5 -column 1 -sticky we
+	grid $lt.none -row 7 -column 1 -sticky w
+	grid $lt.all  -row 9 -column 1 -sticky w
+
+	grid rowconfigure $lt {0 2 4 6 8 10} -minsize $::theme::padding
+#	grid rowconfigure $lt {8} -minsize [expr {2*$::theme::padding}]
+	grid columnconfigure $lt {0 2} -minsize $::theme::padding
+
+	### Default Language ####################################################################
+	set Info(languages) [list [list none [set [namespace parent]::mc::None]]]
+	foreach lang $Languages {
+		lappend Info(languages) [list $lang [::encoding::languageName $lang]]
+	}
+	set Info(languages) [lsort -dictionary -index 1 $Info(languages)]
+	ttk::frame $rt.list
+	set selbox [::tlistbox $rt.list.selection -borderwidth 1 -pady 1 -minwidth 180]
+	$selbox addcol image -id icon
+	$selbox addcol text -id name -expand yes
+	foreach entry $Info(languages) {
+		lassign $entry lang name
+		set img $::country::icon::flag([::mc::countryForLang $lang])
+		$selbox insert [list $img $name]
+	}
+	$selbox resize
+	pack $selbox -anchor s
+	pack $rt.list -padx $::theme::padding -pady $::theme::padding -fill y -expand yes
+	bind $rt.list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
+	bind $selbox <<ListboxSelect>> [namespace code [list SetLanguage %d]]
+	set Info(lang:primary) $selbox
+
+	### Gridding ############################################################################
+	grid $lt -row 1 -column 1 -sticky ns
+	grid $rt -row 1 -column 3 -sticky ns
+	grid rowconfigure $pane {0 2} -minsize $::theme::padding
+	grid rowconfigure $pane {1} -weight 1
+	grid columnconfigure $pane {0 4} -minsize $::theme::padding
+	grid columnconfigure $pane {2} -minsize [expr {2*$::theme::padding}]
+}
+
+
+proc SetLanguage {index} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set type $Values(Type)
+	set Values($type,comments,hyphenation) [lindex $Info(languages) $index 0]
+}
+
+
+proc SetSignificant {} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set type $Values(Type)
+	lset Values($type,comments,languages) 0 1 [$Info(lang:num) get]
+}
+
+
+proc ConfigureWidgets {which} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set type $Values(Type)
+
+	if {$Info(lang,$which)} {
+		lset Values($type,comments,languages) 0 0 $which
+		if {$which eq "all"} { set which none } else { set which all }
+		set Info(lang,$which) 0
+		set state disabled
+	} else {
+		lset Values($type,comments,languages) 0 0 {}
+		set state readonly
+	}
+
+	for {set i 1} {$i <= 4} {incr i} { $Info(lang:box$i) configure -state $state }
+
+	if {$Info(lang,all) || $Info(lang,none)} { set state disabled } else { set state readonly }
+	$Info(lang:num) configure -state $state
+}
+
+
+proc Setup {pane} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set type $Values(Type)
+	set Info(lang,all) 0
+	set Info(lang,none) 0
+	$Info(lang:num) configure -state readonly
+
+	switch [lindex $Values($type,comments,languages) 0 0] {
+		* {
+			lset Values($type,comments,languages) 0 0 {}
+			lset Values($type,comments,languages) 0 1 1
+			lset Values($type,comments,languages) 1 $::mc::langID
+			if {$::mc::langID ne "en"} { lset Values($type,comments,languages) 2 en }
+			set state readonly
+		}
+
+		all - none {
+			set Info(lang,[lindex $Values($type,comments,languages) 0 0]) 1
+			$Info(lang:num) configure -state disabled
+			set state disabled
+		}
+
+		default { set state readonly }
+	}
+
+	for {set i 1} {$i < [llength $Values($type,comments,languages)]} {incr i} {
+		$Info(lang:box$i) configure -state $state
+		$Info(lang:box$i) set [lindex $Values($type,comments,languages) $i]
+	}
+
+	set lang [lsearch -index 0 $Info(languages) $Values($type,comments,hyphenation)]
+	$Info(lang:primary) select $lang
+
+	$Info(lang:num) set [lindex $Values($type,comments,languages) 0 1]
+}
+
+
+proc UpdateLanguages {index} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set type $Values(Type)
+	set lang [$Info(lang:box$index) value]
+	lset Values($type,comments,languages) $index $lang
+}
+
+} ;# namespace comment
+
+
+namespace eval page_pdf { proc BuildFrame {w} { [namespace parent]::page::BuildFrame $w } }
+namespace eval page_tex { proc BuildFrame {w} { [namespace parent]::page::BuildFrame $w } }
+
+
+namespace eval page {
+
+namespace import ::tcl::mathfunc::double
+namespace import ::tcl::mathfunc::round
+namespace import ::tcl::mathfunc::min
+
+proc BuildFrame {w} {
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+	variable [namespace parent]::Colors
+	variable [namespace parent]::DocumentStyle
 
 	set type $Values(Type)
 	set Info($type,formats) {}
@@ -1695,20 +2130,20 @@ proc ConfigureSetup {w} {
 		lappend Info($type,formats) "$id ($width x $height $units)"
 	}
 	if {$Info(useCustom)} {
-		lassign $Values($type,custom) \
+		lassign $Values($type,paper,custom) \
 			Info($type,paper,width) Info($type,paper,height) Info($type,paper,units)
-		lappend Info($type,formats) $mc::Custom
+		lappend Info($type,formats) [set [namespace parent]::mc::Custom]
 		set Info($type,paper,units,textvar) $Info($type,paper,units)
 	}
-	if {$Values($type,format) eq "_Custom_"} {
+	if {$Values($type,paper,format) eq "_Custom_"} {
 		set n [llength $Paper($type)]
 	} else {
-		set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+		set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
 	}
 	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
 
 	canvas $w.c \
-		-borderwidth 2 \
+		-borderwidth 1 \
 		-relief sunken \
 		-width 1 \
 		-height 1 \
@@ -1722,38 +2157,39 @@ proc ConfigureSetup {w} {
 	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline $Colors(text)
 
 	if {$type eq "tex"} {
-		set Info(tex,document-styles) {}
+		set Info(tex,paper,document-styles) {}
 		foreach style $DocumentStyle {
-			lappend Info(tex,document-styles) [set mc::$style]
+			lappend Info(tex,paper,document-styles) [set [namespace parent]::mc::$style]
 		}
-		set n [lsearch $DocumentStyle $Values(tex,document)]
-		set Info(tex,document) [lindex $Info(tex,document-styles) $n]
-		ttk::labelframe $w.doc -text $mc::DocumentStyle
+		set n [lsearch $DocumentStyle $Values(tex,paper,document)]
+		set Info(tex,paper,document) [lindex $Info(tex,paper,document-styles) $n]
+		ttk::labelframe $w.doc -text [set [namespace parent]::mc::DocumentStyle]
 		ttk::combobox $w.doc.style \
 			-state readonly \
-			-values $Info(tex,document-styles) \
-			-textvariable [namespace current]::Info(tex,document)
+			-values $Info(tex,paper,document-styles) \
+			-textvariable [namespace parent]::Info(tex,paper,document) \
+			;
 		bind $w.doc.style <<ComboboxSelected>> [namespace code [list SelectDocumentStyle $w]]
 		grid $w.doc.style -row 1 -column 1 -sticky ew
 		grid rowconfigure $w.doc {0 2} -minsize $::theme::padding
 		grid columnconfigure $w.doc {0 2} -minsize $::theme::padding
 		grid columnconfigure $w.doc {1} -weight 1
 	}
-	ttk::labelframe $w.paper -text $mc::Paper
+	ttk::labelframe $w.paper -text [set [namespace parent]::mc::Paper]
 	if {$Info(useCustom)} {
-		ttk::labelframe $w.margins -text $mc::Margin
+		ttk::labelframe $w.margins -text [set [namespace parent]::mc::Margin]
 	}
-	ttk::labelframe $w.orient -text $mc::Orientation
-	ttk::labelframe $w.just -text $mc::Justification
-	ttk::labelframe $w.columns -text $mc::Columns
+	ttk::labelframe $w.orient -text [set [namespace parent]::mc::Orientation]
+	ttk::labelframe $w.just -text [set [namespace parent]::mc::Justification]
+	ttk::labelframe $w.columns -text [set [namespace parent]::mc::Columns]
 
 	if {$Info(useCustom)} {
-		ttk::label $w.paper.lformat -text $mc::Format
+		ttk::label $w.paper.lformat -text [set [namespace parent]::mc::Format]
 	}
 	ttk::combobox $w.paper.cbformat \
 		-state readonly \
 		-values $Info($type,formats) \
-		-textvariable [namespace current]::Info($type,paper,textvar) \
+		-textvariable [namespace parent]::Info($type,paper,textvar) \
 		;
 	bind $w.paper.cbformat <<ComboboxSelected>> [namespace code [list ConfigureWidgets $w paper]]
 
@@ -1763,19 +2199,19 @@ proc ConfigureSetup {w} {
 	grid $w.paper.cbformat		-row 1 -column 3 -sticky ew -columnspan 7
 
 	if {$Info(useCustom)} {
-		ttk::label $w.paper.lsize -text $mc::Size
-		ttk::entry $w.paper.width -width 5 -textvariable [namespace current]::Info($type,paper,width)
+		ttk::label $w.paper.lsize -text [set [namespace parent]::mc::Size]
+		ttk::entry $w.paper.width -width 5 -textvariable [namespace parent]::Info($type,paper,width)
 		::validate::entryFloat $w.paper.width
 		$w.paper.width configure -validatecommand [namespace code [list SizeChanged $w %P]]
 		ttk::label $w.paper.x -text "x"
-		ttk::entry $w.paper.height -width 5 -textvariable [namespace current]::Info($type,paper,height)
+		ttk::entry $w.paper.height -width 5 -textvariable [namespace parent]::Info($type,paper,height)
 		::validate::entryFloat $w.paper.height
 		$w.paper.height configure -validatecommand [namespace code [list SizeChanged $w %P]]
 		ttk::combobox $w.paper.units \
 			-state readonly \
 			-values {mm in pt} \
 			-width 3 \
-			-textvariable [namespace current]::Info($type,paper,units,textvar)
+			-textvariable [namespace parent]::Info($type,paper,units,textvar)
 		bind $w.paper.units <<ComboboxSelected>> [namespace code [list ConfigureWidgets $w]]
 
 		grid $w.paper.lsize		-row 3 -column 1 -sticky w
@@ -1800,18 +2236,18 @@ proc ConfigureSetup {w} {
 	}
 
 	if {$Info(useCustom)} {
-		if {$Values($type,format) eq "_Custom_"} {
-			set units [lindex $Values($type,custom) 2]
+		if {$Values($type,paper,format) eq "_Custom_"} {
+			set units [lindex $Values($type,paper,custom) 2]
 		} else {
-			set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,format)] 3]
+			set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,paper,format)] 3]
 		}
 		foreach {dir row col} {top 1 1 bottom 3 1 left 1 5 right 3 5} {
 			set text [string toupper $dir 0 0]
 			if {$Info($type,paper,$dir) == 0} {
 				set Info($type,paper,$dir) [DefaultMargin $dir $type $units]
 			}
-			ttk::label $w.margins.l$dir -text [set mc::$text]
-			ttk::entry $w.margins.s$dir -width 5 -textvariable [namespace current]::Info($type,paper,$dir)
+			ttk::label $w.margins.l$dir -text [set [namespace parent]::mc::$text]
+			ttk::entry $w.margins.s$dir -width 5 -textvariable [namespace parent]::Info($type,paper,$dir)
 			::validate::entryFloat $w.margins.s$dir
 			$w.margins.s$dir configure -validatecommand [namespace code [list MarginChanged $w $dir %P]]
 			grid $w.margins.l$dir -row $row -column $col -sticky w
@@ -1825,16 +2261,17 @@ proc ConfigureSetup {w} {
 	}
 
 	ttk::radiobutton $w.orient.potrait \
-		-text $mc::Potrait \
+		-text [set [namespace parent]::mc::Potrait] \
 		-value Potrait \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,orientation)
+		-variable [namespace parent]::Values($type,paper,orientation) \
+		;
 	ttk::radiobutton $w.orient.landscape \
-		-text $mc::Landscape \
+		-text [set [namespace parent]::mc::Landscape] \
 		-value Landscape \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,orientation)
-
+		-variable [namespace parent]::Values($type,paper,orientation) \
+		;
 	grid $w.orient.potrait		-row 1 -column 1 -sticky w
 	grid $w.orient.landscape	-row 1 -column 3 -sticky w
 	grid rowconfigure $w.orient {0 3} -minsize $::theme::padding
@@ -1842,16 +2279,17 @@ proc ConfigureSetup {w} {
 	grid columnconfigure $w.orient 2 -minsize [expr {2*$::theme::padding}]
 
 	ttk::radiobutton $w.just.left \
-		-text $mc::Left \
+		-text [set [namespace parent]::mc::Left] \
 		-value 0 \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,justification)
+		-variable [namespace parent]::Values($type,paper,justification) \
+		;
 	ttk::radiobutton $w.just.even \
-		-text $mc::Even \
+		-text [set [namespace parent]::mc::Even] \
 		-value 1 \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,justification)
-
+		-variable [namespace parent]::Values($type,paper,justification) \
+		;
 	grid $w.just.left -row 1 -column 1 -sticky w
 	grid $w.just.even -row 1 -column 3 -sticky w
 	grid rowconfigure $w.just {0 3} -minsize $::theme::padding
@@ -1859,23 +2297,27 @@ proc ConfigureSetup {w} {
 	grid columnconfigure $w.just 2 -minsize [expr {2*$::theme::padding}]
 
 	ttk::radiobutton $w.columns.one \
-		-text $mc::One \
+		-text [set [namespace parent]::mc::One] \
 		-value 1 \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,columns)
+		-variable [namespace parent]::Values($type,paper,columns) \
+		;
 	ttk::radiobutton $w.columns.two \
-		-text $mc::Two \
+		-text [set [namespace parent]::mc::Two] \
 		-value 2 \
 		-command [namespace code [list RefreshPreview $w]] \
-		-variable [namespace current]::Values($type,columns)
-
+		-variable [namespace parent]::Values($type,paper,columns) \
+		;
 	grid $w.columns.one -row 1 -column 1 -sticky w
 	grid $w.columns.two -row 1 -column 3 -sticky w
 	grid rowconfigure $w.columns {0 3} -minsize $::theme::padding
 	grid columnconfigure $w.columns {0 4} -minsize $::theme::padding
 	grid columnconfigure $w.columns 2 -minsize [expr {2*$::theme::padding}]
 
-	ttk::button $w.reset -text $mc::ResetDefaults -command [namespace code [list ResetPaper $w]]
+	ttk::button $w.reset \
+		-text [set [namespace parent]::mc::ResetDefaults] \
+		-command [namespace code [list ResetPaper $w]] \
+		;
 
 	if {$type eq "tex"} {
 		grid $w.doc			-row  1 -column 1 -sticky ew -columnspan 3
@@ -1908,22 +2350,157 @@ proc ConfigureSetup {w} {
 }
 
 
-proc SelectDocumentStyle {w} {
-	variable Info
-	variable Values
-	variable DocumentStyle
+proc ResetPaper {w} {
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+	variable [namespace parent]::Defaults
+	variable [namespace parent]::DocumentStyle
 
-	set n [lsearch $Info(tex,document-styles) $Info(tex,document)]
-	set Values(tex,document) [lindex $DocumentStyle $n]
+	set type $Values(Type)
+
+	array set Values [array get Defaults $type,paper,*]
+
+	set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
+	set Info($type,paper,units) [GetUnits]
+
+	if {$type eq "tex"} {
+		set n [lsearch $DocumentStyle $Values(tex,paper,document)]
+		set Info(tex,paper,document) [lindex $Info(tex,paper,document-styles) $n]
+	}
+
+	set wantedUnits [lindex $Paper($type) $n 3]
+	foreach dir {top bottom left right} {
+		set Values($type,paper,$dir) 0
+		set Info($type,paper,$dir) [DefaultMargin $dir $type $wantedUnits]
+	}
+
+	ConfigureWidgets $w reset
+}
+
+
+proc MarginChanged {w dir value} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set ok [SizeChanged $w $value]
+	set type $Values(Type)
+
+	if {$ok && $Info($type,paper,$dir) != $value} {
+		set Values($type,paper,$dir) [string trim $value]
+		after cancel $Info(after)
+		set Info(after) [after 250 [namespace code [list RefreshPreview $w]]]
+	}
+
+	return $ok
+}
+
+
+proc GetUnits {} {
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set type $Values(Type)
+
+	if {$Values($type,paper,format) eq "_Custom_"} {
+		set units $Info($type,paper,units,textvar)
+	} else {
+		set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,paper,format)]]
+	}
+
+	return $units
+}
+
+
+proc SizeChanged {w value} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+
+	set units [GetUnits]
+
+	if {$units eq "in"} {
+		set ok [::validate::validateFloat $value]
+	} else {
+		set ok [::validate::validateUnsigned $value 5]
+	}
+
+	if {$ok} {
+		after cancel $Info(after)
+		set Info(after) [after 250 [namespace code [list RefreshPreview $w]]]
+	}
+
+	return $ok
+}
+
+
+proc ConfigureWidgets {w {action {}}} {
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+	variable [namespace parent]::Defaults
+
+	set type $Values(Type)
+	set n [lsearch -exact $Info($type,formats) [$w.paper.cbformat get]]
+	if {$n == [llength $Paper($type)]} {
+		set Values($type,paper,format) _Custom_
+	} else {
+		set Values($type,paper,format) [lindex $Paper($type) $n 0]
+	}
+
+	if {$Info(useCustom)} {
+		if {$Values($type,paper,format) eq "_Custom_"} {
+			$w.paper.width configure -state normal
+			$w.paper.height configure -state normal
+			$w.paper.units configure -state readonly
+			set wantedUnits $Info($type,paper,units,textvar)
+		} else {
+			foreach name {width height units} {
+				$w.paper.$name configure -state disabled
+			}
+			set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+			set wantedUnits [lindex $Paper($type) $n 3]
+		}
+
+		if {$action ne "reset"} {
+			set origUnits $Info($type,paper,units)
+			set Info($type,paper,units) $wantedUnits
+
+			if {$action ne "paper" && $Values($type,paper,format) eq "_Custom_"} {
+				foreach attr {width height} {
+					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
+				}
+			}
+
+			foreach attr {top bottom left right} {
+				if {$Values($type,paper,$attr) == 0} {
+					set Info($type,paper,$attr) [DefaultMargin $attr $type $wantedUnits]
+				} else {
+					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
+					set Values($type,paper,$attr) \
+						[MapUnits $Values($type,paper,$attr) $origUnits $wantedUnits]
+				}
+			}
+		}
+
+		$w.margins configure -text "[set [namespace parent]::mc::Margin] ($wantedUnits)"
+	} else {
+		lassign $Defaults(pdf,margins,$Values($type,paper,format)) \
+			Info($type,paper,top) Info($type,paper,bottom) \
+			Info($type,paper,left) Info($type,paper,right)
+	}
+
+	RefreshPreview $w
 }
 
 
 proc RefreshPreview {w} {
-	variable Paper
-	variable Colors
-	variable Random
-	variable Values
-	variable Info
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Colors
+	variable [namespace parent]::Random
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
 
 	if {[winfo width $w.c] <= 1} { return }
 	bind $w.c <Configure> {}
@@ -1939,18 +2516,18 @@ proc RefreshPreview {w} {
 		}
 	}
 
-	if {$Values($type,format) eq "_Custom_"} {
+	if {$Values($type,paper,format) eq "_Custom_"} {
 		set pw $Info($type,paper,width)
 		set ph $Info($type,paper,height)
 		set units $Info($type,paper,units)
-		set Values($type,custom) [list $pw $ph $units]
+		set Values($type,paper,custom) [list $pw $ph $units]
 	} else {
-		set n [lsearch -index 0 $Paper($type) $Values($type,format)]
+		set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
 		lassign [lindex $Paper($type) $n] id pw ph units
 	}
 	if {[llength $pw] == 0} { set pw 0 }
 	if {[llength $ph] == 0} { set ph 0 }
-	if {$Values($type,orientation) eq "Landscape"} {
+	if {$Values($type,paper,orientation) eq "Landscape"} {
 		set tmp $pw; set pw $ph; set ph $tmp
 	}
 
@@ -1995,7 +2572,7 @@ proc RefreshPreview {w} {
 	if {$lx0 >= $lx1 || $ly0 >= $ly1} { lassign {0 0 0 0} lx0 lx1 ly0 ly1 }
 	set tn [expr {min(2, (min($x1 - $x0, $y1 - $y0)*0.05))}]
 
-	if {$Values($type,columns) == 1 || $lx1 == 0} {
+	if {$Values($type,paper,columns) == 1 || $lx1 == 0} {
 		lassign {0 0 0 0 0} rx0 rx1 ry0 ry1
 		set dirs {l}
 	} else {
@@ -2012,7 +2589,7 @@ proc RefreshPreview {w} {
 		set dirs {l r}
 	}
 	set coords [list $lx0 $ly0 $lx1 $ly1]
-	if {$Values($type,columns) == 2} { lappend coords $rx0 $ry0 $rx1 $ry1 }
+	if {$Values($type,paper,columns) == 2} { lappend coords $rx0 $ry0 $rx1 $ry1 }
 
 	$w.c coords shadow [expr {$x0 + $tn}] [expr {$y0 + $tn}] [expr {$x1 + $tn}] [expr {$y1 + $tn}]
 	$w.c coords paper $x0 $y0 $x1 $y1
@@ -2023,7 +2600,7 @@ proc RefreshPreview {w} {
 	set i 0
 	if {$lx1 > $lx0} {
 		set n [llength $Random]
-		set even $Values($type,justification)
+		set even $Values($type,paper,justification)
 		foreach {x0 y0 x1 y1} $coords {
 			set dx [expr {$x1 - $x0}]
 			set xt 0.0
@@ -2043,69 +2620,6 @@ proc RefreshPreview {w} {
 		}
 		if {$i % $n == 0} { incr i 10 }
 	}
-}
-
-
-proc GetUnits {} {
-	variable Paper
-	variable Info
-	variable Values
-
-	set type $Values(Type)
-
-	if {$Values($type,format) eq "_Custom_"} {
-		set units $Info($type,paper,units,textvar)
-	} else {
-		set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,format)]]
-	}
-
-	return $units
-}
-
-
-proc SizeChanged {w value} {
-	variable Info
-	variable Values
-
-	set units [GetUnits]
-
-	if {$units eq "in"} {
-		set ok [::validate::validateFloat $value]
-	} else {
-		set ok [::validate::validateUnsigned $value 5]
-	}
-
-	if {$ok} {
-		after cancel $Info(after)
-		set Info(after) [after 250 [namespace code [list RefreshPreview $w]]]
-	}
-
-	return $ok
-}
-
-
-proc MarginChanged {w dir value} {
-	variable Info
-	variable Values
-
-	set ok [SizeChanged $w $value]
-	set type $Values(Type)
-
-	if {$ok && $Info($type,paper,$dir) != $value} {
-		set Values($type,paper,$dir) [string trim $value]
-		after cancel $Info(after)
-		set Info(after) [after 250 [namespace code [list RefreshPreview $w]]]
-	}
-
-	return $ok
-}
-
-
-proc Round {x units} {
-	set n [round $x]
-	if {$units ne "in"} { return $n }
-	if {abs($n - $x) < 0.02} { return $n }
-	return [expr {round($x*100.0)/100.0}]
 }
 
 
@@ -2129,107 +2643,16 @@ proc MapUnits {value from to} {
 }
 
 
-proc ConfigureWidgets {w {action {}}} {
-	variable Paper
-	variable Values
-	variable Info
-	variable Defaults
-
-	set type $Values(Type)
-	set n [lsearch -exact $Info($type,formats) [$w.paper.cbformat get]]
-	if {$n == [llength $Paper($type)]} {
-		set Values($type,format) _Custom_
-	} else {
-		set Values($type,format) [lindex $Paper($type) $n 0]
-	}
-
-	if {$Info(useCustom)} {
-		if {$Values($type,format) eq "_Custom_"} {
-			$w.paper.width configure -state normal
-			$w.paper.height configure -state normal
-			$w.paper.units configure -state readonly
-			set wantedUnits $Info($type,paper,units,textvar)
-		} else {
-			foreach name {width height units} {
-				$w.paper.$name configure -state disabled
-			}
-			set n [lsearch -index 0 $Paper($type) $Values($type,format)]
-			set wantedUnits [lindex $Paper($type) $n 3]
-		}
-
-		if {$action ne "reset"} {
-			set origUnits $Info($type,paper,units)
-			set Info($type,paper,units) $wantedUnits
-
-			if {$action ne "paper" && $Values($type,format) eq "_Custom_"} {
-				foreach attr {width height} {
-					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
-				}
-			}
-
-			foreach attr {top bottom left right} {
-				if {$Values($type,paper,$attr) == 0} {
-					set Info($type,paper,$attr) [DefaultMargin $attr $type $wantedUnits]
-				} else {
-					set Info($type,paper,$attr) [MapUnits $Info($type,paper,$attr) $origUnits $wantedUnits]
-					set Values($type,paper,$attr) \
-						[MapUnits $Values($type,paper,$attr) $origUnits $wantedUnits]
-				}
-			}
-		}
-
-		$w.margins configure -text "$mc::Margin ($wantedUnits)"
-	} else {
-		lassign $Defaults(pdf,margins,$Values($type,format)) \
-			Info($type,paper,top) Info($type,paper,bottom) \
-			Info($type,paper,left) Info($type,paper,right)
-	}
-
-	RefreshPreview $w
-}
-
-
-proc ResetPaper {w} {
-	variable Paper
-	variable Info
-	variable Values
-	variable Defaults
-	variable DocumentStyle
-	variable SetupPaper
-
-	set type $Values(Type)
-
-	array set Values [array get SetupPaper $type,*]
-
-	set n [lsearch -index 0 $Paper($type) $Values($type,format)]
-	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
-	set Info($type,paper,units) [GetUnits]
-
-	if {$type eq "tex"} {
-		set n [lsearch $DocumentStyle $Values(tex,document)]
-		set Info(tex,document) [lindex $Info(tex,document-styles) $n]
-	}
-
-	set wantedUnits [lindex $Paper($type) $n 3]
-	foreach dir {top bottom left right} {
-		set Values($type,paper,$dir) 0
-		set Info($type,paper,$dir) [DefaultMargin $dir $type $wantedUnits]
-	}
-
-	ConfigureWidgets $w reset
-}
-
-
 proc DefaultMargin {dir type units} {
-	variable Defaults
-	variable Values
-	variable Paper
-	variable Info
+	variable [namespace parent]::Defaults
+	variable [namespace parent]::Values
+	variable [namespace parent]::Paper
+	variable [namespace parent]::Info
 
-	if {[lsearch -index 0 $Paper($type) $Values($type,format)] == -1} {
+	if {[lsearch -index 0 $Paper($type) $Values($type,paper,format)] == -1} {
 		set format A4
 	} else {
-		set format $Values($type,format)
+		set format $Values($type,paper,format)
 	}
 
 	lassign $Defaults(pdf,margins,$format) m(top) m(bottom) m(left) m(right)
@@ -2237,9 +2660,338 @@ proc DefaultMargin {dir type units} {
 }
 
 
+proc SelectDocumentStyle {w} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+	variable [namespace parent]::DocumentStyle
+
+	set n [lsearch $Info(tex,paper,document-styles) $Info(tex,paper,document)]
+	set Values(tex,paper,document) [lindex $DocumentStyle $n]
+}
+
+} ;# namespace page
+
+
+namespace eval encoding {
+
+proc BuildFrame {w tab encList} {
+	variable [namespace parent]::Info
+	variable [namespace parent]::Values
+	variable [namespace parent]::Defaults
+
+	if {[winfo exists $w.$tab]} { return }
+	set type $Values(Type)
+
+	if {$type eq "pdf" && $Info(pdf-encoding)} {
+		set encoding $Info(encoding)
+	} else {
+		set encoding $Values($type,encoding)
+	}
+
+	if {$Values(Type) ne "scidb"} { set currentEncoding $encoding } else { set currentEncoding {} }
+	::encoding::build $w.$tab $currentEncoding iso8859-1 [winfo width $w] 0 $encList
+	if {$type eq "pdf" && $Info(pdf-encoding)} {
+		::encoding::activate $w.$tab iso8859-1
+	} else {
+		::encoding::select $w.$tab $encoding
+	}
+	bind $w.$tab <<TreeControlSelect>> [namespace code [list SetEncoding %d]]
+	grid $w.$tab -row 0 -column 0 -sticky nsew
+	grid columnconfigure $w 0 -weight 1
+	grid rowconfigure $w 0 -weight 1
+}
+
+
+proc SetEncoding {encoding} {
+	variable Values
+	variable Info
+
+	if {[llength $encoding]} {
+		if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
+			set Info(encoding) $encoding
+		} else {
+			set Values($Values(Type),encoding) $encoding
+		}
+	}
+}
+
+} ;# namespace encoding
+
+
+proc ConfigureTListbox {list height} {
+	set n [$list.selection curselection]
+	set linespace [$list.selection cget -linespace]
+	set nrows [expr {$height/$linespace}]
+	if {$nrows > [$list.selection cget -height]} {
+		$list.selection configure -height $nrows
+	}
+	$list.selection see 0
+	after idle [list $list.selection see]
+}
+
+
+# XXX remove
+proc BuildOptionsFrame_pdf {w} {
+	variable DiagramStyles
+	variable DiagramSizes
+	variable Values
+	variable Info
+
+	ttk::frame $w
+
+	### Notation + Figurine #################################################################
+	BuildNotationAndFigurineList $w
+
+	### Font Handling #######################################################################
+	ttk::labelframe $w.options -text $mc::FontHandling
+	ttk::checkbutton $w.options.builtin \
+		-text $mc::UseBuiltinFonts \
+		-variable [namespace current]::Values(pdf,fonts,builtin) \
+		-command [namespace code UseBuiltinFonts]
+	ttk::checkbutton $w.options.embed \
+		-text $mc::EmebedTruetypeFonts \
+		-variable [namespace current]::Values(pdf,fonts,embed)
+	grid $w.options.builtin -column 1 -row 1 -sticky w
+	grid $w.options.embed   -column 1 -row 3 -sticky w
+	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.options {0 2 4} -minsize $::theme::padding
+
+if {0} {
+	### Diagram Style #######################################################################
+	ttk::checkbutton $w.use \
+		-text $mc::UseImagesForDiagram \
+		-variable [namespace current]::Values(pdf,diagram,use-images) \
+		;
+	ttk::labelframe $w.diagram -labelwidget $w.use
+	SearchDiagramStyles
+	set selbox [::tlistbox $w.diagram.selection \
+		-height [llength $DiagramStyles] \
+		-borderwidth 1 \
+		-disabledbackground [::theme::getBackgroundColor] \
+		-disabledforeground [::theme::getDisabledColor] \
+	]
+	$selbox addcol image -id icon
+	$selbox addcol text -id text -expand yes
+	set Info(diagram:list) {}
+	foreach entry $DiagramStyles {
+		lassign $entry sample style set sizes
+		catch {
+			set img [image create photo -file $sample]
+			set name "$style - $set"
+			$selbox insert [list $img $name]
+			lappend Info(diagram:list) [list [list $style $set] $sizes]
+		}
+	}
+	$selbox resize
+	set f [ttk::frame $w.diagram.sizes -borderwidth 0]
+	ttk::label $f.size -text "$mc::Size (pt):"
+	grid $f.size -column 1 -row 1
+	set col 2
+	foreach size $DiagramSizes {
+		ttk::radiobutton $f.$size \
+			-text [expr {int(double($size)*0.12 + 0.5)}] \
+			-variable [namespace current]::Values(pdf,diagram,image-size) \
+			-value $size \
+			;
+		grid columnconfigure $f $col -minsize $::theme::padding
+		grid $f.$size -column [incr col] -row 1
+		incr col
+	}
+	ToggleUseImages $selbox $f
+	$w.use configure -command [namespace code [list ToggleUseImages $selbox $f]]
+	bind $selbox <<ListboxSelect>> [namespace code [list UseDiagram %d $f]]
+	grid columnconfigure $f $col -minsize $::theme::padding
+	grid $w.diagram.selection -column 1 -row 1 -sticky ew
+	grid $w.diagram.sizes -column 1 -row 3 -sticky w
+	grid columnconfigure $w.diagram {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.diagram {0 4} -minsize $::theme::padding
+	grid rowconfigure $w.diagram 2 -minsize [expr {2*$::theme::padding}]
+}
+
+	### Layout ##############################################################################
+	grid $w.figurines -row 1 -column 1 -sticky ns
+	grid $w.notation  -row 1 -column 3 -sticky ns
+	grid $w.options   -row 1 -column 5 -sticky nsew
+#	grid $w.diagram   -row 3 -column 5 -sticky nsew
+	grid rowconfigure $w {0 2} -minsize $::theme::padding
+	grid rowconfigure $w {1} -weight 1
+	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
+
+	return $w
+}
+
+
+proc HideTab {nb tab} { $nb tab $tab -state hidden }
+proc ShowTab {nb tab} { $nb tab $tab -state normal }
+
+
+proc Select {nb index} {
+	variable PdfEncodingList
+	variable Types
+	variable Info
+	variable Values
+
+	if {[llength $index] == 0} { return }	;# ignore double click
+	set Values(Type) [lindex $Types $index]
+	set savemode 0
+
+	switch $Values(Type) {
+		scidb {
+			HideTab $nb $nb.options
+			HideTab $nb $nb.tags
+			HideTab $nb $nb.page_pdf
+			HideTab $nb $nb.page_tex
+			HideTab $nb $nb.style
+			HideTab $nb $nb.notation
+			HideTab $nb $nb.diagram
+			HideTab $nb $nb.comment
+			HideTab $nb $nb.annotation
+			HideTab $nb $nb.encoding
+			set var $::menu::mc::ScidbBases
+			set ext .sci
+		}
+
+		scid {
+			ShowTab $nb $nb.tags
+			HideTab $nb $nb.options
+			HideTab $nb $nb.page_pdf
+			HideTab $nb $nb.page_tex
+			HideTab $nb $nb.style
+			HideTab $nb $nb.notation
+			HideTab $nb $nb.diagram
+			HideTab $nb $nb.comment
+			HideTab $nb $nb.annotation
+			if {$Values(Type) eq "scidb"} {
+				ShowTab $nb $nb.encoding
+			} else {
+				HideTab $nb $nb.encoding
+			}
+			set var $::menu::mc::ScidBases
+			set ext {.si4 .si3}
+		}
+
+		pgn {
+			ShowTab $nb $nb.options
+			HideTab $nb $nb.tags
+			HideTab $nb $nb.page_pdf
+			HideTab $nb $nb.page_tex
+			HideTab $nb $nb.style
+			HideTab $nb $nb.notation
+			HideTab $nb $nb.diagram
+			HideTab $nb $nb.comment
+			HideTab $nb $nb.annotation
+			if {$Values(Type) eq "scidb"} {
+				ShowTab $nb $nb.encoding
+			} else {
+				HideTab $nb $nb.encoding
+			}
+			set var $::menu::mc::PGNFiles
+			set ext {.pgn .pgn.gz .zip}
+			set savemode 1
+		}
+
+		pdf {
+			ShowTab $nb $nb.style
+			ShowTab $nb $nb.page_pdf
+			ShowTab $nb $nb.notation
+			ShowTab $nb $nb.comment
+			HideTab $nb $nb.options
+			HideTab $nb $nb.tags
+			HideTab $nb $nb.page_tex
+			HideTab $nb $nb.diagram
+			HideTab $nb $nb.annotation
+			if {$Values(Type) eq "scidb" || $Info(pdf-encoding)} {
+				ShowTab $nb $nb.encoding
+			} else {
+				HideTab $nb $nb.encoding
+			}
+			set Info(useCustom) 1
+			set Info(build-style) 1
+			set var $mc::PdfFiles
+			set ext .pdf
+			::beta::notYetImplemented $nb tex
+		}
+
+		html {
+			ShowTab $nb $nb.style
+			ShowTab $nb $nb.notation
+			ShowTab $nb $nb.comment
+			HideTab $nb $nb.options
+			HideTab $nb $nb.tags
+			HideTab $nb $nb.page_pdf
+			HideTab $nb $nb.page_tex
+			HideTab $nb $nb.diagram
+			HideTab $nb $nb.annotation
+			HideTab $nb $nb.encoding
+			set Info(build-style) 1
+			set var $mc::HtmlFiles
+			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
+			::beta::notYetImplemented $nb html
+		}
+
+		tex {
+			ShowTab $nb $nb.page_tex
+			ShowTab $nb $nb.style
+			ShowTab $nb $nb.notation
+			ShowTab $nb $nb.diagram
+			ShowTab $nb $nb.comment
+			ShowTab $nb $nb.annotation
+			HideTab $nb $nb.options
+			HideTab $nb $nb.tags
+			HideTab $nb $nb.page_pdf
+			HideTab $nb $nb.encoding
+			set Info(build-style) 1
+			set Info(useCustom) 0
+			set var $mc::TeXFiles
+			set ext {.tex .ltx}
+		}
+	}
+
+	::dialog::fsbox::useSaveMode $Info(fsbox) $savemode
+
+	foreach what {tags page_pdf page_tex style notation diagram comment annotation} {
+		if {[$nb tab $nb.$what -state] eq "normal"} {
+			if {$Info(build-$what)} {
+				${what}::BuildFrame $nb.$what
+				set Info(build-$what) 0
+			}
+		}
+	}
+
+	foreach what {style notation diagram comment annotation} {
+		if {[$nb tab $nb.$what -state] eq "normal"} {
+			${what}::Setup $nb.$what
+		}
+	}
+
+	if {[$nb tab $nb.encoding -state] eq "normal"} {
+		if {$Values(Type) eq "pdf"} { set encTab pdf } else { set encTab pgn }
+		if {$Info(build-encoding-$encTab)} {
+			if {$Values(Type) eq "pdf"} { set encList $PdfEncodingList } else { set encList {} }
+			bind $nb.encoding <Configure> \
+				+[namespace code [list encoding::BuildFrame $nb.encoding $encTab $encList]]
+			set Info(build-encoding-$encTab) 0
+		} elseif {[winfo exists $nb.encoding.$encTab]} {
+			if {$Values(Type) eq "pdf" && $Info(pdf-encoding)} {
+				set encoding $Info(encoding)
+			} else {
+				set encoding $Values($Values(Type),encoding)
+			}
+			raise $nb.encoding.$encTab
+			focus $nb.encoding.$encTab
+			::encoding::select $nb.encoding.$encTab $encoding
+		}
+	}
+
+	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
+	if {$Values(Type) eq "pdf" && $Values(pdf,fonts,builtin)} { style::UseBuiltinFonts }
+}
+
+
 proc DoExport {parent dlg file} {
 	variable PdfEncodingList
 	variable PdfEncodingMap
+	variable Styles
 	variable Info
 	variable Values
 	variable Tags
@@ -2258,11 +3010,11 @@ proc DoExport {parent dlg file} {
 		return
 	}
 
-	if {$Values(Type) ne "scidb"} {
-		set encoding $Values($Values(Type),encoding)
-	} else {
-		set encoding $Info(encoding)
+	switch $Values(Type) {
+		scidb - tex { set encoding "utf-8" }
+		default		{ set encoding $Values($Values(Type),encoding) }
 	}
+
 	if {$Values(Type) eq "pdf"} {
 		if {$encoding ni $PdfEncodingList} {
 			$dlg.top.nb select $dlg.top.nb.encoding
@@ -2273,7 +3025,7 @@ proc DoExport {parent dlg file} {
 	}
 
 	if {$Values(Type) eq "pgn"} {
-		set excludeGamesWithIllegalMoves $Values(pgn,exclude_games_with_illegal_moves)
+		set excludeGamesWithIllegalMoves $Values(pgn,flag,exclude_games_with_illegal_moves)
 	} else {
 		set excludeGamesWithIllegalMoves 0
 	}
@@ -2296,125 +3048,69 @@ proc DoExport {parent dlg file} {
 			}
 		}
 
-		pdf {
-			# Values(pdf,encoding)
-			# Values(pdf,embed)
-			# Values(pdf,builtin)
-			# Values(pdf,format)
-			# Values(pdf,paper,top)
-			# Values(pdf,paper,bottom)
-			# Values(pdf,paper,left)
-			# Values(pdf,paper,right)
-			# Values(pdf,custom)
-			# Values(pdf,orientation)
-			# Values(pdf,justification)
-			# Values(pdf,columns)
-			# Values(pdf,use-images)
-			# Values(pdf,diagram)
-			# Values(pdf,imageSize)
-			# Values(pdf,notation)
-			# Values(pdf,figurines)
-
-			# pdf,BasicStyle
-			# pdf,BasicStyle,GameInfo
-			# pdf,BasicStyle,GameText
-			# pdf,BasicStyle,GameText,Moves
-			# pdf,BasicStyle,GameText,Moves,MainLine
-			# pdf,BasicStyle,GameText,Moves,Variation
-			# pdf,BasicStyle,GameText,Moves,Subvariation
-			# pdf,BasicStyle,GameText,Moves,Figurines
-			# pdf,BasicStyle,GameText,Moves,Symbols
-			# pdf,BasicStyle,GameText,Comments
-			# pdf,BasicStyle,GameText,Comments,MainLine
-			# pdf,BasicStyle,GameText,Comments,Variation
-			# pdf,BasicStyle,GameText,Comments,Subvariation
-			# pdf,BasicStyle,GameText,Result
-			# pdf,BasicStyle,Diagram
-		}
+		html { return }
+		pdf  { return }
 	
 		tex {
-			# tex,BasicStyle
-			# tex,BasicStyle,GameInfo
-			# tex,BasicStyle,GameText
-			# tex,BasicStyle,GameText,Moves
-			# tex,BasicStyle,GameText,Moves,MainLine
-			# tex,BasicStyle,GameText,Moves,Variation
-			# tex,BasicStyle,GameText,Moves,Subvariation
-			# tex,BasicStyle,GameText,Comments
-			# tex,BasicStyle,GameText,Comments,MainLine
-			# tex,BasicStyle,GameText,Comments,Variation
-			# tex,BasicStyle,GameText,Comments,Subvariation
-			# tex,BasicStyle,GameText,Result
-
-			# Values(tex,notation)
-			# Values(tex,figurines)
-
-			# column style for main line moves (default)
-			#-------------------------------------------
-			# list of language codes for comments
-			#-------------------------------------------
-			# show all diagrams from white's perspective
-			# show all diagrams from black's perspective
-			# show diagram movers (default)
-			# board size (10pt, 15pt, 20pt, 30pt) (default is 20pt)
-			#-------------------------------------------
-			# map unknown NAG's to comments (en,de,it,es) (default is current language)
-			# map all NAG's to comments (en,de,it,es) (default is current language)
-
-			# NAG mapping:
-			# --------------
-			# 7 -> 8
-			# --------------
-			# 11 -> 10
-			# 12 -> 10
-			# --------------
-			# 22/23 -> 176
-			# --------------
-			# 24/25 -> 164
-			# 26/27 -> 164
-			# 28/29 -> 164
-			# --------------
-			# 30/31 -> 175
-			# 32/33 -> 175
-			# 34/35 -> 175
-			# --------------
-			# 36/37 -> 179
-			# 38/39 -> 179
-			# --------------
-			# 40/41 -> 178
-			# --------------
-			# 44/45 -> 181
-			# --------------
-			# 48/49 -> 167
-			# 50/51 -> 167
-			# 52/53 -> 167
-			# --------------
-			# 54/55 -> 183		(60/61 -> 184)
-			# 56/57 -> 183		(62/63 -> 184)
-			# 58/59 -> 183		(64/65 -> 184)
-			# --------------
-			# 130/131 -> 180
-			# 132/133 -> 180
-			# 134/135 -> 180
-			# --------------
-			# 151/152 -> 182
-
-			set families {}
-			foreach style [array names Values tex,BasicStyle,*] {
-				lassign $Values($style) family size weight slant color
-				set name [string range $style 4 end]
-				append preamble "\\def\\$name\${{$family} \\$size {$weight} {$slant} {$color}}"
+			foreach style [array names Styles tex,BasicStyle,*] {
+				if {[llength $Styles($style)] > 1} {
+					lassign $Styles($style) family size weight slant color
+					set name [string range $style 15 end]
+					append preamble "\\def\\$name\${{$family} {$size} {$weight} {$slant} {$color}}\n"
+				} else {
+					set preamble "\\def\\MainlineStyle{[expr {$Styles($style) ? "C" : "B"}]}\n"
+				}
 			}
 			
-			set preamble "
-				\\def\\DocumentStyle{[string tolower $Values(tex,document)]}
-				\\def\\Hyphenation{$Values(tex,primary-lang)}
-				\\let\\FontSize\\[lindex $Values(tex,BasicStyle) 1]
-				\\def\\PageStyle{$Values(tex,format)}
-				\\def\\ColumnStyle{[expr {$Values(tex,columns) == 1 ? onecolumn : twocolumn}]}
-				\\def\\Orientation{$Values(tex,orientation)}
-				\\let\\Justification\\$Values(tex,justification)
+			append preamble "\
+				\\def\\DocumentStyle{[string tolower $Values(tex,paper,document)]}
+				\\def\\Hyphenation{$Values(tex,comments,hyphenation)}
+				\\let\\FontSize\\[lindex $Styles(tex,BasicStyle) 1]
+				\\def\\PageStyle{$Values(tex,paper,format)}
+				\\def\\ColumnStyle{[expr {$Values(tex,paper,columns) == 1 ? "onecolumn" : "twocolumn"}]}
+				\\def\\Orientation{$Values(tex,paper,orientation)}
+				\\let\\Justification\\$Values(tex,paper,justification)
+				\\def\\NotationStyle{$Values(tex,moves,notation)}
+				\\let\\ShowCoordinates\\$Values(tex,diagram,show-coordinates)
+				\\let\\ShowMovers\\$Values(tex,diagram,show-movers)
+				\\let\\ShowArrows\\$Values(tex,diagram,show-arrows)
+				\\let\\ShowMarkers\\$Values(tex,diagram,show-markers)
+				\\let\\BoardSize\\$Values(tex,diagram,board-size)
 			"
+
+			if {$Values(tex,diagram,use-images)} {
+				append preamble \
+					"\\def\\ImageStyle{$Values(tex,diagram,image-style) $Values(tex,diagram,image-size)}\n"
+			}
+			if {[string length $Values(tex,moves,figurines)] <= 3} {
+				append preamble "\\def\\UseLetters{"
+				foreach piece $::font::figurines($Values(tex,moves,figurines)) {
+					# convert into UTF-8 sequence; e.g. "\u05d4\u05de" --> \xD7\x94\xd7\x9e
+					append preamble "\\utf8{[::scidb::misc::utf8sequence $piece]}"
+				}
+				append preamble "}\n"
+			}
+			return
+
+			# use nag mapping:			$Values(tex,nag,mapping)			{{24 183} {25 183}}
+			# use nag language:			$Values(tex,nag,lang)
+			# force nag mapping:			$Values(tex,nag,all)
+			# use notation style:		$Values(tex,moves,notation)
+			# use comment languages:	$Values(tex,comments,languages)	{{* 1} {} {} {} {}}
+			# use diagram hiding:		$Values(tex,diagram,hide)
+			# use diagram perspective: $Values(tex,diagram,perspective)	white
+
+			set cmd [list ::scidb::view::export \
+				$Info(base) \
+				$Info(view) \
+				$file \
+				$nagMapping \
+				$annotationLanguage \
+				$allAnnotations \
+				$commentLanguages \
+				$hideDiagrams \
+				$diagramPerspective \
+			]
 		}
 	}
 
@@ -2426,15 +3122,15 @@ proc DoExport {parent dlg file} {
 	destroy $dlg
 
 	set cmd [list ::scidb::view::export \
-					$Info(base) \
-					$Info(view) \
-					$file \
-					$Info($Values(Type),flags) \
-					$append \
-					$encoding \
-					$excludeGamesWithIllegalMoves \
-					$tagList \
-				]
+		$Info(base) \
+		$Info(view) \
+		$file \
+		$Info($Values(Type),flags) \
+		$append \
+		$encoding \
+		$excludeGamesWithIllegalMoves \
+		$tagList \
+	]
 	set options [list -message $mc::ExportDatabase -log 0]
 	lappend args [namespace current]::Log {}
 
@@ -2480,12 +3176,27 @@ proc CloseView {} {
 
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Values
+	options::writeItem $chan [namespace current]::Styles
 	options::writeItem $chan [namespace current]::Tags no
 }
 
 ::options::hookWriter [namespace current]::WriteOptions
 
 namespace eval icon {
+namespace eval 13x13 {
+
+set checked [image create photo -data {
+	R0lGODlhDQANABEAACwAAAAADQANAIEAAAB/f3/f39////8CJ4yPNgHtLxYYtNbIbJ146jZ0
+	gzeCIuhQ53NJVNpmryZqsYDnemT3BQA7
+}]
+
+set unchecked [image create photo -data {
+	R0lGODlhDQANABEAACwAAAAADQANAIEAAAB/f3/f39////8CIYyPNgHtLxYYtNbIrMZTX+l9
+	WThwZAmSppqGmADHcnRaBQA7
+}]
+
+} ;# namespace 13x13
+
 namespace eval 32x32 {
 
 set IconPDF [image create photo -data {
