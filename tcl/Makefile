@@ -58,6 +58,7 @@ SOURCES = \
 	widgets/entrybuttonbox.tcl \
 	widgets/roundbox.tcl \
 	widgets/countrybox.tcl \
+	widgets/languagebox.tcl \
 	widgets/eventmodebox.tcl \
 	widgets/eventtypebox.tcl \
 	widgets/fideidbox.tcl \
