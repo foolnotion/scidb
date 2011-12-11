@@ -13,19 +13,19 @@
 MAKEFLAGS += --no-print-directory
 
 all: Makefile.in
-	@$(MAKE) -C engines
-	@if [ $$? != 0 ]; then exit 1; fi
+#	@$(MAKE) -C engines
+#	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
 
 depend:
-	@$(MAKE) -C engines depend
+#	@$(MAKE) -C engines depend
 	@$(MAKE) -C src depend
 	@$(MAKE) -C tcl depend
 
 clean:
-	@$(MAKE) -C engines clean
+#	@$(MAKE) -C engines clean
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tcl clean
 
