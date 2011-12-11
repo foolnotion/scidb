@@ -132,6 +132,7 @@
 ::menu::mc::Help						"&Aiuto"
 
 ::menu::mc::FileOpen					"A&pri"
+::menu::mc::FileOpenURL				"Open &URL" ;# NEW
 ::menu::mc::FileOpenRecent			"Apri Re&cente"
 ::menu::mc::FileNew					"&Nuovo"
 ::menu::mc::FileExport				"E&sporta..."
@@ -969,6 +970,7 @@
 ::export::mc::AllAnnotation				"All annotations" ;# NEW
 ::export::mc::UseColumnStyle				"Use column style" ;# NEW
 ::export::mc::MainlineStyle				"Main Line Style" ;# NEW
+::export::mc::HideVariations				"Hide variations" ;# NEW
 
 ::export::mc::PdfFiles						"File PDF"
 ::export::mc::HtmlFiles						"File HTML"

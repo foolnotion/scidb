@@ -494,7 +494,7 @@ Macros::doRegister(Environment& env)
 	env.bindMacro(new GenericAssignmentToken("\\xdef",			::performXdef));
 
 	env.bindMacro(new GenericExpandableToken(::Csname, Func(&Macros::performCsname, this)));
-	m_endcsname = env.bindMacro(new GenericFinalToken(::Endcsname, ::performEndcsname));
+	m_endcsname = Package::bindMacro(env, new GenericFinalToken(::Endcsname, ::performEndcsname));
 }
 
 // vi:set ts=3 sw=3:

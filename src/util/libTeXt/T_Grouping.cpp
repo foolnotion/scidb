@@ -134,7 +134,7 @@ void
 Grouping::doRegister(Environment& env)
 {
 	m_begingroup =
-	env.bindMacro(new GenericFinalToken("\\begingroup",	Func(&Grouping::performBegingroup, this)));
+	bindMacro(env, new GenericFinalToken("\\begingroup",	Func(&Grouping::performBegingroup, this)));
 	env.bindMacro(new GenericFinalToken("\\endgroup",		Func(&Grouping::performEndgroup, this)));
 	env.bindMacro(new GenericFinalToken("\\uptoken", 		::performUpToken));
 	env.bindMacro(new GenericFinalToken("\\uplevel", 		::performUplevel));

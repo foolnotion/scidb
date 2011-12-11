@@ -17,6 +17,9 @@
 // ======================================================================
 
 #include "T_Package.h"
+#include "T_Environment.h"
+
+#include "m_assert.h"
 
 
 using namespace TeXt;
@@ -74,6 +77,16 @@ Package::finish(Environment& env)
 {
 	if (m_isRegistered)
 		doFinish(env);
+}
+
+
+Token::Type
+Package::bindMacro(Environment& env, Token* token)
+{
+	M_REQUIRE(token);
+
+	env.bindMacro(token);
+	return token->type();
 }
 
 // vi:set ts=3 sw=3:

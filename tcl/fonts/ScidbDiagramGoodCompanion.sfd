@@ -1,23 +1,23 @@
 SplineFontDB: 1.0
-FontName: GC2004D
-FullName: GC2004D
-FamilyName: GC2004D
+FontName: ScidbDiagramGoodCompanion
+FullName: Scidb Diagram Good Companion
+FamilyName: Scidb Diagram Good Companion
 Weight: Book
-Copyright: GC2004D a diagram chess font by Linda&Rocky Â©2004
-Version:  4.2.6  4/28/04
+Copyright: GC2004D a diagram chess font by Linda&Rocky ©2004
+Version: 4.2.6  4/28/04
 ItalicAngle: 0
 UnderlinePosition: -100
 UnderlineWidth: 20
 Ascent: 1600
 Descent: 400
 Order2: 1
-XUID: [1021 555 146130107 8815836]
-FSType: 1
+XUID: [1021 555 146130107 14445406]
+FSType: 0
 OS2Version: 0
 OS2_WeightWidthSlopeOnly: 0
 OS2_UseTypoMetrics: 1
 CreationTime: 1083773814
-ModificationTime: 1083773814
+ModificationTime: 1323564159
 PfmFamily: 81
 TTFWeight: 400
 TTFWidth: 5
@@ -65,7 +65,7 @@ EndTtf
 TtfTable: maxp 32
 !!*'"!3H8T!%%[G!!!!#!!iQi!"&]+!3uW%!!*'#
 EndTtf
-LangName: 1033 "" "" "Regular" "Fontographer 4.2.6 GC2004D" "" " 4.2.6  4/28/04" 
+LangName: 1033 "" "" "Regular" "" "" " 4.2.6  4/28/04" 
 Encoding: UnicodeBmp
 UnicodeInterp: none
 NameList: Adobe Glyph List
@@ -73,6 +73,7 @@ DisplaySize: -24
 AntiAlias: 1
 FitToEm: 1
 WinInfo: 63 21 13
+TeXData: 1 0 0 1048576 524288 349525 719847 1048576 349525 783286 444596 497025 792723 393216 433062 380633 303038 157286 324010 404750 52429 2506097 1059062 262144
 BeginChars: 65550 173
 StartChar: .notdef
 Encoding: 65536 -1 0

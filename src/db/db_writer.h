@@ -70,16 +70,10 @@ public:
 	static unsigned const Flag_Use_Shredder_FEN							= 1 << 22;
 	static unsigned const Flag_Convert_Lost_Result_To_Comment		= 1 << 23;
 	static unsigned const Flag_Append_Mode_To_Event_Type				= 1 << 24;
-	static unsigned const Flag_Comment_To_Html								= 1 << 25;
+	static unsigned const Flag_Comment_To_Html							= 1 << 25;
 	static unsigned const Flag_Use_ChessBase_Format						= 1 << 26;
 	static unsigned const Flag_Use_Scidb_Import_Format					= 1 << 27;
 	static unsigned const Flag_LAST											= Flag_Use_Scidb_Import_Format;
-
-	static unsigned const Option_Show_Diagram_From_White				= 1 << 0;
-	static unsigned const Option_Show_Diagram_From_Black				= 1 << 1;
-	static unsigned const Option_Hide_Diagram								= 1 << 2;
-	static unsigned const Option_Show_Mover								= 1 << 3;
-	static unsigned const Option_Column_Style								= 1 << 4;
 
 	Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding);
 

@@ -79,6 +79,7 @@ set UnusualAnnotation	"Unusual annotations"
 set AllAnnotation			"All annotations"
 set UseColumnStyle		"Use column style"
 set MainlineStyle			"Main Line Style"
+set HideVariations		"Hide variations"
 
 set PdfFiles				"PDF Files"
 set HtmlFiles				"HTML Files"
@@ -363,25 +364,75 @@ array set DefaultTags {
 	White/BlackTitle	1
 }
 
-set NagMapping {
-	{   8 0 { 7 }				{} }
-	{  10 0 { 11 12 }			{} }
-	{ 164 1 { 24 26 28 }		{} }
-	{ 167 1 { 48 50 52 }		{} }
-	{ 175 1 { 30 32 34 }		{} }
-	{ 176 1 { 22 }				{} }
-	{ 178 1 { 40 }				{} }
-	{ 179 1 { 36  38 }		{} }
-	{ 180 1 { 130 132 134 }	{} }
-	{ 181 1 { 44 }				{} }
-	{ 182 1 { 151 }			{} }
-	{ 183 1 { 54 56 58 }		{ 184 { 60 62 64 } } }
+array set NagMapping {
+	skak {
+		{   8   0 { 7 }				{} }
+		{  10   0 { 11 12 }			{} }
+		{  13   0 {}					{} }
+		{  14   0 {}					{} }
+		{  15   0 {}					{} }
+		{  16   0 {}					{} }
+		{  17   0 {}					{} }
+		{  18   0 {}					{} }
+		{  19   0 {}					{} }
+		{ 140   0 {}					{} }
+		{ 142   0 {}					{} }
+		{ 145   0 {}					{} }
+		{ 146   0 {}					{} }
+		{ 147   0 {}					{} }
+		{ 148   0 {}					{} }
+		{ 150   0 {}					{} }
+		{ 153   0 {}					{} }
+		{ 154   0 {}					{} }
+		{ 157   0 {}					{} }
+		{ 158   0 {}					{} }
+		{ 159   0 {}					{} }
+		{ 160   0 {}					{} }
+		{ 163   0 {}					{} }
+		{ 164 165 { 24 26 28 }		{} }
+		{ 165   0 { 25 27 29 }		{} }
+		{ 166   0 {}					{} }
+		{ 167 168 { 48 50 52 }		{} }
+		{ 168   0 { 49 51 53 }		{} }
+		{ 170   0 {}					{} }
+		{ 171   0 {}					{} }
+		{ 172   0 {}					{} }
+		{ 175   0 { 30 32 34 }		{ 31 33 35 } }
+		{ 176   0 { 22 }				{ 23 } }
+		{ 178   0 { 40 }				{ 41 } }
+		{ 179   0 { 36  38 }			{ 37 39 } }
+		{ 180   0 { 130 132 134 }	{ 131 133 135 } }
+		{ 181   0 { 44 }				{ 45 } }
+		{ 182   0 { 151 }				{ 152 } }
+		{ 183 184 { 54 56 58 }		{ 55 57 59 } }
+		{ 184   0 { 60 62 64 }		{ 61 63 65 } }
+	}
 }
 
 array set Tags [array get DefaultTags]
 
 variable Types	{scidb scid pgn pdf html tex}
 variable Info
+
+# NOTE: order must coincide with flags in db::DocumentWriter
+array set Options {
+	diagram_from_whites_perspective	0
+	diagram_from_blacks_perspective	1
+	diagram_hide							2
+	diagram_show_mover					3
+	diagram_show_coordinates			4
+
+	moves_notation_short					5
+	moves_notation_long					6
+	moves_notation_algebraic			7
+	moves_notation_correspondence		8
+	moves_notation_telegraphic			9
+
+	annotation_map_unusual				10
+	annotation_map_all					11
+
+	comment_all								12
+}
 
 # NOTE: order must coincide with flags in db::Writer/db::PgnWriter.
 array set Flags {
@@ -448,6 +499,7 @@ array set Defaults {
 
 	pdf,moves,notation								short
 	pdf,moves,figurines								graphic
+	pdf,moves,hide-variations						0
 
 	pdf,diagram,board-size							160
 	pdf,diagram,hide									0
@@ -494,6 +546,7 @@ array set Defaults {
 
 	tex,moves,notation								short
 	tex,moves,figurines								graphic
+	tex,moves,hide-variations						0
 
 	tex,nag,mapping									{}
 	tex,nag,lang										{}
@@ -521,6 +574,7 @@ array set Defaults {
 
 	html,moves,notation								short
 	html,moves,figurines								graphic
+	html,moves,hide-variations						0
 
 	html,comments,languages							{{* 1} {} {} {} {}}
 	html,comments,hyphenation						en
@@ -671,9 +725,14 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 }
 
 
+proc Pow2 {x} { return [expr {1 << $x}] }
+
+namespace export Pow2
+
+
 namespace eval options {
 
-proc Pow2 {x} { return [expr {1 << $x}] }
+namespace import [namespace parent]::Pow2
 
 
 proc Exclude {type flag} {
@@ -992,12 +1051,24 @@ proc BuildFrame {w} {
 	grid columnconfigure $w.style {0 2} -minsize $::theme::padding
 	trace add variable [namespace parent]::Info(column-style) write [namespace code UpdateColumnStyle]
 
+	ttk::labelframe $w.options -text [::mc::stripAmpersand [set [namespace parent]::mc::OptionsSetup]]
+	ttk::checkbutton $w.options.hide \
+		-text [set [namespace parent]::mc::HideVariations] \
+		-variable [namespace parent]::Info(hide-variations) \
+		-command [namespace code UpdateVariationFlag] \
+		;
+	grid $w.options.hide -row 1 -column 1
+	grid rowconfigure $w.options {0 2} -minsize $::theme::padding
+	grid rowconfigure $w.options {2} -weight 1
+	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
+
 	### Layout ##############################################################################
-	grid $w.figurines -row 1 -column 1 -sticky ns
-	grid $w.notation  -row 1 -column 3 -sticky ns
-	grid $w.style     -row 1 -column 5 -sticky ns
-	grid rowconfigure $w {0 2} -minsize $::theme::padding
-	grid rowconfigure $w {1} -weight 1
+	grid $w.figurines -row 1 -column 1 -sticky ns -rowspan 3
+	grid $w.notation  -row 1 -column 3 -sticky ns -rowspan 3
+	grid $w.style     -row 1 -column 5 -sticky nswe
+	grid $w.options   -row 3 -column 5 -sticky nswe
+	grid rowconfigure $w {0 2 4} -minsize $::theme::padding
+	grid rowconfigure $w {1 3} -weight 1
 	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
 
 	return $w
@@ -1031,7 +1102,13 @@ proc SetNotation {w} {
 	set Values($type,moves,notation) $notation
 
 	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
-	if {$lang eq "graphic"} { set n N } else { set n [lindex $::font::figurines($lang) 4] }
+	if {$lang ne "graphic"} {
+		set n [lindex $::font::figurines($lang) 4]
+	} elseif {[info exists ::font::figurines($::mc::langID)]} {
+		set n [lindex $::font::figurines($::mc::langID) 4]
+	} else {
+		set n N
+	}
 
 	switch $notation {
 		short				{ $w.notation.sample.text configure -text "1.e4 ${n}f6" }
@@ -1052,6 +1129,14 @@ proc UpdateColumnStyle {args} {
 }
 
 
+proc UpdateVariationFlag {} {
+	variable [namespace parent]::Values
+	variable [namespace parent]::Info
+
+	set Values($Values(Type),moves,hide-variations) $Info(hide-variations)
+}
+
+
 proc Setup {pane} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::Info
@@ -1069,6 +1154,7 @@ proc Setup {pane} {
 	$pane.notation.list.selection select $index
 
 	set Info(column-style) $Styles($type,BasicStyle,GameText,Moves,MainLine,ColumnStyle)
+	set Info(hide-variations) $Values($type,moves,hide-variations)
 }
 
 } ;# namespace notation
@@ -1436,37 +1522,41 @@ proc BuildFrame {w} {
 	set row 1
 	set spacing1 {0}
 	set spacing2 {}
+	set alliedList {}
 
-	foreach group $NagMapping {
-		lassign $group to black from related
-		ttk::label $f.to$to \
-			-text "[set [namespace parent]::mc::MapTo]: $::annotation::mc::Nag($to) (\$$to)"
-			;
-		if {![info exists bold]} {
-			set font [$f.to$to cget -font]
-			if {[llength $font] == 0} { set font TkDefaultFont }
-			set bold [list [font configure $font -family]  [font configure $font -size] bold]
-		}
-		$f.to$to configure -font $bold
-		grid $f.to$to -row $row -column 1 -sticky ew
-		incr row
-		foreach nag $from {
-			set Info(mapping,$nag) 0
-			ttk::checkbutton $f.from$nag \
-				-text "$::annotation::mc::Nag($nag) (\$$nag)" \
-				-variable [namespace parent]::Info(mapping,$nag) \
-				-onvalue $to \
-				-offvalue 0 \
-				-command [namespace code [list MappingSelected $nag $group]] \
+	foreach group $NagMapping(skak) {
+		lassign $group to allied from related
+		if {[llength $from] && $to ni $alliedList} {
+			if {$allied} { lappend alliedList $allied }
+			ttk::label $f.to$to \
+				-text "[set [namespace parent]::mc::MapTo]: $::annotation::mc::Nag($to) (\$$to)"
 				;
-			bind $f.from$nag <FocusIn> [namespace code [list $scrolled see %W]]
-			lappend spacing1 $row
-			grid $f.from$nag -row [incr row] -column 1 -sticky ew
+			if {![info exists bold]} {
+				set font [$f.to$to cget -font]
+				if {[llength $font] == 0} { set font TkDefaultFont }
+				set bold [list [font configure $font -family]  [font configure $font -size] bold]
+			}
+			$f.to$to configure -font $bold
+			grid $f.to$to -row $row -column 1 -sticky ew
 			incr row
+			foreach nag $from {
+				set Info(mapping,$nag) 0
+				ttk::checkbutton $f.from$nag \
+					-text "$::annotation::mc::Nag($nag) (\$$nag)" \
+					-variable [namespace parent]::Info(mapping,$nag) \
+					-onvalue $to \
+					-offvalue 0 \
+					-command [namespace code [list MappingSelected $nag $group]] \
+					;
+				bind $f.from$nag <FocusIn> [namespace code [list $scrolled see %W]]
+				lappend spacing1 $row
+				grid $f.from$nag -row [incr row] -column 1 -sticky ew
+				incr row
+			}
+			lappend spacing2 $row
+			incr row
+			incr index
 		}
-		lappend spacing2 $row
-		incr row
-		incr index
 	}
 
 	lappend spacing1 [lindex $spacing2 end]
@@ -1515,26 +1605,32 @@ proc UpdateLanguage {} {
 proc MappingSelected {nag group} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::Info
+	variable [namespace parent]::NagMapping
 
 	set type $Values(Type)
-	lassign $group to black from related
+	lassign $group to allied from related
 
-	if {$black} {
-		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $to }
-		set Info(mapping,[expr {$nag + 1}]) $val
+	if {$allied} {
+		set n [lsearch -integer -index 0 $NagMapping(skak) $allied]
+		lassign [lindex $NagMapping(skak) $n] toA alliedA fromA relatedA
+		set n [lsearch -integer $from $nag]
+		set nagA [lindex $fromA $n]
+		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $allied }
+		set Info(mapping,$nagA) $val
+
+		if {[llength $relatedA]} {
+			set i [lsearch -integer $fromA $nagA]
+			set nagR [lindex $relatedA $i]
+			if {$Info(mapping,$nagA) == 0} { set val 0 } else { set val $toA }
+			set Info(mapping,$nagR) $val
+		}
 	}
 
 	if {[llength $related]} {
 		set i [lsearch -integer $from $nag]
-		set rto [lindex $related 0]
-		set rnag [lindex $related 1 $i]
-		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $rto }
-		set Info(mapping,$rnag) $val
-
-		if {$black} {
-			if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $rto }
-			set Info(mapping,[expr {$rnag + 1}]) $val
-		}
+		set nagR [lindex $related $i]
+		if {$Info(mapping,$nag) == 0} { set val 0 } else { set val $to }
+		set Info(mapping,$nagR) $val
 	}
 
 	set type $Values(Type)
@@ -2730,97 +2826,6 @@ proc ConfigureTListbox {list height} {
 }
 
 
-# XXX remove
-proc BuildOptionsFrame_pdf {w} {
-	variable DiagramStyles
-	variable DiagramSizes
-	variable Values
-	variable Info
-
-	ttk::frame $w
-
-	### Notation + Figurine #################################################################
-	BuildNotationAndFigurineList $w
-
-	### Font Handling #######################################################################
-	ttk::labelframe $w.options -text $mc::FontHandling
-	ttk::checkbutton $w.options.builtin \
-		-text $mc::UseBuiltinFonts \
-		-variable [namespace current]::Values(pdf,fonts,builtin) \
-		-command [namespace code UseBuiltinFonts]
-	ttk::checkbutton $w.options.embed \
-		-text $mc::EmebedTruetypeFonts \
-		-variable [namespace current]::Values(pdf,fonts,embed)
-	grid $w.options.builtin -column 1 -row 1 -sticky w
-	grid $w.options.embed   -column 1 -row 3 -sticky w
-	grid columnconfigure $w.options {0 2} -minsize $::theme::padding
-	grid rowconfigure $w.options {0 2 4} -minsize $::theme::padding
-
-if {0} {
-	### Diagram Style #######################################################################
-	ttk::checkbutton $w.use \
-		-text $mc::UseImagesForDiagram \
-		-variable [namespace current]::Values(pdf,diagram,use-images) \
-		;
-	ttk::labelframe $w.diagram -labelwidget $w.use
-	SearchDiagramStyles
-	set selbox [::tlistbox $w.diagram.selection \
-		-height [llength $DiagramStyles] \
-		-borderwidth 1 \
-		-disabledbackground [::theme::getBackgroundColor] \
-		-disabledforeground [::theme::getDisabledColor] \
-	]
-	$selbox addcol image -id icon
-	$selbox addcol text -id text -expand yes
-	set Info(diagram:list) {}
-	foreach entry $DiagramStyles {
-		lassign $entry sample style set sizes
-		catch {
-			set img [image create photo -file $sample]
-			set name "$style - $set"
-			$selbox insert [list $img $name]
-			lappend Info(diagram:list) [list [list $style $set] $sizes]
-		}
-	}
-	$selbox resize
-	set f [ttk::frame $w.diagram.sizes -borderwidth 0]
-	ttk::label $f.size -text "$mc::Size (pt):"
-	grid $f.size -column 1 -row 1
-	set col 2
-	foreach size $DiagramSizes {
-		ttk::radiobutton $f.$size \
-			-text [expr {int(double($size)*0.12 + 0.5)}] \
-			-variable [namespace current]::Values(pdf,diagram,image-size) \
-			-value $size \
-			;
-		grid columnconfigure $f $col -minsize $::theme::padding
-		grid $f.$size -column [incr col] -row 1
-		incr col
-	}
-	ToggleUseImages $selbox $f
-	$w.use configure -command [namespace code [list ToggleUseImages $selbox $f]]
-	bind $selbox <<ListboxSelect>> [namespace code [list UseDiagram %d $f]]
-	grid columnconfigure $f $col -minsize $::theme::padding
-	grid $w.diagram.selection -column 1 -row 1 -sticky ew
-	grid $w.diagram.sizes -column 1 -row 3 -sticky w
-	grid columnconfigure $w.diagram {0 2} -minsize $::theme::padding
-	grid rowconfigure $w.diagram {0 4} -minsize $::theme::padding
-	grid rowconfigure $w.diagram 2 -minsize [expr {2*$::theme::padding}]
-}
-
-	### Layout ##############################################################################
-	grid $w.figurines -row 1 -column 1 -sticky ns
-	grid $w.notation  -row 1 -column 3 -sticky ns
-	grid $w.options   -row 1 -column 5 -sticky nsew
-#	grid $w.diagram   -row 3 -column 5 -sticky nsew
-	grid rowconfigure $w {0 2} -minsize $::theme::padding
-	grid rowconfigure $w {1} -weight 1
-	grid columnconfigure $w {0 2 4 6} -minsize $::theme::padding
-
-	return $w
-}
-
-
 proc HideTab {nb tab} { $nb tab $tab -state hidden }
 proc ShowTab {nb tab} { $nb tab $tab -state normal }
 
@@ -2991,6 +2996,9 @@ proc Select {nb index} {
 proc DoExport {parent dlg file} {
 	variable PdfEncodingList
 	variable PdfEncodingMap
+	variable NagMapping
+	variable Options
+	variable Flags
 	variable Styles
 	variable Info
 	variable Values
@@ -3090,27 +3098,65 @@ proc DoExport {parent dlg file} {
 				}
 				append preamble "}\n"
 			}
-			return
 
-			# use nag mapping:			$Values(tex,nag,mapping)			{{24 183} {25 183}}
-			# use nag language:			$Values(tex,nag,lang)
-			# force nag mapping:			$Values(tex,nag,all)
-			# use notation style:		$Values(tex,moves,notation)
-			# use comment languages:	$Values(tex,comments,languages)	{{* 1} {} {} {} {}}
-			# use diagram hiding:		$Values(tex,diagram,hide)
-			# use diagram perspective: $Values(tex,diagram,perspective)	white
+			set options 0
+			set flags 0
 
-			set cmd [list ::scidb::view::export \
+			switch $Values(tex,diagram,perspective) {
+				white	{ set options [expr {$options | [Pow2 $Options(diagram_from_whites_perspective)]}] }
+				black	{ set options [expr {$options | [Pow2 $Options(diagram_from_blacks_perspective)]}] }
+			}
+			if {$Values(tex,diagram,hide)} {
+				set options [expr {$options | [Pow2 $Options(diagram_hide)]}]
+			}
+			if {$Values(pdf,diagram,show-movers)} {
+				set options [expr {$options | [Pow2 $Options(diagram_show_mover)]}]
+			}
+			if {$Values(pdf,diagram,show-coordinates)} {
+				set options [expr {$options | [Pow2 $Options(diagram_show_coordinates)]}]
+			}
+			if {$Styles(tex,BasicStyle,GameText,Moves,MainLine,ColumnStyle)} {
+				set flags [expr {$flags | [Pow2 $Flags(pgn,column_style)]}]
+			}
+			if {[llength $Values(tex,nag,lang)]} {
+				set options [expr {$options | [Pow2 $Options(annotation_map_unusual)]}]
+			}
+			if {$Values(tex,nag,all)} {
+				set options [expr {$options | [Pow2 $Options(annotation_map_all)]}]
+			}
+			if {[lindex $Values(tex,comments,languages) 0 0] eq "all"} {
+				set options [expr {$options | [Pow2 $Options(comment_all)]}]
+			}
+			set options [expr {$options | [Pow2 $Options(moves_notation_$Values(tex,moves,notation))]}]
+
+			switch [lindex $Values(tex,comments,languages) 0 0] {
+				all - none	{ set comments {} }
+				default		{ set comments [lrange $Values(tex,comments,languages) 1 end] }
+			}
+
+			foreach pair $Values(tex,nag,mapping) {
+				lassign $pair from to
+				lappend map($to) $from
+			}
+			set nags {}
+			foreach group $NagMapping(skak) {
+				set nag [lindex $group 0]
+				if {[info exists map($nag)]} {
+					lappend nags [list $nag $map($nag)]
+				} else {
+					lappend nags $nag
+				}
+			}
+
+			set cmd [list ::scidb::view::print \
 				$Info(base) \
 				$Info(view) \
 				$file \
-				$nagMapping \
-				$annotationLanguage \
-				$allAnnotations \
-				$commentLanguages \
-				$hideDiagrams \
-				$diagramPerspective \
+				$options \
+				$nags \
+				[list	[lindex $Values(tex,comments,languages) 0 1] $comments] \
 			]
+			return
 		}
 	}
 

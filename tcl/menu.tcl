@@ -34,7 +34,7 @@ set Help						"&Help"
 
 set FileOpen				"&Open..."
 set FileOpenRecent		"Open &Recent"
-set FileOpenURL			"Open URL..."
+set FileOpenURL			"Open &URL..."
 set FileNew					"&New..."
 set FileExport				"E&xport..."
 set FileImport				"I&mport PGN files..."
@@ -340,12 +340,13 @@ proc dbNew {parent} {
 		[list $mc::AllScidbBases	{.sci .si4 .si3}] \
 	]
 	set result [::dialog::saveFile \
-				-parent $parent \
-				-filetypes $filetypes \
-				-geometry lastsize \
-				-defaultextension .sci \
-				-needencoding 1 \
-				-title [set [namespace current]::mc::NewFile] \
+		-parent $parent \
+		-filetypes $filetypes \
+		-geometry lastsize \
+		-defaultextension .sci \
+		-defaultencoding utf-8 \
+		-needencoding 1 \
+		-title [set [namespace current]::mc::NewFile] \
 	]
 
 	if {[llength $result]} {
@@ -366,12 +367,12 @@ proc dbOpen {parent} {
 		[list $mc::PGNArchives			{.zip}]                                  \
 	]
 	set result [::dialog::openFile \
-				-parent $parent \
-				-filetypes $filetypes \
-				-defaultextension .sci \
-				-needencoding 1 \
-				-geometry lastsize \
-				-title [set [namespace current]::mc::OpenFile] \
+		-parent $parent \
+		-filetypes $filetypes \
+		-defaultextension .sci \
+		-needencoding 1 \
+		-geometry lastsize \
+		-title [set [namespace current]::mc::OpenFile] \
 	]
 
 	if {[llength $result]} {
@@ -394,13 +395,13 @@ proc dbImport {parent} {
 	]
 	set title [set [namespace current]::mc::ImportFiles]
 	set result [::dialog::openFile \
-					-parent $parent \
-					-filetypes $filetypes \
-					-defaultextension .pgn \
-					-needencoding 1 \
-					-geometry lastsize \
-					-title $title \
-					-multiple yes \
+		-parent $parent \
+		-filetypes $filetypes \
+		-defaultextension .pgn \
+		-needencoding 1 \
+		-geometry lastsize \
+		-title $title \
+		-multiple yes \
 	]
 	
 	if {[llength $result]} {

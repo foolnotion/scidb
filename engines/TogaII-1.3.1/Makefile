@@ -21,10 +21,11 @@ clean:
 	rm -f *.o $(EXE)
 
 install:
-	install -m 755 -p $(EXE) $(SHAREDIR)/engines
+	@install -m 755 -d $(ENGINESDIR)
+	@install -m 755 -p $(EXE) $(ENGINESDIR)
 
 uninstall:
-	rm -f $(SHAREDIR)/engines/$(EXE)
+	@rm -f $(ENGINESDIR)/$(EXE)
 
 # general
 

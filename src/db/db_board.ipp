@@ -34,6 +34,8 @@
 
 namespace db {
 
+inline Board::Board() {}
+
 inline bool Board::isAttackedBy(unsigned color, Square square) const { return attacks(color, square);}
 
 inline color::ID Board::sideToMove() const		{ return color::ID(m_stm); }

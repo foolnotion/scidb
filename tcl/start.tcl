@@ -73,10 +73,99 @@ set options [file join [set [namespace parent]::dir::config] options.dat]
 } ;# namespace file
 
 proc updateThemes {} {
+	array set identifiers {
+		{} {
+			{Alpha|1295711284602|yellow.color|gregor}
+			{Antique|1263914483272|yellow.color|gregor}
+			{Apollo|1296050637190|yellow.color|gregor}
+			{Blue|1262882648418|yellow.color|gregor}
+			{Burly|1262881982561|yellow.color|gregor}
+			{Burnett|1228820485389|yellow.color|gregor}
+			{Fantasy|1228820514842|yellow.color|gregor}
+			{Glass|1243787890671|yellow.color|gregor}
+			{Glassy & Red|1250851039023|yellow.color|gregor}
+			{Goldenrod|1243765848112|yellow.color|gregor}
+			{Gray|1248527850611|yellow.color|gregor}
+			{José|1243683856813|yellow.color|gregor}
+			{Magnetic|1243762798722|yellow.color|gregor}
+			{Marble|1243532376507|yellow.color|gregor}
+			{Marmor|1296049745744|yellow.color|gregor}
+			{Mayan|1243775222632|yellow.color|gregor}
+			{Mayan|1244309428838|yellow.color|gregor}
+			{Modern Cheq|1244122899886|yellow.color|gregor}
+			{Phoenix|1296049187980|yellow.color|gregor}
+			{Sand|1228828282840|yellow.color|gregor}
+			{Scidb|1251901638256|yellow.color|gregor}
+			{Stone Floor|1244113337107|yellow.color|gregor}
+			{Stony Glass|1243792200845|yellow.color|gregor}
+			{Winboard|1228820514841|yellow.color|gregor}
+			{Wood|1262882557387|yellow.color|gregor}
+			{Woodgrain|1296150310528|yellow.color|gregor}
+		}
+		piece {
+			{Burly|1262881395698|yellow.color|gregor}
+			{Condal|1263914065014|yellow.color|gregor}
+			{Emerald|1244127333315|yellow.color|gregor}
+			{Glass|1243791877212|yellow.color|gregor}
+			{Goldenrod|1243765822627|yellow.color|gregor}
+			{Gray|1248527841922|yellow.color|gregor}
+			{Green|1243460196909|yellow.color|gregor}
+			{Lemon|1251901475461|yellow.color|gregor}
+			{Lemon|1227320554192|yellow.color|gregor}
+			{Mayan Red|1243775183896|yellow.color|gregor}
+			{Orange - Lemon|1243778153963|yellow.color|gregor}
+			{Sycomore|1244122254189|yellow.color|gregor}
+			{Winboard|1228820514952|yellow.color|gregor}
+			{Yellow|1296047348974|yellow.color|gregor}
+			{Yellow - Blue|1243787883127|yellow.color|gregor}
+		}
+		square {
+			{Apollo|1243715687066|yellow.color|gregor}
+			{Blue|1262882896027|yellow.color|gregor}
+			{Wood - Brown|1228820485412|yellow.color|gregor}
+			{Burly|1295711105525|yellow.color|gregor}
+			{Crater|1296048990606|yellow.color|gregor}
+			{Glass|1228820514871|yellow.color|gregor}
+			{Gray|1243532989423|yellow.color|gregor}
+			{Marble - Black&Beige|1243775151068|yellow.color|gregor}
+			{Marble - Black&Gray|1243712213706|yellow.color|gregor}
+			{Marble - Black&White|1243715852129|yellow.color|gregor}
+			{Marble - Blue|1243715888985|yellow.color|gregor}
+			{Marble - Classic|1296049694406|yellow.color|gregor}
+			{Marble - Red|1243715874135|yellow.color|gregor}
+			{Sand|1228820287277|yellow.color|gregor}
+			{Scidb|1251901586671|yellow.color|gregor}
+			{Stone|1243792087778|yellow.color|gregor}
+			{Stone Floor|1244113188050|yellow.color|gregor}
+			{Sycomore Gray|1244122565844|yellow.color|gregor}
+			{Sycomore|1243762745547|yellow.color|gregor}
+			{Winboard|1228820514851|yellow.color|gregor}
+			{Wood - Green|1244309414202|yellow.color|gregor}
+			{Wooden|1263914443955|yellow.color|gregor}
+			{Woodgrain|1296150231295|yellow.color|gregor}
+		}
+	}
+
 	foreach dir {{} piece square} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
-			catch { file copy -force $file $themesDir }
+			set path [file join $themesDir [file tail $file]]
+			if {[file exists $path]} {
+				set exisiting 0
+				set f [open $path r]
+				while {[gets $f line] >= 0} {
+					if {[string match *identifier* $line]} {
+						foreach id $identifiers($dir) {
+							if {[string match *$id* $line]} { set exisiting 1 }
+						}
+					}
+				}
+				if {!$exisiting} {
+					puts "Warning: Cannot overwrite $path"
+				}
+			} else {
+				catch { file copy -force $file $path }
+			}
 		}
 	}
 }

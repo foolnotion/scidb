@@ -121,6 +121,7 @@ proc Build {w args} {
 	}
 
 	::ttk::frame $w -class TListBoxFrame -takefocus 0 {*}$style
+	bind $w <FocusIn> { focus [tk_focusNext %W] }
 	if {[llength $style]} {
 		# "::ttk::frame $w -stlye <style>" does not work for any reason!
 		catch { $w configure -borderwidth [::ttk::style lookup $style -borderwidth] }

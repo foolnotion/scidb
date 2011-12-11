@@ -52,6 +52,7 @@ proc Build {w args} {
 	}
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
+	bind $w <FocusIn> { focus [tk_focusNext %W] }
 	::ttk::spinbox $w.__w__ \
 		-from 0 \
 		-to 4000 \

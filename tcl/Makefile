@@ -126,46 +126,58 @@ depend:
 	# nothing to do
 
 install: $(SCRIPT)
-	install -m 755 -d $(BINDIR)
-	install -m 755 -d $(SHAREDIR)
-	install -m 755 -d $(SHAREDIR)/pieces
-	install -m 755 -d $(SHAREDIR)/cursor
-	install -m 755 -d $(SHAREDIR)/flags
-	install -m 755 -d $(SHAREDIR)/lang
-	install -m 755 -d $(SHAREDIR)/lang/eco
-	install -m 755 -d $(SHAREDIR)/lang/nag
-	install -m 755 -d $(SHAREDIR)/photos
-	install -m 755 -d $(SHAREDIR)/photos
-	install -m 755 -d $(SHAREDIR)/textures
-	install -m 755 -d $(SHAREDIR)/themes
-	install -m 755 -d $(SHAREDIR)/themes/square
-	install -m 755 -d $(SHAREDIR)/themes/piece
-	install -m 755 -d $(SHAREDIR)/scripts
-	install -m 755 -d $(SHAREDIR)/pdf
-	install -m 755 -d $(SHAREDIR)/pdf/sets
-	install -m 755 -p $(SCRIPT) $(BINDIR)
-	install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
-	install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
-	install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
-	install -m 644 -p flags/*.png $(SHAREDIR)/flags
-	install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
-	install -m 644 -p lang/eco/*.tcl $(SHAREDIR)/lang/eco
-	install -m 644 -p lang/nag/*.tcl $(SHAREDIR)/lang/nag
-	install -m 644 -p themes/*.dat $(SHAREDIR)/themes
-	install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
-	install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
-	install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
-	for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
-		install -m 755 -d $(SHAREDIR)/photos/$$i;                     \
-		install -m 644 -p photos/$$i/* $(SHAREDIR)/photos/$$i;        \
+	@echo "Create directories"
+	@install -m 755 -d $(BINDIR)
+	@install -m 755 -d $(SHAREDIR)
+	@install -m 755 -d $(SHAREDIR)/pieces
+	@install -m 755 -d $(SHAREDIR)/cursor
+	@install -m 755 -d $(SHAREDIR)/flags
+	@install -m 755 -d $(SHAREDIR)/lang
+	@install -m 755 -d $(SHAREDIR)/lang/eco
+	@install -m 755 -d $(SHAREDIR)/lang/nag
+	@install -m 755 -d $(SHAREDIR)/photos
+	@install -m 755 -d $(SHAREDIR)/photos
+	@install -m 755 -d $(SHAREDIR)/textures
+	@install -m 755 -d $(SHAREDIR)/themes
+	@install -m 755 -d $(SHAREDIR)/themes/square
+	@install -m 755 -d $(SHAREDIR)/themes/piece
+	@install -m 755 -d $(SHAREDIR)/scripts
+	@install -m 755 -d $(SHAREDIR)/pdf
+	@install -m 755 -d $(SHAREDIR)/pdf/sets
+	@install -m 755 -p $(SCRIPT) $(BINDIR)
+	@echo "Install piece sets"
+	@install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
+	@echo "Install cursors"
+	@install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
+	@install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
+	@echo "Install flags"
+	@install -m 644 -p flags/*.png $(SHAREDIR)/flags
+	@echo "Install localizations"
+	@install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
+	@install -m 644 -p lang/eco/*.tcl $(SHAREDIR)/lang/eco
+	@install -m 644 -p lang/nag/*.tcl $(SHAREDIR)/lang/nag
+	@echo "Install board themes"
+	@install -m 644 -p themes/*.dat $(SHAREDIR)/themes
+	@install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
+	@install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
+	@echo "Install TeXt scripts"
+	@install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
+	@echo -n "Install player photos:"
+	@for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
+		echo -n " $$i";                                                \
+		install -m 755 -d $(SHAREDIR)/photos/$$i;                      \
+		install -m 644 -p photos/$$i/* $(SHAREDIR)/photos/$$i;         \
 	done
-	for i in dark lite tile; do                                              \
+	@echo ""
+	@echo "Install textures"
+	@for i in dark lite tile; do                                             \
 		for k in marble misc wood; do                                         \
 			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k;                    \
 			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
 		done;                                                                 \
 	done
-	for i in `ls pdf/sets/`; do                                        \
+	@echo "Install PDF images"
+	@for i in `ls pdf/sets/`; do                                       \
 		ip=pdf/sets/$$i;                                                \
 		install -m 755 -d $(SHAREDIR)/$$ip;                             \
 		for k in `ls $$ip`; do                                          \
@@ -179,6 +191,7 @@ install: $(SCRIPT)
 			done;                                                        \
 		done;                                                           \
 	done
+	@echo "Install fonts"
 	@if [ "`uname -s`" = "Darwin" ]; then                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                \
 			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
@@ -206,31 +219,44 @@ install: $(SCRIPT)
 	fi
 
 uninstall:
-	rm -f $(BINDIR)/$(SCRIPT)
-	for f in `ls pieces/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls cursor/*.xbm`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls lang/eco/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls lang/nag/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done
-	for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
-		for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;   \
+	@echo "Uninstall TeXt scripts"
+	@rm -f $(BINDIR)/$(SCRIPT)
+	@echo "Uninstall piece sets"
+	@for f in `ls pieces/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	@echo "Uninstall cursors"
+	@for f in `ls cursor/*.xbm`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls cursor/*.cur`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done
+	@echo "Uninstall flags"
+	@for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
+	@echo "Uninstall localizations"
+	@for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls lang/eco/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls lang/nag/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
+	@echo "Uninstall board themes"
+	@for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done
+	@for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done
+	@echo -n "Uninstall player photos:"
+	@for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
+		echo -n " $$i";                                                \
+		for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;    \
 	done
-	for d in `find $(SHAREDIR)/photos -type d -empty`; do rmdir $$d; done
-	for i in dark lite tile; do                \
+	@for d in `find $(SHAREDIR)/photos -type d -empty`; do rmdir $$d; done
+	@echo ""
+	@echo "Uninstall textures"
+	@for i in dark lite tile; do               \
 		for k in marble misc wood; do           \
 			for f in `ls textures/$$i/$$k/*`; do \
 				rm -f $(SHAREDIR)/$$f;            \
 			done;                                \
 		done;                                   \
 	done
-	for i in `ls pdf/sets/`; do                                   \
-		for k in `ls pdf/sets/$$i`; do                             \
+	@echo "Uninstall PDF images"
+	@for i in `ls pdf/sets/`; do                                  \
+		ip=pdf/sets/$$i;                                           \
+		for k in `ls $$ip`; do                                     \
 			kp=$$ip/$$k;                                            \
 			rm -f $(SHAREDIR)/$$kp/*.png $(SHAREDIR)/$$kp/*.jpg;    \
 			for j in `ls $$kp/pieces`; do                           \
@@ -239,14 +265,16 @@ uninstall:
 			done;                                                   \
 		done;                                                      \
 	done
-	# repeat 6 times (directory level is 6)
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+	@echo "Remove empty directories"
+	@# repeat 6 times (directory level is 6)
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+	@echo "Uninstall fonts"
 	@if [ "`uname -s`" = "Darwin" ]; then                                                  \
 		if [ "`id -u`" -eq 0 ]; then                                                        \
 			for f in `ls fonts/*.ttf`; do                                                    \

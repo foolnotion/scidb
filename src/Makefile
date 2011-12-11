@@ -67,24 +67,30 @@ TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move
 all: recursive cbh2si4 $(PROGRAM)
 
 install: recursive cbh2si4 $(PROGRAM)
-	install -m 755 -d $(BINDIR)
-	install -m 755 -d $(SHAREDIR)
-	install -m 755 -d $(SHAREDIR)/data
-	install -m 755 -d $(SHAREDIR)/scripts
-	install -m 755 -p $(PROGRAM) $(BINDIR)
-	install -m 755 -p cbh2si4 $(BINDIR)
-	install -m 644 -p data/eco.bin $(SHAREDIR)/data
-	install -m 644 -p data/*.* $(SHAREDIR)/data
-	install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
+	@echo "Create directories"
+	@install -m 755 -d $(BINDIR)
+	@install -m 755 -d $(SHAREDIR)
+	@install -m 755 -d $(SHAREDIR)/data
+	@install -m 755 -d $(SHAREDIR)/scripts
+	@install -m 755 -p $(PROGRAM) $(BINDIR)
+	@echo "Install executables"
+	@install -m 755 -p cbh2si4 $(BINDIR)
+	@echo "Install data files"
+	@install -m 644 -p data/eco.bin $(SHAREDIR)/data
+	@install -m 644 -p data/*.* $(SHAREDIR)/data
+	@install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
 
 uninstall:
-	rm -f $(BINDIR)/$(PROGRAM)
-	rm -f $(BINDIR)/cbh2si4
-	rm -f $(SHAREDIR)/scripts/plain.eXt
-	rm -f $(SHAREDIR)/data/eco.bin
-	for f in `ls data/*.*`; do rm -f $(SHAREDIR)/$$f; done
-	for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+	@echo "Uninstall executables"
+	@rm -f $(BINDIR)/$(PROGRAM)
+	@rm -f $(BINDIR)/cbh2si4
+	@echo "Uninstall data files"
+	@rm -f $(SHAREDIR)/scripts/plain.eXt
+	@rm -f $(SHAREDIR)/data/eco.bin
+	@for f in `ls data/*.*`; do rm -f $(SHAREDIR)/$$f; done
+	@echo "Remove empty directories"
+	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
+	@if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
 
 clean:
 	rm -f $(TARGETS) Makefile.bak

@@ -374,9 +374,9 @@ proc reset {w type args} {
 	if {$opts(-multiple)} { set mode extended } else { set mode single }
 	$Vars(widget:list:file) configure -selectmode $mode
 
-	foreach option {	multiple defaultextension filetypes fileencodings showhidden
-							sizecommand selectencodingcommand deletecommand renamecommand
-							okcommand cancelcommand initialfile} {
+	foreach option {	multiple defaultextension defaultencoding filetypes fileencodings
+							showhidden sizecommand selectencodingcommand deletecommand
+							renamecommand okcommand cancelcommand initialfile} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
@@ -537,6 +537,8 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		}
 	}
 
+	UpdateFileTypesState $w
+
 	if {[info exists Vars(widget:list:file)]} {
 		filelist::RefreshFileList $w
 	}
@@ -617,7 +619,7 @@ proc CheckEncoding {w file} {
 		if {[string length $Vars(encodingUser)] == 0} {
 			set Vars(encodingVar) $Vars(defaultencoding)
 
-			foreach {ext encoding} $Vars(fileencodings) {
+			foreach {ext enable encoding} $Vars(fileencodings) {
 				if {[string match *$ext $file]} {
 					if {[string length $Vars(encodingVar)] == 0} {
 						set Vars(encodingVar) $encoding
@@ -644,6 +646,19 @@ proc CheckFileEncoding {w} {
 }
 
 
+proc UpdateFileTypesState {w} {
+	variable ${w}::Vars
+
+	if {[llength $Vars(selectencodingcommand)]} {
+		set state disabled
+		foreach {ext enable encoding} $Vars(fileencodings) {
+			if {$ext in $Vars(extensions) && $enable} { set state normal }
+		}
+		$Vars(widget:encoding) configure -state $state
+	}
+}
+
+
 proc SelectFileTypes {w combo} {
 	variable ${w}::Vars
 
@@ -653,6 +668,7 @@ proc SelectFileTypes {w combo} {
 	set i [lsearch -index 0 -exact $Vars(filetypes) $selection]
 	set Vars(extensions) [lindex $Vars(filetypes) $i 1]
 
+	UpdateFileTypesState $w
 	SetFileTypes $w
 	filelist::RefreshFileList $w
 }

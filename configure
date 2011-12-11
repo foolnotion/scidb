@@ -198,6 +198,8 @@ array set subdir {
     expat   {}
 }
 
+set engines {{micromax MicroMax} {fruit TogaII-1.3.1}}
+
 set instableTkLibrary ""
 
 
@@ -991,11 +993,29 @@ proc checkGCC {cc} {
 }
 
 
+proc checkEngines {path} {
+    global engines
+
+    set list {}
+
+    foreach e $engines {
+        set exe [file join $path [lindex $e 0]]
+        if {[file exists $exe]} {
+            puts "    Engine $exe already exists (skipped)"
+        } else {
+            lappend list [lindex $e 1]
+        }
+    }
+
+    return $list
+}
+
+
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
 proc writeMakefile {{type ""}} {
-    global option defaults environment package compiler feature configure subdir tcl_platform
+    global option defaults environment package compiler feature configure subdir tcl_platform engines
 
     set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
     if {[llength $compiler(no-stack-protector)]} {
@@ -1043,14 +1063,16 @@ proc writeMakefile {{type ""}} {
     set option(PROGRAM) tkscidb$configure(program-suffix)
     set option(SCRIPT) scidb$configure(program-suffix)
 
-    foreach d {bin lib} {
+    foreach {d p} {bin bin lib lib engines games} {
         if {[info exists configure(${d}dir)]} {
             set dir $configure(${d}dir)
         } else {
-            set dir $configure(exec-prefix)/$d
+            set dir $configure(exec-prefix)/$p
         }
         set option([string toupper $d]DIR) $dir
     }
+
+    set option(ENGINES) [checkEngines $option(ENGINESDIR)]
 
     if {[info exists configure(mandir)]} {
         set dir $configure(mandir)
@@ -1183,6 +1205,7 @@ proc usage {rc} {
     puts ""
     puts "Fine tuning of the installation directories:"
     puts "  --bindir=DIR             user executables \[EPREFIX/bin\]"
+    puts "  --enginesdir=DIR         engines (executables) \[EPREFIX/games\]"
     puts "  --datadir=DIR            read-only architecture-independent data \[PREFIX/share\]"
     puts "  --libdir=DIR             object code libraries \[EPREFIX/lib\]"
     puts "  --mandir=DIR             man documentation \[PREFIX/man\]"
@@ -1322,6 +1345,7 @@ if {[string length $gxxVer]} {
      checkZlib
      checkZziplib
      checkExpat
+
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
          writeMakefile
      }

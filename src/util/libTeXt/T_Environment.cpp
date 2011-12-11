@@ -129,9 +129,10 @@ public:
 	TokenP newVariableToken(mstl::string const& name);
 	TokenP newVariableToken(mstl::string const& name, TokenP const& macro);
 
-	TokenType bindMacro(TokenP const& token, Value defaultValue);
+	void bindMacro(TokenP const& token, Value defaultValue);
 	TokenType bindMacro(mstl::string const& name, TokenP token, Value defaultValue);
 	void bindMacro(RefID refID, TokenP token, int uplevel);
+	void bindMacro(TokenP const& token, mstl::string const& value);
 	void bindVariable(RefID refID, TokenP const& token, unsigned nestingLevel, int uplevel);
 	void bindParameter(RefID refID, TokenP const& token);
 	void setupValue(RefID refID, Value value);
@@ -693,11 +694,19 @@ Environment::Impl::bindMacro(mstl::string const& name, TokenP token, Value defau
 
 
 inline
-Token::Type
+void
 Environment::Impl::bindMacro(TokenP const& token, Value defaultValue)
 {
 	M_REQUIRE(token);
-	return bindMacro(token->name(), token, defaultValue);
+	bindMacro(token->name(), token, defaultValue);
+}
+
+
+inline
+void
+Environment::Impl::bindMacro(TokenP const& token, mstl::string const& value)
+{
+	bindMacro(token->refID(), TokenP(new TextToken(value)), 0);
 }
 
 
@@ -1451,7 +1460,7 @@ Environment::upToken(RefID refID, unsigned nlevels)
 }
 
 
-Token::Type
+void
 Environment::bindMacro(TokenP const& token, Value defaultValue)
 {
 	M_REQUIRE(token);
@@ -1460,14 +1469,14 @@ Environment::bindMacro(TokenP const& token, Value defaultValue)
 	M_REQUIRE(!containsToken(token->name()));
 	M_REQUIRE(!containsToken(token->type()));
 
-	return m_impl->bindMacro(token, defaultValue);
+	m_impl->bindMacro(token, defaultValue);
 }
 
 
-Token::Type
+void
 Environment::bindMacro(Token* token, Value defaultValue)
 {
-	return bindMacro(TokenP(token), defaultValue);
+	bindMacro(TokenP(token), defaultValue);
 }
 
 
@@ -1504,6 +1513,14 @@ Environment::bindMacro(RefID refID, TokenP const& token, int uplevel)
 //	M_REQUIRE(token->name()[0] == Token::kEscapeChar);
 
 	m_impl->bindMacro(refID, token, uplevel);
+}
+
+
+void
+Environment::bindMacro(TokenP const& token, mstl::string const& value)
+{
+	M_REQUIRE(token->isBound());
+	return m_impl->bindMacro(token, value);
 }
 
 

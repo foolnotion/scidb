@@ -55,6 +55,8 @@ protected:
 	virtual void doRegister(Environment& env) = 0;
 	virtual void doFinish(Environment& env);
 
+	Token::Type bindMacro(Environment& env, Token* token);
+
 private:
 
 	Category			m_category;

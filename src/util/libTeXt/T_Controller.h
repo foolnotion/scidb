@@ -91,7 +91,7 @@ public:
 	Controller(	mstl::string const& searchDirs = mstl::string::empty_string,
 					ErrorMode errorMode = AbortMode,
 					LogP log = LogP());
-	~Controller();
+	virtual ~Controller();
 
 	Receptacle& receptacle();
 
@@ -108,6 +108,8 @@ public:
 	int processInput(	mstl::string const& inputPath,
 							mstl::string const& outputPath,
 							unsigned flags = 0);
+
+	virtual void finishProcessing();
 
 private:
 

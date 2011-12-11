@@ -650,22 +650,22 @@ Conditional::doRegister(Environment& env)
 	env.bindMacro(new GenCondTok("\\iftrue",		Func(&Conditional::performIftrue, this)));
 	env.bindMacro(new GenCondTok("\\ifx",			Func(&Conditional::performIfx, this)));
 	m_if =
-	env.bindMacro(new GenCondTok("\\if",			Func(&Conditional::performIf, this)));
+	bindMacro(env, new GenCondTok("\\if",			Func(&Conditional::performIf, this)));
 	m_ifCase =
-	env.bindMacro(new GenCondTok("\\ifcase",		Func(&Conditional::performIfcase, this)));
+	bindMacro(env, new GenCondTok("\\ifcase",		Func(&Conditional::performIfcase, this)));
 	env.bindMacro(new GenCondTok("\\ifequal",		Func(&Conditional::performIfequal, this)));
 	env.bindMacro(new GenCondTok("\\ifgreater",	Func(&Conditional::performIfgreater, this)));
 	env.bindMacro(new GenCondTok("\\iflower",		Func(&Conditional::performIflower, this)));
 
 	env.bindMacro(new GenericExpandableToken("\\unless",	Func(&Conditional::performUnless, this)));
 	m_else =
-	env.bindMacro(new GenericExpandableToken("\\else",		Func(&Conditional::performElse, this)));
+	bindMacro(env, new GenericExpandableToken("\\else",	Func(&Conditional::performElse, this)));
 //	m_or =
-//	env.bindMacro(new GenericExpandableToken("\\or",		Func(&Conditional::performOr, this)));
+//	bindMacro(env, new GenericExpandableToken("\\or",		Func(&Conditional::performOr, this)));
 	m_when =
-	env.bindMacro(new GenericExpandableToken("\\when",		Func(&Conditional::performWhen, this)));
+	bindMacro(env, new GenericExpandableToken("\\when",	Func(&Conditional::performWhen, this)));
 	m_fi =
-	env.bindMacro(new GenericExpandableToken("\\fi",		Func(&Conditional::performFi, this)));
+	bindMacro(env, new GenericExpandableToken("\\fi",		Func(&Conditional::performFi, this)));
 }
 
 // vi:set ts=3 sw=3:

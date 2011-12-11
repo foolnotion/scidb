@@ -240,7 +240,7 @@ proc choosefont {font args} {
 	set modal true
 	set key [lindex $args 0]
 
-	while {$key != ""} {
+	while {[llength $key]} {
 		if {[llength $args] <= 1} {
 			return -code error "no value given to option \"$key\""
 		}
@@ -291,7 +291,7 @@ proc choosefont {font args} {
 			}
 			
 			-geometry {
-				if {$value == "last"} {
+				if {$value eq "last"} {
 					set $geometry [geometry]
 				} else {
 					if {[regexp {^(\d+x\d+)?(\+\d+\+\d+)?$} $value] == 0} {
@@ -320,7 +320,7 @@ proc geometry {{whichPart size}} {
 	variable Vars
 
 	set geom $Vars(geometry)
-	if {$geom == ""} { return "" }
+	if {[llength $geom] == 0} { return "" }
 
 	switch -- $whichPart {
 		size	{ set geom [lindex [split $geom "+"] 0] }
@@ -448,6 +448,11 @@ proc fontFamilies {{caseSensitive true}} {
 	SearchFonts
 	if {$caseSensitive} { return $Vars(fonts) }
 	return $Vars(fonts,lcase)
+}
+
+
+proc resetFonts {} {
+	set [namespace current]::Vars(fonts) {}
 }
 
 
@@ -580,7 +585,7 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 	if {[string first "+" $geometry] >= 0} {
 		wm geometry $dlg $geometry
 	} else {
-		if {$geometry == ""} {
+		if {$geometry eq ""} {
 			set geometry [format "%dx%d" $bw $bh]
 			set uw $bw
 			set uh $bh
@@ -591,7 +596,7 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 		}
 		set sw [winfo screenwidth  $parent]
 		set sh [winfo screenheight $parent]
-		if {$parent == "."} {
+		if {$parent eq "."} {
 			set x0 [expr {($sw - $w)/2 - [winfo vrootx $parent]}]
 			set y0 [expr {($sh - $h)/2 - [winfo vrooty $parent]}]
 		} else {
@@ -600,7 +605,7 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 		}
 		set x "+$x0"
 		set y "+$y0"
-		if {[tk windowingsystem] != "win32"} {
+		if {[tk windowingsystem] ne "win32"} {
 			if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
 			if {$x0 < 0}			{ set x "+0" }
 			if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
@@ -962,12 +967,12 @@ proc SearchFonts {} {
 
 
 proc Weight {style} {
-	return $style == "Bold Italic" || $style == "Bold" ? "bold" : "normal"
+	return $style eq "Bold Italic" || $style eq "Bold" ? "bold" : "normal"
 }
 
 
 proc Slant {style} {
-	return $style == "Bold Italic" || $style == "Italic" ? "italic" : "roman"
+	return $style eq "Bold Italic" || $style eq "Italic" ? "italic" : "roman"
 }
 
 
@@ -1050,7 +1055,7 @@ proc Filter {w} {
 									continue \
 								]
 			}
-			if {$reply == "cancel"} {
+			if {$reply eq "cancel"} {
 				set S(fixed) 0
 				return
 			} else {

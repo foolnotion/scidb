@@ -123,8 +123,9 @@ public:
 	TokenP newVariableToken(mstl::string const& name);
 	TokenP newVariableToken(mstl::string const& name, TokenP const& macro);
 
-	TokenType bindMacro(Token* token, Value defaultValue = 0);
-	TokenType bindMacro(TokenP const& token, Value defaultValue = 0);
+	void bindMacro(Token* token, Value defaultValue = 0);
+	void bindMacro(TokenP const& token, Value defaultValue = 0);
+	void bindMacro(TokenP const& token, mstl::string const& value);
 	TokenType bindMacro(mstl::string const& name, Token* token, Value defaultValue = 0);
 	TokenType bindMacro(mstl::string const& name, TokenP const& token, Value defaultValue = 0);
 

@@ -80,6 +80,7 @@ proc Build {w args} {
 	}
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
+	bind $w <FocusIn> { focus [tk_focusNext %W] }
 	ttk::tcombobox $w.__w__ \
 		-textvariable $opts(-textvariable) \
 		-exportselection no \

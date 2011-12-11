@@ -129,6 +129,7 @@
 ::menu::mc::Help						"&Hilfe"
 
 ::menu::mc::FileOpen					"&Öffnen"
+::menu::mc::FileOpenURL				"&URL öffnen..."
 ::menu::mc::FileOpenRecent			"Öffne &zuvorige"
 ::menu::mc::FileNew					"&Neu"
 ::menu::mc::FileExport				"E&xport..."
@@ -968,6 +969,7 @@
 ::export::mc::AllAnnotation				"Alle Anmerkungen"
 ::export::mc::UseColumnStyle				"Benutze Spaltenformatierung"
 ::export::mc::MainlineStyle				"Hauptvariantenstil"
+::export::mc::HideVariations				"Varianten ausblenden"
 
 ::export::mc::PdfFiles						"PDF-Dateien"
 ::export::mc::HtmlFiles						"HTML-Dateien"

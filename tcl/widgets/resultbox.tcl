@@ -69,6 +69,7 @@ proc Build {w args} {
 	}
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
+	bind $w <FocusIn> { focus [tk_focusNext %W] }
 	ttk::combobox $w.__w__ \
 		-width [expr {max([minWidth], $opts(-width))}] \
 		-textvariable $opts(-textvariable) \

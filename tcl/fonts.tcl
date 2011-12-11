@@ -722,6 +722,7 @@ array set ScidbDiagramBerlinEncoding {
 #	ScidbDiagramUSCFEncoding
 #	ScidbDiagramUsualEncoding
 #	ScidbDiagramWinboardEncoding
+#	ScidbDiagramGoodCompanionEncoding
 
 array set DiagramChessBaseEncoding {
 	lite				"\u002a"
@@ -1147,36 +1148,41 @@ proc splitAnnotation {text} {
 }
 
 
-proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
-	if {![file isdirectory $windowsFontDir]} {
-		::dialog::error -parent $parent -message [format $mc::CannotFindDirectory $windowsFontDir]
-		return 0
-	}
+if {$tcl_platform(platform) ne "windows"} {
 
-	set fontDir $::scidb::dir::home/.fonts
-	if {![file isdirectory $fontDir]} {
-		if {[catch { file mkdir $fontDir }]} {
-			::dialog::error -parent $parent -message [format $mc::CannotCreateDirectory $fontDir]
+	proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
+		if {![file isdirectory $windowsFontDir]} {
+			::dialog::error -parent $parent -message [format $mc::CannotFindDirectory $windowsFontDir]
 			return 0
 		}
-	}
 
-	set count 0
-
-	foreach font {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
-						SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
-						SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg} {
-		if {[file readable $font.ttf]} {
-			file copy -force $font.ttf $fontDir
-			incr count
+		set fontDir [file join $::scidb::dir::home .fonts]
+		if {![file isdirectory $fontDir]} {
+			if {[catch { file mkdir $fontDir }]} {
+				::dialog::error -parent $parent -message [format $mc::CannotCreateDirectory $fontDir]
+				return 0
+			}
 		}
+
+		set count 0
+
+		foreach font {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
+							SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
+							SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg} {
+			if {[file readable $font.ttf]} {
+				file copy -force $font.ttf $fontDir
+				incr count
+			}
+		}
+
+		if {$count && $tcl_platform(platform) eq "unix"} {
+			catch { exec fc-cache -f $fontDir }
+			::chooseFont::resetFonts
+		}
+
+		return $count
 	}
 
-	if {$count} {
-		catch { exec fc-cache -f $fontDir }
-	}
-
-	return $count
 }
 
 # setup ###############################################################################

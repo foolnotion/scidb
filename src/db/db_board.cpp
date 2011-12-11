@@ -53,13 +53,9 @@ using namespace db::board;
 
 namespace bf = mstl::bf;
 
-Board Board::m_standardBoard;
+Board Board::m_standardBoard((Board::Initialize()));
 Board Board::m_shuffleChessBoard;
 Board Board::m_emptyBoard;
-
-struct Board::Initializer { Initializer(); };
-
-static Board::Initializer m_initializer;
 
 inline static int mul8(int x)				{ return x << 3; }
 inline static int mul16(int x)			{ return x << 4; }
@@ -4334,9 +4330,10 @@ Board::dump() const
 }
 
 
-void
-Board::initialize()
+Board::Board(Initialize)
 {
+	Signature::initialize();
+
 	// Empty board
 	::memset(&m_emptyBoard, 0, sizeof(m_emptyBoard));
 	::memset(m_emptyBoard.m_destroyCastle, 0xff, sizeof(m_emptyBoard.m_destroyCastle));
@@ -4359,13 +4356,6 @@ Board::initialize()
 	m_shuffleChessBoard.m_matCount[White].value = m_standardBoard.m_matCount[White].value;
 	m_shuffleChessBoard.m_matCount[Black].value = m_standardBoard.m_matCount[Black].value;
 	m_shuffleChessBoard.m_material.value = m_standardBoard.m_material.value;
-}
-
-
-Board::Initializer::Initializer()
-{
-	Board::initialize();
-	Signature::initialize();
 }
 
 // vi:set ts=3 sw=3:

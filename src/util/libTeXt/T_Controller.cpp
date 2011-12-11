@@ -241,6 +241,8 @@ Controller::processInput(mstl::istream& inp, mstl::ostream& dst, mstl::ostream* 
 			{
 				if ((token = m_env->getFinalToken(Environment::AllowNull)))
 					m_env->execute(token);
+
+				finishProcessing();
 			}
 			catch (Token::BreakExecutionException)
 			{
@@ -481,6 +483,13 @@ Controller::processInput(	mstl::string const& inputPath,
 	}
 
 	return count;
+}
+
+
+void
+Controller::finishProcessing()
+{
+	// no action
 }
 
 

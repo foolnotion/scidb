@@ -87,6 +87,7 @@ proc Build {w args} {
 	array set opts $args
 
 	ttk::frame $w -borderwidth 0 -takefocus 0 -class DateBoxFrame
+	bind $w <FocusIn> { focus [tk_focusNext %W] }
 
 	namespace eval [namespace current]::$w {}
 	variable [namespace current]::${w}::Priv

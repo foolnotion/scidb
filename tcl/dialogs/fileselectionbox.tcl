@@ -63,17 +63,16 @@ set FileIcons [list                        \
 ]
 
 set FileEncodings [list \
-	.sci utf-8 \
-	.si4 utf-8 \
-	.si3 utf-8 \
-	.cbh $::encoding::windowsEncoding \
-	.pgn $::encoding::defaultEncoding \
-	.gz  $::encoding::defaultEncoding \
-	.zip $::encoding::defaultEncoding \
-	.pdf $::encoding::defaultEncoding \
+	.sci 0 utf-8 \
+	.si4 1 utf-8 \
+	.si3 1 utf-8 \
+	.cbh 1 $::encoding::windowsEncoding \
+	.pgn 1 $::encoding::defaultEncoding \
+	.gz  1 $::encoding::defaultEncoding \
+	.zip 1 $::encoding::defaultEncoding \
 ]
-if {[string match Win* $tcl_platform(os)]} {
-	set FileEncodings(.cbh) $::encoding::systemEncoding ;# XXX ok?
+if {$tcl_platform(platform) eq "windows"} {
+	set FileEncodings(.cbh) [list 1 $::encoding::systemEncoding] ;# XXX ok?
 }
 
 
@@ -138,14 +137,15 @@ proc Open {type args} {
 	upvar [namespace current]::$dataName data
 
 	array set data {
-		-parent			.
-		-place			{}
-		-geometry		""
-		-embed			0
-		-needencoding	0
-		-rows				10
+		-parent				.
+		-place				{}
+		-geometry			""
+		-embed				0
+		-needencoding		0
+		-rows					10
 	}
 	set opts(-initialdir) $Priv(lastFolder)
+	set opts(-defaultencoding) {}
 
 	array set data $args
 	array set opts $args
@@ -197,9 +197,8 @@ proc Open {type args} {
 
 	if {$create} {
 		if {$data(-needencoding)} {
-			set opts(-selectencodingcommand) [namespace code SelectEncoding]
+			set opts(-selectencodingcommand) [namespace code [list SelectEncoding $type]]
 			set opts(-fileencodings) [set [namespace current]::FileEncodings]
-			set opts(-defaultencoding) $::encoding::mc::AutoDetect
 		}
 
 		if {[string length $geometry] == 0} {
@@ -219,6 +218,12 @@ proc Open {type args} {
 		grid $w.fsbox -column 0 -row 0 -sticky nsew
 		grid columnconfigure $w 0 -weight 1
 		grid rowconfigure $w 0 -weight 1
+	}
+
+	if {$data(-needencoding)} {
+		if {[llength $opts(-defaultencoding)] == 0} {
+			set opts(-defaultencoding) $::encoding::mc::AutoDetect
+		}
 	}
 
 	if {$data(-embed)} {
@@ -393,11 +398,12 @@ proc ValidateFile {filename {size {}}} {
 }
 
 
-proc SelectEncoding {parent encoding defaultEncoding} {
+proc SelectEncoding {type parent encoding defaultEncoding} {
 	if {$encoding eq $::encoding::mc::AutoDetect} {
 		set encoding $::encoding::autoEncoding
 	}
-	set encoding [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding yes]
+	if {$type eq "save"} { set autoDetectFlag 0 } else { set autoDetectFlag 1 }
+	set encoding [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding $autoDetectFlag]
 	if {$encoding eq $::encoding::autoEncoding} {
 		set encoding $::encoding::mc::AutoDetect
 	}

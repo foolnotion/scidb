@@ -29,7 +29,7 @@
 # ======================================================================
 
   0 "Keine Anmerkung"
-  1   "Guter Zug"
+  1 "Guter Zug"
   2 "Schlechter Zug"
   3 "Sehr guter Zug"
   4 "Sehr schlechter Zug"

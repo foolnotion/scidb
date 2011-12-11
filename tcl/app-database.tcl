@@ -1405,6 +1405,7 @@ proc ChangeIcon {number parent} {
 	wm resizable $dlg false true
 	::util::place $dlg center $parent
 	wm deiconify $dlg
+	focus $dlg.list
 	::ttk::grabWindow $dlg
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg

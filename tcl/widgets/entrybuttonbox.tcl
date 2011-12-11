@@ -122,7 +122,12 @@ proc WidgetProc {w command args} {
 ttk::copyBindings TEntry TEntryButtonBox
 
 bind TEntryButtonBox <KeyPress-Down>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }
-bind TEntryButtonBox <ButtonPress-1>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }
 bind TEntryButtonBox <<TraverseIn>>		{ ttk::combobox::TraverseIn %W  }
+
+bind TEntryButtonBox <ButtonPress-1> {
+	if {[%W cget -state] ne "disabled"} {
+		{*}[set ttk::entrybuttonbox::%W::Vars(-command)]
+	}
+}
 
 # vi:set ts=3 sw=3:

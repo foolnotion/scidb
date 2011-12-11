@@ -30,12 +30,12 @@ clean:
 	@$(MAKE) -C tcl clean
 
 install:
-	@$(MAKE) -C engines install
+#	@$(MAKE) -C engines install
 	@$(MAKE) -C src install
 	@$(MAKE) -C tcl install
 
 uninstall:
-	@$(MAKE) -C engines uninstall
+#	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C src uninstall
 	@$(MAKE) -C tcl uninstall
 
