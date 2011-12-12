@@ -36,9 +36,7 @@
 
 #include <ctype.h>
 #include <string.h>
-#ifdef  HAVE_INTPTR_T
 #include <stdint.h>
-#endif
 #include <tcl.h>
 #include <tk.h>
 #include "qebind.h"
@@ -59,6 +57,7 @@ MODULE_SCOPE void dbwin(char *fmt, ...);
  * to/from pointer from/to integer of different size".
  */
 
+/*
 #if !defined(INT2PTR) && !defined(PTR2INT)
 #   if defined(HAVE_INTPTR_T) || defined(intptr_t)
 #	define INT2PTR(p) ((void *)(intptr_t)(p))
@@ -68,6 +67,9 @@ MODULE_SCOPE void dbwin(char *fmt, ...);
 #	define PTR2INT(p) ((int)(p))
 #   endif
 #endif
+*/
+#define INT2PTR(p) ((void*)((intptr_t)p))
+#define PTR2INT(p) ((int)((intptr_t)p))
 
 int debug_bindings = 0;
 

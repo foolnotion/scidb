@@ -78,6 +78,7 @@
 #include "tk.h"
 
 #include <stdio.h>
+#include <stdint.h>
 
 #ifdef RES_DEBUG
   #include <execinfo.h>
@@ -199,8 +200,8 @@ ResAlloc(v1, v2)
         init = 1;
     }
 
-    key[0] = (int)v1;
-    key[1] = (int)v2;
+    key[0] = (int)((intptr_t)v1);
+    key[1] = (int)((intptr_t)v2);
 
     pEntry = Tcl_CreateHashEntry(&aOutstanding, (const char *)key, &newentry);
     if (newentry) {
@@ -223,7 +224,7 @@ ResAlloc(v1, v2)
     pRec->aStack[pRec->nStack - 1] = aFrame;
 #endif
 
-    aResCounts[(int)v1]++;
+    aResCounts[(int)((intptr_t)v1)]++;
 }
 
 /*
@@ -253,8 +254,8 @@ ResFree(v1, v2)
     Tcl_HashEntry *pEntry;
     ResRecord *pRec;
 
-    key[0] = (int)v1;
-    key[1] = (int)v2;
+    key[0] = (int)((intptr_t)v1);
+    key[1] = (int)((intptr_t)v2);
 
     pEntry = Tcl_FindHashEntry(&aOutstanding, (const char *)key);
     assert(pEntry);
@@ -276,7 +277,7 @@ ResFree(v1, v2)
     }
 #endif
 
-    aResCounts[(int)v1]--;
+    aResCounts[(int)((intptr_t)v1)]--;
 }
 
 /*

@@ -126,7 +126,7 @@ ChannelReader::skip(size_t nbytes)
 	if (::Tcl_Eof(m_chan))
 		return false;
 
-	return ::Tcl_Seek(m_chan, nbytes, SEEK_CUR) == nbytes;
+	return ::Tcl_Seek(m_chan, nbytes, SEEK_CUR) == Tcl_WideInt(nbytes);
 }
 
 } // namespace

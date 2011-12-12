@@ -794,7 +794,7 @@ Namebase::update()
 				::fprintf(	stderr,
 								"WARNING(%u): invalid frequency value %u in %s namebase "
 								"(item '%s') (%u is expected)\n",
-								i - m_list.begin(),
+								unsigned(i - m_list.begin()),
 								(*i)->m_orig_freq,
 								type,
 								(*i)->name().c_str(),

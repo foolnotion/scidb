@@ -42,6 +42,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <assert.h>
@@ -647,7 +648,7 @@ getScriptHandler(pTree, tag)
     int tag;
 {
     Tcl_HashEntry *pEntry;
-    pEntry = Tcl_FindHashEntry(&pTree->aScriptHandler, (char *)tag);
+    pEntry = Tcl_FindHashEntry(&pTree->aScriptHandler, (char *)((intptr_t)tag));
     if (pEntry) {
         return (Tcl_Obj *)Tcl_GetHashValue(pEntry);
     }

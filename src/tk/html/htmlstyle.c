@@ -47,6 +47,7 @@
 #include "html.h"
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
 
 void
 HtmlDelScrollbars(pTree, pNode)
@@ -489,7 +490,7 @@ styleNodeImmediately(pTree, pNode, clientData)
     ClientData clientData;
 {
     CONST char *zStyle;      /* Value of "style" attribute for node */
-    int trashDynamics = (int)clientData;
+    int trashDynamics = (int)((intptr_t)clientData);
 
     if (!HtmlNodeIsText(pNode)) {
         HtmlElementNode *pElem = (HtmlElementNode *)pNode;
@@ -585,7 +586,7 @@ styleNode(pTree, pNode, clientData)
     ClientData clientData;
 {
     CONST char *zStyle;      /* Value of "style" attribute for node */
-    int trashDynamics = (int)clientData;
+    int trashDynamics = (int)((intptr_t)clientData);
 
     if (!HtmlNodeIsText(pNode)) {
         HtmlElementNode *pElem = (HtmlElementNode *)pNode;
@@ -718,7 +719,7 @@ HtmlStyleApply(pTree, pNode)
 {
     int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
     HtmlLog(pTree, "STYLEENGINE", "START");
-    HtmlWalkTree(pTree, pNode, styleNode, (ClientData)isRoot);
+    HtmlWalkTree(pTree, pNode, styleNode, (ClientData)((intptr_t)isRoot));
     return TCL_OK;
 }
 
@@ -742,7 +743,7 @@ HtmlStyleApplyImmediately(pTree, pNode)
 {
     int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
     HtmlLog(pTree, "STYLEENGINE", "START");
-    HtmlWalkTree(pTree, pNode, styleNodeImmediately, (ClientData)isRoot);
+    HtmlWalkTree(pTree, pNode, styleNodeImmediately, (ClientData)((intptr_t)isRoot));
     return TCL_OK;
 }
 
