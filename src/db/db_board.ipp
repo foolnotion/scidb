@@ -34,14 +34,13 @@
 
 namespace db {
 
-inline Board::Board() {}
-
 inline bool Board::isAttackedBy(unsigned color, Square square) const { return attacks(color, square);}
 
 inline color::ID Board::sideToMove() const		{ return color::ID(m_stm); }
 inline color::ID Board::notToMove() const			{ return color::ID(m_stm ^ 1); }
 
 inline bool Board::isEmpty() const					{ return m_hash == 0; }
+inline bool Board::isStandardPosition() const	{ return isEqualPosition(m_standardBoard); }
 inline bool Board::isInCheck() const				{ return isAttackedBy(m_stm ^ 1, m_ksq[m_stm]); }
 inline bool Board::givesCheck() const				{ return isAttackedBy(m_stm, m_ksq[m_stm ^ 1]); }
 inline bool Board::isLegal() const					{ return !isAttackedBy(m_stm, m_ksq[m_stm ^ 1]); }
@@ -76,25 +75,17 @@ inline uint64_t Board::hash() const							{ return m_hash; }
 inline uint64_t Board::pawnHash() const					{ return m_pawnHash; }
 
 inline sq::ID Board::kingSq(color::ID side) const		{ return sq::ID(m_ksq[side]); }
-inline Board const& Board::standardBoard()				{ return m_initializer.m_standardBoard; }
-inline Board const& Board::emptyBoard()					{ return m_initializer.m_emptyBoard; }
+inline Board const& Board::standardBoard()				{ return m_standardBoard; }
+inline Board const& Board::emptyBoard()					{ return m_emptyBoard; }
 
-inline void Board::clear()										{ *this = m_initializer.m_emptyBoard; }
-inline void Board::setStandardPosition()					{ *this = m_initializer.m_standardBoard; }
+inline void Board::clear()										{ *this = m_emptyBoard; }
+inline void Board::setStandardPosition()					{ *this = m_standardBoard; }
 inline void Board::destroyCastle(color::ID color)		{ m_castle &= ~castling::bothSides(color); }
 inline void Board::setToMove(color::ID color)			{ m_stm = color; }
 inline void Board::swapToMove()								{ m_stm ^= 1; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
 inline void Board::setEnPassantSquare(Square sq)		{ setEnPassantSquare(sideToMove(), sq); }
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
-
-
-inline
-bool
-Board::isStandardPosition() const
-{
-	return isEqualPosition(m_initializer.m_standardBoard);
-}
 
 
 inline
