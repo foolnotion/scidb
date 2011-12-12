@@ -36,17 +36,16 @@ using namespace TeXt;
 
 
 LaTeXWriter::LaTeXWriter(	format::Type srcFormat,
-									mstl::ostream& stream,
 									unsigned flags,
 									unsigned options,
 									NagMap const& nagMap,
 									Languages const& languages,
 									unsigned significantLanguages,
 									Environment& env)
-	:DocumentWriter(srcFormat, stream, flags, options, nagMap, languages, significantLanguages)
+	:DocumentWriter(srcFormat, flags, options, nagMap, languages, significantLanguages)
 	,m_env(env)
-	,m_printHeader(env.newUndefinedToken("\\printHeader"))
-	,m_printResult(env.newUndefinedToken("\\printResult"))
+	,m_printHeader(env.newUndefinedToken("\\print-game-header"))
+	,m_printResult(env.newUndefinedToken("\\print-game-result"))
 	,m_white(env.newUndefinedToken("\\White"))
 	,m_black(env.newUndefinedToken("\\Black"))
 	,m_whiteCountry(env.newUndefinedToken("\\WhiteCountry"))
@@ -73,6 +72,13 @@ LaTeXWriter::LaTeXWriter(	format::Type srcFormat,
 LaTeXWriter::~LaTeXWriter() throw()
 {
 	// gcc is complaining w/o this destructor
+}
+
+
+format::Type
+LaTeXWriter::format() const
+{
+	return format::LaTeX;
 }
 
 

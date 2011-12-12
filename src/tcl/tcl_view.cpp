@@ -38,8 +38,12 @@
 #include "db_search.h"
 #include "db_database.h"
 
+#include "T_Controller.h"
+
 #include "sys_utf8_codec.h"
 
+#include "m_ofstream.h"
+#include "m_sstream.h"
 #include "m_vector.h"
 #include "m_algorithm.h"
 #include "m_tuple.h"
@@ -60,6 +64,7 @@ static char const* CmdExport			= "::scidb::view::export";
 static char const* CmdFind				= "::scidb::view::find";
 static char const* CmdMap				= "::scidb::view::map";
 static char const* CmdNew				= "::scidb::view::new";
+static char const* CmdPrint			= "::scidb::view::print";
 static char const* CmdSearch			= "::scidb::view::search";
 static char const* CmdSubscribe		= "::scidb::view::subscribe";
 static char const* CmdUnsubscribe	= "::scidb::view::unsubscribe";
@@ -484,6 +489,112 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	struct Log : public TeXt::Controller::Log
+	{
+		void error(mstl::string const& msg) { str = msg; }
+		mstl::string str;
+	};
+
+	if (objc != 16)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<database> <view> <file> <search-path> <script-path> <preamble> <flags> <options> <nag-map> "
+			"<languages> <significant> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
+		return TCL_ERROR;
+	}
+
+	char const*		database			= stringFromObj(objc, objv, 1);
+	unsigned			view				= unsignedFromObj(objc, objv, 2);
+	char const*		filename			= stringFromObj(objc, objv, 3);
+	char const* 	searchPath		= stringFromObj(objc, objv, 4);
+	mstl::string 	scriptPath		= stringFromObj(objc, objv, 5);
+	mstl::string 	preamble			= stringFromObj(objc, objv, 6);
+	unsigned			flags				= unsignedFromObj(objc, objv, 7);
+	unsigned			options			= unsignedFromObj(objc, objv, 8);
+	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 9);
+	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 10);
+	unsigned			significant		= unsignedFromObj(objc, objv, 11);
+
+	Progress				progress(objv[12], objv[13]);
+	tcl::Log				log(objv[14], objv[15]);
+	Cursor&				cursor(scidb->cursor(database));
+	View&					v(cursor.view(view));
+	Tcl_Obj**			objs;
+	View::NagMap		nagMap;
+	View::Languages	languages;
+
+	::memset(nagMap, 0, sizeof(nagMap));
+
+	if (Tcl_ListObjGetElements(ti, mapObj, &objc, &objs) != TCL_OK)
+		error(CmdExport, 0, 0, "invalid nag map");
+
+	for (int i = 0; i < objc; ++i)
+	{
+		Tcl_Obj** pair;
+		int nelems;
+
+		if (Tcl_ListObjGetElements(ti, objs[i], &nelems, &pair) != TCL_OK || nelems != 2)
+			error(CmdExport, 0, 0, "invalid nag map");
+
+		int lhs = intFromObj(2, pair, 0);
+		int rhs = intFromObj(2, pair, 1);
+
+		if (lhs >= nag::Scidb_Last || rhs >= nag::Scidb_Last)
+			error(CmdExport, 0, 0, "invalid nag map values");
+
+		nagMap[lhs] = rhs;
+	}
+
+	if (	Tcl_ListObjGetElements(ti, languageList, &objc, &objs) != TCL_OK
+		|| objc >= int(U_NUMBER_OF(languages)))
+	{
+		error(CmdExport, 0, 0, "invalid language list");
+	}
+
+	for (int i = 0; i < objc; ++i)
+		languages[i] = stringFromObj(objc, objs, i);
+
+	TeXt::Controller::LogP myLog(new Log);
+	TeXt::Controller controller(searchPath, TeXt::Controller::AbortMode, myLog);
+	mstl::istringstream src(preamble);
+	mstl::ofstream dst(filename);
+	mstl::ostringstream out;
+
+	if (controller.processInput(src, dst, &out, &out) >= 0)
+	{
+		int rc = controller.processInput(scriptPath, dst, &out, &out);
+
+		if (rc == TeXt::Controller::OpenInputFileFailed)
+			out.write(static_cast<Log*>(myLog.get())->str);
+	}
+
+	setResult(v.printGames(	controller.environment(),
+									format::LaTeX,
+									flags,
+									options,
+									nagMap,
+									languages,
+									significant,
+									log,
+									progress));
+
+//	{
+//		mstl::string log(out.str());
+//
+//		if (!log.empty() && log.back() == '\n')
+//			log.set_size(log.size() - 1);
+//
+//		setResult(Tcl_NewStringObj(log, log.size()));
+//	}
+
+	return TCL_OK;
+}
+
+
+static int
 cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* attr = stringFromObj(objc, objv, 1);
@@ -559,12 +670,13 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdClose,			cmdClose);
 	createCommand(ti, CmdCount,			cmdCount);
-	createCommand(ti, CmdExport,		cmdExport);
-	createCommand(ti, CmdFind,			cmdFind);
-	createCommand(ti, CmdMap,			cmdMap);
-	createCommand(ti, CmdNew,			cmdNew);
-	createCommand(ti, CmdSearch,		cmdSearch);
-	createCommand(ti, CmdSubscribe,	cmdSubscribe);
+	createCommand(ti, CmdExport,			cmdExport);
+	createCommand(ti, CmdFind,				cmdFind);
+	createCommand(ti, CmdMap,				cmdMap);
+	createCommand(ti, CmdNew,				cmdNew);
+	createCommand(ti, CmdPrint,			cmdPrint);
+	createCommand(ti, CmdSearch,			cmdSearch);
+	createCommand(ti, CmdSubscribe,		cmdSubscribe);
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 }
 

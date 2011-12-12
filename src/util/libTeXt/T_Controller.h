@@ -94,6 +94,7 @@ public:
 	virtual ~Controller();
 
 	Receptacle& receptacle();
+	Environment& environment();
 
 	void addPackage(PackageP package);
 

@@ -1,6 +1,12 @@
 [December 2011] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #155)
+------------------------------------------------------------------------------
+* There is no proper fix for the Debian Wheezy/Ubuntu 11.10 problem. I've
+implemented a hack only for these insane systems (not yet tested).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #152)
 ------------------------------------------------------------------------------
 * Segmentation fault (hopefully) on Ubuntu 11.10/Debian Wheezy fixed. It is

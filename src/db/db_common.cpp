@@ -1131,13 +1131,10 @@ compareNames(void const* lhs, const void* rhs)
 
 namespace castling
 {
-
 	unsigned Transpose[AllRights + 1];
 
-	struct Initializer { Initializer(); };
-	static Initializer initializer;
-
-	Initializer::Initializer()
+	void
+	initialize()
 	{
 		::memset(Transpose, 0, sizeof(Transpose));
 
@@ -1149,7 +1146,6 @@ namespace castling
 			if (i & BlackKingside)	Transpose[i] |= BlackQueenside;
 		}
 	}
-
 } // namespace castling
 
 namespace tag
@@ -1160,10 +1156,8 @@ namespace tag
 	mstl::bitfield<uint64_t> IsBlackRating;
 	mstl::bitfield<uint64_t> IsRating;
 
-	struct Initializer { Initializer(); };
-	static Initializer initializer;
-
-	Initializer::Initializer()
+	void
+	initialize()
 	{
 		static_assert(U_NUMBER_OF(NameLookup) == ExtraTag, "NameLookup expired");
 		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired");
@@ -1205,6 +1199,22 @@ namespace tag
 
 } // namespace tag
 } // namespace db
+
+
+namespace {
+
+struct Initializer
+{
+	Initializer()
+	{
+		castling::initialize();
+		tag::initialize();
+	}
+}
+;
+static Initializer initializer;
+
+} // namespace
 
 
 unsigned

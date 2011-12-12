@@ -850,6 +850,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 			break;
 
 		case format::Pgn:
+		case format::LaTeX:
 			// cannot happen
 			break;
 	}

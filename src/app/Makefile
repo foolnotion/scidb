@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/universalchardet -I../db -I../db/sci -I../db/si3
+INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/libTeXt -I../util/universalchardet -I../db -I../db/sci -I../db/si3
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \

@@ -54,6 +54,7 @@ public:
 	void debug() const;
 
 	static bool isReachable(uint16_t currentSig, hp::Pawns targetData, unsigned count);
+	static void initialize();
 
 private:
 

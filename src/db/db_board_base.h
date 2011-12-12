@@ -175,6 +175,8 @@ template <typename T> int count(T n);
 int lsbClear(uint8_t& n);
 int lsbClear(uint64_t& n);
 
+namespace base { void initialize(); }
+
 } // namespace board
 } // namespace db
 

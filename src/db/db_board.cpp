@@ -53,9 +53,12 @@ using namespace db::board;
 
 namespace bf = mstl::bf;
 
-Board Board::m_standardBoard((Board::Initialize()));
+Board Board::m_standardBoard;
 Board Board::m_shuffleChessBoard;
 Board Board::m_emptyBoard;
+
+struct Initializer { Initializer() { Board::initialize(); } };
+static Initializer m_initializer;
 
 inline static int mul8(int x)				{ return x << 3; }
 inline static int mul16(int x)			{ return x << 4; }
@@ -4330,7 +4333,8 @@ Board::dump() const
 }
 
 
-Board::Board(Initialize)
+void
+Board::initialize()
 {
 	Signature::initialize();
 

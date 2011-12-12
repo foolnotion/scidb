@@ -31,6 +31,7 @@
 #include "db_filter.h"
 #include "db_game.h"
 #include "db_pgn_writer.h"
+#include "db_latex_writer.h"
 #include "db_log.h"
 
 #include "sci_codec.h"
@@ -38,6 +39,8 @@
 
 #include "si3_codec.h"
 #include "si3_consumer.h"
+
+#include "T_Controller.h"
 
 #include "u_misc.h"
 #include "u_zstream.h"
@@ -589,21 +592,46 @@ View::exportGames(mstl::string const& filename,
 		PgnWriter writer(format::Pgn, strm, encoding, flags);
 		count = exportGames(writer, gameMode, log, progress);
 	}
-	else if (ext == "pdf")
-	{
-		// TODO
-	}
-	else if (ext == "tex")
-	{
-		// TODO
-	}
-	else if (ext == "htm" || ext == "html")
-	{
-		// TODO
-	}
 	else
 	{
 		M_RAISE("unsupported extension: %s", ext.c_str());
+	}
+
+	return count;
+}
+
+
+unsigned
+View::printGames(	TeXt::Environment& environment,
+						format::Type format,
+						unsigned flags,
+						unsigned options,
+						NagMap const& nagMap,
+						Languages const& languages,
+						unsigned significantLanguages,
+						db::Log& log,
+						util::Progress& progress)
+{
+	unsigned count = 0;
+
+	switch (int(format))
+	{
+		case format::LaTeX:
+			{
+				LaTeXWriter	writer(	database().format(),
+											flags,
+											options,
+											nagMap,
+											languages,
+											significantLanguages,
+											environment);
+
+				count = exportGames(writer, AllGames, log, progress);
+			}
+			break;
+
+		default:
+			M_RAISE("unsupported format");
 	}
 
 	return count;

@@ -40,7 +40,6 @@ class LaTeXWriter : public DocumentWriter
 public:
 
 	LaTeXWriter(format::Type srcFormat,
-					mstl::ostream& stream,
 					unsigned flags,
 					unsigned options,
 					NagMap const& nagMap,
@@ -48,6 +47,8 @@ public:
 					unsigned significantLanguages,
 					TeXt::Environment& env);
 	~LaTeXWriter() throw();
+
+	format::Type format() const override;
 
 private:
 

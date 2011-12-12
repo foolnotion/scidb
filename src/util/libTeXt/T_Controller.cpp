@@ -192,6 +192,13 @@ Controller::receptacle()
 }
 
 
+Environment&
+Controller::environment()
+{
+	return *m_env;
+}
+
+
 mstl::string
 Controller::setupStream(mstl::string const& inputPath, mstl::ifstream& inStream)
 {

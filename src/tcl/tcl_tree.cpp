@@ -161,7 +161,9 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				Tcl_ListObjAppendElement(0, list, Tcl_NewStringObj(cursors[i]->database().name(), -1));
 				break;
 
-			case format::ChessBase:	break;
+			case format::ChessBase:
+			case format::LaTeX:
+				break;
 		}
 	}
 

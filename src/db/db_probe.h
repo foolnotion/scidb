@@ -60,6 +60,8 @@ public:
 	int findScore(Board const& board) const;
 	int findBest(Board const& board, Move& result) const;
 
+	static void initialize();
+
 private:
 
 	int quiesce(material::SigPart white, material::SigPart black) const;

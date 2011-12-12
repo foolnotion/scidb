@@ -113,12 +113,15 @@
 	\\end{document}
 }
 
-\print-game-header#white#black#event{%
+\def\print-game-header{%
 	\\textbf{\%
-		\$\\circ\$ \white\\\\
-		\$\\bullet\$ \black\\\\
-		\event
+		\$\\circ\$ \White\\\\
+		\$\\bullet\$ \Black\\\\
+		\Event
 	}\%
+}
+
+\def\print-game-result{%
 }
 
 \\def\\liftsym\#1{{\fontfamily{skak}\fontencoding{U}\selectfont\#1}}

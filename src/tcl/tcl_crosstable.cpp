@@ -39,7 +39,6 @@
 #include "T_NumberToken.h"
 #include "T_TextToken.h"
 
-#include "m_ifstream.h"
 #include "m_sstream.h"
 #include "m_hash.h"
 #include "m_assert.h"
@@ -78,12 +77,6 @@ struct Key
 };
 
 typedef mstl::hash<Key,TournamentTable*> TableHash;
-
-
-struct MyLog : public TeXt::Controller::Log
-{
-	void error(mstl::string const& msg) { fprintf(stderr, "%s\n", msg.c_str()); }
-};
 
 } // namespace
 

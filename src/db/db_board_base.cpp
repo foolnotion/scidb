@@ -100,10 +100,14 @@ kingPawnSquare(sq::ID pawn, sq::ID king, sq::ID queen, bool toMove)
 
 namespace {
 
-struct Initializer { Initializer(); };
+struct Initializer { Initializer() { board::base::initialize(); } };
 static Initializer initializer;
 
-Initializer::Initializer()
+} // namespace
+
+
+void
+board::base::initialize()
 {
 	static Byte const RotateL90[64] =
 	{
@@ -660,7 +664,5 @@ Initializer::Initializer()
 		NextRank[Black][i] = PrevRank[White][i] = (i - 8) & 63;
 	}
 }
-
-} // namespace
 
 // vi:set ts=3 sw=3:

@@ -37,14 +37,12 @@ using namespace db;
 
 
 DocumentWriter::DocumentWriter(	format::Type srcFormat,
-											mstl::ostream& stream,
 											unsigned flags,
 											unsigned options,
 											NagMap const& nagMap,
 											Languages const& languages,
 											unsigned significantLanguages)
 	:Writer(srcFormat, flags, sys::utf8::Codec::utf8())
-	,m_stream(stream)
 	,m_options(options)
 	,m_significant(significantLanguages)
 {
@@ -63,6 +61,10 @@ DocumentWriter::DocumentWriter(	format::Type srcFormat,
 	m_languages[2] = languages[2];
 	m_languages[3] = languages[4];
 }
+
+
+void DocumentWriter::start()  {}
+void DocumentWriter::finish() {}
 
 
 void

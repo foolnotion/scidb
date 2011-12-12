@@ -41,6 +41,8 @@ public:
 	void update(unsigned progress) override;
 	void finish() override;
 
+	static void initialize();
+
 private:
 
 	struct Initializer { Initializer(); };

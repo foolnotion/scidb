@@ -300,8 +300,7 @@ errorInEGTB(int n)
 
 namespace
 {
-	struct Initializer { Initializer(); };
-	Initializer::Initializer() { egtb_error = &errorInEGTB; }
+	struct Initializer { Initializer() { Probe::initialize(); } };
 	static Initializer Initializer;
 }
 
@@ -636,5 +635,8 @@ Probe::findBest(Board const& board, Move& result) const
 	result = moves[bestIndex];
 	return bestScore;
 }
+
+
+void Probe::initialize() { egtb_error = &errorInEGTB; }
 
 // vi:set ts=3 sw=3:

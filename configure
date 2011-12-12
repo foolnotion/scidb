@@ -104,7 +104,6 @@ proc findBestTclVersion {} {
 proc isInsaneUnixRelease {} {
     global insaneRelease
 
-    # check if we build on Ubuntu 11.10 or higher.
     if {![info exists insaneRelease]} {
         set insaneRelease ""
         if {[file exists /etc/lsb-release]} {
@@ -116,12 +115,14 @@ proc isInsaneUnixRelease {} {
                         set isUbuntu 1
                     } elseif {[string match {DISTRIB_RELEASE=*} $line]} {
                         set release [lindex [split $line =] 1]
+                    } elseif {[string match {Codename*wheezy*} $line]} {
+                        set insaneRelease "Debian Wheezy"
                     }
                 }
                 close $f
             }
             if {$isUbuntu && $release >= "11.10"} {
-                set insaneRelease $release
+                set insaneRelease "Ubuntu $release"
             }
         }
     }
@@ -1346,6 +1347,13 @@ if {[string length $gxxVer]} {
      checkZziplib
      checkExpat
 
+    if {[isInsaneUnixRelease]} {
+        if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
+            append option(EXTRA_CXXFLAGS) " "
+        }
+        append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
+    }
+
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
          writeMakefile
      }
@@ -1361,12 +1369,15 @@ if {[string length $gxxVer]} {
     }
 
     if {[isInsaneUnixRelease]} {
-        # it seems that we build on an insane Unix system (like Ubuntu 11.10)
+        # it seems that we build on an insane Unix system (like Debian Wheezy, or Ubuntu 11.10)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to build Scidb on an insane Unix version (like"
-        puts "Ubuntu 11.10). Scidb may crash immediately after startup."
-        puts "No fix or workaround yet."
+        puts "You're about to build Scidb on an insane Unix version"
+        puts "($insaneRelease - static object initialization is not"
+        puts "properly working on this system), Scidb may crash."
+        puts "Also the call of sub-processes is not working properly"
+        puts "on this systems, you may not get a proper error message"
+        puts "in case of an exception."
     }
 
     exit 0

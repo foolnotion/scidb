@@ -116,11 +116,6 @@ public:
 
 	enum Format { XFen, Shredder };
 
-	// initialization
-	struct Initialize {};
-	Board(Initialize); // only required for initialization
-	Board(); // only required because we have a non-default constructor
-
 	// Play moves on board
 
 	/// Play given move, updating board state appropriately
@@ -348,6 +343,8 @@ public:
 									variant::Type variant,
 									castling::Handicap handicap = castling::AllowHandicap,
 									move::Constraint flag = move::AllowIllegalMove);
+
+	static void initialize();
 
 private:
 

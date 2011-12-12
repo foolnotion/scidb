@@ -404,6 +404,8 @@ namespace castling
 
 	mstl::string& print(Rights rights, mstl::string& result);
 
+	void initialize(); // only a hack for corrupted systems like Deb ian Wheezy
+
 } // namespace castling
 
 namespace move {
@@ -510,6 +512,8 @@ namespace tag
 	mstl::string const& toName(ID tag);
 	ID fromName(mstl::string const& tag);
 	ID fromName(char const* name, unsigned length);
+
+	void initialize(); // only a hack for corrupted systems like Deb ian Wheezy
 
 } // namespace tag
 
@@ -762,7 +766,7 @@ namespace tree
 
 namespace format
 {
-	enum Type { Scidb, Scid3, Scid4, ChessBase, Pgn };
+	enum Type { Scidb, Scid3, Scid4, ChessBase, Pgn, LaTeX };
 }
 
 namespace encoding

@@ -26,6 +26,8 @@ using namespace tcl;
 
 
 Progress::Initializer Progress::m_initializer;
+Progress::Initializer::Initializer() { Progress::initialize(); }
+
 
 Tcl_Obj* Progress::m_open			= 0;
 Tcl_Obj* Progress::m_close			= 0;
@@ -50,15 +52,19 @@ checkResult(int rc, Tcl_Obj* cmd, Tcl_Obj* subcmd, Tcl_Obj* arg)
 }
 
 
-Progress::Initializer::Initializer()
+void
+Progress::initialize()
 {
-	Tcl_IncrRefCount(m_open				= Tcl_NewStringObj("open",				-1));
-	Tcl_IncrRefCount(m_close			= Tcl_NewStringObj("close",			-1));
-	Tcl_IncrRefCount(m_start			= Tcl_NewStringObj("start",			-1));
-	Tcl_IncrRefCount(m_update			= Tcl_NewStringObj("update",			-1));
-	Tcl_IncrRefCount(m_finish			= Tcl_NewStringObj("finish",			-1));
-	Tcl_IncrRefCount(m_interrupted	= Tcl_NewStringObj("interrupted?",	-1));
-	Tcl_IncrRefCount(m_ticks			= Tcl_NewStringObj("ticks",			-1));
+	if (m_open == 0)
+	{
+		Tcl_IncrRefCount(m_open				= Tcl_NewStringObj("open",				-1));
+		Tcl_IncrRefCount(m_close			= Tcl_NewStringObj("close",			-1));
+		Tcl_IncrRefCount(m_start			= Tcl_NewStringObj("start",			-1));
+		Tcl_IncrRefCount(m_update			= Tcl_NewStringObj("update",			-1));
+		Tcl_IncrRefCount(m_finish			= Tcl_NewStringObj("finish",			-1));
+		Tcl_IncrRefCount(m_interrupted	= Tcl_NewStringObj("interrupted?",	-1));
+		Tcl_IncrRefCount(m_ticks			= Tcl_NewStringObj("ticks",			-1));
+	}
 }
 
 

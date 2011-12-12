@@ -48,28 +48,7 @@ uint16_t HomePawnMask[2][64];
 inline static uint8_t flipRank(db::Square s) { return sq::flipRank(sq::ID(s)); }
 
 
-HomePawns::Initializer::Initializer()
-{
-	::memset(::HomePawnMask, 0, sizeof(::HomePawnMask));
-
-	::HomePawnMask[color::White][sq::a2] = a2;
-	::HomePawnMask[color::White][sq::b2] = b2;
-	::HomePawnMask[color::White][sq::c2] = c2;
-	::HomePawnMask[color::White][sq::d2] = d2;
-	::HomePawnMask[color::White][sq::e2] = e2;
-	::HomePawnMask[color::White][sq::f2] = f2;
-	::HomePawnMask[color::White][sq::g2] = g2;
-	::HomePawnMask[color::White][sq::h2] = h2;
-
-	::HomePawnMask[color::Black][sq::a7] = a7;
-	::HomePawnMask[color::Black][sq::b7] = b7;
-	::HomePawnMask[color::Black][sq::c7] = c7;
-	::HomePawnMask[color::Black][sq::d7] = d7;
-	::HomePawnMask[color::Black][sq::e7] = e7;
-	::HomePawnMask[color::Black][sq::f7] = f7;
-	::HomePawnMask[color::Black][sq::g7] = g7;
-	::HomePawnMask[color::Black][sq::h7] = h7;
-}
+HomePawns::Initializer::Initializer() { HomePawns::initialize(); }
 
 
 HomePawns::HomePawns()
@@ -194,6 +173,31 @@ HomePawns::debug() const
 {
 	mstl::string s;
 	::printf("%2d: %s\n", used(), print(s).c_str());
+}
+
+
+void
+HomePawns::initialize()
+{
+	::memset(::HomePawnMask, 0, sizeof(::HomePawnMask));
+
+	::HomePawnMask[color::White][sq::a2] = a2;
+	::HomePawnMask[color::White][sq::b2] = b2;
+	::HomePawnMask[color::White][sq::c2] = c2;
+	::HomePawnMask[color::White][sq::d2] = d2;
+	::HomePawnMask[color::White][sq::e2] = e2;
+	::HomePawnMask[color::White][sq::f2] = f2;
+	::HomePawnMask[color::White][sq::g2] = g2;
+	::HomePawnMask[color::White][sq::h2] = h2;
+
+	::HomePawnMask[color::Black][sq::a7] = a7;
+	::HomePawnMask[color::Black][sq::b7] = b7;
+	::HomePawnMask[color::Black][sq::c7] = c7;
+	::HomePawnMask[color::Black][sq::d7] = d7;
+	::HomePawnMask[color::Black][sq::e7] = e7;
+	::HomePawnMask[color::Black][sq::f7] = f7;
+	::HomePawnMask[color::Black][sq::g7] = g7;
+	::HomePawnMask[color::Black][sq::h7] = h7;
 }
 
 // vi:set ts=3 sw=3:
