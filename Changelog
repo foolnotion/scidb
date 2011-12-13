@@ -1,6 +1,14 @@
 [December 2011] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #160)
+------------------------------------------------------------------------------
+* Static object initialization is not working at all on Debian Wheezy/Ubuntu
+Oneric. This means that the GNU compiler is not properly working on these
+systems. Therefore I rolled back to the special hack (calling the constructors
+by hand).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #158)
 ------------------------------------------------------------------------------
 * Finally I've found a proper work-around for this Debian Wheezy/Ubuntu

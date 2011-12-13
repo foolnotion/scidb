@@ -1362,12 +1362,12 @@ if {[string length $gxxVer]} {
      checkZziplib
      checkExpat
 
-#   if {[isInsaneUnixRelease]} {
-#       if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
-#           append option(EXTRA_CXXFLAGS) " "
-#       }
-#       append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
-#   }
+    if {[isInsaneUnixRelease]} {
+        if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
+            append option(EXTRA_CXXFLAGS) " "
+        }
+        append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
+    }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
          writeMakefile
@@ -1390,12 +1390,12 @@ if {[string length $gxxVer]} {
         # (like Debian Wheezy, or Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-#       puts "You're about to build Scidb on an insane Unix distribution"
-#       puts "($insaneRelease - static object initialization is not"
-#       puts "properly working on this system), Scidb may crash (but"
-#       puts "hopefully it will not)."
-        puts "The call of sub-processes is not working properly on"
-        puts "this system, you may not get a proper error message"
+        puts "You're about to build Scidb on an insane distribution"
+        puts "($insaneRelease - static object initialization is not"
+        puts "properly working on this system), Scidb may crash (but"
+        puts "hopefully it will not)."
+        puts "Also the call of sub-processes is not working properly"
+        puts "on this system, you may not get a proper error message"
         puts "in case of an exception."
     }
 
