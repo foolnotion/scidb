@@ -111,7 +111,8 @@ LIB	= libdb
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(LIB)stubs.a $(OBJS) db_eco_table.o db_eco_table_stubs.o Makefile.bak
+	@echo "Clean `pwd`"
+	@rm -f $(LIB).a $(LIB)stubs.a $(OBJS) db_eco_table.o db_eco_table_stubs.o Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) db_eco_table.cpp db_eco_table_stubs.cpp 2>/dev/null

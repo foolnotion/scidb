@@ -51,6 +51,8 @@ enum { BitMask		= (1 << BitLength) - 1 };
 typedef mstl::hash<uint32_t,bool> Hash;
 Hash pawnStructureHash;
 
+static void __attribute__((constructor)) initialize() { Signature::initialize(); }
+
 #endif
 
 
@@ -120,39 +122,6 @@ Signature::isReachablePawnStructure(pawns::Side lhs, pawns::Side rhs)
 		return true;
 
 	return ::isReachablePawnStructure(hashL(lhs, rhs)) && ::isReachablePawnStructure(hashR(lhs, rhs));
-}
-
-
-void
-Signature::initialize()
-{
-#ifdef USE_HASH
-
-	// 500.0/Load
-	// --------------------------------
-	// collisions: 8.326
-	// max. bucket length: 2
-	// average bucket length: 1.28
-	// storage size: 2.549.596 (~ 2.5 MB)
-
-	// 250.0/Load
-	// --------------------------------
-	// collisions: 15.001
-	// max. bucket length: 4
-	// average bucket length: 1.66
-	// storage size: 1.501.020 (~ 1.5 MB)
-
-	::pawnStructureHash.rebuild(unsigned((U_NUMBER_OF(PawnProgressTable))*(250.0/Hash::Load)));
-
-	for (unsigned i = 0; i < U_NUMBER_OF(PawnProgressTable); ++i)
-		::pawnStructureHash.insert_unique(PawnProgressTable[i], true);
-
-//	::fprintf(stderr, "collisions: %u\n", pawnStructureHash.count_collisions());
-//	::fprintf(stderr, "max. bucket length: %u\n", pawnStructureHash.max_bucket_length());
-//	::fprintf(stderr, "average bucket length: %0.2f\n", pawnStructureHash.average_bucket_length());
-//	::fprintf(stderr, "storage size: %u\n", pawnStructureHash.storage_size());
-
-#endif
 }
 
 
@@ -252,6 +221,39 @@ Signature::debug(unsigned spaces) const
 	::printf("%*cHome pawns:        %s\n", spaces, ' ', s.c_str());
 
 	::fflush(stdout);
+}
+
+
+void
+Signature::initialize()
+{
+#ifdef USE_HASH
+
+	// 500.0/Load
+	// --------------------------------
+	// collisions: 8.326
+	// max. bucket length: 2
+	// average bucket length: 1.28
+	// storage size: 2.549.596 (~ 2.5 MB)
+
+	// 250.0/Load
+	// --------------------------------
+	// collisions: 15.001
+	// max. bucket length: 4
+	// average bucket length: 1.66
+	// storage size: 1.501.020 (~ 1.5 MB)
+
+	::pawnStructureHash.rebuild(unsigned((U_NUMBER_OF(PawnProgressTable))*(250.0/Hash::Load)));
+
+	for (unsigned i = 0; i < U_NUMBER_OF(PawnProgressTable); ++i)
+		::pawnStructureHash.insert_unique(PawnProgressTable[i], true);
+
+//	::fprintf(stderr, "collisions: %u\n", pawnStructureHash.count_collisions());
+//	::fprintf(stderr, "max. bucket length: %u\n", pawnStructureHash.max_bucket_length());
+//	::fprintf(stderr, "average bucket length: %0.2f\n", pawnStructureHash.average_bucket_length());
+//	::fprintf(stderr, "storage size: %u\n", pawnStructureHash.storage_size());
+
+#endif
 }
 
 // vi:set ts=3 sw=3:

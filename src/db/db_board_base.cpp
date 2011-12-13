@@ -81,6 +81,9 @@ uint64_t board::Obstructed[64][64];
 uint8_t board::IsOutside[256];
 
 
+static void __attribute__((constructor)) initialize() { board::base::initialize(); }
+
+
 template <typename T> inline static T div8(T x) { return x >> 3; }
 template <typename T> inline static T mod8(T x) { return x & 7; }
 
@@ -96,14 +99,6 @@ kingPawnSquare(sq::ID pawn, sq::ID king, sq::ID queen, bool toMove)
 
 	return (toMove ? pdist : pdist + 1) >= kdist;
 }
-
-
-namespace {
-
-struct Initializer { Initializer() { board::base::initialize(); } };
-static Initializer initializer;
-
-} // namespace
 
 
 void

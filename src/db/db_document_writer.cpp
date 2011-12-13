@@ -59,7 +59,7 @@ DocumentWriter::DocumentWriter(	format::Type srcFormat,
 	m_languages[0] = languages[0];
 	m_languages[1] = languages[1];
 	m_languages[2] = languages[2];
-	m_languages[3] = languages[4];
+	m_languages[3] = languages[3];
 }
 
 

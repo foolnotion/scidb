@@ -93,8 +93,9 @@ uninstall:
 	@if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
 
 clean:
-	rm -f $(TARGETS) Makefile.bak
-	rm -f $(SRC:.cpp=.o)
+	@echo "Clean `pwd`"
+	@rm -f $(TARGETS) Makefile.bak
+	@rm -f $(SRC:.cpp=.o)
 	@for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir clean; \
 	done

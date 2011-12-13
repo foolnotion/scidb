@@ -120,7 +120,8 @@ SOURCES = \
 all: $(SCRIPT)
 
 clean:
-	rm -f $(SCRIPT)
+	@echo "Clean `pwd`"
+	@rm -f $(SCRIPT)
 
 depend:
 	# nothing to do

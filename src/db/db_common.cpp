@@ -1201,20 +1201,13 @@ namespace tag
 } // namespace db
 
 
-namespace {
-
-struct Initializer
+static void
+__attribute__((constructor))
+initialize()
 {
-	Initializer()
-	{
-		castling::initialize();
-		tag::initialize();
-	}
+	castling::initialize();
+	tag::initialize();
 }
-;
-static Initializer initializer;
-
-} // namespace
 
 
 unsigned

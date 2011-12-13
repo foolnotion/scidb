@@ -1537,7 +1537,7 @@ HPDF_LoadFont (HPDF_Doc     pdf,
 
     if (FcConfigSubstitute (pdf->fc_config, pattern, FcMatchFont))
     {
-        FcResult   result = FcResultMatch;
+        FcResult   result  = FcResultMatch;
         FcPattern *matched = FcFontMatch (pdf->fc_config, pattern, &result);
 
         if (result == FcResultNoMatch)
@@ -1602,9 +1602,7 @@ HPDF_LoadFont (HPDF_Doc     pdf,
                 }
 
                 if (ret == NULL && HPDF_GetError (pdf) == HPDF_NOERROR)
-                {
                     HPDF_SetError (&pdf->error, HPDF_PAGE_INVALID_FONT, 0);
-                }
             }
         }
 

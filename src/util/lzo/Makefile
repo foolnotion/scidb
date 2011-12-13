@@ -39,8 +39,9 @@ minilzo.o: minilzo.c
 #
 
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe $(PROGRAM).map $(PROGRAM).tds
-	rm -f *.err *.o *.obj
+	@echo "Clean `pwd`"
+	@rm -f $(PROGRAM) $(PROGRAM).exe $(PROGRAM).map $(PROGRAM).tds
+	@rm -f *.err *.o *.obj
 
 depend:
 	# do nothing

@@ -44,7 +44,8 @@ $(LIB).a: $(LIBOBJS)
 	@$(RANLIB) $(LIB).a
 
 clean:
-	rm -f $(OBJS) $(LIBOBJS) $(LIB).a
+	@echo "Clean `pwd`"
+	@rm -f $(OBJS) $(LIBOBJS) $(LIB).a
 
 depend:
 	# do nothing

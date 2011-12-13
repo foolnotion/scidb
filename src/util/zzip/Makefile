@@ -44,7 +44,8 @@ LIB	= libzzip
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS) Makefile.bak
+	@echo "Clean `pwd`"
+	@rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null

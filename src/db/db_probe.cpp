@@ -298,11 +298,7 @@ errorInEGTB(int n)
 }
 
 
-namespace
-{
-	struct Initializer { Initializer() { Probe::initialize(); } };
-	static Initializer Initializer;
-}
+static void __attribute__((constructor)) initialize() { Probe::initialize(); }
 
 
 static void

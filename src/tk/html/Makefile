@@ -50,7 +50,8 @@ LIB	= libTkhtml3
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS) lempar.c lemon cssparse.out Makefile.bak
+	@echo "Clean `pwd`"
+	@rm -f $(LIB).a $(OBJS) lempar.c lemon cssparse.out Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null

@@ -106,23 +106,38 @@ proc isInsaneUnixRelease {} {
 
     if {![info exists insaneRelease]} {
         set insaneRelease ""
-        if {[file exists /etc/lsb-release]} {
-            set isUbuntu 0
-            set release ""
-            if {![catch { open /etc/lsb-release } f]} {
-                while {[gets $f line] >= 0} {
-                    if {[string match {DISTRIB_ID=Ubuntu*} $line]} {
-                        set isUbuntu 1
-                    } elseif {[string match {DISTRIB_RELEASE=*} $line]} {
-                        set release [lindex [split $line =] 1]
-                    } elseif {[string match {Codename*wheezy*} $line]} {
-                        set insaneRelease "Debian Wheezy"
-                    }
-                }
-                close $f
+        if {![catch {exec lsb_release -is} id] && ![catch {exec lsb_release -rs} release]} {
+            switch $id {
+                Ubuntu { if {$release >= "11.10" } { set insaneRelease "Ubuntu $release" } }
+                Debian { if {$release >= "7.0"   } { set insaneRelease "Debian $release" } }
             }
-            if {$isUbuntu && $release >= "11.10"} {
-                set insaneRelease "Ubuntu $release"
+        }
+        if {[string length $insaneRelease] == 0} {
+            if {[file exists /etc/lsb-release]} {
+                set isUbuntu 0
+                set isDebian 0
+                set release ""
+                if {![catch { open /etc/lsb-release } f]} {
+                    while {[gets $f line] >= 0} {
+                        if {[string match {DISTRIB_ID=Ubuntu*} $line]} {
+                            set isUbuntu 1
+                        } elseif {[string match {DISTRIB_ID=Debian*} $line]} {
+                            set isDebian 1
+                        } elseif {[string match {DISTRIB_RELEASE=*} $line]} {
+                            set release [lindex [split $line =] 1]
+                        } elseif {$line eq "DISTRIB_CODENAME=oneiric"} {
+                            set insaneRelease "Ubuntu Oneiric"
+                        } elseif {$line eq "DISTRIB_CODENAME=wheezy"} {
+                            set insaneRelease "Debian Wheezy"
+                        }
+                    }
+                    close $f
+                }
+                if {$isUbuntu && [string range $release 0 4] >= "11.10"} {
+                    set insaneRelease "Ubuntu $release"
+                } elseif {$isDebian && [string range $release 0 3] >= "7.0"} {
+                    set insaneRelease "Debian $release"
+                }
             }
         }
     }
@@ -1347,36 +1362,40 @@ if {[string length $gxxVer]} {
      checkZziplib
      checkExpat
 
-    if {[isInsaneUnixRelease]} {
-        if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
-            append option(EXTRA_CXXFLAGS) " "
-        }
-        append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
-    }
+#   if {[isInsaneUnixRelease]} {
+#       if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
+#           append option(EXTRA_CXXFLAGS) " "
+#       }
+#       append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
+#   }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
          writeMakefile
      }
 
     if {[llength $instableTkLibrary]} {
-        # it seems that we build on an insane Unix system (like Ubuntu 11.10)
+        # it seems that we build on an insane Unix system (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to run Scidb on an insane Unix version. Scidb may"
-        puts "crash with the pre-installed Tk library $instableTkLibrary. It is highly"
-        puts "recommended to install and use a stable Tk version (e.g. 8.5.6)"
-        puts "before building Scidb."
+        puts "You're about to run Scidb on an insane Unix distribution."
+        puts "Scidb may crash with the pre-installed Tk library $instableTkLibrary."
+        puts "It is highly recommended to install a stable Tk version"
+        puts "(8.5.6, or 8.5.11) before building Scidb."
+        puts "Use \"configure --help\" for instructions how to use"
+        puts "alternative library versions."
     }
 
     if {[isInsaneUnixRelease]} {
-        # it seems that we build on an insane Unix system (like Debian Wheezy, or Ubuntu 11.10)
+        # it seems that we build on an insane Unix system
+        # (like Debian Wheezy, or Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to build Scidb on an insane Unix version"
-        puts "($insaneRelease - static object initialization is not"
-        puts "properly working on this system), Scidb may crash."
-        puts "Also the call of sub-processes is not working properly"
-        puts "on this systems, you may not get a proper error message"
+#       puts "You're about to build Scidb on an insane Unix distribution"
+#       puts "($insaneRelease - static object initialization is not"
+#       puts "properly working on this system), Scidb may crash (but"
+#       puts "hopefully it will not)."
+        puts "The call of sub-processes is not working properly on"
+        puts "this system, you may not get a proper error message"
         puts "in case of an exception."
     }
 

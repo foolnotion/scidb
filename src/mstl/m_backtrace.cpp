@@ -493,7 +493,7 @@ mstl::backtrace::symbols_gdb()
 	snprintf(script_name, sizeof(script_name), "/tmp/gdb-script.%ld", long(::getpid()));
 	int fd = ::open(script_name, O_WRONLY | O_CREAT | O_TRUNC, 0770);
 	if (fd == -1)
-		return 0;
+		return false;
 	::write(fd, GDB_Script, sizeof(GDB_Script) - 1);
 	::close(fd);
 
@@ -508,6 +508,8 @@ mstl::backtrace::symbols_gdb()
 //	m_skip = 4;	seems to be too much on some systems
 
 	string line;
+
+	m_nframes = 0;
 
 	while (strm.getline(line) && line[0] != '#')
 		continue;
@@ -571,7 +573,7 @@ mstl::backtrace::symbols_gdb()
 			return true;
 	}
 
-	return true;
+	return m_nframes > 0;
 }
 
 #  endif // defined(USE_GDB)
@@ -595,6 +597,8 @@ mstl::backtrace::symbols_linux()
 
 	string func;
 	string file;
+
+	m_nframes = 0;
 
 	do
 	{

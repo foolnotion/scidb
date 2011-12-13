@@ -25,10 +25,6 @@
 using namespace tcl;
 
 
-Progress::Initializer Progress::m_initializer;
-Progress::Initializer::Initializer() { Progress::initialize(); }
-
-
 Tcl_Obj* Progress::m_open			= 0;
 Tcl_Obj* Progress::m_close			= 0;
 Tcl_Obj* Progress::m_start			= 0;
@@ -36,6 +32,9 @@ Tcl_Obj* Progress::m_update		= 0;
 Tcl_Obj* Progress::m_finish		= 0;
 Tcl_Obj* Progress::m_interrupted	= 0;
 Tcl_Obj* Progress::m_ticks			= 0;
+
+
+static void __attribute__((constructor)) initialize() { Progress::initialize(); }
 
 
 inline

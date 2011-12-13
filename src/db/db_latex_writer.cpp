@@ -27,7 +27,6 @@
 #include "db_latex_writer.h"
 #include "db_tag_set.h"
 
-#include "T_Receptacle.h"
 #include "T_ListToken.h"
 #include "T_Environment.h"
 

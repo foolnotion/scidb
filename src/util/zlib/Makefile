@@ -40,7 +40,8 @@ LIB	= libz
 all: $(LIB).a
 
 clean:
-	rm -f $(LIB).a $(OBJS)
+	@echo "Clean `pwd`"
+	@rm -f $(LIB).a $(OBJS)
  
 depend:
 	# do nothing
