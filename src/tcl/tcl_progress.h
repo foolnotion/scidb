@@ -45,8 +45,6 @@ public:
 
 private:
 
-	struct Initializer { Initializer(); };
-
 	int sendFinish() throw();
 
 	Tcl_Obj*		m_cmd;
@@ -56,14 +54,13 @@ private:
 	bool			m_sendFinish;
 	bool			m_firstStart;
 
-	static Initializer	m_initializer;
-	static Tcl_Obj*		m_open;
-	static Tcl_Obj*		m_close;
-	static Tcl_Obj*		m_start;
-	static Tcl_Obj*		m_update;
-	static Tcl_Obj*		m_finish;
-	static Tcl_Obj*		m_interrupted;
-	static Tcl_Obj*		m_ticks;
+	static Tcl_Obj* m_open;
+	static Tcl_Obj* m_close;
+	static Tcl_Obj* m_start;
+	static Tcl_Obj* m_update;
+	static Tcl_Obj* m_finish;
+	static Tcl_Obj* m_interrupted;
+	static Tcl_Obj* m_ticks;
 };
 
 } // namespace tcl

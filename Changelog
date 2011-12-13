@@ -1,7 +1,7 @@
 [December 2011] ==============================================================
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #155)
+Scidb 1.0 BETA (rev. #158)
 ------------------------------------------------------------------------------
 * Finally I've found a proper work-around for this Debian Wheezy/Ubuntu
 Oneiric problem with uninitialized static objects (hopefully; needs testing).

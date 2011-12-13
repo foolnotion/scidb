@@ -2322,12 +2322,10 @@ db::Guess::evaluatePassedPawnRaces()
 
 
 #if 0
-namespace {
 
-struct Initializer { Initializer(); };
-static Initializer initializer;
-
-Initializer::Initializer()
+static void
+__attribute__((constructor))
+initialize()
 {
 	// init king safety
 	for (int safety = 0; safety < 16; ++safety)
@@ -2340,7 +2338,6 @@ Initializer::Initializer()
 	}
 }
 
-} // namespace
 #endif
 
 // vi:set ts=3 sw=3:

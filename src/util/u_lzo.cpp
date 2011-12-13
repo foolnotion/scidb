@@ -30,18 +30,13 @@
 using namespace util;
 
 
-namespace {
-
-struct Initializer { Initializer(); };
-static Initializer initializer;
-
-Initializer::Initializer()
+static void
+__attribute__((constructor))
+initialize()
 {
 	__attribute__((unused)) int rc = lzo_init();
 	assert(rc == LZO_E_OK && "lzo_init() failed");
 }
-
-} // namespace
 
 
 static lzo_align_t workingMem[(LZO1X_1_MEM_COMPRESS + sizeof(lzo_align_t) - 1)/sizeof(lzo_align_t)];
