@@ -1,6 +1,15 @@
 [December 2011] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #161)
+------------------------------------------------------------------------------
+* The current status about Debian Wheezy/Ubuntu Oneric:
+On Debian Wheezy the workaround is working, on Ubuntu Oneric not. This means
+that the hack is required only for Ubuntu Oneric. In both cases it's a problem
+with the linker. The GNU team has changed the linker concept (the .ctors
+section is gone), and this linker is not working properly.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #160)
 ------------------------------------------------------------------------------
 * Static object initialization is not working at all on Debian Wheezy/Ubuntu

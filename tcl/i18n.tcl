@@ -277,9 +277,16 @@ proc setLang {id} {
 	variable langID
 	variable ::i18n::languages
 
+	set n [lsearch -index 1 $languages $id]
+	if {$n == -1} {
+		set id en	;# language id is gone
+		set n [lsearch -index 1 $languages $id]
+		if {$n == -1} { return } ;# no language set loaded
+	}
+
 	set langID $id
 	::font::useLanguage $id
-	selectLang [lindex $languages [lsearch -index 1 $languages $id] 0]
+	selectLang [lindex $languages $n 0]
 }
 
 
@@ -319,6 +326,13 @@ proc selectLang {{lang {}}} {
 	variable encoding
 
 	if {[llength $lang]} { set Language $lang }
+
+	if {![info exists ::mc::lang$Language]} {
+		set msg "Language '$Language' is currently not supported, a volunteer is wanted who likes to finish the translation for '$Language'."
+		after idle [list ::dialog::info -message $msg]
+		set Language English
+	}
+
 	set langID [set ::mc::lang$Language]
 	set encoding [set ::mc::encoding$Language]
 

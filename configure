@@ -5,7 +5,7 @@
 # This program tries to determine system-specific details needed
 # for compiling Scidb (such as the version of Tcl/Tk you have
 # installed, and where to find the Tcl/Tk header and library 
-# files), and creates the file "Makefile".
+# files), and creates the file "Makefile.in".
 
 
 # Try to find the best version of Tcl/Tk 8.x that is installed,
@@ -156,12 +156,16 @@ set configure(tcl-version) [findBestTclVersion]
 set configure(gcc-version) ""
 
 array set package {
-    zlib-inc     {}
-    zlib-lib     -lz
-    zziplib-inc  {}
-    zziplib-lib  -lzzip
-    expat-inc    {}
-    expat-lib    -lexpat
+    zlib-inc    {}
+    zlib-lib    -lz
+    zziplib-inc {}
+    zziplib-lib -lzzip
+    expat-inc   {}
+    expat-lib   -lexpat
+    tcl-inc     {}
+    tcl-lib     {}
+    x-inc       {}
+    x-lib       {}
 }
 
 array set feature {
@@ -227,6 +231,9 @@ foreach name [array names environment] {
 
 
 proc MakeOption {prefix path} {
+    if {[string length $path] == 0 || $path eq "/"} {
+        return ""
+    }
     if {[string first $path " "] == -1} {
         return $prefix$path
     }
@@ -1363,10 +1370,12 @@ if {[string length $gxxVer]} {
      checkExpat
 
     if {[isInsaneUnixRelease]} {
-        if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
-            append option(EXTRA_CXXFLAGS) " "
+        if {![string match Debian* $insaneRelease]} {
+            if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
+                append option(EXTRA_CXXFLAGS) " "
+            }
+            append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
         }
-        append option(EXTRA_CXXFLAGS) "-DUSE_WHEEEZY_INIT_HACK=1"
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
@@ -1377,7 +1386,7 @@ if {[string length $gxxVer]} {
         # it seems that we build on an insane Unix system (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to run Scidb on an insane Unix distribution."
+        puts "You're about to run Scidb on an insane distribution."
         puts "Scidb may crash with the pre-installed Tk library $instableTkLibrary."
         puts "It is highly recommended to install a stable Tk version"
         puts "(8.5.6, or 8.5.11) before building Scidb."
@@ -1390,13 +1399,19 @@ if {[string length $gxxVer]} {
         # (like Debian Wheezy, or Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to build Scidb on an insane distribution"
-        puts "($insaneRelease - static object initialization is not"
-        puts "properly working on this system), Scidb may crash (but"
-        puts "hopefully it will not)."
-        puts "Also the call of sub-processes is not working properly"
-        puts "on this system, you may not get a proper error message"
-        puts "in case of an exception."
+        if {[string match Debian* $insaneRelease]} {
+            puts "The call of sub-processes is not working properly on"
+            puts "this system, you may not get a proper error message"
+            puts "in case of an exception."
+        } else {
+            puts "You're about to build Scidb on an insane distribution"
+            puts "($insaneRelease - the linker is broken - among other"
+            puts "severe problems). Scidb may crash - but hopefully it"
+            puts "will not."
+            puts "Also the call of sub-processes is not working properly"
+            puts "on this system, you may not get a proper error message"
+            puts "in case of an exception."
+        }
     }
 
     exit 0

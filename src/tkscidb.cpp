@@ -40,7 +40,7 @@
 #include <stdio.h>
 
 
-#ifdef USE_WHEEEZY_INIT_HACK
+#ifdef BROKEN_LINKER_HACK
 # include "db_board.h"
 # include "db_board_base.h"
 # include "db_home_pawns.h"
@@ -63,7 +63,7 @@ init(Tcl_Interp* ti)
 
 		Tcl_PkgProvide(ti, "tkscidb", "1.0");
 
-#ifdef USE_WHEEEZY_INIT_HACK
+#ifdef BROKEN_LINKER_HACK
 
 		// HACK!
 		// This hack is required for insane systems like Debian Wheezy,
