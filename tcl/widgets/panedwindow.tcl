@@ -203,11 +203,11 @@ proc DestroyHandler {w} {
 } ;# namespace panedwindow
 
 
-bind Panedwindow <Button-1>			{ tk::panedwindow::MarkSash %W %x %y }
+bind Panedwindow <ButtonPress-1>		{ tk::panedwindow::MarkSash %W %x %y }
 bind Panedwindow <B1-Motion>			{ tk::panedwindow::DragSash %W %x %y }
 bind Panedwindow <ButtonRelease-1>	{ tk::panedwindow::ReleaseSash %W }
 
-bind Panedwindow <Button-2>			{ break }
+bind Panedwindow <ButtonPress-2>		{ break }
 bind Panedwindow <B2-Motion>			{ break }
 bind Panedwindow <ButtonRelease-2>	{ break }
 bind Panedwindow <Leave>				{ break }
@@ -227,6 +227,7 @@ proc MarkSash {w x y} {
 	variable ::panedwindow::${w}::MaxSize
 	variable ::panedwindow::${w}::GridSize
 	variable ::panedwindow::${w}::SashCmd
+	variable ::panedwindow::${w}::Cursor
 
 	set panes [$w panes]
 	lassign {0 0 0 0} lhsMax rhsMax lhsMin rhsMin
@@ -291,10 +292,7 @@ proc MarkSash {w x y} {
 		set cursor sb_v_double_arrow
 	}
 
-	foreach pane [$w panes] {
-		set Priv(panecursor:$pane) [$pane cget -cursor]
-		$pane configure -cursor $cursor
-	}
+	SetCursor [$w panes] $cursor
 }
 
 
@@ -317,10 +315,7 @@ proc ReleaseSash {w} {
 	variable ::tk::Priv
 
 	if {[info exists Priv(sash)]} {
-		foreach pane [$w panes] {
-			$pane configure -cursor $Priv(panecursor:$pane)
-		}
-
+		ResetCursor [$w panes]
 		array unset Priv panecursor:*
 		array unset Priv panesize:*
 		unset Priv(sash) Priv(dx) Priv(dy) Priv(min) Priv(max)
@@ -400,6 +395,29 @@ proc MoveSash {w index x y offs} {
 				MoveSash $w [expr {$index + 1}] $x $y [expr {$offs - $maxSize - $sashSize}]
 			}
 		}
+	}
+}
+
+
+proc SetCursor {childs cursor} {
+	variable ::tk::Priv
+
+	foreach child $childs {
+		catch {
+			set Priv(panecursor:$child) [$child cget -cursor]
+			$child configure -cursor $cursor
+		}
+		SetCursor [winfo children $child] $cursor
+	}
+}
+
+
+proc ResetCursor {childs} {
+	variable ::tk::Priv
+
+	foreach child $childs {
+		catch { $child configure -cursor $Priv(panecursor:$child) }
+		ResetCursor [winfo children $child]
 	}
 }
 

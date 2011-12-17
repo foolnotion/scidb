@@ -2533,6 +2533,7 @@ proc DeleteFile {w} {
 				if {[llength $Vars(exec:delete)] == 0} {
 					set Vars(exec:delete) [auto_execok kfmclient]
 				}
+				if {[llength $Vars(exec:delete)] == 0} { set $Vars(iskde) 0 }
 			}
 		}
 		set iskde $Vars(iskde)

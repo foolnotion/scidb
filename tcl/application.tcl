@@ -474,7 +474,7 @@ proc Undock {w name} {
 	wm manage $w ;# -iconic
 	::util::place $w at $x [expr {$y - 22}]
 	wm protocol $w WM_DELETE_WINDOW [namespace code [list Dock $w $name]]
-	wm iconphoto $w -default $::icon::64x64::logo $::icon::16x16::logo
+#	wm iconphoto $w -default $::icon::64x64::logo $::icon::16x16::logo
 	ComputeMinSize $main
 }
 

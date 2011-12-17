@@ -977,7 +977,7 @@
 
 ::export::mc::PdfFiles						"PDF Files"
 ::export::mc::HtmlFiles						"HTML Files"
-::export::mc::TeXFiles						"TeX Files"
+::export::mc::TeXFiles						"LaTeX Files"
 
 ::export::mc::ExportDatabase				"Export Database"
 ::export::mc::ExportDatabaseTitle		"Export Database '%s'"

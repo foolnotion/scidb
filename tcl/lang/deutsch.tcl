@@ -973,7 +973,7 @@
 
 ::export::mc::PdfFiles						"PDF-Dateien"
 ::export::mc::HtmlFiles						"HTML-Dateien"
-::export::mc::TeXFiles						"TeX-Dateien"
+::export::mc::TeXFiles						"LaTeX-Dateien"
 
 ::export::mc::ExportDatabase				"Datenbank exportieren"
 ::export::mc::ExportDatabaseTitle		"Datenbank '%s' exportieren"

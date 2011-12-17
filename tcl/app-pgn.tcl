@@ -2048,11 +2048,11 @@ proc PopupMenu {parent position} {
 		$menu add separator
 
 		$menu add command \
-			-label $::import::mc::ImportPgnGame \
+			-label "$::import::mc::ImportPgnGame..." \
 			-command [namespace code PasteClipboardGame] \
 			;
 		$menu add command \
-			-label $::import::mc::ImportPgnVariation \
+			-label "$::import::mc::ImportPgnVariation..." \
 			-command [namespace code PasteClipboardVariation] \
 			;
 

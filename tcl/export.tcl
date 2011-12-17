@@ -83,7 +83,7 @@ set HideVariations		"Hide variations"
 
 set PdfFiles				"PDF Files"
 set HtmlFiles				"HTML Files"
-set TeXFiles				"TeX Files"
+set TeXFiles				"LaTeX Files"
 
 set ExportDatabase		"Export %s Database"
 set ExportDatabaseTitle	"Export Database '%s'"
@@ -2837,6 +2837,7 @@ proc Select {nb index} {
 	variable Values
 
 	if {[llength $index] == 0} { return }	;# ignore double click
+	::widget::busyCursor $nb on
 	set Values(Type) [lindex $Types $index]
 	set savemode 0
 
@@ -2990,6 +2991,7 @@ proc Select {nb index} {
 
 	::dialog::fsbox::setFileTypes $Info(fsbox) [list [list $var $ext]] $ext
 	if {$Values(Type) eq "pdf" && $Values(pdf,fonts,builtin)} { style::UseBuiltinFonts }
+	::widget::busyCursor $nb off
 }
 
 
@@ -3148,7 +3150,31 @@ proc DoExport {parent dlg file} {
 					lappend nags $nag
 				}
 			}
+		}
+	}
 
+	destroy $dlg
+
+	switch $Values(Type) {
+		scid - scidb - pgn {
+			switch [::dialog::fsbox::saveMode $Info(fsbox)] {
+				append		{ set append 1 }
+				overwrite	{ set append 0 }
+			}
+
+			set cmd [list ::scidb::view::export \
+				$Info(base) \
+				$Info(view) \
+				$file \
+				$Info($Values(Type),flags) \
+				$append \
+				$encoding \
+				$excludeGamesWithIllegalMoves \
+				$tagList \
+			]
+		}
+
+		html - pdf - tex {
 			set cmd [list ::scidb::view::print \
 				$Info(base) \
 				$Info(view) \
@@ -3162,27 +3188,9 @@ proc DoExport {parent dlg file} {
 				$languages \
 				$significant \
 			]
-			return
 		}
 	}
 
-	switch [::dialog::fsbox::saveMode $Info(fsbox)] {
-		append		{ set append 1 }
-		overwrite	{ set append 0 }
-	}
-
-	destroy $dlg
-
-	set cmd [list ::scidb::view::export \
-		$Info(base) \
-		$Info(view) \
-		$file \
-		$Info($Values(Type),flags) \
-		$append \
-		$encoding \
-		$excludeGamesWithIllegalMoves \
-		$tagList \
-	]
 	set options [list -message $mc::ExportDatabase -log 0]
 	lappend args [namespace current]::Log {}
 
@@ -3195,10 +3203,50 @@ proc DoExport {parent dlg file} {
 	::log::open "$formatName $mc::Export"
 	::log::delay
 	::log::info [format $mc::ExportingDatabase $Info(name) $file]
-	set count [::progress::start $parent $cmd $args $options]
+	set result [::progress::start $parent $cmd $args $options]
+	set trace [lindex $result 1]
+	set count [lindex $result 0]
 	update idletasks ;# be sure the following will be appended
 	::log::info [format $mc::ExportedGames [::locale::formatNumber $count]]
 	::log::close
+
+	if {[string length $trace]} { ShowTrace $parent $trace }
+}
+
+
+proc ShowTrace {parent trace} {
+	set dlg [winfo toplevel $parent].trace
+	set txt $dlg.f.text
+
+	if {[winfo exists $dlg]} {
+		$txt configure -state normal
+		$txt delete 1.0 end
+	} else {
+		toplevel $dlg -class Scidb
+		set f [::ttk::frame $dlg.f]
+
+		tk::text $f.text \
+			-width 100 \
+			-height 40 \
+			-yscrollcommand [list $f.vsb set] \
+			-wrap word \
+			-setgrid 1 \
+			;
+		ttk::scrollbar $f.vsb -orient vertical -command [list ::widget::textLineScroll $f.text]
+		pack $f -expand yes -fill both
+		grid $f.text -row 1 -column 1 -sticky nsew
+		grid $f.vsb  -row 1 -column 2 -sticky ns
+		grid rowconfigure $f 1 -weight 1
+		grid columnconfigure $f 1 -weight 1
+		::widget::dialogButtons $dlg close close
+		$dlg.close configure -command [list destroy $dlg]
+		::util::place $dlg center $w
+		wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+		wm deiconify $dlg
+	}
+
+	$txt insert end $trace
+	$txt configure -state disabled
 }
 
 
