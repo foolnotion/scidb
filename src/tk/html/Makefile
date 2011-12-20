@@ -78,7 +78,7 @@ TCLSH	= tclsh$(TCL_VERSION)
 htmltokens.c:	tokenlist.txt
 	$(TCLSH) $?
 
-htmldefaultstyle.c: tkhtml.tcl html.css mkdefaultstyle.tcl 
+htmldefaultstyle.c: tkhtml.tcl html.css quirks.css mkdefaultstyle.tcl 
 	$(TCLSH) mkdefaultstyle.tcl > htmldefaultstyle.c
 
 htmltokens.h: htmltokens.c

@@ -39,16 +39,16 @@ proc spinboxInt {w {clamp 1}} {
 
 
 proc entryFloat {w} {
-	$w configure -validatecommand [namespace code [list validateFloat %P]] -invalidcommand { bell }
-	bind $w <FocusOut> +[namespace code [list formatFloat %W]]
+	$w configure -validatecommand [namespace code { validateFloat %P }] -invalidcommand { bell }
+	bind $w <FocusOut> +[namespace code { formatFloat %W }]
 	bind $w <FocusOut> {+ %W selection clear }
 	bind $w <FocusIn>  {+ %W configure -validate key }
 }
 
 
 proc entryUnsigned {w} {
-	$w configure -validatecommand [namespace code [list validateUnsigned %P]] -invalidcommand { bell }
-	bind $w <FocusOut> +[namespace code [list formatUnsigned %W]]
+	$w configure -validatecommand [namespace code { validateUnsigned %P }] -invalidcommand { bell }
+	bind $w <FocusOut> +[namespace code { formatUnsigned %W }]
 	bind $w <FocusOut> {+ %W selection clear }
 	bind $w <FocusIn>  {+ %W configure -validate key }
 }

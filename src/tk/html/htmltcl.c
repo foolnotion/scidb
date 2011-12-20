@@ -42,6 +42,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -2161,12 +2162,12 @@ handlerCmd(clientData, interp, objc, objv)
     pScript = objv[4];
 
     if (Tcl_GetCharLength(pScript) == 0) {
-        pEntry = Tcl_FindHashEntry(pHash, (char *)tag);
+        pEntry = Tcl_FindHashEntry(pHash, (char *)(intptr_t)tag);
         if (pEntry) {
             Tcl_DeleteHashEntry(pEntry);
         }
     } else {
-        pEntry = Tcl_CreateHashEntry(pHash,(char*)tag,&newentry);
+        pEntry = Tcl_CreateHashEntry(pHash,(char*)(intptr_t)tag,&newentry);
         if (!newentry) {
             Tcl_Obj *pOld = (Tcl_Obj *)Tcl_GetHashValue(pEntry);
             Tcl_DecrRefCount(pOld);
