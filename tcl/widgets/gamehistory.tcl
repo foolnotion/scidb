@@ -30,8 +30,8 @@ package require scrolledframe
 
 namespace eval game {
 
-proc history {path} {
-	return [history::Build $path]
+proc history {path args} {
+	return [history::Build $path {*}$args]
 }
 
 namespace eval history {
@@ -42,10 +42,10 @@ set Games			"Games"
 
 }
 
-proc Build {w} {
+proc Build {w args} {
 	set myList {}
 
-	set parent [::scrolledframe $w -fill both -background white -borderwidth 0]
+	set parent [::scrolledframe $w -fill both -background white -borderwidth 0 {*}$args]
 	set f $parent.f
 	set t $f.t
 	set h $f.h
@@ -55,7 +55,7 @@ proc Build {w} {
 	set size [font configure $font -size]
 	set boldFont [list [list $family $size bold]]
 
-	::tk::frame $f -background white -borderwidth 0
+	::tk::frame $f -background white -borderwidth 0 {*}$args
 	grid $f
 	grid anchor $parent center
 

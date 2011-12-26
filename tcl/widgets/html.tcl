@@ -59,10 +59,13 @@ proc Build {w args} {
 		-imagecmd		{}
 		-nodehandler	{}
 		-doublebuffer	yes
+		-center			no
 		-delay			0
 	}
 
 	array set opts $args
+	set center $opts(-center)
+	array unset opts -center
 
 #	append css "body\{"
 #	append css "font-family: \"Helvetica\", sans-serif;"
@@ -119,6 +122,7 @@ proc Build {w args} {
 	set Priv(bbox) {}
 	set Priv(pointer) {0 0}
 	set Priv(delay) $opts(-delay)
+	set Priv(center) $center
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
@@ -128,8 +132,13 @@ proc Build {w args} {
 	if {[llength $opts(-nodehandler)]} {
 		$html handler node td $opts(-nodehandler)
 	}
-	grid $html
-	grid anchor $parent center
+
+	if {$center} {
+		grid $html
+		grid anchor $parent center
+	} else {
+		pack $html -fill both -expand yes
+	}
 
 	return $w
 }

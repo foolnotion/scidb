@@ -1419,4 +1419,4 @@ if {[string length $gxxVer]} {
 
 exit 1
 
-# vi:set ts=4 sw=4 et:
+# vi:set ts=4 sw=4 et filetype=tcl:

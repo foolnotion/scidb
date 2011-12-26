@@ -292,6 +292,7 @@ proc MarkSash {w x y} {
 		set cursor sb_v_double_arrow
 	}
 
+	set Priv(cursorList) {}
 	SetCursor [$w panes] $cursor
 }
 
@@ -315,10 +316,9 @@ proc ReleaseSash {w} {
 	variable ::tk::Priv
 
 	if {[info exists Priv(sash)]} {
-		ResetCursor [$w panes]
-		array unset Priv panecursor:*
+		ResetCursor
 		array unset Priv panesize:*
-		unset Priv(sash) Priv(dx) Priv(dy) Priv(min) Priv(max)
+		unset Priv(sash) Priv(dx) Priv(dy) Priv(min) Priv(max) Priv(cursorList)
 	}
 }
 
@@ -404,20 +404,22 @@ proc SetCursor {childs cursor} {
 
 	foreach child $childs {
 		catch {
-			set Priv(panecursor:$child) [$child cget -cursor]
+			set cur [$child cget -cursor]
 			$child configure -cursor $cursor
+			lappend Priv(cursorList) $child $cur
 		}
 		SetCursor [winfo children $child] $cursor
 	}
 }
 
 
-proc ResetCursor {childs} {
+proc ResetCursor {} {
 	variable ::tk::Priv
 
-	foreach child $childs {
-		catch { $child configure -cursor $Priv(panecursor:$child) }
-		ResetCursor [winfo children $child]
+	foreach {child cursor} $Priv(cursorList) {
+		if {[winfo exists $child]} {
+			catch { $child configure -cursor $cursor }
+		}
 	}
 }
 

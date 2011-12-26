@@ -278,6 +278,7 @@ proc open {parent base index view source} {
 		-nodehandler [namespace current]::NodeHandler \
 		-imagecmd [namespace code GetImage] \
 		-delay 10 \
+		-center yes \
 		;
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
 

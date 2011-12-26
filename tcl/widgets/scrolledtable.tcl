@@ -187,6 +187,18 @@ proc build {path columns args} {
 	::table::bind $tb <Button1-Motion>		 [namespace code [list ScanDrag $tb %x %y]]
 	::table::bind $tb <ButtonRelease-1>		+[namespace code [list MoveRow $tb %x %y]]
 
+	if {[tk windowingsystem] eq "x11"} {
+		::table::bind $tb <Button-4> [namespace code [list scroll $path up]]
+		::table::bind $tb <Button-5> [namespace code [list scroll $path down]]
+		::table::bind $tb <Shift-Button-4> [namespace code [list scroll $path back]]
+		::table::bind $tb <Shift-Button-5> [namespace code [list scroll $path forward]]
+	} else {
+		::table::bind $tb <MouseWheel> [namespace code [list \
+			if {%D < 0} [list scroll $path up] else [list scroll $path down]]]
+		::table::bind $tb <Shift-MouseWheel> [namespace code [list \
+			if {%D < 0} [list scroll $path back] else [list scroll $path forward]]]
+	}
+
 	foreach seq {<Shift-Up> <Shift-Down> <ButtonPress-1> <ButtonRelease-1>} {
 		::table::bind $tb $seq {+ break }
 	}
@@ -281,7 +293,16 @@ proc scroll {path position} {
 			SetStart $table $start
 		}
 
-		default		{ SetStart $table $position }
+		default		{
+			if {[string is integer -strict $position]} {
+				set start [expr {max(0, min($Vars(size) - 1, $Vars(start) + $position))}]
+				if {$start == $Vars(start)} { return }
+				::tooltip::hide
+				SetStart $table $start
+			} else {
+				SetStart $table $position
+			}
+		}
 	}
 
 	ConfigureScale $table
