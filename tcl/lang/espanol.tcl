@@ -696,8 +696,9 @@
 ::gametable::mc::GameFlags(=)				"Defensa"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Juego de piezas"
-::gametable::mc::GameFlags(t)				"Horror táctico"
-::gametable::mc::GameFlags(s)				"Horror estratégico"
+::gametable::mc::GameFlags(t)				"Horror táctico" ; # unused
+::gametable::mc::GameFlags(s)				"Horror estratégico" ; # unused
+::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
 ::gametable::mc::GameFlags(I)				"Jugada ilegal"
 
 ### playertable ########################################################

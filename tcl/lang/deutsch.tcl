@@ -691,8 +691,9 @@
 ::gametable::mc::GameFlags(=)				"Verteidigung"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Figurenspiel"
-::gametable::mc::GameFlags(t)				"Taktische Schnitzer"
-::gametable::mc::GameFlags(s)				"Strategische Schnitzer"
+::gametable::mc::GameFlags(t)				"Taktische Schnitzer" ;# unused
+::gametable::mc::GameFlags(s)				"Strategische Schnitzer" ;# unused
+::gametable::mc::GameFlags(C)				"Regelwidrige Rochade"
 ::gametable::mc::GameFlags(I)				"Regelwidriger Zug"
 
 ### playertable ########################################################

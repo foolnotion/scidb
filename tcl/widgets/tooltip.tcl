@@ -112,6 +112,10 @@
 #
 #------------------------------------------------------------------------
 
+# Some Tcl/Tk distributions do provide "tooltip 1.4.4".
+# We don't need this.
+catch { package forget tooltip }
+
 package require Tk 8.4
 package provide tooltip 1.5.0
 

@@ -71,6 +71,7 @@ proc open {parent} {
 	set Vars(size) $pieceSize
 	set Vars(dlg) $dlg
 	set Vars(board) $rank
+	set Vars(idn:text) ""
 
 	set activebg [::theme::getActiveBackgroundColor]
 	set selectbg $::board::square::style(hilite,selected)
@@ -158,6 +159,11 @@ proc open {parent} {
 		-textvar [namespace parent]::board::mc::Chess960Castling \
 		-variable [namespace current]::Vars(castling) \
 		;
+	::ttk::entry $top.control.idn \
+		-textvariable [namespace current]::Vars(idn:text) \
+		-width 5 \
+		-state readonly \
+		;
 	::ttk::button $top.control.standard \
 		-style icon.TButton \
 		-image $::icon::16x16::home \
@@ -167,7 +173,7 @@ proc open {parent} {
 		-style icon.TButton \
 		-image $::icon::16x16::dice \
 		-command \
-			[list [namespace parent]::board::PopupShuffleMenu [namespace current] $top.control.shuffle] \
+			[list [namespace parent]::popupShuffleMenu [namespace current] $top.control.shuffle] \
 		;
 	if {[llength $Previous]} { set state normal } else { set state disabled }
 	::ttk::button $top.control.previous \
@@ -176,19 +182,27 @@ proc open {parent} {
 		-command [namespace code [list UsePrevious $dlg]] \
 		-state $state \
 		;
+	::ttk::button $top.control.clear \
+		-style icon.TButton \
+		-image $::icon::16x16::clear \
+		-command [namespace code Clear] \
+		;
 
 	::tooltip::tooltip $top.control.standard [namespace parent]::board::mc::StandardPosition
 	::tooltip::tooltip $top.control.shuffle [namespace parent]::board::mc::Shuffle
 	::tooltip::tooltip $top.control.previous [namespace current]::mc::UsePreviousPosition
+	::tooltip::tooltip $top.control.clear ::mc::Clear
 
 	grid $rank -column 1 -row 1
 
-	grid $top.control.castling -column 1 -row 1 -sticky w
-	grid $top.control.standard -column 3 -row 1
-	grid $top.control.shuffle  -column 5 -row 1
-	grid $top.control.previous -column 7 -row 1
-	grid columnconfigure $top.control {2 4 6} -minsize $::theme::padding
-	grid columnconfigure $top.control 1 -weight 1
+	grid $top.control.castling -column  1 -row 1 -sticky w
+	grid $top.control.idn      -column  3 -row 1
+	grid $top.control.standard -column  5 -row 1
+	grid $top.control.shuffle  -column  7 -row 1
+	grid $top.control.previous -column  9 -row 1
+	grid $top.control.clear    -column 11 -row 1
+	grid columnconfigure $top.control {2 4 6 8 10} -minsize $::theme::padding
+	grid columnconfigure $top.control {2 4} -weight 1
 
 	grid $top.buttons -row 1 -column 2
 	grid $top.board   -row 3 -column 1 -columnspan 3
@@ -227,21 +241,31 @@ proc Shuffle {variant} {
 	set fen [::scidb::board::idnToFen $Vars(idn)]
 	set Vars(position) [string range $fen 36 43]
 
-	for {set col 0} {$col < 8} {incr col} {
-		SetPiece [string tolower [string index $Vars(position) $col]] $col
-	}
-
+	UpdateBoard
+	UpdateButtons
 	Update
+}
+
+
+proc UpdateBoard {} {
+	variable Vars
+
+	for {set col 0} {$col < 8} {incr col} {
+		set piece [string tolower [string index $Vars(position) $col]]
+		SetPiece $piece $col
+	}
 }
 
 
 proc SetPiece {piece col} {
 	variable Vars
 
-	set img photo_Piece(w$piece,$Vars(size))
-
 	$Vars(board) delete piece:$col
-	$Vars(board) create image $Vars(x:$col) $Vars(y:$col) -image $img -tag piece:$col -anchor nw
+
+	if {$piece ne "-"} {
+		set img photo_Piece(w$piece,$Vars(size))
+		$Vars(board) create image $Vars(x:$col) $Vars(y:$col) -image $img -tag piece:$col -anchor nw
+	}
 }
 
 
@@ -257,14 +281,30 @@ proc UpdatePiece {piece col} {
 }
 
 
+proc UpdateButtons {} {
+	variable Vars
+
+	set col 0
+	foreach c {A B C D E F G H} {
+		set piece [string tolower [string index $Vars(position) $col]]
+		set Vars(piece:$c) $piece
+		incr col
+	}
+}
+
+
 proc Update {} {
 	variable Vars
 
-	if {$Vars(idn) == 0} { set state disabled } else { set state normal }
-	$Vars(dlg).ok configure -state $state
+	if {$Vars(idn) == 0} {
+		set Vars(idn:text) ""
+		set state disabled
+	} else {
+		set Vars(idn:text) $Vars(idn)
+		set state normal
+	}
 
-	if {$Vars(idn) <= 960} { set state normal } else { set state disabled }
-	$Vars(dlg).top.control.castling configure -state $state
+	$Vars(dlg).ok configure -state $state
 }
 
 
@@ -282,6 +322,19 @@ proc UsePrevious {dlg} {
 	}
 
 	set Vars(idn) [::scidb::board::positionNumber $Vars(position)]
+	UpdateButtons
+	Update
+}
+
+
+proc Clear {} {
+	variable Vars
+
+	set Vars(position) "--------"
+	set Vars(idn) 0
+
+	UpdateBoard
+	UpdateButtons
 	Update
 }
 

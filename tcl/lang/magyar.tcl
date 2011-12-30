@@ -696,8 +696,9 @@
 ::gametable::mc::GameFlags(=)				"Defense"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Piece Play"
-::gametable::mc::GameFlags(t)				"Tactical Blunder"
-::gametable::mc::GameFlags(s)				"Strategical Blunder"
+::gametable::mc::GameFlags(t)				"Tactical Blunder" ;# unused
+::gametable::mc::GameFlags(s)				"Strategical Blunder" ;# unused
+::gametable::mc::GameFlags(C)				"Illegal Castling"
 ::gametable::mc::GameFlags(I)				"Illegal Move"
 
 ### playertable ########################################################

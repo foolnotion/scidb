@@ -692,8 +692,9 @@
 ::gametable::mc::GameFlags(=)				"Difesa"
 ::gametable::mc::GameFlags(M)				"Materiale"
 ::gametable::mc::GameFlags(P)				"Gioco di pezzi"
-::gametable::mc::GameFlags(t)				"Svista tattica"
-::gametable::mc::GameFlags(s)				"Svista strategica"
+::gametable::mc::GameFlags(t)				"Svista tattica" ;# unused
+::gametable::mc::GameFlags(s)				"Svista strategica" ;# unused
+::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
 ::gametable::mc::GameFlags(I)				"Mossa illegale"
 
 ### playertable ########################################################

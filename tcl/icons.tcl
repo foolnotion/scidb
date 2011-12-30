@@ -425,7 +425,7 @@ namespace eval 12x12 {
 		fpcANMFYZtYG0bYbCASgOp30OjMeaN3aCe8AHohqymv8AzcF0UoEAxYaAAAAAElFTkSuQmCC
 	}]
 
-	set gameflag(I) [image create photo -data {
+	set gameflag(C) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAB+0lEQVQoz2NggIL///8zPUpI
 		qHqUl3fvcUHBnydFRX8flpS8vFNcvHyHjIwQAzL4tGyZyMPy8ttPi4v/P83Kun4tJGTPreDg
 		nXeio58/jI39f7ek5PH5rCxTmMmMTxoaLr7Myvr/oKDg21k/vxwkW1nuhId33goP/3O3oOD+
@@ -438,6 +438,8 @@ namespace eval 12x12 {
 		/xt8fP+v8/L+v6KoePNyVtZEZLVMQCwMxDpA7NyoqTlrvonJkZkGBif6bGy2JJmaNgHFHYBY
 		DYh5AXVu2vtfNL8bAAAAAElFTkSuQmCC
 	}]
+
+	set gameflag(I) $gameflag(I)
 
 	set gameflag(1) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAABRSURB
