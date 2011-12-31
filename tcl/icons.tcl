@@ -439,7 +439,7 @@ namespace eval 12x12 {
 		DYh5AXVu2vtfNL8bAAAAAElFTkSuQmCC
 	}]
 
-	set gameflag(I) $gameflag(I)
+	set gameflag(I) $gameflag(C)
 
 	set gameflag(1) [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAAmJLR0QA/4ePzL8AAABRSURB
