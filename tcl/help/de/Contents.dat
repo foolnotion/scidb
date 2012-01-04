@@ -1,0 +1,43 @@
+set Contents {
+	{
+		{{{Übersicht} {Overview.html}}}
+	}
+	{
+		{{{Allgemeine Hilfe} {Overview.html} {general}}}
+		{{{Datenbankformate} {Database-Formats.html}}}
+		{{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
+		{{{Umgang mit Funktionsleisten} {Toolbar-Usage}}}
+		{{{Die Ablage-Datenbank} {Clipbase.html}}}
+	}
+	{
+		{{{Scidb-Listenfenster} {Overview.html} {list-windows}}}
+		{{{Partienliste} {Game-List-Window.html}}}
+		{{{Spielerliste} {Player-List-Window.html}}}
+		{{{Veranstaltungsliste} {Event-List-Window.html}}}
+		{{{Kommentatorenliste} {Annotator-List-Window.html}}}
+	}
+	{
+		{{{Scidb-Fenster und Dialoge} {Overview.html} {windows-and-dialogs}}}
+		{{{Datenbankumschalter} {Database-Switcher.html}}}
+		{{{Partie-Browser} {Game-Browser.html}}}
+		{{{Partie-Übersicht} {Game-Overview.html}}}
+		{{{Partietext-Fenster} {Game-Text-Window.html}}}
+		{{{Partienhistorie} {Game-History-Window.html}}}
+		{{{Schachbrett} {Board-Window.html}}}
+		{{{Zugbaum} {Tree-Window.html}}}
+		{{{Zugbaumpartienliste} {Tree-Games-Window.html}}}
+		{{{Kommentareditor} {Comment-Editor-Dialog.html}}}
+		{{{Feldmarkierungspalette} {Mark-Palette-Dialog.html}}}
+		{{{Stellungseingabe} {Board-Setup-Dialog.html}}}
+		{{{Startpositionseingabe} {Start-Position-Setup-Dialog.html}}}
+		{{{Kreuztabelle} {Crosstable-Window.html}}}
+		{{{Partienimport} {PGN-Import-Dialog.html}}}
+	}
+	{
+		{{{Weitere Informationen} {Overview.html} {further-information}}}
+		{{{Partiemarkierungen} {Game-Flags.html}}}
+		{{{Kommandozeilenoptionen} {Command-Line-Options.html}}}
+		{{{NAG-Kommentarwerte} {NAG-Comments.html}}}
+		{{{Kontaktinformationen} {Contact-Information.html}}}
+	}
+}

@@ -189,12 +189,14 @@ struct HtmlTokenMap {
 #define TAG_PARENT   2
 #define TAG_OK       3
 
+struct HtmlAttribute {
+    char *zName;
+    char *zValue;
+};
+
 struct HtmlAttributes {
     int nAttr;
-    struct HtmlAttribute {
-        char *zName;
-        char *zValue;
-    } a[1];
+    struct HtmlAttribute a[1];
 };
 
 /*
@@ -559,6 +561,7 @@ struct HtmlTree {
      * are in characters, not bytes. TODO! See ticket #126.
      */
     Tcl_Obj *pDocument;             /* Text of the html document */
+    Tcl_Encoding pCharset;          /* Encoding of the html document */
     int nParsed;                    /* Bytes of pDocument tokenized */
     int nCharParsed;                /* TODO: Characters parsed */
 

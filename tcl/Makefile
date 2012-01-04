@@ -110,6 +110,7 @@ SOURCES = \
 	setup-board.tcl \
 	setup-position.tcl \
 	crosstable.tcl \
+	help.tcl \
 	info.tcl \
 	move.tcl \
 	game.tcl \
@@ -126,58 +127,206 @@ clean:
 depend:
 	# nothing to do
 
-install: $(SCRIPT)
-	@echo "Create directories"
+install-script: $(SCRIPT)
+	@echo "Install $(SCRIPT)"
 	@install -m 755 -d $(BINDIR)
-	@install -m 755 -d $(SHAREDIR)
-	@install -m 755 -d $(SHAREDIR)/pieces
-	@install -m 755 -d $(SHAREDIR)/cursor
-	@install -m 755 -d $(SHAREDIR)/flags
-	@install -m 755 -d $(SHAREDIR)/lang
-	@install -m 755 -d $(SHAREDIR)/lang/eco
-	@install -m 755 -d $(SHAREDIR)/lang/nag
-	@install -m 755 -d $(SHAREDIR)/photos
-	@install -m 755 -d $(SHAREDIR)/photos
-	@install -m 755 -d $(SHAREDIR)/textures
-	@install -m 755 -d $(SHAREDIR)/themes
-	@install -m 755 -d $(SHAREDIR)/themes/square
-	@install -m 755 -d $(SHAREDIR)/themes/piece
-	@install -m 755 -d $(SHAREDIR)/scripts
-	@install -m 755 -d $(SHAREDIR)/pdf
-	@install -m 755 -d $(SHAREDIR)/pdf/sets
 	@install -m 755 -p $(SCRIPT) $(BINDIR)
+
+uninstall-script:
+	@echo "Uninstall $(SCRIPT)"
+	@rm -f $(BINDIR)/$(SCRIPT)
+
+install-pieces:
 	@echo "Install piece sets"
+	@install -m 755 -d $(SHAREDIR)/pieces
 	@install -m 644 -p pieces/*.tcl $(SHAREDIR)/pieces
+
+uninstall-pieces:
+	@echo "Uninstall piece sets"
+	@if [ -d $(SHAREDIR)/pieces ]; then                                                       \
+		for f in `ls pieces/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                            \
+		if [ "`find $(SHAREDIR)/pieces -type d -empty`" = "`ls -d $(SHAREDIR)/pieces`" ]; then \
+			rmdir $(SHAREDIR)/pieces;                                                           \
+		fi;                                                                                    \
+	fi
+
+install-cursors:
 	@echo "Install cursors"
+	@install -m 755 -d $(SHAREDIR)/cursor
 	@install -m 644 -p cursor/*.xbm $(SHAREDIR)/cursor
 	@install -m 644 -p cursor/*.xcur $(SHAREDIR)/cursor
+
+uninstall-cursors:
+	@echo "Uninstall cursors"
+	@if [ -d $(SHAREDIR)/cursor ]; then                                                       \
+		for f in `ls cursor/*.xbm`; do rm -f $(SHAREDIR)/$$f; done;                            \
+		for f in `ls cursor/*.cur`; do rm -f $(SHAREDIR)/$$f; done;                            \
+		for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done;                           \
+		if [ "`find $(SHAREDIR)/cursor -type d -empty`" = "`ls -d $(SHAREDIR)/cursor`" ]; then \
+			rmdir $(SHAREDIR)/cursor;                                                           \
+		fi;                                                                                    \
+	fi
+
+install-flags:
 	@echo "Install flags"
+	@install -m 755 -d $(SHAREDIR)/flags
 	@install -m 644 -p flags/*.png $(SHAREDIR)/flags
+
+uninstall-flags:
+	@echo "Uninstall flags"
+	@if [ -d $(SHAREDIR)/flags ]; then                                                      \
+		for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done;                           \
+		if [ "`find $(SHAREDIR)/flags -type d -empty`" = "`ls -d $(SHAREDIR)/flags`" ]; then \
+			rmdir $(SHAREDIR)/flags;                                                          \
+		fi;                                                                                  \
+	fi
+
+install-localizations:
 	@echo "Install localizations"
+	@install -m 755 -d $(SHAREDIR)/lang/eco
+	@install -m 755 -d $(SHAREDIR)/lang/nag
 	@install -m 644 -p lang/*.tcl $(SHAREDIR)/lang
 	@install -m 644 -p lang/eco/*.tcl $(SHAREDIR)/lang/eco
 	@install -m 644 -p lang/nag/*.tcl $(SHAREDIR)/lang/nag
-	@echo "Install board themes"
-	@install -m 644 -p themes/*.dat $(SHAREDIR)/themes
-	@install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
-	@install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
-	@echo "Install TeXt scripts"
-	@install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
+
+uninstall-localizations:
+	@echo "Uninstall localizations"
+	@if [ -d $(SHAREDIR)/lang ]; then                                                     \
+		for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                          \
+		eco=$(SHAREDIR)/lang/eco;                                                          \
+		if [ -d $$eco ]; then                                                              \
+			for f in `ls lang/eco/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                   \
+			if [ "`find $$eco -type d -empty`" = "`ls -d $$eco`" ]; then                    \
+				rm -rf $$eco;                                                                \
+			fi;                                                                             \
+		fi;                                                                                \
+		nag=$(SHAREDIR)/lang/nag;                                                          \
+		if [ -d $$nag ]; then                                                              \
+			for f in `ls lang/nag/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                   \
+			if [ "`find $$nag -type d -empty`" = "`ls -d $$nag`" ]; then                    \
+				rm -rf $$nag;                                                                \
+			fi;                                                                             \
+		fi;                                                                                \
+		if [ "`find $(SHAREDIR)/lang -type d -empty`" = "`ls -d $(SHAREDIR)/lang`" ]; then \
+			rmdir $(SHAREDIR)/lang;                                                         \
+		fi;                                                                                \
+	fi
+
+install-photos:
 	@echo -n "Install player photos:"
+	@install -m 755 -d $(SHAREDIR)/photos
 	@for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
 		echo -n " $$i";                                                \
 		install -m 755 -d $(SHAREDIR)/photos/$$i;                      \
 		install -m 644 -p photos/$$i/* $(SHAREDIR)/photos/$$i;         \
 	done
 	@echo ""
+
+uninstall-photos:
+	@echo -n "Uninstall player photos:"
+	@if [ -d $(SHAREDIR)/photos ]; then                                                       \
+		for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do                       \
+			dir=$(SHAREDIR)/photos/$$i;                                                         \
+			if [ -d $$dir ]; then                                                               \
+				echo -n " $$i";                                                                  \
+				for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;                      \
+				if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then                     \
+					rmdir $$dir;                                                                  \
+				fi;                                                                              \
+			fi;                                                                                 \
+		done;                                                                                  \
+		echo "";                                                                               \
+		if [ "`find $(SHAREDIR)/photos -type d -empty`" = "`ls -d $(SHAREDIR)/photos`" ]; then \
+			rmdir $(SHAREDIR)/photos;                                                           \
+		fi;                                                                                    \
+	fi
+
+install-textures:
 	@echo "Install textures"
+	@install -m 755 -d $(SHAREDIR)/textures
 	@for i in dark lite tile; do                                             \
 		for k in marble misc wood; do                                         \
 			install -m 755 -d $(SHAREDIR)/textures/$$i/$$k;                    \
 			install -m 644 -p textures/$$i/$$k/* $(SHAREDIR)/textures/$$i/$$k; \
 		done;                                                                 \
 	done
+
+uninstall-textures:
+	@echo "Uninstall textures"
+	@if [ -d $(SHAREDIR)/textures ]; then                                                 \
+		for i in dark lite tile; do                                                        \
+			if [ -d $(SHAREDIR)/textures/$$i ]; then                                        \
+				for k in marble misc wood; do                                                \
+					kdir=$(SHAREDIR)/textures/$$i/$$k;                                        \
+					if [ -d $$kdir ]; then                                                    \
+						for f in `ls textures/$$i/$$k/*`; do                                   \
+							rm -f $(SHAREDIR)/$$f;                                              \
+						done;                                                                  \
+						if [ "`find $$kdir -type d -empty`" = "`ls -d $$kdir`" ]; then         \
+							rmdir $$kdir;                                                       \
+						fi;                                                                    \
+					fi;                                                                       \
+				done;                                                                        \
+				idir=$(SHAREDIR)/textures/$$i;                                               \
+				if [ "`find $$idir -type d -empty`" = "`ls -d $$idir`" ]; then               \
+					rmdir $$idir;                                                             \
+				fi;                                                                          \
+			fi;                                                                             \
+		done;                                                                              \
+		if [ "`find $(SHAREDIR)/textures -type d -empty`" = "$(SHAREDIR)/textures" ]; then \
+			rmdir $(SHAREDIR)/textures;                                                     \
+		fi;                                                                                \
+	fi
+
+install-themes:
+	@echo "Install board themes"
+	@install -m 755 -d $(SHAREDIR)/themes/square
+	@install -m 755 -d $(SHAREDIR)/themes/piece
+	@install -m 644 -p themes/*.dat $(SHAREDIR)/themes
+	@install -m 644 -p themes/piece/*.dat $(SHAREDIR)/themes/piece
+	@install -m 644 -p themes/square/*.dat $(SHAREDIR)/themes/square
+
+uninstall-themes:
+	@echo "Uninstall board themes"
+	@if [ -d $(SHAREDIR)/themes ]; then                                               \
+		for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done;                    \
+		dir=$(SHAREDIR)/themes/piece;                                                  \
+		if [ -d $$dir ]; then                                                          \
+			for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done;           \
+			if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then                \
+				rmdir $$dir;                                                             \
+			fi;                                                                         \
+		fi;                                                                            \
+		dir=$(SHAREDIR)/themes/square;                                                 \
+		if [ -d $$dir ]; then                                                          \
+			for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done;          \
+			if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then                \
+				rmdir $$dir;                                                             \
+			fi;                                                                         \
+		fi;                                                                            \
+		if [ "`find $(SHAREDIR)/themes -type d -empty`" = "$(SHAREDIR)/themes" ]; then \
+			rmdir $(SHAREDIR)/themes;                                                   \
+		fi;                                                                            \
+	fi
+
+install-text-scripts:
+	@echo "Install TeXt scripts"
+	@install -m 755 -d $(SHAREDIR)/scripts
+	@install -m 644 -p scripts/*.eXt $(SHAREDIR)/scripts
+
+uninstall-text-scripts:
+	@echo "Uninstall TeXt scripts"
+	@if [ -d $(SHAREDIR)/scripts ]; then                                                        \
+		for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done;                             \
+		if [ "`find $(SHAREDIR)/scripts -type d -empty`" = "`ls -d $(SHAREDIR)/scripts`" ]; then \
+			rmdir $(SHAREDIR)/scripts;                                                            \
+		fi;                                                                                      \
+	fi
+
+install-pdf-images:
 	@echo "Install PDF images"
+	@install -m 755 -d $(SHAREDIR)/pdf
+	@install -m 755 -d $(SHAREDIR)/pdf/sets
 	@for i in `ls pdf/sets/`; do                                       \
 		ip=pdf/sets/$$i;                                                \
 		install -m 755 -d $(SHAREDIR)/$$ip;                             \
@@ -192,6 +341,106 @@ install: $(SCRIPT)
 			done;                                                        \
 		done;                                                           \
 	done
+
+uninstall-pdf-images:
+	@echo "Uninstall PDF images"
+	@if [ -d $(SHAREDIR)/pdf ]; then                                                                  \
+		if [ -d $(SHAREDIR)/pdf/sets ]; then                                                           \
+			for i in `ls pdf/sets/`; do                                                                 \
+				idir=$(SHAREDIR)/pdf/sets/$$i;                                                           \
+				if [ -d $$idir ]; then                                                                   \
+					ip=pdf/sets/$$i;                                                                      \
+					for k in `ls $$ip`; do                                                                \
+						kdir=$$idir/$$k;                                                                   \
+						if [ -d $$kdir ]; then                                                             \
+							kp=$$ip/$$k;                                                                    \
+							rm -f $$kdir/*.png $$kdir/*.jpg;                                                \
+							if [ -d $$kdir/pieces ]; then                                                   \
+								for j in `ls $$kp/pieces`; do                                                \
+									jdir=$(SHAREDIR)/$$kp/pieces/$$j;                                         \
+									if [ -d $$jdir ]; then                                                    \
+										rm -f $$jdir/*.png $$jdir/*.jpg;                                       \
+										if [ "`find $$jdir -type d -empty`" = "`ls -d $$jdir`" ]; then         \
+											rmdir $$jdir;                                                       \
+										fi;                                                                    \
+									fi;                                                                       \
+								done;                                                                        \
+								if [ "`find $$kdir/pieces -type d -empty`" = "`ls -d $$kdir/pieces`" ]; then \
+									rmdir $$kdir/pieces;                                                      \
+								fi;                                                                          \
+							fi;                                                                             \
+							if [ "`find $$kdir -type d -empty`" = "`ls -d $$kdir`" ]; then                  \
+								rmdir $$kdir;                                                                \
+							fi;                                                                             \
+						fi;                                                                                \
+					done;                                                                                 \
+					if [ "`find $$idir -type d -empty`" = "`ls -d $$idir`" ]; then                        \
+						rmdir $$idir;                                                                      \
+					fi;                                                                                   \
+				fi;                                                                                      \
+			done;                                                                                       \
+			if [ "`find $(SHAREDIR)/pdf/sets -type d -empty`" = "`ls -d $(SHAREDIR)/pdf/sets`" ]; then  \
+				rmdir $(SHAREDIR)/pdf/sets;                                                              \
+			fi;                                                                                         \
+		fi;                                                                                            \
+		if [ "`find $(SHAREDIR)/pdf -type d -empty`" = "`ls -d $(SHAREDIR)/pdf`" ]; then               \
+			rmdir $(SHAREDIR)/pdf;                                                                      \
+		fi;                                                                                            \
+	fi
+
+install-help:
+	@echo "Install help files"
+	@install -m 755 -d $(SHAREDIR)/help
+	@install -m 755 -d $(SHAREDIR)/help/images
+	@install -m 755 -d $(SHAREDIR)/help/styles
+	@install -m 755 -p help/*.tcl $(SHAREDIR)/help
+	@install -m 644 -p help/images/*.* $(SHAREDIR)/help/images
+	@install -m 644 -p help/styles/*.css $(SHAREDIR)/help/styles
+	@for lang in `ls -d help/[a-z][a-z]`; do                          \
+		install -m 755 -d $(SHAREDIR)/$$lang;                          \
+		install -m 755 -d $(SHAREDIR)/$$lang/images;                   \
+		install -m 644 -p $$lang/*.txt $(SHAREDIR)/$$lang;             \
+		install -m 644 -p $$lang/*.dat $(SHAREDIR)/$$lang;             \
+		install -m 644 -p $$lang/*.html $(SHAREDIR)/$$lang;            \
+		install -m 644 -p $$lang/images/*.* $(SHAREDIR)/$$lang/images; \
+		install -m 644 -p $$lang/Makefile $(SHAREDIR)/$$lang;          \
+	done
+
+uninstall-help:
+	@echo "Uninstall help files"
+	@if [ -d $(SHAREDIR)/help ]; then                                                            \
+		for f in `ls help/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                                 \
+		dir=$(SHAREDIR)/help/images;                                                              \
+		if [ -d $$dir ]; then                                                                     \
+			for f in `ls help/images/*.*`; do rm -f $(SHAREDIR)/$$f; done;                         \
+			if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then rmdir $$dir; fi;          \
+		fi;                                                                                       \
+		dir=$(SHAREDIR)/help/styles;                                                              \
+		if [ -d $$dir ]; then                                                                     \
+			for f in `ls help/styles/*.css`; do rm -f $(SHAREDIR)/$$f; done;                       \
+			if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then rmdir $$dir; fi;          \
+		fi;                                                                                       \
+		for lang in `ls -d help/[a-z][a-z]`; do                                                   \
+			dir=$(SHAREDIR)/$$lang;                                                                \
+			if [ -d $$dir ]; then                                                                  \
+				rm -f $$dir/Makefile;                                                               \
+				for f in `ls $$lang/*.txt`; do rm -f $(SHAREDIR)/$$f; done;                         \
+				for f in `ls $$lang/*.dat`; do rm -f $(SHAREDIR)/$$f; done;                         \
+				for f in `ls $$lang/*.html`; do rm -f $(SHAREDIR)/$$f; done;                        \
+				idir=$$dir/images;                                                                  \
+				if [ -d $$idir ]; then                                                              \
+					for f in `ls $$lang/images/*.*`; do rm -f $(SHAREDIR)/$$f; done;                 \
+					if [ "`find $$idir -type d -empty`" = "`ls -d $$idir`" ]; then rmdir $$idir; fi; \
+				fi;                                                                                 \
+				if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then rmdir $$dir; fi;       \
+			fi;                                                                                    \
+		done;                                                                                     \
+		if [ "`find $(SHAREDIR)/help -type d -empty`" = "`ls -d $(SHAREDIR)/help`" ]; then        \
+			rmdir $(SHAREDIR)/help;                                                                \
+		fi;                                                                                       \
+	fi
+
+install-fonts:
 	@echo "Install fonts"
 	@if [ "`uname -s`" = "Darwin" ]; then                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                \
@@ -219,62 +468,7 @@ install: $(SCRIPT)
 		fi;                                                                         \
 	fi
 
-uninstall:
-	@echo "Uninstall TeXt scripts"
-	@rm -f $(BINDIR)/$(SCRIPT)
-	@echo "Uninstall piece sets"
-	@for f in `ls pieces/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	@echo "Uninstall cursors"
-	@for f in `ls cursor/*.xbm`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls cursor/*.cur`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls cursor/*.xcur`; do rm -f $(SHAREDIR)/$$f; done
-	@echo "Uninstall flags"
-	@for f in `ls flags/*.png`; do rm -f $(SHAREDIR)/$$f; done
-	@echo "Uninstall localizations"
-	@for f in `ls lang/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls lang/eco/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls lang/nag/*.tcl`; do rm -f $(SHAREDIR)/$$f; done
-	@echo "Uninstall board themes"
-	@for f in `ls themes/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls themes/piece/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls themes/square/*.dat`; do rm -f $(SHAREDIR)/$$f; done
-	@for f in `ls scripts/*.eXt`; do rm -f $(SHAREDIR)/$$f; done
-	@echo -n "Uninstall player photos:"
-	@for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
-		echo -n " $$i";                                                \
-		for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;    \
-	done
-	@for d in `find $(SHAREDIR)/photos -type d -empty`; do rmdir $$d; done
-	@echo ""
-	@echo "Uninstall textures"
-	@for i in dark lite tile; do               \
-		for k in marble misc wood; do           \
-			for f in `ls textures/$$i/$$k/*`; do \
-				rm -f $(SHAREDIR)/$$f;            \
-			done;                                \
-		done;                                   \
-	done
-	@echo "Uninstall PDF images"
-	@for i in `ls pdf/sets/`; do                                  \
-		ip=pdf/sets/$$i;                                           \
-		for k in `ls $$ip`; do                                     \
-			kp=$$ip/$$k;                                            \
-			rm -f $(SHAREDIR)/$$kp/*.png $(SHAREDIR)/$$kp/*.jpg;    \
-			for j in `ls $$kp/pieces`; do                           \
-				jp=$$kp/pieces/$$j;                                  \
-				rm -f $(SHAREDIR)/$$jp/*.png $(SHAREDIR)/$$jp/*.jpg; \
-			done;                                                   \
-		done;                                                      \
-	done
-	@echo "Remove empty directories"
-	@# repeat 6 times (directory level is 6)
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+uninstall-fonts:
 	@echo "Uninstall fonts"
 	@if [ "`uname -s`" = "Darwin" ]; then                                                  \
 		if [ "`id -u`" -eq 0 ]; then                                                        \
@@ -314,6 +508,17 @@ uninstall:
 				rmdir ~/.fonts;                                                               \
 			fi;                                                                              \
 		fi;                                                                                 \
+	fi
+
+install: install-script install-pieces install-cursors install-flags install-localizations \
+	install-photos install-textures install-themes install-text-scripts install-pdf-images \
+	install-help install-fonts
+
+uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
+	uninstall-themes uninstall-text-scripts uninstall-photos uninstall-textures uninstall-pdf-images \
+	uninstall-help uninstall-fonts
+	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
+		rmdir $(SHAREDIR);                                                     \
 	fi
 
 $(SCRIPT): $(SOURCES)

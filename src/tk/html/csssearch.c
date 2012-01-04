@@ -202,6 +202,7 @@ HtmlCssSearch(clientData, interp, objc, objv)
             iArg++;
             if (iArg == objc) {
                 const char *z = Tcl_GetString(objv[iArg - 1]);
+                Tcl_ResetResult(interp);
                 Tcl_AppendResult(interp, "option requires an argument: ", z, 0);
                 return TCL_ERROR;
             }
@@ -211,6 +212,7 @@ HtmlCssSearch(clientData, interp, objc, objv)
 
     if (aOption[1].pArg && aOption[2].pArg) {
         const char z[] = "options -length and -index are mutually exclusive";
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, z, 0);
         return TCL_ERROR;
     }
@@ -247,6 +249,7 @@ HtmlCssSearch(clientData, interp, objc, objv)
         sprintf(z, "%s {width:0}", zOrig);
         HtmlCssSelectorParse(pTree, n, z, &pStyle);
         if ( !pStyle || !pStyle->pUniversalRules) {
+            Tcl_ResetResult(interp);
             Tcl_AppendResult(interp, "Bad css selector: \"", zOrig, "\"", 0);
             return TCL_ERROR;
         }

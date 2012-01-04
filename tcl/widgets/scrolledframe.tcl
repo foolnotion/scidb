@@ -51,13 +51,13 @@ proc scrolledframe {path args} {
 	if {$opts(-expand) ne "y"} {
 		set v $path.__vs__
 		scrolledframe::Scrollbar $v -command [list $f yview] -orient vertical
-		lappend scrollopts -yscrollcommand [list ::scrolledframe::sbset $v]
+		lappend scrollopts -yscrollcommand [list ::scrolledframe::MySbSet $v]
 		grid $v -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-expand) ne "x"} {
 		set h $path.__hs__
 		scrolledframe::Scrollbar $h -command [list $f xview] -orient horizontal
-		lappend scrollopts -xscrollcommand [list ::scrolledframe::sbset $h]
+		lappend scrollopts -xscrollcommand [list ::scrolledframe::MySbSet $h]
 		grid $h -row 1 -column 0 -sticky ew
 	}
 	::scrolledframe::scrolledframe $f {*}$scrollopts {*}[array get opts]
@@ -551,7 +551,9 @@ proc Scrollbar {path args} {
 proc ScrollbarProc {w cmd args} {
 	switch $cmd {
 		configure - cget {
-			return [[namespace current]::_$w $cmd {*}$args]
+			if {![string match -orient* [lindex $args 0]]} {
+				return [[namespace current]::_$w $cmd {*}$args]
+			}
 		}
 
 		padding {
@@ -566,6 +568,17 @@ proc ScrollbarProc {w cmd args} {
 	}
 
 	return [$w.sb $cmd {*}$args]
+}
+
+
+proc MySbSet {sb first last} {
+	set parent [winfo parent $sb]
+	set slaves [grid slaves $parent]
+	sbset $sb $first $last
+	if {$slaves ne [grid slaves $parent]} {
+		set data [list $sb [expr {$sb in [grid slaves $parent]}]]
+		event generate $parent.__scrolledframe__.scrolled <<ScrollbarChanged>> -data $data
+	}
 }
 
 

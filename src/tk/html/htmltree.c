@@ -1199,6 +1199,41 @@ treeAddTableComponent(pTree, eTag, pAttr)
     return pNew;
 }
 
+
+static void
+parseMetaNode(pTree, pAttr)
+    HtmlTree *pTree;
+    HtmlAttributes *pAttr;
+{
+    int ii;
+
+    for (ii = 0; ii < pAttr->nAttr; ++ii) {
+        struct HtmlAttribute const* attr = &pAttr->a[ii];
+        if (strcmp(attr->zName, "content") == 0) {
+            char const* charset = strstr(attr->zValue, "charset=");
+            if (charset) {
+                char encoding[256];
+                char const* s = charset + 8;
+                char const* p = s;
+
+                while (*p && *p != ';')
+                    ++p;
+                memset(encoding, 0, sizeof(encoding));
+                strncpy(encoding, s, MIN(p - s, sizeof(encoding) - 1));
+                if (strncmp(encoding, "iso8859", 7) == 0) {
+                    memmove(encoding + 4, encoding + 3, strlen(encoding) - 3);
+                    encoding[3] = '-';
+                }
+                if (pTree->pCharset)
+                    Tcl_FreeEncoding(pTree->pCharset);
+                pTree->pCharset = Tcl_GetEncoding(pTree->interp, encoding);
+                Tcl_ResetResult(pTree->interp);
+            }
+        }
+    }
+}
+
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -1297,6 +1332,9 @@ HtmlTreeAddElement(pTree, eType, pAttr, iOffset)
 
         /* Self-closing elements to add to the document head */
         case Html_META:
+            parseMetaNode(pTree, pAttr);
+            // fallthru
+
         case Html_LINK:
         case Html_BASE: {
             int n = HtmlNodeAddChild(pHeadElem, eType, pAttr);
@@ -2456,6 +2494,7 @@ nodeCommand(clientData, interp, objc, objv)
                 zAttr = HtmlNodeAttr(pNode, zAttrName);
                 zAttr = (zAttr ? zAttr : zDefault);
                 if (zAttr==0) {
+                    Tcl_ResetResult(interp);
                     Tcl_AppendResult(interp, "No such attr: ", zAttrName, 0);
                     return TCL_ERROR;
                 }
@@ -2798,6 +2837,7 @@ node_attr_usage:
                     }
                 }
                 if (!mask) {
+                    Tcl_ResetResult(interp);
                     Tcl_AppendResult(interp,
                         "Unsupported dynamic CSS flag: ", zArg2, 0);
                     return TCL_ERROR;
@@ -3091,8 +3131,12 @@ int HtmlTreeClear(pTree)
     if (pTree->pDocument) {
         Tcl_DecrRefCount(pTree->pDocument);
     }
+    if (pTree->pCharset) {
+        Tcl_FreeEncoding(pTree->pCharset);
+    }
     pTree->nParsed = 0;
     pTree->pDocument = 0;
+    pTree->pCharset = 0;
 
     /* Free the stylesheets */
     HtmlCssStyleSheetFree(pTree->pStyle);
@@ -3140,6 +3184,7 @@ HtmlNodeGetPointer(pTree, zCmd)
 
     rc = Tcl_GetCommandInfo(interp, zCmd, &info);
     if (rc == 0 || info.objProc != nodeCommand){
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, "no such node: ", zCmd, 0);
         return 0;
     }
@@ -3207,10 +3252,10 @@ fragmentAddElement(pTree, eType, pAttributes, iOffset)
          * <HEAD> completely. TODO: This will have to change....
          */
         case Html_HTML:
+        case Html_META:
         case Html_HEAD:
         case Html_BODY:
         case Html_TITLE:
-        case Html_META:
         case Html_LINK:
         case Html_BASE:
             return;

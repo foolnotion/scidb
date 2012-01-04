@@ -43,7 +43,7 @@ namespace eval html {
 namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
-variable Margin	8
+variable Margin	5
 variable MaxWidth	12000
 
 
@@ -57,10 +57,10 @@ proc Build {w args} {
 		-borderwidth	{}
 		-relief			{}
 		-imagecmd		{}
-		-nodehandler	{}
 		-doublebuffer	yes
 		-center			no
 		-delay			0
+		-css				{}
 	}
 
 	array set opts $args
@@ -72,14 +72,13 @@ proc Build {w args} {
 #	append css "font-size: 14px;"
 #	append css "line-height: 16px;"
 #	append css "\}"
-	set css {}
+	set css $opts(-css)
 
 	set options {}
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-nodehandler - -delay {
-			}
+			-delay - -css {}
 
 			-imagecmd - -doublebuffer {
 				set value $opts($name)
@@ -94,6 +93,7 @@ proc Build {w args} {
 	}
 
 	set parent [::scrolledframe $w -fill both {*}$options]
+	bind $parent <<ScrollbarChanged>> [namespace code { ConfigureFrame %W {*}%d }]
 	set html $parent.html
 
 	namespace eval [namespace current]::$parent {}
@@ -123,21 +123,25 @@ proc Build {w args} {
 	set Priv(pointer) {0 0}
 	set Priv(delay) $opts(-delay)
 	set Priv(center) $center
+	set Priv(afterId) {}
+	set Priv(bw) $opts(-borderwidth)
+	set Priv(sbwidth) 0
+
+	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
 
-	__html_widget $html -shrink true {*}$htmlOptions -width $MaxWidth
+	set options {}
+	if {$Priv(center)} { lappend options -width $MaxWidth -shrink yes }
+	__html_widget $html {*}$htmlOptions {*}$options
 	$html style -id user $css
-	if {[llength $opts(-nodehandler)]} {
-		$html handler node td $opts(-nodehandler)
-	}
+	grid $html
 
 	if {$center} {
-		grid $html
 		grid anchor $parent center
 	} else {
-		pack $html -fill both -expand yes
+		bind $w <Configure> [namespace code [list Configure $parent %w]]
 	}
 
 	return $w
@@ -158,17 +162,32 @@ proc WidgetProc {w parent command args} {
 			array unset [namespace current]::ActiveNodes3
 			set Priv(nodeList) {}
 			$parent.html reset
-			$parent.html configure -width $MaxWidth
-			update idletasks
-			$parent.html parse -final [lindex $args 0]
-			set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node]]
-			if {[llength $Priv(bbox)]} {
-				lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
-				$parent.html configure -width [lindex $Priv(bbox) 2]
+			$parent xview moveto 0
+			$parent yview moveto 0
+			if {$Priv(center)} {
+				$parent.html configure -width $MaxWidth
 				update idletasks
-				$parent resize
+			}
+			$parent.html parse -final [lindex $args 0]
+			set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
+			if {[llength $Priv(bbox)]} {
+				if {$Priv(center)} {
+					lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
+					$parent.html configure -width [lindex $Priv(bbox) 2]
+					update idletasks
+					$parent resize
+				} else {
+					lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
+					$parent.html configure -height [lindex $Priv(bbox) 3]
+					update idletasks
+					$parent resize
+				}
 			}
 			return
+		}
+
+		handler - search - style {
+			return [$parent.html $command {*}$args]
 		}
 
 		onmouse* {
@@ -197,15 +216,83 @@ proc WidgetProc {w parent command args} {
 
 		drawable	{ return $parent.html }
 		pointer	{ return $Priv(pointer) }
-		bbox		{ return $Priv(bbox) }
 		font		{ return HtmlFont }
+
+		bbox {
+			if {[llength $args] == 0} {
+				return $Priv(bbox)
+			}
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command ?<node>?\""
+			}
+			return [$parent.html bbox [lindex $args 0]]
+		}
+
+		xview - yview {
+			return [$parent $command {*}$args]
+		}
+
+		scrollto {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <px>\""
+			}
+			variable Margin
+			set height [winfo height $parent.html]
+			set y [expr {max(0, [lindex $args 0] - $Margin)}]
+			set fraction [expr {double($y)/double($height)}]
+			update idletasks
+			return [$parent yview moveto $fraction]
+		}
 	}
 
 	return [$w.__html__ $command {*}$args]
 }
 
 
-proc ComputeBoundingBox {w node} {
+proc Configure {parent width} {
+	variable ${parent}::Priv
+	variable Margin
+
+	$parent.html configure -width [expr {max(1,$width - 2*$Priv(bw) - $Priv(sbwidth))}]
+	after cancel $Priv(afterId)
+	set afterId [after idle [namespace code [list ComputeSize $parent]]]
+}
+
+
+proc ConfigureFrame {parent sb visible} {
+	variable ${parent}::Priv
+
+	if {[$sb cget -orient] eq "vertical"} {
+		set width [$parent.html cget -width]
+		set sbw [winfo width $sb]
+		if {$visible} {
+			set Priv(sbwidth) [winfo width $sb]
+		} else {
+			set Priv(sbwidth) 0
+		}
+		incr width $Priv(sbwidth)
+		after idle [$parent.html configure -width $width]
+	}
+}
+
+
+proc ComputeSize {parent} {
+	variable ${parent}::Priv
+	variable Margin
+
+	after cancel $Priv(afterId)
+	set Priv(afterId) {}
+	set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
+	if {[llength $Priv(bbox)]} {
+		lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
+		$parent.html configure -height [lindex $Priv(bbox) 3]
+		update idletasks
+		$parent resize
+	}
+}
+
+
+proc ComputeBoundingBox {w node skipBody} {
 	variable MaxWidth
 	variable Margin
 
@@ -213,22 +300,18 @@ proc ComputeBoundingBox {w node} {
 	set result {}
 
 	if {[string length $tag]} {
-		switch $tag {
-			html - body { ;# skip }
-
-			default {
-				set bbox [$w bbox $node]
-				if {[llength $bbox]} {
-					if {[lindex $bbox 2] == [expr {$MaxWidth - $Margin}]} { lset bbox 2 0 }
-					set result $bbox
-				}
+		if {$tag ne "html" && (!$skipBody || $tag ne "body")} {
+			set bbox [$w bbox $node]
+			if {[llength $bbox]} {
+				if {[lindex $bbox 2] == [expr {$MaxWidth - $Margin}]} { lset bbox 2 0 }
+				set result $bbox
 			}
 		}
 	}
 
 	if {[llength $result] == 0} {
 		foreach n [$node children] {
-			set bbox [ComputeBoundingBox $w $n]
+			set bbox [ComputeBoundingBox $w $n $skipBody]
 			if {[llength $bbox] && [lindex $bbox 2] > 0} {
 				set result [CombineBox $result $bbox]
 			}

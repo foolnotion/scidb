@@ -649,16 +649,16 @@ proc ::TreeCtrl::ButtonPress1 {w x y} {
 	return
     }
 
-#    if {[lindex $id 0] eq "item"} {
-#	lassign $id where item arg1 arg2
-#	if {$arg1 eq "button"} {
-#	    $w item toggle $item
-#	    return
-#	} elseif {$arg1 eq "line"} {
-#	    $w item toggle $arg2
-#	    return
-#	}
-#    }
+    if {[lindex $id 0] eq "item"} {
+	lassign $id where item arg1 arg2
+	if {$arg1 eq "button"} {
+	    $w item toggle $item
+	    return
+	} elseif {$arg1 eq "line"} {
+	    $w item toggle $arg2
+	    return
+	}
+    }
     set Priv(buttonMode) ""
     if {[lindex $id 0] eq "header"} {
 	set Priv(buttonMode) header

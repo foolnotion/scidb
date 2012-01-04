@@ -75,13 +75,13 @@ LEMON_CFLAGS = $(CFLAGS) -Wno-uninitialized -fno-strict-aliasing
 
 TCLSH	= tclsh$(TCL_VERSION)
 
-htmltokens.c:	tokenlist.txt
+htmltokens.h: tokenlist.txt
 	$(TCLSH) $?
 
 htmldefaultstyle.c: tkhtml.tcl html.css quirks.css mkdefaultstyle.tcl 
 	$(TCLSH) mkdefaultstyle.tcl > htmldefaultstyle.c
 
-htmltokens.h: htmltokens.c
+htmltokens.c: htmltokens.h
 
 cssprop.h: cssprop.tcl
 	$(TCLSH) $?

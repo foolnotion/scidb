@@ -1,0 +1,90 @@
+ <!DOCTYPE html PUBLIC "-//W3C//DTD DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+
+<!-- Generated from tcl/help/de/Game-Flags.txt -->
+
+<html>
+ <head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Hilfe: Partiemarkierungen</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Partiemarkierungen</h1>
+</div>
+
+<p>
+Eine <em>Markierung</em> ("Flag") ist ein Kennzeichen irgendeiner Charakteristik, die
+für jede Partie der Datenbank ein- oder ausgeschaltet werden kann. Es gibt 21 vom
+Benutzer einstellbare Markierungen, die direkt in jede Partie gesetzt werden können.
+Diese Markierungen dienen vornehmlich zum Suchen von Partiedaten, oder zum Filtern
+von Partielisten. Diese Markierungen haben ansonsten keine weitere Bedeutung und
+können deshalb vom Benutzer frei verwendet werden.
+</p>
+
+<p>
+Die Markierungen und ihre Symbole im einzelnen:
+</p>
+<div class="box">
+<dl>
+  <dt><img src="../images/gameflag-White-Opening.png"     >&emsp;Weiße Eröffnung</dt>
+  <dt><img src="../images/gameflag-Black-Opening.png"     >&emsp;Schwarze Eröffnung</dt>
+  <dt><img src="../images/gameflag-Middle-Game.png"       >&emsp;Mittelspiel</dt>
+  <dt><img src="../images/gameflag-End-Game.png"          >&emsp;Endspiel</dt>
+  <dt><img src="../images/gameflag-Novelty.png"           >&emsp;Neuerung</dt>
+  <dt><img src="../images/gameflag-Pawn-Structure.png"    >&emsp;Bauernstruktur</dt>
+  <dt><img src="../images/gameflag-Tactics.png"           >&emsp;Taktik</dt>
+  <dt><img src="../images/gameflag-King-Side.png"         >&emsp;Königsseite</dt>
+  <dt><img src="../images/gameflag-Queen-Side.png"        >&emsp;Damenseite</dt>
+  <dt><img src="../images/gameflag-Brilliancy.png"        >&emsp;Brillianz</dt>
+  <dt><img src="../images/gameflag-Blunder.png"           >&emsp;Schnitzer</dt>
+  <dt><img src="../images/gameflag-User.png"              >&emsp;User</dt>
+  <dt><img src="../images/gameflag-Best-Game.png"         >&emsp;Beste Partie</dt>
+  <dt><img src="../images/gameflag-Decided-Tournament.png">&emsp;Entscheidungsturnier</dt>
+  <dt><img src="../images/gameflag-Model-Game.png"        >&emsp;Modellpartie</dt>
+  <dt><img src="../images/gameflag-Strategy.png"          >&emsp;Strategie</dt>
+  <dt><img src="../images/gameflag-With-Attack.png"       >&emsp;Angriff</dt>
+  <dt><img src="../images/gameflag-Sacrifice.png"         >&emsp;Opferspiel</dt>
+  <dt><img src="../images/gameflag-Defense.png"           >&emsp;Verteidigung</dt>
+  <dt><img src="../images/gameflag-Material.png"          >&emsp;Material</dt>
+  <dt><img src="../images/gameflag-Piece-Play.png"        >&emsp;Figurenspiel</dt>
+</dl>
+</div>
+
+<p>
+Es gibt noch eine weitere besondere, nicht vom Benutzer einstellbare Markierung,
+die Lösch-Markierung. Eine Partie mit diesem Flag ist zur Löschung vorgemerkt,
+und die Partie wird erst entfernt, wenn die Datenbank komprimiert wird.
+</p>
+
+<p>
+Beim Bearbeiten von Partien in einer Scid-Datenbank (.si4) werden zudem die sechs
+speziellen Benutzermarkierungen (1..6) unterstützt. Es wird jedoch von einer
+Verwendung dieser Markierungen abgeraten, es kommt zu nicht lösbaren Problemen
+beim Kopieren von Partien in eine andere Datenbank; auch die Applikation Scid
+kann diese Probleme nicht lösen.
+</p>
+
+<p>
+Bei der Umwandlung von ChessBase-Datenbanken werden beide Markierungen
+<em>Strategische Schnitzer</em> und
+<em>Taktische Schnitzer</em> auf die gemeinsame
+Markierung <em>Schnitzer</em> abgebildet, Scidb unterscheidet nicht zwischen diesen
+beiden Typen.
+</p>
+
+</body>
+</html>

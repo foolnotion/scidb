@@ -37,6 +37,7 @@
 ::mc::Apply				"Aplicar"
 ::mc::Background		"Fondo"
 ::mc::Black				"Negras"
+::mc::Bottom			"Inferior"
 ::mc::Cancel			"Cancelar"
 ::mc::Clear				"Vaciar"
 ::mc::Close				"Cerrar"
@@ -51,8 +52,8 @@
 ::mc::Escape			"Esc"
 ::mc::From				"From" ;# NEW
 ::mc::Game				"Partida"
-::mc::Game				"Partida"
 ::mc::Layout			"Disposición"
+::mc::Left				"Izquierda"
 ::mc::Lite				"Claras"
 ::mc::Modify			"Modificar"
 ::mc::No					"no"
@@ -64,10 +65,12 @@
 ::mc::Preview			"Vista previa"
 ::mc::Redo				"Deshacer"
 ::mc::Reset				"Restablecer"
+::mc::Right				"Derecha"
 ::mc::SelectAll		"Seleccionar todo"
 ::mc::Texture			"Textura"
 ::mc::Theme				"Tema"
 ::mc::To					"To" ;# NEW
+::mc::Top				"Superior"
 ::mc::Undo				"Deshacer"
 ::mc::Variation		"Variante"
 ::mc::White				"Blancas"
@@ -131,10 +134,10 @@
 ::menu::mc::View						"&Vista"
 ::menu::mc::Help						"A&yuda"
 
-::menu::mc::FileOpen					"A&brir"
+::menu::mc::FileOpen					"A&brir Base..."
 ::menu::mc::FileOpenURL				"Open &URL" ;# NEW
 ::menu::mc::FileOpenRecent			"Abrir &Recientes"
-::menu::mc::FileNew					"&Nuevo"
+::menu::mc::FileNew					"&Nueva Base..."
 ::menu::mc::FileExport				"E&xportar..."
 ::menu::mc::FileImport				"Importar archivos P&GN..."
 ::menu::mc::FileImportOne			"&Importar una partida en PGN..."
@@ -696,8 +699,8 @@
 ::gametable::mc::GameFlags(=)				"Defensa"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Juego de piezas"
-::gametable::mc::GameFlags(t)				"Horror táctico" ; # unused
-::gametable::mc::GameFlags(s)				"Horror estratégico" ; # unused
+::gametable::mc::GameFlags(t)				"Horror táctico"
+::gametable::mc::GameFlags(s)				"Horror estratégico"
 ::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
 ::gametable::mc::GameFlags(I)				"Jugada ilegal"
 
@@ -1015,10 +1018,6 @@
 ::export::mc::Custom							"Habitual"
 ::export::mc::Potrait						"Retrato"
 ::export::mc::Landscape						"Apaisado"
-::export::mc::Top								"Superior"
-::export::mc::Bottom							"Inferior"
-::export::mc::Left							"Izquierda"
-::export::mc::Right							"Derecha"
 ::export::mc::Justification				"Justificado"
 ::export::mc::Even							"Ajustado"
 ::export::mc::Columns						"Columnas"
@@ -1238,6 +1237,14 @@
 ::timemodebox::mc::Mode(blitz)	"Blitz"
 ::timemodebox::mc::Mode(bullet)	"Bullet"
 ::timemodebox::mc::Mode(corr)		"Correspondencia"
+
+### help ###############################################################
+::help::mc::Help					"Help" ;# NEW
+::help::mc::Contents				"Contents" ;# NEW
+::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
+::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
+::help::mc::ExpandAllItems		"Expand all items" ;# NEW
+::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Grilla de torneo"

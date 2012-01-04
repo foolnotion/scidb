@@ -37,6 +37,7 @@
 ::mc::Apply				"Applica"
 ::mc::Background		"Sfondo"
 ::mc::Black				"Nero"
+::mc::Bottom			"Basso"
 ::mc::Cancel			"Annulla"
 ::mc::Clear				"Pulisci"
 ::mc::Close				"Chiudi"
@@ -51,8 +52,8 @@
 ::mc::Escape			"Esci"
 ::mc::From				"Da"
 ::mc::Game				"Partita"
-::mc::Game				"Partita"
 ::mc::Layout			"Layout"
+::mc::Left				"Sinistra"
 ::mc::Lite				"Chiara"
 ::mc::Modify			"Cambia"
 ::mc::No					"no"
@@ -64,10 +65,12 @@
 ::mc::Preview			"Anteprima"
 ::mc::Redo				"Rifai"
 ::mc::Reset				"Reset"
+::mc::Right				"Destra"
 ::mc::SelectAll		"Seleziona Tutto"
 ::mc::Texture			"Texture"
 ::mc::Theme				"Tema"
 ::mc::To					"A"
+::mc::Top				"Alto"
 ::mc::Undo				"Indietro"
 ::mc::Variation		"Variante"
 ::mc::White				"Bianco"
@@ -131,10 +134,10 @@
 ::menu::mc::View						"&Visualizza"
 ::menu::mc::Help						"&Aiuto"
 
-::menu::mc::FileOpen					"A&pri"
+::menu::mc::FileOpen					"A&pri Database..."
 ::menu::mc::FileOpenURL				"Open &URL" ;# NEW
 ::menu::mc::FileOpenRecent			"Apri Re&cente"
-::menu::mc::FileNew					"&Nuovo"
+::menu::mc::FileNew					"&Nuovo Database..."
 ::menu::mc::FileExport				"E&sporta..."
 ::menu::mc::FileImport				"&Importa file PGN..."
 ::menu::mc::FileImportOne			"Importa &una Partita in PGN..."
@@ -692,8 +695,8 @@
 ::gametable::mc::GameFlags(=)				"Difesa"
 ::gametable::mc::GameFlags(M)				"Materiale"
 ::gametable::mc::GameFlags(P)				"Gioco di pezzi"
-::gametable::mc::GameFlags(t)				"Svista tattica" ;# unused
-::gametable::mc::GameFlags(s)				"Svista strategica" ;# unused
+::gametable::mc::GameFlags(t)				"Svista tattica"
+::gametable::mc::GameFlags(s)				"Svista strategica"
 ::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
 ::gametable::mc::GameFlags(I)				"Mossa illegale"
 
@@ -1011,10 +1014,6 @@
 ::export::mc::Custom							"Personalizza"
 ::export::mc::Potrait						"Ritratto"
 ::export::mc::Landscape						"Panoramica"
-::export::mc::Top								"Alto"
-::export::mc::Bottom							"Basso"
-::export::mc::Left							"Sinistra"
-::export::mc::Right							"Destra"
 ::export::mc::Justification				"Giustificazione"
 ::export::mc::Even							"Pareggia"
 ::export::mc::Columns						"Colonne"
@@ -1234,6 +1233,14 @@
 ::timemodebox::mc::Mode(blitz)	"Blitz"
 ::timemodebox::mc::Mode(bullet)	"Bullet"
 ::timemodebox::mc::Mode(corr)		"Corrispondenza"
+
+### help ###############################################################
+::help::mc::Help					"Help" ;# NEW
+::help::mc::Contents				"Contents" ;# NEW
+::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
+::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
+::help::mc::ExpandAllItems		"Expand all items" ;# NEW
+::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"

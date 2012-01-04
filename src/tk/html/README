@@ -1,0 +1,18 @@
+This is not the original tkhtml library. This version is modified
+by Gregor Cramer for use in Scidb.
+
+Some enhancements:
+
+	Double buffering implemented. You have to define USE_DOUBLE_BUFFERING=1
+	during compile time.
+
+and new commands:
+
+	<pathname> charset
+		Returns the charset given in HTML object "meta", e.g.:
+		"<meta http-equiv="content-type"  content="text/html; charset=utf-8"/>"
+		will give "utf-8". The result may be empty if no charset is given or
+		if the charset couldn't be recognized.
+
+	<nodeHandle> dynamic get flag
+		Returns the status of the argument "flag" in given node.

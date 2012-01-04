@@ -274,12 +274,8 @@ proc open {parent base index view source} {
 
 	ttk::frame $top
 	ttk::frame $canv
-	::html $html \
-		-nodehandler [namespace current]::NodeHandler \
-		-imagecmd [namespace code GetImage] \
-		-delay 10 \
-		-center yes \
-		;
+	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes 
+	$html handler node td [namespace current]::NodeHandler
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
 
 	set tb [::toolbar::toolbar $dlg \

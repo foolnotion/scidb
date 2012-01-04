@@ -1,0 +1,43 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Die Ablage-Datenbank
+
+<p>
+Scidb stellt bereits bei Programmstart eine geöffnete Ablage-Datenbank zur Verfügung,
+welche sich wie eine normale Datenbank verhält, mit der Ausnahme, daß sie im
+Hauptspeicherbereich existiert und nicht auf der Festplatte gespeichert wird.
+Damit hat sie nur ein relative begrenztes Aufnahmevermögen. Der vordefinierte Name
+für dies Datenbank ist <b>%::application::database::mc::T_Clipbase%</b>.
+</p>
+ 
+<!-- p>
+Die Ablage ist nützlich als eine temporäre Datenbank, zum Zusammenführen von
+Suchergebnissen aus der Suche in mehreren Datenbanken, oder zur Behandlung
+der Suchergebnisse als eine eigenständige Datenbank. 
+</p -->
+   
+<p>
+Die Ablage kann nicht geschlossen werden. Es exisitiert eine Menüfunktion zum Leeren
+der Ablage (siehe <a href="Database-Switcher.html#Empty-Clipbase">
+%::application::database::mc::EmptyClipbase%</a>).
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

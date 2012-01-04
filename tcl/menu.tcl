@@ -218,7 +218,7 @@ proc setup {} {
 	unset lst
 
 	lappend Menu \
-		Help	{	Contents			1	F1			help		{ ::beta::notYetImplemented .application help }
+		Help	{	Contents			1	F1			help		{ ::menu::openHelp .application }
 					BugReport		1	{}			bug		{ ::menu::bugReport .application }
 					FeatureRequest	1	{}			question	{ ::menu::featureRequest .application }
 					Info				1	{}			info		{ ::info::openDialog .application }
@@ -463,6 +463,11 @@ proc viewFullscreen {{toggle {}}} {
 
 	if {[llength $toggle]} { set Fullscreen [expr {!$Fullscreen}] }
 	wm attributes .application -fullscreen $Fullscreen
+}
+
+
+proc openHelp {parent} {
+	::help::build $parent
 }
 
 

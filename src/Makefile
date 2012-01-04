@@ -68,30 +68,40 @@ TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move
 all: recursive cbh2si4 $(PROGRAM)
 
 install: recursive cbh2si4 $(PROGRAM)
-	@echo "Create directories"
-	@install -m 755 -d $(BINDIR)
-	@install -m 755 -d $(SHAREDIR)
-	@install -m 755 -d $(SHAREDIR)/data
-	@install -m 755 -d $(SHAREDIR)/scripts
-	@install -m 755 -p $(PROGRAM) $(BINDIR)
 	@echo "Install executables"
+	@install -m 755 -d $(BINDIR)
+	@install -m 755 -p $(PROGRAM) $(BINDIR)
 	@install -m 755 -p cbh2si4 $(BINDIR)
+	@echo "Install TeXt scripts"
+	@install -m 755 -d $(SHAREDIR)/scripts
+	@install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
 	@echo "Install data files"
+	@install -m 755 -d $(SHAREDIR)/data
 	@install -m 644 -p data/eco.bin $(SHAREDIR)/data
 	@install -m 644 -p data/*.* $(SHAREDIR)/data
-	@install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
 
 uninstall:
 	@echo "Uninstall executables"
 	@rm -f $(BINDIR)/$(PROGRAM)
 	@rm -f $(BINDIR)/cbh2si4
+	@echo "Uninstall TeXt scripts"
+	@if [ -d $(SHAREDIR)/scripts ]; then                                                        \
+		rm -f $(SHAREDIR)/scripts/plain.eXt;                                                     \
+		if [ "`find $(SHAREDIR)/scripts -type d -empty`" = "`ls -d $(SHAREDIR)/scripts`" ]; then \
+			rmdir $(SHAREDIR)/scripts;                                                            \
+		fi;                                                                                      \
+	fi
 	@echo "Uninstall data files"
-	@rm -f $(SHAREDIR)/scripts/plain.eXt
-	@rm -f $(SHAREDIR)/data/eco.bin
-	@for f in `ls data/*.*`; do rm -f $(SHAREDIR)/$$f; done
-	@echo "Remove empty directories"
-	@for d in `find $(SHAREDIR) -type d -empty`; do rmdir $$d; done
-	@if [ ! -z "`find $(SHAREDIR) -type d -empty`" ]; then rmdir $(SHAREDIR); fi
+	@if [ -d $(SHAREDIR)/data ]; then                                                     \
+		rm -f $(SHAREDIR)/data/eco.bin;                                                    \
+		for f in `ls data/*.*`; do rm -f $(SHAREDIR)/$$f; done;                            \
+		if [ "`find $(SHAREDIR)/data -type d -empty`" = "`ls -d $(SHAREDIR)/data`" ]; then \
+			rmdir $(SHAREDIR)/data;                                                         \
+		fi;                                                                                \
+	fi
+	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
+		rmdir $(SHAREDIR);                                                     \
+	fi
 
 clean:
 	@echo "Clean `pwd`"

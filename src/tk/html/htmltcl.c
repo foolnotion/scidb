@@ -62,6 +62,7 @@
 #define LOG if (pTree->options.logcmd)
 
 #define SafeCheck(interp,str) if (Tcl_IsSafe(interp)) { \
+    Tcl_ResetResult(interp); \
     Tcl_AppendResult(interp, str, " invalid in safe interp", 0); \
     return TCL_ERROR; \
 }
@@ -1104,8 +1105,10 @@ deleteWidget(clientData)
     if (pTree->buffer) {
         Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
     }
-    TkDestroyRegion(pTree->bufferRegion);
-    pTree->bufferRegion = 0;
+    if (pTree->bufferRegion) {
+        TkDestroyRegion(pTree->bufferRegion);
+        pTree->bufferRegion = 0;
+	 }
 #endif
 
     /* Delete the structure itself */
@@ -1529,6 +1532,37 @@ configureCmd(clientData, interp, objc, objv)
 /*
  *---------------------------------------------------------------------------
  *
+ * charsetCmd --
+ *
+ *     Implementation of the standard Tk "charset" command.
+ *
+ *         <widget> charset
+ *
+ * Results:
+ *     Standard tcl result.
+ *
+ * Side effects:
+ *     None.
+ *
+ *---------------------------------------------------------------------------
+ */
+static int
+charsetCmd(clientData, interp, objc, objv)
+    ClientData clientData;             /* The HTML widget */
+    Tcl_Interp *interp;                /* The interpreter */
+    int objc;                          /* Number of arguments */
+    Tcl_Obj *const *objv;              /* List of all arguments */
+{
+    HtmlTree *pTree = (HtmlTree *)clientData;
+    char const* zCharset = pTree->pCharset ? Tcl_GetEncodingName(pTree->pCharset) : "";
+
+    Tcl_SetObjResult(pTree->interp, Tcl_NewStringObj(zCharset, -1));
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
  * cgetCmd --
  *
  *     Standard Tk "cget" command for querying options.
@@ -1567,6 +1601,7 @@ static int cgetCmd(clientData, interp, objc, objv)
         Tcl_SetObjResult(interp, pRet);
     } else {
         char * zOpt = Tcl_GetString(objv[2]);
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, "unknown option \"", zOpt, "\"", 0);
         return TCL_ERROR;
     }
@@ -1666,6 +1701,7 @@ relayoutCmd(clientData, interp, objc, objv)
         } else if (0 == strcmp(zArg3, "-style")) {
             HtmlCallbackRestyle(pTree, pNode);
         } else {
+            Tcl_ResetResult(interp);
             Tcl_AppendResult(interp,
                 "Bad option \"", zArg3, "\": must be -layout or -style", 0
             );
@@ -2133,6 +2169,7 @@ handlerCmd(clientData, interp, objc, objv)
     zTag = Tcl_GetString(objv[3]);
     tag = HtmlNameToType(0, zTag);
     if (tag==Html_Unknown) {
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, "Unknown tag type: ", zTag, 0);
         return TCL_ERROR;
     }
@@ -2608,6 +2645,7 @@ int widgetCmd(clientData, interp, objc, objv)
     SubCmd aSub[] = {
         {"bbox",         bboxCmd},
         {"cget",         cgetCmd},
+        {"charset",      charsetCmd},
         {"configure",    configureCmd},
         {"fragment",     fragmentCmd},
         {"handler",      handlerCmd},

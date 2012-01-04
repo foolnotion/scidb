@@ -3040,6 +3040,7 @@ HtmlNodeGetProperty(interp, pProp, pValues)
 
     assert(eProp <= CSS_PROPERTY_MAX_PROPERTY);
     if (eProp < 0) {
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, "no such property: ", zProp, 0);
         return TCL_ERROR;
     }

@@ -361,7 +361,7 @@
 
 \lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
 
-<html>\cr
+<html><body>\cr
 <p><nobr>\cr
 <big>
 <font color="blue">\event</font> \site
@@ -503,7 +503,7 @@
 \numGames\ \if\numGames\1\Game\else\Games\fi
 \ (+\won\thick-space\ =\lost\thick-space\ \minus\draw)\cr
 </p>\cr
-</html>
+</body></html>
 
 %%% end of file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bye

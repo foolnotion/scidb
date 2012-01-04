@@ -45,6 +45,7 @@ set home		[file nativename "~"]
 set exec		[file dirname [info nameofexecutable]]
 set user		[file join $home .[string range [file tail [info nameofexecutable]] 2 end]]
 set data		[file join $share data]
+set help		[file join $share help]
 set photos	[file join $share photos]
 set backup	[file join $user backup]
 set config	[file join $user config]
@@ -264,7 +265,7 @@ set IOError(LoadFailed)				"load failed (too many event entries)"
 set Extensions		{.sci .si4 .si3 .cbh .pgn .zip}
 set clipbaseName	Clipbase
 
-proc databaseName {base} {
+proc databaseName {base {withExtension 1}} {
 	variable clipbaseName
 
 	if {$base eq [::scidb::db::get clipbase name]} {
@@ -274,18 +275,21 @@ proc databaseName {base} {
 	set name [lindex [file split $base] end]
 	set ext [file extension $name]
 	set name [file rootname $name]
-	
-	switch -- $ext {
-		.gz {
-			set ext .pgn
-			set name [file rootname $name]
+
+	if {$withExtension} {
+		switch -- $ext {
+			.gz {
+				set ext .pgn
+				set name [file rootname $name]
+			}
+			.zip {
+				set ext .pgn
+			}
 		}
-		.zip {
-			set ext .pgn
-		}
+
+		if {[string length $ext]} { append name " $ext" }
 	}
 
-	if {[string length $ext]} { append name " $ext" }
 	return [string map {" " "\u2002"} $name]
 }
 

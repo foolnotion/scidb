@@ -36,6 +36,7 @@
 ::mc::Apply				"Anwenden"
 ::mc::Background		"Hintergrund"
 ::mc::Black				"Schwarz"
+::mc::Bottom			"Unten"
 ::mc::Cancel			"Abbrechen"
 ::mc::Clear				"Leeren"
 ::mc::Close				"Schliessen"
@@ -51,6 +52,7 @@
 ::mc::From				"Von"
 ::mc::Game				"Partie"
 ::mc::Layout			"Layout"
+::mc::Left				"Links"
 ::mc::Lite				"Hell"
 ::mc::Modify			"Ändern"
 ::mc::No					"nein"
@@ -62,10 +64,12 @@
 ::mc::Preview			"Vorschau"
 ::mc::Redo				"Wiederherstellen"
 ::mc::Reset				"Zurücksetzen"
+::mc::Right				"Rechts"
 ::mc::SelectAll		"Alles selektieren"
 ::mc::Texture			"Textur"
 ::mc::Theme				"Thema"
 ::mc::To					"Nach"
+::mc::Top				"Oben"
 ::mc::Undo				"Rückgängig"
 ::mc::White				"Weiß"
 ::mc::Yes				"ja"
@@ -128,10 +132,10 @@
 ::menu::mc::View						"&Ansicht"
 ::menu::mc::Help						"&Hilfe"
 
-::menu::mc::FileOpen					"&Öffnen"
+::menu::mc::FileOpen					"&Datenbank öffnen..."
 ::menu::mc::FileOpenURL				"&URL öffnen..."
 ::menu::mc::FileOpenRecent			"Öffne &zuvorige"
-::menu::mc::FileNew					"&Neu"
+::menu::mc::FileNew					"&Neue Datenbank anlegen..."
 ::menu::mc::FileExport				"E&xport..."
 ::menu::mc::FileImport				"&PGN-Dateien importieren..."
 ::menu::mc::FileImportOne			"Eine PGN-Partie &importieren..."
@@ -691,8 +695,8 @@
 ::gametable::mc::GameFlags(=)				"Verteidigung"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Figurenspiel"
-::gametable::mc::GameFlags(t)				"Taktische Schnitzer" ;# unused
-::gametable::mc::GameFlags(s)				"Strategische Schnitzer" ;# unused
+::gametable::mc::GameFlags(t)				"Taktische Schnitzer"
+::gametable::mc::GameFlags(s)				"Strategische Schnitzer"
 ::gametable::mc::GameFlags(C)				"Regelwidrige Rochade"
 ::gametable::mc::GameFlags(I)				"Regelwidriger Zug"
 
@@ -1010,10 +1014,6 @@
 ::export::mc::Custom							"Benutzerdefiniert"
 ::export::mc::Potrait						"Hochformat"
 ::export::mc::Landscape						"Querformat"
-::export::mc::Top								"Oben"
-::export::mc::Bottom							"Unten"
-::export::mc::Left							"Links"
-::export::mc::Right							"Rechts"
 ::export::mc::Justification				"Ausrichtung"
 ::export::mc::Even							"Blocksatz"
 ::export::mc::Columns						"Spalten"
@@ -1234,6 +1234,14 @@
 ::timemodebox::mc::Mode(blitz)	"Blitzschach"
 ::timemodebox::mc::Mode(bullet)	"Bullet"
 ::timemodebox::mc::Mode(corr)		"Fernschach"
+
+### help ###############################################################
+::help::mc::Help					"Hilfe"
+::help::mc::Contents				"Inhalt"
+::help::mc::GoBack				"Eine Seite zurück (Alt-Links)"
+::help::mc::GoForward			"Eine Seite vorwärts (Alt-Rechts)"
+::help::mc::ExpandAllItems		"Alle Elemente expandieren"
+::help::mc::CollapseAllItems	"Alle Elemente zusammenfalten"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Turniertabelle"

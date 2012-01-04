@@ -246,7 +246,7 @@ proc ConfigureListbox {list} {
 
 
 proc ConfigurePanedWindowBackground {win} {
-#	$win configure -background [GetTroughColor]
+	$win configure -background [GetTroughColor]
 }
 
 

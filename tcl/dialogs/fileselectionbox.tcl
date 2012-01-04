@@ -195,6 +195,12 @@ proc Open {type args} {
 	if {[string match last* $geometry]} { set geometry [geometry $geometry] }
 	set minh 350
 
+	if {$data(-needencoding)} {
+		if {[llength $opts(-defaultencoding)] == 0} {
+			set opts(-defaultencoding) $::encoding::mc::AutoDetect
+		}
+	}
+
 	if {$create} {
 		if {$data(-needencoding)} {
 			set opts(-selectencodingcommand) [namespace code [list SelectEncoding $type]]
@@ -218,12 +224,6 @@ proc Open {type args} {
 		grid $w.fsbox -column 0 -row 0 -sticky nsew
 		grid columnconfigure $w 0 -weight 1
 		grid rowconfigure $w 0 -weight 1
-	}
-
-	if {$data(-needencoding)} {
-		if {[llength $opts(-defaultencoding)] == 0} {
-			set opts(-defaultencoding) $::encoding::mc::AutoDetect
-		}
 	}
 
 	if {$data(-embed)} {

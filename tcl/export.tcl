@@ -116,10 +116,6 @@ set Size						"Size"
 set Custom					"Custom"
 set Potrait					"Potrait"
 set Landscape				"Landscape"
-set Top						"Top"
-set Bottom					"Bottom"
-set Left						"Left"
-set Right					"Right"
 set Justification			"Justification"
 set Even						"Even"
 set Columns					"Columns"
@@ -2342,7 +2338,7 @@ proc BuildFrame {w} {
 			if {$Info($type,paper,$dir) == 0} {
 				set Info($type,paper,$dir) [DefaultMargin $dir $type $units]
 			}
-			ttk::label $w.margins.l$dir -text [set [namespace parent]::mc::$text]
+			ttk::label $w.margins.l$dir -text [set ::mc::$text]
 			ttk::entry $w.margins.s$dir -width 5 -textvariable [namespace parent]::Info($type,paper,$dir)
 			::validate::entryFloat $w.margins.s$dir
 			$w.margins.s$dir configure -validatecommand [namespace code [list MarginChanged $w $dir %P]]
@@ -2375,7 +2371,7 @@ proc BuildFrame {w} {
 	grid columnconfigure $w.orient 2 -minsize [expr {2*$::theme::padding}]
 
 	ttk::radiobutton $w.just.left \
-		-text [set [namespace parent]::mc::Left] \
+		-text [set ::mc::Left] \
 		-value 0 \
 		-command [namespace code [list RefreshPreview $w]] \
 		-variable [namespace parent]::Values($type,paper,justification) \
@@ -2950,6 +2946,7 @@ proc Select {nb index} {
 			set Info(useCustom) 0
 			set var $mc::TeXFiles
 			set ext {.tex .ltx}
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplemented $nb html }
 		}
 	}
 
@@ -3062,6 +3059,7 @@ proc DoExport {parent dlg file} {
 		pdf  { return }
 	
 		tex {
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { return }
 			foreach style [array names Styles tex,BasicStyle,*] {
 				if {[llength $Styles($style)] > 1} {
 					lassign $Styles($style) family size weight slant color

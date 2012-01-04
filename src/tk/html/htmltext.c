@@ -1114,10 +1114,12 @@ HtmlTagAddRemoveCmd(clientData, interp, objc, objv, isAdd)
 
     /* If either node is an orphan node, throw a Tcl exception. */
     if (HtmlNodeIsOrphan(sData.pFrom)) {
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, Tcl_GetString(objv[4]), " is an orphan", 0);
         return TCL_ERROR;
     }
     if (HtmlNodeIsOrphan(sData.pTo)) {
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, Tcl_GetString(objv[6]), " is an orphan", 0);
         return TCL_ERROR;
     }
@@ -1598,6 +1600,7 @@ HtmlTextOffsetCmd(clientData, interp, objc, objv)
     }
     if (!(pTextNode = HtmlNodeAsText(pNode))) {
         const char *zNode = Tcl_GetString(objv[3]);
+        Tcl_ResetResult(interp);
         Tcl_AppendResult(interp, zNode, " is not a text node", 0);
         return TCL_ERROR;
     }

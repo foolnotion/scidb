@@ -30,8 +30,8 @@ set Revert		"&Revert"
 set Update		"&Update"
 set Previous	"&Previous"
 set Next			"&Next"
-set Last			"&Last"
-set First		"Firs&t"
+set Last			"Las&t"
+set First		"&First"
 
 } ;# namespace mc
 

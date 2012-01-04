@@ -37,6 +37,7 @@
 ::mc::Apply				"Alkalmaz"
 ::mc::Background		"Háttér"
 ::mc::Black				"Sötét"
+::mc::Bottom			"Bottom"
 ::mc::Cancel			"Mégse"
 ::mc::Clear				"Törlése"
 ::mc::Close				"Bezár"
@@ -51,8 +52,8 @@
 ::mc::Escape			"Kilépés"
 ::mc::From				"From" ;# NEW
 ::mc::Game				"Game"
-::mc::Game				"Game"
 ::mc::Layout			"Layout"
+::mc::Left				"Left"
 ::mc::Lite				"Világos"
 ::mc::Modify			"Módosít"
 ::mc::No					"Nem"
@@ -64,10 +65,12 @@
 ::mc::Preview			"Előnézet"
 ::mc::Redo				"Újra"
 ::mc::Reset				"Reset"
+::mc::Right				"Right"
 ::mc::SelectAll		"Mindent kijelöl"
 ::mc::Texture			"Texture"
 ::mc::Theme				"Téma"
 ::mc::To					"To" ;# NEW
+::mc::Top				"Top"
 ::mc::Undo				"Visszavonás"
 ::mc::Variation		"Variáció"
 ::mc::White				"Világos"
@@ -131,10 +134,10 @@
 ::menu::mc::View						"&Nézet"
 ::menu::mc::Help						"&Súgó"
 
-::menu::mc::FileOpen					"&Fájl megnyitása"
+::menu::mc::FileOpen					"&Fájl megnyitása..."
 ::menu::mc::FileOpenURL				"Open &URL" ;# NEW
 ::menu::mc::FileOpenRecent			"Open &Recent"
-::menu::mc::FileNew					"&Új"
+::menu::mc::FileNew					"&New Database..." ;# NEW (changed)
 ::menu::mc::FileExport				"E&xport..."
 ::menu::mc::FileImport				"&PGN fájlok importálás..."
 ::menu::mc::FileImportOne			"&Egyetlen PGN importálás..."
@@ -696,8 +699,8 @@
 ::gametable::mc::GameFlags(=)				"Defense"
 ::gametable::mc::GameFlags(M)				"Material"
 ::gametable::mc::GameFlags(P)				"Piece Play"
-::gametable::mc::GameFlags(t)				"Tactical Blunder" ;# unused
-::gametable::mc::GameFlags(s)				"Strategical Blunder" ;# unused
+::gametable::mc::GameFlags(t)				"Tactical Blunder"
+::gametable::mc::GameFlags(s)				"Strategical Blunder"
 ::gametable::mc::GameFlags(C)				"Illegal Castling"
 ::gametable::mc::GameFlags(I)				"Illegal Move"
 
@@ -1015,10 +1018,6 @@
 ::export::mc::Custom							"Custom"
 ::export::mc::Potrait						"Potrait"
 ::export::mc::Landscape						"Landscape"
-::export::mc::Top								"Top"
-::export::mc::Bottom							"Bottom"
-::export::mc::Left							"Left"
-::export::mc::Right							"Right"
 ::export::mc::Justification				"Justification"
 ::export::mc::Even							"Even"
 ::export::mc::Columns						"Columns"
@@ -1238,6 +1237,14 @@
 ::timemodebox::mc::Mode(blitz)	"Blitz"
 ::timemodebox::mc::Mode(bullet)	"Bullet"
 ::timemodebox::mc::Mode(corr)		"Correspondence"
+
+### help ###############################################################
+::help::mc::Help					"Help" ;# NEW
+::help::mc::Contents				"Contents" ;# NEW
+::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
+::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
+::help::mc::ExpandAllItems		"Expand all items" ;# NEW
+::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tournament Table"
