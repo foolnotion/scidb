@@ -226,7 +226,9 @@
 
 \def\print-results#results{%
 	\begin-row
-	\begin-col-end\empty
+	\if\ShowCountry\1
+		\begin-col-end\empty
+	\fi
 	\begin-col
 	\begin-table\0\0\0\0
 	\begin-row

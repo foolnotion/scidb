@@ -43,7 +43,7 @@ namespace eval html {
 namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
-variable Margin	5
+variable Margin	8 ;# do not change!
 variable MaxWidth	12000
 
 
@@ -251,7 +251,6 @@ proc WidgetProc {w parent command args} {
 
 proc Configure {parent width} {
 	variable ${parent}::Priv
-	variable Margin
 
 	$parent.html configure -width [expr {max(1,$width - 2*$Priv(bw) - $Priv(sbwidth))}]
 	after cancel $Priv(afterId)
