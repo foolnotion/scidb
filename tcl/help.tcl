@@ -175,7 +175,7 @@ proc BuildHtmlFrame {w} {
 		-center no \
 		-width 600 \
 		-height 800 \
-		-cursor top_left_arrow \
+		-cursor left_ptr \
 		-borderwidth 1 \
 		-relief sunken \
 		;

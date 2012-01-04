@@ -28,7 +28,7 @@ verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 
 Dies ist Scid's Datanbankformat und wird aufgrund des hohen Verbreitungsgrades
 nicht nur im Lesemodus, sonder auch im Schreibmodus unterstützt. Es kann mit
-diesem Format jedoch nicht der volle Umfang von Scidb gebutzt werden.
+diesem Format jedoch nicht der volle Umfang von Scidb genutzt werden.
 
 <h2>ChessBase (.cbh)</h2>
 

@@ -92,7 +92,7 @@ proc readTranslationFile {file nagFile encoding} {
 				set value [string map {& {} "..." {}} [lindex $line 1]]
 				set ns [join [lrange [split $var ::] 1 end-2] ::]
 				if {[llength $ns]} { namespace eval $ns {} }
-				set $var [encoding convertto utf-8 $value]
+				set $var $value
 			}
 		}
 
@@ -131,16 +131,37 @@ if {$argc != 1} {
 }
 
 
+set lang [file tail [pwd]] 
+set file [file join .. .. lang localization.tcl]
+source $file
+
+foreach entry $i18n::languages {
+	lassign $entry langName codeName charsetName translationFile
+
+	if {$codeName eq $lang} { break }
+}
+
+if {$codeName ne $lang} {
+	puts stderr "Language \"$lang\" not defined in file \"$file\"."
+	puts stderr "You have to edit \"$file\"."
+	exit 1
+}
+
 set srcfile [lindex $argv 0]
 set dstfile "[file rootname $srcfile].html"
 
 set src [open $srcfile r]
+chan configure $src -encoding $charsetName
 set title ""
 
 while {[gets $src line] >= 0} {
 	if {[string match TITLE* $line]} {
 		set title [getArg $line]
 		break
+	}
+	if {[string match CHARSET* $line]} {
+		set charset [getArg $line]
+		chan configure $src -encoding $charset
 	}
 }
 
@@ -171,22 +192,6 @@ while {[llength $contents] > 0 && [string length [lindex $contents end]] == 0} {
 	set contents [lreplace $contents end end]
 }
 
-set lang [file tail [pwd]] 
-set file [file join .. .. lang localization.tcl]
-source $file
-
-foreach entry $i18n::languages {
-	lassign $entry langName codeName charsetName translationFile
-
-	if {$codeName eq $lang} { break }
-}
-
-if {$codeName ne $lang} {
-	puts stderr "Language \"$lang\" not defined in file \"$file\"."
-	puts stderr "You have to edit \"$file\"."
-	exit 1
-}
-
 set transFile [file join .. .. lang $translationFile]
 set nagFile [file join .. .. lang nag $translationFile]
 
@@ -200,12 +205,9 @@ if {![file readable $nagFile]} {
 }
 
 readTranslationFile $transFile $nagFile $charsetName
-set charsetmap {}
 
 set body {}
 foreach line $contents {
-	set line [encoding convertfrom $charsetName $line]
-	set line [encoding convertto utf-8 $line]
 	while {[regexp {%(::)?[a-zA-Z_:]*([(].*[)])?%} $line pattern]} {
 		set var [string range $pattern 1 end-1]
 		if {[info exists $var]} {
