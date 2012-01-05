@@ -774,19 +774,19 @@ ttk::style theme settings clam {
 } ;# namespace theme::clam
 
 
-namespace eval notebook {
-
+#namespace eval notebook {
+#
 # make keyboard traversal in notebooks comfortable
 # (otherwise "-takefocus 0" have to be set in all children of each tab)
-proc ActivateTab {w tab} {
-	if {[$w index $tab] eq [$w index current]} {
-		focus $w
-	} else {
-		$w select $tab
-	}
-}
-
-} ;# namespace notebook
+#proc ActivateTab {w tab} {
+#	if {[$w index $tab] eq [$w index current]} {
+#		focus $w
+#	} else {
+#		$w select $tab
+#	}
+#}
+#
+#} ;# namespace notebook
 } ;# namespace ttk
 
 # vi:set ts=3 sw=3:

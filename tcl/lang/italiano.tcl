@@ -1236,11 +1236,14 @@
 
 ### help ###############################################################
 ::help::mc::Help					"Help" ;# NEW
-::help::mc::Contents				"Contents" ;# NEW
+::help::mc::Contents				"&Contents" ;# NEW
+::help::mc::Index					"&Index" ;# NEW
 ::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
 ::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
 ::help::mc::ExpandAllItems		"Expand all items" ;# NEW
 ::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
+::help::mc::NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog." ;# NEW
+::help::mc::KeepLanguage		"Keep language %s for subsequent sessions?" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"

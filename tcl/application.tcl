@@ -327,6 +327,8 @@ proc switchTab {which} {
 
 
 proc ChooseLanguage {parent} {
+	variable ::country::icon::flag
+
 	if {!$::scidb::dir::setup} { return }
 	wm protocol $parent WM_DELETE_WINDOW {#}
 	set dlg $parent.lang
@@ -336,13 +338,13 @@ proc ChooseLanguage {parent} {
 	pack $top
 	foreach lang [lsort [array names ::mc::input]] {
 		if {[string length $lang]} {
-			set flag ""
-			catch { set flag $::country::icon::flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
-			if {[string length $flag] == 0} { set flag none }
+			set icon ""
+			catch { set icon $flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
+			if {[string length $icon] == 0} { set icon none }
 			set code [set ::mc::lang$lang]
 			ttk::button $top.$code \
 				-text " $lang" \
-				-image $flag \
+				-image $icon \
 				-compound left \
 				-command [namespace code [list SetupLang $code]] \
 				;

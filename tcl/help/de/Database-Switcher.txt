@@ -16,6 +16,7 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
+INDEX Datenbankumschalter
 TITLE Datenbankumschalter
 
 <dir><img src="images/database-switcher.png"></dir>

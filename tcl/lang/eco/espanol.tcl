@@ -508,7 +508,7 @@
 "Lolli Gambit (Wild Muzio Gambit)"				"Gambito Lolli (Gambito Muzio salvaje)"
 "Lomaya Exchange"						"Cambio de Lomaya"
 "Long Whip (Stockwhip) Defence"					"Defensa del látigo largo (Stockwhip)"
-"López-Gianutio (Nordic) Countergambit"				"Contragambito López-Gianutio (Nórdico)"
+"López-Gianutio (Nordic) Countergambit"			"Contragambito López-Gianutio (Nórdico)"
 "López (McLeod) Opening"					"Apertura López (McLeod)"
 "Löwenthal (La Bourdonnais) Variation"				"Variante Löwenthal (La Bourdonnais)"
 "MacDonnell Double Gambit"					"Doble Gambito MacDonnell"
@@ -560,7 +560,7 @@
 "Neo-Queen's Indian"						"Neo India de dama"
 "Neo-Queen's Indian (Capablanca System)"			"Neo India de dama (Sistema Capablanca)"
 "Neo-Seville Variation"						"Variante neo-Sevilla"
-"Nescafé Frappe Attack"						"Ataque del Nescafé"
+"Nescafé Frappe Attack"					"Ataque del Nescafé"
 "New St. George (Sanky-Georg Variation)"			"San Jorge nueva (Variante Sanky-Georg)"
 "Nimzo-Queen's Hybrid Variation"				"Variante Nimzo-india de dama híbrida"
 "Nimzovich (Kevitz-Mikenas) Defence"				"Defensa Nimzovich (Kevitz-Mikenas)"
@@ -586,7 +586,7 @@
 "Paschman Wing Gambit"						"Gambito de ala de Paschman"
 "Patzer Opening (Wayward Queen Attack)"				"Apertura del novato (Ataque con la dama de Wayward)"
 "Pawn Push Variation"						"Variante de la ofensiva de peones"
-"Pelikán (Lasker/Sveshnikov) Variation"				"Variante Pelikán (Lasker/Sveshnikov)"
+"Pelikán (Lasker/Sveshnikov) Variation"			"Variante Pelikán (Lasker/Sveshnikov)"
 "Philidor: Improved Hanham Variation"				"Philidor: Variante Hanham mejorada"
 "Piece-Sac Line"						"Línea de la pieza sin salida"
 "Pin Variation (Sicilian Counterattack)"			"Variante de la clavada (Contraataque siciliano)"
@@ -731,6 +731,5 @@
 "Yugoslav (Panno) Variation"					"Variante yugoslava (Panno)"
 "Zagreb (Fianchetto) Variation"					"Variante Zagreb (del fianchetto)"
 "Ziegler (O'Kelly) Defence"					"Defensa Ziegler (O'Kelly)"
-			
 
 # vi:set ts=8 sw=8:

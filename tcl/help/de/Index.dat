@@ -1,0 +1,29 @@
+set Index {
+  { A
+    {
+      {{Ablage-Datenbank} {Clipbase.html}}
+    }
+  }
+  { D
+    {
+      {{Dateiformate} {Database-Formats.html}}
+      {{Datenbankformate} {Database-Formats.html}}
+      {{Datenbankumschalter} {Database-Switcher.html}}
+    }
+  }
+  { M
+    {
+      {{Markierungen} {Game-Flags.html}}
+    }
+  }
+  { N
+    {
+      {{NAG-Kommentarwerte} {NAG-Comments.html}}
+    }
+  }
+  { P
+    {
+      {{Partiemarkierungen} {Game-Flags.html}}
+    }
+  }
+}

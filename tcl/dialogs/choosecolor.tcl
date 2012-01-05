@@ -488,9 +488,9 @@ proc OpenDialog {parent class app title modal adjHeight geometry initialColor ol
 
 	### Button Frame ###############
 	set box [tk::frame $dlg.bbox]
+	tk::AmpWidget ttk::button $box.ok  -default active -command [namespace code [list Done $dlg 1 ]]
 	tk::AmpWidget ttk::button $box.cancel -command \
 		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $initialColor : $oldcolor}]]]
-	tk::AmpWidget ttk::button $box.ok  -default active -command [namespace code [list Done $dlg 1 ]]
 	if {[llength iconOk] && [llength iconCancel]} {
 		$box.ok configure -compound left -image $iconOk
 		$box.cancel configure -compound left -image $iconCancel

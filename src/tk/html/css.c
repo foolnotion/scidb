@@ -150,6 +150,8 @@ static const char *constantToString(int c){
             return "CSS_PSEUDOCLASS_FIRSTCHILD";
         case CSS_PSEUDOCLASS_LINK:
             return "CSS_PSEUDOCLASS_LINK";
+        case CSS_PSEUDOCLASS_USERFLAG:
+            return "CSS_PSEUDOCLASS_USERFLAG";
         case CSS_PSEUDOCLASS_VISITED:
             return "CSS_PSEUDOCLASS_VISITED";
         case CSS_PSEUDOCLASS_ACTIVE:
@@ -2923,6 +2925,7 @@ void HtmlCssSelector(pParse, stype, pAttr, pValue)
 #if 0
         (stype == CSS_PSEUDOCLASS_LINK)                   ||
         (stype == CSS_PSEUDOCLASS_VISITED)                ||
+		  (stype == CSS_PSEUDOCLASS_USERFLAG)               ||
 #endif
         (stype == CSS_PSEUDOCLASS_HOVER)                  ||
         (stype == CSS_PSEUDOCLASS_FOCUS)                  ||
@@ -3111,6 +3114,7 @@ cssSelectorPropertySetPair(pParse, pSelector, pPropertySet, freeWhat)
              case CSS_PSEUDOCLASS_FIRSTCHILD:
              case CSS_PSEUDOCLASS_LINK:
              case CSS_PSEUDOCLASS_VISITED:
+				 case CSS_PSEUDOCLASS_USERFLAG:
              case CSS_PSEUDOCLASS_ACTIVE:
              case CSS_PSEUDOCLASS_HOVER:
              case CSS_PSEUDOCLASS_FOCUS:
@@ -3143,7 +3147,8 @@ cssSelectorPropertySetPair(pParse, pSelector, pPropertySet, freeWhat)
                 pS->eSelector == CSS_PSEUDOCLASS_HOVER ||
                 pS->eSelector == CSS_PSEUDOCLASS_FOCUS ||
                 pS->eSelector == CSS_PSEUDOCLASS_LINK ||
-                pS->eSelector == CSS_PSEUDOCLASS_VISITED
+                pS->eSelector == CSS_PSEUDOCLASS_VISITED ||
+					 pS->eSelector == CSS_PSEUDOCLASS_USERFLAG
             )
         ) {
             pS = pS->pNext;
@@ -3229,6 +3234,7 @@ int HtmlCssPseudo(pToken, nColon)
         /* Pseudo-classes. One colon only. */
         {"link",        CSS_PSEUDOCLASS_LINK,       1, 1},
         {"visited",     CSS_PSEUDOCLASS_VISITED,    1, 1},
+		  {"user",        CSS_PSEUDOCLASS_USERFLAG,   1, 1},
         {"active",      CSS_PSEUDOCLASS_ACTIVE,     1, 1},
         {"hover",       CSS_PSEUDOCLASS_HOVER,      1, 1},
         {"focus",       CSS_PSEUDOCLASS_FOCUS,      1, 1},
@@ -3578,6 +3584,9 @@ HtmlCssSelectorTest(pSelector, pNode, dynamic_true)
             case CSS_PSEUDOCLASS_VISITED:
                 if (pElem->flags & HTML_DYNAMIC_VISITED) break;
                 return 0;
+            case CSS_PSEUDOCLASS_USERFLAG:
+                if (pElem->flags & HTML_DYNAMIC_USERFLAG) break;
+                return 0;
 
             case CSS_SELECTOR_NEVERMATCH:
                 return 0;
@@ -3700,6 +3709,7 @@ selectorIsDynamic(pSelector)
             case CSS_PSEUDOCLASS_FOCUS:
             case CSS_PSEUDOCLASS_LINK:
             case CSS_PSEUDOCLASS_VISITED:
+				case CSS_PSEUDOCLASS_USERFLAG:
                 return 1;
         }
     }
@@ -4188,6 +4198,7 @@ HtmlCssSelectorToString(pSelector, pObj)
         case CSS_PSEUDOCLASS_LASTCHILD:            z = ":last-child";   break;
         case CSS_PSEUDOCLASS_LINK:                 z = ":link";         break;
         case CSS_PSEUDOCLASS_VISITED:              z = ":visited";      break;
+		  case CSS_PSEUDOCLASS_USERFLAG:             z = ":user";         break;
         case CSS_PSEUDOCLASS_ACTIVE:               z = ":active";       break;
         case CSS_PSEUDOCLASS_HOVER:                z = ":hover";        break;
         case CSS_PSEUDOCLASS_FOCUS:                z = ":focus";        break;

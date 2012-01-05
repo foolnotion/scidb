@@ -269,6 +269,9 @@ if {[info exists ::i18n::languages]} {
 }
 
 
+proc currentLanguage {} { return [set [namespace current]::Language] }
+
+
 proc countryForLang {lang} {
 	variable langToCountry
 
@@ -412,8 +415,13 @@ proc translateEco {str} {
 
 	foreach {key val} $EcoMatch {
 		if {[string match $key $str]} {
-			set i [string last [string range $key 2 end] $str]
-			set s [translateEco [string range $str 0 [expr {$i - 2}]]]
+			if {[string index $key 0] eq "*"} {
+				set i [expr {[string last [string range $key 2 end] $str] - 2}]
+				set s [translateEco [string range $str 0 $i]]
+			} else {
+				set i [expr {[string length $key] - 1}]
+				set s [translateEco [string range $str $i end]]
+			}
 			set t [string map [list %1 $s] $val]
 			return $t
 		}

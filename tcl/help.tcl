@@ -28,21 +28,36 @@ namespace eval help {
 namespace eval mc {
 
 set Help					"Help"
-set Contents			"Contents"
+set Contents			"&Contents"
+set Index				"&Index"
 set GoBack				"Go back one page (Alt-Left)"
 set GoForward			"Go forward one page (Alt-Right)"
 set ExpandAllItems	"Expand all items"
 set CollapseAllItems	"Collapse all items"
+set KeepLanguage		"Keep language %s for subsequent sessions?"
+set NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
 
 } ;# namespace mc
 
 variable Geometry {}
+variable Lang {}
+
+
+proc helpLanguage {} {
+	variable Lang
+
+	if {[string length $Lang]} { return $Lang }
+	return $::mc::langID
+}
 
 
 proc build {parent} {
 	variable Priv
 	variable Links
 	variable Geometry
+
+	set Priv(check:lang) [CheckLanguage $parent]
+	if {!$Priv(check:lang)} { return }
 
 	array unset Links
 	array set Links {}
@@ -55,9 +70,10 @@ proc build {parent} {
 		return
 	}
 	set Priv(dlg) $dlg
+	set Priv(mode) {}
 
 	toplevel $dlg -class Scidb
-	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Destroy $dlg]]
 	wm withdraw $dlg
 
 	set top [ttk::frame $dlg.top]
@@ -104,11 +120,15 @@ proc build {parent} {
 	grid columnconfigure $buttons {0 2 4 6 8 10} -minsize $::theme::padding
 	grid rowconfigure $buttons {0 2} -minsize $::theme::padding
 
-	set nb [ttk::notebook $control.nb -takefocus 1 -width 300]
-#	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
-	BuildContentsFrame $nb.contents
+	set nb [ttk::notebook $control.nb -takefocus 1 -width 320]
+	::ttk::notebook::enableTraversal $nb
+	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
+	contents::BuildFrame $nb.contents
+	index::BuildFrame $nb.index
 	$nb add $nb.contents -sticky nsew -padding $::theme::padding
+	$nb add $nb.index -sticky nsew -padding $::theme::padding
 	::widget::notebookTextvarHook $nb 0 [namespace current]::mc::Contents
+	::widget::notebookTextvarHook $nb 1 [namespace current]::mc::Index
 
 	grid $buttons -row 1 -column 1 -sticky w
 	grid $nb      -row 3 -column 1 -sticky nsew
@@ -141,6 +161,416 @@ proc build {parent} {
 }
 
 
+proc CheckLanguage {parent} {
+	variable Lang
+	variable ::country::icon::flag
+
+	set lang $::mc::langID
+	set file [file normalize [file join $::scidb::dir::help $lang Contents.dat]]
+	if {[file readable $file]} {
+		set Lang {}
+		return 1
+	}
+
+	if {[string length $Lang]} {
+		set file [file normalize [file join $::scidb::dir::help $Lang Contents.dat]]
+		if {[file readable $file]} { return 1 }
+	}
+
+	set Lang {}
+	set dlg $parent.lang
+	toplevel $dlg -class Scidb
+	wm withdraw $dlg
+	set top [ttk::frame $dlg.top]
+	pack $top
+	ttk::label $top.msg -text $mc::NoHelpAvailable
+	pack $top.msg -side top -padx $::theme::padx -pady $::theme::pady
+	set focus ""
+	foreach lang [lsort [array names ::mc::input]] {
+		if {[string length $lang]} {
+			set code [set ::mc::lang$lang]
+			set file [file normalize [file join $::scidb::dir::help $code Contents.dat]]
+			if {[file readable $file]} {
+				set icon ""
+				catch { set icon $flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
+				if {[string length $icon] == 0} { set icon none }
+				ttk::button $top.$code \
+					-text " $lang" \
+					-image $icon \
+					-compound left \
+					-command [namespace code [list SetupLang $code]] \
+					;
+				pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
+				bind $top.$code <Return> "event generate %W <Key-space>; break"
+			}
+		}
+	}
+	::widget::dialogButtons $dlg cancel cancel yes
+	$dlg.cancel configure -command [list destroy $dlg]
+	wm resizable $dlg no no
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	update idletasks
+	focus $dlg.cancel
+	::ttk::grabWindow $dlg
+	vwait [namespace current]::Lang
+	::ttk::releaseGrab $dlg
+	catch { destroy $dlg }
+
+	if {[string length $Lang] == 0} { return 0 }
+	return 2
+}
+
+
+proc SetupLang {code} {
+	set [namespace current]::Lang $code
+}
+
+
+proc Destroy {dlg} {
+	variable Priv
+	variable Lang
+
+	if {$Priv(check:lang) == 2} {
+		set language $::encoding::mc::Lang($Lang)
+		set reply [::dialog::question -parent $dlg -message [format $mc::KeepLanguage $language]]
+		if {$reply eq "no"} { set Lang "" }
+	}
+
+	destroy $dlg
+}
+
+
+namespace eval contents {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::icon::16x16::collapse
+	variable [namespace parent]::icon::16x16::expand
+	variable [namespace parent]::Priv
+
+	tk::frame $w -background white -takefocus 0
+
+	set t $w.tree
+	set Priv(contents) $t
+	set images [list $collapse open $expand {}]
+	treectrl $t \
+		-class HelpTree \
+		-takefocus 1 \
+		-highlightthickness 0 \
+		-borderwidth 1 \
+		-relief sunken \
+		-showheader no \
+		-showbuttons yes \
+		-buttonimage $images \
+		-showroot no \
+		-showlines no \
+		-xscrollincrement 1 \
+		-background white \
+		-linestyle solid \
+		;
+	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
+	set height [font metrics [$t cget -font] -linespace]
+	if {$height < 18} { set height 18 }
+	$t configure -itemheight $height
+
+	$t state define hilite
+	$t column create -tags item
+	$t configure -treecolumn item
+	$t element create elemImg image
+	$t element create elemTxt text -lines 1
+	$t element create elemSel rect \
+		-fill {	\#ffdd76 {selected focus}
+					\#f2f2f2 {selected !focus}
+					\#ebf4f5 {active focus}
+					\#f0f9fa {selected hilite}
+					\#f0f9fa {hilite}} \
+		;
+	$t element create elemBrd border \
+		-filled no \
+		-relief raised \
+		-thickness 1 \
+		-background {#e5e5e5 {active focus} {} {}} \
+		;
+
+	$t style create styText
+	$t style elements styText {elemSel elemBrd elemImg elemTxt}
+	$t style layout styText elemImg -expand ns -padx {2 0}
+	$t style layout styText elemTxt -padx {6 2} -expand ns -squeeze x
+	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
+	$t style layout styText elemBrd -iexpand xy -detach yes
+
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
+
+	bind $t <KeyPress-Left>  { %W item collapse [%W item id active] }
+	bind $t <KeyPress-Right> { %W item expand [%W item id active] }
+
+	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
+	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
+	bind $w.sh <ButtonPress-1> [list focus $t]
+	ttk::scrollbar $w.sv -orient vertical -command [list $t yview]
+	$t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
+	bind $w.sv <ButtonPress-1> [list focus $t]
+
+	grid $t    -row 0 -column 0 -sticky nsew
+	grid $w.sh -row 1 -column 0 -sticky ew
+	grid $w.sv -row 0 -column 1 -sticky ns
+	grid columnconfigure $w 0 -weight 1
+	grid rowconfigure $w 0 -weight 1
+
+	Update $t
+}
+
+
+proc FillContents {t depth root contents} {
+	variable [namespace parent]::icon::16x16::library
+	variable [namespace parent]::icon::16x16::document
+	variable [namespace parent]::icon::16x16::bookClosed
+	variable [namespace parent]::icon::16x16::bookOpen
+	variable [namespace parent]::Priv
+
+	set lang [[namespace parent]::helpLanguage]
+
+	foreach group $contents {
+		set lastchild $root
+		foreach entry $group {
+			if {[llength $entry] == 1} {
+				set topic [lindex $entry 0]
+				set item [$t item create -button auto]
+				set fill {}
+				if {[llength $topic] > 0} {
+					set file [file normalize [file join $::scidb::dir::help $lang [lindex $topic 1]]]
+					if {![file readable $file]} {
+						lappend fill -fill #999999
+					} elseif {[llength $topic] > 2} {
+						set Priv(uri:$item) [::tkhtml::uri $file#[lindex $topic 2]]
+					} else {
+						set Priv(uri:$item) [::tkhtml::uri $file]
+					}
+				}
+				set title [lindex $topic 0]
+				if {[llength $topic] == 2} {
+					set Priv(topic:$file) $title
+					if {$item == 1} { set icon $library } else { set icon $document }
+				} else {
+					$t item collapse $item
+					set icon [list $bookClosed {!open} $bookOpen {open}]
+				}
+				$t item style set $item item styText
+				$t item element configure $item item elemTxt -text $title {*}$fill
+				$t item lastchild $lastchild $item
+				$t item element configure $item item elemImg -image $icon
+				if {[llength $topic] != 2} { set lastchild $item }
+			} else {
+				FillContents $t [expr {$depth + 1}] $root $entry
+			}
+		}
+	}
+}
+
+
+proc Update {t} {
+	variable [namespace parent]::Priv
+
+	set Contents {}
+	set lang [[namespace parent]::helpLanguage]
+	set file [file normalize [file join $::scidb::dir::help $lang Contents.dat]]
+	catch { source -encoding utf-8 $file }
+	foreach name [array names Priv uri:*] { $Priv($name) destroy }
+	array unset Priv uri:*
+	$t item delete all
+	FillContents $t 0 root $Contents
+	catch { $t activate 1 }
+}
+
+
+proc LoadPage {t item} {
+	variable [namespace parent]::Priv
+	variable [namespace parent]::Links
+
+	if {[info exists Priv(uri:$item)]} {
+		set path [$Priv(uri:$item) path]
+
+		if {[string match http* $path]} {
+			::web::open $Priv(html) $path
+		} else {
+			set fragment [$Priv(uri:$item) fragment]
+			set Links($path) 1
+			[namespace parent]::Load $path $fragment
+		}
+	}
+}
+
+} ;# namespace contents
+
+
+namespace eval index {
+
+proc BuildFrame {w} {
+	variable Priv
+
+	tk::frame $w -background white -takefocus 0
+
+	set t $w.tree
+	set Priv(index) $t
+	treectrl $t \
+		-class HelpTree \
+		-takefocus 1 \
+		-highlightthickness 0 \
+		-borderwidth 1 \
+		-relief sunken \
+		-showheader no \
+		-showbuttons no \
+		-showroot no \
+		-showlines no \
+		-xscrollincrement 1 \
+		-background white \
+		-linestyle solid \
+		;
+	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
+	bind $t <Any-KeyPress> [namespace code { Select %W %A }]
+	set height [font metrics [$t cget -font] -linespace]
+	if {$height < 18} { set height 18 }
+	$t configure -itemheight $height
+
+	$t state define hilite
+	$t column create -tags item
+	$t configure -treecolumn item
+	$t element create elemTxt text -lines 1
+	$t element create elemSel rect \
+		-fill {	\#ffdd76 {selected focus}
+					\#f2f2f2 {selected !focus}
+					\#ebf4f5 {active focus}
+					\#f0f9fa {selected hilite}
+					\#f0f9fa {hilite}} \
+		;
+	$t element create elemBrd border \
+		-filled no \
+		-relief raised \
+		-thickness 1 \
+		-background {#e5e5e5 {active focus} {} {}} \
+		;
+
+	$t style create styText
+	$t style elements styText {elemSel elemBrd elemTxt}
+	$t style layout styText elemTxt -padx {4 4} -expand ns -squeeze x
+	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
+	$t style layout styText elemBrd -iexpand xy -detach yes
+
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
+
+	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
+	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
+	bind $w.sh <ButtonPress-1> [list focus $t]
+	ttk::scrollbar $w.sv -orient vertical -command [list $t yview]
+	$t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
+	bind $w.sv <ButtonPress-1> [list focus $t]
+
+	grid $t    -row 0 -column 0 -sticky nsew
+	grid $w.sh -row 1 -column 0 -sticky ew
+	grid $w.sv -row 0 -column 1 -sticky ns
+	grid columnconfigure $w 0 -weight 1
+	grid rowconfigure $w 0 -weight 1
+
+	Update $t
+}
+
+
+proc Update {t} {
+	variable [namespace parent]::Priv
+
+	set Index {}
+	set lang [[namespace parent]::helpLanguage]
+	set file [file normalize [file join $::scidb::dir::help $lang Index.dat]]
+	catch { source -encoding utf-8 $file }
+	$t item delete all
+	set font [$t cget -font]
+	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
+	array unset Priv index:*
+	array unset Priv key:*
+
+	foreach group $Index {
+		lassign $group alph entries
+
+		set item [$t item create]
+		$t item style set $item item styText
+		$t item element configure $item item elemTxt -text $alph -fill red4 -font $bold
+		$t item enabled $item no
+		$t item lastchild root $item
+
+		set lastchild $item
+		set count 0
+
+		foreach entry $entries {
+			lassign $entry topic file
+
+			set item [$t item create]
+			$t item style set $item item styText
+			$t item element configure $item item elemTxt -text $topic
+			$t item lastchild $lastchild $item
+
+			set path [file normalize [file join $::scidb::dir::help $lang $file]]
+			set Priv(index:$item) $path
+
+			if {$count == 0} {
+				set Priv(key:$alph) $item
+				incr count
+			}
+		}
+	}
+
+	catch { $t activate 2 }
+}
+
+
+proc LoadPage {t item} {
+	variable [namespace parent]::Priv
+
+	if {[string length $item] == 0} { return }
+	set path $Priv(index:$item)
+
+	if {[string match http* $path]} {
+		::web::open $Priv(html) $path
+	} else {
+		[namespace parent]::Load $path
+	}
+}
+
+
+proc Select {t key} {
+	variable [namespace parent]::Priv
+
+	set key [string toupper $key]
+
+	if {[info exists Priv(key:$key)]} {
+		set item $Priv(key:$key)
+		$t activate $item
+		$t see $item
+	}
+}
+
+} ;# namespace index
+
+
+proc TabChanged {nb} {
+	variable Priv
+
+	set tab [$nb select]
+
+	switch -glob -- [$nb select] {
+		*contents	{ set Priv(mode) contents }
+		*index		{ set Priv(mode) index }
+	}
+}
+
+
 proc UpdateTitle {} {
 	variable Priv
 
@@ -154,6 +584,11 @@ proc UpdateTitle {} {
 	}
 
 	wm title $Priv(dlg) $title
+}
+
+
+proc RecordGeometry {dlg} {
+	set [namespace current]::Geometry [wm geometry $dlg]
 }
 
 
@@ -190,118 +625,9 @@ proc BuildHtmlFrame {w} {
 }
 
 
-proc BuildContentsFrame {w} {
-	variable Priv
-
-	ttk::frame $w
-
-	set t $w.tree
-	set Priv(contents) $t
-	set images [list $icon::16x16::collapse open $icon::16x16::expand {}]
-	treectrl $t \
-		-takefocus 1 \
-		-highlightthickness 0 \
-		-borderwidth 1 \
-		-relief sunken \
-		-showheader no \
-		-showbuttons yes \
-		-buttonimage $images \
-		-showroot no \
-		-showlines no \
-		-xscrollincrement 1 \
-		-background white \
-		-linestyle solid \
-		;
-	bind $t <<LanguageChanged>> [namespace code [list UpdateContents $t]]
-	set height [font metrics [$t cget -font] -linespace]
-	if {$height < 18} { set height 18 }
-	$t configure -itemheight $height
-
-	$t state define hilite
-	$t column create -tags item
-	$t configure -treecolumn item
-	$t element create elemImg image
-	$t element create elemTxt text -lines 1
-	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus}
-					\#f2f2f2 {selected !focus}
-					\#ebf4f5 {active focus}
-					\#f0f9fa {selected hilite}
-					\#f0f9fa {hilite}} \
-		;
-	$t element create elemBrd border \
-		-filled no \
-		-relief raised \
-		-thickness 1 \
-		-background {#e5e5e5 {active focus} {} {}} \
-		;
-
-	$t style create styText
-	$t style elements styText {elemSel elemBrd elemImg elemTxt}
-	$t style layout styText elemImg -expand ns -padx {2 0}
-	$t style layout styText elemTxt -padx {6 2} -expand ns -squeeze x
-	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
-	$t style layout styText elemBrd -iexpand xy -detach yes
-
-	$t notify install <Item-enter>
-	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [namespace code [list VisitItem $w $t enter %I]]
-	$t notify bind $t <Item-leave> [namespace code [list VisitItem $w $t leave %I]]
-	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
-
-	bind $t <ButtonPress-1> {+
-		set id [%W identify %x %y]
-		if {[llength $id] == 0} { return }
-		lassign $id where item arg1
-		if {$where ne "item"} { return }
-		if {$arg1 ne "column"} { return }
-		%W selection clear
-		%W selection add $item
-	}
-	bind $t <KeyPress-Up> {
-		set item [TreeCtrl::UpDown %W active -1]
-		if {$item eq ""} return
-		%W activate $item
-		%W see active
-		break
-	}
-	bind $t <KeyPress-Down> {
-		set item [TreeCtrl::UpDown %W active +1]
-		if {$item eq ""} return
-		%W activate $item
-		%W see active
-		break
-	}
-	bind TreeCtrl <KeyPress-space> {
-		 %W selection clear
-		 %W selection add active
-	}
-	bind TreeCtrl <KeyPress-Return> {
-		 %W selection clear
-		 %W selection add active
-	}
-	bind $t <KeyPress-Left>  { %W item collapse [%W item id active] }
-	bind $t <KeyPress-Right> { %W item expand [%W item id active] }
-
-	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
-	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sh <ButtonPress-1> [list focus $t]
-	ttk::scrollbar $w.sv -orient vertical -command [list $t yview]
-	$t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sv <ButtonPress-1> [list focus $t]
-
-	grid $t    -row 0 -column 0 -sticky nsew
-	grid $w.sh -row 1 -column 0 -sticky ew
-	grid $w.sv -row 0 -column 1 -sticky ns
-	grid columnconfigure $w 0 -weight 1
-	grid rowconfigure $w 0 -weight 1
-
-	UpdateContents $t
-}
-
-
 proc VisitItem {w t mode item} {
 	if {[string length $item] == 0} { return }
+	if {![$t item enabled $item]} { return }
 
 	switch $mode {
 		enter {
@@ -314,84 +640,8 @@ proc VisitItem {w t mode item} {
 }
 
 
-proc LoadPage {t item} {
-	variable Priv
-	variable Links
-
-	if {[info exists Priv(uri:$item)]} {
-		set file [$Priv(uri:$item) path]
-		set fragment [$Priv(uri:$item) fragment]
-		set Links($file) 1
-		Load $file $fragment
-	}
-}
-
-
-proc UpdateContents {t} {
-	variable Priv
-
-	set Contents {}
-	set file [file normalize [file join $::scidb::dir::help $::mc::langID Contents.dat]]
-	catch { source -encoding utf-8 $file }
-	foreach name [array names Priv uri:*] { $Priv($name) destroy }
-	array unset Priv uri:*
-	$t item delete all
-	FillContents $t 0 root $Contents
-	catch { $t activate 1 }
-}
-
-
-proc FillContents {t depth root contents} {
-	variable Priv
-
-	foreach group $contents {
-		set lastchild $root
-		foreach entry $group {
-			set count 0
-			if {[llength $entry] == 1} {
-				set topic [lindex $entry 0]
-				set item [$t item create -button auto -tags $depth.$root.$count]
-				set fill {}
-				if {[llength $topic] > 0} {
-					set file [file normalize [file join $::scidb::dir::help $::mc::langID [lindex $topic 1]]]
-					if {![file readable $file]} {
-						lappend fill -fill #999999
-					} elseif {[llength $topic] > 2} {
-						set Priv(uri:$item) [::tkhtml::uri $file#[lindex $topic 2]]
-					} else {
-						set Priv(uri:$item) [::tkhtml::uri $file]
-					}
-				}
-				set title [lindex $topic 0]
-				if {[llength $topic] == 2} {
-					set Priv(topic:$file) $title
-					if {$item == 1} { set icon library } else { set icon document }
-					set icon [set icon::16x16::$icon]
-				} else {
-					$t item collapse $item
-					set icon [list $icon::16x16::bookClosed {!open} $icon::16x16::bookOpen {open}]
-				}
-				$t item style set $item item styText
-				$t item element configure $item item elemTxt -text $title {*}$fill
-				$t item lastchild $lastchild $item
-				$t item element configure $item item elemImg -image $icon
-				if {[llength $topic] != 2} { set lastchild $item }
-				incr count
-			} else {
-				FillContents $t [expr {$depth + 1}] $root $entry
-			}
-		}
-	}
-}
-
-
-proc RecordGeometry {dlg} {
-	set [namespace current]::Geometry [wm geometry $dlg]
-}
-
-
 proc GetImage {file} {
-	set file [file normalize [file join $::scidb::dir::help $::mc::langID $file]]
+	set file [file normalize [file join $::scidb::dir::help [helpLanguage] $file]]
 	if {[catch { set img [image create photo -file $file] }]} {
 		set src $icon::16x16::broken
 		set img [image create photo -width [image width $src] -height [image height $src]]
@@ -405,13 +655,20 @@ proc A_NodeHandler {node} {
 	variable Nodes
 	variable Links
 
-	$node dynamic set link
+	set href [$node attribute -default {} href]
+
+	if {[string match http* $href]} {
+		$node dynamic set user
+		set file $href
+	} else {
+		$node dynamic set link
+		set file [file normalize [file join $::scidb::dir::help [helpLanguage] $href]]
+	}
+
 	set Nodes($node) 0
 
-	set href [$node attribute -default {} href]
-	if {[llength $href]} {
-		set file [file normalize [file join $::scidb::dir::help $::mc::langID $href]]
-		if {[info exists Links($file)]} { $node dynamic set visited }
+	if {[llength $file] && [info exists Links($file)]} {
+		$node dynamic set visited
 	}
 }
 
@@ -425,6 +682,7 @@ proc LinkHandler {node} {
 		# overwrite CSS values
 		set css "
 			:link    { color: blue2; text-decoration: none; }
+			:user		{ color: red3; text-decoration: none; }
 			:visited { color: purple; text-decoration: none; }
 			:hover   { text-decoration: none; background: #ffff00; }
 		"
@@ -437,7 +695,7 @@ proc ImportHandler {parentid uri} {
 	variable _StyleCount
 	variable Priv
 
-	set file [file join $::scidb::dir::help $::mc::langID $uri]
+	set file [file join $::scidb::dir::help [helpLanguage] $uri]
 	set fd [open $file r]
 	set content [read $fd]
 	close $fd
@@ -457,6 +715,10 @@ proc MouseEnter {node} {
 	if {[info exists Nodes($node)]} {
 		$node dynamic set hover
 		[$Priv(html) drawable] configure -cursor hand2
+
+		if {[$node dynamic get user]} {
+			::tooltip::show $Priv(html) [$node attribute href]
+		}
 	}
 }
 
@@ -465,6 +727,7 @@ proc MouseLeave {node} {
 	variable Nodes
 	variable Priv
 
+	::tooltip::hide
 	if {[llength $node] == 0} { return }
 
 	if {[info exists Nodes($node)]} {
@@ -487,10 +750,13 @@ proc Mouse1Up {node} {
 		$node dynamic set visited
 
 		set href [$node attribute -default {} href]
-		if {[llength $href]} {
+
+		if {[string match http* $href]} {
+			::web::open $Priv(html) $href
+		} elseif {[llength $href]} {
 			set fragment ""
 			lassign [split $href \#] href fragment
-			set file [file normalize [file join $::scidb::dir::help $::mc::langID $href]]
+			set file [file normalize [file join $::scidb::dir::help [helpLanguage] $href]]
 			set Links($file) 1
 			Load $file $fragment
 		}
@@ -507,7 +773,7 @@ proc ReloadCurrentPage {} {
 	}
 
 	if {	[string length $file] == 0
-		|| ![file readable [file join $::scidb::dir::help $::mc::langID [file tail $file]]]} {
+		|| ![file readable [file join $::scidb::dir::help [helpLanguage] [file tail $file]]]} {
 		set file Overview.html
 	}
 
@@ -515,7 +781,7 @@ proc ReloadCurrentPage {} {
 	set Priv(history:index) -2
 	set Priv(lastfile) ""
 
-	Load [file normalize [file join $::scidb::dir::help $::mc::langID [file tail $file]]]
+	Load [file normalize [file join $::scidb::dir::help [helpLanguage] [file tail $file]]]
 }
 
 
@@ -636,6 +902,48 @@ proc SetupButtons {} {
 	$Priv(button:back) configure -state $state
 }
 
+
+proc WriteOptions {chan} {
+	::options::writeItem $chan [namespace current]::Lang
+}
+
+::options::hookWriter [namespace current]::WriteOptions
+
+
+ttk::copyBindings TreeCtrl HelpTree
+
+bind HelpTree <ButtonPress-1> {
+	TreeCtrl::ButtonPress1 %W %x %y
+	set id [%W identify %x %y]
+	if {[llength $id] == 0} { return }
+	lassign $id where item arg1
+	if {$where ne "item"} { return }
+	if {$arg1 ne "column"} { return }
+	%W selection clear
+	%W selection add $item
+}
+bind HelpTree <KeyPress-Up> {
+	set item [TreeCtrl::UpDown %W active -1]
+	if {$item eq ""} return
+	%W activate $item
+	%W see active
+	break
+}
+bind HelpTree <KeyPress-Down> {
+	set item [TreeCtrl::UpDown %W active +1]
+	if {$item eq ""} return
+	%W activate $item
+	%W see active
+	break
+}
+bind HelpTree <KeyPress-space> {
+	 %W selection clear
+	 %W selection add active
+}
+bind HelpTree <KeyPress-Return> {
+	 %W selection clear
+	 %W selection add active
+}
 
 namespace eval icon {
 namespace eval 16x16 {

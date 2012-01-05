@@ -212,6 +212,9 @@ uninstall-localizations:
 		fi;                                                                                \
 	fi
 
+install-lang: install-localizations
+uninstall-lang: uninstall-localizations
+
 install-photos:
 	@echo -n "Install player photos:"
 	@install -m 755 -d $(SHAREDIR)/photos

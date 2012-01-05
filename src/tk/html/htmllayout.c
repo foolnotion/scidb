@@ -1313,7 +1313,22 @@ markerBoxLayout(pLayout, pBox, pNode, pVerticalOffset)
         int iList = 1;
 
         HtmlNode *pParent = HtmlNodeParent(pNode);
+		  HtmlAttributes const* pAttr = ((HtmlElementNode*)pParent)->pAttributes;
+
+        if (pAttr) {
+            int ii;
+
+            for (ii = 0; ii < pAttr->nAttr; ++ii) {
+                struct HtmlAttribute const* attr = &pAttr->a[ii];
+                if (strcmp(attr->zName, "start") == 0) {
+                    iList = strtoul(attr->zValue, NULL, 10);
+                }
+            }
+        }
+
         eStyle = pComputed->eListStyleType;
+
+		  /* TODO: look if parent has 'start' attribute */
 
         /* Figure out the numeric index of this list element in it's parent.
          * i.e. the number to draw in the marker box if the list-style-type is

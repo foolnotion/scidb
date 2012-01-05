@@ -16,6 +16,8 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
+INDEX Datenbankformate
+INDEX Dateiformate
 TITLE Datenbankformate
 
 <h2>Scidb (.sci)</h2>

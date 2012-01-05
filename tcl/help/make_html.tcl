@@ -82,22 +82,38 @@ proc print {chan source title body} {
 
 
 proc readTranslationFile {file nagFile encoding} {
-	foreach fileName [list $file $nagFile] {
-		set f [open $fileName r]
-		chan configure $f -encoding $encoding
+	set f [open $file r]
+	chan configure $f -encoding $encoding
 
-		while {[gets $f line] >= 0} {
-			if {[string length $line] > 0 && [string index $line 0] ne "#"} {
-				set var [lindex $line 0]
-				set value [string map {& {} "..." {}} [lindex $line 1]]
-				set ns [join [lrange [split $var ::] 1 end-2] ::]
-				if {[llength $ns]} { namespace eval $ns {} }
-				set $var $value
-			}
+	while {[gets $f line] >= 0} {
+		if {[string length $line] > 0 && [string index $line 0] ne "#"} {
+			set var [lindex $line 0]
+			set value [string map {& {} "..." {}} [lindex $line 1]]
+			set ns [join [lrange [split $var ::] 1 end-2] ::]
+			if {[llength $ns]} { namespace eval $ns {} }
+			set $var $value
 		}
-
-		close $f
 	}
+
+	close $f
+
+	set f [open $nagFile r]
+	chan configure $f -encoding $encoding
+
+	namespace eval ::annotation {}
+	namespace eval ::annotation::mc {}
+
+	while {[gets $f line] >= 0} {
+		if {[string length $line] > 0 && [string index $line 0] ne "#"} {
+			set var [lindex $line 0]
+			set value [string map {& {} "..." {}} [lindex $line 1]]
+			set ns [join [lrange [split $var ::] 1 end-2] ::]
+			if {[llength $ns]} { namespace eval $ns {} }
+			set ::annotation::mc::Nag($var) $value
+		}
+	}
+
+	close $f
 }
 
 
@@ -137,7 +153,6 @@ source $file
 
 foreach entry $i18n::languages {
 	lassign $entry langName codeName charsetName translationFile
-
 	if {$codeName eq $lang} { break }
 }
 
@@ -151,7 +166,7 @@ set srcfile [lindex $argv 0]
 set dstfile "[file rootname $srcfile].html"
 
 set src [open $srcfile r]
-chan configure $src -encoding $charsetName
+set charset $charsetName
 set title ""
 
 while {[gets $src line] >= 0} {
@@ -161,9 +176,10 @@ while {[gets $src line] >= 0} {
 	}
 	if {[string match CHARSET* $line]} {
 		set charset [getArg $line]
-		chan configure $src -encoding $charset
 	}
 }
+
+chan configure $src -encoding $charset
 
 if {![string match TITLE* $line]} {
 	puts stderr "Missing mandatory TITLE."
@@ -174,7 +190,19 @@ set contents {}
 
 while {[gets $src line] >= 0} {
 	if {[string match END* $line]} { break }
-	lappend contents $line
+
+	if {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
+		lassign $location i k
+		set range [string range $line [expr {$i + 5}] [expr {$k - 1}]]
+		lassign [split $range "."] from _ to
+		set pref [string range $line 0 [expr {$i - 1}]]
+		set suff [string range $line [expr {$k + 1}] end]
+		for {} {$from <= $to} {incr from} {
+			lappend contents "${pref}$from${suff}"
+		}
+	} else {
+		lappend contents $line
+	}
 }
 
 if {![string match END* $line]} {
@@ -221,6 +249,7 @@ foreach line $contents {
 }
 
 set dst [open $dstfile w]
+fconfigure $dst -encoding utf-8
 print $dst [file join tcl help de $srcfile] $title $body
 close $dst
 

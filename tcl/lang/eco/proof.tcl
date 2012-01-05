@@ -221,8 +221,13 @@ proc translateEco {str} {
 
 	foreach {key val} $EcoMatch {
 		if {[string match $key $str]} {
-			set i [string last [string range $key 2 end] $str]
-			set s [translateEco [string range $str 0 [expr {$i - 2}]]]
+			if {[string index $key 0] eq "*"} {
+				set i [expr {[string last [string range $key 2 end] $str] - 2}]
+				set s [translateEco [string range $str 0 $i]]
+			} else {
+				set i [expr {[string length $key] - 1}]
+				set s [translateEco [string range $str $i end]]
+			}
 			set t [string map [list %1 $s] $val]
 			if {$::Trace} { puts "#9 $str --> $t" }
 			return $t
@@ -278,7 +283,10 @@ while {[gets $fd line] >= 0} {
 
 		set key [lindex $parts 1]
 		set val [lindex $parts 3]
+
 		if {[string range $key 0 1] eq "* " && [string match {*%1*} $val]} {
+			lappend EcoMatch $key $val
+		} elseif {[string range $key end-1 end] eq " *" && [string match {*%1*} $val]} {
 			lappend EcoMatch $key $val
 		} else {
 			lappend EcoTrans([string index $key 0],[string length $key]) $key $val

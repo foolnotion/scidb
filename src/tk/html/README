@@ -16,3 +16,7 @@ and new commands:
 
 	<nodeHandle> dynamic get flag
 		Returns the status of the argument "flag" in given node.
+
+and is supporting more attributes:
+
+	<ol start="12">...</ol>
