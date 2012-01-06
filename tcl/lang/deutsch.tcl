@@ -1248,7 +1248,7 @@
 ::help::mc::Help					"Hilfe"
 ::help::mc::MatchEntireWord	"Ganzes Wort vergleichen"
 ::help::mc::MatchCase			"Groß-/Kleinschreibung beachten"
-::help::mc::TitleOnly			"Nur Titel"
+::help::mc::TitleOnly			"Nur in Titel suchen"
 ::help::mc::GoBack				"Eine Seite zurück (Alt-Links)"
 ::help::mc::GoForward			"Eine Seite vorwärts (Alt-Rechts)"
 ::help::mc::ExpandAllItems		"Alle Elemente expandieren"

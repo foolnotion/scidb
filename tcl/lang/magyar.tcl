@@ -1251,7 +1251,7 @@
 ::help::mc::Help					"Help" ;# NEW
 ::help::mc::MatchEntireWord	"Match entire word" ;# NEW
 ::help::mc::MatchCase			"Match case" ;# NEW
-::help::mc::TitleOnly			"Title only" ;# NEW
+::help::mc::TitleOnly			"Search in titles only" ;# NEW
 ::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
 ::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
 ::help::mc::ExpandAllItems		"Expand all items" ;# NEW

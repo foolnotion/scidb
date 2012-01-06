@@ -1250,7 +1250,7 @@
 ::help::mc::Help					"Help"
 ::help::mc::MatchEntireWord	"Match entire word"
 ::help::mc::MatchCase			"Match case"
-::help::mc::TitleOnly			"Title only"
+::help::mc::TitleOnly			"Search in titles only"
 ::help::mc::GoBack				"Go back one page (Alt-Left)"
 ::help::mc::GoForward			"Go forward one page (Alt-Right)"
 ::help::mc::ExpandAllItems		"Expand all items"
