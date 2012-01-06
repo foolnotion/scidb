@@ -74,6 +74,11 @@
 ::mc::White				"Weiß"
 ::mc::Yes				"ja"
 
+::mc::LogicalReset	"Löschen"
+::mc::LogicalAnd		"Und"
+::mc::LogicalOr		"Oder"
+::mc::LogicalNot		"Nicht"
+
 ::mc::King				"König"
 ::mc::Queen				"Dame"
 ::mc::Rook				"Turm"
@@ -1236,15 +1241,25 @@
 ::timemodebox::mc::Mode(corr)		"Fernschach"
 
 ### help ###############################################################
-::help::mc::Help					"Hilfe"
 ::help::mc::Contents				"&Inhalt"
 ::help::mc::Index					"Inde&x"
+::help::mc::Search				"&Suche"
+
+::help::mc::Help					"Hilfe"
+::help::mc::MatchEntireWord	"Ganzes Wort vergleichen"
+::help::mc::MatchCase			"Groß-/Kleinschreibung beachten"
+::help::mc::TitleOnly			"Nur Titel"
 ::help::mc::GoBack				"Eine Seite zurück (Alt-Links)"
 ::help::mc::GoForward			"Eine Seite vorwärts (Alt-Rechts)"
 ::help::mc::ExpandAllItems		"Alle Elemente expandieren"
 ::help::mc::CollapseAllItems	"Alle Elemente zusammenfalten"
+::help::mc::SelectLanguage		"Sprachauswahl"
 ::help::mc::NoHelpAvailable	"Es sind keine Hilfedateien verfügbar für die\ndeutsche Sprache. Bitte wählen Sie zwischen einer\nanderen Sprache für den Hilfe-Dialog."
 ::help::mc::KeepLanguage		"Die Sprache %s zukünftig beibehalten?"
+::help::mc::ParserError			"Fehler beim Parsen der Datei %s."
+::help::mc::NoMatch				"Keine Übereinstimmung gefunden"
+::help::mc::MaxmimumExceeded	"In einigen Seiten wurde die maximale Anzahl an Übereinstimmungen überschritten."
+::help::mc::OnlyFirstMatches	"Pro Seite werden nur die ersten %s Übereinstimmungen gezeigt."
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Turniertabelle"

@@ -69,6 +69,11 @@ set Variation		"Variation"
 set White			"White"
 set Yes				"Yes"
 
+set LogicalReset	"Reset"
+set LogicalAnd		"And"
+set LogicalOr		"Or"
+set LogicalNot		"Not"
+
 set King				"King"
 set Queen			"Queen"
 set Rook				"Rook"

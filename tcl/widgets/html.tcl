@@ -133,8 +133,8 @@ proc Build {w args} {
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
 
 	set options {}
-	if {$Priv(center)} { lappend options -width $MaxWidth -shrink yes }
-	__html_widget $html {*}$htmlOptions {*}$options
+	if {$Priv(center)} { lappend options -width $MaxWidth }
+	__html_widget $html {*}$htmlOptions {*}$options -shrink yes
 	$html style -id user $css
 	grid $html
 
@@ -244,6 +244,10 @@ proc WidgetProc {w parent command args} {
 			set fraction [expr {double($y)/double($height)}]
 			update idletasks
 			return [$parent yview moveto $fraction]
+		}
+
+		root {
+			return [$parent.html node]
 		}
 	}
 

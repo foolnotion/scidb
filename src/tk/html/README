@@ -20,3 +20,7 @@ and new commands:
 and is supporting more attributes:
 
 	<ol start="12">...</ol>
+
+and has a new dynamic flag:
+
+	<node> set dynamic user

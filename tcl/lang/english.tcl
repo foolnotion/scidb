@@ -75,6 +75,11 @@
 ::mc::White				"White"
 ::mc::Yes				"yes"
 
+::mc::LogicalReset	"Reset"
+::mc::LogicalAnd		"And"
+::mc::LogicalOr		"Or"
+::mc::LogicalNot		"Not"
+
 ::mc::King				"King"
 ::mc::Queen				"Queen"
 ::mc::Rook				"Rook"
@@ -1238,15 +1243,25 @@
 ::timemodebox::mc::Mode(corr)		"Correspondence"
 
 ### help ###############################################################
-::help::mc::Help					"Help"
 ::help::mc::Contents				"&Contents"
 ::help::mc::Index					"&Index"
+::help::mc::Search				"&Search"
+
+::help::mc::Help					"Help"
+::help::mc::MatchEntireWord	"Match entire word"
+::help::mc::MatchCase			"Match case"
+::help::mc::TitleOnly			"Title only"
 ::help::mc::GoBack				"Go back one page (Alt-Left)"
 ::help::mc::GoForward			"Go forward one page (Alt-Right)"
 ::help::mc::ExpandAllItems		"Expand all items"
 ::help::mc::CollapseAllItems	"Collapse all items"
+::help::mc::SelectLanguage		"Select Language"
 ::help::mc::NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog."
 ::help::mc::KeepLanguage		"Keep language %s for subsequent sessions?"
+::help::mc::ParserError			"Error while parsing file %s."
+::help::mc::NoMatch				"No match is found"
+::help::mc::MaxmimumExceeded	"Maximal number of matches exceeded in some pages."
+::help::mc::OnlyFirstMatches	"Only first %s matches per page will be shown."
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tournament Table"

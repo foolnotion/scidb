@@ -349,7 +349,7 @@ proc ChooseLanguage {parent} {
 				-command [namespace code [list SetupLang $code]] \
 				;
 			pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
-			bind $top.$code <Return> "event generate %W <Key-space>; break"
+			bind $top.$code <Return> { event generate %W <Key-space>; break }
 		}
 	}
 	wm resizable $dlg no no

@@ -349,9 +349,9 @@ parser::parse(char const* svg_data, unsigned len)
 
 	if (!::XML_Parse(p, svg_data, len, true))
 	{
-		exception exc(	"%s at line %d\n",
+		exception exc(	"%s at line %u\n",
 									::XML_ErrorString(::XML_GetErrorCode(p)),
-									::XML_GetCurrentLineNumber(p));
+									unsigned(::XML_GetCurrentLineNumber(p)));
 		::XML_ParserFree(p);
 		M_THROW(exc);
 	}

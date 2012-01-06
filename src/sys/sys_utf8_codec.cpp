@@ -1837,6 +1837,48 @@ utfToUniChar(char const* s, Tcl_UniChar& ch)
 }
 
 
+static
+bool
+matchString(char const* s, char const* t, unsigned len)
+{
+	char const* e = s + len;
+
+	while (s < e)
+	{
+		Tcl_UniChar u, v;
+
+		s += ::utfToUniChar(s, u);
+		t += ::utfToUniChar(t, v);
+
+		if (u != v)
+			return false;
+	}
+
+	return true;
+}
+
+
+static
+bool
+matchStringNoCase(char const* s, char const* t, unsigned len)
+{
+	char const* e = s + len;
+
+	while (s < e)
+	{
+		Tcl_UniChar u, v;
+
+		s += ::utfToUniChar(s, u);
+		t += ::utfToUniChar(t, v);
+
+		if (Tcl_UniCharToUpper(u) != Tcl_UniCharToUpper(v))
+			return false;
+	}
+
+	return true;
+}
+
+
 inline static bool
 isSpace(char c)
 {
@@ -2779,6 +2821,60 @@ Codec::checkEncoding(mstl::string const& name)
 	}
 
 	return false;
+}
+
+
+int
+Codec::findFirst(char const* haystack, unsigned haystackLen, char const* needle, unsigned needleLen)
+{
+	M_REQUIRE(validateUtf8(needle, needleLen));
+	M_REQUIRE(validateUtf8(haystack, haystackLen));
+
+	if (needleLen == 0)
+		return -1;
+
+	char const* end = haystack + haystackLen - needleLen + 1;
+
+	for (char const* p = haystack; p < end; p = Tcl_UtfNext(p))
+	{
+		if (*p == *needle && ::matchString(p, needle, needleLen))
+			return p - haystack;
+	}
+
+	return -1;
+}
+
+
+int
+Codec::findFirstNoCase(	char const* haystack, unsigned haystackLen,
+								char const* needle, unsigned needleLen)
+{
+	M_REQUIRE(validateUtf8(needle, needleLen));
+	M_REQUIRE(validateUtf8(haystack, haystackLen));
+
+	if (needleLen == 0)
+		return -1;
+
+	char const* end = haystack + haystackLen - needleLen + 1;
+
+	Tcl_UniChar u;
+	unsigned bytes = ::utfToUniChar(needle, u);
+	u = Tcl_UniCharToUpper(u);
+	needleLen -= bytes;
+	needle += bytes;
+
+	for (char const* p = haystack; p < end; )
+	{
+		char const* s = p;
+		Tcl_UniChar v;
+
+		p += ::utfToUniChar(p, v);
+
+		if (u == Tcl_UniCharToUpper(v) && ::matchStringNoCase(p, needle, needleLen))
+			return s - haystack;
+	}
+
+	return -1;
 }
 
 // vi:set ts=3 sw=3:

@@ -27,20 +27,37 @@
 namespace eval help {
 namespace eval mc {
 
-set Help					"Help"
 set Contents			"&Contents"
 set Index				"&Index"
+set Search				"&Search"
+
+set Help					"Help"
+set MatchEntireWord	"Match entire word"
+set MatchCase			"Match case"
+set TitleOnly			"Title only"
 set GoBack				"Go back one page (Alt-Left)"
 set GoForward			"Go forward one page (Alt-Right)"
 set ExpandAllItems	"Expand all items"
 set CollapseAllItems	"Collapse all items"
+set SelectLanguage	"Select Language"
 set KeepLanguage		"Keep language %s for subsequent sessions?"
 set NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
+set ParserError		"Error while parsing file %s."
+set NoMatch				"No match is found"
+set MaxmimumExceeded	"Maximal number of matches exceeded in some pages."
+set OnlyFirstMatches	"Only first %s matches per page will be shown."
 
 } ;# namespace mc
 
 variable Geometry {}
 variable Lang {}
+
+array set Priv {
+	tab			contents
+	matchCase	no
+	entireWord	no
+	titleOnly	no
+}
 
 
 proc helpLanguage {} {
@@ -70,7 +87,6 @@ proc build {parent} {
 		return
 	}
 	set Priv(dlg) $dlg
-	set Priv(mode) {}
 
 	toplevel $dlg -class Scidb
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Destroy $dlg]]
@@ -105,11 +121,13 @@ proc build {parent} {
 		-image $icon::16x16::collapse \
 		-command [namespace code ExpandAllItems] \
 		;
+	set Priv(button:collapse) $buttons.collapse
 	::tooltip::tooltip $buttons.expand [namespace current]::mc::ExpandAllItems
 	ttk::button $buttons.collapse \
 		-image $icon::16x16::expand \
 		-command [namespace code CollapseAllItems] \
 		;
+	set Priv(button:expand) $buttons.expand
 	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
 	set Priv(button:forward) $buttons.forward
 	grid $buttons.back     -row 1 -column 1
@@ -125,15 +143,19 @@ proc build {parent} {
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	contents::BuildFrame $nb.contents
 	index::BuildFrame $nb.index
+	search::BuildFrame $nb.search
 	$nb add $nb.contents -sticky nsew -padding $::theme::padding
 	$nb add $nb.index -sticky nsew -padding $::theme::padding
+	$nb add $nb.search -sticky nsew -padding $::theme::padding
 	::widget::notebookTextvarHook $nb 0 [namespace current]::mc::Contents
 	::widget::notebookTextvarHook $nb 1 [namespace current]::mc::Index
+	::widget::notebookTextvarHook $nb 2 [namespace current]::mc::Search
 
 	grid $buttons -row 1 -column 1 -sticky w
 	grid $nb      -row 3 -column 1 -sticky nsew
 	grid columnconfigure $control 1 -weight 1
 	grid rowconfigure $control 3 -weight 1
+	grid rowconfigure $control 2 -minsize $::theme::padding
 
 	### Right side #######################################
 	set html $pw.html
@@ -143,7 +165,7 @@ proc build {parent} {
 	bind $dlg <Alt-Left>		[namespace code GoBack]
 	bind $dlg <Alt-Right>	[namespace code GoForward]
 
-	$pw add $control -sticky nswe -stretch never  -minsize 100
+	$pw add $control -sticky nswe -stretch never  -minsize 200
 	$pw add $html    -sticky nswe -stretch always -minsize 400
 
 	wm deiconify $dlg
@@ -153,10 +175,10 @@ proc build {parent} {
 		set Geometry [winfo width $dlg]x[winfo height $dlg]
 	}
 	wm geometry $dlg $Geometry
-	wm minsize $dlg 430 300
+	wm minsize $dlg 600 300
 	bind $nb <<LanguageChanged>> [namespace code UpdateTitle]
-	after idle [focus $Priv(contents)]
-
+	$nb select $nb.$Priv(tab)
+	focus $Priv($Priv(tab))
 	ReloadCurrentPage
 }
 
@@ -201,13 +223,14 @@ proc CheckLanguage {parent} {
 					-command [namespace code [list SetupLang $code]] \
 					;
 				pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
-				bind $top.$code <Return> "event generate %W <Key-space>; break"
+				bind $top.$code <Return> { event generate %W <Key-space>; break }
 			}
 		}
 	}
 	::widget::dialogButtons $dlg cancel cancel yes
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm resizable $dlg no no
+	wm title $dlg $mc::SelectLanguage
 	::util::place $dlg center $parent
 	wm deiconify $dlg
 	update idletasks
@@ -252,6 +275,7 @@ proc BuildFrame {w} {
 
 	set t $w.tree
 	set Priv(contents) $t
+	set Priv(contents:changed) 0
 	set images [list $collapse open $expand {}]
 	treectrl $t \
 		-class HelpTree \
@@ -268,6 +292,7 @@ proc BuildFrame {w} {
 		-background white \
 		-linestyle solid \
 		;
+	set Priv(contents:tree) $t
 	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
 	set height [font metrics [$t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
@@ -301,8 +326,8 @@ proc BuildFrame {w} {
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
 	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
 
 	bind $t <KeyPress-Left>  { %W item collapse [%W item id active] }
@@ -375,6 +400,7 @@ proc FillContents {t depth root contents} {
 
 proc Update {t} {
 	variable [namespace parent]::Priv
+	variable [namespace parent]::Contents
 
 	set Contents {}
 	set lang [[namespace parent]::helpLanguage]
@@ -400,23 +426,23 @@ proc LoadPage {t item} {
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
 			set Links($path) 1
-			[namespace parent]::Load $path $fragment
+			[namespace parent]::Load $path {} $fragment
 		}
 	}
 }
 
 } ;# namespace contents
 
-
 namespace eval index {
 
 proc BuildFrame {w} {
-	variable Priv
+	variable [namespace parent]::Priv
 
 	tk::frame $w -background white -takefocus 0
 
 	set t $w.tree
 	set Priv(index) $t
+	set Priv(index:changed) 0
 	treectrl $t \
 		-class HelpTree \
 		-takefocus 1 \
@@ -431,6 +457,7 @@ proc BuildFrame {w} {
 		-background white \
 		-linestyle solid \
 		;
+	set Priv(index:tree) $t
 	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
 	bind $t <Any-KeyPress> [namespace code { Select %W %A }]
 	set height [font metrics [$t cget -font] -linespace]
@@ -463,8 +490,8 @@ proc BuildFrame {w} {
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
 	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
 
 	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
@@ -494,7 +521,7 @@ proc Update {t} {
 	$t item delete all
 	set font [$t cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
-	array unset Priv index:*
+	array unset Priv index:path:*
 	array unset Priv key:*
 
 	foreach group $Index {
@@ -518,7 +545,7 @@ proc Update {t} {
 			$t item lastchild $lastchild $item
 
 			set path [file normalize [file join $::scidb::dir::help $lang $file]]
-			set Priv(index:$item) $path
+			set Priv(index:path:$item) $path
 
 			if {$count == 0} {
 				set Priv(key:$alph) $item
@@ -535,7 +562,7 @@ proc LoadPage {t item} {
 	variable [namespace parent]::Priv
 
 	if {[string length $item] == 0} { return }
-	set path $Priv(index:$item)
+	set path $Priv(index:path:$item)
 
 	if {[string match http* $path]} {
 		::web::open $Priv(html) $path
@@ -559,6 +586,240 @@ proc Select {t key} {
 
 } ;# namespace index
 
+namespace eval search {
+
+proc BuildFrame {w} {
+	variable [namespace parent]::Priv
+
+	set Priv(search:entry) ""
+	set Priv(search:changed) 0
+
+	ttk::frame $w -takefocus 0
+	set top [ttk::frame $w.top -takefocus 0]
+	set bot [ttk::frame $w.bot -takefocus 0]
+	set t $bot.tree
+
+	grid $top -row 0 -column 0 -sticky ew
+	grid $bot -row 2 -column 0 -sticky nsew
+	grid rowconfigure $w 2 -weight 1
+	grid rowconfigure $w 1 -minsize $::theme::padding
+	grid columnconfigure $w 0 -weight 1
+
+	### Top Frame ###########################################
+	ttk::entry $top.search \
+		-textvariable [namespace parent]::Priv(search:entry) \
+		-takefocus 1 \
+		-exportselection no \
+		-cursor xterm \
+		;
+	set Priv(search) $top.search
+
+	ttk::checkbutton $top.entire \
+		-textvariable [namespace parent]::mc::MatchEntireWord \
+		-variable [namespace parent]::Priv(entireWord) \
+		;
+	ttk::checkbutton $top.case \
+		-textvariable [namespace parent]::mc::MatchCase \
+		-variable [namespace parent]::Priv(matchCase) \
+		;
+	ttk::checkbutton $top.title \
+		-textvariable [namespace parent]::mc::TitleOnly \
+		-variable [namespace parent]::Priv(titleOnly) \
+		;
+
+	grid $top.search -row 0 -column 0 -sticky ew
+	grid $top.entire -row 2 -column 0 -sticky w
+	grid $top.case   -row 4 -column 0 -sticky w
+	grid $top.title  -row 6 -column 0 -sticky w
+	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $top {1} -minsize $::theme::padding
+
+	foreach v {search entire case title} {
+		bind $top.$v <Return> [namespace code [list Search $t]]
+	}
+
+	### Bottom Frame ########################################
+	treectrl $t \
+		-class HelpTree \
+		-takefocus 1 \
+		-highlightthickness 0 \
+		-borderwidth 1 \
+		-relief sunken \
+		-showheader no \
+		-showbuttons no \
+		-showroot no \
+		-showlines no \
+		-xscrollincrement 1 \
+		-background white \
+		-linestyle solid \
+		;
+	set Priv(search:tree) $t
+	bind $t <<LanguageChanged>> [namespace code [list Clear $t]]
+	set height [font metrics [$t cget -font] -linespace]
+	if {$height < 18} { set height 18 }
+	$t configure -itemheight $height
+	$t state define hilite
+
+	$t column create -tags item
+	$t element create elemTxt text -lines 1
+	$t element create elemSel rect \
+		-fill {	\#ffdd76 {selected focus}
+					\#f2f2f2 {selected !focus}
+					\#ebf4f5 {active focus}
+					\#f0f9fa {selected hilite}
+					\#f0f9fa {hilite}} \
+		;
+	$t element create elemBrd border \
+		-filled no \
+		-relief raised \
+		-thickness 1 \
+		-background {#e5e5e5 {active focus} {} {}} \
+		;
+
+	$t style create styText
+	$t style elements styText {elemSel elemBrd elemTxt}
+	$t style layout styText elemTxt -padx {4 4} -expand ns -squeeze x
+	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
+	$t style layout styText elemBrd -iexpand xy -detach yes
+
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
+	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
+
+	ttk::scrollbar $bot.sh -orient horizontal -command [list $t xview]
+	$t notify bind $bot.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
+	bind $bot.sh <ButtonPress-1> [list focus $t]
+	ttk::scrollbar $bot.sv -orient vertical -command [list $t yview]
+	$t notify bind $bot.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
+	bind $bot.sv <ButtonPress-1> [list focus $t]
+
+	grid $t      -row 0 -column 0 -sticky nsew
+	grid $bot.sh -row 1 -column 0 -sticky ew
+	grid $bot.sv -row 0 -column 1 -sticky ns
+	grid columnconfigure $bot 0 -weight 1
+	grid rowconfigure $bot 0 -weight 1
+}
+
+
+proc Search {t} {
+	variable [namespace parent]::Contents
+	variable [namespace parent]::Priv
+
+	set search $Priv(search:entry)
+	if {[string length $search] == 0} { return }
+
+	lappend options -skipRefs -max 20
+	if {!$Priv(matchCase)}	{ lappend options -noCase }
+	if {$Priv(entireWord)}	{ lappend options -entireWord }
+	if {$Priv(titleOnly)}	{ lappend options -titleOnly }
+
+	array unset Priv match:*
+	set lang [[namespace parent]::helpLanguage]
+	set directory [file normalize [file join $::scidb::dir::help $lang]]
+	set results {}
+	set exceededMsg 0
+	set activate 1
+	::log::open [set [namespace parent]::mc::Help]
+
+	foreach path [glob -nocomplain -directory $directory *.html] {
+		set file [file tail $path]
+
+		if {$file ne "Overview.html" && [file readable $path]} {
+			set fd [open $path r]
+			chan configure $fd -encoding utf-8
+			set content [read $fd]
+			close $fd
+
+			lassign [::scidb::misc::htmlSearch {*}$options $search $content] rc exceeded title positions
+
+			if {!$rc} {
+				::log::error [format [set [namespace parent]::mc::ParserError] [file join $lang $file]]
+			}
+			if {$exceeded} {
+				set exceededMsg 1
+			}
+
+			if {[llength $positions] > 0} {
+				if {[string length $title] == 0} { set title [FindTitle $file $Contents] }
+				if {[string length $title] > 0} {
+					lappend results [list [llength $positions] $path $positions $title $search]
+				}
+			}
+		}
+	}
+
+	::log::close
+	set results [lsort -integer -decreasing -index 0 $results]
+	$t item delete all
+
+	if {[llength $results] == 0} {
+		set item [$t item create]
+		$t item style set $item item styText
+		$t item element configure $item item elemTxt \
+			-text [set [namespace parent]::mc::NoMatch] \
+			-fill #696969 \
+			;
+		$t item enabled $item no
+		$t item lastchild root $item
+	} else {
+		foreach match $results {
+			set item [$t item create]
+			$t item style set $item item styText
+			$t item element configure $item item elemTxt -text [lindex $match 3]
+			$t item lastchild root $item
+			set Priv(match:$item) $match
+		}
+		$t activate 1
+		for {set i 0} {$i < [llength $results]} {incr i} {
+			set path [lindex $results $i 1]
+			if {$Priv(currentfile) eq $path} {
+				$t selection add [expr {$i + 1}]
+				break
+			}
+		}
+	}
+
+	if {$exceededMsg} {
+		::dialog::info \
+			-parent $t \
+			-message [set [namespace parent]::mc::MaxmimumExceeded] \
+			-detail [format [set [namespace parent]::mc::OnlyFirstMatches] 20] \
+			;
+	}
+}
+
+
+proc FindTitle {file contents} {
+	foreach group $contents {
+		foreach entry $group {
+			if {[llength $entry] == 1} {
+				set topic [lindex $entry 0]
+				if {[lindex $topic 1] eq $file} { return [lindex $topic 0] }
+			} else {
+				set title [FindTitle $file $entry]
+				if {[string length $title]} { return $title }
+			}
+		}
+	}
+
+	return ""
+}
+
+
+proc LoadPage {t item} {
+	variable [namespace parent]::Priv
+
+	if {[llength $item] > 0} {
+		if {$Priv(search:changed)} { set Priv(currentfile) "" }
+		set Priv(search:changed) 0
+		[namespace parent]::Load [lindex $Priv(match:$item) 1] $Priv(match:$item)
+	}
+}
+
+} ;# namespace search
+
 
 proc TabChanged {nb} {
 	variable Priv
@@ -566,9 +827,22 @@ proc TabChanged {nb} {
 	set tab [$nb select]
 
 	switch -glob -- [$nb select] {
-		*contents	{ set Priv(mode) contents }
-		*index		{ set Priv(mode) index }
+		*contents	{ set mode contents }
+		*index		{ set mode index }
+		*search		{ set mode search }
 	}
+
+	if {$Priv(tab) eq $mode} { return }
+	set Priv($Priv(tab):changed) 1
+	set Priv(tab) $mode
+
+	switch $Priv(tab) {
+		contents	{ set state normal }
+		default	{ set state disabled }
+	}
+
+	$Priv(button:collapse) configure -state $state
+	$Priv(button:expand) configure -state $state
 }
 
 
@@ -614,6 +888,7 @@ proc BuildHtmlFrame {w} {
 		-cursor left_ptr \
 		-borderwidth 1 \
 		-relief sunken \
+		-doublebuffer no \
 		;
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
 
@@ -626,7 +901,7 @@ proc BuildHtmlFrame {w} {
 }
 
 
-proc VisitItem {w t mode item} {
+proc VisitItem {t mode item} {
 	if {[string length $item] == 0} { return }
 	if {![$t item enabled $item]} { return }
 
@@ -686,6 +961,7 @@ proc LinkHandler {node} {
 			:user		{ color: red3; text-decoration: none; }
 			:visited { color: purple; text-decoration: none; }
 			:hover   { text-decoration: none; background: #ffff00; }
+			.match	{ background: yellow; }
 		"
 		$Priv(html) style -id user $css
 	}
@@ -698,6 +974,7 @@ proc ImportHandler {parentid uri} {
 
 	set file [file join $::scidb::dir::help [helpLanguage] $uri]
 	set fd [open $file r]
+	chan configure $fd -encoding utf-8
 	set content [read $fd]
 	close $fd
 
@@ -759,7 +1036,7 @@ proc Mouse1Up {node} {
 			lassign [split $href \#] href fragment
 			set file [file normalize [file join $::scidb::dir::help [helpLanguage] $href]]
 			set Links($file) 1
-			Load $file $fragment
+			Load $file {} $fragment
 		}
 	}
 }
@@ -769,8 +1046,8 @@ proc ReloadCurrentPage {} {
 	variable Priv
 
 	set file ""
-	if {[info exists Priv(lastfile)] && [string length $Priv(lastfile)] > 0} {
-		set file $Priv(lastfile)
+	if {[info exists Priv(currentfile)] && [string length $Priv(currentfile)] > 0} {
+		set file $Priv(currentfile)
 	}
 
 	if {	[string length $file] == 0
@@ -780,7 +1057,7 @@ proc ReloadCurrentPage {} {
 
 	set Priv(history) {}
 	set Priv(history:index) -2
-	set Priv(lastfile) ""
+	set Priv(currentfile) ""
 
 	Load [file normalize [file join $::scidb::dir::help [helpLanguage] [file tail $file]]]
 }
@@ -803,13 +1080,23 @@ proc Goto {position} {
 }
 
 
-proc Load {file {position {}}} {
+proc Load {file {match {}} {position {}}} {
 	variable Priv
 
-	if {$Priv(lastfile) eq $file} { return [Goto $position] }
+	if {$Priv(currentfile) eq $file} {
+		if {[llength $match]} {
+			SeeNode [$Priv(html) root]
+		} else {
+			Goto $position
+		}
+		return
+	}
 
-	Parse $file
-	Goto $position
+	Parse $file 0 $match
+
+	if {[string length $match] == 0} {
+		Goto $position
+	}
 
 	incr Priv(history:index)
 	set Priv(history) [lrange $Priv(history) 0 $Priv(history:index)]
@@ -818,11 +1105,11 @@ proc Load {file {position {}}} {
 }
 
 
-proc Parse {file {moveto 0}} {
+proc Parse {file {moveto 0} {match {}}} {
 	variable Nodes
 	variable Priv
 
-	if {$Priv(lastfile) eq $file} { return }
+	if {$Priv(currentfile) eq $file} { return }
 
 	set index [expr {$Priv(history:index) + 1}]
 	if {$index >= 0 && $index < [llength $Priv(history)]} {
@@ -850,16 +1137,53 @@ proc Parse {file {moveto 0}} {
 			<p>Can't find the file at <b>$file</b>.</p>
 			</body></html>
 		"
+		set match {}
+	} elseif {[llength $match]} {
+		lassign $match _ _ positions _ search
+
+		set len [string length $search]
+		set str $content
+		set content ""
+		set from 0
+
+		foreach pos $positions {
+			append content [string range $str $from [expr {$pos - 1}]]
+			append content "<span class=\"match\">"
+			append content [string range $str $pos [expr {$pos + $len - 1}]]
+			append content "</span>"
+			set from [expr {$pos + $len}]
+		}
+		append content [string range $str $from end]
 	}
 
 	[$Priv(html) drawable] configure -cursor {}
 	$Priv(html) parse $content
 	$Priv(html) yview moveto $moveto
-	set Priv(lastfile) $file
+	set Priv(currentfile) $file
+
+	if {[llength $match]} { SeeNode [$Priv(html) root] }
 
 	set Priv(topic) ""
 	catch { set Priv(topic) $Priv(topic:$file) }
 	UpdateTitle
+}
+
+
+proc SeeNode {node} {
+	variable Priv
+
+	set cls [$node attribute -default "" class]
+
+	if {$cls eq "match"} {
+		$Priv(html) scrollto [lindex [$Priv(html) bbox $node] 1]
+		return 1
+	}
+
+	foreach node [$node children] {
+		if {[SeeNode $node]} { return 1 }
+	}
+
+	return 0
 }
 
 
