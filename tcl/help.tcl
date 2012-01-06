@@ -160,7 +160,7 @@ proc build {parent} {
 	### Right side #######################################
 	set html $pw.html
 	set Priv(html) $html
-	BuildHtmlFrame $html
+	BuildHtmlFrame $dlg $html
 
 	bind $dlg <Alt-Left>		[namespace code GoBack]
 	bind $dlg <Alt-Right>	[namespace code GoForward]
@@ -879,12 +879,12 @@ proc CollapseAllItems {} {
 }
 
 
-proc BuildHtmlFrame {w} {
+proc BuildHtmlFrame {dlg w} {
 	::html $w \
 		-imagecmd [namespace code GetImage] \
 		-center no \
 		-width 600 \
-		-height 800 \
+		-height [expr {min([winfo screenheight $dlg] - 60, 800)}] \
 		-cursor left_ptr \
 		-borderwidth 1 \
 		-relief sunken \

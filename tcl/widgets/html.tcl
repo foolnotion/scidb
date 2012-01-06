@@ -493,6 +493,19 @@ bind Html <ButtonRelease-3>	[list [namespace current]::ButtonRelease %W %x %y 3 
 bind Html <Unmap>					[list [namespace current]::Leave %W ]
 bind Html <Map>					[list [namespace current]::Mapped %W ]
 
+switch [tk windowingsystem] {
+	win32 {
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-120] units }
+	}
+	aqua {
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-1] units }
+	}
+	x11 {
+		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -1 units }
+		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +1 units }
+	}
+}
+
 } ;# namespace html
 
 # vi:set ts=3 sw=3:
