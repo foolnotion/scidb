@@ -32,7 +32,7 @@ können deshalb vom Benutzer frei verwendet werden.
 <p>
 Die Markierungen und ihre Symbole im einzelnen:
 </p>
-<div class="box">
+<box>
 <dl>
   <dt><img src="../images/gameflag-White-Opening.png"     />&emsp;%::gametable::mc::GameFlags(w)%</dt>
   <dt><img src="../images/gameflag-Black-Opening.png"     />&emsp;%::gametable::mc::GameFlags(b)%</dt>
@@ -56,7 +56,7 @@ Die Markierungen und ihre Symbole im einzelnen:
   <dt><img src="../images/gameflag-Material.png"          />&emsp;%::gametable::mc::GameFlags(M)%</dt>
   <dt><img src="../images/gameflag-Piece-Play.png"        />&emsp;%::gametable::mc::GameFlags(P)%</dt>
 </dl>
-</div>
+</box>
 
 <p>
 Es gibt noch eine weitere besondere, nicht vom Benutzer einstellbare Markierung,

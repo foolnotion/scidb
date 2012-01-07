@@ -40,6 +40,8 @@ set Forward							"Forward to '%s'"
 set Backward						"Backward to '%s'"
 set Delete							"Delete"
 set Rename							"Rename"
+set Duplicate						"Duplicate"
+set CopyOf							"Copy of %s"
 set NewFolder						"New Folder"
 set Layout							"Layout"
 set ListLayout						"List Layout"
@@ -82,6 +84,10 @@ set ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this ope
 set ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
 set DeleteFailed					"Deletion of '%s' failed."
 set CommandFailed					"Command '%s' failed."
+set CopyFailed						"Copying of file '%s' failed: permission denied."
+set CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
+set ReallyDuplicateFile			"Really duplicate this file?"
+set ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
 set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
 set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
 set InvalidFileExt				"Cannot rename because '%s' has an invalid file extension."
@@ -97,6 +103,7 @@ set CannotOverwriteDirectory	"Cannot overwite directory '%s'."
 set FileDoesNotExist				"File \"%s\" does not exist."
 set DirectoryDoesNotExist		"Directory \"%s\" does not exist."
 set CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
+set WaitWhileDuplicating		"Wait while duplicating file..."
 
 }
 
@@ -104,6 +111,8 @@ namespace import ::tcl::mathfunc::max
 
 variable HaveTooltips 1
 if {[catch {package require tooltip}]} { set HaveTooltips 0 }
+
+set duplicateFileSizeLimit 5000000
 
 array set Options {
 	show:hidden	0
@@ -148,6 +157,7 @@ proc fsbox {w type args} {
 		-fileencodings				{}
 		-deletecommand				{}
 		-renamecommand				{}
+		-duplicatecommand			{}
 		-okcommand					{}
 		-cancelcommand				{}
 		-multiple					0
@@ -160,7 +170,8 @@ proc fsbox {w type args} {
 							activebackground activeforeground defaultextension defaultencoding
 							inactivebackground inactiveforeground filetypes fileencodings
 							fileicons showhidden sizecommand selectencodingcommand validatecommand
-							deletecommand renamecommand okcommand cancelcommand initialfile} {
+							deletecommand renamecommand duplicatecommand okcommand cancelcommand
+							initialfile} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -586,6 +597,15 @@ proc unbusy {w} {}
 
 proc makeStateSpecificIcons {img} {
 	return $img ;# XXX how to do?
+}
+
+
+proc noWindowDecor {w} {
+	switch [tk windowingsystem] {
+		aqua	{ ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
+		win32	{ wm attributes $w -toolwindow }
+		x11	{ wm overrideredirect $w true }
+	}
 }
 
 
@@ -1068,6 +1088,7 @@ proc Activate {w} {
 				if {![file exists $file]} {
 					set msg [format [Tr FileDoesNotExist] $file]
 					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					filelist::RefreshFileList $w
 					return
 				}
 			}
@@ -1501,7 +1522,7 @@ proc PopupMenu {w x y} {
 
 	set t $Vars(widget:list:bookmark)
 	set id [$t identify $x $y]
-	if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
+	if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 
 	set m $w.menu
@@ -1522,16 +1543,18 @@ proc PopupMenu {w x y} {
 		incr count
 	}
 
-	set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
-	if {$sel >= 0} {
-		set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
-		$m add command                                        \
-			-compound left                                     \
-			-image $icon::16x16::minus                         \
-			-label " $text"                                    \
-			-command [namespace code [list RemoveBookmark $w]] \
-			;
-		incr count
+	if {[llength $id] > 0} {
+		set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
+		if {$sel >= 0} {
+			set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
+			$m add command                                        \
+				-compound left                                     \
+				-image $icon::16x16::minus                         \
+				-label " $text"                                    \
+				-command [namespace code [list RemoveBookmark $w]] \
+				;
+			incr count
+		}
 	}
 
 	if {$count > 0} {
@@ -1586,7 +1609,8 @@ proc Build {w path args} {
 	variable [namespace parent]::Options
 
 	if {![info exists [namespace current]::icon::16x16::iconAdd]} {
-		foreach {icon img} {Delete delete Modify modify Add folder_add Backward backward Forward forward} {
+		foreach {icon img} {	Delete delete Modify modify Duplicate duplicate Add
+									folder_add Backward backward Forward forward} {
 			set [namespace current]::icon::16x16::icon$icon \
 				[list [[namespace parent]::makeStateSpecificIcons \
 					[set [namespace current]::icon::16x16::$img]]]
@@ -1660,10 +1684,16 @@ proc Build {w path args} {
 		-tooltip [Tr Rename]                            \
 		-state disabled                                 \
 	]
-	set Vars(button:new) [::toolbar::add $tb button   \
-		-image $icon::16x16::iconAdd                   \
+	set Vars(button:copy) [::toolbar::add $tb button     \
+		-image $icon::16x16::iconDuplicate                \
+		-command [namespace code [list DuplicateFile $w]] \
+		-tooltip [Tr Duplicate]                           \
+		-state disabled                                   \
+	]
+	set Vars(button:new) [::toolbar::add $tb button  \
+		-image $icon::16x16::iconAdd                  \
 		-command [namespace code [list NewFolder $w]] \
-		-tooltip [Tr NewFolder]                        \
+		-tooltip [Tr NewFolder]                       \
 	]
 
 	::toolbar::add $tb separator
@@ -2324,11 +2354,16 @@ proc Glob {w refresh} {
 		[namespace parent]::unbusy $w
 
 	} else {
-		set filelist $Vars(list:file)
+		set filelist {}
+		foreach file $Vars(list:file) {
+			if {[file exists $file] && [file isfile $file]} {
+				lappend filelist $file
+			}
+		}
 	}
 
 	set t $Vars(widget:list:file)
-	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	foreach folder $Vars(list:folder) { eval $Vars(scriptDir) }
 	if {[llength $Vars(list:folder)]} {
 		$Vars(widget:list:file) item tag add "root children" directory
 	}
@@ -2425,14 +2460,18 @@ proc ConfigureButtons {w} {
 	variable [namespace parent]::${w}::Vars
 
 	if {$Vars(glob) ne "Files"} {
-		set state disabled
+		set state1 disabled
+		set state2 disabled
 	} elseif {[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 1} {
-		set state normal
+		set state1 normal
+		if {[llength $Vars(selected:files)] == 1} { set state2 normal } else { set state2 disabled }
 	} else {
-		set state disabled
+		set state1 disabled
+		set state2 disabled
 	}
-	::toolbar::childconfigure $Vars(button:delete) -state $state
-	::toolbar::childconfigure $Vars(button:rename) -state $state
+	::toolbar::childconfigure $Vars(button:delete) -state $state1
+	::toolbar::childconfigure $Vars(button:rename) -state $state1
+	::toolbar::childconfigure $Vars(button:copy)   -state $state2
 }
 
 
@@ -2623,6 +2662,130 @@ proc RenameFile {w} {
 }
 
 
+proc MakeFileSize {size} {
+	set unit Byte
+	if {$size >= 1000000000} {
+		set size [expr {($size + 500000000)/1000000000}]
+		set unit GB
+	} elseif {$size >= 1000000} {
+		set size [expr {($size + 500000)/1000000}]
+		set unit MB
+	} elseif {$size >= 1000} {
+		set size [expr {($size + 500)/1000}]
+		set unit KB
+	}
+	return "$size $unit"
+}
+
+
+proc DuplicateFile {w} {
+	variable [namespace parent]::duplicateFileSizeLimit
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:file)
+	set sel [$t item id active]
+	set i [expr {$sel - 1}]
+	if {$i < [llength $Vars(list:folder)]} { return }
+	set i [expr {$i - [llength $Vars(list:folder)]}]
+	set file [lindex $Vars(list:file) $i]
+	set dir [file dirname $file]
+	set newFile [file join $dir [format [Tr CopyOf] [file tail $file]]]
+	while {[file exists $newFile]} {
+		set newFile [file join $dir [format [Tr CopyOf] [file tail $newFile]]]
+	}
+	if {[llength $Vars(duplicatecommand)]} {
+		set files [{*}$Vars(duplicatecommand) $file $newFile]
+	} else {
+		set files [list $file $newFile]
+	}
+	set size 0
+	foreach {f g} $files {
+		if {[file exists $f]} {
+			if {[file exists $g]} {
+				set msg [format [Tr CannotCopy] $g]
+				[namespace parent]::messageBox \
+					-type ok                    \
+					-icon error                 \
+					-parent $Vars(widget:main)  \
+					-message $msg               \
+					;
+				return
+			}
+			incr size [file size $f]
+		}
+	}
+	if {$size > $duplicateFileSizeLimit} {
+		set msg [Tr ReallyDuplicateFile]
+		set detail [format [Tr ReallyDuplicateDetail] [MakeFileSize $size]]
+		set reply [[namespace parent]::messageBox \
+			-type yesno                            \
+			-icon question                         \
+			-parent $Vars(widget:main)             \
+			-message $msg                          \
+			-detail $detail                        \
+		]
+		if {$reply ne "yes"} { return }
+	}
+
+	# popup wait dialog #########################################
+	set dlg [toplevel $w.wait]
+	wm withdraw $dlg
+	set top [tk::frame $dlg.top -border 2 -relief raised]
+	pack $top
+	tk::message $top.msg -aspect 250 -text [Tr WaitWhileDuplicating]
+	pack $top.msg -padx 5 -pady 5
+	wm resizable $dlg no no
+	wm transient $dlg [winfo toplevel $w]
+	::util::place $dlg center [winfo toplevel $w]
+	update idletasks
+	[namespace parent]::noWindowDecor $dlg
+	wm deiconify $dlg
+	::ttk::grabWindow $dlg
+	[namespace parent]::busy $dlg
+
+	set newFiles {}
+	foreach {f g} $files {
+		if {[file exists $f]} {
+			if {[catch { file copy $f $g }]} {
+				set msg [format [Tr CopyFailed] $file]
+				[namespace parent]::messageBox \
+					-type ok                    \
+					-icon error                 \
+					-parent $Vars(widget:main)  \
+					-message $msg               \
+					;
+				foreach f $newFiles { catch { file delete -force $f } }
+				::ttk::releaseGrab $dlg
+				[namespace parent]::unbusy $w
+				destroy $dlg
+				return
+			} else {
+				lappend newFiles $f
+			}
+		}
+	}
+
+	::ttk::releaseGrab $dlg
+	[namespace parent]::unbusy $dlg
+	destroy $dlg
+	# popup wait dialog #########################################
+
+	set fileList [lrange $Vars(list:file) 0 $i]
+	lappend fileList $newFile
+	lappend fileList {*}[lrange $Vars(list:file) [expr {$i + 1}] end]
+	set Vars(list:file) $fileList
+	$t item delete all
+	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	$t item tag add "root children" directory
+	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
+	set sel [expr {[llength $Vars(list:folder)] + $i + 2}]
+	$t see $sel
+	set Vars(edit:active) 1
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	OpenEdit $w $sel rename
+}
+
+
 proc NewFolder {w} {
 	variable [namespace parent]::${w}::Vars
 
@@ -2703,7 +2866,7 @@ proc FinishRenameFile {w sel name} {
 	set Vars(edit:active) 0
 	set name [string trim $name]
 	set t $Vars(widget:list:file)
-	$t selection add $sel
+	$t selection clear
 	set i [expr {$sel - 1}]
 	if {$i < [llength $Vars(list:folder)]} {
 		set type folder
@@ -2779,6 +2942,8 @@ proc FinishRenameFile {w sel name} {
 		}
 	}
 	$t item element configure $sel 0 txtName -text $name
+	$t selection add $sel
+	RefreshFileList $w
 }
 
 
@@ -2824,7 +2989,25 @@ proc SetTooltip {w which folder} {
 
 	if {$folder eq "Favorites" || $folder eq "LastVisited"} {
 		set folder [Tr $folder]
+	} else {
+		# NOTE: We are shortening the (display of) file path. This is a bit experimental.
+		set parts [file split $folder]
+		set k [expr {[llength $parts] - 1}]
+		set length 0
+		set count 0
+
+		while {$k >= 0 && $length + [string length [lindex $parts $k]] < 30} {
+			incr length [string length [lindex $parts $k]]
+			incr length 1
+			incr count
+		}
+		set count [expr {max(1, $count)}]
+
+		if {$count < [llength $parts]} {
+			set folder [file join {*}[lrange $parts [expr {[llength $parts] - $count - 1}] end]]
+		}
 	}
+
 	set Vars(tip:[string tolower $which]) [format [Tr $which] $folder]
 }
 
@@ -2877,14 +3060,14 @@ proc PopupMenu {w x y} {
 
 	set t $Vars(widget:list:file)
 	set id [$t identify $x $y]
-	if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
+	if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 
 	set m $w.menu
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 
-	if {$Vars(glob) eq "Files"} {
+	if {[llength $id] && $Vars(glob) eq "Files"} {
 		set sel [$t item id active]
 		if {$sel in [$t selection get]} {
 			$m add command                                    \
@@ -2899,6 +3082,14 @@ proc PopupMenu {w x y} {
 				-label " [Tr Rename]"                          \
 				-command [namespace code [list RenameFile $w]] \
 				;
+			if {$sel > [llength $Vars(list:folder)]} {
+				$m add command                                       \
+					-compound left                                    \
+					-image $icon::16x16::duplicate                    \
+					-label " [Tr Duplicate]"                          \
+					-command [namespace code [list DuplicateFile $w]] \
+					;
+			}
 		}
 		$m add command                                   \
 			-compound left                                \
@@ -3024,6 +3215,14 @@ set modify [image create photo -data {
 	LY5nzCpNhm8d5f/6L4wvqWwOOBZqSXIOBPlQaivltMRG/Av0rmdWtmRpILQMhbd8dbYxh+mf
 	+DxdpOcEysZcTufw7NjydPzewo+EVaWm4TPjq//sCnmwP1uSkplfBVrFR71W9dTtiLkh0/kO
 	V2a7ngEAfgMA/k9aWbNcqAAAAABJRU5ErkJggg==
+}]
+
+set duplicate [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVjGABli9ydt+7s7/j/
+	//9Udr4gqxYTAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCa
+	nBgAAAAHdElNRQfcAQcLLzlI0zh5AAAAQUlEQVQI12NgYGBQDQ0NDQLSDKGCgoKhYAYIgBgh
+	Li4uriBGsLGxsSmCAdYCYoC1gBkgAGKAtYAMDIFpIYYBcwMAgsMW8snNu0wAAAAASUVORK5C
+	YII=
 }]
 
 set folder_add [image create photo -data {

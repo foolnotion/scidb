@@ -216,6 +216,7 @@ proc Open {type args} {
 			-validatecommand [namespace code ValidateFile] \
 			-deletecommand [namespace code DeleteFile] \
 			-renamecommand [namespace code RenameFile] \
+			-duplicatecommand [namespace code DuplicateFile] \
 			-okcommand [namespace code OkCmd] \
 			-cancelcommand [list set [namespace current]::Priv(result) {}] \
 			-font TkTextFont \
@@ -345,6 +346,20 @@ proc RenameFile {oldName newName} {
 	set new [file rootname $newName]
 	foreach ext [::scidb::misc::suffixes $oldName] {
 		lappend result "$old.$ext" "$new.$ext"
+	}
+	return $result
+}
+
+
+proc DuplicateFile {srcName dstName} {
+	set srcExt [file extension $srcName]
+	set dstExt [file extension $dstName]
+	if {$srcExt ne $dstExt} { return {} }
+	set result {}
+	set src [file rootname $srcName]
+	set dst [file rootname $dstName]
+	foreach ext [::scidb::misc::suffixes $srcName] {
+		lappend result "$src.$ext" "$dst.$ext"
 	}
 	return $result
 }

@@ -27,31 +27,36 @@ Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 </p>
 
 <p>
+Mit der mittleren Maustaste (i.d.R. das Mausrad) wird eine Informationsbox
+angezeigt.
+</p>
+
+<p>
 Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
 </p>
 
 <dir><img src="images/database-switcher-menu.png"/></dir>
 
 <p>
-<span class="menuitem">%::application::database::mc::Properties%</span>
+<menuitem>%::application::database::mc::Properties%</menuitem>
 Öffnet eine Box mit der Anzeige verschiedener Datenbankinformationen.
 </p>
 
 <p>
-<span class="menuitem">%::export::mc::Export%</span>
+<menuitem>%::export::mc::Export%</menuitem>
 Öffnet einen Dialog zum <a href="Database-Export-Dialog.html">Datenbankenexport</a>
 in andere Datenbankformate oder in ein Dokumentenformat.
 </p>
 
 <p>
-<span class="menuitem">%::menu::mc::FileImport%</span>
+<menuitem>%::menu::mc::FileImport%</menuitem>
 Öffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
 importierenden PGN-Dateien auszuwählen. Es können mehrere PGN-Dateien gleichzeitig
 gewählt werden. Die Partien werden an die bestehende Datenbank angehängt.
 </p>
 
 <p>
-<span class="menuitem">%::menu::mc::FileClose%</span>
+<menuitem>%::menu::mc::FileClose%</menuitem>
 Die gewählte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
 aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
 <br/><img src="../images/note.png"/>
@@ -59,21 +64,21 @@ Eine Schliessung der <a href="Clipbase.html">Ablage-Datenbank</a> ist nicht mögl
 </p>
 
 <p>
-<span class="menuitem">%::application::database::mc::ChangeIcon%</span>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
 Ein neues Piktogramm für diese Datanbank auswählen.
 <br/><img src="../images/note.png"/>
 Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
 <p>
-<span class="menuitem">%::application::database::mc::EditDescription%</span>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
 Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
 <br/><img src="../images/note.png"/>
 Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
 <p>
-<span class="menuitem">%::application::database::mc::ReadOnly%</span>
+<menuitem>%::application::database::mc::ReadOnly%</menuitem>
 Diese Datanbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
 Dies ist nur für Scidb- und Scid-Datenbanken (.sci, .si4, .si3) möglich.
 <br/><img src="../images/note.png"/>
@@ -84,30 +89,30 @@ werden.
 </p>
 
 <p>
-<span class="menuitem">%::menu::mc::FileNew%</span>
+<menuitem>%::menu::mc::FileNew%</menuitem>
 Eine neue Datenbank anlegen. Es können nur Scidb- und Scid-Datenbanken
 (.sci, .si4, .si3) neu angelegt werden.
 </p>
 
 <p>
-<span class="menuitem">%::menu::mc::FileOpen%</span>
+<menuitem>%::menu::mc::FileOpen%</menuitem>
 Eine weitere Datenbank öffnen.
 </p>
 
 <p>
-<span class="menuitem">%::menu::mc::FileOpenRecent%</span>
+<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
 Eine Datenbank öffnen über die Datenbankhistorie.
 </p>
 
 <p>
-<span class="menuitem">%::application::database::mc::SymbolSize%</span>
+<menuitem>%::application::database::mc::SymbolSize%</menuitem>
 Auswahl der Symbolgröße für die Datenbankkacheln.
 </p>
 
 <dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
 
-<span class="menuitem">
-%::application::database::mc::EmptyClipbase%</span>
+<menuitem>
+%::application::database::mc::EmptyClipbase%</menuitem>
 <br/><img src="../images/note.png"/>
 Dieser Menüpunkt steht nur für die <a href="Clipbase.html">Ablage-Datenbank</a>
 zur Verfügung.

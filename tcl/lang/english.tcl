@@ -1545,6 +1545,8 @@
 ::fsbox::mc::Backward						"Backward to '%s'"
 ::fsbox::mc::Delete							"Delete"
 ::fsbox::mc::Rename							"Rename"
+::fsbox::mc::Duplicate						"Duplicate"
+::fsbox::mc::CopyOf							"Copy of %s"
 ::fsbox::mc::NewFolder						"New Folder"
 ::fsbox::mc::Layout							"Layout"
 ::fsbox::mc::ListLayout						"List Layout"
@@ -1587,6 +1589,10 @@
 ::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
 ::fsbox::mc::DeleteFailed					"Deletion of '%s' failed."
 ::fsbox::mc::CommandFailed					"Command '%s' failed."
+::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied."
+::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
+::fsbox::mc::ReallyDuplicateFile			"Really duplicate this file?"
+::fsbox::mc::ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
 ::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
 ::fsbox::mc::ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
 ::fsbox::mc::InvalidFileExt				"Cannot rename because '%s' has an invalid file extension."
@@ -1602,6 +1608,7 @@
 ::fsbox::mc::FileDoesNotExist				"File \"%s\" does not exist."
 ::fsbox::mc::DirectoryDoesNotExist		"Directory \"%s\" does not exist."
 ::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
+::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Toolbar"

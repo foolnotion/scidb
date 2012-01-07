@@ -2523,7 +2523,10 @@ updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
         Display   *display = Tk_Display(win);
         XRectangle rect;
 
-        if (resize) {
+        if (pTree->bufferRegion == None) {
+            pTree->bufferRegion = TkCreateRegion();
+            memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
+        } else if (resize) {
             int screenW = WidthOfScreen (Tk_Screen(win));
             int screenH = HeightOfScreen(Tk_Screen(win));
 

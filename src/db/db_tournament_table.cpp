@@ -1415,7 +1415,7 @@ TournamentTable::emitKnockoutTable(TeXt::Receptacle& receptacle, KnockoutOrder o
 	for (unsigned round = m_maxRound; round > 0; --round)
 	{
 		ClashList slots(1 << (m_maxRound - round + m_lastRound - 1), 0);
-		unsigned r = mstl::div2(mstl::div2(slots.size()));
+		unsigned r = mstl::div4(slots.size());
 
 		used.reset();
 

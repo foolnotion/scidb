@@ -1543,6 +1543,8 @@
 ::fsbox::mc::Backward						"Zurück zu '%s'"
 ::fsbox::mc::Delete							"Löschen"
 ::fsbox::mc::Rename							"Umbenennen"
+::fsbox::mc::Duplicate						"Duplizieren"
+::fsbox::mc::CopyOf							"Kopie von %s"
 ::fsbox::mc::NewFolder						"Neuer Ordner"
 ::fsbox::mc::ListLayout						"Spaltenanzeige"
 ::fsbox::mc::Layout							"Layout"
@@ -1585,6 +1587,10 @@
 ::fsbox::mc::ReallyDelete(folder,r)		"Soll tatsächlich der schreibgeschützte Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::DeleteFailed					"Das Löschen von '%s' schlug fehl."
 ::fsbox::mc::CommandFailed					"Das Kommando '%s' schlug fehl."
+::fsbox::mc::CopyFailed						"Das Kopieren der Datei '%s' schlug fehl: keine ausreichenden Rechte vorhanden."
+::fsbox::mc::CannotCopy						"Eine Kopie kann nicht erfolgen weil die Datei '%s' bereits exisitiert."
+::fsbox::mc::ReallyDuplicateFile			"Diese Datei wirklich duplizieren?"
+::fsbox::mc::ReallyDuplicateDetail		"Diese Datei hat ungefähr %s. Das Duplizeieren wird möglicherweise einige Zeit in Anspruch nehmen."
 ::fsbox::mc::ErrorRenaming(folder)		"Fehler beim Umbennenen des Ordners '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::InvalidFileExt				"Aufgrund einer unerlaubten Dateiendung kann nicht in '%s' umbenannt werden."
@@ -1600,6 +1606,7 @@
 ::fsbox::mc::FileDoesNotExist				"Die Datei '%s' ist nicht vorhanden."
 ::fsbox::mc::DirectoryDoesNotExist		"Das Verzeichnis '%s' ist nicht vorhanden."
 ::fsbox::mc::CannotOpenOrCreate			"'%s' kann nicht geöffnet/angelegt werden. Bitte zuvor eine Verzeichnis wählen."
+::fsbox::mc::WaitWhileDuplicating		"Bitte warten bis die Datei dupliziert wurde..."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Werkzeugleiste"

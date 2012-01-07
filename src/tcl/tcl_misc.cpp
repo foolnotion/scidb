@@ -803,6 +803,8 @@ HtmlSearch::parse(char const* document, unsigned length, char const* search, uns
 
 	int rc = XML_Parse(m_parser, buf, length, true);
 	delete [] buf;
+	m_title.trim();
+
 	return rc;
 }
 

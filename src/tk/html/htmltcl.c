@@ -1104,10 +1104,11 @@ deleteWidget(clientData)
 #ifdef USE_DOUBLE_BUFFERING
     if (pTree->buffer) {
         Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
+        pTree->buffer = None;
     }
     if (pTree->bufferRegion) {
         TkDestroyRegion(pTree->bufferRegion);
-        pTree->bufferRegion = 0;
+        pTree->bufferRegion = None;
 	 }
 #endif
 
@@ -1757,6 +1758,13 @@ parseCmd(clientData, interp, objc, objv)
     ) {
         return TCL_ERROR;
     }
+
+#ifdef USE_DOUBLE_BUFFERING
+    if (pTree->bufferRegion) {
+        TkDestroyRegion(pTree->bufferRegion);
+        pTree->bufferRegion = NULL;
+    }
+#endif
 
     /* zHtml = Tcl_GetByteArrayFromObj(aObj[1], &nHtml); */
     zHtml = Tcl_GetStringFromObj(aObj[1], &nHtml);
@@ -2784,8 +2792,8 @@ newWidget(clientData, interp, objc, objv)
     pTree->isSequenceOk = 1;
 
 #ifdef USE_DOUBLE_BUFFERING
-    pTree->buffer = 0;
-    pTree->bufferRegion = TkCreateRegion();
+    pTree->buffer = None;
+    pTree->bufferRegion = None;
     memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
 #endif
 

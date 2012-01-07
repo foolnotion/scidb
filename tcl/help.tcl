@@ -775,6 +775,7 @@ proc Search {t} {
 		for {set i 0} {$i < [llength $results]} {incr i} {
 			set path [lindex $results $i 1]
 			if {$Priv(currentfile) eq $path} {
+				set Priv(currentfile) ""
 				$t selection add [expr {$i + 1}]
 				break
 			}
@@ -961,7 +962,7 @@ proc LinkHandler {node} {
 			:user		{ color: red3; text-decoration: none; }
 			:visited { color: purple; text-decoration: none; }
 			:hover   { text-decoration: none; background: #ffff00; }
-			.match	{ background: yellow; }
+			.match	{ background: yellow; color: black; }
 		"
 		$Priv(html) style -id user $css
 	}

@@ -334,7 +334,7 @@ proc ChooseLanguage {parent} {
 	set dlg $parent.lang
 	toplevel $dlg -class Scidb
 	wm withdraw $dlg
-	set top [frame $dlg.top -border 2 -relief raised]
+	set top [tk::frame $dlg.top -border 2 -relief raised]
 	pack $top
 	foreach lang [lsort [array names ::mc::input]] {
 		if {[string length $lang]} {

@@ -59,6 +59,15 @@ set HtmlH1 {\
 </div>
 }
 
+set HtmlMapping {
+	<menuitem>		{<span class="menuitem">}
+	</menuitem>		</span>
+	<box>				{<div class="box">}
+	</box>			</div>
+	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>}
+	</annotation>	</div>
+}
+
 
 proc print {chan source title body} {
 	set headerMap [list %TITLE% $title %HELP% $::help::mc::Help]
@@ -190,6 +199,7 @@ set contents {}
 
 while {[gets $src line] >= 0} {
 	if {[string match END* $line]} { break }
+	set line [string map $HtmlMapping $line]
 
 	if {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
 		lassign $location i k

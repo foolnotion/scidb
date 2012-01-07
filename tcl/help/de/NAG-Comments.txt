@@ -19,10 +19,9 @@
 INDEX NAG-Kommentarwerte
 TITLE NAG-Kommentarwerte
 
-<div class="annotation">
-<img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+<annotation>
 NAG = Numeric Annotation Glyph = "numerisches Anmerkungszeichen"
-</div>
+</annotation>
 
 <p>
 Im <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
@@ -30,64 +29,64 @@ PGN-Standard</a>
 sind folgende NAG-Werte definiert:
 </p>
 
-<div class="box">
+<box>
   <p>Infix-Kommentierungen:</p>
 
   <ol start="1">
     <li>%::annotation::mc::Nag(ENUM(1..6))%</li>
   </ol>
-</div>
+</box>
 
-<div class="box">
+<box>
   <p>Suffix-Kommentierungen:</p>
 
   <ol start="7">
     <li>%::annotation::mc::Nag(ENUM(7..139))%</li>
   </ol>
-</div>
+</box>
 
 <p>
 Weitere vorgeschlagene NAG-Werte sind: 
 </p>
 
-<div class="box">
+<box>
   <p>Prefix-Kommentierungen:</p>
 
   <ol start="140">
     <li>%::annotation::mc::Nag(ENUM(140..145))%</li>
   </ol>
-</div>
+</box>
 
-<div class="box">
+<box>
   <p>Suffix-Kommentierungen:</p>
 
   <ol start="146">
     <li>%::annotation::mc::Nag(ENUM(146..154))%</li>
   </ol>
-</div>
+</box>
 
 <p>
 Scidb definiert einige weitere NAG-Werte:
 </p>
 
-<div class="box">
+<box>
   <p>Suffix-Kommentierungen:</p>
 
   <ol start="155">
     <li>%::annotation::mc::Nag(ENUM(155..172))%</li>
   </ol>
-</div>
+</box>
 
 <p>
 Um Kommentare in Partien aus ChessBase-Dateien zu unterstützen sind noch
 weitere NAG-Werte vonnöten:
 </p>
 
-<div class="box">
+<box>
   <ol start="173">
     <li>%::annotation::mc::Nag(ENUM(173..184))%</li>
   </ol>
-</div>
+</box>
 
 <p>
 Scid und ChessPad defnieren noch weitere NAG-Werte (&gt; 190). Diese werden
