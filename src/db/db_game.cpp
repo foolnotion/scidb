@@ -325,7 +325,7 @@ Game::insertUndo(UndoAction action, Command command)
 
 			if (	pprev
 				&& (pprev->command == AddMove || pprev->command == AddMoves)
-				&& prev->key.level() == m_currentKey.level()
+				&& pprev->key.level() == m_currentKey.level()
 				&& unsigned(m_currentKey.computeDistance(pprev->key)) <= m_combinePredecessingMoves)
 			{
 				prev->key = m_currentKey;

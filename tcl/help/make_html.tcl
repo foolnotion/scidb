@@ -61,11 +61,12 @@ set HtmlH1 {\
 
 set HtmlMapping {
 	<menuitem>		{<span class="menuitem">}
-	</menuitem>		</span>
+	</menuitem>		{</span>}
+	<note/>			{<br/><img src="../images/note.png"/>}
 	<box>				{<div class="box">}
-	</box>			</div>
+	</box>			{</div>}
 	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>}
-	</annotation>	</div>
+	</annotation>	{</div>}
 }
 
 
