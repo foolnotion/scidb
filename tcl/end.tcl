@@ -145,6 +145,7 @@ if {[tk windowingsystem] eq "x11"} {
 
 	proc ::dialog::choosecolor::x11NoWindowDecor {w} { NoWindowDecor $w }
 	proc ::toolbar::x11NoWindowDecor {w} { NoWindowDecor $w }
+	proc ::fsbox::x11NoWindowDecor {w} { NoWindowDecor $w }
 }
 
 set dialog::iconOk			$icon::iconOk

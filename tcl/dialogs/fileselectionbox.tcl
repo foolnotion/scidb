@@ -79,19 +79,24 @@ if {$tcl_platform(platform) eq "windows"} {
 proc geometry {{whichPart size}} {
 	variable Priv
 
-	set geom $Priv(geometry)
-	if {$geom eq ""} { return "" }
+	if {[info exists Priv(geometry)]} {
+		set geom $Priv(geometry)
+		if {$geom eq ""} { return "" }
 
-	switch -glob -- $whichPart {
-		*size {
-			set geom [lindex [split [lindex [split $geom "-"] 0] "+"] 0]
+		switch -glob -- $whichPart {
+			*size {
+				set geom [lindex [split [lindex [split $geom "-"] 0] "+"] 0]
+			}
+			*pos {
+				set ip [string first "+" $geom]
+				set im [string first "-" $geom]
+				if {$im != -1 && ($im < $ip || $ip == -1)} { set ip $im }
+				set geom [string range $geom $ip end]
+			}
 		}
-		*pos {
-			set ip [string first "+" $geom]
-			set im [string first "-" $geom]
-			if {$im != -1 && ($im < $ip || $ip == -1)} { set ip $im }
-			set geom [string range $geom $ip end]
-		}
+	} else {
+		set Priv(geometry) ""
+		return ""
 	}
 
 	return $geom
@@ -159,8 +164,6 @@ proc Open {type args} {
 	array unset opts -rows
 	array unset opts -title
 	array unset opts -width
-
-	if {![info exists Priv(geometry)]} { set Priv(geometry) "" }
 
 	if {$data(-parent) eq "."} {
 		set w .$dataName
@@ -246,7 +249,7 @@ proc Open {type args} {
 			set minh [expr {[winfo height $w] + 1}]
 			set h [expr {$minh + max($data(-rows) - 8,0)*$linespace}]
 			if {[info exists data(-width)]} { set width $data(-width) } else { set width 650 }
-			set geometry "${width}x${h}"
+			set geometry "${width}x${h}[geometry pos]"
 		} else {
 			scan $geometry "%dx%d" dw dh
 			set minh [expr {min($minh,$dh)}]

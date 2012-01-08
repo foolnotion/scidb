@@ -76,10 +76,10 @@
 ::mc::White				"Bianco"
 ::mc::Yes				"sì"
 
-::mc::LogicalReset	"Reset" ;# NEW
-::mc::LogicalAnd		"And" ;# NEW
-::mc::LogicalOr		"Or" ;# NEW
-::mc::LogicalNot		"Not" ;# NEW
+::mc::LogicalReset	"Reset"
+::mc::LogicalAnd		"AND"
+::mc::LogicalOr		"OR"
+::mc::LogicalNot		"NOT"
 
 ::mc::King				"Re"
 ::mc::Queen				"Donna"
@@ -140,7 +140,7 @@
 ::menu::mc::Help						"&Aiuto"
 
 ::menu::mc::FileOpen					"A&pri Database..."
-::menu::mc::FileOpenURL				"Open &URL" ;# NEW
+::menu::mc::FileOpenURL				"Apri &URL"
 ::menu::mc::FileOpenRecent			"Apri Re&cente"
 ::menu::mc::FileNew					"&Nuovo Database..."
 ::menu::mc::FileExport				"E&sporta..."
@@ -254,8 +254,8 @@
 ::application::database::mc::DescriptionTooLarge	"La descrizione è troppo lunga."
 ::application::database::mc::DescrTooLargeDetail	"Il campo contiene %d caratteri, ma solo %d sono permessi."
 ::application::database::mc::ClipbaseDescription	"Database temporaneo, non è salvato sul disco"
-::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
-::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
+::application::database::mc::HardLinkDetected		"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
+::application::database::mc::HardLinkDetectedDetail "Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
 
 ::application::database::mc::RecodingDatabase		"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames				"%s partite registrate"
@@ -404,7 +404,7 @@
 ::application::pgn::mc::MustBeEven							"Input deve essere un numero pari."
 ::application::pgn::mc::MustBeOdd							"Input deve essere un numero dispari."
 ::application::pgn::mc::ReplaceMovesSucceeded			"Mosse nella partita sostituite con successo."
-::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
+::application::pgn::mc::CannotOpenCursorFiles			"Impossibile aprire il file del cursore: %s"
 
 ::application::pgn::mc::EditAnnotation						"Modifica annotazioni"
 ::application::pgn::mc::EditMoveInformation				"Modifica informazioni mossa"
@@ -702,7 +702,7 @@
 ::gametable::mc::GameFlags(P)				"Gioco di pezzi"
 ::gametable::mc::GameFlags(t)				"Svista tattica"
 ::gametable::mc::GameFlags(s)				"Svista strategica"
-::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
+::gametable::mc::GameFlags(C)				"Arrocco illegale"
 ::gametable::mc::GameFlags(I)				"Mossa illegale"
 
 ### playertable ########################################################
@@ -738,7 +738,7 @@
 ::playertable::mc::OpenViafCatalog			"Apri catalogo VIAF"
 ::playertable::mc::OpenPndCatalog			"Apri catalogo della Deutsche Nationalbibliothek"
 ::playertable::mc::OpenChessgames			"Collezione partite chessgames.com"
-::playertable::mc::SeachIn365ChessCom		"Search in 365Chess.com" ;# NEW
+::playertable::mc::SeachIn365ChessCom		"Cerca in 365Chess.com"
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"  ;#Attendance
@@ -865,9 +865,9 @@
 
 ::import::mc::DifferentEncoding					"La codifica selezionata %src non corrisponde alla codifica del file %dst."
 ::import::mc::DifferentEncodingDetails			"La ricodifica del database non avrà più successo dopo questa azione."
-::import::mc::CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set." ;# NEW
-::import::mc::CheckImportResult					"Please check whether the right figurine set is detected." ;# NEW
-::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities." ;# NEW
+::import::mc::CannotDetectFigurineSet			"Impossibile auto-rilevare un set figurine adatto."
+::import::mc::CheckImportResult					"Per favore controlla che un set figurine adatto sia stato rilevato."
+::import::mc::CheckImportResultDetail			"In rari casi l'auto-rilevamento fallisce per ambiguità."
 
 ::import::mc::EnterOrPaste							"Inserisci o incolla un PGN %s nel campo in alto.\nErrori legati all'importazione di %s saranno mostrati qui."
 ::import::mc::EnterOrPaste-Game					"partita"
@@ -941,17 +941,17 @@
 ::export::mc::AnnotationSetup				"&Annotazione"
 ::export::mc::CommentsSetup				"&Commenti"
 
-::export::mc::Visibility					"Visibility" ;# NEW
-::export::mc::HideDiagrams					"Hide Diagrams" ;# NEW
-::export::mc::AllFromWhitePersp			"All From White's Perspective" ;# NEW
-::export::mc::AllFromBlackPersp			"All From Black's Perspective" ;# NEW
+::export::mc::Visibility					"Visibilità"
+::export::mc::HideDiagrams					"Nascondi Diagrammi"
+::export::mc::AllFromWhitePersp			"Tutto dalla prospettiva del Bianco"
+::export::mc::AllFromBlackPersp			"Tutto dalla prospettiva del Nero"
 ::export::mc::ShowCoordinates				"Mostra coordinate"
 ::export::mc::ShowSideToMove				"Mostra lato con il tratto"
-::export::mc::ShowArrows					"Show Arrows" ;# NEW
-::export::mc::ShowMarkers					"Show Markers" ;# NEW
+::export::mc::ShowArrows					"Mostra Frecce"
+::export::mc::ShowMarkers					"Mostra Codici"
 ::export::mc::Layout							"Layout"
-::export::mc::PostscriptSpecials			"Postscript Specialities" ;# NEW
-::export::mc::BoardSize						"Board Size" ;# NEW
+::export::mc::PostscriptSpecials			"Speciali Postscript"
+::export::mc::BoardSize						"Grandezza Scacchiera"
 
 ::export::mc::Notation						"Notazione"
 ::export::mc::Graphic						"Grafica"
@@ -961,25 +961,25 @@
 ::export::mc::Correspondence				"Corrispondenza"
 ::export::mc::Telegraphic					"Telegrafico"
 ::export::mc::FontHandling					"Gestione caratteri"
-::export::mc::DiagramStyle					"Diagram Style" ;# NEW
-::export::mc::UseImagesForDiagram		"Use images for diagram generation" ;# NEW
+::export::mc::DiagramStyle					"Stile Diagramma"
+::export::mc::UseImagesForDiagram		"Usa immagini per la generazione dei diagrammi"
 ::export::mc::EmebedTruetypeFonts		"Inserisci fond TrueType"
 ::export::mc::UseBuiltinFonts				"Usa caratteri nativi"
 ::export::mc::SelectExportedTags			"Selezione dei tag per l'esportazione"
 ::export::mc::ExcludeAllTags				"Escludi tutti i tag"
 ::export::mc::IncludeAllTags				"Includi tutti i tag"
 ::export::mc::ExtraTags						"Tutti gli altri tag"
-::export::mc::NoComments					"No comments" ;# NEW
-::export::mc::AllLanguages					"All languages" ;# NEW
-::export::mc::Significant					"Significant" ;# NEW
-::export::mc::LanguageSelection			"Language selection" ;# NEW
-::export::mc::MapTo							"Map to" ;# NEW
-::export::mc::MapNagsToComment			"Map annotations to comments" ;# NEW
-::export::mc::UnusualAnnotation			"Unusual annotations" ;# NEW
-::export::mc::AllAnnotation				"All annotations" ;# NEW
-::export::mc::UseColumnStyle				"Use column style" ;# NEW
-::export::mc::MainlineStyle				"Main Line Style" ;# NEW
-::export::mc::HideVariations				"Hide variations" ;# NEW
+::export::mc::NoComments					"Nessun commento"
+::export::mc::AllLanguages					"Tutte le lingue"
+::export::mc::Significant					"Significativo" ;# ?
+::export::mc::LanguageSelection			"Selezione Lingua"
+::export::mc::MapTo							"Mappa a" ;# NEW (map to)
+::export::mc::MapNagsToComment			"Mappa annotazioni a commenti" ;# NEW (map annotations to comments)
+::export::mc::UnusualAnnotation			"Annotazione Inusuali"
+::export::mc::AllAnnotation				"Tutte le annotazioni"
+::export::mc::UseColumnStyle				"Usa stile colonna"
+::export::mc::MainlineStyle				"Stile Linea Principale"
+::export::mc::HideVariations				"Nascondi Varianti"
 
 ::export::mc::PdfFiles						"File PDF"
 ::export::mc::HtmlFiles						"File HTML"
@@ -1003,13 +1003,13 @@
 ::export::mc::Variation						"Variante"
 ::export::mc::Subvariation					"Sottovariante"
 ::export::mc::Figurines						"Figurines"
-::export::mc::Hyphenation					"Hyphenation" ;# NEW
+::export::mc::Hyphenation					"Sillabazione"
 ::export::mc::None							"(nessuno)"
 ::export::mc::Symbols						"Simboli"
 ::export::mc::Comments						"Commenti"
 ::export::mc::Result							"Risultato"
 ::export::mc::Diagram						"Diagramma"
-::export::mc::ColumnStyle					"Column Style" ;# NEW
+::export::mc::ColumnStyle					"Stile Colonna"
 
 ::export::mc::Paper							"Pagine"
 ::export::mc::Orientation					"Orientamento"
@@ -1025,10 +1025,10 @@
 ::export::mc::One								"Uno"
 ::export::mc::Two								"Due"
 
-::export::mc::DocumentStyle				"Document Style" ;# NEW
-::export::mc::Article						"Article" ;# NEW
-::export::mc::Report							"Report" ;# NEW
-::export::mc::Book							"Book" ;# NEW
+::export::mc::DocumentStyle				"Stile Documento"
+::export::mc::Article						"Articolo"
+::export::mc::Report							"Report"
+::export::mc::Book							"Libro"
 
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
@@ -1188,7 +1188,7 @@
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Tutte le lingue"
-::languagebox::mc::None				"None" ;# NEW
+::languagebox::mc::None				"Nessuno"
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Oggi"
@@ -1240,25 +1240,25 @@
 ::timemodebox::mc::Mode(corr)		"Corrispondenza"
 
 ### help ###############################################################
-::help::mc::Contents				"&Contents" ;# NEW
-::help::mc::Index					"&Index" ;# NEW
-::help::mc::Search				"&Search" ;# NEW
+::help::mc::Contents				"&Contenuti"
+::help::mc::Index					"&Indice"
+::help::mc::Search				"&Cerca"
 
-::help::mc::Help					"Help" ;# NEW
-::help::mc::MatchEntireWord	"Match entire word" ;# NEW
-::help::mc::MatchCase			"Match case" ;# NEW
-::help::mc::TitleOnly			"Search in titles only" ;# NEW
-::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
-::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
-::help::mc::ExpandAllItems		"Expand all items" ;# NEW
-::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
-::help::mc::SelectLanguage		"Select Language" ;# NEW
-::help::mc::NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog." ;# NEW
-::help::mc::KeepLanguage		"Keep language %s for subsequent sessions?" ;# NEW
-::help::mc::ParserError			"Error while parsing file %s." ;# NEW
-::help::mc::NoMatch				"No match is found" ;# NEW
-::help::mc::MaxmimumExceeded	"Maximal number of matches exceeded in some pages." ;# NEW
-::help::mc::OnlyFirstMatches	"Only first %s matches per page will be shown." ;# NEW
+::help::mc::Help					"Aiuto"
+::help::mc::MatchEntireWord	"Corrispondi intera parola"
+::help::mc::MatchCase			"Corrispondi capitalizzazione"
+::help::mc::TitleOnly			"Cerca solo nei titoli"
+::help::mc::GoBack				"Vai indietro una pagina (Alt-Left)"
+::help::mc::GoForward			"Vai avanti una pagina (Alt-Right)"
+::help::mc::ExpandAllItems		"Espandi tutti gli oggetti"
+::help::mc::CollapseAllItems	"Comprimi tutti gli oggetti"
+::help::mc::SelectLanguage		"Selezione Lingua"
+::help::mc::NoHelpAvailable	"Nessun file di aiuto disponibile per la lingua Inglese.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
+::help::mc::KeepLanguage		"Mantenere la lingua %s per le prossime sessioni?"
+::help::mc::ParserError			"Errore nel parsing del file %s."
+::help::mc::NoMatch				"Nessuna corrispondenza trovata"
+::help::mc::MaxmimumExceeded	"Il numero massimo di corrispondenze è ecceduto in alcune pagine."
+::help::mc::OnlyFirstMatches	"Solo le prime %s corrispondenze per pagina saranno mostrate."
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"
@@ -1361,8 +1361,8 @@
 ::comment::mc::SwitchLanguage			"Cambia lingua"
 ::comment::mc::FormatText				"Formatta testo"
 ::comment::mc::CopyText					"Copia testo in" ;#Copy text to
-::comment::mc::OverwriteContent		"Overwrite existing content?" ;# NEW
-::comment::mc::AppendContent			"If \"no\" the text will be appended." ;# NEW
+::comment::mc::OverwriteContent		"Sovrascrivere contenuto esistente?"
+::comment::mc::AppendContent			"Se \"no\" il testo sarà aggiunto."
 
 ::comment::mc::InsertSymbol			"&Inserisci Simbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simboli vari"
@@ -1514,10 +1514,10 @@
 ::dialog::choosefont::mc::Underline			"S&ottolinea"
 ::dialog::choosefont::mc::Color				"Co&lore"
 
-::dialog::choosefont::mc::Regular			"Regular" ;# NEW
+::dialog::choosefont::mc::Regular			"Regolare"
 ::dialog::choosefont::mc::Bold				"Grassetto"
 ::dialog::choosefont::mc::Italic				"Corsivo"
-{::dialog::choosefont::mc::Bold Italic}	"Bold Italic" ;# NEW
+{::dialog::choosefont::mc::Bold Italic}	"Grassetto Corsivo"
 
 ::dialog::choosefont::mc::Effects			"Effetti"
 ::dialog::choosefont::mc::Filter				"Filtro"
@@ -1575,15 +1575,15 @@
 ::fsbox::mc::CannotChangeDir				"Non posso cambiare la cartella a '%s'.\nPermesso negato."
 ::fsbox::mc::DirectoryRemoved				"Non posso passare alla cartella '%s'.\nLa cartella è rimossa."
 ::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
-::fsbox::mc::ReallyMove(file,r)			"Really move write-protected file '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(file,r)			"Vuoi davvero spostare il file protetto in scrittura '%s' nel cestino?"
 ::fsbox::mc::ReallyMove(folder,w)		"Vuoi davvero spostare la cartella '%s' nel cestino?"
-::fsbox::mc::ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?" ;# NEW
+::fsbox::mc::ReallyMove(folder,r)		"Vuoi davvero spostare la cartella protetta in scrittura '%s' nel cestino?"
 ::fsbox::mc::ReallyDelete(file,w)		"Vuoi davvero eliminare il file '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation." ;# NEW
-::fsbox::mc::ReallyDelete(link,w)		"Really delete link to '%s'?" ;# NEW
-::fsbox::mc::ReallyDelete(link,r)		"Really delete link to '%s'?" ;# NEW
+::fsbox::mc::ReallyDelete(file,r)		"Vuoi davvero eliminare il file protetto in scrittura '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(link,w)		"Vuoi davvero eliminare il collegamento a '%s'?"
+::fsbox::mc::ReallyDelete(link,r)		"Vuoi davvero eliminare il collegamento a '%s'?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied." ;# NEW
@@ -1598,6 +1598,8 @@
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
 ::fsbox::mc::ContainsTwoDots				"Contiene due punti consecutivi."
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s." ;# NEW
+::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Estensione file '%s' non valida."
 ::fsbox::mc::MissingFileExtension		"Manca estensione del file in '%s'."
 ::fsbox::mc::FileAlreadyExists			"Il file '%s' esiste già.\nVuoi sovrascriverlo?"
@@ -1929,7 +1931,7 @@
 ::encoding::mc::Lang(cy)	"Gallese"
 ::encoding::mc::Lang(da)	"Danese"
 ::encoding::mc::Lang(de)	"Tedesco"
-::encoding::mc::Lang(de+)	"Deutsch (reformed)" ;# NEW
+::encoding::mc::Lang(de+)	"Tedesco (riformato)"
 ::encoding::mc::Lang(el)	"Greco"
 ::encoding::mc::Lang(en)	"Inglese"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -1992,8 +1994,8 @@
 ::encoding::mc::Lang(vi)	"Vietnamese"
 ::encoding::mc::Lang(wa)	"Vallone"
 ::encoding::mc::Lang(wen)	"Lusaziano"
-::encoding::mc::Lang(hsb)	"Upper Sorbian" ;# NEW
-::encoding::mc::Lang(dsb)	"Lower Sorbian" ;# NEW
+::encoding::mc::Lang(hsb)	"Alto Sorbo" 
+::encoding::mc::Lang(dsb)	"Basso Sorbo"
 ::encoding::mc::Lang(zh)	"Cinese"
 
 ::encoding::mc::Font(hi)	"Devanagari"

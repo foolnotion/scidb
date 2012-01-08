@@ -96,6 +96,8 @@ set CannotCreate					"Cannot create folder '%s' because this folder/file already
 set ErrorCreate					"Error creating folder: permission denied."
 set FilenameNotAllowed			"Filename '%s' is not allowed."
 set ContainsTwoDots				"Contains two consecutive dots."
+set ContainsReservedChars		"Contains reserved characters: %s."
+set IsReservedName				"On some operating systems this is an reserved name."
 set InvalidFileExtension		"Invalid file extension in '%s'."
 set MissingFileExtension		"Missing file extension in '%s'."
 set FileAlreadyExists			"File \"%s\" already exists.\n\nDo you want to overwrite it?"
@@ -119,6 +121,8 @@ array set Options {
 	show:layout	details
 	show:filetypeicons 1
 	pane:favorites 120
+	menu:headerbackground #ffdd76
+	menu:headerforeground black
 }
 
 
@@ -144,6 +148,7 @@ proc fsbox {w type args} {
 		-relief						sunken
 		-doublebuffer				window
 		-savemode					0
+		-multiple					0
 		-initialdir					{}
 		-initialfile				{}
 		-showhidden					{}
@@ -160,7 +165,6 @@ proc fsbox {w type args} {
 		-duplicatecommand			{}
 		-okcommand					{}
 		-cancelcommand				{}
-		-multiple					0
 	}
 
 	array set opts $args
@@ -191,7 +195,7 @@ proc fsbox {w type args} {
 	set Vars(folder:home) [file nativename ~]
 	set Vars(folder:desktop) [file join $Vars(folder:home) Desktop]
 	if {![file isdirectory $Vars(folder:desktop)]} { set Vars(folder:desktop) "" }
-	set Vars(folder:filesystem) "/"
+	set Vars(folder:filesystem) [fileSeperator]
 	set Vars(bookmark:folder) ""
 	set Vars(edit:active) 0
 
@@ -363,6 +367,7 @@ proc fsbox {w type args} {
 			if {$file eq $Vars(initialfile)} { set sel $i }
 			incr i
 		}
+		$t selection clear
 		$t selection add $sel
 		$t activate $sel
 		$t see $sel
@@ -569,21 +574,40 @@ proc validatePath {path} {
 	foreach c [list $path] {
 		if {[string is control $c]} { return 0 }
 	}
-	if {[string match {*[\"\*:<>\?\|]*} $path]} {
+	if {[string match {*[\"\\\/:\*<>\?%\|]*} $path]} {
+		# possibly we should avoid "[]+=,;", too
 		return 0
 	}
 	return 1
 }
 
 
+proc fileSeperator {} {
+	if {$::tcl_platform(platform) == "windows"} { return "\\" }
+	return "/"
+}
+
+
 proc verifyPath {path} {
-	if {$path eq "."} { return oneDot }
+	if {$path eq "."} {
+		return oneDot
+	}
 	# we do not allow two or more consecutive dots in filename
 	if {[string first ".." $path] >= 0} {
 		return twoDots
 	}
 	# be sure filename is portable (since we support unix, win32 and mac)
-	if {![validatePath $path]} { return forbiddenChars }
+	if {![validatePath $path]} {
+		return reservedChar
+	}
+	if {[string toupper $path] in { CON PRN AUX CLOCK\$ NUL
+			COM0 COM1 COM2 COM3 COM4 COM5 COM6 COM7 COM8 COM9
+			LPT0 LPT1 LPT2 LPT3 LPT4 LPT5 LPT6 LPT7 LPT8 LPT9
+			\$MFT \$MFTMIRR \$LOGFILE \$VOLUME \$ATTRDEF \$BITMAP
+			\$BOOT \$BADCLUS \$SECURE \$UPCASE \$EXTEND \$QUOTA
+			\$OBJID \$REPARSE}} {
+		return reservedName
+	}
 	return {}
 }
 
@@ -600,11 +624,14 @@ proc makeStateSpecificIcons {img} {
 }
 
 
+proc x11NoWindowDecor {w} {}
+
+
 proc noWindowDecor {w} {
 	switch [tk windowingsystem] {
 		aqua	{ ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
 		win32	{ wm attributes $w -toolwindow }
-		x11	{ wm overrideredirect $w true }
+		x11	{ x11NoWindowDecor $w }
 	}
 }
 
@@ -810,6 +837,7 @@ proc SetActiveItem {w item state} {
 			if {$item in [$w selection get]} {
 				$w selection clear $item
 			} else {
+				$t selection clear
 				$w selection add $item
 			}
 			set Priv(selection) ""
@@ -861,7 +889,7 @@ proc DirChanged {w {useHistory 1}} {
 		::toolbar::childconfigure $Vars(button:forward) -state disabled
 		set Vars(tip:forward) ""
 
-		if {$Vars(glob) eq "Files" && $folder ne "/"} {
+		if {$Vars(glob) eq "Files" && $folder ne [fileSeperator]} {
 			set i [lsearch -exact $Bookmarks(lastvisited) $folder]
 			if {$i >= 0} {
 				set Bookmarks(lastvisited) [lreplace $Bookmarks(lastvisited) $i $i]
@@ -953,6 +981,7 @@ proc ChangeDir {w path {useHistory 1}} {
 				}
 				$Vars(choosedir) set $appPWD
 				messageBox -type ok -parent $Vars(widget:main) -icon warning -message $message
+				if {![file isdirectory $path]} { filelist::RefreshFileList $w }
 				return
 			}
 
@@ -1017,12 +1046,23 @@ proc Activate {w} {
 	if {$Vars(multiple)} {
 		foreach file [string trim [split [$Vars(widget:filename) get] "\""]] {
 			if {[string length $file]} {
+				if {$Vars(type) eq "save"} {
+					set fullname $file
+					if {[string length $Vars(defaultextension)]} { append fullname $Vars(defaultextension) }
+					if {![CheckPath $w $fullname]} { return }
+				}
+				if {$Vars(type) eq "save" && ![CheckPath $w $file]} { return }
 				lappend selected [[namespace current]::$complete $w $file]
 			}
 		}
 	} else {
 		set file [string trim [$Vars(widget:filename) get]]
 		if {[string length $file]} {
+			if {$Vars(type) eq "save"} {
+				set fullname $file
+				if {[string length $Vars(defaultextension)]} { append fullname $Vars(defaultextension) }
+				if {![CheckPath $w $fullname]} { return }
+			}
 			lappend selected [[namespace current]::$complete $w $file]
 		}
 	}
@@ -1030,16 +1070,10 @@ proc Activate {w} {
 	if {[llength $selected] == 0} { return }
 
 	foreach file $selected {
-		if {[lindex [file split $file] 0] ne "/"} {
+		if {[lindex [file split $file] 0] ne [fileSeperator]} {
 			set msg [format [Tr CannotOpenOrCreate] $file]
 			messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
 			return
-		}
-	}
-
-	if {$Vars(type) eq "save"} {
-		foreach file $selected {
-			if {![CheckPath $w $file]} { return }
 		}
 	}
 
@@ -1181,6 +1215,28 @@ proc CheckPath {w path} {
 				-parent $Vars(widget:main) \
 				-message [format [Tr FilenameNotAllowed] $path] \
 				-detail [Tr ContainsTwoDots] \
+				;
+			return 0
+		}
+
+		reservedChar {
+			messageBox \
+				-type ok \
+				-icon error \
+				-parent $Vars(widget:main) \
+				-message [format [Tr FilenameNotAllowed] $path] \
+				-detail [format [Tr ContainsReservedChars] "\" \\ \/ \: \* \< \> \? \% \|"] \
+				;
+			return 0
+		}
+
+		reservedName {
+			messageBox \
+				-type ok \
+				-icon error \
+				-parent $Vars(widget:main) \
+				-message [format [Tr FilenameNotAllowed] $path] \
+				-detail [Tr IsReservedName] \
 				;
 			return 0
 		}
@@ -1543,18 +1599,16 @@ proc PopupMenu {w x y} {
 		incr count
 	}
 
-	if {[llength $id] > 0} {
-		set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
-		if {$sel >= 0} {
-			set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
-			$m add command                                        \
-				-compound left                                     \
-				-image $icon::16x16::minus                         \
-				-label " $text"                                    \
-				-command [namespace code [list RemoveBookmark $w]] \
-				;
-			incr count
-		}
+	set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
+	if {$sel >= 0} {
+		set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
+		$m add command                                        \
+			-compound left                                     \
+			-image $icon::16x16::minus                         \
+			-label " $text"                                    \
+			-command [namespace code [list RemoveBookmark $w]] \
+			;
+		incr count
 	}
 
 	if {$count > 0} {
@@ -2096,6 +2150,7 @@ proc SwitchLayout {w {layout {}}} {
 	
 	set t $Vars(widget:list:file)
 	set selection [$t selection get]
+	$t selection clear
 
 	switch $Options(show:layout) {
 		details {
@@ -2430,6 +2485,7 @@ proc RefreshFileList {w} {
 		set i [lsearch -exact $Vars(list:folder) $folder]
 		if {$i >= 0} {
 			set n [expr {$i + 1}]
+			$t selection clear
 			$t selection add $n
 			lappend Vars(selected:folders) $folder
 		}
@@ -2439,6 +2495,7 @@ proc RefreshFileList {w} {
 		set i [lsearch -exact $Vars(list:file) $file]
 		if {$i >= 0} {
 			set n [expr {$i + 1 + [llength $Vars(list:folder)]}]
+			$t selection clear
 			$t selection add $n
 			$t activate $n
 			lappend Vars(selected:files) $file
@@ -2531,6 +2588,38 @@ proc CheckFile {w {file ""}} {
 
 proc CheckDir {w {folder  ""}} {
 	# nothing to do
+}
+
+
+proc TraverseFiles {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:file)
+	set list $Vars(list:file)
+	set Vars(list:file) {}
+
+	foreach file $list {
+		if {[file isfile $file]} {
+			lappend Vars(list:file) $file
+			eval $Vars(scriptFile)
+		}
+	}
+}
+
+
+proc TraverseFolders {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:file)
+	set list $Vars(list:folder)
+	set Vars(list:folder) {}
+
+	foreach folder $list {
+		if {[file isdirectory $folder]} {
+			lappend Vars(list:folder) $folder
+			eval $Vars(scriptDir)
+		}
+	}
 }
 
 
@@ -2770,15 +2859,24 @@ proc DuplicateFile {w} {
 	destroy $dlg
 	# popup wait dialog #########################################
 
-	set fileList [lrange $Vars(list:file) 0 $i]
-	lappend fileList $newFile
-	lappend fileList {*}[lrange $Vars(list:file) [expr {$i + 1}] end]
-	set Vars(list:file) $fileList
+	set k 0
+	set fileList $Vars(list:file)
+	set Vars(list:file) {}
+	foreach file [lrange $fileList 0 $i] {
+		if {[file isfile $file]} {
+			lappend Vars(list:file) $file
+			incr k
+		}
+	}
+	lappend Vars(list:file) $newFile
+	foreach file [lrange $fileList [expr {$i + 1}] end] {
+		if {[file isfile $file]} { lappend Vars(list:file) $file }
+	}
 	$t item delete all
-	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	TraverseFolders $w
 	$t item tag add "root children" directory
-	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
-	set sel [expr {[llength $Vars(list:folder)] + $i + 2}]
+	foreach file $Vars(list:file) $Vars(scriptFile)
+	set sel [expr {[llength $Vars(list:folder)] + $k + 1}]
 	$t see $sel
 	set Vars(edit:active) 1
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
@@ -2791,10 +2889,10 @@ proc NewFolder {w} {
 
 	set t $Vars(widget:list:file)
 	$t item delete all
-	foreach folder $Vars(list:folder) $Vars(scriptDir)
+	TraverseFolders $w
 	foreach folder [list [Tr NewFolder]] $Vars(scriptNew)
 	$t item tag add "root children" directory
-	foreach file $Vars(list:file) { eval $Vars(scriptFile) }
+	TraverseFiles $w
 	set sel [expr {[llength $Vars(list:folder)] + 1}]
 	$t see $sel
 	set Vars(edit:active) 1
@@ -2972,10 +3070,11 @@ proc FinishNewFolder {w sel name} {
 				-message [Tr ErrorCreate($type)] \
 				;
 			RefreshFileList $w
-		} elseif {[[namespace parent]::CheckPath $w $name]} {
+		} else {
 			$Vars(widget:list:file) item element configure $sel 0 txtName -text $name
 			lappend Vars(list:folder) $folder
-		} else {
+			$Vars(widget:list:file) selection clear
+			$Vars(widget:list:file) selection add $sel
 			RefreshFileList $w
 		}
 	} else {
@@ -3065,11 +3164,27 @@ proc PopupMenu {w x y} {
 
 	set m $w.menu
 	if {[winfo exists $m]} { destroy $m }
-	menu $m -tearoff false
+	menu $m -tearoff false -disabledforeground black
 
-	if {[llength $id] && $Vars(glob) eq "Files"} {
+	if {$Vars(glob) eq "Files"} {
 		set sel [$t item id active]
 		if {$sel in [$t selection get]} {
+			incr sel -1
+			if {$sel >= [llength $Vars(list:folder)]} {
+				set file [lindex $Vars(list:file) [expr {$sel - [llength $Vars(list:folder)]}]]
+			} else {
+				set file [lindex $Vars(list:folder) $sel]
+			}
+			$m add command                                       \
+				-label [file tail $file]                          \
+				-background $Options(menu:headerbackground)       \
+				-foreground $Options(menu:headerforeground)       \
+				-activebackground $Options(menu:headerbackground) \
+				-activeforeground $Options(menu:headerforeground) \
+				-font TkHeadingFont                               \
+				-state disabled                                   \
+				;
+			$m add separator
 			$m add command                                    \
 				-compound left                                 \
 				-image $icon::16x16::delete                    \
@@ -3082,7 +3197,7 @@ proc PopupMenu {w x y} {
 				-label " [Tr Rename]"                          \
 				-command [namespace code [list RenameFile $w]] \
 				;
-			if {$sel > [llength $Vars(list:folder)]} {
+			if {$sel >= [llength $Vars(list:folder)]} {
 				$m add command                                       \
 					-compound left                                    \
 					-image $icon::16x16::duplicate                    \

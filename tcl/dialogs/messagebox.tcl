@@ -359,7 +359,7 @@ proc alert {args} {
 		grid [tk::message $alertBox.text -font $alertFont -text $opts(-message) -width 384]
 	}
 
-	if {[llength $opts(-detail)]} {
+	if {[string length $opts(-detail)]} {
 		set infoText 	[tk::message $w.info -font $infoFont -text $opts(-detail) -width 384]
 	} else {
 		set infoText	[tk::frame $w.info -width 1 -height 1]
@@ -379,7 +379,7 @@ proc alert {args} {
 
 	foreach entry $entries {
 		lassign $entry type text icon
-		if {![::info exists text] || [llength $text] == 0} {
+		if {![::info exists text] || [string length $text] == 0} {
 			switch $type {
 				abort		{ set text [messagebox::mc ::dialog::mc::Abort ]	}
 				cancel	{ set text [messagebox::mc ::dialog::mc::Cancel]	}

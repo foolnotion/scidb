@@ -1502,7 +1502,7 @@ proc BuildFrame {w} {
 	grid $bot.all     -row 1 -column 3
 	grid columnconfigure $bot {0 2 4} -minsize $::theme::padding
 
-	grid $f.top -row 1 -column 1
+	grid $f.top -row 1 -column 1 -sticky w
 	grid $f.bot -row 3 -column 1 -sticky w
 	grid rowconfigure $f {0 2 4} -minsize $::theme::padding
 
@@ -2911,7 +2911,7 @@ proc Select {nb index} {
 			set Info(build-style) 1
 			set var $mc::PdfFiles
 			set ext .pdf
-			::beta::notYetImplemented $nb tex
+			::beta::notYetImplemented $nb pdf
 		}
 
 		html {
@@ -2946,7 +2946,7 @@ proc Select {nb index} {
 			set Info(useCustom) 0
 			set var $mc::TeXFiles
 			set ext {.tex .ltx}
-if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplemented $nb html }
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplemented $nb tex }
 		}
 	}
 
@@ -3018,8 +3018,8 @@ proc DoExport {parent dlg file} {
 	}
 
 	switch $Values(Type) {
-		scidb - tex { set encoding "utf-8" }
-		default		{ set encoding $Values($Values(Type),encoding) }
+		scidb - tex - html { set encoding "utf-8" }
+		default { set encoding $Values($Values(Type),encoding) }
 	}
 
 	if {$Values(Type) eq "pdf"} {
@@ -3055,11 +3055,13 @@ proc DoExport {parent dlg file} {
 			}
 		}
 
-		html { return }
-		pdf  { return }
+		html { return [::beta::notYetImplemented $dlg html] }
+		pdf  { return [::beta::notYetImplemented $dlg pdf] }
 	
 		tex {
-if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { return }
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
+	return [::beta::notYetImplemented $dlg tex]
+}
 			foreach style [array names Styles tex,BasicStyle,*] {
 				if {[llength $Styles($style)] > 1} {
 					lassign $Styles($style) family size weight slant color

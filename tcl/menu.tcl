@@ -342,7 +342,7 @@ proc dbNew {parent} {
 	set result [::dialog::saveFile \
 		-parent $parent \
 		-filetypes $filetypes \
-		-geometry lastsize \
+		-geometry last \
 		-defaultextension .sci \
 		-defaultencoding utf-8 \
 		-needencoding 1 \
@@ -371,7 +371,7 @@ proc dbOpen {parent} {
 		-filetypes $filetypes \
 		-defaultextension .sci \
 		-needencoding 1 \
-		-geometry lastsize \
+		-geometry last \
 		-title [set [namespace current]::mc::OpenFile] \
 	]
 
@@ -399,7 +399,7 @@ proc dbImport {parent} {
 		-filetypes $filetypes \
 		-defaultextension .pgn \
 		-needencoding 1 \
-		-geometry lastsize \
+		-geometry last \
 		-title $title \
 		-multiple yes \
 	]

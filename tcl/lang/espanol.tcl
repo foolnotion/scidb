@@ -1601,6 +1601,8 @@
 ::fsbox::mc::ErrorCreate					"Error creating folder: permission denied." ;# NEW
 ::fsbox::mc::FilenameNotAllowed			"Filename '%s' is not allowed." ;# NEW
 ::fsbox::mc::ContainsTwoDots				"Contains two consecutive dots." ;# NEW
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s." ;# NEW
+::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Invalid file extension in '%s'." ;# NEW
 ::fsbox::mc::MissingFileExtension		"Missing file extension in '%s'." ;# NEW
 ::fsbox::mc::FileAlreadyExists			"El archivo '%s' ya existe.\n¿Quiere sobreescribirlo?"
