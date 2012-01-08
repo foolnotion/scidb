@@ -973,8 +973,8 @@
 ::export::mc::AllLanguages					"Tutte le lingue"
 ::export::mc::Significant					"Significativo" ;# ?
 ::export::mc::LanguageSelection			"Selezione Lingua"
-::export::mc::MapTo							"Mappa a" ;# NEW (map to)
-::export::mc::MapNagsToComment			"Mappa annotazioni a commenti" ;# NEW (map annotations to comments)
+::export::mc::MapTo							"Mappa NAG a" ;# NEW (map to)
+::export::mc::MapNagsToComment			"Mappa annotazioni (NAG) a commenti" ;# NEW (map annotations to comments)
 ::export::mc::UnusualAnnotation			"Annotazione Inusuali"
 ::export::mc::AllAnnotation				"Tutte le annotazioni"
 ::export::mc::UseColumnStyle				"Usa stile colonna"
@@ -1164,7 +1164,7 @@
 ::game::mc::GameAlreadyOpen			"La partita è già aperta ma modificata. Annulla modifiche a questa partita?"
 ::game::mc::GameAlreadyOpenDetail	"'%s' aprirà una nuova partita."
 ::game::mc::GameHasChanged				"La partita %s è stata modificata."
-::game::mc::GameHasChangedDetail		"Probabilmente questa non è la partita giusta in virtù di cambiamenti nel database" ;#Probably this is not the expected game due to database changes
+::game::mc::GameHasChangedDetail		"Probabilmente questa non è la partita giusta in virtù di cambiamenti nel database"
 ::game::mc::CorruptedHeader			"Intestazione corrotta nel file di ripristino '%s'." ;#di ripristino? da ripristinare?
 ::game::mc::RenamedFile					"File rinominato in '%s.bak'."
 ::game::mc::CannotOpen					"Impossibile aprire file di ripristino '%s'."
@@ -1542,8 +1542,8 @@
 ::fsbox::mc::Backward						"Indietro a '%s'"
 ::fsbox::mc::Delete							"Elimina"
 ::fsbox::mc::Rename							"Rinomina"
-::fsbox::mc::Duplicate						"Duplicate" ;# NEW
-::fsbox::mc::CopyOf							"Copy of %s" ;# NEW
+::fsbox::mc::Duplicate						"Duplica"
+::fsbox::mc::CopyOf							"Copia di %s"
 ::fsbox::mc::NewFolder						"Nuova Cartella"
 ::fsbox::mc::Layout							"Layout"
 ::fsbox::mc::ListLayout						"Layout della Lista"
@@ -1586,10 +1586,10 @@
 ::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
-::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied." ;# NEW
-::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting." ;# NEW
-::fsbox::mc::ReallyDuplicateFile			"Really duplicate this file?" ;# NEW
-::fsbox::mc::ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time." ;# NEW
+::fsbox::mc::CopyFailed						"Copia del file '%s' fallita: permesso negato."
+::fsbox::mc::CannotCopy						"Non posso creare una copia perché il file '%s' esiste già."
+::fsbox::mc::ReallyDuplicateFile			"Vuoi davvero duplicare questo file?"
+::fsbox::mc::ReallyDuplicateDetail		"Questo file ha circa %s. Duplicarlo può richiedere del tempo."
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
 ::fsbox::mc::InvalidFileExt				"Impossibile rinominare in '%s' perché ha un'estensione non valida."
@@ -1598,8 +1598,8 @@
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
 ::fsbox::mc::ContainsTwoDots				"Contiene due punti consecutivi."
-::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s." ;# NEW
-::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name." ;# NEW
+::fsbox::mc::ContainsReservedChars		"Contiene caratteri riservati: %s."
+::fsbox::mc::IsReservedName				"In alcuni sistemi operativi questo è un nome riservato."
 ::fsbox::mc::InvalidFileExtension		"Estensione file '%s' non valida."
 ::fsbox::mc::MissingFileExtension		"Manca estensione del file in '%s'."
 ::fsbox::mc::FileAlreadyExists			"Il file '%s' esiste già.\nVuoi sovrascriverlo?"
@@ -1607,7 +1607,7 @@
 ::fsbox::mc::FileDoesNotExist				"Il file '%s' non esiste."
 ::fsbox::mc::DirectoryDoesNotExist		"La cartella '%s' non esiste."
 ::fsbox::mc::CannotOpenOrCreate			"Non posso aprire/creare '%s'. Per favore scegli una cartella."
-::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..." ;# NEW
+::fsbox::mc::WaitWhileDuplicating		"Per favore attendere mentre avviene la duplicazione del file..."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"
