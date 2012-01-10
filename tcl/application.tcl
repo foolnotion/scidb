@@ -259,7 +259,6 @@ if {[::process::testOption use-analysis]} {
 	::load::writeLog
 	update idletasks
 	::beta::welcomeToScidb $app
-
 	set ::remote::blocked 0
 
 	foreach file [::process::arguments] {

@@ -62,7 +62,7 @@ set HtmlH1 {\
 set HtmlMapping {
 	<menuitem>		{<span class="menuitem">}
 	</menuitem>		{</span>}
-	<note/>			{<br/><img src="../images/note.png"/>}
+	<note/>			{<br/><img src="../images/note.png"/> }
 	<box>				{<div class="box">}
 	</box>			{</div>}
 	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>}
@@ -152,7 +152,7 @@ proc getArg {line} {
 
 
 if {$argc != 1} {
-	puts "Usage: [info nameofexecutable] <input-file> <output-file>"
+	puts "Usage: [info script] <input-file> <output-file>"
 	exit 1
 }
 
@@ -167,6 +167,7 @@ foreach entry $i18n::languages {
 }
 
 if {$codeName ne $lang} {
+	puts stderr "Error([info script]):"
 	puts stderr "Language \"$lang\" not defined in file \"$file\"."
 	puts stderr "You have to edit \"$file\"."
 	exit 1
@@ -192,7 +193,7 @@ while {[gets $src line] >= 0} {
 chan configure $src -encoding $charset
 
 if {![string match TITLE* $line]} {
-	puts stderr "Missing mandatory TITLE."
+	puts stderr "Error([info script]): Missing mandatory TITLE."
 	example stderr
 }
 
@@ -217,7 +218,7 @@ while {[gets $src line] >= 0} {
 }
 
 if {![string match END* $line]} {
-	puts stderr "Missing mandatory END."
+	puts stderr "Error([info script]): Missing mandatory END."
 	example stderr
 }
 
@@ -235,11 +236,11 @@ set transFile [file join .. .. lang $translationFile]
 set nagFile [file join .. .. lang nag $translationFile]
 
 if {![file readable $transFile]} {
-	puts stderr "Cannot open file \"$transFile\"."
+	puts stderr "Error([info script]): Cannot open file \"$transFile\"."
 	exit 1
 }
 if {![file readable $nagFile]} {
-	puts stderr "Cannot open file \"$nagFile\"."
+	puts stderr "Error([info script]): Cannot open file \"$nagFile\"."
 	exit 1
 }
 
@@ -252,7 +253,7 @@ foreach line $contents {
 		if {[info exists $var]} {
 			set line [string map [list $pattern [set $var]] $line]
 		} else {
-			puts stderr "Warning: couldn't substitute $var"
+			puts stderr "Warning([info script]): Couldn't substitute $var"
 			set line [string map [list $pattern $var] $line]
 		}
 	}
@@ -261,7 +262,7 @@ foreach line $contents {
 
 set dst [open $dstfile w]
 fconfigure $dst -encoding utf-8
-print $dst [file join tcl help de $srcfile] $title $body
+print $dst [file join tcl help $lang $srcfile] $title $body
 close $dst
 
 # vi:set ts=3 sw=3:

@@ -11,6 +11,11 @@ set Index {
       {{Datenbankumschalter} {Database-Switcher.html}}
     }
   }
+  { K
+    {
+      {{Kontaktinformationen} {Contact-Information.html}}
+    }
+  }
   { M
     {
       {{Markierungen} {Game-Flags.html}}

@@ -27,10 +27,11 @@
 
 html { font-family: Arial; }
 
-h1 { font-size: 20px; }
-h2 { color: #990000; font-size: 20px; }
+h1 { font-size: 20px; background: #eeffff; }
+/*h2 { color: #990000; font-size: 20px; }*/
+h2 { font-size: 20px; background-color: #e5eeff; }
 
-h1.title { text-align: center; }
+h1.title { text-align: center; background-color: #6495ed }
 
 div.title {
   color:				white;

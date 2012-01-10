@@ -33,23 +33,25 @@ package require Tcl 8.5
 array set Title {
 	de "Übersicht"
 	en "Overview"
+	it "Visione d'insieme"
+	es "Resumen"
 }
 
 if {$argc != 1} {
-	puts stderr "Usage: [info nameofexecutable] <contents-file>"
+	puts stderr "Usage: [info script] <contents-file>"
 	exit 1
 }
 
 set contentsFile [lindex $argv 0]
 if {![file readable $contentsFile]} {
-	puts stderr "Error: '$contentsFile' is not readable"
+	puts stderr "Error([info script]): '$contentsFile' is not readable"
 	exit 1
 }
 
 set lang [file tail [pwd]] 
 
 if {![info exists Title($lang)]} {
-	puts stderr "Error: missing entry in Title for language '$lang'"
+	puts stderr "Error([info script]): missing entry in Title for language '$lang'"
 	exit 1
 }
 
@@ -62,6 +64,7 @@ foreach entry $i18n::languages {
 }
 
 if {$codeName ne $lang} {
+	puts stderr "Error([info script]):"
 	puts stderr "Language \"$lang\" not defined in file \"$file\"."
 	puts stderr "You have to edit \"$file\"."
 	exit 1

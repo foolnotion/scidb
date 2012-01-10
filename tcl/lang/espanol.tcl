@@ -157,10 +157,13 @@
 ::menu::mc::GameReplace				"Ree&mplazar partida"
 ::menu::mc::GameReplaceMoves		"Reemp&lazar s—lo jugadas"
 
-::menu::mc::HelpInfo					"&Informaci—n"
+::menu::mc::HelpInfo					"&Informaci—n about Scidb" ;# NEW (changed)
 ::menu::mc::HelpContents			"Con&tenidos"
 ::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
 ::menu::mc::HelpFeatureRequest	"&Solicitud de caracter’stica (abrir en navegador web)"
+::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
+::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
+::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
 
 ::menu::mc::ViewShowLog				"Mostrar bit‡co&ra..."
 ::menu::mc::ViewFullscreen			"Pantalla completa" 
@@ -1244,25 +1247,33 @@
 ::timemodebox::mc::Mode(corr)		"Correspondencia"
 
 ### help ###############################################################
-::help::mc::Contents				"&Contents" ;# NEW
-::help::mc::Index					"&Index" ;# NEW
-::help::mc::Search				"&Search" ;# NEW
+::help::mc::Contents					"&Contents" ;# NEW
+::help::mc::Index						"&Index" ;# NEW
+::help::mc::Search					"&Search" ;# NEW
 
-::help::mc::Help					"Help" ;# NEW
-::help::mc::MatchEntireWord	"Match entire word" ;# NEW
-::help::mc::MatchCase			"Match case" ;# NEW
-::help::mc::TitleOnly			"Search in titles only" ;# NEW
-::help::mc::GoBack				"Go back one page (Alt-Left)" ;# NEW
-::help::mc::GoForward			"Go forward one page (Alt-Right)" ;# NEW
-::help::mc::ExpandAllItems		"Expand all items" ;# NEW
-::help::mc::CollapseAllItems	"Collapse all items" ;# NEW
-::help::mc::SelectLanguage		"Select Language" ;# NEW
-::help::mc::NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog." ;# NEW
-::help::mc::KeepLanguage		"Keep language %s for subsequent sessions?" ;# NEW
-::help::mc::ParserError			"Error while parsing file %s." ;# NEW
-::help::mc::NoMatch				"No match is found" ;# NEW
-::help::mc::MaxmimumExceeded	"Maximal number of matches exceeded in some pages." ;# NEW
-::help::mc::OnlyFirstMatches	"Only first %s matches per page will be shown." ;# NEW
+::help::mc::Help						"Help" ;# NEW
+::help::mc::MatchEntireWord		"Match entire word" ;# NEW
+::help::mc::MatchCase				"Match case" ;# NEW
+::help::mc::TitleOnly				"Search in titles only" ;# NEW
+::help::mc::GoBack					"Go back one page (Alt-Left)" ;# NEW
+::help::mc::GoForward				"Go forward one page (Alt-Right)" ;# NEW
+::help::mc::GotoPage					"Go to page '%s'" ;# NEW
+::help::mc::ExpandAllItems			"Expand all items" ;# NEW
+::help::mc::CollapseAllItems		"Collapse all items" ;# NEW
+::help::mc::SelectLanguage			"Select Language" ;# NEW
+::help::mc::NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog." ;# NEW
+::help::mc::KeepLanguage			"Keep language %s for subsequent sessions?" ;# NEW
+::help::mc::ParserError				"Error while parsing file %s." ;# NEW
+::help::mc::NoMatch					"No match is found" ;# NEW
+::help::mc::MaxmimumExceeded		"Maximal number of matches exceeded in some pages." ;# NEW
+::help::mc::OnlyFirstMatches		"Only first %s matches per page will be shown." ;# NEW
+::help::mc::HideIndex				"Hide index" ;# NEW
+::help::mc::ShowIndex				"Show index" ;# NEW
+
+::help::mc::FileNotFound			"File not found." ;# NEW
+::help::mc::CantFindFile			"Can't find the file at %s." ;# NEW
+::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
+::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Grilla de torneo"

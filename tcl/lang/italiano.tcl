@@ -157,10 +157,13 @@
 ::menu::mc::GameReplace				"S&ostituisci Partita"
 ::menu::mc::GameReplaceMoves		"Sostituisci So&lo Mosse"
 
-::menu::mc::HelpInfo					"In&fo"
+::menu::mc::HelpInfo					"In&fo about Scidb" ;# NEW (changed)
 ::menu::mc::HelpContents			"Conten&uti"
 ::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
 ::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"
+::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
+::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
+::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
 
 ::menu::mc::ViewShowLog				"Mostra &Log..."
 ::menu::mc::ViewFullscreen			"Schermo intero"
@@ -1240,25 +1243,33 @@
 ::timemodebox::mc::Mode(corr)		"Corrispondenza"
 
 ### help ###############################################################
-::help::mc::Contents				"&Contenuti"
-::help::mc::Index					"&Indice"
-::help::mc::Search				"&Cerca"
+::help::mc::Contents					"&Contenuti"
+::help::mc::Index						"&Indice"
+::help::mc::Search					"&Cerca"
 
-::help::mc::Help					"Aiuto"
-::help::mc::MatchEntireWord	"Corrispondi intera parola"
-::help::mc::MatchCase			"Corrispondi capitalizzazione"
-::help::mc::TitleOnly			"Cerca solo nei titoli"
-::help::mc::GoBack				"Vai indietro una pagina (Alt-Left)"
-::help::mc::GoForward			"Vai avanti una pagina (Alt-Right)"
-::help::mc::ExpandAllItems		"Espandi tutti gli oggetti"
-::help::mc::CollapseAllItems	"Comprimi tutti gli oggetti"
-::help::mc::SelectLanguage		"Selezione Lingua"
-::help::mc::NoHelpAvailable	"Nessun file di aiuto disponibile per la lingua Inglese.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
-::help::mc::KeepLanguage		"Mantenere la lingua %s per le prossime sessioni?"
-::help::mc::ParserError			"Errore nel parsing del file %s."
-::help::mc::NoMatch				"Nessuna corrispondenza trovata"
-::help::mc::MaxmimumExceeded	"Il numero massimo di corrispondenze è ecceduto in alcune pagine."
-::help::mc::OnlyFirstMatches	"Solo le prime %s corrispondenze per pagina saranno mostrate."
+::help::mc::Help						"Aiuto"
+::help::mc::MatchEntireWord		"Corrispondi intera parola"
+::help::mc::MatchCase				"Corrispondi capitalizzazione"
+::help::mc::TitleOnly				"Cerca solo nei titoli"
+::help::mc::GoBack					"Vai indietro una pagina (Alt-Left)"
+::help::mc::GoForward				"Vai avanti una pagina (Alt-Right)"
+::help::mc::GotoPage					"Go to page '%s'" ;# NEW
+::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
+::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
+::help::mc::SelectLanguage			"Selezione Lingua"
+::help::mc::NoHelpAvailable		"Nessun file di aiuto disponibile per la lingua Inglese.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
+::help::mc::KeepLanguage			"Mantenere la lingua %s per le prossime sessioni?"
+::help::mc::ParserError				"Errore nel parsing del file %s."
+::help::mc::NoMatch					"Nessuna corrispondenza trovata"
+::help::mc::MaxmimumExceeded		"Il numero massimo di corrispondenze è ecceduto in alcune pagine."
+::help::mc::OnlyFirstMatches		"Solo le prime %s corrispondenze per pagina saranno mostrate."
+::help::mc::HideIndex				"Hide index" ;# NEW
+::help::mc::ShowIndex				"Show index" ;# NEW
+
+::help::mc::FileNotFound			"File not found." ;# NEW
+::help::mc::CantFindFile			"Can't find the file at %s." ;# NEW
+::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
+::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"

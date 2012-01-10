@@ -248,7 +248,6 @@ proc WidgetProc {w parent command args} {
 			set height [winfo height $parent.html]
 			set y [expr {max(0, [lindex $args 0] - $Margin)}]
 			set fraction [expr {double($y)/double($height)}]
-#			update idletasks
 			return [$parent yview moveto $fraction]
 		}
 

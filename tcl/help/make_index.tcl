@@ -48,6 +48,7 @@ foreach entry $i18n::languages {
 }
 
 if {$codeName ne $lang} {
+	puts stderr "Error([info script]):"
 	puts stderr "Language \"$lang\" not defined in file \"$file\"."
 	puts stderr "You have to edit \"$file\"."
 	exit 1

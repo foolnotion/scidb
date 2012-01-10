@@ -1,0 +1,129 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Kontaktinformationen
+TITLE Kontaktinformationen
+
+<h2>Homepage</h2>
+
+Die Scidb Internetseite ist erreichbar unter 
+<a href="http://scidb.sourceforge.net/">http://scidb.sourceforge.net/</a>.
+
+<h2>Mithilfe</h2>
+
+Gesucht werden Interessenten für:
+
+<dir>
+  <li>Testen von Scidb</li>
+  <li>Übersetzungen in andere Sprachen</li>
+  <li>Erstellen von Hilfeseiten</li>
+ </dir>
+
+Interessenten melden sich bitte mit Hilfe einer Nachricht, damit
+dies koordiniert werden kann.
+
+<box>
+<p>
+So kann eine Nachricht gesendet werden:
+</p>
+<ol>
+   <li><p>
+      Eine Mitgliedschaft bei Sourceforge ist erforderlich
+      (<a href="https://sourceforge.net/account/registration">Account Registration</a>).
+      Die Mitgliedschaft ist Gebuehren- und Verpflichtungsfrei.
+    </p></li>
+    <li><p>
+      <a href="https://sourceforge.net/sendmessage.php?touser=2321037">Send an Email</a>
+      öffnen, mit dem Mitgliedsnamen einloggen und die Nachricht senden.
+    </p></li>
+</ol>
+</box>
+  
+<h2>Links</h2>
+  
+<p>
+Für Scidb-Benutzer könnten folgende Seiten interessant sein:
+</p>
+
+<dir>
+  <li><p>
+    <a href="http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse"
+       style="line-height: 150%;">
+    Tracker: Feature Requests</a><br/>
+    Hier können Funktionswünsche eingetragen werden. Bitte dabei den bestehenden
+    <a href="Development-Roadmap.html">Entwicklunsplaner</a> mit berücksichtigen.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse"
+       style="line-height: 150%;">
+    Tracker: Bugs</a><br/>
+    Hier können Probleme mit Scidb gemeldet werden.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/projects/scidb/reviews/"
+       style="line-height: 150%;">
+    Reviews for Scidb</a><br/>
+    Diese Seite bietet die Möglichkeit für die Abgabe einer Rezension
+    oder Bewertung.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
+       style="line-height: 150%;">
+    Scidb Guestbook</a><br/>
+    Hier wird das Gästebuch von Scidb bereitgestellt.
+  </p></li>
+
+  <li><p>
+    <a href="ftp://ftp.cis.uab.edu/pub/hyatt/"
+       style="line-height: 150%;">
+    ftp://ftp.cis.uab.edu/pub/hyatt/</a><br/>
+    Das legendäre Schachprogram Crafty. Das TB - Unterverzeichnis beinhaltet fast alle
+    Nalimov-Endspieltabellen, welche von einigen Schachprogrammen und auch von Scidb
+    (in einer zukünftigen Version) benutzt werden. 
+  </p></li>
+
+  <li><p>
+    <a href="http://www.chess.co.uk/twic/"
+       style="line-height: 150%;">
+    The Week in Chess</a><br/>
+    Ein hervorragendes Wochenmagazin für internationale Schachpartien, das
+    PGN Dateien für den Download bereitstellt.
+  </p></li>
+
+  <li><p>
+    <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm"
+       style="line-height: 150%;">
+    Standard: Portable Game Notation Specification and Implementation Guide</a><br/>
+    Der PGN-Standard, geschaffen von Steven J. Edwards im Jahre 1994. Die Webseite
+    erklärt das PGN- und EPD-Format im Detail.
+  </p></li>
+
+  <li><p>
+    <a href="http://de.wikipedia.org/wiki/ECO-Codes"
+       style="line-height: 150%;">
+    ECO-Code</a><br/>
+    Eine Übersicht über den ECO-Schlüssel.
+  </p></li>
+</dir>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

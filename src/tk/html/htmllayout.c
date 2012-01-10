@@ -1365,6 +1365,7 @@ markerBoxLayout(pLayout, pBox, pNode, pVerticalOffset)
                  break;
             case CSS_CONST_DISC:
                  strcpy(zBuf ,"\xe2\x80\xa2");      /* Unicode 0x25CF */
+//					  strcpy(zBuf ,"\xe2\xac\xa4");      /* Unicode 0x2b24 */
                  break;
 
             case CSS_CONST_LOWER_ALPHA:

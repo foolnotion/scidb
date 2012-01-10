@@ -127,6 +127,13 @@ clean:
 depend:
 	# nothing to do
 
+build-install-help: build-help install-help
+
+build-help:
+	@for lang in `ls -d help/[a-z][a-z]`; do           \
+		(cd $$lang; if [ -a Makefile ]; then make; fi); \
+	done
+
 install-script: $(SCRIPT)
 	@echo "Install $(SCRIPT)"
 	@install -m 755 -d $(BINDIR)
@@ -396,23 +403,23 @@ install-help:
 	@install -m 755 -d $(SHAREDIR)/help
 	@install -m 755 -d $(SHAREDIR)/help/images
 	@install -m 755 -d $(SHAREDIR)/help/styles
-	@install -m 755 -p help/*.tcl $(SHAREDIR)/help
 	@install -m 644 -p help/images/*.* $(SHAREDIR)/help/images
 	@install -m 644 -p help/styles/*.css $(SHAREDIR)/help/styles
-	@for lang in `ls -d help/[a-z][a-z]`; do                          \
-		install -m 755 -d $(SHAREDIR)/$$lang;                          \
-		install -m 755 -d $(SHAREDIR)/$$lang/images;                   \
-		install -m 644 -p $$lang/*.txt $(SHAREDIR)/$$lang;             \
-		install -m 644 -p $$lang/*.dat $(SHAREDIR)/$$lang;             \
-		install -m 644 -p $$lang/*.html $(SHAREDIR)/$$lang;            \
-		install -m 644 -p $$lang/images/*.* $(SHAREDIR)/$$lang/images; \
-		install -m 644 -p $$lang/Makefile $(SHAREDIR)/$$lang;          \
+	@for lang in `ls -d help/[a-z][a-z]`; do                                \
+		if [ -a $$lang/Contents.dat ]; then                                  \
+			install -m 755 -d $(SHAREDIR)/$$lang;                             \
+			install -m 644 -p $$lang/*.dat $(SHAREDIR)/$$lang;                \
+			install -m 644 -p $$lang/*.html $(SHAREDIR)/$$lang;               \
+			if [ -d $$lang/images ]; then                                     \
+				install -m 755 -d $(SHAREDIR)/$$lang/images;                   \
+				install -m 644 -p $$lang/images/*.* $(SHAREDIR)/$$lang/images; \
+			fi;                                                               \
+		fi;                                                                  \
 	done
 
 uninstall-help:
 	@echo "Uninstall help files"
 	@if [ -d $(SHAREDIR)/help ]; then                                                            \
-		for f in `ls help/*.tcl`; do rm -f $(SHAREDIR)/$$f; done;                                 \
 		dir=$(SHAREDIR)/help/images;                                                              \
 		if [ -d $$dir ]; then                                                                     \
 			for f in `ls help/images/*.*`; do rm -f $(SHAREDIR)/$$f; done;                         \
@@ -426,8 +433,6 @@ uninstall-help:
 		for lang in `ls -d help/[a-z][a-z]`; do                                                   \
 			dir=$(SHAREDIR)/$$lang;                                                                \
 			if [ -d $$dir ]; then                                                                  \
-				rm -f $$dir/Makefile;                                                               \
-				for f in `ls $$lang/*.txt`; do rm -f $(SHAREDIR)/$$f; done;                         \
 				for f in `ls $$lang/*.dat`; do rm -f $(SHAREDIR)/$$f; done;                         \
 				for f in `ls $$lang/*.html`; do rm -f $(SHAREDIR)/$$f; done;                        \
 				idir=$$dir/images;                                                                  \

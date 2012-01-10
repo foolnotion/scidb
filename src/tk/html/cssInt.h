@@ -88,7 +88,9 @@ typedef unsigned int u32;
 #define CSS_PSEUDOCLASS_LASTCHILD        13
 #define CSS_PSEUDOCLASS_LINK             14
 #define CSS_PSEUDOCLASS_VISITED          15
-#define CSS_PSEUDOCLASS_USERFLAG         36
+#define CSS_PSEUDOCLASS_USERFLAG_1       36
+#define CSS_PSEUDOCLASS_USERFLAG_2       37
+#define CSS_PSEUDOCLASS_USERFLAG_3       38
 #define CSS_PSEUDOCLASS_ACTIVE           16
 #define CSS_PSEUDOCLASS_HOVER            17
 #define CSS_PSEUDOCLASS_FOCUS            18

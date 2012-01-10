@@ -27,25 +27,33 @@
 namespace eval help {
 namespace eval mc {
 
-set Contents			"&Contents"
-set Index				"&Index"
-set Search				"&Search"
+set Contents				"&Contents"
+set Index					"&Index"
+set Search					"&Search"
 
-set Help					"Help"
-set MatchEntireWord	"Match entire word"
-set MatchCase			"Match case"
-set TitleOnly			"Search in titles only"
-set GoBack				"Go back one page (Alt-Left)"
-set GoForward			"Go forward one page (Alt-Right)"
-set ExpandAllItems	"Expand all items"
-set CollapseAllItems	"Collapse all items"
-set SelectLanguage	"Select Language"
-set KeepLanguage		"Keep language %s for subsequent sessions?"
-set NoHelpAvailable	"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
-set ParserError		"Error while parsing file %s."
-set NoMatch				"No match is found"
-set MaxmimumExceeded	"Maximal number of matches exceeded in some pages."
-set OnlyFirstMatches	"Only first %s matches per page will be shown."
+set Help						"Help"
+set MatchEntireWord		"Match entire word"
+set MatchCase				"Match case"
+set TitleOnly				"Search in titles only"
+set GoBack					"Go back one page (Alt-Left)"
+set GoForward				"Go forward one page (Alt-Right)"
+set GotoPage				"Go to page '%s'"
+set ExpandAllItems		"Expand all items"
+set CollapseAllItems		"Collapse all items"
+set SelectLanguage		"Select Language"
+set KeepLanguage			"Keep language %s for subsequent sessions?"
+set NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
+set ParserError			"Error while parsing file %s."
+set NoMatch					"No match is found"
+set MaxmimumExceeded		"Maximal number of matches exceeded in some pages."
+set OnlyFirstMatches		"Only first %s matches per page will be shown."
+set HideIndex				"Hide index"
+set ShowIndex				"Show index"
+
+set FileNotFound			"File not found."
+set CantFindFile			"Can't find the file at %s."
+set IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that."
+set ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you"
 
 } ;# namespace mc
 
@@ -68,7 +76,7 @@ proc helpLanguage {} {
 }
 
 
-proc build {parent} {
+proc open {parent {file {}}} {
 	variable Priv
 	variable Links
 	variable Geometry
@@ -76,20 +84,30 @@ proc build {parent} {
 	set Priv(check:lang) [CheckLanguage $parent]
 	if {!$Priv(check:lang)} { return }
 
-	array unset Links
-	array set Links {}
-	set Priv(topic) ""
+	if {[string length $file]} {
+		if {[file extension $file] ne ".html"} {
+			append file .html
+		}
+	}
 
 	set dlg $parent.help
 	if {[winfo exists $dlg]} {
 		raise $dlg
 		focus $dlg
+		set Priv(currentfile) [FullPath $file]
+		ReloadCurrentPage
 		return
 	}
+
+	array unset Links
+	array set Links {}
+
+	set Priv(topic) ""
 	set Priv(dlg) $dlg
+	set Priv(minsize) 200
 
 	toplevel $dlg -class Scidb
-	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Destroy $dlg]]
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code Destroy]
 	wm withdraw $dlg
 
 	set top [ttk::frame $dlg.top]
@@ -116,7 +134,6 @@ proc build {parent} {
 		-state disabled \
 		;
 	::tooltip::tooltip $buttons.forward [namespace current]::mc::GoForward
-	ttk::separator $buttons.sep -orient vertical
 	ttk::button $buttons.expand \
 		-image $icon::16x16::collapse \
 		-command [namespace code ExpandAllItems] \
@@ -130,12 +147,12 @@ proc build {parent} {
 	set Priv(button:expand) $buttons.expand
 	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
 	set Priv(button:forward) $buttons.forward
-	grid $buttons.back     -row 1 -column 1
-	grid $buttons.forward  -row 1 -column 3
-	grid $buttons.sep      -row 1 -column 5 -sticky ns
-	grid $buttons.expand   -row 1 -column 7
-	grid $buttons.collapse -row 1 -column 9
-	grid columnconfigure $buttons {0 2 4 6 8 10} -minsize $::theme::padding
+	grid $buttons.expand   -row 1 -column 1
+	grid $buttons.collapse -row 1 -column 3
+	grid $buttons.back     -row 1 -column 5
+	grid $buttons.forward  -row 1 -column 7
+	grid columnconfigure $buttons {0 2 4 6 8} -minsize $::theme::padding
+	grid columnconfigure $buttons 4 -weight 1
 	grid rowconfigure $buttons {0 2} -minsize $::theme::padding
 
 	set nb [ttk::notebook $control.nb -takefocus 1 -width 320]
@@ -151,35 +168,56 @@ proc build {parent} {
 	::widget::notebookTextvarHook $nb 1 [namespace current]::mc::Index
 	::widget::notebookTextvarHook $nb 2 [namespace current]::mc::Search
 
-	grid $buttons -row 1 -column 1 -sticky w
+	grid $buttons -row 1 -column 1 -sticky we
 	grid $nb      -row 3 -column 1 -sticky nsew
 	grid columnconfigure $control 1 -weight 1
 	grid rowconfigure $control 3 -weight 1
 	grid rowconfigure $control 2 -minsize $::theme::padding
+
+	bind $dlg <Alt-Left>			[namespace code GoBack]
+	bind $dlg <Alt-Right>		[namespace code GoForward]
+	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $dlg $pw.control]]
+
+	bind $nb <<LanguageChanged>> [namespace code UpdateTitle]
+	$nb select $nb.$Priv(tab)
 
 	### Right side #######################################
 	set html $pw.html
 	set Priv(html) $html
 	BuildHtmlFrame $dlg $html
 
-	bind $dlg <Alt-Left>		[namespace code GoBack]
-	bind $dlg <Alt-Right>	[namespace code GoForward]
-
-	$pw add $control -sticky nswe -stretch never  -minsize 200
-	$pw add $html    -sticky nswe -stretch always -minsize 400
-
-	wm deiconify $dlg
-	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg]]
-	if {[llength $Geometry] == 0} {
-		update idletasks
-		set Geometry [winfo width $dlg]x[winfo height $dlg]
+	if {[string length $file] == 0} {
+		$pw add $control -sticky nswe -stretch never -minsize $Priv(minsize)
 	}
-	wm geometry $dlg $Geometry
+	$pw add $html -sticky nswe -stretch always -minsize 400
+
+	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
+
 	wm minsize $dlg 600 300
-	bind $nb <<LanguageChanged>> [namespace code UpdateTitle]
-	$nb select $nb.$Priv(tab)
-	focus $Priv($Priv(tab))
+	if {[string length $file] == 0} {
+		if {[llength $Geometry] == 0} {
+			wm deiconify $dlg
+			update idletasks
+			set Geometry [winfo width $dlg]x[winfo height $dlg]
+			focus $Priv($Priv(tab))
+		}
+		wm geometry $dlg $Geometry
+	} else {
+		::util::place $dlg center $parent
+	}
+	wm deiconify $dlg
+
+	if {[string length $file]} {
+		set Priv(currentfile) [FullPath $file]
+	}
 	ReloadCurrentPage
+}
+
+
+proc FullPath {file} {
+	if {[string length $file] == 0} { return "" }
+	if {[string match ${::scidb::dir::help}* $file]} { return $file }
+	return [file normalize [file join $::scidb::dir::help [helpLanguage] $file]]
 }
 
 
@@ -214,10 +252,10 @@ proc CheckLanguage {parent} {
 			set file [file normalize [file join $::scidb::dir::help $code Contents.dat]]
 			if {[file readable $file]} {
 				set icon ""
-				catch { set icon $flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
+				catch { set icon $flag([set ::mc::langToCountry($code)]) }
 				if {[string length $icon] == 0} { set icon none }
 				ttk::button $top.$code \
-					-text " $lang" \
+					-text " $::encoding::mc::Lang($code)" \
 					-image $icon \
 					-compound left \
 					-command [namespace code [list SetupLang $code]] \
@@ -250,17 +288,17 @@ proc SetupLang {code} {
 }
 
 
-proc Destroy {dlg} {
+proc Destroy {} {
 	variable Priv
 	variable Lang
 
 	if {$Priv(check:lang) == 2} {
 		set language $::encoding::mc::Lang($Lang)
-		set reply [::dialog::question -parent $dlg -message [format $mc::KeepLanguage $language]]
+		set reply [::dialog::question -parent $Priv(dlg) -message [format $mc::KeepLanguage $language]]
 		if {$reply eq "no"} { set Lang "" }
 	}
 
-	destroy $dlg
+	destroy $Priv(dlg)
 }
 
 
@@ -357,8 +395,6 @@ proc FillContents {t depth root contents} {
 	variable [namespace parent]::icon::16x16::bookOpen
 	variable [namespace parent]::Priv
 
-	set lang [[namespace parent]::helpLanguage]
-
 	foreach group $contents {
 		set lastchild $root
 		foreach entry $group {
@@ -367,7 +403,7 @@ proc FillContents {t depth root contents} {
 				set item [$t item create -button auto]
 				set fill {}
 				if {[llength $topic] > 0} {
-					set file [file normalize [file join $::scidb::dir::help $lang [lindex $topic 1]]]
+					set file [[namespace parent]::FullPath [lindex $topic 1]]
 					if {![file readable $file]} {
 						lappend fill -fill #999999
 						$t item enabled $item no
@@ -403,8 +439,7 @@ proc Update {t} {
 	variable [namespace parent]::Contents
 
 	set Contents {}
-	set lang [[namespace parent]::helpLanguage]
-	set file [file normalize [file join $::scidb::dir::help $lang Contents.dat]]
+	set file [[namespace parent]::FullPath Contents.dat]
 	catch { source -encoding utf-8 $file }
 	foreach name [array names Priv uri:*] { $Priv($name) destroy }
 	array unset Priv uri:*
@@ -421,12 +456,11 @@ proc LoadPage {t item} {
 	if {[info exists Priv(uri:$item)]} {
 		set path [$Priv(uri:$item) path]
 
-		if {[string match http* $path]} {
+		if {[string match http* $path] || [string match ftp* $path]} {
 			::web::open $Priv(html) $path
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
-			set Links($path) 1
-			[namespace parent]::Load $path {} $fragment
+			set Links($path) [[namespace parent]::Load $path {} $fragment]
 		}
 	}
 }
@@ -515,8 +549,7 @@ proc Update {t} {
 	variable [namespace parent]::Priv
 
 	set Index {}
-	set lang [[namespace parent]::helpLanguage]
-	set file [file normalize [file join $::scidb::dir::help $lang Index.dat]]
+	set file [[namespace parent]::FullPath Index.dat]
 	catch { source -encoding utf-8 $file }
 	$t item delete all
 	set font [$t cget -font]
@@ -544,7 +577,7 @@ proc Update {t} {
 			$t item element configure $item item elemTxt -text $topic
 			$t item lastchild $lastchild $item
 
-			set path [file normalize [file join $::scidb::dir::help $lang $file]]
+			set path [[namespace parent]::FullPath $file]
 			set Priv(index:path:$item) $path
 
 			if {$count == 0} {
@@ -564,7 +597,7 @@ proc LoadPage {t item} {
 	if {[string length $item] == 0} { return }
 	set path $Priv(index:path:$item)
 
-	if {[string match http* $path]} {
+	if {[string match http* $path] || [string match ftp* $path]} {
 		::web::open $Priv(html) $path
 	} else {
 		[namespace parent]::Load $path
@@ -727,7 +760,7 @@ proc Search {t} {
 		set file [file tail $path]
 
 		if {$file ne "Overview.html" && [file readable $path]} {
-			set fd [open $path r]
+			set fd [::open $path r]
 			chan configure $fd -encoding utf-8
 			set content [read $fd]
 			close $fd
@@ -863,8 +896,17 @@ proc UpdateTitle {} {
 }
 
 
-proc RecordGeometry {dlg} {
-	set [namespace current]::Geometry [wm geometry $dlg]
+proc RecordGeometry {pw} {
+	variable Priv
+
+	set dlg [winfo toplevel $pw]
+	scan [wm geometry $dlg] "%dx%d+%d+%d" w h x y
+	if {[llength [$pw panes]] == 1} {
+		set w [expr {min($w + $Priv(minsize), [winfo screenwidth $pw] - 30)}]
+	} else {
+		set Priv(minsize) [winfo width [lindex [$pw panes] 0]]
+	}
+	set [namespace current]::Geometry "${w}x${h}+${x}+${y}"
 }
 
 
@@ -877,6 +919,134 @@ proc ExpandAllItems {} {
 proc CollapseAllItems {} {
 	variable Priv
 	$Priv(contents) collapse -recurse root
+}
+
+
+proc PopupMenu {dlg tab} {
+	variable Priv
+	variable Contents
+
+	::tooltip::hide
+
+	set m $dlg.popup
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
+	set cursor [winfo pointerxy $dlg]
+
+	switch -glob -- [winfo containing {*}$cursor] {
+		*.contents.tree {
+			$m add command \
+				-command [namespace code ExpandAllItems] \
+				-label " $mc::ExpandAllItems" \
+				-image $icon::16x16::collapse \
+				-compound left \
+				;
+			$m add command \
+				-command [namespace code CollapseAllItems] \
+				-label " $mc::CollapseAllItems" \
+				-image $icon::16x16::expand \
+				-compound left \
+				;
+			$m add separator
+		}
+
+		*.html.* {
+			$m add command \
+				-command [namespace code GoBack] \
+				-label " $mc::GoBack" \
+				-image $::icon::16x16::backward \
+				-compound left \
+				-state [$Priv(button:back) cget -state]
+				;
+			$m add command \
+				-command [namespace code GoForward] \
+				-label " $mc::GoForward" \
+				-image $::icon::16x16::forward \
+				-compound left \
+				-state [$Priv(button:forward) cget -state]
+				;
+			$m add separator
+			set count 0
+			set done {}
+			foreach entry $Priv(history) {
+				if {[lindex $entry 2]} {
+					set file [file tail [lindex $entry 0]]
+					set topic [FindTopic $file $Contents]
+					if {[llength $topic]} {
+						lassign $topic title file
+						if {$file ni $done} {
+							set path [FullPath $file]
+							if {$Priv(currentfile) ne $path} {
+								$m add command \
+									-command [namespace code [list Load $path]] \
+									-label " [format $mc::GotoPage $title]" \
+									-image $icon::16x16::document \
+									-compound left \
+									;
+								incr count
+								lappend done $file
+							}
+						}
+					}
+				}
+			}
+			if {$count} { $m add separator }
+		}
+
+		*.tree	{}
+		default	{ return }
+	}
+
+	if {$tab in [[winfo parent $tab] panes]} {
+		set text $mc::HideIndex
+		set icon $::icon::16x16::toggleMinus
+	} else {
+		set text $mc::ShowIndex
+		set icon $::icon::16x16::togglePlus
+	}
+	$m add command \
+		-label " $text" \
+		-image $icon \
+		-compound left \
+		-command [namespace code [list ToggleIndex $tab]] \
+		;
+	$m add separator
+	$m add command \
+		-image $::icon::16x16::close \
+		-label " $::mc::Close" \
+		-compound left \
+		-command [namespace code Destroy] \
+		;
+
+	bind $m <<MenuUnpost>> +::tooltip::hide
+	tk_popup $m {*}$cursor
+}
+
+
+proc FindTopic {file contents} {
+	foreach group $contents {
+		foreach entry $group {
+			if {[llength $entry] != 1} {
+				return [FindTopic $file $entry]
+			}
+			set topic [lindex $entry 0]
+			if {[lindex $topic 1] eq $file} { return $topic }
+		}
+	}
+
+	return {}
+}
+
+
+proc ToggleIndex {tab} {
+	set pw [winfo parent $tab]
+
+	if {$tab in [$pw panes]} {
+		$pw forget $tab
+	} else {
+		$pw add $tab -sticky nswe -stretch never -minsize 200 -before [$pw panes]
+	}
 }
 
 
@@ -918,11 +1088,17 @@ proc VisitItem {t mode item} {
 
 
 proc GetImage {file} {
-	set file [file normalize [file join $::scidb::dir::help [helpLanguage] $file]]
-	if {[catch { set img [image create photo -file $file] }]} {
-		set src $icon::16x16::broken
+	if {[string match {[A-Z][A-Z][A-Z]} $file]} {
+		set src $::country::icon::flag($file)
 		set img [image create photo -width [image width $src] -height [image height $src]]
 		$img copy $src
+	} else {
+		set file [FullPath $file]
+		if {[catch { set img [image create photo -file $file] }]} {
+			set src $icon::16x16::broken
+			set img [image create photo -width [image width $src] -height [image height $src]]
+			$img copy $src
+		}
 	}
 	return $img
 }
@@ -934,19 +1110,26 @@ proc A_NodeHandler {node} {
 
 	set href [$node attribute -default {} href]
 
-	if {[string match http* $href]} {
+	if {[string match http* $href] || [string match ftp* $href]} {
 		$node dynamic set user
 		set file $href
 	} else {
 		$node dynamic set link
-		set file [file normalize [file join $::scidb::dir::help [helpLanguage] $href]]
+
+		if {[string length $href] && ![string match script(*) $href]} {
+			set file [FullPath $href]
+			if {[info exists Links($file)]} {
+				if {$Links($file)} {
+					$node dynamic set visited
+				} else {
+					$node dynamic clear link
+					$node dynamic set user2
+				}
+			}
+		}
 	}
 
 	set Nodes($node) 0
-
-	if {[llength $file] && [info exists Links($file)]} {
-		$node dynamic set visited
-	}
 }
 
 
@@ -954,14 +1137,16 @@ proc LinkHandler {node} {
 	if {[$node attribute rel] eq "stylesheet"} {
 		variable Priv
 
-		ImportHandler author [$node attribute href]
+		set uri [$node attribute -default {} href]
+		if {[string length $uri]} { ImportHandler author $uri }
 
 		# overwrite CSS values
 		set css "
 			:link    { color: blue2; text-decoration: none; }
 			:user		{ color: red3; text-decoration: none; }
+			:user2	{ color: black; text-decoration: underline; }
 			:visited { color: purple; text-decoration: none; }
-			:hover   { text-decoration: none; background: #ffff00; }
+			:hover   { text-decoration: underline; background: #ffff00; }
 			.match	{ background: yellow; color: black; }
 		"
 		$Priv(html) style -id user $css
@@ -973,8 +1158,8 @@ proc ImportHandler {parentid uri} {
 	variable _StyleCount
 	variable Priv
 
-	set file [file join $::scidb::dir::help [helpLanguage] $uri]
-	set fd [open $file r]
+	set file [FullPath $uri]
+	set fd [::open $file r]
 	chan configure $fd -encoding utf-8
 	set content [read $fd]
 	close $fd
@@ -1029,15 +1214,18 @@ proc Mouse1Up {node} {
 		$node dynamic set visited
 
 		set href [$node attribute -default {} href]
+		if {[string length $href] == 0} { return }
 
-		if {[string match http* $href]} {
+		if {[string match script(*) $href]} {
+			set script [string range $href 7 end-1]
+			eval [namespace code [list {*}$script]]
+		} elseif {[string match http* $href] || [string match ftp* $href]} {
 			::web::open $Priv(html) $href
 		} elseif {[llength $href]} {
 			set fragment ""
 			lassign [split $href \#] href fragment
-			set file [file normalize [file join $::scidb::dir::help [helpLanguage] $href]]
-			set Links($file) 1
-			Load $file {} $fragment
+			set file [FullPath $href]
+			set Links($file) [Load $file {} $fragment]
 		}
 	}
 }
@@ -1051,8 +1239,7 @@ proc ReloadCurrentPage {} {
 		set file $Priv(currentfile)
 	}
 
-	if {	[string length $file] == 0
-		|| ![file readable [file join $::scidb::dir::help [helpLanguage] [file tail $file]]]} {
+	if {[string length $file] == 0 || ![file readable [FullPath [file tail $file]]]} {
 		set file Overview.html
 	}
 
@@ -1060,7 +1247,7 @@ proc ReloadCurrentPage {} {
 	set Priv(history:index) -2
 	set Priv(currentfile) ""
 
-	Load [file normalize [file join $::scidb::dir::help [helpLanguage] [file tail $file]]]
+	Load [FullPath [file tail $file]]
 }
 
 
@@ -1090,10 +1277,10 @@ proc Load {file {match {}} {position {}}} {
 		} else {
 			Goto $position
 		}
-		return
+		return 1
 	}
 
-	Parse $file 0 $match
+	set rc [Parse $file 0 $match]
 
 	if {[string length $match] == 0} {
 		Goto $position
@@ -1101,8 +1288,10 @@ proc Load {file {match {}} {position {}}} {
 
 	incr Priv(history:index)
 	set Priv(history) [lrange $Priv(history) 0 $Priv(history:index)]
-	lappend Priv(history) [list $file 0]
+	lappend Priv(history) [list $file 0 $rc]
+
 	SetupButtons
+	return $rc
 }
 
 
@@ -1121,10 +1310,11 @@ proc Parse {file {moveto 0} {match {}}} {
 	array unset Nodes
 	array set Nodes {}
 	set content "<>"
+	set rc 1
 
 	if {[file readable $file]} {
 		catch {
-			set fd [open $file r]
+			set fd [::open $file r]
 			chan configure $fd -encoding utf-8
 			set content [read $fd]
 			close $fd
@@ -1132,13 +1322,43 @@ proc Parse {file {moveto 0} {match {}}} {
 	}
 
 	if {$content eq "<>"} {
-		set content "
-			<html><body>
-			<h1>File not found</h1>
-			<p>Can't find the file at <b>$file</b>.</p>
+		set parts [file split $file]
+		set pref [file join {*}[lrange $parts 0 end-2]]
+		set suff [lindex $parts end]
+		set alternatives {}
+		foreach lang [lsort [array names ::mc::input]] {
+			if {[string length $lang]} {
+				set code [set ::mc::lang$lang]
+				set f [file join $pref $code $suff]
+				if {[file readable $f]} {
+					set img "<img src='$::mc::langToCountry($code)' align='bottom'/>"
+					set alt "$img&ensp;<a href='$f'>$::encoding::mc::Lang($code)</a>"
+					lappend alternatives $alt
+				}
+			}
+		}
+		append content "
+			<html><head><link rel='stylesheet'/></head><body>
+			<h1>$mc::FileNotFound</h1>
+			<p>[format $mc::CantFindFile [list <b>$file</b>]]</p><br>
+			<p><div style='background:yellow; border:1px solid black;'>
+			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
+			</div></p>
+		"
+		if {[llength $alternatives]} {
+			append content "<br/><br/><br/>"
+			append content "<div style='background:#f5f5f5; border:1px solid black;'>"
+			append content "<blockquote><p>$mc::ProbablyTheHelp:</p>"
+			append content "<dl>"
+			foreach alt $alternatives { append content "<dt>$alt</dt>" }
+			append content "</dl></blockquote></div>"
+		}
+		append content "
+			<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>
 			</body></html>
 		"
 		set match {}
+		set rc 0
 	} elseif {[llength $match]} {
 		lassign $match _ _ positions _ search
 
@@ -1149,7 +1369,7 @@ proc Parse {file {moveto 0} {match {}}} {
 
 		foreach pos $positions {
 			append content [string range $str $from [expr {$pos - 1}]]
-			append content "<span class=\"match\">"
+			append content "<span class='match'>"
 			append content [string range $str $pos [expr {$pos + $len - 1}]]
 			append content "</span>"
 			set from [expr {$pos + $len}]
@@ -1159,6 +1379,7 @@ proc Parse {file {moveto 0} {match {}}} {
 
 	[$Priv(html) drawable] configure -cursor {}
 	$Priv(html) parse $content
+	update idletasks
 	$Priv(html) yview moveto $moveto
 	set Priv(currentfile) $file
 
@@ -1167,6 +1388,8 @@ proc Parse {file {moveto 0} {match {}}} {
 	set Priv(topic) ""
 	catch { set Priv(topic) $Priv(topic:$file) }
 	UpdateTitle
+
+	return $rc
 }
 
 
@@ -1191,9 +1414,16 @@ proc SeeNode {node} {
 proc GoBack {} {
 	variable Priv
 
-	if {$Priv(history:index) >= 0} {
-		Parse {*}[lindex $Priv(history) $Priv(history:index)]
-		incr Priv(history:index) -1
+	set index $Priv(history:index)
+	while {$index >= 0} {
+		if {[lindex $Priv(history) $index 2]} { break }
+		incr index -1
+	}
+
+	if {$index >= 0} {
+		set entry [lindex $Priv(history) $index]
+		Parse [lindex $entry 0] [lindex $entry 1]
+		set Priv(history:index) [expr {$index - 1}]
 		SetupButtons
 	}
 }
@@ -1202,9 +1432,16 @@ proc GoBack {} {
 proc GoForward {} {
 	variable Priv
 
-	if {$Priv(history:index) + 2 < [llength $Priv(history)]} {
-		Parse {*}[lindex $Priv(history) [expr {$Priv(history:index) + 2}]]
-		incr Priv(history:index)
+	set index [expr {$Priv(history:index) + 2}]
+	while {$index < [llength $Priv(history)]} {
+		if {[lindex $Priv(history) $index 2]} { break }
+		incr index
+	}
+
+	if {$index < [llength $Priv(history)]} {
+		set entry [lindex $Priv(history) $index]
+		Parse [lindex $entry 0] [lindex $entry 1]
+		set Priv(history:index) [expr {$index - 1}]
 		SetupButtons
 	}
 }
@@ -1212,6 +1449,8 @@ proc GoForward {} {
 
 proc SetupButtons {} {
 	variable Priv
+
+	if {![info exists Priv(button:forward)]} { return }
 
 	if {$Priv(history:index) + 2 < [llength $Priv(history)]} {
 		set state normal

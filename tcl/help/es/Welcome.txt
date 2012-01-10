@@ -1,0 +1,75 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Benvenuto su Scidb!
+
+<p>
+Esta es una versión preliminar de Scidb, sólo para pruebas. La primera
+versión completa será liberada luego de un período de pruebas
+suficientemente prolongado. Por favor, al experimentar con Scidb considere
+que:
+</p>
+
+<ol>
+  <li style="margin-top: 0.5em; ">
+    Esta versión contiene gran cantidad de información de depuración y,
+    por consiguiente, se ejecuta más lento en varios lugares.
+  </li>
+
+  <li style="margin-top: 0.5em; ">
+    El soporte de bases Scid (.si3/.si4) se realiza mediante una emulación
+    bastante compleja, la cual aún no está probada en forma suficiente.
+	  <annotation>
+    Por consiguiente, tenga a bien no editar sus bases Scid originales con
+    este programa.
+    </annotation>
+    En forma predeterminada, las bases Scid se abrirán en modo de
+    sólo-lectura - que, por supuesto, no es crítico.
+  </li>
+
+  <li style="margin-top: 0.5em; ">
+    El formato actual Scidb (.sci) se completará, como mucho, con la
+    primera versión completa (i.e. en la versión 1.0, la actual es la
+    0.92). De cualquier modo, el formato actual ya es completamente
+    utilizable, y se ofrecerá la capacidad de mejora.
+  </li>
+
+  <li style="margin-top: 0.5em; ">
+    El soporte del formato ChessBase (.cbh) no está terminado.
+    Actualmente esta aplicación no puede abrir partidas en formato Chess 960.
+  </li>
+
+  <li style="margin-top: 0.5em; ">
+    De vez en cuando se liberará una nueva versión de pruebas.
+  </li>
+</ol>
+
+<p>
+¡Diviértase mucho con Scidb, cuyo desarrollo ya lleva tres años!
+</p>
+
+<h2>Links</h2>
+
+<dir>
+  <li><a href="Development-Roadmap.html">Entwicklungsplanung</a></li>
+  <li><a href="Whats-New.html">Was ist neu?</a></li>
+</dir>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:
