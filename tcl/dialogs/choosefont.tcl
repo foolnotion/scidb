@@ -943,7 +943,7 @@ proc RecordGeometry {dlg} {
 	if {[winfo toplevel $dlg] ne $dlg} { return }
 
 	variable ${dlg}::S
-	scan [wm geometry $dlg] "%dx%d+%d+%d" w h x y
+	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
 
 	if {$w > 1} {
 		scan [wm grid $dlg] "%d %d %d %d" bw bh wi hi

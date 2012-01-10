@@ -900,7 +900,7 @@ proc RecordGeometry {pw} {
 	variable Priv
 
 	set dlg [winfo toplevel $pw]
-	scan [wm geometry $dlg] "%dx%d+%d+%d" w h x y
+	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
 	if {[llength [$pw panes]] == 1} {
 		set w [expr {min($w + $Priv(minsize), [winfo screenwidth $pw] - 30)}]
 	} else {

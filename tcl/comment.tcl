@@ -262,7 +262,7 @@ proc open {parent pos lang} {
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
 	if {[llength $Geometry] == 4} {
-		scan [wm geometry [winfo toplevel $parent]] "%dx%d+%d+%d" tw th tx ty
+		scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty
 		set rx [expr {$tx + [lindex $Geometry 0]}]
 		set ry [expr {$ty + [lindex $Geometry 1]}]
 		set rw [winfo reqwidth $dlg]
