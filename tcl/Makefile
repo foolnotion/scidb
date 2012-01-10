@@ -131,7 +131,7 @@ build-install-help: build-help install-help
 
 build-help:
 	@for lang in `ls -d help/[a-z][a-z]`; do           \
-		(cd $$lang; if [ -a Makefile ]; then make; fi); \
+		(cd $$lang; if [ -f Makefile ]; then make; fi); \
 	done
 
 install-script: $(SCRIPT)
@@ -406,7 +406,7 @@ install-help:
 	@install -m 644 -p help/images/*.* $(SHAREDIR)/help/images
 	@install -m 644 -p help/styles/*.css $(SHAREDIR)/help/styles
 	@for lang in `ls -d help/[a-z][a-z]`; do                                \
-		if [ -a $$lang/Contents.dat ]; then                                  \
+		if [ -f $$lang/Contents.dat ]; then                                  \
 			install -m 755 -d $(SHAREDIR)/$$lang;                             \
 			install -m 644 -p $$lang/*.dat $(SHAREDIR)/$$lang;                \
 			install -m 644 -p $$lang/*.html $(SHAREDIR)/$$lang;               \
