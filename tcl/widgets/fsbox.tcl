@@ -2018,7 +2018,7 @@ proc DetailsLayout {w} {
 		set item [$t item create -open no]
 		$t item style set $item name styName size stySize modified styDate
 		$t item element configure $item \
-			name txtName -text [encoding convertfrom utf-8 [file tail $folder]] , \
+			name txtName -text [file tail $folder] , \
 			modified txtDate -data [file mtime $folder]
 		$t item lastchild root $item
 	}
@@ -2026,7 +2026,7 @@ proc DetailsLayout {w} {
 	set Vars(scriptNew) {
 		set item [$t item create -open no]
 		$t item style set $item name styName size stySize modified styDate
-		$t item element configure $item name txtName -text [encoding convertfrom utf-8 [file tail $folder]]
+		$t item element configure $item name txtName -text [file tail $folder]
 		$t item lastchild root $item
 	}
 
@@ -2041,7 +2041,7 @@ proc DetailsLayout {w} {
 			set icon [GetFileIcon $w $file]
 			$t item element configure $item \
 				name elemImg -image $icon , \
-				name txtName -text [encoding convertfrom utf-8 [file tail $file]] , \
+				name txtName -text [file tail $file] , \
 				size txtSize -text $size , \
 				modified txtDate -data $mtime
 			$t item lastchild root $item
@@ -2118,7 +2118,7 @@ proc ListLayout {w} {
 			set icon [GetFileIcon $w $file]
 			$t item element configure $item name \
 				elemImg -image $icon + \
-				txtName -text [encoding convertfrom utf-8 [file tail $file]]
+				txtName -text file tail $file]
 			$t item lastchild root $item
 		}
 	}
