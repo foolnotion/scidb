@@ -680,7 +680,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	namebase(Namebase::Event).cleanup();
 
 	namebases().setReadonly(false);
-	namebases().resetModified();
+	namebases().setModified(false);
 	namebases().update();
 	namebases().setReadonly();
 
@@ -2274,6 +2274,9 @@ int
 Codec::getNumberOfGames(mstl::string const& filename)
 {
 	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+
+	if (!strm)
+		return -1;
 
 	Byte record[46];
 

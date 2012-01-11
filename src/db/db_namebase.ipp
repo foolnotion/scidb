@@ -44,7 +44,7 @@ inline bool Namebase::isOriginal() const				{ return m_isOriginal; }
 inline bool Namebase::isReadonly() const				{ return m_isReadonly; }
 
 inline void Namebase::setMaxUsage(unsigned usage)	{ m_maxUsage = usage; }
-inline void Namebase::setModified(bool flag)			{ m_isModified = false; }
+inline void Namebase::setModified(bool flag)			{ m_isModified = flag; }
 
 
 inline

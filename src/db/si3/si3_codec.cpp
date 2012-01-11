@@ -611,7 +611,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progre
 	// NOTE:
 	// 1. we cannot trust the maximal frequency, Scid's value is possibly faulty
 	// 2. we need to recompute the frequency values of the Event and Site bases
-	namebases().resetModified();
+	namebases().setModified(false);
 	namebases().update();
 
 	if (m_hasMagic)
@@ -743,7 +743,7 @@ Codec::attach(mstl::string const& rootname, Progress& progress)
 
 	mstl::string gameFilename(rootname + m_extGame);
 	m_gameStream.set_unbuffered();
-	m_gameStream.open(gameFilename, mode);
+	m_gameStream.open(sys::file::internalName(gameFilename), mode);
 	m_gameData->attach(&m_gameStream);
 	save(rootname, 0, progress, true);
 }
@@ -774,7 +774,8 @@ Codec::update(mstl::string const& rootname)
 	mstl::string	namebaseTempFilename(namebaseFilename + ".temp.38583276");
 
 	m_gameData->sync();
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 
 	try
@@ -809,7 +810,8 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 	mstl::fstream indexStream;
 
 	m_gameData->sync();
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
 	// We cannot use flag updateNamebase, because the frequency may have changed!
 	mstl::fstream namebaseStream;
@@ -855,7 +857,8 @@ Codec::updateHeader(mstl::string const& rootname)
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	writeIndexHeader(indexStream);
 }
 
@@ -1674,7 +1677,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 						::MaxRoundCount,
 						progress);
 	namebase(Namebase::Annotator).insert();
-	namebases().resetModified();
+	namebases().setModified(false);
 }
 
 
@@ -1954,7 +1957,7 @@ Codec::writeNamebases(mstl::fstream& stream)
 	writeNamebase(stream, *m_siteList  );
 	writeNamebase(stream, *m_roundList );
 
-	namebases().resetModified();
+	namebases().setModified(false);
 }
 
 
@@ -2084,6 +2087,9 @@ int
 Codec::getNumberOfGames(mstl::string const& filename)
 {
 	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+
+	if (!strm)
+		return -1;
 
 	char header[17];
 

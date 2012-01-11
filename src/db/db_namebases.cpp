@@ -91,13 +91,13 @@ Namebases::setReadonly(bool flag)
 
 
 void
-Namebases::resetModified()
+Namebases::setModified(bool flag)
 {
-	m_player.setModified(false);
-	m_site.setModified(false);
-	m_event.setModified(false);
-	m_annotator.setModified(false);
-	m_round.setModified(false);
+	m_player.setModified(flag);
+	m_site.setModified(flag);
+	m_event.setModified(flag);
+	m_annotator.setModified(flag);
+	m_round.setModified(flag);
 }
 
 

@@ -1527,7 +1527,7 @@ Codec::writeNamebases(mstl::fstream& stream)
 	}
 
 	bstrm.flush();
-	namebases().resetModified();
+	namebases().setModified(false);
 }
 
 

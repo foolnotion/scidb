@@ -57,6 +57,7 @@
 #include "u_misc.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include "m_vector.h"
 #include "m_utility.h"
@@ -792,7 +793,8 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		encoding = Tcl_GetString(objv[5]);
 	}
 
-	mstl::string path(stringFromObj(objc, objv, 1));
+//	mstl::string path(Tcl_FSGetNativePath(objv[1]));
+	mstl::string path(Tcl_GetString(objv[1]));
 
 	if (util::misc::file::suffix(path) == "sci")
 		encoding = sys::utf8::Codec::utf8();
@@ -855,7 +857,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	char const*		file(stringFromObj(objc, objv, 2));
-	util::ZStream	stream(file, ios_base::in);
+	util::ZStream	stream(sys::file::internalName(file), ios_base::in);
 
 	if (!stream)
 	{
@@ -3107,7 +3109,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	try
 	{
-		setResult(v.exportGames(filename,
+		setResult(v.exportGames(sys::file::internalName(filename),
 										sys::utf8::Codec::utf8(),
 										db.description(),
 										type,

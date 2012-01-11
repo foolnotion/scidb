@@ -49,7 +49,7 @@ public:
 	void update();
 	void clear();
 	void setReadonly(bool flag = true);
-	void resetModified();
+	void setModified(bool flag);
 
 private:
 

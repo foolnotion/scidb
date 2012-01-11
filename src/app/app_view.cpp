@@ -588,7 +588,7 @@ View::exportGames(mstl::string const& filename,
 			mode |= mstl::ios_base::app;
 		}
 
-		util::ZStream strm(filename, type, mode);
+		util::ZStream strm(sys::file::internalName(filename), type, mode);
 		PgnWriter writer(format::Pgn, strm, encoding, flags);
 		count = exportGames(writer, gameMode, log, progress);
 	}

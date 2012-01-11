@@ -34,6 +34,8 @@ enum Mode
 	Readable		= 4,
 };
 
+char const* internalName(char const* externalName);
+
 bool access(char const* filename, Mode mode);
 
 long size(char const* filename);

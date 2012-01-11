@@ -105,6 +105,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 		m_codec->open(this, m_rootname, encoding);
 
 	m_size = m_gameInfoList.size();
+	m_namebases.setModified(true);
 }
 
 

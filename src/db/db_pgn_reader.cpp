@@ -42,6 +42,7 @@
 #include "m_stdio.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -4880,7 +4881,7 @@ PgnReader::getNumberOfGames(mstl::string const& filename)
 {
 	int64_t fileSize;
 
-	if (!ZStream::size(filename, fileSize, 0))
+	if (!ZStream::size(sys::file::internalName(filename), fileSize, 0))
 		return -1;
 
 	if (fileSize < 0)

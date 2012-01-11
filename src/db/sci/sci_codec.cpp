@@ -639,7 +639,7 @@ Codec::attach(mstl::string const& rootname, util::Progress& progress)
 
 	mstl::string gameFilename(rootname + ".scg");
 	m_gameStream.set_unbuffered();
-	m_gameStream.open(gameFilename, mode);
+	m_gameStream.open(sys::file::internalName(gameFilename), mode);
 	m_gameData->attach(&m_gameStream);
 	save(rootname, 0, progress, true);
 }
@@ -667,7 +667,8 @@ Codec::update(mstl::string const& rootname)
 	mstl::fstream namebaseStream;
 
 	m_gameData->sync();
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase);
 	writeNamebases(namebaseStream);
 	updateIndex(indexStream);
@@ -689,7 +690,8 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 	mstl::fstream indexStream;
 
 	m_gameData->sync();
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
 	if (updateNamebase)
 	{
@@ -726,7 +728,8 @@ Codec::updateHeader(mstl::string const& rootname)
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;
-	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+	indexStream.open(	sys::file::internalName(indexFilename),
+							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	writeIndexHeader(indexStream);
 }
 
@@ -806,7 +809,7 @@ Codec::makeCodec(mstl::string const& name)
 {
 	mstl::fstream strm;
 
-	strm.open(name, mstl::ios_base::in | mstl::ios_base::binary);
+	strm.open(sys::file::internalName(name), mstl::ios_base::in | mstl::ios_base::binary);
 
 	if (strm)
 	{
@@ -1843,7 +1846,7 @@ Codec::writeNamebases(mstl::fstream& stream)
 	}
 
 	bstrm.flush();
-	namebases().resetModified();
+	namebases().setModified(false);
 }
 
 
@@ -2122,7 +2125,10 @@ Codec::remove(mstl::string const& fileName)
 int
 Codec::getNumberOfGames(mstl::string const& filename)
 {
-	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+	mstl::fstream strm(sys::file::internalName(filename), mstl::ios_base::in | mstl::ios_base::binary);
+
+	if (!strm)
+		return -1;
 
 	char header[13];
 
