@@ -30,7 +30,8 @@ exec tclsh "$0" "$@"
 package require Tcl 8.5
 
 
-set HtmlDocType {\
+set HtmlDocType {<?xml version="1.0" encoding="utf-8"?>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 }
@@ -39,6 +40,8 @@ set HtmlHead {\
 <head>
   <meta http-equiv="content-type"
            content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
   <link  rel="icon"
         href="http://scidb.sourceforge.net/images/scidb.ico"
         type="image/x-icon" />
@@ -71,12 +74,14 @@ set HtmlMapping {
 
 
 proc print {chan source title body} {
+	variable lang
+
 	set headerMap [list %TITLE% $title %HELP% $::help::mc::Help]
 
 	puts $chan $::HtmlDocType
 	puts $chan "<!-- Generated from $source -->"
 	puts $chan ""
-	puts $chan "<html>"
+	puts $chan "<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='$lang'>"
 	puts $chan [string map $headerMap $::HtmlHead]
 	puts $chan "<body>"
 	puts $chan ""
@@ -178,19 +183,30 @@ set dstfile "[file rootname $srcfile].html"
 
 set src [open $srcfile r]
 set charset $charsetName
+chan configure $src -encoding $charset
 set title ""
+set loop 1
 
-while {[gets $src line] >= 0} {
-	if {[string match TITLE* $line]} {
-		set title [getArg $line]
-		break
-	}
-	if {[string match CHARSET* $line]} {
-		set charset [getArg $line]
+while {$loop} {
+	while {[gets $src line] >= 0} {
+		if {[string match TITLE* $line]} {
+			set title [getArg $line]
+			set loop 0
+			break
+		}
+		if {[string match CHARSET* $line]} {
+			if {!$loop} {
+				puts stderr "Error([info script]): CHARSET has to be declared before TITLE"
+				exit 1
+			}
+			set charset [getArg $line]
+			close $src
+			set src [open $srcfile r]
+			chan configure $src -encoding $charset
+			break
+		}
 	}
 }
-
-chan configure $src -encoding $charset
 
 if {![string match TITLE* $line]} {
 	puts stderr "Error([info script]): Missing mandatory TITLE."

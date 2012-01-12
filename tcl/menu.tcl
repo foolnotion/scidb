@@ -118,6 +118,8 @@ proc CreateViewMenu {menu} {
 	variable Fullscreen
 	variable Theme
 
+	if {[::process::testOption full-screen]} { viewFullscreen toggle }
+
 	set m [menu $menu.mIconSize]
 	set pos -1
 

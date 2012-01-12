@@ -335,7 +335,7 @@ proc databasePath {file} {
 }
 
 
-proc catchIoError {base cmd {resultVar {}}} {
+proc catchIoError {cmd {resultVar {}}} {
 	if {[catch {{*}$cmd} result options]} {
 		array set opts $options
 		if {[string first %IO-Error% $opts(-errorinfo)] >= 0} {

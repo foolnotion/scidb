@@ -21,7 +21,7 @@
 
 #include "sys_time.h"
 
-#include "m_types.h"
+#include "m_string.h"
 
 namespace sys {
 namespace file {
@@ -34,7 +34,7 @@ enum Mode
 	Readable		= 4,
 };
 
-char const* internalName(char const* externalName);
+mstl::string internalName(char const* externalName);
 
 bool access(char const* filename, Mode mode);
 

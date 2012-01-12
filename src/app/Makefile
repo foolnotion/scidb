@@ -268,6 +268,8 @@ app_cursor.o: ../mstl/m_pointer_iterator.ipp
 app_cursor.o: ../mstl/m_list.ipp
 app_cursor.o: ../mstl/m_pair.h
 app_cursor.o: ../mstl/m_pair.ipp
+app_cursor.o: ../mstl/m_string.h
+app_cursor.o: ../mstl/m_string.ipp
 app_cursor.o: app_view.ipp
 app_cursor.o: ../mstl/m_ref_counted_ptr.h
 app_cursor.o: ../mstl/m_ref_counted_traits.h
@@ -286,8 +288,6 @@ app_cursor.o: ../util/u_crc.h
 app_cursor.o: ../util/u_crc.ipp
 app_cursor.o: ../mstl/m_byte_order.h
 app_cursor.o: ../mstl/m_byte_order.ipp
-app_cursor.o: ../mstl/m_string.h
-app_cursor.o: ../mstl/m_string.ipp
 app_cursor.o: ../db/db_move.ipp
 app_cursor.o: ../db/db_eco.h
 app_cursor.o: ../db/db_eco.ipp
@@ -551,6 +551,8 @@ app_view.o: ../mstl/m_pointer_iterator.ipp
 app_view.o: ../mstl/m_list.ipp
 app_view.o: ../mstl/m_pair.h
 app_view.o: ../mstl/m_pair.ipp
+app_view.o: ../mstl/m_string.h
+app_view.o: ../mstl/m_string.ipp
 app_view.o: app_view.ipp
 app_view.o: app_application.h
 app_view.o: ../db/db_tree.h
@@ -560,8 +562,6 @@ app_view.o: ../util/u_crc.h
 app_view.o: ../util/u_crc.ipp
 app_view.o: ../mstl/m_byte_order.h
 app_view.o: ../mstl/m_byte_order.ipp
-app_view.o: ../mstl/m_string.h
-app_view.o: ../mstl/m_string.ipp
 app_view.o: ../db/db_move.ipp
 app_view.o: ../db/db_eco.h
 app_view.o: ../db/db_eco.ipp
@@ -642,6 +642,9 @@ app_view.o: ../db/db_move_info.ipp
 app_view.o: ../db/db_move_info_set.ipp
 app_view.o: ../db/db_consumer.ipp
 app_view.o: ../db/db_writer.ipp
+app_view.o: ../db/db_latex_writer.h
+app_view.o: ../db/db_document_writer.h
+app_view.o: ../util/libTeXt/T_TokenP.h
 app_view.o: ../db/sci/sci_codec.h
 app_view.o: ../mstl/m_fstream.h
 app_view.o: ../mstl/m_ifstream.h
@@ -674,6 +677,16 @@ app_view.o: ../db/si3/si3_encoder.h
 app_view.o: ../db/si3/si3_encoder_position.h
 app_view.o: ../db/si3/si3_encoder_position.ipp
 app_view.o: ../db/si3/si3_common.h
+app_view.o: ../util/libTeXt/T_Controller.h
+app_view.o: ../util/libTeXt/T_Receptacle.h
+app_view.o: ../util/libTeXt/T_Receptacle.ipp
+app_view.o: ../util/libTeXt/T_Consumer.h
+app_view.o: ../util/libTeXt/T_Object.h
+app_view.o: ../util/libTeXt/T_Config.h
+app_view.o: ../util/libTeXt/T_Object.ipp
+app_view.o: ../util/libTeXt/T_Memory.h
+app_view.o: ../mstl/m_scoped_ptr.h
+app_view.o: ../mstl/m_scoped_ptr.ipp
 app_view.o: ../util/u_misc.h
 app_view.o: ../util/u_zstream.h
 app_view.o: ../util/u_progress.h

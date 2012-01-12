@@ -1800,8 +1800,6 @@ db_latex_writer.o: ../mstl/m_cast.h
 db_latex_writer.o: ../mstl/m_cast.ipp
 db_latex_writer.o: db_tag_set.h
 db_latex_writer.o: db_tag_set.ipp
-db_latex_writer.o: ../util/libTeXt/T_Receptacle.h
-db_latex_writer.o: ../util/libTeXt/T_Receptacle.ipp
 db_latex_writer.o: ../util/libTeXt/T_ListToken.h
 db_latex_writer.o: ../util/libTeXt/T_FinalToken.h
 db_latex_writer.o: ../util/libTeXt/T_Token.h
@@ -2522,6 +2520,8 @@ db_pgn_reader.o: ../mstl/m_algorithm.ipp
 db_pgn_reader.o: ../mstl/m_stdio.h
 db_pgn_reader.o: ../sys/sys_utf8_codec.h
 db_pgn_reader.o: ../sys/sys_utf8_codec.ipp
+db_pgn_reader.o: ../sys/sys_file.h
+db_pgn_reader.o: ../sys/sys_time.h
 db_pgn_writer.o: db_pgn_writer.h
 db_pgn_writer.o: db_writer.h
 db_pgn_writer.o: db_consumer.h

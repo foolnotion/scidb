@@ -68,8 +68,8 @@ Divertitevi con Scidb, il cui sviluppo ha richiesto già tre anni!
 <h2>Links</h2>
 
 <dir>
-  <li><a href="Development-Roadmap.html">Development roadmap</a></li>
-  <li><a href="Whats-New.html">What's new?</a></li>
+  <li><a href="Development-Roadmap.html">Piano di Sviluppo</a></li>
+  <li><a href="Whats-New.html">Novità</a></li>
 </dir>
 
 END

@@ -935,6 +935,7 @@
 ::import::mc::TooManyAnnotatorNames				"Demasiados nombres de comentaristas en la base (abortado)"
 ::import::mc::TooManySourceNames					"Demasiados nombres de or’genes en la base (abortado)"
 ::import::mc::SeemsNotToBePgnText				"No parece ser un texto PGN"
+::import::mc::AbortedDueToInternalError		"Aborted due to an internal error" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selecci—n de archivo"

@@ -17,6 +17,8 @@
 *********************************************************************** -->
 
 INDEX Kontaktinformationen
+INDEX Homepage
+INDEX Webseite
 TITLE Kontaktinformationen
 
 <h2>Homepage</h2>
@@ -32,7 +34,7 @@ Gesucht werden Interessenten für:
   <li>Testen von Scidb</li>
   <li>Übersetzungen in andere Sprachen</li>
   <li>Erstellen von Hilfeseiten</li>
- </dir>
+</dir>
 
 Interessenten melden sich bitte mit Hilfe einer Nachricht, damit
 dies koordiniert werden kann.
@@ -62,15 +64,15 @@ Für Scidb-Benutzer könnten folgende Seiten interessant sein:
 
 <dir>
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse"
+    <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
        style="line-height: 150%;">
     Tracker: Feature Requests</a><br/>
-    Hier können Funktionswünsche eingetragen werden. Bitte dabei den bestehenden
-    <a href="Development-Roadmap.html">Entwicklunsplaner</a> mit berücksichtigen.
+    Hier können Funktionswünsche eingetragen werden. Bitte dabei die bestehende
+    <a href="Development-Roadmap.html">Roadmap</a> mit berücksichtigen.
   </p></li>
 
   <li><p>
-    <a href="http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse"
+    <a href="http://sourceforge.net/tracker/?atid=1294797&amp;group_id=307371&amp;func=browse"
        style="line-height: 150%;">
     Tracker: Bugs</a><br/>
     Hier können Probleme mit Scidb gemeldet werden.

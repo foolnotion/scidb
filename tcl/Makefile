@@ -32,7 +32,7 @@ SOURCES = \
 	icons.tcl \
 	encoding.tcl \
 	dialogs/fileselectionbox.tcl \
-	dialogs/fileselectionbox.tcl \
+	dialogs/help.tcl \
 	contrib/tkmenu.tcl \
 	contrib/treectrl.tcl \
 	contrib/filelist-bindings.tcl \
@@ -110,7 +110,6 @@ SOURCES = \
 	setup-board.tcl \
 	setup-position.tcl \
 	crosstable.tcl \
-	help.tcl \
 	info.tcl \
 	move.tcl \
 	game.tcl \

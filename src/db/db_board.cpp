@@ -3807,8 +3807,8 @@ Board::prepareMove(Square from, Square to, move::Constraint flag) const
 		case piece::King:
 			if (!(kingAttacks(to) & src))
 			{
-				move = prepareCastle(from, to, flag);
-				move.setColor(m_stm);
+				if ((move = prepareCastle(from, to, flag)))
+					move.setColor(m_stm);
 				return move;
 			}
 			move = Move::genKingMove(from, to, captured);

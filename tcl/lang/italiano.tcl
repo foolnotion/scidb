@@ -157,13 +157,13 @@
 ::menu::mc::GameReplace				"S&ostituisci Partita"
 ::menu::mc::GameReplaceMoves		"Sostituisci So&lo Mosse"
 
-::menu::mc::HelpInfo					"In&fo about Scidb" ;# NEW (changed)
+::menu::mc::HelpInfo					"In&fo su Scidb"
 ::menu::mc::HelpContents			"Conten&uti"
 ::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
 ::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"
-::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
-::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
-::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
+::menu::mc::HelpWhatsNew			"&Novità"
+::menu::mc::HelpRoadmap				"&Piano di Sviluppo"
+::menu::mc::HelpContactInfo		"C&ontatti"
 
 ::menu::mc::ViewShowLog				"Mostra &Log..."
 ::menu::mc::ViewFullscreen			"Schermo intero"
@@ -931,6 +931,7 @@
 ::import::mc::TooManyAnnotatorNames				"Troppi nomi di commentatori nel database (interrotto)"
 ::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
 ::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"
+::import::mc::AbortedDueToInternalError		"Aborted due to an internal error" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selezione File"
@@ -1253,7 +1254,7 @@
 ::help::mc::TitleOnly				"Cerca solo nei titoli"
 ::help::mc::GoBack					"Vai indietro una pagina (Alt-Left)"
 ::help::mc::GoForward				"Vai avanti una pagina (Alt-Right)"
-::help::mc::GotoPage					"Go to page '%s'" ;# NEW
+::help::mc::GotoPage					"Vai alla pagina '%s'"
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
 ::help::mc::SelectLanguage			"Selezione Lingua"
@@ -1263,13 +1264,13 @@
 ::help::mc::NoMatch					"Nessuna corrispondenza trovata"
 ::help::mc::MaxmimumExceeded		"Il numero massimo di corrispondenze è ecceduto in alcune pagine."
 ::help::mc::OnlyFirstMatches		"Solo le prime %s corrispondenze per pagina saranno mostrate."
-::help::mc::HideIndex				"Hide index" ;# NEW
-::help::mc::ShowIndex				"Show index" ;# NEW
+::help::mc::HideIndex				"Nascondi Indice"
+::help::mc::ShowIndex				"Mostra Indice"
 
-::help::mc::FileNotFound			"File not found." ;# NEW
-::help::mc::CantFindFile			"Can't find the file at %s." ;# NEW
-::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
-::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
+::help::mc::FileNotFound			"File non trovato."
+::help::mc::CantFindFile			"Impossibile trovare file a %s."
+::help::mc::IncompleteHelpFiles	"I file di aiuto sono ancora incompleti. Ci scusiamo."
+::help::mc::ProbablyTheHelp		"Probabilmente la pagina di aiuto in una lingua differente può essere una valida alternativa."
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"

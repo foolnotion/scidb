@@ -931,6 +931,7 @@
 ::import::mc::TooManyAnnotatorNames				"Zuviele Kommentatoren in der Datenbank (Abbruch)"
 ::import::mc::TooManySourceNames					"Zuviele Quellenangaben in der Datenbank (Abbruch)"
 ::import::mc::SeemsNotToBePgnText				"Dies scheint kein PGN-Text zu sein"
+::import::mc::AbortedDueToInternalError		"Abbruch aufgrund eines internen Fehlers"
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Dateiauswahl"

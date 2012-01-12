@@ -138,8 +138,9 @@ if {[testOption help]} {
 	puts ""
 	puts "Options:"
 	puts "  --                      Only file names after this"
-	puts "  --help                  Print Help (this message) and exit"
+	puts "  --help                  Print help (this message) and exit"
 	puts "  --version               Print version information and exit"
+	puts "  --full-screen           Start program with full-screen modus"
 	puts "  --show-board            Switch to board tab immediately after startuo"
 	puts "  --fast-load             Do only load the mandatory files at startup"
 	puts "  --first-time            Delete option file and recovery files at startup"
@@ -156,8 +157,9 @@ if {[testOption help]} {
 	puts "                          (only for debugging)"
 	puts ""
 	puts "Options recognised by GUI (Tk) library:"
-	puts "  -geometry <geom>        Use <geom> for initial geometry"
-	puts "  -display <display>      Run $::scidb::app on <display>"
+	puts "  -geometry GEOMETRY      Use GEOMETRY for initial geometry"
+	puts "  -display DISPLAY        Run $::scidb::app on DISPLAY"
+	puts "  -sync                   Use synchronous mode for display server"
 	exit 0
 }
 

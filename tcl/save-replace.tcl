@@ -2420,7 +2420,7 @@ proc Save {top fields} {
 				[namespace current]::Log {} \
 				-replace $replace \
 			]
-			if {[::util::catchIoError $base $cmd rc]} {
+			if {[::util::catchIoError $cmd rc]} {
 				::widget::busyCursor off
 				return
 			}

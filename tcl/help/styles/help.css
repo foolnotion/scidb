@@ -25,10 +25,9 @@
  * (at your option) any later version.
  **************************************************************************/
 
-html { font-family: Arial; }
+html { font-family: Arial,Helvetica; }
 
 h1 { font-size: 20px; background: #eeffff; }
-/*h2 { color: #990000; font-size: 20px; }*/
 h2 { font-size: 20px; background-color: #e5eeff; }
 
 h1.title { text-align: center; background-color: #6495ed }
@@ -67,6 +66,17 @@ div.annotation {
 	padding-bottom:	1em;
 	padding-left:		1em;
 	padding-right:		1em;
+}
+
+table.standard {
+	background:			#f5f5f5;
+}
+
+td.standard {
+	padding-top:		0.5em;
+	padding-bottom:	0.5em;
+	padding-left:		0.5em;
+	padding-right:		0.5em;
 }
 
 .menuitem {

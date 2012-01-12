@@ -935,6 +935,7 @@
 ::import::mc::TooManyAnnotatorNames				"Too many annotator names in database (aborted)"
 ::import::mc::TooManySourceNames					"Too many source names in database (aborted)"
 ::import::mc::SeemsNotToBePgnText				"Seems not to be PGN text"
+::import::mc::AbortedDueToInternalError		"Aborted due to an internal error" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&File Selection"

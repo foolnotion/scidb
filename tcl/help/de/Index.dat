@@ -11,8 +11,14 @@ set Index {
       {{Datenbankumschalter} {Database-Switcher.html}}
     }
   }
+  { H
+    {
+      {{Homepage} {Contact-Information.html}}
+    }
+  }
   { K
     {
+      {{Kommandozeilenoptionen} {Command-Line-Options.html}}
       {{Kontaktinformationen} {Contact-Information.html}}
     }
   }
@@ -29,6 +35,11 @@ set Index {
   { P
     {
       {{Partiemarkierungen} {Game-Flags.html}}
+    }
+  }
+  { W
+    {
+      {{Webseite} {Contact-Information.html}}
     }
   }
 }

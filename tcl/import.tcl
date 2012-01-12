@@ -108,6 +108,7 @@ set TooManyRoundNames					"Too many round names in database (aborted)"
 set TooManyAnnotatorNames				"Too many annotator names in database (aborted)"
 set TooManySourceNames					"Too many source names in database (aborted)"
 set SeemsNotToBePgnText					"Seems not to be PGN text"
+set AbortedDueToInternalError			"Aborted due to an internal error"
 
 }
 
@@ -349,7 +350,12 @@ proc Open {parent base files msg encoding type useLog} {
 		::log::info [format $mc::ImportingPgnFile $file]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
 		set options [list -message $msg -log $useLog]
-		set count [::progress::start $parent $cmd [list -encoding $encoding] $options 0]
+		if {[catch { ::progress::start $parent $cmd [list -encoding $encoding] $options 0 } count opts]} {
+			::log::error $mc::AbortedDueToInternalError
+			::progress::close
+			::log::close
+			return {*}$opts -rethrow 1 $count
+		}
 		update idletasks	;# be sure the following will be appended
 
 		if {$count == 0} {
@@ -362,7 +368,11 @@ proc Open {parent base files msg encoding type useLog} {
 	}
 
 	set cmd [list ::scidb::db::save $base $ngames]
-	::progress::start $parent $cmd {} {} 1
+	if {[catch { ::progress::start $parent $cmd {} {} 1 } result opts]} {
+		::progress::close
+		::log::close
+		return {*}$opts -rethrow 1 $result
+	}
 	::log::close
 
 	return $Priv(ok)

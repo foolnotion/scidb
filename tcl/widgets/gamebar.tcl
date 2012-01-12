@@ -1626,8 +1626,8 @@ proc Layout {gamebar} {
 			}
 			set width0 [expr {$whiteWd + $whiteEloWd}]
 			set width0 [expr {max($width0, $blackWd + $blackEloWd)}]
-			set width1 $width0
-			set width2 $width0
+			set width1 [expr {max($width0,$width1)}]
+			set width2 [expr {max($width0,$width2)}]
 		} else {
 			lassign [$gamebar bbox hyphen$id] x1 y1 x2 y2
 			set hyphenWd [expr {$x2 - $x1}]

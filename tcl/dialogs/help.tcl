@@ -189,7 +189,7 @@ proc open {parent {file {}}} {
 	if {[string length $file] == 0} {
 		$pw add $control -sticky nswe -stretch never -minsize $Priv(minsize)
 	}
-	$pw add $html -sticky nswe -stretch always -minsize 400
+	$pw add $html -sticky nswe -stretch always -minsize 500
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
@@ -687,7 +687,7 @@ proc BuildFrame {w} {
 		-linestyle solid \
 		;
 	set Priv(search:tree) $t
-	bind $t <<LanguageChanged>> [namespace code [list Clear $t]]
+	bind $t <<LanguageChanged>> [list $t item delete all]
 	set height [font metrics [$t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
 	$t configure -itemheight $height
@@ -1332,11 +1332,11 @@ proc Parse {file {moveto 0} {match {}}} {
 				set f [file join $pref $code $suff]
 				if {[file readable $f]} {
 					set img "<img src='$::mc::langToCountry($code)' align='bottom'/>"
-					set alt "$img&ensp;<a href='$f'>$::encoding::mc::Lang($code)</a>"
-					lappend alternatives $alt
+					lappend alternatives [list $img $f $::encoding::mc::Lang($code)]
 				}
 			}
 		}
+		set alternatives [lsort -index 2 $alternatives]
 		append content "
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
@@ -1350,7 +1350,10 @@ proc Parse {file {moveto 0} {match {}}} {
 			append content "<div style='background:#f5f5f5; border:1px solid black;'>"
 			append content "<blockquote><p>$mc::ProbablyTheHelp:</p>"
 			append content "<dl>"
-			foreach alt $alternatives { append content "<dt>$alt</dt>" }
+			foreach alt $alternatives {
+				lassign $alt icon href lang
+				append content "<dt>$icon&ensp;<a href='$href'>$lang</a></dt>"
+			}
 			append content "</dl></blockquote></div>"
 		}
 		append content "

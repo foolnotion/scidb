@@ -1,7 +1,17 @@
 set Index {
   { C
     {
-      {{Contact information} {Contact-Information.html}}
+      {{Contatti} {Contact-Information.html}}
+    }
+  }
+  { H
+    {
+      {{Homepage} {Contact-Information.html}}
+    }
+  }
+  { S
+    {
+      {{Sito Internet} {Contact-Information.html}}
     }
   }
 }

@@ -350,14 +350,14 @@ proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 				if {[llength $encoding]} { lappend args -encoding $encoding }
 				set cmd [list ::scidb::db::load $file]
 				set options [list -message $msg]
-				if {[::util::catchIoError $file [list ::progress::start $parent $cmd $args $options]]} {
+				if {[::util::catchIoError [list ::progress::start $parent $cmd $args $options]]} {
 					return 0
 				}
 			}
 			pgn - gz - zip {
 				set type [lsearch -exact $Types(sci) Temporary]
 				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
-				if {[::util::catchIoError $file $cmd rc]} { return 0 }
+				if {[::util::catchIoError $cmd rc]} { return 0 }
 				if {!$rc} {
 					::scidb::db::close $file
 					return 0
@@ -376,11 +376,11 @@ proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 			if {$rc eq "yes"} {
 				set cmd [list ::scidb::db::upgrade $file]
 				set options [list -message [format $mc::UpgradeMessage $name]]
-				if {![::util::catchIoError $file [list ::progress::start $parent $cmd {} $options]]} {
+				if {![::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
 					::scidb::db::close $file
 					set cmd [list ::scidb::db::load $file]
 					set options [list -message $msg]
-					if {[::util::catchIoError $file [list ::progress::start $parent $cmd {} $options]]} {
+					if {[::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
 						return 0
 					}
 					set readonly $ro

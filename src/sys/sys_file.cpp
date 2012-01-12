@@ -37,28 +37,27 @@
 #endif
 
 
-char const*
+mstl::string
 sys::file::internalName(char const* externalName)
 {
 	M_REQUIRE(externalName);
 
-	static char buf[4096];
+	mstl::string result;
 
 	Tcl_Obj* pathObj = Tcl_NewStringObj(externalName, -1);
 
 	if (pathObj)
 	{
 		Tcl_IncrRefCount(pathObj);
-		::strncpy(buf, Tcl_FSGetNativePath(pathObj), sizeof(buf));
+		result.assign(Tcl_FSGetNativePath(pathObj));
 		Tcl_DecrRefCount(pathObj);
 	}
 	else
 	{
-		::strncpy(buf, externalName, sizeof(buf));
+		result.assign(externalName);
 	}
 
-	buf[sizeof(buf) - 1] = '\0';
-	return buf;
+	return result;
 }
 
 
