@@ -1,0 +1,131 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Contact information
+INDEX Homepage
+INDEX Website
+
+TITLE Contact information
+
+<h2>Homepage</h2>
+
+The Scidb web page is located at
+<a href="http://scidb.sourceforge.net/">http://scidb.sourceforge.net/</a>.
+
+<h2>Help</h2>
+
+Volunteers are welcome for:
+
+<dir>
+  <li>Testing Scidb</li>
+  <li>Translation into other languages</li>
+  <li>Writing help pages</li>
+</dir>
+
+Please send a message to the author, so that this tasks
+can be coordinated.
+
+<box>
+<p>
+How a message can be sent:
+</p>
+<ol>
+   <li><p>
+      A membership in Sourceforge is required
+      (<a href="https://sourceforge.net/account/registration">Account Registration</a>).
+      The membership is free of charge and duties.
+    </p></li>
+    <li><p>
+      Open <a href="https://sourceforge.net/sendmessage.php?touser=2321037">Send an Email</a>,
+      log in with your member name, and send the message.
+    </p></li>
+</ol>
+</box>
+  
+<h2>Links</h2>
+  
+<p>
+Scidb users may find the following websites interesting:
+</p>
+
+<dir>
+  <li><p>
+    <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
+       style="line-height: 150%;">
+    Tracker: Feature Requests</a><br/>
+    Send feature requtests; please consider the existing
+    <a href="Development-Roadmap.html">development roadmap</a>.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/tracker/?atid=1294797&amp;group_id=307371&amp;func=browse"
+       style="line-height: 150%;">
+    Tracker: Bugs</a><br/>
+    Report problems with Scidb.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/projects/scidb/reviews/"
+       style="line-height: 150%;">
+    Reviews for Scidb</a><br/>
+    This website offers the opportunity for a review.
+  </p></li>
+
+  <li><p>
+    <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
+       style="line-height: 150%;">
+    Scidb Guestbook</a><br/>
+    At this site the guest book is available.
+  </p></li>
+
+  <li><p>
+    <a href="ftp://ftp.cis.uab.edu/pub/hyatt/"
+       style="line-height: 150%;">
+    ftp://ftp.cis.uab.edu/pub/hyatt/</a><br/>
+    The legendary chess engine Crafty. The subdirectory there named TB has many
+    Nalimov-format tablebase files that you can use in several chess programs and
+    in (a later version of) Scidb. 
+  </p></li>
+
+  <li><p>
+    <a href="http://www.chess.co.uk/twic/"
+       style="line-height: 150%;">
+    The Week in Chess</a><br/>
+    An excellent weekly bulletin of international chess games in available
+    in PGN format. 
+  </p></li>
+
+  <li><p>
+    <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm"
+       style="line-height: 150%;">
+    Standard: Portable Game Notation Specification and Implementation Guide</a><br/>
+    The PGN Standard, created by Steven J. Edwards in 1994. This website
+    explains the PGN and EPD formats in detail.
+  </p></li>
+
+  <li><p>
+    <a href="http://en.wikipedia.org/wiki/ECO_code"
+       style="line-height: 150%;">
+    ECO-Code</a><br/>
+    An overview about the ECO code.
+  </p></li>
+</dir>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

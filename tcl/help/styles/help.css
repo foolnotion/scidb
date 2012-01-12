@@ -42,6 +42,10 @@ div.title {
 
 div.box {
 	color:				black;
+/*	background:			#e5eeff;*/
+/*	background:			#dde6ef;*/
+/*	background:			#f5f5f5;*/
+/*	background:			#ffffe0;*/
 	background:			#f5f5f5;
 	border:				1px solid black;
 	margin-top:			1em;
@@ -69,6 +73,10 @@ div.annotation {
 }
 
 table.standard {
+/*	background:			#e5eeff;*/
+/*	background:			#dde6ef;*/
+/*	background:			#f5f5f5;*/
+/*	background:			#ffffe0;*/
 	background:			#f5f5f5;
 }
 

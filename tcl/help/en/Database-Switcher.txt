@@ -1,0 +1,115 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Database switcher
+TITLE The Database switcher
+
+<dir><img src="images/database-switcher.png"/></dir>
+
+<p>
+The database swithcer provides an easy switch between databases.
+The active database will be highlighted with a yellow background.
+</p>
+
+<p>
+While pressing the middle mouse button (i.e. the scroll wheel) an
+information box will be shown.
+</p>
+
+<p>
+For adminstration of the database a context-sensitive menu is available:
+</p>
+
+<dir><img src="images/database-switcher-menu.png"/></dir>
+
+<p>
+<menuitem>%::application::database::mc::Properties%</menuitem>
+Opens a box displaying various database information.
+</p>
+
+<p>
+<menuitem>%::export::mc::Export%</menuitem>
+Opens a dialog for <a href="Database-Export-Dialog.html">database export</a>
+into other database formats or document formats.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileImport%</menuitem>
+Opens the <a href="File-Selection-Dialog.html">file selection dialog</a> for
+the selection of PGN files for import. It is possible  to select multiple
+PGN files simultaneously. The games will be appended at the end of the database.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileClose%</menuitem>
+The selected database will be closed. If there are changed games in this database,
+which are not yet saved, a security prompt will be done before closing the database.
+<note/>Closing the <a href="Clipbase.html">Clipbase</a> is not possible.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
+Select an icon for this database.
+<note/>This is not possible for the <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
+Create or change the description for this database.
+<note/>This is not possible for the <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+Set this database read-only or writeable.
+This is possibly only for Scidb and Scid databases (.sci, .si4, .si3).
+<note/>PGN files and ChessBase databases are always read-only.
+<note/>The <a href="Clipbase.html">Clipbase</a> cannot be set read-only.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileNew%</menuitem>
+Create a new database. Only Scidb and Scid databases (.sci, .si4, .si3)
+can be created.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileOpen%</menuitem>
+Open another database.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
+Open a database via the database history.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::SymbolSize%</menuitem>
+Selection of the symbol size for the database tiles.
+</p>
+
+<dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
+
+<menuitem>
+%::application::database::mc::EmptyClipbase%</menuitem>
+<note/>This menu entry will be provided only for the
+<a href="Clipbase.html">Clipbase</a>.
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

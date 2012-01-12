@@ -1,0 +1,47 @@
+set Contents {
+  {
+     {{{Overview} {Overview.html}}}
+  }
+  {
+    {{{General help} {Overview.html} {general}}}
+    {{{Database formats} {Database-Formats.html}}}
+    {{{Usage of the file selection dialog} {File-Selection-Dialog.html}}}
+    {{{Usage of the toolbars} {Toolbar-Usage.html}}}
+    {{{The Clipbase} {Clipbase.html}}}
+  }
+  {
+    {{{Scidb list windows} {Overview.html} {list-windows}}}
+    {{{Game list} {Game-List-Window.html}}}
+    {{{Player list} {Player-List-Window.html}}}
+    {{{Event List} {Event-List-Window.html}}}
+    {{{Annotator list} {Annotator-List-Window.html}}}
+  }
+  {
+    {{{Scidb-Windows und dialogs} {Overview.html} {windows-and-dialogs}}}
+    {{{Database switcher} {Database-Switcher.html}}}
+    {{{Game browser} {Game-Browser.html}}}
+    {{{Game overview} {Game-Overview.html}}}
+    {{{Game text window} {Game-Text-Window.html}}}
+    {{{Game history} {Game-History-Window.html}}}
+    {{{Chessboard} {Board-Window.html}}}
+    {{{Tree window} {Tree-Window.html}}}
+    {{{Tree games window} {Tree-Games-Window.html}}}
+    {{{Comment editor} {Comment-Editor-Dialog.html}}}
+    {{{Square marker palette} {Mark-Palette-Dialog.html}}}
+    {{{Edit position} {Board-Setup-Dialog.html}}}
+    {{{Edit start position} {Start-Position-Setup-Dialog.html}}}
+    {{{Crosstable} {Crosstable-Window.html}}}
+    {{{Game import} {PGN-Import-Dialog.html}}}
+    {{{Database export} {Database-Export-Dialog.html}}}
+  }
+  {
+    {{{Further information} {Overview.html} {further-information}}}
+    {{{Game markers} {Game-Flags.html}}}
+    {{{Command line options} {Command-Line-Options.html}}}
+    {{{NAG annotation values} {NAG-Comments.html}}}
+    {{{Contact information} {Contact-Information.html}}}
+    {{{Development roadmap} {Development-Roadmap.html}}}
+    {{{What's new?} {Whats-New.html}}}
+    {{{Welcome to Scidb!} {Welcome.html}}}
+  }
+}

@@ -1,0 +1,43 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Clipbase
+TITLE The Clipbase database
+
+<p>
+Scidb provides an open Clipbase database at program start, which is just like any other
+database, except that it exists in memory only and has no files for permanent storage.
+This means that the capacity of this database is limited. The pre-defined name
+for this database is <b>%::application::database::mc::T_Clipbase%</b>.
+</p>
+ 
+<!-- p>
+Die Clipbase ist nützlich als eine temporäre Database, zum Zusammenführen von
+Suchergebnissen aus der Suche in mehreren Datenbanken, oder zur Behandlung
+der Suchergebnisse als eine eigenständige Database. 
+</p -->
+   
+<p>
+The Clipbase cannot be closed. It exists a menu function for emptying the Clipbase
+(see <a href="Database-Switcher.html#Empty-Clipbase">
+%::application::database::mc::EmptyClipbase%</a>).
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

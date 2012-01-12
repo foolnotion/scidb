@@ -106,7 +106,7 @@ proc BuildDialog {dlg} {
 	pack $nb -padx $::theme::padx -pady $::theme::pady
 	set count 1
 
-	foreach tab {About Contributions References System License} {
+	foreach tab {About Contributions System License} {
 		set f [ttk::frame $nb.tab$tab]
 		Build${tab}Frame $f
 		$nb add $f -sticky nsew -padding $::theme::padding -text [set [namespace current]::mc::${tab}]

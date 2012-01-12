@@ -122,16 +122,16 @@ proc Build {w args} {
 		onmouseup3		{}
 		nodeList			{}
 		afterId			{}
+		request			{}
+		bbox				{}
+		pointer			{0 0}
+		sbwidth			0
 	}
 
 	set options {}
-	set Priv(bbox) {}
-	set Priv(pointer) {0 0}
 	set Priv(delay) $opts(-delay)
 	set Priv(center) $center
-	set Priv(afterId) {}
 	set Priv(bw) $opts(-borderwidth)
-	set Priv(sbwidth) 0
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
@@ -147,7 +147,7 @@ proc Build {w args} {
 	if {$center} {
 		grid anchor $parent center
 	} else {
-		bind $w <Configure> [namespace code [list Configure $parent %w]]
+		bind $w <Configure> [namespace code [list Configure $parent %w %#]]
 	}
 
 	return $w
@@ -260,12 +260,19 @@ proc WidgetProc {w parent command args} {
 }
 
 
-proc Configure {parent width} {
+proc Configure {parent width req} {
 	variable ${parent}::Priv
+
+	if {[winfo width $parent.html] == $width} { return }
+
+	# This (using the serial field from the event) is working under x11
+	# to prevent endless loops. But does this work with windows and mac?
+	if {$req == $Priv(request)} { return }
+	set Priv(request) $req
 
 	$parent.html configure -width [expr {max(1,$width - 2*$Priv(bw) - $Priv(sbwidth))}]
 	after cancel $Priv(afterId)
-	set afterId [after idle [namespace code [list ComputeSize $parent]]]
+	set afterId [after idle [namespace code [list ComputeSize $parent $req]]]
 }
 
 
@@ -278,17 +285,18 @@ proc ConfigureFrame {parent sb visible} {
 		set width [$parent.html cget -width]
 		set Priv(sbwidth) [expr {[winfo reqwidth $sb]*$visible}]
 		incr width $Priv(sbwidth)
-		Configure $parent $width
+		Configure $parent $width 0
 	}
 }
 
 
-proc ComputeSize {parent} {
+proc ComputeSize {parent req} {
 	variable ${parent}::Priv
 	variable Margin
 
 	after cancel $Priv(afterId)
 	set Priv(afterId) {}
+
 	set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
 	if {[llength $Priv(bbox)]} {
 		lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]

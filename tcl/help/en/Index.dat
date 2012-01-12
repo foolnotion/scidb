@@ -1,0 +1,44 @@
+set Index {
+  { C
+    {
+      {{Clipbase} {Clipbase.html}}
+      {{Contact information} {Contact-Information.html}}
+    }
+  }
+  { D
+    {
+      {{Database formats} {Database-Formats.html}}
+      {{Database switcher} {Database-Switcher.html}}
+    }
+  }
+  { F
+    {
+      {{File formats} {Database-Formats.html}}
+    }
+  }
+  { H
+    {
+      {{Homepage} {Contact-Information.html}}
+    }
+  }
+  { M
+    {
+      {{Markierungen} {Game-Flags.html}}
+    }
+  }
+  { N
+    {
+      {{NAG-Kommentarwerte} {NAG-Comments.html}}
+    }
+  }
+  { P
+    {
+      {{Partiemarkierungen} {Game-Flags.html}}
+    }
+  }
+  { W
+    {
+      {{Website} {Contact-Information.html}}
+    }
+  }
+}

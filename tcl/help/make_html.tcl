@@ -36,8 +36,7 @@ set HtmlDocType {<?xml version="1.0" encoding="utf-8"?>
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 }
 
-set HtmlHead {\
-<head>
+set HtmlHead {<head>
   <meta http-equiv="content-type"
            content="text/html; charset=utf-8" />
   <meta http-equiv="content-style-type"
@@ -56,8 +55,7 @@ set HtmlHead {\
 </head>
 }
 
-set HtmlH1 {\
-<div class="title">
+set HtmlH1 {<div class="title">
   <h1 class="title">%TITLE%</h1>
 </div>
 }
@@ -185,26 +183,15 @@ set src [open $srcfile r]
 set charset $charsetName
 chan configure $src -encoding $charset
 set title ""
-set loop 1
 
-while {$loop} {
-	while {[gets $src line] >= 0} {
-		if {[string match TITLE* $line]} {
-			set title [getArg $line]
-			set loop 0
-			break
-		}
-		if {[string match CHARSET* $line]} {
-			if {!$loop} {
-				puts stderr "Error([info script]): CHARSET has to be declared before TITLE"
-				exit 1
-			}
-			set charset [getArg $line]
-			close $src
-			set src [open $srcfile r]
-			chan configure $src -encoding $charset
-			break
-		}
+while {[gets $src line] >= 0} {
+	if {[string match TITLE* $line]} {
+		set title [getArg $line]
+		break
+	}
+	if {[string match CHARSET* $line]} {
+		set charset [getArg $line]
+		chan configure $src -encoding $charset
 	}
 }
 
@@ -219,7 +206,10 @@ while {[gets $src line] >= 0} {
 	if {[string match END* $line]} { break }
 	set line [string map $HtmlMapping $line]
 
-	if {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
+	if {[string match CHARSET* $line]} {
+		puts stderr "Error([info script]): CHARSET has to be declared before TITLE"
+		exit 1
+	} elseif {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
 		lassign $location i k
 		set range [string range $line [expr {$i + 5}] [expr {$k - 1}]]
 		lassign [split $range "."] from _ to
