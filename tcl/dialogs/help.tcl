@@ -1067,8 +1067,8 @@ proc BuildHtmlFrame {dlg w} {
 	$w handler node a    [namespace current]::A_NodeHandler
 
 	$w onmouseover [namespace current]::MouseEnter
-	$w onmouseout	[namespace current]::MouseLeave
-	$w onmouseup1	[namespace current]::Mouse1Up
+	$w onmouseout  [namespace current]::MouseLeave
+	$w onmouseup1  [namespace current]::Mouse1Up
 }
 
 

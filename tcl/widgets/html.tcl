@@ -236,6 +236,13 @@ proc WidgetProc {w parent command args} {
 			return [$parent.html bbox [lindex $args 0]]
 		}
 
+		size {
+			lassign $Priv(bbox) x y w h
+			set w [expr {$w + 2*$x}]
+			set h [expr {$h + 2*$y}]
+			return [list $w $h]
+		}
+
 		xview - yview {
 			return [$parent $command {*}$args]
 		}

@@ -194,6 +194,7 @@ proc Open {type args} {
 		catch { wm attributes $w -type dialog }
 	}
 
+	set Priv(type) $type
 	set geometry $data(-geometry)
 	if {[string match last* $geometry]} { set geometry [geometry $geometry] }
 	set minh 350
@@ -206,7 +207,7 @@ proc Open {type args} {
 
 	if {$create} {
 		if {$data(-needencoding)} {
-			set opts(-selectencodingcommand) [namespace code [list SelectEncoding $type]]
+			set opts(-selectencodingcommand) [namespace code SelectEncoding]
 			set opts(-fileencodings) [set [namespace current]::FileEncodings]
 		}
 
@@ -416,11 +417,13 @@ proc ValidateFile {filename {size {}}} {
 }
 
 
-proc SelectEncoding {type parent encoding defaultEncoding} {
+proc SelectEncoding {parent encoding defaultEncoding} {
+	variable Priv
+
 	if {$encoding eq $::encoding::mc::AutoDetect} {
 		set encoding $::encoding::autoEncoding
 	}
-	if {$type eq "save"} { set autoDetectFlag 0 } else { set autoDetectFlag 1 }
+	if {$Priv(type) eq "save"} { set autoDetectFlag 0 } else { set autoDetectFlag 1 }
 	set encoding [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding $autoDetectFlag]
 	if {$encoding eq $::encoding::autoEncoding} {
 		set encoding $::encoding::mc::AutoDetect

@@ -120,56 +120,107 @@ proc BuildDialog {dlg} {
 
 
 proc BuildAboutFrame {w} {
-	set family [font configure TkTextFont -family]
-	set font [list $family 12]
-	set linespace [font metrics $font -linespace]
-	set charwidth [font measure $font "0"]
-	set height [expr {9 + (143 + $linespace - 1)/$linespace}]
-	set width [expr {38 + (138 + $charwidth - 1)/$charwidth}]
-	set t [tk::text $w.t \
-				-padx 10 \
-				-pady 10 \
-				-cursor left_ptr \
-				-font $font \
-				-width $width \
-				-height $height \
-				-wrap word \
-				]
-	$t image create end -image $icon::128x128::logo
-	$t insert end "       "
-	$t insert end "S" {bold emphasized}
-	$t insert end "cidb is a " bold
-	$t insert end "C" {bold emphasized}
-	$t insert end "hess " bold
-	$t insert end "I" {bold emphasized}
-	$t insert end "nformation " bold
-	$t insert end "D" {bold emphasized}
-	$t insert end "ata " bold
-	$t insert end "B" {bold emphasized}
-	$t insert end "ase\n" bold
-	$t insert end "\n$mc::Version $::scidb::version\n"
-	$t insert end "Copyright \u00A9 2011 Gregor Cramer\n\n"
-	$t insert end "scidb.sourceforge.net" hyperlink
-	$t insert end "\n\n"
-	$t insert end $mc::Distributed
-	$t insert end "\n\n"
-	$t insert end $mc::Inspired small
+	::html $w.t \
+		-imagecmd [namespace code GetImage] \
+		-center no \
+		-width 580 \
+		-height 400 \
+		-borderwidth 1 \
+		-relief sunken \
+		-doublebuffer no \
+		-center yes \
+		;
+	pack $w.t
 
-	# TODO: add "SVN rev. $svn-rev ($date), gcc $gcc-version"
+	$w.t handler node link [list [namespace current]::LinkHandler $w.t]
+	$w.t handler node a    [namespace current]::A_NodeHandler
 
-	$t tag configure emphasized -foreground brown
-	$t tag configure bold -font [list $family 14 normal]
-	$t tag configure small -font [list $family 10 normal]
-	$t tag configure hyperlink -underline on -foreground blue
-	$t tag bind hyperlink <Enter> [list $t configure -cursor hand1]
-	$t tag bind hyperlink <Leave> [list $t configure -cursor {}]
-	$t tag bind hyperlink <ButtonPress-1> [list [namespace current]::ClickLink $t %x %y]
+	$w.t onmouseover [list [namespace current]::MouseEnter $w.t]
+	$w.t onmouseout  [list [namespace current]::MouseLeave $w.t]
+	$w.t onmouseup1  [list [namespace current]::Mouse1Up $w.t]
 
-	grid $t -row 0 -column 0 -sticky ew
-	grid rowconfigure $w 0 -weight 1
-	grid columnconfigure $w 0 -weight 1
+	array set font [font actual TkTextFont]
+	set fam $font(-family)
 
-	$t configure -state disabled
+	$w.t parse "
+		<link/>
+		<table border='0' style='font-family: Final Frontier, $fam; font-size: 16pt;' color='steelblue4'>
+			<tr>
+				<td><img src='logo'/></td>
+				<td width='30px'></td>
+				<td align='center'>
+					<font style='font-size: 48pt;'><font color='brown'>S</font>cidb</font><br/>
+					is a
+					<font color='brown'>C</font>hess
+					<font color='brown'>I</font>nformation
+					<font color='brown'>D</font>ata
+					<font color='brown'>B</font>ase
+				<td>
+			</tr>
+		</table>
+		<br/><br/>
+		<font style='font-family: $fam; font-size: 12pt;'>
+			$mc::Version $::scidb::version<br/>
+			Copyright &#x00A9; 2011-2012 Gregor Cramer<br/><br/>
+			<a href='http://scidb.sourceforge.net'>scidb.sourceforge.net</a><br/><br/>
+			$mc::Distributed<br/><br/>
+			<font style='font-size: 9pt;'>$mc::Inspired</font>
+		</font>
+	"
+}
+
+
+proc GetImage {file} {
+	if {$file eq "logo"} {
+		set src $icon::128x128::logo
+		set img [image create photo -width [image width $src] -height [image height $src]]
+		$img copy $src
+	}
+	return $img
+}
+
+
+proc A_NodeHandler {node} {
+	$node dynamic set link
+}
+
+
+proc LinkHandler {w node} {
+	$w style -id user "
+		:link    { color: blue2; text-decoration: none; }
+		:visited { color: purple; text-decoration: none; }
+		:hover   { text-decoration: underline; }
+	"
+}
+
+
+proc MouseEnter {w node} {
+	if {[llength $node] == 0} { return }
+	set href [$node attribute -default {} href]
+	if {[llength $href]} {
+		$node dynamic set hover
+		[$w drawable] configure -cursor hand2
+	}
+}
+
+
+proc MouseLeave {w node} {
+	if {[llength $node] == 0} { return }
+	set href [$node attribute -default {} href]
+	if {[llength $href]} {
+		$node dynamic clear hover
+		[$w drawable] configure -cursor {}
+	}
+}
+
+
+proc Mouse1Up {w node} {
+	if {[llength $node] == 0} { return }
+	set href [$node attribute -default {} href]
+	if {[llength $href]} {
+		::web::open $w $href
+		$node dynamic set visited
+	}
 }
 
 
@@ -244,57 +295,6 @@ proc BuildContributionsFrame {w} {
 	set size [font configure TkTextFont -size]
 
 	$t tag configure caption -font [list $family $size bold]
-
-	$t configure -state disabled
-}
-
-
-proc BuildReferencesFrame {w} {
-	variable Data
-
-	set t [tk::text $w.t \
-		-padx 10 -pady 10 \
-		-cursor left_ptr \
-		-width 0 -height 16 \
-		-font TkTextFont \
-		-wrap word \
-		-yscrollcommand [list ::scrolledframe::sbset $w.s] \
-	]
-	set s [ttk::scrollbar $w.s -command [list $t yview]]
-	grid $t -row 0 -column 0 -sticky nsew
-	grid $s -row 0 -column 1 -sticky ns
-	grid rowconfigure $w 0 -weight 1
-	grid columnconfigure $w 0 -weight 1
-
-	set space ""
-	foreach ref {PGN Stockfish Crafty Toga Fruit Phalanx Gully MicroMax} {
-		lassign $Data($ref) title url
-		set text $mc::Reference($ref)
-		set i [string first "%url%" $text]
-
-		$t insert end $space
-		$t insert end $title caption
-		$t insert end "\n"
-
-		if {$i == -1} {
-			$t insert end $text
-		} else {
-			$t insert end [string range $text 0 [expr {$i - 1}]]
-			$t insert end $url hyperlink
-			$t insert end [string range $text [expr {$i + 5}] end]
-		}
-
-		set space "\n\n"
-	}
-
-	set family [font configure TkTextFont -family]
-	set size [font configure TkTextFont -size]
-
-	$t tag configure caption -font [list $family $size bold]
-	$t tag configure hyperlink -underline on -foreground blue
-	$t tag bind hyperlink <Enter> [list $t configure -cursor hand1]
-	$t tag bind hyperlink <Leave> [list $t configure -cursor {}]
-	$t tag bind hyperlink <Button-1> [list [namespace current]::ClickLink $t %x %y]
 
 	$t configure -state disabled
 }
@@ -377,16 +377,6 @@ proc BuildLicenseFrame {w} {
 	pack $s -side left -fill both
 	$t insert end [set [namespace current]::License]
 	$t configure -state disabled
-}
-
-
-proc ClickLink {w xpos ypos} {
-	set range [$w tag prevrange hyperlink [$w index @$xpos,$ypos]]
-	set url [$w get {*}$range]
-	$w tag add $url {*}$range
-	$w tag configure $url -foreground red
-	update idletasks
-	::web::open $w $url
 }
 
 
