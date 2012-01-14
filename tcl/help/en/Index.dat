@@ -21,21 +21,6 @@ set Index {
       {{Homepage} {Contact-Information.html}}
     }
   }
-  { M
-    {
-      {{Markierungen} {Game-Flags.html}}
-    }
-  }
-  { N
-    {
-      {{NAG-Kommentarwerte} {NAG-Comments.html}}
-    }
-  }
-  { P
-    {
-      {{Partiemarkierungen} {Game-Flags.html}}
-    }
-  }
   { W
     {
       {{Website} {Contact-Information.html}}

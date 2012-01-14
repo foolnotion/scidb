@@ -83,7 +83,7 @@ Für Scidb-Benutzer könnten folgende Seiten interessant sein:
        style="line-height: 150%;">
     Reviews for Scidb</a><br/>
     Diese Seite bietet die Möglichkeit für die Abgabe einer Rezension
-    oder Bewertung.
+    oder Bewertung über Scidb.
   </p></li>
 
   <li><p>

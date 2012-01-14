@@ -1272,6 +1272,7 @@
 ::help::mc::CantFindFile			"Die Datei %s kann nicht gefunden werden."
 ::help::mc::IncompleteHelpFiles	"Es scheint das die Hilfeseiten leider noch nicht vollständig sind."
 ::help::mc::ProbablyTheHelp		"Möglicherweise ist die Hilfseite in einer anderen Sprache eine Alternative"
+::help::mc::PageNotAvailable		"Diese Seite ist nicht verfügbar"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Turniertabelle"

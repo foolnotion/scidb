@@ -16,39 +16,39 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-TITLE Development roadmap
+TITLE Piano di Sviluppo
 
-<h2>Features for next releases</h2>
+<h2>Funzioni per le prossime release</h2>
 
 <dir>
-  <li>Analysis window: launch external chess engines</li>
-  <li>Search functions: search by header, position search, etc.</li>
-  <li>Filter functions: game filter, player filter</li>
-  <li>Drag &amp; Drop of games into different databases</li>
-  <li>Flexible window layout</li>
-  <li>Document generation:: LaTeX export</li>
-  <li>Windows support</li>
-  <li>Database compression (elimination of deleted games)</li>
-  <li>Board photo</li>
+  <li>Finestra Analisi: lancia un motore di scacchi esterno</li>
+  <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
+  <li>Funzioni di Filtro: filtro partita, giocatore</li>
+  <li>Drag &amp; Drop di partite in diversi database</li>
+  <li>Layout flessibile per le finestre</li>
+  <li>Generazione documenti: esportazione in LaTeX</li>
+  <li>Supporto per il sistema operativo Windows</li>
+  <li>Compressione Database (eliminazione partite cancellate)</li>
+  <li>Foto Scacchiera</li>
 </dir>
 
-<h2>Features for the far future</h2>
+<h2>Funzioni per il lontano futuro</h2>
 
 <dir>
-  <li>Duplicate detection</li>
-  <li>Document generation: PDF export and HTML export</li>
-  <li>Dialog for spell checking player names</li>
-  <li>Tip of the Day window</li>
-  <li>Usage of end-game tables</li>
-  <li>3D chessboard</li>
+  <li>Rilevamento partite doppie</li>
+  <li>Generazione documenti: esportazione in PDF e HTML</li>
+  <li>Interfaccia per controllare l'ortografia dei giocatori</li>
+  <li>Finestra del "Consiglio del Giorno"</li>
+  <li>Uso di tavole dei finali</li>
+  <li>Scacchiera 3D</li>
 </dir>
 
-<h2>Volunteers wanted for...</h2>
+<h2>Si cercano volontari per...</h2>
 
 <dir>
-  <li>More languages</li>
-  <li>More chess board themes</li>
-  <li>More help pages</li>
+  <li>Aumentare le lingue supportate</li>
+  <li>Aumentare i temi della scacchiera</li>
+  <li>Scrivere le pagine di aiuto</li>
 </dir>
 
 END

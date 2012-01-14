@@ -54,6 +54,7 @@ set FileNotFound			"File not found."
 set CantFindFile			"Can't find the file at %s."
 set IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that."
 set ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you"
+set PageNotAvailable		"This page is not available"
 
 } ;# namespace mc
 
@@ -1180,7 +1181,9 @@ proc MouseEnter {node} {
 		$node dynamic set hover
 		[$Priv(html) drawable] configure -cursor hand2
 
-		if {[$node dynamic get user]} {
+		if {[$node dynamic get user2]} {
+			::tooltip::show $Priv(html) $mc::PageNotAvailable
+		} elseif {[$node dynamic get user]} {
 			::tooltip::show $Priv(html) [$node attribute href]
 		}
 	}
@@ -1233,6 +1236,7 @@ proc Mouse1Up {node} {
 
 proc ReloadCurrentPage {} {
 	variable Priv
+	variable Links
 
 	set file ""
 	if {[info exists Priv(currentfile)] && [string length $Priv(currentfile)] > 0} {
@@ -1247,7 +1251,7 @@ proc ReloadCurrentPage {} {
 	set Priv(history:index) -2
 	set Priv(currentfile) ""
 
-	Load [FullPath [file tail $file]]
+	set Links($file) [Load [FullPath [file tail $file]]]
 }
 
 

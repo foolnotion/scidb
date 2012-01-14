@@ -1275,6 +1275,7 @@
 ::help::mc::CantFindFile			"Can't find the file at %s." ;# NEW
 ::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
 ::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
+::help::mc::PageNotAvailable		"This page is not available" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Grilla de torneo"
