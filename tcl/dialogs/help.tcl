@@ -461,7 +461,7 @@ proc LoadPage {t item} {
 			::web::open $Priv(html) $path
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
-			set Links($path) [[namespace parent]::Load $path {} $fragment]
+			set Links($path) [[namespace parent]::Load $path {} {} $fragment]
 		}
 	}
 }
@@ -774,7 +774,6 @@ proc Search {t} {
 			if {$exceeded} {
 				set exceededMsg 1
 			}
-
 			if {[llength $positions] > 0} {
 				if {[string length $title] == 0} { set title [FindTitle $file $Contents] }
 				if {[string length $title] > 0} {
@@ -849,7 +848,7 @@ proc LoadPage {t item} {
 	if {[llength $item] > 0} {
 		if {$Priv(search:changed)} { set Priv(currentfile) "" }
 		set Priv(search:changed) 0
-		[namespace parent]::Load [lindex $Priv(match:$item) 1] $Priv(match:$item)
+		[namespace parent]::Load [lindex $Priv(match:$item) 1] {} $Priv(match:$item)
 	}
 }
 
@@ -1147,7 +1146,7 @@ proc LinkHandler {node} {
 			:user		{ color: red3; text-decoration: none; }
 			:user2	{ color: black; text-decoration: underline; }
 			:visited { color: purple; text-decoration: none; }
-			:hover   { text-decoration: underline; background: #ffff00; }
+			:hover   { text-decoration: underline; background: yellow; }
 			.match	{ background: yellow; color: black; }
 		"
 		$Priv(html) style -id user $css
@@ -1228,7 +1227,9 @@ proc Mouse1Up {node} {
 			set fragment ""
 			lassign [split $href \#] href fragment
 			set file [FullPath $href]
-			set Links($file) [Load $file {} $fragment]
+			set wref [$node attribute -default {} wref]
+			if {[llength $wref] == 0} { set wref $file }
+			set Links($wref) [Load $file $wref {} $fragment]
 		}
 	}
 }
@@ -1272,7 +1273,7 @@ proc Goto {position} {
 }
 
 
-proc Load {file {match {}} {position {}}} {
+proc Load {file {wantedFile {}} {match {}} {position {}}} {
 	variable Priv
 
 	if {$Priv(currentfile) eq $file} {
@@ -1284,7 +1285,7 @@ proc Load {file {match {}} {position {}}} {
 		return 1
 	}
 
-	set rc [Parse $file 0 $match]
+	set rc [Parse $file $wantedFile 0 $match]
 
 	if {[string length $match] == 0} {
 		Goto $position
@@ -1299,7 +1300,7 @@ proc Load {file {match {}} {position {}}} {
 }
 
 
-proc Parse {file {moveto 0} {match {}}} {
+proc Parse {file wantedFile moveto {match {}}} {
 	variable Nodes
 	variable Priv
 
@@ -1356,7 +1357,7 @@ proc Parse {file {moveto 0} {match {}}} {
 			append content "<dl>"
 			foreach alt $alternatives {
 				lassign $alt icon href lang
-				append content "<dt>$icon&ensp;<a href='$href'>$lang</a></dt>"
+				append content "<dt>$icon&ensp;<a href='$href' wref='$file'>$lang</a></dt>"
 			}
 			append content "</dl></blockquote></div>"
 		}
@@ -1388,7 +1389,9 @@ proc Parse {file {moveto 0} {match {}}} {
 	$Priv(html) parse $content
 	update idletasks
 	$Priv(html) yview moveto $moveto
-	set Priv(currentfile) $file
+
+	if {[string length $wantedFile] == 0} { set wantedFile $file }
+	set Priv(currentfile) $wantedFile
 
 	if {[llength $match]} { SeeNode [$Priv(html) root] }
 
@@ -1429,7 +1432,7 @@ proc GoBack {} {
 
 	if {$index >= 0} {
 		set entry [lindex $Priv(history) $index]
-		Parse [lindex $entry 0] [lindex $entry 1]
+		Parse [lindex $entry 0] {} [lindex $entry 1]
 		set Priv(history:index) [expr {$index - 1}]
 		SetupButtons
 	}
@@ -1447,7 +1450,7 @@ proc GoForward {} {
 
 	if {$index < [llength $Priv(history)]} {
 		set entry [lindex $Priv(history) $index]
-		Parse [lindex $entry 0] [lindex $entry 1]
+		Parse [lindex $entry 0] {} [lindex $entry 1]
 		set Priv(history:index) [expr {$index - 1}]
 		SetupButtons
 	}
