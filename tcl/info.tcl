@@ -109,7 +109,8 @@ proc BuildDialog {dlg} {
 	foreach tab {About Contributions System License} {
 		set f [ttk::frame $nb.tab$tab]
 		Build${tab}Frame $f
-		$nb add $f -sticky nsew -padding $::theme::padding -text [set [namespace current]::mc::${tab}]
+		$nb add $f -sticky nsew -padding $::theme::padding
+		::widget::notebookTextvarHook $nb $f [namespace current]::mc::${tab}
 		incr count
 	}
 
@@ -139,10 +140,16 @@ proc BuildAboutFrame {w} {
 	$w.t onmouseout  [list [namespace current]::MouseLeave $w.t]
 	$w.t onmouseup1  [list [namespace current]::Mouse1Up $w.t]
 
+	DisplayAbout $w.t
+	bind $w.t <<LanguageChanged>> [namespace code [list DisplayAbout $w.t]]
+}
+
+
+proc DisplayAbout {w} {
 	array set font [font actual TkTextFont]
 	set fam $font(-family)
 
-	$w.t parse "
+	$w parse "
 		<link/>
 		<table border='0' style='font-family: Final Frontier, $fam; font-size: 16pt;' color='steelblue4'>
 			<tr>
@@ -164,7 +171,7 @@ proc BuildAboutFrame {w} {
 			Copyright &#x00A9; 2011-2012 Gregor Cramer<br/><br/>
 			<a href='http://scidb.sourceforge.net'>scidb.sourceforge.net</a><br/><br/>
 			$mc::Distributed<br/><br/>
-			<font style='font-size: 9pt;'>$mc::Inspired</font>
+			<font style='font-size: 10pt;'>$mc::Inspired</font>
 		</font>
 	"
 }
@@ -242,6 +249,19 @@ proc BuildContributionsFrame {w} {
 	grid rowconfigure $w 0 -weight 1
 	grid columnconfigure $w 0 -weight 1
 
+	set family [font configure TkTextFont -family]
+	set size [font configure TkTextFont -size]
+	$t tag configure caption -font [list $family $size bold]
+
+	DisplayContributions $t
+	bind $t <<LanguageChanged>> [namespace code [list DisplayContributions $t]]
+}
+
+
+proc DisplayContributions {t} {
+	$t configure -state normal
+	$t delete 1.0 end
+
 	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
 	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
 	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
@@ -290,11 +310,6 @@ proc BuildContributionsFrame {w} {
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "Scid 3:\n"] caption
 	$t insert end [Enc $mc::SpecialThanks]
-
-	set family [font configure TkTextFont -family]
-	set size [font configure TkTextFont -size]
-
-	$t tag configure caption -font [list $family $size bold]
 
 	$t configure -state disabled
 }

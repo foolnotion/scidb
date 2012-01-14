@@ -64,8 +64,6 @@ proc Build {w args} {
 	}
 
 	array set opts $args
-	set center $opts(-center)
-	array unset opts -center
 
 #	append css "body\{"
 #	append css "font-family: \"Helvetica\", sans-serif;"
@@ -78,15 +76,11 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css {}
+			-delay - -css - -center {}
 
 			-imagecmd - -doublebuffer {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
-			}
-
-			-center - -doublebuffer {
-				array unset opts $name
 			}
 
 			default {
@@ -96,8 +90,9 @@ proc Build {w args} {
 		}
 	}
 
+	if {!$opts(-center)} { lappend options -avoidconfigureresize yes }
 	set parent [::scrolledframe $w -fill both {*}$options]
-	if {!$center} {
+	if {!$opts(-center)} {
 		bind $parent <<ScrollbarChanged>> [namespace code { ConfigureFrame %W {*}%d }]
 	}
 	set html $parent.html
@@ -130,7 +125,7 @@ proc Build {w args} {
 
 	set options {}
 	set Priv(delay) $opts(-delay)
-	set Priv(center) $center
+	set Priv(center) $opts(-center)
 	set Priv(bw) $opts(-borderwidth)
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
@@ -144,7 +139,7 @@ proc Build {w args} {
 	$html style -id user $css
 	grid $html
 
-	if {$center} {
+	if {$Priv(center)} {
 		grid anchor $parent center
 	} else {
 		bind $w <Configure> [namespace code [list Configure $parent %w %#]]

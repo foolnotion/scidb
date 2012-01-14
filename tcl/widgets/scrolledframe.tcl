@@ -31,6 +31,7 @@ proc scrolledframe {path args} {
 	array set opts { -expand none -padding 2 }
 	array set opts $args
 	set frameOpts {}
+	set scrollOpts {}
 	foreach key [array names opts] {
 		switch -- $key {
 			-background - -padding {
@@ -42,25 +43,28 @@ proc scrolledframe {path args} {
 				lappend frameOpts $key $opts($key)
 				array unset opts $key
 			}
+			-avoidconfigureresize {
+				lappend scrollOpts -avoidconfigureresize $opts($key)
+				array unset opts $key
+			}
 		}
 	}
 	ttk::frame $path {*}$frameOpts
 	set f $path.__scrolledframe__
 	bind $path <Map> [list after idle { ::scrolledframe::Map %W }]
-	set scrollopts {}
 	if {$opts(-expand) ne "y"} {
 		set v $path.__vs__
 		scrolledframe::Scrollbar $v -command [list $f yview] -orient vertical
-		lappend scrollopts -yscrollcommand [list ::scrolledframe::MySbSet $v]
+		lappend scrollOpts -yscrollcommand [list ::scrolledframe::MySbSet $v]
 		grid $v -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-expand) ne "x"} {
 		set h $path.__hs__
 		scrolledframe::Scrollbar $h -command [list $f xview] -orient horizontal
-		lappend scrollopts -xscrollcommand [list ::scrolledframe::MySbSet $h]
+		lappend scrollOpts -xscrollcommand [list ::scrolledframe::MySbSet $h]
 		grid $h -row 1 -column 0 -sticky ew
 	}
-	::scrolledframe::scrolledframe $f {*}$scrollopts {*}[array get opts]
+	::scrolledframe::scrolledframe $f {*}$scrollOpts {*}[array get opts]
 	grid $f -row 0 -column 0 -sticky nsew
 	grid rowconfigure $path 0 -weight 1
 	grid columnconfigure $path 0 -weight 1
@@ -73,6 +77,8 @@ namespace eval scrolledframe {
 
 set (sbset:cmd)		{}
 set (sbset:orient)	{}
+set (resize:request)	0
+set (resize:count)	0
 
 
 proc sbset {sb first last} {
@@ -126,6 +132,7 @@ package provide scrolledframe $version
 proc scrolledframe {w args} {
 	variable {}
 
+	array set opts {-avoidconfigureresize no}
 	array set opts $args
 	# create a scrolled frame
 	tk::frame $w
@@ -156,11 +163,14 @@ proc scrolledframe {w args} {
 	set ($w:filly) 0
 	set ($w:expandx) 0
 	set ($w:expandy) 0
-	# configure
+	if {!$opts(-avoidconfigureresize)} {
+puts "---> !avoidconfigureresize"
+		bind $w <Configure> [namespace code [list Resize $w %#]]
+		bind $w.scrolled <Configure> [namespace code [list Resize $w %#]]
+	}
+	array unset opts -avoidconfigureresize
+	set args [array get opts]
 	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
-	# bind <Configure>
-	bind $w <Configure> [namespace code [list Resize $w]]
-	bind $w.scrolled <Configure> [namespace code [list Resize $w]]
 	# return widget ref
 	return $w
 }
@@ -170,7 +180,7 @@ proc Map {w} {
 	# Due to a bug in the Tk library we have to force window mapping
 	[winfo parent $w] configure -width 0
 
-	Resize $w.__scrolledframe__ force
+	Resize $w.__scrolledframe__ 0 force
 	bind $w <Map> {#}
 }
 
@@ -186,7 +196,7 @@ proc Map {w} {
 # --------------
 proc Dispatch {w cmd args} {
 	switch -- $cmd {
-		resize		{ Resize $w }
+		resize		{ Resize $w 0 }
 		see			{ See $w [lindex $args 0] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
 		xview       { uplevel 1 [linsert $args 0 ::scrolledframe::Xview $w] }
@@ -228,7 +238,7 @@ proc Config {w args} {
 				} else {
 					 error "invalid value: should be \"$w configure -fill value\", where \"value\" is \"x\", \"y\", \"none\", or \"both\""
 				}
-				Resize $w force
+				Resize $w 0 force
 				set flag 1
 			}
 			-xscrollcommand {
@@ -259,7 +269,7 @@ proc Config {w args} {
 				} else {
 					 error "invalid value: should be \"$w configure -expand value\", where \"value\" is \"x\", \"y\", or \"none\""
 				}
-				Resize $w force
+				Resize $w 0 force
 				set flag 1
 			}
 			-padding {
@@ -290,9 +300,12 @@ proc Config {w args} {
 # parm1: widget name
 # parm2: pass anything to force resize even if dimensions are unchanged
 # --------------
-proc Resize {w {force {}}} {
+proc Resize {w req {force {}}} {
 	variable {}
 	set force [llength $force]
+
+	if {$req > 0 && $req eq $(resize:request)} { return }
+	set (resize:request) $req
 
 	set _vheight      $($w:vheight)
 	set _vwidth       $($w:vwidth)
@@ -316,12 +329,14 @@ proc Resize {w {force {}}} {
 	if {!$($w:expandy) && ($force || $($w:vheight) != $_vheight || $($w:height) != $_height)} {
 		# resize the vertical scroll bar
 		Yview $w scroll 0 unit
+		update idletasks
 		# Yset $w
 	}
 
 	if {!$($w:expandx) && ($force || $($w:vwidth) != $_vwidth || $($w:width) != $_width)} {
 		# resize the horizontal scroll bar
 		Xview $w scroll 0 unit
+		update idletasks
 		# Xset $w
 	}
 } ;# end proc resize
@@ -572,6 +587,8 @@ proc ScrollbarProc {w cmd args} {
 
 
 proc MySbSet {sb first last} {
+	variable {}
+
 	set parent [winfo parent $sb]
 	set slaves [grid slaves $parent]
 	sbset $sb $first $last
@@ -592,11 +609,22 @@ proc SbSet {} {
 }
 
 
+# Possible solution for flickering:
+# 1. call Resize before gridding and avoid the call of DoSbSet during this time
+# 2. call DoSbSet after resizing is done
 proc DoSbSet {sb first last} {
+	variable {}
+
+	set parent [winfo parent $sb]
+
 	if {$first <= 0 && $last >= 1} {
-		grid remove $sb
+		if {$sb in [grid slaves $parent]} {
+			grid remove $sb
+		}
 	} else {
-		grid $sb
+		if {$sb ne [grid slaves $parent]} {
+			grid $sb
+		}
 	}
 
 	$sb set $first $last
