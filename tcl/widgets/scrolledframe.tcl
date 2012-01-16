@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2012 Gregor Cramer
+# Copyright: (C) 2011 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -52,6 +52,7 @@ proc scrolledframe {path args} {
 	ttk::frame $path {*}$frameOpts
 	set f $path.__scrolledframe__
 	bind $path <Map> [list after idle { ::scrolledframe::Map %W }]
+	set scrollopts {}
 	if {$opts(-expand) ne "y"} {
 		set v $path.__vs__
 		scrolledframe::Scrollbar $v -command [list $f yview] -orient vertical
@@ -132,7 +133,11 @@ package provide scrolledframe $version
 proc scrolledframe {w args} {
 	variable {}
 
-	array set opts {-avoidconfigureresize no}
+	array set opts {
+		-xscrollincrement			20
+		-yscrollincrement			20
+		-avoidconfigureresize	no
+	}
 	array set opts $args
 	# create a scrolled frame
 	tk::frame $w
@@ -157,6 +162,8 @@ proc scrolledframe {w args} {
 	set ($w:vleft) 0
 	set ($w:xscroll) ""
 	set ($w:yscroll) ""
+	set ($w:xincr) 0
+	set ($w:yincr) 0
 	set ($w:width) 0
 	set ($w:height) 0
 	set ($w:fillx) 0
@@ -164,14 +171,12 @@ proc scrolledframe {w args} {
 	set ($w:expandx) 0
 	set ($w:expandy) 0
 	if {!$opts(-avoidconfigureresize)} {
-puts "---> !avoidconfigureresize"
 		bind $w <Configure> [namespace code [list Resize $w %#]]
 		bind $w.scrolled <Configure> [namespace code [list Resize $w %#]]
 	}
 	array unset opts -avoidconfigureresize
 	set args [array get opts]
 	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
-	# return widget ref
 	return $w
 }
 
@@ -198,6 +203,7 @@ proc Dispatch {w cmd args} {
 	switch -- $cmd {
 		resize		{ Resize $w 0 }
 		see			{ See $w [lindex $args 0] }
+		viewbox		{ return [ViewBox $w] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
 		xview       { uplevel 1 [linsert $args 0 ::scrolledframe::Xview $w] }
 		yview       { uplevel 1 [linsert $args 0 ::scrolledframe::Yview $w] }
@@ -244,12 +250,16 @@ proc Config {w args} {
 			-xscrollcommand {
 				# new xscroll option
 				set ($w:xscroll) $value
-				set flag 1
 			}
 			-yscrollcommand {
 				# new yscroll option
 				set ($w:yscroll) $value
-				set flag 1
+			}
+			-xscrollincrement {
+				set ($w:xincr) $value
+			}
+			-yscrollincrement {
+				set ($w:yincr) $value
 			}
 			-background {
 				$w.scrolled configure -background $value
@@ -283,7 +293,7 @@ proc Config {w args} {
 	if {!$flag || [llength $options]} {
 		# call frame config
 		uplevel 1 [linsert $options 0 [namespace current]::_$w configure]
-	}
+#	}
 }
 
 
@@ -329,14 +339,12 @@ proc Resize {w req {force {}}} {
 	if {!$($w:expandy) && ($force || $($w:vheight) != $_vheight || $($w:height) != $_height)} {
 		# resize the vertical scroll bar
 		Yview $w scroll 0 unit
-		update idletasks
 		# Yset $w
 	}
 
 	if {!$($w:expandx) && ($force || $($w:vwidth) != $_vwidth || $($w:width) != $_width)} {
 		# resize the horizontal scroll bar
 		Xview $w scroll 0 unit
-		update idletasks
 		# Xset $w
 	}
 } ;# end proc resize
@@ -416,9 +424,13 @@ proc Xview {w {cmd ""} args} {
 
 		2 {
 			# relative movement
-			foreach {count unit} $args break
-			if {[string match p* $unit]} { set count [expr {$count*9}] }
-			set vleft [expr {$_vleft + $count*0.1*$_width}]
+			lassign $args count unit
+			if {[string match p* $unit]} {
+				set count [expr {$count*9}]
+				set vleft [expr {$_vleft + $count*0.1*$_width}]
+			} else {
+				set vleft [expr {$_vleft + $count*$($w:xincr)}]
+			}
 		}
 	}
 	if {$vleft + $_width > $_vwidth} { set vleft [expr {$_vwidth - $_width}] }
@@ -486,9 +498,13 @@ proc Yview {w {cmd ""} args} {
 
 		2 {
 			# relative movement
-			foreach {count unit} $args break
-			if {[string match p* $unit]} { set count [expr {$count*9}] }
-			set vtop [expr {$_vtop + $count*0.1*$_height}]
+			lassign $args count unit
+			if {[string match p* $unit]} {
+				set count [expr {$count*9}]
+				set vtop [expr {$_vtop + $count*0.1*$_height}]
+			} else {
+				set vtop [expr {$_vtop + $count*$($w:yincr)}]
+			}
 		}
 	}
 	if {$vtop + $_height > $_vheight} { set vtop [expr {$_vheight - $_height}] }
@@ -507,6 +523,33 @@ proc Yview {w {cmd ""} args} {
 			if {$(debug,place)} { puts "place $w.scrolled -in $w -y [expr {-$vtop}] -height {}" }
 		}
 	}
+}
+
+
+proc ViewBox {w} {
+	set parent [winfo parent $w]
+
+	set hs $parent.__hs__
+	set vs $parent.__vs__
+
+	set x0 0
+	set y0 0
+	set wd [winfo width $parent]
+	set ht [winfo height $parent]
+
+	if {[winfo exists $hs]} {
+		lassign [$hs get] first last
+		set wv [winfo width $w.scrolled]
+		set x0 [expr {round($first*$wv)}]
+	}
+
+	if {[winfo exists $vs]} {
+		lassign [$vs get] first last
+		set hv [winfo height $w.scrolled]
+		set y0 [expr {round($first*$hv)}]
+	}
+
+	return [list $x0 $y0 $wd $ht]
 }
 
 
@@ -587,8 +630,6 @@ proc ScrollbarProc {w cmd args} {
 
 
 proc MySbSet {sb first last} {
-	variable {}
-
 	set parent [winfo parent $sb]
 	set slaves [grid slaves $parent]
 	sbset $sb $first $last
