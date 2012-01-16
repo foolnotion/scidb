@@ -261,8 +261,10 @@ if {[::process::testOption use-analysis]} {
 	::beta::welcomeToScidb $app
 	set ::remote::blocked 0
 
+	database::preOpen $app
+
 	foreach file [::process::arguments] {
-		::application::database::openBase \
+		database::openBase \
 			.application [::util::databasePath $file] $::encoding::autoEncoding
 	}
 
@@ -304,6 +306,7 @@ proc shutdown {} {
 	::widget::busyCursor on
 
 	::remote::cleanup
+	database::prepareClose
 	::scidb::app::close
 	if {$backup} { ::game::backup }
 	::scidb::app::finalize

@@ -86,8 +86,15 @@ proc open {parent base info view index {fen {}}} {
 	set number [::gametable::column $info number]
 	set name [file rootname [file tail $base]]
 	if {[info exists Priv($base:$number:$view)]} {
-		wm withdraw $Priv($base:$number:$view)
-		wm deiconify $Priv($base:$number:$view)
+		switch [tk windowingsystem] {
+			x11 {
+				wm withdraw $Priv($base:$number:$view)
+				wm deiconify $Priv($base:$number:$view)
+			}
+			default {
+				raise $Priv($base:$number:$view)
+			}
+		}
 		return
 	}
 
@@ -224,6 +231,9 @@ proc open {parent base info view index {fen {}}} {
 
 	$rt.header tag configure bold -font $Options(font:bold)
 	$rt.header tag configure figurine -font $::font::figurine
+	foreach t {white black event} {
+		$rt.header tag bind $t <ButtonPress-3> [namespace code [list PopupMenu $dlg $board $position $t]]
+	}
 	$rt.pgn tag configure figurine -font $::font::figurine
 	$rt.pgn tag configure result -foreground $Options(foreground:result)
 	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
@@ -278,6 +288,8 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(dlg) $dlg
 	set Vars(closed) 0
 	set Vars(fen) $fen
+	set Vars(locked) no
+	set Vars(info) $info
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
@@ -286,7 +298,7 @@ proc open {parent base info view index {fen {}}} {
 
 	NextGame $dlg $position	;# too early for ::scidb::game::go
 
-	bind $rt.header <<LanguageChanged>> [namespace code [list LanguageChanged $position $info]]
+	bind $rt.header <<LanguageChanged>> [namespace code [list LanguageChanged $position]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
 
 	::scidb::game::setup $position 240 80 0 0 no no no no
@@ -397,17 +409,26 @@ proc ConfigureButtons {position} {
 proc Update {position base {view -1} {index -1}} {
 	variable ${position}::Vars
 
-	if {!$Vars(closed) && $Vars(base) eq $base && $Vars(view) == $view} {
+	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
+		if {$Vars(closed)} {
+			set index $Vars(index:last)
+			if {[::scidb::view::count games $base $Vars(view)] <= $index} { return }
+			set info [::scidb::db::get gameInfo $index $Vars(view) $base]
+			if {$info ne $Vars(info)} { return }
+			set Vars(index) $index
+			set Vars(closed) false
+			SetTitle $position
+		}
 		after cancel $Vars(after)
-		set Vars(after) [after idle [namespace code [list Update2 $position $base]]]
+		set Vars(after) [after idle [namespace code [list Update2 $position]]]
 	}
 }
 
 
-proc Update2 {position base} {
+proc Update2 {position} {
 	variable ${position}::Vars
 
-	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $base]
+	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
 	set Vars(fen) [::scidb::game::fen]
 	ConfigureButtons $position
 }
@@ -416,7 +437,8 @@ proc Update2 {position base} {
 proc Close {position base {view {}}} {
 	variable ${position}::Vars
 
-	if {[llength $view] == 0 || $view == $Vars(view)} {
+	if {!$Vars(closed) && ([llength $view] == 0 || $view == $Vars(view))} {
+		set Vars(index:last) $Vars(index)
 		set Vars(index) -1
 		set Vars(closed) 1
 		ConfigureButtons $position
@@ -463,9 +485,9 @@ proc NextGame {parent position {step 0}} {
 	if {$Vars(index) == -1} { return }
 	set number $Vars(number)
 	incr Vars(index) $step
-	set info [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
-	set Vars(result) [::util::formatResult [::gametable::column $info result]]
-	set Vars(number) [::gametable::column $info number]
+	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
+	set Vars(result) [::util::formatResult [::gametable::column $Vars(info) result]]
+	set Vars(number) [::gametable::column $Vars(info) number]
 	if {$step} {
 		set key $Vars(base):$number:$Vars(view)
 		if {[incr Priv($key:count) -1] == 0} {
@@ -478,10 +500,10 @@ proc NextGame {parent position {step 0}} {
 	}
 	ConfigureButtons $position
 	SetTitle $position
-	set index [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
-	::widget::busyOperation ::game::load $parent $position $Vars(base) $index
+#	set Vars(number) [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
+	::widget::busyOperation ::game::load $parent $position $Vars(base) $Vars(number)
 	::scidb::game::go $position position $Vars(fen)
-	UpdateHeader $position $info
+	UpdateHeader $position
 }
 
 
@@ -515,7 +537,7 @@ proc Goto {position step} {
 }
 
 
-proc LanguageChanged {position info} {
+proc LanguageChanged {position} {
 	variable ${position}::Vars
 
 	if {[::scidb::game::query $position length] == 0} {
@@ -527,12 +549,12 @@ proc LanguageChanged {position info} {
 		$w configure -state disabled
 	}
 
-	UpdateHeader $position $info
+	UpdateHeader $position
 	SetTitle $position
 }
 
 
-proc UpdateHeader {position {info {}}} {
+proc UpdateHeader {position} {
 	variable ${position}::Vars
 
 	set text $Vars(header)
@@ -540,12 +562,12 @@ proc UpdateHeader {position {info {}}} {
 
 	$text delete 1.0 end
 	foreach id {white black event site date annotator} {
-		set $id [::gametable::column $info $id]
+		set $id [::gametable::column $Vars(info) $id]
 	}
 
 	set data {}
 	foreach id {idn position eco opening variation subvar} {
-		lappend data [::gametable::column $info $id]
+		lappend data [::gametable::column $Vars(info) $id]
 	}
 
 	if {[lindex $data 0] == 0} {
@@ -602,8 +624,10 @@ proc UpdateHeader {position {info {}}} {
 proc ShowEvent {position} {
 	variable ${position}::Vars
 
+	if {$Vars(closed)} { return }
+
 	set base  $Vars(base)
-	set index [expr $Vars(number) - 1]
+	set index [expr {$Vars(number) - 1}]
 
 	set info [scidb::db::fetch eventInfo $index $base -card]
 	::eventtable::showInfo $Vars(header) $info
@@ -616,9 +640,12 @@ proc HideEvent {position} {
 }
 
 
-proc EnterItem {position item} {
+proc EnterItem {position item {locked no}} {
 	variable ${position}::Vars
 	variable Options
+
+	set Vars(locked) $locked
+	if {$Vars(closed)} { return }
 
 	$Vars(header) tag configure $item \
 		-background $Options(background:hilite) \
@@ -627,19 +654,26 @@ proc EnterItem {position item} {
 }
 
 
-proc LeaveItem {position item} {
+proc LeaveItem {position item {force no}} {
 	variable ${position}::Vars
 	variable Options
 
-	$Vars(header) tag configure $item -background $Options(background:header) -foreground black
+	if {$force} { set Vars(locked) no }
+	if {$Vars(closed)} { return }
+
+	if {!$Vars(locked)} {
+		$Vars(header) tag configure $item -background $Options(background:header) -foreground black
+	}
 }
 
 
 proc ShowPlayer {position side} {
 	variable ${position}::Vars
 
+	if {$Vars(closed)} { return }
+
 	set base  $Vars(base)
-	set index [expr $Vars(number) - 1]
+	set index [expr {$Vars(number) - 1}]
 
 	set info [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
 	::playertable::showInfo $Vars(header) $info
@@ -867,14 +901,36 @@ proc SetMinSize {w position} {
 }
 
 
-proc PopupMenu {parent board position} {
+proc PopupMenu {parent board position {what ""}} {
 	variable ${position}::Vars
+
+	if {$Vars(locked)} { return }
 
 	set dlg [winfo toplevel $board]
 	set menu $dlg.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 	catch { wm attributes $m -type popup_menu }
+
+	if {!$Vars(closed) && [string length $what]} {
+		EnterItem $position $what yes
+		set index [expr {$Vars(number) - 1}]
+
+		switch $what {
+			white - black {
+				set info [scidb::db::fetch ${what}PlayerInfo $index $Vars(base) -card -ratings {Elo Elo}]
+				::playertable::popupMenu $menu $info
+			}
+
+			event {
+				set info [scidb::db::fetch eventInfo $index $Vars(base) -card]
+				::eventtable::popupMenu $dlg $menu $Vars(base) 0 $index game
+			}
+		}
+
+		bind $menu <<MenuUnpost>> [namespace code [list LeaveItem $position $what yes]]
+		$menu add separator
+	}
 
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 
@@ -925,7 +981,6 @@ proc LoadGame {parent position} {
 
 proc MergeGame {parent position} {
 	variable ${position}::Vars
-puts "MergeGame [expr {$Vars(number) - 1}]"	;# TODO
 }
 
 

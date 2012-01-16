@@ -51,16 +51,19 @@ proc Build {w args} {
 	variable MaxWidth
 
 	array set opts {
-		-width			800
-		-height			600
-		-background		white
-		-borderwidth	{}
-		-relief			{}
-		-imagecmd		{}
-		-doublebuffer	yes
-		-center			no
-		-delay			0
-		-css				{}
+		-width				800
+		-height				600
+		-background			white
+		-borderwidth		{}
+		-relief				{}
+		-exportselection	no
+		-center				no
+		-imagecmd			{}
+		-doublebuffer		yes
+		-delay				0
+		-css					{}
+		-selectbackground	#678db2
+		-selectforeground	white
 	}
 
 	array set opts $args
@@ -76,9 +79,9 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center {}
+			-delay - -css - -center - -selectbackground - -selectforeground {}
 
-			-imagecmd - -doublebuffer {
+			-imagecmd - -doublebuffer - -exportselection {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
 			}
@@ -127,6 +130,10 @@ proc Build {w args} {
 	set Priv(delay) $opts(-delay)
 	set Priv(center) $opts(-center)
 	set Priv(bw) $opts(-borderwidth)
+	set Priv(focus) 0
+	set Priv(sel:state) false
+	set Priv(sel:fg) $opts(-selectforeground)
+	set Priv(sel:bg) $opts(-selectbackground)
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
@@ -138,6 +145,9 @@ proc Build {w args} {
 	__html_widget $html {*}$htmlOptions {*}$options -shrink yes
 	$html style -id user $css
 	grid $html
+
+	SelectionClear $html
+	selection handle $html [namespace code [list SelectionHandler $html]]
 
 	if {$Priv(center)} {
 		grid anchor $parent center
@@ -231,6 +241,10 @@ proc WidgetProc {w parent command args} {
 			return [$parent.html bbox [lindex $args 0]]
 		}
 
+		viewbox {
+			return [$parent viewbox]
+		}
+
 		size {
 			lassign $Priv(bbox) x y w h
 			set w [expr {$w + 2*$x}]
@@ -255,6 +269,28 @@ proc WidgetProc {w parent command args} {
 
 		root {
 			return [$parent.html node]
+		}
+
+		focusin {
+			if {!$Priv(focus)} {
+				set Priv(focus) 1
+
+				if {[$parent.html cget -exportselection]} {
+					$parent.html tag configure selection -foreground $Priv(sel:fg) -background $Priv(sel:bg)
+				}
+			}
+			return
+		}
+
+		focusout {
+			if {$Priv(focus)} {
+				set Priv(focus) 0
+
+				if {[$parent.html cget -exportselection]} {
+					$parent.html tag configure selection -foreground white -background darkgrey
+				}
+			}
+			return
 		}
 	}
 
@@ -353,6 +389,8 @@ proc CombineBox {box1 box2} {
 proc Motion {w x y state} {
 	variable [winfo parent $w]::Priv
 
+	SelectionExtend $w $x $y
+
 	set Priv(pointer) [list $x $y]
 	if {$state >= 256} { return }
 
@@ -440,9 +478,24 @@ proc Mapped {w} {
 }
 
 
-proc ButtonPress {w x y k} {
+proc GenerateEvents {w eventlist} {
+	variable [winfo parent $w]::Priv
+
+	foreach {event node} $eventlist {
+		if {[llength $node] == 0 || [llength [info commands $node]]} {
+			foreach script $Priv($event) {
+				{*}$script $node
+			}
+		}
+	}
+}
+
+
+proc ButtonPress {w x y k {state 0}} {
 	variable [winfo parent $w]::ActiveNodes$k
 	variable [winfo parent $w]::Priv
+
+	if {$k == 1} { SelectionAnchor $w $x $y $state }
 
 	array unset ActiveNodes$k
 	set node [lindex [$w node $x $y] end]
@@ -469,6 +522,8 @@ proc ButtonRelease {w x y k} {
 	variable [winfo parent $w]::ActiveNodes$k
 	variable [winfo parent $w]::Priv
 
+	if {$k == 1} { SelectionFinish $w $x $y }
+
 	set node [lindex [$w node $x $y] end]
 	if {[llength $node]} {
 		if {[string length [$node tag]] == 0} { set node [$node parent] }
@@ -486,40 +541,334 @@ proc ButtonRelease {w x y k} {
 }
 
 
-proc GenerateEvents {w eventlist} {
+proc SelectionAnchor {w x y state} {
 	variable [winfo parent $w]::Priv
 
-	foreach {event node} $eventlist {
-		if {[llength $node] == 0 || [llength [info commands $node]]} {
-			foreach script $Priv($event) {
-				{*}$script $node
-			}
+	if {![$w cget -exportselection]} { return }
+
+	if {($state & 1) && $Priv(sel:moved)} {
+		set Priv(sel:to:node) ""
+	} else {
+		SelectionClear $w
+	}
+
+	set Priv(sel:state) true
+	set Priv(sel:mode) char
+	set Priv(sel:ignore) 0
+	set Priv(sel:x) $x
+	set Priv(sel:y) $y
+
+	SelectionExtend $w $x $y
+}
+
+
+proc SelectionFinish {w x y} {
+	variable [winfo parent $w]::Priv
+	set Priv(sel:state) false
+}
+
+
+proc SelectionExtend {w x y {node {}}} {
+	variable [winfo parent $w]::Priv
+
+	if {![$w cget -exportselection]} { return }
+	if {!$Priv(sel:state)} { return }
+	if {$Priv(sel:ignore)} { return }
+
+	set to [$w node -index $x $y]
+	lassign $to toNode toIdx
+
+	if {[llength $node] > 0 && [llength $toNode] > 0} {
+		if {[$node stacking] ne [$toNode stacking]} { set to {} }
+	}
+
+	if {[llength $to] > 0} {
+		if {[llength $Priv(sel:from:node)] == 0} {
+			set Priv(sel:from:node) $toNode
+			set Priv(sel:from:index) $toIdx
 		}
+
+		if {	$toNode != $Priv(sel:from:node)
+			|| $toIdx !=  $Priv(sel:from:index)
+			|| abs($x - $Priv(sel:x)) >= 3
+			|| abs($y - $Priv(sel:y)) >= 3} {
+			set Priv(sel:moved) 1
+		}
+
+		set rc [catch {
+			if {$Priv(sel:to:node) ne $toNode || $toIdx != $Priv(sel:to:index)} {
+				if {$Priv(sel:moved)} {
+					switch -- $Priv(sel:mode) {
+						char {
+							if {[llength $Priv(sel:to:node)] > 0} {
+								$w tag remove selection $Priv(sel:to:node) $Priv(sel:to:index) $toNode $toIdx
+							}
+							$w tag add selection $Priv(sel:from:node) $Priv(sel:from:index) $toNode $toIdx
+							if {$Priv(sel:from:node) ne $toNode || $Priv(sel:from:index) != $toIdx} {
+								selection own $w
+							}
+						}
+
+						word {
+							if {[llength $Priv(sel:to:node)] > 0} {
+								$w tag remove selection $Priv(sel:to:node) $Priv(sel:to:index) $toNode $toIdx
+								SelectionUntagWord $w $Priv(sel:to:node) $Priv(sel:to:index)
+							}
+
+							$w tag add selection $Priv(sel:from:node) $Priv(sel:from:index) $toNode $toIdx
+							SelectionTagWord $w $toNode $toIdx
+							SelectionTagWord $w $Priv(sel:from:node) $Priv(sel:from:index)
+							selection own $w
+						}
+
+						block {
+							set toBlock2  [SelectionToBlock $w $toNode $toIdx]
+							set fromBlock [SelectionToBlock $w $Priv(sel:from:node) $Priv(sel:from:index)]
+
+							if {[llength $Priv(sel:to:node)] > 0} {
+								set toBlock [SelectionToBlock $w $Priv(sel:to:node) $Priv(sel:to:index)]
+								$w tag remove selection $Priv(sel:to:mode) $Priv(sel:to:index) $toNode $toIdx
+								$w tag remove selection {*}$toBlock
+							}
+
+							$w tag add selection $Priv(sel:from:node) $Priv(sel:from:index) $toNode $toIdx
+							$w tag add selection {*}$toBlock2
+							$w tag add selection {*}$fromBlock
+							selection own $w
+						}
+					}
+				}
+
+				set Priv(sel:to:node) $toNode
+				set Priv(sel:to:index) $toIdx
+			}
+		} msg]
+
+		if {$rc && [regexp {[^ ]+ is an orphan} $msg]} {
+			SelectionClear $w
+		}
+	}
+
+	set v [winfo parent $w]
+	lassign [$v viewbox] x0 y0 vw vh
+
+	set motioncmd {}
+	if {$y > $y0 + $vh} {
+		if {$y < [winfo height $w]} {
+			set motioncmd [list $v yview scroll 1 units]
+		}
+	} elseif {$y < $y0} {
+		if {$y >= 0} {
+			set motioncmd [list $v yview scroll -1 units]
+		}
+	}
+
+	if {$motioncmd ne ""} {
+		set Priv(sel:ignore) 1
+		{*}$motioncmd
+		update idletasks
+		after cancel $Priv(sel:afterid)
+		set Priv(sel:afterid) [after 200 [namespace code [list SelectionContinueMotion $w]]]
+	}
+
+	if {$x > $x0 + $vw} {
+		if {$x < [winfo width $w]} {
+			set motioncmd [list $v xview scroll 1 units]
+		}
+	} elseif {$x < 0} {
+		if {$x >= 0} {
+			set motioncmd [list $v xview scroll -1 units]
+		}
+	}
+
+	if {$motioncmd ne ""} {
+		set Priv(sel:ignore) 1
+		{*}$motioncmd
+		update idletasks
+		after cancel $Priv(sel:afterid)
+		set Priv(sel:afterid) [after 200 [namespace code [list SelectionContinueMotion $w]]]
 	}
 }
 
 
-bind Html <Motion>				[list [namespace current]::Motion %W %x %y %s ]
-bind Html <Leave>					[list [namespace current]::Leave %W ]
-bind Html <ButtonPress-1>		[list [namespace current]::ButtonPress %W %x %y 1 ]
-bind Html <ButtonRelease-1>	[list [namespace current]::ButtonRelease %W %x %y 1 ]
-bind Html <ButtonPress-2>		[list [namespace current]::ButtonPress %W %x %y 2 ]
-bind Html <ButtonRelease-2>	[list [namespace current]::ButtonRelease %W %x %y 2 ]
-bind Html <ButtonPress-3>		[list [namespace current]::ButtonPress %W %x %y 3 ]
-bind Html <ButtonRelease-3>	[list [namespace current]::ButtonRelease %W %x %y 3 ]
-bind Html <Unmap>					[list [namespace current]::Leave %W ]
-bind Html <Map>					[list [namespace current]::Mapped %W ]
+proc SelectionContinueMotion {w} {
+	variable [winfo parent $w]::Priv
+
+	set Priv(sel:ignore) 0
+	set Priv(sel:afterid) {}
+	set x [expr [winfo pointerx $w] - [winfo rootx $w]]
+	set y [expr [winfo pointery $w] - [winfo rooty $w]]
+	set node [lindex [$w node $x $y] 0]
+	SelectionExtend $w $x $y $node
+}
+
+
+proc Select {w x y mode} {
+	variable [winfo parent $w]::Priv
+
+	if {![$w cget -exportselection]} { return }
+
+	SelectionClear $w
+	set Priv(sel:mode) $mode
+	set Priv(sel:state) true
+	set Priv(sel:moved) 1
+	SelectionExtend $w $x $y
+}
+
+
+proc SelectExtend {w x y mode} {
+	variable [winfo parent $w]::Priv
+
+	if {![$w cget -exportselection]} { return }
+
+	if {!$Priv(sel:moved)} { SelectionClear $w }
+
+	set Priv(sel:to:node) ""
+	set Priv(sel:mode) $mode
+	set Priv(sel:state) true
+	set Priv(sel:moved) 1
+
+	SelectionExtend $w $x $y
+}
+
+
+proc SelectionClear {w} {
+	variable [winfo parent $w]::Priv
+
+	if {![$w cget -exportselection]} { return }
+
+	$w tag delete selection
+	$w tag configure selection -foreground $Priv(sel:fg) -background $Priv(sel:bg)
+	set Priv(sel:from:node) ""
+	set Priv(sel:to:node) ""
+	set Priv(sel:moved) 0
+	set Priv(sel:ignore) 0
+	set Priv(sel:afterid) {}
+}
+
+
+proc SelectionTagWord {w node idx} {
+	lassign [SelectionToWord $node $idx] i1 i2
+	$w tag add selection $node $i1 $node $i2
+}
+
+
+proc SelectionUntagWord {w node idx} {
+	lassign [SelectionToWord $node $idx] i1 i2
+	$w tag remove selection $node $i1 $node $i2
+}
+
+
+proc SelectionToWord {node idx} {
+	set t [$node text]
+	set cidx [::tkhtml::charoffset $t $idx]
+	set cidx1 [string wordstart $t $cidx]
+	set cidx2 [string wordend $t $cidx]
+	set idx1 [::tkhtml::byteoffset $t $cidx1]
+	set idx2 [::tkhtml::byteoffset $t $cidx2]
+	return [list $idx1 $idx2]
+}
+
+
+proc SelectionToBlock {w node idx} {
+	set t [$w text text]
+	set offset [$w text offset $node $idx]
+
+	set start [string last "\n" $t $offset]
+	if {$start < 0} {set start 0}
+	set end [string first "\n" $t $offset]
+	if {$end < 0} {set end [string length $t]}
+
+	set startIdx [$w text index $start]
+	set endIdx   [$w text index $end]
+
+	return [concat $startIdx $endIdx]
+}
+
+
+proc SelectionGet {w offset maxChars} {
+	variable [winfo parent $w]::Priv
+
+	set t  [$w text text]
+	set n1 $Priv(sel:from:node)
+	set i1 $Priv(sel:from:index)
+	set n2 $Priv(sel:to:node)
+	set i2 $Priv(sel:to:index)
+
+	set stridxA [$w text offset $Priv(sel:from:node) $Priv(sel:from:index)]
+	set stridxB [$w text offset $Priv(sel:to:node) $Priv(sel:to:index)]
+	if {$stridxA > $stridxB} { lassign [list $stridxB $stridxA] stridxA stridxB }
+
+	if {$Priv(sel:mode) eq "word"} {
+		set stridxA [string wordstart $t $stridxA]
+		set stridxB [string wordend $t $stridxB]
+	}
+	if {$Priv(sel:mode) eq "block"} {
+		set stridxA [string last "\n" $t $stridxA]
+		if {$stridxA < 0} {set stridxA 0}
+		set stridxB [string first "\n" $t $stridxB]
+		if {$stridxB < 0} {set stridxB [string length $t]}
+	}
+
+	set text [string range [$w text text] $stridxA [expr $stridxB - 1]]
+	set text [string range $text $offset [expr $offset + $maxChars]]
+
+	return $text
+}
+
+
+#proc GetSelection {w} {
+#	variable [winfo parent $w]::Priv
+#
+#	if {[llength $Priv(sel:from:node)] == 0} { return "" }
+#	return [SelectionGet 0 10000000]
+#}
+
+
+proc SelectionHandler {w args} {
+	variable [winfo parent $w]::Priv
+
+	if {![$w cget -exportselection]} { return "" }
+	set eval [concat SelectionGet $w $args]
+
+	if {[catch [list uplevel $eval] result]} {
+		set cmd [list bgerror $result]
+		set error [list $::errorInfo $::errorCode]
+		after idle [list lassign [list $error $cmd] ::errorInfo ::errorCode]
+		set ::errorInfo ""
+		return ""
+	}
+
+	return $result
+}
+
+
+bind Html <Motion>				[list [namespace current]::Motion %W %x %y %s]
+bind Html <Leave>					[list [namespace current]::Leave %W]
+bind Html <ButtonPress-1>		[list [namespace current]::ButtonPress %W %x %y 1 %s]
+bind Html <ButtonRelease-1>	[list [namespace current]::ButtonRelease %W %x %y 1]
+bind Html <ButtonPress-2>		[list [namespace current]::ButtonPress %W %x %y 2]
+bind Html <ButtonRelease-2>	[list [namespace current]::ButtonRelease %W %x %y 2]
+bind Html <ButtonPress-3>		[list [namespace current]::ButtonPress %W %x %y 3]
+bind Html <ButtonRelease-3>	[list [namespace current]::ButtonRelease %W %x %y 3]
+bind Html <Unmap>					[list [namespace current]::Leave %W]
+bind Html <Map>					[list [namespace current]::Mapped %W]
+
+bind Html <Double-ButtonPress-1>			[list [namespace current]::Select %W %x %y word]
+bind Html <Triple-ButtonPress-1>			[list [namespace current]::Select %W %x %y block]
+bind Html <Shift-Double-ButtonPress-1>	[list [namespace current]::SelectExtend %W %x %y word]
+bind Html <Shift-Triple-ButtonPress-1>	[list [namespace current]::SelectExtend %W %x %y block]
 
 switch [tk windowingsystem] {
 	win32 {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-120] units }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-120] units; break }
 	}
 	aqua {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-1] units }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-1] units; break }
 	}
 	x11 {
-		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -1 units }
-		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +1 units }
+		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -1 units; break }
+		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +1 units; break }
 	}
 }
 

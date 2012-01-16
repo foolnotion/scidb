@@ -21,6 +21,11 @@ set Index {
       {{Homepage} {Contact-Information.html}}
     }
   }
+  { K
+    {
+      {{Kommandozeilenoptionen} {Command-Line-Options.html}}
+    }
+  }
   { W
     {
       {{Website} {Contact-Information.html}}

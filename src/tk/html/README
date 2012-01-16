@@ -6,7 +6,7 @@ Some enhancements:
 	Double buffering implemented. You have to define USE_DOUBLE_BUFFERING=1
 	during compile time.
 
-and new commands:
+new commands:
 
 	<pathname> charset
 		Returns the charset given in HTML object "meta", e.g.:
@@ -17,7 +17,19 @@ and new commands:
 	<nodeHandle> dynamic get flag
 		Returns the status of the argument "flag" in given node.
 
-and is supporting more attributes:
+new options:
+
+	-doublebuffer
+		Specifies whether double buffering should be used.
+
+	-cursor
+		Specifies the mouse cursor to be used for the widget.
+
+	-exportselection
+		Specifies whether or not a selection in the widget should also be the X selection.
+		Selection is possible only if this option is enabled.
+
+is supporting more attributes:
 
 	<ol start="12">...</ol>
 

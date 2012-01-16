@@ -80,6 +80,7 @@ proc helpLanguage {} {
 proc open {parent {file {}}} {
 	variable Priv
 	variable Links
+	variable ExternalLinks
 	variable Geometry
 
 	set Priv(check:lang) [CheckLanguage $parent]
@@ -101,7 +102,9 @@ proc open {parent {file {}}} {
 	}
 
 	array unset Links
+	array unset ExternalLinks
 	array set Links {}
+	array set ExternalLinks {}
 
 	set Priv(topic) ""
 	set Priv(dlg) $dlg
@@ -453,12 +456,14 @@ proc Update {t} {
 proc LoadPage {t item} {
 	variable [namespace parent]::Priv
 	variable [namespace parent]::Links
+	variable [namespace parent]::ExternalLinks
 
 	if {[info exists Priv(uri:$item)]} {
 		set path [$Priv(uri:$item) path]
 
 		if {[string match http* $path] || [string match ftp* $path]} {
 			::web::open $Priv(html) $path
+			set ExternalLinks($path) 1
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
 			set Links($path) [[namespace parent]::Load $path {} {} $fragment]
@@ -898,15 +903,33 @@ proc UpdateTitle {} {
 
 proc RecordGeometry {pw} {
 	variable Priv
+	variable Geometry
 
 	set dlg [winfo toplevel $pw]
 	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
+
 	if {[llength [$pw panes]] == 1} {
 		set w [expr {min($w + $Priv(minsize), [winfo screenwidth $pw] - 30)}]
 	} else {
 		set Priv(minsize) [winfo width [lindex [$pw panes] 0]]
 	}
-	set [namespace current]::Geometry "${w}x${h}+${x}+${y}"
+
+	if {[info exists x]} {
+		set Geometry "${w}x${h}+${x}+${y}"
+	} else {
+		set indexP [string first $Geometry "+"]
+		set indexM [string first $Geometry "-"]
+		if {$indexP == -1} {
+			set indexP $indexM
+		} elseif {$indexM >= 0} {
+			set indexP [expr {min($indexP, $indexM)}]
+		}
+		if {$indexP == -1} {
+			set Geometry "${w}x${h}"
+		} else {
+			set Geometry "${w}x${h}[string range $indexP end]"
+		}
+	}
 }
 
 
@@ -1060,7 +1083,9 @@ proc BuildHtmlFrame {dlg w} {
 		-borderwidth 1 \
 		-relief sunken \
 		-doublebuffer no \
+		-exportselection yes \
 		;
+
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
 
 	$w handler node link [namespace current]::LinkHandler
@@ -1069,6 +1094,21 @@ proc BuildHtmlFrame {dlg w} {
 	$w onmouseover [namespace current]::MouseEnter
 	$w onmouseout  [namespace current]::MouseLeave
 	$w onmouseup1  [namespace current]::Mouse1Up
+
+	set dlg [winfo toplevel $dlg]
+
+	bind $dlg <FocusIn>	[list $w focusin]
+	bind $dlg <FocusOut>	[list $w focusout]
+
+	switch [tk windowingsystem] {
+		win32 - aqua {
+			bind $dlg <MouseWheel> [list event generate [$w drawable] <MouseWheel> -delta %D]
+		}
+		x11 {
+			bind $dlg <ButtonPress-4> [list event generate [$w drawable] <ButtonPress-4>]
+			bind $dlg <ButtonPress-5> [list event generate [$w drawable] <ButtonPress-5>]
+		}
+	}
 }
 
 
@@ -1107,12 +1147,23 @@ proc GetImage {file} {
 proc A_NodeHandler {node} {
 	variable Nodes
 	variable Links
+	variable ExternalLinks
 
 	set href [$node attribute -default {} href]
 
 	if {[string match http* $href] || [string match ftp* $href]} {
 		$node dynamic set user
 		set file $href
+
+		if {[info exists ExternalLinks($file)]} {
+			if {$ExternalLinks($file)} {
+				$node dynamic clear link
+				$node dynamic set user2
+			} else {
+				$node dynamic clear link
+				$node dynamic set user3
+			}
+		}
 	} else {
 		$node dynamic set link
 
@@ -1123,7 +1174,7 @@ proc A_NodeHandler {node} {
 					$node dynamic set visited
 				} else {
 					$node dynamic clear link
-					$node dynamic set user2
+					$node dynamic set user3
 				}
 			}
 		}
@@ -1143,9 +1194,11 @@ proc LinkHandler {node} {
 		# overwrite CSS values
 		set css "
 			:link    { color: blue2; text-decoration: none; }
-			:user		{ color: red3; text-decoration: none; }
-			:user2	{ color: black; text-decoration: underline; }
 			:visited { color: purple; text-decoration: none; }
+			/*:user	{ color: red3; text-decoration: none; }*/
+			:user		{ color: blue2; text-decoration: underline; }	/* http link */
+			:user2	{ color: purple; text-decoration: underline; }	/* http visited */
+			:user3	{ color: black; text-decoration: underline; }	/* invalid link */
 			:hover   { text-decoration: underline; background: yellow; }
 			.match	{ background: yellow; color: black; }
 		"
@@ -1180,7 +1233,7 @@ proc MouseEnter {node} {
 		$node dynamic set hover
 		[$Priv(html) drawable] configure -cursor hand2
 
-		if {[$node dynamic get user2]} {
+		if {[$node dynamic get user3]} {
 			::tooltip::show $Priv(html) $mc::PageNotAvailable
 		} elseif {[$node dynamic get user]} {
 			::tooltip::show $Priv(html) [$node attribute href]
@@ -1206,6 +1259,7 @@ proc MouseLeave {node} {
 proc Mouse1Up {node} {
 	variable Nodes
 	variable Links
+	variable ExternalLinks
 	variable Priv
 
 	if {[llength $node] == 0} { return }
@@ -1213,7 +1267,11 @@ proc Mouse1Up {node} {
 	if {[info exists Nodes($node)]} {
 		set Nodes($node) 1
 		$node dynamic clear link
-		$node dynamic set visited
+		if {[$node dynamic get user]} {
+			$node dynamic set user2
+		} else {
+			$node dynamic set visited
+		}
 
 		set href [$node attribute -default {} href]
 		if {[string length $href] == 0} { return }
@@ -1223,6 +1281,7 @@ proc Mouse1Up {node} {
 			eval [namespace code [list {*}$script]]
 		} elseif {[string match http* $href] || [string match ftp* $href]} {
 			::web::open $Priv(html) $href
+			set ExternalLinks($href) 1
 		} elseif {[llength $href]} {
 			set fragment ""
 			lassign [split $href \#] href fragment

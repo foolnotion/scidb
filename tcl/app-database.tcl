@@ -151,7 +151,7 @@ array set Options {
 }
 
 variable ClipbaseType	[::scidb::db::get clipbase type]
-variable PreOpen			[list Clipbase $::scidb::clipbaseName {}]
+variable PreOpen			{}
 variable RecentFiles		{}
 variable MaxHistory		10
 
@@ -164,7 +164,6 @@ namespace import ::tcl::mathfunc::min
 
 
 proc build {tab menu width height} {
-	variable PreOpen
 	variable ::scidb::clipbaseName
 	variable ClipbaseType
 	variable Vars
@@ -250,26 +249,34 @@ proc build {tab menu width height} {
 	set Vars(after) {}
 	set Vars(lock:minsize) 0
 
-	foreach {type file encoding readonly} $PreOpen {
+	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
+	bind $contents <<LanguageChanged>> +[namespace code LanguageChanged]
+
+	AddBase $ClipbaseType $::scidb::clipbaseName {} no
+	SetClipbaseDescription
+	bind $contents <<LanguageChanged>> [namespace code SetClipbaseDescription]
+	Switch $clipbaseName
+}
+
+
+proc preOpen {parent} {
+	variable PreOpen
+
+	if {![::process::testOption pre-open]} { return }
+
+	foreach entry $PreOpen {
+		lassign $entry type file encoding readonly active
 		if {[llength $encoding] && $encoding ni [encoding names]} {
 			set encoding $::encoding::defaultEncoding
 			::log::error $mc::Preload [format $mc::MissingEncoding $encoding $encoding]
 		}
-		if {$type eq $ClipbaseType} {
-			if {$file ne $clipbaseName} { ::scidb::db::attach $clipbaseName $file }
-			AddBase $ClipbaseType $file $encoding $readonly
-			SetClipbaseDescription
-			bind $contents <<LanguageChanged>> [namespace code SetClipbaseDescription]
-			Switch $clipbaseName
-		} else {
+		if {[file readable $file]} {
 			::log::hide 1
-			openBase $main $file no $encoding $readonly
+			openBase $parent $file no $encoding $readonly $active
+			if {$active} { set current $file }
 			::log::hide 0
 		} 
 	}
-
-	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
-	bind $contents <<LanguageChanged>> +[namespace code LanguageChanged]
 }
 
 
@@ -285,7 +292,7 @@ proc activate {w menu flag} {
 }
 
 
-proc openBase {parent file byUser {encoding ""} {readonly -1}} {
+proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}} {
 	variable Vars
 	variable RecentFiles
 	variable Types
@@ -390,7 +397,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 		if {![::scidb::db::get writeable? $file]} { set readonly 1 }
 		::scidb::db::set readonly $file $readonly
 		set type [::scidb::db::get type $file]
-		AddBase $type $file $encoding $readonly
+		AddBase $type $file $encoding $readonly $switchToBase
 		AddRecentFile $type $file $encoding $ro
 		CheckEncoding $parent $file [::scidb::db::get encoding $file]
 	} else {
@@ -401,8 +408,27 @@ proc openBase {parent file byUser {encoding ""} {readonly -1}} {
 		}
 	}
 
-	Switch $file
+	if {$switchToBase} { Switch $file }
 	return 1
+}
+
+
+proc prepareClose {} {
+	variable Vars
+	variable PreOpen
+	variable ClipbaseType
+
+	set current [::scidb::db::get name]
+	set active ""
+
+	set PreOpen {}
+	foreach entry $Vars(bases) {
+		lassign $entry i type file ext encoding readonly
+		if {$type ne $ClipbaseType} {
+			if {$file eq $current} { set active 1 } else { set active 0 }
+			lappend PreOpen [list $type $file $encoding $readonly $active]
+		}
+	}
 }
 
 
@@ -670,7 +696,7 @@ proc DeleteBase {number} {
 }
 
 
-proc AddBase {type file encoding readonly} {
+proc AddBase {type file encoding readonly {selectBase yes}} {
 	variable Vars
 	variable Defaults
 
@@ -681,7 +707,7 @@ proc AddBase {type file encoding readonly} {
 	switch $ext { .gz - .zip { set ext .pgn } }
 	if {[llength $ext] == 0} { set ext sci } else { set ext [string range $ext 1 end] }
 	set Vars(active) $i
-	set Vars(selection) $i
+#	if {$selectBase} { set Vars(selection) $i }
 	if {[llength $encoding] == 0} { set encoding [::scidb::db::get encoding] }
 	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
@@ -1742,7 +1768,7 @@ proc FindRecentFile {file} {
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::RecentFiles
 	::options::writeItem $chan [namespace current]::Defaults
-	::options::writeList $chan [namespace current]::PreOpen	;# TODO
+	::options::writeList $chan [namespace current]::PreOpen
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

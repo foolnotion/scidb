@@ -424,6 +424,7 @@ struct HtmlOptions {
     int       forcefontmetrics;
     int       forcewidth;
     int       doublebuffer;
+    int       exportselection;
     Tcl_Obj  *imagecmd;
     int       imagecache;
     int       mode;                      /* One of the HTML_MODE_XXX values */

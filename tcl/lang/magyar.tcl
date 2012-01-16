@@ -157,7 +157,7 @@
 ::menu::mc::GameReplace				"Játszma &Felülírása"
 ::menu::mc::GameReplaceMoves		"Replace &Moves Only"
 
-::menu::mc::HelpInfo					"&Info about Scidb"
+::menu::mc::HelpAbout				"&About Scidb"
 ::menu::mc::HelpContents			"&Contents"
 ::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
 ::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)"

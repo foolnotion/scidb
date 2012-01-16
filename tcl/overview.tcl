@@ -52,8 +52,15 @@ proc open {parent base info view index {fen {}}} {
 	set name [file rootname [file tail $base]]
 
 	if {[info exists Priv($base:$number:$view)]} {
-		wm withdraw $Priv($base:$number:$view)
-		wm deiconify $Priv($base:$number:$view)
+		switch [tk windowingsystem] {
+			x11 {
+				wm withdraw $Priv($base:$number:$view)
+				wm deiconify $Priv($base:$number:$view)
+			}
+			default {
+				raise $Priv($base:$number:$view)
+			}
+		}
 		return
 	}
 
@@ -93,6 +100,7 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(flip) $Priv(flip)
 	set Vars(fen) $fen
 	set Vars(closed) 0
+	set Vars(info) $info
 
 	set idn [::gametable::column $info idn]
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
@@ -157,7 +165,16 @@ proc ConfigureButtons {nb} {
 proc Update {nb base {view -1} {index -1}} {
 	variable ${nb}::Vars
 
-	if {!$Vars(closed) && $Vars(base) eq $base && $Vars(view) == $view} {
+	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
+		if {$Vars(closed)} {
+			set index $Vars(index:last)
+			if {[::scidb::view::count games $base $Vars(view)] <= $index} { return }
+			set info [::scidb::db::get gameInfo $index $Vars(view) $base]
+			if {$info ne $Vars(info)} { return }
+			set Vars(index) $index
+			set Vars(closed) false
+			SetTitle $nb
+		}
 		after cancel $Vars(after)
 		set Vars(after) [after idle [namespace code [list Update2 $nb]]]
 	}
@@ -173,13 +190,16 @@ proc Update2 {nb} {
 }
 
 
-proc Close {nb base} {
+proc Close {nb base {view {}}} {
 	variable ${nb}::Vars
 
-	set Vars(index) -1
-	set Vars(closed) 1
-	ConfigureButtons $nb
-	SetTitle $nb
+	if {!$Vars(closed) && ([llength $view] == 0 || $view == $Vars(view))} {
+		set Vars(index:last) $Vars(index)
+		set Vars(index) -1
+		set Vars(closed) 1
+		ConfigureButtons $nb
+		SetTitle $nb
+	}
 }
 
 
@@ -222,8 +242,8 @@ proc NextGame {nb base {step 0}} {
 	set number $Vars(number)
 	incr Vars(index) $step
 	ConfigureButtons $nb
-	set info [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
-	set Vars(number) [::gametable::column $info number]
+	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
+	set Vars(number) [::gametable::column $Vars(info) number]
 	if {$step} {
 		set key $Vars(base):$number:$Vars(view)
 		if {[incr Priv($key:count) -1] == 0} {
@@ -234,7 +254,7 @@ proc NextGame {nb base {step 0}} {
 		set Priv($key) [winfo toplevel $nb]
 		incr Priv($key:count)
 	}
-	set idn [::gametable::column $info idn]
+	set idn [::gametable::column $Vars(info) idn]
 	SetTitle $nb
 	set failed 0
 
@@ -264,7 +284,7 @@ proc NextGame {nb base {step 0}} {
 			set moves [::font::splitMoves [lindex $result [expr {2*$i}]]]
 			foreach {move tag} $moves { $text insert end $move $tag }
 			if {$i == $length - 1} {
-				set res [::gametable::column $info result]
+				set res [::gametable::column $Vars(info) result]
 				set res [::util::formatResult $res]
 				if {[lindex [split [$text index current] .] 1] > 1} {
 					$text insert end " "

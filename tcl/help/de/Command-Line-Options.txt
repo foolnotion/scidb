@@ -47,6 +47,15 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
   </tr>
   <tr>
     <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --pre-open
+    </td>
+    <td class="standard">
+      Alle Datenbanken, die beim Schliessen der letzten Sitzung offen waren, sofort
+      nach Programmstart laden.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
         --fast-load
     </td>
     <td class="standard">
@@ -93,7 +102,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard">
       Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
       die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
-      Es erfolgt keine physikalische Löschung,mit der Option
+      Es erfolgt keine physikalische Löschung, mit der Option
       <span style="font-family:fixed;">--recover-old</span>
       können sie wiederbenutzt werden.
     </td>
@@ -134,9 +143,9 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
         --force-grab
     </td>
     <td class="standard">
-      Wird das Programm in einem Debugger gestartet, werden Grabs automatisch
+      Wird das Programm in einem Debugger gestartet werden Grabs automatisch
       unterdrückt, denn diese können zum Einfrieren des Bildschirms führen.
-      Mit dieser Option werden die Grabs auch im Debugger wieder zugelassen.
+      Mit dieser Option werden die Grabs auch im Debugger zugelassen.
     </td>
   </tr>
 </table>

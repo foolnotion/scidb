@@ -157,7 +157,7 @@
 ::menu::mc::GameReplace				"Ree&mplazar partida"
 ::menu::mc::GameReplaceMoves		"Reemp&lazar s—lo jugadas"
 
-::menu::mc::HelpInfo					"&Informaci—n about Scidb" ;# NEW (changed)
+::menu::mc::HelpAbout				"&About Scidb" ;# NEW (changed)
 ::menu::mc::HelpContents			"Con&tenidos"
 ::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
 ::menu::mc::HelpFeatureRequest	"&Solicitud de caracter’stica (abrir en navegador web)"

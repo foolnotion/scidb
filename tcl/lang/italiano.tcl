@@ -157,7 +157,7 @@
 ::menu::mc::GameReplace				"S&ostituisci Partita"
 ::menu::mc::GameReplaceMoves		"Sostituisci So&lo Mosse"
 
-::menu::mc::HelpInfo					"In&fo su Scidb"
+::menu::mc::HelpAbout				"&Su Scidb"
 ::menu::mc::HelpContents			"Conten&uti"
 ::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
 ::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"

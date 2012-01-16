@@ -155,7 +155,7 @@
 ::menu::mc::GameReplace				"Partie &ersetzen"
 ::menu::mc::GameReplaceMoves		"Partie&züge ersetzen"
 
-::menu::mc::HelpInfo					"&Informationen über Scidb"
+::menu::mc::HelpAbout				"&Über Scidb"
 ::menu::mc::HelpContents			"In&halt"
 ::menu::mc::HelpWhatsNew			"&Was ist neu?"
 ::menu::mc::HelpRoadmap				"&Roadmap"

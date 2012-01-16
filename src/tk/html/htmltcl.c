@@ -1391,6 +1391,7 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(forcefontmetrics, "forceFontMetrics", "ForceFontMetrics", "1", F_MASK),
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
         BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
+        BOOLEAN(exportselection, "exportSelection", "ExportSelection", "0", 0),
 
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
 
@@ -1404,8 +1405,7 @@ configureCmd(clientData, interp, objc, objv)
         STRING(yscrollcommand, "yScrollCommand", "ScrollCommand", ""),
 
         /* Non-debugging widget specific options */
-        OBJ(defaultstyle, "defaultStyle", "DefaultStyle",
-            HTML_DEFAULT_CSS, 0),
+        OBJ(defaultstyle, "defaultStyle", "DefaultStyle", HTML_DEFAULT_CSS, 0),
         STRING(imagecmd, "imageCmd", "ImageCmd", ""),
         BOOLEAN(imagecache, "imageCache", "ImageCache", "1", S_MASK),
 
