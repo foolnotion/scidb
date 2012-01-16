@@ -500,8 +500,8 @@ proc NextGame {parent position {step 0}} {
 	}
 	ConfigureButtons $position
 	SetTitle $position
-#	set Vars(number) [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
-	::widget::busyOperation ::game::load $parent $position $Vars(base) $Vars(number)
+	set number [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
+	::widget::busyOperation ::game::load $parent $position $Vars(base) $number
 	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position
 }
