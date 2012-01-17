@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/it/Database-Formats.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='it'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Aiuto: Formati Database</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Formati Database</h1>
+</div>
+
+<h2>Scidb (.sci)</h2>
+
+Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
+
+<h2>Scid (.si4, .si3)</h2>
+
+Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
+
+<h2>ChessBase (.cbh)</h2>
+
+L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura è supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita dell'operazione di decodifica.
+
+<h2>PGN (.pgn, .pgn.gz, .zip)</h2>
+
+Il formato PGN (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file PGN è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
+
+</body>
+</html>

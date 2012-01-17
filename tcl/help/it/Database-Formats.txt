@@ -1,0 +1,41 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Formati Database
+INDEX Formati File
+TITLE Formati Database
+
+<h2>Scidb (.sci)</h2>
+
+Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
+
+<h2>Scid (.si4, .si3)</h2>
+
+Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
+
+<h2>ChessBase (.cbh)</h2>
+
+L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura è supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita dell'operazione di decodifica.
+
+<h2>PGN (.pgn, .pgn.gz, .zip)</h2>
+
+Il formato PGN (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file PGN è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

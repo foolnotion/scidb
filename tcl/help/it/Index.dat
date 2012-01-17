@@ -1,7 +1,14 @@
 set Index {
   { C
     {
+      {{Clipbase} {Clipbase.html}}
       {{Contatti} {Contact-Information.html}}
+    }
+  }
+  { F
+    {
+      {{Formati Database} {Database-Formats.html}}
+      {{Formati File} {Database-Formats.html}}
     }
   }
   { H
@@ -11,6 +18,7 @@ set Index {
   }
   { S
     {
+      {{Selezionatore di Database} {Database-Switcher.html}}
       {{Sito Internet} {Contact-Information.html}}
     }
   }

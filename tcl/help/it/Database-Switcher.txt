@@ -1,0 +1,110 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Selezionatore di Database
+TITLE Il Selezionatore di Database
+
+<dir><img src="images/database-switcher.png"/></dir>
+
+<p>
+Il selezionatore permette di cambiare facilmente tra più database.
+Il database attivo sarà evidenziato con uno sfondo giallo.
+</p>
+
+<p>
+Premendo il tasto centrale del mouse (o la rotella) apparirà una finestra informativa.
+</p>
+
+<p>
+Per l'amministrazione del database è disponibile un menu contestuale:
+</p>
+
+<dir><img src="images/database-switcher-menu.png"/></dir>
+
+<p>
+<menuitem>%::application::database::mc::Properties%</menuitem>
+Apre una finestra che mostra diverse informazioni sul database.
+</p>
+
+<p>
+<menuitem>%::export::mc::Export%</menuitem>
+Apre un'interfaccia per <a href="Database-Export-Dialog.html">l'esporazione del database</a>
+in altri formati database o documenti.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileImport%</menuitem>
+Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file PGN per l'importazione. È possibile scegliere diversi file PGN simultaneamente. Le partite saranno aggiunte alla fine del database.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileClose%</menuitem>
+Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
+<note/>Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
+Seleziona un'icona per il database.
+<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
+Crea o cambia la descrizione per questo database.
+<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+Imposta il database per la sola lettura o scrittura.
+Questa possibilità è disponibile solo per database nei formati Scidb e Scid (.sci, .si4, .si3).
+<note/>File PGN e Chessbase sono sempre in sola-lettura.
+<note/>Il <a href="Clipbase.html">Clipbase</a> non può essere impostato per la sola lettura.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileNew%</menuitem>
+Crea un nuovo database. Solo database in formato Scidb o Scid (.sci, .si4, .si3) possono essere creati.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileOpen%</menuitem>
+Apre un altro database.
+</p>
+
+<p>
+<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
+Apre un database dallo storico dei database aperti.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::SymbolSize%</menuitem>
+Seleziona la grandezza del simbolo per l'icona del database.
+</p>
+
+<dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
+
+<menuitem>
+%::application::database::mc::EmptyClipbase%</menuitem>
+<note/>Questa funzione sarà disponibile solo per il
+<a href="Clipbase.html">Clipbase</a>.
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->
