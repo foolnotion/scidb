@@ -25,6 +25,8 @@
 
 #include "tcl_base.h"
 
+#include "u_base.h"
+
 #include "m_assert.h"
 
 #include "agg_pixfmt_rgb.h"
@@ -46,6 +48,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdarg.h>
 
 using namespace tcl;
@@ -66,6 +69,8 @@ using namespace tcl;
 
 
 namespace {
+
+enum { Dir_X, Dir_Y };
 
 typedef agg::span_interpolator_linear<> agg_interpolator_type;
 
@@ -131,6 +136,10 @@ struct rasterizer
 
 inline int mul4(int x)							{ return x << 2; }
 inline int clip(int v, int min, int max)	{ return v < min ? min : (max < v ? max : v); }
+
+inline
+unsigned char
+mulChan(unsigned char v, unsigned char f)	{ return (v*f + v) >> 8; }
 
 
 inline
@@ -219,7 +228,10 @@ struct pixbuf
 	typedef typename agg_types<R,G,B,A>::image_accessor_clone image_accessor_clone;
 
 	pixbuf(Tk_PhotoImageBlock const& block)
-		:m_buf(block.pixelPtr), m_rows(block.height), m_cols(block.width), m_pitch(block.pitch)
+		:m_buf(block.pixelPtr)
+		,m_rows(block.height)
+		,m_cols(block.width)
+		,m_pitch(block.pitch)
 	{
 	}
 
@@ -267,6 +279,26 @@ struct pixbuf
 		}
 
 		m_buf += m_pitch;
+	}
+
+	void darken(double alpha)
+	{
+		unsigned char opacity = unsigned(alpha*255.0 + 0.5);
+
+		for (int r = 0; r < m_rows; ++r)
+		{
+			unsigned char* p = scanline(r);
+			unsigned char* e = p + N*m_cols;
+
+			for ( ; p < e; p += N)
+			{
+				p[R] = ::mulChan(p[R], opacity);
+				p[G] = ::mulChan(p[G], opacity);
+				p[B] = ::mulChan(p[B], opacity);
+				if (Alpha)
+					p[A] = 255;
+			}
+		}
 	}
 
 	void recolor(agg::rgba8 const& color, bool overlay)
@@ -433,6 +465,169 @@ struct pixbuf
 		}
 	}
 
+	void shadow_x(double opacity)
+	{
+		static unsigned char const LeftBottom[5][8] =
+		{
+			{ 0xfb, 0xf2, 0xdf, 0xc1, 0x9e, 0x81, 0x6e, 0x65 },
+			{ 0xfc, 0xf7, 0xeb, 0xd8, 0xc1, 0xad, 0xa1, 0x9c },
+			{ 0xfd, 0xfa, 0xf4, 0xeb, 0xdf, 0xd6, 0xcf, 0xcd },
+			{ 0xfe, 0xfd, 0xfa, 0xf6, 0xf2, 0xee, 0xeb, 0xea },
+			{ 0xfe, 0xfe, 0xfd, 0xfc, 0xfa, 0xf9, 0xf8, 0xf8 },
+		};
+		static unsigned char const Middle[5] = { 0x62, 0x9b, 0xcc, 0xea, 0xf8 };
+
+		enum { Cols = U_NUMBER_OF(LeftBottom[0]), Rows = U_NUMBER_OF(LeftBottom) };
+
+		unsigned char leftBottom[Rows][Cols];
+		unsigned char middle[Rows];
+
+		::memcpy(leftBottom, LeftBottom, sizeof(LeftBottom));
+		::memcpy(middle, Middle, sizeof(Middle));
+
+		if (opacity != 1.0)
+		{
+			for (int r = 0; r < Rows; ++r)
+			{
+				unsigned char* row = leftBottom[r];
+
+				for (int c = 0; c < Cols; ++c)
+					row[c] = mstl::min(255u, unsigned(row[c]*opacity + 0.5));
+
+				middle[r] = mstl::min(255u, unsigned(middle[r]*opacity + 0.5));
+			}
+		}
+
+		int lt_cols = mstl::min(int(Cols), mstl::max(0, mstl::div2(m_cols)));
+		int rt_cols = mstl::min(int(Cols), mstl::max(0, m_cols - lt_cols));
+		int mi_cols = mstl::max(0, m_cols - lt_cols - rt_cols);
+
+		for (int r = 0; r < Rows; ++r)
+		{
+			unsigned char const* p = leftBottom[r];
+			unsigned char* q = scanline(r);
+			unsigned opac = middle[r];
+
+			for (int c = 0; c < lt_cols; ++c, q += N)
+			{
+				unsigned opac = p[c];
+
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+
+			for (int c = 0; c < mi_cols; ++c, q += N)
+			{
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+
+			for (int c = 0; c < lt_cols; ++c, q+= N)
+			{
+				unsigned opac = p[Cols - c - 1];
+
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+		}
+	}
+
+	void shadow_y(double opacity)
+	{
+		static unsigned char const RightTop[8][5] =
+		{
+			{ 0xfb, 0xfc, 0xfd, 0xfe, 0xfe },
+			{ 0xf2, 0xf7, 0xfa, 0xfd, 0xfe },
+			{ 0xdf, 0xeb, 0xf4, 0xfa, 0xfd },
+			{ 0xc1, 0xd8, 0xeb, 0xf6, 0xfc },
+			{ 0x9e, 0xc1, 0xdf, 0xf2, 0xfa },
+			{ 0x81, 0xad, 0xd6, 0xee, 0xf9 },
+			{ 0x6e, 0xa1, 0xcf, 0xeb, 0xf8 },
+			{ 0x65, 0x9c, 0xcd, 0xea, 0xf8 },
+		};
+		static unsigned char const Middle[5] = { 0x62, 0x9b, 0xcc, 0xea, 0xf8 };
+
+		enum { Rows = U_NUMBER_OF(RightTop), Cols = U_NUMBER_OF(RightTop[0]) };
+
+		unsigned char rightTop[Rows][Cols];
+		unsigned char middle[Rows];
+
+		::memcpy(rightTop, RightTop, sizeof(RightTop));
+		::memcpy(middle, Middle, sizeof(Middle));
+
+		if (opacity != 1.0)
+		{
+			for (int r = 0; r < Rows; ++r)
+			{
+				unsigned char* row = rightTop[r];
+
+				for (int c = 0; c < Cols; ++c)
+					row[c] = mstl::min(255u, unsigned(row[c]*opacity + 0.5));
+
+				middle[r] = mstl::min(255u, unsigned(middle[r]*opacity + 0.5));
+			}
+		}
+
+		int rt_rows = mstl::min(int(Rows), mstl::max(0, mstl::div2(m_rows)));
+		int rb_rows = mstl::min(int(Rows), mstl::max(0, m_rows - rt_rows));
+		int mi_rows = mstl::max(0, m_rows - rt_rows - rb_rows);
+		int r = 0;
+
+		mi_rows += rt_rows;
+		rb_rows += mi_rows;
+
+		for ( ; r < rt_rows; ++r)
+		{
+			unsigned char const* p = rightTop[r];
+			unsigned char const* e = p + Cols;
+			unsigned char* q = scanline(r);
+
+			for ( ; p < e; ++p, q += N)
+			{
+				unsigned opac = *p;
+
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+		}
+
+		for ( ; r < mi_rows; ++r)
+		{
+			unsigned char const* p = middle;
+			unsigned char const* e = p + Cols;
+			unsigned char* q = scanline(r);
+
+			for ( ; p < e; ++p, q += N)
+			{
+				unsigned opac = *p;
+
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+		}
+
+		for (int k = Rows - 1; r < rb_rows; ++r, --k)
+		{
+			unsigned char const* p = rightTop[k];
+			unsigned char const* e = p + Cols;
+			unsigned char* q = scanline(r);
+
+			for ( ; p < e; ++p, q += N)
+			{
+				unsigned opac = *p;
+
+				q[R] = ::mulChan(q[R], opac);
+				q[G] = ::mulChan(q[G], opac);
+				q[B] = ::mulChan(q[B], opac);
+			}
+		}
+	}
+
 	static void set_alpha(unsigned char* p, int alpha) { p[A] = alpha; }
 
 	static void set_pixel(unsigned char* p, int r, int g, int b, int a)
@@ -543,6 +738,34 @@ struct SetAlpha
 	explicit SetAlpha(int alpha, bool overlay = true) : m_alpha(alpha/255.0), m_overlay(overlay) {}
 	explicit SetAlpha(double alpha, bool overlay = true) : m_alpha(alpha), m_overlay(overlay) {}
 	template <typename PixBuf> void operator()(PixBuf& pixbuf) { pixbuf.set_alpha(m_alpha, m_overlay); }
+};
+
+
+struct Shadow
+{
+	Shadow(int dir, double opacity) :m_dir(dir), m_opacity(opacity) {}
+	int m_dir;
+	double m_opacity;
+
+	template <typename PixBuf>
+	void operator()(PixBuf& pixbuf)
+	{
+		switch (m_dir)
+		{
+			case Dir_X: pixbuf.shadow_x(m_opacity); break;
+			case Dir_Y: pixbuf.shadow_y(m_opacity); break;
+		}
+	}
+};
+
+
+struct Darken
+{
+	Darken(double alpha) :m_alpha(alpha) {}
+	double m_alpha;
+
+	template <typename PixBuf>
+	void operator()(PixBuf& pixbuf) { pixbuf.darken(m_alpha); }
 };
 
 
@@ -1475,6 +1698,37 @@ tk_set_alpha(	char const* subcmd,
 
 
 static int
+tk_shadow(	char const* subcmd,
+				Tcl_Interp* ti,
+				char const* direction,
+				char const* dstName,
+				double opacity,
+				int objc, Tcl_Obj* const objv[])
+{
+	int dir;
+
+	switch (::toupper(*direction))
+	{
+		case 'X': case 'H': dir = Dir_X; break;
+		case 'Y': case 'V': dir = Dir_Y; break;
+
+		default: return tcl_error(subcmd, "invalid direction: '%s'", direction);
+	}
+
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, dstName);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", dstName);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+
+	processImage(block, Shadow(dir, opacity));
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+}
+
+
+static int
 tk_blur(	char const* subcmd,
 			Tcl_Interp* ti,
 			char const* srcName,
@@ -2083,6 +2337,35 @@ tk_colorize(char const* subcmd,
 
 
 static int
+tk_darken_image(	char const* subcmd,
+						Tcl_Interp* ti,
+						char const* value,
+						char const* photo,
+						int objc, Tcl_Obj* const objv[])
+{
+	double alpha = ::strtod(value, 0);
+
+	if (0.0 > alpha || alpha > 1.0)
+		return tcl_error(subcmd, "invalid alpha value: '%s'", value);
+
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", photo);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+
+	int rc = check_image_format(subcmd, ti, block);
+	if (rc != TCL_OK)
+		return rc;
+
+	processImage(block, Darken(alpha));
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+}
+
+
+static int
 tk_recolor_image(	char const* subcmd,
 						Tcl_Interp* ti,
 						char const* color,
@@ -2180,7 +2463,7 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		"border", "copy", "create", "recolor", "disable",
 		"alpha", "diffuse", "boost", "colorize", "blur",
-		0
+		"shadow", "darken", 0
 	};
 	struct { char const* usage; int min_args; } const definitions[] =
 	{
@@ -2194,11 +2477,14 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{ "boost <min> <max> <photo>", 4 },
 		{ "colorize <color> <brighten> <photo>", 4 },
 		{ "blur <radius> <photo> <out-photo>", 4 },
+		{ "shadow <opacity> <direction> <out-photo>", 4 },
+		{ "darken <alpha> <photo>", 3 },
 	};
 	enum
 	{
 		Cmd_Border, Cmd_Copy, Cmd_Create, Cmd_Recolor, Cmd_Disable,
 		Cmd_Alpha, Cmd_Diffuse, Cmd_Boost, Cmd_Colorize, Cmd_Blur,
+		Cmd_Shadow, Cmd_Darken,
 	};
 
 	if (objc < 2)
@@ -2254,6 +2540,13 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				return tk_create_image(subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
 			}
 
+		case Cmd_Darken:
+			{
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[1]);
+				return tk_darken_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+			}
+
 		case Cmd_Recolor:
 			{
 				char const* str0 = Tcl_GetString(objv[0]);
@@ -2306,7 +2599,7 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											"invalid argument: type 'double' for alpha value expected");
 				}
 				char const* str0 = Tcl_GetString(objv[2]);
-				return tk_boost(subcommands[index], ti, min, max, str0, objc - 2, objv + 2);
+				return tk_boost(subcommands[index], ti, min, max, str0, objc - 3, objv + 3);
 			}
 
 		case Cmd_Colorize:
@@ -2319,20 +2612,35 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return tcl_error(	subcommands[index],
 											"invalid argument: type 'double' for brighten value expected");
 				}
-				return tk_colorize(subcommands[index], ti, str0, str1, brighten, objc - 2, objv + 2);
+				return tk_colorize(subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
 			}
-
 
 		case Cmd_Blur:
 			{
 				double radius;
-				if (Tcl_GetDoubleFromObj(ti, objv[1], &radius) != TCL_OK)
-					return tcl_error(	subcommands[index], "invalid argument: type 'int' for radius expected");
+				if (Tcl_GetDoubleFromObj(ti, objv[0], &radius) != TCL_OK)
+				{
+					return tcl_error(	subcommands[index],
+											"invalid argument: type 'double' for radius expected");
+				}
 				if (radius < 0.0)
 					return tcl_error(	subcommands[index], "invalid argument: radius is negative");
-				char const* str0 = Tcl_GetString(objv[2]);
-				char const* str1 = Tcl_GetString(objv[3]);
-				return tk_blur(subcommands[index], ti, str0, str1, radius, objc - 2, objv + 2);
+				char const* str0 = Tcl_GetString(objv[1]);
+				char const* str1 = Tcl_GetString(objv[2]);
+				return tk_blur(subcommands[index], ti, str0, str1, radius, objc - 3, objv + 3);
+			}
+
+		case Cmd_Shadow:
+			{
+				double opacity;
+				if (Tcl_GetDoubleFromObj(ti, objv[0], &opacity) != TCL_OK)
+				{
+					return tcl_error(	subcommands[index],
+											"invalid argument: type 'double' for opacity value expected");
+				}
+				char const* str0 = Tcl_GetString(objv[1]);
+				char const* str1 = Tcl_GetString(objv[2]);
+				return tk_shadow(subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
 			}
 	}
 

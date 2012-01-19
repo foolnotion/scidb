@@ -679,14 +679,9 @@ proc hideGame {path} { hideMoves $path }
 proc showMoves {path moves {result ""} {empty 0}} {
 	set w $path.showmoves
 	if {![winfo exists $w]} {
-		toplevel $w -class Tooltip
-		wm withdraw $w
-		if {[tk windowingsystem] eq "aqua"} {
-			::tk::unsupported::MacWindowStyle style $w help none
-		} else {
-			wm overrideredirect $w true
-		}
-		wm attributes $w -topmost true
+		set f [::util::makeDropDown $w]
+		set bg [$f cget -background]
+		destroy $f
 		tk::text $w.text \
 			-wrap word \
 			-width 50 \

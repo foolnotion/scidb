@@ -1880,6 +1880,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 't': setResult(Scidb->hasTrialMode(pos)); break;						// trial
 		case 'i': setResult(Scidb->game(pos).idn()); break;							// idn
 		case 'f': setResult(Scidb->game(pos).startBoard().toFen()); break;		// fen
+		case 'v': setResult(Scidb->game(pos).hasVariations()); break;			// variations?
 
 		case 'p':			// parent
 			{
@@ -1939,11 +1940,20 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'm':
 			switch (cmd[1])
 			{
-				case 'o':	// modified?
-					setResult(Scidb->game(pos).isModified());
+				case 'o':
+					switch (cmd[2])
+					{
+						case 'd':	// modified?
+							setResult(Scidb->game(pos).isModified());
+							break;
+
+						case 'v':	// moveInfo?
+							setResult(Scidb->game(pos).hasMoveInfo());
+							break;
+					}
 					break;
 
-				case 'a':	// marks
+				case 'a':			// marks
 					if (nextArg < objc)
 					{
 						mstl::string key(stringFromObj(objc, objv, nextArg));

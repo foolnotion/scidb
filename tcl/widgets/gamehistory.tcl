@@ -256,22 +256,17 @@ proc ShowTooltip {t x y} {
 	if {![info exists Map($sel)]} { return }
 	lassign [lindex $Map($sel) 1] event site date round white black result
 
-	set w $t.__popup__
-	if {![winfo exists $w]} {
-		set background [::tooltip::background]
-		toplevel $w -background $background -class Tooltip
-		wm withdraw $w
-		if {[tk windowingsystem] eq "aqua"} {
-			::tk::unsupported::MacWindowStyle style $w help none
-		} else {
-			wm overrideredirect $w true
-		}
-		wm attributes $w -topmost true
-		grid [::tk::label $w.evline -background $background] -row 1 -column 1 -sticky w
-		grid [::tk::label $w.coline -background $background] -row 2 -column 1 -sticky w
-		grid [::tk::label $w.siline -background $background] -row 3 -column 1 -sticky w
-		grid rowconfigure $w {0 4} -minsize 2
-		grid columnconfigure $w {0 2} -minsize 2
+	set dlg $t.__popup__
+	if {[winfo exists $dlg]} {
+		set f [lindex [winfo children $dlg] 0]
+	} else {
+		set f [::util::makeDropDown $dlg]
+		set background [$f cget -background]
+		grid [::tk::label $f.evline -background $background] -row 1 -column 1 -sticky w
+		grid [::tk::label $f.coline -background $background] -row 2 -column 1 -sticky w
+		grid [::tk::label $f.siline -background $background] -row 3 -column 1 -sticky w
+		grid rowconfigure $f {0 4} -minsize 2
+		grid columnconfigure $f {0 2} -minsize 2
 	}
 
 	if {[llength $white] == 0} { set white "?" }
@@ -290,15 +285,15 @@ proc ShowTooltip {t x y} {
 	append coline " \u2013 "
 	append coline $black
 
-	if {[string length $evline]} { grid $w.evline } else { grid remove $w.evline }
-	if {[string length $siline]} { grid $w.siline } else { grid remove $w.siline }
+	if {[string length $evline]} { grid $f.evline } else { grid remove $f.evline }
+	if {[string length $siline]} { grid $f.siline } else { grid remove $f.siline }
 
-	$w.evline configure -text $evline
-	$w.coline configure -text $coline
-	$w.siline configure -text $siline
+	$f.evline configure -text $evline
+	$f.coline configure -text $coline
+	$f.siline configure -text $siline
 
 	::tooltip::disable
-	::tooltip::popup $t $w cursor
+	::tooltip::popup $t $dlg cursor
 }
 
 

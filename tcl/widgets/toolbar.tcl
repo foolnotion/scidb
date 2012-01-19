@@ -323,153 +323,16 @@ proc toolbar {parent args} {
 }
 
 
-proc add {toolbar widgetCommand args} {
-	variable Counter
-	variable Defaults
-	variable HaveTooltips
-	variable Specs
+proc add {args} {
+	if {[llength $args] > 1} { return [Add {*}$args] }
 
-	if {$widgetCommand eq "separator"} { return [addSeparator $toolbar] }
+	set widget [lindex $args 0]
+	set toolbar [winfo parent $widget]
 
-	set options(-takefocus) 0
-	set w $toolbar.__tbw__[incr Counter]
-	set variable ""
-	set value ""
-	set state normal
-	set widgetType $widgetCommand
-
-	array set Specs [list                                       \
-		float:$w:$toolbar				1                             \
-		padx:$w:$toolbar				0                             \
-		tooltip:$w:$toolbar			{}                            \
-		tooltipvar:$w:$toolbar		{}                            \
-		default:$w:$toolbar			{}                            \
-		small:$w:$toolbar				{}                            \
-		medium:$w:$toolbar			{}                            \
-		large:$w:$toolbar				{}                            \
-		state:$w:$toolbar				normal                        \
-		overrelief:$w:$toolbar		$Defaults(toolbar:overrelief) \
-		relief:$w:$toolbar			$Defaults(toolbar:relief)     \
-	]
-
-	foreach {arg val} $args {
-		switch -- $arg {
-			-image		{ set options(-image) [SetupIcons $toolbar $w $val] }
-			-state		{ set state $val }
-			-overrelief	{ set Specs(overrelief:$w:$toolbar) $val }
-			-relief		{ set Specs(relief:$w:$toolbar) $val }
-			-tooltip		{ if {[llength $val]} { set Specs(tooltip:$w:$toolbar) $val } }
-			-tooltipvar	{ if {[llength $val]} { set Specs(tooltipvar:$w:$toolbar) $val } }
-			-value		{ set value $val }
-			-variable	{ set variable $val }
-			-float		{ set Specs(float:$w:$toolbar) $val }
-			-padx			{ set Specs(padx:$w:$toolbar) $val }
-			default		{ set options($arg) $val }
-		}
+	if {$widget ni [pack slaves $toolbar.widgets]} {
+		PackWidget $toolbar $widget
+		if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $widget }
 	}
-
-	if {![info exists options(-background)] && [string match *button* $widgetCommand]} {
-		set options(-background) [$toolbar cget -background]
-	}
-	if {![info exists  options(-activebackground)]} {
-		set options(-activebackground) $Defaults(toolbar:activebackground)
-	}
-
-	if {[string match *ttk::spinbox $widgetCommand]} { set options(-state) $state }
-	if {$widgetCommand eq "spinbox"} { set options(-state) $state }
-	if {$widgetCommand eq "checkbutton"} { set widgetCommand "button" }
-	if {$widgetCommand ne "button"} { unset options(-activebackground) }
-	if {$widgetCommand eq "frame"} { set options(-relief) $Specs(relief:$w:$toolbar) }
-	if {![string match *ttk* $widgetCommand]} { set options(-relief) $Specs(relief:$w:$toolbar) }
-	if {[string match *entry $widgetCommand]} { set Specs(takefocus:$toolbar) 1 }
-	if {[string match *spinbox $widgetCommand]} { set variable {} }
-
-	eval $widgetCommand $w [array get options]
-	if {[winfo class $w] eq "Button"} {
-		set Specs(active:$w:$toolbar) [$w cget -activebackground]
-		set Specs(command:$w:$toolbar) [$w cget -command]
-		set Specs(button1:$w:$toolbar) ::tooltip::hide
-		set Specs(entercmd:$w:$toolbar) {}
-		if {[$w cget -state] eq "normal"} {
-			$w configure -overrelief $Specs(overrelief:$w:$toolbar)
-		}
-		bind $w <ButtonPress-1> $Specs(button1:$w:$toolbar)
-	}
-
-	if {[llength $variable]} {
-		if {$widgetType eq "checkbutton"} {
-			set traceCmd "[namespace current]::Tracer4 $toolbar $w $variable"
-			trace add variable $variable write $traceCmd
-			bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
-			ConfigureCheckButton $toolbar $w $w $variable
-		} else {
-			if {[llength $value]} {
-				set Specs(value:$variable:$w:$toolbar) $value
-			} else {
-				set Specs(value:$variable:$w:$toolbar) [set $variable]
-			}
-			if {[info exists Specs(variable:$variable:$toolbar)]} {
-				lappend Specs(variable:$variable:$toolbar) $w
-			} elseif {[llength $value]} {
-				set Specs(variable:$variable:$toolbar) $w
-				if {$variable ni $Specs(variables:$toolbar)} {
-					lappend Specs(variables:$toolbar) $variable
-				}
-				set bg [$w cget -background]
-				set activebg [$w cget -activebackground]
-				set traceCmd "[namespace current]::Tracer1 $toolbar $variable $bg $activebg"
-				trace add variable $variable write $traceCmd
-				bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
-			}
-			if {[llength $value] && [set $variable] eq $value} {
-				$w configure -relief solid -background [$w cget -activebackground]
-			}
-		}
-		bind $w <Leave> [namespace code [list LeaveButton $toolbar $w $variable $value]]
-	} elseif {[info exists options(-relief)]} {
-		bind $w <Leave> [namespace code [list LeaveButton $toolbar $w]]
-	}
-
-	set variable [namespace current]::Specs(state:$w:$toolbar)
-	set traceCmd "[namespace current]::Tracer2 $toolbar $w $variable"
-	trace add variable $variable write $traceCmd
-	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
-
-	set variable [namespace current]::Specs(state:$toolbar)
-	set traceCmd "[namespace current]::Tracer3 $toolbar $variable"
-	trace add variable $variable write $traceCmd
-	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
-
-	if {	$HaveTooltips
-		&& ([llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)])} {
-		::tooltip::init
-		set Specs(tooltip-init:$w:$toolbar) 1
-		bind $w <Enter> +[namespace code { Tooltip show %W }]
-		bind $w <Leave> +[namespace code { Tooltip hide %W }]
-	}
-	if {$widgetCommand eq "button"} {
-		bind $w <Enter> +[namespace code [list EnterButton $toolbar $w]]
-		set Specs(entercmd:$w:$toolbar) [bind $w <Enter>]
-	}
-	if {$Specs(usehandle:$toolbar)} {
-		bind $w <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
-		if {[string match *frame $widgetCommand]} {
-			bind $w <Configure> [namespace code [list BindMenuToChilds $toolbar $w]]
-		}
-	}
-
-	PackWidget $toolbar $w
-	if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $w }
-
-	set parent [winfo parent $toolbar]
-	if {![info exists Specs(configure:$parent)]} {
-		bind $parent <Map> [namespace code { Finish %W }]
-		set Specs(configure:$parent) 1
-	}
-
-	if {$state ne "normal"} { set Specs(state:$w:$toolbar) $state }
-
-	return $w
 }
 
 
@@ -490,12 +353,24 @@ proc addSeparator {toolbar} {
 }
 
 
-proc remove {toolbar widget} {
+proc remove {widget} {
 	variable Specs
 
-	destroy $widget
-	catch { destroy $Specs(child:$widget:$toolbar.floating.frame) }
-	array unset Specs *:$widget:$toolbar
+	set toolbar [winfo parent $widget]
+	pack forget $widget
+	catch { pack forget $Specs(child:$widget:$toolbar.floating.frame) }
+}
+
+
+proc forget {widget} {
+	variable Specs
+
+	if {[winfo exists $widget]} {
+		set toolbar [winfo parent $widget]
+		destroy $widget
+		catch { destroy $Specs(child:$widget:$toolbar.floating.frame) }
+		array unset Specs *:$widget:$toolbar
+	}
 }
 
 
@@ -576,7 +451,9 @@ proc activate {parent {flag 1}} {
 		set childs {}
 		if {[info exists Specs(childs:$tbf)]} {
 			foreach toolbar $Specs(childs:$tbf) {
-				if {[winfo exists $toolbar.floating]} { wm state $toolbar.floating $state }
+				if {[winfo exists $toolbar.floating]} {
+					wm state $toolbar.floating $state
+				}
 			}
 		}
 	}
@@ -663,14 +540,27 @@ proc setState {toolbar state} {
 	variable Specs
 
 	switch $state {
-		enabled {
+		enabled - normal {
 			if {$Specs(enabled:$toolbar)} { return }
 			set Specs(enabled:$toolbar) 1
+			set state $Specs(state:$toolbar)
+			if {$Specs(finish:$toolbar) && $state eq "hide"} { set state float }
 
-			switch $Specs(state:$toolbar) {
-				float	{ UndockToolbar $toolbar [winfo rootx $toolbar] [winfo rooty $toolbar] }
+			switch $state {
 				flat	{ Hide $toolbar flat }
 				show	{ show $toolbar }
+				float	{
+					if {[info exists Specs(position:$toolbar)] && [llength $Specs(position:$toolbar)] == 2} {
+						set tl [winfo toplevel $toolbar]
+						lassign $Specs(position:$toolbar) x y
+						set x [expr {$x + [winfo rootx $tl]}]
+						set y [expr {$y + [winfo rooty $tl]}]
+					} else {
+						set x [winfo rootx $toolbar]
+						set y [winfo rooty $toolbar]
+					}
+					UndockToolbar $toolbar $x $y
+				}
 			}
 
 			event generate $toolbar <<ToolbarEnabled>>
@@ -821,6 +711,156 @@ proc toolbarDialogs {} {
 	}
 
 	return $result
+}
+
+
+proc Add {toolbar widgetCommand args} {
+	variable Counter
+	variable Defaults
+	variable HaveTooltips
+	variable Specs
+
+	if {$widgetCommand eq "separator"} { return [addSeparator $toolbar] }
+
+	set options(-takefocus) 0
+	set w $toolbar.__tbw__[incr Counter]
+	set variable ""
+	set value ""
+	set state normal
+	set widgetType $widgetCommand
+
+	array set Specs [list                                       \
+		float:$w:$toolbar				1                             \
+		padx:$w:$toolbar				0                             \
+		tooltip:$w:$toolbar			{}                            \
+		tooltipvar:$w:$toolbar		{}                            \
+		default:$w:$toolbar			{}                            \
+		small:$w:$toolbar				{}                            \
+		medium:$w:$toolbar			{}                            \
+		large:$w:$toolbar				{}                            \
+		state:$w:$toolbar				normal                        \
+		overrelief:$w:$toolbar		$Defaults(toolbar:overrelief) \
+		relief:$w:$toolbar			$Defaults(toolbar:relief)     \
+	]
+
+	foreach {arg val} $args {
+		switch -- $arg {
+			-image		{ set options(-image) [SetupIcons $toolbar $w $val] }
+			-state		{ set state $val }
+			-overrelief	{ set Specs(overrelief:$w:$toolbar) $val }
+			-relief		{ set Specs(relief:$w:$toolbar) $val }
+			-tooltip		{ if {[llength $val]} { set Specs(tooltip:$w:$toolbar) $val } }
+			-tooltipvar	{ if {[llength $val]} { set Specs(tooltipvar:$w:$toolbar) $val } }
+			-value		{ set value $val }
+			-variable	{ set variable $val }
+			-float		{ set Specs(float:$w:$toolbar) $val }
+			-padx			{ set Specs(padx:$w:$toolbar) $val }
+			default		{ set options($arg) $val }
+		}
+	}
+
+	if {![info exists options(-background)] && [string match *button* $widgetCommand]} {
+		set options(-background) [$toolbar cget -background]
+	}
+	if {![info exists  options(-activebackground)]} {
+		set options(-activebackground) $Defaults(toolbar:activebackground)
+	}
+
+	if {[string match *ttk::spinbox $widgetCommand]} { set options(-state) $state }
+	if {$widgetCommand eq "spinbox"} { set options(-state) $state }
+	if {$widgetCommand eq "checkbutton"} { set widgetCommand "button" }
+	if {$widgetCommand ne "button"} { unset options(-activebackground) }
+	if {$widgetCommand eq "frame"} { set options(-relief) $Specs(relief:$w:$toolbar) }
+	if {![string match *ttk* $widgetCommand]} { set options(-relief) $Specs(relief:$w:$toolbar) }
+	if {[string match *entry $widgetCommand]} { set Specs(takefocus:$toolbar) 1 }
+	if {[string match *spinbox $widgetCommand]} { set variable {} }
+
+	eval $widgetCommand $w [array get options]
+	if {[winfo class $w] eq "Button"} {
+		set Specs(active:$w:$toolbar) [$w cget -activebackground]
+		set Specs(command:$w:$toolbar) [$w cget -command]
+		set Specs(button1:$w:$toolbar) ::tooltip::hide
+		set Specs(entercmd:$w:$toolbar) {}
+		if {[$w cget -state] eq "normal"} {
+			$w configure -overrelief $Specs(overrelief:$w:$toolbar)
+		}
+		bind $w <ButtonPress-1> $Specs(button1:$w:$toolbar)
+	}
+
+	if {[llength $variable]} {
+		if {$widgetType eq "checkbutton"} {
+			set traceCmd "[namespace current]::Tracer4 $toolbar $w $variable"
+			trace add variable $variable write $traceCmd
+			bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
+			ConfigureCheckButton $toolbar $w $w $variable
+		} else {
+			if {[llength $value]} {
+				set Specs(value:$variable:$w:$toolbar) $value
+			} else {
+				set Specs(value:$variable:$w:$toolbar) [set $variable]
+			}
+			if {[info exists Specs(variable:$variable:$toolbar)]} {
+				lappend Specs(variable:$variable:$toolbar) $w
+			} elseif {[llength $value]} {
+				set Specs(variable:$variable:$toolbar) $w
+				if {$variable ni $Specs(variables:$toolbar)} {
+					lappend Specs(variables:$toolbar) $variable
+				}
+				set bg [$w cget -background]
+				set activebg [$w cget -activebackground]
+				set traceCmd "[namespace current]::Tracer1 $toolbar $variable $bg $activebg"
+				trace add variable $variable write $traceCmd
+				bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
+			}
+			if {[llength $value] && [set $variable] eq $value} {
+				$w configure -relief solid -background [$w cget -activebackground]
+			}
+		}
+		bind $w <Leave> [namespace code [list LeaveButton $toolbar $w $variable $value]]
+	} elseif {[info exists options(-relief)]} {
+		bind $w <Leave> [namespace code [list LeaveButton $toolbar $w]]
+	}
+
+	set variable [namespace current]::Specs(state:$w:$toolbar)
+	set traceCmd "[namespace current]::Tracer2 $toolbar $w $variable"
+	trace add variable $variable write $traceCmd
+	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
+
+	set variable [namespace current]::Specs(state:$toolbar)
+	set traceCmd "[namespace current]::Tracer3 $toolbar $variable"
+	trace add variable $variable write $traceCmd
+	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
+
+	if {	$HaveTooltips
+		&& ([llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)])} {
+		::tooltip::init
+		set Specs(tooltip-init:$w:$toolbar) 1
+		bind $w <Enter> +[namespace code { Tooltip show %W }]
+		bind $w <Leave> +[namespace code { Tooltip hide %W }]
+	}
+	if {$widgetCommand eq "button"} {
+		bind $w <Enter> +[namespace code [list EnterButton $toolbar $w]]
+		set Specs(entercmd:$w:$toolbar) [bind $w <Enter>]
+	}
+	if {$Specs(usehandle:$toolbar)} {
+		bind $w <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
+		if {[string match *frame $widgetCommand]} {
+			bind $w <Configure> [namespace code [list BindMenuToChilds $toolbar $w]]
+		}
+	}
+
+	PackWidget $toolbar $w
+	if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $w }
+
+	set parent [winfo parent $toolbar]
+	if {![info exists Specs(configure:$parent)]} {
+		bind $parent <Map> [namespace code { Finish %W }]
+		set Specs(configure:$parent) 1
+	}
+
+	if {$state ne "normal"} { set Specs(state:$w:$toolbar) $state }
+
+	return $w
 }
 
 
@@ -1100,7 +1140,6 @@ proc Finish {parent} {
 
 	bind $parent <Map> {}
 	unset Specs(configure:$parent)
-	scan [winfo geometry [winfo toplevel $parent]] "%dx%d+%d+%d" tw th tx ty
 
 	foreach toolbar $Specs(count:$parent) {
 		if {$Specs(enabled:$toolbar) && $Specs(finish:$toolbar)} {
@@ -1109,8 +1148,8 @@ proc Finish {parent} {
 				set fx 500
 				set fy 500
 			}
-			UndockToolbar $toolbar [expr {$tx + $fx}] [expr {$ty + $fy}]
-			set Specs(finish:$toolbar) 0
+			set tl [winfo toplevel $parent]
+			UndockToolbar $toolbar [expr {[winfo rootx $tl] + $fx}] [expr {[winfo rooty $tl] + $fy}]
 		}
 	}
 }
@@ -2313,10 +2352,7 @@ proc UndockToolbar {toolbar x y} {
 	bind $floatingToolbar <Destroy>  [namespace code [list array unset Specs *:$floatingToolbar]]
 	bind $floatingToolbar <ButtonPress-3> [namespace code [list Menu $toolbar %X %Y]]
 	pack $floatingToolbar -fill both -expand yes
-
-	if {![llength $Specs(position:$toolbar)]} {
-		bind $floatingToolbar <Configure> [namespace code [list TracePosition $floatingToolbar $toolbar]]
-	}
+	bind $floatingToolbar <Configure> [namespace code [list TracePosition $floatingToolbar $toolbar]]
 
 	if {	$Defaults(floating:overrideredirect)
 		|| [tk windowingsystem] eq "aqua"
@@ -2341,6 +2377,7 @@ proc UndockToolbar {toolbar x y} {
 		bind $decor <Button1-Motion>	[namespace code [list Motion $floatingToolbar %X %Y]]
 	}
 
+	set Specs(finish:$toolbar) 0
 	set Specs(orientation:$floatingToolbar) horz
 	set Specs(icon:$floatingToolbar) $Specs(icon:$toolbar)
 	set padx $Specs(padx:$toolbar)

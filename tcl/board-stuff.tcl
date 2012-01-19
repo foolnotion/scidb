@@ -794,7 +794,6 @@ proc MakeSquare {squareSize color} {
 
 proc DrawSquare {w square color} {
 	variable ${w}::Board
-	variable Rectangle
 
 	if {![info exists Board(image,square,$color)]} {
 		set Board(image,square,$color) [MakeSquare $Board(size) $color]
@@ -1521,26 +1520,17 @@ set Rectangle "
   </defs>
   <g>
     <rect
-       width=\"252\"
-       height=\"252\"
-       x=\"6\"
-       y=\"6\"
+       width=\"252\" height=\"252\" x=\"6\" y=\"6\"
        style=\"opacity:1;color:#000000;fill:#000000;fill-opacity:0.50196078;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\"
-       id=\"rect2186\" />
+	 />
     <rect
-       width=\"250\"
-       height=\"250\"
-       x=\"5\"
-       y=\"5\"
+       width=\"250\" height=\"250\" x=\"5\" y=\"5\"
        style=\"opacity:1;color:#000000;fill:#c#;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;troke-opacity:1\"
-       id=\"rect2182\" />
+	 />
     <rect
-       width=\"240\"
-       height=\"240\"
-       x=\"10\"
-       y=\"10\"
+       width=\"240\" height=\"240\" x=\"10\" y=\"10\"
        style=\"opacity:1;color:#000000;fill:url(#linearGradient2196);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1.39999998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-opacity:1\"
-       id=\"rect2188\" />
+	 />
   </g>
 </svg>
 "

@@ -796,17 +796,8 @@ proc ShowTags {gamebar id} {
 	if {[llength $Specs(tags:$id:$gamebar)] == 0} { return }
 
 	set dlg $gamebar.tags
-	toplevel $dlg -background white -class Tooltip
-	wm withdraw $dlg
-	if {[tk windowingsystem] eq "aqua"} {
-		::tk::unsupported::MacWindowStyle style $dlg help none
-	} else {
-		wm overrideredirect $dlg true
-	}
-	wm attributes $dlg -topmost true
-	set bg [::tooltip::background]
-	set f [tk::frame $dlg.f -takefocus 0 -relief solid -borderwidth 0 -background $bg]
-	pack $f -fill x -padx 2 -pady 2
+	set f [::util::makeDropDown $dlg]
+	set bg [$f cget -background]
 
 	lassign [::scidb::game::link? $id] base number
 	if {$base ne $scratchbaseName} {

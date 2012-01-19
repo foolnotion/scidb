@@ -272,10 +272,7 @@ tcl_error(Tcl_Interp* ti, char const* fmt, ...)
 
 
 static int
-cmdWM(ClientData client_data __attribute__((unused)),
-		Tcl_Interp *ti,
-		int objc,
-		Tcl_Obj* const objv[])
+cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* Usage =	"Usage: ::scidb::tk::wm (noDecor | grid "
 								"| setLeader | map | raise | sync) <window> ...";
@@ -293,7 +290,7 @@ cmdWM(ClientData client_data __attribute__((unused)),
 
 	int rc = 1;
 
-	if (strcmp(subcmd, "grid") == 0)
+	if (strcasecmp(subcmd, "grid") == 0)
 	{
 		char const* Usage = "Usage: ::scidb::tk::wm grid <window> <baseWidth> <baseHeight> <widthInc> <heightInc>";
 
@@ -313,7 +310,7 @@ cmdWM(ClientData client_data __attribute__((unused)),
 		Tk_SetGrid(tkwin, baseWidth, baseHeight, widthIncr, heightIncr);
 	}
 #if !defined(WIN32) && !defined(__MacOSX__)
-	else if (strcmp(subcmd, "noDecor") == 0)
+	else if (strcasecmp(subcmd, "noDecor") == 0)
 	{
 		Window window = Tk_WindowId(tkwin);
 
@@ -342,19 +339,19 @@ cmdWM(ClientData client_data __attribute__((unused)),
 
 		rc = noDecor(tkmain, parent);
 	}
-	else if (strcmp(subcmd, "setLeader") == 0)
+	else if (strcasecmp(subcmd, "setLeader") == 0)
 	{
 		setClientLeader(tkwin, Tk_WindowId(tkwin));
 	}
-	else if (strcmp(subcmd, "raise") == 0)
+	else if (strcasecmp(subcmd, "raise") == 0)
 	{
 		raiseWindow(tkwin, Tk_WindowId(tkwin));
 	}
-	else if (strcmp(subcmd, "map") == 0)
+	else if (strcasecmp(subcmd, "map") == 0)
 	{
 		Tk_MapWindow(tkwin);
 	}
-	else if (strcmp(subcmd, "sync") == 0)
+	else if (strcasecmp(subcmd, "sync") == 0)
 	{
 		XSynchronize(Tk_Display(tkmain), True);
 	}

@@ -64,6 +64,14 @@ proc textLineScroll {w cmd args} {
 }
 
 
+proc textPreventSelection {w} {
+	bind $w <Double-1>	{ break }
+	bind $w <Triple-1>	{ break }
+	bind $w <B1-Motion>	{ break }
+	bind $w <B2-Motion>	{ break }
+}
+
+
 proc notebookTextvarHook {nb id var {args {}}} {
 	SetNotebookLabel $nb $id $var $args
 	set cmd [list [namespace current]::SetNotebookLabel $nb $id $var $args]

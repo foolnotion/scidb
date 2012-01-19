@@ -431,6 +431,10 @@ struct HtmlOptions {
     int       shrink;                    /* Boolean */
     int       xhtml;                     /* Boolean. True -> parse as XHTML */
     double    zoom;                      /* Universal scaling factor. */
+    XColor    inactiveselectbackground;
+    XColor    inactiveselectforeground;
+    XColor    selectbackground;
+    XColor    selectforeground;
 
     /* Debugging options. Not part of the official interface. */
     int       layoutcache;

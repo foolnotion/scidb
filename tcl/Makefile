@@ -12,6 +12,7 @@
 
 include ../Makefile.in
 
+# NOTE that the ordering is important!
 SOURCES = \
 	exec.tcl \
 	start.tcl \
@@ -40,6 +41,7 @@ SOURCES = \
 	utils/countries.tcl \
 	utils/web.tcl \
 	utils/xcursor.tcl \
+	utils/shadow.tcl \
 	widgets/tooltip.tcl \
 	widgets/toolbar.tcl \
 	widgets/validate.tcl \
@@ -232,8 +234,8 @@ install-photos:
 	@echo ""
 
 uninstall-photos:
-	@echo -n "Uninstall player photos:"
 	@if [ -d $(SHAREDIR)/photos ]; then                                                       \
+		echo -n "Uninstall player photos:"
 		for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do                       \
 			dir=$(SHAREDIR)/photos/$$i;                                                         \
 			if [ -d $$dir ]; then                                                               \
@@ -517,12 +519,14 @@ uninstall-fonts:
 		fi;                                                                                 \
 	fi
 
-install: install-script install-pieces install-cursors install-flags install-localizations \
-	install-photos install-textures install-themes install-text-scripts install-pdf-images \
-	install-help install-fonts
+install-no-photos: install-script install-pieces install-cursors install-flags \
+	install-localizations install-textures install-themes install-text-scripts  \
+	install-pdf-images install-help install-fonts
+
+install: install-no-photos install-photos
 
 uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
-	uninstall-themes uninstall-text-scripts uninstall-photos uninstall-textures uninstall-pdf-images \
+	uninstall-themes uninstall-text-scripts uninstall-photos uninstall-textures uninstall-pdf-images    \
 	uninstall-help uninstall-fonts
 	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
 		rmdir $(SHAREDIR);                                                     \

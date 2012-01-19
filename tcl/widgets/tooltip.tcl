@@ -153,46 +153,30 @@ array set G {
 switch [tk windowingsystem] {
 	x11 {
 		array set G {
-			fade							0
-			fadestep						0.2
-			shadowthickness			1
-			shadowthickness2			2
-			shadowthresholdheight	40
-			shadowthresholdwidth		200
-			shadowoffset				5
-			shadowcolor					gray50
-			shadowalpha					1.0
+			fade		0
+			fadestep	0.2
 		}
 	}
 
 	win32 {
 		array set G {
-			fade							1
-			fadestep						0.2
-			shadowthickness			2
-			shadowthickness2			2
-			shadowthresholdheight	99999
-			shadowthresholdwidth		99999
-			shadowoffset				5
-			shadowcolor					black
-			shadowalpha					0.6
+			fade		1
+			fadestep	0.2
 		}
 	}
 
 	aqua {
 		array set G {
-			fade							0
-			fadestep						0.2
-			shadowthickness			2
-			shadowthickness2			2
-			shadowthresholdheight	99999
-			shadowthresholdwidth		99999
-			shadowoffset				5
-			shadowcolor					black
-			shadowalpha					0.6
+			fade		0
+			fadestep	0.2
 		}
 	}
 }
+
+
+# The user may overwrite this function.
+proc ::tooltip::x11DropShadow {args} {}
+
 
 # The extra ::hide call in <Enter> is necessary to catch moving to
 # child widgets where the <Leave> event won't be generated
@@ -461,38 +445,6 @@ proc popup {w b {at {}}} {
 		set focus [focus]
 	}
 
-	set shadowthickness $G(shadowthickness)
-
-	if {$shadowthickness} {
-		if {$reqh >= $G(shadowthresholdheight) && $reqw >= $G(shadowthresholdwidth)} {
-			set shadowthickness $G(shadowthickness2)
-		}
-		set bw [expr {$reqw - $G(shadowoffset)}]
-		set bh $shadowthickness
-		set rw $shadowthickness
-		set rh [expr {$reqh - $G(shadowoffset) + $shadowthickness}]
-		if {![winfo exists $b.__shadow__b__]} {
-			set options [list -background $G(shadowcolor) -borderwidth 0 -relief flat -highlightthickness 0]
-			toplevel $b.__shadow__b__ -width $bw -height $bh {*}$options
-			toplevel $b.__shadow__r__ -width $rw -height $rh {*}$options
-			wm withdraw $b.__shadow__b__
-			wm withdraw $b.__shadow__r__
-			wm overrideredirect $b.__shadow__b__ 1
-			wm overrideredirect $b.__shadow__r__ 1
-			catch { wm attributes $b.__shadow__b__ -alpha $G(shadowalpha) }
-			catch { wm attributes $b.__shadow__r__ -alpha $G(shadowalpha) }
-		} else {
-			$b.__shadow__b__ configure -width $bw -height $bh
-			$b.__shadow__r__ configure -width $rw -height $rh
-		}
-		wm geometry $b.__shadow__b__ +[expr {$x + $G(shadowoffset)}]+[expr {$y + $reqh}]
-		wm geometry $b.__shadow__r__ +[expr {$x + $reqw}]+[expr {$y + $G(shadowoffset)}]
-		wm deiconify $b.__shadow__b__
-		wm deiconify $b.__shadow__r__
-		raise $b.__shadow__b__
-		raise $b.__shadow__r__
-	}
-
 	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
 	catch { wm attributes $b -alpha 0.99 }
 	catch { wm attributes $b -type tooltip }
@@ -511,15 +463,7 @@ proc popdown {w} {
 	variable G
 
 	if {$w ne $G(toplevel)} { tooltip on }
-
-	if {[winfo exists $w]} {
-		wm withdraw $w
-
-		if {[winfo exists $w.__shadow__b__]} {
-			wm withdraw $w.__shadow__b__
-			wm withdraw $w.__shadow__r__
-		}
-	}
+	if {[winfo exists $w]} { wm withdraw $w }
 }
 
 
@@ -532,10 +476,6 @@ proc hide {{fadeOk 0}} {
 
 	if {$fadeOk && $G(fade)} {
 		set w $G(toplevel)
-		if {[winfo exists $w.__shadow__b__]} {
-			wm withdraw $w.__shadow__b__
-			wm withdraw $w.__shadow__r__
-		}
 		Fade $w $G(fadestep)
 	} else {
 		popdown $G(toplevel)

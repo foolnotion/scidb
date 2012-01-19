@@ -231,10 +231,8 @@ proc build {parent menu width height} {
 			-cursor {} \
 		]
 
-		bind $pgn <Button-3>		[namespace code [list PopupMenu $edit $i]]
-		bind $pgn <Double-1>		{ break }
-		bind $pgn <B1-Motion>	{ break }
-		bind $pgn <B2-Motion>	{ break }
+		::widget::textPreventSelection $pgn
+		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
 
 		grid $pgn -row 1 -column 1 -sticky nsew
 		grid $sb -row 1 -column 2 -sticky ns
@@ -275,13 +273,11 @@ proc build {parent menu width height} {
 	set Vars(button:new) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarDocument \
 		-tooltip [::mc::stripAmpersand $::menu::mc::GameNew] \
-		-compound left \
 		-command [list ::menu::gameNew $top] \
 	]
 	set Vars(button:shuffle) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarDice \
 		-tooltip "[::mc::stripAmpersand $::menu::mc::GameNew:] $::setup::board::mc::Shuffle" \
-		-compound left \
 		-command [namespace code NewGame] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
@@ -292,13 +288,11 @@ proc build {parent menu width height} {
 	set Vars(button:remove) [::toolbar::add $tbGameHistory button \
 		-image $::icon::toolbarRemove \
 		-tooltipvar ::game::mc::RemoveSelectedGame \
-		-compound left \
 		-command [namespace code RemoveHistoryEntry] \
 	]
 	::toolbar::add $tbGameHistory button \
 		-image $::icon::toolbarClear \
 		-tooltipvar ::game::mc::ClearHistory \
-		-compound left \
 		-command [list ::game::clearHistory] \
 		;
 	set tbDisplay [::toolbar::toolbar $top \
@@ -320,24 +314,24 @@ proc build {parent menu width height} {
 		-variable [namespace current]::Options(paragraph-spacing) \
 		-padx 1 \
 		;
-	::toolbar::add $tbDisplay checkbutton \
+	set Vars(button:show-move-info) [::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarClock \
 		-command [namespace code [list ToggleOption show-move-info]] \
 		-tooltipvar [namespace current]::mc::ShowMoveInfo \
 		-variable [namespace current]::Options(show-move-info) \
 		-padx 1 \
-		;
-	::toolbar::addSeparator $tbDisplay
-	::toolbar::add $tbDisplay button \
+	]
+	set Vars(separator:variations) [::toolbar::addSeparator $tbDisplay]
+	set Vars(button:fold-variations) [::toolbar::add $tbDisplay button \
 		-image $::icon::toolbarToggleMinus \
 		-command [namespace code { FoldVariations on }] \
 		-tooltipvar [namespace current]::mc::CollapseVariations \
-		;
-	::toolbar::add $tbDisplay button \
+	]
+	set Vars(button:expand-variations) [::toolbar::add $tbDisplay button \
 		-image $::icon::toolbarTogglePlus \
 		-command [namespace code { FoldVariations off }] \
 		-tooltipvar [namespace current]::mc::ExpandVariations \
-		;
+	]
 
 	set tbLanguages [::toolbar::toolbar $top \
 		-id languages \
@@ -839,7 +833,7 @@ proc UpdateLanguages {position languages} {
 	set langButtons [array names Vars lang:button:*]
 	
 	foreach button $langButtons {
-		::toolbar::remove $Vars(lang:toolbar) $Vars($button)
+		::toolbar::forget $Vars($button)
 		unset Vars($button)
 	}
 
@@ -930,7 +924,6 @@ proc Update {position data} {
 
 				switch [lindex $args 0] {
 					replace {
-						set action replace
 						lassign $args unused level removePos insertMark
 						$w delete $removePos $insertMark
 						$w mark gravity $removePos left
@@ -940,7 +933,6 @@ proc Update {position data} {
 					}
 
 					insert {
-						set action insert
 						lassign $args unused level insertMark
 						$w mark gravity $insertMark right
 						$w mark set current $insertMark
@@ -960,10 +952,6 @@ proc Update {position data} {
 					clear {
 						$w delete m-start m-0
 						$w insert m-0 "\u200b"
-
-#						foreach tag [$Vars(pgn:$position) tag names] {
-#							if {[string match m-* $tag]} { $w tag delete $tag }
-#						}
 					}
 
 					marks	{ [namespace parent]::board::updateMarks [::scidb::game::query marks] }
@@ -1020,6 +1008,8 @@ proc Update {position data} {
 			}
 		}
 	}
+
+	after idle [namespace code UpdateButtons]
 #set clock1 [clock milliseconds]
 #puts "clock: [expr {$clock1 - $clock0}]"
 }
@@ -1693,14 +1683,7 @@ proc ShowPosition {parent position key} {
 	if {![winfo exists $w]} {
 		variable Options
 
-		toplevel $w -class Tooltip -relief solid
-		wm withdraw $w
-		if {[tk windowingsystem] eq "aqua"} {
-			::tk::unsupported::MacWindowStyle style $w help none
-		} else {
-			wm overrideredirect $w true
-		}
-		wm attributes $w -topmost true
+		destroy [::util::makeDropDown $w]
 		::board::stuff::new $w.board $Options(board-size) 2
 		pack $w.board
 	}
@@ -1790,6 +1773,27 @@ proc ResetGame {position tags} {
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
 	::scidb::game::subscribe state $position [namespace current]::StateChanged
+}
+
+
+proc UpdateButtons {} {
+	variable Vars
+
+	if {[::scidb::game::query moveInfo?]} {
+		::toolbar::add $Vars(button:show-move-info)
+	} else {
+		::toolbar::remove $Vars(button:show-move-info)
+	}
+
+	if {[::scidb::game::query variations?]} {
+		::toolbar::add $Vars(separator:variations)
+		::toolbar::add $Vars(button:expand-variations)
+		::toolbar::add $Vars(button:fold-variations)
+	} else {
+		::toolbar::remove $Vars(separator:variations)
+		::toolbar::remove $Vars(button:expand-variations)
+		::toolbar::remove $Vars(button:fold-variations)
+	}
 }
 
 
@@ -2152,19 +2156,21 @@ proc PopupMenu {parent position} {
 		$menu add separator
 	}
 
-	$menu add command \
-		-compound left \
-		-label " $mc::CollapseVariations" \
-		-image $::icon::16x16::toggleMinus \
-		-command [list ::scidb::game::variation fold on] \
-		;
-	$menu add command \
-		-compound left \
-		-label " $mc::ExpandVariations" \
-		-image $::icon::16x16::togglePlus \
-		-command [list ::scidb::game::variation fold off] \
-		;
-	$menu add separator
+	if {[::scidb::game::query variations?]} {
+		$menu add command \
+			-compound left \
+			-label " $mc::CollapseVariations" \
+			-image $::icon::16x16::toggleMinus \
+			-command [list ::scidb::game::variation fold on] \
+			;
+		$menu add command \
+			-compound left \
+			-label " $mc::ExpandVariations" \
+			-image $::icon::16x16::togglePlus \
+			-command [list ::scidb::game::variation fold off] \
+			;
+		$menu add separator
+	}
 
 	menu $menu.display
 	$menu add cascade -menu $menu.display -label $mc::Display
@@ -2653,8 +2659,8 @@ proc WriteOptions {chan} {
 switch [tk windowingsystem] {
 	x11 {
 		if {[::xcursor::supported?]} {
-			set file1 [file join $::scidb::dir::share "cursor/collapse-16x16.xcur"]
-			set file2 [file join $::scidb::dir::share "cursor/expand-16x16.xcur"]
+			set file1 [file join $::scidb::dir::share cursor collapse-16x16.xcur]
+			set file2 [file join $::scidb::dir::share cursor expand-16x16.xcur]
 			if {[file readable $file1] && [file readable $file2]} {
 				catch {
 					set Cursor(collapse) [::xcursor::loadCursor $file1]
@@ -2666,21 +2672,19 @@ switch [tk windowingsystem] {
 		}
 	}
 
-	win32 {
-		set file1 [file join $::scidb::dir::share "cursor/collapse-16x16.cur"]
-		set file2 [file join $::scidb::dir::share "cursor/expand-16x16.cur"]
+	win32 - aqua {
+		if {[tk windowingsystem] eq "win32"} { set ext cur } else { set ext crsr }
+		# IMPORTANT NOTE: under windows the cursor wil be displayed with size 32x32
+		# source: http://wiki.tcl.tk/8674
+		# but probably this information is wrong
+		set file1 [file join $::scidb::dir::share cursor collapse-16x16.$ext]
+		set file2 [file join $::scidb::dir::share cursor expand-16x16.$ext]
 		if {[file readable $file1] && [file readable $file2]} {
-			catch {
-				set Cursor(collapse) [::xcursor::loadCursor $file1]
-				set Cursor(expand)   [::xcursor::loadCursor $file2]
-			}
+			set Cursor(collapse) [list @$file1]
+			set Cursor(expand) [list @$file2]
 		} else {
 			::log::info PGN-Editor [format $mc::CannotOpenCursorFiles "$file1 $file2"]
 		}
-	}
-
-	aqua {
-		puts "custom cursors not yet implemented" ;# TODO
 	}
 }
 

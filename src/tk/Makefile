@@ -29,6 +29,7 @@ SRC_CXX = \
 	tk_png.cpp \
 	tk_twm.cpp \
 	tk_window_manager.cpp \
+	tk_x11.cpp \
 	tk_xcursor.cpp \
 
 SRC	= $(SRC_CXX)
@@ -217,4 +218,7 @@ tk_window_manager.o: ../mstl/m_assert.h
 tk_window_manager.o: ../mstl/m_exception.h
 tk_window_manager.o: ../mstl/m_backtrace.h
 tk_window_manager.o: ../mstl/m_exception.ipp
+tk_x11.o: tk_init.h
+tk_x11.o: ../tcl/tcl_base.h
+tk_x11.o: ../tcl/tcl_base.ipp
 tk_xcursor.o: ./X11/Xcursor/Xcursor.h

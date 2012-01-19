@@ -448,6 +448,8 @@ proc ComboboxSelected {w} {
 }
 
 option add *background #efefef
+option add *inactiveSelectBackground darkgrey
+option add *inactiveSelectForeground white
 
 option add *Spinbox.background white
 option add *Spinbox.selectForeground white

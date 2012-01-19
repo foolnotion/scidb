@@ -435,7 +435,6 @@ proc Update {{setup 1}} {
 	foreach entry $Vars(content) {
 		lassign $entry lang comment
 		SetupComment $lang $comment
-
 		if {$setup} {
 			if {[string length $lang] == 0} { set lang xx }
 			SetUndoPoint $w $lang
@@ -454,7 +453,6 @@ proc SetupComment {lang comment} {
 	if {$lang eq $Vars(lang)} {
 		if {[info exists Vars(content:$lang)]} {
 			InsertComment $lang $Vars(content:$lang)
-			set Vars(insert) [$Vars(widget:text) index insert]
 		}
 	}
 }
@@ -690,12 +688,14 @@ proc SetUndoPoint {w {lang {}}} {
 	variable Vars
 
 	if {[string length $lang] == 0} { set lang $Vars(lang) }
+
 	set dump [$w dump -tag -text 1.0 end]
 	set text [ParseDump $dump]
+	set insert [$w index insert]
 
 	if {[info exists Vars(undoStack:$lang)]} {
 		if {$text eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 1]} {
-			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $Vars(insert)
+			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $insert
 			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2 [DumpToComment $dump]
 			return
 		}
@@ -705,7 +705,7 @@ proc SetUndoPoint {w {lang {}}} {
 		set Vars(undoStackIndex:$lang) 0
 	}
 
-	lappend Vars(undoStack:$lang) [list $Vars(insert) $text [DumpToComment $dump]]
+	lappend Vars(undoStack:$lang) [list $insert $text [DumpToComment $dump]]
 }
 
 
@@ -2158,7 +2158,6 @@ proc TextInsert {w s} {
 	}
 
 	$w see insert
-	set Vars(insert) [$w index insert]
 }
 
 

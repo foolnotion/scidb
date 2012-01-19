@@ -991,8 +991,8 @@ proc SetupCursors {} {
 		x11 {
 			if {[::xcursor::supported?]} {
 				foreach fig {k q r b n p} {
-					set wfile [file join $::scidb::dir::share "cursor/igor-w${fig}-32x32.xcur"]
-					set bfile [file join $::scidb::dir::share "cursor/igor-b${fig}-32x32.xcur"]
+					set wfile [file join $::scidb::dir::share cursor igor-w${fig}-32x32.xcur]
+					set bfile [file join $::scidb::dir::share cursor igor-b${fig}-32x32.xcur]
 
 					if {[file readable $wfile] && [file readable $bfile]} {
 						catch {
@@ -1000,40 +1000,38 @@ proc SetupCursors {} {
 							set Cursor(b$fig) [::xcursor::loadCursor $bfile]
 						}
 					} else {
-						::log::info Setup [format $::application::pgn::mc::CannotOpenCursorFiles $wfile $bfile]
+						set msg [format $::application::pgn::mc::CannotOpenCursorFiles "$wfile $bfile"]
+						::log::info Setup $msg
 					}
 				}
 			} else {
 				foreach fig {k q r b n p} {
-					set wfile [file join $::scidb::dir::share "cursor/igor-w${fig}-32x32.xbm"]
-					set bfile [file join $::scidb::dir::share "cursor/igor-b${fig}-32x32.xbm"]
-					set mfile [file join $::scidb::dir::share "cursor/igor-w${fig}-32x32_mask.xbm"]
+					set wfile [file join $::scidb::dir::share cursor igor-w${fig}-32x32.xbm]
+					set bfile [file join $::scidb::dir::share cursor igor-b${fig}-32x32.xbm]
+					set mfile [file join $::scidb::dir::share cursor igor-w${fig}-32x32_mask.xbm]
 
 					if {[file readable $wfile] && [file readable $bfile] && [file readable $mfile]} {
 						set Cursor(w$fig) [list @$wfile $mfile black white]
 						set Cursor(b$fig) [list @$bfile $mfile white black]
 					} else {
-						set msg [format $::application::pgn::mc::CannotOpenCursorFiles $wfile $bfile $mfile]
+						set msg [format $::application::pgn::mc::CannotOpenCursorFiles "$wfile $bfile $mfile"]
 						::log::info Setup $msg
 					}
 				}
 			}
 		}
 
-		win32 {
-			set wfile [file join $::scidb::dir::share "cursor/igor-w${fig}-32x32.cur"]
-			set bfile [file join $::scidb::dir::share "cursor/igor-b${fig}-32x32.cur"]
+		win32 - aqua {
+			if {[tk windowingsystem] eq "win32"} { set ext cur } else { set ext crsr }
+			set wfile [file join $::scidb::dir::share cursor igor-w${fig}-32x32.$ext]
+			set bfile [file join $::scidb::dir::share cursor igor-b${fig}-32x32.$ext]
 
 			if {[file readable $wfile] && [file readable $bfile]} {
 				set Cursor(w$fig) [list @$wfile]
 				set Cursor(b$fig) [list @$bfile]
 			} else {
-				::log::info Setup [format $::application::pgn::mc::CannotOpenCursorFiles $wfile $bfile]
+				::log::info Setup [format $::application::pgn::mc::CannotOpenCursorFiles "$wfile $bfile"]
 			}
-		}
-
-		aqua {
-			# TODO
 		}
 	}
 

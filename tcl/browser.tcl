@@ -192,8 +192,10 @@ proc open {parent base info view index {fen {}}} {
 		-font $Options(font) \
 		-cursor {} \
 		;
+	::widget::textPreventSelection $rt.header
+	::widget::textPreventSelection $rt.pgn
 	::ttk::scrollbar $rt.sb -command [list $rt.pgn yview] -takefocus 0
-
+	
 	grid $rt.header	-row 1 -column 1 -columnspan 2 -sticky nsew
 	grid $rt.pgn		-row 3 -column 1 -sticky nsew -ipady 1
 	grid $rt.sb			-row 3 -column 2 -sticky ns

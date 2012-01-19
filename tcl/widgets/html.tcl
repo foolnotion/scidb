@@ -62,26 +62,19 @@ proc Build {w args} {
 		-doublebuffer		yes
 		-delay				0
 		-css					{}
-		-selectbackground	#678db2
-		-selectforeground	white
 	}
 
 	array set opts $args
-
-#	append css "body\{"
-#	append css "font-family: \"Helvetica\", sans-serif;"
-#	append css "font-size: 14px;"
-#	append css "line-height: 16px;"
-#	append css "\}"
-	set css $opts(-css)
 
 	set options {}
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -selectbackground - -selectforeground {}
+			-delay - -css - -center {}
 
-			-imagecmd - -doublebuffer - -exportselection {
+			-imagecmd - -doublebuffer - -exportselection -
+			-selectbackground - -selectforeground -
+			-inactiveselectbackground - -inactiveselectforeground {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
 			}
@@ -108,8 +101,6 @@ proc Build {w args} {
 	variable [namespace current]::${parent}::ActiveNodes3
 
 	array set Priv {
-		horzScrollbar	{}
-		vertScrollbar	{}
 		onmouseover		{}
 		onmouseout		{}
 		onmousedown1	{}
@@ -124,26 +115,21 @@ proc Build {w args} {
 		bbox				{}
 		pointer			{0 0}
 		sbwidth			0
+		focus				0
+		sel:state		0
 	}
 
-	set options {}
-	set Priv(delay) $opts(-delay)
+	set Priv(delay)  $opts(-delay)
 	set Priv(center) $opts(-center)
-	set Priv(bw) $opts(-borderwidth)
-	set Priv(focus) 0
-	set Priv(sel:state) false
-	set Priv(sel:fg) $opts(-selectforeground)
-	set Priv(sel:bg) $opts(-selectbackground)
+	set Priv(bw)     $opts(-borderwidth)
+	set Priv(css)    $opts(-css)
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
 
-	set options {}
-	if {$Priv(center)} { lappend options -width $MaxWidth }
-	__html_widget $html {*}$htmlOptions {*}$options -shrink yes
-	$html style -id user $css
+	__html_widget $html {*}$htmlOptions -shrink yes
 	grid $html
 
 	SelectionClear $html
@@ -180,21 +166,20 @@ proc WidgetProc {w parent command args} {
 				update idletasks
 			}
 			$parent.html parse -final [lindex $args 0]
+			if {[string length $Priv(css)]} { $parent.html style -id user $Priv(css) }
 			set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
-			lset Priv(bbox) 2 [expr {min([lindex $Priv(bbox) 2],4000)}]
-#			lset Priv(bbox) 3 [expr {min([lindex $Priv(bbox) 3],8000)}]
+			lset Priv(bbox) 2 [min [lindex $Priv(bbox) 2] 4000]
+#			lset Priv(bbox) 3 [min [lindex $Priv(bbox) 3] 8000]
 			if {[llength $Priv(bbox)]} {
 				if {$Priv(center)} {
 					lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
 					$parent.html configure -width [lindex $Priv(bbox) 2]
-					update idletasks
-					$parent resize
 				} else {
 					lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
 					$parent.html configure -height [lindex $Priv(bbox) 3]
-					update idletasks
-					$parent resize
 				}
+				update idletasks
+				$parent resize
 			}
 			return
 		}
@@ -274,9 +259,11 @@ proc WidgetProc {w parent command args} {
 		focusin {
 			if {!$Priv(focus)} {
 				set Priv(focus) 1
-
 				if {[$parent.html cget -exportselection]} {
-					$parent.html tag configure selection -foreground $Priv(sel:fg) -background $Priv(sel:bg)
+					$parent.html tag configure selection \
+						-foreground [$parent.html cget -selectforeground] \
+						-background [$parent.html cget -selectbackground] \
+						;
 				}
 			}
 			return
@@ -285,9 +272,11 @@ proc WidgetProc {w parent command args} {
 		focusout {
 			if {$Priv(focus)} {
 				set Priv(focus) 0
-
 				if {[$parent.html cget -exportselection]} {
-					$parent.html tag configure selection -foreground white -background darkgrey
+					$parent.html tag configure selection \
+						-foreground [$parent.html cget -inactiveselectforeground] \
+						-background [$parent.html cget -inactiveselectbackground] \
+						;
 				}
 			}
 			return
@@ -308,7 +297,7 @@ proc Configure {parent width req} {
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
 
-	$parent.html configure -width [expr {max(1,$width - 2*$Priv(bw) - $Priv(sbwidth))}]
+	$parent.html configure -width [expr {max(1, $width - 2*$Priv(bw) - $Priv(sbwidth))}]
 	after cancel $Priv(afterId)
 	set afterId [after idle [namespace code [list ComputeSize $parent $req]]]
 }
@@ -353,11 +342,17 @@ proc ComputeBoundingBox {w node skipBody} {
 	set result {}
 
 	if {[string length $tag]} {
-		if {$tag ne "html" && (!$skipBody || $tag ne "body")} {
-			set bbox [$w bbox $node]
-			if {[llength $bbox]} {
-				if {[lindex $bbox 2] == [expr {$MaxWidth - $Margin}]} { lset bbox 2 0 }
-				set result $bbox
+		switch -- $tag {
+			html {}
+			head { return $result }
+			default {
+				if {!$skipBody || $tag ne "body"} {
+					set bbox [$w bbox $node]
+					if {[llength $bbox]} {
+						if {[lindex $bbox 2] == $MaxWidth - $Margin} { lset bbox 2 0 }
+						set result $bbox
+					}
+				}
 			}
 		}
 	}
@@ -365,7 +360,7 @@ proc ComputeBoundingBox {w node skipBody} {
 	if {[llength $result] == 0} {
 		foreach n [$node children] {
 			set bbox [ComputeBoundingBox $w $n $skipBody]
-			if {[llength $bbox] && [lindex $bbox 2] > 0} {
+			if {[llength $bbox] > 0 && [lindex $bbox 2] > 0} {
 				set result [CombineBox $result $bbox]
 			}
 		}
@@ -482,7 +477,7 @@ proc GenerateEvents {w eventlist} {
 	variable [winfo parent $w]::Priv
 
 	foreach {event node} $eventlist {
-		if {[llength $node] == 0 || [llength [info commands $node]]} {
+		if {[llength $node] == 0 || [llength [info commands $node]] > 0} {
 			foreach script $Priv($event) {
 				{*}$script $node
 			}
@@ -499,9 +494,7 @@ proc ButtonPress {w x y k {state 0}} {
 
 	array unset ActiveNodes$k
 	set node [lindex [$w node $x $y] end]
-	if {[llength $node]} {
-		if {[string length [$node tag]] == 0} { set node [$node parent] }
-	}
+	if {[string length $node]  > 0 && [string length [$node tag]] == 0} { set node [$node parent] }
 	if {[string length $node] == 0 || [string length [$node tag]] == 0} { set node [$w node] }
 
 	for {set n $node} {[string length $n] > 0} {set n [$n parent]} {
@@ -525,9 +518,7 @@ proc ButtonRelease {w x y k} {
 	if {$k == 1} { SelectionFinish $w $x $y }
 
 	set node [lindex [$w node $x $y] end]
-	if {[llength $node]} {
-		if {[string length [$node tag]] == 0} { set node [$node parent] }
-	}
+	if {[string length $node]  > 0 && [string length [$node tag]] == 0} { set node [$node parent] }
 	if {[string length $node] == 0 || [string length [$node tag]] == 0} { set node [$w node] }
 
 	set eventlist {}
@@ -738,7 +729,10 @@ proc SelectionClear {w} {
 	if {![$w cget -exportselection]} { return }
 
 	$w tag delete selection
-	$w tag configure selection -foreground $Priv(sel:fg) -background $Priv(sel:bg)
+	$w tag configure selection \
+		-foreground [$w cget -selectforeground] \
+		-background [$w cget -selectbackground] \
+		;
 	set Priv(sel:from:node) ""
 	set Priv(sel:to:node) ""
 	set Priv(sel:moved) 0
@@ -817,14 +811,6 @@ proc SelectionGet {w offset maxChars} {
 }
 
 
-#proc GetSelection {w} {
-#	variable [winfo parent $w]::Priv
-#
-#	if {[llength $Priv(sel:from:node)] == 0} { return "" }
-#	return [SelectionGet 0 10000000]
-#}
-
-
 proc SelectionHandler {w args} {
 	variable [winfo parent $w]::Priv
 
@@ -843,21 +829,21 @@ proc SelectionHandler {w args} {
 }
 
 
-bind Html <Motion>				[list [namespace current]::Motion %W %x %y %s]
-bind Html <Leave>					[list [namespace current]::Leave %W]
-bind Html <ButtonPress-1>		[list [namespace current]::ButtonPress %W %x %y 1 %s]
-bind Html <ButtonRelease-1>	[list [namespace current]::ButtonRelease %W %x %y 1]
-bind Html <ButtonPress-2>		[list [namespace current]::ButtonPress %W %x %y 2]
-bind Html <ButtonRelease-2>	[list [namespace current]::ButtonRelease %W %x %y 2]
-bind Html <ButtonPress-3>		[list [namespace current]::ButtonPress %W %x %y 3]
-bind Html <ButtonRelease-3>	[list [namespace current]::ButtonRelease %W %x %y 3]
-bind Html <Unmap>					[list [namespace current]::Leave %W]
-bind Html <Map>					[list [namespace current]::Mapped %W]
+bind Html <Motion>				[namespace code { Motion %W %x %y %s }]
+bind Html <Leave>					[namespace code { Leave %W }]
+bind Html <ButtonPress-1>		[namespace code { ButtonPress %W %x %y 1 %s }]
+bind Html <ButtonRelease-1>	[namespace code { ButtonRelease %W %x %y 1 }]
+bind Html <ButtonPress-2>		[namespace code { ButtonPress %W %x %y 2 }]
+bind Html <ButtonRelease-2>	[namespace code { ButtonRelease %W %x %y 2 }]
+bind Html <ButtonPress-3>		[namespace code { ButtonPress %W %x %y 3 }]
+bind Html <ButtonRelease-3>	[namespace code { ButtonRelease %W %x %y 3 }]
+bind Html <Unmap>					[namespace code { Leave %W }]
+bind Html <Map>					[namespace code { Mapped %W }]
 
-bind Html <Double-ButtonPress-1>			[list [namespace current]::Select %W %x %y word]
-bind Html <Triple-ButtonPress-1>			[list [namespace current]::Select %W %x %y block]
-bind Html <Shift-Double-ButtonPress-1>	[list [namespace current]::SelectExtend %W %x %y word]
-bind Html <Shift-Triple-ButtonPress-1>	[list [namespace current]::SelectExtend %W %x %y block]
+bind Html <Double-ButtonPress-1>			[namespace code { Select %W %x %y word }]
+bind Html <Triple-ButtonPress-1>			[namespace code { Select %W %x %y block }]
+bind Html <Shift-Double-ButtonPress-1>	[namespace code { SelectExtend %W %x %y word }]
+bind Html <Shift-Triple-ButtonPress-1>	[namespace code { SelectExtend %W %x %y block }]
 
 switch [tk windowingsystem] {
 	win32 {

@@ -82,20 +82,23 @@ proc WriteOptions {chan} {
 # --- Initalization ----------------------------------------------------
 
 if {[tk windowingsystem] eq "x11"} {
-	proc NoWindowDecor {w} {
-		update idletasks
-		::scidb::tk::wm noDecor $w
+	namespace eval x11 {
+		proc noWindowDecor {w} {
+			update idletasks
+			::scidb::tk::wm noDecor $w
+		}
 	}
 
-	proc ::dialog::choosecolor::x11NoWindowDecor {w} { NoWindowDecor $w }
-	proc ::toolbar::x11NoWindowDecor {w} { NoWindowDecor $w }
-	proc ::fsbox::x11NoWindowDecor {w} { NoWindowDecor $w }
+	proc ::dialog::choosecolor::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc ::toolbar::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc ::fsbox::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc ::tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 }
 
-set dialog::iconOk			$icon::iconOk
-set dialog::iconCancel		$icon::iconCancel
-set dialog::iconGoNext		$icon::iconGoNext
-set dialog::iconYes			$icon::iconOk
+set dialog::iconOk		$icon::iconOk
+set dialog::iconCancel	$icon::iconCancel
+set dialog::iconGoNext	$icon::iconGoNext
+set dialog::iconYes		$icon::iconOk
 
 set dialog::choosefont::iconOk		$icon::iconOk
 set dialog::choosefont::iconCancel	$icon::iconCancel

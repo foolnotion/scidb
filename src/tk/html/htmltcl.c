@@ -1377,6 +1377,22 @@ configureCmd(clientData, interp, objc, objv)
         {TK_OPTION_CURSOR, "-" #v, s1, s2, 0, -1, \
          Tk_Offset(HtmlOptions, v), TK_OPTION_NULL_OK, 0, 0}
 
+#if defined(__WIN32__)
+# define SELECT_BG          "SystemHighlight"
+# define SELECT_FG          "SystemHighlightText"
+# define INACTIVE_SELECT_BG NULL
+#elif defined(MAC_OSX_TK)
+# define SELECT_BG          "systemHighlight"
+# define SELECT_FG          None
+# define INACTIVE_SELECT_BG "systemHighlightSecondary"
+#elif defined(__unix__)
+# define SELECT_BG          "#678db2"
+# define SELECT_FG          "white"
+# define INACTIVE_SELECT_BG "#c3c3c3"
+#else
+# error "unknown platform"
+#endif
+
     /* Option table definition for the html widget. */
     static Tk_OptionSpec htmlOptionSpec[] = {
 
@@ -1385,6 +1401,11 @@ configureCmd(clientData, interp, objc, objv)
         GEOMETRY(width, "width", "Width", "800"),
 
         CURSOR(cursor, "cursor", "Cursor"),
+
+        XCOLOR(inactiveselectbackground, "inactiveSelectBackground", "Foreground", INACTIVE_SELECT_BG),
+        XCOLOR(inactiveselectforeground, "inactiveSelectForeground", "Background", SELECT_FG),
+        XCOLOR(selectbackground, "selectBackground", "Foreground", SELECT_BG),
+        XCOLOR(selectforeground, "selectForeground", "Background", SELECT_FG),
 
         BOOLEAN(shrink, "shrink", "Shrink", "0", S_MASK),
         BOOLEAN(layoutcache, "layoutCache", "LayoutCache", "1", S_MASK),
@@ -1422,9 +1443,13 @@ configureCmd(clientData, interp, objc, objv)
         {TK_OPTION_END, 0, 0, 0, 0, 0, 0, 0, 0}
     };
     #undef PIXELS
+    #undef GEOMETRY
     #undef STRING
     #undef XCOLOR
     #undef BOOLEAN
+    #undef OBJ
+    #undef DOUBLE
+    #undef CURSOR
 
     HtmlTree *pTree = (HtmlTree *)clientData;
     char *pOptions = (char *)&pTree->options;

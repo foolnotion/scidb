@@ -371,6 +371,21 @@ proc catchIoError {cmd {resultVar {}}} {
 	return 0
 }
 
+
+proc makeDropDown {w} {
+	toplevel $w -background white -class Tooltip
+	wm withdraw $w
+	if {[tk windowingsystem] eq "aqua"} {
+		::tk::unsupported::MacWindowStyle style $w help none
+	} else {
+		wm overrideredirect $w true
+	}
+	wm attributes $w -topmost true
+	tk::frame $w.f -takefocus 0 -relief solid -borderwidth 0 -background [::tooltip::background]
+	pack $w.f -fill x -expand yes -padx 1 -pady 1
+	return $w.f
+}
+
 } ;# namespace util
 
 

@@ -250,11 +250,11 @@ proc build {tab menu width height} {
 	set Vars(lock:minsize) 0
 
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
-	bind $contents <<LanguageChanged>> +[namespace code LanguageChanged]
+	bind $contents <<LanguageChanged>> [namespace code LanguageChanged]
 
 	AddBase $ClipbaseType $::scidb::clipbaseName {} no
 	SetClipbaseDescription
-	bind $contents <<LanguageChanged>> [namespace code SetClipbaseDescription]
+	bind $contents <<LanguageChanged>> +[namespace code SetClipbaseDescription]
 	Switch $clipbaseName
 }
 
@@ -508,7 +508,6 @@ proc CloseBase {parent file number} {
 
 proc SetClipbaseDescription {} {
 	variable ::scidb::clipbaseName
-
 	::scidb::db::set description $clipbaseName $mc::ClipbaseDescription
 }
 
@@ -888,6 +887,7 @@ proc LanguageChanged {} {
 	variable ::scidb::clipbaseName
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
+puts "LanguageChanged: $::util::clipbaseName"
 	UpdateSwitcher $Vars(canvas) $clipbaseName
 
 	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
@@ -1505,25 +1505,14 @@ proc Properties {index popup} {
 		}
 	}
 
-	set f $dlg.f
-
 	if {$popup} {
 		if {[winfo exists $dlg]} { destroy $dlg }
-		toplevel $dlg -background white -class Tooltip
-		wm withdraw $dlg
-		if {[tk windowingsystem] eq "aqua"} {
-			::tk::unsupported::MacWindowStyle style $dlg help none
-		} else {
-			wm overrideredirect $dlg true
-		}
-		wm attributes $dlg -topmost true
-		set bg [::tooltip::background]
-		tk::frame $f -takefocus 0 -relief solid -borderwidth 0 -background $bg
-		set label tk::label
-		set options [list -background $bg]
-		pack $f -fill x -expand yes -padx 2 -pady 2
+		set f [::util::makeDropDown $dlg]
+		set label ::tk::label
+		set options [list -background [$f cget -background]]
 	} else {
 		toplevel $dlg -class Scidb
+		set f $dlg.f
 		tk::frame $f -takefocus 0 -background $Options(prop:background)
 		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
 		wm resizable $dlg false false

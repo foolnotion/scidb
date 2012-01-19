@@ -311,18 +311,8 @@ proc see {path position} {
 proc showInfo {path info} {
 	set w $path.showinfo
 	catch { destroy $w }
-	toplevel $w -background white -class Tooltip
-	wm withdraw $w
-	if {[tk windowingsystem] eq "aqua"} {
-		::tk::unsupported::MacWindowStyle style $w help none
-	} else {
-		wm overrideredirect $w true
-	}
-	wm attributes $w -topmost true
-
-	set bg [::tooltip::background]
-	set top [tk::frame $w.f -relief solid -borderwidth 0 -background $bg]
-	pack $top -padx 2 -pady 2
+	set top [::util::makeDropDown $w]
+	set bg [$top cget -background]
 
 	set f [tk::frame $top.f -borderwidth 0 -background $bg]
 	grid $f -column 3 -row 1

@@ -28,6 +28,12 @@ new options:
 	-exportselection
 		Specifies whether or not a selection in the widget should also be the X selection.
 		Selection is possible only if this option is enabled.
+	
+	-selectbackground
+	-selectforeground
+	-inactiveselectbackground
+	-inactiveselectforeground
+		Specifies the colors for selection.
 
 is supporting more attributes:
 

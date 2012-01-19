@@ -208,6 +208,10 @@ public:
 	bool isValidKey(edit::Key const& key) const;
 	/// Return whether variation is folded at given position
 	bool isFolded(edit::Key const& key) const;
+	/// Return whether the game contains variations.
+	bool hasVariations() const;
+	/// Return whether the game contains move information.
+	bool hasMoveInfo() const;
 
 	// Accessing game information
 
