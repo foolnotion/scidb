@@ -626,7 +626,10 @@ proc SetStripped {var {unused {}} {unused {}}} {
 proc InvokeLang {w lang} {
 	if {![winfo exists $w]} { return }
 	event generate $w <<LanguageChanged>> -data $lang
-	foreach child [winfo children $w] { InvokeLang $child $lang }
+	if {![winfo exists $w]} { return }
+	foreach child [winfo children $w] {
+		InvokeLang $child $lang
+	}
 }
 
 

@@ -1588,6 +1588,7 @@
 ::fsbox::mc::Desktop							"Arbeitsfläche"
 ::fsbox::mc::Home								"Heimverzeichnis"
 
+::fsbox::mc::SelectEncoding				"Auswahl der Enkodierung für die Datenbank (öffnet einen Dialog)"
 ::fsbox::mc::SelectWhichType				"Auswahl der anzuzeigenden Dateitypen"
 ::fsbox::mc::TimeFormat						"%d.%m.%Y %H:%M"
 

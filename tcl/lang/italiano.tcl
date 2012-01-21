@@ -1587,6 +1587,7 @@
 ::fsbox::mc::Desktop							"Desktop"
 ::fsbox::mc::Home								"Home"
 
+::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)" ;# NEW
 ::fsbox::mc::SelectWhichType				"Selezione che tipo di file visualizzare"
 ::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
 
