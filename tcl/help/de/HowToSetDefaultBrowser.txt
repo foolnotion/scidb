@@ -1,0 +1,68 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011-2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Festlegung des Standard-Browsers
+
+<p>
+Es existieren vier Möglichkeiten um den Standard-Browser, mit dem die
+externen Verweise geöffnet werden, festzulegen:
+</p>
+
+<ol>
+  <li><p>
+    Scidb benutzt den Wert der Umgebungsvariable <tt>BROWSER</tt> zur
+    Bestimmung des Standard-Browsers. Beispiel:<br/>
+    <box>
+      <p><tt>export BROWSER=/usr/bin/firefox</tt><br/></p>
+    </box>
+  </p></li>
+
+  <li><p>
+    Es wird der Verweise <tt>"x-www-browser"</tt> benutzt.
+    Unter Debian/Ubuntu kann dieser Verweise mittels
+    <box>
+      <p><tt>sudo update-alternatives --config x-www-browser</tt></p>
+    </box>
+    gesetzt werden.
+  </p></li>
+
+  <li><p>
+    Die Datei <tt>"~/.htmlviewrc"</tt> wird nach
+    einem Eintrag der Form <tt>"X11BROWSER=/usr/bin/firefox"</tt>
+    durchsucht.
+  </p></li>
+
+  <li><p>
+    Es wird der zuerst auffindbare Browser aus der folgenden Liste verwendet:
+    iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex.
+  </p></li>
+</ol>
+
+<p>
+Die erste der vier Möglichkeiten, die erfolgreich ist, bestimmt den
+Standard-Browser. Schlagen alle fehl, kann kein Browser gestartet
+werden und es erfolgt eine Fehlermeldung.
+</p>
+
+<note>Konsolen-Browser werden nicht von Scidb verwendet, es muß also ein
+X-Browser (graphischer Browser) bestimmt werden.</note>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

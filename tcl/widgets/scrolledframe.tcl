@@ -184,7 +184,6 @@ proc scrolledframe {w args} {
 proc Map {w} {
 	# Due to a bug in the Tk library we have to force window mapping
 	[winfo parent $w] configure -width 0
-
 	Resize $w.__scrolledframe__ 0 force
 	bind $w <Map> {#}
 }

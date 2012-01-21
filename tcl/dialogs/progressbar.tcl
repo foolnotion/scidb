@@ -132,8 +132,11 @@ proc open {args} {
 	}
 	wm geometry $w ${x}${y}
 	wm deiconify $w
-	# prevent error 'window ".progress" was deleted before its visibility changed'
-	catch { tkwait visibility $w }
+	if {[tk windowingsystem] == "x11"} {
+		# prevent error 'window ".progress" was deleted before its visibility changed'
+		catch { tkwait visibility $w }
+		if {![winfo exists $w]} { return }
+	}
 	if {[llength $opts(-command)]} { busyCursor $w on }
 	if {[llength $opts(-command)] == 0} { return }
 	after idle [namespace code [list Start $w $opts(-command) $opts(-close)]]

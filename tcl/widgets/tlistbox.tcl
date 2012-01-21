@@ -537,6 +537,10 @@ proc WidgetProc {w command args} {
 			return $result
 		}
 
+		child {
+			return $t
+		}
+
 		size {
 			return $Priv(last)
 		}

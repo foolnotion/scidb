@@ -45,3 +45,7 @@ set Contents {
     {{{Benvenuto su Scidb!} {Welcome.html}}}
   }
 }
+
+set UnixOnly {
+  HowToSetDefaultBrowser.html
+}

@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Black & White|1322146556616|yellow.color|gregor}
+  piece-set    {Cases}
+  piece-style  {Contrast|1322146529013|yellow.color|gregor}
+  square-style {Black & White|1322146381433|yellow.color|gregor}
+  version      {1.0}
+}

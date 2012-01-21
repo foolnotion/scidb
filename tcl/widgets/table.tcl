@@ -92,6 +92,7 @@ array set Defaults {
 	-selectionforeground		black
 	-disabledforeground		#999999
 	-labelforeground			black
+	-labelbackground			#d9d9d9
 	-borderwidth				1
 	-labelfont					TkTextFont
 	-labelrelief				raised
@@ -392,7 +393,7 @@ proc addcol {table id args} {
 		-text $labelText                         \
 		-font $Options(-labelfont)               \
 		-textcolor $Options(-labelforeground)    \
-		-background $Options(-background)        \
+		-background $Options(-labelbackground)   \
 		-textpadx $Options(-padx)                \
 		-textpady $Options(-pady)                \
 		-imagepadx $Options(-imagepadx)          \

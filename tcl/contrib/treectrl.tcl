@@ -454,6 +454,11 @@ proc ::TreeCtrl::CursorCheck {w x y} {
 	    unset Priv(item,$w)
 	    TryEvent $w Item leave [list C $prevC I $prevI]
 	}
+	if {[info exists Priv(elem,$w)]} {
+	    lassign [split $Priv(elem,$w) :] prevC prevI prevE
+	    unset Priv(elem,$w)
+	    TryEvent $w Elem leave [list C $prevC I $prevI E $prevE]
+	}
 	if {![info exists Priv(cursor,$w)]} {
 	    set Priv(cursor,$w) [$w cget -cursor]
 	}
@@ -525,7 +530,7 @@ proc ::TreeCtrl::MotionInHeader {w args} {
 	set action [CursorAction $w $x $y]
         set column ""
 	set prevColumn ""
-	if {[lindex $action 1] eq "header"} {
+	if {[lindex $action 1] eq "header" || [lindex $action 1] eq "button"} {
 	    set column [lindex $action 2]
 	}
 	if {[info exists Priv(header,$w)]} {
@@ -541,6 +546,11 @@ proc ::TreeCtrl::MotionInHeader {w args} {
 		    lassign [split $Priv(item,$w) :] prevC prevI
 		    unset Priv(item,$w)
 		    TryEvent $w Item leave [list C $prevC I $prevI]
+		}
+		if {[info exists Priv(elem,$w)]} {
+		    lassign [split $Priv(elem,$w) :] prevC prevI prevE
+		    unset Priv(elem,$w)
+		    TryEvent $w Elem leave [list C $prevC I $prevI E $prevE]
 		}
 		TryEvent $w Header enter [list C $column x $x y $y]
 		set Priv(header,$w) $column
@@ -600,6 +610,7 @@ proc ::TreeCtrl::MotionInItems {w args} {
 	if {[lindex $id 0] ne "item"} { return }
 	set item [lindex $id 1]
 	set column [lindex $id 3]
+	set elem [lindex $id 5]
 	set id "$column:$item"
 	set prevId ""
 	if {[info exists Priv(item,$w)]} {
@@ -621,6 +632,55 @@ proc ::TreeCtrl::MotionInItems {w args} {
 	    lassign [split $Priv(item,$w) :] prevColumn prevItem
 	    TryEvent $w Item leave [list C $prevColumn I $prevItem]
 	    unset Priv(item,$w)
+	}
+	set action ""
+    }
+}
+
+# ::TreeCtrl::MotionInElems --
+#
+# This procedure fires Enter/Leave events for each element visited.
+#
+# Arguments:
+# w		The treectrl widget.
+# args		x y coords if the pointer is in the window, or an empty list.
+
+proc ::TreeCtrl::MotionInElems {w args} {
+    variable Priv
+    if {[llength $args]} {
+	set x [lindex $args 0]
+	set y [lindex $args 1]
+    	set id [$w identify $x $y]
+	if {([lindex $id 0] eq "" || [lindex $id 0] eq "header") && [info exists Priv(elem,$w)]} {
+	    lassign [split $Priv(elem,$w) :] prevColumn prevItem prevElem
+	    TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
+	    unset Priv(elem,$w)
+	}
+	if {[lindex $id 0] ne "item"} { return }
+	set item [lindex $id 1]
+	set column [lindex $id 3]
+	set elem [lindex $id 5]
+	set id "$column:$item:$elem"
+	set prevId ""
+	if {[info exists Priv(elem,$w)]} {
+	    set prevId $Priv(elem,$w)
+	}
+	if {$id ne $prevId} {
+	    if {$prevId ne ""} {
+		lassign [split $prevId :] prevColumn prevItem prevElem
+		TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
+		unset Priv(elem,$w)
+	    }
+	    if {$id ne ""} {
+		TryEvent $w Elem enter [list C $column I $item x $x y $y E $elem]
+		set Priv(elem,$w) $id
+	    }
+	}
+    } else {
+	if {[info exists Priv(elem,$w)]} {
+	    lassign [split $Priv(elem,$w) :] prevColumn prevItem prevElem
+	    TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
+	    unset Priv(elem,$w)
 	}
 	set action ""
     }

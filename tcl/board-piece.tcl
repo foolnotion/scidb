@@ -586,7 +586,7 @@ proc SelectTexture {parent which} {
 	::validate::spinboxInt $lt.szoom
 	::theme::configureSpinbox $lt.szoom
 	foreach c {x y} {
-		ttk::label $lt.loffs$c -textvar [::mc::var [namespace current]::mc::Offset [string toupper $c]]
+		ttk::label $lt.loffs$c -textvar [::mc::var [namespace current]::mc::Offset " [string toupper $c]"]
 		set Widget(offs$c,$which) [ \
 			::ttk::spinbox $lt.soffs$c \
 				-from 0 \
@@ -733,7 +733,7 @@ proc SelectColor {parent var component which showEraser} {
 					catch { image delete photo_Texture(piece-bg:[lindex $RecentTextures($which) end]) }
 					set n end
 				}
-				set RecentTextures($which) [linsert [lreplace $RecentTextures($which) $n $n] 0 $img]
+				set RecentTextures($which) [linsert [lreplace $RecentTextures($which) $n $n] 0 [list $img]]
 			}
 
 			ConfigurePieceFrame $which

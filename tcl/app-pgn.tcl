@@ -1141,7 +1141,7 @@ proc InsertMove {position w level key data} {
 					"e" { $w insert current "\n<$mc::EmptyGame>" empty }
 
 					default {
-						variable Cursor
+						variable cursor::collapse
 						variable Colors
 
 						if {$space eq "+"} {
@@ -1157,7 +1157,7 @@ proc InsertMove {position w level key data} {
 							$w window create current -align center -window $img
 							bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
 							$w insert current " )" bracket
-						} elseif {[info exists Cursor(collapse)]} {
+						} elseif {[info exists collapse]} {
 							set tag fold:$key
 							$w insert current "( " [list bracket $tag]
 							$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
@@ -1560,14 +1560,13 @@ proc LeaveMark {w tag} {
 
 
 proc EnterBracket {w key} {
-	variable Cursor
 	variable Counter
 	variable Vars
 
 	if {[::scidb::game::variation folded? $key]} {
-		set cursor $Cursor(expand)
+		set cursor $cursor::expand
 	} else {
-		set cursor $Cursor(collapse)
+		set cursor $cursor::collapse
 	}
 
 	incr Counter
@@ -1683,7 +1682,7 @@ proc ShowPosition {parent position key} {
 	if {![winfo exists $w]} {
 		variable Options
 
-		destroy [::util::makeDropDown $w]
+		destroy [::util::makePopup $w]
 		::board::stuff::new $w.board $Options(board-size) 2
 		pack $w.board
 	}
@@ -2656,15 +2655,20 @@ proc WriteOptions {chan} {
 ::options::hookWriter [namespace current]::WriteOptions
 
 
+namespace eval cursor {
+
 switch [tk windowingsystem] {
+	variable collapse
+	variable expand
+
 	x11 {
 		if {[::xcursor::supported?]} {
 			set file1 [file join $::scidb::dir::share cursor collapse-16x16.xcur]
 			set file2 [file join $::scidb::dir::share cursor expand-16x16.xcur]
 			if {[file readable $file1] && [file readable $file2]} {
 				catch {
-					set Cursor(collapse) [::xcursor::loadCursor $file1]
-					set Cursor(expand)   [::xcursor::loadCursor $file2]
+					set collapse [::xcursor::loadCursor $file1]
+					set expand [::xcursor::loadCursor $file2]
 				}
 			} else {
 				::log::info PGN-Editor [format $mc::CannotOpenCursorFiles "$file1 $file2"]
@@ -2680,14 +2684,15 @@ switch [tk windowingsystem] {
 		set file1 [file join $::scidb::dir::share cursor collapse-16x16.$ext]
 		set file2 [file join $::scidb::dir::share cursor expand-16x16.$ext]
 		if {[file readable $file1] && [file readable $file2]} {
-			set Cursor(collapse) [list @$file1]
-			set Cursor(expand) [list @$file2]
+			set collapse [list @$file1]
+			set expand [list @$file2]
 		} else {
 			::log::info PGN-Editor [format $mc::CannotOpenCursorFiles "$file1 $file2"]
 		}
 	}
 }
 
+} ;# namespace cursor
 
 namespace eval icon {
 namespace eval 12x12 {

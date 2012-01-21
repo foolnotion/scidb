@@ -1,0 +1,183 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software,you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation,either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Kommandozeilenoptionen
+TITLE Kommandozeilenoptionen
+
+<p>
+On the command line the following options are available at program start:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --
+    </td>
+    <td class="standard">
+      After this option all arguments wil be interpreted as file names. This permits
+      that file names may start with a hyphen.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --help
+    </td>
+    <td class="standard">Anzeige der Optionsmöglichkeiten (in Englisch) und sofortiges Programmende.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --show-board
+    </td>
+    <td class="standard">Zum Brett-Tab wechseln sofort nach Programmstart.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --fast-load
+    </td>
+    <td class="standard">
+      Nur die ausschliesslich erforderlichen Dateien nach Programmstart laden. Dies ermöglicht
+      einen deutlich schnelleren Programmstart. Diese Option sollte i.A. nicht benutzt werden,
+      sie dient vornehmlich dem Testen.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --first-time
+    </td>
+    <td class="standard">
+      Das Programm wird gestartet wie beim ersten Mal, d.h. die Benutzeroptionen werden
+      zurückgesetzt, die Wiederherstellungsdateien werden gelöscht, und die Standard-Brettthemen
+      werden erneut in das benutzereigene Verzeichnis kopiert, sofern sie nicht modifiziert
+      wurden. Diese Option kann nützlich sein wenn der Programmstart aufgrund eines Fehlers in der
+      Optionendatei fehlschlägt.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --elo-only
+    </td>
+    <td class="standard">
+      Keine weiteren Rating-Dateien laden ausser dem ELO-Rating. Dies beschleunigt den
+      Programmstart.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --print-recovery-files
+    </td>
+    <td class="standard">
+      Zeige die Wiederherstellungsdateien, die in der letzten Sitzung aufgrund
+      ungespeicherter Partien erzeugt wurden, und terminiere das Programm.
+      Möglicherweise existieren keine und es werden dann auch keine angezeigt.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --delete-recovery-files
+    </td>
+    <td class="standard">
+      Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
+      die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
+      Es erfolgt keine physikalische Löschung, mit der Option
+      <span style="font-family:fixed;">--recover-old</span>
+      können sie wiederbenutzt werden.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --dont-recover
+    </td>
+    <td class="standard">
+      Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
+      Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
+      nicht physikalisch gelöscht,mit der Option
+      <span style="font-family:fixed;">--recover-old</span>
+      können sie wiederbenutzt werden.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --recover-old
+    </td>
+    <td class="standard">
+      Ungespeicherte Partien aus älteren Sitzungen wiederherstellen. Die
+      ungespeicherten Partien aus der letzten Sitzung werden nicht mehr
+      berücksichtigt.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --single-process
+    </td>
+    <td class="standard">
+      Erzwingt eine weitere Scidb-Instanz bei Programmstart. Diese Option
+      dient nur dem Testen und sollte nicht verwendet werden.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        --force-grab
+    </td>
+    <td class="standard">
+      Wird das Programm in einem Debugger gestartet werden Grabs automatisch
+      unterdrückt, denn diese können zum Einfrieren des Bildschirms führen.
+      Mit dieser Option werden die Grabs auch im Debugger zugelassen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        -geometry GEOMETRY
+    </td>
+    <td class="standard">
+      Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
+      Hauptfenster mit der Angabe
+      <span style="font-family:fixed;">
+        -geometry 600x800+20+10
+      </span>
+      die Größe 600x800 und wird an der Bildschirmposition mit den Koordinaten
+      20,10 positioniert.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        -display DISPLAY
+    </td>
+    <td class="standard">
+      Benutze das mit DISPLAY angegebene Display.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+        -sync
+    </td>
+    <td class="standard">
+      Benutze den Synchron-Modus für den Display-Server.
+    </td>
+  </tr>
+</table>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

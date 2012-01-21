@@ -26,7 +26,7 @@
 
 namespace eval shadow {
 
-set Used 0
+array set Used {}
 
 
 proc prepare {w x y width height} {
@@ -34,22 +34,22 @@ proc prepare {w x y width height} {
 
 	if {$width > 1 && $height > 1} {
 		set Geometry($w) [list $x $y $width $height]
-		Create
 	}
 }
 
 
 proc map {w} {
 	variable Geometry
-	variable Used
+	variable Mapped
 
 	if {![info exists Geometry($w)]} { return }
+	set id [Create]
 	lassign $Geometry($w) x y width height
+	set Mapped($w) $id
 
-	set b .__shadow__b__$Used
-	set r .__shadow__r__$Used
+	set b .__shadow__b__$id
+	set r .__shadow__r__$id
 	if {![winfo exists $b]} { return }
-	incr Used
 
 	set bx [expr {$x + 5}]
 	set by [expr {$y + $height}]
@@ -77,33 +77,48 @@ proc map {w} {
 
 proc unmap {w} {
 	variable Geometry
+	variable Mapped
 	variable Used
 
-	if {![info exists Geometry($w)]} { return }
-	incr Used -1
+	if {![info exists Mapped($w)]} { return }
+	set id $Mapped($w)
+	set Used($id) 0
+	array unset Mapped $w
 
-	set b .__shadow__b__$Used
-	set r .__shadow__r__$Used
+	set b .__shadow__b__$id
+	set r .__shadow__r__$id
 
 	if {[winfo exists $b]} {
 		wm withdraw $b
 		wm withdraw $r
-	} else {
-		incr Used
 	}
 }
 
 
 proc Create {} {
-	variable Geometry
 	variable Used
 
-	set b .__shadow__b__$Used
-	set r .__shadow__r__$Used
+	set id -1
+
+	foreach key [array names Used] {
+		if {!$Used($key)} {
+			set id $key
+			break
+		}
+	}
+
+	if {$id == -1} {
+		set id [llength [array names Used]]
+	}
+
+	set Used($id) 1
+
+	set b .__shadow__b__$id
+	set r .__shadow__r__$id
 
 	if {![winfo exists $b]} {
 		foreach w [list $b $r] {
-			toplevel $w -background black -borderwidth 0 -relief flat -highlightthickness 0
+			toplevel $w -background black -borderwidth 0 -relief flat -takefocus 0
 			wm withdraw $w
 			wm overrideredirect $w 1
 			pack [tk::canvas $w.c -borderwidth 0] -fill both -expand yes
@@ -114,6 +129,8 @@ proc Create {} {
 		$b.c create image 0 0 -anchor nw -image [image create photo -width 0 -height 5] -tag image
 		$r.c create image 0 0 -anchor nw -image [image create photo -width 5 -height 0] -tag image
 	}
+
+	return $id
 }
 
 } ;# shadow
@@ -121,21 +138,30 @@ proc Create {} {
 ### M E N U #####################################################################################
 
 bind Menu <Configure> {+
-	if {![string match *#application#menu %W]} {
+	if {![string match *#menu %W]} {
 		shadow::prepare %W %x %y %w %h
 	}
 }
 
 bind Menu <Map> {+
-	if {![string match *#application#menu %W]} {
-		after idle [namespace code [list shadow::map %W]]
+	if {![string match *#menu %W]} {
+		after idle { shadow::map %W }
 	}
 }
 
 bind Menu <Unmap> {+
 	variable ::shadow::Geometry
 
-	if {![string match *#application#menu %W]} {
+	if {![string match *#menu %W]} {
+		shadow::unmap %W
+		array unset Geometry %W
+	}
+}
+
+bind Menu <Destroy> {+
+	variable ::shadow::Geometry
+
+	if {![string match *#menu %W]} {
 		shadow::unmap %W
 		array unset Geometry %W
 	}
@@ -143,15 +169,22 @@ bind Menu <Unmap> {+
 
 ###  C O M B O B O X ############################################################################
 
-bind ComboboxPopdown <Configure>	{+ shadow::prepare %W %x %y %w %h }
-bind ComboboxPopdown <Map>			{+ after idle [list shadow::map %W] }
-bind ComboboxPopdown <Unmap>		{+ shadow::unmap %W }
-bind ComboboxPopdown <Destroy>	{+ array unset ::shadow::Geometry %W }
+bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
+bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W } }
+bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
+bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
+
+###  A D D L A N G U A G E P O P D O W N ########################################################
+
+bind AddLanguagePopdown <Configure>	{+ shadow::prepare %W %x %y %w %h }
+bind AddLanguagePopdown <Map>			{+ after idle { shadow::map %W } }
+bind AddLanguagePopdown <Destroy>	{+ shadow::unmap %W }
 
 ###  T O O L T I P ##############################################################################
 
-bind Tooltip <Configure>	{+ if {[winfo class %W] eq "Tooltip"} { shadow::prepare %W %x %y %w %h } }
-bind Tooltip <Map>			{+ if {[winfo class %W] eq "Tooltip"} { after idle [list shadow::map %W] } }
-bind Tooltip <Unmap>			{+ if {[winfo class %W] eq "Tooltip"} { shadow::unmap %W } }
+bind TooltipPopup <Configure>			{+ shadow::prepare %W %x %y %w %h }
+bind TooltipPopup <Map>					{+ after idle { shadow::map %W } }
+bind TooltipPopup <Unmap>				{+ shadow::unmap %W }
+bind TooltipPopup <Destroy>			{+ shadow::unmap %W }
 
 # vi:set ts=3 sw=3:

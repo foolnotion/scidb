@@ -29,14 +29,6 @@ exec tclsh "$0" "$@"
 
 package require Tcl 8.5
 
-# utf-8 encoded (you may use gedit for editing)
-array set Title {
-	de "Übersicht"
-	en "Overview"
-	it "Visione d'insieme"
-	es "Resumen"
-}
-
 if {$argc != 1} {
 	puts stderr "Usage: [info script] <contents-file>"
 	exit 1
@@ -48,18 +40,13 @@ if {![file readable $contentsFile]} {
 	exit 1
 }
 
+encoding system utf-8
 set lang [file tail [pwd]] 
-
-if {![info exists Title($lang)]} {
-	puts stderr "Error([info script]): missing entry in Title for language '$lang'"
-	exit 1
-}
-
 set file [file join .. .. lang localization.tcl]
 source $file
 
 foreach entry $i18n::languages {
-	lassign $entry _ codeName charset _
+	lassign $entry _ codeName charset langFile
 	if {$codeName eq $lang} { break }
 }
 
@@ -70,6 +57,32 @@ if {$codeName ne $lang} {
 	exit 1
 }
 
+set translationFile [file join .. .. lang $langFile]
+if {![file readable $translationFile]} {
+	puts stderr "Error([info script]): Cannot open file \"$translationFile\"."
+	exit 1
+}
+set f [open $translationFile r]
+chan configure $f -encoding $charset
+while {[gets $f line] >= 0} {
+	if {[string length $line] > 0 && [string index $line 0] ne "#"} {
+		if {[string match ::help::mc::Overview* $line]} {
+			set var [lindex $line 0]
+			set value [string map {& {} "..." {}} [lindex $line 1]]
+			set ns [join [lrange [split $var ::] 1 end-2] ::]
+			if {[llength $ns]} { namespace eval $ns {} }
+			set title $value
+		}
+	}
+}
+close $f
+
+if {![info exists title]} {
+	puts stderr "Error([info script]): \
+		missing entry '::help::mc::Overview' in language file '$translationFile'"
+	exit 1
+}
+
 set file "[file rootname $contentsFile].html"
 set src [open $contentsFile r]
 chan configure $src -encoding $charset
@@ -77,7 +90,7 @@ set close 0
 
 puts "set Contents \{"
 puts "  \{"
-puts "     {{{$Title($lang)} {$file}}}"
+puts "     {{{$title} {$file}}}"
 
 while {[gets $src line] >= 0} {
 	if {[regexp {<h[1-6] name=\"(.*)\">(.*)</h[1-6]>} $line _ href section]} {
@@ -91,6 +104,7 @@ while {[gets $src line] >= 0} {
 
 puts "  \}"
 puts "\}"
+puts "\nset UnixOnly \{\n  HowToSetDefaultBrowser.html\n\}"
 close $src
 
 # vi:set ts=3 sw=3:

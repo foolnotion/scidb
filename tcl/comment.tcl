@@ -93,7 +93,7 @@ variable DingbatSet {
 }
 variable Colors {darkgreen darkred darkblue darkgreen darkred darkblue}
 
-set Symbols [join $font::figurines(graphic)]
+set Symbols [join $font::figurines(graphic) ""]
 foreach section {prefix suffix} {
 	foreach nag $NagSet($section) {
 		set c $::font::SymbolUtfEncoding($nag)
@@ -314,7 +314,7 @@ proc MakeLanguageButtons {} {
 	set langButtons [array names Vars tb:*]
 	
 	foreach button $langButtons {
-		::toolbar::remove $Vars(tb) $Vars($button)
+		::toolbar::remove $Vars($button)
 		unset Vars($button)
 	}
 
@@ -435,7 +435,7 @@ proc Update {{setup 1}} {
 	foreach entry $Vars(content) {
 		lassign $entry lang comment
 		SetupComment $lang $comment
-		if {$setup} {
+		if {$setup && $lang eq $Vars(lang)} {
 			if {[string length $lang] == 0} { set lang xx }
 			SetUndoPoint $w $lang
 		}
@@ -1128,6 +1128,7 @@ proc PopupSymbolTable {w text} {
 	if {[tk windowingsystem] eq "x11"} {
 		tkwait visibility $m
 		::update idletasks
+		if {![winfo exists $m]} { return }
 	}
 	focus -force $top.c_0_0
 	ttk::globalGrab $top
@@ -1442,7 +1443,7 @@ proc PopupChooseLanguage {dlg} {
 	variable Options
 
 	if {$Options(useComboBox)} {
-		PopdownLaguages $dlg
+		PopdownLanguages $dlg
 	} else {
 		PopupLanguageMenu $dlg
 	}
@@ -1464,7 +1465,7 @@ proc PopupLanguageMenu {dlg} {
 }
 
 
-proc PopdownLaguages {dlg} {
+proc PopdownLanguages {dlg} {
 	variable Vars
 
 	set popdown $dlg.popdown
@@ -1517,10 +1518,17 @@ proc PopdownLaguages {dlg} {
 
 	bind $lb <<ItemVisit>> 		[namespace code [list Activate $lb %d]]
 
-	$lb bind <Escape>				[namespace code [list UnpostPopdown $popdown]]
-	$lb bind <Return>				[namespace code [list Selected $popdown]]
 	$lb bind <ButtonRelease-1>	[namespace code [list Selected $popdown]]
-	$lb bind <Any-KeyPress>		[namespace code [list Search $popdown %A %K]]
+	bind $popdown <Any-Key>		[namespace code [list Search $popdown %A %K]]
+	bind $popdown <Key-space>	[namespace code [list Selected $popdown]]
+	bind $popdown <Return>		[namespace code [list Selected $popdown]]
+
+	bind $popdown <Home>			[list tlistbox::Home [$lb child]]
+	bind $popdown <End>			[list tlistbox::End [$lb child]]
+	bind $popdown <Prior>		[list tlistbox::Prior [$lb child]]
+	bind $popdown <Next>			[list tlistbox::Next [$lb child]]
+	bind $popdown <Up>			[list tlistbox::Up [$lb child]]
+	bind $popdown <Down>			[list tlistbox::Down [$lb child]]
 
 	$lb addcol image	-id flag	-width 18 -justify left
 	$lb addcol text	-id name
@@ -1570,6 +1578,7 @@ proc UnpostPopdown {popdown} {
 
 	catch { focus -force $Vars(focus) }
 	grab release $popdown	;# in case of stuck or unexpected grab
+	update idletasks
 	destroy $popdown
 }
 
@@ -1764,9 +1773,10 @@ proc WriteOptions {chan} {
 
 
 bind AddLanguagePopdown <Map>				{ ttk::grabWindow %W }
-bind AddLanguagePopdown <Destroy>		{ ttk::releaseGrab %W }
 bind AddLanguagePopdown <Map>				{+ focus -force %W }
+bind AddLanguagePopdown <Destroy>		{ ttk::releaseGrab %W }
 bind AddLanguagePopdown <ButtonPress>	[namespace code { UnpostPopdown %W }]
+bind AddLanguagePopdown <Escape>			[namespace code { UnpostPopdown %W }]
 
 switch -- [tk windowingsystem] {
 	win32 {

@@ -208,7 +208,7 @@ proc init {} {
 	if {!$G(init)} { return }
 
 	set b $G(toplevel)
-	toplevel $b -class Tooltip
+	toplevel $b -class TooltipPopup
 
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $b help none
@@ -463,7 +463,11 @@ proc popdown {w} {
 	variable G
 
 	if {$w ne $G(toplevel)} { tooltip on }
-	if {[winfo exists $w]} { wm withdraw $w }
+
+	if {[winfo exists $w]} {
+		update idletasks
+		wm withdraw $w
+	}
 }
 
 

@@ -359,13 +359,13 @@ proc setupSquares {size} {
 		set size [dict keys $BoardSizeDict]
 
 		foreach s $size {
-			foreach which {lite dark white black} {
+			foreach which {lite dark} {
 				if {$needRefresh($which,all)} { set needRefresh($which,$s) true }
 			}
 		}
 	}
 
-	foreach which {lite dark white black} {
+	foreach which {lite dark} {
 		set needRefresh($which,all) false
 	}
 
@@ -454,7 +454,7 @@ proc registerBoardSize {size} {
 	variable needRefresh
 
 	if {[dict get [dict incr BoardSizeDict $size] $size] == 1} {
-		foreach which {lite dark white black} {
+		foreach which {lite dark} {
 			image create photo photo_Square($which,$size) -width $size -height $size
 		}
 		image create photo photo_Borderline($size) -width $size -height $size
@@ -470,7 +470,7 @@ proc unregisterBoardSize {size} {
 	variable BoardSizeDict
 
 	if {[dict get [dict incr BoardSizeDict $size -1] $size] == 0} {
-		foreach which {lite dark white black} {
+		foreach which {lite dark} {
 			catch { image delete photo_Square($which,$size) }
 		}
 		catch { image delete photo_Borderline($size) }
@@ -488,6 +488,9 @@ proc registerPieceSize {size} {
 			image create photo photo_Piece($piece,$size) -width $size -height $size
 		}
 
+		image create photo photo_Square(white,$size) -width $size -height $size
+		image create photo photo_Square(black,$size) -width $size -height $size
+
 		foreach which {piece white black} {
 			set needRefresh($which,$size) true
 		}
@@ -502,6 +505,8 @@ proc unregisterPieceSize {size} {
 		foreach piece {wk wq wr wb wn wp bk bq br bb bn bp} {
 			catch { image delete photo_Piece($piece,$size) }
 		}
+		catch { image delete photo_Square(white,$size) }
+		catch { image delete photo_Square(black,$size) }
 		dict unset PieceSizeDict $size
 	}
 }
@@ -816,6 +821,12 @@ proc mapToName {identifier {which theme}} {
 
 proc mapToLongId {identifier {which theme}} {
 	variable ${which}::NameLookup
+
+	if {$identifier eq $mc::Default} {
+		set identifier $defaultId
+	} elseif {$identifier eq $mc::WorkingSet} {
+		set identifier $workingSetId
+	}
 	return [dict get $NameLookup $identifier]
 }
 

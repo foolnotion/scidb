@@ -157,6 +157,7 @@ proc Move {canv ydir xdir} {
 
 
 proc popdown {} {
+	update idletasks
 	::tooltip::tooltip on
 	catch { wm withdraw .board_texture_popup }
 }
@@ -174,6 +175,7 @@ proc popup {w xc yc} {
 	}
 	wm geometry $w "+$xc+$yc"
 	wm attributes $w -topmost
+	update idletasks ;# help shadow package
 	wm deiconify $w
 }
 
@@ -182,7 +184,7 @@ proc makePopup {} {
 	set w .board_texture_popup
 	if {[winfo exists $w]} { return $w }
 
-	toplevel $w -class Scidb -relief raised -borderwidth 2
+	toplevel $w -class TooltipPopup -relief raised -borderwidth 1
 	wm withdraw $w
 	wm overrideredirect $w 1
 	tk::canvas $w.texture

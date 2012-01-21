@@ -87,6 +87,9 @@
 ::mc::Knight			"Knight"
 ::mc::Pawn				"Pawn"
 
+### scidb ##############################################################
+::scidb::mc::CannotOverwriteTheme	"Cannot overwrite theme %s."
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
 ::locale::Pattern(thousandsSep)	","
@@ -1275,6 +1278,8 @@
 ::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that."
 ::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you"
 ::help::mc::PageNotAvailable		"This page is not available"
+
+::help::mc::Overview					"Overview"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tournament Table"

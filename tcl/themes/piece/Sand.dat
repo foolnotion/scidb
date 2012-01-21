@@ -1,0 +1,46 @@
+::board::addStyle piece {
+  color,b,contour    {#ffffff}
+  color,b,fill       {}
+  color,b,stroke     {}
+  color,b,texture    {misc sand-brown.png}
+  color,w,contour    {#ffffff}
+  color,w,fill       {}
+  color,w,stroke     {}
+  color,w,texture    {misc sand-yellow.png}
+  contour            {1.0}
+  diffusion          {linear}
+  gradient,b,start   {}
+  gradient,b,stop    {}
+  gradient,b,tx      {0}
+  gradient,b,ty      {0}
+  gradient,b,use     {false}
+  gradient,b,x1      {0}
+  gradient,b,x2      {1}
+  gradient,b,y1      {0}
+  gradient,b,y2      {1}
+  gradient,w,start   {}
+  gradient,w,stop    {}
+  gradient,w,tx      {0}
+  gradient,w,ty      {0}
+  gradient,w,use     {false}
+  gradient,w,x1      {0}
+  gradient,w,x2      {1}
+  gradient,w,y1      {0}
+  gradient,w,y2      {1}
+  identifier         {Sand|1326983597299|yellow.color|gregor}
+  opacity            {0.5019607843137255}
+  shadow             {0.03333333333333333}
+  texture,b,rotation {0}
+  texture,b,x1       {0}
+  texture,b,x2       {150}
+  texture,b,y1       {0}
+  texture,b,y2       {150}
+  texture,w,rotation {0}
+  texture,w,x1       {0}
+  texture,w,x2       {150}
+  texture,w,y1       {0}
+  texture,w,y2       {150}
+  useWhitePiece      {1}
+  version            {1.0}
+  zoom               {1.0}
+}

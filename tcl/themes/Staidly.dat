@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Staidly|1326986145826|yellow.color|gregor}
+  piece-set    {Motif}
+  piece-style  {Sand|1326983597299|yellow.color|gregor}
+  square-style {Staidly|1326985703375|yellow.color|gregor}
+  version      {1.0}
+}

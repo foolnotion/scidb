@@ -260,7 +260,7 @@ proc ShowTooltip {t x y} {
 	if {[winfo exists $dlg]} {
 		set f [lindex [winfo children $dlg] 0]
 	} else {
-		set f [::util::makeDropDown $dlg]
+		set f [::util::makePopup $dlg]
 		set background [$f cget -background]
 		grid [::tk::label $f.evline -background $background] -row 1 -column 1 -sticky w
 		grid [::tk::label $f.coline -background $background] -row 2 -column 1 -sticky w

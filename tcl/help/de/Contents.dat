@@ -8,6 +8,7 @@ set Contents {
     {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
     {{{Umgang mit Funktionsleisten} {Toolbar-Usage.html}}}
     {{{Die Ablage-Datenbank} {Clipbase.html}}}
+    {{{Festlegung des Standard-Browsers} {HowToSetDefaultBrowser.html}}}
   }
   {
     {{{Scidb-Listenfenster} {Overview.html} {list-windows}}}
@@ -20,7 +21,7 @@ set Contents {
     {{{Scidb-Fenster und Dialoge} {Overview.html} {windows-and-dialogs}}}
     {{{Datenbankumschalter} {Database-Switcher.html}}}
     {{{Partie-Browser} {Game-Browser.html}}}
-    {{{Partie-Übersicht} {Game-Overview.html}}}
+    {{{Partie-Ãœbersicht} {Game-Overview.html}}}
     {{{Partietext-Fenster} {Game-Text-Window.html}}}
     {{{Partienhistorie} {Game-History-Window.html}}}
     {{{Schachbrett} {Board-Window.html}}}
@@ -44,4 +45,8 @@ set Contents {
     {{{Was ist neu?} {Whats-New.html}}}
     {{{Willkommen zu Scidb!} {Welcome.html}}}
   }
+}
+
+set UnixOnly {
+  HowToSetDefaultBrowser.html
 }

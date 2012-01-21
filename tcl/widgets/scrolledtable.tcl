@@ -72,17 +72,18 @@ proc build {path columns args} {
 	namespace eval [namespace current]::$tb {}
 	variable [namespace current]::${tb}::Vars
 
-	table::table $tb                             \
-		-moveable 1                               \
-		-setgrid 0                                \
-		-takefocus $opts(-takefocus)              \
-		-fillcolumn end                           \
-		-stripes $opts(-stripes)                  \
-		-highlightcolor $Defaults(highlight)      \
-		-background $Defaults(background)         \
-		-separatorcolor $Defaults(separatorcolor) \
-		-listmode $opts(-listmode)                \
-		-fixedrows $opts(-fixedrows)              \
+	table::table $tb                                  \
+		-moveable 1                                    \
+		-setgrid 0                                     \
+		-takefocus $opts(-takefocus)                   \
+		-fillcolumn end                                \
+		-stripes $opts(-stripes)                       \
+		-highlightcolor $Defaults(highlight)           \
+		-background $Defaults(background)              \
+		-separatorcolor $Defaults(separatorcolor)      \
+		-listmode $opts(-listmode)                     \
+		-fixedrows $opts(-fixedrows)                   \
+		-labelbackground [::theme::getBackgroundColor] \
 		;
 	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
 	

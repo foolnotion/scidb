@@ -148,7 +148,6 @@ array set fontFamilies {
 		{FreeSans}
 		{MgOpen Modata}
 		{Helvetica}
-		{Arial Unicode MS}
 	}
 
 	{Latin Modern} {

@@ -163,7 +163,10 @@ switch $::scidb::revision {
 	}
 }
 
-if {$::scidb::revision < [::scidb::misc::revision]} { set ::beta::WhatsNew 1 }
+if {$::scidb::revision < [::scidb::misc::revision]} {
+	::scidb::updateThemes
+	set ::beta::WhatsNew 1
+}
 set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------

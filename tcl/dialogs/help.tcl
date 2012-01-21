@@ -1,4 +1,4 @@
-# ======================================================================
+## ======================================================================
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -346,8 +346,8 @@ proc BuildFrame {w} {
 	$t element create elemImg image
 	$t element create elemTxt text -lines 1
 	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus}
-					\#f2f2f2 {selected !focus}
+		-fill {	\#ffdd76 {selected focus !hilite}
+					\#f2f2f2 {selected !focus !hilite}
 					\#ebf4f5 {active focus}
 					\#f0f9fa {selected hilite}
 					\#f0f9fa {hilite}} \
@@ -361,15 +361,15 @@ proc BuildFrame {w} {
 
 	$t style create styText
 	$t style elements styText {elemSel elemBrd elemImg elemTxt}
-	$t style layout styText elemImg -expand ns -padx {2 0}
-	$t style layout styText elemTxt -padx {6 2} -expand ns -squeeze x
-	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
-	$t style layout styText elemBrd -iexpand xy -detach yes
+	$t style layout styText elemImg -expand ns -padx {2 2}
+	$t style layout styText elemTxt -padx {2 2} -expand ns -squeeze x
+	$t style layout styText elemSel -union {elemTxt} -iexpand nes -ipadx {2 2}
+	$t style layout styText elemBrd -union {elemTxt} -iexpand nes -ipadx {2 2} -detach yes
 
-	$t notify install <Item-enter>
-	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
+	$t notify install <Elem-enter>
+	$t notify install <Elem-leave>
+	$t notify bind $t <Elem-enter> [list [namespace parent]::VisitElem $t enter %I %E]
+	$t notify bind $t <Elem-leave> [list [namespace parent]::VisitElem $t leave %I %E]
 	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
 
 	bind $t <KeyPress-Left>  { %W item collapse [%W item id active] }
@@ -438,7 +438,30 @@ proc FillContents {t depth root contents} {
 }
 
 
+proc FilterContents {contents exclude} {
+	set result {}
+
+	foreach group $contents {
+		set newGroup {}
+		foreach entry $group {
+			if {[llength $entry] == 1} {
+				set file [lindex $entry 0 1]
+				if {$file ni $exclude} {
+					lappend newGroup $entry
+				}
+			} else {
+				lappend newGroup [FilterContents $contents $exclude]
+			}
+		}
+		lappend result $newGroup
+	}
+
+	return $result
+}
+
+
 proc Update {t} {
+	global tcl_platform
 	variable [namespace parent]::Priv
 	variable [namespace parent]::Contents
 
@@ -446,6 +469,9 @@ proc Update {t} {
 	set file [[namespace parent]::FullPath Contents.dat]
 	catch { source -encoding utf-8 $file }
 	foreach name [array names Priv uri:*] { $Priv($name) destroy }
+	if {$tcl_platform(platform) ne "unix"} {
+		set Contents [FilterContents $Contents $UnixOnly]
+	}
 	array unset Priv uri:*
 	$t item delete all
 	FillContents $t 0 root $Contents
@@ -990,9 +1016,11 @@ proc PopupMenu {dlg tab} {
 				-state [$Priv(button:forward) cget -state]
 				;
 			$m add separator
-			set count 0
+			set first $Priv(history:index)
+			set last [expr {max(0, $first - 4)}]
 			set done {}
-			foreach entry $Priv(history) {
+			for {} {$first >= $last} {incr first -1} {
+				set entry [lindex $Priv(history) $first]
 				if {[lindex $entry 2]} {
 					set file [file tail [lindex $entry 0]]
 					set topic [FindTopic $file $Contents]
@@ -1014,7 +1042,7 @@ proc PopupMenu {dlg tab} {
 					}
 				}
 			}
-			if {$count} { $m add separator }
+			if {$Priv(history:index) >= 0} { $m add separator }
 		}
 
 		*.tree	{}
@@ -1034,7 +1062,6 @@ proc PopupMenu {dlg tab} {
 		-compound left \
 		-command [namespace code [list ToggleIndex $tab]] \
 		;
-	$m add separator
 	$m add command \
 		-image $::icon::16x16::close \
 		-label " $::mc::Close" \
@@ -1083,6 +1110,8 @@ proc BuildHtmlFrame {dlg w} {
 		:user3	{ color: black; text-decoration: underline; }	/* invalid link */
 		:hover   { text-decoration: underline; background: yellow; }
 		.match	{ background: yellow; color: black; }
+		html		{ font-family: Arial, Bitstream Vera Sans, DejaVu Sans, Verdana; }
+		tt, pre	{ font-family: [join $::dialog::choosefont::fontFamilies(Courier) ","]; }
 	"
 	set height [expr {min([winfo screenheight $dlg] - 60, 800)}]
 	::html $w \
@@ -1127,6 +1156,22 @@ proc BuildHtmlFrame {dlg w} {
 proc VisitItem {t mode item} {
 	if {[string length $item] == 0} { return }
 	if {![$t item enabled $item]} { return }
+
+	switch $mode {
+		enter {
+			foreach i [$t item children root] { $t item state set $i {!hilite} }
+			catch { $t item state set $item {hilite} }
+		}
+
+		leave { catch { $t item state set $item {!hilite} } }
+	}
+}
+
+
+proc VisitElem {t mode item elem} {
+	if {[string length $item] == 0} { return }
+	if {![$t item enabled $item]} { return }
+	if {$elem ne "elemTxt"} { return }
 
 	switch $mode {
 		enter {
@@ -1543,15 +1588,27 @@ proc WriteOptions {chan} {
 
 ttk::copyBindings TreeCtrl HelpTree
 
+bind HelpTree <Motion> {
+	TreeCtrl::MotionInItems %W %x %y
+	TreeCtrl::MotionInElems %W %x %y
+}
+
+bind TreeCtrl <Leave> {
+	TreeCtrl::MotionInItems %W
+	TreeCtrl::MotionInElems %W
+}
+
 bind HelpTree <ButtonPress-1> {
-	TreeCtrl::ButtonPress1 %W %x %y
 	set id [%W identify %x %y]
 	if {[llength $id] == 0} { return }
-	lassign $id where item arg1
-	if {$where ne "item"} { return }
-	if {$arg1 ne "column"} { return }
-	%W selection clear
-	%W selection add $item
+	lassign $id where item arg1 _ _ elem
+	if {$arg1 eq "button"} {
+		TreeCtrl::ButtonPress1 %W %x %y
+	} elseif {$where eq "item" && $arg1 eq "column" && $elem eq "elemTxt"} {
+		TreeCtrl::ButtonPress1 %W %x %y
+		%W selection clear
+		%W selection add $item
+	}
 }
 bind HelpTree <KeyPress-Up> {
 	set item [TreeCtrl::UpDown %W active -1]

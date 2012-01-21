@@ -80,14 +80,15 @@ set ChooseAnotherSquareStyle	\
 
 namespace import ::tcl::mathfunc::min
 
-variable RecentTextures		[lrepeat 6 {{} {}}]
-variable PieceSetListCount	11
-variable BoardSize			[expr {45*$PieceSetListCount}]
-variable SquareSize			[expr {($BoardSize - 66)/4}]
-variable InitialPosition	{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk}}
-variable EditStylePath		.board_options_edit_style_[clock milliseconds]
-variable FixedBackground	#fff5d6
-variable ModifiedColor		brown
+variable RecentTextures			[lrepeat 6 {{} {}}]
+variable PieceSetListCount		11
+variable BoardSize				[expr {45*$PieceSetListCount}]
+variable SquareSize				[expr {($BoardSize - 66)/4}]
+variable InitialPosition		{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk}}
+variable EditStylePath			.board_options_edit_style_[clock milliseconds]
+variable FixedBackground		#fff5d6
+variable ModifiedBackground	brown
+variable ModifiedForeground	white
 variable BorderWidth
 variable ChangeWS
 variable NameList
@@ -423,7 +424,8 @@ proc makePieceSetSelectionFrame {path} {
 
 proc ConfigStyleSelectionFrame {which} {
 	variable Widget
-	variable ModifiedColor
+	variable ModifiedBackground
+	variable ModifiedForeground
 
 	if {$which eq "theme"} {
 		ConfigThemeSelectionFrame
@@ -445,7 +447,11 @@ proc ConfigStyleSelectionFrame {which} {
 		}
 
 		if {[[namespace parent]::workingSetIsModified $which]} {
-			$Widget($which,list) itemconfigure 0 -foreground $ModifiedColor -selectbackground $ModifiedColor
+			$Widget($which,list) itemconfigure 0 \
+				-foreground $ModifiedBackground \
+				-selectforeground $ModifiedForeground \
+				-selectbackground $ModifiedBackground \
+				;
 		} else {
 			$Widget($which,list) itemconfigure 0 -foreground {} -selectbackground {}
 		}

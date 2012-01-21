@@ -88,6 +88,9 @@
 ::mc::Knight			"Cavallo"
 ::mc::Pawn				"Pedone"
 
+### scidb ##############################################################
+::scidb::mc::CannotOverwriteTheme	"Cannot overwrite theme %s." ;# NEW
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
 ::locale::Pattern(thousandsSep)	","
@@ -1272,6 +1275,8 @@
 ::help::mc::IncompleteHelpFiles	"I file di aiuto sono ancora incompleti. Ci scusiamo."
 ::help::mc::ProbablyTheHelp		"Probabilmente la pagina di aiuto in una lingua differente può essere una valida alternativa."
 ::help::mc::PageNotAvailable		"This page is not available" ;# NEW
+
+::help::mc::Overview					"Visione d'insieme"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tabella Torneo"

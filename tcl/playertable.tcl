@@ -442,7 +442,7 @@ proc showInfo {path info} {
 
 	set w $path.showinfo
 	catch { destroy $w }
-	set top [::util::makeDropDown $w]
+	set top [::util::makePopup $w]
 	set bg [$top cget -background]
 
 	set f [tk::frame $top.f -borderwidth 0 -background $bg]

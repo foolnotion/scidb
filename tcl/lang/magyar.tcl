@@ -88,6 +88,9 @@
 ::mc::Knight			"Huszár"
 ::mc::Pawn				"Gyalog"
 
+### scidb ##############################################################
+::scidb::mc::CannotOverwriteTheme	"Cannot overwrite theme %s." ;# NEW
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
 ::locale::Pattern(thousandsSep)	","
@@ -1276,6 +1279,8 @@
 ::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
 ::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
 ::help::mc::PageNotAvailable		"This page is not available" ;# NEW
+
+::help::mc::Overview					"Overview" ;# NEW
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Tournament Table"

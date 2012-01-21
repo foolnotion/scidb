@@ -41,7 +41,6 @@ SOURCES = \
 	utils/countries.tcl \
 	utils/web.tcl \
 	utils/xcursor.tcl \
-	utils/shadow.tcl \
 	widgets/tooltip.tcl \
 	widgets/toolbar.tcl \
 	widgets/validate.tcl \
@@ -116,6 +115,7 @@ SOURCES = \
 	move.tcl \
 	game.tcl \
 	i18n.tcl \
+	utils/shadow.tcl \
 	menu.tcl \
 	end.tcl \
 

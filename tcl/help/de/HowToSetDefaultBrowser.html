@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/HowToSetDefaultBrowser.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Hilfe: Festlegung des Standard-Browsers</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Festlegung des Standard-Browsers</h1>
+</div>
+
+<p>
+Es existieren vier Möglichkeiten um den Standard-Browser, mit dem die
+externen Verweise geöffnet werden, festzulegen:
+</p>
+
+<ol>
+  <li><p>
+    Scidb benutzt den Wert der Umgebungsvariable <tt>BROWSER</tt> zur
+    Bestimmung des Standard-Browsers. Beispiel:<br/>
+    <div class="box">
+      <p><tt>export BROWSER=/usr/bin/firefox</tt><br/></p>
+    </div>
+  </p></li>
+
+  <li><p>
+    Es wird der Verweise <tt>"x-www-browser"</tt> benutzt.
+    Unter Debian/Ubuntu kann dieser Verweise mittels
+    <div class="box">
+      <p><tt>sudo update-alternatives --config x-www-browser</tt></p>
+    </div>
+    gesetzt werden.
+  </p></li>
+
+  <li><p>
+    Die Datei <tt>"~/.htmlviewrc"</tt> wird nach
+    einem Eintrag der Form <tt>"X11BROWSER=/usr/bin/firefox"</tt>
+    durchsucht.
+  </p></li>
+
+  <li><p>
+    Es wird der zuerst auffindbare Browser aus der folgenden Liste verwendet:
+    iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex.
+  </p></li>
+</ol>
+
+<p>
+Die erste der vier Möglichkeiten, die erfolgreich ist, bestimmt den
+Standard-Browser. Schlagen alle fehl, kann kein Browser gestartet
+werden und es erfolgt eine Fehlermeldung.
+</p>
+
+<p><img src="../images/note.png"/> Konsolen-Browser werden nicht von Scidb verwendet, es muß also ein
+X-Browser (graphischer Browser) bestimmt werden.</p>
+
+</body>
+</html>

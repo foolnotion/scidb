@@ -451,11 +451,6 @@ proc open {parent} {
 	set panel [ttk::frame $top.panel]
 	set selectbg $::board::square::style(hilite,selected)
 	set activebg [::theme::getActiveBackgroundColor]
-	if {[string length $activebg] == 0} {
-		tk::button $top.temp
-		set activebg [$top.temp cget -activebackground]
-		destroy $top.temp
-	}
 	set row 1
 	foreach piece {k q r b n p} {
 		set col 1

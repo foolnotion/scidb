@@ -679,7 +679,7 @@ proc hideGame {path} { hideMoves $path }
 proc showMoves {path moves {result ""} {empty 0}} {
 	set w $path.showmoves
 	if {![winfo exists $w]} {
-		set f [::util::makeDropDown $w]
+		set f [::util::makePopup $w]
 		set bg [$f cget -background]
 		destroy $f
 		tk::text $w.text \
@@ -1686,7 +1686,7 @@ proc BindAccelerators {path} {
 
 
 proc LoadGame {path index} {
-	::scrolledtable::select $path $index
+	::scrolledtable::select $path [::scrolledtable::indexToRow $path $index]
 	TableSelected $path $index
 }
 

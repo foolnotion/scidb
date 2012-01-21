@@ -596,7 +596,7 @@ proc verifyPath {path} {
 	if {[string first ".." $path] >= 0} {
 		return twoDots
 	}
-	# be sure filename is portable (since we support unix, win32 and mac)
+	# be sure filename is portable (since we support unix, windows and mac)
 	if {![validatePath $path]} {
 		return reservedChar
 	}
@@ -782,15 +782,25 @@ proc SelectEncoding {w} {
 }
 
 
+proc GetHeaderBackground {w} {
+	set background [ttk::style lookup $::ttk::currentTheme -background]
+	set activebg [ttk::style lookup $::ttk::currentTheme -activebackground]
+	if {[llength $activebg] == 0} { set activebg [$w cget -background] }
+	set background [list $background {!active} $activebg {active}]
+}
+
+
 proc ThemeChanged {w} {
 	variable ${w}::Vars
 
 	set background [ttk::style lookup $::ttk::currentTheme -background]
+	set activebg [ttk::style lookup $::ttk::currentTheme -activebackground]
+	if {[llength $activebg]== 0} { set activebg [$w cget -background] }
 
 	foreach n {bookmark file} {
 		set t $Vars(widget:list:$n)
 		foreach id [$t column list] {
-			$t column configure $id -background $background
+			$t column configure $id -background [GetHeaderBackground $w]
 		}
 	}
 
@@ -1906,7 +1916,10 @@ proc DetailsLayout {w} {
 		set copts(modified) {}
 	}
 
+	set background [[namespace parent]::GetHeaderBackground $w]
+
 	$t column create                            \
+		-background $background                  \
 		-text [set [namespace parent]::mc::Name] \
 		-tags name                               \
 		-minwidth [expr {10*$Vars(charwidth)}]   \
@@ -1921,6 +1934,7 @@ proc DetailsLayout {w} {
 		{*}$copts(name)                          \
 		;
 	$t column create                            \
+		-background $background                  \
 		-text [set [namespace parent]::mc::Size] \
 		-tags size                               \
 		-justify right                           \
@@ -1936,6 +1950,7 @@ proc DetailsLayout {w} {
 		{*}$copts(size)                          \
 		;
 	$t column create                                \
+		-background $background                      \
 		-text [set [namespace parent]::mc::Modified] \
 		-tags modified                               \
 		-width [expr {18*$Vars(charwidth)}]          \
@@ -2118,7 +2133,7 @@ proc ListLayout {w} {
 			set icon [GetFileIcon $w $file]
 			$t item element configure $item name \
 				elemImg -image $icon + \
-				txtName -text file tail $file]
+				txtName -text [file tail $file]
 			$t item lastchild root $item
 		}
 	}
@@ -2148,6 +2163,7 @@ proc SwitchLayout {w {layout {}}} {
 		return
 	}
 	
+	[namespace parent]::busy [winfo toplevel $w]
 	set t $Vars(widget:list:file)
 	set selection [$t selection get]
 	$t selection clear
@@ -2170,6 +2186,7 @@ proc SwitchLayout {w {layout {}}} {
 		$t activate $sel
 		$t see $sel
 	}
+	[namespace parent]::unbusy [winfo toplevel $w]
 }
 
 
@@ -2207,7 +2224,7 @@ proc SortColumn {w {column ""}} {
 		if {[$t column cget $column -arrow] eq "none"} { return }
 	} else {
 		set column [lindex [$t column tag names $column] 0]
-		set arrow [$t column cget $Vars(sort-column) -arrow]
+		set arrow [$t column cget $column -arrow]
 		if {$column eq $Vars(sort-column) || $arrow eq "none"} {
 			if {$arrow eq "up"} { set order decreasing } else { set order increasing }
 		} else {
@@ -2249,13 +2266,13 @@ proc SortColumn {w {column ""}} {
 
 		size {
 			if {$fileCount} {
-				$t item sort root -$Vars(sort-order)                          \
-					-first [list root child [expr {$lastDir + 1}]]             \
-					-last [list root child [expr {$totalCount - 1}]]           \
-					-column $column                                            \
-					-command [namespace code CompSize $Vars(widget:list:file)] \
-					-column name                                               \
-					-dictionary                                                \
+				$t item sort root -$Vars(sort-order)                                 \
+					-first [list root child [expr {$lastDir + 1}]]                    \
+					-last [list root child [expr {$totalCount - 1}]]                  \
+					-column $column                                                   \
+					-command [namespace code [list CompSize $Vars(widget:list:file)]] \
+					-column name                                                      \
+					-dictionary                                                       \
 					;
 			}
 		}

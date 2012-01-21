@@ -25,7 +25,7 @@
  * (at your option) any later version.
  **************************************************************************/
 
-html { font-family: Arial,Bitstream Vera Sans,Helvetica; }
+html { font-family: Arial, Bitstream Vera Sans, DejaVu Sans, Verdana, Helvetica; }
 
 h1 { font-size: 20px; background: #eeffff; }
 h2 { font-size: 20px; background-color: #e5eeff; }
@@ -33,18 +33,17 @@ h2 { font-size: 20px; background-color: #e5eeff; }
 h1.title { text-align: center; background-color: #6495ed }
 
 div.title {
-  color:				white;
-  background:		#6495ed;
-  border:			1px solid #6495ed;
-  margin-top:		0.5em;
-  margin-bottom:	1.5em;
+  color:					white;
+  background:			#6495ed;
+  border:				1px solid #6495ed;
+  margin-top:			0.5em;
+  margin-bottom:		1.5em;
 }
 
 div.box {
 	color:				black;
 /*	background:			#e5eeff;*/
 /*	background:			#dde6ef;*/
-/*	background:			#f5f5f5;*/
 /*	background:			#ffffe0;*/
 	background:			#f5f5f5;
 	border:				1px solid black;
@@ -75,7 +74,6 @@ div.annotation {
 table.standard {
 /*	background:			#e5eeff;*/
 /*	background:			#dde6ef;*/
-/*	background:			#f5f5f5;*/
 /*	background:			#ffffe0;*/
 	background:			#f5f5f5;
 }
@@ -88,8 +86,8 @@ td.standard {
 }
 
 .menuitem {
-	color:         black;
-	background:    #c4d0f4;
+	color:         	black;
+	background:    	#c4d0f4;
 }
 
 a:link    { text-decoration: none; }

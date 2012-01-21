@@ -27,6 +27,9 @@
 #set tcl_traceExec 1
 
 namespace eval scidb {
+namespace eval mc {
+	set CannotOverwriteTheme "Cannot overwrite theme %s."
+}
 
 set revision 83 ;# first revision ever
 
@@ -79,6 +82,7 @@ proc updateThemes {} {
 			{Alpha|1295711284602|yellow.color|gregor}
 			{Antique|1263914483272|yellow.color|gregor}
 			{Apollo|1296050637190|yellow.color|gregor}
+			{Black & White|1322146556616|yellow.color|gregor}
 			{Blue|1262882648418|yellow.color|gregor}
 			{Burly|1262881982561|yellow.color|gregor}
 			{Burnett|1228820485389|yellow.color|gregor}
@@ -97,6 +101,7 @@ proc updateThemes {} {
 			{Phoenix|1296049187980|yellow.color|gregor}
 			{Sand|1228828282840|yellow.color|gregor}
 			{Scidb|1251901638256|yellow.color|gregor}
+			{Staidly|1326986145826|yellow.color|gregor}
 			{Stone Floor|1244113337107|yellow.color|gregor}
 			{Stony Glass|1243792200845|yellow.color|gregor}
 			{Winboard|1228820514841|yellow.color|gregor}
@@ -106,6 +111,7 @@ proc updateThemes {} {
 		piece {
 			{Burly|1262881395698|yellow.color|gregor}
 			{Condal|1263914065014|yellow.color|gregor}
+			{Contrast|1322146529013|yellow.color|gregor}
 			{Emerald|1244127333315|yellow.color|gregor}
 			{Glass|1243791877212|yellow.color|gregor}
 			{Goldenrod|1243765822627|yellow.color|gregor}
@@ -115,6 +121,7 @@ proc updateThemes {} {
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan Red|1243775183896|yellow.color|gregor}
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
+			{Sand|1326983597299|yellow.color|gregor}
 			{Sycomore|1244122254189|yellow.color|gregor}
 			{Winboard|1228820514952|yellow.color|gregor}
 			{Yellow|1296047348974|yellow.color|gregor}
@@ -122,6 +129,7 @@ proc updateThemes {} {
 		}
 		square {
 			{Apollo|1243715687066|yellow.color|gregor}
+			{Black & White|1322146381433|yellow.color|gregor}
 			{Blue|1262882896027|yellow.color|gregor}
 			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
@@ -136,6 +144,7 @@ proc updateThemes {} {
 			{Marble - Red|1243715874135|yellow.color|gregor}
 			{Sand|1228820287277|yellow.color|gregor}
 			{Scidb|1251901586671|yellow.color|gregor}
+			{Staidly|1326985703375|yellow.color|gregor}
 			{Stone|1243792087778|yellow.color|gregor}
 			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
@@ -148,6 +157,7 @@ proc updateThemes {} {
 	}
 
 	foreach dir {{} piece square} {
+		::log::open Startup
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
 			set path [file join $themesDir [file tail $file]]
@@ -162,12 +172,13 @@ proc updateThemes {} {
 					}
 				}
 				if {!$exisiting} {
-					puts "Warning: Cannot overwrite $path"
+					::log::info [format $mc::CannotOverwriteTheme $path]
 				}
 			} else {
 				catch { file copy -force $file $path }
 			}
 		}
+		::log::close
 	}
 }
 
@@ -372,8 +383,8 @@ proc catchIoError {cmd {resultVar {}}} {
 }
 
 
-proc makeDropDown {w} {
-	toplevel $w -background white -class Tooltip
+proc makePopup {w} {
+	toplevel $w -background white -class TooltipPopup
 	wm withdraw $w
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $w help none

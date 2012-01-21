@@ -114,7 +114,6 @@ proc Build {w args} {
 		request			{}
 		bbox				{}
 		pointer			{0 0}
-		sbwidth			0
 		focus				0
 		sel:state		0
 	}
@@ -125,6 +124,7 @@ proc Build {w args} {
 	set Priv(css)    $opts(-css)
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
+	if {![info exists Priv(sbwidth)]} { set Priv(sbwidth) 0 }
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"

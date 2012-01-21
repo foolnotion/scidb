@@ -796,7 +796,7 @@ proc ShowTags {gamebar id} {
 	if {[llength $Specs(tags:$id:$gamebar)] == 0} { return }
 
 	set dlg $gamebar.tags
-	set f [::util::makeDropDown $dlg]
+	set f [::util::makePopup $dlg]
 	set bg [$f cget -background]
 
 	lassign [::scidb::game::link? $id] base number

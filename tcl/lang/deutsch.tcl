@@ -86,6 +86,9 @@
 ::mc::Knight			"Springer"
 ::mc::Pawn				"Bauer"
 
+### scidb ##############################################################
+::scidb::mc::CannotOverwriteTheme	"Das Theme %s konnte nicht überschrieben werden."
+
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	","
 ::locale::Pattern(thousandsSep)	"."
@@ -1274,6 +1277,8 @@
 ::help::mc::ProbablyTheHelp		"Möglicherweise ist die Hilfseite in einer anderen Sprache eine Alternative"
 ::help::mc::PageNotAvailable		"Diese Seite ist nicht verfügbar"
 
+::help::mc::Overview					"Übersicht"
+
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Turniertabelle"
 ::crosstable::mc::AverageRating			"Durchschnittswertung"
@@ -1352,7 +1357,7 @@
 ::info::mc::IconDesign				"Piktogrammdesign"
 
 ::info::mc::Version					"Version"
-::info::mc::Distributed				"Dieses Program wurde unter der GNU General Public License verbreitet."
+::info::mc::Distributed				"Dieses Program wurde unter den Bedingungen der GNU General Public License verbreitet."
 ::info::mc::Inspired					"Scidb wurde inspiriert durch Scid 3.6.1, Copyright \u00A9 1999-2003 Shane Hudson."
 ::info::mc::SpecialThanks			"Besonderen Dank an Shane Hudson für seine fantastische Arbeit. Seine Leistung ist Basis für diese Applikation."
 

@@ -38,6 +38,7 @@ proc getArg {line} {
 }
 
 
+encoding system utf-8
 set lang [file tail [pwd]] 
 set file [file join .. .. lang localization.tcl]
 source $file

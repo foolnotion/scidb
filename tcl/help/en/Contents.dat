@@ -8,6 +8,7 @@ set Contents {
     {{{Usage of the file selection dialog} {File-Selection-Dialog.html}}}
     {{{Usage of the toolbars} {Toolbar-Usage.html}}}
     {{{The Clipbase} {Clipbase.html}}}
+    {{{How to set the default browser} {HowToSetDefaultBrowser.html}}}
   }
   {
     {{{Scidb list windows} {Overview.html} {list-windows}}}
@@ -44,4 +45,8 @@ set Contents {
     {{{What's new?} {Whats-New.html}}}
     {{{Welcome to Scidb!} {Welcome.html}}}
   }
+}
+
+set UnixOnly {
+  HowToSetDefaultBrowser.html
 }
