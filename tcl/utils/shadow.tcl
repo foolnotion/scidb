@@ -171,7 +171,7 @@ bind Menu <Destroy> {+
 
 bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
 bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W } }
-bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
+bind ComboboxPopdown <Unmap>			{+ after idle { shadow::unmap %W } }
 bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
 
 ###  A D D L A N G U A G E P O P D O W N ########################################################
