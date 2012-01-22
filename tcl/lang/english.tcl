@@ -161,11 +161,11 @@
 
 ::menu::mc::HelpAbout				"&About Scidb"
 ::menu::mc::HelpContents			"&Contents"
-::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
-::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)"
 ::menu::mc::HelpWhatsNew			"&What's new"
 ::menu::mc::HelpRoadmap				"&Roadmap"
 ::menu::mc::HelpContactInfo		"C&ontact Information"
+::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
+::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)"
 
 ::menu::mc::ViewShowLog				"Show &Log..."
 ::menu::mc::ViewFullscreen			"Full-Screen"
@@ -424,7 +424,6 @@
 ::application::pgn::mc::None									"none"
 
 ### application::tree ##################################################
-
 ::application::tree::mc::Total								"Total"
 ::application::tree::mc::Control								"Control"
 ::application::tree::mc::ChooseReferenceBase				"Choose reference database"
@@ -586,7 +585,6 @@
 ::gametable::mc::SortOnDate				"Sort on date (descending)"
 ::gametable::mc::SortOnNumber				"Sort on game number (asscending)"
 ::gametable::mc::ReverseOrder				"Reverse order"
-::gametable::mc::NotAvailable				"n/a"
 ::gametable::mc::NoMoves					"No moves"
 ::gametable::mc::NoMoreMoves				"No more moves"
 ::gametable::mc::WhiteRating				"White Rating"
@@ -810,7 +808,7 @@
 ::encoding::mc::SystemEncoding		"System encoding:"
 
 ### setup ##############################################################
-::setup::mc::Chess960Position			"Chess 960 position"
+::setup::mc::Chess960Position		"Chess 960 position"
 ::setup::mc::SymmChess960Position	"Symmetrical chess 960 position"
 ::setup::mc::ShuffleChessPosition	"Shuffle chess position"
 
@@ -1264,7 +1262,7 @@
 ::help::mc::ExpandAllItems			"Expand all items"
 ::help::mc::CollapseAllItems		"Collapse all items"
 ::help::mc::SelectLanguage			"Select Language"
-::help::mc::NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog."
+::help::mc::NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
 ::help::mc::KeepLanguage			"Keep language %s for subsequent sessions?"
 ::help::mc::ParserError				"Error while parsing file %s."
 ::help::mc::NoMatch					"No match is found"
@@ -1384,6 +1382,10 @@
 ::comment::mc::CopyText					"Copy text to"
 ::comment::mc::OverwriteContent		"Overwrite existing content?"
 ::comment::mc::AppendContent			"If \"no\" the text will be appended."
+
+::comment::mc::Bold						"Bold"
+::comment::mc::Italic					"Italic"
+::comment::mc::Underline				"Underline"
 
 ::comment::mc::InsertSymbol			"&Insert Symbol..."
 ::comment::mc::MiscellaneousSymbols	"Miscellaneous Symbols"

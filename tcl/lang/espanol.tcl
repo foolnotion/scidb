@@ -162,11 +162,11 @@
 
 ::menu::mc::HelpAbout				"&About Scidb" ;# NEW (changed)
 ::menu::mc::HelpContents			"Con&tenidos"
-::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
-::menu::mc::HelpFeatureRequest	"&Solicitud de característica (abrir en navegador web)"
 ::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
 ::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
 ::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
+::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
+::menu::mc::HelpFeatureRequest	"&Solicitud de característica (abrir en navegador web)"
 
 ::menu::mc::ViewShowLog				"Mostrar bitáco&ra..."
 ::menu::mc::ViewFullscreen			"Pantalla completa" 
@@ -587,7 +587,6 @@
 ::gametable::mc::SortOnDate				"Clasificar por fecha (descendente)"
 ::gametable::mc::SortOnNumber				"Clasificar por número de partida (ascendente)"
 ::gametable::mc::ReverseOrder				"Invertir el orden"
-::gametable::mc::NotAvailable				"n/d"
 ::gametable::mc::NoMoves					"Sin jugadas"
 ::gametable::mc::NoMoreMoves				"No more moves" ;# NEW
 ::gametable::mc::WhiteRating				"Rating de las Blancas"
@@ -811,9 +810,9 @@
 ::encoding::mc::SystemEncoding		"Codificación del sistema:"
 
 ### setup ##############################################################
-::setup::board::mc::Chess960Position		"Posición de Chess 960"
-::setup::board::mc::SymmChess960Position	"Posición simétrica de chess 960"
-::setup::board::mc::ShuffleChessPosition	"Posición de ajedrez Shuffle"
+::setup::mc::Chess960Position			"Posición de Chess 960"
+::setup::mc::SymmChess960Position	"Posición simétrica de chess 960"
+::setup::mc::ShuffleChessPosition	"Posición de ajedrez Shuffle"
 
 ### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Configurar una posición inicial"
@@ -1265,7 +1264,7 @@
 ::help::mc::ExpandAllItems			"Expand all items" ;# NEW
 ::help::mc::CollapseAllItems		"Collapse all items" ;# NEW
 ::help::mc::SelectLanguage			"Select Language" ;# NEW
-::help::mc::NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative languagelanguage\nfor the help dialog." ;# NEW
+::help::mc::NoHelpAvailable		"No help files available for language Spanish.\nPlease choose an alternative language\nfor the help dialog." ;# NEW
 ::help::mc::KeepLanguage			"Keep language %s for subsequent sessions?" ;# NEW
 ::help::mc::ParserError				"Error while parsing file %s." ;# NEW
 ::help::mc::NoMatch					"No match is found" ;# NEW

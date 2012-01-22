@@ -115,9 +115,11 @@ Tablebase::getOnlineQuery(Board const& board, Move& result)
 	// IMPORTANT NOTE: Both do not allow online access from other chess applications.
 
 	// other sites:
-	// http://chess.jaet.org/endings/
 	// http://www.lokasoft.nl/tbweb.aspx
 	// http://chessok.com/?page_id=361
+
+	// Probably this is the most interesting one:
+	// http://chess.jaet.org/endings/
 
 	static bool onlineQueryAllowed = ::getenv("SCIDB_ONLINE_QUERY_ALLOWED");
 

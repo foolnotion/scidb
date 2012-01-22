@@ -302,6 +302,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 		set i [FindRecentFile $file]
 		if {$i >= 0} {
 			set RecentFiles [lreplace $RecentFiles $i $i]
+			::menu::configureOpenRecent [GetRecentState]
 		}
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
 		return 0
@@ -483,6 +484,49 @@ proc selectPlayer {base index} {
 
 proc setFocus {} {
 	focus [set [namespace current]::Vars(switcher)]
+}
+
+
+proc addRecentlyUsedToMenu {parent m} {
+	variable RecentFiles
+	variable Vars
+
+	set recentFiles {}
+	foreach entry $RecentFiles {
+		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} {
+			lappend recentFiles $entry
+		}
+	}
+
+	if {[llength $recentFiles]} {
+		foreach entry $recentFiles {
+			lassign $entry type file encoding readonly
+			set name [::util::databaseName $file]
+			$m add command \
+				-label " $name  \u25b8  $file" \
+				-image [set [namespace current]::icons::${type}(16x16)] \
+				-compound left \
+				-command [namespace code [list openBase $parent $file yes $encoding $readonly]] \
+				;
+		}
+		$m add separator
+		$m add command \
+			-label " $::game::mc::ClearHistory" \
+			-image $::icon::16x16::clear \
+			-compound left \
+			-command [namespace code ClearHistory] \
+			;
+	}
+
+	return [llength $recentFiles]
+}
+
+
+proc ClearHistory {} {
+	variable RecentFiles
+
+	set RecentFiles {}
+	::menu::configureOpenRecent [GetRecentState]
 }
 
 
@@ -1059,7 +1103,6 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 	variable ::scidb::clipbaseName
 	variable ClipbaseType
-	variable RecentFiles
 	variable Defaults
 	variable Vars
 	variable ::table::options
@@ -1168,40 +1211,16 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		}
 	}
 
-	set recentFiles {}
-	foreach entry $RecentFiles {
-		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} {
-			lappend recentFiles $entry
-		}
-	}
-
-	if {[llength $recentFiles]} {
-		set m [menu $menu.mOpenRecent -tearoff false]
-		$menu add cascade \
-			-menu $m \
-			-label " [::mc::stripAmpersand $::menu::mc::FileOpenRecent]" \
-			-image $::icon::16x16::docOpen \
-			-compound left \
-			;
-		foreach entry $recentFiles {
-			lassign $entry type file encoding readonly
-			set name [::util::databaseName $file]
-			$m add command \
-				-label " $name  \u25b8  $file" \
-				-image [set [namespace current]::icons::${type}(16x16)] \
-				-compound left \
-				-command [namespace code [list openBase \
-								[winfo parent [winfo parent $canv]] $file yes $encoding $readonly]] \
-				;
-		}
-		$m add separator
-		$m add command \
-			-label " $::game::mc::ClearHistory" \
-			-image $::icon::16x16::clear \
-			-compound left \
-			-command [list set [namespace current]::RecentFiles {}] \
-			;
-	}
+	set m [menu $menu.mOpenRecent -tearoff false]
+	set state normal
+	if {[addRecentlyUsedToMenu [winfo parent [winfo parent $canv]] $m] == 0} { set state disabled }
+	$menu add cascade \
+		-menu $m \
+		-label " [::mc::stripAmpersand $::menu::mc::FileOpenRecent]" \
+		-image $::icon::16x16::docOpen \
+		-compound left \
+		-state $state \
+		;
 
 #	if {$index == -1 && [::scidb::db::get name] ne $clipbaseName} {
 #		$menu add separator
@@ -1690,6 +1709,22 @@ proc AddRecentFile {type file encoding readonly} {
 	if {$i >= 0} { set RecentFiles [lreplace $RecentFiles $i $i] }
 	set RecentFiles [linsert $RecentFiles 0 [list $type $file $encoding $readonly]]
 	if {[llength $RecentFiles] > $MaxHistory} { set RecentFiles [lrange $RecentFiles 0 9] }
+	::menu::configureOpenRecent [GetRecentState]
+}
+
+
+proc GetRecentState {} {
+	variable RecentFiles
+	variable Vars
+
+	set count 0
+
+	foreach entry $RecentFiles {
+		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} { incr count }
+	}
+
+	if {$count == 0} { return disabled }
+	return normal
 }
 
 

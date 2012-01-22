@@ -71,6 +71,7 @@
 ::mc::To					"Nach"
 ::mc::Top				"Oben"
 ::mc::Undo				"Rückgängig"
+::mc::Variation		"Variante"
 ::mc::White				"Weiß"
 ::mc::Yes				"ja"
 
@@ -423,7 +424,6 @@
 ::application::pgn::mc::None									"keine"
 
 ### application::tree ##################################################
-
 ::application::tree::mc::Total								"Summe"
 ::application::tree::mc::Control								"Steuerung"
 ::application::tree::mc::ChooseReferenceBase				"Referenzdatenbank wählen"
@@ -563,7 +563,7 @@
 ::board::square::mc::CloseDialog			"Dialog schliessen und Änderungen verwerfen?"
 
 ### board::texture #####################################################
-::board::texture::PreselectedOnly 		"Nur die Vorauswahl"
+::board::texture::mc::PreselectedOnly 	"Nur die Vorauswahl"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"
@@ -629,6 +629,7 @@
 ::gametable::mc::F_Promotion				"Umwandlung"
 ::gametable::mc::F_UnderPromo				"Unterverwandlung"
 ::gametable::mc::F_StandardPos			"Standardposition"
+::gametable::mc::F_Chess960Pos			"9"
 ::gametable::mc::F_Opening					"Eröffnung"
 ::gametable::mc::F_Variation				"Variante"
 ::gametable::mc::F_Subvariation			"Untervariante"
@@ -664,8 +665,8 @@
 ::gametable::mc::P_Country					"Land"
 ::gametable::mc::P_Title					"Title"
 ::gametable::mc::P_Type						"Typus"
-::gametable::mc::P_Mode						"Modus"
 ::gametable::mc::P_Date						"Datum"
+::gametable::mc::P_Mode						"Modus"
 ::gametable::mc::P_Sex						"Geschlecht"
 ::gametable::mc::P_Name						"Name"
 
@@ -1049,7 +1050,6 @@
 ::export::mc::Option(pgn,include_comments)						"Kommentare exportieren"
 ::export::mc::Option(pgn,include_moveinfo)						"Zuginformationen exportieren (als Kommentar)"
 ::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
-::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Scidb-Import-Format benutzen"
 ::export::mc::Option(pgn,use_chessbase_format)					"ChessBase-Format benutzen"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Tag 'PlyCount' schreiben"
@@ -1183,9 +1183,9 @@
 ::game::mc::ErrorInRecoveryFile		"Fehler in der Wiederherstellungsdatei '%s'"
 ::game::mc::Recovery						"Wiederherstellung"
 ::game::mc::UnsavedGames				"Es existieren ungesicherte Partieänderungen."
+::game::mc::DiscardChanges				"'%s' wird alle Änderungen verwerfen."
 ::game::mc::ShouldRestoreGame			"Soll diese Partie in der nächsten Sitzung wiederhergestellt werden?"
 ::game::mc::ShouldRestoreGames		"Sollen diese Partien in der nächsten Sitzung wiederhergestellt werden?"
-::game::mc::DiscardChanges				"'%s' wird alle Änderungen verwerfen."
 ::game::mc::NewGame						"Neue Partie"
 ::game::mc::NewGames						"Neue Partien"
 ::game::mc::Created						"erstellt"
@@ -1383,6 +1383,10 @@
 ::comment::mc::OverwriteContent		"Vorhandenen Inhalt überschreiben?"
 ::comment::mc::AppendContent			"Falls \"nein\" wird der Text angefügt."
 
+::comment::mc::Bold						"Fett"
+::comment::mc::Italic					"Kursiv"
+::comment::mc::Underline				"Unterstrich"
+
 ::comment::mc::InsertSymbol			"Symbol &einfügen..."
 ::comment::mc::MiscellaneousSymbols	"Verschiedene Symbole"
 ::comment::mc::Figurine					"Figurine"
@@ -1564,8 +1568,8 @@
 ::fsbox::mc::Duplicate						"Duplizieren"
 ::fsbox::mc::CopyOf							"Kopie von %s"
 ::fsbox::mc::NewFolder						"Neuer Ordner"
-::fsbox::mc::ListLayout						"Spaltenanzeige"
 ::fsbox::mc::Layout							"Layout"
+::fsbox::mc::ListLayout						"Spaltenanzeige"
 ::fsbox::mc::DetailedLayout				"Detailanzeige"
 ::fsbox::mc::ShowHiddenDirs				"Zeige versteckte Verzeichnisse"
 ::fsbox::mc::ShowHiddenFiles				"Zeige versteckte Dateien und Verzeichnisse"
@@ -1575,7 +1579,7 @@
 ::fsbox::mc::Open								"&Öffnen"
 
 ::fsbox::mc::AddBookmark					"Lesezeichen '%s' hinzufügen"
-::fsbox::mc::RemoveBookmark				"Lesezeichen '%s' löschen"
+::fsbox::mc::RemoveBookmark				"Lesezeichen '%s' entfernen"
 
 ::fsbox::mc::Filename						"Datei&name:"
 ::fsbox::mc::Filenames						"Datei&namen:"

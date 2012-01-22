@@ -116,7 +116,7 @@
 # We don't need this.
 catch { package forget tooltip }
 
-package require Tk 8.4
+package require Tk 8.5
 package provide tooltip 1.5.0
 
 namespace eval ::tooltip {
@@ -149,33 +149,14 @@ array set G {
 }
 # original background: lightyellow
 # alternative background: #ffffaa
+# alternative exposureTime: 4000
+# alternative delay: 750-1000
 
 switch [tk windowingsystem] {
-	x11 {
-		array set G {
-			fade		0
-			fadestep	0.2
-		}
-	}
-
-	win32 {
-		array set G {
-			fade		1
-			fadestep	0.2
-		}
-	}
-
-	aqua {
-		array set G {
-			fade		0
-			fadestep	0.2
-		}
-	}
+	x11	{ array set G { fade 0 fadestep 0.2 } }
+	win32	{ array set G { fade 1 fadestep 0.2 } }
+	aqua	{ array set G { fade 0 fadestep 0.2 } }
 }
-
-
-# The user may overwrite this function.
-proc ::tooltip::x11DropShadow {args} {}
 
 
 # The extra ::hide call in <Enter> is necessary to catch moving to

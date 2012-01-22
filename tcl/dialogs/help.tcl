@@ -109,6 +109,7 @@ proc open {parent {file {}}} {
 	set Priv(topic) ""
 	set Priv(dlg) $dlg
 	set Priv(minsize) 200
+	set Priv(recent) {}
 
 	toplevel $dlg -class Scidb
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code Destroy]
@@ -1016,33 +1017,24 @@ proc PopupMenu {dlg tab} {
 				-state [$Priv(button:forward) cget -state]
 				;
 			$m add separator
-			set first $Priv(history:index)
-			set last [expr {max(0, $first - 4)}]
-			set done {}
-			for {} {$first >= $last} {incr first -1} {
-				set entry [lindex $Priv(history) $first]
-				if {[lindex $entry 2]} {
-					set file [file tail [lindex $entry 0]]
-					set topic [FindTopic $file $Contents]
-					if {[llength $topic]} {
-						lassign $topic title file
-						if {$file ni $done} {
-							set path [FullPath $file]
-							if {$Priv(currentfile) ne $path} {
-								$m add command \
-									-command [namespace code [list Load $path]] \
-									-label " [format $mc::GotoPage $title]" \
-									-image $icon::16x16::document \
-									-compound left \
-									;
-								incr count
-								lappend done $file
-							}
-						}
+			set count 0
+			foreach file $Priv(recent) {
+				set topic [FindTopic $file $Contents]
+				if {[llength $topic]} {
+					lassign $topic title file
+					set path [FullPath $file]
+					if {$Priv(currentfile) ne $path} {
+						$m add command \
+							-command [namespace code [list Load $path]] \
+							-label " [format $mc::GotoPage $title]" \
+							-image $icon::16x16::document \
+							-compound left \
+							;
+						incr count
 					}
 				}
 			}
-			if {$Priv(history:index) >= 0} { $m add separator }
+			if {$count > 0} { $m add separator }
 		}
 
 		*.tree	{}
@@ -1081,7 +1073,7 @@ proc FindTopic {file contents} {
 				return [FindTopic $file $entry]
 			}
 			set topic [lindex $entry 0]
-			if {[lindex $topic 1] eq $file} { return $topic }
+			if {[file tail [lindex $topic 1]] eq $file} { return $topic }
 		}
 	}
 
@@ -1395,6 +1387,10 @@ proc Load {file {wantedFile {}} {match {}} {position {}}} {
 	incr Priv(history:index)
 	set Priv(history) [lrange $Priv(history) 0 $Priv(history:index)]
 	lappend Priv(history) [list $file 0 $rc]
+	if {$rc && [file tail $file] ni $Priv(recent)} {
+		if {[llength $Priv(recent)] > 4} { set Priv(recent) [lrange $Priv(recent) 0 4] }
+		set Priv(recent) [linsert $Priv(recent) 0 [file tail $file]]
+	}
 
 	SetupButtons
 	return $rc

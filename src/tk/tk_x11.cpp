@@ -52,11 +52,8 @@ cmdX11(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 	if (strcasecmp(subcmd, "region") == 0)
 	{
-		int x = unsignedFromObj(objc, objv, 2);
-		int y = unsignedFromObj(objc, objv, 3);
-
-		if (Tcl_GetIntFromObj(ti, objv[2], &x) != TCL_OK || Tcl_GetIntFromObj(ti, objv[3], &y) != TCL_OK)
-			return error(::Command, subcmd, 0, "invalid coordinates: %d, %d\n", x, y);
+		int x = intFromObj(objc, objv, 2);
+		int y = intFromObj(objc, objv, 3);
 
 		Tk_PhotoHandle handle = Tk_FindPhoto(ti, Tcl_GetString(objv[4]));
 

@@ -113,6 +113,20 @@ Scidb users may find the following websites interesting:
   </p></li>
 
   <li><p>
+    <a href="http://tablebase.sesse.net"
+       style="line-height: 150%;">
+    tablebase.sesse.net</a><br/>
+    This site does also provide tablebase files, including 6-men bases.
+  </p></li>
+
+  <!--<li><p>
+    <a href="http://folk.uib.no/pfvaf/chesslib/Nalimov.htm">
+       style="line-height: 150%;">
+    ChessliB - Nalimov's endgame tablebases</a><br/>
+    Another site with tablebase files (3-4-5).
+  </p></li>-->
+
+  <li><p>
     <a href="http://www.chess.co.uk/twic/"
        style="line-height: 150%;">
     The Week in Chess</a><br/>

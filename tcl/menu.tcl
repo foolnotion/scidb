@@ -106,7 +106,8 @@ set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=
 variable Fullscreen		0
 variable HideMenu			0
 variable Theme				default
-variable Entries
+variable Entry
+variable SubMenu
 variable MenuWidget
 
 
@@ -187,26 +188,28 @@ proc CreateViewMenu {menu} {
 proc setup {} {
 	variable Menu
 	variable MenuWidget
-	variable Entries
+	variable Entry
+	variable SubMenu
 
 	lappend Menu \
-		File	{	New				1	Ctrl+N			docNew			{ ::menu::dbNew .application }
-					Open				1	Ctrl+O			docOpen			{ ::menu::dbOpen .application }
-					Close				0	Ctrl+W			close				{ ::menu::dbClose .application }
-					OpenURL			1	{}					internet			{ ::menu::dbOpenUrl .application }
-					Export			1	Ctrl+X			fileExport		{ ::menu::dbExport .application }
-					Import			1	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
-					ImportOne		1	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
-					--------------	-	-------------	--------------	---------------------------------
-					Quit				0	Ctrl+Q			exit				{ ::application::shutdown }
+		File	{	New				1	0	Ctrl+N			docNew			{ ::menu::dbNew .application }
+					Open				1	0	Ctrl+O			docOpen			{ ::menu::dbOpen .application }
+					OpenRecent		0	1	Ctrl-R			docOpen			{ ::menu::dbOpenRecent .application }
+					Close				0	0	Ctrl+W			close				{ ::menu::dbClose .application }
+					OpenURL			1	0	{}					internet			{ ::menu::dbOpenUrl .application }
+					Export			1	0	Ctrl+X			fileExport		{ ::menu::dbExport .application }
+					Import			1	0	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
+					ImportOne		1	0	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
+					--------------	-	-	------------	--------------	---------------------------------
+					Quit				0	0	Ctrl+Q			exit				{ ::application::shutdown }
 				} \
-		Game	{	New				1	Ctrl+X			document			{ ::menu::gameNew .application }
-					NewChess960		1	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
-					NewChess960Sym	1	Ctrl+Shift+Y	dice				{ ::menu::gameNew .application sfrc }
-					NewShuffle		1	Ctrl+Shift+Z	dice				{ ::menu::gameNew .application shuffle }
-					Save				1	Ctrl+S			save				{ ::game::save .application }
-					Replace			1	Ctrl+R			saveAs			{ ::game::replace .application }
-					ReplaceMoves	1	Ctrl+Shift+M	saveAs			{ ::game::replaceMoves .application }
+		Game	{	New				1	0	Ctrl+X			document			{ ::menu::gameNew .application }
+					NewChess960		1	0	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
+					NewChess960Sym	1	0	Ctrl+Shift+Y	dice				{ ::menu::gameNew .application sfrc }
+					NewShuffle		1	0	Ctrl+Shift+Z	dice				{ ::menu::gameNew .application shuffle}
+					Save				1	0	Ctrl+S			save				{ ::game::save .application }
+					Replace			1	0	Ctrl+R			saveAs			{ ::game::replace .application }
+					ReplaceMoves	1	0	Ctrl+Shift+M	saveAs			{ ::game::replaceMoves .application }
 				} \
 		View	CreateViewMenu
 
@@ -216,20 +219,20 @@ proc setup {} {
 			set flag ""
 			catch { set flag ::country::icon::flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
 			if {[string length $flag] == 0} { set flag none }
-			lappend lst $lang 0 "" $flag [list ::mc::selectLang $lang]
+			lappend lst $lang 0 0 "" $flag [list ::mc::selectLang $lang]
 		}
 	}
 	lappend Menu Settings [list {*}$lst]
 	unset lst
 
 	lappend Menu \
-		Help	{	Contents			1	F1			help		{ ::menu::openHelp .application }
-					WhatsNew			1	{}			news		{ ::menu::whatsNew .application }
-					Roadmap			1	{}			plan		{ ::menu::roadmap .application }
-					ContactInfo		1	{}			contact	{ ::menu::contactInfo .application }
-					BugReport		1	{}			bug		{ ::menu::bugReport .application }
-					FeatureRequest	1	{}			question	{ ::menu::featureRequest .application }
-					About				1	{}			info		{ ::info::openDialog .application }
+		Help	{	Contents			1	0	F1		help		{ ::menu::openHelp .application }
+					WhatsNew			1	0	{}		news		{ ::menu::whatsNew .application }
+					Roadmap			1	0	{}		plan		{ ::menu::roadmap .application }
+					ContactInfo		1	0	{}		contact	{ ::menu::contactInfo .application }
+					BugReport		1	0	{}		bug		{ ::menu::bugReport .application }
+					FeatureRequest	1	0	{}		question	{ ::menu::featureRequest .application }
+					About				1	0	{}		info		{ ::info::openDialog .application }
 				}
 
 
@@ -248,12 +251,18 @@ proc setup {} {
 		if {[llength $cascade] == 1} {
 			[namespace current]::$cascade $c
 		} else {
-			foreach {entryName dots acc icon cmd} $cascade {
-				if {[string range $entryName 0 0] eq "-"} {
+			foreach {entryName dots submenu acc icon cmd} $cascade {
+				if {[string index $entryName 0] eq "-"} {
 					$c add separator
 				} else {
-					set Entries($menuName:$entryName) $index
-					$c add command -command $cmd
+					set Entry($menuName:$entryName) $index
+					if {$submenu} {
+						set sub [menu $c.m$entryName -tearoff false -postcommand $cmd]
+						set SubMenu($menuName:$entryName) $sub
+						$c add cascade -menu $sub
+					} else {
+						$c add command -command $cmd
+					}
 					widget::menuTextvarHook $c $index [namespace current]::mc::$menuName$entryName {*}$dots
 
 					if {[string length $icon]} {
@@ -307,8 +316,15 @@ proc setup {} {
 
 
 proc configureCloseBase {state} {
-	variable Entries
-	.application.menu.mFile entryconfigure $Entries(File:Close) -state $state
+	variable Entry
+	.application.menu.mFile entryconfigure $Entry(File:Close) -state $state
+	configureOpenRecent [::application::database::GetRecentState]
+}
+
+
+proc configureOpenRecent {state} {
+	variable Entry
+	.application.menu.mFile entryconfigure $Entry(File:OpenRecent) -state $state
 }
 
 
@@ -387,6 +403,14 @@ proc dbOpen {parent} {
 		lassign $result file encoding
 		::application::database::openBase $parent $file yes $encoding
 	}
+}
+
+
+proc dbOpenRecent {parent} {
+	variable SubMenu
+	set m $SubMenu(File:OpenRecent)
+	$m delete 0 end
+	::application::database::addRecentlyUsedToMenu $parent $m
 }
 
 

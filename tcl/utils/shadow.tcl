@@ -133,7 +133,7 @@ proc Create {} {
 	return $id
 }
 
-} ;# shadow
+} ;# namespace shadow
 
 ### M E N U #####################################################################################
 
@@ -167,24 +167,27 @@ bind Menu <Destroy> {+
 	}
 }
 
-###  C O M B O B O X ############################################################################
+###  C O M B O B O X  P O P D O W N #############################################################
 
 bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
 bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W } }
 bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
+bind ComboboxPopdown <Destroy>		{+ shadow::unmap %W }
 bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
 
-###  A D D L A N G U A G E P O P D O W N ########################################################
+###  A D D  L A N G U A G E  P O P D O W N ######################################################
 
 bind AddLanguagePopdown <Configure>	{+ shadow::prepare %W %x %y %w %h }
 bind AddLanguagePopdown <Map>			{+ after idle { shadow::map %W } }
 bind AddLanguagePopdown <Destroy>	{+ shadow::unmap %W }
+bind AddLanguagePopdown <Destroy>	{+ array unset ::shadow::Geometry %W }
 
-###  T O O L T I P ##############################################################################
+###  T O O L T I P  P O P U P ###################################################################
 
 bind TooltipPopup <Configure>			{+ shadow::prepare %W %x %y %w %h }
 bind TooltipPopup <Map>					{+ after idle { shadow::map %W } }
 bind TooltipPopup <Unmap>				{+ shadow::unmap %W }
 bind TooltipPopup <Destroy>			{+ shadow::unmap %W }
+bind TooltipPopup <Destroy>			{+ array unset ::shadow::Geometry %W }
 
 # vi:set ts=3 sw=3:

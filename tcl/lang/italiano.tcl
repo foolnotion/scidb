@@ -162,11 +162,11 @@
 
 ::menu::mc::HelpAbout				"&Su Scidb"
 ::menu::mc::HelpContents			"Conten&uti"
-::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
-::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"
 ::menu::mc::HelpWhatsNew			"&Novità"
 ::menu::mc::HelpRoadmap				"&Piano di Sviluppo"
 ::menu::mc::HelpContactInfo		"C&ontatti"
+::menu::mc::HelpBugReport			"Segnala &Bug (apre il browser)"
+::menu::mc::HelpFeatureRequest	"&Richiesta Funzione (apre il browser)"
 
 ::menu::mc::ViewShowLog				"Mostra &Log..."
 ::menu::mc::ViewFullscreen			"Schermo intero"
@@ -321,6 +321,8 @@
 ::application::database::mc::OpenDatabase				"Apri Database"
 ::application::database::mc::NewDatabase				"Nuovo Database"
 ::application::database::mc::CloseDatabase			"Chiudi Database '%s'"
+::application::database::mc::SetReadonly				"Set Database '%s' readonly" ;# NEW
+::application::database::mc::SetWriteable				"Set Database '%s' writeable" ;# NEW
 
 ::application::database::mc::OpenReadonly				"Apri sola lettura"
 ::application::database::mc::OpenWriteable			"Apri scrivibile"
@@ -780,7 +782,7 @@
 ::browser::mc::DecreaseBoardSize	"Diminuisci grandezza scacchiera"
 ::browser::mc::GotoFirstGame    	"Vai alla prima partita"
 ::browser::mc::GotoLastGame     	"Vai all'ultima partita"
-	
+
 ::browser::mc::LoadGame				"Carica partita"
 ::browser::mc::MergeGame			"Unisci partita"
 
@@ -1261,7 +1263,7 @@
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
 ::help::mc::SelectLanguage			"Selezione Lingua"
-::help::mc::NoHelpAvailable		"Nessun file di aiuto disponibile per la lingua Inglese.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
+::help::mc::NoHelpAvailable		"Nessun file di aiuto disponibile per la lingua italiana.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
 ::help::mc::KeepLanguage			"Mantenere la lingua %s per le prossime sessioni?"
 ::help::mc::ParserError				"Errore nel parsing del file %s."
 ::help::mc::NoMatch					"Nessuna corrispondenza trovata"
@@ -1381,6 +1383,10 @@
 ::comment::mc::CopyText					"Copia testo in" ;#Copy text to
 ::comment::mc::OverwriteContent		"Sovrascrivere contenuto esistente?"
 ::comment::mc::AppendContent			"Se \"no\" il testo sarà aggiunto."
+
+::comment::mc::Bold						"Grassetto"
+::comment::mc::Italic					"Corsivo"
+::comment::mc::Underline				"Sottolinea"
 
 ::comment::mc::InsertSymbol			"&Inserisci Simbolo..."
 ::comment::mc::MiscellaneousSymbols	"Simboli vari"
