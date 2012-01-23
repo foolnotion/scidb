@@ -474,7 +474,7 @@ Decoder::decodeTags(TagSet& tags)
 							m_codec.convertToUtf8(in, out);
 							if (!sys::utf8::Codec::validateUtf8(out))
 								m_codec.forceValidUtf8(out);
-							tags.setExtra(tag, out);
+							tags.setExtra(tag, b, out, c);
 						}
 						break;
 

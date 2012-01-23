@@ -1612,11 +1612,12 @@
 ::fsbox::mc::CommandFailed					"Das Kommando '%s' schlug fehl."
 ::fsbox::mc::CopyFailed						"Das Kopieren der Datei '%s' schlug fehl: keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::CannotCopy						"Eine Kopie kann nicht erfolgen weil die Datei '%s' bereits exisitiert."
+::fsbox::mc::CannotDuplicate				"Eine Kopie von '%s' kann nicht erfolgen aufgrund unzureichender Zugriffsrechte."
 ::fsbox::mc::ReallyDuplicateFile			"Diese Datei wirklich duplizieren?"
 ::fsbox::mc::ReallyDuplicateDetail		"Diese Datei hat ungefähr %s. Das Duplizeieren wird möglicherweise einige Zeit in Anspruch nehmen."
 ::fsbox::mc::ErrorRenaming(folder)		"Fehler beim Umbennenen des Ordners '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."
-::fsbox::mc::InvalidFileExt				"Aufgrund einer unerlaubten Dateiendung kann nicht in '%s' umbenannt werden."
+::fsbox::mc::InvalidFileExt				"Die Operation shlug fehl: '%s' hat eine unerlaubte Dateiendung."
 ::fsbox::mc::CannotRename					"Die Umbennenung in '%s' ist nicht möglich, diese(r) Datei/Ordner existiert bereits."
 ::fsbox::mc::CannotCreate					"Der Ordner '%s' kann nicht angelegt werden, ein gleichnamiger Ordner existiert bereits."
 ::fsbox::mc::ErrorCreate					"Fehler beim Anlegen des Ordners: keine ausreichenden Rechte vorhanden."
@@ -1632,6 +1633,7 @@
 ::fsbox::mc::DirectoryDoesNotExist		"Das Verzeichnis '%s' ist nicht vorhanden."
 ::fsbox::mc::CannotOpenOrCreate			"'%s' kann nicht geöffnet/angelegt werden. Bitte zuvor eine Verzeichnis wählen."
 ::fsbox::mc::WaitWhileDuplicating		"Bitte warten bis die Datei dupliziert wurde..."
+::fsbox::mc::FileHasDisappeared			"Die Datei '%s' ist nicht mehr vorhanden."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Werkzeugleiste"

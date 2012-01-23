@@ -87,11 +87,12 @@ set DeleteFailed					"Deletion of '%s' failed."
 set CommandFailed					"Command '%s' failed."
 set CopyFailed						"Copying of file '%s' failed: permission denied."
 set CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
+set CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission."
 set ReallyDuplicateFile			"Really duplicate this file?"
 set ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
 set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
 set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
-set InvalidFileExt				"Cannot rename because '%s' has an invalid file extension."
+set InvalidFileExt				"Operation failed: '%s' has an invalid file extension."
 set CannotRename					"Cannot rename to '%s' because this folder/file already exists."
 set CannotCreate					"Cannot create folder '%s' because this folder/file already exists."
 set ErrorCreate					"Error creating folder: permission denied."
@@ -107,6 +108,7 @@ set FileDoesNotExist				"File \"%s\" does not exist."
 set DirectoryDoesNotExist		"Directory \"%s\" does not exist."
 set CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 set WaitWhileDuplicating		"Wait while duplicating file..."
+set FileHasDisappeared			"File '%s' has disappeared."
 
 }
 
@@ -365,7 +367,7 @@ proc fsbox {w type args} {
 		set i [expr {[llength $Vars(list:folder)] + 1}]
 		set sel 0
 		foreach file $Vars(list:file) {
-			set file [lindex [file split $file] end]
+			set file [file tail $file]
 			if {$file eq $Vars(initialfile)} { set sel $i }
 			incr i
 		}
@@ -2040,7 +2042,7 @@ proc DetailsLayout {w} {
 		$t item lastchild root $item
 	}
 
-	set Vars(scriptNew) {
+	set Vars(scriptNewDir) {
 		set item [$t item create -open no]
 		$t item style set $item name styName size stySize modified styDate
 		$t item element configure $item name txtName -text [file tail $folder]
@@ -2063,6 +2065,16 @@ proc DetailsLayout {w} {
 				modified txtDate -data $mtime
 			$t item lastchild root $item
 		}
+	}
+
+	set Vars(scriptNewFile) {
+		set item [$t item create -open no]
+		$t item style set $item name styName size stySize modified styDate
+		set icon [GetFileIcon $w $file]
+		$t item element configure $item \
+			name elemImg -image $icon , \
+			name txtName -text [file tail $file]
+		$t item lastchild root $item
 	}
 }
 
@@ -2124,7 +2136,7 @@ proc ListLayout {w} {
 		$t item lastchild root $item
 	}
 
-	set Vars(scriptNew) $Vars(scriptDir)
+	set Vars(scriptNewDir) $Vars(scriptDir)
 
 	set Vars(scriptFile) {
 		set valid [{*}$Vars(validatecommand) $file]
@@ -2139,6 +2151,8 @@ proc ListLayout {w} {
 			$t item lastchild root $item
 		}
 	}
+
+	set Vars(scriptNewFile) $Vars(scriptFile)
 }
 
 
@@ -2690,7 +2704,7 @@ proc DeleteFile {w} {
 	if {[file writable $file]} { set mode w } else { set mode r }
 	if {$iskde} { set which ReallyMove } else { set which ReallyDelete }
 	set fmt [Tr ${which}($type,$mode)]
-	set msg [format $fmt [lindex [file split $dest] end]]
+	set msg [format $fmt [file tail $dest]]
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
 	set reply [[namespace parent]::messageBox \
 					-type yesno                   \
@@ -2763,9 +2777,10 @@ proc RenameFile {w} {
 
 	set t $Vars(widget:list:file)
 	set sel [$t item id active]
-	$t selection clear
-	set Vars(edit:active) 1
-	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	set i [expr {$sel - 1}]
+	if {$i < [llength $Vars(list:folder)]} { return }
+	set i [expr {$i - [llength $Vars(list:folder)]}]
+	set Vars(edit:file) [lindex $Vars(list:file) $i]
 	OpenEdit $w $sel rename
 }
 
@@ -2796,6 +2811,17 @@ proc DuplicateFile {w} {
 	if {$i < [llength $Vars(list:folder)]} { return }
 	set i [expr {$i - [llength $Vars(list:folder)]}]
 	set file [lindex $Vars(list:file) $i]
+	if {![file exists $file]} {
+		set msg [format [Tr FileHasDisappeared] [file tail $file]]
+		[namespace parent]::messageBox \
+			-type ok                    \
+			-icon error                 \
+			-parent $Vars(widget:main)  \
+			-message $msg               \
+			;
+		return
+	}
+	set Vars(edit:file) $file
 	set dir [file dirname $file]
 	set newFile [file join $dir [format [Tr CopyOf] [file tail $file]]]
 	while {[file exists $newFile]} {
@@ -2810,7 +2836,7 @@ proc DuplicateFile {w} {
 	foreach {f g} $files {
 		if {[file exists $f]} {
 			if {[file exists $g]} {
-				set msg [format [Tr CannotCopy] $g]
+				set msg [format [Tr CannotCopy] [file tail $g]]
 				[namespace parent]::messageBox \
 					-type ok                    \
 					-icon error                 \
@@ -2835,71 +2861,12 @@ proc DuplicateFile {w} {
 		if {$reply ne "yes"} { return }
 	}
 
-	# popup wait dialog #########################################
-	set dlg [toplevel $w.wait]
-	wm withdraw $dlg
-	set top [tk::frame $dlg.top -border 2 -relief raised]
-	pack $top
-	tk::message $top.msg -aspect 250 -text [Tr WaitWhileDuplicating]
-	pack $top.msg -padx 5 -pady 5
-	wm resizable $dlg no no
-	wm transient $dlg [winfo toplevel $w]
-	::util::place $dlg center [winfo toplevel $w]
-	update idletasks
-	[namespace parent]::noWindowDecor $dlg
-	wm deiconify $dlg
-	::ttk::grabWindow $dlg
-	[namespace parent]::busy $dlg
-
-	set newFiles {}
-	foreach {f g} $files {
-		if {[file exists $f]} {
-			if {[catch { file copy $f $g }]} {
-				set msg [format [Tr CopyFailed] $file]
-				[namespace parent]::messageBox \
-					-type ok                    \
-					-icon error                 \
-					-parent $Vars(widget:main)  \
-					-message $msg               \
-					;
-				foreach f $newFiles { catch { file delete -force $f } }
-				::ttk::releaseGrab $dlg
-				[namespace parent]::unbusy $w
-				destroy $dlg
-				return
-			} else {
-				lappend newFiles $f
-			}
-		}
-	}
-
-	::ttk::releaseGrab $dlg
-	[namespace parent]::unbusy $dlg
-	destroy $dlg
-	# popup wait dialog #########################################
-
-	set k 0
-	set fileList $Vars(list:file)
-	set Vars(list:file) {}
-	foreach file [lrange $fileList 0 $i] {
-		if {[file isfile $file]} {
-			lappend Vars(list:file) $file
-			incr k
-		}
-	}
-	lappend Vars(list:file) $newFile
-	foreach file [lrange $fileList [expr {$i + 1}] end] {
-		if {[file isfile $file]} { lappend Vars(list:file) $file }
-	}
 	$t item delete all
 	TraverseFolders $w
 	$t item tag add "root children" directory
-	foreach file $Vars(list:file) $Vars(scriptFile)
-	set sel [expr {[llength $Vars(list:folder)] + $k + 1}]
-	$t see $sel
-	set Vars(edit:active) 1
-	foreach item [$t item children root] { $t item state set $item {!hilite} }
-	OpenEdit $w $sel rename
+	TraverseFiles $w
+	foreach file [list $newFile] $Vars(scriptNewFile)
+	OpenEdit $w [expr {[llength $Vars(list:folder)] + [llength $Vars(list:file)] + 1}] duplicate
 }
 
 
@@ -2907,16 +2874,21 @@ proc NewFolder {w} {
 	variable [namespace parent]::${w}::Vars
 
 	set t $Vars(widget:list:file)
+
+	set sel [$t item id active]
+	set i [expr {$sel - 1}]
+	if {$i < [llength $Vars(list:folder)]} {
+		set Vars(edit:file) [lindex $Vars(list:folder) $i]
+	} else {
+		set i [expr {$i - [llength $Vars(list:folder)]}]
+		set Vars(edit:file) [lindex $Vars(list:file) $i]
+	}
 	$t item delete all
 	TraverseFolders $w
-	foreach folder [list [Tr NewFolder]] $Vars(scriptNew)
+	foreach folder [list [Tr NewFolder]] $Vars(scriptNewDir)
 	$t item tag add "root children" directory
 	TraverseFiles $w
-	set sel [expr {[llength $Vars(list:folder)] + 1}]
-	$t see $sel
-	set Vars(edit:active) 1
-	foreach item [$t item children root] { $t item state set $item {!hilite} }
-	OpenEdit $w $sel new
+	OpenEdit $w [expr {[llength $Vars(list:folder)] + 1}] new
 }
 
 
@@ -2924,6 +2896,10 @@ proc OpenEdit {w sel mode} {
 	variable [namespace parent]::${w}::Vars
 
 	set t $Vars(widget:list:file)
+	$t selection clear
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	$t see $sel
+
 	set e [::TreeCtrl::EntryExpanderOpen $t $sel 0 txtName 0 [namespace code [list SelectFileName $w]]]
 	set vcmd { return [::fsbox::validatePath %P] }
 	$e configure                \
@@ -2931,6 +2907,7 @@ proc OpenEdit {w sel mode} {
 		-validatecommand $vcmd   \
 		-invalidcommand { bell } \
 		;
+	set Vars(edit:active) 1
 	set Vars(edit:sel) $sel
 	set Vars(edit:mode) $mode
 	set Vars(edit:accept) 0
@@ -2966,11 +2943,35 @@ proc FinishEdit {w} {
 
 	set t $Vars(widget:list:file)
 	set sel $Vars(edit:sel)
-	set name [string trim [$t item element cget $sel 0 txtName -text]]
+	set Vars(edit:active) 0
 
-	switch $Vars(edit:mode) {
-		rename	{ FinishRenameFile $w $sel $name }
-		new		{ FinishNewFolder $w $sel $name }
+	if {$Vars(edit:accept)} {
+		set name [string trim [$t item element cget $sel 0 txtName -text]]
+
+		switch $Vars(edit:mode) {
+			rename		{ set selFile [FinishRenameFile $w $sel $name] }
+			duplicate	{ set selFile [FinishDuplicateFile $w $sel $name] }
+			new			{ set selFile [FinishNewFolder $w $sel $name] }
+		}
+	} else {
+		set selFile $Vars(edit:file)
+	}
+
+	RefreshFileList $w
+
+	if {[string length $selFile]} {
+		set k [lsearch $Vars(list:folder) $selFile]
+		if {$k == -1} {
+			set k [lsearch $Vars(list:file) $selFile]
+			if {$k >= 0} { set k [expr {[llength $Vars(list:folder)] + $k + 1}] }
+		}
+		if {$k >= 0} {
+			set t $Vars(widget:list:file)
+			$t selection clear
+			$t selection add $k
+			$t activate $k
+			$t see $k
+		}
 	}
 
 	after idle [list [namespace parent]::Stimulate $w]
@@ -2980,7 +2981,6 @@ proc FinishEdit {w} {
 proc FinishRenameFile {w sel name} {
 	variable [namespace parent]::${w}::Vars
 
-	set Vars(edit:active) 0
 	set name [string trim $name]
 	set t $Vars(widget:list:file)
 	$t selection clear
@@ -2992,75 +2992,150 @@ proc FinishRenameFile {w sel name} {
 		set type file
 	}
 	set oldName [lindex $Vars(list:$type) $i]
-	if {[string length $name]} {
-		set newName [file join $Vars(folder) $name]
-	} else {
-		set newName [lindex [file split $oldName] end]
-		set name $newName
+	if {[string length $name] == 0} { return $oldName }
+	set newName [file join $Vars(folder) $name]
+	if {$oldName eq $newName} { return $oldName }
+	if {![[namespace parent]::CheckPath $w $name]} { return $oldName }
+
+	if {[file exists $newName]} {
+		[namespace parent]::messageBox \
+			-type ok \
+			-icon error \
+			-parent $Vars(widget:main) \
+			-message [format [Tr CannotRename] $name] \
+			;
+		return $oldName
 	}
-	if {$oldName ne $newName} {
-		if {[[namespace parent]::CheckPath $w $name]} {
-			set k [lsearch $Vars(list:folder) $newName]
-			if {$k == -1} { set k [lsearch $Vars(list:file) $newName] }
-			if {$k >= 0} {
-				[namespace parent]::messageBox \
-					-type ok \
-					-icon error \
-					-parent $Vars(widget:main) \
-					-message [format [Tr CannotRename] $name] \
-					;
-				set name [lindex [file split $oldName] end]
-			} else {
-				set ok 1
-				if {$type eq "file" && [llength $Vars(renamecommand)] > 0} {
-					set files [{*}$Vars(renamecommand) $oldName $newName]
-					if {[llength $files] == 0} {
+
+	set ok 1
+	if {$type eq "file" && [llength $Vars(renamecommand)] > 0} {
+		set files [{*}$Vars(renamecommand) $oldName $newName]
+		if {[llength $files] == 0} {
+			set ok 0
+			set new $newName
+		} else {
+			set undoList {}
+			foreach {old new} $files {
+				if {[file exists $old]} {
+					if {[catch {file rename $old $new}]} {
+						foreach {f g} $undoList { catch { file rename $g $f } }
 						set ok 0
-						set new $newName
+						break
 					} else {
-						set undoList {}
-						foreach {old new} $files {
-							if {[file exists $old]} {
-								if {[catch {file rename $old $new}]} {
-									foreach {f g} $undoList { catch { file rename $g $f } }
-									set ok 0
-									break
-								} else {
-									lappend undoList $old $new
-								}
-							}
-						}
+						lappend undoList $old $new
 					}
-				} elseif {[catch {file rename $oldName $newName}]} {
-					set old [lindex [file split $oldName] end]
-					set new [lindex [file split $newName] end]
-					set ok 0
-				}
-				if {$ok} {
-					lset Vars(list:$type) $i $newName
-				} else {
-					if {[llength $files] == 0} {
-						set msg [format [Tr InvalidFileExt] $new]
-					} else {
-						set msg [Tr ErrorRenaming($type)]
-						set msg [string map [list %old $old %new $new] $msg]
-					}
-					[namespace parent]::messageBox \
-						-type ok                    \
-						-icon error                 \
-						-parent $Vars(widget:main)  \
-						-message $msg               \
-						;
-					set name [lindex [file split $oldName] end]
 				}
 			}
+		}
+	} elseif {[catch {file rename $oldName $newName}]} {
+		set old [file tail $oldName]
+		set new [file tail $newName]
+		set ok 0
+	}
+	if {$ok} {
+		lset Vars(list:$type) $i $newName
+	} else {
+		if {[llength $files] == 0} {
+			set msg [format [Tr InvalidFileExt] [file tail $new]]
 		} else {
-			set name [lindex [file split $oldName] end]
+			set msg [Tr ErrorRenaming($type)]
+			set msg [string map [list %old [file tail $old] %new [file tail $new]] $msg]
+		}
+		[namespace parent]::messageBox \
+			-type ok                    \
+			-icon error                 \
+			-parent $Vars(widget:main)  \
+			-message $msg               \
+			;
+		return $oldName
+	}
+
+	return $newName
+}
+
+
+proc FinishDuplicateFile {w sel name} {
+	variable [namespace parent]::${w}::Vars
+
+	set name [string trim $name]
+	set srcFile $Vars(edit:file)
+	set dir [file dirname $srcFile]
+	set dstFile [file join $dir $name]
+
+	if {![[namespace parent]::CheckPath $w $name]} { return $srcFile }
+
+	if {[llength $Vars(duplicatecommand)]} {
+		set files [{*}$Vars(duplicatecommand) $srcFile $dstFile]
+	} else {
+		set files [list $srcFile $dstFile]
+	}
+
+	if {[llength $files] == 0} {
+		set msg [format [Tr InvalidFileExt] $name]
+		[namespace parent]::messageBox \
+			-type ok                    \
+			-icon error                 \
+			-parent $Vars(widget:main)  \
+			-message $msg               \
+			;
+		return $srcFile
+	}
+
+	foreach {_ f} $files {
+		if {[file exists $f]} {
+			[namespace parent]::messageBox \
+				-type ok \
+				-icon error \
+				-parent $Vars(widget:main) \
+				-message [format [Tr CannotCopy] [file tail $f]] \
+				;
+			return $srcFile
 		}
 	}
-	$t item element configure $sel 0 txtName -text $name
-	$t selection add $sel
-	RefreshFileList $w
+
+	set dlg [toplevel $w.wait]
+	wm withdraw $dlg
+	set top [tk::frame $dlg.top -border 2 -relief raised]
+	pack $top
+	tk::message $top.msg -aspect 250 -text [Tr WaitWhileDuplicating]
+	pack $top.msg -padx 5 -pady 5
+	wm resizable $dlg no no
+	wm transient $dlg [winfo toplevel $w]
+	::util::place $dlg center [winfo toplevel $w]
+	update idletasks
+	[namespace parent]::noWindowDecor $dlg
+	wm deiconify $dlg
+	::ttk::grabWindow $dlg
+	[namespace parent]::busy $dlg
+
+	set newFiles {}
+	foreach {f g} $files {
+		if {[file exists $f]} {
+			if {[catch { file copy $f $g }]} {
+				::ttk::releaseGrab $dlg
+				destroy $dlg
+				set msg [format [Tr CopyFailed] [file tail $f]]
+				[namespace parent]::messageBox \
+					-type ok                    \
+					-icon error                 \
+					-parent $Vars(widget:main)  \
+					-message $msg               \
+					;
+				foreach f $newFiles { catch { file delete -force $f } }
+				[namespace parent]::unbusy $w
+				return $srcFile
+			} else {
+				if {$::tcl_platform(platform) eq "unix"} { exec touch $g }
+				lappend newFiles $g
+			}
+		}
+	}
+
+	::ttk::releaseGrab $dlg
+	[namespace parent]::unbusy $dlg
+	destroy $dlg
+
+	return $dstFile
 }
 
 
@@ -3068,37 +3143,34 @@ proc FinishNewFolder {w sel name} {
 	variable [namespace parent]::${w}::Vars
 
 	set name [string trim $name]
+	if {[string length $name] == 0} { return "" }
 
-	if {$Vars(edit:accept) && [string length $name]} {
-		set folder [file join $Vars(folder) $name]
-		set k [lsearch $Vars(list:folder) $folder]
-		if {$k == -1} { set k [lsearch $Vars(list:file) $folder] }
-		if {$k >= 0} {
-			[namespace parent]::messageBox               \
-				-type ok                                  \
-				-icon error                               \
-				-parent $Vars(widget:main)                \
-				-message [format [Tr CannotCreate] $name] \
-				;
-			RefreshFileList $w
-		} elseif {[catch {file mkdir $folder}]} {
-			[namespace parent]::messageBox      \
-				-type ok                         \
-				-icon error                      \
-				-parent $Vars(widget:main)       \
-				-message [Tr ErrorCreate($type)] \
-				;
-			RefreshFileList $w
-		} else {
-			$Vars(widget:list:file) item element configure $sel 0 txtName -text $name
-			lappend Vars(list:folder) $folder
-			$Vars(widget:list:file) selection clear
-			$Vars(widget:list:file) selection add $sel
-			RefreshFileList $w
-		}
-	} else {
+	set folder [file join $Vars(folder) $name]
+	if {[file exists $folder]} {
+		[namespace parent]::messageBox               \
+			-type ok                                  \
+			-icon error                               \
+			-parent $Vars(widget:main)                \
+			-message [format [Tr CannotCreate] $name] \
+			;
+	} elseif {[catch {file mkdir $folder}]} {
+		[namespace parent]::messageBox      \
+			-type ok                         \
+			-icon error                      \
+			-parent $Vars(widget:main)       \
+			-message [Tr ErrorCreate($type)] \
+			;
 		RefreshFileList $w
+	} else {
+		$Vars(widget:list:file) item element configure $sel 0 txtName -text $name
+		lappend Vars(list:folder) $folder
+		set t $Vars(widget:list:file)
+		$t selection clear
+		$t selection add $sel
+		$t see $sel
 	}
+
+	return ""
 }
 
 

@@ -61,7 +61,7 @@ if {[llength [info nameofexecutable]] == 0} {
 
 if {[::scidb::misc::version] ne $scidb::version} {
 	wm withdraw .
-	if {$tcl_platform(platform) == "windows"} {
+	if {$tcl_platform(platform) eq "windows"} {
 		append msg "This is $scidb::app version [::scidb::misc::version], but the scidb.gui "
 		append msg "data file has the version number $scidb::version."
 	} else {

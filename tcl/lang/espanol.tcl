@@ -1609,11 +1609,12 @@
 ::fsbox::mc::CommandFailed					"Command '%s' failed." ;# NEW
 ::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied." ;# NEW
 ::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting." ;# NEW
+::fsbox::mc::CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
 ::fsbox::mc::ReallyDuplicateFile			"Really duplicate this file?" ;# NEW
 ::fsbox::mc::ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time." ;# NEW
 ::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied." ;# NEW
 ::fsbox::mc::ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied." ;# NEW
-::fsbox::mc::InvalidFileExt				"Cannot rename because '%s' has an invalid file extension." ;# NEW
+::fsbox::mc::InvalidFileExt				"Operation failed: '%s' has an invalid file extension." ;# NEW
 ::fsbox::mc::CannotRename					"Cannot rename to '%s' because this folder/file already exists." ;# NEW
 ::fsbox::mc::CannotCreate					"Cannot create folder '%s' because this folder/file already exists." ;# NEW
 ::fsbox::mc::ErrorCreate					"Error creating folder: permission denied." ;# NEW
@@ -1629,6 +1630,7 @@
 ::fsbox::mc::DirectoryDoesNotExist		"Directory '%s' does not exist." ;# NEW
 ::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory." ;# NEW
 ::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..." ;# NEW
+::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"

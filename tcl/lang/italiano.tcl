@@ -1613,11 +1613,12 @@
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::CopyFailed						"Copia del file '%s' fallita: permesso negato."
 ::fsbox::mc::CannotCopy						"Non posso creare una copia perché il file '%s' esiste già."
+::fsbox::mc::CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
 ::fsbox::mc::ReallyDuplicateFile			"Vuoi davvero duplicare questo file?"
 ::fsbox::mc::ReallyDuplicateDetail		"Questo file ha circa %s. Duplicarlo può richiedere del tempo."
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
-::fsbox::mc::InvalidFileExt				"Impossibile rinominare in '%s' perché ha un'estensione non valida."
+::fsbox::mc::InvalidFileExt				"Operation failed: '%s' has an invalid file extension." ;# NEW
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
@@ -1633,6 +1634,7 @@
 ::fsbox::mc::DirectoryDoesNotExist		"La cartella '%s' non esiste."
 ::fsbox::mc::CannotOpenOrCreate			"Non posso aprire/creare '%s'. Per favore scegli una cartella."
 ::fsbox::mc::WaitWhileDuplicating		"Per favore attendere mentre avviene la duplicazione del file..."
+::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"
