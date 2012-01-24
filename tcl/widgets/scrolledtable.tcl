@@ -761,7 +761,9 @@ proc TableResized {table height} {
 }
 
 
-proc SetStart {table start} { Scroll $table set $start true }
+proc SetStart {table start} {
+	Scroll $table set $start
+}
 
 
 proc ShiftScroll {table action} {
@@ -774,10 +776,8 @@ proc ShiftScroll {table action} {
 proc Scroll {table action args} {
 	variable ${table}::Vars
 
-	set force false
-
 	switch $action {
-		set		{ lassign $args start force }
+		set		{ lassign $args start }
 		moveto	{ set start [expr {int($args*$Vars(size) + 0.5)}] }
 		up			{ set start [expr {$Vars(start) - 1}] }
 		down		{ set start [expr {$Vars(start) + 1}] }
@@ -798,7 +798,7 @@ proc Scroll {table action args} {
 	set last  [expr {$Vars(size) <= 1 ? 1.0 : double($start + $Vars(height))/double($Vars(size))}]
 	$Vars(scrollbar) set $first $last
 
-	if {$force || $start != $Vars(start)} {
+	if {$start != $Vars(start)} {
 		if {abs($Vars(start) - $start) == 1} {
 			::table::activate $table none
 			if {$start < $Vars(start)} {
