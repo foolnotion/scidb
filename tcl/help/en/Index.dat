@@ -2,6 +2,7 @@ set Index {
   { C
     {
       {{Clipbase} {Clipbase.html}}
+      {{Command line options} {Command-Line-Options.html}}
       {{Contact information} {Contact-Information.html}}
     }
   }
@@ -16,14 +17,24 @@ set Index {
       {{File formats} {Database-Formats.html}}
     }
   }
+  { G
+    {
+      {{Game markers} {Game-Flags.html}}
+    }
+  }
   { H
     {
       {{Homepage} {Contact-Information.html}}
     }
   }
-  { K
+  { M
     {
-      {{Kommandozeilenoptionen} {Command-Line-Options.html}}
+      {{Markers} {Game-Flags.html}}
+    }
+  }
+  { N
+    {
+      {{NAG annotation values} {NAG-Comments.html}}
     }
   }
   { W

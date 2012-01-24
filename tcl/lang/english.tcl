@@ -568,7 +568,7 @@
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"
 ::gametable::mc::UndeleteGame				"Undelete this game"
-::gametable::mc::EditGameFlags			"Edit game flags"
+::gametable::mc::EditGameFlags			"Edit game markers"
 ::gametable::mc::Custom						"Custom"
 
 ::gametable::mc::Monochrome				"Monochrome"

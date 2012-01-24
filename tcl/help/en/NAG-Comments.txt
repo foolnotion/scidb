@@ -1,0 +1,99 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX NAG annotation values
+TITLE NAG annotation values
+
+<annotation>
+NAG = Numeric Annotation Glyph
+</annotation>
+
+<p>
+The <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
+PGN-Standard</a>
+defines the following NAG values:
+</p>
+
+<box>
+  <p>Infix annotations:</p>
+
+  <ol start="1">
+    <li>%::annotation::mc::Nag(ENUM(1..6))%</li>
+  </ol>
+</box>
+
+<box>
+  <p>Suffix annotations:</p>
+
+  <ol start="7">
+    <li>%::annotation::mc::Nag(ENUM(7..139))%</li>
+  </ol>
+</box>
+
+<p>
+Other proposed NAG values are:
+</p>
+
+<box>
+  <p>Prefix annotations:</p>
+
+  <ol start="140">
+    <li>%::annotation::mc::Nag(ENUM(140..145))%</li>
+  </ol>
+</box>
+
+<box>
+  <p>Suffix annotations:</p>
+
+  <ol start="146">
+    <li>%::annotation::mc::Nag(ENUM(146..154))%</li>
+  </ol>
+</box>
+
+<p>
+Scidb is defining some more NAG values:
+</p>
+
+<box>
+  <p>Suffix annotations:</p>
+
+  <ol start="155">
+    <li>%::annotation::mc::Nag(ENUM(155..172))%</li>
+  </ol>
+</box>
+
+<p>
+For the support of commentaries in ChessBase files some more NAG
+values are required:
+</p>
+
+<box>
+  <ol start="173">
+    <li>%::annotation::mc::Nag(ENUM(173..184))%</li>
+  </ol>
+</box>
+
+<p>
+Scid and ChessPad define further NAG values (&gt; 190). But these values
+will be automatically mapped to Scidb specific values during import
+and database conversion.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

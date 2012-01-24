@@ -174,7 +174,7 @@
 143 "Worse is"
 144 "Equivalent is"
 145 "Editor's remark"
-146 "novelty"
+146 "Novelty"
 147 "Weak Point"
 148 "Endgame"
 149 "Line"

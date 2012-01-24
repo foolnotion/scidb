@@ -446,6 +446,14 @@ proc TableFill {path args} {
 				set item [lindex $line [incr k]]
 
 				switch $id {
+					event {
+						if {[string length $item] == 0} {
+							lappend text "-"
+						} else {
+							lappend text $item
+						}
+					}
+
 					eventCountry {
 						if {[string length $item] == 0} {
 							if {$Options(country-code) eq "flags"} {

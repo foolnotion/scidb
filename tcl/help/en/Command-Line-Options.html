@@ -21,13 +21,13 @@
         media="screen"
          href="../styles/help.css" />
 
-  <title>Help: Kommandozeilenoptionen</title>
+  <title>Help: Command line options</title>
 </head>
 
 <body>
 
 <div class="title">
-  <h1 class="title">Kommandozeilenoptionen</h1>
+  <h1 class="title">Command line options</h1>
 </div>
 
 <p>
@@ -48,21 +48,21 @@ On the command line the following options are available at program start:
     <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
         --help
     </td>
-    <td class="standard">Anzeige der Optionsmöglichkeiten (in Englisch) und sofortiges Programmende.</td>
+    <td class="standard">Display all options and terminate.</td>
   </tr>
   <tr>
     <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
         --show-board
     </td>
-    <td class="standard">Zum Brett-Tab wechseln sofort nach Programmstart.</td>
+    <td class="standard">Change to board tab after initialization.</td>
   </tr>
   <tr>
     <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --pre-open
+        --re-open
     </td>
     <td class="standard">
-      Alle Datenbanken, die beim Schliessen der letzten Sitzung offen waren, sofort
-      nach Programmstart laden.
+      Open all databases immediately after initialization which where open at the end
+      of the last session.
     </td>
   </tr>
   <tr>
@@ -70,9 +70,8 @@ On the command line the following options are available at program start:
         --fast-load
     </td>
     <td class="standard">
-      Nur die ausschliesslich erforderlichen Dateien nach Programmstart laden. Dies ermöglicht
-      einen deutlich schnelleren Programmstart. Diese Option sollte i.A. nicht benutzt werden,
-      sie dient vornehmlich dem Testen.
+      Load only the required data files after initialization, this enables a significant
+      faster program start. It is not recommended to use this option except for testing.
     </td>
   </tr>
   <tr>
@@ -80,11 +79,10 @@ On the command line the following options are available at program start:
         --first-time
     </td>
     <td class="standard">
-      Das Programm wird gestartet wie beim ersten Mal, d.h. die Benutzeroptionen werden
-      zurückgesetzt, die Wiederherstellungsdateien werden gelöscht, und die Standard-Brettthemen
-      werden erneut in das benutzereigene Verzeichnis kopiert, sofern sie nicht modifiziert
-      wurden. Diese Option kann nützlich sein wenn der Programmstart aufgrund eines Fehlers in der
-      Optionendatei fehlschlägt.
+      Start the program as it would be the first time; this means reset all user options,
+      delete the recovery files, and copy all standard board themes into the userown
+      directory, unless the modified ones. This option may be useful if the initialization
+      fails due to an error in the option file.
     </td>
   </tr>
   <tr>
@@ -92,8 +90,8 @@ On the command line the following options are available at program start:
         --elo-only
     </td>
     <td class="standard">
-      Keine weiteren Rating-Dateien laden ausser dem ELO-Rating. Dies beschleunigt den
-      Programmstart.
+      Do not load other rating files than ELO rating. This is accelerating the
+      initialization.
     </td>
   </tr>
   <tr>
@@ -101,9 +99,9 @@ On the command line the following options are available at program start:
         --print-recovery-files
     </td>
     <td class="standard">
-      Zeige die Wiederherstellungsdateien, die in der letzten Sitzung aufgrund
-      ungespeicherter Partien erzeugt wurden, und terminiere das Programm.
-      Möglicherweise existieren keine und es werden dann auch keine angezeigt.
+      Show all recovery files which where generated at the end of last session due
+      to unsaved modifications, and terminate. The output is empty if no revoery
+      file exists.
     </td>
   </tr>
   <tr>
@@ -111,11 +109,10 @@ On the command line the following options are available at program start:
         --delete-recovery-files
     </td>
     <td class="standard">
-      Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
-      die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
-      Es erfolgt keine physikalische Löschung, mit der Option
+      Delete all recovery files from last session and terminate the program.
+      It is not a phyisical removal, with option
       <span style="font-family:fixed;">--recover-old</span>
-      können sie wiederbenutzt werden.
+      it is possible to reuse these files.
     </td>
   </tr>
   <tr>
@@ -123,11 +120,11 @@ On the command line the following options are available at program start:
         --dont-recover
     </td>
     <td class="standard">
-      Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
-      Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
-      nicht physikalisch gelöscht,mit der Option
+      Start the program without using the recovery files (which contains
+      unsaved modified games from last session). The removal is not physical,
+      with option
       <span style="font-family:fixed;">--recover-old</span>
-      können sie wiederbenutzt werden.
+      it is possible to reuse these files.
     </td>
   </tr>
   <tr>
@@ -135,9 +132,8 @@ On the command line the following options are available at program start:
         --recover-old
     </td>
     <td class="standard">
-      Ungespeicherte Partien aus älteren Sitzungen wiederherstellen. Die
-      ungespeicherten Partien aus der letzten Sitzung werden nicht mehr
-      berücksichtigt.
+      Recover unsaved games from older sessions. Unsaved games from last session
+      will be discarded.
     </td>
   </tr>
   <tr>
@@ -145,8 +141,7 @@ On the command line the following options are available at program start:
         --single-process
     </td>
     <td class="standard">
-      Erzwingt eine weitere Scidb-Instanz bei Programmstart. Diese Option
-      dient nur dem Testen und sollte nicht verwendet werden.
+      Force another instance of Scidb. This option is intented only for testing.
     </td>
   </tr>
   <tr>
@@ -154,15 +149,15 @@ On the command line the following options are available at program start:
         --force-grab
     </td>
     <td class="standard">
-      Wird das Programm in einem Debugger gestartet werden Grabs automatisch
-      unterdrückt, denn diese können zum Einfrieren des Bildschirms führen.
-      Mit dieser Option werden die Grabs auch im Debugger zugelassen.
+      The program is supressing grabs automaticaly if started inside a debugger,
+      because gras may lead to frozen screens. With this option grabbing
+      the screen will be allowed also in debug mode.
     </td>
   </tr>
 </table>
 
 <p>
-Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
+The following options will be recognized by the Tk library:
 </p>
 
 <table class="standard">
@@ -171,13 +166,10 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
         -geometry GEOMETRY
     </td>
     <td class="standard">
-      Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
-      Hauptfenster mit der Angabe
-      <span style="font-family:fixed;">
-        -geometry 600x800+20+10
-      </span>
-      die Größe 600x800 und wird an der Bildschirmposition mit den Koordinaten
-      20,10 positioniert.
+      Use the geometric information for the main window. For example the
+      argument <span style="font-family:fixed;">-geometry 600x800+20+10</span>
+      will resize the main window to 600x800, and the position of the window
+      will have the screen coordinates 20,10.
     </td>
   </tr>
   <tr>
@@ -185,7 +177,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
         -display DISPLAY
     </td>
     <td class="standard">
-      Benutze das mit DISPLAY angegebene Display.
+      Name of screen on which to create window.
     </td>
   </tr>
   <tr>
@@ -193,7 +185,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
         -sync
     </td>
     <td class="standard">
-      Benutze den Synchron-Modus für den Display-Server.
+      Use synchronous mode for display server.
     </td>
   </tr>
 </table>

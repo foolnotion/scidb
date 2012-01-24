@@ -262,7 +262,7 @@ proc build {tab menu width height} {
 proc preOpen {parent} {
 	variable PreOpen
 
-	if {![::process::testOption pre-open]} { return }
+	if {![::process::testOption re-open]} { return }
 
 	foreach entry $PreOpen {
 		lassign $entry type file encoding readonly active

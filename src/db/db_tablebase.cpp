@@ -115,7 +115,7 @@ Tablebase::getOnlineQuery(Board const& board, Move& result)
 	// IMPORTANT NOTE: Both do not allow online access from other chess applications.
 
 	// other sites:
-	// http://www.lokasoft.nl/tbweb.aspx
+	// http://www.lokasoft.nl/tbweb.aspx		!! allows access from other chess applications
 	// http://chessok.com/?page_id=361
 
 	// Probably this is the most interesting one:

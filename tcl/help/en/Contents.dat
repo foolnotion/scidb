@@ -48,5 +48,5 @@ set Contents {
 }
 
 set UnixOnly {
-  HowToSetDefaultBrowser.html
+  How-To-Set-Default-Browser.html
 }

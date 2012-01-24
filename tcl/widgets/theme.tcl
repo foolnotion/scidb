@@ -469,29 +469,43 @@ option add *inactiveSelectForeground white
 option add *Spinbox.background white
 option add *Spinbox.selectForeground white
 option add *Spinbox.readonlyBackground white
+
 option add *Entry.selectForeground black
 option add *Entry.readonlyBackground white
+#option add *Entry.selectBackground #678db2
+
 option add *Listbox.background white
 option add *Listbox.selectBorderWidth 0
 option add *Listbox.activeStyle dotbox
 option add *Listbox.selectBackground #ffdd76
 option add *Listbox.selectForeground black
+
 option add *Panedwindow.sashWidth 4
 option add *Panedwindow.sashRelief raised
+
 option add *Menu.TearOff 0
 option add *Menu.activeBackground #678db2
 option add *Menu.activeForeground white
 option add *Menu.activeBorderWidth 0
+
 option add *Text.background white
+#option add *Text.selectBackground #678db2
+
 option add *Button.highlightThickness 0
+
 option add *Canvas.highlightThickness 0
+
 option add *TreeCtrl.highlightThickness 0
 
 option add *TCombobox.exportSelection 0
+
 option add *TSpinbox.wrap 0
+
 option add *TEntry.exportSelection 0
 option add *TEntry.background white
+#option add *TEntry.selectBackground #678db2
 #option add *TEntry.cursor xterm
+
 #option add *Combobox.cursor xterm
 
 bind Listbox <Home>	[namespace code { ListboxHome %W }]

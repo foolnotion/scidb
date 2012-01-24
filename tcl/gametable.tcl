@@ -1199,6 +1199,14 @@ proc TableFill {path args} {
 						}
 					}
 
+					wgite - black - event - site {
+						if {[string length $item] == 0} {
+							lappend text "-"
+						} else {
+							lappend text $item
+						}
+					}
+
 					default {
 						lappend text $item
 					}

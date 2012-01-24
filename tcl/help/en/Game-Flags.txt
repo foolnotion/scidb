@@ -1,0 +1,60 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Markers
+INDEX Game markers
+TITLE Game markers
+
+<p>
+A <em>marker</em> is an indicator of some chess characteristic that can be turned
+on or off for each game in the database. There are 21 user-settable markers that
+you can directly set for each game. These markers will be used used mainly as part
+of complex searches in the database, or for game list filter purposes.  Since all
+the user-settable markers have no significance, you can use them for any purpose that
+suits your needs.
+</p>
+
+<p>
+The markers and their symbols in detail:
+</p>
+INCLUDE ../Game-Flags.txt
+
+<p>
+There exists another special marker which is not user-settable, the deletion
+marker.  A game marked with this marker selected for deletion. It will be removed
+when the database is compacted.
+</p>
+
+<p>
+When editing games from Scid databases (.si4) Scidb is supporting the six special
+user defined markers (1..6). But it is recommended not to use these markers, because
+unsolvable problems will ocurr while copying games to other databases; also the
+application Scid cannot solve these problems.
+</p>
+
+<p>
+When reading ChessBase databases both markers
+<em>%::gametable::mc::GameFlags(s)%</em> and
+<em>%::gametable::mc::GameFlags(t)%</em>
+will be mapped to the common marker <em>%::gametable::mc::GameFlags(?)%</em>.
+Scidb does not distinguish between these two characteristics.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -774,9 +774,13 @@ proc TableFill {path args} {
 
 			switch $id {
 				lastName {
-					set parts [split $item ,]
-					lappend text [lindex $parts 0]
-					lappend text [lindex [lrange $parts 1 end] 0]
+					if {[string length $item] == 0} {
+						lappend text "-"
+					} else {
+						set parts [split $item ,]
+						lappend text [lindex $parts 0]
+						lappend text [lindex [lrange $parts 1 end] 0]
+					}
 				}
 
 				firstName {

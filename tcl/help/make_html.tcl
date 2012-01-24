@@ -206,42 +206,49 @@ if {![string match TITLE* $line]} {
 	example stderr
 }
 
-set contents {}
+proc readContents {chan file} {
+	variable HtmlMapping
+	variable charset
 
-while {[gets $src line] >= 0} {
-	if {[string match END* $line]} { break }
-	set line [string map $HtmlMapping $line]
+	set contents {}
 
-	if {[string match CHARSET* $line]} {
-		puts stderr "Error([info script]): CHARSET has to be declared before TITLE"
-		exit 1
-	} elseif {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
-		lassign $location i k
-		set range [string range $line [expr {$i + 5}] [expr {$k - 1}]]
-		lassign [split $range "."] from _ to
-		set pref [string range $line 0 [expr {$i - 1}]]
-		set suff [string range $line [expr {$k + 1}] end]
-		for {} {$from <= $to} {incr from} {
-			lappend contents "${pref}$from${suff}"
+	while {[gets $chan line] >= 0} {
+		if {[string match END* $line]} { break }
+		set line [string map $HtmlMapping $line]
+
+		if {[string match CHARSET* $line]} {
+			set charset [getArg $line]
+			chan configure $src -encoding $charset
+		} elseif {[regexp -indices {ENUM[(][0-9]+[.][.][0-9]+[)]} $line location]} {
+			lassign $location i k
+			set range [string range $line [expr {$i + 5}] [expr {$k - 1}]]
+			lassign [split $range "."] from _ to
+			set pref [string range $line 0 [expr {$i - 1}]]
+			set suff [string range $line [expr {$k + 1}] end]
+			for {} {$from <= $to} {incr from} {
+				lappend contents "${pref}$from${suff}"
+			}
+		} else {
+			lappend contents $line
 		}
-	} else {
-		lappend contents $line
 	}
-}
 
-if {![string match END* $line]} {
-	puts stderr "Error([info script]): Missing mandatory END."
-	example stderr
-}
+	if {![string match END* $line]} {
+		puts stderr "Error([info script]): Missing mandatory END."
+		example stderr
+	}
 
-close $src
+	close $chan
 
-while {[llength $contents] > 0 && [string length [lindex $contents 0]] == 0} {
-	set contents [lreplace $contents 0 0]
-}
+	while {[llength $contents] > 0 && [string length [lindex $contents 0]] == 0} {
+		set contents [lreplace $contents 0 0]
+	}
 
-while {[llength $contents] > 0 && [string length [lindex $contents end]] == 0} {
-	set contents [lreplace $contents end end]
+	while {[llength $contents] > 0 && [string length [lindex $contents end]] == 0} {
+		set contents [lreplace $contents end end]
+	}
+
+	return $contents
 }
 
 set transFile [file join .. .. lang $translationFile]
@@ -258,20 +265,45 @@ if {![file readable $nagFile]} {
 
 readTranslationFile $transFile $nagFile $charsetName
 
-set body {}
-foreach line $contents {
-	while {[regexp {%(::)?[a-zA-Z_:]*([(].*[)])?%} $line pattern]} {
-		set var [string range $pattern 1 end-1]
-		if {[info exists $var]} {
-			set line [string map [list $pattern [set $var]] $line]
+proc processContents {contents} {
+	variable body
+	variable charset
+
+	foreach line $contents {
+		if {[string match {INCLUDE *} $line]} {
+			set f [getArg $line]
+			if {[catch { set inc [open $f r] }]} {
+				puts stderr "Error([info script]): Cannot open file '$f'."
+				exit 1
+			}
+			set mainCharset $charset
+			chan configure $inc -encoding $charset
+			while {[gets $inc line] >= 0} {
+				if {[string match BEGIN* $line]} { break }
+			}
+			if {![string match BEGIN* $line]} {
+				puts stderr "Error($f): Missing mandatory END."
+				exit 1
+			}
+			processContents [readContents $inc $f]
+			set charset $mainCharset
 		} else {
-			puts stderr "Warning([info script]): Couldn't substitute $var"
-			set line [string map [list $pattern $var] $line]
+			while {[regexp {%(::)?[a-zA-Z_:]*([(].*[)])?%} $line pattern]} {
+				set var [string range $pattern 1 end-1]
+				if {[info exists $var]} {
+					set line [string map [list $pattern [set $var]] $line]
+				} else {
+					puts stderr "Warning([info script]): Couldn't substitute $var"
+					set line [string map [list $pattern $var] $line]
+				}
+			}
+			lappend body $line
 		}
 	}
-	lappend body $line
 }
 
+set body {}
+processContents [readContents $src [info script]]
 set dst [open $dstfile w]
 fconfigure $dst -encoding utf-8
 print $dst [file join tcl help $lang $srcfile] $title $body

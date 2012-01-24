@@ -104,7 +104,7 @@ while {[gets $src line] >= 0} {
 
 puts "  \}"
 puts "\}"
-puts "\nset UnixOnly \{\n  HowToSetDefaultBrowser.html\n\}"
+puts "\nset UnixOnly \{\n  How-To-Set-Default-Browser.html\n\}"
 close $src
 
 # vi:set ts=3 sw=3:
