@@ -157,7 +157,6 @@ proc updateThemes {} {
 	}
 
 	foreach dir {{} piece square} {
-		::log::open Startup
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
 			set path [file join $themesDir [file tail $file]]
@@ -172,13 +171,12 @@ proc updateThemes {} {
 					}
 				}
 				if {!$exisiting} {
-					::log::info [format $mc::CannotOverwriteTheme $path]
+					puts stderr [format $mc::CannotOverwriteTheme $path]
 				}
 			} else {
 				catch { file copy -force $file $path }
 			}
 		}
-		::log::close
 	}
 }
 
