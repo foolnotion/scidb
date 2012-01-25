@@ -238,7 +238,7 @@ proc open {parent pos lang} {
 		set Vars(format:$fmt) 0
 		::toolbar::add $tb checkbutton \
 			-image [set icon::toolbar$format] \
-			-tooltipvar $mc::$format \
+			-tooltipvar [set mc::$format] \
 			-variable [namespace current]::Vars(format:$fmt) \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
@@ -400,9 +400,10 @@ proc Ok {dlg} {
 proc RecordGeometry {dlg parent} {
 	variable Geometry
 
-	scan [wm geometry $dlg] "%dx%d+%d+%d" fw fh fx fy
-	scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d+%d+%d" tw th tx ty
-	set Geometry [list [expr {$fx - $tx}] [expr {$fy - $ty}] $fw $fh]
+	lassign $Geometry fx fy fw fh
+	scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy
+	scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d%d%d" tw th tx ty
+	set Geometry [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
 }
 
 
@@ -1229,7 +1230,7 @@ proc PopupMenu {parent} {
 		$m.format add command \
 			-compound left \
 			-image [set ::icon::12x12::text-$fmt] \
-			-label $mc::$format \
+			-label [set mc::$format] \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;
 	}

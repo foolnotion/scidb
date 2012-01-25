@@ -22,15 +22,13 @@ TITLE Database formats
 
 <h2>Scidb (.sci)</h2>
 
-This is Scidb's own database format. The usage of this format is strongly
-recommended, only with this format the full capability of Scidb is
-accessible, and it will provide optimal processing speed.
+This is Scidb's own database format. Use of this format is strongly
+recommended because of speed and feature completeness considerations.
 
 <h2>Scid (.si4, .si3)</h2>
 
-This is Scid's database format, and due to the wide distribution rate
-the reading mode and the writing mode is supported. But with this
-format you cannot use the full capability of Scidb.
+Scid's database format is fully supported because of it's wide adoption.
+But with this format you cannot use the full capability of Scidb.
 
 <h2>ChessBase (.cbh)</h2>
 

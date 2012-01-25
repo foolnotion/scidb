@@ -933,7 +933,12 @@ proc RecordGeometry {pw} {
 	variable Geometry
 
 	set dlg [winfo toplevel $pw]
+
+	lassign {0 0} x y
+	scan $Geometry "%dx%d%d%d" _ _ x y
 	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
+	if {$x < 0} { set x 0 }
+	if {$y < 0} { set y 0 }
 
 	if {[llength [$pw panes]] == 1} {
 		set w [expr {min($w + $Priv(minsize), [winfo screenwidth $pw] - 30)}]
@@ -941,22 +946,7 @@ proc RecordGeometry {pw} {
 		set Priv(minsize) [winfo width [lindex [$pw panes] 0]]
 	}
 
-	if {[info exists x]} {
-		set Geometry "${w}x${h}+${x}+${y}"
-	} else {
-		set indexP [string first $Geometry "+"]
-		set indexM [string first $Geometry "-"]
-		if {$indexP == -1} {
-			set indexP $indexM
-		} elseif {$indexM >= 0} {
-			set indexP [expr {min($indexP, $indexM)}]
-		}
-		if {$indexP == -1} {
-			set Geometry "${w}x${h}"
-		} else {
-			set Geometry "${w}x${h}[string range $indexP end]"
-		}
-	}
+	set Geometry "${w}x${h}+${x}+${y}"
 }
 
 
@@ -1093,6 +1083,45 @@ proc ToggleIndex {tab} {
 
 
 proc BuildHtmlFrame {dlg w} {
+	# Find appropriate courier font(s)
+	set defaultFixedFamilies $::dialog::choosefont::fontFamilies(Courier)
+	set fixedFamilies {}
+	set fixed ""
+	foreach font {TkDefaultFont TkTextFont} {
+		array set attrs [font actual $font]
+		set fam $attrs(-family)
+		if {$fam ni $fixedFamilies && $fam in $::dialog::choosefont::fontFamilies(Courier)} {
+			lappend fixedFamilies $fam
+		}
+	}
+	if {[llength $fixedFamilies] == 0} {
+		foreach fam $::dialog::choosefont::fontFamilies(Courier) {
+			array set attrs [font actual [list $fam 12]]
+			if {$f eq $attrs(-family)} { lappend fixedFamilies $fam }
+		}
+	}
+
+	# Find appropriate text font(s)
+	set defaultTextFamiles {Arial {Bitstream Vera Sans} {DejaVu Sans} Verdana}
+	set textFamilies {}
+	foreach fam $defaultTextFamiles {
+		array set attrs [font actual [list $fam 12]]
+		set f $attrs(-family)
+		if {$f eq $fam && $fam ni $textFamilies && $fam ni $::dialog::choosefont::fontFamilies(Courier)} {
+			lappend textFamilies $fam
+		}
+	}
+	array set attrs [font actual TkTextFont]
+	set fam $attrs(-family)
+	if {$fam ni $textFamilies} {
+		if {$fam in $::dialog::choosefont::fontFamilies(Courier)} {
+			lappend textFamilies $fam
+		} else {
+			set textFamilies [linsert $defaultTextFamiles 1 $fam]
+		}
+	}
+
+	# setup css script
 	set css "
 		:link    { color: blue2; text-decoration: none; }
 		:visited { color: purple; text-decoration: none; }
@@ -1102,9 +1131,11 @@ proc BuildHtmlFrame {dlg w} {
 		:user3	{ color: black; text-decoration: underline; }	/* invalid link */
 		:hover   { text-decoration: underline; background: yellow; }
 		.match	{ background: yellow; color: black; }
-		html		{ font-family: Arial, Bitstream Vera Sans, DejaVu Sans, Verdana; }
-		tt, pre	{ font-family: [join $::dialog::choosefont::fontFamilies(Courier) ","]; }
+		html		{ font-family: [join $textFamilies ","]; }
+		tt, pre	{ font-family: [join $fixedFamilies ","]; }
 	"
+
+	# build HTML widget
 	set height [expr {min([winfo screenheight $dlg] - 60, 800)}]
 	::html $w \
 		-imagecmd [namespace code GetImage] \

@@ -108,13 +108,17 @@ array set fontFamilies {
 	Courier {
 		{Bitstream Vera Sans}
 		{DejaVu Sans}
+		{DejaVu LGC Sans}
 		{Cumberland AMT}
 		{Lucida Console}
 	}
 
 	Fixed {
 		{Bitstream Vera Sans Mono}
+		{Liberation Mono}
+		{Courier 10 Pitch}
 		{DejaVu Sans Mono}
+		{DejaVu LGC Sans Mono}
 		{Lucida Console}
 		{Andale Mono}
 		{Courier New}
@@ -948,6 +952,8 @@ proc RecordGeometry {dlg} {
 		scan [wm grid $dlg] "%d %d %d %d" bw bh wi hi
 		set w [expr {($w - $S(width))/$wi + $bw}]
 		set h [expr {($h - $S(height))/$hi + $bh}]
+		set x [expr {max(0, $x)}]
+		set y [expr {max(0, $y)}]
 		set S(geometry) "${w}x${h}+${x}+${y}"
 	}
 }

@@ -79,7 +79,7 @@ On the command line the following options are available at program start:
         --elo-only
     </td>
     <td class="standard">
-      Do not load other rating files than ELO rating. This is accelerating the
+      Do not load other rating files than ELO rating. This speeds up program
       initialization.
     </td>
   </tr>

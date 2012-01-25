@@ -439,7 +439,12 @@ proc Close {dlg base {view {}}} {
 
 
 proc RecordGeometry {dlg} {
-	set [namespace current]::Geometry [lindex [split [wm geometry $dlg] +] 0]
+	variable Geometry
+
+	set g [wm geometry $dlg]
+	set n [string first "+" $g]
+	if {$n == -1} { set n [string first "-" $g] }
+	if {$n >= 0} { set Geometry [string range $g 0 [expr {$n - 1}]] }
 }
 
 
