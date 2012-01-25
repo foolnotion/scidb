@@ -1100,6 +1100,10 @@ proc BuildHtmlFrame {dlg w} {
 			if {$f eq $attrs(-family)} { lappend fixedFamilies $fam }
 		}
 	}
+	if {[llength $fixedFamilies] == 0} {
+		array set attrs [font actual TkFixedFont]
+		lappend fixedFamilies $attrs(-family)
+	}
 
 	# Find appropriate text font(s)
 	set defaultTextFamiles {Arial {Bitstream Vera Sans} {DejaVu Sans} Verdana}
@@ -1114,7 +1118,7 @@ proc BuildHtmlFrame {dlg w} {
 	array set attrs [font actual TkTextFont]
 	set fam $attrs(-family)
 	if {$fam ni $textFamilies} {
-		if {$fam in $::dialog::choosefont::fontFamilies(Courier)} {
+		if {$fam in $::dialog::choosefont::fontFamilies(Courier) || [llength $defaultTextFamiles] <= 1} {
 			lappend textFamilies $fam
 		} else {
 			set textFamilies [linsert $defaultTextFamiles 1 $fam]
