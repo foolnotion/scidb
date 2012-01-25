@@ -1084,25 +1084,25 @@ proc ToggleIndex {tab} {
 
 proc BuildHtmlFrame {dlg w} {
 	# Find appropriate courier font(s)
-	set defaultFixedFamilies $::dialog::choosefont::fontFamilies(Courier)
-	set fixedFamilies {}
-	set fixed ""
+	set defaultCourierFamilies $::dialog::choosefont::fontFamilies(Courier)
+	set courierFamilies {}
+	set courier ""
 	foreach font {TkDefaultFont TkTextFont} {
 		array set attrs [font actual $font]
 		set fam $attrs(-family)
-		if {$fam ni $fixedFamilies && $fam in $::dialog::choosefont::fontFamilies(Courier)} {
-			lappend fixedFamilies $fam
+		if {$fam ni $courierFamilies && $fam in $::dialog::choosefont::fontFamilies(Courier)} {
+			lappend courierFamilies $fam
 		}
 	}
-	if {[llength $fixedFamilies] == 0} {
+	if {[llength $courierFamilies] == 0} {
 		foreach fam $::dialog::choosefont::fontFamilies(Courier) {
 			array set attrs [font actual [list $fam 12]]
-			if {$f eq $attrs(-family)} { lappend fixedFamilies $fam }
+			if {$fam eq $attrs(-family)} { lappend courierFamilies $fam }
 		}
 	}
-	if {[llength $fixedFamilies] == 0} {
+	if {[llength $courierFamilies] == 0} {
 		array set attrs [font actual TkFixedFont]
-		lappend fixedFamilies $attrs(-family)
+		lappend courierFamilies $attrs(-family)
 	}
 
 	# Find appropriate text font(s)
@@ -1136,7 +1136,7 @@ proc BuildHtmlFrame {dlg w} {
 		:hover   { text-decoration: underline; background: yellow; }
 		.match	{ background: yellow; color: black; }
 		html		{ font-family: [join $textFamilies ","]; }
-		tt, pre	{ font-family: [join $fixedFamilies ","]; }
+		tt, pre	{ font-family: [join $courierFamilies ","]; }
 	"
 
 	# build HTML widget
