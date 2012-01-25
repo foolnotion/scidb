@@ -203,6 +203,7 @@ proc Dispatch {w cmd args} {
 		resize		{ Resize $w 0 }
 		see			{ See $w [lindex $args 0] }
 		viewbox		{ return [ViewBox $w] }
+		vsbwidth		{ return [VsbWidth $w] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
 		xview       { uplevel 1 [linsert $args 0 ::scrolledframe::Xview $w] }
 		yview       { uplevel 1 [linsert $args 0 ::scrolledframe::Yview $w] }
@@ -549,6 +550,16 @@ proc ViewBox {w} {
 	}
 
 	return [list $x0 $y0 $wd $ht]
+}
+
+
+proc VsbWidth {w} {
+	set parent [winfo parent $w]
+
+	set vs $parent.__vs__
+	if {![winfo exists $vs]} { return 0 }
+	if {$vs ni [grid slaves $parent]} { return 0 }
+	return [winfo width $vs]
 }
 
 

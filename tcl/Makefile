@@ -235,7 +235,7 @@ install-photos:
 
 uninstall-photos:
 	@if [ -d $(SHAREDIR)/photos ]; then                                                       \
-		echo -n "Uninstall player photos:"
+		echo -n "Uninstall player photos:";                                                    \
 		for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do                       \
 			dir=$(SHAREDIR)/photos/$$i;                                                         \
 			if [ -d $$dir ]; then                                                               \

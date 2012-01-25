@@ -124,7 +124,6 @@ proc Build {w args} {
 	set Priv(css)    $opts(-css)
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
-	if {![info exists Priv(sbwidth)]} { set Priv(sbwidth) 0 }
 
 	rename ::$w $w.__html__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
@@ -297,7 +296,7 @@ proc Configure {parent width req} {
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
 
-	$parent.html configure -width [expr {max(1, $width - 2*$Priv(bw) - $Priv(sbwidth))}]
+	$parent.html configure -width [expr {max(1, $width - 2*$Priv(bw) - [$parent vsbwidth])}]
 	after cancel $Priv(afterId)
 	set afterId [after idle [namespace code [list ComputeSize $parent $req]]]
 }
@@ -310,8 +309,7 @@ proc ConfigureFrame {parent sb visible} {
 		after cancel $Priv(afterId)
 		set Priv(afterId) {}
 		set width [$parent.html cget -width]
-		set Priv(sbwidth) [expr {[winfo reqwidth $sb]*$visible}]
-		incr width $Priv(sbwidth)
+		incr width [$parent vsbwidth]
 		Configure $parent $width 0
 	}
 }

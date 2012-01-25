@@ -258,7 +258,6 @@ if {[::process::testOption use-analysis]} {
 	TabChanged $nb $app
 	::load::writeLog
 	update idletasks
-	::beta::welcomeToScidb $app
 	set ::remote::blocked 0
 
 	database::preOpen $app
@@ -273,6 +272,8 @@ if {[::process::testOption use-analysis]} {
 	if {[::process::testOption show-board]} {
 		after idle [namespace code [list switchTab board]]
 	}
+
+	after idle [list ::beta::welcomeToScidb $app]
 }
 
 
