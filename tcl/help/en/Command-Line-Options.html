@@ -36,8 +36,8 @@ On the command line the following options are available at program start:
 
 <table class="standard">
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--</tt>
     </td>
     <td class="standard">
       After this option all arguments wil be interpreted as file names. This permits
@@ -45,20 +45,20 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --help
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--help</tt>
     </td>
     <td class="standard">Display all options and terminate.</td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --show-board
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--show-board</tt>
     </td>
     <td class="standard">Change to board tab after initialization.</td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --re-open
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--re-open</tt>
     </td>
     <td class="standard">
       Open all databases immediately after initialization which where open at the end
@@ -66,8 +66,8 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --fast-load
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--fast-load</tt>
     </td>
     <td class="standard">
       Load only the required data files after initialization, this enables a significant
@@ -75,8 +75,8 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --first-time
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--first-time</tt>
     </td>
     <td class="standard">
       Start the program as it would be the first time; this means reset all user options,
@@ -86,17 +86,17 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --elo-only
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--elo-only</tt>
     </td>
     <td class="standard">
-      Do not load other rating files than ELO rating. This is accelerating the
+      Do not load other rating files than ELO rating. This speeds up program
       initialization.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --print-recovery-files
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--print-recovery-files</tt>
     </td>
     <td class="standard">
       Show all recovery files which where generated at the end of last session due
@@ -105,31 +105,28 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --delete-recovery-files
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--delete-recovery-files</tt>
     </td>
     <td class="standard">
       Delete all recovery files from last session and terminate the program.
       It is not a phyisical removal, with option
-      <span style="font-family:fixed;">--recover-old</span>
-      it is possible to reuse these files.
+      <tt>--recover-old</tt> it is possible to reuse these files.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --dont-recover
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--dont-recover</tt>
     </td>
     <td class="standard">
       Start the program without using the recovery files (which contains
       unsaved modified games from last session). The removal is not physical,
-      with option
-      <span style="font-family:fixed;">--recover-old</span>
-      it is possible to reuse these files.
+      with option <tt>--recover-old</tt> it is possible to reuse these files.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --recover-old
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--recover-old</tt>
     </td>
     <td class="standard">
       Recover unsaved games from older sessions. Unsaved games from last session
@@ -137,16 +134,16 @@ On the command line the following options are available at program start:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --single-process
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--single-process</tt>
     </td>
     <td class="standard">
       Force another instance of Scidb. This option is intented only for testing.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --force-grab
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--force-grab</tt>
     </td>
     <td class="standard">
       The program is supressing grabs automaticaly if started inside a debugger,
@@ -162,7 +159,7 @@ The following options will be recognized by the Tk library:
 
 <table class="standard">
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+    <td class="standard" style="white-space:nowrap;" valign="top">
         -geometry GEOMETRY
     </td>
     <td class="standard">
@@ -173,7 +170,7 @@ The following options will be recognized by the Tk library:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+    <td class="standard" style="white-space:nowrap;" valign="top">
         -display DISPLAY
     </td>
     <td class="standard">
@@ -181,7 +178,7 @@ The following options will be recognized by the Tk library:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
+    <td class="standard" style="white-space:nowrap;" valign="top">
         -sync
     </td>
     <td class="standard">

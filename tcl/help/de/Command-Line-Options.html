@@ -36,8 +36,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
 
 <table class="standard">
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--</tt>
     </td>
     <td class="standard">
       Nach dieser Option können nur noch Dateinamen folgen. Dies ermöglicht das Dateinamen
@@ -45,20 +45,20 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --help
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--help</tt>
     </td>
     <td class="standard">Anzeige der Optionsmöglichkeiten (in Englisch) und sofortiges Programmende.</td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --show-board
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--show-board</tt>
     </td>
     <td class="standard">Zum Brett-Tab wechseln sofort nach Programmstart.</td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --re-open
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--re-open</tt>
     </td>
     <td class="standard">
       Alle Datenbanken, die beim Schliessen der letzten Sitzung noch offen waren, sofort
@@ -66,8 +66,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --fast-load
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--fast-load</tt>
     </td>
     <td class="standard">
       Nur die ausschliesslich erforderlichen Dateien nach Programmstart laden. Dies ermöglicht
@@ -76,8 +76,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --first-time
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--first-time</tt>
     </td>
     <td class="standard">
       Das Programm wird gestartet wie beim ersten Mal, d.h. die Benutzeroptionen werden
@@ -88,8 +88,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --elo-only
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--elo-only</tt>
     </td>
     <td class="standard">
       Keine weiteren Rating-Dateien laden ausser dem ELO-Rating. Dies beschleunigt den
@@ -97,8 +97,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --print-recovery-files
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--print-recovery-files</tt>
     </td>
     <td class="standard">
       Zeige die Wiederherstellungsdateien, die in der letzten Sitzung aufgrund
@@ -107,32 +107,30 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --delete-recovery-files
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--delete-recovery-files</tt>
     </td>
     <td class="standard">
       Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
       die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
       Es erfolgt keine physikalische Löschung, mit der Option
-      <span style="font-family:fixed;">--recover-old</span>
-      können sie wiederbenutzt werden.
+      <tt>--recover-old</tt> können sie wiederbenutzt werden.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --dont-recover
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--dont-recover</tt>
     </td>
     <td class="standard">
       Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
       Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
       nicht physikalisch gelöscht,mit der Option
-      <span style="font-family:fixed;">--recover-old</span>
-      können sie wiederbenutzt werden.
+      <tt>--recover-old</tt> können sie wiederbenutzt werden.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --recover-old
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--recover-old</tt>
     </td>
     <td class="standard">
       Ungespeicherte Partien aus älteren Sitzungen wiederherstellen. Die
@@ -141,8 +139,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --single-process
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--single-process</tt>
     </td>
     <td class="standard">
       Erzwingt eine weitere Scidb-Instanz bei Programmstart. Diese Option
@@ -150,8 +148,8 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        --force-grab
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--force-grab</tt>
     </td>
     <td class="standard">
       Wird das Programm in einem Debugger gestartet werden Grabs automatisch
@@ -167,8 +165,8 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
 
 <table class="standard">
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        -geometry GEOMETRY
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-geometry GEOMETRY</tt>
     </td>
     <td class="standard">
       Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
@@ -181,16 +179,16 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        -display DISPLAY
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-display DISPLAY</tt>
     </td>
     <td class="standard">
       Benutze das mit DISPLAY angegebene Display.
     </td>
   </tr>
   <tr>
-    <td class="standard" style="font-family:fixed; white-space:nowrap;" valign="top">
-        -sync
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-sync</tt>
     </td>
     <td class="standard">
       Benutze den Synchron-Modus für den Display-Server.
