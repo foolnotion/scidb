@@ -1,0 +1,47 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+BEGIN
+<box>
+<dl>
+  <dt><img src="../images/gameflag-White-Opening.png"     />&emsp;%::gametable::mc::GameFlags(w)%</dt>
+  <dt><img src="../images/gameflag-Black-Opening.png"     />&emsp;%::gametable::mc::GameFlags(b)%</dt>
+  <dt><img src="../images/gameflag-Middle-Game.png"       />&emsp;%::gametable::mc::GameFlags(m)%</dt>
+  <dt><img src="../images/gameflag-End-Game.png"          />&emsp;%::gametable::mc::GameFlags(e)%</dt>
+  <dt><img src="../images/gameflag-Novelty.png"           />&emsp;%::gametable::mc::GameFlags(N)%</dt>
+  <dt><img src="../images/gameflag-Pawn-Structure.png"    />&emsp;%::gametable::mc::GameFlags(p)%</dt>
+  <dt><img src="../images/gameflag-Tactics.png"           />&emsp;%::gametable::mc::GameFlags(T)%</dt>
+  <dt><img src="../images/gameflag-King-Side.png"         />&emsp;%::gametable::mc::GameFlags(K)%</dt>
+  <dt><img src="../images/gameflag-Queen-Side.png"        />&emsp;%::gametable::mc::GameFlags(Q)%</dt>
+  <dt><img src="../images/gameflag-Brilliancy.png"        />&emsp;%::gametable::mc::GameFlags(!)%</dt>
+  <dt><img src="../images/gameflag-Blunder.png"           />&emsp;%::gametable::mc::GameFlags(?)%</dt>
+  <dt><img src="../images/gameflag-User.png"              />&emsp;%::gametable::mc::GameFlags(U)%</dt>
+  <dt><img src="../images/gameflag-Best-Game.png"         />&emsp;%::gametable::mc::GameFlags(*)%</dt>
+  <dt><img src="../images/gameflag-Decided-Tournament.png"/>&emsp;%::gametable::mc::GameFlags(D)%</dt>
+  <dt><img src="../images/gameflag-Model-Game.png"        />&emsp;%::gametable::mc::GameFlags(G)%</dt>
+  <dt><img src="../images/gameflag-Strategy.png"          />&emsp;%::gametable::mc::GameFlags(S)%</dt>
+  <dt><img src="../images/gameflag-With-Attack.png"       />&emsp;%::gametable::mc::GameFlags(^)%</dt>
+  <dt><img src="../images/gameflag-Sacrifice.png"         />&emsp;%::gametable::mc::GameFlags(~)%</dt>
+  <dt><img src="../images/gameflag-Defense.png"           />&emsp;%::gametable::mc::GameFlags(=)%</dt>
+  <dt><img src="../images/gameflag-Material.png"          />&emsp;%::gametable::mc::GameFlags(M)%</dt>
+  <dt><img src="../images/gameflag-Piece-Play.png"        />&emsp;%::gametable::mc::GameFlags(P)%</dt>
+</dl>
+</box>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->
