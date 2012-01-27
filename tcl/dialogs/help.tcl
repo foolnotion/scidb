@@ -1083,47 +1083,29 @@ proc ToggleIndex {tab} {
 
 
 proc BuildHtmlFrame {dlg w} {
-	# Find appropriate courier font(s)
-	set defaultCourierFamilies $::dialog::choosefont::fontFamilies(Courier)
-	set courierFamilies {}
-	set courier ""
-	foreach font {TkDefaultFont TkTextFont} {
-		array set attrs [font actual $font]
-		set fam $attrs(-family)
-		if {$fam ni $courierFamilies && $fam in $::dialog::choosefont::fontFamilies(Courier)} {
-			lappend courierFamilies $fam
-		}
-	}
-	if {[llength $courierFamilies] == 0} {
-		foreach fam $::dialog::choosefont::fontFamilies(Courier) {
-			array set attrs [font actual [list $fam 12]]
-			if {$fam eq $attrs(-family)} { lappend courierFamilies $fam }
-		}
-	}
-	if {[llength $courierFamilies] == 0} {
-		array set attrs [font actual TkFixedFont]
-		lappend courierFamilies $attrs(-family)
-	}
-
-	# Find appropriate text font(s)
-	set defaultTextFamiles {Arial {Bitstream Vera Sans} {DejaVu Sans} Verdana}
-	set textFamilies {}
-	foreach fam $defaultTextFamiles {
-		array set attrs [font actual [list $fam 12]]
+	# Find appropriate fixed fonts
+	set defaultFixedFamilies {{Arial Monospaced} {Bitstream Vera Sans Mono} TkFixedFont}
+	set monoFamilies {}
+	foreach fam $defaultFixedFamilies {
+		array set attrs [font actual [list $fam]]
 		set f $attrs(-family)
-		if {$f eq $fam && $fam ni $textFamilies && $fam ni $::dialog::choosefont::fontFamilies(Courier)} {
-			lappend textFamilies $fam
+		if {($f eq $fam || [string match Tk* $fam]) && $f ni $monoFamilies} {
+			lappend monoFamilies $f
 		}
 	}
-	array set attrs [font actual TkTextFont]
-	set fam $attrs(-family)
-	if {$fam ni $textFamilies} {
-		if {$fam in $::dialog::choosefont::fontFamilies(Courier) || [llength $defaultTextFamiles] <= 1} {
-			lappend textFamilies $fam
-		} else {
-			set textFamilies [linsert $defaultTextFamiles 1 $fam]
+	lappend monoFamilies Monospace Fixed
+
+	# Find appropriate text fonts
+	set defaultTextFamilies {Arial {Bitstream Vera Sans} TkTextFont {DejaVu Sans} Verdana}
+	set textFamilies {}
+	foreach fam $defaultTextFamilies {
+		array set attrs [font actual [list $fam]]
+		set f $attrs(-family)
+		if {($f eq $fam || [string match Tk* $fam]) && $f ni $textFamilies} {
+			lappend textFamilies $f
 		}
 	}
+	lappend textFamilies Sans-Serif Helvetica
 
 	# setup css script
 	set css "
@@ -1136,7 +1118,7 @@ proc BuildHtmlFrame {dlg w} {
 		:hover   { text-decoration: underline; background: yellow; }
 		.match	{ background: yellow; color: black; }
 		html		{ font-family: [join $textFamilies ","]; }
-		tt, pre	{ font-family: [join $courierFamilies ","]; }
+		pre, tt	{ font-family: [join $monoFamilies ","]; }
 	"
 
 	# build HTML widget
@@ -1641,6 +1623,7 @@ bind HelpTree <ButtonPress-1> {
 		%W selection add $item
 	}
 }
+
 bind HelpTree <KeyPress-Up> {
 	set item [TreeCtrl::UpDown %W active -1]
 	if {$item eq ""} return
@@ -1648,6 +1631,7 @@ bind HelpTree <KeyPress-Up> {
 	%W see active
 	break
 }
+
 bind HelpTree <KeyPress-Down> {
 	set item [TreeCtrl::UpDown %W active +1]
 	if {$item eq ""} return
@@ -1655,10 +1639,12 @@ bind HelpTree <KeyPress-Down> {
 	%W see active
 	break
 }
+
 bind HelpTree <KeyPress-space> {
 	 %W selection clear
 	 %W selection add active
 }
+
 bind HelpTree <KeyPress-Return> {
 	 %W selection clear
 	 %W selection add active
