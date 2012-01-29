@@ -666,7 +666,6 @@ proc openGame {parent index} {
 	variable List
 
 	lassign [lindex $History $index] tags base crcHist encoding
-puts "openGame: $index -- $base"
 	lassign $base base codec number
 	set rc 1
 	set parent [winfo toplevel $parent]
@@ -809,7 +808,6 @@ proc Update {_ position} {
 	variable History
 	variable MaxPosition
 
-puts "Update: $position"
 	if {$position < $MaxPosition} {
 		set key    [lindex $List $position 3]
 		set base   [::scidb::game::query $position database]
@@ -839,7 +837,6 @@ puts "Update: $position"
 proc UpdateHistory {_ base index} {
 	variable History
 
-puts "UpdateHistory: $index"
 	for {set i 0} {$i < [llength $History]} {incr i} {
 		lassign [lindex $History $i] info key crcHist _
 		lassign $key filename codec number
@@ -869,7 +866,6 @@ proc UpdateHistoryEntry {pos base tags} {
 	variable History
 	variable HistorySize
 
-puts "UpdateHistoryEntry: $pos"
 	if {[llength $tags] == 0} { return }
 	if {$base eq $scratchbaseName} { return }
 	if {$base eq $clipbaseName} { return }
@@ -883,10 +879,22 @@ puts "UpdateHistoryEntry: $pos"
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
 
-	set i [lsearch -index 0 $History $info]
-	if {($i >= 0 && $base eq [lindex $List $pos 3 0]) || [llength $History] >= $HistorySize} {
-		if {$i == -1} { set i end }
-		set History [lreplace $History $i $i]
+	set i 0
+	set k -1
+	while {$i < [llength $History]} {
+		set i [lsearch -index 0 -start $i $History $info]
+		if {$i == -1} { break }
+		if {$base eq [lindex $History $i 1 0]} { set k $i }
+		incr i
+	}
+
+	if {$k >= 0 && $base eq [lindex $List $pos 3 0]} {
+		if {$k == -1} { set k end }
+		set History [lreplace $History $k $k]
+	}
+
+	while {[llength $History] >= $HistorySize} {
+		set History [lreplace $History end end]
 	}
 
 	set History [linsert $History 0 $entry]
