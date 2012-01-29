@@ -79,7 +79,9 @@ switch $::tcl_platform(platform) {
 }
 
 
-proc currentTheme {} { return [ttk::style theme use] }
+# This is not working under older Tk versions.
+#proc currentTheme {} { return ttk::style theme use] }
+proc currentTheme {} { return $::ttk::currentTheme }
 
 
 proc getBackgroundColor {} {
