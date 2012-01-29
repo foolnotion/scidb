@@ -89,7 +89,7 @@ On the command line the following options are available at program start:
     </td>
     <td class="standard">
       Show all recovery files which where generated at the end of last session due
-      to unsaved modifications, and terminate. The output is empty if no revoery
+      to unsaved modifications, and terminate. The output is empty if no recovery
       file exists.
     </td>
   </tr>

@@ -18,6 +18,8 @@ all: Makefile.in
 	@$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
+	@if [ $$? != 0 ]; then exit 1; fi
+	@$(MAKE) -C man
 
 depend:
 #	@$(MAKE) -C engines depend
@@ -28,16 +30,19 @@ clean:
 #	@$(MAKE) -C engines clean
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tcl clean
+	@$(MAKE) -C man clean
 
 install:
 #	@$(MAKE) -C engines install
 	@$(MAKE) -C src install
 	@$(MAKE) -C tcl install
+	@$(MAKE) -C man install
 
 uninstall:
 #	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C src uninstall
 	@$(MAKE) -C tcl uninstall
+	@$(MAKE) -C man install
 
 Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"

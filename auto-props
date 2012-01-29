@@ -19,6 +19,7 @@
 *.ssp = svn:eol-style=native; svn:mime-type=text/plain
 *.tcl = svn:eol-style=native; svn:keywords="Author Revision Date URL"; svn:mime-type=text/x-tcl
 *.txt = svn:eol-style=native; svn:mime-type=text/plain
+*.gz  = svn:mime-type=application/x-gzip
 
 *.cur = svn:mime-type=image/x-win-bitmap
 *.ico = svn:mime-type=image/vnd.microsoft.icon

@@ -1,0 +1,42 @@
+# ======================================================================
+# Makefile for Scidb for Unix operating systems
+# ======================================================================
+
+# ======================================================================
+#    _/|            __
+#   // o\         /    )           ,        /    /
+#   || ._)    ----\---------__----------__-/----/__-
+#   //__\          \      /   '  /    /   /    /   )
+#   )___(     _(____/____(___ __/____(___/____(___/_
+# ======================================================================
+
+include ../Makefile.in
+
+.SUFFIXES: .n
+
+$(SCRIPT).1.gz: scidb.n
+	@echo "Make $(SCRIPT).1.gz"
+	@gzip -c scidb.n > $(SCRIPT).1.gz
+
+all: $(SCRIPT).1.gz
+
+install: $(SCRIPT).1.gz
+	@echo "Install man page"
+	@install -m 755 -d $(MANDIR)/man1
+	@install -m 755 -p $(SCRIPT).1.gz $(MANDIR)/man1
+
+uninstall:
+	@echo "Uninstall man page"
+	@rm -f $(MANDIR)/man1/$(SCRIPT).1.gz
+
+clean:
+	# nothing to do
+
+clean-man:
+	@echo "Clean `pwd`"
+	@rm -f $(SCRIPT).1.gz
+
+clean-properly:
+	clean-man
+
+# vi:set ts=3 sw=3:

@@ -1,0 +1,112 @@
+.TH scidb 1 "February 1, 2012"
+.SH NAME
+Scidb - chess database application
+.SH SYNOPSIS
+scidb-beta [options] database(s)
+.SH DESCRIPTION
+.B Scidb
+is a chess database application.
+.PP
+.SH OPTIONS
+.TP 9
+.B --
+After this option all arguments wil be interpreted as file names.
+This permits that file names may start with a hyphen.
+.TP 9
+.B --help
+Display all options and terminate.
+.TP 9
+.B --show-board
+Change to board tab after initialization.
+.TP 9
+.B --re-open
+Open all databases immediately after initialization which where open
+at the end of the last session.
+.TP 9
+.B --fast-load
+Load only the required data files after initialization, this enables
+a significant faster program start. It is not recommended to use this
+option except for testing.
+.TP 9
+.B --first-time
+Start the program as it would be the first time; this means reset
+all user options, delete the recovery files, and copy all standard
+board themes into the userown directory, unless the modified ones.
+This option may be useful if the initialization fails due to an error
+in the option file.
+.TP 9
+.B --elo-only
+Do not load other rating files than ELO rating. This speeds up program
+initialization.
+.TP 9
+.B --print-recovery-files
+Show all recovery files which where generated at the end of last session
+due to unsaved modifications, and terminate. The output is empty if no
+recovery file exists.
+.TP 9
+.B --delete-recovery-files
+Delete all recovery files from last session and terminate the program.
+It is not a phyisical removal, with option
+.B --recover-old
+it is possible to reuse these files.
+.TP 9
+.B --dont-recover
+Start the program without using the recovery files (which contains
+unsaved modified games from last session). The removal is not physical,
+with option
+.B --recover-old
+it is possible to reuse these files.
+.TP 9
+.B --recover-old
+Recover unsaved games from older sessions. Unsaved games from last session
+will be discarded.
+.TP 9
+.B --single-process
+Force another instance of Scidb. This option is intented only for testing.
+.TP 9
+.B --force-grab
+The program is supressing grabs automaticaly if started inside a debugger.
+because gras may lead to frozen screens. With this option grabbing the
+screen will be allowed also in debug mode.
+.SH OPTIONS RECOGNIZED BY THE TK LIBRARY
+.TP 9
+.B -geometry GEOMETRY
+Use the geometric information for the main window. For example the argument
+.B -geometry 600x800+20+10
+will resize the main window to 600x800, and the position of the window
+will have the screen coordinates 20,10.
+.TP 9
+.B -display DISPLAY
+Name of screen on which to create window.
+.TP 9
+.B -sync
+Use synchronous mode for display server.
+.SH LICENSE
+Copyright (c) Gregor Cramer, 2011-2012.
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in
+all copies of the Software and its documentation and acknowledgment shall be
+given in the documentation and software packages that this Software was
+used.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.PP
+Email bugs to
+.br
+.B <http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
+.PP
+Email feature requests to
+.br
+.B http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
