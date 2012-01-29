@@ -35,7 +35,7 @@ set First		"&First"
 
 } ;# namespace mc
 
-set Priv(busy:state)		0
+set Priv(busy:state) 0
 
 
 set ButtonOrder { previous next update clear close ok apply cancel reset revert }

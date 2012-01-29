@@ -255,6 +255,7 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_eventList(new NameList)
 	,m_siteList(new NameList)
 	,m_roundList(new NameList)
+	,m_roundEntry(0)
 	,m_progressFrequency(0)
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
@@ -703,25 +704,12 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	if (isReadOnly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
-	mstl::fstream	indexStream;
-	mstl::fstream	namebaseStream;
-	mstl::string	namebaseTempFilename(namebaseFilename + ".temp.38583276");
-
 	m_gameData->sync();
+
+	mstl::fstream indexStream;
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
-	openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 
-	try
-	{
-		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
-	}
-	catch (...)
-	{
-		sys::file::deleteIt(namebaseTempFilename);
-		throw;
-	}
-
+	writeNamebases(namebaseFilename);
 	writeIndex(indexStream, start, progress);
 }
 
@@ -769,26 +757,13 @@ Codec::update(mstl::string const& rootname)
 	if (isReadOnly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
-	mstl::fstream	indexStream;
-	mstl::fstream	namebaseStream;
-	mstl::string	namebaseTempFilename(namebaseFilename + ".temp.38583276");
-
 	m_gameData->sync();
+
+	mstl::fstream indexStream;
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
-	openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
 
-	try
-	{
-		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
-	}
-	catch (...)
-	{
-		sys::file::deleteIt(namebaseTempFilename);
-		throw;
-	}
-
+	writeNamebases(namebaseFilename);
 	updateIndex(indexStream);
 }
 
@@ -814,24 +789,9 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
 	// We cannot use flag updateNamebase, because the frequency may have changed!
-	mstl::fstream namebaseStream;
 	mstl::string namebaseFilename(rootname + m_extNamebase);
-
-	mstl::string namebaseTempFilename(namebaseFilename + ".temp.38583276");
-
-	try
-	{
-		mstl::fstream namebaseStream;
-		checkPermissions(namebaseFilename);
-		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
-		writeNamebases(namebaseStream);
-		sys::file::rename(namebaseTempFilename, namebaseFilename, true);
-	}
-	catch (...)
-	{
-		sys::file::deleteIt(namebaseTempFilename);
-		throw;
-	}
+	checkPermissions(namebaseFilename);
+	writeNamebases(namebaseFilename);
 
 	GameInfo* info = gameInfoList()[index];
 
@@ -1920,6 +1880,26 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 void
+Codec::writeNamebases(mstl::string const& filename)
+{
+	mstl::string namebaseTempFilename(filename + ".temp.38583276");
+
+	try
+	{
+		mstl::fstream namebaseStream;
+		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
+		writeNamebases(namebaseStream);
+		sys::file::rename(namebaseTempFilename, filename, true);
+	}
+	catch (...)
+	{
+		sys::file::deleteIt(namebaseTempFilename);
+		throw;
+	}
+}
+
+
+void
 Codec::writeNamebases(mstl::fstream& stream)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
@@ -2007,6 +1987,18 @@ Codec::writeNamebase(mstl::fstream& stream, NameList& base)
 }
 
 
+mstl::string const&
+Codec::getRoundEntry(unsigned index)
+{
+	NamebaseEntry* entry = m_roundLookup[index];
+
+	if (entry)
+		return entry->name();
+
+	return mstl::string::empty_string;
+}
+
+
 void
 Codec::releaseRoundEntry(unsigned index)
 {
@@ -2039,17 +2031,59 @@ Codec::saveRoundEntry(unsigned index, mstl::string const& value)
 void
 Codec::restoreRoundEntry(unsigned index)
 {
-	namebase(Namebase::Round).deref(m_roundLookup[index]);
+	NamebaseEntry* entry = m_roundLookup[index];
+
+	if (entry)
+		namebase(Namebase::Round).deref(entry);
 
 	if (m_roundEntry)
 	{
 		namebase(Namebase::Round).ref(m_roundEntry);
 
-		if (m_roundLookup[index]->frequency() == 0)
+		if (entry && m_roundLookup[index]->frequency() == 0)
 			m_roundLookup[index] = m_roundEntry;
 
 		m_roundEntry = 0;
 	}
+}
+
+
+void
+Codec::useOverflowEntry(unsigned index)
+{
+	Namebase& roundBase = namebase(Namebase::Round);
+
+	NamebaseEntry* entry = roundBase.insert("overflow", ::MaxRoundCount);
+
+	if (entry == 0)
+	{
+		unsigned freq = unsigned(-1);
+
+		for (int i = ::MaxRoundCount - 1 ; i >= 0; --i)
+		{
+			NamebaseEntry* e = roundBase.entryAt(i);
+
+			M_ASSERT(e);
+
+			if (e->frequency() < freq)
+			{
+				entry = e;
+
+				if (e->frequency() == 1)
+					break;
+
+				freq = e->frequency();
+			}
+		}
+
+		roundBase.rename(entry, "overflow");
+	}
+
+	if (index >= m_roundLookup.size())
+		m_roundLookup.resize((index + mstl::max(20u, (9*index)/10)));
+
+	m_roundLookup[index] = entry;
+	roundBase.ref(entry);
 }
 
 

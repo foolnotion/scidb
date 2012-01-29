@@ -134,6 +134,12 @@ NameList::update(Namebase& base, sys::utf8::Codec& codec)
 	if (base.nextId() > m_lookup.size())
 		reserve(base.nextId());
 
+	for (unsigned i = 0; i < base.size(); ++i)
+	{
+		if (base.entryAt(i)->frequency() == 0)
+			m_usedIdSet.reset(base.entryAt(i)->id());
+	}
+
 	m_nextId = m_usedIdSet.find_first_not();
 
 #ifndef NDEBUG

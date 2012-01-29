@@ -79,16 +79,16 @@ switch $::tcl_platform(platform) {
 }
 
 
-proc currentTheme {} { return $::ttk::currentTheme }
+proc currentTheme {} { return [ttk::style theme use] }
 
 
 proc getBackgroundColor {} {
-	return [ttk::style lookup [::theme::currentTheme] -background]
+	return [ttk::style lookup [currentTheme] -background]
 }
 
 
 proc getActiveBackgroundColor {} {
-	set activebg [ttk::style lookup [::theme::currentTheme] -activebackground]
+	set activebg [ttk::style lookup [currentTheme] -activebackground]
 
 	if {[string length $activebg] == 0} {
 		variable ActiveBackground
@@ -107,8 +107,7 @@ proc getActiveBackgroundColor {} {
 
 
 proc getDisabledColor {} {
-	variable ::ttk::currentTheme
-	return [::ttk::style lookup $currentTheme -foreground disabled]
+	return [::ttk::style lookup [currentTheme] -foreground disabled]
 }
 
 
@@ -144,11 +143,9 @@ proc configureSpinbox {sbox} {
 
 
 proc enableScale {scale {enable true}} {
-	variable ::ttk::currentTheme
-
 	if {$enable} {
 		$scale configure \
-			-foreground [::ttk::style lookup $currentTheme -foreground] \
+			-foreground [::ttk::style lookup [currentTheme] -foreground] \
 			-troughcolor [GetTroughColor] \
 			-state normal
 	} else {
@@ -179,24 +176,22 @@ proc configureDefaultButton {but} {
 
 
 proc configureBackground {w} {
-	variable ::ttk::currentTheme
-	$w configure -background [::ttk::style lookup $currentTheme -background]
+	$w configure -background [::ttk::style lookup [currentTheme] -background]
 }
 
 
 proc SetupCurrentTheme {} {
-	variable ::ttk::currentTheme
 	variable strongTtk
 	variable Settings
 
 	# 1. Makes a correction of read-only state color. Read-Only does not mean disabled!
 	set fbg {}
-	switch "_$currentTheme" {
-		_alt		{ set fbg [list readonly white disabled [ttk::style lookup $currentTheme -background]] }
+	switch "_[currentTheme]" {
+		_alt		{ set fbg [list readonly white disabled [ttk::style lookup [currentTheme] -background]] }
 		_clam		{ set fbg [list \
 									readonly white \
-									{readonly focus} [::ttk::style lookup $currentTheme -selectbackground]] }
-		_default	{ set fbg [list readonly white disabled [ttk::style lookup $currentTheme -background]] }
+									{readonly focus} [::ttk::style lookup [currentTheme] -selectbackground]] }
+		_default	{ set fbg [list readonly white disabled [ttk::style lookup [currentTheme] -background]] }
 	}
 	if {[llength $fbg]} {
 		ttk::style map TCombobox -fieldbackground $fbg
@@ -207,12 +202,12 @@ proc SetupCurrentTheme {} {
 	}
 
 	# adjust padding of arrows in spinbox (the default padding is quite ugly)
-	switch "_$currentTheme" {
+	switch "_[currentTheme]" {
 		_alt - _clam - _default { ttk::style configure TSpinbox -padding {2 0 2 0} }
 	}
 
 	# get current settings
-	set background [::ttk::style lookup $currentTheme -background]
+	set background [::ttk::style lookup [currentTheme] -background]
 	set f [tk::frame .__hopefully_unique_widget_id__[clock milliseconds]]
 	set Settings(tk:background) [$f cget -background]
 	destroy $f
@@ -229,14 +224,14 @@ proc SetupCurrentTheme {} {
 	# 4. Set theme options
 #	option add *Frame.background $Settings(tk:background)
 #	option add *Button.background $background
-	option add *Spinbox.selectBackground [::ttk::style lookup $currentTheme -selectbackground]
+	option add *Spinbox.selectBackground [::ttk::style lookup [currentTheme] -selectbackground]
 	option add *Spinbox.disabledBackground $background
 	option add *Scale.highlightBackground $background
 	option add *Scale.background $background
 	option add *Scale.troughColor [GetTroughColor]
-	option add *Listbox.disabledForeground [::ttk::style lookup $currentTheme -foreground disabled]
-#	option add *Listbox.selectBackground [::ttk::style lookup $currentTheme -selectbackground]
-#	option add *Listbox.selectForeground [::ttk::style lookup $currentTheme -selectforeground]
+	option add *Listbox.disabledForeground [::ttk::style lookup [currentTheme] -foreground disabled]
+#	option add *Listbox.selectBackground [::ttk::style lookup [currentTheme] -selectbackground]
+#	option add *Listbox.selectForeground [::ttk::style lookup [currentTheme] -selectforeground]
 #	option add *Panedwindow.background [GetTroughColor]
 
 	if {$strongTtk} {
@@ -251,12 +246,10 @@ proc SetupCurrentTheme {} {
 
 
 proc ConfigureListbox {list} {
-	variable ::ttk::currentTheme
-
 	$list configure \
-		-disabledforeground [::ttk::style lookup $currentTheme -foreground disabled]
-#		-selectbackground [::ttk::style lookup $currentTheme -selectbackground]
-#		-selectforeground [::ttk::style lookup $currentTheme -selectforeground]
+		-disabledforeground [::ttk::style lookup [currentTheme] -foreground disabled]
+#		-selectbackground [::ttk::style lookup [currentTheme] -selectbackground]
+#		-selectforeground [::ttk::style lookup [currentTheme] -selectforeground]
 }
 
 
@@ -266,23 +259,19 @@ proc ConfigurePanedWindowBackground {win} {
 
 
 proc ConfigureSpinboxBackground {sbox} {
-	variable ::ttk::currentTheme
-
 	set borderwidth 1
-	switch $currentTheme { alt { set borderwidth 2 } }
+	switch "_[currentTheme]" { _alt { set borderwidth 2 } }
 
 	$sbox configure \
-		-buttonbackground [::ttk::style lookup $currentTheme -background] \
-		-selectbackground [::ttk::style lookup $currentTheme -selectbackground] \
-		-disabledbackground [::ttk::style lookup $currentTheme -background] \
+		-buttonbackground [::ttk::style lookup [currentTheme] -background] \
+		-selectbackground [::ttk::style lookup [currentTheme] -selectbackground] \
+		-disabledbackground [::ttk::style lookup [currentTheme] -background] \
 		-borderwidth $borderwidth
 }
 
 
 proc ConfigureScaleBackground {scale} {
-	variable ::ttk::currentTheme
-
-	set background [::ttk::style lookup $currentTheme -background]
+	set background [::ttk::style lookup [currentTheme] -background]
 
 	if {[$scale cget -state] eq "disabled"} {
 		$scale configure \
@@ -300,30 +289,28 @@ proc ConfigureScaleBackground {scale} {
 
 
 proc GetTroughColor {} {
-	variable ::ttk::currentTheme
 	variable Settings
 
-	switch $currentTheme {
-		aqua			-
-		winnative	-
-		xpnative		{
-			if {![info exists Settings($currentTheme:troughcolor)} {
+	switch "_[currentTheme]" {
+		_aqua			-
+		_winnative	-
+		_xpnative	{
+			if {![info exists Settings([currentTheme]:troughcolor)} {
 				set sc [ttk::scale .__hopefully_unique_widget_id__[clock milliseconds]]
-				set Settings($currentTheme:troughcolor) [$sc cget -troughcolor]
+				set Settings([currentTheme]:troughcolor) [$sc cget -troughcolor]
 				destroy $sc
 			}
 
-			return $Settings($currentTheme:troughcolor)
+			return $Settings([currentTheme]:troughcolor)
 		}
 	}
 
-	return [::ttk::style lookup $currentTheme -troughcolor]
+	return [::ttk::style lookup [currentTheme] -troughcolor]
 }
 
 
 proc GetActiveTroughColor {} {
-	variable ::ttk::currentTheme
-	return [::ttk::style lookup $currentTheme -selectbackground]
+	return [::ttk::style lookup [currentTheme] -selectbackground]
 }
 
 
@@ -598,10 +585,6 @@ bind Scale			<<ThemeChanged>> [namespace code [list ConfigureScaleBackground %W]
 bind Listbox		<<ThemeChanged>> [namespace code [list ConfigureListbox %W]]
 bind Panedwindow	<<ThemeChanged>> [namespace code [list ConfigurePanedWindowBackground %W]]
 
-
-if {![info exists ::ttk::currentTheme]} {
-	error "variable ::ttk::currentTheme does not exist"
-}
 
 scrollbar .__scrollbar__
 set repeatDelay [.__scrollbar__ cget -repeatdelay]

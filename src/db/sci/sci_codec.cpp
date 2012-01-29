@@ -613,13 +613,12 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 	if (isReadOnly())
 		IO_RAISE(Index, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
-	mstl::fstream indexStream;
-	mstl::fstream namebaseStream;
-
 	m_gameData->sync();
+
+	mstl::fstream indexStream;
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
-	openFile(namebaseStream, namebaseFilename, MagicNamebase, attach ? Truncate : 0);
-	writeNamebases(namebaseStream);
+
+	writeNamebases(namebaseFilename);
 	writeIndex(indexStream, start, progress);
 }
 
@@ -664,13 +663,13 @@ Codec::update(mstl::string const& rootname)
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
 	mstl::fstream indexStream;
-	mstl::fstream namebaseStream;
 
 	m_gameData->sync();
+
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
-	openFile(namebaseStream, namebaseFilename, MagicNamebase);
-	writeNamebases(namebaseStream);
+
+	writeNamebases(namebaseFilename);
 	updateIndex(indexStream);
 }
 
@@ -687,20 +686,17 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 	if (isReadOnly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
-	mstl::fstream indexStream;
-
 	m_gameData->sync();
+
+	mstl::fstream indexStream;
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
 	if (updateNamebase)
 	{
-		mstl::fstream namebaseStream;
 		mstl::string namebaseFilename(rootname + ".scn");
-
 		checkPermissions(namebaseFilename);
-		openFile(namebaseStream, namebaseFilename, MagicNamebase);
-		writeNamebases(namebaseStream);
+		writeNamebases(namebaseFilename);
 	}
 
 	GameInfo* info = gameInfoList()[index];
@@ -1414,11 +1410,11 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		unsigned size = bstrm.uint24();
 		unsigned maxFreq = bstrm.uint24();
 		unsigned maxUsage = bstrm.uint24();
-		unsigned maxId = bstrm.uint24();
+		unsigned nextId = bstrm.uint24();
 
-		M_ASSERT(maxId >= size);
+		M_ASSERT(nextId >= size);
 
-		m_lookup[i].resize(maxId);
+		m_lookup[i].resize(nextId);
 
 		switch (i)
 		{
@@ -1430,7 +1426,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 		m_progressCount += size;
 		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
-		base.setPrepared(maxFreq, maxId, maxUsage);
+		base.setPrepared(maxFreq, nextId - 1, maxUsage);
 	}
 }
 
@@ -1798,6 +1794,30 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progres
 		}
 
 		lookup[index] = i;
+	}
+}
+
+
+void
+Codec::writeNamebases(mstl::string const& filename)
+{
+	if (!namebases().isModified())
+		return;
+
+	mstl::string namebaseTempFilename(filename + ".temp.38583276");
+
+	try
+	{
+		mstl::fstream namebaseStream;
+		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
+		writeNamebases(namebaseStream);
+		namebaseStream.close();
+		sys::file::rename(namebaseTempFilename, filename, true);
+	}
+	catch (...)
+	{
+		sys::file::deleteIt(namebaseTempFilename);
+		throw;
 	}
 }
 

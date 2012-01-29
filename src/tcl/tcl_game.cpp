@@ -1156,10 +1156,9 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned position = intFromObj(objc, objv, 1);
 
-	return tcl::db::getGameInfo(	Scidb->gameInfoAt(position),
+	return tcl::db::getGameInfo(	Scidb->database(position),
 											Scidb->gameIndex(position),
-											tcl::db::Ratings(rating::Elo, rating::Elo),
-											Scidb->cursor().database().format());
+											tcl::db::Ratings(rating::Elo, rating::Elo));
 }
 
 
@@ -1694,7 +1693,7 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		save::State state = scidb->saveGame(scidb->cursor(db), replace);
 
-		setResult(state == save::Ok);
+		setResult(save::isOk(state));
 		log.error(state, Scidb->gameIndex());
 	}
 
@@ -2666,11 +2665,11 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned		position	= unsignedFromObj(objc, objv, 1);
 	char const*	filename	= stringFromObj(objc, objv, 2);
 
-	setResult(Scidb->writeGame(position,
-										filename,
-										sys::utf8::Codec::utf8(),
-										comment,
-										Writer::Flag_Use_Scidb_Import_Format) == save::Ok);
+	setResult(save::isOk(Scidb->writeGame(position,
+								filename,
+								sys::utf8::Codec::utf8(),
+								comment,
+								Writer::Flag_Use_Scidb_Import_Format)));
 
 	return TCL_OK;
 }

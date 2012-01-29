@@ -385,6 +385,18 @@ isGermanSpeakingCountry(Code code)
 }
 
 } // namespace country
+
+namespace save {
+
+inline bool isOk(State state) { return state == Ok || state == TooManyRoundNames; }
+
+} // namespace save
+
+namespace format {
+
+inline bool isScidFormat(Type type) { return type & (Scid3 | Scid4); }
+
+} // namespace format
 } // namespace db
 
 // vi:set ts=3 sw=3:

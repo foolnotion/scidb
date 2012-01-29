@@ -82,6 +82,7 @@ private:
 	unsigned	m_countErrors;
 	unsigned	m_countWarnings;
 	bool		m_trialModeFlag;
+	bool		m_tooManyRoundNames;
 	Error		m_lastError;
 };
 

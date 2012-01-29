@@ -150,6 +150,7 @@ public:
 					Producer& producer,
 					util::Progress& progress);
 	void clear(mstl::string const& rootname = mstl::string::empty_string);
+	void rename(mstl::string const& oldName, mstl::string const& newName);
 	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
 	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	virtual void attach(mstl::string const& rootname, util::Progress& progress);

@@ -138,6 +138,7 @@ tk_image.o: svg/svg_parser.h
 tk_image.o: svg/svg_exception.h
 tk_image.o: ../tcl/tcl_base.h
 tk_image.o: ../tcl/tcl_base.ipp
+tk_image.o: ../util/u_base.h
 tk_image.o: svg/agg/agg_pixfmt_rgb.h
 tk_image.o: svg/agg/agg_pixfmt_rgba.h
 tk_image.o: svg/agg/agg_image_accessors.h
@@ -221,4 +222,16 @@ tk_window_manager.o: ../mstl/m_exception.ipp
 tk_x11.o: tk_init.h
 tk_x11.o: ../tcl/tcl_base.h
 tk_x11.o: ../tcl/tcl_base.ipp
+tk_x11.o: ../mstl/m_utility.h
+tk_x11.o: ../mstl/m_types.h
+tk_x11.o: ../mstl/m_type_traits.h
+tk_x11.o: ../mstl/m_type_traits.ipp
+tk_x11.o: ../mstl/m_utility.ipp
+tk_x11.o: ../mstl/m_limits.h
+tk_x11.o: ../mstl/m_bit_functions.h
+tk_x11.o: ../mstl/m_bit_functions.ipp
+tk_x11.o: ../mstl/m_assert.h
+tk_x11.o: ../mstl/m_exception.h
+tk_x11.o: ../mstl/m_backtrace.h
+tk_x11.o: ../mstl/m_exception.ipp
 tk_xcursor.o: ./X11/Xcursor/Xcursor.h

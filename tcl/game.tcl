@@ -27,35 +27,35 @@
 namespace eval game {
 namespace eval mc {
 
-set CloseDatabase					"Close Database"
-set CloseAllGames					"Close all open games of database '%s'?"
-set SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
-set AllSlotsOccupied				"All game slots are occupied."
-set ReleaseOneGame				"Please release one of the games before loading a new one."
-set GameAlreadyOpen				"Game is already open but modified. Discard modified game?"
-set GameAlreadyOpenDetail		"'%s' will open a new game."
-set GameHasChanged				"Game %s has changed."
-set GameHasChangedDetail		"Probably this is not the expected game due to database changes."
-set CorruptedHeader				"Corrupted header in recovery file '%s'."
-set RenamedFile					"Renamed this file to '%s.bak'."
-set CannotOpen						"Cannot open recovery file '%s'."
-set OldGameRestored				"One game restored."
-set OldGamesRestored				"%s games restored."
-set GameRestored					"One game from last session restored."
-set GamesRestored					"%s games from last session restored."
-set ErrorInRecoveryFile			"Error in recovery file '%s'"
-set Recovery						"Recovery"
-set UnsavedGames					"You have unsaved game changes."
-set DiscardChanges				"'%s' will throw away all changes."
-set ShouldRestoreGame			"Should this game be restored in next session?"
-set ShouldRestoreGames			"Should these games be restored in next session?"
-set NewGame							"New Game"
-set NewGames						"New Games"
-set Created							"created"
-set ClearHistory					"Clear history"
-set RemoveSelectedGame			"Remove selected game from history"
-set GameDataCorrupted			"Game data is corrupted."
-set GameDecodingFailed			"Decoding of this game was not possible."
+set CloseDatabase				"Close Database"
+set CloseAllGames				"Close all open games of database '%s'?"
+set SomeGamesAreModified	"Some games of database '%s' are modified. Close anyway?"
+set AllSlotsOccupied			"All game slots are occupied."
+set ReleaseOneGame			"Please release one of the games before loading a new one."
+set GameAlreadyOpen			"Game is already open but modified. Discard modified game?"
+set GameAlreadyOpenDetail	"'%s' will open a new game."
+set GameHasChanged			"Game %s has changed."
+set GameHasChangedDetail	"Probably this is not the expected game due to database changes."
+set CorruptedHeader			"Corrupted header in recovery file '%s'."
+set RenamedFile				"Renamed this file to '%s.bak'."
+set CannotOpen					"Cannot open recovery file '%s'."
+set OldGameRestored			"One game restored."
+set OldGamesRestored			"%s games restored."
+set GameRestored				"One game from last session restored."
+set GamesRestored				"%s games from last session restored."
+set ErrorInRecoveryFile		"Error in recovery file '%s'"
+set Recovery					"Recovery"
+set UnsavedGames				"You have unsaved game changes."
+set DiscardChanges			"'%s' will throw away all changes."
+set ShouldRestoreGame		"Should this game be restored in next session?"
+set ShouldRestoreGames		"Should these games be restored in next session?"
+set NewGame						"New Game"
+set NewGames					"New Games"
+set Created						"created"
+set ClearHistory				"Clear history"
+set RemoveSelectedGame		"Remove selected game from history"
+set GameDataCorrupted		"Game data is corrupted."
+set GameDecodingFailed		"Decoding of this game was not possible."
 
 } ;# namespace mc
 
@@ -64,6 +64,8 @@ namespace import ::tcl::mathfunc::min
 
 # {<time> <modified> <locked> {<base> <codec> <number>} {<crc-index> <crc-moves>} <tags>}
 variable List		{}
+
+# {<tags> {<base> <codec> <number>} {<crc-index> <crc-moves>} <encoding>}
 variable History	{}
 
 variable HistorySize		10
@@ -192,13 +194,14 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 
 	if {$init} {
 		::scidb::db::subscribe gameInfo [namespace current]::Update
+		::scidb::db::subscribe gameHistory [namespace current]::UpdateHistory
 	}
 
 	if {[llength $fen]} {
 		::scidb::game::go $pos position $fen
 	}
 
-	UpdateHistory $pos $base $tags
+	UpdateHistoryEntry $pos $base $tags
 
 	return $pos
 }
@@ -229,7 +232,7 @@ proc stateChanged {position modified} {
 	variable List
 	variable MaxPosition
 
-	if {$position <= $MaxPosition} {
+	if {$position < $MaxPosition} {
 		lset List $position 1 $modified
 
 		if {!$modified} {
@@ -253,7 +256,7 @@ proc lockChanged {position locked} {
 	variable List
 	variable MaxPosition
 
-	if {$position <= $MaxPosition} {
+	if {$position < $MaxPosition} {
 		lset List $position 2 $locked
 	}
 }
@@ -284,6 +287,7 @@ proc setFirst {base tags} {
 
 	if {[llength $List] == 0} {
 		::scidb::db::subscribe gameInfo [namespace current]::Update
+		::scidb::db::subscribe gameHistory [namespace current]::UpdateHistory
 	}
 
 	if {[llength $List] == 0} { lappend List {} }
@@ -662,6 +666,7 @@ proc openGame {parent index} {
 	variable List
 
 	lassign [lindex $History $index] tags base crcHist encoding
+puts "openGame: $index -- $base"
 	lassign $base base codec number
 	set rc 1
 	set parent [winfo toplevel $parent]
@@ -804,13 +809,20 @@ proc Update {_ position} {
 	variable History
 	variable MaxPosition
 
-	if {$position <= $MaxPosition} {
-		set key [lindex $List $position 3]
-		set i [lsearch -index 1 $History $key]
-		if {$i >= 0} { set History [lreplace $History $i $i] }
+puts "Update: $position"
+	if {$position < $MaxPosition} {
+		set key    [lindex $List $position 3]
+		set base   [::scidb::game::query $position database]
+		set tags   [::scidb::game::tags $position]
+		set number [expr {[::scidb::game::number $position] - 1}]
 
-		set base [::scidb::game::query $position database]
-		set tags [::scidb::game::tags $position]
+		set i [lsearch -index 1 $History $key]
+		if {$i >= 0} {
+			lassign [lindex $History $i 1] filename _ index
+			if {$base eq $filename} {
+				set History [lreplace $History $i $i]
+			}
+		}
 
 		lset List $position 3 0 $base
 		lset List $position 3 1 [::scidb::db::get codec $base]
@@ -819,18 +831,45 @@ proc Update {_ position} {
 		lset List $position 4 [::scidb::game::query $position checksum]
 		lset List $position 5 $tags
 
-		UpdateHistory $position $base $tags
+		UpdateHistoryEntry $position $base $tags
 	}
 }
 
 
-proc UpdateHistory {pos base tags} {
+proc UpdateHistory {_ base index} {
+	variable History
+
+puts "UpdateHistory: $index"
+	for {set i 0} {$i < [llength $History]} {incr i} {
+		lassign [lindex $History $i] info key crcHist _
+		lassign $key filename codec number
+
+		if {$base eq $filename && $index eq $number} {
+			set tags [::scidb::db::get tags $index $base]
+			set info {}
+
+			foreach pair $tags {
+				lassign $pair name value
+				set lookup($name) $value
+			}
+			foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
+
+			lset History $i 0 $info
+			lset History $i 2 [list [::scidb::db::get checksum $index $base] [lindex $crcHist 1]]
+			lset History $i 3 [::scidb::db::get encoding $base]
+		}
+	}
+}
+
+
+proc UpdateHistoryEntry {pos base tags} {
 	variable ::scidb::scratchbaseName
 	variable ::scidb::clipbaseName
 	variable List
 	variable History
 	variable HistorySize
 
+puts "UpdateHistoryEntry: $pos"
 	if {[llength $tags] == 0} { return }
 	if {$base eq $scratchbaseName} { return }
 	if {$base eq $clipbaseName} { return }
@@ -843,11 +882,13 @@ proc UpdateHistory {pos base tags} {
 	set encoding [::scidb::db::get encoding $base]
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
+
 	set i [lsearch -index 0 $History $info]
-	if {$i >= 0 || [llength $History] >= $HistorySize} {
+	if {($i >= 0 && $base eq [lindex $List $pos 3 0]) || [llength $History] >= $HistorySize} {
 		if {$i == -1} { set i end }
 		set History [lreplace $History $i $i]
 	}
+
 	set History [linsert $History 0 $entry]
 }
 

@@ -53,9 +53,9 @@ public:
 
 	Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedTags, bool allowExtraTags);
 
-private:
+	format::Type format() const override;
 
-	format::Type format() const;
+private:
 
 	void start() override;
 	void finish() override;

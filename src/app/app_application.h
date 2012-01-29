@@ -62,6 +62,8 @@ class Application
 {
 public:
 
+	typedef util::crc::checksum_t checksum_t;
+
 	static unsigned const InvalidPosition = unsigned(-1);
 
 	struct Subscriber : public mstl::ref_counter
@@ -91,6 +93,7 @@ public:
 		virtual void updateAnnotatorList(mstl::string const& filename, unsigned view) = 0;
 		virtual void updateAnnotatorList(mstl::string const& filename, unsigned view, unsigned index) = 0;
 
+		virtual void updateGameInfo(mstl::string const& filename, unsigned index) = 0;
 		virtual void updateGameInfo(unsigned position) = 0;
 		virtual void gameSwitched(unsigned position) = 0;
 		virtual void updateTree(mstl::string const& filename) = 0;
@@ -166,12 +169,13 @@ public:
 	Subscriber* subscriber() const;
 	unsigned gameIndex(unsigned position = InvalidPosition) const;
 	unsigned sourceIndex(unsigned position = InvalidPosition) const;
+	db::Database const& database(unsigned position = InvalidPosition) const;
 	mstl::string const& databaseName(unsigned position = InvalidPosition) const;
 	mstl::string const& sourceName(unsigned position = InvalidPosition) const;
 	unsigned currentPosition() const;
 	unsigned indexAt(unsigned position) const;
-	uint32_t checksumIndex(unsigned position = InvalidPosition) const;
-	uint32_t checksumMoves(unsigned position = InvalidPosition) const;
+	checksum_t checksumIndex(unsigned position = InvalidPosition) const;
+	checksum_t checksumMoves(unsigned position = InvalidPosition) const;
 
 	db::load::State loadGame(unsigned position);
 	db::load::State loadGame(unsigned position, Cursor& cursor, unsigned index);
@@ -199,6 +203,8 @@ public:
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 
 	void clearBase(Cursor& cursor);
+	void compressBase(Cursor& cursor, ::util::Progress& progress);
+
 	void setReferenceBase(Cursor* cursor);
 	void setSwitchReferenceBase(bool flag);
 
@@ -249,8 +255,6 @@ public:
 
 private:
 
-	typedef util::crc::checksum_t checksum_t;
-
 	struct EditGame
 	{
 		Cursor*			cursor;
@@ -270,7 +274,7 @@ private:
 	Cursor const* findBase(mstl::string const& name) const;
 	void setReferenceBase(Cursor* cursor, bool isUserSet);
 	void moveGamesToScratchbase(Cursor& cursor);
-	EditGame* findGame(Cursor* cursor, unsigned index);
+	EditGame* findGame(Cursor* cursor, unsigned index, unsigned* position = 0);
 
 	typedef mstl::map<unsigned,EditGame>		GameMap;
 	typedef mstl::map<unsigned,unsigned> 		IndexMap;

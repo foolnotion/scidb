@@ -213,8 +213,9 @@ struct Subscriber : public Application::Subscriber
 		EventList		= 1 << 3,
 		AnnotatorList	= 1 << 4,
 		GameInfo			= 1 << 5,
-		GameSwitched	= 1 << 6,
-		Tree				= 1 << 7,
+		GameHistory		= 1 << 6,
+		GameSwitched	= 1 << 7,
+		Tree				= 1 << 8,
 	};
 
 	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
@@ -303,6 +304,11 @@ struct Subscriber : public Application::Subscriber
 		setCmd(GameInfo, updateCmd, closeCmd, arg);
 	}
 
+	void setGameHistoryCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	{
+		setCmd(GameHistory, updateCmd, closeCmd, arg);
+	}
+
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
 		setCmd(GameSwitched, updateCmd, 0, 0);
@@ -341,6 +347,11 @@ struct Subscriber : public Application::Subscriber
 	void unsetGameInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
 		unsetCmd(GameInfo, updateCmd, closeCmd, arg);
+	}
+
+	void unsetGameHistoryCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	{
+		unsetCmd(GameHistory, updateCmd, closeCmd, arg);
 	}
 
 	void unsetTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
@@ -515,6 +526,24 @@ struct Subscriber : public Application::Subscriber
 		}
 
 		Tcl_DecrRefCount(pos);
+	}
+
+	void updateGameInfo(mstl::string const& filename, unsigned index) override
+	{
+		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
+		Tcl_Obj* w = Tcl_NewIntObj(index);
+
+		Tcl_IncrRefCount(f);
+		Tcl_IncrRefCount(w);
+
+		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		{
+			if (i->m_type == GameHistory)
+				invoke(__func__, i->getUpdate(), i->getArg(), f, w, nullptr);
+		}
+
+		Tcl_DecrRefCount(f);
+		Tcl_DecrRefCount(w);
 	}
 
 	void gameSwitched(unsigned position) override
@@ -1493,8 +1522,10 @@ getGameInfo(int index, int view, char const* database, unsigned which)
 
 
 int
-tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratings, unsigned format)
+tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 {
+	GameInfo const& info = db.gameInfo(index);
+
 	char		acv[100];
 	Tcl_Obj*	objv[attribute::game::LastColumn];
 
@@ -1510,13 +1541,24 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	if (info.idn())
 		shuffle::utf8::position(info.idn(), startPosition);
 
-	mstl::string openingLong, openingShort, variation, subvariation;
+	mstl::string openingLong, openingShort, variation, subvariation, round;
 
 	Eco eco = info.eco();
 	Eco eop = info.idn() == chess960::StandardIdn ? info.ecoKey() : Eco();
 
-	if (!eco && format == format::Scidb)
-		eco = eop;
+	if (db.format() == format::Scidb)
+	{
+		if (!eco)
+			eco = eop;
+
+		round.assign(info.roundAsString());
+	}
+	else
+	{
+		TagSet tags;
+		db.getInfoTags(index, tags);
+		round.assign(tags.value(tag::Round));
+	}
 
 	if (info.idn() == chess960::StandardIdn && eco)
 	{
@@ -1539,7 +1581,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 
 	GameInfo::flagsToString(info.flags(), flags);
 
-	if (format == format::Scid4)
+	if (db.format() == format::Scid4)
 		::mapScid4Flags(flags);
 
 	if (info.idn() == chess960::StandardIdn)
@@ -1572,7 +1614,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 
 #define SET(attr, value) objv[::attribute::game::attr] = value
 
-	SET(Number,               Tcl_NewIntObj(number));
+	SET(Number,               Tcl_NewIntObj(index + 1));
 	SET(WhitePlayer,          Tcl_NewStringObj(whitePlayer, whitePlayer.size()));
 	SET(WhiteFideID,          whiteFideID ? Tcl_NewIntObj(whiteFideID) : Tcl_NewListObj(0, 0));
 	SET(WhiteRating1,         Tcl_NewIntObj(::findRating(info, color::White, ratings.first)));
@@ -1598,7 +1640,7 @@ tcl::db::getGameInfo(GameInfo const& info, unsigned number, Ratings const& ratin
 	SET(Site,                 Tcl_NewStringObj(info.site(), info.site().size()));
 	SET(EventCountry,         Tcl_NewStringObj(country::toString(info.findEventCountry()), -1));
 	SET(Date,                 Tcl_NewStringObj(info.date().asShortString(), -1));
-	SET(Round,                Tcl_NewStringObj(info.roundAsString(), -1));
+	SET(Round,                Tcl_NewStringObj(round, round.size()));
 	SET(Annotator,            Tcl_NewStringObj(info.annotator(), info.annotator().size()));
 	SET(Idn,                  Tcl_NewIntObj(info.idn()));
 	SET(Position,             Tcl_NewStringObj(startPosition, -1));
@@ -1641,12 +1683,7 @@ getGameInfo(int index, int view, char const* database)
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
 
-	GameInfo const& info = cursor.database().gameInfo(index);
-
-	return getGameInfo(	info,
-								index + 1,
-								Ratings(rating::Elo, rating::DWZ),
-								cursor.database().format());
+	return getGameInfo(cursor.database(), index, Ratings(rating::Elo, rating::DWZ));
 }
 
 
@@ -1658,8 +1695,7 @@ getGameInfo(int index, int view, char const* database, Ratings const& ratings)
 	if (view >= 0)
 		index = cursor.gameIndex(index, view);
 
-	GameInfo const& info = cursor.database().gameInfo(index);
-	return getGameInfo(info, index + 1, ratings, cursor.database().format());
+	return getGameInfo(cursor.database(), index, ratings);
 }
 
 
@@ -1912,6 +1948,14 @@ getTags(int index, char const* database)
 
 
 static int
+getChecksum(int index, char const* database)
+{
+	setResult(Scidb->cursor(database).database().computeChecksum(index));
+	return TCL_OK;
+}
+
+
+static int
 getIdn(int index, char const* database)
 {
 	setResult(Scidb->cursor(database).database().gameInfo(index).idn());
@@ -2046,7 +2090,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"modified?", "gameInfo", "playerInfo", "eventInfo", "annotator", "gameIndex", "playerIndex",
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
-		"minYear", "maxYear", "maxUsage", "tags", "idn", "eco", "ratingTypes",
+		"minYear", "maxYear", "maxUsage", "tags", "checksum", "idn", "eco", "ratingTypes",
 		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?",
 		0
 	};
@@ -2086,6 +2130,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<number> ?<database>?",
 		"<number> ?<database>?",
 		"<number> ?<database>?",
+		"<number> ?<database>?",
 		"<index> ?<view>? ?<database>?",
 		"<index> ?<view>? ?<database>?",
 		"?<database>?",
@@ -2099,7 +2144,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_AnnotatorIndex, Cmd_Description,
 		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
 		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
-		Cmd_Tags, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
+		Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
 		Cmd_Writeable, Cmd_Upgrade,
 	};
 
@@ -2451,6 +2496,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getTags(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
+		case Cmd_Checksum:
+			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
+				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+			return getChecksum(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
+
 		case Cmd_Idn:
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
@@ -2478,7 +2528,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"dbInfo|gameList|playerList|annotatorList|gameInfo|gameSwitch|tree <update-cmd> ??"
+			"dbInfo|gameList|playerList|annotatorList|gameInfo|gameHistory|gameSwitch|tree <update-cmd> ??"
 			"<close-cmd>? <arg>?");
 		return TCL_ERROR;
 	}
@@ -2486,12 +2536,12 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "annotatorList",
-		"eventList", "gameInfo", "gameSwitch", "tree", 0
+		"eventList", "gameInfo", "gameHistory", "gameSwitch", "tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList,
-		Cmd_EventList, Cmd_GameInfo, Cmd_GameSwitch, Cmd_Tree,
+		Cmd_EventList, Cmd_GameInfo, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -2534,6 +2584,10 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			subscriber->setGameInfoCmd(updateCmd, closeCmd, arg);
 			break;
 
+		case Cmd_GameHistory:
+			subscriber->setGameHistoryCmd(updateCmd, closeCmd, arg);
+			break;
+
 		case Cmd_GameSwitch:
 			subscriber->setGameSwitchedCmd(updateCmd);
 			break;
@@ -2560,17 +2614,20 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"dbInfo|gameList|playerList|annotatorList|gameInfo|tree <update-cmd> ??" "<close-cmd>? <arg>?");
+			"dbInfo|gameList|playerList|annotatorList|gameInfo|gameHistory|tree "
+			"<update-cmd> ??" "<close-cmd>? <arg>?");
 		return TCL_ERROR;
 	}
 
 	static char const* subcommands[] =
 	{
-		"dbInfo", "gameList", "playerList", "eventList", "annotatorList", "gameInfo", "tree", 0
+		"dbInfo", "gameList", "playerList", "eventList",
+		"annotatorList", "gameInfo", "gameHistory", "tree", 0
 	};
 	enum
 	{
-		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_AnnotatorList, Cmd_GameInfo, Cmd_Tree
+		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList,
+		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameHistory, Cmd_Tree
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -2608,6 +2665,10 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_GameInfo:
 			subscriber->unsetGameInfoCmd(updateCmd, closeCmd, arg);
+			break;
+
+		case Cmd_GameHistory:
+			subscriber->unsetGameHistoryCmd(updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_Tree:
@@ -3091,7 +3152,8 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	struct Log : public ::db::Log
 	{
-		bool error(save::State code, unsigned gameNumber) override { return true; }
+		bool error(save::State, unsigned) override	{ return true; }
+		void warning(Warning, unsigned) override		{}
 	};
 
 	mstl::string database(stringFromObj(objc, objv, 1));

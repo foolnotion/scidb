@@ -933,7 +933,7 @@
 ::import::mc::TooManyPlayerNames					"Demasiados nombres de jugadores en la base (abortado)"
 ::import::mc::TooManyEventNames					"Demasiados nombres de evento en la base (abortado)"
 ::import::mc::TooManySiteNames					"Demasiados nombres de lugares en la base (abortado)"
-::import::mc::TooManyRoundNames					"Demasiados nombres de ronda en la base (abortado)"
+::import::mc::TooManyRoundNames					"Demasiados nombres de ronda en la base"
 ::import::mc::TooManyAnnotatorNames				"Demasiados nombres de comentaristas en la base (abortado)"
 ::import::mc::TooManySourceNames					"Demasiados nombres de or’genes en la base (abortado)"
 ::import::mc::SeemsNotToBePgnText				"No parece ser un texto PGN"

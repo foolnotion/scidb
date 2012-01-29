@@ -33,11 +33,14 @@ public:
 	~Log() throw();
 
 	bool error(::db::save::State code, unsigned gameNumber) override;
+	void warning(Warning code, unsigned gameNumber) override;
 
 private:
 
 	Tcl_Obj* m_cmd;
 	Tcl_Obj* m_arg;
+
+	bool m_tooManyRounds;
 };
 
 } // namespace tcl

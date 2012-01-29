@@ -134,6 +134,9 @@ public:
 	void releaseRoundEntry(unsigned index);
 	bool saveRoundEntry(unsigned index, mstl::string const& value);
 	void restoreRoundEntry(unsigned index);
+	void useOverflowEntry(unsigned index);
+	mstl::string const& getRoundEntry(unsigned index);
+
 	sys::utf8::Codec& codec();
 
 	void useAsyncReader(bool flag) override;
@@ -179,6 +182,7 @@ private:
 								unsigned maxFreq,
 								unsigned count,
 								util::Progress& progress);
+	void writeNamebases(mstl::string const& filename);
 	void writeNamebases(mstl::fstream& stream);
 	void writeNamebase(mstl::fstream& stream, NameList& base);
 

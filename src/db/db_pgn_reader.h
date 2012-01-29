@@ -215,10 +215,8 @@ private:
 
 	typedef mstl::vector<Comment> Comments;
 
-	void error(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string)
-		__attribute__((noreturn));
-	void error(Error code, mstl::string const& item = mstl::string::empty_string)
-		__attribute__((noreturn));
+	void error(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string);
+	void error(Error code, mstl::string const& item = mstl::string::empty_string);
 
 	void fatalError(Error code, Pos const& pos, mstl::string const& item = mstl::string::empty_string)
 		__attribute__((noreturn));

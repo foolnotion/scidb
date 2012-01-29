@@ -932,7 +932,7 @@
 ::import::mc::TooManyPlayerNames					"Troppi nomi di giocatori nel database (interrotto)"
 ::import::mc::TooManyEventNames					"Troppi nomi di eventi nel database (interrotto)"
 ::import::mc::TooManySiteNames					"Troppi nomi di siti nel database (interrotto)"
-::import::mc::TooManyRoundNames					"Troppi turni nel database (interrotto)"
+::import::mc::TooManyRoundNames					"Troppi turni nel database"
 ::import::mc::TooManyAnnotatorNames				"Troppi nomi di commentatori nel database (interrotto)"
 ::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
 ::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"

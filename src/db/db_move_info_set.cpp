@@ -50,11 +50,88 @@ match(char const* s, char const* pattern, unsigned n)
 }
 
 
+static bool
+seemsToBeMoveInfo(char const* s, char const* e)
+{
+	if (*e == ')' || isdigit(*e))
+		return true;
+
+	if (*e == 's' && isdigit(e[-1]))
+	{
+		e -= 2;
+
+		while (e > s && isdigit(*e))
+			--e;
+
+		if (*e == ' ')
+		{
+			--e;
+
+			while (e > s && *e == ' ')
+				--e;
+
+			return *e == ')' || isdigit(*e);
+		}
+	}
+
+	return false;
+}
+
+
+static bool
+seemsToBeEvaluation(char const* s)
+{
+	if (::isdigit(*s))
+	{
+		do
+			++s;
+		while (::isdigit(*s));
+
+		if (*s++ != ':')
+			return false;
+	}
+
+	return *s == '+' || *s == '-';
+}
+
+
+static bool
+isDelim(char const* s)
+{
+	return *s == '\0' || *s == ' ';
+}
+
+
 static char const*
 skipSpaces(char const* s)
 {
 	while (*s == ' ')
 		++s;
+
+	return s;
+}
+
+
+char const*
+skipTimeInfo(char const* s)
+{
+	if (s)
+	{
+		char const* t = skipSpaces(s);
+
+		if (isdigit(*t))
+		{
+			do
+				++t;
+			while (isdigit(*t));
+
+			if (*t == 's')
+			{
+				if (t[1] == ' ' || t[1] == '\0')
+					s = t + 1;
+			}
+		}
+	}
 
 	return s;
 }
@@ -81,8 +158,12 @@ MoveInfoSet::sort()
 // Mechanical Clock Time:	[%mct 17:10:42]
 // (Digital) Clock Time:	[%ct 17:10:42]
 // Corres. Chess Sent:		[%ccsnt 2011.06.16], [%ccsnt 2011.06.16,17:53], [%ccsnt 2011.06.16,17:53:02]
-// Evaluation information:	[%eval -6.05], "+0.92", "11:+0.00", "Crafty: 12:+0.61", "-11.78|d18"
+// Evaluation information:	[%eval -6.05], "+0.92", "11:+0.00", "Crafty: 12:+0.61", "-11.78|d9", "+0.00/0"
 // Time Information:			"1:40:25", "(1:40:25)", "Crafty: 1:40:25", "Rybka Aquarium (0:00:45)"
+//
+// NOTE:
+// Evaluation information may be followed by a time value; e.g. " 4s".
+// We will skip this time information.
 bool
 MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 {
@@ -139,7 +220,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 						case 'v':
 							if ((q = ::match(p + 2, "eval", 4)))
-								q = info.parseEvaluation(q);
+								q = ::skipTimeInfo(info.parseEvaluation(q));
 							break;
 					}
 					break;
@@ -156,6 +237,9 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 				info.clear();
 				result.append(s, p - s);
 				s = p = q + 1;
+
+				if (*p == '\0')
+					p = 0;
 			}
 			else
 			{
@@ -176,7 +260,10 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 		comment.swap(result);
 		comment.trim();
 	}
-	else if (!comment.empty() && (comment.back() == ')' || ::isdigit(comment.back())))
+
+	s = ::skipSpaces(comment);
+
+	if (::seemsToBeMoveInfo(s, comment.end() - 1))
 	{
 		if (::isalpha(*s))
 		{
@@ -203,7 +290,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			char const* q = info.parsePlayersClock(s);
 
 			if (!q)
-				q = info.parseEvaluation(s);
+				q = ::skipTimeInfo(info.parseEvaluation(s));
 
 			if (q == 0 || (delim ? q[0] != delim || q[1] : *q))
 				return false;
@@ -220,26 +307,48 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			comment.clear();
 			rc = true;
 		}
-		else if (::isdigit(*s))
+		else if (::seemsToBeEvaluation(s))
 		{
-			char const* e = info.parsePlayersClock(s);
+			char const* e = ::skipTimeInfo(info.parseEvaluation(s));
 
-			if (e && *::skipSpaces(e) == '\0')
+			if (e && ::isDelim(::skipSpaces(e)))
 			{
 				add(info);
 				comment.clear();
 				rc = true;
 			}
 		}
-		else if (*s == '-' || *s == '+')
+		else if (::isdigit(*s))
 		{
-			char const* e = info.parseEvaluation(s);
+			char const* e = info.parsePlayersClock(s);
 
-			if (e && *::skipSpaces(e) == '\0')
+			if (e && ::isDelim(::skipSpaces(e)))
 			{
 				add(info);
 				comment.clear();
 				rc = true;
+			}
+		}
+	}
+
+	char const* e = s + comment.size() - 1;
+
+	if (e > comment.c_str())
+	{
+		if (*e == 's')
+		{
+			--e;
+
+			if (::isdigit(*e))
+			{
+				while (e > comment.c_str() && ::isdigit(e[-1]))
+					--e;
+
+				if (e == comment.c_str() || e[-1] == ' ')
+				{
+					comment.erase(e, comment.end());
+					comment.trim();
+				}
 			}
 		}
 	}

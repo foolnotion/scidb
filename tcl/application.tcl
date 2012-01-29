@@ -282,6 +282,7 @@ proc shutdown {} {
 	variable Vars
 
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
+	if {[llength [grab current]]} { bell; return }
 
 	set dlg .application.shutdown
 	if {[winfo exists $dlg]} { return }

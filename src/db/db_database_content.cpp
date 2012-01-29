@@ -44,4 +44,17 @@ DatabaseContent::DatabaseContent(mstl::string const& encoding, Type type)
 {
 }
 
+
+DatabaseContent::DatabaseContent(DatabaseContent const& content)
+	:m_type(content.m_type)
+	,m_created(content.m_created)
+	,m_readOnly(content.m_readOnly)
+	,m_writeable(content.m_writeable)
+	,m_memoryOnly(false)
+	,m_description(content.m_description)
+	,m_encoding(content.m_encoding)
+	,m_allocator(32768)
+{
+}
+
 // vi:set ts=3 sw=3:

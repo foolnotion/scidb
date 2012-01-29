@@ -29,7 +29,12 @@
 #include "app_view.h"
 
 #include "db_database.h"
+#include "db_exception.h"
 
+#include "u_misc.h"
+#include "u_progress.h"
+
+#include "m_auto_ptr.h"
 #include "m_assert.h"
 
 using namespace db;
@@ -67,6 +72,20 @@ Cursor::clear() throw()
 
 	m_viewList.resize(1);
 	m_treeView = -1;
+}
+
+
+bool
+Cursor::isReadOnly() const
+{
+	return m_db->isReadOnly();
+}
+
+
+bool
+Cursor::isWriteable() const
+{
+	return m_db->isWriteable();
 }
 
 
@@ -276,6 +295,7 @@ void
 Cursor::save(util::Progress& progress, unsigned start)
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
 	M_REQUIRE(start <= countGames());
 
 	// TODO: handle return code!
@@ -287,6 +307,7 @@ void
 Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
 	M_REQUIRE(index < countGames());
 
 	// TODO: handle return code!
@@ -311,6 +332,7 @@ unsigned
 Cursor::importGame(Producer& producer, unsigned index)
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
 	M_REQUIRE(index < countGames());
 
 	if (m_isRefBase)
@@ -329,6 +351,7 @@ unsigned
 Cursor::importGames(Producer& producer, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
 
 	if (m_isRefBase)
 		Application::cancelUpdateTree();
@@ -345,6 +368,8 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 void
 Cursor::clearBase()
 {
+	M_REQUIRE(!isReadOnly());
+
 	database().clear();
 
 	for (unsigned i = 0; i < m_viewList.size(); ++i)
@@ -354,6 +379,92 @@ Cursor::clearBase()
 		if (view)
 			view->update();
 	}
+}
+
+
+bool
+Cursor::compress(::util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
+
+	m_db->sync(progress);
+
+	unsigned numGames	= m_db->countGames();
+	unsigned deleted	= 0;
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (m_db->gameInfo(i).isDeleted())
+			++deleted;
+	}
+
+	if (deleted == 0)
+		return false;
+
+	mstl::string orig(m_db->name());
+	mstl::string name(".");
+	name.append(::util::misc::file::rootname(m_db->name()));
+	name.append(".compress.293528376");
+	name.append(::util::misc::file::suffix(m_db->name()));
+
+	mstl::auto_ptr<Database> compressed(new Database(*m_db, name));
+
+	unsigned frequency	= progress.frequency(numGames, 20000);
+	unsigned reportAfter	= frequency;
+
+	util::ProgressWatcher watcher(progress, numGames);
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		if (!m_db->gameInfo(i).isDeleted())
+		{
+			save::State state = m_db->exportGame(i, *compressed);
+
+			if (!save::isOk(state))
+			{
+				// The following errors cannot happen, but we want to be sure:
+				switch (state)
+				{
+					case save::Ok:
+						break;
+
+					case save::UnsupportedVariant:
+					case save::DecodingFailed:
+					case save::GameTooLong:
+					case save::TooManyAnnotatorNames:
+						// skip non-fatal errors
+						break;
+
+					case save::FileSizeExeeded:
+					case save::TooManyGames:
+					case save::TooManyPlayerNames:
+					case save::TooManyEventNames:
+					case save::TooManySiteNames:
+					case save::TooManyRoundNames:
+						M_THROW(Exception("Compression failed: save state %d", int(state)));
+						break;
+				}
+			}
+		}
+	}
+
+	compressed->save(progress);
+
+	m_db->close();
+	delete m_db;
+
+	m_db = compressed.release();
+	m_db->rename(orig);
+
+	return true;
 }
 
 // vi:set ts=3 sw=3:

@@ -40,6 +40,8 @@
 #include "db_search.h"
 #include "db_log.h"
 
+#include "si3_codec.h"
+
 #include "u_block_file.h"
 #include "u_progress.h"
 #include "u_misc.h"
@@ -74,6 +76,20 @@ struct SingleProgress : public util::Progress
 
 
 static unsigned Counter = 0;
+
+
+Database::Database(Database const& db, mstl::string const& name)
+	:DatabaseContent(db)
+	,m_name(name)
+	,m_rootname(file::rootname(name))
+	,m_id(Counter++)
+	,m_size(0)
+	,m_lastChange(sys::time::timestamp())
+	,m_encodingFailed(false)
+	,m_encodingOk(true)
+	,m_usingAsyncReader(false)
+{
+}
 
 
 Database::Database(mstl::string const& name, mstl::string const& encoding, Storage storage, Type type)
@@ -219,15 +235,20 @@ Database::save(util::Progress& progress, unsigned start)
 
 
 void
+Database::sync(util::Progress& progress)
+{
+	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable && m_size != m_gameInfoList.size())
+		save(progress, m_size);
+}
+
+
+void
 Database::close()
 {
 	if (m_codec)
 	{
-		if (!isMemoryOnly() && !m_readOnly && m_writeable && m_size != m_gameInfoList.size())
-		{
-			util::Progress progress;
-			save(progress, m_size);
-		}
+		util::Progress progress;
+		sync(progress);
 
 		m_codec->close();
 		delete m_codec;
@@ -243,7 +264,7 @@ Database::getInfoTags(unsigned index, TagSet& tags) const
 	M_REQUIRE(index < countGames());
 
 	tags.clear();
-	m_gameInfoList[index]->setupTags(tags);
+	setupTags(index, tags);
 
 	for (unsigned i = 0; i < tag::ExtraTag; ++i)
 		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::InfoTags);
@@ -257,7 +278,7 @@ Database::getGameTags(unsigned index, TagSet& tags) const
 	M_REQUIRE(index < countGames());
 
 	tags.clear();
-	m_gameInfoList[index]->setupTags(tags);
+	setupTags(index, tags);
 
 	for (unsigned i = 0; i < tag::ExtraTag; ++i)
 		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::GameTags);
@@ -322,7 +343,15 @@ Database::computeChecksum(unsigned index) const
 	M_REQUIRE(index < countGames());
 
 	GameInfo const& info = *m_gameInfoList[index];
-	return m_codec->computeChecksum(info, info.computeChecksum());
+	util::crc::checksum_t crc = m_codec->computeChecksum(info, info.computeChecksum());
+
+	if (format::isScidFormat(format()))
+	{
+		mstl::string const& round = static_cast<si3::Codec const*>(m_codec)->getRoundEntry(index);
+		crc = ::util::crc::compute(crc, round, round.size());
+	}
+
+	return crc;
 }
 
 
@@ -372,7 +401,7 @@ Database::newGame(Game& game, GameInfo const& info)
 	save::State state = m_codec->addGame(strm, info);
 	m_namebases.update();
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
@@ -397,7 +426,7 @@ Database::addGame(Game const& game)
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
 	m_namebases.update();
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
 		{
@@ -432,7 +461,7 @@ Database::updateGame(Game const& game)
 
 	m_namebases.update();
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
 			m_codec->update(m_rootname, game.index(), true);
@@ -464,7 +493,7 @@ Database::updateMoves(Game const& game)
 
 	save::State state = m_codec->saveMoves(strm, game);
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
@@ -486,7 +515,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 
 	m_namebases.update();
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
 			m_codec->update(m_rootname, index, true);
@@ -556,8 +585,7 @@ Database::exportGame(unsigned index, Consumer& consumer)
 #ifdef DEBUG_SI4
 //	if (	info->idn() == 518
 //		&& m_codec->format() != format::ChessBase
-//		&& (	consumer.sourceFormat() == format::Scid3
-//			|| consumer.sourceFormat() == format::Scid4))
+//		&& (format::isScidFormat/consumer.sourceFormat()))
 //	{
 //		Eco opening;
 //		Eco eco = EcoTable::specimen().lookup(consumer.openingLine(), opening);
@@ -683,10 +711,26 @@ Database::recode(mstl::string const& encoding, util::Progress& progress)
 
 
 void
+Database::rename(mstl::string const& name)
+{
+	M_REQUIRE(!isMemoryOnly());
+	M_REQUIRE(util::misc::file::suffix(name) == util::misc::file::suffix(this->name()));
+
+	m_codec->rename(m_name, name);
+	m_name = name;
+	m_rootname = file::rootname(m_name);
+}
+
+
+void
 Database::setupTags(unsigned index, TagSet& tags) const
 {
 	M_REQUIRE(isOpen());
+
 	gameInfo(index).setupTags(tags);
+
+	if (format::isScidFormat(format()))
+		tags.set(tag::Round, static_cast<si3::Codec const*>(m_codec)->getRoundEntry(index));
 }
 
 
@@ -697,7 +741,13 @@ Database::deleteGame(unsigned index, bool flag)
 	M_REQUIRE(!isReadOnly());
 	M_REQUIRE(index < countGames());
 
+	if (gameInfo(index).isDeleted())
+		--m_statistic.deleted;
+
 	gameInfo(index).setDeleted(flag);
+
+	if (flag)
+		++m_statistic.deleted;
 
 	if (!m_memoryOnly)
 		m_codec->update(m_rootname, index, false);

@@ -42,6 +42,27 @@ proc map {w} {
 	variable Geometry
 	variable Mapped
 
+	# kill dangling shadows (should not happen)
+	set cls [winfo class $w]
+	foreach v [array names Mapped] {
+		if {	$cls ne "Menu"
+			|| [winfo class $v] ne "Menu"
+			|| ![winfo ismapped $v]
+			|| ![string match $v* $w]} {
+
+			set id $Mapped($v)
+			array unset Mapped $v
+
+			set b .__shadow__b__$id
+			set r .__shadow__r__$id
+
+			if {[winfo exists $b]} {
+				wm withdraw $b
+				wm withdraw $r
+			}
+		}
+	}
+
 	if {![info exists Geometry($w)]} { return }
 	set id [Create]
 	lassign $Geometry($w) x y width height
@@ -72,6 +93,8 @@ proc map {w} {
 	wm deiconify $r
 	raise $b
 	raise $r
+
+	update idletasks
 }
 
 
@@ -92,6 +115,8 @@ proc unmap {w} {
 		wm withdraw $b
 		wm withdraw $r
 	}
+
+	update idletasks
 }
 
 

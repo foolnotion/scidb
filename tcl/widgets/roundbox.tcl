@@ -32,21 +32,32 @@ proc roundbox {w args} {
 namespace eval roundbox {
 
 proc Build {w args} {
-	ttk::entry $w \
-		-exportselection no \
-		-width 6 \
-		-validate key \
-		-validatecommand { return [regexp {^[0-9.]*$} %P] } \
-		-invalidcommand { bell } \
-		{*}$args \
-		;
+	array set opts { -useString 1 }
+	array set opts $args
+
+	namespace eval [namespace current]::$w {}
+	variable [namespace current]::${w}::Priv
+	set Priv(useString) $opts(-useString)
+	array unset opts -useString
+	set args [array get opts]
+
+	if {!$Priv(useString)} {
+		lappend args -validate key
+		lappend args -validatecommand { return [regexp {^[0-9.]*$} %P] }
+		lappend args -invalidcommand { bell }
+	}
+
+	ttk::entry $w -exportselection no -width 6 {*}$args
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
+
 	return $w
 }
 
 
 proc WidgetProc {w command args} {
+	variable ${w}::Priv
+
 	switch -- $command {
 		bind {
 			if {1 > [llength $args] || [llength $args] > 3} {
@@ -56,13 +67,16 @@ proc WidgetProc {w command args} {
 		}
 
 		valid? {
-			set value [string trim [$w.__w__ get]]
-			if {$value eq "?" || $value eq "-"} { return 1 }
-			if {![regexp {^([1-9][0-9]*(\.[1-9][0-9]*)?)?$} $value]} { return 0 }
+			if {!$Priv(useString)} {
+				set value [string trim [$w.__w__ get]]
+				if {$value eq "?" || $value eq "-"} { return 1 }
+				if {![regexp {^([1-9][0-9]*(\.[1-9][0-9]*)?)?$} $value]} { return 0 }
+			}
 			return 1
 		}
 		
 		check {
+			if {$Priv(useString)} { return 0 }
 			return [CheckRange [string trim [$w.__w__ get]]]
 		}
 

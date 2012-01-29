@@ -451,12 +451,12 @@ proc ::TreeCtrl::CursorCheck {w x y} {
     if {$cursor ne [$w cget -cursor]} {
 	if {[info exists Priv(item,$w)]} {
 	    lassign [split $Priv(item,$w) :] prevC prevI
-	    unset Priv(item,$w)
+	    array unset Priv item,$w
 	    TryEvent $w Item leave [list C $prevC I $prevI]
 	}
 	if {[info exists Priv(elem,$w)]} {
 	    lassign [split $Priv(elem,$w) :] prevC prevI prevE
-	    unset Priv(elem,$w)
+	    array unset Priv elem,$w
 	    TryEvent $w Elem leave [list C $prevC I $prevI E $prevE]
 	}
 	if {![info exists Priv(cursor,$w)]} {
@@ -503,11 +503,11 @@ proc ::TreeCtrl::CursorCancel {w} {
     variable Priv
     if {[info exists Priv(cursor,$w)]} {
 	$w configure -cursor $Priv(cursor,$w)
-	unset Priv(cursor,$w)
+	array unset Priv cursor,$w
     }
     if {[info exists Priv(cursor,afterId,$w)]} {
 	after cancel $Priv(cursor,afterId,$w)
-	unset Priv(cursor,afterId,$w)
+	array unset Priv cursor,afterId,$w
     }
     return
 }
@@ -539,17 +539,17 @@ proc ::TreeCtrl::MotionInHeader {w args} {
 	if {$column ne $prevColumn} {
 	    if {$prevColumn ne ""} {
 		TryEvent $w Header leave [list C $prevColumn]
-		unset Priv(header,$w)
+		array unset Priv header,$w
 	    }
 	    if {$column ne ""} {
 		if {[info exists Priv(item,$w)]} {
 		    lassign [split $Priv(item,$w) :] prevC prevI
-		    unset Priv(item,$w)
+		    array unset Priv item,$w
 		    TryEvent $w Item leave [list C $prevC I $prevI]
 		}
 		if {[info exists Priv(elem,$w)]} {
 		    lassign [split $Priv(elem,$w) :] prevC prevI prevE
-		    unset Priv(elem,$w)
+		    array unset Priv elem,$w
 		    TryEvent $w Elem leave [list C $prevC I $prevI E $prevE]
 		}
 		TryEvent $w Header enter [list C $column x $x y $y]
@@ -559,7 +559,7 @@ proc ::TreeCtrl::MotionInHeader {w args} {
     } else {
 	if {[info exists Priv(header,$w)]} {
 	    TryEvent $w Header leave [list C $Priv(header,$w)]
-	    unset Priv(header,$w)
+	    array unset Priv header,$w
 	}
 	set action ""
     }
@@ -582,7 +582,7 @@ proc ::TreeCtrl::MotionInHeader {w args} {
 	    }
 	    set Priv(inheader,$w) $column
 	} else {
-	    unset Priv(inheader,$w)
+	    array unset Priv inheader,$w
 	}
     }
     return
@@ -605,7 +605,7 @@ proc ::TreeCtrl::MotionInItems {w args} {
 	if {([lindex $id 0] eq "" || [lindex $id 0] eq "header") && [info exists Priv(item,$w)]} {
 	    lassign [split $Priv(item,$w) :] prevColumn prevItem
 	    TryEvent $w Item leave [list C $prevColumn I $prevItem]
-	    unset Priv(item,$w)
+	    array unset Priv item,$w
 	}
 	if {[lindex $id 0] ne "item"} { return }
 	set item [lindex $id 1]
@@ -620,7 +620,7 @@ proc ::TreeCtrl::MotionInItems {w args} {
 	    if {$prevId ne ""} {
 		lassign [split $prevId :] prevColumn prevItem
 		TryEvent $w Item leave [list C $prevColumn I $prevItem]
-		unset Priv(item,$w)
+		array unset Priv item,$w
 	    }
 	    if {$id ne ""} {
 		TryEvent $w Item enter [list C $column I $item x $x y $y]
@@ -631,7 +631,7 @@ proc ::TreeCtrl::MotionInItems {w args} {
 	if {[info exists Priv(item,$w)]} {
 	    lassign [split $Priv(item,$w) :] prevColumn prevItem
 	    TryEvent $w Item leave [list C $prevColumn I $prevItem]
-	    unset Priv(item,$w)
+	    array unset Priv item,$w
 	}
 	set action ""
     }
@@ -654,7 +654,7 @@ proc ::TreeCtrl::MotionInElems {w args} {
 	if {([lindex $id 0] eq "" || [lindex $id 0] eq "header") && [info exists Priv(elem,$w)]} {
 	    lassign [split $Priv(elem,$w) :] prevColumn prevItem prevElem
 	    TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
-	    unset Priv(elem,$w)
+	    array unset Priv elem,$w
 	}
 	if {[lindex $id 0] ne "item"} { return }
 	set item [lindex $id 1]
@@ -669,7 +669,7 @@ proc ::TreeCtrl::MotionInElems {w args} {
 	    if {$prevId ne ""} {
 		lassign [split $prevId :] prevColumn prevItem prevElem
 		TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
-		unset Priv(elem,$w)
+		array unset Priv elem,$w
 	    }
 	    if {$id ne ""} {
 		TryEvent $w Elem enter [list C $column I $item x $x y $y E $elem]
@@ -680,7 +680,7 @@ proc ::TreeCtrl::MotionInElems {w args} {
 	if {[info exists Priv(elem,$w)]} {
 	    lassign [split $Priv(elem,$w) :] prevColumn prevItem prevElem
 	    TryEvent $w Elem leave [list C $prevColumn I $prevItem E $prevElem]
-	    unset Priv(elem,$w)
+	    array unset Priv elem,$w
 	}
 	set action ""
     }
@@ -1052,7 +1052,7 @@ proc ::TreeCtrl::Release1 {w x y} {
 	    TryEvent $w Column resized [list C $Priv(column) w [$w column cget $Priv(column) -width]]
 	}
     }
-    unset Priv(buttonMode)
+    array unset Priv buttonMode
     return
 }
 
@@ -1270,7 +1270,7 @@ proc ::TreeCtrl::AutoScanCheckAux {w} {
     variable Priv
     # Not quite sure how this can happen
     if {![info exists Priv(autoscan,afterId,$w)]} return
-    unset Priv(autoscan,afterId,$w)
+    array unset Priv autoscan,afterId,$w
     set x [winfo pointerx $w]
     set y [winfo pointery $w]
     set x [expr {$x - [winfo rootx $w]}]
@@ -1290,9 +1290,9 @@ proc ::TreeCtrl::AutoScanCancel {w} {
     variable Priv
     if {[info exists Priv(autoscan,afterId,$w)]} {
 	after cancel $Priv(autoscan,afterId,$w)
-	unset Priv(autoscan,afterId,$w)
+	array unset Priv autoscan,afterId,$w
     }
-    unset -nocomplain Priv(autoscan,scanning,$w)
+    array unset Priv autoscan,scanning,$w
     return
 }
 
@@ -1355,7 +1355,7 @@ proc ::TreeCtrl::ColumnDragScrollCheckAux {w} {
     variable Priv
     # Not quite sure how this can happen
     if {![info exists Priv(autoscan,afterId,$w)]} return
-    unset Priv(autoscan,afterId,$w)
+    array unset Priv autoscan,afterId,$w
     set x [winfo pointerx $w]
     set y [winfo pointery $w]
     set x [expr {$x - [winfo rootx $w]}]

@@ -206,7 +206,7 @@ string::assign(const_iterator i1, const_iterator i2)
 
 inline
 string::iterator
-string::erase(iterator first, const_iterator last)
+string::erase(const_iterator first, const_iterator last)
 {
 	M_REQUIRE(first <= last);
 	return erase(first, last - first);

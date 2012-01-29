@@ -932,7 +932,7 @@
 ::import::mc::TooManyPlayerNames					"Too many player names in database (aborted)"
 ::import::mc::TooManyEventNames					"Too many event names in database (aborted)"
 ::import::mc::TooManySiteNames					"Too many site names in database (aborted)"
-::import::mc::TooManyRoundNames					"Too many round names in database (aborted)"
+::import::mc::TooManyRoundNames					"Too many round names in database"
 ::import::mc::TooManyAnnotatorNames				"Too many annotator names in database (aborted)"
 ::import::mc::TooManySourceNames					"Too many source names in database (aborted)"
 ::import::mc::SeemsNotToBePgnText				"Seems not to be PGN text"

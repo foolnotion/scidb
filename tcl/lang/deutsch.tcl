@@ -931,7 +931,7 @@
 ::import::mc::TooManyPlayerNames					"Zuviele Spielernamen in der Datenbank (Abbruch)"
 ::import::mc::TooManyEventNames					"Zuviele Turniernamen in der Datenbank (Abbruch)"
 ::import::mc::TooManySiteNames					"Zuviele Ortsnamen in der Datenbank (Abbruch)"
-::import::mc::TooManyRoundNames					"Zuviele Rundenbezeichnungen in der Datenbank (Abbruch)"
+::import::mc::TooManyRoundNames					"Zuviele Rundenbezeichnungen in der Datenbank"
 ::import::mc::TooManyAnnotatorNames				"Zuviele Kommentatoren in der Datenbank (Abbruch)"
 ::import::mc::TooManySourceNames					"Zuviele Quellenangaben in der Datenbank (Abbruch)"
 ::import::mc::SeemsNotToBePgnText				"Dies scheint kein PGN-Text zu sein"

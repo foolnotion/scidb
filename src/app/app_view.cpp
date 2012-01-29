@@ -31,6 +31,7 @@
 #include "db_filter.h"
 #include "db_game.h"
 #include "db_pgn_writer.h"
+#include "db_pgn_reader.h"
 #include "db_latex_writer.h"
 #include "db_log.h"
 
@@ -367,6 +368,12 @@ View::setGameFilter(Filter const& filter)
 }
 
 
+void
+View::shortenFilter(Filter const& filter)
+{
+}
+
+
 db::TournamentTable*
 View::makeTournamentTable() const
 {
@@ -462,8 +469,10 @@ View::dumpGame(unsigned index,
 
 template <class Destination>
 unsigned
-View::exportGames(Destination& destination, GameMode gameMode, db::Log& log, util::Progress& progress)
+View::exportGames(Destination& destination, GameMode gameMode, Log& log, util::Progress& progress)
 {
+	enum { MaxWarning = 40 };
+
 	unsigned frequency = progress.frequency(m_gameFilter.count());
 
 	if (frequency == 0)
@@ -475,6 +484,7 @@ View::exportGames(Destination& destination, GameMode gameMode, db::Log& log, uti
 
 	unsigned count		= 0;
 	unsigned numGames	= 0;
+	unsigned warnings	= 0;
 
 	for (int i = m_gameFilter.next(Filter::Invalid); i != Filter::Invalid; i = m_gameFilter.next(i))
 	{
@@ -488,7 +498,20 @@ View::exportGames(Destination& destination, GameMode gameMode, db::Log& log, uti
 		{
 			save::State state = m_db.exportGame(i, destination);
 
-			if (state == save::Ok)
+			if (::format::isScidFormat(m_db.format()) && destination.format() == format::Scidb)
+			{
+				unsigned unused;
+				mstl::string const& round = static_cast<si3::Codec&>(m_db.codec()).getRoundEntry(i);
+
+				if (!PgnReader::parseRound(round, unused, unused))
+				{
+					log.warning(
+						warnings++ >= MaxWarning ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
+						m_gameSelector.map(i));
+				}
+			}
+
+			if (save::isOk(state))
 				++numGames;
 			else if (!log.error(state, m_gameSelector.map(i)))
 				return numGames;

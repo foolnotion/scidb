@@ -66,6 +66,7 @@ public:
 	enum Storage	{ MemoryOnly, OnDisk };
 	enum Mode		{ ReadOnly, ReadWrite };
 
+	Database(Database const& db, mstl::string const& name);
 	Database(mstl::string const& name,
 				mstl::string const& encoding,
 				Storage storage = MemoryOnly,
@@ -185,18 +186,20 @@ public:
 
 	/// Removes all games from the database.
 	void clear();
-	/// Compacts the database.
-	void compact();
 	/// Re-open the database.
 	void reopen(mstl::string const& encoding, util::Progress& progress);
 	/// Close database.
 	void close();
+	/// Sync database (save unsaved data).
+	void sync(util::Progress& progress);
 	/// Attach database to a file.
 	void attach(mstl::string const& filename, util::Progress& progress);
 	/// Update database files.
 	void save(util::Progress& progress, unsigned start = 0);
 	/// Recode content of database.
 	void recode(mstl::string const& encoding, util::Progress& progress);
+	/// Rename the database.
+	void rename(mstl::string const& name);
 
 	/// Build tournament table for selected games.
 	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;

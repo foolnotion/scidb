@@ -104,6 +104,8 @@ struct Log : public db::Log
 
 		return code == save::GameTooLong;
 	}
+
+	void warning(Warning code, unsigned gameNumber) {}
 };
 
 

@@ -477,6 +477,30 @@ DatabaseCodec::openFile(mstl::fstream& stream,
 }
 
 
+void
+DatabaseCodec::rename(mstl::string const& oldName, mstl::string const& newName)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(util::misc::file::suffix(oldName) == util::misc::file::suffix(newName));
+	M_REQUIRE(format() == format::Scidb || format() == format::Scid3 || format() == format::Scid4);
+
+	mstl::string oldRoot(file::rootname(oldName));
+	mstl::string newRoot(file::rootname(newName));
+
+	StringList result;
+	getSuffixes(newName, result);
+
+	for (unsigned i = 0; i < result.size(); ++i)
+	{
+		mstl::string oldFile(oldRoot + "." + result[i]);
+		mstl::string newFile(newRoot + "." + result[i]);
+
+		if (sys::file::access(oldFile, sys::file::Existence))
+			::sys::file::rename(oldFile, newFile, true);
+	}
+}
+
+
 Time
 DatabaseCodec::modified(mstl::string const& rootname) const
 {
@@ -833,9 +857,11 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 
 	if (maxAnnotatorCount)
 	{
-		annotatorEntry = namebase(Namebase::Annotator).insert(tags.value(tag::Annotator),
-																				maxAnnotatorCount);
+		annotatorEntry =
+			namebase(Namebase::Annotator).insert(tags.value(tag::Annotator), maxAnnotatorCount);
 	}
+
+	save::State state = save::Ok;
 
 	bool failed =		whiteEntry == 0
 						|| blackEntry == 0
@@ -850,14 +876,20 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 		if (info == 0)
 		{
 			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
-				failed = true;
+			{
+				static_cast<si3::Codec*>(this)->useOverflowEntry(index);
+				state = save::TooManyRoundNames;
+			}
 		}
-		else if (m_storedInfo->round() != info->round() || m_storedInfo->subround() != info->subround())
+		else if (static_cast<si3::Codec*>(this)->getRoundEntry(index) != tags.value(tag::Round))
 		{
 			static_cast<si3::Codec*>(this)->releaseRoundEntry(index);
 
 			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
-				failed = true;
+			{
+				static_cast<si3::Codec*>(this)->useOverflowEntry(index);
+				state = save::TooManyRoundNames;
+			}
 		}
 	}
 
@@ -896,13 +928,12 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 				IO_RAISE(Game, Write_Failed, "offset failure (internal error)");
 		}
 
-		if (!whiteEntry)		return save::TooManyPlayerNames;
-		if (!blackEntry)		return save::TooManyPlayerNames;
-		if (!eventEntry)		return save::TooManyEventNames;
-		if (!siteEntry)		return save::TooManySiteNames;
-		if (!annotatorEntry)	return save::TooManyAnnotatorNames;
+		if (!whiteEntry)	return save::TooManyPlayerNames;
+		if (!blackEntry)	return save::TooManyPlayerNames;
+		if (!eventEntry)	return save::TooManyEventNames;
+		if (!siteEntry)	return save::TooManySiteNames;
 
-		return save::TooManyRoundNames;
+		return save::TooManyAnnotatorNames;
 	}
 
 	if (info == 0)
@@ -921,7 +952,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 					provider,
 					m_db->m_namebases);
 
-	return save::Ok;
+	return state;
 }
 
 
@@ -995,6 +1026,8 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
+	save::State state = save::Ok;
+
 	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
@@ -1002,7 +1035,8 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 		if (!static_cast<si3::Codec*>(this)->saveRoundEntry(	m_db->m_gameInfoList.size(),
 																				info.roundAsString()))
 		{
-			failed = true;
+			static_cast<si3::Codec*>(this)->useOverflowEntry(m_db->m_gameInfoList.size());
+			state = save::TooManyRoundNames;
 		}
 	}
 
@@ -1030,13 +1064,12 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 				IO_RAISE(Game, Write_Failed, "offset failure (internal error)");
 		}
 
-		if (!whiteEntry)		return save::TooManyPlayerNames;
-		if (!blackEntry)		return save::TooManyPlayerNames;
-		if (!eventEntry)		return save::TooManyEventNames;
-		if (!siteEntry)		return save::TooManySiteNames;
-		if (!annotatorEntry)	return save::TooManyAnnotatorNames;
+		if (!whiteEntry)	return save::TooManyPlayerNames;
+		if (!blackEntry)	return save::TooManyPlayerNames;
+		if (!eventEntry)	return save::TooManyEventNames;
+		if (!siteEntry)	return save::TooManySiteNames;
 
-		return save::TooManyRoundNames;
+		return save::TooManyAnnotatorNames;
 	}
 
 	GameInfo* i = allocGameInfo();
@@ -1052,7 +1085,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 		m_db->m_namebases);
 
 	m_db->m_gameInfoList.push_back(i);
-	return save::Ok;
+	return state;
 }
 
 
@@ -1117,16 +1150,21 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 						|| siteEntry == 0
 						|| (maxAnnotatorCount > 0 && annotatorEntry == 0);
 
+	save::State state = save::Ok;
+
 	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
 
-		if (m_storedInfo->round() != info->round() || m_storedInfo->subround() != info->subround())
+		if (static_cast<si3::Codec*>(this)->getRoundEntry(index) != tags.value(tag::Round))
 		{
 			static_cast<si3::Codec*>(this)->releaseRoundEntry(index);
 
-			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, info->roundAsString()))
-				failed = true;
+			if (!static_cast<si3::Codec*>(this)->saveRoundEntry(index, tags.value(tag::Round)))
+			{
+				static_cast<si3::Codec*>(this)->useOverflowEntry(index);
+				state = save::TooManyRoundNames;
+			}
 		}
 	}
 
@@ -1139,13 +1177,12 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 
 		namebases().update();
 
-		if (!whiteEntry)		return save::TooManyPlayerNames;
-		if (!blackEntry)		return save::TooManyPlayerNames;
-		if (!eventEntry)		return save::TooManyEventNames;
-		if (!siteEntry)		return save::TooManySiteNames;
-		if (!annotatorEntry)	return save::TooManyAnnotatorNames;
+		if (!whiteEntry)	return save::TooManyPlayerNames;
+		if (!blackEntry)	return save::TooManyPlayerNames;
+		if (!eventEntry)	return save::TooManyEventNames;
+		if (!siteEntry)	return save::TooManySiteNames;
 
-		return save::TooManyRoundNames;
+		return save::TooManyAnnotatorNames;
 	}
 
 	info->update(	whiteEntry,
@@ -1155,7 +1192,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 						tags,
 						m_db->m_namebases);
 
-	return save::Ok;
+	return state;
 }
 
 // vi:set ts=3 sw=3:

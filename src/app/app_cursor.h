@@ -70,6 +70,8 @@ public:
 
 	bool isOpen() const;
 	bool isClosed() const;
+	bool isReadOnly() const;
+	bool isWriteable() const;
 	bool isViewOpen(unsigned view) const;
 	bool isValidView(unsigned view) const;
 	bool isReferenceBase() const;
@@ -148,6 +150,9 @@ public:
 	void clearBase();
 	/// Update the characteristics of a game.
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
+
+	// Compress the database.
+	bool compress(::util::Progress& progress);
 
 	SubscriberP subscriber() const;
 	void setSubscriber(SubscriberP subscriber);

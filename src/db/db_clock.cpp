@@ -43,6 +43,17 @@ isdelim(char c)
 
 
 inline
+static char*
+skipSpaces(char* s)
+{
+	while (*s == ' ')
+		++s;
+
+	return s;
+}
+
+
+inline
 static char const*
 skipSpaces(char const* s)
 {
@@ -60,31 +71,30 @@ Clock::parse(char const* s)
 
 	char* e = 0;
 
+	m_second = m_minute = m_hour = 0;
+
 	s = ::skipSpaces(s);
 	m_hour = strtoul(s, &e, 10);
-
-	if (e == s)
-		return 0;
+	e = skipSpaces(e);
 
 	if (::isdelim(*e))
-	{
-		m_minute = m_second = 0;
 		return e;
-	}
 
-	if (*e != ' ')
-	{
-		m_minute = strtoul(s = e + 1, &e, 10);
+	if (*e != ':')
+		return 0;
 
-		if (e == s || ::isdelim(*e))
-		{
-			m_second = 0;
-			return e;
-		}
+	e = skipSpaces(e + 1);
+	m_minute = strtoul(s = e, &e, 10);
+	e = skipSpaces(e);
 
-		if (*e != ' ')
-			m_second = strtoul(s = e + 1, &e, 10);
-	}
+	if (::isdelim(*e))
+		return e;
+
+	if (*e != ':')
+		return 0;
+
+	e = skipSpaces(e + 1);
+	m_second = strtoul(s = e, &e, 10);
 
 	return skipSpaces(e);
 }

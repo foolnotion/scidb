@@ -29,6 +29,7 @@ using namespace tcl;
 Log::Log(Tcl_Obj* cmd, Tcl_Obj* arg)
 	:m_cmd(cmd)
 	,m_arg(arg)
+	,m_tooManyRounds(false)
 {
 	Tcl_IncrRefCount(m_cmd);
 	Tcl_IncrRefCount(m_arg);
@@ -58,8 +59,14 @@ Log::error(db::save::State code, unsigned gameNumber)
 		case db::save::TooManyPlayerNames:		msg = "TooManyPlayerNames"; break;
 		case db::save::TooManyEventNames:		msg = "TooManyEventNames"; break;
 		case db::save::TooManySiteNames:			msg = "TooManySiteNames"; break;
-		case db::save::TooManyRoundNames:		msg = "TooManyRoundNames"; break;
 		case db::save::TooManyAnnotatorNames:	msg = "TooManyAnnotatorNames"; break;
+
+		case db::save::TooManyRoundNames:
+			if (m_tooManyRounds)
+				return true;
+			m_tooManyRounds = true;
+			msg = "TooManyRoundNames";
+			break;
 	}
 
 	Tcl_Obj* objv[3];
@@ -73,12 +80,34 @@ Log::error(db::save::State code, unsigned gameNumber)
 	switch (int(code))
 	{
 		case db::save::GameTooLong:
+		case db::save::TooManyRoundNames:
 		case db::save::UnsupportedVariant:
 		case db::save::DecodingFailed:
 			return true;
 	}
 
 	return false;
+}
+
+
+void
+Log::warning(Warning code, unsigned gameNumber)
+{
+	char const* msg = 0;
+
+	switch (code)
+	{
+		case InvalidRoundTag:					msg = "InvalidRoundTag"; break;
+		case MaximalWarningCountExceeded:	msg = "MaximalWarningCountExceeded"; break;
+	}
+
+	Tcl_Obj* objv[3];
+
+	objv[0] = Tcl_NewStringObj("warning", -1);
+	objv[1] = Tcl_NewStringObj(msg, -1);
+	objv[2] = Tcl_NewIntObj(gameNumber + 1);
+
+	invoke(__func__, m_cmd, m_arg, 0, U_NUMBER_OF(objv), objv);
 }
 
 // vi:set ts=3 sw=3:

@@ -251,7 +251,7 @@ Application::insertScratchGame(unsigned position)
 
 		m_indexMap[position] = index = base.countGames();
 
-		if (base.newGame(*game.game, info) != save::Ok)
+		if (!save::isOk(base.newGame(*game.game, info)))
 			M_RAISE("unexpected error: couldn't add new game to Scratchbase");
 
 		game.game->finishLoad();
@@ -267,7 +267,7 @@ Application::insertScratchGame(unsigned position)
 	game.cursor = m_scratchBase;
 	game.index = index;
 	game.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
-	game.crcIndex = base.gameInfo(index).computeChecksum();
+	game.crcIndex = base.computeChecksum(index);
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
@@ -373,14 +373,19 @@ Application::findBase(mstl::string const& name) const
 
 
 Application::EditGame*
-Application::findGame(Cursor* cursor, unsigned index)
+Application::findGame(Cursor* cursor, unsigned index, unsigned* position)
 {
 	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
 	{
 		EditGame& game = i->second;
 
 		if (game.cursor == cursor && game.index == index)
+		{
+			if (position)
+				*position = i->first;
+
 			return &game;
+		}
 	}
 
 	return 0;
@@ -565,15 +570,22 @@ Application::sourceIndex(unsigned position) const
 }
 
 
-mstl::string const&
-Application::databaseName(unsigned position) const
+Database const&
+Application::database(unsigned position) const
 {
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
 		position = m_position;
 
-	return m_gameMap.find(position)->second.cursor->name();
+	return m_gameMap.find(position)->second.cursor->database();
+}
+
+
+mstl::string const&
+Application::databaseName(unsigned position) const
+{
+	return database(position).name();
 }
 
 
@@ -600,7 +612,7 @@ Application::setSource(unsigned position, mstl::string const& name, unsigned ind
 }
 
 
-uint32_t
+::util::crc::checksum_t
 Application::checksumIndex(unsigned position) const
 {
 	M_REQUIRE(containsGameAt(position));
@@ -612,7 +624,7 @@ Application::checksumIndex(unsigned position) const
 }
 
 
-uint32_t
+::util::crc::checksum_t
 Application::checksumMoves(unsigned position) const
 {
 	M_REQUIRE(containsGameAt(position));
@@ -718,7 +730,7 @@ Application::searchGames(Cursor& cursor, Query const& query, unsigned view, unsi
 	if (filter & Players)
 		v.filterPlayers();
 
-	if (m_subscriber)
+	if (m_subscriber && m_current == &cursor)
 	{
 		m_subscriber->updateGameList(cursor.name(), view);
 
@@ -740,7 +752,7 @@ Application::sort(Cursor& cursor,
 {
 	cursor.view(view).sort(attr, order, ratingType);
 
-	if (m_subscriber)
+	if (m_subscriber && m_current == &cursor)
 		m_subscriber->updateGameList(cursor.name(), view);
 }
 
@@ -787,7 +799,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::game::ID attr)
 {
 	cursor.view(view).reverse(attr);
 
-	if (m_subscriber)
+	if (m_subscriber && m_current == &cursor)
 		m_subscriber->updateGameList(cursor.name(), view);
 }
 
@@ -873,8 +885,6 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	if (!isNew)
 		game.game->resetForNextLoad();
 
-	GameInfo const& info = base.gameInfo(index);
-
 	TagSet tags;
 	base.getGameTags(index, tags);
 
@@ -886,7 +896,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 
 	load::State state = base.loadGame(index, *game.game);
 
-	game.crcIndex = info.computeChecksum();
+	game.crcIndex = base.computeChecksum(index);
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
@@ -958,9 +968,11 @@ Application::releaseGame(unsigned position)
 void
 Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag)
 {
+	M_REQUIRE(!cursor.isReadOnly());
+
 	cursor.base().deleteGame(cursor.gameIndex(index, view), flag);
 
-	if (m_subscriber)
+	if (m_subscriber && m_current == &cursor)
 	{
 		m_subscriber->updateGameList(cursor.name(), view, index);
 		m_subscriber->updatePlayerList(cursor.name(), view);
@@ -1033,9 +1045,11 @@ Application::swapGames(unsigned position1, unsigned position2)
 void
 Application::setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigned flags)
 {
+	M_REQUIRE(!cursor.isReadOnly());
+
 	cursor.base().setGameFlags(cursor.gameIndex(index, view), flags);
 
-	if (m_subscriber)
+	if (m_subscriber && m_current == &cursor)
 		m_subscriber->updateGameList(cursor.name(), view, index);
 }
 
@@ -1071,7 +1085,7 @@ Application::writeGame(	unsigned position,
 
 	game.game->setIndex(m_indexMap[position]);
 	save::State state = m_scratchBase->base().updateMoves(*game.game);
-	if (state != save::Ok)
+	if (!save::isOk(state))
 		return state;
 
 	mstl::ofstream strm(filename, mstl::ios_base::out | mstl::ios_base::trunc);
@@ -1229,15 +1243,40 @@ Application::moveGamesToScratchbase(Cursor& cursor)
 void
 Application::clearBase(Cursor& cursor)
 {
+	M_REQUIRE(!cursor.isReadOnly());
+
 	moveGamesToScratchbase(cursor);
 	cursor.clearBase();
 
 	if (m_subscriber)
 	{
 		m_subscriber->updateDatabaseInfo(cursor.name());
-		m_subscriber->updateList(cursor.name());
+
+		if (m_current == &cursor)
+			m_subscriber->updateList(cursor.name());
 
 		if (m_referenceBase == &cursor)
+			m_subscriber->updateTree(m_referenceBase->name());
+	}
+}
+
+
+void
+Application::compressBase(Cursor& cursor, ::util::Progress& progress)
+{
+	M_REQUIRE(!cursor.isReadOnly());
+
+	if (cursor.isReferenceBase())
+		cancelUpdateTree();
+
+	if (cursor.compress(progress))
+	{
+		m_subscriber->updateDatabaseInfo(cursor.name());
+
+		if (m_current == &cursor)
+			m_subscriber->updateList(cursor.name());
+
+		if (cursor.isReferenceBase())
 			m_subscriber->updateTree(m_referenceBase->name());
 	}
 }
@@ -1463,9 +1502,11 @@ save::State
 Application::saveGame(Cursor& cursor, bool replace)
 {
 	M_REQUIRE(cursor.isOpen());
+	M_REQUIRE(!cursor.isReadOnly());
 	M_REQUIRE(haveCurrentGame());
 
-	EditGame&	g(m_gameMap.find(m_position)->second);
+	EditGame& g(m_gameMap.find(m_position)->second);
+
 	save::State	state;
 
 	if (cursor.isReferenceBase())
@@ -1483,12 +1524,12 @@ Application::saveGame(Cursor& cursor, bool replace)
 		}
 	}
 
-	GameInfo* info	= &g.cursor->base().gameInfo(g.index);
-	Database& db	= cursor.base();
+	Database& db = cursor.base();
 
 	if (replace)
 	{
-		g.game->setFlags(info->flags());
+		M_ASSERT(&cursor == g.cursor);
+		g.game->setFlags(cursor.base().gameInfo(g.index).flags());
 		g.game->setIndex(g.index);
 		// TODO: should be transaction save
 		state = db.updateGame(*g.game);
@@ -1500,46 +1541,49 @@ Application::saveGame(Cursor& cursor, bool replace)
 		// TODO: should be transaction save
 		state = db.addGame(*g.game);
 		g.game->setIndex(g.index = db.countGames() - 1);
+		g.sourceBase = cursor.name();
 		cursor.updateViews();
-		info = &g.cursor->base().gameInfo(g.index);
 	}
 
-	info->setIllegalMove(g.game->containsIllegalMoves());
+	GameInfo& info	= cursor.base().gameInfo(g.index);
+	info.setIllegalMove(g.game->containsIllegalMoves());
 
-	if (state == save::Ok)
+	if (save::isOk(state))
 	{
 		TagSet tags;
 		db.getGameTags(g.index, tags);
 
-		info->setDirty(false);
+		info.setDirty(false);
 		g.game->setIsModified(false);
-		// TODO: update game tags
 		g.crcMoves = tags.computeChecksum(g.game->computeChecksum());
-		g.crcIndex = info->computeChecksum();
-		g.sourceBase = cursor.name();
+		g.crcIndex = cursor.base().computeChecksum(g.index);
 		g.sourceIndex = g.game->index();
+
+		db.setupTags(g.index, tags);
+		g.game->setTags(tags);
 
 		if (m_subscriber)
 		{
-			if (!replace)
-				m_subscriber->updateDatabaseInfo(cursor.name());
-
+			m_subscriber->updateDatabaseInfo(cursor.name());
 			m_subscriber->updateGameInfo(m_position);
 
-			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+			if (m_current == &cursor)
 			{
-				if (cursor.isViewOpen(i))
+				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
 				{
-					if (replace)
+					if (cursor.isViewOpen(i))
 					{
-						m_subscriber->updateGameList(db.name(), i, g.game->index());
-						m_subscriber->updatePlayerList(db.name(), i);
-						m_subscriber->updateEventList(db.name(), i);
-						m_subscriber->updateAnnotatorList(db.name(), i);
-					}
-					else
-					{
-						m_subscriber->updateList(db.name(), i);
+						if (replace)
+						{
+							m_subscriber->updateGameList(db.name(), i, g.game->index());
+							m_subscriber->updatePlayerList(db.name(), i);
+							m_subscriber->updateEventList(db.name(), i);
+							m_subscriber->updateAnnotatorList(db.name(), i);
+						}
+						else
+						{
+							m_subscriber->updateList(db.name(), i);
+						}
 					}
 				}
 			}
@@ -1560,6 +1604,7 @@ Application::updateMoves()
 {
 	M_REQUIRE(haveCurrentGame());
 	M_REQUIRE(contains(sourceName()));
+	M_REQUIRE(!cursor(sourceName()).isReadOnly());
 
 	EditGame& game(m_gameMap.find(m_position)->second);
 
@@ -1584,7 +1629,7 @@ Application::updateMoves()
 	{
 		mstl::string const& name = cursor.name();
 
-		if (state == save::Ok)
+		if (save::isOk(state))
 		{
 			TagSet tags;
 			cursor.base().getGameTags(game.sourceIndex, tags);
@@ -1593,10 +1638,13 @@ Application::updateMoves()
 			game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 			m_subscriber->updateDatabaseInfo(name);
 
-			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+			if (m_current == &cursor)
 			{
-				if (cursor.isViewOpen(i))
-					m_subscriber->updateGameList(name, i, game.sourceIndex);
+				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+				{
+					if (cursor.isViewOpen(i))
+						m_subscriber->updateGameList(name, i, game.sourceIndex);
+				}
 			}
 		}
 
@@ -1612,36 +1660,50 @@ save::State
 Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(cursor.isOpen());
+	M_REQUIRE(!cursor.isReadOnly());
 	M_REQUIRE(index < cursor.countGames());
 
 	if (cursor.isReferenceBase())
 		cancelUpdateTree();
 
-	save::State state = cursor.base().updateCharacteristics(index, tags);
+	unsigned		position;
+	save::State	state = cursor.base().updateCharacteristics(index, tags);
+	EditGame*	game	= findGame(&cursor, index, &position);
+
+	M_ASSERT(game == 0 || game->index == index);
+
+	if (game)
+	{
+		TagSet tags;
+		cursor.base().setupTags(index, tags);
+		game->game->setTags(tags);
+		game->crcIndex = cursor.base().computeChecksum(index);
+	}
 
 	if (m_subscriber)
 	{
 		mstl::string const& name = cursor.name();
 
-		if (state == save::Ok)
+		if (save::isOk(state))
 		{
-			EditGame* game = findGame(&cursor, index);
-
-			M_ASSERT(game == 0 || game->index == index);
-
-			if (game)
-				game->crcIndex = cursor.base().gameInfo(index).computeChecksum();
-
 			m_subscriber->updateDatabaseInfo(name);
 
-			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+			if (game)
+				m_subscriber->updateGameInfo(position);
+			else
+				m_subscriber->updateGameInfo(cursor.name(), index);
+
+			if (m_current == &cursor)
 			{
-				if (cursor.isViewOpen(i))
+				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
 				{
-					m_subscriber->updateGameList(name, i, index);
-					m_subscriber->updatePlayerList(name, i);
-					m_subscriber->updateEventList(name, i);
-					m_subscriber->updateAnnotatorList(name, i);
+					if (cursor.isViewOpen(i))
+					{
+						m_subscriber->updateGameList(name, i, index);
+						m_subscriber->updatePlayerList(name, i);
+						m_subscriber->updateEventList(name, i);
+						m_subscriber->updateAnnotatorList(name, i);
+					}
 				}
 			}
 

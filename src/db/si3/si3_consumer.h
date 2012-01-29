@@ -60,12 +60,12 @@ public:
 				TagBits const& allowedTags,
 				bool allowExtraTags);
 
+	format::Type format() const override;
+
 private:
 
 	typedef mstl::vector<Comment>	Comments;
 	typedef mstl::stack<Move>		MoveStack;
-
-	format::Type format() const;
 
 	void start();
 	void finish();

@@ -206,11 +206,17 @@ PgnReader::error(	Error code,
 		case TooManyPlayerNames:		msg = "TooManyPlayerNames"; break;
 		case TooManyEventNames:			msg = "TooManyEventNames"; break;
 		case TooManySiteNames:			msg = "TooManySiteNames"; break;
-		case TooManyRoundNames:			msg = "TooManyRoundNames"; break;
 		case TooManyAnnotatorNames:	msg = "TooManyAnnotatorNames"; break;
 		case TooManySourceNames:		msg = "TooManySourceNames"; break;
 		case SeemsNotToBePgnText:		msg = "SeemsNotToBePgnText"; break;
 		case UnexpectedResultToken:	msg = "UnexpectedResultToken"; break;
+
+		case TooManyRoundNames:
+			if (m_tooManyRoundNames)
+				return;
+			m_tooManyRoundNames = true;
+			msg = "TooManyRoundNames"; break;
+			break;
 	}
 
 	Tcl_Obj* objv[8];

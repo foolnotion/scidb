@@ -169,6 +169,8 @@ public:
 	void update();
 	/// Set game filter.
 	void setGameFilter(db::Filter const& filter);
+	/// Delete removed games from filter.
+	void shortenFilter(db::Filter const& filter);
 
 	/// Build tournament table for all games in current view.
 	db::TournamentTable* makeTournamentTable() const;

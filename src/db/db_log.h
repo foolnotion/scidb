@@ -33,9 +33,12 @@ namespace db {
 
 struct Log
 {
+	enum Warning { InvalidRoundTag, MaximalWarningCountExceeded };
+
 	virtual ~Log() throw() = 0;
 
 	virtual bool error(save::State code, unsigned gameNumber) = 0;
+	virtual void warning(Warning code, unsigned gameNumber) = 0;
 };
 
 } // namespace db

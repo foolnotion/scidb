@@ -217,8 +217,18 @@ MoveInfo::parseEvaluation(char const* s)
 	m_analysis.m_pawns = mstl::min(pawns, (1u << 11) - 1);
 	m_analysis.m_centipawns = mstl::min(centipawns, 99u);
 
-	if (e[0] == '|' && e[1] == 'd' && ::isdigit(e[2]))
-		m_analysis.m_depth = ::strtoul(e + 2, &e, 10);
+	switch (*e)
+	{
+		case '|':
+			if (e[1] == 'd' && ::isdigit(e[2]))
+				m_analysis.m_depth = ::strtoul(e + 2, &e, 10);
+			break;
+
+		case '/':
+			if (::isdigit(e[1]))
+				m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
+			break;
+	}
 
 	m_content = Evaluation;
 
@@ -411,9 +421,9 @@ MoveInfo::encode(ByteStream& strm) const
 								 | (uint8_t(m_content) << 4)									//  4 bit
 								 | (uint8_t(m_time.m_date.day() & 0x0f))					//  4 bit
 			);
-			strm << uint32_t(	(uint32_t(m_time.m_date.month() & 0x0fff))				//  4 bit
+			strm << uint32_t(	(uint32_t(m_time.m_date.month() & 0x0fff))			//  4 bit
 								 | (uint32_t(m_time.m_date.year() & 0x0fff) << 4)		// 12 bit
-								 | (uint32_t(m_time.m_clock.hour() & 0x000f) << 16)		//  4 bit
+								 | (uint32_t(m_time.m_clock.hour() & 0x000f) << 16)	//  4 bit
 								 | (uint32_t(m_time.m_clock.minute() & 0x003f) << 20)	//  6 bit
 								 | (uint32_t(m_time.m_clock.second() & 0x003f) << 26)	//  6 bit
 			);
@@ -428,7 +438,7 @@ MoveInfo::encode(ByteStream& strm) const
 								 | (uint8_t(m_content) << 4)									//  4 bit
 								 | (uint8_t(m_engine & 0x0f))									//  4 bit
 			);
-			strm << uint16_t(	(uint32_t(m_time.m_clock.hour() & 0x000f))				//  4 bit
+			strm << uint16_t(	(uint32_t(m_time.m_clock.hour() & 0x000f))			//  4 bit
 								 | (uint32_t(m_time.m_clock.minute() & 0x003f) << 4)	//  6 bit
 								 | (uint32_t(m_time.m_clock.second() & 0x003f) << 10)	//  6 bit
 			);
