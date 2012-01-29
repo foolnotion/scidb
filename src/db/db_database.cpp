@@ -347,7 +347,7 @@ Database::computeChecksum(unsigned index) const
 
 	if (format::isScidFormat(format()))
 	{
-		mstl::string const& round = static_cast<si3::Codec const*>(m_codec)->getRoundEntry(index);
+		mstl::string const& round = static_cast<si3::Codec*>(m_codec)->getRoundEntry(index);
 		crc = ::util::crc::compute(crc, round, round.size());
 	}
 
@@ -730,7 +730,7 @@ Database::setupTags(unsigned index, TagSet& tags) const
 	gameInfo(index).setupTags(tags);
 
 	if (format::isScidFormat(format()))
-		tags.set(tag::Round, static_cast<si3::Codec const*>(m_codec)->getRoundEntry(index));
+		tags.set(tag::Round, static_cast<si3::Codec*>(m_codec)->getRoundEntry(index));
 }
 
 
