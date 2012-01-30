@@ -471,32 +471,36 @@ proc TableFill {path args} {
 					}
 
 					eventType {
-						if {[llength $item]} {
+						if {[string length $item]} {
 							if {$Options(eventtype-icon)} {
 								lappend text [list @ $::eventtypebox::icon::12x12::Type($item)]
 							} else {
 								lappend text $::gametable::mc::EventType($item)
 							}
 						} elseif {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text {}
 						}
 					}
 
 					eventMode {
-						if {[string length $item] == 0} {
-							lappend text [list @ $::icon::12x12::none]
-						} else {
+						if {[string length $item] > 0} {
 							lappend text [list @ [set ::eventmodebox::icon::12x12::$item]]
+						} elseif {$codec eq "si3" || $codec eq "si4"} {
+							lappend text $::mc::NotAvailableSign
+						} else {
+							lappend text [list @ $::icon::12x12::none]
 						}
 					}
 
 					timeMode {
-						if {[string length $item] == 0} {
-							lappend text [list @ $::icon::12x12::none]
-						} else {
+						if {[string length $item] > 0} {
 							lappend text [list @ $::timemodebox::icon::12x12::Mode($item)]
+						} elseif {$codec eq "si3" || $codec eq "si4"} {
+							lappend text $::mc::NotAvailableSign
+						} else {
+							lappend text [list @ $::icon::12x12::none]
 						}
 					}
 
@@ -534,7 +538,7 @@ proc TableVisit {table data} {
 	set col  [lsearch -exact $Vars(columns) $id]
 	set item [::scidb::db::get eventInfo $row $view $base $col]
 
-	if {[llength $item] == 0} { return }
+	if {[string length $item] == 0} { return }
 
 	switch $id {
 		eventCountry	{ set tip [::country::name $item] }
@@ -609,9 +613,12 @@ proc BindAccelerators {path} {
 
 
 proc OpenCrosstable {path source {base {}} {view -1} {index -1}} {
-	if {$index == -1}				{ set index [::scrolledtable::active $path] }
-	if {$index == -1}				{ return }
-	if {[llength $base] == 0}	{ set base [::scrolledtable::base $path] }
+	if {$index == -1} { set index [::scrolledtable::active $path] }
+	if {$index == -1} { return }
+
+	if {[string length $base] == 0} {
+		set base [::scrolledtable::base $path]
+	}
 
 	if {$view == -1} {
 		variable ${path}::Vars

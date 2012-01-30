@@ -81,6 +81,9 @@ set Bishop			"Bishop"
 set Knight			"Knight"
 set Pawn				"Pawn"
 
+#set NotAvailableSign "\u2298"
+set NotAvailableSign "\u2370"
+
 array set EcoTrans		{}
 set EcoMatch				{}
 set Language				English

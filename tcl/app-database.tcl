@@ -543,8 +543,8 @@ proc CloseBase {parent file number} {
 
 	if {[::game::releaseAll $parent $file]} {
 		::widget::busyCursor on
-		DeleteBase $number
 		::scidb::db::close $file
+		DeleteBase $number
 		::widget::busyCursor off
 	}
 }

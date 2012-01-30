@@ -694,7 +694,7 @@ proc showMoves {path moves {result ""} {empty 0}} {
 	}
 	$w.text delete 1.0 end
 	set moves [::font::splitMoves $moves]
-	if {[llength $moves] == 0} {
+	if {[string length $moves] == 0} {
 		if {$empty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
 		$w.text insert end $text
 		$w.text insert end " "
@@ -950,8 +950,8 @@ proc TableFill {path args} {
 
 					termination {
 						if {$codec ne "sci"} {
-							lappend text $::mc::NotAvailable]
-						} elseif {[llength $item]} {
+							lappend text $::mc::NotAvailableSign]
+						} elseif {[string length $item]} {
 							lappend text [list @ [set ::terminationbox::icon::12x12::$item]]
 						} else {
 							lappend text {@ {}}
@@ -1004,7 +1004,7 @@ proc TableFill {path args} {
 								set idn ""
 							}
 						} else {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 							set idn ""
 						}
 					}
@@ -1020,7 +1020,11 @@ proc TableFill {path args} {
 					}
 
 					position {
-						if {$codec eq "sci"} { lappend text $item } else { lappend text $::mc::NotAvailable }
+						if {$codec eq "sci"} {
+							lappend text $item
+						} else {
+							lappend text $::mc::NotAvailableSign
+						}
 					}
 
 					whiteFideID - blackFideID {
@@ -1069,7 +1073,7 @@ proc TableFill {path args} {
 						if {$codec eq "sci" || $codec eq "cbh"} {
 							lappend text $item
 						} else {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 						}
 					}
 
@@ -1114,7 +1118,7 @@ proc TableFill {path args} {
 
 					material {
 						if {$codec eq "cbh"} {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [::font::translate [string map {: " - "} $item]]
 						}
@@ -1122,7 +1126,7 @@ proc TableFill {path args} {
 
 					key {
 						if {$codec eq "cbh"} {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text $item
 						}
@@ -1138,14 +1142,14 @@ proc TableFill {path args} {
 
 					overview {
 						if {$codec eq "cbh"} {
-							lappend text $::mc::NotAvailable
+							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [::font::translate $item]
 						}
 					}
 
 					whiteType - blackType {
-						if {[llength $item]} {
+						if {[string length $item]} {
 							lappend text [list @ [set ::icon::12x12::$item]]
 						} else {
 							lappend text [list @ {}]
@@ -1187,8 +1191,8 @@ proc TableFill {path args} {
 
 					eventType {
 						if {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailable
-						} elseif {[llength $item]} {
+							lappend text $::mc::NotAvailableSign
+						} elseif {[string length $item]} {
 							if {$Options(eventtype-icon)} {
 								lappend text [list @ $::eventtypebox::icon::12x12::Type($item)]
 							} else {
@@ -1247,7 +1251,9 @@ proc TableVisit {table data} {
 
 	switch $id {
 		acv - key - overview - opening { if {$codec eq "cbh"} { return } }
-		eco - eventMode - timeMode - idn - termination - eventType - flags {}
+		idn - termination - position { if {$codec ne "sci"} { return } }
+		eventType { if {[string match si? $codec]} { return } }
+		eco - eventMode - timeMode - flags {}
 		whiteType - blackType - whiteTitle - blackTitle - whiteCountry - blackCountry - eventCountry {}
 		whiteSex - blackSex { if {!$Options(include-type)} { return } }
 		whiteRating1 - blackRating1 { if {$Defaults(rating:1) ne [lindex $ratings end]} { return } }
@@ -1273,7 +1279,7 @@ proc TableVisit {table data} {
 	set item  [::scidb::db::get gameInfo $index $view $base $col]
 	set font  [::tooltip::font]
 
-	if {[llength $item] == 0} { return }
+	if {[string length $item] == 0} { return }
 
 	switch $id {
 		acv {
@@ -1305,7 +1311,7 @@ proc TableVisit {table data} {
 		flags {
 			set tip ""
 			foreach flag $item {
-				if {[llength $tip]} { append tip "\n" }
+				if {[string length $tip]} { append tip "\n" }
 				switch $flag {
 					1 - 2 - 3 - 4 - 5 - 6 {
 						set text [lindex [::scidb::db::get customFlags $base] [expr {$flag - 1}]]
@@ -1384,7 +1390,7 @@ proc TableVisit {table data} {
 		}
 	}
 
-	if {[llength $tip]} { ::tooltip::show $table $tip cursor $font }
+	if {[string length $tip]} { ::tooltip::show $table $tip cursor $font }
 }
 
 
@@ -1396,7 +1402,7 @@ proc SortColumn {path id dir {rating {}}} {
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path]
 	set view [{*}$Vars(viewcmd) $base]
-	if {[llength $rating]} {
+	if {[string length $rating]} {
 		set ratings [list $rating $rating]
 	} else {
 		set ratings [list $Defaults(rating:1) $Defaults(rating:2)]
@@ -1600,7 +1606,7 @@ proc PopupMenu {path menu base index} {
 	set groups {}
 	foreach entry $Columns {
 		set name [lindex $entry 1]
-		if {[llength $name]} {
+		if {[string length $name]} {
 			set k [lsearch $groups $name]
 			if {$k == -1} { lappend groups $name }
 		}

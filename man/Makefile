@@ -16,7 +16,7 @@ include ../Makefile.in
 
 $(SCRIPT).1.gz: scidb.n
 	@echo "Make $(SCRIPT).1.gz"
-	@gzip -c scidb.n > $(SCRIPT).1.gz
+	@cat scidb.n | sed -e 's#%SCRIPT%#$(SCRIPT)#' -e 's#%PROGRAM%#$(PROGRAM)#' -e 's#%BINDIR%#$(BINDIR)#' -e 's#%SHAREDIR%#$(SHAREDIR)#' | gzip -c > $(SCRIPT).1.gz
 
 all: $(SCRIPT).1.gz
 

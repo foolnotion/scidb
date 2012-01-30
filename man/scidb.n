@@ -1,12 +1,17 @@
-.TH scidb 1 "February 1, 2012"
+.TH Scidb 1 "February 1, 2012" scidb "Linux User's Manual"
 .SH NAME
 Scidb - chess database application
 .SH SYNOPSIS
-scidb-beta [options] database(s)
+.B %SCRIPT%
+[options] [database(s)...]
 .SH DESCRIPTION
 .B Scidb
 is a chess database application.
-.PP
+.SH USAGE
+If there is a
+.B Scidb
+application already running, the currently
+running process will be used.
 .SH OPTIONS
 .TP 9
 .B --
@@ -62,25 +67,69 @@ Recover unsaved games from older sessions. Unsaved games from last session
 will be discarded.
 .TP 9
 .B --single-process
-Force another instance of Scidb. This option is intented only for testing.
+Force another instance of \fBScidb\fR.  This option is intented only for
+testing.
 .TP 9
 .B --force-grab
 The program is supressing grabs automaticaly if started inside a debugger.
 because gras may lead to frozen screens. With this option grabbing the
 screen will be allowed also in debug mode.
-.SH OPTIONS RECOGNIZED BY THE TK LIBRARY
+.SS Options recognized by the Tk library
 .TP 9
-.B -geometry GEOMETRY
+.B -geometry \fIGEOMETRY\fR
 Use the geometric information for the main window. For example the argument
-.B -geometry 600x800+20+10
+.ul
+600x800+20+10
 will resize the main window to 600x800, and the position of the window
 will have the screen coordinates 20,10.
 .TP 9
-.B -display DISPLAY
+.B -display \fIDISPLAY\fR
 Name of screen on which to create window.
 .TP 9
 .B -sync
 Use synchronous mode for display server.
+.SH ENVIRONMENT
+.TP 9
+.B BROWSER
+Determines the default browser which will be used for external links.
+.TP 9
+.B DISPLAY
+Name of screen on which to create window.
+.SH EXAMPLES
+%SCRIPT% --show-board traxler.sci ulvestad.si4
+.PP
+Open the databases traxler and ulvestad immediataly after program
+initialization, and change to the board tab.
+.SH AUTHOR
+Gregor Cramer
+.br
+.ul
+http://scidb.sourceforge.net/
+.SH BUGS
+For bug reports visit
+.br
+.ul
+http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
+.SH FEATURE REQUESTS
+For feature requests visit
+.br
+.ul
+http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
+.SH FILES
+.TP 9
+%BINDIR%/%SCRIPT%
+Tcl/Tk script.
+.TP 9
+%BINDIR%/%PROGRAM%
+C++ executable, will be invoked by the script.
+.TP 9
+%SHAREDIR%/data/eco.bin
+Compressed ECO file.
+.B Scidb
+is not working without this file.
+.TP 9
+~/.%SCRIPT%/config/options.dat
+File containing the saved options from last session.
 .SH LICENSE
 Copyright (c) Gregor Cramer, 2011-2012.
 .PP
@@ -102,11 +151,3 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
 THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-.PP
-Email bugs to
-.br
-.B <http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
-.PP
-Email feature requests to
-.br
-.B http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse

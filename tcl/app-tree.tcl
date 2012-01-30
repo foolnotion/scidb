@@ -535,7 +535,7 @@ proc Update {table base} {
 	variable Vars
 	variable Options
 
-	if {[llength $base]} {
+	if {[string length $base]} {
 		if {$base ne $Vars(current)} { SetSwitcher $base }
 
 		if {$Options(search:automatic)} {

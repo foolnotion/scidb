@@ -852,7 +852,7 @@ proc TableFill {path args} {
 				}
 
 				type {
-					if {[llength $item]} {
+					if {[string length $item]} {
 						lappend text [list @ [set ::icon::12x12::$item]]
 					} else {
 						lappend text [list @ {}]
@@ -915,7 +915,7 @@ proc TableVisit {path data} {
 	set row  [::scrolledtable::rowToIndex $table $row]
 	set item [::scidb::db::get playerInfo $row $view $base $col]
 
-	if {[llength $item] == 0} { return }
+	if {[string length $item] == 0} { return }
 
 	switch $id {
 		federation	{ set tip [::country::name $item] }

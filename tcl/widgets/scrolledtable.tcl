@@ -341,6 +341,8 @@ proc refresh {path} {
 
 proc clear {path {first -1} {last -1}} {
 	set table $path.top.table
+	variable ${table}::Vars
+
 	ConfigureScrollbar $table
 	ConfigureScale $table
 	::table::clear $table $first $last

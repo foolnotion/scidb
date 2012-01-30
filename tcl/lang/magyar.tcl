@@ -57,7 +57,7 @@
 ::mc::Lite				"Világos"
 ::mc::Modify			"Módosít"
 ::mc::No					"Nem"
-::mc::NotAvailable	"Nem elérhető"
+::mc::NotAvailable	"n/e" ;# "Nem elérhető"
 ::mc::Number			"Szám"
 ::mc::OK					"OK"
 ::mc::Paste				"Beillesztés"
