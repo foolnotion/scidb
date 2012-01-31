@@ -165,6 +165,7 @@ sys_timer.o: ../tcl/tcl_base.h
 sys_timer.o: ../tcl/tcl_base.ipp
 sys_utf8.o: sys_utf8.h
 sys_utf8.o: ../mstl/m_types.h
+sys_utf8.o: sys_utf8.ipp
 sys_utf8.o: ../mstl/m_string.h
 sys_utf8.o: ../mstl/m_string.ipp
 sys_utf8.o: ../mstl/m_utility.h
@@ -209,6 +210,7 @@ sys_utf8_codec.o: ../mstl/m_pointer_iterator.ipp
 sys_utf8_codec.o: ../mstl/m_list.ipp
 sys_utf8_codec.o: sys_utf8_codec.ipp
 sys_utf8_codec.o: sys_utf8.h
+sys_utf8_codec.o: sys_utf8.ipp
 sys_utf8_codec.o: sys_base.h
 sys_utf8_codec.o: sys_base.ipp
 sys_utf8_codec.o: ../tcl/tcl_base.h

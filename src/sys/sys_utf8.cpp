@@ -111,6 +111,12 @@ sys::utf8::validate(char const* str, unsigned nbytes)
 }
 
 
+struct IsAlpha 	{ inline bool operator()(sys::utf8::uchar uc) { return  Tcl_UniCharIsAlpha(uc); } };
+struct IsSpace		{ inline bool operator()(sys::utf8::uchar uc) { return  Tcl_UniCharIsSpace(uc); } };
+struct IsNonAlpha	{ inline bool operator()(sys::utf8::uchar uc) { return !Tcl_UniCharIsAlpha(uc); } };
+struct IsNonSpace	{ inline bool operator()(sys::utf8::uchar uc) { return !Tcl_UniCharIsSpace(uc); } };
+
+
 template <typename Func>
 static
 char const*

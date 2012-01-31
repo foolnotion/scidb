@@ -266,6 +266,8 @@ db_comment.o: ../mstl/m_map.ipp
 db_comment.o: db_comment.ipp
 db_comment.o: db_exception.h
 db_comment.o: ../util/u_exception.h
+db_comment.o: ../sys/sys_utf8.h
+db_comment.o: ../sys/sys_utf8.ipp
 db_comment.o: ../sys/sys_utf8_codec.h
 db_comment.o: ../mstl/m_list.h
 db_comment.o: ../mstl/m_pointer_iterator.h
@@ -2214,6 +2216,8 @@ db_namebase.o: ../mstl/m_chunk_allocator.ipp
 db_namebase.o: db_namebase.ipp
 db_namebase.o: db_site.h
 db_namebase.o: db_site.ipp
+db_namebase.o: ../sys/sys_utf8.h
+db_namebase.o: ../sys/sys_utf8.ipp
 db_namebase.o: ../sys/sys_utf8_codec.h
 db_namebase.o: ../sys/sys_utf8_codec.ipp
 db_namebase.o: ../mstl/m_algorithm.h
@@ -2396,6 +2400,8 @@ db_pdf_writer.o: db_mark.h
 db_pdf_writer.o: db_mark.ipp
 db_pdf_writer.o: db_mark_set.ipp
 db_pdf_writer.o: ../util/u_misc.h
+db_pdf_writer.o: ../sys/sys_utf8.h
+db_pdf_writer.o: ../sys/sys_utf8.ipp
 db_pdf_writer.o: ../sys/sys_utf8_codec.h
 db_pdf_writer.o: ../mstl/m_list.h
 db_pdf_writer.o: ../mstl/m_pointer_iterator.h
@@ -2527,6 +2533,8 @@ db_pgn_reader.o: ../mstl/m_ostream.ipp
 db_pgn_reader.o: ../mstl/m_algorithm.h
 db_pgn_reader.o: ../mstl/m_algorithm.ipp
 db_pgn_reader.o: ../mstl/m_stdio.h
+db_pgn_reader.o: ../sys/sys_utf8.h
+db_pgn_reader.o: ../sys/sys_utf8.ipp
 db_pgn_reader.o: ../sys/sys_utf8_codec.h
 db_pgn_reader.o: ../sys/sys_utf8_codec.ipp
 db_pgn_reader.o: ../sys/sys_file.h
@@ -2658,6 +2666,8 @@ db_player.o: ../mstl/m_list.ipp
 db_player.o: ../mstl/m_pair.h
 db_player.o: ../mstl/m_pair.ipp
 db_player.o: db_player.ipp
+db_player.o: ../sys/sys_utf8.h
+db_player.o: ../sys/sys_utf8.ipp
 db_player.o: ../sys/sys_utf8_codec.h
 db_player.o: ../sys/sys_utf8_codec.ipp
 db_player.o: ../mstl/m_hash.h
@@ -3037,6 +3047,8 @@ db_site.o: ../mstl/m_algobase.ipp
 db_site.o: ../mstl/m_construct.h
 db_site.o: ../mstl/m_construct.ipp
 db_site.o: db_site.ipp
+db_site.o: ../sys/sys_utf8.h
+db_site.o: ../sys/sys_utf8.ipp
 db_site.o: ../sys/sys_utf8_codec.h
 db_site.o: ../mstl/m_list.h
 db_site.o: ../mstl/m_pointer_iterator.h
@@ -5035,6 +5047,8 @@ si3/si3_codec.o: ../util/u_progress.h
 si3/si3_codec.o: ../util/u_progress.ipp
 si3/si3_codec.o: ../util/u_misc.h
 si3/si3_codec.o: ../sys/sys_file.h
+si3/si3_codec.o: ../sys/sys_utf8.h
+si3/si3_codec.o: ../sys/sys_utf8.ipp
 si3/si3_codec.o: ../sys/sys_utf8_codec.h
 si3/si3_codec.o: ../sys/sys_utf8_codec.ipp
 si3/si3_codec.o: ../mstl/m_function.h
@@ -5299,6 +5313,8 @@ si3/si3_decoder.o: db_exception.h
 si3/si3_decoder.o: ../util/u_exception.h
 si3/si3_decoder.o: ../util/u_byte_stream.h
 si3/si3_decoder.o: ../util/u_byte_stream.ipp
+si3/si3_decoder.o: ../sys/sys_utf8.h
+si3/si3_decoder.o: ../sys/sys_utf8.ipp
 si3/si3_decoder.o: ../sys/sys_utf8_codec.h
 si3/si3_decoder.o: ../sys/sys_utf8_codec.ipp
 si3/si3_decoder_position.o: si3/si3_decoder_position.h
@@ -5761,6 +5777,8 @@ cbh/cbh_codec.o: ../util/u_progress.ipp
 cbh/cbh_codec.o: ../util/u_byte_stream.h
 cbh/cbh_codec.o: ../util/u_byte_stream.ipp
 cbh/cbh_codec.o: ../sys/sys_file.h
+cbh/cbh_codec.o: ../sys/sys_utf8.h
+cbh/cbh_codec.o: ../sys/sys_utf8.ipp
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.h
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.ipp
 cbh/cbh_codec.o: ../mstl/m_stdio.h
@@ -5885,6 +5903,8 @@ cbh/cbh_decoder.o: ../util/u_byte_stream.h
 cbh/cbh_decoder.o: ../util/u_byte_stream.ipp
 cbh/cbh_decoder.o: ../util/u_bit_stream.h
 cbh/cbh_decoder.o: ../util/u_bit_stream.ipp
+cbh/cbh_decoder.o: ../sys/sys_utf8.h
+cbh/cbh_decoder.o: ../sys/sys_utf8.ipp
 cbh/cbh_decoder.o: ../sys/sys_utf8_codec.h
 cbh/cbh_decoder.o: ../sys/sys_utf8_codec.ipp
 cbh/cbh_decoder.o: ../mstl/m_stdio.h
