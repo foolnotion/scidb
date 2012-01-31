@@ -36,14 +36,6 @@ Codec::is7BitAscii(mstl::string const& s)
 
 inline
 bool
-Codec::validateUtf8(mstl::string const& utf8)
-{
-	return validateUtf8(utf8, utf8.size());
-}
-
-
-inline
-bool
 Codec::hasEncoding() const
 {
 	return m_codec;

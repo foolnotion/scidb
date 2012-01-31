@@ -1,10 +1,10 @@
 ** Scidb
-Copyright (C) 2008-2011 by Gregor Cramer
+Copyright (C) 2008-2012 by Gregor Cramer
 
 Except: ********************************
 
 ** treectrl
-Copyright (C) 2009-2011 Gregor Cramer
+Copyright (C) 2009-2012 Gregor Cramer
 Copyright (C) 2002-2008 Tim Baker
 Copyright (C) 2002-2003 Christian Krone
 Copyright (C) 2003 ActiveState Corporation
@@ -24,6 +24,13 @@ Copyright 1993-1998 Lucent Technologies, Inc.
 ** libharu
 Copyright (C) 2007-2008 Antony Dovgal
 Copyright (C) 1999-2006 Takeshi Kanno
+
+** libhyphenate
+Copyright (C) 2012 Gregor Cramer
+Copyright (C) 2007 Steve Wolter
+
+** universalchardet
+Copyright (C) 1998 Netscape Communications Corporation
 
 ** expat
 Copyright (C) 1998-2000 Thai Open Source Software Center Ltd

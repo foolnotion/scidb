@@ -28,6 +28,7 @@
 #include "db_player.h"
 #include "db_site.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_algorithm.h"
@@ -290,7 +291,7 @@ Namebase::insertSite(mstl::string const& name,
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Site);
-	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(::sys::utf8::validate(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -353,7 +354,7 @@ Namebase::insertEvent(	mstl::string const& name,
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Event);
 	M_REQUIRE(site);
-	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(::sys::utf8::validate(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -415,7 +416,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(this->type() == Player);
-	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(::sys::utf8::validate(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(limit > 0 || isEmpty() || *entryAt(size() - 1) <= name);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
@@ -566,7 +567,7 @@ Namebase::insert(mstl::string const& name, unsigned id, unsigned limit)
 	M_REQUIRE(this->type() != Site);
 	M_REQUIRE(this->type() != Event);
 	M_REQUIRE(this->type() != Player);
-	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(::sys::utf8::validate(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 //	M_REQUIRE(limit == 0 || id == InvalidId || id < limit);
 
@@ -620,7 +621,7 @@ Namebase::append(mstl::string const& name, unsigned id)
 	M_REQUIRE(this->type() != Site);
 	M_REQUIRE(this->type() != Event);
 	M_REQUIRE(this->type() != Player);
-	M_REQUIRE(::sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(::sys::utf8::validate(name));
 	M_REQUIRE(name.size() <= NamebaseEntry::MaxNameLength);
 	M_REQUIRE(isEmpty() || *entryAt(size() - 1) < name);
 	M_ASSERT(id != InvalidId);
@@ -885,7 +886,7 @@ Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
 {
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(entry);
-	M_REQUIRE(sys::utf8::Codec::validateUtf8(name));
+	M_REQUIRE(sys::utf8::validate(name));
 
 	if (name == entry->name())
 		return;

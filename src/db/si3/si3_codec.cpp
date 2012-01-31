@@ -48,6 +48,7 @@
 
 #include "sys_time.h"
 #include "sys_file.h"
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_function.h"
@@ -1112,7 +1113,7 @@ Codec::setRecodedDescription(char const* description)
 	str.hook(data, ::strlen(data));
 
 	m_codec->toUtf8(str, result);
-	if (!sys::utf8::Codec::validateUtf8(result))
+	if (!sys::utf8::validate(result))
 	{
 		// the database is opened with wrong encoding
 		m_codec->forceValidUtf8(result);
@@ -1533,7 +1534,7 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 		{
 			m_codec->toUtf8(str, name);
 
-			if (!sys::utf8::Codec::validateUtf8(name))
+			if (!sys::utf8::validate(name))
 			{
 				// the database is opened with wrong encoding
 				m_codec->forceValidUtf8(name);
@@ -1766,7 +1767,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		str.set_size(length);
 		m_codec->toUtf8(str, name);
 
-		if (!sys::utf8::Codec::validateUtf8(name))
+		if (!sys::utf8::validate(name))
 		{
 			// the database is opened with wrong encoding
 			m_codec->forceValidUtf8(name);

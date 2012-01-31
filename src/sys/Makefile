@@ -29,6 +29,7 @@ SRC_CXX = \
 	sys_thread.cpp \
 	sys_time.cpp \
 	sys_timer.cpp \
+	sys_utf8.cpp \
 	sys_utf8_codec.cpp \
 
 SRC	= $(SRC_CXX)
@@ -55,7 +56,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -162,6 +163,21 @@ sys_timer.o: sys_base.h
 sys_timer.o: sys_base.ipp
 sys_timer.o: ../tcl/tcl_base.h
 sys_timer.o: ../tcl/tcl_base.ipp
+sys_utf8.o: sys_utf8.h
+sys_utf8.o: ../mstl/m_types.h
+sys_utf8.o: ../mstl/m_string.h
+sys_utf8.o: ../mstl/m_string.ipp
+sys_utf8.o: ../mstl/m_utility.h
+sys_utf8.o: ../mstl/m_type_traits.h
+sys_utf8.o: ../mstl/m_type_traits.ipp
+sys_utf8.o: ../mstl/m_utility.ipp
+sys_utf8.o: ../mstl/m_limits.h
+sys_utf8.o: ../mstl/m_bit_functions.h
+sys_utf8.o: ../mstl/m_bit_functions.ipp
+sys_utf8.o: ../mstl/m_assert.h
+sys_utf8.o: ../mstl/m_exception.h
+sys_utf8.o: ../mstl/m_backtrace.h
+sys_utf8.o: ../mstl/m_exception.ipp
 sys_utf8_codec.o: sys_utf8_codec.h
 sys_utf8_codec.o: ../mstl/m_string.h
 sys_utf8_codec.o: ../mstl/m_types.h
@@ -192,6 +208,7 @@ sys_utf8_codec.o: ../mstl/m_pointer_iterator.h
 sys_utf8_codec.o: ../mstl/m_pointer_iterator.ipp
 sys_utf8_codec.o: ../mstl/m_list.ipp
 sys_utf8_codec.o: sys_utf8_codec.ipp
+sys_utf8_codec.o: sys_utf8.h
 sys_utf8_codec.o: sys_base.h
 sys_utf8_codec.o: sys_base.ipp
 sys_utf8_codec.o: ../tcl/tcl_base.h

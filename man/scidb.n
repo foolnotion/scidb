@@ -1,37 +1,51 @@
 .TH Scidb 1 "February 1, 2012" scidb "Linux User's Manual"
+.\" ==========================================================================
 .SH NAME
+.\" --------------------------------------------------------------------------
 Scidb - chess database application
+.\" ==========================================================================
 .SH SYNOPSIS
+.\" --------------------------------------------------------------------------
 .B %SCRIPT%
 [options] [database(s)...]
+.\" ==========================================================================
 .SH DESCRIPTION
+.\" --------------------------------------------------------------------------
 .B Scidb
 is a chess database application.
+.\" ==========================================================================
 .SH USAGE
+.\" --------------------------------------------------------------------------
 If there is a
 .B Scidb
-application already running, the currently
-running process will be used.
+application already running, the currently running process will be used.
+.\" ==========================================================================
 .SH OPTIONS
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --
 After this option all arguments wil be interpreted as file names.
 This permits that file names may start with a hyphen.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --help
 Display all options and terminate.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --show-board
 Change to board tab after initialization.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --re-open
 Open all databases immediately after initialization which where open
 at the end of the last session.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --fast-load
 Load only the required data files after initialization, this enables
 a significant faster program start. It is not recommended to use this
 option except for testing.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --first-time
 Start the program as it would be the first time; this means reset
@@ -39,21 +53,25 @@ all user options, delete the recovery files, and copy all standard
 board themes into the userown directory, unless the modified ones.
 This option may be useful if the initialization fails due to an error
 in the option file.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --elo-only
 Do not load other rating files than ELO rating. This speeds up program
 initialization.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --print-recovery-files
 Show all recovery files which where generated at the end of last session
 due to unsaved modifications, and terminate. The output is empty if no
 recovery file exists.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --delete-recovery-files
 Delete all recovery files from last session and terminate the program.
 It is not a phyisical removal, with option
 .B --recover-old
 it is possible to reuse these files.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --dont-recover
 Start the program without using the recovery files (which contains
@@ -61,20 +79,24 @@ unsaved modified games from last session). The removal is not physical,
 with option
 .B --recover-old
 it is possible to reuse these files.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --recover-old
 Recover unsaved games from older sessions. Unsaved games from last session
 will be discarded.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --single-process
 Force another instance of \fBScidb\fR.  This option is intented only for
 testing.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B --force-grab
 The program is supressing grabs automaticaly if started inside a debugger.
 because gras may lead to frozen screens. With this option grabbing the
 screen will be allowed also in debug mode.
 .SS Options recognized by the Tk library
+.\" --------------------------------------------------------------------------
 .TP 9
 .B -geometry \fIGEOMETRY\fR
 Use the geometric information for the main window. For example the argument
@@ -82,69 +104,91 @@ Use the geometric information for the main window. For example the argument
 600x800+20+10
 will resize the main window to 600x800, and the position of the window
 will have the screen coordinates 20,10.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B -display \fIDISPLAY\fR
 Name of screen on which to create window.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B -sync
 Use synchronous mode for display server.
+.\" ==========================================================================
 .SH ENVIRONMENT
+.\" --------------------------------------------------------------------------
 .TP 9
 .B BROWSER
 Determines the default browser which will be used for external links.
+.\" --------------------------------------------------------------------------
 .TP 9
 .B DISPLAY
 Name of screen on which to create window.
+.\" ==========================================================================
 .SH EXAMPLES
+.\" --------------------------------------------------------------------------
+.EX
 %SCRIPT% --show-board traxler.sci ulvestad.si4
-.PP
+.EE
+.P
 Open the databases traxler and ulvestad immediataly after program
 initialization, and change to the board tab.
+.\" ==========================================================================
 .SH AUTHOR
+.\" --------------------------------------------------------------------------
 Gregor Cramer
 .br
 .ul
 http://scidb.sourceforge.net/
+.\" ==========================================================================
 .SH BUGS
+.\" --------------------------------------------------------------------------
 For bug reports visit
 .br
 .ul
 http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
+.\" ==========================================================================
 .SH FEATURE REQUESTS
+.\" --------------------------------------------------------------------------
 For feature requests visit
 .br
 .ul
 http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
+.\" ==========================================================================
 .SH FILES
+.\" --------------------------------------------------------------------------
 .TP 9
 %BINDIR%/%SCRIPT%
 Tcl/Tk script.
+.\" --------------------------------------------------------------------------
 .TP 9
 %BINDIR%/%PROGRAM%
 C++ executable, will be invoked by the script.
+.\" --------------------------------------------------------------------------
 .TP 9
 %SHAREDIR%/data/eco.bin
 Compressed ECO file.
 .B Scidb
 is not working without this file.
+.\" --------------------------------------------------------------------------
 .TP 9
 ~/.%SCRIPT%/config/options.dat
 File containing the saved options from last session.
+.\" ==========================================================================
 .SH LICENSE
+.\" --------------------------------------------------------------------------
 Copyright (c) Gregor Cramer, 2011-2012.
-.PP
+.P
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
 deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
 sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-.PP
+.P
 The above copyright notice and this permission notice shall be included in
 all copies of the Software and its documentation and acknowledgment shall be
 given in the documentation and software packages that this Software was
 used.
-.PP
+.P
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL

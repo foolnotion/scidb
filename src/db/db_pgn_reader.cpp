@@ -41,6 +41,7 @@
 #include "m_istream.h"
 #include "m_stdio.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
 
@@ -1257,7 +1258,7 @@ PgnReader::convertToUtf(mstl::string& s)
 {
 	m_codec.toUtf8(s);
 
-	if (!sys::utf8::Codec::validateUtf8(s))
+	if (!sys::utf8::validate(s))
 	{
 		// user has chosen wrong encoding
 		m_codec.forceValidUtf8(s);

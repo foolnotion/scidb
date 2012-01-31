@@ -1040,10 +1040,13 @@ proc checkEngines {path} {
 proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir tcl_platform engines
 
-    set option(EXTRA_CFLAGS) "-pipe -Wno-format-security"
-    if {[llength $compiler(no-stack-protector)]} {
-        Append option(EXTRA_CFLAGS) $compiler(no-stack-protector)
+    set extra_c_flags "-pipe -Wno-format-security"
+    if {[string length $compiler(no-stack-protector)]} {
+        Append extra_c_flags $compiler(no-stack-protector)
     }
+
+    Append option(EXTRA_CXXFLAGS) $extra_c_flags
+    Append option(EXTRA_CFLAGS) $extra_c_flags
 
     set success [findTclTkPaths]
 
@@ -1371,10 +1374,7 @@ if {[string length $gxxVer]} {
 
     if {[isInsaneUnixRelease]} {
         if {![string match Debian* $insaneRelease]} {
-            if {[string length $option(EXTRA_CXXFLAGS)] > 0} {
-                append option(EXTRA_CXXFLAGS) " "
-            }
-            append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
+            Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
         }
     }
 

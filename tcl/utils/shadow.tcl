@@ -42,6 +42,11 @@ proc map {w} {
 	variable Geometry
 	variable Mapped
 
+	# sometimes Tk is "hanging" and the order of
+	# map/unmap events is confused.
+	if {[string length [grab current]] == 0} { return }
+	if {![string match [grab current]* $w]}  { return }
+
 	if {![info exists Geometry($w)]} { return }
 	set id [Create]
 	lassign $Geometry($w) x y width height

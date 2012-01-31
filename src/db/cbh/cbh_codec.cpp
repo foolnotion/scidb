@@ -42,6 +42,7 @@
 #include "u_byte_stream.h"
 
 #include "sys_file.h"
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_limits.h"
@@ -566,7 +567,7 @@ Codec::toUtf8(mstl::string& str)
 {
 	m_codec->toUtf8(str);
 
-	if (!sys::utf8::Codec::validateUtf8(str))
+	if (!sys::utf8::validate(str))
 		m_codec->forceValidUtf8(str);
 }
 
@@ -1404,7 +1405,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
 			{
-				if (!sys::utf8::Codec::validateUtf8(name))
+				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
 
 				eventBase.rename(m_eventMap[i], name);
@@ -1416,7 +1417,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 
 			if (!sys::utf8::Codec::is7BitAscii(city))
 			{
-				if (!sys::utf8::Codec::validateUtf8(city))
+				if (!sys::utf8::validate(city))
 					m_codec->forceValidUtf8(city);
 
 				siteBase.rename(static_cast<NamebaseEvent*>(m_eventMap[i])->site(), city);
@@ -1544,7 +1545,7 @@ Codec::reloadAnnotatorData(mstl::string const& rootname, util::Progress& progres
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
 			{
-				if (!sys::utf8::Codec::validateUtf8(name))
+				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
 
 				base.rename(m_annotatorMap[i], name);
@@ -1611,7 +1612,7 @@ Codec::reloadSourceData(mstl::string const& rootname, util::Progress& progress)
 			{
 				mstl::string str;
 
-				if (!sys::utf8::Codec::validateUtf8(name))
+				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
 
 				m_sourceBase.rename(m_sourceMap2[i], name);
@@ -1674,7 +1675,7 @@ Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
 			{
-				if (!sys::utf8::Codec::validateUtf8(name))
+				if (!sys::utf8::validate(name))
 					m_codec->forceValidUtf8(name);
 
 				char* p = m_sourceBase.alloc(name.size());
@@ -1822,7 +1823,7 @@ Codec::readIniData(mstl::string const& rootname)
 			}
 
 			m_codec->toUtf8(title);
-			if (!::sys::utf8::Codec::validateUtf8(title))
+			if (!::sys::utf8::validate(title))
 				m_codec->forceValidUtf8(title);
 			setDescription(title);
 

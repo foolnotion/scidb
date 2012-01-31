@@ -42,6 +42,7 @@
 #include "u_byte_stream.h"
 #include "u_bit_stream.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_vector.h"
@@ -692,7 +693,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 		// TODO: use character encoding according to language code ?!
 		m_codec.toUtf8(str);
 
-		if (!sys::utf8::Codec::validateUtf8(str))
+		if (!sys::utf8::validate(str))
 			m_codec.forceValidUtf8(str);
 
 		if (useXml)

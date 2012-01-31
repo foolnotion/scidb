@@ -31,6 +31,7 @@
 
 #include "u_misc.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "hpdf.h"
@@ -155,7 +156,7 @@ PdfWriter::writeMove(Move const& move,
 
 		while (*s)
 		{
-			unsigned len = ::sys::utf8::Codec::utfCharLength(s);
+			unsigned len = ::sys::utf8::charLength(s);
 
 			if (len > 1)
 			{
@@ -167,7 +168,7 @@ PdfWriter::writeMove(Move const& move,
 			{
 				char const* t = s + 1;
 
-				while (t < s && ::sys::utf8::Codec::utfCharLength(t) == 1)
+				while (t < s && ::sys::utf8::charLength(t) == 1)
 					++t;
 
 				setFont(Move_Text_MainLine);

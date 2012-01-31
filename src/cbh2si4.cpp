@@ -93,7 +93,7 @@ struct Log : public db::Log
 			case save::TooManyEventNames:			msg = "Too many event names"; break;
 			case save::TooManySiteNames:			msg = "Too many site names"; break;
 			case save::TooManyRoundNames:			msg = "Too many round names"; break;
-			case save::TooManyAnnotatorNames:	msg = "Too many annotator names"; break;
+			case save::TooManyAnnotatorNames:	return true; // cannot happen
 		}
 
 		::fprintf(	stderr,

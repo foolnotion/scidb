@@ -28,6 +28,7 @@
 #include "db_common.h"
 #include "db_exception.h"
 
+#include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
 #include "m_set.h"
@@ -762,9 +763,9 @@ struct HtmlConv : public Comment::Callback
 
 		while (s < e)
 		{
-			uint16_t code;
+			sys::utf8::uchar code;
 
-			s = sys::utf8::Codec::utfNextChar(s, code);
+			s = sys::utf8::nextChar(s, code);
 
 			if (code < 128)
 			{
@@ -1007,7 +1008,7 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 					data->isHtml = true;
 					s += 3;
 				}
-				else if ((p = sys::utf8::Codec::utfNextChar(s)) - s > 1)
+				else if ((p = sys::utf8::nextChar(s)) - s > 1)
 				{
 					data->result.append(s, p - s);
 					data->isHtml = true;
@@ -1561,9 +1562,9 @@ Comment::toHtml(mstl::string& result) const
 
 				default:
 					{
-						uint16_t code;
+						sys::utf8::uchar code;
 
-						s = sys::utf8::Codec::utfNextChar(s, code);
+						s = sys::utf8::nextChar(s, code);
 
 						if (code < 0x80)
 							result += char(code);
@@ -1784,7 +1785,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 		{
 			if (encoding == encoding::Utf8)
 			{
-				char const* e = sys::utf8::Codec::utfNextChar(s);
+				char const* e = sys::utf8::nextChar(s);
 
 				if (s[0] == '\xe2' && s[1] == '\x99' && ('\x94' <= s[2] && s[2] <= '\x99'))
 				{

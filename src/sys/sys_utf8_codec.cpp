@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "sys_utf8_codec.h"
+#include "sys_utf8.h"
 #include "sys_base.h"
 
 #include "tcl_base.h"
@@ -1750,74 +1751,6 @@ fitsRegion6(mstl::string const& s)
 }
 
 
-namespace validate {
-
-// adopted from Frank Yung-Fong Tang <http://people.netscape.com/ftang/utf8/isutf8.c>
-//
-// Valid octet sequences:
-// 00-7f
-//	c2-df	80-bf
-//	e0		a0-bf 80-bf
-//	e1-ec	80-bf 80-bf
-//	ed		80-9f 80-bf
-//	ee-ef	80-bf 80-bf
-//	f0		90-bf 80-bf 80-bf
-//	f1-f3	80-bf 80-bf 80-bf
-//	f4		80-8f 80-bf 80-bf
-
-enum State { Start, A, B, C, D, E, F, G, Error };
-
-static int const Byte_Class_Lookup_Tbl[256] =
-{
-//	00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 00
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 10
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 20
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 30
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 40
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 50
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 70
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 80
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, // 90
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // A0
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, // B0
-	4, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // C0
-	5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, // D0
-	6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, // E0
-	9,10,10,10,11, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, // F0
-};
-
-#define _ Error
-static enum State const State_Transition_Tbl[12][8] =
-{
-//	  Start  A      B      C      D      E      F      G
-	{ Start, _    , _    , _    , _    , _    , _    , _    }, //  0: 00-7f
-	{ _    , Start, A    , _    , A    , B    , _    , B    }, //  1: 80-8f
-	{ _    , Start, A    , _    , A    , B    , B    , _    }, //  2: 90-9f
-	{ _    , Start, A    , A    , _    , B    , B    , _    }, //  3: a0-bf
-	{ _    , _    , _    , _    , _    , _    , _    , _    }, //  4: c0-c1, f5-ff
-	{ A    , _    , _    , _    , _    , _    , _    , _    }, //  5: c2-df
-	{ C    , _    , _    , _    , _    , _    , _    , _    }, //  6: e0
-	{ B    , _    , _    , _    , _    , _    , _    , _    }, //  7: e1-ec, ee-ef
-	{ D    , _    , _    , _    , _    , _    , _    , _    }, //  8: ed
-	{ F    , _    , _    , _    , _    , _    , _    , _    }, //  9: f0
-	{ E    , _    , _    , _    , _    , _    , _    , _    }, // 10: f1-f3
-	{ G    , _    , _    , _    , _    , _    , _    , _    }, // 11: f4
-};
-#undef _
-
-
-inline
-static State
-nextState(State current, unsigned char c)
-{
-	return State_Transition_Tbl[Byte_Class_Lookup_Tbl[c]][current];
-}
-
-} // namespace validate
-
-
 static int
 compareEncodings(void const* lhs, void const* rhs)
 {
@@ -1929,39 +1862,11 @@ Codec::is7BitAscii(char const* s, unsigned nbytes)
 }
 
 
-unsigned
-Codec::countUtfChars(mstl::string const& s)
-{
-	return Tcl_NumUtfChars(s, s.size());
-}
-
-
-unsigned
-Codec::utfCharLength(char const* s)
-{
-	return Tcl_UtfNext(s) - s;
-}
-
-
-char const*
-Codec::utfNextChar(char const* s)
-{
-	return Tcl_UtfNext(s);
-}
-
-
-char const*
-Codec::utfNextChar(char const* s, uint16_t& code)
-{
-	return s + ::utfToUniChar(s, code);
-}
-
-
 bool
 Codec::convertFromUtf8(mstl::string const& in, mstl::string& out)
 {
 	M_REQUIRE(hasEncoding());
-	M_REQUIRE(validateUtf8(in));
+	M_REQUIRE(sys::utf8::validate(in));
 
 	if (m_isUtf8)
 	{
@@ -2067,13 +1972,13 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 		if (rc == TCL_OK)
 		{
 			// NOTE: sometimes Tcl_ExternalToUtf() is producing overlong UTF-8 sequences!
-			if (!validateUtf8(m_buf, soFar))
+			if (!sys::utf8::validate(m_buf, soFar))
 			{
 				soFar = removeOverlongSequences(m_buf.data(), soFar);
 
-				if (validateUtf8(m_buf, soFar))
+				if (sys::utf8::validate(m_buf, soFar))
 					out.assign(m_buf.c_str(), soFar);
-				else if (validateUtf8(in))
+				else if (sys::utf8::validate(in))
 					out = in;
 				else
 					out.assign(in.size(), '?');
@@ -2105,7 +2010,7 @@ Codec::convertToUtf8(mstl::string const& in, mstl::string& out)
 
 			case TCL_CONVERT_MULTIBYTE:
 				out.assign(m_buf.c_str(), soFar);
-				M_ASSERT(validateUtf8(out));
+				M_ASSERT(sys::utf8::validate(out));
 				m_failed = true;
 				return false;
 		}
@@ -2176,7 +2081,7 @@ Codec::automatic()
 unsigned
 Codec::firstCharToUpper(mstl::string& name)
 {
-	M_REQUIRE(validateUtf8(name));
+	M_REQUIRE(sys::utf8::validate(name));
 	M_REQUIRE(!name.readonly());
 
 	// IMPORTANT NOTE:
@@ -2206,7 +2111,7 @@ Codec::firstCharToUpper(mstl::string& name)
 unsigned
 Codec::firstCharToUpper(mstl::string const& name, mstl::string& result)
 {
-	M_REQUIRE(validateUtf8(name));
+	M_REQUIRE(sys::utf8::validate(name));
 	M_REQUIRE(name.c_str() != result.c_str());
 
 	// IMPORTANT NOTE:
@@ -2236,8 +2141,8 @@ Codec::firstCharToUpper(mstl::string const& name, mstl::string& result)
 int
 Codec::compare(mstl::string const& lhs, mstl::string const& rhs)
 {
-	M_REQUIRE(validateUtf8(lhs));
-	M_REQUIRE(validateUtf8(rhs));
+	M_REQUIRE(sys::utf8::validate(lhs));
+	M_REQUIRE(sys::utf8::validate(rhs));
 
 	char const* p = lhs.c_str();
 	char const* q = rhs.c_str();
@@ -2262,8 +2167,8 @@ Codec::compare(mstl::string const& lhs, mstl::string const& rhs)
 int
 Codec::casecmp(mstl::string const& lhs, mstl::string const& rhs)
 {
-	M_REQUIRE(validateUtf8(lhs));
-	M_REQUIRE(validateUtf8(rhs));
+	M_REQUIRE(sys::utf8::validate(lhs));
+	M_REQUIRE(sys::utf8::validate(rhs));
 
 	// IMPORTANT NOTE:
 	// At this time, the case conversions are only defined for the ISO8859-1 characters.
@@ -2297,8 +2202,8 @@ Codec::casecmp(mstl::string const& lhs, mstl::string const& rhs)
 bool
 Codec::caseMatch(mstl::string const& lhs, mstl::string const& rhs, unsigned size)
 {
-	M_REQUIRE(validateUtf8(lhs));
-	M_REQUIRE(validateUtf8(rhs));
+	M_REQUIRE(sys::utf8::validate(lhs));
+	M_REQUIRE(sys::utf8::validate(rhs));
 
 	// IMPORTANT NOTE:
 	// At this time, the case conversions are only defined for the ISO8859-1 characters.
@@ -2342,11 +2247,11 @@ Codec::levenstein(	mstl::string const& lhs,
 							unsigned sub)
 {
 	// we have to restrict array size
-	M_REQUIRE(countUtfChars(lhs) < 256);
-	M_REQUIRE(countUtfChars(rhs) < 256);
+	M_REQUIRE(sys::utf8::countChars(lhs) < 256);
+	M_REQUIRE(sys::utf8::countChars(rhs) < 256);
 
-	unsigned lhsSize = countUtfChars(lhs);
-	unsigned rhsSize = countUtfChars(rhs);
+	unsigned lhsSize = sys::utf8::countChars(lhs);
+	unsigned rhsSize = sys::utf8::countChars(rhs);
 
 	if (lhsSize == 0)
 		return rhsSize*ins;
@@ -2355,7 +2260,7 @@ Codec::levenstein(	mstl::string const& lhs,
 
 	// algorithm from http://en.wikipedia.org/wiki/Levenshtein_distance
 
-	uint16_t		d[256][256];
+	uchar			d[256][256];
 	Tcl_UniChar	c[256];
 
 	for (unsigned i = 0; i <= lhsSize; ++i)
@@ -2541,67 +2446,10 @@ Codec::isLatin1(mstl::string const& s) const
 }
 
 
-bool
-Codec::validateUtf8(char const* utf8, unsigned nbytes)
-{
-	M_ASSERT(utf8);
-
-	validate::State state = validate::Start;
-
-	for (char const* e = utf8 + nbytes; utf8 < e; ++utf8)
-	{
-		state = validate::nextState(state, *utf8);
-
-		if (state == validate::Error)
-			return false;
-	}
-
-	return state == validate::Start;
-}
-
-
 void
 Codec::forceValidUtf8(mstl::string& str)
 {
-	mstl::string result;
-
-	char const* s = str.begin();
-	char const* e = str.end();
-	char const* p = s;
-
-	validate::State state = validate::Start;
-
-	for ( ; s < e; ++s)
-	{
-		state = validate::nextState(state, *s);
-
-		switch (int(state))
-		{
-			case validate::Error:
-				result += '?';
-				m_failed = true;
-				state = validate::Start;
-				while (s < e && ((*s & 0xc0) == 0x80 || validate::nextState(state, *s) == validate::Error))
-					++s;
-				p = s;
-				if (s < e)
-					--s;
-				break;
-
-			case validate::Start:
-				result.append(p, s + 1);
-				p = s + 1;
-				break;
-		}
-	}
-
-	if (state != validate::Error && state != validate::Start)
-	{
-		m_failed = true;
-		result += '?';
-	}
-
-	str.swap(result);
+	return sys::utf8::makeValid(str, m_failed);
 }
 
 
@@ -2827,8 +2675,8 @@ Codec::checkEncoding(mstl::string const& name)
 int
 Codec::findFirst(char const* haystack, unsigned haystackLen, char const* needle, unsigned needleLen)
 {
-	M_REQUIRE(validateUtf8(needle, needleLen));
-	M_REQUIRE(validateUtf8(haystack, haystackLen));
+	M_REQUIRE(sys::utf8::validate(needle, needleLen));
+	M_REQUIRE(sys::utf8::validate(haystack, haystackLen));
 
 	if (needleLen == 0)
 		return -1;
@@ -2849,8 +2697,8 @@ int
 Codec::findFirstNoCase(	char const* haystack, unsigned haystackLen,
 								char const* needle, unsigned needleLen)
 {
-	M_REQUIRE(validateUtf8(needle, needleLen));
-	M_REQUIRE(validateUtf8(haystack, haystackLen));
+	M_REQUIRE(sys::utf8::validate(needle, needleLen));
+	M_REQUIRE(sys::utf8::validate(haystack, haystackLen));
 
 	if (needleLen == 0)
 		return -1;
