@@ -58,6 +58,7 @@ public:
 	bool contains(const_reference v) const;
 
 	size_type size() const;
+	container_type const& container() const;
 
 	iterator begin();
 	const_iterator begin() const;

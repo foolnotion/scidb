@@ -2141,6 +2141,7 @@ allocateNewFont(clientData)
     Tk_GetFontMetrics(tkfont, &pFont->metrics);
     pFont->ex_pixels = Tk_TextWidth(tkfont, "x", 1);
     pFont->space_pixels = Tk_TextWidth(tkfont, " ", 1);
+    pFont->hyphen_pixels = Tk_TextWidth(tkfont, "-", 1);
 
     /* Set the number of pixels to be used for 1 "em" unit for this font.
      * Setting the em-pixels to the ascent + the descent worked Ok for

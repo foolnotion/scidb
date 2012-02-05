@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -16,40 +16,28 @@
 // (at your option) any later version.
 // ======================================================================
 
-namespace sys {
-namespace utf8 {
+#include "m_exception.h"
 
-inline bool Codec::failed() const				{ return m_failed; }
-inline bool Codec::isUtf8() const				{ return m_isUtf8; }
-inline bool Codec::fromUtf8(mstl::string& s)	{ return fromUtf8(s, s); }
-inline bool Codec::toUtf8(mstl::string& s)	{ return toUtf8(s, s); }
-inline void Codec::reset()							{ m_failed = false; }
+namespace util {
+namespace html {
+
+inline mstl::string const& Hyphenate::result() const	{ return m_result; }
 
 
-inline
-bool
-Codec::is7BitAscii(mstl::string const& s)
-{
-	return is7BitAscii(s.c_str(), s.size());
-}
+inline bool Search::tooManyMatches() const				{ return m_tooManyMatches; }
+inline unsigned Search::countMatches() const				{ return m_posList.size(); }
+inline mstl::string const& Search::title() const		{ return m_title; }
 
 
 inline
-bool
-Codec::hasEncoding() const
+unsigned
+Search::matchPosition(unsigned i) const
 {
-	return m_codec;
+	M_REQUIRE(i < countMatches());
+	return m_posList[i];
 }
 
-
-inline
-mstl::string const&
-Codec::encoding() const
-{
-	return m_encoding;
-}
-
-} // namespace utf8
-} // namespace sys
+} // namespace html
+} // namespace util
 
 // vi:set ts=3 sw=3:

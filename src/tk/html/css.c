@@ -4021,7 +4021,7 @@ generateContentText(pTree, zContent)
     HtmlTree *pTree;
     const char *zContent;
 {
-    HtmlTextNode *pTextNode = HtmlTextNew(strlen(zContent), zContent, 0, 0);
+    HtmlTextNode *pTextNode = HtmlTextNew(pTree, strlen(zContent), zContent, 0, 0);
     return pTextNode;
 }
 

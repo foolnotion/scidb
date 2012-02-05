@@ -908,8 +908,8 @@ tcl_misc.o: ../db/si3/si3_codec.ipp
 tcl_misc.o: ../sys/sys_utf8_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.ipp
 tcl_misc.o: ../sys/sys_file.h
-tcl_misc.o: ../util/expat/expat.h
-tcl_misc.o: ../util/expat/xmlparse.h
+tcl_misc.o: ../util/u_html.h
+tcl_misc.o: ../util/u_html.ipp
 tcl_pgn_reader.o: tcl_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_reader.h

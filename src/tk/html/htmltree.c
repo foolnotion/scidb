@@ -2240,7 +2240,7 @@ nodeTextCommand(interp, pNode, objc, objv)
         HtmlCallbackLayout(pTree, pNode);
 
         zNew = Tcl_GetStringFromObj(objv[3], &nNew);
-        pNew = HtmlTextNew(nNew, zNew, 0, 0);
+        pNew = HtmlTextNew(pTree, nNew, zNew, 0, 0);
 
         /* Copy the base class attributes to the new HtmlTextNode */
         memcpy(pNew, pNode, sizeof(HtmlNode));

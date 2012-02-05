@@ -23,4 +23,12 @@ inline bool sys::utf8::isTail(char c)	{ return (c & 0xc0) == 0x80; }
 
 inline bool sys::utf8::validate(mstl::string const& str) { return validate(str, str.size()); }
 
+
+inline
+bool
+sys::utf8::isSimilar(mstl::string const& lhs, mstl::string const& rhs, unsigned threshold)
+{
+	return levenstein(lhs, rhs) < threshold;
+}
+
 // vi:set ts=3 sw=3:

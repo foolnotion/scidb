@@ -34,7 +34,7 @@
 #include "m_bit_functions.h"
 #include "m_utility.h"
 
-#include "sys_utf8_codec.h"
+#include "sys_utf8.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -57,7 +57,7 @@ inline static int compare(Date const& lhs, Date const& rhs) { return Date::compa
 inline static int
 compare(mstl::string const& lhs, mstl::string const& rhs)
 {
-	return sys::utf8::Codec::casecmp(lhs, rhs);
+	return sys::utf8::casecmp(lhs, rhs);
 }
 
 static int
@@ -1039,7 +1039,7 @@ Selector::searchPlayer(Database const& db, mstl::string const& name) const
 
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.player(i).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.player(i).name(), name, name.size()))
 				return i;
 		}
 	}
@@ -1047,7 +1047,7 @@ Selector::searchPlayer(Database const& db, mstl::string const& name) const
 	{
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.player(m_map[i]).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.player(m_map[i]).name(), name, name.size()))
 				return i;
 		}
 	}
@@ -1067,7 +1067,7 @@ Selector::searchEvent(Database const& db, mstl::string const& name) const
 
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.event(i).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.event(i).name(), name, name.size()))
 				return i;
 		}
 	}
@@ -1075,7 +1075,7 @@ Selector::searchEvent(Database const& db, mstl::string const& name) const
 	{
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.event(m_map[i]).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.event(m_map[i]).name(), name, name.size()))
 				return i;
 		}
 	}
@@ -1095,7 +1095,7 @@ Selector::searchAnnotator(Database const& db, mstl::string const& name) const
 
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.annotator(i).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.annotator(i).name(), name, name.size()))
 				return i;
 		}
 	}
@@ -1103,13 +1103,13 @@ Selector::searchAnnotator(Database const& db, mstl::string const& name) const
 	{
 		for (unsigned i = 0; i < n; ++i)
 		{
-			if (::sys::utf8::Codec::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
+			if (::sys::utf8::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
 				return i;
 		}
 	}
 	for (unsigned i = 0; i < n; ++i)
 	{
-		if (::sys::utf8::Codec::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
+		if (::sys::utf8::caseMatch(db.annotator(m_map[i]).name(), name, name.size()))
 			return i;
 	}
 

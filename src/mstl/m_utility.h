@@ -83,13 +83,19 @@ template <typename T> ptrdiff_t distance(T first, T last);
 
 #if USE_0X_STANDARD
 
-template<typename T> typename mstl::remove_reference<T>::type&& move(T&& t);
+template<typename T> typename mstl::remove_reference<T>::type&& move(T&& t) noexcept;
+template<typename T> T&& forward(typename mstl::remove_reference<T>::type& t) noexcept;
 
-# define M_CXX_MOVE(x) ::mstl::move(x)
+# define M_CXX_MOVE(x) 		::mstl::move(x)
+# define M_CXX_FORWARD(c)	::mstl::forward(x)
 
 #else
 
-# define M_CXX_MOVE(x) (x)
+template<typename T> typename mstl::remove_reference<T>::type& move(T& t);
+template<typename T> T& forward(typename mstl::remove_reference<T>::type& t);
+
+# define M_CXX_MOVE(x)		(x)
+# define M_CXX_FORWARD(x)	(x)
 
 #endif
 

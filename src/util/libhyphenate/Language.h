@@ -37,7 +37,7 @@
 #include "m_list.h"
 #include "m_string.h"
 
-namespace RFC_3066
+namespace rfc_3066
 {
 	/// This class implements a parser for RFC 3066-compliant language codes.
 	class Language

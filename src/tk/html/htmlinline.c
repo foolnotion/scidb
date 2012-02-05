@@ -149,6 +149,8 @@ struct InlineBox {
   int nLeftPixels;            /* Total left width of borders that start here */
   int nRightPixels;           /* Total right width of borders that start here */
   int nContentPixels;         /* Width of content. */
+  int nKerning;               /* Kerning: last char of current token/first char of next token */
+  int iHyphen;                /* Whether this token is a syllable of a word. */
 
   /* Applicable value of the 'white-space' property */
   int eWhitespace;
@@ -816,9 +818,13 @@ calculateLineBoxWidth(p, flags, iReqWidth, piWidth, pnBox, pHasText)
     int *pHasText;           /* OUT: True if there is a text or newline box */
 {
     int nBox = 0;
+    int nPrevBox = 0;
     int iWidth = 0;
+    int iPrevWidth = 0;
     int ii = 0;
     int hasText = 0;
+    const int showhyphens = p->pTree->options.showhyphens;
+    const int hyphen_pixels = HtmlNodeComputedValues(p->pNode)->fFont->hyphen_pixels;
 
     int isForceLine = (flags & LINEBOX_FORCELINE);
     int isForceBox = (flags & LINEBOX_FORCEBOX);
@@ -845,13 +851,35 @@ calculateLineBoxWidth(p, flags, iReqWidth, piWidth, pnBox, pHasText)
         iBoxW = pBox->nContentPixels + pBox->nRightPixels + pBox->nLeftPixels;
         if (pPrevBox) {
             iBoxW += pPrevBox->nSpace;
+            if (showhyphens <= 1) {
+                iBoxW += pPrevBox->nKerning;
+            }
+        }
+        if (showhyphens >= 1 && pBox->iHyphen) {
+            iBoxW += hyphen_pixels;
         }
 
         if ((iWidth + iBoxW > iReqWidth) && (!isForceBox || nBox > 0)) {
             /* pBox will not fit on the line box. Break out of this loop. */
-            break;
+            if (!pPrevBox || !pPrevBox->iHyphen) {
+                break;
+            }
+            if (showhyphens >= 1) {
+                break;
+            }
+            if (nPrevBox > 0) {
+                nBox = nPrevBox;
+                iWidth = iPrevWidth;
+                break;
+            }
         }
         iWidth += iBoxW;
+        if (!pBox->iHyphen) {
+            iPrevWidth = iWidth;
+        }
+        if (showhyphens == 1 && pBox->iHyphen) {
+            iWidth -= hyphen_pixels;
+        }
 
         if (eType == INLINE_TEXT || eType == INLINE_NEWLINE) {
             hasText = 1;
@@ -868,6 +896,9 @@ calculateLineBoxWidth(p, flags, iReqWidth, piWidth, pnBox, pHasText)
             pNextBox->eWhitespace == CSS_CONST_NORMAL
         ) {
             nBox = ii + 1;
+            if (!pBox->iHyphen) {
+                nPrevBox = nBox;
+            }
         }
     }
 
@@ -960,7 +991,7 @@ calculateLineBoxWidth(p, flags, iReqWidth, piWidth, pnBox, pHasText)
  *---------------------------------------------------------------------------
  */
 int
-HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
+HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent)
     LayoutContext *pLayout;
     InlineContext *p;
     int flags;                /* IN: See above */
@@ -979,6 +1010,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
     InlineBorder *pBorder;
     int *aReplacedX = 0;     /* List of x-coords - borders of replaced objs. */
     int nReplacedX = 0;      /* Size of aReplacedX divided by 2 */
+    const int showhyphens = pLayout->pTree->options.showhyphens;
 
     /* True if this line-box contains one or more INLINE_NEWLINE or
      * INLINE_TEXT elements. This is used to activate a line-box height quirk
@@ -1060,6 +1092,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
         int extra_pixels = 0;   /* Number of extra pixels for justification */
         InlineBox *pBox = &p->aInline[i];
         int boxwidth = pBox->nContentPixels;
+        HtmlFont *pFont = HtmlNodeComputedValues(pBox->pNode)->fFont;
         int x1;
         int x2;
         int nBorderDraw = 0;
@@ -1080,12 +1113,25 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
         }
 
         if (
+            (showhyphens <= 1 || !pBox[-1].iHyphen) &&
             !pContext->isSizeOnly &&
             pBox != &p->aInline[0] && pBox->eType == INLINE_TEXT &&
             pBox->pNode && pBox[-1].pNode &&
             pBox[-1].eType == INLINE_TEXT
         ) {
-            HtmlFont *pFont = HtmlNodeComputedValues(pBox->pNode)->fFont;
+            /* If two tokens from the same text node are drawn in succession,
+             * and they belong to the same word, then they should be combined
+             * into a single primitive using HtmlDrawTextExtend().
+             */
+            if (
+                pBox->pNode == pBox[-1].pNode &&
+                pBox[-1].iHyphen
+            ) {
+                int iWidth = pBox->canvas.right;
+                int nChar = HtmlDrawTextLength(&pBox->canvas);
+                HtmlDrawTextExtend(&content, nChar, 0, iWidth);
+                HtmlDrawCleanup(pContext->pTree, &pBox->canvas);
+            }
 
             /* If two tokens from the same text node are drawn in succession,
              * and they are seperated by a single space (or really, by the
@@ -1096,14 +1142,14 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
              *
              * This is an optimization only.
              */
-            if (
+            else if (
                 pBox->pNode == pBox[-1].pNode &&
                 nExtra <= 0.0 &&
                 pFont->space_pixels == pBox[-1].nSpace
             ) {
                 int iWidth = pBox->canvas.right;
                 int nChar = HtmlDrawTextLength(&pBox->canvas) + 1;
-                HtmlDrawTextExtend(&content, nChar, pBox[-1].nSpace + iWidth);
+                HtmlDrawTextExtend(&content, nChar, 0, pBox[-1].nSpace + iWidth);
                 HtmlDrawCleanup(pContext->pTree, &pBox->canvas);
             }
 
@@ -1120,7 +1166,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
                 if (nExtra > 0.0) {
                     iExtra = (extra_pixels - (int)(nExtra * (i-1)));
                 }
-                HtmlDrawTextExtend(&content, 0, pBox[-1].nSpace + iExtra);
+                HtmlDrawTextExtend(&content, 0, 0, pBox[-1].nSpace + iExtra);
             }
         }
 
@@ -1241,6 +1287,10 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace,pAscent)
                 p->pBorders = pBorder->pNext;
                 HtmlFree(pBorder);
             }
+        }
+
+        if (pBox->iHyphen && (showhyphens >= 2 || (showhyphens == 1 && i == nBox - 1))) {
+            HtmlDrawTextHyphen(&content, pFont->hyphen_pixels);
         }
 
         x += pBox->nSpace;
@@ -1499,6 +1549,7 @@ HtmlInlineContextAddText(pContext, pNode)
         int nData = HtmlTextIterLength(&sIter);
         char const *zData = HtmlTextIterData(&sIter);
         int eType = HtmlTextIterType(&sIter);
+        int iHyphen = HtmlTextIterHyphen(&sIter);
 
         switch (eType) {
             case HTML_TEXT_TOKEN_TEXT: {
@@ -1514,13 +1565,29 @@ HtmlInlineContextAddText(pContext, pNode)
                 tw = Tk_TextWidth(tkfont, zData, nData);
                 pBox = &pContext->aInline[pContext->nInline-1];
                 pBox->nContentPixels = tw;
+                pBox->iHyphen = iHyphen;
                 pBox->eWhitespace = eWhitespace;
+
+                if (iHyphen) {
+                    int nt = Tk_TextWidth(tkfont, zData + nData - 1, 2);
+                    int n1 = Tk_TextWidth(tkfont, zData + nData - 1, 1);
+                    int n2 = Tk_TextWidth(tkfont, zData + nData, 1);
+
+                    pBox->nKerning = nt - (n1 + n2);
+                } else {
+                    pBox->nKerning = 0;
+                }
 
                 y = pContext->pCurrent->metrics.iBaseline;
 
                 pText = Tcl_NewStringObj(zData, nData);
                 Tcl_IncrRefCount(pText);
                 iIndex = zData - ((HtmlTextNode *)pNode)->zText;
+                /*if (showhyphens >= 2 && iHyphen) {
+                    tw += pFont->hyphen_pixels;
+                } else if (showhyphens < 2 && HtmlTextIterIsNotLast(&sIter)) {
+                    iHyphen = 0;
+                }*/
                 HtmlDrawText(p, zData, nData, 0, y, tw, szonly, pNode, iIndex);
                 Tcl_DecrRefCount(pText);
 
@@ -1616,6 +1683,7 @@ HtmlInlineContextAddBox(pContext, pNode, pCanvas, iWidth, iHeight, iOffset)
     pInline = inlineContextAddInlineCanvas(pContext, INLINE_REPLACED, pNode);
     pBox = &pContext->aInline[pContext->nInline-1];
     pBox->nContentPixels = iWidth;
+    pBox->iHyphen = 0;
     pBox->eWhitespace = pComputed->eWhitespace;
     DRAW_CANVAS(pInline, pCanvas, 0, 0, pNode);
     HtmlInlineContextPopBorder(pContext, pBorder);
@@ -1635,3 +1703,5 @@ HtmlInlineContextCreator(pContext)
 {
     return pContext->pNode;
 }
+
+/* vi:set ts=4 sw=4 et: */

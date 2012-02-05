@@ -2975,8 +2975,8 @@ db_selector.o: db_database_codec.h
 db_selector.o: db_database_codec.ipp
 db_selector.o: db_filter.h
 db_selector.o: db_filter.ipp
-db_selector.o: ../sys/sys_utf8_codec.h
-db_selector.o: ../sys/sys_utf8_codec.ipp
+db_selector.o: ../sys/sys_utf8.h
+db_selector.o: ../sys/sys_utf8.ipp
 db_signature.o: db_signature.h
 db_signature.o: db_common.h
 db_signature.o: ../util/u_base.h

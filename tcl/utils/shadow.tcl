@@ -38,14 +38,18 @@ proc prepare {w x y width height} {
 }
 
 
-proc map {w} {
+proc map {w {checkIfGrabbed 0}} {
 	variable Geometry
 	variable Mapped
 
-	# sometimes Tk is "hanging" and the order of
-	# map/unmap events is confused.
-	if {[string length [grab current]] == 0} { return }
-	if {![string match [grab current]* $w]}  { return }
+	if {$checkIfGrabbed} {
+		# sometimes the order of map/unmap events is confused,
+		# this means that the unmap event comes first, and the
+		# corresponding map event will come later. therefore
+		# we will not map a shadow if no grab is done.
+		if {[string length [grab current]] == 0} { return }
+		if {![string match [grab current]* $w]}  { return }
+	}
 
 	if {![info exists Geometry($w)]} { return }
 	set id [Create]
@@ -167,9 +171,10 @@ proc Create {} {
 rename grab __grab__shadow
 
 proc grab {args} {
-	# sometimes Tk is "hanging" and the order of
-	# map/unmap events is confused. in this case
-	# we will kill all dangling shadows.
+	# sometimes Tk is "hanging" and the unmap
+	# event will come too late (at end of session).
+	# therefore we will kill all shadows as soon as
+	# a grab is released.
 	if {[lindex $args 0] eq "release"} { shadow::kill }
 
 	return [__grab__shadow {*}$args]
@@ -185,31 +190,27 @@ bind Menu <Configure> {+
 
 bind Menu <Map> {+
 	if {![string match *#menu %W]} {
-		after idle { shadow::map %W }
+		after idle { shadow::map %W yes }
 	}
 }
 
 bind Menu <Unmap> {+
-	variable ::shadow::Geometry
-
 	if {![string match *#menu %W]} {
 		shadow::unmap %W
 	}
 }
 
 bind Menu <Destroy> {+
-	variable ::shadow::Geometry
-
 	if {![string match *#menu %W]} {
 		shadow::unmap %W
-		array unset Geometry %W
+		array unset ::shadow::Geometry %W
 	}
 }
 
 ###  C O M B O B O X  P O P D O W N #############################################################
 
 bind ComboboxPopdown <Configure>		{+ shadow::prepare %W %x %y %w %h }
-bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W } }
+bind ComboboxPopdown <Map>				{+ after idle { shadow::map %W yes } }
 bind ComboboxPopdown <Unmap>			{+ shadow::unmap %W }
 bind ComboboxPopdown <Destroy>		{+ shadow::unmap %W }
 bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
@@ -217,14 +218,14 @@ bind ComboboxPopdown <Destroy>		{+ array unset ::shadow::Geometry %W }
 ###  A D D  L A N G U A G E  P O P D O W N ######################################################
 
 bind AddLanguagePopdown <Configure>	{+ shadow::prepare %W %x %y %w %h }
-bind AddLanguagePopdown <Map>			{+ after idle { shadow::map %W } }
+bind AddLanguagePopdown <Map>			{+ after idle { shadow::map %W yes } }
 bind AddLanguagePopdown <Destroy>	{+ shadow::unmap %W }
 bind AddLanguagePopdown <Destroy>	{+ array unset ::shadow::Geometry %W }
 
 ###  T O O L T I P  P O P U P ###################################################################
 
 bind TooltipPopup <Configure>			{+ shadow::prepare %W %x %y %w %h }
-bind TooltipPopup <Map>					{+ after idle { shadow::map %W } }
+bind TooltipPopup <Map>					{+ after idle { shadow::map %W no } }
 bind TooltipPopup <Unmap>				{+ shadow::unmap %W }
 bind TooltipPopup <Destroy>			{+ shadow::unmap %W }
 bind TooltipPopup <Destroy>			{+ array unset ::shadow::Geometry %W }

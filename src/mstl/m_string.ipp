@@ -313,8 +313,22 @@ string::find_last_not_of(string const& s, size_type pos) const
 }
 
 
-inline bool operator==(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) == 0; }
-inline bool operator!=(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) != 0; }
+inline
+bool
+operator==(string const& lhs, string const& rhs)
+{
+	return lhs.size() == rhs.size() && ::strcmp(lhs, rhs) == 0;
+}
+
+
+inline
+bool
+operator!=(string const& lhs, string const& rhs)
+{
+	return lhs.size() != rhs.size() || ::strcmp(lhs, rhs) != 0;
+}
+
+
 inline bool operator<=(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) <= 0; }
 inline bool operator< (string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) <  0; }
 inline bool operator>=(string const& lhs, string const& rhs) { return ::strcmp(lhs, rhs) >= 0; }

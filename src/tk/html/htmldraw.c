@@ -215,6 +215,7 @@ struct CanvasText {
 
     const char *zText;
     int nText;
+    int iHyphen;
 };
 
 /* A square box, with borders, background color and image as determined
@@ -1325,6 +1326,7 @@ void HtmlDrawText(pCanvas, zText, nText, x, y, w, size_only, pNode, iIndex)
 
         pItem->type = CANVAS_TEXT;
         pItem->x.t.nText = nText;
+        pItem->x.t.iHyphen = 0;
         pItem->x.t.x = x;
         pItem->x.t.y = y;
         pItem->x.t.w = w;
@@ -1342,14 +1344,28 @@ void HtmlDrawText(pCanvas, zText, nText, x, y, w, size_only, pNode, iIndex)
 }
 
 void
-HtmlDrawTextExtend(pCanvas, nChar, nPixel)
+HtmlDrawTextExtend(pCanvas, nChar, iHyphen, nPixel)
     HtmlCanvas *pCanvas;
     int nChar;
+    int iHyphen;
     int nPixel;
 {
     assert(pCanvas && pCanvas->pLast && pCanvas->pLast->type == CANVAS_TEXT);
+    pCanvas->pLast->x.t.iHyphen = iHyphen;
     pCanvas->pLast->x.t.nText += nChar;
     pCanvas->pLast->x.t.w += nPixel;
+}
+
+void
+HtmlDrawTextHyphen(pCanvas, nPixel)
+    HtmlCanvas *pCanvas;
+    int nPixel;
+{
+    if (pCanvas->pLast) {
+        assert(pCanvas->pLast->type == CANVAS_TEXT);
+        pCanvas->pLast->x.t.iHyphen = 1;
+        pCanvas->pLast->x.t.w += nPixel;
+    }
 }
 
 int
@@ -2312,6 +2328,36 @@ drawLine(pQuery, pItem, drawable, x, y, w, h)
     );
 }
 
+/*
+ *---------------------------------------------------------------------------
+ *
+ * drawText --
+ *
+ *      Draw string, eventually with an additional hyphen.
+ *
+ *---------------------------------------------------------------------------
+ */
+static void
+drawChars(display, drawable, gc, tkfont, string, numBytes, x, y, hyphen)
+    Display *display;
+    Drawable drawable;
+    GC gc;
+    Tk_Font tkfont;
+    const char *string;
+    int numBytes;
+    int x;
+    int y;
+    int hyphen;
+{
+    if (hyphen) {
+        char buffer[2048];
+        memcpy(buffer, string, MIN(sizeof(buffer) - 1, numBytes));
+        buffer[numBytes] = '-';
+        Tk_DrawChars(display, drawable, gc, tkfont, buffer, numBytes + 1, x, y);
+    } else {
+        Tk_DrawChars(display, drawable, gc, tkfont, string, numBytes, x, y);
+    }
+}
 
 #define SWAPINT(x,y) {int tmp = x; x = y; y = tmp;}
 
@@ -2376,7 +2422,7 @@ drawText(pQuery, pItem, drawable, x, y)
         gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
         setClippingRegion(pQuery, disp, gc);
         setClippingDrawable(pQuery, pItem, &drawable, &x, &y);
-        Tk_DrawChars(disp, drawable, gc, font, z, n, pT->x + x, pT->y + y);
+        drawChars(disp, drawable, gc, font, z, n, pT->x + x, pT->y + y, pT->iHyphen);
         clearClippingRegion(disp, gc);
         Tk_FreeGC(disp, gc);
     }
@@ -2438,7 +2484,7 @@ drawText(pQuery, pItem, drawable, x, y)
             gc_values.font = Tk_FontId(font);
             gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
             setClippingRegion(pQuery, disp, gc);
-            Tk_DrawChars(disp, drawable, gc, font, zSel, nSel,pT->x+xs,pT->y+y);
+            drawChars(disp, drawable, gc, font, zSel, nSel, pT->x + xs, pT->y + y, pT->iHyphen);
             clearClippingRegion(disp, gc);
             Tk_FreeGC(disp, gc);
         }
@@ -2622,6 +2668,7 @@ updateRegions(pTree, pElem, drawable, dx, dy)
                 int len = 0;
                 int size = 0;
                 int kk;
+                const int showhyphens = pTree->options.showhyphens;
 
                 for (
                     HtmlTextIterFirst(pTextNode, &sIter);
@@ -2630,14 +2677,21 @@ updateRegions(pTree, pElem, drawable, dx, dy)
                 ) {
                     int nData = HtmlTextIterLength(&sIter);
 
-                    if (len + nData < sizeof(buf)) {
+                    if (len + nData + 1 < sizeof(buf)) {
                         char const *zData = HtmlTextIterData(&sIter);
                         int eType = HtmlTextIterType(&sIter);
+                        int iHyphen = HtmlTextIterHyphen(&sIter);
 
                         switch (eType) {
                             case HTML_TEXT_TOKEN_TEXT:
                                 memcpy(buf + len, zData, nData);
                                 len += nData;
+                                if (iHyphen &&
+                                    showhyphens > 0 &&
+                                    (showhyphens >= 2 || !HtmlTextIterIsNotLast(&sIter))) {
+                                    buf[len] = '-';
+                                    ++len;
+                                }
                                 break;
 
                             case HTML_TEXT_TOKEN_NEWLINE:
@@ -3093,7 +3147,8 @@ static int itemsAreEqual(p1, p2)
                     p1->x.t.w == p2->x.t.w &&
                     p1->x.t.fFont == p2->x.t.fFont &&
                     p1->x.t.zText == p2->x.t.zText &&
-                    p1->x.t.nText == p2->x.t.nText
+                    p1->x.t.nText == p2->x.t.nText &&
+                    p1->x.t.iHyphen == p2->x.t.iHyphen
                 );
             }
             case CANVAS_LINE: {

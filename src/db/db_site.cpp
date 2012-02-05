@@ -128,14 +128,14 @@ operator<(SiteList::value_type const& lhs, mstl::string const& rhs)
 static int
 cmpAssoc(SiteList::value_type const* lhs, SiteList::value_type const* rhs)
 {
-	return sys::utf8::Codec::compare(lhs->first, rhs->first);
+	return sys::utf8::compare(lhs->first, rhs->first);
 }
 
 
 static int
 cmpMatch(Site::Matches::value_type const* lhs, Site::Matches::value_type const* rhs)
 {
-	return sys::utf8::Codec::compare(lhs->second->name(), rhs->second->name());
+	return sys::utf8::compare(lhs->second->name(), rhs->second->name());
 }
 
 

@@ -111,6 +111,8 @@ proc open {parent {file {}}} {
 	set Priv(minsize) 200
 	set Priv(recent) {}
 
+	::scidb::misc::html cache on
+
 	toplevel $dlg -class Scidb
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code Destroy]
 	wm withdraw $dlg
@@ -304,6 +306,7 @@ proc Destroy {} {
 	}
 
 	destroy $Priv(dlg)
+	::scidb::misc::html cache off
 }
 
 
@@ -776,7 +779,7 @@ proc Search {t} {
 	set search $Priv(search:entry)
 	if {[string length $search] == 0} { return }
 
-	lappend options -skipRefs -max 20
+	lappend options -max 20
 	if {!$Priv(matchCase)}	{ lappend options -noCase }
 	if {$Priv(entireWord)}	{ lappend options -entireWord }
 	if {$Priv(titleOnly)}	{ lappend options -titleOnly }
@@ -798,7 +801,7 @@ proc Search {t} {
 			set content [read $fd]
 			close $fd
 
-			lassign [::scidb::misc::htmlSearch {*}$options $search $content] rc exceeded title positions
+			lassign [::scidb::misc::html search {*}$options $search $content] rc exceeded title positions
 
 			if {!$rc} {
 				::log::error [format [set [namespace parent]::mc::ParserError] [file join $lang $file]]
@@ -1134,6 +1137,7 @@ proc BuildHtmlFrame {dlg w} {
 		-doublebuffer no \
 		-exportselection yes \
 		-css $css \
+		-showhyphens 1 \
 		;
 
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
@@ -1497,6 +1501,27 @@ proc Parse {file wantedFile moveto {match {}}} {
 			set from [expr {$pos + $len}]
 		}
 		append content [string range $str $from end]
+	}
+
+	set lang [lindex [file split $file] end-1]
+	set patternFilename [file join $::scidb::dir::hyphen pattern $lang.dat]
+	if {[file readable $patternFilename]} {
+		set dictFilenames ""
+		set filename [file join $::scidb::dir::hyphen dict xx.dat]
+		if {[file readable $filename]} {
+			append dictFilenames $filename
+		}
+		set filename [file join $::scidb::dir::hyphen dict $lang.dat]
+		if {[file readable $filename]} {
+			if {[string length $dictFilenames]} { append dictFilenames ";" }
+			append dictFilenames $filename
+		}
+		set filename [file join $::scidb::dir::home dict $lang.dat]
+		if {[file readable $filename]} {
+			if {[string length $dictFilenames]} { append dictFilenames ";" }
+			append dictFilenames $filename
+		}
+		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
 	}
 
 	[$Priv(html) drawable] configure -cursor {}

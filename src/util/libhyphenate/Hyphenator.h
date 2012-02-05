@@ -34,64 +34,105 @@
 #ifndef _hyphenate_hyphenator_h
 #define _hyphenate_hyphenator_h
 
-#include "Language.h"
-
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_set.h"
 #include "m_auto_ptr.h"
 #include "m_pair.h"
 
 #include <iconv.h>
 
-namespace Hyphenate
+namespace rfc_3066 { class Language; }
+namespace mstl { class ostream; }
+
+namespace hyphenate
 {
 	class HyphenationTree;
 	class HyphenationRule;
 
 	class Hyphenator
 	{
+	public:
+
+		struct String
+		{
+			mstl::string s;
+
+			String() {}
+			String(mstl::string const& t) :s(t) {}
+
+			char const* begin() const	{ return s.begin(); }
+			char const* end() const		{ return s.end(); }
+		};
+
+		typedef mstl::set<String> Lookup;
+
+#if USE_0X_STANDARD
+		typedef mstl::string&& result;
+		typedef mstl::pair<mstl::string, mstl::string>&& result_pair;
+#else
+		typedef mstl::string result;
+		typedef mstl::pair<mstl::string, mstl::string> result_pair;
+#endif
+
 	private:
 
 		mstl::auto_ptr<HyphenationTree> dictionary;
+		mstl::auto_ptr<Lookup> lookup;
 
-		mstl::string hyphenate_word(mstl::string const& word, mstl::string const& hyphen);
+		result hyphenate_word(mstl::string const& word, mstl::string const& hyphen);
+		void try_to_load(rfc_3066::Language const& lang, mstl::string const& path);
+		void read_hyphenation_table(mstl::string const& filename);
+		void read_exception_dict(mstl::string const& filename);
+		result replace_hyphens(mstl::string const& word, mstl::string const& hyphen);
 
 	public:
 
-		////Build a hyphenator for the given language. The hyphenation
+		/// Build a hyphenator for the given language. The hyphenation
 		/// patterns for the language will loaded from a file named like
 		/// the language string or any prefix of it. The file will be
 		/// located in the directory given by the environment variable
 		/// LIBHYPHENATE_PATH or, if this is empty, in the compiled-in
 		/// pattern directory which defaults to 
-		/// /usr/local/share/libhyphenate/patterns .
+		/// /usr/local/share/libhyphenate/pattern .
 		///
 		///\param lang The language for which hyphenation patterns will be
 		///            loaded.
-		Hyphenator(RFC_3066::Language const& lang); 
+		Hyphenator(rfc_3066::Language const& lang); 
 
 		/// Build a hyphenator from the patterns in the file provided.
-		Hyphenator(mstl::string const& filename); 
+		Hyphenator(mstl::string const& patternFilename, mstl::string const& dictFilenames = "");
+
+		// Destroy Hyphenator.
+		~Hyphenator();
+
+		/// Return whether a pattern directory was found.
+		bool has_dictionary() const	{ return dictionary; }
+		bool has_lookup() const			{ return lookup; }
+
+		// Dump the content.
+		void dump_dictionary(mstl::ostream& strm) const;
+		void dump_lookup(mstl::ostream& strm) const;
 
 		/// The actual workhorse. You'll want to call this function once
 		/// for each word (NEW: or complete string, not only word. The library
 		/// will do the word-splitting for you) you want hyphenated.  
 		/// 
 		/// Usage example: 
-		/// 	Hyphenate::Hyphenator hyphenator(Language("de-DE"));
+		/// 	hyphenate::Hyphenator hyphenator(Language("de-DE"));
 		/// 	hyphenator.hyphenate("Schifffahrt");
 		///
 		/// 	yields "Schiff-fahrt", while 
 		///
-		/// 	Hyphenate::Hyphenator hyphenator(Language("en"));
+		/// 	hyphenate::Hyphenator hyphenator(Language("en"));
 		/// 	hyphenator.hyphenate("example", "&shy;");
 		///
 		/// 	yields "ex&shy;am&shy;ple".
 		///
-		/// \param word A single UTF-8 encoded word to be hyphenated.
+		/// \param text A UTF-8 encoded text to be hyphenated.
 		/// \param hyphen The string to put at each possible
 		///               hyphenation point. The default is an ASCII dash.
-		mstl::string hyphenate(mstl::string const& word, mstl::string const& hyphen = "-");
+		result hyphenate(mstl::string const& text, mstl::string const& hyphen = "-");
 
 		/// Find a single hyphenation point in the string so that the first
 		/// part (including a hyphen) will be shorter or equal in length
@@ -110,7 +151,7 @@ namespace Hyphenate
 		///    result += p.first + "\n"
 		///    rest = p.second;
 		/// }
-		mstl::pair<mstl::string,mstl::string> hyphenate_at(
+		result_pair hyphenate_at(
 			mstl::string const& word,
 			mstl::string const& hyphen = "-",
 			size_t len = mstl::string::npos);
@@ -120,7 +161,7 @@ namespace Hyphenate
 		///
 		/// \returns A vector with the same size as the word with a non-NULL
 		///          entry for every hyphenation point.
-		mstl::auto_ptr<mstl::vector<const HyphenationRule*> > 
+		mstl::auto_ptr<mstl::vector<HyphenationRule const*> > 
 		applyHyphenationRules(mstl::string const& word);
 	};
 }

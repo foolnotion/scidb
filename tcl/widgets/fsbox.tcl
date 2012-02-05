@@ -580,6 +580,7 @@ proc validatePath {path} {
 	}
 	if {[string match {*[\"\\\/:\*<>\?%\|]*} $path]} {
 		# possibly we should avoid "[]+=,;", too
+		# especially ';' should be avoided!?
 		return 0
 	}
 	return 1

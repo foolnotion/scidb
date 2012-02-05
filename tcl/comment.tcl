@@ -333,7 +333,7 @@ proc Accept {} {
 
 	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
-	set Vars(comment) [::scidb::misc::xmlFromList $Vars(content)]
+	set Vars(comment) [::scidb::misc::xml fromList $Vars(content)]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
 }
 
@@ -368,7 +368,7 @@ proc Revert {dlg} {
 
 	set w $Vars(widget:text)
 
-	foreach entry [::scidb::misc::xmlToList [::scidb::game::query comment $Vars(pos)]] {
+	foreach entry [::scidb::misc::xml toList [::scidb::game::query comment $Vars(pos)]] {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} { set lang xx }
 		if {$lang eq $Vars(lang)} {
@@ -434,7 +434,7 @@ proc Update {{setup 1}} {
 	if {$setup} {
 		array unset Vars undoStack:*
 		array unset Vars undoStackIndex:*
-		set Vars(content) [::scidb::misc::xmlToList $Vars(comment)]
+		set Vars(content) [::scidb::misc::xml toList $Vars(comment)]
 	}
 
 	foreach entry $Vars(content) {

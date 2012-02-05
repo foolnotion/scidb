@@ -40,11 +40,13 @@
 #include "m_auto_ptr.h"
 #include "m_utility.h"
 #include "m_istream.h"
+#include "m_bitfield.h"
+#include "m_vector.h"
 
 #include <ctype.h>
 #include <string.h>
 
-using namespace Hyphenate;
+using namespace hyphenate;
 
 
 // The HyphenationNode is a tree node for the hyphenation search tree. It
@@ -52,41 +54,83 @@ using namespace Hyphenate;
 // pattern that ends with that particular character, the hyphenation_pattern
 // is set to non-NULL. The jump_table links to the children of that node,
 // indexed by letters.
-class Hyphenate::HyphenationNode
+class HyphenationTree::HyphenationNode
 {
 public:
 
-	typedef HyphenationNode* JumpTable[256];
+	typedef mstl::vector<HyphenationNode*> JumpTable;
+	typedef mstl::bitfield<uint64_t> SparseLookup[4];
 
 	// Table of children
 	JumpTable jump_table;
+	// Sparse array lookup.
+	SparseLookup sparse_lookup;
 	// Hyphenation pattern associated with the full path to this node.
 	mstl::auto_ptr<HyphenationRule> hyphenation_pattern;
 
-	inline HyphenationNode()
+	inline bool contains(unsigned char i) const
 	{
-		::memset(jump_table, 0, sizeof(jump_table));
+		return sparse_lookup[i >> 6][mstl::bitfield<uint64_t>::word_index(i)];
 	}
+
+	unsigned table_index(unsigned char i) const
+	{
+		// This is a seldom case,
+		if (i < 64)
+		{
+			M_ASSERT(sparse_lookup[0].test(i));
+			return sparse_lookup[0].count(0, i) - 1;
+		}
+		unsigned count = sparse_lookup[0].count();
+		i -= 64;
+
+		// This is the normal case: index will be found in sparse_lookup[1].
+		if (i < 64)
+		{
+			M_ASSERT(sparse_lookup[1].test(i));
+			return sparse_lookup[1].count(0, i) - 1;
+		}
+		count += sparse_lookup[1].count();
+		i -= 64;
+
+		// These are seldom cases.
+		if (i < 64)
+		{
+			M_ASSERT(sparse_lookup[2].test(i));
+			return count + sparse_lookup[2].count(0, i) - 1;
+		}
+		count += sparse_lookup[2].count();
+		i -= 64;
+	
+		M_ASSERT(sparse_lookup[3].test(i));
+		return count + sparse_lookup[3].count(0, i) - 1;
+	}
+
+	inline HyphenationNode* lookup(unsigned char arg) const
+	{
+		if (!contains(arg))
+			return nullptr;
+		M_ASSERT(jump_table[table_index(arg)]);
+		return jump_table[table_index(arg)];
+	}
+
+public:
+
+	HyphenationNode() { ::memset(sparse_lookup, 0, sizeof(sparse_lookup)); }
 
 	~HyphenationNode()
 	{
 		// The destructor has to destroy all childrens.
-		for (unsigned i = 0; i < 256; ++i)
+		for (unsigned i = 0; i < jump_table.size(); ++i)
 			delete jump_table[i];
 	}
 
 	/// Find a particular jump table entry, or NULL if there is none for that letter.
-	inline HyphenationNode const* find(unsigned char arg) const
-	{
-		return jump_table[arg];
-	}
+	inline HyphenationNode const* find(unsigned char arg) const { return lookup(arg); }
 
 	/// Find a particular jump table entry, or NULL if there is none 
 	/// for that letter.
-	inline HyphenationNode* find(unsigned char arg)
-	{
-		return jump_table[arg];
-	}
+	inline HyphenationNode* find(unsigned char arg) { return lookup(arg); }
 
 	/// Insert a particular hyphenation pattern into this 
 	/// hyphenation subtree.
@@ -95,14 +139,13 @@ public:
 	void insert(char const* id, mstl::auto_ptr<HyphenationRule> pattern);
 
 	/// Apply all patterns for that subtree.
-	void apply_patterns(
-		char* priority_buffer, 
-		HyphenationRule const** rule_buffer, 
-		char const* to_match) const;
+	void apply_patterns(	char* priority_buffer,
+								HyphenationRule const** rule_buffer,
+								char const* to_match) const;
 };
 
 
-Hyphenate::HyphenationTree::HyphenationTree()
+HyphenationTree::HyphenationTree()
 	:root(new HyphenationNode())
 	,start_safe(1)
 	,end_safe(1)
@@ -110,14 +153,14 @@ Hyphenate::HyphenationTree::HyphenationTree()
 }
 
 
-Hyphenate::HyphenationTree::~HyphenationTree()
+HyphenationTree::~HyphenationTree()
 {
 	delete root;
 }
 
 
 void
-Hyphenate::HyphenationTree::insert(mstl::auto_ptr<HyphenationRule> pattern)
+HyphenationTree::insert(mstl::auto_ptr<HyphenationRule> pattern)
 {
 	// Convert our key to lower case to ease matching.
 	char const* upperCaseKey = pattern->getKey().c_str();
@@ -129,7 +172,7 @@ Hyphenate::HyphenationTree::insert(mstl::auto_ptr<HyphenationRule> pattern)
 	{
 		sys::utf8::uchar code;
 		upperCaseKey = sys::utf8::nextChar(upperCaseKey, code);
-		lowerCaseKey += sys::utf8::toLower(code);
+		sys::utf8::append(lowerCaseKey, sys::utf8::toLower(code));
 	}
 
 	root->insert(lowerCaseKey, pattern);
@@ -137,7 +180,7 @@ Hyphenate::HyphenationTree::insert(mstl::auto_ptr<HyphenationRule> pattern)
 
 
 void
-HyphenationNode::insert(char const* key_string, mstl::auto_ptr<HyphenationRule> pattern) 
+HyphenationTree::HyphenationNode::insert(char const* key_string, mstl::auto_ptr<HyphenationRule> pattern) 
 {
 	// Is this the terminal node for that pattern?
 	if (key_string[0] == 0)
@@ -149,22 +192,24 @@ HyphenationNode::insert(char const* key_string, mstl::auto_ptr<HyphenationRule> 
 	else
 	{
 		// If not, however, we make sure that the branch for our letter exists and descend.
-		char key = key_string[0];
+		unsigned char key = key_string[0];
 
-		// Ensure presence of a branch for that letter.
-		HyphenationNode* p = find(key);
-
-		if (!p)
-			jump_table[static_cast<unsigned char>(key)] = new HyphenationNode();
+		if (!contains(key))
+		{
+			sparse_lookup[key >> 6].set(mstl::bitfield<uint64_t>::word_index(key));
+			jump_table.resize(jump_table.size() + 1);
+			jump_table.insert(jump_table.begin() + table_index(key), new HyphenationNode());
+		}
 
 		// Go to the next letter and descend.
-		p->insert(key_string + 1, pattern);
+		M_ASSERT(find(key));
+		find(key)->insert(key_string + 1, pattern);
 	}
 }
 
 
 void
-Hyphenate::HyphenationNode::apply_patterns(
+HyphenationTree::HyphenationNode::apply_patterns(
 	char* priority_buffer, 
 	HyphenationRule const** rule_buffer, 
 	char const* to_match) const
@@ -172,7 +217,7 @@ Hyphenate::HyphenationNode::apply_patterns(
 	// First of all, if we can descend further into the tree (that is,
 	// there is an input char left and there is a branch in the tree),
 	// do so.
-	char key = to_match[0];
+	unsigned char key = to_match[0];
 
 	if (key != 0)
 	{
@@ -219,7 +264,7 @@ HyphenationTree::applyPatterns(mstl::string const& word, size_t stop_at) const
 		{
 			sys::utf8::uchar code;
 			s = sys::utf8::nextChar(s, code);
-			w += sys::utf8::toLower(code);
+			sys::utf8::append(w, sys::utf8::toLower(code));
 		}
 	}
 	w += ".";
@@ -231,7 +276,7 @@ HyphenationTree::applyPatterns(mstl::string const& word, size_t stop_at) const
 	// For each suffix of the expanded word, search all matching prefixes.
 	// That way, each possible match is found. Note the pointer arithmetics
 	// in the first and second argument.
-	for (unsigned i = 0; i < w.size()-1 && i <= stop_at; ++i)
+	for (unsigned i = 0; i < w.size() - 1 && i <= stop_at; ++i)
 		root->apply_patterns((&pri[i]), &rules[i], w.c_str() + i);
 
 	// Copy the results to a shorter vector.

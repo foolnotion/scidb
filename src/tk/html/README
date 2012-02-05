@@ -19,21 +19,26 @@ new commands:
 
 new options:
 
-	-doublebuffer
+	-doublebuffer <flag>
 		Specifies whether double buffering should be used.
 
-	-cursor
+	-cursor <cursor>
 		Specifies the mouse cursor to be used for the widget.
 
-	-exportselection
+	-exportselection <flag>
 		Specifies whether or not a selection in the widget should also be the X selection.
 		Selection is possible only if this option is enabled.
 	
-	-selectbackground
-	-selectforeground
-	-inactiveselectbackground
-	-inactiveselectforeground
+	-selectbackground <color>
+	-selectforeground <color>
+	-inactiveselectbackground <color>
+	-inactiveselectforeground <color>
 		Specifies the colors for selection.
+
+	-showhyphens <flag>
+		flag=0: discard soft hyphens (&shy;)
+		flag=1: use soft hyphens for hyphenation
+		flag=2: show all soft hyphens (for proof-reading)
 
 is supporting more attributes:
 

@@ -64,33 +64,14 @@ public:
 
 	static bool is7BitAscii(mstl::string const& s);
 	static bool is7BitAscii(char const* s, unsigned nbytes);
-	static bool caseMatch(	mstl::string const& lhs,
-									mstl::string const& rhs,
-									unsigned size);
 	static bool matchAscii(mstl::string const& utf8, mstl::string const& ascii);
 	static bool matchGerman(mstl::string const& utf8, mstl::string const& ascii);
-	static bool isSimilar(mstl::string const& lhs, mstl::string const& rhs, unsigned threshold = 2);
 	static bool fitsRegion(mstl::string const& s, unsigned region);
-	static int compare(mstl::string const& lhs, mstl::string const& rhs);
-	static int casecmp(mstl::string const& lhs, mstl::string const& rhs);
-	static unsigned levenstein(mstl::string const& lhs,
-										mstl::string const& rhs,
-										unsigned ins = 2,
-										unsigned del = 2,
-										unsigned sub = 1);
 	static unsigned removeOverlongSequences(char* s, unsigned size);
 	static void mapFromGerman(mstl::string const& name, mstl::string& result);
 	static void makeShortName(mstl::string const& name, mstl::string& result);
 	static unsigned firstCharToUpper(mstl::string& name);
 	static unsigned firstCharToUpper(mstl::string const& name, mstl::string& result);
-	static int findFirst(char const* haystack,
-								unsigned haystackLen,
-								char const* needle,
-								unsigned needleLen);
-	static int findFirstNoCase(char const* haystack,
-										unsigned haystackLen,
-										char const* needle,
-										unsigned needleLen);
 	static mstl::string const& convertToNonDiacritics(	unsigned region,
 																		mstl::string const& s,
 																		mstl::string& buffer);

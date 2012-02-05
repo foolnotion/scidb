@@ -35,6 +35,7 @@ LIBS = \
 	util/libharu/libharu.a \
 	mstl/libmstl.a \
 	util/libutil.a \
+	util/libhyphenate/libhyphenate.a \
 	util/universalchardet/libchardet.a \
 
 TK_LIBS = \
@@ -67,23 +68,23 @@ TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move
 
 all: recursive cbh2si4 $(PROGRAM)
 
-install: recursive cbh2si4 $(PROGRAM)
+install-executables: recursive cbh2si4 $(PROGRAM)
 	@echo "Install executables"
 	@install -m 755 -d $(BINDIR)
 	@install -m 755 -p $(PROGRAM) $(BINDIR)
 	@install -m 755 -p cbh2si4 $(BINDIR)
-	@echo "Install TeXt scripts"
-	@install -m 755 -d $(SHAREDIR)/scripts
-	@install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
-	@echo "Install data files"
-	@install -m 755 -d $(SHAREDIR)/data
-	@install -m 644 -p data/eco.bin $(SHAREDIR)/data
-	@install -m 644 -p data/*.* $(SHAREDIR)/data
 
-uninstall:
+uninstall-executables:
 	@echo "Uninstall executables"
 	@rm -f $(BINDIR)/$(PROGRAM)
 	@rm -f $(BINDIR)/cbh2si4
+
+install-scripts:
+	@echo "Install TeXt scripts"
+	@install -m 755 -d $(SHAREDIR)/scripts
+	@install -m 644 -p util/libTeXt/plain.eXt $(SHAREDIR)/scripts
+
+uninstall-scripts:
 	@echo "Uninstall TeXt scripts"
 	@if [ -d $(SHAREDIR)/scripts ]; then                                                        \
 		rm -f $(SHAREDIR)/scripts/plain.eXt;                                                     \
@@ -91,6 +92,13 @@ uninstall:
 			rmdir $(SHAREDIR)/scripts;                                                            \
 		fi;                                                                                      \
 	fi
+
+install-data:
+	@install -m 755 -d $(SHAREDIR)/data
+	@install -m 644 -p data/eco.bin $(SHAREDIR)/data
+	@install -m 644 -p data/*.* $(SHAREDIR)/data
+
+uninstall-data:
 	@echo "Uninstall data files"
 	@if [ -d $(SHAREDIR)/data ]; then                                                     \
 		rm -f $(SHAREDIR)/data/eco.bin;                                                    \
@@ -99,6 +107,36 @@ uninstall:
 			rmdir $(SHAREDIR)/data;                                                         \
 		fi;                                                                                \
 	fi
+
+install-hyphen:
+	@echo "Install hyphenation files"
+	@install -m 755 -d $(SHAREDIR)/hyphen/pattern
+	@install -m 755 -d $(SHAREDIR)/hyphen/dict
+	@install -m 644 -p util/libhyphenate/pattern/*.dat $(SHAREDIR)/hyphen/pattern
+	@install -m 644 -p util/libhyphenate/dict/*.dat $(SHAREDIR)/hyphen/dict
+
+uninstall-hyphen:
+	@echo "Uninstall hyphenation files"
+	@if [ -d $(SHAREDIR)/hyphen ]; then                                                       \
+		for dir in pattern dict; do                                                            \
+			dst=$(SHAREDIR)/hyphen/$$dir;                                                       \
+			if [ -d $$dst ]; then                                                               \
+				for f in `ls util/libhyphenate/$$dir/*.dat`; do                                  \
+					rm -f $$dst/`basename $$f`;                                                   \
+				done;                                                                            \
+				if [ "`find $$dst -type d -empty`" = "`ls -d $$dst`" ]; then                     \
+					rmdir $$dst;                                                                  \
+				fi;                                                                              \
+			fi;                                                                                 \
+		done;                                                                                  \
+		if [ "`find $(SHAREDIR)/hyphen -type d -empty`" = "`ls -d $(SHAREDIR)/hyphen`" ]; then \
+			rmdir $(SHAREDIR)/hyphen;                                                           \
+		fi;                                                                                    \
+	fi
+
+install: install-executables install-scripts install-data install-hyphen
+
+uninstall: uninstall-executables uninstall-scripts uninstall-data uninstall-hyphen
 	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
 		rmdir $(SHAREDIR);                                                     \
 	fi

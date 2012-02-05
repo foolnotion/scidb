@@ -69,10 +69,24 @@ struct signed_arithmetic<0>
 template<typename T>
 inline
 typename mstl::remove_reference<T>::type&&
-move(T&& t)
+move(T&& t) noexcept
 {
 	return static_cast<typename mstl::remove_reference<T>::type&&>(t);
 }
+
+
+template<typename T>
+inline
+T&&
+forward(typename mstl::remove_reference<T>::type& t) noexcept
+{
+	return static_cast<T&&>(t);
+}
+
+#else
+
+template<typename T> typename mstl::remove_reference<T>::type& move(T& t)		{ return t; }
+template<typename T> T& forward(typename mstl::remove_reference<T>::type& t)	{ return t; }
 
 #endif
 

@@ -31,7 +31,7 @@ targets: $(TARGETS) $(INDEX) $(CONTENTS)
 
 .txt.html:
 	@echo "Generating $@"
-	@tclsh$(TCL_VERSION) ../make_html.tcl $<
+	@tclsh$(TCL_VERSION) ../make_html.tcl $< > $@
 
 $(INDEX): $(SOURCES) ../make_index.tcl
 	@echo "Generating $@"
@@ -40,5 +40,8 @@ $(INDEX): $(SOURCES) ../make_index.tcl
 $(CONTENTS): Overview.txt ../make_contents.tcl
 	@echo "Generating $@"
 	@tclsh$(TCL_VERSION) ../make_contents.tcl Overview.txt > $@
+
+clean:
+	rm -f Makefile.tmp
 
 # vi:set ts=3 sw=3:

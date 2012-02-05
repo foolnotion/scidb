@@ -12,7 +12,7 @@
 
 include ../../Makefile.in
 
-INCLUDE	= -I. -I../mstl -I../sys -Izlib -Iminizip
+INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip
 CXXFLAGS	+=  $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
@@ -21,6 +21,7 @@ SRC_CXX = \
 	u_bit_stream.cpp \
 	u_byte_stream.cpp \
 	u_exception.cpp \
+	u_html.cpp \
 	u_http.cpp \
 	u_misc.cpp \
 	u_path.cpp \
@@ -146,6 +147,43 @@ u_exception.o: ../mstl/m_backtrace.h
 u_exception.o: ../mstl/m_types.h
 u_exception.o: ../mstl/m_exception.ipp
 u_exception.o: ../mstl/m_stdio.h
+u_html.o: u_html.h
+u_html.o: ../mstl/m_string.h
+u_html.o: ../mstl/m_types.h
+u_html.o: ../mstl/m_string.ipp
+u_html.o: ../mstl/m_utility.h
+u_html.o: ../mstl/m_type_traits.h
+u_html.o: ../mstl/m_type_traits.ipp
+u_html.o: ../mstl/m_utility.ipp
+u_html.o: ../mstl/m_limits.h
+u_html.o: ../mstl/m_bit_functions.h
+u_html.o: ../mstl/m_bit_functions.ipp
+u_html.o: ../mstl/m_assert.h
+u_html.o: ../mstl/m_exception.h
+u_html.o: ../mstl/m_backtrace.h
+u_html.o: ../mstl/m_exception.ipp
+u_html.o: ../mstl/m_vector.h
+u_html.o: ../mstl/m_memblock.h
+u_html.o: ../mstl/m_memblock.ipp
+u_html.o: ../mstl/m_vector.ipp
+u_html.o: ../mstl/m_uninitialized.h
+u_html.o: ../mstl/m_uninitialized.ipp
+u_html.o: ../mstl/m_algobase.h
+u_html.o: ../mstl/m_algobase.ipp
+u_html.o: ../mstl/m_construct.h
+u_html.o: ../mstl/m_construct.ipp
+u_html.o: u_html.ipp
+u_html.o: libhyphenate/Hyphenator.h
+u_html.o: ../mstl/m_set.h
+u_html.o: ../mstl/m_set.ipp
+u_html.o: ../mstl/m_algorithm.h
+u_html.o: ../mstl/m_algorithm.ipp
+u_html.o: ../mstl/m_auto_ptr.h
+u_html.o: ../mstl/m_auto_ptr.ipp
+u_html.o: ../mstl/m_pair.h
+u_html.o: ../mstl/m_pair.ipp
+u_html.o: ../sys/sys_utf8.h
+u_html.o: ../sys/sys_utf8.ipp
 u_http.o: u_http.h
 u_http.o: ../mstl/m_string.h
 u_http.o: ../mstl/m_types.h

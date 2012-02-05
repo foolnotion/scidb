@@ -430,6 +430,7 @@ struct HtmlOptions {
     int       mode;                      /* One of the HTML_MODE_XXX values */
     int       shrink;                    /* Boolean */
     int       xhtml;                     /* Boolean. True -> parse as XHTML */
+    int       showhyphens;               /* Integer. Hyphenation modus */
     double    zoom;                      /* Universal scaling factor. */
     XColor    inactiveselectbackground;
     XColor    inactiveselectforeground;
@@ -767,7 +768,8 @@ void HtmlDrawDeleteControls(HtmlTree *, HtmlCanvas *);
 
 void HtmlDrawCanvas(HtmlCanvas*,HtmlCanvas*,int,int,HtmlNode*);
 void HtmlDrawText(HtmlCanvas*,const char*,int,int,int,int,int,HtmlNode*,int);
-void HtmlDrawTextExtend(HtmlCanvas*, int, int);
+void HtmlDrawTextHyphen(HtmlCanvas*, int);
+void HtmlDrawTextExtend(HtmlCanvas*, int, int, int);
 int HtmlDrawTextLength(HtmlCanvas*);
 
 #define CANVAS_BOX_OPEN_LEFT    0x01      /* Open left-border */
@@ -929,7 +931,7 @@ void HtmlInitTree(HtmlTree *);
 /*
  * Creation and deletion of HtmlTextNode objects.
  */
-HtmlTextNode * HtmlTextNew(int, const char *, int, int);
+HtmlTextNode * HtmlTextNew(HtmlTree*, int, const char *, int, int);
 void           HtmlTextFree(HtmlTextNode *);
 
 /* The details of this structure should be considered private to
@@ -960,6 +962,7 @@ struct HtmlTextIter {
 void HtmlTextIterFirst(HtmlTextNode *, HtmlTextIter *);
 void HtmlTextIterNext(HtmlTextIter *);
 int HtmlTextIterIsValid(HtmlTextIter *);
+int HtmlTextIterIsNotLast(HtmlTextIter *);
 
 /*
  * Query functions to discover the token type, length and data.
@@ -979,6 +982,7 @@ int HtmlTextIterIsValid(HtmlTextIter *);
  */
 int         HtmlTextIterType(HtmlTextIter *);
 int         HtmlTextIterLength(HtmlTextIter *);
+int         HtmlTextIterHyphen(HtmlTextIter *);
 const char *HtmlTextIterData(HtmlTextIter *);
 
 #ifdef NDEBUG

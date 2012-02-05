@@ -60,6 +60,7 @@ proc Build {w args} {
 		-center				no
 		-imagecmd			{}
 		-doublebuffer		yes
+		-showhyphens		0
 		-delay				0
 		-css					{}
 	}
@@ -73,7 +74,7 @@ proc Build {w args} {
 			-delay - -css - -center {}
 
 			-imagecmd - -doublebuffer - -exportselection -
-			-selectbackground - -selectforeground -
+			-selectbackground - -selectforeground - -showhyphens -
 			-inactiveselectbackground - -inactiveselectforeground {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }

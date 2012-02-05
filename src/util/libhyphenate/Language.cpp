@@ -41,7 +41,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-using namespace RFC_3066;
+using namespace rfc_3066;
 
 
 Language::Language(mstl::string const& rfc_3066)
@@ -154,8 +154,7 @@ Language::find_suitable_file(mstl::string const& dir) const
 			return path;
 	}
 
-	M_RAISE("libhyphenate: No suitable hyphenation file for language " +
-				concat(components.size()) + " found in " + dir);
+	return mstl::string::empty_string;
 }
 
 // vi:set ts=3 sw=3:

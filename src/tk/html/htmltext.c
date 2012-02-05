@@ -46,6 +46,7 @@
 #define ISNEWLINE(x) ((x) == '\n' || (x) == '\r')
 #define ISTAB(x) ((x) == '\t')
 #define ISSPACE(x) isspace((unsigned char)(x))
+#define ISHYPHEN(x) ((x) == 0xAD)
 
 /*
  * This file implements the experimental [tag] widget method. The
@@ -1721,14 +1722,14 @@ HtmlTextBboxCmd(clientData, interp, objc, objv)
  *
  *     The following block of text:
  *
- *         "abcde   <NEWLINE>&gt;&lt;<NEWLINE><NEWLINE>hello"
+ *         "abcde   <NEWLINE>&gt;&lt;<NEWLINE><NEWLINE>hel&shy;lo"
  *
  *     Is represented by the data structures:
  *
  *         HtmlTextNode.aToken = {
  *              {TEXT, 5}, {SPACE, 3}, {NEWLINE, 1},
  *              {TEXT, 2}, {NEWLINE 2},
- *              {TEXT, 5},
+ *              {TEXT, 5 (3)},
  *              {END, <unused>},
  *         }
  *         HtmlTextNode.zText  = "abcde <> hello"
@@ -1763,7 +1764,8 @@ HtmlTextBboxCmd(clientData, interp, objc, objv)
  */
 struct HtmlTextToken {
     unsigned char n;
-    unsigned char eType;
+    unsigned char eType:7;
+    unsigned char iHyphen:1;
 };
 
 /* Return true if the argument is a unicode codpoint that should be handled
@@ -1853,11 +1855,74 @@ tokenLength(zToken, zEnd)
 
     iChar = utf8Read(zCsr, zEnd, &zNext);
     while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar)){
-      zCsr = zNext;
-      iChar = utf8Read(zCsr, zEnd, &zNext);
+        zCsr = zNext;
+        iChar = utf8Read(zCsr, zEnd, &zNext);
     }
 
     return ((zCsr==zToken)?zNext:zCsr)-zToken;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * copyText --
+ *
+ *     This function copies text discarding soft hyphens.
+ *
+ *---------------------------------------------------------------------------
+ */
+static unsigned
+copyText(dst, src, len)
+    unsigned char* dst;
+    const unsigned char* src;
+    unsigned len;
+{
+    const unsigned char* e = src + len;
+    unsigned char* p = dst;
+
+    for ( ; src < e; ++src) {
+        if (src[0] == 0xC2 && src < e - 1 && src[1] == 0xAD) {
+            ++src;
+        } else {
+            *p++ = *src;
+        }
+    }
+
+    return p - dst;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * setupToken --
+ *
+ *     Set text token arguments.
+ *
+ *---------------------------------------------------------------------------
+ */
+static void
+setupToken(HtmlTextToken* pToken, unsigned char n, unsigned char hyphen)
+{
+    pToken->eType = HTML_TEXT_TOKEN_TEXT;
+    pToken->n = n;
+    pToken->iHyphen = hyphen;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * setupTokenLong --
+ *
+ *     Set text token arguments.
+ *
+ *---------------------------------------------------------------------------
+ */
+static void
+setupTokenLong(HtmlTextToken* pToken, unsigned char n)
+{
+    pToken->eType = HTML_TEXT_TOKEN_LONGTEXT;
+    pToken->n = n;
+    pToken->iHyphen = 0;
 }
 
 /*
@@ -1882,7 +1947,8 @@ tokenLength(zToken, zEnd)
  *---------------------------------------------------------------------------
  */
 static void
-populateTextNode(n, z, pText, pnToken, pnText)
+populateTextNode(pTree, n, z, pText, pnToken, pnText)
+    HtmlTree* pTree;
     int n;                     /* Length of input text */
     char const *z;             /* Input text */
     HtmlTextNode *pText;       /* OUT: The structure to populate (or NULL) */
@@ -1979,22 +2045,48 @@ populateTextNode(n, z, pText, pnToken, pnText)
 
             if (nThisText > 255) {
                 if (pText) {
-                    pText->aToken[nToken].eType = HTML_TEXT_TOKEN_LONGTEXT;
-                    pText->aToken[nToken+1].eType = HTML_TEXT_TOKEN_LONGTEXT;
-                    pText->aToken[nToken+2].eType = HTML_TEXT_TOKEN_LONGTEXT;
-                    pText->aToken[nToken].n = ((nThisText >> 16) & 0x000000FF);
-                    pText->aToken[nToken+1].n = ((nThisText >> 8) & 0x000000FF);
-                    pText->aToken[nToken+2].n = (nThisText & 0x000000FF);
-                    memcpy(&pText->zText[nText], zStart, nThisText);
+                    nThisText = copyText(&pText->zText[nText], zStart, nThisText);
+                    setupTokenLong(&pText->aToken[nToken], (nThisText >> 16) & 0x000000FF);
+                    setupTokenLong(&pText->aToken[nToken + 1], (nThisText >> 8) & 0x000000FF);
+                    setupTokenLong(&pText->aToken[nToken + 2], nThisText & 0x000000FF);
                 }
                 nToken += 3;
             } else {
-                if (pText) {
-                    pText->aToken[nToken].eType = HTML_TEXT_TOKEN_TEXT;
-                    pText->aToken[nToken].n = nThisText;
-                    memcpy(&pText->zText[nText], zStart, nThisText);
+                Tcl_UniChar iChar = 0;
+                const unsigned char *zCurr = zStart;
+                const unsigned char *zLast = zStart;
+                const unsigned char *zNext = zStart;
+                const unsigned char *zEnd  = zStart + nThisText;
+
+                nThisText = 0;
+                iChar = utf8Read(zCurr, zEnd, &zNext);
+                while (iChar) {
+                    if (ISHYPHEN(iChar)) {
+                        if (zCurr > zLast) {
+                            int n = zCurr - zLast;
+                            if (pText) {
+                                memcpy(&pText->zText[nText + nThisText], zLast, n);
+                                setupToken(&pText->aToken[nToken], n, 1);
+                            }
+                            nThisText += n;
+                            nToken++;
+                        }
+                        zLast = zNext;
+                    }
+                    zCurr = zNext;
+                    iChar = utf8Read(zCurr, zEnd, &zNext);
                 }
-                nToken++;
+                if (zCurr > zLast) {
+                    int n = zCurr - zLast;
+                    if (pText) {
+                        memcpy(&pText->zText[nText + nThisText], zLast, n);
+                        setupToken(&pText->aToken[nToken], n, 0);
+                    }
+                    nThisText += n;
+                    nToken++;
+                } else if (pText && nThisText > 0) {
+                    pText->aToken[nToken - 1].iHyphen = 0;
+                }
             }
 
             nText += nThisText;
@@ -2014,7 +2106,8 @@ populateTextNode(n, z, pText, pnToken, pnText)
 }
 
 HtmlTextNode *
-HtmlTextNew(n, z, isTrimEnd, isTrimStart)
+HtmlTextNew(pTree, n, z, isTrimEnd, isTrimStart)
+    HtmlTree* pTree;
     int n;
     const char *z;
     int isTrimEnd;
@@ -2038,7 +2131,7 @@ HtmlTextNew(n, z, isTrimEnd, isTrimStart)
     HtmlTranslateEscapes(z2);
 
     /* Figure out how much space is required for this HtmlTextNode. */
-    populateTextNode(strlen(z2), z2, 0, &nToken, &nText);
+    populateTextNode(pTree, strlen(z2), z2, 0, &nToken, &nText);
     assert(nText >= 0 && nToken > 0);
 
     /* Allocate space for the HtmlTextNode and it's two array members */
@@ -2053,7 +2146,7 @@ HtmlTextNew(n, z, isTrimEnd, isTrimStart)
     }
 
     /* Populate the HtmlTextNode.aToken and zText arrays. */
-    populateTextNode(strlen(z2), z2, pText, 0, 0);
+    populateTextNode(pTree, strlen(z2), z2, pText, 0, 0);
     HtmlFree(z2);
 
     assert(pText->aToken[nToken-1].eType == HTML_TEXT_TOKEN_END);
@@ -2162,6 +2255,13 @@ HtmlTextIterIsValid(pTextIter)
     return (p->eType != HTML_TEXT_TOKEN_END) ? 1 : 0;
 }
 
+int
+HtmlTextIterIsNotLast(pTextIter)
+    HtmlTextIter *pTextIter;
+{
+    return pTextIter->pTextNode->aToken[pTextIter->iToken + 1].eType != HTML_TEXT_TOKEN_END;
+}
+
 void
 HtmlTextIterNext(pTextIter)
     HtmlTextIter *pTextIter;
@@ -2174,8 +2274,7 @@ HtmlTextIterNext(pTextIter)
 
     if (eType == HTML_TEXT_TOKEN_TEXT) {
         pTextIter->iText += p->n;
-    }
-    else if (eType == HTML_TEXT_TOKEN_LONGTEXT) {
+    } else if (eType == HTML_TEXT_TOKEN_LONGTEXT) {
         int n = (p[0].n << 16) + (p[1].n << 8) + p[2].n;
         pTextIter->iText += n;
         pTextIter->iToken += 2;
@@ -2218,3 +2317,11 @@ HtmlTextIterData(pTextIter)
     return (const char *)(&pTextIter->pTextNode->zText[pTextIter->iText]);
 }
 
+int
+HtmlTextIterHyphen(pTextIter)
+    HtmlTextIter *pTextIter;
+{
+    return pTextIter->pTextNode->aToken[pTextIter->iToken].iHyphen;
+}
+
+/* vi: set ts=4 sw=4 et: */

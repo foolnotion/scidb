@@ -39,6 +39,15 @@ template <typename T> inline typename set<T>::const_iterator set<T>::end() const
 template <typename T> inline bool set<T>::contains(const_reference v) const { return find(v) != end(); }
 
 
+template <typename T>
+inline
+typename set<T>::container_type const&
+set<T>::container() const
+{
+	return m_v;
+}
+
+
 template <typename V>
 inline
 set<V>&

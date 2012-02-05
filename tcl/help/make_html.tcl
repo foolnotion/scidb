@@ -159,8 +159,8 @@ proc getArg {line} {
 }
 
 
-if {$argc != 1} {
-	puts "Usage: [info script] <input-file> <output-file>"
+if {$argc < 1} {
+	puts "Usage: [info script] <input-file> [<output-file>]"
 	exit 1
 }
 
@@ -183,7 +183,7 @@ if {$codeName ne $lang} {
 }
 
 set srcfile [lindex $argv 0]
-set dstfile "[file rootname $srcfile].html"
+set dstfile [lindex $argv 1]
 
 set src [open $srcfile r]
 set charset $charsetName
@@ -304,9 +304,14 @@ proc processContents {contents} {
 
 set body {}
 processContents [readContents $src [info script]]
-set dst [open $dstfile w]
-fconfigure $dst -encoding utf-8
-print $dst [file join tcl help $lang $srcfile] $title $body
-close $dst
+
+if {[string length $dstfile] == 0} {
+	print stdout [file join tcl help $lang $srcfile] $title $body
+} else {
+	set dst [open $dstfile w]
+	fconfigure $dst -encoding utf-8
+	print $dst [file join tcl help $lang $srcfile] $title $body
+	close $dst
+}
 
 # vi:set ts=3 sw=3:

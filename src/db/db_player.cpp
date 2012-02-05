@@ -191,14 +191,14 @@ insert(Player::Matches& matches, Player const* player)
 static int
 cmpAssoc(PlayerList::value_type const* lhs, PlayerList::value_type const* rhs)
 {
-	return sys::utf8::Codec::compare(lhs->first, rhs->first);
+	return sys::utf8::compare(lhs->first, rhs->first);
 }
 
 
 static int
 cmpMatch(Player::Matches::value_type const* lhs, Player::Matches::value_type const* rhs)
 {
-	return sys::utf8::Codec::compare((*lhs)->name(), (*rhs)->name());
+	return sys::utf8::compare((*lhs)->name(), (*rhs)->name());
 }
 
 

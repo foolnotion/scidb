@@ -41,16 +41,16 @@
 
 namespace mstl { class istream; }
 
-namespace Hyphenate
+namespace hyphenate
 {
-	class HyphenationNode;
-
 	/// \class HyphenationTree
 	/// \brief The root for a tree of HyphenationNodes.
 
 	class HyphenationTree
 	{
 	private:
+
+		class HyphenationNode;
 
 		HyphenationNode* root;
 		unsigned start_safe, end_safe;

@@ -111,6 +111,59 @@ sys::utf8::validate(char const* str, unsigned nbytes)
 }
 
 
+inline static int
+utfToUniChar(char const* s, Tcl_UniChar& ch)
+{
+	if (static_cast<unsigned char>(*s) >= 0xc0)
+		return Tcl_UtfToUniChar(s, &ch);
+
+	ch = *s;
+	return 1;
+}
+
+
+static
+bool
+matchString(char const* s, char const* t, unsigned len)
+{
+	char const* e = s + len;
+
+	while (s < e)
+	{
+		Tcl_UniChar u, v;
+
+		s += ::utfToUniChar(s, u);
+		t += ::utfToUniChar(t, v);
+
+		if (u != v)
+			return false;
+	}
+
+	return true;
+}
+
+
+static
+bool
+matchStringNoCase(char const* s, char const* t, unsigned len)
+{
+	char const* e = s + len;
+
+	while (s < e)
+	{
+		Tcl_UniChar u, v;
+
+		s += ::utfToUniChar(s, u);
+		t += ::utfToUniChar(t, v);
+
+		if (Tcl_UniCharToUpper(u) != Tcl_UniCharToUpper(v))
+			return false;
+	}
+
+	return true;
+}
+
+
 struct IsAlpha 	{ inline bool operator()(sys::utf8::uchar uc) { return  Tcl_UniCharIsAlpha(uc); } };
 struct IsSpace		{ inline bool operator()(sys::utf8::uchar uc) { return  Tcl_UniCharIsSpace(uc); } };
 struct IsNonAlpha	{ inline bool operator()(sys::utf8::uchar uc) { return !Tcl_UniCharIsAlpha(uc); } };
@@ -130,7 +183,7 @@ skip(char const* str, char const* end, Func func)
 
 	while (str < end && func(code))
 		len = Tcl_UtfToUniChar(str += len, &code);
-	
+
 	return str;
 }
 
@@ -139,6 +192,13 @@ unsigned
 sys::utf8::countChars(mstl::string const& str)
 {
 	return Tcl_NumUtfChars(str, str.size());
+}
+
+
+unsigned
+sys::utf8::countChars(char const* str, unsigned byteLength)
+{
+	return Tcl_NumUtfChars(str, byteLength);
 }
 
 
@@ -186,6 +246,15 @@ sys::utf8::getChar(char const* str)
 	uchar code;
 	Tcl_UtfToUniChar(str, &code);
 	return code;
+}
+
+
+mstl::string&
+sys::utf8::append(mstl::string& result, uchar uc)
+{
+	char buf[TCL_UTF_MAX];
+	result.append(buf, Tcl_UniCharToUtf(uc, buf));
+	return result;
 }
 
 
@@ -296,6 +365,216 @@ sys::utf8::makeValid(mstl::string& str, bool& failed)
 	}
 
 	str.swap(result);
+}
+
+
+int
+sys::utf8::compare(mstl::string const& lhs, mstl::string const& rhs)
+{
+	M_REQUIRE(validate(lhs));
+	M_REQUIRE(validate(rhs));
+
+	char const* p = lhs.c_str();
+	char const* q = rhs.c_str();
+
+	Tcl_UniChar c, d;
+
+	while (true)
+	{
+		if (*p == 0) return *q == 0 ? 0 : -1;
+		if (*q == 0) return *p == 0 ? 0 : +1;
+
+		p = nextChar(p, c);
+		q = nextChar(q, d);
+
+		if (c != d) return c - d;
+	}
+
+	return 0;	// satisfies the compiler
+}
+
+
+int
+sys::utf8::casecmp(mstl::string const& lhs, mstl::string const& rhs)
+{
+	M_REQUIRE(validate(lhs));
+	M_REQUIRE(validate(rhs));
+
+	// IMPORTANT NOTE:
+	// At this time, the case conversions are only defined for the ISO8859-1 characters.
+
+	char const* p = lhs.c_str();
+	char const* q = rhs.c_str();
+
+	Tcl_UniChar c, d;
+
+	while (true)
+	{
+		if (*p == 0) return *q == 0 ? 0 : -1;
+		if (*q == 0) return *p == 0 ? 0 : +1;
+
+		p = nextChar(p, c);
+		q = nextChar(q, d);
+
+		if (c != d)
+		{
+			c = Tcl_UniCharToLower(c);
+			d = Tcl_UniCharToLower(d);
+
+			if (c != d) return c - d;
+		}
+	}
+
+	return 0;	// satisfies the compiler
+}
+
+
+bool
+sys::utf8::caseMatch(mstl::string const& lhs, mstl::string const& rhs, unsigned size)
+{
+	M_REQUIRE(validate(lhs));
+	M_REQUIRE(validate(rhs));
+
+	// IMPORTANT NOTE:
+	// At this time, the case conversions are only defined for the ISO8859-1 characters.
+
+	char const* p = lhs.c_str();
+	char const* q = rhs.c_str();
+	char const* e = p + size;
+	char const* f = q + size;
+
+	Tcl_UniChar c, d;
+
+	while (p < e && q < f)
+	{
+		if (*p == 0)
+			return false;
+		if (*q == 0)
+			return true;
+
+		p = nextChar(p, c);
+		q = nextChar(q, d);
+
+		if (c != d)
+		{
+			c = Tcl_UniCharToLower(c);
+			d = Tcl_UniCharToLower(d);
+
+			if (c != d)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+
+int
+sys::utf8::findFirst(char const* haystack, unsigned haystackLen, char const* needle, unsigned needleLen)
+{
+	M_REQUIRE(validate(needle, needleLen));
+	M_REQUIRE(validate(haystack, haystackLen));
+
+	if (needleLen == 0)
+		return -1;
+
+	char const* end = haystack + haystackLen - needleLen + 1;
+
+	for (char const* p = haystack; p < end; p = Tcl_UtfNext(p))
+	{
+		if (*p == *needle && ::matchString(p, needle, needleLen))
+			return p - haystack;
+	}
+
+	return -1;
+}
+
+
+int
+sys::utf8::findFirstNoCase(char const* haystack,
+									unsigned haystackLen,
+									char const* needle,
+									unsigned needleLen)
+{
+	M_REQUIRE(validate(needle, needleLen));
+	M_REQUIRE(validate(haystack, haystackLen));
+
+	if (needleLen == 0)
+		return -1;
+
+	char const* end = haystack + haystackLen - needleLen + 1;
+
+	Tcl_UniChar u;
+	unsigned bytes = ::utfToUniChar(needle, u);
+	u = Tcl_UniCharToUpper(u);
+	needleLen -= bytes;
+	needle += bytes;
+
+	for (char const* p = haystack; p < end; )
+	{
+		char const* s = p;
+		Tcl_UniChar v;
+
+		p += ::utfToUniChar(p, v);
+
+		if (u == Tcl_UniCharToUpper(v) && ::matchStringNoCase(p, needle, needleLen))
+			return s - haystack;
+	}
+
+	return -1;
+}
+
+
+unsigned
+sys::utf8::levenstein(	mstl::string const& lhs,
+								mstl::string const& rhs,
+								unsigned ins,
+								unsigned del,
+								unsigned sub)
+{
+	// we have to restrict array size
+	M_REQUIRE(countChars(lhs) < 256);
+	M_REQUIRE(countChars(rhs) < 256);
+
+	unsigned lhsSize = sys::utf8::countChars(lhs);
+	unsigned rhsSize = sys::utf8::countChars(rhs);
+
+	if (lhsSize == 0)
+		return rhsSize*ins;
+	if (rhsSize == 0)
+		return lhsSize*ins;
+
+	// algorithm from http://en.wikipedia.org/wiki/Levenshtein_distance
+
+	uchar			d[256][256];
+	Tcl_UniChar	c[256];
+
+	for (unsigned i = 0; i <= lhsSize; ++i)
+		d[i][0] = i;
+	for (unsigned j = 0; j <= rhsSize; ++j)
+		d[0][j] = j;
+
+	char const* ls = lhs.c_str();
+	char const* rs = rhs.c_str();
+
+	for (unsigned i = 0; i < lhsSize; ++i)
+		ls = nextChar(rs, c[i]);
+
+	for (unsigned j = 0; j < rhsSize; ++j)
+	{
+		Tcl_UniChar b;
+		rs = nextChar(rs, b);
+
+		for (unsigned i = 0; i < lhsSize; ++i)
+		{
+			if (c[i] == b)
+				d[i + 1][j + 1] = d[i][j];
+			else
+				d[i + 1][j + 1] = mstl::min(d[i][j + 1] + del, d[i + 1][j] + ins, d[i][j] + sub);
+		}
+	}
+
+	return d[lhsSize][rhsSize];
 }
 
 // vi:set ts=3 sw=3:

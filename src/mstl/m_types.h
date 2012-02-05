@@ -283,6 +283,10 @@
 # define override
 #endif
 
+#if !HAVE_0X_ALLOWING_MOVE_CONSTRUCTORS_TO_THROW
+# define noexcept
+#endif
+
 #if !HAVE_0X_STATIC_ASSERTIONS
 
 namespace mstl {

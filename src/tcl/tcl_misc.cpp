@@ -39,17 +39,14 @@
 #include "sys_file.h"
 
 #include "u_crc.h"
+#include "u_html.h"
 
 #include "m_backtrace.h"
 #include "m_string.h"
-#include "m_stack.h"
-#include "m_vector.h"
 #include "m_assert.h"
 
 #include <tcl.h>
-#include <expat.h>
 #include <string.h>
-#include <ctype.h>
 
 using namespace tcl;
 
@@ -62,7 +59,7 @@ static char const* CmdEncoding		= "::scidb::misc::encoding";
 static char const* CmdExtraTags		= "::scidb::misc::extraTags";
 static char const* CmdFitsRegion		= "::scidb::misc::fitsRegion?";
 static char const* CmdHardLinked		= "::scidb::misc::hardLinked?";
-static char const* CmdHtmlSearch		= "::scidb::misc::htmlSearch";
+static char const* CmdHtml				= "::scidb::misc::html";
 static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
 static char const* CmdLookup			= "::scidb::misc::lookup";
 static char const* CmdRevision		= "::scidb::misc::revision";
@@ -70,8 +67,9 @@ static char const* CmdSize				= "::scidb::misc::size";
 static char const* CmdSuffixes		= "::scidb::misc::suffixes";
 static char const* CmdToAscii			= "::scidb::misc::toAscii";
 static char const* CmdVersion			= "::scidb::misc::version";
-static char const* CmdXmlFromList	= "::scidb::misc::xmlFromList";
-static char const* CmdXmlToList		= "::scidb::misc::xmlToList";
+static char const* CmdXml				= "::scidb::misc::xml";
+
+static unsigned cacheCount = 0;
 
 
 static void
@@ -545,269 +543,6 @@ Parser::parse()
 	return m_xml;
 }
 
-
-struct HtmlSearch
-{
-	typedef int (*Compare)(char const*, unsigned, char const*, unsigned);
-	typedef mstl::vector<unsigned> PosList;
-
-	HtmlSearch(bool noCase, bool entireWord, bool titleOnly, bool skipRefs, unsigned maxMatches);
-	~HtmlSearch();
-
-	int parse(char const* document, unsigned length, char const* search, unsigned searchLen);
-
-	int stringFirstCmd(char const* haystack, unsigned haystackLen);
-	void addPosition(unsigned pos);
-
-	static void htmlContent(void* cbData, XML_Char const* s, int len);
-	static void htmlStartElement(void* cbData, XML_Char const* elem, char const** attr);
-	static void htmlEndElement(void* cbData, XML_Char const* elem);
-
-	XML_Parser		m_parser;
-	char const*		m_needle;
-	char const*		m_haystack;
-	unsigned			m_length;
-	Compare			m_compare;
-	bool				m_entireWord;
-	bool				m_titleOnly;
-	bool				m_skipRefs;
-	bool				m_isTitle;
-	bool				m_tooMany;
-	int				m_skip;
-	unsigned			m_maxMatches;
-	unsigned			m_lastBytePos;
-	unsigned			m_lastCharPos;
-	PosList			m_posList;
-	mstl::string	m_title;
-};
-
-
-HtmlSearch::HtmlSearch(bool noCase, bool entireWord, bool titleOnly, bool skipRefs, unsigned maxMatches)
-	:m_parser(XML_ParserCreate("UTF-8"))
-	,m_needle(0)
-	,m_length(0)
-	,m_compare(noCase ? sys::utf8::Codec::findFirstNoCase : sys::utf8::Codec::findFirst)
-	,m_entireWord(entireWord)
-	,m_titleOnly(titleOnly)
-	,m_skipRefs(skipRefs)
-	,m_isTitle(false)
-	,m_tooMany(false)
-	,m_skip(m_titleOnly ? 1 : 0)
-	,m_maxMatches(maxMatches)
-	,m_lastBytePos(0)
-	,m_lastCharPos(0)
-{
-	if (m_parser == 0)
-		M_RAISE("couldn't allocate memory for parser");
-
-	XML_SetUserData(m_parser, this);
-	XML_SetCharacterDataHandler(m_parser, htmlContent);
-	XML_SetElementHandler(m_parser, htmlStartElement, htmlEndElement);
-}
-
-
-HtmlSearch::~HtmlSearch()
-{
-	XML_ParserFree(m_parser);
-}
-
-
-int
-HtmlSearch::stringFirstCmd(char const* haystack, unsigned haystackLen)
-{
-	int pos = m_compare(haystack, haystackLen, m_needle, m_length);
-
-	M_ASSERT(pos < 0 || unsigned(pos) <= haystackLen - m_length);
-
-	if (pos >= 0 && m_entireWord)
-	{
-		Tcl_UniChar u = 0;
-
-		if (pos > 0)
-		{
-			char const* p = Tcl_UtfPrev(haystack + pos, haystack);
-
-			Tcl_UtfToUniChar(p, &u);
-
-			if (Tcl_UniCharIsAlpha(u))
-				return -1;
-		}
-
-		if (unsigned(pos) + m_length < haystackLen - 1)
-		{
-			Tcl_UtfToUniChar(haystack + pos + m_length, &u);
-
-			if (Tcl_UniCharIsAlpha(u))
-				return -1;
-		}
-	}
-
-	return pos;
-}
-
-
-void
-HtmlSearch::htmlStartElement(void* cbData, XML_Char const* elem, char const** attr)
-{
-	switch (toupper(elem[0]))
-	{
-		case 'A':
-			if (elem[1] == '\0')
-				++static_cast<HtmlSearch*>(cbData)->m_skip;
-			break;
-
-		case 'H':
-		{
-			if (::isdigit(elem[1]))
-			{
-				HtmlSearch* self = static_cast<HtmlSearch*>(cbData);
-
-				if (elem[1] == '1')
-					self->m_isTitle = true;
-
-				if (self->m_titleOnly)
-					--self->m_skip;
-			}
-			else if (::strcasecmp(elem, "head") == 0)
-			{
-				++static_cast<HtmlSearch*>(cbData)->m_skip;
-			}
-		}
-		break;
-	}
-}
-
-
-void
-HtmlSearch::htmlEndElement(void* cbData, XML_Char const* elem)
-{
-	switch (toupper(elem[0]))
-	{
-		case 'A':
-			if (elem[1] == '\0')
-				--static_cast<HtmlSearch*>(cbData)->m_skip;
-			break;
-
-		case 'H':
-		{
-			if (::isdigit(elem[1]))
-			{
-				HtmlSearch* self = static_cast<HtmlSearch*>(cbData);
-
-				self->m_isTitle = false;
-
-				if (self->m_titleOnly)
-					++self->m_skip;
-			}
-			else if (::strcasecmp(elem, "head") == 0)
-			{
-				--static_cast<HtmlSearch*>(cbData)->m_skip;
-			}
-		}
-		break;
-	}
-}
-
-
-void
-HtmlSearch::addPosition(unsigned bytePos)
-{
-	M_ASSERT(bytePos > m_lastBytePos);
-
-	if (m_posList.size() == m_maxMatches)
-	{
-		m_tooMany = true;
-		++m_skip;
-	}
-	else
-	{
-		unsigned nchars = Tcl_NumUtfChars(m_haystack + m_lastBytePos, bytePos - m_lastBytePos);
-
-		{
-			char const* s = m_haystack + m_lastBytePos;
-			char const* e = m_haystack + bytePos;
-
-			unsigned n = 0;
-
-			for ( ; s < e; ++n)
-				s = Tcl_UtfNext(s);
-
-			M_ASSERT(nchars == n);
-		}
-
-		m_lastCharPos += nchars;
-		m_posList.push_back(m_lastCharPos);
-		m_lastBytePos = bytePos;
-	}
-}
-
-
-void
-HtmlSearch::htmlContent(void* cbData, XML_Char const* s, int len)
-{
-	if (*s == '\n' && len == 1)
-		return;
-
-	HtmlSearch* self = static_cast<HtmlSearch*>(cbData);
-
-	if (self->m_isTitle)
-		self->m_title.append(s, len);
-
-	if (self->m_skip)
-		return;
-
-	int pos	= self->stringFirstCmd(s, len);
-	int offs	= 0;
-
-	while (pos >= 0)
-	{
-		M_ASSERT(pos < len);
-
-		unsigned skip = pos + self->m_length;
-
-		self->addPosition(XML_GetCurrentByteIndex(self->m_parser) + offs + pos);
-
-		offs += skip;
-		len -= skip;
-
-		pos = self->stringFirstCmd(s + offs, len);
-	}
-}
-
-
-int
-HtmlSearch::parse(char const* document, unsigned length, char const* search, unsigned searchLen)
-{
-	// expat has problems with some &xxx; tokens.
-
-	char* buf = new char[length + 1];
-	::memcpy(buf, document, length + 1);
-	char* s = strchr(buf, '&');
-
-	while (s)
-	{
-		char* p = s + 1;
-
-		while (::isalpha(*p))
-			++p;
-
-		if (*p == ';')
-			::memset(s, ' ', ++p - s);
-
-		s = strchr(p, '&');
-	}
-
-	m_needle = search;
-	m_length = searchLen;
-	m_haystack = document;
-
-	int rc = XML_Parse(m_parser, buf, length, true);
-	delete [] buf;
-	m_title.trim();
-
-	return rc;
-}
-
 } // namespace
 
 
@@ -858,6 +593,21 @@ cmdXmlFromList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Parser parser(objectFromObj(objc, objv, 1));
 	setResult(parser.parse());
 	return TCL_OK;
+}
+
+
+static int
+cmdXml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* command = stringFromObj(objc, objv, 1);
+
+	if (strcmp(command, "toList") == 0)
+		return cmdXmlToList(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "fromList") == 0)
+		return cmdXmlFromList(clientData, ti, objc - 1, objv + 1);
+
+	return error(CmdXml, 0, 0, "unknown command '%s'", command);
 }
 
 
@@ -983,20 +733,43 @@ cmdHardLinked(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdHtmlHyphenate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+	{
+		Tcl_WrongNumArgs(	ti, 1, objv, "<patternFile> <dictFiles> <document>");
+		return TCL_ERROR;
+	}
+
+	int length;
+	char const* document = Tcl_GetStringFromObj(objv[3], &length);
+
+	util::html::Hyphenate hyphenate(
+		stringFromObj(objc, objv, 1),
+		stringFromObj(objc, objv, 2),
+		util::html::Hyphenate::KeepInCache);
+
+	hyphenate.parse(document, length);
+	setResult(hyphenate.result());
+
+	return TCL_OK;
+}
+
+
+static int
 cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc < 3)
 	{
 		Tcl_WrongNumArgs(	ti, 1, objv,
 								"?-nocase? ?-entireword? ?-titleonly? "
-								"?-skiprefs? ?-max N? <needle> <haystack>");
+								"?-max N? <needle> <haystack>");
 		return TCL_ERROR;
 	}
 
 	bool noCase			= false;
 	bool entireWord	= false;
 	bool titleOnly		= false;
-	bool skipRefs		= false;
 
 	unsigned maxMatches = unsigned(-1);
 
@@ -1016,28 +789,24 @@ cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			titleOnly = true;
 		}
-		else if (strcasecmp(option, "-skiprefs") == 0)
-		{
-			skipRefs = true;
-		}
 		else if (strcasecmp(option, "-max") == 0)
 		{
 			option = Tcl_GetString(objv[++i]);
 			maxMatches = ::strtoul(option, 0, 10);
 
 			if (i > objc - 2)
-				return error(CmdHtmlSearch, 0, 0, "missing haystack argument");
+				return error("html search", 0, 0, "missing haystack argument");
 
 			if (maxMatches == 0)
-				return error(CmdHtmlSearch, 0, 0, "invalid -max argument '%s'", option);
+				return error("html search", 0, 0, "invalid -max argument '%s'", option);
 		}
 		else
 		{
-			return error(CmdHtmlSearch, 0, 0, "unknown option '%s'", option);
+			return error("html search", 0, 0, "unknown option '%s'", option);
 		}
 	}
 
-	HtmlSearch search(noCase, entireWord, titleOnly, skipRefs, maxMatches);
+	util::html::Search search(noCase, entireWord, titleOnly, maxMatches);
 
 	int lengthHaystack;
 	int lengthNeedle;
@@ -1045,23 +814,54 @@ cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	haystack	= Tcl_GetStringFromObj(objv[objc - 1], &lengthHaystack);
 	char const*	needle	= Tcl_GetStringFromObj(objv[objc - 2], &lengthNeedle);
 	Tcl_Obj*		result	= Tcl_NewListObj(0, 0);
-	int			rc			= 0;
 
-	rc = search.parse(haystack, lengthHaystack, needle, lengthNeedle);
+	bool rc = search.parse(haystack, lengthHaystack, needle, lengthNeedle);
 
-	for (unsigned i = 0; i < search.m_posList.size(); ++i)
-		Tcl_ListObjAppendElement(ti, result, Tcl_NewIntObj(search.m_posList[i]));
+	for (unsigned i = 0; i < search.countMatches(); ++i)
+		Tcl_ListObjAppendElement(ti, result, Tcl_NewIntObj(search.matchPosition(i)));
 
 	Tcl_Obj* objs[4] =
 	{
 		Tcl_NewBooleanObj(rc),
-		Tcl_NewBooleanObj(search.m_tooMany),
-		Tcl_NewStringObj(search.m_title, search.m_title.size()),
+		Tcl_NewBooleanObj(search.tooManyMatches()),
+		Tcl_NewStringObj(search.title(), search.title().size()),
 		result,
 	};
 	setResult(U_NUMBER_OF(objs), objs);
 
 	return TCL_OK;
+}
+
+
+static int
+cmdHtmlCache(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	bool flag = boolFromObj(objc, objv, 1);
+
+	if (flag)
+		++::cacheCount;
+	else if (--::cacheCount == 0)
+		util::html::Hyphenate::clearCache();
+
+	return TCL_OK;
+}
+
+
+static int
+cmdHtml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* command = stringFromObj(objc, objv, 1);
+
+	if (strcmp(command, "search") == 0)
+		return cmdHtmlSearch(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "hyphenate") == 0)
+		return cmdHtmlHyphenate(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "cache") == 0)
+		return cmdHtmlCache(clientData, ti, objc - 1, objv + 1);
+
+	return error(CmdHtml, 0, 0, "unknown command '%s'", command);
 }
 
 
@@ -1077,7 +877,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdExtraTags,		cmdExtraTags);
 	createCommand(ti, CmdFitsRegion,		cmdFitsRegion);
 	createCommand(ti, CmdHardLinked,		cmdHardLinked);
-	createCommand(ti, CmdHtmlSearch,		cmdHtmlSearch);
+	createCommand(ti, CmdHtml,			cmdHtml);
 	createCommand(ti, CmdIsAscii,			cmdIsAscii);
 	createCommand(ti, CmdLookup,			cmdLookup);
 	createCommand(ti, CmdRevision,		cmdRevision);
@@ -1085,8 +885,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSuffixes,		cmdSuffixes);
 	createCommand(ti, CmdToAscii,			cmdToAscii);
 	createCommand(ti, CmdVersion,			cmdVersion);
-	createCommand(ti, CmdXmlFromList,	cmdXmlFromList);
-	createCommand(ti, CmdXmlToList,		cmdXmlToList);
+	createCommand(ti, CmdXml,			cmdXml);
 }
 
 } // namespace misc

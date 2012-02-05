@@ -23,7 +23,7 @@ TITLE Kontaktinformationen
 
 <h2>Homepage</h2>
 
-Die Scidb Internetseite ist erreichbar unter 
+Die Scidb-Internetseite ist erreichbar unter 
 <a href="http://scidb.sourceforge.net/">http://scidb.sourceforge.net/</a>.
 
 <h2>Mithilfe</h2>

@@ -41,8 +41,10 @@
 #include <string.h>
 #include <ctype.h>
 
+using namespace hyphenate;
 
-Hyphenate::HyphenationRule::HyphenationRule(mstl::string const& dpattern)
+
+HyphenationRule::HyphenationRule(mstl::string const& dpattern)
 	:del_pre(0)
 	,skip_post(0)
 {
@@ -112,7 +114,7 @@ Hyphenate::HyphenationRule::HyphenationRule(mstl::string const& dpattern)
 
 
 int
-Hyphenate::HyphenationRule::apply(mstl::string& word, mstl::string const& hyph) const
+HyphenationRule::apply(mstl::string& word, mstl::string const& hyph) const
 {
 	apply_first(word, hyph);
 	return apply_second(word);
@@ -120,7 +122,7 @@ Hyphenate::HyphenationRule::apply(mstl::string& word, mstl::string const& hyph) 
 
 
 void
-Hyphenate::HyphenationRule::apply_first(mstl::string& word, mstl::string const& hyph) const
+HyphenationRule::apply_first(mstl::string& word, mstl::string const& hyph) const
 {
 	if (del_pre > 0)
 		word.erase(word.size() - del_pre);
@@ -131,7 +133,7 @@ Hyphenate::HyphenationRule::apply_first(mstl::string& word, mstl::string const& 
 
 
 int
-Hyphenate::HyphenationRule::apply_second(mstl::string& word) const
+HyphenationRule::apply_second(mstl::string& word) const
 {
    if (del_pre > 0)
 		word.erase(word.size() - del_pre);

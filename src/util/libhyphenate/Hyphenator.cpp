@@ -34,10 +34,12 @@
 #include "Hyphenator.h"
 #include "HyphenationRule.h"
 #include "HyphenationTree.h"
+#include "Language.h"
 
 #include "sys_utf8.h"
 
 #include "m_fstream.h"
+#include "m_ostream.h"
 #include "m_vector.h"
 #include "m_auto_ptr.h"
 #include "m_assert.h"
@@ -45,20 +47,95 @@
 #include <stdlib.h>
 #include <locale.h>
 
-#define UTF8_MAX 6
+#ifdef WIN32
+static char const PathDelim = '\\';
+#else
+static char const PathDelim = '/';
+#endif
 
-using namespace RFC_3066;
-using namespace Hyphenate;
+#ifndef WIN32
+# define LIBHYPHENATE_DEFAULT_PATH "/usr/local/share/libhyphenate/"
+#endif
+
+static char const* PatternDir = "pattern";
+static char const* DictDir = "dict";
+
+using namespace rfc_3066;
+using namespace hyphenate;
+
+
+namespace hyphenate
+{
+	bool
+	operator<(::Hyphenator::String const& lhs, Hyphenator::String const& rhs)
+	{
+		char const* p = lhs.begin();
+		char const* e = lhs.end();
+		char const* q = rhs.begin();
+		char const* f = rhs.end();
+
+		sys::utf8::uchar c, d;
+
+		while (true)
+		{
+			if (p == e) return q != f;
+			if (q == f) return false;
+
+			if (*p == '-' ) ++p;
+			if (*q == '-' ) ++q;
+
+			p = sys::utf8::nextChar(p, c);
+			q = sys::utf8::nextChar(q, d);
+
+			if (c != d)
+			{
+				c = sys::utf8::toLower(c);
+				d = sys::utf8::toLower(d);
+
+				if (c != d) return c < d;
+			}
+		}
+
+		return false; // satisfies the compiler
+	}
+}
 
 
 /// The hyphenation table parser.
-static mstl::auto_ptr<HyphenationTree>
-read_hyphenation_table(mstl::string const& filename)
+static void
+read_hyphenation_table(mstl::auto_ptr<HyphenationTree>& output, mstl::string const& filename)
 {
-   mstl::ifstream i(filename, mstl::ifstream::in);
-   mstl::auto_ptr<HyphenationTree> output(new HyphenationTree());
-   output->loadPatterns(i);
-   return output;
+   mstl::ifstream strm(filename, mstl::ifstream::in);
+
+	if (strm)
+	{
+		if (!output)
+			output.reset(new HyphenationTree());
+		output->loadPatterns(strm);
+	}
+}
+
+
+/// The hyphenation dictionary parser.
+static void
+read_dictionary(mstl::auto_ptr<Hyphenator::Lookup>& output, mstl::string const& filename)
+{
+	mstl::ifstream strm(filename, mstl::ifstream::in);
+
+	if (strm)
+	{
+		mstl::string line;
+
+		if (!output)
+			output.reset(new Hyphenator::Lookup);
+
+		while (strm.getline(line))
+		{
+			line.unhook();
+			line.trim();
+			output->push_back(line);
+		}
+	}
 }
 
 
@@ -72,92 +149,201 @@ read_hyphenation_table(mstl::string const& filename)
 ///
 ///\param lang The language for which hyphenation patterns will be
 ///            loaded.
-Hyphenate::Hyphenator::Hyphenator(RFC_3066::Language const& lang)
+Hyphenator::Hyphenator(Language const& lang)
 {
-	char* oldLocale = ::setlocale(LC_CTYPE, "");
+	mstl::string path;
 
-	try
-	{
-		mstl::string path;
-
-		if (::getenv("LIBHYPHENATE_PATH"))
-			path = ::getenv("LIBHYPHENATE_PATH");
+	if (::getenv("LIBHYPHENATE_PATH"))
+		path = ::getenv("LIBHYPHENATE_PATH");
 
 #ifdef LIBHYPHENATE_DEFAULT_PATH
-		if (path.empty())
-			path = LIBHYPHENATE_DEFAULT_PATH;
+	if (path.empty())
+		path = LIBHYPHENATE_DEFAULT_PATH;
 #endif
 
-		path += "/";
+	if (path.empty())
+		return;
 
-		mstl::string filename = lang.find_suitable_file(path);
-		dictionary = ::read_hyphenation_table(filename);
-		::setlocale(LC_CTYPE, oldLocale);
-	}
-	catch (...)
+	mstl::string::size_type k = 0;
+	mstl::string::size_type n = path.find(';');
+	if (n == mstl::string::npos)
+		n = path.size();
+
+	while (k != mstl::string::npos)
 	{
-		::setlocale(LC_CTYPE, oldLocale);
-		throw;
+		mstl::string p(path, k, n - k);
+
+		if (!p.empty())
+			try_to_load(lang, p);
+
+		if (n >= path.size() - 1)
+		{
+			k = mstl::string::npos;
+		}
+		else
+		{
+			k = n + 1;
+
+			if ((n = path.find(';', k + 1)) == mstl::string::npos)
+				n = path.size();
+		}
 	}
 }
 
 
 /// Build a hyphenator from the patterns in the file provided.
-Hyphenate::Hyphenator::Hyphenator(mstl::string const& filename)
+Hyphenator::Hyphenator(mstl::string const& patternFilename, mstl::string const& dictFilenames)
 {
-	dictionary = ::read_hyphenation_table(filename);
+	::read_hyphenation_table(dictionary, patternFilename);
+
+	if (!dictFilenames.empty())
+	{
+		mstl::string::size_type k = 0;
+		mstl::string::size_type n = dictFilenames.find(';');
+		if (n == mstl::string::npos)
+			n = dictFilenames.size();
+
+		while (k != mstl::string::npos)
+		{
+			mstl::string filename(dictFilenames, k, n - k);
+
+			if (!filename.empty())
+				::read_dictionary(lookup, filename);
+
+			if (n >= dictFilenames.size() - 1)
+			{
+				k = mstl::string::npos;
+			}
+			else
+			{
+				k = n + 1;
+
+				if ((n = dictFilenames.find(';', k + 1)) == mstl::string::npos)
+					n = dictFilenames.size();
+			}
+		}
+	}
 }
 
 
-mstl::string
-Hyphenator::hyphenate(mstl::string const& word, mstl::string const& hyphen)
+Hyphenator::~Hyphenator() {}
+
+
+void
+Hyphenator::try_to_load(Language const& lang, mstl::string const& path)
 {
-	M_REQUIRE(sys::utf8::validate(word));
+	mstl::string pattFilename	= lang.find_suitable_file(path + ::PathDelim + ::PatternDir + ::PathDelim);
+	mstl::string dictFilename	= lang.find_suitable_file(path + ::PathDelim + ::DictDir + ::PathDelim);
+	mstl::string personalFname	= mstl::string(path + ::PathDelim + ::DictDir + ::PathDelim + "xx.dat");
 
-	mstl::string result;
-	unsigned word_start = unsigned(-1);
-
-	char const* w = word.c_str();
-
-	// Go through the input. All non-alpha characters are added to the
-	// output immediately, and words are hyphenated and then added.
-
-	for (unsigned i = 0; i < word.size(); ++i)
+	if (!pattFilename.empty())
 	{
-		// Skip UTF-8 tail bytes.
-		if (sys::utf8::isFirst(word[i]))
+		char* oldLocale = ::setlocale(LC_CTYPE, "");
+
+		try
 		{
-			if (sys::utf8::isAlpha(sys::utf8::getChar(w)))
-			{
-				if (word_start == mstl::string::npos)
-					word_start = i;
-			}
-			else if (word_start != mstl::string::npos)
-			{
-				result += hyphenate_word(word.substr(word_start, i - word_start), hyphen);
-				word_start = mstl::string::npos;
-			}
+			::read_hyphenation_table(dictionary, pattFilename);
+			if (!dictFilename.empty())
+				::read_dictionary(lookup, dictFilename);
+			::read_dictionary(lookup, personalFname);
+		}
+		catch (...)
+		{
+			::setlocale(LC_CTYPE, oldLocale);
+			throw;
 		}
 
-		if (word_start == mstl::string::npos)
-			result += word[i];
+		::setlocale(LC_CTYPE, oldLocale);
 	}
+}
 
-	if (word_start != mstl::string::npos)
-		result += hyphenate_word(word.substr(word_start), hyphen);
+
+void
+Hyphenator::dump_lookup(mstl::ostream& strm) const
+{
+	if (!lookup)
+		return;
+	
+	for (unsigned i = 0; i < lookup->container().size(); ++i)
+	{
+		strm.write(lookup->container()[i].s);
+		strm.put('\n');
+	}
+}
+
+
+Hyphenator::result
+Hyphenator::replace_hyphens(mstl::string const& word, mstl::string const& hyphen)
+{
+	if (hyphen == "-")
+		return word;
+
+	mstl::string result;
+
+	char const* s = word.begin();
+	char const* e = word.end();
+
+	for ( ; s < e; ++s)
+	{
+		if (sys::utf8::isTail(*s))
+			result.append(*s);
+		else if (*s == '-')
+			result.append(hyphen);
+		else
+			result.append(*s);
+	}
 
 	return result;
 }
 
 
-mstl::string Hyphenator::hyphenate_word(mstl::string const& word, mstl::string const& hyphen)
+Hyphenator::result
+Hyphenator::hyphenate(mstl::string const& text, mstl::string const& hyphen)
 {
+	char const* cur	= text.begin();
+	char const* next	= cur;
+	char const* end	= text.end();
+
+	mstl::string result;
+
+	while (next < end)
+	{
+		next = sys::utf8::skipNonAlphas(next, end);
+		char const* eow = sys::utf8::skipAlphas(next, end);
+
+		if (eow > next)
+		{
+			mstl::string s;
+			s.hook(const_cast<char*>(next), eow - next);
+			result.append(cur, next);
+			result.append(hyphenate_word(s, hyphen));
+			next = cur = eow;
+		}
+	}
+
+	result.append(cur, end);
+	return result;
+}
+
+
+Hyphenator::result
+Hyphenator::hyphenate_word(mstl::string const& word, mstl::string const& hyphen)
+{
+	M_REQUIRE(has_dictionary());
 	M_REQUIRE(sys::utf8::validate(word));
 
-	mstl::auto_ptr<mstl::vector<const HyphenationRule*> > rules = dictionary->applyPatterns(word);
+	if (lookup)
+	{
+		Lookup::const_iterator i = lookup->find(word);
 
-	// Build our result string. Of course, we _could_ insert characters in
-	// w, but that would be highly inefficient.
+		if (i != lookup->end())
+			return replace_hyphens(i->s, hyphen);
+	}
+
+	mstl::auto_ptr<mstl::vector<HyphenationRule const*> > rules = dictionary->applyPatterns(word);
+
+	// Build our result string. Of course, we _could_ insert
+	// characters in w, but that would be highly inefficient.
 	mstl::string result;
 
 	int acc_skip = 0;
@@ -177,18 +363,20 @@ mstl::string Hyphenator::hyphenate_word(mstl::string const& word, mstl::string c
 }
 
 
-mstl::pair<mstl::string,mstl::string>
+Hyphenator::result_pair
 Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, size_t len)
 {
+	M_REQUIRE(has_dictionary());
 	M_REQUIRE(sys::utf8::validate(src));
 
 	// First of all, find the word which needs to be hyphenated.
 	char const* cur	= sys::utf8::atIndex(src.begin(), len);
 	char const* next	= sys::utf8::skipNonSpaces(cur, src.end());
+	char const* end	= src.end();
 
 	mstl::pair<mstl::string,mstl::string> result;
 
-	if (next < src.end())
+	if (next < end)
 	{
 		// We are lucky: There is a space we can hyphenate at.
 
@@ -197,11 +385,11 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 			cur = sys::utf8::prevChar(cur, src.begin());
 
 		int byteLen = cur - src.begin() + 1;
-		result.first = src.substr(0, byteLen);
+		result.first.assign(src, 0, byteLen);
 
 		// Neither do we leave spaces at the beginning of the next.
-		next = sys::utf8::skipSpaces(cur, src.end());
-		result.second = src.substr(next - src.begin());
+		next = sys::utf8::skipSpaces(cur, end);
+		result.second.assign(next, end);
 	}
 	else
 	{
@@ -246,66 +434,69 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 			// In the first case, there is nothing really hyphenateable.
 			if (word_start != nullptr)
 			{
-				// We have the start of a word, now look for the character after
-				// the end.
-				char const* word_end = sys::utf8::skipAlphas(word_start, src.end());
+				// We have the start of a word, now look for the character after the end.
+				char const* word_end = sys::utf8::skipAlphas(word_start, end);
 
 				// Build the substring consisting of the word.
-				mstl::string word;
+				mstl::string word(word_start, word_end);
 
-				for (char const* i = word_start; i < word_end; ++i)
-					word += *i;
+				Lookup::const_iterator except;
 
-				// Hyphenate the word.
-				mstl::auto_ptr<mstl::vector<const HyphenationRule*> >
-				rules = dictionary->applyPatterns(word);
-
-				// Determine the index of the latest hyphenation that will still fit.
-				int latest_possible_hyphenation = -1;
-				int earliest_hyphenation = -1;
-
-				for (int i = 0; i < int(rules->size()); ++i)
+				if (lookup && (except = lookup->find(word)) != lookup->end())
 				{
-					if ((*rules)[i])
-					{
-						if (earliest_hyphenation == -1)
-							earliest_hyphenation = i;
+					// TODO
+					// build result
+					// replace all hyphens with "hyphen"
+				}
+				else
+				{
+					// Hyphenate the word.
+					mstl::auto_ptr<mstl::vector<HyphenationRule const*> >
+					rules = dictionary->applyPatterns(word);
 
-						if (word_start + i + (*rules)[i]->spaceNeededPreHyphen() + hyphen.size() <= border) 
+					// Determine the index of the latest hyphenation that will still fit.
+					int latest_possible_hyphenation = -1;
+					int earliest_hyphenation = -1;
+
+					for (int i = 0; i < int(rules->size()); ++i)
+					{
+						if ((*rules)[i])
 						{
+							if (earliest_hyphenation == -1)
+								earliest_hyphenation = i;
+
+							if (word_start + i + (*rules)[i]->spaceNeededPreHyphen() + hyphen.size() > border) 
+								break;
+
 							if (i > latest_possible_hyphenation)
 								latest_possible_hyphenation = i;
 						}
-						else
+					}
+
+					bool have_space = false;
+
+					for (char const* i = src.begin(); i <= word_start; i = sys::utf8::nextChar(i))
+					{
+						if (sys::utf8::isSpace(sys::utf8::getChar(i)))
 						{
+							have_space = true;
 							break;
 						}
 					}
-				}
 
-				bool have_space = false;
+					if (latest_possible_hyphenation == -1 && !have_space)
+						latest_possible_hyphenation = earliest_hyphenation;
 
-				for (char const* i = src.begin(); i <= word_start; i = sys::utf8::nextChar(i))
-				{
-					if (sys::utf8::isSpace(sys::utf8::getChar(i)))
+					// Apply the best hyphenation, if any.
+					if (latest_possible_hyphenation >= 0)
 					{
-						have_space = true;
-						break;
+						int i = latest_possible_hyphenation;
+						result.first.assign(src, 0, word_start - src.begin() + i);
+						(*rules)[i]->apply_first(result.first, hyphen);
+						int skip = (*rules)[i]->apply_second(result.second);
+						result.second.append(src, (word_start - src.begin()) + i + skip);
+						return result;
 					}
-				}
-
-				if (latest_possible_hyphenation == -1 && !have_space)
-					latest_possible_hyphenation = earliest_hyphenation;
-
-				// Apply the best hyphenation, if any.
-				if (latest_possible_hyphenation >= 0)
-				{
-					int i = latest_possible_hyphenation;
-					result.first = src.substr(0, word_start - src.begin() + i);
-					(*rules)[i]->apply_first(result.first, hyphen);
-					int skip = (*rules)[i]->apply_second(result.second);
-					result.second += mstl::string(word_start + i + skip);
-					break;
 				}
 			}
 
@@ -313,26 +504,26 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 			{
 				// We cannot hyphenate at all, so leave the first block standing
 				// and move to its end.
-				char const* eol = sys::utf8::skipNonSpaces(cur, src.end());
+				char const* eol = sys::utf8::skipNonSpaces(cur, end);
 
-				result.first = src.substr(0, eol - src.begin() + 1);
+				result.first.assign(src, 0, eol - src.begin() + 1);
 
-				eol = sys::utf8::skipSpaces(cur, src.end());
-				result.second = mstl::string(eol);
-				break;
+				eol = sys::utf8::skipSpaces(cur, end);
+				result.second.assign(eol, end);
+				return result;
 			}
 			else if (sys::utf8::isSpace(sys::utf8::getChar(cur)))
 			{
 				// eol is the end of the previous line, bol the start of the next.
 				char const* eol = cur;
-				char const* bol = sys::utf8::skipSpaces(cur, src.end());
+				char const* bol = sys::utf8::skipSpaces(cur, end);
 
 				while (eol > src.begin() && sys::utf8::isSpace(sys::utf8::getChar(eol)))
 					eol = sys::utf8::prevChar(eol, src.begin());
 
-				result.first  = src.substr(0, eol - src.begin() + 1);
-				result.second = mstl::string(bol);
-				break;
+				result.first.assign(src, 0, eol - src.begin() + 1);
+				result.second.assign(bol, end);
+				return result;
 			}
 		}
 	}
@@ -341,10 +532,12 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 }
 
 
-mstl::auto_ptr<mstl::vector<const HyphenationRule*> > 
-Hyphenate::Hyphenator::applyHyphenationRules(mstl::string const& word)
+mstl::auto_ptr<mstl::vector<HyphenationRule const*> > 
+Hyphenator::applyHyphenationRules(mstl::string const& word)
 {
+	M_REQUIRE(has_dictionary());
 	M_REQUIRE(sys::utf8::validate(word));
+
 	return dictionary->applyPatterns(word);
 }
 

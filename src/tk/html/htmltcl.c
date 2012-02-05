@@ -1364,6 +1364,9 @@ configureCmd(clientData, interp, objc, objv)
     #define XCOLOR(v, s1, s2, s3) \
         {TK_OPTION_COLOR, "-" #v, s1, s2, s3, -1, \
          Tk_Offset(HtmlOptions, v), 0, 0, 0}
+    #define INT(v, s1, s2, s3, f) \
+        {TK_OPTION_INT, "-" #v, s1, s2, s3, -1, \
+         Tk_Offset(HtmlOptions, v), 0, 0, f}
     #define BOOLEAN(v, s1, s2, s3, flags) \
         {TK_OPTION_BOOLEAN, "-" #v, s1, s2, s3, -1, \
          Tk_Offset(HtmlOptions, v), 0, 0, flags}
@@ -1413,8 +1416,9 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
         BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
         BOOLEAN(exportselection, "exportSelection", "ExportSelection", "0", 0),
-
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
+
+        INT(showhyphens, "showHyphens", "ShowHyphens", "0", F_MASK),
 
         DOUBLE(fontscale, "fontScale", "FontScale", "1.0", F_MASK),
         DOUBLE(zoom, "zoom", "Zoom", "1.0", F_MASK),

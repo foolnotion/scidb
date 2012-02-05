@@ -1,0 +1,38 @@
+# ======================================================================
+# Makefile for Scidb for Unix operating systems
+# ======================================================================
+
+# ======================================================================
+#    _/|            __
+#   // o\         /    )           ,        /    /
+#   || ._)    ----\---------__----------__-/----/__-
+#   //__\          \      /   '  /    /   /    /   )
+#   )___(     _(____/____(___ __/____(___/____(___/_
+# ======================================================================
+
+include ../../Makefile.in
+
+.SUFFIXES: .cpp
+
+INCLUDE		= -I. -I../../src/mstl -I../../src/sys -I../../src/util/libhyphenate $(TCL_INCLUDE)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE)
+
+LIBS = \
+	../../src/util/libhyphenate/libhyphenate.a \
+	../../src/sys/libsys.a \
+	../../src/mstl/libmstl.a \
+
+all: hyphenate
+
+hyphenate: hyphenate.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS) $(TCL_LIBRARY) $(EXPAT_LIB)
+
+.cpp.o:
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_DEBUG_FLAGS) $(INCLUDE) $<
+
+clean:
+	rm -f hyphenate hyphenate.o
+
+# vi:set ts=3 sw=3:

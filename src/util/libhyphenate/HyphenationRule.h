@@ -37,7 +37,7 @@
 #include "m_string.h"
 #include "m_vector.h"
 
-namespace Hyphenate
+namespace hyphenate
 {
 	/// The HyphenationRule class represents a single Hyphenation Rule, that
 	/// is, a pattern that has a number assigned to each letter and will,

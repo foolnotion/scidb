@@ -904,7 +904,7 @@ HtmlTokenize(pTree, zText, isFinal, xAddText, xAddElement, xAddClosing)
 
             if (c || isFinal) {
                 int ts = isTrimStart;
-                HtmlTextNode *pTextNode = HtmlTextNew(i, &z[n], isTrimEnd, ts);
+                HtmlTextNode *pTextNode = HtmlTextNew(pTree, i, &z[n], isTrimEnd, ts);
                 xAddText(pTree, pTextNode, n);
                 n += i;
             } else {
@@ -1147,7 +1147,7 @@ HtmlTokenize(pTree, zText, isFinal, xAddText, xAddElement, xAddClosing)
                     }
                     if (zScript) {
                         HtmlTextNode *pTextNode;
-                        pTextNode = HtmlTextNew(nScript, zScript, 1, 1);
+                        pTextNode = HtmlTextNew(pTree, nScript, zScript, 1, 1);
                         xAddText(pTree, pTextNode, n);
                         xAddClosing(pTree, pMap->type, n);
                     } else {
