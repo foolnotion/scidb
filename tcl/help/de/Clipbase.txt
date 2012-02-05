@@ -24,7 +24,7 @@ Scidb stellt bereits bei Programmstart eine geöffnete Ablage-Datenbank zur Verfü
 welche sich wie eine normale Datenbank verhält, mit der Ausnahme, daß sie im
 Hauptspeicherbereich existiert und nicht auf der Festplatte gespeichert wird.
 Damit hat sie nur ein relative begrenztes Aufnahmevermögen. Der vordefinierte Name
-für dies Datenbank ist <b>%::application::database::mc::T_Clipbase%</b>.
+für diese Datenbank ist <b>%::application::database::mc::T_Clipbase%</b>.
 </p>
  
 <!-- p>

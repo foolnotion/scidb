@@ -422,7 +422,16 @@ Hyphenate::parse(char const* document, unsigned length)
 
 			if (s[0] == '<')
 			{
-				if (s[1] == '/')
+				if (s[1] == '!' && s[2] == '-' && s[3] == '-')
+				{
+					char const* q = ::strchr(s + 4, '-');
+
+					while (q && (q[1] != '-' || q[2] != '>'))
+						q = ::strchr(q + 1, '-');
+
+					s = q ? q + 3 : e;
+				}
+				else if (s[1] == '/')
 				{
 					if (::isExcludingTag(s + 2))
 						--skipCounter;
