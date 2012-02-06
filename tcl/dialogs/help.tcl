@@ -1138,7 +1138,7 @@ proc BuildHtmlFrame {dlg w} {
 		-exportselection yes \
 		-css $css \
 		-showhyphens 1 \
-		-latinligatures 0 \
+		-latinligatures 1 \
 		;
 
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
