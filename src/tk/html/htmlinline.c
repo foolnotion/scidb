@@ -1170,6 +1170,10 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
             }
         }
 
+        if (pBox->iHyphen && (showhyphens >= 2 || (showhyphens == 1 && i == nBox - 1))) {
+            boxwidth += pFont->hyphen_pixels;
+        }
+
         /* If any inline-borders start with this box, then add them to the
          * active borders list now. Remember the current x-coordinate and
          * inline-box for when we have to go back and draw the border.
@@ -1562,13 +1566,14 @@ HtmlInlineContextAddText(pContext, pNode)
 
                 p = inlineContextAddInlineCanvas(pContext, INLINE_TEXT, pNode);
 
-                tw = Tk_TextWidth(tkfont, zData, nData);
+                tw = HtmlTextWidth(pContext->pTree, pFont, zData, nData);
                 pBox = &pContext->aInline[pContext->nInline-1];
                 pBox->nContentPixels = tw;
                 pBox->iHyphen = iHyphen;
                 pBox->eWhitespace = eWhitespace;
 
                 if (iHyphen) {
+                    /* TODO: take ligatures into account. */
                     int nt = Tk_TextWidth(tkfont, zData + nData - 1, 2);
                     int n1 = Tk_TextWidth(tkfont, zData + nData - 1, 1);
                     int n2 = Tk_TextWidth(tkfont, zData + nData, 1);
@@ -1583,11 +1588,6 @@ HtmlInlineContextAddText(pContext, pNode)
                 pText = Tcl_NewStringObj(zData, nData);
                 Tcl_IncrRefCount(pText);
                 iIndex = zData - ((HtmlTextNode *)pNode)->zText;
-                /*if (showhyphens >= 2 && iHyphen) {
-                    tw += pFont->hyphen_pixels;
-                } else if (showhyphens < 2 && HtmlTextIterIsNotLast(&sIter)) {
-                    iHyphen = 0;
-                }*/
                 HtmlDrawText(p, zData, nData, 0, y, tw, szonly, pNode, iIndex);
                 Tcl_DecrRefCount(pText);
 

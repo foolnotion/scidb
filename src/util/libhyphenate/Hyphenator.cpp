@@ -45,6 +45,7 @@
 #include "m_assert.h"
 
 #include <stdlib.h>
+#include <ctype.h>
 #include <locale.h>
 
 #ifdef WIN32
@@ -144,7 +145,7 @@ read_dictionary(mstl::auto_ptr<Hyphenator::Lookup>& output, mstl::string const& 
 /// the language string or any prefix of it. The file will be
 /// located in the directory given by the environment variable
 /// LIBHYPHENATE_PATH or, if this is empty, in the compiled-in
-/// pattern directory which defaults to 
+/// pattern directory which defaults to
 /// /usr/local/share/libhyphenate/patterns .
 ///
 ///\param lang The language for which hyphenation patterns will be
@@ -194,7 +195,7 @@ Hyphenator::Hyphenator(Language const& lang)
 /// Build a hyphenator from the patterns in the file provided.
 Hyphenator::Hyphenator(mstl::string const& patternFilename, mstl::string const& dictFilenames)
 {
-	::read_hyphenation_table(dictionary, patternFilename);
+	::read_hyphenation_table(m_dictionary, patternFilename);
 
 	if (!dictFilenames.empty())
 	{
@@ -208,7 +209,7 @@ Hyphenator::Hyphenator(mstl::string const& patternFilename, mstl::string const& 
 			mstl::string filename(dictFilenames, k, n - k);
 
 			if (!filename.empty())
-				::read_dictionary(lookup, filename);
+				::read_dictionary(m_lookup, filename);
 
 			if (n >= dictFilenames.size() - 1)
 			{
@@ -242,10 +243,10 @@ Hyphenator::try_to_load(Language const& lang, mstl::string const& path)
 
 		try
 		{
-			::read_hyphenation_table(dictionary, pattFilename);
+			::read_hyphenation_table(m_dictionary, pattFilename);
 			if (!dictFilename.empty())
-				::read_dictionary(lookup, dictFilename);
-			::read_dictionary(lookup, personalFname);
+				::read_dictionary(m_lookup, dictFilename);
+			::read_dictionary(m_lookup, personalFname);
 		}
 		catch (...)
 		{
@@ -261,36 +262,55 @@ Hyphenator::try_to_load(Language const& lang, mstl::string const& path)
 void
 Hyphenator::dump_lookup(mstl::ostream& strm) const
 {
-	if (!lookup)
+	if (!m_lookup)
 		return;
-	
-	for (unsigned i = 0; i < lookup->container().size(); ++i)
+
+	for (unsigned i = 0; i < m_lookup->container().size(); ++i)
 	{
-		strm.write(lookup->container()[i].s);
+		strm.write(m_lookup->container()[i].s);
 		strm.put('\n');
 	}
 }
 
 
 Hyphenator::result
-Hyphenator::replace_hyphens(mstl::string const& word, mstl::string const& hyphen)
+Hyphenator::replace_hyphens(	mstl::string const& word,
+ 										mstl::string const& lookup,
+										mstl::string const& hyphen)
 {
-	if (hyphen == "-")
-		return word;
-
 	mstl::string result;
 
-	char const* s = word.begin();
-	char const* e = word.end();
+	char const* s = lookup.begin();
+	char const* e = lookup.end();
+	char const* p = word.begin();
 
-	for ( ; s < e; ++s)
+	while (s < e)
 	{
-		if (sys::utf8::isTail(*s))
-			result.append(*s);
-		else if (*s == '-')
+		if (*s == '-')
+		{
 			result.append(hyphen);
+			++s;
+		}
+		else if (sys::utf8::isAscii(*s))
+		{
+			M_ASSERT(p < word.end());
+			M_ASSERT(sys::utf8::isAscii(*p));
+			M_ASSERT(::toupper(*s) == ::toupper(*p));
+
+			result.append(*p++);
+			++s;
+		}
 		else
-			result.append(*s);
+		{
+			M_ASSERT(p < word.end());
+			M_ASSERT(sys::utf8::toUpper(sys::utf8::getChar(s)) ==
+						sys::utf8::toUpper(sys::utf8::getChar(p)));
+
+			char const* q = sys::utf8::nextChar(p);
+			result.append(p, q);
+			p = q;
+			s = sys::utf8::nextChar(s);
+		}
 	}
 
 	return result;
@@ -332,15 +352,15 @@ Hyphenator::hyphenate_word(mstl::string const& word, mstl::string const& hyphen)
 	M_REQUIRE(has_dictionary());
 	M_REQUIRE(sys::utf8::validate(word));
 
-	if (lookup)
+	if (m_lookup)
 	{
-		Lookup::const_iterator i = lookup->find(word);
+		Lookup::const_iterator i = m_lookup->find(word);
 
-		if (i != lookup->end())
-			return replace_hyphens(i->s, hyphen);
+		if (i != m_lookup->end())
+			return replace_hyphens(word, i->s, hyphen);
 	}
 
-	mstl::auto_ptr<mstl::vector<HyphenationRule const*> > rules = dictionary->applyPatterns(word);
+	mstl::auto_ptr<mstl::vector<HyphenationRule const*> > rules = m_dictionary->applyPatterns(word);
 
 	// Build our result string. Of course, we _could_ insert
 	// characters in w, but that would be highly inefficient.
@@ -442,9 +462,9 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 
 				Lookup::const_iterator except;
 
-				if (lookup && (except = lookup->find(word)) != lookup->end())
+				if (m_lookup && (except = m_lookup->find(word)) != m_lookup->end())
 				{
-					// TODO
+					// XXX TODO
 					// build result
 					// replace all hyphens with "hyphen"
 				}
@@ -452,7 +472,7 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 				{
 					// Hyphenate the word.
 					mstl::auto_ptr<mstl::vector<HyphenationRule const*> >
-					rules = dictionary->applyPatterns(word);
+					rules = m_dictionary->applyPatterns(word);
 
 					// Determine the index of the latest hyphenation that will still fit.
 					int latest_possible_hyphenation = -1;
@@ -465,7 +485,7 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 							if (earliest_hyphenation == -1)
 								earliest_hyphenation = i;
 
-							if (word_start + i + (*rules)[i]->spaceNeededPreHyphen() + hyphen.size() > border) 
+							if (word_start + i + (*rules)[i]->spaceNeededPreHyphen() + hyphen.size() > border)
 								break;
 
 							if (i > latest_possible_hyphenation)
@@ -532,13 +552,13 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 }
 
 
-mstl::auto_ptr<mstl::vector<HyphenationRule const*> > 
+mstl::auto_ptr<mstl::vector<HyphenationRule const*> >
 Hyphenator::applyHyphenationRules(mstl::string const& word)
 {
 	M_REQUIRE(has_dictionary());
 	M_REQUIRE(sys::utf8::validate(word));
 
-	return dictionary->applyPatterns(word);
+	return m_dictionary->applyPatterns(word);
 }
 
 // vi:set ts=3 sw=3:

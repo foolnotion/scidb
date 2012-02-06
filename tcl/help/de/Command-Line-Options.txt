@@ -159,7 +159,7 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     </td>
     <td class="standard">
       Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
-      Hauptfenster mit der Angabe <tt>-geometry 600x800+20+10</tt>
+      Hauptfenster mit der Angabe <tt>-geometry</tt> <tt>600x800+20+10</tt>
       die Größe 600x800 und wird an der Bildschirmposition mit den Koordinaten
       20,10 positioniert.
     </td>

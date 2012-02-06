@@ -20,6 +20,7 @@
 
 inline bool sys::utf8::isFirst(char c)	{ return (c & 0xc0) != 0x80; }
 inline bool sys::utf8::isTail(char c)	{ return (c & 0xc0) == 0x80; }
+inline bool sys::utf8::isAscii(char c)	{ return (c & 0x80) == 0x00; }
 
 inline bool sys::utf8::validate(mstl::string const& str) { return validate(str, str.size()); }
 

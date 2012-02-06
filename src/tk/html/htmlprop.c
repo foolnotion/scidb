@@ -2087,7 +2087,7 @@ allocateNewFont(clientData)
 
     char zTkFontName[256];      /* Tk font name */
     HtmlFont *pFont;
-
+    int ii;
 
     /* Local variable iFontSize is in points - not thousandths */
     int iFontSize;
@@ -2142,6 +2142,20 @@ allocateNewFont(clientData)
     pFont->ex_pixels = Tk_TextWidth(tkfont, "x", 1);
     pFont->space_pixels = Tk_TextWidth(tkfont, " ", 1);
     pFont->hyphen_pixels = Tk_TextWidth(tkfont, "-", 1);
+    pFont->ligature[0] = Tk_TextWidth(tkfont, "\xEF\xAC\x80", 1); /* ff  uFB00 */
+    pFont->ligature[1] = Tk_TextWidth(tkfont, "\xEF\xAC\x81", 1); /* fi  uFB01 */
+    pFont->ligature[2] = Tk_TextWidth(tkfont, "\xEF\xAC\x82", 1); /* fl  uFB02 */
+    pFont->ligature[3] = Tk_TextWidth(tkfont, "\xEF\xAC\x83", 1); /* ffi uFB03 */
+    pFont->ligature[4] = Tk_TextWidth(tkfont, "\xEF\xAC\x84", 1); /* ffl uFB04 */
+    pFont->ligature[5] = Tk_TextWidth(tkfont, "\xEF\xAC\x85", 1); /* ft  uFB05 */
+    pFont->ligature[6] = Tk_TextWidth(tkfont, "\xEF\xAC\x86", 1); /* st  uFB06 */
+    pFont->has_ligatures = 0;
+
+    for (ii = 0; ii < 7; ++ii) {
+        if (pFont->ligature[0] > 0) {
+            pFont->has_ligatures = 1;
+        }
+    }
 
     /* Set the number of pixels to be used for 1 "em" unit for this font.
      * Setting the em-pixels to the ascent + the descent worked Ok for

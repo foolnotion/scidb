@@ -60,6 +60,7 @@ proc Build {w args} {
 		-center				no
 		-imagecmd			{}
 		-doublebuffer		yes
+		-latinligatures	yes
 		-showhyphens		0
 		-delay				0
 		-css					{}
@@ -73,7 +74,7 @@ proc Build {w args} {
 		switch -- $name {
 			-delay - -css - -center {}
 
-			-imagecmd - -doublebuffer - -exportselection -
+			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -showhyphens -
 			-inactiveselectbackground - -inactiveselectforeground {
 				set value $opts($name)
@@ -706,7 +707,7 @@ proc Select {w x y mode} {
 }
 
 
-proc SelectExtend {w x y mode} {
+proc ExtendSelection {w x y mode} {
 	variable [winfo parent $w]::Priv
 
 	if {![$w cget -exportselection]} { return }
@@ -841,8 +842,8 @@ bind Html <Map>					[namespace code { Mapped %W }]
 
 bind Html <Double-ButtonPress-1>			[namespace code { Select %W %x %y word }]
 bind Html <Triple-ButtonPress-1>			[namespace code { Select %W %x %y block }]
-bind Html <Shift-Double-ButtonPress-1>	[namespace code { SelectExtend %W %x %y word }]
-bind Html <Shift-Triple-ButtonPress-1>	[namespace code { SelectExtend %W %x %y block }]
+bind Html <Shift-Double-ButtonPress-1>	[namespace code { ExtendSelection %W %x %y word }]
+bind Html <Shift-Triple-ButtonPress-1>	[namespace code { ExtendSelection %W %x %y block }]
 
 switch [tk windowingsystem] {
 	win32 {

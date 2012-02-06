@@ -149,18 +149,18 @@ The following options will be recognized by the Tk library:
 <table class="standard">
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        -geometry GEOMETRY
+        <tt>-geometry GEOMETRY</tt>
     </td>
     <td class="standard">
       Use the geometric information for the main window. For example the
-      argument <tt>-geometry 600x800+20+10</tt>
+      argument <tt>-geometry</tt> <tt>600x800+20+10</tt>
       will resize the main window to 600x800, and the position of the window
       will have the screen coordinates 20,10.
     </td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        -display DISPLAY
+        <tt>-display DISPLAY</tt>
     </td>
     <td class="standard">
       Name of screen on which to create window.
@@ -168,7 +168,7 @@ The following options will be recognized by the Tk library:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        -sync
+        <tt>-sync</tt>
     </td>
     <td class="standard">
       Use synchronous mode for display server.

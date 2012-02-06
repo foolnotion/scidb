@@ -1121,7 +1121,7 @@ proc BuildHtmlFrame {dlg w} {
 		:hover   { text-decoration: underline; background: yellow; }
 		.match	{ background: yellow; color: black; }
 		html		{ font-family: [join $textFamilies ","]; }
-		pre, tt	{ font-family: [join $monoFamilies ","]; }
+		pre, tt, code { font-family: [join $monoFamilies ","]; }
 	"
 
 	# build HTML widget
@@ -1138,6 +1138,7 @@ proc BuildHtmlFrame {dlg w} {
 		-exportselection yes \
 		-css $css \
 		-showhyphens 1 \
+		-latinligatures 0 \
 		;
 
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]

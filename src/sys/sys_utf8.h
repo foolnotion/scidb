@@ -37,6 +37,8 @@ bool validate(char const* str, unsigned nbytes);
 bool isAlpha(uchar uc);
 bool isSpace(uchar uc);
 
+bool isAscii(char c);
+
 uchar toLower(uchar uc);
 uchar toUpper(uchar uc);
 

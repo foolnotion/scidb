@@ -40,6 +40,21 @@ typedef mstl::map<mstl::string,HyphenatorP> HyphenatorMap;
 static HyphenatorMap hyphenatorMap;
 
 
+static char const*
+findChar(char const* first, char const* last, char c)
+{
+	while (first < last)
+	{
+		if (*first == c)
+			return first;
+
+		first = sys::utf8::nextChar(first);
+	}
+
+	return 0;
+}
+
+
 Search::Search(bool noCase, bool entireWord, bool titleOnly, unsigned maxMatches)
 	:m_parser(XML_ParserCreate("UTF-8"))
 	,m_needle(0)
@@ -246,7 +261,8 @@ Search::parse(char const* document, unsigned length, char const* search, unsigne
 {
 	char* buf = new char[length + 1];
 	::memcpy(buf, document, length + 1);
-	char* s = strchr(buf, '&');
+	char* e = buf + length;
+	char* s = const_cast<char*>(::findChar(buf, e, '&'));
 
 	while (s)
 	{
@@ -261,7 +277,7 @@ Search::parse(char const* document, unsigned length, char const* search, unsigne
 			::memset(s, ' ', p - s);
 		}
 
-		s = strchr(p, '&');
+		s = const_cast<char*>(::findChar(p, e, '&'));
 	}
 
 	m_needle = search;
@@ -313,7 +329,7 @@ Hyphenate::Hyphenate(mstl::string const& patternFilename,
 	if (i == ::hyphenatorMap.end())
 	{
 		i = ::hyphenatorMap.insert(::HyphenatorMap::value_type(
-				patternFilename, 
+				patternFilename,
 				::HyphenatorP(0, new ::hyphenate::Hyphenator(patternFilename, dictFilenames)))).first;
 	}
 
@@ -373,87 +389,136 @@ Hyphenate::clearCache(mstl::string const& patternFilename)
 bool
 Hyphenate::parse(char const* document, unsigned length)
 {
-	mstl::string	hyphen("&shy;");
-	unsigned			skipCounter = 0;
-	unsigned			lessCounter = 0;
-	char const*		s = document;
-	char const*		e = document + length;
-	mstl::string	buf;
+	mstl::string hyphen("&shy;");
+	mstl::string buf;
+
+	unsigned skipCounter = 0;
+	unsigned lessCounter = 0;
+
+	char const* first		= document;
+	char const* last		= document + length;
+	char const* escape	= 0;
+	char const* markup	= 0;
 
 	m_result.clear();
 
-	while (s < e)
+	while (first < last)
 	{
 		if (mstl::is_odd(lessCounter))
 		{
-			char const* p = ::strchr(s, '>');
+			char const* endMark = ::findChar(first, last, '>');
 
-			if (p)
-				--lessCounter, ++p;
+			if (endMark)
+				--lessCounter, ++endMark;
 			else
-				p = e;
+				endMark = last;
 
-			m_result.append(s, p);
-			s = p;
+			m_result.append(first, endMark);
+			first = endMark;
+
+			if (escape < first)
+				escape = 0;
 		}
 		else
 		{
-			char const* p = ::strchr(s, '<');
-
-			if (p)
-				++lessCounter;
-			else
-				p = e;
-
-			if (s < p)
+			if (!markup)
 			{
-				if (skipCounter > 0)
-				{
-					m_result.append(s, p);
-				}
-				else
-				{
-					buf.hook(const_cast<char*>(s), p - s);
-					m_result.append(m_hyphenator->hyphenate(buf, hyphen));
-				}
+				markup = ::findChar(first, last, '<');
 
-				s = p;
+				if (!markup)
+					markup = last;
 			}
 
-			if (s[0] == '<')
+			if (!escape)
 			{
-				if (s[1] == '!' && s[2] == '-' && s[3] == '-')
-				{
-					char const* q = ::strchr(s + 4, '-');
+				escape = ::findChar(first, last, '&');
 
-					while (q && (q[1] != '-' || q[2] != '>'))
-						q = ::strchr(q + 1, '-');
+				if (!escape)
+					escape = last;
+			}
 
-					s = q ? q + 3 : e;
-				}
-				else if (s[1] == '/')
+			if (escape < markup)
+			{
+				if (first < escape)
 				{
-					if (::isExcludingTag(s + 2))
-						--skipCounter;
+					if (skipCounter > 0)
+					{
+						m_result.append(first, escape);
+					}
+					else
+					{
+						buf.hook(const_cast<char*>(first), escape - first);
+						m_result.append(m_hyphenator->hyphenate(buf, hyphen));
+					}
 				}
+
+				first = ::findChar(escape, last, ';');
+
+				if (first)
+					++first;
 				else
-				{
-					char const* q = s + 1;
+					first = last;
 
-					while (s < e && *s != '<')
+				m_result.append(escape, first);
+				escape = 0;
+			}
+			else
+			{
+				if (markup < last)
+					++lessCounter;
+
+				if (first < markup)
+				{
+					if (skipCounter > 0)
+					{
+						m_result.append(first, markup);
+					}
+					else
+					{
+						buf.hook(const_cast<char*>(first), markup - first);
+						m_result.append(m_hyphenator->hyphenate(buf, hyphen));
+					}
+
+					first = markup;
+				}
+
+				if (first[0] == '<')
+				{
+					if (first[1] == '!' && first[2] == '-' && first[3] == '-')
+					{
+						char const* q = ::findChar(first + 4, last, '-');
+
+						while (q && (q[1] != '-' || q[2] != '>'))
+						q = ::findChar(q + 1, last, '-');
+
+						first = q ? q + 3 : last;
+					}
+					else if (first[1] == '/')
+					{
+						if (::isExcludingTag(first + 2))
+							--skipCounter;
+					}
+					else
+					{
+						char const* q = first + 1;
+
+						while (first < last && *first != '<')
 						++q;
 
-					if (q < e && q[-1] == '/')
-					{
-						m_result.append(s, ++q);
-						s = q;
-						--lessCounter;
-					}
-					else if (::isExcludingTag(s + 1))
-					{
-						++skipCounter;
+						if (q < last && q[-1] == '/')
+						{
+							m_result.append(first, ++q);
+							first = q;
+							--lessCounter;
+						}
+						else if (::isExcludingTag(first + 1))
+						{
+							++skipCounter;
+						}
 					}
 				}
+
+				markup = 0;
 			}
 		}
 	}

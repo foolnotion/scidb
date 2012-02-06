@@ -374,13 +374,16 @@ struct Overflow {
     int pmh;
 };
 
-static int pixmapQueryCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int sorterCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int layoutNodeIndexCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int paintNodesSearchCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int scrollToNodeCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int layoutBboxCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
-static int layoutNodeCb(HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int pixmapQueryCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int sorterCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int layoutNodeIndexCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int paintNodesSearchCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int scrollToNodeCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int layoutBboxCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int layoutNodeCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int snapshotReleaseItemsCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int bboxCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
+static int visbboxCb(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
 
 /*
  * This is like a big expensive assert() statement that checks the
@@ -562,9 +565,10 @@ sorterInsert(pSorter, pItem, x, y, pOverflow)
     pSlot->pOverflow = pOverflow;
 }
 static void
-sorterIterate(pSorter, xFunc, clientData)
+sorterIterate(pTree, pSorter, xFunc, clientData)
+    HtmlTree* pTree;
     CanvasItemSorter *pSorter;
-    int (*xFunc)(HtmlCanvasItem *, int, int, Overflow *, ClientData);
+    int (*xFunc)(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
     ClientData clientData;
 {
     int ii;
@@ -573,7 +577,7 @@ sorterIterate(pSorter, xFunc, clientData)
         int jj;
         for (jj = 0; jj < pLevel->iSlot; jj++) {
             CanvasItemSorterSlot *p = &pLevel->aSlot[jj];
-            xFunc(p->pItem, p->x, p->y, p->pOverflow, clientData);
+            xFunc(pTree, p->pItem, p->x, p->y, p->pOverflow, clientData);
         }
     }
 }
@@ -2328,37 +2332,6 @@ drawLine(pQuery, pItem, drawable, x, y, w, h)
     );
 }
 
-/*
- *---------------------------------------------------------------------------
- *
- * drawText --
- *
- *      Draw string, eventually with an additional hyphen.
- *
- *---------------------------------------------------------------------------
- */
-static void
-drawChars(display, drawable, gc, tkfont, string, numBytes, x, y, hyphen)
-    Display *display;
-    Drawable drawable;
-    GC gc;
-    Tk_Font tkfont;
-    const char *string;
-    int numBytes;
-    int x;
-    int y;
-    int hyphen;
-{
-    if (hyphen) {
-        char buffer[2048];
-        memcpy(buffer, string, MIN(sizeof(buffer) - 1, numBytes));
-        buffer[numBytes] = '-';
-        Tk_DrawChars(display, drawable, gc, tkfont, buffer, numBytes + 1, x, y);
-    } else {
-        Tk_DrawChars(display, drawable, gc, tkfont, string, numBytes, x, y);
-    }
-}
-
 #define SWAPINT(x,y) {int tmp = x; x = y; y = tmp;}
 
 /*
@@ -2422,7 +2395,7 @@ drawText(pQuery, pItem, drawable, x, y)
         gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
         setClippingRegion(pQuery, disp, gc);
         setClippingDrawable(pQuery, pItem, &drawable, &x, &y);
-        drawChars(disp, drawable, gc, font, z, n, pT->x + x, pT->y + y, pT->iHyphen);
+        HtmlDrawChars(pTree, drawable, gc, pFont, z, n, pT->x + x, pT->y + y, pT->iHyphen);
         clearClippingRegion(disp, gc);
         Tk_FreeGC(disp, gc);
     }
@@ -2460,12 +2433,12 @@ drawText(pQuery, pItem, drawable, x, y)
 
             nSel = iSelTo - iSelFrom;
             if (iSelFrom > 0) {
-                xs += Tk_TextWidth(font, z, iSelFrom);
+                xs += HtmlTextWidth(pTree, pFont, z, iSelFrom);
             }
             if (eContinue) {
                 w = pT->w + x - xs;
             } else {
-                w = Tk_TextWidth(font, zSel, nSel);
+                w = HtmlTextWidth(pTree, pFont, zSel, nSel);
             }
 
             h = pFont->metrics.ascent + pFont->metrics.descent;
@@ -2484,7 +2457,7 @@ drawText(pQuery, pItem, drawable, x, y)
             gc_values.font = Tk_FontId(font);
             gc = Tk_GetGC(pTree->tkwin, mask, &gc_values);
             setClippingRegion(pQuery, disp, gc);
-            drawChars(disp, drawable, gc, font, zSel, nSel, pT->x + xs, pT->y + y, pT->iHyphen);
+            HtmlDrawChars(pTree, drawable, gc, pFont, zSel, nSel, pT->x + xs, pT->y + y, pT->iHyphen);
             clearClippingRegion(disp, gc);
             Tk_FreeGC(disp, gc);
         }
@@ -2729,7 +2702,8 @@ updateRegions(pTree, pElem, drawable, dx, dy)
 #ifdef MEASURE_TIME
 restart_time();
 #endif
-                    Tk_DrawChars(display, drawable, gc, font->tkfont, buf, len, x, y);
+                    /* XXX: take additional hyphen into account */
+                    HtmlDrawChars(pTree, drawable, gc, font, buf, len, x, y, 0);
 #ifdef MEASURE_TIME
 buf[len] = '\0';
 printf("drawChars(%d): %lu\n", size, elapsed_time());
@@ -2844,7 +2818,7 @@ searchCanvas(pTree, ymin, ymax, xFunc, clientData, requireOverflow)
     HtmlTree *pTree;
     int ymin;                    /* Minimum y coordinate, or INT_MIN */
     int ymax;                    /* Maximum y coordinate, or INT_MAX */
-    int (*xFunc)(HtmlCanvasItem *, int, int, Overflow *, ClientData);
+    int (*xFunc)(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
     ClientData clientData;
     int requireOverflow;         /* Boolean. True to pass Overflow* arg */
 {
@@ -2964,7 +2938,7 @@ searchCanvas(pTree, ymin, ymax, xFunc, clientData, requireOverflow)
                 if (iOverflow >= 0) {
                     pOver = apOverflow[iOverflow];
                 }
-                rc = xFunc(pItem, origin_x, origin_y, pOver, clientData);
+                rc = xFunc(pTree, pItem, origin_x, origin_y, pOver, clientData);
                 if (0 != rc) {
                     goto search_out;
                 }
@@ -2989,7 +2963,8 @@ search_out:
 }
 
 static int
-sorterCb(pItem, x, y, pOverflow, clientData)
+sorterCb(pTree, pItem, x, y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int x;
     int y;
@@ -3042,20 +3017,21 @@ searchSortedCanvas(pTree, ymin, ymax, pNode, xFunc, clientData)
     int ymin;                    /* Minimum y coordinate, or INT_MIN */
     int ymax;                    /* Maximum y coordinate, or INT_MAX */
     HtmlNode *pNode;             /* Node to search subtree of, or NULL */
-    int (*xFunc)(HtmlCanvasItem *, int, int, Overflow *, ClientData);
+    int (*xFunc)(HtmlTree*, HtmlCanvasItem *, int, int, Overflow *, ClientData);
     ClientData clientData;
 {
     CanvasItemSorter sSorter;
     memset(&sSorter, 0, sizeof(CanvasItemSorter));
 
     searchCanvas(pTree, ymin, ymax, sorterCb, (ClientData)&sSorter, 1);
-    sorterIterate(&sSorter, xFunc, clientData);
+    sorterIterate(pTree, &sSorter, xFunc, clientData);
     sorterReset(&sSorter);
 }
 
 
 static int
-snapshotReleaseItemsCb(pItem, x, y, pOverflow, clientData)
+snapshotReleaseItemsCb(pTree, pItem, x, y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int x;
     int y;
@@ -3287,7 +3263,7 @@ HtmlDrawSnapshotFree(pTree, pSnapshot)
     if (pSnapshot) {
         CanvasItemSorter *p = (CanvasItemSorter *)pSnapshot;
         if (p->iSnapshot) {
-            sorterIterate(p, snapshotReleaseItemsCb, (ClientData)pTree);
+            sorterIterate(pTree, p, snapshotReleaseItemsCb, (ClientData)pTree);
         }
         sorterReset(p);
         HtmlFree(pSnapshot);
@@ -3390,7 +3366,8 @@ pixmapQuerySwitchOverflow(pQuery, pOverflow)
 }
 
 static int
-pixmapQueryCb(pItem, origin_x, origin_y, pOverflow, clientData)
+pixmapQueryCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -3624,7 +3601,7 @@ getPixmap(pTree, xcanvas, ycanvas, w, h, getwin)
 #else
     if (pTree->cb.pSnapshot) {
         CanvasItemSorter *pSorter = (CanvasItemSorter *)pTree->cb.pSnapshot;
-        sorterIterate(pSorter, pixmapQueryCb, clientData);
+        sorterIterate(pTree, pSorter, pixmapQueryCb, clientData);
     }else{
         searchSortedCanvas(pTree, ycanvas, ycanvas+h, 0, pixmapQueryCb, clientData);
     }
@@ -3792,7 +3769,8 @@ struct NodeIndexQuery {
  *---------------------------------------------------------------------------
  */
 static int
-layoutNodeIndexCb(pItem, origin_x, origin_y, pOverflow, clientData)
+layoutNodeIndexCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -3905,9 +3883,8 @@ layoutNodeIndexCmd(pTree, x, y)
         iIndex = n;
         if (rc) {
             /* Calculate the index to return */
-            int dum;
-            Tk_Font font = fontFromNode(sQuery.pClosest->pNode)->tkfont;
-            iIndex = Tk_MeasureChars(font, z, n, x - sQuery.closest_x, 0, &dum);
+            HtmlFont* font = fontFromNode(sQuery.pClosest->pNode);
+            iIndex = HtmlMeasureChars(pTree, font, z, n, x - sQuery.closest_x);
         }
         iIndex += sQuery.pClosest->iIndex;
 
@@ -3967,7 +3944,8 @@ struct NodeQuery {
 };
 
 static int
-layoutNodeCb(pItem, origin_x, origin_y, pOverflow, clientData)
+layoutNodeCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4175,7 +4153,8 @@ struct BboxContext {
 typedef struct BboxContext BboxContext;
 
 static int
-bboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
+bboxCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4205,7 +4184,8 @@ bboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
 }
 
 static int
-visbboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
+visbboxCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4376,7 +4356,8 @@ struct PaintNodesQuery {
  *---------------------------------------------------------------------------
  */
 static int
-paintNodesSearchCb(pItem, origin_x, origin_y, pOverflow, clientData)
+paintNodesSearchCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4412,7 +4393,7 @@ paintNodesSearchCb(pItem, origin_x, origin_y, pOverflow, clientData)
 
                     if (iNode == p->iNodeFin && p->iIndexFin >= 0) {
                         nFin = MIN(n, 1 + p->iIndexFin - pT->iIndex);
-                        right = Tk_TextWidth(pFont->tkfont, z, nFin) + left;
+                        right = HtmlTextWidth(pTree, pFont, z, nFin) + left;
                     } else {
                         right = pT->w + left;
                     }
@@ -4420,7 +4401,7 @@ paintNodesSearchCb(pItem, origin_x, origin_y, pOverflow, clientData)
                         int nStart = MAX(0, p->iIndexStart - pT->iIndex);
                         if (nStart > 0) {
                             assert(nStart <= n);
-                            left += Tk_TextWidth(pFont->tkfont, z, nStart);
+                            left += HtmlTextWidth(pTree, pFont, z, nStart);
                         }
                     }
 
@@ -4581,7 +4562,8 @@ struct ScrollToQuery {
  *---------------------------------------------------------------------------
  */
 static int
-scrollToNodeCb(pItem, origin_x, origin_y, pOverflow, clientData)
+scrollToNodeCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4668,7 +4650,8 @@ struct LayoutBboxQuery {
 };
 
 static int
-layoutBboxCb(pItem, origin_x, origin_y, pOverflow, clientData)
+layoutBboxCb(pTree, pItem, origin_x, origin_y, pOverflow, clientData)
+    HtmlTree* pTree;
     HtmlCanvasItem *pItem;
     int origin_x;
     int origin_y;
@@ -4741,7 +4724,7 @@ HtmlWidgetNodeBox(pTree, pNode, pX, pY, pW, pH)
             origin_x += pItem->x.o.x;
             origin_y += pItem->x.o.y;
         } else {
-            layoutBboxCb(pItem, origin_x, origin_y, 0, (ClientData)&sQuery);
+            layoutBboxCb(pTree, pItem, origin_x, origin_y, 0, (ClientData)&sQuery);
         }
     }
 

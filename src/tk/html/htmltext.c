@@ -46,7 +46,12 @@
 #define ISNEWLINE(x) ((x) == '\n' || (x) == '\r')
 #define ISTAB(x) ((x) == '\t')
 #define ISSPACE(x) isspace((unsigned char)(x))
-#define ISHYPHEN(x) ((x) == 0xAD)
+#define ISHARDHYPHEN(x) ((x) == 0x200B)
+#define ISSOFTHYPHEN(x) ((x) == 0x00AD)
+#define ISHYPHEN(x) ((x) == '-')
+#define ISZEROWIDTHSPACE(x) ((x) == 0x200D)
+
+#define BUFSIZE 2048
 
 /*
  * This file implements the experimental [tag] widget method. The
@@ -1854,12 +1859,19 @@ tokenLength(zToken, zEnd)
     const unsigned char *zNext = zCsr;
 
     iChar = utf8Read(zCsr, zEnd, &zNext);
-    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar)){
-        zCsr = zNext;
-        iChar = utf8Read(zCsr, zEnd, &zNext);
+    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar)) {
+        if (ISHARDHYPHEN(iChar)) {
+            return zNext - zToken;
+        } else {
+            Tcl_UniChar prevChar = iChar;
+            zCsr = zNext;
+            iChar = utf8Read(zCsr, zEnd, &zNext);
+            if (ISHYPHEN(prevChar) && Tcl_UniCharIsAlpha(iChar))
+                return zCsr - zToken;
+        }
     }
 
-    return ((zCsr==zToken)?zNext:zCsr)-zToken;
+    return ((zCsr == zToken) ? zNext : zCsr) - zToken;
 }
 
 /*
@@ -2061,7 +2073,7 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
                 nThisText = 0;
                 iChar = utf8Read(zCurr, zEnd, &zNext);
                 while (iChar) {
-                    if (ISHYPHEN(iChar)) {
+                    if (ISSOFTHYPHEN(iChar)) {
                         if (zCurr > zLast) {
                             int n = zCurr - zLast;
                             if (pText) {
@@ -2322,6 +2334,197 @@ HtmlTextIterHyphen(pTextIter)
     HtmlTextIter *pTextIter;
 {
     return pTextIter->pTextNode->aToken[pTextIter->iToken].iHyphen;
+}
+
+
+static char const*
+findZeroWidthSpace(const unsigned char* zText, const unsigned char* zEnd)
+{
+    zEnd -= 4;
+
+    for (++zText; zText < zEnd; ++zText) {
+        if (zText[0] == 0xe2 && zText[1] == 0x80 && zText[2] == 0x8D) {
+            return zText - 1;
+        }
+    }
+
+    return NULL;
+}
+
+static const unsigned char*
+buildLigatures(tree, font, zText, numBytes, buffer)
+    HtmlTree* tree;
+    HtmlFont* font;
+    const unsigned char* zText;
+    int* numBytes;
+    unsigned char* buffer;
+{
+    unsigned char* zInsert;
+
+    const unsigned char* zLast;
+    const unsigned char* zEnd;
+    const unsigned char* zNext;
+
+    if (!tree->options.latinligatures) {
+        return zText;
+    }
+
+    if (!font->has_ligatures) {
+        return zText;
+    }
+
+    zEnd  = zText + *numBytes;
+    zNext = findZeroWidthSpace(zText, zEnd);
+
+    if (zNext == NULL) {
+        return zText;
+    }
+
+    if (*numBytes > BUFSIZE) {
+        *numBytes = BUFSIZE;
+    }
+
+    zLast = zText;
+    zInsert = buffer;
+
+    while (zNext) {
+        static const unsigned char ZeroWidthSpace[3] = { 0xE2, 0x80, 0x8D };
+
+        const unsigned char* zPos = zNext + 4;
+
+        int ii = -1;
+
+        assert(zText <= zNext && zPos < zEnd);
+
+        switch (*zNext) {
+            case 'f':
+                switch (*zPos) {
+                    case 'f': ii = 0; break; /* ff */
+                    case 'i': ii = 1; break; /* fi */
+                    case 'l': ii = 2; break; /* fl */
+                    case 't': ii = 5; break; /* ft */
+                }
+                break;
+
+            case 's':
+                if (*zPos == 't') { ii = 6; } /* st */
+                break;
+        }
+
+        if (ii >= 0) {
+            if (ii == 0 && zPos + 4 < zEnd && memcmp(zPos + 1, ZeroWidthSpace, 3) == 0) {
+                switch (zNext[8]) {
+                    case 'i': ii = 3; zPos += 4; break; /* ffi */
+                    case 'l': ii = 4; zPos += 4; break; /* ffl */
+                }
+            }
+
+            if (font->ligature[ii]) {
+                int nchars = zNext - zLast;
+                memcpy(zInsert, zLast, nchars);
+                zInsert += nchars;
+                zInsert[0] = 0xEF;
+                zInsert[1] = 0xAC;
+                zInsert[2] = 0x80 + ii;
+                zInsert += 3;
+                zLast = ++zPos;
+            }
+        }
+
+        zNext = findZeroWidthSpace(zPos, zEnd);
+    }
+
+    {
+        int nchars = zEnd - zLast;
+        memcpy(zInsert, zLast, nchars);
+        *numBytes = (zInsert - buffer) + nchars;
+    }
+
+    return buffer;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * HtmlTextWidth --
+ *
+ * A replacement for Tk_TextWidth(), because the Tk function
+ * cannot handle latin ligatures.
+ *
+ *---------------------------------------------------------------------------
+ */
+int
+HtmlTextWidth(tree, font, string, numBytes)
+    HtmlTree* tree;
+    HtmlFont* font;
+    const unsigned char* string;
+    int numBytes;
+{
+    unsigned char buffer[BUFSIZE];
+    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+
+    return Tk_TextWidth(font->tkfont, pBuf, numBytes);
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * HtmlMeasureChars --
+ *
+ * A replacement for Tk_MeasureChars(), because the Tk function
+ * cannot handle latin ligatures.
+ *
+ *---------------------------------------------------------------------------
+ */
+int
+HtmlMeasureChars(tree, font, string, numBytes, maxPixels)
+    HtmlTree* tree;
+    HtmlFont* font;
+    const unsigned char* string;
+    int numBytes;
+    int maxPixels;
+{
+    int dummy;
+    unsigned char buffer[BUFSIZE];
+    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+
+    return Tk_MeasureChars(font->tkfont, pBuf, numBytes, maxPixels, 0, &dummy);
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * HtmlDrawChars --
+ *
+ * A replacement for Tk_DrawChars(), because the Tk function
+ * cannot handle latin ligatures.
+ *
+ *---------------------------------------------------------------------------
+ */
+void
+HtmlDrawChars(tree, drawable, gc, font, string, numBytes, x, y, appendHyphen)
+    HtmlTree* tree;
+    Drawable drawable;
+    GC gc;
+    HtmlFont* font;
+    const unsigned char *string;
+    int numBytes;
+    int x;
+    int y;
+    int appendHyphen;
+{
+    unsigned char buffer[BUFSIZE];
+    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+
+    if (appendHyphen && numBytes < BUFSIZE) {
+        if (pBuf != buffer) {
+            memcpy(buffer, string, numBytes);
+            pBuf = buffer;
+        }
+        ((unsigned char*)pBuf)[numBytes++] = '-';
+    }
+
+    Tk_DrawChars(Tk_Display(tree->tkwin), drawable, gc, font->tkfont, pBuf, numBytes, x, y);
 }
 
 /* vi: set ts=4 sw=4 et: */

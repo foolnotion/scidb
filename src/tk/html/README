@@ -21,6 +21,7 @@ new options:
 
 	-doublebuffer <flag>
 		Specifies whether double buffering should be used.
+		Default is 0.
 
 	-cursor <cursor>
 		Specifies the mouse cursor to be used for the widget.
@@ -28,6 +29,7 @@ new options:
 	-exportselection <flag>
 		Specifies whether or not a selection in the widget should also be the X selection.
 		Selection is possible only if this option is enabled.
+		Default is 0.
 	
 	-selectbackground <color>
 	-selectforeground <color>
@@ -39,6 +41,12 @@ new options:
 		flag=0: discard soft hyphens (&shy;)
 		flag=1: use soft hyphens for hyphenation
 		flag=2: show all soft hyphens (for proof-reading)
+		Default is 0.
+	
+	-latinligatures <flag>
+		Specifies whether latin ligatures should be used.
+		Default is 0.
+		HTML example for ligature ff: "f&zwj;f" or "f&#x200D;f".
 
 is supporting more attributes:
 

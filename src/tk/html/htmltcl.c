@@ -1415,6 +1415,7 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(forcefontmetrics, "forceFontMetrics", "ForceFontMetrics", "1", F_MASK),
         BOOLEAN(forcewidth, "forceWidth", "ForceWidth", "0", L_MASK),
         BOOLEAN(doublebuffer, "doubleBuffer", "DoubleBuffer", "0", 0),
+        BOOLEAN(latinligatures, "latinLigatures", "LatinLigatures", "0", F_MASK),
         BOOLEAN(exportselection, "exportSelection", "ExportSelection", "0", 0),
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
 
