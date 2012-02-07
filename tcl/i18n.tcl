@@ -308,7 +308,9 @@ proc setLang {id} {
 proc var {var str} {
 	if {![info exists ${var}_($str)]} {
 		set ${var}_($str) "[set $var]$str"
-		trace add variable $var write "[namespace current]::SetVar $str"
+		set cmd "[namespace current]::SetVar $str"
+		trace remove variable $var write $cmd
+		trace add variable $var write $cmd
 	}
 	return ${var}_($str)
 }
@@ -317,7 +319,9 @@ proc var {var str} {
 proc stripped {var} {
 	if {![info exists ${var}_()]} {
 		set ${var}_() [stripAmpersand [set $var]]
-		trace add variable $var write [namespace current]::SetStripped
+		set cmd [namespace current]::SetStripped
+		trace remove variable $var write $cmd
+		trace add variable $var write $cmd
 	}
 	return ${var}_()
 }

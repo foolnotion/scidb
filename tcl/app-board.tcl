@@ -222,6 +222,7 @@ proc activate {w menu flag} {
 		if {$Index >= 0} {
 			::menu::entryconfigure $menu $Index
 			set cmd "[namespace current]::ToolbarChanged $menu $Index"
+			trace remove variable ::toolbar::mc::Toolbar write $cmd
 			trace add variable ::toolbar::mc::Toolbar write $cmd
 		}
 		focus $Vars(widget:frame)

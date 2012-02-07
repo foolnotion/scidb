@@ -471,6 +471,7 @@ proc Update {t} {
 
 	set Contents {}
 	set file [[namespace parent]::FullPath Contents.dat]
+	if {![file readable $file]} { return [[namespace parent]::Destroy] }
 	catch { source -encoding utf-8 $file }
 	foreach name [array names Priv uri:*] { $Priv($name) destroy }
 	if {$tcl_platform(platform) ne "unix"} {
@@ -584,8 +585,11 @@ proc BuildFrame {w} {
 proc Update {t} {
 	variable [namespace parent]::Priv
 
+	if {![winfo exists $t]} { return }
+
 	set Index {}
 	set file [[namespace parent]::FullPath Index.dat]
+	if {![file readable $file]} { return }
 	catch { source -encoding utf-8 $file }
 	$t item delete all
 	set font [$t cget -font]
@@ -1361,6 +1365,7 @@ proc ReloadCurrentPage {} {
 
 	if {[string length $file] == 0 || ![file readable [FullPath [file tail $file]]]} {
 		set file Overview.html
+		if {![file readable [FullPath [file tail $file]]]} { return }
 	}
 
 	set Priv(history) {}
@@ -1480,10 +1485,12 @@ proc Parse {file wantedFile moveto {match {}}} {
 			}
 			append content "</dl></blockquote></div>"
 		}
+		if {[GetGoBackIndex] >= 0} {
+			append content "
+				<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>"
+		}
 		append content "
-			<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>
-			</body></html>
-		"
+			</body></html>"
 		set match {}
 		set rc 0
 	} elseif {[llength $match]} {
@@ -1561,7 +1568,7 @@ proc SeeNode {node} {
 }
 
 
-proc GoBack {} {
+proc GetGoBackIndex {} {
 	variable Priv
 
 	set index $Priv(history:index)
@@ -1569,6 +1576,15 @@ proc GoBack {} {
 		if {[lindex $Priv(history) $index 2]} { break }
 		incr index -1
 	}
+
+	return $index
+}
+
+
+proc GoBack {} {
+	variable Priv
+
+	set index [GetGoBackIndex]
 
 	if {$index >= 0} {
 		set entry [lindex $Priv(history) $index]

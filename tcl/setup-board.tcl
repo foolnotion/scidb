@@ -334,10 +334,11 @@ proc open {parent} {
 			set [namespace current]::_FlipSide "$::mc::White \u2194 $::mc::Black"
 		}
 
-		trace add variable ::mc::White write [namespace code SetupVars]
-		trace add variable ::mc::Black write [namespace code SetupVars]
-		trace add variable ::mc::King write [namespace code SetupVars]
-		trace add variable ::mc::Queen write [namespace code SetupVars]
+		set cmd [namespace code SetupVars]
+		foreach piece {White Black King Queen} {
+			trace remove variable ::mc::$piece write $cmd
+			trace add variable ::mc::$piece write $cmd
+		}
 
 		SetupVars
 	}
