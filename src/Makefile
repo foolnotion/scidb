@@ -339,6 +339,7 @@ best_move.o: tk/tk_init.h
 best_move.o: tcl/tcl_base.h
 best_move.o: tcl/tcl_base.ipp
 best_move.o: util/u_zstream.h
+best_move.o: mstl/m_iostream.h
 best_move.o: mstl/m_istream.h
 best_move.o: mstl/m_ios.h
 best_move.o: mstl/m_ios.ipp
@@ -829,6 +830,7 @@ pgn_split_eco.o: mstl/m_chunk_allocator.h
 pgn_split_eco.o: mstl/m_chunk_allocator.ipp
 pgn_split_eco.o: db/db_eco_table.ipp
 pgn_split_eco.o: util/u_zstream.h
+pgn_split_eco.o: mstl/m_iostream.h
 pgn_split_eco.o: mstl/m_istream.h
 pgn_split_eco.o: mstl/m_ios.h
 pgn_split_eco.o: mstl/m_ios.ipp
@@ -956,6 +958,7 @@ tkscidb.o: tcl/tcl_base.h
 tkscidb.o: tcl/tcl_base.ipp
 tkscidb.o: tcl/tcl_application.h
 tkscidb.o: util/u_zstream.h
+tkscidb.o: mstl/m_iostream.h
 tkscidb.o: mstl/m_istream.h
 tkscidb.o: mstl/m_ios.h
 tkscidb.o: mstl/m_ios.ipp

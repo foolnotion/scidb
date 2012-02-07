@@ -751,7 +751,9 @@ proc AddBase {type file encoding readonly {selectBase yes}} {
 	if {[llength $ext] == 0} { set ext sci } else { set ext [string range $ext 1 end] }
 	set Vars(active) $i
 #	if {$selectBase} { set Vars(selection) $i }
-	if {[llength $encoding] == 0} { set encoding [::scidb::db::get encoding] }
+	if {[llength $encoding] == 0 || $encoding eq $::encoding::autoEncoding} {
+		set encoding [::scidb::db::get encoding]
+	}
 	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
 	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }

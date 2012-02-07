@@ -2524,6 +2524,7 @@ db_pgn_reader.o: db_eco.ipp
 db_pgn_reader.o: ../util/u_progress.h
 db_pgn_reader.o: ../util/u_progress.ipp
 db_pgn_reader.o: ../util/u_zstream.h
+db_pgn_reader.o: ../mstl/m_iostream.h
 db_pgn_reader.o: ../mstl/m_istream.h
 db_pgn_reader.o: ../mstl/m_ios.h
 db_pgn_reader.o: ../mstl/m_ios.ipp

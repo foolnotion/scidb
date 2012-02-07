@@ -448,6 +448,11 @@ proc ::tk::MenuUnpost menu {
         unset -nocomplain Priv($menu:postIndex)
     }
 
+    ### FEATURE begin ############################################################
+    # Firstly unmap the drop-shadow to avoid glitches.
+    catch { ::shadow::unmap $menu }
+    ### FEATURE end ##############################################################
+
     ### FIX begin ################################################################
     # It's important to invoke all pending mapping events, otherwise it may happen
     # that an unmap event occurs before the corresponding map event occurs.

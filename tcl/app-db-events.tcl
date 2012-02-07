@@ -47,11 +47,7 @@ proc build {parent} {
 	lappend Tables $top
 
 	set lt ${top}.events
-
-	set rt [tk::panedwindow $top.info \
-		-orient vertical \
-		-opaqueresize true \
-		-borderwidth 0]
+	set rt ${top}.info
 
 	set gl ${rt}.games
 	set pl ${rt}.players
@@ -67,6 +63,8 @@ proc build {parent} {
 	::eventtable::build $lt [namespace code [list View $top]] {} \
 		-selectcmd [list [namespace current]::events::Search $top] \
 		;
+
+	tk::panedwindow $rt -orient vertical -opaqueresize true -borderwidth 0
 	set columns {white whiteElo black blackElo result date round length}
 	::gametable::build $gl [namespace code [list View $top]] $columns
 	set columns {lastName firstName type sex rating1 federation title}

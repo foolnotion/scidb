@@ -36,24 +36,25 @@
 using namespace util;
 
 
-#define ZFILE	static_cast<ZStream::Handle*>(cookie)->file
-#define ZDIR	static_cast<ZStream::Handle*>(cookie)->dir
-#define HANDLE	static_cast<ZStream::Handle*>(cookie)->handle
+#define ZIP_FILE	static_cast<ZStream::Handle*>(cookie)->file
+#define ZIP_DIR	static_cast<ZStream::Handle*>(cookie)->dir
+#define HANDLE		static_cast<ZStream::Handle*>(cookie)->handle
 
 #define IS_READABLE	(static_cast<ZStream::Handle*>(cookie)->mode & mstl::ios_base::in)
 #define IS_WRITEABLE	(static_cast<ZStream::Handle*>(cookie)->mode & mstl::ios_base::out)
 
 
-static unsigned char const gzipMagic[2] = { '\037', '\213' };
-static unsigned char const zzipMagic[4] = { 'P', 'K', '\003', '\004' };
+static unsigned char const gzipMagic [2] = { '\037', '\213' };
+static unsigned char const zzipMagic [4] = { 'P', 'K', '\003', '\004' };
 
 static double const DecompressionFactor = 3.365;
 
 
-namespace zstream {
+namespace {
+namespace zzip {
 
 static bool
-zzipMatch(ZStream::Strings const& suffixes, char const* name)
+match(ZStream::Strings const& suffixes, char const* name)
 {
 	if (suffixes.empty())
 		return true;
@@ -73,19 +74,19 @@ zzipMatch(ZStream::Strings const& suffixes, char const* name)
 
 
 static struct zzip_file*
-zzipFileOpen(void* cookie)
+fileOpen(void* cookie)
 {
 	ZZIP_DIRENT entry;
 
 	while (true)
 	{
-		if (!zzip_dir_read(ZDIR, &entry))
+		if (!zzip_dir_read(ZIP_DIR, &entry))
 			return 0;
 
 		M_ASSERT(static_cast<ZStream::Handle*>(cookie)->suffixes);
 
-		if (zzipMatch(*static_cast<ZStream::Handle*>(cookie)->suffixes, entry.d_name))
-			return ::zzip_file_open(ZDIR, entry.d_name, 0);
+		if (match(*static_cast<ZStream::Handle*>(cookie)->suffixes, entry.d_name))
+			return ::zzip_file_open(ZIP_DIR, entry.d_name, 0);
 	}
 
 	return 0;	// satisfies the compiler
@@ -93,21 +94,21 @@ zzipFileOpen(void* cookie)
 
 
 static __ssize_t
-zzipRead(void* cookie, char* buf, size_t len)
+read(void* cookie, char* buf, size_t len)
 {
 	M_ASSERT(IS_READABLE);
 
-	long n = ZFILE ? zzip_file_read(ZFILE, buf, len) : 0;
+	long n = ZIP_FILE ? zzip_file_read(ZIP_FILE, buf, len) : 0;
 
 	while (n <= 0)
 	{
-		if (ZFILE)
-			::zzip_fclose(ZFILE);
+		if (ZIP_FILE)
+			::zzip_fclose(ZIP_FILE);
 
-		if (!(ZFILE = zzipFileOpen(cookie)))
+		if (!(ZIP_FILE = fileOpen(cookie)))
 			return 0;
 
-		n = ::zzip_file_read(ZFILE, buf, len);
+		n = ::zzip_file_read(ZIP_FILE, buf, len);
 	}
 
 	return n;
@@ -115,43 +116,43 @@ zzipRead(void* cookie, char* buf, size_t len)
 
 
 static int
-zzipSeek(void* cookie, __off64_t* pos, int whence)
+seek(void* cookie, __off64_t* pos, int whence)
 {
 	M_ASSERT(IS_READABLE);
 
-	*pos = ::zzip_seek(ZFILE, *pos, whence);
+	*pos = ::zzip_seek(ZIP_FILE, *pos, whence);
 	return *pos < 0 ? -1 : 0;
 }
 
 
 static int
-zzipClose(void* cookie)
+close(void* cookie)
 {
-	M_ASSERT(ZDIR);
+	M_ASSERT(ZIP_DIR);
 
-	if (ZFILE)
+	if (ZIP_FILE)
 	{
-		::zzip_fclose(ZFILE);
-		ZFILE = 0;
+		::zzip_fclose(ZIP_FILE);
+		ZIP_FILE = 0;
 	}
 
-	::zzip_dir_close(ZDIR);
-	ZDIR = 0;
+	::zzip_dir_close(ZIP_DIR);
+	ZIP_DIR = 0;
 
 	return 0;
 }
 
 
 static __ssize_t
-zzipWrite(void*, char const*, size_t)
+write(void*, char const*, size_t)
 {
-	M_RAISE("unexpected call of zzipWrite()");
+	M_RAISE("unexpected call of %s", __func__);
 	return 0;
 }
 
 
 static int64_t
-zzipSize(ZStream::Strings const& suffixes, ZZIP_DIR* dir)
+size(ZStream::Strings const& suffixes, ZZIP_DIR* dir)
 {
 	ZZIP_DIRENT entry;
 	int64_t		size	= 0;
@@ -159,7 +160,7 @@ zzipSize(ZStream::Strings const& suffixes, ZZIP_DIR* dir)
 
 	while (::zzip_dir_read(dir, &entry))
 	{
-		if (zzipMatch(suffixes, entry.d_name))
+		if (match(suffixes, entry.d_name))
 		{
 			size += entry.st_size;
 			++count;
@@ -173,7 +174,7 @@ zzipSize(ZStream::Strings const& suffixes, ZZIP_DIR* dir)
 
 
 static bool
-zzipFind(ZZIP_DIR* dir, mstl::string const& name)
+find(ZZIP_DIR* dir, mstl::string const& name)
 {
 	ZZIP_DIRENT entry;
 
@@ -190,9 +191,12 @@ zzipFind(ZZIP_DIR* dir, mstl::string const& name)
 	return false;
 }
 
+} // namespace zzip
+
+namespace zip {
 
 bool
-zipOpenNewFileInZip(void* cookie, char const* filename, mstl::ios_base::openmode mode)
+openNewFile(void* cookie, char const* filename, mstl::ios_base::openmode mode)
 {
 	mstl::string basename(::util::misc::file::rootname(::util::misc::file::basename(filename)));
 	mstl::string fname(basename);
@@ -211,7 +215,7 @@ zipOpenNewFileInZip(void* cookie, char const* filename, mstl::ios_base::openmode
 		{
 			unsigned count = 2;
 
-			while (zzipFind(dir, fname))
+			while (zzip::find(dir, fname))
 			{
 				char buf[100];
 				sprintf(buf, "-%d", count++);
@@ -247,23 +251,23 @@ zipOpenNewFileInZip(void* cookie, char const* filename, mstl::ios_base::openmode
 
 
 static __ssize_t
-zipRead(void*, char*, size_t)
+read(void*, char*, size_t)
 {
-	M_RAISE("unexpected call of zipRead()");
+	M_RAISE("unexpected call of %s", __func__);
 	return 0;
 }
 
 
 static int
-zipSeek(void*, __off64_t*, int)
+seek(void*, __off64_t*, int)
 {
-	M_RAISE("unexpected call of zipSeek()");
+	M_RAISE("unexpected call of %s", __func__);
 	return 0;
 }
 
 
 static int
-zipClose(void* cookie)
+close(void* cookie)
 {
 	M_ASSERT(HANDLE);
 
@@ -275,15 +279,18 @@ zipClose(void* cookie)
 
 
 static __ssize_t
-zipWrite(void* cookie, char const* buf, size_t len)
+write(void* cookie, char const* buf, size_t len)
 {
 	M_ASSERT(IS_WRITEABLE);
 	return ::zipWriteInFileInZip(HANDLE, buf, len) == ZIP_OK ? len : 0;
 }
 
+} // namespace zip
+
+namespace gzip {
 
 static __ssize_t
-gzipRead(void* cookie, char* buf, size_t len)
+read(void* cookie, char* buf, size_t len)
 {
 	M_ASSERT(IS_READABLE);
 
@@ -293,7 +300,7 @@ gzipRead(void* cookie, char* buf, size_t len)
 
 
 static int
-gzipSeek(void* cookie, __off64_t* pos, int whence)
+seek(void* cookie, __off64_t* pos, int whence)
 {
 	M_ASSERT(IS_READABLE);
 
@@ -303,28 +310,26 @@ gzipSeek(void* cookie, __off64_t* pos, int whence)
 
 
 static int
-gzipClose(void* cookie)
+close(void* cookie)
 {
 	return ::gzclose(HANDLE);
 }
 
 
 static __ssize_t
-gzipWrite(void* cookie, char const* buf, size_t len)
+write(void* cookie, char const* buf, size_t len)
 {
 	M_ASSERT(IS_WRITEABLE);
 	return ::gzwrite(HANDLE, buf, len);
 }
 
-} // namespace zstream
+} // namespace gzip
+} // namespace
 
 
-static cookie_io_functions_t m_gzip =
-	{ zstream::gzipRead, zstream::gzipWrite, zstream::gzipSeek, zstream::gzipClose };
-static cookie_io_functions_t m_zzip =
-	{ zstream::zzipRead, zstream::zzipWrite, zstream::zzipSeek, zstream::zzipClose };
-static cookie_io_functions_t m_zip  =
-	{  zstream::zipRead,  zstream::zipWrite,  zstream::zipSeek,  zstream::zipClose };
+static cookie_io_functions_t m_gzip	= { gzip::read,  gzip::write,  gzip::seek,  gzip::close };
+static cookie_io_functions_t m_zzip	= { zzip::read,  zzip::write,  zzip::seek,  zzip::close };
+static cookie_io_functions_t m_zip	= { zip::read,   zip::write,   zip::seek,   zip::close };
 
 
 ZStream::Handle::Handle() : dir(0), file(0), suffixes(0) {}
@@ -392,11 +397,12 @@ ZStream::open(char const* filename, Mode mode)
 	char fmode[3] = { 'r', '\0', '\0' };
 
 	cookie->mode = mode;
+	cookie->suffixes = &m_suffixes;
 
 	if (::memcmp(buffer, gzipMagic, sizeof(gzipMagic)) == 0)
 	{
 		fmode[1] = 'b';
-		HANDLE = static_cast<ZZIP_FILE*>(::gzopen(filename, fmode));
+		HANDLE = ::gzopen(filename, fmode);
 
 		if (!HANDLE)
 			return setstate(failbit);
@@ -412,17 +418,16 @@ ZStream::open(char const* filename, Mode mode)
 	else if (::memcmp(buffer, zzipMagic, sizeof(zzipMagic)) == 0)
 	{
 		fmode[1] = 'b';
-		ZDIR = ::zzip_dir_open(filename, 0);
+		ZIP_DIR = ::zzip_dir_open(filename, 0);
 
-		if (!ZDIR)
+		if (!ZIP_DIR)
 			return setstate(failbit);
 
-		cookie->suffixes = &m_suffixes;
-		m_size = zstream::zzipSize(m_suffixes, ZDIR);
+		m_size = zzip::size(m_suffixes, ZIP_DIR);
 		m_fp = ::fopencookie(cookie, fmode, ::m_zzip);
 
 		if (!m_fp)
-			zzip_dir_close(ZDIR);
+			zzip_dir_close(ZIP_DIR);
 
 		m_type = Zip;
 	}
@@ -490,7 +495,7 @@ ZStream::open(char const* filename, Type type, Mode mode)
 			if (!HANDLE)
 				return setstate(failbit);
 
-			if (!zstream::zipOpenNewFileInZip(cookie, filename, mode))
+			if (!zip::openNewFile(cookie, filename, mode))
 			{
 				::zipClose(HANDLE, 0);
 				return setstate(failbit);
@@ -556,13 +561,13 @@ ZStream::size(char const* filename, int64_t& size, Type* type)
 		Handle	handle;
 		void*		cookie = &handle;
 
-		ZDIR = ::zzip_dir_open(filename, 0);
+		ZIP_DIR = ::zzip_dir_open(filename, 0);
 
-		if (!ZDIR )
+		if (!ZIP_DIR)
 			return false;
 
-		size = zstream::zzipSize(m_suffixes, ZDIR);
-		::zzip_dir_close(ZDIR);
+		size = zzip::size(m_suffixes, ZIP_DIR);
+		::zzip_dir_close(ZIP_DIR);
 		if (type) *type = Zip;
 	}
 	else
@@ -571,7 +576,7 @@ ZStream::size(char const* filename, int64_t& size, Type* type)
 		if (type) *type = Text;
 	}
 
-	return true;
+	return size != -1;
 }
 
 // vi:set ts=3 sw=3:

@@ -186,6 +186,7 @@ tcl_application.o: ../mstl/m_hash.h
 tcl_application.o: ../mstl/m_hash.ipp
 tcl_application.o: ../db/db_eco_table.ipp
 tcl_application.o: ../util/u_zstream.h
+tcl_application.o: ../mstl/m_iostream.h
 tcl_application.o: ../mstl/m_istream.h
 tcl_application.o: ../mstl/m_ios.h
 tcl_application.o: ../mstl/m_ios.ipp
@@ -578,6 +579,7 @@ tcl_database.o: ../mstl/m_ostream.h
 tcl_database.o: ../mstl/m_ostream.ipp
 tcl_database.o: ../mstl/m_ofstream.ipp
 tcl_database.o: ../util/u_zstream.h
+tcl_database.o: ../mstl/m_iostream.h
 tcl_database.o: ../util/u_misc.h
 tcl_database.o: ../sys/sys_utf8_codec.h
 tcl_database.o: ../sys/sys_utf8_codec.ipp

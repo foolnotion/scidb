@@ -707,6 +707,7 @@ app_view.o: ../mstl/m_scoped_ptr.h
 app_view.o: ../mstl/m_scoped_ptr.ipp
 app_view.o: ../util/u_misc.h
 app_view.o: ../util/u_zstream.h
+app_view.o: ../mstl/m_iostream.h
 app_view.o: ../util/u_progress.h
 app_view.o: ../util/u_progress.ipp
 app_view.o: ../sys/sys_utf8_codec.h

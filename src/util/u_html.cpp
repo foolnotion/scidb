@@ -300,17 +300,17 @@ isExcludingTag(char const* s)
 {
 	switch (tolower(s[0]))
 	{
-//		case 'a': return isdelim(s[1]); break;
-		case 'c': return strncasecmp(s + 1, "ode", 3) == 0 && isdelim(s[4]);
-		case 'p': return strncasecmp(s + 1, "re", 2) == 0 && isdelim(s[3]);
-		case 't': return tolower(s[1]) == 't' && isdelim(s[2]);
-		case 'h': return isdigit(s[1]) && isdelim(s[2]);
+//		case 'a': return isdelim(s[1]); break;												// <a>
+		case 'c': return strncasecmp(s + 1, "ode", 3) == 0 && isdelim(s[4]);		// <code>
+		case 'p': return strncasecmp(s + 1, "re", 2) == 0 && isdelim(s[3]);		// <pre>
+//		case 't': return tolower(s[1]) == 't' && isdelim(s[2]);						// <tt>
+		case 'h': return isdigit(s[1]) && isdelim(s[2]);								// <h1>, <h2>, ...
 
 		case 's':
 			switch (tolower(s[1]))
 			{
-				case 'c': return strncasecmp(s + 2, "ript", 4) == 0 && isdelim(s[5]);
-				case 't': return strncasecmp(s + 2, "yle", 3) == 0 && isdelim(s[4]);
+				case 'c': return strncasecmp(s + 2, "ript", 4) == 0 && isdelim(s[5]);	// <script>
+				case 't': return strncasecmp(s + 2, "yle", 3) == 0 && isdelim(s[4]);		// <style>
 			}
 			break;
 	}

@@ -90,6 +90,7 @@ proc unmap {w} {
 	variable Geometry
 	variable Mapped
 	variable Used
+	variable Wait
 
 	if {![info exists Mapped($w)]} { return }
 	set id $Mapped($w)
@@ -103,8 +104,6 @@ proc unmap {w} {
 		wm withdraw $b
 		wm withdraw $r
 	}
-
-	update idletasks
 }
 
 
@@ -196,6 +195,10 @@ bind Menu <Map> {+
 
 bind Menu <Unmap> {+
 	if {![string match *#menu %W]} {
+		# IMPORTANT NOTE:
+		# The unmapping should be called before the menu is unmapping
+		# to avoid glitches. This will be done in tk::MenuUnpost.
+		# This call is for safety only.
 		shadow::unmap %W
 	}
 }

@@ -277,6 +277,7 @@ u_progress.o: ../mstl/m_exception.h
 u_progress.o: ../mstl/m_backtrace.h
 u_progress.o: ../mstl/m_exception.ipp
 u_zstream.o: u_zstream.h
+u_zstream.o: ../mstl/m_iostream.h
 u_zstream.o: ../mstl/m_istream.h
 u_zstream.o: ../mstl/m_ios.h
 u_zstream.o: ../mstl/m_exception.h
