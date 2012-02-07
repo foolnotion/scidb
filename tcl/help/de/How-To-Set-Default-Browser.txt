@@ -25,25 +25,25 @@ externen Verweise geöffnet werden, festzulegen:
 
 <ol>
   <li><p>
-    Scidb benutzt den Wert der Umgebungsvariable <tt>BROWSER</tt> zur
+    Scidb benutzt den Wert der Umgebungsvariable <code>BROWSER</code> zur
     Bestimmung des Standard-Browsers. Beispiel:<br/>
     <box>
-      <p><tt>export BROWSER=/usr/bin/firefox</tt><br/></p>
+      <p><code>export BROWSER=/usr/bin/firefox</code><br/></p>
     </box>
   </p></li>
 
   <li><p>
-    Es wird der Verweise <tt>"x-www-browser"</tt> benutzt.
+    Es wird der Verweise <code>"x-www-browser"</code> benutzt.
     Unter Debian/Ubuntu kann dieser Verweise mittels
     <box>
-      <p><tt>sudo update-alternatives --config x-www-browser</tt></p>
+      <p><code>sudo update-alternatives --config x-www-browser</code></p>
     </box>
     gesetzt werden.
   </p></li>
 
   <li><p>
-    Die Datei <tt>"~/.htmlviewrc"</tt> wird nach
-    einem Eintrag der Form <tt>"X11BROWSER=/usr/bin/firefox"</tt>
+    Die Datei <code>"~/.htmlviewrc"</code> wird nach
+    einem Eintrag der Form <code>"X11BROWSER=/usr/bin/firefox"</code>
     durchsucht.
   </p></li>
 

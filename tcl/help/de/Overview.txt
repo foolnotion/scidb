@@ -25,7 +25,7 @@ TITLE Willkommen zur Scidb-Hilfe
   <li><a href="File-Selection-Dialog.html">Umgang mit dem Dateiauswahldialog</a></li>
   <li><a href="Toolbar-Usage.html">Umgang mit Funktionsleisten</a></li>
   <li><a href="Clipbase.html">Die Ablage-Datenbank</a></li>
-  <li><a href="HowToSetDefaultBrowser.html">Festlegung des Standard-Browsers</a></li>
+  <li><a href="How-To-Set-Default-Browser.html">Festlegung des Standard-Browsers</a></li>
 </dir>
 
 <h2 name="list-windows">Scidb-Listenfenster</h2>

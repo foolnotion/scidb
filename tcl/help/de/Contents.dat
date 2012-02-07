@@ -8,7 +8,7 @@ set Contents {
     {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
     {{{Umgang mit Funktionsleisten} {Toolbar-Usage.html}}}
     {{{Die Ablage-Datenbank} {Clipbase.html}}}
-    {{{Festlegung des Standard-Browsers} {HowToSetDefaultBrowser.html}}}
+    {{{Festlegung des Standard-Browsers} {How-To-Set-Default-Browser.html}}}
   }
   {
     {{{Scidb-Listenfenster} {Overview.html} {list-windows}}}

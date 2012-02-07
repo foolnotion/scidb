@@ -26,7 +26,7 @@ On the command line the following options are available at program start:
 <table class="standard">
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--</tt>
+        <code>--</code>
     </td>
     <td class="standard">
       After this option all arguments wil be interpreted as file names. This permits
@@ -35,19 +35,19 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--help</tt>
+        <code>--help</code>
     </td>
     <td class="standard">Display all options and terminate.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--show-board</tt>
+        <code>--show-board</code>
     </td>
     <td class="standard">Change to board tab after initialization.</td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--re-open</tt>
+        <code>--re-open</code>
     </td>
     <td class="standard">
       Open all databases immediately after initialization which where open at the end
@@ -56,7 +56,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--fast-load</tt>
+        <code>--fast-load</code>
     </td>
     <td class="standard">
       Load only the required data files after initialization, this enables a significant
@@ -65,7 +65,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--first-time</tt>
+        <code>--first-time</code>
     </td>
     <td class="standard">
       Start the program as it would be the first time; this means reset all user options,
@@ -76,7 +76,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--elo-only</tt>
+        <code>--elo-only</code>
     </td>
     <td class="standard">
       Do not load other rating files than ELO rating. This speeds up program
@@ -85,7 +85,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--print-recovery-files</tt>
+        <code>--print-recovery-files</code>
     </td>
     <td class="standard">
       Show all recovery files which where generated at the end of last session due
@@ -95,27 +95,27 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--delete-recovery-files</tt>
+        <code>--delete-recovery-files</code>
     </td>
     <td class="standard">
       Delete all recovery files from last session and terminate the program.
       It is not a phyisical removal, with option
-      <tt>--recover-old</tt> it is possible to reuse these files.
+      <code>--recover-old</code> it is possible to reuse these files.
     </td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--dont-recover</tt>
+        <code>--dont-recover</code>
     </td>
     <td class="standard">
       Start the program without using the recovery files (which contains
       unsaved modified games from last session). The removal is not physical,
-      with option <tt>--recover-old</tt> it is possible to reuse these files.
+      with option <code>--recover-old</code> it is possible to reuse these files.
     </td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--recover-old</tt>
+        <code>--recover-old</code>
     </td>
     <td class="standard">
       Recover unsaved games from older sessions. Unsaved games from last session
@@ -124,7 +124,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--single-process</tt>
+        <code>--single-process</code>
     </td>
     <td class="standard">
       Force another instance of Scidb. This option is intented only for testing.
@@ -132,7 +132,7 @@ On the command line the following options are available at program start:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>--force-grab</tt>
+        <code>--force-grab</code>
     </td>
     <td class="standard">
       The program is supressing grabs automaticaly if started inside a debugger,
@@ -149,18 +149,18 @@ The following options will be recognized by the Tk library:
 <table class="standard">
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>-geometry GEOMETRY</tt>
+        <code>-geometry GEOMETRY</code>
     </td>
     <td class="standard">
       Use the geometric information for the main window. For example the
-      argument <tt>-geometry</tt> <tt>600x800+20+10</tt>
+      argument <code>-geometry</code> <code>600x800+20+10</code>
       will resize the main window to 600x800, and the position of the window
       will have the screen coordinates 20,10.
     </td>
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>-display DISPLAY</tt>
+        <code>-display DISPLAY</code>
     </td>
     <td class="standard">
       Name of screen on which to create window.
@@ -168,7 +168,7 @@ The following options will be recognized by the Tk library:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
-        <tt>-sync</tt>
+        <code>-sync</code>
     </td>
     <td class="standard">
       Use synchronous mode for display server.
