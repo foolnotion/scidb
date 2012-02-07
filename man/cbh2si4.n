@@ -1,0 +1,177 @@
+.TH cbh2si4 1 "February 1, 2012" cbh2si4 "Linux User's Manual"
+.\" ==========================================================================
+.SH NAME
+.\" --------------------------------------------------------------------------
+cbh2si4 - ChessBase to Scid converter
+.\" ==========================================================================
+.SH SYNOPSIS
+.\" --------------------------------------------------------------------------
+.B cbh2si4
+[options] ChessBase-database [destination-database]
+.\" ==========================================================================
+.SH DESCRIPTION
+.\" --------------------------------------------------------------------------
+.B cbh2si4
+is converting databases in ChessBase format (.cbh) to databases in Scid's
+format (.si4).
+.\" ==========================================================================
+.SH USAGE
+.\" --------------------------------------------------------------------------
+If no destination database is specified, the base name of the
+input database will be used for the name of the destination
+database.
+.PP
+In some cases the decoding of a game may fail. In this case the concerned
+game will be discarded.
+.PP
+.B cbh2si4
+might report error messages:
+.\" --------------------------------------------------------------------------
+.TP 9
+.B Game too long
+The encoded game (Scid format) is exceeding the block size. This game
+will be skipped.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B File size exeeded
+The input database is too large. The program is aborting with a valid
+output database.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B Too many games
+The input database is containing too many games. The program is aborting
+with a valid output database.
+.PP
+.B Too many event names
+.br
+.B Too many player names
+.br
+.B Too many site names
+.br
+.B Too many round names
+.RS 9
+.\" --------------------------------------------------------------------------
+.TP 9
+The limit of Scid's namebase is exceeded. The program is aborting
+with a valid output database.
+.\" ==========================================================================
+.SH OPTIONS
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --
+After this option all arguments wil be interpreted as file names.
+This permits that file names may start with a hyphen.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --help
+Display all options and terminate.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --force
+Overwrite existing destination files. Without this option
+.B cbh2si4
+is aborting if the destination database already exists.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --convertto \fIencoding\fR
+Use this encoding for output database. The default encoding is
+\fIutf-8\fR.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --convertfrom \fIencoding\fR
+The encoding of the ChessBase database. The default encoding is
+\fIcp1252\fR.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --tags \fIcomma-separated-tag-list\fR
+Export only the tags given with this list, but mandatory tags are
+always exported.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --unusual-tags
+Export unusual tags. Without this option the unusual tags will be
+discarded. Use
+.B --list-usual-tags
+if you like to see the usual tags.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --all-tags
+Export all tags. This option overrules \fB--tags\fR.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --no-tags
+Do not export any tag except the mandatory tags. This option
+overrules \fB--tags\fR, and \fB--all-tags\fR, but not
+\fB--unusual-tags\fR.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --list-encodings
+List all known encodings.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --list-mandatory-tags
+List all mandatory tags.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --list-default-tags
+List all default tags.
+.\" --------------------------------------------------------------------------
+.TP 9
+.B --list-usual-tags
+List all usual tags, this includes the mandatory tags.
+.\" ==========================================================================
+.SH AUTHOR
+.\" --------------------------------------------------------------------------
+Gregor Cramer
+.br
+.ul
+http://scidb.sourceforge.net/
+.\" ==========================================================================
+.SH BUGS
+.\" --------------------------------------------------------------------------
+For bug reports visit
+.br
+.ul
+http://sourceforge.net/tracker/?atid=1294797&group_id=307371&func=browse
+.\" ==========================================================================
+.SH FEATURE REQUESTS
+.\" --------------------------------------------------------------------------
+For feature requests visit
+.br
+.ul
+http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
+.\" ==========================================================================
+.SH FILES
+.\" --------------------------------------------------------------------------
+.TP 9
+%BINDIR%/cbh2si4
+C++ executable.
+.\" --------------------------------------------------------------------------
+.TP 9
+%SHAREDIR%/data/eco.bin
+Compressed ECO file.
+.B cbh2si4
+is not working without this file.
+.\" ==========================================================================
+.SH LICENSE
+.\" --------------------------------------------------------------------------
+Copyright (c) Gregor Cramer, 2011-2012.
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to
+deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.PP
+The above copyright notice and this permission notice shall be included in
+all copies of the Software and its documentation and acknowledgment shall be
+given in the documentation and software packages that this Software was
+used.
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -89,7 +89,7 @@
 ::mc::Pawn				"Pedone"
 
 ### scidb ##############################################################
-::scidb::mc::CannotOverwriteTheme	"Cannot overwrite theme %s." ;# NEW
+::scidb::mc::CannotOverwriteTheme	"Impossibile sovrascrivere il tema %s."
 
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
@@ -321,8 +321,8 @@
 ::application::database::mc::OpenDatabase				"Apri Database"
 ::application::database::mc::NewDatabase				"Nuovo Database"
 ::application::database::mc::CloseDatabase			"Chiudi Database '%s'"
-::application::database::mc::SetReadonly				"Set Database '%s' readonly" ;# NEW
-::application::database::mc::SetWriteable				"Set Database '%s' writeable" ;# NEW
+::application::database::mc::SetReadonly				"Imposta Database '%s' in sola lettura"
+::application::database::mc::SetWriteable				"Imposta Database '%s' scrivibile" ;#Scrivibile?
 
 ::application::database::mc::OpenReadonly				"Apri sola lettura"
 ::application::database::mc::OpenWriteable			"Apri scrivibile"
@@ -936,7 +936,7 @@
 ::import::mc::TooManyAnnotatorNames				"Troppi nomi di commentatori nel database (interrotto)"
 ::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
 ::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"
-::import::mc::AbortedDueToInternalError		"Aborted due to an internal error" ;# NEW
+::import::mc::AbortedDueToInternalError		"Annullato per errore interno"
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selezione File"
@@ -982,8 +982,8 @@
 ::export::mc::AllLanguages					"Tutte le lingue"
 ::export::mc::Significant					"Significativo" ;# ?
 ::export::mc::LanguageSelection			"Selezione Lingua"
-::export::mc::MapTo							"Mappa NAG a" ;# NEW (map to)
-::export::mc::MapNagsToComment			"Mappa annotazioni (NAG) a commenti" ;# NEW (map annotations to comments)
+::export::mc::MapTo							"Mappa NAG a" ;# (map to)
+::export::mc::MapNagsToComment			"Mappa annotazioni (NAG) a commenti" ;# (map annotations to comments)
 ::export::mc::UnusualAnnotation			"Annotazione Inusuali"
 ::export::mc::AllAnnotation				"Tutte le annotazioni"
 ::export::mc::UseColumnStyle				"Usa stile colonna"
@@ -1276,7 +1276,7 @@
 ::help::mc::CantFindFile			"Impossibile trovare file a %s."
 ::help::mc::IncompleteHelpFiles	"I file di aiuto sono ancora incompleti. Ci scusiamo."
 ::help::mc::ProbablyTheHelp		"Probabilmente la pagina di aiuto in una lingua differente può essere una valida alternativa."
-::help::mc::PageNotAvailable		"This page is not available" ;# NEW
+::help::mc::PageNotAvailable		"Questa pagina non è disponibile"
 
 ::help::mc::Overview					"Visione d'insieme"
 
@@ -1593,7 +1593,7 @@
 ::fsbox::mc::Desktop							"Desktop"
 ::fsbox::mc::Home								"Home"
 
-::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)" ;# NEW
+::fsbox::mc::SelectEncoding				"Selezionare la codifica del database (apre un'interfaccia)"
 ::fsbox::mc::SelectWhichType				"Selezione che tipo di file visualizzare"
 ::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
 
@@ -1613,12 +1613,12 @@
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::CopyFailed						"Copia del file '%s' fallita: permesso negato."
 ::fsbox::mc::CannotCopy						"Non posso creare una copia perché il file '%s' esiste già."
-::fsbox::mc::CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
+::fsbox::mc::CannotDuplicate				"Impossibile duplicare il file '%s' per mancanza di permessi lettura."
 ::fsbox::mc::ReallyDuplicateFile			"Vuoi davvero duplicare questo file?"
 ::fsbox::mc::ReallyDuplicateDetail		"Questo file ha circa %s. Duplicarlo può richiedere del tempo."
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
-::fsbox::mc::InvalidFileExt				"Operation failed: '%s' has an invalid file extension." ;# NEW
+::fsbox::mc::InvalidFileExt				"Operazione fallita: '%s' ha un'estensione file non valida."
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
@@ -1634,7 +1634,7 @@
 ::fsbox::mc::DirectoryDoesNotExist		"La cartella '%s' non esiste."
 ::fsbox::mc::CannotOpenOrCreate			"Non posso aprire/creare '%s'. Per favore scegli una cartella."
 ::fsbox::mc::WaitWhileDuplicating		"Per favore attendere mentre avviene la duplicazione del file..."
-::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
+::fsbox::mc::FileHasDisappeared			"Il file '%s' è scomparso."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"
