@@ -238,7 +238,7 @@ proc open {parent pos lang} {
 		set Vars(format:$fmt) 0
 		::toolbar::add $tb checkbutton \
 			-image [set icon::toolbar$format] \
-			-tooltipvar [set mc::$format] \
+			-tooltipvar [namespace current]::mc::$format \
 			-variable [namespace current]::Vars(format:$fmt) \
 			-command [namespace code [list ChangeFormat $fmt]] \
 			;

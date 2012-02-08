@@ -57,6 +57,10 @@
 # include "tkInt.h"
 #endif
 
+#ifdef HAVE_XFT
+# include <fontconfig/fontconfig.h>
+#endif
+
 #include "htmldefaultstyle.c"
 
 #define LOG if (pTree->options.logcmd)
@@ -1110,6 +1114,14 @@ deleteWidget(clientData)
         TkDestroyRegion(pTree->bufferRegion);
         pTree->bufferRegion = None;
 	 }
+#endif
+
+#ifdef HAVE_XFT
+    if (pTree->fc_config)
+    {
+        FcConfigDestroy(pTree->fc_config);
+        pTree->fc_config = NULL;
+    }
 #endif
 
     /* Delete the structure itself */
@@ -2825,6 +2837,10 @@ newWidget(clientData, interp, objc, objv)
     pTree->buffer = None;
     pTree->bufferRegion = None;
     memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
+#endif
+
+#ifdef HAVE_XFT
+    pTree->fc_config = NULL;
 #endif
 
 #ifdef TKHTML_ENABLE_PROFILE

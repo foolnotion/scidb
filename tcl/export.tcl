@@ -1045,10 +1045,7 @@ proc BuildFrame {w} {
 	grid rowconfigure $w.style {0 2} -minsize $::theme::padding
 	grid rowconfigure $w.style {2} -weight 1
 	grid columnconfigure $w.style {0 2} -minsize $::theme::padding
-	set var [namespace parent]::Info(column-style)
-	set cmd [namespace code UpdateColumnStyle]
-	trace remove variable $var write $cmd
-	trace add variable $var write $cmd
+	trace add variable [namespace parent]::Info(column-style) write [namespace code UpdateColumnStyle]
 
 	ttk::labelframe $w.options -text [::mc::stripAmpersand [set [namespace parent]::mc::OptionsSetup]]
 	ttk::checkbutton $w.options.hide \
@@ -1748,7 +1745,6 @@ proc BuildFrame {w} {
 	set Info(column-style) $Styles($type,BasicStyle,GameText,Moves,MainLine,ColumnStyle)
 	set var [namespace parent]::Info(column-style)
 	set cmd [namespace code [list UpdateColumnStyle $w.t]]
-	trace remove variable $var write $cmd
 	trace add variable $var write $cmd
 	set Info(style) [lindex $StyleLayout($Values(Type)) 0 1]
 	set Info(fontstyle) $Info(style)

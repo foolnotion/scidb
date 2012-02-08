@@ -1530,6 +1530,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 			append dictFilenames $filename
 		}
 		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
+		set content [::scidb::misc::html ligatures $content]
 	}
 
 	[$Priv(html) drawable] configure -cursor {}

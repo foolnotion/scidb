@@ -2702,7 +2702,6 @@ updateRegions(pTree, pElem, drawable, dx, dy)
 #ifdef MEASURE_TIME
 restart_time();
 #endif
-                    /* XXX: take additional hyphen into account */
                     HtmlDrawChars(pTree, drawable, gc, font, buf, len, x, y, 0);
 #ifdef MEASURE_TIME
 buf[len] = '\0';

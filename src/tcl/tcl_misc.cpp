@@ -757,6 +757,26 @@ cmdHtmlHyphenate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdHtmlLigatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 2)
+	{
+		Tcl_WrongNumArgs(	ti, 1, objv, "<document>");
+		return TCL_ERROR;
+	}
+
+	int length;
+	char const* document = Tcl_GetStringFromObj(objv[1], &length);
+
+	util::html::BuildLigatures ligatures;
+	ligatures.parse(document, length);
+	setResult(ligatures.result());
+
+	return TCL_OK;
+}
+
+
+static int
 cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc < 3)
@@ -857,6 +877,9 @@ cmdHtml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (strcmp(command, "hyphenate") == 0)
 		return cmdHtmlHyphenate(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "ligatures") == 0)
+		return cmdHtmlLigatures(clientData, ti, objc - 1, objv + 1);
 
 	if (strcmp(command, "cache") == 0)
 		return cmdHtmlCache(clientData, ti, objc - 1, objv + 1);

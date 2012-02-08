@@ -33,11 +33,11 @@ There exists four possibilites to set the default browser:
   </p></li>
 
   <li><p>
-    The link <code>"x-www-browser"</code> will be used.
+    The link <nobr><code>"x-www-browser"</code></nobr> will be used.
     Under Ubuntu/Debian this link can be updated to the default browser
     with:
     <box>
-      <p><code>sudo update-alternatives --config x-www-browser</code></p>
+      <p><code>sudo update-alternatives <nobr>--config</nobr> <nobr>x-www-browser</nobr></code></p>
     </box>
   </p></li>
 
@@ -48,8 +48,8 @@ There exists four possibilites to set the default browser:
 
   <li><p>
     Use the first browser which can be found in the following list:<br/>
-    iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
-    epiphany, galeon, mosaic, amaya, browsex.
+    <ragged>iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex</ragged>.
   </p></li>
 </ol>
 

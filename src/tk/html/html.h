@@ -80,6 +80,10 @@
 struct TkRegion_;
 #endif
 
+#ifdef HAVE_XFT
+struct _FcConfig;
+#endif
+
 /*
  * Version information for the package mechanism.
  */
@@ -681,6 +685,10 @@ struct HtmlTree {
     Pixmap buffer;
     XRectangle bufferRect;
     struct TkRegion_ *bufferRegion;
+#endif
+
+#ifdef HAVE_XFT
+    struct _FcConfig *fc_config;
 #endif
 
 #ifdef TKHTML_ENABLE_PROFILE

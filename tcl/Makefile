@@ -16,6 +16,7 @@ include ../Makefile.in
 SOURCES = \
 	exec.tcl \
 	start.tcl \
+	utils/tcl_bugs.tcl \
 	utils/place.tcl \
 	splash.tcl \
 	dialogs/messagebox.tcl \
@@ -534,7 +535,7 @@ uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags u
 
 $(SCRIPT): $(SOURCES)
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
-	cat $(SOURCES) | sed -e '/^##/d' -e '/^# /d' > $(SCRIPT)
+	cat $(SOURCES) | sed -e '/^##/d' -e '/^[ 	]*# /d' > $(SCRIPT)
 	chmod 0555 $(SCRIPT)
 
 # vi:set ts=3 sw=3:

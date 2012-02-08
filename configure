@@ -151,6 +151,7 @@ array set configure {
     prefix          /usr/local
     exec-prefix     /usr/local
     program-suffix  {}
+    fontconfig-path {}
 }
 set configure(tcl-version) [findBestTclVersion]
 set configure(gcc-version) ""
@@ -199,7 +200,8 @@ array set compiler {
 }
 
 array set option {
-    EXTRA_CXXFLAGS {}
+    EXTRA_CXXFLAGS  {}
+    HAVE_XFT        {}
 }
 
 array set defaults {
@@ -613,6 +615,31 @@ proc findTclTkPaths {} {
     }
 
     return 1
+}
+
+
+# findFontconfig:
+#    Find the fontconfig path.
+#    Returns 1 on success, 0 on failure.
+#
+proc findFontconfig {} {
+    variable option
+
+    set path {
+        /usr/local/include/fontconfig
+        /usr/include/fontconfig
+    }
+
+    puts -nonewline "    Checking if your system has fontconfig: "
+    set dir [FindDir "fontconfig.h" $path]
+
+    if {[string length $dir]} {
+        set option(HAVE_XFT) "-DHAVE_XFT"
+        puts "yes."
+    } else {
+        set option(HAVE_XFT) 0
+        puts "no."
+    }
 }
 
 
@@ -1376,6 +1403,10 @@ if {[string length $gxxVer]} {
         if {![string match Debian* $insaneRelease]} {
             Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
         }
+    }
+
+    if {$::tcl_platform(platform) eq "unix"} {
+        findFontconfig
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {

@@ -33,11 +33,158 @@
 
 using namespace util;
 using namespace util::html;
+using namespace hyphenate;
 
 
-typedef mstl::pair<unsigned,hyphenate::Hyphenator*> HyphenatorP;
+typedef mstl::pair<unsigned,Hyphenator*> HyphenatorP;
 typedef mstl::map<mstl::string,HyphenatorP> HyphenatorMap;
 static HyphenatorMap hyphenatorMap;
+
+
+inline static bool isdelim(char c) { return c == ' ' || c == '>'; }
+
+
+inline static bool
+compTag(char const* str, char const* tag, unsigned tagLen)
+{
+	return strncasecmp(str, tag, tagLen) == 0 && ::isdelim(str[tagLen]);
+}
+
+
+namespace {
+
+struct ActionHyphenate
+{
+	ActionHyphenate(Hyphenator* hyphenator, mstl::string const& hyphen) :
+		m_hyphenator(hyphenator),
+		m_hyphen(hyphen)
+	{
+	}
+
+	bool isExcludingTag(char const* s)
+	{
+		switch (tolower(s[0]))
+		{
+			case 'c': return ::compTag(s + 1, "ode",   3);			// <code>
+			case 'n': return ::compTag(s + 1, "obr",   3);			// <nobr>
+			case 'p': return ::compTag(s + 1, "re",    2);			// <pre>
+			case 'r': return ::compTag(s + 1, "agged", 5);			// <ragged>
+			case 'v': return ::compTag(s + 1, "ar",    2);			// <var>
+
+			case 'a':
+				switch (tolower(s[1]))
+				{
+					case 'b': return ::compTag(s + 2, "br",    2);	// <abbr>
+					case 'c': return ::compTag(s + 2, "ronym", 5);	// <acronym>
+				}
+				break;
+
+			case 's':
+				switch (tolower(s[1]))
+				{
+					case 'c': return ::compTag(s + 2, "ript", 4);	// <script>
+					case 't': return ::compTag(s + 2, "yle",  3);	// <style>
+				}
+				break;
+		}
+
+		return false;
+	}
+
+	// TODO: use HAVE_0X_RVALUE_REFERENCES
+	mstl::string operator()(mstl::string const& buf) { return m_hyphenator->hyphenate(buf, m_hyphen); }
+
+	Hyphenator*		m_hyphenator;
+	mstl::string	m_hyphen;
+};
+
+
+struct ActionBuildLigatures
+{
+	// TODO: use HAVE_0X_RVALUE_REFERENCES
+	mstl::string
+	operator()(mstl::string const& buf)
+	{
+		static unsigned char ZeroWidthJoiner[3] = { 0xe2, 0x80, 0x8d };
+
+		mstl::string result;
+		result.reserve(mstl::mul2(buf.size()));
+
+		char const* s = buf.begin();
+		char const* e = buf.end() - 1;
+
+		for ( ; s < e; ++s)
+		{
+			result.append(*s);
+
+			// NOTE: currently we do not want ligature 'st'.
+			if (*s == 'f')
+			{
+				switch (s[1])
+				{
+					case 'f':
+						result.append(reinterpret_cast<char const*>(ZeroWidthJoiner), 3);
+						result.append('f');
+
+						if (++s + 1 < e)
+						{
+							switch (s[1])
+							{
+								case 'i':
+								case 'l':
+									result.append(reinterpret_cast<char const*>(ZeroWidthJoiner), 3);
+									result.append(*++s);
+									break;
+							}
+						}
+						break;
+
+					case 'i':
+					case 'l':
+					case 't':
+						result.append(reinterpret_cast<char const*>(ZeroWidthJoiner), 3);
+						result.append(*++s);
+						break;
+				}
+			}
+		}
+
+		if (s < buf.end())
+			result.append(*s);
+
+		return result;
+	}
+
+	bool isExcludingTag(char const* s)
+	{
+		switch (tolower(s[0]))
+		{
+			case 'c': return ::compTag(s + 1, "ode", 3);				// <code>
+			case 'p': return ::compTag(s + 1, "re",  2);				// <pre>
+			case 'v': return ::compTag(s + 1, "ar",  2);				// <var>
+
+			case 'a':
+				switch (tolower(s[1]))
+				{
+					case 'b': return ::compTag(s + 2, "br",    2);	// <abbr>
+					case 'c': return ::compTag(s + 2, "ronym", 5);	// <acronym>
+				}
+				break;
+
+			case 's':
+				switch (tolower(s[1]))
+				{
+					case 'c': return ::compTag(s + 2, "ript", 4);	// <script>
+					case 't': return ::compTag(s + 2, "yle",  3);	// <style>
+				}
+				break;
+		}
+
+		return false;
+	}
+};
+
+} // namespace
 
 
 static char const*
@@ -52,6 +199,147 @@ findChar(char const* first, char const* last, char c)
 	}
 
 	return 0;
+}
+
+
+template <typename Action>
+static bool
+parse(char const* document, unsigned length, mstl::string& result, Action& action)
+{
+	mstl::string buf;
+
+	unsigned skipCounter = 0;
+	unsigned lessCounter = 0;
+
+	char const* first		= document;
+	char const* last		= document + length;
+	char const* escape	= 0;
+	char const* markup	= 0;
+
+	result.clear();
+
+	while (first < last)
+	{
+		if (mstl::is_odd(lessCounter))
+		{
+			char const* endMark = ::findChar(first, last, '>');
+
+			if (endMark)
+				--lessCounter, ++endMark;
+			else
+				endMark = last;
+
+			result.append(first, endMark);
+			first = endMark;
+
+			if (escape < first)
+				escape = 0;
+		}
+		else
+		{
+			if (!markup)
+			{
+				markup = ::findChar(first, last, '<');
+
+				if (!markup)
+					markup = last;
+			}
+
+			if (!escape)
+			{
+				escape = ::findChar(first, last, '&');
+
+				if (!escape)
+					escape = last;
+			}
+
+			if (escape < markup)
+			{
+				if (first < escape)
+				{
+					if (skipCounter > 0)
+					{
+						result.append(first, escape);
+					}
+					else
+					{
+						buf.hook(const_cast<char*>(first), escape - first);
+						result.append(action(buf));
+					}
+				}
+
+				first = ::findChar(escape, last, ';');
+
+				if (first)
+					++first;
+				else
+					first = last;
+
+				result.append(escape, first);
+				escape = 0;
+			}
+			else
+			{
+				if (markup < last)
+					++lessCounter;
+
+				if (first < markup)
+				{
+					if (skipCounter > 0)
+					{
+						result.append(first, markup);
+					}
+					else
+					{
+						buf.hook(const_cast<char*>(first), markup - first);
+						result.append(action(buf));
+					}
+
+					first = markup;
+				}
+
+				if (first[0] == '<')
+				{
+					if (first[1] == '!' && first[2] == '-' && first[3] == '-')
+					{
+						char const* q = ::findChar(first + 4, last, '-');
+
+						while (q && (q[1] != '-' || q[2] != '>'))
+						q = ::findChar(q + 1, last, '-');
+
+						first = q ? q + 3 : last;
+					}
+					else if (first[1] == '/')
+					{
+						if (action.isExcludingTag(first + 2))
+							--skipCounter;
+					}
+					else
+					{
+						char const* q = first + 1;
+
+						while (first < last && *first != '<')
+						++q;
+
+						if (q < last && q[-1] == '/')
+						{
+							result.append(first, ++q);
+							first = q;
+							--lessCounter;
+						}
+						else if (action.isExcludingTag(first + 1))
+						{
+							++skipCounter;
+						}
+					}
+				}
+
+				markup = 0;
+			}
+		}
+	}
+
+	return true;
 }
 
 
@@ -292,32 +580,6 @@ Search::parse(char const* document, unsigned length, char const* search, unsigne
 }
 
 
-inline static bool isdelim(char c) { return c == ' ' || c == '>'; }
-
-
-static bool
-isExcludingTag(char const* s)
-{
-	switch (tolower(s[0]))
-	{
-//		case 'a': return isdelim(s[1]); break;												// <a>
-		case 'c': return strncasecmp(s + 1, "ode", 3) == 0 && isdelim(s[4]);		// <code>
-		case 'p': return strncasecmp(s + 1, "re", 2) == 0 && isdelim(s[3]);		// <pre>
-//		case 't': return tolower(s[1]) == 't' && isdelim(s[2]);						// <tt>
-		case 'h': return isdigit(s[1]) && isdelim(s[2]);								// <h1>, <h2>, ...
-
-		case 's':
-			switch (tolower(s[1]))
-			{
-				case 'c': return strncasecmp(s + 2, "ript", 4) == 0 && isdelim(s[5]);	// <script>
-				case 't': return strncasecmp(s + 2, "yle", 3) == 0 && isdelim(s[4]);		// <style>
-			}
-			break;
-	}
-
-	return false;
-}
-
 Hyphenate::Hyphenate(mstl::string const& patternFilename,
 							mstl::string const& dictFilenames,
 							CacheState keepInCache)
@@ -330,7 +592,7 @@ Hyphenate::Hyphenate(mstl::string const& patternFilename,
 	{
 		i = ::hyphenatorMap.insert(::HyphenatorMap::value_type(
 				patternFilename,
-				::HyphenatorP(0, new ::hyphenate::Hyphenator(patternFilename, dictFilenames)))).first;
+				::HyphenatorP(0, new Hyphenator(patternFilename, dictFilenames)))).first;
 	}
 
 	m_hyphenator = i->second.second;
@@ -389,140 +651,17 @@ Hyphenate::clearCache(mstl::string const& patternFilename)
 bool
 Hyphenate::parse(char const* document, unsigned length)
 {
-	mstl::string hyphen("&shy;");
-	mstl::string buf;
+	ActionHyphenate action(m_hyphenator, "&shy;");
+	::parse(document, length, m_result, action);
+	return true;
+}
 
-	unsigned skipCounter = 0;
-	unsigned lessCounter = 0;
 
-	char const* first		= document;
-	char const* last		= document + length;
-	char const* escape	= 0;
-	char const* markup	= 0;
-
-	m_result.clear();
-
-	while (first < last)
-	{
-		if (mstl::is_odd(lessCounter))
-		{
-			char const* endMark = ::findChar(first, last, '>');
-
-			if (endMark)
-				--lessCounter, ++endMark;
-			else
-				endMark = last;
-
-			m_result.append(first, endMark);
-			first = endMark;
-
-			if (escape < first)
-				escape = 0;
-		}
-		else
-		{
-			if (!markup)
-			{
-				markup = ::findChar(first, last, '<');
-
-				if (!markup)
-					markup = last;
-			}
-
-			if (!escape)
-			{
-				escape = ::findChar(first, last, '&');
-
-				if (!escape)
-					escape = last;
-			}
-
-			if (escape < markup)
-			{
-				if (first < escape)
-				{
-					if (skipCounter > 0)
-					{
-						m_result.append(first, escape);
-					}
-					else
-					{
-						buf.hook(const_cast<char*>(first), escape - first);
-						m_result.append(m_hyphenator->hyphenate(buf, hyphen));
-					}
-				}
-
-				first = ::findChar(escape, last, ';');
-
-				if (first)
-					++first;
-				else
-					first = last;
-
-				m_result.append(escape, first);
-				escape = 0;
-			}
-			else
-			{
-				if (markup < last)
-					++lessCounter;
-
-				if (first < markup)
-				{
-					if (skipCounter > 0)
-					{
-						m_result.append(first, markup);
-					}
-					else
-					{
-						buf.hook(const_cast<char*>(first), markup - first);
-						m_result.append(m_hyphenator->hyphenate(buf, hyphen));
-					}
-
-					first = markup;
-				}
-
-				if (first[0] == '<')
-				{
-					if (first[1] == '!' && first[2] == '-' && first[3] == '-')
-					{
-						char const* q = ::findChar(first + 4, last, '-');
-
-						while (q && (q[1] != '-' || q[2] != '>'))
-						q = ::findChar(q + 1, last, '-');
-
-						first = q ? q + 3 : last;
-					}
-					else if (first[1] == '/')
-					{
-						if (::isExcludingTag(first + 2))
-							--skipCounter;
-					}
-					else
-					{
-						char const* q = first + 1;
-
-						while (first < last && *first != '<')
-						++q;
-
-						if (q < last && q[-1] == '/')
-						{
-							m_result.append(first, ++q);
-							first = q;
-							--lessCounter;
-						}
-						else if (::isExcludingTag(first + 1))
-						{
-							++skipCounter;
-						}
-					}
-				}
-
-				markup = 0;
-			}
-		}
-	}
-
+bool
+BuildLigatures::parse(char const* document, unsigned length)
+{
+	ActionBuildLigatures action;
+	::parse(document, length, m_result, action);
 	return true;
 }
 

@@ -21,8 +21,8 @@
 namespace util {
 namespace html {
 
-inline mstl::string const& Hyphenate::result() const	{ return m_result; }
-
+inline mstl::string const& Hyphenate::result() const			{ return m_result; }
+inline mstl::string const& BuildLigatures::result() const	{ return m_result; }
 
 inline bool Search::tooManyMatches() const				{ return m_tooManyMatches; }
 inline unsigned Search::countMatches() const				{ return m_posList.size(); }

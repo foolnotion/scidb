@@ -103,7 +103,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
       Die aus der letzten Sitzung existierenden Wiederherstellungsdateien,
       die ungespeicherte Partien enthalten, löschen und das Prgramm terminieren.
       Es erfolgt keine physikalische Löschung, mit der Option
-      <code>--recover-old</code> können sie wiederbenutzt werden.
+      <nobr><code>--recover-old</code></nobr> können sie wiederbenutzt werden.
     </td>
   </tr>
   <tr>
@@ -114,7 +114,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
       Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
       Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
       nicht physikalisch gelöscht,mit der Option
-      <code>--recover-old</code> können sie wiederbenutzt werden.
+      <nobr><code>--recover-old</code></nobr> können sie wiederbenutzt werden.
     </td>
   </tr>
   <tr>
@@ -159,9 +159,9 @@ Die folgenden Optionen werden von der Tk-Bibliothek erkannt:
     </td>
     <td class="standard">
       Benutze die Geometrieangaben für das Hauptfenster. Beispielsweise hat das
-      Hauptfenster mit der Angabe <code>-geometry</code> <code>600x800+20+10</code>
-      die Größe 600x800 und wird an der Bildschirmposition mit den Koordinaten
-      20,10 positioniert.
+      Hauptfenster mit der Angabe <nobr><code>-geometry</code></nobr>
+      <nobr><code>600x800+20+10</code></nobr> die Größe 600x800 und wird an der
+      Bildschirmposition mit den Koordinaten 20,10 positioniert.
     </td>
   </tr>
   <tr>

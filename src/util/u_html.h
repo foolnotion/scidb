@@ -81,7 +81,7 @@ class Hyphenate
 {
 public:
 
-	enum CacheState { KeepInCache, DontKeepInCache, };
+	enum CacheState { KeepInCache, DontKeepInCache };
 
 	Hyphenate(	mstl::string const& patternFilename,
 					mstl::string const& dictFilenames,
@@ -101,6 +101,19 @@ private:
 	mstl::string	m_filename;
 	CacheState		m_keepInCache;
 	mstl::string	m_result;
+};
+
+
+class BuildLigatures
+{
+public:
+
+	bool parse(char const* document, unsigned length);
+	mstl::string const& result() const;
+
+private:
+
+	mstl::string m_result;
 };
 
 } // namespace html

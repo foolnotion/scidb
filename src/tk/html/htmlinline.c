@@ -1522,8 +1522,11 @@ HtmlInlineContextAddText(pContext, pNode)
 {
     HtmlTextIter sIter;
 
+    InlineBox* pPrevBox = NULL;
+    char const* zPrevData = NULL;
+    int nPrevData = 0;
+
     HtmlFont *pFont;               /* Font to render in */
-    Tk_Font tkfont;                /* Copy of pFont->tkfont */
     int eWhitespace;               /* Value of 'white-space' property */
 
     int sw;                        /* Space-Width in pFont. */
@@ -1537,8 +1540,6 @@ HtmlInlineContextAddText(pContext, pNode)
     assert(pValues);
     pFont = pValues->fFont;
     eWhitespace = pValues->eWhitespace;
-
-    tkfont = pFont->tkfont;
 
     sw = pFont->space_pixels;
     nh = pFont->metrics.ascent + pFont->metrics.descent;
@@ -1571,16 +1572,18 @@ HtmlInlineContextAddText(pContext, pNode)
                 pBox->nContentPixels = tw;
                 pBox->iHyphen = iHyphen;
                 pBox->eWhitespace = eWhitespace;
+                pBox->nKerning = 0;
+
+                if (pPrevBox) {
+                    int w = HtmlTextWidth(pContext->pTree, pFont, zPrevData, nPrevData + nData);
+                    pPrevBox->nKerning = w - (pPrevBox->nContentPixels + pBox->nContentPixels);
+                    pPrevBox = NULL;
+                }
 
                 if (iHyphen) {
-                    /* TODO: take ligatures into account. */
-                    int nt = Tk_TextWidth(tkfont, zData + nData - 1, 2);
-                    int n1 = Tk_TextWidth(tkfont, zData + nData - 1, 1);
-                    int n2 = Tk_TextWidth(tkfont, zData + nData, 1);
-
-                    pBox->nKerning = nt - (n1 + n2);
-                } else {
-                    pBox->nKerning = 0;
+                    pPrevBox = pBox;
+                    nPrevData = nData;
+                    zPrevData = zData;
                 }
 
                 y = pContext->pCurrent->metrics.iBaseline;
@@ -1601,6 +1604,7 @@ HtmlInlineContextAddText(pContext, pNode)
                     for (i = 0; i < nData; i++) {
                         inlineContextAddNewLine(pContext, nh);
                     }
+                    pPrevBox = NULL;
                     break;
                 }
                 /* Otherwise fall through */
@@ -1616,6 +1620,7 @@ HtmlInlineContextAddText(pContext, pNode)
                 for (i = 0; i < nData; i++) {
                     inlineContextAddSpace(pContext, sw, eWhitespace);
                 }
+                pPrevBox = NULL;
                 break;
             }
 

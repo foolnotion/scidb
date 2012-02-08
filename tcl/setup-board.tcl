@@ -336,7 +336,6 @@ proc open {parent} {
 
 		set cmd [namespace code SetupVars]
 		foreach piece {White Black King Queen} {
-			trace remove variable ::mc::$piece write $cmd
 			trace add variable ::mc::$piece write $cmd
 		}
 

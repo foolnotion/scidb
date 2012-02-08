@@ -50,6 +50,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#ifdef WIN32
+# include <windows.h>
+#endif
+
+#if defined(HAVE_XFT)
+# include <fontconfig/fontconfig.h>
+#endif
+
 /* #define ACCEPT_UNITLESS_LENGTHS */
 
 #define LOG if (p->pTree->options.logcmd && p->pNode)
@@ -284,6 +292,16 @@ static int nolayoutlist[] = {
     CSS_PROPERTY_VISIBILITY,
     CSS_PROPERTY_BACKGROUND_POSITION_X,
     CSS_PROPERTY_BACKGROUND_POSITION_Y
+};
+
+static unsigned char ligTable[7][3] = {
+    { 0xEF, 0xAC, 0x80 }, /* ff  */
+    { 0xEF, 0xAC, 0x81 }, /* fi  */
+    { 0xEF, 0xAC, 0x82 }, /* fl  */
+    { 0xEF, 0xAC, 0x83 }, /* ffi */
+    { 0xEF, 0xAC, 0x84 }, /* ffl */
+    { 0xEF, 0xAC, 0x85 }, /* ft  */
+    { 0xEF, 0xAC, 0x86 }, /* st  */
 };
 
 
@@ -2051,6 +2069,134 @@ HtmlComputedValuesSet(p, eProp, pProp)
     return 1;
 }
 
+#ifdef WIN32
+
+void
+MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
+    HtmlTree* pTree;
+    HtmlFont* pFont;
+    const char* zFamily;
+    int isBold;
+    int isItalic;
+{
+    LOGFONTA lf;
+    HPDF_UINT32 len;
+    HFONT hf;
+
+    if (strlen(zFamily) >= LF_FACESIZE) {
+        return
+    }
+
+    lf.lfHeight         = 0;
+    lf.lfWidth          = 0;
+    lf.lfEscapement     = 0;
+    lf.lfOrientation    = 0;
+    lf.lfWeight         = isBold ? FW_BOLD : 0;
+    lf.lfItalic         = isItalic ? 1 : 0;
+    lf.lfUnderline      = 0;
+    lf.lfStrikeOut      = 0;
+    lf.lfCharSet        = DEFAULT_CHARSET;
+    lf.lfOutPrecision   = OUT_DEFAULT_PRECIS;
+    lf.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+    lf.lfQuality        = DEFAULT_QUALITY;
+    lf.lfPitchAndFamily = DEFAULT_PITCH | FF_DONTCARE;
+
+    memset(&lf.lfFaceName, 0, LF_FACESIZE);
+    strcpy(lf.lfFaceName, zFamily);
+
+    if ((hf = CreateFontIndirectA(&lf))) {
+        HDC hdc = GetDC(0);
+
+        if (hdc) {
+            HGDIOBJ oldFont = SelectObject(hdc, hf);
+            Tcl_DString dstr;
+            int ii;
+
+            for (ii = 0; ii < 7; ++ii) {
+                Tcl_UtfToExternalDString("unicode", ligTable[i], 3, &dstr);
+
+                if (Tcl_DStringLength(&dstr) == 1) {
+                    LWORD pgi;
+
+                    if (    GetGlyphIndices(hdc,
+                                            Tcl_DStringValue(&dstr), 1,
+                                            &pgi,
+                                            GGI_MARK_NONEXISTING_GLYPHS) != GDI_ERROR
+                        && pgi != 0xffff) {
+
+                        pFont->ligature[i] = Tk_TextWidth(pFont->tkfont, ligTable[i], 3);
+                    }
+                }
+            }
+
+            SelectObject(hdc, oldFont);
+            ReleaseDC(0, hdc);
+        }
+
+        DeleteObject(hf);
+    }
+}
+
+#endif
+
+#ifdef __MacOSX__
+# error "MeasureLatinLigatures() not yet implemented"
+#endif
+
+#ifdef __unix__
+
+void
+MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
+    HtmlTree* pTree;
+    HtmlFont* pFont;
+    const char* zFamily;
+    int isBold;
+    int isItalic;
+{
+# ifdef HAVE_XFT
+
+    FcPattern* pattern;
+
+    if (pTree->fc_config == NULL)
+        pTree->fc_config = FcInitLoadConfigAndFonts();
+
+    pattern = FcPatternBuild(   NULL,
+                                FC_FAMILY, FcTypeString, zFamily,
+                                FC_WEIGHT, FcTypeInteger, isBold ? FC_WEIGHT_BOLD : FC_WEIGHT_MEDIUM,
+                                FC_SLANT,
+                                FcTypeInteger,
+                                isItalic ? FC_SLANT_ITALIC : FC_SLANT_ROMAN,
+                                NULL);
+    FcDefaultSubstitute(pattern);
+
+    if (FcConfigSubstitute(pTree->fc_config, pattern, FcMatchFont)) {
+        FcResult result = FcResultMatch;
+        FcPattern* matched = FcFontMatch(pTree->fc_config, pattern, &result);
+
+        if (result == FcResultMatch) {
+            FcCharSet *charset = NULL;
+
+            if (FcPatternGetCharSet(matched, FC_CHARSET, 0, &charset) == FcResultMatch) {
+                unsigned ii;
+
+                for (ii = 0; ii < 7; ++ii) {
+                    if (FcCharSetHasChar(charset, 0xFB00 + ii)) {
+                        pFont->ligature[ii] = Tk_TextWidth(pFont->tkfont, ligTable[ii], 3);
+                    }
+                }
+            }
+        }
+
+        FcPatternDestroy(matched);
+    }
+
+    FcPatternDestroy(pattern);
+
+#endif
+}
+
+#endif
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -2142,17 +2288,14 @@ allocateNewFont(clientData)
     pFont->ex_pixels = Tk_TextWidth(tkfont, "x", 1);
     pFont->space_pixels = Tk_TextWidth(tkfont, " ", 1);
     pFont->hyphen_pixels = Tk_TextWidth(tkfont, "-", 1);
-    pFont->ligature[0] = Tk_TextWidth(tkfont, "\xEF\xAC\x80", 1); /* ff  uFB00 */
-    pFont->ligature[1] = Tk_TextWidth(tkfont, "\xEF\xAC\x81", 1); /* fi  uFB01 */
-    pFont->ligature[2] = Tk_TextWidth(tkfont, "\xEF\xAC\x82", 1); /* fl  uFB02 */
-    pFont->ligature[3] = Tk_TextWidth(tkfont, "\xEF\xAC\x83", 1); /* ffi uFB03 */
-    pFont->ligature[4] = Tk_TextWidth(tkfont, "\xEF\xAC\x84", 1); /* ffl uFB04 */
-    pFont->ligature[5] = Tk_TextWidth(tkfont, "\xEF\xAC\x85", 1); /* ft  uFB05 */
-    pFont->ligature[6] = Tk_TextWidth(tkfont, "\xEF\xAC\x86", 1); /* st  uFB06 */
+
+    /* NOTE: Tk cannot provide information about the existence of specific glyphs. */
     pFont->has_ligatures = 0;
+    memset(pFont->ligature, 0, sizeof(pFont->ligature));
+    MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic);
 
     for (ii = 0; ii < 7; ++ii) {
-        if (pFont->ligature[0] > 0) {
+        if (pFont->ligature[ii] > 0) {
             pFont->has_ligatures = 1;
         }
     }
@@ -3164,3 +3307,4 @@ HtmlComputedValuesCompare(pV1, pV2)
     return HTML_REQUIRE_PAINT;
 }
 
+/* vi: set ts=4 sw=4 et: */

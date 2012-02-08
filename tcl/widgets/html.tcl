@@ -756,8 +756,8 @@ proc SelectionUntagWord {w node idx} {
 proc SelectionToWord {node idx} {
 	set t [$node text]
 	set cidx [::tkhtml::charoffset $t $idx]
-	set cidx1 [string wordstart $t $cidx]
-	set cidx2 [string wordend $t $cidx]
+	set cidx1 [WordStart $t $cidx]
+	set cidx2 [WordEnd $t $cidx]
 	set idx1 [::tkhtml::byteoffset $t $cidx1]
 	set idx2 [::tkhtml::byteoffset $t $cidx2]
 	return [list $idx1 $idx2]
@@ -794,8 +794,8 @@ proc SelectionGet {w offset maxChars} {
 	if {$stridxA > $stridxB} { lassign [list $stridxB $stridxA] stridxA stridxB }
 
 	if {$Priv(sel:mode) eq "word"} {
-		set stridxA [string wordstart $t $stridxA]
-		set stridxB [string wordend $t $stridxB]
+		set stridxA [WordStart $t $stridxA]
+		set stridxB [WordEnd $t $stridxB]
 	}
 	if {$Priv(sel:mode) eq "block"} {
 		set stridxA [string last "\n" $t $stridxA]
@@ -826,6 +826,32 @@ proc SelectionHandler {w args} {
 	}
 
 	return $result
+}
+
+
+proc WordStart {str index} {
+	set index [string wordstart $str $index]
+
+	while {	$index > 1
+			&& (	[string index $str [expr {$index - 1}]] eq "\u200c"
+				|| [string index $str [expr {$index - 1}]] eq "\u200d")} {
+		set index [string wordstart $str [expr {$index - 2}]]
+	}
+
+	return $index
+}
+
+
+proc WordEnd {str index} {
+	set index [string wordend $str $index]
+
+	while {	$index < [string length $str]
+			&& (	[string index $str $index] eq "\u200c"
+				|| [string index $str $index] eq "\u200d")} {
+		set index [string wordend $str [expr {$index + 1}]]
+	}
+
+	return $index
 }
 
 

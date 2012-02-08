@@ -2340,10 +2340,10 @@ HtmlTextIterHyphen(pTextIter)
 static char const*
 findZeroWidthSpace(const unsigned char* zText, const unsigned char* zEnd)
 {
-    zEnd -= 4;
+    zEnd -= 3;
 
     for (++zText; zText < zEnd; ++zText) {
-        if (zText[0] == 0xe2 && zText[1] == 0x80 && zText[2] == 0x8D) {
+        if (zText[0] == 0xe2 && zText[1] == 0x80 && (zText[2] == 0x8C || zText[2] == 0x8D)) {
             return zText - 1;
         }
     }
@@ -2365,10 +2365,6 @@ buildLigatures(tree, font, zText, numBytes, buffer)
     const unsigned char* zEnd;
     const unsigned char* zNext;
 
-    if (!font->has_ligatures) {
-        return zText;
-    }
-
     zEnd  = zText + *numBytes;
     zNext = findZeroWidthSpace(zText, zEnd);
 
@@ -2384,57 +2380,65 @@ buildLigatures(tree, font, zText, numBytes, buffer)
     zInsert = buffer;
 
     while (zNext) {
-        static const unsigned char ZeroWidthSpace[3] = { 0xE2, 0x80, 0x8D };
-
         const unsigned char* zPos = zNext + 4;
 
         int ii = -1;
 
         assert(zText <= zNext && zPos < zEnd);
 
-        switch (*zNext) {
-            case 'f':
-                switch (*zPos) {
-                    case 'f': ii = 0; break; /* ff */
-                    case 'i': ii = 1; break; /* fi */
-                    case 'l': ii = 2; break; /* fl */
-                    case 't': ii = 5; break; /* ft */
-                }
-                break;
-
-            case 's':
-                if (*zPos == 't') { ii = 6; } /* st */
-                break;
-        }
-
-        if (ii >= 0) {
-            if (ii == 0 && zPos + 4 < zEnd && memcmp(zPos + 1, ZeroWidthSpace, 3) == 0) {
-                switch (zNext[8]) {
-                    case 'i': ii = 3; zPos += 4; break; /* ffi */
-                    case 'l': ii = 4; zPos += 4; break; /* ffl */
-                }
-            }
-
+        if (zNext[3] == 0x8C) {
+            /* Eliminate ZERO WIDTH NON-JOINER. */
             int nchars = zNext - zLast;
             memcpy(zInsert, zLast, nchars);
             zInsert += nchars;
+            zLast = zPos;
+        } else {
+            switch (*zNext) {
+                case 'f':
+                    switch (*zPos) {
+                        case 'f': ii = 0; break; /* ff */
+                        case 'i': ii = 1; break; /* fi */
+                        case 'l': ii = 2; break; /* fl */
+                        case 't': ii = 5; break; /* ft */
+                    }
+                    break;
 
-            if (tree->options.latinligatures && font->ligature[ii]) {
-                zInsert[0] = 0xEF;
-                zInsert[1] = 0xAC;
-                zInsert[2] = 0x80 + ii;
-                zInsert += 3;
-            } else {
-                zInsert[0] = zNext[0];
-                zInsert[1] = zNext[4];
-                zInsert += 2;
-
-                if (ii == 3 || ii == 4) {
-                    *zInsert++ = zNext[8];
-                }
+                case 's':
+                    if (*zPos == 't') { ii = 6; } /* st */
+                    break;
             }
 
-            zLast = ++zPos;
+            if (ii >= 0) {
+                static const unsigned char ZeroWidthJoiner[3] = { 0xE2, 0x80, 0x8D };
+
+                if (ii == 0 && zPos + 4 < zEnd && memcmp(zPos + 1, ZeroWidthJoiner, 3) == 0) {
+                    switch (zNext[8]) {
+                        case 'i': ii = 3; zPos += 4; break; /* ffi */
+                        case 'l': ii = 4; zPos += 4; break; /* ffl */
+                    }
+                }
+
+                int nchars = zNext - zLast;
+                memcpy(zInsert, zLast, nchars);
+                zInsert += nchars;
+
+                if (tree->options.latinligatures && font->ligature[ii]) {
+                    zInsert[0] = 0xEF;
+                    zInsert[1] = 0xAC;
+                    zInsert[2] = 0x80 + ii;
+                    zInsert += 3;
+                } else {
+                    zInsert[0] = zNext[0];
+                    zInsert[1] = zNext[4];
+                    zInsert += 2;
+
+                    if (ii == 3 || ii == 4) {
+                        *zInsert++ = zNext[8];
+                    }
+                }
+
+                zLast = ++zPos;
+            }
         }
 
         zNext = findZeroWidthSpace(zPos, zEnd);
