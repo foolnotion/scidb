@@ -127,7 +127,7 @@ clean:
 	@rm -f $(SCRIPT)
 
 depend:
-	# nothing to do
+	@# nothing to do
 
 build-install-help: build-help install-help
 

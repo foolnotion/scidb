@@ -41,17 +41,15 @@ output database.
 .B Too many games
 The input database is containing too many games. The program is aborting
 with a valid output database.
-.PP
-.B Too many event names
-.br
-.B Too many player names
-.br
-.B Too many site names
-.br
-.B Too many round names
-.RS 9
 .\" --------------------------------------------------------------------------
 .TP 9
+.B Too many event names
+.TP 9
+.B Too many player names
+.TP 9
+.B Too many site names
+.TP 9
+.B Too many round names
 The limit of Scid's namebase is exceeded. The program is aborting
 with a valid output database.
 .\" ==========================================================================

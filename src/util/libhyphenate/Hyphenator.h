@@ -66,14 +66,8 @@ namespace hyphenate
 		};
 
 		typedef mstl::set<String> Lookup;
-
-#if USE_0X_STANDARD
-		typedef mstl::string&& result;
-		typedef mstl::pair<mstl::string, mstl::string>&& result_pair;
-#else
 		typedef mstl::string result;
 		typedef mstl::pair<mstl::string, mstl::string> result_pair;
-#endif
 
 	private:
 

@@ -2065,10 +2065,10 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
                 nToken += 3;
             } else {
                 Tcl_UniChar iChar = 0;
-                const unsigned char *zCurr = zStart;
-                const unsigned char *zLast = zStart;
-                const unsigned char *zNext = zStart;
-                const unsigned char *zEnd  = zStart + nThisText;
+                const unsigned char *zCurr = (const unsigned char*)zStart;
+                const unsigned char *zLast = (const unsigned char*)zStart;
+                const unsigned char *zNext = (const unsigned char*)zStart;
+                const unsigned char *zEnd  = (const unsigned char*)zStart + nThisText;
 
                 nThisText = 0;
                 iChar = utf8Read(zCurr, zEnd, &zNext);
@@ -2338,7 +2338,7 @@ HtmlTextIterHyphen(pTextIter)
 
 
 static char const*
-findZeroWidthSpace(const unsigned char* zText, const unsigned char* zEnd)
+findZeroWidthSpace(const char* zText, const char* zEnd)
 {
     zEnd -= 3;
 
@@ -2351,19 +2351,19 @@ findZeroWidthSpace(const unsigned char* zText, const unsigned char* zEnd)
     return NULL;
 }
 
-static const unsigned char*
+static const char*
 buildLigatures(tree, font, zText, numBytes, buffer)
     HtmlTree* tree;
     HtmlFont* font;
-    const unsigned char* zText;
+    const char* zText;
     int* numBytes;
-    unsigned char* buffer;
+    char* buffer;
 {
-    unsigned char* zInsert;
+    char* zInsert;
 
-    const unsigned char* zLast;
-    const unsigned char* zEnd;
-    const unsigned char* zNext;
+    const char* zLast;
+    const char* zEnd;
+    const char* zNext;
 
     zEnd  = zText + *numBytes;
     zNext = findZeroWidthSpace(zText, zEnd);
@@ -2380,7 +2380,7 @@ buildLigatures(tree, font, zText, numBytes, buffer)
     zInsert = buffer;
 
     while (zNext) {
-        const unsigned char* zPos = zNext + 4;
+        const char* zPos = zNext + 4;
 
         int ii = -1;
 
@@ -2467,11 +2467,11 @@ int
 HtmlTextWidth(tree, font, string, numBytes)
     HtmlTree* tree;
     HtmlFont* font;
-    const unsigned char* string;
+    const char* string;
     int numBytes;
 {
     unsigned char buffer[BUFSIZE];
-    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+    const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     return Tk_TextWidth(font->tkfont, pBuf, numBytes);
 }
@@ -2490,13 +2490,13 @@ int
 HtmlMeasureChars(tree, font, string, numBytes, maxPixels)
     HtmlTree* tree;
     HtmlFont* font;
-    const unsigned char* string;
+    const char* string;
     int numBytes;
     int maxPixels;
 {
     int dummy;
-    unsigned char buffer[BUFSIZE];
-    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+    char buffer[BUFSIZE];
+    const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     return Tk_MeasureChars(font->tkfont, pBuf, numBytes, maxPixels, 0, &dummy);
 }
@@ -2517,21 +2517,21 @@ HtmlDrawChars(tree, drawable, gc, font, string, numBytes, x, y, appendHyphen)
     Drawable drawable;
     GC gc;
     HtmlFont* font;
-    const unsigned char *string;
+    const char *string;
     int numBytes;
     int x;
     int y;
     int appendHyphen;
 {
-    unsigned char buffer[BUFSIZE];
-    const unsigned char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
+    char buffer[BUFSIZE];
+    const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     if (appendHyphen && numBytes < BUFSIZE) {
         if (pBuf != buffer) {
             memcpy(buffer, string, numBytes);
             pBuf = buffer;
         }
-        ((unsigned char*)pBuf)[numBytes++] = '-';
+        ((char*)pBuf)[numBytes++] = '-';
     }
 
     Tk_DrawChars(Tk_Display(tree->tkwin), drawable, gc, font->tkfont, pBuf, numBytes, x, y);

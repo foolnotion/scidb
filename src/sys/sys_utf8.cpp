@@ -558,7 +558,7 @@ sys::utf8::levenstein(	mstl::string const& lhs,
 	char const* rs = rhs.c_str();
 
 	for (unsigned i = 0; i < lhsSize; ++i)
-		ls = nextChar(rs, c[i]);
+		ls = nextChar(ls, c[i]);
 
 	for (unsigned j = 0; j < rhsSize; ++j)
 	{

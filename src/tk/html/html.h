@@ -946,9 +946,9 @@ void           HtmlTextFree(HtmlTextNode *);
 /*
  * Replacment functions for Tk_TextWidth() and Tk_DrawChars.
  */
-int HtmlTextWidth(HtmlTree*, HtmlFont*, const unsigned char*, int);
-int HtmlMeasureChars(HtmlTree*, HtmlFont*, const unsigned char*, int, int);
-void HtmlDrawChars(HtmlTree*, Drawable, GC, HtmlFont*, const unsigned char*, int, int, int, int);
+int HtmlTextWidth(HtmlTree*, HtmlFont*, const char*, int);
+int HtmlMeasureChars(HtmlTree*, HtmlFont*, const char*, int, int);
+void HtmlDrawChars(HtmlTree*, Drawable, GC, HtmlFont*, const char*, int, int, int, int);
 
 /* The details of this structure should be considered private to
  * htmltext.c. They are here because other code needs to know the

@@ -33,7 +33,7 @@ uninstall:
 	@rm -f $(MANDIR)/man1/cbh2si4.1.gz
 
 clean:
-	# nothing to do
+	@# nothing to do
 
 clean-man:
 	@echo "Clean `pwd`"
