@@ -79,11 +79,7 @@
 
 /* Define to 1 if you have the <fontconfig/fontconfig.h> header file. */
 #ifndef LIBHPDF_HAVE_FONTCONFIG_H
-#ifdef __unix__
-#define LIBHPDF_HAVE_FONTCONFIG_H 1
-#else
 #define LIBHPDF_HAVE_FONTCONFIG_H 0
-#endif
 #endif
 
 /* Define to 1 if you have the <windows.h> header file. */

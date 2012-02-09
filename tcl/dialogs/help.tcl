@@ -61,11 +61,13 @@ set PageNotAvailable		"This page is not available"
 variable Geometry {}
 variable Lang {}
 
+# we will not use latin ligatures because they are looking bad with some fonts
 array set Priv {
-	tab			contents
-	matchCase	no
-	entireWord	no
-	titleOnly	no
+	tab				contents
+	matchCase		no
+	entireWord		no
+	titleOnly		no
+	latinligatures	no
 }
 
 
@@ -1094,6 +1096,8 @@ proc ToggleIndex {tab} {
 
 
 proc BuildHtmlFrame {dlg w} {
+	variable Priv
+
 	# Find appropriate fixed fonts
 	set defaultFixedFamilies {{Arial Monospaced} {Bitstream Vera Sans Mono} TkFixedFont}
 	set monoFamilies {}
@@ -1146,7 +1150,7 @@ proc BuildHtmlFrame {dlg w} {
 		-exportselection yes \
 		-css $css \
 		-showhyphens 1 \
-		-latinligatures 1 \
+		-latinligatures $Priv(latinligatures) \
 		;
 
 	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
@@ -1534,8 +1538,10 @@ proc Parse {file wantedFile moveto {match {}}} {
 			append dictFilenames $filename
 		}
 		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
-		# we will not use ligatures because they are looking bad with some fonts
-		#set content [::scidb::misc::html ligatures $content]
+
+		if {$Priv(latinligatures)} {
+			set content [::scidb::misc::html ligatures $content]
+		}
 	}
 
 	[$Priv(html) drawable] configure -cursor {}

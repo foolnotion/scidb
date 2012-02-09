@@ -1505,9 +1505,9 @@ HPDF_LoadFont (HPDF_Doc     pdf,
     return ret;
 }
 
-#endif
+HPDF_EXPORT(HPDF_BOOL) HPDF_LoadFontIsAvailable () { return HPDF_TRUE; }
 
-#if LIBHPDF_HAVE_FONTCONFIG_H
+#elif LIBHPDF_HAVE_FONTCONFIG_H
 
 HPDF_EXPORT(const char*)
 HPDF_LoadFont (HPDF_Doc     pdf,
@@ -1613,6 +1613,22 @@ HPDF_LoadFont (HPDF_Doc     pdf,
 
     return ret;
 }
+
+HPDF_EXPORT(HPDF_BOOL) HPDF_LoadFontIsAvailable () { return HPDF_TRUE; }
+
+#else
+
+HPDF_EXPORT(const char*)
+HPDF_LoadFont (HPDF_Doc     pdf,
+               const char  *family_name,
+               HPDF_BOOL    bold,
+               HPDF_BOOL    italic,
+               HPDF_BOOL    embedding)
+{
+	return NULL;
+}
+
+HPDF_EXPORT(HPDF_BOOL) HPDF_LoadFontIsAvailable () { return HPDF_FALSE; }
 
 #endif
 

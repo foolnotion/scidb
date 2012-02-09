@@ -76,6 +76,7 @@ public:
 
 	virtual void errorHandler(unsigned code, mstl::string const& message);
 
+	static bool isUsable();
 	static mstl::string errorMessage(unsigned detailNo);
 
 private:

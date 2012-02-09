@@ -70,6 +70,8 @@ PdfWriter::PdfWriter(format::Type srcFormat,
 	,m_page(nullptr)
 	,m_currentStyle(LAST)
 {
+	M_REQUIRE(isUsable());
+
 	::memset(m_font, 0, sizeof(m_font));
 	::memset(m_fontSize, 0, sizeof(m_fontSize));
 	::memset(m_image, 0, sizeof(m_image));
@@ -109,6 +111,13 @@ PdfWriter::PdfWriter(format::Type srcFormat,
 PdfWriter::~PdfWriter() throw()
 {
 	HPDF_Free(m_doc);
+}
+
+
+bool
+PdfWriter::isUsable()
+{
+	return HPDF_LoadFontIsAvailable() == HPDF_TRUE;
 }
 
 
@@ -309,7 +318,10 @@ PdfWriter::writeDiagram(Board const& board, double x, double y)
 }
 
 
-void PdfWriter::start() {}
+void PdfWriter::start()
+{
+	M_REQUIRE(isUsable());
+}
 
 
 void

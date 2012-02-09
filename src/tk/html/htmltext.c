@@ -2343,7 +2343,10 @@ findZeroWidthSpace(const char* zText, const char* zEnd)
     zEnd -= 3;
 
     for (++zText; zText < zEnd; ++zText) {
-        if (zText[0] == 0xe2 && zText[1] == 0x80 && (zText[2] == 0x8C || zText[2] == 0x8D)) {
+        if (   zText[0] == (char)0xe2
+            && zText[1] == (char)0x80
+            && (zText[2] == (char)0x8C || zText[2] == (char)0x8D)) {
+
             return zText - 1;
         }
     }
@@ -2386,8 +2389,8 @@ buildLigatures(tree, font, zText, numBytes, buffer)
 
         assert(zText <= zNext && zPos < zEnd);
 
-        if (zNext[3] == 0x8C) {
-            /* Eliminate ZERO WIDTH NON-JOINER. */
+        if (!tree->options.latinligatures || zNext[3] == (char)0x8C) {
+            /* Eliminate ZERO WIDTH (NON)JOINER. */
             int nchars = zNext - zLast;
             memcpy(zInsert, zLast, nchars);
             zInsert += nchars;

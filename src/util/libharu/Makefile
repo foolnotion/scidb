@@ -16,6 +16,11 @@ include ../../../Makefile.in
 
 INCLUDE	= -I. -I../../mstl
 DEFINES	= -DHPDF_NOPNGLIB
+
+ifdef HAVE_XFT
+DEFINES += -DLIBHPDF_HAVE_FONTCONFIG_H=1
+endif
+
 CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
 SRC_C = \
