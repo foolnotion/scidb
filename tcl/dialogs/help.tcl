@@ -376,8 +376,12 @@ proc BuildFrame {w} {
 	$t notify bind $t <Elem-leave> [list [namespace parent]::VisitElem $t leave %I %E]
 	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
 
-	bind $t <KeyPress-Left>  { %W item collapse [%W item id active] }
-	bind $t <KeyPress-Right> { %W item expand [%W item id active] }
+	bind $t <KeyPress-Left>		{ %W item collapse [%W item id active] }
+	bind $t <KeyPress-Right>	{ %W item expand   [%W item id active] }
+	bind $t <Alt-Left>			[namespace parent]::GoBack
+	bind $t <Alt-Right>			[namespace parent]::GoForward
+	bind $t <Alt-Left>			{+ break }
+	bind $t <Alt-Right>			{+ break }
 
 	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
 	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
@@ -1138,7 +1142,7 @@ proc BuildHtmlFrame {dlg w} {
 		-cursor left_ptr \
 		-borderwidth 1 \
 		-relief sunken \
-		-doublebuffer no \
+		-doublebuffer yes \
 		-exportselection yes \
 		-css $css \
 		-showhyphens 1 \

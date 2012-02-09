@@ -449,8 +449,7 @@ proc ::tk::MenuUnpost menu {
     }
 
     ### FEATURE begin ############################################################
-    # Firstly unmap the drop-shadow to avoid glitches.
-    catch { ::shadow::unmap $menu }
+    event generate $menu <<MenuWillUnpost>>
     ### FEATURE end ##############################################################
 
     ### FIX begin ################################################################
