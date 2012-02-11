@@ -1,0 +1,50 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Codici
+INDEX Codici Partita
+TITLE Codici Partita
+
+<p>
+Un <em>codice</em> indica una qualche caratteristica scacchistica che può essere attivata o meno per ogni partita nel database. Ci sono 21 codici impostabili dall'utente che possono essere applicati ad ogni partita. Questi codici saranno usati principalmente come parte di ricerche complesse nel database, o per filtrare all'interno di liste di partite. Dato che tutti i codici importabili dall'utente non hanno significato, è possibile usarli per ogni uso di cui l'utente ha bisogno.
+</p>
+
+<p>
+I codici e i loro simboli nel dettaglio:
+</p>
+INCLUDE ../Game-Flags.txt
+
+<p>
+Esistono altri codici speciali che non sono impostabili dall'utente, il codice di rimozione. Una partita marcata così sarà rimossa alla prossima compressione del database.
+</p>
+
+<p>
+Quando si modifica partite dai database di Scid (.si4) Scidb supporta i sei codici speciali definiti dall'utente (1..6). Ma non è raccomandato usare questi codici, perché appariranno problemi insolvibili quando le partite saranno copiate in altri database; neanche il programma Scid può risolvere questi problemi.
+</p>
+
+<p>
+Quando si leggono database ChessBase entrambi i codici
+<em>%::gametable::mc::GameFlags(s)%</em> e
+<em>%::gametable::mc::GameFlags(t)%</em>
+saranno mappati al codice comune <em>%::gametable::mc::GameFlags(?)%</em>.
+Scidb non distingue tra queste due caratteristiche.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

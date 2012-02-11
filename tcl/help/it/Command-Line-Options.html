@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/it/Command-Line-Options.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='it'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Aiuto: Opzioni nella linea di comando</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Opzioni nella linea di comando</h1>
+</div>
+
+<p>
+Nella linea di comando sono disponibili le seguenti opzioni:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--</tt>
+    </td>
+    <td class="standard">
+      Dopo questa opzione tutti gli argomenti saranno interpretati come 
+      nomi di file. Questo permette che nomi di file possano cominciare col 
+      trattino ('-').
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--help</tt>
+    </td>
+    <td class="standard">Mostra tutte le opzioni e termina.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--show-board</tt>
+    </td>
+    <td class="standard">Va alla tab della scacchiera dopo l'inizializzazione.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--re-open</tt>
+    </td>
+    <td class="standard">
+      All'inizializzazione apre tutti i database che erano aperti alla 
+      fine dell'ultima sessione.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--fast-load</tt>
+    </td>
+    <td class="standard">
+      Carica solo i file dati richiesti dopo l'inizializzazione, questo 
+      permette che il programma parta in modo decisamente più veloce. È 
+      consigliato usare questa opzione solo per testing.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--first-time</tt>
+    </td>
+    <td class="standard">
+      Apre il programma come se fosse la prima volta; questo significa 
+      che reimposta le opzioni utente, elimina i file di ripristino e 
+      copia tutti i temi scacchiera standard nella cartella dell'utente, 
+      tranne quelli modificati. Questa opzione può essere utile se 
+      l'inizializzazione fallisce per via di un errore nel file opzione.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--elo-only</tt>
+    </td>
+    <td class="standard">
+      Non carica altri file di rating oltre a quelli relativi all'ELO. 
+      Questo velocizza decisamente il programma dopo l'inizializzazione.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--print-recovery-files</tt>
+    </td>
+    <td class="standard">
+      Mostra tutti i file di ripristino che sono stati generati alla fine 
+      dell'ultima sessione in virtù di modifiche non salvate, e termina. 
+      L'output è vuoto se nessun file di ripristino esiste.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--delete-recovery-files</tt>
+    </td>
+    <td class="standard">
+      Elimina tutti i file di ripristino dall'ultima sessione e termina il 
+      programma. Non si tratta di un'eliminazione fisica, con l'opzione 
+      <tt>--recover-old</tt> è possibile tornare ad usare quei file.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--dont-recover</tt>
+    </td>
+    <td class="standard">
+      Apre il programma senza usare file di ripristino (che contengono 
+      modifiche non salvate alle partite dall'ultima sessione). La rimozione
+      non è fisica, con l'opzione <tt>--recover-old</tt> è possibile tornare a 
+      usare questi file.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--recover-old</tt>
+    </td>
+    <td class="standard">
+      Ripristina partite non salvate da vecchie sessioni. Partite non 
+      salvate dall'ultima sessione saranno scartati.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--single-process</tt>
+    </td>
+    <td class="standard">
+      Forza un'altra istanza di Scidb. Questa opzione è pensata solo per il testing.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>--force-grab</tt>
+    </td>
+    <td class="standard">
+      Il programma sopprime automaticamente i grab se aperto dentro un debugger,
+      perché i grabs potrebbero portare al freeze dello schermo. Con questa opzione
+      "grabbare" lo schermo sarà permesso automaticamente anche in modalità debug.
+    </td>
+  </tr>
+</table>
+
+<p>
+Le opzioni seguenti saranno riconosciute dalla libreria Tk:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-geometry GEOMETRY</tt>
+    </td>
+    <td class="standard">
+      Usa le informazioni geometriche per la finestra principale. Per
+      esempio l'argomento <tt>-geometry</tt> <tt>600x800+20+10</tt>
+      modificherà la grandezza della finestra principale a 600x800, 
+      e la posizione della finestra avrà coordinate 20,10.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-display DISPLAY</tt>
+    </td>
+    <td class="standard">
+      Nome dello schermo su cui creare la finestra.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <tt>-sync</tt>
+    </td>
+    <td class="standard">
+      Usa la modalità sincrona per il display server.
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

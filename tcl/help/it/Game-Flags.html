@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/it/Game-Flags.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='it'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Aiuto: Codici Partita</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Codici Partita</h1>
+</div>
+
+<p>
+Un <em>codice</em> indica una qualche caratteristica scacchistica che può essere attivata o meno per ogni partita nel database. Ci sono 21 codici impostabili dall'utente che possono essere applicati ad ogni partita. Questi codici saranno usati principalmente come parte di ricerche complesse nel database, o per filtrare all'interno di liste di partite. Dato che tutti i codici importabili dall'utente non hanno significato, è possibile usarli per ogni uso di cui l'utente ha bisogno.
+</p>
+
+<p>
+I codici e i loro simboli nel dettaglio:
+</p>
+<div class="box">
+<dl>
+  <dt><img src="../images/gameflag-White-Opening.png"     />&emsp;Apertura Bianco</dt>
+  <dt><img src="../images/gameflag-Black-Opening.png"     />&emsp;Apertura Nero</dt>
+  <dt><img src="../images/gameflag-Middle-Game.png"       />&emsp;Mediogioco</dt>
+  <dt><img src="../images/gameflag-End-Game.png"          />&emsp;Finale</dt>
+  <dt><img src="../images/gameflag-Novelty.png"           />&emsp;Novità</dt>
+  <dt><img src="../images/gameflag-Pawn-Structure.png"    />&emsp;Struttura pedonale</dt>
+  <dt><img src="../images/gameflag-Tactics.png"           />&emsp;Tattica</dt>
+  <dt><img src="../images/gameflag-King-Side.png"         />&emsp;Lato di re</dt>
+  <dt><img src="../images/gameflag-Queen-Side.png"        />&emsp;Lato di donna</dt>
+  <dt><img src="../images/gameflag-Brilliancy.png"        />&emsp;Brillante</dt>
+  <dt><img src="../images/gameflag-Blunder.png"           />&emsp;Svista</dt>
+  <dt><img src="../images/gameflag-User.png"              />&emsp;Utente</dt>
+  <dt><img src="../images/gameflag-Best-Game.png"         />&emsp;Miglior partita</dt>
+  <dt><img src="../images/gameflag-Decided-Tournament.png"/>&emsp;Partita decisiva</dt>
+  <dt><img src="../images/gameflag-Model-Game.png"        />&emsp;Partita modello</dt>
+  <dt><img src="../images/gameflag-Strategy.png"          />&emsp;Strategia</dt>
+  <dt><img src="../images/gameflag-With-Attack.png"       />&emsp;Attacco</dt>
+  <dt><img src="../images/gameflag-Sacrifice.png"         />&emsp;Sacrificio</dt>
+  <dt><img src="../images/gameflag-Defense.png"           />&emsp;Difesa</dt>
+  <dt><img src="../images/gameflag-Material.png"          />&emsp;Materiale</dt>
+  <dt><img src="../images/gameflag-Piece-Play.png"        />&emsp;Gioco di pezzi</dt>
+</dl>
+</div>
+
+<p>
+Esistono altri codici speciali che non sono impostabili dall'utente, il codice di rimozione. Una partita marcata così sarà rimossa alla prossima compressione del database.
+</p>
+
+<p>
+Quando si modifica partite dai database di Scid (.si4) Scidb supporta i sei codici speciali definiti dall'utente (1..6). Ma non è raccomandato usare questi codici, perché appariranno problemi insolvibili quando le partite saranno copiate in altri database; neanche il programma Scid può risolvere questi problemi.
+</p>
+
+<p>
+Quando si leggono database ChessBase entrambi i codici
+<em>Svista strategica</em> e
+<em>Svista tattica</em>
+saranno mappati al codice comune <em>Svista</em>.
+Scidb non distingue tra queste due caratteristiche.
+</p>
+
+</body>
+</html>

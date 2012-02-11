@@ -1,0 +1,61 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011-2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Come ipostare il browser di default
+
+<p>
+Il browser di default sarà usato per aprire link esterni. Esistono quattro possibilità per impostare un browser di default:
+</p>
+
+<ol>
+  <li><p>
+    Il valore della variabile d'ambiente <tt>BROWSER</tt> sarà usata all'apertura del programma. Ad esempio:<br/>
+    <box>
+      <p><tt>export BROWSER=/usr/bin/firefox</tt><br/></p>
+    </box>
+  </p></li>
+
+  <li><p>
+    Sarà usato il link <tt>"x-www-browser"</tt>.
+    In Ubuntu/Debian questo link può essere aggiornato al browser di default con:
+    <box>
+      <p><tt>sudo update-alternatives --config x-www-browser</tt></p>
+    </box>
+  </p></li>
+
+  <li><p>
+    Scidb cerca per una riga come <tt>"X11BROWSER=/usr/bin/firefox"</tt>
+    nel file <tt>"~/.htmlviewrc"</tt>.
+  </p></li>
+
+  <li><p>
+    Usa il primo browser che può essere trovato nella seguente lista:<br/>
+    iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex.
+  </p></li>
+</ol>
+
+<p>
+La prima possibilità che ha sucesso determinerà il browser di default. Se nessuna di queste possibilità ha successo non è possibile aprire il browser e sarà mostrato un errore.
+</p>
+
+<note>Browser da terminale non saranno usati con Scidb, questo significa che è necessario impostare un browser X (browser grafico).</note>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

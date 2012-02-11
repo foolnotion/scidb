@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/it/How-To-Set-Default-Browser.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='it'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+  <link  rel="icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico"
+        type="image/x-icon" />
+  <link  rel="shortcut icon"
+        href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link   rel="stylesheet"
+         type="text/css"
+        media="screen"
+         href="../styles/help.css" />
+
+  <title>Aiuto: Come ipostare il browser di default</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Come ipostare il browser di default</h1>
+</div>
+
+<p>
+Il browser di default sarà usato per aprire link esterni. Esistono quattro possibilità per impostare un browser di default:
+</p>
+
+<ol>
+  <li><p>
+    Il valore della variabile d'ambiente <tt>BROWSER</tt> sarà usata all'apertura del programma. Ad esempio:<br/>
+    <div class="box">
+      <p><tt>export BROWSER=/usr/bin/firefox</tt><br/></p>
+    </div>
+  </p></li>
+
+  <li><p>
+    Sarà usato il link <tt>"x-www-browser"</tt>.
+    In Ubuntu/Debian questo link può essere aggiornato al browser di default con:
+    <div class="box">
+      <p><tt>sudo update-alternatives --config x-www-browser</tt></p>
+    </div>
+  </p></li>
+
+  <li><p>
+    Scidb cerca per una riga come <tt>"X11BROWSER=/usr/bin/firefox"</tt>
+    nel file <tt>"~/.htmlviewrc"</tt>.
+  </p></li>
+
+  <li><p>
+    Usa il primo browser che può essere trovato nella seguente lista:<br/>
+    iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex.
+  </p></li>
+</ol>
+
+<p>
+La prima possibilità che ha sucesso determinerà il browser di default. Se nessuna di queste possibilità ha successo non è possibile aprire il browser e sarà mostrato un errore.
+</p>
+
+<p><img src="../images/note.png"/> Browser da terminale non saranno usati con Scidb, questo significa che è necessario impostare un browser X (browser grafico).</p>
+
+</body>
+</html>

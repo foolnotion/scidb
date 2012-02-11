@@ -2,6 +2,8 @@ set Index {
   { C
     {
       {{Clipbase} {Clipbase.html}}
+      {{Codici} {Game-Flags.html}}
+      {{Codici Partita} {Game-Flags.html}}
       {{Contatti} {Contact-Information.html}}
     }
   }
@@ -16,10 +18,20 @@ set Index {
       {{Homepage} {Contact-Information.html}}
     }
   }
+  { O
+    {
+      {{Opzioni nella linea di comando} {Command-Line-Options.html}}
+    }
+  }
   { S
     {
       {{Selezionatore di Database} {Database-Switcher.html}}
       {{Sito Internet} {Contact-Information.html}}
+    }
+  }
+  { V
+    {
+      {{Valori delle annotazioni NAG} {NAG-Comments.html}}
     }
   }
 }
