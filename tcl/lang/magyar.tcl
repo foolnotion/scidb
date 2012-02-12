@@ -37,7 +37,7 @@
 ::mc::Apply				"Alkalmaz"
 ::mc::Background		"Háttér"
 ::mc::Black				"Sötét"
-::mc::Bottom			"Bottom"
+::mc::Bottom			"Alsó"	;#Alul??
 ::mc::Cancel			"Mégse"
 ::mc::Clear				"Törlése"
 ::mc::Close				"Bezár"
@@ -53,11 +53,11 @@
 ::mc::From				"From" ;# NEW
 ::mc::Game				"Játszma"
 ::mc::Layout			"Layout"
-::mc::Left				"Left"
+::mc::Left				"Bal"
 ::mc::Lite				"Világos"
 ::mc::Modify			"Módosít"
 ::mc::No					"Nem"
-::mc::NotAvailable	"n/e" ;# "Nem elérhető"
+::mc::NotAvailable	"Nem elérhető" ;# I put it back, since n/e has no meaning in hungarian, unlike n/a in english; Zoltan 2010.02.11
 ::mc::Number			"Szám"
 ::mc::OK					"OK"
 ::mc::Paste				"Beillesztés"
@@ -65,21 +65,21 @@
 ::mc::Preview			"Előnézet"
 ::mc::Redo				"Újra"
 ::mc::Reset				"Reset"
-::mc::Right				"Right"
+::mc::Right				"Jobb"
 ::mc::SelectAll		"Mindent kijelöl"
 ::mc::Texture			"Textúra"
 ::mc::Theme				"Téma"
 ::mc::To					"To" ;# NEW
-::mc::Top				"Top"
+::mc::Top				"Felső"  ;# felül
 ::mc::Undo				"Visszavonás"
 ::mc::Variation		"Variáció"
 ::mc::White				"Világos"
 ::mc::Yes				"igen"
 
 ::mc::LogicalReset	"Reset" ;# NEW
-::mc::LogicalAnd		"And" ;# NEW
-::mc::LogicalOr		"Or" ;# NEW
-::mc::LogicalNot		"Not" ;# NEW
+::mc::LogicalAnd		"És"
+::mc::LogicalOr		"Vagy"
+::mc::LogicalNot		"Nem"
 
 ::mc::King				"Király"
 ::mc::Queen				"Vezér"
@@ -134,7 +134,7 @@
 ::util::mc::IOError(LoadFailed)				"Betöltési hiba (túl sok bejegyzés)"
 
 ### progress ###########################################################
-::progress::mc::Progress "Progress" ;# NEW
+::progress::mc::Progress "Állapot" ;# ? NEW 
 
 ### menu ###############################################################
 ::menu::mc::File						"&Fájl"
@@ -153,18 +153,18 @@
 ::menu::mc::FileQuit					"&Kilépés"
 
 ::menu::mc::GameNew					"Új &tábla"
-::menu::mc::GameNewChess960		"N&ew Game: Chess 960" ;# NEW
-::menu::mc::GameNewChess960Sym	"Ne&w Game: Chess 960 (symmetrical only)" ;# NEW
-::menu::mc::GameNewShuffle			"New &Game: Shuffle Chess" ;# NEW
+::menu::mc::GameNewChess960		"Új játszma: Chess 960" ;# NEW
+::menu::mc::GameNewChess960Sym	"Új játszma: Chess 960 (symmetrical only)" ;# NEW
+::menu::mc::GameNewShuffle			"Új játszma: Shuffle Chess" ;# NEW
 ::menu::mc::GameSave					"Ját&szma Mentése"
 ::menu::mc::GameReplace				"Játszma &Felülírása"
-::menu::mc::GameReplaceMoves		"Replace &Moves Only"
+::menu::mc::GameReplaceMoves		"Csak lépések felülírása"
 
-::menu::mc::HelpAbout				"&About Scidb" ;# NEW
+::menu::mc::HelpAbout				"&Scidb Névjegy"
 ::menu::mc::HelpContents			"&Tartalom"
-::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
-::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
-::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
+::menu::mc::HelpWhatsNew			"&Újdonságok"
+::menu::mc::HelpRoadmap				"&Roadmap"
+::menu::mc::HelpContactInfo		"&Elérhetőség"
 ::menu::mc::HelpBugReport			"&Hiba jelentés (böngészőből)"
 ::menu::mc::HelpFeatureRequest	"&Feature Request (böngészőből)"
 
@@ -184,11 +184,11 @@
 ::menu::mc::ScidBases				"Scid adatbázisok"
 ::menu::mc::ScidbBases				"Scidb adatbázisok"
 ::menu::mc::ChessBaseBases			"ChessBase adatbázisok"
-::menu::mc::PGNFilesArchives		"PGN files/archives" ;# NEW
+::menu::mc::PGNFilesArchives		"PGN fájlok/arhívumok"
 ::menu::mc::PGNFiles					"PGN fájlok"
-::menu::mc::PGNArchives				"PGN archives" ;# NEW
+::menu::mc::PGNArchives				"PGN arhívumok"
 
-::menu::mc::FileNotAllowed			"'%s' féjlnév nem engedélyzett"
+::menu::mc::FileNotAllowed			"'%s' fájlnév nem engedélyzett"
 ::menu::mc::TwoOrMoreDots			"Kettő vagy egymásutáni pontot tartalmaz."
 ::menu::mc::ForbiddenChars			"Tiltott karaktereket tartalmaz."
 
@@ -202,9 +202,9 @@
 ::load::mc::StartupFinished		"A betöltés befejeződött"
 
 ::load::mc::ECOFile					"ECO fájl"
-::load::mc::EngineFile				"elemző program fájl"
+::load::mc::EngineFile				"Elemző program fájl"
 ::load::mc::SpellcheckFile			"Játékos-adatbázis fájl"
-::load::mc::LocalizationFile		"lokalizációs fájl"
+::load::mc::LocalizationFile		"Lokalizációs fájl"
 ::load::mc::RatingList				"%s erősorrend lista"
 ::load::mc::WikipediaLinks			"Wikipedia linkek"
 ::load::mc::ChessgamesComLinks	"chessgames.com linkek"
@@ -223,7 +223,7 @@
 ::application::mc::Shutdown				"Kilépés..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Show tournament table for this game"
+::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
 
 ::application::board::mc::Tools					"Eszközök"
 ::application::board::mc::Control				"Kezelés"
@@ -241,7 +241,7 @@
 ::application::database::mc::Annotators				"&Elemző"
 
 ::application::database::mc::File						"Fájl"
-::application::database::mc::SymbolSize				"Symbol Size"
+::application::database::mc::SymbolSize				"Szimvólum méret"
 ::application::database::mc::Large						"Nagy"
 ::application::database::mc::Medium						"Közepes"
 ::application::database::mc::Small						"Kicsi"
@@ -250,17 +250,17 @@
 ::application::database::mc::None						"nincs"
 ::application::database::mc::Failed						"meghiúsult"
 ::application::database::mc::LoadMessage				"Adatbázis megnyitása: %s"
-::application::database::mc::UpgradeMessage			"Upgrading Database %s" ;# NEW
+::application::database::mc::UpgradeMessage			"Adatbázis frissítése %s"
 ::application::database::mc::CannotOpenFile			"A fájl nem nyitható meg olvasásra: '%s'."
-::application::database::mc::EncodingFailed			"Encoding %s failed."
+::application::database::mc::EncodingFailed			"%s kódolása sikertelen."
 ::application::database::mc::DatabaseAlreadyOpen	"Az '%s' adatbázis már meg van nyitva."
 ::application::database::mc::Properties				"Tulajdonságok"
 ::application::database::mc::Preload					"Preload"
-::application::database::mc::MissingEncoding			"Missing encoding %s (using %s instead)"
+::application::database::mc::MissingEncoding			"Hiányos kódolás %s (használd inkább %s-t)"
 ::application::database::mc::DescriptionTooLarge	"Túl hosszú leírás."
-::application::database::mc::DescrTooLargeDetail	"The entry contains %d characters, but only %d characters are allowed."
+::application::database::mc::DescrTooLargeDetail	"A mező %d karaktert tartalmaz, de csak %d megengedett."
 ::application::database::mc::ClipbaseDescription	"Ideiglenes adatbázis, nincs elmentve a lemezre."
-::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
+::application::database::mc::HardLinkDetected		"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Recoding %s from %s to %s"
@@ -272,23 +272,23 @@
 ::application::database::mc::Description				"Leírás"
 ::application::database::mc::Created					"Létrehozva"
 ::application::database::mc::LastModified				"Utoljára módosítva"
-::application::database::mc::Encoding					"Encoding"
-::application::database::mc::YearRange					"Year range"
-::application::database::mc::RatingRange				"Rating range"
-::application::database::mc::Result						"Result"
-::application::database::mc::Score						"Score"
-::application::database::mc::Type						"Type"
+::application::database::mc::Encoding					"Kódolás"
+::application::database::mc::YearRange					"Év tartomány" ;#?
+::application::database::mc::RatingRange				"Értékszám tartomány"
+::application::database::mc::Result						"Eredmény"
+::application::database::mc::Score						"Pontszám"
+::application::database::mc::Type						"Típus"
 ::application::database::mc::ReadOnly					"Csak olvasható"
 
 ::application::database::mc::ChangeIcon				"Ikon cseréje"
 ::application::database::mc::Recode						"Újrakódolás"
 ::application::database::mc::EditDescription			"Leírás szerkesztése"
-::application::database::mc::EmptyClipbase			"Üres Clipbase"
+::application::database::mc::EmptyClipbase			"Üres vágólap"
 
-::application::database::mc::T_Unspecific				"Unspecific"
+::application::database::mc::T_Unspecific				"Nem specifikus"
 ::application::database::mc::T_Temporary				"Ideiglenes"
 ::application::database::mc::T_Work						"Munka"
-::application::database::mc::T_Clipbase				"Clipbase"
+::application::database::mc::T_Clipbase				"Vágólap"
 ::application::database::mc::T_MyGames					"Játszmáim"
 ::application::database::mc::T_Informant				"Informátor"
 ::application::database::mc::T_LargeDatabase			"Nagy adatbázis"
@@ -321,14 +321,14 @@
 ::application::database::mc::OpenDatabase				"Adatbázis megnyitása"
 ::application::database::mc::NewDatabase				"Új adatbázis"
 ::application::database::mc::CloseDatabase			"Adatbázis bezárása: '%s'"
-::application::database::mc::SetReadonly				"Set Database '%s' readonly" ;# NEW
-::application::database::mc::SetWriteable				"Set Database '%s' writeable" ;# NEW
+::application::database::mc::SetReadonly				"'%s' adatbázis módosítása írásvédette"
+::application::database::mc::SetWriteable				"'%s' adatbázis módosítása írhatóvá"
 
 ::application::database::mc::OpenReadonly				"Megynitás olvasásra"
 ::application::database::mc::OpenWriteable			"Megnyitás írásra"
 
-::application::database::mc::UpgradeDatabase			"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?" ;# NEW
-::application::database::mc::UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you cannot set it writeable." ;# NEW
+::application::database::mc::UpgradeDatabase			"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
+::application::database::mc::UpgradeDatabaseDetail	"\"Nem\" olvasásra niytja meg az adatbázist."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -345,44 +345,44 @@
 
 ### application::database::players #####################################
 ::application::database::players::mc::EditPlayer				"Játékos adatok szerkesztése"
-::application::database::players::mc::Score						"Score"
-::application::database::players::mc::TooltipRating			"Rating: %s"
+::application::database::players::mc::Score						"Pont"
+::application::database::players::mc::TooltipRating			"Értékszám: %s"
 
 ### application::database::annotators ##################################
 ::application::database::annotators::mc::F_Annotator		"Elemző"
-::application::database::annotators::mc::F_Frequency		"Frequency"
+::application::database::annotators::mc::F_Frequency		"Gyakoriság"
 
 ::application::database::annotators::mc::Find				"Keres"
-::application::database::annotators::mc::FindAnnotator	"elemző keresése"
-::application::database::annotators::mc::ClearEntries		"bejegyzések törlése"
+::application::database::annotators::mc::FindAnnotator	"Elemző keresése"
+::application::database::annotators::mc::ClearEntries		"Bejegyzések törlése"
 ::application::database::annotators::mc::NotFound			"Nem található."
 
 ### application::pgn ###################################################
-::application::pgn::mc::Command(move:comment)			"Set Comment"
-::application::pgn::mc::Command(move:marks)				"Set Marks"
-::application::pgn::mc::Command(move:annotation)		"Set Annotation/Comment/Marks"
+::application::pgn::mc::Command(move:comment)			"Megjegyzés hozzáadása"
+::application::pgn::mc::Command(move:marks)				"Jelölés hozzáadása"
+::application::pgn::mc::Command(move:annotation)		"Értékelés/megjegyzés/jelölés hozzáadása"
 ::application::pgn::mc::Command(move:append)				"Lépés hozzáadása"
-::application::pgn::mc::Command(move:nappend)			"Add Moves" ;# NEW
+::application::pgn::mc::Command(move:nappend)			"Lépés hozzáadása"
 ::application::pgn::mc::Command(move:exchange)			"Lépés cseréje"
 ::application::pgn::mc::Command(variation:new)			"Új változat"
 ::application::pgn::mc::Command(variation:replace)		"Lépések felülírása"
-::application::pgn::mc::Command(variation:truncate)	"változat csonkítása"
+::application::pgn::mc::Command(variation:truncate)	"Változat csonkítása"
 ::application::pgn::mc::Command(variation:first)		"Első változattá emelés"
 ::application::pgn::mc::Command(variation:promote)		"Változat főváltozattá emelése"
 ::application::pgn::mc::Command(variation:remove)		"változat törlése"
-::application::pgn::mc::Command(variation:mainline)	"új főváltozat"
+::application::pgn::mc::Command(variation:mainline)	"Új főváltozat"
 ::application::pgn::mc::Command(variation:insert)		"Lépések beszúrása"
 ::application::pgn::mc::Command(variation:exchange)	"Lépések cseréje"
 ::application::pgn::mc::Command(strip:moves)				"Lépések az elejétől"
-::application::pgn::mc::Command(strip:truncate)			"Moves to the end"
-::application::pgn::mc::Command(strip:annotations)		"Annotations"
-::application::pgn::mc::Command(strip:info)				"Move Information" ;# NEW
-::application::pgn::mc::Command(strip:marks)				"Marks"
+::application::pgn::mc::Command(strip:truncate)			"Lépések a végéig"
+::application::pgn::mc::Command(strip:annotations)		"Értékelő jelek"
+::application::pgn::mc::Command(strip:info)				"Lépés információ"
+::application::pgn::mc::Command(strip:marks)				"Jelölések"
 ::application::pgn::mc::Command(strip:comments)			"Megjegyzések"
-::application::pgn::mc::Command(strip:variations)		"változatok"
-::application::pgn::mc::Command(copy:comments)			"Copy Comments" ;# NEW
-::application::pgn::mc::Command(move:comments)			"Move Comments" ;# NEW
-::application::pgn::mc::Command(game:clear)				"Jétszma törlése"
+::application::pgn::mc::Command(strip:variations)		"Változatok"
+::application::pgn::mc::Command(copy:comments)			"Megjegyzések másolása"
+::application::pgn::mc::Command(move:comments)			"Megjegyzések áthelyezése"
+::application::pgn::mc::Command(game:clear)				"Játszma törlése"
 ::application::pgn::mc::Command(game:transpose)			"Transpose Game"
 
 ::application::pgn::mc::StartTrialMode						"Start Trial Mode"
@@ -397,15 +397,15 @@
 ::application::pgn::mc::ReplaceGame							"Mentés: Játszma felülírása %s-ben..."
 ::application::pgn::mc::ReplaceMoves						"Mentés: Replace Moves Only in Game"
 
-::application::pgn::mc::ColumnStyle							"Column Style"
-::application::pgn::mc::UseParagraphSpacing				"Use Paragraph Spacing"
-::application::pgn::mc::ShowMoveInfo						"Show Move Information" ;# NEW
+::application::pgn::mc::ColumnStyle							"Oszlop stílus"
+::application::pgn::mc::UseParagraphSpacing				"Bekezdés stílus"
+::application::pgn::mc::ShowMoveInfo						"Lépés információ mutatása"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Főváltozat félkövér betűkkel"
 ::application::pgn::mc::ShowDiagrams						"Diagramok mutatása"
 ::application::pgn::mc::Languages							"Nyelvek"
 ::application::pgn::mc::CollapseVariations				"Változatok elrejtése"
 ::application::pgn::mc::ExpandVariations					"Változatok kibontása"
-::application::pgn::mc::EmptyGame							"Empty Game"
+::application::pgn::mc::EmptyGame							"Üres játszma"
 
 ::application::pgn::mc::NumberOfMoves						"(fél)lépésszám (a főváltozatban):"
 ::application::pgn::mc::InvalidInput						"Érvénytelen input '%d'."
@@ -415,7 +415,7 @@
 ::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Értékelés szerkesztése"
-::application::pgn::mc::EditMoveInformation				"Edit move information" ;# NEW
+::application::pgn::mc::EditMoveInformation				"Lépés információ szerkesztése"
 ::application::pgn::mc::EditCommentBefore					"Megjegyzés szerkesztése (lépés előtt)"
 ::application::pgn::mc::EditCommentAfter					"Megjegyzés szerkesztése (lépés után)"
 ::application::pgn::mc::EditPrecedingComment				"Legutóbbi megjegyzés szerkesztése"
@@ -426,7 +426,7 @@
 
 ### application::tree ##################################################
 ::application::tree::mc::Total							"Teljes"
-::application::tree::mc::Control							"Control"
+::application::tree::mc::Control							"Vezérlés"
 ::application::tree::mc::ChooseReferenceBase			"Válassz referencia adatbázist"
 ::application::tree::mc::ReferenceBaseSwitcher		"Referencia adatbázis váltó"
 ::application::tree::mc::Numeric							"Numerikus"
@@ -443,18 +443,18 @@
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"
 ::application::tree::mc::FromSideToMovePerspective	"A lépésre következő játékos nézőpontjából"
-::application::tree::mc::FromWhitesPerspectiveTip		"Score from whites perspective" ;# NEW
-::application::tree::mc::FromBlacksPerspectiveTip		"Score from blacks perspective" ;# NEW
+::application::tree::mc::FromWhitesPerspectiveTip		"Világos nézőpontjából"
+::application::tree::mc::FromBlacksPerspectiveTip		"Sötét nézőpontjából"
 
-::application::tree::mc::TooltipAverageRating		"Average Rating (%s)"
-::application::tree::mc::TooltipBestRating		"Best Rating (%s)"
+::application::tree::mc::TooltipAverageRating		"Átlagos értékszám (%s)"
+::application::tree::mc::TooltipBestRating		"Legjobb értékszám (%s)"
 
 ::application::tree::mc::F_Number						"#"
 ::application::tree::mc::F_Move							"Lépés"
 ::application::tree::mc::F_Eco							"ECO"
-::application::tree::mc::F_Frequency					"Frequency"
-::application::tree::mc::F_Ratio							"Ratio"
-::application::tree::mc::F_Score							"Score"
+::application::tree::mc::F_Frequency					"Gyakoriság"
+::application::tree::mc::F_Ratio							"Arány"
+::application::tree::mc::F_Score							"Pont"
 ::application::tree::mc::F_Draws							"Döntetlenek"
 ::application::tree::mc::F_Performance					"Teljesítmény"
 ::application::tree::mc::F_AverageYear					"\u00f8 Év"
@@ -462,17 +462,17 @@
 ::application::tree::mc::F_BestPlayer					"Legjobb játékos"
 ::application::tree::mc::F_FrequentPlayer				"Gyakori játékos"
 
-::application::tree::mc::T_Number					"Numeration"
+::application::tree::mc::T_Number					"Számozás"
 ::application::tree::mc::T_AverageYear					"Average Year"
 ::application::tree::mc::T_FrequentPlayer				"Leggyakoribb játékos"
 
 ### board ##############################################################
 ::board::mc::CannotReadFile		"Fájl '%s' nem olvasható"
 ::board::mc::CannotFindFile		"Fájl '%s' nem található"
-::board::mc::FileWillBeIgnored	"'%s' will be ignored (duplicate ID)"
+::board::mc::FileWillBeIgnored	"'%s' figyelmen kívül hagyva (duplicate ID)"
 ::board::mc::IsCorrupt				"'%s' hibás (ismeretlen %s style '%s')"
 
-::board::mc::ThemeManagement		"Theme Management"
+::board::mc::ThemeManagement		"Téma beállítások"
 ::board::mc::Setup			"Beállítás"
 
 ::board::mc::Default				"Alapértelmezett"
@@ -539,12 +539,12 @@
 ::board::piece::mc::Zoom						"Nagyítás"
 ::board::piece::mc::Shadow						"Árnyék"
 ::board::piece::mc::Opacity					"Opacity"
-::board::piece::mc::ShadowDiffusion			"Shadow Diffusion"
-::board::piece::mc::PieceStyleConf			"Piece Style Configuration"
+::board::piece::mc::ShadowDiffusion			"Árnyék elmosás"
+::board::piece::mc::PieceStyleConf			"Bábustílus Beállítás"
 ::board::piece::mc::Offset						"Eltolás"
 ::board::piece::mc::Rotate						"Forgatás"
-::board::piece::mc::CloseDialog				"Close dialog and throw away changes?"
-::board::piece::mc::OpenTextureDialog		"Open Texture Dialog"
+::board::piece::mc::CloseDialog				"Bezárod a dialógusablakot és elveted változtatásokat?"
+::board::piece::mc::OpenTextureDialog		"Textúra dialógus megnyitása"
 
 ### board::square ######################################################
 ::board::square::mc::SolidColor			"Solid Color"
@@ -558,10 +558,10 @@
 ::board::square::mc::GapBetweenSquares	"Mezők közötti rés"
 ::board::square::mc::Highlighting		"Kijelölés"
 ::board::square::mc::Selected				"Kiválasztott"
-::board::square::mc::SuggestedMove		"Ajénlott lépés"
+::board::square::mc::SuggestedMove		"Ajánlott lépés"
 ::board::square::mc::Show					"Előnézet"
 ::board::square::mc::SquareStyleConf	"Mező stílus beállítása"
-::board::square::mc::CloseDialog			"Close dialog and throw away changes?"
+::board::square::mc::CloseDialog			"Bezárod a dialógusablakot és elveted változtatásokat?"
 
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly "Preselected only"
@@ -623,9 +623,9 @@
 ::gametable::mc::F_Material				"Material"
 ::gametable::mc::F_Acv						"ACV"
 ::gametable::mc::F_Idn						"960"
-::gametable::mc::F_Position				"Position"
-::gametable::mc::F_EventDate				"Event Date"
-::gametable::mc::F_EventType				"Ev.Type"
+::gametable::mc::F_Position				"Pozíció"
+::gametable::mc::F_EventDate				"Esemény dátuma"
+::gametable::mc::F_EventType				"Esemény típusa"
 ::gametable::mc::F_Changed					"Changed"
 ::gametable::mc::F_Promotion				"Promotion"
 ::gametable::mc::F_UnderPromo				"Under-Promotion"
@@ -676,16 +676,16 @@
 ::gametable::mc::G_Event					"Verseny"
 
 ::gametable::mc::EventType(game)			"Játszma"
-::gametable::mc::EventType(match)		"Match"
-::gametable::mc::EventType(tourn)		"Tourn"
-::gametable::mc::EventType(swiss)		"Swiss"
-::gametable::mc::EventType(team)			"Team"
-::gametable::mc::EventType(k.o.)			"K.O."
-::gametable::mc::EventType(simul)		"Simul"
+::gametable::mc::EventType(match)		"Mérkőzés"
+::gametable::mc::EventType(tourn)		"Torna"
+::gametable::mc::EventType(swiss)		"Svájci"
+::gametable::mc::EventType(team)			"Csapat"
+::gametable::mc::EventType(k.o.)			"Kieséses"
+::gametable::mc::EventType(simul)		"Szimultán"
 ::gametable::mc::EventType(schev)		"Schev"
 
-::gametable::mc::PlayerType(human)		"Human"
-::gametable::mc::PlayerType(program)	"Computer"
+::gametable::mc::PlayerType(human)		"Ember"
+::gametable::mc::PlayerType(program)	"Számítógép"
 
 ::gametable::mc::GameFlags(w)				"Megnyitás világossal"
 ::gametable::mc::GameFlags(b)				"Megnyitás sötéttel"
@@ -710,7 +710,7 @@
 ::gametable::mc::GameFlags(P)				"Tisztjáték"
 ::gametable::mc::GameFlags(t)				"Taktikai hiba"
 ::gametable::mc::GameFlags(s)				"Stratégiai hiba"
-::gametable::mc::GameFlags(C)				"Illegal Castling" ;# NEW
+::gametable::mc::GameFlags(C)				"Érvénytelen sáncolás"
 ::gametable::mc::GameFlags(I)				"Szabálytalan lépés"
 
 ### playertable ########################################################
@@ -718,7 +718,7 @@
 ::playertable::mc::F_FirstName				"Keresztnév"
 ::playertable::mc::F_FideID					"Fide azonosító"
 ::playertable::mc::F_Title						"Cím"
-::playertable::mc::F_Frequency				"Frequency"
+::playertable::mc::F_Frequency				"Gyakorisg"
 
 ::playertable::mc::T_Federation				"Szövetség"
 ::playertable::mc::T_RatingType				"Rating Type"
@@ -741,12 +741,12 @@
 ::playertable::mc::OpenInWebBrowser			"Mgnyitás böngészőben..."
 ::playertable::mc::OpenPlayerCard			"%s játékos adatlapjának megynitása"
 ::playertable::mc::OpenFileCard				"%s fájl adatlapjának megnyitása"
-::playertable::mc::OpenFideRatingHistory	"Open Fide rating history"
-::playertable::mc::OpenWikipedia				"Open Wikipedia biography"
-::playertable::mc::OpenViafCatalog			"Open VIAF catalog"
-::playertable::mc::OpenPndCatalog			"Open catalog of Deutsche Nationalbibliothek"
-::playertable::mc::OpenChessgames			"chessgames.com game collection"
-::playertable::mc::SeachIn365ChessCom		"Search in 365Chess.com" ;# NEW
+::playertable::mc::OpenFideRatingHistory	"Fide értékszámának alakulása"
+::playertable::mc::OpenWikipedia				"Wikipédia életrajz megnyitása"
+::playertable::mc::OpenViafCatalog			"VIAF katalógus megnyitása"
+::playertable::mc::OpenPndCatalog			"A Német Országos Könyvtár katalógusának megynitása"
+::playertable::mc::OpenChessgames			"chessgames.com játszmagyűjtemény"
+::playertable::mc::SeachIn365ChessCom		"Keresés a 365Chess.com -on"
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
@@ -765,8 +765,8 @@
 ::gamebar::mc::NewGameSndPart			"Játszma"
 ::gamebar::mc::Unlock				"Zárolás feloldása"
 
-::gamebar::mc::LockGame					"Lock Game" ;# NEW
-::gamebar::mc::CloseGame				"Close Game" ;# NEW
+::gamebar::mc::LockGame					"Játszma zárolása"
+::gamebar::mc::CloseGame				"Játszma bezárása"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame		"Játszma áttekintése"
@@ -795,12 +795,12 @@
 ::overview::mc::AcceleratorRotate	"R"
 
 ### encoding ###########################################################
-::encoding::mc::AutoDetect				"auto-detection" ;# NEW
+::encoding::mc::AutoDetect				"automatikus felismerés"
 
 ::encoding::mc::Encoding		"Kódolás"
 ::encoding::mc::Description		"Leírás"
 ::encoding::mc::Languages		"Nyelvek (Betűtípusok)"
-::encoding::mc::UseAutoDetection		"Use Auto-Detection" ;# NEW
+::encoding::mc::UseAutoDetection		"Automatikus felismerés használata"
 
 ::encoding::mc::ChooseEncodingTitle	"Kódolás válastása"
 
@@ -817,7 +817,7 @@
 ::setup::position::mc::SetStartPosition		"Kezdő pozíció beállítása"
 ::setup::position::mc::UsePreviousPosition	"Előző pozíció használata"
 
-::setup::board::mc::SetStartBoard		"Set Start Board"
+::setup::board::mc::SetStartBoard		"Kiinduló állás beállítása"
 ::setup::board::mc::SideToMove			"Lépésre következő fél"
 ::setup::board::mc::Castling			"Sáncolás"
 ::setup::board::mc::MoveNumber			"Lépésszám"
@@ -825,12 +825,12 @@
 ::setup::board::mc::StartPosition		"Kiinduló állás"
 ::setup::board::mc::Fen				"FEN"
 ::setup::board::mc::Clear			"Törlés"
-::setup::board::mc::CopyFen			"Copy FEN to clipboard"
+::setup::board::mc::CopyFen			"FEN másolása a vágólapra"
 ::setup::board::mc::Shuffle			"Keverés..."
 ::setup::board::mc::StandardPosition		"Standard Position"
 ::setup::board::mc::Chess960Castling		"Chess 960 castling"
 
-::setup::board::mc::InvalidFen			"Invalid FEN"
+::setup::board::mc::InvalidFen			"Érvénytelen FEN"
 ::setup::board::mc::CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
 ::setup::board::mc::UnsupportedVariant		"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
@@ -848,10 +848,10 @@
 ::setup::board::mc::Error(TooManyWhite)		"Túl sok világos figura."
 ::setup::board::mc::Error(TooManyBlack)		"Túl sok sötét figura."
 ::setup::board::mc::Error(BadCastlingRights)	"Hibás sáncolási jogok."
-::setup::board::mc::Error(InvalidCastlingRights)	"Unreasonable rook file(s) for castling."
-::setup::board::mc::Error(InvalidCastlingFile)		"Invalid castling file."
+::setup::board::mc::Error(InvalidCastlingRights)	"Értelmetlen bástya vonal(ak) sáncoláshoz."
+::setup::board::mc::Error(InvalidCastlingFile)		"Érvénytelen sáncolási vonal."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
-::setup::board::mc::Error(InvalidEnPassant)		"Unreasonable en passant file."
+::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
 
@@ -871,11 +871,11 @@
 ::import::mc::TextIsEmpty					"PGN szöveg üres."
 ::import::mc::AbortImport					"Meg akarja szakítani a PGN importálást?"
 
-::import::mc::DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
-::import::mc::DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
-::import::mc::CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set." ;# NEW
-::import::mc::CheckImportResult					"Please check whether the right figurine set is detected." ;# NEW
-::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities." ;# NEW
+::import::mc::DifferentEncoding					"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
+::import::mc::DifferentEncodingDetails			"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
+::import::mc::CannotDetectFigurineSet			"Nem sikerült felismerni egyetlen megfelelő bábukészletet sem."
+::import::mc::CheckImportResult					"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve."
+::import::mc::CheckImportResultDetail			"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 
 ::import::mc::EnterOrPaste					"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
 ::import::mc::EnterOrPaste-Game					"játszma"
@@ -910,57 +910,57 @@
 ::import::mc::IllegalMove					"Szabálytalan lépés"
 ::import::mc::UnsupportedVariant				"Unsupported chess variant"
 ::import::mc::DecodingFailed					"Sikertelen dekódolás"
-::import::mc::ResultDidNotMatchHeaderResult			"Result did not match header result"
-::import::mc::ValueTooLong					"Tag value is too long and will truncated to 255 characacters"
-::import::mc::MaximalErrorCountExceeded		"Maximal error count exceeded; no more errors (of previous error type) will be reported"
-::import::mc::MaximalWarningCountExceeded		"Maximal warning count exceeded; no more warnings (of previous warning type) will be reported"
-::import::mc::InvalidToken					"Invalid token"
+::import::mc::ResultDidNotMatchHeaderResult			"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
+::import::mc::ValueTooLong					"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
+::import::mc::MaximalErrorCountExceeded		"A maximális hibaszám túllépve; több hiba (az előző hibatípusból) nem lesz közölve"
+::import::mc::MaximalWarningCountExceeded		"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
+::import::mc::InvalidToken					"Érvénytelen token"
 ::import::mc::InvalidMove					"Érvénytelen lépés"
 ::import::mc::UnexpectedSymbol					"Váratlan szimbólum"
-::import::mc::UnexpectedEndOfInput				"Unexpected end of input"
-::import::mc::UnexpectedResultToken				"Unexpected result token"
-::import::mc::UnexpectedTag						"Unexpected tag inside game"
-::import::mc::UnexpectedEndOfGame				"Unexpected end of game (missing result)"
-::import::mc::TagNameExpected						"Syntax error: Tag name expected"
-::import::mc::TagValueExpected					"Syntax error: Tag value expected"
-::import::mc::InvalidFen							"Invalid FEN"
-::import::mc::UnterminatedString					"Unterminated string"
-::import::mc::UnterminatedVariation				"Unterminated variation"
-::import::mc::TooManyGames							"Too many games in database (aborted)"
-::import::mc::GameTooLong							"Game too long (skipped)"
-::import::mc::FileSizeExceeded					"Maximal file size (2GB) will be exceeded (aborted)"
-::import::mc::TooManyPlayerNames					"Too many player names in database (aborted)"
-::import::mc::TooManyEventNames					"Too many event names in database (aborted)"
-::import::mc::TooManySiteNames					"Too many site names in database (aborted)"
-::import::mc::TooManyRoundNames					"Too many round names in database"
-::import::mc::TooManyAnnotatorNames				"Too many annotator names in database (aborted)"
-::import::mc::TooManySourceNames					"Too many source names in database (aborted)"
-::import::mc::SeemsNotToBePgnText				"Seems not to be PGN text"
-::import::mc::AbortedDueToInternalError		"Aborted due to an internal error" ;# NEW
+::import::mc::UnexpectedEndOfInput				"A bement váratlanul véget ért" ;# ? Unexpected end of input"
+::import::mc::UnexpectedResultToken				"Váratlan eredmény token"
+::import::mc::UnexpectedTag						"Váratlan cimke a játszmában"
+::import::mc::UnexpectedEndOfGame				"A játszma váratlanul véget ért (hiényzó eredmény)"
+::import::mc::TagNameExpected						"Szintaktikai hiba: meg kell adni a cimke nevét"
+::import::mc::TagValueExpected					"Szintaktikai hiba: meg kell adni a cimke értékét"
+::import::mc::InvalidFen							"Érvénytelen FEN"
+::import::mc::UnterminatedString					"Befejezetlen string"
+::import::mc::UnterminatedVariation				"Befejezetlen változat"
+::import::mc::TooManyGames							"Az adatbézis túl sok játszmát tartalmaz (aborted)"
+::import::mc::GameTooLong							"A játszma túl hosszú (átugorva)"
+::import::mc::FileSizeExceeded					"A legnagyobb kezelhető ájlméret (2GB) túllépésre került (aborted)"
+::import::mc::TooManyPlayerNames					"Túl sok játékos az adatbázisban (aborted)"
+::import::mc::TooManyEventNames					"Túl sok esemény az adatbázisban (aborted)"
+::import::mc::TooManySiteNames					"Túl sok helyzín az adatbázisban (aborted)"
+::import::mc::TooManyRoundNames					"Túl sok forduló az adatbázisban (aborted)"
+::import::mc::TooManyAnnotatorNames				"Túl sok elemző az adatbázisban (aborted)"
+::import::mc::TooManySourceNames					"Túl sok forrás az adatbázisban (aborted)"
+::import::mc::SeemsNotToBePgnText				"Nem tűnik PGN szövegnek"
+::import::mc::AbortedDueToInternalError		"Beslő hiba miatt Aborted"
 
 ### export #############################################################
-::export::mc::FileSelection			"&File Selection"
+::export::mc::FileSelection			"&Fájl Selection"
 ::export::mc::OptionsSetup					"Beállítás&ok"
 ::export::mc::PageSetup				"&Oldalbeállítás"
-::export::mc::DiagramSetup					"&Diagram Setup"
+::export::mc::DiagramSetup					"&Diagramm Beállítások"
 ::export::mc::StyleSetup					"Stí&lus"
 ::export::mc::EncodingSetup				"&Kódolás"
-::export::mc::TagsSetup						"&Tags" ;# NEW
+::export::mc::TagsSetup						"&Cimkék"
 ::export::mc::NotationSetup				"&Notation" ;# NEW
-::export::mc::AnnotationSetup				"&Annotation" ;# NEW
-::export::mc::CommentsSetup				"&Comments" ;# NEW
+::export::mc::AnnotationSetup				"&Értékelés"
+::export::mc::CommentsSetup				"&Megjegyzés"
 
-::export::mc::Visibility					"Visibility" ;# NEW
-::export::mc::HideDiagrams					"Hide Diagrams" ;# NEW
+::export::mc::Visibility					"Láthatóság"
+::export::mc::HideDiagrams					"Diagramm elrejtése"
 ::export::mc::AllFromWhitePersp			"All From White's Perspective" ;# NEW
 ::export::mc::AllFromBlackPersp			"All From Black's Perspective" ;# NEW
-::export::mc::ShowCoordinates				"Show Coordinates" ;# NEW
-::export::mc::ShowSideToMove				"Show Side to Move" ;# NEW
-::export::mc::ShowArrows					"Show Arrows" ;# NEW
-::export::mc::ShowMarkers					"Show Markers" ;# NEW
+::export::mc::ShowCoordinates				"Koordináták mutatása"
+::export::mc::ShowSideToMove				"Lépésre jövő fél mutatása"
+::export::mc::ShowArrows					"Nyilak mutatása"
+::export::mc::ShowMarkers					"Jelölések mutatása"
 ::export::mc::Layout							"Layout" ;# NEW
 ::export::mc::PostscriptSpecials			"Postscript Specialities" ;# NEW
-::export::mc::BoardSize						"Board Size" ;# NEW
+::export::mc::BoardSize						"Tábla méret"
 
 ::export::mc::Notation				"Notation"
 ::export::mc::Graphic				"Grafika"
@@ -970,25 +970,25 @@
 ::export::mc::Correspondence			"Levelezési játszma"
 ::export::mc::Telegraphic			"Telegraphic"
 ::export::mc::FontHandling			"Betűk kezelése"
-::export::mc::DiagramStyle					"Diagram Style" ;# NEW
-::export::mc::UseImagesForDiagram		"Use images for diagram generation" ;# NEW
+::export::mc::DiagramStyle					"Diagramm Stílus"
+::export::mc::UseImagesForDiagram		"Képek használata a diagrammok előállításához"
 ::export::mc::EmebedTruetypeFonts		"TrueType betűk beágyazása"
 ::export::mc::UseBuiltinFonts			"Használd a beépített betűkészletet"
 ::export::mc::SelectExportedTags			"Selection of exported tags" ;# NEW
-::export::mc::ExcludeAllTags				"Exclude all tags" ;# NEW
-::export::mc::IncludeAllTags				"Include all tags" ;# NEW
-::export::mc::ExtraTags						"All other extra tags" ;# NEW
+::export::mc::ExcludeAllTags				"Minden cimke kizárása"
+::export::mc::IncludeAllTags				"Minden cimke kiválasztása"
+::export::mc::ExtraTags						"Minden más további cimkék"
 ::export::mc::NoComments					"No comments" ;# NEW
-::export::mc::AllLanguages					"All languages" ;# NEW
-::export::mc::Significant					"Significant" ;# NEW
-::export::mc::LanguageSelection			"Language selection" ;# NEW
+::export::mc::AllLanguages					"Minden nyelv"
+::export::mc::Significant					"Jelentős"
+::export::mc::LanguageSelection			"Nyelv választás"
 ::export::mc::MapTo							"Map to" ;# NEW
 ::export::mc::MapNagsToComment			"Map annotations to comments" ;# NEW
-::export::mc::UnusualAnnotation			"Unusual annotations" ;# NEW
-::export::mc::AllAnnotation				"All annotations" ;# NEW
-::export::mc::UseColumnStyle				"Use column style" ;# NEW
-::export::mc::MainlineStyle				"Main Line Style" ;# NEW
-::export::mc::HideVariations				"Hide variations" ;# NEW
+::export::mc::UnusualAnnotation			"Szokatlan értékelése"
+::export::mc::AllAnnotation				"Minden értékelés"
+::export::mc::UseColumnStyle				"Oszlop stílus használata"
+::export::mc::MainlineStyle				"Főváltozat stílusa"
+::export::mc::HideVariations				"Változatok elrejtése"
 
 ::export::mc::PdfFiles				"PDF fájlok"
 ::export::mc::HtmlFiles				"HTML fájlok"
@@ -1012,13 +1012,13 @@
 ::export::mc::Variation				"Változat"
 ::export::mc::Subvariation			"Alváltozat"
 ::export::mc::Figurines				"Figurines"
-::export::mc::Hyphenation					"Hyphenation" ;# NEW
+::export::mc::Hyphenation					"Elválasztása"
 ::export::mc::None							"(nessuno)"
 ::export::mc::Symbols				"Szimbólumok"
 ::export::mc::Comments				"Megjegyzések"
 ::export::mc::Result				"Eredmény"
 ::export::mc::Diagram				"Diagramm"
-::export::mc::ColumnStyle					"Column Style" ;# NEW
+::export::mc::ColumnStyle					"Oszlopstílus"
 
 ::export::mc::Paper				"Papír"
 ::export::mc::Orientation			"Orientáció"
@@ -1034,10 +1034,10 @@
 ::export::mc::One				"Egy"
 ::export::mc::Two				"Kettő"
 
-::export::mc::DocumentStyle				"Document Style" ;# NEW
-::export::mc::Article						"Article" ;# NEW
-::export::mc::Report							"Report" ;# NEW
-::export::mc::Book							"Book" ;# NEW
+::export::mc::DocumentStyle				"Dokumentum stílus"
+::export::mc::Article						"Cikk"
+::export::mc::Report							"Jelentés"
+::export::mc::Book							"Könyv"
 
 ::export::mc::FormatName(scidb)			"Scidb"
 ::export::mc::FormatName(scid)			"Scid"
@@ -1049,8 +1049,8 @@
 
 ::export::mc::Option(pgn,include_varations)		"Változatok exportálása"
 ::export::mc::Option(pgn,include_comments)		"Megegyzések exportálása"
-::export::mc::Option(pgn,include_moveinfo)		"Export move information (as comments)" ;# NEW
-::export::mc::Option(pgn,include_marks)			"Export marks (as comments)"
+::export::mc::Option(pgn,include_moveinfo)		"Lépés információk exportálása (megjegyzésként)"
+::export::mc::Option(pgn,include_marks)			"Export marks (megjegyzésként)"
 ::export::mc::Option(pgn,use_scidb_import_format)	"Scidb Import Formátum használata"
 ::export::mc::Option(pgn,use_chessbase_format)		"ChessBase formátum használata"
 ::export::mc::Option(pgn,include_ply_count_tag)		"'PlyCount' cimke írása"
@@ -1068,24 +1068,24 @@
 ::export::mc::Option(pgn,symbolic_annotation_style)	"Symbolic annotation style (!, !?)"
 ::export::mc::Option(pgn,extended_symbolic_style)	"Extended symbolic annotation style (+=, +/-)"
 ::export::mc::Option(pgn,convert_null_moves)		"Convert null moves to comments"
-::export::mc::Option(pgn,space_after_move_number)	"Add space after move numbers"
+::export::mc::Option(pgn,space_after_move_number)	"Lépésszám után szóköz"
 ::export::mc::Option(pgn,shredder_fen)			"Write Shredder-FEN (default is X-FEN)"
-::export::mc::Option(pgn,convert_lost_result_to_comment)	"Write comment for result '0-0'"
+::export::mc::Option(pgn,convert_lost_result_to_comment)	"Megjegyzés írása a '0-0'-ás eredményhez"
 ::export::mc::Option(pgn,append_mode_to_event_type)	"Add mode after event type"
-::export::mc::Option(pgn,comment_to_html)		"Write comment in HTML style"
-::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
+::export::mc::Option(pgn,comment_to_html)		"Megjegyzés írása HTML stílusban"
+::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Érvénytelen lépést tartalmazó játszmák elvetése"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame			"Játszma mentése"
 ::dialog::save::mc::ReplaceGame			"Játszma kicserélése"
-::dialog::save::mc::EditCharacteristics		"Edit Characteristics"
+::dialog::save::mc::EditCharacteristics		"Tulajdonságok beállítása"
 	
 ::dialog::save::mc::GameData			"Játszma adatai"
 ::dialog::save::mc::Event			"Esemény"
 
-::dialog::save::mc::MatchesExtraTags		"Matches / Extraneous Tags"
+::dialog::save::mc::MatchesExtraTags		"Játszmák / Extraneous Tags"
 ::dialog::save::mc::PressToSelect		"Kiválasztáshoz nyomja meg a Ctrl+0-tól Ctrl+9-ig (vagy bal egérgomb)"
-::dialog::save::mc::PressForWhole		"Press Alt-0 to Alt-9 (vagy jobb egérgomb) for whole data set"
+::dialog::save::mc::PressForWhole		"Nyomj Alt-0-9 -et (vagy jobb egérgomb) az egész adathalmazhoz"
 ::dialog::save::mc::EditTags			"Cimkék szerkesztése"
 ::dialog::save::mc::DeleteThisTag		"Törölni kívánja a '%s' cimkét?"
 ::dialog::save::mc::TagAlreadyExists		"'%s' cimke már létezik."
@@ -1097,16 +1097,16 @@
 ::dialog::save::mc::DeleteTag			"Cimke törlése"
 ::dialog::save::mc::SetToGameDate		"Set to game date"
 ::dialog::save::mc::SaveGameFailed		"A játszma mentése meghiúsult."
-::dialog::save::mc::SaveGameFailedDetail	"See log for details."
-::dialog::save::mc::SavingGameLogInfo		"(%white - %black, %event) játszma mentése a(z) '%base' adatbézisba"
-::dialog::save::mc::CurrentBaseIsReadonly	"A jelenlegi '%s' adatbézis csak olvasható."
+::dialog::save::mc::SaveGameFailedDetail	"Lásd az eseménynaplót a részletekért."
+::dialog::save::mc::SavingGameLogInfo		"(%white - %black, %event) játszma mentése a(z) '%base' adatbázisba"
+::dialog::save::mc::CurrentBaseIsReadonly	"A jelenlegi '%s' adatbázis csak olvasható."
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved." ;' NEW
 
 ::dialog::save::mc::LocalName			"He&lyi Név"
 ::dialog::save::mc::EnglishName			"A&ngol Név"
 ::dialog::save::mc::ShowRatingType		"É&rtékszám mutatása"
 ::dialog::save::mc::EcoCode			"&ECO"
-::dialog::save::mc::Matches			"&Matches"
+::dialog::save::mc::Matches			"&Játszmák"
 ::dialog::save::mc::Tags			"&Cimkék"
 
 ::dialog::save::mc::Name			"Név"
@@ -1127,36 +1127,36 @@
 ::dialog::save::mc::Site			"Helyszín"
 ::dialog::save::mc::Mode			"Mode"
 ::dialog::save::mc::TimeMode			"Time Mode"
-::dialog::save::mc::Frequency			"Frequency"
+::dialog::save::mc::Frequency			"Gyakoriság"
 
 ::dialog::save::mc::GameBase			"Játszma adatbázis"
 ::dialog::save::mc::PlayerBase			"Játékos adatbázis"
 ::dialog::save::mc::EventBase			"Esemény adatbázis"
-::dialog::save::mc::SiteBase			"Site Base"
+::dialog::save::mc::SiteBase			"Helyzín adatbázis"
 ::dialog::save::mc::AnnotatorBase		"Annotator Base"
-::dialog::save::mc::History			"History"
+::dialog::save::mc::History			"Előzmények"
 
 ::dialog::save::mc::InvalidEntry		"'%s' nem érényes bejegyzés."
 ::dialog::save::mc::InvalidRoundEntry		"'%s' nem érévnyes forduló bejegyzés."
 ::dialog::save::mc::InvalidRoundEntryDetail	"Érvényes bejegyzések pl. '4' vagy '6.1'.  nem megengedett"
 ::dialog::save::mc::RoundIsTooHigh		"A fordulók száma nem haladhatja meg a 256-t"
 ::dialog::save::mc::SubroundIsTooHigh		"Sub-round should be less than 256."
-::dialog::save::mc::ImplausibleDate		"A jétszam dátuma ('%s') korábbi mint az esemény dátuma ('%s')."
+::dialog::save::mc::ImplausibleDate		"A játszma dátuma ('%s') korábbi mint az esemény dátuma ('%s')."
 ::dialog::save::mc::InvalidTagName		"Érénytelen cimke név: '%s' (syntax error)."
 ::dialog::save::mc::Field			"'%s' mező: "
 ::dialog::save::mc::ExtraTag			"'%s'Extra cimke : "
 ::dialog::save::mc::InvalidNetworkAddress	"'%s' érvénytelen hálózati cíim '%s'."
 ::dialog::save::mc::InvalidCountryCode		"Érvénytelen országkód '%s'."
-::dialog::save::mc::InvalidEventRounds		"Invalid number of event rounds '%s' (positive integer expected)."
-::dialog::save::mc::InvalidPlyCount		"Invalid move count '%s' (positive integer expected)."
-::dialog::save::mc::IncorrectPlyCount		"Incorrect move count '%s' (actual move count is %s)."
-::dialog::save::mc::InvalidTimeControl		"Invalid time control field entry in '%s'."
+::dialog::save::mc::InvalidEventRounds		"Érvénytelen fordulószám '%s' (pozitív egésznek kell lennie)."
+::dialog::save::mc::InvalidPlyCount		"Érvénytelen lépésszám '%s' (pozitív egésznek kell lennie)."
+::dialog::save::mc::IncorrectPlyCount		"Érvénytelen lépésszám '%s' (az aktuális lépésszám %s)."
+::dialog::save::mc::InvalidTimeControl		"Érvénytelen időellenőrzés mező '%s'-ban/ben."
 ::dialog::save::mc::InvalidDate			"'%s' érvénytelen dátum."
-::dialog::save::mc::InvalidYear					"Invalid year '%s'."
-::dialog::save::mc::InvalidMonth					"Invalid month '%s'."
-::dialog::save::mc::InvalidDay					"Invalid day '%s'."
-::dialog::save::mc::MissingYear					"Year is missing."
-::dialog::save::mc::MissingMonth					"Month is missing."
+::dialog::save::mc::InvalidYear					"Érvénytelen évszám '%s'."
+::dialog::save::mc::InvalidMonth					"Érvénytelen hónap '%s'."
+::dialog::save::mc::InvalidDay					"Érvénytelen nap '%s'."
+::dialog::save::mc::MissingYear					"Az évszám hiányzik."
+::dialog::save::mc::MissingMonth					"A hónap hiányzik."
 ::dialog::save::mc::StringTooLong				"Tag %tag%: string '%value%' is too long and will be truncated to '%trunc%'."
 ::dialog::save::mc::InvalidEventDate			"Cannot accept given event date: The difference between the year of the game and the year of the event should be less than 4 (restriction of Scid's database format)."
 ::dialog::save::mc::TagIsEmpty					"Tag '%s' is empty (will be discarded)."
@@ -1165,39 +1165,39 @@
 ::game::history::mc::GameHistory	"Game History" ;# NEW
 
 ### game ###############################################################
-::game::mc::CloseDatabase				"Close Database" ;# NEW
+::game::mc::CloseDatabase				"Adatbázis bezárása"
 ::game::mc::CloseAllGames				"Close all open games of database '%s'?"
 ::game::mc::SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
 ::game::mc::AllSlotsOccupied			"All game slots are occupied."
 ::game::mc::ReleaseOneGame				"Please release one of the games before loading a new one."
 ::game::mc::GameAlreadyOpen			"Game is already open but modified. Discard modified version of this game?"
-::game::mc::GameAlreadyOpenDetail	"'%s' will open a new game."
-::game::mc::GameHasChanged				"Game %s has changed."
-::game::mc::GameHasChangedDetail		"Probably this is not the expected game due to database changes."
+::game::mc::GameAlreadyOpenDetail	"'%s' egy új játszmát fog megynitni."
+::game::mc::GameHasChanged				"%s játszma megváltozott."
+::game::mc::GameHasChangedDetail		"Az adatbázis változásai miatt valószínűleg nem ezt a játszmát akartad megnyitni."
 ::game::mc::CorruptedHeader			"Corrupted header in recovery file '%s'."
 ::game::mc::RenamedFile					"Renamed this file to '%s.bak'."
-::game::mc::CannotOpen					"Cannot open recovery file '%s'."
+::game::mc::CannotOpen					"A visszaállító fájl '%s' nem nyitható meg."
 ::game::mc::GameRestored				"One game from last session restored."
 ::game::mc::GamesRestored				"%s games from last session restored."
 ::game::mc::OldGameRestored			"Egy játszma helyreállítva."
 ::game::mc::OldGamesRestored			"%s játszmák helyreállítva."
 ::game::mc::ErrorInRecoveryFile		"Hiba a helyreállító fájlban '%s'"
-::game::mc::Recovery						"Recovery"
+::game::mc::Recovery						"Visszaállítás"
 ::game::mc::UnsavedGames		"A játszmabeli változtatások nincsenel elmentve."
 ::game::mc::DiscardChanges		"'%s' el fogja vetni a változtatásokat."
 ::game::mc::ShouldRestoreGame		"Legyen ez a játszma helyreállítva a következő indításkor?"
 ::game::mc::ShouldRestoreGames		"Legyenek ezek a játszmák helyreállítva a következő indításkor?"
 ::game::mc::NewGame			"Új játszma"
 ::game::mc::NewGames			"Új játszmák"
-::game::mc::Created			"látrehozva"
-::game::mc::ClearHistory				"Clear History" ;# NEW
-::game::mc::RemoveSelectedGame		"Remove selected game from history" ;# NEW
-::game::mc::GameDataCorrupted			"Game data is corrupted." ;# NEW
-::game::mc::GameDecodingFailed		"Decoding of this game was not possible." ;# NEW
+::game::mc::Created			"létrehozva"
+::game::mc::ClearHistory				"Előzmények törlése"
+::game::mc::RemoveSelectedGame		"Kijelölt játszmák törlése az előzmények közül"
+::game::mc::GameDataCorrupted			"Játszma sérült."
+::game::mc::GameDecodingFailed		"Ennek a jástszmának a dekódolása nem lehetséges."
 
 ### languagebox ########################################################
-::languagebox::mc::AllLanguages	"All languages"
-::languagebox::mc::None				"None" ;# NEW
+::languagebox::mc::AllLanguages	"Összes nyelv"
+::languagebox::mc::None				"Egyik sem"
 
 ### datebox ############################################################
 ::widget::datebox::mc::Today		"Ma"
@@ -1219,7 +1219,7 @@
 ::terminationbox::mc::Death		"Death"
 ::terminationbox::mc::Emergency		"Emergency"
 ::terminationbox::mc::RulesInfraction	"Rules infraction"
-::terminationbox::mc::TimeForfeit	"Time forfeit"
+::terminationbox::mc::TimeForfeit	"Leesett"
 ::terminationbox::mc::Unterminated	"Unterminated"
 
 ### eventmodebox #######################################################
@@ -1249,78 +1249,78 @@
 ::timemodebox::mc::Mode(corr)	"Levelezési"
 
 ### help ###############################################################
-::help::mc::Contents					"&Contents" ;# NEW
-::help::mc::Index						"&Index" ;# NEW
-::help::mc::Search					"&Search" ;# NEW
+::help::mc::Contents					"&Tartalom"
+::help::mc::Index						"&Tárgymutató"
+::help::mc::Search					"&Keresés"
 
-::help::mc::Help						"Help" ;# NEW
-::help::mc::MatchEntireWord		"Match entire word" ;# NEW
+::help::mc::Help						"Súgó"
+::help::mc::MatchEntireWord		"Teljes szó keresése"
 ::help::mc::MatchCase				"Match case" ;# NEW
 ::help::mc::TitleOnly				"Search in titles only" ;# NEW
-::help::mc::GoBack					"Go back one page (Alt-Left)" ;# NEW
-::help::mc::GoForward				"Go forward one page (Alt-Right)" ;# NEW
-::help::mc::GotoPage					"Go to page '%s'" ;# NEW
+::help::mc::GoBack					"Egy oldallal vissza (Alt-Left)" ;# NEW
+::help::mc::GoForward				"Egy oldallal előre (Alt-Right)" ;# NEW
+::help::mc::GotoPage					"Menj a '%s'-dik oldalra"
 ::help::mc::ExpandAllItems			"Expand all items" ;# NEW
 ::help::mc::CollapseAllItems		"Collapse all items" ;# NEW
-::help::mc::SelectLanguage			"Select Language" ;# NEW
-::help::mc::NoHelpAvailable		"No help files available for language Hungarian.\nPlease choose an alternative language\nfor the help dialog." ;# NEW
+::help::mc::SelectLanguage			"Nyelv választás"
+::help::mc::NoHelpAvailable		"Nincs elérhető súgó fájl magyar nyelven.\nVálaszz másik nyelvet\na súgó számára."
 ::help::mc::KeepLanguage			"Keep language %s for subsequent sessions?" ;# NEW
 ::help::mc::ParserError				"Error while parsing file %s." ;# NEW
-::help::mc::NoMatch					"No match is found" ;# NEW
+::help::mc::NoMatch					"Nincs találat"
 ::help::mc::MaxmimumExceeded		"Maximal number of matches exceeded in some pages." ;# NEW
-::help::mc::OnlyFirstMatches		"Only first %s matches per page will be shown." ;# NEW
-::help::mc::HideIndex				"Hide index" ;# NEW
-::help::mc::ShowIndex				"Show index" ;# NEW
+::help::mc::OnlyFirstMatches		"Csak az első %s találat jelenik meg."
+::help::mc::HideIndex				"Tárgymutató elrejtése"
+::help::mc::ShowIndex				"Tárgymutató mutatása"
 
-::help::mc::FileNotFound			"File not found." ;# NEW
-::help::mc::CantFindFile			"Can't find the file at %s." ;# NEW
-::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that." ;# NEW
-::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you" ;# NEW
-::help::mc::PageNotAvailable		"This page is not available" ;# NEW
+::help::mc::FileNotFound			"Fájl nem található."
+::help::mc::CantFindFile			"Fájl nem található %s könyvtárban."
+::help::mc::IncompleteHelpFiles	"Úgy tűnik, hogy a súgó fájlok még nem véglegesek. Bocs!"
+::help::mc::ProbablyTheHelp		"Valószínűleg egy más nylevű súgó segíthet"
+::help::mc::PageNotAvailable		"TEz az oldal nem elérhető"
 
-::help::mc::Overview					"Overview" ;# NEW
+::help::mc::Overview					"Áttekintés"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable	"Tournament Table"
+::crosstable::mc::TournamentTable	"Verseny tabella"
 ::crosstable::mc::AverageRating		"Átlagos pontszám"
-::crosstable::mc::Category		"Category"
+::crosstable::mc::Category		"Kategória"
 ::crosstable::mc::Games			"játszmák"
 ::crosstable::mc::Game			"játszma"
 ::crosstable::mc::ScoringSystem			"Scoring System" ;# NEW
-::crosstable::mc::Tiebreak		"Tie-Break"
+::crosstable::mc::Tiebreak		"Rövidített játszma"
 ::crosstable::mc::Settings		"Beállítások"
 ::crosstable::mc::RevertToStart		"Kiinduló értékek visszaállítása"
 ::crosstable::mc::UpdateDisplay		"Képernyő frissítése"
 
-::crosstable::mc::Traditional				"Traditional" ;# NEW
+::crosstable::mc::Traditional				"Hagyományos"
 ::crosstable::mc::Bilbao					"Bilbao" ;# NEW
 
-::crosstable::mc::None				"None"
+::crosstable::mc::None				"nincs"
 ::crosstable::mc::Buchholz			"Buchholz"
 ::crosstable::mc::MedianBuchholz		"Median-Buchholz"
 ::crosstable::mc::ModifiedMedianBuchholz 	"Mod. Median-Buchholz"
 ::crosstable::mc::RefinedBuchholz		"Refined Buchholz"
 ::crosstable::mc::SonnebornBerger		"Sonneborn-Berger"
-::crosstable::mc::Progressive			"Progressive Score"
-::crosstable::mc::KoyaSystem			"Koya System"
-::crosstable::mc::GamesWon			"Number of Games Won"
-::crosstable::mc::GamesWonWithBlack		"Games Won with Black" ;# NEW
+::crosstable::mc::Progressive			"Progresszív"
+::crosstable::mc::KoyaSystem			"Koya rendszer"
+::crosstable::mc::GamesWon			"Nyert játszmák"
+::crosstable::mc::GamesWonWithBlack		"Sötéttel nyert játszmákGames Won with Black" ;# NEW
 ::crosstable::mc::ParticularResult		"Particular Result" ;# NEW
 ::crosstable::mc::TraditionalScoring	"Traditional Scoring" ;# NEW
 
-::crosstable::mc::Crosstable			"Crosstable"
-::crosstable::mc::Scheveningen			"Scheveningen"
-::crosstable::mc::Swiss				"Swiss System"
+::crosstable::mc::Crosstable			"Kereszttábla"
+::crosstable::mc::Scheveningen			"Scheveningeni"
+::crosstable::mc::Swiss				"Svájci rendszer"
 ::crosstable::mc::Match				"Match"
-::crosstable::mc::Knockout			"Knockout"
+::crosstable::mc::Knockout			"Kieséses"
 ::crosstable::mc::RankingList			"Ranking List"
 
 ::crosstable::mc::Order				"Order"
-::crosstable::mc::Type				"Table Type"
-::crosstable::mc::Score				"Score"
+::crosstable::mc::Type				"Tábla típus"
+::crosstable::mc::Score				"Pont"
 ::crosstable::mc::Alphabetical			"Alphabetical"
-::crosstable::mc::Rating			"Rating"
-::crosstable::mc::Federation			"Federation"
+::crosstable::mc::Rating			"Értékszám"
+::crosstable::mc::Federation			"Szövetség"
 
 ::crosstable::mc::Debugging			"Hibakeresés"
 ::crosstable::mc::Display			"Kijelző"
@@ -1329,27 +1329,27 @@
 ::crosstable::mc::Padding			"Padding"
 ::crosstable::mc::ShowLog			"Eseméynnapló megnyitása"
 ::crosstable::mc::ShowHtml			"HTML megnyitása"
-::crosstable::mc::ShowRating			"Rating"
-::crosstable::mc::ShowPerformance		"Performance"
-::crosstable::mc::ShowTiebreak			"Tiebreak"
-::crosstable::mc::ShowOpponent			"Opponent (as Tooltip)"
-::crosstable::mc::KnockoutStyle			"Knockout Table Style"
-::crosstable::mc::Pyramid			"Pyramid"
-::crosstable::mc::Triangle			"Triangle"
+::crosstable::mc::ShowRating			"Értékszám"
+::crosstable::mc::ShowPerformance		"Teljesítmény"
+::crosstable::mc::ShowTiebreak			"Rövidített játszma"
+::crosstable::mc::ShowOpponent			"Ellenfél (as Tooltip)"
+::crosstable::mc::KnockoutStyle			"Kiütéses Táblázat Stílus" ;# ?
+::crosstable::mc::Pyramid			"Piramis"
+::crosstable::mc::Triangle			"Háromszög"
 
 ::crosstable::mc::CrosstableLimit	"The crosstable limit of %d players will be exceeded."
 ::crosstable::mc::CrosstableLimitDetail "'%s' is choosing another table mode."
 
 ### info ###############################################################
-::info::mc::InfoTitle			"About %s"
+::info::mc::InfoTitle			"Névjegy %s"
 ::info::mc::Info			"Info"
 ::info::mc::About			"Névjegy"
 ::info::mc::Contributions		"Contributions"
-::info::mc::License			"License"
+::info::mc::License			"Liszenc"
 ::info::mc::Localization		"Localization"
-::info::mc::Testing			"Testing"
-::info::mc::References			"References"
-::info::mc::System			"System"
+::info::mc::Testing			"Tesztelés"
+::info::mc::References			"Referenciák"
+::info::mc::System			"Rendszer"
 ::info::mc::FontDesign			"chess font design"
 ::info::mc::ChessPieceDesign		"chess piece design"
 ::info::mc::BoardThemeDesign		"Board theme design"
@@ -1379,21 +1379,21 @@
 ::comment::mc::AddLanguage		"Nyelv hozzáadása..."
 ::comment::mc::SwitchLanguage		"Nyelv váltása"
 ::comment::mc::FormatText		"Szöveg formázása"
-::comment::mc::CopyText					"Copy text to" ;# NEW
-::comment::mc::OverwriteContent		"Overwrite existing content?" ;# NEW
-::comment::mc::AppendContent			"If \"no\" the text will be appended." ;# NEW
+::comment::mc::CopyText					"Szöveg másolása"
+::comment::mc::OverwriteContent		"Felülírod a meglévő tartalmat?"
+::comment::mc::AppendContent			"Ha \"nem\" , akkor a szöveg hozzáasódik."
 
 ::comment::mc::Bold			"Félkövér"
 ::comment::mc::Italic			"Dőlt"
 ::comment::mc::Underline		"Aláhúzott"
 
 ::comment::mc::InsertSymbol		"Szimbólum be&illesztése..."
-::comment::mc::MiscellaneousSymbols	"Miscellaneous Symbols"
+::comment::mc::MiscellaneousSymbols	"Vegyes szimbólumok"
 ::comment::mc::Figurine			"Figurális"
 
 ### annotation #########################################################
-::annotation::mc::AnnotationEditor		"Annotation"
-::annotation::mc::TooManyNags			"Too many annotations (the last one was ignored)."
+::annotation::mc::AnnotationEditor		"Értékelő jelek"
+::annotation::mc::TooManyNags			"Túl sok értékelő jel (az utolsó elvetve)."
 ::annotation::mc::TooManyNagsDetail		"Maximal %d annotations per ply allowed."
 
 ::annotation::mc::PrefixedCommentaries		"Prefixed Commentaries"
@@ -1413,7 +1413,7 @@
 ::move::mc::TryVariation			"Változat kipróbálása"
 ::move::mc::ExchangeMove			"Lépés cseréje"
 
-::move::mc::GameWillBeTruncated	"Game will be truncated. Continue with '%s'?"
+::move::mc::GameWillBeTruncated	"Játszma megcsonkításra kerül. Folytatod? '%s'"
 
 ### log ################################################################
 ::log::mc::LogTitle		"Eseménynapló"
@@ -1537,7 +1537,7 @@
 ::dialog::choosefont::mc::Underline			"&Aláhúzás"
 ::dialog::choosefont::mc::Color				"Szín"
 
-::dialog::choosefont::mc::Regular			"Regular" ;# NEW
+::dialog::choosefont::mc::Regular			"Hagyományos"
 ::dialog::choosefont::mc::Bold				"Félkövér"
 ::dialog::choosefont::mc::Italic			"Dőlt"
 {::dialog::choosefont::mc::Bold Italic}	"Félkövér Dőlt"
@@ -1545,72 +1545,72 @@
 ::dialog::choosefont::mc::Effects			"Effektusok"
 ::dialog::choosefont::mc::Filter			"Szűrő"
 ::dialog::choosefont::mc::Sample			"Minta"
-::dialog::choosefont::mc::SearchTitle			"Searching for monospaced fonts"
+::dialog::choosefont::mc::SearchTitle			"Azonos szélességű betűtípusok keresése"
 ::dialog::choosefont::mc::SeveralMinutes		"Ez a művelet kb. %d percig tart."
 ::dialog::choosefont::mc::FontSelection			"Betűtypus választása"
 ::dialog::choosefont::mc::Wait				"Kérem várjon"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"File System" ;# NEW
+::choosedir::mc::FileSystem		"Fájl rendszer"
 ::choosedir::mc::ShowPredecessor	"Show Predecessor" ;# NEW
 ::choosedir::mc::ShowTail			"Show Tail" ;# NEW
-::choosedir::mc::Folder				"Könyvtár:"
+::choosedir::mc::Folder				"Könyvtár"
 
 ### fsbox ##############################################################
-::fsbox::mc::Name								"Name"
-::fsbox::mc::Size								"Size"
-::fsbox::mc::Modified						"Modified"
+::fsbox::mc::Name								"Név"
+::fsbox::mc::Size								"Dátum"
+::fsbox::mc::Modified						"Módosítva"
 
 ::fsbox::mc::Forward							"Forward to '%s'"
 ::fsbox::mc::Backward						"Backward to '%s'"
-::fsbox::mc::Delete							"Delete"
-::fsbox::mc::Rename							"Rename"
+::fsbox::mc::Delete							"Töröl"
+::fsbox::mc::Rename							"Átnevez"
 ::fsbox::mc::Duplicate						"Duplicate"
 ::fsbox::mc::CopyOf							"Copy of %s"
-::fsbox::mc::NewFolder						"New Folder"
-::fsbox::mc::Layout							"Layout"
-::fsbox::mc::ListLayout						"List Layout"
-::fsbox::mc::DetailedLayout				"Detailed Layout"
+::fsbox::mc::NewFolder						"Új könyvtár"
+::fsbox::mc::Layout							"Nézet"
+::fsbox::mc::ListLayout						"Lista nézet"
+::fsbox::mc::DetailedLayout				"Részletes nézet"
 ::fsbox::mc::ShowHiddenDirs				"Mutasd a &rejtett könyvtárakat"
 ::fsbox::mc::ShowHiddenFiles				"Mutasd a &rejtett fájlokat és könyvtárakat"
 ::fsbox::mc::AppendToExisitingFile		"Játszmák hozzá&adása egy létező fájlhoz"
-::fsbox::mc::Cancel							"&Cancel"
+::fsbox::mc::Cancel							"&Mégse"
 ::fsbox::mc::Save								"Menté&s"
-::fsbox::mc::Open								"&Open"
+::fsbox::mc::Open								"&Megynitás"
 
-::fsbox::mc::AddBookmark					"Add Bookmark '%s'"
-::fsbox::mc::RemoveBookmark				"Remove Bookmark '%s'"
+::fsbox::mc::AddBookmark					"Könyvjelző hozzáadása '%s'"
+::fsbox::mc::RemoveBookmark				"Könyvjelző eltávolítása '%s'"
 
 ::fsbox::mc::Filename						"Fájl &név:"
 ::fsbox::mc::Filenames						"Fájl &nevek:"
 ::fsbox::mc::FilesType						"Fájl &típusok:"
-::fsbox::mc::FileEncoding					"File &encoding:"
+::fsbox::mc::FileEncoding					"Fájl &kódolás:"
 
-::fsbox::mc::Favorites						"Favorites"
-::fsbox::mc::LastVisited					"Last Visited"
+::fsbox::mc::Favorites						"Kedvencek"
+::fsbox::mc::LastVisited					"Utoljára használt"  ;#?
 ::fsbox::mc::FileSystem						"Fájlredszer"
 ::fsbox::mc::Desktop							"Asztal"
 ::fsbox::mc::Home								"Home" ;# NEW
 
-::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)"
-::fsbox::mc::SelectWhichType				"Select which type of file are shown"
-::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
+::fsbox::mc::SelectEncoding				"Adatbázis kódolásának kiválasztása"
+::fsbox::mc::SelectWhichType				"Megjelenítendő fájltípusok kiválasztása"
+::fsbox::mc::TimeFormat						"%y/%m/%d %I:%M %p"
 
-::fsbox::mc::CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
-::fsbox::mc::DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
-::fsbox::mc::ReallyMove(file,w)			"Really move file '%s' to trash?"
-::fsbox::mc::ReallyMove(file,r)			"Really move write-protected file '%s' to trash?"
-::fsbox::mc::ReallyMove(folder,w)		"Really move folder '%s' to trash?"
-::fsbox::mc::ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?"
-::fsbox::mc::ReallyDelete(file,w)		"Really delete file '%s'? You cannot undo this operation."
-::fsbox::mc::ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation."
-::fsbox::mc::ReallyDelete(link,w)		"Really delete link to '%s'?"
-::fsbox::mc::ReallyDelete(link,r)		"Really delete link to '%s'?"
-::fsbox::mc::ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
-::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
-::fsbox::mc::DeleteFailed					"Deletion of '%s' failed."
-::fsbox::mc::CommandFailed					"Command '%s' failed."
-::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied."
+::fsbox::mc::CannotChangeDir				"Cannot change to the directory \"%s\".\nHozzáférés megtagadva."
+::fsbox::mc::DirectoryRemoved				"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."
+::fsbox::mc::ReallyMove(file,w)			"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
+::fsbox::mc::ReallyMove(file,r)			"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
+::fsbox::mc::ReallyMove(folder,w)		"Biztos hogy a kukába dobod a(z) '%s' könyvtárat"
+::fsbox::mc::ReallyMove(folder,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett könyvtárat?"
+::fsbox::mc::ReallyDelete(file,w)		"Biztos hogy törlöd a(z) '%s' fájlt? Ez a művelet később nem vonható vissza." ;# You cannot undo this operation."
+::fsbox::mc::ReallyDelete(file,r)		"Biztos hogy törlöd a(z) '%s' írásvédett fájlt? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(link,w)		"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(link,r)		"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(folder,w)		"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(folder,r)		"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::DeleteFailed					"'%s' törlése meghiúsult."
+::fsbox::mc::CommandFailed					"'%s' utasítás nem hajtható vége."
+::fsbox::mc::CopyFailed						"'%s' fájl másolása meghiúsult: hozzáférés megtagadva"
 ::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
 ::fsbox::mc::CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
 ::fsbox::mc::ReallyDuplicateFile			"Really duplicate this file?"
@@ -1636,129 +1636,129 @@
 ::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
 
 ### toolbar ############################################################
-::toolbar::mc::Toolbar		"Toolbar"
+::toolbar::mc::Toolbar		"Eszköztár"
 ::toolbar::mc::Orientation	"Orientation"
-::toolbar::mc::Alignment	"Alignment"
-::toolbar::mc::IconSize		"Icon Size"
+::toolbar::mc::Alignment	"Igazítás"
+::toolbar::mc::IconSize		"Ikon méret"
 
 ::toolbar::mc::Default		"Default"
-::toolbar::mc::Small			"Small"
-::toolbar::mc::Medium		"Medium"
-::toolbar::mc::Large			"Large"
+::toolbar::mc::Small			"Kicsi"
+::toolbar::mc::Medium		"Közepes"
+::toolbar::mc::Large			"Nagy"
 
-::toolbar::mc::Top			"Top"
-::toolbar::mc::Bottom		"Bottom"
-::toolbar::mc::Left			"Left"
-::toolbar::mc::Right			"Right"
-::toolbar::mc::Center		"Center"
+::toolbar::mc::Top			"Felső"
+::toolbar::mc::Bottom		"Alsó"
+::toolbar::mc::Left			"Bal"
+::toolbar::mc::Right			"Jobb"
+::toolbar::mc::Center		"Középső"
 
-::toolbar::mc::Flat			"Flat"
-::toolbar::mc::Floating		"Floating"
-::toolbar::mc::Hide			"Hide"
+::toolbar::mc::Flat			"Lapos"
+::toolbar::mc::Floating		"Lebegő"
+::toolbar::mc::Hide			"Elrejt"
 
-::toolbar::mc::Expand		"Expand"
+::toolbar::mc::Expand		"Kibont" ;#?
 
 ### Countries ##########################################################
-::country::mc::Afghanistan											"Afghanistan"
-::country::mc::Netherlands_Antilles								"Netherlands Antilles"
+::country::mc::Afghanistan											"Afganisztán"
+::country::mc::Netherlands_Antilles								"Holland Antillák"
 ::country::mc::Anguilla												"Anguilla"
 ::country::mc::Aboard_Aircraft									"Aboard Aircraft"
 ::country::mc::Aaland_Islands										"Aaland Islands"
-::country::mc::Albania												"Albania"
-::country::mc::Algeria												"Algeria"
+::country::mc::Albania												"Albánia"
+::country::mc::Algeria												"Algéria"
 ::country::mc::Andorra												"Andorra"
 ::country::mc::Angola												"Angola"
 ::country::mc::Antigua												"Antigua and Barbuda"
 ::country::mc::Australasia											"Australasia"
-::country::mc::Argentina											"Argentina"
-::country::mc::Armenia												"Armenia"
+::country::mc::Argentina											"Argentína"
+::country::mc::Armenia												"Örményország"
 ::country::mc::Aruba													"Aruba"
 ::country::mc::American_Samoa										"American Samoa"
-::country::mc::Antarctica											"Antarctica"
+::country::mc::Antarctica											"Antarktisz"
 ::country::mc::French_Southern_Territories					"French Southern Territories"
-::country::mc::Australia											"Australia"
-::country::mc::Austria												"Austria"
-::country::mc::Azerbaijan											"Azerbaijan"
-::country::mc::Bahamas												"Bahamas"
-::country::mc::Bangladesh											"Bangladesh"
-::country::mc::Barbados												"Barbados"
-::country::mc::Basque												"Basque"
+::country::mc::Australia											"Ausztrália"
+::country::mc::Austria												"Ausztria"
+::country::mc::Azerbaijan											"Azerbajdzsán"
+::country::mc::Bahamas												"Bahamák"
+::country::mc::Bangladesh											"Banglades"
+::country::mc::Barbados												"Barbadosz"
+::country::mc::Basque												"Baszkföld"
 ::country::mc::Burundi												"Burundi"
 ::country::mc::Belgium												"Belgium"
 ::country::mc::Benin													"Benin"
 ::country::mc::Bermuda												"Bermuda"
 ::country::mc::Bhutan												"Bhutan"
-::country::mc::Bosnia_and_Herzegovina							"Bosnia and Herzegovina"
+::country::mc::Bosnia_and_Herzegovina							"Bosznia and Herzegovina"
 ::country::mc::Belize												"Belize"
-::country::mc::Belarus												"Belarus"
-::country::mc::Bolivia												"Bolivia"
-::country::mc::Brazil												"Brazil"
-::country::mc::Bahrain												"Bahrain"
+::country::mc::Belarus												"Fehéroroszország"
+::country::mc::Bolivia												"Bolívia"
+::country::mc::Brazil												"Brazília"
+::country::mc::Bahrain												"Bahrein"
 ::country::mc::Brunei												"Brunei"
 ::country::mc::Botswana												"Botswana"
-::country::mc::Bulgaria												"Bulgaria"
+::country::mc::Bulgaria												"Bulgária"
 ::country::mc::Burkina_Faso										"Burkina Faso"
 ::country::mc::Bouvet_Islands										"Bouvet Islands"
 ::country::mc::Central_African_Republic						"Central African Republic"
-::country::mc::Cambodia												"Cambodia"
-::country::mc::Canada												"Canada"
-::country::mc::Catalonia											"Catalonia"
-::country::mc::Cayman_Islands										"Cayman Islands"
+::country::mc::Cambodia												"Kambodzsa"
+::country::mc::Canada												"Kanada"
+::country::mc::Catalonia											"Katalónia"
+::country::mc::Cayman_Islands										"Kajmán szigetek"
 ::country::mc::Cocos_Islands										"Cocos Islands"
-::country::mc::Congo													"Congo (Brazzaville)"
-::country::mc::Chad													"Chad"
-::country::mc::Chile													"Chile"
-::country::mc::China													"China"
-::country::mc::Ivory_Coast											"Ivory Coast"
-::country::mc::Cameroon												"Cameroon"
-::country::mc::DR_Congo												"DR Congo"
+::country::mc::Congo													"Kongo (Brazzaville)"
+::country::mc::Chad													"Csád"
+::country::mc::Chile													"Csíle"
+::country::mc::China													"Kína"
+::country::mc::Ivory_Coast											"Elefántcsontpart"
+::country::mc::Cameroon												"Kamerun"
+::country::mc::DR_Congo												"Kongó"
 ::country::mc::Cook_Islands										"Cook Islands"
-::country::mc::Colombia												"Colombia"
+::country::mc::Colombia												"Kolumbia"
 ::country::mc::Comoros												"Comoros"
 ::country::mc::Cape_Verde											"Cape Verde"
 ::country::mc::Costa_Rica											"Costa Rica"
-::country::mc::Croatia												"Croatia"
-::country::mc::Cuba													"Cuba"
+::country::mc::Croatia												"Horvátország"
+::country::mc::Cuba													"Kuba"
 ::country::mc::Christmas_Island									"Christmas Island"
-::country::mc::Cyprus												"Cyprus"
-::country::mc::Czech_Republic										"Czech Republic"
-::country::mc::Denmark												"Denmark"
+::country::mc::Cyprus												"Ciprus"
+::country::mc::Czech_Republic										"Cseh Köztársaság"
+::country::mc::Denmark												"Dánia"
 ::country::mc::Djibouti												"Djibouti"
 ::country::mc::Dominica												"Dominica"
 ::country::mc::Dominican_Republic								"Dominican Republic"
 ::country::mc::Ecuador												"Ecuador"
-::country::mc::Egypt													"Egypt"
-::country::mc::England												"England"
+::country::mc::Egypt													"Egyiptom"
+::country::mc::England												"Anglia"
 ::country::mc::Eritrea												"Eritrea"
 ::country::mc::El_Salvador											"El Salvador"
-::country::mc::Western_Sahara										"Western Sahara"
-::country::mc::Spain													"Spain"
-::country::mc::Estonia												"Estonia"
-::country::mc::Ethiopia												"Ethiopia"
-::country::mc::Faroe_Islands										"Faroe Islands"
+::country::mc::Western_Sahara										"Nyugat Szahara"
+::country::mc::Spain													"Spanyolország"
+::country::mc::Estonia												"Észtország"
+::country::mc::Ethiopia												"Etiópia"
+::country::mc::Faroe_Islands										"Feröer Szigetek"
 ::country::mc::Fiji													"Fiji"
-::country::mc::Finland												"Finland"
-::country::mc::Falkland_Islands									"Falkland Islands"
-::country::mc::France												"France"
-::country::mc::West_Germany										"West Germany"
+::country::mc::Finland												"Finnország"
+::country::mc::Falkland_Islands									"Falkland Szigetek"
+::country::mc::France												"Franciaország"
+::country::mc::West_Germany										"Nyugat Németország"
 ::country::mc::Micronesia											"Micronesia"
 ::country::mc::Gabon													"Gabon"
 ::country::mc::Gambia												"Gambia"
-::country::mc::Great_Britain										"Great Britain"
+::country::mc::Great_Britain										"Nagy Britannia"
 ::country::mc::Guinea_Bissau										"Guinea-Bissau"
-::country::mc::Gibraltar											"Gibraltar"
+::country::mc::Gibraltar											"Gibraltár"
 ::country::mc::Guernsey												"Guernsey"
-::country::mc::East_Germany										"East Germany"
-::country::mc::Georgia												"Georgia"
-::country::mc::Equatorial_Guinea									"Equatorial Guinea"
-::country::mc::Germany												"Germany"
-::country::mc::Ghana													"Ghana"
+::country::mc::East_Germany										"Kelet Németország"
+::country::mc::Georgia												"Grúzia"
+::country::mc::Equatorial_Guinea									"Egyenlítői Guinea"
+::country::mc::Germany												"Németország"
+::country::mc::Ghana													"Gána"
 ::country::mc::Guadeloupe											"Guadeloupe"
-::country::mc::Greece												"Greece"
-::country::mc::Grenada												"Grenada"
-::country::mc::Greenland											"Greenland"
+::country::mc::Greece												"Görögország"
+::country::mc::Grenada												"Granada"
+::country::mc::Greenland											"Grönland"
 ::country::mc::Guatemala											"Guatemala"
-::country::mc::French_Guiana										"French Guiana"
+::country::mc::French_Guiana										"Francia Guiana"
 ::country::mc::Guinea												"Guinea"
 ::country::mc::Guam													"Guam"
 ::country::mc::Guyana												"Guyana"
@@ -1766,57 +1766,57 @@
 ::country::mc::Hong_Kong											"Hong Kong"
 ::country::mc::Heard_Island_and_McDonald_Islands			"Heard Island and McDonald Islands"
 ::country::mc::Honduras												"Honduras"
-::country::mc::Hungary												"Hungary"
+::country::mc::Hungary												"Magyarország"
 ::country::mc::Isle_of_Man											"Isle of Man"
-::country::mc::Indonesia											"Indonesia"
+::country::mc::Indonesia											"Indonézia"
 ::country::mc::India													"India"
 ::country::mc::British_Indian_Ocean_Territory				"British Indian Ocean Territory"
-::country::mc::Iran													"Iran"
-::country::mc::Ireland												"Ireland"
-::country::mc::Iraq													"Iraq"
-::country::mc::Iceland												"Iceland"
-::country::mc::Israel												"Israel"
-::country::mc::Italy													"Italy"
+::country::mc::Iran													"Irán"
+::country::mc::Ireland												"Irország"
+::country::mc::Iraq													"Irak"
+::country::mc::Iceland												"Izland"
+::country::mc::Israel												"Izrael"
+::country::mc::Italy													"Olaszország"
 ::country::mc::British_Virgin_Islands							"British Virgin Islands"
-::country::mc::Jamaica												"Jamaica"
+::country::mc::Jamaica												"Jamaika"
 ::country::mc::Jersey												"Jersey"
-::country::mc::Jordan												"Jordan"
+::country::mc::Jordan												"Jordánia"
 ::country::mc::Japan													"Japan"
 ::country::mc::Kazakhstan											"Kazakhstan"
 ::country::mc::Kenya													"Kenya"
-::country::mc::Kosovo												"Kosovo"
-::country::mc::Kyrgyzstan											"Kyrgyzstan"
+::country::mc::Kosovo												"Koszovó"
+::country::mc::Kyrgyzstan											"Kirgizisztán"
 ::country::mc::Kiribati												"Kiribati"
-::country::mc::South_Korea											"South Korea"
-::country::mc::Saudi_Arabia										"Saudi Arabia"
+::country::mc::South_Korea											"Dél-Korea"
+::country::mc::Saudi_Arabia										"Szaúd-Arábia"
 ::country::mc::Kuwait												"Kuwait"
-::country::mc::Laos													"Laos"
-::country::mc::Latvia												"Latvia"
-::country::mc::Libya													"Libya"
+::country::mc::Laos													"Laosz"
+::country::mc::Latvia												"Lettország"
+::country::mc::Libya													"Líbia"
 ::country::mc::Liberia												"Liberia"
 ::country::mc::Saint_Lucia											"Saint Lucia"
 ::country::mc::Lesotho												"Lesotho"
-::country::mc::Lebanon												"Lebanon"
+::country::mc::Lebanon												"Libanon"
 ::country::mc::Liechtenstein										"Liechtenstein"
-::country::mc::Lithuania											"Lithuania"
-::country::mc::Luxembourg											"Luxembourg"
+::country::mc::Lithuania											"Litvánia"
+::country::mc::Luxembourg											"Luxemburg"
 ::country::mc::Macao													"Macao"
-::country::mc::Madagascar											"Madagascar"
-::country::mc::Morocco												"Morocco"
-::country::mc::Malaysia												"Malaysia"
+::country::mc::Madagascar											"Madagaszkár"
+::country::mc::Morocco												"Marokkó"
+::country::mc::Malaysia												"Malajzia"
 ::country::mc::Malawi												"Malawi"
 ::country::mc::Moldova												"Moldova"
-::country::mc::Maldives												"Maldives"
-::country::mc::Mexico												"Mexico"
-::country::mc::Mongolia												"Mongolia"
+::country::mc::Maldives												"Maldíve Szigetek"
+::country::mc::Mexico												"Mexikó"
+::country::mc::Mongolia												"Mongólia"
 ::country::mc::Marshall_Islands									"Marshall Islands"
-::country::mc::Macedonia											"Macedonia"
+::country::mc::Macedonia											"Macedónia"
 ::country::mc::Mali													"Mali"
-::country::mc::Malta													"Malta"
-::country::mc::Montenegro											"Montenegro"
+::country::mc::Malta													"Málta"
+::country::mc::Montenegro											"Montenegró"
 ::country::mc::Northern_Mariana_Islands						"Northern Mariana Islands"
-::country::mc::Monaco												"Monaco"
-::country::mc::Mozambique											"Mozambique"
+::country::mc::Monaco												"Monakó"
+::country::mc::Mozambique											"Mozambik"
 ::country::mc::Mauritius											"Mauritius"
 ::country::mc::Montserrat											"Montserrat"
 ::country::mc::Mauritania											"Mauritania"
@@ -2027,10 +2027,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"One month forward (Shift-Right)"
-::calendar::mc::OneMonthBackward	"One month backward (Shift-Left)"
-::calendar::mc::OneYearForward	"One year forward (Ctrl-Right)"
-::calendar::mc::OneYearBackward	"One year backward (Ctrl-Left)"
+::calendar::mc::OneMonthForward	"Egy hónappal előre (Shift-Right)"
+::calendar::mc::OneMonthBackward	"Egy hónappal vissza (Shift-Left)"
+::calendar::mc::OneYearForward	"Egy évvel előre (Ctrl-Right)"
+::calendar::mc::OneYearBackward	"Egy évvel vissza (Ctrl-Left)"
 
 ::calendar::mc::Su	"Su"
 ::calendar::mc::Mo	"Mo"
@@ -2040,39 +2040,39 @@
 ::calendar::mc::Fr	"Fr"
 ::calendar::mc::Sa	"Sa"
 
-::calendar::mc::Jan	"Jan"
-::calendar::mc::Feb	"Feb"
-::calendar::mc::Mar	"Mar"
-::calendar::mc::Apr	"Apr"
-::calendar::mc::May	"May"
-::calendar::mc::Jun	"Jun"
-::calendar::mc::Jul	"Jul"
-::calendar::mc::Aug	"Aug"
-::calendar::mc::Sep	"Sep"
-::calendar::mc::Oct	"Oct"
-::calendar::mc::Nov	"Nov"
-::calendar::mc::Dec	"Dec"
+::calendar::mc::Jan	"jan"
+::calendar::mc::Feb	"feb"
+::calendar::mc::Mar	"már"
+::calendar::mc::Apr	"ápr"
+::calendar::mc::May	"máj"
+::calendar::mc::Jun	"jún"
+::calendar::mc::Jul	"júl"
+::calendar::mc::Aug	"aug"
+::calendar::mc::Sep	"szept"
+::calendar::mc::Oct	"okt"
+::calendar::mc::Nov	"nov"
+::calendar::mc::Dec	"dec"
 
-::calendar::mc::MonthName(1)		"January"
-::calendar::mc::MonthName(2)		"February"
-::calendar::mc::MonthName(3)		"March"
-::calendar::mc::MonthName(4)		"April"
-::calendar::mc::MonthName(5)		"May"
-::calendar::mc::MonthName(6)		"June"
-::calendar::mc::MonthName(7)		"July"
-::calendar::mc::MonthName(8)		"August"
-::calendar::mc::MonthName(9)		"September"
-::calendar::mc::MonthName(10)		"October"
+::calendar::mc::MonthName(1)		"Január"
+::calendar::mc::MonthName(2)		"Február"
+::calendar::mc::MonthName(3)		"Március"
+::calendar::mc::MonthName(4)		"Április"
+::calendar::mc::MonthName(5)		"Május"
+::calendar::mc::MonthName(6)		"Június"
+::calendar::mc::MonthName(7)		"Július"
+::calendar::mc::MonthName(8)		"Augusztus"
+::calendar::mc::MonthName(9)		"Szeptember"
+::calendar::mc::MonthName(10)		"Október"
 ::calendar::mc::MonthName(11)		"November"
 ::calendar::mc::MonthName(12)		"December"
 
-::calendar::mc::WeekdayName(0)	"Sunday"
-::calendar::mc::WeekdayName(1)	"Monday"
-::calendar::mc::WeekdayName(2)	"Tuesday"
-::calendar::mc::WeekdayName(3)	"Wednesday"
-::calendar::mc::WeekdayName(4)	"Thursday"
-::calendar::mc::WeekdayName(5)	"Friday"
-::calendar::mc::WeekdayName(6)	"Saturday"
+::calendar::mc::WeekdayName(0)	"Vasárnap"
+::calendar::mc::WeekdayName(1)	"Hétfő"
+::calendar::mc::WeekdayName(2)	"Kedd"
+::calendar::mc::WeekdayName(3)	"Szerda"
+::calendar::mc::WeekdayName(4)	"Csütörtök"
+::calendar::mc::WeekdayName(5)	"Péntek"
+::calendar::mc::WeekdayName(6)	"Szombat"
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Opening of database \"%s\" is postponed until current operation will be finished."
