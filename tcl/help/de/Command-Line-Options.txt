@@ -113,7 +113,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
     <td class="standard">
       Das Programm starten ohne Wiederherstellungsdateien, die ungespeicherte
       Partien enthalten, aus der letzten Sitzung zu laden. Diese Dateien werden
-      nicht physikalisch gelöscht,mit der Option
+      nicht physikalisch gelöscht, mit der Option
       <nobr><code>--recover-old</code></nobr> können sie wiederbenutzt werden.
     </td>
   </tr>

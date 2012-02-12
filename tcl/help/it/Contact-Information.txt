@@ -122,7 +122,7 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
   </p></li>
 
   <li><p>
-    <a href="http://en.wikipedia.org/wiki/ECO_code"
+    <a href="http://www.webalice.it/costa.f/eco/eco.html"
        style="line-height: 150%;">
     ECO-Code</a><br/>
     Una panoramica sul codice ECO.

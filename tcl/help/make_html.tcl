@@ -115,23 +115,25 @@ proc readTranslationFile {file nagFile encoding} {
 
 	close $f
 
-	set f [open $nagFile r]
-	chan configure $f -encoding $encoding
+	if {[file readable $nagFile]} {
+		set f [open $nagFile r]
+		chan configure $f -encoding $encoding
 
-	namespace eval ::annotation {}
-	namespace eval ::annotation::mc {}
+		namespace eval ::annotation {}
+		namespace eval ::annotation::mc {}
 
-	while {[gets $f line] >= 0} {
-		if {[string length $line] > 0 && [string index $line 0] ne "#"} {
-			set var [lindex $line 0]
-			set value [string map {& {} "..." {}} [lindex $line 1]]
-			set ns [join [lrange [split $var ::] 1 end-2] ::]
-			if {[llength $ns]} { namespace eval $ns {} }
-			set ::annotation::mc::Nag($var) $value
+		while {[gets $f line] >= 0} {
+			if {[string length $line] > 0 && [string index $line 0] ne "#"} {
+				set var [lindex $line 0]
+				set value [string map {& {} "..." {}} [lindex $line 1]]
+				set ns [join [lrange [split $var ::] 1 end-2] ::]
+				if {[llength $ns]} { namespace eval $ns {} }
+				set ::annotation::mc::Nag($var) $value
+			}
 		}
-	}
 
-	close $f
+		close $f
+	}
 }
 
 
@@ -258,10 +260,10 @@ if {![file readable $transFile]} {
 	puts stderr "Error([info script]): Cannot open file \"$transFile\"."
 	exit 1
 }
-if {![file readable $nagFile]} {
-	puts stderr "Error([info script]): Cannot open file \"$nagFile\"."
-	exit 1
-}
+#if {![file readable $nagFile]} {
+#	puts stderr "Error([info script]): Cannot open file \"$nagFile\"."
+#	exit 1
+#}
 
 readTranslationFile $transFile $nagFile $charsetName
 

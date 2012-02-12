@@ -1,0 +1,59 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE What's new?
+
+<dir>
+  <li><p>Game history</p></li>
+  <li><p>Help dialog (with a few help pages)</p></li>
+  <li><p>New file selection box with extraneous functions:</p></li>
+    <ul type="circle">
+      <li>Delete database</li>
+      <li>Rename database</li>
+      <li>Duplicate database</li>
+      <li>Create new folder</li>
+      <li>Selection of database encoding</li>
+    </ul>
+  <li><p>Automatic detection of database encoding</p></li>
+  <li><p>Enhanced Scidb database format; now it exists a new comment type: move information. This provides a compact storage and a facilitated input (the latter will be done in a future version).</p></li>
+  <li><p>Automatic upgrade to the new database format</p></li>
+  <li><p>Revised export dialog</p></li>
+  <li><p>Undo/redo in comment editor</p></li>
+  <li><p>Improved behaviour of the HTML window</p></li>
+    <ul type="circle">
+      <li>Double buffering for flicker-free display</li>
+      <li>Automatic hyphenation</li>
+    </ul>
+  <li><p>Accelerated popup of the game save dialog</p></li>
+  <li><p>Improved tournament table:</p></li>
+    <ul type="circle">
+      <li>Additional scoring system "Bilbao" (three points for a win)</li>
+      <li>Additional tie-breaks</li>
+    </ul>
+  <li><p>The export to .si3/.si4 now offers a selection of the <acronym>PGN</acronym>-Tags (a restriction of the tags is accelerating the position tree)</p></li>
+  <li><p>Selection dialog of database symbols is revised</p></li>
+  <li><p>New feature in game editor: copy/move comments between different languages</p></li>
+  <li><p>Drop-down shadows (experimental)</p></li>
+  <li><p>Partial translation into Hungarian; the translation is still in progress</p></li>
+  <li><p>Ths Spanish translation is taken out temporary due to incompleteness. Volunteers for the translation: please look at <a href="Contact-Information.html">Contact information</a></p></li>
+  <li><p><acronym>UNIX</acronym> man pages</p></li>
+</dir>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

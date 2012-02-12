@@ -1111,7 +1111,13 @@ proc BuildHtmlFrame {dlg w} {
 	lappend monoFamilies Monospace Fixed
 
 	# Find appropriate text fonts
-	set defaultTextFamilies {Arial {Bitstream Vera Sans} TkTextFont {DejaVu Sans} Verdana}
+	set defaultTextFamilies {	Arial
+										{Bitstream Vera Sans}
+										TkTextFont
+										{DejaVu Sans}
+										Verdana
+										{Lucida Grande}
+										Lucida}
 	set textFamilies {}
 	foreach fam $defaultTextFamilies {
 		array set attrs [font actual [list $fam]]
@@ -1477,7 +1483,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 		append content "
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
-			<p>[format $mc::CantFindFile [list <b>$file</b>]]</p><br>
+			<p>[format $mc::CantFindFile [list <ragged><b>$file</b></ragged>]]</p><br>
 			<p><div style='background:yellow; border:1px solid black;'>
 			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
 			</div></p>
@@ -1493,11 +1499,8 @@ proc Parse {file wantedFile moveto {match {}}} {
 			}
 			append content "</dl></blockquote></div>"
 		}
-		if {[GetGoBackIndex] >= 0} {
-			append content "
-				<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>"
-		}
 		append content "
+			<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>
 			</body></html>"
 		set match {}
 		set rc 0
