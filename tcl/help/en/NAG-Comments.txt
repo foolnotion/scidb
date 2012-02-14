@@ -20,13 +20,13 @@ INDEX NAG annotation values
 TITLE NAG annotation values
 
 <annotation>
-NAG = Numeric Annotation Glyph
+<acronym>NAG</acronym> = Numeric Annotation Glyph
 </annotation>
 
 <p>
 The <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
 PGN-Standard</a>
-defines the following NAG values:
+defines the following <acronym>NAG</acronym> values:
 </p>
 
 <box>
@@ -46,7 +46,7 @@ defines the following NAG values:
 </box>
 
 <p>
-Other proposed NAG values are:
+Other proposed <acronym>NAG</acronym> values are:
 </p>
 
 <box>
@@ -66,7 +66,7 @@ Other proposed NAG values are:
 </box>
 
 <p>
-Scidb is defining some more NAG values:
+Scidb is defining some more <acronym>NAG</acronym> values:
 </p>
 
 <box>
@@ -78,7 +78,7 @@ Scidb is defining some more NAG values:
 </box>
 
 <p>
-For the support of commentaries in ChessBase files some more NAG
+For the support of commentaries in ChessBase files some more <acronym>NAG</acronym>
 values are required:
 </p>
 
@@ -89,7 +89,7 @@ values are required:
 </box>
 
 <p>
-Scid and ChessPad define further NAG values (&gt; 190). But these values
+Scid and ChessPad define further <acronym>NAG</acronym> values (&gt; 190). But these values
 will be automatically mapped to Scidb specific values during import
 and database conversion.
 </p>

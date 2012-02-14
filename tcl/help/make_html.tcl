@@ -68,6 +68,9 @@ set HtmlMapping {
 	<note>			{<p><img src="../images/note.png"/> }
 	</note>			{</p>}
 
+	<nobr>			{<span style="white-space:nowrap;">}
+	</nobr>			{</span>}
+
 	<box>				{<div class="box">}
 	</box>			{</div>}
 

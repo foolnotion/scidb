@@ -54,7 +54,7 @@
 # include <windows.h>
 #endif
 
-#if defined(HAVE_XFT)
+#if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)
 # include <fontconfig/fontconfig.h>
 #endif
 
@@ -2070,7 +2070,8 @@ HtmlComputedValuesSet(p, eProp, pProp)
     return 1;
 }
 
-#ifdef WIN32
+#ifdef USE_LATIN_LIGATURES
+# ifdef WIN32
 
 void
 MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
@@ -2138,13 +2139,13 @@ MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
     }
 }
 
-#endif
+# endif
 
-#ifdef __MacOSX__
-# error "MeasureLatinLigatures() not yet implemented"
-#endif
+# ifdef __MacOSX__
+#  error "MeasureLatinLigatures() not yet implemented"
+# endif
 
-#ifdef __unix__
+# ifdef __unix__
 
 void
 MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
@@ -2154,7 +2155,7 @@ MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
     int isBold;
     int isItalic;
 {
-#ifdef HAVE_XFT
+#  ifdef HAVE_XFT
 
     FcPattern* pattern;
 
@@ -2193,11 +2194,11 @@ MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
 
     FcPatternDestroy(pattern);
 
-#endif
+#  endif // HAVE_XFT
 }
 
-#endif
-
+# endif // __unix__
+#endif  // USE_LATIN_LIGATURES
 /*
  *---------------------------------------------------------------------------
  *
@@ -2234,7 +2235,6 @@ allocateNewFont(clientData)
 
     char zTkFontName[256];      /* Tk font name */
     HtmlFont *pFont;
-    int ii;
 
     /* Local variable iFontSize is in points - not thousandths */
     int iFontSize;
@@ -2290,11 +2290,14 @@ allocateNewFont(clientData)
     pFont->space_pixels = Tk_TextWidth(tkfont, " ", 1);
     pFont->hyphen_pixels = Tk_TextWidth(tkfont, "-", 1);
 
+#if defined(USE_LATIN_LIGATURES)
     /* NOTE: Tk cannot provide information about the existence of specific glyphs. */
     pFont->has_ligatures = 0;
     memset(pFont->ligature, 0, sizeof(pFont->ligature));
 
     if (pTree->options.latinligatures) {
+        int ii;
+
         MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic);
 
         for (ii = 0; ii < 7; ++ii) {
@@ -2303,6 +2306,7 @@ allocateNewFont(clientData)
             }
         }
     }
+#endif
 
     /* Set the number of pixels to be used for 1 "em" unit for this font.
      * Setting the em-pixels to the ascent + the descent worked Ok for

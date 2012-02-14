@@ -1595,7 +1595,7 @@
 
 ::fsbox::mc::SelectEncoding				"Selezionare la codifica del database (apre un'interfaccia)"
 ::fsbox::mc::SelectWhichType				"Selezione che tipo di file visualizzare"
-::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
+::fsbox::mc::TimeFormat						"%d/%m/%Y %H:%M"
 
 ::fsbox::mc::CannotChangeDir				"Non posso cambiare la cartella a '%s'.\nPermesso negato."
 ::fsbox::mc::DirectoryRemoved				"Non posso passare alla cartella '%s'.\nLa cartella è rimossa."

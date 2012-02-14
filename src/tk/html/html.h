@@ -80,7 +80,7 @@
 struct TkRegion_;
 #endif
 
-#ifdef HAVE_XFT
+#if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)
 struct _FcConfig;
 #endif
 
@@ -687,7 +687,7 @@ struct HtmlTree {
     struct TkRegion_ *bufferRegion;
 #endif
 
-#ifdef HAVE_XFT
+#if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)
     struct _FcConfig *fc_config;
 #endif
 
@@ -1010,8 +1010,9 @@ const char *HtmlTextIterData(HtmlTextIter *);
 /* Values returned by HtmlTextTokenType */
 #define HTML_TEXT_TOKEN_TEXT          1
 #define HTML_TEXT_TOKEN_SPACE         2
-#define HTML_TEXT_TOKEN_NEWLINE       3
-#define HTML_TEXT_TOKEN_HARDNEWLINE   4
+#define HTML_TEXT_TOKEN_ZERO_SPACE    3
+#define HTML_TEXT_TOKEN_NEWLINE       4
+#define HTML_TEXT_TOKEN_HARDNEWLINE   5
 
 /* These values are used internally by the htmltext.c module. They
  * should never be returned by HtmlTextTokenType(). But define them
@@ -1019,7 +1020,7 @@ const char *HtmlTextIterData(HtmlTextIter *);
  * HTML_TEXT_* values defined above.
  */
 #define HTML_TEXT_TOKEN_END       0
-#define HTML_TEXT_TOKEN_LONGTEXT  5
+#define HTML_TEXT_TOKEN_LONGTEXT  6
 
 /*
  * The following symbols are used for the built-in instrumentation

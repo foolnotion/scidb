@@ -27,7 +27,7 @@ Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 </p>
 
 <p>
-Mit der mittleren Maustaste (i.d.R. das Mausrad) wird eine Informationsbox
+Mit der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine Informationsbox
 angezeigt.
 </p>
 
@@ -51,8 +51,9 @@ in andere Datenbankformate oder in ein Dokumentenformat.
 <p>
 <menuitem>%::menu::mc::FileImport%</menuitem>
 Öffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
-importierenden PGN-Dateien auszuwählen. Es können mehrere PGN-Dateien gleichzeitig
-gewählt werden. Die Partien werden an die bestehende Datenbank angehängt.
+importierenden <abbr>PGN</abbr>-Dateien auszuwählen. Es können mehrere
+<abbr>PGN</abbr>-Dateien gleichzeitig gewählt werden. Die Partien werden an die
+bestehende Datenbank angehängt.
 </p>
 
 <p>
@@ -77,16 +78,18 @@ Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
 <p>
 <menuitem>%::application::database::mc::ReadOnly%</menuitem>
 Diese Datanbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
-Dies ist nur für Scidb- und Scid-Datenbanken (.sci, .si4, .si3) möglich.
-<note/>PGN-Dateien und ChessBase-Datenbanken sind immer schreibgeschützt.
-<note/>Die <a href="Clipbase.html">Ablage-Datenbank</a> kann nicht schreibgeschützt
-werden.
+Dies ist nur für Scidb- und Scid-Datenbanken
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) möglich.
+<note/><abbr>PGN</abbr>-Dateien und ChessBase-Datenbanken
+sind immer schreibgeschützt. <note/>Die <a href="Clipbase.html">Ablage-Datenbank</a> kann
+nicht schreibgeschützt werden.
 </p>
 
 <p>
 <menuitem>%::menu::mc::FileNew%</menuitem>
-Eine neue Datenbank anlegen. Es können nur Scidb- und Scid-Datenbanken
-(.sci, .si4, .si3) neu angelegt werden.
+Eine neue Datenbank anlegen. Es können nur Scidb- und
+Scid-Datenbanken (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
+neu angelegt werden.
 </p>
 
 <p>

@@ -28,7 +28,7 @@ There exists four possibilites to set the default browser:
     The value of the environment variable <code>BROWSER</code> wil be used
     at program start. Example:<br/>
     <box>
-      <p><code>export BROWSER=/usr/bin/firefox</code><br/></p>
+      <p><code>export BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox</code><br/></p>
     </box>
   </p></li>
 
@@ -42,7 +42,7 @@ There exists four possibilites to set the default browser:
   </p></li>
 
   <li><p>
-    Scidb looks for an entry like <code>"X11BROWSER=/usr/bin/firefox"</code>
+    Scidb looks for an entry like <code>"X11BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox"</code>
     in file <code>"~/.htmlviewrc"</code>.
   </p></li>
 

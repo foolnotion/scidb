@@ -1594,7 +1594,7 @@
 
 ::fsbox::mc::SelectEncoding				"Adatbázis kódolásának kiválasztása"
 ::fsbox::mc::SelectWhichType				"Megjelenítendő fájltípusok kiválasztása"
-::fsbox::mc::TimeFormat						"%y/%m/%d %I:%M %p"
+::fsbox::mc::TimeFormat						"%Y.%m.%d %H:%M"
 
 ::fsbox::mc::CannotChangeDir				"Cannot change to the directory \"%s\".\nHozzáférés megtagadva."
 ::fsbox::mc::DirectoryRemoved				"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."

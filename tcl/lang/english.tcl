@@ -1594,7 +1594,7 @@
 
 ::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)"
 ::fsbox::mc::SelectWhichType				"Select which type of file are shown"
-::fsbox::mc::TimeFormat						"%d/%m/%y %I:%M %p"
+::fsbox::mc::TimeFormat						"%d/%m/%Y %I:%M %p"
 
 ::fsbox::mc::CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
 ::fsbox::mc::DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."

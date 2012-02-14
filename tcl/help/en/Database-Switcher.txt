@@ -51,8 +51,8 @@ into other database formats or document formats.
 <p>
 <menuitem>%::menu::mc::FileImport%</menuitem>
 Opens the <a href="File-Selection-Dialog.html">file selection dialog</a> for
-the selection of PGN files for import. It is possible  to select multiple
-PGN files simultaneously. The games will be appended at the end of the database.
+the selection of <abbr>PGN</abbr> files for import. It is possible  to select multiple
+<abbr>PGN</abbr> files simultaneously. The games will be appended at the end of the database.
 </p>
 
 <p>
@@ -77,14 +77,16 @@ Create or change the description for this database.
 <p>
 <menuitem>%::application::database::mc::ReadOnly%</menuitem>
 Set this database read-only or writeable.
-This is possibly only for Scidb and Scid databases (.sci, .si4, .si3).
-<note/>PGN files and ChessBase databases are always read-only.
+This is possibly only for Scidb and Scid databases
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+<note/><abbr>PGN</abbr> files and ChessBase databases are always read-only.
 <note/>The <a href="Clipbase.html">Clipbase</a> cannot be set read-only.
 </p>
 
 <p>
 <menuitem>%::menu::mc::FileNew%</menuitem>
-Create a new database. Only Scidb and Scid databases (.sci, .si4, .si3)
+Create a new database. Only Scidb and Scid databases
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 can be created.
 </p>
 

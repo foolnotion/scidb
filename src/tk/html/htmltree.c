@@ -368,6 +368,9 @@ nodeGetPreText(pTextNode)
                 Tcl_AppendToObj(pRet, zData, nData);
                 break;
 
+            /*case HTML_TEXT_TOKEN_ZERO_SPACE:
+                break;*/
+
             case HTML_TEXT_TOKEN_NEWLINE:
                 zWhite = "\n";
             case HTML_TEXT_TOKEN_SPACE: {
@@ -2311,6 +2314,10 @@ nodeTextCommand(interp, pNode, objc, objv)
                         zType = "space";
                         pObj = Tcl_NewIntObj(nData);
                         break;
+                    case HTML_TEXT_TOKEN_ZERO_SPACE:
+                        zType = "zerospace";
+                        pObj = Tcl_NewIntObj(nData);
+                        break;
                     case HTML_TEXT_TOKEN_NEWLINE:
                         zType = "newline";
                         pObj = Tcl_NewIntObj(nData);
@@ -3394,3 +3401,4 @@ HtmlSequenceNodes(pTree)
     }
 }
 
+/* vi:set ts=4 sw=4 et: */

@@ -40,21 +40,21 @@ There exists four possibilites to set the default browser:
     The value of the environment variable <code>BROWSER</code> wil be used
     at program start. Example:<br/>
     <div class="box">
-      <p><code>export BROWSER=/usr/bin/firefox</code><br/></p>
+      <p><code>export BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox</code><br/></p>
     </div>
   </p></li>
 
   <li><p>
-    The link <nobr><code>"x-www-browser"</code></nobr> will be used.
+    The link <span style="white-space:nowrap;"><code>"x-www-browser"</code></span> will be used.
     Under Ubuntu/Debian this link can be updated to the default browser
     with:
     <div class="box">
-      <p><code>sudo update-alternatives <nobr>--config</nobr> <nobr>x-www-browser</nobr></code></p>
+      <p><code>sudo update-alternatives <span style="white-space:nowrap;">--config</span> <span style="white-space:nowrap;">x-www-browser</span></code></p>
     </div>
   </p></li>
 
   <li><p>
-    Scidb looks for an entry like <code>"X11BROWSER=/usr/bin/firefox"</code>
+    Scidb looks for an entry like <code>"X11BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox"</code>
     in file <code>"~/.htmlviewrc"</code>.
   </p></li>
 

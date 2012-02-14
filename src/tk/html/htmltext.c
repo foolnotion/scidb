@@ -46,10 +46,10 @@
 #define ISNEWLINE(x) ((x) == '\n' || (x) == '\r')
 #define ISTAB(x) ((x) == '\t')
 #define ISSPACE(x) isspace((unsigned char)(x))
-#define ISHARDHYPHEN(x) ((x) == 0x200B)
+#define ISZEROWIDTHSPACE(x) ((x) == 0x200B)
 #define ISSOFTHYPHEN(x) ((x) == 0x00AD)
 #define ISHYPHEN(x) ((x) == '-')
-#define ISZEROWIDTHSPACE(x) ((x) == 0x200D)
+#define ISZEROWIDTHJOINER(x) ((x) == 0x200D)
 
 #define BUFSIZE 2048
 
@@ -1353,6 +1353,10 @@ initHtmlText_TextNode(pTree, pTextNode, pInit)
                 }
                 break;
 
+            case HTML_TEXT_TOKEN_ZERO_SPACE:
+                /* nothing to do */
+                break;
+
             case HTML_TEXT_TOKEN_TEXT:
                 if (pInit->iIdx > 0 && pInit->eState == SEEN_SPACE) {
                     Tcl_AppendToObj(pInit->pText->pObj, " ", 1);
@@ -1859,16 +1863,12 @@ tokenLength(zToken, zEnd)
     const unsigned char *zNext = zCsr;
 
     iChar = utf8Read(zCsr, zEnd, &zNext);
-    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar)) {
-        if (ISHARDHYPHEN(iChar)) {
-            return zNext - zToken;
-        } else {
-            Tcl_UniChar prevChar = iChar;
-            zCsr = zNext;
-            iChar = utf8Read(zCsr, zEnd, &zNext);
-            if (ISHYPHEN(prevChar) && Tcl_UniCharIsAlpha(iChar))
-                return zCsr - zToken;
-        }
+    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar) && !ISZEROWIDTHSPACE(iChar)) {
+        Tcl_UniChar prevChar = iChar;
+        zCsr = zNext;
+        iChar = utf8Read(zCsr, zEnd, &zNext);
+        if (ISHYPHEN(prevChar) && Tcl_UniCharIsAlpha(iChar))
+            return zCsr - zToken;
     }
 
     return ((zCsr == zToken) ? zNext : zCsr) - zToken;
@@ -1913,7 +1913,24 @@ copyText(dst, src, len)
  *---------------------------------------------------------------------------
  */
 static void
-setupToken(HtmlTextToken* pToken, unsigned char n, unsigned char hyphen)
+setupToken(HtmlTextToken* pToken, unsigned char type, unsigned char n)
+{
+    pToken->eType = type;
+    pToken->n = n;
+    pToken->iHyphen = 0;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
+ * setupTextToken --
+ *
+ *     Set text token arguments.
+ *
+ *---------------------------------------------------------------------------
+ */
+static void
+setupTextToken(HtmlTextToken* pToken, unsigned char n, unsigned char hyphen)
 {
     pToken->eType = HTML_TEXT_TOKEN_TEXT;
     pToken->n = n;
@@ -1923,14 +1940,14 @@ setupToken(HtmlTextToken* pToken, unsigned char n, unsigned char hyphen)
 /*
  *---------------------------------------------------------------------------
  *
- * setupTokenLong --
+ * setupTokenTextLong --
  *
  *     Set text token arguments.
  *
  *---------------------------------------------------------------------------
  */
 static void
-setupTokenLong(HtmlTextToken* pToken, unsigned char n)
+setupTokenTextLong(HtmlTextToken* pToken, unsigned char n)
 {
     pToken->eType = HTML_TEXT_TOKEN_LONGTEXT;
     pToken->n = n;
@@ -2026,8 +2043,7 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
 
             assert(nSpace <= 255);
             if (pText) {
-                pText->aToken[nToken].n = nSpace;
-                pText->aToken[nToken].eType = eType;
+                setupToken(&pText->aToken[nToken], eType, nSpace);
             }
             nToken++;
 
@@ -2042,6 +2058,13 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
                 nText++;
                 isPrevTokenText = 0;
             }
+        } else if (c == 0xe2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0x8B) {
+            /* ZERO WIDTH SPACE */
+            if (pText) {
+                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_ZERO_SPACE, 0);
+            }
+            nToken++;
+            zCsr += 3;
         } else {
 
             /* This block sets nThisText to the number of bytes (not
@@ -2058,9 +2081,9 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
             if (nThisText > 255) {
                 if (pText) {
                     nThisText = copyText(&pText->zText[nText], zStart, nThisText);
-                    setupTokenLong(&pText->aToken[nToken], (nThisText >> 16) & 0x000000FF);
-                    setupTokenLong(&pText->aToken[nToken + 1], (nThisText >> 8) & 0x000000FF);
-                    setupTokenLong(&pText->aToken[nToken + 2], nThisText & 0x000000FF);
+                    setupTokenTextLong(&pText->aToken[nToken], (nThisText >> 16) & 0x000000FF);
+                    setupTokenTextLong(&pText->aToken[nToken + 1], (nThisText >> 8) & 0x000000FF);
+                    setupTokenTextLong(&pText->aToken[nToken + 2], nThisText & 0x000000FF);
                 }
                 nToken += 3;
             } else {
@@ -2078,7 +2101,7 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
                             int n = zCurr - zLast;
                             if (pText) {
                                 memcpy(&pText->zText[nText + nThisText], zLast, n);
-                                setupToken(&pText->aToken[nToken], n, 1);
+                                setupTextToken(&pText->aToken[nToken], n, 1);
                             }
                             nThisText += n;
                             nToken++;
@@ -2092,7 +2115,7 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
                     int n = zCurr - zLast;
                     if (pText) {
                         memcpy(&pText->zText[nText + nThisText], zLast, n);
-                        setupToken(&pText->aToken[nToken], n, 0);
+                        setupTextToken(&pText->aToken[nToken], n, 0);
                     }
                     nThisText += n;
                     nToken++;
@@ -2109,7 +2132,7 @@ populateTextNode(pTree, n, z, pText, pnToken, pnText)
 
     /* Add the terminator token */
     if (pText) {
-        pText->aToken[nToken].eType = HTML_TEXT_TOKEN_END;
+        setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_END, 0);
     }
     nToken++;
 
@@ -2293,7 +2316,9 @@ HtmlTextIterNext(pTextIter)
     }
 
     if ((eType == HTML_TEXT_TOKEN_TEXT || eType == HTML_TEXT_TOKEN_LONGTEXT) &&
-        (eNext != HTML_TEXT_TOKEN_TEXT && eNext != HTML_TEXT_TOKEN_LONGTEXT)
+        (   eNext != HTML_TEXT_TOKEN_TEXT
+        && eNext != HTML_TEXT_TOKEN_LONGTEXT
+        && eNext != HTML_TEXT_TOKEN_ZERO_SPACE)
     ) {
         pTextIter->iText++;
     }
@@ -2336,6 +2361,7 @@ HtmlTextIterHyphen(pTextIter)
     return pTextIter->pTextNode->aToken[pTextIter->iToken].iHyphen;
 }
 
+#if defined(USE_LATIN_LIGATURES)
 
 static char const*
 findZeroWidthSpace(const char* zText, const char* zEnd)
@@ -2456,6 +2482,8 @@ buildLigatures(tree, font, zText, numBytes, buffer)
     return buffer;
 }
 
+#endif
+
 /*
  *---------------------------------------------------------------------------
  *
@@ -2473,10 +2501,14 @@ HtmlTextWidth(tree, font, string, numBytes)
     const char* string;
     int numBytes;
 {
+#if defined(USE_LATIN_LIGATURES)
     unsigned char buffer[BUFSIZE];
     const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     return Tk_TextWidth(font->tkfont, pBuf, numBytes);
+#else
+    return Tk_TextWidth(font->tkfont, string, numBytes);
+#endif
 }
 
 /*
@@ -2498,10 +2530,14 @@ HtmlMeasureChars(tree, font, string, numBytes, maxPixels)
     int maxPixels;
 {
     int dummy;
+#if defined(USE_LATIN_LIGATURES)
     char buffer[BUFSIZE];
     const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     return Tk_MeasureChars(font->tkfont, pBuf, numBytes, maxPixels, 0, &dummy);
+#else
+    return Tk_MeasureChars(font->tkfont, string, numBytes, maxPixels, 0, &dummy);
+#endif
 }
 
 /*
@@ -2527,6 +2563,9 @@ HtmlDrawChars(tree, drawable, gc, font, string, numBytes, x, y, appendHyphen)
     int appendHyphen;
 {
     char buffer[BUFSIZE];
+
+#if defined(USE_LATIN_LIGATURES)
+
     const char* pBuf = buildLigatures(tree, font, string, &numBytes, buffer);
 
     if (appendHyphen && numBytes < BUFSIZE) {
@@ -2538,6 +2577,20 @@ HtmlDrawChars(tree, drawable, gc, font, string, numBytes, x, y, appendHyphen)
     }
 
     Tk_DrawChars(Tk_Display(tree->tkwin), drawable, gc, font->tkfont, pBuf, numBytes, x, y);
+
+#else
+
+    const char* pBuf = string;
+
+    if (appendHyphen && numBytes < BUFSIZE) {
+        memcpy(buffer, string, numBytes);
+        pBuf = buffer;
+        ((char*)pBuf)[numBytes++] = '-';
+    }
+
+    Tk_DrawChars(Tk_Display(tree->tkwin), drawable, gc, font->tkfont, pBuf, numBytes, x, y);
+
+#endif
 }
 
 /* vi: set ts=4 sw=4 et: */

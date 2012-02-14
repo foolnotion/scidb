@@ -79,8 +79,10 @@ struct HtmlFont {
     int hyphen_pixels;     /* Pixels per hyphen ('-') in this font */
     Tk_FontMetrics metrics;
 
+#if defined(USE_LATIN_LIGATURES)
     char has_ligatures;
     unsigned char ligature[7]; /* Ligature table 0xFB00-0xFB06 */
+#endif
 
     HtmlFont *pNext;       /* Next entry in the Html.FontCache LRU list */
 };

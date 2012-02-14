@@ -131,15 +131,15 @@ Scidb users may find the following websites interesting:
        style="line-height: 150%;">
     The Week in Chess</a><br/>
     An excellent weekly bulletin of international chess games in available
-    in PGN format. 
+    in <abbr>PGN</abbr> format. 
   </p></li>
 
   <li><p>
     <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm"
        style="line-height: 150%;">
     Standard: Portable Game Notation Specification and Implementation Guide</a><br/>
-    The PGN Standard, created by Steven J. Edwards in 1994. This website
-    explains the PGN and EPD formats in detail.
+    The <abbr>PGN</abbr> Standard, created by Steven J. Edwards in 1994. This website
+    explains the <abbr>PGN</abbr> and <abbr>EPD</abbr> formats in detail.
   </p></li>
 
   <li><p>

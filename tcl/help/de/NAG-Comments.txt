@@ -17,16 +17,16 @@
 *********************************************************************** -->
 
 INDEX NAG-Kommentarwerte
-TITLE NAG-Kommentarwerte
+TITLE <acronym>NAG</acronym>-Kommentarwerte
 
 <annotation>
-NAG = Numeric Annotation Glyph = "numerisches Anmerkungszeichen"
+<acronym>NAG</acronym> = Numeric Annotation Glyph = "numerisches Anmerkungszeichen"
 </annotation>
 
 <p>
 Im <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
 PGN-Standard</a>
-sind folgende NAG-Werte definiert:
+sind folgende <acronym>NAG</acronym>-Werte definiert:
 </p>
 
 <box>
@@ -46,7 +46,7 @@ sind folgende NAG-Werte definiert:
 </box>
 
 <p>
-Weitere vorgeschlagene NAG-Werte sind: 
+Weitere vorgeschlagene <acronym>NAG</acronym>-Werte sind: 
 </p>
 
 <box>
@@ -66,7 +66,7 @@ Weitere vorgeschlagene NAG-Werte sind:
 </box>
 
 <p>
-Scidb definiert einige weitere NAG-Werte:
+Scidb definiert einige weitere <acronym>NAG</acronym>-Werte:
 </p>
 
 <box>
@@ -79,7 +79,7 @@ Scidb definiert einige weitere NAG-Werte:
 
 <p>
 Um Kommentare in Partien aus ChessBase-Dateien zu unterstützen sind noch
-weitere NAG-Werte vonnöten:
+weitere <acronym>NAG</acronym>-Werte vonnöten:
 </p>
 
 <box>
@@ -89,9 +89,9 @@ weitere NAG-Werte vonnöten:
 </box>
 
 <p>
-Scid und ChessPad defnieren noch weitere NAG-Werte (&gt; 190). Diese werden
+Scid und ChessPad defnieren noch weitere <acronym>NAG</acronym>-Werte (&gt; 190). Diese werden
 jedoch beim Importieren bzw. Konvertieren automatisch auf die Scidb-spezifischen
-NAG-Werte abgebildet.
+<acronym>NAG</acronym>-Werte abgebildet.
 </p>
 
 END

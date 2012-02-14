@@ -2671,6 +2671,9 @@ updateRegions(pTree, pElem, drawable, dx, dy)
                             case HTML_TEXT_TOKEN_SPACE:
                                 buf[len++] = ' ';
                                 break;
+
+                            /*case HTML_TEXT_TOKEN_ZERO_SPACE:
+                                break;*/
                         }
                     }
                 }

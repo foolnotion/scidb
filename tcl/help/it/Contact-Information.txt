@@ -111,14 +111,14 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
     <a href="http://www.chess.co.uk/twic/"
        style="line-height: 150%;">
     The Week in Chess</a><br/>
-    L'eccellente bollettino settimanale di partite di scacchi a respiro internazionale avviabili in formato PGN.
+    L'eccellente bollettino settimanale di partite di scacchi a respiro internazionale avviabili in formato <abbr>PGN</abbr>.
   </p></li>
 
   <li><p>
     <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm"
        style="line-height: 150%;">
     Standard: Portable Game Notation Specification and Implementation Guide</a><br/>
-    Lo Standard PGN, creato da Steven J. Edwards in 1994. Questo sito spiega i formati PGN e EPD nel dettaglio.
+    Lo Standard <abbr>PGN</abbr>, creato da Steven J. Edwards in 1994. Questo sito spiega i formati <abbr>PGN</abbr> e EPD nel dettaglio.
   </p></li>
 
   <li><p>
