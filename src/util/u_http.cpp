@@ -67,10 +67,10 @@ get_errno()
 	return rc;
 }
 
-#ifdef h_errno
-# undef errno
-# undef h_errno
-#endif
+# ifdef h_errno
+#  undef errno
+#  undef h_errno
+# endif
 
 # define errno		get_errno()
 # define h_errno	get_errno()
@@ -88,9 +88,9 @@ static bool wsaDataInizialized = false;
 # include <sys/select.h>
 # include <netinet/in.h>
 
-#ifndef NO_DATA
-# define NO_DATA NO_ADDRESS
-#endif
+# ifndef NO_DATA
+#  define NO_DATA NO_ADDRESS
+# endif
 
 enum { SOCKET_ERROR = -1 };
 
@@ -258,7 +258,7 @@ Http::Socket::waitForInput(unsigned timeout)
 
 		struct timeval tv;
 		tv.tv_sec = timeout/1000;
-		tv.tv_usec = timeout % 1000;	// XXX ok?
+		tv.tv_usec = timeout % 1000;
 
 		rc = ::select(m_fd + 1, &rfds, 0, 0, &tv);
 	}

@@ -16,49 +16,41 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-TITLE Welcome to Scidb!
+CHARSET utf-8
+TITLE Üdvözöljük a Scidb-ben!
 
 <p>
-This is a preliminary version of Scidb for try-out and testing. The first
-full version will be released after a sufficiently long test period. Please
-consider while experimenting with Scidb:
+Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes verzió egy kellően hosszú tesztelési időszak után kerül kiadásra. Kérlek legyél tekintettel az alábbiakra, miközben a Scidb-vel ismerkedsz:
 </p>
 
 <ol>
   <li style="margin-top: 0.5em; ">
-    This version contains a lot of debugging information and is accordingly
-    slow in several places.
+    Ez a verzió sok, hibakereséshez használt információval dolgozik, ami lelassíthatja a működést.
   </li>
 
   <li style="margin-top: 0.5em; ">
-    The support of Scid databases (.si3/.si4) is performed by a quite complex
-    emulation which is not yet sufficiently tested.
+    A Scid adatbázisok (.si3/.si4) megnyitása egy összetett emulációs folyamat segítségével történik, ami még nincs teljeskörüen tesztelve.    
 	  <annotation>
-    Therefore please do not edit your original Scid databases with this program.
+    Mindezek miatt egyenlőre ne szerkeszd a már meglévő scid adatbázisaidat a programmal!
     </annotation>
-    Per default the Scid databases will be opened in read-only mode, which is
-    of course uncritical.
+    Scid adatbázisok megnyitása alapértelmezetten írásvédett módban történik, így a fentiek nem jelentenek veszélyt az adatbázisra.
   </li>
 
   <li style="margin-top: 0.5em; ">
-    The current Scidb format (.sci) will be finished at latest with the first
-    full version (i.e. it will reach version 1.0 later, the current version
-    is 0.92). Nevertheless the current format is already fully usable, and there
-    will be offered an upgrade capability.
+    Az aktuális Scidb formátum (.sci) legkésőbb az első teljes verzió megjelenésekor véglesedik (Ami az 1.0-ás verzió lesz. A jelenlegi verziószám 0.92). Mindazonáltal a jelenlegi formátum már teljes értékű és a későbbi változatások csupán új funkciók hozzáadására korlátozódnak.
   </li>
 
   <li style="margin-top: 0.5em; ">
-    The support of the ChessBase format (.cbh) is not yet finished. Currently
-    this application cannot open Chess 960 games.
+    A .cbh ChessBase formátum támogatása még nem teljes körű. A Fischer sakk (Sakk960) játszmák megnyitása még nem támogatott.
   </li>
 
   <li style="margin-top: 0.5em; ">
-    From time to time a newer test version will be released.
+    Időről időre újabb teszt verziók kerülnek kiadásra.
   </li>
 </ol>
 
 <p>
-Have a lot of fun with Scidb, whose development has already taken three years!
+Jó szórakozást kívánunk a Scidb használatához, melynek fejlesztése immáron három éve tart!
 </p>
 
 <h2>Links</h2>

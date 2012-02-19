@@ -36,6 +36,7 @@ TITLE Entwicklungsplanung
 
 <dir>
   <li>Dublettensuche</li>
+  <li>Laden von Datenbanken aus dem Internet</li>
   <li>Dokumentenerzeugung: PDF-Export und HTML-Export</li>
   <li>Dialog zur Rechtschreibkorrektur von Spielernamen</li>
   <li>Tip-des-Tages-Fenster</li>

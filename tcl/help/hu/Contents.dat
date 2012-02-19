@@ -1,6 +1,6 @@
 set Contents {
   {
-     {{{Overview} {Overview.html}}}
+     {{{Áttekintés} {Overview.html}}}
   }
   {
     {{{General help} {Overview.html} {general}}}
@@ -43,7 +43,7 @@ set Contents {
     {{{Contact information} {Contact-Information.html}}}
     {{{Development roadmap} {Development-Roadmap.html}}}
     {{{What's new?} {Whats-New.html}}}
-    {{{Welcome to Scidb!} {Welcome.html}}}
+    {{{Üdvözöljük a Scidb-ben!} {Welcome.html}}}
   }
 }
 

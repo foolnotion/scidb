@@ -16,6 +16,7 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
+CHARSET utf-8
 TITLE Welcome to Scidb-Help
 
 <h2 name="general">General help</h2>
@@ -66,7 +67,7 @@ TITLE Welcome to Scidb-Help
   <li><a href="Contact-Information.html">Contact information</a></li>
   <li><a href="Development-Roadmap.html">Development roadmap</a></li>
   <li><a href="Whats-New.html">What's new?</a></li>
-  <li><a href="Welcome.html">Welcome to Scidb!</a></li>
+  <li><a href="Welcome.html">Üdvözöljük a Scidb-ben!</a></li>
 </dir>
 
 END
