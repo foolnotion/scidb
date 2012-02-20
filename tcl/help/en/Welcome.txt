@@ -25,12 +25,12 @@ consider while experimenting with Scidb:
 </p>
 
 <ol>
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     This version contains a lot of debugging information and is accordingly
     slow in several places.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     The support of Scid databases (.si3/.si4) is performed by a quite complex
     emulation which is not yet sufficiently tested.
 	  <annotation>
@@ -40,19 +40,19 @@ consider while experimenting with Scidb:
     of course uncritical.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     The current Scidb format (.sci) will be finished at latest with the first
     full version (i.e. it will reach version 1.0 later, the current version
     is 0.92). Nevertheless the current format is already fully usable, and there
     will be offered an upgrade capability.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     The support of the ChessBase format (.cbh) is not yet finished. Currently
     this application cannot open Chess 960 games.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     From time to time a newer test version will be released.
   </li>
 </ol>

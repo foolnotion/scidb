@@ -16,7 +16,6 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-CHARSET utf-8
 TITLE What's new?
 
 <dir>

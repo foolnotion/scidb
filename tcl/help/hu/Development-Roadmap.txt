@@ -16,7 +16,6 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-CHARSET utf-8
 TITLE Development roadmap
 
 <h2>Features for next releases</h2>
@@ -38,6 +37,7 @@ TITLE Development roadmap
 <dir>
   <li>Duplicate detection</li>
   <li>Loading databases from the Internet</li>
+  <li>Player dictionary dialog</li>
   <li>Document generation: PDF export and HTML export</li>
   <li>Dialog for spell checking player names</li>
   <li>Tip of the Day window</li>

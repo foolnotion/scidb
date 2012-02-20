@@ -16,7 +16,6 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-CHARSET utf-8
 TITLE Welcome to Scidb-Help
 
 <h2 name="general">General help</h2>

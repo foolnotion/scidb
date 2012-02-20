@@ -26,12 +26,12 @@ que:
 </p>
 
 <ol>
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Esta versi—n contiene gran cantidad de informaci—n de depuraci—n y,
     por consiguiente, se ejecuta m‡s lento en varios lugares.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     El soporte de bases Scid (.si3/.si4) se realiza mediante una emulaci—n
     bastante compleja, la cual aœn no est‡ probada en forma suficiente.
 	  <annotation>
@@ -42,19 +42,19 @@ que:
     s—lo-lectura - que, por supuesto, no es cr’tico.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     El formato actual Scidb (.sci) se completar‡, como mucho, con la
     primera versi—n completa (i.e. en la versi—n 1.0, la actual es la
     0.92). De cualquier modo, el formato actual ya es completamente
     utilizable, y se ofrecer‡ la capacidad de mejora.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     El soporte del formato ChessBase (.cbh) no est‡ terminado.
     Actualmente esta aplicaci—n no puede abrir partidas en formato Chess 960.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     De vez en cuando se liberar‡ una nueva versi—n de pruebas.
   </li>
 </ol>

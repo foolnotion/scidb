@@ -652,7 +652,7 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (objc > 2)
 	{
-		if (!strcmp(stringFromObj(objc, objv, 2), "-unicode"))
+		if (strcmp(stringFromObj(objc, objv, 2), "-unicode") != 0)
 			return error(CmdLookup, 0, 0, "unknown option '%s'", stringFromObj(objc, objv, 2));
 
 		unicodeFlag = boolFromObj(objc, objv, 3);

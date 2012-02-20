@@ -26,12 +26,12 @@ Scidb:
 </p>
 
 <ol>
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Questa versione contiene molte informazioni di debugging ed è quindi
     lenta in diversi punti.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Il supporto al formato database di Scid (.si3/.si4) è reso possibile
     da una emulazione piuttosto complessa che non è stata ancora testata
     a sufficienza.
@@ -43,7 +43,7 @@ Scidb:
     che ovviamente non comporta problemi.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Il formato di Scidb attuale (.sci) sarà finito al più tardi con il
     rilascio della prima versione completa (cioè quando sarà raggiunta
     la versione 1.0 o superiore, la versione corrente è la 0.92).
@@ -51,12 +51,12 @@ Scidb:
     possibile aggiornarlo in futuro.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Il supporto al formato database di Chessbase (.cbh) non è ancora finito.
     Ad oggi questo programma non può aprire partite di Scacchi 960.
   </li>
 
-  <li style="margin-top: 0.5em; ">
+  <li class="space">
     Col tempo saranno rilasciate nuove versioni di test.
   </li>
 </ol>

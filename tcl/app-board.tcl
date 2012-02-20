@@ -711,7 +711,11 @@ proc ConfigureBoard {canv} {
 			set y [expr {$Dim(border:y1) + $Dim(edgethickness) + $Dim(squaresize)/2}]
 		}
 		set columns {8 7 6 5 4 3 2 1}
-		if {[::board::stuff::flipped? $board]} { set columns [lreverse $columns] }
+		set rows {A B C D E F G H}
+		if {[::board::stuff::flipped? $board]} {
+			set columns [lreverse $columns]
+			set rows [lreverse $rows]
+		}
 		foreach r $columns {
 			foreach {k offs} {w -1 b 1 {} 0} {
 				$w coords ${k}coord${r} [expr {$x + $offs}] [expr {$y + $offs}]
@@ -725,7 +729,7 @@ proc ConfigureBoard {canv} {
 			set x [expr {$Dim(border:x1) + $Dim(edgethickness) + $Dim(squaresize)/2}]
 			set y [expr {$Dim(border:y2) + $Dim(edgethickness) + $Dim(offset)/2}]
 		}
-		foreach c {A B C D E F G H} {
+		foreach c $rows {
 			foreach {k offs} {w -1 b 1 {} 0} {
 				$w coords ${k}coord${c} [expr {$x + $offs}] [expr {$y + $offs}]
 			}

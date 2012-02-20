@@ -94,6 +94,11 @@ td.standard {
 	background:    	#c4d0f4;
 }
 
+li.space {
+	margin-top:		0.5em;
+	margin-bottom:	0.5em;
+}
+
 a:link    { text-decoration: none; }
 a:visited { text-decoration: none; }
 a:hover   { text-decoration: underline; background: #ffff00; }

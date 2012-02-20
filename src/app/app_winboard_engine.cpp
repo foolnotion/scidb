@@ -436,7 +436,7 @@ winboard::Engine::protocolStart(bool isProbing)
 		send("go");				// NOTE: don't send "go" if the user is to move
 		send("?");
 //		send("force");
-//		send("ponder off");
+//		send("easy");
 //		send("hard");
 //		send("easy");
 

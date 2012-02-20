@@ -377,17 +377,17 @@ sys::utf8::compare(mstl::string const& lhs, mstl::string const& rhs)
 	char const* p = lhs.c_str();
 	char const* q = rhs.c_str();
 
-	Tcl_UniChar c, d;
-
 	while (true)
 	{
+		Tcl_UniChar c, d;
+
 		if (*p == 0) return *q == 0 ? 0 : -1;
 		if (*q == 0) return *p == 0 ? 0 : +1;
 
 		p = nextChar(p, c);
 		q = nextChar(q, d);
 
-		if (c != d) return c - d;
+		if (c != d) return int(c) - int(d);
 	}
 
 	return 0;	// satisfies the compiler
@@ -406,10 +406,10 @@ sys::utf8::casecmp(mstl::string const& lhs, mstl::string const& rhs)
 	char const* p = lhs.c_str();
 	char const* q = rhs.c_str();
 
-	Tcl_UniChar c, d;
-
 	while (true)
 	{
+		Tcl_UniChar c, d;
+
 		if (*p == 0) return *q == 0 ? 0 : -1;
 		if (*q == 0) return *p == 0 ? 0 : +1;
 
@@ -421,7 +421,7 @@ sys::utf8::casecmp(mstl::string const& lhs, mstl::string const& rhs)
 			c = Tcl_UniCharToLower(c);
 			d = Tcl_UniCharToLower(d);
 
-			if (c != d) return c - d;
+			if (c != d) return int(c) - int(d);
 		}
 	}
 

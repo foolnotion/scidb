@@ -13,7 +13,7 @@
   hilite,selected       #b0d0e0
   lite,x2               378
   lite,solid            #e0d070
-  hilite,suggested      #fcffa4
+  hilite,suggested      #c32424
   dark,rotation         0
   dark,x1               0
   dark,texture          {marble marble13.jpg}

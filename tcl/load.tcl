@@ -148,13 +148,13 @@ load::load	[format $load::mc::Loading $load::mc::ECOFile] \
 				[file join $scidb::dir::data eco.bin] \
 				;
 
+if {![::process::testOption fast-load]} {
+
 # --- Load engines -----------------------------------------------------
 load::load	[format $load::mc::Loading $load::mc::EngineFile] \
 				comp \
 				[file join $scidb::dir::data engines.txt] \
 				;
-
-if {![::process::testOption fast-load]} {
 
 # --- Load spellcheck files --------------------------------------------
 foreach file {ratings_utf8.ssp.zip ratings-additional.ssp} {
