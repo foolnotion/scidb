@@ -1,0 +1,172 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Database archive
+INDEX Archive
+TITLE Database archive
+
+<p>
+Scidb's database archive is based on an independent archive format with the general
+file suffix "<abbr>.ive</abbr>". Scidb will use the special file suffix
+"<abbr>.sca</abbr>". This archive format contains information about the included
+file like name, size, compression method, etc.
+</p>
+
+<p>
+This archive format has the following syntax (simplified EBNF):
+</p>
+
+<verbatim>
+Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
+Magic       = 'iveArch' LF ;
+File        = Header BinaryData ;
+Header      = HeadDelim LF HeaderInfo DataDelim ;
+HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
+DataDelim   = '&lt;-- D A T A --&gt;' LF ;
+HeaderInfo  =
+  '&lt;Name&gt;' { Space } ValidFileName LF
+  '&lt;Size&gt;' { Space } Number LF
+  [ '&lt;Compression&gt;' { Space } Compression LF ]
+  [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
+  [ '&lt;Modified&gt;' { Space } Timestamp LF ] ;
+Space       = HT | " " ;
+Compression = 'raw' | 'gzip' | 'lzo' ;
+BinaryData  = { Byte } ;
+ArchInfo    = '&lt;TotalSize&gt;' { Space } Number LF ;
+UserInfo    = { Attribute } ;
+Attribute   = AttrName { Space } AttrValue LF ;
+AttrName    = "&lt;" Identifier "&gt;" ;
+Identifier  = AsciiLetter { AsciiLetter } ;
+AttrValue   = AsciiGraphical { AsciiGraphical } ;
+Timestamp = Date " " Time ;
+Date      = Year "-" Month "-" Day ;
+Time      = Hour ":" Minute ":" Second ; <!--
+--></verbatim>
+
+<p>
+<code>ValidFileName</code> is any platform independent, and valid file name,
+optionally preceded by a path specification. A platform independent file name
+cannot contain the characters "&lt;" and "&gt;". It is the decision of the
+decoder in which way the preceding path specification will be used.
+<code>&lt;Size&gt;</code> is the size of the file contained inside the archive,
+not the size of the unpacked file.  This information is simultaneously the offset
+to next file header. <code>&lt;TotalSize&gt;</code> contains the sum of all
+(internal) files. The optional checksum <code>&lt;Checksum&gt;</code>
+concerns the file data inside the archive, and will be computed with the CRC32
+method; <code>&lt;Modified&gt;</code> contains the last modification timestamp
+(GMT), the decoder may use this information to restore this timestamp in the
+extracted file.  The attributes <code>&lt;Name&gt;</code>,
+<code>&lt;Size&gt;</code>, <code>&lt;Compression&gt;</code>,
+<code>&lt;Checksum&gt;</code>, and <code>&lt;Modified&gt;</code> may be
+enumerated in random order. The default for the attribute
+<code>&lt;Compression&gt;</code> is 'raw' (which means no decompression
+is required).
+</p>
+
+<p>
+<code>Magic</code> is chosen in a way that the following points will be ensured:
+</p>
+
+<ul>
+  <li>Readableness with a text editor.</li>
+  <li>No confusion with an ordinary text file.</li>
+</ul>
+
+<annotation>
+The whole archive format is designed in a way so that it is readable and editable
+with any suitable text editor (which allows binary data).
+</annotation>
+
+<p>
+In "<abbr>.sca</abbr>" format the attribute <code>UserInfo</code> has the following
+definition:
+</p>
+
+<verbatim>
+UserInfo  =
+  "&lt;Count&gt;" { Space } ( Number | "-" ) LF
+  "&lt;Format&gt;" { Space } Formats LF
+  "&lt;Type&gt;" { Space } Type LF ;
+Type      = 'single' | 'multi' ;
+Formats   = Format { "," Format } ;
+Format    = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ; <!--
+--></verbatim>
+
+<p>
+<code>&lt;Count&gt;</code> is the number of games in the database. If this
+information is unknown (for example in case of PGN files), the value of
+this field will be a hyphen.
+<code>&lt;Format&gt;</code> describes the format of the extracted database.
+</p>
+
+<p>
+In general archives do contain only one database
+(<code>&lt;Type&gt;</code> = 'single').  But it is also provided that
+several database may be packed in one archive.  In this case
+<code>&lt;Type&gt;</code> should have the value 'multi', and
+<code>&lt;Format&gt;</code> will contain a comma separated list of all
+comprised database formats. Moreover <code>&lt;Count&gt;</code>
+is the sum of all games in all databases.
+</p>
+
+<p>
+The order of the attributes <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>,
+and <code>&lt;Type&gt;</code> is fixed.
+</p>
+
+<p>
+At least one simple example for an archive:
+</p>
+
+<verbatim>
+iveArch
+&lt;TotalSize&gt; 468
+&lt;Count&gt; 1
+&lt;Format&gt; pgn
+&lt;Type&gt; single
+&lt;-- H E A D --&gt; 
+&lt;Name&gt; one-game.pgn
+&lt;Size&gt; 468
+&lt;Compression&gt; raw
+&lt;Checksum&gt; 3225351655
+&lt;Modified&gt; 2012-02-21 18:31:12
+&lt;-- D A T A --&gt; 
+[Event "London knockout"]
+[Site "London"]
+[Date "1851.05.27"]
+[Round "1.1"]
+[White "Staunton, Howard"]
+[Black "Brodie, Alfred"]
+[Result "1-0"]
+[EventDate "1851.05.27"]
+[EventCountry "ENG"]
+[EventType "k.o."]
+[EventRounds "3"]
+[ECO "C44"]
+[TimeMode "normal"]
+[Source "Tournaments"]
+[SourceDate "2004.03.11"]
+
+1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
+Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
+12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0 <!--
+--></verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -167,10 +167,8 @@ proc leaveSquare {{square {}}} {
 	} elseif {$Leave <= 0} {
 		set Leave [expr {-($square + 1)}]
 	} else {
-		if {$Square(selected) != -1} {
-			if {$square != $Square(selected)} {
-				::board::stuff::hilite $board $square off
-			}
+		if {$Square(selected) != -1 && $square != $Square(selected)} {
+			::board::stuff::hilite $board $square off
 		}
 
 		if {$hilite(show-suggested)} {
