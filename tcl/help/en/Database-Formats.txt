@@ -33,9 +33,18 @@ A database in Scidb's format is divided into several files:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Game moves, commentaries, annotations, move information, and PGN tags</td></tr>
-    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Player/Event/Site/Annotator data</td></tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.sci =&nbsp;</kbd></td>
+      <td>Game data</td>
+    </tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.scg =&nbsp;</kbd></td>
+      <td>Game moves, commentaries, annotations, move information, and PGN tags</td>
+    </tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.scn =&nbsp;</kbd></td>
+      <td>Player/Event/Site/Annotator data</td>
+    </tr>
   </table>
 </box>
 
@@ -52,9 +61,18 @@ This format resembles structurally Scidb's format:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Game moves, commentaries, annotations, and PGN tags</td></tr>
-    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Player/Event/Site/Round data</td></tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.si4 =&nbsp;</kbd></td>
+      <td>Game data</td>
+    </tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.sg4 =&nbsp;</kbd></td>
+      <td>Game moves, commentaries, annotations, and PGN tags</td>
+    </tr>
+    <tr>
+      <td nowrap valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
+      <td>Player/Event/Site/Round data</td>
+    </tr>
   </table>
 </box>
 
@@ -72,15 +90,16 @@ A database in ChessBase format is divided into many separate files, the importan
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
-    <tr><td><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
-    <tr><td><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
-    <tr><td><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
-    <tr><td><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
-    <tr><td><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
-    <tr><td><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
-    <tr><td><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cba =&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
+    <tr><td nowrap valign="top"><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
+    <tr><td nowrap valign="top"><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
   </table>
 </box>
 
