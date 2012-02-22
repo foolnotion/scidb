@@ -1,0 +1,171 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Datenbankarchiv
+INDEX Archiv
+TITLE Datenbankarchiv
+
+<p>
+Scidb's Datenbankarchiv stützt sich euf ein unabhängiges Archivformat, für das die
+generelle Dateiendung "<abbr>.ive</abbr>" vorgesehen ist. Scidb benutzt jedoch die
+spezielle Dateiendung "<abbr>.sca</abbr>". Dieses Archivformat enthält Informationen
+über die enthaltenen Dateien wie Name, Größe, Komprimierungsmethode, etc.
+</p>
+
+<p>
+Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
+</p>
+
+<verbatim>
+Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
+Magic       = 'iveArch' LF ;
+File        = Header BinaryData ;
+Header      = HeadDelim LF HeaderInfo DataDelim ;
+HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
+DataDelim   = '&lt;-- D A T A --&gt;' LF ;
+HeaderInfo  =
+  '&lt;Name&gt;' { Space } ValidFileName LF
+  '&lt;Size&gt;' { Space } Number LF
+  [ '&lt;Compression&gt;' { Space } Compression LF ]
+  [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
+  [ '&lt;Modified&gt;' { Space } Timestamp LF ] ;
+Space       = HT | " " ;
+Compression = 'raw' | 'gzip' | 'lzo' ;
+BinaryData  = { Byte } ;
+ArchInfo    = '&lt;TotalSize&gt;' { Space } Number LF ;
+UserInfo    = { Attribute } ;
+Attribute   = AttrName { Space } AttrValue LF ;
+AttrName    = "&lt;" Identifier "&gt;" ;
+Identifier  = AsciiLetter { AsciiLetter } ;
+AttrValue   = AsciiGraphical { AsciiGraphical } ;
+Timestamp = Date " " Time ;
+Date      = Year "-" Month "-" Day ;
+Time      = Hour ":" Minute ":" Second ; <!--
+--></verbatim>
+
+<p>
+<code>ValidFileName</code> ist irgendein plattformunabhängiger, gültiger Dateiname,
+optional mit vorangestellter Pfadbezeichnung. Ein plattformunabhängiger
+Dateiname darf die Zeichen "&lt;" und "&gt;" nicht enthalten. Es ist dem
+Dekodierungsprogramm überlassen, wie die vorangestellten Pfadbezeichnungen verarbeitet
+werden. <code>&lt;Size&gt;</code> enthält die Größe der Datei innerhalb der
+Archivierungsdatei, nicht die Größe der Datei in entpackter Form. Diese Angabe
+ist zugleich der Offset zum nächsten Datei-Header. <code>&lt;TotalSize&gt;</code>
+enthält die Summe aller (internen) Dateigrößen.  Die optionale Prüfsumme
+<code>&lt;Checksum&gt;</code> wird mit dem CRC32-Verfahren ermittelt.
+Diese Prüfsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
+<code>&lt;Modified&gt;</code> enthält den Zeitstempel der letzten Modifikation (GMT),
+dieses Datum kann vom Dekoder verwendet werden um den Modifikationszeitstempel
+der extrahierten Datei wiederherzustellen.  Die Attribute <code>&lt;Name&gt;</code>,
+<code>&lt;Size&gt;</code>, <code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code>
+und <code>&lt;Modified&gt;</code> können in beliebiger Reihenfolge aufgeführt werden.
+Fehlt die Angabe <code>&lt;Compression&gt;</code> wird 'raw' als Wert angenommen
+(d.h. es wird keine Dekomprimierung verwendet).
+</p>
+
+<p>
+<code>Magic</code> ist so gewählt, daß folgende Punkte gewährleistet sind:
+</p>
+
+<ul>
+  <li>Lesbarkeit mit einem Texteditor.</li>
+  <li>Keine Verwechslung mit einer gewöhnlichen Textdatei.</li>
+</ul>
+
+<annotation>
+Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Texteditor
+(der binäre Daten verkraftet) gelesen und bearbeitet werden kann.
+</annotation>
+
+<p>
+<code>UserInfo</code> ist im "<abbr>.sca</abbr>"-Format folgendermaßen definiert:
+</p>
+
+<verbatim>
+UserInfo  =
+  "&lt;Count&gt;" { Space } ( Number | "-" ) LF
+  "&lt;Format&gt;" { Space } Formats LF
+  "&lt;Type&gt;" { Space } Type LF ;
+Type      = 'single' | 'multi' ;
+Formats   = Format { "," Format } ;
+Format    = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ; <!--
+--></verbatim>
+
+<p>
+<code>&lt;Count&gt;</code> ist die Anzahl der enthaltenen Partien in der Datenbank.
+Wenn diese Anzahl nicht bekannt ist, z.B. bei PGN-Dateien, dann enthält dieses
+Feld den Wert "-".  <code>&lt;Format&gt;</code> ist die Angabe des Formats
+der entpackten Datenbank.
+</p>
+
+<p>
+"<abbr>.sca</abbr>"-Archive enthalten in der Regel immer nur eine Datenbank
+(<code>&lt;Type&gt;</code> = 'single'). Es ist jedoch vorgesehen, daß auch
+mehrere Datenbanken in ein Archiv gepackt werden können. Dann muß
+<code>&lt;Type&gt;</code> den Wert 'multi' enthalten, und unter
+<code>&lt;Format&gt;</code> werden alle enthaltenen Datenbankformate
+komma-separiert aufgeführt.  Zudem ist <code>&lt;Count&gt;</code> dann die
+Summe der Partien in allen Datenbanken.
+</p>
+
+<p>
+Die Reihenfolge der Attribute <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>
+und <code>&lt;Type&gt;</code> ist zwingend.
+</p>
+
+<p>
+Zum Abschluss ein einfaches Beispiel für ein Archiv:
+</p>
+
+<verbatim>
+iveArch
+&lt;TotalSize&gt; 468
+&lt;Count&gt; 1
+&lt;Format&gt; pgn
+&lt;Type&gt; single
+&lt;-- H E A D --&gt; 
+&lt;Name&gt; one-game.pgn
+&lt;Size&gt; 468
+&lt;Compression&gt; raw
+&lt;Checksum&gt; 3225351655
+&lt;Modified&gt; 2012-02-21 18:31:12
+&lt;-- D A T A --&gt; 
+[Event "London knockout"]
+[Site "London"]
+[Date "1851.05.27"]
+[Round "1.1"]
+[White "Staunton, Howard"]
+[Black "Brodie, Alfred"]
+[Result "1-0"]
+[EventDate "1851.05.27"]
+[EventCountry "ENG"]
+[EventType "k.o."]
+[EventRounds "3"]
+[ECO "C44"]
+[TimeMode "normal"]
+[Source "Tournaments"]
+[SourceDate "2004.03.11"]
+
+1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
+Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
+12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0 <!--
+--></verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

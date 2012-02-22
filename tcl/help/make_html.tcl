@@ -74,6 +74,9 @@ set HtmlMapping {
 	<box>				{<div class="box">}
 	</box>			{</div>}
 
+	<verbatim>		{<div class="box"><pre><code>}
+	</verbatim>		{</code></pre></div>}
+
 	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>}
 	</annotation>	{</div>}
 }

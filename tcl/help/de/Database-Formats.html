@@ -32,29 +32,100 @@
 
 <h2>Scidb (<abbr>.sci</abbr>)</h2>
 
+<p>
 Dies ist Scidb's eigenes Datenbankformat und wird ausdrücklich
 zur Verwendung mit Scidb empfohlen. Nur mit diesem Format ist der volle Umfang von
 Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
+</p>
+
+<p>
+Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Partiendatenx</td></tr>
+    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Partiezüge, Kommentare, Anmerkungen, Zuginformationen und PGN-Tags</td></tr>
+    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Spieler/Ereignis/Ort/Kommentator-Daten</td></tr>
+  </table>
+</div>
 
 <h2>Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
+<p>
 Dies ist Scid's Datenbankformat und wird aufgrund des hohen
 Verbreitungsgrades vollständig unterstützt. Es kann mit diesem Format jedoch nicht
 der volle Umfang von Scidb genutzt werden.
+</p>
+
+<p>
+Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Partiendaten</td></tr>
+    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Partiezüge, Kommentare, Anmerkungen und PGN-Tags</td></tr>
+    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Spieler/Ereignis/Ort/Runden-Daten</td></tr>
+  </table>
+</div>
 
 <h2>ChessBase (<abbr>.cbh</abbr>)</h2>
 
+<p>
 Die Firma ChessBase hält das Format dieser Datenbank geheim und es wird deshalb
 nur im Lesemodus unterstützt. Nicht alle Partiedaten können korrekt gelesen
 werden; bei einigen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
 werden konnte.
+</p>
+
+<p>
+Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigsten sind:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.cbh =&nbsp;</kbd></td><td>Partiedaten</td></tr>
+    <tr><td><kbd>.cbg =&nbsp;</kbd></td><td>Partiezüge und Varianten</td></tr>
+    <tr><td><kbd>.cbs =&nbsp;</kbd></td><td>Quellenindex</td></tr>
+    <tr><td><kbd>.cbp =&nbsp;</kbd></td><td>Spielerindex</td></tr>
+    <tr><td><kbd>.cbc =&nbsp;</kbd></td><td>Kommentatorindex</td></tr>
+    <tr><td><kbd>.cbt =&nbsp;</kbd></td><td>Turnierindex</td></tr>
+    <tr><td><kbd>.cbe =&nbsp;</kbd></td><td>Teamindex</td></tr>
+    <tr><td><kbd>.cbj =&nbsp;</kbd></td><td>Teaminformation</td></tr>
+    <tr><td><kbd>.ini =&nbsp;</kbd></td><td>Datenbankinitialiserungsdatei</td></tr>
+  </table>
+</div>
 
 <h2><abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
+<p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
 Transfer von Schachpartien. <abbr>PGN</abbr>-Dateien werden nur im Lesemodus geöffnet.
 Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das
 Scidb-Format empfohlen.
+</p>
+
+<p>
+Eine vollständige Beschreibung dieses Formats findet man unter
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
+Standard: Portable Game Notation Specification and Implementation Guide</a>.
+</p>
+
+<h2>Datenbankarchiv (<abbr>.sca</abbr>)</h2>
+
+<p>
+Scidb's Datanbankarchiv stützt sich euf ein unabhängiges Archivformat, und
+enthält eine Datenbank (oder sogar mehrere) in archivierter Form. Dies ermöglicht
+eine Versendung der Datenbank(en), die ansonsten aus mehreren Dateien besteht, über
+das Internet. Dieses Datenbankarchiv ist an kein spezielles Datenbankformat
+gebunden.
+</p>
+
+<p>
+Eine nährere Beschreibung diese Formats gibt es auf der Seite
+<a href="Database-Archive.html">Datenbankarchiv</a>.
+</p>
 
 </body>
 </html>

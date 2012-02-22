@@ -22,25 +22,96 @@ TITLE Database formats
 
 <h2>Scidb (<abbr>.sci</abbr>)</h2>
 
+<p>
 This is Scidb's own database format. Use of this format is strongly
 recommended because of speed and feature completeness considerations.
+</p>
+
+<p>
+A database in Scidb's format is divided into several files:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Game moves, commentaries, annotations, move information, and PGN tags</td></tr>
+    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Player/Event/Site/Annotator data</td></tr>
+  </table>
+</box>
 
 <h2>Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
+<p>
 Scid's database format is fully supported because of it's wide adoption.
 But with this format you cannot use the full capability of Scidb.
+</p>
+
+<p>
+This format resembles structurally Scidb's format:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.sci =&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td><kbd>.scg =&nbsp;</kbd></td><td>Game moves, commentaries, annotations, and PGN tags</td></tr>
+    <tr><td><kbd>.scn =&nbsp;</kbd></td><td>Player/Event/Site/Round data</td></tr>
+  </table>
+</box>
 
 <h2>ChessBase (<abbr>.cbh</abbr>)</h2>
 
+<p>
 The company ChessBase keeps this format secret, therefore only the reading
 mode is supported. Not all game data can be read correctly, with some games
 the message of failed decoding will appear.
+</p>
+
+<p>
+A database in ChessBase format is divided into many separate files, the important ones are:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
+    <tr><td><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
+    <tr><td><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
+    <tr><td><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
+    <tr><td><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
+    <tr><td><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
+    <tr><td><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
+    <tr><td><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+  </table>
+</box>
 
 <h2><abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
+<p>
 The <abbr>PGN</abbr> format (Portable Game Notation) is a common standard for transfering
 chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. With larger
 <abbr>PGN</abbr> game collections it is recommended to convert it into the Scidb format.
+</p>
+
+<p>
+A complete specification of this format will be found at
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
+Standard: Portable Game Notation Specification and Implementation Guide</a>.
+</p>
+
+<h2>Database archive (<abbr>.sca</abbr>)</h2>
+
+<p>
+Scidb's database archive is based on an independent archive format,
+and contains one (or perhaps several) databases in archived form. This
+facilitates the shipment of databases through the internet, because it
+is a single file instead of several ones. This database archive is not
+limited to a specific database format.
+</p>
+
+<p>
+A specification of this format is on page
+<a href="Database-Archive.html">Database archive</a>.
+</p>
 
 END
 

@@ -5,6 +5,7 @@ set Contents {
   {
     {{{Allgemeine Hilfe} {Overview.html} {general}}}
     {{{Datenbankformate} {Database-Formats.html}}}
+    {{{Datenbankarchiv} {Database-Archive.html}}}
     {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
     {{{Umgang mit Funktionsleisten} {Toolbar-Usage.html}}}
     {{{Die Ablage-Datenbank} {Clipbase.html}}}

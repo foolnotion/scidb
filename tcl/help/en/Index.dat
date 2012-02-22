@@ -1,4 +1,9 @@
 set Index {
+  { A
+    {
+      {{Archive} {Database-Archive.html}}
+    }
+  }
   { C
     {
       {{Clipbase} {Clipbase.html}}
@@ -8,6 +13,7 @@ set Index {
   }
   { D
     {
+      {{Database archive} {Database-Archive.html}}
       {{Database formats} {Database-Formats.html}}
       {{Database switcher} {Database-Switcher.html}}
     }

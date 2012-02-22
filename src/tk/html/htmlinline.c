@@ -1107,7 +1107,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
         int extra_pixels = 0;   /* Number of extra pixels for justification */
         InlineBox *pBox = &p->aInline[i];
         int boxwidth = pBox->nContentPixels;
-        HtmlFont *pFont = HtmlNodeComputedValues(pBox->pNode)->fFont;
+        HtmlFont *pFont = pBox->pNode ? HtmlNodeComputedValues(pBox->pNode)->fFont : NULL;
         int x1;
         int x2;
         int nBorderDraw = 0;
@@ -1162,7 +1162,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
             else if (
                 extra_pixels == 0 &&
                 pBox->pNode == pBox[-1].pNode &&
-                pFont->space_pixels == pBox[-1].nSpace
+                (pFont && pFont->space_pixels == pBox[-1].nSpace)
             ) {
                 int iWidth = pBox->canvas.right;
                 int nChar = HtmlDrawTextLength(&pBox->canvas) + 1;
@@ -1184,6 +1184,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
         }
 
         if (pBox->iHyphen && (showhyphens >= 2 || (showhyphens == 1 && i == nBox - 1))) {
+            assert(pFont);
             boxwidth += pFont->hyphen_pixels;
         }
         boxwidth += extra_pixels;
@@ -1308,6 +1309,7 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
         }
 
         if (pBox->iHyphen && (showhyphens >= 2 || (showhyphens == 1 && i == nBox - 1))) {
+            assert(pFont);
             HtmlDrawTextHyphen(&content, pFont->hyphen_pixels);
         }
 

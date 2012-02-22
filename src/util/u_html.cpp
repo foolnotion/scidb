@@ -305,9 +305,13 @@ parse(char const* document, unsigned length, mstl::string& result, Action& actio
 						char const* q = ::findChar(first + 4, last, '-');
 
 						while (q && (q[1] != '-' || q[2] != '>'))
-						q = ::findChar(q + 1, last, '-');
+							q = ::findChar(q + 1, last, '-');
 
 						first = q ? q + 3 : last;
+						--lessCounter;
+
+						if (escape < first)
+						    escape = 0;
 					}
 					else if (first[1] == '/')
 					{
@@ -319,7 +323,7 @@ parse(char const* document, unsigned length, mstl::string& result, Action& actio
 						char const* q = first + 1;
 
 						while (first < last && *first != '<')
-						++q;
+						    ++q;
 
 						if (q < last && q[-1] == '/')
 						{

@@ -2,11 +2,13 @@ set Index {
   { A
     {
       {{Ablage-Datenbank} {Clipbase.html}}
+      {{Archiv} {Database-Archive.html}}
     }
   }
   { D
     {
       {{Dateiformate} {Database-Formats.html}}
+      {{Datenbankarchiv} {Database-Archive.html}}
       {{Datenbankformate} {Database-Formats.html}}
       {{Datenbankumschalter} {Database-Switcher.html}}
     }
