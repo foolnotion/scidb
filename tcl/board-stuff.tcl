@@ -71,8 +71,10 @@ proc new {w size {borderSize 0} {flipped 0}} {
 	set Board(marks) {}
 	set Board(size) $size
 	set Board(data) ""
-	set Board(drag) -1
-	set Board(dragged) 0
+	set Board(drag:square) -1
+	set Board(drag:active) 0
+	set Board(drag:x) -1
+	set Board(drag:y) -1
 	set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 	set Board(border) 0
 	set Board(animate) 1
@@ -391,37 +393,51 @@ proc getSquare {w x y} {
 proc setDragSquare {w {sq -1}} {
 	variable ${w}::Board
 
-	set oldSq $Board(drag)
+	set oldSq $Board(drag:square)
 
 	if {$oldSq != -1} {
 		DrawPiece $w $oldSq [string index $Board(data) $oldSq]
 	}
 
-	set Board(drag) $sq
-	set Board(dragged) 0
+	if {$sq != -1} {
+		set x [expr {[winfo pointerx $w] - [winfo rootx $w.c] - $Board(size)/2}]
+		set y [expr {[winfo pointery $w] - [winfo rootx $w.c] - $Board(size)/2}]
+
+		lassign [$w.c coords square:$sq] x0 y0
+		set Board(drag:x) [expr {$x - $x0}]
+		set Board(drag:y) [expr {$y - $y0}]
+	}
+
+	set Board(drag:square) $sq
+	set Board(drag:active) 0
 }
 
 
 proc isDragged? {w} {
 	variable ${w}::Board
-	return $Board(dragged)
+	return $Board(drag:active)
 }
 
 
 proc dragPiece {w x y} {
 	variable ${w}::Board
 
-	set sq $Board(drag)
+	set sq $Board(drag:square)
 	if {$sq == -1} { return }
 
 	set x [expr {$x - [winfo rootx $w.c] - $Board(size)/2}]
 	set y [expr {$y - [winfo rooty $w.c] - $Board(size)/2}]
 
-	if {!$Board(dragged)} {
+	if {!$Board(drag:active)} {
 		lassign [$w.c coords square:$sq] x0 y0
 		if {abs($x0 - $x) > 5 || abs($y0 - $y) > 5} {
-			set Board(dragged) 1
+			set Board(drag:active) 1
 		}
+	}
+
+	if {$Board(drag:x) != -1 && $Board(drag:y) != -1} {
+		set x [epxr {$x - $Board(drag:x)}]
+		set y [epxr {$y - $Board(drag:y)}]
 	}
 
 	$w.c coords piece:$sq $x $y
