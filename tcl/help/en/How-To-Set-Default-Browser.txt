@@ -48,7 +48,7 @@ There exists four possibilites to set the default browser:
 
   <li><p>
     Use the first browser which can be found in the following list:<br/>
-    <ragged>iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    <ragged>iceweasel, firefox, google-chrome, opera, iexplorer, konqueror,
     epiphany, galeon, mosaic, amaya, browsex</ragged>.
   </p></li>
 </ol>

@@ -1,0 +1,145 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Toolbar
+TITLE Usage of the toolbars
+
+<p>
+The toolbars do provide fast access to context-dependend functions and settings.
+The orientation and adjustment of each toolbar is individually adjustable.
+This will be elucidated with some examples.
+</p>
+
+<h3>%::toolbar::mc::Orientation%</h3>
+
+<dir><img src="images/toolbar-usage-dnd-hover.png"/></dir>
+
+<p>
+We will drag the toolbar "%::application::board::mc::Control%" towards the top side.
+For this purpose hold the left mouse button down over the drag bar (the ribbed bar)
+and move the bar to top side. Unless the toolbar is over a detended position inside the
+window a black frame will be displayed.
+</p>
+
+<dir><img src="images/toolbar-usage-move-float.png"/></dir>
+
+<p>
+If we release the mouse button here we will have a floating toolbar.
+<note/>Not all toolbars are floatable.
+</p>
+
+<dir><img src="images/toolbar-usage-float.png"/></dir>
+
+<p>
+With a double click on the yellow head the toolbar will be placed back to
+the former position. For this purpose you may also use the context-sensitive
+menu of the floating bar.
+</p>
+
+<p>
+Now we will drag the toolbar to the top position. A red frame indicates that
+a detended position is reached.
+</p>
+
+<dir><img src="images/toolbar-usage-move-locked.png"/></dir>
+
+<p>
+At this place we will drop the toolbar.
+</p>
+
+<dir><img src="images/toolbar-usage-locked.png"/></dir>
+
+The functionaility of positioning is also available with the context-sensitive
+menu.
+
+<dir><img src="images/toolbar-usage-menu-orientation.png"/></dir>
+
+<p>
+It is different for the particular toolbars which positions are allowed.
+</p>
+
+<p>
+In the next example the toolbars at the top are minimized (flat).
+</p>
+
+<dir><img src="images/toolbar-usage-minimized.png"/></dir>
+
+<p>
+The toolbar will reappear after a click on the drag bar (the ribbed bar).
+</p>
+
+<h3>%::toolbar::mc::Alignment%</h3>
+
+<p>
+The toolbars can also be aligned.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-alignment.png"/></dir>
+
+<p>
+Usually the bars are aligned to left, but in some cases an alignment to the
+middle, or even to the right, is useful.
+</p>
+
+<h3>%::toolbar::mc::IconSize%</h3>
+
+<p>
+Each bar offers an individually setting of the icon size.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-icon-size.png"/></dir>
+
+<p>
+Usually the setting "%::toolbar::mc::Default%" will be chosen, this means the icon size
+is given with the setting under
+<menuitem>%::menu::mc::View%&#8680;%::toolbar::mc::IconSize%</menuitem>
+in the main menu.
+</p>
+
+<h3>Hide and Unhide</h3>
+
+<p>
+Furthermore the context-sensitive menu offers a hide and unhide functionality:
+</p>
+
+<dir><img src="images/toolbar-usage-menu-toolbar.png"/></dir>
+
+<p>
+This functionality is available also in the main menu under
+<menuitem>%::menu::mc::Settings%&#8680;%::toolbar::mc::Toolbar%</menuitem>.
+<note/>Not all toolbars can be hidden.
+</p>
+
+<h3>%::toolbar::mc::Expand%</h3>
+
+<p>
+Finally there exists a special setting, demonstrated with the help of
+the comment dialog.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-expand.png"/></dir>
+
+We let expand the top bar if we click on the menu item
+<menuitem>%::toolbar::mc::Expand%</menuitem> of the context-sensitive
+menu. The result:
+
+<dir><img src="images/toolbar-usage-expanded.png"/></dir>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

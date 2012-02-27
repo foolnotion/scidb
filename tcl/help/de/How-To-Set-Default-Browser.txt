@@ -49,7 +49,7 @@ externen Verweise geöffnet werden, festzulegen:
 
   <li><p>
     Es wird der zuerst auffindbare Browser aus der folgenden Liste verwendet:
-    <ragged>iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    <ragged>iceweasel, firefox, google-chrome, opera, iexplorer, konqueror,
     epiphany, galeon, mosaic, amaya, browsex</ragged>.
   </p></li>
 </ol>

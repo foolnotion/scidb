@@ -20,7 +20,8 @@
 
 #include <tcl.h>
 
-extern "C" {
+extern "C"
+{
 	extern int Tkhtml_Init(Tcl_Interp*);
 	extern int Tkhtml_SafeInit(Tcl_Interp*);
 }

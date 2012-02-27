@@ -26,7 +26,7 @@
 
 #include "tk_init.h"
 
-#define namespace namespace_	// bug in tcl8.6/tkInt.h
+#define namespace namespace_ // bug in tcl8.6/tkInt.h
 #include <tkInt.h>
 #undef namespace
 
@@ -52,7 +52,7 @@ extern "C" { void TkpWmSetState(TkWindow* winPtr, int state); }
 //	Since there is a bug in tkGeometry.c, we need this routine to
 //	replace Tk_ManageGeometry(tkwin, 0, 0);
 static void
-UnmanageGeometry(Tk_Window tkwin)
+unmanageGeometry(Tk_Window tkwin)
 {
 	TkWindow* winPtr = reinterpret_cast<TkWindow*>(tkwin);
 
@@ -65,7 +65,7 @@ UnmanageGeometry(Tk_Window tkwin)
 
 
 static void
-UnlinkWindow(TkWindow* winPtr)
+unlinkWindow(TkWindow* winPtr)
 {
 	if (winPtr->parentPtr == 0)
 		return;
@@ -98,7 +98,7 @@ UnlinkWindow(TkWindow* winPtr)
 
 
 static void
-LinkWindow(TkWindow* winPtr)
+linkWindow(TkWindow* winPtr)
 {
 	TkWindow* parent = winPtr->parentPtr;
 
@@ -127,7 +127,7 @@ releaseWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin)
 		return 0;
 
 	// detach the window from its gemoetry manager, if any
-	UnmanageGeometry(tkwin);
+	unmanageGeometry(tkwin);
 
 	TkWindow* winPtr = reinterpret_cast<TkWindow*>(tkwin);
 
@@ -200,10 +200,10 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 //		if (parent->childList)
 //			return 0;
 
-		UnlinkWindow(winPtr);
+		unlinkWindow(winPtr);
 		winPtr->parentPtr = parent;
 		winPtr->nextPtr = 0;
-		LinkWindow(winPtr);
+		linkWindow(winPtr);
 	}
 
 	if (winPtr->window == None)
@@ -245,10 +245,10 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 		Tk_ChangeWindowAttributes(tkwin, CWEventMask, &atts);
 	}
 
-	UnmanageGeometry(tkwin);
+	unmanageGeometry(tkwin);
 
 	// Can't delete the TopLevelEventProc, because this definition only exists
-	// in tkWinWm or tkUnixWm.c. Is having this event handler around really cause
+	// in tkWinWm.c or tkUnixWm.c. Is having this event handler around really cause
 	// a problem?
 //	Tk_DeleteEventHandler(tkwin, StructureNotifyMask, TopLevelEventProc, winPtr);
 
@@ -275,7 +275,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 // Some examples of a node list structure:
 // ===========================================================================
 //
-// (horz (vert (horz 1 0) (tabs 2 3) 4)	(horz 1 (vert (horz 0 4) (tabs 2 3))
+// (horz (vert (horz 1 0) (tabs 2 3)) 4)		(horz 1 (vert (horz 0 4) (tabs 2 3)))
 // +---+-----------+---+						+---+-----------+---+
 // |   |           |   |						|   |           |   |
 // | 1 |     0     | 4 |						| 1 |     0     | 4 |
@@ -284,8 +284,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 // |       2/3     |   |						|   |      2/3      |
 // +---------------+---+						+---+---------------+
 //
-//
-// (vert (horz 1 0 4) (tabs 2 3))			(horz 1 (vert 0 (tabs 2 3)) 4)
+// (vert (horz 1 0 4) (tabs 2 3))				(horz 1 (vert 0 (tabs 2 3)) 4)
 // +---+-----------+---+						+---+-----------+---+
 // |   |           |   |						|   |           |   |
 // | 1 |     0     | 4 |						| 1 |     0     | 4 |
@@ -293,7 +292,205 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 // +---+-----------+---+						|   +-----------+   |
 // |        2/3        |						|   |    2/3    |   |
 // +-------------------+						+---+-----------+---+
-
+//
+// ===========================================================================
+// Operations:
+// ===========================================================================
+//
+// ROOT 0 --> 0
+//
+//		+-----------+
+//		|           |
+//		|     0     |
+//		|           |
+//		+-----------+
+//
+//		makeFrame 0
+//
+// RIGHT 4 0 --> A:(horz 0 [4])
+//
+//		+-----------+---+
+//		|           |   |
+//		|     0     | 4 |
+//		|           |   |
+//		+-----------+---+
+//
+//		makeFrame 4
+//		makeWindow 4 --> [4]
+//		makePane horz 0 [4] --> A
+//
+// BOTTOM 2 A:(horz 0 [4]) --> B:(vert A:(horz 0 [4]) [2])
+//
+//		+-----------+---+
+//		|           |   |
+//		|     0     | 4 |
+//		|           |   |
+//		+-----------+---+
+//		|     2         |
+//		+---------------+
+//
+//		makeFrame 2
+//		makeWindow 2 --> [2]
+//		makePane vert A [2] --> B
+//
+// OVER 3 [2] --> B:(vert A:(horz 0 [4]) [C]:(tabs 2 3))
+//
+//		+-----------+---+
+//		|           |   |
+//		|     0     | 4 |
+//		|           |   |
+//		+-----------+---+
+//		|    2/3        |
+//		+---------------+
+//
+//		makeFrame 3
+//		makeNotebook 2 3 --> C
+//		destroyWindow [2]
+//		makeWindow C --> [C]
+//
+// LEFT 1 B:(vert (horz 0 [4]) [C]:(tabs 2 3)) -> D:(horz [1] B:(vert A:(horz 0 [4]) [C]:(tabs 2 3)))
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|   +-----------+---+
+//		|   |    2/3        |
+//		+---+---------------+
+//
+//		makeFrame 1
+//		makeWindow 1 --> [1]
+//		makePane horz [1] B --> D
+//
+// OVER 5 [C] -->
+//		B:(vert (horz 0 [4]) [C]:(tabs 2 3)) -> D:(horz [1] B:(vert A:(horz 0 [4]) [C]:(tabs 2 3 5)))
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|   +-----------+---+
+//		|   |    2/3/5      |
+//		+---+---------------+
+//
+//		makeFrame 5
+//		addTab C 5
+//
+// REMOVE 5 -->
+//		B:(vert (horz 0 [4]) [C]:(tabs 2 3)) -> D:(horz [1] B:(vert A:(horz 0 [4]) [C]:(tabs 2 3)))
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|   +-----------+---+
+//		|   |    2/3        |
+//		+---+---------------+
+//
+//		removeTab C 5
+//		destroyFrame 5
+//
+// EXPAND 4 --> F:(horz [1] E:(vert 0 [C]:(tabs 2 3)) [4])
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|   +-----------+   |
+//		|   |    2/3    |   |
+//		+---+-----------+---+
+//
+//		destroyPane A
+//		makePane vert 0 [C] --> E
+//		makePane horz [1] E --> F
+//
+// EXPAND C:(tabs 2 3) --> H:(vert G:(horz [1] 0 [4]) [C]:(tabs 2 3))
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|---+-----------+---|
+//		|        2/3        |
+//		+-------------------+
+//
+//		destroyPane E
+//		destroyPane F
+//		makePane horz [1] 0 [4] --> G
+//		makePane vert G [C] --> H
+//
+// EXPAND 4 --> K:(horz J:(vert I:(horz [1] 0) [C]:(tabs 2 3)) [4])
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|---+-----------+   |
+//		|        2/3    |   |
+//		+---------------+---+
+//
+//		destroyPane G
+//		destroyPane H
+//		makePane horz [1] 0 --> I
+//		makePane horz I [C] --> J
+//		makePane horz J [4] --> K
+//
+// REMOVE 2 --> M:(horz L:(vert I:(horz [1] 0) [3]) [4])
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		|---+-----------+   |
+//		|         3     |   |
+//		+---------------+---+
+//
+//		destroyPane J
+//		destroyPane K
+//		destroyWindow [C]
+//		destroyFrame 2
+//		makeWindow 3 --> [3]
+//		makePane vert I [3] --> L
+//		makePane horz L [4] --> H
+//
+// REMOVE 3 --> N:(horz [1] 0 [4])
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		+---+-----------+---+
+//
+//		destroyPane I
+//		destroyPane L
+//		destroyPane M
+//		destroyWindow [3]
+//		destroyFrame 3
+//		makePane horz [1] 0 [4] --> N
+//
+// UNDOCK 1 --> N:(horz 0 [4]) + <1>
+//
+//		+---+-----------+  +---+
+//		|   |           |  |   |
+//		| 1 |     0     |  | 4 |
+//		|   |           |  |   |
+//		+---+-----------+  +---+
+//
+//		removePane [4]
+//		destroyWindow [4]
+//		makeSingleWindow 4 --> <4>
+//
+// DOCK 1 --> N:(horz [1] 0 [4])
+//
+//		+---+-----------+---+
+//		|   |           |   |
+//		| 1 |     0     | 4 |
+//		|   |           |   |
+//		+---+-----------+---+
+//
+//		destroySingleWindow 4
+//		makeWindow 4 --> [4]
+//		addPane N [4] after 0
 
 class Node
 {

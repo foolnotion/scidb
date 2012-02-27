@@ -1397,7 +1397,7 @@ proc Goto {position} {
 		set position 0
 	} elseif {![string is integer -strict $position]} {
 		if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
-		set selector [format {[name="%s"]} $position]
+		set selector [format {[id="%s"]} $position]
 		set node [lindex [$Priv(html) search $selector] 0]
 		if {[llength $node] == 0} { return }
 		set position [lindex [$Priv(html) bbox $node] 1]

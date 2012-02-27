@@ -1506,6 +1506,7 @@ proc CreateHandle {toolbar handle {size 0}} {
 	variable HaveTooltips
 
 	tk::frame $handle -class ToolbarHandle -borderwidth 0
+	if {$size == 0} { $handle configure -cursor hand2 }
 
 	if {$Specs(orientation:[winfo parent $handle]) eq "horz"} {
 		set decor [tk::canvas $handle.c -width $Defaults(handle:size) -height $size -borderwidth 0]

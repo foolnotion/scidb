@@ -1,6 +1,20 @@
 [Ferbruary 2012] ===============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #257)
+------------------------------------------------------------------------------
+* Fix in tkmenu.tcl: submenus will be placed left if not enough room on right
+side is available.
+
+* cbh2sci.cpp: Ubuntu initialization fix.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #256)
+------------------------------------------------------------------------------
+* Bug in file seldction dialog fixed: "file copy" is copying links, therefore
+we are resolving links before copying.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #252)
 ------------------------------------------------------------------------------
 * Bug in hyphenation parser fixed.

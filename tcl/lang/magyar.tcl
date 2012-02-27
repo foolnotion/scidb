@@ -140,6 +140,7 @@
 ::menu::mc::File						"&Fájl"
 ::menu::mc::Game						"&Játszma"
 ::menu::mc::View						"&Nézet"
+::menu::mc::Settings					"&Beállítások"
 ::menu::mc::Help						"&Súgó"
 
 ::menu::mc::FileOpen					"Fájl &megnyitása"
@@ -191,8 +192,6 @@
 ::menu::mc::FileNotAllowed			"'%s' fájlnév nem engedélyzett"
 ::menu::mc::TwoOrMoreDots			"Kettő vagy egymásutáni pontot tartalmaz."
 ::menu::mc::ForbiddenChars			"Tiltott karaktereket tartalmaz."
-
-::menu::mc::Settings					"&Beállítások"
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt	"A %s fájl sérült:"
@@ -1382,6 +1381,9 @@
 ::comment::mc::CopyText					"Szöveg másolása"
 ::comment::mc::OverwriteContent		"Felülírod a meglévő tartalmat?"
 ::comment::mc::AppendContent			"Ha \"nem\" , akkor a szöveg hozzáasódik."
+
+::comment::mc::LanguageSelection		"Language selection" ;# NEW
+::comment::mc::Formatting				"Formatting" ;# NEW
 
 ::comment::mc::Bold			"Félkövér"
 ::comment::mc::Italic			"Dőlt"

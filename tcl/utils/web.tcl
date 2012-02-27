@@ -22,7 +22,7 @@ namespace eval mc {
 	set CannotFindBrowserDetail	"Set the BROWSER environment variable to your desired browser."
 }
 
-variable Browsers {google-chrome iceweasel firefox iexplorer opera konqueror epiphany galeon mosaic amaya browsex}
+variable Browsers {google-chrome iceweasel firefox opera iexplorer konqueror epiphany galeon mosaic amaya browsex}
 variable Excluded {}
 
 

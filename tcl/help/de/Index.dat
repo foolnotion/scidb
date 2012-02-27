@@ -13,6 +13,11 @@ set Index {
       {{Datenbankumschalter} {Database-Switcher.html}}
     }
   }
+  { F
+    {
+      {{Funktionsleiste} {Toolbar-Usage.html}}
+    }
+  }
   { H
     {
       {{Homepage} {Contact-Information.html}}

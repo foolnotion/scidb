@@ -39,6 +39,9 @@ set CopyText					"Copy text to"
 set OverwriteContent			"Overwrite existing content?"
 set AppendContent				"If \"no\" the text will be appended."
 
+set LanguageSelection		"Language selection"
+set Formatting					"Formatting"
+
 set Bold							"Bold"
 set Italic						"Italic"
 set Underline					"Underline"
@@ -230,8 +233,20 @@ proc open {parent pos lang} {
 	$dlg.ok		configure -command [namespace code [list Ok $dlg]]
 	$dlg.cancel	configure -command [namespace code [list Close $dlg]]
 
-	set tb [::toolbar::toolbar $dlg -id languages -float 0 -side left -allow {left top bottom}]
-	set Vars(tb) [::toolbar::toolbar $dlg -id format -float 0 -side top -allow {left top bottom}]
+	set tb [::toolbar::toolbar $dlg \
+		-id languages \
+		-float 0 \
+		-side left \
+		-allow {left top bottom} \
+		-tooltipvar [namespace current]::mc::LanguageSelection \
+	]
+	set Vars(tb) [::toolbar::toolbar $dlg \
+		-id format \
+		-float 0 \
+		-side top \
+		-allow {left top bottom} \
+		-tooltipvar [namespace current]::mc::Formatting \
+	]
 
 	foreach format {Bold Italic Underline} {
 		set fmt [string tolower $format]

@@ -43,6 +43,11 @@ set Index {
       {{NAG annotation values} {NAG-Comments.html}}
     }
   }
+  { T
+    {
+      {{Toolbar} {Toolbar-Usage.html}}
+    }
+  }
   { W
     {
       {{Website} {Contact-Information.html}}

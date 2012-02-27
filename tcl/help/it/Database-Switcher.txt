@@ -98,7 +98,7 @@ Apre un database dallo storico dei database aperti.
 Seleziona la grandezza del simbolo per l'icona del database.
 </p>
 
-<dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
+<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>

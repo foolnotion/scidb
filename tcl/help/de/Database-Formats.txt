@@ -83,7 +83,7 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 <p>
 Die Firma ChessBase hält das Format dieser Datenbank geheim und es wird deshalb
 nur im Lesemodus unterstützt. Nicht alle Partiedaten können korrekt gelesen
-werden; bei einigen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
+werden; bei manchen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
 werden konnte.
 </p>
 
@@ -121,7 +121,7 @@ Eine vollständige Beschreibung dieses Formats findet man unter
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2>Datenbankarchiv (<abbr>.sca</abbr>)</h2>
+<h2>Datenbankarchiv (<abbr>.scv</abbr>)</h2>
 
 <p>
 Scidb's Datanbankarchiv stützt sich euf ein unabhängiges Archivformat, und
@@ -133,7 +133,7 @@ gebunden.
 
 <p>
 Eine nährere Beschreibung diese Formats gibt es auf der Seite
-<a href="Database-Archive.html">Datenbankarchiv</a>.
+<a href="Database-Archive.html">Spezifikation des Datenbankarchivs</a>.
 </p>
 
 END

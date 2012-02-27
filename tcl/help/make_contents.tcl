@@ -93,7 +93,7 @@ puts "  \{"
 puts "     {{{$title} {$file}}}"
 
 while {[gets $src line] >= 0} {
-	if {[regexp {<h[1-6] name=\"(.*)\">(.*)</h[1-6]>} $line _ href section]} {
+	if {[regexp {<h[1-6] id=\"(.*)\">(.*)</h[1-6]>} $line _ href section]} {
 		puts "  \}"
 		puts "  \{"
 		puts "    {{{$section} {$file} {$href}}}"

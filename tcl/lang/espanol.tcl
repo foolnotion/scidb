@@ -140,6 +140,7 @@
 ::menu::mc::File						"&Archivo"
 ::menu::mc::Game						"&Partida"
 ::menu::mc::View						"&Vista"
+::menu::mc::Settings					"&Configuraci—n"
 ::menu::mc::Help						"A&yuda"
 
 ::menu::mc::FileOpen					"A&brir Base..."
@@ -191,8 +192,6 @@
 ::menu::mc::FileNotAllowed			"Nombre de archivo '%s' no permitido"
 ::menu::mc::TwoOrMoreDots			"Contiene dos o m‡s puntos consecutivos."
 ::menu::mc::ForbiddenChars			"Contiene caracteres prohibidos."
-
-::menu::mc::Settings					"&Configuraci—n"
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt	"El archivo %s est‡ roto:"
@@ -1384,6 +1383,9 @@
 ::comment::mc::CopyText					"Copy text to" ;# NEW
 ::comment::mc::OverwriteContent		"Overwrite existing content?" ;# NEW
 ::comment::mc::AppendContent			"If \"no\" the text will be appended." ;# NEW
+
+::comment::mc::LanguageSelection		"Language selection" ;# NEW
+::comment::mc::Formatting				"Formatting" ;# NEW
 
 ::comment::mc::Bold						"Negrita"
 ::comment::mc::Italic					"It‡lica"

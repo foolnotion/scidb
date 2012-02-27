@@ -5,7 +5,6 @@ set Contents {
   {
     {{{General help} {Overview.html} {general}}}
     {{{Database formats} {Database-Formats.html}}}
-    {{{Database archive} {Database-Archive.html}}}
     {{{Usage of the file selection dialog} {File-Selection-Dialog.html}}}
     {{{Usage of the toolbars} {Toolbar-Usage.html}}}
     {{{The Clipbase} {Clipbase.html}}}
@@ -39,6 +38,7 @@ set Contents {
   {
     {{{Further information} {Overview.html} {further-information}}}
     {{{Game markers} {Game-Flags.html}}}
+    {{{Specification of database archive} {Database-Archive.html}}}
     {{{Command line options} {Command-Line-Options.html}}}
     {{{NAG annotation values} {NAG-Comments.html}}}
     {{{Contact information} {Contact-Information.html}}}

@@ -139,6 +139,7 @@
 ::menu::mc::File						"&File"
 ::menu::mc::Game						"&Game"
 ::menu::mc::View						"&View"
+::menu::mc::Settings					"&Settings"
 ::menu::mc::Help						"&Help"
 
 ::menu::mc::FileOpen					"&Open Database..."
@@ -190,8 +191,6 @@
 ::menu::mc::FileNotAllowed			"Filename '%s' not allowed"
 ::menu::mc::TwoOrMoreDots			"Contains two or more consecutive dots."
 ::menu::mc::ForbiddenChars			"Contains forbidden character(s)."
-
-::menu::mc::Settings					"&Settings"
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt			"File %s is corrupt:"
@@ -1382,6 +1381,9 @@
 ::comment::mc::CopyText					"Copy text to"
 ::comment::mc::OverwriteContent		"Overwrite existing content?"
 ::comment::mc::AppendContent			"If \"no\" the text will be appended."
+
+::comment::mc::LanguageSelection		"Language selection"
+::comment::mc::Formatting				"Formatting"
 
 ::comment::mc::Bold						"Bold"
 ::comment::mc::Italic					"Italic"

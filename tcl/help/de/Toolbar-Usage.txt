@@ -1,0 +1,152 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Funktionsleiste
+TITLE Umgang mit Funktionsleisten
+
+<p>
+Die Funktionsleisten bieten eine Schnellauswahl zum Kontext gehöriger Funktionen und
+Einstellungen. Alle Funktionsleisten sind in ihrer Position und Ausrichtung individuell
+einstellbar. Dies wird an Beispielen erläutert.
+</p>
+
+<h3>%::toolbar::mc::Orientation%</h3>
+
+<dir><img src="images/toolbar-usage-dnd-hover.png"/></dir>
+
+<p>
+Wir verschieben die Funktionsleiste "%::application::board::mc::Control%" nach oben.
+Dazu wird die linke Maustaste auf der Dragleiste (der geriffelten Leiste) gedrückt
+gehalten und die Leiste nach oben verschoben. Solange die Funktionsleiste nicht im
+Fenster einrastet, wird ein schwarzer Rahmen angezeigt.
+</p>
+
+<dir><img src="images/toolbar-usage-move-float.png"/></dir>
+
+<p>
+Lassen wir hier die Maus los, dann haben wir eine schwebende Funktionsleiste.
+<note/>Nicht alle Funktionsleisten können schwebend positioniert werden.
+</p>
+
+<dir><img src="images/toolbar-usage-float.png"/></dir>
+
+<p>
+Durch einen Doppelklick auf die gelbe Kopfzeile wird die Funktionsleiste wieder an
+ihrer vorhergehenden Position eingerastet. Zu diesem Zweck kann auch das
+kontextsensitiven Menü der schwebenden Leiste genutzt werden.
+</p>
+
+<p>
+Nun verschieben wir die Funktionsleiste an die obere Position. Ein roter Rahmen
+zeigt an, daß eine Einraststelle vorliegt.
+</p>
+
+<dir><img src="images/toolbar-usage-move-locked.png"/></dir>
+
+<p>
+An dieser Stelle lassen wir die Funktionsleiste los.
+</p>
+
+<dir><img src="images/toolbar-usage-locked.png"/></dir>
+
+<p>
+Die Funktionalität des Positionierens ist auch unter dem kontextsensitiven Menü
+einer Funktionsleiste erreichbar.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-orientation.png"/></dir>
+
+<p>
+Es ist bei den einzelnen Funktionsleisten verschieden, welche Positionierungen
+zugelassen sind.
+</p>
+
+<p>
+Im nächsten Beispiel sind die oberen Funktionsleisten minimiert.
+</p>
+
+<dir><img src="images/toolbar-usage-minimized.png"/></dir>
+
+<p>
+Ein Klick auf die Dragleiste (die geriffelte Leiste) läßt die Funktionsleiste
+wieder expandieren.
+</p>
+
+<h3>%::toolbar::mc::Alignment%</h3>
+
+<p>
+Die Funktionsleisten können auch ausgerichtet werden.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-alignment.png"/></dir>
+
+<p>
+Normalerweise sind diese Leisten immer nach Links ausgerichtet, doch bei manchen
+ist eine Ausrichtung in die Mitte oder sogar nach Rechts sinnvoll.
+</p>
+
+<h3>%::toolbar::mc::IconSize%</h3>
+
+<p>
+Jede Leiste lässt eine individuelle Einstellung der Piktogrammgröße zu.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-icon-size.png"/></dir>
+
+<p>
+Normalerweise wird die Einstellung "%::toolbar::mc::Default%" gewählt, d.h. es wird
+die Piktogrammgröße gewählt, die im Hauptmenü unter
+<menuitem>%::menu::mc::View%&#8680;%::toolbar::mc::IconSize%</menuitem>
+vorgegeben ist.
+</p>
+
+<h3>Ein- und Ausblenden</h3>
+
+<p>
+Auch ein Ein- oder Ausblenden einer Leiste wird im kontextsensitiven Menü angeboten:
+</p>
+
+<dir><img src="images/toolbar-usage-menu-toolbar.png"/></dir>
+
+<p>
+Diese Funktionalität ist ebenso im Hauptmenü unter
+<menuitem>%::menu::mc::Settings%&#8680;%::toolbar::mc::Toolbar%</menuitem>
+erreichbar.
+<note/>Nicht alle Funktionsleisten sind ausblendbar.
+</p>
+
+<h3>%::toolbar::mc::Expand%</h3>
+
+<p>
+Letzlich gibt es noch eine besondere Einstellung, was hier am Beispiel des
+Kommentardialogs gezeigt wird.
+</p>
+
+<dir><img src="images/toolbar-usage-menu-expand.png"/></dir>
+
+<p>
+Wir lassen nun die obere Leiste expandieren, indem wir den Menüpunkt
+<menuitem>%::toolbar::mc::Expand%</menuitem> des kontextsensitiven Menüs
+anklicken. Das Resultat:
+</p>
+
+<dir><img src="images/toolbar-usage-expanded.png"/></dir>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -5,7 +5,6 @@ set Contents {
   {
     {{{Allgemeine Hilfe} {Overview.html} {general}}}
     {{{Datenbankformate} {Database-Formats.html}}}
-    {{{Datenbankarchiv} {Database-Archive.html}}}
     {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
     {{{Umgang mit Funktionsleisten} {Toolbar-Usage.html}}}
     {{{Die Ablage-Datenbank} {Clipbase.html}}}
@@ -39,6 +38,7 @@ set Contents {
   {
     {{{Weitere Informationen} {Overview.html} {further-information}}}
     {{{Partiemarkierungen} {Game-Flags.html}}}
+    {{{Spezifikation des Datenbankarchivs} {Database-Archive.html}}}
     {{{Kommandozeilenoptionen} {Command-Line-Options.html}}}
     {{{NAG-Kommentarwerte} {NAG-Comments.html}}}
     {{{Kontaktinformationen} {Contact-Information.html}}}

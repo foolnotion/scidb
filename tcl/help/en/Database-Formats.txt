@@ -117,7 +117,7 @@ A complete specification of this format will be found at
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2>Database archive (<abbr>.sca</abbr>)</h2>
+<h2>Database archive (<abbr>.scv</abbr>)</h2>
 
 <p>
 Scidb's database archive is based on an independent archive format,
@@ -128,8 +128,8 @@ limited to a specific database format.
 </p>
 
 <p>
-A specification of this format is on page
-<a href="Database-Archive.html">Database archive</a>.
+A detailed description of this format is on page
+<a href="Database-Archive.html">Specification of database archive</a>.
 </p>
 
 END

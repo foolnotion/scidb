@@ -2314,8 +2314,8 @@ proc CopyComments {parent} {
 		set w $top.$what.cb
 		::ttk::tcombobox $w \
 			-state readonly \
-			-height 15 \
 			-showcolumns {flag code} \
+			-height [expr {min(15, [llength $langSet($what)])}] \
 			-textvariable [namespace current]::Vars(lang:$what) \
 			-exportselection no \
 			-format "%2" \

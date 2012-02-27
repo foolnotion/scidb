@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 #ifdef BROKEN_LINKER_HACK
 # include "db_board.h"
 # include "db_board_base.h"

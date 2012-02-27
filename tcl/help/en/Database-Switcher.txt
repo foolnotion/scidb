@@ -105,7 +105,7 @@ Open a database via the database history.
 Selection of the symbol size for the database tiles.
 </p>
 
-<dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
+<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>

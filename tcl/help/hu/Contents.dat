@@ -38,6 +38,7 @@ set Contents {
   {
     {{{Further information} {Overview.html} {further-information}}}
     {{{Game markers} {Game-Flags.html}}}
+    {{{Specification of database archive} {Database-Archive.html}}}
     {{{Command line options} {Command-Line-Options.html}}}
     {{{NAG annotation values} {NAG-Comments.html}}}
     {{{Contact information} {Contact-Information.html}}}

@@ -8,8 +8,9 @@
 # ======================================================================
 # Copyright: (C) 2009-2012 Gregor Cramer
 # ----------------------------------------------------------------------
-# - Made a fix (look for FIX) and an
+# - Made a fix (look for FIX)
 # - Important enhancement (look for FEATURE)
+# - Positioning of submenus modernized (look for SUBMENUS)
 # - Patch http://sourceforge.net/tracker/index.php?func=detail&aid=2920409&group_id=12997&atid=312997
 #  applied with major modifications (look for MODERNIZE)
 # ======================================================================
@@ -215,6 +216,46 @@ switch [tk windowingsystem] {
 namespace eval tk { set MenuDelay 250 }
 
 ### MODERNIZE end ############################################################
+
+
+### SUBMENUS begin ###########################################################
+if {[tk windowingsystem] eq "x11"} {
+    bind Menu <Configure> {+
+        set w [winfo parent %W]
+
+        if {[winfo class $w] eq "Menu"} {
+            set dir right
+            if {[info exists ::tk::Priv(sub:dir:$w)]} {
+                set dir $::tk::Priv(sub:dir:$w)
+            }
+            set ::tk::Priv(sub:dir:%W) right
+            set countHashes [expr {[string length %W] - [string length [string map {# {}} %W]]}]
+
+            if {$countHashes >= 8 || $countHashes == 0 || $dir eq "left"} {
+                set x0 [winfo rootx $w]
+                set y0 [winfo rootx $w]
+                
+                # Adjusts the given coordinates down and the left to give a Motif look.
+                set bw [$w cget -borderwidth]
+                set activebw [$w cget -activeborderwidth]
+                set x [expr {$x0 + [winfo width $w] - $bw - $activebw - 2}]
+
+                if {%x < $x || $dir eq "left"} {
+                    set x [expr {$x0 - %w}]
+                    set x [expr {$x - $::shadow::offset + 1}]
+
+                    if {$x >= 0} {
+                        wm state %W withdrawn
+                        wm geometry %W "+$x+%y"
+                        after idle [list wm state %W normal]
+                        set ::tk::Priv(sub:dir:%W) left
+                    }
+                }
+            }
+        }
+    }
+}
+### SUBMENUS end #############################################################
 
 
 # ::tk::MbEnter --
@@ -497,7 +538,7 @@ proc ::tk::MenuUnpost menu {
 		set menu $parent
 	    }
 	    if {[$menu cget -type] ne "menubar"} {
-	    $Priv(popup) unpost
+                $Priv(popup) unpost
 		$menu unpost
 	    }
 	}

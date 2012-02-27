@@ -401,7 +401,7 @@ set undock [image create photo -data {
 } ;# namespace twm
 
 if {0} {
-	set header "Header"
+	set header "Engine"
 
 	ttk::frame .f
 	pack .f -fill both -expand yes

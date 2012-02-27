@@ -139,6 +139,7 @@
 ::menu::mc::File						"&Datei"
 ::menu::mc::Game						"&Partie"
 ::menu::mc::View						"&Ansicht"
+::menu::mc::Settings					"&Einstellungen"
 ::menu::mc::Help						"&Hilfe"
 
 ::menu::mc::FileOpen					"&Datenbank öffnen..."
@@ -190,8 +191,6 @@
 ::menu::mc::FileNotAllowed			"Dateiname '%s' ist nicht erlaubt"
 ::menu::mc::TwoOrMoreDots			"Enthält zwei oder mehr aufeinanderfolgende Punkte."
 ::menu::mc::ForbiddenChars			"Enthält unerlaubte Zeichen."
-
-::menu::mc::Settings					"&Einstellungen"
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt			"Datei %s ist beschädigt:"
@@ -392,7 +391,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffix-Kommentierungen"
 ::application::pgn::mc::StripOriginalComments			"Ursprungskommentare entfernen"
 
-::application::pgn::mc::AddNewGame							"Partie speichern in %s..."
+::application::pgn::mc::AddNewGame							"Partie hinzufügen zu %s..."
 ::application::pgn::mc::ReplaceGame							"Partie ersetzen in %s..."
 ::application::pgn::mc::ReplaceMoves						"Partiezüge ersetzen in aktueller Partie"
 
@@ -1383,6 +1382,9 @@
 ::comment::mc::OverwriteContent		"Vorhandenen Inhalt überschreiben?"
 ::comment::mc::AppendContent			"Falls \"nein\" wird der Text angefügt."
 
+::comment::mc::LanguageSelection		"Sprachauswahl"
+::comment::mc::Formatting				"Formatierung"
+
 ::comment::mc::Bold						"Fett"
 ::comment::mc::Italic					"Kursiv"
 ::comment::mc::Underline				"Unterstrich"
@@ -1636,7 +1638,7 @@
 ::fsbox::mc::FileHasDisappeared			"Die Datei '%s' ist nicht mehr vorhanden."
 
 ### toolbar ############################################################
-::toolbar::mc::Toolbar		"Werkzeugleiste"
+::toolbar::mc::Toolbar		"Funktionsleiste"
 ::toolbar::mc::Orientation	"Positionierung"
 ::toolbar::mc::Alignment	"Ausrichtung"
 ::toolbar::mc::IconSize		"Piktogrammgröße"

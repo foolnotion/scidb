@@ -18,18 +18,17 @@
 
 TITLE Willkommen zur Scidb-Hilfe
 
-<h2 name="general">Allgemeine Hilfe</h2>
+<h2 id="general">Allgemeine Hilfe</h2>
 
 <dir>
   <li><a href="Database-Formats.html">Datenbankformate</a></li>
-  <li><a href="Database-Archive.html">Datenbankarchiv</a></li>
   <li><a href="File-Selection-Dialog.html">Umgang mit dem Dateiauswahldialog</a></li>
   <li><a href="Toolbar-Usage.html">Umgang mit Funktionsleisten</a></li>
   <li><a href="Clipbase.html">Die Ablage-Datenbank</a></li>
   <li><a href="How-To-Set-Default-Browser.html">Festlegung des Standard-Browsers</a></li>
 </dir>
 
-<h2 name="list-windows">Scidb-Listenfenster</h2>
+<h2 id="list-windows">Scidb-Listenfenster</h2>
 
 <dir>
   <li><a href="Game-List-Window.html">Partienliste</a></li>
@@ -38,7 +37,7 @@ TITLE Willkommen zur Scidb-Hilfe
   <li><a href="Annotator-List-Window.html">Kommentatorenliste</a></li>
 </dir>
 
-<h2 name="windows-and-dialogs">Scidb-Fenster und Dialoge</h2>
+<h2 id="windows-and-dialogs">Scidb-Fenster und Dialoge</h2>
 
 <dir>
   <li><a href="Database-Switcher.html">Datenbankumschalter</a></li>
@@ -58,10 +57,11 @@ TITLE Willkommen zur Scidb-Hilfe
   <li><a href="Database-Export-Dialog.html">Datenbankenexport</a></li>
 </dir>
 
-<h2 name="further-information">Weitere Informationen</h2>
+<h2 id="further-information">Weitere Informationen</h2>
 
 <dir>
   <li><a href="Game-Flags.html">Partiemarkierungen</a></li>
+  <li><a href="Database-Archive.html">Spezifikation des Datenbankarchivs</a></li>
   <li><a href="Command-Line-Options.html">Kommandozeilenoptionen</a></li>
   <li><a href="NAG-Comments.html">NAG-Kommentarwerte</a></li>
   <li><a href="Contact-Information.html">Kontaktinformationen</a></li>

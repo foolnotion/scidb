@@ -218,6 +218,10 @@ parse(char const* document, unsigned length, mstl::string& result, Action& actio
 
 	result.clear();
 
+	// XXX: Currently parser is not recognizing "<![CDATA[ ... ]]>" elements.
+	//      Inside these elements the characters "<>&" do not have a special meaning.
+	//      (This means, do not parse inside this element)
+
 	while (first < last)
 	{
 		if (mstl::is_odd(lessCounter))

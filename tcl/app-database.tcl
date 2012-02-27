@@ -501,9 +501,12 @@ proc addRecentlyUsedToMenu {parent m} {
 	if {[llength $recentFiles]} {
 		foreach entry $recentFiles {
 			lassign $entry type file encoding readonly
+			if {[string match $::scidb::dir::home* $file]} {
+				set filename [string replace $file 0 [expr {[string length $::scidb::dir::home] - 1}] "~"]
+			}
 			set name [::util::databaseName $file]
 			$m add command \
-				-label " $name  \u25b8  $file" \
+				-label " $name  \u25b8  $filename" \
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase $parent $file yes $encoding $readonly]] \

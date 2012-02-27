@@ -3066,9 +3066,19 @@ proc FinishDuplicateFile {w sel name} {
 	if {![[namespace parent]::CheckPath $w $name]} { return $srcFile }
 
 	if {[llength $Vars(duplicatecommand)]} {
-		set files [{*}$Vars(duplicatecommand) $srcFile $dstFile]
+		set fileList [{*}$Vars(duplicatecommand) $srcFile $dstFile]
 	} else {
-		set files [list $srcFile $dstFile]
+		set fileList [list $srcFile $dstFile]
+	}
+
+	set files {}
+	foreach {f g} $fileList {
+		if {[file exists $f]} {
+			while {[file type $f] eq "link"} {
+				set f [file readlink $f]
+			}
+		}
+		lappend files $f $g
 	}
 
 	if {[llength $files] == 0} {

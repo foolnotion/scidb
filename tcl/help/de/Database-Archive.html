@@ -9,17 +9,25 @@
 <head>
   <meta http-equiv="content-type"
            content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="%LANG%" />
   <meta http-equiv="content-style-type"
            content="text/css" />
-  <link  rel="icon"
-        href="http://scidb.sourceforge.net/images/scidb.ico"
-        type="image/x-icon" />
-  <link  rel="shortcut icon"
-        href="http://scidb.sourceforge.net/images/scidb.ico" />
-  <link   rel="stylesheet"
-         type="text/css"
-        media="screen"
-         href="../styles/help.css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
 
   <title>Hilfe: Datenbankarchiv</title>
 </head>
@@ -33,7 +41,7 @@
 <p>
 Scidb's Datenbankarchiv stützt sich euf ein unabhängiges Archivformat, für das die
 generelle Dateiendung "<abbr>.ive</abbr>" vorgesehen ist. Scidb benutzt jedoch die
-spezielle Dateiendung "<abbr>.sca</abbr>". Dieses Archivformat enthält Informationen
+spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthält Informationen
 über die enthaltenen Dateien wie Name, Größe, Komprimierungsmethode, etc.
 </p>
 
@@ -41,7 +49,7 @@ spezielle Dateiendung "<abbr>.sca</abbr>". Dieses Archivformat enthält Informat
 Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
 </p>
 
-<div class="box"><pre><code>
+<div class="box"><pre><code> <!-- don't translate -->
 Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -49,17 +57,18 @@ Header      = HeadDelim LF HeaderInfo DataDelim ;
 HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
 DataDelim   = '&lt;-- D A T A --&gt;' LF ;
 HeaderInfo  =
-  '&lt;Name&gt;' { Space } ValidFileName LF
-  '&lt;Size&gt;' { Space } Number LF
+  '&lt;FileName&gt;' { Space } FileName LF
+  [ '&lt;FileSize&gt;' { Space } Number LF ]
+  [ '&lt;Size&gt;' { Space } Number LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
   [ '&lt;Modified&gt;' { Space } Timestamp LF ] ;
 Space       = HT | " " ;
 Compression = 'raw' | 'gzip' | 'lzo' ;
 BinaryData  = { Byte } ;
-ArchInfo    = '&lt;TotalSize&gt;' { Space } Number LF ;
-UserInfo    = { Attribute } ;
-Attribute   = AttrName { Space } AttrValue LF ;
+ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
+UserInfo    = LF { Attribute LF } Attribute ;
+Attribute   = AttrName { Space } AttrValue ;
 AttrName    = "&lt;" Identifier "&gt;" ;
 Identifier  = AsciiLetter { AsciiLetter } ;
 AttrValue   = AsciiGraphical { AsciiGraphical } ;
@@ -69,23 +78,33 @@ Time      = Hour ":" Minute ":" Second ; <!--
 --></code></pre></div>
 
 <p>
-<code>ValidFileName</code> ist irgendein plattformunabhängiger, gültiger Dateiname,
+<code>FileName</code> ist irgendein plattformunabhängiger, gültiger Dateiname,
 optional mit vorangestellter Pfadbezeichnung. Ein plattformunabhängiger
 Dateiname darf die Zeichen "&lt;" und "&gt;" nicht enthalten. Es ist dem
 Dekodierungsprogramm überlassen, wie die vorangestellten Pfadbezeichnungen verarbeitet
 werden. <code>&lt;Size&gt;</code> enthält die Größe der Datei innerhalb der
-Archivierungsdatei, nicht die Größe der Datei in entpackter Form. Diese Angabe
-ist zugleich der Offset zum nächsten Datei-Header. <code>&lt;TotalSize&gt;</code>
-enthält die Summe aller (internen) Dateigrößen.  Die optionale Prüfsumme
-<code>&lt;Checksum&gt;</code> wird mit dem CRC32-Verfahren ermittelt.
+Archivierungsdatei, die Größe der entpackten Datei wird in <code>FileSize</code>
+angegeben. Diese Angabe der internen Größe ist zugleich der Offset zum nächsten
+Datei-Header. <code>&lt;TotalSize&gt;</code> enthält die Summe aller (externen) Dateigrößen.
+Ist diese Summe unbekannt, weil eine der Dateigrößen unbekannt ist, dann ist
+<code>&lt;TotalSize&gt;</code> nicht vorhanden.
+Die optionale Prüfsumme <code>&lt;Checksum&gt;</code> wird mit dem CRC32-Verfahren ermittelt.
 Diese Prüfsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
 <code>&lt;Modified&gt;</code> enthält den Zeitstempel der letzten Modifikation (GMT),
 dieses Datum kann vom Dekoder verwendet werden um den Modifikationszeitstempel
-der extrahierten Datei wiederherzustellen.  Die Attribute <code>&lt;Name&gt;</code>,
-<code>&lt;Size&gt;</code>, <code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code>
-und <code>&lt;Modified&gt;</code> können in beliebiger Reihenfolge aufgeführt werden.
-Fehlt die Angabe <code>&lt;Compression&gt;</code> wird 'raw' als Wert angenommen
-(d.h. es wird keine Dekomprimierung verwendet).
+der extrahierten Datei wiederherzustellen.  Die Attribute <code>&lt;FileName&gt;</code>,
+<code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>, <code>&lt;Compression&gt;</code>,
+<code>&lt;Checksum&gt;</code> und <code>&lt;Modified&gt;</code> können in beliebiger
+Reihenfolge aufgeführt werden.  Fehlt die Angabe <code>&lt;Compression&gt;</code> wird
+'raw' als Wert angenommen (d.h. es wird keine Dekomprimierung verwendet).
+</p>
+
+<p>
+Es kann für <code>FileName</code> auch eine <acronym>URL</acronym> genommen werden,
+wie <abbr>z.B.</abbr> <code>http://scidb.sf.net/bases/tiny.pgn</code>.
+In diesem Fall ist das Attribute <code>Size</code> nicht vorhanden, und
+<code>FileSize</code> mag unbekannt sein (d.h. ebenso nicht vorhanden).
+Der Datenbereich ist bei Angabe einer <acronym>URL</acronym> leer (Leerzeile).
 </p>
 
 <p>
@@ -103,28 +122,29 @@ Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Textedi
 </div>
 
 <p>
-<code>UserInfo</code> ist im "<abbr>.sca</abbr>"-Format folgendermaßen definiert:
+<code>UserInfo</code> ist im "<abbr>.scv</abbr>"-Format folgendermaßen definiert:
 </p>
 
-<div class="box"><pre><code>
-UserInfo  =
-  "&lt;Count&gt;" { Space } ( Number | "-" ) LF
-  "&lt;Format&gt;" { Space } Formats LF
-  "&lt;Type&gt;" { Space } Type LF ;
-Type      = 'single' | 'multi' ;
-Formats   = Format { "," Format } ;
-Format    = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ; <!--
+<div class="box"><pre><code> <!-- don't translate -->
+UserInfo    = { LF Attributes } ;
+Attributes  =
+  "&lt;Format&gt;" { Space } Formats
+  "&lt;Type&gt;" { Space } Type
+  [ "&lt;Count&gt;" { Space } Number ] ;
+Type        = 'single' | 'multi' ;
+Formats     = Format { "," Format } ;
+Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ; <!--
 --></code></pre></div>
 
 <p>
 <code>&lt;Count&gt;</code> ist die Anzahl der enthaltenen Partien in der Datenbank.
-Wenn diese Anzahl nicht bekannt ist, z.B. bei PGN-Dateien, dann enthält dieses
-Feld den Wert "-".  <code>&lt;Format&gt;</code> ist die Angabe des Formats
-der entpackten Datenbank.
+Wenn diese Anzahl nicht bekannt ist, z.B. bei <acronym>PGN</acronym>-Dateien oder
+bei der Verwendung von <acronym>URL<acronym>'s, dann ist dieses Attribut nicht vorhanden.
+<code>&lt;Format&gt;</code> ist die Angabe des Formats der entpackten Datenbank.
 </p>
 
 <p>
-"<abbr>.sca</abbr>"-Archive enthalten in der Regel immer nur eine Datenbank
+"<abbr>.scv</abbr>"-Archive enthalten in der Regel immer nur eine Datenbank
 (<code>&lt;Type&gt;</code> = 'single'). Es ist jedoch vorgesehen, daß auch
 mehrere Datenbanken in ein Archiv gepackt werden können. Dann muß
 <code>&lt;Type&gt;</code> den Wert 'multi' enthalten, und unter
@@ -135,26 +155,27 @@ Summe der Partien in allen Datenbanken.
 
 <p>
 Die Reihenfolge der Attribute <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>
-und <code>&lt;Type&gt;</code> ist zwingend.
+und <code>&lt;Type&gt;</code> ist beliebig.
 </p>
 
 <p>
-Zum Abschluss ein einfaches Beispiel für ein Archiv:
+Zum Abschluss zwei einfache Beispiele für Archive:
 </p>
 
-<div class="box"><pre><code>
+<div class="box"><pre><code> <!-- don't translate -->
 iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
 &lt;Format&gt; pgn
 &lt;Type&gt; single
-&lt;-- H E A D --&gt; 
-&lt;Name&gt; one-game.pgn
+&lt;-- H E A D --&gt;
+&lt;FileName&gt; one-game.pgn
+&lt;FileSize&gt; 468
 &lt;Size&gt; 468
 &lt;Compression&gt; raw
 &lt;Checksum&gt; 3225351655
 &lt;Modified&gt; 2012-02-21 18:31:12
-&lt;-- D A T A --&gt; 
+&lt;-- D A T A --&gt;
 [Event "London knockout"]
 [Site "London"]
 [Date "1851.05.27"]
@@ -174,6 +195,19 @@ iveArch
 1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
 Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0 <!--
+--></code></pre></div>
+
+<div class="box"><pre><code> <!-- don't translate -->
+iveArch
+&lt;Format&gt; pgn
+&lt;Type&gt; multi
+&lt;-- H E A D --&gt;
+&lt;FileName&gt; http://scidb.sf.net/bases/tiny-1.pgn
+&lt;-- D A T A --&gt;
+
+&lt;-- H E A D --&gt;
+&lt;FileName&gt; http://scidb.sf.net/bases/tiny-2.pgn
+&lt;-- D A T A --&gt; <!--
 --></code></pre></div>
 
 </body>
