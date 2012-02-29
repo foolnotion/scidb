@@ -194,7 +194,8 @@ bind Menu <Configure> {+
 
 bind Menu <Map> {+
 	if {![string match *#menu %W]} {
-		after idle { shadow::map %W yes }
+		# a slight delay is reducing the flickering
+		after 25 { shadow::map %W yes }
 	}
 }
 

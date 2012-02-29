@@ -257,7 +257,7 @@ if {[tk windowingsystem] eq "x11"} {
                     }
                 }
             }
-        } elseif {$countHashes == 0} {
+        } elseif {0 && $countHashes == 0} { ;# this is not working well
             set x [expr {max(0, min(%x, [winfo screenwidth %W] - %w - $::tk::ShadowOffset))}]
             if {$x != %x} {
                 wm state %W withdrawn
