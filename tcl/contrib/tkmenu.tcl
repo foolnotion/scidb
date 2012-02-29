@@ -221,55 +221,6 @@ namespace eval tk {
 ### MODERNIZE end ############################################################
 
 
-### SUBMENUS begin ###########################################################
-if {[tk windowingsystem] eq "x11"} {
-    bind Menu <Configure> {+
-        set w [winfo parent %W]
-        set countHashes [expr {[string length %W] - [string length [string map {# {}} %W]]}]
-
-        if {[winfo class $w] eq "Menu"} {
-            set dir right
-            if {[info exists ::tk::Priv(sub:dir:$w)]} {
-                set dir $::tk::Priv(sub:dir:$w)
-            }
-            set ::tk::Priv(sub:dir:%W) right
-
-            if {$countHashes >= 8 || $countHashes == 0 || $dir eq "left"} {
-                set x0 [winfo rootx $w]
-                set y0 [winfo rootx $w]
-                
-                # Adjusts the given coordinates down and the left to give a Motif look.
-                set bw [$w cget -borderwidth]
-                set activebw [$w cget -activeborderwidth]
-                set x [expr {$x0 + [winfo width $w] - $bw - $activebw - 2}]
-
-                if {%x < $x || $dir eq "left"} {
-                    set x [expr {$x0 - %w}]
-                    if {$::tk::ShadowOffset > 0} {
-                        set x [expr {$x - $::tk::ShadowOffset + [$w cget -borderwidth]}]
-                    }
-
-                    if {$x >= 0} {
-                        wm state %W withdrawn
-                        wm geometry %W "+$x+%y"
-                        after idle [list wm state %W normal]
-                        set ::tk::Priv(sub:dir:%W) left
-                    }
-                }
-            }
-        } elseif {0 && $countHashes == 0} { ;# this is not working well
-            set x [expr {max(0, min(%x, [winfo screenwidth %W] - %w - $::tk::ShadowOffset))}]
-            if {$x != %x} {
-                wm state %W withdrawn
-                wm geometry %W "+$x+%y"
-                after idle [list wm state %W normal]
-            }
-        }
-    }
-}
-### SUBMENUS end #############################################################
-
-
 # ::tk::MbEnter --
 # This procedure is invoked when the mouse enters a menubutton
 # widget.  It activates the widget unless it is disabled.  Note:
@@ -1591,5 +1542,63 @@ proc ::tk_popup {menu x y {entry {}}} {
 	tk_menuSetFocus $menu
     }
 }
+
+### MODERNIZE begin ##########################################################
+# Modernized menu placement: menu will be placed on left side if not
+# enough room on right side is available.
+##############################################################################
+if {[tk windowingsystem] eq "x11"} {
+
+namespace eval tk::menu {}
+rename ::menu ::__menu__tkmenu
+
+
+proc menu {args} {
+    set w [__menu__tkmenu {*}$args]
+    catch { rename ::$w $w.__menu__ }
+    proc ::$w {command args} "::tk::menu::WidgetProc $w \$command {*}\$args"
+    return $w
+}
+
+
+proc ::tk::menu::WidgetProc {m command args} {
+    if {$command eq "post" && [llength $args] == 2} {
+        lassign $args x y
+        set w [winfo parent $m]
+        set countHashes [expr {[string length $m] - [string length [string map {# {}} $m]]}]
+
+        if {[winfo class $w] eq "Menu"} {
+            set dir right
+            if {[info exists ::tk::Priv(sub:dir:$w)]} {
+                set dir $::tk::Priv(sub:dir:$w)
+            }
+            set ::tk::Priv(sub:dir:$m) right
+
+            if {$countHashes >= 8 || $countHashes == 0 || $dir eq "left"} {
+                set x0 [winfo rootx $w]
+                set bw [$w cget -borderwidth]
+                set aw [$w cget -activeborderwidth]
+                set x1 [expr {$x0 + [winfo width $w] - $bw - $aw - 2}]
+                set mw [winfo reqwidth $m]
+                set sw [winfo screenwidth $m]
+
+                if {$x1 + $mw >= $sw || $dir eq "left"} {
+                    set x1 [expr {$x0 - $mw - $::tk::ShadowOffset + [$w cget -borderwidth]}]
+                    if {$x1 >= 0} { set x $x1 }
+                }
+            }
+        } elseif {$countHashes == 0} {
+            set x1 [expr {min($x, [winfo screenwidth $m] - [winfo reqwidth $m] - $::tk::ShadowOffset)}]
+            if {$x1 >= 0} { set x $x1 }
+        }
+
+        set args [list $x $y]
+    }
+
+    return [$m.__menu__ $command {*}$args]
+}
+
+}
+### MODERNIZE end ############################################################
 
 # vi:set et ts=8 sw=4:
