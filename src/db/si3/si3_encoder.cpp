@@ -171,9 +171,9 @@ Encoder::isExtraTag(tag::ID tag)
 		case tag::BlackCountry:
 		case tag::Annotator:
 		case tag::PlyCount:
-		case tag::Opening:
-		case tag::Variation:
-		case tag::Source:
+//		case tag::Opening:
+//		case tag::Variation:
+//		case tag::Source:
 		case tag::SetUp:
 		case tag::EventDate:
 			return false;

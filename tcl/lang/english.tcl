@@ -136,61 +136,35 @@
 ::progress::mc::Progress "Progress"
 
 ### menu ###############################################################
-::menu::mc::File						"&File"
-::menu::mc::Game						"&Game"
-::menu::mc::View						"&View"
-::menu::mc::Settings					"&Settings"
-::menu::mc::Help						"&Help"
+::menu::mc::Theme							"Theme"
+::menu::mc::Ctrl							"Ctrl"
+::menu::mc::Shift							"Shift"
 
-::menu::mc::FileOpen					"&Open Database..."
-::menu::mc::FileOpenURL				"Open &URL"
-::menu::mc::FileOpenRecent			"Open &Recent"
-::menu::mc::FileNew					"&New Database..."
-::menu::mc::FileExport				"E&xport..."
-::menu::mc::FileImport				"Import &PGN files..."
-::menu::mc::FileImportOne			"&Import one PGN game..."
-::menu::mc::FileClose				"&Close"
-::menu::mc::FileQuit					"&Quit"
+::menu::mc::AllScidbFiles				"All Scidb files"
+::menu::mc::AllScidbBases				"All Scidb databases"
+::menu::mc::ScidBases					"Scid databases"
+::menu::mc::ScidbBases					"Scidb databases"
+::menu::mc::ChessBaseBases				"ChessBase databases"
+::menu::mc::PGNFilesArchives			"PGN files/archives"
+::menu::mc::PGNFiles						"PGN files"
+::menu::mc::PGNArchives					"PGN archives"
 
-::menu::mc::GameNew					"&New Game"
-::menu::mc::GameNewChess960		"N&ew Game: Chess 960"
-::menu::mc::GameNewChess960Sym	"Ne&w Game: Chess 960 (symmetrical only)"
-::menu::mc::GameNewShuffle			"New &Game: Shuffle Chess"
-::menu::mc::GameSave					"&Save Game"
-::menu::mc::GameReplace				"&Replace Game"
-::menu::mc::GameReplaceMoves		"Replace &Moves Only"
+::menu::mc::Language						"&Language"
+::menu::mc::Toolbars						"&Toolbars"
+::menu::mc::ShowLog						"Show &Log..."
+::menu::mc::AboutScidb					"&About Scidb"
+::menu::mc::Fullscreen					"&Full-Screen"
+::menu::mc::LeaveFullscreen			"Leave &Full-Screen"
+::menu::mc::Help							"&Help"
+::menu::mc::Contact						"&Contact (Web Browser)"
+::menu::mc::Quit							"&Quit"
 
-::menu::mc::HelpAbout				"&About Scidb"
-::menu::mc::HelpContents			"&Contents"
-::menu::mc::HelpWhatsNew			"&What's new"
-::menu::mc::HelpRoadmap				"&Roadmap"
-::menu::mc::HelpContactInfo		"C&ontact Information"
-::menu::mc::HelpBugReport			"&Bug Report (open in web browser)"
-::menu::mc::HelpFeatureRequest	"&Feature Request (open in web browser)"
+::menu::mc::ContactBugReport			"&Bug Report"
+::menu::mc::ContactFeatureRequest	"&Feature Request"
 
-::menu::mc::ViewShowLog				"Show &Log..."
-::menu::mc::ViewFullscreen			"Full-Screen"
-
-::menu::mc::OpenFile					"Open a Scidb File"
-::menu::mc::NewFile					"Create a Scidb File"
-::menu::mc::ImportFiles				"Import PGN files..."
-
-::menu::mc::Theme						"Theme"
-::menu::mc::Ctrl						"Ctrl"
-::menu::mc::Shift						"Shift"
-
-::menu::mc::AllScidbFiles			"All Scidb files"
-::menu::mc::AllScidbBases			"All Scidb databases"
-::menu::mc::ScidBases				"Scid databases"
-::menu::mc::ScidbBases				"Scidb databases"
-::menu::mc::ChessBaseBases			"ChessBase databases"
-::menu::mc::PGNFilesArchives		"PGN files/archives"
-::menu::mc::PGNFiles					"PGN files"
-::menu::mc::PGNArchives				"PGN archives"
-
-::menu::mc::FileNotAllowed			"Filename '%s' not allowed"
-::menu::mc::TwoOrMoreDots			"Contains two or more consecutive dots."
-::menu::mc::ForbiddenChars			"Contains forbidden character(s)."
+::menu::mc::OpenFile						"Open a Scidb File"
+::menu::mc::NewFile						"Create a Scidb File"
+::menu::mc::ImportFiles					"Import PGN files..."
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt			"File %s is corrupt:"
@@ -214,6 +188,7 @@
 ### application ########################################################
 ::application::mc::Database				"&Database"
 ::application::mc::Board					"&Board"
+::application::mc::MainMenu				"&Main Menu"
 
 ::application::mc::DockWindow				"Dock Window"
 ::application::mc::UndockWindow			"Undock Window"
@@ -233,6 +208,13 @@
 ::application::board::mc::KeyEditMarks			"M"
 
 ### application::database ##############################################
+::application::database::mc::FileOpen					"Open Database..."
+::application::database::mc::FileOpenRecent			"Open Recent"
+::application::database::mc::FileNew					"New Database..."
+::application::database::mc::FileExport				"Export..."
+::application::database::mc::FileImport				"Import PGN files..."
+::application::database::mc::FileClose					"Close"
+
 ::application::database::mc::Games						"&Games"
 ::application::database::mc::Players					"&Players"
 ::application::database::mc::Events						"&Events"
@@ -765,6 +747,11 @@
 
 ::gamebar::mc::LockGame					"Lock Game"
 ::gamebar::mc::CloseGame				"Close Game"
+
+::gamebar::mc::GameNew					"New Game"
+::gamebar::mc::GameNewChess960		"New Game: Chess 960"
+::gamebar::mc::GameNewChess960Sym	"New Game: Chess 960 (symmetrical only)"
+::gamebar::mc::GameNewShuffle			"New Game: Shuffle Chess"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Browse Game"

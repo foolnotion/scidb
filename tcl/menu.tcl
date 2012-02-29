@@ -27,65 +27,38 @@
 namespace eval menu {
 namespace eval mc {
 
-set File						"&File"
-set Game						"&Game"
-set View						"&View"
-set Help						"&Help"
+set Theme						"Theme"
+set Ctrl							"Ctrl"
+set Shift						"Shift"
 
-set FileOpen				"&Open..."
-set FileOpenRecent		"Open &Recent"
-set FileOpenURL			"Open &URL..."
-set FileNew					"&New..."
-set FileExport				"E&xport..."
-set FileImport				"I&mport PGN files..."
-set FileImportOne			"&Import one PGN game..."
-set FileClose				"&Close"
-set FileQuit				"&Quit"
+set AllScidbFiles				"All Scidb files"
+set AllScidbBases				"All Scidb databases"
+set ScidBases					"Scid databases"
+set ScidbBases					"Scidb databases"
+set ChessBaseBases			"ChessBase databases"
+set PGNFilesArchives			"PGN files/archives"
+set PGNFiles					"PGN files"
+set PGNArchives				"PGN archives"
 
-set GameNew					"&New Game"
-set GameNewChess960		"N&ew Game: Chess 960"
-set GameNewChess960Sym	"Ne&w Game: Chess 960 (symmetrical only)"
-set GameNewShuffle		"New &Game: Shuffle"
-set GameSave				"&Save Game"
-set GameReplace			"&Replace Game"
-set GameReplaceMoves		"Replace &Moves Only"
+set Language					"&Language"
+set Toolbars					"&Toolbars"
+set ShowLog						"&Show Log..."
+set AboutScidb					"&About Scidb"
+set Fullscreen					"&Full-Screen"
+set LeaveFullscreen			"Leave &Full-Screen"
+set Help							"&Help"
+set Contact						"&Contact (Web Browser)"
+set Quit							"&Quit"
 
-set HelpAbout				"&About Scidb"
-set HelpContents			"&Contents"
-set HelpWhatsNew			"&What's New"
-set HelpRoadmap			"&Roadmap"
-set HelpContactInfo		"C&ontact Information"
-set HelpBugReport			"&Bug Report (open in web browser)"
-set HelpFeatureRequest	"&Feature Request (open in web browser)"
+set ContactBugReport			"&Bug Report"
+set ContactFeatureRequest	"&Feature Request"
 
-set ViewShowLog			"Show &Log..."
-set ViewFullscreen		"Full-Screen"
-
-set OpenFile				"Open a Scidb File"
-set NewFile					"Create a Scidb File"
-set ImportFiles			"Import PGN files"
-
-set Theme					"Theme"
-set Ctrl						"Ctrl"
-set Shift					"Shift"
-
-set AllScidbFiles			"All Scidb files"
-set AllScidbBases			"All Scidb databases"
-set ScidBases				"Scid databases"
-set ScidbBases				"Scidb databases"
-set ChessBaseBases		"ChessBase databases"
-set PGNFilesArchives		"PGN files/archives"
-set PGNFiles				"PGN files"
-set PGNArchives			"PGN archives"
-
-set FileNotAllowed		"Filename '%s' not allowed"
-set TwoOrMoreDots			"Contains two or more consecutive dots."
-set ForbiddenChars		"Contains forbidden character(s)."
-
-set Settings				"&Settings"
+set OpenFile					"Open a Scidb File"
+set NewFile						"Create a Scidb File"
+set ImportFiles				"Import PGN files..."
 
 # do not need translation
-set SettingsEnglish		"&English"
+set SettingsEnglish			"&English"
 
 }
 
@@ -111,22 +84,51 @@ variable SubMenu
 variable MenuWidget
 
 
-# TODO: create menu after Post event
+proc setup {} {
+	bind .application <F1> [list ::menu::openHelp .application]
+	bind .application <Control-l> [list ::log::show]
+	bind .application <F11> [namespace code [list viewFullscreen toggle]]
+	bind .application <Control-q> ::application::shutdown
+
+	if {[::process::testOption full-screen]} { viewFullscreen toggle }
+}
 
 
-proc CreateViewMenu {menu} {
+proc build {menu} {
 	variable ::application::Options
 	variable Fullscreen
 	variable Theme
 
-	if {[::process::testOption full-screen]} { viewFullscreen toggle }
+	### languages ############################################################
+	set m [menu $menu.mLanguages]
+	lassign [::tk::UnderlineAmpersand $mc::Language] text ul
+	$menu add cascade \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::languages \
+		-compound left \
+		;
+	foreach lang [lsort [array names ::mc::input]] {
+		if {[string length $lang]} {
+			set flag $::country::icon::flag([set ::mc::langToCountry([set ::mc::lang$lang])])
+			$m add command \
+				-label " $lang" \
+				-image $flag \
+				-compound left \
+				-command [list ::mc::selectLang $lang] \
+				;
+		}
+	}
 
+	### icon size ############################################################
 	set m [menu $menu.mIconSize]
-	set pos -1
-
-	$menu add cascade -menu $m -label $::toolbar::mc::IconSize
-	widget::menuTextvarHook $menu [incr pos] ::toolbar::mc::IconSize
-	set index 0
+	$menu add cascade \
+		-menu $m \
+		-label " $::toolbar::mc::IconSize" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
 	foreach size $::toolbar::iconSizes {
 		set var ::toolbar::mc::[string toupper $size 0 0]
 		set text [set $var]
@@ -136,13 +138,16 @@ proc CreateViewMenu {menu} {
 			-value $size \
 			;
 		::theme::configureRadioEntry $m $text
-		widget::menuTextvarHook $m $index $var
-		incr index
 	}
 
+	### theme ################################################################
 	set m [menu $menu.mTheme]
-	$menu add cascade -menu $m -label $mc::Theme
-	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::Theme
+	$menu add cascade \
+		-menu $m \
+		-label " $mc::Theme" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
 	set Theme [::theme::currentTheme]
 	set styles [lsort -dictionary [ttk::style theme names]]
 	set i [lsearch $styles default]
@@ -151,6 +156,8 @@ proc CreateViewMenu {menu} {
 		if {$style ne "classic"} {
 			$m add radiobutton \
 				-label $style \
+				-image $::icon::16x16::none \
+				-compound left \
 				-variable [namespace current]::Theme \
 				-indicatoron off \
 				-value $style \
@@ -158,202 +165,107 @@ proc CreateViewMenu {menu} {
 			::theme::configureRadioEntry $m $style
 		}
 	}
-	
+
+	### toolbars #############################################################
+	set m [menu $menu.mToolbars]
+	lassign [::tk::UnderlineAmpersand $mc::Toolbars] text ul
+	$menu add cascade \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
+	foreach parent [::toolbar::activeParents] {
+		::toolbar::addToolbarMenu $m $parent none
+	}
+
+	### help #################################################################
 	$menu add separator
-	incr pos
-	set cmd [list ::log::show]
+
+	lassign [::tk::UnderlineAmpersand $mc::Help] text ul
 	$menu add command \
 		-compound left \
-		-image $::icon::16x16::log \
-		-accelerator "${mc::Ctrl}+L" \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::help \
+		-accelerator "F1" \
+		-command [list ::menu::openHelp .application] \
+		;
+
+	### about ################################################################
+	set cmd [list ::info::openDialog .application]
+	lassign [::tk::UnderlineAmpersand $mc::AboutScidb] text ul
+	$menu add command \
+		-compound left \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::info \
 		-command $cmd \
 		;
-	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewShowLog
-	bind .application <Control-l> $cmd
 
-	$menu add separator
-	incr pos
-	$menu add checkbutton \
+	### show log #############################################################
+	lassign [::tk::UnderlineAmpersand $mc::ShowLog] text ul
+	$menu add command \
 		-compound left \
-		-image $::icon::16x16::fullscreen \
-		-command [namespace code viewFullscreen] \
-		-accelerator "F11" \
-		-variable [namespace current]::Fullscreen \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::log \
+		-accelerator "${mc::Ctrl}+L" \
+		-command ::log::show \
 		;
-	widget::menuTextvarHook $menu [incr pos] [namespace current]::mc::ViewFullscreen
-	bind .application <F11> [namespace code [list viewFullscreen toggle]]
-}
 
+	### contact ##############################################################
+	set m [menu $menu.mContact]
+	lassign [::tk::UnderlineAmpersand $mc::Contact] text ul
+	$menu add cascade \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
 
-proc setup {} {
-	variable Menu
-	variable MenuWidget
-	variable Entry
-	variable SubMenu
+	lassign [::tk::UnderlineAmpersand $mc::ContactBugReport] text ul
+	$m add command \
+		-compound left \
+		-label $text \
+		-underline $ul \
+		-command [namespace code [list bugReport .application]] \
+		;
 
-	lappend Menu \
-		File	{	New				1	0	Ctrl+N			docNew			{ ::menu::dbNew .application }
-					Open				1	0	Ctrl+O			docOpen			{ ::menu::dbOpen .application }
-					OpenRecent		0	1	Ctrl-R			docOpen			{ ::menu::dbOpenRecent .application }
-					Close				0	0	Ctrl+W			close				{ ::menu::dbClose .application }
-					OpenURL			1	0	{}					internet			{ ::menu::dbOpenUrl .application }
-					Export			1	0	Ctrl+X			fileExport		{ ::menu::dbExport .application }
-					Import			1	0	Ctrl+P			filetypePGN		{ ::menu::dbImport .application }
-					ImportOne		1	0	Ctrl+I			filetypePGN-1	{ ::menu::dbImportOne .application }
-					--------------	-	-	------------	--------------	---------------------------------
-					Quit				0	0	Ctrl+Q			exit				{ ::application::shutdown }
-				} \
-		Game	{	New				1	0	Ctrl+X			document			{ ::menu::gameNew .application }
-					NewChess960		1	0	Ctrl+Shift+X	dice				{ ::menu::gameNew .application frc }
-					NewChess960Sym	1	0	Ctrl+Shift+Y	dice				{ ::menu::gameNew .application sfrc }
-					NewShuffle		1	0	Ctrl+Shift+Z	dice				{ ::menu::gameNew .application shuffle}
-					Save				1	0	Ctrl+S			save				{ ::game::save .application }
-					Replace			1	0	Ctrl+R			saveAs			{ ::game::replace .application }
-					ReplaceMoves	1	0	Ctrl+Shift+M	saveAs			{ ::game::replaceMoves .application }
-				} \
-		View	CreateViewMenu
+	lassign [::tk::UnderlineAmpersand $mc::ContactFeatureRequest] text ul
+	$m add command \
+		-compound left \
+		-label $text \
+		-underline $ul \
+		-command [namespace code [list featureRequest .application]] \
+		;
 
-	set lst {}
-	foreach lang [lsort [array names ::mc::input]] {
-		if {[string length $lang]} {
-			set flag ""
-			catch { set flag ::country::icon::flag([set ::mc::langToCountry([set ::mc::lang$lang])]) }
-			if {[string length $flag] == 0} { set flag none }
-			lappend lst $lang 0 0 "" $flag [list ::mc::selectLang $lang]
-		}
-	}
-	lappend Menu Settings [list {*}$lst]
-	unset lst
+	### fullscreen ###########################################################
+	$menu add separator
+	if {$Fullscreen} { set var LeaveFullscreen } else { set var Fullscreen }
+	lassign [::tk::UnderlineAmpersand [set mc::$var]] text ul
+	$menu add command \
+		-compound left \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::fullscreen \
+		-command [namespace code [list viewFullscreen toggle]] \
+		-accelerator "F11" \
+		;
 
-	lappend Menu \
-		Help	{	Contents			1	0	F1		help		{ ::menu::openHelp .application }
-					WhatsNew			1	0	{}		news		{ ::menu::whatsNew .application }
-					Roadmap			1	0	{}		plan		{ ::menu::roadmap .application }
-					ContactInfo		1	0	{}		contact	{ ::menu::contactInfo .application }
-					BugReport		1	0	{}		bug		{ ::menu::bugReport .application }
-					FeatureRequest	1	0	{}		question	{ ::menu::featureRequest .application }
-					About				1	0	{}		info		{ ::info::openDialog .application }
-				}
-
-
-	set m [menu .application.menu]
-	.application configure -menu $m
-	set MenuWidget $m
-
-	set count 0
-	foreach {menuName cascade} $Menu {
-		set c [menu $m.m$menuName]
-		$m add cascade -menu $c -label [set [namespace current]::mc::$menuName]
-		widget::menuTextvarHook $m $count [namespace current]::mc::$menuName
-		incr count
-		set index 0
-
-		if {[llength $cascade] == 1} {
-			[namespace current]::$cascade $c
-		} else {
-			foreach {entryName dots submenu acc icon cmd} $cascade {
-				if {[string index $entryName 0] eq "-"} {
-					$c add separator
-				} else {
-					set Entry($menuName:$entryName) $index
-					if {$submenu} {
-						set sub [menu $c.m$entryName -tearoff false -postcommand $cmd]
-						set SubMenu($menuName:$entryName) $sub
-						$c add cascade -menu $sub
-					} else {
-						$c add command -command $cmd
-					}
-					widget::menuTextvarHook $c $index [namespace current]::mc::$menuName$entryName {*}$dots
-
-					if {[string length $icon]} {
-						if {![info exists $icon]} { set icon ::icon::16x16::$icon }
-						$c entryconfigure $index -image [set $icon] -compound left
-					}
-
-					if {[llength $acc]} {
-						set key $acc
-						if {[string match Ctrl* $key]} {
-							set keys [split $key "+-"]
-							set key {}
-							set acc {}
-							set shift 0
-							foreach k $keys {
-								if {[string length $key] > 0 && [string index $key end] != "\u2013"} {
-									append key "-"
-								}
-								if {[string length $acc] > 0 && [string index $acc end] != "+"} {
-									append acc "+"
-								}
-								switch $k {
-									Ctrl {
-										append key "Control"
-										append acc $mc::Ctrl
-									}
-									Shift {
-										set shift 1
-										append acc $mc::Shift
-									}
-									default {
-										if {$shift} {
-											append key $k
-										} else {
-											append key [string tolower $k]
-										}
-										append acc $k
-									}
-								}
-							}
-						}
-						$c entryconfigure $index -accelerator $acc
-						bind .application <$key> $cmd
-					}
-				}
-				incr index
-			}
-		}
-	}
-}
-
-
-proc configureCloseBase {state} {
-	variable Entry
-	.application.menu.mFile entryconfigure $Entry(File:Close) -state $state
-	configureOpenRecent [::application::database::GetRecentState]
-}
-
-
-proc configureOpenRecent {state} {
-	variable Entry
-	.application.menu.mFile entryconfigure $Entry(File:OpenRecent) -state $state
-}
-
-
-proc entryconfigure {menu index {var {}} {unused {}} {unused {}}} {
-	$menu entryconfigure $index -image $::icon::16x16::none -compound left
-}
-
-
-proc verifyPath {w path} {
-	# we do not allow two or more consecutive dots in filename
-	if {[string first ".." $path] >= 0} {
-		::dialog::error -parent $w -message [format $mc::FileNotAllowed $path] -detail $mc::TwoOrMoreDots
-		return ""
-	}
-	# be sure filename is portable (since we support unix, win32 and mac)
-	foreach c $path {
-		if {[string is control $c]} {
-			::dialog::error \
-				-parent $w \
-				-message [format $mc::FileNotAllowed $path] \
-				-detail $mc::ForbiddenChars
-			return ""
-		}
-	}
-	if {[string match {*[\"\*:<>\?\|]*} $path]} {
-		::dialog::error -parent $w -message [format $mc::FileNotAllowed $path] -detail $mc::ForbiddenChars
-		return ""
-	}
-	return $path
+	### quit #################################################################
+	$menu add separator
+	lassign [::tk::UnderlineAmpersand $mc::Quit] text ul
+	$menu add command \
+		-compound left \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::exit \
+		-command ::application::shutdown \
+		-accelerator "Ctrl+Q" \
+		;
 }
 
 
@@ -406,20 +318,6 @@ proc dbOpen {parent} {
 }
 
 
-proc dbOpenRecent {parent} {
-	variable SubMenu
-	set m $SubMenu(File:OpenRecent)
-	$m delete 0 end
-	::application::database::addRecentlyUsedToMenu $parent $m
-}
-
-
-proc dbOpenUrl {parent} {
-	::beta::notYetImplemented .application OpenUrl
-	# TODO: download a PGN file from the internet (may be zipped)
-}
-
-
 proc dbImport {parent} {
 	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
 								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
@@ -435,7 +333,7 @@ proc dbImport {parent} {
 		-title $title \
 		-multiple yes \
 	]
-	
+
 	if {[llength $result]} {
 		set base [::scidb::db::get name]
 		lassign $result files encoding
@@ -445,25 +343,17 @@ proc dbImport {parent} {
 }
 
 
-proc dbImportOne {parent} {
-	set pos [::game::new $parent]
-	if {$pos >= 0} {
-		::application::switchTab board
-		::import::openEdit $parent $pos
-	}
-}
+#proc dbImportOne {parent} {
+#	set pos [::game::new $parent]
+#	if {$pos >= 0} {
+#		::application::switchTab board
+#		::import::openEdit $parent $pos
+#	}
+#}
 
 
 proc dbClose {parent} {
 	::application::database::closeBase $parent
-}
-
-
-proc dbExport {parent} {
-	set base [::scidb::db::get name]
-	set type [::scidb::db::get type]
-	set name [::util::databaseName $base]
-	::export::open $parent $base $type $name 0
 }
 
 
@@ -500,42 +390,6 @@ proc viewFullscreen {{toggle {}}} {
 
 proc openHelp {parent} {
 	::help::open $parent
-}
-
-
-proc whatsNew {parent} {
-	::help::open $parent Whats-New
-}
-
-
-proc roadmap {parent} {
-	::help::open $parent Development-Roadmap
-}
-
-
-proc contactInfo {parent} {
-	::help::open $parent Contact-Information
-}
-
-
-# NOTE: currently unused
-proc hideMenu {{toggle {}}} {
-	variable MenuWidget
-	variable HideMenu
-
-	if {[llength $toggle]} { set HideMenu [expr {!$HideMenu}] }
-	set geom [winfo geometry .application]
-
-	if {$HideMenu} {
-		.application configure -menu {}
-	} else {
-		.application configure -menu $MenuWidget
-	}
-
-	wm geometry .application $geom
-	update
-
-	# TODO: configure .application in a way that opening menues will still work
 }
 
 } ;# namespace menu

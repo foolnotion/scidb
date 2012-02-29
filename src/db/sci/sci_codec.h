@@ -128,6 +128,7 @@ public:
 	static int getNumberOfGames(mstl::string const& filename);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
 	static bool upgradeIndexOnly();
+	static bool isExtraTag(tag::ID tag);
 
 private:
 

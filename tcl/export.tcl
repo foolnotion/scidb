@@ -346,18 +346,35 @@ array set Colors {
 	text		#c0c0c0
 }
 
-array set DefaultTags {
-	Board					1
-	EventCountry		1
-	EventType			1
-	Mode					1
-	Remark				1
-	TimeControl			1
-	TimeMode				1
-	White/BlackClock	1
-	White/BlackFideId	1
-	White/BlackTeam	1
-	White/BlackTitle	1
+namespace eval si3 {
+	array set DefaultTags {
+		Board					1
+		EventCountry		1
+		EventType			1
+		Mode					1
+		Remark				1
+		Source				1
+		TimeControl			1
+		TimeMode				1
+		White/BlackClock	1
+		White/BlackFideId	1
+		White/BlackTeam	1
+		White/BlackTitle	1
+	}
+}
+namespace eval sci {
+	array set DefaultTags {
+		Board							1
+		EventCategory				1
+		EventRounds					1
+		Remark						1
+		Source						1
+		SourceDate					1
+		TimeControl					1
+		White/BlackClock			1
+		White/BlackTeam			1
+		White/BlackTeamCountry	1
+	}
 }
 
 array set NagMapping {
@@ -405,7 +422,8 @@ array set NagMapping {
 	}
 }
 
-array set Tags [array get DefaultTags]
+namespace eval si3 { array set Tags [array get DefaultTags] }
+namespace eval sci { array set Tags [array get DefaultTags] }
 
 variable Types	{scidb scid pgn pdf html tex}
 variable Info
@@ -677,7 +695,8 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	::widget::notebookTextvarHook $nb $Info(fsbox) [namespace current]::mc::FileSelection
 
 	foreach {tab var} {	options OptionsSetup
-								tags TagsSetup
+								tags_si3 TagsSetup
+								tags_sci TagsSetup
 								style StyleSetup
 								page_pdf PageSetup
 								page_tex PageSetup
@@ -853,12 +872,23 @@ proc SetupFlags {w type} {
 } ;# namespace options
 
 
+namespace eval tags_si3 { proc BuildFrame {w} { [namespace parent]::tags::BuildFrame $w } }
+namespace eval tags_sci { proc BuildFrame {w} { [namespace parent]::tags::BuildFrame $w } }
+
+
 namespace eval tags {
 
 proc BuildFrame {w} {
-	variable [namespace parent]::Tags
+	variable [namespace parent]::Values
 
-	set extraTags [lsort [::scidb::misc::extraTags]]
+	switch $Values(Type) {
+		scid	{ set type si3 }
+		scidb	{ set type sci }
+	}
+
+	variable [namespace parent]::${type}::Tags
+
+	set extraTags [lsort [::scidb::misc::extraTags $type]]
 	set tagList {}
 
 	foreach tag $extraTags {
@@ -899,7 +929,7 @@ proc BuildFrame {w} {
 		}
 		ttk::checkbutton $btn \
 			-text $text \
-			-variable [namespace parent]::Tags($tag) \
+			-variable [namespace parent]::${type}::Tags($tag) \
 			;
 		set row [expr {2*($count % $nrows) + 3}]
 		set col [expr {2*($count / $nrows) + 1}]
@@ -917,15 +947,15 @@ proc BuildFrame {w} {
 
 	ttk::button $w.buttons.include \
 		-textvar [namespace parent]::mc::IncludeAllTags \
-		-command [namespace code [list ResetTags 1]] \
+		-command [namespace code [list ResetTags $type 1]] \
 		;
 	ttk::button $w.buttons.exclude \
 		-textvar [namespace parent]::mc::ExcludeAllTags \
-		-command [namespace code [list ResetTags 0]] \
+		-command [namespace code [list ResetTags $type 0]] \
 		;
 	ttk::button $w.buttons.reset \
 		-textvar [namespace parent]::mc::ResetDefaults \
-		-command [namespace code [list ResetTags -1]] \
+		-command [namespace code [list ResetTags $type -1]] \
 		;
 	grid $w.buttons.include -row 0 -column 0
 	grid $w.buttons.exclude -row 0 -column 2
@@ -943,9 +973,9 @@ proc BuildFrame {w} {
 }
 
 
-proc ResetTags {value} {
-	variable [namespace parent]::Tags
-	variable [namespace parent]::DefaultTags
+proc ResetTags {type value} {
+	variable [namespace parent]::${type}::Tags
+	variable [namespace parent]::${type}::DefaultTags
 
 	if {$value == -1} {
 		foreach tag [array names Tags] { set Tags($tag) 0 }
@@ -2840,8 +2870,9 @@ proc Select {nb index} {
 
 	switch $Values(Type) {
 		scidb {
+			ShowTab $nb $nb.tags_sci
+			HideTab $nb $nb.tags_si3
 			HideTab $nb $nb.options
-			HideTab $nb $nb.tags
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.page_tex
 			HideTab $nb $nb.style
@@ -2855,7 +2886,8 @@ proc Select {nb index} {
 		}
 
 		scid {
-			ShowTab $nb $nb.tags
+			ShowTab $nb $nb.tags_si3
+			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.options
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.page_tex
@@ -2875,7 +2907,8 @@ proc Select {nb index} {
 
 		pgn {
 			ShowTab $nb $nb.options
-			HideTab $nb $nb.tags
+			HideTab $nb $nb.tags_si3
+			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.page_tex
 			HideTab $nb $nb.style
@@ -2899,7 +2932,8 @@ proc Select {nb index} {
 			ShowTab $nb $nb.notation
 			ShowTab $nb $nb.comment
 			HideTab $nb $nb.options
-			HideTab $nb $nb.tags
+			HideTab $nb $nb.tags_si3
+			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.page_tex
 			HideTab $nb $nb.diagram
 			HideTab $nb $nb.annotation
@@ -2920,7 +2954,8 @@ proc Select {nb index} {
 			ShowTab $nb $nb.notation
 			ShowTab $nb $nb.comment
 			HideTab $nb $nb.options
-			HideTab $nb $nb.tags
+			HideTab $nb $nb.tags_si3
+			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.page_tex
 			HideTab $nb $nb.diagram
@@ -2940,7 +2975,8 @@ proc Select {nb index} {
 			ShowTab $nb $nb.comment
 			ShowTab $nb $nb.annotation
 			HideTab $nb $nb.options
-			HideTab $nb $nb.tags
+			HideTab $nb $nb.tags_si3
+			HideTab $nb $nb.tags_sci
 			HideTab $nb $nb.page_pdf
 			HideTab $nb $nb.encoding
 			set Info(build-style) 1
@@ -2953,7 +2989,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 
 	::dialog::fsbox::useSaveMode $Info(fsbox) $savemode
 
-	foreach what {tags page_pdf page_tex style notation diagram comment annotation} {
+	foreach what {tags_si3 tags_sci page_pdf page_tex style notation diagram comment annotation} {
 		if {[$nb tab $nb.$what -state] eq "normal"} {
 			if {$Info(build-$what)} {
 				${what}::BuildFrame $nb.$what
@@ -3002,7 +3038,6 @@ proc DoExport {parent dlg file} {
 	variable Styles
 	variable Info
 	variable Values
-	variable Tags
 
 	set file [string trim $file]
 	if {[string length $file] == 0} { return }
@@ -3041,7 +3076,8 @@ proc DoExport {parent dlg file} {
 	set tagList {}
 
 	switch $Values(Type) {
-		scid {
+		scid - scidb {
+			if {$Values(Type) eq "scid"} { variable si3::Tags } else { variable sci::Tags }
 			foreach tag [array names Tags] {
 				if {$Tags($tag)} {
 					lappend tagList $tag
@@ -3054,6 +3090,7 @@ proc DoExport {parent dlg file} {
 					}
 				}
 			}
+			if {[llength $tagList] == 0} { set tagList {{}} }
 		}
 
 		html { return [::beta::notYetImplemented $dlg html] }
@@ -3278,7 +3315,8 @@ proc CloseView {} {
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Values
 	options::writeItem $chan [namespace current]::Styles
-	options::writeItem $chan [namespace current]::Tags no
+	options::writeItem $chan [namespace current]::si3::Tags no
+	options::writeItem $chan [namespace current]::sci::Tags no
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

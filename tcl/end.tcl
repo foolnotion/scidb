@@ -105,6 +105,8 @@ set dialog::choosefont::iconCancel	$icon::iconCancel
 set dialog::choosefont::iconApply	$icon::iconApply
 set dialog::choosefont::iconReset	$icon::iconReset
 
+set ::tk::ShadowOffset $::shadow::offset
+
 proc ::dialog::choosefont::messageBox {parent msg buttons defaultButton} {
 	return [::dialog::warning -parent $parent -message $msg -buttons $buttons -default $defaultButton]
 }

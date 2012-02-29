@@ -107,21 +107,21 @@ Each bar offers an individually setting of the icon size.
 <p>
 Usually the setting "%::toolbar::mc::Default%" will be chosen, this means the icon size
 is given with the setting under
-<menuitem>%::menu::mc::View%&#8680;%::toolbar::mc::IconSize%</menuitem>
+<menuitem>%::toolbar::mc::IconSize%</menuitem>
 in the main menu.
 </p>
 
 <h3>Hide and Unhide</h3>
 
 <p>
-Furthermore the context-sensitive menu offers a hide and unhide functionality:
+Furthermore the context-sensitive menu offers hide and unhide functionality:
 </p>
 
 <dir><img src="images/toolbar-usage-menu-toolbar.png"/></dir>
 
 <p>
 This functionality is available also in the main menu under
-<menuitem>%::menu::mc::Settings%&#8680;%::toolbar::mc::Toolbar%</menuitem>.
+<menuitem>%::menu::mc::Toolbars%</menuitem>.
 <note/>Not all toolbars can be hidden.
 </p>
 
@@ -134,7 +134,7 @@ the comment dialog.
 
 <dir><img src="images/toolbar-usage-menu-expand.png"/></dir>
 
-We let expand the top bar if we click on the menu item
+We let expand the top bar if we select the menu item
 <menuitem>%::toolbar::mc::Expand%</menuitem> of the context-sensitive
 menu. The result:
 

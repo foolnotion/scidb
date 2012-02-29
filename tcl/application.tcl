@@ -29,6 +29,7 @@ namespace eval mc {
 
 set Database				"&Database"
 set Board					"&Board"
+set MainMenu				"&Main Menu"
 
 set DockWindow				"Dock Window"
 set UndockWindow			"Undock Window"
@@ -123,35 +124,51 @@ array set Attr {
 }
 
 array set Vars {
-	tabChanged	0
+	tabs:changed 0
+
+	settings:locked				0
+	settings:state					normal
+	settings:background			#c3c3c3
+	settings:activebackground	{}
 }
 
 
 proc open {} {
 	variable Attr
+	variable Vars
 
 	# setup
 	::move::setup
-
 	set app .application
-
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 1]
-if {0} {
-	tk::label $nb.l \
-		-text "Einstellungen" \
+
+	set m ".__m__[clock milliseconds]"
+	menu $m
+	set Vars(settings:activebackground) [$m cget -activebackground]
+	destroy $m
+
+	tk::menubutton $nb.l \
 		-borderwidth 1 \
 		-relief raised \
 		-padx 2 \
 		-pady 2 \
-		-background #437597 \
-		-foreground white \
-		-image $icon::18x16::downArrow \
+		-background $Vars(settings:background) \
+		-activebackground $Vars(settings:activebackground) \
+		-foreground black \
+		-activeforeground white \
+		-image $icon::16x16::downArrow(black) \
 		-compound right \
 		;
+	SetSettingsText $nb.l
+	bind $nb.l <<LanguageChanged>> [namespace code [list SetSettingsText $nb.l]]
+	bind $nb.l <Enter> [namespace code [list EnterSettings $nb.l]]
+	bind $nb.l <Leave> [namespace code [list LeaveSettings $nb.l]]
+	bind $nb.l <<MenuWillPost>> [namespace code [list BuildSettingsMenu $nb.l]]
+	bind $nb.l <<MenuWillUnpost>> [namespace code [list FinishSettings $nb.l]]
 	bind $nb <Configure> [namespace code [list PlaceSettingsMenu $nb.l]]
 	bind $nb.l <Configure> [namespace code [list PlaceSettingsMenu $nb.l]]
-}
+
 	::ttk::notebook::enableTraversal $nb
 	set db [::ttk::frame $nb.database]
 	set main [tk::panedwindow $nb.main -orient vertical -opaqueresize true]
@@ -345,8 +362,76 @@ proc switchTab {which} {
 }
 
 
+proc EnterSettings {w} {
+	variable Vars
+
+	set Vars(settings:state) active
+
+	if {!$Vars(settings:locked)} {
+		$w configure -state active -image $icon::16x16::downArrow(white)
+	}
+}
+
+
+proc LeaveSettings {w} {
+	variable Vars
+
+	set Vars(settings:state) normal
+
+	if {!$Vars(settings:locked)} {
+		$w configure -state normal -image $icon::16x16::downArrow(black)
+	}
+}
+
+
+proc FinishSettings {m} {
+	variable Vars
+
+	$m configure \
+		-background $Vars(settings:background) \
+		-activebackground $Vars(settings:activebackground) \
+		-foreground black \
+		-activeforeground white \
+		-image $icon::16x16::downArrow(black) \
+		;
+	set Vars(settings:locked) 0
+
+	if {$Vars(settings:state) eq "normal"} {
+		LeaveSettings $m
+	} else {
+		EnterSettings $m
+	}
+}
+
+
 proc PlaceSettingsMenu {m} {
 	place $m -x [expr {[winfo width [winfo parent $m]] - [winfo width $m]}] -y 0
+}
+
+
+proc SetSettingsText {w} {
+	lassign [::tk::UnderlineAmpersand $mc::MainMenu] text ul
+	$w configure -text $text -underline $ul
+}
+
+
+proc BuildSettingsMenu {m} {
+	variable Vars
+
+	catch { destroy $m.settings }
+	::menu $m.settings
+	::menu::build $m.settings
+
+	$m configure \
+		-background $Vars(settings:activebackground) \
+		-activebackground $Vars(settings:activebackground) \
+		-foreground white \
+		-activeforeground white \
+		-image $icon::16x16::downArrow(white) \
+		-menu $m.settings \
+		-direction below \
+		;
+	set Vars(settings:locked) 1
 }
 
 
@@ -439,11 +524,11 @@ proc TabChanged {nb app} {
 		}
 	}
 
-	if {$Vars(tabChanged) > 0} {
+	if {$Vars(tabs:changed) > 0} {
 		# avoid resizing (multicolumn problem)
 		wm geometry $app [wm geometry $app]
 	}
-	incr Vars(tabChanged)
+	incr Vars(tabs:changed)
 }
 
 
@@ -527,12 +612,20 @@ wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo
 
 
 namespace eval icon {
-namespace eval 18x16 {
+namespace eval 16x16 {
 
-set downArrow [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABIAAAAQAQMAAAAhyL0fAAAABlBMVEUAAwD////ieeUNAAAA
-	AXRSTlMAQObYZgAAACNJREFUCNdjYMAC+P8zMLD/Y2Bg/sPAwPgDKPABiBOwqWQAALMQBVzB
-	x7woAAAAAElFTkSuQmCC
+set downArrow(white) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAwD////ieeUNAAAA
+	AXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAAHdElNRQfc
+	AhsSDDtW7CQ8AAAAH0lEQVQI12NgQAX2fxjkfzDwf2Bgf8DAfICBsQFNHgCImwV95+svrgAA
+	AABJRU5ErkJggg==
+}]
+
+set downArrow(black) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX///8AAABVwtN+AAAA
+	AXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAAHdElNRQfU
+	BgoJITF3Fs8LAAAAH0lEQVR4nGNgQAX2fxjkfzDwf2Bgf8DAfICBsQFNHgCImwV9ZRdLTQAA
+	AABJRU5ErkJggg==
 }]
 
 } ;# namespace 19x16
@@ -587,5 +680,17 @@ set shutdown [image create photo -data {
 } ;# namespace 32x32
 } ;# namespace icon
 } ;# namespace application
+
+rename ::tk::PostOverPoint ::tk::_PostOverPoint_application
+
+proc ::tk::PostOverPoint {menu x y {entry {}}} {
+	if {$menu eq ".application.nb.l.settings"} {
+		set rx [winfo rootx .application]
+		set mw [winfo reqwidth $menu]
+		set x [expr {min($rx + [winfo width .application] - $mw, $x)}]
+	}
+
+	::tk::_PostOverPoint_application $menu $x $y $entry
+}
 
 # vi:set ts=3 sw=3:

@@ -16,6 +16,8 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
+<!-- NOTE: It is not required to translate this file into different languages -->
+
 INDEX Database archive
 INDEX Archive
 TITLE Database archive

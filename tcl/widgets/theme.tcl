@@ -474,6 +474,7 @@ option add *Panedwindow.sashRelief raised
 
 option add *Menu.TearOff 0
 option add *Menu.activeBackground #678db2
+#option add *Menu.activeBackground #437597
 option add *Menu.activeForeground white
 option add *Menu.activeBorderWidth 0
 

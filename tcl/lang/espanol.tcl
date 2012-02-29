@@ -137,64 +137,38 @@
 ::progress::mc::Progress "Progreso"
 
 ### menu ###############################################################
-::menu::mc::File						"&Archivo"
-::menu::mc::Game						"&Partida"
-::menu::mc::View						"&Vista"
-::menu::mc::Settings					"&Configuración"
-::menu::mc::Help						"A&yuda"
+::menu::mc::Theme							"Tema"
+::menu::mc::Ctrl							"Ctrl"
+::menu::mc::Shift							"Shift"
 
-::menu::mc::FileOpen					"A&brir Base..."
-::menu::mc::FileOpenURL				"Open &URL" ;# NEW
-::menu::mc::FileOpenRecent			"Abrir &Recientes"
-::menu::mc::FileNew					"&Nueva Base..."
-::menu::mc::FileExport				"E&xportar..."
-::menu::mc::FileImport				"Importar archivos P&GN..."
-::menu::mc::FileImportOne			"&Importar una partida en PGN..."
-::menu::mc::FileClose				"&Cerrar"
-::menu::mc::FileQuit					"&Salir"
+::menu::mc::AllScidbFiles				"Todos los archivos Scidb"
+::menu::mc::AllScidbBases				"Todas las bases Scidb"
+::menu::mc::ScidBases					"Bases Scid"
+::menu::mc::ScidbBases					"Bases Scidb"
+::menu::mc::ChessBaseBases				"Bases ChessBase"
+::menu::mc::PGNFilesArchives			"PGN files/archives" ;# NEW
+::menu::mc::PGNFiles						"Archivos PGN"
+::menu::mc::PGNArchives					"PGN archives" ;# NEW
 
-::menu::mc::GameNew					"N&ueva partida"
-::menu::mc::GameNewChess960		"Nue&va partida: Ajedrez 960"
-::menu::mc::GameNewChess960Sym	"Nuev&a partida: Ajedrez 960 (sólo simétrico)"
-::menu::mc::GameNewShuffle			"Nu&eva partida: Ajedrez Shuffle"
-::menu::mc::GameSave					"Guar&dar partida"
-::menu::mc::GameReplace				"Ree&mplazar partida"
-::menu::mc::GameReplaceMoves		"Reemp&lazar sólo jugadas"
+::menu::mc::Language						"&Idioma"
+::menu::mc::Toolbars						"&Barras de herramientas"
+::menu::mc::ShowLog						"Mostrar &bitáco&ra..."
+::menu::mc::AboutScidb					"A&bout Scidb" ;# NEW
+::menu::mc::Fullscreen					"&Pantalla completa"
+::menu::mc::LeaveFullscreen			"Leave &pantalla completa" ;# NEW "Leave Full-Screen"
+::menu::mc::Help							"&Ayuda"
+::menu::mc::Contact						"&Contenidos (navegador web)"
+::menu::mc::Quit							"&Salir"
 
-::menu::mc::HelpAbout				"&About Scidb" ;# NEW (changed)
-::menu::mc::HelpContents			"Con&tenidos"
-::menu::mc::HelpWhatsNew			"&What's new" ;# NEW
-::menu::mc::HelpRoadmap				"&Roadmap" ;# NEW
-::menu::mc::HelpContactInfo		"C&ontact Information" ;# NEW
-::menu::mc::HelpBugReport			"Rep&orte de errores (abrir en navegador web)"
-::menu::mc::HelpFeatureRequest	"&Solicitud de característica (abrir en navegador web)"
+::menu::mc::ContactBugReport			"&Reporte de errores"
+::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
 
-::menu::mc::ViewShowLog				"Mostrar bitáco&ra..."
-::menu::mc::ViewFullscreen			"Pantalla completa" 
-
-::menu::mc::OpenFile					"Abrir un archivo Scidb"
-::menu::mc::NewFile					"Crear un archivo Scidb"
-::menu::mc::ImportFiles				"Importar archivos PGN..."
-
-::menu::mc::Theme						"Tema"
-::menu::mc::Ctrl						"Ctrl"
-::menu::mc::Shift						"Shift"
-
-::menu::mc::AllScidbFiles			"Todos los archivos Scidb"
-::menu::mc::AllScidbBases			"Todas las bases Scidb"
-::menu::mc::ScidBases				"Bases Scid"
-::menu::mc::ScidbBases				"Bases Scidb"
-::menu::mc::ChessBaseBases			"Bases ChessBase"
-::menu::mc::PGNFilesArchives		"PGN files/archives" ;# NEW
-::menu::mc::PGNFiles					"Archivos PGN"
-::menu::mc::PGNArchives				"PGN archives" ;# NEW
-
-::menu::mc::FileNotAllowed			"Nombre de archivo '%s' no permitido"
-::menu::mc::TwoOrMoreDots			"Contiene dos o más puntos consecutivos."
-::menu::mc::ForbiddenChars			"Contiene caracteres prohibidos."
+::menu::mc::OpenFile						"Abrir un archivo Scidb"
+::menu::mc::NewFile						"Crear un archivo Scidb"
+::menu::mc::ImportFiles					"Importar archivos PGN..."
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt	"El archivo %s está roto:"
+::load::mc::FileIsCorrupt			"El archivo %s está roto:"
 
 ::load::mc::Loading					"Cargando %s"
 ::load::mc::ReadingOptionsFile	"Leer archivo de opciones"
@@ -215,6 +189,7 @@
 ### application ########################################################
 ::application::mc::Database				"&Base"
 ::application::mc::Board					"&Tablero"
+::application::mc::MainMenu				"&Main Menu" ;# NEW
 
 ::application::mc::DockWindow				"Ventana acoplada"
 ::application::mc::UndockWindow			"Ventana desacoplada"
@@ -234,6 +209,13 @@
 ::application::board::mc::KeyEditMarks			"M"
 
 ### application::database ##############################################
+::application::database::mc::FileOpen					"Abrir Base..."
+::application::database::mc::FileOpenRecent			"Abrir Recientes"
+::application::database::mc::FileNew					"Nueva Base..."
+::application::database::mc::FileExport				"Exportar..."
+::application::database::mc::FileImport				"Importar archivos PGN..."
+::application::database::mc::FileClose					"Cerrar"
+
 ::application::database::mc::Games						"&Partidas"
 ::application::database::mc::Players					"&Jugadores"
 ::application::database::mc::Events						"Even&tos"
@@ -767,6 +749,11 @@
 
 ::gamebar::mc::LockGame					"Lock Game" ;# NEW
 ::gamebar::mc::CloseGame				"Close Game" ;# NEW
+
+::gamebar::mc::GameNew					"Nueva partida"
+::gamebar::mc::GameNewChess960		"Nueva partida: Ajedrez 960"
+::gamebar::mc::GameNewChess960Sym	"Nueva partida: Ajedrez 960 (sólo simétrico)"
+::gamebar::mc::GameNewShuffle			"Nueva partida: Ajedrez Shuffle"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Buscar partida"

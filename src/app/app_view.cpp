@@ -37,6 +37,7 @@
 
 #include "sci_codec.h"
 #include "sci_consumer.h"
+#include "sci_encoder.h"
 
 #include "si3_codec.h"
 #include "si3_consumer.h"
@@ -548,7 +549,10 @@ View::exportGames(mstl::string const& filename,
 		destination.setDescription(description);
 		destination.setType(type);
 
-		if (m_db.format() == format::Scidb && fmode != Upgrade)
+		if (	m_db.format() == format::Scidb
+			&& fmode != Upgrade
+			&& allowExtraTags
+			&& (allowedTags | sci::Encoder::extraTags()).any())
 		{
 			count = exportGames(destination, gameMode, log, progress);
 		}

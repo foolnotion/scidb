@@ -464,12 +464,15 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		for (int i = 0; i < objc; ++i)
 		{
-			tag::ID tag = tag::fromName(Tcl_GetString(tags[i]));
+			if (*Tcl_GetString(tags[i]))
+			{
+				tag::ID tag = tag::fromName(Tcl_GetString(tags[i]));
 
-			if (tag == tag::ExtraTag)
-				extraTags = true;
-			else
-				tagBits.set(tag);
+				if (tag == tag::ExtraTag)
+					extraTags = true;
+				else
+					tagBits.set(tag);
+			}
 		}
 	}
 

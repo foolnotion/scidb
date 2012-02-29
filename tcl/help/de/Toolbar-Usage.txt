@@ -103,7 +103,7 @@ ist eine Ausrichtung in die Mitte oder sogar nach Rechts sinnvoll.
 <h3>%::toolbar::mc::IconSize%</h3>
 
 <p>
-Jede Leiste lässt eine individuelle Einstellung der Piktogrammgröße zu.
+Jede Leiste läßt eine individuelle Einstellung der Piktogrammgröße zu.
 </p>
 
 <dir><img src="images/toolbar-usage-menu-icon-size.png"/></dir>
@@ -111,7 +111,7 @@ Jede Leiste lässt eine individuelle Einstellung der Piktogrammgröße zu.
 <p>
 Normalerweise wird die Einstellung "%::toolbar::mc::Default%" gewählt, d.h. es wird
 die Piktogrammgröße gewählt, die im Hauptmenü unter
-<menuitem>%::menu::mc::View%&#8680;%::toolbar::mc::IconSize%</menuitem>
+<menuitem>%::toolbar::mc::IconSize%</menuitem>
 vorgegeben ist.
 </p>
 
@@ -125,7 +125,7 @@ Auch ein Ein- oder Ausblenden einer Leiste wird im kontextsensitiven Menü angebo
 
 <p>
 Diese Funktionalität ist ebenso im Hauptmenü unter
-<menuitem>%::menu::mc::Settings%&#8680;%::toolbar::mc::Toolbar%</menuitem>
+<menuitem>%::menu::mc::Toolbars%</menuitem>
 erreichbar.
 <note/>Nicht alle Funktionsleisten sind ausblendbar.
 </p>
@@ -142,7 +142,7 @@ Kommentardialogs gezeigt wird.
 <p>
 Wir lassen nun die obere Leiste expandieren, indem wir den Menüpunkt
 <menuitem>%::toolbar::mc::Expand%</menuitem> des kontextsensitiven Menüs
-anklicken. Das Resultat:
+auswählen. Das Resultat:
 </p>
 
 <dir><img src="images/toolbar-usage-expanded.png"/></dir>

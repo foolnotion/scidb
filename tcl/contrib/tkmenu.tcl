@@ -213,7 +213,10 @@ switch [tk windowingsystem] {
     default { set ::tk::MODERNIZE 0 }
 }
 
-namespace eval tk { set MenuDelay 250 }
+namespace eval tk {
+    set MenuDelay       250
+    set ShadowOffset    0
+}
 
 ### MODERNIZE end ############################################################
 
@@ -222,6 +225,7 @@ namespace eval tk { set MenuDelay 250 }
 if {[tk windowingsystem] eq "x11"} {
     bind Menu <Configure> {+
         set w [winfo parent %W]
+        set countHashes [expr {[string length %W] - [string length [string map {# {}} %W]]}]
 
         if {[winfo class $w] eq "Menu"} {
             set dir right
@@ -229,7 +233,6 @@ if {[tk windowingsystem] eq "x11"} {
                 set dir $::tk::Priv(sub:dir:$w)
             }
             set ::tk::Priv(sub:dir:%W) right
-            set countHashes [expr {[string length %W] - [string length [string map {# {}} %W]]}]
 
             if {$countHashes >= 8 || $countHashes == 0 || $dir eq "left"} {
                 set x0 [winfo rootx $w]
@@ -242,7 +245,9 @@ if {[tk windowingsystem] eq "x11"} {
 
                 if {%x < $x || $dir eq "left"} {
                     set x [expr {$x0 - %w}]
-                    set x [expr {$x - $::shadow::offset + 1}]
+                    if {$::tk::ShadowOffset > 0} {
+                        set x [expr {$x - $::tk::ShadowOffset + [$w cget -borderwidth]}]
+                    }
 
                     if {$x >= 0} {
                         wm state %W withdrawn
@@ -251,6 +256,13 @@ if {[tk windowingsystem] eq "x11"} {
                         set ::tk::Priv(sub:dir:%W) left
                     }
                 }
+            }
+        } elseif {$countHashes == 0} {
+            set x [expr {max(0, min(%x, [winfo screenwidth %W] - %w - $::tk::ShadowOffset))}]
+            if {$x != %x} {
+                wm state %W withdrawn
+                wm geometry %W "+$x+%y"
+                after idle [list wm state %W normal]
             }
         }
     }
@@ -324,6 +336,12 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     if {[$w cget -state] eq "disabled" || $w eq $Priv(postedMb)} {
 	return
     }
+
+    ### FEATURE begin ############################################################
+    # give the user the chance to build the menu
+    event generate $w <<MenuWillPost>>
+    ### FEATURE end ##############################################################
+
     set menu [$w cget -menu]
     if {$menu eq ""} {
 	return
@@ -490,7 +508,11 @@ proc ::tk::MenuUnpost menu {
     }
 
     ### FEATURE begin ############################################################
-    event generate $menu <<MenuWillUnpost>>
+    if {[string length $mb]} {
+        event generate $mb <<MenuWillUnpost>>
+    } elseif {[string length $menu]} {
+        event generate $menu <<MenuWillUnpost>>
+    }
     ### FEATURE end ##############################################################
 
     ### FIX begin ################################################################

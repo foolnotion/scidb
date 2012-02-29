@@ -2610,6 +2610,19 @@ namespace eval 16x16 {
 		RK5CYII=
 	}]
 
+	set languages [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABDlBM
+		VEX///9VV1NVV1NVV1NVV1OqradzdnGcn5laXFdoa2aOkIteYFxaXFhZW1cgSocjS4Q4cao5
+		c646dLE7drU9eLZCe7hGfrtHVmdKf7RLgr1MgbZTh8JVWFZXW1tXibpZir1bX11cYF9djLpg
+		kMFgkchjkb5lk8JslsBwm8lym8V1n8t3nsV3oc14n8h4ocx5n8Z6oMZ6os57osl9o8p+pMx/
+		pM1/pdB/ps+Ap86Ap9CBpcmBpsuBps2Fqc+FqtGIioWIq86IrdOJrNCJsNiLjYiLrc+LrdCN
+		r9KPkIyQsNCRk4+Ss9SUlpGUs9OUtNWUtdWXmZSXt9mYt9mZm5eZt9Wam5eaudqdnpqeoJyl
+		wNw0qLzlAAAADnRSTlMABQkOEExklaut3uHw8yuOxt4AAACYSURBVBjTY+CQEedDBgy8wQqm
+		zjrKEgKCQsJi0ip8DDwRiibYBFTVddVEIQLhQAFHb2srV3cNM7BAKFAgzN/B08hGLwwsEAAU
+		CPRz0DZ20goCC/gABSwjfQ3cbM0NwQJeIEMtQvQ1bewkwQIeYFvklKTkRSC2uKC7w16WH8Xp
+		PPY8LAzIgJuLmxlFgJOdkwlFgI2VjRGZDwAN8h0/+xQm4AAAAABJRU5ErkJggg==
+	}]
+
 } ;# namespace 16x16
 
 namespace eval 22x22 {

@@ -195,8 +195,6 @@ proc toolbar {parent args} {
 		}
 	}
 
-	set Specs(hide:$toolbar) 0 ;# # XXX BETA
-
 	if {!$haveId} { set Specs(keepoptions:$toolbar) 0 }
 	set parent [join [lrange [split $toolbar .] 0 end-1] .]
 	lappend Specs(count:$parent) $toolbar
@@ -317,7 +315,10 @@ proc toolbar {parent args} {
 	}
 
 	lappend Specs(toolbars) $toolbar
-	set path $parent
+
+	if {![info exists Specs(activated:$parent)]} {
+		set Specs(activated:$parent) 0
+	}
 
 	return $toolbar
 }
@@ -445,6 +446,7 @@ proc activate {parent {flag 1}} {
 	variable Specs
 
 	if {$flag} { set state normal } else { set state withdrawn }
+	set Specs(activated:$parent) $flag
 
 	foreach dir {top bottom left right} {
 		set tbf [Join $parent __tbf__$dir]
@@ -457,6 +459,37 @@ proc activate {parent {flag 1}} {
 			}
 		}
 	}
+}
+
+
+proc activeParents {} {
+	variable Specs
+
+	set result {}
+
+	foreach entry [array names Specs activated:*] {
+		set parent [string range $entry 10 end]
+		if {$Specs(activated:$parent)} {
+			if {[winfo ismapped $parent]} {
+				set use 0
+				foreach dir {top left right bottom} {
+					set tbf [Join $parent __tbf__$dir]
+					if {[info exists Specs(childs:$tbf)]} {
+						foreach toolbar $Specs(childs:$tbf) {
+							if {$Specs(hide:$toolbar)} {
+								set use 1
+							}
+						}
+					}
+				}
+			}
+			if {$use} {
+				lappend result $parent
+			}
+		}
+	}
+
+	return $result
 }
 
 
@@ -593,21 +626,18 @@ proc addToolbarMenu {menu parent {index -1} {var {}}} {
 	variable Specs
 
 	if {![info exists Specs(toolbars:$parent)]} { return -1 }
-	if {[llength $var] == 0} { set var [namespace current]::mc::Toolbar }
+	if {[string length $var] == 0} { set var [namespace current]::mc::Toolbar }
 
-	if {$index eq "end"} {
+	if {$index eq "end" || $index eq "last"} {
 		set m [menu $menu.__tb__Toolbar -tearoff false]
-		# poor Tk; we cannot ask for last index, therefore this hack:
-		$menu add cascade -menu $m -command [namespace current]::__dummy__
-		set index 0
-		while {[$menu entrycget $index -command] ne "[namespace current]::__dummy__"} { incr index }
-		$menu entryconfigure $index -command {}
-	} elseif {$index >= 0} {
+		$menu add cascade -menu $m
+		set index [$menu index last]
+		if {$index eq "none"} { set index -1 }
+	} elseif {[string is integer -strict $index] && $index >= 0} {
 		set m [menu $menu.__tb__Toolbar -tearoff false]
 		$menu insert cascade $index -menu $m
 	} else {
 		set m $menu
-		set index 0
 	}
 
 	if {$index >= 0} {
@@ -617,7 +647,10 @@ proc addToolbarMenu {menu parent {index -1} {var {}}} {
 		SetMenuLabel $menu $index $var
 	}
 
-	set i 0
+	set i [$m index last]
+	if {$i eq "none"} { set i -1}
+	incr i
+
 	foreach tb $Specs(toolbars:$parent) {
 		$m add checkbutton \
 			-onvalue 0 \

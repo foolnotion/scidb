@@ -133,12 +133,14 @@ proc build {w menu width height} {
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarRotateBoard \
 		-tooltipvar ::overview::mc::RotateBoard \
-		-command [namespace code [list Rotate $canv]]
+		-command [namespace code [list Rotate $canv] \
+	]
 	::toolbar::add $tbLayout checkbutton \
 		-image $::icon::toolbarSideToMove \
 		-variable ::board::layout(side-to-move) \
 		-tooltipvar ::board::options::mc::ShowSideToMove \
-		-command [namespace code [list ToggleSideToMove $canv]]
+		-command [namespace code [list ToggleSideToMove $canv] \
+	]
 
 	foreach {action key tipvar} {	GotoStart Home		GotoStartOfGame
 											FastBack  Prior	GoBackFast
@@ -217,20 +219,9 @@ proc activate {w menu flag} {
 	::toolbar::activate $w $flag
 
 	if {$flag} {
-		set Toolbar " $::toolbar::mc::Toolbar"
-		set Index [::toolbar::addToolbarMenu $menu $w end [namespace current]::Toolbar]
-		if {$Index >= 0} {
-			::menu::entryconfigure $menu $Index
-			set cmd "[namespace current]::ToolbarChanged $menu $Index"
-			trace add variable ::toolbar::mc::Toolbar write $cmd
-		}
 		focus $Vars(widget:frame)
 	} elseif {$Index >= 0 && [winfo exists $menu]} {
 		$menu delete $Index
-		::toolbar::removeToolbarMenu $menu $Index [namespace current]::Toolbar
-		set cmd "[namespace current]::ToolbarChanged $menu $Index"
-		trace remove variable ::toolbar::mc::Toolbar write $cmd
-		set Index -1
 	}
 
 	[namespace parent]::pgn::activate $w $menu $flag
@@ -335,11 +326,6 @@ proc Preload {width height} {
 	::board::registerSize $Dim(squaresize)
 	::board::setupSquares $Dim(squaresize)
 	::board::setupPieces $Dim(squaresize)
-}
-
-
-proc ToolbarChanged {m index var {unused {}} {unused {}}} {
-	set [namespace current]::Toolbar " $::toolbar::mc::Toolbar"
 }
 
 

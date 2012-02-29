@@ -1,6 +1,14 @@
 [Ferbruary 2012] ===============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #258)
+------------------------------------------------------------------------------
+* Main menu bar eliminated: these main menu bars are archaic. A single main
+menu button is integrated into the top tab bar.
+
+* Export dialog: "Tags" tab added to "Scidb" mode.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #257)
 ------------------------------------------------------------------------------
 * Fix in tkmenu.tcl: submenus will be placed left if not enough room on right

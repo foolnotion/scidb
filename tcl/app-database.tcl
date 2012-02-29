@@ -28,6 +28,13 @@ namespace eval application {
 namespace eval database {
 namespace eval mc {
 
+set FileOpen					"Open..."
+set FileOpenRecent			"Open Recent"
+set FileNew						"New..."
+set FileExport					"Export..."
+set FileImport					"Import PGN files..."
+set FileClose					"Close"
+
 set Games						"&Games"
 set Players						"&Players"
 set Events						"&Events"
@@ -302,7 +309,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 		set i [FindRecentFile $file]
 		if {$i >= 0} {
 			set RecentFiles [lreplace $RecentFiles $i $i]
-			::menu::configureOpenRecent [GetRecentState]
+			#::menu::configureOpenRecent [GetRecentState]
 		}
 		::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
 		return 0
@@ -529,7 +536,7 @@ proc ClearHistory {} {
 	variable RecentFiles
 
 	set RecentFiles {}
-	::menu::configureOpenRecent [GetRecentState]
+	#::menu::configureOpenRecent [GetRecentState]
 }
 
 
@@ -880,7 +887,7 @@ proc Switch {filename} {
 		::toolbar::childconfigure $Vars(button:readonly) -tooltip $roState
 	}
 
-	::menu::configureCloseBase $state
+	#::menu::configureCloseBase $state
 	::toolbar::childconfigure $Vars(button:close) -state $state
 	::toolbar::childconfigure $Vars(button:readonly) -state $roState
 
@@ -1145,12 +1152,12 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			;
 		$menu add separator
 		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {}
-		lappend specs command $::menu::mc::FileExport [list ::export::open $canv $file $type $name 0] \
+		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {}
-		lappend specs command $::menu::mc::FileImport ::menu::dbImport 1 0 filetypePGN {}
+		lappend specs command $mc::FileImport ::menu::dbImport 1 0 filetypePGN {}
 		lappend specs separator {} {} {} {} {} {}
 		if {$file ne $clipbaseName} {
-			lappend specs command $::menu::mc::FileClose \
+			lappend specs command $mc::FileClose \
 				[namespace code [list closeBase $canv $file $i]] 0 0 close {}
 			lappend specs command "$mc::ChangeIcon..." \
 				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {}
@@ -1190,8 +1197,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs separator {} {} {} {} {} {}
 		}
 	}
-	lappend specs command "$::menu::mc::FileNew..." ::menu::dbNew 0 0 docNew {}
-	lappend specs command "$::menu::mc::FileOpen..." ::menu::dbOpen 0 0 docOpen {}
+	lappend specs command "$mc::FileNew..." ::menu::dbNew 0 0 docNew {}
+	lappend specs command "$mc::FileOpen..." ::menu::dbOpen 0 0 docOpen {}
 
 	foreach {type text cmd writableOnly notSci icon var} $specs {
 		if {$type eq "separator"} {
@@ -1221,7 +1228,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 	if {[addRecentlyUsedToMenu [winfo parent [winfo parent $canv]] $m] == 0} { set state disabled }
 	$menu add cascade \
 		-menu $m \
-		-label " [::mc::stripAmpersand $::menu::mc::FileOpenRecent]" \
+		-label " [::mc::stripAmpersand $mc::FileOpenRecent]" \
 		-image $::icon::16x16::docOpen \
 		-compound left \
 		-state $state \
@@ -1714,7 +1721,7 @@ proc AddRecentFile {type file encoding readonly} {
 	if {$i >= 0} { set RecentFiles [lreplace $RecentFiles $i $i] }
 	set RecentFiles [linsert $RecentFiles 0 [list $type $file $encoding $readonly]]
 	if {[llength $RecentFiles] > $MaxHistory} { set RecentFiles [lrange $RecentFiles 0 9] }
-	::menu::configureOpenRecent [GetRecentState]
+	#::menu::configureOpenRecent [GetRecentState]
 }
 
 

@@ -1059,15 +1059,21 @@ proc Activate {w} {
 	set selected {}
 
 	if {$Vars(multiple)} {
-		foreach file [string trim [split [$Vars(widget:filename) get] "\""]] {
-			if {[string length $file]} {
-				if {$Vars(type) eq "save"} {
-					set fullname $file
-					if {[string length $Vars(defaultextension)]} { append fullname $Vars(defaultextension) }
-					if {![CheckPath $w $fullname]} { return }
+		set even 0
+		foreach list [string trim [split [$Vars(widget:filename) get] \"]] {
+			if {$even} { set list [list $list] }
+			set even [expr {1 - $even}]
+			foreach file $list {
+				if {[string length $file]} {
+					if {$Vars(type) eq "save"} {
+						set fullname $file
+						if {[string length $Vars(defaultextension)]} {
+							append fullname $Vars(defaultextension)
+						}
+						if {![CheckPath $w $fullname]} { return }
+					}
+					lappend selected [[namespace current]::$complete $w $file]
 				}
-				if {$Vars(type) eq "save" && ![CheckPath $w $file]} { return }
-				lappend selected [[namespace current]::$complete $w $file]
 			}
 		}
 	} else {

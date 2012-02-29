@@ -34,6 +34,7 @@
 #include "u_byte_stream.h"
 
 namespace util { class ByteStream; }
+namespace mstl { template <typename T> class bitfield; }
 
 namespace db {
 
@@ -60,6 +61,8 @@ public:
 							bool allowExtraTags);
 
 	static bool skipTag(tag::ID tag);
+	static bool isExtraTag(tag::ID tag);
+	static mstl::bitfield<uint64_t> const& extraTags();
 
 protected:
 

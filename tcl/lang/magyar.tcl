@@ -137,61 +137,35 @@
 ::progress::mc::Progress "Állapot" ;# ? NEW 
 
 ### menu ###############################################################
-::menu::mc::File						"&Fájl"
-::menu::mc::Game						"&Játszma"
-::menu::mc::View						"&Nézet"
-::menu::mc::Settings					"&Beállítások"
-::menu::mc::Help						"&Súgó"
+::menu::mc::Theme							"Téma"
+::menu::mc::Ctrl							"Ctrl"
+::menu::mc::Shift							"Shift"
 
-::menu::mc::FileOpen					"Fájl &megnyitása"
-::menu::mc::FileOpenURL				"Open &URL"
-::menu::mc::FileOpenRecent			"Leg&utóbbi fájlok Megnyitása"
-::menu::mc::FileNew					"Ú&j"
-::menu::mc::FileExport				"E&xport..."
-::menu::mc::FileImport				"PGN fájlok &importálás..."
-::menu::mc::FileImportOne			"&PGN fájl importálás..."
-::menu::mc::FileClose				"&Bezárás"
-::menu::mc::FileQuit					"&Kilépés"
+::menu::mc::AllScidbFiles				"Minden Scidb fájl"
+::menu::mc::AllScidbBases				"Minde Scidb adatbázis"
+::menu::mc::ScidBases					"Scid adatbázisok"
+::menu::mc::ScidbBases					"Scidb adatbázisok"
+::menu::mc::ChessBaseBases				"ChessBase adatbázisok"
+::menu::mc::PGNFilesArchives			"PGN fájlok/arhívumok"
+::menu::mc::PGNFiles						"PGN fájlok"
+::menu::mc::PGNArchives					"PGN arhívumok"
 
-::menu::mc::GameNew					"Új &tábla"
-::menu::mc::GameNewChess960		"Új játszma: Chess 960" ;# NEW
-::menu::mc::GameNewChess960Sym	"Új játszma: Chess 960 (symmetrical only)" ;# NEW
-::menu::mc::GameNewShuffle			"Új játszma: Shuffle Chess" ;# NEW
-::menu::mc::GameSave					"Ját&szma Mentése"
-::menu::mc::GameReplace				"Játszma &Felülírása"
-::menu::mc::GameReplaceMoves		"Csak lépések felülírása"
+::menu::mc::Language						"L&anguage" ;# NEW
+::menu::mc::Toolbars						"&Toolbars" ;# NEW
+::menu::mc::ShowLog						"&Log fájl mutatása"
+::menu::mc::AboutScidb					"Scidb &Névjegy"
+::menu::mc::Fullscreen					"&Teljes képernyő"
+::menu::mc::LeaveFullscreen			"Leave &Teljes képernyő" ;# NEW "Leave Full-Screen"
+::menu::mc::Help							"&Súgó"
+::menu::mc::Contact						"&Contact (Web Browser)" ;# NEW
+::menu::mc::Quit							"&Kilépés"
 
-::menu::mc::HelpAbout				"&Scidb Névjegy"
-::menu::mc::HelpContents			"&Tartalom"
-::menu::mc::HelpWhatsNew			"&Újdonságok"
-::menu::mc::HelpRoadmap				"&Roadmap"
-::menu::mc::HelpContactInfo		"&Elérhetőség"
-::menu::mc::HelpBugReport			"&Hiba jelentés (böngészőből)"
-::menu::mc::HelpFeatureRequest	"&Feature Request (böngészőből)"
+::menu::mc::ContactBugReport			"&Hiba jelentés"
+::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
 
-::menu::mc::ViewShowLog				"&Log fájl mutatása"
-::menu::mc::ViewFullscreen			"Teljes képernyő"
-
-::menu::mc::OpenFile					"Scidb fájl megnyitása"
-::menu::mc::NewFile					"Scidb fájl létrehozása"
-::menu::mc::ImportFiles				"PGN fájlok importálása"
-
-::menu::mc::Theme						"Téma"
-::menu::mc::Ctrl						"Ctrl"
-::menu::mc::Shift						"Shift"
-
-::menu::mc::AllScidbFiles			"Minden Scidb fájl"
-::menu::mc::AllScidbBases			"Minde Scidb adatbázis"
-::menu::mc::ScidBases				"Scid adatbázisok"
-::menu::mc::ScidbBases				"Scidb adatbázisok"
-::menu::mc::ChessBaseBases			"ChessBase adatbázisok"
-::menu::mc::PGNFilesArchives		"PGN fájlok/arhívumok"
-::menu::mc::PGNFiles					"PGN fájlok"
-::menu::mc::PGNArchives				"PGN arhívumok"
-
-::menu::mc::FileNotAllowed			"'%s' fájlnév nem engedélyzett"
-::menu::mc::TwoOrMoreDots			"Kettő vagy egymásutáni pontot tartalmaz."
-::menu::mc::ForbiddenChars			"Tiltott karaktereket tartalmaz."
+::menu::mc::OpenFile						"Scidb fájl megnyitása"
+::menu::mc::NewFile						"Scidb fájl létrehozása"
+::menu::mc::ImportFiles					"PGN fájlok importálása"
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt	"A %s fájl sérült:"
@@ -215,6 +189,7 @@
 ### application ########################################################
 ::application::mc::Database				"&Adatbázis"
 ::application::mc::Board					"&Tábla"
+::application::mc::MainMenu				"&Main Menu" ;# NEW
 
 ::application::mc::DockWindow				"Ablak dokkolása"
 ::application::mc::UndockWindow			"Dokkolás visszavonása"
@@ -234,6 +209,13 @@
 ::application::board::mc::KeyEditMarks			"M"
 
 ### application::database ##############################################
+::application::database::mc::FileOpen					"Fájl megnyitása"
+::application::database::mc::FileOpenRecent			"Legutóbbi fájlok Megnyitása"
+::application::database::mc::FileNew					"Új"
+::application::database::mc::FileExport				"Export..."
+::application::database::mc::FileImport				"PGN fájlok importálás..."
+::application::database::mc::FileClose					"Bezárás"
+
 ::application::database::mc::Games						"&Játszmák"
 ::application::database::mc::Players					"&Játékosok"
 ::application::database::mc::Events						"&Versenyek"
@@ -766,6 +748,11 @@
 
 ::gamebar::mc::LockGame					"Játszma zárolása"
 ::gamebar::mc::CloseGame				"Játszma bezárása"
+
+::gamebar::mc::GameNew					"Új tábla"
+::gamebar::mc::GameNewChess960		"Új játszma: Chess 960" ;# NEW
+::gamebar::mc::GameNewChess960Sym	"Új játszma: Chess 960 (symmetrical only)" ;# NEW
+::gamebar::mc::GameNewShuffle			"Új játszma: Shuffle Chess" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame		"Játszma áttekintése"

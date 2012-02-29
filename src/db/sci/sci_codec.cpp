@@ -520,6 +520,13 @@ Codec::isWriteable() const
 
 
 bool
+Codec::isExtraTag(tag::ID tag)
+{
+	return Encoder::isExtraTag(tag);
+}
+
+
+bool
 Codec::upgradeIndexOnly()
 {
 	return false;
