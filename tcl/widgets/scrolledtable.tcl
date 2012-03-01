@@ -189,13 +189,13 @@ proc build {path columns args} {
 	::table::bind $tb <ButtonRelease-1>		+[namespace code [list MoveRow $tb %x %y]]
 
 	if {[tk windowingsystem] eq "x11"} {
-		::table::bind $tb <Button-4> [namespace code [list scroll $path up]]
-		::table::bind $tb <Button-5> [namespace code [list scroll $path down]]
+		::table::bind $tb <Button-4> [namespace code [list scroll $path up 10]]
+		::table::bind $tb <Button-5> [namespace code [list scroll $path down 10]]
 		::table::bind $tb <Shift-Button-4> [namespace code [list scroll $path back]]
 		::table::bind $tb <Shift-Button-5> [namespace code [list scroll $path forward]]
 	} else {
 		::table::bind $tb <MouseWheel> [namespace code [list \
-			if {%D < 0} [list scroll $path up] else [list scroll $path down]]]
+			if {%D < 0} [list scroll $path up 10] else [list scroll $path down 10]]]
 		::table::bind $tb <Shift-MouseWheel> [namespace code [list \
 			if {%D < 0} [list scroll $path back] else [list scroll $path forward]]]
 	}
@@ -279,7 +279,7 @@ proc forget {path base} {
 }
 
 
-proc scroll {path position} {
+proc scroll {path position {units 1}} {
 	set table $path.top.table
 	variable ${table}::Vars
 
@@ -293,7 +293,8 @@ proc scroll {path position} {
 		end			{ TableScroll $table end }
 
 		up - down	{
-			if {$position eq "up"} { set dir -1 } else { set dir +1 }
+			if {$units > $Vars(height)/2} { set units [expr {max(1, $Vars(height)/2)}] }
+			if {$position eq "up"} { set dir [expr {-$units}] } else { set dir $units }
 			set start [expr {max(0, min($Vars(size) - 1, $Vars(start) + $dir))}]
 			if {$start == $Vars(start)} { return }
 			::tooltip::hide
