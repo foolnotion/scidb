@@ -3,6 +3,12 @@
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #261)
 ------------------------------------------------------------------------------
+* Experimental USE_TWO_BYTE_DECODING removed. A two byte decoding is slowing
+down the position search time by factor 2.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #261)
+------------------------------------------------------------------------------
 * Experimental: (simple) two byte move decoding implemented (use compiler flag
 USE_TWO_BYTE_DECODING).
 

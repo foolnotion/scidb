@@ -120,9 +120,6 @@ void
 Encoder::encodeNullMove(Move const&)
 {
 	m_strm.put(5);
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
@@ -157,9 +154,6 @@ Encoder::encodeKing(Move const& move)
 		M_ASSERT(diff < U_NUMBER_OF(Value) && Value[diff] != 0);
 		m_strm.put(Value[diff]);
 	}
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
@@ -177,17 +171,11 @@ Encoder::encodeQueen(Move const& move)
 	 {
         // Rook-horizontal move
         m_strm.put(makeMoveByte(move.from(), sq::fyle(move.to())));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
     }
 	 else if (sq::fyle(move.from()) == sq::fyle(move.to()))
 	 {
         // Rook-vertical move
         m_strm.put(makeMoveByte(move.from(), sq::rank(move.to()) + 8));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
     }
 	 else
 	 {
@@ -223,9 +211,6 @@ Encoder::encodeRook(Move const& move)
         value = sq::rank(move.to()) + 8;
 
     m_strm.put(makeMoveByte(move.from(), value));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
@@ -246,9 +231,6 @@ Encoder::encodeBishop(Move const& move)
 		 value += 8;
 
     m_strm.put(makeMoveByte(move.from(), value));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
@@ -274,9 +256,6 @@ Encoder::encodeKnight(Move const& move)
 	// Verify we have a valid knight move:
 	M_ASSERT(-17 <= diff && diff <= 17 && Value[diff + 17] != 0);
 	m_strm.put(makeMoveByte(move.from(), Value[diff + 17]));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
@@ -321,9 +300,6 @@ Encoder::encodePawn(Move const& move)
 	}
 
 	m_strm.put(makeMoveByte(move.from(), value));
-#ifdef USE_TWO_BYTE_DECODING
-	m_strm.put(0);
-#endif
 }
 
 
