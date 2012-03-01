@@ -411,7 +411,7 @@ proc PlaceSettingsMenu {m} {
 
 proc SetSettingsText {w} {
 	lassign [::tk::UnderlineAmpersand $mc::MainMenu] text ul
-	$w configure -text $text -underline $ul
+	$w configure -text " $text" -underline [incr ul]
 }
 
 

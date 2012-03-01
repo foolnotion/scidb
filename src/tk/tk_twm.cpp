@@ -275,7 +275,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 // Some examples of a node list structure:
 // ===========================================================================
 //
-// (horz (vert (horz 1 0) (tabs 2 3)) 4)		(horz 1 (vert (horz 0 4) (tabs 2 3)))
+// (horz (vert (horz 1 0) (tabs 2 3)) 4)	(horz 1 (vert (horz 0 4) (tabs 2 3)))
 // +---+-----------+---+						+---+-----------+---+
 // |   |           |   |						|   |           |   |
 // | 1 |     0     | 4 |						| 1 |     0     | 4 |
@@ -284,7 +284,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 // |       2/3     |   |						|   |      2/3      |
 // +---------------+---+						+---+---------------+
 //
-// (vert (horz 1 0 4) (tabs 2 3))				(horz 1 (vert 0 (tabs 2 3)) 4)
+// (vert (horz 1 0 4) (tabs 2 3))			(horz 1 (vert 0 (tabs 2 3)) 4)
 // +---+-----------+---+						+---+-----------+---+
 // |   |           |   |						|   |           |   |
 // | 1 |     0     | 4 |						| 1 |     0     | 4 |

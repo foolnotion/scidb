@@ -10,7 +10,7 @@
 # ----------------------------------------------------------------------
 # - Made a fix (look for FIX)
 # - Important enhancement (look for FEATURE)
-# - Positioning of submenus modernized (look for SUBMENUS)
+# - Positioning of submenus modernized (look for MODERNIZE)
 # - Patch http://sourceforge.net/tracker/index.php?func=detail&aid=2920409&group_id=12997&atid=312997
 #  applied with major modifications (look for MODERNIZE)
 # ======================================================================
@@ -1568,9 +1568,10 @@ proc ::tk::menu::WidgetProc {m command args} {
         set countHashes [expr {[string length $m] - [string length [string map {# {}} $m]]}]
 
         if {[winfo class $w] eq "Menu"} {
-            set dir right
             if {[info exists ::tk::Priv(sub:dir:$w)]} {
                 set dir $::tk::Priv(sub:dir:$w)
+            } else {
+                set dir right
             }
             set ::tk::Priv(sub:dir:$m) right
 
@@ -1584,7 +1585,10 @@ proc ::tk::menu::WidgetProc {m command args} {
 
                 if {$x1 + $mw >= $sw || $dir eq "left"} {
                     set x1 [expr {$x0 - $mw - $::tk::ShadowOffset + [$w cget -borderwidth]}]
-                    if {$x1 >= 0} { set x $x1 }
+                    if {$x1 >= 0} {
+                        set x $x1
+                        set ::tk::Priv(sub:dir:$m) left
+                    }
                 }
             }
         } elseif {$countHashes == 0} {

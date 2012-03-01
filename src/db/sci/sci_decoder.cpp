@@ -95,6 +95,9 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 		}
 	}
 
+#ifdef USE_TWO_BYTE_DECODING
+	m_strm.get();
+#endif
 	return m_position.makeKingMove(from, (from + offset) & 63);
 }
 
@@ -104,10 +107,24 @@ Move
 Decoder::decodeQueen(sq::ID from, Byte nybble)
 {
 	if (nybble >= 8)					// rook-vertical move
+#ifdef USE_TWO_BYTE_DECODING
+{
+	m_strm.get();
+#endif
 		return m_position.makeQueenMove(from, sq::make(sq::fyle(from), sq::Rank(nybble & 7)));
+#ifdef USE_TWO_BYTE_DECODING
+}
+#endif
 
 	if (nybble != sq::fyle(from))	// rook-horizontal move
+#ifdef USE_TWO_BYTE_DECODING
+{
+	m_strm.get();
+#endif
 		return m_position.makeQueenMove(from, sq::make(sq::Fyle(nybble), sq::rank(from)));
+#ifdef USE_TWO_BYTE_DECODING
+}
+#endif
 
 	M_ASSERT(m_strm.peek() > token::End_Marker);
 
@@ -123,6 +140,9 @@ Decoder::decodeRook(sq::ID from, Byte nybble)
 	if (nybble >= 8)	// this is a move along a fyle, to a different rank
 		return m_position.makeRookMove(from, sq::make(sq::fyle(from), nybble & 7));
 
+#ifdef USE_TWO_BYTE_DECODING
+	m_strm.get();
+#endif
 	return m_position.makeRookMove(from, sq::make(nybble, sq::rank(from)));
 }
 
@@ -132,6 +152,9 @@ Move
 Decoder::decodeBishop(sq::ID from, Byte nybble)
 {
 	int diff = int(nybble & 7) - int(sq::fyle(from));
+#ifdef USE_TWO_BYTE_DECODING
+	m_strm.get();
+#endif
 	return m_position.makeBishopMove(from, (nybble < 8 ? int(from) + 9*diff : int(from) - 7*diff) & 63);
 }
 
@@ -141,6 +164,9 @@ Move
 Decoder::decodeKnight(sq::ID from, Byte nybble)
 {
 	static int const Offset[16] = { 0, -17, -15, -10, -6, 6, 10, 15, 17, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef USE_TWO_BYTE_DECODING
+	m_strm.get();
+#endif
 	return m_position.makeKnightMove(from, (from + Offset[nybble]) & 63);
 }
 
@@ -160,6 +186,9 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		piece::None,
 	};
 
+#ifdef USE_TWO_BYTE_DECODING
+	m_strm.get();
+#endif
 	int offset = Offset[nybble];
 
 	if (m_position.whiteToMove())
