@@ -42,7 +42,7 @@ set PGNArchives				"PGN archives"
 
 set Language					"&Language"
 set Toolbars					"&Toolbars"
-set ShowLog						"&Show Log..."
+set ShowLog						"&Show Log"
 set AboutScidb					"&About Scidb"
 set Fullscreen					"&Full-Screen"
 set LeaveFullscreen			"Leave &Full-Screen"
@@ -186,7 +186,7 @@ proc build {menu} {
 	lassign [::tk::UnderlineAmpersand $mc::Help] text ul
 	$menu add command \
 		-compound left \
-		-label " $text" \
+		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::help \
 		-accelerator "F1" \
@@ -198,7 +198,7 @@ proc build {menu} {
 	lassign [::tk::UnderlineAmpersand $mc::AboutScidb] text ul
 	$menu add command \
 		-compound left \
-		-label " $text" \
+		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::info \
 		-command $cmd \
@@ -208,7 +208,7 @@ proc build {menu} {
 	lassign [::tk::UnderlineAmpersand $mc::ShowLog] text ul
 	$menu add command \
 		-compound left \
-		-label " $text" \
+		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::log \
 		-accelerator "${mc::Ctrl}+L" \

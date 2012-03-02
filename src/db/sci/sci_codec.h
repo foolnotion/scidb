@@ -161,7 +161,11 @@ private:
 
 	mstl::fstream				m_gameStream;
 	util::BlockFile*			m_gameData;
+#ifdef USE_SEPARATE_SEARCH_READER
+	mstl::fstream				m_treeStream;
+#else
 	util::BlockFileReader*	m_asyncReader;
+#endif
 	mstl::string				m_magicGameFile;
 	Lookup						m_lookup[4];
 	unsigned						m_progressFrequency;

@@ -152,7 +152,7 @@
 
 ::menu::mc::Language						"&Lingua"
 ::menu::mc::Toolbars						"&Barre strumenti"
-::menu::mc::ShowLog						"Mostra &Log..."
+::menu::mc::ShowLog						"Mostra &Log"
 ::menu::mc::AboutScidb					"S&u Scidb"
 ::menu::mc::Fullscreen					"&Schermo intero"
 ::menu::mc::LeaveFullscreen			"Leave &Schermo intero" ;# NEW "Leave Full-Screen"

@@ -49,28 +49,7 @@ set Distributed			"This program is distributed under the terms of the GNU Genera
 set Inspired				"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
 set SpecialThanks			"Special thanks to Shane Hudson for his terrific work. His effort is the basis for this application."
 
-set Reference(PGN)		"is the accepted standard for textual representation of chess games and transfer between chess databases. Steven J. Edwards created the PGN standard and the document explaining it is available at many chess websites; here is one location for it: %url%."
-set Reference(Crafty)	"is one of the strongest free chess program. The author is Bob Hyatt. The Crafty ftp site is: %url%. The \"TB\" subdirectory at this site contains many tablebase files which can also be used in Scidb."
-set Reference(Stockfish)	"is an open-source chess engine based on Glaurung. Probably it is the strongest free chess engine available. Stockfish can be downloaded at %url%"
-set Reference(Toga)		"is one of the strongest free chess engine available. The authors are Thomas Gaksch and Fabien Letouzey. The Toga II site is %url%."
-set Reference(Fruit)		"is a chess engine developed by Fabien Letouzey and Joachim Rang, and is vice world computer chess champion 2005. This engine supports Chess960 and is two times winner of Chess960 Engine Liga. The Fruit site is %url%."
-set Reference(Phalanx)	"Phalanx's playing style is quite human-like; when it plays at full strength, it may be compared to a intermediate-to-strong club player; beginners will be right at home with it, too. The author of Phalanx is Dusan Dobes. You may find this chess engine at %url%."
-set Reference(Gully)		"The Gullydeckel chess playing program allows you to play a game of chess against a not too strong opponent. It has been written by Martin Borriss. The Gullydeckel site is %url%."
-set Reference(MicroMax)	"is probably the smallest C Chess program in existence. The Micro-Max site is %url%. Micro-Max is written by H.G. Muller."
-
 } ;# namespace mc
-
-
-array set Data {
-	PGN			{ "PGN (Portable Game Notation)" http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm }
-	Crafty		{ "Crafty"			ftp://ftp.cis.uab.edu/pub/hyatt }
-	Toga			{ "Toga II"			http://www.superchessengine.com/toga_ii.htm }
-	Fruit			{ "Fruit"			http://www.fruitchess.com }
-	Phalanx		{ "Phalanx"			http://phalanx.sourceforge.net }
-	Gully			{ "Gullydeckel"	http://borriss.com }
-	MicroMax		{ "Micro-Max"		http://home.hccnet.nl/h.g.muller/max-src2.html }
-	Stockfish	{ "Stockfish"		http://www.stockfishchess.com/download/all/index.html }
-}
 
 
 proc openDialog {parent} {
@@ -265,6 +244,7 @@ proc DisplayContributions {t} {
 	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
 	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
 	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
+#	$t insert end [Enc "Benigno Hernández Bacallado ([::encoding::languageName es]), "]
 	$t insert end [Enc "Zoltán Tibenszky ([::encoding::languageName hu]), "]
 	$t insert end [Enc "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"]
 

@@ -385,7 +385,7 @@ ByteIStream::ByteIStream(mstl::fstream& strm)
 	:ByteStream(strm.bufsize())
 	,m_strm(strm)
 {
-	skip(strm.bufsize());	// force underflow()
+	m_getp = m_endp;	// force underflow
 }
 
 
@@ -488,7 +488,9 @@ Codec::gameFlags() const
 
 Codec::Codec()
 	:m_gameData(0)
+#ifndef USE_SEPARATE_SEARCH_READER
 	,m_asyncReader(0)
+#endif
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
 {
@@ -505,8 +507,16 @@ Codec::Codec()
 
 Codec::~Codec() throw()
 {
+#ifdef USE_SEPARATE_SEARCH_READER
+
+	m_treeStream.close();
+
+#else
+
 	if (m_asyncReader)
 		m_gameData->closeAsyncReader(m_asyncReader);
+
+#endif
 
 	delete m_gameData;
 }
@@ -2089,6 +2099,74 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 	}
 }
 
+#ifdef USE_SEPARATE_SEARCH_READER
+
+namespace {
+
+struct ByteTreeStream : public util::ByteStream
+{
+	ByteTreeStream(mstl::fstream& strm, unsigned offset);
+	void underflow(unsigned size);
+	mstl::istream& m_strm;
+	Byte m_buf[1024];
+};
+
+
+ByteTreeStream::ByteTreeStream(mstl::fstream& strm, unsigned offset)
+	:ByteStream(m_buf, sizeof(m_buf))
+	,m_strm(strm)
+{
+	m_strm.seekg(offset + 3, mstl::ios_base::beg);
+	m_strm.read(m_base, sizeof(m_buf));
+	m_endp = m_base + sizeof(m_buf);
+}
+
+
+void
+ByteTreeStream::underflow(unsigned size)
+{
+	M_ASSERT(size <= capacity());
+
+	unsigned remaining = this->remaining();
+	::memmove(m_base, m_getp, remaining);
+	m_getp = m_base + remaining;
+	m_endp = m_getp + m_strm.readsome(reinterpret_cast<char*>(m_getp), capacity() - remaining);
+	m_getp -= remaining;
+
+	if (__builtin_expect(m_getp >= m_endp, 0))
+		IO_RAISE(Namebase, Corrupted, "unexpected end of stream");
+}
+
+} // namespace
+
+void
+Codec::useAsyncReader(bool flag)
+{
+	M_ASSERT(m_gameData);
+
+	if (flag)
+	{
+		m_treeStream.set_bufsize(4096);
+		m_treeStream.open(m_gameStream.filename(), mstl::ios_base::in | mstl::ios_base::binary);
+	}
+	else
+	{
+		m_treeStream.close();
+	}
+}
+
+
+Move
+Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations)
+{
+	M_ASSERT(m_treeStream.is_open());
+
+	ByteTreeStream src(m_treeStream, info.gameOffset());
+	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
+	return decoder.findExactPosition(position, skipVariations);
+}
+
+#else
 
 void
 Codec::useAsyncReader(bool flag)
@@ -2119,6 +2197,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	return decoder.findExactPosition(position, skipVariations);
 }
 
+#endif
 
 void
 Codec::rename(mstl::string const& oldName, mstl::string const& newName)

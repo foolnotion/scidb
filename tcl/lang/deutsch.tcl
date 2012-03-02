@@ -151,7 +151,7 @@
 
 ::menu::mc::Language						"&Sprache"
 ::menu::mc::Toolbars						"&Funktionsleisten"
-::menu::mc::ShowLog						"&Log zeigen..."
+::menu::mc::ShowLog						"&Log zeigen"
 ::menu::mc::AboutScidb					"&Über Scidb"
 ::menu::mc::Fullscreen					"&Vollbild"
 ::menu::mc::LeaveFullscreen			"&Vollbild verlassen"

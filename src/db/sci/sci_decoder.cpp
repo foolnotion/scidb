@@ -858,10 +858,14 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 	for ( ; runLength > 0; --runLength)
 	{
+#ifdef USE_SEPARATE_SEARCH_READER
+		m_position.doMove(move, decodeMove(m_strm.get(), move));
+#else
 		static_assert((1 << 16)/* Maximal Run Size */ <= Block_Size, "unsafeGet() is unsafe");
 
 		// unsafeGet() is ok because the block file is buffered with doubled size
 		m_position.doMove(move, decodeMove(m_strm.unsafeGet(), move));
+#endif
 
 		if (position.isEqualPosition(m_position.board()))
 			return nextMove(runLength - 1);

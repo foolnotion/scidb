@@ -152,7 +152,7 @@
 
 ::menu::mc::Language						"&Idioma"
 ::menu::mc::Toolbars						"&Barras de herramientas"
-::menu::mc::ShowLog						"Mostrar &bit‡co&ra..."
+::menu::mc::ShowLog						"Mostrar &bit‡co&ra"
 ::menu::mc::AboutScidb					"A&bout Scidb" ;# NEW
 ::menu::mc::Fullscreen					"&Pantalla completa"
 ::menu::mc::LeaveFullscreen			"Leave &pantalla completa" ;# NEW "Leave Full-Screen"

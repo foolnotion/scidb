@@ -111,7 +111,7 @@ struct TeXt::MemoryBlock
 	size_t		numFree;
 	Object		freeNode;
 	ChunkList	chunkList;
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(NREQ)
 	bool			destroyed;
 #endif
 
@@ -124,7 +124,7 @@ struct TeXt::MemoryBlock
 
 MemoryBlock::MemoryBlock()
 	:numFree(0)
-#ifndef NDEBUG
+#if !defined(NDEBUG) || !defined(NREQ)
 	,destroyed(false)
 #endif
 {

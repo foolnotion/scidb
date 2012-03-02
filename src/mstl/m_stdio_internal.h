@@ -60,6 +60,12 @@
 #define _HAVE_STDC
 #endif
 
+#ifdef _WIN32
+#define __CYGWIN__
+#endif
+
+#define HAVE_FCNTL 1
+
 /*  ISO C++.  */
 
 #ifdef __cplusplus
@@ -335,24 +341,28 @@ typedef unsigned int __uint64_t;
 //#include <machine/_types.h>
 //#include <sys/lock.h>
 
-#ifndef __off_t_defined
 typedef long _off_t;
-#endif
+typedef long off_t;
+typedef long ssize_t;
 
 #if defined(__rtems__)
 /* device numbers are 32-bit major and and 32-bit minor */
 typedef unsigned long long __dev_t;
 #else
 #ifndef __dev_t_defined
-typedef short __dev_t;
+#if __WORDSIZE == 64
+typedef unsigned long __dev_t;
+#else
+typedef unsigned long long __dev_t;
+#endif
 #endif
 #endif
 
 #ifndef __uid_t_defined
-typedef unsigned short __uid_t;
+typedef unsigned __uid_t;
 #endif
 #ifndef __gid_t_defined
-typedef unsigned short __gid_t;
+typedef unsigned __gid_t;
 #endif
 
 #ifndef __off64_t_defined
@@ -576,6 +586,8 @@ extern _VOID   _EXFUN(__sinit,(struct _reent *));
 #else
 # define _REENT_SMALL_CHECK_INIT(ptr) /* nothing */
 #endif
+
+#define _READ_WRITE_RETURN_TYPE _ssize_t
 
 struct __sFILE {
   unsigned char *_p;	/* current position in (some) buffer */
@@ -1421,6 +1433,7 @@ FILE *	_EXFUN(tmpfile, (void));
 char *	_EXFUN(tmpnam, (char *));
 int	_EXFUN(fclose, (FILE *));
 int	_EXFUN(fflush, (FILE *));
+int	_EXFUN(fflush_unlocked, (FILE *));
 FILE *	_EXFUN(freopen, (const char *, const char *, FILE *));
 void	_EXFUN(setbuf, (FILE *, char *));
 int	_EXFUN(setvbuf, (FILE *, char *, int, size_t));
@@ -1441,9 +1454,12 @@ int	_EXFUN(vprintf, (const char *, __VALIST)
 int	_EXFUN(vsprintf, (char *, const char *, __VALIST)
                _ATTRIBUTE ((__format__ (__printf__, 2, 0))));
 int	_EXFUN(fgetc, (FILE *));
+int	_EXFUN(fgetc_unlocked, (FILE *));
 char *  _EXFUN(fgets, (char *, int, FILE *));
+char *  _EXFUN(fgets_unlocked, (char *, int, FILE *));
 int	_EXFUN(fputc, (int, FILE *));
 int	_EXFUN(fputs, (const char *, FILE *));
+int	_EXFUN(fputs_unlocked, (const char *, FILE *));
 int	_EXFUN(getc, (FILE *));
 int	_EXFUN(getchar, (void));
 char *  _EXFUN(gets, (char *));
@@ -1452,7 +1468,9 @@ int	_EXFUN(putchar, (int));
 int	_EXFUN(puts, (const char *));
 int	_EXFUN(ungetc, (int, FILE *));
 size_t	_EXFUN(fread, (_PTR, size_t _size, size_t _n, FILE *));
+size_t	_EXFUN(fread_unlocked, (_PTR, size_t _size, size_t _n, FILE *));
 size_t	_EXFUN(fwrite, (const _PTR , size_t _size, size_t _n, FILE *));
+size_t	_EXFUN(fwrite_unlocked, (const _PTR , size_t _size, size_t _n, FILE *));
 #ifdef _COMPILING_NEWLIB
 int	_EXFUN(fgetpos, (FILE *, _fpos_t *));
 #else
@@ -1561,8 +1579,8 @@ FILE *	_EXFUN(fdopen, (int, const char *));
 #endif
 int	_EXFUN(fileno, (FILE *));
 int	_EXFUN(getw, (FILE *));
-int	_EXFUN(pclose, (FILE *));
-FILE *  _EXFUN(popen, (const char *, const char *));
+/*int	_EXFUN(pclose, (FILE *));*/
+/*FILE *  _EXFUN(popen, (const char *, const char *));*/
 int	_EXFUN(putw, (int, FILE *));
 void    _EXFUN(setbuffer, (FILE *, char *, int));
 int	_EXFUN(setlinebuf, (FILE *));
@@ -1573,6 +1591,7 @@ int	_EXFUN(ftrylockfile, (FILE *));
 void	_EXFUN(funlockfile, (FILE *));
 int	_EXFUN(putc_unlocked, (int, FILE *));
 int	_EXFUN(putchar_unlocked, (int));
+
 #endif /* ! __STRICT_ANSI__ */
 
 /*
@@ -1890,6 +1909,11 @@ _ELIDABLE_INLINE int __sputc_r(struct _reent *_ptr, int _c, FILE *_p) {
 #define	__sferror(p)	(((p)->_flags & __SERR) != 0)
 #define	__sclearerr(p)	((void)((p)->_flags &= ~(__SERR|__SEOF)))
 #define	__sfileno(p)	((p)->_file)
+
+#define	feof_unlocked(p)	__sfeof(p)
+#define	ferror_unlocked(p)	__sferror(p)
+#define	fputc_unlocked(c,p)	__sputc_r(_REENT, c, p)
+#define fileno_unlocked(fp)	__sfileno (fp)
 
 #ifndef _REENT_SMALL
 #define	feof(p)		__sfeof(p)
