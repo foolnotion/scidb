@@ -266,7 +266,7 @@ struct Node;
 typedef mstl::vector<Node*> Childs;
 typedef mstl::list<mstl::string> Commands;
 
-enum Type	{ Frame, Pane, PanedWindow, Notebook };
+enum Type	{ Root, Frame, Pane, PanedWindow, Notebook };
 enum Expand	{ None, X = 1, Y = 2 };
 enum Orient	{ Horizontal = X, Vertical = Y };
 
@@ -305,7 +305,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|           |
 //		+-----------+
 //
-//		makeFrame 0
+//		makePane 0
 //
 // RIGHT 4 0 --> A:(horz 0 [4])
 //
@@ -315,9 +315,9 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|           |   |
 //		+-----------+---+
 //
-//		makeFrame 4
-//		makeWindow 4 --> [4]
-//		makePane horz 0 [4] --> A
+//		makePane 4
+//		makeFrame 4 --> [4]
+//		makePanedWindow horz 0 [4] --> A
 //
 // BOTTOM 2 A:(horz 0 [4]) --> B:(vert A:(horz 0 [4]) [2])
 //
@@ -329,9 +329,9 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|     2         |
 //		+---------------+
 //
-//		makeFrame 2
-//		makeWindow 2 --> [2]
-//		makePane vert A [2] --> B
+//		makePane 2
+//		makeFrame 2 --> [2]
+//		makePanedWindow vert A [2] --> B
 //
 // OVER 3 [2] --> B:(vert A:(horz 0 [4]) [C]:(tabs 2 3))
 //
@@ -343,10 +343,10 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|    2/3        |
 //		+---------------+
 //
-//		makeFrame 3
+//		makePane 3
 //		makeNotebook 2 3 --> C
-//		destroyWindow [2]
-//		makeWindow C --> [C]
+//		destroyFrame [2]
+//		makeFrame C --> [C]
 //
 // LEFT 1 B:(vert (horz 0 [4]) [C]:(tabs 2 3)) -> D:(horz [1] B:(vert A:(horz 0 [4]) [C]:(tabs 2 3)))
 //
@@ -358,9 +358,9 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|   |    2/3        |
 //		+---+---------------+
 //
-//		makeFrame 1
-//		makeWindow 1 --> [1]
-//		makePane horz [1] B --> D
+//		makePane 1
+//		makeFrame 1 --> [1]
+//		makePanedWindow horz [1] B --> D
 //
 // OVER 5 [C] -->
 //		B:(vert (horz 0 [4]) [C]:(tabs 2 3)) -> D:(horz [1] B:(vert A:(horz 0 [4]) [C]:(tabs 2 3 5)))
@@ -373,7 +373,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|   |    2/3/5      |
 //		+---+---------------+
 //
-//		makeFrame 5
+//		makePane 5
 //		addTab C 5
 //
 // REMOVE 5 -->
@@ -388,7 +388,7 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		+---+---------------+
 //
 //		removeTab C 5
-//		destroyFrame 5
+//		destroyPane 5
 //
 // EXPAND 4 --> F:(horz [1] E:(vert 0 [C]:(tabs 2 3)) [4])
 //
@@ -400,9 +400,9 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|   |    2/3    |   |
 //		+---+-----------+---+
 //
-//		destroyPane A
-//		makePane vert 0 [C] --> E
-//		makePane horz [1] E --> F
+//		destroyPanedWindow A
+//		makePanedWindow vert 0 [C] --> E
+//		makePanedWindow horz [1] E --> F
 //
 // EXPAND C:(tabs 2 3) --> H:(vert G:(horz [1] 0 [4]) [C]:(tabs 2 3))
 //
@@ -414,10 +414,10 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|        2/3        |
 //		+-------------------+
 //
-//		destroyPane E
-//		destroyPane F
-//		makePane horz [1] 0 [4] --> G
-//		makePane vert G [C] --> H
+//		destroyPanedWindow E
+//		destroyPanedWindow F
+//		makePanedWindow horz [1] 0 [4] --> G
+//		makePanedWindow vert G [C] --> H
 //
 // EXPAND 4 --> K:(horz J:(vert I:(horz [1] 0) [C]:(tabs 2 3)) [4])
 //
@@ -429,11 +429,11 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|        2/3    |   |
 //		+---------------+---+
 //
-//		destroyPane G
-//		destroyPane H
-//		makePane horz [1] 0 --> I
-//		makePane horz I [C] --> J
-//		makePane horz J [4] --> K
+//		destroyPanedWindow G
+//		destroyPanedWindow H
+//		makePanedWindow horz [1] 0 --> I
+//		makePanedWindow horz I [C] --> J
+//		makePanedWindow horz J [4] --> K
 //
 // REMOVE 2 --> M:(horz L:(vert I:(horz [1] 0) [3]) [4])
 //
@@ -445,13 +445,13 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|         3     |   |
 //		+---------------+---+
 //
-//		destroyPane J
-//		destroyPane K
-//		destroyWindow [C]
-//		destroyFrame 2
-//		makeWindow 3 --> [3]
-//		makePane vert I [3] --> L
-//		makePane horz L [4] --> H
+//		destroyPanedWindow J
+//		destroyPanedWindow K
+//		destroyFrame [C]
+//		destroyPane 2
+//		makeFrame 3 --> [3]
+//		makePanedWindow vert I [3] --> L
+//		makePanedWindow horz L [4] --> H
 //
 // REMOVE 3 --> N:(horz [1] 0 [4])
 //
@@ -461,14 +461,14 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|   |           |   |
 //		+---+-----------+---+
 //
-//		destroyPane I
-//		destroyPane L
-//		destroyPane M
-//		destroyWindow [3]
-//		destroyFrame 3
-//		makePane horz [1] 0 [4] --> N
+//		destroyPanedWindow I
+//		destroyPanedWindow L
+//		destroyPanedWindow M
+//		destroyFrame [3]
+//		destroyPane 3
+//		makePanedWindow horz [1] 0 [4] --> N
 //
-// UNDOCK 1 --> N:(horz 0 [4]) + <1>
+// UNDOCK 4 --> N:(horz [1] 0) + <4>
 //
 //		+---+-----------+  +---+
 //		|   |           |  |   |
@@ -477,8 +477,8 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		+---+-----------+  +---+
 //
 //		removePane [4]
-//		destroyWindow [4]
-//		makeSingleWindow 4 --> <4>
+//		destroyFrame [4]
+//		makeWindow 4 --> <4>
 //
 // DOCK 1 --> N:(horz [1] 0 [4])
 //
@@ -488,8 +488,8 @@ enum Orient	{ Horizontal = X, Vertical = Y };
 //		|   |           |   |
 //		+---+-----------+---+
 //
-//		destroySingleWindow 4
-//		makeWindow 4 --> [4]
+//		destroyWindow <4>
+//		makeFrame 4 --> [4]
 //		addPane N [4] after 0
 
 class Node
@@ -500,6 +500,7 @@ public:
 
 	Node();
 	Node(Type type);
+	Node(Type type, Tcl_Obj* path);
 	Node(Tcl_Obj* path);
 	~Node() throw();
 
@@ -557,10 +558,6 @@ private:
 	static Tcl_Obj* m_objNotebook;
 	static Tcl_Obj* m_objPane;
 	static Tcl_Obj* m_objFrame;
-	static Tcl_Obj* m_objCreateCmd;
-	static Tcl_Obj* m_objPackCmd;
-	static Tcl_Obj* m_objUnpackCmd;
-	static Tcl_Obj* m_objConfigureCmd;
 	static Tcl_Obj* m_objBefore;
 	static Tcl_Obj* m_objAfter;
 	static Tcl_Obj* m_objMinsize;
@@ -571,10 +568,6 @@ Tcl_Obj* Node::m_objPanedWindow = 0;
 Tcl_Obj* Node::m_objNotebook = 0;
 Tcl_Obj* Node::m_objPane = 0;
 Tcl_Obj* Node::m_objFrame = 0;
-Tcl_Obj* Node::m_objCreateCmd = 0;
-Tcl_Obj* Node::m_objPackCmd = 0;
-Tcl_Obj* Node::m_objUnpackCmd = 0;
-Tcl_Obj* Node::m_objConfigureCmd = 0;
 Tcl_Obj* Node::m_objBefore = 0;
 Tcl_Obj* Node::m_objAfter = 0;
 Tcl_Obj* Node::m_objMinsize = 0;
@@ -583,6 +576,10 @@ Tcl_Obj* Node::m_objMaxsize = 0;
 Node::Lookup Node::m_lookup;
 
 } // namespace
+
+
+typedef mstl::map<mstl::string, Node*> NodeList;
+static NodeList nodeList;
 
 
 namespace {
@@ -606,16 +603,27 @@ Node::Node()
 }
 
 
+Node::Node(Tcl_Obj* path)
+	:m_type(Frame)
+	,m_path(path)
+	,m_opts(0)
+	,m_parent(0)
+{
+	m_lookup[Tcl_GetString(path)] = this;
+}
+
+
 Node::Node(Type type)
 	:m_type(type)
+	,m_path(0)
 	,m_opts(0)
 	,m_parent(0)
 {
 }
 
 
-Node::Node(Tcl_Obj* path)
-	:m_type(Frame)
+Node::Node(Type type, Tcl_Obj* path)
+	:m_type(type)
 	,m_path(path)
 	,m_opts(0)
 	,m_parent(0)
@@ -639,12 +647,8 @@ Node::~Node() throw()
 void
 Node::initialize()
 {
-	if (m_objCreateCmd == 0)
+	if (m_objPanedWindow == 0)
 	{
-		m_objCreateCmd = Tcl_NewStringObj("::twm::callback::Create", -1);
-		m_objPackCmd = Tcl_NewStringObj("::twm::callback::Pack", -1);
-		m_objUnpackCmd = Tcl_NewStringObj("::twm::callback::Unpack", -1);
-		m_objConfigureCmd = Tcl_NewStringObj("::twm::callback::Configure", -1);
 		m_objPanedWindow = Tcl_NewStringObj("panedwindow", -1);
 		m_objNotebook = Tcl_NewStringObj("notebook", -1);
 		m_objPane = Tcl_NewStringObj("pane", -1);
@@ -681,8 +685,17 @@ Node::create(Node* parent, int n, Tcl_Obj** opts)
 {
 	M_ASSERT(opts);
 	M_ASSERT(n > 0);
+	M_ASSERT(m_type != Root);
 
 	Tcl_Obj* type = 0; // shut up the compiler
+
+	switch (int(m_type))
+	{
+		case Pane:
+		case Frame:
+			m_name = Tcl_GetString(opts[0]);
+			break;
+	}
 
 	switch (m_type)
 	{
@@ -690,16 +703,14 @@ Node::create(Node* parent, int n, Tcl_Obj** opts)
 		case Notebook:		type = m_objNotebook; break;
 		case Pane:			type = m_objPane; break;
 		case Frame:			type = m_objFrame; break;
+		case Root:			break; // should not happen
 	}
 
-	m_name.assign(Tcl_GetString(opts[0]));
 	m_opts = Tcl_NewListObj(n - 1, opts + 1);
 	m_path = call(	__func__,
-						m_objCreateCmd,
 						root()->path(),
-						parent->path(),
-						opts[0],
 						type,
+						opts[0],
 						n, opts);
 
 	Tcl_IncrRefCount(m_opts);
@@ -814,6 +825,7 @@ Node::isExpandable(Orient orient) const
 		case Frame:
 		case PanedWindow:
 		case Notebook:
+		case Root:
 			for (unsigned i = 0; i < m_childs.size(); ++i)
 			{
 				if (m_childs[i]->isExpandable(orient))
@@ -836,6 +848,7 @@ Node::configure(unsigned& minw, unsigned& maxw)
 	{
 		case PanedWindow:
 		case Notebook:
+		case Root:
 			// nothing to do
 			break;
 
@@ -853,7 +866,7 @@ Node::configure(unsigned& minw, unsigned& maxw)
 	objv[2] = m_objMaxsize;
 	objv[3] = Tcl_NewIntObj(maxw);
 
-	tcl::call(__func__, m_objConfigureCmd, root()->path(), m_parent->path(), path(), 4, objv);
+//	tcl::call(__func__, m_objConfigureCmd, root()->path(), m_parent->path(), path(), 4, objv);
 }
 
 
@@ -885,7 +898,7 @@ Node::packBefore(Node* node, Node const* succ)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, succ->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
+//	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), succ), node);
 
 	Tcl_DecrRefCount(opts);
@@ -907,7 +920,7 @@ Node::packAfter(Node* node, Node const* pred)
 	Tcl_ListObjAppendElement(tcl::interp(), opts, pred->path());
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
+//	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), opts, nullptr);
 	m_childs.insert(mstl::find(m_childs.begin(), m_childs.end(), pred) + 1, node);
 
 	Tcl_DecrRefCount(opts);
@@ -921,7 +934,7 @@ Node::pack(Node* node)
 	M_ASSERT(m_type != Pane && m_type != Frame);
 
 	node->m_parent = this;
-	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), m_opts, nullptr);
+//	tcl::call(__func__, m_objPackCmd, root()->path(), path(), node->path(), m_opts, nullptr);
 	m_childs.push_back(node);
 }
 
@@ -943,7 +956,7 @@ Node::unpack(unsigned index)
 	M_ASSERT(index < m_childs.size());
 
 	m_childs[index]->m_parent = 0;
-	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), nullptr);
+//	tcl::call(__func__, m_objUnpackCmd, root()->path(), m_parent->path(), m_childs[index]->path(), nullptr);
 }
 
 
@@ -964,8 +977,8 @@ Node::unpack()
 {
 	m_childs.clear();
 
-	if (m_type == Notebook || m_type == PanedWindow)
-		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), nullptr);
+//	if (m_type == Notebook || m_type == PanedWindow)
+//		tcl::call(__func__, m_objUnpackCmd, root()->path(), path(), nullptr);
 }
 
 
@@ -977,6 +990,7 @@ enum Relation { Successor, Predecessor, Ancestor };
 static char const* CmdTwm = "::scidb::tk::twm";
 
 
+/*
 static void
 insertNode(Node* root, Node* relative, Relation relation, Orient orientation, Node* node)
 {
@@ -1068,6 +1082,7 @@ insertNode(Node* root, Node* relative, Relation relation, Orient orientation, No
 			break;
 	}
 }
+*/
 
 
 static int
@@ -1157,20 +1172,19 @@ traverseList(Node* root, Node* parent, Tcl_Obj* list)
 
 
 static int
-cmdInit(int objc, Tcl_Obj* const objv[])
+cmdInit(Node* root, int objc, Tcl_Obj* const objv[])
 {
 	Node::initialize();
-	Node* root = new Node(objectFromObj(objc, objv, 0));
-	traverseList(root, root, objectFromObj(objc, objv, 1));
+	traverseList(root, root, objectFromObj(objc, objv, 0));
 	root->configure();
 	return TCL_OK;
 }
 
 
 static int
-cmdAdd(int objc, Tcl_Obj* const objv[])
+cmdAdd(Node* root, int objc, Tcl_Obj* const objv[])
 {
-insertNode(0, 0, Ancestor, Horizontal, 0);
+//insertNode(0, 0, Ancestor, Horizontal, 0);
 #if 0
 	Node* newn = new Node(objectFromObj(objc, objv, 1), objectFromObj(objc, objv, 2));
 	Node* root = Node::lookupRoot(stringFromObj(objc, objv, 0));
@@ -1217,7 +1231,7 @@ insertNode(0, 0, Ancestor, Horizontal, 0);
 
 
 static int
-cmdRemove(int objc, Tcl_Obj* const objv[])
+cmdRemove(Node* root, int objc, Tcl_Obj* const objv[])
 {
 #if 0
 	int	pos	= Node::positionFromName(stringFromObj(objc, objv, 1));
@@ -1239,6 +1253,18 @@ cmdRemove(int objc, Tcl_Obj* const objv[])
 }
 
 
+static Node*
+lookupRoot(Tcl_Obj* path)
+{
+	NodeList::iterator i = ::nodeList.find(Tcl_GetString(path));
+
+	if (i == ::nodeList.end())
+		i = ::nodeList.insert(NodeList::value_type(Tcl_GetString(path), new Node(Root, path))).first;
+
+	return i->second;
+}
+
+
 static int
 cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -1251,7 +1277,7 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{ "<widget> <new-parent>", 2 },
 		{ "<widget>", 1 },
 	};
-	enum { Cmd_Init, Cmd_Add, Cmd_Remove, Cmd_Capture, Cmd_Release };
+	enum { Cmd_Init, Cmd_Add, Cmd_Remove, Cmd_Capture, Cmd_Release, };
 
 	if (objc < 2)
 	{
@@ -1276,9 +1302,10 @@ cmdTwm(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	switch (index)
 	{
-		case Cmd_Init:		return cmdInit(objc, objv);
-		case Cmd_Add:		return cmdAdd(objc, objv);
-		case Cmd_Remove:	return cmdRemove(objc, objv);
+		case Cmd_Init:		return cmdInit(lookupRoot(objv[1]), objc, objv);
+		case Cmd_Add:		return cmdAdd(lookupRoot(objv[1]), objc, objv);
+		case Cmd_Remove:	return cmdRemove(lookupRoot(objv[1]), objc, objv);
+
 		case Cmd_Capture:	return cmdCapture(objc, objv);
 		case Cmd_Release:	return cmdRelease(objc, objv);
 	}

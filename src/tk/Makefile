@@ -26,6 +26,7 @@ SRC_CXX = \
 	tk_init.cpp \
 	tk_jpeg.cpp \
 	tk_multiwindow.cpp \
+	tk_notebook.cpp \
 	tk_png.cpp \
 	tk_twm.cpp \
 	tk_window_manager.cpp \
@@ -165,6 +166,14 @@ tk_multiwindow.o: tk8.5/tkPort.h
 tk_multiwindow.o: tk8.5/tkUnixPort.h
 tk_multiwindow.o: tk8.5/tkIntDecls.h
 tk_multiwindow.o: ../mstl/m_types.h
+tk_notebook.o: tk_init.h
+tk_notebook.o: ../tcl/tcl_base.h
+tk_notebook.o: ../tcl/tcl_base.ipp
+tk_notebook.o: tk8.5/tkInt.h
+tk_notebook.o: tk8.5/tkPort.h
+tk_notebook.o: tk8.5/tkUnixPort.h
+tk_notebook.o: tk8.5/tkIntDecls.h
+tk_notebook.o: ../mstl/m_types.h
 tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h

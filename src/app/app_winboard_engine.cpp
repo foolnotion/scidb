@@ -193,6 +193,7 @@ winboard::Engine::Engine()
 	,m_featureSigint(false)
 	,m_featureAnalyze(false)
 	,m_featurePause(false)
+	,m_featurePlayOther(false)
 	,m_featureSan(false)
 	,m_variantChess960(false)
 	,m_variantNoCastle(false)
@@ -512,16 +513,70 @@ winboard::Engine::processMessage(mstl::string const& message)
 		parseAnalysis(msg);
 		m_editSent = false;
 	}
-	else if (::strncmp(msg, "feature ", 8) == 0)
-	{
-		parseFeatures(::skipSpaces(msg + 8));
-	}
-	else if (isProbing() && (::strncmp(msg, "move ", 5) == 0 || ::strncmp(msg, "pong ", 5) == 0))
-	{
-		m_response = true;
-	}
 	else
 	{
+		switch (msg[0])
+		{
+			case 'f':
+				if (::strncmp(msg, "feature ", 8) == 0)
+					return parseFeatures(::skipSpaces(msg + 8));
+				break;
+
+			case 'p':
+				if (isProbing() && ::strncmp(msg, "pong ", 5) == 0)
+				{
+					m_response = true;
+					return;
+				}
+				break;
+
+			case 'm':
+				if (isProbing() && ::strncmp(msg, "move ", 5) == 0)
+				{
+					m_response = true;
+					return;
+				}
+				// fallthru
+
+			case 'M':
+				if (::strncmp(msg + 1, "y move is", 9) == 0)
+				{
+					// TODO: do something with move
+					// skip possible colon after " is".
+					return;
+				}
+				break;
+
+			case 'r':
+				if (::strncmp(msg, "resign", 6) == 0)
+				{
+					// TODO: handle resign
+					return;
+				}
+				break;
+
+			case '1':
+				if (::strncmp(msg, "1-0", 3) == 0)
+				{
+					// TODO: handle "White wins"
+					return;
+				}
+				else if (::strncmp(msg, "1/2-1/2", 7) == 0)
+				{
+					// TODO: handle "Engine declares draw"
+					return;
+				}
+				break;
+
+			case '0':
+				if (::strncmp(msg, "resign", 6) == 0)
+				{
+					// TODO: handle "Black wins"
+					return;
+				}
+				break;
+		}
+
 		detectFeatures(msg);
 	}
 }
@@ -588,13 +643,29 @@ winboard::Engine::parseFeatures(char const* msg)
 				break;
 
 			case 'p':
-				if (::strncmp(key, "pause=", 6) == 0)
+				switch (key[1])
 				{
-					m_featurePause= *val == '1';
-					accept = true;
+					case 'u':
+						if (::strncmp(key, "pause=", 6) == 0)
+						{
+							m_featurePause= *val == '1';
+							accept = true;
 
-					if (isProbing())
-						addFeature(app::Engine::Feature_Pause);
+							if (isProbing())
+								addFeature(app::Engine::Feature_Pause);
+						}
+						break;
+
+					case 'l':
+						if (::strncmp(key, "playother=", 10) == 0)
+						{
+							m_featurePlayOther= *val == '1';
+							accept = true;
+
+							if (isProbing())
+								addFeature(app::Engine::Feature_PlayOther);
+						}
+						break;
 				}
 				break;
 

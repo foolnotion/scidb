@@ -136,6 +136,7 @@ public:
 	static unsigned const Feature_Chess_960		= 1 << 0;
 	static unsigned const Feature_Shuffle_Chess	= 1 << 1;
 	static unsigned const Feature_Pause				= 1 << 2;
+	static unsigned const Feature_PlayOther		= 1 << 3;
 
 	Engine(	Protocol protocol,
 				mstl::string const& name,

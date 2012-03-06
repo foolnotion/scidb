@@ -44,6 +44,8 @@ array set Defaults {
 	header:button:background	#d7d7d7
 }
 
+variable Counter 0
+
 
 proc mc {tok} { return [::tk::msgcat::mc [set $tok]] }
 proc tooltip {args} {}
@@ -53,36 +55,61 @@ if {![catch {package require tooltip}]} {
 }
 
 
-proc twm {parent} {
-	if {$parent eq "."} { set twm .twm } else { set twm $parent.twm }
+proc twm {path args} {
+	namespace eval [namespace current]::$path {}
+	variable ${path}::Vars
+	variable ${path}::Options
 
-	namespace eval [namespace current]::$twm {}
-	variable ${twm}::Vars
-	variable ${twm}::Options
+	array set opts { -makepane {} -getname {} }
+	array set opts $args
+	set Vars(makepane) $opts(-makepane)
+	set Vars(getname) $opts(-getname)
 
-	ttk::frame $twm -class TwmToplevelFrame
-	bind $twm <Destroy> [namespace code { Destroy %W }]
+	ttk::frame $path -class TwmToplevelFrame
+	bind $path <Destroy> [namespace code { Destroy %W }]
 
-	rename ::$twm $twm.__twm_frame__
-	proc ::$twm {command args} "[namespace current]::WidgetProc $twm \$command {*}\$args"
+	rename ::$path $path.__twm_frame__
+	proc ::$path {command args} "[namespace current]::WidgetProc $path \$command {*}\$args"
 
-	foreach side {left right top bottom} {
-		set Vars(childs:$side) {}
-		set Vars(graph:$side) {}
-	}
-
-	return $twm
+	return $path
 }
 
 
 proc WidgetProc {twm command args} {
+	variable ${twm}::Vars
+
 	switch -- $command {
 		add {
-			Add $twm {*}$args
 		}
 
 		display {
-			Display $twm
+		}
+
+		init {
+		}
+
+		frame {
+			set pane [$Vars(makepane) [lindex $args 0]]
+			set name [$Vars(getname) [lindex $args 0]]
+			return [MakeFrame $twm $pane $name]
+		}
+
+		pane {
+			return [$Vars(makepane) [lindex $args 0]]
+		}
+
+		notebook {
+			variable Counter
+			return [ttk::notebook $twm.__notebook__[incr Counter] {*}$args]
+		}
+
+		panedwindow {
+			variable Counter
+			return [tk::panedwindow $twm.__panedwindow__[incr Counter] {*}$args]
+		}
+
+		update {
+#			return [Update [lindex $args 0]]
 		}
 	}
 
@@ -90,6 +117,110 @@ proc WidgetProc {twm command args} {
 }
 
 
+proc MakeFrame {twm child name} {
+	variable Defaults
+	variable Counter
+	variable ${twm}::Vars
+
+	set parent [winfo parent $twm]
+	incr Counter
+	set top [tk::frame $twm.__frame__$Counter -borderwidth 0 -background yellow]
+	set hdr [tk::frame $parent.__header__$Counter \
+					-background $Defaults(header:background) \
+					-borderwidth 1 \
+					-relief raised \
+				]
+
+	::scidb::tk::twm capture $child $top
+
+	pack $hdr -in $top -side top -fill x -expand no
+	pack $child -in $top -side top -fill both -expand yes
+
+	tk::button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
+	tk::button $hdr.undock -image $icon::12x12::undock -background $Defaults(header:button:background)
+
+	tooltip $hdr.close  [namespace current]::mc::Close
+	tooltip $hdr.undock [namespace current]::mc::Undock
+
+	set opts {}
+	if {[info exists $name]} {
+		lappend opts -textvar $name
+		set text [set $name]
+	} else {
+		lappend opts -text $name
+		set text $name
+	}
+
+	set headerFont [list [font configure $Defaults(header:font) -family] $Defaults(header:fontsize) bold]
+	tk::label $hdr.label \
+		-background $Defaults(header:background) \
+		-foreground $Defaults(header:foreground) \
+		-font $headerFont \
+		-text $text \
+		;
+
+	grid $hdr.close	-column 4 -row 0
+	grid $hdr.undock	-column 2 -row 0
+	grid $hdr.label	-column 0 -row 0 -padx 2
+
+	grid columnconfigure $hdr 1 -weight 1
+	grid columnconfigure $hdr {3 5} -minsize 3
+
+	return $top
+}
+
+
+proc Update {data} {
+	switch {[lindex $data 0]} {
+		makeWindow {
+			set name [lindex $data 1]
+			set w [tk::toplevel .__window__$name]
+			pack .$name
+			return $w
+		}
+
+		makePane {
+			switch [lindex $data 1] {
+				board			{ return [MakePane board blue] }
+				editor		{ return [MakePane editor white] }
+				analysis		{ return [MakePane analysis yellow] }
+				tree			{ return [MakePane tree red] }
+				tree-games	{ return [MakePane tree-games green] }
+			}
+		}
+
+		makePanedWindow {
+			lassign $data cmd orient pane1 pane2
+		}
+
+		makeNotebook {
+			lassign $data cmd pane1 pane2
+		}
+
+		makeFrame {
+			return [MakeFrame [lindex $data 1]]
+		}
+
+		destroyPane - destroyPanedWindow - destroyNotebook - destroyWindow {
+			destroy [lindex $data 1]
+		}
+
+		destroyWindow {
+			set name [lindex $data 1]
+			pack forget [winfo children $name]
+			destroy $name
+		}
+
+		addTab			{}
+		removeTab		{}
+
+		addPane			{}
+		removePane		{}
+	}
+}
+
+
+if {0} {
 proc Add {twm w args} {
 	variable ${twm}::Vars
 	variable ${twm}::Options
@@ -198,11 +329,11 @@ proc Compare {twm lhs rhs} {
 }
 
 
-proc MakeFrame {parent text args} {
+proc MakeFrame {path text args} {
 	variable Defaults
 
-	set top [ttk::frame $parent.top {*}$args]
-	set hdr [tk::frame $parent.top.header \
+	set top [ttk::frame $path {*}$args]
+	set hdr [tk::frame $path.header \
 					-background $Defaults(header:background) \
 					-borderwidth 1 \
 					-relief raised \
@@ -238,6 +369,9 @@ proc MakeFrame {parent text args} {
 
 	grid columnconfigure $hdr 1 -weight 1
 	grid columnconfigure $hdr {3 5} -minsize 3
+
+	return $path
+}
 }
 
 
@@ -370,6 +504,11 @@ proc Unpack {twm parent path} {
 
 } ;# namespace callback
 
+
+proc MakePane {name color} {
+	return [tk::frame .$name -background $color]
+}
+
 namespace eval icon {
 namespace eval 12x12 {
 
@@ -413,8 +552,9 @@ if {0} {
 }
 
 if {0} {
-	tk::frame .f1 -width 200 -height 200 -background blue
-	tk::frame .f2 -width 100 -height 200 -background red
+	wm withdraw .
+	tk::frame .f1 -background blue
+	tk::frame .f2 -background red
 
 	pack .f1 -expand 1 -fill both
 	pack .f2 -expand 1 -fill both
@@ -422,6 +562,10 @@ if {0} {
 	tk::button .f1.b -text "Dock/Undock" -command { Move .f1.b }
 	pack .f1.b
 	set parent .f1
+	update idletasks
+	.f1 configure -width [winfo reqwidth .f1.b] -height [winfo reqheight .f1.b]
+	.f2 configure -width [winfo reqwidth .f1.b] -height [winfo reqheight .f1.b]
+	wm deiconify .
 
 	proc Move {w} {
 		global parent
@@ -440,10 +584,15 @@ if {0} {
 }
 
 if {0} {
+	wm withdraw .
 	tk::button .b -text "Move" -command Move
 	pack .b
 	toplevel .tl
+	wm withdraw .tl
+	update idletasks
+	wm geometry .tl [winfo reqwidth .]x[winfo reqheight .]
 	wm deiconify .tl
+	wm deiconify .
 
 	proc Move {} {
 		if {[winfo toplevel .b] eq "."} { set parent .tl } else { set parent . }

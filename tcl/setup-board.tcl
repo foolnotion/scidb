@@ -518,7 +518,7 @@ proc SetCursor {piece} {
 	variable Vars
 	variable Cursor
 
-	if {[string match *32x32* $Cursor($piece)]} {
+	if {[string match *32x32 $Cursor($piece)]} {
 		::xcursor::setCursor $Vars(board) $Cursor($piece)
 	} else {
 		$Vars(board) configure -cursor $Cursor($piece)

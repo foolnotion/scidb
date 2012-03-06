@@ -270,12 +270,6 @@ proc fsbox {w type args} {
 		}
 	}
 
-	if {[llength $Vars(selectencodingcommand)] == 0 && [llength $Vars(filetypes)] > 0} {
-		set cspan {-columnspan 4}
-	} else {
-		set cspan {}
-	}
-
 	grid columnconfigure $top {3} -weight 1
 	grid columnconfigure $top {0 2 8} -minsize 5
 	grid rowconfigure $top {3} -weight 1

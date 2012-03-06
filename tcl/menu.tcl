@@ -222,7 +222,7 @@ proc build {menu} {
 		-menu $m \
 		-label " $text" \
 		-underline [incr ul] \
-		-image $::icon::16x16::none \
+		-image $::icon::16x16::contact \
 		-compound left \
 		;
 

@@ -34,6 +34,7 @@ set languages {
    { Español  es    macRoman    espanol.tcl  }
    { Italiano  it    utf-8       italiano.tcl }
    { Magyar    hu    utf-8       magyar.tcl   }
+   { Svenska   sv    utf-8       svenska.tcl  }
 }
 
 } ;# namespace i18n

@@ -925,7 +925,7 @@
 ::import::mc::AbortedDueToInternalError		"Beslő hiba miatt Aborted"
 
 ### export #############################################################
-::export::mc::FileSelection			"&Fájl Kiválasztás(>%d)"
+::export::mc::FileSelection			"&Fájl Kiválasztás"
 ::export::mc::OptionsSetup					"Beállítás&ok"
 ::export::mc::PageSetup				"&Oldalbeállítás"
 ::export::mc::DiagramSetup					"&Diagramm Beállítások"

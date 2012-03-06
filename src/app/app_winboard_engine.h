@@ -105,6 +105,7 @@ private:
 	bool				m_featureSigint;
 	bool				m_featureAnalyze;
 	bool				m_featurePause;
+	bool				m_featurePlayOther;
 	bool				m_featureSan;
 	bool				m_variantChess960;
 	bool				m_variantNoCastle;
