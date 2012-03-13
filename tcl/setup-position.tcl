@@ -43,7 +43,7 @@ proc open {parent} {
 	set dlg $parent.setup_position
 	if {[winfo exists $dlg]} { return }
 
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
 	pack $dlg.top

@@ -221,7 +221,7 @@ namespace eval mc {}
 
 tk appname $scidb::app
 
-toplevel .application -class $::scidb::app
+tk::toplevel .application -class $::scidb::app
 wm withdraw .application
 
 if {[::scidb::misc::debug?]} {
@@ -383,7 +383,7 @@ proc catchIoError {cmd {resultVar {}}} {
 
 
 proc makePopup {w} {
-	toplevel $w -background white -class TooltipPopup
+	tk::toplevel $w -background white -class TooltipPopup
 	wm withdraw $w
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $w help none

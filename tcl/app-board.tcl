@@ -88,7 +88,7 @@ proc build {w menu width height} {
 	::board::stuff::bind $board all <ButtonPress-1>		{ ::move::pressSquare %q %s }
 	::board::stuff::bind $board all <ButtonPress-1>		{+focus %W }
 	::board::stuff::bind $board all <ButtonRelease-1>	{ ::move::releaseSquare %X %Y %s }
-	::board::stuff::bind $board all <Button1-Motion>	[list ::board::stuff::dragPiece $board %X %Y]
+	::board::stuff::bind $board all <Button1-Motion>	{ ::move::dragPiece %X %Y }
 
 	::board::stuff::bind $board all <Control-ButtonPress-1>		{ ::marks::pressSquare %X %Y }
 	::board::stuff::bind $board all <Control-ButtonPress-1>		{+ ::move::disable }

@@ -445,6 +445,10 @@ proc getOptions {path} {
 	set table $path.top.table
 	variable ${table}::Vars
 
+	if {![info exists Vars(options)]} {
+		set Vars(options) [::table::getOptions $table]
+	}
+
 	return $Vars(options)
 }
 

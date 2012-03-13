@@ -139,7 +139,7 @@ proc openEdit {parent position {mode {}}} {
 		set mode game
 	}
 
-	set dlg [toplevel ${parent}.importOnePgnGame${position} -class Scidb]
+	set dlg [tk::toplevel ${parent}.importOnePgnGame${position} -class Scidb]
 	set top [ttk::frame $dlg.top]
 	set lbl [ttk::label $top.figurinesText -textvariable ::export::mc::Figurines]
 	set fig [ttk::tcombobox $top.figurines \

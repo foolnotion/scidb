@@ -43,6 +43,8 @@
 # include "db_board.h"
 # include "db_board_base.h"
 # include "db_home_pawns.h"
+# include "db_signature.h"
+# include "db_probe.h"
 # include "tcl_progress.h"
 #endif
 
@@ -73,6 +75,8 @@ init(Tcl_Interp* ti)
 		db::board::base::initialize();
 		db::Board::initialize();
 		db::HomePawns::initialize();
+		db::Signature::initialize();
+		db::Probe::initialize();
 		tcl::Progress::initialize();
 
 #endif

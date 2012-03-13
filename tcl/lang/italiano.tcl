@@ -30,8 +30,9 @@
 # ======================================================================
 
 ### global #############################################################
-::mc::SortMapping		{Å A à a À A á a Á A è e È E é e É E ì i Ì i í i Í I ò o Ò O ó o Ó O ù u Ù U ú u Ú U}
-::mc::AsciiMapping	{Å A à a À A á a Á A è e È E é e É E ì i Ì i í i Í I ò o Ò O ó o Ó O ù u Ù U ú u Ú U}
+::mc::SortMapping		{Å A å a à a À A è e È E é e É E ì i Ì i ò o Ò O ù u Ù U}
+::mc::AsciiMapping	{Å A à a À A å a è e È E é e É E ì i Ì i  ò o Ò O ù u Ù U}
+::mc::SortOrder		{A À Å B C D E È É F G H I Ì J K L M N O Ò P Q R S T U Ù V W X Y Z a à å b c d e è é f g h i ì j k l m n o ò p q r s t u ù v w x y z}
 
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"
@@ -731,6 +732,10 @@
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"  ;#Attendance
+
+### twm - tiled window manager #########################################
+::twm::mc::Undock	"Undock" ;# NEW
+::twm::mc::Close	"Chiudi"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Posizione di partenza"

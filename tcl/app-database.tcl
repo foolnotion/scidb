@@ -138,6 +138,10 @@ array set Vars {
 	icon			0
 	ignore-next	0
 	counter		0
+	motion		-1
+	current		-1
+	afterid		{}
+	taborder		{games players events annotators}
 }
 
 array set Defaults {
@@ -186,7 +190,7 @@ proc build {tab menu width height} {
 	pack $main -fill both -expand yes
 
 	set switcher [::ttk::frame $main.switcher -borderwidth 1]
-	set contents [::ttk::notebook $tab.contents -takefocus 1]
+	set contents [::ttk::notebook $tab.contents -class UndockingNotebook -takefocus 1]
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
 	BuildSwitcher $switcher
@@ -194,19 +198,20 @@ proc build {tab menu width height} {
 	$main add $switcher
 	$main add $contents
 
-	foreach tab {games players events annotators} {
-		::ttk::frame $contents.$tab
-		$contents add $contents.$tab -sticky nsew
+	foreach tab $Vars(taborder) {
+		::ttk::frame $contents.$tab -class Scidb
 		set var [namespace current]::mc::[string toupper $tab 0 0]
-		::widget::notebookTextvarHook $contents $contents.$tab $var
+		$contents add $contents.$tab -sticky nsew -compound right -image $icon::16x16::undock_disabled
+		::widget::notebookSetLabel $contents $contents.$tab [set $var]
 		${tab}::build $contents.$tab
 		set Vars($tab) $contents.$tab
 	}
 
-	$main paneconfigure $switcher -sticky nsew -stretch middle
+	$main paneconfigure $switcher -sticky nsew -stretch never
 	$main paneconfigure $contents -sticky nsew -stretch always
 
 	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $contents %d]]
+	bind $contents.games <Configure> [namespace code [list ConfigureList $main $contents $switcher %h]]
 
 	bind $main <Double-Button-1>	{ break }
 	bind $main <Double-Button-2>	{ break }
@@ -249,6 +254,7 @@ proc build {tab menu width height} {
 	set Vars(bases) {}
 	set Vars(switcher) $switcher
 	set Vars(contents) $contents
+	set Vars(windows) [$contents tabs]
 #	set Vars(history) $history
 #	set Vars(blank) $blank
 	set Vars(current:tab) games
@@ -576,6 +582,16 @@ proc TabChanged {} {
 	}
 	[namespace current]::${tab}::activate $Vars($tab) $Vars(menu) 1
 	set Vars(current:tab) $tab
+
+	set tabs [$Vars(contents) tabs]
+	foreach t $tabs {
+		if {[$Vars(contents) select] eq $t && [llength $tabs] > 2} {
+			set icon $icon::16x16::undock
+		} else {
+			set icon $icon::16x16::undock_disabled
+		}
+		$Vars(contents) tab $t -image $icon
+	}
 }
 
 
@@ -584,8 +600,7 @@ proc SashCmd {w action x y} {
 
 	switch $action {
 		mark {
-			set Vars(y) $y
-			incr Vars(y) [expr {[games::overhang $Vars(games)]}]
+			set Vars(y) [expr {$y + [games::overhang $Vars(games)]}]
 		}
 
 		drag {
@@ -953,6 +968,15 @@ proc LanguageChanged {} {
 		set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
 		set [namespace current]::_Readonly [format $str $name]
 	}
+
+	foreach t $Vars(windows) {
+		set var [namespace current]::mc::[string toupper [lindex [split $t .] end] 0 0]
+		if {[winfo toplevel $t] eq $t} {
+			wm title $t "$::scidb::app - [::mc::stripAmpersand [set $var]]"
+		} else {
+			::widget::notebookSetLabel $Vars(contents) $t [set $var]
+		}
+	}
 }
 
 
@@ -1109,6 +1133,44 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 	set Vars(unitsperline) $cols
 	if {$r != $cols} { incr y $minheight }
 	set Vars(canv-height) $y
+}
+
+
+proc ConfigureList {main contents switcher height} {
+	variable Vars
+
+	if {[winfo toplevel $Vars(games)] eq $Vars(games)} { return }
+
+	if {[info exists Vars(incr)]} {
+		set overhang [games::overhang $Vars(games)]
+		set n [expr {($height - $overhang)/$Vars(incr)}]
+		set wantedHeight [expr {$n*$Vars(incr) + $overhang + 2}]
+		set offset [expr {$height - $wantedHeight}]
+
+		if {$offset != 0} {
+			after cancel $Vars(afterid)
+			set Vars(afterid) [after 50 [namespace code \
+				[list ResizeList $main $contents $switcher $wantedHeight $offset]]]
+		}
+	}
+}
+
+
+proc ResizeList {main contents switcher wantedHeight offset} {
+	variable Vars
+
+	set pixels [expr {$Vars(pixels) + $offset}]
+	set n [expr {$pixels/$Vars(incr)}]
+	set offset [expr {$offset - $n*$Vars(incr)}]
+	set pixels [expr {$pixels - $n*$Vars(incr)}]
+
+	set Vars(pixels) $pixels
+
+	if {$offset != 0} {
+		lassign [$main sash coord 0] x y
+		incr y $offset
+		$main sash place 0 $x $y
+	}
 }
 
 
@@ -1303,7 +1365,7 @@ proc EditDescription {canv index} {
 	set file [lindex $Vars(bases) $i 2]
 	set Vars(description) [::scidb::db::get description $file]
 
-	set dlg [toplevel $canv.descr -class Dialog]
+	set dlg [tk::toplevel $canv.descr -class Dialog]
 	::ttk::entry $dlg.entry -takefocus 1 -width 108 -textvar [namespace current]::Vars(description)
 	$dlg.entry selection range 0 end
 	$dlg.entry icursor end
@@ -1422,7 +1484,7 @@ proc ChangeIcon {number parent} {
 	variable Options
 	variable Vars
 
-	set dlg [toplevel $parent.changeIcon -class Dialog]
+	set dlg [tk::toplevel $parent.changeIcon -class Dialog]
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
 	lassign [lindex $Vars(bases) $i] index type file ext
 	set cols 2
@@ -1541,7 +1603,7 @@ proc Properties {index popup} {
 		set label ::tk::label
 		set options [list -background [$f cget -background]]
 	} else {
-		toplevel $dlg -class Scidb
+		tk::toplevel $dlg -class Scidb
 		set f $dlg.f
 		tk::frame $f -takefocus 0 -background $Options(prop:background)
 		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
@@ -1808,7 +1870,240 @@ proc WriteOptions {chan} {
 
 ::options::hookWriter [namespace current]::WriteOptions
 
+
+proc Identify {nb x y} {
+	if {[$nb identify $x $y] ne "label"} { return "" }
+	set x1 $x
+	while {[$nb identify [expr {$x1 + 1}] $y] eq "label"} { incr x1 +1 }
+	incr x1 -16
+	if {$x1 <= $x} { return "icon" }
+	return "label"
+}
+
+
+proc Motion {nb x y} {
+	variable Vars
+
+	if {[llength [$nb tabs]] == 2} { return }
+
+	set index [$nb index @$x,$y]
+	if {[llength $index] == 0} {
+		set what label
+	} else {
+		set what [Identify $nb $x $y]
+	}
+
+	switch $what {
+		icon {
+			if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
+			if {[grab current $nb] eq $nb} {
+				set icon $icon::16x16::undock_sunken
+			} else {
+				set icon $icon::16x16::undock_active
+				if {$index != $Vars(motion)} {
+					::tooltip::show $nb $::twm::mc::Undock
+				}
+			}
+			set Vars(motion) $index
+		}
+
+		label {
+			return [Leave $nb]
+		}
+
+		default {
+			if {[llength $index]} {
+				if {[$nb index [$nb select]] == $index} {
+					set icon $icon::16x16::undock
+				} else {
+					set icon $icon::16x16::undock_disabled
+				}
+			}
+			set Vars(motion) -1
+			::tooltip::hide
+		}
+	}
+
+	if {[llength $index]} {
+		$nb tab $index -image $icon
+	}
+}
+
+
+proc Leave {nb} {
+	variable Vars
+
+	::tooltip::hide
+	if {[llength [$nb tabs]] == 2} { return }
+
+	if {$Vars(motion) >= 0} {
+		foreach t [$nb tabs] {
+			if {[$nb tab $t -image] ne $icon::16x16::undock_disabled} {
+				$nb tab $t -image $icon::16x16::undock
+			}
+		}
+		set Vars(motion) -1
+	}
+}
+
+
+proc ButtonPress {nb x y} {
+	variable Vars
+
+	::tooltip::hide
+
+	set index [$nb index @$x,$y]
+	if {[llength $index] == 0} {
+		set what ""
+	} else {
+		set what [Identify $nb $x $y]
+		if {$what eq "icon" && [$nb index [$nb select]] != $index} {
+			set what label
+		}
+	}
+
+	switch $what {
+		icon {
+			if {[llength [$nb tabs]] == 2} { return }
+			if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
+			::ttk::grabWindow $nb
+			$nb tab $index -image $icon::16x16::undock_sunken
+		}
+
+		label {
+			set Vars(current) $index
+			ttk::notebook::Press $nb $x $y
+			after idle [namespace code [list Motion $nb $x $y]]
+		}
+	}
+}
+
+
+proc ButtonRelease {nb x y} {
+	variable Vars
+
+	if {[grab current $nb] eq $nb} {
+		::ttk::releaseGrab $nb
+	}
+
+	set current $Vars(current)
+	set Vars(current) -1
+
+	if {[llength [$nb tabs]] == 2} { return }
+
+	set index [$nb index @$x,$y]
+	if {[llength $index] == 0} {
+		set index $Vars(motion)
+	}
+
+	if {$index >= 0} {
+		if {$current == $index} { return }
+		if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
+		$nb tab $index -image $icon::16x16::undock
+	}
+
+	if {[Identify $nb $x $y] eq "icon"} {
+		Undock $nb $index
+	}
+
+	after idle [namespace code [list Motion $nb $x $y]]
+}
+
+
+proc Undock {nb index} {
+	set title [$nb tab $index -text]
+	set w [lindex [$nb tabs] $index]
+	$nb forget $w
+	set wd [winfo width $w]
+	set ht [winfo height $w]
+	if {$wd <= 1 || $ht <= 1} {
+		set v [lindex [$nb tabs] 0]
+		set wd [winfo width $v]
+		set ht [winfo height $v]
+	}
+	::scidb::tk::twm release $w
+	::update idle ;# is reducing flickering
+	wm geometry $w ${wd}x${ht}
+#	wm transient $w [winfo toplevel $nb]
+	wm title $w "$::scidb::app - $title"
+	wm state $w normal
+	wm protocol $w WM_DELETE_WINDOW [namespace code [list Dock $nb $w]]
+}
+
+
+proc Dock {nb w} {
+	variable Vars
+
+	if {[llength [$nb tabs]] == 2} {
+		$nb tab [$nb select] -image $icon::16x16::undock
+	}
+	::scidb::tk::twm capture $w
+	set id [lindex [split $w .] end]
+	set indices {}
+	foreach t [$nb tabs] {
+		set i [lsearch $Vars(taborder) [lindex [split $t .] end]]
+		lappend indices $i
+	}
+	set indices [lsort -integer $indices]
+	set i [lsearch $Vars(taborder) $id]
+	set k 0
+	while {$k < [llength $indices] && [lindex $indices $k] < $i} { incr k }
+	if {$k == [llength [$nb tabs]]} { set k end }
+	$nb insert $k $w -sticky nsew -compound right -image $icon::16x16::undock_disabled
+	set var [namespace current]::mc::[string toupper $id 0 0]
+	::widget::notebookSetLabel $nb $w [set $var]
+}
+
+
+namespace eval icon {
+namespace eval 16x16 {
+
+set undock [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA2FBMVEUAAAAAAAAAAAAAAAAB
+	DhcAAAAAAxQ9PT0uLi53d3ZOTk5Tk6tFRUVCQkIQT2hVla08PDw6Ojo3Nzc2NjZAhJ5so7OH
+	h4ZycnKJpqJambCLtrcYYn7FxMRHaXeBta99rbbLy8oeY32goJ9xmJShoaC1tbXAwL8qc460
+	tLS2tbS3t7ZzjZbIyMiTk5N+pLIAAAAAAAAAAAAAAAAAAACKucK/v77AwL/BwcDExMTKycnR
+	0dHj4+Lp6Oft7ezt7e3u7u3u7u7v7+7w8O/w8PDx8fDy8vHz8/L09PQeL5dpAAAAAXRSTlMA
+	QObYZgAAAFhJREFUGNNjYCAXGBsaGgMBkoAJCOjDeMZ6EAEDCF8dyDN2tHVwcjHSAQtogwSc
+	nF3d3KFmaBrbWBpDgBpYQMPY2srC3NRMF2aDlrGDvb2tHbKdEMBANQAAtIkRPpJ+I/QAAAAA
+	SUVORK5CYII=
+}]
+
+set undock_active [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA21BMVEUAAAAAAAAAAAAAAAAB
+	DhcAAAAAAxQ9PT0uLi53d3ZOTk5Tk6tFRUVCQkIQT2hVla08PDw6Ojo3Nzc2NjZAhJ5so7OH
+	h4ZycnKJpqJambCLtrcYYn7FxMRHaXeBta99rbbLy8oeY32goJ9xmJShoaC1tbXAwL8qc460
+	tLS2tbS3t7ZzjZbIyMiTk5N+pLIAAAAAAAAAAAAAAAAAAACKucK/v77AwL/BwcDExMTKycnR
+	0dHj4+Lp6Oft7ezt7e3u7u3u7u7v7+7w8O/w8PDx8fDy8vHz8/L09PT///8tKC41AAAAAXRS
+	TlMAQObYZgAAAGZJREFUGNNj8EADDB4MKEAMl4CxoaExECAJmICAPlTA2FgPImAAEVAH8owd
+	bR2cXIx0wALaIAEnZ1c3d6gZmsY2lsYQoAYW0DC2trIwNzXThVmrZexgb29rZ4xwB1Q9fpfi
+	FRBDBQA1Mxx0CnVnXwAAAABJRU5ErkJggg==
+}]
+
+set undock_sunken [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA2FBMVEUAAAAAAAAAAAABDhcA
+	AAAAAxQ9PT0uLi53d3ZOTk5Tk6tFRUVCQkIQT2hVla08PDw6Ojo3Nzc2NjZAhJ5so7OHh4Zy
+	cnKJpqJambCLtrcYYn7FxMRHaXeBta99rbbLy8oeY32goJ9xmJShoaC1tbXAwL8qc460tLS2
+	tbS3t7ZzjZbIyMiTk5N+pLIAAAAAAAAAAAAAAAAAAACKucK/v77AwL/BwcDExMTKycnR0dHj
+	4+Lp6Oft7ezt7e3u7u3u7u7v7+7w8O/w8PDx8fDy8vHz8/L09PT///9HJVJiAAAAAXRSTlMA
+	QObYZgAAAGZJREFUGNNjEEUDDKIMKMAdl4CRgYERECAJGIOAHlTAyEgXIqAPEVAD8owcbOwd
+	nQ21wQJaIAFHJxdXN6gZGkbWFkYQoAoWUDeysjQ3MzHVgVmraWRvZ2dja4RwB1Q9fpfiFXBH
+	BQCaEhuBKwIaLAAAAABJRU5ErkJggg==
+}]
+
+set undock_disabled [image create photo -width 16 -height 16]
+::scidb::tk::image disable $undock $undock_disabled
+
+} ;# namespace 16x16
+} ;# namespace icon
 } ;# namespace database
 } ;# namespace application
+
+ttk::copyBindings TNotebook UndockingNotebook
+
+bind UndockingNotebook <Motion>				{ application::database::Motion %W %x %y }
+bind UndockingNotebook <Leave>				{ application::database::Leave %W }
+bind UndockingNotebook <ButtonPress-1>		{ application::database::ButtonPress %W %x %y }
+bind UndockingNotebook <ButtonRelease-1>	{ application::database::ButtonRelease %W %x %y }
 
 # vi:set ts=3 sw=3:

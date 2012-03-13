@@ -30,8 +30,9 @@
 # ======================================================================
 
 ### global #############################################################
-::mc::SortMapping		{‡ a ç A Ž e ƒ E ’ i ê I – n „ N — o î O œ u ò U Ÿ u † U}
-::mc::AsciiMapping	{‡ a ç A Ž e ƒ E ’ i ê I – n „ N — o î O œ u ò U Ÿ u † U}
+::mc::SortMapping		{‡ a ç A Ž e ƒ E ’ i ê I – n „ N — o î O œ u ò U}
+::mc::AsciiMapping	{‡ a ç A Ž e ƒ E ’ i ê I – n „ N — o î O œ u ò U}
+::mc::SortOrder		{A ç B C D E ƒ F G H I ê J K L M N „ O î P Q R S T U ò V W X Y Z a ‡ b c d e Ž f g h i ’ j k l m n – o — p q r s t u œ v w x y z}
 
 ::mc::Alignment		"Alineaci—n"
 ::mc::Apply				"Aplicar"
@@ -732,6 +733,10 @@
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
+
+### twm - tiled window manager #########################################
+::twm::mc::Undock	"Undock" ;# NEW
+::twm::mc::Close	"Cerrar"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Iniciar posici—n"

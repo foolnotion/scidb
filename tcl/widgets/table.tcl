@@ -157,7 +157,6 @@ proc table {args} {
 
 	set Vars(charwidth)		[font measure $Options(-font) "0"]
 	set Vars(linespace)		[font metrics $Options(-font) -linespace]
-	set Vars(tableHeight)	0
 	set Vars(labelHeight)	0
 	set Vars(minwidth)		0
 	set Vars(minheight)		0
@@ -631,7 +630,7 @@ proc gridsize {table} {
 
 proc overhang {table} {
 	variable ${table}::Vars
-	return [expr {$Vars(tableHeight) - $Vars(height)*$Vars(linespace)}]
+	return [expr {[$table.t header bbox 0] - 2*[$table.t cget -borderwidth]}]
 }
 
 
@@ -1589,7 +1588,7 @@ proc OpenConfigureDialog {table id header} {
 		if {$Vars(maxwidth:$id:menu) == 0} { set Vars(maxwidth:$id:menu) $Options(-width:$id) }
 	}
 
-	set top [toplevel $table.__configure__${id}__ -class Dialog]
+	set top [tk::toplevel $table.__configure__${id}__ -class Dialog]
 	::bind $top <Alt-Key> [list tk::AltKeyInDialog $top %A]
 	set f [ttk::frame $top.f]
 	

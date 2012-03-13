@@ -103,40 +103,40 @@ proc WidgetProc {w command args} {
 		if {[llength $args] % 2 == 0} {
 			error "value for \"[lindex $args end]\" missing"
 		}
+		set child [lindex $args 0]
+		array set opts [lrange $args 1 end]
 
 		variable [namespace current]::${w}::MaxSize
 		variable [namespace current]::${w}::GridSize
 
-		set MaxSize([lindex $args 0]) 32000
-		set GridSize([lindex $args 0]) 0
-		array set opts [lrange $args 1 end]
+		set MaxSize($child) 32000
+		set GridSize($child) 0
 		
 		if {[info exists opts(-maxsize)]} {
 			if {[string is integer -strict $opts(-maxsize)]} {
 				set maxSize $opts(-maxsize)
 				if {$maxSize <= 0} { set maxSize 32000 }
-				set MaxSize([lindex $args 0]) $maxSize
+				set MaxSize($child) $maxSize
 			} else {
 				error "bad screen distance \"$opts(-maxsize)\""
 			}
 
 			unset opts(-maxsize)
-			set args [lindex $args 0]
-			lappend args {*}[array get opts]
 		}
 		if {[info exists opts(-gridsize)]} {
 			if {[string is integer -strict $opts(-gridsize)]} {
 				set gridsize $opts(-gridsize)
 				if {$gridsize <= 0} { set gridsize 0 }
-				set GridSize([lindex $args 0]) $gridsize
+				set GridSize($child) $gridsize
 			} else {
 				error "bad screen distance \"$opts(-gridsize)\""
 			}
 
 			unset opts(-gridsize)
-			set args [lindex $args 0]
-			lappend args {*}[array get opts]
 		}
+
+		set args $child
+		lappend args {*}[array get opts]
 	}
 
 	switch -- $command {

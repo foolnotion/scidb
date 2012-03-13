@@ -81,18 +81,16 @@ unlinkWindow(TkWindow* winPtr)
 	}
 	else
 	{
-		M_ASSERT(prevPtr);
-
-		while (prevPtr->nextPtr != winPtr)
-		{
+		while (prevPtr && prevPtr->nextPtr != winPtr)
 			prevPtr = prevPtr->nextPtr;
-			M_ASSERT(prevPtr);
+
+		if (prevPtr)
+		{
+			prevPtr->nextPtr = winPtr->nextPtr;
+
+			if (winPtr->nextPtr == 0)
+				winPtr->parentPtr->lastChildPtr = prevPtr;
 		}
-
-		prevPtr->nextPtr = winPtr->nextPtr;
-
-		if (winPtr->nextPtr == 0)
-			winPtr->parentPtr->lastChildPtr = prevPtr;
 	}
 }
 
@@ -193,7 +191,7 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 	// withdraw the window
 	TkpWmSetState(winPtr, WithdrawnState);
 
-	if (tkparent)
+	if (tkparent && tkparent != reinterpret_cast<Tk_Window>(winPtr->parentPtr))
 	{
 		TkWindow* parent = reinterpret_cast<TkWindow*>(tkparent);
 

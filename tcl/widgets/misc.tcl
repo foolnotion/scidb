@@ -72,6 +72,12 @@ proc textPreventSelection {w} {
 }
 
 
+proc notebookSetLabel {nb id text} {
+	lassign [::tk::UnderlineAmpersand $text] text idx
+	$nb tab $id -text [::mc::stripAmpersand $text] -underline $idx
+}
+
+
 proc notebookTextvarHook {nb id var {args {}}} {
 	SetNotebookLabel $nb $id $var $args
 	set cmd [list [namespace current]::SetNotebookLabel $nb $id $var $args]

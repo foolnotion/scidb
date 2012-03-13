@@ -731,6 +731,10 @@
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance"
 
+### twm - tiled window manager #########################################
+::twm::mc::Undock	"Undock"
+::twm::mc::Close	"Close"
+
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Start Position"
 ::gamebar::mc::Players					"Players"

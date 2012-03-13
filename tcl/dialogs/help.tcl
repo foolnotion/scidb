@@ -115,7 +115,7 @@ proc open {parent {file {}}} {
 
 	::scidb::misc::html cache on
 
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code Destroy]
 	wm withdraw $dlg
 
@@ -248,7 +248,7 @@ proc CheckLanguage {parent} {
 
 	set Lang {}
 	set dlg $parent.lang
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
 	pack $top

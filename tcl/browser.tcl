@@ -102,7 +102,7 @@ proc open {parent base info view index {fen {}}} {
 	set dlg $parent.browser$position
 	set Priv($base:$number:$view) $dlg
 	incr Priv($base:$number:$view:count)
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 
 	set top [::ttk::frame $dlg.top]
 	set bot [tk::frame $dlg.bot]

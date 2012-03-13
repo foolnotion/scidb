@@ -1040,6 +1040,8 @@ proc ProcessGoto {position w key succKey} {
 	variable Vars
 	variable Colors
 
+	::move::reset
+
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
 		foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
@@ -2300,7 +2302,7 @@ proc SearchLang {w code sym} {
 proc CopyComments {parent} {
 	variable Vars
 
-	set dlg [toplevel $parent.copy_comments -class Dialog]
+	set dlg [tk::toplevel $parent.copy_comments -class Dialog]
 	set top [::ttk::frame $dlg.top]
 	pack $dlg.top
 
@@ -2479,7 +2481,7 @@ proc ExchangeMoves {parent} {
 
 	set key [::scidb::game::position key]
 	set varno [::scidb::game::variation leave]
-	set dlg [toplevel $parent.exchange -class Dialog]
+	set dlg [tk::toplevel $parent.exchange -class Dialog]
 	set top [::ttk::frame $dlg.top]
 	pack $dlg.top
 	set Length_ [::scidb::game::variation length $varno]

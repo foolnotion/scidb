@@ -1395,9 +1395,9 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
-     checkZlib
-     checkZziplib
-     checkExpat
+    checkZlib
+    checkZziplib
+    checkExpat
 
     if {[isInsaneUnixRelease]} {
         if {![string match Debian* $insaneRelease]} {

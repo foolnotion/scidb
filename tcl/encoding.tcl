@@ -304,7 +304,7 @@ proc choose {parent currentEnc defaultEnc {autoDetectFlag no}} {
 	if {$autoDetectFlag} { set encodingList [linsert $encodingList 0 $autoEncoding] }
 	set _Encoding $currentEnc
 	set dlg $parent.chooseEncoding
-	toplevel $dlg -class Dialog
+	tk::toplevel $dlg -class Dialog
 	if {[llength $defaultEnc] == 0} { set defaultEnc $defaultEncoding }
 	build $dlg.enc $currentEnc $defaultEnc 600 400 $encodingList
 	variable ${dlg}.enc.list.t::Vars

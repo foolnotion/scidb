@@ -106,6 +106,22 @@ proc disable {} {
 }
 
 
+proc reset {} {
+	variable ::application::board::board
+	variable Square
+
+	if {$Square(selected) != -1} {
+		::board::stuff::hilite $board $Square(selected) off
+		set Square(selected) -1
+	}
+
+	if {$Square(suggested) != -1} {
+		::board::stuff::hilite $board $Square(suggested) off
+		set Square(suggested) -1
+	}
+}
+
+
 proc enterSquare {{square {}}} {
 	variable ::application::board::board
 	variable ::board::hilite
@@ -122,12 +138,15 @@ proc enterSquare {{square {}}} {
 		set square $Square(current)
 	}
 
+	set Square(suggested) -1
+
 	if {$Square(selected) == -1} {
 		if {$hilite(show-suggested)} {
 			set Square(origin) -1
 			set suggested [::scidb::pos::guess $square]
 			if {$suggested != -1} { set Square(origin) $square }
 		} else {
+			set Square(origin) -1
 			set suggested -1
 		}
 	
@@ -139,8 +158,10 @@ proc enterSquare {{square {}}} {
 			::board::stuff::hilite $board $suggested suggested
 		}
 
-		set Square(suggested) $suggested
-	} else {
+		if {$hilite(show-suggested)} {
+			set Square(suggested) $suggested
+		}
+	} elseif {$hilite(show-suggested)} {
 		::board::stuff::hilite $board $Square(selected) selected
 		if {$Square(origin) != -1} {
 			::board::stuff::hilite $board $Square(suggested) suggested
@@ -183,6 +204,7 @@ proc leaveSquare {{square {}}} {
 
 proc pressSquare {square state} {
 	variable ::application::board::board
+	variable ::board::hilite
 	variable Square
 	variable Disabled
 
@@ -196,12 +218,16 @@ proc pressSquare {square state} {
 		set c [::scidb::pos::stm]
 		set p [string index [::board::stuff::piece $board $square] 0]
 		if {$c eq $p} { ::board::stuff::setDragSquare $board $square }
-	} else {
+	} elseif {$hilite(show-suggested)} {
 		::board::stuff::setDragSquare $board
 		::board::stuff::hilite $board $Square(selected) off
+		::board::stuff::hilite $board $Square(suggested) off
 		::board::stuff::hilite $board $square off
 		set Square(selected) -1
 		enterSquare $square
+	} elseif {$square eq $Square(selected)} {
+		::board::stuff::hilite $board $Square(selected) off
+		set Square(selected) -1
 	}
 }
 
@@ -216,9 +242,12 @@ proc releaseSquare {x y state} {
 
 	set suggested $Square(suggested)
 	set selected $Square(selected)
-	set Square(selected) -1
 	set dragged [::board::stuff::isDragged? $board]
 	set square [::board::stuff::getSquare $board $x $y]
+
+	if {$hilite(show-suggested) || $square != $Square(selected)} {
+		set Square(selected) -1
+	}
 
 	if {$square >= 0} {
 		set allowIllegalMove [expr {$state & 1}] ;# detect whether Shift is held down
@@ -234,8 +263,6 @@ proc releaseSquare {x y state} {
 				}
 				::board::stuff::hilite $board $selected off
 				enterSquare $square
-			} else {
-				::board::stuff::hilite $board $selected off
 			}
 			# else current square is the square user pressed the button on, so we do nothing
 		} else {
@@ -248,10 +275,25 @@ proc releaseSquare {x y state} {
 		}
 	}
 	
-	if {$suggested != $Square(suggested)} {
+	if {$hilite(show-suggested) && $suggested != $Square(suggested)} {
 		::board::stuff::hilite $board $suggested off
 	}
+
 	::board::stuff::setDragSquare $board
+}
+
+
+proc dragPiece {x y} {
+	variable ::application::board::board
+	variable Square
+
+	::board::stuff::dragPiece $board $x $y
+
+	if {[::board::stuff::isDragged? $board]} {
+		::board::stuff::hilite $board $Square(suggested) off
+		::board::stuff::hilite $board $Square(selected) off
+		::board::stuff::hilite $board [::board::stuff::dragSquare $board] off
+	}
 }
 
 

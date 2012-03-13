@@ -128,9 +128,7 @@ MultiWindow;
 #define REDRAW_PENDING			0x0001
 #define WIDGET_DELETED			0x0002
 #define REQUESTED_RELAYOUT		0x0004
-#define RECOMPUTE_GEOMETRY		0x0008
-#define PROXY_REDRAW_PENDING	0x0010
-#define RESIZE_PENDING			0x0020
+#define RESIZE_PENDING			0x0008
 
 
 // declarations
@@ -548,6 +546,34 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 
 //--------------------------------------------------------------
 //
+// HaveUnhiddenSlave --
+//
+//	Check if there exists one pane which is not hidden.
+//
+// Results:
+//	Returns whezjer one pane exists which is not hidden.
+//
+// Side effects:
+//	None.
+//
+//--------------------------------------------------------------
+static int
+HaveUnhiddenSlave(MultiWindow* mw)
+{
+	int i;
+
+	for (i = 0; i < mw->numSlaves; ++i)
+	{
+		if (!mw->slaves[i]->hide)
+			return 1;
+	}
+
+	return 0;
+}
+
+
+//--------------------------------------------------------------
+//
 // ArrangePane --
 //
 //	This function is invoked (using the Tcl_DoWhenIdle mechanism) to
@@ -582,7 +608,7 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	// "relinquish" control over the parent so another geometry manager can
 	// take over.
 
-	if (mw->numSlaves == 0 || mw->slaves[0]->hide)
+	if (!HaveUnhiddenSlave(mw))
 		return;
 
 	Tcl_Preserve((ClientData)mw);
@@ -643,6 +669,9 @@ RaiseSlave(	MultiWindow* mw,	// Information about multi window
 			index++;
 	}
 
+	if (index == mw->numSlaves)
+		return;
+
 	slaves = (Slave**)ckalloc(sizeof(Slave*)*mw->numSlaves);
 	memcpy(slaves, mw->slaves, sizeof(Slave*)*mw->numSlaves);
 
@@ -691,7 +720,7 @@ static void
 PlaceSlave(	MultiWindow* mw,	// Information about multi window
 				Slave* oldSlave)	// Previously mapped slave
 {
-	if (mw->numSlaves > 0 && !mw->slaves[0]->hide)
+	if (HaveUnhiddenSlave(mw))
 	{
 		ArrangePane(mw);
 
@@ -859,48 +888,48 @@ ComputeGeometry(MultiWindow* mw)		// Pointer to the Multi Window structure
 static void
 Unlink(Slave* slave)		// Window to unlink
 {
-	MultiWindow *master = slave->master;
+	MultiWindow *mw = slave->master;
 	int i;
 
-	if (master == nullptr)
+	if (mw == nullptr)
 		return;
 
 	// Find the specified slave in the multiwindow's list of slaves, then
 	// remove it from that list.
 
-	for (i = 0; i < master->numSlaves; i++)
+	for (i = 0; i < mw->numSlaves; i++)
 	{
-		if (master->slaves[i] == slave)
+		if (mw->slaves[i] == slave)
 		{
-			memmove(master->slaves + i, master->slaves + i + 1, sizeof(Slave*)*(master->numSlaves - i - 1));
+			memmove(mw->slaves + i, mw->slaves + i + 1, sizeof(Slave*)*(mw->numSlaves - i - 1));
 			break;
 		}
 	}
 
 	// Clean out any -after or -before references to this slave
 
-	for (i = 0; i < master->numSlaves; i++)
+	for (i = 0; i < mw->numSlaves; i++)
 	{
-		if (master->slaves[i]->before == slave->tkwin)
-			master->slaves[i]->before = None;
+		if (mw->slaves[i]->before == slave->tkwin)
+			mw->slaves[i]->before = None;
 
-		if (master->slaves[i]->after == slave->tkwin)
-			master->slaves[i]->after = None;
+		if (mw->slaves[i]->after == slave->tkwin)
+			mw->slaves[i]->after = None;
 	}
 
-	master->flags |= REQUESTED_RELAYOUT;
+	mw->flags |= REQUESTED_RELAYOUT;
 
-	if (!(master->flags & REDRAW_PENDING))
+	if (Tk_IsMapped(mw->tkwin) && !(mw->flags & REDRAW_PENDING))
 	{
-		master->flags |= REDRAW_PENDING;
-		Tcl_DoWhenIdle(DisplayMultiWindow, (ClientData)master);
+		mw->flags |= REDRAW_PENDING;
+		Tcl_DoWhenIdle(DisplayMultiWindow, (ClientData)mw);
 	}
 
 	// Set the slave's master to nullptr, so that we can tell that the slave
 	// is no longer attached to any multiwindow.
 
 	slave->master = nullptr;
-	master->numSlaves--;
+	mw->numSlaves--;
 }
 
 
@@ -1478,7 +1507,7 @@ MultiWindowWidgetObjCmd(ClientData clientData,	// Information about square widge
 							{
 								int nextVisible = 1;
 
-								while (nextVisible < mw->numSlaves && !mw->slaves[nextVisible]->hide)
+								while (nextVisible < mw->numSlaves && mw->slaves[nextVisible]->hide)
 									++nextVisible;
 
 								if (nextVisible < mw->numSlaves)
@@ -1702,6 +1731,9 @@ DestroyMultiWindow(MultiWindow* mw)		// Info about multi window widget
 
 	if (mw->flags & RESIZE_PENDING)
 		Tcl_CancelIdleCall(ArrangePane, (ClientData)mw);
+
+	if (mw->gc)
+		Tk_FreeGC(Tk_Display(mw->tkwin), mw->gc);
 
 	// Clean up the slave list; foreach slave:
 	//  o  Cancel the slave's structure notification callback

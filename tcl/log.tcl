@@ -235,7 +235,7 @@ proc Open {} {
 	variable Log
 	variable colors
 
-	toplevel $Log -class $::scidb::app
+	tk::toplevel $Log -class $::scidb::app
 	wm withdraw $Log
 	wm protocol $Log WM_DELETE_WINDOW [list wm withdraw $Log]
 	set top [ttk::frame $Log.top]

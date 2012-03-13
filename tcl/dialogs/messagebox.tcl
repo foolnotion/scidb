@@ -318,7 +318,7 @@ proc alert {args} {
 	set w ${path}alert[clock milliseconds]
 	while {[winfo exists $w]} { set w ${path}alert[clock milliseconds] }
 	set windowingsystem [tk windowingsystem]
-	toplevel $w -relief solid -class Dialog
+	tk::toplevel $w -relief solid -class Dialog
 	wm title $w $opts(-title)
 	wm iconname $w Dialog
 	wm protocol $w WM_DELETE_WINDOW {#}

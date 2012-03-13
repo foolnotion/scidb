@@ -3104,7 +3104,7 @@ proc FinishDuplicateFile {w sel name} {
 		}
 	}
 
-	set dlg [toplevel $w.wait]
+	set dlg [tk::toplevel $w.wait]
 	wm withdraw $dlg
 	set top [tk::frame $dlg.top -border 2 -relief raised]
 	pack $top

@@ -74,7 +74,7 @@ proc open {parent} {
 
 	set Vars(dialog) $dlg
 	set Vars(hidden) 0
-	toplevel $dlg -class Scidb -relief solid
+	tk::toplevel $dlg -class Scidb -relief solid
 	wm withdraw $dlg
 	set title "$::scidb::app: $mc::MarksPalette"
 

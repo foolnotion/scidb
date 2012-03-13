@@ -1,6 +1,19 @@
 [March 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #268)
+------------------------------------------------------------------------------
+* Board: move input reworked, especially the case if move suggestion is
+disabled.
+
+* Some corrections in the man pages.
+
+* Tree search: experimental tree search reader removed, there is no
+significant speed improvement.
+
+* Database window: all tabs are dockable/undockable now.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #267)
 ------------------------------------------------------------------------------
 * Translation file "svenka.tcl" added.

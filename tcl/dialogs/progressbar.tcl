@@ -65,7 +65,7 @@ proc open {args} {
 	array set opts [lrange $args 1 end]
 
 	set w [lindex $args 0]
-	toplevel $w -relief solid -class $opts(-class)
+	tk::toplevel $w -relief solid -class $opts(-class)
 	set parent $opts(-parent)
 	if {[llength $parent] == 0} {
 		set parent [winfo parent $w]

@@ -189,7 +189,7 @@ proc init {} {
 	if {!$G(init)} { return }
 
 	set b $G(toplevel)
-	toplevel $b -class TooltipPopup
+	tk::toplevel $b -class TooltipPopup
 
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $b help none

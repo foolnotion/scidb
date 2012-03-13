@@ -325,7 +325,7 @@ proc shutdown {} {
 		cancel	{ return }
 	}
 
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	pack [tk::frame $dlg.f -border 2 -relief raised]
 	pack [tk::label $dlg.f.text -compound left -image $shutdown -text " $mc::Shutdown"] \
@@ -441,7 +441,7 @@ proc ChooseLanguage {parent} {
 	if {!$::scidb::dir::setup} { return }
 	wm protocol $parent WM_DELETE_WINDOW {#}
 	set dlg $parent.lang
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [tk::frame $dlg.top -border 2 -relief raised]
 	pack $top

@@ -135,7 +135,7 @@ proc open {parent} {
 	if {[winfo exists $dlg]} { return }
 
 	SetupCursors
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
 	pack $dlg.top

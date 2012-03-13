@@ -119,7 +119,7 @@ proc open {parent pos lang} {
 
 	set dlg $parent.__comment__
 	set Vars(dialog) $dlg
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 
 	set top [tk::frame $dlg.top]
@@ -1489,7 +1489,7 @@ proc PopdownLanguages {dlg} {
 	variable Vars
 
 	set popdown $dlg.popdown
-	toplevel $popdown -class AddLanguagePopdown
+	tk::toplevel $popdown -class AddLanguagePopdown
 	wm withdraw $popdown
 
 	switch -- [tk windowingsystem] {

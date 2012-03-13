@@ -738,6 +738,7 @@ Component::upsampleH2V1Fancy(JPEGSample* source, int outputRows)
 		{
 			v = ::mul3(*source++);
 
+			// TODO: use SIMD
 			*b++ = ::div4(v + source[-2] + 1);
 			*b++ = ::div4(v + source[ 0] + 2);
 		}
@@ -750,6 +751,7 @@ Component::upsampleH2V1Fancy(JPEGSample* source, int outputRows)
 }
 
 
+#if 0 // not working
 void
 Component::upsampleH1V2Fancy(JPEGSample* source, int outputRows)
 {
@@ -852,6 +854,7 @@ Component::upsampleH2V2Fancy(JPEGSample* source, int outputRows)
 		source = next;
 	}
 }
+#endif
 
 
 char const*

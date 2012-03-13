@@ -77,6 +77,7 @@ SOURCES = \
 	widgets/choosedir.tcl \
 	widgets/fsbox.tcl \
 	widgets/choosedir.tcl \
+	widgets/twm.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \
@@ -452,72 +453,49 @@ uninstall-help:
 
 install-fonts:
 	@echo "Install fonts"
-	@if [ "`uname -s`" = "Darwin" ]; then                                          \
-		if [ "`id -u`" -eq 0 ]; then                                                \
-			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
-		else                                                                        \
-			install -m 644 -p fonts/*.ttf ~/Library/Fonts;                           \
-		fi;                                                                         \
-	else                                                                           \
-		if [ "`id -u`" -eq 0 ]; then                                                \
-			install -m 755 -d $(FONTDIR);                                            \
-			install -m 644 -p fonts/*.ttf $(FONTDIR);                                \
-		else                                                                        \
-			install -m 755 -d ~/.fonts;                                              \
-			install -m 644 -p fonts/*.ttf ~/.fonts;                                  \
-		fi;                                                                         \
-		if [ ! -z "`which fc-cache`" ]; then                                        \
-			if [ "`id -u`" -eq 0 ]; then                                             \
-				fc-cache -fv $(FONTDIR);                                              \
-			else                                                                     \
-				fc-cache -fv ~/.fonts;                                                \
-			fi                                                                       \
-		else                                                                        \
-			echo "Don't know how to setup truetype fonts (fc-cache not available)."; \
-			echo "Please contact your system administrator.";                        \
-		fi;                                                                         \
+	@if [ 1 ]; then                                                                   \
+		if [ "`id -u`" -eq 0 ]; then                                                   \
+			fontdir="$(FONTDIR)";                                                       \
+		else                                                                           \
+			if [ "`uname -s`" = "Darwin" ]; then                                        \
+				fontdir="$(HOME)/Library/Fonts";                                         \
+			else                                                                        \
+				fontdir="$(HOME)/.fonts";                                                \
+			fi;                                                                         \
+		fi;                                                                            \
+		install -m 755 -d $$fontdir;                                                   \
+		install -m 644 -p fonts/*.ttf $$fontdir;                                       \
+		if [ ! -z "`which fc-cache`" ]; then                                           \
+			fc-cache -f $$fontdir;                                                      \
+		else                                                                           \
+			if [ "`uname -s`" != "Darwin" ]; then                                       \
+				echo "Don't know how to setup truetype fonts (fc-cache not available)."; \
+				echo "Please contact your system administrator.";                        \
+			fi;                                                                         \
+		fi;                                                                            \
 	fi
 
 uninstall-fonts:
 	@echo "Uninstall fonts"
-	@if [ "`uname -s`" = "Darwin" ]; then                                                  \
-		if [ "`id -u`" -eq 0 ]; then                                                        \
-			for f in `ls fonts/*.ttf`; do                                                    \
-				rm -f $(FONTDIR)/`basename $$f`;                                              \
-			done;                                                                            \
-			if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then                   \
-				rmdir $(FONTDIR);                                                             \
-			fi;                                                                              \
-		else                                                                                \
-			for f in `ls fonts/*.ttf`; do                                                    \
-				rm -f ~/Library/Fonts/`basename $$f`;                                         \
-			done;                                                                            \
-			if [ "`find ~/Library/Fonts -type d -empty`" = "`ls -d ~/Library/Fonts`" ]; then \
-				rmdir ~/Library/Fonts;                                                        \
-			fi;                                                                              \
-		fi;                                                                                 \
-	else                                                                                   \
-		if [ "`id -u`" -eq 0 ]; then                                                        \
-			for f in `ls fonts/*.ttf`; do                                                    \
-				rm -f $(FONTDIR)/`basename $$f`;                                              \
-			done;                                                                            \
-			if [ ! -z "`which fc-cache`" ]; then                                             \
-				fc-cache -fv $(FONTDIR);                                                      \
-			fi;                                                                              \
-			if [ "`find $(FONTDIR) -type d -empty`" = "$(FONTDIR)" ]; then                   \
-				rmdir $(FONTDIR);                                                             \
-			fi;                                                                              \
-		else                                                                                \
-			for f in `ls fonts/*.ttf`; do                                                    \
-				rm -f ~/.$$f;                                                                 \
-			done;                                                                            \
-			if [ ! -z "`which fc-cache`" ]; then                                             \
-				fc-cache -fv ~/.fonts;                                                        \
-			fi;                                                                              \
-			if [ "`find ~/.fonts -type d -empty`" = "`ls -d ~/.fonts`" ]; then               \
-				rmdir ~/.fonts;                                                               \
-			fi;                                                                              \
-		fi;                                                                                 \
+	@if [ 1 ]; then                                                 \
+		if [ "`id -u`" -eq 0 ]; then                                 \
+			fontdir="$(FONTDIR)";                                     \
+		else                                                         \
+			if [ "`uname -s`" = "Darwin" ]; then                      \
+				fontdir="$(HOME)/Library/Fonts";                       \
+			else                                                      \
+				fontdir="$(HOME)/.fonts";                              \
+			fi;                                                       \
+		fi;                                                          \
+		for f in `ls fonts/*.ttf`; do                                \
+			rm -f $$fontdir/`basename $$f`;                           \
+		done;                                                        \
+		if [ ! -z "`which fc-cache`" ]; then                         \
+			fc-cache -f $$fontdir;                                    \
+		fi;                                                          \
+		if [ "`find $$fontdir -type d -empty`" = "$$fontdir" ]; then \
+			rmdir $$fontdir;                                          \
+		fi;                                                          \
 	fi
 
 install-no-photos: install-script install-pieces install-cursors install-flags \

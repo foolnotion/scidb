@@ -32,11 +32,7 @@ clean:
 	@$(MAKE) -C tcl clean
 	@$(MAKE) -C man clean
 
-install:
-#	@$(MAKE) -C engines install
-	@$(MAKE) -C src install
-	@$(MAKE) -C tcl install
-	@$(MAKE) -C man install
+install: install-subdirs # update-etc-magic
 
 uninstall:
 #	@$(MAKE) -C engines uninstall
@@ -47,5 +43,33 @@ uninstall:
 Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"
 	@exit 1
+
+install-subdirs:
+#	@$(MAKE) -C engines install
+	@$(MAKE) -C src install
+	@$(MAKE) -C tcl install
+	@$(MAKE) -C man install
+
+update-etc-magic:
+	@echo "Update magic file"
+	@if [ -f /usr/share/file/magic ]; then                                     \
+		if [ -z "`cat /usr/share/file/magic | grep Scidb`" ]; then              \
+			if [[ ! -r /etc/magic || -z "`cat /etc/magic | grep Scidb`" ]]; then \
+				if [ "`id -u`" -eq 0 ]; then                                      \
+					magic="/etc/magic";                                            \
+				else                                                              \
+					magic="$(HOME)/.magic";                                        \
+				fi;                                                               \
+				if [ ! -a $$magic ]; then                                         \
+					touch $$magic;                                                 \
+				fi;                                                               \
+				if [ -w $$magic ]; then                                           \
+					if [ -z "`cat $$magic | grep Scidb`" ]; then                   \
+						cat magic >> $$magic;                                       \
+					fi;                                                            \
+				fi;                                                               \
+			fi;                                                                  \
+		fi;                                                                     \
+	fi
 
 # vi:set ts=3 sw=3:

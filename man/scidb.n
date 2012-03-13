@@ -12,7 +12,7 @@ Scidb - chess database application
 .SH DESCRIPTION
 .\" --------------------------------------------------------------------------
 .B Scidb
-is a chess database application.
+is a Chess Information Data Base.
 .\" ==========================================================================
 .SH USAGE
 .\" --------------------------------------------------------------------------
@@ -68,7 +68,7 @@ recovery file exists.
 .TP 9
 .B --delete-recovery-files
 Delete all recovery files from last session and terminate the program.
-It is not a phyisical removal, with option
+This is not a physical removal, with option
 .B --recover-old
 it is possible to reuse these files.
 .\" --------------------------------------------------------------------------
@@ -92,8 +92,8 @@ testing.
 .\" --------------------------------------------------------------------------
 .TP 9
 .B --force-grab
-The program is supressing grabs automaticaly if started inside a debugger.
-because gras may lead to frozen screens. With this option grabbing the
+The program is suppressing grabs automatically if started inside a debugger,
+because grabs may lead to frozen screens. With this option grabbing the
 screen will be allowed also in debug mode.
 .SS Options recognized by the Tk library
 .\" --------------------------------------------------------------------------

@@ -4331,66 +4331,76 @@ PgnReader::parseRound(mstl::string const& data, unsigned& round, unsigned& subro
 	}
 	else
 	{
-		if (*s == '(')
-			++s;
-		while (*s == '0')
+		while (::isspace(*s))
 			++s;
 
-		if (::isdigit(*s))
-		{
-			round = ::strtoul(s, &s, 10);
-
-			if (round > 255)
-			{
-				round = subround = 0;
-				return false;
-			}
-		}
-		else if (s == data.c_str() || s[-1] != '0')
+		if (*s == '\0')
 		{
 			round = subround = 0;
-			return false;
 		}
 		else
 		{
-			round = subround = 0;
-			return true;
-		}
+			if (*s == '(')
+				++s;
+			while (*s == '0')
+				++s;
 
-		if (*s == '.')
-		{
-			subround = ::strtoul(s + 1, &s, 10);
-
-			if (subround > 255)
+			if (::isdigit(*s))
 			{
-				subround = 0;
-				return false;
-			}
+				round = ::strtoul(s, &s, 10);
 
-			if (*s == '.')
-			{
-				round = subround;
-				subround = ::strtoul(s + 1, &s, 10);
-
-				if (subround > 255)
+				if (round > 255)
 				{
 					round = subround = 0;
 					return false;
 				}
 			}
-
-			if (*s == ')' && data[0] == '(')
-				++s;
-
-			if (*s)
+			else if (s == data.c_str() || s[-1] != '0')
 			{
 				round = subround = 0;
 				return false;
 			}
-		}
-		else
-		{
-			subround = 0;
+			else
+			{
+				round = subround = 0;
+				return true;
+			}
+
+			if (*s == '.')
+			{
+				subround = ::strtoul(s + 1, &s, 10);
+
+				if (subround > 255)
+				{
+					subround = 0;
+					return false;
+				}
+
+				if (*s == '.')
+				{
+					round = subround;
+					subround = ::strtoul(s + 1, &s, 10);
+
+					if (subround > 255)
+					{
+						round = subround = 0;
+						return false;
+					}
+				}
+
+				if (*s == ')' && data[0] == '(')
+					++s;
+
+				if (*s)
+				{
+					round = subround = 0;
+					return false;
+				}
+			}
+			else
+			{
+				subround = 0;
+			}
 		}
 	}
 

@@ -484,9 +484,9 @@ proc OpenDialog {parent class app font title enableEffects applyProc receiver ge
 	set point [expr {$parent eq "." ? "" : "."}]
 	set dlg ${parent}${point}__choosefont__
 	if {[llength $class]} {
-		toplevel $dlg -padx 10 -pady 10 -class $class
+		tk::toplevel $dlg -padx 10 -pady 10 -class $class
 	} else {
-		toplevel $dlg -padx 10 -pady 10
+		tk::toplevel $dlg -padx 10 -pady 10
 	}
 	set cancelCmd [list $dlg.buttons.cancel invoke]
 	switch $::tcl_platform(platform) {

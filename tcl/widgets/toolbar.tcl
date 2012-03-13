@@ -1753,10 +1753,10 @@ proc Grab {toolbar x y time} {
 	set Specs(drag:color) $Defaults(drag:color:snapping)
 	set options [list -background $Specs(drag:color) -borderwidth 0 -relief flat -highlightthickness 0]
 	set top [winfo toplevel $toolbar]
-	toplevel $toolbar.__l__ -width 1 -height $sh {*}$options
-	toplevel $toolbar.__r__ -width 1 -height $sh {*}$options
-	toplevel $toolbar.__t__ -width $sw -height 1 {*}$options
-	toplevel $toolbar.__b__ -width $sw -height 1 {*}$options
+	tk::toplevel $toolbar.__l__ -width 1 -height $sh {*}$options
+	tk::toplevel $toolbar.__r__ -width 1 -height $sh {*}$options
+	tk::toplevel $toolbar.__t__ -width $sw -height 1 {*}$options
+	tk::toplevel $toolbar.__b__ -width $sw -height 1 {*}$options
 	foreach dir {l r t b} {
 		wm transient $toolbar.__${dir}__ $top
 		wm overrideredirect $toolbar.__${dir}__ true
@@ -2377,7 +2377,7 @@ proc UndockToolbar {toolbar x y} {
 	Forget $toolbar
 	set Specs(state:$toolbar) "float"
 
-	toplevel $win -relief solid
+	tk::toplevel $win -relief solid
 	bind $win <Destroy>  [namespace code [list DockToolbar $toolbar]]
 	bind $toolbar <Destroy> +[list catch [list if [list "$toolbar" eq %W] [list destroy $win]]]
 

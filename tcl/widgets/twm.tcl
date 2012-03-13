@@ -42,7 +42,10 @@ array set Defaults {
 	header:font						TkHeadingFont
 	header:fontsize				8
 	header:button:background	#d7d7d7
+	highlight:color				#3778ed
+	highlight:opacity				0.4
 }
+# highlight:color #6495ed
 
 variable Counter 0
 
@@ -89,23 +92,25 @@ proc WidgetProc {twm command args} {
 		}
 
 		frame {
-			set pane [$Vars(makepane) [lindex $args 0]]
-			set name [$Vars(getname) [lindex $args 0]]
-			return [MakeFrame $twm $pane $name]
+			return [MakeFrame $twm [lindex $args 0]]
 		}
 
 		pane {
-			return [$Vars(makepane) [lindex $args 0]]
+			return [$Vars(makepane) [winfo parent $twm] [lindex $args 0]]
 		}
 
 		notebook {
 			variable Counter
-			return [ttk::notebook $twm.__notebook__[incr Counter] {*}$args]
+			set w [ttk::notebook $twm.__notebook__[incr Counter] {*}$args]
+			lappend Vars(container) $w
+			return $w
 		}
 
 		panedwindow {
 			variable Counter
-			return [tk::panedwindow $twm.__panedwindow__[incr Counter] {*}$args]
+			set w [tk::panedwindow $twm.__panedwindow__[incr Counter] {*}$args]
+			lappend Vars(container) $w
+			return $w
 		}
 
 		update {
@@ -117,27 +122,31 @@ proc WidgetProc {twm command args} {
 }
 
 
-proc MakeFrame {twm child name} {
+proc MakeFrame {twm id} {
 	variable Defaults
 	variable Counter
 	variable ${twm}::Vars
 
 	set parent [winfo parent $twm]
 	incr Counter
-	set top [tk::frame $twm.__frame__$Counter -borderwidth 0 -background yellow]
-	set hdr [tk::frame $parent.__header__$Counter \
+	set top [tk::frame $parent.__frame__$Counter -borderwidth 0 -background black]
+	set hdr [tk::frame $top.__header__ \
 					-background $Defaults(header:background) \
 					-borderwidth 1 \
 					-relief raised \
 				]
+	set child [$Vars(makepane) $top $id]
+	set name [$Vars(getname) $id]
 
-	::scidb::tk::twm capture $child $top
-
-	pack $hdr -in $top -side top -fill x -expand no
-	pack $child -in $top -side top -fill both -expand yes
+	pack $hdr -side top -fill x -expand no
+	pack $child -side top -fill both -expand yes
 
 	tk::button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
-	tk::button $hdr.undock -image $icon::12x12::undock -background $Defaults(header:button:background)
+	tk::button $hdr.undock \
+		-image $icon::12x12::undock \
+		-background $Defaults(header:button:background) \
+		-command [namespace code [list Undock $twm $top]] \
+		;
 
 	tooltip $hdr.close  [namespace current]::mc::Close
 	tooltip $hdr.undock [namespace current]::mc::Undock
@@ -166,7 +175,502 @@ proc MakeFrame {twm child name} {
 	grid columnconfigure $hdr 1 -weight 1
 	grid columnconfigure $hdr {3 5} -minsize 3
 
+	foreach w [list $hdr $hdr.label] {
+		bind $w <ButtonPress-1>		[namespace code [list HeaderPress $twm $top %X %Y]]
+		bind $w <Button1-Motion>	[namespace code [list HeaderMotion $twm $top %X %Y]]
+		bind $w <ButtonRelease-1>	[namespace code [list HeaderRelease $twm $top %X %Y]]
+	}
+
 	return $top
+}
+
+
+proc HeaderPress {twm top x y} {
+	variable ${twm}::Vars
+
+	SaveUndockPosition $twm $top
+	set Vars(init:x) $x
+	set Vars(init:y) $y
+	set Vars(delta:x) [expr {$x - [winfo rootx $top]}]
+	set Vars(delta:y) [expr {$y - [winfo rooty $top]}]
+	set Vars(docking:markers) {}
+	set Vars(docking:marker) {}
+	set Vars(afterid) {}
+	ttk::globalGrab $top
+}
+
+
+proc HeaderMotion {twm top x y} {
+	variable ${twm}::Vars
+
+	if {[winfo toplevel $top] eq $top} {
+		foreach entry $Vars(docking:markers) {
+			lassign $entry canv w x0 y0 x1 y1
+			if {$x0 <= $x && $x < $x1 && $y0 <= $y && $y < $y1} {
+				if {[llength $Vars(docking:marker)] > 0} {
+					if {$Vars(docking:marker) eq $canv} { return }
+					DockingMotion $twm $top $w $Vars(docking:marker) leave $x $y
+					set Vars(docking:marker) {}
+				}
+				DockingMotion $twm $top $w $canv enter $x $y
+				set Vars(docking:marker) $canv
+				return
+			} elseif {$Vars(docking:marker) eq $canv} {
+				DockingMotion $twm $top $w $canv leave $x $y
+				set Vars(docking:marker) {}
+			}
+		}
+		if {[winfo toplevel $top] eq $top} {
+			wm geometry $top +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
+		}
+	} elseif {abs($x - $Vars(init:x)) >= 3 || abs($y - $Vars(init:y)) >= 3} {
+		bind $top <Button1-Motion> {#}
+		bind $top <ButtonRelease-1> {#}
+		set wd [expr {[winfo width $top] + 2}]
+		set ht [expr {[winfo height $top] + 2}]
+		set x [expr {$x - $Vars(delta:x)}]
+		$top configure -width $wd -height $ht
+		ttk::releaseGrab $top
+		::scidb::tk::twm release $top
+		$top configure -borderwidth 1
+		wm geometry $top ${wd}x${ht}+${x}+${y}
+		::scidb::tk::wm noDecor $top
+		wm state $top normal
+		ttk::globalGrab $top
+		bind $top <Button1-Motion> [namespace code [list HeaderMotion $twm $top %X %Y]]
+		bind $top <ButtonRelease-1> [namespace code [list HeaderRelease $twm $top %X %Y]]
+		ComputeDockingPoints $twm $top
+	}
+
+	if {[winfo toplevel $top] eq $top} {
+		after idle [namespace code [list ShowDockingPoints $twm $top $x $y]]
+	}
+}
+
+
+proc HeaderRelease {twm top x y} {
+	variable ${twm}::Vars
+
+	ttk::releaseGrab $top
+	after cancel $Vars(afterid)
+	HideDockingPoints $twm $top
+
+	foreach entry $Vars(docking:markers) {
+		set w [lindex $entry 0]
+		if {[winfo exists $w]} {
+			destroy [winfo parent $w]
+		}
+		set w $twm.__highlight__
+		if {[winfo exists $w]} {
+			wm withdraw $w
+			catch { image delete [$w.c itemcget image -image] }
+		}
+	}
+
+	if {[winfo toplevel $top] eq $top} {
+		wm geometry $top +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
+		$top configure -borderwidth 0
+		Dock $twm $top
+	}
+}
+
+
+proc ShowDockingPoints {twm top x y} {
+	variable ${twm}::Vars
+
+	foreach entry $Vars(docking:panes) {
+		lassign $entry w x0 y0 x1 y1
+
+		if {$x0 <= $x && $x < $x1 && $y0 <= $y && $y < $y1} {
+			ShowDockingPoint $twm $top $w $x $y
+		} else {
+			HideDockingPoint $twm $top $w
+		}
+	}
+}
+
+
+proc ShowDockingPoint {twm top w x y} {
+	variable ${twm}::Vars
+
+	set iw 32
+	set ih 32
+
+	if {[info exists Vars(docking:hover:$w)]} {
+		if {![winfo exists $w.__m__]} {
+			foreach point $Vars(docking:hover:$w) {
+				lassign $point pos x0 y0
+
+				switch $pos {
+					m {
+						set wd [expr {$iw + 4}]
+						set ht [expr {$ih + 4}]
+						set ix 2
+						set iy 2
+						set lines [list \
+							0 0 1 0 \
+							0 [expr {$ht - 1}] 1 [expr {$ht - 1}] \
+							[expr {$wd - 1}] 0 $wd 0 \
+							[expr {$ht - 1}] [expr {$wd - 1}] [expr {$ht - 1}] $wd \
+						]
+					}
+
+					l {
+						set wd [expr {$iw + 2}]
+						set ht [expr {$ih + 4}]
+						set ix 2
+						set iy 2
+						set lines [list \
+							0 0 $wd 0 \
+							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
+							0 0 0 $ht \
+						]
+					}
+
+					r {
+						set wd [expr {$iw + 2}]
+						set ht [expr {$ih + 4}]
+						set ix 0
+						set iy 2
+						set lines [list \
+							0 0 $wd 0 \
+							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
+							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
+						]
+					}
+
+					t {
+						set wd [expr {$iw + 4}]
+						set ht [expr {$ih + 2}]
+						set ix 2
+						set iy 2
+						set lines [list \
+							0 0 $wd 0 \
+							0 0 0 $ht \
+							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
+						]
+					}
+
+					b {
+						set wd [expr {$iw + 4}]
+						set ht [expr {$ih + 2}]
+						set ix 2
+						set iy 0
+						set lines [list \
+							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
+							0 0 0 $ht \
+							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
+						]
+					}
+				}
+
+				set tl [tk::toplevel $w.__${pos}__ -width $wd -height $ht -borderwidth 0]
+				wm withdraw $tl
+				set c [tk::canvas $tl.__docking__ -borderwidth 0 -width $wd -height $ht]
+				pack $c
+				$c create rectangle 0 0 $wd $ht -width 0 -fill black -tag background
+				foreach {lx0 ly0 lx1 ly1} $lines {
+					$c create line $lx0 $ly0 $lx1 $ly1 -fill white -tag border
+				}
+				$c create image $ix $iy -anchor nw -image $icon::32x32::shape($pos)
+				wm transient $tl $twm
+				wm overrideredirect $tl true
+				wm attributes $tl -topmost true
+				wm geometry $tl ${wd}x${ht}+${x0}+${y0}
+				wm state $tl normal
+
+				if {$tl ni $Vars(docking:markers)} {
+					lappend Vars(docking:markers) [list $c $w $x0 $y0 [expr {$x0 + $wd}] [expr {$y0 + $ht}]]
+				}
+			}
+		}
+	}
+}
+
+
+proc DockingMotion {twm top w canv mode x y} {
+	variable ${twm}::Vars
+
+	after cancel $Vars(afterid)
+
+	switch $mode {
+		enter {
+			$canv itemconfigure background -fill yellow
+			$canv itemconfigure border -fill black
+			set Vars(afterid) [after 50 [namespace code [list ShowHighlightRegion $twm $top $w $canv]]]
+		}
+
+		leave {
+			$canv itemconfigure background -fill black
+			$canv itemconfigure border -fill white
+			wm geometry $top +[expr {$x - $Vars(delta:x)}]+[expr {$y - $Vars(delta:y)}]
+			set h $twm.__highlight__
+			if {[winfo exists $h]} {
+				wm withdraw $h
+				catch { image delete [$h.c itemcget image -image] }
+			}
+		}
+	}
+}
+
+
+proc ShowHighlightRegion {twm top w canv} {
+	variable ${twm}::Vars
+	variable Defaults
+
+	update idletasks
+
+	set x  [winfo rootx $w]
+	set y  [winfo rooty $w]
+	set wd [winfo width $w]
+	set ht [winfo height $w]
+
+	set tl $twm.__highlight__
+	if {[winfo exists $tl]} {
+		wm withdraw $tl
+		catch { image delete [$tl.c itemcget image -image] }
+		update idletasks
+	} else {
+		set tl [tk::toplevel $tl -borderwidth 0]
+		pack [tk::canvas $tl.c -borderwidth 0]
+		$tl.c create image 0 0 -anchor nw -tag image
+	}
+
+	switch -glob -- $canv {
+		*.__t__.__docking__ {
+			set ht [expr {$ht/2}]
+		}
+		*.__b__.__docking__ {
+			set y  [expr {$y + $ht/2}]
+			set ht [expr {$ht - $ht/2}]
+		}
+		*.__r__.__docking__ {
+			set x  [expr {$x + $wd/2}]
+			set wd [expr {$wd - $wd/2}]
+		}
+		*.__l__.__docking__ {
+			set wd [expr {$wd/2}]
+		}
+	}
+
+	$tl.c configure -width $wd -height $ht
+	set img [image create photo -width $wd -height $ht]
+	::scidb::tk::x11 region $x $y $img
+	::scidb::tk::image paintover $Defaults(highlight:color) $Defaults(highlight:opacity) $img
+	$tl.c itemconfigure image -image $img
+	wm geometry $tl ${wd}x${ht}+${x}+${y}
+	wm overrideredirect $tl true
+	foreach pos {m l r b t} {
+		set v $w.__${pos}__
+		if {[winfo exists $v]} { raise $v $tl }
+	}
+	wm transient $tl $w
+	update idletasks
+	::scidb::tk::wm noDecor $tl
+	wm state $tl normal
+
+	after idle [namespace code [list HeaderMotion $twm $top {*}[winfo pointerxy $twm]]]
+}
+
+
+proc HideDockingPoints {twm top} {
+	variable ${twm}::Vars
+
+	foreach name [array names Vars docking:hover:*] {
+		set w [lindex [split $name :] 2]
+		HideDockingPoint $twm $top $w
+	}
+}
+
+
+proc HideDockingPoint {twm top w} {
+	foreach dir {l r t b m} {
+		set v $w.__${dir}__
+		if {[winfo exists $v]} {
+			destroy $v
+		}
+	}
+}
+
+
+proc ComputeDockingPoints {twm top} {
+	variable ${twm}::Vars
+
+	update idletasks
+	array unset Vars docking:hover:*
+	array unset Vars docking:sub:*
+	set Vars(docking:panes) {}
+	set panes {}
+	set iw 32
+	set ih 32
+
+	foreach w $Vars(container) {
+		switch -glob -- $w {
+			*__panedwindow__* {
+				# lrtbm if pointer hovers pane
+				foreach v [$w panes] {
+if {$v ne ".application.twm.__panedwindow__5"} {
+					set x  [winfo rootx $v]
+					set y  [winfo rooty $v]
+					set wd [winfo width $v]
+					set ht [winfo height $v]
+					set mx [expr {$x + $wd/2 - ($iw + 4)/2}]
+					set my [expr {$y + $ht/2 - ($ih + 4)/2}]
+					set tx $mx
+					set ty [expr {$my - ($ih + 2)}]
+					set bx $mx
+					set by [expr {$my + ($ih + 4)}]
+					set lx [expr {$mx - ($iw + 2)}]
+					set ly $my
+					set rx [expr {$mx + ($iw + 4)}]
+					set ry $my
+					set Vars(docking:hover:$v) \
+						[list \
+							[list m $mx $my] \
+							[list l $lx $ly] \
+							[list r $rx $ry] \
+							[list t $tx $ty] \
+							[list b $bx $by] \
+						]
+					lappend Vars(docking:panes) [list $v $x $y [expr {$x + $wd}] [expr {$y + $ht}]]
+					lappend panes $v
+}
+				}
+			}
+		}
+	}
+
+	foreach w $Vars(container) {
+		if {$w ni $panes} {
+			switch -glob -- $w {
+				*__notebook__* {
+					# lrtbm if pointer hovers notebook
+					set x  [winfo rootx $w]
+					set y  [winfo rooty $w]
+					set wd [winfo width $w]
+					set ht [winfo height $w]
+					set mx [expr {$x + ($wd/2) - ($iw + 4)/2}]
+					set my [expr {$y + ($ht/2) - ($ih + 4)/2}]
+					set tx $mx
+					set ty [expr {$my - ($ih + 2)}]
+					set bx $mx
+					set by [expr {$my + ($ih + 4)}]
+					set lx [expr {$mx - ($iw + 2)}]
+					set ly $my
+					set rx [expr {$mx + ($iw + 4)}]
+					set ry $my
+					set Vars(docking:hover:$w) \
+						[list \
+							[list m $mx $my] \
+							[list l $lx $ly] \
+							[list r $rx $ry] \
+							[list t $tx $ty] \
+							[list b $bx $by] \
+						]
+					lappend Vars(docking:panes) [list $w $x $y [expr {$x + $wd}] [expr {$y + $ht}]]
+				}
+				*__panedwindow__* {
+if {$w ne ".application.twm.__panedwindow__5"} {
+					# tb if horizontal and pane is subwindow
+					# lr if vertical and pane is subwindow
+					set x  [winfo rootx $w]
+					set y  [winfo rootx $w]
+					set wd [winfo width $w]
+					set ht [winfo height $w]
+					if {[$w cget -orient] eq "horizontal"} {
+						set tx [expr {$x + $wd/2 - ($iw + 4)/2}]
+						set ty $y
+						set bx $tx
+						set by [expr {$y + $ht - ($ih + 4)}]
+						set Vars(docking:sub:$w) [list $w [list t $tx $ty] [list b $bx $by]]
+					} else {
+						set lx $x
+						set ly [expr {$y - $ht/2 - ($ih + 4)}]
+						set rx [expr {$x + $wd - ($iw + 4)}]
+						set ry $ly
+						set Vars(docking:sub:$w) [list [list l $lx $ly] [list r $rx $ry]]
+					}
+					lappend Vars(docking:panes) [list $w $x $y [expr {$x + $wd}] [expr {$y + $ht}]]
+}
+				}
+			}
+		}
+	}
+}
+
+
+proc SaveUndockPosition {twm top} {
+	variable ${twm}::Vars
+
+	set container {}
+	set options {}
+	set pos end
+
+	foreach w [winfo children $twm] {
+		switch -glob -- $w {
+			*__panedwindow__* {
+				set panes [$w panes]
+				if {$top in $panes} {
+					set container $w
+					foreach entry [$w paneconfigure $top] {
+						if {[llength [lindex $entry 4]]} {
+							lappend options [lindex $entry 0] [lindex $entry 4]
+						}
+					}
+					set pos [lsearch $panes $top]
+					if {$pos + 1 < [llength $panes]} {
+						lappend options -before [lindex $panes [expr {$pos + 1}]]
+					}
+				}
+			}
+			*__notebook__* {
+				set tabs [$w tabs]
+				if {$top in $tabs} {
+					set container $w
+					set options [$w tab $top]
+					set pos [lsearch $tabs $top]
+					if {$pos + 1 == [llength $tabs]} { set pos end }
+				}
+			}
+		}
+	}
+
+	set Vars(dock:container:$top) $container
+	set Vars(dock:options:$top) $options
+	set Vars(dock:position:$top) $pos
+}
+
+
+proc Undock {twm top} {
+	SaveUndockPosition $twm $top
+	pack forget $top.__header__
+	set wd [winfo width $top]
+	set ht [winfo height $top]
+	set x [winfo rootx $top]
+	set y [winfo rooty $top]
+	::scidb::tk::twm release $top
+	::update idle ;# is reducing flickering
+	wm geometry $top ${wd}x${ht}+${x}+${y}
+#	wm transient $top $twm
+	wm title $top [$top.__header__.label cget -text]
+	wm state $top normal
+	wm protocol $top WM_DELETE_WINDOW [namespace code [list Dock $twm $top]]
+}
+
+
+proc Dock {twm top} {
+	variable ${twm}::Vars
+
+	::scidb::tk::twm capture $top
+	switch -glob -- $Vars(dock:container:$top) {
+		*__panedwindow__*	{
+			$Vars(dock:container:$top) add $top {*}$Vars(dock:options:$top) -height [winfo height $top]
+		}
+		*__notebook__* {
+			$Vars(dock:container:$top) insert $Vars(dock:position:$top) $top {*}$Vars(dock:options:$top)
+		}
+	}
+	pack $top.__header__ -side top -fill x -expand no -before [lindex [pack slaves $top] 0]
 }
 
 
@@ -535,71 +1039,78 @@ set undock [image create photo -data {
 }]
 
 } ;# namespace 12x12
+
+namespace eval 32x32 {
+
+set shape(t) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAXVBMVEUAAAAceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkceDsceDskokkceDskokkceDsceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkoQLgrAAAAHXRSTlMAEBAgIDAwQEBQUGBgcICA
+	j4+fr6+/v8/P39/v79eCthgAAAEVSURBVDjLfZLbloIwDEUjyk0qiFikQvL/n2mblumFMvsB
+	1iKHJmwCEPFEfMI/PFDzOK9fV1QK18tpYEKsa8TprN7yAHqMNl+/rPr0ouBbNsCvjqM76Ag3
+	r4gqHiUT0ONfYSFa+GOO9d4IGEgzGB19Wi8RJdw2E9huIBHLJMCPZmJmG08d9yDIIWzDxDEU
+	2x7YCjty7Bje9McbYuOs5k4B98i4dfwNA9/IuHVMEaFxbtdQQuON84osaWAxnVXsOGY3bh1T
+	BmdcX5wR4UUJ58+8HPy40X+C/8WAO9KrGsy5DiNhDzSZgFZRdr1GpgFlnnZlsFASqtkhdGA6
+	bFy469pRf9zpT1s7uk9mr18Y8cqstfJl5Rv8AIgzNBnoDubuAAAAAElFTkSuQmCC
+}]
+
+set shape(b) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAXVBMVEUAAAAceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkceDsceDskokkceDskokkceDsceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkoQLgrAAAAHXRSTlMAEBAgIDAwQEBQUGBgcICA
+	j4+fr6+/v8/P39/v79eCthgAAAEcSURBVDjLfZPbsoIwDEUDlesBRBEEIfz/Z9o0hDbFOevB
+	GdpNkywqgNCteLJ0cOGJime8XyC+q+KgeiMWUaDDNfFPyYpxkQFHaKaDHMYgkLWdZbGB+35Q
+	2sBIq38ZQC9tRYGDHvBHoPYBtIGz2kMCD986UtbwU7NJYGt4xdC5Gf3c9h/c6OXMHdP68p47
+	tEf5hRzN8f5MthaxPEAZB0rrTnxbFZUfQQapSMJpfk3ST7j/Sd2ijOvCdRio+djgU9lyL7//
+	4sY8hhpOvaiURjPh13YjNxJoWI7CSZt4f2K9GjbuimziOL5zYtw71ri2ZnJsxPHlXg+Q73se
+	ONawceVYw8a1Yw2/qh3Hfw4sIscaaj92rGnporfwD/1lgi93uTQd6kQc3wAAAABJRU5ErkJg
+	gg==
+}]
+
+set shape(l) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAXVBMVEUAAAAceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkceDsceDskokkceDskokkceDsceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkoQLgrAAAAHXRSTlMAEBAgIDAwQEBQUGBgcICA
+	j4+fr6+/v8/P39/v79eCthgAAADUSURBVDjLnZPrDoMgDIXrFbyic2wybd//MQfDGDE1mJ1f
+	hPMROLQF4FRoxAGu1aNTcWULY13LNLydDNbWGViG9asFcensggeyyR6fEsgvgM4drwAUsYDL
+	hkMCcqYfYKZenLMZAelI5AGnxykbgPyQB7TVst/jsxWQPsmr9dtvNEG2dt18WkelVAsN4p4t
+	g/xFoV4gHLBnW4kFBp+tnIl44JDtTyB6RfSR8ZgXH1VLWUK1AdGvPhSr5ot1o9xMw+g+bJh4
+	y91o2njb3xic+OjdGN5w/L8QZDQZzKCcIgAAAABJRU5ErkJggg==
+}]
+
+set shape(r) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAYFBMVEUAAAAceDskokkceDsk
+	okkceDskokkceDskokkceDskokkceDskokkceDskokkceDskokkceDskokkceDsceDskokkc
+	eDskokkceDskokkceDskokkceDskokkceDskoklWkjs0AAAAHnRSTlMAEBAgIDAwQEBQUGBg
+	cHCAgI+Pn6+vv7/Pz9/f7+8EUqY3AAAA2klEQVQ4y52T0XKCMBBFLyICKo1YGyuNZ///L/uQ
+	jtNkCOl0Xzkz4ezeK0mSZvCdytMB4MrACRyw9CXAgVoPzE0ZkKYAYSwDezU34NaWALtI4wJh
+	yr72zi8gmT0GNTO58TtABMyuO/VLauwgeO99BOzrKKXGgc+odrY4Hzt1v41h1GEYjtfnD2DP
+	t8QYet0tnfte7ct4DbDnRRpDNF4FzB6HaDyXgJfxv4HKE7WfzDRP+aLOyaKqq86PNeTHqp5b
+	6p3zW4FJIxdWIvfn0NZiv1mcqVa9ank36v8NrZY13DAzgmEAAAAASUVORK5CYII=
+}]
+
+set shape(m) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAABPlBMVEUAAAAceDsceDsceDsc
+	eDsceDsceDsceDsceDsceDsceDsceDskokkceDsceDsceDsceDsceDsceDsceDsceDsceDsk
+	okkceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDsc
+	eDsceDsceDskokkceDsceDsceDsceDsceDsceDskokkceDsceDsceDsceDsceDsceDsceDsc
+	eDsceDsceDsceDsceDsceDsceDsceDsceDsceDsceDskokkceDsceDsceDsceDsceDsceDsk
+	okkceDsceDsceDsceDsceDsceDsceDsceDskokkceDsceDsceDsceDsceDsceDsceDsceDsc
+	eDsceDsceDsceDsceDskokkkokkceDsceDsceDsceDskoknM1eVxAAAAaHRSTlMAAQMEBQYH
+	CAkLDBAREhQaHyAhJCYnKCsuMzs8PkBBQkRFRklNU1hbYGNlbnBydnd/hIWHiYuMjY6QmZqb
+	np+rrq+xsrOztrzBw8fIysvT1djZ2tvd4uPk5ebp6uvv8fL3+Pn5+vv8/SHi5lUAAAGFSURB
+	VDjLfZNpWxMxFIXfCqgjdUU6WPcFBy2oFOsaUYG6NijoyBbA2gbO/P8/4Ic60GlnfL/lycnN
+	Te45cEQQGeu8d9ZEAcOExksHa5++7UnyJhzcb0j7r64AcHlu6bfUyB63+vPi7PH69ONd2b4i
+	VadfE9mKl1blqkfnnVbPAeVaM+5242atDJx5K5fWsPo8DtQ7yT86daD0Tjbt7+soVFpJH60K
+	jKz3Og3VnoRKnGSIKzAthYDRc6CVDNCC0hcZCLzuQT0Zog535AMi6TzlzrCgU+bEjiKM1qCW
+	5FCD9zJYPYNmnqAJT2VxugtxniCGB3J4XYdunqALt+T/L7gtj9NM8RX35bBaLG5yQRajjeJn
+	fpAhki4WfVRpRxGB18Oir74hH4DRj7H8YbEsA4TSbP64r/XGTUPtm3mGGfueWtuqPTVsOV6m
+	liN02rwwaFqeHJuWqtPPyaztTy712R5Cq4NHp/r2r25ngtOL3uGb6REAxmcWB6OXhtd/fD2/
+	spUb3sL4/wXwM+cM3aIvkgAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 32x32
 } ;# namespace icon
-
 } ;# namespace twm
-
-if {0} {
-	set header "Engine"
-
-	ttk::frame .f
-	pack .f -fill both -expand yes
-
-	twm::MakeFrame .f ::header
-
-	tk::text .f.text -background white
-	pack .f.text -in .f.top -side top
-}
-
-if {0} {
-	wm withdraw .
-	tk::frame .f1 -background blue
-	tk::frame .f2 -background red
-
-	pack .f1 -expand 1 -fill both
-	pack .f2 -expand 1 -fill both
-
-	tk::button .f1.b -text "Dock/Undock" -command { Move .f1.b }
-	pack .f1.b
-	set parent .f1
-	update idletasks
-	.f1 configure -width [winfo reqwidth .f1.b] -height [winfo reqheight .f1.b]
-	.f2 configure -width [winfo reqwidth .f1.b] -height [winfo reqheight .f1.b]
-	wm deiconify .
-
-	proc Move {w} {
-		global parent
-
-		if {[winfo toplevel $w] eq $w} {
-			if {$parent eq ".f1"} { set parent .f2 } else { set parent .f1 }
-			::scidb::tk::twm capture $w $parent
-			pack $w
-		} else {
-			::scidb::tk::twm release $w
-			::update idle ;# is reducing flickering
-			wm geometry $w +100+100
-			wm state $w normal
-		}
-	}
-}
-
-if {0} {
-	wm withdraw .
-	tk::button .b -text "Move" -command Move
-	pack .b
-	toplevel .tl
-	wm withdraw .tl
-	update idletasks
-	wm geometry .tl [winfo reqwidth .]x[winfo reqheight .]
-	wm deiconify .tl
-	wm deiconify .
-
-	proc Move {} {
-		if {[winfo toplevel .b] eq "."} { set parent .tl } else { set parent . }
-		::scidb::tk::twm release .b
-		scidb::tk::twm capture .b $parent
-		pack .b
-	}
-}
 
 # vi:set ts=3 sw=3:

@@ -281,6 +281,18 @@ struct pixbuf
 		m_buf += m_pitch;
 	}
 
+	void grayscale()
+	{
+		for (int r = 0; r < m_rows; ++r)
+		{
+			unsigned char* p = scanline(r);
+			unsigned char* e = p + N*m_cols;
+
+			for ( ; p < e; p += N)
+				p[R] = p[G] = p[B] = (p[R]*306 + p[G]*601 + p[B]*117) >> 10;
+		}
+	}
+
 	void darken(double alpha)
 	{
 		unsigned char opacity = unsigned(alpha*255.0 + 0.5);
@@ -346,6 +358,44 @@ struct pixbuf
 				p[R] = ::colorize(p[R], color.r, brighten);
 				p[G] = ::colorize(p[G], color.g, brighten);
 				p[B] = ::colorize(p[B], color.b, brighten);
+			}
+		}
+	}
+
+	void paintOver(agg::rgba8 const& color, double opacity)
+	{
+		agg::rgba8 lookup[256];
+
+		double alpha = 1.0 - opacity;
+
+		double rc = opacity*color.r;
+		double gc = opacity*color.g;
+		double bc = opacity*color.b;
+
+		agg::rgba8* s = lookup;
+		agg::rgba8* e = lookup + 256;
+
+		for (int i = 0; s < e; ++s, ++i)
+		{
+			double c = alpha*i + 0.5;
+
+			s->r = static_cast<unsigned char>(rc + c);
+			s->g = static_cast<unsigned char>(gc + c);
+			s->b = static_cast<unsigned char>(bc + c);
+		}
+
+		for (int r = 0; r < m_rows; ++r)
+		{
+			unsigned char* p = scanline(r);
+			unsigned char* e = p + N*m_cols;
+
+			for ( ; p < e; p += N)
+			{
+				agg::rgba8 c = lookup[(p[R]*306 + p[G]*601 + p[B]*117) >> 10];
+
+				p[R] = c.r;
+				p[G] = c.g;
+				p[B] = c.b;
 			}
 		}
 	}
@@ -731,6 +781,12 @@ struct Boost
 };
 
 
+struct MakeGray
+{
+	template <typename PixBuf> void operator()(PixBuf& pixbuf) { pixbuf.grayscale(); }
+};
+
+
 struct SetAlpha
 {
 	double m_alpha;
@@ -788,6 +844,17 @@ struct Colorize
 
 	template <typename PixBuf>
 	void operator()(PixBuf& pixbuf) { pixbuf.colorize(m_color, m_brighten); }
+};
+
+
+struct PaintOver
+{
+	PaintOver(agg::rgba8 const& fillcolor, double opacity) :m_color(fillcolor), m_opacity(opacity) {}
+	agg::rgba8 m_color;
+	double m_opacity;
+
+	template <typename PixBuf>
+	void operator()(PixBuf& pixbuf) { pixbuf.paintOver(m_color, m_opacity); }
 };
 
 
@@ -954,7 +1021,7 @@ compute_pitch(int width, int pixelSize)
 
 	if (pixelSize == 4)
 		return 4*width;
-	
+
 	return (pixelSize*width + pixelSize) & ~3; // 32 bit alignment
 }
 
@@ -1560,6 +1627,29 @@ tk_make_border(char const* subcmd,
 	delete [] block.pixelPtr;
 
 	return TCL_OK;
+}
+
+
+static int
+tk_grayscale(	char const* subcmd,
+					Tcl_Interp* ti,
+					char const* photo,
+					int objc, Tcl_Obj* const objv[])
+{
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", photo);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+
+	int rc = check_image_format(subcmd, ti, block);
+	if (rc != TCL_OK)
+		return rc;
+
+	processImage(block, MakeGray());
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
 }
 
 
@@ -2337,6 +2427,37 @@ tk_colorize(char const* subcmd,
 
 
 static int
+tk_paint_over(	char const* subcmd,
+					Tcl_Interp* ti,
+					char const* color,
+					char const* photo,
+					double opacity,
+					int objc, Tcl_Obj* const objv[])
+{
+	Tk_PhotoHandle handle = Tk_FindPhoto(ti, photo);
+
+	if (!handle)
+		return tcl_error(subcmd, "invalid argument: '%s' is not a photo image", photo);
+
+	agg::rgba8 fillcolor;
+
+	if (!parse_color(color, fillcolor))
+		return tcl_error(subcmd, "invalid color name '%s'", color);
+
+	Tk_PhotoImageBlock block;
+	Tk_PhotoGetImage(handle, &block);
+	Tk_PhotoImageBlock dstBlock = block;
+
+	int rc = check_image_format(subcmd, ti, dstBlock);
+	if (rc != TCL_OK)
+		return rc;
+
+	processImage(dstBlock, PaintOver(fillcolor, opacity));
+	return Tk_PhotoPutBlock(ti, handle, &block, 0, 0, block.width, block.height, TK_PHOTO_COMPOSITE_SET);
+}
+
+
+static int
 tk_darken_image(	char const* subcmd,
 						Tcl_Interp* ti,
 						char const* value,
@@ -2462,8 +2583,8 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"border", "copy", "create", "recolor", "disable",
-		"alpha", "diffuse", "boost", "colorize", "blur",
-		"shadow", "darken", 0
+		"alpha", "diffuse", "boost", "colorize", "paintover",
+		"grayscale", "blur", "shadow", "darken", 0
 	};
 	struct { char const* usage; int min_args; } const definitions[] =
 	{
@@ -2476,6 +2597,8 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{ "diffuse <value> <photo>", 3 },
 		{ "boost <min> <max> <photo>", 4 },
 		{ "colorize <color> <brighten> <photo>", 4 },
+		{ "paintover <color> <opacity> <photo>", 4 },
+		{ "grayscale <photo>", 2 },
 		{ "blur <radius> <photo> <out-photo>", 4 },
 		{ "shadow <opacity> <direction> <out-photo>", 4 },
 		{ "darken <alpha> <photo>", 3 },
@@ -2483,8 +2606,8 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum
 	{
 		Cmd_Border, Cmd_Copy, Cmd_Create, Cmd_Recolor, Cmd_Disable,
-		Cmd_Alpha, Cmd_Diffuse, Cmd_Boost, Cmd_Colorize, Cmd_Blur,
-		Cmd_Shadow, Cmd_Darken,
+		Cmd_Alpha, Cmd_Diffuse, Cmd_Boost, Cmd_Colorize, Cmd_PaintOver,
+		Cmd_GrayScale, Cmd_Blur, Cmd_Shadow, Cmd_Darken,
 	};
 
 	if (objc < 2)
@@ -2514,6 +2637,12 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				char const* str = Tcl_GetString(objv[0]);
 				return tk_make_border(subcommands[index], ti, str, objc - 1, objv + 1);
+			}
+
+		case Cmd_GrayScale:
+			{
+				char const* str = Tcl_GetString(objv[0]);
+				return tk_grayscale(subcommands[index], ti, str, objc - 1, objv + 1);
 			}
 
 		case Cmd_Copy:
@@ -2613,6 +2742,19 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											"invalid argument: type 'double' for brighten value expected");
 				}
 				return tk_colorize(subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
+			}
+
+		case Cmd_PaintOver:
+			{
+				double opacity;
+				char const* str0 = Tcl_GetString(objv[0]);
+				char const* str1 = Tcl_GetString(objv[2]);
+				if (Tcl_GetDoubleFromObj(ti, objv[1], &opacity) != TCL_OK)
+				{
+					return tcl_error(	subcommands[index],
+											"invalid argument: type 'double' for opacity value expected");
+				}
+				return tk_paint_over(subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
 			}
 
 		case Cmd_Blur:

@@ -29,7 +29,7 @@ namespace eval splash {
 proc open {} {
 	variable Picture
 
-	toplevel .splash -class Scidb
+	tk::toplevel .splash -class Scidb
 	wm title .splash $::scidb::app
 	wm attributes .splash -alpha 0.8
 	catch { wm attributes .splash -type splash }

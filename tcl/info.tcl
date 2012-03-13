@@ -62,7 +62,7 @@ proc openDialog {parent} {
 		raise $dlg
 		focus $dlg
 	} else {
-		toplevel $dlg -class $::scidb::app
+		tk::toplevel $dlg -class $::scidb::app
 		wm iconname $dlg ""
 		wm withdraw $dlg
 		BuildDialog $dlg

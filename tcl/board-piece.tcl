@@ -548,7 +548,7 @@ proc SelectTexture {parent which} {
 	set Vars(offset,$which,y) $style(texture,$which,y1)
 	set Vars(rotation,$which) $style(texture,$which,rotation)
 
-	set dlg [toplevel $parent.select_texture_$which -class Scidb]
+	set dlg [tk::toplevel $parent.select_texture_$which -class Scidb]
 	bind $dlg <<BrowserSelect>> [namespace code [list SetTexture $which "%d" true]]
 	bind $dlg <Destroy> "if {{%W} eq {$dlg}} { incr [namespace current]::Vars(open) -1 }"
 
@@ -984,7 +984,7 @@ proc SelectGradient {which} {
 	photo_Circle(start) copy $::icon::15x15::circle
 	photo_Circle(stop) copy $::icon::15x15::circle
 
-	set dlg [toplevel .selectgradient -class Scidb]
+	set dlg [tk::toplevel .selectgradient -class Scidb]
 	bind $dlg <Destroy> "
 		if {{%W} eq {$dlg}} {
 			incr [namespace current]::Vars(open) -1
@@ -1495,7 +1495,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 
 	# toplevel
 	set point [expr {$parent eq "." ? "" : "."}]
-	set dlg [toplevel ${parent}${point}configPieces -class Scidb]
+	set dlg [tk::toplevel ${parent}${point}configPieces -class Scidb]
 	set Widget(dialog) $dlg
 	bind $dlg <Escape> [namespace code [list DestroyDialog $dlg $size $resetCmd]]
 	bind $dlg <Destroy> [namespace code {

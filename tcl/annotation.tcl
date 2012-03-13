@@ -347,7 +347,7 @@ proc open {parent} {
 
 	set Vars(needUpdate) 1
 	set Vars(dialog) $dlg
-	toplevel $dlg -class Scidb -relief solid
+	tk::toplevel $dlg -class Scidb -relief solid
 	wm withdraw $dlg
 	set title "$::scidb::app: $mc::AnnotationEditor"
 

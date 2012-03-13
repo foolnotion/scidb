@@ -851,7 +851,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 
 	# toplevel
 	set point [expr {$parent eq "." ? "" : "."}]
-	set dlg [toplevel ${parent}${point}configSquares -class Scidb]
+	set dlg [tk::toplevel ${parent}${point}configSquares -class Scidb]
 	bind $dlg <Destroy> [namespace code {
 		if {"%W" eq [winfo toplevel %W]} {
 			unregisterSize [set [namespace parent]::designSize]

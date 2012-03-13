@@ -21,26 +21,36 @@
 #include "tcl_base.h"
 
 #include "m_utility.h"
+#include "m_backtrace.h"
+#include "m_sstream.h"
 
 #include <tcl.h>
 #include <tk.h>
 #include <string.h>
+#include <stdio.h>
 
 #if !defined(WIN32) && !defined(__MacOSX__)
 
+#ifdef override
+# undef override
+#endif
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xproto.h>
+#include <X11/Xlibint.h>
 
 using namespace tcl;
 
 static Tcl_Command tk_cmd = 0;
 static char const* Command = "::scidb::tk::x11";
+static XErrorHandler xErrorHandler = 0;
 
 
 static int
 cmdX11(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* Usage =	"Usage: ::scidb::tk::x22 region <x> <y> <photo>";
+	char const* Usage =	"Usage: ::scidb::tk::x11 region <x> <y> <photo>";
 
 	if (objc != 5)
 	{
@@ -152,9 +162,32 @@ cmdX11(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+handleXErrorMessage(Display *dpy, XErrorEvent *event)
+{
+	// a BadWindow due to X_SendEvent is likely due to XDND
+	if (event->error_code == BadWindow && event->request_code == X_SendEvent)
+		return 0;
+
+	mstl::backtrace bt;
+	mstl::ostringstream strm;
+
+	strm.write("\n", 1);
+	strm.format("=== Backtrace ============================================\n");
+	bt.text_write(strm, 3);
+	strm.format("==========================================================\n");
+	fprintf(stderr, "%s", strm.str().c_str());
+
+	::xErrorHandler(dpy, event);
+
+	return event->error_code != BadImplementation;
+}
+
+
 void
 tk::x11_init(Tcl_Interp* ti)
 {
+	::xErrorHandler = XSetErrorHandler(handleXErrorMessage);
 	tk_cmd = Tcl_CreateObjCommand(ti, ::Command, cmdX11, 0, 0);
 }
 

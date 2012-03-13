@@ -31,6 +31,7 @@
 ### global #############################################################
 ::mc::SortMapping		{Ä ae ä ae Ö Oe ö oe Ü Ue ü ue ß ss Å A å a  Ã A  ã a  é e  è e  ø oe ì i  Ì i}
 ::mc::AsciiMapping	{Ä a  ä a  Ö O  ö o  Ü U  ü u  ß ss Å A å a  Ã A  ã a  é e  è e  ø o  ì i  Ì i}
+::mc::SortOrder		{a å b c d e f g h i ì j k l m n o p q r s t u v w x y z A Å B C D E F G H I Ì J K L M N O P Q R S T U V W X Y Z}
 
 ::mc::Alignment		"Ausrichtung"
 ::mc::Apply				"Anwenden"
@@ -730,6 +731,10 @@
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Teilnehmerzahl"
+
+### twm - tiled window manager #########################################
+::twm::mc::Undock	"Abkopplen"
+::twm::mc::Close	"Schliessen"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"

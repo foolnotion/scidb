@@ -65,6 +65,22 @@ typedef struct Busy {
     Tk_OptionTable optionTable;
 } Busy;
 
+static inline Window
+GetParent(
+    Display *display,
+    Window window)
+{
+    Window root, parent;
+    Window *dummy;
+    unsigned int count;
+
+    if (XQueryTree(display, window, &root, &parent, &dummy, &count) > 0) {
+        XFree(dummy);
+        return parent;
+    }
+    return None;
+}
+
 #ifdef WIN32
 
 static void
@@ -170,40 +186,28 @@ ScMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 static void
 ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
 {
+# error "not yet implemented"
 }
 
 static void
 ScShowBusyWindow(Busy* busy)
 {
+# error "not yet implemented"
 }
 
 static void
 ScHideBusyWindow(Busy* busy)
 {
+# error "not yet implemented"
 }
 
 static void
 ScMakeTransparentWindowExist(Tk_Window tkwin, Window parent)
 {
+# error "not yet implemented"
 }
 
 #else // defined (__unix__)
-
-static inline Window
-GetParent(
-    Display *display,
-    Window window)
-{
-    Window root, parent;
-    Window *dummy;
-    unsigned int count;
-
-    if (XQueryTree(display, window, &root, &parent, &dummy, &count) > 0) {
-	XFree(dummy);
-	return parent;
-    }
-    return None;
-}
 
 static void
 ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)

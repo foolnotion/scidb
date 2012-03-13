@@ -382,7 +382,7 @@ proc Build {dlg base position number} {
 	set Priv(twoRatings) $twoRatings
 	set Priv(format) [expr {$twoRatings ? "sci" : "si3"}]
 
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 
 	set top [ttk::frame $dlg.top -takefocus 0]

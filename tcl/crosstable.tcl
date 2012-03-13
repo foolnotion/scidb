@@ -268,7 +268,7 @@ proc open {parent base index view source} {
 	set Vars(typeList) {}
 	set Vars(scoringList) {}
 
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W 1]]
 	wm withdraw $dlg
 
@@ -817,7 +817,7 @@ proc ShowTrace {which} {
 		$txt configure -state normal
 		$txt delete 1.0 end
 	} else {
-		toplevel $dlg -class Scidb
+		tk::toplevel $dlg -class Scidb
 		set f [::ttk::frame $dlg.f]
 
 		tk::text $f.text \

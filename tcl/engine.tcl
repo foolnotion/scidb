@@ -34,7 +34,7 @@ proc choose {parent} {
 	global photo_Engine
 
 	set dlg $parent.chooseEngine
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
 	pack $top

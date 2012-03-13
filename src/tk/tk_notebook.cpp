@@ -83,15 +83,21 @@ typedef struct Slave
     Tk_Window	tkwin;		// Window being managed.
     Tcl_Obj*	widthObj;	// Tcl_Obj rep's of slave width, to allow for null values.
 	 Tcl_Obj*	heightObj;	// Tcl_Obj rep's of slave height, to allow for null values.
+	 Tcl_Obj*	minwidthObj;
+	 Tcl_Obj*	minheightObj;
 	 Tcl_Obj*	underlineObj;
 	 Tcl_Obj*	paddingObj;
 	 Tcl_Obj*	textObj;
 	 Padding		padding;
     int			width;		// Slave width.
     int			height;		// Slave height.
-	 int			state;		// Either TK_STATE_NORMAL, TK_STATE_DISABLED, or TK_STATE_HIDDEN.
+	 int			minwidth;
+	 int			minheight;
     int			sticky;		// Sticky string.
     int			hide;			// Controls visibility of pane.
+	 int			tabWidth;
+	 int			textWidth;
+	 int			textHeight;
     Tk_Window	after;		// Placeholder for parsing options.
     Tk_Window	before;		// Placeholder for parsing options.
 
@@ -109,7 +115,13 @@ typedef struct Notebook
     Tcl_Command		widgetCmd;		// Token for square's widget command.
     Tk_OptionTable	optionTable;	// Token representing the configuration * specifications.
 	 Tk_OptionTable	paneOptions;
+	 Tk_Font				tkfont;			// Specifies font to use for display tab text.
+	 XColor*				normalFg;		// Specifies foreground color in normal mode.
+	 XColor*				disabledFg;		// Specifies foreground color when disabled..
+	 XColor*				highlightBgColor;
+	 XColor*				highlightFgColor;
     Tk_3DBorder		background;		// Background color.
+	 Tk_3DBorder		tabBackground;	// Background color for tab label box.
     int					borderWidth;	// Value of -borderwidth option.
     int					relief;			// 3D border effect (TK_RELIEF_RAISED, etc)
     Tcl_Obj*			widthObj;		// Tcl_Obj rep for width.
@@ -118,11 +130,17 @@ typedef struct Notebook
 	 Padding				padding;
     int					width;			// Width of the widget.
 	 int					height;			// Height of the widget.
+	 int					tabHeight;
     Tk_Cursor			cursor;			// Current cursor for window, or None.
     GC					gc;				// Graphics context for copying from off-screen pixmap onto screen.
+	 GC					tabGC;			// Graphics context for label box.
+	 GC					disabledGC;		// Graphics context for disabled text.
+	 GC					highlightGC;	// Graphics context for selected tab.
     Slave**				slaves;			// Pointer to array of Slaves.
     int					numSlaves;		// Number of slaves.
 	 int					overlay;			// Overlay flag.
+	 int					currentIndex;	// Index of selected tab.
+	 int					state;			// Either TK_STATE_NORMAL, or TK_STATE_DISABLED
     int					flags;			// Flags for widget; see below.
 }
 Notebook;
@@ -133,6 +151,9 @@ Notebook;
 // REDRAW_PENDING:		Non-zero means a DoWhenIdle handler has been
 //				queued to redraw this window.
 //
+// REDRAW_TABS_PENDING:	Non-zero means a DoWhenIdle handler has been
+//				queued to redraw the tabs of this window.
+//
 // WIDGET_DELETED:		Non-zero means that the notebook has been,
 //				or is in the process of being, deleted.
 //
@@ -141,11 +162,10 @@ Notebook;
 //				because of a change in the size of one of its
 //				children.
 #define REDRAW_PENDING			0x0001
-#define WIDGET_DELETED			0x0002
-#define REQUESTED_RELAYOUT		0x0004
-#define RECOMPUTE_GEOMETRY		0x0008
-#define PROXY_REDRAW_PENDING	0x0010
-#define RESIZE_PENDING			0x0020
+#define REDRAW_TABS_PENDING	0x0002
+#define WIDGET_DELETED			0x0004
+#define REQUESTED_RELAYOUT		0x0008
+#define RESIZE_PENDING			0x0010
 
 
 // declarations
@@ -205,14 +225,22 @@ static Tk_ObjCustomOption paddingOption =
 # error "unsupported platform"
 #endif
 
-#define DEF_NOTEBOOK_BG_COLOR		NORMAL_BG
-#define DEF_NOTEBOOK_BG_MONO		"#ffffff"
-#define DEF_NOTEBOOK_BORDERWIDTH	"1"
-#define DEF_NOTEBOOK_OVERLAY		"0"
-#define DEF_NOTEBOOK_CURSOR		""
-#define DEF_NOTEBOOK_HEIGHT		""
-#define DEF_NOTEBOOK_RELIEF		"flat"
-#define DEF_NOTEBOOK_WIDTH			""
+#define DEF_NOTEBOOK_BG_COLOR			"#d9d9d9"
+#define DEF_NOTEBOOK_TAB_BG_COLOR	"#efefef"
+#define DEF_NOTEBOOK_HIGHLIGHT_BG	"#678db2"
+#define DEF_NOTEBOOK_HIGHLIGHT_FG	"#ffffff"
+#define DEF_NOTEBOOK_BG_MONO			"#ffffff"
+#define DEF_NOTEBOOK_BORDERWIDTH		"1"
+#define DEF_NOTEBOOK_FONT				"TkDefaultFont"
+#define DEF_NOTEBOOK_OVERLAY			"0"
+#define DEF_NOTEBOOK_CURSOR			""
+#define DEF_NOTEBOOK_HEIGHT			""
+#define DEF_NOTEBOOK_RELIEF			"flat"
+#define DEF_NOTEBOOK_WIDTH				""
+
+static char const* stateStrings[] = {
+	"disabled", "normal", NULL
+};
 
 static const Tk_OptionSpec optionSpecs[] =
 {
@@ -229,10 +257,18 @@ static const Tk_OptionSpec optionSpecs[] =
    {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor",
 	 DEF_NOTEBOOK_CURSOR, -1, Tk_Offset(Notebook, cursor),
 	 TK_OPTION_NULL_OK, 0, 0},
+	{TK_OPTION_FONT, "-font", "font", "Font",
+	 DEF_NOTEBOOK_FONT, -1, Tk_Offset(Notebook, tkfont), 0, 0, 0},
    {TK_OPTION_PIXELS, "-height", "height", "Height",
 	 DEF_NOTEBOOK_HEIGHT, Tk_Offset(Notebook, heightObj),
 	 Tk_Offset(Notebook, height), TK_OPTION_NULL_OK, 0, GEOMETRY},
-	 {TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
+	{TK_OPTION_COLOR, "-highlightbackground", "highlightBackground", "HighlightBackground",
+	 DEF_NOTEBOOK_HIGHLIGHT_BG, -1,
+	 Tk_Offset(Notebook, highlightBgColor), 0, 0, 0},
+	{TK_OPTION_COLOR, "-highlightforeground", "highlightForeground", "HighlightForeground",
+	 DEF_NOTEBOOK_HIGHLIGHT_FG, -1,
+	 Tk_Offset(Notebook, highlightFgColor), 0, 0, 0},
+	{TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
 	 DEF_NOTEBOOK_OVERLAY, -1, Tk_Offset(Notebook, overlay),
 	 0, 0, 0},
 	{TK_OPTION_STRING, "-padding", "padding", "Padding", "0",
@@ -240,6 +276,11 @@ static const Tk_OptionSpec optionSpecs[] =
 	 (ClientData)&paddingOption, GEOMETRY },
    {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
 	 DEF_NOTEBOOK_RELIEF, -1, Tk_Offset(Notebook, relief), 0, 0, 0},
+	{TK_OPTION_STRING_TABLE, "-state", "", "",
+	 "normal", -1, Tk_Offset(Notebook, state), 0, ClientData(stateStrings), 0 },
+   {TK_OPTION_BORDER, "-tabbackground", "tabBackground", "TabBackground",
+	 DEF_NOTEBOOK_TAB_BG_COLOR, -1, Tk_Offset(Notebook, tabBackground),
+	 0, (ClientData)DEF_NOTEBOOK_BG_MONO},
    {TK_OPTION_PIXELS, "-width", "width", "Width",
 	 DEF_NOTEBOOK_WIDTH, Tk_Offset(Notebook, widthObj),
 	 Tk_Offset(Notebook, width), TK_OPTION_NULL_OK, 0, GEOMETRY},
@@ -250,14 +291,10 @@ static const Tk_OptionSpec optionSpecs[] =
 #define DEF_NOTEBOOK_PANE_AFTER		""
 #define DEF_NOTEBOOK_PANE_BEFORE		""
 #define DEF_NOTEBOOK_PANE_HEIGHT		""
-#define DEF_NOTEBOOK_PANE_HIDE			"0"
-#define DEF_NOTEBOOK_PANE_STICKY	"nsew"
+#define DEF_NOTEBOOK_PANE_HIDE		"0"
+#define DEF_NOTEBOOK_PANE_STICKY		"nsew"
 #define DEF_NOTEBOOK_PANE_UNDERLINE	"-1"
 #define DEF_NOTEBOOK_PANE_WIDTH		""
-
-static char *stateStrings[] = {
-	"disabled", "normal", "hidden", NULL
-};
 
 static const Tk_OptionSpec paneOptionSpecs[] =
 {
@@ -270,17 +307,21 @@ static const Tk_OptionSpec paneOptionSpecs[] =
    {TK_OPTION_PIXELS, "-height", nullptr, nullptr,
 	 DEF_NOTEBOOK_PANE_HEIGHT, Tk_Offset(Slave, heightObj),
 	 Tk_Offset(Slave, height), TK_OPTION_NULL_OK, 0, 0},
-	{TK_OPTION_STRING, "-padding", "padding", "Padding", "0",
+   {TK_OPTION_PIXELS, "-minwidth", nullptr, nullptr,
+	 "0", Tk_Offset(Slave, minwidthObj),
+	 Tk_Offset(Slave, minwidth), TK_OPTION_NULL_OK, 0, 0},
+   {TK_OPTION_PIXELS, "-minheight", nullptr, nullptr,
+	 "0", Tk_Offset(Slave, minheightObj),
+	 Tk_Offset(Slave, minheight), TK_OPTION_NULL_OK, 0, 0},
+	{TK_OPTION_STRING, "-padding", nullptr, nullptr, "0",
 	 Tk_Offset(Slave, paddingObj), -1, 0,
 	 (ClientData)&paddingOption, GEOMETRY },
-	{TK_OPTION_STRING_TABLE, "-state", "", "",
-	 "normal", -1, Tk_Offset(Slave, state), 0, ClientData(stateStrings), 0 },
    {TK_OPTION_CUSTOM, "-sticky", nullptr, nullptr,
 	 DEF_NOTEBOOK_PANE_STICKY, -1, Tk_Offset(Slave, sticky), 0,
 	 (ClientData)&stickyOption, GEOMETRY },
-	{TK_OPTION_STRING, "-text", "text", "Text", "",
+	{TK_OPTION_STRING, "-text", nullptr, nullptr, "",
 	 Tk_Offset(Slave,textObj), -1, 0, 0, GEOMETRY },
-	{TK_OPTION_INT, "-underline", "underline", "Underline",
+	{TK_OPTION_INT, "-underline", nullptr, nullptr,
 	 DEF_NOTEBOOK_PANE_UNDERLINE, Tk_Offset(Slave, underlineObj),
 	 -1, 0, 0, GEOMETRY },
    {TK_OPTION_PIXELS, "-width", nullptr, nullptr,
@@ -375,21 +416,21 @@ ComputeSlotAddress(	char* recordPtr,	// Pointer to the start of a record
 
 //----------------------------------------------------------------------
 //
-// GetPane --
+// GetIndex --
 //
 //	Given a token to a Tk window, find the pane that corresponds to that
 //	token in a given notebook.
 //
 // Results:
-//	Pointer to the slave structure, or nullptr if the window is not managed
+//	Index of the slave structure, or -1 if the window is not managed
 //	by this notebook.
 //
 // Side effects:
 //	None.
 //
 //----------------------------------------------------------------------
-static Slave*
-GetPane(	Notebook* nb,		// Pointer to the notebook info
+static int
+GetIndex(	Notebook* nb,		// Pointer to the notebook info
 			Tk_Window tkwin)	// Window to search for
 {
 	int i;
@@ -397,10 +438,10 @@ GetPane(	Notebook* nb,		// Pointer to the notebook info
 	for (i = 0; i < nb->numSlaves; i++)
 	{
 		if (nb->slaves[i]->tkwin == tkwin)
-			return nb->slaves[i];
+			return i;
 	}
 
-	return nullptr;
+	return -1;
 }
 
 
@@ -721,6 +762,49 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 
 //----------------------------------------------------------------------
 //
+// LayoutTabs --
+//
+//	Compute geometry for the tab labels.
+//
+// Results:
+//	None.
+//
+// Side effects:
+//	Stores results in slave structure.
+//
+//----------------------------------------------------------------------
+static void
+LayoutTabs(Notebook* nb)
+{
+	int i;
+	int textHeight;
+	Tk_FontMetrics fmt;
+	int tabHeight = 0;
+
+	Tk_GetFontMetrics(nb->tkfont, &fmt);
+	textHeight = fmt.linespace;
+
+	for (i = 0; i < nb->numSlaves; ++i)
+	{
+		Slave* slave = nb->slaves[i];
+
+		if (!slave->hide)
+		{
+			int len;
+			char const* str = Tcl_GetStringFromObj(slave->textObj, &len);
+			int textWidth = Tk_TextWidth(nb->tkfont, str, len);
+
+			slave->tabWidth = slave->padding.left + textWidth + slave->padding.right;
+			tabHeight = MAX(tabHeight, slave->padding.top + textHeight + slave->padding.bottom);
+		}
+	}
+
+	nb->tabHeight = tabHeight;
+}
+
+
+//----------------------------------------------------------------------
+//
 // ComputeTabrowSize --
 //
 //	Compute geometry for the tab row.
@@ -733,11 +817,23 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 //
 //----------------------------------------------------------------------
 static void
-ComputeTabrowSize(Notebook* nb, int* width, int* height)
+ComputeTabrowSize(Notebook* nb, int* width)
 {
-	/* TODO */
-	*width = 20;
-	*height = 20;
+	int i;
+	int tabWidth = 0;
+
+	if (nb->numSlaves > 0)
+		tabWidth += 2;
+
+	for (i = 0; i < nb->numSlaves; ++i)
+	{
+		Slave* slave = nb->slaves[i];
+
+		if (!slave->hide)
+			tabWidth += slave->tabWidth + 2;
+	}
+
+	*width = tabWidth;
 }
 
 
@@ -769,8 +865,7 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	int slaveHeight;
 	int slaveX;
 	int slaveY;
-	int tabrowWidth;
-	int tabrowHeight;
+//	int tabrowWidth;
 
 	Slave* slave;
 
@@ -779,13 +874,13 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	// "relinquish" control over the parent so another geometry manager can
 	// take over.
 
-	if (nb->numSlaves == 0 || nb->slaves[0]->hide)
+	if (nb->currentIndex == -1)
 		return;
 
 	Tcl_Preserve((ClientData)nb);
-	ComputeTabrowSize(nb, &tabrowWidth, &tabrowHeight);
+//	ComputeTabrowSize(nb, &tabrowWidth);
 
-	slave = nb->slaves[0];
+	slave = nb->slaves[nb->currentIndex];
 	doubleBw = 2*Tk_Changes(slave->tkwin)->border_width;
 
 	slaveX = nb->padding.left;
@@ -795,7 +890,7 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	paneWidth = (nb->width > 0 ? nb->width : Tk_Width(nb->tkwin));
 	paneHeight = (nb->height > 0 ? nb->height : Tk_Height(nb->tkwin));
 	paneWidth -= nb->padding.left + nb->padding.right;
-	paneHeight -= tabrowHeight + nb->padding.top - nb->padding.bottom;
+	paneHeight -= nb->tabHeight + nb->padding.top - nb->padding.bottom - 4;
 
 	AdjustForSticky(slave->sticky, paneWidth, paneHeight, &slaveX, &slaveY, &slaveWidth, &slaveHeight);
 
@@ -817,39 +912,37 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 //
 // RaiseSlave --
 //
-// Rotate slaves until wanted slave is at top.
+// Raise current tab.
 //
 //----------------------------------------------------------------------
 static void
 RaiseSlave(	Notebook* nb,	// Information about notebook
-				Slave* slave)	// New top slave, use first unhidden slave if zero
+				int index)		// New top slave, use first unhidden slave if -1
 {
-	int index = 0;
-	Slave** slaves;
+	Slave* slave;
 
-	if (slave == 0)
+	if (index == -1)
 	{
+		index = 0;
+
 		while (index < nb->numSlaves && nb->slaves[index]->hide)
 			index++;
 
-		if (index == 0)
+		if (index == nb->numSlaves)
 			return;
 	}
-	else
+
+	slave = nb->slaves[index];
+	slave->hide = 0;
+	nb->currentIndex = index;
+
+	ArrangePane(nb);
+
+	if (Tk_IsMapped(nb->tkwin))
 	{
-		slave->hide = 0;
-
-		while (nb->slaves[index] != slave)
-			index++;
+		Tk_RestackWindow(slave->tkwin, Above, nullptr);
+		Tk_MapWindow(slave->tkwin);
 	}
-
-	slaves = (Slave**)ckalloc(sizeof(Slave*)*nb->numSlaves);
-	memcpy(slaves, nb->slaves, sizeof(Slave*)*nb->numSlaves);
-
-	memcpy(nb->slaves, slaves + index, sizeof(Slave*)*(nb->numSlaves - index));
-	memcpy(nb->slaves + nb->numSlaves - index, slaves, sizeof(Slave*)*index);
-
-	ckfree((char*)slaves);
 }
 
 
@@ -862,16 +955,12 @@ RaiseSlave(	Notebook* nb,	// Information about notebook
 //----------------------------------------------------------------------
 static void
 UnmapSlave(	Notebook* nb,	// Information about notebook
-				Slave* slave)	// Slave to unmap, use first unhidden slave if zero
+				int index)		// Slave to unmap, use first unhidden slave if -1
 {
-	if (nb->overlay)
-		return;
-
-	if (slave == 0 && nb->numSlaves > 0 && !nb->slaves[0]->hide)
-		slave = nb->slaves[0];
-
-	if (slave)
+	if (!nb->overlay && index != -1)
 	{
+		Slave* slave = nb->slaves[index];
+
 		Tk_UnmaintainGeometry(slave->tkwin, nb->tkwin);
 		// Contrary to documentation, Tk_UnmaintainGeometry doesn't always unmap the slave:
 		Tk_UnmapWindow(slave->tkwin);
@@ -879,30 +968,203 @@ UnmapSlave(	Notebook* nb,	// Information about notebook
 }
 
 
-//----------------------------------------------------------------------
+//--------------------------------------------------------------
 //
-// PlaceSlave --
+// setSegment --
 //
-// Set the position and size of a child widget
-// based on the current client area and slave options.
+//	Set the values of XSegment structure.
 //
-//----------------------------------------------------------------------
+//--------------------------------------------------------------
 static void
-PlaceSlave(	Notebook* nb,		// Information about notebook
-				Slave* oldSlave)	// Previously mapped slave
+setSegment(XSegment* seg, int x1, int y1, int x2, int y2)
 {
-	if (nb->numSlaves > 0 && !nb->slaves[0]->hide)
+	seg->x1 = x1; seg->y1 = y1; seg->x2 = x2; seg->y2 = y2;
+}
+
+
+//--------------------------------------------------------------
+//
+// DrawTab --
+//
+//	This function draws a tab of a notebook widget.
+//
+// Results:
+//	None.
+//
+// Side effects:
+//	Information appears on the screen.
+//
+//--------------------------------------------------------------
+static void
+DrawTab(Slave* slave, Pixmap pixmap, int x, int y, int height, int selected)
+{
+	Notebook*	nb				= slave->master;
+	Tk_Window	tkwin			= nb->tkwin;
+	Display*		display		= Tk_Display(tkwin);
+	int			len;
+	char const*	str			= Tcl_GetStringFromObj(slave->textObj, &len);
+	int			underline	= -1;
+	int			width			= slave->tabWidth;
+	GC				gc;
+	GC				flatGC		= Tk_3DBorderGC(tkwin, nb->tabBackground, TK_3D_FLAT_GC);
+	XSegment		segments[5];
+
+	if (slave->underlineObj)
+		Tcl_GetIntFromObj(0, slave->underlineObj, &underline);
+
+	gc = selected && nb->state == TK_STATE_NORMAL ? nb->highlightGC : nb->tabGC;
+	XFillRectangle(display, pixmap, gc, x, y, width - 1, height - 1);
+
+	// draw frame
+	setSegment(segments + 0, x,					y,				x + width,		y);					// top
+	setSegment(segments + 1, MAX(x - 1, 0),	y + height,	x + width - 2,	y + height);		// bottom
+	setSegment(segments + 2, x,					y,				x,					y + height);		// left
+	setSegment(segments + 3, x + width,			y,				x + width,		y + height - 2);	// right
+	setSegment(segments + 4, x + width - 2,	y + height,	x + width,		y + height - 2);	// edge
+
+	XDrawSegments(display, pixmap, flatGC, segments, 5);
+
+	if (selected && nb->state == TK_STATE_NORMAL)
 	{
-		ArrangePane(nb);
+		setSegment(segments + 0, x + 1,		y,				x + width - 1,	y);					// top
+		setSegment(segments + 1, x + 1,		y + height,	x + width - 1,	y + height);		// bottom
+		setSegment(segments + 2, x,			y + 1,		x,					y + height - 1);	// left
+		setSegment(segments + 3, x + width,	y + 1,		x + width,		y + height - 1);	// right
 
-		if (Tk_IsMapped(nb->tkwin))
+		XDrawSegments(display, pixmap, nb->gc, segments, 4);
+	}
+
+	// draw content
+	if (nb->state == TK_STATE_DISABLED)
+		gc = nb->disabledGC;
+	else if (selected)
+		gc = nb->highlightGC;
+	else
+		gc = nb->gc;
+
+	x += slave->padding.left + 2;
+	y += slave->padding.top + 2;
+
+	Tk_DrawChars(display, pixmap, gc, nb->tkfont, str, len, x, y);
+
+	if (underline >= 0)
+		Tk_UnderlineChars(display, pixmap, gc, nb->tkfont, str, x, y, underline, underline + 1);
+}
+
+
+//--------------------------------------------------------------
+//
+// DrawTabs --
+//
+//	This function draws the tabs of a notebook widget.
+//
+// Results:
+//	None.
+//
+// Side effects:
+//	Information appears on the screen.
+//
+//--------------------------------------------------------------
+static void
+DrawTabs(Notebook* nb, Pixmap pixmap, int x, int y, int width, int height)
+{
+	int cx;
+	int i;
+
+	for (i = 0; i < nb->numSlaves; ++i)
+	{
+		Slave* slave = nb->slaves[i];
+
+		if (!slave->hide)
 		{
-			Slave* slave = nb->slaves[0];
+			if (i == nb->currentIndex)
+				cx = x;
+			else
+				DrawTab(slave, pixmap, x, y, height, 0);
 
-			Tk_RestackWindow(slave->tkwin, Above, nullptr);
-			Tk_MapWindow(slave->tkwin);
+			x += slave->tabWidth + 2;
 		}
 	}
+
+	if (nb->currentIndex != -1)
+		DrawTab(nb->slaves[nb->currentIndex], pixmap, cx, y, height, 1);
+}
+
+
+//--------------------------------------------------------------
+//
+// DisplayTabs --
+//
+//	This function redraws the tabs of a notebook widget. It is
+//	invoked as a do-when-idle handler, so it only runs when there's
+//	nothing else for the application to do.
+//
+// Results:
+//	None.
+//
+// Side effects:
+//	Information appears on the screen.
+//
+//--------------------------------------------------------------
+static void
+DisplayTabs(ClientData clientData)	// Information about window
+{
+	Notebook*	nb		= (Notebook*)clientData;
+	Tk_Window	tkwin	= nb->tkwin;
+	int			x;
+	int			y;
+	int			width;
+	int			height;
+
+	nb->flags &= ~REDRAW_TABS_PENDING;
+	if ((nb->tkwin == nullptr) || !Tk_IsMapped(tkwin))
+		return;
+
+	x = nb->borderWidth + nb->padding.left;
+	y = Tk_Height(tkwin) - nb->tabHeight - nb->padding.bottom - nb->borderWidth;
+
+	width = Tk_Width(tkwin) - nb->padding.left - nb->padding.right - 2*nb->borderWidth;
+	height = nb->tabHeight;
+
+#ifdef TK_NO_DOUBLE_BUFFERING
+
+	XClearArea(	Tk_Display(tkwin),
+					Tk_WindowId(tkwin),
+					x,
+					y,
+					width,
+					height,
+					False);
+
+	DrawTabs(nb, pixmap, x, y, width, height);
+
+#else
+	{
+		// Create a pixmap for double-buffering.
+		Pixmap pixmap = Tk_GetPixmap(	Tk_Display(tkwin),
+												Tk_WindowId(tkwin),
+												width,
+												height,
+												Tk_Depth(tkwin));
+
+		DrawTabs(nb, pixmap, 0, 0, width, height);
+
+		// Copy the information from the off-screen pixmap onto the screen, then
+		// delete the pixmap.
+
+		XCopyArea(	Tk_Display(tkwin),
+						pixmap,
+						Tk_WindowId(tkwin),
+						nb->gc,
+						0,
+						0,
+						width,
+						height,
+						x,
+						y);
+		Tk_FreePixmap(Tk_Display(tkwin), pixmap);
+	}
+#endif /* TK_NO_DOUBLE_BUFFERING */
 }
 
 
@@ -927,13 +1189,25 @@ DisplayNotebook(ClientData clientData)	// Information about window
 	Notebook*	nb			= (Notebook*)clientData;
 	Tk_Window	tkwin		= nb->tkwin;
 	Pixmap		pixmap;
+	int			x;
+	int			y;
+	int			width;
+	int			height;
 
-	nb->flags &= ~REDRAW_PENDING;
+	if (nb->flags & REDRAW_TABS_PENDING)
+		Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+
+	nb->flags &= ~(REDRAW_PENDING | REDRAW_TABS_PENDING);
 	if ((nb->tkwin == nullptr) || !Tk_IsMapped(tkwin))
 		return;
 
 	if (nb->flags & REQUESTED_RELAYOUT)
 		ArrangePane(clientData);
+
+	x = nb->borderWidth + nb->padding.left;
+	y = Tk_Height(tkwin) - nb->tabHeight - nb->padding.bottom - nb->borderWidth;
+	width = Tk_Width(tkwin) - nb->padding.left - nb->padding.right - 2*nb->borderWidth;
+	height = nb->tabHeight;
 
 #ifndef TK_NO_DOUBLE_BUFFERING
 	// Create a pixmap for double-buffering, if necessary.
@@ -944,6 +1218,14 @@ DisplayNotebook(ClientData clientData)	// Information about window
 									Tk_Depth(tkwin));
 #else
 	pixmap = Tk_WindowId(tkwin);
+
+	XClearArea(	Tk_Display(tkwin),
+					Tk_WindowId(tkwin),
+					x,
+					y,
+					width,
+					height,
+					False);
 #endif
 
 	// Redraw the widget's background and border.
@@ -956,6 +1238,8 @@ DisplayNotebook(ClientData clientData)	// Information about window
 								Tk_Height(tkwin),
 								nb->borderWidth,
 								nb->relief);
+
+	DrawTabs(nb, pixmap, x, y, width, height);
 
 #ifndef TK_NO_DOUBLE_BUFFERING
 	// Copy the information from the off-screen pixmap onto the screen, then
@@ -998,11 +1282,12 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 	int clientHeight	= 0;
 	int reqWidth		= 0;
 	int reqHeight		= 0;
+	int minWidth		= 0;
+	int minHeight		= 0;
 	int tabrowWidth;
-	int tabrowHeight;
 	int internalBw;
 
-	ComputeTabrowSize(nb, &tabrowWidth, &tabrowHeight);
+	ComputeTabrowSize(nb, &tabrowWidth);
 
 	nb->flags |= REQUESTED_RELAYOUT;
 
@@ -1022,6 +1307,9 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 
 			clientWidth = MAX(clientWidth, slaveWidth);
 			clientHeight = MAX(clientHeight, slaveHeight);
+
+			minWidth = MAX(minWidth, nb->slaves[i]->minwidth);
+			minHeight = MAX(minHeight, nb->slaves[i]->minheight);
 		}
 	}
 
@@ -1037,8 +1325,11 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 
 	internalBw = Tk_InternalBorderWidth(nb->tkwin);
 
+	clientWidth = MAX(clientWidth, minWidth);
+	clientHeight = MAX(clientHeight, minHeight);
+
 	clientWidth += internalBw;
-	clientHeight += internalBw + tabrowHeight;
+	clientHeight += internalBw + nb->tabHeight + 4;
 
 	clientWidth = MAX(clientWidth, tabrowWidth);
 	Tk_GeometryRequest(nb->tkwin, clientWidth, clientHeight);
@@ -1047,6 +1338,12 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 	{
 		nb->flags |= REDRAW_PENDING;
 		Tcl_DoWhenIdle(DisplayNotebook, (ClientData)nb);
+
+		if (nb->flags & REDRAW_TABS_PENDING)
+		{
+			Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+			nb->flags &= ~REDRAW_TABS_PENDING;
+		}
 	}
 }
 
@@ -1067,48 +1364,54 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 static void
 Unlink(Slave* slave)		// Window to unlink
 {
-	Notebook *master = slave->master;
+	Notebook *nb = slave->master;
 	int i;
 
-	if (master == nullptr)
+	if (nb == nullptr)
 		return;
 
 	// Find the specified slave in the notebook's list of slaves, then
 	// remove it from that list.
 
-	for (i = 0; i < master->numSlaves; i++)
+	for (i = 0; i < nb->numSlaves; i++)
 	{
-		if (master->slaves[i] == slave)
+		if (nb->slaves[i] == slave)
 		{
-			memmove(master->slaves + i, master->slaves + i + 1, sizeof(Slave*)*(master->numSlaves - i - 1));
+			memmove(nb->slaves + i, nb->slaves + i + 1, sizeof(Slave*)*(nb->numSlaves - i - 1));
 			break;
 		}
 	}
 
 	// Clean out any -after or -before references to this slave
 
-	for (i = 0; i < master->numSlaves; i++)
+	for (i = 0; i < nb->numSlaves; i++)
 	{
-		if (master->slaves[i]->before == slave->tkwin)
-			master->slaves[i]->before = None;
+		if (nb->slaves[i]->before == slave->tkwin)
+			nb->slaves[i]->before = None;
 
-		if (master->slaves[i]->after == slave->tkwin)
-			master->slaves[i]->after = None;
+		if (nb->slaves[i]->after == slave->tkwin)
+			nb->slaves[i]->after = None;
 	}
 
-	master->flags |= REQUESTED_RELAYOUT;
+	nb->flags |= REQUESTED_RELAYOUT;
 
-	if (!(master->flags & REDRAW_PENDING))
+	if (Tk_IsMapped(nb->tkwin) && !(nb->flags & REDRAW_PENDING))
 	{
-		master->flags |= REDRAW_PENDING;
-		Tcl_DoWhenIdle(DisplayNotebook, (ClientData)master);
+		nb->flags |= REDRAW_PENDING;
+		Tcl_DoWhenIdle(DisplayNotebook, (ClientData)nb);
+
+		if (nb->flags & REDRAW_TABS_PENDING)
+		{
+			Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+			nb->flags &= ~REDRAW_TABS_PENDING;
+		}
 	}
 
-	// Set the slave's master to nullptr, so that we can tell that the slave
+	// Set the slave's nb to nullptr, so that we can tell that the slave
 	// is no longer attached to any notebook.
 
 	slave->master = nullptr;
-	master->numSlaves--;
+	nb->numSlaves--;
 }
 
 
@@ -1335,6 +1638,12 @@ ConfigureSlaves(	Notebook* nb,				// Information about notebook
 		{
 			if (nb->slaves[j] != nullptr && nb->slaves[j]->tkwin == tkwin)
 			{
+				::memset(nb->slaves[j], 0, sizeof(Slave));
+				nb->slaves[j]->padding.left = 4;
+				nb->slaves[j]->padding.top = 2;
+				nb->slaves[j]->padding.right = 4;
+				nb->slaves[j]->padding.bottom = 2;
+
 				Tk_SetOptions(	interp,
 									(char*)nb->slaves[j],
 									nb->paneOptions,
@@ -1478,18 +1787,40 @@ static void
 NotebookWorldChanged(ClientData instanceData)	// Information about the notebook
 {
 	XGCValues	gcValues;
-	GC				newGC;
 	Notebook*	nb = (Notebook*)instanceData;
 
 	// Allocated a graphics context for drawing the notebook widget
 	// elements (background, sashes, etc.) and set the window background.
-
+	gcValues.font = Tk_FontId(nb->tkfont);
+	gcValues.foreground = nb->normalFg->pixel;
 	gcValues.background = Tk_3DBorderColor(nb->background)->pixel;
-	newGC = Tk_GetGC(nb->tkwin, GCBackground, &gcValues);
 	if (nb->gc != None)
 		Tk_FreeGC(Tk_Display(nb->tkwin), nb->gc);
-	nb->gc = newGC;
+	nb->gc = Tk_GetGC(nb->tkwin, GCForeground | GCBackground | GCFont, &gcValues);
 	Tk_SetWindowBackground(nb->tkwin, gcValues.background);
+
+	// Allocate the disabled graphics context, for drawing text in its
+	// disabled state.
+	if (nb->disabledFg)
+		gcValues.foreground = nb->disabledFg->pixel;
+	else
+		gcValues.foreground = gcValues.background;
+	if (nb->disabledGC != None)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->disabledGC);
+	nb->disabledGC = Tk_GetGC(nb->tkwin, GCForeground | GCBackground | GCFont, &gcValues);
+
+	// Allocate the label box graphics context.
+	if (nb->tabGC != None)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->tabGC);
+	gcValues.background = Tk_3DBorderColor(nb->tabBackground)->pixel;
+	nb->tabGC = Tk_GetGC(nb->tkwin, GCBackground, &gcValues);
+
+	// Allocate the highlight graphics context
+	gcValues.foreground = nb->highlightFgColor->pixel;
+	gcValues.background = nb->highlightBgColor->pixel;
+	if (nb->highlightGC != None)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->highlightGC);
+	nb->highlightGC = Tk_GetGC(nb->tkwin, GCForeground | GCBackground | GCFont, &gcValues);
 
 	// Issue geometry size requests to Tk.
 
@@ -1503,6 +1834,12 @@ NotebookWorldChanged(ClientData instanceData)	// Information about the notebook
 	{
 		Tcl_DoWhenIdle(DisplayNotebook, (ClientData)nb);
 		nb->flags |= REDRAW_PENDING;
+
+		if (nb->flags & REDRAW_TABS_PENDING)
+		{
+			Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+			nb->flags &= ~REDRAW_TABS_PENDING;
+		}
 	}
 }
 
@@ -1560,6 +1897,50 @@ ConfigureNotebook(Tcl_Interp* interp,		// Used for error reporting
 
 //--------------------------------------------------------------
 //
+// IdentifyTab --
+//
+//	Return the index of the tab at point x,y,
+//	or -1 if no tab at that point.
+//
+// Results:
+//	An integer value.
+//
+// Side effects:
+//	None.
+//
+//--------------------------------------------------------------
+static int
+IdentifyTab(Notebook* nb, int x, int y)
+{
+	int x0 = Tk_X(nb->tkwin) + nb->padding.left + 1;
+	int y0 = Tk_Y(nb->tkwin) + Tk_Height(nb->tkwin) - nb->tabHeight - nb->padding.bottom + 1;
+
+	if (x0 <= x && y0 <= y && y < y0 + nb->tabHeight + 1)
+	{
+		int index;
+
+		for (index = 0; index < nb->numSlaves; ++index)
+		{
+			Slave* slave = nb->slaves[index];
+
+			if (!slave->hide)
+			{
+				x0 += slave->tabWidth;
+
+				if (x < x0 + 1)
+					return index;
+
+				x0 += 2;
+			}
+		}
+	}
+
+	return -1;
+}
+
+
+//--------------------------------------------------------------
+//
 // NotebookWidgetObjCmd --
 //
 //	This function is invoked to process the Tcl command that corresponds
@@ -1581,13 +1962,13 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 {
 	static const char *optionStrings[] =
 	{
-		"add", "cget", "configure", "forget", "panecget",
-		"paneconfigure", "panes", "raise", "unmap", nullptr,
+		"add", "cget", "configure", "forget", "hide", "identify",
+		"panecget", "paneconfigure", "panes", "select", nullptr,
 	};
 	enum options
 	{
-		MW_ADD, MW_CGET, MW_CONFIGURE, MW_FORGET, MW_PANECGET,
-		MW_PANECONFIGURE, MW_PANES, MW_RAISE, MW_UNMAP,
+		NB_ADD, NB_CGET, NB_CONFIGURE, NB_FORGET, NB_HIDE, NB_IDENTIFY,
+		NB_PANECGET, NB_PANECONFIGURE, NB_PANES, NB_SELECT,
 	};
 
 	Notebook*	nb				= (Notebook*)clientData;
@@ -1609,7 +1990,7 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 
 	switch ((enum options)index)
 	{
-		case MW_ADD:
+		case NB_ADD:
 			if (objc < 3)
 			{
 				Tcl_WrongNumArgs(interp, 2, objv, "widget ?widget ...?");
@@ -1617,11 +1998,31 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			}
 			else
 			{
-				result = ConfigureSlaves(nb, interp, objc, objv);
+				Tk_Window slaveWindow = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
+
+				if (!slaveWindow)
+				{
+					result = ConfigureSlaves(nb, interp, objc, objv);
+				}
+				else
+				{
+					int index = GetIndex(nb, slaveWindow);
+
+					if (index != -1 && nb->slaves[index]->hide)
+					{
+						 nb->slaves[index]->hide = 0;
+
+						if (Tk_IsMapped(nb->tkwin) && !(nb->flags & (REDRAW_PENDING | REDRAW_TABS_PENDING)))
+						{
+							Tcl_DoWhenIdle(DisplayTabs, (ClientData)nb);
+							nb->flags |= REDRAW_TABS_PENDING;
+						}
+					}
+				}
 			}
 			break;
 
-		case MW_CGET:
+		case NB_CGET:
 			if (objc != 3)
 			{
 				Tcl_WrongNumArgs(interp, 2, objv, "option");
@@ -1629,11 +2030,11 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			}
 			else
 			{
-				resultObj = Tk_GetOptionValue(	interp,
-															(char*)nb,
-															nb->optionTable,
-															objv[2],
-															nb->tkwin);
+				resultObj = Tk_GetOptionValue(interp,
+														(char*)nb,
+														nb->optionTable,
+														objv[2],
+														nb->tkwin);
 				if (resultObj == nullptr)
 					result = TCL_ERROR;
 				else
@@ -1641,8 +2042,7 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			}
 			break;
 
-		case MW_CONFIGURE:
-			resultObj = nullptr;
+		case NB_CONFIGURE:
 			if (objc <= 3)
 			{
 				resultObj = Tk_GetOptionInfo(	interp,
@@ -1661,7 +2061,7 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			}
 			break;
 
-		case MW_FORGET:
+		case NB_FORGET:
 			if (objc < 3)
 			{
 				Tcl_WrongNumArgs(interp, 2, objv, "widget ?widget ...?");
@@ -1680,19 +2080,26 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 
 						if (slaveWindow)
 						{
-							Slave* slave = GetPane(nb, slaveWindow);
+							int index = GetIndex(nb, slaveWindow);
 
-							if (slave == nb->slaves[0])
+							if (index != -1)
 							{
-								int nextVisible = 1;
+								int nextVisible = index + 1;
 
-								while (nextVisible < nb->numSlaves && !nb->slaves[nextVisible]->hide)
+								while (nextVisible < nb->numSlaves && nb->slaves[nextVisible]->hide)
 									++nextVisible;
 
-								if (nextVisible < nb->numSlaves)
+								if (nextVisible == nb->numSlaves)
 								{
-									RaiseSlave(nb, nb->slaves[nextVisible]);
-									PlaceSlave(nb, slave);
+									nextVisible = 0;
+
+									while (nextVisible < index && nb->slaves[nextVisible]->hide)
+										++nextVisible;
+								}
+
+								if (nextVisible != index)
+								{
+									RaiseSlave(nb, nextVisible);
 									SendVirtualEvent(nb->tkwin, "NotebookTabChanged");
 								}
 							}
@@ -1707,25 +2114,57 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 
 					if (slaveWindow)
 					{
-						Slave* slave = GetPane(nb, slaveWindow);
+						int index = GetIndex(nb, slaveWindow);
 
-						if (slave && slave->master)
+						if (index != -1)
 						{
-							Tk_ManageGeometry(slaveWindow, nullptr, (ClientData)nullptr);
-							Tk_UnmaintainGeometry(slave->tkwin, nb->tkwin);
-							Tk_DeleteEventHandler(	slave->tkwin,
-															StructureNotifyMask,
-															SlaveStructureProc,
-															(ClientData)slave);
-							Tk_UnmapWindow(slave->tkwin);
-							Unlink(slave);
+							Slave* slave = nb->slaves[index];
+
+							if (slave->master)
+							{
+								Tk_ManageGeometry(slaveWindow, nullptr, (ClientData)nullptr);
+								Tk_UnmaintainGeometry(slave->tkwin, nb->tkwin);
+								Tk_DeleteEventHandler(	slave->tkwin,
+																StructureNotifyMask,
+																SlaveStructureProc,
+																(ClientData)slave);
+								Tk_UnmapWindow(slave->tkwin);
+								Unlink(slave);
+							}
 						}
 					}
 				}
 			}
 			break;
 
-			case MW_PANECGET:
+			case NB_IDENTIFY:
+				if (objc != 4)
+				{
+					Tcl_WrongNumArgs(interp, 2, objv, "x y");
+					result = TCL_ERROR;
+				}
+				else
+				{
+					int x, y;
+					int tabIndex;
+
+					if (	Tcl_GetIntFromObj(interp, objv[2], &x) != TCL_OK
+						|| Tcl_GetIntFromObj(interp, objv[3], &y) != TCL_OK)
+					{
+						return TCL_ERROR;
+					}
+
+					tabIndex = IdentifyTab(nb, x, y);
+
+					if (tabIndex >= 0)
+					{
+						Tcl_ResetResult(interp);
+						Tcl_AppendResult(interp, Tk_PathName(nb->slaves[tabIndex]->tkwin));
+					}
+				}
+				break;
+
+			case NB_PANECGET:
 				if (objc != 4)
 				{
 					Tcl_WrongNumArgs(interp, 2, objv, "pane option");
@@ -1766,46 +2205,41 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 				}
 				break;
 
-		case MW_PANECONFIGURE:
+		case NB_PANECONFIGURE:
 			if (objc < 3)
 			{
 				Tcl_WrongNumArgs(interp, 2, objv, "pane ?option? ?value option value ...?");
 				result = TCL_ERROR;
 			}
-			else
+			else if (objc <= 4)
 			{
-				resultObj = nullptr;
+				Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
 
-				if (objc <= 4)
+				for (i = 0; i < nb->numSlaves; i++)
 				{
-					Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
-
-					for (i = 0; i < nb->numSlaves; i++)
+					if (nb->slaves[i]->tkwin == tkwin)
 					{
-						if (nb->slaves[i]->tkwin == tkwin)
-						{
-							resultObj = Tk_GetOptionInfo(	interp,
-																	(char*)nb->slaves[i],
-																	nb->paneOptions,
-																	objc == 4 ? objv[3] : nullptr,
-																	nb->tkwin);
-							if (resultObj == nullptr)
-								result = TCL_ERROR;
-							else
-								Tcl_SetObjResult(interp, resultObj);
+						resultObj = Tk_GetOptionInfo(	interp,
+																(char*)nb->slaves[i],
+																nb->paneOptions,
+																objc == 4 ? objv[3] : nullptr,
+																nb->tkwin);
+						if (resultObj == nullptr)
+							result = TCL_ERROR;
+						else
+							Tcl_SetObjResult(interp, resultObj);
 
-							break;
-						}
+						break;
 					}
 				}
-				else
-				{
-					result = ConfigureSlaves(nb, interp, objc, objv);
-				}
+			}
+			else
+			{
+				result = ConfigureSlaves(nb, interp, objc, objv);
 			}
 			break;
 
-		case MW_PANES:
+		case NB_PANES:
 			resultObj = Tcl_NewObj();
 			Tcl_IncrRefCount(resultObj);
 
@@ -1819,7 +2253,7 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			Tcl_DecrRefCount(resultObj);
 			break;
 
-		case MW_RAISE:
+		case NB_SELECT:
 			if (objc != 3)
 			{
 				Tcl_WrongNumArgs(interp, 2, objv, "widget");
@@ -1829,47 +2263,32 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			{
 				Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
 
-				if (nb->numSlaves > 0 && nb->slaves[0]->tkwin != tkwin)
+				if (tkwin)
 				{
-					Slave* slave	= nb->slaves[0];
-					Slave* visible	= GetPane(nb, tkwin);
+					int index = GetIndex(nb, tkwin);
 
-					if (visible)
+					if (index != -1 && nb->currentIndex != index)
 					{
-						RaiseSlave(nb, visible);
-						PlaceSlave(nb, slave);
-						UnmapSlave(nb, slave);
+						RaiseSlave(nb, index);
+						UnmapSlave(nb, nb->currentIndex);
 						SendVirtualEvent(nb->tkwin, "NotebookTabChanged");
 					}
 				}
 			}
 			break;
 
-		case MW_UNMAP:
-			if (objc < 3)
+		case NB_HIDE:
+			if (objc != 3)
 			{
-				Tcl_WrongNumArgs(interp, 2, objv, "widget ?widget ...?");
+				Tcl_WrongNumArgs(interp, 2, objv, "widget");
 				result = TCL_ERROR;
 			}
 			else
 			{
-				int i;
+				Tk_Window tkwin = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
 
-				for (i = 2; i < objc; i++)
-				{
-					Tk_Window slaveWindow = Tk_NameToWindow(interp, Tcl_GetString(objv[i]), nb->tkwin);
-
-					if (slaveWindow)
-					{
-						Slave* slave = GetPane(nb, slaveWindow);
-
-						if (slave && Tk_IsMapped(slave->tkwin))
-						{
-							Tk_UnmaintainGeometry(slave->tkwin, nb->tkwin);
-							Tk_UnmapWindow(slave->tkwin);
-						}
-					}
-				}
+				// TODO: hide given tab
+				// TODO: probably switch tab
 			}
 			break;
 	}
@@ -1905,11 +2324,23 @@ DestroyNotebook(Notebook* nb)		// Info about notebook widget
 
 	// Cancel idle callbacks for redrawing the widget and for rearranging the panes.
 
+	if (nb->flags & REDRAW_TABS_PENDING)
+		Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+
 	if (nb->flags & REDRAW_PENDING)
 		Tcl_CancelIdleCall(DisplayNotebook, (ClientData)nb);
 
 	if (nb->flags & RESIZE_PENDING)
 		Tcl_CancelIdleCall(ArrangePane, (ClientData)nb);
+
+	if (nb->gc)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->gc);
+	if (nb->tabGC)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->tabGC);
+	if (nb->highlightGC)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->highlightGC);
+	if (nb->disabledGC)
+		Tk_FreeGC(Tk_Display(nb->tkwin), nb->disabledGC);
 
 	// Clean up the slave list; foreach slave:
 	//  o  Cancel the slave's structure notification callback
@@ -1975,6 +2406,12 @@ NotebookEventProc(ClientData clientData,	// Information about window
 			{
 				Tcl_DoWhenIdle(DisplayNotebook, (ClientData)nb);
 				nb->flags |= REDRAW_PENDING;
+
+				if (nb->flags & REDRAW_TABS_PENDING)
+				{
+					Tcl_CancelIdleCall(DisplayTabs, (ClientData)nb);
+					nb->flags &= ~REDRAW_TABS_PENDING;
+				}
 			}
 			break;
 
@@ -1983,12 +2420,11 @@ NotebookEventProc(ClientData clientData,	// Information about window
 			break;
 
 		case MapNotify:
-			RaiseSlave(nb, 0);
-			PlaceSlave(nb, 0);
+			RaiseSlave(nb, -1);
 			break;
 
 		case UnmapNotify:
-			UnmapSlave(nb, 0);
+			UnmapSlave(nb, nb->currentIndex);
 			break;
 	}
 }
@@ -2192,8 +2628,18 @@ Tk_NotebookObjCmd(ClientData clientData,	// nullptr
 	nb->paneOptions = nbOptions->paneOptions;
 	nb->relief = TK_RELIEF_RAISED;
 	nb->gc = None;
+	nb->tabGC = None;
+	nb->disabledGC = None;
+	nb->highlightGC = None;
 	nb->cursor = None;
 	nb->overlay = 0;
+	nb->normalFg = 0;
+	nb->disabledFg = 0;
+	nb->highlightBgColor = 0;
+	nb->highlightFgColor = 0;
+	nb->tkfont = 0;
+	nb->tabHeight = 0;
+	nb->currentIndex = -1;
 
 	// Keep a hold of the associated tkwin until we destroy the widget,
 	// otherwise Tk might free it while we still need it.

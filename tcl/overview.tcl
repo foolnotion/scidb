@@ -68,7 +68,7 @@ proc open {parent base info view index {fen {}}} {
 	set dlg $parent.overview$position
 	set Priv($base:$number:$view) $dlg
 	incr Priv($base:$number:$view:count)
-	toplevel $dlg -class Scidb
+	tk::toplevel $dlg -class Scidb
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 	::widget::dialogButtons $dlg {close previous next} close
 	foreach type {close previous next} { $dlg.$type configure -width 15 }
