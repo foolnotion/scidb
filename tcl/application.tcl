@@ -157,7 +157,7 @@ proc open {} {
 		-activebackground $Vars(settings:activebackground) \
 		-foreground black \
 		-activeforeground white \
-		-image $icon::16x16::downArrow(black) \
+		-image $icon::16x12::downArrow(black) \
 		-compound right \
 		;
 	SetSettingsText $nb.l
@@ -268,13 +268,13 @@ if {[::process::testOption use-analysis]} {
 #		}
 	}
 
-	database::build $db $app.menu.mSettings $Attr(board,width) $Attr(board,height)
-	board::build $top.board $app.menu.mSettings $Attr(board,width) $Attr(board,height)
-	pgn::build $right.pgn $app.menu.mSettings $Attr(pgn,width) $Attr(pgn,height)
-	tree::build $bottom.tree $app.menu.mSettings $Attr(tree,width) $Attr(tree,height)
-	tree::games::build $bottom.games $app.menu.mSettings $Attr(games,width) $Attr(games,height)
+	database::build $db $Attr(board,width) $Attr(board,height)
+	board::build $top.board $Attr(board,width) $Attr(board,height)
+	pgn::build $right.pgn $Attr(pgn,width) $Attr(pgn,height)
+	tree::build $bottom.tree $Attr(tree,width) $Attr(tree,height)
+	tree::games::build $bottom.games $Attr(games,width) $Attr(games,height)
 if {[::process::testOption use-analysis]} {
-	analysis::build $right.analysis $app.menu.mSettings $Attr(analysis,width) $Attr(analysis,height)
+	analysis::build $right.analysis $Attr(analysis,width) $Attr(analysis,height)
 }
 #[winfo parent $bottom] forget $bottom
 
@@ -284,6 +284,8 @@ if {[::process::testOption use-analysis]} {
 	::util::place $app center .
 	::widget::dialogSetTitle $app [namespace code Title]
 	wm deiconify $app
+	database::finish $app
+	raise $app
 	::splash::close
 	ChooseLanguage $app
 	focus $nb
@@ -368,7 +370,7 @@ proc EnterSettings {w} {
 	set Vars(settings:state) active
 
 	if {!$Vars(settings:locked)} {
-		$w configure -state active -image $icon::16x16::downArrow(white)
+		$w configure -state active -image $icon::16x12::downArrow(white)
 	}
 }
 
@@ -379,7 +381,7 @@ proc LeaveSettings {w} {
 	set Vars(settings:state) normal
 
 	if {!$Vars(settings:locked)} {
-		$w configure -state normal -image $icon::16x16::downArrow(black)
+		$w configure -state normal -image $icon::16x12::downArrow(black)
 	}
 }
 
@@ -392,7 +394,7 @@ proc FinishSettings {m} {
 		-activebackground $Vars(settings:activebackground) \
 		-foreground black \
 		-activeforeground white \
-		-image $icon::16x16::downArrow(black) \
+		-image $icon::16x12::downArrow(black) \
 		;
 	set Vars(settings:locked) 0
 
@@ -427,7 +429,7 @@ proc BuildSettingsMenu {m} {
 		-activebackground $Vars(settings:activebackground) \
 		-foreground white \
 		-activeforeground white \
-		-image $icon::16x16::downArrow(white) \
+		-image $icon::16x12::downArrow(white) \
 		-menu $m.settings \
 		-direction below \
 		;
@@ -510,17 +512,17 @@ proc TabChanged {nb app} {
 
 	switch $current {
 		database	{
-			database::activate $nb.database $app.menu.mSettings 1
-			board::activate $nb.main.top.board $app.menu.mSettings 0
-			tree::activate $nb.main.bottom.tree $app.menu.mSettings 0
-#			analysis::activate $nb.main.top.right.analysis $app.menu.mSettings 0
+			database::activate $nb.database 1
+			board::activate $nb.main.top.board 0
+			tree::activate $nb.main.bottom.tree 0
+#			analysis::activate $nb.main.top.right.analysis 0
 		}
 
 		main {
-			database::activate $nb.database $app.menu.mSettings 0
-			board::activate $nb.main.top.board $app.menu.mSettings 1
-			tree::activate $nb.main.bottom.tree $app.menu.mSettings 1
-#			analysis::activate $nb.main.top.right.analysis $app.menu.mSettings 1
+			database::activate $nb.database 0
+			board::activate $nb.main.top.board 1
+			tree::activate $nb.main.bottom.tree 1
+#			analysis::activate $nb.main.top.right.analysis 1
 		}
 	}
 
@@ -612,24 +614,21 @@ wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo
 
 
 namespace eval icon {
-namespace eval 16x16 {
+namespace eval 16x12 {
 
 set downArrow(white) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAwD////ieeUNAAAA
-	AXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAAHdElNRQfc
-	AhsSDDtW7CQ8AAAAH0lEQVQI12NgQAX2fxjkfzDwf2Bgf8DAfICBsQFNHgCImwV95+svrgAA
-	AABJRU5ErkJggg==
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAMAQMAAABRKa/CAAAABlBMVEUAAwD////ieeUNAAAA
+	AXRSTlMAQObYZgAAAB9JREFUCNdjYIAB+z8M8j8Y+D8wsD9gYD7AwNgAlwEAZ6cFfe/e8VYA
+	AAAASUVORK5CYII=
 }]
 
 set downArrow(black) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEX///8AAABVwtN+AAAA
-	AXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAAHdElNRQfU
-	BgoJITF3Fs8LAAAAH0lEQVR4nGNgQAX2fxjkfzDwf2Bgf8DAfICBsQFNHgCImwV9ZRdLTQAA
-	AABJRU5ErkJggg==
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAMAQMAAABRKa/CAAAABlBMVEUAAwAAAADix8MfAAAA
+	AXRSTlMAQObYZgAAAB9JREFUCNdjYIAB+z8M8j8Y+D8wsD9gYD7AwNgAlwEAZ6cFfe/e8VYA
+	AAAASUVORK5CYII=
 }]
 
-} ;# namespace 19x16
-
+} ;# namespace 16x12
 namespace eval 32x32 {
 
 set shutdown [image create photo -data {

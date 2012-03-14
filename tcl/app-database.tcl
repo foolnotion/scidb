@@ -133,15 +133,16 @@ set UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you canno
 }
 
 array set Vars {
-	pixels		0
-	selection	0
-	icon			0
-	ignore-next	0
-	counter		0
-	motion		-1
-	current		-1
-	afterid		{}
-	taborder		{games players events annotators}
+	pixels			0
+	selection		0
+	icon				0
+	ignore-next		0
+	counter			0
+	motion			-1
+	current			-1
+	afterid			{}
+	showDisabled	0
+	taborder			{games players events annotators}
 }
 
 array set Defaults {
@@ -166,6 +167,8 @@ variable PreOpen			{}
 variable RecentFiles		{}
 variable MaxHistory		10
 
+array set Positions		{}
+
 set Types(sci)				[::scidb::db::get types sci]
 set Types(si3)				[::scidb::db::get types si3]
 set Types(si4)				[::scidb::db::get types si4]
@@ -174,7 +177,7 @@ namespace import ::tcl::mathfunc::max
 namespace import ::tcl::mathfunc::min
 
 
-proc build {tab menu width height} {
+proc build {tab width height} {
 	variable ::scidb::clipbaseName
 	variable ClipbaseType
 	variable Vars
@@ -201,10 +204,12 @@ proc build {tab menu width height} {
 	foreach tab $Vars(taborder) {
 		::ttk::frame $contents.$tab -class Scidb
 		set var [namespace current]::mc::[string toupper $tab 0 0]
-		$contents add $contents.$tab -sticky nsew -compound right -image $icon::16x16::undock_disabled
+		$contents add $contents.$tab -sticky nsew -compound right
+		if {$Vars(showDisabled)} { $contents tab $contents.$tab -image $icon::16x16::undock_disabled }
 		::widget::notebookSetLabel $contents $contents.$tab [set $var]
 		${tab}::build $contents.$tab
 		set Vars($tab) $contents.$tab
+		bind $contents.$tab <Destroy> [namespace code [list DestroyTab %W $contents.$tab]]
 	}
 
 	$main paneconfigure $switcher -sticky nsew -stretch never
@@ -272,6 +277,21 @@ proc build {tab menu width height} {
 }
 
 
+proc finish {app} {
+	variable Positions
+	variable Vars
+
+	foreach w [array names Positions] {
+		set tabs [$Vars(contents) tabs]
+		for {set i 0} {$i < [llength $tabs] && ![string match *$w [lindex $tabs $i]]} {incr i} {}
+		Undock $Vars(contents) $i $Positions($w)
+	}
+
+	unset Positions
+	array set Positions {}
+}
+
+
 proc preOpen {parent} {
 	variable PreOpen
 
@@ -293,13 +313,12 @@ proc preOpen {parent} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	variable Vars
 
-	set Vars(menu) $menu
 	set tab [lindex [split [$Vars(contents) select] .] end]
 	::toolbar::activate $Vars(switcher) $flag
-	[namespace current]::${tab}::activate $Vars($tab) $menu $flag
+	[namespace current]::${tab}::activate $Vars($tab) $flag
 	::annotation::hide $flag
 	::marks::hide $flag
 }
@@ -486,12 +505,24 @@ proc refreshBase {base} {
 
 
 proc selectEvent {base index} {
-	events::select [set [namespace current]::Vars(events)] $base $index
+	variable Vars
+
+	events::select $Vars(events) $base $index
+
+	if {[winfo toplevel $Vars(events)] eq $Vars(events)} {
+		events::activate $Vars(events) 1
+	}
 }
 
 
 proc selectPlayer {base index} {
-	players::select [set [namespace current]::Vars(players)] $base $index
+	variable Vars
+
+	players::select $Vars(players) $base $index
+
+	if {[winfo toplevel $Vars(players)] eq $Vars(players)} {
+		players::activate $Vars(players) 1
+	}
 }
 
 
@@ -575,20 +606,21 @@ proc SetClipbaseDescription {} {
 proc TabChanged {} {
 	variable Vars
 
-	if {![info exists Vars(menu)]} { return }
 	set tab [lindex [split [$Vars(contents) select] .] end]
 	if {$tab ne $Vars(current:tab)} {
-		[namespace current]::[set Vars(current:tab)]::activate $Vars($Vars(current:tab)) $Vars(menu) 0
+		[namespace current]::[set Vars(current:tab)]::activate $Vars($Vars(current:tab)) 0
 	}
-	[namespace current]::${tab}::activate $Vars($tab) $Vars(menu) 1
+	[namespace current]::${tab}::activate $Vars($tab) 1
 	set Vars(current:tab) $tab
 
 	set tabs [$Vars(contents) tabs]
 	foreach t $tabs {
 		if {[$Vars(contents) select] eq $t && [llength $tabs] > 2} {
 			set icon $icon::16x16::undock
-		} else {
+		} elseif {$Vars(showDisabled)} {
 			set icon $icon::16x16::undock_disabled
+		} else {
+			set icon {}
 		}
 		$Vars(contents) tab $t -image $icon
 	}
@@ -635,6 +667,7 @@ proc ToolbarShow {pane} {
 proc TableMinSize {main pane sizeInfo} {
 	variable Vars
 
+	if {[llength $sizeInfo] != 3} { return }
 	lassign $sizeInfo minwidth minheight Vars(incr)
 
 	incr minheight [winfo height $pane]
@@ -907,10 +940,7 @@ proc Switch {filename} {
 	::toolbar::childconfigure $Vars(button:readonly) -state $roState
 
 	set Vars(flag:readonly) $readonly
-
-	set codec [::scidb::db::get codec]
-	if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
-	$Vars(contents) tab $Vars(annotators) -state $state
+	CheckTabState
 
 	foreach base $Vars(bases) {
 		lassign $base i type file
@@ -927,6 +957,23 @@ proc Switch {filename} {
 		}
 
 		$canv itemconfigure content$i -fill $background
+	}
+
+	foreach tab {players events annotators} {
+		if {[winfo toplevel $Vars($tab)] eq $Vars($tab)} {
+			[namespace current]::${tab}::activate $Vars($tab) 1
+		}
+	}
+}
+
+
+proc CheckTabState {} {
+	variable Vars
+
+	if {[winfo toplevel $Vars(annotators)] ne $Vars(annotators)} {
+		set codec [::scidb::db::get codec]
+		if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
+		$Vars(contents) tab $Vars(annotators) -state $state
 	}
 }
 
@@ -1866,32 +1913,42 @@ proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::RecentFiles
 	::options::writeItem $chan [namespace current]::Defaults
 	::options::writeList $chan [namespace current]::PreOpen
+	::options::writeItem $chan [namespace current]::Positions
 }
 
 ::options::hookWriter [namespace current]::WriteOptions
 
 
-proc Identify {nb x y} {
-	if {[$nb identify $x $y] ne "label"} { return "" }
-	set x1 $x
-	while {[$nb identify [expr {$x1 + 1}] $y] eq "label"} { incr x1 +1 }
-	incr x1 -16
-	if {$x1 <= $x} { return "icon" }
-	return "label"
+proc DestroyTab {w tab} {
+	variable Positions
+
+	if {$w eq $tab} {
+		if {[winfo toplevel $w] eq $w} {
+			set Positions([lindex [split $w .] end]) [wm geometry $w]
+		}
+	}
 }
 
 
-proc Motion {nb x y} {
+proc Identify {nb x y} {
+	set index [$nb index @$x,$y]
+	if {[llength $index] == 0} { return {-1 ""} }
+	if {[llength [$nb tab $index -image]] == 0} { return [list $index "label"] }
+	if {[$nb identify $x $y] ne "label"} { return [list $index ""] }
+	set x1 $x
+	while {[$nb identify [expr {$x1 + 1}] $y] eq "label"} { incr x1 +1 }
+	incr x1 -16
+	if {$x1 <= $x} { return [list $index "icon"] }
+	return [list $index "label"]
+}
+
+
+proc Motion {nb x y {showTooltip 1}} {
 	variable Vars
 
 	if {[llength [$nb tabs]] == 2} { return }
-
-	set index [$nb index @$x,$y]
-	if {[llength $index] == 0} {
-		set what label
-	} else {
-		set what [Identify $nb $x $y]
-	}
+	lassign [Identify $nb $x $y] index what
+	if {$index == -1} { set what "label" }
 
 	switch $what {
 		icon {
@@ -1900,7 +1957,7 @@ proc Motion {nb x y} {
 				set icon $icon::16x16::undock_sunken
 			} else {
 				set icon $icon::16x16::undock_active
-				if {$index != $Vars(motion)} {
+				if {$index != $Vars(motion) && $showTooltip} {
 					::tooltip::show $nb $::twm::mc::Undock
 				}
 			}
@@ -1912,11 +1969,13 @@ proc Motion {nb x y} {
 		}
 
 		default {
-			if {[llength $index]} {
+			if {$index >= 0} {
 				if {[$nb index [$nb select]] == $index} {
 					set icon $icon::16x16::undock
-				} else {
+				} elseif {$Vars(showDisabled)} {
 					set icon $icon::16x16::undock_disabled
+				} else {
+					set icon {}
 				}
 			}
 			set Vars(motion) -1
@@ -1924,8 +1983,24 @@ proc Motion {nb x y} {
 		}
 	}
 
-	if {[llength $index]} {
+	if {$index >= 0} {
 		$nb tab $index -image $icon
+	}
+}
+
+
+proc Enter {nb} {
+	variable Vars
+
+	if {[llength [$nb tabs]] == 2} { return }
+
+	if {$Vars(motion) >= 0 && $Vars(motion) < [llength [$nb tabs]]} {
+		set icon [$nb tab $Vars(motion) -image]
+
+		if {[llength $icon] > 0 && $icon ne $icon::16x16::undock_disabled} {
+			$nb tab $Vars(motion) -image $icon::16x16::undock
+			set Vars(motion) -1
+		}
 	}
 }
 
@@ -1938,7 +2013,8 @@ proc Leave {nb} {
 
 	if {$Vars(motion) >= 0} {
 		foreach t [$nb tabs] {
-			if {[$nb tab $t -image] ne $icon::16x16::undock_disabled} {
+			set icon [$nb tab $t -image]
+			if {[llength $icon] > 0 && $icon ne $icon::16x16::undock_disabled} {
 				$nb tab $t -image $icon::16x16::undock
 			}
 		}
@@ -1951,16 +2027,8 @@ proc ButtonPress {nb x y} {
 	variable Vars
 
 	::tooltip::hide
-
-	set index [$nb index @$x,$y]
-	if {[llength $index] == 0} {
-		set what ""
-	} else {
-		set what [Identify $nb $x $y]
-		if {$what eq "icon" && [$nb index [$nb select]] != $index} {
-			set what label
-		}
-	}
+	lassign [Identify $nb $x $y] index what
+	if {$what eq "icon" && [$nb index [$nb select]] != $index} { set what "label" }
 
 	switch $what {
 		icon {
@@ -1973,7 +2041,7 @@ proc ButtonPress {nb x y} {
 		label {
 			set Vars(current) $index
 			ttk::notebook::Press $nb $x $y
-			after idle [namespace code [list Motion $nb $x $y]]
+			after idle [namespace code [list Motion $nb $x $y 0]]
 		}
 	}
 }
@@ -1990,41 +2058,53 @@ proc ButtonRelease {nb x y} {
 	set Vars(current) -1
 
 	if {[llength [$nb tabs]] == 2} { return }
-
-	set index [$nb index @$x,$y]
-	if {[llength $index] == 0} {
-		set index $Vars(motion)
-	}
+	lassign [Identify $nb $x $y] index what
+	if {$index == -1} { set index $Vars(motion) }
 
 	if {$index >= 0} {
 		if {$current == $index} { return }
+		if {[llength [$nb tab $index -image]] == 0} { return }
 		if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
 		$nb tab $index -image $icon::16x16::undock
 	}
 
-	if {[Identify $nb $x $y] eq "icon"} {
+	if {$what eq "icon"} {
 		Undock $nb $index
 	}
 
-	after idle [namespace code [list Motion $nb $x $y]]
+	::tooltip::hide
+	after idle [namespace code [list Motion $nb $x $y 0]]
 }
 
 
-proc Undock {nb index} {
+proc Undock {nb index {geometry {}}} {
+	variable Vars
+
 	set title [$nb tab $index -text]
 	set w [lindex [$nb tabs] $index]
 	$nb forget $w
-	set wd [winfo width $w]
-	set ht [winfo height $w]
-	if {$wd <= 1 || $ht <= 1} {
-		set v [lindex [$nb tabs] 0]
-		set wd [winfo width $v]
-		set ht [winfo height $v]
+	if {[string length $geometry] == 0} {
+		set wd [winfo width $w]
+		set ht [winfo height $w]
+		if {$wd <= 1 || $ht <= 1} {
+			set v [lindex [$nb tabs] 0]
+			set wd [winfo width $v]
+			set ht [winfo height $v]
+		}
 	}
 	::scidb::tk::twm release $w
 	::update idle ;# is reducing flickering
-	wm geometry $w ${wd}x${ht}
+	if {[string length $geometry] == 0} {
+		wm geometry $w ${wd}x${ht}
+	} else {
+		wm geometry $w $geometry
+	}
+	set id [lindex [split $w .] end]
+	set overhang [${id}::overhang $Vars($id)]
+	set linespace [${id}::linespace $Vars($id)]
+	set minheight [expr {8*$linespace + $overhang}]
 #	wm transient $w [winfo toplevel $nb]
+	wm minsize $w 500 $minheight
 	wm title $w "$::scidb::app - $title"
 	wm state $w normal
 	wm protocol $w WM_DELETE_WINDOW [namespace code [list Dock $nb $w]]
@@ -2049,9 +2129,12 @@ proc Dock {nb w} {
 	set k 0
 	while {$k < [llength $indices] && [lindex $indices $k] < $i} { incr k }
 	if {$k == [llength [$nb tabs]]} { set k end }
-	$nb insert $k $w -sticky nsew -compound right -image $icon::16x16::undock_disabled
+	if {$Vars(showDisabled)} { set icon $icon::16x16::undock_disabled } else { set icon {} }
+	$nb insert $k $w -sticky nsew -compound right -image $icon
 	set var [namespace current]::mc::[string toupper $id 0 0]
 	::widget::notebookSetLabel $nb $w [set $var]
+	${id}::activate $Vars($id) 0
+	CheckTabState
 }
 
 
@@ -2102,6 +2185,7 @@ set undock_disabled [image create photo -width 16 -height 16]
 ttk::copyBindings TNotebook UndockingNotebook
 
 bind UndockingNotebook <Motion>				{ application::database::Motion %W %x %y }
+bind UndockingNotebook <Enter>				{ application::database::Enter %W }
 bind UndockingNotebook <Leave>				{ application::database::Leave %W }
 bind UndockingNotebook <ButtonPress-1>		{ application::database::ButtonPress %W %x %y }
 bind UndockingNotebook <ButtonRelease-1>	{ application::database::ButtonRelease %W %x %y }

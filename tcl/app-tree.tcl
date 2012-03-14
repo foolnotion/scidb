@@ -126,7 +126,7 @@ array set Vars {
 array set Bars {}
 
 
-proc build {parent menu width height} {
+proc build {parent width height} {
 	variable ::ratingbox::ratings
 	variable Columns
 	variable Options
@@ -442,7 +442,7 @@ proc build {parent menu width height} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	variable Vars
 
 	::toolbar::activate $w $flag

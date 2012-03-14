@@ -55,7 +55,7 @@ variable Dim
 set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 
 
-proc build {w menu width height} {
+proc build {w width height} {
 	variable Dim
 	variable Vars
 	variable board
@@ -80,7 +80,7 @@ proc build {w menu width height} {
 	set Vars(active) 0
 	$board configure -cursor crosshair
 	bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
-	bind $canv <Destroy> [namespace code [list activate $w $menu 0]]
+	bind $canv <Destroy> [namespace code [list activate $w 0]]
 	bind $canv <FocusIn> [namespace code { GotFocus %W }]
 
 	::board::stuff::bind $board all <Enter>				{ ::move::enterSquare %q }
@@ -210,7 +210,7 @@ proc build {w menu width height} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	variable Toolbar
 	variable Index
 	variable Vars
@@ -220,11 +220,9 @@ proc activate {w menu flag} {
 
 	if {$flag} {
 		focus $Vars(widget:frame)
-	} elseif {$Index >= 0 && [winfo exists $menu]} {
-		$menu delete $Index
 	}
 
-	[namespace parent]::pgn::activate $w $menu $flag
+	[namespace parent]::pgn::activate $w $flag
 }
 
 

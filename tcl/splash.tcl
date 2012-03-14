@@ -60,6 +60,7 @@ proc open {} {
 	}
 
 	::util::place .splash center .
+	wm attributes .splash -topmost
 	wm deiconify .splash
 	update idletasks
 	tkwait visibility .splash

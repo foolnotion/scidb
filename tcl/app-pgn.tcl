@@ -149,7 +149,7 @@ variable CharLimit 250
 variable Counter 0
 
 
-proc build {parent menu width height} {
+proc build {parent width height} {
 	variable Vars
 	variable Options
 
@@ -381,7 +381,7 @@ proc setActiveLang {code flag} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	variable Vars
 
 	::toolbar::activate [winfo parent [lindex $Vars(toolbars) 0]] $flag

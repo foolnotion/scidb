@@ -574,6 +574,11 @@ proc overhang {path} {
 }
 
 
+proc linespace {path} {
+	return [::scrolledtable::linespace $path]
+}
+
+
 proc borderwidth {path} {
 	return [::scrolledtable::borderwidth $path]
 }

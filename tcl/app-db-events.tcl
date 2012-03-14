@@ -105,13 +105,26 @@ proc build {parent} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	set path $w.top
 	variable ${path}::Vars
 
 	set Vars(active) $flag
 	events::Update2 $path [::scidb::db::get name]
-	::toolbar::activate $path.events $flag
+
+	if {[winfo toplevel $w] ne $w} {
+		::toolbar::activate $path.events $flag
+	}
+}
+
+
+proc overhang {parent} {
+	return [::eventtable::overhang $parent.top.events]
+}
+
+
+proc linespace {parent} {
+	return [::eventtable::linespace $parent.top.events]
 }
 
 

@@ -56,7 +56,7 @@ array set Options {
 variable Vars
 
 
-proc build {parent menu width height} {
+proc build {parent width height} {
 	variable Options
 	variable Vars
 
@@ -265,7 +265,7 @@ proc build {parent menu width height} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	::toolbar::activate $w $flag
 }
 

@@ -28,7 +28,7 @@ namespace eval application {
 namespace eval tree {
 namespace eval games {
 
-proc build {parent menu width height} {
+proc build {parent width height} {
 	variable Vars
 
 	set table $parent.treeGames

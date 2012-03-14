@@ -634,6 +634,11 @@ proc overhang {table} {
 }
 
 
+proc linespace {table} {
+	return [set ${table}::Vars(linespace)]
+}
+
+
 proc borderwidth {table} {
 	return [set ${table}::Options(-borderwidth)]
 }

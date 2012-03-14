@@ -545,6 +545,11 @@ proc overhang {path} {
 }
 
 
+proc linespace {path} {
+	return [::table::linespace $path.top.table]
+}
+
+
 proc borderwidth {path} {
 	return [::table::borderwidth $path.top.table]
 }

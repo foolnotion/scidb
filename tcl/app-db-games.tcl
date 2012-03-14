@@ -203,8 +203,10 @@ proc build {parent} {
 }
 
 
-proc activate {w menu flag} {
-	::toolbar::activate $w $flag
+proc activate {w flag} {
+	if {[winfo toplevel $w] ne $w} {
+		::toolbar::activate $w $flag
+	}
 #	::gametable::focus $w.table
 }
 
@@ -221,6 +223,11 @@ proc prepareSwitch {w newCodec} {
 
 proc overhang {parent} {
 	return [::gametable::overhang $parent.table]
+}
+
+
+proc linespace {parent} {
+	return [::gametable::linespace $parent.table]
 }
 
 

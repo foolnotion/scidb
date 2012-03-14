@@ -115,13 +115,26 @@ proc build {parent} {
 }
 
 
-proc activate {w menu flag} {
+proc activate {w flag} {
 	set path $w.top
 	variable ${path}::Vars
 
 	set Vars(active) $flag
 	players::Update2 $path [::scidb::db::get name]
-	::toolbar::activate $path.players $flag
+
+	if {[winfo toplevel $w] ne $w} {
+		::toolbar::activate $path.players $flag
+	}
+}
+
+
+proc overhang {parent} {
+	return [::playertable::overhang $parent.top.players]
+}
+
+
+proc linespace {parent} {
+	return [::playertable::linespace $parent.top.players]
 }
 
 
