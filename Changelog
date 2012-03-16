@@ -1,9 +1,19 @@
 [March 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #270)
+------------------------------------------------------------------------------
+* Database switcher receives drop events, it is tested with Konqueror.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #269)
 ------------------------------------------------------------------------------
 * Database window: implementation of docking/undocking completed.
+
+* TkDND 2.2 added to project.
+
+* configure: Linux Mint >= 12 added as an insane Linux release (derived from
+Ubuntu).
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #268)

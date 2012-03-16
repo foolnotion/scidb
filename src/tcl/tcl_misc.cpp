@@ -63,6 +63,7 @@ static char const* CmdHardLinked		= "::scidb::misc::hardLinked?";
 static char const* CmdHtml				= "::scidb::misc::html";
 static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
 static char const* CmdLookup			= "::scidb::misc::lookup";
+static char const* CmdMapExtension	= "::scidb::misc::mapExtension";
 static char const* CmdRevision		= "::scidb::misc::revision";
 static char const* CmdSize				= "::scidb::misc::size";
 static char const* CmdSuffixes		= "::scidb::misc::suffixes";
@@ -695,6 +696,33 @@ cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdMapExtension(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	static char const* Extensions[] = { "sci", "si3", "si4", "cbh" };
+
+	mstl::string extension(stringFromObj(objc, objv, 1));
+
+	for (unsigned i = 0; i < U_NUMBER_OF(Extensions); ++i)
+	{
+		db::DatabaseCodec::StringList result;
+		db::DatabaseCodec::getSuffixes(Extensions[i], result);
+
+		for (unsigned k = 0; k < result.size(); ++k)
+		{
+			if (result[k] == extension)
+			{
+				setResult(Extensions[i]);
+				return TCL_OK;
+			}
+		}
+	}
+
+	setResult(extension);
+	return TCL_OK;
+}
+
+
+static int
 cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	bool (*isExtraTagFunc)(::db::tag::ID);
@@ -911,6 +939,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdHtml,			cmdHtml);
 	createCommand(ti, CmdIsAscii,			cmdIsAscii);
 	createCommand(ti, CmdLookup,			cmdLookup);
+	createCommand(ti, CmdMapExtension,	cmdMapExtension);
 	createCommand(ti, CmdRevision,		cmdRevision);
 	createCommand(ti, CmdSize,				cmdSize);
 	createCommand(ti, CmdSuffixes,		cmdSuffixes);

@@ -134,6 +134,8 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"se alcanz— el tama–o m‡ximo de archivo" 
 ::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
 
+::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
+
 ### progress ###########################################################
 ::progress::mc::Progress "Progreso"
 
@@ -216,6 +218,7 @@
 ::application::database::mc::FileExport				"Exportar..."
 ::application::database::mc::FileImport				"Importar archivos PGN..."
 ::application::database::mc::FileClose					"Cerrar"
+::application::database::mc::HelpSwitcher				"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games						"&Partidas"
 ::application::database::mc::Players					"&Jugadores"
@@ -244,6 +247,8 @@
 ::application::database::mc::ClipbaseDescription	"Base temporal, no se guarda al disco."
 ::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
 ::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
+::application::database::mc::CannotOpenUri			"Cannot open the following URI:" ;# NEW
+::application::database::mc::InvalidUri				"Drop content is not a valid URI." ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames				"%s partida(s) recodificadas"

@@ -907,6 +907,7 @@ tcl_misc.o: ../mstl/m_ostream.h
 tcl_misc.o: ../mstl/m_ostream.ipp
 tcl_misc.o: ../mstl/m_ofstream.ipp
 tcl_misc.o: ../db/si3/si3_codec.ipp
+tcl_misc.o: ../db/sci/sci_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.ipp
 tcl_misc.o: ../sys/sys_file.h

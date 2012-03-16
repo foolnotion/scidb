@@ -31,6 +31,8 @@ Mit der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine Informat
 angezeigt.
 </p>
 
+<h3>Administration</h3>
+
 <p>
 Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
 </p>
@@ -49,7 +51,7 @@ in andere Datenbankformate oder in ein Dokumentenformat.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileImport%</menuitem>
+<menuitem>%::application::database::mc::FileImport%</menuitem>
 Öffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
 importierenden <abbr>PGN</abbr>-Dateien auszuwählen. Es können mehrere
 <abbr>PGN</abbr>-Dateien gleichzeitig gewählt werden. Die Partien werden an die
@@ -57,7 +59,7 @@ bestehende Datenbank angehängt.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileClose%</menuitem>
+<menuitem>%::application::database::mc::FileClose%</menuitem>
 Die gewählte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
 aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
 <note/>Eine Schliessung der <a href="Clipbase.html">Ablage-Datenbank</a> ist nicht möglich.
@@ -86,19 +88,19 @@ nicht schreibgeschützt werden.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileNew%</menuitem>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
 Eine neue Datenbank anlegen. Es können nur Scidb- und
 Scid-Datenbanken (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 neu angelegt werden.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpen%</menuitem>
+<menuitem>%::application::database::mc::FileOpen%</menuitem>
 Eine weitere Datenbank öffnen.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
+<menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
 Eine Datenbank öffnen über die Datenbankhistorie.
 </p>
 
@@ -107,12 +109,28 @@ Eine Datenbank öffnen über die Datenbankhistorie.
 Auswahl der Symbolgröße für die Datenbankkacheln.
 </p>
 
+<p>
+<menuitem>%::application::database::mc::HelpSwitcher%</menuitem>
+Hilfedialog zum Datenbankumschalter öffnen.
+</p>
+
 <dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
 <note/>Dieser Menüpunkt steht nur für die
 <a href="Clipbase.html">Ablage-Datenbank</a> zur Verfügung.
+
+<h3>Drag &amp; Drop</h3>
+
+<p>
+Datenbanken können auch durch einen Drop einer URI-Liste geöffnet werden. Wird eine
+URI-Liste (Dateienliste) in das Datenbankumschaltfenster gezogen, so wird durch
+einen farbigen Hintergrund angezeigt, das ein Drop (Fallenlassen) erfolgen
+kann. Auf diese Weise kann das Öffnen von Datenbanken beispielsweise auch mit dem
+<!-- TODO: the next line should be independent from Linux -->
+Konqueror, Nautilus oder Dolphin erfolgen.
+</p>
 
 END
 

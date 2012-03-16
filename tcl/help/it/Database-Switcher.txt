@@ -30,6 +30,10 @@ Il database attivo sarà evidenziato con uno sfondo giallo.
 Premendo il tasto centrale del mouse (o la rotella) apparirà una finestra informativa.
 </p>
 
+<!-- NEW
+<h3>Administration</h3>
+-->
+
 <p>
 Per l'amministrazione del database è disponibile un menu contestuale:
 </p>
@@ -48,12 +52,12 @@ in altri formati database o documenti.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileImport%</menuitem>
+<menuitem>%::application::database::mc::FileImport%</menuitem>
 Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileClose%</menuitem>
+<menuitem>%::application::database::mc::FileClose%</menuitem>
 Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
 <note/>Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
 </p>
@@ -79,17 +83,17 @@ Questa possibilità è disponibile solo per database nei formati Scidb e Scid (<
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileNew%</menuitem>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
 Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpen%</menuitem>
+<menuitem>%::application::database::mc::FileOpen%</menuitem>
 Apre un altro database.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
+<menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
 Apre un database dallo storico dei database aperti.
 </p>
 
@@ -98,12 +102,30 @@ Apre un database dallo storico dei database aperti.
 Seleziona la grandezza del simbolo per l'icona del database.
 </p>
 
+<!-- NEW: we have to make a new snapshot of the menu (images/database-switcher-menu.png)
+<p>
+<menuitem>%::application::database::mc::HelpSwitcher%</menuitem>
+Open the help dialog about the database switcher.
+</p>
+-->
+
 <dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
 <note/>Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
+
+<!-- NEW
+<h3>Drag &amp; Drop</h3>
+
+<p>
+Database can be opened with a drop of an URI list. If an URI list (list of files)
+will be dragged over the  database switcher, a colored background will
+indicate that a drop of this list is possible. In this way you may open databases
+with the help of Konqueror, Nautilus, or Dolphin.
+</p>
+-->
 
 END
 

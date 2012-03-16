@@ -134,6 +134,8 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
 
+::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
+
 ### progress ###########################################################
 ::progress::mc::Progress "Progressi"
 
@@ -216,6 +218,7 @@
 ::application::database::mc::FileExport				"Esporta..."
 ::application::database::mc::FileImport				"Importa file PGN..."
 ::application::database::mc::FileClose					"Chiudi"
+::application::database::mc::HelpSwitcher				"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games						"&Partite"
 ::application::database::mc::Players					"&Giocatori"
@@ -244,6 +247,8 @@
 ::application::database::mc::ClipbaseDescription	"Database temporaneo, non è salvato sul disco"
 ::application::database::mc::HardLinkDetected		"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
 ::application::database::mc::HardLinkDetectedDetail "Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
+::application::database::mc::CannotOpenUri			"Cannot open the following URI:" ;# NEW
+::application::database::mc::InvalidUri				"Drop content is not a valid URI." ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames				"%s partite registrate"

@@ -1539,7 +1539,6 @@ proc CreateHandle {toolbar handle {size 0}} {
 	variable HaveTooltips
 
 	tk::frame $handle -class ToolbarHandle -borderwidth 0
-	if {$size == 0} { $handle configure -cursor hand2 }
 
 	if {$Specs(orientation:[winfo parent $handle]) eq "horz"} {
 		set decor [tk::canvas $handle.c -width $Defaults(handle:size) -height $size -borderwidth 0]
@@ -1607,6 +1606,7 @@ proc Grab {toolbar x y time} {
 
 	# in rare cases we do not receive a ButtonRelease event. tk bug?
 	if {[winfo exists $toolbar.__t__]} {
+		$toolbar configure -cursor {}
 		foreach dir {l r t b} { destroy $toolbar.__${dir}__ }
 		if {![info exists Specs(drag:after)]} { array unset Specs drag:* }
 		::tooltip::tooltip on
@@ -1640,6 +1640,7 @@ proc Grab {toolbar x y time} {
 	}
 
 	::tooltip::tooltip off
+	$toolbar configure -cursor hand2
 
 	set Specs(drag:directions) {}
 	foreach dir $Specs(allow:$toolbar) { lappend Specs(drag:directions) [string range $dir 0 0] }
@@ -1767,6 +1768,8 @@ proc Grab {toolbar x y time} {
 
 proc Ungrab {toolbar x y} {
 	variable Specs
+
+	$toolbar configure -cursor {}
 
 	if {[winfo exists $toolbar.__t__]} {
 		foreach dir {l r t b} { destroy $toolbar.__${dir}__ }

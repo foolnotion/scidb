@@ -85,8 +85,8 @@ proc open {parent {file {}}} {
 	variable ExternalLinks
 	variable Geometry
 
-	set Priv(check:lang) [CheckLanguage $parent]
-	if {!$Priv(check:lang)} { return }
+	set Priv(check:lang) [CheckLanguage $parent $file]
+	if {$Priv(check:lang) eq "none"} { return }
 
 	if {[string length $file]} {
 		if {[file extension $file] ne ".html"} {
@@ -230,20 +230,27 @@ proc FullPath {file} {
 }
 
 
-proc CheckLanguage {parent} {
+proc CheckLanguage {parent helpFile} {
 	variable Lang
 	variable ::country::icon::flag
 
+	set rc "temporary"
+
+	if {[llength $helpFile] == 0} {
+		set helpFile Contents.dat
+		set rc "substitution"
+	}
+
 	set lang $::mc::langID
-	set file [file normalize [file join $::scidb::dir::help $lang Contents.dat]]
+	set file [file normalize [file join $::scidb::dir::help $lang $helpFile]]
 	if {[file readable $file]} {
 		set Lang {}
-		return 1
+		return "found"
 	}
 
 	if {[string length $Lang]} {
-		set file [file normalize [file join $::scidb::dir::help $Lang Contents.dat]]
-		if {[file readable $file]} { return 1 }
+		set file [file normalize [file join $::scidb::dir::help $Lang $helpFile]]
+		if {[file readable $file]} { return "found" }
 	}
 
 	set Lang {}
@@ -258,7 +265,7 @@ proc CheckLanguage {parent} {
 	foreach lang [lsort [array names ::mc::input]] {
 		if {[string length $lang]} {
 			set code [set ::mc::lang$lang]
-			set file [file normalize [file join $::scidb::dir::help $code Contents.dat]]
+			set file [file normalize [file join $::scidb::dir::help $code $helpFile]]
 			if {[file readable $file]} {
 				set icon ""
 				catch { set icon $flag([set ::mc::langToCountry($code)]) }
@@ -287,8 +294,8 @@ proc CheckLanguage {parent} {
 	::ttk::releaseGrab $dlg
 	catch { destroy $dlg }
 
-	if {[string length $Lang] == 0} { return 0 }
-	return 2
+	if {[string length $Lang] == 0} { return "none" }
+	return $rc
 }
 
 
@@ -301,10 +308,12 @@ proc Destroy {} {
 	variable Priv
 	variable Lang
 
-	if {$Priv(check:lang) == 2} {
+	if {$Priv(check:lang) eq "substitution"} {
 		set language $::encoding::mc::Lang($Lang)
 		set reply [::dialog::question -parent $Priv(dlg) -message [format $mc::KeepLanguage $language]]
 		if {$reply eq "no"} { set Lang "" }
+	} elseif {$Priv(check:lang) eq "temporary"} {
+		set Lang ""
 	}
 
 	destroy $Priv(dlg)

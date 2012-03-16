@@ -2139,14 +2139,21 @@ Codec::getNumberOfGames(mstl::string const& filename)
 void
 Codec::getSuffixes(mstl::string const& filename, StringList& result)
 {
-	mstl::string ext(::util::misc::file::suffix(filename));
+	mstl::string ext;
+
+	if (filename.find('.') == mstl::string::npos)
+		ext = filename;
+	else
+		ext = ::util::misc::file::suffix(filename);
 
 	result.push_back(ext);
 	ext[1] = 'g';
 	result.push_back(ext);
 	ext[1] = 'n';
 	result.push_back(ext);
-	result.push_back("ssc");
+
+	if (ext[2] == '4')
+		result.push_back("ssc");
 }
 
 // vi:set ts=3 sw=3:

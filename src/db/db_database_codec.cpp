@@ -271,7 +271,12 @@ DatabaseCodec::getNumberOfGames(mstl::string const& filename)
 void
 DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 {
-	mstl::string ext(file::suffix(filename));
+	mstl::string ext;
+
+	if (filename.find('.') == mstl::string::npos)
+		ext = filename;
+	else
+		ext = file::suffix(filename);
 
 	if (ext == "sci")
 		sci::Codec::getSuffixes(filename, result);

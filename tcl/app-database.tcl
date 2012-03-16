@@ -34,6 +34,7 @@ set FileNew						"New..."
 set FileExport					"Export..."
 set FileImport					"Import PGN files..."
 set FileClose					"Close"
+set HelpSwitcher				"Help for Database Switcher"
 
 set Games						"&Games"
 set Players						"&Players"
@@ -62,6 +63,8 @@ set DescrTooLargeDetail		"The entry contains %d characters, but only %d characte
 set ClipbaseDescription		"Temporary database, not kept on disk."
 set HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
 set HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."
+set CannotOpenUri				"Cannot open the following URI:"
+set InvalidUri					"Drop content is not a valid URI."
 
 set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
@@ -252,6 +255,11 @@ proc build {tab width height} {
 		-variable [namespace current]::Vars(flag:readonly) \
 		-command [namespace code [list ToggleReadOnly 1]] \
 	]
+#	::toolbar::add $tbFile button \
+#		-image $::icon::toolbarHelp \
+#		-tooltipvar [namespace current]::mc::HelpSwitcher \
+#		-command [list ::menu::openHelp $Vars(canvas) "Database-Switcher.html"] \
+#		;
 
 	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
 	after idle [namespace code [list ToolbarShow $switcher]]
@@ -289,6 +297,12 @@ proc finish {app} {
 
 	unset Positions
 	array set Positions {}
+
+	::tkdnd::drop_target register $Vars(canvas) DND_Text
+	bind $Vars(canvas) <<DropEnter>> [list $Vars(canvas) configure -background LemonChiffon]
+	bind $Vars(canvas) <<DropLeave>> [list $Vars(canvas) configure -background white]
+	bind $Vars(canvas) <<Drop>> [list $Vars(canvas) configure -background white]
+	bind $Vars(canvas) <<Drop>> +[namespace code { OpenUri %D }]
 }
 
 
@@ -769,6 +783,97 @@ proc Traverse {move} {
 	}
 	$Vars(canvas) itemconfigure active$Vars(active) -state normal
 	SeeSymbol $Vars(active)
+}
+
+
+proc OpenUri {uriFiles} {
+	variable Vars
+
+	set errorList {}
+	set databaseList {}
+
+	foreach file [split $uriFiles \n] {
+		if {[string length $file]} {
+			if {[string equal -length 5 $file "file:"]} {
+				if {[string equal -length 17 $file "file://localhost/"]} {
+					# correct implementation
+					set file [string range $file 16 end]
+				} elseif {[string equal -length 8 $file "file:///"]} {
+					# no hostname, but three slashes - nearly correct
+					set file [string range $file 7 end]
+				} elseif {[string index $file 5] eq "/"} {
+					# theoretically, the hostname should be the first, but no one implements it
+					set file [string range $file 5 end]
+					for {set n 1} {$n < 5} {incr n} { if {[string index $file $n] eq "/"} { break } }
+					set file [string range $file [expr {$n - 1}] end]
+					
+					if {![file exists $file]} {
+						# perhaps a correct implementation with hostname?
+						set i [string first "/" $file 1]
+						if {$i >= 0} {
+							set f [string range $file $i end]
+							if {[file exists $f]} {
+								# it seems so
+								set file $f
+							}
+						}
+					}
+				} else {
+					# no slash after "file:" - what is that for a crappy program?
+					set file [string range $file 5 end]
+				}
+			}
+
+			set file [file normalize $file]
+
+			if {[string match *.pgn.gz $file]} {
+				if {$file ni $databaseList} { lappend databaseList $file }
+			} else {
+				set origExt [file extension $file]
+
+				if {[string length $origExt]} {
+					set origExt [string range $origExt 1 end]
+					set mappedExt [::scidb::misc::mapExtension $origExt]
+
+					if {$origExt ne $mappedExt} {
+						set f [file rootname $file]
+						append f . $mappedExt
+						if {[file exists $f]} {
+							set file $f
+						}
+					}
+				}
+
+				if {[file exists $file]} {
+					switch [file extension $file] {
+						.sci - .si3 - .si4 - .cbh - .pgn {
+							if {$file ni $databaseList} { lappend databaseList $file }
+						}
+						default {
+							if {$file ni $errorList} { lappend errorList $file }
+						}
+					}
+				} elseif {$file ni $errorList} {
+					lappend errorList $file
+				}
+			}
+		}
+	}
+
+	foreach file $databaseList {
+		openBase $Vars(canvas) $file no {} -1 [expr {[llength $databaseList] == 1}]
+	}
+
+	if {[llength $errorList]} {
+		if {[string match file:* $uriFiles]} {
+			set message $mc::CannotOpenUri
+			append message \n\n [join $errorList \n]
+		} else {
+			set message $mc::InvalidUri
+		}
+
+		dialog::error -parent $Vars(canvas) -message $message
+	}
 }
 
 
@@ -1368,6 +1473,14 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-command [namespace code [list ChangeIconSize $canv]] \
 			;
 	}
+
+	$menu add separator
+	$menu add command \
+		-label " [::mc::stripAmpersand $mc::HelpSwitcher]" \
+		-image $::icon::16x16::help \
+		-compound left \
+		-command [list ::menu::openHelp $canv "Database-Switcher.html"] \
+		;
 
 	::tooltip::hide
 	tk_popup $menu $x $y

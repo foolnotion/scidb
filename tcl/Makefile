@@ -42,6 +42,8 @@ SOURCES = \
 	utils/countries.tcl \
 	utils/web.tcl \
 	utils/xcursor.tcl \
+	dnd/tkdnd.tcl \
+	dnd/tkdnd_unix.tcl \
 	widgets/tooltip.tcl \
 	widgets/toolbar.tcl \
 	widgets/validate.tcl \
@@ -514,7 +516,7 @@ uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags u
 $(SCRIPT): $(SOURCES)
 	@echo "Build $(SCRIPT)"
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
-	@cat $(SOURCES) | sed -e '/^##/d' -e '/^[ 	]*# /d' > $(SCRIPT)
+	@cat $(SOURCES) | sed -e '/^##/d' -e '/^#$$/d' -e '/^[ 	]*#[ 	]$$/d' > $(SCRIPT)
 	@chmod 0555 $(SCRIPT)
 
 # vi:set ts=3 sw=3:

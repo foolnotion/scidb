@@ -133,6 +133,8 @@
 ::util::mc::IOError(MaxFileSizeExceeded)	"die maximale Dateigrösse wirde erreicht"
 ::util::mc::IOError(LoadFailed)				"das Laden schlug fehl (zuviele Turnier-Einträge)"
 
+::util::mc::SelectionOwnerDidntRespond		"Zeitüberschreitung während der Drop-Aktion: der Eigentümer des Drop-Inhalts antwortete nicht."
+
 ### progress ###########################################################
 ::progress::mc::Progress "Fortschritt"
 
@@ -215,6 +217,7 @@
 ::application::database::mc::FileExport				"Export..."
 ::application::database::mc::FileImport				"PGN-Dateien importieren..."
 ::application::database::mc::FileClose					"Schliessen"
+::application::database::mc::HelpSwitcher				"Hilfe zum Datenbankumschalter"
 
 ::application::database::mc::Games						"&Partien"
 ::application::database::mc::Players					"Sp&ieler"
@@ -243,6 +246,8 @@
 ::application::database::mc::ClipbaseDescription	"Temporäre Datenbank, wird nicht auf der Festplatte gehalten."
 ::application::database::mc::HardLinkDetected		"Die Datei '%file1' kann nicht geladen werden weil sie bereits als Datei '%file2' geladen wurde. Dies kann nur geschehen wenn harte Links involviert sind."
 ::application::database::mc::HardLinkDetectedDetail "Wenn diese Datei zweifach geladen wird kann die Applikation abstürzen aufgrund der Verwndung von Subprozessen (Threads)."
+::application::database::mc::CannotOpenUri			"Die folgenden URI können nicht geöffnet werden:"
+::application::database::mc::InvalidUri				"Der Drop-Inhalt ist keine gültige URI."
 
 ::application::database::mc::RecodingDatabase		"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames				"%s Partie(n) umkodiert"

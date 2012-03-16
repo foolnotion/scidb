@@ -77,7 +77,7 @@ proc WriteOptions {chan} {
 
 ::options::hookWriter [namespace current]::WriteOptions
 
-}
+} ;# namespace beta
 
 # --- Initalization ----------------------------------------------------
 
@@ -89,10 +89,10 @@ if {[tk windowingsystem] eq "x11"} {
 		}
 	}
 
-	proc ::dialog::choosecolor::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
-	proc ::toolbar::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
-	proc ::fsbox::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
-	proc ::tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
+	proc dialog::choosecolor::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc toolbar::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc fsbox::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 }
 
 set dialog::iconOk		$icon::iconOk
@@ -107,27 +107,27 @@ set dialog::choosefont::iconReset	$icon::iconReset
 
 set ::tk::ShadowOffset $::shadow::offset
 
-proc ::dialog::choosefont::messageBox {parent msg buttons defaultButton} {
+proc dialog::choosefont::messageBox {parent msg buttons defaultButton} {
 	return [::dialog::warning -parent $parent -message $msg -buttons $buttons -default $defaultButton]
 }
 
 set dialog::choosecolor::iconOk		$icon::iconOk
 set dialog::choosecolor::iconCancel	$icon::iconCancel
 
-proc ::dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
+proc dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
 
-proc ::calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
+proc calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
 
-proc ::fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
-proc ::fsbox::tooltip {args} { return [::tooltip::tooltip {*}$args] }
-proc ::fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
-proc ::fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
-proc ::fsbox::busy {args} { ::widget::busyCursor on }
-proc ::fsbox::unbusy {args} { ::widget::busyCursor off }
+proc fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
+proc fsbox::tooltip {args} { return [::tooltip::tooltip {*}$args] }
+proc fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
+proc fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
+proc fsbox::busy {args} { ::widget::busyCursor on }
+proc fsbox::unbusy {args} { ::widget::busyCursor off }
 
-proc ::dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state }
+proc dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state }
 
-proc ::colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
+proc colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc WriteOptions {chan} {
 	::options::writeList $chan ::dialog::choosecolor::UserColorList
@@ -143,7 +143,7 @@ proc WriteOptions {chan} {
 # --- Read options -----------------------------------------------------
 
 # prevent errors while parsing old config files (as long as we have a beta version)
-proc ::dialog::fsbox::setBookmarks {args} {}
+proc dialog::fsbox::setBookmarks {args} {}
 
 if {[file readable $::scidb::file::options]} {
 	::load::source $::scidb::file::options -message $::load::mc::ReadingOptionsFile -encoding utf-8
@@ -173,6 +173,7 @@ set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------
 
+::tkdnd::initialise
 ::theme::setTheme $menu::Theme
 ::menu::setup
 ::board::setupTheme

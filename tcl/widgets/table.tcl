@@ -1118,6 +1118,7 @@ proc Highlight {table x y} {
 
 		header {
 			::TreeCtrl::ButtonPress1Header $table.t $id $x $y 0
+			$table.t configure -cursor hand2
 			set Vars(header) 1
 		}
 	}
@@ -1129,6 +1130,7 @@ proc Release {table x y} {
 
 	if {$Vars(header)} {
 		::TreeCtrl::Release1 $table.t $x $y
+		$table.t configure -cursor {}
 	}
 }
 

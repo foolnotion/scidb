@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itcl$(TCL_VERSION) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
-ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
+ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
 CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
@@ -28,6 +28,7 @@ SRC_CXX = \
 	tk_multiwindow.cpp \
 	tk_notebook.cpp \
 	tk_png.cpp \
+	tk_selection.cpp \
 	tk_twm.cpp \
 	tk_window_manager.cpp \
 	tk_x11.cpp \
@@ -177,6 +178,23 @@ tk_notebook.o: ../mstl/m_types.h
 tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h
+tk_selection.o: tk_init.h
+tk_selection.o: ../tcl/tcl_base.h
+tk_selection.o: ../tcl/tcl_base.ipp
+tk_selection.o: ../mstl/m_string.h
+tk_selection.o: ../mstl/m_types.h
+tk_selection.o: ../mstl/m_string.ipp
+tk_selection.o: ../mstl/m_utility.h
+tk_selection.o: ../mstl/m_type_traits.h
+tk_selection.o: ../mstl/m_type_traits.ipp
+tk_selection.o: ../mstl/m_utility.ipp
+tk_selection.o: ../mstl/m_limits.h
+tk_selection.o: ../mstl/m_bit_functions.h
+tk_selection.o: ../mstl/m_bit_functions.ipp
+tk_selection.o: ../mstl/m_assert.h
+tk_selection.o: ../mstl/m_exception.h
+tk_selection.o: ../mstl/m_backtrace.h
+tk_selection.o: ../mstl/m_exception.ipp
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h
@@ -243,4 +261,13 @@ tk_x11.o: ../mstl/m_assert.h
 tk_x11.o: ../mstl/m_exception.h
 tk_x11.o: ../mstl/m_backtrace.h
 tk_x11.o: ../mstl/m_exception.ipp
+tk_x11.o: ../mstl/m_sstream.h
+tk_x11.o: ../mstl/m_ostream.h
+tk_x11.o: ../mstl/m_ios.h
+tk_x11.o: ../mstl/m_ios.ipp
+tk_x11.o: ../mstl/m_ostream.ipp
+tk_x11.o: ../mstl/m_istream.h
+tk_x11.o: ../mstl/m_istream.ipp
+tk_x11.o: ../mstl/m_string.h
+tk_x11.o: ../mstl/m_string.ipp
 tk_xcursor.o: ./X11/Xcursor/Xcursor.h

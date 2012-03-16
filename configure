@@ -108,19 +108,23 @@ proc isInsaneUnixRelease {} {
         set insaneRelease ""
         if {![catch {exec lsb_release -is} id] && ![catch {exec lsb_release -rs} release]} {
             switch $id {
-                Ubuntu { if {$release >= "11.10" } { set insaneRelease "Ubuntu $release" } }
-                Debian { if {$release >= "7.0"   } { set insaneRelease "Debian $release" } }
+                Ubuntu      { if {$release >= "11.10" } { set insaneRelease "Ubuntu $release" } }
+                Debian      { if {$release >= "7.0"   } { set insaneRelease "Debian $release" } }
+                LinuxMint   { if {$release >= "12"    } { set insaneRelease "Linux Mint $release" } }
             }
         }
         if {[string length $insaneRelease] == 0} {
             if {[file exists /etc/lsb-release]} {
                 set isUbuntu 0
                 set isDebian 0
+                set isLinuxMint 1
                 set release ""
                 if {![catch { open /etc/lsb-release } f]} {
                     while {[gets $f line] >= 0} {
                         if {[string match {DISTRIB_ID=Ubuntu*} $line]} {
                             set isUbuntu 1
+                        } elseif {[string match {DISTRIB_ID=LinuxMint*} $line]} {
+                            set isLinuxMint 1
                         } elseif {[string match {DISTRIB_ID=Debian*} $line]} {
                             set isDebian 1
                         } elseif {[string match {DISTRIB_RELEASE=*} $line]} {
@@ -135,6 +139,8 @@ proc isInsaneUnixRelease {} {
                 }
                 if {$isUbuntu && [string range $release 0 4] >= "11.10"} {
                     set insaneRelease "Ubuntu $release"
+                } elseif {$isLinuxMint && [string range $release 0 2] >= "12"} {
+                    set insaneRelease "Linux Mint $release"
                 } elseif {$isDebian && [string range $release 0 3] >= "7.0"} {
                     set insaneRelease "Debian $release"
                 }
@@ -1434,7 +1440,7 @@ if {[string length $gxxVer]} {
             puts "The call of sub-processes is not working properly on"
             puts "this system, you may not get a proper error message"
             puts "in case of an exception."
-        } else {
+        } else { ;# Ubuntu, Linux Mint
             puts "You're about to build Scidb on an insane distribution"
             puts "($insaneRelease - the linker is broken - among other"
             puts "severe problems). Scidb may crash - but hopefully it"

@@ -24,6 +24,7 @@ extern "C"
 {
 	extern int Tkhtml_Init(Tcl_Interp*);
 	extern int Tkhtml_SafeInit(Tcl_Interp*);
+	extern int Tkdnd_Init(Tcl_Interp*);
 }
 
 
@@ -33,6 +34,7 @@ tk::init(Tcl_Interp* ti)
 	Tcl_Eval(ti, "namespace eval ::scidb {}");
 	Tcl_Eval(ti, "namespace eval ::scidb::tk {}");
 
+	selection_init(ti);
 	x11_init(ti);
 	window_manager_init(ti);
 	twm_init(ti);
@@ -45,6 +47,7 @@ tk::init(Tcl_Interp* ti)
 	notebook_init(ti);
 
 	Tkhtml_Init(ti);
+	Tkdnd_Init(ti);
 //	Tcl_SetVar(ti, "tcl_rcFileName", "~/.scidb", TCL_GLOBAL_ONLY)
 }
 

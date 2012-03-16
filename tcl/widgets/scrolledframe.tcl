@@ -293,7 +293,7 @@ proc Config {w args} {
 	if {!$flag || [llength $options]} {
 		# call frame config
 		uplevel 1 [linsert $options 0 [namespace current]::_$w configure]
-#	}
+	}
 }
 
 

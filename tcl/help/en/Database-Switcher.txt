@@ -31,6 +31,8 @@ While pressing the middle mouse button (i.e. the scroll wheel) an
 information box will be shown.
 </p>
 
+<h3>Administration</h3>
+
 <p>
 For adminstration of the database a context-sensitive menu is available:
 </p>
@@ -49,14 +51,14 @@ into other database formats or document formats.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileImport%</menuitem>
+<menuitem>%::application::database::mc::FileImport%</menuitem>
 Opens the <a href="File-Selection-Dialog.html">file selection dialog</a> for
 the selection of <abbr>PGN</abbr> files for import. It is possible  to select multiple
 <abbr>PGN</abbr> files simultaneously. The games will be appended at the end of the database.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileClose%</menuitem>
+<menuitem>%::application::database::mc::FileClose%</menuitem>
 The selected database will be closed. If there are changed games in this database,
 which are not yet saved, a security prompt will be done before closing the database.
 <note/>Closing the <a href="Clipbase.html">Clipbase</a> is not possible.
@@ -84,19 +86,19 @@ This is possibly only for Scidb and Scid databases
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileNew%</menuitem>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
 Create a new database. Only Scidb and Scid databases
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 can be created.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpen%</menuitem>
+<menuitem>%::application::database::mc::FileOpen%</menuitem>
 Open another database.
 </p>
 
 <p>
-<menuitem>%::menu::mc::FileOpenRecent%</menuitem>
+<menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
 Open a database via the database history.
 </p>
 
@@ -105,12 +107,26 @@ Open a database via the database history.
 Selection of the symbol size for the database tiles.
 </p>
 
+<p>
+<menuitem>%::application::database::mc::HelpSwitcher%</menuitem>
+Open the help dialog about the database switcher.
+</p>
+
 <dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
 <note/>This menu entry will be provided only for the
 <a href="Clipbase.html">Clipbase</a>.
+
+<h3>Drag &amp; Drop</h3>
+
+<p>
+Database can be opened with a drop of an URI list. If an URI list (list of files)
+will be dragged over the  database switcher, a colored background will
+indicate that a drop of this list is possible. In this way you may open databases
+with the help of Konqueror, Nautilus, or Dolphin.
+</p>
 
 END
 

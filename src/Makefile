@@ -46,6 +46,7 @@ TK_LIBS = \
 	tk/jpeg/libjpegd.a \
 	tk/treectrl/libtreectrl.a \
 	tk/html/libTkhtml3.a \
+	tk/tkdnd/libtkDnd.a \
 
 SRC = \
 	best_move.cpp \
@@ -62,7 +63,7 @@ ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EX
 ALL_TK_LIBS = $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 #ALL_TK_LIBS = $(TK_LIBS) /usr/local/lib/libtk.a $(X_LIBRARY) -lXft -lXss
 
-SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
+SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
 
 TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
 

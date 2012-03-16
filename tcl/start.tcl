@@ -270,6 +270,8 @@ set IOError(EncodingFailed)		"cannot write namebase file"
 set IOError(MaxFileSizeExceeded)	"maximal file size reached"
 set IOError(LoadFailed)				"load failed (too many event entries)"
 
+set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner didn't respond."
+
 }
 
 set Extensions		{.sci .si4 .si3 .cbh .pgn .zip}
@@ -414,5 +416,18 @@ proc openBase {pathList} {
 }
 
 } ;# namespace remote
+
+proc bgerror {err} {
+	if {$err eq "selection owner didn't respond"} {
+      set parent [::tkdnd::get_drop_target]
+      if {[llength $parent] == 0} { set parent .application }
+      after idle [list dialog::error \
+         -parent $parent \
+         -message $::util::mc::SelectionOwnerDidntRespond \
+      ]
+	} else {
+		::tk::dialog::error::bgerror $err
+	}
+}
 
 # vi:set ts=3 sw=3:

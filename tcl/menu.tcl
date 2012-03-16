@@ -388,8 +388,8 @@ proc viewFullscreen {{toggle {}}} {
 }
 
 
-proc openHelp {parent} {
-	::help::open $parent
+proc openHelp {parent {topic {}}} {
+	::help::open $parent $topic
 }
 
 } ;# namespace menu
