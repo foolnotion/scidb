@@ -247,7 +247,10 @@
 ::application::database::mc::HardLinkDetected		"Die Datei '%file1' kann nicht geladen werden weil sie bereits als Datei '%file2' geladen wurde. Dies kann nur geschehen wenn harte Links involviert sind."
 ::application::database::mc::HardLinkDetectedDetail "Wenn diese Datei zweifach geladen wird kann die Applikation abstürzen aufgrund der Verwndung von Subprozessen (Threads)."
 ::application::database::mc::CannotOpenUri			"Die folgenden URI können nicht geöffnet werden:"
-::application::database::mc::InvalidUri				"Der Drop-Inhalt ist keine gültige URI."
+::application::database::mc::InvalidUri				"Der Drop-Inhalt ist keine gültige URI-Liste."
+::application::database::mc::UriRejected				"Die folgenden Dateien wurden zurückgewiesen:"
+::application::database::mc::UriRejectedDetail		"Nur Scidb-Datenbanken können geöffnet werden:"
+::application::database::mc::EmptyUriList				"Der Drop-Inhalt ist leer."
 
 ::application::database::mc::RecodingDatabase		"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames				"%s Partie(n) umkodiert"

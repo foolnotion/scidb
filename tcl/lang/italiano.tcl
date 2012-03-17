@@ -248,7 +248,10 @@
 ::application::database::mc::HardLinkDetected		"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
 ::application::database::mc::HardLinkDetectedDetail "Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
 ::application::database::mc::CannotOpenUri			"Cannot open the following URI:" ;# NEW
-::application::database::mc::InvalidUri				"Drop content is not a valid URI." ;# NEW
+::application::database::mc::InvalidUri				"Drop content is not a valid URI list." ;# NEW
+::application::database::mc::UriRejected				"The following files are rejected:" ;# NEW
+::application::database::mc::UriRejectedDetail		"Only Scidb databases can be opened:" ;# NEW
+::application::database::mc::EmptyUriList				"Drop content is empty." ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames				"%s partite registrate"

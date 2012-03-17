@@ -125,7 +125,7 @@ Open the help dialog about the database switcher.
 Database can be opened with a drop of an URI list. If an URI list (list of files)
 will be dragged over the  database switcher, a colored background will
 indicate that a drop of this list is possible. In this way you may open databases
-with the help of Konqueror, Nautilus, or Dolphin.
+with the help of Dolphin, or Windows Explorer.
 </p>
 
 END

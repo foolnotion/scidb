@@ -267,10 +267,19 @@ proc olednd::_GetDropTypes { drop_target } {
 # ----------------------------------------------------------------------------
 proc olednd::_GetDroppedData {  } {
   variable _drop_target
+  variable _common_drag_source_types
   variable _prev_drop_target
   set _prev_drop_target $_drop_target
-  return [selection get -displayof $_drop_target \
-                        -selection XdndSelection -type STRING]
+  foreach type $_common_drag_source_types {
+    if {![catch {
+      return [selection get -displayof $_drop_target -selection XdndSelection \
+                            -type $type] result options]} {
+      return $result
+    }
+  }
+  # target should receive a leave event in any case
+  _HandleXdndLeave
+  return -options $options $result
 };# olednd::_GetDroppedData
 
 # ----------------------------------------------------------------------------
@@ -376,3 +385,5 @@ proc olednd::_supported_type { type } {
   if {[lsearch -exact $_unhandled_types $type] != -1} {return 1}
   return 0
 }; # olednd::_supported_type
+
+# vi:set ts=2 sw=2 et:

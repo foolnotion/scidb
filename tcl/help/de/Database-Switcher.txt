@@ -128,8 +128,7 @@ Datenbanken können auch durch einen Drop einer URI-Liste geöffnet werden. Wird e
 URI-Liste (Dateienliste) in das Datenbankumschaltfenster gezogen, so wird durch
 einen farbigen Hintergrund angezeigt, das ein Drop (Fallenlassen) erfolgen
 kann. Auf diese Weise kann das Öffnen von Datenbanken beispielsweise auch mit dem
-<!-- TODO: the next line should be independent from Linux -->
-Konqueror, Nautilus oder Dolphin erfolgen.
+Dolphin oder Windows Explorer erfolgen.
 </p>
 
 END

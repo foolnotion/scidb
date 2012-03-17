@@ -90,59 +90,59 @@ namespace eval tkdnd {
       }
     }
 
-    ## Get User's home directory: We try to locate the proper path from a set of
-    ## environmental variables...
-    foreach var {HOME HOMEPATH USERPROFILE ALLUSERSPROFILE APPDATA} {
-      if {[info exists env($var)]} {
-        if {[file isdirectory $env($var)]} {
-          set UserHomeDir $env($var)
-          break
-        }
-      }
-    }
-
-    ## Should use [tk windowingsystem] instead of tcl platform array:
-    ## OS X returns "unix," but that's not useful because it has its own
-    ## windowing system, aqua
-    ## Under windows we have to also combine HOMEDRIVE & HOMEPATH...
-    if {![info exists UserHomeDir] && 
-        [string equal $_windowingsystem windows] &&
-        [info exists env(HOMEDRIVE)] && [info exists env(HOMEPATH)]} {
-      if {[file isdirectory $env(HOMEDRIVE)$env(HOMEPATH)]} {
-        set UserHomeDir $env(HOMEDRIVE)$env(HOMEPATH)
-      }
-    }
-    ## Have we located the needed path?
-    if {![info exists UserHomeDir]} {
-      set UserHomeDir [pwd]
-    }
-    set UserHomeDir [file normalize $UserHomeDir]
-    
-    ## Try to locate a temporary directory...
-    foreach var {TKDND_TEMP_DIR TEMP TMP} {
-      if {[info exists env($var)]} {
-        if {[file isdirectory $env($var)] && [file writable $env($var)]} {
-          set _drop_file_temp_dir $env($var)
-          break
-        }
-      }
-    }
-    if {![info exists _drop_file_temp_dir]} {
-      foreach _dir [list "$UserHomeDir/Local Settings/Temp" \
-                         "$UserHomeDir/AppData/Local/Temp" \
-                         /tmp \
-                         C:/WINDOWS/Temp C:/Temp C:/tmp \
-                         D:/WINDOWS/Temp D:/Temp D:/tmp] {
-        if {[file isdirectory $_dir] && [file writable $_dir]} {
-          set _drop_file_temp_dir $_dir
-          break
-        }
-      }
-    }
-    if {![info exists _drop_file_temp_dir]} {
-      set _drop_file_temp_dir $UserHomeDir
-    }
-    set _drop_file_temp_dir [file native $_drop_file_temp_dir]
+#   ## Get User's home directory: We try to locate the proper path from a set of
+#   ## environmental variables...
+#   foreach var {HOME HOMEPATH USERPROFILE ALLUSERSPROFILE APPDATA} {
+#     if {[info exists env($var)]} {
+#       if {[file isdirectory $env($var)]} {
+#         set UserHomeDir $env($var)
+#         break
+#       }
+#     }
+#   }
+#
+#   ## Should use [tk windowingsystem] instead of tcl platform array:
+#   ## OS X returns "unix," but that's not useful because it has its own
+#   ## windowing system, aqua
+#   ## Under windows we have to also combine HOMEDRIVE & HOMEPATH...
+#   if {![info exists UserHomeDir] && 
+#       [string equal $_windowingsystem windows] &&
+#       [info exists env(HOMEDRIVE)] && [info exists env(HOMEPATH)]} {
+#     if {[file isdirectory $env(HOMEDRIVE)$env(HOMEPATH)]} {
+#       set UserHomeDir $env(HOMEDRIVE)$env(HOMEPATH)
+#     }
+#   }
+#   ## Have we located the needed path?
+#   if {![info exists UserHomeDir]} {
+#     set UserHomeDir [pwd]
+#   }
+#   set UserHomeDir [file normalize $UserHomeDir]
+#   
+#   ## Try to locate a temporary directory...
+#   foreach var {TKDND_TEMP_DIR TEMP TMP} {
+#     if {[info exists env($var)]} {
+#       if {[file isdirectory $env($var)] && [file writable $env($var)]} {
+#         set _drop_file_temp_dir $env($var)
+#         break
+#       }
+#     }
+#   }
+#   if {![info exists _drop_file_temp_dir]} {
+#     foreach _dir [list "$UserHomeDir/Local Settings/Temp" \
+#                        "$UserHomeDir/AppData/Local/Temp" \
+#                        /tmp \
+#                        C:/WINDOWS/Temp C:/Temp C:/tmp \
+#                        D:/WINDOWS/Temp D:/Temp D:/tmp] {
+#       if {[file isdirectory $_dir] && [file writable $_dir]} {
+#         set _drop_file_temp_dir $_dir
+#         break
+#       }
+#     }
+#   }
+#   if {![info exists _drop_file_temp_dir]} {
+#     set _drop_file_temp_dir $UserHomeDir
+#   }
+#   set _drop_file_temp_dir [file native $_drop_file_temp_dir]
     
     switch $_windowingsystem {
       x11 {
@@ -161,14 +161,14 @@ namespace eval tkdnd {
     }
   };# initialise
 
-  proc GetDropFileTempDirectory { } {
-    variable _drop_file_temp_dir
-    return $_drop_file_temp_dir
-  }
-  proc SetDropFileTempDirectory { dir } {
-    variable _drop_file_temp_dir
-    set _drop_file_temp_dir $dir
-  }
+# proc GetDropFileTempDirectory { } {
+#   variable _drop_file_temp_dir
+#   return $_drop_file_temp_dir
+# }
+# proc SetDropFileTempDirectory { dir } {
+#   variable _drop_file_temp_dir
+#   set _drop_file_temp_dir $dir
+# }
   
 };# namespace tkdnd
 

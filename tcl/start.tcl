@@ -425,6 +425,9 @@ proc bgerror {err} {
          -parent $parent \
          -message $::util::mc::SelectionOwnerDidntRespond \
       ]
+	} elseif {[string match {*selection doesn't exist*} $err]} {
+		# ignore this stupid message. This message appears
+		# in case of empty strings. this is not an error!
 	} else {
 		::tk::dialog::error::bgerror $err
 	}

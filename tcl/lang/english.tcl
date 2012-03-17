@@ -246,7 +246,10 @@
 ::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
 ::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads."
 ::application::database::mc::CannotOpenUri			"Cannot open the following URI:"
-::application::database::mc::InvalidUri				"Drop content is not a valid URI."
+::application::database::mc::InvalidUri				"Drop content is not a valid URI list."
+::application::database::mc::UriRejected				"The following files are rejected:"
+::application::database::mc::UriRejectedDetail		"Only Scidb databases can be opened:"
+::application::database::mc::EmptyUriList				"Drop content is empty."
 
 ::application::database::mc::RecodingDatabase		"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames				"%s game(s) recoded"

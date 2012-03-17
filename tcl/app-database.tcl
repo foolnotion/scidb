@@ -64,7 +64,10 @@ set ClipbaseDescription		"Temporary database, not kept on disk."
 set HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
 set HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."
 set CannotOpenUri				"Cannot open the following URI:"
-set InvalidUri					"Drop content is not a valid URI."
+set InvalidUri					"Drop content is not a valid URI list."
+set UriRejected				"The following files are rejected:"
+set UriRejectedDetail		"Only Scidb databases can be opened:"
+set EmptyUriList				"Drop content is empty."
 
 set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
@@ -157,6 +160,7 @@ array set Defaults {
 	si4-readonly			1
 	font-symbol-tiny		TkTooltipFont
 	font-symbol-normal	TkTextFont
+	drop:background		LemonChiffon
 }
 # lightsteelblue
 
@@ -298,11 +302,10 @@ proc finish {app} {
 	unset Positions
 	array set Positions {}
 
-	::tkdnd::drop_target register $Vars(canvas) DND_Text
-	bind $Vars(canvas) <<DropEnter>> [list $Vars(canvas) configure -background LemonChiffon]
-	bind $Vars(canvas) <<DropLeave>> [list $Vars(canvas) configure -background white]
-	bind $Vars(canvas) <<Drop>> [list $Vars(canvas) configure -background white]
-	bind $Vars(canvas) <<Drop>> +[namespace code { OpenUri %D }]
+	::tkdnd::drop_target register $Vars(canvas) DND_Files
+	bind $Vars(canvas) <<DropEnter>> [namespace code { HandleDropEvent enter %t }]
+	bind $Vars(canvas) <<DropLeave>> [namespace code { HandleDropEvent leave %t }]
+	bind $Vars(canvas) <<Drop>> [namespace code { HandleDropEvent %D %t }]
 }
 
 
@@ -786,13 +789,37 @@ proc Traverse {move} {
 }
 
 
+proc HandleDropEvent {action types} {
+	variable Vars
+	variable Defaults
+
+	switch $action {
+		enter {
+			$Vars(canvas) configure -background $Defaults(drop:background)
+		}
+		leave {
+			$Vars(canvas) configure -background white
+		}
+		default {
+			$Vars(canvas) configure -background white
+			OpenUri $action
+		}
+	}
+
+	return copy
+}
+
+
 proc OpenUri {uriFiles} {
 	variable Vars
 
 	set errorList {}
+	set rejectList {}
 	set databaseList {}
 
 	foreach file [split $uriFiles \n] {
+		set uri [string trimright $file]
+		set file $uri
 		if {[string length $file]} {
 			if {[string equal -length 5 $file "file:"]} {
 				if {[string equal -length 17 $file "file://localhost/"]} {
@@ -826,36 +853,37 @@ proc OpenUri {uriFiles} {
 
 			set file [file normalize $file]
 
-			if {[string match *.pgn.gz $file]} {
-				if {$file ni $databaseList} { lappend databaseList $file }
-			} else {
-				set origExt [file extension $file]
+			if {[file exists $file]} {
+				if {[string match *.pgn.gz $file]} {
+					if {$file ni $databaseList} { lappend databaseList $file }
+				} else {
+					set origExt [file extension $file]
 
-				if {[string length $origExt]} {
-					set origExt [string range $origExt 1 end]
-					set mappedExt [::scidb::misc::mapExtension $origExt]
+					if {[string length $origExt]} {
+						set origExt [string range $origExt 1 end]
+						set mappedExt [::scidb::misc::mapExtension $origExt]
 
-					if {$origExt ne $mappedExt} {
-						set f [file rootname $file]
-						append f . $mappedExt
-						if {[file exists $f]} {
-							set file $f
+						if {$origExt ne $mappedExt} {
+							set f [file rootname $file]
+							append f . $mappedExt
+							if {[file exists $f]} {
+								set file $f
+							}
 						}
 					}
-				}
 
-				if {[file exists $file]} {
 					switch [file extension $file] {
-						.sci - .si3 - .si4 - .cbh - .pgn {
+						.sci - .si3 - .si4 - .cbh - .pgn - .zip {
 							if {$file ni $databaseList} { lappend databaseList $file }
 						}
 						default {
-							if {$file ni $errorList} { lappend errorList $file }
+							if {$file ni $rejectList} { lappend rejectList $file }
 						}
 					}
-				} elseif {$file ni $errorList} {
-					lappend errorList $file
 				}
+			} elseif {$uri ni $errorList} {
+				# This shouldn't happen.
+				lappend errorList $uri
 			}
 		}
 	}
@@ -865,14 +893,26 @@ proc OpenUri {uriFiles} {
 	}
 
 	if {[llength $errorList]} {
-		if {[string match file:* $uriFiles]} {
+		if {[string match file:* $uriFiles] && [llength $databaseList] == 0} {
 			set message $mc::CannotOpenUri
 			append message \n\n [join $errorList \n]
 		} else {
 			set message $mc::InvalidUri
 		}
-
 		dialog::error -parent $Vars(canvas) -message $message
+	}
+
+	if {[llength $rejectList]} {
+		set message $mc::UriRejected
+		append message \n\n [join $rejectList \n]
+		set detail $mc::UriRejectedDetail
+		append detail " .sci, .si4, .si3, .cbh, .pgn, .pgn.gz, .zip"
+		dialog::info -parent $Vars(canvas) -message $message -detail $detail
+	}
+	
+	if {[llength $databaseList] + [llength $rejectList] + [llength $errorList] == 0} {
+		set message $mc::EmptyUriList
+		dialog::info -parent $Vars(canvas) -message $message
 	}
 }
 
