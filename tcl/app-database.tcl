@@ -802,7 +802,8 @@ proc HandleDropEvent {action types} {
 		}
 		default {
 			$Vars(canvas) configure -background white
-			OpenUri $action
+			# It is important that HandleDropEvent is returning as fast as possible.
+			after idle [namespace code [list OpenUri $action]]
 		}
 	}
 

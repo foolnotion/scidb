@@ -56,7 +56,9 @@
 #endif
 
 #define XDND_VERSION 5
-//#define SUPPORT_GNOME
+
+#define GNOME_SUPPORT
+//#define DEBUG_CLIENTMESSAGE_HANDLER
 
 #ifndef PACKAGE_NAME
 # define PACKAGE_NAME "tkDND"
@@ -74,18 +76,6 @@ extern void MotifDND_RegisterTypesObjCmd(Tk_Window tkwin);
 #define TkDND_TkWin(x) \
   (Tk_NameToWindow(interp, Tcl_GetString(x), Tk_MainWindow(interp)))
 
-#define TkDND_Eval(objc) \
-  for (i=0; i<objc; ++i) Tcl_IncrRefCount(objv[i]);\
-  if (Tcl_EvalObjv(interp, objc, objv, TCL_EVAL_GLOBAL) != TCL_OK) \
-      Tk_BackgroundError(interp); \
-  for (i=0; i<objc; ++i) Tcl_DecrRefCount(objv[i]);
-
-#define TkDND_Status_Eval(objc) \
-  for (i=0; i<objc; ++i) Tcl_IncrRefCount(objv[i]);\
-  status = Tcl_EvalObjv(interp, objc, objv, TCL_EVAL_GLOBAL);\
-  if (status != TCL_OK) Tk_BackgroundError(interp); \
-  for (i=0; i<objc; ++i) Tcl_DecrRefCount(objv[i]);
-
 #ifndef Tk_Interp
 /*
  * Tk 8.5 has a new function to return the interpreter that is associated with a
@@ -100,6 +90,120 @@ Tcl_Interp * TkDND_Interp(Tk_Window tkwin) {
 } /* Tk_Interp */
 #define Tk_Interp TkDND_Interp
 #endif /* Tk_Interp */
+
+int
+TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
+{
+  int i;
+  int status;
+
+  for (i = 0; i < objc; ++i)
+    Tcl_IncrRefCount(objv[i]);
+  status = Tcl_EvalObjv(interp, objc, objv, TCL_EVAL_GLOBAL);
+  if (status != TCL_OK)
+    Tk_BackgroundError(interp);
+  for (i = 0; i < objc; ++i)
+    Tcl_DecrRefCount(objv[i]);
+  return status;
+}
+
+#ifdef GNOME_SUPPORT
+
+#include "tkInt.h"
+
+static Tk_Window
+GetWmFrameChild(Tk_Window tkwin) {
+  if (Tk_PathName(tkwin) == NULL) {
+    Window    xroot;
+    Window    xwmwin;
+    Window*   childs;
+    unsigned  nchilds;
+
+    if (XQueryTree(Tk_Display(tkwin), Tk_WindowId(tkwin),
+                   &xroot, &xwmwin, &childs, &nchilds) && childs) {
+      if (nchilds == 1) {
+        /* This is GNOME. We have to use the child window. */
+        tkwin = Tk_IdToWindow(Tk_Display(tkwin), childs[0]);
+      }
+      XFree(childs);
+    }
+  }
+
+  return tkwin;
+}
+
+static Tk_Window
+CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
+  Tk_Window mouse_tkwin;
+  int childX, childY;
+
+  if (Tk_PathName(tkwin) == NULL) {
+    Tk_Window w = GetWmFrameChild(tkwin);
+    if (w == tkwin)
+      return tkwin;
+    tkwin = w;
+  }
+
+  Tk_GetRootCoords(tkwin, &childX, &childY);
+  rootX -= childX;
+  rootY -= childY;
+  mouse_tkwin = tkwin;
+
+  while (tkwin != NULL) {
+    TkWindow* winPtr = ((TkWindow*)tkwin)->childList;
+    tkwin = NULL;
+
+    for ( ; winPtr != NULL; winPtr = winPtr->nextPtr) {
+      if (!(winPtr->flags & TK_ANONYMOUS_WINDOW)) {
+        Tk_Window child = (Tk_Window)winPtr;
+        int x = Tk_X(child);
+        int y = Tk_Y(child);
+        int width = Tk_Width(child);
+        int height = Tk_Height(child);
+
+        if (x <= rootX && y <= rootY && rootX < x + width && rootY < y + height) {
+          tkwin = child;
+          mouse_tkwin = child;
+          rootX -= x;
+          rootY -= y;
+          break;
+        }
+      }
+    }
+  }
+
+  return mouse_tkwin;
+}
+
+static void
+SetWmFrameAware(Tk_Window path) {
+  Tk_Window root= path;
+  Window    xroot;
+  Window    xwmwin;
+  Window*   childs;
+  unsigned  nchilds;
+
+  while (!Tk_IsTopLevel(root)) {
+    root = Tk_Parent(root);
+    if (!root)
+      return;
+  }
+
+  if (XQueryTree(Tk_Display(root), Tk_WindowId(root),
+                 &xroot, &xwmwin, &childs, &nchilds)) {
+    if (xwmwin != None) {
+      Atom version = XDND_VERSION;
+      /* Set XdndAware to window manager frame, otherwise GNOME will not work. */
+      XChangeProperty(Tk_Display(root), xwmwin,
+                      Tk_InternAtom(path, "XdndAware"),
+                      XA_ATOM, 32, PropModeReplace,
+                      (unsigned char *) &version, 1);
+    }
+    if (childs)
+      XFree(childs);
+  }
+}
+#endif
 
 int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
                               int objc, Tcl_Obj *CONST objv[]) {
@@ -122,31 +226,8 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *) &version, 1);
 
-#ifdef SUPPORT_GNOME
-  {
-    Tk_Window root = path;
-    Window    xroot;
-    Window    xwmwin;
-    Window*   childs;
-    unsigned  nchilds;
-
-    while (!Tk_IsTopLevel(root)) {
-      root = Tk_Parent(root);
-      if (!root)
-        break;
-    }
-
-    if (root) {
-      if (XQueryTree(Tk_Display(root), Tk_WindowId(root),
-                     &xroot, &xwmwin, &childs, &nchilds)) {
-        /* Set XdndAware to decoration window, otherwise GNOME drops will not work. */
-        XChangeProperty(Tk_Display(root), xwmwin,
-                        Tk_InternAtom(path, "XdndAware"),
-                        XA_ATOM, 32, PropModeReplace,
-                        (unsigned char *) &version, 1);
-      }
-    }
-  }
+#ifdef GNOME_SUPPORT
+  SetWmFrameAware(path);
 #endif
 
 #ifdef TKDND_ENABLE_MOTIF_DROPS
@@ -222,7 +303,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent cm) {
     element = Tcl_NewStringObj(Tk_GetAtomName(tkwin, typelist[i]), -1);
     Tcl_ListObjAppendElement(NULL, objv[3], element);
   }
-  TkDND_Eval(4);
+  TkDND_Eval(TkDND_Interp(tkwin), 4, objv);
   Tcl_Free((char *) typelist);
   return True;
 } /* TkDND_HandleXdndEnter */
@@ -233,7 +314,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
   Tcl_Obj* result;
   Tcl_Obj* objv[4];
   const unsigned long *l = (const unsigned long *) cm.data.l;
-  int rootX, rootY, i, index, status;
+  int rootX, rootY, index, status;
   XClientMessageEvent response;
   int width = 1, height = 1;
   static char *DropActions[] = {
@@ -250,18 +331,24 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
   rootX = (l[2] & 0xffff0000) >> 16;
   rootY =  l[2] & 0x0000ffff;
   mouse_tkwin = Tk_CoordsToWindow(rootX, rootY, tkwin);
+#ifdef GNOME_SUPPORT
+  if (mouse_tkwin == NULL) {
+    /* The GNOME shape is confusing Tk_CoordsToWindow(), because this shape has
+     * the root window as parent. What the hell is GNOME doing? */
+    mouse_tkwin = CoordsToWindow(rootX, rootY, tkwin);
+  }
+#endif
   if (mouse_tkwin == NULL) {
     /* We received the client message, but we cannot find a window? Strange...*/
     /* A last attemp: execute wm containing x, y */
     objv[0] = Tcl_NewStringObj("update", -1);
     objv[1] = Tcl_NewStringObj("idletasks", -1);
-    TkDND_Eval(2);
+    TkDND_Eval(TkDND_Interp(tkwin), 2, objv);
     objv[0] = Tcl_NewStringObj("winfo", -1);
     objv[1] = Tcl_NewStringObj("containing", -1);
     objv[2] = Tcl_NewIntObj(rootX);
     objv[3] = Tcl_NewIntObj(rootY);
-    TkDND_Status_Eval(4);
-    if (status == TCL_OK) {
+    if (TkDND_Eval(TkDND_Interp(tkwin), 4, objv) == TCL_OK) {
       result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
       mouse_tkwin = Tk_NameToWindow(interp, Tcl_GetString(result),
                                     Tk_MainWindow(interp));
@@ -270,7 +357,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
   }
   /* Get the drag source. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  TkDND_Status_Eval(1); if (status != TCL_OK) return False;
+  if (TkDND_Eval(TkDND_Interp(tkwin), 1, objv) != TCL_OK) return False;
   if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
                          (long *)&response.window) != TCL_OK) return False;
   /* Now that we have found the containing widget, ask it whether it will accept
@@ -281,8 +368,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
     objv[1] = Tcl_NewStringObj(Tk_PathName(mouse_tkwin), -1);
     objv[2] = Tcl_NewIntObj(rootX);
     objv[3] = Tcl_NewIntObj(rootY);
-    TkDND_Status_Eval(4);
-    if (status == TCL_OK) {
+    if (TkDND_Eval(TkDND_Interp(tkwin), 4, objv) == TCL_OK) {
       /* Get the returned action... */
       result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
       status = Tcl_GetIndexFromObj(interp, result, (const char **) DropActions,
@@ -316,6 +402,12 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
       response.data.l[1] = 0; /* Refuse drop. */
     }
   }
+#ifdef GNOME_SUPPORT
+  if (Tk_PathName(tkwin) == NULL) {
+    /* GNOME is expecting the window manager frame. */
+    response.data.l[0] = Tk_WindowId(tkwin);
+  }
+#endif
   XSendEvent(cm.display, response.window, False, NoEventMask,
              (XEvent*)&response);
   return True;
@@ -324,10 +416,9 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
 int TkDND_HandleXdndLeave(Tk_Window tkwin, XClientMessageEvent cm) {
   Tcl_Interp *interp = Tk_Interp(tkwin);
   Tcl_Obj* objv[1];
-  int i;
   if (interp == NULL) return False;
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndLeave", -1);
-  TkDND_Eval(1);
+  TkDND_Eval(TkDND_Interp(tkwin), 1, objv);
   return True;
 } /* TkDND_HandleXdndLeave */
 
@@ -335,7 +426,7 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   XClientMessageEvent finished;
   Tcl_Interp *interp = Tk_Interp(tkwin);
   Tcl_Obj* objv[2], *result;
-  int status, i, index;
+  int status, index;
   Time time = cm.data.l[2];
   static char *DropActions[] = {
     "copy", "move", "link", "ask",  "private", "refuse_drop", "default",
@@ -350,22 +441,31 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
 
   /* Get the drag source. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  TkDND_Status_Eval(1); if (status != TCL_OK) return False;
+  if (TkDND_Eval(TkDND_Interp(tkwin), 1, objv) != TCL_OK) return False;
   if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
                          (long *) &finished.window) != TCL_OK) return False;
 
   /* Get the drop target. */
+#ifdef GNOME_SUPPORT
+  /* It seems that GNOME is expecting thw window manager frame */
+  if (Tk_PathName(tkwin) == NULL) {
+    finished.data.l[0] = Tk_WindowId(tkwin);
+  } else {
+#endif
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDropTarget", -1);
-  TkDND_Status_Eval(1);
+  TkDND_Eval(TkDND_Interp(tkwin), 1, objv);
   if (Tcl_GetLongFromObj(interp,
          Tcl_GetObjResult(interp), &finished.data.l[0]) != TCL_OK) {
     finished.data.l[0] = None;
   }
+#ifdef GNOME_SUPPORT
+  }
+#endif
 
   /* Call out Tcl callback. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndDrop", -1);
   objv[1] = Tcl_NewLongObj(time);
-  TkDND_Status_Eval(2);
+  TkDND_Eval(TkDND_Interp(tkwin), 2, objv);
   finished.data.l[1] = 1; /* Accept drop. */
   if (status == TCL_OK) {
     /* Get the returned action... */
@@ -414,23 +514,6 @@ static int TkDND_XDNDHandler(Tk_Window tkwin, XEvent *xevent) {
   XClientMessageEvent clientMessage;
   if (xevent->type != ClientMessage) return False;
   clientMessage = xevent->xclient;
-
-#ifdef SUPPORT_GNOME
-  if (Tk_PathName(tkwin) == NULL) {
-    Window    xroot;
-    Window    xwmwin;
-    Window*   childs;
-    unsigned  nchilds;
-
-    if (XQueryTree(Tk_Display(tkwin), Tk_WindowId(tkwin),
-                   &xroot, &xwmwin, &childs, &nchilds) &&
-        nchilds == 1 && childs) {
-      /* This is GNOME. We have to use the child window. */
-      tkwin = Tk_IdToWindow(Tk_Display(tkwin), childs[0]);
-      XFree(childs);
-    }
-  }
-#endif
 
   if (clientMessage.message_type == Tk_InternAtom(tkwin, "XdndPosition")) {
 #ifdef DEBUG_CLIENTMESSAGE_HANDLER
