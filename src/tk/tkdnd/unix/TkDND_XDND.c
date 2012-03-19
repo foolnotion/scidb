@@ -465,9 +465,8 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   /* Call out Tcl callback. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndDrop", -1);
   objv[1] = Tcl_NewLongObj(time);
-  TkDND_Eval(TkDND_Interp(tkwin), 2, objv);
-  finished.data.l[1] = 1; /* Accept drop. */
-  if (status == TCL_OK) {
+  if (TkDND_Eval(TkDND_Interp(tkwin), 2, objv) == TCL_OK) {
+    finished.data.l[1] = 1; /* Accept drop. */
     /* Get the returned action... */
     result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
     status = Tcl_GetIndexFromObj(interp, result, (const char **) DropActions,
