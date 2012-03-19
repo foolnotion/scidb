@@ -195,6 +195,10 @@ tk_selection.o: ../mstl/m_assert.h
 tk_selection.o: ../mstl/m_exception.h
 tk_selection.o: ../mstl/m_backtrace.h
 tk_selection.o: ../mstl/m_exception.ipp
+tk_selection.o: tk8.5/tkInt.h
+tk_selection.o: tk8.5/tkPort.h
+tk_selection.o: tk8.5/tkUnixPort.h
+tk_selection.o: tk8.5/tkIntDecls.h
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h

@@ -56,6 +56,20 @@
 #endif
 
 #define XDND_VERSION 5
+//#define SUPPORT_GNOME
+
+#ifndef PACKAGE_NAME
+# define PACKAGE_NAME "tkDND"
+#endif
+
+#ifndef PACKAGE_VERSION
+# define PACKAGE_VERSION "2.2"
+#endif
+
+#ifdef TKDND_ENABLE_MOTIF_DROPS
+extern int MotifDND_HandleClientMessage(Tk_Window tkwin, XEvent* xevent);
+extern void MotifDND_RegisterTypesObjCmd(Tk_Window tkwin);
+#endif
 
 #define TkDND_TkWin(x) \
   (Tk_NameToWindow(interp, Tcl_GetString(x), Tk_MainWindow(interp)))
@@ -107,6 +121,37 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
                   Tk_InternAtom(path, "XdndAware"),
                   XA_ATOM, 32, PropModeReplace,
                   (unsigned char *) &version, 1);
+
+#ifdef SUPPORT_GNOME
+  {
+    Tk_Window root = path;
+    Window    xroot;
+    Window    xwmwin;
+    Window*   childs;
+    unsigned  nchilds;
+
+    while (!Tk_IsTopLevel(root)) {
+      root = Tk_Parent(root);
+      if (!root)
+        break;
+    }
+
+    if (root) {
+      if (XQueryTree(Tk_Display(root), Tk_WindowId(root),
+                     &xroot, &xwmwin, &childs, &nchilds)) {
+        /* Set XdndAware to decoration window, otherwise GNOME drops will not work. */
+        XChangeProperty(Tk_Display(root), xwmwin,
+                        Tk_InternAtom(path, "XdndAware"),
+                        XA_ATOM, 32, PropModeReplace,
+                        (unsigned char *) &version, 1);
+      }
+    }
+  }
+#endif
+
+#ifdef TKDND_ENABLE_MOTIF_DROPS
+  MotifDND_RegisterTypesObjCmd(path);
+#endif
   return TCL_OK;
 #if 0
   int status;
@@ -209,7 +254,8 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
     /* We received the client message, but we cannot find a window? Strange...*/
     /* A last attemp: execute wm containing x, y */
     objv[0] = Tcl_NewStringObj("update", -1);
-    TkDND_Eval(1);
+    objv[1] = Tcl_NewStringObj("idletasks", -1);
+    TkDND_Eval(2);
     objv[0] = Tcl_NewStringObj("winfo", -1);
     objv[1] = Tcl_NewStringObj("containing", -1);
     objv[2] = Tcl_NewIntObj(rootX);
@@ -369,6 +415,23 @@ static int TkDND_XDNDHandler(Tk_Window tkwin, XEvent *xevent) {
   if (xevent->type != ClientMessage) return False;
   clientMessage = xevent->xclient;
 
+#ifdef SUPPORT_GNOME
+  if (Tk_PathName(tkwin) == NULL) {
+    Window    xroot;
+    Window    xwmwin;
+    Window*   childs;
+    unsigned  nchilds;
+
+    if (XQueryTree(Tk_Display(tkwin), Tk_WindowId(tkwin),
+                   &xroot, &xwmwin, &childs, &nchilds) &&
+        nchilds == 1 && childs) {
+      /* This is GNOME. We have to use the child window. */
+      tkwin = Tk_IdToWindow(Tk_Display(tkwin), childs[0]);
+      XFree(childs);
+    }
+  }
+#endif
+
   if (clientMessage.message_type == Tk_InternAtom(tkwin, "XdndPosition")) {
 #ifdef DEBUG_CLIENTMESSAGE_HANDLER
     printf("XDND_HandleClientMessage: Received XdndPosition\n");
@@ -402,7 +465,7 @@ static int TkDND_XDNDHandler(Tk_Window tkwin, XEvent *xevent) {
     return TkDND_HandleXdndFinished(tkwin, clientMessage);
   } else {
 #ifdef TKDND_ENABLE_MOTIF_DROPS
-    if (MotifDND_HandleClientMessage(dnd, *xevent)) return True;
+    if (MotifDND_HandleClientMessage(tkwin, xevent)) return True;
 #endif /* TKDND_ENABLE_MOTIF_DROPS */
   }
   return False;

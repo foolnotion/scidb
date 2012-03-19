@@ -895,7 +895,12 @@ proc OpenUri {uriFiles} {
 	if {[llength $errorList]} {
 		if {[string match file:* $uriFiles] && [llength $databaseList] == 0} {
 			set message $mc::CannotOpenUri
-			append message \n\n [join $errorList \n]
+			if {[llength $errorList] > 10} {
+				append message \n\n [join [lrange $errorList 0 9] \n]
+				append message \n...
+			} else {
+				append message \n\n [join $errorList \n]
+			}
 		} else {
 			set message $mc::InvalidUri
 		}
@@ -904,7 +909,12 @@ proc OpenUri {uriFiles} {
 
 	if {[llength $rejectList]} {
 		set message $mc::UriRejected
-		append message \n\n [join $rejectList \n]
+		if {[llength $rejectList] > 10} {
+			append message \n\n [join [lrange $rejectList 0 9] \n]
+			append message \n...
+		} else {
+			append message \n\n [join $rejectList \n]
+		}
 		set detail $mc::UriRejectedDetail
 		append detail " .sci, .si4, .si3, .cbh, .pgn, .pgn.gz, .zip"
 		dialog::info -parent $Vars(canvas) -message $message -detail $detail

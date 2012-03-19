@@ -12,20 +12,20 @@
 
 include ../../../Makefile.in
 
-.SUFFIXES: .cpp
+.SUFFIXES: .c
 .PRECIOUS:
 
 INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) -I../tk$(TCL_VERSION)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING) -DPACKAGE_NAME=\"tkDND\" -DPACKAGE_VERSION=\"2.2\"
 
-SRC	= unix/TkDND_XDND.c
-OBJS	= TkDND_XDND.o
+SRC	= unix/TkDND_XDND.c #unix/Motif.c
+OBJS	= $(SRC:.c=.o)
 LIB	= libtkDnd
 
 all: $(LIB).a
 
 clean:
-	@rm -f $(LIB).a TkDND_XDND.o Makefile.bak
+	@rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
@@ -36,10 +36,10 @@ depend:
 
 $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
-	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
+	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o #Motif.o
 	@$(RANLIB) $(LIB).a
 
-TkDND_XDND.o: unix/TkDND_XDND.c
+.c.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 

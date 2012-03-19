@@ -331,7 +331,7 @@ proc xdnd::_GetDroppedData { time } {
     # _get_selection $_drop_target $time $type
     if {![catch {
       selection get -displayof $_drop_target -selection XdndSelection \
-                    -type $type} result options]} {
+                    -type $type -time $time} result options]} {
       return $result
     }
   }
