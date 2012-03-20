@@ -5,6 +5,10 @@
 // Url    : $URL$
 // ======================================================================
 
+// ======================================================================
+// Copyright: (C) 2012 Gregor Cramer
+// ======================================================================
+
 /*
  * TkDND_XDND.h -- Tk XDND Drag'n'Drop Protocol Implementation
  *
@@ -76,20 +80,6 @@ extern void MotifDND_RegisterTypesObjCmd(Tk_Window tkwin);
 #define TkDND_TkWin(x) \
   (Tk_NameToWindow(interp, Tcl_GetString(x), Tk_MainWindow(interp)))
 
-#ifndef Tk_Interp
-/*
- * Tk 8.5 has a new function to return the interpreter that is associated with a
- * window. Under 8.4 and earlier versions, simulate this function.
- */
-#include "tkInt.h"
-Tcl_Interp * TkDND_Interp(Tk_Window tkwin) {
-  if (tkwin != NULL && ((TkWindow *)tkwin)->mainPtr != NULL) {
-    return ((TkWindow *)tkwin)->mainPtr->interp;
-  }
-  return NULL;
-} /* Tk_Interp */
-#define Tk_Interp TkDND_Interp
-#endif /* Tk_Interp */
 
 int
 TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
@@ -109,7 +99,9 @@ TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
 
 #ifdef GNOME_SUPPORT
 
-#include "tkInt.h"
+#ifdef USE_TKINT_H
+# include "tkInt.h"
+#endif
 
 static Tk_Window
 GetWmFrameChild(Tk_Window tkwin) {
@@ -150,6 +142,7 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
   mouse_tkwin = tkwin;
 
   while (tkwin != NULL) {
+#ifdef USE_TKINT_H
     TkWindow* winPtr = ((TkWindow*)tkwin)->childList;
     tkwin = NULL;
 
@@ -170,6 +163,52 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
         }
       }
     }
+#else
+    Tcl_Interp* interp = Tk_Interp(tkwin);
+    Tcl_Obj* objv[3];
+    Tcl_Obj* result;
+    int length, i;
+
+    objv[0] = Tcl_NewStringObj("winfo", -1);
+    objv[1] = Tcl_NewStringObj("children", -1);
+    objv[2] = Tcl_NewStringObj(Tk_PathName(tkwin), -1);
+
+    if (TkDND_Eval(interp, 3, objv) != TCL_OK)
+      return mouse_tkwin;
+
+    result = Tcl_GetObjResult(interp);
+    Tcl_IncrRefCount(result);
+    tkwin = NULL;
+
+    if (Tcl_ListObjLength(interp, result, &length) == TCL_OK) {
+      for (i = 0; i < length; ++i) {
+        Tcl_Obj* path;
+        Tk_Window child;
+        int x, y, width, height;
+
+        if (Tcl_ListObjIndex(interp, result, i, &path) == TCL_OK) {
+          child = Tk_NameToWindow(interp, Tcl_GetString(path), mouse_tkwin);
+
+          if (child != NULL) {
+            x = Tk_X(child);
+            y = Tk_Y(child);
+            width = Tk_Width(child);
+            height = Tk_Height(child);
+
+            if (x <= rootX && y <= rootY && rootX < x + width && rootY < y + height) {
+              tkwin = child;
+              mouse_tkwin = child;
+              rootX -= x;
+              rootY -= y;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    Tcl_DecrRefCount(result);
+#endif
   }
 
   return mouse_tkwin;
@@ -303,7 +342,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent cm) {
     element = Tcl_NewStringObj(Tk_GetAtomName(tkwin, typelist[i]), -1);
     Tcl_ListObjAppendElement(NULL, objv[3], element);
   }
-  TkDND_Eval(TkDND_Interp(tkwin), 4, objv);
+  TkDND_Eval(Tk_Interp(tkwin), 4, objv);
   Tcl_Free((char *) typelist);
   return True;
 } /* TkDND_HandleXdndEnter */
@@ -343,12 +382,12 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
     /* A last attemp: execute wm containing x, y */
     objv[0] = Tcl_NewStringObj("update", -1);
     objv[1] = Tcl_NewStringObj("idletasks", -1);
-    TkDND_Eval(TkDND_Interp(tkwin), 2, objv);
+    TkDND_Eval(Tk_Interp(tkwin), 2, objv);
     objv[0] = Tcl_NewStringObj("winfo", -1);
     objv[1] = Tcl_NewStringObj("containing", -1);
     objv[2] = Tcl_NewIntObj(rootX);
     objv[3] = Tcl_NewIntObj(rootY);
-    if (TkDND_Eval(TkDND_Interp(tkwin), 4, objv) == TCL_OK) {
+    if (TkDND_Eval(Tk_Interp(tkwin), 4, objv) == TCL_OK) {
       result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
       mouse_tkwin = Tk_NameToWindow(interp, Tcl_GetString(result),
                                     Tk_MainWindow(interp));
@@ -357,7 +396,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
   }
   /* Get the drag source. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  if (TkDND_Eval(TkDND_Interp(tkwin), 1, objv) != TCL_OK) return False;
+  if (TkDND_Eval(Tk_Interp(tkwin), 1, objv) != TCL_OK) return False;
   if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
                          (long *)&response.window) != TCL_OK) return False;
   /* Now that we have found the containing widget, ask it whether it will accept
@@ -368,7 +407,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
     objv[1] = Tcl_NewStringObj(Tk_PathName(mouse_tkwin), -1);
     objv[2] = Tcl_NewIntObj(rootX);
     objv[3] = Tcl_NewIntObj(rootY);
-    if (TkDND_Eval(TkDND_Interp(tkwin), 4, objv) == TCL_OK) {
+    if (TkDND_Eval(Tk_Interp(tkwin), 4, objv) == TCL_OK) {
       /* Get the returned action... */
       result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
       status = Tcl_GetIndexFromObj(interp, result, (const char **) DropActions,
@@ -418,7 +457,7 @@ int TkDND_HandleXdndLeave(Tk_Window tkwin, XClientMessageEvent cm) {
   Tcl_Obj* objv[1];
   if (interp == NULL) return False;
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndLeave", -1);
-  TkDND_Eval(TkDND_Interp(tkwin), 1, objv);
+  TkDND_Eval(Tk_Interp(tkwin), 1, objv);
   return True;
 } /* TkDND_HandleXdndLeave */
 
@@ -441,7 +480,7 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
 
   /* Get the drag source. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  if (TkDND_Eval(TkDND_Interp(tkwin), 1, objv) != TCL_OK) return False;
+  if (TkDND_Eval(Tk_Interp(tkwin), 1, objv) != TCL_OK) return False;
   if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
                          (long *) &finished.window) != TCL_OK) return False;
 
@@ -453,7 +492,7 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   } else {
 #endif
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDropTarget", -1);
-  TkDND_Eval(TkDND_Interp(tkwin), 1, objv);
+  TkDND_Eval(Tk_Interp(tkwin), 1, objv);
   if (Tcl_GetLongFromObj(interp,
          Tcl_GetObjResult(interp), &finished.data.l[0]) != TCL_OK) {
     finished.data.l[0] = None;
@@ -465,7 +504,7 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   /* Call out Tcl callback. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndDrop", -1);
   objv[1] = Tcl_NewLongObj(time);
-  if (TkDND_Eval(TkDND_Interp(tkwin), 2, objv) == TCL_OK) {
+  if (TkDND_Eval(Tk_Interp(tkwin), 2, objv) == TCL_OK) {
     finished.data.l[1] = 1; /* Accept drop. */
     /* Get the returned action... */
     result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);

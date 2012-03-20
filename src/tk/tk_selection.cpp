@@ -18,8 +18,6 @@
 
 #include "tk_init.h"
 
-#include "tcl_base.h"
-
 #include "m_string.h"
 #include "m_assert.h"
 
@@ -29,7 +27,6 @@
 
 #include <tcl.h>
 #include <tk.h>
-#include <tkInt.h>
 #include <string.h>
 
 
@@ -209,14 +206,12 @@ selEventProc(Tk_Window tkwin, XEvent *eventPtr)
 
 		if (type == xaPlainText || type == xaPlainTextUtf8 || type == xaUriList)
 		{
-			Tcl_Interp* ti = ((TkWindow *)tkwin)->mainPtr->interp;
-
 			while (numItems > 0 && propInfo[numItems - 1] == '\0')
 				--numItems;
 
 			if (type == xaPlainTextUtf8)
 			{
-				Tcl_SetObjResult(ti, Tcl_NewStringObj(propInfo, numItems));
+				Tcl_SetObjResult(Tk_Interp(tkwin), Tcl_NewStringObj(propInfo, numItems));
 			}
 			else
 			{
@@ -226,7 +221,7 @@ selEventProc(Tk_Window tkwin, XEvent *eventPtr)
 					numItems = unescapeChars(propInfo, propInfo + numItems) - propInfo;
 
 				Tcl_ExternalToUtfDString(0, propInfo, numItems, &ds);
-				Tcl_DStringResult(ti, &ds);
+				Tcl_DStringResult(Tk_Interp(tkwin), &ds);
 				Tcl_DStringFree(&ds);
 			}
 
