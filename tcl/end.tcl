@@ -173,7 +173,6 @@ set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------
 
-::tkdnd::initialise
 ::theme::setTheme $menu::Theme
 ::menu::setup
 ::board::setupTheme

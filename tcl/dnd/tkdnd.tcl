@@ -44,7 +44,7 @@
 #
 
 package require Tk
-package require tkDND 2.2
+package require tkDND 2.3
 
 namespace eval tkdnd {
   variable _topw ".drag"
@@ -70,9 +70,11 @@ namespace eval tkdnd {
   # ----------------------------------------------------------------------------
   proc initialise {} {
     variable _platform_namespace
-    variable _drop_file_temp_dir
+#   variable _drop_file_temp_dir
     variable _windowingsystem
-    global env
+#   global env
+
+    if {[info exists _windowingsystem]} { return }
 
     switch [tk windowingsystem] {
       x11 {
@@ -169,6 +171,8 @@ namespace eval tkdnd {
 #   variable _drop_file_temp_dir
 #   set _drop_file_temp_dir $dir
 # }
+
+  initialise
   
 };# namespace tkdnd
 
@@ -399,3 +403,5 @@ proc tkdnd::platform_independent_type { type } {
   variable _platform_namespace
   return [${_platform_namespace}::_platform_independent_type $type]
 }; # tkdnd::platform_independent_type
+
+# vi:set ts=2 sw=2 et:

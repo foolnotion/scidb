@@ -69,7 +69,7 @@
 #endif
 
 #ifndef PACKAGE_VERSION
-# define PACKAGE_VERSION "2.2"
+# define PACKAGE_VERSION "2.3"
 #endif
 
 #ifdef TKDND_ENABLE_MOTIF_DROPS
@@ -99,9 +99,9 @@ TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
 
 #ifdef GNOME_SUPPORT
 
-#ifdef USE_TKINT_H
-# include "tkInt.h"
-#endif
+# ifdef USE_TKINT_H
+#  include "tkInt.h"
+# endif
 
 static Tk_Window
 GetWmFrameChild(Tk_Window tkwin) {
@@ -129,13 +129,7 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
   Tk_Window mouse_tkwin;
   int childX, childY;
 
-  if (Tk_PathName(tkwin) == NULL) {
-    Tk_Window w = GetWmFrameChild(tkwin);
-    if (w == tkwin)
-      return tkwin;
-    tkwin = w;
-  }
-
+  tkwin = GetWmFrameChild(tkwin);
   Tk_GetRootCoords(tkwin, &childX, &childY);
   rootX -= childX;
   rootY -= childY;
@@ -174,7 +168,7 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
     objv[2] = Tcl_NewStringObj(Tk_PathName(tkwin), -1);
 
     if (TkDND_Eval(interp, 3, objv) != TCL_OK)
-      return mouse_tkwin;
+      return NULL;
 
     result = Tcl_GetObjResult(interp);
     Tcl_IncrRefCount(result);
@@ -216,24 +210,26 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
 
 static void
 SetWmFrameAware(Tk_Window path) {
-  Tk_Window root= path;
+  Tk_Window toplevel = path;
   Window    xroot;
   Window    xwmwin;
   Window*   childs;
   unsigned  nchilds;
 
-  while (!Tk_IsTopLevel(root)) {
-    root = Tk_Parent(root);
-    if (!root)
+  while (!Tk_IsTopLevel(toplevel)) {
+    toplevel = Tk_Parent(toplevel);
+    if (!toplevel)
       return;
   }
 
-  if (XQueryTree(Tk_Display(root), Tk_WindowId(root),
+  Tk_MakeWindowExist(toplevel);
+
+  if (XQueryTree(Tk_Display(toplevel), Tk_WindowId(toplevel),
                  &xroot, &xwmwin, &childs, &nchilds)) {
     if (xwmwin != None) {
       Atom version = XDND_VERSION;
       /* Set XdndAware to window manager frame, otherwise GNOME will not work. */
-      XChangeProperty(Tk_Display(root), xwmwin,
+      XChangeProperty(Tk_Display(toplevel), xwmwin,
                       Tk_InternAtom(path, "XdndAware"),
                       XA_ATOM, 32, PropModeReplace,
                       (unsigned char *) &version, 1);
@@ -266,6 +262,14 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
                   (unsigned char *) &version, 1);
 
 #ifdef GNOME_SUPPORT
+  /* For GNOME support we have to set the awareness to the window manager
+   * frame. One problem remains: if the user is switching the window manager,
+   * the awareness will get lost. Due to the fact that we cannot catch the
+   * ReparentNotify event - this event is encapsulated inside the Tk library -
+   * we have to live with this. Furthermore GNOME's decision is causing much
+   * superfluous X traffic. GNOME's decision for the window manager frame,
+   * which do not belong to our own process, is nonesense.
+  */
   SetWmFrameAware(path);
 #endif
 
@@ -273,29 +277,6 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
   MotifDND_RegisterTypesObjCmd(path);
 #endif
   return TCL_OK;
-#if 0
-  int status;
-  Window root_return, parent, *children_return = 0;
-  unsigned int nchildren_return;
-  Tk_Window toplevel = TkDND_TkWin(objv[2]);
-  if (!Tk_IsTopLevel(toplevel)) {
-    Tcl_ResetResult(interp);
-    Tcl_AppendResult(interp, "path \"", Tcl_GetString(objv[2]),
-                             "\" is not a toplevel window!", (char *) NULL);
-    return TCL_ERROR;
-  }
-  Tk_MakeWindowExist(toplevel);
-  Tk_MapWindow(toplevel);
-  status = XQueryTree(Tk_Display(toplevel), Tk_WindowId(toplevel),
-                      &root_return, &parent,
-                      &children_return, &nchildren_return);
-  if (children_return) XFree(children_return);
-  XChangeProperty(Tk_Display(toplevel), parent,
-                  Tk_InternAtom(toplevel, "XdndAware"),
-                  XA_ATOM, 32, PropModeReplace,
-                  (unsigned char *) &version, 1);
-  return TCL_OK;
-#endif
 } /* TkDND_RegisterTypesObjCmd */
 
 int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent cm) {
@@ -486,17 +467,17 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
 
   /* Get the drop target. */
 #ifdef GNOME_SUPPORT
-  /* It seems that GNOME is expecting thw window manager frame */
+  /* It seems that GNOME is expecting thw window manager frame. */
   if (Tk_PathName(tkwin) == NULL) {
     finished.data.l[0] = Tk_WindowId(tkwin);
   } else {
 #endif
-  objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDropTarget", -1);
-  TkDND_Eval(Tk_Interp(tkwin), 1, objv);
-  if (Tcl_GetLongFromObj(interp,
-         Tcl_GetObjResult(interp), &finished.data.l[0]) != TCL_OK) {
-    finished.data.l[0] = None;
-  }
+    objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDropTarget", -1);
+    TkDND_Eval(Tk_Interp(tkwin), 1, objv);
+    if (Tcl_GetLongFromObj(interp,
+           Tcl_GetObjResult(interp), &finished.data.l[0]) != TCL_OK) {
+      finished.data.l[0] = None;
+    }
 #ifdef GNOME_SUPPORT
   }
 #endif
