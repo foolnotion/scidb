@@ -179,8 +179,6 @@ tk_png.o: ../util/zlib/zlib.h
 tk_png.o: ../util/zlib/zconf.h
 tk_png.o: tk_init.h
 tk_selection.o: tk_init.h
-tk_selection.o: ../tcl/tcl_base.h
-tk_selection.o: ../tcl/tcl_base.ipp
 tk_selection.o: ../mstl/m_string.h
 tk_selection.o: ../mstl/m_types.h
 tk_selection.o: ../mstl/m_string.ipp
@@ -195,10 +193,6 @@ tk_selection.o: ../mstl/m_assert.h
 tk_selection.o: ../mstl/m_exception.h
 tk_selection.o: ../mstl/m_backtrace.h
 tk_selection.o: ../mstl/m_exception.ipp
-tk_selection.o: tk8.5/tkInt.h
-tk_selection.o: tk8.5/tkPort.h
-tk_selection.o: tk8.5/tkUnixPort.h
-tk_selection.o: tk8.5/tkIntDecls.h
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h

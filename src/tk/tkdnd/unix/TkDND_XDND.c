@@ -211,6 +211,7 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
 static void
 SetWmFrameAware(Tk_Window path) {
   Tk_Window toplevel = path;
+  Display*  display  = Tk_Display(path);
   Window    xroot;
   Window    xwmwin;
   Window*   childs;
@@ -222,11 +223,17 @@ SetWmFrameAware(Tk_Window path) {
       return;
   }
 
+  if (!Tk_IsMapped(toplevel)) {
+    /* What a pitty, no window manager frame exists. */
+    return;
+  }
+
   Tk_MakeWindowExist(toplevel);
 
-  if (XQueryTree(Tk_Display(toplevel), Tk_WindowId(toplevel),
+  if (XQueryTree(display, Tk_WindowId(toplevel),
                  &xroot, &xwmwin, &childs, &nchilds)) {
-    if (xwmwin != None) {
+    if (xwmwin != None &&
+        xwmwin != RootWindow(display, Tk_ScreenNumber(path))) {
       Atom version = XDND_VERSION;
       /* Set XdndAware to window manager frame, otherwise GNOME will not work. */
       XChangeProperty(Tk_Display(toplevel), xwmwin,
@@ -238,6 +245,7 @@ SetWmFrameAware(Tk_Window path) {
       XFree(childs);
   }
 }
+
 #endif
 
 int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
@@ -263,7 +271,9 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
 
 #ifdef GNOME_SUPPORT
   /* For GNOME support we have to set the awareness to the window manager
-   * frame. One problem remains: if the user is switching the window manager,
+   * frame, this requires that the toplevel window is already mapped. We
+   * will not do this mapping implicitly, the TCL side should care about this.
+   * One problem remains: if the user is switching the window manager,
    * the awareness will get lost. Due to the fact that we cannot catch the
    * ReparentNotify event - this event is encapsulated inside the Tk library -
    * we have to live with this. Furthermore GNOME's decision is causing much

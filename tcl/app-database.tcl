@@ -302,10 +302,8 @@ proc finish {app} {
 	unset Positions
 	array set Positions {}
 
-	::tkdnd::drop_target register $Vars(canvas) DND_Files
-	bind $Vars(canvas) <<DropEnter>> [namespace code { HandleDropEvent enter %t }]
-	bind $Vars(canvas) <<DropLeave>> [namespace code { HandleDropEvent leave %t }]
-	bind $Vars(canvas) <<Drop>> [namespace code { HandleDropEvent %D %t }]
+	# must be done after the toplevel window has been mapped
+	after idle [namespace code RegisterDropEvents]
 }
 
 
@@ -786,6 +784,16 @@ proc Traverse {move} {
 	}
 	$Vars(canvas) itemconfigure active$Vars(active) -state normal
 	SeeSymbol $Vars(active)
+}
+
+
+proc RegisterDropEvents {} {
+	variable Vars
+
+	::tkdnd::drop_target register $Vars(canvas) DND_Files
+	bind $Vars(canvas) <<DropEnter>> [namespace code { HandleDropEvent enter %t }]
+	bind $Vars(canvas) <<DropLeave>> [namespace code { HandleDropEvent leave %t }]
+	bind $Vars(canvas) <<Drop>> [namespace code { HandleDropEvent %D %t }]
 }
 
 

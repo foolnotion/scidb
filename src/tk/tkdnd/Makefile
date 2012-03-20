@@ -51,7 +51,3 @@ unix/TkDND_XDND.o: /usr/local/include/tclDecls.h
 unix/TkDND_XDND.o: /usr/local/include/tclPlatDecls.h
 unix/TkDND_XDND.o: /usr/local/include/tk.h
 unix/TkDND_XDND.o: /usr/local/include/tkDecls.h
-unix/TkDND_XDND.o: ../tk8.5/tkInt.h
-unix/TkDND_XDND.o: ../tk8.5/tkPort.h
-unix/TkDND_XDND.o: ../tk8.5/tkUnixPort.h
-unix/TkDND_XDND.o: ../tk8.5/tkIntDecls.h
