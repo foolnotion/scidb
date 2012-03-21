@@ -18,7 +18,6 @@
 
 #include "tk_init.h"
 
-#include "m_string.h"
 #include "m_assert.h"
 
 #ifdef override

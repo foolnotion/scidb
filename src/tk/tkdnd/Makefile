@@ -18,7 +18,7 @@ include ../../../Makefile.in
 INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) -I../tk$(TCL_VERSION)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING) -DUSE_TKINT_H
 
-SRC	= unix/TkDND_XDND.c #unix/Motif.c
+SRC	= unix/TkDND_XDND.c
 OBJS	= $(SRC:.c=.o)
 LIB	= libtkDnd
 
@@ -28,15 +28,15 @@ clean:
 	@rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
-	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
-	@if [ -h Makefile.bak ]; then \
-		cp Makefile Makefile.bak; \
-		mv Makefile.bak Makefile; \
-	fi
+#	makedepend -fMakefile -Y -- -I../tk$(TCL_VERSION) -- -w1 $(SRC) 2>/dev/null
+#	@if [ -h Makefile.bak ]; then \
+#		cp Makefile Makefile.bak; \
+#		mv Makefile.bak Makefile; \
+#	fi
 
 $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
-	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o #Motif.o
+	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o
 	@$(RANLIB) $(LIB).a
 
 .c.o:
@@ -44,10 +44,3 @@ $(LIB).a: $(OBJS)
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
-# DO NOT DELETE
-
-unix/TkDND_XDND.o: /usr/local/include/tcl.h
-unix/TkDND_XDND.o: /usr/local/include/tclDecls.h
-unix/TkDND_XDND.o: /usr/local/include/tclPlatDecls.h
-unix/TkDND_XDND.o: /usr/local/include/tk.h
-unix/TkDND_XDND.o: /usr/local/include/tkDecls.h

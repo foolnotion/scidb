@@ -137,7 +137,7 @@ initialization, and change to the board tab.
 Gregor Cramer
 .br
 .ul
-http://scidb.sourceforge.net/
+http://scidb.sourceforge.net
 .\" ==========================================================================
 .SH BUGS
 .\" --------------------------------------------------------------------------

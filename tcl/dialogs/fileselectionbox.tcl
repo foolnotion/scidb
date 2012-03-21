@@ -41,7 +41,7 @@ switch [tk windowingsystem] {
 	}
 }
 
-
+if {[tk windowingsystem] eq "x11"} {
 namespace eval fsbox {
 
 array set Priv {
@@ -484,6 +484,7 @@ proc WriteOptions {chan} {
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace fsbox
+} ;# x11
 } ;# namespace dialog
 
 # vi:set ts=3 sw=3:

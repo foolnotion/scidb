@@ -454,6 +454,7 @@ proc ChooseLanguage {parent} {
 			if {[string length $icon] == 0} { set icon none }
 			set code [set ::mc::lang$lang]
 			ttk::button $top.$code \
+				-style aligned.TButton \
 				-text " $lang" \
 				-image $icon \
 				-compound left \

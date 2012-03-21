@@ -436,20 +436,23 @@ proc ShowHighlightRegion {twm top w canv} {
 		$tl.c create image 0 0 -anchor nw -tag image
 	}
 
+	set ht2 [expr {min(150,$ht/2)}]
+	set wd2 [expr {min(150,$wd/2)}]
+
 	switch -glob -- $canv {
 		*.__t__.__docking__ {
-			set ht [expr {$ht/2}]
+			set ht $ht2
 		}
 		*.__b__.__docking__ {
-			set y  [expr {$y + $ht/2}]
-			set ht [expr {$ht - $ht/2}]
+			set y  [expr {$y + $ht - $ht2}]
+			set ht $ht2
 		}
 		*.__r__.__docking__ {
-			set x  [expr {$x + $wd/2}]
-			set wd [expr {$wd - $wd/2}]
+			set x  [expr {$x + $wd - $wd2}]
+			set wd $wd2
 		}
 		*.__l__.__docking__ {
-			set wd [expr {$wd/2}]
+			set wd $wd2
 		}
 	}
 

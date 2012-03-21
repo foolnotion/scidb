@@ -234,6 +234,10 @@ proc CheckLanguage {parent helpFile} {
 	variable Lang
 	variable ::country::icon::flag
 
+	if {![string match *.html $helpFile]} {
+		append helpFile .html
+	}
+
 	set rc "temporary"
 
 	if {[llength $helpFile] == 0} {

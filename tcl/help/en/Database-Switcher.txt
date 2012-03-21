@@ -122,10 +122,10 @@ Open the help dialog about the database switcher.
 <h3>Drag &amp; Drop</h3>
 
 <p>
-Database can be opened with a drop of an URI list. If an URI list (list of files)
-will be dragged over the  database switcher, a colored background will
-indicate that a drop of this list is possible. In this way you may open databases
-with the help of Dolphin, or Windows Explorer.
+Database can be opened with the drop of an URI list. If an URI list (list of files)
+&ndash; or a single file &ndash; will be dragged over the database switcher,
+a colored background will indicate that a drop of this item is possible.
+In this way you may open databases with the help of an external file manager.
 </p>
 
 END

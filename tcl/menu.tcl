@@ -318,7 +318,7 @@ proc dbOpen {parent} {
 }
 
 
-proc dbImport {parent} {
+proc dbImport {parent {base ""}} {
 	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
 								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
 								[list $mc::PGNArchives			{.zip}] \
@@ -335,7 +335,7 @@ proc dbImport {parent} {
 	]
 
 	if {[llength $result]} {
-		set base [::scidb::db::get name]
+		if {[string length $base] == 0} { set base [::scidb::db::get name] }
 		lassign $result files encoding
 		::import::open $parent $base $files $title $encoding
 		::application::database::refreshBase $base

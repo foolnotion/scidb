@@ -80,7 +80,6 @@ extern void MotifDND_RegisterTypesObjCmd(Tk_Window tkwin);
 #define TkDND_TkWin(x) \
   (Tk_NameToWindow(interp, Tcl_GetString(x), Tk_MainWindow(interp)))
 
-
 int
 TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
 {
@@ -228,8 +227,6 @@ SetWmFrameAware(Tk_Window path) {
     return;
   }
 
-  Tk_MakeWindowExist(toplevel);
-
   if (XQueryTree(display, Tk_WindowId(toplevel),
                  &xroot, &xwmwin, &childs, &nchilds)) {
     if (xwmwin != None &&
@@ -278,7 +275,7 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
    * ReparentNotify event - this event is encapsulated inside the Tk library -
    * we have to live with this. Furthermore GNOME's decision is causing much
    * superfluous X traffic. GNOME's decision for the window manager frame,
-   * which do not belong to our own process, is nonesense.
+   * which is not belonging to our own process, is nonsense.
   */
   SetWmFrameAware(path);
 #endif

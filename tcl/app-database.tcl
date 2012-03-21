@@ -1427,7 +1427,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {}
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {}
-		lappend specs command $mc::FileImport ::menu::dbImport 1 0 filetypePGN {}
+		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {}
 		lappend specs separator {} {} {} {} {} {}
 		if {$file ne $clipbaseName} {
 			lappend specs command $mc::FileClose \
@@ -1451,8 +1451,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 								;
 		}
 		# TODO:
-		#	if {	[::scidb::view::count games $base 0] == [::scidb::db::count games $base]
-		#		&& [::scidb::view::query sorted]} {
+		#	if {	[::scidb::view::count games $file 0] == [::scidb::db::count games $file]
+		#		&& [::scidb::view::query sorted $file]} {
 		#		lappend specs command "Save current order" \
 		#			[namespace code [list SaveOrder $i $top]] 1 0 disk {}
 		#	}
@@ -1470,15 +1470,14 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs separator {} {} {} {} {} {}
 		}
 	}
-	lappend specs command "$mc::FileNew..." ::menu::dbNew 0 0 docNew {}
-	lappend specs command "$mc::FileOpen..." ::menu::dbOpen 0 0 docOpen {}
+	lappend specs command "$mc::FileNew..." [list ::menu::dbNew $top] 0 0 docNew {}
+	lappend specs command "$mc::FileOpen..." [list ::menu::dbOpen $top] 0 0 docOpen {}
 
 	foreach {type text cmd writableOnly notSci icon var} $specs {
 		if {$type eq "separator"} {
 			$menu add separator
 		} else {
 			if {[llength $icon] == 0} { set icon none }
-			if {[string match ::menu::* $cmd]} { lappend cmd $top }
 			if {($writableOnly && $readonly) || ($notSci && $isSciFormat)} {
 				set state disabled
 			} else {
