@@ -31,6 +31,7 @@
 ### global #############################################################
 ::mc::SortMapping		{}
 ::mc::AsciiMapping	{}
+::mc::SortOrder		{}
 
 ::mc::Alignment		"Alignment"
 ::mc::Apply				"Apply"

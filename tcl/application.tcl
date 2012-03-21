@@ -447,6 +447,7 @@ proc ChooseLanguage {parent} {
 	wm withdraw $dlg
 	set top [tk::frame $dlg.top -border 2 -relief raised]
 	pack $top
+	set r 0
 	foreach lang [lsort [array names ::mc::input]] {
 		if {[string length $lang]} {
 			set icon ""
@@ -460,8 +461,10 @@ proc ChooseLanguage {parent} {
 				-compound left \
 				-command [namespace code [list SetupLang $code]] \
 				;
-			pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
-			bind $top.$code <Return> { event generate %W <Key-space>; break }
+			grid $top.$code -column 1 -row [incr r 1]
+			bind $top.$code <Return>	{ event generate %W <Key-space>; break }
+			bind $top.$code <Down>		{ focus [tk_focusNext [focus]] }
+			bind $top.$code <Up>			{ focus [tk_focusPrev [focus]] }
 		}
 	}
 	wm resizable $dlg no no

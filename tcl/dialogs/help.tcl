@@ -79,7 +79,7 @@ proc helpLanguage {} {
 }
 
 
-proc open {parent {file {}}} {
+proc open {parent {file {}} args} {
 	variable Priv
 	variable Links
 	variable ExternalLinks
@@ -202,6 +202,11 @@ proc open {parent {file {}}} {
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
+	set opts(-transient) no
+	array set opts $args
+	if {$opts(-transient)} {
+		wm transient $dlg [winfo toplevel $parent]
+	}
 	wm minsize $dlg 600 300
 	if {[string length $file] == 0} {
 		if {[llength $Geometry] == 0} {
@@ -234,7 +239,7 @@ proc CheckLanguage {parent helpFile} {
 	variable Lang
 	variable ::country::icon::flag
 
-	if {![string match *.html $helpFile]} {
+	if {[string length $helpFile] > 0 && ![string match *.html $helpFile]} {
 		append helpFile .html
 	}
 

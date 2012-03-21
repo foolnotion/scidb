@@ -31,7 +31,7 @@ spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthält Informati
 Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
 </p>
 
-<verbatim> <!-- don't translate -->
+<verbatim><!-- don't translate -->
 Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -56,8 +56,8 @@ Identifier  = AsciiLetter { AsciiLetter } ;
 AttrValue   = AsciiGraphical { AsciiGraphical } ;
 Timestamp = Date " " Time ;
 Date      = Year "-" Month "-" Day ;
-Time      = Hour ":" Minute ":" Second ; <!--
---></verbatim>
+Time      = Hour ":" Minute ":" Second ;
+</verbatim>
 
 <p>
 <code>FileName</code> ist irgendein plattformunabhängiger, gültiger Dateiname,
@@ -107,7 +107,7 @@ Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Textedit
 <code>UserInfo</code> ist im "<abbr>.scv</abbr>"-Format folgendermaßen definiert:
 </p>
 
-<verbatim> <!-- don't translate -->
+<verbatim><!-- don't translate -->
 UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
@@ -115,8 +115,8 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ; <!--
---></verbatim>
+Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ;
+</verbatim>
 
 <p>
 <code>&lt;Count&gt;</code> ist die Anzahl der enthaltenen Partien in der Datenbank.
@@ -126,7 +126,7 @@ bei der Verwendung von <acronym>URL<acronym>'s, dann ist dieses Attribut nicht v
 </p>
 
 <p>
-"<abbr>.scv</abbr>"-Archive enthalten in der Regel immer nur eine Datenbank
+Scidb-Archive enthalten in der Regel immer nur eine Datenbank
 (<code>&lt;Type&gt;</code> = 'single'). Es ist jedoch vorgesehen, daß auch
 mehrere Datenbanken in ein Archiv gepackt werden können. Dann muß
 <code>&lt;Type&gt;</code> den Wert 'multi' enthalten, und unter
@@ -144,7 +144,7 @@ und <code>&lt;Type&gt;</code> ist beliebig.
 Zum Abschluss zwei einfache Beispiele für Archive:
 </p>
 
-<verbatim> <!-- don't translate -->
+<verbatim><!-- don't translate -->
 iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
@@ -176,10 +176,10 @@ iveArch
 
 1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
 Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
-12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0 <!--
---></verbatim>
+12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0
+</verbatim>
 
-<verbatim> <!-- don't translate -->
+<verbatim><!-- don't translate -->
 iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi
@@ -189,8 +189,8 @@ iveArch
 
 &lt;-- H E A D --&gt;
 &lt;FileName&gt; http://scidb.sf.net/bases/tiny-2.pgn
-&lt;-- D A T A --&gt; <!--
---></verbatim>
+&lt;-- D A T A --&gt;
+</verbatim>
 
 END
 

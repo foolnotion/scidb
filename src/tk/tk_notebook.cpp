@@ -331,7 +331,6 @@ static const Tk_OptionSpec paneOptionSpecs[] =
 };
 
 
-
 //----------------------------------------------------------------------
 //
 // SendVirtualEvent --
