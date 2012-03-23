@@ -148,6 +148,7 @@ array set Vars {
 	current			-1
 	afterid			{}
 	showDisabled	0
+	pressed			0
 	taborder			{games players events annotators}
 }
 
@@ -839,9 +840,9 @@ proc OpenUri {uriFiles} {
 					set file [string range $file 7 end]
 				} elseif {[string index $file 5] eq "/"} {
 					# theoretically, the hostname should be the first, but no one implements it
-					set file [string range $file 5 end]
+					set file [string range $uri 5 end]
 					for {set n 1} {$n < 5} {incr n} { if {[string index $file $n] eq "/"} { break } }
-					set file [string range $file [expr {$n - 1}] end]
+					set file [string range $uri [expr {$n - 1}] end]
 					
 					if {![file exists $file]} {
 						# perhaps a correct implementation with hostname?
@@ -2124,7 +2125,7 @@ proc Motion {nb x y {showTooltip 1}} {
 	switch $what {
 		icon {
 			if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
-			if {[grab current $nb] eq $nb} {
+			if {$Vars(pressed)} {
 				set icon $icon::16x16::undock_sunken
 			} else {
 				set icon $icon::16x16::undock_active
@@ -2205,9 +2206,9 @@ proc ButtonPress {nb x y} {
 		icon {
 			if {[llength [$nb tabs]] == 2} { return }
 			if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
-			::ttk::grabWindow $nb
 			$nb tab $index -image $icon::16x16::undock_sunken
-		}
+			set Vars(pressed) 1
+	}
 
 		label {
 			set Vars(current) $index
@@ -2221,10 +2222,7 @@ proc ButtonPress {nb x y} {
 proc ButtonRelease {nb x y} {
 	variable Vars
 
-	if {[grab current $nb] eq $nb} {
-		::ttk::releaseGrab $nb
-	}
-
+	set Vars(pressed) 0
 	set current $Vars(current)
 	set Vars(current) -1
 
