@@ -54,6 +54,7 @@ set FileIcons [list                        \
 	.sci	$::icon::16x16::filetypeScidbBase \
 	.si4	$::icon::16x16::filetypeScid4Base \
 	.si3	$::icon::16x16::filetypeScid3Base \
+	.scv  $::icon::16x16::filetypeArchive   \
 	.cbh	$::icon::16x16::filetypeChessBase \
 	.pgn	$::icon::16x16::filetypePGN       \
 	.gz	$::icon::16x16::filetypePGN       \
@@ -69,6 +70,7 @@ set FileEncodings [list \
 	.sci 0 utf-8 \
 	.si4 1 utf-8 \
 	.si3 1 utf-8 \
+	.scv 0 utf-8 \
 	.cbh 1 $::encoding::windowsEncoding \
 	.pgn 1 $::encoding::defaultEncoding \
 	.gz  1 $::encoding::defaultEncoding \
@@ -226,9 +228,11 @@ proc Open {type args} {
 			-validatecommand [namespace code ValidateFile] \
 			-deletecommand [namespace code DeleteFile] \
 			-renamecommand [namespace code RenameFile] \
+			-bookmarkswidth 120 \
 			-duplicatecommand [namespace code DuplicateFile] \
 			-okcommand [namespace code OkCmd] \
 			-cancelcommand [list set [namespace current]::Priv(result) {}] \
+			-inspectcommand [namespace code Inspect] \
 			-font TkTextFont \
 			{*}[array get opts] \
 			;
@@ -255,7 +259,7 @@ proc Open {type args} {
 			set h [expr {[winfo height $w] + 6*$linespace}]
 			set minh [expr {[winfo height $w] + 1}]
 			set h [expr {$minh + max($data(-rows) - 8,0)*$linespace}]
-			if {[info exists data(-width)]} { set width $data(-width) } else { set width 650 }
+			if {[info exists data(-width)]} { set width $data(-width) } else { set width 680 }
 			set geometry "${width}x${h}[geometry pos]"
 		} else {
 			scan $geometry "%dx%d" dw dh
@@ -387,14 +391,37 @@ proc DuplicateFile {srcName dstName} {
 }
 
 
-proc FileSize {filename mtime} {
+proc GetArchiveSize {arch} {
+	set fd [open $arch "r"]
+	fconfigure $fd -translation lf
+	gets $fd line
+	gets $fd line
+	while {$line ne "<-- H E A D -->"} {
+		lassign {"" ""} attr value
+		regexp {<([A-Za-z]+)>[ 	]*(.*)} $line _ attr value
+		if {$attr eq "TotalGames" && [string is integer -strict $value]} {
+			close $fd
+			return $value
+		}
+		gets $fd line
+	}
+	close $fd
+	return -1
+}
+
+
+proc FileSize {filename {mtime 0}} {
 	variable FileSizeCache
 
 	set modified -1
 	if {[llength $mtime] == 0} { set mtime [file mtime $filename] }
 	catch { lassign $FileSizeCache($filename) size modified }
 	if {$modified != $mtime} {
-		set size [::scidb::misc::size $filename]
+		if {[file extension $filename] ne ".scv"} {
+			set size [::scidb::misc::size $filename]
+		} elseif {[catch {set size [GetArchiveSize $filename]} err]} {
+			set size -1
+		}
 		set FileSizeCache($filename) [list $size $mtime]
 	}
 	return $size
@@ -424,6 +451,22 @@ proc GetFileSize {filename mtime} {
 
 	append result [::locale::formatNumber $size]
 	return $result
+}
+
+
+proc Inspect {parent {filename ""}} {
+	set dlg $parent.__inspect__
+	catch { destroy $dlg }
+
+	if {[string length $filename] > 0} {
+		set f [::util::makePopup $dlg]
+		set bg [$f cget -background]
+		lassign [::scidb::misc::attributes $filename] numGames type created descr
+		# 1332331114
+		puts "$numGames - $type - $created - $descr"
+		pack [tk::label $f.l -text $filename -background $bg]
+		::tooltip::popup $parent $dlg cursor
+	}
 }
 
 

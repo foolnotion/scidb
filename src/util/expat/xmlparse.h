@@ -14,7 +14,8 @@ extern "C" {
 #define XMLPARSEAPI /* as nothing */
 #endif
 
-typedef void *XML_Parser;
+struct XML_ParserStruct;
+typedef struct XML_ParserStruct *XML_Parser;
 
 #ifdef XML_UNICODE_WCHAR_T
 

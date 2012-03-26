@@ -356,9 +356,20 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 		return 0
 	}
 
-	if {$encoding eq $::encoding::mc::AutoDetect} { set encoding $::encoding::autoEncoding }
 	set file [file normalize $file]
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
+
+	if {[file extension $file] eq ".scv"} {
+#		set progress  $parent.__progress
+#		::dialog::progressbar::open $progress -variable __dummy
+#		set destination [file dirname $file]
+#		::archive::unpack $file $progress $destination
+		# TODO: call openBase for all databases in archive
+		::dialog::error -parent $parent -message "Cannot extract archive yet"
+		return 0
+	}
+
+	if {$encoding eq $::encoding::mc::AutoDetect} { set encoding $::encoding::autoEncoding }
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
 	if {$i == -1} {
 		set ext [string range [file extension $file] 1 end]
@@ -390,7 +401,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 		if {[llength $encoding] == 0} {
 			switch $ext {
 				sci - si3 - si4 - cbh	{ set encoding auto }
-				pgn - gz - .ip				{ set encoding $::encoding::defaultEncoding }
+				pgn - gz - zip				{ set encoding $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
@@ -562,11 +573,12 @@ proc addRecentlyUsedToMenu {parent m} {
 		foreach entry $recentFiles {
 			lassign $entry type file encoding readonly
 			if {[string match $::scidb::dir::home* $file]} {
-				set filename [string replace $file 0 [expr {[string length $::scidb::dir::home] - 1}] "~"]
+				set file [string replace $file 0 [expr {[string length $::scidb::dir::home] - 1}] "~"]
 			}
 			set name [::util::databaseName $file]
+			set dir [file dirname $file]
 			$m add command \
-				-label " $name  \u25b8  $filename" \
+				-label " $name  \u25b8  $dir" \
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
 				-command [namespace code [list openBase $parent $file yes $encoding $readonly]] \

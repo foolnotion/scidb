@@ -125,7 +125,11 @@ public:
 	static DatabaseCodec* makeCodec(mstl::string const& name);
 	static void rename(mstl::string const& oldName, mstl::string const& newName);
 	static void remove(mstl::string const& fileName);
-	static int getNumberOfGames(mstl::string const& filename);
+	static bool getAttributes(	mstl::string const& filename,
+										int& numGames,
+										db::type::ID& type,
+										uint32_t& creationTime,
+										mstl::string* description = 0);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
 	static bool upgradeIndexOnly();
 	static bool isExtraTag(tag::ID tag);

@@ -250,21 +250,32 @@ DatabaseCodec::makeCodec(mstl::string const& name)
 }
 
 
-int
-DatabaseCodec::getNumberOfGames(mstl::string const& filename)
+bool
+DatabaseCodec::getAttributes(	mstl::string const& filename,
+										int& numGames,
+										type::ID& type,
+										uint32_t& creationTime,
+										mstl::string* description)
 {
 	mstl::string ext(file::suffix(filename));
 
+	type = type::Unspecific;
+	creationTime = 0;
+	numGames = -1;
+
+	if (description)
+		description->clear();
+
 	if (ext == "sci")
-		return sci::Codec::getNumberOfGames(filename);
+		return sci::Codec::getAttributes(filename, numGames, type, creationTime, description);
 
 	if (ext == "cbh")
-		return cbh::Codec::getNumberOfGames(filename);
+		return cbh::Codec::getAttributes(filename, numGames, type, description);
 
 	if (ext == "si3" || ext == "si4")
-		return si3::Codec::getNumberOfGames(filename);
+		return si3::Codec::getAttributes(filename, numGames, type, description);
 
-	return PgnReader::getNumberOfGames(filename);
+	return PgnReader::getAttributes(filename, numGames, description);
 }
 
 

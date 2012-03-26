@@ -98,6 +98,8 @@ TkDND_Eval(Tcl_Interp* interp, int objc, Tcl_Obj* const* objv)
 
 #ifdef GNOME_SUPPORT
 
+# include <string.h>
+
 # ifdef USE_TKINT_H
 #  include "tkInt.h"
 # endif
@@ -112,9 +114,25 @@ GetWmFrameChild(Tk_Window tkwin) {
 
     if (XQueryTree(Tk_Display(tkwin), Tk_WindowId(tkwin),
                    &xroot, &xwmwin, &childs, &nchilds) && childs) {
+      /* This is GNOME. We have to use the child window. */
       if (nchilds == 1) {
-        /* This is GNOME. We have to use the child window. */
         tkwin = Tk_IdToWindow(Tk_Display(tkwin), childs[0]);
+      } else if (nchilds == 2) {
+        /* In this case we have to disqualify the menu bar. */
+        Tk_Window win1 = Tk_IdToWindow(Tk_Display(tkwin), childs[0]);
+        Tk_Window win2 = Tk_IdToWindow(Tk_Display(tkwin), childs[1]);
+
+        char const* p1 = Tk_PathName(win1);
+        char const* p2 = Tk_PathName(win2);
+
+        if (p1 && p2) {
+          char const* s1 = strchr(p1, '#');
+          char const* s2 = strchr(p2, '#');
+
+          if ((s1 == NULL) != (s2 == NULL)) {
+            tkwin = s1 ? win2 : win1;
+          }
+        }
       }
       XFree(childs);
     }
@@ -129,6 +147,10 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
   int childX, childY;
 
   tkwin = GetWmFrameChild(tkwin);
+
+  if (Tk_PathName(tkwin) == NULL)
+    return NULL; /* something was going wrong */
+
   Tk_GetRootCoords(tkwin, &childX, &childY);
   rootX -= childX;
   rootY -= childY;

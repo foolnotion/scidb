@@ -44,9 +44,10 @@ HeaderInfo  =
   [ '&lt;Size&gt;' { Space } Number LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
-  [ '&lt;Modified&gt;' { Space } Timestamp LF ] ;
+  [ '&lt;Modified&gt;' { Space } Timestamp LF ]
+  [ '&lt;Encoding&gt;' { Space } Encoding ] ;
 Space       = HT | " " ;
-Compression = 'raw' | 'gzip' | 'lzo' ;
+Compression = 'raw' | 'zlib' | 'lzo' ;
 BinaryData  = { Byte } ;
 ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
 UserInfo    = LF { Attribute LF } Attribute ;
@@ -68,8 +69,7 @@ werden. <code>&lt;Size&gt;</code> enthält die Größe der Datei innerhalb der
 Archivierungsdatei, die Größe der entpackten Datei wird in <code>FileSize</code>
 angegeben. Diese Angabe der internen Größe ist zugleich der Offset zum nächsten
 Datei-Header. <code>&lt;TotalSize&gt;</code> enthält die Summe aller (externen) Dateigrößen.
-Ist diese Summe unbekannt, weil eine der Dateigrößen unbekannt ist, dann ist
-<code>&lt;TotalSize&gt;</code> nicht vorhanden.
+Ist diese Summe unbekannt, dann ist <code>&lt;TotalSize&gt;</code> nicht vorhanden.
 Die optionale Prüfsumme <code>&lt;Checksum&gt;</code> wird mit dem CRC32-Verfahren ermittelt.
 Diese Prüfsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
 <code>&lt;Modified&gt;</code> enthält den Zeitstempel der letzten Modifikation (GMT),
@@ -79,6 +79,7 @@ der extrahierten Datei wiederherzustellen.  Die Attribute <code>&lt;FileName&gt;
 <code>&lt;Checksum&gt;</code> und <code>&lt;Modified&gt;</code> können in beliebiger
 Reihenfolge aufgeführt werden.  Fehlt die Angabe <code>&lt;Compression&gt;</code> wird
 'raw' als Wert angenommen (d.h. es wird keine Dekomprimierung verwendet).
+<code>&lt;Encoding&gt;</code> spezifiziert den Zeichensatz.
 </p>
 
 <p>
@@ -115,7 +116,7 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ;
+Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;
 </verbatim>
 
 <p>

@@ -427,7 +427,7 @@ proc FindMatch {w cmd column key mapping strEqOpts} {
 
 
 proc Unposted {w focus} {
-	bind $w <<ComboboxUnposted>> {}
+	bind $w <<ComboboxUnposted>> {#}
 	if {[llength $focus]} { focus $focus }
 }
 
@@ -435,7 +435,7 @@ proc Unposted {w focus} {
 proc PlaceIcon {w icon} {
 	update idletasks
 	$w placeicon $icon
-	bind $w <Map> {}
+	bind $w <Map> {#}
 }
 
 

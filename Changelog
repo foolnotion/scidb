@@ -1,6 +1,17 @@
 [March 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #282)
+------------------------------------------------------------------------------
+* archive.tcl added.
+
+* Problem with integrated expat library fixed.
+
+* PGN reader is parsing preceding description (if any).
+
+* Problem in TkDND_XDND.c fixed (GNOME support of dnd).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #274)
 ------------------------------------------------------------------------------
 * Drag&Drop works now with GNOME (was quite difficult). Only one bug remains:

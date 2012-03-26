@@ -428,6 +428,8 @@ proc bgerror {err} {
 	} elseif {[string match {*selection doesn't exist*} $err]} {
 		# ignore this stupid message. this message appears
 		# in case of empty strings. this is not an error!
+	} elseif {[string length $err] == 0} {
+		# an empty background error! ignore this nonsense.
 	} else {
 		::tk::dialog::error::bgerror $err
 	}

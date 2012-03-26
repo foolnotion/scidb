@@ -40,6 +40,7 @@
 
 #include "u_progress.h"
 #include "u_byte_stream.h"
+#include "u_misc.h"
 
 #include "sys_file.h"
 #include "sys_utf8.h"
@@ -1775,14 +1776,10 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 void
 Codec::readIniData(mstl::string const& rootname)
 {
-	enum Section { AnyOther, DescrCBG , Environ };
-
 	mstl::string	filename(rootname + ".ini");
 	mstl::string	title;
-	mstl::string	tournTitle;
-	mstl::string	tournPlace;
-	mstl::string	tournYear;
 	mstl::fstream	strm;
+	db::type::ID	type;
 
 	if (!sys::file::access(filename, sys::file::Readable))
 		return;
@@ -1790,7 +1787,27 @@ Codec::readIniData(mstl::string const& rootname)
 	openFile(strm, filename, Readonly);
 	strm.exceptions(mstl::ios_base::badbit);
 
+	M_ASSERT(m_codec);
+	readIniData(strm, *m_codec, type, title);
+	setType(type);
+	setDescription(title);
+}
+
+
+void
+Codec::readIniData(mstl::fstream& strm, sys::utf8::Codec& codec, db::type::ID& type, mstl::string& title)
+{
+	enum Section { AnyOther, DescrCBG , Environ };
+
+	M_REQUIRE(strm.is_open());
+
+	mstl::string tournTitle;
+	mstl::string tournPlace;
+	mstl::string tournYear;
+
 	Section section = AnyOther;
+
+	type = Unspecific;
 
 	while (true)
 	{
@@ -1822,10 +1839,9 @@ Codec::readIniData(mstl::string const& rootname)
 				}
 			}
 
-			m_codec->toUtf8(title);
+			codec.toUtf8(title);
 			if (!::sys::utf8::validate(title))
-				m_codec->forceValidUtf8(title);
-			setDescription(title);
+				codec.forceValidUtf8(title);
 
 			return;
 		}
@@ -1848,10 +1864,9 @@ Codec::readIniData(mstl::string const& rootname)
 					case DescrCBG:
 						if (::strncmp(line, "Type=", 5) == 0)
 						{
-							unsigned type = ::strtoul(line.c_str() + 5, nullptr, 10);
-
-							if (type < U_NUMBER_OF(::TypeMap))
-								setType(::TypeMap[type]);
+							unsigned t = ::strtoul(line.c_str() + 5, nullptr, 10);
+							if (t < U_NUMBER_OF(::TypeMap))
+								type = ::TypeMap[t];
 						}
 						else if (::strncmp(line, "Title=", 6) == 0)
 						{
@@ -2271,18 +2286,22 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 }
 
 
-int
-Codec::getNumberOfGames(mstl::string const& filename)
+bool
+Codec::getAttributes(mstl::string const& filename,
+							int& numGames,
+							db::type::ID& type,
+							mstl::string* description)
 {
-	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+	mstl::fstream strm(sys::file::internalName(filename), mstl::ios_base::in | mstl::ios_base::binary);
+	mstl::string rootname(misc::file::rootname(filename));
 
 	if (!strm)
-		return -1;
+		return false;
 
 	Byte record[46];
 
 	if (!strm.read(record, sizeof(record)))
-		return -1;
+		return false;
 
 	if (	record[0] != 0
 		|| record[1] != 0
@@ -2292,13 +2311,29 @@ Codec::getNumberOfGames(mstl::string const& filename)
 		|| record[4] != 0x2e
 		|| record[5] != 0x01)
 	{
-		return -1;
+		return false;
 	}
 
 	ByteStream bstrm(record, sizeof(record));
 
 	bstrm.skip(6);
-	return bstrm.uint32() - 1;
+	numGames = bstrm.uint32() - 1;
+
+	if (description)
+	{
+		strm.close();
+		strm.open(rootname + ".ini");
+
+		if (strm)
+		{
+			sys::utf8::Codec codec(sys::utf8::Codec::windows());
+			readIniData(strm, codec, type, *description);
+			strm.close();
+		}
+	}
+
+	strm.close();
+	return true;
 }
 
 

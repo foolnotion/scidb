@@ -150,6 +150,8 @@ public:
 	void clearBase();
 	/// Update the characteristics of a game.
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
+	/// Update the database description.
+	void setDescription(mstl::string const& description);
 
 	// Compress the database.
 	bool compress(::util::Progress& progress);

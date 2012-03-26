@@ -1760,7 +1760,11 @@ proc Layout {gamebar} {
 		set x [expr {max(2, ($lineWidth - $width1)/2)}]
 		set x [expr {min($x, max(2, ($lineWidth - $width0)/2))}]
 		set x [expr {min($x, max(2, ($lineWidth - $width2)/2))}]
-		$gamebar coords line1$id $x $height
+		if {$Options(separateLines)} {
+			$gamebar coords line1$id $x $height
+		} else {
+			$gamebar coords line1$id [expr {max(2, ($lineWidth - $width1)/2)}] $height
+		}
 		$gamebar coords line1bg$id {*}[$gamebar bbox line1$id]
 		$gamebar coords line1Input$id {*}[$gamebar bbox line1$id]
 		incr height $height1
@@ -1772,7 +1776,6 @@ proc Layout {gamebar} {
 				$gamebar coords blackCountry$id $fx [expr {$fy + $height0}]
 				$gamebar coords whiteCountryInput$id {*}[$gamebar bbox whiteCountry$id]
 				$gamebar coords blackCountryInput$id {*}[$gamebar bbox blackCountry$id]
-			} else {
 			}
 			set eloX [expr {$x + max($whiteWd,$blackWd) + max($whiteEloWd,$blackEloWd) + $spacewidth}]
 			if {$whiteEloWd > 0} {
@@ -1786,12 +1789,14 @@ proc Layout {gamebar} {
 			$gamebar coords black$id $x $height
 			incr height $height0
 		} else {
+			set x [expr {max(2, ($lineWidth - $width0)/2)}]
 			$gamebar coords white$id $x $height
 			incr x $whiteWd
 			$gamebar coords hyphen$id $x $height
 			incr x $hyphenWd
 			$gamebar coords black$id $x $height
 			incr height $height0
+			set x [expr {max(2, ($lineWidth - $width2)/2)}]
 		}
 		foreach side {white black} {
 			$gamebar coords ${side}bg${id} {*}[$gamebar bbox ${side}${id}]

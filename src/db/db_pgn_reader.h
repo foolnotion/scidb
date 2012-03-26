@@ -147,6 +147,7 @@ public:
 	bool encodingFailed() const override;
 
 	mstl::string const& encoding() const override;
+	mstl::string const& description() const;
 
 	unsigned process(util::Progress& progress) override;
 
@@ -172,7 +173,7 @@ public:
 	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
 	static event::Mode getEventMode(char const* event, char const* site);
 	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
-	static int getNumberOfGames(mstl::string const& filename);
+	static bool getAttributes(mstl::string const& filename, int& numGames, mstl::string* description = 0);
 
 private:
 
@@ -307,6 +308,8 @@ private:
 	Token skipWhiteSpace(Token prevToken, int c);
 	Token unexpectedSymbol(Token prevToken, int c);
 
+	static void parseDescription(mstl::istream& strm, mstl::string& result);
+
 	mstl::istream&		m_stream;
 	unsigned				m_putback;
 	char					m_putbackBuf[10];
@@ -348,6 +351,7 @@ private:
 	unsigned				m_postIndex;
 	variant::Type		m_variant;
 	mstl::string		m_figurine;
+	mstl::string		m_description;
 	sys::utf8::Codec&	m_codec;
 };
 

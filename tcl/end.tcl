@@ -105,7 +105,7 @@ set dialog::choosefont::iconCancel	$icon::iconCancel
 set dialog::choosefont::iconApply	$icon::iconApply
 set dialog::choosefont::iconReset	$icon::iconReset
 
-set ::tk::ShadowOffset $::shadow::offset
+set tk::ShadowOffset $::shadow::offset
 
 proc dialog::choosefont::messageBox {parent msg buttons defaultButton} {
 	return [::dialog::warning -parent $parent -message $msg -buttons $buttons -default $defaultButton]
@@ -130,15 +130,26 @@ proc dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state 
 proc colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc WriteOptions {chan} {
-	::options::writeList $chan ::dialog::choosecolor::UserColorList
-	::options::writeItem $chan ::table::options
-	::options::writeItem $chan ::menu::Theme
-	::options::writeItem $chan ::toolbar::Options
-	::options::writeItem $chan ::fsbox::bookmarks::Bookmarks
-	::options::writeItem $chan ::fsbox::Options
-	::options::writeItem $chan ::scidb::revision
+	options::writeList $chan ::dialog::choosecolor::UserColorList
+	options::writeItem $chan ::table::options
+	options::writeItem $chan ::menu::Theme
+	options::writeItem $chan ::toolbar::Options
+	options::writeItem $chan ::fsbox::bookmarks::Bookmarks
+	options::writeItem $chan ::fsbox::Options
+	options::writeItem $chan ::scidb::revision
 }
-::options::hookWriter [namespace current]::WriteOptions
+options::hookWriter [namespace current]::WriteOptions
+
+proc archive::setModTime {file time} { return ::scidb::util::setModTime $file $time }
+
+proc archive::tick {progress n} {
+	::dialog::progressbar::tick $progress $n
+	update
+}
+
+proc archive::setMaxTick {progress n} {
+	::dialog::progressbar::setMaximum $progress $n
+}
 
 # --- Read options -----------------------------------------------------
 

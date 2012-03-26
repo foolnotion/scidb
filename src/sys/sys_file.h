@@ -44,6 +44,7 @@ bool isHardLinked(char const* filename1, char const* filename2);
 
 void rename(char const* oldFilename, char const* newFilename, bool preserveOldAttrs = false);
 void deleteIt(char const* filename);
+bool setModificationTime(char const* filename, uint32_t time);
 
 void* createMapping(char const* filename, Mode mode);
 void closeMapping(void*& address);

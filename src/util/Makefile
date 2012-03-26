@@ -12,7 +12,7 @@
 
 include ../../Makefile.in
 
-INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip
+INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip -Iexpat
 CXXFLAGS	+=  $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \

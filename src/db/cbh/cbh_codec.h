@@ -38,8 +38,8 @@
 #include "m_hash.h"
 #include "m_chunk_allocator.h"
 
-namespace sys { namespace utf8 { class Codec; }; };
-
+namespace sys  { namespace utf8 { class Codec; }; };
+namespace mstl { class fstream; }
 namespace util { class ByteStream; };
 
 namespace db {
@@ -100,7 +100,10 @@ public:
 											Board const& position,
 											bool skipVariations) override;
 
-	static int getNumberOfGames(mstl::string const& filename);
+	static bool getAttributes(	mstl::string const& filename,
+										int& numGames,
+										db::type::ID& type,
+										mstl::string* description);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
 
 private:
@@ -169,6 +172,11 @@ private:
 	void toUtf8(mstl::string& str);
 
 	void Report(char const* charset);
+
+	static void readIniData(mstl::fstream& strm,
+									sys::utf8::Codec& codec,
+									db::type::ID& type,
+									mstl::string& title);
 
 	sys::utf8::Codec*	m_codec;
 	mstl::fstream		m_gameStream;

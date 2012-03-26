@@ -556,12 +556,25 @@ PgnReader::PgnReader(mstl::istream& stream,
 
 	::memset(m_countWarnings, 0, sizeof(m_countWarnings));
 	::memset(m_countErrors, 0, sizeof(m_countErrors));
+
+	if (firstGameNumber >= 0)
+	{
+		parseDescription(stream, m_description);
+		m_description.trim();
+	}
 }
 
 
 PgnReader::~PgnReader() throw()
 {
 	// no action
+}
+
+
+mstl::string const&
+PgnReader::description() const
+{
+	return m_description;
 }
 
 
@@ -1558,6 +1571,35 @@ PgnReader::searchTag()
 	}
 
 	return kEoi;	// satisfies the compiler
+}
+
+
+void
+PgnReader::parseDescription(mstl::istream& strm, mstl::string& result)
+{
+	unsigned n = 0;
+
+	while (1)
+	{
+		int c = strm.peek();
+
+		switch (c)
+		{
+			case '\0':
+			case '[':
+				return;
+
+			case '\n':
+				if (++n == 10)
+					return;
+				// fallthru
+
+			default:
+				result.append(c);
+				strm.get();
+				break;
+		}
+	}
 }
 
 
@@ -4902,18 +4944,35 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 }
 
 
-int
-PgnReader::getNumberOfGames(mstl::string const& filename)
+bool
+PgnReader::getAttributes(mstl::string const& filename, int& numGames, mstl::string* description)
 {
-	int64_t fileSize;
+	if (description)
+	{
+		ZStream strm(sys::file::internalName(filename), mstl::ios_base::in);
 
-	if (!ZStream::size(sys::file::internalName(filename), fileSize, 0))
-		return -1;
+		if (!strm.is_open())
+			return false;
 
-	if (fileSize < 0)
-		return fileSize;
+		numGames = strm.size();
+		parseDescription(strm, *description);
+		description->trim();
+		strm.close();
+	}
+	else
+	{
+		int64_t fileSize;
 
-	return ::estimateNumberOfGames(fileSize);
+		if (!ZStream::size(sys::file::internalName(filename), fileSize, 0))
+			return false;
+
+		numGames = fileSize;
+	}
+
+	if (numGames >= 0)
+		numGames = ::estimateNumberOfGames(numGames);
+
+	return true;
 }
 
 // vi:set ts=3 sw=3:

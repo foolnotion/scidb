@@ -78,6 +78,7 @@ Cursor::clear() throw()
 bool
 Cursor::isReadOnly() const
 {
+	M_REQUIRE(isOpen());
 	return m_db->isReadOnly();
 }
 
@@ -85,7 +86,17 @@ Cursor::isReadOnly() const
 bool
 Cursor::isWriteable() const
 {
+	M_REQUIRE(isOpen());
 	return m_db->isWriteable();
+}
+
+
+
+void
+Cursor::setDescription(mstl::string const& description)
+{
+	M_REQUIRE(isOpen());
+	m_db->setDescription(description);
 }
 
 

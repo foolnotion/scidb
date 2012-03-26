@@ -192,6 +192,11 @@ public:
 	static DatabaseCodec* makeCodec();
 
 	static int getNumberOfGames(mstl::string const& filename);
+	static bool getAttributes(	mstl::string const& filename,
+										int& numGames,
+										type::ID& type,
+										uint32_t& creationTime,
+										mstl::string* description = 0);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
 
 protected:

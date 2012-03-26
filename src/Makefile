@@ -55,7 +55,7 @@ SRC = \
 	dump_eco.cpp \
 	eco2code.cpp \
 	extend_eco.cpp \
-	permute_eco.cpp \
+	pawn_progress.cpp \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
@@ -65,7 +65,7 @@ ALL_TK_LIBS = $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco permute_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
+TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
 
 all: recursive cbh2si4 $(PROGRAM)
 
@@ -220,9 +220,9 @@ db/libdb.a:
 db/libdbstubs.a:
 	$(MAKE) -C db libdbstubs.a
 
-permute_eco: permute_eco.o $(LIBS)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+#permute_eco: permute_eco.o $(LIBS)
+#	@echo "Building $@"
+#	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
 
 extend_eco: extend_eco.o $(LIBS_BASE)
 	@echo "Building $@"
@@ -683,56 +683,34 @@ extend_eco.o: mstl/m_chunk_allocator.h
 extend_eco.o: mstl/m_stack.h
 extend_eco.o: mstl/m_stack.ipp
 extend_eco.o: mstl/m_chunk_allocator.ipp
-permute_eco.o: db/db_move_list.h
-permute_eco.o: db/db_move.h
-permute_eco.o: db/db_common.h
-permute_eco.o: util/u_base.h
-permute_eco.o: mstl/m_types.h
-permute_eco.o: db/db_common.ipp
-permute_eco.o: mstl/m_assert.h
-permute_eco.o: mstl/m_exception.h
-permute_eco.o: mstl/m_backtrace.h
-permute_eco.o: mstl/m_exception.ipp
-permute_eco.o: mstl/m_utility.h
-permute_eco.o: mstl/m_type_traits.h
-permute_eco.o: mstl/m_type_traits.ipp
-permute_eco.o: mstl/m_utility.ipp
-permute_eco.o: mstl/m_limits.h
-permute_eco.o: mstl/m_bit_functions.h
-permute_eco.o: mstl/m_bit_functions.ipp
-permute_eco.o: util/u_crc.h
-permute_eco.o: util/u_crc.ipp
-permute_eco.o: mstl/m_byte_order.h
-permute_eco.o: mstl/m_byte_order.ipp
-permute_eco.o: mstl/m_string.h
-permute_eco.o: mstl/m_string.ipp
-permute_eco.o: db/db_move.ipp
-permute_eco.o: db/db_move_list.ipp
-permute_eco.o: db/db_eco.h
-permute_eco.o: db/db_eco.ipp
-permute_eco.o: mstl/m_map.h
-permute_eco.o: mstl/m_vector.h
-permute_eco.o: mstl/m_memblock.h
-permute_eco.o: mstl/m_memblock.ipp
-permute_eco.o: mstl/m_vector.ipp
-permute_eco.o: mstl/m_uninitialized.h
-permute_eco.o: mstl/m_uninitialized.ipp
-permute_eco.o: mstl/m_algobase.h
-permute_eco.o: mstl/m_algobase.ipp
-permute_eco.o: mstl/m_construct.h
-permute_eco.o: mstl/m_construct.ipp
-permute_eco.o: mstl/m_pair.h
-permute_eco.o: mstl/m_pair.ipp
-permute_eco.o: mstl/m_map.ipp
-permute_eco.o: mstl/m_ifstream.h
-permute_eco.o: mstl/m_istream.h
-permute_eco.o: mstl/m_ios.h
-permute_eco.o: mstl/m_ios.ipp
-permute_eco.o: mstl/m_istream.ipp
-permute_eco.o: mstl/m_file.h
-permute_eco.o: mstl/m_file.ipp
-permute_eco.o: mstl/m_ifstream.ipp
-permute_eco.o: guess/guess.h
+pawn_progress.o: mstl/m_bitfield.h
+pawn_progress.o: mstl/m_bitfield.ipp
+pawn_progress.o: mstl/m_assert.h
+pawn_progress.o: mstl/m_exception.h
+pawn_progress.o: mstl/m_backtrace.h
+pawn_progress.o: mstl/m_types.h
+pawn_progress.o: mstl/m_exception.ipp
+pawn_progress.o: mstl/m_bit_functions.h
+pawn_progress.o: mstl/m_bit_functions.ipp
+pawn_progress.o: mstl/m_limits.h
+pawn_progress.o: mstl/m_vector.h
+pawn_progress.o: mstl/m_type_traits.h
+pawn_progress.o: mstl/m_type_traits.ipp
+pawn_progress.o: mstl/m_memblock.h
+pawn_progress.o: mstl/m_memblock.ipp
+pawn_progress.o: mstl/m_utility.h
+pawn_progress.o: mstl/m_utility.ipp
+pawn_progress.o: mstl/m_vector.ipp
+pawn_progress.o: mstl/m_uninitialized.h
+pawn_progress.o: mstl/m_uninitialized.ipp
+pawn_progress.o: mstl/m_algobase.h
+pawn_progress.o: mstl/m_algobase.ipp
+pawn_progress.o: mstl/m_construct.h
+pawn_progress.o: mstl/m_construct.ipp
+pawn_progress.o: mstl/m_set.h
+pawn_progress.o: mstl/m_set.ipp
+pawn_progress.o: mstl/m_algorithm.h
+pawn_progress.o: mstl/m_algorithm.ipp
 pgn_split_eco.o: tcl/tcl_base.h
 pgn_split_eco.o: tcl/tcl_base.ipp
 pgn_split_eco.o: db/db_pgn_reader.h

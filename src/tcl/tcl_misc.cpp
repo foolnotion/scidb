@@ -54,6 +54,7 @@ using namespace tcl;
 static char const* ScidbVersion	= "1.0 BETA";
 static char const* ScidbRevision	= "96";
 
+static char const* CmdAttributes		= "::scidb::misc::attributes";
 static char const* CmdCrc32			= "::scidb::misc::crc32";
 static char const* CmdDebug			= "::scidb::misc::debug?";
 static char const* CmdEncoding		= "::scidb::misc::encoding";
@@ -65,6 +66,7 @@ static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
 static char const* CmdLookup			= "::scidb::misc::lookup";
 static char const* CmdMapExtension	= "::scidb::misc::mapExtension";
 static char const* CmdRevision		= "::scidb::misc::revision";
+static char const* CmdSetModTime		= "::scidb::misc::setModTime";
 static char const* CmdSize				= "::scidb::misc::size";
 static char const* CmdSuffixes		= "::scidb::misc::suffixes";
 static char const* CmdToAscii			= "::scidb::misc::toAscii";
@@ -674,7 +676,47 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(db::DatabaseCodec::getNumberOfGames(stringFromObj(objc, objv, 1)));
+	int				numGames;
+	uint32_t			creationTime;
+	db::type::ID	type;
+
+	db::DatabaseCodec::getAttributes(stringFromObj(objc, objv, 1),
+												numGames,
+												type,
+												creationTime);
+
+	setResult(numGames);
+	return TCL_OK;
+}
+
+
+static int
+cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	mstl::string	description;
+	int				numGames;
+	uint32_t			creationTime;
+	db::type::ID	type;
+
+	db::DatabaseCodec::getAttributes(stringFromObj(objc, objv, 1),
+												numGames,
+												type,
+												creationTime,
+												&description);
+
+	Tcl_Obj* objs[4];
+
+	mstl::string created;
+
+	if (creationTime)
+		created = db::Time(creationTime).asString();
+
+	objs[0] = Tcl_NewIntObj(numGames);
+	objs[1] = Tcl_NewIntObj(type);
+	objs[2] = Tcl_NewStringObj(created, created.size());
+	objs[3] = Tcl_NewStringObj(description, description.size());
+
+	setResult(4, objs);
 	return TCL_OK;
 }
 
@@ -924,12 +966,24 @@ cmdHtml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdSetModTime(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* filename = stringFromObj(objc, objv, 1);
+	long time = longFromObj(objc, objv, 2);
+
+	sys::file::setModificationTime(filename, time);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
 void
 init(Tcl_Interp* ti)
 {
+	createCommand(ti, CmdAttributes,		cmdAttributes);
 	createCommand(ti, CmdCrc32,			cmdCrc32);
 	createCommand(ti, CmdDebug,			cmdDebug);
 	createCommand(ti, CmdEncoding,		cmdEncoding);
@@ -941,7 +995,8 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdLookup,			cmdLookup);
 	createCommand(ti, CmdMapExtension,	cmdMapExtension);
 	createCommand(ti, CmdRevision,		cmdRevision);
-	createCommand(ti, CmdSize,				cmdSize);
+	createCommand(ti, CmdSetModTime,	cmdSetModTime);
+	createCommand(ti, CmdSize,			cmdSize);
 	createCommand(ti, CmdSuffixes,		cmdSuffixes);
 	createCommand(ti, CmdToAscii,			cmdToAscii);
 	createCommand(ti, CmdVersion,			cmdVersion);

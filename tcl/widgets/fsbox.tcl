@@ -123,7 +123,7 @@ array set Options {
 	show:hidden	0
 	show:layout	details
 	show:filetypeicons 1
-	pane:favorites 120
+	pane:favorites 0
 	menu:headerbackground #ffdd76
 	menu:headerforeground black
 }
@@ -141,6 +141,7 @@ proc fsbox {w type args} {
 		-font							TkTextFont
 		-background					white
 		-foreground					black
+		-bookmarkswidth			120
 		-selectionbackground		#ebf4f5
 		-selectionforeground		black
 		-inactivebackground		#f2f2f2
@@ -168,6 +169,7 @@ proc fsbox {w type args} {
 		-duplicatecommand			{}
 		-okcommand					{}
 		-cancelcommand				{}
+		-inspectcommand			{}
 	}
 
 	array set opts $args
@@ -178,11 +180,14 @@ proc fsbox {w type args} {
 							inactivebackground inactiveforeground filetypes fileencodings
 							fileicons showhidden sizecommand selectencodingcommand validatecommand
 							deletecommand renamecommand duplicatecommand okcommand cancelcommand
-							initialfile} {
+							inspectcommand initialfile bookmarkswidth} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
 
+	if {$Options(pane:favorites) == 0} {
+		set Options(pane:favorites) $Vars(bookmarkswidth)
+	}
 	if {[llength $Vars(showhidden)]} {
 		set Options(show:hidden) $Vars(showhidden)
 	}
@@ -1310,7 +1315,6 @@ proc Build {w path args} {
 		}
 	}
 
-	set opts(-width) 120
 	set opts(-selectmode) single
 	array set opts $args
 	array unset opts -rows
@@ -1687,7 +1691,6 @@ proc Build {w path args} {
 	}
 
 	array set opts {
-		-width			300
 		-scrollmargin	16
 		-selectmode		single
 		-fullstripes	yes
@@ -1812,6 +1815,11 @@ proc Build {w path args} {
 		-orient vertical             \
 		;
 	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
+
+	if {[llength $Vars(inspectcommand)]} {
+		bind $t <ButtonPress-2>		[namespace code [list Inspect $w show %x %y]]
+		bind $t <ButtonRelease-2>	[namespace code [list Inspect $w hide %x %y]]
+	}
 
 	ttk::scrollbar $sv           \
 		-orient vertical          \
@@ -3367,6 +3375,23 @@ proc PopupMenu {w x y} {
 	set Vars(edit:active) 1
 	tk_popup $m {*}[winfo pointerxy $w]
 	bind $m <<MenuUnpost>> [list [namespace parent]::Stimulate $w]
+}
+
+
+proc Inspect {w mode x y} {
+	variable [namespace parent]::${w}::Vars
+
+	set tl [winfo toplevel $w]
+
+	if {$mode eq "show"} {
+		set t $Vars(widget:list:file)
+		set id [$t identify $x $y]
+		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
+		set index [expr {[lindex $id 1] - [llength $Vars(list:folder)] - 1}]
+		$Vars(inspectcommand) $tl [lindex $Vars(list:file) $index]
+	} else {
+		$Vars(inspectcommand) $tl
+	}
 }
 
 

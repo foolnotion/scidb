@@ -36,6 +36,7 @@ SRC_CXX = \
 	tcl_progress.cpp \
 	tcl_tree.cpp \
 	tcl_view.cpp \
+	tcl_zlib.cpp \
 
 SRC	= $(SRC_CXX)
 OBJS	= $(SRC_CXX:.cpp=.o)
@@ -1438,3 +1439,17 @@ tcl_view.o: ../mstl/m_make_type_list.ipp
 tcl_view.o: ../mstl/m_member_list.h
 tcl_view.o: ../mstl/m_member_list.ipp
 tcl_view.o: ../mstl/m_tuple.ipp
+tcl_zlib.o: tcl_base.h
+tcl_zlib.o: tcl_base.ipp
+tcl_zlib.o: ../mstl/m_assert.h
+tcl_zlib.o: ../mstl/m_exception.h
+tcl_zlib.o: ../mstl/m_backtrace.h
+tcl_zlib.o: ../mstl/m_types.h
+tcl_zlib.o: ../mstl/m_exception.ipp
+tcl_zlib.o: ../mstl/m_utility.h
+tcl_zlib.o: ../mstl/m_type_traits.h
+tcl_zlib.o: ../mstl/m_type_traits.ipp
+tcl_zlib.o: ../mstl/m_utility.ipp
+tcl_zlib.o: ../mstl/m_limits.h
+tcl_zlib.o: ../mstl/m_bit_functions.h
+tcl_zlib.o: ../mstl/m_bit_functions.ipp

@@ -109,8 +109,12 @@ proc BuildAboutFrame {w} {
 		-relief sunken \
 		-doublebuffer no \
 		-center yes \
+		-exportselection yes \
 		;
 	pack $w.t
+
+	bind [winfo toplevel $w] <FocusIn>	[list $w.t focusin]
+	bind [winfo toplevel $w] <FocusOut>	[list $w.t focusout]
 
 	$w.t handler node link [list [namespace current]::LinkHandler $w.t]
 	$w.t handler node a    [namespace current]::A_NodeHandler

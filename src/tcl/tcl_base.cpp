@@ -900,6 +900,7 @@ namespace pos			{ void init(Tcl_Interp* interp); }
 namespace board		{ void init(Tcl_Interp* interp); }
 namespace misc			{ void init(Tcl_Interp* interp); }
 namespace crosstable	{ void init(Tcl_Interp* interp); }
+namespace zlib			{ void init(Tcl_Interp* interp); }
 
 } // namespace tcl
 
@@ -939,6 +940,7 @@ tcl::init(Tcl_Interp* ti)
 	board::init(ti);
 	misc::init(ti);
 	crosstable::init(ti);
+	zlib::init(ti);
 }
 
 // vi:set ts=3 sw=3:

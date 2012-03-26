@@ -62,9 +62,10 @@ HeaderInfo  =
   [ '&lt;Size&gt;' { Space } Number LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
-  [ '&lt;Modified&gt;' { Space } Timestamp LF ] ;
+  [ '&lt;Modified&gt;' { Space } Timestamp LF ]
+  [ '&lt;Encoding&gt;' { Space } Encoding ] ;
 Space       = HT | " " ;
-Compression = 'raw' | 'gzip' | 'lzo' ;
+Compression = 'raw' | 'zlib' | 'lzo' ;
 BinaryData  = { Byte } ;
 ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
 UserInfo    = LF { Attribute LF } Attribute ;
@@ -85,9 +86,8 @@ decoder in which way the preceding path specification will be used.
 <code>&lt;Size&gt;</code> is the size of the file contained inside the archive,
 the size of the unpacked file is given with <code>FileSize</code>. The
 internal size information is simultaneously the offset to next file header.
-<code>&lt;TotalSize&gt;</code> contains the sum of all unpacked files. If the sum
-is unknown, because one of the file sizes is unknown, then this attribute
-is not available.
+<code>&lt;TotalSize&gt;</code> contains the sum of all unpacked files. This
+attribute may not be available if the sum is unknown.
 The optional checksum <code>&lt;Checksum&gt;</code>
 concerns the file data inside the archive, and will be computed with the CRC32
 method; <code>&lt;Modified&gt;</code> contains the last modification timestamp
@@ -98,6 +98,7 @@ extracted file.  The attributes <code>&lt;FileName&gt;</code>,
 and <code>&lt;Modified&gt;</code> may be enumerated in random order.
 The default for the attribute <code>&lt;Compression&gt;</code> is 'raw'
 (which means no decompression is required).
+<code>&lt;Encoding&gt;</code> is specifying the character set.
 </p>
 
 <p>
@@ -135,7 +136,7 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' ;<--
+Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;<--
 --></code></pre></div>
 
 <p>

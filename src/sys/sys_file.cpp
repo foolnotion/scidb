@@ -181,6 +181,27 @@ sys::file::closeMapping(void*& address)
 	address = 0;
 }
 
+
+bool
+sys::file::setModificationTime(char const* filename, uint32_t time)
+{
+	M_REQUIRE(filename);
+
+	struct ::_utimbuf ubuf;
+	struct ::_stat st;
+
+	if (::_stat(filename, &st) == -1)
+		return false;
+
+	ubuf.actime = st.st_atime;
+	ubuf.modtime = time;
+
+	if (::_utime(filename, &ubuf) == -1)
+		return false;
+
+	return true;
+}
+
 #else
 
 #include "m_map.h"
@@ -191,6 +212,8 @@ sys::file::closeMapping(void*& address)
 # include <errno.h>
 
 # include <sys/mman.h>
+# include <sys/types.h>
+# include <utime.h>
 
 
 static mstl::map<void*,mstl::pair<int,int> > FileMap;
@@ -269,6 +292,27 @@ void
 sys::file::unlock(int fd)
 {
 	::lockf(fd, F_ULOCK, 0);
+}
+
+
+bool
+sys::file::setModificationTime(char const* filename, uint32_t time)
+{
+	M_REQUIRE(filename);
+
+	struct ::utimbuf ubuf;
+	struct ::stat st;
+
+	if (::stat(filename, &st) == -1)
+		return false;
+
+	ubuf.actime = st.st_atime;
+	ubuf.modtime = time;
+
+	if (::utime(filename, &ubuf) == -1)
+		return false;
+
+	return true;
 }
 
 #endif

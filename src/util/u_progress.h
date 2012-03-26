@@ -35,6 +35,7 @@ public:
 	virtual unsigned ticks() const;
 
 	virtual void start(unsigned total);
+	virtual void tick(unsigned count);
 	virtual void update(unsigned progress);
 	virtual void finish();
 

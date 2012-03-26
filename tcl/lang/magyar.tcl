@@ -149,6 +149,7 @@
 ::menu::mc::ScidBases					"Scid adatbázisok"
 ::menu::mc::ScidbBases					"Scidb adatbázisok"
 ::menu::mc::ChessBaseBases				"ChessBase adatbázisok"
+::menu::mc::ScidbArchives				"Scidb archives" ;# NEW
 ::menu::mc::PGNFilesArchives			"PGN fájlok/arhívumok"
 ::menu::mc::PGNFiles						"PGN fájlok"
 ::menu::mc::PGNArchives					"PGN arhívumok"

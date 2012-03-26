@@ -29,6 +29,7 @@ Tcl_Obj* Progress::m_open			= 0;
 Tcl_Obj* Progress::m_close			= 0;
 Tcl_Obj* Progress::m_start			= 0;
 Tcl_Obj* Progress::m_update		= 0;
+Tcl_Obj* Progress::m_tick			= 0;
 Tcl_Obj* Progress::m_finish		= 0;
 Tcl_Obj* Progress::m_interrupted	= 0;
 Tcl_Obj* Progress::m_ticks			= 0;
@@ -60,6 +61,7 @@ Progress::initialize()
 		Tcl_IncrRefCount(m_close			= Tcl_NewStringObj("close",			-1));
 		Tcl_IncrRefCount(m_start			= Tcl_NewStringObj("start",			-1));
 		Tcl_IncrRefCount(m_update			= Tcl_NewStringObj("update",			-1));
+		Tcl_IncrRefCount(m_tick				= Tcl_NewStringObj("tick",				-1));
 		Tcl_IncrRefCount(m_finish			= Tcl_NewStringObj("finish",			-1));
 		Tcl_IncrRefCount(m_interrupted	= Tcl_NewStringObj("interrupted?",	-1));
 		Tcl_IncrRefCount(m_ticks			= Tcl_NewStringObj("ticks",			-1));
@@ -139,6 +141,17 @@ Progress::start(unsigned total)
 	Tcl_DecrRefCount(maximum);
 	m_sendFinish = rc == TCL_OK;
 	checkResult(rc, m_cmd, m_start, m_arg);
+}
+
+
+void
+Progress::tick(unsigned count)
+{
+	Tcl_Obj* value = Tcl_NewLongObj(count);
+	Tcl_IncrRefCount(value);
+	int rc = invoke(__func__, m_cmd, m_tick, m_arg, value, nullptr);
+	Tcl_DecrRefCount(value);
+	checkResult(rc, m_cmd, m_update, m_arg);
 }
 
 

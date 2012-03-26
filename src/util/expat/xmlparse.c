@@ -276,6 +276,7 @@ static const XML_Char *poolCopyStringN(STRING_POOL *pool, const XML_Char *s, int
    ? 0 \
    : ((*((pool)->ptr)++ = c), 1))
 
+#define Parser XML_ParserStruct
 typedef struct {
   /* The first member must be userData so that the XML_GetUserData macro works. */
   void *m_userData;

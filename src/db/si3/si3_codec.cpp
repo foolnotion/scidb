@@ -1095,8 +1095,10 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 
 	m_autoLoad = bstrm.uint24();
 
+	mstl::string description;
 	bstrm[119] = '\0';	// to be sure
-	setRecodedDescription(reinterpret_cast<char const*>(bstrm.data()));
+	getRecodedDescription(reinterpret_cast<char const*>(bstrm.data()), description, *m_codec);
+	setDescription(description);
 
 	decodeIndex(fstrm, progress);
 	fstrm.close();
@@ -1104,22 +1106,19 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 
 
 void
-Codec::setRecodedDescription(char const* description)
+Codec::getRecodedDescription(char const* description, mstl::string& result, sys::utf8::Codec& codec)
 {
 	mstl::string str;
-	mstl::string result;
 
 	char* data = const_cast<char*>(description);
 	str.hook(data, ::strlen(data));
 
-	m_codec->toUtf8(str, result);
+	codec.toUtf8(str, result);
 	if (!sys::utf8::validate(result))
 	{
 		// the database is opened with wrong encoding
-		m_codec->forceValidUtf8(result);
+		codec.forceValidUtf8(result);
 	}
-
-	setDescription(result);
 }
 
 
@@ -1409,7 +1408,9 @@ Codec::reloadDescription(mstl::string const& rootname)
 
 	bstrm.skip(12);
 	bstrm[119] = '\0';	// to be sure
-	setRecodedDescription(reinterpret_cast<char const*>(bstrm.data()));
+	mstl::string description;
+	getRecodedDescription(reinterpret_cast<char const*>(bstrm.data()), description, *m_codec);
+	setDescription(description);
 }
 
 
@@ -2118,21 +2119,41 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 }
 
 
-int
-Codec::getNumberOfGames(mstl::string const& filename)
+bool
+Codec::getAttributes(mstl::string const& filename,
+							int& numGames,
+							db::type::ID& type,
+							mstl::string* description)
 {
-	mstl::fstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+	mstl::fstream strm(sys::file::internalName(filename), mstl::ios_base::in | mstl::ios_base::binary);
 
 	if (!strm)
-		return -1;
+		return false;
 
-	char header[17];
+	char header[120];
 
-	if (!strm.read(header, sizeof(header)))
-		return -1;
+	strm.seekp(8, mstl::ios_base::beg);
 
-	ByteStream bstrm(header + 14, sizeof(header) - 14);
-	return bstrm.uint24();
+	if (!strm.read(header, description ? sizeof(header) : 8))
+		return false;
+
+	ByteStream bstrm(header, sizeof(header));
+
+	bstrm.skip(2); // skip version
+	type = Decoder::decodeType(bstrm.uint32());
+	numGames	= bstrm.uint24();
+
+	if (description)
+	{
+		sys::utf8::Codec codec(sys::utf8::Codec::utf8());
+
+		bstrm.skip(3);			// skip autoload
+		bstrm[119] = '\0';	// to be sure
+		getRecodedDescription(reinterpret_cast<char const*>(bstrm.data()), *description, codec);
+	}
+
+	strm.close();
+	return true;
 }
 
 

@@ -910,6 +910,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Progress			progress(objv[5], objv[6]);
 
 		n = cursor.importGames(reader, progress);
+		cursor.setDescription(reader.description());
 		stream.close();
 	}
 

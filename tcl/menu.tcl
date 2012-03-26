@@ -36,6 +36,7 @@ set AllScidbBases				"All Scidb databases"
 set ScidBases					"Scid databases"
 set ScidbBases					"Scidb databases"
 set ChessBaseBases			"ChessBase databases"
+set ScidbArchives				"Scidb archives"
 set PGNFilesArchives			"PGN files/archives"
 set PGNFiles					"PGN files"
 set PGNArchives				"PGN archives"
@@ -292,15 +293,16 @@ proc dbNew {parent} {
 
 
 proc dbOpen {parent} {
-	set filetypes [list                                                       \
-		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .pgn .pgn.gz .zip}] \
-		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh}]                   \
-		[list $mc::ScidbBases			.sci]                                    \
-		[list $mc::ScidBases				{.si4 .si3}]                             \
-		[list $mc::ChessBaseBases		.cbh]                                    \
-		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                     \
-		[list $mc::PGNFiles				{.pgn .pgn.gz}]                          \
-		[list $mc::PGNArchives			{.zip}]                                  \
+	set filetypes [list                                                            \
+		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .zip}] \
+		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                   \
+		[list $mc::ScidbBases			.sci]                                         \
+		[list $mc::ScidBases				{.si4 .si3}]                                  \
+		[list $mc::ChessBaseBases		.cbh]                                         \
+		[list $mc::ScidbArchives		{.scv}]                                       \
+		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                          \
+		[list $mc::PGNFiles				{.pgn .pgn.gz}]                               \
+		[list $mc::PGNArchives			{.zip}]                                       \
 	]
 	set result [::dialog::openFile \
 		-parent $parent \

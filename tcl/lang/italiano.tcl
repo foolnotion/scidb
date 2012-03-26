@@ -149,6 +149,7 @@
 ::menu::mc::ScidBases					"Database Scid"
 ::menu::mc::ScidbBases					"Database Scidb"
 ::menu::mc::ChessBaseBases				"Database ChessBase"
+::menu::mc::ScidbArchives				"Scidb archives" ;# NEW
 ::menu::mc::PGNFilesArchives			"File/Archivi PGN"
 ::menu::mc::PGNFiles						"File PGN"
 ::menu::mc::PGNArchives					"Archivi PGN"
