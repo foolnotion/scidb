@@ -57,6 +57,7 @@ set ContactFeatureRequest	"&Feature Request"
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
 set ImportFiles				"Import PGN files..."
+set CreateArchive				"Create an archive"
 
 # do not need translation
 set SettingsEnglish			"&English"
@@ -310,7 +311,7 @@ proc dbOpen {parent} {
 		-defaultextension .sci \
 		-needencoding 1 \
 		-geometry last \
-		-title [set [namespace current]::mc::OpenFile] \
+		-title $mc::OpenFile \
 	]
 
 	if {[llength $result]} {
@@ -320,12 +321,65 @@ proc dbOpen {parent} {
 }
 
 
+proc dbCreateArchive {parent {base ""}} {
+	set filetypes [list	[list $mc::ScidbArchives {.scv}]]
+	set result [::dialog::saveFile \
+		-parent $parent \
+		-filetypes $filetypes \
+		-defaultextension .scv \
+		-needencoding 0 \
+		-geometry last \
+		-title $mc::CreateArchive \
+	]
+	if {[llength $result]} {
+		set arch [lindex $result 0]
+		if {[string length $base] == 0} { set base [::scidb::db::get name] }
+		set progress $parent.__p__
+		::dialog::progressbar::open $progress -variable [namespace current]::_dummy
+		if {[::scidb::db::get memoryOnly? $base]} {
+			set streams {}
+			foreach ext [::scidb::misc::suffixes "$base.sci"] { lappend streams "$base.$ext" }
+			set cmd [list ::archive::packStreams \
+				$arch \
+				$streams \
+				{sci} \
+				zlib \
+				[clock seconds] \
+				[::scidb::db::count games $base] \
+				[namespace current]::archive::Write \
+				$progress \
+			]
+		} else {
+			set files {}
+			set rootname [file rootname $base]
+			foreach ext [::scidb::misc::suffixes $base] {
+				set f "$rootname.$ext"
+				if {[file exists $f]} { lappend files $f }
+			}
+			set cmd [list ::archive::packFiles \
+							$arch \
+							$files \
+							$progress \
+							[namespace current]::archive::GetCompressionMethod \
+							[namespace current]::archive::GetCount \
+							::scidb::misc::mapExtension \
+						]
+		}
+		if {[catch {{*}$cmd} err options]} {
+			destroy $progress
+			return {*}$options $result
+		}
+		destroy $progress
+	}
+}
+
+
 proc dbImport {parent {base ""}} {
 	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
 								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
 								[list $mc::PGNArchives			{.zip}] \
 	]
-	set title [set [namespace current]::mc::ImportFiles]
+	set title $mc::ImportFiles
 	set result [::dialog::openFile \
 		-parent $parent \
 		-filetypes $filetypes \
@@ -335,7 +389,6 @@ proc dbImport {parent {base ""}} {
 		-title $title \
 		-multiple yes \
 	]
-
 	if {[llength $result]} {
 		if {[string length $base] == 0} { set base [::scidb::db::get name] }
 		lassign $result files encoding
@@ -394,6 +447,65 @@ proc openHelp {parent {topic {}}} {
 	::help::open $parent $topic
 }
 
+namespace eval archive {
+
+proc GetCompressionMethod {ext} {
+	switch $ext {
+		gz - zip	{ set method raw  }
+		default	{ set method zlib }
+	}
+
+	return $method
+}
+
+
+proc GetCount {file} {
+	switch [file extension $file] {
+		.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+			return [::scidb::misc::size $file]
+		}
+	}
+	return 0
+}
+
+
+proc Write {file chan progress} {
+	set ext [file extension $file]
+	set base [file rootname $file]
+
+	return [::scidb::db::write \
+		$base \
+		[string range $ext 1 end] \
+		$chan \
+		[namespace current]::Progress \
+		$progress \
+	]
+}
+
+
+proc Progress {cmd w {value 0}} {
+puts "Progress: $cmd - $value"
+	switch $cmd {
+		start {
+			::dialog::progressbar::setMaximum $w $value
+			update
+		}
+
+		update - finish {
+			update
+		}
+
+		ticks {
+			return $::dialog::progressbar::ticks
+		}
+
+		interrupted? {
+			return [::dialog::progressbar::interrupted? $w]
+		}
+	}
+}
+
+} ;# namespace archive
 } ;# namespace menu
 
 # vi:set ts=3 sw=3:

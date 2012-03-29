@@ -35,6 +35,10 @@ proc inspect {arch {destDir ""}} {
 	set header {}
 	gets $fd line
 
+	if {[string length $destDir] == 0} {
+		set destDir [file dirname $arch]
+	}
+
 	gets $fd line
 	while {$line ne "<-- H E A D -->"} {
 		regexp {<([A-Za-z]+)>[ 	]*(.*)} $line _ attr value
@@ -56,8 +60,7 @@ proc inspect {arch {destDir ""}} {
 			set value [string trim $value]
 			set $attr $value
 			if {$attr eq "FileName"} {
-				set value [file tail $value]
-				if {[string length $destDir]} { set value [file join $destDir $value] }
+				set value [file join $destDir [file tail $value]]
 			}
 			if {![info exists FileName]} {
 				# error: missing mandatory attribute FileName
@@ -76,7 +79,7 @@ proc inspect {arch {destDir ""}} {
 }
 
 
-proc pack {arch sources progress procCompression {archAttributes {}} {procCount {}} {mapExtension {}}} {
+proc packFiles {arch sources progress procCompression {procCount {}} {mapExtension {}}} {
 	set TotalSize 0
 	set Count 0
 	array set formats {}
@@ -129,11 +132,7 @@ proc pack {arch sources progress procCompression {archAttributes {}} {procCount 
 	puts $fd "<TotalSize> $TotalSize"
 	if {$Count >= 0} { puts $fd "<Count> $Count" }
 	puts $fd "<Format> [join [array names formats] ","]"
-	puts -nonewline $fd "<Tyoe> $Type"
-
-	foreach {attr value} $archAttributes {
-		puts -nonewline $fd "\n<$attr> $value"
-	}
+	puts -nonewline $fd "<Type> $Type"
 
 	foreach attrs $fileAttrs {
 		puts $fd ""
@@ -194,6 +193,61 @@ proc pack {arch sources progress procCompression {archAttributes {}} {procCount 
 }
 
 
+proc packStreams {arch sources formats compression modified count procWrite progress} {
+	set TotalSize 0
+	set Count 0
+	set Type single
+	set fileAttrs {}
+
+	set fd [open $arch wb]
+	fconfigure $fd -translation lf
+
+	puts $fd "iveArch"
+	puts -nonewline $fd "<TotalSize> "
+	set offs(TotalSize) [tell $fd]
+	puts $fd "           " ;# placeholder
+	puts $fd "<Count> $Count"
+	puts $fd "<Format> [join $formats ","]"
+	puts -nonewline $fd "<Type> single"
+
+	set TotalSize 0
+
+	foreach source $sources {
+		puts $fd ""
+		puts $fd "<-- H E A D -->"
+
+		puts $fd "<FileName> $source"
+		puts -nonewline $fd "<FileSize> "
+		set offs($source,FileSize) [tell $fd]
+		puts $fd "           " ;# placeholder
+		puts $fd "<Compression> $compression"
+		puts $fd "<Modified> $modified"
+
+		foreach attr {Size Checksum} {
+			puts -nonewline $fd "<$attr> "
+			set offs($source,$attr) [tell $fd]
+			puts $fd "           " ;# placeholder
+		}
+
+		puts $fd "<-- D A T A -->"
+
+		lassign [$procWrite $source $fd $progress] FileSize Size Checksum
+		incr $TotalSize $FileSize
+
+		foreach attr {FileSize Size Checksum} {
+			seek $fd $offs($source,$attr) start
+			puts -nonewline $fd [set $attr]
+		}
+
+		seek $fd 0 end
+	}
+
+	seek $fd $offs(TotalSize) start
+	puts -nonewline $fd $TotalSize
+	close $fd
+}
+
+
 proc unpack {arch progress {destDir ""}} {
 	set fd [open $arch "r"]
 	fconfigure $fd -translation lf
@@ -211,6 +265,10 @@ proc unpack {arch progress {destDir ""}} {
 
 	setMaxTick $progress [expr {$TotalSize + 1}]
 
+	if {[string length $destDir] == 0} {
+		set destDir [file dirname $arch]
+	}
+
 	while {[tell $fd] < $fileSize} {
 		if {$line ne "<-- H E A D -->"} {
 			# log error
@@ -226,8 +284,7 @@ proc unpack {arch progress {destDir ""}} {
 			gets $fd line
 		}
 		lappend entries $attrs
-		set destFilename [file tail $FileName]
-		if {[string length $destDir]} { set destFilename [file join $destDir $FileName] }
+		set destFilename [file join $destDir [file tail $FileName]]
 		if {[string match http:* $FileName]} {
 		} elseif {[catch {set f [open $destFilename wb]} err]} {
 			# write "error opening file" to log
@@ -235,7 +292,7 @@ proc unpack {arch progress {destDir ""}} {
 			tick $progress $Size
 		} else {
 			fconfigure $f -buffering none
-			swiitch $Compression {
+			switch $Compression {
 				zlib {
 					lassign [::zlib::inflate $fd $f $Size [namespace current]::tick $progress] size crc
 				}
@@ -277,27 +334,25 @@ proc unpack {arch progress {destDir ""}} {
 	return 1
 }
 
-
-# move to elsewhere
-proc getCompressionMethod {ext} {
-	switch $ext {
-		gz - zip	{ set method raw  }
-		default	{ set method zlib }
-	}
-
-	return $method
-}
-
 } ;# namespace archive
 
 if {0} {
+	proc getCount {file} {
+		switch [file extension $file] {
+			.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+				return [::scidb::misc::size $file]
+			}
+		}
+		return 0
+	}
+
 	wm withdraw .
 	source ../dialogs/progressbar.tcl
 	source ../progress.tcl
 	::dialog::progressbar::open .p -variable N
 
 	if {1} {
-		::archive::pack \
+		::archive::packFiles \
 			arch.scv \
 			{ \
 				{../Bases/CB Light Database.sci}
@@ -306,8 +361,7 @@ if {0} {
 			} \
 			.p \
 			::archive::getCompressionMethod \
-			{TotalGames 14820} \
-			::scidb::misc::size \
+			getCount \
 			::scidb::misc::mapExtension \
 			;
 	} elseif {1} {

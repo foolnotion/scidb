@@ -170,6 +170,7 @@
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
 ::menu::mc::ImportFiles					"PGN fájlok importálása"
+::menu::mc::CreateArchive				"Create an archive" ;# NEW
 
 ### load ###############################################################
 ::load::mc::FileIsCorrupt	"A %s fájl sérült:"
@@ -213,113 +214,117 @@
 ::application::board::mc::KeyEditMarks			"M"
 
 ### application::database ##############################################
-::application::database::mc::FileOpen					"Fájl megnyitása"
-::application::database::mc::FileOpenRecent			"Legutóbbi fájlok Megnyitása"
-::application::database::mc::FileNew					"Új"
-::application::database::mc::FileExport				"Export..."
-::application::database::mc::FileImport				"PGN fájlok importálás..."
-::application::database::mc::FileClose					"Bezárás"
-::application::database::mc::HelpSwitcher				"Help for Database Switcher" ;# NEW
+::application::database::mc::FileOpen						"Fájl megnyitása"
+::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
+::application::database::mc::FileNew						"Új"
+::application::database::mc::FileExport					"Export..."
+::application::database::mc::FileImport					"PGN fájlok importálás..."
+::application::database::mc::FileCreate					"Create Archive..." ;# NEW
+::application::database::mc::FileCreate					"Create archive..." ;# NEW
+::application::database::mc::FileClose						"Bezárás"
+::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
-::application::database::mc::Games						"&Játszmák"
-::application::database::mc::Players					"&Játékosok"
-::application::database::mc::Events						"&Versenyek"
-::application::database::mc::Annotators				"&Elemző"
+::application::database::mc::Games							"&Játszmák"
+::application::database::mc::Players						"&Játékosok"
+::application::database::mc::Events							"&Versenyek"
+::application::database::mc::Annotators					"&Elemző"
 
-::application::database::mc::File						"Fájl"
-::application::database::mc::SymbolSize				"Szimvólum méret"
-::application::database::mc::Large						"Nagy"
-::application::database::mc::Medium						"Közepes"
-::application::database::mc::Small						"Kicsi"
-::application::database::mc::Tiny						"Apró"
-::application::database::mc::Empty						"üres"
-::application::database::mc::None						"nincs"
-::application::database::mc::Failed						"meghiúsult"
-::application::database::mc::LoadMessage				"Adatbázis megnyitása: %s"
-::application::database::mc::UpgradeMessage			"Adatbázis frissítése %s"
-::application::database::mc::CannotOpenFile			"A fájl nem nyitható meg olvasásra: '%s'."
-::application::database::mc::EncodingFailed			"%s kódolása sikertelen."
-::application::database::mc::DatabaseAlreadyOpen	"Az '%s' adatbázis már meg van nyitva."
-::application::database::mc::Properties				"Tulajdonságok"
-::application::database::mc::Preload					"Preload"
-::application::database::mc::MissingEncoding			"Hiányos kódolás %s (használd inkább %s-t)"
-::application::database::mc::DescriptionTooLarge	"Túl hosszú leírás."
-::application::database::mc::DescrTooLargeDetail	"A mező %d karaktert tartalmaz, de csak %d megengedett."
-::application::database::mc::ClipbaseDescription	"Ideiglenes adatbázis, nincs elmentve a lemezre."
-::application::database::mc::HardLinkDetected		"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
+::application::database::mc::File							"Fájl"
+::application::database::mc::SymbolSize					"Szimvólum méret"
+::application::database::mc::Large							"Nagy"
+::application::database::mc::Medium							"Közepes"
+::application::database::mc::Small							"Kicsi"
+::application::database::mc::Tiny							"Apró"
+::application::database::mc::Empty							"üres"
+::application::database::mc::None							"nincs"
+::application::database::mc::Failed							"meghiúsult"
+::application::database::mc::LoadMessage					"Adatbázis megnyitása: %s"
+::application::database::mc::UpgradeMessage				"Adatbázis frissítése %s"
+::application::database::mc::CannotOpenFile				"A fájl nem nyitható meg olvasásra: '%s'."
+::application::database::mc::EncodingFailed				"%s kódolása sikertelen."
+::application::database::mc::DatabaseAlreadyOpen		"Az '%s' adatbázis már meg van nyitva."
+::application::database::mc::Properties					"Tulajdonságok"
+::application::database::mc::Preload						"Preload"
+::application::database::mc::MissingEncoding				"Hiányos kódolás %s (használd inkább %s-t)"
+::application::database::mc::DescriptionTooLarge		"Túl hosszú leírás."
+::application::database::mc::DescrTooLargeDetail		"A mező %d karaktert tartalmaz, de csak %d megengedett."
+::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
+::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::CannotOpenUri			"Cannot open the following URI:" ;# NEW
-::application::database::mc::InvalidUri				"Drop content is not a valid URI list." ;# NEW
-::application::database::mc::UriRejected				"The following files are rejected:" ;# NEW
-::application::database::mc::UriRejectedDetail		"Only Scidb databases can be opened:" ;# NEW
-::application::database::mc::EmptyUriList				"Drop content is empty." ;# NEW
+::application::database::mc::CannotOpenUri				"Cannot open the following URI:" ;# NEW
+::application::database::mc::InvalidUri					"Drop content is not a valid URI list." ;# NEW
+::application::database::mc::UriRejected					"The following files are rejected:" ;# NEW
+::application::database::mc::UriRejectedDetail			"Only Scidb databases can be opened:" ;# NEW
+::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
+::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
+::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
 
-::application::database::mc::RecodingDatabase		"Recoding %s from %s to %s"
-::application::database::mc::RecodedGames				"%s game(s) recoded"
+::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
+::application::database::mc::RecodedGames					"%s game(s) recoded"
 
-::application::database::mc::GameCount					"Játszmák"
-::application::database::mc::DatabasePath				"Adatbázis elérési útvonala"
-::application::database::mc::DeletedGames				"Törölt játszmák"
-::application::database::mc::Description				"Leírás"
-::application::database::mc::Created					"Létrehozva"
-::application::database::mc::LastModified				"Utoljára módosítva"
-::application::database::mc::Encoding					"Kódolás"
-::application::database::mc::YearRange					"Év tartomány" ;#?
-::application::database::mc::RatingRange				"Értékszám tartomány"
-::application::database::mc::Result						"Eredmény"
-::application::database::mc::Score						"Pontszám"
-::application::database::mc::Type						"Típus"
-::application::database::mc::ReadOnly					"Csak olvasható"
+::application::database::mc::GameCount						"Játszmák"
+::application::database::mc::DatabasePath					"Adatbázis elérési útvonala"
+::application::database::mc::DeletedGames					"Törölt játszmák"
+::application::database::mc::Description					"Leírás"
+::application::database::mc::Created						"Létrehozva"
+::application::database::mc::LastModified					"Utoljára módosítva"
+::application::database::mc::Encoding						"Kódolás"
+::application::database::mc::YearRange						"Év tartomány" ;#?
+::application::database::mc::RatingRange					"Értékszám tartomány"
+::application::database::mc::Result							"Eredmény"
+::application::database::mc::Score							"Pontszám"
+::application::database::mc::Type							"Típus"
+::application::database::mc::ReadOnly						"Csak olvasható"
 
-::application::database::mc::ChangeIcon				"Ikon cseréje"
-::application::database::mc::Recode						"Újrakódolás"
-::application::database::mc::EditDescription			"Leírás szerkesztése"
-::application::database::mc::EmptyClipbase			"Üres vágólap"
+::application::database::mc::ChangeIcon					"Ikon cseréje"
+::application::database::mc::Recode							"Újrakódolás"
+::application::database::mc::EditDescription				"Leírás szerkesztése"
+::application::database::mc::EmptyClipbase				"Üres vágólap"
 
-::application::database::mc::T_Unspecific				"Nem specifikus"
-::application::database::mc::T_Temporary				"Ideiglenes"
-::application::database::mc::T_Work						"Munka"
-::application::database::mc::T_Clipbase				"Vágólap"
-::application::database::mc::T_MyGames					"Játszmáim"
-::application::database::mc::T_Informant				"Informátor"
-::application::database::mc::T_LargeDatabase			"Nagy adatbázis"
-::application::database::mc::T_CorrespondenceChess	"Levelező sakk"  
-::application::database::mc::T_EmailChess				"e-mail sakk"
-::application::database::mc::T_InternetChess			"internet sakk"
-::application::database::mc::T_ComputerChess			"számítógépes sakk"
-::application::database::mc::T_Chess960				"Chess 960"
-::application::database::mc::T_PlayerCollection		"Játékos adatlapok"
-::application::database::mc::T_Tournament				"Verseny"
-::application::database::mc::T_TournamentSwiss		"Svájci verseny"
-::application::database::mc::T_GMGames					"GM Játszmák"
-::application::database::mc::T_IMGames					"IM Játszmák"
-::application::database::mc::T_BlitzGames				"Schnell játszmák"
-::application::database::mc::T_Tactics					"Taktika"
-::application::database::mc::T_Endgames				"Végjátékok"
-::application::database::mc::T_Analysis				"Elemzések"
-::application::database::mc::T_Training				"Edzések"
-::application::database::mc::T_Match					"Match"
-::application::database::mc::T_Studies					"Tanulmányok"
-::application::database::mc::T_Jewels					"Gyöngyszemek"
-::application::database::mc::T_Problems				"Problémák"
-::application::database::mc::T_Patzer					"Patzer"
-::application::database::mc::T_Gambit					"Gambit"
-::application::database::mc::T_Important				"Important"
-::application::database::mc::T_Openings				"Megnyitások"
-::application::database::mc::T_OpeningsWhite			"Megnyitások világossal"
-::application::database::mc::T_OpeningsBlack			"Megnyitások sötéttel"
+::application::database::mc::T_Unspecific					"Nem specifikus"
+::application::database::mc::T_Temporary					"Ideiglenes"
+::application::database::mc::T_Work							"Munka"
+::application::database::mc::T_Clipbase					"Vágólap"
+::application::database::mc::T_MyGames						"Játszmáim"
+::application::database::mc::T_Informant					"Informátor"
+::application::database::mc::T_LargeDatabase				"Nagy adatbázis"
+::application::database::mc::T_CorrespondenceChess		"Levelező sakk"  
+::application::database::mc::T_EmailChess					"e-mail sakk"
+::application::database::mc::T_InternetChess				"internet sakk"
+::application::database::mc::T_ComputerChess				"számítógépes sakk"
+::application::database::mc::T_Chess960					"Chess 960"
+::application::database::mc::T_PlayerCollection			"Játékos adatlapok"
+::application::database::mc::T_Tournament					"Verseny"
+::application::database::mc::T_TournamentSwiss			"Svájci verseny"
+::application::database::mc::T_GMGames						"GM Játszmák"
+::application::database::mc::T_IMGames						"IM Játszmák"
+::application::database::mc::T_BlitzGames					"Schnell játszmák"
+::application::database::mc::T_Tactics						"Taktika"
+::application::database::mc::T_Endgames					"Végjátékok"
+::application::database::mc::T_Analysis					"Elemzések"
+::application::database::mc::T_Training					"Edzések"
+::application::database::mc::T_Match						"Match"
+::application::database::mc::T_Studies						"Tanulmányok"
+::application::database::mc::T_Jewels						"Gyöngyszemek"
+::application::database::mc::T_Problems					"Problémák"
+::application::database::mc::T_Patzer						"Patzer"
+::application::database::mc::T_Gambit						"Gambit"
+::application::database::mc::T_Important					"Important"
+::application::database::mc::T_Openings					"Megnyitások"
+::application::database::mc::T_OpeningsWhite				"Megnyitások világossal"
+::application::database::mc::T_OpeningsBlack				"Megnyitások sötéttel"
 
-::application::database::mc::OpenDatabase				"Adatbázis megnyitása"
-::application::database::mc::NewDatabase				"Új adatbázis"
-::application::database::mc::CloseDatabase			"Adatbázis bezárása: '%s'"
-::application::database::mc::SetReadonly				"'%s' adatbázis módosítása írásvédette"
-::application::database::mc::SetWriteable				"'%s' adatbázis módosítása írhatóvá"
+::application::database::mc::OpenDatabase					"Adatbázis megnyitása"
+::application::database::mc::NewDatabase					"Új adatbázis"
+::application::database::mc::CloseDatabase				"Adatbázis bezárása: '%s'"
+::application::database::mc::SetReadonly					"'%s' adatbázis módosítása írásvédette"
+::application::database::mc::SetWriteable					"'%s' adatbázis módosítása írhatóvá"
 
-::application::database::mc::OpenReadonly				"Megynitás olvasásra"
-::application::database::mc::OpenWriteable			"Megnyitás írásra"
+::application::database::mc::OpenReadonly					"Megynitás olvasásra"
+::application::database::mc::OpenWriteable				"Megnyitás írásra"
 
-::application::database::mc::UpgradeDatabase			"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
-::application::database::mc::UpgradeDatabaseDetail	"\"Nem\" olvasásra niytja meg az adatbázist."
+::application::database::mc::UpgradeDatabase				"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
+::application::database::mc::UpgradeDatabaseDetail		"\"Nem\" olvasásra niytja meg az adatbázist."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -1454,7 +1459,7 @@
 ::dialog::mc::Error			"Hiba"
 ::dialog::mc::Warning		"Figyelmeztetés"
 ::dialog::mc::Information	"Információ"
-::dialog::mc::Question		"Kérdés"
+::dialog::mc::Question		"Kérdés" ;# NEW english content is "Confirm"
 
 ::dialog::mc::DontAskAgain	"Ne kérdezd meg újra"
 
@@ -1501,6 +1506,19 @@
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns		"Ctrl+."
 ::table::mc::AccelSqueezeColumns		"Ctrl+#"
+
+### fileselectionbox ###################################################
+::dialog::fsbox::mc::ScidbDatabase			"Scidb Database" ;# NEW
+::dialog::fsbox::mc::ScidDatabase			"Scid Database" ;# NEW
+::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase Database" ;# NEW
+::dialog::fsbox::mc::PortableGameFile		"Portable Game File" ;# NEW
+::dialog::fsbox::mc::ZipArchive				"ZIP Archive" ;# NEW
+::dialog::fsbox::mc::ScidbArchive			"Scidb Arvchive" ;# NEW
+::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
+::dialog::fsbox::mc::HypertextFile			"Hypertext File" ;# NEW
+::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
+
+::dialog::fsbox::mc::Content					"Content" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok			"&OK"

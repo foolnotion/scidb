@@ -81,12 +81,7 @@ proc DoCmd {cmd parent {value 0}} {
 			update
 		}
 
-		update {
-			set Priv(value) $value
-			update
-		}
-
-		finish {
+		update - finish {
 			set Priv(value) $value
 			update
 		}

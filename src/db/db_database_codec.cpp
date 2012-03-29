@@ -347,6 +347,27 @@ DatabaseCodec::save(mstl::string const&, unsigned, Progress&)
 
 
 void
+DatabaseCodec::writeNamebases(mstl::ostream&, util::Progress*)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::writeIndex(mstl::ostream&, util::Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::writeGames(mstl::ostream&, util::Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
 DatabaseCodec::update(mstl::string const&, unsigned, bool)
 {
 	M_RAISE("should not be used");

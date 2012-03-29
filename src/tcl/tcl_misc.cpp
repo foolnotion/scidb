@@ -26,6 +26,8 @@
 
 #include "tcl_base.h"
 #include "tcl_exception.h"
+#include "tcl_database.h"
+#include "tcl_file.h"
 
 #include "db_comment.h"
 #include "db_player.h"
@@ -141,7 +143,7 @@ struct CharsetDetector : public nsUniversalDetector
 };
 
 
-class ToList : public db::Comment::Callback
+class ToList : public ::db::Comment::Callback
 {
 public:
 
@@ -581,7 +583,7 @@ cmdToAscii(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
+	::db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
 	ToList callback;
 
 	comment.parse(callback);
@@ -651,7 +653,7 @@ cmdDebug(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	db::Player const* player = db::Player::findPlayer(unsignedFromObj(objc, objv, 1));
+	::db::Player const* player = ::db::Player::findPlayer(unsignedFromObj(objc, objv, 1));
 	bool unicodeFlag = false;
 
 	if (objc > 2)
@@ -678,12 +680,12 @@ cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	int				numGames;
 	uint32_t			creationTime;
-	db::type::ID	type;
+	::db::type::ID	type;
 
-	db::DatabaseCodec::getAttributes(stringFromObj(objc, objv, 1),
-												numGames,
-												type,
-												creationTime);
+	::db::DatabaseCodec::getAttributes(	stringFromObj(objc, objv, 1),
+													numGames,
+													type,
+													creationTime);
 
 	setResult(numGames);
 	return TCL_OK;
@@ -696,23 +698,23 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	description;
 	int				numGames;
 	uint32_t			creationTime;
-	db::type::ID	type;
+	::db::type::ID	type;
 
-	db::DatabaseCodec::getAttributes(stringFromObj(objc, objv, 1),
-												numGames,
-												type,
-												creationTime,
-												&description);
+	::db::DatabaseCodec::getAttributes(	stringFromObj(objc, objv, 1),
+													numGames,
+													type,
+													creationTime,
+													&description);
 
 	Tcl_Obj* objs[4];
 
 	mstl::string created;
 
 	if (creationTime)
-		created = db::Time(creationTime).asString();
+		created = ::db::Time(creationTime).asString();
 
 	objs[0] = Tcl_NewIntObj(numGames);
-	objs[1] = Tcl_NewIntObj(type);
+	objs[1] = Tcl_NewStringObj(tcl::db::lookupType(type), -1);
 	objs[2] = Tcl_NewStringObj(created, created.size());
 	objs[3] = Tcl_NewStringObj(description, description.size());
 
@@ -724,8 +726,8 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	db::DatabaseCodec::StringList result;
-	db::DatabaseCodec::getSuffixes(stringFromObj(objc, objv, 1), result);
+	::db::DatabaseCodec::StringList result;
+	::db::DatabaseCodec::getSuffixes(stringFromObj(objc, objv, 1), result);
 
 	Tcl_Obj* objs[result.size()];
 
@@ -746,8 +748,8 @@ cmdMapExtension(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	for (unsigned i = 0; i < U_NUMBER_OF(Extensions); ++i)
 	{
-		db::DatabaseCodec::StringList result;
-		db::DatabaseCodec::getSuffixes(Extensions[i], result);
+		::db::DatabaseCodec::StringList result;
+		::db::DatabaseCodec::getSuffixes(Extensions[i], result);
 
 		for (unsigned k = 0; k < result.size(); ++k)
 		{
@@ -774,13 +776,13 @@ cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		isExtraTagFunc = ::db::sci::Codec::isExtraTag;
 
-	Tcl_Obj* objs[db::tag::ExtraTag];
+	Tcl_Obj* objs[::db::tag::ExtraTag];
 	unsigned count = 0;
 
-	for (unsigned i = 0; i < db::tag::ExtraTag; ++i)
+	for (unsigned i = 0; i < ::db::tag::ExtraTag; ++i)
 	{
-		if (isExtraTagFunc(db::tag::ID(i)))
-			objs[count++] = Tcl_NewStringObj(db::tag::toName(db::tag::ID(i)), -1);
+		if (isExtraTagFunc(::db::tag::ID(i)))
+			objs[count++] = Tcl_NewStringObj(::db::tag::toName(::db::tag::ID(i)), -1);
 	}
 
 	setResult(count, objs);

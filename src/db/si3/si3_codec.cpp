@@ -1108,12 +1108,9 @@ Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
 void
 Codec::getRecodedDescription(char const* description, mstl::string& result, sys::utf8::Codec& codec)
 {
-	mstl::string str;
-
-	char* data = const_cast<char*>(description);
-	str.hook(data, ::strlen(data));
-
+	mstl::string str(const_cast<char*>(description));
 	codec.toUtf8(str, result);
+
 	if (!sys::utf8::validate(result))
 	{
 		// the database is opened with wrong encoding
@@ -2148,7 +2145,7 @@ Codec::getAttributes(mstl::string const& filename,
 		sys::utf8::Codec codec(sys::utf8::Codec::utf8());
 
 		bstrm.skip(3);			// skip autoload
-		bstrm[119] = '\0';	// to be sure
+		header[119] = '\0';	// to be sure
 		getRecodedDescription(reinterpret_cast<char const*>(bstrm.data()), *description, codec);
 	}
 

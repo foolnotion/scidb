@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -16,35 +16,41 @@
 // (at your option) any later version.
 // ======================================================================
 
-namespace util {
+#ifndef _tcl_file_included
+#define _tcl_file_included
 
-inline unsigned Progress::frequency() const { return m_freq; }
-inline void Progress::setFrequency(unsigned frequency) { m_freq = frequency; }
+#include "m_stdio.h"
 
+#include <tcl.h>
 
-inline
-ProgressWatcher::ProgressWatcher(Progress& progress, unsigned total)
-	:m_progress(&progress)
+namespace tcl {
+
+class File
 {
-	m_progress->start(total);
-}
+public:
 
+	File(Tcl_Channel chan = 0);
+	~File() throw();
 
-inline
-ProgressWatcher::ProgressWatcher(Progress* progress, unsigned total)
-	:m_progress(progress)
-{
-	if (m_progress)
-		m_progress->start(total);
-}
+	bool isOpen() const;
 
+	FILE* handle() const;
 
-inline ProgressWatcher::~ProgressWatcher()
-{
-	if (m_progress)
-		m_progress->finish();
-}
+	void open(Tcl_Channel chan);
+	void flush();
+	void close();
 
-} // namespace util
+private:
+
+	class Cookie;
+	friend class Cookie;
+
+	Tcl_Channel	m_chan;
+	FILE*			m_fp;
+};
+
+} // namespace tcl
+
+#endif // _tcl_file_included
 
 // vi:set ts=3 sw=3:

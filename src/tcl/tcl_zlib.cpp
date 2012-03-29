@@ -6,14 +6,6 @@
 // ======================================================================
 
 // ======================================================================
-//    _/|            __
-//   // o\         /    )           ,        /    /
-//   || ._)    ----\---------__----------__-/----/__-
-//   //__\          \      /   '  /    /   /    /   )
-//   )___(     _(____/____(___ __/____(___/____(___/_
-// ======================================================================
-
-// ======================================================================
 // Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
@@ -121,7 +113,6 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 			strm.next_out = reinterpret_cast<Bytef*>(outBuf);
 
 			ret = inflate(&strm, Z_NO_FLUSH);
-			M_ASSERT(ret != Z_STREAM_ERROR);
 
 			switch (ret)
 			{
@@ -134,6 +125,9 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 					else
 						Tcl_SetResult(ti, const_cast<char*>("zlib::inflate failed"), TCL_STATIC);
 					return TCL_ERROR;
+
+				case Z_STREAM_ERROR:
+					M_RAISE("zlib: inflate() failed");
 			}
 
 			int have = ChunkSize - strm.avail_out;
@@ -217,7 +211,6 @@ cmdZlibDeflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 
 	Tcl_Obj* objs[3];
 	int flush;
-	int ret;
 	unsigned crc = 0;
 
 	objs[0] = objv[3];
@@ -245,8 +238,9 @@ cmdZlibDeflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 			strm.avail_out = ChunkSize;
 			strm.next_out = reinterpret_cast<Bytef*>(outBuf);
 
-			ret = deflate(&strm, flush);
-			M_ASSERT(ret != Z_STREAM_ERROR);
+			if (deflate(&strm, flush) == Z_STREAM_ERROR)
+				M_RAISE("zlib: deflate() failed");
+
 			int have = ChunkSize - strm.avail_out;
 
 			if (Tcl_Write(dstChan, outBuf, have) != have)
@@ -269,7 +263,6 @@ cmdZlibDeflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 	}
 	while (flush != Z_FINISH);
 
-	M_ASSERT(ret == Z_STREAM_END);
 	deflateEnd(&strm);
 
 	objs[0] = Tcl_NewLongObj(strm.total_out);

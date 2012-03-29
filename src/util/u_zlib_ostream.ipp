@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -18,32 +18,10 @@
 
 namespace util {
 
-inline unsigned Progress::frequency() const { return m_freq; }
-inline void Progress::setFrequency(unsigned frequency) { m_freq = frequency; }
-
-
-inline
-ProgressWatcher::ProgressWatcher(Progress& progress, unsigned total)
-	:m_progress(&progress)
-{
-	m_progress->start(total);
-}
-
-
-inline
-ProgressWatcher::ProgressWatcher(Progress* progress, unsigned total)
-	:m_progress(progress)
-{
-	if (m_progress)
-		m_progress->start(total);
-}
-
-
-inline ProgressWatcher::~ProgressWatcher()
-{
-	if (m_progress)
-		m_progress->finish();
-}
+inline bool ZlibOStream::isOpen() const					{ return m_dst != 0; }
+inline uint32_t ZlibOStream::crc() const					{ return m_crc; }
+inline unsigned ZlibOStream::size() const					{ return m_size; }
+inline unsigned ZlibOStream::compressedSize() const	{ return m_compressedSize; }
 
 } // namespace util
 

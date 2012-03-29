@@ -27,6 +27,7 @@ SRC_CXX = \
 	u_path.cpp \
 	u_piped_progress.cpp \
 	u_progress.cpp \
+	u_zlib_ostream.cpp\
 	u_zstream.cpp \
 
 SRC	= $(SRC_CXX)
@@ -93,6 +94,8 @@ u_block_file.o: ../mstl/m_algobase.ipp
 u_block_file.o: ../mstl/m_construct.h
 u_block_file.o: ../mstl/m_construct.ipp
 u_block_file.o: u_block_file.ipp
+u_block_file.o: u_progress.h
+u_block_file.o: u_progress.ipp
 u_block_file.o: ../mstl/m_algorithm.h
 u_block_file.o: ../mstl/m_algorithm.ipp
 u_block_file.o: ../mstl/m_fstream.h
@@ -186,6 +189,8 @@ u_html.o: ../sys/sys_utf8.h
 u_html.o: ../sys/sys_utf8.ipp
 u_html.o: ../mstl/m_map.h
 u_html.o: ../mstl/m_map.ipp
+u_html.o: expat/expat.h
+u_html.o: expat/xmlparse.h
 u_http.o: u_http.h
 u_http.o: ../mstl/m_string.h
 u_http.o: ../mstl/m_types.h
@@ -276,6 +281,20 @@ u_progress.o: ../mstl/m_assert.h
 u_progress.o: ../mstl/m_exception.h
 u_progress.o: ../mstl/m_backtrace.h
 u_progress.o: ../mstl/m_exception.ipp
+u_zlib_ostream.o: u_zlib_ostream.h
+u_zlib_ostream.o: ../mstl/m_ostream.h
+u_zlib_ostream.o: ../mstl/m_ios.h
+u_zlib_ostream.o: ../mstl/m_exception.h
+u_zlib_ostream.o: ../mstl/m_backtrace.h
+u_zlib_ostream.o: ../mstl/m_types.h
+u_zlib_ostream.o: ../mstl/m_exception.ipp
+u_zlib_ostream.o: ../mstl/m_ios.ipp
+u_zlib_ostream.o: ../mstl/m_ostream.ipp
+u_zlib_ostream.o: ../mstl/m_stdio.h
+u_zlib_ostream.o: u_zlib_ostream.ipp
+u_zlib_ostream.o: ../mstl/m_assert.h
+u_zlib_ostream.o: zlib/zlib.h
+u_zlib_ostream.o: zlib/zconf.h
 u_zstream.o: u_zstream.h
 u_zstream.o: ../mstl/m_iostream.h
 u_zstream.o: ../mstl/m_istream.h

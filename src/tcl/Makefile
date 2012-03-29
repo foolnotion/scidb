@@ -27,6 +27,7 @@ SRC_CXX = \
 	tcl_crosstable.cpp \
 	tcl_database.cpp \
 	tcl_exception.cpp \
+	tcl_file.cpp \
 	tcl_game.cpp \
 	tcl_http.cpp \
 	tcl_log.cpp \
@@ -489,6 +490,8 @@ tcl_database.o: tcl_progress.h
 tcl_database.o: ../util/u_progress.h
 tcl_database.o: ../util/u_progress.ipp
 tcl_database.o: tcl_game.h
+tcl_database.o: tcl_file.h
+tcl_database.o: ../mstl/m_stdio.h
 tcl_database.o: tcl_log.h
 tcl_database.o: ../db/db_log.h
 tcl_database.o: tcl_obj.h
@@ -581,6 +584,8 @@ tcl_database.o: ../mstl/m_ostream.ipp
 tcl_database.o: ../mstl/m_ofstream.ipp
 tcl_database.o: ../util/u_zstream.h
 tcl_database.o: ../mstl/m_iostream.h
+tcl_database.o: ../util/u_zlib_ostream.h
+tcl_database.o: ../util/u_zlib_ostream.ipp
 tcl_database.o: ../util/u_misc.h
 tcl_database.o: ../sys/sys_utf8_codec.h
 tcl_database.o: ../sys/sys_utf8_codec.ipp
@@ -601,6 +606,13 @@ tcl_exception.o: ../mstl/m_exception.h
 tcl_exception.o: ../mstl/m_backtrace.h
 tcl_exception.o: ../mstl/m_types.h
 tcl_exception.o: ../mstl/m_exception.ipp
+tcl_file.o: tcl_file.h
+tcl_file.o: ../mstl/m_stdio.h
+tcl_file.o: ../mstl/m_assert.h
+tcl_file.o: ../mstl/m_exception.h
+tcl_file.o: ../mstl/m_backtrace.h
+tcl_file.o: ../mstl/m_types.h
+tcl_file.o: ../mstl/m_exception.ipp
 tcl_game.o: tcl_game.h
 tcl_game.o: ../db/db_common.h
 tcl_game.o: ../util/u_base.h
@@ -818,7 +830,7 @@ tcl_misc.o: ../mstl/m_exception.h
 tcl_misc.o: ../mstl/m_backtrace.h
 tcl_misc.o: ../mstl/m_types.h
 tcl_misc.o: ../mstl/m_exception.ipp
-tcl_misc.o: ../db/db_comment.h
+tcl_misc.o: tcl_database.h
 tcl_misc.o: ../db/db_common.h
 tcl_misc.o: ../util/u_base.h
 tcl_misc.o: ../db/db_common.ipp
@@ -830,6 +842,11 @@ tcl_misc.o: ../mstl/m_utility.ipp
 tcl_misc.o: ../mstl/m_limits.h
 tcl_misc.o: ../mstl/m_bit_functions.h
 tcl_misc.o: ../mstl/m_bit_functions.ipp
+tcl_misc.o: ../mstl/m_pair.h
+tcl_misc.o: ../mstl/m_pair.ipp
+tcl_misc.o: tcl_file.h
+tcl_misc.o: ../mstl/m_stdio.h
+tcl_misc.o: ../db/db_comment.h
 tcl_misc.o: ../util/u_crc.h
 tcl_misc.o: ../util/u_crc.ipp
 tcl_misc.o: ../mstl/m_byte_order.h
@@ -847,8 +864,6 @@ tcl_misc.o: ../mstl/m_algobase.h
 tcl_misc.o: ../mstl/m_algobase.ipp
 tcl_misc.o: ../mstl/m_construct.h
 tcl_misc.o: ../mstl/m_construct.ipp
-tcl_misc.o: ../mstl/m_pair.h
-tcl_misc.o: ../mstl/m_pair.ipp
 tcl_misc.o: ../mstl/m_map.ipp
 tcl_misc.o: ../db/db_comment.ipp
 tcl_misc.o: ../db/db_player.h

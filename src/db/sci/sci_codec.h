@@ -102,6 +102,9 @@ public:
 	void unlock(mstl::string const& rootname) override;
 	void close() override;
 	void sync() override;
+	void writeNamebases(mstl::ostream& stream, util::Progress* progress) override;
+	void writeIndex(mstl::ostream& strm, util::Progress& progress);
+	void writeGames(mstl::ostream& strm, util::Progress& progress);
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
@@ -149,15 +152,15 @@ private:
 	void readEventbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 	void readPlayerbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 
-	void updateIndex(mstl::fstream& fstrm);
-	void writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress);
-	void writeIndexHeader(mstl::fstream& fstrm);
+	void updateIndex(mstl::ostream& strm);
+	void writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress);
+	void writeIndexHeader(mstl::ostream& strm);
 	void writeNamebases(mstl::string const& filename);
-	void writeNamebases(mstl::fstream& stream);
-	void writeNamebase(util::ByteStream& bstrm, Namebase& base);
-	void writeSitebase(util::ByteStream& bstrm, Namebase& base);
-	void writeEventbase(util::ByteStream& bstrm, Namebase& base);
-	void writePlayerbase(util::ByteStream& bstrm, Namebase& base);
+	void writeNamebase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
+	void writeSitebase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
+	void writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
+	void writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
+	void writeNamebases(mstl::ostream& stream);
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
 	uint16_t readIndexHeader(mstl::fstream& fstrm);

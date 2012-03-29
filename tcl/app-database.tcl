@@ -33,6 +33,7 @@ set FileOpenRecent			"Open Recent"
 set FileNew						"New..."
 set FileExport					"Export..."
 set FileImport					"Import PGN files..."
+set FileCreate					"Create Archive..."
 set FileClose					"Close"
 set HelpSwitcher				"Help for Database Switcher"
 
@@ -68,6 +69,8 @@ set InvalidUri					"Drop content is not a valid URI list."
 set UriRejected				"The following files are rejected:"
 set UriRejectedDetail		"Only Scidb databases can be opened:"
 set EmptyUriList				"Drop content is empty."
+set OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
+set SelectDatabases			"Select the databases to be opened"
 
 set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
@@ -360,13 +363,8 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 
 	if {[file extension $file] eq ".scv"} {
-#		set progress  $parent.__progress
-#		::dialog::progressbar::open $progress -variable __dummy
-#		set destination [file dirname $file]
-#		::archive::unpack $file $progress $destination
-		# TODO: call openBase for all databases in archive
-		::dialog::error -parent $parent -message "Cannot extract archive yet"
-		return 0
+		return [::remote::busyOperation \
+					[list OpenArchive $parent $file $byUser $encoding $readonly $switchToBase]]
 	}
 
 	if {$encoding eq $::encoding::mc::AutoDetect} { set encoding $::encoding::autoEncoding }
@@ -594,6 +592,97 @@ proc addRecentlyUsedToMenu {parent m} {
 	}
 
 	return [llength $recentFiles]
+}
+
+
+proc OpenArchive {parent file byUser encoding readonly switchToBase} {
+	variable _Select
+
+	lassign [::archive::inspect $file] header files
+	set bases {}
+	set overwrite {}
+
+	foreach entry $files {
+		foreach pair $entry {
+			lassign $pair attr value
+			if {$attr eq "FileName"} {
+				switch [file extension $value] {
+					.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+						lappend bases $value
+						if {[file exists $value]} { lappend overwrite "\u26ab [file tail $value]" }
+					}
+				}
+			}
+		}
+	}
+
+	if {[llength $bases] == 0} { return 1 }
+	set dirname [file dirname $file]
+	if {[llength $overwrite] > 0} {
+		append msg [format $mc::OverwriteExistingFiles $dirname]
+		append msg "\n\n"
+		append msg [join $overwrite \n]
+		set answer [::dialog::question -parent $parent -message $msg -default no]
+		if {$answer eq "no"} { return 1 }
+	}
+
+	set progress $parent.__progress
+	::dialog::progressbar::open $progress -variable __dummy
+	::archive::unpack $file $progress $dirname
+	destroy $progress
+
+	if {[llength $bases] == 1} {
+		return [openBase $parent [lindex $bases 0] $byUser $encoding $readonly $switchToBase]
+	}
+
+	set dlg $parent.__choose__
+	toplevel $dlg -class Scidb
+	bind $dlg <Escape> [list $dlg.cancel invoke]
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg [string trim [format $mc::LoadMessage ""]]
+	wm resizable $dlg false false
+	set top [ttk::frame $dlg.top]
+	pack $top
+	ttk::label $top.select -text $mc::SelectDatabases
+	grid $top.select -row 1 -column 1
+	set r 3
+	set n 0
+	foreach base $bases {
+		set _Select($n) [expr {$n == 0}]
+		ttk::checkbutton $top.base$r -text [file tail $base] -variable [namespace current]::_Select($n)
+		grid $top.base$r -row $r -column 1 -sticky w
+		grid rowconfigure $top [incr r] -minsize $::theme::pady
+		incr r
+		incr n
+	}
+	grid rowconfigure $top [list 0 $r] -minsize $::theme::pady
+	grid rowconfigure $top 2 -minsize $::theme::padY
+	grid columnconfigure $top {0 2} -minsize $::theme::padx
+	::widget::dialogButtons $dlg {ok cancel} ok
+	$dlg.ok configure -command \
+		[namespace code [list OpenBases $parent $dlg $bases $byUser $encoding $readonly]]
+	$dlg.cancel configure -command [list destroy $dlg]
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $dlg
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+	return 1
+}
+
+
+proc OpenBases {parent dlg bases byUser encoding readonly} {
+	variable _Select
+
+	set n 0
+	foreach base $bases {
+		if {$_Select($n)} { openBase $parent $base $byUser $encoding $readonly no }
+		incr n
+	}
+	destroy $dlg
 }
 
 
@@ -1441,6 +1530,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {}
 		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {}
+		lappend specs command "$mc::FileCreate" \
+				[list ::menu::dbCreateArchive $top $file] 0 0 filetypeArchive {}
 		lappend specs separator {} {} {} {} {} {}
 		if {$file ne $clipbaseName} {
 			lappend specs command $mc::FileClose \
@@ -1868,8 +1959,8 @@ proc Properties {index popup} {
 		incr row 2
 	}
 
-	$f.tpath configure -wraplength 250
-	$f.tdescr configure -wraplength 250
+	$f.tpath configure -wraplength 250 -justify left
+	$f.tdescr configure -wraplength 250 -justify left
 	grid columnconfigure $f {0 2 4} -minsize $::theme::padx
 	grid rowconfigure $f [list 0 [expr {$row - 1}]] -minsize $::theme::pady
 
@@ -1877,7 +1968,7 @@ proc Properties {index popup} {
 	set readOnly [::scidb::db::get readonly? $file]
 
 	set descr [::scidb::db::get description $file]
-	if {[llength $descr] == 0} { set descr "--" }
+	if {[llength $descr] == 0} { set descr "\u2014" }
 	grid $f.lpath $f.tpath $f.ldescr $f.tdescr
 	$f.tpath configure -text $file
 	$f.tdescr configure -text $descr
@@ -1961,7 +2052,7 @@ proc Properties {index popup} {
 		} elseif {$minYear} {
 			set yearRange $minYear
 		} else {
-			set yearRange "--"
+			set yearRange "\u2014"
 		}
 
 		if {$minElo && $maxElo && $minElo != $maxElo} {
@@ -1969,7 +2060,7 @@ proc Properties {index popup} {
 		} elseif {$minElo} {
 			set ratingRange $minElo
 		} else {
-			set ratingRange "--"
+			set ratingRange "\u2014"
 		}
 
 		$f.tdeleted			configure -text "$fmtDeleted ($fmtAvgDeleted%)"

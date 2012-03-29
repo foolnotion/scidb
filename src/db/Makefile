@@ -278,6 +278,8 @@ db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
 db_comment.o: ../mstl/m_algorithm.h
 db_comment.o: ../mstl/m_algorithm.ipp
+db_comment.o: ../util/expat/expat.h
+db_comment.o: ../util/expat/xmlparse.h
 db_common.o: db_common.h
 db_common.o: ../util/u_base.h
 db_common.o: ../mstl/m_types.h
@@ -5777,6 +5779,7 @@ cbh/cbh_codec.o: ../util/u_progress.h
 cbh/cbh_codec.o: ../util/u_progress.ipp
 cbh/cbh_codec.o: ../util/u_byte_stream.h
 cbh/cbh_codec.o: ../util/u_byte_stream.ipp
+cbh/cbh_codec.o: ../util/u_misc.h
 cbh/cbh_codec.o: ../sys/sys_file.h
 cbh/cbh_codec.o: ../sys/sys_utf8.h
 cbh/cbh_codec.o: ../sys/sys_utf8.ipp

@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "u_block_file.h"
+#include "u_progress.h"
 
 #include "m_algorithm.h"
 #include "m_utility.h"
@@ -280,7 +281,7 @@ BlockFile::close()
 
 
 bool
-BlockFile::attach(mstl::fstream* stream)
+BlockFile::attach(mstl::fstream* stream, Progress* progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly());
@@ -300,7 +301,7 @@ BlockFile::attach(mstl::fstream* stream)
 	stream->flush();
 	stream->seekp(0);
 
-	bool rc = save(*stream);
+	bool rc = save(*stream, progress);
 	m_countWrites = m_cache.size();
 
 	// we keep the current block, because it may be part of a span of blocks
@@ -318,24 +319,48 @@ BlockFile::attach(mstl::fstream* stream)
 
 
 bool
-BlockFile::save(mstl::ofstream& stream)
+BlockFile::save(mstl::ostream& stream, Progress* progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly());
-	M_REQUIRE(stream.is_open());
+//	M_REQUIRE(stream.is_open());
 	M_REQUIRE(stream.good());
 	M_REQUIRE(stream.mode() & mstl::ios_base::binary);
-	M_REQUIRE(stream.is_unbuffered());
+//	M_REQUIRE(stream.is_unbuffered());
 
 	M_ASSERT(m_sizeInfo.size() == m_cache.size());
 
 	if (!m_cache.empty())
 	{
-		for (unsigned i = 0, n = m_cache.size() - 1; i < n; ++i)
+		unsigned size = m_cache.size();
+		unsigned progressFrequency;
+		unsigned progressReportAfter	= unsigned(-1);
+
+		if (progress)
 		{
-			if (__builtin_expect(!stream.write(m_cache[i], m_blockSize), 0))
-				return false;
+			progressFrequency = progress->frequency(size, 1000);
+			progressReportAfter = progressFrequency;
+			progress->start(size);
 		}
+
+		for (unsigned i = 0, n = size - 1; i < n; ++i)
+		{
+			if (progressReportAfter == i)
+			{
+				progress->update(i);
+				progressReportAfter += progressFrequency;
+			}
+
+			if (__builtin_expect(!stream.write(m_cache[i], m_blockSize), 0))
+			{
+				if (progress)
+					progress->finish();
+
+				return false;
+			}
+		}
+
+		progress->finish();
 
 		if (__builtin_expect(!stream.write(m_cache.back(), m_sizeInfo.back()), 0))
 			return false;

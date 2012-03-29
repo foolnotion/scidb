@@ -2322,7 +2322,7 @@ Codec::getAttributes(mstl::string const& filename,
 	if (description)
 	{
 		strm.close();
-		strm.open(rootname + ".ini");
+		strm.open(rootname + ".ini", mstl::ios_base::in);
 
 		if (strm)
 		{

@@ -36,7 +36,7 @@ set Continue		"Con&tinue"
 set Error			"Error"
 set Warning			"Warning"
 set Information	"Information"
-set Question		"Question"
+set Question		"Query"
 
 set DontAskAgain	"Don't ask again"
 #################################################################
@@ -493,6 +493,7 @@ proc alert {args} {
 	focus $focus
 
 	if {[llength $opts(-buttons)] == 0} {
+		wm protocol $w WM_DELETE_WINDOW [list destroy $w]
 		wm deiconify $w
 		return $w
 	}

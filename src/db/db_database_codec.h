@@ -47,6 +47,7 @@ namespace mstl
 	class fstream;
 	class ifstream;
 	class ofstream;
+	class ostream;
 }
 
 namespace util
@@ -152,6 +153,9 @@ public:
 	void clear(mstl::string const& rootname = mstl::string::empty_string);
 	void rename(mstl::string const& oldName, mstl::string const& newName);
 	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
+	virtual void writeNamebases(mstl::ostream& os, util::Progress* progress);
+	virtual void writeIndex(mstl::ostream& os, util::Progress& progress);
+	virtual void writeGames(mstl::ostream& os, util::Progress& progress);
 	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	virtual void attach(mstl::string const& rootname, util::Progress& progress);
 	virtual void reloadDescription(mstl::string const& rootname);

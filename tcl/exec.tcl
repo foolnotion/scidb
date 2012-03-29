@@ -227,16 +227,19 @@ proc Update {} {
 
 	if {[llength $Vars(pending)] == 0} { return }
 
-	set path [lindex $Vars(pending) 0]
-	set Vars(pending) [lreplace $Vars(pending) 0 0]
-	set postponed [expr {[llength $Vars(pending)] > 0}]
-
-	if {[winfo exists $Vars(infoBox:$path)]} {
-		destroy $Vars(infoBox:$path)
+	foreach path $Vars(pending) {
+		if {[info exists Vars(infoBox:$path)]} {
+			if {[winfo exists $Vars(infoBox:$path)]} {
+				destroy $Vars(infoBox:$path)
+			}
+			unset Vars(infoBox:$path)
+		}
 	}
-	unset Vars(infoBox:$path)
 
-	openBase $path
+	set files $Vars(pending)
+	set Vars(pending) {}
+	set postponed 0
+	openBases $files
 }
 
 
@@ -294,7 +297,7 @@ proc Execute {path} {
 				[::dialog::info -buttons {} -title $::scidb::app -message $msg -topmost yes]
 		}
 	} else {
-		openBase $path
+		openBases [list $path]
 	}
 }
 

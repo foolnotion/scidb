@@ -498,10 +498,9 @@ proc Title {} {
 
 
 proc Exit {w} {
-	set ::remote::blocking 1
-	set ::remote::postponed 0
-
 	if {$w eq ".application"} {
+		set ::remote::blocking 1
+		set ::remote::postponed 0
 		::options::write
 		::load::write
 		exit

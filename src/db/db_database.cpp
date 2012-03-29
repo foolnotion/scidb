@@ -235,6 +235,45 @@ Database::save(util::Progress& progress, unsigned start)
 
 
 void
+Database::writeIndex(mstl::ostream& os, util::Progress& progress)
+{
+	M_REQUIRE(format() == format::Scidb);
+
+	m_namebases.update();
+	m_codec->reset();
+	m_codec->writeIndex(os, progress);
+	m_size = m_gameInfoList.size();
+	setEncodingFailed(m_codec->encodingFailed());
+}
+
+
+void
+Database::writeNamebases(mstl::ostream& os, util::Progress& progress)
+{
+	M_REQUIRE(format() == format::Scidb);
+
+	m_namebases.update();
+	m_codec->reset();
+	m_codec->writeNamebases(os, &progress);
+	m_size = m_gameInfoList.size();
+	setEncodingFailed(m_codec->encodingFailed());
+}
+
+
+void
+Database::writeGames(mstl::ostream& os, util::Progress& progress)
+{
+	M_REQUIRE(format() == format::Scidb);
+
+	m_namebases.update();
+	m_codec->reset();
+	m_codec->writeGames(os, progress);
+	m_size = m_gameInfoList.size();
+	setEncodingFailed(m_codec->encodingFailed());
+}
+
+
+void
 Database::sync(util::Progress& progress)
 {
 	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable && m_size != m_gameInfoList.size())

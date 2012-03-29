@@ -121,7 +121,7 @@ Eine vollständige Beschreibung dieses Formats findet man unter
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2>Datenbankarchiv (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive">Datenbankarchiv (<abbr>.scv</abbr>)</h2>
 
 <p>
 Scidb's Datanbankarchiv stützt sich euf ein unabhängiges Archivformat, und

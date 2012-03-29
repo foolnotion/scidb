@@ -601,6 +601,13 @@ Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordL
 
 
 void
+Codec::writeNamebases(mstl::ostream& stream)
+{
+	writeNamebases(stream, 0);
+}
+
+
+void
 Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach)
 {
 	if (!(m_gameStream.mode() & mstl::ios_base::out))
@@ -626,6 +633,9 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
 
 	writeNamebases(namebaseFilename);
+
+	if (start > 0 && !indexStream.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
 	writeIndex(indexStream, start, progress);
 }
 
@@ -646,7 +656,7 @@ Codec::attach(mstl::string const& rootname, util::Progress& progress)
 	mstl::string gameFilename(rootname + ".scg");
 	m_gameStream.set_unbuffered();
 	m_gameStream.open(sys::file::internalName(gameFilename), mode);
-	m_gameData->attach(&m_gameStream);
+	m_gameData->attach(&m_gameStream, &progress);
 	save(rootname, 0, progress, true);
 }
 
@@ -1158,38 +1168,35 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 
 
 void
-Codec::writeIndexHeader(mstl::fstream& fstrm)
+Codec::writeIndexHeader(mstl::ostream& strm)
 {
-	// write header (w/o magic)
-	unsigned char header[120];
-	ByteStream strm(header, sizeof(header));
-
+	unsigned char header[128];
 	::memset(header, 0, sizeof(header));
 
-	strm << uint16_t(FileVersion);				// Scidb version
-	strm << uint24_t(gameInfoList().size());	// number of games
-	strm << uint8_t(type());						// base type
-	strm << uint32_t(created());					// creation time
+	ByteStream bstrm(header, sizeof(header));
 
-	strm.put(description(),
-				mstl::min(	description().size(),
-								mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
+	bstrm.put(::MagicIndexFile, 8);
+	bstrm << uint16_t(FileVersion);				// Scidb version
+	bstrm << uint24_t(gameInfoList().size());	// number of games
+	bstrm << uint8_t(type());						// base type
+	bstrm << uint32_t(created());					// creation time
 
-	if (!fstrm.seekp(8, mstl::ios_base::beg))	// skip magic
+	bstrm.put(	description(),
+					mstl::min(	description().size(),
+									mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
+
+	if (!strm.seekp(0, mstl::ios_base::beg))	// skip magic
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
 
-	if (!fstrm.write(header, sizeof(header)))
+	if (!strm.write(header, sizeof(header)))
 		IO_RAISE(Index, Write_Failed, "unexpected end of index file");
 }
 
 
 void
-Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress)
+Codec::writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress)
 {
-	writeIndexHeader(fstrm);
-
-	if (start > 0 && !fstrm.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
-		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
+	writeIndexHeader(strm);
 
 	GameInfoList& infoList = gameInfoList();
 
@@ -1211,25 +1218,40 @@ Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress
 		ByteStream bstrm(buf, sizeof(IndexEntry));
 		encodeIndex(*infoList[i], bstrm);
 
-		if (__builtin_expect(!fstrm.write(buf, sizeof(IndexEntry)), 0))
+		if (__builtin_expect(!strm.write(buf, sizeof(IndexEntry)), 0))
 			IO_RAISE(Index, Write_Failed, "error while writing index entry");
 	}
 }
 
 
 void
-Codec::updateIndex(mstl::fstream& fstrm)
+Codec::writeGames(mstl::ostream& strm, util::Progress& progress)
+{
+	M_ASSERT(m_gameData);
+	m_gameData->save(strm, &progress);
+}
+
+
+void
+Codec::writeIndex(mstl::ostream& strm, util::Progress& progress)
+{
+	writeIndex(strm, 0, progress);
+}
+
+
+void
+Codec::updateIndex(mstl::ostream& strm)
 {
 	// update header
 	{
-		if (!fstrm.seekp(10))
+		if (!strm.seekp(10))
 			IO_RAISE(Index, Corrupted, "unexpected end of index file");
 
 		unsigned char buf[3];
-		ByteStream strm(buf, sizeof(buf));
-		strm << uint24_t(gameInfoList().size());	// number of games
+		ByteStream bstrm(buf, sizeof(buf));
+		bstrm << uint24_t(gameInfoList().size());	// number of games
 
-		if (!fstrm.write(buf, sizeof(buf)))
+		if (!strm.write(buf, sizeof(buf)))
 			IO_RAISE(Index, Write_Failed, "error while writing index entry");
 	}
 
@@ -1244,9 +1266,9 @@ Codec::updateIndex(mstl::fstream& fstrm)
 			ByteStream bstrm(buf, sizeof(IndexEntry));
 			encodeIndex(*infoList[i], bstrm);
 
-			if (!fstrm.seekp(i*sizeof(IndexEntry) + 128))
+			if (!strm.seekp(i*sizeof(IndexEntry) + 128))
 				IO_RAISE(Index, Corrupted, "unexpected end of index file");
-			if (!fstrm.write(buf, sizeof(IndexEntry)))
+			if (!strm.write(buf, sizeof(IndexEntry)))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
 
 			infoList[i]->setDirty(false);
@@ -1432,6 +1454,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		}
 
 		m_progressCount += size;
+		progress.update(m_progressCount);
 		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
 		base.setPrepared(maxFreq, nextId - 1, maxUsage);
 	}
@@ -1830,10 +1853,13 @@ Codec::writeNamebases(mstl::string const& filename)
 
 
 void
-Codec::writeNamebases(mstl::fstream& stream)
+Codec::writeNamebases(mstl::ostream& stream, util::Progress* progress)
 {
 	if (!namebases().isModified())
 		return;
+
+	if (!stream.seekp(0, mstl::ios_base::beg))
+		IO_RAISE(Namebase, Corrupted, "seek failed");
 
 #ifdef USE_LZO
 	LzoByteStream bstrm(stream);
@@ -1847,6 +1873,20 @@ Codec::writeNamebases(mstl::fstream& stream)
 	for (unsigned i = 0; i < U_NUMBER_OF(::NamebaseTags); ++i)
 		total += namebase(Namebase::Type(i)).used();
 
+	ProgressWatcher watcher(progress, total);
+
+	if (progress)
+	{
+		m_progressFrequency		= progress->frequency(total, 1000);
+		m_progressReportAfter	= m_progressFrequency;
+		m_progressCount			= 0;
+	}
+	else
+	{
+		m_progressReportAfter = unsigned(-1);
+	}
+
+	bstrm.put(::MagicNamebase, 8);
 	bstrm << uint16_t(FileVersion);
 	bstrm << uint32_t(total);
 
@@ -1864,11 +1904,18 @@ Codec::writeNamebases(mstl::fstream& stream)
 		{
 			switch (i)
 			{
-				case Namebase::Site:		writeSitebase(bstrm, base); break;
-				case Namebase::Event:	writeEventbase(bstrm, base); break;
-				case Namebase::Player:	writePlayerbase(bstrm, base); break;
-				default:						writeNamebase(bstrm, base); break;
+				case Namebase::Site:		writeSitebase(bstrm, base, progress); break;
+				case Namebase::Event:	writeEventbase(bstrm, base, progress); break;
+				case Namebase::Player:	writePlayerbase(bstrm, base, progress); break;
+				default:						writeNamebase(bstrm, base, progress); break;
 			}
+		}
+
+		if (progress)
+		{
+			m_progressCount += base.used();
+			progress->update(m_progressCount);
+			m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
 		}
 	}
 
@@ -1878,7 +1925,7 @@ Codec::writeNamebases(mstl::fstream& stream)
 
 
 void
-Codec::writeNamebase(ByteStream& bstrm, Namebase& base)
+Codec::writeNamebase(ByteStream& bstrm, Namebase& base, util::Progress* progress)
 {
 	M_ASSERT(base.used() > 0);
 
@@ -1892,6 +1939,13 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base)
 
 	for (unsigned i = 1; i < base.used(); ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			M_ASSERT(progress);
+			progress->update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		NamebaseEntry* entry = base.entry(i);
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
@@ -1911,7 +1965,7 @@ Codec::writeNamebase(ByteStream& bstrm, Namebase& base)
 
 
 void
-Codec::writeSitebase(ByteStream& bstrm, Namebase& base)
+Codec::writeSitebase(ByteStream& bstrm, Namebase& base, util::Progress* progress)
 {
 	M_ASSERT(base.used() > 0);
 
@@ -1926,6 +1980,13 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base)
 
 	for (unsigned i = 1; i < base.used(); ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			M_ASSERT(progress);
+			progress->update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		NamebaseSite* entry = base.site(i);
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
@@ -1946,7 +2007,7 @@ Codec::writeSitebase(ByteStream& bstrm, Namebase& base)
 
 
 void
-Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base)
+Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress)
 {
 	M_ASSERT(base.used() > 0);
 
@@ -1980,6 +2041,13 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base)
 
 	for (unsigned i = 1; i < base.used(); ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			M_ASSERT(progress);
+			progress->update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		NamebaseEvent* entry = base.event(i);
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());
@@ -2019,7 +2087,7 @@ Codec::writeEventbase(util::ByteStream& bstrm, Namebase& base)
 
 
 void
-Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
+Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress)
 {
 	M_ASSERT(base.used() > 0);
 
@@ -2053,6 +2121,13 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 
 	for (unsigned i = 1; i < base.used(); ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			M_ASSERT(progress);
+			progress->update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		NamebasePlayer* entry = base.player(i);
 
 		unsigned prefix = ::prefix(entry->name(), prev->name());

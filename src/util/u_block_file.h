@@ -26,11 +26,12 @@
 #include "m_utility.h"
 
 namespace mstl { class fstream; }
-namespace mstl { class ofstream; }
+namespace mstl { class ostream; }
 
 namespace util {
 
 class BlockFile;
+class Progress;
 
 
 class BlockFileReader
@@ -107,8 +108,8 @@ public:
 	unsigned countSpans(unsigned size) const;
 	unsigned fileSize();
 
-	bool save(mstl::ofstream& stream);
-	bool attach(mstl::fstream* stream);
+	bool save(mstl::ostream& stream, Progress* progress = 0);
+	bool attach(mstl::fstream* stream, Progress* progress = 0);
 	bool close();
 	bool sync();
 

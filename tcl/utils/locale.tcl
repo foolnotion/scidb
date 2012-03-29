@@ -46,9 +46,9 @@ proc formatNumber {n {kilo false}} {
 		if {$n >= 1000000} {
 			set decimalPart [format "%02d" [expr {(int($n/10000)) % 100}]]
 			set n [expr {int($n)/1000000}]
-			set unit "${Pattern(decimalPoint)}${decimalPart}M"
+			set unit "${Pattern(decimalPoint)}${decimalPart} M"
 		} elseif {$n >= 100000} {
-			set unit "K"
+			set unit " K"
 			set n [expr {int($n/1000)} ]
 		}
 	}
@@ -57,6 +57,14 @@ proc formatNumber {n {kilo false}} {
 	while {[regsub {^([-+]?[0-9]+)([0-9][0-9][0-9])} $n "\\1$Pattern(thousandsSep)\\2" n]} {}
 
 	return "$n$unit"
+}
+
+
+proc formatFileSize {n} {
+	set result [formatNumber $n yes]
+	if {[string is digit [string index $result end]]} { append result " " }
+	append result "B"
+	return $result
 }
 
 

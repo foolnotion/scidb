@@ -37,6 +37,7 @@
 #include "m_string.h"
 
 namespace mstl { class fstream; }
+namespace mstl { class ostream; }
 namespace util { class Progress; }
 namespace util { class ByteStream; }
 
@@ -196,6 +197,12 @@ public:
 	void attach(mstl::string const& filename, util::Progress& progress);
 	/// Update database files.
 	void save(util::Progress& progress, unsigned start = 0);
+	/// Write complete index of database to stream.
+	void writeIndex(mstl::ostream& os, util::Progress& progress);
+	/// Write complete namebases of database to stream.
+	void writeNamebases(mstl::ostream& os, util::Progress& progress);
+	/// Write all games of database to stream.
+	void writeGames(mstl::ostream& os, util::Progress& progress);
 	/// Recode content of database.
 	void recode(mstl::string const& encoding, util::Progress& progress);
 	/// Rename the database.

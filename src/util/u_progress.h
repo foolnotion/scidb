@@ -53,11 +53,12 @@ class ProgressWatcher
 public:
 
 	ProgressWatcher(Progress& progress, unsigned total);
+	ProgressWatcher(Progress* progress, unsigned total);
 	~ProgressWatcher();
 
 private:
 
-	Progress& m_progress;
+	Progress* m_progress;
 };
 
 } // namespace util

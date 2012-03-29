@@ -403,7 +403,7 @@ proc makePopup {w} {
 
 namespace eval remote {
 
-proc openBase {pathList} {
+proc openBases {pathList} {
 	raise .application
 
 	if {[llength $pathList]} {

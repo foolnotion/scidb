@@ -30,6 +30,7 @@
 #include "tcl_pgn_reader.h"
 #include "tcl_progress.h"
 #include "tcl_game.h"
+#include "tcl_file.h"
 #include "tcl_log.h"
 #include "tcl_obj.h"
 #include "tcl_base.h"
@@ -54,6 +55,7 @@
 #include "sci_codec.h"
 
 #include "u_zstream.h"
+#include "u_zlib_ostream.h"
 #include "u_misc.h"
 
 #include "sys_utf8_codec.h"
@@ -97,6 +99,7 @@ static char const* CmdSwitch			= "::scidb::db::switch";
 static char const* CmdUnsubscribe	= "::scidb::db::unsubscribe";
 static char const* CmdUpdate			= "::scidb::db::update";
 static char const* CmdUpgrade			= "::scidb::db::upgrade";
+static char const* CmdWrite			= "::scidb::db::write";
 
 
 static char const User1 = GameInfo::mapFlag(GameInfo::Flag_User1);
@@ -587,8 +590,8 @@ struct Subscriber : public Application::Subscriber
 
 
 
-static char const*
-lookupType(type::ID type)
+char const*
+tcl::db::lookupType(type::ID type)
 {
 	switch (type)
 	{
@@ -2092,7 +2095,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "checksum", "idn", "eco", "ratingTypes",
-		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?",
+		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?", "memoryOnly?",
 		0
 	};
 	static char const* args[] =
@@ -2136,6 +2139,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"<index> ?<view>? ?<database>?",
 		"?<database>?",
 		"<database>",
+		"?<database>?",
 		0
 	};
 	enum
@@ -2146,7 +2150,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
 		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
 		Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
-		Cmd_Writeable, Cmd_Upgrade,
+		Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly,
 	};
 
 	if (objc < 2)
@@ -2516,6 +2520,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
 				return usage(::CmdGet, nullptr, nullptr, subcommands, args);
 			return getRatingTypes(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
+
+		case Cmd_MemoryOnly:
+			char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
+			setResult(Scidb->cursor(base).database().isMemoryOnly());
+			return TCL_OK;
 	}
 
 	return usage(::CmdGet, nullptr, nullptr, subcommands, args);
@@ -3196,6 +3205,49 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 6)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv, "<database> <file-extension> <channel> <progress-cmd> <progress-arg>");
+		return TCL_ERROR;
+	}
+
+	char const*	baseName		= stringFromObj(objc, objv, 1);
+	char const* extension	= stringFromObj(objc, objv, 2);
+	char const* channelName	= stringFromObj(objc, objv, 3);
+
+	Tcl_Channel			chan(Tcl_GetChannel(ti, channelName, 0));
+	tcl::Progress		progress(objv[4], objv[5]);
+	tcl::File			file(chan);
+	util::ZlibOStream	os(file.handle());
+
+	if (strcmp(extension, "sci") == 0)
+		scidb->cursor(baseName).database().writeIndex(os, progress);
+	else if (strcmp(extension, "scn") == 0)
+		scidb->cursor(baseName).database().writeNamebases(os, progress);
+	else if (strcmp(extension, "scg") == 0)
+		scidb->cursor(baseName).database().writeGames(os, progress);
+	else
+		return error(CmdWrite, 0, 0, "unexpected extension '%s'", extension);
+
+	os.flush();
+	file.flush();
+	os.close();
+	file.close();
+
+	Tcl_Obj* objs[3];
+	objs[0] = Tcl_NewIntObj(os.size());
+	objs[1] = Tcl_NewIntObj(os.compressedSize());
+	objs[2] = Tcl_NewIntObj(os.crc());
+	setResult(3, objs);
+
+	return TCL_OK;
+}
+
+
 int
 tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, bool info, bool idCard)
 {
@@ -3356,17 +3408,6 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 }
 
 
-inline static int
-utfToUniChar(char const* s, Tcl_UniChar& ch)
-{
-	if (static_cast<unsigned char>(*s) >= 0xc0)
-		return Tcl_UtfToUniChar(s, &ch);
-
-	ch = *s;
-	return 1;
-}
-
-
 namespace tcl {
 namespace db {
 
@@ -3393,6 +3434,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 	createCommand(ti, CmdUpdate,		cmdUpdate);
 	createCommand(ti, CmdUpgrade,		cmdUpgrade);
+	createCommand(ti, CmdWrite,			cmdWrite);
 }
 
 } // namespace db

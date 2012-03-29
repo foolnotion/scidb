@@ -282,7 +282,7 @@ proc unbusyCursor {{w {}}} {
 proc busyOperation {args} {
 	busyCursor on
 
-	if {[catch {{*}$args} result options]} {
+	if {[catch {uplevel $args} result options]} {
 		busyCursor off
 		array set opts $options
 		return \

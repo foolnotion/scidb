@@ -148,7 +148,7 @@ proc WidgetProc {w command args} {
 
 			set selection [$w.__scrolledframe__.scrolled.f.t selection get]
 			if {[llength $selection] == 0} { return -1 }
-			set selection [expr {[lindex $selection 0] - 2}]
+			set selection [expr {[lindex $selection 0]}]
 			if {![info exists Map($selection)]} { return -1 }
 			return [lindex $Map($selection) 0]
 		}
@@ -171,6 +171,8 @@ proc WidgetProc {w command args} {
 proc Rebuild {t} {
 	variable Map
 
+	array set Map {}
+
 	set headerScript {
 		upvar t u
 
@@ -179,6 +181,8 @@ proc Rebuild {t} {
 		$u item enabled $item no
 		$u item text $item game [::util::databaseName $base]
 		$u item lastchild root $item
+
+		uplevel [list set Map($item) [list [file dirname $base]]]
 	}
 
 	set gameScript {
@@ -194,7 +198,7 @@ proc Rebuild {t} {
 		$u item text $item game $lbl
 		$u item lastchild root $item
 
-		uplevel [list set Map($count) [list $index $tags]]
+		uplevel [list set Map($item) [list $index $tags]]
 	}
 
 	$t item delete 0 end
@@ -224,9 +228,9 @@ proc OpenGame {t args} {
 		set id [$t identify $x $y]
 		if {[lindex $id 0] eq "header"} { return }
 		if {[lindex $id 1] eq ""} { return }
-		set sel [expr {[lindex $id 1] - 2}]
+		set sel [expr {[lindex $id 1]}]
 	} else {
-		set sel [expr {[$t item id active] - 2}]
+		set sel [expr {[$t item id active]}]
 	}
 
 	if {[info exists Map($sel)]} {
@@ -236,6 +240,8 @@ proc OpenGame {t args} {
 
 
 proc VisitItem {t mode item} {
+	variable Map
+
 	# Note: this function may be invoked with non-existing items
 	if {[string length $item]} {
 		switch $mode {
@@ -252,9 +258,8 @@ proc ShowTooltip {t x y} {
 	set id [$t identify $x $y]
 	if {[lindex $id 0] eq "header"} { return }
 	if {[lindex $id 1] eq ""} { return }
-	set sel [expr {[lindex $id 1] - 2}]
+	set sel [expr {[lindex $id 1]}]
 	if {![info exists Map($sel)]} { return }
-	lassign [lindex $Map($sel) 1] event site date round white black result
 
 	set dlg $t.__popup__
 	if {[winfo exists $dlg]} {
@@ -269,28 +274,36 @@ proc ShowTooltip {t x y} {
 		grid columnconfigure $f {0 2} -minsize 2
 	}
 
-	if {[string length $white] == 0} { set white "?" }
-	if {[string length $black] == 0} { set black "?" }
-	if {$event eq "-" || $event eq "?"} { set event "" }
-	if {$site eq "-" || $site eq "?"} { set site "" }
-	set date [::locale::formatNormalDate $date]
+	if {[llength $Map($sel)] == 1} {
+		grid remove $f.evline $f.siline
+		$f.coline configure -text [lindex $Map($sel) 0] -foreground black
+		::tooltip::show $t [lindex $Map($sel) 0]
+	} else {
+		lassign [lindex $Map($sel) 1] event site date round white black result
 
-	append evline $event
+		if {[string length $white] == 0} { set white "?" }
+		if {[string length $black] == 0} { set black "?" }
+		if {$event eq "-" || $event eq "?"} { set event "" }
+		if {$site eq "-" || $site eq "?"} { set site "" }
+		set date [::locale::formatNormalDate $date]
 
-	append siline $site
-	if {[string length $siline] && [string length $date]} { append siline ", " }
-	append siline $date
+		append evline $event
 
-	append coline $white
-	append coline " \u2013 "
-	append coline $black
+		append siline $site
+		if {[string length $siline] && [string length $date]} { append siline ", " }
+		append siline $date
 
-	if {[string length $evline]} { grid $f.evline } else { grid remove $f.evline }
-	if {[string length $siline]} { grid $f.siline } else { grid remove $f.siline }
+		append coline $white
+		append coline " \u2013 "
+		append coline $black
 
-	$f.evline configure -text $evline
-	$f.coline configure -text $coline
-	$f.siline configure -text $siline
+		if {[string length $evline]} { grid $f.evline } else { grid remove $f.evline }
+		if {[string length $siline]} { grid $f.siline } else { grid remove $f.siline }
+
+		$f.evline configure -text $evline
+		$f.coline configure -text $coline -foreground darkred
+		$f.siline configure -text $siline
+	}
 
 	::tooltip::disable
 	::tooltip::popup $t $dlg cursor

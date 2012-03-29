@@ -43,6 +43,21 @@ switch [tk windowingsystem] {
 
 if {[tk windowingsystem] eq "x11"} {
 namespace eval fsbox {
+namespace eval mc {
+
+set ScidbDatabase				"Scidb Database"
+set ScidDatabase				"Scid Database"
+set ChessBaseDatabase		"ChessBase Database"
+set PortableGameFile			"Portable Game File"
+set ZipArchive					"ZIP Archive"
+set ScidbArchive				"Scidb Arvchive"
+set PortableDocumentFile	"Portable Document File"
+set HypertextFile				"Hypertext File"
+set TypesettingFile			"Typesetting File"
+
+set Content						"Content"
+
+}
 
 array set Priv {
 	lastFolder ""
@@ -79,6 +94,22 @@ set FileEncodings [list \
 if {$tcl_platform(platform) eq "windows"} {
 	set FileEncodings(.cbh) [list 1 $::encoding::systemEncoding] ;# XXX ok?
 }
+
+array set FileType [list      \
+	.sci	ScidbDatabase        \
+	.si4	ScidDatabase         \
+	.si3	ScidDatabase         \
+	.scv  ScidbArchive         \
+	.cbh	ChessBaseDatabase    \
+	.pgn	PortableGameFile     \
+	.gz	PortableGameFile     \
+	.zip	ZipArchive           \
+	.pdf	PortableDocumentFile \
+	.html	HypertextFile        \
+	.htm	HypertextFile        \
+	.tex	TypesettingFile      \
+	.ltx	TypesettingFile      \
+]
 
 
 proc geometry {{whichPart size}} {
@@ -224,7 +255,7 @@ proc Open {type args} {
 		}
 		::fsbox $w.fsbox $type \
 			-fileicons [fileIcons] \
-			-sizecommand [namespace code GetFileSize] \
+			-sizecommand [namespace code GetNumGames] \
 			-validatecommand [namespace code ValidateFile] \
 			-deletecommand [namespace code DeleteFile] \
 			-renamecommand [namespace code RenameFile] \
@@ -396,10 +427,10 @@ proc GetArchiveSize {arch} {
 	fconfigure $fd -translation lf
 	gets $fd line
 	gets $fd line
-	while {$line ne "<-- H E A D -->"} {
+	while {$line ne "<-- H E A D -->" && ![eof $fd]} {
 		lassign {"" ""} attr value
 		regexp {<([A-Za-z]+)>[ 	]*(.*)} $line _ attr value
-		if {$attr eq "TotalGames" && [string is integer -strict $value]} {
+		if {$attr eq "Count" && [string is integer -strict $value]} {
 			close $fd
 			return $value
 		}
@@ -410,7 +441,7 @@ proc GetArchiveSize {arch} {
 }
 
 
-proc FileSize {filename {mtime 0}} {
+proc NumGames {filename {mtime 0}} {
 	variable FileSizeCache
 
 	set modified -1
@@ -428,43 +459,121 @@ proc FileSize {filename {mtime 0}} {
 }
 
 
-proc GetFileSize {filename mtime} {
+proc FormatNumGames {filename count} {
 	set result ""
-	set size [FileSize $filename $mtime]
-
-	if {$size > 0} {
+	if {$count > 0} {
 		switch [file extension $filename] {
 			.pgn - .gz - .zip {
 				append result "~ "
-				if {$size > 10000} {
-					set size [expr {(($size + 500)/1000)*1000}]
-				} elseif {$size > 1000} {
-					set size [expr {(($size + 50)/100)*100}]
-				} elseif {$size > 10} {
-					set size [expr {(($size + 5)/10)*10}]
+				if {$count > 10000} {
+					set count [expr {(($count + 500)/1000)*1000}]
+				} elseif {$count > 1000} {
+					set count [expr {(($count + 50)/100)*100}]
+				} elseif {$count > 10} {
+					set count [expr {(($count + 5)/10)*10}]
 				}
 			}
 
 			.cbh { append result "\u2264 " }
 		}
 	}
-
-	append result [::locale::formatNumber $size]
+	append result [::locale::formatNumber $count]
 	return $result
 }
 
 
+proc GetNumGames {filename mtime} {
+	return [FormatNumGames $filename [NumGames $filename $mtime]]
+}
+
+
 proc Inspect {parent {filename ""}} {
+	variable FileType
+
 	set dlg $parent.__inspect__
 	catch { destroy $dlg }
 
 	if {[string length $filename] > 0} {
 		set f [::util::makePopup $dlg]
 		set bg [$f cget -background]
-		lassign [::scidb::misc::attributes $filename] numGames type created descr
-		# 1332331114
-		puts "$numGames - $type - $created - $descr"
-		pack [tk::label $f.l -text $filename -background $bg]
+		file stat $filename stat
+		set mtime [::locale::formatTime [clock format $stat(mtime) -format {%Y.%m.%d %H:%M:%S}]]
+		set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
+		set size [::locale::formatFileSize $stat(size)]
+		set ext [file extension $filename]
+		set fileType [set mc::$FileType($ext)]
+
+		tk::label $f.lname -text "$::fsbox::mc::Name:"
+		tk::label $f.tname -text [file tail $filename]
+		tk::label $f.ltype -text "$::application::database::mc::Type:"
+		tk::label $f.ttype -text $fileType
+		tk::label $f.lsize -text "$::fsbox::mc::Size:"
+		tk::label $f.tsize -text $size
+		tk::label $f.lcreated -text "$::application::database::mc::Created:"
+		tk::label $f.tcreated -text $ctime
+
+		switch $ext {
+			.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+				lassign [::scidb::misc::attributes $filename] numGames type created descr
+				if {[string length $descr] == 0} { set descr "\u2014" }
+#				set type [set ::application::database::mc::T_$type]
+				set numGames [FormatNumGames $filename $numGames]
+				if {[llength $created] > 0} {
+					$f.tcreated configure -text [::locale::formatTime $created]
+				}
+				tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
+				tk::label $f.tmodified -text $mtime
+				if {$numGames >= 0} {
+					tk::label $f.lngames -text "$::crosstable::mc::Games:"
+					tk::label $f.tngames -text $numGames
+				}
+				tk::label $f.ldescr -text "$::application::database::mc::Description:"
+				tk::label $f.tdescr -text $descr
+			}
+			.scv {
+				lassign [::archive::inspect $filename] header files
+				foreach pair $header {
+					lassign $pair attr value
+					if {$attr eq "Count"} {
+						tk::label $f.lngames -text "$::crosstable::mc::Games:"
+						tk::label $f.tngames -text [::locale::formatNumber $value]
+					}
+				}
+				set bases {}
+				foreach entry $files {
+					foreach pair $entry {
+						lassign $pair attr value
+						if {$attr eq "FileName"} {
+							switch [file extension $value] {
+								.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+									if {[string length $bases] > 0} { append bases \n }
+									append bases [file tail $value]
+								}
+							}
+						}
+					}
+				}
+				if {[string length $bases]} {
+					tk::label $f.ldescr -text "$mc::Content:"
+					tk::label $f.tdescr -text $bases -wraplength 250 -justify left
+				}
+			}
+		}
+
+		set r 1
+		foreach attr {name type size created modified ngames descr} {
+			if {[winfo exists $f.l$attr]} {
+				$f.l$attr configure -background $bg
+				$f.t$attr configure -background $bg
+				grid $f.l$attr -row $r -column 1 -sticky wn
+				grid $f.t$attr -row $r -column 3 -sticky wn
+				grid rowconfigure $f [incr r] -minsize 3
+				incr r
+			}
+		}
+		grid rowconfigure $f [list 0 $r] -minsize 3
+		grid columnconfigure $f {0 2 4} -minsize 3
+
 		::tooltip::popup $parent $dlg cursor
 	}
 }
@@ -472,7 +581,7 @@ proc Inspect {parent {filename ""}} {
 
 proc ValidateFile {filename {size {}}} {
 	if {![string match *.zip $filename]} { return 1 }
-	if {[llength $size] == 0} { set size [FileSize $filename [file mtime $filename]] }
+	if {[llength $size] == 0} { set size [NumGames $filename [file mtime $filename]] }
 	if {$size >= 0} { return 1 }
 	return 0
 }
@@ -493,7 +602,7 @@ proc SelectEncoding {parent encoding defaultEncoding} {
 }
 
 
-proc OkCmd {files encoding} {
+proc OkCmd {files {encoding ""}} {
 	set [namespace current]::Priv(result) [list $files $encoding]
 }
 
