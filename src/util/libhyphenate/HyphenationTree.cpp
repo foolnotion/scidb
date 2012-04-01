@@ -322,7 +322,12 @@ HyphenationTree::loadPatterns(mstl::istream &i)
 
 	while (i.get(ch))
 	{
-		if (::isspace(ch))
+		if (ch == '%')
+		{
+			while (i.get(ch) && ch != '\n')
+				continue;
+		}
+		else if (::isspace(ch))
 		{
 			// The output operation.
 			if (pattern.size() && numeric && num_field <= 1)

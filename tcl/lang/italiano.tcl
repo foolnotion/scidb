@@ -784,6 +784,8 @@
 ::browser::mc::GotoEndOfGame		"Vai alla fine della partita"
 ::browser::mc::IncreaseBoardSize	"Aumenta grandezza scacchiera"
 ::browser::mc::DecreaseBoardSize	"Diminuisci grandezza scacchiera"
+::browser::mc::MaximizeBoardSize	"Maximize board size" ;# NEW
+::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
 ::browser::mc::GotoFirstGame    	"Vai alla prima partita"
 ::browser::mc::GotoLastGame     	"Vai all'ultima partita"
 

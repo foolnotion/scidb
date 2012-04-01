@@ -280,6 +280,7 @@ proc CheckLanguage {parent helpFile} {
 				catch { set icon $flag([set ::mc::langToCountry($code)]) }
 				if {[string length $icon] == 0} { set icon none }
 				ttk::button $top.$code \
+					-style aligned.TButton \
 					-text " $::encoding::mc::Lang($code)" \
 					-image $icon \
 					-compound left \

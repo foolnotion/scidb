@@ -142,7 +142,7 @@ und <code>&lt;Type&gt;</code> ist beliebig.
 </p>
 
 <p>
-Zum Abschluss zwei einfache Beispiele für Archive:
+Zum Abschluß zwei einfache Beispiele für Archive:
 </p>
 
 <verbatim><!-- don't translate -->

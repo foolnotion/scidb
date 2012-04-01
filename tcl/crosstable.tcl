@@ -1120,13 +1120,13 @@ proc Mouse3Down {node} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::browse \
-		-label $::browser::mc::BrowseGame \
+		-label " $::browser::mc::BrowseGame" \
 		-command [namespace code [list Open browser $gameIndex]] \
 		;
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::overview \
-		-label $::overview::mc::Overview \
+		-label " $::overview::mc::Overview" \
 		-command [namespace code [list Open overview $gameIndex]] \
 		;
 	$m add command \

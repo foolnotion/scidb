@@ -3219,8 +3219,8 @@ cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* extension	= stringFromObj(objc, objv, 2);
 	char const* channelName	= stringFromObj(objc, objv, 3);
 
-	Tcl_Channel			chan(Tcl_GetChannel(ti, channelName, 0));
 	tcl::Progress		progress(objv[4], objv[5]);
+	Tcl_Channel			chan(Tcl_GetChannel(ti, channelName, 0));
 	tcl::File			file(chan);
 	util::ZlibOStream	os(file.handle());
 

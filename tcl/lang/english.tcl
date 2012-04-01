@@ -783,6 +783,8 @@
 ::browser::mc::GotoEndOfGame		"Go to end of game"
 ::browser::mc::IncreaseBoardSize	"Increase board size"
 ::browser::mc::DecreaseBoardSize	"Decrease board size"
+::browser::mc::MaximizeBoardSize	"Maximize board size"
+::browser::mc::MinimizeBoardSize	"Minimize board size"
 ::browser::mc::GotoFirstGame		"Goto first game"
 ::browser::mc::GotoLastGame		"Goto last game"
 

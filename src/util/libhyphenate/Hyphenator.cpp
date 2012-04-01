@@ -132,9 +132,12 @@ read_dictionary(mstl::auto_ptr<Hyphenator::Lookup>& output, mstl::string const& 
 
 		while (strm.getline(line))
 		{
-			line.unhook();
-			line.trim();
-			output->push_back(line);
+			if (*line.c_str() != '%')
+			{
+				line.unhook();
+				line.trim();
+				output->push_back(line);
+			}
 		}
 	}
 }
@@ -430,7 +433,7 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 
 				if (in_word && !sys::utf8::isAlpha(ch))
 				{
-					// If we have a word, try hyphenating it.*/
+					// If we have a word, try hyphenating it.
 					word_start = sys::utf8::nextChar(cur);
 					break;
 				}
@@ -464,15 +467,43 @@ Hyphenator::hyphenate_at(mstl::string const& src, mstl::string const& hyphen, si
 
 				if (m_lookup && (except = m_lookup->find(word)) != m_lookup->end())
 				{
-					// XXX TODO
-					// build result
-					// replace all hyphens with "hyphen"
+					unsigned start = cur - word_start;
+					unsigned found = -1;
+					unsigned end = len - hyphen.size();
+
+					// TODO: test this algorithm
+					for (unsigned i = 0; start < end; ++i)
+					{
+						if (word[i] == '-')
+							found = i;
+						else
+							++start;
+					}
+
+					if (found >= 0)
+					{
+						result.first.assign(src, 0, word_start - src.begin());
+						for (unsigned i = 0; i < found; ++i)
+						{
+							if (word[i] != '-')
+								result.first.append(word[i]);
+						}
+						result.first.append(hyphen);
+
+						for (unsigned i = found; i < word.size(); ++i)
+						{
+							if (word[i] != '-')
+								result.second.append(word[i]);
+						}
+						result.second.append(word_end, word_end - src.begin());
+
+						return result;
+					}
 				}
 				else
 				{
 					// Hyphenate the word.
-					mstl::auto_ptr<mstl::vector<HyphenationRule const*> >
-					rules = m_dictionary->applyPatterns(word);
+					mstl::auto_ptr<mstl::vector<HyphenationRule const*> > rules(m_dictionary->applyPatterns(word));
 
 					// Determine the index of the latest hyphenation that will still fit.
 					int latest_possible_hyphenation = -1;

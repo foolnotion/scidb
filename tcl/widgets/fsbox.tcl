@@ -241,17 +241,18 @@ proc fsbox {w type args} {
 	bind $top.ent_filename <Return> {+ break }
 	bind $top.ent_filename <Any-KeyRelease> [namespace code [list CheckFileEncoding $w]]
 
+	set Vars(widget:encoding:label) [::tk::AmpWidget ttk::label $top.lbl_encoding -text [Tr FileEncoding]]
+	set Vars(widget:encoding:entry) [ttk::entrybuttonbox $top.ent_encoding \
+		-width 14 \
+		-textvar [namespace current]::${w}::Vars(encodingVar) \
+		-command [namespace code [list SelectEncoding $w]] \
+	]
+	tooltip $top.ent_encoding [Tr SelectEncoding]
+
 	if {[llength $Vars(selectencodingcommand)]} {
 		set Vars(encodingVar) $Vars(defaultencoding)
 		set Vars(encodingDefault) ""
 		set Vars(encodingUser) ""
-		::tk::AmpWidget ttk::label $top.lbl_encoding -text [Tr FileEncoding]
-		set Vars(widget:encoding) [ttk::entrybuttonbox $top.ent_encoding \
-			-width 14 \
-			-textvar [namespace current]::${w}::Vars(encodingVar) \
-			-command [namespace code [list SelectEncoding $w]] \
-		]
-		tooltip $top.ent_encoding [Tr SelectEncoding]
 	}
 
 	if {[llength $Vars(filetypes)]} {
@@ -287,8 +288,9 @@ proc fsbox {w type args} {
 	if {[llength $Vars(selectencodingcommand)]} {
 		grid $top.lbl_encoding -row 5 -column 5
 		grid $top.ent_encoding -row 5 -column 7
-		grid columnconfigure $top {6} -minsize 5
 		grid columnconfigure $top {4} -minsize 10
+		grid columnconfigure $top {6} -minsize 5
+		grid columnconfigure $top {7} -minsize 0
 	} elseif {[llength $Vars(filetypes)]} {
 		grid $top.ent_filename -columnspan 5
 		grid columnconfigure $top {7} -minsize 92
@@ -361,22 +363,7 @@ proc fsbox {w type args} {
 
 	bind $top.main.fav <Configure> [namespace code { ConfigurePane %w }]
 
-	if {[string length $Vars(initialfile)]} {
-		set t $Vars(widget:list:file)
-		set i [expr {[llength $Vars(list:folder)] + 1}]
-		set sel 0
-		foreach file $Vars(list:file) {
-			set file [file tail $file]
-			if {$file eq $Vars(initialfile)} { set sel $i }
-			incr i
-		}
-		$t selection clear
-		$t selection add $sel
-		$t activate $sel
-		$t see $sel
-		filelist::SelectFiles $w [list $sel]
-	}
-
+	CheckInitialFile $w
 	DirChanged $w
 	focus $top.ent_filename
 	return $w
@@ -392,6 +379,9 @@ proc reset {w type args} {
 
 	if {$opts(-multiple)} { set mode extended } else { set mode single }
 	$Vars(widget:list:file) configure -selectmode $mode
+	set Vars(selectencodingcommand) {}
+	set Vars(fileencodings) {}
+	set Vars(initialfile) ""
 
 	foreach option {	multiple defaultextension defaultencoding filetypes fileencodings
 							showhidden sizecommand selectencodingcommand deletecommand
@@ -420,7 +410,6 @@ proc reset {w type args} {
 
 	$Vars(widget:list:bookmark) selection clear
 	$Vars(widget:list:file) selection clear
-	$Vars(widget:filename) delete 0 end
 
 	::toolbar::childconfigure $Vars(button:forward) -state disabled
 	::toolbar::childconfigure $Vars(button:backward) -state disabled
@@ -436,6 +425,7 @@ proc reset {w type args} {
 	set Vars(tip:forward) ""
 	set Vars(tip:backward) ""
 
+	CheckInitialFile $w
 	changeFileDialogType $w $type
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
 	filelist::RefreshFileList $w
@@ -645,7 +635,7 @@ proc Tr {tok {args {}}} {
 }
 
 
-proc GetFileSize {file} {
+proc GetFileSize {file mtime} {
 	set size [expr {[file size $file]/1024 + 1}]
 }
 
@@ -660,6 +650,27 @@ proc SetupSaveMode {w} {
 
 proc ValidateFile {file {size {}}} {
 	return 1
+}
+
+
+proc CheckInitialFile {w} {
+	variable ${w}::Vars
+
+	if {[string length $Vars(initialfile)]} {
+		set t $Vars(widget:list:file)
+		set i [expr {[llength $Vars(list:folder)] + 1}]
+		set sel 0
+		foreach file $Vars(list:file) {
+			set file [file tail $file]
+			if {$file eq $Vars(initialfile)} { set sel $i }
+			incr i
+		}
+		$t selection clear
+		$t selection add $sel
+		$t activate $sel
+		$t see $sel
+		filelist::SelectFiles $w [list $sel]
+	}
 }
 
 
@@ -700,12 +711,24 @@ proc CheckFileEncoding {w} {
 proc UpdateFileTypesState {w} {
 	variable ${w}::Vars
 
+	set top [winfo parent $Vars(widget:encoding:label)]
+
 	if {[llength $Vars(selectencodingcommand)]} {
 		set state disabled
 		foreach {ext enable encoding} $Vars(fileencodings) {
 			if {$ext in $Vars(extensions) && $enable} { set state normal }
 		}
-		$Vars(widget:encoding) configure -state $state
+		$Vars(widget:encoding:entry) configure -state $state
+		grid $Vars(widget:encoding:label) -row 5 -column 5
+		grid $Vars(widget:encoding:entry) -row 5 -column 7
+		grid $Vars(widget:filename) -columnspan 1
+		grid columnconfigure $top {4} -minsize 10
+		grid columnconfigure $top {6} -minsize 5
+		grid columnconfigure $top {7} -minsize 0
+	} else {
+		grid remove $Vars(widget:encoding:label) $Vars(widget:encoding:entry)
+		grid $Vars(widget:filename) -columnspan 5
+		grid columnconfigure $top {7} -minsize 92
 	}
 }
 
@@ -851,7 +874,6 @@ proc SetActiveItem {w item state} {
 			if {$item in [$w selection get]} {
 				$w selection clear $item
 			} else {
-				$t selection clear
 				$w selection add $item
 			}
 			set Priv(selection) ""
@@ -2605,7 +2627,7 @@ proc SelectFiles {w selection} {
 
 	set filenames ""
 	foreach file $Vars(selected:$type) {
-		if {[llength $Vars(selected:$type)] > 1 && [string first " " $file] >= 0} {
+		if {$Vars(multiple) && ([llength $Vars(selected:$type)] > 1 || [string first " " $file] >= 0)} {
 			set delim "\""
 		} else {
 			set delim ""

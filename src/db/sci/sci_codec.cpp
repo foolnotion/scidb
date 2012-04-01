@@ -1186,7 +1186,7 @@ Codec::writeIndexHeader(mstl::ostream& strm)
 									mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
 
 	if (!strm.seekp(0, mstl::ios_base::beg))	// skip magic
-		IO_RAISE(Index, Corrupted, "unexpected end of index file");
+		IO_RAISE(Index, Corrupted, "seek failed");
 
 	if (!strm.write(header, sizeof(header)))
 		IO_RAISE(Index, Write_Failed, "unexpected end of index file");

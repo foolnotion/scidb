@@ -104,7 +104,12 @@ ostream&
 ostream::write(char const* buffer, size_t size)
 {
 	if (fwrite(buffer, size, 1, m_fp) == 0)
-		setstate(feof(m_fp) ? eofbit | failbit : badbit);
+	{
+		if (ferror(m_fp))
+			setstate(badbit);
+		else if (feof(m_fp))
+			setstate(eofbit | failbit);
+	}
 
 	return *this;
 }

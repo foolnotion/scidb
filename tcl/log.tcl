@@ -124,6 +124,11 @@ proc hide {{flag 1}} {
 proc exists	{} { return [winfo exists $Log] }
 
 
+proc finishLayout {} {
+	::widget::dialogButtonSetIcons [set [namespace current]::Log]
+}
+
+
 proc Show {} {
 	variable Priv
 	variable Log

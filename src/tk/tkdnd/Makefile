@@ -34,7 +34,7 @@ depend:
 #		mv Makefile.bak Makefile; \
 #	fi
 
-$(LIB).a: $(OBJS)
+$(LIB).a: TkDND_XDND.o
 	@echo "Building $(LIB).a"
 	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o
 	@$(RANLIB) $(LIB).a

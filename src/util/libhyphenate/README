@@ -3,10 +3,6 @@
 This library provides an implementation of Frank Liangs hyphenation algorithm,
 better known as the TeX hyphenation algorithm, for C++ and C.
 
-=== Dependencies ===
-
-STL, POSIX and the GNOME glib.
-
 === How to use ===
 
 An example program is supplied as example.cpp in this directory.

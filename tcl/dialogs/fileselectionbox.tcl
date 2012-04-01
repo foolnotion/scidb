@@ -242,14 +242,11 @@ proc Open {type args} {
 		if {[llength $opts(-defaultencoding)] == 0} {
 			set opts(-defaultencoding) $::encoding::mc::AutoDetect
 		}
+		set opts(-selectencodingcommand) [namespace code SelectEncoding]
+		set opts(-fileencodings) [set [namespace current]::FileEncodings]
 	}
 
 	if {$create} {
-		if {$data(-needencoding)} {
-			set opts(-selectencodingcommand) [namespace code SelectEncoding]
-			set opts(-fileencodings) [set [namespace current]::FileEncodings]
-		}
-
 		if {[string length $geometry] == 0} {
 			set opts(-rows) 8
 		}

@@ -18,8 +18,8 @@ SOURCES = \
 	start.tcl \
 	utils/tcl_bugs.tcl \
 	utils/place.tcl \
-	utils/archive.tcl \
 	splash.tcl \
+	utils/archive.tcl \
 	dialogs/messagebox.tcl \
 	dialogs/progressbar.tcl \
 	dialogs/choosecolor.tcl \
@@ -517,7 +517,7 @@ uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags u
 $(SCRIPT): $(SOURCES)
 	@echo "Build $(SCRIPT)"
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
-	@cat $(SOURCES) | sed -e '/^##/d' -e '/^#$$/d' -e '/^[ 	]*#[ 	]$$/d' > $(SCRIPT)
+	@cat $(SOURCES) | sed 's/# vi:set ts=3 sw=3:/update idletasks/' | sed -e '/^##/d' -e '/^#$$/d' -e '/^[ 	]*#[ 	]\+/d' > $(SCRIPT)
 	@chmod 0555 $(SCRIPT)
 
 # vi:set ts=3 sw=3:

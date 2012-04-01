@@ -188,6 +188,7 @@ set RatingType(Any)		"-Any-"
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::abs
+namespace import ::tcl::mathfunc::min
 
 #		ID   				Group	Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
 #	-------------------------------------------------------------------------------------------------
@@ -686,27 +687,43 @@ proc showMoves {path moves {result ""} {empty 0}} {
 	if {![winfo exists $w]} {
 		set f [::util::makePopup $w]
 		set bg [$f cget -background]
-		destroy $f
-		tk::text $w.text \
+		tk::text $f.text \
 			-wrap word \
 			-width 50 \
 			-height 8 \
 			-background [::tooltip::background] \
 			-borderwidth 0 \
-			-relief solid
-		pack $w.text -padx 2 -pady 2
-      $w.text tag configure figurine -font $::font::figurine
+			-relief solid \
+			;
+		pack $f.text -padx 1 -pady 1
+      $f.text tag configure figurine -font $::font::figurine
+		# NOTE: w/o this dirty trick -displaylines will not work.
+		wm geometry $w +0-1000
+		wm deiconify $w
+		lower $w
+		wm withdraw $w
 	}
-	$w.text delete 1.0 end
+	set t $w.f.text
+	$t delete 1.0 end
+	$t configure -width 50
 	set moves [::font::splitMoves $moves]
 	if {[string length $moves] == 0} {
 		if {$empty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
-		$w.text insert end $text
-		$w.text insert end " "
+		$t insert end $text
+		$t insert end " "
 	} else {
-		foreach {move tag} $moves { $w.text insert end $move $tag }
+		foreach {move tag} $moves { $t insert end $move $tag }
 	}
-	$w.text insert end $result
+	$t insert end $result
+	::update idletasks
+	set lines [min 8 [$t count -displaylines 1.0 8.0]]
+	if {$lines == 1} {
+		lassign [$t bbox 1.end-1c] x0 y0 w0 h0
+		set width [expr {$x0 + $w0}]
+		set charwidth [font measure [$t cget -font] "0"]
+		$t configure -width [expr {($width + $charwidth - 1)/$charwidth}]
+	}
+	$t configure -height $lines
 	::tooltip::disable
 	::tooltip::popup $path $w cursor
 }

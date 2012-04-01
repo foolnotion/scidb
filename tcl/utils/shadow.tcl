@@ -34,7 +34,7 @@ array set Used {}
 proc prepare {w x y width height} {
 	variable Geometry
 
-	if {$width > 1 && $height > 1} {
+	if {$width > 1 && $height > 1 && $y >= 0} {
 		set Geometry($w) [list $x $y $width $height]
 	}
 }

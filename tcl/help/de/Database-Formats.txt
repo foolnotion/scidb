@@ -124,7 +124,7 @@ Standard: Portable Game Notation Specification and Implementation Guide</a>.
 <h2 id="Database-Archive">Datenbankarchiv (<abbr>.scv</abbr>)</h2>
 
 <p>
-Scidb's Datanbankarchiv stützt sich euf ein unabhängiges Archivformat, und
+Scidb's Datenbankarchiv stützt sich euf ein unabhängiges Archivformat, und
 enthält eine Datenbank (oder sogar mehrere) in archivierter Form. Dies ermöglicht
 eine Versendung der Datenbank(en), die ansonsten aus mehreren Dateien besteht, über
 das Internet. Dieses Datenbankarchiv ist an kein spezielles Datenbankformat

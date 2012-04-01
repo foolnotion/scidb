@@ -38,6 +38,8 @@ set GotoStartOfGame		"Go to start of game"
 set GotoEndOfGame			"Go to end of game"
 set IncreaseBoardSize	"Increase board size"
 set DecreaseBoardSize	"Decrease board size"
+set MaximizeBoardSize	"Maximize board size"
+set MinimizeBoardSize	"Minimize board size"
 
 set IllegalMove			"Illegal move"
 set NoCastlingRights		"no castling rights"
@@ -50,6 +52,7 @@ set MergeGame				"Merge Game"
 
 } ;# namespace mc
 
+namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
 set Priv(count) 100
@@ -240,24 +243,28 @@ proc open {parent base info view index {fen {}}} {
 	$rt.pgn tag configure result -foreground $Options(foreground:result)
 	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
-	bind $dlg <Alt-Key>				[list tk::AltKeyInDialog $dlg %A]
-	bind $dlg <Return>				[namespace code [list ::widget::dialogButtonInvoke $buttons]]
-	bind $dlg <Return>				{+ break }
-	bind $dlg <Configure>			[namespace code [list Configure %W $position]]
-	bind $dlg <Control-a>			[namespace code [list ToggleAutoPlay $position]]
-	bind $dlg <Control-r>			[namespace code [list RotateBoard $board]]
-	bind $dlg <Destroy>				[namespace code [list Destroy $dlg %W $position $base]]
-	bind $dlg <Left>					[namespace code [list Goto $position -1]]
-	bind $dlg <Right>					[namespace code [list Goto $position +1]]
-	bind $dlg <Prior>					[namespace code [list Goto $position -10]]
-	bind $dlg <Next>					[namespace code [list Goto $position +10]]
-	bind $dlg <Home>					[namespace code [list Goto $position -9999]]
-	bind $dlg <End>					[namespace code [list Goto $position +9999]]
-	bind $dlg <ButtonPress-3>		[namespace code [list PopupMenu $dlg $board $position]]
-	bind $dlg <Key-plus>				[namespace code [list IncreaseBoardSize $position $lt.board +5]]
-	bind $dlg <Key-KP_Add>			[namespace code [list IncreaseBoardSize $position $lt.board +5]]
-	bind $dlg <Key-minus>			[namespace code [list IncreaseBoardSize $position $lt.board -5]]
-	bind $dlg <Key-KP_Subtract>	[namespace code [list IncreaseBoardSize $position $lt.board -5]]
+	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
+	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
+	bind $dlg <Return>					{+ break }
+	bind $dlg <Configure>				[namespace code [list Configure %W $position]]
+	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
+	bind $dlg <Control-r>				[namespace code [list RotateBoard $board]]
+	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
+	bind $dlg <Left>						[namespace code [list Goto $position -1]]
+	bind $dlg <Right>						[namespace code [list Goto $position +1]]
+	bind $dlg <Prior>						[namespace code [list Goto $position -10]]
+	bind $dlg <Next>						[namespace code [list Goto $position +10]]
+	bind $dlg <Home>						[namespace code [list Goto $position -9999]]
+	bind $dlg <End>						[namespace code [list Goto $position +9999]]
+	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $board $position]]
+	bind $dlg <Key-plus>					[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-minus>				[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Key-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Control-plus>			[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
 
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -962,13 +969,23 @@ proc PopupMenu {parent board position {what ""}} {
 	$menu add separator
 	$menu add command \
 		-label $mc::IncreaseBoardSize \
-		-command [namespace code [list IncreaseBoardSize $position $board +5]] \
+		-command [namespace code [list ChangeBoardSize $position $board +5]] \
 		-accelerator "+" \
 		;
 	$menu add command \
 		-label $mc::DecreaseBoardSize \
-		-command [namespace code [list IncreaseBoardSize $position $board -5]] \
+		-command [namespace code [list ChangeBoardSize $position $board -5]] \
 		-accelerator "\u2212" \
+		;
+	$menu add command \
+		-label $mc::MaximizeBoardSize \
+		-command [namespace code [list ChangeBoardSize $position $board max]] \
+		-accelerator "${::menu::mc::Ctrl}-+" \
+		;
+	$menu add command \
+		-label $mc::MinimizeBoardSize \
+		-command [namespace code [list ChangeBoardSize $position $board min]] \
+		-accelerator "${::menu::mc::Ctrl}-\u2212" \
 		;
 
 	tk_popup $menu {*}[winfo pointerxy $dlg]
@@ -986,7 +1003,7 @@ proc MergeGame {parent position} {
 }
 
 
-proc IncreaseBoardSize {position board delta} {
+proc ChangeBoardSize {position board delta} {
 	variable ${position}::Vars
 	variable Options
 
@@ -994,10 +1011,26 @@ proc IncreaseBoardSize {position board delta} {
 
 	set dlg [winfo toplevel $board]
 	set maxSize [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size) - 75)/8}]
-	set newSize [expr {$Options(board:size) + $delta}]
 
-	if {$delta < 0 && $newSize < 35} { return }
-	if {$delta > 0 && $newSize > $maxSize} { return }
+	switch $delta {
+		max {
+			set newSize $maxSize
+			set delta [expr {$newSize - $Options(board:size)}]
+			if {$delta <= 0} { return }
+		}
+
+		min {
+			set newSize 35
+			set delta [expr {$newSize - $Options(board:size)}]
+			if {$delta >= 0} { return }
+		}
+
+		default {
+			set newSize [expr {$Options(board:size) + $delta}]
+			if {$delta < 0 && $newSize < 35} { return }
+			if {$delta > 0 && $newSize > $maxSize} { return }
+		}
+	}
 
 	set w [expr {$Vars(minsize) + 8*$delta}]
 	set h [expr {[winfo height $dlg] + 8*$delta}]
@@ -1009,6 +1042,17 @@ proc IncreaseBoardSize {position board delta} {
 	::board::registerSize $newSize
 	::board::stuff::resize $board $newSize 1
 	grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]
+
+	update idletasks
+
+	set x0 [winfo rootx $dlg]
+	set y0 [winfo rooty $dlg]
+	set x1 [expr {[winfo screenwidth  $dlg] - [winfo width  $dlg] - 25}]
+	set y1 [expr {[winfo screenheight $dlg] - [winfo height $dlg] - 25}]
+
+	if {$x1 >= 0 && $y1 >= 0 && ($x1 < $x0 || $y1 < $y0)} {
+		wm geometry $dlg +[min $x0 $x1]+[min $y0 $y1]
+	}
 }
 
 

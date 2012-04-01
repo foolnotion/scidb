@@ -780,6 +780,8 @@
 ::browser::mc::GotoEndOfGame		"Ir al final de la partida"
 ::browser::mc::IncreaseBoardSize	"Agrandar el tablero"
 ::browser::mc::DecreaseBoardSize	"Achicar el tablero"
+::browser::mc::MaximizeBoardSize	"Maximize board size" ;# NEW
+::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
 ::browser::mc::GotoFirstGame		"Ir a la primera partida"
 ::browser::mc::GotoLastGame		"Ir a la œltima partida"
 

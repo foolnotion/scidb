@@ -785,6 +785,8 @@
 ::browser::mc::GotoEndOfGame		"A játszma végére"
 ::browser::mc::IncreaseBoardSize	"Tábla méretánek növelése"
 ::browser::mc::DecreaseBoardSize	"Tábla méretének növelése"
+::browser::mc::MaximizeBoardSize	"Maximize board size" ;# NEW
+::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
 ::browser::mc::GotoFirstGame		"Első játszmához"
 ::browser::mc::GotoLastGame		"Utolsó játszmához"
 

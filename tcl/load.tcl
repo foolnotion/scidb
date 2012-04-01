@@ -107,6 +107,8 @@ proc load {msg type path} {
 	} else {
 		lappend Log info "$msg: $path"
 	}
+
+	update idletasks
 }
 
 

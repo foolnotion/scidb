@@ -151,6 +151,8 @@ proc archive::setMaxTick {progress n} {
 	::dialog::progressbar::setMaximum $progress $n
 }
 
+log::finishLayout
+
 # --- Read options -----------------------------------------------------
 
 # prevent errors while parsing old config files (as long as we have a beta version)

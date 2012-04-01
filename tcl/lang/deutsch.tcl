@@ -782,6 +782,8 @@
 ::browser::mc::GotoEndOfGame		"Zum Partieende"
 ::browser::mc::IncreaseBoardSize	"Brett vergößern"
 ::browser::mc::DecreaseBoardSize	"Brett verkleinern"
+::browser::mc::MaximizeBoardSize	"Brett maximieren"
+::browser::mc::MinimizeBoardSize	"Brett minimieren"
 ::browser::mc::GotoFirstGame		"Zur ersten Partie"
 ::browser::mc::GotoLastGame		"Zur letzten Partie"
 

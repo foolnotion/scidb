@@ -89,13 +89,14 @@ File::open(Tcl_Channel chan)
 		Cookie::read,
 		Cookie::write,
 		Cookie::seek,
-		Cookie::close
+		Cookie::close,
 	};
 
 	M_REQUIRE(chan);
 	M_REQUIRE(!isOpen());
 
-	m_fp = ::fopencookie(this, "r+b", Cookie);
+	m_fp = ::fopencookie(this, "r+", Cookie);
+	::setvbuf(m_fp, 0, _IONBF, 0);
 }
 
 
@@ -113,6 +114,7 @@ File::close()
 	if (m_fp)
 	{
 		::fclose(m_fp);
+printf("File:~File()\n");
 		m_fp = 0;
 	}
 }

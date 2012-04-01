@@ -363,6 +363,8 @@ proc open {parent} {
 		tk::button $decor.close \
 			-command [namespace code [list Close $dlg]] \
 			-image $::gamebar::icon::15x15::close(locked) \
+			-relief flat \
+			-overrelief raised \
 			;
 		Focus $dlg out
 		pack $decor.close -side right
