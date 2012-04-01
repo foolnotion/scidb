@@ -32,15 +32,15 @@ A database in Scidb's format is divided into several files:
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
-      <td nowrap valign="top"><kbd>.sci =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
       <td>Game data</td>
     </tr>
     <tr>
-      <td nowrap valign="top"><kbd>.scg =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.scg =&nbsp;</kbd></td>
       <td>Game moves, commentaries, annotations, move information, and PGN tags</td>
     </tr>
     <tr>
-      <td nowrap valign="top"><kbd>.scn =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.scn =&nbsp;</kbd></td>
       <td>Player/Event/Site/Annotator data</td>
     </tr>
   </table>
@@ -59,15 +59,15 @@ This format resembles structurally Scidb's format:
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
-      <td nowrap valign="top"><kbd>.si4 =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.si4 =&nbsp;</kbd></td>
       <td>Game data</td>
     </tr>
     <tr>
-      <td nowrap valign="top"><kbd>.sg4 =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.sg4 =&nbsp;</kbd></td>
       <td>Game moves, commentaries, annotations, and PGN tags</td>
     </tr>
     <tr>
-      <td nowrap valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
+      <td nowrap="nowrap" valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
       <td>Player/Event/Site/Round data</td>
     </tr>
   </table>

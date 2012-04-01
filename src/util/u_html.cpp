@@ -30,6 +30,9 @@
 #include <expat.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdio.h>
+
+#define TRACE(x)
 
 using namespace util;
 using namespace util::html;
@@ -436,6 +439,8 @@ Search::stringFirstCmd(char const* haystack, unsigned haystackLen)
 void
 Search::htmlStartElement(void* cbData, XML_Char const* elem, char const** attr)
 {
+	TRACE(printf("htmlStartElement(%s)\n", elem));
+
 	switch (toupper(elem[0]))
 	{
 		case 'A':
@@ -470,6 +475,8 @@ Search::htmlStartElement(void* cbData, XML_Char const* elem, char const** attr)
 void
 Search::htmlEndElement(void* cbData, XML_Char const* elem)
 {
+	TRACE(printf("htmlStartElement(%s)\n", elem));
+
 	switch (toupper(elem[0]))
 	{
 		case 'A':
@@ -522,6 +529,8 @@ Search::addPosition(unsigned bytePos)
 void
 Search::htmlContent(void* cbData, XML_Char const* s, int len)
 {
+	TRACE(printf("htmlContent(%s)\n", mstl::string(s, len).c_str()));
+
 	if (*s == '\n' && len == 1)
 		return;
 

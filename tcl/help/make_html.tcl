@@ -240,11 +240,11 @@ proc readContents {chan file} {
 
 		if {[string match *verbatim>* $line]} {
 			if {[string match *<verbatim>* $line]} {
-				append line "<--"
+				append line "<!--"
 				set linePref "-->"
 			} elseif {[llength $contents] > 0} {
 				set last [lindex $contents end]
-				append last "<--"
+				append last "<!--"
 				lset contents end $last
 				set s "-->"
 				append s $line

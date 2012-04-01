@@ -95,6 +95,7 @@ uninstall-scripts:
 	fi
 
 install-data:
+	@echo "Install data"
 	@install -m 755 -d $(SHAREDIR)/data
 	@install -m 644 -p data/eco.bin $(SHAREDIR)/data
 	@install -m 644 -p data/*.* $(SHAREDIR)/data

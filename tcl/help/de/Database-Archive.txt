@@ -122,7 +122,7 @@ Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;
 <p>
 <code>&lt;Count&gt;</code> ist die Anzahl der enthaltenen Partien in der Datenbank.
 Wenn diese Anzahl nicht bekannt ist, z.B. bei <acronym>PGN</acronym>-Dateien oder
-bei der Verwendung von <acronym>URL<acronym>'s, dann ist dieses Attribut nicht vorhanden.
+bei der Verwendung von <acronym>URL</acronym>'s, dann ist dieses Attribut nicht vorhanden.
 <code>&lt;Format&gt;</code> ist die Angabe des Formats der entpackten Datenbank.
 </p>
 

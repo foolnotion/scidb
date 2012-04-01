@@ -114,7 +114,6 @@ File::close()
 	if (m_fp)
 	{
 		::fclose(m_fp);
-printf("File:~File()\n");
 		m_fp = 0;
 	}
 }

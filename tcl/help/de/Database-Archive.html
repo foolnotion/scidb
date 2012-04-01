@@ -49,7 +49,7 @@ spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthält Informat
 Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><--
+<div class="box"><pre><code><!-- don't translate --><!--
 -->Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -75,7 +75,7 @@ Identifier  = AsciiLetter { AsciiLetter } ;
 AttrValue   = AsciiGraphical { AsciiGraphical } ;
 Timestamp = Date " " Time ;
 Date      = Year "-" Month "-" Day ;
-Time      = Hour ":" Minute ":" Second ;<--
+Time      = Hour ":" Minute ":" Second ;<!--
 --></code></pre></div>
 
 <p>
@@ -126,7 +126,7 @@ Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Textedi
 <code>UserInfo</code> ist im "<abbr>.scv</abbr>"-Format folgendermaßen definiert:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><--
+<div class="box"><pre><code><!-- don't translate --><!--
 -->UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
@@ -134,13 +134,13 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;<--
+Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;<!--
 --></code></pre></div>
 
 <p>
 <code>&lt;Count&gt;</code> ist die Anzahl der enthaltenen Partien in der Datenbank.
 Wenn diese Anzahl nicht bekannt ist, z.B. bei <acronym>PGN</acronym>-Dateien oder
-bei der Verwendung von <acronym>URL<acronym>'s, dann ist dieses Attribut nicht vorhanden.
+bei der Verwendung von <acronym>URL</acronym>'s, dann ist dieses Attribut nicht vorhanden.
 <code>&lt;Format&gt;</code> ist die Angabe des Formats der entpackten Datenbank.
 </p>
 
@@ -163,7 +163,7 @@ und <code>&lt;Type&gt;</code> ist beliebig.
 Zum Abschluß zwei einfache Beispiele für Archive:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><--
+<div class="box"><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
@@ -195,10 +195,10 @@ Zum Abschluß zwei einfache Beispiele für Archive:
 
 1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
 Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
-12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0<--
+12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0<!--
 --></code></pre></div>
 
-<div class="box"><pre><code><!-- don't translate --><--
+<div class="box"><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi
@@ -208,7 +208,7 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 
 &lt;-- H E A D --&gt;
 &lt;FileName&gt; http://scidb.sf.net/bases/tiny-2.pgn
-&lt;-- D A T A --&gt;<--
+&lt;-- D A T A --&gt;<!--
 --></code></pre></div>
 
 </body>
