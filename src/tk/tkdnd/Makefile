@@ -19,7 +19,6 @@ INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) -I../tk$(TCL_VERSION)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING) -DUSE_TKINT_H
 
 SRC	= unix/TkDND_XDND.c
-OBJS	= $(SRC:.c=.o)
 LIB	= libtkDnd
 
 all: $(LIB).a
@@ -39,7 +38,7 @@ $(LIB).a: TkDND_XDND.o
 	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o
 	@$(RANLIB) $(LIB).a
 
-.c.o:
+TkDND_XDND.o: unix/TkDND_XDND.c
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 

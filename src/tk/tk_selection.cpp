@@ -48,8 +48,12 @@ invokeTkSelection(Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 #  include <windows.h>
 
+#  ifndef XA_STRING
+#   define XA_STRING CF_TEXT
+#  endif
+
 static int
-selGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long)
+selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long)
 {
 	int	done = TCL_ERROR;
 	bool	notAvailable = false;
@@ -69,14 +73,14 @@ selGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned lo
 
 				if (handle)
 				{
-					char* data = GlobalLock(handle);
+					void* data = GlobalLock(handle);
 
 					Tcl_DString ds;
 					Tcl_DStringInit(&ds);
-					Tcl_UniCharToUtfDString(reinterpret_cast<Tcl_UniChar*>(data),
-													Tcl_UniCharLen(reinterpret_cast<Tcl_UniChar*>(data)),
+					Tcl_UniCharToUtfDString(static_cast<Tcl_UniChar*>(data),
+													Tcl_UniCharLen(static_cast<Tcl_UniChar*>(data)),
 													&ds);
-					Tcl_DStringResult(tcl::interp(), &ds);
+					Tcl_DStringResult(ti, &ds);
 					Tcl_DStringFree(&ds);
 
 					GlobalUnlock(handle);
@@ -98,7 +102,7 @@ selGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned lo
 
 	if (!notAvailable)
 	{
-		Tcl_AppendResult(	tcl::interp(),
+		Tcl_AppendResult(	ti,
 								Tk_GetAtomName(tkwin, selection),
 								" selection doesn't exist or form \"",
 								Tk_GetAtomName(tkwin, target), "\" not defined",
@@ -248,7 +252,7 @@ selTimeoutProc(ClientData clientData)
 
 
 static int
-selGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long timestamp)
+selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long timestamp)
 {
 	XConvertSelection(Tk_Display(tkwin), selection, target, selection, Tk_WindowId(tkwin), timestamp);
 
@@ -347,7 +351,7 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (targetName)
 		target = Tk_InternAtom(tkwin, targetName);
 
-	return selGet(ti, tkwin, Tk_InternAtom(tkwin, selName), target, timestamp);
+	return selectionGet(ti, tkwin, Tk_InternAtom(tkwin, selName), target, timestamp);
 }
 
 
