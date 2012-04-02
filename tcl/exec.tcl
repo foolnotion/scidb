@@ -118,7 +118,19 @@ proc ParseArgs {} {
 		if {[string range $arg 0 1] ne "--"} {
 			break
 		}
-		set Options([string range $arg 2 end]) 1
+
+		set option [string range $arg 2 end]
+
+		switch -- $option {
+			{} - help - version - full-screen - show-board - re-open - fast-load - first-time -
+			elo-only - print-recovery-files - delete-recovery-files - dont-recover - recover-old -
+			single-process - force-grab {
+				set Options($option) 1
+			}
+			default {
+				puts stderr "Unrecognized option: $option"
+			}
+		}
 	}
 
 	if {[::scidb::misc::debug?]} {

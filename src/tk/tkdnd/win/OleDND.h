@@ -109,6 +109,13 @@ typedef struct {
   TCHAR *name;
 } CLIP_FORMAT_STRING_TABLE;
 
+// Older MinGW versions do not know CF_DIBV5.
+#if !defined(CF_DIBV5) && CF_MAX == 17
+# define CF_DIBV5 17
+# undef CF_MAX
+# define CF_MAX 18
+#endif
+
 static CLIP_FORMAT_STRING_TABLE ClipboardFormatBook[] = {
   STRING_(CF_TEXT),
   STRING_(CF_BITMAP),
@@ -126,9 +133,7 @@ static CLIP_FORMAT_STRING_TABLE ClipboardFormatBook[] = {
   STRING_(CF_ENHMETAFILE),
   STRING_(CF_HDROP),
   STRING_(CF_LOCALE),
-#ifdef CF_DIBV5
   STRING_(CF_DIBV5),
-#endif
   STRING_(CF_OWNERDISPLAY),
   STRING_(CF_DSPTEXT),
   STRING_(CF_DSPBITMAP),
