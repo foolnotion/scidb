@@ -985,7 +985,7 @@ proc OpenUri {uriFiles} {
 					}
 
 					switch [file extension $file] {
-						.sci - .si3 - .si4 - .cbh - .pgn - .zip {
+						.sci - .scv - .si3 - .si4 - .cbh - .pgn - .zip {
 							if {$file ni $databaseList} { lappend databaseList $file }
 						}
 						default {
@@ -1028,7 +1028,7 @@ proc OpenUri {uriFiles} {
 			append message \n\n [join $rejectList \n]
 		}
 		set detail $mc::UriRejectedDetail
-		append detail " .sci, .si4, .si3, .cbh, .pgn, .pgn.gz, .zip"
+		append detail " .sci, .scv, .si4, .si3, .cbh, .pgn, .pgn.gz, .zip"
 		dialog::info -parent $Vars(canvas) -message $message -detail $detail
 	}
 	

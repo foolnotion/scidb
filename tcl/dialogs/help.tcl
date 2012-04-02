@@ -1559,6 +1559,10 @@ proc Parse {file wantedFile moveto {match {}}} {
 			if {[string length $dictFilenames]} { append dictFilenames ";" }
 			append dictFilenames $filename
 		}
+		if {$lang eq "de"} {
+			# we cannot hyphenate "ß" properly
+			set content [string map {"ß" "ss"} $content]
+		}
 		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
 
 		if {$Priv(latinligatures)} {

@@ -50,7 +50,7 @@ inline static bool isdelim(char c) { return c == ' ' || c == '>'; }
 inline static bool
 compTag(char const* str, char const* tag, unsigned tagLen)
 {
-	return strncasecmp(str, tag, tagLen) == 0 && ::isdelim(str[tagLen]);
+	return strncasecmp(str, tag, tagLen) == 0 && isdelim(str[tagLen]);
 }
 
 
@@ -58,9 +58,9 @@ namespace {
 
 struct ActionHyphenate
 {
-	ActionHyphenate(Hyphenator* hyphenator, mstl::string const& hyphen) :
-		m_hyphenator(hyphenator),
-		m_hyphen(hyphen)
+	ActionHyphenate(Hyphenator* hyphenator, mstl::string const& hyphen)
+		:m_hyphenator(hyphenator)
+		,m_hyphen(hyphen)
 	{
 	}
 
@@ -94,7 +94,6 @@ struct ActionHyphenate
 		return false;
 	}
 
-	// TODO: use HAVE_0X_RVALUE_REFERENCES
 	mstl::string operator()(mstl::string const& buf) { return m_hyphenator->hyphenate(buf, m_hyphen); }
 
 	Hyphenator*		m_hyphenator;
@@ -104,7 +103,6 @@ struct ActionHyphenate
 
 struct ActionBuildLigatures
 {
-	// TODO: use HAVE_0X_RVALUE_REFERENCES
 	mstl::string
 	operator()(mstl::string const& buf)
 	{
@@ -221,7 +219,7 @@ parse(char const* document, unsigned length, mstl::string& result, Action& actio
 
 	result.clear();
 
-	// XXX: Currently parser is not recognizing "<![CDATA[ ... ]]>" elements.
+	// XXX: Currently the parser is not recognizing "<![CDATA[ ... ]]>" elements.
 	//      Inside these elements the characters "<>&" do not have a special meaning.
 	//      (This means, do not parse inside this element)
 

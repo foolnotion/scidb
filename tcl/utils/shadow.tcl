@@ -29,12 +29,28 @@ namespace eval shadow {
 set offset 5
 
 array set Used {}
+array set Prevent {}
+
+
+proc prevent {w} {
+	variable Prevent
+	set Prevent($w) 1
+}
+
+
+proc allow {w} {
+	variable Prevent
+	array unset Prevent $w
+}
 
 
 proc prepare {w x y width height} {
 	variable Geometry
+	variable Prevent
 
-	if {$width > 1 && $height > 1 && $y >= 0} {
+	if {[info exists Prevent($w)]} { return }
+
+	if {$width > 1 && $height > 1} {
 		set Geometry($w) [list $x $y $width $height]
 	}
 }
