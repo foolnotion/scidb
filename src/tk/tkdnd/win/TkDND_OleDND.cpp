@@ -40,6 +40,14 @@
 
 #include "OleDND.h"
 
+#ifndef PACKAGE_NAME
+# define PACKAGE_NAME "tkDND"
+#endif
+
+#ifndef PACKAGE_VERSION
+# define PACKAGE_VERSION "2.3"
+#endif
+
 int TkDND_RegisterDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
                                  int objc, Tcl_Obj *CONST objv[]) {
   TkDND_DropTarget *pDropTarget;
@@ -423,3 +431,5 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
 int DLLEXPORT Tkdnd_SafeInit(Tcl_Interp *interp) {
   return Tkdnd_Init(interp);
 } /* Tkdnd_SafeInit */
+
+/* vi:set ts=2 sw=2 et: */

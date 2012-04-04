@@ -28,6 +28,7 @@ namespace eval mc {
 
 set Alignment		"Alignment"
 set Apply			"Apply"
+set Archive			"Archive"
 set Background		"Background"
 set Black			"Black"
 set Bottom			"Bottom"

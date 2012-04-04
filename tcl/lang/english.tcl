@@ -35,6 +35,7 @@
 
 ::mc::Alignment		"Alignment"
 ::mc::Apply				"Apply"
+::mc::Archive			"Archive"
 ::mc::Background		"Background"
 ::mc::Black				"Black"
 ::mc::Bottom			"Bottom"
@@ -189,6 +190,20 @@
 ::load::mc::PieceSet					"piece set"
 ::load::mc::Theme						"theme"
 ::load::mc::Icons						"icons"
+
+### archive ############################################################
+::archive::mc::CorruptedArchive			"Archive '%s' is corrupted."
+::archive::mc::NotAnArchive				"'%s' is not an archive."
+::archive::mc::CorruptedHeader			"Archive header in '%s' is corrupted."
+::archive::mc::CannotCreateFile			"Failed to create file '%s'."
+::archive::mc::FailedToExtractFile		"Failed to extract file '%s'."
+::archive::mc::UnknownCompression		"Unknown compression method '%s'."
+::archive::mc::ChecksumError				"Checksum error while extracting '%s'."
+::archive::mc::ChecksumErrorDetail		"The extracted file '%s' will be corrupted."
+::archive::mc::FileNotReadable			"File '%s' is not readable."
+::archive::mc::UsingRawInstead			"Using compression method 'raw' instead."
+::archive::mc::CannotOpenArchive			"Cannot open archive '%s'."
+::archive::mc::CouldNotCreateArchive	"Could not create archive '%s'."
 
 ### application ########################################################
 ::application::mc::Database				"&Database"
@@ -1647,6 +1662,7 @@
 ::fsbox::mc::ContainsTwoDots				"Contains two consecutive dots."
 ::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s."
 ::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name."
+::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters."
 ::fsbox::mc::InvalidFileExtension		"Invalid file extension in '%s'."
 ::fsbox::mc::MissingFileExtension		"Missing file extension in '%s'."
 ::fsbox::mc::FileAlreadyExists			"File \"%s\" already exists.\n\nDo you want to overwrite it?"

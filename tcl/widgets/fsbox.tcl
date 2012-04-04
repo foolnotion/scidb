@@ -100,6 +100,7 @@ set FilenameNotAllowed			"Filename '%s' is not allowed."
 set ContainsTwoDots				"Contains two consecutive dots."
 set ContainsReservedChars		"Contains reserved characters: %s."
 set IsReservedName				"On some operating systems this is an reserved name."
+set FilenameTooLong				"A file name should have less than 256 characters."
 set InvalidFileExtension		"Invalid file extension in '%s'."
 set MissingFileExtension		"Missing file extension in '%s'."
 set FileAlreadyExists			"File \"%s\" already exists.\n\nDo you want to overwrite it?"
@@ -118,6 +119,9 @@ variable HaveTooltips 1
 if {[catch {package require tooltip}]} { set HaveTooltips 0 }
 
 set duplicateFileSizeLimit 5000000
+
+# possibly we should avoid "{}[]+=,;%", too especially ';' should be avoided!?
+set reservedChars {\" \\ / : * < > ? |}
 
 array set Options {
 	show:hidden	0
@@ -562,23 +566,30 @@ proc lastFolder {w} {
 }
 
 
-proc validatePath {path} {
-	if {[string length $path] == 0} { return 1 }
-	foreach c [list $path] {
-		if {[string is control $c]} { return 0 }
-	}
-	if {[string match {*[\"\\\/:\*<>\?%\|]*} $path]} {
-		# possibly we should avoid "[]+=,;", too
-		# especially ';' should be avoided!?
-		return 0
-	}
-	return 1
-}
-
-
 proc fileSeperator {} {
 	if {$::tcl_platform(platform) == "windows"} { return "\\" }
 	return "/"
+}
+
+
+proc validatePath {path} {
+	variable reservedChars
+
+	if {[string length $path] == 0} { return 1 }
+	foreach c [list $path] {
+		# windows forbids the use of characters in range 1-31
+		if {[string is control $c]} { return 0 }
+	}
+	# hyphen must not be the first character
+	if {[string index $path 0] eq "-"} { return 0 }
+	# windows forbids the use of some characters
+	set pattern *\[[join $reservedChars ""]\]*
+	if {[string match $pattern $path]} { return 0 }
+	# in windows the space and the period are not allowed as the final character of a filename
+	if {[string is space [string index $path end]] || [string index $path end] eq "."} {
+		return 0
+	}
+	return 1
 }
 
 
@@ -590,6 +601,7 @@ proc verifyPath {path} {
 	if {[string first ".." $path] >= 0} {
 		return twoDots
 	}
+	if {[string length $path] > 255} { return tooLong }
 	# be sure filename is portable (since we support unix, windows and mac)
 	if {![validatePath $path]} {
 		return reservedChar
@@ -599,7 +611,7 @@ proc verifyPath {path} {
 			LPT0 LPT1 LPT2 LPT3 LPT4 LPT5 LPT6 LPT7 LPT8 LPT9
 			\$MFT \$MFTMIRR \$LOGFILE \$VOLUME \$ATTRDEF \$BITMAP
 			\$BOOT \$BADCLUS \$SECURE \$UPCASE \$EXTEND \$QUOTA
-			\$OBJID \$REPARSE}} {
+			\$OBJID \$REPARSE A.OUT CORE .PROFILE .HISTORY .CSHRC}} {
 		return reservedName
 	}
 	return {}
@@ -1239,52 +1251,47 @@ proc SearchLastVisited {w dir} {
 proc CheckPath {w path} {
 	variable ${w}::Vars
 
+	set message ""
+	set detail ""
+
 	switch [verifyPath $path] {
 		oneDot {
-			messageBox \
-				-type ok \
-				-icon error \
-				-parent $Vars(widget:main) \
-				-message [format [Tr FilenameNotAllowed] $path] \
-				;
-			return 0
+			set message [format [Tr FilenameNotAllowed] $path]
 		}
 
 		twoDots {
-			messageBox \
-				-type ok \
-				-icon error \
-				-parent $Vars(widget:main) \
-				-message [format [Tr FilenameNotAllowed] $path] \
-				-detail [Tr ContainsTwoDots] \
-				;
-			return 0
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr ContainsTwoDots]
+		}
+
+		tooLong {
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr FilenameTooLong]
 		}
 
 		reservedChar {
-			messageBox \
-				-type ok \
-				-icon error \
-				-parent $Vars(widget:main) \
-				-message [format [Tr FilenameNotAllowed] $path] \
-				-detail [format [Tr ContainsReservedChars] "\" \\ \/ \: \* \< \> \? \% \|"] \
-				;
-			return 0
+			variable reservedChars
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [format [Tr ContainsReservedChars] [join $reservedChars " "]]
 		}
 
 		reservedName {
-			messageBox \
-				-type ok \
-				-icon error \
-				-parent $Vars(widget:main) \
-				-message [format [Tr FilenameNotAllowed] $path] \
-				-detail [Tr IsReservedName] \
-				;
-			return 0
+			set message [format [Tr FilenameNotAllowed] $path]
+			set detail [Tr IsReservedName]
 		}
 	}
 
-	return 1
+	if {[string length $message] == 0} { return 1 }
+
+	messageBox \
+		-type ok \
+		-icon error \
+		-parent $Vars(widget:main) \
+		-message $message \
+		-detail $detail \
+		;
+
+	return 0
 }
 
 

@@ -58,6 +58,7 @@ if {[tk windowingsystem] eq "aqua" && "AppKit" ni [winfo server .]} {
   error {TkAqua Cocoa required}
 }
 
+namespace eval tkdnd {
 namespace eval macdnd {
   variable _dropped_data {}
   variable _prev_drop_target {}
@@ -186,3 +187,7 @@ proc macdnd::_supported_type { type } {
 proc xdnd::_supported_type { type } {
   return [::tkdnd::macdnd::_supported_type $type]
 }; # xdnd::_supported_type
+
+}; # namespace tkdnd
+
+# vi:set ts=2 sw=2 et:

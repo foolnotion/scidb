@@ -34,6 +34,7 @@
 
 ::mc::Alignment		"Ausrichtung"
 ::mc::Apply				"Anwenden"
+::mc::Archive			"Archiv"
 ::mc::Background		"Hintergrund"
 ::mc::Black				"Schwarz"
 ::mc::Bottom			"Unten"
@@ -188,6 +189,20 @@
 ::load::mc::PieceSet					"Figurensatz"
 ::load::mc::Theme						"Thema"
 ::load::mc::Icons						"Icons"
+
+### archive ############################################################
+::archive::mc::CorruptedArchive			"Das Archiv '%s' ist beschädigt."
+::archive::mc::NotAnArchive				"'%s' ist keine Archivdatei."
+::archive::mc::CorruptedHeader			"Der Archivkopf der Date '%s' ist beschädigt."
+::archive::mc::CannotCreateFile			"Die Datei '%s' konnte nicht angelegt werden."
+::archive::mc::FailedToExtractFile		"Die Datei '%s' konnte nicht extrahiert werden."
+::archive::mc::UnknownCompression		"Die Kompressionsmethode '%s' ist nicht bekannt."
+::archive::mc::ChecksumError				"Beim Extrahieren der Datei '%s' trat ein Prüfsummenfehler auf."
+::archive::mc::ChecksumErrorDetail		"Die extrahierte Datei '%s' ist beschädigt."
+::archive::mc::FileNotReadable			"Die Datei '%s' ist nicht lesbar."
+::archive::mc::UsingRawInstead			"Die Kompressionsmethode 'raw' wird stattdessen verwendet."
+::archive::mc::CannotOpenArchive			"Das Archiv '%s' konnte nicht geöffnet werden."
+::archive::mc::CouldNotCreateArchive	"Das Archiv '%s' konnte nicht angelegt werden."
 
 ### application ########################################################
 ::application::mc::Database				"Datenba&nk"
@@ -1646,6 +1661,7 @@
 ::fsbox::mc::ContainsTwoDots				"Er enthält zwei aufeinanderfolgende Punkte."
 ::fsbox::mc::ContainsReservedChars		"Er enthält ein reserviertes Zeichen: %s."
 ::fsbox::mc::IsReservedName				"Unter einigen Betriebssystemen ist dies ein reservierter Name."
+::fsbox::mc::FilenameTooLong				"Ein Dateiname sollte weniger als 256 Zeichen haben."
 ::fsbox::mc::InvalidFileExtension		"Ungültige Dateiendung in '%s'."
 ::fsbox::mc::MissingFileExtension		"'%s' hat keine Dateiendung."
 ::fsbox::mc::FileAlreadyExists			"Die Datei '%s' ist bereits vorhanden.\nWollen sie diese überschreiben?"

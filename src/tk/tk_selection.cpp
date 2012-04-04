@@ -19,6 +19,7 @@
 #include "tk_init.h"
 
 #include "m_assert.h"
+#include "m_string.h"
 
 #ifdef override
 # undef override
@@ -55,17 +56,12 @@ invokeTkSelection(Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 static int
 selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long)
 {
-	int	done = TCL_ERROR;
+	int	done = 0;
 	bool	notAvailable = false;
 
 	if (OpenClipboard(0))
 	{
-		static Atom cfHDrop = 0;
-
-		if (cfHDrop == 0)
-			cfHDrop = Tk_InternAtom(tkwin, "CF_HDROP");
-
-		if (target == cfHDrop)
+		if (target == Tk_InternAtom(tkwin, "CF_HDROP"))
 		{
 			if (IsClipboardFormatAvailable(CF_HDROP))
 			{
@@ -73,18 +69,34 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 				if (handle)
 				{
-					void* data = GlobalLock(handle);
+					HDROP hdrop = static_cast<HDROP>(GlobalLock(handle));
+					int count = DragQueryFileW(hdrop, static_cast<unsigned>(-1), 0, 0);
+					mstl::string result;
 
-					Tcl_DString ds;
-					Tcl_DStringInit(&ds);
-					Tcl_UniCharToUtfDString(static_cast<Tcl_UniChar*>(data),
-													Tcl_UniCharLen(static_cast<Tcl_UniChar*>(data)),
-													&ds);
-					Tcl_DStringResult(ti, &ds);
-					Tcl_DStringFree(&ds);
+					result.reserve(count*50);
 
+					for (int i = 0; i < count; ++i)
+					{
+						Tcl_Unicode buffer[1024];
+
+						if (int len = DragQueryFileW(hdrop, i, buffer, sizeof(buffer)/sizeof(buffer[0])))
+						{
+							Tcl_UniChar const* s = buffer;
+							Tcl_UniChar const* e = s + len;
+
+							for ( ; s < e; ++s)
+							{
+								char buf[6];
+								result.append(buf, Tcl_UniCharToUtf(*s, buf));
+							}
+
+							result.append(buf, '\n');
+						}
+					}
+
+					Tcl_SetObjResult(ti, Tcl_NewStringObj(result, result.size()));
 					GlobalUnlock(handle);
-					done = TCL_OK;
+					done = 1;
 				}
 				else
 				{
@@ -203,18 +215,13 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 
 	if (result == Success && propInfo != 0 && type != None && bytesAfter == 0 && format == 8)
 	{
-		static Atom xaPlainText			= 0;
-		static Atom xaUriList			= 0;
-		static Atom xaPlainTextUtf8	= 0;
+		Atom xaPlainText		= 0;
+		Atom xaPlainTextUtf8	= 0;
+		Atom xaUriList			= 0;
 
-		if (xaPlainText == 0)
-		{
-			xaPlainText = Tk_InternAtom(tkwin, "text/plain");
-			xaUriList = Tk_InternAtom(tkwin, "text/uri-list");
-			xaPlainTextUtf8 = Tk_InternAtom(tkwin, "text/plain;charset=UTF-8");
-		}
-
-		if (type == xaPlainText || type == xaPlainTextUtf8 || type == xaUriList)
+		if (	type == (xaPlainText			= Tk_InternAtom(tkwin, "text/plain"))
+			|| type == (xaPlainTextUtf8	= Tk_InternAtom(tkwin, "text/plain;charset=UTF-8"))
+			|| type == (xaUriList			= Tk_InternAtom(tkwin, "text/uri-list")))
 		{
 			while (numItems > 0 && propInfo[numItems - 1] == '\0')
 				--numItems;

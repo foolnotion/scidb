@@ -17,6 +17,22 @@
 # ======================================================================
 
 namespace eval archive {
+namespace eval mc {
+
+set CorruptedArchive			"Archive '%s' is corrupted."
+set NotAnArchive				"'%s' is not an archive."
+set CorruptedHeader			"Archive header in '%s' is corrupted."
+set CannotCreateFile			"Failed to create file '%s'."
+set FailedToExtractFile		"Failed to extract file '%s'."
+set UnknownCompression		"Unknown compression method '%s'."
+set ChecksumError				"Checksum error while extracting '%s'."
+set ChecksumErrorDetail		"The extracted file '%s' will be corrupted."
+set FileNotReadable			"File '%s' is not readable."
+set UsingRawInstead			"Using compression method 'raw' instead."
+set CannotOpenArchive		"Cannot open archive '%s'."
+set CouldNotCreateArchive	"Could not create archive '%s'."
+
+}
 
 namespace import ::tcl::mathfunc::min
 
@@ -25,15 +41,25 @@ namespace import ::tcl::mathfunc::min
 proc setModTime {file time} {}
 proc tick {progress n} {}
 proc setMaxTick {progress n} {}
+proc logError {msg detail} {}
 
 
 proc inspect {arch {destDir ""}} {
-	set fd [open $arch "r"]
+	if {[catch {set fd [open $arch "r"]} err]} {
+		logError [format $mc::CannotOpenArchive $arch] ""
+		return {}
+	}
 	fconfigure $fd -translation lf
 	set fileSize [file size $arch]
 	set entries {}
 	set header {}
 	gets $fd line
+
+	if {$line ne "iveArch"} {
+		logError [format $mc::NotAnArchive $arch] ""
+		close $fd
+		return {}
+	}
 
 	if {[string length $destDir] == 0} {
 		set destDir [file dirname $arch]
@@ -46,10 +72,19 @@ proc inspect {arch {destDir ""}} {
 		gets $fd line
 	}
 
+	foreach attr {Format Type} {
+		if {[lsearch -index 0 $header $attr] == -1} {
+			logError [format $mc::CorruptedHeader $arch] ""
+			close $fd
+			return {}
+		}
+	}
+
 	while {[tell $fd] < $fileSize} {
 		if {$line ne "<-- H E A D -->"} {
-			# log error
-			return
+			logError [format $mc::CorruptedArchive $arch] ""
+			close $fd
+			return {}
 		}
 		set attrs {}
 		unset -nocomplain FileName FileSize Size Compression Checksum Modified
@@ -62,11 +97,15 @@ proc inspect {arch {destDir ""}} {
 			if {$attr eq "FileName"} {
 				set value [file join $destDir [file tail $value]]
 			}
-			if {![info exists FileName]} {
-				# error: missing mandatory attribute FileName
-			}
 			lappend attrs [list $attr $value]
 			gets $fd line
+		}
+		foreach attr {FileName Size} {
+			if {[lsearch -index 0 $attrs $attr] == -1} {
+				logError [format $mc::CorruptedHeader $arch] ""
+				close $fd
+				return {}
+			}
 		}
 		lappend entries $attrs
 		seek $fd $Size current
@@ -86,28 +125,40 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 	set Type single
 	set fileAttrs {}
 	array set filenames {}
+	set fileCount 0
 
 	foreach f $sources {
 		if {![string match http:* $f]} {
-			file stat $f info
-			set FileSize $info(size)
-			set Modified $info(mtime)
-			set Size $FileSize
+			if {![file readable $f]} {
+				logError [format $mc::FileNotReadable $f] ""
+			} else {
+				file stat $f info
+				set FileSize $info(size)
+				set Modified $info(mtime)
+				set Size $FileSize
 
-			if {[llength $procCount] && $Count >= 0} {
-				set count [$procCount $f]
-				if {[llength $count] > 0} {
-					incr Count $count
-				} else {
-					set Count -1
+				if {[llength $procCount] && $Count >= 0} {
+					set count [$procCount $f]
+					if {[llength $count] > 0} {
+						incr Count $count
+					} else {
+						set Count -1
+					}
 				}
-			}
 
-			incr TotalSize $FileSize
-			set ext [string range [file extension $f] 1 end]
-			set Compression [$procCompression $ext]
-			if {[llength $mapExtension]} { set ext [$mapExtension $ext] }
-			set formats($ext) 1
+				incr TotalSize $FileSize
+				set ext [string range [file extension $f] 1 end]
+				set Compression [$procCompression $ext]
+				if {$Compression ne "raw" && $Compression ne "zlib"} {
+					logError \
+						[format $mc::UnknownCompression $Compression] \
+						[format $mc::UsingRawInstead] \
+						;
+					set Compression raw
+				}
+				if {[llength $mapExtension]} { set ext [$mapExtension $ext] }
+				set formats($ext) 1
+			}
 		}
 
 		set rootname [file rootname  $f]
@@ -124,7 +175,10 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 		lappend fileAttrs $attrs
 	}
 
-	set fd [open $arch wb]
+	if {[catch {set fd [open $arch wb]} err]} {
+		logError [format $mc::CannotCreateFile $arch] ""
+		return -1
+	}
 	fconfigure $fd -translation lf
 	setMaxTick $progress [expr {$TotalSize + 1}]
 
@@ -155,10 +209,14 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 
 		puts $fd "<-- D A T A -->"
 
-		if {[string match http:* $FileName]} {
-			# TODO
-		} else {
-			set f [open $FileName rb]
+		if {![string match http:* $FileName]} {
+			if {[catch {set f [open $FileName rb]} err]} {
+				logError [format $mc::FileNotReadable $f] ""
+				logError [format $mc::CouldNotCreateArchive $arch] ""
+				close $fd
+				file delete $arch
+				return -1
+			}
 			fconfigure $f -buffering none
 			switch $Compression {
 				zlib {
@@ -176,9 +234,6 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 						tick $progress [string length $data]
 					}
 				}
-				default {
-					# error: unknown compression method
-				}
 			}
 			close $f
 			seek $fd $sizeOffs start
@@ -186,20 +241,26 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 			seek $fd $checksumOffs start
 			puts -nonewline $fd $crc
 			seek $fd 0 end
+			incr fileCount
 		}
 	}
 
 	close $fd
+	return $fileCount
 }
 
 
 proc packStreams {arch sources formats compression modified count procWrite progress} {
 	set TotalSize 0
-	set Count 0
+	set Count $count
 	set Type single
 	set fileAttrs {}
+	set fileCount 0
 
-	set fd [open $arch wb]
+	if {[catch {set fd [open $arch wb]} err]} {
+		logError [format $mc::CannotCreateFile $arch] ""
+		return -1
+	}
 	fconfigure $fd -translation lf
 
 	puts $fd "iveArch"
@@ -245,16 +306,27 @@ proc packStreams {arch sources formats compression modified count procWrite prog
 	seek $fd $offs(TotalSize) start
 	puts -nonewline $fd $TotalSize
 	close $fd
+
+	return $fileCount
 }
 
 
 proc unpack {arch progress {destDir ""}} {
-	set fd [open $arch "r"]
+	if {[catch {set fd [open $arch "r"]} err]} {
+		logError [format $mc::CannotCreateFile $arch] ""
+		return 0
+	}
 	fconfigure $fd -translation lf
 	set fileSize [file size $arch]
 	set entries {}
 	set header {}
 	gets $fd line
+
+	if {$line ne "iveArch"} {
+		logError [format $mc::NotAnArchive $arch] ""
+		close $fd
+		return 0
+	}
 
 	gets $fd line
 	while {$line ne "<-- H E A D -->"} {
@@ -269,9 +341,12 @@ proc unpack {arch progress {destDir ""}} {
 		set destDir [file dirname $arch]
 	}
 
+	set rc 1
+
 	while {[tell $fd] < $fileSize} {
 		if {$line ne "<-- H E A D -->"} {
-			# log error
+			logError [format $mc::CorruptedArchive $arch] ""
+			close $fd
 			return 0
 		}
 		set attrs {}
@@ -283,15 +358,24 @@ proc unpack {arch progress {destDir ""}} {
 			set $attr $value
 			gets $fd line
 		}
+		foreach attr {FileName Size} {
+			if {![info exists $attr]} {
+				logError [format $mc::CorruptedHeader $arch] ""
+				close $fd
+				return 0
+			}
+		}
 		lappend entries $attrs
 		set destFilename [file join $destDir [file tail $FileName]]
 		if {[string match http:* $FileName]} {
 		} elseif {[catch {set f [open $destFilename wb]} err]} {
-			# write "error opening file" to log
+			logError [format $mc::CannotCreateFile $destFilename] ""
+			set rc 0
 			seek $fd $Size current 
 			tick $progress $Size
 		} else {
 			fconfigure $f -buffering none
+			set ok 1
 			switch $Compression {
 				zlib {
 					lassign [::zlib::inflate $fd $f $Size [namespace current]::tick $progress] size crc
@@ -313,17 +397,32 @@ proc unpack {arch progress {destDir ""}} {
 					}
 				}
 				default {
-					# error: unknown compression method
+					logError \
+						[format $mc::FailedToExtractFile $FileName] \
+						[format $mc::UnknownCompression $Compression] \
+						;
+					set rc 0
+					set ok 0
+					seek $fd $Size current 
+					tick $progress $Size
 				}
 			}
 			close $f
-			if {[info exists Modified]} {
-				setModTime $destFilename $Modified
-			}
-			if {[info exists Checksum]} {
-				if {$crc != $Checksum} {
-					# write "checksum error" to log
+			if {$ok} {
+				if {[info exists Modified]} {
+					setModTime $destFilename $Modified
 				}
+				if {[info exists Checksum]} {
+					if {$crc != $Checksum} {
+						logError \
+							[format $mc::ChecksumError $FileName] \
+							[format $mc::ChecksumErrorDetail $destFilename] \
+							;
+						set rc 0
+					}
+				}
+			} else {
+				file delete $destFilename
 			}
 		}
 		gets $fd line
@@ -331,60 +430,9 @@ proc unpack {arch progress {destDir ""}} {
 	}
 
 	close $fd
-	return 1
+	return $rc
 }
 
 } ;# namespace archive
-
-if {0} {
-	proc getCount {file} {
-		switch [file extension $file] {
-			.sci - .si3 - .si4 - .cbh - .pgn - .gz {
-				return [::scidb::misc::size $file]
-			}
-		}
-		return 0
-	}
-
-	wm withdraw .
-	source ../dialogs/progressbar.tcl
-	source ../progress.tcl
-	::dialog::progressbar::open .p -variable N
-
-	if {1} {
-		::archive::packFiles \
-			arch.scv \
-			{ \
-				{../Bases/CB Light Database.sci}
-				{../Bases/CB Light Database.scg}
-				{../Bases/CB Light Database.scn}
-			} \
-			.p \
-			::archive::getCompressionMethod \
-			getCount \
-			::scidb::misc::mapExtension \
-			;
-	} elseif {1} {
-		wm withdraw .p
-		lassign [::archive::inspect arch.scv] header files
-		puts "================================="
-		foreach pair $header {
-			lassign $pair attr value
-			puts "$attr: $value"
-		}
-		puts "================================="
-		foreach entry $files {
-			foreach pair $entry {
-				lassign $pair attr value
-				puts "$attr: $value"
-			}
-			puts "---------------------------------"
-		}
-	} elseif {0} {
-		::archive::unpack arch.scv .p
-	}
-
-	exit 0
-}
 
 # vi:set ts=3 sw=3:

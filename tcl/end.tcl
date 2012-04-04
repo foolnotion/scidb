@@ -142,6 +142,11 @@ options::hookWriter [namespace current]::WriteOptions
 
 proc archive::setModTime {file time} { return ::scidb::util::setModTime $file $time }
 
+proc archive::logError {msg detail} {
+	::log::error $::mc::Archive $msg
+	if {[string length $detail]} { ::log::info $::mc::Archive $detail }
+}
+
 proc archive::tick {progress n} {
 	::dialog::progressbar::tick $progress $n
 	update

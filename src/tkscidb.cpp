@@ -82,6 +82,10 @@ init(Tcl_Interp* ti)
 #endif
 
 		tcl::app::setup(new app::Application);
+
+#ifdef WIN32
+		return Tcl_FSEvalFileEx(tcl::interp(), "scidb.gui", 0);
+#endif
 	}
 	catch (mstl::exception const& exc)
 	{

@@ -19,6 +19,14 @@
 #import <tkMacOSXInt.h>
 #import <Cocoa/Cocoa.h>
 
+#ifndef PACKAGE_NAME
+# define PACKAGE_NAME "tkDND"
+#endif
+
+#ifndef PACKAGE_VERSION
+# define PACKAGE_VERSION "2.3"
+#endif
+
 #define TkDND_Tag    1234
 
 #define TkDND_TkWin(x)                                                  \
@@ -772,3 +780,5 @@ int Tkdnd_Init (Tcl_Interp *interp) {
 int Tkdnd_SafeInit(Tcl_Interp *ip) {
   return Tkdnd_Init(ip);
 }; /* Tkdnd_SafeInit */
+
+/* vi:set ts=2 sw=2 et: */
