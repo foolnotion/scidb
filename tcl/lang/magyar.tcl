@@ -174,7 +174,9 @@
 ::menu::mc::CreateArchive				"Create an archive" ;# NEW
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt	"A %s fájl sérült:"
+::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
+::load::mc::FileIsCorrupt			"A %s fájl sérült:"
+::load::mc::ProgramAborting		"Program is aborting." ;# NEW
 
 ::load::mc::Loading					"%s betöltése"
 ::load::mc::ReadingOptionsFile	"beállítások beolvasása"

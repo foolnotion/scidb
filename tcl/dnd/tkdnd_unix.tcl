@@ -105,7 +105,7 @@ proc xdnd::_HandleXdndPosition { drop_target rootX rootY } {
   variable _drag_source
   variable _drop_target
   # debug "xdnd::_HandleXdndPosition: drop_target=$drop_target,\
-               _drop_target=$_drop_target, rootX=$rootX, rootY=$rootY"
+  #             _drop_target=$_drop_target, rootX=$rootX, rootY=$rootY"
 
   if {![info exists _drag_source] && ![string length $_drag_source]} {
     # debug "xdnd::_HandleXdndPosition: no or empty _drag_source:\

@@ -172,7 +172,9 @@
 ::menu::mc::CreateArchive				"Ein Archiv anlegen"
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt			"Datei %s ist beschädigt:"
+::load::mc::SevereError				"Schwerwiegender Fehler beim Laden der ECO-Datei"
+::load::mc::FileIsCorrupt			"Die Datei %s ist beschädigt:"
+::load::mc::ProgramAborting		"Das Programmausführung wird abgebrochen."
 
 ::load::mc::Loading					"Lade %s"
 ::load::mc::ReadingOptionsFile	"Lese Optionendatei"

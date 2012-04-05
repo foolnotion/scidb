@@ -27,7 +27,9 @@
 namespace eval load {
 namespace eval mc {
 
+set SevereError			"Severe error during load of ECO file"
 set FileIsCorrupt 		"File %s is corrupt:"
+set ProgramAborting		"Program is aborting."
 
 set Loading					"Loading %s"
 set ReadingOptionsFile	"Reading options file"
@@ -96,9 +98,8 @@ proc load {msg type path} {
 	if {[catch {::scidb::app::load $type $path} err]} {
 		set msg [format $mc::FileIsCorrupt $path]
 		if {$type eq "eco"} {
-			set msg "Severe error during load of ECO file:\n$msg\n\n"
-			append msg "Program is aborting."
-			dialog::error -message $msg
+			append str $mc::SevereError \n $msg \n\n $mc::ProgramAborting
+			dialog::error -message $str
 			exit 1
 		} else {
 			lappend Log error $msg error $err

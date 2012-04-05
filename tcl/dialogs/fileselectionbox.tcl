@@ -496,6 +496,7 @@ proc Inspect {parent {filename ""}} {
 		file stat $filename stat
 		set mtime [::locale::formatTime [clock format $stat(mtime) -format {%Y.%m.%d %H:%M:%S}]]
 		set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
+		# TODO: should we sum the sizes of all related files?
 		set size [::locale::formatFileSize $stat(size)]
 		set ext [file extension $filename]
 		set fileType [set mc::$FileType($ext)]

@@ -576,13 +576,13 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		}
 	}
 
-	set Dim(boardsize)		[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
-	set Dim(bordersize)		[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
-	set Dim(border:x1)		[expr {($canvWidth - $Dim(bordersize))/2}]
-	set Dim(border:y1)		[expr {($canvHeight - $Dim(bordersize))/2}]
-	set Dim(border:x2)		[expr {$Dim(border:x1) + $Dim(bordersize)}]
-	set Dim(border:y2)		[expr {$Dim(border:y1) + $Dim(bordersize)}]
-	set Dim(mid:y)				[expr {$Dim(border:y1) + $Dim(bordersize)/2}]
+	set Dim(boardsize)	[expr {8*$Dim(squaresize) + 2*$Dim(edgethickness)}]
+	set Dim(bordersize)	[expr {$Dim(boardsize) + 2*$Dim(borderthickness)}]
+	set Dim(border:x1)	[expr {($canvWidth - $Dim(bordersize))/2}]
+	set Dim(border:y1)	[expr {($canvHeight - $Dim(bordersize))/2}]
+	set Dim(border:x2)	[expr {$Dim(border:x1) + $Dim(bordersize)}]
+	set Dim(border:y2)	[expr {$Dim(border:y1) + $Dim(bordersize)}]
+	set Dim(mid:y)			[expr {$Dim(border:y1) + $Dim(bordersize)/2}]
 
 	if {$bordersize != -1 && $Dim(bordersize) != $bordersize} {
 		$Vars(widget:frame) delete stm

@@ -2131,7 +2131,7 @@ Codec::getAttributes(mstl::string const& filename,
 
 	strm.seekp(8, mstl::ios_base::beg);
 
-	if (!strm.read(header, description ? sizeof(header) : 8))
+	if (!strm.read(header, description ? sizeof(header) : 10))
 		return false;
 
 	ByteStream bstrm(header, sizeof(header));

@@ -174,7 +174,9 @@
 ::menu::mc::CreateArchive				"Create an archive" ;# NEW
 
 ### load ###############################################################
-::load::mc::FileIsCorrupt	"Il file %s è corrotto:"
+::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
+::load::mc::FileIsCorrupt			"Il file %s è corrotto:"
+::load::mc::ProgramAborting		"Program is aborting." ;# NEW
 
 ::load::mc::Loading					"Carico %s"
 ::load::mc::ReadingOptionsFile	"Permessi di lettura del file" ;# "reading options file"

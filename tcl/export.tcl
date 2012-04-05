@@ -2946,7 +2946,7 @@ proc Select {nb index} {
 			set Info(build-style) 1
 			set var $mc::PdfFiles
 			set ext .pdf
-			::beta::notYetImplemented $nb pdf
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplemented $nb pdf }
 		}
 
 		html {
@@ -2964,7 +2964,7 @@ proc Select {nb index} {
 			set Info(build-style) 1
 			set var $mc::HtmlFiles
 			if {$::tcl_platform(platform) eq "windows"} { set ext .htm } else { set ext .html }
-			::beta::notYetImplemented $nb html
+if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplemented $nb html }
 		}
 
 		tex {

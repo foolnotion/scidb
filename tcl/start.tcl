@@ -38,10 +38,17 @@ variable scratchbaseName	[::scidb::db::get scratchbase name]
 
 namespace eval dir {
 
-if {$tcl_platform(platform) eq "windows"} {
+if {[info exists ::env(SCIDB_SHAREDIR)]} {
+	set share $::env(SCIDB_SHAREDIR)
+} elseif {$tcl_platform(platform) eq "windows"} {
 	set share $exec
 } else {
-	# already defined in tkscidb
+	set share "%SHAREDIR%"
+	if {$share eq "%SHAREDIR%"} {
+		set share [file tail [info nameofexecutable]]
+		set share [string range $share [string first scidb $share] end]
+		set share "/usr/local/share/$share"
+	}
 }
 
 set home		[file nativename "~"]

@@ -172,7 +172,9 @@
 ::menu::mc::CreateArchive				"Create an archive" ;# NEW
 
 ### load ###############################################################
+::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
 ::load::mc::FileIsCorrupt			"Filen %s är skadad:"
+::load::mc::ProgramAborting		"Program is aborting." ;# NEW
 
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::ReadingOptionsFile	"Läser alternativ"

@@ -936,9 +936,6 @@ tcl::init(Tcl_Interp* ti)
 	Tcl_IncrRefCount(::m_blocked = Tcl_NewStringObj("::remote::blocked", -1));
 	Tcl_IncrRefCount(::m_postponed = Tcl_NewStringObj("::remote::postponed", -1));
 
-	// setup share directory
-	Tcl_SetVar2(ti, "::scidb::dir::share", 0, SHAREDIR, TCL_GLOBAL_ONLY);
-
 	app::init(ti);
 	db::init(ti);
 	view::init(ti);

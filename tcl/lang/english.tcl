@@ -173,7 +173,9 @@
 ::menu::mc::CreateArchive				"Create an archive"
 
 ### load ###############################################################
+::load::mc::SevereError				"Severe error during load of ECO file"
 ::load::mc::FileIsCorrupt			"File %s is corrupt:"
+::load::mc::ProgramAborting		"Program is aborting."
 
 ::load::mc::Loading					"Loading %s"
 ::load::mc::ReadingOptionsFile	"Reading options file"

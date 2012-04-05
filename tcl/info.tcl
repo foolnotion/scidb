@@ -250,7 +250,8 @@ proc DisplayContributions {t} {
 	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
 #	$t insert end [Enc "Benigno Hernández Bacallado ([::encoding::languageName es]), "]
 	$t insert end [Enc "Zoltán Tibenszky ([::encoding::languageName hu]), "]
-	$t insert end [Enc "Gregor Cramer ([::encoding::languageName en], [::encoding::languageName de])"]
+	$t insert end [Enc "Lars Ekman ([::encoding::languageName sv]), "]
+	$t insert end [Enc "Gregor Cramer ([::encoding::languageName de], [::encoding::languageName en])"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
@@ -260,7 +261,7 @@ proc DisplayContributions {t} {
 #	$t insert end [Enc "Fernando González, "]
 #	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
-	$t insert end [Enc "Zoltán Tibenszky, "]
+	$t insert end [Enc "Zoltán Tibenszky"]
 #	$t insert end [Enc "Natalia Parés Vives"]
 
 	$t insert end [Enc "\n\n"]

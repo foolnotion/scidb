@@ -230,10 +230,6 @@ proc open {parent base info view index {fen {}}} {
 	grid columnconfigure $bot 3 -weight 1
 	grid rowconfigure $bot {0 2} -minsize $::theme::padding
 
-	bind $rt.pgn <Double-1>		{ break }
-	bind $rt.pgn <B1-Motion>	{ break }
-	bind $rt.pgn <B2-Motion>	{ break }
-
 	$rt.header tag configure bold -font $Options(font:bold)
 	$rt.header tag configure figurine -font $::font::figurine
 	foreach t {white black event} {
@@ -944,9 +940,9 @@ proc PopupMenu {parent board position {what ""}} {
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 
 	$menu add command \
-		-compound left \
-		-image $::icon::16x16::document \
 		-label " $mc::LoadGame" \
+		-image $::icon::16x16::document \
+		-compound left \
 		-command [namespace code [list LoadGame $dlg $position]] \
 		-state $state \
 		;
@@ -957,33 +953,45 @@ proc PopupMenu {parent board position {what ""}} {
 #		;
 	$menu add separator
 	$menu add command \
-		-label $mc::GotoFirstGame \
+		-label " $mc::GotoFirstGame" \
+		-image $::icon::16x16::first \
+		-compound left \
 		-command [namespace code [list GotoFirstGame $parent $position]] \
 		-state $state \
 		;
 	$menu add command \
-		-label $mc::GotoLastGame \
+		-label " $mc::GotoLastGame" \
+		-image $::icon::16x16::last \
+		-compound left \
 		-command [namespace code [list GotoLastGame $parent $position]] \
 		-state $state \
 		;
 	$menu add separator
 	$menu add command \
-		-label $mc::IncreaseBoardSize \
+		-label " $mc::IncreaseBoardSize" \
+		-image $::icon::16x16::plus \
+		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board +5]] \
 		-accelerator "+" \
 		;
 	$menu add command \
-		-label $mc::DecreaseBoardSize \
+		-label " $mc::DecreaseBoardSize" \
+		-image $::icon::16x16::minus \
+		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board -5]] \
 		-accelerator "\u2212" \
 		;
 	$menu add command \
-		-label $mc::MaximizeBoardSize \
+		-label " $mc::MaximizeBoardSize" \
+		-image $::icon::16x16::maximize \
+		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board max]] \
 		-accelerator "${::menu::mc::Ctrl}-+" \
 		;
 	$menu add command \
 		-label $mc::MinimizeBoardSize \
+		-image $::icon::16x16::minimize \
+		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board min]] \
 		-accelerator "${::menu::mc::Ctrl}-\u2212" \
 		;

@@ -69,6 +69,18 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 				if (handle)
 				{
+					// This stuff should work due to the Windows specification,
+					// but for any reasons it isn't working. Only Microsoft
+					// knows why.
+					//
+					// It seems that DragQueryFileW(hdrop, 0, ...) gives a space
+					// separated list of file names, which are bracketed in curly
+					// spaces iff the file name contains a space; e.g:
+					// "{fst file.pgn} snd-file.pgn".
+					//
+					// Probably it is possible to interpret hdrop as a file list:
+					// Tcl_UniChar const* files = static_cast<Tcl_UniChar const*>(GlobalLock(handle));
+
 					HDROP hdrop = static_cast<HDROP>(GlobalLock(handle));
 					int count = DragQueryFileW(hdrop, static_cast<unsigned>(-1), 0, 0);
 					mstl::string result;
@@ -77,9 +89,12 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 					for (int i = 0; i < count; ++i)
 					{
-						Tcl_Unicode buffer[1024];
+						Tcl_UniChar buffer[1024];
 
-						if (int len = DragQueryFileW(hdrop, i, buffer, sizeof(buffer)/sizeof(buffer[0])))
+						if (int len = DragQueryFileW(	hdrop,
+																i,
+																reinterpret_cast<TCHAR*>(buffer),
+																sizeof(buffer)/sizeof(buffer[0])))
 						{
 							Tcl_UniChar const* s = buffer;
 							Tcl_UniChar const* e = s + len;
@@ -90,7 +105,7 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 								result.append(buf, Tcl_UniCharToUtf(*s, buf));
 							}
 
-							result.append(buf, '\n');
+							result.append('\n');
 						}
 					}
 

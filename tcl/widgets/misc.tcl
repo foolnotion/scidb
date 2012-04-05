@@ -65,10 +65,12 @@ proc textLineScroll {w cmd args} {
 
 
 proc textPreventSelection {w} {
-	bind $w <Double-1>	{ break }
-	bind $w <Triple-1>	{ break }
-	bind $w <B1-Motion>	{ break }
-	bind $w <B2-Motion>	{ break }
+	bind $w <Double-1>			{ break }
+	bind $w <Triple-1>			{ break }
+	bind $w <B1-Motion>			{ break }
+	bind $w <B2-Motion>			{ break }
+	bind $w <ButtonPress-2>		{ break }
+	bind $w <ButtonRelease-2>	{ break }
 }
 
 
