@@ -482,6 +482,7 @@ View::exportGames(Destination& destination, GameMode gameMode, Log& log, util::P
 	unsigned reportAfter = frequency;
 
 	util::ProgressWatcher watcher(progress, m_gameFilter.count());
+	progress.message("game");
 
 	unsigned count		= 0;
 	unsigned numGames	= 0;

@@ -64,7 +64,6 @@ set SettingsEnglish			"&English"
 
 }
 
-
 if {[info exists ::i18n::languages]} {
 	foreach entry $::i18n::languages {
 		set language [lindex $entry 0]
@@ -73,7 +72,6 @@ if {[info exists ::i18n::languages]} {
 		}
 	}
 }
-
 
 set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
 set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
@@ -91,6 +89,7 @@ proc setup {} {
 	bind .application <Control-l> [list ::log::show]
 	bind .application <F11> [namespace code [list viewFullscreen toggle]]
 	bind .application <Control-q> ::application::shutdown
+	bind .application <Configure> [namespace code { CheckFullscreen %W }]
 
 	if {[::process::testOption full-screen]} { viewFullscreen toggle }
 }
@@ -447,6 +446,21 @@ proc viewFullscreen {{toggle {}}} {
 
 proc openHelp {parent {topic {}}} {
 	::help::open $parent $topic
+}
+
+
+proc CheckFullscreen {app} {
+	variable Fullscreen
+
+	if {$app eq ".application"} {
+		lassign [scan [wm geometry $app] "%dx%d"] wd ht
+
+		if {$wd == [winfo screenwidth $app] && $ht == [winfo screenheight $app]} {
+			set Fullscreen 1
+		} else {
+			set Fullscreen 0
+		}
+	}
 }
 
 namespace eval archive {

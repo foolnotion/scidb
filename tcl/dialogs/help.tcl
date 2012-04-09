@@ -35,6 +35,7 @@ set Help						"Help"
 set MatchEntireWord		"Match entire word"
 set MatchCase				"Match case"
 set TitleOnly				"Search in titles only"
+set CurrentPageOnly		"Search in current page only"
 set GoBack					"Go back one page (Alt-Left)"
 set GoForward				"Go forward one page (Alt-Right)"
 set GotoPage				"Go to page '%s'"
@@ -67,6 +68,7 @@ array set Priv {
 	matchCase		no
 	entireWord		no
 	titleOnly		no
+	currentOnly		no
 	latinligatures	no
 }
 
@@ -230,6 +232,7 @@ proc open {parent {file {}} args} {
 
 proc FullPath {file} {
 	if {[string length $file] == 0} { return "" }
+	if {[string length [file extension $file]] == 0} { append file ".html" }
 	if {[string match ${::scidb::dir::help}* $file]} { return $file }
 	return [file normalize [file join $::scidb::dir::help [helpLanguage] $file]]
 }
@@ -724,15 +727,20 @@ proc BuildFrame {w} {
 		-textvariable [namespace parent]::mc::TitleOnly \
 		-variable [namespace parent]::Priv(titleOnly) \
 		;
+	ttk::checkbutton $top.current \
+		-textvariable [namespace parent]::mc::CurrentPageOnly \
+		-variable [namespace parent]::Priv(currentOnly) \
+		;
 
-	grid $top.search -row 0 -column 0 -sticky ew
-	grid $top.entire -row 2 -column 0 -sticky w
-	grid $top.case   -row 4 -column 0 -sticky w
-	grid $top.title  -row 6 -column 0 -sticky w
+	grid $top.search  -row 0 -column 0 -sticky ew
+	grid $top.entire  -row 2 -column 0 -sticky w
+	grid $top.case    -row 4 -column 0 -sticky w
+	grid $top.title   -row 6 -column 0 -sticky w
+	grid $top.current -row 8 -column 0 -sticky w
 	grid columnconfigure $top 0 -weight 1
 	grid rowconfigure $top {1} -minsize $::theme::padding
 
-	foreach v {search entire case title} {
+	foreach v {search entire case title current} {
 		bind $top.$v <Return> [namespace code [list Search $t]]
 	}
 
@@ -821,7 +829,13 @@ proc Search {t} {
 	set activate 1
 	::log::open [set [namespace parent]::mc::Help]
 
-	foreach path [glob -nocomplain -directory $directory *.html] {
+	if {$Priv(currentOnly)} {
+		set files [list $Priv(currentfile)]
+	} else {
+		set files [glob -nocomplain -directory $directory *.html]
+	}
+
+	foreach path $files {
 		set file [file tail $path]
 
 		if {$file ne "Overview.html" && [file readable $path]} {
@@ -1429,7 +1443,7 @@ proc Goto {position} {
 proc Load {file {wantedFile {}} {match {}} {position {}}} {
 	variable Priv
 
-	if {$Priv(currentfile) eq $file} {
+	if {[string length $file] == 0 || $Priv(currentfile) eq $file} {
 		if {[llength $match]} {
 			SeeNode [$Priv(html) root]
 		} else {

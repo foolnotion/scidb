@@ -66,7 +66,7 @@ optional mit vorangestellter Pfadbezeichnung. Ein plattformunabhängiger
 Dateiname darf die Zeichen "&lt;" und "&gt;" nicht enthalten. Es ist dem
 Dekodierungsprogramm überlassen, wie die vorangestellten Pfadbezeichnungen verarbeitet
 werden. <code>&lt;Size&gt;</code> enthält die Größe der Datei innerhalb der
-Archivierungsdatei, die Größe der entpackten Datei wird in <code>FileSize</code>
+Archivierungsdatei, die Größe der entpackten Datei wird in <code>&lt;FileSize&gt;</code>
 angegeben. Diese Angabe der internen Größe ist zugleich der Offset zum nächsten
 Datei-Header. <code>&lt;TotalSize&gt;</code> enthält die Summe aller (externen) Dateigrößen.
 Ist diese Summe unbekannt, dann ist <code>&lt;TotalSize&gt;</code> nicht vorhanden.
@@ -116,7 +116,8 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;
+Format      = 'sci' | 'si3' | 'si4' |
+              'cbh' | 'pgn' | 'gz' ;
 </verbatim>
 
 <p>

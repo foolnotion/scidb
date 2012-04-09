@@ -47,6 +47,11 @@ Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 </p>
 
 <p>
+Datenbanken im Scidb-Format sind immer im UTF-8 Zeichensatz enkodiert und damit
+unter jedem System und jeder Lokation problemlos verwendbar.
+</p>
+
+<p>
 Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
 </p>
 
@@ -76,6 +81,13 @@ der volle Umfang von Scidb genutzt werden.
 </p>
 
 <p>
+Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
+werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
+sind mit großer Wahrscheinlichkeit UTF-8 enkodiert, ältere evt. im Latin-1
+(ISO-8859-1) Zeichensatz. Das Scid-Format gibt keine Auskunft darüber.
+</p>
+
+<p>
 Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 </p>
 
@@ -93,6 +105,10 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
       <td nowrap="nowrap" valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
       <td>Spieler/Ereignis/Ort/Runden-Daten</td>
     </tr>
+    <tr>
+      <td nowrap="nowrap" valign="top"><kbd>.ssc =&nbsp;</kbd></td>
+      <td>Sortierungsdaten</td>
+    </tr>
   </table>
 </div>
 
@@ -103,6 +119,17 @@ Die Firma ChessBase hält das Format dieser Datenbank geheim und es wird deshalb
 nur im Lesemodus unterstützt. Nicht alle Partiedaten können korrekt gelesen
 werden; bei manchen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
 werden konnte.
+</p>
+
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+ChessBase-Datenbanken können nicht als Referenzdatenbank verwendet werden.
+</div>
+
+<p>
+Es kann normalerweise davon ausgegangen werden, daß die Datenbank im CP1252
+Zeichensatz enkodiert ist. Unter Umständen ist aber eine manuelle Auswahl
+des Zeichensatzes beim Öffnen der Datenbank notwendig, damit alle Namen und
+Texte korrekt dargestellt werden.
 </p>
 
 <p>
@@ -134,6 +161,11 @@ Scidb-Format empfohlen.
 </p>
 
 <p>
+Gemäß dem PGN-Standard ist eine PGN-Datei mit dem Zeichensatz Latin-1 (ISO-8859-1)
+enkodiert.
+</p>
+
+<p>
 Eine vollständige Beschreibung dieses Formats findet man unter
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
@@ -142,7 +174,7 @@ Standard: Portable Game Notation Specification and Implementation Guide</a>.
 <h2 id="Database-Archive">Datenbankarchiv (<abbr>.scv</abbr>)</h2>
 
 <p>
-Scidb's Datenbankarchiv stützt sich euf ein unabhängiges Archivformat, und
+Scidb's Datenbankarchiv stützt sich auf ein unabhängiges Archivformat, und
 enthält eine Datenbank (oder sogar mehrere) in archivierter Form. Dies ermöglicht
 eine Versendung der Datenbank(en), die ansonsten aus mehreren Dateien besteht, über
 das Internet. Dieses Datenbankarchiv ist an kein spezielles Datenbankformat

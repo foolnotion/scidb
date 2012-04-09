@@ -124,6 +124,7 @@ proc fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
 proc fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
 proc fsbox::busy {args} { ::widget::busyCursor on }
 proc fsbox::unbusy {args} { ::widget::busyCursor off }
+proc fsbox::configureRadioEntry {args} { ::theme::configureRadioEntry {*}$args }
 
 proc dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state }
 

@@ -28,6 +28,7 @@ Progress::Progress() : m_freq(0) {}
 Progress::~Progress() throw() {}
 
 void Progress::start(unsigned) {}
+void Progress::message(mstl::string const&) {}
 void Progress::tick(unsigned) {}
 void Progress::update(unsigned) {}
 void Progress::finish() {}

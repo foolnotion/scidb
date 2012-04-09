@@ -13,6 +13,8 @@
 # - Positioning of submenus modernized (look for MODERNIZE)
 # - Patch http://sourceforge.net/tracker/index.php?func=detail&aid=2920409&group_id=12997&atid=312997
 #  applied with major modifications (look for MODERNIZE)
+# - Priv(window) replaced with Priv(menu:window) because tkButton is
+#   also using this variable
 # ======================================================================
 
 # menu.tcl --
@@ -136,7 +138,7 @@ bind Menubutton <space> {
 bind Menu <FocusIn> {}
 
 bind Menu <Enter> {
-    set tk::Priv(window) %W
+    set tk::Priv(menu:window) %W
     if {[%W cget -type] eq "tearoff"} {
 	if {"%m" ne "NotifyUngrab"} {
 	    if {[tk windowingsystem] eq "x11"} {
@@ -540,6 +542,7 @@ proc ::tk::MenuUnpost menu {
                 ### FEATURE end ######################################################
                 ### FIX begin ########################################################
                 set Priv(fix:active) ""
+                set Priv(fix:popup) 0
                 ### FIX end ##########################################################
 	    }
 	}
@@ -630,7 +633,7 @@ proc ::tk::MbButtonUp w {
 
 proc ::tk::MenuMotion {menu x y state} {
     variable ::tk::Priv
-    if {$menu eq $Priv(window)} {
+    if {$menu eq $Priv(menu:window)} {
         if {$::tk::MODERNIZE} {
             set activeindex [$menu index active]
         }
@@ -697,7 +700,7 @@ proc ::tk::CountLevel {w} {
 proc ::tk::DeactiveMenu {menu} {
     variable ::tk::Priv
 
-    if {[winfo exists $menu] && $menu eq $Priv(window)} {
+    if {[winfo exists $menu] && $menu eq $Priv(menu:window)} {
         lassign [winfo pointerxy $menu] x y
         if {$Priv(activeindex) != -1 && [$menu index @$x,$y] != $Priv(activeindex)} {
             $menu postcascade none
@@ -709,7 +712,7 @@ proc ::tk::DeactiveMenu {menu} {
 proc ::tk::UnpostCascade {menu} {
     variable ::tk::Priv
 
-    if {[winfo exists $menu] && $menu eq $Priv(window)} {
+    if {[winfo exists $menu] && $menu eq $Priv(menu:window)} {
         $menu postcascade none
         set Priv(activeindex) -1
     }
@@ -811,7 +814,7 @@ proc ::tk::MenuButtonDown menu {
 
 proc ::tk::MenuLeave {menu rootx rooty state} {
     variable ::tk::Priv
-    set Priv(window) {}
+    set Priv(menu:window) {}
     if {[$menu index active] eq "none"} {
 	return
     }
@@ -836,8 +839,7 @@ proc ::tk::MenuLeave {menu rootx rooty state} {
 
 proc ::tk::MenuInvoke {w buttonRelease} {
     variable ::tk::Priv
-
-    if {$buttonRelease && $Priv(window) eq ""} {
+    if {$buttonRelease && $Priv(menu:window) eq ""} {
 	# Mouse was pressed over a menu without a menu button, then
 	# dragged off the menu (possibly with a cascade posted) and
 	# released.  Unpost everything and quit.
@@ -1244,7 +1246,7 @@ proc ::tk::TraverseToMenu {w char} {
     if {$w ne ""} {
 	if {[winfo class $w] eq "Menu"} {
 	    tk_menuSetFocus $w
-	    set Priv(window) $w
+	    set Priv(menu:window) $w
 	    SaveGrabInfo $w
 	    grab -global $w
 	    TraverseWithinMenu $w $char
@@ -1269,7 +1271,7 @@ proc ::tk::FirstMenu w {
     if {$w ne ""} {
 	if {[winfo class $w] eq "Menu"} {
 	    tk_menuSetFocus $w
-	    set Priv(window) $w
+	    set Priv(menu:window) $w
 	    SaveGrabInfo $w
 	    grab -global $w
 	    MenuFirstEntry $w
@@ -1533,6 +1535,7 @@ proc ::tk_popup {menu x y {entry {}}} {
     }
     ### FIX begin ####################################################################
     set Priv(fix:active) ""
+    set Priv(fix:popup) 1
     ### FIX end ######################################################################
     if {$::tk::MODERNIZE} { 
         set Priv(activeindex) -1
@@ -1608,5 +1611,9 @@ proc ::tk::menu::WidgetProc {m command args} {
 
 }
 ### MODERNIZE end ############################################################
+
+### FIX begin ####################################################################
+namespace eval tk { set Priv(menu:window) "" }
+### FIX end ######################################################################
 
 # vi:set et ts=8 sw=4:

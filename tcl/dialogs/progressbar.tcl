@@ -104,9 +104,21 @@ proc open {args} {
 		-length $ticks \
 		{*}$options \
 		;
+	
+	tk::label $w.m -text " "
 
-	pack $w.l -side top -pady 10 -padx 10
-	pack $w.p -side top -pady 15 -padx 10
+	grid $w.l -row 1 -column 1 -sticky we
+	grid $w.p -row 3 -column 1 -sticky we
+	grid $w.m -row 5 -column 1 -sticky w
+
+	grid rowconfigure $w {0} -minsize 10
+	grid rowconfigure $w {2} -minsize 15
+	grid rowconfigure $w {4} -minsize 5
+	grid rowconfigure $w {6} -minsize 10
+
+	grid columnconfigure $w {0 2} -minsize 10
+#	grid remove $w.m
+
 	bind $w.l <Destroy> [namespace code [list Cleanup $w]]
 	wm withdraw $w
 	update idletasks
@@ -166,6 +178,12 @@ proc interrupted? {w} {
 
 proc interrupt {w} {
 	set [namespace current]::Priv(interrupted:$w) 1
+}
+
+
+proc setMessage {w msg} {
+#	if {[string length $msg]} { grid $w.m } else { grid remove $w.m }
+	$w.m configure -text $msg
 }
 
 

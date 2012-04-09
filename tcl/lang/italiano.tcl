@@ -138,7 +138,26 @@
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
 ### progress ###########################################################
-::progress::mc::Progress "Progressi"
+::progress::mc::Progress							"Progressi"
+
+::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament data" ;# NEW
+::progress::mc::Message(preload-player)		"Pre-loading player data" ;# NEW
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator data" ;# NEW
+
+::progress::mc::Message(read-index)				"Loading index data" ;# NEW
+::progress::mc::Message(read-game)				"Loading game data" ;# NEW
+::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
+::progress::mc::Message(read-tournament)		"Loading tournament data" ;# NEW
+::progress::mc::Message(read-player)			"Loading player data" ;# NEW
+::progress::mc::Message(read-annotator)		"Loading annotator data" ;# NEW
+::progress::mc::Message(read-source)			"Loading source data" ;# NEW
+::progress::mc::Message(read-team)				"Loading team data" ;# NEW
+::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
+
+::progress::mc::Message(write-index)			"Writing index data" ;# NEW
+::progress::mc::Message(write-game)				"Writing game data" ;# NEW
+::progress::mc::Message(write-namebase)		"Writing namebase data" ;# NEW
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
@@ -1280,6 +1299,7 @@
 ::help::mc::MatchEntireWord		"Corrispondi intera parola"
 ::help::mc::MatchCase				"Corrispondi capitalizzazione"
 ::help::mc::TitleOnly				"Cerca solo nei titoli"
+::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
 ::help::mc::GoBack					"Vai indietro una pagina (Alt-Left)"
 ::help::mc::GoForward				"Vai avanti una pagina (Alt-Right)"
 ::help::mc::GotoPage					"Vai alla pagina '%s'"
@@ -1591,7 +1611,6 @@
 ::dialog::choosefont::mc::Wait				"Aspetta"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"File System"
 ::choosedir::mc::ShowPredecessor	"Mostra Precedente"
 ::choosedir::mc::ShowTail			"Mostra Coda"
 ::choosedir::mc::Folder				"Cartella"
@@ -1604,6 +1623,7 @@
 ::fsbox::mc::Forward							"Avanti a '%s'"
 ::fsbox::mc::Backward						"Indietro a '%s'"
 ::fsbox::mc::Delete							"Elimina"
+::fsbox::mc::Restore							"Restore" ;# NEW
 ::fsbox::mc::Rename							"Rinomina"
 ::fsbox::mc::Duplicate						"Duplica"
 ::fsbox::mc::CopyOf							"Copia di %s"
@@ -1630,6 +1650,7 @@
 ::fsbox::mc::LastVisited					"Ultime Visite"
 ::fsbox::mc::FileSystem						"File System"
 ::fsbox::mc::Desktop							"Desktop"
+::fsbox::mc::Trash							"Trash" ;# NEW
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectEncoding				"Selezionare la codifica del database (apre un'interfaccia)"
@@ -1649,6 +1670,7 @@
 ::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
 ::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
+::fsbox::mc::RestoreFailed					"Restoring of '%s' failed." ;# NEW
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::CopyFailed						"Copia del file '%s' fallita: permesso negato."
 ::fsbox::mc::CannotCopy						"Non posso creare una copia perché il file '%s' esiste già."
@@ -1663,7 +1685,9 @@
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
 ::fsbox::mc::ContainsTwoDots				"Contiene due punti consecutivi."
-::fsbox::mc::ContainsReservedChars		"Contiene caratteri riservati: %s."
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Contiene caratteri riservati: %s."
+::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
+::fsbox::mc::ReservedCharsDetails		"Control characters (ASCII 0-31) are also forbidden." ;# NEW
 ::fsbox::mc::IsReservedName				"In alcuni sistemi operativi questo è un nome riservato."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Estensione file '%s' non valida."

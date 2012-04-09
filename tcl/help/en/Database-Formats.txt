@@ -73,6 +73,10 @@ This format resembles structurally Scidb's format:
       <td nowrap="nowrap" valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
       <td>Player/Event/Site/Round data</td>
     </tr>
+    <tr>
+      <td nowrap="nowrap" valign="top"><kbd>.ssc =&nbsp;</kbd></td>
+      <td>Sorting data</td>
+    </tr>
   </table>
 </box>
 
@@ -83,6 +87,10 @@ The company ChessBase keeps this format secret, therefore only the reading
 mode is supported. Not all game data can be read correctly, with some games
 the message of failed decoding will appear.
 </p>
+
+<annotation>
+ChessBase databases cannot be used as reference database.
+</annotation>
 
 <p>
 A database in ChessBase format is divided into many separate files, the important ones are:

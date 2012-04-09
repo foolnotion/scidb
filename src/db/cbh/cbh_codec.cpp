@@ -665,6 +665,8 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 		useEncoding(m_encoding);
 	}
 
+	progress.message("read-init");
+
 	readIniData(rootname);
 	readSourceData(rootname, progress);
 	readPlayerData(rootname, progress);
@@ -724,6 +726,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 	Namebase& siteBase	= namebase(Namebase::Site);
 
 	progress.start(nrecs);
+	progress.message("read-tournament");
 	eventBase.reserve(nrecs, (1 << 24) - 1);
 
 	for (unsigned i = 0; i < nrecs; ++i)
@@ -854,6 +857,7 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 	base.reserve(nrecs, (1 << 24) - 1);
 	str.assign(202, '\0');
 	progress.start(nrecs);
+	progress.message("read-player");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -935,6 +939,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 	base.reserve(nrecs, (1 << 24) - 1);
 	str.assign(200, '\0');
 	progress.start(nrecs);
+	progress.message("read-annotator");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1000,6 +1005,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 	m_sourceBase.reserve(nrecs, (1 << 24) - 1);
 	str.assign(200, '\0');
 	progress.start(nrecs);
+	progress.message("read-source");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1091,6 +1097,7 @@ Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 	m_teamBase.reserve(nrecs);
 	str.assign(250, '\0');
 	progress.start(nrecs);
+	progress.message("read-team");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1206,6 +1213,7 @@ Codec::preloadTournamentData(mstl::string const& rootname, util::Progress& progr
 	unsigned reportAfter	= frequency;
 
 	progress.start(nrecs);
+	progress.message("preload-tournament");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1262,6 +1270,7 @@ Codec::preloadPlayerData(mstl::string const& rootname, util::Progress& progress)
 
 	name.assign(202, '\0');
 	progress.start(nrecs);
+	progress.message("preload-player");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1320,6 +1329,7 @@ Codec::preloadAnnotatorData(mstl::string const& rootname, util::Progress& progre
 
 	name.assign(200, '\0');
 	progress.start(nrecs);
+	progress.message("preload-annotator");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1379,6 +1389,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 	Namebase& siteBase	= namebase(Namebase::Site);
 
 	progress.start(nrecs);
+	progress.message("load-tournament");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1455,6 +1466,7 @@ Codec::reloadPlayerData(mstl::string const& rootname, util::Progress& progress)
 
 	name.assign(202, '\0');
 	progress.start(nrecs);
+	progress.message("read-player");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1520,6 +1532,7 @@ Codec::reloadAnnotatorData(mstl::string const& rootname, util::Progress& progres
 
 	name.assign(200, '\0');
 	progress.start(nrecs);
+	progress.message("read-annotator");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1585,6 +1598,7 @@ Codec::reloadSourceData(mstl::string const& rootname, util::Progress& progress)
 
 	name.assign(200, '\0');
 	progress.start(nrecs);
+	progress.message("read-source");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1650,6 +1664,7 @@ Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
 
 	name.assign(250, '\0');
 	progress.start(nrecs);
+	progress.message("read-team");
 
 	for (unsigned i = 0; i < nrecs; ++i)
 	{
@@ -1735,6 +1750,7 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	strm.seekg(sizeof(record));
 
 	ProgressWatcher watcher(progress, m_numGames);
+	progress.message("read-index");
 
 	unsigned frequency	= progress.frequency(m_numGames, 20000);
 	unsigned reportAfter	= frequency;

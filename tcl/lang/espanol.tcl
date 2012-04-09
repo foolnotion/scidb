@@ -137,7 +137,26 @@
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
 ### progress ###########################################################
-::progress::mc::Progress "Progreso"
+::progress::mc::Progress							"Progreso"
+
+::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament data" ;# NEW
+::progress::mc::Message(preload-player)		"Pre-loading player data" ;# NEW
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator data" ;# NEW
+
+::progress::mc::Message(read-index)				"Loading index data" ;# NEW
+::progress::mc::Message(read-game)				"Loading game data" ;# NEW
+::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
+::progress::mc::Message(read-tournament)		"Loading tournament data" ;# NEW
+::progress::mc::Message(read-player)			"Loading player data" ;# NEW
+::progress::mc::Message(read-annotator)		"Loading annotator data" ;# NEW
+::progress::mc::Message(read-source)			"Loading source data" ;# NEW
+::progress::mc::Message(read-team)				"Loading team data" ;# NEW
+::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
+
+::progress::mc::Message(write-index)			"Writing index data" ;# NEW
+::progress::mc::Message(write-game)				"Writing game data" ;# NEW
+::progress::mc::Message(write-namebase)		"Writing namebase data" ;# NEW
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
@@ -1259,6 +1278,7 @@
 ::help::mc::MatchEntireWord		"Match entire word" ;# NEW
 ::help::mc::MatchCase				"Match case" ;# NEW
 ::help::mc::TitleOnly				"Search in titles only" ;# NEW
+::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
 ::help::mc::GoBack					"Go back one page (Alt-Left)" ;# NEW
 ::help::mc::GoForward				"Go forward one page (Alt-Right)" ;# NEW
 ::help::mc::GotoPage					"Go to page '%s'" ;# NEW
@@ -1552,7 +1572,6 @@
 ::dialog::choosefont::mc::Wait				"Espere"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"Sistema de archivos"
 ::choosedir::mc::ShowPredecessor	"Show Predecessor" ;# NEW
 ::choosedir::mc::ShowTail			"Show Tail" ;# NEW
 ::choosedir::mc::Folder				"Folder" ;# NEW
@@ -1565,6 +1584,7 @@
 ::fsbox::mc::Forward							"Forward to '%s'" ;# NEW
 ::fsbox::mc::Backward						"Backward to '%s'" ;# NEW
 ::fsbox::mc::Delete							"Eliminar"
+::fsbox::mc::Restore							"Restore" ;# NEW
 ::fsbox::mc::Rename							"Rename" ;# NEW
 ::fsbox::mc::Duplicate						"Duplicate" ;# NEW
 ::fsbox::mc::CopyOf							"Copy of %s" ;# NEW
@@ -1591,6 +1611,7 @@
 ::fsbox::mc::LastVisited					"Last Visited" ;# NEW
 ::fsbox::mc::FileSystem						"Sistema de archivos"
 ::fsbox::mc::Desktop							"Escritorio"
+::fsbox::mc::Trash							"Trash" ;# NEW
 ::fsbox::mc::Home								"Home" ;# NEW
 
 ::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)" ;# NEW
@@ -1610,6 +1631,7 @@
 ::fsbox::mc::ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation." ;# NEW
 ::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation." ;# NEW
 ::fsbox::mc::DeleteFailed					"Deletion of '%s' failed." ;# NEW
+::fsbox::mc::RestoreFailed					"Restoring of '%s' failed." ;# NEW
 ::fsbox::mc::CommandFailed					"Command '%s' failed." ;# NEW
 ::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied." ;# NEW
 ::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting." ;# NEW
@@ -1624,7 +1646,8 @@
 ::fsbox::mc::ErrorCreate					"Error creating folder: permission denied." ;# NEW
 ::fsbox::mc::FilenameNotAllowed			"Filename '%s' is not allowed." ;# NEW
 ::fsbox::mc::ContainsTwoDots				"Contains two consecutive dots." ;# NEW
-::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s." ;# NEW
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW
+::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
 ::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Invalid file extension in '%s'." ;# NEW
 ::fsbox::mc::MissingFileExtension		"Missing file extension in '%s'." ;# NEW

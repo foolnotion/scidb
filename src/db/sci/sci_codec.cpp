@@ -656,6 +656,7 @@ Codec::attach(mstl::string const& rootname, util::Progress& progress)
 	mstl::string gameFilename(rootname + ".scg");
 	m_gameStream.set_unbuffered();
 	m_gameStream.open(sys::file::internalName(gameFilename), mode);
+	progress.message("write-game");
 	m_gameData->attach(&m_gameStream, &progress);
 	save(rootname, 0, progress, true);
 }
@@ -1018,6 +1019,7 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 	unsigned reportAfter	= frequency;
 
 	ProgressWatcher watcher(progress, infoList.size());
+	progress.message("read-index");
 
 	for (unsigned i = 0; i < infoList.size(); ++i)
 	{
@@ -1204,6 +1206,7 @@ Codec::writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress)
 	unsigned reportAfter	= frequency + start;
 
 	ProgressWatcher watcher(progress, infoList.size());
+	progress.message("write-index");
 
 	for (unsigned i = start; i < infoList.size(); ++i)
 	{
@@ -1413,6 +1416,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 	unsigned total = bstrm.uint32();
 
 	ProgressWatcher watcher(progress, total);
+	progress.message("read-namebase");
 
 	m_progressFrequency		= progress.frequency(total, 1000);
 	m_progressReportAfter	= m_progressFrequency;
@@ -1874,6 +1878,9 @@ Codec::writeNamebases(mstl::ostream& stream, util::Progress* progress)
 		total += namebase(Namebase::Type(i)).used();
 
 	ProgressWatcher watcher(progress, total);
+
+	if (progress)
+		progress->message("write-namebase");
 
 	if (progress)
 	{

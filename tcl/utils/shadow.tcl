@@ -210,8 +210,9 @@ bind Menu <Configure> {+
 
 bind Menu <Map> {+
 	if {![string match *#menu %W]} {
-		# a slight delay is reducing the flickering
-		after 25 { shadow::map %W yes }
+		# a slight delay is reducing the flickering (25ms)
+		# but this may confuse the order of map/unmap events.
+		after idle { shadow::map %W yes }
 	}
 }
 

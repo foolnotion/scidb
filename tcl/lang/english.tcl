@@ -137,7 +137,26 @@
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond."
 
 ### progress ###########################################################
-::progress::mc::Progress "Progress"
+::progress::mc::Progress							"Progress"
+
+::progress::mc::Message(preload-namebase)		"Pre-loading namebase data"
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament data"
+::progress::mc::Message(preload-player)		"Pre-loading player data"
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator data"
+
+::progress::mc::Message(read-index)				"Loading index data"
+::progress::mc::Message(read-game)				"Loading game data"
+::progress::mc::Message(read-namebase)			"Loading namebase data"
+::progress::mc::Message(read-tournament)		"Loading tournament data"
+::progress::mc::Message(read-player)			"Loading player data"
+::progress::mc::Message(read-annotator)		"Loading annotator data"
+::progress::mc::Message(read-source)			"Loading source data"
+::progress::mc::Message(read-team)				"Loading team data"
+::progress::mc::Message(read-init)				"Loading initialization data"
+
+::progress::mc::Message(write-index)			"Writing index data"
+::progress::mc::Message(write-game)				"Writing game data"
+::progress::mc::Message(write-namebase)		"Writing namebase data"
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Theme"
@@ -1279,6 +1298,7 @@
 ::help::mc::MatchEntireWord		"Match entire word"
 ::help::mc::MatchCase				"Match case"
 ::help::mc::TitleOnly				"Search in titles only"
+::help::mc::CurrentPageOnly		"Search in current page only"
 ::help::mc::GoBack					"Go back one page (Alt-Left)"
 ::help::mc::GoForward				"Go forward one page (Alt-Right)"
 ::help::mc::GotoPage					"Go to page '%s'"
@@ -1590,7 +1610,6 @@
 ::dialog::choosefont::mc::Wait				"Wait"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"File System"
 ::choosedir::mc::ShowPredecessor	"Show Predecessor"
 ::choosedir::mc::ShowTail			"Show Tail"
 ::choosedir::mc::Folder				"Folder"
@@ -1603,6 +1622,7 @@
 ::fsbox::mc::Forward							"Forward to '%s'"
 ::fsbox::mc::Backward						"Backward to '%s'"
 ::fsbox::mc::Delete							"Delete"
+::fsbox::mc::Restore							"Restore"
 ::fsbox::mc::Rename							"Rename"
 ::fsbox::mc::Duplicate						"Duplicate"
 ::fsbox::mc::CopyOf							"Copy of %s"
@@ -1629,6 +1649,7 @@
 ::fsbox::mc::LastVisited					"Last Visited"
 ::fsbox::mc::FileSystem						"File System"
 ::fsbox::mc::Desktop							"Desktop"
+::fsbox::mc::Trash							"Trash"
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)"
@@ -1648,6 +1669,7 @@
 ::fsbox::mc::ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
 ::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
 ::fsbox::mc::DeleteFailed					"Deletion of '%s' failed."
+::fsbox::mc::RestoreFailed					"Restoring of '%s' failed."
 ::fsbox::mc::CommandFailed					"Command '%s' failed."
 ::fsbox::mc::CopyFailed						"Copying of file '%s' failed: permission denied."
 ::fsbox::mc::CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
@@ -1662,7 +1684,8 @@
 ::fsbox::mc::ErrorCreate					"Error creating folder: permission denied."
 ::fsbox::mc::FilenameNotAllowed			"Filename '%s' is not allowed."
 ::fsbox::mc::ContainsTwoDots				"Contains two consecutive dots."
-::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s."
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)."
+::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period."
 ::fsbox::mc::IsReservedName				"On some operating systems this is an reserved name."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters."
 ::fsbox::mc::InvalidFileExtension		"Invalid file extension in '%s'."

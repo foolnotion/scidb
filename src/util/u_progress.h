@@ -19,6 +19,8 @@
 #ifndef _u_progress_included
 #define _u_progress_included
 
+namespace mstl { class string; }
+
 namespace util {
 
 class Progress
@@ -35,6 +37,7 @@ public:
 	virtual unsigned ticks() const;
 
 	virtual void start(unsigned total);
+	virtual void message(mstl::string const& msg);
 	virtual void tick(unsigned count);
 	virtual void update(unsigned progress);
 	virtual void finish();

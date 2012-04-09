@@ -136,7 +136,26 @@
 ::util::mc::SelectionOwnerDidntRespond		"Zeitüberschreitung während der Drop-Aktion: der Eigentümer des Drop-Inhalts antwortete nicht."
 
 ### progress ###########################################################
-::progress::mc::Progress "Fortschritt"
+::progress::mc::Progress							"Fortschritt"
+
+::progress::mc::Message(preload-namebase)		"Namebase-Daten vorladen"
+::progress::mc::Message(preload-tournament)	"Turnier-Daten vorladen"
+::progress::mc::Message(preload-player)		"Spieler-Daten vorladen"
+::progress::mc::Message(preload-annotator)	"Kommentator-Daten vorladen"
+
+::progress::mc::Message(read-index)				"Index-Daten laden"
+::progress::mc::Message(read-game)				"Partie-Daten laden"
+::progress::mc::Message(read-namebase)			"Namebase-Daten laden"
+::progress::mc::Message(read-tournament)		"Turnier-Daten laden"
+::progress::mc::Message(read-player)			"Spieler-Daten laden"
+::progress::mc::Message(read-annotator)		"Kommentator-Daten laden"
+::progress::mc::Message(read-source)			"Quellen-Daten laden"
+::progress::mc::Message(read-team)				"Team-Daten laden"
+::progress::mc::Message(read-init)				"Initialisierungs-Daten laden"
+
+::progress::mc::Message(write-index)			"Index-Daten schreiben"
+::progress::mc::Message(write-game)				"Partie-Daten schreiben"
+::progress::mc::Message(write-namebase)		"Namebase-Daten schreiben"
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Thema"
@@ -1278,6 +1297,7 @@
 ::help::mc::MatchEntireWord		"Ganzes Wort vergleichen"
 ::help::mc::MatchCase				"Groß-/Kleinschreibung beachten"
 ::help::mc::TitleOnly				"Nur in Titeln suchen"
+::help::mc::CurrentPageOnly		"Nur auf der aktuellen Seite suchen"
 ::help::mc::GoBack					"Eine Seite zurück (Alt-Links)"
 ::help::mc::GoForward				"Eine Seite vorwärts (Alt-Rechts)"
 ::help::mc::GotoPage					"Wechsle zur Seite '%s'"
@@ -1589,7 +1609,6 @@
 ::dialog::choosefont::mc::Wait				"Fortschritt"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"Dateisystem"
 ::choosedir::mc::ShowPredecessor	"Show Predecessor"
 ::choosedir::mc::ShowTail			"Show Tail"
 ::choosedir::mc::Folder				"Ordner"
@@ -1602,6 +1621,7 @@
 ::fsbox::mc::Forward							"Wechsle zu '%s'"
 ::fsbox::mc::Backward						"Zurück zu '%s'"
 ::fsbox::mc::Delete							"Löschen"
+::fsbox::mc::Restore							"Wiederherstellen"
 ::fsbox::mc::Rename							"Umbenennen"
 ::fsbox::mc::Duplicate						"Duplizieren"
 ::fsbox::mc::CopyOf							"Kopie von %s"
@@ -1616,8 +1636,8 @@
 ::fsbox::mc::Save								"&Speichern"
 ::fsbox::mc::Open								"&Öffnen"
 
-::fsbox::mc::AddBookmark					"Lesezeichen '%s' hinzufügen"
-::fsbox::mc::RemoveBookmark				"Lesezeichen '%s' entfernen"
+::fsbox::mc::AddBookmark					"Verweis '%s' hinzufügen"
+::fsbox::mc::RemoveBookmark				"Verweis '%s' entfernen"
 
 ::fsbox::mc::Filename						"Datei&name:"
 ::fsbox::mc::Filenames						"Datei&namen:"
@@ -1628,6 +1648,7 @@
 ::fsbox::mc::LastVisited					"Zuletzt besucht"
 ::fsbox::mc::FileSystem						"Dateisystem"
 ::fsbox::mc::Desktop							"Arbeitsfläche"
+::fsbox::mc::Trash							"Müllkorb"
 ::fsbox::mc::Home								"Heimverzeichnis"
 
 ::fsbox::mc::SelectEncoding				"Auswahl der Enkodierung für die Datenbank (öffnet einen Dialog)"
@@ -1647,6 +1668,7 @@
 ::fsbox::mc::ReallyDelete(folder,w)		"Soll tatsächlich der Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::ReallyDelete(folder,r)		"Soll tatsächlich der schreibgeschützte Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::DeleteFailed					"Das Löschen von '%s' schlug fehl."
+::fsbox::mc::RestoreFailed					"Das Wiederherstellen von '%s' schlug fehl."
 ::fsbox::mc::CommandFailed					"Das Kommando '%s' schlug fehl."
 ::fsbox::mc::CopyFailed						"Das Kopieren der Datei '%s' schlug fehl: keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::CannotCopy						"Eine Kopie kann nicht erfolgen weil die Datei '%s' bereits exisitiert."
@@ -1657,11 +1679,12 @@
 ::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::InvalidFileExt				"Die Operation shlug fehl: '%s' hat eine unerlaubte Dateiendung."
 ::fsbox::mc::CannotRename					"Die Umbennenung in '%s' ist nicht möglich, diese(r) Datei/Ordner existiert bereits."
-::fsbox::mc::CannotCreate					"Der Ordner '%s' kann nicht angelegt werden, ein gleichnamiger Ordner existiert bereits."
+::fsbox::mc::CannotCreate					"Der Ordner '%s' kann nicht angelegt werden, ein gleichnamiger Verzeichniseintrag existiert bereits."
 ::fsbox::mc::ErrorCreate					"Fehler beim Anlegen des Ordners: keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::FilenameNotAllowed			"'%s' ist nicht als Dateiname erlaubt."
 ::fsbox::mc::ContainsTwoDots				"Er enthält zwei aufeinanderfolgende Punkte."
-::fsbox::mc::ContainsReservedChars		"Er enthält ein reserviertes Zeichen: %s."
+::fsbox::mc::ContainsReservedChars		"Der Dateiname enthält ein reserviertes Zeichen: %s, oder ein Steuerungszeichen (ASCII 0-31)."
+::fsbox::mc::InvalidFileName				"Ein Dateiname kann weder mit einem Bindestrich beginnen, noch mit einem Punkt oder Leerzeichen enden."
 ::fsbox::mc::IsReservedName				"Unter einigen Betriebssystemen ist dies ein reservierter Name."
 ::fsbox::mc::FilenameTooLong				"Ein Dateiname sollte weniger als 256 Zeichen haben."
 ::fsbox::mc::InvalidFileExtension		"Ungültige Dateiendung in '%s'."

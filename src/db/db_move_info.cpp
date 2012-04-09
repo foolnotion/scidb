@@ -372,7 +372,7 @@ MoveInfo::decode(ByteStream& strm)
 
 		case CorrespondenceChessSent:
 			v = strm.uint32();
-			m_time.m_date.setYMD(		((v >>  4) & 0x0fff),
+			m_time.m_date.setYMD(	((v >>  4) & 0x0fff),
 											((v      ) & 0x000f),
 											((u      ) & 0x000f));
 

@@ -733,6 +733,7 @@ Codec::attach(mstl::string const& rootname, Progress& progress)
 	mstl::string gameFilename(rootname + m_extGame);
 	m_gameStream.set_unbuffered();
 	m_gameStream.open(sys::file::internalName(gameFilename), mode);
+	progress.message("read-game");
 	m_gameData->attach(&m_gameStream);
 	save(rootname, 0, progress, true);
 }
@@ -873,6 +874,7 @@ Codec::writeIndex(mstl::fstream& fstrm, unsigned start, Progress& progress)
 	unsigned reportAfter	= frequency + start;
 
 	ProgressWatcher watcher(progress, infoList.size());
+	progress.message("write-index");
 
 	for (unsigned i = start; i < infoList.size(); ++i)
 	{
@@ -1132,6 +1134,7 @@ Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
 	unsigned reportAfter	= frequency;
 
 	ProgressWatcher watcher(progress, infoList.size());
+	progress.message("read-index");
 
 	for (unsigned i = 0; i < infoList.size(); ++i)
 	{
@@ -1440,6 +1443,7 @@ Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
 	bstrm.skip(3); // skip round
 
 	ProgressWatcher watcher(progress, total);
+	progress.message("read-namebase");
 
 	m_progressFrequency		= progress.frequency(total, 1000);
 	m_progressReportAfter	= m_progressFrequency;
@@ -1581,6 +1585,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 	if (!m_codec->hasEncoding())
 	{
+		progress.message("preload-namebase");
 		preloadNamebase(bstrm, maxFreq[Namebase::Player], count[Namebase::Player], progress);
 		m_progressCount += count[Namebase::Player];
 		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
@@ -1600,6 +1605,8 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		m_codec->reset(m_encoding);
 		useEncoding(m_encoding);
 	}
+
+	progress.message("read-namebase");
 
 	readNamebase(	bstrm,
 						namebase(Namebase::Player),

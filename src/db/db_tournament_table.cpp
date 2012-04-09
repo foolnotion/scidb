@@ -946,8 +946,7 @@ TournamentTable::computeTiebreaks()
 			{
 				player->refinedBuchholz[Buchholz] += opponent->tiebreak[Buchholz];
 				player->refinedBuchholz[MedianBuchholz] += opponent->tiebreak[MedianBuchholz];
-				player->refinedBuchholz[ModifiedMedianBuchholz] +=
-								opponent->tiebreak[ModifiedMedianBuchholz];
+				player->refinedBuchholz[ModifiedMedianBuchholz] += opponent->tiebreak[ModifiedMedianBuchholz];
 			}
 		}
 	}

@@ -20,6 +20,8 @@
 #include "tcl_exception.h"
 #include "tcl_base.h"
 
+#include "m_string.h"
+
 #include <tcl.h>
 
 using namespace tcl;
@@ -33,6 +35,7 @@ Tcl_Obj* Progress::m_tick			= 0;
 Tcl_Obj* Progress::m_finish		= 0;
 Tcl_Obj* Progress::m_interrupted	= 0;
 Tcl_Obj* Progress::m_ticks			= 0;
+Tcl_Obj* Progress::m_message		= 0;
 
 
 static void __attribute__((constructor)) initialize() { Progress::initialize(); }
@@ -65,6 +68,7 @@ Progress::initialize()
 		Tcl_IncrRefCount(m_finish			= Tcl_NewStringObj("finish",			-1));
 		Tcl_IncrRefCount(m_interrupted	= Tcl_NewStringObj("interrupted?",	-1));
 		Tcl_IncrRefCount(m_ticks			= Tcl_NewStringObj("ticks",			-1));
+		Tcl_IncrRefCount(m_message			= Tcl_NewStringObj("message",			-1));
 	}
 }
 
@@ -141,6 +145,17 @@ Progress::start(unsigned total)
 	Tcl_DecrRefCount(maximum);
 	m_sendFinish = rc == TCL_OK;
 	checkResult(rc, m_cmd, m_start, m_arg);
+}
+
+
+void
+Progress::message(mstl::string const& msg)
+{
+	Tcl_Obj* message = Tcl_NewStringObj(msg, msg.size());
+	Tcl_IncrRefCount(message);
+	int rc = invoke(__func__, m_cmd, m_message, m_arg, message, nullptr);
+	Tcl_DecrRefCount(message);
+	checkResult(rc, m_cmd, m_update, m_arg);
 }
 
 

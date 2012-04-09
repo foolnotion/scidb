@@ -29,7 +29,6 @@ proc choosedir {w args} {
 namespace eval choosedir {
 namespace eval mc {
 
-set FileSystem			"File System"
 set ShowPredecessor	"Show Predecessor"
 set ShowTail			"Show Tail"
 set Folder				"Folder"
@@ -82,8 +81,9 @@ proc Build {w args} {
 	set Vars(padx) $opts(-padx)
 	set Vars(pady) $opts(-pady)
 	set Vars(initialdir) $opts(-initialdir)
-	set Vars(subfolders) {}
 	set Vars(user) 0
+	set Vars(icon) {}
+	set Vars(startmenu) {}
 
 	set Vars(linespace) [font metrics $opts(-font) -linespace]
 	set Vars(activebackground) $opts(-activebackground)
@@ -114,7 +114,7 @@ proc Build {w args} {
 	}
 
 	tk::button $w.prev                           \
-		-image $icon::14x14::PrevComponent        \
+		-image $icon::14x14::prevComponent        \
 		-relief flat                              \
 		-overrelief raised                        \
 		-background $bg                           \
@@ -122,7 +122,7 @@ proc Build {w args} {
 		-takefocus 0                              \
 		;
 	tk::button $w.next                           \
-		-image $icon::14x14::NextComponent        \
+		-image $icon::14x14::nextComponent        \
 		-relief flat                              \
 		-overrelief raised                        \
 		-background $bg                           \
@@ -139,6 +139,7 @@ proc Build {w args} {
 		-command [namespace code [list PopupDirs $w $w.image--1 -1]] \
 		-takefocus 0                                                 \
 		;
+	bind $w.prev <Leave> { %W configure -relief flat }
 	bind $w.image--1 <Leave> { %W configure -relief flat }
 	tooltip $w.next [Tr ShowTail]
 	if {$Vars(showlabel)} {
@@ -165,12 +166,13 @@ proc Build {w args} {
 proc WidgetProc {w command args} {
 	switch -- $command {
 		set {
-			if {[llength $args] != 1} {
-				error "wrong # args: should be \"[namespace current] $command <dir>\""
+			if {[llength $args] != 1 && [llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <dir> ?<icon>?\""
 			}
 			variable ${w}::Vars
 
-			set folder [lindex $args 0]
+			set icon {}
+			lassign $args folder icon
 			if {$folder ne $Vars(dir)} {
 				set Vars(dir) $folder
 				set Vars(components) [file split $Vars(dir)]
@@ -180,8 +182,8 @@ proc WidgetProc {w command args} {
 					set Vars(components) [lreplace $Vars(components) 0 0]
 				}
 				set Vars(start) [llength $Vars(components)]
-				set Vars(subfolders) {}
 				set Vars(user) 0
+				set Vars(icon) $icon
 				Layout $w
 			}
 
@@ -189,21 +191,31 @@ proc WidgetProc {w command args} {
 		}
 
 		setfolder {
-			if {[llength $args] != 1 && [llength $args] != 2} {
-				error "wrong # args: should be \"[namespace current] $command <folder> ?<sub-folders>?\""
+			if {[llength $args] != 1 && [llength $args] != 2 && [llength $args] != 2} {
+				error "wrong # args: should be \"[namespace current] $command <folder> ?<icon>?\""
 			}
 			variable ${w}::Vars
 
-			lassign $args folder subfolders
+			set icon {}
+			lassign $args folder icon
 			if {$folder ne $Vars(dir)} {
 				set Vars(dir) $folder
 				set Vars(components) [list $folder]
 				set Vars(start) 1
-				set Vars(subfolders) $subfolders
 				set Vars(user) 1
+				set Vars(icon) $icon
 				Layout $w
 			}
 
+			return $w
+		}
+
+		setstartmenu {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <start-menu>\""
+			}
+			variable ${w}::Vars
+			set Vars(startmenu) [lindex $args 0]
 			return $w
 		}
 
@@ -220,6 +232,7 @@ proc WidgetProc {w command args} {
 			foreach option {padx pady} {
 				if {[info exists opts(-$option)]} {
 					set Vars($option) $opts(-$option)
+					array unset opts -$option
 				}
 			}
 			if {[info exists opts(-font)]} {
@@ -336,15 +349,16 @@ proc Layout {w} {
 		bind $w.next <ButtonRelease-1> [namespace code [list SetRange $w $w.next $n]]
 	}
 	if {$f == 0} {
-		set img $icon::14x14::FileSystem
+		set icon $Vars(icon)
+		if {[llength $icon] == 0} { set icon $icon::16x16::fileSystem }
 		$w.prev configure -command [namespace code [list Invoke $w $w.prev -1]]
-		tooltip $w.prev [Tr FileSystem]
+		tooltip $w.prev ""
 	} else {
-		set img $icon::14x14::PrevComponent
+		set icon $icon::14x14::prevComponent
 		$w.prev configure -command [namespace code [list SetRange $w $w.prev [expr {$f - 1}]]]
 		tooltip $w.prev [Tr ShowPredecessor]
 	}
-	$w.prev configure -image $img
+	$w.prev configure -image $icon
 	if {$f >= $e} { set f [expr {$e - 1}] }
 
 	for {set i 0} {$i < $Vars(size)} {incr i} {
@@ -358,9 +372,11 @@ proc Layout {w} {
 	}
 
 	if {$Vars(user)} {
+		if {[llength $Vars(icon)] == 0} {
+			grid remove $w.prev
+		}
 		grid remove $w.image--1
-		grid remove $w.prev
-		if {[llength $Vars(subfolders)] == 0} { grid remove $w.image-0 }
+		grid remove $w.image-0
 	} else {
 		grid $w.image--1
 		grid $w.prev
@@ -383,7 +399,27 @@ proc ButtonEnter {w} {
 proc Invoke {w btn i} {
 	variable ${w}::Vars
 
-	if {$Vars(user)} {
+	if {$i == -1} {
+		event generate $w <<GetStartMenu>>
+		set m $w.popup
+		if {[winfo exists $m]} { destroy $m }
+		menu $m -tearoff false
+		foreach {icon name folder} $Vars(startmenu) {
+			if {[string length $name] == 0} {
+				$m add separator
+			} else {
+				$m add command \
+					-label " $name" \
+					-image $icon \
+					-compound left \
+					-command [namespace code [list ChangeFolder $w $folder]] \
+					;
+			}
+		}
+		bind $m <<MenuUnpost>> [list $btn configure -state normal -relief flat]
+		bind $m <<MenuUnpost>> +[namespace code [list ButtonEnter $btn]]
+		tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
+	} elseif {$Vars(user)} {
 		event generate $w <<SetFolder>> -data $Vars(dir)
 	} else {
 		set components [lrange $Vars(components) 0 $i]
@@ -397,7 +433,7 @@ proc PopupDirs {w btn i} {
 	variable ${w}::Vars
 
 	if {$Vars(user)} {
-		set subdirs $Vars(subfolders)
+		set subdirs {}
 	} else {
 		set rootdir [file join "/" {*}[lrange $Vars(components) 0 $i]]
 		set subdirs [glob -nocomplain -tails -dir $rootdir -types d *]
@@ -420,6 +456,11 @@ proc PopupDirs {w btn i} {
 
 	bind $m <<MenuUnpost>> [namespace code [list ButtonEnter $btn]]
 	tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
+}
+
+
+proc ChangeFolder {w folder} {
+	event generate $w <<SetFolder>> -data $folder
 }
 
 
@@ -447,21 +488,45 @@ proc Configure {w width} {
 
 
 namespace eval icon {
+namespace eval 16x16 {
+
+set fileSystem [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAACDVBMVEVjYGAEBARraGhtampm
+	ZGRhYGBfXl5eXl5fXl4NDQ1fX19fX19eXl5eXl4oKChRUVFwbW0XGheJh4eRj4+CgIAiIiKU
+	kpKXlZWbmpqfn5+ioqIZHBqop6eCgYEuMy+rq6uurq6vr69SVFKLi4uoqag3Nzg7Ozs+PUA+
+	PkGYmJigoKCnp6eqqqqrq6usrKytra05OTo5PDmRkZEyOzQzQzempKSurKyxsbG2tbW6urrA
+	wMAcHB3FxcXLy8vPz8/S0tLT0tJeXl61tbUgKSInSC8oKB4sLy0wMDExMTExMjE0dkNLSSVn
+	ZClpcGtra19xbS1ybi5zhXZzlnp4eHh5eXl7emV8fHl9gH1/f3+AgICBgGuBgYGCgoKEg3CF
+	hoWJiYmKioqMjIyNjY2Ojo6Tk5OZmZmampqcnJydnZ2fn5+kpKSlpaWoqKiurq6wr6+wsLCy
+	srKzsrK0tLS1tbW3tra3t7e4uLi5ubm5vbq6urq8vLy9vb2/v7/BwcHBwcLCwsLDw8PExMTE
+	xsTFxcXFyMbGxcXGxsbHxsbIyMjJycnKysrLy8zNzc3Nzs3Ozc3Ozs7OztDPz8/Q0NDR0dHS
+	0tLT09PU1NTV1dXW1tbY2NjZ2dna2trb29vc3Nzd3d3e3t7f39/g4ODh4eHj4+Pj5OPk5OTl
+	5eXm5ubn5+fo6Ojp6enq6urr6+vs7Oz///8yXVsIAAAAQ3RSTlMSHR8hKTE4P0VISk5RVFVV
+	WmKPkZeYmaGor7W3ury+vsHExcXFxsbGxsbGxsbGxsbHx8fIyeHi5Obo6uvs7u/w8PHxjP3u
+	2AAAAAFiS0dErrlrk6cAAADNSURBVBgZBcFdTsJQEIDR+WampT9iQyBNDDHRV7fgct2Vvvis
+	NgYR5LbcO56D7IZaXSJUcmk+j66Pz5uNhCCSl+ny4lCOr7fEd6en9VDh0Cuhy5U80xRzkP5p
+	KeyF4klR0Dx+5XPq0mpDh8O5bsdhmu4fbDo1ODr06Y5mW19THmtcaW/UxBuZi7WmDqaVi4hE
+	SbObwiGrAmrYT8FhbA0IwfNWcdX3fl0ZhKS/38484m1VWWqJSDNL8WXOy5zTASGXOiXY7S8S
+	BRHplY/jP3c7WDhrbzSyAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 16x16
+
 namespace eval 14x14 {
 
-set PrevComponent [image create photo -data {
+set prevComponent [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAAT0lEQVQY02NgIBEYMEjikrJk
 	2Mdggl3KhuEywwcGY2xSDgxXGP4zvMMm6cxwneE/NkkmBg+GWwz/sUuKMeyGSpGqE6+dBF1L
 	wJ8EQgglbAEKliaZAtPhwwAAAABJRU5ErkJggg==
 }]
 
-set NextComponent [image create photo -data {
+set nextComponent [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAQAAAC1QeVaAAAAAmJLR0QA/4ePzL8AAABQSURB
 	VBjTY2AgAkgyGOCWNGHYx2CJS9KY4QPDZQYbXJLvGP4zXGFwwC35n+E6gzNuyf8Mtxg8GJhw
 	Sf5n2M0gRoZOPHbidC0ef+INIaxhCwCrHiaZy5kakAAAAABJRU5ErkJggg==
 }]
 
-set FileSystem [image create photo -data {
+set fileSystem [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAMAAAAolt3jAAABnlBMVEVvbW0MDAx+fHyBf39+
 	fHx8e3t9fX1/fn6BgIAVFRaBgYGAgIB6enpOTk54dnYcHxyUkpKcmpqfnp6Mi4spKSiko6Op
 	qamsrKyysbEfIR+2traOjo65ubkvODG4uLh+gH85OTc6Ojo7PDtGRUGXl5efn5+rq6uwsLC3

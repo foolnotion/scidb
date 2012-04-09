@@ -1,53 +1,53 @@
 set Contents {
   {
-     {{{Visione d'insieme} {Overview.html}}}
+     {{{Visione d'insieme} {Overview}}}
   }
   {
-    {{{Informazioni Generali} {Overview.html} {general}}}
-    {{{Formato Database} {Database-Formats.html}}}
-    {{{Uso dell'interfaccia di selezione dei file} {File-Selection-Dialog.html}}}
-    {{{Uso delle barre degli strumenti} {Toolbar-Usage.html}}}
-    {{{Il Clipbase} {Clipbase.html}}}
-    {{{How to set the default browser} {How-To-Set-Default-Browser.html}}}
+    {{{Informazioni Generali} {Overview} {general}}}
+    {{{Formato Database} {Database-Formats}}}
+    {{{Uso dell'interfaccia di selezione dei file} {File-Selection-Dialog}}}
+    {{{Uso delle barre degli strumenti} {Toolbar-Usage}}}
+    {{{Il Clipbase} {Clipbase}}}
+    {{{How to set the default browser} {How-To-Set-Default-Browser}}}
   }
   {
-    {{{Finestre di liste in Scidb} {Overview.html} {list-windows}}}
-    {{{Lista Partite} {Game-List-Window.html}}}
-    {{{Lista Giocatori} {Player-List-Window.html}}}
-    {{{Lista Eventi} {Event-List-Window.html}}}
-    {{{Lista Commentatori} {Annotator-List-Window.html}}}
+    {{{Finestre di liste in Scidb} {Overview} {list-windows}}}
+    {{{Lista Partite} {Game-List-Window}}}
+    {{{Lista Giocatori} {Player-List-Window}}}
+    {{{Lista Eventi} {Event-List-Window}}}
+    {{{Lista Commentatori} {Annotator-List-Window}}}
   }
   {
-    {{{Scidb- finestre e interfacce} {Overview.html} {windows-and-dialogs}}}
-    {{{Cambio Database} {Database-Switcher.html}}}
-    {{{Browser Partite} {Game-Browser.html}}}
-    {{{Panoramica Partita} {Game-Overview.html}}}
-    {{{Finestra di Testo della Partita} {Game-Text-Window.html}}}
-    {{{Storia Partita} {Game-History-Window.html}}}
-    {{{Scacchiera} {Board-Window.html}}}
-    {{{Finestre dell'Albero} {Tree-Window.html}}}
-    {{{Finestra dell'Albero delle Partite} {Tree-Games-Window.html}}}
-    {{{Editor Commenti} {Comment-Editor-Dialog.html}}}
-    {{{Tavolozza Simboli Quadrati} {Mark-Palette-Dialog.html}}}
-    {{{Modifica Posizione} {Board-Setup-Dialog.html}}}
-    {{{Modifica Posizione Iniziale} {Start-Position-Setup-Dialog.html}}}
-    {{{Tabellone} {Crosstable-Window.html}}}
-    {{{Importa Partita} {PGN-Import-Dialog.html}}}
-    {{{Esporta Database} {Database-Export-Dialog.html}}}
+    {{{Scidb- finestre e interfacce} {Overview} {windows-and-dialogs}}}
+    {{{Cambio Database} {Database-Switcher}}}
+    {{{Browser Partite} {Game-Browser}}}
+    {{{Panoramica Partita} {Game-Overview}}}
+    {{{Finestra di Testo della Partita} {Game-Text-Window}}}
+    {{{Storia Partita} {Game-History-Window}}}
+    {{{Scacchiera} {Board-Window}}}
+    {{{Finestre dell'Albero} {Tree-Window}}}
+    {{{Finestra dell'Albero delle Partite} {Tree-Games-Window}}}
+    {{{Editor Commenti} {Comment-Editor-Dialog}}}
+    {{{Tavolozza Simboli Quadrati} {Mark-Palette-Dialog}}}
+    {{{Modifica Posizione} {Board-Setup-Dialog}}}
+    {{{Modifica Posizione Iniziale} {Start-Position-Setup-Dialog}}}
+    {{{Tabellone} {Crosstable-Window}}}
+    {{{Importa Partita} {PGN-Import-Dialog}}}
+    {{{Esporta Database} {Database-Export-Dialog}}}
   }
   {
-    {{{Ulteriori Informazioni} {Overview.html} {further-information}}}
-    {{{Codici Partita} {Game-Flags.html}}}
-    {{{Specification of database archive} {Database-Archive.html}}}
-    {{{Opzioni nella Linea di Comando} {Command-Line-Options.html}}}
-    {{{Valori delle annotazioni in NAG} {NAG-Comments.html}}}
-    {{{Contatti} {Contact-Information.html}}}
-    {{{Piano di Sviluppo} {Development-Roadmap.html}}}
-    {{{Novità} {Whats-New.html}}}
-    {{{Benvenuto su Scidb!} {Welcome.html}}}
+    {{{Ulteriori Informazioni} {Overview} {further-information}}}
+    {{{Codici Partita} {Game-Flags}}}
+    {{{Specification of database archive} {Database-Archive}}}
+    {{{Opzioni nella Linea di Comando} {Command-Line-Options}}}
+    {{{Valori delle annotazioni in NAG} {NAG-Comments}}}
+    {{{Contatti} {Contact-Information}}}
+    {{{Piano di Sviluppo} {Development-Roadmap}}}
+    {{{Novità} {Whats-New}}}
+    {{{Benvenuto su Scidb!} {Welcome}}}
   }
 }
 
 set UnixOnly {
-  How-To-Set-Default-Browser.html
+  How-To-Set-Default-Browser
 }

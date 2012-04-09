@@ -38,6 +38,7 @@ public:
 	unsigned ticks() const override;
 
 	void start(unsigned total) override;
+	void message(mstl::string const& msg) override;
 	void tick(unsigned count) override;
 	void update(unsigned progress) override;
 	void finish() override;
@@ -63,6 +64,7 @@ private:
 	static Tcl_Obj* m_finish;
 	static Tcl_Obj* m_interrupted;
 	static Tcl_Obj* m_ticks;
+	static Tcl_Obj* m_message;
 };
 
 } // namespace tcl

@@ -152,6 +152,7 @@ MoveInfoSet::sort()
 
 
 // Extract move information from comments:
+// ------------------------------------------------------------------------------------------------------
 // Players Clock:				[%clk 1:05:23]
 // Elapsed Game Time:		[%egt 1:25:42]
 // Elapsed Move Time:		[%emt 0:05:42]

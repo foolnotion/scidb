@@ -84,7 +84,7 @@ optionally preceded by a path specification. A platform independent file name
 cannot contain the characters "&lt;" and "&gt;". It is the decision of the
 decoder in which way the preceding path specification will be used.
 <code>&lt;Size&gt;</code> is the size of the file contained inside the archive,
-the size of the unpacked file is given with <code>FileSize</code>. The
+the size of the unpacked file is given with <code>&lt;FileSize&gt;</code>. The
 internal size information is simultaneously the offset to next file header.
 <code>&lt;TotalSize&gt;</code> contains the sum of all unpacked files. This
 attribute may not be available if the sum is unknown.
@@ -136,7 +136,8 @@ Attributes  =
   [ "&lt;Count&gt;" { Space } Number ] ;
 Type        = 'single' | 'multi' ;
 Formats     = Format { "," Format } ;
-Format      = 'sci' | 'si3' | 'si4' | 'cbh' | 'pgn' | 'gz' ;<!--
+Format      = 'sci' | 'si3' | 'si4' |
+              'cbh' | 'pgn' | 'gz' ;<!--
 --></code></pre></div>
 
 <p>

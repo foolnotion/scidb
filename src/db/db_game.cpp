@@ -1212,12 +1212,8 @@ Game::moveToMainlineEnd()
 void
 Game::exitToMainline()
 {
-	if (isMainline())
-		return;
-
-	do
+	while (isVariation())
 		exitVariation();
-	while (isVariation());
 }
 
 
@@ -3115,7 +3111,7 @@ Game::setup(unsigned linebreakThreshold,
 	m_linebreakThreshold				= linebreakThreshold;
 	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
 	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
-	m_linebreakMinCommentLength		= linebreakMinCommentLength;
+	m_linebreakMinCommentLength	= linebreakMinCommentLength;
 	m_displayStyle						= displayStyle;
 }
 

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/File-Selection-Dialog.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="%LANG%" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Hilfe: Der Dateiauswahldialog</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Der Dateiauswahldialog</h1>
+</div>
+
+<p>
+Der Dateiauswahldialog besteht hauptsächlich aus sechs Bereichen:
+</p>
+
+<ul>
+  <li><a href="#Navigation">Verzeichnisnavigation</a></li>
+  <li><a href="#Bookmarks">Verweise</a></li>
+  <li><a href="#FileList">Dateianzeige</a></li>
+  <li><a href="#FileName">Auswahl der Datei</a></li>
+  <li><a href="#FilesType">Auswahl der Dateitypen</a></li>
+  <li><a href="#Encoding">Auswahl der Enkodierung</a></li>
+</ul>
+
+<h3 id="Navigation">Verzeichnisnavigation</h3>
+
+<p>
+Diese Leiste zeigt den aktuellen Verzeichnissstandort an, und erlaubt einen schnellen
+Wechsel zu übergeordneten Verzeichnissen, sowie auch zu untergeordneten Verzeichnissen.
+</p>
+
+<p>
+Die übergeordneten Verzeichnisse werden durch Anklicken der Verzeichnisschaltflächen
+gewählt.
+</p>
+
+<p>
+Die untergeordneten Verzeichnisse werden durch Anklicken der zugeörigen
+Pfeilschaltfläche aufgelistet.
+</p>
+
+<h3 id="Bookmarks">Verweise</h3>
+
+<p>
+Hier kann der Benutzer eigene Verweise auf Verzeichnisse anlegen oder auch wieder löschen.
+Hierzu wird das kontextsensitive Menü oder die Funktionsleiste benutzt.
+</p>
+
+<p>
+Es gibt voreingestellte Verweise, die nicht löschbar sind:
+</p>
+
+<h4>Favoriten</h4>
+
+<p>
+Dieser Ordner enthält die meistbesuchten Verzeichnisse.
+</p>
+
+<h4>Zuletzt besucht</h4>
+
+<p>
+In diesem Ordner sind die zuletzt besuchten Verzeichnisse enthalten.
+</p>
+
+<h4>Dateisystem</h4>
+
+<p>
+Dies ermöglicht die Direktanwahl der Wurzel des Dateisystems.
+</p>
+
+<h4>Arbeitsfläche</h4>
+
+<p>
+Dieser Ordner listet alle in <code>~/Desktop</code> angelegten Dateiverknüpfungen auf.
+Dies sind normalerweise die Verknüpfungen, die auf der Arbeitsfläche zu sehen
+sind.
+<br/><img src="../images/note.png"/> Dieser Verweis exisitiert nur wenn das Verzeichnis <code>~/Desktop</code>
+vorhanden ist.
+</p>
+
+<h4>Müllkorb</h4>
+
+<p>
+Über diesen Verweise werden die Inhalte des Müllkorbs aufgelistet.
+<br/><img src="../images/note.png"/> Dieser Verweis existiert nur unter KDE/Unix.
+</p>
+
+<h4>Heimverzeichnis</h4>
+
+<p>
+Dies ermöglicht eine Direktanwahl des Heimverzeichnisses.
+</p>
+
+<h3 id="FileList">Dateianzeige</h3>
+
+<p>
+Diese Dateiliste ist auf Scidb-Dateien spezialisiert. D.h. das alle Operation immer auf
+allen zu einer Datenbank gehörigen Dateien ausgeführt werden, obwohl nur die führende Datei
+(i.d.R. die Indexdatei) aufgelistet wird. Auf diese Weise braucht sich der Anwender nicht
+um die Einzelheiten der <a href="Database-Formats.html">Datenbankformate</a> zu kümmern.
+</p>
+
+<p>
+Die Dateioperationen im einzelnen:
+</p>
+
+<h4>Löschen</h4>
+
+Das Entfernen der selektierten Datenbank. Unter KDE/Unix wird sie in den Müllkorb
+verschoben, ansonsten erfolgt eine physikalische Löschung, die nicht rückgängig gemacht
+werden kann. In jedem Fall muß zuvor diese Operation noch einmal in einem
+Dialog bestätigt werden.
+
+<h4>Umbenennen</h4>
+
+Das Umbenennen der selektierten Datenbank. Diese Operation kann mit <key>ESC</key>
+wirkungslos verlassen werden. Der Dialog überprüft, ob der neue Dateiname
+zulässig ist, dabei werden die Besonderheiten aller unterstützten Betriebssysteme
+berücksichtigt, um einen Austausch auch zwischen den unterschiedlichen
+Betriebssystemen zu unterstützen.
+
+<h4>Duplizieren</h4>
+
+Die selektierte Datenbank wird dupliziert, allerdings erst nach Eingabe des neuen
+Dateinamens. Diese Operation kann mit <key>ESC</key> abgebrochen werden. Es wird
+keine bereits vorhandene Datenbank überschrieben, ein Überschreiben einer bereits
+vorhandenen Datenbank ist also nicht möglich.
+
+<h4>Neuer Ordner</h4>
+
+Ein neues Unterverzeichnis wird angelegt, aber erst nach Eingabe des
+Verzeichnisnamens. Diese Operation kann mit <key>ESC</key> wirkungslos
+verlassen werden. Es ist nicht möglich, einen bereits vorhandenen
+Verzeichniseintrag zu überschreiben.
+
+<h3 id="FileName">Auswahl der Datei</h3>
+
+<p>
+Dieses Feld erlaubt die direkte Eingabe eines Dateinames, optional mit einer
+Dateiendung für das gewünschte Datenbankformat. Ist kein Datenbankformat
+mittels der Dateiendung definiert, wird automatisch ein Standardformat
+gewählt. Dies ist das erste Format, das unter den aktuell selektierten
+Dateitypen aufgezählt wird.
+</p>
+
+<h3 id="FilesType">Auswahl der Dateitypen</h3>
+
+<p>
+Hier kann die Auswahl der Datenbanktypen eingeschränkt werden. Eine Übersicht
+über die Dateiendungen gibt es auf der Seite über die
+<a href="Database-Formats.html">Datenbankformate</a>.
+</p>
+
+<h3 id="Encoding">Auswahl der Enkodierung</h3>
+
+<p>
+Die Auswahl der passenden Enkodierung hängt vom Datenbankformat ab. Auch hier
+sind weitere Informationen auf der Seite über die
+<a href="Database-Formats.html">Datenbankformate</a> zu finden. In den
+meisten Fällen ist jedoch die voreingestellte automatische Erkennung
+ausreichend.
+</p>
+
+</body>
+</html>

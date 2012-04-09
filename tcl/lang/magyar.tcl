@@ -138,7 +138,26 @@
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
 ### progress ###########################################################
-::progress::mc::Progress "Állapot" ;# ? NEW 
+::progress::mc::Progress							"Állapot"
+
+::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament data" ;# NEW
+::progress::mc::Message(preload-player)		"Pre-loading player data" ;# NEW
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator data" ;# NEW
+
+::progress::mc::Message(read-index)				"Loading index data" ;# NEW
+::progress::mc::Message(read-game)				"Loading game data" ;# NEW
+::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
+::progress::mc::Message(read-tournament)		"Loading tournament data" ;# NEW
+::progress::mc::Message(read-player)			"Loading player data" ;# NEW
+::progress::mc::Message(read-annotator)		"Loading annotator data" ;# NEW
+::progress::mc::Message(read-source)			"Loading source data" ;# NEW
+::progress::mc::Message(read-team)				"Loading team data" ;# NEW
+::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
+
+::progress::mc::Message(write-index)			"Writing index data" ;# NEW
+::progress::mc::Message(write-game)				"Writing game data" ;# NEW
+::progress::mc::Message(write-namebase)		"Writing namebase data" ;# NEW
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Téma"
@@ -1281,6 +1300,7 @@
 ::help::mc::MatchEntireWord		"Teljes szó keresése"
 ::help::mc::MatchCase				"Match case" ;# NEW
 ::help::mc::TitleOnly				"Keresés csak a címek között"
+::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
 ::help::mc::GoBack					"Egy oldallal vissza (Alt-Left)"
 ::help::mc::GoForward				"Egy oldallal előre (Alt-Right)"
 ::help::mc::GotoPage					"Menj a '%s'-dik oldalra"
@@ -1591,7 +1611,6 @@
 ::dialog::choosefont::mc::Wait				"Kérem várjon"
 
 ### choosedir ##########################################################
-::choosedir::mc::FileSystem		"Fájl rendszer"
 ::choosedir::mc::ShowPredecessor	"Show Predecessor" ;# NEW
 ::choosedir::mc::ShowTail			"Show Tail" ;# NEW
 ::choosedir::mc::Folder				"Könyvtár"
@@ -1604,6 +1623,7 @@
 ::fsbox::mc::Forward							"Forward to '%s'"
 ::fsbox::mc::Backward						"Backward to '%s'"
 ::fsbox::mc::Delete							"Töröl"
+::fsbox::mc::Restore							"Restore" ;# NEW
 ::fsbox::mc::Rename							"Átnevez"
 ::fsbox::mc::Duplicate						"Duplicate"
 ::fsbox::mc::CopyOf							"Copy of %s"
@@ -1630,6 +1650,7 @@
 ::fsbox::mc::LastVisited					"Utoljára használt"  ;#?
 ::fsbox::mc::FileSystem						"Fájlredszer"
 ::fsbox::mc::Desktop							"Asztal"
+::fsbox::mc::Trash							"Trash" ;# NEW
 ::fsbox::mc::Home								"Home" ;# NEW
 
 ::fsbox::mc::SelectEncoding				"Adatbázis kódolásának kiválasztása"
@@ -1649,6 +1670,7 @@
 ::fsbox::mc::ReallyDelete(folder,w)		"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
 ::fsbox::mc::ReallyDelete(folder,r)		"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
 ::fsbox::mc::DeleteFailed					"'%s' törlése meghiúsult."
+::fsbox::mc::RestoreFailed					"Restoring of '%s' failed." ;# NEW
 ::fsbox::mc::CommandFailed					"'%s' utasítás nem hajtható vége."
 ::fsbox::mc::CopyFailed						"'%s' fájl másolása meghiúsult: hozzáférés megtagadva"
 ::fsbox::mc::CannotCopy						"'%s' már létezik. A másolás meghiúsult."
@@ -1663,7 +1685,9 @@
 ::fsbox::mc::ErrorCreate					"Hiba a könyvtár létrehozás közben: hozzáférés megtagadva."
 ::fsbox::mc::FilenameNotAllowed			"'%s' fájlnév nem engedélyezett."
 ::fsbox::mc::ContainsTwoDots				"Két egymásutáni pontot tartalmaz."
-::fsbox::mc::ContainsReservedChars		"Fenntartott karaktereket tartalmaz: %s."
+::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Fenntartott karaktereket tartalmaz: %s."
+::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
+::fsbox::mc::ReservedCharsDetails		"Control characters (ASCII 0-31) are also forbidden." ;# NEW
 ::fsbox::mc::IsReservedName				"Ez egy fenntartott név néhány operációs rendszeren."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"'%s': érvénytelen kiterjesztés."
