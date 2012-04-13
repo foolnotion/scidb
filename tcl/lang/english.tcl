@@ -33,6 +33,10 @@
 ::mc::AsciiMapping	{}
 ::mc::SortOrder		{}
 
+::mc::Alt				"Alt"
+::mc::Ctrl				"Ctrl"
+::mc::Shift				"Shift"
+
 ::mc::Alignment		"Alignment"
 ::mc::Apply				"Apply"
 ::mc::Archive			"Archive"
@@ -140,18 +144,18 @@
 ::progress::mc::Progress							"Progress"
 
 ::progress::mc::Message(preload-namebase)		"Pre-loading namebase data"
-::progress::mc::Message(preload-tournament)	"Pre-loading tournament data"
-::progress::mc::Message(preload-player)		"Pre-loading player data"
-::progress::mc::Message(preload-annotator)	"Pre-loading annotator data"
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament index"
+::progress::mc::Message(preload-player)		"Pre-loading player index"
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator index"
 
 ::progress::mc::Message(read-index)				"Loading index data"
 ::progress::mc::Message(read-game)				"Loading game data"
 ::progress::mc::Message(read-namebase)			"Loading namebase data"
-::progress::mc::Message(read-tournament)		"Loading tournament data"
-::progress::mc::Message(read-player)			"Loading player data"
-::progress::mc::Message(read-annotator)		"Loading annotator data"
-::progress::mc::Message(read-source)			"Loading source data"
-::progress::mc::Message(read-team)				"Loading team data"
+::progress::mc::Message(read-tournament)		"Loading tournament index"
+::progress::mc::Message(read-player)			"Loading player index"
+::progress::mc::Message(read-annotator)		"Loading annotator index"
+::progress::mc::Message(read-source)			"Loading source index"
+::progress::mc::Message(read-team)				"Loading team index"
 ::progress::mc::Message(read-init)				"Loading initialization data"
 
 ::progress::mc::Message(write-index)			"Writing index data"
@@ -160,8 +164,6 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Theme"
-::menu::mc::Ctrl							"Ctrl"
-::menu::mc::Shift							"Shift"
 
 ::menu::mc::AllScidbFiles				"All Scidb files"
 ::menu::mc::AllScidbBases				"All Scidb databases"
@@ -189,7 +191,9 @@
 ::menu::mc::OpenFile						"Open a Scidb File"
 ::menu::mc::NewFile						"Create a Scidb File"
 ::menu::mc::ImportFiles					"Import PGN files..."
-::menu::mc::CreateArchive				"Create an archive"
+::menu::mc::CreateArchive				"Create Archive"
+::menu::mc::BuildArchive				"Create archive %s"
+::menu::mc::Data							"%s data"
 
 ### load ###############################################################
 ::load::mc::SevereError				"Severe error during load of ECO file"
@@ -226,6 +230,9 @@
 ::archive::mc::CannotOpenArchive			"Cannot open archive '%s'."
 ::archive::mc::CouldNotCreateArchive	"Could not create archive '%s'."
 
+::archive::mc::PackFile						"Pack %s"
+::archive::mc::UnpackFile					"Unpack %s"
+
 ### application ########################################################
 ::application::mc::Database				"&Database"
 ::application::mc::Board					"&Board"
@@ -237,16 +244,20 @@
 ::application::mc::Shutdown				"Shutdown..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Show tournament table for this game"
+::application::board::mc::ShowCrosstable	"Show tournament table for this game"
 
-::application::board::mc::Tools					"Tools"
-::application::board::mc::Control				"Control"
-::application::board::mc::GoIntoNextVar		"Go into next variation"
-::application::board::mc::GoIntPrevVar			"Go into previous variation"
+::application::board::mc::Tools				"Tools"
+::application::board::mc::Control			"Control"
+::application::board::mc::GoIntoNextVar	"Go into next variation"
+::application::board::mc::GoIntPrevVar		"Go into previous variation"
 
-::application::board::mc::KeyEditAnnotation	"A"
-::application::board::mc::KeyEditComment		"C"
-::application::board::mc::KeyEditMarks			"M"
+::application::board::mc::Accel(edit-annotation)	"A"
+::application::board::mc::Accel(edit-comment)		"C"
+::application::board::mc::Accel(edit-marks)			"M"
+::application::board::mc::Accel(add-new-game)		"S"
+::application::board::mc::Accel(replace-game)		"R"
+::application::board::mc::Accel(replace-moves)		"V"
+::application::board::mc::Accel(trial-mode)			"T"
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Open Database..."
@@ -292,6 +303,7 @@
 ::application::database::mc::EmptyUriList					"Drop content is empty."
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
 ::application::database::mc::SelectDatabases				"Select the databases to be opened"
+::application::database::mc::ExtractArchive				"Extract archive %s"
 
 ::application::database::mc::RecodingDatabase			"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -1404,15 +1416,6 @@
 ::info::mc::Inspired				"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
 ::info::mc::SpecialThanks		"Special thanks to Shane Hudson for his terrific work. His effort is the basis for this application."
 
-::info::mc::Reference(PGN)			"is the accepted standard for textual representation of chess games and transfer between chess databases. Steven J. Edwards created the PGN standard and the document explaining it is available at many chess websites; here is one location for it: %url%."
-::info::mc::Reference(Crafty)		"is one of the strongest free chess program. The author is Bob Hyatt. The Crafty ftp site is: %url%. The \"TB\" subdirectory at this site contains many tablebase files which can also be used in Scidb."
-::info::mc::Reference(Stockfish)	"is an open-source chess engine based on Glaurung. Probably it is the strongest free chess engine available. Stockfish can be downloaded at %url%"
-::info::mc::Reference(Toga)		"is probably the strongest free chess engine available. The authors are Thomas Gaksch and Fabien Letouzey. The Toga II site is %url%."
-::info::mc::Reference(Fruit)		"Fruit is a chess engine developed by Fabien Letouzey and Joachim Rang, and is vice world computer chess champion 2005. This engine supports Chess960 and is two times winner of Chess960 Engine League. The Fruit site is %url%."
-::info::mc::Reference(Phalanx)	"Phalanx's playing style is quite human-like; when it plays at full strength, it may be compared to a intermediate-to-strong club player; beginners will be right at home with it, too. The author of Phalanx is Dusan Dobes. You may find this chess engine at %url%."
-::info::mc::Reference(Gully)		"The Gullydeckel chess playing program allows you to play a game of chess against a not too strong opponent. It has been written by Martin Borriss. The Gullydeckel site is %url%."
-::info::mc::Reference(MicroMax)	"is probably the smallest C Chess program in existence. The Micro-Max site is %url%. Micro-Max is written by H.G. Muller."
-
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Comment before move"
 ::comment::mc::CommentAfterMove		"Comment after move"
@@ -1557,6 +1560,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
 
 ::dialog::fsbox::mc::Content					"Content"
+::dialog::fsbox::mc::Open						"Open"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"
@@ -1697,6 +1701,9 @@
 ::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 ::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..."
 ::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared."
+::fsbox::mc::CannotDelete					"Cannot delete file '%s'."
+::fsbox::mc::CannotRename					"Cannot rename file '%s'."
+::fsbox::mc::CannotDeleteDetail			"This file is currently in use."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Toolbar"

@@ -30,9 +30,9 @@ namespace eval mc {
 set Progress "Progress"
 
 set Message(preload-namebase)		"Pre-loading namebase data"
-set Message(preload-tournament)	"Pre-loading tournament data"
-set Message(preload-player)		"Pre-loading player data"
-set Message(preload-annotator)	"Pre-loading annotator data"
+set Message(preload-tournament)	"Pre-loading tournament index"
+set Message(preload-player)		"Pre-loading player index"
+set Message(preload-annotator)	"Pre-loading annotator index"
 
 set Message(read-index)				"Loading index data"
 set Message(read-game)				"Loading game data"

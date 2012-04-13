@@ -183,7 +183,7 @@ proc interrupt {w} {
 
 proc setMessage {w msg} {
 #	if {[string length $msg]} { grid $w.m } else { grid remove $w.m }
-	$w.m configure -text $msg
+	$w.m configure -text "$msg..."
 }
 
 

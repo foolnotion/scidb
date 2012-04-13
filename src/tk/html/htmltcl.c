@@ -1106,7 +1106,7 @@ deleteWidget(clientData)
     }
 
 #ifdef USE_DOUBLE_BUFFERING
-    if (pTree->buffer) {
+    if (pTree->buffer && Tk_MainWindow(pTree->interp)) {
         Tk_FreePixmap(Tk_Display(Tk_MainWindow(pTree->interp)), pTree->buffer);
         pTree->buffer = None;
     }

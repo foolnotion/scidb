@@ -32,6 +32,10 @@
 ::mc::SortMapping		{Ä ae ä ae Ö Oe ö oe Ü Ue ü ue ß ss Å A å a  Ã A  ã a  é e  è e  ø oe ì i  Ì I}
 ::mc::AsciiMapping	{Ä a  ä a  Ö O  ö o  Ü U  ü u  ß ss Å A å a  Ã A  ã a  é e  è e  ø o  ì i  Ì I}
 
+::mc::Alt				"Alt"
+::mc::Ctrl				"Strg"
+::mc::Shift				"Umschalt"
+
 ::mc::Alignment		"Ausrichtung"
 ::mc::Apply				"Anwenden"
 ::mc::Archive			"Archiv"
@@ -138,19 +142,19 @@
 ### progress ###########################################################
 ::progress::mc::Progress							"Fortschritt"
 
-::progress::mc::Message(preload-namebase)		"Namebase-Daten vorladen"
-::progress::mc::Message(preload-tournament)	"Turnier-Daten vorladen"
-::progress::mc::Message(preload-player)		"Spieler-Daten vorladen"
-::progress::mc::Message(preload-annotator)	"Kommentator-Daten vorladen"
+::progress::mc::Message(preload-namebase)		"Namebase-Daten vorausladen"
+::progress::mc::Message(preload-tournament)	"Turnier-Index vorausladen"
+::progress::mc::Message(preload-player)		"Spieler-Index vorausladen"
+::progress::mc::Message(preload-annotator)	"Kommentator-Index vorladen"
 
 ::progress::mc::Message(read-index)				"Index-Daten laden"
 ::progress::mc::Message(read-game)				"Partie-Daten laden"
 ::progress::mc::Message(read-namebase)			"Namebase-Daten laden"
-::progress::mc::Message(read-tournament)		"Turnier-Daten laden"
-::progress::mc::Message(read-player)			"Spieler-Daten laden"
-::progress::mc::Message(read-annotator)		"Kommentator-Daten laden"
-::progress::mc::Message(read-source)			"Quellen-Daten laden"
-::progress::mc::Message(read-team)				"Team-Daten laden"
+::progress::mc::Message(read-tournament)		"Turnier-Index laden"
+::progress::mc::Message(read-player)			"Spieler-Index laden"
+::progress::mc::Message(read-annotator)		"Kommentator-Index laden"
+::progress::mc::Message(read-source)			"Quellen-Index laden"
+::progress::mc::Message(read-team)				"Team-Index laden"
 ::progress::mc::Message(read-init)				"Initialisierungs-Daten laden"
 
 ::progress::mc::Message(write-index)			"Index-Daten schreiben"
@@ -159,8 +163,6 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Thema"
-::menu::mc::Ctrl							"Strg"
-::menu::mc::Shift							"Umschalt"
 
 ::menu::mc::AllScidbFiles				"Alle Scidb Dateien"
 ::menu::mc::AllScidbBases				"Alle Scidb Datenbanken"
@@ -189,6 +191,8 @@
 ::menu::mc::NewFile						"Eine Scidb-Datei anlegen"
 ::menu::mc::ImportFiles					"PGN Dateien importieren..."
 ::menu::mc::CreateArchive				"Ein Archiv anlegen"
+::menu::mc::BuildArchive				"Archiv %s erzeugen"
+::menu::mc::Data							"%s-Daten"
 
 ### load ###############################################################
 ::load::mc::SevereError				"Schwerwiegender Fehler beim Laden der ECO-Datei"
@@ -225,6 +229,9 @@
 ::archive::mc::CannotOpenArchive			"Das Archiv '%s' konnte nicht geöffnet werden."
 ::archive::mc::CouldNotCreateArchive	"Das Archiv '%s' konnte nicht angelegt werden."
 
+::archive::mc::PackFile						"%s packen"
+::archive::mc::UnpackFile					"%s extrahieren"
+
 ### application ########################################################
 ::application::mc::Database				"Datenba&nk"
 ::application::mc::Board					"&Brett"
@@ -236,16 +243,20 @@
 ::application::mc::Shutdown				"Schließung..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Zeige Turniertabelle zur aktuellen Partie"
+::application::board::mc::ShowCrosstable	"Zeige Turniertabelle zur aktuellen Partie"
 
-::application::board::mc::Tools					"Werkzeuge"
-::application::board::mc::Control				"Steuerung"
-::application::board::mc::GoIntoNextVar		"Zur nächsten Variante"
-::application::board::mc::GoIntPrevVar			"Zur vorhergehenden Variante"
+::application::board::mc::Tools				"Werkzeuge"
+::application::board::mc::Control			"Steuerung"
+::application::board::mc::GoIntoNextVar	"Zur nächsten Variante"
+::application::board::mc::GoIntPrevVar		"Zur vorhergehenden Variante"
 
-::application::board::mc::KeyEditAnnotation	"A"
-::application::board::mc::KeyEditComment		"K"
-::application::board::mc::KeyEditMarks			"M"
+::application::board::mc::Accel(edit-annotation)	"A"
+::application::board::mc::Accel(edit-comment)		"K"
+::application::board::mc::Accel(edit-marks)			"M"
+::application::board::mc::Accel(add-new-game)		"H"
+::application::board::mc::Accel(replace-game)		"E"
+::application::board::mc::Accel(replace-moves)		"F"
+::application::board::mc::Accel(trial-mode)			"V"
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Datenbank öffnen..."
@@ -291,6 +302,7 @@
 ::application::database::mc::EmptyUriList					"Der Drop-Inhalt ist leer."
 ::application::database::mc::OverwriteExistingFiles	"Die existierenden Dateien im Verzeichnis '%s' überschreiben?"
 ::application::database::mc::SelectDatabases				"Die zu öffnenden Datenbanken selektieren"
+::application::database::mc::ExtractArchive				"Archiv %s extrahieren"
 
 ::application::database::mc::RecodingDatabase			"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames					"%s Partie(n) umkodiert"
@@ -1403,15 +1415,6 @@
 ::info::mc::Inspired					"Scidb wurde inspiriert durch Scid 3.6.1, Copyright \u00A9 1999-2003 Shane Hudson."
 ::info::mc::SpecialThanks			"Besonderen Dank an Shane Hudson für seine fantastische Arbeit. Seine Leistung ist Basis für diese Applikation."
 
-::info::mc::Reference(PGN)			"ist der anerkannte Standard zur Darstellung von Schachpartien und deren Übermittlung zwischen Schachdatenbanken. Der PGN Standard wurd von Steven J. Edwards kreiert. Das Dokument zur Erläuterung des Standards ist auf vielen Webseiten verfügbar; u.a. bei %url%."
-::info::mc::Reference(Crafty)		"ist eine der stärksten freien Schachprogramme. Der Autor ist Bob Hyatt. Die FTP-Seite von Crafty ist: %url%. Das \"TB\" Unterverzeichniss auf dieser Seite enthält viele Tablebase-Dateien, die in Scidb verwendet werden können."
-::info::mc::Reference(Stockfish)	"ist ein Open-Source Schachprogramm basierend auf Glaurung. Möglicherweise ist es das stärkste frei verfügbare Schachprogramm. Stockfish kann unter %url% heruntergeladen werden."
-::info::mc::Reference(Toga)		"ist eines der stärksten frei verfügbaren Schachprogramm. Die Autoren sind Thomas Gaksch und Fabien Letouzey. Die Toga II Webseite ist %url%."
-::info::mc::Reference(Fruit)		"Fuit ist ein von Fabien Letouzey und Joachim Rang entwickeltes Schachprogramm, und war Vizemeister der Computerweltmeisterschaft 2005. Diese Programm unterstützt Schach-960 und war zweimal Gewinner der Schach-960-Schachprogrammliga. Die Fruit-Webseite ist %url%."
-::info::mc::Reference(Phalanx)	"Phalanx's Spielstil ist ziemlich menschlich; wenn es mit voller Stärke spielt, kann man es mit einem mittelstarken Vereinsspieler vergeleichen. Einsteiger sind mit diesem Programm gut beraten. Der Autor von Phalanx ist Dusan Dobes. Dieses Schachprogramm ist auf der Webseite %url% auffindbar."
-::info::mc::Reference(Gully)		"Das Schachprogramm Gullydeckel erlaubt gegen einen nicht all zu starken Gegner zu spielen. Es wurde von Martin Borriss geschrieben. die Webseite ist %url%."
-::info::mc::Reference(MicroMax)	"ist möglicherweise das kleinste verfügbare in C programmierte Schachprogramm. Die Webseite von Micro-Max ist %url%. Micro-Max wurde von H.G. Muller entwickelt."
-
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar vor dem Zug"
 ::comment::mc::CommentAfterMove		"Kommentar nach dem Zug"
@@ -1556,6 +1559,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Textsatz-Datei"
 
 ::dialog::fsbox::mc::Content					"Inhalt"
+::dialog::fsbox::mc::Open						"Geöffnet"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"
@@ -1696,6 +1700,9 @@
 ::fsbox::mc::CannotOpenOrCreate			"'%s' kann nicht geöffnet/angelegt werden. Bitte zuvor eine Verzeichnis wählen."
 ::fsbox::mc::WaitWhileDuplicating		"Bitte warten bis die Datei dupliziert wurde..."
 ::fsbox::mc::FileHasDisappeared			"Die Datei '%s' ist nicht mehr vorhanden."
+::fsbox::mc::CannotDelete					"Die Datei '%s' kann nicht gelöscht werden."
+::fsbox::mc::CannotRename					"Die Datei '%s' kann nicht unbenannt werden."
+::fsbox::mc::CannotDeleteDetail			"Diese Datei ist zur Zeit im Gebrauch."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Funktionsleiste"

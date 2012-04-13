@@ -46,7 +46,7 @@ Der Dateiauswahldialog besteht hauptsächlich aus sechs Bereichen:
   <li><a href="#Navigation">Verzeichnisnavigation</a></li>
   <li><a href="#Bookmarks">Verweise</a></li>
   <li><a href="#FileList">Dateianzeige</a></li>
-  <li><a href="#FileName">Auswahl der Datei</a></li>
+  <li><a href="#FileName">Dateinameneingabe</a></li>
   <li><a href="#FilesType">Auswahl der Dateitypen</a></li>
   <li><a href="#Encoding">Auswahl der Enkodierung</a></li>
 </ul>
@@ -54,17 +54,21 @@ Der Dateiauswahldialog besteht hauptsächlich aus sechs Bereichen:
 <h3 id="Navigation">Verzeichnisnavigation</h3>
 
 <p>
-Diese Leiste zeigt den aktuellen Verzeichnissstandort an, und erlaubt einen schnellen
+Diese Leiste zeigt den Pfad des aktuellen Verzeichnissstandorts an, und erlaubt einen schnellen
 Wechsel zu übergeordneten Verzeichnissen, sowie auch zu untergeordneten Verzeichnissen.
 </p>
+
+<dir><img src="images/file-selection-box-navigation-folder.png"/></dir>
 
 <p>
 Die übergeordneten Verzeichnisse werden durch Anklicken der Verzeichnisschaltflächen
 gewählt.
 </p>
 
+<dir><img src="images/file-selection-box-navigation-arrow.png"/></dir>
+
 <p>
-Die untergeordneten Verzeichnisse werden durch Anklicken der zugeörigen
+Die untergeordneten Verzeichnisse werden durch Anklicken der zugehörigen
 Pfeilschaltfläche aufgelistet.
 </p>
 
@@ -79,25 +83,25 @@ Hierzu wird das kontextsensitive Menü oder die Funktionsleiste benutzt.
 Es gibt voreingestellte Verweise, die nicht löschbar sind:
 </p>
 
-<h4>Favoriten</h4>
+<h4><img src="../images/fsbox-favorites.png"> Favoriten</h4>
 
 <p>
 Dieser Ordner enthält die meistbesuchten Verzeichnisse.
 </p>
 
-<h4>Zuletzt besucht</h4>
+<h4><img src="../images/fsbox-visited.png"> Zuletzt besucht</h4>
 
 <p>
 In diesem Ordner sind die zuletzt besuchten Verzeichnisse enthalten.
 </p>
 
-<h4>Dateisystem</h4>
+<h4><img src="../images/fsbox-filesystem.png"> Dateisystem</h4>
 
 <p>
 Dies ermöglicht die Direktanwahl der Wurzel des Dateisystems.
 </p>
 
-<h4>Arbeitsfläche</h4>
+<h4><img src="../images/fsbox-desktop.png"> Arbeitsfläche</h4>
 
 <p>
 Dieser Ordner listet alle in <code>~/Desktop</code> angelegten Dateiverknüpfungen auf.
@@ -107,14 +111,14 @@ sind.
 vorhanden ist.
 </p>
 
-<h4>Müllkorb</h4>
+<h4><img src="../images/fsbox-trash.png"> Müllkorb</h4>
 
 <p>
-Über diesen Verweise werden die Inhalte des Müllkorbs aufgelistet.
+Über diesen Verweis werden die Inhalte des Müllkorbs aufgelistet.
 <br/><img src="../images/note.png"/> Dieser Verweis existiert nur unter KDE/Unix.
 </p>
 
-<h4>Heimverzeichnis</h4>
+<h4><img src="../images/fsbox-home.png"> Heimverzeichnis</h4>
 
 <p>
 Dies ermöglicht eine Direktanwahl des Heimverzeichnisses.
@@ -130,39 +134,58 @@ um die Einzelheiten der <a href="Database-Formats.html">Datenbankformate</a> zu 
 </p>
 
 <p>
+Durch Halten der mittleren Maustaste werden Informationen über die Datei angezeigt.
+</p>
+
+<p>
 Die Dateioperationen im einzelnen:
 </p>
 
-<h4>Löschen</h4>
+<h4><img src="../images/fsbox-delete.png"> Löschen</h4>
 
+<p>
 Das Entfernen der selektierten Datenbank. Unter KDE/Unix wird sie in den Müllkorb
 verschoben, ansonsten erfolgt eine physikalische Löschung, die nicht rückgängig gemacht
 werden kann. In jedem Fall muß zuvor diese Operation noch einmal in einem
 Dialog bestätigt werden.
+</p>
 
-<h4>Umbenennen</h4>
+<h4><img src="../images/fsbox-rename.png"> Umbenennen</h4>
 
-Das Umbenennen der selektierten Datenbank. Diese Operation kann mit <key>ESC</key>
+<p>
+Das Umbenennen der selektierten Datenbank. Diese Operation kann mit <kbd>&lt;Esc&gt;</kbd>
 wirkungslos verlassen werden. Der Dialog überprüft, ob der neue Dateiname
 zulässig ist, dabei werden die Besonderheiten aller unterstützten Betriebssysteme
 berücksichtigt, um einen Austausch auch zwischen den unterschiedlichen
 Betriebssystemen zu unterstützen.
+</p>
 
-<h4>Duplizieren</h4>
+<h4><img src="../images/fsbox-duplicate.png"> Duplizieren</h4>
 
+<p>
 Die selektierte Datenbank wird dupliziert, allerdings erst nach Eingabe des neuen
-Dateinamens. Diese Operation kann mit <key>ESC</key> abgebrochen werden. Es wird
+Dateinamens. Diese Operation kann mit <kbd>&lt;Esc&gt;</kbd> abgebrochen werden. Es wird
 keine bereits vorhandene Datenbank überschrieben, ein Überschreiben einer bereits
 vorhandenen Datenbank ist also nicht möglich.
+</p>
 
-<h4>Neuer Ordner</h4>
+<h4><img src="../images/fsbox-archive.png"> Ein Archiv anlegen</h4>
 
+<p>
+Die aktuell selektierte Datenbank wird archiviert. Der Archivname wird mit
+einem weiteren Dateiauswahldialog ermittelt.
+</p>
+
+<h4><img src="../images/fsbox-newfolder.png"> Neuer Ordner</h4>
+
+<p>
 Ein neues Unterverzeichnis wird angelegt, aber erst nach Eingabe des
-Verzeichnisnamens. Diese Operation kann mit <key>ESC</key> wirkungslos
+Verzeichnisnamens. Diese Operation kann mit <kbd>&lt;Esc&gt;</kbd> wirkungslos
 verlassen werden. Es ist nicht möglich, einen bereits vorhandenen
 Verzeichniseintrag zu überschreiben.
+</p>
 
-<h3 id="FileName">Auswahl der Datei</h3>
+<h3 id="FileName">Dateinameneingabe</h3>
 
 <p>
 Dieses Feld erlaubt die direkte Eingabe eines Dateinames, optional mit einer
@@ -182,9 +205,11 @@ Hier kann die Auswahl der Datenbanktypen eingeschränkt werden. Eine Übersicht
 
 <h3 id="Encoding">Auswahl der Enkodierung</h3>
 
+<dir><img src="images/file-selection-box-encoding.png"/></dir>
+
 <p>
-Die Auswahl der passenden Enkodierung hängt vom Datenbankformat ab. Auch hier
-sind weitere Informationen auf der Seite über die
+Die Auswahl der passenden Enkodierung hängt vom Datenbankformat ab.
+Weitere Informationen sind auf auf der Seite über die
 <a href="Database-Formats.html">Datenbankformate</a> zu finden. In den
 meisten Fällen ist jedoch die voreingestellte automatische Erkennung
 ausreichend.

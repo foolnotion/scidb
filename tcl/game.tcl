@@ -453,20 +453,19 @@ proc resize {n} {
 }
 
 
-proc startTrialMode {{pos -1}} {
-	::scidb::game::push $pos
-	::gamebar::setEmphasized [::application::pgn::gamebar] 1
-}
-
-
-proc endTrialMode {{pos -1}} {
-	::scidb::game::pop $pos
-	::gamebar::setEmphasized [::application::pgn::gamebar] 0
+proc flipTrialMode {{pos -1}} {
+	if {[trialMode? $pos]} {
+		::scidb::game::pop $pos
+		::gamebar::setEmphasized [::application::pgn::gamebar] 0
+	} else {
+		::scidb::game::push $pos
+		::gamebar::setEmphasized [::application::pgn::gamebar] 1
+	}
 }
 
 
 proc trialMode? {{pos -1}} {
-	return [::scidb::game::query trial]
+	return [::scidb::game::query $pos trial]
 }
 
 

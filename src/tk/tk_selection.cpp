@@ -169,26 +169,18 @@ unescapeChars(char* s, char const* e)
 
 	while (s < e)
 	{
-		if (*s == '%')
+		if (*s != '%')
 		{
-			if (s[1] == '%')
-			{
-				*p++ = '%';
-				s += 2;
-			}
-			else if (isxdigit(s[1]) && isxdigit(s[2]))
-			{
-				*p++ = (xdigitToVal(s[1]) << 4) + xdigitToVal(s[2]);
-				s += 3;
-			}
-			else
-			{
-				// Ooops, this shouldn't happen.
-				*p++ = *s++;
-			}
+			*p++ = *s++;
+		}
+		else if (isxdigit(s[1]) && isxdigit(s[2]))
+		{
+			*p++ = (xdigitToVal(s[1]) << 4) + xdigitToVal(s[2]);
+			s += 3;
 		}
 		else
 		{
+			// Ooops, this shouldn't happen.
 			*p++ = *s++;
 		}
 	}

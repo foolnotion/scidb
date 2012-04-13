@@ -101,6 +101,13 @@ proc WidgetProc {w command args} {
 			set args [array get opts]
 		}
 
+		invoke {
+			if {[$w cget -state] ne "disabled"} {
+				{*}[set ttk::entrybuttonbox::${w}::Vars(-command)]
+			}
+			return
+		}
+
 		instate {
 			if {[llength $args] != 1 && [llength $args] != 2} {
 				error "wrong # args: should be \"[namespace current] $command <statespec> ?<script>?\""

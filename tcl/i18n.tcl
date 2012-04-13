@@ -26,6 +26,10 @@
 
 namespace eval mc {
 
+set Alt				"Alt"
+set Ctrl				"Ctrl"
+set Shift			"Shift"
+
 set Alignment		"Alignment"
 set Apply			"Apply"
 set Archive			"Archive"
@@ -38,7 +42,6 @@ set Close			"Close"
 set Color			"Color"
 set Colors			"Colors"
 set Copy				"Copy"
-set Ctrl				"Ctrl"
 set Cut				"Cut"
 set Dark				"Dark"
 set Database		"Database"
@@ -366,6 +369,8 @@ proc selectLang {{lang {}}} {
 
 		close $f
 	}
+
+	if {[tk windowingsystem] eq "aqua"} { set ::mc::Ctrl "Cmd" }
 
 	set file [file join $::scidb::dir::share lang nag $mc::input($Language)]
 	if {[file readable $file]} {

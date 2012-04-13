@@ -34,6 +34,7 @@ tk::init(Tcl_Interp* ti)
 	Tcl_Eval(ti, "namespace eval ::scidb {}");
 	Tcl_Eval(ti, "namespace eval ::scidb::tk {}");
 
+	fixes_init(ti);
 	selection_init(ti);
 	x11_init(ti);
 	window_manager_init(ti);

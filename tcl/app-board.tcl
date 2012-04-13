@@ -28,16 +28,20 @@ namespace eval application {
 namespace eval board {
 namespace eval mc {
 
-set ShowCrosstable		"Show tournament table for this game"
+set ShowCrosstable			"Show tournament table for this game"
 
-set Tools					"Tools"
-set Control					"Control"
-set GoIntoNextVar			"Go into next variation"
-set GoIntPrevVar			"Go into previous variation"
+set Tools						"Tools"
+set Control						"Control"
+set GoIntoNextVar				"Go into next variation"
+set GoIntPrevVar				"Go into previous variation"
 
-set KeyEditAnnotation	"A"
-set KeyEditComment		"C"
-set KeyEditMarks			"M"
+set Accel(edit-annotation)	"A"
+set Accel(edit-comment)		"C"
+set Accel(edit-marks)		"M"
+set Accel(add-new-game)		"S"
+set Accel(replace-game)		"R"
+set Accel(replace-moves)	"V"
+set Accel(trial-mode)		"T"
 
 } ;# namespace mc
 
@@ -59,6 +63,7 @@ proc build {w width height} {
 	variable Dim
 	variable Vars
 	variable board
+	variable mc::Accel
 
 	Preload $width $height
 
@@ -79,9 +84,9 @@ proc build {w width height} {
 	set Vars(autoplay) 0
 	set Vars(active) 0
 	$board configure -cursor crosshair
-	bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
-	bind $canv <Destroy> [namespace code [list activate $w 0]]
-	bind $canv <FocusIn> [namespace code { GotFocus %W }]
+	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
+	::bind $canv <Destroy> [namespace code [list activate $w 0]]
+	::bind $canv <FocusIn> [namespace code { GotFocus %W }]
 
 	::board::stuff::bind $board all <Enter>				{ ::move::enterSquare %q }
 	::board::stuff::bind $board all <Leave>				{ ::move::leaveSquare %q }
@@ -94,11 +99,11 @@ proc build {w width height} {
 	::board::stuff::bind $board all <Control-ButtonPress-1>		{+ ::move::disable }
 	::board::stuff::bind $board all <Control-ButtonRelease-1>	{ ::marks::unpressSquare }
 
-	bind .application <<ControlOn>>	{ ::move::disable }
-	bind .application <<ControlOff>>	{ ::move::enable %X %Y }
-	bind .application <<ControlOff>>	{+ ::marks::releaseSquare }
-	bind .application <FocusOut>		{ ::move::enable }
-	bind .application <FocusOut>		{+ ::marks::releaseSquare }
+	::bind .application <<ControlOn>>	{ ::move::disable }
+	::bind .application <<ControlOff>>	{ ::move::enable %X %Y }
+	::bind .application <<ControlOff>>	{+ ::marks::releaseSquare }
+	::bind .application <FocusOut>		{ ::move::enable }
+	::bind .application <FocusOut>		{+ ::marks::releaseSquare }
 
 	::board::stuff::update $board standard
 	::board::unregisterSize $Dim(squaresize)
@@ -168,40 +173,47 @@ proc build {w width height} {
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code GoUp]]
 	
-	Bind <Left>				[namespace code GoLeft]
-	Bind <Right>			[namespace code GoRight]
-	Bind <Prior>			[namespace code GoPrior]
-	Bind <Next>				[namespace code GoNext]
-	Bind <Home>				[namespace code GoHome]
-	Bind <End>				[namespace code GoEnd]
-	Bind <Down>				[namespace code GoDown]
-	Bind <Up>				[namespace code GoUp]
-	Bind <Control-Down>	[namespace code LoadNext]
-	Bind <Control-Up>		[namespace code LoadPrevious]
-	Bind <<Undo>>			[namespace parent]::pgn::undo
-	Bind <<Redo>>			[namespace parent]::pgn::redo
-	Bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
+	bind <Left>				[namespace code GoLeft]
+	bind <Right>			[namespace code GoRight]
+	bind <Prior>			[namespace code GoPrior]
+	bind <Next>				[namespace code GoNext]
+	bind <Home>				[namespace code GoHome]
+	bind <End>				[namespace code GoEnd]
+	bind <Down>				[namespace code GoDown]
+	bind <Up>				[namespace code GoUp]
+	bind <Control-Down>	[namespace code LoadNext]
+	bind <Control-Up>		[namespace code LoadPrevious]
+	bind <<Undo>>			[namespace parent]::pgn::undo
+	bind <<Redo>>			[namespace parent]::pgn::redo
+	bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
 
 	for {set i 1} {$i <= 9} {incr i} {
-		Bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
+		bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 		# NOTE: the working of the following depends on actual keyboard bindings!
-		Bind <Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
+		bind <Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 	}
 
-	Bind <Shift-Up>		[list [namespace parent]::pgn::scroll -1 units]
-	Bind <Shift-Down>		[list [namespace parent]::pgn::scroll +1 units]
-	Bind <Shift-Prior>	[list [namespace parent]::pgn::scroll -1 pages]
-	Bind <Shift-Next>		[list [namespace parent]::pgn::scroll +1 pages]
-	Bind <Shift-Home>		[list [namespace parent]::pgn::scroll -9999 pages]
-	Bind <Shift-End>		[list [namespace parent]::pgn::scroll +9999 pages]
+	bind <Shift-Up>		[list [namespace parent]::pgn::scroll -1 units]
+	bind <Shift-Down>		[list [namespace parent]::pgn::scroll +1 units]
+	bind <Shift-Prior>	[list [namespace parent]::pgn::scroll -1 pages]
+	bind <Shift-Next>		[list [namespace parent]::pgn::scroll +1 pages]
+	bind <Shift-Home>		[list [namespace parent]::pgn::scroll -9999 pages]
+	bind <Shift-End>		[list [namespace parent]::pgn::scroll +9999 pages]
 
 	set Vars(after) {}
-	set Vars(key:annotation) $mc::KeyEditAnnotation
-	set Vars(key:comment) $mc::KeyEditComment
-	set Vars(key:marks) $mc::KeyEditMarks
+	foreach key [array names Accel] { set Vars(key:$key) $Accel($key) }
+
+	set Vars(cmd:edit-annotation)		[namespace parent]::pgn::editAnnotation
+	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment p]
+	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment a]
+	set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
+	set Vars(cmd:add-new-game)			[list [namespace parent]::pgn::SaveGame add]
+	set Vars(cmd:replace-game)			[list [namespace parent]::pgn::SaveGame replace]
+	set Vars(cmd:replace-moves)		[list [namespace parent]::pgn::SaveGame moves]
+	set Vars(cmd:trial-mode)			::game::flipTrialMode
 
 	LanguageChanged
-	Bind <<LanguageChanged>> [namespace code LanguageChanged]
+	bind <<LanguageChanged>> [namespace code LanguageChanged]
 
 	BuildBoard $canv
 	ConfigureBoard $canv
@@ -281,6 +293,18 @@ proc updateMarks {marks} {
 }
 
 
+proc bind {key cmd} {
+	variable Vars
+	variable board
+
+	::bind $Vars(widget:frame) $key $cmd
+	::bind $Vars(widget:border) $key $cmd
+	::bind $Vars(widget:frame) $key {+ break }
+	::bind $Vars(widget:border) $key {+ break }
+	::board::stuff::bind $board $key $cmd
+}
+
+
 proc GoLeft 	{} { goto -1 }
 proc GoRight	{} { goto +1 }
 proc GoPrior	{} { goto -10 }
@@ -298,18 +322,6 @@ proc LoadPrevious	{} { ;# TODO }
 proc GotFocus {w} {
 	# we have to skip the focus if no game is open
 	if {[::application::pgn::empty?]} { focus [::tk_focusNext $w] }
-}
-
-
-proc Bind {key cmd} {
-	variable Vars
-	variable board
-
-	bind $Vars(widget:frame) $key $cmd
-	bind $Vars(widget:border) $key $cmd
-	bind $Vars(widget:frame) $key {+ break }
-	bind $Vars(widget:border) $key {+ break }
-	::board::stuff::bind $board $key $cmd
 }
 
 
@@ -899,30 +911,24 @@ proc ShowCrossTable {parent} {
 
 proc LanguageChanged {} {
 	variable Vars
+	variable mc::Accel
 
-	Bind <Control-[string tolower $Vars(key:annotation)]> {}
-	Bind <Control-[string toupper $Vars(key:annotation)]> {}
-	Bind <Control-[string tolower $Vars(key:comment)]> {}
-	Bind <Control-[string toupper $Vars(key:comment)]> {}
-	Bind <Control-Shift-[string tolower $Vars(key:comment)]> {}
-	Bind <Control-Shift-[string toupper $Vars(key:comment)]> {}
-	Bind <Control-[string tolower $Vars(key:marks)]> {}
-	Bind <Control-[string toupper $Vars(key:marks)]> {}
+	foreach key [array names Accel] {
+		bind <Control-[string tolower $Vars(key:$key)]> {}
+		bind <Control-[string toupper $Vars(key:$key)]> {}
+	}
 
-	Bind <Control-[string tolower $mc::KeyEditAnnotation]> [namespace parent]::pgn::editAnnotation
-	Bind <Control-[string toupper $mc::KeyEditAnnotation]> [namespace parent]::pgn::editAnnotation
-	Bind <Control-[string tolower $mc::KeyEditComment]> [list [namespace parent]::pgn::editComment p]
-	Bind <Control-[string toupper $mc::KeyEditComment]> [list [namespace parent]::pgn::editComment p]
-	Bind <Control-Shift-[string tolower $mc::KeyEditComment]> \
-		[list [namespace parent]::pgn::editComment a]
-	Bind <Control-Shift-[string toupper $mc::KeyEditComment]> \
-		[list [namespace parent]::pgn::editComment a]
-	Bind <Control-[string tolower $mc::KeyEditMarks]> [namespace parent]::pgn::openMarksPalette
-	Bind <Control-[string toupper $mc::KeyEditMarks]> [namespace parent]::pgn::openMarksPalette
+	bind <Control-Shift-[string tolower $Vars(key:edit-comment)]> {}
+	bind <Control-Shift-[string toupper $Vars(key:edit-comment)]> {}
 
-	set Vars(key:annotation) $mc::KeyEditAnnotation
-	set Vars(key:comment) $mc::KeyEditComment
-	set Vars(key:marks) $mc::KeyEditMarks
+	foreach key [array names Accel] {
+		bind <Control-[string tolower $Accel($key)]> $Vars(cmd:$key)
+		bind <Control-[string toupper $Accel($key)]> $Vars(cmd:$key)
+		set Vars(key:$key) $Vars(cmd:$key)
+	}
+
+	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
+	bind <Control-Shift-[string toupper $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
 }
 
 

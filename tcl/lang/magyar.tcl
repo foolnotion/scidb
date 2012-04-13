@@ -34,6 +34,10 @@
 ::mc::AsciiMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
+::mc::Alt				"Alt" ;# NEW
+::mc::Ctrl				"Ctrl" ;# NEW
+::mc::Shift				"Shift" ;# NEW
+
 ::mc::Alignment		"Sorba rendezés(?)"
 ::mc::Apply				"Alkalmaz"
 ::mc::Archive			"Archive" ;# NEW
@@ -141,18 +145,18 @@
 ::progress::mc::Progress							"Állapot"
 
 ::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
-::progress::mc::Message(preload-tournament)	"Pre-loading tournament data" ;# NEW
-::progress::mc::Message(preload-player)		"Pre-loading player data" ;# NEW
-::progress::mc::Message(preload-annotator)	"Pre-loading annotator data" ;# NEW
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament index" ;# NEW
+::progress::mc::Message(preload-player)		"Pre-loading player index" ;# NEW
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator index" ;# NEW
 
 ::progress::mc::Message(read-index)				"Loading index data" ;# NEW
 ::progress::mc::Message(read-game)				"Loading game data" ;# NEW
 ::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
-::progress::mc::Message(read-tournament)		"Loading tournament data" ;# NEW
-::progress::mc::Message(read-player)			"Loading player data" ;# NEW
-::progress::mc::Message(read-annotator)		"Loading annotator data" ;# NEW
-::progress::mc::Message(read-source)			"Loading source data" ;# NEW
-::progress::mc::Message(read-team)				"Loading team data" ;# NEW
+::progress::mc::Message(read-tournament)		"Loading tournament index" ;# NEW
+::progress::mc::Message(read-player)			"Loading player index" ;# NEW
+::progress::mc::Message(read-annotator)		"Loading annotator index" ;# NEW
+::progress::mc::Message(read-source)			"Loading source index" ;# NEW
+::progress::mc::Message(read-team)				"Loading team index" ;# NEW
 ::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
 
 ::progress::mc::Message(write-index)			"Writing index data" ;# NEW
@@ -161,8 +165,6 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Téma"
-::menu::mc::Ctrl							"Ctrl"
-::menu::mc::Shift							"Shift"
 
 ::menu::mc::AllScidbFiles				"Minden Scidb fájl"
 ::menu::mc::AllScidbBases				"Minde Scidb adatbázis"
@@ -190,7 +192,9 @@
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
 ::menu::mc::ImportFiles					"PGN fájlok importálása"
-::menu::mc::CreateArchive				"Create an archive" ;# NEW
+::menu::mc::CreateArchive				"Create Archive" ;# NEW
+::menu::mc::BuildArchive				"Create archive %s" ;# NEW
+::menu::mc::Data							"%s data" ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
@@ -227,6 +231,9 @@
 ::archive::mc::CannotOpenArchive			"Cannot open archive '%s'." ;# NEW
 ::archive::mc::CouldNotCreateArchive	"Could not create archive '%s'." ;# NEW
 
+::archive::mc::PackFile						"Pack %s" ;# NEW
+::archive::mc::UnpackFile					"Unpack %s" ;# NEW
+
 ### application ########################################################
 ::application::mc::Database				"&Adatbázis"
 ::application::mc::Board					"&Tábla"
@@ -238,16 +245,20 @@
 ::application::mc::Shutdown				"Kilépés..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
+::application::board::mc::ShowCrosstable	"Mutasd a verseny kereszttábláját"
 
-::application::board::mc::Tools					"Eszközök"
-::application::board::mc::Control				"Kezelés"
-::application::board::mc::GoIntoNextVar		"Következő variáció"
-::application::board::mc::GoIntPrevVar			"Előző variáció"
+::application::board::mc::Tools				"Eszközök"
+::application::board::mc::Control			"Kezelés"
+::application::board::mc::GoIntoNextVar	"Következő variáció"
+::application::board::mc::GoIntPrevVar		"Előző variáció"
 
-::application::board::mc::KeyEditAnnotation	"A"
-::application::board::mc::KeyEditComment		"C"
-::application::board::mc::KeyEditMarks			"M"
+::application::board::mc::Accel(edit-annotation)	"A"
+::application::board::mc::Accel(edit-comment)		"C"
+::application::board::mc::Accel(edit-marks)			"M"
+::application::board::mc::Accel(add-new-game)		"S" ;# NEW
+::application::board::mc::Accel(replace-game)		"R" ;# NEW
+::application::board::mc::Accel(replace-moves)		"V" ;# NEW
+::application::board::mc::Accel(trial-mode)			"T" ;# NEW
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Fájl megnyitása"
@@ -294,6 +305,7 @@
 ::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
 ::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
+::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -1405,15 +1417,6 @@
 ::info::mc::Inspired				"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
 ::info::mc::SpecialThanks		"Special thanks to Shane Hudson for his terrific work. His effort is the basis for this application."
 
-::info::mc::Reference(PGN)			"is the accepted standard for textual representation of chess games and transfer between chess databases. Steven J. Edwards created the PGN standard and the document explaining it is available at many chess websites; here is one location for it: %url%."
-::info::mc::Reference(Crafty)		"is one of the strongest free chess program. The author is Bob Hyatt. The Crafty ftp site is: %url%. The \"TB\" subdirectory at this site contains many tablebase files which can also be used in Scidb."
-::info::mc::Reference(Stockfish)	"is an open-source chess engine based on Glaurung. Probably it is the strongest free chess engine available. Stockfish can be downloaded at %url%"
-::info::mc::Reference(Toga)		"is probably the strongest free chess engine available. The authors are Thomas Gaksch and Fabien Letouzey. The Toga II site is %url%."
-::info::mc::Reference(Fruit)		"Fruit is a chess engine developed by Fabien Letouzey and Joachim Rang, and is vice world computer chess champion 2005. This engine supports Chess960 and is two times winner of Chess960 Engine League. The Fruit site is %url%."
-::info::mc::Reference(Phalanx)	"Phalanx's playing style is quite human-like; when it plays at full strength, it may be compared to a intermediate-to-strong club player; beginners will be right at home with it, too. The author of Phalanx is Dusan Dobes. You may find this chess engine at %url%."
-::info::mc::Reference(Gully)		"The Gullydeckel chess playing program allows you to play a game of chess against a not too strong opponent. It has been written by Martin Borriss. The Gullydeckel site is %url%."
-::info::mc::Reference(MicroMax)	"is probably the smallest C Chess program in existence. The Micro-Max site is %url%. Micro-Max is written by H.G. Muller."
-
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove	"Megjegyzés lépés elé"
 ::comment::mc::CommentAfterMove		"Megjegyzés lépés utám"
@@ -1558,6 +1561,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
 
 ::dialog::fsbox::mc::Content					"Content" ;# NEW
+::dialog::fsbox::mc::Open						"Open" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok			"&OK"
@@ -1699,6 +1703,9 @@
 ::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 ::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..."
 ::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
+::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
+::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
+::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Eszköztár"

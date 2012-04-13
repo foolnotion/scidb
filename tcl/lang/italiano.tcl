@@ -15,7 +15,7 @@
 
 # ======================================================================
 # Copyright: (C) 2011-2012 Gregor Cramer
-# Copyright: (C) 2011 Giovanni Ornaghi
+# Copyright: (C) 2011-2012 Giovanni Ornaghi
 # ======================================================================
 
 # ======================================================================
@@ -33,6 +33,10 @@
 ::mc::SortMapping		{Å A å a à a À A è e È E é e É E ì i Ì i ò o Ò O ù u Ù U}
 ::mc::AsciiMapping	{Å A à a À A å a è e È E é e É E ì i Ì i  ò o Ò O ù u Ù U}
 ::mc::SortOrder		{A À Å B C D E È É F G H I Ì J K L M N O Ò P Q R S T U Ù V W X Y Z a à å b c d e è é f g h i ì j k l m n o ò p q r s t u ù v w x y z}
+
+::mc::Alt				"Alt" ;# NEW
+::mc::Ctrl				"Ctrl" ;# NEW
+::mc::Shift				"Shift" ;# NEW
 
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"
@@ -141,18 +145,18 @@
 ::progress::mc::Progress							"Progressi"
 
 ::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
-::progress::mc::Message(preload-tournament)	"Pre-loading tournament data" ;# NEW
-::progress::mc::Message(preload-player)		"Pre-loading player data" ;# NEW
-::progress::mc::Message(preload-annotator)	"Pre-loading annotator data" ;# NEW
+::progress::mc::Message(preload-tournament)	"Pre-loading tournament index" ;# NEW
+::progress::mc::Message(preload-player)		"Pre-loading player index" ;# NEW
+::progress::mc::Message(preload-annotator)	"Pre-loading annotator index" ;# NEW
 
 ::progress::mc::Message(read-index)				"Loading index data" ;# NEW
 ::progress::mc::Message(read-game)				"Loading game data" ;# NEW
 ::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
-::progress::mc::Message(read-tournament)		"Loading tournament data" ;# NEW
-::progress::mc::Message(read-player)			"Loading player data" ;# NEW
-::progress::mc::Message(read-annotator)		"Loading annotator data" ;# NEW
-::progress::mc::Message(read-source)			"Loading source data" ;# NEW
-::progress::mc::Message(read-team)				"Loading team data" ;# NEW
+::progress::mc::Message(read-tournament)		"Loading tournament index" ;# NEW
+::progress::mc::Message(read-player)			"Loading player index" ;# NEW
+::progress::mc::Message(read-annotator)		"Loading annotator index" ;# NEW
+::progress::mc::Message(read-source)			"Loading source index" ;# NEW
+::progress::mc::Message(read-team)				"Loading team index" ;# NEW
 ::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
 
 ::progress::mc::Message(write-index)			"Writing index data" ;# NEW
@@ -161,8 +165,6 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
-::menu::mc::Ctrl							"Ctrl"
-::menu::mc::Shift							"Shift"
 
 ::menu::mc::AllScidbFiles				"Tutti i file Scidb"
 ::menu::mc::AllScidbBases				"Tutti i Database Scidb"
@@ -190,7 +192,9 @@
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
 ::menu::mc::ImportFiles					"Importa file PGN..."
-::menu::mc::CreateArchive				"Create an archive" ;# NEW
+::menu::mc::CreateArchive				"Create Archive" ;# NEW
+::menu::mc::BuildArchive				"Create archive %s" ;# NEW
+::menu::mc::Data							"%s data" ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
@@ -227,6 +231,9 @@
 ::archive::mc::CannotOpenArchive			"Cannot open archive '%s'." ;# NEW
 ::archive::mc::CouldNotCreateArchive	"Could not create archive '%s'." ;# NEW
 
+::archive::mc::PackFile						"Pack %s" ;# NEW
+::archive::mc::UnpackFile					"Unpack %s" ;# NEW
+
 ### application ########################################################
 ::application::mc::Database				"&Database"
 ::application::mc::Board					"&Scacchiera"
@@ -238,16 +245,20 @@
 ::application::mc::Shutdown				"Spegni..."
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Mostra tabella torneo per questa partita"
+::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"
 
-::application::board::mc::Tools					"Strumenti"
-::application::board::mc::Control				"Controllo"
-::application::board::mc::GoIntoNextVar		"Vai alla prossima variante"
-::application::board::mc::GoIntPrevVar			"Vai alla precedente variante"
+::application::board::mc::Tools				"Strumenti"
+::application::board::mc::Control			"Controllo"
+::application::board::mc::GoIntoNextVar	"Vai alla prossima variante"
+::application::board::mc::GoIntPrevVar		"Vai alla precedente variante"
 
-::application::board::mc::KeyEditAnnotation	"A"
-::application::board::mc::KeyEditComment		"C"
-::application::board::mc::KeyEditMarks			"M"
+::application::board::mc::Accel(edit-annotation)	"A"
+::application::board::mc::Accel(edit-comment)		"C"
+::application::board::mc::Accel(edit-marks)			"M"
+::application::board::mc::Accel(add-new-game)		"S" ;# NEW
+::application::board::mc::Accel(replace-game)		"R" ;# NEW
+::application::board::mc::Accel(replace-moves)		"V" ;# NEW
+::application::board::mc::Accel(trial-mode)			"T" ;# NEW
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Apri Database..."
@@ -293,6 +304,7 @@
 ::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
 ::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
+::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames					"%s partite registrate"
@@ -1405,15 +1417,6 @@
 ::info::mc::Inspired				"Scidb è ispirato a Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
 ::info::mc::SpecialThanks		"Ringraziamenti speciali a Shane Hudson per il suo incredibile lavoro. I suoi sforzi sono alla base di questa applicazione."
 
-::info::mc::Reference(PGN)			"è lo standard accettato per la rappresentazione testuale delle partite di scacchi e il trasferimento tra database scacchistici. Steven J. Edwards ha creato lo standard PGN e il documento esplicativo disponibile su diversi siti di scacchi; qui c'è una possibile locazione: %url%."
-::info::mc::Reference(Crafty)		"è uno dei più forti programmi di scacchi gratuiti. L'autore è Bob Hyatt. Il sito FTP di Crafty è: %url%. La sotto-cartella \"TB\" nel sito contiene diverse tablebase che possono essere usate in Scidb."
-::info::mc::Reference(Stockfish)	"è un motore di scacchi open-source basato su Glaurung. Probabilmente è il motore di scacchi gratuito più forte a disposizione. Stockfish può essere scaricato da %url%"
-::info::mc::Reference(Toga)		"è probabilmente il più forte motore di scacchi grauito disponibile. Gli autori sono Thomas Gaksch e Fabien Letouzey. Il sito di Toga II è %url%."
-::info::mc::Reference(Fruit)		"Fruit è un motore di scacchi sviluppato da Fabien Letouzey e Joachim Rang, ed è il programma vice-campione del mondo nel 2005. Questo motore supporta gli Scacchi 960 ed è stato vincitore per due volte del Campionato per Motori di Scacchi 960. Il sito di Fruit è %url%."
-::info::mc::Reference(Phalanx)	"Lo stile di gioco di Phalanx è simile a quello umano; quando gioca al suo massimo può essere paragonato a un giocatore di circolo intermedio-forte; ma anche i principianti si troveranno bene con questo programma. L'autore di Phalanx è Dusan Dobes. Puoi trovare questo motore di scacchi su %url%."
-::info::mc::Reference(Gully)		"Il programma di scacchi Gullydeckel ti permette di giocare contro un avversario non troppo forte. È stato scritto da Martin Borriss. Il sito di Gullydeckel è %url%."
-::info::mc::Reference(MicroMax)	"è probabilmente il più piccolo programma di scacchi scritto in C esistente. Il sito di Micro-Max è %url%. Micro-Max è stato scritto da H.G. Muller."
-
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Commento prima della mossa"
 ::comment::mc::CommentAfterMove		"Commento dopo mossa"
@@ -1558,6 +1561,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
 
 ::dialog::fsbox::mc::Content					"Content" ;# NEW
+::dialog::fsbox::mc::Open						"Open" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"
@@ -1699,6 +1703,9 @@
 ::fsbox::mc::CannotOpenOrCreate			"Non posso aprire/creare '%s'. Per favore scegli una cartella."
 ::fsbox::mc::WaitWhileDuplicating		"Per favore attendere mentre avviene la duplicazione del file..."
 ::fsbox::mc::FileHasDisappeared			"Il file '%s' è scomparso."
+::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
+::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
+::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"

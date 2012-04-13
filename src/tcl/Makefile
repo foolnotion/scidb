@@ -1166,6 +1166,16 @@ tcl_progress.o: ../mstl/m_backtrace.h
 tcl_progress.o: ../mstl/m_exception.ipp
 tcl_progress.o: tcl_base.h
 tcl_progress.o: tcl_base.ipp
+tcl_progress.o: ../mstl/m_string.h
+tcl_progress.o: ../mstl/m_string.ipp
+tcl_progress.o: ../mstl/m_utility.h
+tcl_progress.o: ../mstl/m_type_traits.h
+tcl_progress.o: ../mstl/m_type_traits.ipp
+tcl_progress.o: ../mstl/m_utility.ipp
+tcl_progress.o: ../mstl/m_limits.h
+tcl_progress.o: ../mstl/m_bit_functions.h
+tcl_progress.o: ../mstl/m_bit_functions.ipp
+tcl_progress.o: ../mstl/m_assert.h
 tcl_tree.o: tcl_tree.h
 tcl_tree.o: tcl_base.h
 tcl_tree.o: tcl_base.ipp

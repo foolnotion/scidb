@@ -1468,7 +1468,7 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
-			if {[lindex [split [$w index current] .] end] ne "0"} {
+			if {$prevSym >= 0 && [lindex [split [$w index current] .] end] ne "0"} {
 				$w insert current " "
 			}
 			set prevSym 1
@@ -1822,7 +1822,11 @@ proc PopupMenu {parent position} {
 	catch { wm attributes $menu -type popup_menu }
 
 	if {[::game::trialMode?]} {
-		$menu add command -label $mc::StopTrialMode -command ::game::endTrialMode
+		$menu add command \
+			-label $mc::StopTrialMode \
+			-command ::game::flipTrialMode \
+			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
+			;
 		$menu add separator
 	} else {
 		if {[::scidb::game::level] > 0} {
@@ -1853,7 +1857,11 @@ proc PopupMenu {parent position} {
 			$menu add separator
 		}
 
-		$menu add command -label $mc::StartTrialMode -command ::game::startTrialMode
+		$menu add command \
+			-label $mc::StartTrialMode \
+			-command ::game::flipTrialMode \
+			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
+			;
 		$menu add command -label $mc::Command(game:transpose) -command [namespace code TransposeGame]
 
 		menu $menu.strip -tearoff no
@@ -2026,6 +2034,7 @@ proc PopupMenu {parent position} {
 			-label "$mc::EditAnnotation..." \
 			-state $state \
 			-command [namespace code [list editAnnotation $position]] \
+			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-annotation)]" \
 			;
 		if {[::scidb::game::position atStart?]} {
 			$menu add command \
@@ -2036,10 +2045,12 @@ proc PopupMenu {parent position} {
 			$menu add command \
 				-label "$mc::EditCommentAfter..." \
 				-command [namespace code [list editComment p $position]] \
+				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
 			$menu add command \
 				-label "$mc::EditCommentBefore..." \
 				-command [namespace code [list editComment a $position]] \
+				-accel "$::mc::Ctrl-$::mc::Shift-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
 		}
 		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {
@@ -2058,6 +2069,7 @@ proc PopupMenu {parent position} {
 			-label "$::marks::mc::MarksPalette..." \
 			-state $state \
 			-command [namespace code [list openMarksPalette $position]] \
+			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-marks)]" \
 			;
 
 		$menu add separator
@@ -2077,8 +2089,7 @@ proc PopupMenu {parent position} {
 	foreach action {undo redo} {
 		set cmd [::scidb::game::query $action]
 		set label [set ::mc::[string toupper $action 0 0]]
-		if {[tk windowingsystem] eq "aqua"} { set accel "Cmd" } else { set accel "Ctrl" }
-		append accel "-"
+		set accel "$::mc::Ctrl-"
 		if {$action eq "undo"} { append accel "Z" } else { append accel "Y" }
 		if {[llength $cmd]} {
 			append label " '"
@@ -2121,6 +2132,7 @@ proc PopupMenu {parent position} {
 				-label [format $mc::ReplaceGame $name] \
 				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
 				-state $state \
+				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(replace-game)]" \
 				;
 
 			if {![::scidb::game::query modified?]} { set state disabled }
@@ -2128,6 +2140,7 @@ proc PopupMenu {parent position} {
 				-label [format $mc::ReplaceMoves $name] \
 				-command [namespace code [list replaceMoves $parent]] \
 				-state $state \
+				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(replace-moves)]" \
 				;
 		}
 
@@ -2142,6 +2155,7 @@ proc PopupMenu {parent position} {
 			-label [format $mc::AddNewGame [::util::databaseName $actual]] \
 			-command [list ::dialog::save::open $parent $actual $position] \
 			-state $state \
+			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(add-new-game)]" \
 			;
 
 		menu $menu.save
@@ -2401,7 +2415,7 @@ proc FoldVariations {flag} {
 
 
 proc TransposeGame {} {
-	::game::startTrialMode
+	::game::flipTrialMode
 	::widget::busyOperation ::scidb::game::transpose true
 }
 
@@ -2653,6 +2667,35 @@ proc LanguageChanged {} {
 	::toolbar::childconfigure $Vars(button:new) -tooltip $::gamebar::mc::GameNew
 	::toolbar::childconfigure $Vars(button:shuffle) \
 		-tooltip "${::gamebar::mc::GameNew}: $::setup::board::mc::Shuffle"
+}
+
+
+proc SaveGame {mode} {
+	variable ::scidb::clipbaseName
+	variable Vars
+
+	set position [::gamebar::selected $Vars(gamebar)]
+	set base [::scidb::db::get name]
+
+	if {$base eq $clipbaseName} { return }
+	if {[::scidb::db::get readonly? $base]} { return }
+	if {![::scidb::game::query modified?]} { return }
+
+
+	switch $mode {
+		add {
+			::dialog::save::open $Vars(main) $base $position
+		}
+
+		replace {
+			lassign [::scidb::game::link? $position] _ index
+			::dialog::save::open $Vars(main) $base $position [expr {$index + 1}]
+		}
+
+		moves {
+			replaceMoves $Vars(main)
+		}
+	}
 }
 
 

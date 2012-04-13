@@ -22,6 +22,7 @@ CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	tk_busy.cpp \
+	tk_fixes.cpp \
 	tk_image.cpp \
 	tk_init.cpp \
 	tk_jpeg.cpp \
@@ -184,6 +185,15 @@ tk_selection.o: ../mstl/m_exception.h
 tk_selection.o: ../mstl/m_backtrace.h
 tk_selection.o: ../mstl/m_types.h
 tk_selection.o: ../mstl/m_exception.ipp
+tk_selection.o: ../mstl/m_string.h
+tk_selection.o: ../mstl/m_string.ipp
+tk_selection.o: ../mstl/m_utility.h
+tk_selection.o: ../mstl/m_type_traits.h
+tk_selection.o: ../mstl/m_type_traits.ipp
+tk_selection.o: ../mstl/m_utility.ipp
+tk_selection.o: ../mstl/m_limits.h
+tk_selection.o: ../mstl/m_bit_functions.h
+tk_selection.o: ../mstl/m_bit_functions.ipp
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h

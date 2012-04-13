@@ -56,6 +56,7 @@ set HypertextFile				"Hypertext File"
 set TypesettingFile			"Typesetting File"
 
 set Content						"Content"
+set Open							"Open"
 
 }
 
@@ -246,6 +247,18 @@ proc Open {type args} {
 		set opts(-fileencodings) [set [namespace current]::FileEncodings]
 	}
 
+	if {![info exists opts(-helpcommand)]} {
+		set opts(-helpcommand) [namespace code OpenHelp]
+		set opts(-helpicon) $::icon::16x16::help
+		set opts(-helplabel) $::menu::mc::Help
+	}
+	if {![info exists opts(-cancelcommand)]} {
+		set opts(-cancelcommand) [list set [namespace current]::Priv($type:result) {}]
+	}
+	if {![info exists opts(-okcommand)]} {
+		set opts(-okcommand) [namespace code [list OkCmd $type]]
+	}
+
 	if {$create} {
 		if {[string length $geometry] == 0} {
 			set opts(-rows) 8
@@ -258,9 +271,8 @@ proc Open {type args} {
 			-renamecommand [namespace code RenameFile] \
 			-bookmarkswidth 120 \
 			-duplicatecommand [namespace code DuplicateFile] \
-			-okcommand [namespace code OkCmd] \
-			-cancelcommand [list set [namespace current]::Priv(result) {}] \
 			-inspectcommand [namespace code Inspect] \
+			-isusedcommand [namespace code IsUsed] \
 			-font TkTextFont \
 			{*}[array get opts] \
 			;
@@ -276,7 +288,7 @@ proc Open {type args} {
 		return $w
 	}
 
-	wm protocol $w WM_DELETE_WINDOW [list set [namespace current]::Priv(result) {}]
+	wm protocol $w WM_DELETE_WINDOW [list set [namespace current]::Priv($type:result) {}]
 	wm title $w $data(-title)
 
 	if {$create} {
@@ -343,22 +355,23 @@ proc Open {type args} {
 	wm iconname $w ""
 	wm deiconify $w
 
-	array unset Priv result
+	array unset Priv $type:result
+	tkwait visibility $w
 	::ttk::grabWindow $w
-	vwait [namespace current]::Priv(result)
+	vwait [namespace current]::Priv($type:result)
 	::ttk::releaseGrab $w
 	wm withdraw $w
 
 	set Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
 
-	lassign $Priv(result) path encoding
+	lassign $Priv($type:result) path encoding
 	if {[llength $path] == 0} { return {} }
 
 	if {$encoding eq $::encoding::mc::AutoDetect} {
 		return [list $path $::encoding::autoEncoding]
 	}
 
-	return $Priv(result)
+	return $Priv($type:result)
 }
 
 
@@ -378,6 +391,11 @@ proc TraceLastFolder {dlg dlg2 w} {
 	if {$dlg eq $dlg2} {
 		set [namespace current]::Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
 	}
+}
+
+
+proc OpenHelp {parent} {
+	::help::open $parent File-Selection-Dialog
 }
 
 
@@ -484,7 +502,13 @@ proc GetNumGames {filename mtime} {
 }
 
 
-proc Inspect {parent {filename ""}} {
+proc IsUsed {folder file} {
+	if {[::scidb::db::get open? [file normalize $file]]} { return yes }
+	return no
+}
+
+
+proc Inspect {parent folder {filename ""}} {
 	variable FileType
 
 	set dlg $parent.__inspect__
@@ -525,6 +549,13 @@ proc Inspect {parent {filename ""}} {
 					tk::label $f.lngames -text "$::crosstable::mc::Games:"
 					tk::label $f.tngames -text $numGames
 				}
+				if {[::scidb::db::get open? [file normalize $filename]]} {
+					set open [string tolower $::mc::Yes]
+				} else {
+					set open [string tolower $::mc::No]
+				}
+				tk::label $f.lused -text "$mc::Open:"
+				tk::label $f.tused -text $open
 				tk::label $f.ldescr -text "$::application::database::mc::Description:"
 				tk::label $f.tdescr -text $descr
 			}
@@ -545,7 +576,8 @@ proc Inspect {parent {filename ""}} {
 							switch [file extension $value] {
 								.sci - .si3 - .si4 - .cbh - .pgn - .gz {
 									if {[string length $bases] > 0} { append bases \n }
-									append bases [file tail $value]
+									set file [file tail $value]
+									append bases $file
 								}
 							}
 						}
@@ -559,7 +591,7 @@ proc Inspect {parent {filename ""}} {
 		}
 
 		set r 1
-		foreach attr {name type size created modified ngames descr} {
+		foreach attr {name type size created modified ngames used descr} {
 			if {[winfo exists $f.l$attr]} {
 				$f.l$attr configure -background $bg
 				$f.t$attr configure -background $bg
@@ -573,6 +605,8 @@ proc Inspect {parent {filename ""}} {
 		grid columnconfigure $f {0 2 4} -minsize 3
 
 		::tooltip::popup $parent $dlg cursor
+	} else {
+		::tooltip::popdown $dlg
 	}
 }
 
@@ -600,8 +634,8 @@ proc SelectEncoding {parent encoding defaultEncoding} {
 }
 
 
-proc OkCmd {files {encoding ""}} {
-	set [namespace current]::Priv(result) [list $files $encoding]
+proc OkCmd {type files {encoding ""}} {
+	set [namespace current]::Priv($type:result) [list $files $encoding]
 }
 
 

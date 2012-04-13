@@ -989,7 +989,7 @@ proc PopupMenu {parent board position {what ""}} {
 		-accelerator "${::menu::mc::Ctrl}-+" \
 		;
 	$menu add command \
-		-label $mc::MinimizeBoardSize \
+		-label " $mc::MinimizeBoardSize" \
 		-image $::icon::16x16::minimize \
 		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board min]] \

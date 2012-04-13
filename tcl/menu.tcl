@@ -28,8 +28,6 @@ namespace eval menu {
 namespace eval mc {
 
 set Theme						"Theme"
-set Ctrl							"Ctrl"
-set Shift						"Shift"
 
 set AllScidbFiles				"All Scidb files"
 set AllScidbBases				"All Scidb databases"
@@ -57,7 +55,9 @@ set ContactFeatureRequest	"&Feature Request"
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
 set ImportFiles				"Import PGN files..."
-set CreateArchive				"Create an archive"
+set CreateArchive				"Create Archive"
+set BuildArchive				"Create archive %s"
+set Data							"%s data"
 
 # do not need translation
 set SettingsEnglish			"&English"
@@ -212,7 +212,7 @@ proc build {menu} {
 		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::log \
-		-accelerator "${mc::Ctrl}+L" \
+		-accelerator "${::mc::Ctrl}+L" \
 		-command ::log::show \
 		;
 
@@ -265,7 +265,7 @@ proc build {menu} {
 		-underline [incr ul] \
 		-image $::icon::16x16::exit \
 		-command ::application::shutdown \
-		-accelerator "Ctrl+Q" \
+		-accelerator "${::mc::Ctrl}+Q" \
 		;
 }
 
@@ -311,6 +311,10 @@ proc dbOpen {parent} {
 		-needencoding 1 \
 		-geometry last \
 		-title $mc::OpenFile \
+		-customicon $::icon::16x16::filetypeArchive \
+		-customtooltip $mc::CreateArchive \
+		-customcommand [namespace code [list CreateArchive]] \
+		-customfiletypes {.sci .si4 .si3 .cbh .pgn .gz .zip} \
 	]
 
 	if {[llength $result]} {
@@ -335,8 +339,11 @@ proc dbCreateArchive {parent {base ""}} {
 	if {[llength $result]} {
 		set arch [lindex $result 0]
 		set progress $parent.__p__
-		if {[::scidb::db::get memoryOnly? $base]} {
-			::dialog::progressbar::open $progress -mode indeterminate
+		if {[::scidb::db::get open? $base] && [::scidb::db::get memoryOnly? $base]} {
+			::dialog::progressbar::open $progress \
+				-mode indeterminate \
+				-message [format $mc::BuildArchive [file rootname [file tail $arch]]] \
+				;
 			set streams {}
 			foreach ext [::scidb::misc::suffixes "$base.sci"] { lappend streams "$base.$ext" }
 			set cmd [list ::archive::packStreams \
@@ -347,10 +354,14 @@ proc dbCreateArchive {parent {base ""}} {
 				[clock seconds] \
 				[::scidb::db::count games $base] \
 				[namespace current]::archive::Write \
+				[namespace current]::archive::getName \
 				$progress \
 			]
 		} else {
-			::dialog::progressbar::open $progress -mode determinate
+			::dialog::progressbar::open $progress \
+				-mode determinate \
+				-message [format $mc::BuildArchive [file rootname [file tail $arch]]] \
+				;
 			set files {}
 			set rootname [file rootname $base]
 			foreach ext [::scidb::misc::suffixes $base] {
@@ -362,6 +373,7 @@ proc dbCreateArchive {parent {base ""}} {
 							$files \
 							$progress \
 							[namespace current]::archive::GetCompressionMethod \
+							[namespace current]::archive::getName \
 							[namespace current]::archive::GetCount \
 							::scidb::misc::mapExtension \
 						]
@@ -463,7 +475,48 @@ proc CheckFullscreen {app} {
 	}
 }
 
+
+proc CreateArchive {parent file} {
+	dbCreateArchive $parent [file normalize $file]
+}
+
 namespace eval archive {
+# namespace eval mc {
+#
+# set Data(index)				"index data"
+# set Data(game)				"game data"
+# set Data(namebase)			"namebase data"
+# set Data(sorting)			"sorting data"
+# set Data(team)				"team data"
+# set Data(initialization)	"initialization data"
+#
+# set Index(annotation)		"annotation index"
+# set Index(source)			"source index"
+# set Index(player)			"player index"
+# set Index(annotator)		"annotator index"
+# set Index(team)				"team index"
+#
+# }
+
+proc getName {file} {
+	set ext [file extension $file]
+#	switch $ext {
+#		.sci - .si3 - .si4 - .cbh	{ return $mc::Data(index) }
+#		.scg - .sg3 - .sg4 - .cbg	{ return $mc::Data(game) }
+#		.scn - .sn3 - .sn4			{ return $mc::Data(namebase) }
+#		.ssc								{ return $mc::Data(sorting) }
+#		.pgn - .gz  - .zip			{ return $mc::Data(game) }
+#		.cba								{ return $mc::Index(annotation) }
+#		.cbs								{ return $mc::Index(source) }
+#		.cbp								{ return $mc::Index(player) }
+#		.cbc								{ return $mc::Index(annotator) }
+#		.cbt								{ return $mc::Index(team) }
+#		.cbj								{ return $mc::Data(team) }
+#		.ini								{ return $mc::Data(initialization) }
+#	}
+	return [format [set [namespace parent]::mc::Data] $ext]
+}
+
 
 proc GetCompressionMethod {ext} {
 	switch $ext {

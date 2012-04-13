@@ -96,7 +96,7 @@ proc open {parent {file {}} args} {
 		}
 	}
 
-	set dlg $parent.help
+	if {$parent eq "."} { set dlg .help } else { set dlg $parent.help }
 	if {[winfo exists $dlg]} {
 		raise $dlg
 		focus $dlg
@@ -114,6 +114,7 @@ proc open {parent {file {}} args} {
 	set Priv(dlg) $dlg
 	set Priv(minsize) 200
 	set Priv(recent) {}
+	set Priv(grab) {}
 
 	::scidb::misc::html cache on
 
@@ -227,6 +228,8 @@ proc open {parent {file {}} args} {
 		set Priv(currentfile) [FullPath $file]
 	}
 	ReloadCurrentPage
+
+	return $dlg
 }
 
 

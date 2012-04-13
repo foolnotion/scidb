@@ -89,6 +89,10 @@ set HtmlMapping {
 	</annotation>	{</div>}
 }
 
+set KeyMapping {
+	<key>ESC</key>	<kbd>&lt;Esc&gt;</kbd>
+}
+
 
 proc print {chan source title body} {
 	variable lang
@@ -223,6 +227,7 @@ if {![string match TITLE* $line]} {
 }
 
 proc readContents {chan file} {
+	variable KeyMapping
 	variable HtmlMapping
 	variable charset
 
@@ -252,6 +257,7 @@ proc readContents {chan file} {
 			}
 		}
 
+		set line [string map $KeyMapping $line]
 		set line [string map $HtmlMapping $line]
 
 		if {[string match CHARSET* $line]} {

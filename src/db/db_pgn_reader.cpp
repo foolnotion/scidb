@@ -1589,6 +1589,9 @@ PgnReader::parseDescription(mstl::istream& strm, mstl::string& result)
 			case '[':
 				return;
 
+			case EOF:
+				return;
+
 			case '\n':
 				if (++n == 10)
 					return;

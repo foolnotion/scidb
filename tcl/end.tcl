@@ -141,7 +141,9 @@ proc WriteOptions {chan} {
 }
 options::hookWriter [namespace current]::WriteOptions
 
-proc archive::setModTime {file time} { return ::scidb::util::setModTime $file $time }
+proc archive::setModTime {file time} { ::scidb::misc::setModTime $file $time }
+proc archive::setMessage {progress msg} { ::dialog::progressbar::setMessage $progress $msg }
+proc archive::setMaxTick {progress n} { ::dialog::progressbar::setMaximum $progress $n }
 
 proc archive::logError {msg detail} {
 	::log::error $::mc::Archive $msg
@@ -151,10 +153,6 @@ proc archive::logError {msg detail} {
 proc archive::tick {progress n} {
 	::dialog::progressbar::tick $progress $n
 	update
-}
-
-proc archive::setMaxTick {progress n} {
-	::dialog::progressbar::setMaximum $progress $n
 }
 
 log::finishLayout

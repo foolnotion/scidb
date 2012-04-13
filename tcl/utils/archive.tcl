@@ -32,6 +32,9 @@ set UsingRawInstead			"Using compression method 'raw' instead."
 set CannotOpenArchive		"Cannot open archive '%s'."
 set CouldNotCreateArchive	"Could not create archive '%s'."
 
+set PackFile					"Pack %s"
+set UnpackFile					"Unpack %s"
+
 }
 
 namespace import ::tcl::mathfunc::min
@@ -41,6 +44,7 @@ namespace import ::tcl::mathfunc::min
 proc setModTime {file time} {}
 proc tick {progress n} {}
 proc setMaxTick {progress n} {}
+proc setMessage {progress msg} {}
 proc logError {msg detail} {}
 
 
@@ -118,7 +122,7 @@ proc inspect {arch {destDir ""}} {
 }
 
 
-proc packFiles {arch sources progress procCompression {procCount {}} {mapExtension {}}} {
+proc packFiles {arch sources progress procCompression procGetName {procCount {}} {mapExtension {}}} {
 	set TotalSize 0
 	set Count 0
 	array set formats {}
@@ -197,6 +201,8 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 			puts $fd "<$attr> $value"
 		}
 
+		setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
+
 		if {![string match http:* $FileName]} {
 			puts -nonewline $fd "<Size> "
 			set sizeOffs [tell $fd]
@@ -250,7 +256,7 @@ proc packFiles {arch sources progress procCompression {procCount {}} {mapExtensi
 }
 
 
-proc packStreams {arch sources formats compression modified count procWrite progress} {
+proc packStreams {arch sources formats compression modified count procWrite procGetName progress} {
 	set TotalSize 0
 	set Count $count
 	set Type single
@@ -274,6 +280,8 @@ proc packStreams {arch sources formats compression modified count procWrite prog
 	set TotalSize 0
 
 	foreach source $sources {
+		setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
+
 		puts $fd ""
 		puts $fd "<-- H E A D -->"
 
@@ -311,7 +319,7 @@ proc packStreams {arch sources formats compression modified count procWrite prog
 }
 
 
-proc unpack {arch progress {destDir ""}} {
+proc unpack {arch procGetName progress {destDir ""}} {
 	if {[catch {set fd [open $arch "r"]} err]} {
 		logError [format $mc::CannotCreateFile $arch] ""
 		return 0
@@ -365,6 +373,7 @@ proc unpack {arch progress {destDir ""}} {
 				return 0
 			}
 		}
+		setMessage $progress [format $mc::UnpackFile [$procGetName $FileName]]
 		lappend entries $attrs
 		set destFilename [file join $destDir [file tail $FileName]]
 		if {[string match http:* $FileName]} {

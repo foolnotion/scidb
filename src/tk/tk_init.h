@@ -26,6 +26,7 @@ namespace tk { void init(Tcl_Interp* ti); }
 // internally used
 namespace tk {
 
+void fixes_init(Tcl_Interp*);
 void selection_init(Tcl_Interp*);
 void image_init(Tcl_Interp*);
 void jpeg_init(Tcl_Interp*);

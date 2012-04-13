@@ -71,6 +71,7 @@ set UriRejectedDetail		"Only Scidb databases can be opened:"
 set EmptyUriList				"Drop content is empty."
 set OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
 set SelectDatabases			"Select the databases to be opened"
+set ExtractArchive			"Extract archive %s"
 
 set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
@@ -630,8 +631,11 @@ proc OpenArchive {parent file byUser encoding readonly switchToBase} {
 	}
 
 	set progress $parent.__progress
-	::dialog::progressbar::open $progress -variable __dummy
-	set rc [::archive::unpack $file $progress $dirname]
+	::dialog::progressbar::open $progress \
+		-mode indeterminate \
+		-message [format $mc::ExtractArchive [file rootname [file tail $file]]] \
+		;
+	set rc [::archive::unpack $file ::menu::archive::getName $progress $dirname]
 	destroy $progress
 	if {!$rc} { return [::log::show] }
 

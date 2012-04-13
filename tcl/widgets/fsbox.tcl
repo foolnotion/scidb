@@ -114,6 +114,9 @@ set DirectoryDoesNotExist		"Directory \"%s\" does not exist."
 set CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 set WaitWhileDuplicating		"Wait while duplicating file..."
 set FileHasDisappeared			"File '%s' has disappeared."
+set CannotDelete					"Cannot delete file '%s'."
+set CannotRename					"Cannot rename file '%s'."
+set CannotDeleteDetail			"This file is currently in use."
 
 }
 
@@ -176,6 +179,14 @@ proc fsbox {w type args} {
 		-okcommand					{}
 		-cancelcommand				{}
 		-inspectcommand			{}
+		-customcommand				{}
+		-customfiletypes			{}
+		-customicon					{}
+		-customtooltip				{}
+		-helpcommand				{}
+		-helpicon					{}
+		-helplabel					{}
+		-isusedcommand				{}
 	}
 
 	array set opts $args
@@ -186,7 +197,8 @@ proc fsbox {w type args} {
 							inactivebackground inactiveforeground filetypes fileencodings
 							fileicons showhidden sizecommand selectencodingcommand validatecommand
 							deletecommand renamecommand duplicatecommand okcommand cancelcommand
-							inspectcommand initialfile bookmarkswidth} {
+							inspectcommand initialfile bookmarkswidth customcommand customicon
+							customtooltip customfiletypes helpcommand helpicon helplabel isusedcommand} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -204,6 +216,7 @@ proc fsbox {w type args} {
 		set Vars(validatecommand) [namespace code ValidateFile]
 	}
 
+	set Vars(delete:action) delete
 	set filesystem $::choosedir::icon::16x16::fileSystem
 
 	set Vars(type) $type
@@ -214,13 +227,13 @@ proc fsbox {w type args} {
 	set Vars(folder:trash) [file join $Vars(folder:home) .local share Trash files]
 	if {![file isdirectory $Vars(folder:trash)]} { set Vars(folder:trash) "" }
 	if {![CheckIsKDE $w]} { set Vars(folder:trash) "" }
-	set Vars(folder:filesystem) [fileSeperator]
+	set Vars(folder:filesystem) [fileSeparator]
 	set Vars(bookmark:folder) ""
 	set Vars(edit:active) 0
 	set Vars(lookup:$Vars(folder:home)) home
 	set Vars(lookup:$Vars(folder:filesystem)) filesystem
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
-	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
+#	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
 
 	set Vars(icon:lastvisited) $icon::16x16::visited
 	set Vars(icon:favorites) $icon::16x16::star
@@ -271,6 +284,7 @@ proc fsbox {w type args} {
 		-textvar [namespace current]::${w}::Vars(encodingVar) \
 		-command [namespace code [list SelectEncoding $w]] \
 	]
+	bind $Vars(widget:encoding:label) <<AltUnderlined>> [list $Vars(widget:encoding:entry) invoke]
 	tooltip $top.ent_encoding [Tr SelectEncoding]
 
 	if {[llength $Vars(selectencodingcommand)]} {
@@ -287,7 +301,7 @@ proc fsbox {w type args} {
 			-padding 1                     \
 			;
 		bind $top.ent_filetype <<ComboboxSelected>> [namespace code [list SelectFileTypes $w %W]]
-		bind $top.lbl_filetype <<AltUnderlined>> [list focus $top.ent_filetype]
+		bind $top.lbl_filetype <<AltUnderlined>> [list ::ttk::combobox::Post $top.ent_filetype]
 		set Vars(widget:filetypes:combobox) $top.ent_filetype
 		tooltip $top.ent_filetype [Tr SelectWhichType]
 
@@ -358,22 +372,38 @@ proc fsbox {w type args} {
 		-image $icon::16x16::cancel \
 		-command [namespace code [list Cancel $w]] \
 	]
+	if {[llength $Vars(helpcommand)]} {
+		tk::AmpWidget ttk::button $buttons.help  \
+			-class TButton \
+			-default normal \
+			-compound left \
+			-image $Vars(helpicon) \
+			-command [list $Vars(helpcommand) $w] \
+			;
+	}
 	set utype [string toupper $Vars(type) 0 0]
 	if {$utype eq "Dir"} { set utype Open }
 	tk::SetAmpText $buttons.cancel " [Tr Cancel]"
 	tk::SetAmpText $buttons.ok " [Tr $utype]"
+	if {[llength $Vars(helpcommand)]} {
+		tk::SetAmpText $buttons.help " $Vars(helplabel)"
+	}
 	changeFileDialogType $w $type
 
 	bind $Vars(button:ok) <Return> [namespace code { InvokeOk %W }]
 	bind $Vars(button:cancel) <Return> [namespace code [list Cancel $w]]
 
 	if {$type eq "save"} { useSaveMode $w $Vars(savemode) }
+	if {[llength $Vars(helpcommand)]} { pack $buttons.help -pady 5 -padx 5 -fill x -side left }
 	pack $Vars(button:cancel) -pady 5 -padx 5 -fill x -side right
 	pack $Vars(button:ok) -pady 5 -padx 5 -fill x -side right
 
 	bind $top.main <<ThemeChanged>> [namespace code [list ThemeChanged $w]]
-	bind [winfo toplevel $top] <Escape> [list $Vars(button:cancel) invoke]
-	bind [winfo toplevel $top] <Return> [list $Vars(button:ok) invoke]
+
+	set tl [winfo toplevel $top]
+	bind $tl <Escape>  [list $Vars(button:cancel) invoke]
+	bind $tl <Return>  [list $Vars(button:ok) invoke]
+	bind $tl <Alt-Key> [list tk::AltKeyInDialog $tl %A]
 
 	array unset Vars widget:list:file
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
@@ -586,7 +616,7 @@ proc lastFolder {w} {
 }
 
 
-proc fileSeperator {} {
+proc fileSeparator {} {
 	if {$::tcl_platform(platform) == "windows"} { return "\\" }
 	return "/"
 }
@@ -963,7 +993,7 @@ proc DirChanged {w {useHistory 1}} {
 		::toolbar::childconfigure $Vars(button:forward) -state disabled
 		set Vars(tip:forward) ""
 
-		if {$Vars(glob) eq "Files" && $folder ne [fileSeperator]} {
+		if {$Vars(glob) eq "Files" && $folder ne [fileSeparator]} {
 			set i [lsearch -exact $Bookmarks(lastvisited) $folder]
 			if {$i >= 0} {
 				set Bookmarks(lastvisited) [lreplace $Bookmarks(lastvisited) $i $i]
@@ -991,32 +1021,43 @@ proc DirChanged {w {useHistory 1}} {
 	}
 
 	set Vars(bookmark:folder) ""
+	foreach what {delete rename copy new} { set Vars(disable:$what) 0 }
+	::toolbar::childconfigure $Vars(button:add) -state normal
 
-	if {$Vars(folder) eq $Vars(folder:trash)} { set action restore } else { set action delete }
+	if {[string match $Vars(folder:trash)* $Vars(folder)]} {
+		set action restore
+	} else {
+		set action delete
+	}
 	filelist::SetDeleteAction $w $action
 
-	foreach f {home desktop trash filesystem} {
+	foreach f {desktop trash} {
+		if {[string match $Vars(folder:$f)* $Vars(folder)]} {
+			foreach what {delete rename copy new} { set Vars(disable:$what) 1 }
+			::toolbar::childconfigure $Vars(button:add) -state disabled
+		}
+	}
+
+	foreach f {home filesystem} {
 		if {$Vars(folder) eq $Vars(folder:$f)} {
 			::toolbar::childconfigure $Vars(button:add) -state disabled
-			return
 		}
 	}
 
 	if {$Vars(glob) ne "Files"} {
 		::toolbar::childconfigure $Vars(button:add) -state disabled
-		return
 	} else {
 		foreach f $Bookmarks(user) {
 			if {$Vars(folder) eq $f} {
 				::toolbar::childconfigure $Vars(button:add) -state disabled
-				return
 			}
 		}
 	}
 
 	set Vars(bookmark:folder) $folder
 	set tip [format $mc::AddBookmark [file tail $folder]]
-	::toolbar::childconfigure $Vars(button:add) -state normal -tooltip $tip
+	::toolbar::childconfigure $Vars(button:add) -tooltip $tip
+	filelist::ConfigureButtons $w
 }
 
 
@@ -1176,7 +1217,7 @@ proc Activate {w} {
 	if {[llength $selected] == 0} { return }
 
 	foreach file $selected {
-		if {[lindex [file split $file] 0] ne [fileSeperator]} {
+		if {[lindex [file split $file] 0] ne [fileSeparator]} {
 			set msg [format [Tr CannotOpenOrCreate] $file]
 			messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
 			return
@@ -1389,6 +1430,7 @@ proc CheckIsKDE {w} {
 			if {[llength $Vars(exec:delete)] == 0} {
 				set Vars(exec:delete) [auto_execok kfmclient]
 			}
+			set Vars(exec:restore) [auto_execok ktrash]
 			if {[llength $Vars(exec:delete)] == 0} { set $Vars(iskde) 0 }
 		}
 	}
@@ -1669,6 +1711,7 @@ proc InvokeBookmark {w args} {
 	if {$sel < [llength $Vars(bookmarks)]} {
 		set folder [lindex $Vars(bookmarks) $sel 1]
 		set id [string tolower $folder]
+		if {[string length $folder] == 0} { return }
 		switch $folder {
 			Favorites - LastVisited	{ set dir $folder }
 			default { set dir $Vars(folder:$id) }
@@ -1782,6 +1825,10 @@ proc Build {w path args} {
 		}
 	}
 
+	if {[llength $Vars(customcommand)] && [llength $Vars(customicon)]} {
+		set Vars(customicon) [list [[namespace parent]::makeStateSpecificIcons $Vars(customicon)]]
+	}
+
 	array set opts {
 		-scrollmargin	16
 		-selectmode		single
@@ -1813,6 +1860,11 @@ proc Build {w path args} {
 	set Vars(undo:current) -1
 	set Vars(tip:forward) ""
 	set Vars(tip:backward) ""
+	set Vars(disable:delete) 0
+	set Vars(disable:rename) 0
+	set Vars(disable:copy) 0
+	set Vars(disable:new) 0
+	set Vars(disable:custom) 0
 
 	tk::frame $path -borderwidth 0 -takefocus 0
 	tk::frame $path.f -borderwidth 0 -takefocus 0
@@ -1854,6 +1906,14 @@ proc Build {w path args} {
 		-tooltip [Tr Duplicate]                           \
 		-state disabled                                   \
 	]
+	if {[llength $Vars(customcommand)] && [llength $Vars(customicon)]} {
+		set Vars(button:custom) [::toolbar::add $tb button       \
+			-image $Vars(customicon)                              \
+			-command [namespace code [list CallCustomCommand $w]] \
+			-tooltip $Vars(customtooltip)                         \
+			-state disabled                                       \
+		]
+	}
 	set Vars(button:new) [::toolbar::add $tb button  \
 		-image $icon::16x16::iconAdd                  \
 		-command [namespace code [list NewFolder $w]] \
@@ -2152,7 +2212,9 @@ proc DetailsLayout {w} {
 		set item [$t item create -open no]
 		if {[llength $folder] == 0} { set folder [file tail $path] }
 		$t item style set $item name styName size stySize modified styDate
-		$t item element configure $item name txtName -text $folder
+		$t item element configure $item \
+			name elemImg -image $icon , \
+			name txtName -text $folder
 		$t item lastchild root $item
 	}
 
@@ -2651,22 +2713,62 @@ proc RefreshFileList {w} {
 }
 
 
+proc CurrentFileIsUsed {w} {
+	variable [namespace parent]::${w}::Vars
+
+	if {$Vars(glob) ne "Files"} { return 0 }
+	if {[llength $Vars(selected:files)] > 1} { return 0 }
+	if {[llength $Vars(isusedcommand)] == 0} { return 0 }
+	return [$Vars(isusedcommand) $Vars(folder) [file join $Vars(folder) $Vars(initialfile)]]
+}
+
+
 proc ConfigureButtons {w} {
 	variable [namespace parent]::${w}::Vars
 
-	if {$Vars(glob) ne "Files"} {
-		set state1 disabled
-		set state2 disabled
-	} elseif {[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 1} {
-		set state1 normal
-		if {[llength $Vars(selected:files)] == 1} { set state2 normal } else { set state2 disabled }
+	if {	[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 0
+		|| $Vars(glob) ne "Files"} {
+		set st disabled
 	} else {
-		set state1 disabled
-		set state2 disabled
+		set st normal
 	}
-	::toolbar::childconfigure $Vars(button:delete) -state $state1
-	::toolbar::childconfigure $Vars(button:rename) -state $state1
-	::toolbar::childconfigure $Vars(button:copy)   -state $state2
+
+	foreach what {delete rename copy} { set Vars(state:$what) $st }
+	if {[llength $Vars(selected:folders)] > 0} { set Vars(state:copy) disabled }
+	if {$Vars(glob) eq "Files"} { set Vars(state:new) normal } else { set Vars(state:new) disabled }
+
+#	if {[CurrentFileIsUsed $w]} {
+#		set Vars(state:delete) disabled
+#		set Vars(state:rename) disabled
+#	}
+
+	foreach what {delete rename copy new} {
+		if {$Vars(disable:$what)} { set Vars(state:$what) disabled }
+	}
+
+	::toolbar::childconfigure $Vars(button:delete) -state $Vars(state:delete)
+	::toolbar::childconfigure $Vars(button:rename) -state $Vars(state:rename)
+	::toolbar::childconfigure $Vars(button:copy)   -state $Vars(state:copy)
+	::toolbar::childconfigure $Vars(button:new)    -state $Vars(state:new)
+
+	if {[info exists Vars(button:custom)]} {
+		if {	[llength $Vars(selected:files)] == 1
+			&& [file extension $Vars(initialfile)] in $Vars(customfiletypes)} {
+			if {$Vars(glob) eq "Files"} {
+				set Vars(state:custom) normal
+			} else {
+				set Vars(state:custom) disabled
+			}
+		} else {
+			set Vars(state:custom) disabled
+		}
+		::toolbar::childconfigure $Vars(button:custom) -state $Vars(state:custom)
+	}
+
+	# NOTE ktrash is not working
+	if {$Vars(delete:action) eq "restore"} {
+		::toolbar::childconfigure $Vars(button:delete) -state disabled
+	}
 }
 
 
@@ -2763,10 +2865,28 @@ proc TraverseFolders {w} {
 }
 
 
+proc CheckIfInUse {w file mode} {
+	variable [namespace parent]::${w}::Vars
+
+	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $Vars(folder) $file]} {
+		set msg [format [set [namespace parent]::mc::Cannot[string toupper $mode 0 0]] [file tail $file]]
+		set detail [set [namespace parent]::mc::CannotDeleteDetail]
+		[namespace parent]::messageBox \
+			-type ok                    \
+			-icon info                  \
+			-parent $Vars(widget:main)  \
+			-message $msg               \
+			-detail $detail             \
+			;
+		return 1
+	}
+	return 0
+}
+
+
 proc DeleteFile {w} {
 	variable [namespace parent]::${w}::Vars
 
-	[namespace parent]::busy $w
 	set t $Vars(widget:list:file)
 	set sel [expr {[$t item id active] - 1}]
 
@@ -2782,7 +2902,10 @@ proc DeleteFile {w} {
 			default	{ set type file }
 		}
 		set ltype file
+		if {[CheckIfInUse $w $file delete]} { return }
 	}
+
+	[namespace parent]::busy $w
 
 	if {$type eq "link"} {
 		set iskde 0
@@ -2793,18 +2916,27 @@ proc DeleteFile {w} {
 	}
 
 	if {$Vars(delete:action) eq "restore"} {
-		if {$iskde} {
-			if {$ltype eq "file" && [llength $Vars(deletecommand)] > 0} {
-				set cmd "$Vars(exec:delete) move trash:/"
-				foreach f [{*}$Vars(deletecommand) $file] {
-					if {[file exists $f]} { append cmd " \"$f\"" }
-				}
-			} else {
-				set cmd "$Vars(exec:delete) move trash:/ \"$file\""
-			}
-			if {[catch {exec /bin/sh -c $cmd}]} {
-				# Oops, kioclient is always returning an error
-			}
+# "ktrash --restore <file>" is not working despite the documentation
+#		if {$iskde && [llength $Vars(exec:restore)] > 0} {
+#			set fs [[namespace parent]::fileSeparator]
+#			set n [llength [split $Vars(folder:trash) $fs]]
+#			if {$ltype eq "file"} {
+#				foreach f [{*}$Vars(deletecommand) $file] {
+#					if {[file exists $f]} {
+#						set components [lrange [split $f $fs] $n end]
+#						set f [file join {*}$components]
+#						set cmd "$Vars(exec:restore) --restore \"$f\""
+#						if {[catch {exec /bin/sh -c $cmd}]} {
+#							# TODO: ktrash failed
+#						}
+#					}
+#				}
+#			} else {
+#				set cmd "$Vars(exec:restore) --restore \"$file\""
+#			}
+#			if {[catch {exec /bin/sh -c $cmd}]} {
+#				# TODO: ktrash failed
+#			}
 		}
 	} else {
 		if {[file writable $file]} { set mode w } else { set mode r }
@@ -2878,11 +3010,13 @@ proc SetDeleteAction {w action} {
 	variable [namespace parent]::${w}::Vars
 
 	set Vars(delete:action) $action
-	set name [string toupper $action 0 0]
-	::toolbar::childconfigure $Vars(button:delete) \
-		-image [set icon::16x16::icon$name] \
-		-tooltip [Tr $name] \
-		;
+
+	# NOTE that ktrash is not working, we cannot restore files
+#	set name [string toupper $action 0 0]
+#	::toolbar::childconfigure $Vars(button:delete) \
+#		-image [set icon::16x16::icon$name] \
+#		-tooltip [Tr $name] \
+#		;
 }
 
 
@@ -2892,9 +3026,13 @@ proc RenameFile {w} {
 	set t $Vars(widget:list:file)
 	set sel [$t item id active]
 	set i [expr {$sel - 1}]
-	if {$i < [llength $Vars(list:folder)]} { return }
-	set i [expr {$i - [llength $Vars(list:folder)]}]
-	set Vars(edit:file) [lindex $Vars(list:file) $i]
+	if {$i < [llength $Vars(list:folder)]} {
+		set Vars(edit:file) [lindex $Vars(list:folder) $i]
+	} else {
+		set i [expr {$i - [llength $Vars(list:folder)]}]
+		set Vars(edit:file) [lindex $Vars(list:file) $i]
+		if {[CheckIfInUse $w $Vars(edit:file) rename]} { return }
+	}
 	OpenEdit $w $sel rename
 }
 
@@ -2999,11 +3137,30 @@ proc NewFolder {w} {
 	}
 	$t item delete all
 	TraverseFolders $w
-	set icon {}
+	set icon [set [namespace parent]::icon::16x16::folder]
 	foreach folder [list [Tr NewFolder]] $Vars(scriptNewDir)
 	$t item tag add "root children" directory
 	TraverseFiles $w
 	OpenEdit $w [expr {[llength $Vars(list:folder)] + 1}] new
+}
+
+
+proc CallCustomCommand {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:file)
+
+	set sel [$t item id active]
+	set i [expr {$sel - 1}]
+	if {$i < [llength $Vars(list:folder)]} {
+		set file [lindex $Vars(list:folder) $i]
+	} else {
+		set i [expr {$i - [llength $Vars(list:folder)]}]
+		set file [lindex $Vars(list:file) $i]
+	}
+
+	$Vars(customcommand) [winfo toplevel $w] $file
+	RefreshFileList $w
 }
 
 
@@ -3078,9 +3235,10 @@ proc FinishEdit {w} {
 		set k [lsearch $Vars(list:folder) $selFile]
 		if {$k == -1} {
 			set k [lsearch $Vars(list:file) $selFile]
-			if {$k >= 0} { set k [expr {[llength $Vars(list:folder)] + $k + 1}] }
+			if {$k >= 0} { set k [expr {[llength $Vars(list:folder)] + $k}] }
 		}
 		if {$k >= 0} {
+			incr k
 			set t $Vars(widget:list:file)
 			$t selection clear
 			$t selection add $k
@@ -3123,6 +3281,7 @@ proc FinishRenameFile {w sel name} {
 	}
 
 	set ok 1
+	set files {}
 	if {$type eq "file" && [llength $Vars(renamecommand)] > 0} {
 		set files [{*}$Vars(renamecommand) $oldName $newName]
 		if {[llength $files] == 0} {
@@ -3150,7 +3309,7 @@ proc FinishRenameFile {w sel name} {
 	if {$ok} {
 		lset Vars(list:$type) $i $newName
 	} else {
-		if {[llength $files] == 0} {
+		if {$type eq "file" && [llength $files] == 0} {
 			set msg [format [Tr InvalidFileExt] [file tail $new]]
 		} else {
 			set msg [Tr ErrorRenaming($type)]
@@ -3383,6 +3542,7 @@ proc PopupMenu {w x y} {
 	menu $m -tearoff false -disabledforeground black
 
 	if {$Vars(glob) eq "Files"} {
+		set count 0
 		set sel [$t item id active]
 		if {$sel in [$t selection get]} {
 			incr sel -1
@@ -3401,20 +3561,30 @@ proc PopupMenu {w x y} {
 				-state disabled                                   \
 				;
 			$m add separator
-			set name [string toupper $Vars(delete:action) 0 0]
-			$m add command                                    \
-				-compound left                                 \
-				-image [set icon::16x16::$Vars(delete:action)] \
-				-label " [Tr $name]"                           \
-				-command [namespace code [list DeleteFile $w]] \
-				;
-			$m add command                                    \
-				-compound left                                 \
-				-image $icon::16x16::modify                    \
-				-label " [Tr Rename]"                          \
-				-command [namespace code [list RenameFile $w]] \
-				;
-			if {$sel >= [llength $Vars(list:folder)]} {
+#			if {![CurrentFileIsUsed $w]} {
+				# NOTE ktrash is not working
+				if {$Vars(state:delete) eq "normal" && $Vars(delete:action) eq "delete"} {
+					incr count
+					set name [string toupper $Vars(delete:action) 0 0]
+					$m add command                                    \
+						-compound left                                 \
+						-image [set icon::16x16::$Vars(delete:action)] \
+						-label " [Tr $name]"                           \
+						-command [namespace code [list DeleteFile $w]] \
+						;
+				}
+				if {$Vars(state:rename) eq "normal"} {
+					incr count
+					$m add command                                    \
+						-compound left                                 \
+						-image $icon::16x16::modify                    \
+						-label " [Tr Rename]"                          \
+						-command [namespace code [list RenameFile $w]] \
+						;
+				}
+#			}
+			if {$Vars(state:copy) eq "normal"} {
+				incr count
 				$m add command                                       \
 					-compound left                                    \
 					-image $icon::16x16::duplicate                    \
@@ -3422,14 +3592,29 @@ proc PopupMenu {w x y} {
 					-command [namespace code [list DuplicateFile $w]] \
 					;
 			}
+			if {	$Vars(state:custom) eq "normal"
+				&& [llength $Vars(customcommand)]
+				&& [llength $Vars(customtooltip)]
+				&& [file extension $file] in $Vars(customfiletypes)} {
+				incr count
+				$m add command                                           \
+					-compound left                                        \
+					-image [lindex $Vars(customicon) 0 0]                 \
+					-label " $Vars(customtooltip)"                        \
+					-command [namespace code [list CallCustomCommand $w]] \
+					;
+			}
 		}
-		$m add command                                   \
-			-compound left                                \
-			-image $icon::16x16::folder_add               \
-			-label " [Tr NewFolder]"                      \
-			-command [namespace code [list NewFolder $w]] \
-			;
-		$m add separator
+		if {$Vars(state:new) eq "normal"} {
+			incr count
+			$m add command                                   \
+				-compound left                                \
+				-image $icon::16x16::folder_add               \
+				-label " [Tr NewFolder]"                      \
+				-command [namespace code [list NewFolder $w]] \
+				;
+		}
+		if {$count > 0} { $m add separator }
 	}
 	set count 0
 	if {[string length $Vars(tip:backward)]} {
@@ -3501,9 +3686,9 @@ proc Inspect {w mode x y} {
 		set id [$t identify $x $y]
 		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
 		set index [expr {[lindex $id 1] - [llength $Vars(list:folder)] - 1}]
-		$Vars(inspectcommand) $tl [lindex $Vars(list:file) $index]
+		$Vars(inspectcommand) $tl $Vars(folder) [lindex $Vars(list:file) $index]
 	} else {
-		$Vars(inspectcommand) $tl
+		$Vars(inspectcommand) $tl $Vars(folder)
 	}
 }
 
@@ -3555,12 +3740,19 @@ set delete [image create photo -data {
 }]
 
 set restore [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABCklEQVQ4y52TsUrDUBSGv4RM
-	2qlLXXwBHdoncG3u5tpZx059gojgZAtC3bqqa7cQKH2FWiFZHUSIg5lChi7Xpak312Ma/eHA
-	5Zzz/5fzHw5UMQZ0wxgDOCb5fnQ8Glxe0AR31zdcPW0mpoDOkoDPJKRI41rywdEpRRrTHeZ4
-	drFIY15nh5w/f4jkea/D2aPafeJKTVuyI4Ut7G0NkVDmnbpxXMAHyJJgl1xPW+XT32emC0SA
-	3z75FugO85Ic8Qf0jR33a/p0lgR6PW1pQJtbiPbNK8GzDLPhNBVAKVUphGGIJD7vdWQBi1SB
-	uSGA/P1FFvgNb8vbH7nFaoO5Ja2Uki6Ommt8ME36t4lfRLtlZLmcpZsAAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
+	ZSBJbWFnZVJlYWR5ccllPAAAAjhJREFUeNqcUj1s00AUfj6fY9w2DBlQKB0qVSBQmXA7loUB
+	6MDUBSliQupINtaIGaSy0TWKVCExIBZGRpZYtAK1ClWVtoIkSPmrG/+c7fPxbOevHqjEJz3d
+	vbt73/vu7pPuvT4AWVGADkOW5QIArAkhNnEEx7IgjZBz4EEAge8DTe0VOOfFUeJ7HlwGMl2M
+	jMXC+nU9YvYYiztdhkSBEHHx840l3TTDWBqimlaO0RqulzGOYwK866OoePPpHb1Ws0DTCDy5
+	v6AnvADTI/M4a3Xs1f2j7oNAiBIufaE+So3QbLpg2z5IEsWHTIqmCTgX4DiBOkMz+dXla3Nf
+	v/0qBWFYl5ZfGbjJC6ikuPH4btz5w+cfRvqu2hWqLOTnclmNzjtuQEIiN2tHnXck6SAqgce2
+	dj5WDde2wGcukgYrYRiO49y01/drrZ0/fafRFQS4Iufw3Mr4FyISn3lb7z/tGp7LwB1YF34B
+	SX7j/tuTk3bXv5qFnjqj4rk8PWu3o00MDhJIleG116JiyzRjw0RQMpnYcNgcOsosnk18QvtI
+	EEEiBB9QAiLLFUwraQ9gfgNVvlBvLuYakgZZz2L4Aa2JE4XYxu76qGMaQs0oytJi7uzW7XkX
+	ZFBPG11UUKVTBfrDl8/0UxvAC5Nw+WQeIHsfc/xNmO21B87u3iH4fpkOXRfj8Bz94GK3SLK4
+	OAqcKNaAKfV6z937/hMYKxFCjmk4UWAcvNn+l+3HVsYHLBNKYytLYmS3/8RfAQYAPjpdqK/T
+	5bcAAAAASUVORK5CYII=
 }]
 
 set modify [image create photo -data {
