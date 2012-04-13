@@ -986,14 +986,14 @@ proc PopupMenu {parent board position {what ""}} {
 		-image $::icon::16x16::maximize \
 		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board max]] \
-		-accelerator "${::menu::mc::Ctrl}-+" \
+		-accelerator "${::mc::Ctrl}-+" \
 		;
 	$menu add command \
 		-label " $mc::MinimizeBoardSize" \
 		-image $::icon::16x16::minimize \
 		-compound left \
 		-command [namespace code [list ChangeBoardSize $position $board min]] \
-		-accelerator "${::menu::mc::Ctrl}-\u2212" \
+		-accelerator "${::mc::Ctrl}-\u2212" \
 		;
 
 	tk_popup $menu {*}[winfo pointerxy $dlg]
