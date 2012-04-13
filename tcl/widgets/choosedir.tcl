@@ -61,6 +61,7 @@ proc Build {w args} {
 		-activebackground	{}
 		-initialdir			{}
 		-showlabel			0
+		-showhidden			0
 	}
 	array set opts $args
 
@@ -84,6 +85,7 @@ proc Build {w args} {
 	set Vars(user) 0
 	set Vars(icon) {}
 	set Vars(startmenu) {}
+	set Vars(showhidden) $opts(-showhidden)
 
 	set Vars(linespace) [font metrics $opts(-font) -linespace]
 	set Vars(activebackground) $opts(-activebackground)
@@ -94,6 +96,7 @@ proc Build {w args} {
 	array unset opts -activebackground
 	array unset opts -initialdir
 	array unset opts -showlabel
+	array unset opts -showhidden
 
 	set opts(-height) [expr {$Vars(linespace) + 2*$Vars(pady)}]
 	set bg [::theme::getBackgroundColor]
@@ -216,6 +219,15 @@ proc WidgetProc {w command args} {
 			}
 			variable ${w}::Vars
 			set Vars(startmenu) [lindex $args 0]
+			return $w
+		}
+
+		showhidden {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <flag>\""
+			}
+			variable ${w}::Vars
+			set Vars(showhidden) [lindex $args 0]
 			return $w
 		}
 
@@ -436,7 +448,13 @@ proc PopupDirs {w btn i} {
 		set subdirs {}
 	} else {
 		set rootdir [file join "/" {*}[lrange $Vars(components) 0 $i]]
-		set subdirs [glob -nocomplain -tails -dir $rootdir -types d *]
+		set filter *
+		if {$::tcl_platform(platform) eq "unix" && $Vars(showhidden)} { lappend filter .* }
+		set subdirs [glob -nocomplain -tails -dir $rootdir -types d {*}$filter]
+		foreach dir {. ..} {
+			set i [lsearch $subdirs $dir]
+			if {$i >= 0} { set subdirs [lreplace $subdirs $i $i] }
+		}
 		set subdirs [lsort -dictionary -unique $subdirs]
 	}
 
@@ -445,12 +463,24 @@ proc PopupDirs {w btn i} {
 	menu $m -tearoff false
 
 	if {[llength $subdirs]} {
+		set linespace [font metrics [$m cget -font] -linespace]
+		set maxh [winfo screenheight $m]
+		set columns [expr {(2*[llength $subdirs]*$linespace + $maxh - 1)/$maxh}]
+		if {$columns > 4} { set columns [expr {([llength $subdirs]*$linespace + $maxh - 1)/$maxh}] }
+		set size [expr {[llength $subdirs]/$columns}]
+		set n 0
 		foreach dir $subdirs {
+			set opts {}
+			if {$n == $size} {
+				lappend opts -columnbreak 1
+				set n 0
+			}
 			if {$Vars(user)} {
 				set rootdir [file dirname $dir]
 				set dir [lindex [file split $dir] end]
 			}
-			$m add command -label $dir -command [namespace code [list ChangeDir $w $rootdir $dir]]
+			$m add command {*}$opts -label $dir -command [namespace code [list ChangeDir $w $rootdir $dir]]
+			incr n
 		}
 	}
 

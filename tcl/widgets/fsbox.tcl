@@ -256,7 +256,8 @@ proc fsbox {w type args} {
 	tk::frame $w -takefocus 0
 	set top [ttk::frame $w.top -takefocus 0]
 	pack $top -fill both -expand yes
-	set Vars(choosedir) [choosedir $top.folder -initialdir $Vars(folder) -showlabel 1]
+	set Vars(choosedir) \
+		[choosedir $top.folder -initialdir $Vars(folder) -showlabel 1 -showhidden $Options(show:hidden)]
 	bind $Vars(choosedir) <<SetDirectory>> [namespace code [list ChangeDir $w %d]]
 	bind $Vars(choosedir) <<SetFolder>>    [namespace code [list ChangeDir $w %d]]
 	bind $Vars(choosedir) <<GetStartMenu>> [namespace code [list GetStartMenu $w]]
@@ -484,6 +485,12 @@ proc reset {w type args} {
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
 	filelist::RefreshFileList $w
 	focus $Vars(widget:filename)
+}
+
+
+proc countRows {w} {
+	variable ${w}::Vars
+	return $Vars(rows:computed)
 }
 
 
@@ -1573,6 +1580,11 @@ proc Build {w path args} {
 	bind $t <Key-space> [namespace code [list InvokeBookmark $w]]
 	bind $t <Return> [namespace code [list InvokeBookmark $w]]
 
+	if {[llength $Vars(inspectcommand)]} {
+		bind $t <ButtonPress-2> [namespace code [list InspectBookmark $w show %x %y]]
+		bind $t <ButtonRelease-2> [namespace code [list InspectBookmark $w hide]]
+	}
+
 	set Vars(bookmarks) {
 		{ star			Favorites	}
 		{ visited		LastVisited	}
@@ -1596,6 +1608,33 @@ proc Build {w path args} {
 	$t notify bind $t <Selection> [namespace code [list Selected $w %S]]
 
 	Selected $w {}
+}
+
+
+proc InspectBookmark {w mode args} {
+	variable [namespace parent]::${w}::Vars
+
+	set tl [winfo toplevel $w]
+
+	if {$mode eq "show"} {
+		variable Bookmarks
+		set t $Vars(widget:list:bookmark)
+		lassign $args x y
+		set id [$t identify $x $y]
+		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
+		set index [lindex $id 1]
+		if {$index < [llength $Vars(bookmarks)]} {
+			set attr [string tolower [lindex $Vars(bookmarks) [expr {$index - 1}] 1]]
+			if {![info exists Vars(folder:$attr)]} { return }
+			set path $Vars(folder:$attr)
+			if {[string length $path] == 1} { set path " $path " }
+		} else {
+			set path [lindex $Bookmarks(user) [expr {$index - [llength $Vars(bookmarks)] - 1}]]
+		}
+		$Vars(inspectcommand) $tl $path
+	} else {
+		$Vars(inspectcommand) $tl
+	}
 }
 
 
@@ -1991,7 +2030,6 @@ proc Build {w path args} {
 	set linespace [max [font metrics [$t cget -font] -linespace] 20]
 	set Vars(charwidth) [font measure [$t cget -font] "0"]
 	$t configure -itemheight $linespace
-
 	$t state define hilite
 
 	SwitchLayout $w
@@ -2031,14 +2069,16 @@ proc Build {w path args} {
 
 	if {[llength $Vars(inspectcommand)]} {
 		bind $t <ButtonPress-2>		[namespace code [list Inspect $w show %x %y]]
-		bind $t <ButtonRelease-2>	[namespace code [list Inspect $w hide %x %y]]
+		bind $t <ButtonRelease-2>	[namespace code [list Inspect $w hide]]
 	}
 
 	CheckDir $t
 
 	if {[info exists Vars(rows)]} {
 		update idletasks
-		set h [expr {[$t headerheight] + max($Vars(rows),1)*$linespace}]
+		set minh [expr {[::toolbar::requestetHeight $path] - [$t headerheight]}]
+		set Vars(rows:computed) [expr {max($Vars(rows), ($minh + $linespace - 1)/$linespace)}]
+		set h [expr {[$t headerheight] + max($Vars(rows:computed), 1)*$linespace}]
 		$t configure -height $h
 	}
 }
@@ -2051,6 +2091,7 @@ proc SwitchHidden {w} {
 	set Options(show:hidden) [expr {!$Options(show:hidden)}]
 	if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
 	toolbar::childconfigure $Vars(widget:hidden) -image [set icon::16x16::${ipref}locked]
+	$Vars(choosedir) showhidden $Options(show:hidden)
 	RefreshFileList $w
 }
 
@@ -2612,10 +2653,16 @@ proc Glob {w refresh} {
 	foreach path $Vars(list:folder) {
 		set icon {}
 		set folder {}
-		if {$lookupFolder && [info exists Vars(lookup:$path)]} {
-			set attr $Vars(lookup:$path)
-			set icon [set [namespace parent]::icon::16x16::$attr]
-			set folder [Tr [string toupper $attr 0 0]]
+		if {$lookupFolder} {
+			if {[info exists Vars(lookup:$path)]} {
+				set attr $Vars(lookup:$path)
+				set icon [set [namespace parent]::icon::16x16::$attr]
+				set folder [Tr [string toupper $attr 0 0]]
+			} elseif {[string match $Vars(folder:trash)* $path]} {
+				set icon [set [namespace parent]::icon::16x16::trash]
+				set folder [set [namespace parent]::mc::Trash]
+				if {$path ne $Vars(folder:trash)} { append folder ": " [file tail $path] }
+			}
 		}
 		eval $Vars(scriptDir)
 	}
@@ -3676,19 +3723,30 @@ proc PopupMenu {w x y} {
 }
 
 
-proc Inspect {w mode x y} {
+proc Inspect {w mode args} {
 	variable [namespace parent]::${w}::Vars
 
 	set tl [winfo toplevel $w]
 
 	if {$mode eq "show"} {
 		set t $Vars(widget:list:file)
+		lassign $args x y
 		set id [$t identify $x $y]
 		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
-		set index [expr {[lindex $id 1] - [llength $Vars(list:folder)] - 1}]
-		$Vars(inspectcommand) $tl $Vars(folder) [lindex $Vars(list:file) $index]
+		switch $Vars(glob) {
+			LastVisited - Favorites {
+				set path [lindex $Vars(list:folder) [expr {[lindex $id 1] - 1}]]
+				$Vars(inspectcommand) $tl $path
+			}
+			default {
+				set index [expr {[lindex $id 1] - [llength $Vars(list:folder)] - 1}]
+				if {$index >= 0} {
+					$Vars(inspectcommand) $tl $Vars(folder) [lindex $Vars(list:file) $index]
+				}
+			}
+		}
 	} else {
-		$Vars(inspectcommand) $tl $Vars(folder)
+		$Vars(inspectcommand) $tl
 	}
 }
 

@@ -707,6 +707,19 @@ proc lookupClone {child w} {
 }
 
 
+proc requestetHeight {parent} {
+	set slaves [pack slaves $parent]
+	set height 0
+
+	foreach side {left right flat} {
+		set tbf [Join $parent __tbf__$side]
+		if {$tbf in $slaves} { incr height [winfo reqheight $tbf] }
+	}
+
+	return $height
+}
+
+
 proc totalheight {parent} {
 	set slaves [pack slaves $parent]
 	set height 0

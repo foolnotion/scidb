@@ -98,6 +98,7 @@ proc open {parent {file {}} args} {
 
 	if {$parent eq "."} { set dlg .help } else { set dlg $parent.help }
 	if {[winfo exists $dlg]} {
+		ShowIndex
 		raise $dlg
 		focus $dlg
 		set Priv(currentfile) [FullPath $file]
@@ -131,6 +132,7 @@ proc open {parent {file {}} args} {
 
 	### Left side ########################################
 	set control [ttk::frame $pw.control]
+	set Priv(control) $control
 
 	set buttons [ttk::frame $control.buttons]
 	ttk::button $buttons.back \
@@ -1091,7 +1093,7 @@ proc PopupMenu {dlg tab} {
 		-label " $text" \
 		-image $icon \
 		-compound left \
-		-command [namespace code [list ToggleIndex $tab]] \
+		-command [namespace code ToggleIndex] \
 		;
 	$m add command \
 		-image $::icon::16x16::close \
@@ -1120,14 +1122,24 @@ proc FindTopic {file contents} {
 }
 
 
-proc ToggleIndex {tab} {
-	set pw [winfo parent $tab]
+proc ToggleIndex {} {
+	variable Priv
 
-	if {$tab in [$pw panes]} {
-		$pw forget $tab
+	set pw [winfo parent $Priv(control)]
+
+	if {$Priv(control) in [$pw panes]} {
+		$pw forget $Priv(control)
 	} else {
-		$pw add $tab -sticky nswe -stretch never -minsize 200 -before [$pw panes]
+		$pw add $Priv(control) -sticky nswe -stretch never -minsize 200 -before [$pw panes]
 	}
+}
+
+
+proc ShowIndex {} {
+	variable Priv
+
+	set pw [winfo parent $Priv(control)]
+	if {$Priv(control) ni [$pw panes]} { ToggleIndex }
 }
 
 

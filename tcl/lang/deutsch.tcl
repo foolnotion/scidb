@@ -1702,7 +1702,7 @@
 ::fsbox::mc::FileHasDisappeared			"Die Datei '%s' ist nicht mehr vorhanden."
 ::fsbox::mc::CannotDelete					"Die Datei '%s' kann nicht gelöscht werden."
 ::fsbox::mc::CannotRename					"Die Datei '%s' kann nicht unbenannt werden."
-::fsbox::mc::CannotDeleteDetail			"Diese Datei ist zur Zeit im Gebrauch."
+::fsbox::mc::CannotDeleteDetail			"Diese Datei ist zur Zeit in Gebrauch."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Funktionsleiste"

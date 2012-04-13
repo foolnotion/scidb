@@ -58,6 +58,7 @@ Pfeilschaltfläche aufgelistet.
 <p>
 Hier kann der Benutzer eigene Verweise auf Verzeichnisse anlegen oder auch wieder löschen.
 Hierzu wird das kontextsensitive Menü oder die Funktionsleiste benutzt.
+Durch Halten der mittleren Maustaste auf einem Verweis wird der zugehörige Pfad angezeigt.
 </p>
 
 <p>
@@ -115,7 +116,8 @@ um die Einzelheiten der <a href="Database-Formats.html">Datenbankformate</a> zu 
 </p>
 
 <p>
-Durch Halten der mittleren Maustaste werden Informationen über die Datei angezeigt.
+Durch Halten der mittleren Maustaste auf einer Datei werden Informationen über diese
+Datei angezeigt.
 </p>
 
 <p>
