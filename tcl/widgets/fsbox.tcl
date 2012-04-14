@@ -2984,7 +2984,7 @@ proc DeleteFile {w} {
 #			if {[catch {exec /bin/sh -c $cmd}]} {
 #				# TODO: ktrash failed
 #			}
-		}
+#		}
 	} else {
 		if {[file writable $file]} { set mode w } else { set mode r }
 		if {$iskde} { set which ReallyMove } else { set which ReallyDelete }

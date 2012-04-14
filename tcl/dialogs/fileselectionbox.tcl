@@ -394,7 +394,7 @@ proc TraceLastFolder {dlg dlg2 w} {
 
 
 proc OpenHelp {parent} {
-	::help::open .application File-Selection-Dialog
+	::help::open $parent File-Selection-Dialog
 }
 
 
