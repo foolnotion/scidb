@@ -192,6 +192,7 @@
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
 ::menu::mc::ImportFiles					"PGN fájlok importálása"
+::menu::mc::Archiving					"Archiving" ;# NEW
 ::menu::mc::CreateArchive				"Create Archive" ;# NEW
 ::menu::mc::BuildArchive				"Create archive %s" ;# NEW
 ::menu::mc::Data							"%s data" ;# NEW

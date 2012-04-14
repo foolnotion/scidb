@@ -190,6 +190,7 @@
 ::menu::mc::OpenFile						"Eine Scidb-Datei öffnen"
 ::menu::mc::NewFile						"Eine Scidb-Datei anlegen"
 ::menu::mc::ImportFiles					"PGN Dateien importieren..."
+::menu::mc::Archiving					"Archivieren"
 ::menu::mc::CreateArchive				"Ein Archiv anlegen"
 ::menu::mc::BuildArchive				"Archiv %s erzeugen"
 ::menu::mc::Data							"%s-Daten"

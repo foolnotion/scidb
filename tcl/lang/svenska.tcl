@@ -190,6 +190,7 @@
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
 ::menu::mc::ImportFiles					"Importera PGN fil..."
+::menu::mc::Archiving					"Archiving" ;# NEW
 ::menu::mc::CreateArchive				"Create Archive" ;# NEW
 ::menu::mc::BuildArchive				"Create archive %s" ;# NEW
 ::menu::mc::Data							"%s data" ;# NEW

@@ -191,6 +191,7 @@
 ::menu::mc::OpenFile						"Open a Scidb File"
 ::menu::mc::NewFile						"Create a Scidb File"
 ::menu::mc::ImportFiles					"Import PGN files..."
+::menu::mc::Archiving					"Archiving"
 ::menu::mc::CreateArchive				"Create Archive"
 ::menu::mc::BuildArchive				"Create archive %s"
 ::menu::mc::Data							"%s data"
