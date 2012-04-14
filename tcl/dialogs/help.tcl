@@ -96,7 +96,7 @@ proc open {parent {file {}} args} {
 		}
 	}
 
-	if {$parent eq "."} { set dlg .help } else { set dlg $parent.help }
+	set dlg .help
 	if {[winfo exists $dlg]} {
 		ShowIndex
 		raise $dlg

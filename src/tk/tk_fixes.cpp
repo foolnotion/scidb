@@ -21,10 +21,15 @@
 #include <tk.h>
 #include <tkInt.h>
 
-#define GENERATED_EVENT_MAGIC ((Bool) 0x147321ac)
+//#define FIX_TK_POINTER_EVENTS
+#define FIX_TK_GRAB_STATE
 
-#define GRAB_GLOBAL		1
-#define GRAB_TEMP_GLOBAL	4
+
+#ifdef FIX_TK_POINTER_EVENTS
+
+# if defined(__unix__) && !defined(__MacOSX__)
+
+#define GENERATED_EVENT_MAGIC ((Bool) 0x147321ac)
 
 #define ALL_BUTTONS \
 	(Button1Mask|Button2Mask|Button3Mask|Button4Mask|Button5Mask)
@@ -34,16 +39,8 @@ static unsigned int buttonStates[] = {
 
 extern void TkpSync (Display * display);
 
-typedef struct {
-    Display *display;		/* Display from which to discard events. */
-    unsigned int serial;	/* Serial number with which to compare. */
-} GrabInfo;
-
-
 extern "C" int TkPointerEvent(XEvent *eventPtr, TkWindow *winPtr);
 
-
-#if defined(__unix__) && !defined(__MacOSX__)
 
 static void
 TransferXEventsToTcl(
@@ -82,7 +79,7 @@ Sync(Display *display)
     TransferXEventsToTcl(display);
 }
 
-#else
+# else
 
 static void
 Sync(Display *display)
@@ -90,7 +87,7 @@ Sync(Display *display)
     /* nothing to do */
 }
 
-#endif
+# endif // __unix__ && !__MacOSX__
 
 
 static Tk_RestrictAction
@@ -429,14 +426,79 @@ TkPointerEvent(
     return 1;
 }
 
+#endif // FIX_TK_POINTER_EVENTS
+
+#ifdef FIX_TK_GRAB_STATE
+
+#define GRAB_GLOBAL		1
+#define GRAB_TEMP_GLOBAL	4
+
+extern "C" int TkPositionInTree(TkWindow *winPtr, TkWindow *treePtr);
+extern "C" int TkGrabState(TkWindow *winPtr);
+
+typedef struct {
+    Display *display;		/* Display from which to discard events. */
+    unsigned int serial;	/* Serial number with which to compare. */
+} GrabInfo;
+
+
+static TkWindow *
+SecondLastToplevel(
+    TkWindow *winPtr)		/* Window for which second last
+				 * toplevel is needed. */
+{
+    TkWindow *prevTopLevelWinPtr = winPtr->mainPtr->winPtr;
+    TkWindow *topLevelWinPtr = winPtr->mainPtr->winPtr;
+
+    while (winPtr && !(winPtr->flags & TK_TOP_HIERARCHY)) {
+	topLevelWinPtr = prevTopLevelWinPtr;
+	prevTopLevelWinPtr = winPtr;
+	winPtr = winPtr->parentPtr;
+    }
+
+    return topLevelWinPtr;
+}
+
+
+int
+TkGrabState(
+    TkWindow *winPtr)		/* Window for which grab information is
+				 * needed. */
+{
+    TkWindow *grabWinPtr = winPtr->dispPtr->grabWinPtr;
+
+    if (grabWinPtr == NULL) {
+	return TK_GRAB_NONE;
+    }
+    if (!(winPtr->dispPtr->grabFlags & GRAB_GLOBAL) &&
+	    winPtr != grabWinPtr && /* this is an often case */
+	    (SecondLastToplevel(winPtr) != SecondLastToplevel(grabWinPtr))) {
+	return TK_GRAB_NONE;
+    }
+
+    return TkPositionInTree(winPtr, grabWinPtr);
+}
+
+#endif // FIX_TK_GRAB_STATE
 
 void
 tk::fixes_init(Tcl_Interp*)
 {
+#ifdef FIX_TK_POINTER_EVENTS
     // force linkage
-    int (*func)(XEvent *, TkWindow *) = TkPointerEvent;
-    if (func)
-        ;
+    {
+	int (*func)(XEvent *, TkWindow *) = TkPointerEvent;
+	if (func)
+	    ;
+    }
+#endif
+#ifdef FIX_TK_GRAB_STATE
+    {
+	int (*func)(TkWindow *) = TkGrabState;
+	if (func)
+	    ;
+    }
+#endif
 }
 
-// vi:set ts=8 sw=8:
+// vi:set ts=8 sw=4:

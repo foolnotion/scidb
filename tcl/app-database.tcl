@@ -267,7 +267,7 @@ proc build {tab width height} {
 #	::toolbar::add $tbFile button \
 #		-image $::icon::toolbarHelp \
 #		-tooltipvar [namespace current]::mc::HelpSwitcher \
-#		-command [list ::menu::openHelp $Vars(canvas) Database-Switcher] \
+#		-command [list ::help::open $sitcher Database-Switcher] \
 #		;
 
 	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
@@ -1649,7 +1649,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		-label " [::mc::stripAmpersand $mc::HelpSwitcher]" \
 		-image $::icon::16x16::help \
 		-compound left \
-		-command [list ::menu::openHelp $canv Database-Switcher] \
+		-command [list ::help::open .application Database-Switcher] \
 		;
 
 	::tooltip::hide

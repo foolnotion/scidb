@@ -39,10 +39,10 @@ proc welcomeToScidb {parent} {
 	variable WhatsNew
 
 	if {!$Welcome} {
-		::help::open .application Welcome -transient yes
+		::help::open .application Welcome
 		set Welcome 1
 	} elseif {$WhatsNew} {
-		::help::open .application Whats-New -transient yes
+		::help::open .application Whats-New
 	}
 }
 

@@ -85,7 +85,7 @@ variable MenuWidget
 
 
 proc setup {} {
-	bind .application <F1> [list ::menu::openHelp .application]
+	bind .application <F1> [list ::help::open .application]
 	bind .application <Control-l> [list ::log::show]
 	bind .application <F11> [namespace code [list viewFullscreen toggle]]
 	bind .application <Control-q> ::application::shutdown
@@ -191,7 +191,7 @@ proc build {menu} {
 		-underline [incr ul] \
 		-image $::icon::16x16::help \
 		-accelerator "F1" \
-		-command [list ::menu::openHelp .application] \
+		-command [list ::help::open .application] \
 		;
 
 	### about ################################################################
@@ -453,11 +453,6 @@ proc viewFullscreen {{toggle {}}} {
 
 	if {[llength $toggle]} { set Fullscreen [expr {!$Fullscreen}] }
 	wm attributes .application -fullscreen $Fullscreen
-}
-
-
-proc openHelp {parent {topic {}}} {
-	::help::open $parent $topic
 }
 
 

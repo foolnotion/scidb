@@ -374,6 +374,11 @@ proc Open {type args} {
 }
 
 
+proc OpenHelp {w} {
+	::help::open $w File-Selection-Dialog
+}
+
+
 proc Destroyed {w} {
 	variable Priv
 	set i [lsearch $Priv(dialogs) $w]
@@ -390,11 +395,6 @@ proc TraceLastFolder {dlg dlg2 w} {
 	if {$dlg eq $dlg2} {
 		set [namespace current]::Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
 	}
-}
-
-
-proc OpenHelp {parent} {
-	::help::open $parent File-Selection-Dialog
 }
 
 

@@ -1,9 +1,23 @@
 [April 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #296)
+------------------------------------------------------------------------------
+* Fix of the Tk function TkGrabState(). The fixed version is taking the tree
+hierarchy into account, I think this was the intended behavior. I've reported
+this to the Tk team (bug item #3517803).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #294)
 ------------------------------------------------------------------------------
 * File selection box finished.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #290)
+------------------------------------------------------------------------------
+* tk_fixes.cpp added which is fixing the Tk function TkPointerEvent(). Without
+this fix the result is a frozen screen if the help dialog is used from the
+file selection box. This bug is reported to the Tk team (bug item #3517228.)
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #290)

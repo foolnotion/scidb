@@ -56,11 +56,10 @@ invokeTkSelection(Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 static int
 selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long)
 {
-	int	done = 0;
-	bool	notAvailable = false;
-
 	if (OpenClipboard(0))
 	{
+		int rc = TCL_ERROR;
+
 		if (target == Tk_InternAtom(tkwin, "CF_HDROP"))
 		{
 			if (IsClipboardFormatAvailable(CF_HDROP))
@@ -111,39 +110,22 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 					Tcl_SetObjResult(ti, Tcl_NewStringObj(result, result.size()));
 					GlobalUnlock(handle);
-					done = 1;
-				}
-				else
-				{
-					notAvailable = true;
+					rc = TCL_OK;
 				}
 			}
 		}
-		else
-		{
-			notAvailable = true;
-		}
 
 		CloseClipboard();
+		return rc;
 	}
 
-	if (!notAvailable)
-	{
-		Tcl_AppendResult(	ti,
-								Tk_GetAtomName(tkwin, selection),
-								" selection doesn't exist or form \"",
-								Tk_GetAtomName(tkwin, target), "\" not defined",
-								nullptr);
-	}
+	Tcl_AppendResult(	ti,
+							Tk_GetAtomName(tkwin, selection),
+							" selection doesn't exist or form \"",
+							Tk_GetAtomName(tkwin, target), "\" not defined",
+							nullptr);
 
-	return done;
-}
-
-
-static int
-selEventProc(Tk_Window, XEvent*)
-{
-	return 0; // no action required
+	return TCL_ERROR;
 }
 
 # elif defined(__unix__)
@@ -273,9 +255,20 @@ selTimeoutProc(ClientData clientData)
 
 
 static int
+handleSelection(ClientData clientData, XEvent* eventPtr)
+{
+	if (eventPtr->type == SelectionNotify)
+		return selEventProc(Tk_IdToWindow(eventPtr->xany.display, eventPtr->xany.window), eventPtr);
+
+	return 0;
+}
+
+
+static int
 selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long timestamp)
 {
 	XConvertSelection(Tk_Display(tkwin), selection, target, selection, Tk_WindowId(tkwin), timestamp);
+	Tk_CreateGenericHandler(handleSelection, 0);
 
 	Tcl_TimerToken timeout = Tcl_CreateTimerHandler(500, selTimeoutProc, ti);
 	m_selectionRetrieved = m_timeOut = false;
@@ -283,6 +276,8 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 		Tcl_DoOneEvent(0);
 	Tcl_DeleteTimerHandler(timeout);
 	m_timeOut = true;
+
+	Tk_DeleteGenericHandler(handleSelection, 0);
 
 	return m_selectionRetrieved ? TCL_OK : TCL_ERROR;
 }
@@ -386,16 +381,6 @@ selCmd(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 }
 
 
-static int
-handleSelection(ClientData clientData, XEvent* eventPtr)
-{
-	if (eventPtr->type == SelectionNotify)
-		return selEventProc(Tk_IdToWindow(eventPtr->xany.display, eventPtr->xany.window), eventPtr);
-
-	return 0;
-}
-
-
 void
 tk::selection_init(Tcl_Interp* ti)
 {
@@ -404,7 +389,6 @@ tk::selection_init(Tcl_Interp* ti)
 	Tcl_IncrRefCount(m_renamedCmd = Tcl_NewStringObj("__selection__x11_", -1));
 	TclRenameCommand(ti, "selection", Tcl_GetString(m_renamedCmd));
 	Tcl_CreateObjCommand(ti, "selection", selCmd, 0, 0);
-	Tk_CreateGenericHandler(handleSelection, 0);
 }
 
 #else
