@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source help-dialog
+
 namespace eval help {
 namespace eval mc {
 

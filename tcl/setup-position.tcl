@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source setup-position-dialog
+
 namespace eval setup {
 namespace eval position {
 namespace eval mc {

@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source color-cube
+
 package require tkscidb
 
 namespace eval dialog {

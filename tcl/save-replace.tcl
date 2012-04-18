@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source save-replace-dialog
+
 namespace eval dialog {
 namespace eval save {
 namespace eval mc {
@@ -39,14 +41,14 @@ set MatchesExtraTags				"Matches / Extra Tags"
 set PressToSelect					"Press Ctrl+0 to Ctrl+9 (or left mouse button) to select"
 set PressForWhole					"Press Alt-0 to Alt-9 (or middle mouse button) for whole data set"
 set EditTags						"Edit Tags"
-set DeleteThisTag					"Delete tag '%s'?"
+set RemoveThisTag					"Remove tag '%s'?"
 set TagAlreadyExists				"Tag name '%s' already exists."
-set TagDeleted						"Extra tag '%s' (current value: '%s') will be deleted."
+set TagRemoved						"Extra tag '%s' (current value: '%s') will be removed."
 set TagNameIsReserved			"Tag name '%s' is reserved."
 set Locked							"Locked"
 set OtherTag						"Other tag"
 set NewTag							"New tag"
-set DeleteTag						"Delete tag"
+set RemoveTag						"Remove tag"
 set SetToGameDate					"Set to game date"
 set SaveGameFailed				"Save of game failed."
 set SaveGameFailedDetail		"See log for details."
@@ -287,6 +289,7 @@ proc open {parent base position {number 0}} {
 	set Priv(base) $base
 	set Priv(position) $position
 	set Priv(number) $number
+	set Priv(tag:current) {}
 
 	if {![winfo exists $dlg]} {
 		Build $dlg $base $position $number
@@ -1084,7 +1087,7 @@ proc VisitTag {t mode column item} {
 			}
 			if {$column == 0} {
 				if {$img eq $icon::12x12::delete} {
-					::tooltip::show $t $::mc::Delete
+					::tooltip::show $t $::mc::Remove
 				} elseif {$img eq $icon::12x12::locked} {
 					::tooltip::show $t $mc::Locked
 				} else {
@@ -1102,6 +1105,7 @@ proc VisitTag {t mode column item} {
 
 
 proc HighlightTag {t} {
+	variable ::[winfo toplevel $t]::Priv
 	variable Colors
 
 	lassign [winfo pointerxy $t] x y
@@ -1118,6 +1122,7 @@ proc HighlightTag {t} {
 
 
 proc OpenEntry {t item column} {
+	variable ::[winfo toplevel $t]::Priv
 	variable Lookup
 	variable Item
 
@@ -1134,9 +1139,8 @@ proc OpenEntry {t item column} {
 			-validatecommand { return [regexp {^([A-Z][A-Za-z0-9_]*)?$} %P] } \
 			-invalidcommand { bell } \
 			;
-	} else {
-		$e configure -validate none
 	}
+	set Priv(entry) $e
 	::TreeCtrl::TryEvent $t Edit begin [list I $item C $column E elemText]
 }
 
@@ -1187,6 +1191,7 @@ proc FinishEditTag {t item column} {
 	set value [string trim [$t item element cget $item value elemText -text]]
 	$t item element configure $item name elemText -text $name
 	$t item element configure $item value elemText -text $value
+	$Priv(entry) configure -invalidcommand {} -validatecommand {} -validate none
 
 	foreach s [array names TagOrder] {
 		if {[string compare -nocase $s $name] == 0} {
@@ -1305,9 +1310,9 @@ proc ActivateElement {t item} {
 	set img [$t item element cget $item delete elemImage -image]
 	if {$img eq $icon::12x12::delete} {
 		set name [$t item element cget $item name elemText -text]
-		set msg [format $mc::DeleteThisTag $name]
+		set msg [format $mc::RemoveThisTag $name]
 		if {[::dialog::question -parent $t -message $msg -title $mc::EditTags] eq "yes"} {
-			DeleteTag $t $name
+			RemoveTag $t $name
 		}
 		after idle [namespace code [list HighlightTag $t]]
 	} elseif {$img eq $icon::12x12::plus} {
@@ -1340,6 +1345,8 @@ proc ActivateCurrentElement {t} {
 
 
 proc ChangeCurrentElement {t {dirX 0} {dirY 0}} {
+	variable ::[winfo toplevel $t]::Priv
+
 	switch $dirY {
 		 0 	{ set item active }
 		+1 	{ set item [$t item nextsibling active] }
@@ -1350,13 +1357,12 @@ proc ChangeCurrentElement {t {dirX 0} {dirY 0}} {
 	if {[llength $item] == 0} { return }
 	if {![$t item enabled $item]} { return }
 
-	set col [$t item tag names active]
-	if {[llength $col]} {
-		$t item state forcolumn active $col {!current}
-		$t item tag remove active $col
-	} else {
-		set col 0
+	if {[llength $Priv(tag:current)]} {
+		$t item state forcolumn {*}$Priv(tag:current) {!current}
 	}
+
+	set col [$t item tag names active]
+	if {[llength $col] == 0} { set col 0 }
 
 	if {$dirY eq "last"} {
 		set col 0
@@ -1370,24 +1376,28 @@ proc ChangeCurrentElement {t {dirX 0} {dirY 0}} {
 	}
 
 	$t activate $item
+	foreach c [$t column list] { $t item tag remove active $c }
 	$t item tag add active $col
 	$t item state forcolumn active $col {current}
+	set Priv(tag:current) [list $item $col]
 	$t see $item
 }
 
 
 proc SetCurrentElement {t item column} {
+	variable ::[winfo toplevel $t]::Priv
+
 	if {![$t item enabled $item]} { return }
 
-	set col [$t item tag names active]
-	if {[llength $col]} {
-		$t item state forcolumn active $col {!current}
-		$t item tag remove active $col
+	if {[llength $Priv(tag:current)]} {
+		$t item state forcolumn {*}$Priv(tag:current) {!current}
 	}
 
 	$t activate $item
+	foreach c [$t column list] { $t item tag remove active $c }
 	$t item tag add active $column
 	$t item state forcolumn active $column {current}
+	set Priv(tag:current) [list $item $column]
 	$t see $item
 }
 
@@ -1415,9 +1425,9 @@ proc PopupTagMenu {t} {
 	}
 	if {[llength $list]} {
 		menu $m.del -tearoff 0
-		$m add cascade -menu $m.del -label $mc::DeleteTag
+		$m add cascade -menu $m.del -label $mc::RemoveTag
 		foreach name $list {
-			$m.del add command -label $name -command [namespace code [list DeleteTag $t $name]]
+			$m.del add command -label $name -command [namespace code [list RemoveTag $t $name]]
 		}
 	}
 
@@ -1425,7 +1435,7 @@ proc PopupTagMenu {t} {
 }
 
 
-proc DeleteTag {t name {showWarning 0}} {
+proc RemoveTag {t name {showWarning 0}} {
 	variable Item
 	variable Lookup
 	variable ::[winfo toplevel $t]::Priv
@@ -1433,7 +1443,7 @@ proc DeleteTag {t name {showWarning 0}} {
 	variable Mandatory
 
 	if {$showWarning && !$Mandatory($name,$Priv(twoRatings)) && $TagOrder($name) <= 99} {
-		set msg [format $mc::TagDeleted $name $Lookup($name)]
+		set msg [format $mc::TagRemoved $name $Lookup($name)]
 		::dialog::info -parent $t -message $msg -title $mc::EditTags]
 	}
 	if {[$t item id active] == [$t item id $Item($name)]} {
@@ -1462,10 +1472,10 @@ proc UpdateRatingTags {top color typeField scoreField} {
 	set ratingType $Priv($typeField)
 	set ratingTagName $color$ratingType
 	if {[info exists Lookup($ratingTagName)]} {
-		DeleteTag $t $ratingTagName 1
+		RemoveTag $t $ratingTagName 1
 		set TagOrder($ratingTagName) 99
 	} elseif {[info exists Lookup($color$Priv($color:ratingType))]} {
-		DeleteTag $t $color$Priv($color:ratingType) 1
+		RemoveTag $t $color$Priv($color:ratingType) 1
 		set TagOrder($color$Priv($color:ratingType) 99
 	}
 	if {[llength $value]} {
@@ -1482,7 +1492,7 @@ proc UpdateRatingTags {top color typeField scoreField} {
 			if {[info exists Lookup($name)] && $TagOrder($name) == 99} {
 				set Priv($typeField) $ratingType
 				set Priv($scoreField) $Lookup($name)
-				DeleteTag $t $name 1
+				RemoveTag $t $name 1
 				set TagOrder($name) $RatingTagOrder($name)
 				UpdateTagList $t $name $Priv($scoreField)
 			}
@@ -1500,7 +1510,7 @@ proc UpdateEcoTag {top field} {
 	if {$Priv(game-eco-flag)} {
 		UpdateTagList $t ECO [$top.$field value]
 	} elseif {[info exists Lookup(ECO)]} {
-		DeleteTag $t ECO 0
+		RemoveTag $t ECO 0
 	}
 }
 
@@ -1550,7 +1560,7 @@ proc UpdateTagList {t name value} {
 				Result											{ set value "*" }
 
 				default {
-					return [DeleteTag $t $name 1]
+					return [RemoveTag $t $name 1]
 				}
 			}
 		}
@@ -1975,13 +1985,12 @@ proc ClearMatchList {top {field ""}} {
 		set field $Priv(entry)
 	}
 
-	if {[string length $field] == 0} { return }
-
 	switch $field {
 		white-name - black-name	{ set attr player }
 		event-title					{ set attr event }
 		event-site					{ set attr site }
 		game-annotator				{ set attr annotator }
+		default						{ return }
 	}
 
 	set lb $top.nb.matches.$attr.lb
@@ -1994,6 +2003,7 @@ proc ClearMatchList {top {field ""}} {
 	$lb activate none
 	$lb resize
 	$lb recolor
+
 	set Priv(entry) ""
 	set Priv(skip:$attr) "\uffff"
 	set Priv(list) {}

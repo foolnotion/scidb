@@ -147,7 +147,7 @@ bitfield<Bits>::bitfield()
 template <class Bits>
 inline
 bitfield<Bits>::bitfield(bool flag)
-	:m_bits(flag ? ~0u : 0u)
+	:m_bits(flag ? ~value_type(0) : value_type(0))
 {
 }
 

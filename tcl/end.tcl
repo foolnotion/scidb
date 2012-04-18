@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source initialization
+
 # --- Special popups for BETA version only -----------------------------
 
 namespace eval beta {

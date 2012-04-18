@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source language-selection-box
+
 proc languagebox {w args} {
 	return [::languagebox::Build $w {*}$args]
 }

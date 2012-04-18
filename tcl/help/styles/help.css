@@ -90,6 +90,16 @@ td.standard {
 	padding-right:		0.5em;
 }
 
+kbd.key {
+	font-size:			smaller;
+	border-width:		0.2em;
+	border-style:		solid;
+	border-color:		#dddddd #bbbbbb #bbbbbb #dddddd;
+	padding:				0 0;
+	background:			#eeeeee;
+	white-space:		nowrap;
+}
+
 .menuitem {
 	color:         	black;
 	background:    	#c4d0f4;

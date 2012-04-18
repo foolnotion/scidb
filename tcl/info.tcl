@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source info-dialog
+
 catch { package require platform }
 
 namespace eval info {

@@ -1066,6 +1066,7 @@ namespace load
 	enum State
 	{
 		Ok,
+		None,
 		Failed,
 		Corrupted,
 	};

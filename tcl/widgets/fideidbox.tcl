@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source fide-id-input-box
+
 proc fideidbox {w args} {
 	return [::fideidbox::Build $w {*}$args]
 }

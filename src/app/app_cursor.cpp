@@ -49,6 +49,7 @@ Cursor::Cursor(Application& app, Database* database)
 	,m_db(database)
 	,m_treeView(-1)
 	,m_isRefBase(false)
+	,m_isScratchBase(false)
 {
 	M_REQUIRE(database);
 
@@ -329,12 +330,15 @@ Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 void
 Cursor::updateViews()
 {
-	for (unsigned i = 0; i < m_viewList.size(); ++i)
+	if (!m_isScratchBase)
 	{
-		View* view = m_viewList[i];
+		for (unsigned i = 0; i < m_viewList.size(); ++i)
+		{
+			View* view = m_viewList[i];
 
-		if (view)
-			view->update();
+			if (view)
+				view->update();
+		}
 	}
 }
 
@@ -382,14 +386,7 @@ Cursor::clearBase()
 	M_REQUIRE(!isReadOnly());
 
 	database().clear();
-
-	for (unsigned i = 0; i < m_viewList.size(); ++i)
-	{
-		View* view = m_viewList[i];
-
-		if (view)
-			view->update();
-	}
+	updateViews();
 }
 
 

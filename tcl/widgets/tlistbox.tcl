@@ -581,6 +581,7 @@ proc WidgetProc {w command args} {
 			}
 			if {[$t cget -selectmode] eq "browse"} { return }
 			set index [lindex $args 0]
+			if {[llength $index] == 0} { return }
 			if {[string is integer -strict $index]} {
 				incr index
 			} elseif {$index eq "none"} {
@@ -604,6 +605,7 @@ proc WidgetProc {w command args} {
 				single - browse { $t selection clear }
 			}
 			set index [lindex $args 0]
+			if {[llength $index] == 0} { return }
 			if {[string is integer -strict $index]} {
 				incr index
 			} elseif {$index eq "none"} {

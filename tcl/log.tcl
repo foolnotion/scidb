@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source log-dialog
+
 namespace eval log {
 namespace eval mc {
 

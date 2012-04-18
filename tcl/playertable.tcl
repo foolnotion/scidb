@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source player-table
+
 namespace eval playertable {
 namespace eval mc {
 

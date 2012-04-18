@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source round-input-box
+
 proc roundbox {w args} {
 	return [::roundbox::Build $w {*}$args]
 }

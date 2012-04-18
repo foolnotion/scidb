@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-texture-dialog
+
 namespace eval board {
 namespace eval texture {
 

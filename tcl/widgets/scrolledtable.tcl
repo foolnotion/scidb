@@ -436,7 +436,7 @@ proc at {path y} {
 	variable ${table}::Vars
 
 	set row [::table::at $table $y]
-	if {![string is digit $row]} { return $row }
+	if {![string is digit -strict $row]} { return $row }
 	return [expr {$row + $Vars(start)}]
 }
 

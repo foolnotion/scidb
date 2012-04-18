@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source gender-selection-box
+
 proc genderbox {w args} {
 	return [::genderbox::Build $w {*}$args]
 }
@@ -154,7 +156,7 @@ proc WidgetProc {w command args} {
 			set value [$w.__w__ get]
 			set index [lsearch [$w.__w__ cget -values] $value]
 			if {$index >= 0} { return true }
-			if {$value eq "-" || $value eq "--" || $value eq ""} { return true }
+			if {$value eq "-" || $value eq "\u2014" || $value eq ""} { return true }
 			return false
 		}
 
@@ -221,7 +223,7 @@ proc Setup {w} {
 	}
 
 	$w.__w__ configure -width [expr {max([minWidth], $Width)}]
-	$w.__w__ listinsert { "" "--" } -index 0
+	$w.__w__ listinsert { "" "\u2014" } -index 0
 	set index 0
 	foreach type $types {
 		set entry [list $icon::12x12::Gender($type) $mc::Gender($type)]
@@ -245,7 +247,7 @@ proc Select {w key} {
 	variable ${w}::Computer
 
 	if {[string length [$w get]] == 1} {
-		if {[string is digit $key]} {
+		if {[string is digit -strict $key]} {
 			if {$key <= 3} {
 				$w.__w__ current $key
 				$w.__w__ icursor end

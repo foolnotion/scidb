@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source database--pane
+
 namespace eval application {
 namespace eval database {
 namespace eval mc {

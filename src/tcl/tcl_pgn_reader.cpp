@@ -149,10 +149,19 @@ PgnReader::warning(	Warning code,
 		case MaximalWarningCountExceeded:	msg = "MaximalWarningCountExceeded"; break;
 	}
 
+	if (lineNo >= m_lineOffset)
+		lineNo -= m_lineOffset;
+
+	if (lineNo == 0)
+	{
+		lineNo = 1;
+		column = 0;
+	}
+
 	Tcl_Obj* objv[8];
 
 	objv[0] = m_warning;
-	objv[1] = Tcl_NewIntObj(lineNo <= m_lineOffset ? lineNo : lineNo - m_lineOffset);
+	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
 	objv[3] = Tcl_NewIntObj(gameNo);
 	objv[4] = Tcl_NewStringObj(mstl::string::empty_string, 0);
@@ -219,10 +228,19 @@ PgnReader::error(	Error code,
 			break;
 	}
 
+	if (lineNo >= m_lineOffset)
+		lineNo -= m_lineOffset;
+
+	if (lineNo == 0)
+	{
+		lineNo = 1;
+		column = 0;
+	}
+
 	Tcl_Obj* objv[8];
 
 	objv[0] = m_error;
-	objv[1] = Tcl_NewIntObj(lineNo <= m_lineOffset ? lineNo : lineNo - m_lineOffset);
+	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
 	objv[3] = gameNo >= 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
 	objv[4] = Tcl_NewStringObj(message, message.size());

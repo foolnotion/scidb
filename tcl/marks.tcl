@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source marks-palette
+
 namespace eval marks {
 namespace eval mc {
 

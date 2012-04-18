@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source analysis-pane
+
 namespace eval application {
 namespace eval analysis {
 namespace eval mc {

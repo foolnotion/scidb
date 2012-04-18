@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-squares-dialog
+
 namespace eval board {
 namespace eval square {
 namespace eval mc {

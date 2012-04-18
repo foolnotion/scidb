@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source date-selection-box
+
 namespace eval widget {
 
 proc datebox {w args} { return [datebox::Build $w {*}$args] }

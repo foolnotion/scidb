@@ -12,6 +12,8 @@
 
 include ../Makefile.in
 
+ARCH = scidb-arch
+
 # NOTE that the ordering is important!
 SOURCES = \
 	exec.tcl \
@@ -519,5 +521,11 @@ $(SCRIPT): $(SOURCES)
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
 	@cat $(SOURCES) | sed 's/# vi:set ts=3 sw=3:/update idletasks/' | sed -e 's#%SHAREDIR%#$(SHAREDIR)#' -e '/^##/d' -e '/^#$$/d' -e '/^[ 	]*#[ 	]\+/d' > $(SCRIPT)
 	@chmod 0555 $(SCRIPT)
+
+$(ARCH): scidb-arch.tcl utils/archive.tcl
+	@echo "Build $(ARCH)"
+	@if [ -e $(ARCH) ]; then rm -f $(ARCH); fi
+	@cat scidb-arch.tcl utils/archive.tcl | sed -e 's/%PROGRAM%/$(PROGRAM)/' -e 's/%ARCH%/$(ARCH)/' > $(ARCH)
+	@chmod 0555 $(ARCH)
 
 # vi:set ts=3 sw=3:

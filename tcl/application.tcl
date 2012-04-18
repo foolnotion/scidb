@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source application
+
 namespace eval application {
 namespace eval mc {
 

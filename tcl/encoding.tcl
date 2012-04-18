@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source encoding-dialog
+
 namespace eval encoding {
 namespace eval mc {
 

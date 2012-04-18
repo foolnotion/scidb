@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source country-selection-box
+
 proc countrybox {w args} {
 	return [::countrybox::Build $w {*}$args]
 }

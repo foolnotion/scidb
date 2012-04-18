@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source comment-dialog
+
 namespace eval comment {
 namespace eval mc {
 

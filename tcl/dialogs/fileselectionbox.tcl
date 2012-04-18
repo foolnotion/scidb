@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source file-selection-box
+
 namespace eval dialog {
 
 switch [tk windowingsystem] {

@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-basics
+
 namespace eval board {
 namespace eval mc {
 

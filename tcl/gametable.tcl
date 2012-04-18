@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-table
+
 namespace eval gametable {
 namespace eval mc {
 

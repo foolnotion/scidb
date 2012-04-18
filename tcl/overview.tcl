@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source overview-dialog
+
 namespace eval overview {
 namespace eval mc {
 
@@ -265,7 +267,7 @@ proc NextGame {nb base {step 0}} {
 			[::widget::busyOperation ::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num]
 		set failed 1
 		switch [lindex $result 0] {
-			 0 { set failed 0 }
+			 1 { set failed 0 }
 			-1 { after idle [list ::dialog::info  -parent $nb -message $::game::mc::GameDecodingFailed] }
 			-2 { after idle [list ::dialog::error -parent $nb -message $::game::mc::GameDataCorrupted] }
 		}

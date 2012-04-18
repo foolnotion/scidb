@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source event-table
+
 namespace eval eventtable {
 namespace eval mc {
 

@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source engine-dialog
+
 namespace eval engine {
 
 variable Engines {}

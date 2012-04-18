@@ -165,7 +165,8 @@ stateToInt(load::State state)
 {
 	switch (state)
 	{
-		case load::Ok:				return  0;
+		case load::None:			return  0;
+		case load::Ok:				return  1;
 		case load::Failed:		return -1;
 		case load::Corrupted:	return -2;
 	}
@@ -1876,10 +1877,10 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (cmd[0])
 	{
 		case 'u': setResult(toString(Scidb->game(pos).undoCommand())); break;	// undo
-		case 't': setResult(Scidb->hasTrialMode(pos)); break;						// trial
+		case 't': setResult(Scidb->hasTrialMode(pos)); break;							// trial
 		case 'i': setResult(Scidb->game(pos).idn()); break;							// idn
 		case 'f': setResult(Scidb->game(pos).startBoard().toFen()); break;		// fen
-		case 'v': setResult(Scidb->game(pos).hasVariations()); break;			// variations?
+		case 'v': setResult(Scidb->game(pos).hasVariations()); break;				// variations?
 
 		case 'p':			// parent
 			{
@@ -2616,24 +2617,12 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (figurine)
 			reader.setFigurine(figurine);
 
-		int count = scidb->scratchBase().importGame(reader, scidb->indexAt(position));
+		load::State state = scidb->importGame(reader, position, trialMode);
 
 		if (trialMode)
-		{
 			setResult(reader.lastErrorCode() == tcl::PgnReader::LastError);
-		}
 		else
-		{
-			if (count >= 1)
-			{
-				load::State state = scidb->loadGame(position);
-
-				if (state != load::Ok)
-					count = ::stateToInt(state);
-			}
-
-			setResult(count);
-		}
+			setResult(::stateToInt(state));
 	}
 
 	return TCL_OK;

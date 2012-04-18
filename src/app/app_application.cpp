@@ -48,6 +48,7 @@
 #include "m_ofstream.h"
 #include "m_algorithm.h"
 #include "m_function.h"
+#include "m_bitset.h"
 #include "m_auto_ptr.h"
 #include "m_ref_counted_ptr.h"
 #include "m_limits.h"
@@ -193,6 +194,7 @@ Application::Application()
 								sys::utf8::Codec::utf8(),
 								Database::MemoryOnly,
 								db::type::Clipbase));
+	m_scratchBase->setScratchBase(true);
 
 	m_cursorMap[m_clipbaseName] = m_clipBase;
 	m_cursorMap[m_scratchbaseName] = m_scratchBase;
@@ -647,6 +649,7 @@ void
 Application::setReferenceBase(Cursor* cursor, bool isUserSet)
 {
 	M_REQUIRE(cursor == 0 || cursor->base().format() != format::ChessBase);
+	M_REQUIRE(cursor == 0 || !cursor->isScratchBase());
 
 	m_isUserSet = isUserSet;
 
@@ -695,6 +698,7 @@ void
 Application::switchBase(Cursor& cursor)
 {
 	M_REQUIRE(contains(cursor));
+	M_REQUIRE(!cursor.isScratchBase());
 
 	m_current = &cursor;
 
@@ -902,10 +906,13 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.sourceIndex = index;
 	game.refresh = 0;
 
-	game.game->updateSubscriber(Game::UpdateAll);
+	if (&cursor != m_scratchBase)
+	{
+		game.game->updateSubscriber(Game::UpdateAll);
 
-	if (m_subscriber && !isNew)
-		m_subscriber->updateGameInfo(position);
+		if (m_subscriber && !isNew)
+			m_subscriber->updateGameInfo(position);
+	}
 
 	return state;
 }
@@ -914,7 +921,8 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 load::State
 Application::loadGame(unsigned position)
 {
-	return loadGame(position, *m_scratchBase, indexAt(position));
+	EditGame const& game = m_gameMap.find(position)->second;
+	return loadGame(position, *game.cursor, game.index);
 }
 
 
@@ -1060,6 +1068,7 @@ Application::clearGame(Board const* startPosition)
 	M_REQUIRE(haveCurrentGame());
 
 	EditGame& game = m_gameMap[m_position];
+
 	game.game->clear(startPosition);
 	game.game->updateSubscriber(Game::UpdateBoard);
 
@@ -1244,6 +1253,7 @@ void
 Application::clearBase(Cursor& cursor)
 {
 	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isScratchBase());
 
 	moveGamesToScratchbase(cursor);
 	cursor.clearBase();
@@ -1265,6 +1275,7 @@ void
 Application::compressBase(Cursor& cursor, ::util::Progress& progress)
 {
 	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isScratchBase());
 
 	if (cursor.isReferenceBase())
 		cancelUpdateTree();
@@ -1559,9 +1570,6 @@ Application::saveGame(Cursor& cursor, bool replace)
 		g.crcIndex = cursor.base().computeChecksum(g.index);
 		g.sourceIndex = g.game->index();
 
-		db.setupTags(g.index, tags);
-		g.game->setTags(tags);
-
 		if (m_subscriber)
 		{
 			m_subscriber->updateDatabaseInfo(cursor.name());
@@ -1713,6 +1721,73 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 
 		if (cursor.isReferenceBase())
 			m_subscriber->updateTree(name);
+	}
+
+	return state;
+}
+
+
+unsigned
+Application::findUnusedPosition() const
+{
+	mstl::bitset posSet(m_gameMap.size() + 1, true);
+
+	for (GameMap::const_iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	{
+		if (i->first < m_gameMap.size())
+			posSet.reset(i->first);
+	}
+
+	M_ASSERT(!posSet.none());
+
+	return posSet.find_first();
+}
+
+
+db::load::State
+Application::importGame(db::Producer& producer, unsigned position, bool trialMode)
+{
+	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = m_position;
+
+	EditGame& game		= m_gameMap.find(position)->second;
+	EditGame* myGame	= &game;
+
+	unsigned rememberPosition = position;
+
+	if (game.cursor != m_scratchBase)
+	{
+		position = findUnusedPosition();
+		myGame = &insertScratchGame(position);
+
+		mstl::swap(myGame->game, game.game);
+		mstl::swap(myGame->backup, game.backup);
+	}
+
+	unsigned count = m_scratchBase->importGame(producer, myGame->index);
+	db::load::State state = count ? db::load::Ok : db::load::None;
+
+	if (count > 0 && !trialMode)
+	{
+		state = loadGame(position);
+		myGame->game->setIsModified(true);
+
+		game.game->updateSubscriber(Game::UpdateAll);
+
+		if (m_subscriber)
+			m_subscriber->updateGameInfo(rememberPosition);
+	}
+
+	if (game.cursor != m_scratchBase)
+	{
+		mstl::swap(myGame->game, game.game);
+		mstl::swap(myGame->backup, game.backup);
+
+		m_scratchBase->database().deleteGame(myGame->index, true);
+		releaseGame(position);
+		// TODO: compress scratch base
 	}
 
 	return state;

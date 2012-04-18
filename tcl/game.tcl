@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-management
+
 namespace eval game {
 namespace eval mc {
 
@@ -272,7 +274,7 @@ proc load {parent position base index} {
 		set rc 1
 	} else {
 		switch [::scidb::game::load $position $base $index] {
-			 0 { set rc 1 }
+			 1 { set rc 1 }
 			-1 { ::dialog::info  -parent [winfo toplevel $parent] -message $mc::GameDecodingFailed }
 			-2 { ::dialog::error -parent [winfo toplevel $parent] -message $mc::GameDataCorrupted }
 		}

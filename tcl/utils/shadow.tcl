@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source drop-down-shadows
+
 namespace eval shadow {
 
 set offset 5

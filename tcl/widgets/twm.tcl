@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source tiled-window-manager
+
 package require Tk 8.5
 package require tktwm 1.0
 if {[catch { package require tkpng }]} { package require Img }

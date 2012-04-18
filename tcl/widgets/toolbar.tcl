@@ -437,6 +437,20 @@ proc childconfigure {w args} {
 }
 
 
+proc childcget {w key} {
+	variable Specs
+
+	set toolbar [winfo parent $w]
+	switch -- $key {
+		-state - -tooltip - -tooltipvar {
+			set key [string range $key 1 end]
+			return $Specs($key:$w:$toolbar)
+		}
+	}
+	return -code error "unknown option '$key'"
+}
+
+
 proc deactivate {parent} {
 	activate $parent 0
 }

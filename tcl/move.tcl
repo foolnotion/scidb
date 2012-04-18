@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source move-handling
+
 namespace eval move {
 namespace eval mc {
 

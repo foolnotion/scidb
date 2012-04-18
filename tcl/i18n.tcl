@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source internationalization
+
 namespace eval mc {
 
 set Alt				"Alt"

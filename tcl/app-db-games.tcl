@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-list
+
 namespace eval application {
 namespace eval database {
 namespace eval games {

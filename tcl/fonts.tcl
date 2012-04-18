@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source font-management
+
 namespace eval font {
 
 namespace import ::tcl::mathfunc::int

@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source title-selection-box
+
 proc titlebox {w args} {
 	return [::titlebox::Build $w {*}$args]
 }
@@ -131,7 +133,7 @@ proc WidgetProc {w command args} {
 			set value [$w.__w__ get]
 			set index [lsearch [$w.__w__ cget -values] $value]
 			if {$index >= 0} { return true }
-			if {$value eq "-" || $value eq "--" || $value eq ""} { return true }
+			if {$value eq "-" || $value eq "\u2014" || $value eq ""} { return true }
 			return false
 		}
 
@@ -167,7 +169,7 @@ proc SetupList {w} {
 	variable mc::Title
 	variable titles
 
-	$w listinsert { "---" } -index 0
+	$w listinsert { "\u2014" } -index 0
 
 	set index 0
 	foreach title $titles {

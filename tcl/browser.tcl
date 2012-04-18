@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-browser-dialog
+
 namespace eval browser {
 namespace eval mc {
 

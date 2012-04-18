@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source scrolled-frame
+
 package require Tk 8.5
 package require Ttk
 

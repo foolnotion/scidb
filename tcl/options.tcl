@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source options
+
 namespace eval options {
 
 namespace import ::tcl::mathfunc::max

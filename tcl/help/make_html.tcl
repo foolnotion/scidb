@@ -90,7 +90,7 @@ set HtmlMapping {
 }
 
 set KeyMapping {
-	<key>ESC</key>	<kbd>&lt;Esc&gt;</kbd>
+	<key>ESC</key>	{<kbd class="key">Esc</kbd>}
 }
 
 

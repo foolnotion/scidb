@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source score-input-box
+
 proc scorebox {w args} {
 	return [::scorebox::Build $w {*}$args]
 }

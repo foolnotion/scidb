@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source entry-button-box
+
 package provide entrybuttonbox 1.0
 
 namespace eval ttk {

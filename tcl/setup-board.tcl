@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source setup-board-dialog
+
 namespace eval setup {
 namespace eval mc {
 

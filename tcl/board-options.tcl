@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-options-dialog
+
 namespace eval board {
 namespace eval options {
 namespace eval mc {

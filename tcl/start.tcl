@@ -405,6 +405,11 @@ proc makePopup {w} {
 	return $w.f
 }
 
+
+proc source {what} {
+	update idletasks
+}
+
 } ;# namespace util
 
 

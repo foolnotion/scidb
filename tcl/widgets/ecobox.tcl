@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source eco-selection-box
+
 proc ecobox {w args} {
 	return [::ecobox::Build $w {*}$args]
 }

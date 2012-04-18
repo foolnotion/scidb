@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source annotation-toolwindow
+
 namespace eval annotation {
 namespace eval mc {
 

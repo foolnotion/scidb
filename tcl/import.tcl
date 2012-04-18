@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source import-dialog
+
 namespace eval import {
 namespace eval mc {
 
@@ -665,7 +667,7 @@ proc Import {position dlg} {
 		foreach entry $Priv($position:sets) {
 			lassign $entry code _ figurine
 
-			set ok [::scidb::game::import \
+			set state [::scidb::game::import \
 				$position \
 				$content \
 				-encoding utf-8 \
@@ -674,8 +676,8 @@ proc Import {position dlg} {
 				-varno $Priv($position:varno) \
 				-trial 1 \
 			]
-			if {$ok} { set successfull 1 }
-			if {$ok && $code eq "en"} { break }
+			if {$state == 0 || $state == 1} { set successfull 1 }
+			if {$state <= 1 && $code eq "en"} { break }
 			lappend found $code
 		}
 
@@ -698,7 +700,7 @@ proc Import {position dlg} {
 		$Priv($position:figurines) current [incr index]
 	}
 
-	set n [::scidb::game::import \
+	set state [::scidb::game::import \
 		$position \
 		$content \
 		[namespace current]::Log import \
@@ -709,12 +711,12 @@ proc Import {position dlg} {
 		-trial 0 \
 	]
 	
-	if {$isVar && $n >= 0} {
-		set Priv($position:varno) $n
-		set n 1
+	if {$isVar && $state >= 0} {
+		set Priv($position:varno) $state
+		set state 1
 	}
 	
-	if {$n <= 0} {
+	if {$state <= 0} {
 		if {[string length [string trim $content]] == 0} {
 			Show info $mc::TextIsEmpty
 			$log configure -state disabled -takefocus 0

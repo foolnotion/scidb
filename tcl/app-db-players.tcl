@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source player-list
+
 namespace eval application {
 namespace eval database {
 namespace eval players {

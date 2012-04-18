@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-pane
+
 namespace eval application {
 namespace eval board {
 namespace eval mc {

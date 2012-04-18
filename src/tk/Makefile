@@ -72,6 +72,11 @@ tk_busy.o: tk8.5/tkPort.h
 tk_busy.o: tk8.5/tkUnixPort.h
 tk_busy.o: tk8.5/tkIntDecls.h
 tk_busy.o: ../mstl/m_types.h
+tk_fixes.o: tk_init.h
+tk_fixes.o: tk8.5/tkInt.h
+tk_fixes.o: tk8.5/tkPort.h
+tk_fixes.o: tk8.5/tkUnixPort.h
+tk_fixes.o: tk8.5/tkIntDecls.h
 tk_image.o: tk_init.h
 tk_image.o: svg/svg_path_renderer.h
 tk_image.o: svg/svg_path_tokenizer.h

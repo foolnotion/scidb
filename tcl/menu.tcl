@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source main-menu
+
 namespace eval menu {
 namespace eval mc {
 
@@ -77,9 +79,10 @@ if {[info exists ::i18n::languages]} {
 set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
 set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
 
-variable Fullscreen		0
-variable HideMenu			0
-variable Theme				default
+variable Fullscreen			0
+variable HideMenu				0
+variable Theme					default
+variable FileSelBoxInUse	0
 variable Entry
 variable SubMenu
 variable MenuWidget
@@ -272,6 +275,11 @@ proc build {menu} {
 
 
 proc dbNew {parent} {
+	variable FileSelBoxInUse
+
+	if {$FileSelBoxInUse} { return }
+	set FileSelBoxInUse 1
+
 	set filetypes [list                             \
 		[list $mc::ScidbBases		.sci]             \
 		[list $mc::ScidBases			{.si4 .si3}]      \
@@ -286,6 +294,7 @@ proc dbNew {parent} {
 		-needencoding 1 \
 		-title [set [namespace current]::mc::NewFile] \
 	]
+	set FileSelBoxInUse 0
 
 	if {[llength $result]} {
 		::application::database::newBase $parent {*}$result
@@ -294,6 +303,11 @@ proc dbNew {parent} {
 
 
 proc dbOpen {parent} {
+	variable FileSelBoxInUse
+
+	if {$FileSelBoxInUse} { return }
+	set FileSelBoxInUse 1
+
 	set filetypes [list                                                            \
 		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .zip}] \
 		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                   \
@@ -317,6 +331,7 @@ proc dbOpen {parent} {
 		-customcommand [namespace code [list CreateArchive]] \
 		-customfiletypes {.sci .si4 .si3 .cbh .pgn .gz .zip} \
 	]
+	set FileSelBoxInUse 0
 
 	if {[llength $result]} {
 		lassign $result file encoding
@@ -326,6 +341,11 @@ proc dbOpen {parent} {
 
 
 proc dbCreateArchive {parent {base ""}} {
+	variable FileSelBoxInUse
+
+	if {$FileSelBoxInUse} { return }
+	set FileSelBoxInUse 1
+
 	if {[string length $base] == 0} { set base [::scidb::db::get name] }
 	set filetypes [list	[list $mc::ScidbArchives {.scv}]]
 	set result [::dialog::saveFile \
@@ -337,6 +357,7 @@ proc dbCreateArchive {parent {base ""}} {
 		-title $mc::CreateArchive \
 		-initialfile [file tail [file rootname $base]] \
 	]
+	set FileSelBoxInUse 0
 	if {[llength $result]} {
 		set arch [lindex $result 0]
 		set progress $parent.__p__
@@ -389,6 +410,11 @@ proc dbCreateArchive {parent {base ""}} {
 
 
 proc dbImport {parent {base ""}} {
+	variable FileSelBoxInUse
+
+	if {$FileSelBoxInUse} { return }
+	set FileSelBoxInUse 1
+
 	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
 								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
 								[list $mc::PGNArchives			{.zip}] \
@@ -403,6 +429,7 @@ proc dbImport {parent {base ""}} {
 		-title $title \
 		-multiple yes \
 	]
+	set FileSelBoxInUse 0
 	if {[llength $result]} {
 		if {[string length $base] == 0} { set base [::scidb::db::get name] }
 		lassign $result files encoding

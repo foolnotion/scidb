@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source termination-selection-box
+
 proc terminationbox {w args} {
 	return [::terminationbox::Build $w {*}$args]
 }
@@ -137,7 +139,7 @@ proc WidgetProc {w command args} {
 			set value [$w.__w__ get]
 			set index [lsearch [$w.__w__ cget -values] $value]
 			if {$index >= 0} { return true }
-			if {$value eq "-" || $value eq "--" || $value eq ""} { return true }
+			if {$value eq "-" || $value eq "\u2014" || $value eq ""} { return true }
 			return false
 		}
 
@@ -194,7 +196,7 @@ proc Setup {w} {
 	variable reasons
 
 	$w.__w__ configure -width [expr {max([minWidth], $Width)}]
-	$w.__w__ listinsert [list "" "--"] -index 0
+	$w.__w__ listinsert [list "" "\u2014"] -index 0
 	set index 0
 	foreach reason $reasons {
 		$w.__w__ listinsert [list [set icon::12x12::$reason] [set mc::$reason]] -index [incr index]
@@ -254,7 +256,7 @@ proc Completion2 {w var prevContent} {
 	set len [string length $content]
 	if {$len == 0} { return }
 
-	if {$len == 1 && [string is digit $content]} {
+	if {$len == 1 && [string is digit -strict $content]} {
 		if {$content <= [llength $reasons]} {
 			$w.__w__ current $content
 			$w.__w__ icursor end

@@ -162,7 +162,8 @@ proc configureRadioEntry {menu index} {
 		-indicatoron off \
 		-image $icon::15x15::None \
 		-selectimage $icon::15x15::Dot \
-		-compound left
+		-compound left \
+		;
 }
 
 
@@ -364,11 +365,10 @@ proc ListboxNext {w} {
 	set nrows [expr {[winfo height $w]/$linespace}]
 	set last [expr {$index + $nrows - 1}]
 	if {$last == $active} {
-		$w yview scroll 2 units
-		$w activate [expr {min([$w size] - 1, $last + $nrows)}]
-	} else {
-		$w activate $last
+		$w yview scroll +1 pages
+		$w yview scroll +1 units
 	}
+	$w activate @0,10000
 	if {[$w cget -selectmode] eq "browse"} {
 		$w selection clear 0 end
 		$w selection set [$w index active]

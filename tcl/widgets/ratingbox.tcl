@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source rating-selection-box
+
 proc ratingbox {w args} {
 	return [::ratingbox::Build $w {*}$args]
 }

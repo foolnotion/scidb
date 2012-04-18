@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source tree-game-list
+
 namespace eval application {
 namespace eval tree {
 namespace eval games {

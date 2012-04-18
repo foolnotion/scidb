@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source database-icons
+
 namespace eval application {
 namespace eval database {
 namespace eval icons {

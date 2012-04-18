@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source splash-screen
+
 namespace eval splash {
 
 proc open {} {

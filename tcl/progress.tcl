@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source progress-dialog
+
 namespace eval progress {
 namespace eval mc {
 

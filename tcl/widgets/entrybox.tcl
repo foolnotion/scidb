@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source entry-box
+
 proc entrybox {w args} {
 	return [::entrybox::Build $w {*}$args]
 }

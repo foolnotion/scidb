@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source board-diagram
+
 namespace eval board {
 namespace eval stuff {
 

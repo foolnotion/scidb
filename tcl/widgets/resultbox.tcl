@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source result-selection-box
+
 proc resultbox {w args} {
 	return [::resultbox::Build $w {*}$args]
 }

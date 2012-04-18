@@ -75,6 +75,7 @@ public:
 	bool isViewOpen(unsigned view) const;
 	bool isValidView(unsigned view) const;
 	bool isReferenceBase() const;
+	bool isScratchBase() const;
 	bool hasTreeView() const;
 
 	/// Count number of loaded games.
@@ -146,6 +147,8 @@ public:
 	void close();
 	/// Set whether this database is a reference database
 	void setReferenceBase(bool flag);
+	/// Set whether this database is a scratch database
+	void setScratchBase(bool flag);
 	/// Removes all games from the underlying database.
 	void clearBase();
 	/// Update the characteristics of a game.
@@ -176,6 +179,7 @@ private:
 	IndexSet			m_freeSet;
 	int				m_treeView;
 	bool				m_isRefBase;
+	bool				m_isScratchBase;
 	SubscriberP		m_subscriber;
 };
 

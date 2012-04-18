@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source load-management
+
 namespace eval load {
 namespace eval mc {
 
@@ -81,6 +83,8 @@ proc source {path args} {
 	} elseif {[string length $msg]} {
 		lappend Log info "$msg: $path"
 	}
+
+	update idletasks
 }
 
 

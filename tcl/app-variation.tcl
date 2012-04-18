@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source variation-tool
+
 namespace eval application {
 namespace eval vars {
 namespace eval mc {
@@ -595,11 +597,13 @@ proc PopupMenu {table x y} {
 		;
 	$m add separator
 	foreach mode {exact fast} {
+		set text [set mc::Use[string toupper $mode 0 0]Mode]
 		$m add radiobutton \
-			-label [set mc::Use[string toupper $mode 0 0]Mode] \
+			-label $text \
 			-variable [namespace current]::Options(search:mode) \
 			-value $mode \
 			;
+		::theme::configureRadioEntry $m $text
 	}
 	$m add separator
 	$m add checkbutton \
@@ -625,19 +629,23 @@ proc PopupMenu {table x y} {
 		set _Current $clipbaseName
 	}
 
+	set text $::util::clipbaseName
 	$n add radiobutton \
-		-label $::util::clipbaseName \
+		-label $text \
 		-value $clipbaseName \
 		-variable [namespace current]::_Current \
 		-command [list ::scidb::vars::set $clipbaseName] \
 		;
+	::theme::configureRadioEntry $n $text
 	foreach base [lsort -dictionary -index 0 $list] {
+		lassign $base text value
 		$n add radiobutton \
-			-label [lindex $base 0] \
-			-value [lindex $base 1] \
+			-label $text \
+			-value $value \
 			-variable [namespace current]::_Current \
-			-command [list ::scidb::vars::set [lindex $base 1]] \
+			-command [list ::scidb::vars::set $value] \
 			;
+		::theme::configureRadioEntry $n $text
 	}
 
 	tk_popup $m $x $y

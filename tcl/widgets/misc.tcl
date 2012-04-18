@@ -16,6 +16,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source miscellaneous-widget-functions
+
 namespace eval widget {
 namespace eval mc {
 

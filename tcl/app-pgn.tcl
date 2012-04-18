@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-editor-pane
+
 namespace eval application {
 namespace eval pgn {
 namespace eval mc {
@@ -289,6 +291,11 @@ proc build {parent width height} {
 		-image $::icon::toolbarDice \
 		-tooltip "${::gamebar::mc::GameNew}: $::setup::board::mc::Shuffle" \
 		-command [namespace code NewGame] \
+	]
+	set Vars(button:import) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarPGN \
+		-tooltip $::import::mc::ImportPgnGame \
+		-command [namespace code ImportGame] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id history \
@@ -2074,10 +2081,12 @@ proc PopupMenu {parent position} {
 
 		$menu add separator
 
-		$menu add command \
-			-label "$::import::mc::ImportPgnGame..." \
-			-command [namespace code PasteClipboardGame] \
-			;
+		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
+			$menu add command \
+				-label "$::import::mc::ImportPgnGame..." \
+				-command [namespace code PasteClipboardGame] \
+				;
+		}
 		$menu add command \
 			-label "$::import::mc::ImportPgnVariation..." \
 			-command [namespace code PasteClipboardVariation] \
@@ -2621,6 +2630,14 @@ proc NewGame {} {
 }
 
 
+proc ImportGame {} {
+	variable Vars
+
+	set pos [::game::new $Vars(main)]
+	if {$pos >= 0} { ::import::openEdit $Vars(main) $pos }
+}
+
+
 proc Shuffle {variant} {
 	variable Vars
 	::menu::gameNew $Vars(main) $variant
@@ -2679,7 +2696,6 @@ proc SaveGame {mode} {
 
 	if {$base eq $clipbaseName} { return }
 	if {[::scidb::db::get readonly? $base]} { return }
-	if {![::scidb::game::query modified?]} { return }
 
 
 	switch $mode {

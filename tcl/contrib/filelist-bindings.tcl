@@ -575,7 +575,6 @@ proc ::TreeCtrl::EntryOpen {T item column element} {
 
 # Like EntryOpen, but Entry widget expands/shrinks during typing
 proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0} {selcmd {}}} {
-
     variable Priv
 
     set Priv(entry,$T,item) $item
@@ -603,6 +602,7 @@ proc ::TreeCtrl::EntryExpanderOpen {T item column element {fullWidth 0} {selcmd 
     }
 
     set Priv(entry,$T,font) $font
+    set Priv(entry,$T,text) $text
 
     # Create the Entry widget if needed
     set e $T.entry
@@ -693,7 +693,6 @@ proc ::TreeCtrl::EditClose {T type accept {refocus 0}} {
 }
 
 proc ::TreeCtrl::EntryExpanderKeypress {T} {
-
     variable Priv
 
     set font $Priv(entry,$T,font)
@@ -701,18 +700,27 @@ proc ::TreeCtrl::EntryExpanderKeypress {T} {
     set ebw [$T.entry cget -borderwidth]
     set ex [winfo x $T.entry]
 
-    set width [font measure $font ${text}W]
-    set width [expr {$width + ($ebw + 1) * 2}]
+    set charwidth [font measure $font 0]
+    set width [font measure $font ${text}]
+    set width [expr {$width + $charwidth + ($ebw + 1)*2}]
 
     scan [$T contentbox] "%d %d %d %d" left top right bottom
-    if {$ex + $width > $right} {
-	set width [expr {$right - $ex}]
+    if {$ex + $width > $right - $left} {
+	set width [expr {$right - $left - $ex}]
     }
     if {$width < $Priv(entry,$T,minwidth)} {
 	set width $Priv(entry,$T,minwidth)
     }
 
     place configure $T.entry -width $width
+
+    set oldContent $Priv(entry,$T,text)
+    if {[string length $text] > [string length $oldContent] &&
+	[string match ${oldContent}* $text]} {
+       # Help Tk a bit; the implementation of the cursor handling in tk::entry is clumsy.
+       $T.entry xview 10000
+    }
+    set Priv(entry,$T,text) $text
 
     return
 }
@@ -880,3 +888,4 @@ proc ::TreeCtrl::TextExpanderKeypress {T} {
     return
 }
 
+# vi:set ts=8 sw=4:

@@ -56,6 +56,7 @@ set Open								"&Open"
 
 set AddBookmark					"Add Bookmark '%s'"
 set RemoveBookmark				"Remove Bookmark '%s'"
+set RenameBookmark				"Rename Bookmark '%s'"
 
 set Filename						"File &name:"
 set Filenames						"File &names:"
@@ -968,6 +969,50 @@ proc SetActiveItem {w item state} {
 }
 
 
+proc ScrollPage {w units} {
+	set pages $units
+	set active [$w item id active]
+
+	if {$active > 0} {
+		if {$pages > 0} {
+			if {[lindex [$w yview] 0] == 0} {
+				set last [$w item id [list nearest 0 [expr {[winfo height $w] - 1}]]]
+				if {$active < $last} { set pages 0 }
+			}
+		} else {
+			if {[lindex [$w yview] 1] == 1} {
+				set first [$w item id {nearest 0 0}]
+				if {$first < $active} { set pages 0 }
+			}
+		}
+	}
+
+	$w yview scroll $pages pages
+
+	if {$active > 0} {
+		if {$units > 0} {
+			set activate [$w item id [list nearest 0 [expr {[winfo height $w] - 1}]]]
+		} else {
+			set activate [$w item id {nearest 0 0}]
+		}
+		$w activate $activate
+
+		if {[$w cget -selectmode] eq "single"} {
+			set selection [$w selection get]
+
+			if {[llength $selection] == 1} {
+				set sel [lindex $selection 0]
+
+				if {$active eq $sel} {
+					$w selection clear
+					$w selection add $activate
+				}
+			}
+		}
+	}
+}
+
+
 proc SbSet {sb first last} {
 	if {$first <= 0 && $last >= 1} {
 		grid remove $sb
@@ -1055,7 +1100,7 @@ proc DirChanged {w {useHistory 1}} {
 		::toolbar::childconfigure $Vars(button:add) -state disabled
 	} else {
 		foreach f $Bookmarks(user) {
-			if {$Vars(folder) eq $f} {
+			if {$Vars(folder) eq [lindex $f 0]} {
 				::toolbar::childconfigure $Vars(button:add) -state disabled
 			}
 		}
@@ -1084,9 +1129,10 @@ proc GetStartMenu {w} {
 	}
 	if {[llength $Bookmarks(user)]} {
 		lappend start "" "" ""
-		foreach folder $Bookmarks(user) {
+		foreach entry $Bookmarks(user) {
+			lassign $entry folder name
 			if {[file isdirectory $folder]} {
-				lappend start $icon::16x16::folder [file tail $folder] $folder
+				lappend start $icon::16x16::folder $name $folder
 			}
 		}
 	}
@@ -1467,7 +1513,7 @@ proc Build {w path args} {
 	variable Bookmarks
 
 	if {![info exists [namespace current]::icon::16x16::iconAdd]} {
-		foreach {icon img} {Add plus Minus minus} {
+		foreach {icon img} {Add plus Minus minus Modify modify} {
 			set [namespace current]::icon::16x16::icon$icon \
 				[list [[namespace parent]::makeStateSpecificIcons \
 					[set [namespace current]::icon::16x16::$img]]]
@@ -1494,6 +1540,12 @@ proc Build {w path args} {
 	set Vars(button:minus) [::toolbar::add $tb button     \
 		-image $icon::16x16::iconMinus                     \
 		-command [namespace code [list RemoveBookmark $w]] \
+		-state disabled                                    \
+	]
+	::toolbar::add $tb separator
+	set Vars(button:modify) [::toolbar::add $tb button     \
+		-image $icon::16x16::iconModify                     \
+		-command [namespace code [list RenameBookmark $w]] \
 		-state disabled                                    \
 	]
 	
@@ -1529,11 +1581,7 @@ proc Build {w path args} {
 	grid rowconfigure $path.f {0} -weight 1
 
 	$t state define hilite
-
-	$t notify install <Item-enter>
-	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+	$t state define edit
 
 	$t column create -tags root
 	$t configure -treecolumn root
@@ -1573,6 +1621,25 @@ proc Build {w path args} {
 	$t style create styLine
 	$t style elements styLine {elemDiv}
 	$t style layout styLine elemDiv -pady {3 2} -padx {4 4} -iexpand x -expand ns
+
+	TreeCtrl::SetEditable  $t { {root style elemTxt} }
+
+	$t notify install <Edit-begin>
+	$t notify install <Edit-accept>
+	$t notify install <Edit-end>
+	$t notify install <Item-enter>
+	$t notify install <Item-leave>
+
+	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
+	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
+
+	$t style layout style elemTxt -draw {no edit}
+	$t style layout style elemSel -draw {no edit}
+	$t notify bind $t <Edit-begin> { %T item state set %I ~edit }
+	$t notify bind $t <Edit-accept> { %T item element configure %I %C %E -text %t }
+	$t notify bind $t <Edit-accept> +[namespace code [list EditAccept $w]]
+	$t notify bind $t <Edit-end> { %T item state set %I ~edit }
+	$t notify bind $t <Edit-end> +[namespace code [list FinishEdit $w]]
 
 	bind $t <Double-Button-1> [namespace code [list InvokeBookmark $w %x %y]]
 	bind $t <Double-Button-1> {+ break }
@@ -1629,7 +1696,7 @@ proc InspectBookmark {w mode args} {
 			set path $Vars(folder:$attr)
 			if {[string length $path] == 1} { set path " $path " }
 		} else {
-			set path [lindex $Bookmarks(user) [expr {$index - [llength $Vars(bookmarks)] - 1}]]
+			set path [lindex [lindex $Bookmarks(user) [expr {$index - [llength $Vars(bookmarks)] - 1}]] 0]
 		}
 		$Vars(inspectcommand) $tl $path
 	} else {
@@ -1665,20 +1732,23 @@ proc LayoutBookmarks {w} {
 	}
 
 	set bookmarks {}
-	foreach folder $Bookmarks(user) {
+	foreach entry $Bookmarks(user) {
+		lassign $entry folder name
+		if {[string length $name] == 0} { set name $folder } ;# support old format
 		if {[file isdirectory $folder]} {
-			lappend bookmarks $folder
+			lappend bookmarks [list $folder $name]
 		}
 	}
 	set Bookmarks(user) $bookmarks
 	array unset Vars bookmark:tooltip:*
 
 	set index 0
-	foreach folder $Bookmarks(user) {
+	foreach entry $Bookmarks(user) {
+		lassign $entry folder name
 		set icon [set [namespace parent]::icon::16x16::folder]
 		set item [$t item create]
 		$t item style set $item root style
-		$t item element configure $item root elemImg -image $icon + elemTxt -text [file tail $folder]
+		$t item element configure $item root elemImg -image $icon + elemTxt -text $name
 		$t item lastchild root $item
 		set Vars(bookmark:tooltip:$item) $index
 		incr index
@@ -1690,13 +1760,13 @@ proc AddBookmark {w} {
 	variable [namespace parent]::${w}::Vars
 	variable Bookmarks
 
-	lappend Bookmarks(user) $Vars(folder)
+	lappend Bookmarks(user) $Vars(folder) [file tail $Vars(folder)]
 	set list {}
 	set index -1
-	foreach folder $Bookmarks(user) {
-		lappend list [list [incr index] [string tolower [file tail $folder]]]
+	foreach entry $Bookmarks(user) {
+		lappend list [list [incr index] [string tolower [lindex $entry 1]]]
 	}
-	set list [lsort -dictionary -index 1 $list]
+	set list [lsort -dictionary -index 1 1 $list]
 	set bookmarks {}
 	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
 	set Bookmarks(user) $bookmarks
@@ -1718,16 +1788,80 @@ proc RemoveBookmark {w} {
 }
 
 
+proc RenameBookmark {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+	set sel [$t item id active]
+	OpenEdit $w $sel rename
+}
+
+
+proc OpenEdit {w sel mode} {
+	variable [namespace parent]::${w}::Vars
+
+	set t $Vars(widget:list:bookmark)
+	$t selection clear
+	foreach item [$t item children root] { $t item state set $item {!hilite} }
+	$t see $sel
+	set index [expr {$sel - [llength $Vars(bookmarks)] - 1}]
+
+	set e [::TreeCtrl::EntryExpanderOpen $t $sel 0 elemTxt 0]
+	set Vars(edit:active) 1
+	set Vars(edit:sel) $sel
+	set Vars(edit:index) $index
+	set Vars(edit:accept) 0
+	::TreeCtrl::TryEvent $t Edit begin [list I $sel C 0 E elemTxt]
+}
+
+
+proc EditAccept {w} {
+	variable [namespace parent]::${w}::Vars
+	set Vars(edit:accept) 1
+}
+
+
+proc FinishEdit {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	set t $Vars(widget:list:bookmark)
+	set sel $Vars(edit:sel)
+	set Vars(edit:active) 0
+
+	if {$Vars(edit:accept)} {
+		$t selection clear
+		set newName [string trim [$t item element cget $sel 0 elemTxt -text]]
+		set oldName [lindex $Bookmarks(user) $Vars(edit:index) 1]
+		if {[string length $newName] == 0} { return $oldName }
+		if {$oldName eq $newName} { return $oldName }
+		lset Bookmarks(user) $Vars(edit:index) 1 $newName
+		Selected $w $Vars(edit:sel)
+	}
+
+	$t selection clear
+	$t selection add $sel
+	$t activate $sel
+	$t see $sel
+
+	after idle [list [namespace parent]::Stimulate $w]
+}
+
+
 proc Selected {w sel} {
 	variable [namespace parent]::${w}::Vars
 	variable Bookmarks
 
 	if {[string is integer -strict $sel] && $sel > [llength $Vars(bookmarks)]} {
-		set folder [lindex $Bookmarks(user) [expr {$sel - [llength $Vars(bookmarks)] - 1}]]
-		set tip [format [set [namespace parent]::mc::RemoveBookmark] [file tail $folder]]
+		set name [lindex $Bookmarks(user) [expr {$sel - [llength $Vars(bookmarks)] - 1}] 1]
+		set tip [format [set [namespace parent]::mc::RemoveBookmark] [file tail $name]]
 		::toolbar::childconfigure $Vars(button:minus) -state normal -tooltip $tip
+		set tip [format [set [namespace parent]::mc::RenameBookmark] [file tail $name]]
+		::toolbar::childconfigure $Vars(button:modify) -state normal -tooltip $tip
 	} else {
 		::toolbar::childconfigure $Vars(button:minus) -state disabled
+		::toolbar::childconfigure $Vars(button:modify) -state disabled
 	}
 }
 
@@ -1759,7 +1893,7 @@ proc InvokeBookmark {w args} {
 	} else {
 		set i [expr {$sel - [llength $Vars(bookmarks)]}]
 		if {$i < [llength $Bookmarks(user)]} {
-			[namespace parent]::ChangeDir $w [lindex $Bookmarks(user) $i]
+			[namespace parent]::ChangeDir $w [lindex $Bookmarks(user) $i 0]
 		}
 	}
 }
@@ -1779,7 +1913,7 @@ proc PopupMenu {w x y} {
 	menu $m -tearoff false
 	set count 0
 
-	if {[string length $Vars(folder)]} {
+	if {[string length $Vars(folder)] && [::toolbar::childcget $Vars(button:add) -state] eq "normal"} {
 		if {[string length $Vars(bookmark:folder)]} { set state normal } else { set state disabled }
 		set text [format [Tr AddBookmark] [file tail $Vars(folder)]]
 		$m add command \
@@ -1794,12 +1928,20 @@ proc PopupMenu {w x y} {
 
 	set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
 	if {$sel >= 0} {
-		set text [format [Tr RemoveBookmark] [file tail $Bookmarks(user)]]
+		set name [lindex $Bookmarks(user) $sel 1]
+		set text [format [Tr RemoveBookmark] $name]
 		$m add command                                        \
 			-compound left                                     \
 			-image $icon::16x16::minus                         \
 			-label " $text"                                    \
 			-command [namespace code [list RemoveBookmark $w]] \
+			;
+		set text [format [Tr RenameBookmark] $name]
+		$m add command                                        \
+			-compound left                                     \
+			-image $icon::16x16::modify                        \
+			-label " $text"                                    \
+			-command [namespace code [list RenameBookmark $w]] \
 			;
 		incr count
 	}
@@ -1835,6 +1977,24 @@ set plus [image create photo -data {
 	TBU3CzknVOsxmhluFoz9csAmKu5OlfPwG7jh5v8HmBqOb+RcrUndLw5qZhuCHKGCet/fm9oC
 	1N8ZMGD9gA74A1LI/eeznYVOAAAAInpUWHRTb2Z0d2FyZQAAeNpzTMlPSlXwzE1MTw1KTUyp
 	BAAvnAXUrgypTQAAAABJRU5ErkJggg==
+}]
+
+set modify [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAABIAAAASABGyWs+AAACsElEQVQ4y42TXUhTcRjGn/8525SdOXWxLDRnKWJqEUpm
+	c5oUgl0EWWA3RZR0YV141UUXrRF00YUUfYk6u4kuIgiMIkJSkgih/KrQmNOpW/ve8WxzOzv7
+	OP8uBEHL7L3/Pc/D+74PwX+O71EtIiuxFv3OnBeyQ5ATtsjVgfOlL9ntwP6O23g9MQwp31S1
+	KCS7s+zfy/PsvBq2+NHqkYBrW4Eb10UEh+/UhLLTD4vqrjQszUWI/HYMuQFJK7NM85YCXzvL
+	0POlHNJo9MiuJvKEyf1kdMyukj3NXXDFUmAmJ6FSE9WWAjfNu+H/kKzTNWR61QZvbV5SgNI5
+	hampFArPdiGYisUTzokBZjM4fm0fKD0BcRn1OqP8WG3wHCKBMKiHgIupoJt5hpnntyRNKWfl
+	cyUL2SzgHDwI0ZUx6Yy0V21wV5KAAOIjCNs0CDtYUCkjBpdhDU6lzaoihbCeYKzTAEpbEHOm
+	TDoj06Mu8a7DEfsajBSVEpFsK5VyLPrqPOHkcBTrCZYGDyC+nDbqG9l+rsRdCR+/0Tkli2JI
+	ZQ3ZGDOnp0L9qwAAgHlvBCi9iNiiVKM/xt7nDO5K+PkNzjQlS/GA0sovwMJmy+swADDFF9ow
+	0v7ToKsr7OaKXYfh50G8a87CPAs5KYtRn6LP8w1mBUf55qHghp0xFa2XoasqOqfde8nErOwA
+	8QIRuwYRBws5KUtRr8Lqs8HCcFRoehP649zMu/bTZQWm421ZigqFMn0Kor8Ygp0gLWZEwc32
+	LY5nzCpNhm8d5f/6L4wvqWwOOBZqSXIOBPlQaivltMRG/Av0rmdWtmRpILQMhbd8dbYxh+mf
+	+DxdpOcEysZcTufw7NjydPzewo+EVaWm4TPjq//sCnmwP1uSkplfBVrFR71W9dTtiLkh0/kO
+	V2a7ngEAfgMA/k9aWbNcqAAAAABJRU5ErkJggg==
 }]
 
 } ;# namespace 16x16
@@ -2054,6 +2214,7 @@ proc Build {w path args} {
 	$t notify bind $t <Edit-accept> +[namespace code [list EditAccept $w]]
 	$t notify bind $t <Edit-end> { %T item state set %I ~edit }
 	$t notify bind $t <Edit-end> +[namespace code [list FinishEdit $w]]
+
 	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $w $t enter %I]
 	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $w $t leave %I]
 	$t notify bind $t <Column-resized> [namespace code [list ColumnResized $w %C]]
@@ -3813,23 +3974,7 @@ set restore [image create photo -data {
 	5bcAAAAASUVORK5CYII=
 }]
 
-set modify [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-	CXBIWXMAAABIAAAASABGyWs+AAACsElEQVQ4y42TXUhTcRjGn/8525SdOXWxLDRnKWJqEUpm
-	c5oUgl0EWWA3RZR0YV141UUXrRF00YUUfYk6u4kuIgiMIkJSkgih/KrQmNOpW/ve8WxzOzv7
-	OP8uBEHL7L3/Pc/D+74PwX+O71EtIiuxFv3OnBeyQ5ATtsjVgfOlL9ntwP6O23g9MQwp31S1
-	KCS7s+zfy/PsvBq2+NHqkYBrW4Eb10UEh+/UhLLTD4vqrjQszUWI/HYMuQFJK7NM85YCXzvL
-	0POlHNJo9MiuJvKEyf1kdMyukj3NXXDFUmAmJ6FSE9WWAjfNu+H/kKzTNWR61QZvbV5SgNI5
-	hampFArPdiGYisUTzokBZjM4fm0fKD0BcRn1OqP8WG3wHCKBMKiHgIupoJt5hpnntyRNKWfl
-	cyUL2SzgHDwI0ZUx6Yy0V21wV5KAAOIjCNs0CDtYUCkjBpdhDU6lzaoihbCeYKzTAEpbEHOm
-	TDoj06Mu8a7DEfsajBSVEpFsK5VyLPrqPOHkcBTrCZYGDyC+nDbqG9l+rsRdCR+/0Tkli2JI
-	ZQ3ZGDOnp0L9qwAAgHlvBCi9iNiiVKM/xt7nDO5K+PkNzjQlS/GA0sovwMJmy+swADDFF9ow
-	0v7ToKsr7OaKXYfh50G8a87CPAs5KYtRn6LP8w1mBUf55qHghp0xFa2XoasqOqfde8nErOwA
-	8QIRuwYRBws5KUtRr8Lqs8HCcFRoehP649zMu/bTZQWm421ZigqFMn0Kor8Ygp0gLWZEwc32
-	LY5nzCpNhm8d5f/6L4wvqWwOOBZqSXIOBPlQaivltMRG/Av0rmdWtmRpILQMhbd8dbYxh+mf
-	+DxdpOcEysZcTufw7NjydPzewo+EVaWm4TPjq//sCnmwP1uSkplfBVrFR71W9dTtiLkh0/kO
-	V2a7ngEAfgMA/k9aWbNcqAAAAABJRU5ErkJggg==
-}]
+set modify [set ::fsbox::bookmarks::icon::16x16::modify]
 
 set duplicate [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVjGABli9ydt+7s7/j/
@@ -4085,12 +4230,13 @@ bind FSBox <KeyPress-End>			{ TreeCtrl::SetActiveItem %W [%W item id {last visib
 bind FSBox <KeyPress-space>		{ TreeCtrl::SetActiveItem %W [%W item id active] }
 bind FSBox <Shift-KeyPress-Down>	{ TreeCtrl::Extend %W below }
 bind FSBox <Shift-KeyPress-Up>	{ TreeCtrl::Extend %W above }
-# not working due to a Tk bug (is disturbing the Double-Button-1 event)
 bind FSBox <ButtonPress-1>			{ fsbox::SetActiveItem %W [TreeCtrl::ButtonPress1 %W %x %y] %s }
 bind FSBox <ButtonRelease-1>		{ TreeCtrl::Release1 %W %x %y }
 bind FSBox <Button1-Motion>		{ TreeCtrl::Motion1 %W %x %y }
 bind FSBox <Button1-Leave>			{ TreeCtrl::Leave1 %W %x %y }
 bind FSBox <Button1-Enter>			{ TreeCtrl::Enter1 %W %x %y }
+bind FSBox <KeyPress-Prior>		{ fsbox::ScrollPage %W -1 }
+bind FSBox <KeyPress-Next>			{ fsbox::ScrollPage %W +1 }
 
 bind FSBox <Motion> {
     TreeCtrl::CursorCheck %W %x %y

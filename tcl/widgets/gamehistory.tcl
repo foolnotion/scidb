@@ -24,6 +24,8 @@
 # (at your option) any later version.
 # ======================================================================
 
+::util::source game-history
+
 package require Tk 8.5
 package require tktreectrl 2.2
 package require scrolledframe
@@ -272,11 +274,16 @@ proc ShowTooltip {t x y} {
 		grid [::tk::label $f.siline -background $background] -row 3 -column 1 -sticky w
 		grid rowconfigure $f {0 4} -minsize 2
 		grid columnconfigure $f {0 2} -minsize 2
+
+		set family [font configure [$f.coline cget -font] -family]
+		set size [font configure [$f.coline cget -font] -size]
+		set boldFont [list $family $size bold]
+		$f.coline configure -font $boldFont
 	}
 
 	if {[llength $Map($sel)] == 1} {
-		grid remove $f.evline $f.siline
-		$f.coline configure -text [lindex $Map($sel) 0] -foreground black
+		grid remove $f.coline $f.siline
+		$f.evline configure -text [lindex $Map($sel) 0] -foreground black
 		::tooltip::show $t [lindex $Map($sel) 0]
 	} else {
 		lassign [lindex $Map($sel) 1] event site date round white black result
@@ -297,12 +304,10 @@ proc ShowTooltip {t x y} {
 		append coline " \u2013 "
 		append coline $black
 
-		if {[string length $evline]} { grid $f.evline } else { grid remove $f.evline }
-		if {[string length $siline]} { grid $f.siline } else { grid remove $f.siline }
-
-		$f.evline configure -text $evline
-		$f.coline configure -text $coline -foreground darkred
-		$f.siline configure -text $siline
+		foreach what {evline coline siline} {
+			if {[string length [set $what]]} { grid $f.$what } else { grid remove $f.$what }
+			$f.$what configure -text [set $what]
+		}
 	}
 
 	::tooltip::disable
