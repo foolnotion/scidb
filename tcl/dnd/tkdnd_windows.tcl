@@ -58,14 +58,6 @@ namespace eval olednd {
 };# namespace olednd
 
 # ----------------------------------------------------------------------------
-#  Command olednd::_DropTarget
-# ----------------------------------------------------------------------------
-proc olednd::_DropTarget {} {
-  variable _prev_drop_target;
-  return $_prev_drop_target
-}
-
-# ----------------------------------------------------------------------------
 #  Command olednd::_HandleDragEnter
 # ----------------------------------------------------------------------------
 proc olednd::_HandleDragEnter { drop_target typelist actionlist pressedkeys

@@ -63,14 +63,6 @@ namespace eval xdnd {
 };# namespace xdnd
 
 # ----------------------------------------------------------------------------
-#  Command xdnd::_DropTarget
-# ----------------------------------------------------------------------------
-proc xdnd::_DropTarget {} {
-  variable _prev_drop_target
-  return $_prev_drop_target
-}
-
-# ----------------------------------------------------------------------------
 #  Command xdnd::_HandleXdndEnter
 # ----------------------------------------------------------------------------
 proc xdnd::_HandleXdndEnter { path drag_source typelist } {
@@ -325,6 +317,9 @@ proc xdnd::_GetDroppedData { time } {
   variable _drop_target
   variable _prev_drop_target
   variable _common_drag_source_types
+  if {![llength $_common_drag_source_types]} {
+    error "no common data types between the drag source and drop target widgets"
+  }
   set _prev_drop_target $_drop_target
   foreach type $_common_drag_source_types {
     # puts "TYPE: $type ($_drop_target)"
@@ -332,7 +327,7 @@ proc xdnd::_GetDroppedData { time } {
     if {![catch {
       selection get -displayof $_drop_target -selection XdndSelection \
                     -type $type -time $time} result options]} {
-      return $result
+      return [_normalise_data $type $result]
     }
   }
   # target should receive a leave event in any case
@@ -385,10 +380,7 @@ proc xdnd::_platform_specific_types { types } {
 #  Command xdnd::_normalise_data
 # ----------------------------------------------------------------------------
 proc xdnd::_normalise_data { type data } {
-  switch $type {
-    CF_HDROP   {return [encoding convertfrom $data]}
-    default    {return $data}
-  }
+  return $data
 }; # xdnd::_normalise_data
 
 # ----------------------------------------------------------------------------
@@ -396,8 +388,14 @@ proc xdnd::_normalise_data { type data } {
 # ----------------------------------------------------------------------------
 proc xdnd::_platform_specific_type { type } {
   switch $type {
-    DND_Text   {return [list text/plain UTF8_STRING STRING]}
-    DND_Files  {return [list text/uri-list]}
+    DND_Text   {return {text/plain
+                        text/html
+                        text/plain;charset=UTF-8
+                        text/plain;charset=ISO-8859-1
+                        text/html;charset=UTF-8
+                        text/html;charset=ISO-8859-1
+                        UTF8_STRING STRING}}
+    DND_Files  {return {text/uri-list text/x-moz-url application/x-qiconlist}}
     default    {return [list $type]}
   }
 }; # xdnd::_platform_specific_type
@@ -407,11 +405,20 @@ proc xdnd::_platform_specific_type { type } {
 # ----------------------------------------------------------------------------
 proc xdnd::_platform_independent_type { type } {
   switch $type {
-    UTF8_STRING   -
-    STRING        -
-    text/plain    {return DND_Text}
-    text/uri-list {return DND_Files}
-    default       {return [list $type]}
+    UTF8_STRING     -
+    STRING          -
+    text/plain;charset=UTF-8 -
+    text/plain;charset=ISO-8859-1 -
+    text/html;charset=UTF-8 -
+    text/html;charset=ISO-8859-1 -
+    text/html       -
+    text/plain      {return DND_Text}
+
+    text/uri-list   -
+    application/x-qiconlist -
+    text/x-moz-url  {return DND_Files}
+
+    default         {return [list $type]}
   }
 }; # xdnd::_platform_independent_type
 
@@ -420,8 +427,15 @@ proc xdnd::_platform_independent_type { type } {
 # ----------------------------------------------------------------------------
 proc xdnd::_supported_type { type } {
   switch $type {
-    {text/plain;charset=UTF-8} - text/plain -
-    text/uri-list {return 1}
+    text/plain -
+    text/html -
+    text/plain;charset=UTF-8 -
+    text/plain;charset=ISO-8859-1 -
+    text/html;charset=UTF-8 -
+    text/html;charset=ISO-8859-1 -
+    text/uri-list -
+    text/x-moz-url -
+    application/x-qiconlist {return 1}
   }
   return 0
 }; # xdnd::_supported_type

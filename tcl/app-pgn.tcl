@@ -295,7 +295,7 @@ proc build {parent width height} {
 	set Vars(button:import) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPGN \
 		-tooltip $::import::mc::ImportPgnGame \
-		-command [namespace code ImportGame] \
+		-command [namespace code [list ::menu::importGame $Vars(main)]] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id history \
@@ -2627,14 +2627,6 @@ proc Refresh {var} {
 proc NewGame {} {
 	variable Vars
 	::setup::popupShuffleMenu [namespace current] $Vars(button:shuffle)
-}
-
-
-proc ImportGame {} {
-	variable Vars
-
-	set pos [::game::new $Vars(main)]
-	if {$pos >= 0} { ::import::openEdit $Vars(main) $pos }
 }
 
 

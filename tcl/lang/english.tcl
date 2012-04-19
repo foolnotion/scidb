@@ -1560,6 +1560,9 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File"
 ::dialog::fsbox::mc::HypertextFile			"Hypertext File"
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
+::dialog::fsbox::mc::LinkTo					"Link to %s"
+::dialog::fsbox::mc::LinkTarget				"Link target"
+::dialog::fsbox::mc::Directory				"Directory"
 
 ::dialog::fsbox::mc::Content					"Content"
 ::dialog::fsbox::mc::Open						"Open"

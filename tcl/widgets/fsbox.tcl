@@ -1734,8 +1734,8 @@ proc LayoutBookmarks {w} {
 	set bookmarks {}
 	foreach entry $Bookmarks(user) {
 		lassign $entry folder name
-		if {[string length $name] == 0} { set name $folder } ;# support old format
 		if {[file isdirectory $folder]} {
+			if {[string length $name] == 0} { set name [file tail $folder] } ;# support old format
 			lappend bookmarks [list $folder $name]
 		}
 	}
@@ -2920,14 +2920,14 @@ proc RefreshFileList {w} {
 }
 
 
-proc CurrentFileIsUsed {w} {
-	variable [namespace parent]::${w}::Vars
-
-	if {$Vars(glob) ne "Files"} { return 0 }
-	if {[llength $Vars(selected:files)] > 1} { return 0 }
-	if {[llength $Vars(isusedcommand)] == 0} { return 0 }
-	return [$Vars(isusedcommand) $Vars(folder) [file join $Vars(folder) $Vars(initialfile)]]
-}
+#proc CurrentFileIsUsed {w} {
+#	variable [namespace parent]::${w}::Vars
+#
+#	if {$Vars(glob) ne "Files"} { return 0 }
+#	if {[llength $Vars(selected:files)] > 1} { return 0 }
+#	if {[llength $Vars(isusedcommand)] == 0} { return 0 }
+#	return [$Vars(isusedcommand) $Vars(folder) [file join $Vars(folder) $Vars(initialfile)]]
+#}
 
 
 proc ConfigureButtons {w} {
@@ -3894,16 +3894,20 @@ proc Inspect {w mode args} {
 		lassign $args x y
 		set id [$t identify $x $y]
 		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
+		set index [expr {[lindex $id 1] - 1}]
 		switch $Vars(glob) {
 			LastVisited - Favorites {
-				set path [lindex $Vars(list:folder) [expr {[lindex $id 1] - 1}]]
+				set path [lindex $Vars(list:folder) $index]
 				$Vars(inspectcommand) $tl $path
 			}
 			default {
-				set index [expr {[lindex $id 1] - [llength $Vars(list:folder)] - 1}]
-				if {$index >= 0} {
-					$Vars(inspectcommand) $tl $Vars(folder) [lindex $Vars(list:file) $index]
+				if {$index >= [llength $Vars(list:folder)]} {
+					set index [expr {$index - [llength $Vars(list:folder)]}]
+					set file [lindex $Vars(list:file) $index]
+				} else {
+					set file [lindex $Vars(list:folder) $index]
 				}
+				$Vars(inspectcommand) $tl $Vars(folder) $file
 			}
 		}
 	} else {

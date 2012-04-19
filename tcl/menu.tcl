@@ -466,6 +466,12 @@ proc gameNew {parent {variant {}}} {
 }
 
 
+proc importGame {parent} {
+	set pos [::game::new $parent]
+	if {$pos >= 0} { ::import::openEdit $parent $pos }
+}
+
+
 proc bugReport {parent} {
 	::web::open $parent [set [namespace current]::BugTracker]
 }

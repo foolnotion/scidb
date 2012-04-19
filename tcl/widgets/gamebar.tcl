@@ -1237,6 +1237,12 @@ proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
 		-compound left \
 		-command [list ::menu::gameNew [winfo parent $m] shuffle] \
 		;
+	$m add command \
+		-label " $::import::mc::ImportPgnGame" \
+		-image $::icon::16x16::filetypePGN \
+		-compound left \
+		-command [list ::menu::importGame [winfo parent $m]] \
+		;
 	
 	if {$clearHistory == 2} {
 		$m add separator

@@ -760,13 +760,13 @@ int Tkdnd_Init (Tcl_Interp *interp) {
     return TCL_ERROR;
   }
 
-  Tcl_CreateObjCommand(interp, "::macdnd::registerdragwidget",
+  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::registerdragwidget",
                        TkDND_RegisterDragWidgetObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "::macdnd::unregisterdragwidget",
+  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::unregisterdragwidget",
                        TkDND_UnregisterDragWidgetObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "::macdnd::dodragdrop",
+  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::dodragdrop",
                        TkDND_DoDragDropObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 

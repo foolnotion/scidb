@@ -50,7 +50,7 @@ install-subdirs:
 	@$(MAKE) -C tcl install
 	@$(MAKE) -C man install
 
-update-etc-magic:
+update-magic:
 	@echo "Update magic file"
 	@if [ -f /usr/share/file/magic ]; then                                     \
 		if [ -z "`cat /usr/share/file/magic | grep Scidb`" ]; then              \

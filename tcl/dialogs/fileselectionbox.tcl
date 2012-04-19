@@ -56,6 +56,9 @@ set ScidbArchive				"Scidb Arvchive"
 set PortableDocumentFile	"Portable Document File"
 set HypertextFile				"Hypertext File"
 set TypesettingFile			"Typesetting File"
+set LinkTo						"Link to %s"
+set LinkTarget					"Link target"
+set Directory					"Directory"
 
 set Content						"Content"
 set Open							"Open"
@@ -504,7 +507,16 @@ proc GetNumGames {filename mtime} {
 
 
 proc IsUsed {folder file} {
-	if {[::scidb::db::get open? [file normalize $file]]} { return yes }
+	switch [file extension $file] {
+		.pgn - .gz - .zip {
+			# no action
+		}
+
+		.sci - .si3 - .si4 - .cbh {
+			if {[::scidb::db::get open? [file normalize $file]]} { return yes }
+		}
+	}
+
 	return no
 }
 
@@ -521,80 +533,102 @@ proc Inspect {parent {folder ""} {filename ""}} {
 
 		if {[string length $filename] > 0} {
 			file stat $filename stat
+			set type [file type $filename]
 			set mtime [::locale::formatTime [clock format $stat(mtime) -format {%Y.%m.%d %H:%M:%S}]]
-			set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
-			# TODO: should we sum the sizes of all related files?
-			set size [::locale::formatFileSize $stat(size)]
-			set ext [file extension $filename]
-			set fileType [set mc::$FileType($ext)]
 
-			tk::label $f.lname -text "$::fsbox::mc::Name:"
-			tk::label $f.tname -text [file tail $filename]
-			tk::label $f.ltype -text "$::application::database::mc::Type:"
-			tk::label $f.ttype -text $fileType
-			tk::label $f.lsize -text "$::fsbox::mc::Size:"
-			tk::label $f.tsize -text $size
-			tk::label $f.lcreated -text "$::application::database::mc::Created:"
-			tk::label $f.tcreated -text $ctime
-
-			switch $ext {
-				.sci - .si3 - .si4 - .cbh - .pgn - .gz {
-					lassign [::scidb::misc::attributes $filename] numGames type created descr
-					if {[string length $descr] == 0} { set descr "\u2014" }
-#				set type [set ::application::database::mc::T_$type]
-					set numGames [FormatNumGames $filename $numGames]
-					if {[llength $created] > 0} {
-						$f.tcreated configure -text [::locale::formatTime $created]
-					}
-					tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
-					tk::label $f.tmodified -text $mtime
-					if {$numGames >= 0} {
-						tk::label $f.lngames -text "$::crosstable::mc::Games:"
-						tk::label $f.tngames -text $numGames
-					}
-					if {[::scidb::db::get open? [file normalize $filename]]} {
-						set open [string tolower $::mc::Yes]
-					} else {
-						set open [string tolower $::mc::No]
-					}
-					tk::label $f.lused -text "$mc::Open:"
-					tk::label $f.tused -text $open
-					tk::label $f.ldescr -text "$::application::database::mc::Description:"
-					tk::label $f.tdescr -text $descr -wraplength 200 -justify left
+			if {$stat(type) eq "directory"} {
+				set fileType $mc::Directory
+				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
+				tk::label $f.lname -text "$::fsbox::mc::Name:"
+				tk::label $f.tname -text [file tail $filename]
+				tk::label $f.ltype -text "$::application::database::mc::Type:"
+				tk::label $f.ttype -text $fileType
+				if {$type eq "link"} {
+					tk::label $f.ltarget -text "$mc::LinkTarget:"
+					tk::label $f.ttarget -text [file readlink $filename]
 				}
-				.scv {
-					lassign [::archive::inspect $filename] header files
-					foreach pair $header {
-						lassign $pair attr value
-						if {$attr eq "Count"} {
-							tk::label $f.lngames -text "$::crosstable::mc::Games:"
-							tk::label $f.tngames -text [::locale::formatNumber $value]
+				tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
+				tk::label $f.tmodified -text $mtime
+			} else {
+				set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
+				# TODO: should we sum the sizes of all related files?
+				set size [::locale::formatFileSize $stat(size)]
+				set ext [file extension $filename]
+				set fileType [set mc::$FileType($ext)]
+				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
+
+				tk::label $f.lname -text "$::fsbox::mc::Name:"
+				tk::label $f.tname -text [file tail $filename]
+				tk::label $f.ltype -text "$::application::database::mc::Type:"
+				tk::label $f.ttype -text $fileType
+				if {$type eq "link"} {
+					tk::label $f.ltarget -text "$mc::LinkTarget:"
+					tk::label $f.ttarget -text [file readlink $filename]
+				}
+				tk::label $f.lsize -text "$::fsbox::mc::Size:"
+				tk::label $f.tsize -text $size
+				tk::label $f.lcreated -text "$::application::database::mc::Created:"
+				tk::label $f.tcreated -text $ctime
+
+				switch $ext {
+					.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+						lassign [::scidb::misc::attributes $filename] numGames type created descr
+						if {[string length $descr] == 0} { set descr "\u2014" }
+#						set type [set ::application::database::mc::T_$type]
+						set numGames [FormatNumGames $filename $numGames]
+						if {[llength $created] > 0} {
+							$f.tcreated configure -text [::locale::formatTime $created]
 						}
+						tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
+						tk::label $f.tmodified -text $mtime
+						if {$numGames >= 0} {
+							tk::label $f.lngames -text "$::crosstable::mc::Games:"
+							tk::label $f.tngames -text $numGames
+						}
+						if {[::scidb::db::get open? [file normalize $filename]]} {
+							set open [string tolower $::mc::Yes]
+						} else {
+							set open [string tolower $::mc::No]
+						}
+						tk::label $f.lused -text "$mc::Open:"
+						tk::label $f.tused -text $open
+						tk::label $f.ldescr -text "$::application::database::mc::Description:"
+						tk::label $f.tdescr -text $descr -wraplength 200 -justify left
 					}
-					set bases {}
-					foreach entry $files {
-						foreach pair $entry {
+					.scv {
+						lassign [::archive::inspect $filename] header files
+						foreach pair $header {
 							lassign $pair attr value
-							if {$attr eq "FileName"} {
-								switch [file extension $value] {
-									.sci - .si3 - .si4 - .cbh - .pgn - .gz {
-										if {[string length $bases] > 0} { append bases \n }
-										set file [file tail $value]
-										append bases $file
+							if {$attr eq "Count"} {
+								tk::label $f.lngames -text "$::crosstable::mc::Games:"
+								tk::label $f.tngames -text [::locale::formatNumber $value]
+							}
+						}
+						set bases {}
+						foreach entry $files {
+							foreach pair $entry {
+								lassign $pair attr value
+								if {$attr eq "FileName"} {
+									switch [file extension $value] {
+										.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+											if {[string length $bases] > 0} { append bases \n }
+											set file [file tail $value]
+											append bases $file
+										}
 									}
 								}
 							}
 						}
-					}
-					if {[string length $bases]} {
-						tk::label $f.ldescr -text "$mc::Content:"
-						tk::label $f.tdescr -text $bases -wraplength 250 -justify left
+						if {[string length $bases]} {
+							tk::label $f.ldescr -text "$mc::Content:"
+							tk::label $f.tdescr -text $bases -wraplength 250 -justify left
+						}
 					}
 				}
 			}
 
 			set r 1
-			foreach attr {name type size created modified ngames used descr} {
+			foreach attr {name type target size created modified ngames used descr} {
 				if {[winfo exists $f.l$attr]} {
 					$f.l$attr configure -background $bg
 					$f.t$attr configure -background $bg

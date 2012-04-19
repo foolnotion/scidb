@@ -131,7 +131,7 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
   DWORD             actions = 0;
   DWORD             dwEffect;
   DWORD             dwResult;
-  int               status, elem_nu, i, index, nDataLength;
+  int               status, elem_nu, i, index, nDataLength, button = 1;
   char             *ptr;
   Tcl_UniChar      *unicode, *ptr_u;
   FORMATETC        *m_pfmtetc;
@@ -153,11 +153,21 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
     refuse_drop, ActionDefault
   };
 
-  if (objc != 5) {
-    Tcl_WrongNumArgs(interp, 1, objv, "path actions types data");
+  if (objc != 5 && objc != 6) {
+    Tcl_WrongNumArgs(interp, 1, objv, "path actions types data ?mouse-button?");
     return TCL_ERROR;
   }
   Tcl_ResetResult(interp);
+
+  /* Get the mouse button. It must be one of 1, 2, or 3. */
+  if (objc > 5) {
+    status = Tcl_GetIntFromObj(interp, objv[5], &button);
+    if (status != TCL_OK) return status;
+    if (button < 1 || button > 3) {
+      Tcl_SetResult(interp, "button must be either 1, 2, or 3", TCL_STATIC);
+      return TCL_ERROR;
+    }
+  }
 
   /* Process drag actions. */
   status = Tcl_ListObjGetElements(interp, objv[2], &elem_nu, &elem);
@@ -310,7 +320,7 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
     return TCL_ERROR;
   }
   
-  pDropSource = new TkDND_DropSource();
+  pDropSource = new TkDND_DropSource(button);
   if (pDropSource == NULL) {
     pDataObject->Release();
     Tcl_SetResult(interp, "unable to create OLE Drop Source object",TCL_STATIC);
@@ -407,18 +417,18 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
   }
 
   /* Register the various commands */
-  if (Tcl_CreateObjCommand(interp, "_RegisterDragDrop",
+  if (Tcl_CreateObjCommand(interp, "::tkdnd::_RegisterDragDrop",
            (Tcl_ObjCmdProc*) TkDND_RegisterDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;
   }
-  if (Tcl_CreateObjCommand(interp, "_RevokeDragDrop",
+  if (Tcl_CreateObjCommand(interp, "::tkdnd::_RevokeDragDrop",
            (Tcl_ObjCmdProc*) TkDND_RevokeDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;
   }
 
-  if (Tcl_CreateObjCommand(interp, "_DoDragDrop",
+  if (Tcl_CreateObjCommand(interp, "::tkdnd::_DoDragDrop",
            (Tcl_ObjCmdProc*) TkDND_DoDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;

@@ -926,7 +926,7 @@ proc LanguageChanged {} {
 	foreach key [array names Accel] {
 		bind <Control-[string tolower $Accel($key)]> $Vars(cmd:$key)
 		bind <Control-[string toupper $Accel($key)]> $Vars(cmd:$key)
-		set Vars(key:$key) $Vars(cmd:$key)
+		set Vars(key:$key) $Accel($key)
 	}
 
 	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)

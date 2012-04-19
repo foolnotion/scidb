@@ -1559,6 +1559,9 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
 ::dialog::fsbox::mc::HypertextFile			"Hypertext File" ;# NEW
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
+::dialog::fsbox::mc::LinkTo					"Link to %s" ;# NEW
+::dialog::fsbox::mc::LinkTarget				"Link target" ;# NEW
+::dialog::fsbox::mc::Directory				"Directory" ;# NEW
 
 ::dialog::fsbox::mc::Content					"Content" ;# NEW
 ::dialog::fsbox::mc::Open						"Open" ;# NEW

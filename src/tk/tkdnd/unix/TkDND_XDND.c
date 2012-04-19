@@ -72,11 +72,6 @@
 # define PACKAGE_VERSION "2.3"
 #endif
 
-#ifdef TKDND_ENABLE_MOTIF_DROPS
-extern int MotifDND_HandleClientMessage(Tk_Window tkwin, XEvent* xevent);
-extern void MotifDND_RegisterTypesObjCmd(Tk_Window tkwin);
-#endif
-
 #define TkDND_TkWin(x) \
   (Tk_NameToWindow(interp, Tcl_GetString(x), Tk_MainWindow(interp)))
 
@@ -305,9 +300,6 @@ int TkDND_RegisterTypesObjCmd(ClientData clientData, Tcl_Interp *interp,
   SetWmFrameAware(path);
 #endif
 
-#ifdef TKDND_ENABLE_MOTIF_DROPS
-  MotifDND_RegisterTypesObjCmd(path);
-#endif
   return TCL_OK;
 } /* TkDND_RegisterTypesObjCmd */
 
@@ -321,6 +313,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent cm) {
 
   if (interp == NULL) return False;
   if (version > XDND_VERSION) return False;
+  if (version < 3) return False;
   drag_source = l[0];
   if (l[1] & 0x1UL) {
     /* Get the types from XdndTypeList property. */
@@ -362,7 +355,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent cm) {
 
 int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
   Tcl_Interp *interp = Tk_Interp(tkwin);
-  Tk_Window mouse_tkwin;
+  Tk_Window mouse_tkwin = NULL;
   Tcl_Obj* result;
   Tcl_Obj* objv[4];
   const unsigned long *l = (const unsigned long *) cm.data.l;
@@ -382,38 +375,23 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
 
   rootX = (l[2] & 0xffff0000) >> 16;
   rootY =  l[2] & 0x0000ffff;
-  mouse_tkwin = Tk_CoordsToWindow(rootX, rootY, tkwin);
+ 
 #ifdef GNOME_SUPPORT
-  if (mouse_tkwin == NULL) {
+  if (Tk_PathName(tkwin) == NULL) {
     /* The GNOME shape is confusing Tk_CoordsToWindow(), because this shape has
      * the root window as parent. What the hell is GNOME doing? */
     mouse_tkwin = CoordsToWindow(rootX, rootY, tkwin);
   }
 #endif
   if (mouse_tkwin == NULL) {
-    /* We received the client message, but we cannot find a window? Strange...*/
-    /* A last attemp: execute wm containing x, y */
-    objv[0] = Tcl_NewStringObj("update", -1);
-    objv[1] = Tcl_NewStringObj("idletasks", -1);
-    TkDND_Eval(Tk_Interp(tkwin), 2, objv);
-    objv[0] = Tcl_NewStringObj("winfo", -1);
-    objv[1] = Tcl_NewStringObj("containing", -1);
-    objv[2] = Tcl_NewIntObj(rootX);
-    objv[3] = Tcl_NewIntObj(rootY);
-    if (TkDND_Eval(Tk_Interp(tkwin), 4, objv) == TCL_OK) {
-      result = Tcl_GetObjResult(interp); Tcl_IncrRefCount(result);
-      mouse_tkwin = Tk_NameToWindow(interp, Tcl_GetString(result),
-                                    Tk_MainWindow(interp));
-      Tcl_DecrRefCount(result);
-    }
+    mouse_tkwin = Tk_CoordsToWindow(rootX, rootY, tkwin);
   }
-  /* Get the drag source. */
-  objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  if (TkDND_Eval(Tk_Interp(tkwin), 1, objv) != TCL_OK) return False;
-  if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
-                         (long *)&response.window) != TCL_OK) return False;
-  /* Now that we have found the containing widget, ask it whether it will accept
-   * the drop... */
+  if (mouse_tkwin == NULL) {
+    int dx, dy;
+    Tk_GetRootCoords(tkwin, &dx, &dy);
+    mouse_tkwin = Tk_CoordsToWindow(rootX + dx, rootY + dy, tkwin);
+  }
+  /* Ask the Tk widget whether it will accept the drop... */
   index = refuse_drop;
   if (mouse_tkwin != NULL) {
     objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndPosition", -1);
@@ -430,10 +408,12 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
     }
   }
   /* Sent */
+  memset (&response, 0, sizeof(response));
   response.type         = ClientMessage;
   response.format       = 32;
+  response.window       = cm.data.l[0];
   response.message_type = Tk_InternAtom(tkwin, "XdndStatus");
-  response.data.l[0]    = (mouse_tkwin!=NULL) ? Tk_WindowId(mouse_tkwin) : 0;
+  response.data.l[0]    = Tk_WindowId(tkwin);
   response.data.l[1]    = 1; /* yes */
   response.data.l[2]    = ((rootX) << 16) | ((rootY)  & 0xFFFFUL); /* x, y */
   response.data.l[3]    = ((width) << 16) | ((height) & 0xFFFFUL); /* w, h */
@@ -454,12 +434,6 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent cm) {
       response.data.l[1] = 0; /* Refuse drop. */
     }
   }
-#ifdef GNOME_SUPPORT
-  if (Tk_PathName(tkwin) == NULL) {
-    /* GNOME is expecting the window manager frame. */
-    response.data.l[0] = Tk_WindowId(tkwin);
-  }
-#endif
   XSendEvent(cm.display, response.window, False, NoEventMask,
              (XEvent*)&response);
   return True;
@@ -490,29 +464,6 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   };
 
   if (interp == NULL) return False;
-
-  /* Get the drag source. */
-  objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDragSource", -1);
-  if (TkDND_Eval(Tk_Interp(tkwin), 1, objv) != TCL_OK) return False;
-  if (Tcl_GetLongFromObj(interp, Tcl_GetObjResult(interp),
-                         (long *) &finished.window) != TCL_OK) return False;
-
-  /* Get the drop target. */
-#ifdef GNOME_SUPPORT
-  /* It seems that GNOME is expecting thw window manager frame. */
-  if (Tk_PathName(tkwin) == NULL) {
-    finished.data.l[0] = Tk_WindowId(tkwin);
-  } else {
-#endif
-    objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_GetDropTarget", -1);
-    TkDND_Eval(Tk_Interp(tkwin), 1, objv);
-    if (Tcl_GetLongFromObj(interp,
-           Tcl_GetObjResult(interp), &finished.data.l[0]) != TCL_OK) {
-      finished.data.l[0] = None;
-    }
-#ifdef GNOME_SUPPORT
-  }
-#endif
 
   /* Call out Tcl callback. */
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndDrop", -1);
@@ -547,7 +498,9 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, XClientMessageEvent cm) {
   /* Send XdndFinished. */
   finished.type         = ClientMessage;
   finished.format       = 32;
+  finished.window       = cm.data.l[0];
   finished.message_type = Tk_InternAtom(tkwin, "XdndFinished");
+  finished.data.l[0]    = Tk_WindowId(tkwin);
   XSendEvent(cm.display, finished.window, False, NoEventMask,
              (XEvent*)&finished);
   return True;
@@ -597,14 +550,11 @@ static int TkDND_XDNDHandler(Tk_Window tkwin, XEvent *xevent) {
     printf("XDND_HandleClientMessage: Received XdndFinished\n");
 #endif /* DEBUG_CLIENTMESSAGE_HANDLER */
     return TkDND_HandleXdndFinished(tkwin, clientMessage);
-  } else {
-#ifdef TKDND_ENABLE_MOTIF_DROPS
-    if (MotifDND_HandleClientMessage(tkwin, xevent)) return True;
-#endif /* TKDND_ENABLE_MOTIF_DROPS */
   }
   return False;
 } /* TkDND_XDNDHandler */
 
+#if 0 // we don't need this hack
 int TkDND_GetSelectionObjCmd(ClientData clientData, Tcl_Interp *interp,
                              int objc, Tcl_Obj *CONST objv[]) {
   Time time;
@@ -628,6 +578,7 @@ int TkDND_GetSelectionObjCmd(ClientData clientData, Tcl_Interp *interp,
                     selection, Tk_WindowId(path), time);
   return TCL_OK;
 } /* TkDND_GetSelectionObjCmd */
+#endif
 
 /*
  * For C++ compilers, use extern "C"
@@ -635,13 +586,13 @@ int TkDND_GetSelectionObjCmd(ClientData clientData, Tcl_Interp *interp,
 #ifdef __cplusplus
 extern "C" {
 #endif
-DLLEXPORT int Tkdnd_Init(Tcl_Interp *interp);
-DLLEXPORT int Tkdnd_SafeInit(Tcl_Interp *interp);
+int Tkdnd_Init(Tcl_Interp *interp);
+int Tkdnd_SafeInit(Tcl_Interp *interp);
 #ifdef __cplusplus
 }
 #endif
 
-int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
+int Tkdnd_Init(Tcl_Interp *interp) {
   int major, minor, patchlevel;
 
   if (
@@ -674,17 +625,19 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
 
 
   /* Register the various commands */
-  if (Tcl_CreateObjCommand(interp, "_register_types",
+  if (Tcl_CreateObjCommand(interp, "::tkdnd::_register_types",
            (Tcl_ObjCmdProc*) TkDND_RegisterTypesObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }
 
-  if (Tcl_CreateObjCommand(interp, "_get_selection",
+#if 0
+  if (Tcl_CreateObjCommand(interp, "::tkdnd::_get_selection",
            (Tcl_ObjCmdProc*) TkDND_GetSelectionObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }
+#endif
 
   /* Finally, register the XDND Handler... */
   Tk_CreateClientMessageHandler(&TkDND_XDNDHandler);
@@ -693,7 +646,7 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
   return TCL_OK;
 } /* Tkdnd_Init */
 
-int DLLEXPORT Tkdnd_SafeInit(Tcl_Interp *interp) {
+int Tkdnd_SafeInit(Tcl_Interp *interp) {
   return Tkdnd_Init(interp);
 } /* Tkdnd_SafeInit */
 
