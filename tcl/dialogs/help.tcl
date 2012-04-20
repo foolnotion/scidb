@@ -100,7 +100,7 @@ proc open {parent {file {}} args} {
 
 	set dlg .help
 	if {[winfo exists $dlg]} {
-		ShowIndex
+		if {[string length $file] == 0} { ShowIndex }
 		raise $dlg
 		focus $dlg
 		set Priv(currentfile) [FullPath $file]

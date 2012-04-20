@@ -293,6 +293,10 @@ proc dbNew {parent} {
 		-defaultencoding utf-8 \
 		-needencoding 1 \
 		-title [set [namespace current]::mc::NewFile] \
+		-customicon $::icon::16x16::filetypeArchive \
+		-customtooltip $mc::Archiving \
+		-customcommand [namespace code [list CreateArchive]] \
+		-customfiletypes {.sci .si4 .si3 .cbh .pgn .gz .zip} \
 	]
 	set FileSelBoxInUse 0
 
@@ -341,11 +345,6 @@ proc dbOpen {parent} {
 
 
 proc dbCreateArchive {parent {base ""}} {
-	variable FileSelBoxInUse
-
-	if {$FileSelBoxInUse} { return }
-	set FileSelBoxInUse 1
-
 	if {[string length $base] == 0} { set base [::scidb::db::get name] }
 	set filetypes [list	[list $mc::ScidbArchives {.scv}]]
 	set result [::dialog::saveFile \
@@ -357,7 +356,6 @@ proc dbCreateArchive {parent {base ""}} {
 		-title $mc::CreateArchive \
 		-initialfile [file tail [file rootname $base]] \
 	]
-	set FileSelBoxInUse 0
 	if {[llength $result]} {
 		set arch [lindex $result 0]
 		set progress $parent.__p__
@@ -398,6 +396,7 @@ proc dbCreateArchive {parent {base ""}} {
 							[namespace current]::archive::getName \
 							[namespace current]::archive::GetCount \
 							::scidb::misc::mapExtension \
+							-customcommand {} \
 						]
 		}
 		if {[catch {{*}$cmd} err options]} {

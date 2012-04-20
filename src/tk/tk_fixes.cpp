@@ -443,20 +443,46 @@ typedef struct {
 
 
 static TkWindow *
-SecondLastToplevel(
-    TkWindow *winPtr)		/* Window for which second last
-				 * toplevel is needed. */
+TopLevelWindow(
+    TkWindow *winPtr)		/* Window for which the toplevel is needed. */
 {
-    TkWindow *prevTopLevelWinPtr = winPtr->mainPtr->winPtr;
-    TkWindow *topLevelWinPtr = winPtr->mainPtr->winPtr;
+    TkWindow *topLevelWinPtr = winPtr;
 
-    while (winPtr && !(winPtr->flags & TK_TOP_HIERARCHY)) {
-	topLevelWinPtr = prevTopLevelWinPtr;
-	prevTopLevelWinPtr = winPtr;
+    while (winPtr) {
+	if (winPtr->flags & TK_TOP_HIERARCHY) {
+	    return winPtr;
+	}
 	winPtr = winPtr->parentPtr;
     }
 
     return topLevelWinPtr;
+}
+
+
+static int
+CanDerive(
+    TkWindow *winPtr1,
+    TkWindow *winPtr2)
+{
+    for ( ; winPtr1; winPtr1 = winPtr1->parentPtr) {
+	if (winPtr1 == winPtr2) {
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+
+static int
+CannotDerive(
+    TkWindow *winPtr1,
+    TkWindow *winPtr2)
+{
+    if (CanDerive(winPtr1, winPtr2))
+	return 0;
+    if (CanDerive(winPtr2, winPtr1))
+	return 0;
+    return 1;
 }
 
 
@@ -471,8 +497,8 @@ TkGrabState(
 	return TK_GRAB_NONE;
     }
     if (!(winPtr->dispPtr->grabFlags & GRAB_GLOBAL) &&
-	    winPtr != grabWinPtr && /* this is an often case */
-	    (SecondLastToplevel(winPtr) != SecondLastToplevel(grabWinPtr))) {
+	    winPtr != grabWinPtr && /* this is an often case (which is false) */
+	    CannotDerive(TopLevelWindow(winPtr), TopLevelWindow(grabWinPtr))) {
 	return TK_GRAB_NONE;
     }
 

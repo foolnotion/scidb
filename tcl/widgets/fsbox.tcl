@@ -3800,9 +3800,9 @@ proc PopupMenu {w x y} {
 					-command [namespace code [list DuplicateFile $w]] \
 					;
 			}
-			if {	$Vars(state:custom) eq "normal"
-				&& [llength $Vars(customcommand)]
+			if {	[llength $Vars(customcommand)]
 				&& [llength $Vars(customtooltip)]
+				&& $Vars(state:custom) eq "normal"
 				&& [file extension $file] in $Vars(customfiletypes)} {
 				incr count
 				$m add command                                           \
