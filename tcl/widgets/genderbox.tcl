@@ -165,8 +165,11 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] set <value>\""
 			}
 			set value [lindex $args 0]
-			if {[info exists mc::Gender($value)]} { set value $mc::Gender($value) }
-			$w.__w__ current search sex $value
+			if {[info exists mc::Gender($value)]} {
+				$w.__w__ current search sex  $mc::Gender($value)
+			} else {
+				$w.__w__ current 0
+			}
 			ShowIcon $w
 			return $w
 		}

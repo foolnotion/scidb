@@ -63,25 +63,26 @@ set EcoCode							"&ECO Code"
 set Matches							"&Matches"
 set Tags								"&Tags"
 
-set Name								"Name"
-set NameFideID						"Name/Fide ID"
-set Value							"Value"
-set Title							"Title"
-set Rating							"Rating"
-set Federation						"Federation"
-set Country							"Country"
-set Type								"Type"
-set Sex								"Sex/Type"
-set Date								"Date"
-set EventDate						"Event Date"
-set Round							"Round"
-set Result							"Result"
-set Termination					"Termination"
-set Annotator						"Annotator"
-set Site								"Site"
-set Mode								"Mode"
-set TimeMode						"Time Mode"
-set Frequency						"Frequency"
+set Label(name)					"Name"
+set Label(fideID)					"Fide ID"
+set Label(value)					"Value"
+set Label(title)					"Title"
+set Label(rating)					"Rating"
+set Label(federation)			"Federation"
+set Label(country)				"Country"
+set Label(eventType)				"Type"
+set Label(sex)						"Sex/Type"
+set Label(date)					"Date"
+set Label(eventDate)				"Event Date"
+set Label(round)					"Round"
+set Label(result)					"Result"
+set Label(termination)			"Termination"
+set Label(annotator)				"Annotator"
+set Label(site)					"Site"
+set Label(eventMode)				"Mode"
+set Label(timeMode)				"Time Mode"
+set Label(frequency)				"Frequency"
+set Label(score)					"Second rating"
 
 set GameBase						"Game Base"
 set PlayerBase						"Player Base"
@@ -218,7 +219,7 @@ array set History {
 
 array set Attrs {
 	player		{ freq name ascii fideID species sex federation title elo rating score }
-	event			{ freq name site country date eventMode eventType timeMode }
+	event			{ freq name site country eventDate eventMode eventType timeMode }
 	site			{ freq name ascii country }
 	annotator	{ freq name }
 }
@@ -230,7 +231,7 @@ array set Colors {
 	federation						darkblue
 	score								darkgreen
 	ratingType						darkblue
-	date								darkblue
+	eventDate						darkblue
 	eventCountry					darkblue
 	taglistOutline					gray
 	taglistBackground				lightYellow
@@ -239,6 +240,22 @@ array set Colors {
 	matchlistBackground			#ebf4f5
 	matchlistHeaderForeground	#727272
 	matchlistHeaderBackground	#dfe7e8
+}
+
+array set Selection {
+	player:fideID		1
+	player:sex			1
+	player:federation	1
+	player:title		0
+	player:elo			0
+	player:score		0
+
+	event:site			1
+	event:country		1
+	event:eventDate	1
+	event:eventMode	1
+	event:eventType	1
+	event:timeMode		1
 }
 
 array set Options {
@@ -290,6 +307,8 @@ proc open {parent base position {number 0}} {
 	set Priv(position) $position
 	set Priv(number) $number
 	set Priv(tag:current) {}
+
+	set mc::Label(elo) "Elo"
 
 	if {![winfo exists $dlg]} {
 		Build $dlg $base $position $number
@@ -418,17 +437,14 @@ proc Build {dlg base position number} {
 		set color [string toupper $side 0 0]
 		ttk::labelbar $top.$side ::mc::[string toupper $side 0 0]
 
-		if {$state eq "normal"} {
-			set textvar [namespace current]::mc::NameFideID
-		} else {
-			set textvar [namespace current]::mc::Name
-		}
+		ttk::label $top.$side-player-l
+		bind $top.$side-player-l <<LanguageChanged>> \
+			[namespace code [list UpdateNameLabel $top.$side-player-l $state]]
+		UpdateNameLabel $top.$side-player-l $state
 
-		ttk::label $top.$side-player-l -textvar $textvar
-		ttk::label $top.$side-rating-l -textvar [namespace current]::mc::Rating
-		ttk::label $top.$side-title-l -textvar [namespace current]::mc::Title
-		ttk::label $top.$side-federation-l -textvar [namespace current]::mc::Federation
-		ttk::label $top.$side-sex-l -textvar [namespace current]::mc::Sex
+		foreach attr {rating title federation sex} {
+			ttk::label $top.$side-$attr-l -textvar [namespace current]::mc::Label($attr)
+		}
 
 		ttk::frame $top.$side-player -borderwidth 0 -takefocus 0
 		entrybox $top.$side-name -textvar ::${dlg}::Priv(${side}-name)
@@ -571,11 +587,9 @@ proc Build {dlg base position number} {
 	# Game Data ###############################################
 	ttk::labelbar $top.game [namespace current]::mc::GameData
 
-	ttk::label $top.game-date-l -textvar [namespace current]::mc::Date
-	ttk::label $top.game-result-l -textvar [namespace current]::mc::Result
-	ttk::label $top.game-round-l -textvar [namespace current]::mc::Round
-	ttk::label $top.game-termination-l  -textvar [namespace current]::mc::Termination
-	ttk::label $top.game-annotator-l -textvar [namespace current]::mc::Annotator
+	foreach attr {date result round termination annotator} {
+		ttk::label $top.game-$attr-l -textvar [namespace current]::mc::Label($attr)
+	}
 
 	::widget::datebox $top.game-date -minYear $minYear -maxYear $maxYear
 	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result)
@@ -598,7 +612,7 @@ proc Build {dlg base position number} {
 
 	bind $top.game-eco-l <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $top.game-date <<DateChanged>> \
-		[namespace code [list UpdateEventDate $top.game-date $top.event-date]]
+		[namespace code [list UpdateEventDate $top.game-date $top.event-eventDate]]
 	
 	if {$state eq "disabled"} {
 		lappend disabled game-termination game-annotator
@@ -653,13 +667,9 @@ proc Build {dlg base position number} {
 	# Event Data ##############################################
 	ttk::labelbar $top.event [namespace current]::mc::Event
 
-	ttk::label $top.event-title-l -textvar [namespace current]::mc::Title
-	ttk::label $top.event-site-l -textvar [namespace current]::mc::Site
-	ttk::label $top.event-country-l -textvar [namespace current]::mc::Country
-	ttk::label $top.event-date-l -textvar [namespace current]::mc::EventDate
-	ttk::label $top.event-eventMode-l -textvar [namespace current]::mc::Mode
-	ttk::label $top.event-eventType-l -textvar [namespace current]::mc::Type
-	ttk::label $top.event-timeMode-l -textvar [namespace current]::mc::TimeMode
+	foreach attr {title site country eventDate eventMode eventType timeMode} {
+		ttk::label $top.event-$attr-l -textvar [namespace current]::mc::Label($attr)
+	}
 
 	entrybox $top.event-title -width $maxlen -textvar ::${dlg}::Priv(event-title)
 	entrybox $top.event-site -width $maxlen -textvar ::${dlg}::Priv(event-site)
@@ -669,7 +679,7 @@ proc Build {dlg base position number} {
 		-textvar ::${dlg}::Priv(event-country) \
 		-state $state \
 		;
-	::widget::datebox $top.event-date \
+	::widget::datebox $top.event-eventDate \
 		-minYear $minYear \
 		-maxYear $maxYear \
 		-tooltip [namespace current]::mc::SetToGameDate \
@@ -685,7 +695,7 @@ proc Build {dlg base position number} {
 	lappend fields [list Event event-title]
 	lappend fields [list Site event-site]
 	lappend fields [list EventCountry event-country]
-	lappend fields [list EventDate event-date]
+	lappend fields [list EventDate event-eventDate]
 	lappend fields [list Mode event-eventMode]
 	lappend fields [list EventType event-eventType]
 	lappend fields [list TimeMode event-timeMode]
@@ -694,7 +704,7 @@ proc Build {dlg base position number} {
 	grid $top.event -row $ltrow -column 1 -columnspan 3 -sticky ew
 	incr ltrow 2
 
-	foreach {attr tag} {	title Event site Site country EventCountry date EventDate
+	foreach {attr tag} {	title Event site Site country EventCountry eventDate EventDate
 								eventMode Mode eventType EventType timeMode TimeMode} {
 		grid $top.event-$attr-l -row $ltrow -column 1 -sticky w
 		grid $top.event-$attr -row $ltrow -column 3 -sticky $sticky
@@ -719,7 +729,7 @@ proc Build {dlg base position number} {
 
 	set Priv(select:event) [list \
 		name entrybox Event event-title \
-		date datebox EventDate event-date \
+		eventDate datebox EventDate event-eventDate \
 		eventMode eventmodebox Mode event-eventMode \
 		eventType eventtypebox EventType event-eventType \
 		timeMode timemodebox TimeMode event-timeMode \
@@ -815,6 +825,7 @@ proc Build {dlg base position number} {
 		$lb bind <ButtonPress-2> [namespace code [list SelectActive $top $lb]]
 		$lb bind <ButtonRelease-1> +[namespace code [list SetFocus $dlg]]
 		$lb bind <ButtonRelease-2> +[namespace code [list SetFocus $dlg]]
+		$lb bind <ButtonPress-3> [namespace code [list SelectMatchAttributes $dlg $attr %X %Y]]
 		$lb addcol text -id number -justify right -width 1 -foreground $Colors(number)
 		$lb addcol text -id freq -justify right -width 4 -foreground $Colors(frequency)
 		$lb addcol text -id name -squeeze yes -weight 1 -steady no
@@ -849,7 +860,7 @@ proc Build {dlg base position number} {
 	# ------ Event List ---------------------------------------
 	set lb $nb.matches.event.lb
 
-	$lb addcol text  -id date -width 10 -foreground $Colors(date)
+	$lb addcol text  -id eventDate -width 10 -foreground $Colors(date)
 	$lb addcol image -id eventMode -width 14 -justify center
 	$lb addcol image -id eventType -width 14 -justify center
 	$lb addcol image -id timeMode -width 14 -justify center
@@ -906,7 +917,7 @@ proc Build {dlg base position number} {
 		-uniform uniform \
 		;
 	$t column create \
-		-text $mc::Name \
+		-text $mc::Label(name) \
 		-minwidth [expr {6*$charwidth}] \
 		-tags name \
 		-borderwidth 1 \
@@ -917,7 +928,7 @@ proc Build {dlg base position number} {
 		-squeeze no \
 		;
 	$t column create \
-		-text $mc::Value \
+		-text $mc::Label(value) \
 		-minwidth [expr {16*$charwidth}] \
 		-expand yes \
 		-tags value \
@@ -1037,6 +1048,13 @@ proc Destroy {dlg} {
 	array unset Lookup
 	array unset Item
 	array unset TagOrder PlyCount
+}
+
+
+proc UpdateNameLabel {lbl state} {
+	set text $mc::Label(name)
+	if {$state eq "normal"} { append text "/" $mc::Label(fideID) }
+	$lbl configure -text $text
 }
 
 
@@ -1599,6 +1617,36 @@ proc AdjustDateBox {top} {
 }
 
 
+proc SelectMatchAttributes {dlg attr x y} {
+	variable ::${dlg}::Priv
+	variable Selection
+
+	if {[llength $Priv(lb)] == 0} { return }
+
+	set fieldList [array names Selection $attr:*]
+	if {[llength $fieldList] == 0} { return }
+	set m $dlg.__select_attrs__
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff 0 -disabledforeground black
+	$m add command                                                \
+		-label $::mc::Apply                                        \
+		-background $::table::options(menu:headerbackground)       \
+		-foreground $::table::options(menu:headerforeground)       \
+		-activebackground $::table::options(menu:headerbackground) \
+		-activeforeground $::table::options(menu:headerforeground) \
+		-font TkHeadingFont                                        \
+		-state disabled                                            \
+		;
+	$m add separator
+	foreach field $fieldList {
+		lassign [split $field :] _ f
+		$m add checkbutton -label $mc::Label($f) -variable [namespace current]::Selection($field)
+	}
+
+	tk_popup $m $x $y
+}
+
+
 proc BindMatchKeys {top attr} {
 	variable ::[winfo toplevel $top]::Priv
 
@@ -1660,7 +1708,7 @@ proc VisitMatch {lb data} {
 		freq {
 			set item [lindex $data [lsearch $Attrs(player) $id]]
 			if {$item > 0} {
-				set tip $mc::Frequency
+				set tip $mc::Label(frequency)
 			}
 		}
 
@@ -1799,7 +1847,7 @@ proc MakeMatchEntry {top index entry attr} {
 			if {[llength $eventMode]} { set eventMode [set ::eventmodebox::icon::12x12::$eventMode] }
 			if {[llength $eventType]} { set eventType $::eventtypebox::icon::12x12::Type($eventType) }
 			if {[llength $timeMode]} { set timeMode [set ::timemodebox::icon::12x12::Mode($timeMode)] }
-			set entry [list $index $freq $name $date $eventMode $eventType $timeMode]
+			set entry [list $index $freq $name $eventDate $eventMode $eventType $timeMode]
 		}
 
 		site {
@@ -2032,6 +2080,7 @@ proc SelectMatch {top lb index complete} {
 proc EnterMatch {top lb index complete} {
 	variable ::[winfo toplevel $top]::Priv
 	variable Attrs
+	variable Selection
 
 	set field $Priv(entry)
 	if {[string length $field] == 0} { return }
@@ -2066,66 +2115,67 @@ proc EnterMatch {top lb index complete} {
 		set widget $top.$field
 
 		if {[$widget cget -state] eq "normal"} {
-			if {[llength $value] == 0 && $type eq "genderbox" && $species eq "program"} {
-				set value "c"
-			}
+			if {[llength $value] == 0 && $type eq "genderbox" && $species eq "program"} { set value "c" }
+			set f [lindex [split $field -] 1]
+			if {[string first . $f] >= 0} { set f [lindex [split $f .] 1] }
+			set apply [expr {$complete || ![info exists Selection($attr:$f)] || $Selection($attr:$f)}]
 
 			if {[llength $value]} {
-				switch $type {
-					entrybox {
-						$widget set $value
-						set Priv(skip:$attr) $value
-						UpdateTags $top $tag $field
-					}
+				if {$apply} {
+					switch $type {
+						entrybox {
+							$widget set $value
+							set Priv(skip:$attr) $value
+							UpdateTags $top $tag $field
+						}
 
-					titlebox	 {
-						if {$complete} {
+						titlebox	 {
 							$widget set $value
 							UpdateTags $top $tag $field
 						}
-					}
 
-					countrybox {
-						if {$complete || $attr ne "player"} {
+						countrybox {
 							$widget set $value
 							UpdateTags $top $tag $field
 						}
-					}
 
-					ratingbox {
-						if {$freq > 0 && $acceptRating} {
-							$widget set $value
-							UpdateRatingTags $top $color $side-rating $side-score
-						}
-					}
-
-					scorebox {
-						if {$freq > 0 && ([string match *Elo $tag] || $acceptRating)} {
-							$widget set $value
-							if {$tag eq "${color}Elo"} {
-								UpdateTags $top $tag $field
-							} else {
+						ratingbox {
+							if {$freq > 0 && $acceptRating} {
+								$widget set $value
 								UpdateRatingTags $top $color $side-rating $side-score
 							}
 						}
-					}
 
-					genderbox {
-						$widget set $value
-						UpdateSexTag $top $color $field
-					}
+						scorebox {
+							if {$freq > 0 && ([string match *Elo $tag] || $acceptRating)} {
+								$widget set $value
+								if {$tag eq "${color}Elo"} {
+									UpdateTags $top $tag $field
+								} else {
+									UpdateRatingTags $top $color $side-rating $side-score
+								}
+							}
+						}
 
-					fideidbox {
-						$widget set $value
-						UpdateTags $top $tag $field
-					}
+						genderbox {
+							if {$Selection(player:sex)} {
+								$widget set $value
+								UpdateSexTag $top $color $field
+							}
+						}
 
-					default {
-						$widget set $value
-						UpdateTags $top $tag $field
+						fideidbox {
+							$widget set $value
+							UpdateTags $top $tag $field
+						}
+
+						default {
+							$widget set $value
+							UpdateTags $top $tag $field
+						}
 					}
 				}
-			} elseif {$complete} {
+			} elseif {$apply} {
 				switch $type {
 					entrybox {
 						$widget delete 0 end
@@ -2165,7 +2215,7 @@ proc EnterMatch {top lb index complete} {
 						UpdateTags $top $tag $field
 					}
 				}
-			} elseif {$type eq "genderbox"} {
+			} elseif {$type eq "genderbox" && $Selection(player:sex)} {
 				$widget current 0
 				UpdateSexTag $top $color $field
 			}
@@ -2289,7 +2339,7 @@ proc SetupTags {top base idn position number} {
 	}
 
 	foreach {field tag} {game-annotator Annotator
-								event-date EventDate
+								event-eventDate EventDate
 								white-federation WhiteCountry
 								black-federation BlackCountry
 								event-country EventCountry
@@ -2508,7 +2558,7 @@ proc Save {top fields} {
 
 			switch $field {
 				name			{ set tag Event }
-				date			{ set tag EventDate }
+				eventDate	{ set tag EventDate }
 				eventMode	{ set tag Mode }
 				eventType	{ set tag EventType }
 				timeMode		{ set tag TimeMode }
@@ -2693,12 +2743,12 @@ proc CheckFields {top title fields} {
 				lassign [$top.$field date] value error
 				if {[llength $error] == 0} {
 					if {$tagName eq "Date"} {
-						lassign [$top.event-date date] date error
+						lassign [$top.event-eventDate date] date error
 						if {[llength $error] == 0} {
 							set cmp [::calendar::compare $value $date]
 							if {$cmp == -1} {
 								lappend warnings \
-									[format $mc::ImplausibleDate [$top.$field value] [$top.event-date value]]
+									[format $mc::ImplausibleDate [$top.$field value] [$top.event-eventDate value]]
 							}
 						}
 					} elseif {$Priv(characteristics-only) && !$Priv(twoRatings)} {
@@ -2921,6 +2971,7 @@ proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Colors
 	options::writeItem $chan [namespace current]::Options
 	options::writeItem $chan [namespace current]::History
+	options::writeItem $chan [namespace current]::Selection
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

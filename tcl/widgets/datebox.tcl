@@ -225,6 +225,8 @@ proc WidgetProc {w command args} {
 			}
 			if {[lindex $args 0] eq "-state"} { return "normal" }
 		}
+
+		icursor - selection { return }
 	}
 
 	return [$w.__w__ $command {*}$args]

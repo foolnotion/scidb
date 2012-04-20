@@ -1,7 +1,13 @@
 [April 2012] =================================================================
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #298)
+Scidb 1.0 BETA (rev. #301)
+------------------------------------------------------------------------------
+* Save/replace dialog tweaked: the user may select the fields which will be
+taken from the match list.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #300)
 ------------------------------------------------------------------------------
 * Patch of TkGrabState() tweaked. Now this function really takes the full
 widget hierarchy into account. I've sent this patch to the (usually

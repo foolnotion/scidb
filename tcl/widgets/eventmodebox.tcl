@@ -154,8 +154,11 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] set <value>\""
 			}
 			set value [lindex $args 0]
-			if {[info exists mc::$value]} { set value [set mc::$value] }
-			$w.__w__ current search mode $value
+			if {[info exists mc::$value]} {
+				$w.__w__ current search mode [set mc::$value]
+			} else {
+				$w.__w__ current 0
+			}
 			ShowIcon $w
 			return $w
 		}

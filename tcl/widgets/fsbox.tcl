@@ -403,9 +403,12 @@ proc fsbox {w type args} {
 	bind $top.main <<ThemeChanged>> [namespace code [list ThemeChanged $w]]
 
 	set tl [winfo toplevel $top]
-	bind $tl <Escape>  [list $Vars(button:cancel) invoke]
-	bind $tl <Return>  [list $Vars(button:ok) invoke]
-	bind $tl <Alt-Key> [list tk::AltKeyInDialog $tl %A]
+	bind $tl <Escape>		[list $Vars(button:cancel) invoke]
+	bind $tl <Return>		[list $Vars(button:ok) invoke]
+	bind $tl <Alt-Key>	[list tk::AltKeyInDialog $tl %A]
+	if {[llength $Vars(helpcommand)]} {
+		bind $tl <F1>		[list $Vars(helpcommand) $w]
+	}
 
 	array unset Vars widget:list:file
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)

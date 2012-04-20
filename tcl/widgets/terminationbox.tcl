@@ -155,8 +155,11 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] set <value>\""
 			}
 			set value [lindex $args 0]
-			if {[info exists mc::$value]} { set value [set mc::$value] }
-			$w.__w__ current search reason $value
+			if {[info exists mc::$value]} {
+				$w.__w__ current search reason [set mc::$value]
+			} else {
+				$w.__w__ current 0
+			}
 			ShowIcon $w
 			return $w
 		}
@@ -372,18 +375,15 @@ set TimeForfeit [image create photo -data {
 }]
 
 set Unplayed [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QAAAAAAAD5Q7t/AAAC
-	NklEQVQoz2PgU7RnAALmCYu3JfUu3ub0//9/BinrGAYNr2yQOGPvwq0Rlb2L/EDijLxqIDEG
-	JhPHoOQV2w6/X7rt2LXIsklWU1buBUtkNs8J2bD/7IsJ89c/UNSxdgdpYvAKT4uv753zdtnu
-	M/+X7jr9v2n2xmvBhX3W0RWTQ3oWb3++fM/Z/4u3n/ifUtx4z8jO15bB1NHPJSyl4Epp/7L/
-	JRNX/S8F4oaZGx5WTFr1EsQGieV3zv/vEhhzUNPEUYehYft/Bl4ReTuH0NyrIUX9//3yuv9H
-	lU/+H1Yy4b9/Xs//gLyu/8buMQdZ2Pm1ReSNQN7iY2g5+p1BxsjPPq5i4sOg/J7/DvF1YOyX
-	2/XfPbn+LL+yvZa2Tx5QMTcDg45XJtiDbskNoeEl/a890lr+28fVgrE7kB2Y13XLPqbKKqF2
-	JoOcVQRYLYN3ZltIcGHvc5/szv++OV3/E+tm/o+tnvYfxAfZElTQc80lqcEqr2sJA0Pn/C0h
-	aU1zngcD3R9ZMfV/RtuCf+WTV58Bevh6WvO8/+Flk/+HFE8AGjLjaknfMjOGqsmrfIEa7iY1
-	zvmf3wsMqQkrD8bXzdRObZ5rVzJx5dXcriX/kxpmg2w9k92+wBjspPCySZ4tczffbV+w7WBS
-	41ztyqlrGS4+fM2Q3rrArmHWxqtlE1edCSzoM5m47jADQ3DxRAYGIUfGiSv2uE5audfg8ZvP
-	DMGlkxkiKqaBDetctN2udd4WC1As++b1MAAAmzQRMsu+WogAAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABp0lEQVQoz22QTWsTURiFnzu3
+	bWLSaUhUxAEpaLHeBmfhRKIRQYTiILoOaNGfUNAuZzlrN0J/QikIbs1CujRUOmLVCJZpaKe1
+	bWrTJGOaNJvgximl5MC7Oc/7xZEAEzNzdsYsLGbMQnD47ZPPKZ1lcmJmzgbcl0+nrdW1qjo9
+	FLHiowdWZX1DZcxCIK49f73y4sm0VdnYZvLKZRY+LHmA8/+A+/j+HavWaJHWk3wsr3gyYxaC
+	1bWqyk1dN778WieXnTSq2zsKeJg3s9bm3j7DQ5Ly1x8e4AiAq89e2YB775Zpbe7uM5qI0+n2
+	OGg0GRkZptkKPcCpLrwpSYDG97Kfvnk32NqtqXPxmFGrNzjqHqNpGn/b7ZNmgKEojX6/D0Dn
+	uIfUNM76kSTAeHHWFkK4qbExC0AIcVLxWMzo9Xoqlc0HrcqyL8aLszbgns+krWhL/bDhAQzw
+	HJnK5hcvXbxgaUKgCcGfg3oU61Kn21X6aNLQhCCZSBjto46SurodhO22Sum68Xuv5gHO1ru3
+	pVZl2R/EZPjzs5+8kQuaYagAZ+f9fCl6YxD7ByswwHrAi8cXAAAAAElFTkSuQmCC
 }]
 
 set Abandoned [image create photo -data {

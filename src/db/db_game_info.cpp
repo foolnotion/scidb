@@ -247,13 +247,14 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 	namebases(Namebase::Site).ref(event->site());
 	namebases(Namebase::Event).ref(m_event = event);
 
-	m_dateYear	= Date::Zero10Bits;
-	m_dateMonth	= 0;
-	m_dateDay	= 0;
-	m_result		= result::Unknown;
-	m_eco			= Eco();
-	m_round		= 0;
-	m_subround	= 0;
+	m_dateYear		= Date::Zero10Bits;
+	m_dateMonth		= 0;
+	m_dateDay		= 0;
+	m_result			= result::Unknown;
+	m_eco				= Eco();
+	m_round			= 0;
+	m_subround		= 0;
+	m_termination	= termination::Unknown;
 
 	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
@@ -425,6 +426,10 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					m_dateMonth = date.month();
 					m_dateDay = date.day();
 				}
+				break;
+
+			case tag::Termination:
+				m_termination = termination::fromString(tags.value(tag::Termination));
 				break;
 		}
 	}
