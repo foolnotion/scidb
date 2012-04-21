@@ -191,10 +191,10 @@ proc Build {w args} {
 	}
 	lappend fill \
 		$opts(-selectbackground) {selected} \
-		$opts(-background) {enabled !highlight} \
 		$opts(-highlightbackground) {highlight} \
 		$opts(-disabledbackground) {!enabled} \
 		;
+#		$opts(-background) {enabled !highlight}
 	$t element create sel.e  rect -fill $fill -open e  -showfocus $opts(-showfocus)
 	$t element create sel.w  rect -fill $fill -open w  -showfocus $opts(-showfocus)
 	$t element create sel.we rect -fill $fill -open we -showfocus $opts(-showfocus)
@@ -266,16 +266,17 @@ proc WidgetProc {w command args} {
 			if {[llength $args] == 0} {
 				error "wrong # args: should be \"[namespace current] $command text|image ?options?\""
 			}
-			array set opts [list                    \
-				-id			[llength $Priv(columns)] \
-				-justify		left                     \
-				-expand		no                       \
-				-foreground	{}                       \
-				-font			{}                       \
-				-font2		{}                       \
-				-squeeze		no                       \
-				-steady		yes                      \
-			]
+			array set opts {
+				-justify		left
+				-expand		no
+				-foreground	{}
+				-font			{}
+				-font2		{}
+				-squeeze		no
+				-steady		yes
+			}
+			set opts(-id) [llength $Priv(columns)]
+			set opts(-background) $Priv(background:normal)
 			set type [lindex $args 0]
 			switch -- $type {
 				text - image - combined {}
@@ -291,12 +292,13 @@ proc WidgetProc {w command args} {
 			} elseif {$opts(-expand)} {
 				set Priv(expand) $id
 			}
-			$t column create                \
-				-tag $id                     \
-				-itemjustify $opts(-justify) \
-				-expand $opts(-expand)       \
-				-squeeze $opts(-squeeze)     \
-				-steady $opts(-steady)       \
+			$t column create                      \
+				-tag $id                           \
+				-itemjustify $opts(-justify)       \
+				-expand $opts(-expand)             \
+				-squeeze $opts(-squeeze)           \
+				-steady $opts(-steady)             \
+				-itembackground $opts(-background) \
 				;
 			if {[llength $opts(-font)]} {
 				set charwidth [font measure $opts(-font) "0"]
@@ -348,6 +350,11 @@ proc WidgetProc {w command args} {
 						set width [expr {$width + 2*$Priv(padx) + $Priv(padding)}]
 						$t column configure $id -width $width
 					}
+					-background {
+						set background $opts(-background)
+						if {[llength $background] == 0} { set background $Priv(background:normal) }
+						$t column configure $id -itembackground $opts(-background)
+					}
 					default {
 						error "cannot set column attribute \"$key\""
 					}
@@ -364,8 +371,8 @@ proc WidgetProc {w command args} {
 		insert {
 			array set opts {
 				-index		-1
-				-enabled		1
-				-highlight	0
+				-enabled		yes
+				-highlight	no
 				-types		{}
 				-font			{}
 				-font2		{}

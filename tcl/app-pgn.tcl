@@ -279,6 +279,7 @@ proc build {parent width height} {
 
 	set tbGame [::toolbar::toolbar $top \
 		-id game \
+		-hide 1 \
 		-side bottom \
 		-tooltipvar ::mc::Game \
 	]
@@ -299,8 +300,9 @@ proc build {parent width height} {
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id history \
+		-hide 1 \
 		-side bottom \
-		-tooltipvar ::mc::Game \
+		-tooltipvar ::dialog::save::mc::History \
 	]
 	set Vars(button:remove) [::toolbar::add $tbGameHistory button \
 		-image $::icon::toolbarRemove \

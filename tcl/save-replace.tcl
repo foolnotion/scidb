@@ -393,6 +393,7 @@ proc Build {dlg base position number} {
 	variable ::${dlg}::Priv
 	variable Colors
 	variable MaxColumnLength
+	variable Selection
 	variable Options
 
 	switch $Priv(codec) {
@@ -775,7 +776,7 @@ proc Build {dlg base position number} {
 
 	set Priv(ratingType) Elo
 	ttk::label $opts.ratingtype
-	ratingbox $opts.ratingbox -textvar ::${dlg}::Priv(ratingType) -format all
+	ratingbox $opts.ratingbox -textvar ::${dlg}::Priv(ratingType) -format all -state readonly
 	SetRatingTypeText $opts.ratingtype $opts.ratingbox
 	bind $opts.ratingbox <FocusOut> [namespace code [list RefreshMatchList $top $opts.ratingbox]]
 	bind $opts.ratingbox <<ComboboxSelected>> [namespace code [list RefreshMatchList $top]]
@@ -807,6 +808,7 @@ proc Build {dlg base position number} {
 		ttk::frame $nb.matches.$attr -borderwidth 1 -relief sunken -takefocus 0
 		bind $nb.matches.$attr <Configure> [namespace code [list SetMaxWidth $nb.matches.$attr %w]]
 		grid $nb.matches.$attr -row 3 -column 1 -sticky ew
+
 		set lb [tlistbox $nb.matches.$attr.lb \
 					-background $Colors(matchlistBackground) \
 					-disabledbackground $Colors(matchlistBackground) \
@@ -1617,14 +1619,22 @@ proc AdjustDateBox {top} {
 }
 
 
+proc SortMatchAttr {ordering lhs rhs} {
+	return [expr {[lsearch $ordering $lhs] - [lsearch $ordering $rhs]}]
+}
+
+
 proc SelectMatchAttributes {dlg attr x y} {
 	variable ::${dlg}::Priv
 	variable Selection
+	variable Attrs
 
 	if {[llength $Priv(lb)] == 0} { return }
 
-	set fieldList [array names Selection $attr:*]
+	set fieldList {}
+	foreach entry [array names Selection $attr:*] { lappend fieldList [lindex [split $entry :] 1] }
 	if {[llength $fieldList] == 0} { return }
+	set fieldList [lsort -command [namespace code [list SortMatchAttr $Attrs($attr)]] $fieldList]
 	set m $dlg.__select_attrs__
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff 0 -disabledforeground black
@@ -1639,8 +1649,7 @@ proc SelectMatchAttributes {dlg attr x y} {
 		;
 	$m add separator
 	foreach field $fieldList {
-		lassign [split $field :] _ f
-		$m add checkbutton -label $mc::Label($f) -variable [namespace current]::Selection($field)
+		$m add checkbutton -label $mc::Label($field) -variable [namespace current]::Selection($attr:$field)
 	}
 
 	tk_popup $m $x $y
@@ -3035,5 +3044,15 @@ bind TagList <Key-Right>	{ ::dialog::save::ChangeCurrentElement %W +1 0 }
 bind TagList <Key-Up>		{ ::dialog::save::ChangeCurrentElement %W 0 -1 }
 bind TagList <Key-Down>		{ ::dialog::save::ChangeCurrentElement %W 0 +1 }
 bind TagList <Key-space>	{ ::dialog::save::ActivateCurrentElement %W }
+
+rename tk_focusNext tk_focusNext_save_replace_
+
+proc ::tk_focusNext w {
+	if {[string match *.saveReplace_*.event-timeMode.__w__ $w]} {
+		return [winfo parent [winfo parent [winfo parent $w]]].ok
+	}
+
+	return [tk_focusNext_save_replace_ $w]
+}
 
 # vi:set ts=3 sw=3:

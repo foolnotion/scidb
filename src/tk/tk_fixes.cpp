@@ -18,8 +18,10 @@
 
 #include "tk_init.h"
 
+#define namespace namespace_ // bug in tk8.6/tkInt.h
 #include <tk.h>
 #include <tkInt.h>
+#undef namespace_
 
 //#define FIX_TK_POINTER_EVENTS
 #define FIX_TK_GRAB_STATE
