@@ -47,7 +47,7 @@ proc findBestTclVersion {} {
     lappend paths              \
         /usr/local/tk/include  \
         /usr/local/tcl/include \
-        /usr/local/include     \
+        usr/local/include     \
         ;
     foreach version $versions {
         lappend paths                                 \
@@ -527,6 +527,8 @@ proc findTclTkPaths {} {
     foreach module {tcl tk} {
         if {[info exists configure($module-libraries)]} {
             set package($module-lib) [MakeOption -L $configure($module-libraries)]
+            append package($module-lib) " -l${module}${tclv}"
+#           set package($module-lib) "$configure($module-libraries)/lib${module}${tclv}.so"
         } else {
             set libPaths $path($module,libraries)
             set configure($module-libraries) [FindDir "lib${module}${tclv}.*" $libPaths]
@@ -567,6 +569,7 @@ proc findTclTkPaths {} {
 
     if {[info exists configure(x-libraries)]} {
         set package(x-lib) [MakeOption -L $configure(x-libraries)]
+        append package(x-lib) " -lX11"
     } else {
         set configure(x-libraries) [FindDir "libX11*" $path(x,libraries)]
         puts -nonewline "    Location of X11 library: "
