@@ -3045,14 +3045,17 @@ bind TagList <Key-Up>		{ ::dialog::save::ChangeCurrentElement %W 0 -1 }
 bind TagList <Key-Down>		{ ::dialog::save::ChangeCurrentElement %W 0 +1 }
 bind TagList <Key-space>	{ ::dialog::save::ActivateCurrentElement %W }
 
-rename tk_focusNext tk_focusNext_save_replace_
+# XXX On some systems tk_focusNext is not exisiting??
+catch {
+	rename tk_focusNext tk_focusNext_save_replace_
 
-proc ::tk_focusNext w {
-	if {[string match *.saveReplace_*.event-timeMode.__w__ $w]} {
-		return [winfo parent [winfo parent [winfo parent $w]]].ok
+	proc ::tk_focusNext w {
+		if {[string match *.saveReplace_*.event-timeMode.__w__ $w]} {
+			return [winfo parent [winfo parent [winfo parent $w]]].ok
+		}
+
+		return [tk_focusNext_save_replace_ $w]
 	}
-
-	return [tk_focusNext_save_replace_ $w]
 }
 
 # vi:set ts=3 sw=3:
