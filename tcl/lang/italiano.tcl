@@ -964,6 +964,7 @@
 ::import::mc::TooManyNags							"Troppi NAG (ultimo ignorato)"
 ::import::mc::IllegalCastling						"Arrocco illegale"
 ::import::mc::IllegalMove							"Mossa illegale"
+::import::mc::CastlingCorrection					"Castling correction" ;# NEW
 ::import::mc::UnsupportedVariant					"Variante di scacchi non supportata"
 ::import::mc::DecodingFailed						"La decodifica di questa partita non è stata possibile"
 ::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"

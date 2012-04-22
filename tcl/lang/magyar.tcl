@@ -965,6 +965,7 @@
 ::import::mc::TooManyNags					"Túl sok NAG (a későbbiek kihagyva)"
 ::import::mc::IllegalCastling					"Szabálytalan sáncolás"
 ::import::mc::IllegalMove					"Szabálytalan lépés"
+::import::mc::CastlingCorrection				"Castling correction" ;# NEW
 ::import::mc::UnsupportedVariant				"Unsupported chess variant"
 ::import::mc::DecodingFailed					"Sikertelen dekódolás"
 ::import::mc::ResultDidNotMatchHeaderResult			"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"

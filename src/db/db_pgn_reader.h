@@ -107,6 +107,7 @@ public:
 		ResultDidNotMatchHeaderResult,
 		IllegalCastling,
 		IllegalMove,
+		CastlingCorrection,
 		ValueTooLong,
 		MaximalErrorCountExceeded,
 		MaximalWarningCountExceeded,

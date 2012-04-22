@@ -2172,6 +2172,26 @@ Board::genCastleLong(MoveList& result, color::ID side) const
 
 
 void
+Board::generateCastlingMoves(MoveList& result) const
+{
+	if (m_stm == White)
+	{
+		if ((m_castle & WhiteKingside) && shortCastlingWhiteIsLegal())
+			genCastleShort(result, White);
+		if ((m_castle & WhiteQueenside) && longCastlingWhiteIsLegal())
+			genCastleLong(result, White);
+	}
+	else
+	{
+		if ((m_castle & BlackKingside) && shortCastlingBlackIsLegal())
+			genCastleShort(result, Black);
+		if ((m_castle & BlackQueenside) && longCastlingBlackIsLegal())
+			genCastleLong(result, Black);
+	}
+}
+
+
+void
 Board::generateMoves(MoveList& result) const
 {
 	result.clear();
@@ -3835,15 +3855,15 @@ Board::prepareMove(Square from, Square to, move::Constraint flag) const
 			break;
 	}
 
-	if (!move)
-		move.setSquares(from, to);
+	if (move)
+	{
+		move.setColor(m_stm);
 
-	move.setColor(m_stm);
-
-	if (!isIntoCheck(move))
-		move.setLegalMove();
-	else if (flag == move::DontAllowIllegalMove)
-		return Move::empty();
+		if (!isIntoCheck(move))
+			move.setLegalMove();
+		else if (flag == move::DontAllowIllegalMove)
+			return Move::empty();
+	}
 
 	return move;
 }

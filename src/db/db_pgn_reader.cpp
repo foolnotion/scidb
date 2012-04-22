@@ -2676,7 +2676,24 @@ PgnReader::doCastling(char const* castle)
 		board.parseMove(castle, m_move, move::AllowIllegalMove);
 
 		if (!m_move)
-			return false;
+		{
+			Move castling;
+			MoveList moves;
+
+			this->board().generateCastlingMoves(moves);
+			this->board().filterLegalMoves(moves);
+
+			if (moves.size() != 1)
+				return false;
+
+			mstl::string msg(castle);
+			msg.append(" -> ");
+			msg.append(moves[0].asString());
+
+			m_move = moves[0];
+			warning(CastlingCorrection, m_prevPos, msg);
+			return true;
+		}
 
 		m_move.setIllegalMove();
 		warning(IllegalCastling, m_prevPos, castle);

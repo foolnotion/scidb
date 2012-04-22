@@ -179,10 +179,12 @@ public:
 	void prepareUndo(Move& move) const;
 	/// Generate all possible moves in a given position
 	void generateMoves(MoveList& result) const;
-	/// Remove all illegal moves from given move list
-	void filterLegalMoves(MoveList& result) const;
 	/// Generate all possible capturing moves in a given position
 	void generateCapturingMoves(MoveList& result) const;
+	/// Generate all possible castling moves in a given position.
+	void generateCastlingMoves(MoveList& result) const;
+	/// Remove all illegal moves from given move list
+	void filterLegalMoves(MoveList& result) const;
 
 	// Query
 

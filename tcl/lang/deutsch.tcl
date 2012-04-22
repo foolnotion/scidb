@@ -962,6 +962,7 @@
 ::import::mc::TooManyNags							"Zuviele NAG's (die letzteren werden ignoriert)"
 ::import::mc::IllegalCastling						"Regelwidrige Rochade"
 ::import::mc::IllegalMove							"Regelwidriger Zug"
+::import::mc::CastlingCorrection					"Castling correction"
 ::import::mc::UnsupportedVariant					"Unzulässige Schachvariante"
 ::import::mc::DecodingFailed						"Eine Dekodierung dieser Partie war nicht möglich"
 ::import::mc::ResultDidNotMatchHeaderResult	"Ergebnis stimmte nicht mit Ergebnis-Tag überein"

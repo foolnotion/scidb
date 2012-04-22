@@ -143,6 +143,7 @@ PgnReader::warning(	Warning code,
 		case TooManyNags:							msg = "TooManyNags"; break;
 		case IllegalCastling:					msg = "IllegalCastling"; break;
 		case IllegalMove:							msg = "IllegalMove"; break;
+		case CastlingCorrection:				msg = "CastlingCorrection"; break;
 		case ResultDidNotMatchHeaderResult: msg = "ResultDidNotMatchHeaderResult"; break;
 		case ValueTooLong:						msg = "ValueTooLong"; break;
 		case MaximalErrorCountExceeded:		msg = "MaximalErrorCountExceeded"; break;

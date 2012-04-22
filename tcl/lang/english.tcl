@@ -963,6 +963,7 @@
 ::import::mc::TooManyNags							"Too many NAG's (latter ignored)"
 ::import::mc::IllegalCastling						"Illegal castling"
 ::import::mc::IllegalMove							"Illegal move"
+::import::mc::CastlingCorrection					"Rochadekorrektur"
 ::import::mc::UnsupportedVariant					"Unsupported chess variant"
 ::import::mc::DecodingFailed						"Decoding of this game was not possible"
 ::import::mc::ResultDidNotMatchHeaderResult	"Result did not match header result"
