@@ -2523,6 +2523,7 @@ db_pgn_reader.o: db_site.h
 db_pgn_reader.o: db_site.ipp
 db_pgn_reader.o: db_eco.h
 db_pgn_reader.o: db_eco.ipp
+db_pgn_reader.o: db_pgn_aquarium.h
 db_pgn_reader.o: ../util/u_progress.h
 db_pgn_reader.o: ../util/u_progress.ipp
 db_pgn_reader.o: ../util/u_zstream.h

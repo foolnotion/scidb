@@ -712,16 +712,24 @@ proc showMoves {path moves {result ""} {empty 0}} {
 	$t delete 1.0 end
 	$t configure -width 50
 	set moves [::font::splitMoves $moves]
+	set complete 1
 	if {[string length $moves] == 0} {
 		if {$empty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
 		$t insert end $text
 		$t insert end " "
 	} else {
-		foreach {move tag} $moves { $t insert end $move $tag }
+		set i 0
+		foreach {move tag} $moves {
+			$t insert end $move $tag
+			if {[incr i] == 300} {
+				set complete 0
+				break
+			}
+		}
 	}
-	$t insert end $result
+	if {$complete} { $t insert end $result }
 	::update idletasks
-	set lines [min 8 [$t count -displaylines 1.0 8.0]]
+	set lines [min 20 [$t count -displaylines 1.0 8.0]]
 	if {$lines == 1} {
 		lassign [$t bbox 1.end-1c] x0 y0 w0 h0
 		set width [expr {$x0 + $w0}]

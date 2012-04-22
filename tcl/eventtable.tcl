@@ -324,7 +324,7 @@ proc showInfo {path info} {
 	set f [tk::frame $top.f -borderwidth 0 -background $bg]
 	grid $f -column 3 -row 1
 
-	set columns {event type eventDate mode timeMode
+	set columns {event type eventDate eventMode timeMode
 					country site frequency attendance averageRating category}
 	lassign $info {*}$columns
 	set countryCode $country
@@ -336,7 +336,7 @@ proc showInfo {path info} {
 		set timeMode ""
 	}
 	set eventDate [::locale::formatDate $eventDate]
-	if {[string length $mode ] > 1} { set mode [set ::eventmodebox::mc::$mode] }
+	if {[string length $eventMode] > 1} { set mode [set ::eventmodebox::mc::$eventMode] }
 	set row 1
 	foreach var $columns {
 		if {$var ne "frequency"} {
@@ -345,8 +345,8 @@ proc showInfo {path info} {
 			set attr [string toupper $var 0 0]
 			if {[info exists ::gametable::mc::F_$attr]} {
 				set text [set ::gametable::mc::F_$attr]
-			} elseif {[info exists ::dialog::save::mc::$attr]} {
-				set text [set ::dialog::save::mc::$attr]
+			} elseif {[info exists ::dialog::save::mc::Label($var)]} {
+				set text [set ::dialog::save::mc::Label($var)]
 			} elseif {[info exists ::crosstable::mc::$attr]} {
 				set text [set ::crosstable::mc::$attr]
 			} else {
