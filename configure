@@ -47,7 +47,7 @@ proc findBestTclVersion {} {
     lappend paths              \
         /usr/local/tk/include  \
         /usr/local/tcl/include \
-        usr/local/include     \
+        /usr/local/include     \
         ;
     foreach version $versions {
         lappend paths                                 \
@@ -72,6 +72,7 @@ proc findBestTclVersion {} {
         /opt/include             \
         ;
 
+    set results {}
     foreach dir $paths {
         if {[file isdirectory $dir]} {
             if {[file exists $dir/tk.h]} {
@@ -79,15 +80,20 @@ proc findBestTclVersion {} {
                 while {[gets $f line] >= 0} {
                     if {[string match {\#*define *TK_VERSION*} $line]} {
                         set ver [lindex [split $line \"] 1]
-                        if {$ver in $versions} {
+                        if {[lindex $versions 0] eq $ver} {
                             close $f
                             return $ver
+                        } elseif {$ver in $versions} {
+                            lappend results $ver
                         }
                     }
                 }
                 close $f
             }
         }
+    }
+    if {[llength $results] > 0} {
+        return [lindex [lsort $results] 0]
     }
 
     foreach version $versions {
