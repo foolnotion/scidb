@@ -3045,6 +3045,9 @@ bind TagList <Key-Up>		{ ::dialog::save::ChangeCurrentElement %W 0 -1 }
 bind TagList <Key-Down>		{ ::dialog::save::ChangeCurrentElement %W 0 +1 }
 bind TagList <Key-space>	{ ::dialog::save::ActivateCurrentElement %W }
 
+
+# NOTE: we have to stipulate tk_focusNext before renaming is possibe!
+tk_focusNext .
 rename tk_focusNext tk_focusNext_save_replace_
 
 proc ::tk_focusNext w {
