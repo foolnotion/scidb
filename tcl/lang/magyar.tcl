@@ -536,7 +536,7 @@
 ::board::options::mc::ShowBorder			"Határvonal mutatása"
 ::board::options::mc::ShowCoordinates		"Koordináták mutatása"
 ::board::options::mc::ShowMaterialValues	"Anyageloszlás mutatása"
-::board::options::mc::ShowBar					"Show Bar"
+::board::options::mc::ShowMaterialBar		"Show Material Bar"
 ::board::options::mc::ShowSideToMove		"Lépésre jövő fél jelzése"
 ::board::options::mc::ShowSuggestedMove		"Ajánlott lépés mutatása"
 ::board::options::mc::SuggestedMove		"Ajánlott lépés"
@@ -1489,8 +1489,10 @@
 ::titlebox::mc::Title(SM)	"Senior Master (USCF)"
 ::titlebox::mc::Title(LM)	"Life Master (USCF)"
 ::titlebox::mc::Title(CGM)	"Correspondence Grandmaster (ICCF)"
-::titlebox::mc::Title(CSM)	"Correspondence Senior International Master (ICCF)"
 ::titlebox::mc::Title(CIM)	"Correspondence International Master (ICCF)"
+::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
+::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICC)"
+::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
 ::dialog::mc::Ok				"&OK"

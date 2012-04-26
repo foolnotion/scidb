@@ -380,7 +380,7 @@ inline NamebasePlayer::Value::Value(uint32_t key) : m_key(key & KeyMask) {}
 inline
 NamebasePlayer::Value::Value()
 	:m_federation(country::Unknown)
-	,m_title(0)
+	,m_title(title::None)
 	,m_sex(sex::Unspecified)
 	,m_species(species::Unspecified)
 	,m_ignored_(0)

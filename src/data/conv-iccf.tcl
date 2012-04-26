@@ -5,11 +5,16 @@ exec tclsh "$0" "$@"
 
 # ID;Country;Title;Name;Games;Rating;Gender;
 
-proc expand {str len} {
+proc expand {str len {align right}} {
 	set length [string length $str]
 
 	if {$length >= $len} { return $str }
 	set spaces [string repeat " " [expr {$len - $length}]]
+
+	if {$align eq "left"} {
+		return [append str $spaces]
+	}
+
 	return [append spaces $str]
 }
 
@@ -71,7 +76,7 @@ while {[gets $fd line] > 0} {
 			}
 		}
 
-		puts "[expand $id 6] $country [expand $title 2] [expand $rating 4] [expand $gender 1] $name"
+		puts "[expand $id 6] $country [expand $title 3 left] [expand $rating 4] [expand $gender 1] $name"
 	}
 }
 

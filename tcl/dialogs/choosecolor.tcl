@@ -761,7 +761,8 @@ proc CreateEntry {w} {
 		-validatecommand {
 			return [expr {%d == 0 || ([string match \[0-9a-fA-F\]* "%S"] && [string length %s] <= 5)}]
 		} \
-		-invalidcommand { bell }
+		-invalidcommand { bell } \
+		;
 	$f.e configure -validate key
 	$f.e selection range 0 end
 	pack $f -padx 5 -pady 5

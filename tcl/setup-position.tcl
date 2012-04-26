@@ -162,10 +162,12 @@ proc open {parent} {
 		-variable [namespace current]::Vars(castling) \
 		;
 	set Vars(castling:widget) $top.control.castling
-	::ttk::entry $top.control.idn \
+	::ttk::label $top.control.idn \
 		-textvariable [namespace current]::Vars(idn:text) \
 		-width 5 \
-		-state readonly \
+		-relief sunken \
+		-anchor center \
+		-background [$dlg cget -background] \
 		;
 	::ttk::button $top.control.standard \
 		-style icon.TButton \

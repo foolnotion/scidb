@@ -1079,7 +1079,7 @@ proc DirChanged {w {useHistory 1}} {
 	foreach what {delete rename copy new} { set Vars(disable:$what) 0 }
 	::toolbar::childconfigure $Vars(button:add) -state normal
 
-	if {[string match $Vars(folder:trash)* $Vars(folder)]} {
+	if {[string length $Vars(folder:trash)] > 0 && [string match $Vars(folder:trash)* $Vars(folder)]} {
 		set action restore
 	} else {
 		set action delete
@@ -1087,7 +1087,7 @@ proc DirChanged {w {useHistory 1}} {
 	filelist::SetDeleteAction $w $action
 
 	foreach f {desktop trash} {
-		if {[string match $Vars(folder:$f)* $Vars(folder)]} {
+		if {[string length $Vars(folder:$f)] > 0 && [string match $Vars(folder:$f)* $Vars(folder)]} {
 			foreach what {delete rename copy new} { set Vars(disable:$what) 1 }
 			::toolbar::childconfigure $Vars(button:add) -state disabled
 		}
@@ -1176,7 +1176,7 @@ proc ChangeDir {w path {useHistory 1}} {
 
 			if {[info exists Vars(lookup:$path)]} {
 				set icon [set icon::16x16::$Vars(lookup:$path)]
-			} elseif {	[llength $Vars(folder:trash)]
+			} elseif {	[string length $Vars(folder:trash)] > 0
 						&& [string match $Vars(folder:trash)* $path]} {
 				set icon $Vars(icon:trash)
 			} else {
@@ -1701,9 +1701,9 @@ proc InspectBookmark {w mode args} {
 		} else {
 			set path [lindex [lindex $Bookmarks(user) [expr {$index - [llength $Vars(bookmarks)] - 1}]] 0]
 		}
-		$Vars(inspectcommand) $tl $path
+		{*}$Vars(inspectcommand) $tl $path
 	} else {
-		$Vars(inspectcommand) $tl
+		{*}$Vars(inspectcommand) $tl
 	}
 }
 
@@ -2822,7 +2822,8 @@ proc Glob {w refresh} {
 				set attr $Vars(lookup:$path)
 				set icon [set [namespace parent]::icon::16x16::$attr]
 				set folder [Tr [string toupper $attr 0 0]]
-			} elseif {[string match $Vars(folder:trash)* $path]} {
+			} elseif {	[string length  $Vars(folder:trash)] > 0
+						&& [string match $Vars(folder:trash)* $path]} {
 				set icon [set [namespace parent]::icon::16x16::trash]
 				set folder [set [namespace parent]::mc::Trash]
 				if {$path ne $Vars(folder:trash)} { append folder ": " [file tail $path] }
@@ -3192,7 +3193,7 @@ proc DeleteFile {w} {
 				set files [list $file]
 			}
 
-			catch {file delete {*}$files}
+			catch {file delete -force {*}$files}
 		} elseif {![catch {file delete -force $file}]} {
 			[namespace parent]::bookmarks::LayoutBookmarks $w
 		}
@@ -3370,7 +3371,7 @@ proc CallCustomCommand {w} {
 		set file [lindex $Vars(list:file) $i]
 	}
 
-	$Vars(customcommand) [winfo toplevel $w] $file
+	{*}$Vars(customcommand) [winfo toplevel $w] $file
 	RefreshFileList $w
 }
 
@@ -3901,7 +3902,7 @@ proc Inspect {w mode args} {
 		switch $Vars(glob) {
 			LastVisited - Favorites {
 				set path [lindex $Vars(list:folder) $index]
-				$Vars(inspectcommand) $tl $path
+				{*}$Vars(inspectcommand) $tl $path
 			}
 			default {
 				if {$index >= [llength $Vars(list:folder)]} {
@@ -3910,11 +3911,11 @@ proc Inspect {w mode args} {
 				} else {
 					set file [lindex $Vars(list:folder) $index]
 				}
-				$Vars(inspectcommand) $tl $Vars(folder) $file
+				{*}$Vars(inspectcommand) $tl $Vars(folder) $file
 			}
 		}
 	} else {
-		$Vars(inspectcommand) $tl
+		{*}$Vars(inspectcommand) $tl
 	}
 }
 

@@ -160,7 +160,7 @@ static mstl::string const Lookup[] =
 	"WGM", "WIM", "WFM", "WCM",
 	"HGM",
 	"NM", "SM", "LM",
-	"CGM", "CIM", "CSM",
+	"CGM", "CIM", "LGM", "ILM", "CSIM",
 };
 
 } // namespace title
@@ -1294,7 +1294,7 @@ append(mstl::string& result, unsigned count, mstl::string const& s)
 title::ID
 title::toID(unsigned title)
 {
-	M_REQUIRE(title <= Mask_CSM);
+	M_REQUIRE(title <= Mask_CSIM);
 	return title::ID(title ? mstl::bf::lsb_index(title) + 1 : 0);
 }
 
@@ -1313,9 +1313,8 @@ title::fromString(char const* title)
 	{
 		case 'F': return title[1] == 'M' ? title::FM : title::None;
 		case 'G': return title[1] == 'M' ? title::GM : title::None;
-		case 'L': return title[1] == 'M' ? title::LM : title::None;
 		case 'N': return title[1] == 'M' ? title::NM : title::None;
-		case 'S': return title[1] == 'M' ? title::SM : title::None;
+		case 'S': return title[1] == 'M' || (title[1] == 'I' && title[2] == 'M') ? title::SM : title::None;
 
 		case 'C':
 			switch (title[1])
@@ -1323,7 +1322,7 @@ title::fromString(char const* title)
 				case 'G': return title[2] == 'M' ? title::CGM : title::None;
 				case 'I': return title[2] == 'M' ? title::CIM : title::None;
 				case 'M': return title::CM;
-				case 'S': return title[2] == 'M' ? title::CSM : title::None;
+				case 'S': return title[2] == 'I' && title[3] == 'M' ? title::CSIM : title::None;
 			}
 			break;
 
@@ -1334,7 +1333,16 @@ title::fromString(char const* title)
 			switch (title[1])
 			{
 				case 'G': return title[2] == 'M' ? title::GM : title::None;
+				case 'L': return title[2] == 'M' ? title::CILM : title::None;
 				case 'M': return title::IM;
+			}
+			break;
+
+		case 'L':
+			switch (title[1])
+			{
+				case 'G': return title[2] == 'M' ? title::CLGM : title::None;
+				case 'M': return title::LM;
 			}
 			break;
 

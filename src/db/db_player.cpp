@@ -2347,10 +2347,10 @@ Player::parseDwzRating(mstl::istream& stream)
 // --------------------------------
 // ICCF ID:	     0 -  5 (6 chars)
 // Federation:   7 -  9 (3 chars)
-// Title:       11 - 12 (2 chars)
-// Rating:      14 - 17 (4 chars)
-// Sex:         19 - 19 (1 char )
-// Name:        21 - end
+// Title:       11 - 13 (3 chars) +1
+// Rating:      15 - 18 (4 chars)
+// Sex:         20 - 20 (1 char )
+// Name:        22 - end
 void
 Player::parseIccfRating(mstl::istream& stream)
 {
@@ -2365,22 +2365,22 @@ Player::parseIccfRating(mstl::istream& stream)
 
 	while (stream.getline(line))
 	{
-		if (line.size() >= 21 && ::isdigit(line[14]))
+		if (line.size() >= 22 && ::isdigit(line[15]))
 		{
-			unsigned rating = ::strtoul(line.c_str() + 14, nullptr, 10);
+			unsigned rating = ::strtoul(line.c_str() + 15, nullptr, 10);
 
 			if (rating >= m_minICCF)
 			{
 				country::Code	federation	= country::fromString(line.c_str() + 7);
 				sex::ID			sex			= sex::Unspecified;
 
-				switch (line[19])
+				switch (line[20])
 				{
 					case 'M': sex = sex::Male; break;
 					case 'F': sex = sex::Female; break;
 				}
 
-				name.hook(line.data() + 21, line.size() - 21);
+				name.hook(line.data() + 22, line.size() - 22);
 
 				if (db::Player* player = insertPlayer(name, 0, federation, sex))
 				{
@@ -2391,8 +2391,9 @@ Player::parseIccfRating(mstl::istream& stream)
 
 					switch (line[11])
 					{
-						case 'I': player->addTitle(title::CIM); break;
-						case 'S': player->addTitle(title::CSM); break;
+						case 'I': player->addTitle(line[12] == 'M' ? title::CIM : title::CILM); break;
+						case 'L': player->addTitle(title::CLGM); break;
+						case 'S': player->addTitle(title::CSIM); break;
 						case 'G': player->addTitle(title::CGM); break;
 					}
 

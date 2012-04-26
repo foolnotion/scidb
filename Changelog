@@ -1,6 +1,25 @@
 [April 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #310)
+------------------------------------------------------------------------------
+* Rating files updated: ELO, DWZ, ECF, ICCF.
+
+* Missing titles added: CILM = Corres. Lady IM (ICCF), CLGM = Corr. Lady GM
+(ICCF). Possibly this requires a new database version, but the current version
+is a beta version only, it's only a minor problem. The new database version
+will come at least with the first alpha release.
+
+* Bug in load function fixed: Scidb will load DWZ, ECF, and ICCF again.
+
+* Bug in configure script shuld be fixed: now version 8.5 will be preferred
+over 8.6, if exisiting.
+
+* Archiving fixed: new version is archving directories.
+
+* File selection box fixed: now will work properly with non-KDE systems.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #306)
 ------------------------------------------------------------------------------
 * Bug in PGN parser fixed (thanks to Steve).

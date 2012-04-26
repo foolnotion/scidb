@@ -51,13 +51,21 @@ namespace eval scidb {
 wm withdraw .
 
 
-if {[llength [info nameofexecutable]] == 0} {
-	# broken Tk library, e.g. 8.6b2
-	append msg "You've installed a broken Tk library (version [info patchlevel]). "
-	append msg "Please change the version (8.5.6 is recommended)."
-	tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
-	exit 1
+set nameofexecutable [info nameofexecutable]
+if {[llength $nameofexecutable] == 0} {
+	if {$tcl_platform(platform) eq "unix"} {
+		catch { set nameofexecutable [exec readlink /proc/[pid]/exe] }
+	}
+	if {[llength $nameofexecutable] == 0} {
+		# broken Tk library, e.g. 8.6b2
+		append msg "You've installed a broken Tk library (version [info patchlevel]). "
+		append msg "Please change the version (8.5.6 is recommended)."
+		tk_messageBox -type ok -icon error -title "$scidb::app: broken library" -message $msg
+		exit 1
+	}
 }
+set nameofexecutable [file normalize $nameofexecutable]
+
 
 if {[::scidb::misc::version] ne $scidb::version} {
 	wm withdraw .
@@ -66,12 +74,13 @@ if {[::scidb::misc::version] ne $scidb::version} {
 		append msg "data file has the version number $scidb::version."
 	} else {
 		append msg "This is $scidb::app version '$scidb::version', but the "
-		append msg "[file tail [info nameofexecutable]] program it uses is "
+		append msg "[file tail $nameofexecutable] program it uses is "
 		append msg "version '[::scidb::misc::version]'."
 	}
 	tk_messageBox -type ok -icon error -title "$scidb::app: version error" -message $msg
 	exit 1
 }
+
 
 if {[info patchlevel] eq "8.5.10"} {
 	# broken Tk library (e.g. Ubuntu 11.10)

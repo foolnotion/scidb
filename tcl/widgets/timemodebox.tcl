@@ -161,6 +161,10 @@ proc WidgetProc {w command args} {
 			return [focus $w.__w__]
 		}
 
+		path {
+			return $w.__w__
+		}
+
 		instate {
 			if {[llength $args] != 1 && [llength $args] != 2} {
 				error "wrong # args: should be \"[namespace current] $command <statespec> ?<script>?\""

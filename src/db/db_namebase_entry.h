@@ -235,7 +235,7 @@ class NamebasePlayer : public NamebaseEntry
 {
 public:
 
-	static uint32_t const KeyMask = 0x00ffffff;
+	static uint32_t const KeyMask = 0x01ffffff;
 
 	union Value
 	{
@@ -257,7 +257,7 @@ public:
 		struct
 		{
 			uint32_t	m_federation:9;
-			uint32_t	m_title:4;
+			uint32_t	m_title:5;
 			uint32_t m_sex:3;
 			uint32_t	m_species:3;
 			uint32_t	m_federationFlag:1;
@@ -266,7 +266,7 @@ public:
 			uint32_t m_speciesFlag:1;
 			uint32_t m_fideIdFlag:1;
 			uint32_t m_ignored_:4;
-			uint32_t m_unused_:4;
+			uint32_t m_unused_:3;
 		};
 
 		uint32_t m_key;
@@ -355,7 +355,7 @@ private:
 		struct
 		{
 			uint32_t	m_federation:9;
-			uint32_t	m_title:4;
+			uint32_t	m_title:5;
 			uint32_t m_sex:3;
 			uint32_t	m_species:3;
 			uint32_t	m_federationFlag:1;
@@ -364,7 +364,7 @@ private:
 			uint32_t m_speciesFlag:1;
 			uint32_t m_fideIdFlag:1;
 			uint32_t	m_ratingType:4;
-			uint32_t m_unused_:4;
+			uint32_t m_unused_:3;
 		};
 
 		uint32_t m_value;

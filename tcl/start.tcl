@@ -45,15 +45,15 @@ if {[info exists ::env(SCIDB_SHAREDIR)]} {
 } else {
 	set share "%SHAREDIR%"
 	if {$share eq "%SHAREDIR%"} {
-		set share [file tail [info nameofexecutable]]
+		set share [file tail $::nameofexecutable]
 		set share [string range $share [string first scidb $share] end]
 		set share "/usr/local/share/$share"
 	}
 }
 
 set home		[file nativename "~"]
-set exec		[file dirname [info nameofexecutable]]
-set user		[file join $home .[string range [file tail [info nameofexecutable]] 2 end]]
+set exec		[file dirname $::nameofexecutable]
+set user		[file join $home .[string range [file tail $::nameofexecutable] 2 end]]
 set data		[file join $share data]
 set help		[file join $share help]
 set hyphen	[file join $share hyphen]

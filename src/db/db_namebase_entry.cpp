@@ -56,7 +56,7 @@ NamebaseSite::findCountry() const
 NamebasePlayer::NamebasePlayer()
 	:m_player(0)
 	,m_federation(country::Unknown)
-	,m_title(0)
+	,m_title(title::None)
 	,m_sex(sex::Unspecified)
 	,m_species(species::Unspecified)
 	,m_federationFlag(1)

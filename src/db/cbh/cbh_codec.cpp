@@ -54,6 +54,7 @@
 #include "m_bitfield.h"
 
 #include <string.h>
+#include <ctype.h>
 
 using namespace db;
 using namespace db::cbh;
@@ -404,6 +405,27 @@ setDate(Date& result, uint32_t value)
 }
 
 
+static void
+replaceNewlines(mstl::string& s)
+{
+	char const*	p = s.begin();
+	char const*	e = s.end();
+	char*			q = s.data();
+
+	for ( ; p < e; ++p, ++q)
+	{
+		if (p[0] != '\r')
+			*q = *p;
+		else if (p[1] == '\n')
+			*q = *++p;
+		else
+			*q = '\n';
+	}
+
+	s.resize(q - s.begin());
+}
+
+
 Codec::Tournament::Tournament() :category(0) ,rounds(0) {}
 Codec::Tournament::Tournament(Byte cat, Byte nrounds) :category(cat) ,rounds(nrounds) {}
 
@@ -652,6 +674,10 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 
 	m_numGames = readHeader(rootname);
 
+	mstl::string filename(rootname + ".cbg");
+	checkPermissions(filename);
+	openFile(m_gameStream, filename, Readonly);
+
 	if (!m_codec->hasEncoding())
 	{
 		preloadPlayerData(rootname, progress);
@@ -687,10 +713,6 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::
 	namebases().setModified(false);
 	namebases().update();
 	namebases().setReadonly();
-
-	mstl::string filename(rootname + ".cbg");
-	checkPermissions(filename);
-	openFile(m_gameStream, filename, Readonly);
 
 	filename.assign(rootname + ".cba");
 	checkPermissions(filename);
@@ -1775,13 +1797,17 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 
 		Byte flags = bstrm.peek();
 
-		if ((flags & 0x2) == 0)	// otherwise it is guiding text
+		if ((flags & 0x2) == 0)
 		{
 			infoList.push_back(allocGameInfo());
 			decodeIndex(bstrm, *infoList.back());
 
 			if (m_teamStream.is_open())
 				m_gameIndexLookup[infoList.back()] = i;
+		}
+		else
+		{
+			decodeGuidingText(bstrm);
 		}
 	}
 
@@ -1842,13 +1868,13 @@ Codec::readIniData(mstl::fstream& strm, sys::utf8::Codec& codec, db::type::ID& t
 			{
 				title = tournTitle;
 
-				if (!tournPlace.empty())
+				if (tournPlace != "Unknown" && tournPlace != "Unkown" && !tournPlace.empty())
 				{
 					title.append(", ", 2);
 					title += tournPlace;
 				}
 
-				if (!tournYear.empty())
+				if (!tournYear.empty() && ::isdigit(tournYear[0]))
 				{
 					title.append(", ", 2);
 					title += tournYear;
@@ -1987,6 +2013,170 @@ Codec::getSource(uint32_t ref)
 	p->second->ref();
 
 	return static_cast<Source*>(p->second);
+}
+
+
+void
+Codec::decodeGuidingText(ByteStream& strm)
+{
+	M_ASSERT(m_gameStream.is_open());
+
+if (::getenv("SCIDB_GUIDING_TEXT") == 0)
+	return;
+
+	Byte flags = strm.get();
+
+	if (flags & (1 << 7))
+		return; // is deleted
+
+	unsigned offset			= strm.uint32();
+
+printf("skip(0): %02x %02x %02x\n", Byte(strm.data()[0]), Byte(strm.data()[1]), Byte(strm.data()[2]));
+	strm.skip(3);
+
+	unsigned tournamentId	= strm.uint24();
+	unsigned sourceId			= strm.uint24();
+	unsigned annotatorId		= strm.uint24();;
+	unsigned round				= strm.get();
+
+printf("offset:     %u\n", offset);
+printf("tournament: %u\n", tournamentId);
+printf("source:     %u\n", sourceId);
+printf("annotator:  %u\n", annotatorId);
+printf("round:      %u\n", round);
+
+#if 0
+	if (NamebaseEntry* annotator = getAnnotator(strm.uint24()))
+		info.m_annotator = annotator;
+	if (Source* source = getSource(strm.uint24()))
+		m_sourceMap[&info] = source;
+#endif
+
+	char header[8];
+
+	if (m_gameStream.seekg(offset, mstl::ios_base::beg) && m_gameStream.read(header, sizeof(header)))
+	{
+		// Header (8 bytes) -----------------------------------------------------------------------
+		// 80 00 20 cd			bit 0-29: Game size (including this, excluding trash bytes)
+		// 						bit 30: ?
+		// 						bit 31: If set, the data is not encoded
+		//
+		// 03						type of entries (after titles)?
+		// 00						?
+		// 01 00					Number of titles (can be 0) (little endian)
+		//
+		// For each title: ------------------------------------------------------------------------
+		// 01 00					Language (0=english, 1=german, 2=france, 3=spain, 4=italian, 5=dutch)
+		// 						(little endian) (unknown: italian, portuguese, polish)
+		// 05 00					Length of title (little endian)
+		// string				Title
+
+		ByteStream bstrm(header, sizeof(header));
+
+		int size = bstrm.uint32();
+
+		if ((size & 0x80000000) == 0)
+			return; // data is encoded
+
+		size = (size & 0x3fffffff) - sizeof(header);
+printf("skip(1): %02x %02x\n", Byte(bstrm.data()[0]), Byte(bstrm.data()[1]));
+
+		unsigned type = bstrm.get();
+
+		bstrm.skip(1); // ??
+
+		unsigned numTitles = bstrm.uint16LE();
+
+		char* buf = new char[size];
+		char* mem = buf;
+
+		mstl::string str;
+
+		if (m_gameStream.read(buf, size))
+		{
+			bstrm.setup(buf, size);
+
+			for (unsigned i = 0; i < numTitles; ++i)
+			{
+				if (bstrm.remaining() <= 4)
+					return;
+
+				unsigned lang		= bstrm.uint16LE();
+				unsigned length	= bstrm.uint16LE();
+
+				if (length > bstrm.remaining())
+					return;
+
+				str.clear();
+				bstrm.get(str, length);
+				::replaceNewlines(str);
+
+printf("lang=%u, length=%u: '%s'\n", lang, length, str.c_str());
+			}
+		}
+
+		// PAN-EGC:
+		// 01 | 01 00 00 00 | 67 34
+		// language | id | length
+
+		// Big2010:
+		// 01 | 01 00 00 00 | 20 02
+		// language | id | length
+
+		// CB Light Database:
+		// 01 | 08 00 00 00 | 6e 09 00 00
+		// language | id | length
+
+		// Test1:
+		// 01 | 08 00 00 00 | 96 00 00 00
+		// language | id | length
+
+		if (type == 1)
+		{
+			if (bstrm.remaining() > 7)
+			{
+				unsigned lang		= bstrm.get();
+				unsigned id			= bstrm.uint32LE();	// which?
+				unsigned length	= bstrm.uint16LE();
+
+				if (length > bstrm.remaining())
+					return;
+
+				str.clear();
+				bstrm.get(str, length);
+				::replaceNewlines(str);
+printf("id=%u, lang=%u: '%s'\n", id, lang, str.c_str());
+				bstrm.get(); // nul byte?
+			}
+		}
+		else
+		{
+			unsigned lang	= bstrm.get();			// really is language?
+			unsigned id		= bstrm.uint32LE();	// which id?
+
+			while (bstrm.remaining() > 4)
+			{
+				unsigned length = bstrm.uint32LE();
+
+				if (length >= bstrm.remaining())
+					return;
+
+				str.clear();
+				bstrm.get(str, length);
+				::replaceNewlines(str);
+printf("id=%u, lang=%u: '%s'\n", id, lang, str.c_str());
+				bstrm.get(); // nul byte?
+
+				if (bstrm.remaining() > 9)
+				{
+					id = bstrm.uint32();	// which?
+					lang = bstrm.get();	// really?
+				}
+			}
+		}
+
+		delete [] mem;
+	}
 }
 
 
@@ -2382,6 +2572,7 @@ Codec::getSuffixes(mstl::string const&, StringList& result)
 	result.push_back("cpn");
 	result.push_back("cpo");
 	result.push_back("flags");
+	result.push_back("html");
 	result.push_back("ini");
 	result.push_back("rb0");
 	result.push_back("rb1");

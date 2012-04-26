@@ -550,28 +550,32 @@ namespace title
 		LM,	///< Life Master (USCF)
 		CGM,	///< Correspondence Grandmaster (ICCF)
 		CIM,	///< Correspondence International Master (ICCF)
-		CSM,	///< Correspondence Senior International Master (ICCF)
+		CLGM,	///< Correspondence Lady Grandmaster (ICCF)
+		CILM,	///< Correspondence Lady International Master (ICCF)
+		CSIM,	///< Correspondence Senior International Master (ICCF)
 
 		Last,
 	};
 
 	enum
 	{
-		Mask_GM		= 1 << (GM  - 1),
-		Mask_IM		= 1 << (IM  - 1),
-		Mask_FM		= 1 << (FM  - 1),
-		Mask_CM		= 1 << (CM  - 1),
-		Mask_WGM		= 1 << (WGM - 1),
-		Mask_WIM		= 1 << (WIM - 1),
-		Mask_WFM		= 1 << (WFM - 1),
-		Mask_WCM		= 1 << (WCM - 1),
-		Mask_HGM		= 1 << (HGM - 1),
-		Mask_NM		= 1 << (NM  - 1),
-		Mask_SM		= 1 << (SM  - 1),
-		Mask_LM		= 1 << (LM  - 1),
-		Mask_CGM		= 1 << (CGM - 1),
-		Mask_CIM		= 1 << (CIM - 1),
-		Mask_CSM		= 1 << (CSM - 1),
+		Mask_GM		= 1 << (GM   - 1),
+		Mask_IM		= 1 << (IM   - 1),
+		Mask_FM		= 1 << (FM   - 1),
+		Mask_CM		= 1 << (CM   - 1),
+		Mask_WGM		= 1 << (WGM  - 1),
+		Mask_WIM		= 1 << (WIM  - 1),
+		Mask_WFM		= 1 << (WFM  - 1),
+		Mask_WCM		= 1 << (WCM  - 1),
+		Mask_HGM		= 1 << (HGM  - 1),
+		Mask_NM		= 1 << (NM   - 1),
+		Mask_SM		= 1 << (SM   - 1),
+		Mask_LM		= 1 << (LM   - 1),
+		Mask_CGM		= 1 << (CGM  - 1),
+		Mask_CIM		= 1 << (CIM  - 1),
+		Mask_CLGM	= 1 << (CLGM - 1),
+		Mask_CILM	= 1 << (CILM - 1),
+		Mask_CSIM	= 1 << (CSIM - 1),
 	};
 
 	ID toID(unsigned title);

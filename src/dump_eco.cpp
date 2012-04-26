@@ -1073,7 +1073,7 @@ main(int argc, char const* argv[])
 		si3::StoredLine::initialize();
 
 		mstl::ifstream stream(argv[argc - 1]);
-		Node* root = load(stream);
+		Node* root = ::load(stream);
 
 		if (argc == 2)
 		{

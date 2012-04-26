@@ -181,9 +181,10 @@ if {![::process::testOption elo-only]} {
 
 # --- Load rating lists ------------------------------------------------
 foreach rating {IPS DWZ ECF ICCF} {
+	set type [string tolower $rating]
 	load::load	[format $load::mc::Loading [format $load::mc::RatingList $rating]] \
-					ips \
-					[file join $scidb::dir::data [string tolower $rating]-ratings.txt] \
+					$type \
+					[file join $scidb::dir::data $type-ratings.txt] \
 					;
 }
 

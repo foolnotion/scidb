@@ -413,7 +413,7 @@ proc PopupMenu {w} {
 		-command [namespace code [list Apply $Vars(widget:frame)]] \
 		;
 	$m add checkbutton \
-		-label $::board::options::mc::ShowBar \
+		-label $::board::options::mc::ShowMaterialBar \
 		-variable ::board::layout(material-bar) \
 		-state [expr {$::board::layout(material-values) ? "normal" : "disabled"}] \
 		-command [namespace code [list Apply $Vars(widget:frame)]] \

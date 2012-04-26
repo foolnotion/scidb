@@ -1030,6 +1030,8 @@ proc Build {dlg base position number} {
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
+	::widget::focusNext [$top.event-timeMode path] $dlg.ok
+	::widget::focusPrev $dlg.ok [$top.event-timeMode path]
 
 	# Tracing #################################################
 	foreach attr {white-name black-name event-title event-site game-annotator} {
@@ -3044,18 +3046,5 @@ bind TagList <Key-Right>	{ ::dialog::save::ChangeCurrentElement %W +1 0 }
 bind TagList <Key-Up>		{ ::dialog::save::ChangeCurrentElement %W 0 -1 }
 bind TagList <Key-Down>		{ ::dialog::save::ChangeCurrentElement %W 0 +1 }
 bind TagList <Key-space>	{ ::dialog::save::ActivateCurrentElement %W }
-
-
-# NOTE: we have to stipulate tk_focusNext before renaming is possibe!
-tk_focusNext .
-rename tk_focusNext tk_focusNext_save_replace_
-
-proc ::tk_focusNext w {
-	if {[string match *.saveReplace_*.event-timeMode.__w__ $w]} {
-		return [winfo parent [winfo parent [winfo parent $w]]].ok
-	}
-
-	return [tk_focusNext_save_replace_ $w]
-}
 
 # vi:set ts=3 sw=3:

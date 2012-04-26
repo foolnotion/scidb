@@ -1477,7 +1477,7 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
-			if {$prevSym >= 0 && [lindex [split [$w index current] .] end] ne "0"} {
+			if {[lindex [split [$w index current] .] end] ne "0"} {
 				$w insert current " "
 			}
 			set prevSym 1

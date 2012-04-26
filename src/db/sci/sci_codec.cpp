@@ -1733,8 +1733,8 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progres
 		// country/title data (16 bit)
 		// -------------------------------
 		// 0000 0001 1111 1111  country
-		// 0000 1111 0000 0000  title
-		// 1110 0000 0000 0000  <unused>
+		// 0011 1110 0000 0000  title
+		// 1100 0000 0000 0000  <unused>
 		//
 		// fide id (32 bit)
 		// -------------------------------
@@ -1748,7 +1748,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progres
 			uint16_t extraneous = bstrm.uint16();
 
 			country = country::Code(extraneous & 0x01ff);
-			title = title::ID((extraneous >> 9) & 0x000f);
+			title = title::ID((extraneous >> 9) & 0x001f);
 		}
 		else
 		{
@@ -1806,7 +1806,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progres
 				uint16_t extraneous = bstrm.uint16();
 
 				country = country::Code(extraneous & 0x01ff);
-				title = title::ID((extraneous >> 9) & 0x0f);
+				title = title::ID((extraneous >> 9) & 0x1f);
 			}
 			else
 			{
@@ -2112,7 +2112,7 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 	if (fideID)
 		flags |= 0x80;
 
-	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x0f) << 9)
+	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x1f) << 9)
 									 | uint16_t(prev->federation() & 0x01ff))
 	{
 		bstrm.put(flags | 0x40);
@@ -2153,7 +2153,7 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 		if ((fideID = entry->fideID()))
 			flags |= 0x80;
 
-		if (uint16_t extranouos = (uint16_t(entry->title() & 0x0f) << 9)
+		if (uint16_t extranouos = (uint16_t(entry->title() & 0x1f) << 9)
 										 | uint16_t(entry->federation() & 0x01ff))
 		{
 			bstrm.put(flags | 0x40);

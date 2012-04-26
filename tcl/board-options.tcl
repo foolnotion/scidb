@@ -44,7 +44,7 @@ set SelectedSquare		"Selected Square"
 set ShowBorder				"Show Border"
 set ShowCoordinates		"Show Coordinates"
 set ShowMaterialValues	"Show Material Values"
-set ShowBar					"Show Bar"
+set ShowMaterialBar		"Show Material Bar"
 set ShowSideToMove		"Show Side to Move"
 set ShowSuggestedMove	"Show Suggested Move"
 set SuggestedMove			"Suggested Move"
@@ -145,7 +145,7 @@ proc makeBasicFrame {path} {
 		-variable [namespace parent]::layout(material-values) \
 		-command [namespace code { RefreshBoard }]
 	::ttk::checkbutton $f.mvbar \
-		-textvar [namespace current]::mc::ShowBar \
+		-textvar [namespace current]::mc::ShowMaterialBar \
 		-variable [namespace parent]::layout(material-bar) \
 		-command [namespace code { RefreshBoard }]
 	set Widget(bar) $f.mvbar

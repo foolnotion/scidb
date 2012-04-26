@@ -355,6 +355,7 @@ proc dbCreateArchive {parent {base ""}} {
 		-geometry last \
 		-title $mc::CreateArchive \
 		-initialfile [file tail [file rootname $base]] \
+		-customcommand {} \
 	]
 	if {[llength $result]} {
 		set arch [lindex $result 0]
@@ -368,6 +369,7 @@ proc dbCreateArchive {parent {base ""}} {
 			foreach ext [::scidb::misc::suffixes "$base.sci"] { lappend streams "$base.$ext" }
 			set cmd [list ::archive::packStreams \
 				$arch \
+				[file dirname $base] \
 				$streams \
 				{sci} \
 				zlib \
@@ -386,17 +388,17 @@ proc dbCreateArchive {parent {base ""}} {
 			set rootname [file rootname $base]
 			foreach ext [::scidb::misc::suffixes $base] {
 				set f "$rootname.$ext"
-				if {[file exists $f]} { lappend files $f }
+				if {[file exists $f]} { lappend files [file tail $f] }
 			}
 			set cmd [list ::archive::packFiles \
 							$arch \
+							[file dirname $base] \
 							$files \
 							$progress \
 							[namespace current]::archive::GetCompressionMethod \
 							[namespace current]::archive::getName \
 							[namespace current]::archive::GetCount \
 							::scidb::misc::mapExtension \
-							-customcommand {} \
 						]
 		}
 		if {[catch {{*}$cmd} err options]} {
@@ -548,8 +550,9 @@ proc getName {file} {
 
 proc GetCompressionMethod {ext} {
 	switch $ext {
-		gz - zip	{ set method raw  }
-		default	{ set method zlib }
+		gz - zip						{ set method raw  }
+		png - jpg - jpeg - gif	{ set method raw  }
+		default						{ set method zlib }
 	}
 
 	return $method

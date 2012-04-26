@@ -99,7 +99,7 @@ proc inspect {arch {destDir ""}} {
 			set value [string trim $value]
 			set $attr $value
 			if {$attr eq "FileName"} {
-				set value [file join $destDir [file tail $value]]
+				set value [file join $destDir $value]
 			}
 			lappend attrs [list $attr $value]
 			gets $fd line
@@ -122,7 +122,7 @@ proc inspect {arch {destDir ""}} {
 }
 
 
-proc packFiles {arch sources progress procCompression procGetName {procCount {}} {mapExtension {}}} {
+proc packFiles {arch baseDir sources progress procCompression procGetName {procCount {}} {mapExtension {}}} {
 	set TotalSize 0
 	set Count 0
 	array set formats {}
@@ -130,19 +130,35 @@ proc packFiles {arch sources progress procCompression procGetName {procCount {}}
 	set fileAttrs {}
 	array set filenames {}
 	set fileCount 0
+	set pathList {}
+	set basedir {}
 
 	foreach f $sources {
+		set path [file join $baseDir $f]
+		if {[string match http:* $f]} {
+			lappend pathList $f
+		} elseif {![file readable $path]} {
+			logError [format $mc::FileNotReadable $path] ""
+		} elseif {[file isdirectory $path]} {
+			lappend pathList {*}[GlobDir $path $f]
+		} else {
+			lappend pathList $f
+		}
+	}
+
+	foreach f $pathList {
 		if {![string match http:* $f]} {
-			if {![file readable $f]} {
-				logError [format $mc::FileNotReadable $f] ""
+			set path [file join $baseDir $f]
+			if {![file readable $path]} {
+				logError [format $mc::FileNotReadable $path] ""
 			} else {
-				file stat $f info
+				file stat $path info
 				set FileSize $info(size)
 				set Modified $info(mtime)
 				set Size $FileSize
 
 				if {[llength $procCount] && $Count >= 0} {
-					set count [$procCount $f]
+					set count [$procCount $path]
 					if {[llength $count] > 0} {
 						incr Count $count
 					} else {
@@ -169,6 +185,7 @@ proc packFiles {arch sources progress procCompression procGetName {procCount {}}
 		if {[info exists filenames($rootname)]} { set Type multi }
 		set filenames($rootname) 1
 		set attrs [list FileName $f]
+		lappend attrs PathName $path
 
 		if {![string match http:* $f]} {
 			foreach attr {FileSize Compression Modified} {
@@ -198,7 +215,7 @@ proc packFiles {arch sources progress procCompression procGetName {procCount {}}
 
 		foreach {attr value} $attrs {
 			set $attr [string trim $value]
-			puts $fd "<$attr> $value"
+			if {$attr ne "PathName"} { puts $fd "<$attr> $value" }
 		}
 
 		setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
@@ -216,7 +233,7 @@ proc packFiles {arch sources progress procCompression procGetName {procCount {}}
 		puts $fd "<-- D A T A -->"
 
 		if {![string match http:* $FileName]} {
-			if {[catch {set f [open $FileName rb]} err]} {
+			if {[catch {set f [open $PathName rb]} err]} {
 				logError [format $mc::FileNotReadable $f] ""
 				logError [format $mc::CouldNotCreateArchive $arch] ""
 				close $fd
@@ -256,7 +273,7 @@ proc packFiles {arch sources progress procCompression procGetName {procCount {}}
 }
 
 
-proc packStreams {arch sources formats compression modified count procWrite procGetName progress} {
+proc packStreams {arch baseDir sources formats compression modified count procWrite procGetName progress} {
 	set TotalSize 0
 	set Count $count
 	set Type single
@@ -279,36 +296,39 @@ proc packStreams {arch sources formats compression modified count procWrite proc
 
 	set TotalSize 0
 
-	foreach source $sources {
-		setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
+	foreach FileName $sources {
+		if {![string match http:* $FileName]} {
+			set PathName [file join $baseDir $FileName]
+			setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
 
-		puts $fd ""
-		puts $fd "<-- H E A D -->"
+			puts $fd ""
+			puts $fd "<-- H E A D -->"
 
-		puts $fd "<FileName> $source"
-		puts -nonewline $fd "<FileSize> "
-		set offs($source,FileSize) [tell $fd]
-		puts $fd "           " ;# placeholder
-		puts $fd "<Compression> $compression"
-		puts $fd "<Modified> $modified"
-
-		foreach attr {Size Checksum} {
-			puts -nonewline $fd "<$attr> "
-			set offs($source,$attr) [tell $fd]
+			puts $fd "<FileName> $FileName"
+			puts -nonewline $fd "<FileSize> "
+			set offs($FileName,FileSize) [tell $fd]
 			puts $fd "           " ;# placeholder
+			puts $fd "<Compression> $compression"
+			puts $fd "<Modified> $modified"
+
+			foreach attr {Size Checksum} {
+				puts -nonewline $fd "<$attr> "
+				set offs($FileName,$attr) [tell $fd]
+				puts $fd "           " ;# placeholder
+			}
+
+			puts $fd "<-- D A T A -->"
+
+			lassign [$procWrite $PathName $fd $progress] FileSize Size Checksum
+			incr $TotalSize $FileSize
+
+			foreach attr {FileSize Size Checksum} {
+				seek $fd $offs($FileName,$attr) start
+				puts -nonewline $fd [set $attr]
+			}
+
+			seek $fd 0 end
 		}
-
-		puts $fd "<-- D A T A -->"
-
-		lassign [$procWrite $source $fd $progress] FileSize Size Checksum
-		incr $TotalSize $FileSize
-
-		foreach attr {FileSize Size Checksum} {
-			seek $fd $offs($source,$attr) start
-			puts -nonewline $fd [set $attr]
-		}
-
-		seek $fd 0 end
 	}
 
 	seek $fd $offs(TotalSize) start
@@ -375,63 +395,68 @@ proc unpack {arch procGetName progress {destDir ""}} {
 		}
 		setMessage $progress [format $mc::UnpackFile [$procGetName $FileName]]
 		lappend entries $attrs
-		set destFilename [file join $destDir [file tail $FileName]]
+		set destFilename [file join $destDir $FileName]
 		if {[string match http:* $FileName]} {
-		} elseif {[catch {set f [open $destFilename wb]} err]} {
-			logError [format $mc::CannotCreateFile $destFilename] ""
-			set rc 0
-			seek $fd $Size current 
-			tick $progress $Size
+			# TODO
 		} else {
-			fconfigure $f -buffering none
-			set ok 1
-			switch $Compression {
-				zlib {
-					lassign [::zlib::inflate $fd $f $Size [namespace current]::tick $progress] size crc
-				}
-				raw {
-					set remaining $Size
-					set crc 0
-					set buf ""
-					while {$remaining > 0} {
-						set data [read $fd [min $remaining 65536]]
-						set remaining [expr {$remaining - [string length $data]}]
-						tick $progress [string length $data]
-						if {$Compression eq "zlib"} {
-							set data [::zlib::inflate $data $buf]
-							set buf $data
-						}
-						set crc [::zlib::crc $data $crc]
-						puts -nonewline $f $data
+			set dir [file dirname $destFilename]
+			if {![file exists $dir]} { file mkdir $dir }
+			if {[catch {set f [open $destFilename wb]} err]} {
+				logError [format $mc::CannotCreateFile $destFilename] ""
+				set rc 0
+				seek $fd $Size current 
+				tick $progress $Size
+			} else {
+				fconfigure $f -buffering none
+				set ok 1
+				switch $Compression {
+					zlib {
+						lassign [::zlib::inflate $fd $f $Size [namespace current]::tick $progress] size crc
 					}
-				}
-				default {
-					logError \
-						[format $mc::FailedToExtractFile $FileName] \
-						[format $mc::UnknownCompression $Compression] \
-						;
-					set rc 0
-					set ok 0
-					seek $fd $Size current 
-					tick $progress $Size
-				}
-			}
-			close $f
-			if {$ok} {
-				if {[info exists Modified]} {
-					setModTime $destFilename $Modified
-				}
-				if {[info exists Checksum]} {
-					if {$crc != $Checksum} {
+					raw {
+						set remaining $Size
+						set crc 0
+						set buf ""
+						while {$remaining > 0} {
+							set data [read $fd [min $remaining 65536]]
+							set remaining [expr {$remaining - [string length $data]}]
+							tick $progress [string length $data]
+							if {$Compression eq "zlib"} {
+								set data [::zlib::inflate $data $buf]
+								set buf $data
+							}
+							set crc [::zlib::crc $data $crc]
+							puts -nonewline $f $data
+						}
+					}
+					default {
 						logError \
-							[format $mc::ChecksumError $FileName] \
-							[format $mc::ChecksumErrorDetail $destFilename] \
+							[format $mc::FailedToExtractFile $FileName] \
+							[format $mc::UnknownCompression $Compression] \
 							;
 						set rc 0
+						set ok 0
+						seek $fd $Size current 
+						tick $progress $Size
 					}
 				}
-			} else {
-				file delete $destFilename
+				close $f
+				if {$ok} {
+					if {[info exists Modified]} {
+						setModTime $destFilename $Modified
+					}
+					if {[info exists Checksum]} {
+						if {$crc != $Checksum} {
+							logError \
+								[format $mc::ChecksumError $FileName] \
+								[format $mc::ChecksumErrorDetail $destFilename] \
+								;
+							set rc 0
+						}
+					}
+				} else {
+					file delete $destFilename
+				}
 			}
 		}
 		gets $fd line
@@ -440,6 +465,21 @@ proc unpack {arch procGetName progress {destDir ""}} {
 
 	close $fd
 	return $rc
+}
+
+
+proc GlobDir {dir subdir} {
+	set result {}
+
+	foreach f [glob -directory $dir *] {
+		if {[file isdirectory $f]} {
+			lappend result {*}[GlobDir $f [file join $subdir [file tail $f]]]
+		} else {
+			lappend result [file join $subdir [file tail $f]]
+		}
+	}
+
+	return $result
 }
 
 } ;# namespace archive
