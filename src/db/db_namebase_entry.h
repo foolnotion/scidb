@@ -151,14 +151,15 @@ public:
 
 		union
 		{
+			// XXX this is not platform independent!
 			struct
 			{
-				uint32_t m_timeMode	:3;
-				uint32_t m_eventMode	:3;
 				uint32_t m_type		:4;
-				uint32_t m_dateDay	:5;
-				uint32_t m_dateMonth	:4;
+				uint32_t m_eventMode	:3;
+				uint32_t m_timeMode	:3;
 				uint32_t m_dateYear	:10;
+				uint32_t m_dateMonth	:4;
+				uint32_t m_dateDay	:5;
 				uint32_t m_unused_	:3;
 			};
 
@@ -235,7 +236,8 @@ class NamebasePlayer : public NamebaseEntry
 {
 public:
 
-	static uint32_t const KeyMask = 0x01ffffff;
+	static uint32_t const KeyMask		= 0x01ffffff;
+	static uint32_t const SortMask	= 0x001fffff;
 
 	union Value
 	{
@@ -254,17 +256,18 @@ public:
 
 		bool operator<(Value value) const;
 
+		// XXX this is not platform independent!
 		struct
 		{
+			uint32_t	m_species:3;
+			uint32_t m_sex:3;
 			uint32_t	m_federation:9;
 			uint32_t	m_title:5;
-			uint32_t m_sex:3;
-			uint32_t	m_species:3;
+			uint32_t m_fideIdFlag:1;
 			uint32_t	m_federationFlag:1;
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
-			uint32_t m_fideIdFlag:1;
 			uint32_t m_ignored_:4;
 			uint32_t m_unused_:3;
 		};
@@ -352,17 +355,18 @@ private:
 
 	union
 	{
+		// XXX this is not platform independent!
 		struct
 		{
+			uint32_t	m_species:3;
+			uint32_t m_sex:3;
 			uint32_t	m_federation:9;
 			uint32_t	m_title:5;
-			uint32_t m_sex:3;
-			uint32_t	m_species:3;
+			uint32_t m_fideIdFlag:1;
 			uint32_t	m_federationFlag:1;
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
-			uint32_t m_fideIdFlag:1;
 			uint32_t	m_ratingType:4;
 			uint32_t m_unused_:3;
 		};

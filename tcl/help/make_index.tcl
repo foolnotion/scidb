@@ -68,10 +68,11 @@ foreach file [glob *.txt] {
 		}
 		if {[string match INDEX* $line]} {
 			set item [getArg $line]
-			set alph [string toupper [string index $item 0]]
+			lassign [split $item #] wref fragment
+			set alph [string toupper [string index $wref 0]]
 			set path [file rootname $file]
 			append path .html
-			lappend index($alph) [list $item $path]
+			lappend index($alph) [list $wref $path $fragment]
 		}
 	}
 	close $src
@@ -85,7 +86,8 @@ foreach alph $alphabet {
 	puts "  \{ $alph"
 	puts "    \{"
 	foreach entry [lsort -index 0 -dictionary $index($alph)] {
-		puts "      {{[lindex $entry 0]} {[lindex $entry 1]}}"
+		lassign $entry wref path fragment
+		puts "      {{$wref} {$path} {$fragment}}"
 	}
 	puts "    \}"
 	puts "  \}"

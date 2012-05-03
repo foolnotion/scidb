@@ -16,10 +16,10 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
+<!-- ------------------------------------------------------------------------ -->
 <!-- NOTE: It is not required to translate this file into different languages -->
+<!-- ------------------------------------------------------------------------ -->
 
-INDEX Database archive
-INDEX Archive
 TITLE Database archive
 
 <p>
@@ -42,12 +42,13 @@ HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
 DataDelim   = '&lt;-- D A T A --&gt;' LF ;
 HeaderInfo  =
   '&lt;FileName&gt;' { Space } FileName LF
+  [ '&lt;URI&gt;' { Space } Number LF ]
   [ '&lt;FileSize&gt;' { Space } Number LF ]
   [ '&lt;Size&gt;' { Space } Number LF ]
   [ '&lt;Compression&gt;' { Space } Compression LF ]
   [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
   [ '&lt;Modified&gt;' { Space } Timestamp LF ]
-  [ '&lt;Encoding&gt;' { Space } Encoding ] ;
+  [ '&lt;Encoding&gt;' { Space } Encoding LF ] ;
 Space       = HT | " " ;
 Compression = 'raw' | 'zlib' | 'lzo' ;
 BinaryData  = { Byte } ;
@@ -57,44 +58,75 @@ Attribute   = AttrName { Space } AttrValue ;
 AttrName    = "&lt;" Identifier "&gt;" ;
 Identifier  = AsciiLetter { AsciiLetter } ;
 AttrValue   = AsciiGraphical { AsciiGraphical } ;
-Timestamp = Date " " Time ;
-Date      = Year "-" Month "-" Day ;
-Time      = Hour ":" Minute ":" Second ;
+Timestamp   = Date " " Time ;
+Date        = Year "-" Month "-" Day ;
+Time        = Hour ":" Minute ":" Second ;
 </verbatim>
 
 <p>
-<code>FileName</code> is any platform independent, and valid file name,
-optionally preceded by a path specification. A platform independent file name
-cannot contain the characters "&lt;" and "&gt;". It is the decision of the
+<b><code>&lt;FileName&gt;</code></b> is any platform independent, and valid
+file name, without a preceding path. A platform independent file name cannot
+contain the characters "&lt;" and "&gt;"
+</p>
+
+<p>
+<b><code>&lt;URI&gt;</code></b> is an unified resource identifier, for example
+<code>http://www.chess-and-more.com/any-database.scv</code>, or
+<code>file:///home/chris/Chess/MyBase.sci</code>. It is the decision of the
 decoder in which way the preceding path specification will be used.
-<code>&lt;Size&gt;</code> is the size of the file contained inside the archive,
-the size of the unpacked file is given with <code>&lt;FileSize&gt;</code>. The
-internal size information is simultaneously the offset to next file header.
-<code>&lt;TotalSize&gt;</code> contains the sum of all unpacked files. This
-attribute may not be available if the sum is unknown.
-The optional checksum <code>&lt;Checksum&gt;</code>
-concerns the file data inside the archive, and will be computed with the CRC32
-method; <code>&lt;Modified&gt;</code> contains the last modification timestamp
+</p>
+
+<p>
+<b><code>&lt;Size&gt;</code></b> is the size of the file contained inside
+the archive,
+</p>
+
+<p>
+<b><code>&lt;FileSize&gt;</code></b> is the size of the unpacked file.
+This internal size information is simultaneously the offset to next file
+header.
+</p>
+
+<p>
+<b><code>&lt;TotalSize&gt;</code></b> contains the sum of all unpacked files.
+This attribute may not be available if the sum is unknown.
+</p>
+
+<p>
+<b><code>&lt;Checksum&gt;</code></b> is a check-sum which concerns the file
+data inside the archive, and will be computed with the CRC32 method.
+</p>
+
+<p>
+<b><code>&lt;Modified&gt;</code></b> contains the last modification timestamp
 (GMT), the decoder may use this information to restore this timestamp in the
-extracted file.  The attributes <code>&lt;FileName&gt;</code>,
+extracted file.
+</p>
+
+<p>
+<b><code>&lt;Encoding&gt;</code></b> is specifying the character set.
+</p>
+
+<p>
+The attributes <code>&lt;FileName&gt;</code>, <code>URI</code>,
 <code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
 <code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code>,
 and <code>&lt;Modified&gt;</code> may be enumerated in random order.
-The default for the attribute <code>&lt;Compression&gt;</code> is 'raw'
-(which means no decompression is required).
-<code>&lt;Encoding&gt;</code> is specifying the character set.
+The default for the attribute <code>&lt;Compression&gt;</code> is
+'<code>raw</code>' (which means no decompression is required).
 </p>
 
 <p>
-<code>FileName</code> may be specified as an <acronym>URL</acronym> like 
-<code>http://scidb.sf.net/bases/tiny.pgn</code>.
-In this case <code>Size</code> is not available, and <code>FileSize</code>
-may be unknown as well (not available). The data section is empty ((empty line)
-if an <code>URL</code> is given.
+if <code>URI</code> is an external sink (for example <code>http://*</code>),
+<code>Size</code> may not be  available, and <code>FileSize</code>
+may be unknown as well (not available). In this case usually the data section
+is empty (empty line). But file data may be available, which should be used
+if the external sink is unavailable. Then the attribute <code>Size</code>
+has to be specified anyway.
 </p>
 
 <p>
-<code>Magic</code> is chosen in a way that the following points will be ensured:
+<b><code>Magic</code></b> is chosen in a way that the following points will be ensured:
 </p>
 
 <ul>
@@ -108,8 +140,8 @@ with any suitable text editor (which allows binary data).
 </annotation>
 
 <p>
-In "<abbr>.scv</abbr>" format the attribute <code>UserInfo</code> has the following
-definition:
+In "<abbr>.scv</abbr>" format the attribute <b><code>UserInfo</code></b> has the
+following definition:
 </p>
 
 <verbatim><!-- don't translate -->
@@ -125,19 +157,21 @@ Format      = 'sci' | 'si3' | 'si4' |
 </verbatim>
 
 <p>
-<code>&lt;Count&gt;</code> is the number of games in the database. If this
+<b><code>&lt;Count&gt;</code></b> is the number of games in the database. If this
 information is unknown (for example in case of PGN files), then this
-attribute is not available.  <code>&lt;Format&gt;</code> describes the format
-of the extracted database.
+attribute is not available.
 </p>
 
 <p>
-In general archives do contain only one database
-(<code>&lt;Type&gt;</code> = 'single').  But it is also provided that
-several database may be packed in one archive.  In this case
-<code>&lt;Type&gt;</code> should have the value 'multi', and
+<b><code>&lt;Format&gt;</code></b> describes the format of the extracted database.
+</p>
+
+<p>
+In general archives do contain only one database (<b><code>&lt;Type&gt;</code></b>
+= 'single').  But it is also provided that several database may be packed in one
+archive. In this case <code>&lt;Type&gt;</code> should have the value 'multi', and
 <code>&lt;Format&gt;</code> will contain a comma separated list of all
-comprised database formats. Moreover <code>&lt;Count&gt;</code>
+comprised database formats.  Moreover <code>&lt;Count&gt;</code>
 is the sum of all games in all databases.
 </p>
 
@@ -189,11 +223,13 @@ iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; http://scidb.sf.net/bases/tiny-1.pgn
+&lt;FileName&gt; tiny-1.pgn
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-1.pgn
 &lt;-- D A T A --&gt;
 
 &lt;-- H E A D --&gt;
-&lt;FileName&gt; http://scidb.sf.net/bases/tiny-2.pgn
+&lt;FileName&gt; tiny-2.pgn
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.pgn
 &lt;-- D A T A --&gt;
 </verbatim>
 

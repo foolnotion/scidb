@@ -88,8 +88,8 @@ set Bishop			"Bishop"
 set Knight			"Knight"
 set Pawn				"Pawn"
 
-#set NotAvailableSign "\u2298"
-set NotAvailableSign "\u2370"
+set NotAvailableSign "\u2298"
+#set NotAvailableSign "\u2370" ;# not available on some systems
 
 array set EcoTrans		{}
 set EcoMatch				{}

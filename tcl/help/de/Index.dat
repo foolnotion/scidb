@@ -1,53 +1,53 @@
 set Index {
   { A
     {
-      {{Ablage-Datenbank} {Clipbase.html}}
-      {{Archiv} {Database-Archive.html}}
+      {{Ablage-Datenbank} {Clipbase.html} {}}
+      {{Archiv} {Database-Formats.html} {Database-Archive}}
     }
   }
   { D
     {
-      {{Dateiauswahldialog} {File-Selection-Dialog.html}}
-      {{Dateiformate} {Database-Formats.html}}
-      {{Datenbankarchiv} {Database-Archive.html}}
-      {{Datenbankformate} {Database-Formats.html}}
-      {{Datenbankumschalter} {Database-Switcher.html}}
+      {{Dateiauswahldialog} {File-Selection-Dialog.html} {}}
+      {{Dateiformate} {Database-Formats.html} {}}
+      {{Datenbankarchiv} {Database-Formats.html} {Database-Archive}}
+      {{Datenbankformate} {Database-Formats.html} {}}
+      {{Datenbankumschalter} {Database-Switcher.html} {}}
     }
   }
   { F
     {
-      {{Funktionsleiste} {Toolbar-Usage.html}}
+      {{Funktionsleiste} {Toolbar-Usage.html} {}}
     }
   }
   { H
     {
-      {{Homepage} {Contact-Information.html}}
+      {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
   { K
     {
-      {{Kommandozeilenoptionen} {Command-Line-Options.html}}
-      {{Kontaktinformationen} {Contact-Information.html}}
+      {{Kommandozeilenoptionen} {Command-Line-Options.html} {}}
+      {{Kontaktinformationen} {Contact-Information.html} {}}
     }
   }
   { M
     {
-      {{Markierungen} {Game-Flags.html}}
+      {{Markierungen} {Game-Flags.html} {}}
     }
   }
   { N
     {
-      {{NAG-Kommentarwerte} {NAG-Comments.html}}
+      {{NAG-Kommentarwerte} {NAG-Comments.html} {}}
     }
   }
   { P
     {
-      {{Partiemarkierungen} {Game-Flags.html}}
+      {{Partiemarkierungen} {Game-Flags.html} {}}
     }
   }
   { W
     {
-      {{Webseite} {Contact-Information.html}}
+      {{Webseite} {Contact-Information.html} {Homepage}}
     }
   }
 }

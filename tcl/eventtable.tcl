@@ -494,8 +494,6 @@ proc TableFill {path args} {
 					eventMode {
 						if {[string length $item] > 0} {
 							lappend text [list @ [set ::eventmodebox::icon::12x12::$item]]
-						} elseif {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [list @ $::icon::12x12::none]
 						}
@@ -504,8 +502,6 @@ proc TableFill {path args} {
 					timeMode {
 						if {[string length $item] > 0} {
 							lappend text [list @ $::timemodebox::icon::12x12::Mode($item)]
-						} elseif {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [list @ $::icon::12x12::none]
 						}

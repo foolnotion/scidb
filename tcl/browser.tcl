@@ -58,6 +58,7 @@ namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
 set Priv(count) 100
+set Priv(register) 1
 
 array set Options {
 	font						TkTextFont
@@ -84,7 +85,7 @@ proc open {parent base info view index {fen {}}} {
 	variable Options
 	variable Priv
 
-	if {$Priv(count) == 100} {
+	if {$Priv(register)} {
 		::board::registerSize $Options(board:size)
 	}
 
@@ -242,9 +243,10 @@ proc open {parent base info view index {fen {}}} {
 	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
 	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
+	bind $dlg <F11>						[namespace code [list ViewFullscreen $position $board]]
 	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
 	bind $dlg <Return>					{+ break }
-	bind $dlg <Configure>				[namespace code [list Configure %W $position]]
+	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
 	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
 	bind $dlg <Control-r>				[namespace code [list RotateBoard $board]]
 	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
@@ -265,6 +267,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
 
 	wm withdraw $dlg
+#	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm resizable $dlg true false
 	::util::place $dlg center $parent
@@ -282,7 +285,7 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(afterid) {}
 	set Vars(afterid2) {}
 	set Vars(header) $rt.header
-	set Vars(size) $Options(board:size)
+	set Vars(board:size) $Options(board:size)
 	set Vars(length) -1
 	set Vars(base) $base
 	set Vars(name) $name
@@ -291,12 +294,17 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(number) $number
 	set Vars(after) {}
 	set Vars(current) {}
-	set Vars(minsize) 0
+	set Vars(size:width) 0
+	set Vars(size:width:plus) 0
+	set Vars(size:height) 0
+	set Vars(pos:x) 0
+	set Vars(pos:y) 0
 	set Vars(dlg) $dlg
 	set Vars(closed) 0
 	set Vars(fen) $fen
 	set Vars(locked) no
 	set Vars(info) $info
+	set Vars(fullscreen) 0
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
@@ -868,6 +876,8 @@ proc Destroy {dlg w position base} {
 		::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 	}
 
+	if {$Vars(fullscreen)} { set Priv(register) 1 }
+
 	::scidb::game::release $position
 	set key $Vars(base):$Vars(number):$Vars(view)
 	if {[incr Priv($key:count) -1] == 0} {
@@ -892,10 +902,21 @@ proc ConfigureHeader2 {position} {
 }
 
 
-proc Configure {w position} {
+proc FirstConfigure {w position} {
 	if {[winfo toplevel $w] eq $w && [winfo width $w] > 1} {
 		after idle [namespace code [list SetMinSize $w $position]]
-		bind $w <Configure> {}
+		bind $w <Configure> [namespace code [list SecondConfigure $w $position %w]]
+	}
+}
+
+
+proc SecondConfigure {w position width} {
+	variable ${position}::Vars
+
+	if {!$Vars(fullscreen)} {
+		set Vars(size:width:plus) [expr {max(0, [winfo width $w] - $Vars(size:width))}]
+		set Vars(pos:x) [max 0 [winfo rootx $w]]
+		set Vars(pos:y) [max 0 [winfo rooty $w]]
 	}
 }
 
@@ -904,7 +925,8 @@ proc SetMinSize {w position} {
 	variable ${position}::Vars
 
 	wm minsize $w [winfo width $w] [winfo height $w]
-	set Vars(minsize) [winfo width $w]
+	set Vars(size:width) [winfo width $w]
+	set Vars(size:height) [winfo height $w]
 }
 
 
@@ -969,36 +991,57 @@ proc PopupMenu {parent board position {what ""}} {
 		-state $state \
 		;
 	$menu add separator
+	if {!$Vars(fullscreen)} {
+		$menu add command \
+			-label " $mc::IncreaseBoardSize" \
+			-image $::icon::16x16::plus \
+			-compound left \
+			-command [namespace code [list ChangeBoardSize $position $board +5]] \
+			-accelerator "+" \
+			;
+		$menu add command \
+			-label " $mc::DecreaseBoardSize" \
+			-image $::icon::16x16::minus \
+			-compound left \
+			-command [namespace code [list ChangeBoardSize $position $board -5]] \
+			-accelerator "\u2212" \
+			;
+		$menu add command \
+			-label " $mc::MaximizeBoardSize" \
+			-image $::icon::16x16::maximize \
+			-compound left \
+			-command [namespace code [list ChangeBoardSize $position $board max]] \
+			-accelerator "${::mc::Ctrl}-+" \
+			;
+		$menu add command \
+			-label " $mc::MinimizeBoardSize" \
+			-image $::icon::16x16::minimize \
+			-compound left \
+			-command [namespace code [list ChangeBoardSize $position $board min]] \
+			-accelerator "${::mc::Ctrl}-\u2212" \
+			;
+	}
+	if {$Vars(fullscreen)} { set var LeaveFullscreen } else { set var Fullscreen }
 	$menu add command \
-		-label " $mc::IncreaseBoardSize" \
-		-image $::icon::16x16::plus \
+		-label " [::mc::stripAmpersand [set ::menu::mc::$var]]" \
+		-image $::icon::16x16::fullscreen \
 		-compound left \
-		-command [namespace code [list ChangeBoardSize $position $board +5]] \
-		-accelerator "+" \
-		;
-	$menu add command \
-		-label " $mc::DecreaseBoardSize" \
-		-image $::icon::16x16::minus \
-		-compound left \
-		-command [namespace code [list ChangeBoardSize $position $board -5]] \
-		-accelerator "\u2212" \
-		;
-	$menu add command \
-		-label " $mc::MaximizeBoardSize" \
-		-image $::icon::16x16::maximize \
-		-compound left \
-		-command [namespace code [list ChangeBoardSize $position $board max]] \
-		-accelerator "${::mc::Ctrl}-+" \
-		;
-	$menu add command \
-		-label " $mc::MinimizeBoardSize" \
-		-image $::icon::16x16::minimize \
-		-compound left \
-		-command [namespace code [list ChangeBoardSize $position $board min]] \
-		-accelerator "${::mc::Ctrl}-\u2212" \
+		-command [namespace code [list ViewFullscreen $position $board]] \
+		-accelerator "F11" \
 		;
 
 	tk_popup $menu {*}[winfo pointerxy $dlg]
+}
+
+
+proc ViewFullscreen {position board} {
+	variable ${position}::Vars
+	variable Options
+
+	set Vars(fullscreen) [expr {!$Vars(fullscreen)}]
+	wm attributes [winfo toplevel $Vars(pgn)] -fullscreen $Vars(fullscreen)
+	if {$Vars(fullscreen)} { set mode fullscreen } else { set mode restore }
+	after idle [namespace code [list ChangeBoardSize $position $board $mode]]
 }
 
 
@@ -1035,6 +1078,18 @@ proc ChangeBoardSize {position board delta} {
 			if {$delta >= 0} { return }
 		}
 
+		fullscreen {
+			set boardSize [expr {[winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size)}]
+			set newSize [expr {$boardSize/8}]
+			unset delta
+		}
+
+		restore {
+			wm geometry $dlg +$Vars(pos:x)+$Vars(pos:y)
+			set newSize $Options(board:size)
+			set delta 0
+		}
+
 		default {
 			set newSize [expr {$Options(board:size) + $delta}]
 			if {$delta < 0 && $newSize < 35} { return }
@@ -1042,26 +1097,34 @@ proc ChangeBoardSize {position board delta} {
 		}
 	}
 
-	set w [expr {$Vars(minsize) + 8*$delta}]
-	set h [expr {[winfo height $dlg] + 8*$delta}]
-	wm minsize $dlg $w $h
-	set Vars(minsize) $w
+	if {[info exists delta]} {
+		set Vars(size:width) [expr {$Vars(size:width) + 8*$delta}]
+		set Vars(size:height) [expr {$Vars(size:height) + 8*$delta}]
+		wm minsize $dlg $Vars(size:width) $Vars(size:height)
+		wm geometry $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}]x${Vars(size:height)}
+	}
 
-	::board::unregisterSize $Options(board:size)
-	set Options(board:size) $newSize
-	::board::registerSize $newSize
-	::board::stuff::resize $board $newSize 1
-	grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]
+	if {$newSize != $Vars(board:size)} {
+		::board::unregisterSize $Vars(board:size)
+		::board::registerSize $newSize
+		::board::stuff::resize $board $newSize 1
+		grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]
+		set Vars(board:size) $newSize
+	}
 
-	update idletasks
+	if {!$Vars(fullscreen)} {
+		set Options(board:size) $newSize
 
-	set x0 [winfo rootx $dlg]
-	set y0 [winfo rooty $dlg]
-	set x1 [expr {[winfo screenwidth  $dlg] - [winfo width  $dlg] - 25}]
-	set y1 [expr {[winfo screenheight $dlg] - [winfo height $dlg] - 25}]
+		update idletasks
 
-	if {$x1 >= 0 && $y1 >= 0 && ($x1 < $x0 || $y1 < $y0)} {
-		wm geometry $dlg +[min $x0 $x1]+[min $y0 $y1]
+		set x0 [winfo rootx $dlg]
+		set y0 [winfo rooty $dlg]
+		set x1 [expr {[winfo screenwidth  $dlg] - [winfo width  $dlg] - 25}]
+		set y1 [expr {[winfo screenheight $dlg] - [winfo height $dlg] - 25}]
+
+		if {$x1 >= 0 && $y1 >= 0 && ($x1 < $x0 || $y1 < $y0)} {
+			wm geometry $dlg +[min $x0 $x1]+[min $y0 $y1]
+		}
 	}
 }
 

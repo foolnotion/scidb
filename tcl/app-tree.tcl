@@ -326,7 +326,7 @@ proc build {parent width height} {
 	::table::bind $tb <ButtonRelease-2>	[namespace code [list HideInfo $tb]]
 	::table::bind $tb <ButtonPress-1>	[namespace code [list Select $tb %x %y]]
 	::table::bind $tb <Button1-Motion>	[namespace code [list Motion1 $tb %x %y]]
-	::table::bind $tb <ButtonRelease-1>	[namespace code [list Activate $tb]]
+	::table::bind $tb <ButtonRelease-1>	+[namespace code [list Activate $tb]]
 	::table::bind $tb <ButtonRelease-3>	+[list set [namespace current]::Vars(button) 0]
 	::table::bind $tb <Leave>				[namespace code [list Leave %W]]
 	::table::bind $tb <Motion>				[namespace code [list Motion %W %x %y]]

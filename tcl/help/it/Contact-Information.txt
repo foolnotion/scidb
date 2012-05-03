@@ -17,12 +17,12 @@
 *********************************************************************** -->
 
 INDEX Contatti
-INDEX Homepage
-INDEX Sito Internet
+INDEX Homepage#Homepage
+INDEX Sito Internet#Homepage
 
 TITLE Contatti
 
-<h2>Homepage</h2>
+<h2 id="Homepage">Homepage</h2>
 
 La pagina web di Scidb si trova all'indirizzo
 <a href="http://scidb.sourceforge.net/">http://scidb.sourceforge.net</a>.

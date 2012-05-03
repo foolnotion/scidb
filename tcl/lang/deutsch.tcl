@@ -1140,7 +1140,7 @@
 
 ::dialog::save::mc::MatchesExtraTags			"Entsprechungen / Zusätzliche Tags"
 ::dialog::save::mc::PressToSelect				"Drücke Strg+0 bis Strg+9 zur Auswahl (oder linker Mausklick)"
-::dialog::save::mc::PressForWhole				"Drücke Alt-0 to Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
+::dialog::save::mc::PressForWhole				"Drücke Alt-0 bis Alt-9 für ganzen Datensatz (oder mittlerer Mausklick)"
 ::dialog::save::mc::EditTags						"Tags bearbeiten"
 ::dialog::save::mc::RemoveThisTag				"Tag '%s' entfernen?"
 ::dialog::save::mc::TagAlreadyExists			"Der Tag-Name '%s' existiert bereits."
@@ -1688,7 +1688,7 @@
 ::fsbox::mc::CannotCopy						"Eine Kopie kann nicht erfolgen weil die Datei '%s' bereits exisitiert."
 ::fsbox::mc::CannotDuplicate				"Eine Kopie von '%s' kann nicht erfolgen aufgrund unzureichender Zugriffsrechte."
 ::fsbox::mc::ReallyDuplicateFile			"Diese Datei wirklich duplizieren?"
-::fsbox::mc::ReallyDuplicateDetail		"Diese Datei hat ungefähr %s. Das Duplizeieren wird möglicherweise einige Zeit in Anspruch nehmen."
+::fsbox::mc::ReallyDuplicateDetail		"Diese Datei hat ungefähr %s. Das Duplizieren wird möglicherweise einige Zeit in Anspruch nehmen."
 ::fsbox::mc::ErrorRenaming(folder)		"Fehler beim Umbennenen des Ordners '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::InvalidFileExt				"Die Operation shlug fehl: '%s' hat eine unerlaubte Dateiendung."

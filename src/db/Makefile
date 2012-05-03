@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -Isci -Isci/v91 -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys
-CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DISK)
+CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DISK) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
 	db_annotation.cpp \

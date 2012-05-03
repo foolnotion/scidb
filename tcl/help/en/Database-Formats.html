@@ -46,6 +46,12 @@ recommended because of speed and feature completeness considerations.
 </p>
 
 <p>
+Scidb databases are always encoded with character set UTF-8. Hence
+these databases can be used without any complications under all systems
+and locations.
+</p>
+
+<p>
 A database in Scidb's format is divided into several files:
 </p>
 
@@ -71,6 +77,21 @@ A database in Scidb's format is divided into several files:
 <p>
 Scid's database format is fully supported because of it's wide adoption.
 But with this format you cannot use the full capability of Scidb.
+</p>
+
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+Scid databases will be opened in read-only mode, the user may switch to
+writeable mode after opening. The last mode will be prerserved while
+re-opening the database.
+</div>
+
+<p>
+In some cases the user has to choose the appropriate encoding while opening
+the database, to ensure a correct display of names and other text. Newer
+databases may be UTF-8 encoded, older database may be written with Latin-1
+(ISO-8859-1) character set, the Scid format does not provide information
+about this. But in most cases the automatic detection of the character set
+should be successful.
 </p>
 
 <p>
@@ -111,6 +132,12 @@ ChessBase databases cannot be used as reference database.
 </div>
 
 <p>
+Usually this database is encoded with character set CP1252, but in some cases
+a manual selection of the the character set while opening the database may
+be required, to ensure a correct display of names and other text.
+</p>
+
+<p>
 A database in ChessBase format is divided into many separate files, the important ones are:
 </p>
 
@@ -126,6 +153,7 @@ A database in ChessBase format is divided into many separate files, the importan
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML document folder</td></tr>
   </table>
 </div>
 
@@ -135,6 +163,11 @@ A database in ChessBase format is divided into many separate files, the importan
 The <abbr>PGN</abbr> format (Portable Game Notation) is a common standard for transfering
 chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. With larger
 <abbr>PGN</abbr> game collections it is recommended to convert it into the Scidb format.
+</p>
+
+<p>
+According to the PGN standard a PGN file is encoded with character set 
+Latin-1 (ISO-8859-1).
 </p>
 
 <p>
@@ -155,7 +188,9 @@ limited to a specific database format.
 
 <p>
 A detailed description of this format is on page
-<a href="Database-Archive.html">Specification of database archive</a>.
+<!-- NOTE for translators: only German and English specification will be available -->
+<!-- This means: do not translate next line -->
+<a href="../en/Database-Archive.html">Specification of database archive</a>.
 </p>
 
 </body>

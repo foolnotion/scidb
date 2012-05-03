@@ -106,7 +106,22 @@ vorhanden ist.
 Dies ermöglicht eine Direktanwahl des Heimverzeichnisses.
 </p>
 
+<!--
+<h4>Verweisverwaltung</h4>
+
+<p>
+Mit dem kontextsensitiven Menü, oder alternativ mit der Funktionsleiste, sind folgende
+Operationen zur Verweisverwaltung möglich:
+</p>
+
+<h4><img src="../images/fsbox-add.png"> %::fsbox::mc::AddBookmark%</h4>
+
+<h4><img src="../images/fsbox-minus.png"> %::fsbox::mc::RemoveBookmark%</h4>
+
+<h4><img src="../images/fsbox-rename.png"> %::fsbox::mc::RenameBookmark%</h4>
+
 <h3 id="FileList">Dateianzeige</h3>
+-->
 
 <p>
 Diese Dateiliste ist auf Scidb-Dateien spezialisiert. D.h. das alle Operation immer auf

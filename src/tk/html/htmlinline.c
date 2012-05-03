@@ -571,7 +571,42 @@ inlineContextAddInlineCanvas(p, eType, pNode)
     /* pBox->eReplaced = eReplaced; */
     pBox->eType = eType;
     pBox->pNode = pNode;
+
     return &pBox->canvas;
+}
+
+static void
+fixLineBreak(p, zText, nText)
+    InlineContext *p;
+    char CONST *zText;
+    int nText;
+{
+    if (p->nInline >= 2 && nText > 0) {
+        InlineBox *pPrevBox = &p->aInline[p->nInline - 2];
+
+        if (pPrevBox->eType == INLINE_TEXT) {
+            int nLast;
+            char CONST *zLast = HtmlDrawTextLast(&pPrevBox->canvas, &nLast);
+
+            if (nLast > 0) {
+                Tcl_UniChar ch;
+                Tcl_UtfToUniChar(zText, &ch);
+
+                if (strchr("{([", zLast[nLast - 1])) {
+                    if (Tcl_UniCharIsAlnum(ch)) {
+                        InlineBox *pBox = &p->aInline[p->nInline - 1];
+                        pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
+                    }
+                } else if (strchr("})]", zText[0]) || Tcl_UniCharIsPunct(ch)) {
+                    Tcl_UtfToUniChar(Tcl_UtfPrev(zLast + nLast, zLast), &ch);
+                    if (Tcl_UniCharIsAlnum(ch)) {
+                        InlineBox *pBox = &p->aInline[p->nInline - 1];
+                        pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -1289,7 +1324,11 @@ HtmlInlineContextGetLineBox(pLayout, p, flags, pWidth, pCanvas, pVSpace, pAscent
             DRAW_CANVAS(&tmpcanvas, &borders, 0, 0, 0);
             memset(&borders, 0, sizeof(HtmlCanvas));
             inlineContextDrawBorder(pLayout, &borders, pBorder,
+#ifdef DONT_FIX_BOX_DRAWING
                  x1, x2, iVerticalOffset, rb,
+#else
+                 x1, x2 - pBox->nRightPixels - pBorder->box.iRight, iVerticalOffset, rb,
+#endif
                  aReplacedX, nReplacedX
             );
             DRAW_CANVAS(&borders, &tmpcanvas, 0, 0, 0);
@@ -1594,6 +1633,10 @@ HtmlInlineContextAddText(pContext, pNode)
                 pBox->eWhitespace = eWhitespace;
                 pBox->nKerning = 0;
                 pBox->iJoin = iJoin;
+
+                if (HtmlTextIterIsFirst(&sIter)) {
+                    fixLineBreak(pContext, zData, nData);
+                }
 
                 if (pPrevTextBox) {
                     int w = HtmlTextWidth(pContext->pTree, pFont, zPrevData, nPrevData + nData);

@@ -1,6 +1,22 @@
 [April 2012] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #311)
+------------------------------------------------------------------------------
+* Game browser: Full-screen mode implemented.
+
+* HTML widget: attempt to fix box drawing (grep DONT_FIX_BOX_DRAWING).
+
+* HTML widget: first attempt to fix line breaking (function fixLineBreak()).
+
+* sci_encoder.cpp: writing tags fixed (missing nul byte in some cases).
+
+* sci_decoder.cpp: preliminary fix for missing nul bytes (grep SCI_TAGS_FIX).
+
+* Severe bug in namebase fixed. This fix requires a new database version
+number.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #310)
 ------------------------------------------------------------------------------
 * Rating files updated: ELO, DWZ, ECF, ICCF.

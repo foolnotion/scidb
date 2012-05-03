@@ -61,7 +61,8 @@ TITLE Benvenuti a Scidb-Help
 
 <dir>
   <li><a href="Game-Flags.html">Codici Partita</a></li>
-  <!-- NEW<li><a href="Database-Archive.html">Specification of database archive</a></li>-->
+  <!-- NOTE for translators: this page is only available in English (do not remove this note) -->
+  <!-- NEW <li><a href="../en/Database-Archive.html">Specification of database archive (English)</a></li> -->
   <li><a href="Command-Line-Options.html">Opzioni nella Linea di Comando</a></li>
   <li><a href="NAG-Comments.html">Valori delle annotazioni in NAG</a></li>
   <li><a href="Contact-Information.html">Contatti</a></li>

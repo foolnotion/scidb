@@ -61,7 +61,8 @@ TITLE Welcome to Scidb-Help
 
 <dir>
   <li><a href="Game-Flags.html">Game markers</a></li>
-  <!-- NEW<li><a href="Database-Archive.html">Specification of database archive</a></li>-->
+  <!-- NOTE for translators: this page is only available in English (do not remove this note) -->
+  <li><a href="../en/Database-Archive.html">Specification of database archive (English)</a>
   <li><a href="Command-Line-Options.html">Command line options</a></li>
   <li><a href="NAG-Comments.html">NAG annotation values</a></li>
   <li><a href="Contact-Information.html">Contact information</a></li>

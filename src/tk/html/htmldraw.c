@@ -1380,6 +1380,36 @@ HtmlDrawTextLength(pCanvas)
     return pCanvas->pLast->x.t.nText;
 }
 
+char CONST*
+HtmlDrawTextFirst(pCanvas, nText)
+    HtmlCanvas *pCanvas;
+    int *nText;
+{
+    assert(pCanvas);
+    assert(nText);
+    if (pCanvas->pFirst && pCanvas->pFirst->type == CANVAS_TEXT) {
+        *nText = pCanvas->pFirst->x.t.nText;
+        return pCanvas->pFirst->x.t.zText;
+    }
+    *nText = 0;
+    return NULL;
+}
+
+char CONST*
+HtmlDrawTextLast(pCanvas, nText)
+    HtmlCanvas *pCanvas;
+    int *nText;
+{
+    assert(pCanvas);
+    assert(nText);
+    if (pCanvas->pLast && pCanvas->pLast->type == CANVAS_TEXT) {
+        *nText = pCanvas->pLast->x.t.nText;
+        return pCanvas->pLast->x.t.zText;
+    }
+    *nText = 0;
+    return NULL;
+}
+
 void
 HtmlDrawImage(
         pCanvas, pImage,

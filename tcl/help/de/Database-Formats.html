@@ -80,11 +80,19 @@ Verbreitungsgrades vollständig unterstützt. Es kann mit diesem Format jedoch n
 der volle Umfang von Scidb genutzt werden.
 </p>
 
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+Scid-Datenbanken werden im Lesemodus geöffnet, können dann aber schreibbar gesetzt
+werden. Beim erneuten Öffnen bleibt der zuletzt eingestellte Lese/Schreibmodus
+erhalten.
+</div>
+
 <p>
 Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
 werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
 sind mit großer Wahrscheinlichkeit UTF-8 enkodiert, ältere evt. im Latin-1
-(ISO-8859-1) Zeichensatz. Das Scid-Format gibt keine Auskunft darüber.
+(ISO-8859-1) Zeichensatz, das Scid-Format gibt keine Auskunft darüber. In den
+meisten Fällen sollte aber die programmeigene, automatische Ermittlung des
+Zeichensatzes erfolgreich sein.
 </p>
 
 <p>
@@ -138,16 +146,17 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh =&nbsp;</kbd></td><td>Partiedaten</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg =&nbsp;</kbd></td><td>Partiezüge und Varianten</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cba =&nbsp;</kbd></td><td>Anmerkungen und Kommentare</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs =&nbsp;</kbd></td><td>Quellenindex</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp =&nbsp;</kbd></td><td>Spielerindex</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc =&nbsp;</kbd></td><td>Kommentatorindex</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt =&nbsp;</kbd></td><td>Turnierindex</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe =&nbsp;</kbd></td><td>Teamindex</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj =&nbsp;</kbd></td><td>Teaminformation</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini =&nbsp;</kbd></td><td>Datenbankinitialiserungsdatei</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh  =&nbsp;</kbd></td><td>Partiedaten</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg  =&nbsp;</kbd></td><td>Partiezüge und Varianten</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cba  =&nbsp;</kbd></td><td>Anmerkungen und Kommentare</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs  =&nbsp;</kbd></td><td>Quellenindex</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp  =&nbsp;</kbd></td><td>Spielerindex</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc  =&nbsp;</kbd></td><td>Kommentatorindex</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt  =&nbsp;</kbd></td><td>Turnierindex</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe  =&nbsp;</kbd></td><td>Teamindex</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj  =&nbsp;</kbd></td><td>Teaminformation</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini  =&nbsp;</kbd></td><td>Datenbankinitialiserungsdatei</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML-Dokumentenverzeichnis</td></tr>
   </table>
 </div>
 

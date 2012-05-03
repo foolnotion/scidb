@@ -17,12 +17,12 @@
 *********************************************************************** -->
 
 INDEX Contact information
-INDEX Homepage
-INDEX Website
+INDEX Homepage#Homepage
+INDEX Website#Homepage
 
 TITLE Contact information
 
-<h2>Homepage</h2>
+<h2 id="Homepage">Homepage</h2>
 
 The Scidb web page is located at
 <a href="http://scidb.sourceforge.net/">http://scidb.sourceforge.net</a>.

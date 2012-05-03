@@ -405,7 +405,9 @@ proc fsbox {w type args} {
 	set tl [winfo toplevel $top]
 	bind $tl <Escape>		[list $Vars(button:cancel) invoke]
 	bind $tl <Return>		[list $Vars(button:ok) invoke]
-	bind $tl <Alt-Key>	[list tk::AltKeyInDialog $tl %A]
+	bind $tl <Alt-Key>	[namespace code [list AltKeyInDialog $top $tl %A]]
+	bind $tl <Alt-Left>	[namespace code [list Undo $top $w]]
+	bind $tl <Alt-Right>	[namespace code [list Redo $top $w]]
 	if {[llength $Vars(helpcommand)]} {
 		bind $tl <F1>		[list $Vars(helpcommand) $w]
 	}
@@ -1013,6 +1015,32 @@ proc ScrollPage {w units} {
 			}
 		}
 	}
+}
+
+
+proc HasFocus {w focus} {
+	if {[llength $focus] > 0} {
+		while {$focus ne "."} {
+			if {$w eq $focus} { return 1 }
+			set focus [winfo parent $focus]
+		}
+	}
+	return 0
+}
+
+
+proc AltKeyInDialog {tl path key} {
+	if {[HasFocus $tl [focus]]} { tk::AltKeyInDialog $path $key }
+}
+
+
+proc Undo {tl w} {
+	if {[HasFocus $tl [focus]]} { filelist::Undo $w }
+}
+
+
+proc Redo {tl w} {
+	if {[HasFocus $tl [focus]]} { filelist::Redo $w }
 }
 
 
@@ -1769,7 +1797,7 @@ proc AddBookmark {w} {
 	foreach entry $Bookmarks(user) {
 		lappend list [list [incr index] [string tolower [lindex $entry 1]]]
 	}
-	set list [lsort -dictionary -index 1 1 $list]
+	set list [lsort -dictionary -index 1 $list]
 	set bookmarks {}
 	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
 	set Bookmarks(user) $bookmarks
@@ -3373,6 +3401,7 @@ proc CallCustomCommand {w} {
 
 	{*}$Vars(customcommand) [winfo toplevel $w] $file
 	RefreshFileList $w
+	[namespace parent]::bookmarks::LayoutBookmarks $w
 }
 
 

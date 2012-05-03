@@ -168,12 +168,12 @@ inline Site const* NamebaseSite::site() const					{ return m_site; }
 
 inline
 NamebaseEvent::Value::Value()
-	:m_timeMode(time::Unknown)
+	:m_type(event::Unknown)
 	,m_eventMode(event::Undetermined)
-	,m_type(event::Unknown)
-	,m_dateDay(0)
-	,m_dateMonth(0)
+	,m_timeMode(time::Unknown)
 	,m_dateYear(Date::Zero10Bits)
+	,m_dateMonth(0)
+	,m_dateDay(0)
 	,m_unused_(0)
 	,m_site(m_emptySite)
 {
@@ -196,12 +196,12 @@ NamebaseEvent::Value::Value(	event::Type type,
 										time::Mode timeMode,
 										event::Mode eventMode,
 										NamebaseSite* site)
-	:m_timeMode(timeMode)
+	:m_type(type)
 	,m_eventMode(eventMode)
-	,m_type(type)
-	,m_dateDay(dateDay)
-	,m_dateMonth(dateMonth)
+	,m_timeMode(timeMode)
 	,m_dateYear(Date::encodeYearTo10Bits(dateYear))
+	,m_dateMonth(dateMonth)
+	,m_dateDay(dateDay)
 	,m_unused_(0)
 	,m_site(site)
 {
@@ -215,12 +215,12 @@ NamebaseEvent::Value::Value(	event::Type type,
 										time::Mode timeMode,
 										event::Mode eventMode,
 										NamebaseSite* site)
-	:m_timeMode(timeMode)
+	:m_type(type)
 	,m_eventMode(eventMode)
-	,m_type(type)
-	,m_dateDay(date.day())
-	,m_dateMonth(date.month())
+	,m_timeMode(timeMode)
 	,m_dateYear(Date::encodeYearTo10Bits(date.year()))
+	,m_dateMonth(date.month())
+	,m_dateDay(date.day())
 	,m_unused_(0)
 	,m_site(site)
 {
@@ -290,7 +290,7 @@ inline NamebaseSite* NamebaseEvent::site() const		{ return m_value.m_site; }
 inline NamebaseSite* NamebaseEvent::emptySite()			{ return m_emptySite; }
 
 inline void NamebaseEvent::setType_(event::Type type)				{ m_value.m_type = type; }
-inline void NamebaseEvent::setTimeMode_(time::Mode timeMode)		{ m_value.m_timeMode = timeMode; }
+inline void NamebaseEvent::setTimeMode_(time::Mode timeMode)	{ m_value.m_timeMode = timeMode; }
 inline void NamebaseEvent::setEventMode_(event::Mode mode)		{ m_value.m_eventMode = mode; }
 inline void NamebaseEvent::setCountry_(country::Code country)	{ m_value.m_site->setCountry(country); }
 inline void NamebaseEvent::setSite_(NamebaseSite* site)			{ m_value.m_site = site; }
@@ -379,10 +379,15 @@ inline NamebasePlayer::Value::Value(uint32_t key) : m_key(key & KeyMask) {}
 
 inline
 NamebasePlayer::Value::Value()
-	:m_federation(country::Unknown)
-	,m_title(title::None)
+	:m_species(species::Unspecified)
 	,m_sex(sex::Unspecified)
-	,m_species(species::Unspecified)
+	,m_federation(country::Unknown)
+	,m_title(title::None)
+	,m_fideIdFlag(0)
+	,m_federationFlag(0)
+	,m_titleFlag(0)
+	,m_sexFlag(0)
+	,m_speciesFlag(0)
 	,m_ignored_(0)
 	,m_unused_(0)
 {
@@ -406,15 +411,15 @@ NamebasePlayer::Value::Value(	country::Code federation,
 										bool typeFlag,
 										bool sexFlag,
 										bool fideIdFlag)
-	:m_federation(federation)
-	,m_title(title)
+	:m_species(type)
 	,m_sex(sex)
-	,m_species(type)
+	,m_federation(federation)
+	,m_title(title)
+	,m_fideIdFlag(fideIdFlag)
 	,m_federationFlag(federationFlag)
 	,m_titleFlag(titleFlag)
 	,m_sexFlag(sexFlag)
 	,m_speciesFlag(typeFlag)
-	,m_fideIdFlag(fideIdFlag)
 	,m_ignored_(0)
 	,m_unused_(0)
 {
@@ -483,7 +488,7 @@ NamebasePlayer::operator<(NamebasePlayer const& player) const
 	if (cmp < 0) return true;
 	if (cmp > 0) return false;
 
-	return (m_value & KeyMask) < (player.m_value & KeyMask);
+	return (m_value & SortMask) < (player.m_value & SortMask);
 }
 
 
@@ -491,7 +496,8 @@ inline
 bool
 NamebasePlayer::operator==(Key const& key) const
 {
-	return NamebaseEntry::compare(name(), key.name) == 0 && (m_value & KeyMask) == key.value.m_key;
+	return	NamebaseEntry::compare(name(), key.name) == 0
+			&& (m_value & SortMask) == (key.value.m_key & SortMask);
 }
 
 
@@ -504,7 +510,7 @@ NamebasePlayer::operator<(Key const& key) const
 	if (cmp < 0) return true;
 	if (cmp > 0) return false;
 
-	return (m_value & KeyMask) < key.value.m_key;
+	return (m_value & SortMask) < (key.value.m_key & SortMask);
 }
 
 

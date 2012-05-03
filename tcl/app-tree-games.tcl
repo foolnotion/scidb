@@ -46,7 +46,7 @@ proc build {parent width height} {
 
 	::gametable::bind $table <ButtonPress-1>		+[list set [namespace current]::Vars(button) 1]
 	::gametable::bind $table <Button1-Motion>		 [namespace code [list Motion1 $table %x %y]]
-	::gametable::bind $table <ButtonRelease-1>	 [namespace code [list Release1 $table]]
+	::gametable::bind $table <ButtonRelease-1>	+[namespace code [list Release1 $table]]
 	::gametable::bind $table <ButtonPress-2>		+[list set [namespace current]::Vars(button) 2]
 	::gametable::bind $table <ButtonRelease-2>	+[namespace code [list ReleaseButton $table]]
 	::gametable::bind $table <ButtonPress-3>		+[list set [namespace current]::Vars(button) 3]

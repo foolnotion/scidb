@@ -427,6 +427,8 @@ Namebase::insertPlayer(	mstl::string const& name,
 	bool sexFlag			= true;
 	bool fideIdFlag		= fideID != 0;
 
+	species::ID myType = type;
+
 	db::Player const* p;
 
 	if (fideIdFlag)
@@ -443,7 +445,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 		if (p == 0)
 		{
-			if (type == species::Program)
+			if (myType == species::Program)
 			{
 				mstl::string shortName;
 				sys::utf8::Codec::makeShortName(name, shortName);
@@ -455,7 +457,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 				sys::utf8::Codec::makeShortName(name, shortName);
 
-				if ((p = Player::findEngine(shortName)) && type == species::Unspecified && !p->isUnique())
+				if ((p = Player::findEngine(shortName)) && myType == species::Unspecified && !p->isUnique())
 				{
 					char const *p = name.c_str() + shortName.size();
 
@@ -466,49 +468,37 @@ Namebase::insertPlayer(	mstl::string const& name,
 						++p;
 
 					if (*p == '\0')
-						type = species::Program;
+						myType = species::Program;
 				}
 			}
-			else if (type == species::Unspecified)
+			else if (myType == species::Unspecified)
 			{
-				type = species::Human;
+				myType = species::Human;
 				typeFlag = false;
 			}
 		}
-		else if (type == species::Unspecified && name.find(',') != mstl::string::npos)
+		else if (myType == species::Unspecified && name.find(',') != mstl::string::npos)
 		{
-			type = species::Human;
+			myType = species::Human;
 			typeFlag = false;
 		}
 	}
 
 	if (p)
 	{
-		if (type == species::Unspecified ? p->isUnique() : type == p->type())
+		if (myType == species::Unspecified ? p->isUnique() : myType == p->type())
 		{
 			if (federation == country::Unknown)
-			{
-				federation = p->federation();
 				federationFlag = false;
-			}
 
 			if (title == title::None)
-			{
-				title = title::best(p->titles());
 				titleFlag = false;
-			}
 
-			if (type == species::Unspecified)
-			{
-				type = p->type();
+			if (myType == species::Unspecified)
 				typeFlag = false;
-			}
 
 			if (sex == sex::Unspecified)
-			{
-				sex = p->sex();
 				sexFlag = false;
-			}
 		}
 		else
 		{
@@ -552,7 +542,19 @@ Namebase::insertPlayer(	mstl::string const& name,
 	entry->m_sexFlag = sexFlag;
 	entry->m_fideIdFlag = fideIdFlag;
 
+#ifdef SCI_NAMEBASE_FIX
+	{
+		unsigned i = size() - 1;
+
+		while (i > 0 && *playerAt(i) < *playerAt(i - 1))
+		{
+			mstl::swap(m_list[i], m_list[i - 1]);
+			--i;
+		}
+	}
+#else
 	M_ASSERT(size() == 1 || *playerAt(size() - 2) < *playerAt(size() - 1));
+#endif
 
 	m_isConsistent = false;
 	m_isModified = true;

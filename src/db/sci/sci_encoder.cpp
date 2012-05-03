@@ -548,7 +548,8 @@ Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 void
 Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags)
 {
-	m_data.resetp();
+	unsigned pos = m_strm.tellp();
+
 	allowedTags -= ::tagLookup.m_lookup;
 
 	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
@@ -576,6 +577,8 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 
 	if (allowExtraTags)
 	{
+		m_data.resetp();
+
 		for (unsigned i = 0; i < tags.countExtra(); ++i)
 		{
 			mstl::string const& name  = tags.extra(i).name;
@@ -585,15 +588,12 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 			m_data.put(name, name.size() + 1);
 			m_data.put(value, value.size() + 1);
 		}
+
+		m_strm.put(m_data.base(), m_data.tellp());
 	}
 
-	unsigned size = m_data.tellp();
-
-	if (size > 0)
-	{
-		m_strm.put(m_data.base(), size);
+	if (pos < m_strm.tellp())
 		m_strm.put(0);
-	}
 }
 
 

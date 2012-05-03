@@ -1,56 +1,56 @@
 set Index {
   { A
     {
-      {{Archive} {Database-Archive.html}}
+      {{Archive} {Database-Formats.html} {Database-Archive}}
     }
   }
   { C
     {
-      {{Clipbase} {Clipbase.html}}
-      {{Command line options} {Command-Line-Options.html}}
-      {{Contact information} {Contact-Information.html}}
+      {{Clipbase} {Clipbase.html} {}}
+      {{Command line options} {Command-Line-Options.html} {}}
+      {{Contact information} {Contact-Information.html} {}}
     }
   }
   { D
     {
-      {{Database archive} {Database-Archive.html}}
-      {{Database formats} {Database-Formats.html}}
-      {{Database switcher} {Database-Switcher.html}}
+      {{Database archive} {Database-Formats.html} {Database-Archive}}
+      {{Database formats} {Database-Formats.html} {}}
+      {{Database switcher} {Database-Switcher.html} {}}
     }
   }
   { F
     {
-      {{File formats} {Database-Formats.html}}
+      {{File formats} {Database-Formats.html} {}}
     }
   }
   { G
     {
-      {{Game markers} {Game-Flags.html}}
+      {{Game markers} {Game-Flags.html} {}}
     }
   }
   { H
     {
-      {{Homepage} {Contact-Information.html}}
+      {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
   { M
     {
-      {{Markers} {Game-Flags.html}}
+      {{Markers} {Game-Flags.html} {}}
     }
   }
   { N
     {
-      {{NAG annotation values} {NAG-Comments.html}}
+      {{NAG annotation values} {NAG-Comments.html} {}}
     }
   }
   { T
     {
-      {{Toolbar} {Toolbar-Usage.html}}
+      {{Toolbar} {Toolbar-Usage.html} {}}
     }
   }
   { W
     {
-      {{Website} {Contact-Information.html}}
+      {{Website} {Contact-Information.html} {Homepage}}
     }
   }
 }

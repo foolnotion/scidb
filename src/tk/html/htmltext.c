@@ -1867,7 +1867,7 @@ tokenLength(zToken, zEnd)
         Tcl_UniChar prevChar = iChar;
         zCsr = zNext;
         iChar = utf8Read(zCsr, zEnd, &zNext);
-        if (ISHYPHEN(prevChar) && Tcl_UniCharIsAlpha(iChar))
+        if (ISHYPHEN(prevChar) && Tcl_UniCharIsAlnum(iChar)) // Tcl_UniCharIsAlpha ?
             return zCsr - zToken;
     }
 
@@ -2295,6 +2295,13 @@ HtmlTextIterIsNotLast(pTextIter)
     HtmlTextIter *pTextIter;
 {
     return pTextIter->pTextNode->aToken[pTextIter->iToken + 1].eType != HTML_TEXT_TOKEN_END;
+}
+
+int
+HtmlTextIterIsFirst(pTextIter)
+    HtmlTextIter *pTextIter;
+{
+    return pTextIter->iToken == 0;
 }
 
 void

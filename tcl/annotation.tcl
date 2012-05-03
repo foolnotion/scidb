@@ -935,6 +935,7 @@ proc SetValues {cb} {
 
 proc TracePosition {frame parent} {
 	variable Position
+	variable Vars
 
 	set fx [winfo rootx $frame]
 	set fy [winfo rooty $frame]
@@ -942,6 +943,9 @@ proc TracePosition {frame parent} {
 	set ty [winfo rooty $parent]
 
 	set Position [list [expr {$fx - $tx}] [expr {$fy - $ty}]]
+
+	array unset Vars x
+	array unset Vars y
 }
 
 

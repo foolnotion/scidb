@@ -44,6 +44,12 @@ Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente rac
 
 <!-- NEW
 <p>
+Scidb databases are always encoded with character set UTF-8. Hence
+these databases can be used without any complications under all systems
+and locations.
+</p>
+
+<p>
 A database in Scidb's format is divided into several files:
 </p>
 
@@ -70,6 +76,21 @@ A database in Scidb's format is divided into several files:
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
 <!-- NEW
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+Scid databases will be opened in read-only mode, the user may switch to
+writeable mode after opening. The last mode will be prerserved while
+re-opening the database.
+</div>
+
+<p>
+In some cases the user has to choose the appropriate encoding while opening
+the database, to ensure a correct display of names and other text. Newer
+databases may be UTF-8 encoded, older database may be written with Latin-1
+(ISO-8859-1) character set, the Scid format does not provide information
+about this. But in most cases the automatic detection of the character set
+should be successful.
+</p>
+
 <p>
 This format resembles structurally Scidb's format:
 </p>
@@ -101,22 +122,33 @@ This format resembles structurally Scidb's format:
 L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura è supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita dell'operazione di decodifica.
 
 <!-- NEW
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+ChessBase databases cannot be used as reference database.
+</div>
+
+<p>
+Usually this database is encoded with character set CP1252, but in some cases
+a manual selection of the the character set while opening the database may
+be required, to ensure a correct display of names and other text.
+</p>
+
 <p>
 A database in ChessBase format is divided into many separate files, the important ones are:
 </p>
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
-    <tr><td><kbd>.cba =&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
-    <tr><td><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
-    <tr><td><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
-    <tr><td><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
-    <tr><td><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
-    <tr><td><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
-    <tr><td><kbd>.cbj =&nbsp;</kbd></td><td>Second header file (team information, final material)</td></tr>
-    <tr><td><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cba =&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML document folder</td></tr>
   </table>
 </div>
 -->
@@ -126,9 +158,10 @@ A database in ChessBase format is divided into many separate files, the importan
 Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 
 <!-- NEW
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
-ChessBase databases cannot be used as reference database.
-</div>
+<p>
+According to the PGN standard a PGN file is encoded with character set 
+Latin-1 (ISO-8859-1).
+</p>
 
 <p>
 A complete specification of this format will be found at

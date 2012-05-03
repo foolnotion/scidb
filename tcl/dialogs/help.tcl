@@ -92,10 +92,11 @@ proc open {parent {file {}} args} {
 	set Priv(check:lang) [CheckLanguage $parent $file]
 	if {$Priv(check:lang) eq "none"} { return }
 
-	if {[string length $file]} {
-		if {[file extension $file] ne ".html"} {
-			append file .html
-		}
+	if {[string length $file] == 0} {
+		set Priv(current:file) ""
+		set Priv(current:lang) [helpLanguage]
+	} elseif {[file extension $file] ne ".html"} {
+		append file .html
 	}
 
 	set dlg .help
@@ -103,7 +104,8 @@ proc open {parent {file {}} args} {
 		if {[string length $file] == 0} { ShowIndex }
 		raise $dlg
 		focus $dlg
-		set Priv(currentfile) [FullPath $file]
+		set Priv(current:file) [FullPath $file]
+		set Priv(current:lang) [helpLanguage]
 		ReloadCurrentPage
 		return
 	}
@@ -138,14 +140,14 @@ proc open {parent {file {}} args} {
 
 	set buttons [ttk::frame $control.buttons]
 	ttk::button $buttons.back \
-		-image $::icon::16x16::controlBackward \
+		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlBackward] \
 		-command [namespace code GoBack] \
 		-state disabled \
 		;
 	::tooltip::tooltip $buttons.back [namespace current]::mc::GoBack
 	set Priv(button:back) $buttons.back
 	ttk::button $buttons.forward \
-		-image $::icon::16x16::controlForward \
+		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlForward] \
 		-command [namespace code GoForward] \
 		-state disabled \
 		;
@@ -229,7 +231,8 @@ proc open {parent {file {}} args} {
 	wm deiconify $dlg
 
 	if {[string length $file]} {
-		set Priv(currentfile) [FullPath $file]
+		set Priv(current:file) [FullPath $file]
+		set Priv(current:lang) [helpLanguage]
 	}
 	ReloadCurrentPage
 
@@ -238,10 +241,18 @@ proc open {parent {file {}} args} {
 
 
 proc FullPath {file} {
+	variable Priv
+
 	if {[string length $file] == 0} { return "" }
 	if {[string length [file extension $file]] == 0} { append file ".html" }
 	if {[string match ${::scidb::dir::help}* $file]} { return $file }
-	return [file normalize [file join $::scidb::dir::help [helpLanguage] $file]]
+
+	if {[file extension $file] eq ".html"} {
+		set lang [helpLanguage]
+	} else {
+		set lang $Priv(current:lang)
+	}
+	return [file normalize [file join $::scidb::dir::help $lang $file]]
 }
 
 
@@ -645,7 +656,7 @@ proc Update {t} {
 		set count 0
 
 		foreach entry $entries {
-			lassign $entry topic file
+			lassign $entry topic file fragment
 
 			set item [$t item create]
 			$t item style set $item item styText
@@ -653,7 +664,7 @@ proc Update {t} {
 			$t item lastchild $lastchild $item
 
 			set path [[namespace parent]::FullPath $file]
-			set Priv(index:path:$item) $path
+			set Priv(index:path:$item) [list $path $fragment]
 
 			if {$count == 0} {
 				set Priv(key:$alph) $item
@@ -670,12 +681,12 @@ proc LoadPage {t item} {
 	variable [namespace parent]::Priv
 
 	if {[string length $item] == 0} { return }
-	set path $Priv(index:path:$item)
+	lassign $Priv(index:path:$item) path fragment
 
 	if {[string match http* $path] || [string match ftp* $path]} {
 		::web::open $Priv(html) $path
 	} else {
-		[namespace parent]::Load $path
+		[namespace parent]::Load $path {} {} $fragment
 	}
 }
 
@@ -837,7 +848,7 @@ proc Search {t} {
 	::log::open [set [namespace parent]::mc::Help]
 
 	if {$Priv(currentOnly)} {
-		set files [list $Priv(currentfile)]
+		set files [list $Priv(current:file)]
 	} else {
 		set files [glob -nocomplain -directory $directory *.html]
 	}
@@ -892,8 +903,8 @@ proc Search {t} {
 		$t activate 1
 		for {set i 0} {$i < [llength $results]} {incr i} {
 			set path [lindex $results $i 1]
-			if {$Priv(currentfile) eq $path} {
-				set Priv(currentfile) ""
+			if {$Priv(current:file) eq $path} {
+				set Priv(current:file) ""
 				$t selection add [expr {$i + 1}]
 				break
 			}
@@ -931,7 +942,7 @@ proc LoadPage {t item} {
 	variable [namespace parent]::Priv
 
 	if {[llength $item] > 0} {
-		if {$Priv(search:changed)} { set Priv(currentfile) "" }
+		if {$Priv(search:changed)} { set Priv(current:file) "" }
 		set Priv(search:changed) 0
 		[namespace parent]::Load [lindex $Priv(match:$item) 1] {} $Priv(match:$item)
 	}
@@ -1066,7 +1077,7 @@ proc PopupMenu {dlg tab} {
 				if {[llength $topic]} {
 					lassign $topic title file
 					set path [FullPath $file]
-					if {$Priv(currentfile) ne $path} {
+					if {$Priv(current:file) ne $path} {
 						$m add command \
 							-command [namespace code [list Load $path]] \
 							-label " [format $mc::GotoPage $title]" \
@@ -1110,13 +1121,15 @@ proc PopupMenu {dlg tab} {
 
 
 proc FindTopic {file contents} {
+	set file [file rootname $file]
 	foreach group $contents {
 		foreach entry $group {
 			if {[llength $entry] != 1} {
 				return [FindTopic $file $entry]
 			}
 			set topic [lindex $entry 0]
-			if {[file tail [lindex $topic 1]] eq $file} { return $topic }
+			set f [file rootname [file tail [lindex $topic 1]]]
+			if {$f eq $file} { return $topic }
 		}
 	}
 
@@ -1423,8 +1436,8 @@ proc ReloadCurrentPage {} {
 	variable Links
 
 	set file ""
-	if {[info exists Priv(currentfile)] && [string length $Priv(currentfile)] > 0} {
-		set file $Priv(currentfile)
+	if {[info exists Priv(current:file)] && [string length $Priv(current:file)] > 0} {
+		set file $Priv(current:file)
 	}
 
 	if {[string length $file] == 0 || ![file readable [FullPath [file tail $file]]]} {
@@ -1434,7 +1447,7 @@ proc ReloadCurrentPage {} {
 
 	set Priv(history) {}
 	set Priv(history:index) -2
-	set Priv(currentfile) ""
+	set Priv(current:file) ""
 
 	set Links($file) [Load [FullPath [file tail $file]]]
 }
@@ -1460,7 +1473,7 @@ proc Goto {position} {
 proc Load {file {wantedFile {}} {match {}} {position {}}} {
 	variable Priv
 
-	if {[string length $file] == 0 || $Priv(currentfile) eq $file} {
+	if {[string length $file] == 0 || $Priv(current:file) eq $file} {
 		if {[llength $match]} {
 			SeeNode [$Priv(html) root]
 		} else {
@@ -1492,7 +1505,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 	variable Nodes
 	variable Priv
 
-	if {$Priv(currentfile) eq $file} { return }
+	if {$Priv(current:file) eq $file} { return }
 
 	set index [expr {$Priv(history:index) + 1}]
 	if {$index >= 0 && $index < [llength $Priv(history)]} {
@@ -1506,6 +1519,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 	set rc 1
 
 	if {[file readable $file]} {
+		set Priv(current:lang) [lindex [file split $file] end-1]
 		catch {
 			set fd [::open $file r]
 			chan configure $fd -encoding utf-8
@@ -1515,6 +1529,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 	}
 
 	if {$content eq "<>"} {
+		set Priv(current:lang) [helpLanguage]
 		set parts [file split $file]
 		set pref [file join {*}[lrange $parts 0 end-2]]
 		set suff [lindex $parts end]
@@ -1607,7 +1622,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 	$Priv(html) yview moveto $moveto
 
 	if {[string length $wantedFile] == 0} { set wantedFile $file }
-	set Priv(currentfile) $wantedFile
+	set Priv(current:file) $wantedFile
 
 	if {[llength $match]} { SeeNode [$Priv(html) root] }
 
