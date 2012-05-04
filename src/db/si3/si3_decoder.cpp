@@ -96,6 +96,7 @@ Decoder::Decoder(ByteStream& strm, sys::utf8::Codec& codec)
 	,m_codec(&codec)
 	,m_currentNode(0)
 	,m_hasVariantTag(false)
+	,m_isLatin1(true)
 {
 }
 
@@ -1188,6 +1189,8 @@ Decoder::Report(char const* charset)
 {
 	if (m_codec->encoding() != charset)
 		m_codec = new sys::utf8::Codec(charset);
+
+	m_isLatin1 = false;
 }
 
 
@@ -1196,7 +1199,7 @@ Decoder::determineCharsetFinish()
 {
 	DataEnd();
 
-	if (m_codec == m_givenCodec && m_codec->encoding() != sys::utf8::Codec::latin1())
+	if (m_isLatin1 && m_codec->encoding() != sys::utf8::Codec::latin1())
 		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
 }
 
