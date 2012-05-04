@@ -92,10 +92,18 @@ throwCorruptData()
 
 Decoder::Decoder(ByteStream& strm, sys::utf8::Codec& codec)
 	:m_strm(strm)
-	,m_codec(codec)
+	,m_givenCodec(&codec)
+	,m_codec(&codec)
 	,m_currentNode(0)
 	,m_hasVariantTag(false)
 {
+}
+
+
+Decoder::~Decoder()
+{
+	if (m_codec != m_givenCodec)
+		delete m_codec;
 }
 
 
@@ -364,7 +372,7 @@ Decoder::decodeVariation(unsigned level)
 								if (	!m_currentNode->annotation().isEmpty()
 									|| m_strm.peek() == token::Start_Marker)
 								{
-#ifndef DONT_ALLOW_EMPTY_VARS
+#ifndef ALLOW_EMPTY_VARS
 									// As a workaround we insert a null move.
 
 									MoveNode* node = new MoveNode(m_position.board().makeNullMove());
@@ -427,6 +435,47 @@ Decoder::skipTags()
 
 
 void
+Decoder::determineCharsetTags()
+{
+	Byte b;
+
+	while ((b = m_strm.get()))
+	{
+		if (b <= ::Max_Tag_Length)
+		{
+			char*	tag = const_cast<char*>(reinterpret_cast<char const*>(m_strm.data()));
+
+			m_strm.skip(b);
+			Byte c = m_strm.get();
+
+			// NOTE: we ignore invalid tags (Scid bug)
+			if (PgnReader::validateTagName(tag, b))
+				HandleData(reinterpret_cast<char const*>(m_strm.data()), c);
+
+			m_strm.skip(c);
+		}
+		else
+		{
+			switch (b)
+			{
+				case 245:	// event date
+				case 255:	// special binary 3-byte encoding of EventDate (obsolete since 3.x)
+					break;
+
+				default:		// a common tag name, not explicitly stored
+					{
+						b = m_strm.get();
+						HandleData(reinterpret_cast<char const*>(m_strm.data()), b);
+						m_strm.skip(b);
+					}
+					break;
+			}
+		}
+	}
+}
+
+
+void
 Decoder::decodeTags(TagSet& tags)
 {
 	Byte significance[2] = { 2, 2 };
@@ -472,9 +521,9 @@ Decoder::decodeTags(TagSet& tags)
 						{
 							mstl::string in;
 							in.hook(reinterpret_cast<char*>(m_strm.data()), c);
-							m_codec.convertToUtf8(in, out);
+							m_codec->convertToUtf8(in, out);
 							if (!sys::utf8::validate(out))
-								m_codec.forceValidUtf8(out);
+								m_codec->forceValidUtf8(out);
 							tags.setExtra(tag, b, out, c);
 						}
 						break;
@@ -493,9 +542,9 @@ Decoder::decodeTags(TagSet& tags)
 						{
 							mstl::string in;
 							in.hook(reinterpret_cast<char*>(m_strm.data()), c);
-							m_codec.convertToUtf8(in, out);
+							m_codec->convertToUtf8(in, out);
 							if (!sys::utf8::validate(out))
-								m_codec.forceValidUtf8(out);
+								m_codec->forceValidUtf8(out);
 
 							tags.set(id, out);
 
@@ -541,14 +590,14 @@ Decoder::decodeTags(TagSet& tags)
 					}
 					break;
 
-				default:	// a common tag name, not explicitly stored
+				default:		// a common tag name, not explicitly stored
 					{
 						tag::ID tag = ::CommonTags[b - ::Max_Tag_Length - 1];
 
 						if (__builtin_expect(tag == tag::ExtraTag, 0))
 							throwCorruptData();
 
-						unsigned b = m_strm.get();
+						Byte b = m_strm.get();
 
 						switch (unsigned(tag))
 						{
@@ -564,9 +613,9 @@ Decoder::decodeTags(TagSet& tags)
 
 									c = '\0';
 									in.hook(const_cast<char*>(reinterpret_cast<char const*>(m_strm.data())), b);
-									m_codec.convertToUtf8(in, out);
+									m_codec->convertToUtf8(in, out);
 									if (!sys::utf8::validate(out))
-										m_codec.forceValidUtf8(out);
+										m_codec->forceValidUtf8(out);
 									tags.set(tag, out);
 									c = d;
 									tag = tag::ExtraTag;
@@ -590,6 +639,41 @@ Decoder::decodeTags(TagSet& tags)
 
 
 void
+Decoder::determineCharsetComments(MoveNode* node)
+{
+	if (node->hasComment(move::Post))
+	{
+		mstl::string content;
+		m_strm.get(content);
+		HandleData(content, content.size());
+	}
+
+	for (node = node->next(); node; node = node->next())
+	{
+		if (node->hasSupplement())
+		{
+			if (node->hasComment(move::Ante))
+			{
+				mstl::string content;
+				m_strm.get(content);
+				HandleData(content, content.size());
+			}
+
+			if (node->hasComment(move::Post))
+			{
+				mstl::string content;
+				m_strm.get(content);
+				HandleData(content, content.size());
+			}
+
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+				determineCharsetComments(node->variation(i));
+		}
+	}
+}
+
+
+void
 Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 {
 	mstl::string buffer;
@@ -604,12 +688,12 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 		m_strm.get(content);
 		marks.extractFromComment(content);
 		node->swapMarks(marks);
-		m_codec.toUtf8(content, buffer);
+		m_codec->toUtf8(content, buffer);
 
 		if (!content.empty())
 		{
 			if (!sys::utf8::validate(buffer))
-				m_codec.forceValidUtf8(buffer);
+				m_codec->forceValidUtf8(buffer);
 
 			if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
 				node->addAnnotation(nag::Diagram);
@@ -638,10 +722,10 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 				if (!content.empty())
 				{
 					buffer.clear();
-					m_codec.toUtf8(content, buffer);
+					m_codec->toUtf8(content, buffer);
 
 					if (!sys::utf8::validate(buffer))
-						m_codec.forceValidUtf8(buffer);
+						m_codec->forceValidUtf8(buffer);
 
 					if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
 						node->addAnnotation(nag::Diagram);
@@ -696,10 +780,10 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 
 				if (!content.empty())
 				{
-					m_codec.toUtf8(content, buffer);
+					m_codec->toUtf8(content, buffer);
 
 					if (!sys::utf8::validate(buffer))
-						m_codec.forceValidUtf8(buffer);
+						m_codec->forceValidUtf8(buffer);
 
 					if (Comment::convertCommentToXml(buffer, comment, encoding::Utf8))
 						node->addAnnotation(nag::Diagram);
@@ -752,6 +836,14 @@ Decoder::checkVariant(TagSet& tags)
 save::State
 Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 {
+	// determine character set
+	Reset();
+	{
+		unsigned pos = m_strm.tellg();
+		determineCharsetTags();
+		m_strm.seekg(pos);
+	}
+
 	decodeTags(tags);
 
 	if (m_strm.get() & flags::Non_Standard_Start)
@@ -778,9 +870,21 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	m_currentNode = &start;
 
 	decodeVariation();
+
+	// determine character set
+	{
+		unsigned pos = m_strm.tellg();
+		determineCharsetComments(&start);
+		m_strm.seekg(pos);
+	}
+	determineCharsetFinish();
+
 	decodeComments(&start, &consumer);
 	decodeVariation(consumer, &start);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
+
+	if (m_codec->failed())
+		m_givenCodec->setFailed();
 
 #ifdef DEBUG_SI4
 	if (	m_position.startBoard().isStandardPosition()
@@ -801,6 +905,14 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 unsigned
 Decoder::doDecoding(GameData& data)
 {
+	// determine character set
+	Reset();
+	{
+		unsigned pos = m_strm.tellg();
+		determineCharsetTags();
+		m_strm.seekg(pos);
+	}
+
 	decodeTags(data.m_tags);
 
 	if (m_strm.get() & flags::Non_Standard_Start)
@@ -824,7 +936,19 @@ Decoder::doDecoding(GameData& data)
 	M_ASSERT(m_currentNode);
 
 	decodeVariation();
+
+	// determine character set
+	{
+		unsigned pos = m_strm.tellg();
+		determineCharsetComments(data.m_startNode);
+		m_strm.seekg(pos);
+	}
+	determineCharsetFinish();
+
 	decodeComments(data.m_startNode);
+
+	if (m_codec->failed())
+		m_givenCodec->setFailed();
 
 	return m_position.board().plyNumber() - plyNumber;
 }
@@ -1056,6 +1180,31 @@ Decoder::decodeType(unsigned type)
 	};
 
 	return type::Openings;									// Theory ...
+}
+
+
+void
+Decoder::Report(char const* charset)
+{
+	if (m_codec->encoding() != charset)
+		m_codec = new sys::utf8::Codec(charset);
+}
+
+
+void
+Decoder::determineCharsetFinish()
+{
+	DataEnd();
+
+	if (m_codec == m_givenCodec && m_codec->encoding() != sys::utf8::Codec::latin1())
+		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
+}
+
+
+mstl::string const&
+Decoder::encoding() const
+{
+	return m_codec->encoding();
 }
 
 // vi:set ts=3 sw=3:

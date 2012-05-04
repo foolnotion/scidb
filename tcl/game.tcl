@@ -29,35 +29,37 @@
 namespace eval game {
 namespace eval mc {
 
-set CloseDatabase				"Close Database"
-set CloseAllGames				"Close all open games of database '%s'?"
-set SomeGamesAreModified	"Some games of database '%s' are modified. Close anyway?"
-set AllSlotsOccupied			"All game slots are occupied."
-set ReleaseOneGame			"Please release one of the games before loading a new one."
-set GameAlreadyOpen			"Game is already open but modified. Discard modified game?"
-set GameAlreadyOpenDetail	"'%s' will open a new game."
-set GameHasChanged			"Game %s has changed."
-set GameHasChangedDetail	"Probably this is not the expected game due to database changes."
-set CorruptedHeader			"Corrupted header in recovery file '%s'."
-set RenamedFile				"Renamed this file to '%s.bak'."
-set CannotOpen					"Cannot open recovery file '%s'."
-set OldGameRestored			"One game restored."
-set OldGamesRestored			"%s games restored."
-set GameRestored				"One game from last session restored."
-set GamesRestored				"%s games from last session restored."
-set ErrorInRecoveryFile		"Error in recovery file '%s'"
-set Recovery					"Recovery"
-set UnsavedGames				"You have unsaved game changes."
-set DiscardChanges			"'%s' will throw away all changes."
-set ShouldRestoreGame		"Should this game be restored in next session?"
-set ShouldRestoreGames		"Should these games be restored in next session?"
-set NewGame						"New Game"
-set NewGames					"New Games"
-set Created						"created"
-set ClearHistory				"Clear history"
-set RemoveSelectedGame		"Remove selected game from history"
-set GameDataCorrupted		"Game data is corrupted."
-set GameDecodingFailed		"Decoding of this game was not possible."
+set CloseDatabase					"Close Database"
+set CloseAllGames					"Close all open games of database '%s'?"
+set SomeGamesAreModified		"Some games of database '%s' are modified. Close anyway?"
+set AllSlotsOccupied				"All game slots are occupied."
+set ReleaseOneGame				"Please release one of the games before loading a new one."
+set GameAlreadyOpen				"Game is already open but modified. Discard modified game?"
+set GameAlreadyOpenDetail		"'%s' will open a new game."
+set GameHasChanged				"Game %s has changed."
+set GameHasChangedDetail		"Probably this is not the expected game due to database changes."
+set CorruptedHeader				"Corrupted header in recovery file '%s'."
+set RenamedFile					"Renamed this file to '%s.bak'."
+set CannotOpen						"Cannot open recovery file '%s'."
+set OldGameRestored				"One game restored."
+set OldGamesRestored				"%s games restored."
+set GameRestored					"One game from last session restored."
+set GamesRestored					"%s games from last session restored."
+set ErrorInRecoveryFile			"Error in recovery file '%s'"
+set Recovery						"Recovery"
+set UnsavedGames					"You have unsaved game changes."
+set DiscardChanges				"'%s' will throw away all changes."
+set ShouldRestoreGame			"Should this game be restored in next session?"
+set ShouldRestoreGames			"Should these games be restored in next session?"
+set NewGame							"New Game"
+set NewGames						"New Games"
+set Created							"created"
+set ClearHistory					"Clear history"
+set RemoveSelectedGame			"Remove selected game from history"
+set GameDataCorrupted			"Game data is corrupted."
+set GameDecodingFailed			"Decoding of this game was not possible."
+set GameDecodingChanged			"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set."
+set GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited."
 
 } ;# namespace mc
 
@@ -119,7 +121,7 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 	if {$pos >= 0} {
 		set loadPos [expr {$MaxPosition + 1}]
 		::scidb::game::release $loadPos
-		if {![load $parent $loadPos $base $index]} { return -1 }
+		if {![load $parent $loadPos $base $index yes]} { return -1 }
 		set crc [::scidb::game::query $loadPos checksum]
 
 		if {$crc ne [lindex $List $pos 4]} {
@@ -175,7 +177,7 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 
 		if {$loadPos == -1} {
 			::scidb::game::release $pos ;# release scratch game
-			if {![load $parent $pos $base $index]} { return -1 }
+			if {![load $parent $pos $base $index yes]} { return -1 }
 			set crc [::scidb::game::query $pos checksum]
 		} else {
 			::scidb::game::swap $pos $loadPos
@@ -264,7 +266,7 @@ proc lockChanged {position locked} {
 }
 
 
-proc load {parent position base index} {
+proc load {parent position base index {checkEncoding 0}} {
 	variable ::scidb::scratchbaseName
 
 	set rc 0
@@ -277,6 +279,18 @@ proc load {parent position base index} {
 			 1 { set rc 1 }
 			-1 { ::dialog::info  -parent [winfo toplevel $parent] -message $mc::GameDecodingFailed }
 			-2 { ::dialog::error -parent [winfo toplevel $parent] -message $mc::GameDataCorrupted }
+		}
+
+		if {$checkEncoding} {
+			set baseEncoding [::scidb::db::get encoding $base]
+			set gameEncoding [::scidb::game::query $position encoding]
+
+			if {$baseEncoding != $gameEncoding} {
+				set fmt [list %base% $baseEncoding %game% $gameEncoding]
+				set msg [string map $fmt $mc::GameDecodingChanged]
+				set dtl $mc::GameDecodingChangedDetail
+				::dialog::info -parent [winfo toplevel $parent] -message $msg -detail $dtl
+			}
 		}
 	}
 

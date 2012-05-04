@@ -247,7 +247,7 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_extNamebase(customFlags ? ".sn4" : ".sn3")
 	,m_blockSize(customFlags ? 131072 : 32768)
 	,m_codec(0)
-	,m_encoding(sys::utf8::Codec::latin1())
+	,m_encoding(sys::utf8::Codec::latin1()) // utf8() should be preferred?
 	,m_customFlags(customFlags)
 	,m_gameData(0)
 	,m_asyncReader(0)
@@ -480,7 +480,7 @@ Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info, mstl::string* encoding)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
@@ -492,6 +492,9 @@ Codec::doDecoding(GameData& data, GameInfo& info)
 	M_ASSERT(strm.size() == info.gameRecordLength());
 
 	info.m_plyCount = mstl::min(GameInfo::MaxPlyCount, decoder.doDecoding(data));
+
+	if (encoding)
+		*encoding = decoder.encoding();
 
 	if (data.m_tags.contains(tag::Termination) && info.terminationReason() == termination::Unknown)
 		info.m_termination = termination::fromString(data.m_tags.value(tag::Termination));

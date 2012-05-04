@@ -640,7 +640,7 @@ Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);

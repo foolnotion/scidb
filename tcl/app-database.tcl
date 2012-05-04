@@ -1085,7 +1085,7 @@ proc AddBase {type file encoding readonly {selectBase yes}} {
 	set Vars(active) $i
 #	if {$selectBase} { set Vars(selection) $i }
 	if {[llength $encoding] == 0 || $encoding eq $::encoding::autoEncoding} {
-		set encoding [::scidb::db::get encoding]
+		set encoding [::scidb::db::get encoding $file]
 	}
 	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
 	set count [::scidb::db::count games $file]
@@ -1773,6 +1773,7 @@ proc Recode {number parent} {
 
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
 	lassign [lindex $Vars(bases) $i] index type file ext enc
+	set enc [::scidb::db::get encoding $file]
 	if {$ext eq "cbh"} {
 		set defaultEncoding $::encoding::windowsEncoding
 	} else {

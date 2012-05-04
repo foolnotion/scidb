@@ -5236,6 +5236,8 @@ si3/si3_decoder.o: ../mstl/m_construct.ipp
 si3/si3_decoder.o: si3/si3_decoder_position.ipp
 si3/si3_decoder.o: db_eco.h
 si3/si3_decoder.o: db_eco.ipp
+si3/si3_decoder.o: ../util/universalchardet/nsUniversalDetector.h
+si3/si3_decoder.o: ../util/universalchardet/nstypes.h
 si3/si3_decoder.o: si3/si3_common.h
 si3/si3_decoder.o: db_game_data.h
 si3/si3_decoder.o: db_tag_set.h

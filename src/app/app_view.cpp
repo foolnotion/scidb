@@ -409,6 +409,7 @@ View::dumpGame(unsigned index,
 	typedef mstl::vector<unsigned> LengthList;
 
 	Game game;
+	mstl::string encoding;
 
 	load::State state = m_db.loadGame(gameIndex(index), game);
 

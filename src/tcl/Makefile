@@ -564,6 +564,8 @@ tcl_database.o: ../db/db_eco_table.ipp
 tcl_database.o: ../db/si3/si3_decoder.h
 tcl_database.o: ../db/si3/si3_decoder_position.h
 tcl_database.o: ../db/si3/si3_decoder_position.ipp
+tcl_database.o: ../util/universalchardet/nsUniversalDetector.h
+tcl_database.o: ../util/universalchardet/nstypes.h
 tcl_database.o: ../db/si3/si3_encoder.h
 tcl_database.o: ../db/si3/si3_encoder_position.h
 tcl_database.o: ../db/si3/si3_encoder_position.ipp

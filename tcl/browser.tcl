@@ -242,38 +242,6 @@ proc open {parent base info view index {fen {}}} {
 	$rt.pgn tag configure result -foreground $Options(foreground:result)
 	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
-	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
-	bind $dlg <F11>						[namespace code [list ViewFullscreen $position $board]]
-	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
-	bind $dlg <Return>					{+ break }
-	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
-	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
-	bind $dlg <Control-r>				[namespace code [list RotateBoard $board]]
-	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
-	bind $dlg <Left>						[namespace code [list Goto $position -1]]
-	bind $dlg <Right>						[namespace code [list Goto $position +1]]
-	bind $dlg <Prior>						[namespace code [list Goto $position -10]]
-	bind $dlg <Next>						[namespace code [list Goto $position +10]]
-	bind $dlg <Home>						[namespace code [list Goto $position -9999]]
-	bind $dlg <End>						[namespace code [list Goto $position +9999]]
-	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $board $position]]
-	bind $dlg <Key-plus>					[namespace code [list ChangeBoardSize $position $lt.board +5]]
-	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
-	bind $dlg <Key-minus>				[namespace code [list ChangeBoardSize $position $lt.board -5]]
-	bind $dlg <Key-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board -5]]
-	bind $dlg <Control-plus>			[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
-
-	wm withdraw $dlg
-#	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
-	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	wm resizable $dlg true false
-	::util::place $dlg center $parent
-	wm deiconify $dlg
-	focus $buttons.close
-
 	namespace eval [namespace current]::${position} {}
 	variable ${position}::Vars
 	set Vars(pgn) $rt.pgn
@@ -310,6 +278,38 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
 	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
 	set Vars(subscribe:close) [list [namespace current]::Close $base $position]
+
+	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
+	bind $dlg <F11>						[namespace code [list ViewFullscreen $position $board]]
+	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
+	bind $dlg <Return>					{+ break }
+	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
+	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
+	bind $dlg <Control-r>				[namespace code [list RotateBoard $board]]
+	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
+	bind $dlg <Left>						[namespace code [list Goto $position -1]]
+	bind $dlg <Right>						[namespace code [list Goto $position +1]]
+	bind $dlg <Prior>						[namespace code [list Goto $position -10]]
+	bind $dlg <Next>						[namespace code [list Goto $position +10]]
+	bind $dlg <Home>						[namespace code [list Goto $position -9999]]
+	bind $dlg <End>						[namespace code [list Goto $position +9999]]
+	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $board $position]]
+	bind $dlg <Key-plus>					[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
+	bind $dlg <Key-minus>				[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Key-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board -5]]
+	bind $dlg <Control-plus>			[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
+
+	wm withdraw $dlg
+#	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm resizable $dlg true false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $buttons.close
 
 	NextGame $dlg $position	;# too early for ::scidb::game::go
 

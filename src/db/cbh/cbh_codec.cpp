@@ -2431,7 +2431,7 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info)
+Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 {
 	Byte buf[2][32768];
 

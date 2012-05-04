@@ -25,6 +25,8 @@ inline bool Codec::fromUtf8(mstl::string& s)	{ return fromUtf8(s, s); }
 inline bool Codec::toUtf8(mstl::string& s)	{ return toUtf8(s, s); }
 inline void Codec::reset()							{ m_failed = false; }
 
+inline void Codec::setFailed(bool flag)		{ m_failed = flag; }
+
 
 inline
 bool

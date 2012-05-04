@@ -395,7 +395,7 @@ Database::computeChecksum(unsigned index) const
 
 
 load::State
-Database::loadGame(unsigned index, Game& game)
+Database::loadGame(unsigned index, Game& game, mstl::string* encoding)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
@@ -405,7 +405,7 @@ Database::loadGame(unsigned index, Game& game)
 
 	try
 	{
-		m_codec->decodeGame(game, *info);
+		m_codec->decodeGame(game, *info, encoding);
 	}
 	catch (DecodingFailedException const& exc)
 	{

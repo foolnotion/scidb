@@ -239,6 +239,22 @@ Database::findExactPositionAsync(unsigned index, Board const& position, bool ski
 	return m_codec->findExactPositionAsync(*m_gameInfoList[index], position, skipVariations);
 }
 
+
+inline
+load::State
+Database::loadGame(unsigned index, Game& game)
+{
+	return loadGame(index, game, 0);
+}
+
+
+inline
+load::State
+Database::loadGame(unsigned index, Game& game, mstl::string& encoding)
+{
+	return loadGame(index, game, &encoding);
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

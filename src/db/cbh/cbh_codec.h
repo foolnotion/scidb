@@ -90,7 +90,7 @@ public:
 
 	void close() override;
 
-	void doDecoding(GameData& data, GameInfo& info) override;
+	void doDecoding(GameData& data, GameInfo& info, mstl::string*) override;
 	save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 
 	void reset() override;

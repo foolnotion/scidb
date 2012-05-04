@@ -552,9 +552,9 @@ Namebase::insertPlayer(	mstl::string const& name,
 			--i;
 		}
 	}
-#else
-	M_ASSERT(size() == 1 || *playerAt(size() - 2) < *playerAt(size() - 1));
 #endif
+
+	M_ASSERT(size() == 1 || *playerAt(size() - 2) < *playerAt(size() - 1));
 
 	m_isConsistent = false;
 	m_isModified = true;

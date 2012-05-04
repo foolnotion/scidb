@@ -37,6 +37,8 @@
 # include "db_home_pawns.h"
 #endif
 
+#include "nsUniversalDetector.h"
+
 namespace util { class ByteStream; }
 namespace sys { namespace utf8 { class Codec; } }
 
@@ -49,11 +51,14 @@ class MoveNode;
 
 namespace si3 {
 
-class Decoder
+class Decoder : public nsUniversalDetector
 {
 public:
 
 	Decoder(util::ByteStream& strm, sys::utf8::Codec& codec);
+	~Decoder();
+
+	mstl::string const& encoding() const;
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
@@ -63,6 +68,10 @@ public:
 	static type::ID decodeType(unsigned type);
 
 private:
+
+	void determineCharsetComments(MoveNode* node);
+	void determineCharsetTags();
+	void determineCharsetFinish();
 
 	void decodeVariation(unsigned level = 0);
 	Byte decodeMove(Byte value);
@@ -79,6 +88,8 @@ private:
 
 	void decodeVariation(Consumer& consumer, MoveNode const* node);
 
+	void Report(char const* charset);
+
 	Move nextMove();
 	void skipVariation();
 	void checkVariant(TagSet& tags);
@@ -87,7 +98,8 @@ private:
 	Decoder& operator=(Decoder const&);
 
 	util::ByteStream&	m_strm;
-	sys::utf8::Codec&	m_codec;
+	sys::utf8::Codec*	m_givenCodec;
+	sys::utf8::Codec*	m_codec;
 	decoder::Position	m_position;
 	MoveNode*			m_currentNode;
 	Move					m_move;

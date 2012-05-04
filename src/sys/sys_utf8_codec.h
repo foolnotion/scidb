@@ -56,6 +56,7 @@ public:
 
 	void reset();
 	void reset(mstl::string const& encoding);
+	void setFailed(bool flag = true);
 
 	static mstl::string const& automatic();
 	static mstl::string const& utf8();

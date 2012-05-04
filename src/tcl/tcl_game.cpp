@@ -2068,6 +2068,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			switch (cmd[1])
 			{
 				case 'm': setResult(Scidb->game(pos).isEmpty()); break;									// empty?
+				case 'n': setResult(Scidb->encoding(pos)); break;											// encoding?
 				case 'c': setResult(Scidb->game(pos).computeEcoCode().asShortString()); break;	// eco
 
 				case 'l':	// elo

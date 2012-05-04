@@ -1,4 +1,11 @@
-[April 2012] =================================================================
+[Mai 2012] ===================================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #312)
+------------------------------------------------------------------------------
+* Automatic detection of character set while encoding si3/si4 games. An info
+message will be displayed if the detected charset differs from the charset of
+the database.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #311)
@@ -13,8 +20,10 @@ Scidb 1.0 BETA (rev. #311)
 
 * sci_decoder.cpp: preliminary fix for missing nul bytes (grep SCI_TAGS_FIX).
 
-* Severe bug in namebase fixed. This fix requires a new database version
-number.
+* Severe bug in namebase fixed. Compiler flag SCI_NAMEBASE_FIX will be used
+temporary until a new database version is established.
+
+[April 2012] =================================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #310)

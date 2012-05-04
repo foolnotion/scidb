@@ -274,6 +274,7 @@ Application::insertScratchGame(unsigned position)
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
 	game.refresh = 0;
+	game.encoding = sys::utf8::Codec::utf8();
 
 	return game;
 }
@@ -391,6 +392,18 @@ Application::findGame(Cursor* cursor, unsigned index, unsigned* position)
 	}
 
 	return 0;
+}
+
+
+mstl::string const&
+Application::encoding(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = m_position;
+
+	return m_gameMap.find(position)->second.encoding;
 }
 
 
@@ -898,7 +911,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.cursor = &cursor;
 	game.index = index;
 
-	load::State state = base.loadGame(index, *game.game);
+	load::State state = base.loadGame(index, *game.game, game.encoding);
 
 	game.crcIndex = base.computeChecksum(index);
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());

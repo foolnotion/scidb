@@ -663,10 +663,10 @@ DatabaseCodec::sync()
 
 
 void
-DatabaseCodec::decodeGame(GameData& data, GameInfo& info)
+DatabaseCodec::decodeGame(GameData& data, GameInfo& info, mstl::string* encoding)
 {
 	M_REQUIRE(isOpen());
-	doDecoding(data, info);
+	doDecoding(data, info, encoding);
 }
 
 
