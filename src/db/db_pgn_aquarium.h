@@ -36,7 +36,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Poco precisa.</:it>"
 					"<:ru>Неточность.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>En felaktighet.</:sv>"
 					"</xml>",
 	/* 202 */	"<xml>"
 					"<:de>Ein Fehler.</:de>"
@@ -46,17 +46,17 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un errore.</:it>"
 					"<:ru>Ошибка.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ett fel.</:sv>"
 					"</xml>",
 	/* 203 */	"<xml>"
 					"<:de>Ein Patzer.</:de>"
 					"<:en>A blunder.</:en>"
-					"<:es>Grave error</:es>"
+					"<:es>Grave error.</:es>"
 					"<:fr>Une gaffe.</:fr>"
 //					"<:hy></:hy>"
 					"<:it>Una svista.</:it>"
 					"<:ru>Грубая ошибка.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ett misstag.</:sv>"
 					"</xml>",
 	/* 204 */	"<xml>"
 					"<:de>Der zweite Fehler in Folge.</:de>"
@@ -66,7 +66,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il secondo errore di fila.</:it>"
 					"<:ru>Вторая ошибка подряд.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Andra felet i rad.</:sv>"
 					"</xml>",
 	/* 205 */	"<xml>"
 					"<:de>Nicht die beste Fortsetzung.</:de>"
@@ -76,7 +76,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Non è la continuazione migliore.</:it>"
 					"<:ru>Не лучшее продолжение.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Inte den bästa fortsättningen.</:sv>"
 					"</xml>",
 	/* 206 */	"<xml>"
 					"<:de>Weiß kann den gegnerischen Fehler nicht zu seinem Vorteil nutzen.</:de>"
@@ -86,7 +86,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco manca di sfruttare l'errore dell'avversario.</:it>"
 					"<:ru>Белые не воспользовались ошибкой соперника.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit misslyckas att dra nytta av motståndarens misstag.</:sv>"
 					"</xml>",
 	/* 207 */	"<xml>"
 					"<:de>Schwarz kann den gegnerischen Fehler nicht zu seinem Vorteil nutzen.</:de>"
@@ -96,7 +96,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero manca di sfruttare l'errore dell'avversario.</:it>"
 					"<:ru>Черные не воспользовались ошибкой соперника.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart misslyckas att dra nytta av motståndarens misstag.</:sv>"
 					"</xml>",
 	/* 208 */	0,
 	/* 209 */	0,
@@ -109,7 +109,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Più forte è</:it>"
 					"<:ru>Сильнее было</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Starkare är</:sv>"
 					"</xml>",
 	/* 212 */	"<xml>"
 					"<:de>Vielversprechender ist</:de>"
@@ -119,7 +119,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Più promettente è</:it>"
 					"<:ru>Перспективнее</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Mer lovande är</:sv>"
 					"</xml>",
 	/* 213 */	"<xml>"
 					"<:de>Vorzuziehen ist</:de>"
@@ -129,7 +129,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>È preferibile</:it>"
 					"<:ru>Предпочтительнее было</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Är att föredra</:sv>"
 					"</xml>",
 	/* 214 */	"<xml>"
 					"<:de>Beachtung verdient</:de>"
@@ -139,7 +139,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Merita attenzione</:it>"
 					"<:ru>Заслуживало внимания</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Värt uppmärksamhet</:sv>"
 					"</xml>",
 	/* 215 */	"<xml>"
 					"<:de>Eine interessante Alternative ist</:de>"
@@ -149,7 +149,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un'alternativa interessante è</:it>"
 					"<:ru>Интересной альтернативой было</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ett intressant alternativ är</:sv>"
 					"</xml>",
 	/* 216 */	"<xml>"
 					"<:de>Besser ist</:de>"
@@ -159,7 +159,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Migliore</:it>"
 					"<:ru>Лучше</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Bättre är</:sv>"
 					"</xml>",
 	/* 217 */	"<xml>"
 					"<:de>Noch eigensinniger ist</:de>"
@@ -169,7 +169,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Più coriacea è</:it>"
 					"<:ru>Упорнее было</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Mer envist är</:sv>"
 					"</xml>",
 	/* 218 */	0,
 	/* 219 */	0,
@@ -182,7 +182,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>mantiene il vantaggio.</:it>"
 					"<:ru>сохраняло перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>behåller en fördel.</:sv>"
 					"</xml>",
 	/* 222 */	"<xml>"
 					"<:de>bewahrt eine ungefähre Ausgeglichenheit.</:de>"
@@ -192,7 +192,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>mantiene una sostanziale parità.</:it>"
 					"<:ru>сохраняло примерное равновесие.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>behåller en ungefärlig balans.</:sv>"
 					"</xml>",
 	/* 223 */	"<xml>"
 					"<:de>gibt eine Möglichkeit um die Partie zu retten.</:de>"
@@ -202,7 +202,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>da speranze per salvare la partita.</:it>"
 					"<:ru>оставляло шансы на спасение.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>ger chanser att rädda partiet.</:sv>"
 					"</xml>",
 	/* 224 */	0,
 	/* 225 */	0,
@@ -219,7 +219,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco sta leggermente meglio.</:it>"
 					"<:ru>У белых немного лучше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit står något bättre.</:sv>"
 					"</xml>",
 	/* 232 */	"<xml>"
 					"<:de>Schwarz steht etwas besser.</:de>"
@@ -229,7 +229,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero sta leggermente meglio.</:it>"
 					"<:ru>У черных немного лучше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart står något bättre.</:sv>"
 					"</xml>",
 	/* 233 */	"<xml>"
 					"<:de>Die weißen Chancen sind etwas besser.</:de>"
@@ -239,7 +239,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Le possibilità del Bianco sono leggermente migliori.</:it>"
 					"<:ru>Шансы белых немного выше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vits chanser är något bättre.</:sv>"
 					"</xml>",
 	/* 234 */	"<xml>"
 					"<:de>Die schwarzen Chancen sind etwas besser.</:de>"
@@ -249,7 +249,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Le possibilità del Nero sono leggermente migliori.</:it>"
 					"<:ru>Шансы черных немного выше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svarts chanser är något bättre.</:sv>"
 					"</xml>",
 	/* 235 */	"<xml>"
 					"<:de>Die weiße Position ist etwas vielversprechender.</:de>"
@@ -259,7 +259,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>La posizione del Bianco è un po' più promettente.</:it>"
 					"<:ru>Позиция белых неcколько перспективнее.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vits ställning är något mer lovande.</:sv>"
 					"</xml>",
 	/* 236 */	"<xml>"
 					"<:de>Die schwarze Position ist etwas vielversprechender.</:de>"
@@ -269,7 +269,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>La posizione del Nero è un po' più promettente.</:it>"
 					"<:ru>Позиция черных неcколько перспективнее.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svarts ställning är något mer lovande.</:sv>"
 					"</xml>",
 	/* 237 */	"<xml>"
 					"<:de>Die Chancen sind gleich.</:de>"
@@ -279,7 +279,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Uguali possibilità.</:it>"
 					"<:ru>Шансы сторон равны </:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Chanserna är lika.</:sv>"
 					"</xml>",
 	/* 238 */	"<xml>"
 					"<:de>Die Position ist ungefähr ausgeglichen.</:de>"
@@ -289,7 +289,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>La posizione è sostanzialmente pari.</:it>"
 					"<:ru>Позиция примерно равна.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ställningen är ungefär lika.</:sv>"
 					"</xml>",
 	/* 239 */	"<xml>"
 					"<:de>Die Chancen sind verteilt.</:de>"
@@ -299,7 +299,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Con possibilità da entrambi i lati.</:it>"
 					"<:ru>Шансы сторон взаимны.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Chanserna är ömsesidiga.</:sv>"
 					"</xml>",
 	/* 240 */	"<xml>"
 					"<:de>Zweischneidiges Spiel.</:de>"
@@ -309,7 +309,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Con gioco a doppio taglio.</:it>"
 					"<:ru>Обоюдоострая игра.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Dubbeleggat spel.</:sv>"
 					"</xml>",
 	/* 241 */	"<xml>"
 					"<:de>Weiß ist am gewinnen.</:de>"
@@ -319,7 +319,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco sta vincendo.</:it>"
 					"<:ru>У белых выиграно.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit vinner.</:sv>"
 					"</xml>",
 	/* 242 */	"<xml>"
 					"<:de>Schwarz ist am gewinnen.</:de>"
@@ -329,7 +329,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero sta vincendo.</:it>"
 					"<:ru>У черных выиграно.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart vinner.</:sv>"
 					"</xml>",
 	/* 243 */	"<xml>"
 					"<:de>Weiß hat einen entscheidenden Vorteil.</:de>"
@@ -339,7 +339,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco è in netto vantaggio.</:it>"
 					"<:ru>У белых решающий перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har en avgörande fördel.</:sv>"
 					"</xml>",
 	/* 244 */	"<xml>"
 					"<:de>Schwarz hat einen entscheidenden Vorteil.</:de>"
@@ -349,7 +349,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero è in netto vantaggio.</:it>"
 					"<:ru>У черных решающий перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har en avgörande fördel.</:sv>"
 					"</xml>",
 	/* 245 */	"<xml>"
 					"<:de>Weiß hat einige Initiative.</:de>"
@@ -359,7 +359,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha l'iniziativa.</:it>"
 					"<:ru>У белых инициатива.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har ett initiativ.</:sv>"
 					"</xml>",
 	/* 246 */	"<xml>"
 					"<:de>Schwarz hat einige Initiative.</:de>"
@@ -369,7 +369,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha l'iniziativa.</:it>"
 					"<:ru>У черных инициатива.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har ett initiativ.</:sv>"
 					"</xml>",
 	/* 247 */	"<xml>"
 					"<:de>Der weiße König ist in Gefahr.</:de>"
@@ -379,7 +379,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il re Bianco è in pericolo.</:it>"
 					"<:ru>Белый король в опасности.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vits kung är i fara.</:sv>"
 					"</xml>",
 	/* 248 */	"<xml>"
 					"<:de>Der schwarze König ist in Gefahr.</:de>"
@@ -389,7 +389,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il re Nero è in pericolo.</:it>"
 					"<:ru>Черный король в опасности.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svarts kung är i fara.</:sv>"
 					"</xml>",
 	/* 249 */	"<xml>"
 					"<:de>Weiß entwickelt einen gefährlichen Angriff.</:de>"
@@ -399,7 +399,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco sviluppa un attacco pericoloso.</:it>"
 					"<:ru>Белые развивают опасную атаку.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit utvecklar ett farligt anfall.</:sv>"
 					"</xml>",
 	/* 250 */	"<xml>"
 					"<:de>Schwarz entwickelt einen gefährlichen Angriff.</:de>"
@@ -409,7 +409,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero sviluppa un attacco pericoloso.</:it>"
 					"<:ru>Черные развивают опасную атаку.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart utvecklar ett farligt anfall.</:sv>"
 					"</xml>",
 	/* 251 */	"<xml>"
 					"<:de>Weiß hat das Läuferpaar.</:de>"
@@ -419,7 +419,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha la coppia degli alfieri.</:it>"
 					"<:ru>У белых преимущество 2-х слонов.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har löparparet.</:sv>"
 					"</xml>",
 	/* 252 */	"<xml>"
 					"<:de>Schwarz hat das Läuferpaar.</:de>"
@@ -429,7 +429,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha la coppia degli alfieri.</:it>"
 					"<:ru>У черных преимущество 2-х слонов.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har löparparet.</:sv>"
 					"</xml>",
 	/* 253 */	"<xml>"
 					"<:de>Es ist eine ruhige Position entstanden mit einem kleinen weißen Vorteil.</:de>"
@@ -439,7 +439,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Si e creata una posizione tranquilla con un piccolo vantaggio per il Bianco.</:it>"
 					"<:ru>Возникла спокойная позиция с небольшим перевесом белых.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Det uppstår en lugn ställning med en liten fördel för vit.</:sv>"
 					"</xml>",
 	/* 254 */	"<xml>"
 					"<:de>Es ist eine ruhige Position entstanden mit einem kleinen schwarzen Vorteil.</:de>"
@@ -449,7 +449,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Si e creata una posizione tranquilla con un piccolo vantaggio per il Nero.</:it>"
 					"<:ru>Возникла спокойная позиция с небольшим перевесом черных.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Det uppstår en lugn ställning med en liten fördel för svart.</:sv>"
 					"</xml>",
 	/* 255 */	"<xml>"
 					"<:de>Der weiße König ist der Rochade beraubt.</:de>"
@@ -459,7 +459,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco perde il diritto di arroccare.</:it>"
 					"<:ru>Белый король лишился рокировки.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vita kungen berövas på rockaden.</:sv>"
 					"</xml>",
 	/* 256 */	"<xml>"
 					"<:de>Der schwarze König ist der Rochade beraubt.</:de>"
@@ -469,17 +469,17 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero perde il diritto di arroccare.</:it>"
 					"<:ru>Черный король лишился рокировки.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svarta kungen berövas på rockaden.</:sv>"
 					"</xml>",
 	/* 257 */	"<xml>"
 					"<:de>Im bevorstehenden Endspiel sind die weißen Chancen etwas besser.</:de>"
 					"<:en>In the ensuing endgame white's chances are slightly better.</:en>"
-					"<:es>En el final chances de las blancas son un poco superiores.</:es>"
+					"<:es>En el final chances de las blancas son un poco superiores.</:es>" 
 					"<:fr>Dans la finale qui s'en suit, les chances des blancs sont legerement superieures.</:fr>"
 //					"<:hy></:hy>"
 					"<:it>Nel finale a seguire il Bianco ha maggiori possibilità.</:it>"
 					"<:ru>В возникшем эндшпиле шансы белых несколько выше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>I det följande slutspelet är vits chanser något bättre.</:sv>"
 					"</xml>",
 	/* 258 */	"<xml>"
 					"<:de>Im bevorstehenden Endspiel sind die schwarzen Chancen etwas besser.</:de>"
@@ -489,7 +489,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Nel finale a seguire il Nero ha maggiori possibilità.</:it>"
 					"<:ru>В возникшем эндшпиле шансы черных несколько выше.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>I det följande slutspelet är svarts chanser något bättre.</:sv>"
 					"</xml>",
 	/* 259 */	"<xml>"
 					"<:de>Der Freibauer sichert Weiß einen Vorteil.</:de>"
@@ -499,7 +499,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un pedone passato assicura il vantaggio Bianco.</:it>"
 					"<:ru>Проходная пешка обеспечивает перевес белым.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Fribonden säkrar en fördel för vit.</:sv>"
 					"</xml>",
 	/* 260 */	"<xml>"
 					"<:de>Der Freibauer sichert Schwarz einen Vorteil.</:de>"
@@ -509,7 +509,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un pedone passato assicura il vantaggio Nero.</:it>"
 					"<:ru>Проходная пешка обеспечивает перевес черным.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Fribonden säkrar en fördel för svart.</:sv>"
 					"</xml>",
 	/* 261 */	"<xml>"
 					"<:de>Beiderseitiger Schlagabtausch.</:de>"
@@ -519,7 +519,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Scambio di colpi da entrambi i lati.</:it>"
 					"<:ru>Стороны обмениваются ударами.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Dubbelsidig sluggerfest.</:sv>"
 					"</xml>",
 	/* 262 */	0,
 	/* 263 */	"<xml>"
@@ -530,7 +530,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Bianco.</:it>"
 					"<:ru>Неприятная связка, дающая небольшой перевес белым.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>En obehaglig bindning ger en liten fördel till vit.</:sv>"
 					"</xml>",
 	/* 264 */	"<xml>"
 					"<:de>Eine unangenehme Fesselung, die Schwarz einen Vorteil garantiert.</:de>"
@@ -540,7 +540,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Nero.</:it>"
 					"<:ru>Неприятная связка, дающая небольшой перевес черным.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>En obehaglig bindning ger en liten fördel till svart.</:sv>"
 					"</xml>",
 	/* 265 */	"<xml>"
 					"<:de>Weiß hat eine gute Kompensation für das geopferte Material.</:de>"
@@ -550,7 +550,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha buon compenso per il materiale sacrificato.</:it>"
 					"<:ru>У белых хорошая компенсация за материальный перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har bra kompensation för offrade matrialet.</:sv>"
 					"</xml>",
 	/* 266 */	"<xml>"
 					"<:de>Schwarz hat eine gute Kompensation für das geopferte Material.</:de>"
@@ -560,7 +560,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha buon compenso per il materiale sacrificato.</:it>"
 					"<:ru>У черных хорошая компенсация за материальный перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har bra kompensation för offrade matrialet.</:sv>"
 					"</xml>",
 	/* 267 */	"<xml>"
 					"<:de>Weiß hat keine Kompensation für das Materialdefizit.</:de>"
@@ -570,7 +570,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco non ha alcun compenso per il materiale in meno.</:it>"
 					"<:ru>У белых нет компенсации за отсутствующий материал.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har ingen kompensation för saknade matrialet.</:sv>"
 					"</xml>",
 	/* 268 */	"<xml>"
 					"<:de>Schwarz hat keine Kompensation für das Materialdefizit.</:de>"
@@ -580,7 +580,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero non ha alcun compenso per il materiale in meno.</:it>"
 					"<:ru>У черных нет компенсации за отсутствующий материал.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har ingen kompensation för saknade matrialet.</:sv>"
 					"</xml>",
 	/* 269 */	"<xml>"
 					"<:de>Weiß hat einen Materialvorteil.</:de>"
@@ -590,7 +590,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha vantaggio materiale.</:it>"
 					"<:ru>У белых материальный перевес</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Vit har matriell fördel.</:sv>"
 					"</xml>",
 	/* 270 */	"<xml>"
 					"<:de>Schwarz hat einen Materialvorteil.</:de>"
@@ -600,7 +600,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha vantaggio materiale.</:it>"
 					"<:ru>У черных материальный перевес.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Svart har matriell fördel.</:sv>"
 					"</xml>",
 	/* 271 */	"<xml>"
 					"<:de>Das Schliessen der Position favorisiert Weiß.</:de>"
@@ -610,7 +610,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>La posizione chiusa a seguire favorisce il Bianco.</:it>"
 					"<:ru>Возникшая закрытая позиция в пользу белых.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Den följande slutna ställningen är gynnsam för vit.</:sv>"
 					"</xml>",
 	/* 272 */	"<xml>"
 					"<:de>Das Schliessen der Position favorisiert Schwarz.</:de>"
@@ -620,7 +620,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>La posizione chiusa a seguire favorisce il Nero.</:it>"
 					"<:ru>Возникшая закрытая позиция в пользу черных.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Den följande slutna ställningen är gynnsam för svart.</:sv>"
 					"</xml>",
 	/* 273 */	0,
 	/* 274 */	0,
@@ -648,7 +648,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Minacciando</:it>"
 					"<:ru>C угрозой</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Med hotet</:sv>"
 					"</xml>",
 	/* 292 */	"<xml>"
 					"<:de>Mit der Idee</:de>"
@@ -658,7 +658,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Con l'idea</:it>"
 					"<:ru>C идеей</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Med idén</:sv>"
 					"</xml>",
 };
 
@@ -675,7 +675,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Una mossa rara.</:it>"
 					"<:ru>Редкий ход.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ett ovanligt drag.</:sv>"
 					"</xml>",
 	/* 502 */	"<xml>"
 					"<:de>Die Hauptfortsetzung ist</:de>"
@@ -685,7 +685,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>La continuazione principale è</:it>"
 					"<:ru>Основное продолжение</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Huvudfortsättningen är</:sv>"
 					"</xml>",
 	/* 503 */	"<xml>"
 					"<:de>Neuerung!</:de>"
@@ -695,17 +695,17 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Novità!</:it>"
 					"<:ru>Новинка!</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Nyskapande!</:sv>"
 					"</xml>",
 	/* 504 */	"<xml>"
 					"<:de>Bisher wurde gespielt:</:de>"
-					"<:en>Previously occured</:en>"
+					"<:en>Previously occured:</:en>"
 					"<:es>Se encontraba antes:</:es>"
 					"<:fr>Deja vu</:fr>"
 //					"<:hy></:hy>"
-					"<:it>Avvenuto in precedenza.</:it>"
-					"<:ru>Ранее встречалось</:ru>"
-//					"<:sv></:sv>"
+					"<:it>Avvenuto in precedenza:</:it>"
+					"<:ru>Ранее встречалось:</:ru>"
+					"<:sv>Tidigare inträffade:</:sv>"
 					"</xml>",
 	/* 505 */	"<xml>"
 					"<:de>Ein veralteter Zug.</:de>"
@@ -715,7 +715,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Una vecchia mossa.</:it>"
 					"<:ru>Старый ход.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ett gammalt drag.</:sv>"
 					"</xml>",
 	/* 506 */	"<xml>"
 					"<:de>Neuerdings ist folgende Fortsetzung populärer:</:de>"
@@ -725,7 +725,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Recentemente è più popolare la continuazione:</:it>"
 					"<:ru>В последнее время популярнее продолжение:</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Nyligen mer populär är fortsättningen:</:sv>"
 					"</xml>",
 	/* 507 */	"<xml>"
 					"<:de>Dieser Zug wurde bisher nicht auf hohem Niveau angewandt.</:de>"
@@ -735,7 +735,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Questa mossa non si è ancora vista a livello magistrale.</:it>"
 					"<:ru>Ход, не применявшийся на высоком уровне.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Det här draget har inte spelats på hög nivå innan.</:sv>"
 					"</xml>",
 	/* 508 */	"<xml>"
 					"<:de>Führende Schachspieler bevorzugen</:de>"
@@ -745,7 +745,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>I più forti giocatori preferiscono</:it>"
 					"<:ru>Ведущие шахматисты предпочитали</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Ledande schackspelare föredrar</:sv>"
 					"</xml>",
 	/* 509 */	"<xml>"
 					"<:de>Die solidere Alternative ist</:de>"
@@ -755,7 +755,7 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Una solida alternativa è</:it>"
 					"<:ru>Более надежное продолжение</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Mer tillförlitlig fortsättning är</:sv>"
 					"</xml>",
 	/* 510 */	"<xml>"
 					"<:de>Beachtung verdient</:de>"
@@ -765,17 +765,17 @@ static char const* Phrases500[] =
 //					"<:hy></:hy>"
 					"<:it>Merita attenzione</:it>"
 					"<:ru>Заслуживает внимания</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Värt uppmärksamhet är</:sv>"
 					"</xml>",
 	/* 511 */	"<xml>"
-					"<:de>Dieser Zug wird immer populärer.</:de>"
+					"<:de>Dieser Zug wird immer unpopulärer.</:de>"
 					"<:en>This move becomes more and more unpopular.</:en>"
-					"<:es>Esta jugada se pone a estar mas y mas popular.</:es>"
+					"<:es>Esta jugada se pone a estar mas y mas impopular.</:es>"
 					"<:fr>Ce coup est de moins en moins apprecie.</:fr>"
 //					"<:hy></:hy>"
 					"<:it>Questa mossa sta diventando sempre piu impopolare.</:it>"
 					"<:ru>Ход становится непопулярным.</:ru>"
-//					"<:sv></:sv>"
+					"<:sv>Det här draget blir mer och mer impopulärt.</:sv>"
 					"</xml>",
 };
 
