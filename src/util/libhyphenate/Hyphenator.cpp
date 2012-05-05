@@ -48,13 +48,13 @@
 #include <ctype.h>
 #include <locale.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 static char const PathDelim = '\\';
 #else
 static char const PathDelim = '/';
 #endif
 
-#ifndef WIN32
+#ifndef __WIN32__
 # define LIBHYPHENATE_DEFAULT_PATH "/usr/local/share/libhyphenate/"
 #endif
 

@@ -32,7 +32,7 @@
 static Tcl_Command tk_cmd = 0;
 
 
-#if !defined(WIN32) && !defined(__MacOSX__)
+#if !defined(__WIN32__) && !defined(__MacOSX__)
 
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
@@ -309,7 +309,7 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 		Tk_SetGrid(tkwin, baseWidth, baseHeight, widthIncr, heightIncr);
 	}
-#if !defined(WIN32) && !defined(__MacOSX__)
+#if !defined(__WIN32__) && !defined(__MacOSX__)
 	else if (strcasecmp(subcmd, "noDecor") == 0)
 	{
 		Window window = Tk_WindowId(tkwin);

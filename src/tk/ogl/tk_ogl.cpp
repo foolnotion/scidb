@@ -29,7 +29,7 @@
 #include <tkInt.h>
 #undef namespace
 
-#if defined(WIN32)
+#if defined(__WIN32__)
 
 //# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
@@ -78,7 +78,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 # include <tkPlatDecls.h>
 # include <tkWinInt.h>
 #endif
@@ -100,7 +100,7 @@
 #define DEFAULT_TIME			"1"
 
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 // Maximum size of a logical palette corresponding to a colormap in color index mode.
 # define MAX_CI_COLORMAP_SIZE 4096
@@ -149,7 +149,7 @@ struct Context
 {
     Context*					next;					// next in linked list
 
-#if defined(WIN32)
+#if defined(__WIN32__)
 
     HGLRC						ctx;					// OpenGL rendering context to be made current
     HDC							tglGLHdc;			// Device context of device that OpenGL calls will be drawn on
@@ -178,7 +178,6 @@ struct Context
     int						setGrid;				// positive is grid size for window manager
     int						timerInterval;		// Time interval for timer in milliseconds
     Tcl_TimerToken		timerHandler;		// Token for Ogl's timer handler
-    Bool						rgbaFlag;			// configuration flags (ala GLX parameters)
     int						rgbaRed;
     int						rgbaGreen;
     int						rgbaBlue;
@@ -231,11 +230,6 @@ static void ogl_objCmdDelete(ClientData clientData);
 static void ogl_eventProc(ClientData clientData, XEvent *eventPtr);
 static Window ogl_makeWindow(Tk_Window, Window, ClientData);
 static void ogl_worldChanged(ClientData);
-
-#ifdef MESA_COLOR_HACK
-static int get_free_color_cells(Display* display, int screen, Colormap colormap);
-static void free_default_color_cells(Display* display, Colormap colormap);
-#endif
 static void ogl_oglCmdDeletedProc(ClientData);
 
 #if defined(__MacOSX__)
@@ -267,8 +261,6 @@ static Tk_OptionSpec optionSpecs[] = {
 		DEFAULT_HEIGHT, -1, Tk_Offset(Ogl, height), 0, 0, GEOMETRY_MASK},
 	{TK_OPTION_PIXELS, "-width", "width", "Width",
 		DEFAULT_WIDTH, -1, Tk_Offset(Ogl, width), 0, 0, GEOMETRY_MASK},
-	{TK_OPTION_BOOLEAN, "-rgba", "rgba", "Rgba",
-		"true", -1, Tk_Offset(Ogl, rgbaFlag), 0, 0, FORMAT_MASK},
 	{TK_OPTION_INT, "-redsize", "redsize", "RedSize",
 		"1", -1, Tk_Offset(Ogl, rgbaRed), 0, 0, FORMAT_MASK},
 	{TK_OPTION_INT, "-greensize", "greensize", "GreenSize",
@@ -464,13 +456,7 @@ get_rgb_colormap(Display* dpy, int scrnum, XVisualInfo const* visinfo, Tk_Window
 	// First check if visinfo's visual matches the default/root visual.
 	if (visinfo->visual == Tk_Visual(tkwin)) {
 		// use the default/root colormap
-		Colormap cmap = Tk_Colormap(tkwin);;
-
-# ifdef MESA_COLOR_HACK
-		get_free_color_cells(dpy, scrnum, cmap);
-# endif
-
-		return cmap;
+		return Tk_Colormap(tkwin);
 	}
 
 	// Check if we're using Mesa.
@@ -550,7 +536,7 @@ get_rgb_colormap(Display* dpy, int scrnum, XVisualInfo const* visinfo, Tk_Window
 	return XCreateColormap(dpy, root, visinfo->visual, AllocNone);
 }
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 // Code to create RGB palette is taken from the GENGL sample program of Win32 SDK
 
@@ -799,7 +785,7 @@ ogl_timer(ClientData clientData)
 static void
 ogl_makeCurrent(Ogl const* ogl)
 {
-#if defined(WIN32)
+#if defined(__WIN32__)
 
 	int res = TRUE;
 
@@ -847,7 +833,7 @@ ogl_swapInterval(Ogl const* ogl, int interval)
 	GLint swapInterval = interval;
 	return aglSetInteger(ogl->ctx, AGL_SWAP_INTERVAL, &swapInterval);
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	typedef BOOL (WINAPI* BOOLFuncInt)(int);
 	typedef char const* (WINAPI* StrFuncHDC)(HDC);
@@ -1051,9 +1037,6 @@ ogl_objConfigure(Tcl_Interp* ti, Ogl* ogl, int objc, Tcl_Obj* const* objv)
 			}
 
 			// Whether or not the format is okay is figured out when ogl tries to create the window.
-#ifdef MESA_COLOR_HACK
-			free_default_color_cells(Tk_Display(ogl->tkWin), Tk_Colormap(ogl->tkWin));
-#endif
 			undoMask |= FORMAT_MASK;
 		}
 
@@ -1444,7 +1427,7 @@ ogl_objCmd(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const* objv
 	// initialize Ogl data structures values
 	ogl->next = 0;
 	ogl->ctx = 0;
-#if defined(WIN32)
+#if defined(__WIN32__)
 	ogl->tglGLHdc = 0;
 #endif
 	ogl->contextTag = 0;
@@ -1463,7 +1446,6 @@ ogl_objCmd(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const* objv
 	ogl->height = 0;
 	ogl->setGrid = 0;
 	ogl->timerInterval = 0;
-	ogl->rgbaFlag = True;
 	ogl->rgbaRed = 1;
 	ogl->rgbaGreen = 1;
 	ogl->rgbaBlue = 1;
@@ -1574,7 +1556,7 @@ ogl_objCmd(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const* objv
 }
 
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # define OGL_CLASS_NAME "Ogl Class"
 
@@ -1661,14 +1643,13 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 																	BOOL direct,
 																	int const* attrib_list);
 
-	static int ci_depths[MAX_ATTEMPTS] = { 8, 4, 2, 1, 12, 16, 8, 4, 2, 1, 12, 16 };
 	static int dbl_flags[MAX_ATTEMPTS] = { 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1 };
 
 	static CREATECONTEXTATTRIBSARB createContextAttribs;
 	GLXFBConfig* fbc = None;
 	int fbcCount = 0;
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	typedef BOOL (WINAPI* ChooseFunc)(HDC, int const*, const FLOAT*, UINT, int*, UINT*);
 	typedef char const* (WINAPI* StrFuncHDC)(HDC);
@@ -1732,6 +1713,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 		{
 			XVisualInfo tmplate;
 			int count = 1;
+			Bool rgbaFlag = True;
 
 			tmplate.visualid = ogl->pixelFormat;
 			visinfo = XGetVisualInfo(dpy, VisualIDMask, &tmplate, &count);
@@ -1741,8 +1723,10 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 				return DUMMY_WINDOW;
 			}
 			// fill in flags normally passed in that affect behavior.
-			glXGetConfig(dpy, visinfo, GLX_RGBA, &ogl->rgbaFlag);
+			glXGetConfig(dpy, visinfo, GLX_RGBA, &rgbaFlag);
 			glXGetConfig(dpy, visinfo, GLX_DOUBLEBUFFER, &ogl->doubleFlag);
+
+			M_REQUIRE(rgbaFlag);
 		}
 		else
 		{
@@ -1753,37 +1737,24 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 			{
 				attrib_count = 0;
 
-				if (ogl->rgbaFlag)
+				attrib_list[attrib_count++] = GLX_RED_SIZE;
+				attrib_list[attrib_count++] = ogl->rgbaRed;
+				attrib_list[attrib_count++] = GLX_GREEN_SIZE;
+				attrib_list[attrib_count++] = ogl->rgbaGreen;
+				attrib_list[attrib_count++] = GLX_BLUE_SIZE;
+				attrib_list[attrib_count++] = ogl->rgbaBlue;
+
+				if (ogl->alphaFlag)
 				{
-					// RGB[A] mode
-					attrib_list[attrib_count++] = GLX_RED_SIZE;
-					attrib_list[attrib_count++] = ogl->rgbaRed;
-					attrib_list[attrib_count++] = GLX_GREEN_SIZE;
-					attrib_list[attrib_count++] = ogl->rgbaGreen;
-					attrib_list[attrib_count++] = GLX_BLUE_SIZE;
-					attrib_list[attrib_count++] = ogl->rgbaBlue;
-
-					if (ogl->alphaFlag)
-					{
-						attrib_list[attrib_count++] = GLX_ALPHA_SIZE;
-						attrib_list[attrib_count++] = ogl->alphaSize;
-					}
-
-					free(ogl->redMap);
-					free(ogl->greenMap);
-					free(ogl->blueMap);
-					ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
-					ogl->mapSize = 0;
+					attrib_list[attrib_count++] = GLX_ALPHA_SIZE;
+					attrib_list[attrib_count++] = ogl->alphaSize;
 				}
-				else
-				{
-					// Color index mode
-					int depth;
 
-					attrib_list[attrib_count++] = GLX_BUFFER_SIZE;
-					depth = ci_depths[attempt];
-					attrib_list[attrib_count++] = depth;
-				}
+				free(ogl->redMap);
+				free(ogl->greenMap);
+				free(ogl->blueMap);
+				ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
+				ogl->mapSize = 0;
 
 				if (ogl->depthFlag)
 				{
@@ -1916,7 +1887,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	}
 #endif
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 	parentWin = Tk_GetHWND(parent);
 	hInstance = Tk_GetHINSTANCE();
@@ -1970,7 +1941,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	else
 	{
 		pfd.cColorBits = ogl->rgbaRed + ogl->rgbaGreen + ogl->rgbaBlue;
-		pfd.iPixelType = ogl->rgbaFlag ? PFD_TYPE_RGBA : PFD_TYPE_COLORINDEX;
+		pfd.iPixelType = PFD_TYPE_RGBA;
 		// Alpha bitplanes are not supported in the current generic OpenGL
 		// implementation, but may be supported by specific hardware devices.
 		pfd.cAlphaBits = ogl->alphaFlag ? ogl->alphaSize : 0;
@@ -1989,26 +1960,17 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 		iAttribs[attrib_count++] = GL_TRUE;
 		iAttribs[attrib_count++] = WGL_ACCELERATION_ARB;
 		iAttribs[attrib_count++] = WGL_FULL_ACCELERATION_ARB;
-		if (ogl->rgbaFlag)
-		{
-			// RGB[A] mode
-			iAttribs[attrib_count++] = WGL_RED_BITS_ARB;
-			iAttribs[attrib_count++] = ogl->rgbaRed;
-			iAttribs[attrib_count++] = WGL_GREEN_BITS_ARB;
-			iAttribs[attrib_count++] = ogl->rgbaGreen;
-			iAttribs[attrib_count++] = WGL_BLUE_BITS_ARB;
-			iAttribs[attrib_count++] = ogl->rgbaBlue;
+		iAttribs[attrib_count++] = WGL_RED_BITS_ARB;
+		iAttribs[attrib_count++] = ogl->rgbaRed;
+		iAttribs[attrib_count++] = WGL_GREEN_BITS_ARB;
+		iAttribs[attrib_count++] = ogl->rgbaGreen;
+		iAttribs[attrib_count++] = WGL_BLUE_BITS_ARB;
+		iAttribs[attrib_count++] = ogl->rgbaBlue;
 
-			if (ogl->alphaFlag)
-			{
-				iAttribs[attrib_count++] = WGL_ALPHA_BITS_ARB;
-				iAttribs[attrib_count++] = ogl->alphaSize;
-			}
-		}
-		else
+		if (ogl->alphaFlag)
 		{
-			// Color index mode
-			// OPA TODO
+			iAttribs[attrib_count++] = WGL_ALPHA_BITS_ARB;
+			iAttribs[attrib_count++] = ogl->alphaSize;
 		}
 
 		if (ogl->depthFlag)
@@ -2142,7 +2104,6 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	if (ogl->pixelFormat)
 	{
 		// fill in flags normally passed in that affect behavior
-		ogl->rgbaFlag = pfd.iPixelType == PFD_TYPE_RGBA;
 		ogl->doubleFlag = pfd.cDepthBits > 0;
 		// TODO: set depth flag, and more
 	}
@@ -2241,85 +2202,34 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	// find a colormap
 	scrnum = Tk_ScreenNumber(tkwin);
 
-	if (ogl->rgbaFlag)
-	{
-		// Colormap for RGB mode.
 #if defined(__unix__)
 
-		cmap = get_rgb_colormap(dpy, scrnum, visinfo, tkwin);
+	cmap = get_rgb_colormap(dpy, scrnum, visinfo, tkwin);
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
-		if (pfd.dwFlags & PFD_NEED_PALETTE)
-			cmap = win32CreateRgbColormap(pfd);
-		else
-			cmap = DefaultColormap(dpy, scrnum);
-
-		free(ogl->redMap);
-		free(ogl->greenMap);
-		free(ogl->blueMap);
-		ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
-		ogl->mapSize = 0;
-
-#elif defined(__MacOSX__)
-
+	if (pfd.dwFlags & PFD_NEED_PALETTE)
+		cmap = win32CreateRgbColormap(pfd);
+	else
 		cmap = DefaultColormap(dpy, scrnum);
 
-		free(ogl->redMap);
-		free(ogl->greenMap);
-		free(ogl->blueMap);
-		ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
-		ogl->mapSize = 0;
+	free(ogl->redMap);
+	free(ogl->greenMap);
+	free(ogl->blueMap);
+	ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
+	ogl->mapSize = 0;
 
-#endif
-	}
-	else
-	{
-		// Colormap for CI mode.
-#ifdef WIN32
-
-		// this logic is to overcome a combination driver/compiler bug:
-		// 1. cColorBits may be unusally large (e.g., 32 instead of 8 or 12)
-		// 2. 1 << 32 might be 1 instead of zero (gcc for ia32).
-		if (pfd.cColorBits >= MAX_CI_COLORMAP_BITS)
-		{
-			ogl->ciColormapSize = MAX_CI_COLORMAP_SIZE;
-		}
-		else
-		{
-			ogl->ciColormapSize = 1 << pfd.cColorBits;
-			if (ogl->ciColormapSize >= MAX_CI_COLORMAP_SIZE)
-				ogl->ciColormapSize = MAX_CI_COLORMAP_SIZE;
-		}
-
-#endif
-
-		if (ogl->privateCmapFlag)
-		{
-			// need read/write colormap so user can store own color entries
-#if defined(__unix__)
-			cmap = XCreateColormap(dpy, XRootWindow(dpy, visinfo->screen), visinfo->visual, AllocAll);
-#elif defined(WIN32)
-			cmap = win32CreateCiColormap(ogl);
 #elif defined(__MacOSX__)
-			// need to figure out how to do this correctly on Mac...
-			cmap = DefaultColormap(dpy, scrnum);
+
+	cmap = DefaultColormap(dpy, scrnum);
+
+	free(ogl->redMap);
+	free(ogl->greenMap);
+	free(ogl->blueMap);
+	ogl->redMap = ogl->greenMap = ogl->blueMap = 0;
+	ogl->mapSize = 0;
+
 #endif
-		}
-		else
-		{
-			if (visinfo->visual == DefaultVisual(dpy, scrnum))
-			{
-				// share default/root colormap
-				cmap = Tk_Colormap(tkwin);
-			}
-			else
-			{
-				// make a new read-only colormap
-				cmap = XCreateColormap(dpy, XRootWindow(dpy, visinfo->screen), visinfo->visual, AllocNone);
-			}
-		}
-	}
 
 #if !defined(__MacOSX__)
 
@@ -2329,7 +2239,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
 #endif
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 	// Install the colormap.
 	SelectPalette(ogl->tglGLHdc, ((TkWinColormap*)cmap)->palette, TRUE);
@@ -2375,7 +2285,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 			}
 		}
 	}
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	window = Tk_AttachHWND(tkwin, hwnd);
 
@@ -2417,7 +2327,7 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 			if (	aglDescribePixelFormat(fmt, AGL_RGBA, &has_rgba)
 				&& aglDescribePixelFormat(fmt, AGL_DOUBLEBUFFER, &has_doublebuf))
 			{
-				ogl->rgbaFlag = has_rgba ? True : False;
+				M_ASSERT(has_rgba);
 				ogl->doubleFlag = has_doublebuf ? True : False;
 			}
 			else
@@ -2435,29 +2345,18 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 			// ask for hardware-accelerated onscreen
 			attribs[na++] = AGL_ACCELERATED;
 			attribs[na++] = AGL_NO_RECOVERY;
+			attribs[na++] = AGL_RGBA;
+			attribs[na++] = AGL_RED_SIZE;
+			attribs[na++] = ogl->rgbaRed;
+			attribs[na++] = AGL_GREEN_SIZE;
+			attribs[na++] = ogl->rgbaGreen;
+			attribs[na++] = AGL_BLUE_SIZE;
+			attribs[na++] = ogl->rgbaBlue;
 
-			if (ogl->rgbaFlag)
+			if (ogl->alphaFlag)
 			{
-				// RGB[A] mode.
-				attribs[na++] = AGL_RGBA;
-				attribs[na++] = AGL_RED_SIZE;
-				attribs[na++] = ogl->rgbaRed;
-				attribs[na++] = AGL_GREEN_SIZE;
-				attribs[na++] = ogl->rgbaGreen;
-				attribs[na++] = AGL_BLUE_SIZE;
-				attribs[na++] = ogl->rgbaBlue;
-
-				if (ogl->alphaFlag)
-				{
-					attribs[na++] = AGL_ALPHA_SIZE;
-					attribs[na++] = ogl->alphaSize;
-				}
-			}
-			else
-			{
-				// Color index mode.
-				attribs[na++] = AGL_BUFFER_SIZE;
-				attribs[na++] = 8;
+				attribs[na++] = AGL_ALPHA_SIZE;
+				attribs[na++] = ogl->alphaSize;
 			}
 
 			if (ogl->depthFlag)
@@ -2585,35 +2484,6 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	}
 #endif
 
-	if (!ogl->rgbaFlag)
-	{
-		int indexSize;
-
-#if defined(__unix__) || defined(__MacOSX__)
-
-		GLint indexBits;
-
-		glGetIntegerv(GL_INDEX_BITS, &indexBits);
-		indexSize = 1 << indexBits;
-
-#elif defined(WIN32)
-
-		indexSize = ogl->ciColormapSize;
-
-#endif
-
-		if (ogl->mapSize != indexSize)
-		{
-			free(ogl->redMap);
-			free(ogl->greenMap);
-			free(ogl->blueMap);
-
-			ogl->mapSize	= indexSize;
-			ogl->redMap		= (GLfloat*)calloc(indexSize, sizeof(GLfloat));
-			ogl->greenMap	= (GLfloat*)calloc(indexSize, sizeof(GLfloat));
-			ogl->blueMap	= (GLfloat*)calloc(indexSize, sizeof(GLfloat));
-		}
-	}
 	return window;
 }
 
@@ -2723,7 +2593,7 @@ ogl_oglCmdDeletedProc(ClientData clientData)
 			ogl->ctx = 0;
 		}
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 		if (ogl->ctx)
 		{
@@ -2825,7 +2695,7 @@ ogl_eventProc(ClientData clientData, XEvent *eventPtr)
 	  case DestroyNotify:
 		  if (ogl->tkWin != 0)
 		  {
-#ifdef WIN32
+#ifdef __WIN32__
 			  HWND hwnd = Tk_GetHWND(Tk_WindowId(ogl->tkWin));
 
 			  // Prevent win32WinProc from calling Tcl_DeleteCommandFromToken a second time.
@@ -2865,7 +2735,7 @@ tk::ogl::swapBuffers(Context const* ctx)
 
 	if (ctx->doubleFlag)
 	{
-#if defined(WIN32)
+#if defined(__WIN32__)
 
 		int res = SwapBuffers(ctx->tglGLHdc);
 
@@ -2910,336 +2780,6 @@ ogl_contextTag(Ogl const* ogl)
 }
 
 
-#ifdef PROVIDE_COLOR_ALLOCATION
-
-# if defined(__unix__)
-// A replacement for XAllocColor.  This function should never
-// fail to allocate a color.  When XAllocColor fails, we return
-// the nearest matching color.  If we have to allocate many colors
-// this function isn't too efficient; the XQueryColors() could be
-// done just once.
-// Written by Michael Pichler, Brian Paul, Mark Kilgard
-// Input:  dpy - X display
-//		 cmap - X colormap
-//		 cmapSize - size of colormap
-// In/Out: color - the XColor struct
-// Output:  exact - 1=exact color match, 0=closest match
-static void
-noFaultXAllocColor(Display* dpy, Colormap cmap, int cmapSize, XColor* color, int* exact)
-{
-	XColor	subColor;
-	int		i;
-	int		bestmatch;
-	int64_t	mindist;			// 3*2^16^2 exceeds long int precision.
-
-	// First try just using XAllocColor.
-	if (XAllocColor(dpy, cmap, color))
-	{
-		*exact = 1;
-		return;
-	}
-
-	// Retrieve color table entries. */
-	XColor ctable[cmapSize];
-	for (i = 0; i < cmapSize; i++)
-		ctable[i].pixel = i;
-
-	XQueryColors(dpy, cmap, ctable, cmapSize);
-
-	// Find best match.
-	bestmatch = -1;
-	mindist = 0;
-
-	for (i = 0; i < cmapSize; i++)
-	{
-		int64_t dr = color->red - ctable[i].red;
-		int64_t dg = color->green - ctable[i].green;
-		int64_t db = color->blue - ctable[i].blue;
-		int64_t dist = dr*dr + dg*dg + db*db;
-
-		if (bestmatch < 0 || dist < mindist)
-		{
-			bestmatch = i;
-			mindist = dist;
-		}
-	}
-
-	// Return result.
-	subColor.red = ctable[bestmatch].red;
-	subColor.green = ctable[bestmatch].green;
-	subColor.blue = ctable[bestmatch].blue;
-
-	// Try to allocate the closest match color.  This should only fail if the
-	// cell is read/write.  Otherwise, we're incrementing the cell's reference
-	// count.
-	if (!XAllocColor(dpy, cmap, &subColor))
-	{
-		// do this to work around a problem reported by Frank Ortega
-		subColor.pixel = (unsigned long)bestmatch;
-		subColor.red = ctable[bestmatch].red;
-		subColor.green = ctable[bestmatch].green;
-		subColor.blue = ctable[bestmatch].blue;
-		subColor.flags = DoRed | DoGreen | DoBlue;
-	}
-	*color = subColor;
-}
-
-# elif defined(WIN32)
-
-static UINT
-win32AllocColor(Ogl const* ogl, float red, float green, float blue)
-{
-	// Modified version of XAllocColor emulation of Tk. - returns index,
-	// instead of color itself - allocates logical palette entry even for
-	// non-palette devices.
-
-	TkWinColormap*	cmap = (TkWinColormap*)Tk_Colormap(ogl->tkWin);
-	UINT				index;
-	COLORREF			newColor;
-	COLORREF			closeColor;
-	PALETTEENTRY	entry;
-	PALETTEENTRY	closeEntry;
-	int				isNew;
-	int				refCount;
-	Tcl_HashEntry*	entryPtr;
-
-	entry.peRed = (unsigned char)(red*255 + .5);
-	entry.peGreen = (unsigned char)(green*255 + .5);
-	entry.peBlue = (unsigned char)(blue*255 + .5);
-	entry.peFlags = 0;
-
-	// Find the nearest existing palette entry.
-
-	newColor = RGB(entry.peRed, entry.peGreen, entry.peBlue);
-	index = GetNearestPaletteIndex(cmap->palette, newColor);
-	GetPaletteEntries(cmap->palette, index, 1, &closeEntry);
-	closeColor = RGB(closeEntry.peRed, closeEntry.peGreen, closeEntry.peBlue);
-
-	// If this is not a duplicate and colormap is not full, allocate a new entry.
-
-	if (newColor != closeColor)
-	{
-		if (cmap->size == (unsigned)ogl->ciColormapSize)
-		{
-			entry = closeEntry;
-		}
-		else
-		{
-			cmap->size++;
-			ResizePalette(cmap->palette, cmap->size);
-			index = cmap->size - 1;
-			SetPaletteEntries(cmap->palette, index, 1, &entry);
-			SelectPalette(ogl->tglGLHdc, cmap->palette, TRUE);
-			RealizePalette(ogl->tglGLHdc);
-		}
-	}
-
-	newColor = PALETTERGB(entry.peRed, entry.peGreen, entry.peBlue);
-	entryPtr = Tcl_CreateHashEntry(&cmap->refCounts, (char CONST*)newColor, &isNew);
-
-	if (isNew)
-		refCount = 1;
-	else
-		refCount = ((int)Tcl_GetHashValue(entryPtr)) + 1;
-
-	Tcl_SetHashValue(entryPtr, (ClientData)refCount);
-
-	ogl->redMap[index] = (GLfloat) (entry.peRed/255.0);
-	ogl->greenMap[index] = (GLfloat) (entry.peGreen/255.0);
-	ogl->blueMap[index] = (GLfloat) (entry.peBlue/255.0);
-
-	return index;
-}
-
-
-static void
-win32FreeColor(Ogl const* ogl, unsigned long index)
-{
-	TkWinColormap*	cmap = (TkWinColormap*)Tk_Colormap(ogl->tkWin);
-	COLORREF			cref;
-	UINT				count;
-	UINT				refCount;
-	PALETTEENTRY	entry;
-	PALETTEENTRY*	entries;
-	Tcl_HashEntry*	entryPtr;
-
-	if (index >= cmap->size)
-		panic("Tried to free a color that isn't allocated.");
-
-	GetPaletteEntries(cmap->palette, index, 1, &entry);
-	cref = PALETTERGB(entry.peRed, entry.peGreen, entry.peBlue);
-	entryPtr = Tcl_FindHashEntry(&cmap->refCounts, (CONST char*)cref);
-
-	if (!entryPtr)
-		panic("Tried to free a color that isn't allocated.");
-
-	refCount = (int)Tcl_GetHashValue(entryPtr) - 1;
-
-	if (refCount == 0)
-	{
-		count = cmap->size - index;
-		entries = (PALETTEENTRY*)ckalloc(sizeof(PALETTEENTRY)*count);
-		GetPaletteEntries(cmap->palette, index + 1, count, entries);
-		SetPaletteEntries(cmap->palette, index, count, entries);
-		SelectPalette(ogl->tglGLHdc, cmap->palette, TRUE);
-		RealizePalette(ogl->tglGLHdc);
-		ckfree((char*) entries);
-		cmap->size--;
-		Tcl_DeleteHashEntry(entryPtr);
-	}
-	else
-	{
-		Tcl_SetHashValue(entryPtr, (ClientData)refCount);
-	}
-}
-
-#endif
-
-static unsigned long
-ogl_allocColor(Ogl const* ogl, float red, float green, float blue)
-{
-	if (ogl->rgbaFlag)
-	{
-		fprintf(stderr, "Error: ogl_allocColor illegal in RGBA mode.\n");
-		return 0;
-	}
-
-	// TODO: maybe not...
-	if (ogl->privateCmapFlag)
-	{
-		fprintf(stderr, "Error: ogl_allocColor illegal with private colormap\n");
-		return 0;
-	}
-
-#if defined(__unix__)
-	{
-		XColor	xcol;
-		int		exact;
-
-		xcol.red = (short)(red*65535.0);
-		xcol.green = (short)(green*65535.0);
-		xcol.blue = (short)(blue*65535.0);
-
-		noFaultXAllocColor(	Tk_Display(ogl->tkWin),
-									Tk_Colormap(ogl->tkWin),
-									Tk_Visual(ogl->tkWin)->map_entries,
-									&xcol,
-									&exact);
-		ogl->redMap[xcol.pixel] = xcol.red/65535.0;
-		ogl->greenMap[xcol.pixel] = xcol.green/65535.0;
-		ogl->blueMap[xcol.pixel] = xcol.blue/65535.0;
-
-		return xcol.pixel;
-	}
-
-#elif defined(WIN32)
-
-	return win32AllocColor(ogl, red, green, blue);
-
-#elif defined(__MacOSX__)
-
-	// still need to implement this on Mac...
-	return 0;
-
-#endif
-}
-
-
-static void
-ogl_freeColor(Ogl const* ogl, unsigned long pixel)
-{
-	if (ogl->rgbaFlag)
-	{
-		fprintf(stderr, "Error: ogl_freeColor illegal in RGBA mode.\n");
-		return;
-	}
-
-	// TODO: maybe not...
-	if (ogl->privateCmapFlag)
-	{
-		fprintf(stderr, "Error: ogl_freeColor illegal with private colormap\n");
-		return;
-	}
-
-#if defined(__unix__)
-
-	XFreeColors(Tk_Display(ogl->tkWin), Tk_Colormap(ogl->tkWin), &pixel, 1, 0);
-
-#elif defined(WIN32)
-
-	win32FreeColor(ogl, pixel);
-
-#endif
-}
-
-#endif // PROVIDE_COLOR_ALLOCATION
-
-#if 0
-#ifdef WIN32
-
-static void
-win32SetColor(Ogl const* ogl, unsigned long index, float red, float green, float blue)
-{
-	TkWinColormap* cmap = (TkWinColormap*)Tk_Colormap(ogl->tkWin);
-	PALETTEENTRY	entry;
-
-	entry.peRed = (unsigned char)(red*255 + .5);
-	entry.peGreen = (unsigned char)(green*255 + .5);
-	entry.peBlue = (unsigned char)(blue*255 + .5);
-	entry.peFlags = 0;
-
-	SetPaletteEntries(cmap->palette, index, 1, &entry);
-	SelectPalette(ogl->tglGLHdc, cmap->palette, TRUE);
-	RealizePalette(ogl->tglGLHdc);
-
-	ogl->redMap[index] = (GLfloat)(entry.peRed/255.0);
-	ogl->greenMap[index] = (GLfloat)(entry.peGreen/255.0);
-	ogl->blueMap[index] = (GLfloat)(entry.peBlue/255.0);
-}
-
-#endif
-
-
-static void
-ogl_setColor(Ogl const* ogl, unsigned long index, float red, float green, float blue)
-{
-	if (ogl->rgbaFlag)
-	{
-		fprintf(stderr, "Error: ogl_setColor illegal in RGBA mode.\n");
-		return;
-	}
-
-	if (!ogl->privateCmapFlag)
-	{
-		fprintf(stderr, "Error: ogl_setColor requires a private colormap\n");
-		return;
-	}
-
-#if defined(__unix__)
-	{
-		XColor  xcol;
-
-		xcol.pixel = index;
-		xcol.red = (short)(red*65535.0);
-		xcol.green = (short)(green*65535.0);
-		xcol.blue = (short)(blue*65535.0);
-		xcol.flags = DoRed | DoGreen | DoBlue;
-
-		XStoreColor(Tk_Display(ogl->tkWin), Tk_Colormap(ogl->tkWin), &xcol);
-
-		ogl->redMap[xcol.pixel] = xcol.red/65535.0;
-		ogl->greenMap[xcol.pixel] = xcol.green/65535.0;
-		ogl->blueMap[xcol.pixel] = xcol.blue/65535.0;
-	}
-#elif defined(WIN32)
-
-	win32SetColor(ogl, index, red, green, blue);
-
-#endif
-}
-#endif
-
-
 #define MAX_FONTS 1000
 static GLuint listBase[MAX_FONTS];
 static GLuint listCount[MAX_FONTS];
@@ -3261,7 +2801,7 @@ ogl_loadBitmapFont(	Ogl const* ogl,
 
 	XFontStruct* fontinfo;
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	FontAttributes	fa;
 	XLFDAttributes	xa;
@@ -3311,7 +2851,7 @@ ogl_loadBitmapFont(	Ogl const* ogl,
 
 	sprintf(msgStr, "Font: (%d, %d)\n", first, last);
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	if (TCL_OK != FontParseXLFD(name, &fa, &xa))
 		return 0;
@@ -3352,14 +2892,14 @@ ogl_loadBitmapFont(	Ogl const* ogl,
 
 	if (fontbase == 0)
 	{
-#ifdef WIN32
+#ifdef __WIN32__
 		SelectObject(ogl->tglGLHdc, oldFont);
 		DeleteObject(font);
 #endif
 		return 0;
 	}
 
-#if defined(WIN32)
+#if defined(__WIN32__)
 
 	wglUseFontBitmaps(ogl->tglGLHdc, first, count, (int)fontbase + first);
 	SelectObject(ogl->tglGLHdc, oldFont);
@@ -3410,79 +2950,6 @@ ogl_unloadBitmapFont(Ogl const* ogl, GLuint fontbase)
 		}
 	}
 }
-
-
-#ifdef MESA_COLOR_HACK
-
-// Let's know how many free colors do we have.
-
-#define RLEVELS 5
-#define GLEVELS 9
-#define BLEVELS 5
-
-
-// to free dithered_rgb_colormap pixels allocated by Mesa
-static unsigned long* oglMesaUsedPixelCells = 0;
-static int oglMesaUsedFreeCells = 0;
-
-static int
-get_free_color_cells(Display* display, int screen, Colormap colormap)
-{
-	if (!oglMesaUsedPixelCells)
-	{
-		XColor	xcol;
-		int		i;
-		int		colorsfailed;
-		int		ncolors			= XDisplayCells(display, screen);
-		long		r, g, b;
-
-		oglMesaUsedPixelCells = (unsigned long*)ckalloc(ncolors*sizeof(unsigned long));
-
-		// Allocate X colors and initialize color_table[], red_table[], etc
-		// de Mesa 2.1: xmesa1.c setup_dithered_(...)
-		i = colorsfailed = 0;
-
-		for (r = 0; r < RLEVELS; r++)
-		{
-			for (g = 0; g < GLEVELS; g++)
-			{
-				for (b = 0; b < BLEVELS; b++)
-				{
-					int exact;
-
-					xcol.red = (r*65535)/(RLEVELS - 1);
-					xcol.green = (g*65535)/(GLEVELS - 1);
-					xcol.blue = (b*65535)/(BLEVELS - 1);
-					noFaultXAllocColor(display, colormap, ncolors, &xcol, &exact);
-					oglMesaUsedPixelCells[i++] = xcol.pixel;
-
-					if (!exact)
-						colorsfailed++;
-				}
-			}
-		}
-
-		oglMesaUsedFreeCells = i;
-		XFreeColors(display, colormap, oglMesaUsedPixelCells, oglMesaUsedFreeCells, 0x00000000);
-	}
-
-	return oglMesaUsedFreeCells;
-}
-
-
-static void
-free_default_color_cells(Display* display, Colormap colormap)
-{
-	if (oglMesaUsedPixelCells)
-	{
-		XFreeColors(display, colormap, oglMesaUsedPixelCells, oglMesaUsedFreeCells, 0x00000000);
-		ckfree((char*)oglMesaUsedPixelCells);
-		oglMesaUsedPixelCells = 0;
-		oglMesaUsedFreeCells = 0;
-	}
-}
-
-#endif
 
 #if 0 // unused functions
 

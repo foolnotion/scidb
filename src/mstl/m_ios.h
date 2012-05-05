@@ -22,7 +22,7 @@
 #include "m_exception.h"
 #include "m_types.h"
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 extern "C" { struct _iobuf; }
 # define _IO_FILE _iobuf
@@ -117,7 +117,7 @@ private:
 
 #include "m_ios.ipp"
 
-#ifdef WIN32
+#ifdef __WIN32__
 # include <stdarg.h>
 
 extern "C"

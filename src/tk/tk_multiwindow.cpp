@@ -166,7 +166,7 @@ static Tk_ObjCustomOption stickyOption =
 
 #if defined(__MacOSX__)
 # define NORMAL_BG	"systemWindowBody"
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 # define NORMAL_BG	"SystemButtonFace"
 #elif defined(__unix__)
 # define NORMAL_BG	"#d9d9d9"

@@ -513,17 +513,18 @@ standardizeNames(char const* name, char* result)
 }
 
 
-static void
+static mstl::string const&
 insertAlias(Player::StringList& sl, mstl::string const& alias)
 {
 	for (unsigned i = 0; i < sl.size(); ++i)
 	{
 		if (sl[i] == alias)
-			return;
+			sl[i];
 	}
 
 	sl.push_back();
 	::alloc(sl.back(), alias);
+	return sl.back();
 }
 
 
@@ -580,7 +581,31 @@ containsPlayer(Players const& players, country::Code federation, sex::ID sex)
 
 
 static Player*
-findPlayer(Players const& players, country::Code federation, sex::ID sex)
+findPlayer(mstl::string const& name, Players const& players)
+{
+	if (players.size() == 1)
+		return players.front();
+
+	for (unsigned i = 0; i < players.size(); ++i)
+	{
+		::StringList const* sl = ::aliasDict.find(players[i]);
+
+		if (sl)
+		{
+			for (unsigned k = 0; k < sl->size(); ++k)
+			{
+				if ((*sl)[k] == name)
+					return players[i];
+			}
+		}
+	}
+
+	return 0;
+}
+
+
+static Player*
+findPlayer(mstl::string const& name, Players const& players, country::Code federation, sex::ID sex)
 {
 	M_ASSERT(players.size() >= 1);
 
@@ -595,7 +620,7 @@ findPlayer(Players const& players, country::Code federation, sex::ID sex)
 			if (sex == sex::Unspecified || player->sex() == sex::Unspecified || sex == player->sex())
 			{
 				if (player->federation() == country::Unknown)
-					return players.size() == 1 ? player : 0;
+					return findPlayer(name, players);
 
 				if (federation == player->federation() || federation == player->nativeCountry())
 					return player;
@@ -618,7 +643,7 @@ findPlayer(Players const& players, country::Code federation, sex::ID sex)
 			Player* player = players[i];
 
 			if (player->sex() == sex::Unspecified)
-				return players.size() == 1 ? player : 0;
+				return findPlayer(name, players);
 
 			if (player->sex() == sex)
 				return player;
@@ -627,7 +652,7 @@ findPlayer(Players const& players, country::Code federation, sex::ID sex)
 		return 0;
 	}
 
-	return players.size() == 1 ? players.front() : 0;
+	return findPlayer(name, players);
 }
 
 
@@ -809,11 +834,7 @@ Player::findPlayer(mstl::string const& name, country::Code federation, sex::ID s
 	normalize(key);
 
 	::Players const* p = ::playerLookup.find(key);
-
-	if (p == 0)
-		return 0;
-
-	return ::findPlayer(*p, federation, sex);
+	return p ? ::findPlayer(name, *p, federation, sex) : 0;
 }
 
 
@@ -870,30 +891,12 @@ Player::newPlayer(mstl::string const& name,
 				}
 
 				player = players.front();
-
-//				if (player->federation() != country::Unknown)
-//				{
-//					DEBUG(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
-//					return 0;
-//				}
-//
-//				if (player->sex() != sex::Unspecified)
-//				{
-//					DEBUG(::printf("cannot distinguish between sex: %s ignored\n", name.c_str()));
-//					return 0;
-//				}
 			}
 			else
 			{
 				for (unsigned i = 0; i < players.size(); ++i)
 				{
 					Player* p = players[i];
-
-//					if (p->federation() != country::Unknown)
-//					{
-//						DEBUG(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
-//						return 0;
-//					}
 
 					if (p->sex() == sex || p->sex() == sex::Unspecified)
 					{
@@ -911,21 +914,11 @@ Player::newPlayer(mstl::string const& name,
 				{
 					Player* p = players[i];
 
-//					if (p->sex() != sex::Unspecified)
-//					{
-//						DEBUG(::printf("cannot distinguish between sex: %s ignored\n", name.c_str()));
-//						return 0;
-//					}
-
 					if (federation == p->federation())
 					{
 						player = p;
 						break;
 					}
-//					else if (country::match(federation, p->federation()))
-//					{
-//						player = p;
-//					}
 				}
 			}
 			else
@@ -941,10 +934,6 @@ Player::newPlayer(mstl::string const& name,
 							player = p;
 							break;
 						}
-//						else if (country::match(federation, p->federation()))
-//						{
-//							player = p;
-//						}
 					}
 				}
 			}
@@ -1056,32 +1045,12 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 				}
 
 				player = players.front();
-
-//				if (player->federation() != country::Unknown)
-//				{
-//					DEBUG(::printf("cannot distinguish between federation: alias %s ignored\n",
-//										name.c_str()));
-//					return false;
-//				}
-//
-//				if (player->sex() != sex::Unspecified)
-//				{
-//					DEBUG(::printf("cannot distinguish between sex: alias %s ignored\n", name.c_str()));
-//					return false;
-//				}
 			}
 			else
 			{
 				for (unsigned i = 0; i < players.size(); ++i)
 				{
 					Player* p = players[i];
-
-//					if (p->federation() != country::Unknown)
-//					{
-//						DEBUG(::printf("cannot distinguish between federation: alias %s ignored\n",
-//											name.c_str()));
-//						return false;
-//					}
 
 					if (p->sex() == sex || p->sex() == sex::Unspecified)
 					{
@@ -1098,12 +1067,6 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 				for (unsigned i = 0; i < players.size(); ++i)
 				{
 					Player* p = players[i];
-
-//					if (p->sex() != sex::Unspecified)
-//					{
-//						DEBUG(::printf("cannot distinguish between sex: alias %s ignored\n", name.c_str()));
-//						return false;
-//					}
 
 					if (country::match(federation, p->federation()))
 					{
@@ -1202,32 +1165,12 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 					}
 
 					player = players.front();
-
-//					if (player->federation() != country::Unknown)
-//					{
-//						DEBUG(::printf("cannot distinguish between federation: name %s ignored\n",
-//											name.c_str()));
-//						return false;
-//					}
-//
-//					if (player->sex() != sex::Unspecified)
-//					{
-//						DEBUG(::printf("cannot distinguish between sex: name %s ignored\n", name.c_str()));
-//						return false;
-//					}
 				}
 				else
 				{
 					for (unsigned i = 0; i < players.size(); ++i)
 					{
 						Player* p = players[i];
-
-//						if (p->federation() != country::Unknown)
-//						{
-//							DEBUG(::printf("cannot distinguish between federation: name %s ignored\n",
-//												name.c_str()));
-//							return false;
-//						}
 
 						if (p->sex() == sex || p->sex() == sex::Unspecified)
 						{
@@ -1244,12 +1187,6 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 					for (unsigned i = 0; i < players.size(); ++i)
 					{
 						Player* p = players[i];
-
-//						if (p->sex() != sex::Unspecified)
-//						{
-//							DEBUG(::printf("cannot distinguish between sex: name %s ignored\n", name.c_str()));
-//							return false;
-//						}
 
 						if (country::match(federation, p->federation()))
 						{
@@ -1283,19 +1220,15 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 	}
 
 	::StringList& sl = ::aliasDict.find_or_insert(player, ::StringList());
-
-	sl.push_back(player->m_name);
-	::alloc(player->m_name, name);
-	::playerList.push_back(PlayerList::value_type(player->m_name, player));
+	::playerList.push_back(PlayerList::value_type(::insertAlias(sl, name), player));
 
 	if (ascii.c_str() != name.c_str())
 	{
 		M_ASSERT(ascii != name);
 
-		sl.push_back();
-		::alloc(sl.back(), ascii);
-		::alloc(::asciiDict[player], sl.back());
-		::playerList.push_back(PlayerList::value_type(sl.back(), player));
+		mstl::string const& s = ::insertAlias(sl, ascii);
+		::alloc(::asciiDict[player], s);
+		::playerList.push_back(PlayerList::value_type(s, player));
 
 		normalize(name, key);
 		::alloc(key2, key);

@@ -773,6 +773,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			strm.read(name.data(), 40);
 
 			name.set_size(::strlen(name.c_str()));
+			mapPlayerName(name);
 			toUtf8(name);
 
 			strm.read(city.data(), 30);
@@ -1257,6 +1258,7 @@ Codec::preloadTournamentData(mstl::string const& rootname, util::Progress& progr
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 40);
+			::convPlayerName(name);
 			HandleData(name, ::strlen(name));
 
 			strm.read(city.data(), 30);

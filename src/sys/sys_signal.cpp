@@ -18,7 +18,7 @@
 
 #include "sys_signal.h"
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 bool sys::signal::sendInterrupt(long pid) { return false; }
 

@@ -181,6 +181,13 @@ switch $::scidb::revision {
 		set ::export::Values(scid,encoding) utf-8
 		set ::export::Values(scidb,encoding) utf-8
 		set ::export::Values(pdf,encoding) iso8859-1
+		set ::crosstable::RecentlyUsedHistory {}
+		set ::crosstable::MostRecentHistory {}
+	}
+
+	96 {
+		set ::crosstable::RecentlyUsedHistory {}
+		set ::crosstable::MostRecentHistory {}
 	}
 }
 

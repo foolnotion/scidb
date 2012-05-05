@@ -81,7 +81,7 @@ GetParent(
     return None;
 }
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 static void
 ScCreateBusy(Tk_FakeWin *winPtr, Tk_Window tkRef, Window *parentPtr, Tk_Window tkParent, Busy* busy)
@@ -449,7 +449,7 @@ NewWindowObj(Tk_Window tkwin)
  * OSX/Aqua, that's nothing at all.
  */
 
-#ifdef WIN32
+#ifdef __WIN32__
 # define DEF_BUSY_CURSOR "wait"
 #else
 # define DEF_BUSY_CURSOR "watch"

@@ -26,7 +26,7 @@
 
 #define U_BITS_OF(type) (sizeof(type)*8)
 
-#if defined(__GNUC__) && !defined(WIN32)
+#if defined(__GNUC__) && !defined(__WIN32__)
 // We want to use 'minor' and 'major' as method names.
 // Unfortunately these names are used as macros,
 // so we have to undefine these macros.
@@ -35,7 +35,7 @@
 # undef major
 #endif
 
-#ifdef WIN32
+#ifdef __WIN32__
 # include <windows.h>
 # undef min
 # undef max

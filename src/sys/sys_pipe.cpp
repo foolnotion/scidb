@@ -77,7 +77,7 @@ Pipe::close()
 }
 
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 # include <io.h>

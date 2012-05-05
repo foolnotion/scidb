@@ -28,7 +28,7 @@
 
 using namespace sys::thread;
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 typedef HANDLE Id;
@@ -169,7 +169,7 @@ atomic_test(atomic_t* v)
 	return *v == 1;
 }
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 static volatile LONG m_lock = 0;
 
@@ -397,7 +397,7 @@ atomic_test(atomic_t* v)
 
 // End of Mutex /////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 static volatile LONG m_cancel = 1;
 

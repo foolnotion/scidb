@@ -40,7 +40,7 @@
 
 #include <tk.h>
 
-#if !defined(WIN32) && !defined(__MacOSX__)
+#if !defined(__WIN32__) && !defined(__MacOSX__)
 
 #include <X11/Xcursor/Xcursor.h>
 
@@ -131,7 +131,7 @@ cmdFreeCursor(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const ob
 	return TCL_OK;
 }
 
-#endif // !defined(WIN32) && !defined(__MacOSX__)
+#endif // !defined(__WIN32__) && !defined(__MacOSX__)
 
 
 static int
@@ -139,7 +139,7 @@ cmdIsARGBSupported(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* con
 {
 	int value = 0;
 
-#if !defined(WIN32) && !defined(__MacOSX__)
+#if !defined(__WIN32__) && !defined(__MacOSX__)
 	value = XcursorSupportsARGB(Tk_Display(Tk_MainWindow(ti)));
 #endif
 
@@ -162,7 +162,7 @@ xcursor_init(Tcl_Interp* ti)
 	if (Tcl_Eval(ti, "namespace eval xcursor {}") == TCL_ERROR)
 		return TCL_ERROR;
 
-#if !defined(WIN32) && !defined(__MacOSX__)
+#if !defined(__WIN32__) && !defined(__MacOSX__)
 
 	// private functions
 	Tcl_CreateObjCommand(ti, "xcursor::DefineCursor", cmdSetCursor, 0, 0);

@@ -162,7 +162,7 @@ _free_r (struct _reent *ptr, void *addr)
 
 #else
 
-#ifdef _WIN32
+#ifdef __WIN32__
 
 static CRITICAL_SECTION __sfp_lock;
 static CRITICAL_SECTION __sinit_lock;
@@ -1039,7 +1039,7 @@ _DEFUN(__svfscanf_r, (rptr, fp, fmt0, ap),
 	  if (flags & VECTOR)
 	    vec_read_count = 4;
 	  break;
-       
+
 # ifdef __SPE__
 	  /* treat fixed-point like %f floating point */
         case 'r':
@@ -1164,7 +1164,7 @@ _DEFUN(__svfscanf_r, (rptr, fp, fmt0, ap),
       /* for vector formats process separator characters after first loop */
       if (looped && (flags & VECTOR))
 	{
-	  flags = orig_flags; 
+	  flags = orig_flags;
 	  /* all formats other than default char have a separator char */
 	  if (vec_sep != ' ' || type != CT_CHAR)
 	    {
@@ -1773,7 +1773,7 @@ _DEFUN(__svfscanf_r, (rptr, fp, fmt0, ap),
 		  nassigned++;
 		  break;
 		}
-	      
+
 #endif /* __SPE__ */
 #ifdef _NO_LONGDBL
 	      res = _strtod_r (rptr, buf, NULL);
@@ -7358,7 +7358,7 @@ ssize_t
 _DEFUN(__getdelim, (bufptr, n, delim, fp),
        char **bufptr _AND
        size_t *n     _AND
-       int delim     _AND 
+       int delim     _AND
        FILE *fp)
 {
   char *buf;
@@ -7375,7 +7375,7 @@ _DEFUN(__getdelim, (bufptr, n, delim, fp),
     }
 
   buf = *bufptr;
-  if (buf == NULL || *n < MIN_LINE_SIZE) 
+  if (buf == NULL || *n < MIN_LINE_SIZE)
     {
       buf = (char *)realloc (*bufptr, DEFAULT_LINE_SIZE);
       if (buf == NULL)
@@ -7406,7 +7406,7 @@ _DEFUN(__getdelim, (bufptr, n, delim, fp),
 	      cont = 0;
               break;
             }
-	  else 
+	  else
             {
               *ptr++ = ch;
               if (ch == delim)
@@ -7429,7 +7429,7 @@ _DEFUN(__getdelim, (bufptr, n, delim, fp),
               break;
             }
 
-          /* After reallocating, continue in new buffer */          
+          /* After reallocating, continue in new buffer */
           *bufptr = buf;
           *n = newsize;
           ptr = buf + pos;
@@ -8811,7 +8811,7 @@ _DEFUN(setbuf, (fp, buf),
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-/* 
+/*
 Modified copy of setbuf.c to support the setbuffer function
 defined as part of BSD.
 Modifications by Gareth Pearce, 2001.
@@ -8895,7 +8895,7 @@ _DEFUN(setbuffer, (fp, buf, size),
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-/* 
+/*
 Modified copy of setbuf.c to support setlinebuf function
 defined as part of BSD.
 Modifications by Gareth Pearce, 2001.
@@ -11151,8 +11151,8 @@ _DEFUN(get_arg, (data, n, fmt, ap, numargs_p, args, arg_type, last_fmt),
 #ifndef _REENT_ONLY
 
 int
-_DEFUN(vscanf, (fmt, ap), 
-       _CONST char *fmt _AND 
+_DEFUN(vscanf, (fmt, ap),
+       _CONST char *fmt _AND
        va_list ap)
 {
   _REENT_SMALL_CHECK_INIT (_REENT);
@@ -11163,8 +11163,8 @@ _DEFUN(vscanf, (fmt, ap),
 
 int
 _DEFUN(_vscanf_r, (ptr, fmt, ap),
-       struct _reent *ptr _AND 
-       _CONST char *fmt   _AND 
+       struct _reent *ptr _AND
+       _CONST char *fmt   _AND
        va_list ap)
 {
   _REENT_SMALL_CHECK_INIT (ptr);

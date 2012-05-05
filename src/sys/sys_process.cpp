@@ -32,7 +32,7 @@ using namespace sys;
 
 namespace {
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 

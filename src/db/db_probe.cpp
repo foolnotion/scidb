@@ -149,7 +149,7 @@ inline static square SqFindThird(square const* squares, int piece)
 #include <stdlib.h>				// must be included before we include egtb/tbindex.cpp
 #define exit(n) egtb_exit(n)	// because of this macro definition
 #define printf(fmt,args...) egtb_printf(fmt,##args)
-#ifdef WIN32
+#ifdef __WIN32__
 # include <ctype.h>
 #endif
 #ifdef PROBE_USE_SCID

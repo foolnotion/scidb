@@ -438,11 +438,6 @@ TkPointerEvent(
 extern "C" int TkPositionInTree(TkWindow *winPtr, TkWindow *treePtr);
 extern "C" int TkGrabState(TkWindow *winPtr);
 
-typedef struct {
-    Display *display;		/* Display from which to discard events. */
-    unsigned int serial;	/* Serial number with which to compare. */
-} GrabInfo;
-
 
 static TkWindow *
 TopLevelWindow(
@@ -512,8 +507,8 @@ TkGrabState(
 void
 tk::fixes_init(Tcl_Interp*)
 {
-#ifdef FIX_TK_POINTER_EVENTS
     // force linkage
+#ifdef FIX_TK_POINTER_EVENTS
     {
 	int (*func)(XEvent *, TkWindow *) = TkPointerEvent;
 	if (func)

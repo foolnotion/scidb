@@ -37,7 +37,7 @@ static unsigned const DefaultRedirects		= 3;
 static int const PortNumber = 80;
 
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include "winsock2.h"
 
@@ -120,7 +120,7 @@ struct Http::Socket
 Http::Socket::Socket()
 	:m_fd(INVALID_SOCKET)
 {
-#ifdef WIN32
+#ifdef __WIN32__
 	if (!::wsaDataInizialized)
 	{
 		if (::WSAStartup(MAKEWORD(2,2), &::f_wsaData) != 0)
@@ -140,7 +140,7 @@ Http::Socket::~Socket()
 	if (m_fd != INVALID_SOCKET)
 		::closesocket(m_fd);
 
-#ifdef WIN32
+#ifdef __WIN32__
 	::WSACleanup();
 #endif
 }
@@ -199,7 +199,7 @@ Http::Socket::connect(mstl::string host)
 			case EMFILE:				return Http::Too_Many_Open_Files;
 			case ENOBUFS:				return Http::Out_Of_Memory;
 			case EPROTONOSUPPORT:	return Http::TCP_Not_Supported;
-#ifndef WIN32
+#ifndef __WIN32__
 			case EACCES:				return Http::No_Permission;
 			case ENFILE:				return Http::Too_Many_Open_Files;
 			case ENOMEM:				return Http::Out_Of_Memory;
@@ -211,7 +211,7 @@ Http::Socket::connect(mstl::string host)
 
 	::setsockopt(m_fd, SOL_SOCKET, SO_KEEPALIVE, 0, 0);
 
-#ifdef WIN32
+#ifdef __WIN32__
 	WSACleanup();
 #endif
 
@@ -225,7 +225,7 @@ Http::Socket::connect(mstl::string host)
 			case ECONNREFUSED:	return Http::Connection_Refused;
 			case ENETUNREACH:		return Http::Network_Unreachable;
 			case ETIMEDOUT:		return Http::Timeout;
-#ifndef WIN32
+#ifndef __WIN32__
 			case EACCES:			// fallthru
 			case EPERM:				return Http::Firewall_Denied;
 			case EAGAIN:			return Http::No_Free_Local_Port;
@@ -236,7 +236,7 @@ Http::Socket::connect(mstl::string host)
 		return Connect_Failed;
 	}
 
-#ifdef WIN32
+#ifdef __WIN32__
 	WSACleanup();
 #endif
 
@@ -277,14 +277,14 @@ Http::Socket::waitForInput(unsigned timeout)
 			{
 				case ENETDOWN:	return Http::Network_Down;		// win32 specific
 				case EFAULT:	return Http::Out_Of_Memory;	// win32 specific
-#ifndef WIN32
+#ifndef __WIN32__
 				case EINTR:		return Http::Interrupted;
 #endif
 			}
 			return Http::Select_Failed;
 	}
 
-#ifdef WIN32
+#ifdef __WIN32__
 	WSACleanup();
 #endif
 
@@ -304,7 +304,7 @@ Http::Socket::recv(unsigned nbytes, char* buf)
 			case ENETDOWN:		return Http::Network_Down;			// win32 specific
 			case ETIMEDOUT:	return Http::Connection_Closed;	// win32 specific
 			case ENOBUFS:		return Http::Out_Of_Memory;		// unix specific
-#ifdef WIN32
+#ifdef __WIN32__
 			case ECONNRESET:
 			case ECONNABORTED:
 			case ENETRESET:	return Http::Connection_Closed;
@@ -316,7 +316,7 @@ Http::Socket::recv(unsigned nbytes, char* buf)
 		return Read_Failed;
 	}
 
-#ifdef WIN32
+#ifdef __WIN32__
 	WSACleanup();
 #endif
 
@@ -336,7 +336,7 @@ Http::Socket::send(char const* buf, unsigned size)
 			case ENETDOWN:			return Http::Network_Down;			// win32 specific
 			case ECONNRESET:		return Http::Connection_Closed;
 			case ENOBUFS:			return Http::Output_Queue_Full;
-#ifdef WIN32
+#ifdef __WIN32__
 			case ENETRESET:		return Http::Connection_Closed;
 			case ETIMEDOUT:		// fallthru
 			case ECONNABORTED:	return Http::Connection_Closed;
@@ -352,7 +352,7 @@ Http::Socket::send(char const* buf, unsigned size)
 		return Http::Write_Failed;
 	}
 
-#ifdef WIN32
+#ifdef __WIN32__
 	WSACleanup();
 #endif
 

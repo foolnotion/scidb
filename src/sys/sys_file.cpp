@@ -27,7 +27,7 @@
 # include <sys/stat.h>
 # include <sys/types.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 # define stat	_stat
 # define chmod	_chmod
 #endif
@@ -122,7 +122,7 @@ sys::file::changed(char const* filename, uint32_t& time)
 }
 
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 
@@ -343,7 +343,7 @@ sys::file::rename(char const* oldFilename, char const* newFilename, bool preserv
 
 	if (preserveOldAttrs)
 	{
-#if defined(WIN32)
+#if defined(__WIN32__)
 		st.st_mode &= _S_IREAD | _S_IWRITE;
 #else
 		st.st_mode &= 0x0fff;

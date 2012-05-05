@@ -2146,7 +2146,7 @@ drawBox(pQuery, pItem, pBox, drawable, x, y, w, h, xview, yview, flags)
             int iPosY;
             HtmlNode *pBgNode = pBox->pNode;
 
-#ifdef WIN32
+#ifdef __WIN32__
             /*
              * Todo: On windows, using XFillRectangle() to draw the image
              * doesn't seem to work. This is probably a shortcoming of the Tk

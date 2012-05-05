@@ -43,7 +43,7 @@
 #define nscore_h___
 
 /**
- * Make sure that we have the proper platform specific 
+ * Make sure that we have the proper platform specific
  * c++ definitions needed by nscore.h
  */
 /*#ifndef _XPCOM_CONFIG_H_
@@ -60,10 +60,10 @@
 /**
  * Macros defining the target platform...
  */
-#ifdef _WIN32
+#ifdef __WIN32__
 #define NS_WIN32 1
 
-#elif defined(__unix)
+#elif defined(__unix__)
 #define NS_UNIX 1
 
 #elif defined(XP_OS2)
@@ -336,10 +336,10 @@
     a pointer to a base to a pointer to a derived class, the cast will be
     ambiguous if the source pointer type appears multiple times in the
     destination, e.g.,
-    
+
       class Base {};
       class Derived : public Base, public Base {};
-      
+
       void foo( Base* b )
         {
           ((Derived*)b)->some_derived_member ... // Error: Ambiguous, expand from which |Base|?
@@ -360,8 +360,8 @@
     "straight", no macro.
   */
 #endif
- 
-/* 
+
+/*
  * Use these macros to do 64bit safe pointer conversions.
  */
 

@@ -142,7 +142,7 @@ releaseWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin)
 		if (winPtr->flags & TK_MAPPED)
 			Tk_UnmapWindow(tkwin);
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 		// Reparent to nullptr so UpdateWrapper won't delete our original parent window
 		SetParent(TkWinGetHWND(winPtr->window), nullptr);
@@ -214,7 +214,7 @@ captureWindow(Tcl_Interp *interp, Tk_Window tkmain, Tk_Window tkwin, Tk_Window t
 	{
 		XSetWindowAttributes atts;
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 		// SetParent must be done before TkWmDeadWindow or it's DestroyWindow on the
 		// parent Hwnd will also destroy the child

@@ -23,7 +23,7 @@
 
 #if defined(__unix__) || defined(__MaxOSX__)
 # include <time.h>
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 # include <windows.h>
 #endif
 
@@ -69,7 +69,7 @@ DateTime::doRegister(Environment& env)
 	min	= lt->tm_min;
 	sec	= lt->tm_sec;
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 	SYSTEMTIME lt;
 	GetLocalTime(&lt);

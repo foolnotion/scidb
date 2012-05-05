@@ -1047,7 +1047,7 @@ int HtmlImageServerCount(pTree)
  *
  *---------------------------------------------------------------------------
  */
-#ifndef WIN32
+#ifndef __WIN32__
 #include <X11/Xutil.h>
 Tcl_Obj *HtmlXImageToImage(pTree, pXImage, w, h)
     HtmlTree *pTree;

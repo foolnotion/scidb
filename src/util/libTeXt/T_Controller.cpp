@@ -38,7 +38,7 @@
 # include <unistd.h>
 # include <time.h>
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 # include <windows.h>
 
@@ -325,7 +325,7 @@ Controller::processInput(	mstl::istream& inp,
 		mstl::string::size_type dot = myPath.rfind('.');
 #if defined(__unix__) || defined(__MaxOSX__)
 		mstl::string::size_type sep = myPath.rfind('/');
-#elif defined (WIN32)
+#elif defined (__WIN32__)
 		mstl::string::size_type sep = myPath.rfind('\\');
 #else
 # error "unsupported platform"
@@ -422,7 +422,7 @@ Controller::processInput(	mstl::string const& inputPath,
 				min	= lt->tm_min;
 			}
 
-#elif defined(WIN32)
+#elif defined(__WIN32__)
 
 			HANDLE fh = (HANDLE)::_get_osfhandle(fildes);
 

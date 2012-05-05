@@ -20,7 +20,7 @@
 
 #include <time.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 # include <sys/timeb.h>

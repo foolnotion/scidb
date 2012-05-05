@@ -394,6 +394,18 @@ Namebase::insertEvent(	mstl::string const& name,
 		entry->m_value.m_eventMode = eventMode;
 		entry->m_value.m_site = site;
 
+#ifdef SCI_NAMEBASE_FIX
+		{
+			unsigned i = size() - 1;
+
+			while (i > 0 && *eventAt(i) < *eventAt(i - 1))
+			{
+				mstl::swap(m_list[i], m_list[i - 1]);
+				--i;
+			}
+		}
+#endif
+
 		M_ASSERT(size() == 1 || *eventAt(size() - 2) < *eventAt(size() - 1));
 	}
 

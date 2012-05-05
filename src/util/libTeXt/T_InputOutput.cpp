@@ -28,7 +28,7 @@
 #include "m_string.h"
 #include "m_ifstream.h"
 
-#if defined(WIN32)
+#if defined(__WIN32__)
 #elif defined(__unix__) || defined(__MacOSX__)
 # include <unistd.h>
 #endif
@@ -48,7 +48,7 @@ InputOutput::suffix()
 static bool
 fileExists(mstl::string const& name)
 {
-#if defined(WIN32)
+#if defined(__WIN32__)
 
 	DWORD fileAttr = GetFileAttributes(name);
 	return fileAttr != 0xffffffff;
@@ -77,7 +77,7 @@ InputOutput::searchFile(mstl::string const& searchDirs, mstl::string& filename)
 	{
 		mstl::string fullPathname(searchDirs.substr(start, end));
 
-#if defined(WIN32)
+#if defined(__WIN32__)
 		fullPathname += '\\';
 #else
 		fullPathname += '/';

@@ -50,7 +50,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 # include <windows.h>
 #endif
 
@@ -2071,7 +2071,7 @@ HtmlComputedValuesSet(p, eProp, pProp)
 }
 
 #ifdef USE_LATIN_LIGATURES
-# ifdef WIN32
+# ifdef __WIN32__
 
 void
 MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)

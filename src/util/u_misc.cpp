@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#ifdef WIN32
+#ifdef __WIN32__
 
 # include <windows.h>
 static char Separator = '\\';
@@ -97,7 +97,7 @@ util::misc::file::suffix(mstl::string const& path)
 bool
 util::misc::time::getCurrentTime(struct tm& result)
 {
-#ifdef WIN32
+#ifdef WI__WIN32__N32
 
 	SYSTEMTIME t;
 	::GetLocalTime(&t);

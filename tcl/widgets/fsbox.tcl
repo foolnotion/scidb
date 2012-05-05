@@ -233,6 +233,7 @@ proc fsbox {w type args} {
 	set Vars(edit:active) 0
 	set Vars(lookup:$Vars(folder:home)) home
 	set Vars(lookup:$Vars(folder:filesystem)) filesystem
+	set Vars(history:folder) ""
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
 #	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
 
@@ -1054,10 +1055,44 @@ proc SbSet {sb first last} {
 }
 
 
-proc DirChanged {w {useHistory 1}} {
+proc AddToHistory {w folder} {
 	variable ${w}::Vars
 	variable bookmarks::Bookmarks
 	variable bookmarks::BookmarkSize
+
+	if {[string length $folder] == 0} { return }
+
+	set i [lsearch -exact $Bookmarks(lastvisited) $folder]
+	if {$i >= 0} {
+		set Bookmarks(lastvisited) [lreplace $Bookmarks(lastvisited) $i $i]
+	}
+	if {[llength $Bookmarks(lastvisited)] >= $BookmarkSize} {
+		set erange [expr {$BookmarkSize - 2}]
+		set Bookmarks(lastvisited) [lrange $Bookmarks(lastvisited) 0 $erange]
+	}
+	set Bookmarks(lastvisited) [linsert $Bookmarks(lastvisited) 0 $folder]
+
+	set i [lsearch -exact -index 0 $Bookmarks(favorites) $folder]
+	if {$i == -1} {
+		if {[llength $Bookmarks(favorites)] >= $BookmarkSize} {
+			set erange [expr {$BookmarkSize - 2}]
+			set Bookmarks(favorites) [lrange $Bookmarks(favorites) 0 $erange]
+		}
+		lappend Bookmarks(favorites) [list $folder 1]
+	} else {
+		set count [lindex $Bookmarks(favorites) $i 1]
+		set Bookmarks(favorites) [lreplace $Bookmarks(favorites) $i $i]
+		lappend Bookmarks(favorites) [list $folder [incr count]]
+	}
+	set Bookmarks(favorites) [lsort -index 1 -decreasing -integer $Bookmarks(favorites)]
+}
+
+
+proc DirChanged {w {useHistory 1}} {
+	variable ${w}::Vars
+	variable bookmarks::Bookmarks
+
+	set Vars(history:folder) ""
 
 	if {$Vars(glob) eq "Files"} {
 		set folder $Vars(folder)
@@ -1077,29 +1112,7 @@ proc DirChanged {w {useHistory 1}} {
 		set Vars(tip:forward) ""
 
 		if {$Vars(glob) eq "Files" && $folder ne [fileSeparator]} {
-			set i [lsearch -exact $Bookmarks(lastvisited) $folder]
-			if {$i >= 0} {
-				set Bookmarks(lastvisited) [lreplace $Bookmarks(lastvisited) $i $i]
-			}
-			if {[llength $Bookmarks(lastvisited)] >= $BookmarkSize} {
-				set erange [expr {$BookmarkSize - 2}]
-				set Bookmarks(lastvisited) [lrange $Bookmarks(lastvisited) 0 $erange]
-			}
-			set Bookmarks(lastvisited) [linsert $Bookmarks(lastvisited) 0 $folder]
-
-			set i [lsearch -exact -index 0 $Bookmarks(favorites) $folder]
-			if {$i == -1} {
-				if {[llength $Bookmarks(favorites)] >= $BookmarkSize} {
-					set erange [expr {$BookmarkSize - 2}]
-					set Bookmarks(favorites) [lrange $Bookmarks(favorites) 0 $erange]
-				}
-				lappend Bookmarks(favorites) [list $folder 1]
-			} else {
-				set count [lindex $Bookmarks(favorites) $i 1]
-				set Bookmarks(favorites) [lreplace $Bookmarks(favorites) $i $i]
-				lappend Bookmarks(favorites) [list $folder [incr count]]
-			}
-			set Bookmarks(favorites) [lsort -index 1 -decreasing -integer $Bookmarks(favorites)]
+			set Vars(history:folder) $folder
 		}
 	}
 
@@ -1299,6 +1312,7 @@ proc Activate {w} {
 	}
 
 	if {[llength $selected] == 0} { return }
+	AddToHistory $w $Vars(history:folder)
 
 	foreach file $selected {
 		if {[lindex [file split $file] 0] ne [fileSeparator]} {
@@ -1574,8 +1588,8 @@ proc Build {w path args} {
 		-state disabled                                    \
 	]
 	::toolbar::add $tb separator
-	set Vars(button:modify) [::toolbar::add $tb button     \
-		-image $icon::16x16::iconModify                     \
+	set Vars(button:modify) [::toolbar::add $tb button    \
+		-image $icon::16x16::iconModify                    \
 		-command [namespace code [list RenameBookmark $w]] \
 		-state disabled                                    \
 	]
@@ -2199,14 +2213,14 @@ proc Build {w path args} {
 		-orient vertical             \
 		;
 
-	ttk::scrollbar $sv           \
-		-orient vertical          \
-		-takefocus 0              \
+	ttk::scrollbar $sv          \
+		-orient vertical         \
+		-takefocus 0             \
 		-command [list $t yview] \
 		;
-	ttk::scrollbar $sh           \
-		-orient horizontal        \
-		-takefocus 0              \
+	ttk::scrollbar $sh          \
+		-orient horizontal       \
+		-takefocus 0             \
 		-command [list $t xview] \
 		;
 
@@ -3512,10 +3526,10 @@ proc FinishRenameFile {w sel name} {
 	if {![[namespace parent]::CheckPath $w $name]} { return $oldName }
 
 	if {[file exists $newName]} {
-		[namespace parent]::messageBox \
-			-type ok \
-			-icon error \
-			-parent $Vars(widget:main) \
+		[namespace parent]::messageBox               \
+			-type ok                                  \
+			-icon error                               \
+			-parent $Vars(widget:main)                \
 			-message [format [Tr CannotRename] $name] \
 			;
 		return $oldName
@@ -3608,10 +3622,10 @@ proc FinishDuplicateFile {w sel name} {
 
 	foreach {_ f} $files {
 		if {[file exists $f]} {
-			[namespace parent]::messageBox \
-				-type ok \
-				-icon error \
-				-parent $Vars(widget:main) \
+			[namespace parent]::messageBox                      \
+				-type ok                                         \
+				-icon error                                      \
+				-parent $Vars(widget:main)                       \
 				-message [format [Tr CannotCopy] [file tail $f]] \
 				;
 			return $srcFile
