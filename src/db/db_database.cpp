@@ -403,6 +403,9 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding)
 	GameInfo* info = m_gameInfoList[index];
 	m_codec->reset();
 
+	if (encoding)
+		*encoding = this->encoding();
+
 	try
 	{
 		m_codec->decodeGame(game, *info, encoding);

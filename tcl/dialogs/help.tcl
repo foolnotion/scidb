@@ -249,8 +249,10 @@ proc FullPath {file} {
 
 	if {[file extension $file] eq ".html"} {
 		set lang [helpLanguage]
-	} else {
+	} elseif {[info exists Priv(current:lang)]} {
 		set lang $Priv(current:lang)
+	} else {
+		set lang [helpLanguage]
 	}
 	return [file normalize [file join $::scidb::dir::help $lang $file]]
 }

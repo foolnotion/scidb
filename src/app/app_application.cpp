@@ -910,7 +910,6 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
 	game.cursor = &cursor;
 	game.index = index;
-	game.encoding = base.encoding();
 
 	load::State state = base.loadGame(index, *game.game, game.encoding);
 
