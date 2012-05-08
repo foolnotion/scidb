@@ -204,6 +204,7 @@
 ::load::mc::Loading					"Lade %s"
 ::load::mc::ReadingOptionsFile	"Lese Optionendatei"
 ::load::mc::StartupFinished		"Programmstart beendet"
+::load::mc::SystemEncoding			"Die Systemenkodierung ist '%s'"
 
 ::load::mc::ECOFile					"ECO-Datei"
 ::load::mc::EngineFile				"Engine-Datei"

@@ -57,13 +57,13 @@ proc scrolledframe {path args} {
 	set scrollopts {}
 	if {$opts(-expand) ne "y"} {
 		set v $path.__vs__
-		scrolledframe::Scrollbar $v -command [list $f yview] -orient vertical
+		scrolledframe::scrollbar $v -command [list $f yview] -orient vertical
 		lappend scrollOpts -yscrollcommand [list ::scrolledframe::MySbSet $v]
 		grid $v -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-expand) ne "x"} {
 		set h $path.__hs__
-		scrolledframe::Scrollbar $h -command [list $f xview] -orient horizontal
+		scrolledframe::scrollbar $h -command [list $f xview] -orient horizontal
 		lappend scrollOpts -xscrollcommand [list ::scrolledframe::MySbSet $h]
 		grid $h -row 1 -column 0 -sticky ew
 	}
@@ -180,6 +180,23 @@ proc scrolledframe {w args} {
 	set args [array get opts]
 	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
 	return $w
+}
+
+
+proc scrollbar {path args} {
+	tk::frame $path -borderwidth 0
+	ttk::scrollbar $path.sb {*}$args
+	if {[$path.sb cget -orient] eq "horizontal"} {
+		set dim column
+		set sticky we
+	} else {
+		set dim row
+		set sticky ns
+	}
+	grid $path.sb -row 1 -column 1 -sticky $sticky
+	grid ${dim}configure $path 1 -weight 1
+	rename $path [namespace current]::_$path
+	interp alias {} $path {} [namespace current]::ScrollbarProc $path
 }
 
 
@@ -349,7 +366,7 @@ proc Resize {w req {force {}}} {
 		Xview $w scroll 0 unit
 		# Xset $w
 	}
-} ;# end proc resize
+}
 
 
 # --------------
@@ -555,6 +572,17 @@ proc ViewBox {w} {
 }
 
 
+proc MySbSet {sb first last} {
+	set parent [winfo parent $sb]
+	set slaves [grid slaves $parent]
+	sbset $sb $first $last
+	if {$slaves ne [grid slaves $parent]} {
+		set data [list $sb [expr {$sb in [grid slaves $parent]}]]
+		event generate $parent.__scrolledframe__.scrolled <<ScrollbarChanged>> -data $data
+	}
+}
+
+
 proc VsbWidth {w} {
 	set parent [winfo parent $w]
 
@@ -601,23 +629,6 @@ proc See {w child} {
 }
 
 
-proc Scrollbar {path args} {
-	tk::frame $path -borderwidth 0
-	ttk::scrollbar $path.sb {*}$args
-	if {[$path.sb cget -orient] eq "horizontal"} {
-		set dim column
-		set sticky we
-	} else {
-		set dim row
-		set sticky ns
-	}
-	grid $path.sb -row 1 -column 1 -sticky $sticky
-	grid ${dim}configure $path 1 -weight 1
-	rename $path [namespace current]::_$path
-	interp alias {} $path {} [namespace current]::ScrollbarProc $path
-}
-
-
 proc ScrollbarProc {w cmd args} {
 	switch $cmd {
 		configure - cget {
@@ -638,17 +649,6 @@ proc ScrollbarProc {w cmd args} {
 	}
 
 	return [$w.sb $cmd {*}$args]
-}
-
-
-proc MySbSet {sb first last} {
-	set parent [winfo parent $sb]
-	set slaves [grid slaves $parent]
-	sbset $sb $first $last
-	if {$slaves ne [grid slaves $parent]} {
-		set data [list $sb [expr {$sb in [grid slaves $parent]}]]
-		event generate $parent.__scrolledframe__.scrolled <<ScrollbarChanged>> -data $data
-	}
 }
 
 

@@ -391,19 +391,23 @@ proc popup {w b {at {}}} {
 	# When adjusting for being on the screen boundary, check that we are
 	# near the "edge" already, as Tk handles multiple monitors oddly
 	if {$at eq "cursor"} {
-		set y [expr {[winfo pointery $w] + 20}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+		set py [winfo pointery $w]
+		set y [expr {$py + 20}]
+		if {$py < $screenh && $y + $reqh > $screenh} {
+			# show above if we would be offscreen
 			set y [expr {[winfo pointery $w] - $reqh - 5}]
 		}
 	} elseif {$at ne ""} {
-		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [$w yposition $at] + 25}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+		set rooty [winfo rooty $w]
+		set y [expr {$rooty + [winfo vrooty $w] + [$w yposition $at] + 25}]
+		if {$rooty < $screenh && $y + $reqh > $screenh} {
 			# show above if we would be offscreen
 			set y [expr {[winfo rooty $w] + [$w yposition $at] - $reqh - 5}]
 		}
 	} else {
-		set y [expr {[winfo rooty $w] + [winfo vrooty $w] + [winfo height $w] + 5}]
-		if {($y < $screenh) && ($y + $reqh) > $screenh} {
+		set rooty [winfo rooty $w]
+		set y [expr {$rooty + [winfo vrooty $w] + [winfo height $w] + 5}]
+		if {$rooty < $screenh && $y + $reqh > $screenh} {
 			# show above if we would be offscreen
 			set y [expr {[winfo rooty $w] - $reqh - 5}]
 		}
@@ -429,6 +433,7 @@ proc popup {w b {at {}}} {
 	# avoid the blink issue with 1 to <1 alpha on Windows, watch half-fading
 	catch { wm attributes $b -alpha 0.99 }
 	catch { wm attributes $b -type tooltip }
+	catch { wm attributes $b -topmost }
 	wm geometry $b +$x+$y
 	wm deiconify $b
 	raise $b

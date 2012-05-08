@@ -548,7 +548,7 @@ private:
 	void doMove();
 	void undoMove();
 	void goToCurrentMove(bool forward) const;
-	void tryToMoveTo(edit::Key const& key);
+	void tryMoveTo(edit::Key const& key);
 
 	void getMoves(StringList& resul, unsigned flags);
 	void getKeys(StringList& result);

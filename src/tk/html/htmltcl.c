@@ -1187,6 +1187,9 @@ eventHandler(clientData, pEvent)
             int iWidth = Tk_Width(pTree->tkwin);
             int iHeight = Tk_Height(pTree->tkwin);
             HtmlLog(pTree, "EVENT", "ConfigureNotify: width=%dpx", iWidth);
+            if (pTree->options.fixedwidth) {
+                iWidth = pTree->options.fixedwidth;
+            }
             if (
                 iWidth != pTree->iCanvasWidth ||
                 iHeight != pTree->iCanvasHeight
@@ -1232,7 +1235,10 @@ docwinEventHandler(clientData, pEvent)
             if (pTree->buffer) {
                 Tk_Window win = pTree->docwin;
                 Display *display = Tk_Display(win);
-                int rc = TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height);
+                int rc = RectangleOut;
+
+                if (pTree->bufferRegion)
+                    rc = TkRectInRegion(pTree->bufferRegion, p->x, p->y, p->width, p->height);
 
                 if (rc == RectangleIn) {
                     GC gc;
@@ -1432,6 +1438,7 @@ configureCmd(clientData, interp, objc, objv)
         BOOLEAN(xhtml, "xhtml", "xhtml", "0", 0),
 
         INT(showhyphens, "showHyphens", "ShowHyphens", "0", F_MASK),
+        INT(fixedwidth, NULL, NULL, "0", 0),
 
         DOUBLE(fontscale, "fontScale", "FontScale", "1.0", F_MASK),
         DOUBLE(zoom, "zoom", "Zoom", "1.0", F_MASK),
@@ -2670,6 +2677,40 @@ visbboxCmd(clientData, interp, objc, objv)
 /*
  *---------------------------------------------------------------------------
  *
+ * viewboxCmd --
+ *
+ *     html viewbox
+ *
+ * Results:
+ *     Tcl result (i.e. TCL_OK, TCL_ERROR).
+ *
+ * Side effects:
+ *
+ *---------------------------------------------------------------------------
+ */
+static int
+viewboxCmd(clientData, interp, objc, objv)
+    ClientData clientData;             /* The HTML widget data structure */
+    Tcl_Interp *interp;                /* Current interpreter. */
+    int objc;                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[];             /* Argument strings. */
+{
+    HtmlTree *pTree = (HtmlTree *)clientData;
+    Tcl_Obj *pRet = Tcl_NewObj();
+    int width = Tk_Width(pTree->tkwin);
+    int height = Tk_Height(pTree->tkwin);
+
+    Tcl_ListObjAppendElement(0, pRet, Tcl_NewIntObj(pTree->cb.iScrollX));
+    Tcl_ListObjAppendElement(0, pRet, Tcl_NewIntObj(pTree->cb.iScrollY));
+    Tcl_ListObjAppendElement(0, pRet, Tcl_NewIntObj(pTree->cb.iScrollX + width));
+    Tcl_ListObjAppendElement(0, pRet, Tcl_NewIntObj(pTree->cb.iScrollY + height));
+    Tcl_SetObjResult(interp, pRet);
+    return TCL_OK;
+}
+
+/*
+ *---------------------------------------------------------------------------
+ *
  * widgetCmd --
  *
  *     This is the C function invoked for a widget command.
@@ -2708,6 +2749,7 @@ int widgetCmd(clientData, interp, objc, objv)
         {"style",        styleCmd},
         {"tag",          tagCmd},
         {"text",         textCmd},
+        {"viewbox",      viewboxCmd},
         {"visbbox",      visbboxCmd},
         {"write",        writeCmd},
         {"xview",        xviewCmd},

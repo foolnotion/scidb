@@ -1,19 +1,19 @@
-.TH cbh2si4 1 "February 1, 2012" cbh2si4 "Linux User's Manual"
+.TH cdb2sci 1 "May 7, 2012" cdb2sci "Linux User's Manual"
 .\" ==========================================================================
 .SH NAME
 .\" --------------------------------------------------------------------------
-cbh2si4 - ChessBase to Scid converter
+cdb2sci - Chess database to Scidb converter
 .\" ==========================================================================
 .SH SYNOPSIS
 .\" --------------------------------------------------------------------------
-.B cbh2si4
-[options] ChessBase-database [destination-database]
+.B cdb2sci
+[options] source-database [destination-database]
 .\" ==========================================================================
 .SH DESCRIPTION
 .\" --------------------------------------------------------------------------
-.B cbh2si4
-is converting databases in ChessBase format (.cbh) to databases in Scid's
-format (.si4).
+.B cdb2sci
+is converting any chess database (.si4, .si3, .sci, .cbh, .pgn, .pgn.gz, .zip)
+to databases in Scidb's format (.sci).
 .\" ==========================================================================
 .SH USAGE
 .\" --------------------------------------------------------------------------
@@ -24,13 +24,8 @@ database.
 In some cases the decoding of a game may fail. In this case the concerned
 game will be discarded.
 .PP
-.B cbh2si4
+.B cdb2sci
 might report error messages:
-.\" --------------------------------------------------------------------------
-.TP 9
-.B Game too long
-The encoded game (Scid format) is exceeding the block size. This game
-will be skipped.
 .\" --------------------------------------------------------------------------
 .TP 9
 .B File size exeeded
@@ -50,7 +45,9 @@ The input database is containing too many games. The program is aborting
 .B Too many site names
 .TP 9
 .B Too many round names
-The limit of Scid's namebase is exceeded. The program is aborting
+.TP 9
+.B Too many annotator names
+The limit of Scidb's namebase is exceeded. The program is aborting
 (with a valid output database).
 .\" ==========================================================================
 .SH OPTIONS
@@ -67,17 +64,12 @@ Display all options and terminate.
 .TP 9
 .B --force
 Overwrite existing destination files. Without this option
-.B cbh2si4
+.B cdb2sci
 is aborting if the destination database already exists.
 .\" --------------------------------------------------------------------------
 .TP 9
-.B --convertto \fIencoding\fR
-Use this encoding for output database. The default encoding is
-\fIutf-8\fR.
-.\" --------------------------------------------------------------------------
-.TP 9
 .B --convertfrom \fIencoding\fR
-The encoding of the ChessBase database. The default encoding is
+The encoding of the source database. The default encoding is
 \fIauto\fR (auto detection).
 .\" --------------------------------------------------------------------------
 .TP 9
@@ -142,18 +134,18 @@ http://sourceforge.net/tracker/?atid=1294800&group_id=307371&func=browse
 .SH FILES
 .\" --------------------------------------------------------------------------
 .TP 9
-%BINDIR%/cbh2si4
+%BINDIR%/cdb2sci
 C++ executable.
 .\" --------------------------------------------------------------------------
 .TP 9
 %SHAREDIR%/data/eco.bin
 Compressed ECO file.
-.B cbh2si4
+.B cdb2sci
 is not working without this file.
 .\" ==========================================================================
 .SH LICENSE
 .\" --------------------------------------------------------------------------
-Copyright (c) Gregor Cramer, 2011-2012.
+Copyright (c) Gregor Cramer, 2012.
 .P
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

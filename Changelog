@@ -1,6 +1,19 @@
 [Mai 2012] ===================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #318)
+------------------------------------------------------------------------------
+* Option -nocase added to "<treectrl> item sort itemDesc ?option ...?".
+
+* cdb2sci added. This executable is converting any Scidb database to .sci
+format.
+
+* New option -fixedwidth added to html widget (C++).
+
+* Html (Tcl) widget reworked. The widget it not using the scrolled frame
+anymore. This change is saving resources in a highly significant way.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #316)
 ------------------------------------------------------------------------------
 * Color map support in tk_ogl.cpp removed.

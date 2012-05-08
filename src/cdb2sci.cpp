@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2011-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -29,9 +29,9 @@
 #include "db_pgn_reader.h"
 #include "db_log.h"
 
-#include "si3/si3_consumer.h"
-#include "si3/si3_encoder.h"
-#include "si3/si3_codec.h"
+#include "sci/sci_consumer.h"
+#include "sci/sci_encoder.h"
+#include "sci/sci_codec.h"
 
 #include "u_progress.h"
 
@@ -93,14 +93,14 @@ struct Log : public db::Log
 			case save::Ok:								return true;
 			case save::UnsupportedVariant:		++rejected; return true;
 			case save::DecodingFailed:				++rejected; return true;
-			case save::GameTooLong:					msg = "Game too long"; break;
+			case save::GameTooLong:					msg = "Game too long"; break; // should not happen
 			case save::FileSizeExeeded:			msg = "File size exeeded"; break;
 			case save::TooManyGames:				msg = "Too many games"; break;
 			case save::TooManyPlayerNames:		msg = "Too many player names"; break;
 			case save::TooManyEventNames:			msg = "Too many event names"; break;
 			case save::TooManySiteNames:			msg = "Too many site names"; break;
 			case save::TooManyRoundNames:			msg = "Too many round names"; break;
-			case save::TooManyAnnotatorNames:	return true; // cannot happen
+			case save::TooManyAnnotatorNames:	msg = "Too many annotator names"; break;
 		}
 
 		::fprintf(	stderr,
@@ -116,10 +116,9 @@ struct Log : public db::Log
 };
 
 
-typedef si3::Consumer::TagBits TagBits;
+typedef sci::Consumer::TagBits TagBits;
 
-static char const* ConvertTo		= "utf-8";
-static char const* ConvertFrom	= "auto";
+static char const* ConvertFrom = "auto";
 
 
 static TagBits
@@ -128,22 +127,67 @@ getDefaultTags()
 	TagBits defaultTags;
 
 	defaultTags.set(tag::Board);
-	defaultTags.set(tag::EventCountry);
-	defaultTags.set(tag::EventType);
-	defaultTags.set(tag::Mode);
+	defaultTags.set(tag::EventCategory);
+	defaultTags.set(tag::EventRounds);
 	defaultTags.set(tag::Remark);
+	defaultTags.set(tag::Source);
+	defaultTags.set(tag::SourceDate);
 	defaultTags.set(tag::TimeControl);
-	defaultTags.set(tag::TimeMode);
 	defaultTags.set(tag::WhiteClock);
-	defaultTags.set(tag::WhiteFideId);
-	defaultTags.set(tag::WhiteTeam);
-	defaultTags.set(tag::WhiteTitle);
 	defaultTags.set(tag::BlackClock);
-	defaultTags.set(tag::BlackFideId);
+	defaultTags.set(tag::WhiteTeam);
 	defaultTags.set(tag::BlackTeam);
-	defaultTags.set(tag::BlackTitle);
 
 	return defaultTags;
+}
+
+
+static format::Type
+getFormat(mstl::string& path)
+{
+	format::Type fmt = format::Invalid;
+
+	if (path.size() >= 7 && strcmp(path.c_str() + path.size() - 7, ".pgn.gz") == 0)
+	{
+		fmt = format::Pgn;
+	}
+	else if (path.size() >= 4)
+	{
+		char const* s = path.c_str() + path.size() - 4;
+
+		if			(strcmp(s, ".si4") == 0) fmt = format::Scid4;
+		else if	(strcmp(s, ".si3") == 0) fmt = format::Scid3;
+		else if	(strcmp(s, ".sci") == 0) fmt = format::Scidb;
+		else if	(strcmp(s, ".cbh") == 0) fmt = format::ChessBase;
+		else if	(strcmp(s, ".pgn") == 0) fmt = format::Pgn;
+		else if	(strcmp(s, ".zip") == 0) fmt = format::Pgn;
+	}
+
+	return fmt;
+}
+
+
+static void
+stripSuffix(mstl::string& path)
+{
+	if (path.size() >= 7 && strcmp(path.c_str() + path.size() - 7, ".pgn.gz") == 0)
+	{
+		path.erase(path.size() - 7);
+	}
+	else if (path.size() >= 4)
+	{
+		char const* s = path.c_str() + path.size() - 4;
+
+		if (	strcmp(s, ".si4") == 0
+			|| strcmp(s, ".si3") == 0
+			|| strcmp(s, ".sci") == 0
+			|| strcmp(s, ".cbh") == 0
+			|| strcmp(s, ".pgn") == 0
+			|| strcmp(s, ".zip") == 0)
+		{
+			path.erase(path.size() - 4);
+		}
+	}
 }
 
 
@@ -166,17 +210,14 @@ loadEcoFile()
 static void
 printHelpAndExit(int rc)
 {
-	printf("Usage: cbh2si4 [options ...] <ChessBase database> [destination database]\n");
+	printf("Usage: cdb2sci [options ...] <source database> [destination database]\n");
 	printf("\n");
 	printf("Options:\n");
 	printf("  --              Only file names after this\n");
 	printf("  --help          Print Help (this message) and exit\n");
 	printf("  --force         Overwrite existing destination files\n");
-	printf("  --convertto <encoding>\n");
-	printf("                  Use this encoding for output database\n");
-	printf("                  (default is %s)\n", ConvertTo);
 	printf("  --convertfrom <encoding>\n");
-	printf("                  The encoding of the ChessBase database\n");
+	printf("                  The encoding of the source database\n");
 	printf("                  (default is %s)\n", ::ConvertFrom);
 	printf("  --tags <comma-separated-tag-list>\n");
 	printf("                  Export only the tags given with this list\n");
@@ -234,6 +275,9 @@ printEncodingsAndExit(int rc)
 static void
 checkEncoding(mstl::string const& encoding)
 {
+	if (encoding == "auto")
+		return;
+
 	if (isForbiddenEncoding(encoding))
 	{
 		fprintf(stderr, "Encoding '%s' is not allowed\n", encoding.c_str());
@@ -296,7 +340,7 @@ printMandatoryTagsAndExit(int rc)
 
 	for (unsigned i = 0; i < tag::ExtraTag; ++i)
 	{
-		if (si3::Encoder::skipTag(tag::ID(i)))
+		if (sci::Encoder::skipTag(tag::ID(i)))
 		{
 			if (!tagList.empty())
 				tagList += ',';
@@ -415,7 +459,6 @@ main(int argc, char* argv[])
 #endif
 
 	TclInterpreter	tclInterpreter;
-	mstl::string	convertto(::ConvertTo);
 	mstl::string	convertfrom(::ConvertFrom);
 	bool				force(false);
 	bool				allTags(false);
@@ -435,20 +478,12 @@ main(int argc, char* argv[])
 		{
 			printHelpAndExit(0);
 		}
-		else if (strcmp(argv[i], "--convertto") == 0)
-		{
-			if (++i == argc)
-				printHelpAndExit(1);
-			convertto.assign(argv[i]);
-			checkEncoding(convertto);
-		}
 		else if (strcmp(argv[i], "--convertfrom") == 0)
 		{
 			if (++i == argc)
 				printHelpAndExit(1);
+			checkEncoding(argv[i]);
 			convertfrom.assign(argv[i]);
-			if (convertfrom != "auto")
-				checkEncoding(convertfrom);
 		}
 		else if (strcmp(argv[i], "--tags") == 0)
 		{
@@ -497,12 +532,6 @@ main(int argc, char* argv[])
 		}
 	}
 
-	if (!sys::utf8::Codec::checkEncoding(convertto))
-	{
-		fprintf(stderr, "Unknown encoding '%s'.\n\n", convertto.c_str());
-		printEncodingsAndExit(1);
-	}
-
 	if (convertfrom != "auto" && !sys::utf8::Codec::checkEncoding(convertfrom))
 	{
 		fprintf(stderr, "Unknown encoding '%s'.\n\n", convertfrom.c_str());
@@ -515,49 +544,52 @@ main(int argc, char* argv[])
 		printHelpAndExit(1);
 	}
 
-	mstl::string cbhPath(argv[i++]);
+	mstl::string cdbPath(argv[i++]);
+	format::Type cdbFormat = getFormat(cdbPath);
 
-	if (cbhPath.size() < 4 || strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbh") != 0)
-		cbhPath.append(".cbh");
-
-	mstl::ifstream	stream(cbhPath);
-
-	if (!stream)
+	if (cdbFormat == format::Invalid)
 	{
-		fprintf(stderr, "Cannot open file '%s'.\n", cbhPath.c_str());
+		fprintf(stderr, "'%s' is not an Scidb database.\n", cdbPath.c_str());
 		exit(1);
 	}
 
-	mstl::string si4Path;
+	mstl::ifstream	stream(cdbPath);
+
+	if (!stream)
+	{
+		fprintf(stderr, "Cannot open file '%s'.\n", cdbPath.c_str());
+		exit(1);
+	}
+
+	mstl::string sciPath;
 
 	if (i < argc)
 	{
-		si4Path.append(argv[i]);
+		sciPath.append(argv[i]);
 	}
 	else
 	{
-		si4Path.assign(cbhPath);
-		mstl::string::size_type n = si4Path.rfind('/');
+		sciPath.assign(cdbPath);
+		mstl::string::size_type n = sciPath.rfind('/');
 
 		if (n != mstl::string::npos)
-			si4Path.erase(mstl::string::size_type(0), n + 1);
+			sciPath.erase(mstl::string::size_type(0), n + 1);
 
-		if (si4Path.size() < 4 || strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbh") == 0)
-			si4Path.erase(si4Path.size() - 4);
+		stripSuffix(sciPath);
 	}
 
-	if (si4Path.empty())
+	if (sciPath.empty())
 	{
 		fprintf(stderr, "Empty destination file name is not allowed.\n");
 		exit(1);
 	}
 
-	if (si4Path.size() < 4 || strcmp(si4Path.c_str() + si4Path.size() - 4, ".si4") != 0)
-		si4Path.append(".si4");
+	if (sciPath.size() < 4 || strcmp(sciPath.c_str() + sciPath.size() - 4, ".sci") != 0)
+		sciPath.append(".sci");
 	
-	if (!force && access(si4Path, R_OK) == 0)
+	if ((!force || cdbPath == sciPath) && access(sciPath, R_OK) == 0)
 	{
-		fprintf(stderr, "Database '%s' already exists.\n", si4Path.c_str());
+		fprintf(stderr, "Database '%s' already exists.\n", sciPath.c_str());
 		exit(1);
 	}
 
@@ -579,11 +611,10 @@ main(int argc, char* argv[])
 
 		Progress	progress;
 
-		Database	src(cbhPath, convertfrom, Database::ReadOnly, progress);
-		Database	dst(si4Path, convertto, Database::OnDisk);
-		si3::Consumer consumer(	format::Scid4,
-										dynamic_cast<si3::Codec&>(dst.codec()),
-										convertto,
+		Database	src(cdbPath, convertfrom, Database::ReadOnly, progress);
+		Database	dst(sciPath, "utf-8", Database::OnDisk);
+		sci::Consumer consumer(	cdbFormat,
+										dynamic_cast<sci::Codec&>(dst.codec()),
 										tagList,
 										extraTags);
 

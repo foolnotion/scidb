@@ -175,7 +175,8 @@ proc MakeFrame {twm id} {
 	grid $hdr.label	-column 0 -row 0 -padx 2
 
 	grid columnconfigure $hdr 1 -weight 1
-	grid columnconfigure $hdr {3 5} -minsize 3
+	grid columnconfigure $hdr {3} -minsize 3
+	grid columnconfigure $hdr {5} -minsize 1
 
 	foreach w [list $hdr $hdr.label] {
 		bind $w <ButtonPress-1>		[namespace code [list HeaderPress $twm $top %X %Y]]
@@ -199,6 +200,7 @@ proc HeaderPress {twm top x y} {
 	set Vars(docking:markers) {}
 	set Vars(docking:marker) {}
 	set Vars(afterid) {}
+	set Vars(grab:$top) 1
 	ttk::globalGrab $top
 }
 
@@ -254,6 +256,9 @@ proc HeaderMotion {twm top x y} {
 proc HeaderRelease {twm top x y} {
 	variable ${twm}::Vars
 
+	if {![info exists Vars(grab:$top)]} { return }
+
+	unset Vars(grab:$top)
 	ttk::releaseGrab $top
 	$top.__header__ configure -cursor {}
 	after cancel $Vars(afterid)
@@ -467,13 +472,11 @@ proc ShowHighlightRegion {twm top w canv} {
 	$tl.c itemconfigure image -image $img
 	wm geometry $tl ${wd}x${ht}+${x}+${y}
 	wm overrideredirect $tl true
+	wm transient $tl $w
 	foreach pos {m l r b t} {
 		set v $w.__${pos}__
 		if {[winfo exists $v]} { raise $v $tl }
 	}
-	wm transient $tl $w
-	update idletasks
-	::scidb::tk::wm noDecor $tl
 	wm state $tl normal
 
 	after idle [namespace code [list HeaderMotion $twm $top {*}[winfo pointerxy $twm]]]

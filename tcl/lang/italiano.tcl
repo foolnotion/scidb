@@ -206,6 +206,7 @@
 ::load::mc::Loading					"Carico %s"
 ::load::mc::ReadingOptionsFile	"Permessi di lettura del file" ;# "reading options file"
 ::load::mc::StartupFinished		"Startup completato"
+::load::mc::SystemEncoding			"System encoding is '%s'" ;# NEW
 
 ::load::mc::ECOFile					"File ECO"
 ::load::mc::EngineFile				"File motore"

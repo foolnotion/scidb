@@ -3899,6 +3899,9 @@ HtmlLayout(pTree)
     if (nWidth < 5 || pTree->options.forcewidth) {
         nWidth = pTree->options.width;
     }
+    if (pTree->options.fixedwidth) {
+        nWidth = pTree->options.fixedwidth;
+    }
     nHeight = Tk_Height(pTree->tkwin);
     if (nHeight < 5) {
         nHeight = PIXELVAL_AUTO;

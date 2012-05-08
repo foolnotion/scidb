@@ -239,7 +239,7 @@ proc Open {type args} {
 		bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
 	}
 
-	set Priv(type) $type
+	set Priv($type:type) $type
 	set geometry $data(-geometry)
 	if {[string match last* $geometry]} { set geometry [geometry $geometry] }
 	set minh 350
@@ -248,7 +248,7 @@ proc Open {type args} {
 		if {[llength $opts(-defaultencoding)] == 0} {
 			set opts(-defaultencoding) $::encoding::mc::AutoDetect
 		}
-		set opts(-selectencodingcommand) [namespace code SelectEncoding]
+		set opts(-selectencodingcommand) [namespace code [list SelectEncoding $type]]
 		set opts(-fileencodings) [set [namespace current]::FileEncodings]
 	}
 
@@ -302,12 +302,12 @@ proc Open {type args} {
 			set linespace [font metrics TkTextFont -linespace]
 			if {$linespace < 20} { set linespace 20 }
 			set minh [winfo height $w]
+			wm minsize $w 640 $minh
 			set h [expr {$minh + max($data(-rows) - [::fsbox::countRows $w.fsbox],0)*$linespace}]
 			if {[info exists data(-width)]} { set width $data(-width) } else { set width 680 }
 			set geometry "${width}x${h}[geometry pos]"
 		} else {
 			scan $geometry "%dx%d" dw dh
-			set minh [expr {min($minh,$dh)}]
 		}
 		wm geometry $w $geometry
 		update idletasks
@@ -325,7 +325,6 @@ proc Open {type args} {
 			} else {
 				scan $geometry "%dx%d" dw dh
 			}
-			set minh [expr {min($minh,$dh)}]
 			set parent $data(-parent)
 			set sw [winfo screenwidth  $parent]
 			set sh [winfo screenheight $parent]
@@ -355,7 +354,6 @@ proc Open {type args} {
 		::fsbox::reset $w.fsbox $type {*}[array get opts]
 	}
 
-	wm minsize $w 640 $minh
 	wm iconname $w ""
 	wm deiconify $w
 
@@ -659,13 +657,13 @@ proc ValidateFile {filename {size {}}} {
 }
 
 
-proc SelectEncoding {parent encoding defaultEncoding} {
+proc SelectEncoding {type parent encoding defaultEncoding} {
 	variable Priv
 
 	if {$encoding eq $::encoding::mc::AutoDetect} {
 		set encoding $::encoding::autoEncoding
 	}
-	if {$Priv(type) eq "save"} { set autoDetectFlag 0 } else { set autoDetectFlag 1 }
+	if {$Priv($type:type) eq "save"} { set autoDetectFlag 0 } else { set autoDetectFlag 1 }
 	set encoding [::encoding::choose [winfo toplevel $parent] $encoding $defaultEncoding $autoDetectFlag]
 	if {$encoding eq $::encoding::autoEncoding} {
 		set encoding $::encoding::mc::AutoDetect

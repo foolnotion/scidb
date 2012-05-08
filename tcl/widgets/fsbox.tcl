@@ -135,6 +135,7 @@ array set Options {
 	pane:favorites 0
 	menu:headerbackground #ffdd76
 	menu:headerforeground black
+	tooltip:shorten-paths 0
 }
 
 
@@ -1811,7 +1812,7 @@ proc AddBookmark {w} {
 	foreach entry $Bookmarks(user) {
 		lappend list [list [incr index] [string tolower [lindex $entry 1]]]
 	}
-	set list [lsort -dictionary -index 1 $list]
+	set list [lsort -nocase -index 1 $list]
 	set bookmarks {}
 	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
 	set Bookmarks(user) $bookmarks
@@ -2687,7 +2688,7 @@ proc SortColumn {w {column ""}} {
 				$t item sort root -$Vars(sort-order) \
 					-last [list root child $lastDir]  \
 					-column $column                   \
-					-dictionary                       \
+					-nocase                           \
 					;
 			}
 			if {$fileCount} {
@@ -2695,7 +2696,7 @@ proc SortColumn {w {column ""}} {
 					-first [list root child [expr {$lastDir + 1}]]   \
 					-last [list root child [expr {$totalCount - 1}]] \
 					-column $column                                  \
-					-dictionary                                      \
+					-nocase                                          \
 					;
 			}
 		}
@@ -2708,7 +2709,7 @@ proc SortColumn {w {column ""}} {
 					-column $column                                                   \
 					-command [namespace code [list CompSize $Vars(widget:list:file)]] \
 					-column name                                                      \
-					-dictionary                                                       \
+					-nocase                                                           \
 					;
 			}
 		}
@@ -2720,7 +2721,7 @@ proc SortColumn {w {column ""}} {
 					-column $column                   \
 					-integer                          \
 					-column name                      \
-					-dictionary                       \
+					-nocase                           \
 					;
 			}
 			if {$fileCount} {
@@ -2730,7 +2731,7 @@ proc SortColumn {w {column ""}} {
 					-column $column                                  \
 					-integer                                         \
 					-column name                                     \
-					-dictionary                                      \
+					-nocase                                          \
 					;
 			}
 		}
@@ -2779,7 +2780,7 @@ proc Glob {w refresh} {
 				set filter *
 				if {$Options(show:hidden)} { lappend filter .* }
 				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
-				set folders [lsort -dictionary $folders]
+				set folders [lsort -nocase $folders]
 			}
 
 			LastVisited - Favorites {
@@ -2825,7 +2826,8 @@ proc Glob {w refresh} {
 			if {$Options(show:hidden)} { lappend filter .* }
 			set files [glob -nocomplain -directory $Vars(folder) -types f {*}$filter]
 
-			foreach file [lsort -dictionary -unique $files] {
+			# NOTE: we dont want -dictionary
+			foreach file [lsort -nocase -unique $files] {
 				set match 0
 
 				if {[llength $Vars(extensions)] == 0} {
@@ -3715,10 +3717,11 @@ proc FinishNewFolder {w sel name} {
 
 proc SetTooltip {w which folder} {
 	variable [namespace parent]::${w}::Vars
+	variable [namespace parent]::Options
 
 	if {$folder eq "Favorites" || $folder eq "LastVisited"} {
 		set folder [Tr $folder]
-	} else {
+	} elseif {$Options(tooltip:shorten-paths)} {
 		# NOTE: We are shortening the (display of) file path. This is a bit experimental.
 		set parts [file split $folder]
 		set k [expr {[llength $parts] - 1}]
@@ -3732,8 +3735,8 @@ proc SetTooltip {w which folder} {
 		}
 		set count [expr {max(1, $count)}]
 
-		if {$count < [llength $parts]} {
-			set folder [file join {*}[lrange $parts [expr {[llength $parts] - $count - 1}] end]]
+		if {$count + 2 < [llength $parts]} {
+			set folder "\u2026[file join {*}[lrange $parts [expr {[llength $parts] - $count - 1}] end]]"
 		}
 	}
 

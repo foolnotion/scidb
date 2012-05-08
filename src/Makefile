@@ -51,6 +51,7 @@ TK_LIBS = \
 SRC = \
 	best_move.cpp \
 	cbh2si4.cpp \
+	cdb2sci.cpp \
 	code2eco.cpp \
 	dump_eco.cpp \
 	eco2code.cpp \
@@ -65,20 +66,23 @@ ALL_TK_LIBS = $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 $(PROGRAM)
+TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(PROGRAM)
 
-all: recursive cbh2si4 $(PROGRAM)
+all: recursive cbh2si4 cdb2sci $(PROGRAM)
+tkscidb-only: recursive $(PROGRAM)
 
-install-executables: recursive cbh2si4 $(PROGRAM)
+install-executables: recursive cbh2si4 cdb2sci $(PROGRAM)
 	@echo "Install executables"
 	@install -m 755 -d $(BINDIR)
 	@install -m 755 -p $(PROGRAM) $(BINDIR)
 	@install -m 755 -p cbh2si4 $(BINDIR)
+	@install -m 755 -p cdb2sci $(BINDIR)
 
 uninstall-executables:
 	@echo "Uninstall executables"
 	@rm -f $(BINDIR)/$(PROGRAM)
 	@rm -f $(BINDIR)/cbh2si4
+	@rm -f $(BINDIR)/cdb2sci
 
 install-scripts:
 	@echo "Install TeXt scripts"
@@ -257,6 +261,10 @@ cbh2si4: cbh2si4.o $(LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
+cdb2sci: cdb2sci.o $(LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+
 $(PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
@@ -266,6 +274,10 @@ $(PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
 	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) $<
 
 cbh2si4.o: cbh2si4.cpp
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
+	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
+
+cdb2sci.o: cdb2sci.cpp
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
 	@$(CXX) -c $(ALL_CXXFLAGS) $(EXTRA_CXXFLAGS) $(EXTRA_DEBUG_FLAGS) $(ALL_INCLUDE) -DSHAREDIR=\"$(SHAREDIR)\" $<
 
@@ -503,6 +515,155 @@ cbh2si4.o: sys/sys_utf8_codec.h
 cbh2si4.o: sys/sys_utf8_codec.ipp
 cbh2si4.o: tcl/tcl_base.h
 cbh2si4.o: tcl/tcl_base.ipp
+cdb2sci.o: db/db_eco_table.h
+cdb2sci.o: db/db_eco.h
+cdb2sci.o: util/u_base.h
+cdb2sci.o: mstl/m_types.h
+cdb2sci.o: mstl/m_string.h
+cdb2sci.o: mstl/m_string.ipp
+cdb2sci.o: mstl/m_utility.h
+cdb2sci.o: mstl/m_type_traits.h
+cdb2sci.o: mstl/m_type_traits.ipp
+cdb2sci.o: mstl/m_utility.ipp
+cdb2sci.o: mstl/m_limits.h
+cdb2sci.o: mstl/m_bit_functions.h
+cdb2sci.o: mstl/m_bit_functions.ipp
+cdb2sci.o: mstl/m_assert.h
+cdb2sci.o: mstl/m_exception.h
+cdb2sci.o: mstl/m_backtrace.h
+cdb2sci.o: mstl/m_exception.ipp
+cdb2sci.o: db/db_eco.ipp
+cdb2sci.o: db/db_line.h
+cdb2sci.o: db/db_line.ipp
+cdb2sci.o: db/db_home_pawns.h
+cdb2sci.o: db/db_common.h
+cdb2sci.o: db/db_common.ipp
+cdb2sci.o: db/db_home_pawns.ipp
+cdb2sci.o: mstl/m_map.h
+cdb2sci.o: mstl/m_vector.h
+cdb2sci.o: mstl/m_memblock.h
+cdb2sci.o: mstl/m_memblock.ipp
+cdb2sci.o: mstl/m_vector.ipp
+cdb2sci.o: mstl/m_uninitialized.h
+cdb2sci.o: mstl/m_uninitialized.ipp
+cdb2sci.o: mstl/m_algobase.h
+cdb2sci.o: mstl/m_algobase.ipp
+cdb2sci.o: mstl/m_construct.h
+cdb2sci.o: mstl/m_construct.ipp
+cdb2sci.o: mstl/m_pair.h
+cdb2sci.o: mstl/m_pair.ipp
+cdb2sci.o: mstl/m_map.ipp
+cdb2sci.o: mstl/m_hash.h
+cdb2sci.o: mstl/m_hash.ipp
+cdb2sci.o: mstl/m_bitset.h
+cdb2sci.o: mstl/m_bitset_iterator.h
+cdb2sci.o: mstl/m_bitfield.h
+cdb2sci.o: mstl/m_bitfield.ipp
+cdb2sci.o: mstl/m_bitset_iterator.ipp
+cdb2sci.o: mstl/m_bitset.ipp
+cdb2sci.o: mstl/m_chunk_allocator.h
+cdb2sci.o: mstl/m_stack.h
+cdb2sci.o: mstl/m_stack.ipp
+cdb2sci.o: mstl/m_chunk_allocator.ipp
+cdb2sci.o: db/db_eco_table.ipp
+cdb2sci.o: db/db_database.h
+cdb2sci.o: db/db_database_content.h
+cdb2sci.o: db/db_namebases.h
+cdb2sci.o: db/db_namebase.h
+cdb2sci.o: db/db_namebase_entry.h
+cdb2sci.o: db/db_date.h
+cdb2sci.o: util/u_crc.h
+cdb2sci.o: util/u_crc.ipp
+cdb2sci.o: mstl/m_byte_order.h
+cdb2sci.o: mstl/m_byte_order.ipp
+cdb2sci.o: db/db_date.ipp
+cdb2sci.o: db/db_namebase_entry.ipp
+cdb2sci.o: db/db_player.h
+cdb2sci.o: mstl/m_list.h
+cdb2sci.o: mstl/m_pointer_iterator.h
+cdb2sci.o: mstl/m_pointer_iterator.ipp
+cdb2sci.o: mstl/m_list.ipp
+cdb2sci.o: db/db_player.ipp
+cdb2sci.o: db/db_namebase.ipp
+cdb2sci.o: db/db_namebases.ipp
+cdb2sci.o: db/db_game_info.h
+cdb2sci.o: db/db_signature.h
+cdb2sci.o: db/db_signature.ipp
+cdb2sci.o: db/db_game_info.ipp
+cdb2sci.o: db/db_move.h
+cdb2sci.o: db/db_move.ipp
+cdb2sci.o: db/db_statistic.h
+cdb2sci.o: db/db_time.h
+cdb2sci.o: sys/sys_time.h
+cdb2sci.o: db/db_time.ipp
+cdb2sci.o: db/db_database_content.ipp
+cdb2sci.o: db/db_tree_cache.h
+cdb2sci.o: db/db_board.h
+cdb2sci.o: db/db_move_list.h
+cdb2sci.o: db/db_move_list.ipp
+cdb2sci.o: db/db_board.ipp
+cdb2sci.o: db/db_tree_cache.ipp
+cdb2sci.o: db/db_database.ipp
+cdb2sci.o: db/db_database_codec.h
+cdb2sci.o: db/db_database_codec.ipp
+cdb2sci.o: db/db_pgn_reader.h
+cdb2sci.o: db/db_reader.h
+cdb2sci.o: db/db_producer.h
+cdb2sci.o: db/db_producer.ipp
+cdb2sci.o: db/db_consumer.h
+cdb2sci.o: db/db_provider.h
+cdb2sci.o: db/db_provider.ipp
+cdb2sci.o: db/db_move_info_set.h
+cdb2sci.o: db/db_move_info.h
+cdb2sci.o: db/db_clock.h
+cdb2sci.o: db/db_clock.ipp
+cdb2sci.o: db/db_move_info.ipp
+cdb2sci.o: db/db_move_info_set.ipp
+cdb2sci.o: db/db_engine_list.h
+cdb2sci.o: db/db_engine_list.ipp
+cdb2sci.o: db/db_consumer.ipp
+cdb2sci.o: db/db_reader.ipp
+cdb2sci.o: db/db_annotation.h
+cdb2sci.o: db/db_annotation.ipp
+cdb2sci.o: db/db_tag_set.h
+cdb2sci.o: db/db_tag_set.ipp
+cdb2sci.o: db/db_mark_set.h
+cdb2sci.o: db/db_mark.h
+cdb2sci.o: db/db_mark.ipp
+cdb2sci.o: db/db_mark_set.ipp
+cdb2sci.o: db/db_comment.h
+cdb2sci.o: db/db_comment.ipp
+cdb2sci.o: db/db_log.h
+cdb2sci.o: db/sci/sci_consumer.h
+cdb2sci.o: db/sci/sci_encoder.h
+cdb2sci.o: db/sci/sci_encoder_position.h
+cdb2sci.o: db/sci/sci_encoder_position.ipp
+cdb2sci.o: util/u_byte_stream.h
+cdb2sci.o: util/u_exception.h
+cdb2sci.o: util/u_byte_stream.ipp
+cdb2sci.o: db/sci/sci_common.h
+cdb2sci.o: db/db_info_consumer.h
+cdb2sci.o: db/sci/sci_encoder.h
+cdb2sci.o: db/sci/sci_codec.h
+cdb2sci.o: mstl/m_fstream.h
+cdb2sci.o: mstl/m_ifstream.h
+cdb2sci.o: mstl/m_istream.h
+cdb2sci.o: mstl/m_ios.h
+cdb2sci.o: mstl/m_ios.ipp
+cdb2sci.o: mstl/m_istream.ipp
+cdb2sci.o: mstl/m_file.h
+cdb2sci.o: mstl/m_file.ipp
+cdb2sci.o: mstl/m_ifstream.ipp
+cdb2sci.o: mstl/m_ofstream.h
+cdb2sci.o: mstl/m_ostream.h
+cdb2sci.o: mstl/m_ostream.ipp
+cdb2sci.o: mstl/m_ofstream.ipp
+cdb2sci.o: util/u_progress.h
+cdb2sci.o: util/u_progress.ipp
+cdb2sci.o: sys/sys_utf8_codec.h
+cdb2sci.o: sys/sys_utf8_codec.ipp
+cdb2sci.o: tcl/tcl_base.h
+cdb2sci.o: tcl/tcl_base.ipp
 code2eco.o: db/db_eco.h
 code2eco.o: util/u_base.h
 code2eco.o: mstl/m_types.h

@@ -3464,6 +3464,7 @@ TreeElement_GetSortData(
 	switch (type) {
 		case SORT_ASCII:
 		case SORT_DICT:
+		case SORT_NOCASE:
 			if (dataObj != NULL && dataType != TDT_NULL)
 				(*sv) = Tcl_GetString(dataObj);
 			else

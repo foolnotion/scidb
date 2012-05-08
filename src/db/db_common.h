@@ -778,6 +778,8 @@ namespace format
 		ChessBase	= 1 << 3,
 		Pgn			= 1 << 4,
 		LaTeX			= 1 << 5,
+
+		Invalid		= LaTeX, // makes sense if used for input format
 	};
 
 	bool isScidFormat(Type type);

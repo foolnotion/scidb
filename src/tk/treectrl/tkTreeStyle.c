@@ -6420,7 +6420,7 @@ TreeStyle_GetSortData(
 	int type,					/* SORT_xxx constant. */
 	long *lv,					/* Returned for SORT_LONG. */
 	double *dv,					/* Returned for SORT_DOUBLE. */
-	char **sv					/* Returned for SORT_ASCII or SORT_DICT. */
+	char **sv					/* Returned for SORT_ASCII, SORT_DICT, or SORT_NOCASE. */
 	)
 {
 	IStyle *style = (IStyle *) style_;

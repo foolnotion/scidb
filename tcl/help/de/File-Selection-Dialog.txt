@@ -207,7 +207,7 @@ Hier kann die Auswahl der Datenbanktypen eingeschränkt werden. Eine Übersicht
 
 <p>
 Die Auswahl der passenden Enkodierung hängt vom Datenbankformat ab.
-Weitere Informationen sind auf auf der Seite über die
+Weitere Informationen sind auf der Seite über die
 <a href="Database-Formats.html">Datenbankformate</a> zu finden. In den
 meisten Fällen ist jedoch die voreingestellte automatische Erkennung
 ausreichend.

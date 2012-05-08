@@ -206,6 +206,7 @@
 ::load::mc::Loading					"%s betöltése"
 ::load::mc::ReadingOptionsFile	"beállítások beolvasása"
 ::load::mc::StartupFinished		"A betöltés befejeződött"
+::load::mc::SystemEncoding	"System encoding is '%s'" ;# NEW
 
 ::load::mc::ECOFile					"ECO fájl"
 ::load::mc::EngineFile				"Elemző program fájl"

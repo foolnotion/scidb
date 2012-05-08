@@ -692,6 +692,7 @@ MODULE_SCOPE void TreeStyle_TreeChanged(TreeCtrl *tree, int flagT);
 #define SORT_DOUBLE 2
 #define SORT_LONG 3
 #define SORT_COMMAND 4
+#define SORT_NOCASE 5
 MODULE_SCOPE int TreeStyle_GetSortData(TreeCtrl *tree, TreeStyle style_, int elemIndex, int type, long *lv, double *dv, char **sv);
 #if 0
 MODULE_SCOPE int TreeStyle_ValidateElements(TreeCtrl *tree, TreeStyle style_, int objc, Tcl_Obj *CONST objv[]);

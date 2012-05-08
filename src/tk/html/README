@@ -27,8 +27,8 @@ new options:
 		Specifies the mouse cursor to be used for the widget.
 
 	-exportselection <flag>
-		Specifies whether or not a selection in the widget should also be the X selection.
-		Selection is possible only if this option is enabled.
+		Specifies whether or not a selection in the widget should also be the
+		X selection.  Selection is possible only if this option is enabled.
 		Default is 0.
 	
 	-selectbackground <color>
@@ -47,6 +47,11 @@ new options:
 		Specifies whether latin ligatures should be used.
 		Default is 0.
 		HTML example for ligature ff: "f&zwj;f" or "f&#x200D;f".
+	
+	-fixedwidth <dimension>
+		Set the width of the internal canvas to a fixed with, otherwise a
+		configuration of the widget width would re-layout the content. Set
+		this option to zero if a re-layout is required.
 
 is supporting more attributes:
 

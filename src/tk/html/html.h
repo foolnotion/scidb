@@ -416,6 +416,7 @@ struct HtmlOptions {
     /* Tkhtml3 supports the following standard Tk options */
     int       width;
     int       height;
+    int       fixedwidth;
     int       xscrollincrement;
     int       yscrollincrement;
     Tcl_Obj  *yscrollcommand;

@@ -72,6 +72,12 @@ and new commands:
 		Sets a second font that wil be used for any unicode
 		point >= 256.
 
+"pathName item sort itemDesc ?option ...?" has new option:
+
+	-nocase
+		Causes comparisons to be handled in a case-insensitive manner.
+		Has no effect if combined with the -dictionary, -integer, or -real options.
+
 ==================================================================
 Original content of README.txt:
 ------------------------------------------------------------------

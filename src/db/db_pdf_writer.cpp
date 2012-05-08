@@ -93,15 +93,16 @@ PdfWriter::PdfWriter(format::Type srcFormat,
 
 	m_font[GameInfo] = HPDF_GetFont(m_doc, "Helvetica", NULL);
 	m_font[Move_Text_MainLine] =
-	m_font[Move_Text_Variation] =
-	m_font[Move_Text_SubVariation] =
-	m_font[Move_Symbol_MainLine] =
-	m_font[Move_Symbol_Variation] =
-	m_font[Move_Symbol_SubVariation] =
-	m_font[Comment_MainLine] =
-	m_font[Comment_Variation] =
-	m_font[Comment_SubVariation] =
-	m_font[Result] = m_font[GameInfo];
+		m_font[Move_Text_Variation] =
+		m_font[Move_Text_SubVariation] =
+		m_font[Move_Symbol_MainLine] =
+		m_font[Move_Symbol_Variation] =
+		m_font[Move_Symbol_SubVariation] =
+		m_font[Comment_MainLine] =
+		m_font[Comment_Variation] =
+		m_font[Comment_SubVariation] =
+		m_font[Result] =
+		m_font[GameInfo];
 
 	for (unsigned i = 0; i < LAST; ++i)
 		m_fontSize[i] = 12;

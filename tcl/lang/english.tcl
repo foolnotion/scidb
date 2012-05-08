@@ -205,6 +205,7 @@
 ::load::mc::Loading					"Loading %s"
 ::load::mc::ReadingOptionsFile	"Reading options file"
 ::load::mc::StartupFinished		"Startup finished"
+::load::mc::SystemEncoding			"System encoding is '%s'"
 
 ::load::mc::ECOFile					"ECO file"
 ::load::mc::EngineFile				"engine file"

@@ -829,7 +829,7 @@ TreeItem_ChangeState(
 
 	if ((state & tree->stateMask) == item->state)
 		return 0;
-	
+
 	treeColumn = tree->columns;
 	column = item->columns;
 	while (column != NULL) {
@@ -6036,6 +6036,27 @@ CompareCmd(
 }
 
 static int
+CompareNoCase(
+	SortData *sortData,
+	struct SortItem *a,
+	struct SortItem *b,
+	int n						/* Column index. */
+	)
+{
+	char *left  = a->item1[n].string;
+	char *right = b->item1[n].string;
+
+	/* make sure to handle case where no string value has been set */
+	if (left == NULL) {
+		return ((right == NULL) ? 0 : (0 - UCHAR(*right)));
+	} else if (right == NULL) {
+		return UCHAR(*left);
+	} else {
+		return strcasecmp(left, right);
+	}
+}
+
+static int
 CompareProc(
 	SortData *sortData,
 	struct SortItem *a,
@@ -6259,8 +6280,8 @@ ItemSortCmd(
 	Column *column;
 	int i, j, count, elemIndex, index, indexF = 0, indexL = 0;
 	int sawColumn = FALSE, sawCmd = FALSE;
-	static int (*sortProc[5])(SortData *, struct SortItem *, struct SortItem *, int) =
-		{ CompareAscii, CompareDict, CompareDouble, CompareLong, CompareCmd };
+	static int (*sortProc[6])(SortData *, struct SortItem *, struct SortItem *, int) =
+		{ CompareAscii, CompareDict, CompareDouble, CompareLong, CompareCmd, CompareNoCase };
 	SortData sortData;
 	TreeColumn treeColumn;
 	struct SortElement *elemPtr;
@@ -6295,11 +6316,11 @@ ItemSortCmd(
 	for (i = 4; i < objc; ) {
 		static CONST char *optionName[] = { "-ascii", "-column", "-command",
 											"-decreasing", "-dictionary", "-element", "-first", "-increasing",
-											"-integer", "-last", "-notreally", "-real", NULL };
+											"-integer", "-last", "-nocase", "-notreally", "-real", NULL };
 		int numArgs[] = { 1, 2, 2, 1, 1, 2, 2, 1, 1, 2, 1, 1 };
 		enum { OPT_ASCII, OPT_COLUMN, OPT_COMMAND, OPT_DECREASING, OPT_DICT,
 			   OPT_ELEMENT, OPT_FIRST, OPT_INCREASING, OPT_INTEGER, OPT_LAST,
-			   OPT_NOT_REALLY, OPT_REAL };
+			   OPT_NOCASE, OPT_NOT_REALLY, OPT_REAL };
 
 		if (Tcl_GetIndexFromObj(interp, objv[i], optionName, "option", 0,
 					&index) != TCL_OK)
@@ -6431,6 +6452,10 @@ ItemSortCmd(
 							tree->itemPrefix, last->id, tree->itemPrefix, item->id);
 					return TCL_ERROR;
 				}
+				break;
+
+			case OPT_NOCASE:
+				sortData.columns[sortData.columnCount - 1].sortBy = SORT_NOCASE;
 				break;
 			case OPT_NOT_REALLY:
 				notReally = TRUE;

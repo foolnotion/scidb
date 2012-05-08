@@ -36,6 +36,7 @@ set ProgramAborting		"Program is aborting."
 set Loading					"Loading %s"
 set ReadingOptionsFile	"Reading options file"
 set StartupFinished		"Startup finished"
+set SystemEncoding		"System encoding is '%s'"
 
 set ECOFile					"ECO file"
 set EngineFile				"engine file"
@@ -120,6 +121,7 @@ proc load {msg type path} {
 proc writeLog {} {
 	variable Log
 
+	::log::info [format $mc::SystemEncoding [encoding system]]
 	foreach {type msg} $Log { log::$type $msg }
 	array unset Log
 	::log::info $mc::StartupFinished

@@ -18,7 +18,6 @@
 
 package require Tk 8.5
 package require Tkhtml 3.1
-package require scrolledframe
 
 rename html __html_widget
 
@@ -48,8 +47,6 @@ variable MaxWidth	12000
 
 
 proc Build {w args} {
-	variable MaxWidth
-
 	array set opts {
 		-width				800
 		-height				600
@@ -76,7 +73,8 @@ proc Build {w args} {
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -showhyphens -
-			-inactiveselectbackground - -inactiveselectforeground {
+			-inactiveselectbackground - -inactiveselectforeground - 
+			-width - -height {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
 			}
@@ -88,19 +86,23 @@ proc Build {w args} {
 		}
 	}
 
-	if {!$opts(-center)} { lappend options -avoidconfigureresize yes }
-	set parent [::scrolledframe $w -fill both {*}$options]
-	if {!$opts(-center)} {
-		bind $parent <<ScrollbarChanged>> [namespace code { ConfigureFrame %W {*}%d }]
-	}
-	set html $parent.html
+	tk::frame $w {*}$options
+	tk::frame $w.sub -background $opts(-background) -borderwidth 0 
+	set html $w.sub.html
+	::scrolledframe::scrollbar $w.v -orient "vertical" -command [list $html yview]
+	::scrolledframe::scrollbar $w.h -orient "horizontal" -command [list $html xview]
+	grid $w.v -row 0 -column 1 -sticky ns
+	grid $w.h -row 1 -column 0 -sticky ew
+	grid $w.sub -row 0 -column 0 -sticky nsew
+	grid columnconfigure $w {0} -weight 1
+	grid rowconfigure $w {0} -weight 1
 
-	namespace eval [namespace current]::$parent {}
-	variable [namespace current]::${parent}::Priv
-	variable [namespace current]::${parent}::HoverNodes
-	variable [namespace current]::${parent}::ActiveNodes1
-	variable [namespace current]::${parent}::ActiveNodes2
-	variable [namespace current]::${parent}::ActiveNodes3
+	namespace eval [namespace current]::$w {}
+	variable [namespace current]::${w}::Priv
+	variable [namespace current]::${w}::HoverNodes
+	variable [namespace current]::${w}::ActiveNodes1
+	variable [namespace current]::${w}::ActiveNodes2
+	variable [namespace current]::${w}::ActiveNodes3
 
 	array set Priv {
 		onmouseover		{}
@@ -128,26 +130,37 @@ proc Build {w args} {
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
 	rename ::$w $w.__html__
-	proc ::$w {command args} "[namespace current]::WidgetProc $w $parent \$command {*}\$args"
+	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
-	__html_widget $html {*}$htmlOptions -shrink yes
-	grid $html
+	if {$Priv(center)} {
+		$w.sub configure -width $opts(-width) -height $opts(-height)
+	}
+
+	__html_widget $html {*}$htmlOptions \
+		-shrink no \
+		-yscrollcommand [namespace code [list SbSet $w.v]] \
+		-xscrollcommand [namespace code [list SbSet $w.h]] \
+		-yscrollincrement 10 \
+		-xscrollincrement 10 \
+		;
+
+	if {$Priv(center)} {
+		place $html -x 0 -y 0
+		bind $w.sub <Configure> [namespace code { Place %W %w %h }]
+	} else {
+		pack $html -fill both -expand yes
+		bind $w <Configure> [namespace code { Configure %W %w %# }]
+	}
 
 	SelectionClear $html
 	selection handle $html [namespace code [list SelectionHandler $html]]
-
-	if {$Priv(center)} {
-		grid anchor $parent center
-	} else {
-		bind $w <Configure> [namespace code [list Configure $parent %w %#]]
-	}
 
 	return $w
 }
 
 
-proc WidgetProc {w parent command args} {
-	variable ${parent}::Priv
+proc WidgetProc {w command args} {
+	variable ${w}::Priv
 
 	switch -glob -- $command {
 		parse {
@@ -159,40 +172,31 @@ proc WidgetProc {w parent command args} {
 			array unset [namespace current]::ActiveNodes2
 			array unset [namespace current]::ActiveNodes3
 			set Priv(nodeList) {}
-			$parent.html reset
-			$parent xview moveto 0
-			$parent yview moveto 0
-			if {$Priv(center)} {
-				$parent.html configure -width $MaxWidth
-				update idletasks
-			}
-			$parent.html parse -final [lindex $args 0]
-			if {[string length $Priv(css)]} { $parent.html style -id user $Priv(css) }
-			set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
+			$w.sub.html reset
+			$w.sub.html xview moveto 0
+			$w.sub.html yview moveto 0
+			if {$Priv(center)} { $w.sub.html configure -fixedwidth $MaxWidth }
+			$w.sub.html parse -final [lindex $args 0]
+			if {[string length $Priv(css)]} { $w.sub.html style -id user $Priv(css) }
+			set Priv(bbox) [ComputeBoundingBox $w.sub.html [$w.sub.html node] $Priv(center)]
 			if {[llength $Priv(bbox)] == 0} {
 				# Due to a bug in the html library sometimes
 				# we don't have a bounding box.
 				set Priv(bbox) {0 0 400 600}
 			} else {
 				lset Priv(bbox) 2 [min [lindex $Priv(bbox) 2] 4000]
-#				lset Priv(bbox) 3 [min [lindex $Priv(bbox) 3] 8000]
 			}
-			if {[llength $Priv(bbox)]} {
-				if {$Priv(center)} {
-					lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
-					$parent.html configure -width [lindex $Priv(bbox) 2]
-				} else {
-					lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
-					$parent.html configure -height [lindex $Priv(bbox) 3]
-				}
-				update idletasks
-				$parent resize
+			if {[llength $Priv(bbox)] && $Priv(center)} {
+				lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
+				lset Priv(bbox) 3 [lindex [$w.sub.html bbox] 3]
+				$w.sub.html configure -fixedwidth [lindex $Priv(bbox) 2]
+				Place $w.sub [winfo width $w.sub] [winfo height $w.sub]
 			}
 			return
 		}
 
 		handler - search - style {
-			return [$parent.html $command {*}$args]
+			return [$w.sub.html $command {*}$args]
 		}
 
 		onmouse* {
@@ -213,13 +217,13 @@ proc WidgetProc {w parent command args} {
 		stimulate {
 			array unset HoverNodes
 			set Priv(nodeList) {}
-			set x [expr {[winfo pointerx .] - [winfo rootx $parent.html]}]
-			set y [expr {[winfo pointery .] - [winfo rooty $parent.html]}]
-			event generate $parent.html <Motion> -x $x -y $y
+			set x [expr {[winfo pointerx .] - [winfo rootx $w.sub.html]}]
+			set y [expr {[winfo pointery .] - [winfo rooty $w.sub.html]}]
+			event generate $w.sub.html <Motion> -x $x -y $y
 			return
 		}
 
-		drawable	{ return $parent.html }
+		drawable	{ return $w.sub.html }
 		pointer	{ return $Priv(pointer) }
 		font		{ return HtmlFont }
 
@@ -230,11 +234,11 @@ proc WidgetProc {w parent command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] $command ?<node>?\""
 			}
-			return [$parent.html bbox [lindex $args 0]]
+			return [$w.sub.html bbox [lindex $args 0]]
 		}
 
 		viewbox {
-			return [$parent viewbox]
+			return [$w.sub viewbox]
 		}
 
 		size {
@@ -245,7 +249,7 @@ proc WidgetProc {w parent command args} {
 		}
 
 		xview - yview {
-			return [$parent $command {*}$args]
+			return [$w.sub.html $command {*}$args]
 		}
 
 		scrollto {
@@ -253,23 +257,23 @@ proc WidgetProc {w parent command args} {
 				error "wrong # args: should be \"[namespace current] $command <px>\""
 			}
 			variable Margin
-			set height [winfo height $parent.html]
+			set height [winfo height $w.sub.html]
 			set y [expr {max(0, [lindex $args 0] - $Margin)}]
 			set fraction [expr {double($y)/double($height)}]
-			return [$parent yview moveto $fraction]
+			return [$w.sub.html yview moveto $fraction]
 		}
 
 		root {
-			return [$parent.html node]
+			return [$w.sub.html node]
 		}
 
 		focusin {
 			if {!$Priv(focus)} {
 				set Priv(focus) 1
-				if {[$parent.html cget -exportselection]} {
-					$parent.html tag configure selection \
-						-foreground [$parent.html cget -selectforeground] \
-						-background [$parent.html cget -selectbackground] \
+				if {[$w.sub.html cget -exportselection]} {
+					$w.sub.html tag configure selection \
+						-foreground [$w.sub.html cget -selectforeground] \
+						-background [$w.sub.html cget -selectbackground] \
 						;
 				}
 			}
@@ -279,10 +283,10 @@ proc WidgetProc {w parent command args} {
 		focusout {
 			if {$Priv(focus)} {
 				set Priv(focus) 0
-				if {[$parent.html cget -exportselection]} {
-					$parent.html tag configure selection \
-						-foreground [$parent.html cget -inactiveselectforeground] \
-						-background [$parent.html cget -inactiveselectbackground] \
+				if {[$w.sub.html cget -exportselection]} {
+					$w.sub.html tag configure selection \
+						-foreground [$w.sub.html cget -inactiveselectforeground] \
+						-background [$w.sub.html cget -inactiveselectbackground] \
 						;
 				}
 			}
@@ -294,17 +298,31 @@ proc WidgetProc {w parent command args} {
 }
 
 
+proc Place {w width height} {
+	variable [winfo parent $w]::Priv
+
+	if {[llength $Priv(bbox)] == 0} { return }
+
+	set htmlWidth [lindex $Priv(bbox) 2]
+	set htmlHeight [lindex $Priv(bbox) 3]
+	$w.html configure -height [expr {min($height, $htmlHeight)}] -width [winfo width $w]
+	set xdelta [expr {max(0, ($width - $htmlWidth)/2)}]
+	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
+	place $w.html -x $xdelta -y $ydelta
+}
+
+
 proc Configure {parent width req} {
 	variable ${parent}::Priv
 
-	if {[winfo width $parent.html] == $width} { return }
+	if {[winfo width $parent.sub.html] == $width} { return }
 
 	# This (using the serial field from the event) is working under x11
 	# to prevent endless loops. But does this work with windows and mac?
 	if {$req == $Priv(request)} { return }
 	set Priv(request) $req
 
-	$parent.html configure -width [expr {max(1, $width - 2*$Priv(bw) - [$parent vsbwidth])}]
+	$parent.sub.html configure -width [expr {max(1, $width - 2*$Priv(bw) - [VsbWidth $parent])}]
 	after cancel $Priv(afterId)
 	set afterId [after idle [namespace code [list ComputeSize $parent $req]]]
 }
@@ -313,13 +331,19 @@ proc Configure {parent width req} {
 proc ConfigureFrame {parent sb visible} {
 	variable ${parent}::Priv
 
-	if {[$sb cget -orient] eq "vertical"} {
+	if {!$Priv(center) && [$sb cget -orient] eq "vertical"} {
 		after cancel $Priv(afterId)
 		set Priv(afterId) {}
-		set width [$parent.html cget -width]
-		incr width [$parent vsbwidth]
+		set width [$parent.sub.html cget -width]
+		incr width [VsbWidth $parent.sub]
 		Configure $parent $width 0
 	}
+}
+
+
+proc VsbWidth {parent} {
+	if {"$parent.v" ni [grid slaves $parent]} { return 0 }
+	return [winfo width $parent.v]
 }
 
 
@@ -330,12 +354,10 @@ proc ComputeSize {parent req} {
 	after cancel $Priv(afterId)
 	set Priv(afterId) {}
 
-	set Priv(bbox) [ComputeBoundingBox $parent.html [$parent.html node] $Priv(center)]
+	set Priv(bbox) [ComputeBoundingBox $parent.sub.html [$parent.sub.html node] $Priv(center)]
 	if {[llength $Priv(bbox)]} {
 		lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
-		$parent.html configure -height [lindex $Priv(bbox) 3]
-		update idletasks
-		$parent resize
+		$parent.sub.html configure -height [lindex $Priv(bbox) 3]
 	}
 }
 
@@ -363,7 +385,7 @@ proc ComputeBoundingBox {w node skipBody} {
 		}
 	}
 
-	if {[llength $result] == 0} {
+	if {[llength $result] == 0 || [lindex $result 2] == 0} {
 		foreach n [$node children] {
 			set bbox [ComputeBoundingBox $w $n $skipBody]
 			if {[llength $bbox] > 0 && [lindex $bbox 2] > 0} {
@@ -387,8 +409,18 @@ proc CombineBox {box1 box2} {
 }
 
 
+proc SbSet {sb first last} {
+	set parent [winfo parent $sb]
+	set slaves [grid slaves $parent]
+	::scrolledframe::sbset $sb $first $last
+	if {$slaves ne [grid slaves $parent]} {
+		ConfigureFrame $parent $sb [expr {$sb in [grid slaves $parent]}]
+	}
+}
+
+
 proc Motion {w x y state} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	SelectionExtend $w $x $y
 
@@ -412,8 +444,8 @@ proc Motion {w x y state} {
 
 
 proc HandleMotion {w nodelist} {
-	variable [winfo parent $w]::HoverNodes
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::HoverNodes
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	set Priv(nodeList) $nodelist
 	set events(onmouseover) {}
@@ -452,8 +484,8 @@ proc HandleMotion {w nodelist} {
 
 
 proc Leave {w} {
-	variable [winfo parent $w]::HoverNodes
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::HoverNodes
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {[llength $Priv(afterId)]} {
 		after cancel $Priv(afterId)
@@ -480,7 +512,7 @@ proc Mapped {w} {
 
 
 proc GenerateEvents {w eventlist} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	foreach {event node} $eventlist {
 		if {[llength $node] == 0 || [llength [info commands $node]] > 0} {
@@ -493,8 +525,8 @@ proc GenerateEvents {w eventlist} {
 
 
 proc ButtonPress {w x y k {state 0}} {
-	variable [winfo parent $w]::ActiveNodes$k
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::ActiveNodes$k
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {$k == 1} { SelectionAnchor $w $x $y $state }
 
@@ -518,8 +550,8 @@ proc ButtonPress {w x y k {state 0}} {
 
 
 proc ButtonRelease {w x y k} {
-	variable [winfo parent $w]::ActiveNodes$k
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::ActiveNodes$k
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {$k == 1} { SelectionFinish $w $x $y }
 
@@ -539,7 +571,7 @@ proc ButtonRelease {w x y k} {
 
 
 proc SelectionAnchor {w x y state} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
 
@@ -560,13 +592,13 @@ proc SelectionAnchor {w x y state} {
 
 
 proc SelectionFinish {w x y} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 	set Priv(sel:state) false
 }
 
 
 proc SelectionExtend {w x y {node {}}} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
 	if {!$Priv(sel:state)} { return }
@@ -646,17 +678,17 @@ proc SelectionExtend {w x y {node {}}} {
 		}
 	}
 
-	set v [winfo parent $w]
-	lassign [$v viewbox] x0 y0 vw vh
+	lassign [$w viewbox] x0 y0 x1 y1
+	lassign [$w visbbox] _ _ xmax ymax
 
 	set motioncmd {}
-	if {$y > $y0 + $vh} {
-		if {$y < [winfo height $w]} {
-			set motioncmd [list $v yview scroll 1 units]
+	if {$y > $y1 - $y0} {
+		if {$y1 < $ymax} {
+			set motioncmd [list $w yview scroll 1 units]
 		}
-	} elseif {$y < $y0} {
-		if {$y >= 0} {
-			set motioncmd [list $v yview scroll -1 units]
+	} elseif {$y < 0} {
+		if {$y0 > 0} {
+			set motioncmd [list $w yview scroll -1 units]
 		}
 	}
 
@@ -668,13 +700,13 @@ proc SelectionExtend {w x y {node {}}} {
 		set Priv(sel:afterid) [after 200 [namespace code [list SelectionContinueMotion $w]]]
 	}
 
-	if {$x > $x0 + $vw} {
-		if {$x < [winfo width $w]} {
-			set motioncmd [list $v xview scroll 1 units]
+	if {$x > $x1 - $x0} {
+		if {$x1 < $xmax} {
+			set motioncmd [list $w xview scroll 1 units]
 		}
 	} elseif {$x < 0} {
-		if {$x >= 0} {
-			set motioncmd [list $v xview scroll -1 units]
+		if {$x0 > 0} {
+			set motioncmd [list $w xview scroll -1 units]
 		}
 	}
 
@@ -683,13 +715,13 @@ proc SelectionExtend {w x y {node {}}} {
 		{*}$motioncmd
 		update idletasks
 		after cancel $Priv(sel:afterid)
-		set Priv(sel:afterid) [after 200 [namespace code [list SelectionContinueMotion $w]]]
+		set Priv(sel:afterid) [after 100 [namespace code [list SelectionContinueMotion $w]]]
 	}
 }
 
 
 proc SelectionContinueMotion {w} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	set Priv(sel:ignore) 0
 	set Priv(sel:afterid) {}
@@ -701,7 +733,7 @@ proc SelectionContinueMotion {w} {
 
 
 proc Select {w x y mode} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
 
@@ -714,7 +746,7 @@ proc Select {w x y mode} {
 
 
 proc ExtendSelection {w x y mode} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
 
@@ -730,7 +762,7 @@ proc ExtendSelection {w x y mode} {
 
 
 proc SelectionClear {w} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
 
@@ -787,7 +819,7 @@ proc SelectionToBlock {w node idx} {
 
 
 proc SelectionGet {w offset maxChars} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	set t  [$w text text]
 	set n1 $Priv(sel:from:node)
@@ -818,7 +850,7 @@ proc SelectionGet {w offset maxChars} {
 
 
 proc SelectionHandler {w args} {
-	variable [winfo parent $w]::Priv
+	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return "" }
 	set eval [concat SelectionGet $w $args]
@@ -838,6 +870,7 @@ proc SelectionHandler {w args} {
 proc WordStart {str index} {
 	set index [string wordstart $str $index]
 
+	# this is [string wordstart] but including zero with joiners
 	while {	$index > 1
 			&& (	[string index $str [expr {$index - 1}]] eq "\u200c"
 				|| [string index $str [expr {$index - 1}]] eq "\u200d")} {
@@ -851,6 +884,7 @@ proc WordStart {str index} {
 proc WordEnd {str index} {
 	set index [string wordend $str $index]
 
+	# this is [string wordend] but including zero with joiners
 	while {	$index < [string length $str]
 			&& (	[string index $str $index] eq "\u200c"
 				|| [string index $str $index] eq "\u200d")} {
@@ -879,14 +913,14 @@ bind Html <Shift-Triple-ButtonPress-1>	[namespace code { ExtendSelection %W %x %
 
 switch [tk windowingsystem] {
 	win32 {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-120] units; break }
+		bind Html <MouseWheel> { %W yview scroll [expr %D/-60] units; break }
 	}
 	aqua {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-1] units; break }
+		bind Html <MouseWheel> { %W yview scroll [expr %D*-2] units; break }
 	}
 	x11 {
-		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -1 units; break }
-		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +1 units; break }
+		bind Html <ButtonPress-4> { %W yview scroll -2 units; break }
+		bind Html <ButtonPress-5> { %W yview scroll +2 units; break }
 	}
 }
 

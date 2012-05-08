@@ -204,6 +204,7 @@
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::ReadingOptionsFile	"Läser alternativ"
 ::load::mc::StartupFinished		"Inläsning klar"
+::load::mc::SystemEncoding			"System encoding is '%s'" ;# NEW
 
 ::load::mc::ECOFile					"ECO-fil"
 ::load::mc::EngineFile				"schackmotor"

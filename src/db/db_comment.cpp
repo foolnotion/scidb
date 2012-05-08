@@ -1295,10 +1295,7 @@ Comment::append(Comment const& comment, char delim)
 
 	if (m_content.empty())
 	{
-		m_content = comment;
-		m_engFlag = comment.m_engFlag;
-		m_othFlag = comment.m_othFlag;
-		m_languageSet.clear();
+		*this = comment;
 	}
 	else
 	{
