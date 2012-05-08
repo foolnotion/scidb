@@ -857,12 +857,12 @@ Node::configure(unsigned& minw, unsigned& maxw)
 			break;
 	}
 
-	Tcl_Obj* objv[4];
+//	Tcl_Obj* objv[4];
 
-	objv[0] = m_objMinsize;
-	objv[1] = Tcl_NewIntObj(minw);
-	objv[2] = m_objMaxsize;
-	objv[3] = Tcl_NewIntObj(maxw);
+//	objv[0] = m_objMinsize;
+//	objv[1] = Tcl_NewIntObj(minw);
+//	objv[2] = m_objMaxsize;
+//	objv[3] = Tcl_NewIntObj(maxw);
 
 //	tcl::call(__func__, m_objConfigureCmd, root()->path(), m_parent->path(), path(), 4, objv);
 }

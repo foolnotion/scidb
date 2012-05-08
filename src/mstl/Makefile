@@ -66,7 +66,7 @@ $(LIB).a: $(OBJS)
 
 .c.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
-	$(CXX) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $*.c
+	@$(CXX) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $*.c
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"

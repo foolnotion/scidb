@@ -730,19 +730,14 @@ TournamentTable::guessBestMode()
 	mstl::bitset group1(m_playerMap.size());
 	mstl::bitset group2(m_playerMap.size());
 
-	unsigned minGameCount	= mstl::numeric_limits<unsigned>::max();
-	unsigned maxGameCount	= 0;
-	unsigned maxOppCount		= 0;
+	unsigned minOppCount	= mstl::numeric_limits<unsigned>::max();
+	unsigned maxOppCount = 0;
 
 	for (PlayerMap::iterator i = m_playerMap.begin(); i != m_playerMap.end(); ++i)
 	{
-		Player const* player = i->second;
-		Player::ClashList const& clashList = player->clashList;
-
-		minGameCount = mstl::min(Player::ClashList::size_type(minGameCount), clashList.size());
-		maxGameCount = mstl::max(Player::ClashList::size_type(maxGameCount), clashList.size());
-
-		Player const* opponent = 0;
+		Player const*					player		= i->second;
+		Player::ClashList const&	clashList	= player->clashList;
+		Player const*					opponent		= 0;
 
 		unsigned oppCount = 0;
 
@@ -771,6 +766,7 @@ TournamentTable::guessBestMode()
 			(isGroup1 ? group1 : group2).set(player->ranking);
 		}
 
+		minOppCount = mstl::min(minOppCount, oppCount);
 		maxOppCount = mstl::max(maxOppCount, oppCount);
 	}
 
@@ -798,7 +794,7 @@ TournamentTable::guessBestMode()
 				m_bestMode = RankingList;
 			else if (isDisjoint && group1.count() == group2.count())
 				m_bestMode = Scheveningen;
-			else if (minGameCount == 1 && maxGameCount == mstl::log2_ceil(nplayers))
+			else if (minOppCount == 1 && maxOppCount == mstl::log2_ceil(nplayers))
 				m_bestMode = Knockout;
 			else if (nplayers <= 12)
 				m_bestMode = Crosstable;
