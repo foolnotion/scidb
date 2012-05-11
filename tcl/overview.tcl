@@ -75,7 +75,7 @@ proc open {parent base info view index {fen {}}} {
 	::widget::dialogButtons $dlg {close previous next help} close
 #	foreach type {close previous next help} { $dlg.$type configure -width 15 }
 	$dlg.close configure -command [list destroy $dlg]
-	$dlg.help configure -command { ::help::open .application Overview-Browser }
+	$dlg.help configure -command { ::help::open .application Game-Overview }
 
 	set sw [expr {[winfo screenwidth $dlg] - 30}]
 	set sh [expr {[winfo screenheight $dlg] - 140}]
