@@ -145,11 +145,46 @@ proc open {} {
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 1]
 
+	tk::frame $nb.control -borderwidth 0 -takefocus 0
+	tk::button $nb.control.minimize \
+		-image $icon::12x12::minimize \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-command { wm iconify .application } \
+		-takefocus 0 \
+		;
+	::theme::configureBackground $nb.control.minimize
+	::tooltip::tooltip $nb.control.minimize ::mc::Minimize
+	tk::button $nb.control.restore \
+		-image $icon::12x12::restore \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-command { ::menu::viewFullscreen toggle } \
+		-takefocus 0 \
+		;
+	::theme::configureBackground $nb.control.restore
+	::tooltip::tooltip $nb.control.restore [::mc::stripAmpersand $::menu::mc::LeaveFullscreen]
+	tk::button $nb.control.close \
+		-image $icon::12x12::close \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-command [namespace code shutdown] \
+		-takefocus 0 \
+		;
+	::theme::configureBackground $nb.control.close
+	::tooltip::tooltip $nb.control.close ::mc::Close
+	pack $nb.control.minimize -side left
+	pack $nb.control.restore -side left
+	pack $nb.control.close -side left
+	set Vars(control) $nb.control
+
 	set m ".__m__[clock milliseconds]"
 	menu $m
 	set Vars(settings:activebackground) [$m cget -activebackground]
 	destroy $m
-
 	tk::menubutton $nb.l \
 		-borderwidth 1 \
 		-relief raised \
@@ -168,8 +203,9 @@ proc open {} {
 	bind $nb.l <Leave> [namespace code [list LeaveSettings $nb.l]]
 	bind $nb.l <<MenuWillPost>> [namespace code [list BuildSettingsMenu $nb.l]]
 	bind $nb.l <<MenuWillUnpost>> [namespace code [list FinishSettings $nb.l]]
-	bind $nb <Configure> [namespace code [list PlaceSettingsMenu $nb.l]]
-	bind $nb.l <Configure> [namespace code [list PlaceSettingsMenu $nb.l]]
+	bind $nb <Configure> [namespace code [list PlaceControlMenu $nb.control $nb.l]]
+	bind $nb.control <Configure> [namespace code [list PlaceControlMenu $nb.control $nb.l]]
+	set Vars(menu) $nb.l
 
 	::ttk::notebook::enableTraversal $nb
 	set db [::ttk::frame $nb.database]
@@ -409,13 +445,45 @@ proc FinishSettings {m} {
 
 
 proc PlaceSettingsMenu {m} {
-	place $m -x [expr {[winfo width [winfo parent $m]] - [winfo width $m]}] -y 0
+	variable Vars
+
+	set parent [winfo parent $m]
+	set x [expr {[winfo width $parent] - [winfo width $m]}]
+	if {$Vars(control) in [place slaves $parent]} {
+		set x [expr {$x - [winfo width $Vars(control)]}]
+	}
+	place $m -x $x -y 0
+}
+
+
+proc PlaceControlMenu {w m} {
+	variable Vars
+
+	set parent [winfo parent $w]
+
+	if {[::menu::fullscreen?]} {
+		set height [winfo height $Vars(menu)]
+		$w configure -height $height
+		foreach btn [winfo children $w] {
+			set h [expr {$height - 2*[$btn cget -borderwidth]}]
+			$btn configure -width $h -height $h
+		}
+		set x [expr {[winfo width $parent] - [winfo width $w]}]
+		place $w -x $x -y 0
+	} else {
+		place forget $w
+	}
+
+	PlaceSettingsMenu $m
 }
 
 
 proc SetSettingsText {w} {
+	variable Vars
+
 	lassign [::tk::UnderlineAmpersand $mc::MainMenu] text ul
 	$w configure -text " $text" -underline [incr ul]
+	::tooltip::tooltip $Vars(control).restore [::mc::stripAmpersand $::menu::mc::LeaveFullscreen]
 }
 
 
@@ -619,6 +687,28 @@ wm iconphoto .application -default $::icon::64x64::logo $::icon::16x16::logo
 
 
 namespace eval icon {
+namespace eval 12x12 {
+
+set restore [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAQElEQVQY02N8z4AdsMAYgv+R
+	hd8zMjEQ0sHA8J4RWTcLwhiYYRAFhIxCNgaikwVTLXFGofqCgYGBgRGXz3EaBQCJyw4hsZ0N
+	1AAAAABJRU5ErkJggg==
+}]
+
+set minimize [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAH0lEQVQY02P8z4AdMDEMKQkW
+	CMWI5J3/jHh1MJLscwAXlAQX2HQFpAAAAABJRU5ErkJggg==
+}]
+
+set close [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAApklEQVQY033OsY4BARSF4S8U
+	Emw27NARr7DvINErVOIlvAOJYpttSUS3UUg0PIpuOp1KMhOjmC1mhkac6uTec+9/eKuyiVbu
+	u0ZKxXjqbK2Brr3QJFs1LSVif74d3V0tVLObLxs3sYtEZO7jSWnbSqVSv1k6x6j5zF2g8sx3
+	HCQioZvYumjYsnMX+dGzkYis1LN3Y6GZKgJLJ8MCUdJ/NAkMHuRX+gd3xCejvVN16wAAAABJ
+	RU5ErkJggg==
+}]
+
+} ;# namespace 12x12
 namespace eval 16x12 {
 
 set downArrow(white) [image create photo -data {

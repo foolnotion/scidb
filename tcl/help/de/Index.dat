@@ -42,12 +42,18 @@ set Index {
   }
   { P
     {
+      {{Partie-Übersichts-Browser} {Game-Overview.html} {}}
       {{Partiemarkierungen} {Game-Flags.html} {}}
     }
   }
   { W
     {
       {{Webseite} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { Ü
+    {
+      {{Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
 }

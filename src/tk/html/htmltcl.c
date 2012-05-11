@@ -865,6 +865,14 @@ HtmlCallbackLayout(pTree, pNode)
 {
     if (pNode) {
         HtmlNode *p;
+
+#ifdef USE_DOUBLE_BUFFERING
+        if (pTree->bufferRegion) {
+            TkDestroyRegion(pTree->bufferRegion);
+            pTree->bufferRegion = NULL;
+        }
+#endif
+
         snapshotLayout(pTree);
         if (!pTree->cb.flags) {
             Tcl_DoWhenIdle(callbackHandler, (ClientData)pTree);

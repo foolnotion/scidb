@@ -61,6 +61,7 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Sinistra"
 ::mc::Lite				"Chiara"
+::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Cambia"
 ::mc::No					"no"
 ::mc::NotAvailable	"n/a"
@@ -123,6 +124,7 @@
 ::widget::mc::Next		"Pro&ssima"
 ::widget::mc::First		"Pri&ma"
 ::widget::mc::Last		"&Ultima"
+::widget::mc::Help		"&Help" ;# NEW
 
 ### util ###############################################################
 
@@ -1494,7 +1496,7 @@
 ::titlebox::mc::Title(CGM)		"Grande Maestro per corrispondenza (ICCF)"
 ::titlebox::mc::Title(CIM)		"Maestro Internazionale per corrispondenza (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)" ;# NEW
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICC)" ;# NEW
+::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)" ;# NEW
 ::titlebox::mc::Title(CSIM)	"Maestro Internazionale Senior per corrispondenza (ICCF)"
 
 ### messagebox #########################################################
@@ -1719,6 +1721,7 @@
 ::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
 ::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
 ::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
+::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"

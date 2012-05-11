@@ -21,7 +21,7 @@ set Contents {
     {{{Scidb-Windows und dialogs} {Overview.html} {windows-and-dialogs}}}
     {{{Database switcher} {Database-Switcher.html}}}
     {{{Game browser} {Game-Browser.html}}}
-    {{{Game overview} {Game-Overview.html}}}
+    {{{Game overview browser} {Game-Overview.html}}}
     {{{Game text window} {Game-Text-Window.html}}}
     {{{Game history} {Game-History-Window.html}}}
     {{{Chessboard} {Board-Window.html}}}

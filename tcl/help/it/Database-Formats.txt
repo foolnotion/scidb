@@ -73,7 +73,7 @@ In some cases the user has to choose the appropriate encoding while opening
 the database, to ensure a correct display of names and other text. Newer
 databases may be UTF-8 encoded, older database may be written with Latin-1
 (ISO-8859-1) character set, the Scid format does not provide information
-about this. But in most cases the automatic detection of the character set
+about this. But in many cases the automatic detection of the character set
 should be successful.
 </p>
 
@@ -166,8 +166,10 @@ limited to a specific database format.
 </p>
 
 <p>
-A specification of this format is on page
-<a href="Database-Archive.html">Database archive</a>.
+A detailed description of this format is on page
+<!-- NOTE for translators: only German and English specification will be available -->
+<!-- This means: do not translate next line -->
+<a href="../en/Database-Archive.html">Specification of database archive</a>.
 </p>
 -->
 

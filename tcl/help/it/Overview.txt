@@ -42,6 +42,7 @@ TITLE Benvenuti a Scidb-Help
 <dir>
   <li><a href="Database-Switcher.html">Cambio Database</a></li>
   <li><a href="Game-Browser.html">Browser Partite</a></li>
+  <!-- NEW: Change "Panoramica Partita" to "Fame overview browser" -->
   <li><a href="Game-Overview.html">Panoramica Partita</a></li>
   <li><a href="Game-Text-Window.html">Finestra di Testo della Partita</a></li>
   <li><a href="Game-History-Window.html">Storia Partita</a></li>

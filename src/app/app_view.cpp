@@ -395,7 +395,8 @@ View::dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) co
 	if (!fen.empty())
 		game.goToPosition(fen);
 
-	return Result(state, game.dumpMoves(result));
+	// NOTE: we like to use flag UseZeroWidthSpace, but Tk cannot handle this character.
+	return Result(state, game.dumpMoves(result, Game::SuppressSpace | Game::WhiteNumbers));
 }
 
 
@@ -437,7 +438,13 @@ View::dumpGame(unsigned index,
 		lengths.resize(size);
 
 		for (unsigned i = 0; i < size; ++i)
-			count += (lengths[i] = game.dumpMoves(result[i], unsigned((i + 1)*delta + 0.5) - count));
+		{
+			// NOTE: we like to use flag UseZeroWidthSpace, but Tk cannot handle this character.
+			count += (lengths[i] = game.dumpMoves(
+												result[i],
+												unsigned((i + 1)*delta + 0.5) - count,
+												Game::SuppressSpace | Game::WhiteNumbers));
+		}
 	}
 	else
 	{

@@ -118,6 +118,7 @@ set FileHasDisappeared			"File '%s' has disappeared."
 set CannotDelete					"Cannot delete file '%s'."
 set CannotRename					"Cannot rename file '%s'."
 set CannotDeleteDetail			"This file is currently in use."
+set CannotOverwrite				"Cannot overwrite file '%s'."
 
 }
 
@@ -1381,13 +1382,14 @@ proc Activate {w} {
 					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
 					return
 				}
+				if {[CheckIfInUse $w $file overwrite]} { return }
 				if {[file exists $file]} {
 					set msg [format [Tr FileAlreadyExists] [file tail $file]]
-					set reply [messageBox \
-									-type yesno \
-									-icon question \
+					set reply [messageBox                  \
+									-type yesno                \
+									-icon question             \
 									-parent $Vars(widget:main) \
-									-message $msg \
+									-message $msg              \
 					]
 					if {$reply ne "yes"} { return }
 				}
@@ -1510,6 +1512,25 @@ proc Stimulate {w} {
 			$t item state set $item {hilite}
 		}
 	}
+}
+
+
+proc CheckIfInUse {w file mode} {
+	variable ${w}::Vars
+
+	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $Vars(folder) $file]} {
+		set msg [format [set mc::Cannot[string toupper $mode 0 0]] [file tail $file]]
+		set detail [set mc::CannotDeleteDetail]
+		messageBox                    \
+			-type ok                   \
+			-icon info                 \
+			-parent $Vars(widget:main) \
+			-message $msg              \
+			-detail $detail            \
+			;
+		return 1
+	}
+	return 0
 }
 
 
@@ -3120,25 +3141,6 @@ proc TraverseFolders {w} {
 }
 
 
-proc CheckIfInUse {w file mode} {
-	variable [namespace parent]::${w}::Vars
-
-	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $Vars(folder) $file]} {
-		set msg [format [set [namespace parent]::mc::Cannot[string toupper $mode 0 0]] [file tail $file]]
-		set detail [set [namespace parent]::mc::CannotDeleteDetail]
-		[namespace parent]::messageBox \
-			-type ok                    \
-			-icon info                  \
-			-parent $Vars(widget:main)  \
-			-message $msg               \
-			-detail $detail             \
-			;
-		return 1
-	}
-	return 0
-}
-
-
 proc DeleteFile {w} {
 	variable [namespace parent]::${w}::Vars
 
@@ -3157,7 +3159,7 @@ proc DeleteFile {w} {
 			default	{ set type file }
 		}
 		set ltype file
-		if {[CheckIfInUse $w $file delete]} { return }
+		if {[[namespace parent]::CheckIfInUse $w $file delete]} { return }
 	}
 
 	[namespace parent]::busy $w
@@ -3286,7 +3288,7 @@ proc RenameFile {w} {
 	} else {
 		set i [expr {$i - [llength $Vars(list:folder)]}]
 		set Vars(edit:file) [lindex $Vars(list:file) $i]
-		if {[CheckIfInUse $w $Vars(edit:file) rename]} { return }
+		if {[[namespace parent]::CheckIfInUse $w $Vars(edit:file) rename]} { return }
 	}
 	OpenEdit $w $sel rename
 }

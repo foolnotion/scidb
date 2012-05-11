@@ -74,8 +74,8 @@ erhalten.
 Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
 werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
 sind mit großer Wahrscheinlichkeit UTF-8 enkodiert, ältere evt. im Latin-1
-(ISO-8859-1) Zeichensatz, das Scid-Format gibt keine Auskunft darüber. In den
-meisten Fällen sollte aber die programmeigene, automatische Ermittlung des
+(ISO-8859-1) Zeichensatz, das Scid-Format gibt keine Auskunft darüber. In
+vielen Fällen sollte aber die programmeigene, automatische Ermittlung des
 Zeichensatzes erfolgreich sein.
 </p>
 

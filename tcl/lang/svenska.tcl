@@ -61,6 +61,7 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Vänster"
 ::mc::Lite				"Ljus"
+::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Ändra"
 ::mc::No					"nej"
 ::mc::NotAvailable	"n/a"
@@ -123,6 +124,7 @@
 ::widget::mc::Next		"&Nästa"
 ::widget::mc::First		"&Första"
 ::widget::mc::Last		"&Sista"
+::widget::mc::Help		"&Help" ;# NEW
 
 ### util ###############################################################
 
@@ -1491,7 +1493,7 @@
 ::titlebox::mc::Title(CGM)		"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)		"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICC)"
+::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -1716,6 +1718,7 @@
 ::fsbox::mc::CannotDelete					"Kan inte radera filen '%s'."
 ::fsbox::mc::CannotRename					"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::CannotDeleteDetail			"Filen används."
+::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Verktygsfält"

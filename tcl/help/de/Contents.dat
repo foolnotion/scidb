@@ -1,53 +1,53 @@
 set Contents {
   {
-     {{{Übersicht} {Overview}}}
+     {{{Übersicht} {Overview.html}}}
   }
   {
-    {{{Allgemeine Hilfe} {Overview} {general}}}
-    {{{Datenbankformate} {Database-Formats}}}
-    {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog}}}
-    {{{Umgang mit Funktionsleisten} {Toolbar-Usage}}}
-    {{{Die Ablage-Datenbank} {Clipbase}}}
-    {{{Festlegung des Standard-Browsers} {How-To-Set-Default-Browser}}}
+    {{{Allgemeine Hilfe} {Overview.html} {general}}}
+    {{{Datenbankformate} {Database-Formats.html}}}
+    {{{Umgang mit dem Dateiauswahldialog} {File-Selection-Dialog.html}}}
+    {{{Umgang mit Funktionsleisten} {Toolbar-Usage.html}}}
+    {{{Die Ablage-Datenbank} {Clipbase.html}}}
+    {{{Festlegung des Standard-Browsers} {How-To-Set-Default-Browser.html}}}
   }
   {
-    {{{Scidb-Listenfenster} {Overview} {list-windows}}}
-    {{{Partienliste} {Game-List-Window}}}
-    {{{Spielerliste} {Player-List-Window}}}
-    {{{Veranstaltungsliste} {Event-List-Window}}}
-    {{{Kommentatorenliste} {Annotator-List-Window}}}
+    {{{Scidb-Listenfenster} {Overview.html} {list-windows}}}
+    {{{Partienliste} {Game-List-Window.html}}}
+    {{{Spielerliste} {Player-List-Window.html}}}
+    {{{Veranstaltungsliste} {Event-List-Window.html}}}
+    {{{Kommentatorenliste} {Annotator-List-Window.html}}}
   }
   {
-    {{{Scidb-Fenster und Dialoge} {Overview} {windows-and-dialogs}}}
-    {{{Datenbankumschalter} {Database-Switcher}}}
-    {{{Partie-Browser} {Game-Browser}}}
-    {{{Partie-Übersicht} {Game-Overview}}}
-    {{{Partietext-Fenster} {Game-Text-Window}}}
-    {{{Partienhistorie} {Game-History-Window}}}
-    {{{Schachbrett} {Board-Window}}}
-    {{{Zugbaum} {Tree-Window}}}
-    {{{Zugbaumpartienliste} {Tree-Games-Window}}}
-    {{{Kommentareditor} {Comment-Editor-Dialog}}}
-    {{{Feldmarkierungspalette} {Mark-Palette-Dialog}}}
-    {{{Stellungseingabe} {Board-Setup-Dialog}}}
-    {{{Startpositionseingabe} {Start-Position-Setup-Dialog}}}
-    {{{Kreuztabelle} {Crosstable-Window}}}
-    {{{Partienimport} {PGN-Import-Dialog}}}
-    {{{Datenbankenexport} {Database-Export-Dialog}}}
+    {{{Scidb-Fenster und Dialoge} {Overview.html} {windows-and-dialogs}}}
+    {{{Datenbankumschalter} {Database-Switcher.html}}}
+    {{{Partie-Browser} {Game-Browser.html}}}
+    {{{Partie-Übersichts-Browser} {Game-Overview.html}}}
+    {{{Partietext-Fenster} {Game-Text-Window.html}}}
+    {{{Partienhistorie} {Game-History-Window.html}}}
+    {{{Schachbrett} {Board-Window.html}}}
+    {{{Zugbaum} {Tree-Window.html}}}
+    {{{Zugbaumpartienliste} {Tree-Games-Window.html}}}
+    {{{Kommentareditor} {Comment-Editor-Dialog.html}}}
+    {{{Feldmarkierungspalette} {Mark-Palette-Dialog.html}}}
+    {{{Stellungseingabe} {Board-Setup-Dialog.html}}}
+    {{{Startpositionseingabe} {Start-Position-Setup-Dialog.html}}}
+    {{{Kreuztabelle} {Crosstable-Window.html}}}
+    {{{Partienimport} {PGN-Import-Dialog.html}}}
+    {{{Datenbankenexport} {Database-Export-Dialog.html}}}
   }
   {
-    {{{Weitere Informationen} {Overview} {further-information}}}
-    {{{Partiemarkierungen} {Game-Flags}}}
-    {{{Spezifikation des Datenbankarchivs} {Database-Archive}}}
-    {{{Kommandozeilenoptionen} {Command-Line-Options}}}
-    {{{NAG-Kommentarwerte} {NAG-Comments}}}
-    {{{Kontaktinformationen} {Contact-Information}}}
-    {{{Entwicklungsplanung} {Development-Roadmap}}}
-    {{{Was ist neu?} {Whats-New}}}
-    {{{Willkommen zu Scidb!} {Welcome}}}
+    {{{Weitere Informationen} {Overview.html} {further-information}}}
+    {{{Partiemarkierungen} {Game-Flags.html}}}
+    {{{Spezifikation des Datenbankarchivs} {Database-Archive.html}}}
+    {{{Kommandozeilenoptionen} {Command-Line-Options.html}}}
+    {{{NAG-Kommentarwerte} {NAG-Comments.html}}}
+    {{{Kontaktinformationen} {Contact-Information.html}}}
+    {{{Entwicklungsplanung} {Development-Roadmap.html}}}
+    {{{Was ist neu?} {Whats-New.html}}}
+    {{{Willkommen zu Scidb!} {Welcome.html}}}
   }
 }
 
 set UnixOnly {
-  How-To-Set-Default-Browser
+  How-To-Set-Default-Browser.html
 }

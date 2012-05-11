@@ -49,6 +49,7 @@
 #include "m_assert.h"
 
 #include <tcl.h>
+#include <tk.h>
 #include <string.h>
 
 using namespace tcl;
@@ -56,24 +57,25 @@ using namespace tcl;
 static char const* ScidbVersion	= "1.0 BETA";
 static char const* ScidbRevision	= "96";
 
-static char const* CmdAttributes		= "::scidb::misc::attributes";
-static char const* CmdCrc32			= "::scidb::misc::crc32";
-static char const* CmdDebug			= "::scidb::misc::debug?";
-static char const* CmdEncoding		= "::scidb::misc::encoding";
-static char const* CmdExtraTags		= "::scidb::misc::extraTags";
-static char const* CmdFitsRegion		= "::scidb::misc::fitsRegion?";
-static char const* CmdHardLinked		= "::scidb::misc::hardLinked?";
-static char const* CmdHtml				= "::scidb::misc::html";
-static char const* CmdIsAscii			= "::scidb::misc::isAscii?";
-static char const* CmdLookup			= "::scidb::misc::lookup";
-static char const* CmdMapExtension	= "::scidb::misc::mapExtension";
-static char const* CmdRevision		= "::scidb::misc::revision";
-static char const* CmdSetModTime		= "::scidb::misc::setModTime";
-static char const* CmdSize				= "::scidb::misc::size";
-static char const* CmdSuffixes		= "::scidb::misc::suffixes";
-static char const* CmdToAscii			= "::scidb::misc::toAscii";
-static char const* CmdVersion			= "::scidb::misc::version";
-static char const* CmdXml				= "::scidb::misc::xml";
+static char const* CmdAttributes			= "::scidb::misc::attributes";
+static char const* CmdCrc32				= "::scidb::misc::crc32";
+static char const* CmdDebug				= "::scidb::misc::debug?";
+static char const* CmdEncoding			= "::scidb::misc::encoding";
+static char const* CmdExtraTags			= "::scidb::misc::extraTags";
+static char const* CmdFitsRegion			= "::scidb::misc::fitsRegion?";
+static char const* CmdGeometryRequest	= "::scidb::misc::geometryRequest";
+static char const* CmdHardLinked			= "::scidb::misc::hardLinked?";
+static char const* CmdHtml					= "::scidb::misc::html";
+static char const* CmdIsAscii				= "::scidb::misc::isAscii?";
+static char const* CmdLookup				= "::scidb::misc::lookup";
+static char const* CmdMapExtension		= "::scidb::misc::mapExtension";
+static char const* CmdRevision			= "::scidb::misc::revision";
+static char const* CmdSetModTime			= "::scidb::misc::setModTime";
+static char const* CmdSize					= "::scidb::misc::size";
+static char const* CmdSuffixes			= "::scidb::misc::suffixes";
+static char const* CmdToAscii				= "::scidb::misc::toAscii";
+static char const* CmdVersion				= "::scidb::misc::version";
+static char const* CmdXml					= "::scidb::misc::xml";
 
 static unsigned cacheCount = 0;
 
@@ -979,30 +981,44 @@ cmdSetModTime(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const ob
 }
 
 
+static int
+cmdGeometryRequest(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tk_Window tkwin = Tk_NameToWindow(ti, stringFromObj(objc, objv, 1), Tk_MainWindow(ti));
+
+	if (!tkwin)
+		return error(CmdGeometryRequest, 0, 0, "unknown window '%s'", stringFromObj(objc, objv, 1));
+
+	Tk_GeometryRequest(tkwin, unsignedFromObj(objc, objv, 2), unsignedFromObj(objc, objv, 3));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdAttributes,		cmdAttributes);
-	createCommand(ti, CmdCrc32,			cmdCrc32);
-	createCommand(ti, CmdDebug,			cmdDebug);
-	createCommand(ti, CmdEncoding,		cmdEncoding);
-	createCommand(ti, CmdExtraTags,		cmdExtraTags);
-	createCommand(ti, CmdFitsRegion,		cmdFitsRegion);
-	createCommand(ti, CmdHardLinked,		cmdHardLinked);
-	createCommand(ti, CmdHtml,			cmdHtml);
-	createCommand(ti, CmdIsAscii,			cmdIsAscii);
-	createCommand(ti, CmdLookup,			cmdLookup);
-	createCommand(ti, CmdMapExtension,	cmdMapExtension);
-	createCommand(ti, CmdRevision,		cmdRevision);
-	createCommand(ti, CmdSetModTime,	cmdSetModTime);
-	createCommand(ti, CmdSize,			cmdSize);
-	createCommand(ti, CmdSuffixes,		cmdSuffixes);
-	createCommand(ti, CmdToAscii,			cmdToAscii);
-	createCommand(ti, CmdVersion,			cmdVersion);
-	createCommand(ti, CmdXml,			cmdXml);
+	createCommand(ti, CmdAttributes,			cmdAttributes);
+	createCommand(ti, CmdCrc32,					cmdCrc32);
+	createCommand(ti, CmdDebug,					cmdDebug);
+	createCommand(ti, CmdEncoding,				cmdEncoding);
+	createCommand(ti, CmdExtraTags,			cmdExtraTags);
+	createCommand(ti, CmdFitsRegion,			cmdFitsRegion);
+	createCommand(ti, CmdGeometryRequest,	cmdGeometryRequest);
+	createCommand(ti, CmdHardLinked,			cmdHardLinked);
+	createCommand(ti, CmdHtml,					cmdHtml);
+	createCommand(ti, CmdIsAscii,				cmdIsAscii);
+	createCommand(ti, CmdLookup,				cmdLookup);
+	createCommand(ti, CmdMapExtension,		cmdMapExtension);
+	createCommand(ti, CmdRevision,				cmdRevision);
+	createCommand(ti, CmdSetModTime,			cmdSetModTime);
+	createCommand(ti, CmdSize,					cmdSize);
+	createCommand(ti, CmdSuffixes,				cmdSuffixes);
+	createCommand(ti, CmdToAscii,				cmdToAscii);
+	createCommand(ti, CmdVersion,				cmdVersion);
+	createCommand(ti, CmdXml,					cmdXml);
 }
 
 } // namespace misc

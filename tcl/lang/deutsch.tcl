@@ -59,6 +59,7 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Links"
 ::mc::Lite				"Hell"
+::mc::Minimize			"Minimieren"
 ::mc::Modify			"Ändern"
 ::mc::No					"nein"
 ::mc::NotAvailable	"n/v"
@@ -121,6 +122,7 @@
 ::widget::mc::Next		"&Nächste"
 ::widget::mc::First		"&Erste"
 ::widget::mc::Last		"Le&tzte"
+::widget::mc::Help		"&Hilfe"
 
 ### util ###############################################################
 
@@ -1716,6 +1718,7 @@
 ::fsbox::mc::CannotDelete					"Die Datei '%s' kann nicht gelöscht werden."
 ::fsbox::mc::CannotRename					"Die Datei '%s' kann nicht unbenannt werden."
 ::fsbox::mc::CannotDeleteDetail			"Diese Datei ist zur Zeit in Gebrauch."
+::fsbox::mc::CannotOverwrite				"Die Datei '%s' kann nicht überschrieben werden."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Funktionsleiste"

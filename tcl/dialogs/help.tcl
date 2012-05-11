@@ -90,7 +90,7 @@ proc open {parent {file {}} args} {
 	variable Geometry
 
 	set Priv(check:lang) [CheckLanguage $parent $file]
-	if {$Priv(check:lang) eq "none"} { return }
+	if {$Priv(check:lang) eq "none"} { return "" }
 
 	if {[string length $file] == 0} {
 		set Priv(current:file) ""
@@ -107,7 +107,7 @@ proc open {parent {file {}} args} {
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
 		ReloadCurrentPage
-		return
+		return $dlg
 	}
 
 	array unset Links

@@ -491,6 +491,11 @@ proc viewFullscreen {{toggle {}}} {
 }
 
 
+proc fullscreen? {} {
+	return [set [namespace current]::Fullscreen]
+}
+
+
 proc CheckFullscreen {app} {
 	variable Fullscreen
 

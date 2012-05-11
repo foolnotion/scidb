@@ -34,13 +34,14 @@ set Previous	"&Previous"
 set Next			"&Next"
 set Last			"Las&t"
 set First		"&First"
+set Help			"&Help"
 
 } ;# namespace mc
 
 set Priv(busy:state) 0
 
 
-set ButtonOrder { previous next update clear close ok apply cancel reset revert }
+set ButtonOrder { previous next update clear close ok apply cancel reset revert help }
 	
 
 proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
@@ -147,6 +148,7 @@ proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
 			next		{ set var [namespace current]::mc::Next }
 			first		{ set var [namespace current]::mc::First }
 			last		{ set var [namespace current]::mc::Last }
+			help		{ set var [namespace current]::mc::Help }
 
 			default	{
 				if {![info exists var]} {
@@ -182,6 +184,7 @@ proc dialogButtonSetIcons {dlg} {
 				next		{ set icon $::icon::iconForward }
 				first		{ set icon $::icon::iconFirst }
 				last		{ set icon $::icon::iconLast }
+				help		{ set icon $::icon::16x16::help }
 			}
 
 			if {[llength $icon]} {

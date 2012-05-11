@@ -677,14 +677,15 @@ proc showGame {path base view index {pos {}}} {
 	set result [lindex $info [columnIndex result]]
 #	set result [::util::formatResult $result]
 	if {$result eq "1/2-1/2"} { set result "1/2" }
-	showMoves $path [lindex [::scidb::game::dump $base $view $index $pos] 1] $result [expr {$length == 0}]
+	set moves [lindex [::scidb::game::dump $base $view $index $pos] 1]
+	showMoves $path $moves $result [expr {$length == 0}]
 }
 
 
 proc hideGame {path} { hideMoves $path }
 
 
-proc showMoves {path moves {result ""} {empty 0}} {
+proc showMoves {path moves result showEmpty {width 50}} {
 	set w $path.showmoves
 	if {![winfo exists $w]} {
 		set f [::util::makePopup $w]
@@ -696,12 +697,15 @@ proc showMoves {path moves {result ""} {empty 0}} {
 			-background [::tooltip::background] \
 			-borderwidth 0 \
 			-relief solid \
+			-cursor {} \
 			;
 		pack $f.text -padx 1 -pady 1
       $f.text tag configure figurine -font $::font::figurine
 		# NOTE: w/o this dirty trick -displaylines will not work.
 		::shadow::prevent $w
 		wm geometry $w +[winfo screenwidth $w]+[winfo screenheight $w]
+		catch { wm attributes $w -type tooltip }
+		catch { wm attributes $w -topmost }
 		wm deiconify $w
 		lower $w
 		wm withdraw $w
@@ -710,11 +714,11 @@ proc showMoves {path moves {result ""} {empty 0}} {
 	}
 	set t $w.f.text
 	$t delete 1.0 end
-	$t configure -width 50
+	$t configure -width $width -state normal
 	set moves [::font::splitMoves $moves]
 	set complete 1
 	if {[string length $moves] == 0} {
-		if {$empty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
+		if {$showEmpty} { set text $mc::NoMoves } else { set text $mc::NoMoreMoves }
 		$t insert end $text
 		$t insert end " "
 	} else {
@@ -736,7 +740,7 @@ proc showMoves {path moves {result ""} {empty 0}} {
 		set charwidth [font measure [$t cget -font] "0"]
 		$t configure -width [expr {($width + $charwidth - 1)/$charwidth}]
 	}
-	$t configure -height $lines
+	$t configure -height $lines -state disabled
 	::tooltip::disable
 	::tooltip::popup $path $w cursor
 }

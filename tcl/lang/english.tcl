@@ -60,6 +60,7 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Left"
 ::mc::Lite				"Light"
+::mc::Minimize			"Minimize"
 ::mc::Modify			"Modify"
 ::mc::No					"no"
 ::mc::NotAvailable	"n/a"
@@ -122,6 +123,7 @@
 ::widget::mc::Next		"&Next"
 ::widget::mc::First		"&First"
 ::widget::mc::Last		"Las&t"
+::widget::mc::Help		"&Help"
 
 ### util ###############################################################
 
@@ -1493,7 +1495,7 @@
 ::titlebox::mc::Title(CGM)		"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)		"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICC)"
+::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -1717,6 +1719,7 @@
 ::fsbox::mc::CannotDelete					"Cannot delete file '%s'."
 ::fsbox::mc::CannotRename					"Cannot rename file '%s'."
 ::fsbox::mc::CannotDeleteDetail			"This file is currently in use."
+::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Toolbar"

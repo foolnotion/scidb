@@ -178,19 +178,16 @@ proc WidgetProc {w command args} {
 			if {$Priv(center)} { $w.sub.html configure -fixedwidth $MaxWidth }
 			$w.sub.html parse -final [lindex $args 0]
 			if {[string length $Priv(css)]} { $w.sub.html style -id user $Priv(css) }
-			set Priv(bbox) [ComputeBoundingBox $w.sub.html [$w.sub.html node] $Priv(center)]
-			if {[llength $Priv(bbox)] == 0} {
-				# Due to a bug in the html library sometimes
-				# we don't have a bounding box.
-				set Priv(bbox) {0 0 400 600}
-			} else {
-				lset Priv(bbox) 2 [min [lindex $Priv(bbox) 2] 4000]
-			}
-			if {[llength $Priv(bbox)] && $Priv(center)} {
-				lset Priv(bbox) 2 [expr {[lindex $Priv(bbox) 2] + $Margin}]
-				lset Priv(bbox) 3 [lindex [$w.sub.html bbox] 3]
-				$w.sub.html configure -fixedwidth [lindex $Priv(bbox) 2]
-				Place $w.sub [winfo width $w.sub] [winfo height $w.sub]
+			if {$Priv(center)} {
+				set bbox [ComputeBoundingBox $w.sub.html [$w.sub.html node]]
+				if {[llength $bbox] == 0} {
+					set width [winfo width $w.sub]
+				} else {
+					set width [expr {min([lindex $bbox 2], 4000) + $Margin}]
+				}
+				$w.sub.html configure -fixedwidth $width
+				update idletasks
+				after idle [namespace code [list Place $w.sub [winfo width $w.sub] [winfo height $w.sub]]]
 			}
 			return
 		}
@@ -229,7 +226,7 @@ proc WidgetProc {w command args} {
 
 		bbox {
 			if {[llength $args] == 0} {
-				return $Priv(bbox)
+				return [$w.sub.html bbox]
 			}
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] $command ?<node>?\""
@@ -242,7 +239,7 @@ proc WidgetProc {w command args} {
 		}
 
 		size {
-			lassign $Priv(bbox) x y w h
+			lassign [$w.sub.html bbox] x y w h
 			set w [expr {$w + 2*$x}]
 			set h [expr {$h + 2*$y}]
 			return [list $w $h]
@@ -301,14 +298,15 @@ proc WidgetProc {w command args} {
 proc Place {w width height} {
 	variable [winfo parent $w]::Priv
 
-	if {[llength $Priv(bbox)] == 0} { return }
-
-	set htmlWidth [lindex $Priv(bbox) 2]
-	set htmlHeight [lindex $Priv(bbox) 3]
-	$w.html configure -height [expr {min($height, $htmlHeight)}] -width [winfo width $w]
+	lassign [$w.html visbbox] _ _ htmlWidth htmlHeight
 	set xdelta [expr {max(0, ($width - $htmlWidth)/2)}]
 	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
+	if {$ydelta > 0} { set height $htmlHeight }
+	if {$xdelta > 0} { set width $htmlWidth }
+	$w.html configure -width $width -height $height
 	place $w.html -x $xdelta -y $ydelta
+	$w.html xview scroll 0 units
+	$w.html yview scroll 0 units
 }
 
 
@@ -323,8 +321,6 @@ proc Configure {parent width req} {
 	set Priv(request) $req
 
 	$parent.sub.html configure -width [expr {max(1, $width - 2*$Priv(bw) - [VsbWidth $parent])}]
-	after cancel $Priv(afterId)
-	set afterId [after idle [namespace code [list ComputeSize $parent $req]]]
 }
 
 
@@ -347,22 +343,7 @@ proc VsbWidth {parent} {
 }
 
 
-proc ComputeSize {parent req} {
-	variable ${parent}::Priv
-	variable Margin
-
-	after cancel $Priv(afterId)
-	set Priv(afterId) {}
-
-	set Priv(bbox) [ComputeBoundingBox $parent.sub.html [$parent.sub.html node] $Priv(center)]
-	if {[llength $Priv(bbox)]} {
-		lset Priv(bbox) 3 [expr {[lindex $Priv(bbox) 3] + $Margin}]
-		$parent.sub.html configure -height [lindex $Priv(bbox) 3]
-	}
-}
-
-
-proc ComputeBoundingBox {w node skipBody} {
+proc ComputeBoundingBox {w node} {
 	variable MaxWidth
 	variable Margin
 
@@ -374,7 +355,7 @@ proc ComputeBoundingBox {w node skipBody} {
 			html {}
 			head { return $result }
 			default {
-				if {!$skipBody || $tag ne "body"} {
+				if {$tag ne "body"} {
 					set bbox [$w bbox $node]
 					if {[llength $bbox]} {
 						if {[lindex $bbox 2] == $MaxWidth - $Margin} { lset bbox 2 0 }
@@ -387,7 +368,7 @@ proc ComputeBoundingBox {w node skipBody} {
 
 	if {[llength $result] == 0 || [lindex $result 2] == 0} {
 		foreach n [$node children] {
-			set bbox [ComputeBoundingBox $w $n $skipBody]
+			set bbox [ComputeBoundingBox $w $n]
 			if {[llength $bbox] > 0 && [lindex $bbox 2] > 0} {
 				set result [CombineBox $result $bbox]
 			}

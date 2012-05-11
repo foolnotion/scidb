@@ -1,6 +1,18 @@
 [Mai 2012] ===================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #320)
+------------------------------------------------------------------------------
+* HTML widget (C++): double buffering fixed.
+
+* HTML widget (Tcl): centering mode a bit reworked.
+
+* New help pages: File selection box, overview browser.
+
+* Controls to main window added for full-screen mode: close, restore,
+minimize.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #318)
 ------------------------------------------------------------------------------
 * Option -nocase added to "<treectrl> item sort itemDesc ?option ...?".

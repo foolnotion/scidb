@@ -1,0 +1,67 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Partie-Übersichts-Browser
+INDEX Übersichts-Browser
+TITLE Der Partie-Übersichts-Browser
+
+<p>
+Der Übersichts-Browser wird mit einer Partie aus einer Partieliste
+geöffnet. Der Browser ist an diese Partieliste gebunden. Wird diese
+Partieliste geschlossen während der Browser noch offen ist, kann
+keine weitere Partie mehr geladen werden.
+</p>
+
+<p>
+Der Übersichts-Browser teilt die Partie in etwa gleich große Intervalle
+und zeigt die Positionen in einer Übersicht. Die Anzahl der Positionen
+hängt von der Bildschirmgröße und des gewählten Reiters ab. Unterhalb
+jeder Position sieht man die Züge die zu dieser Position führten,
+d.h. das letzte Brett zeigt die Endstellung. Manchmal sind nicht alle
+Züge innerhalb des Textfensters zu sehen. In diesem Fall läßt sich die
+Ansicht rollen, indem man mit dem Mauszeiger mit gehaltener linker
+Maustaste in das Textfenster klickt und durch Ziehen nach oben oder
+nach unten rollt.
+</p>
+
+<p>
+Das kontextsensitive Menü des Übersicht-Browsers bietet folgende
+Funktionen:
+</p>
+
+<ul>
+	<li>Die Bretter drehen</li>
+	<li>Die aktuelle Partie in den Partie-Editor laden</li>
+	<li>Die erste Partie in der Partieliste laden</li>
+	<li>Die letzte Partie in der Partieliste laden</li>
+</ul>
+
+<p>
+Des weiteren gibt es Schaltflächen für folgende Aktionen:
+</p>
+
+<ul>
+	<li>Die vorhergegehende Partie aus der Partieliste laden</li>
+	<li>Die nachfolgende Partie aus der Partieliste laden</li>
+	<li>Den Browser schliessen</li>
+	<li>Diese Hilfeseite öffnen</li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

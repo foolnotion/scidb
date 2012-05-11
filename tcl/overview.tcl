@@ -54,13 +54,14 @@ proc open {parent base info view index {fen {}}} {
 	set name [file rootname [file tail $base]]
 
 	if {[info exists Priv($base:$number:$view)]} {
+		set dlg [lindex $Priv($base:$number:$view) 0]
 		switch [tk windowingsystem] {
 			x11 {
-				wm withdraw $Priv($base:$number:$view)
-				wm deiconify $Priv($base:$number:$view)
+				wm withdraw $dlg
+				wm deiconify $dlg
 			}
 			default {
-				raise $Priv($base:$number:$view)
+				raise $dlg
 			}
 		}
 		return
@@ -68,13 +69,13 @@ proc open {parent base info view index {fen {}}} {
 
 	set position [incr Priv(count)]
 	set dlg $parent.overview$position
-	set Priv($base:$number:$view) $dlg
-	incr Priv($base:$number:$view:count)
+	lappend Priv($base:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
-	::widget::dialogButtons $dlg {close previous next} close
-	foreach type {close previous next} { $dlg.$type configure -width 15 }
+	::widget::dialogButtons $dlg {close previous next help} close
+#	foreach type {close previous next help} { $dlg.$type configure -width 15 }
 	$dlg.close configure -command [list destroy $dlg]
+	$dlg.help configure -command { ::help::open .application Overview-Browser }
 
 	set sw [expr {[winfo screenwidth $dlg] - 30}]
 	set sh [expr {[winfo screenheight $dlg] - 140}]
@@ -89,6 +90,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $nb <<LanguageChanged>> [namespace code [list SetTitle $nb]]
 	bind $dlg <Key-[string tolower $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
 	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base]]
+	bind $dlg <F1> { ::help::open .application Overview-Browser }
 
 	namespace eval $nb {}
 	variable ${nb}::Vars
@@ -103,6 +105,8 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(fen) $fen
 	set Vars(closed) 0
 	set Vars(info) $info
+	set Vars(after) {}
+	set Vars(moves) ""
 
 	set idn [::gametable::column $info idn]
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
@@ -246,16 +250,13 @@ proc NextGame {nb base {step 0}} {
 	ConfigureButtons $nb
 	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
 	set Vars(number) [::gametable::column $Vars(info) number]
-	if {$step} {
-		set key $Vars(base):$number:$Vars(view)
-		if {[incr Priv($key:count) -1] == 0} {
-			unset Priv($key)
-			unset Priv($key:count)
-		}
-		set key $Vars(base):$Vars(number):$Vars(view)
-		set Priv($key) [winfo toplevel $nb]
-		incr Priv($key:count)
-	}
+	set dlg [winfo toplevel $nb]
+	set key $Vars(base):$number:$Vars(view)
+	set i [lsearch $Priv($key) $dlg]
+	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
+	if {[llength $Priv($key)] == 0} { array unset Priv $key }
+	set key $Vars(base):$Vars(number):$Vars(view)
+	lappend Priv($key) $dlg
 	set idn [::gametable::column $Vars(info) idn]
 	SetTitle $nb
 	set failed 0
@@ -293,13 +294,18 @@ proc NextGame {nb base {step 0}} {
 				}
 				$text insert end "$res"
 			}
-			$text configure -state disabled
 			if {$i < $length} {
 				set position [lindex $result [expr {2*$i + 1}]]
 			} else {
 				set position empty
 			}
 			::board::stuff::update $nb.s$boardSize.board_${row}_${col} $position
+			update idletasks
+#			For any reason this is not working.
+#			if {[$text count -displaylines 1.0 end] > 2} {
+#				$text insert 2.end "\u204d"
+#			}
+			$text configure -state disabled
 		}
 	}
 }
@@ -337,15 +343,20 @@ proc BuildTab {nb boardSize sw sh specified} {
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {
 			set board [::board::stuff::new $f.board_${row}_${col} $boardSize 1 $Priv(flip)]
-			set text [tk::text $f.text_${row}_${col} \
-				-borderwidth 1 \
-				-relief raised \
-				-width 0 -height 2 \
-				-state disabled \
-				-wrap word \
-				-cursor {} \
-				-background $Background] \
-				;
+			set t $f.text_${row}_${col}
+			set text [tk::text $t                    \
+				-borderwidth 1                        \
+				-relief raised                        \
+				-width 0                              \
+				-height 2                             \
+				-state disabled                       \
+				-wrap word                            \
+				-cursor {}                            \
+				-background $Background               \
+				-inactiveselectbackground $Background \
+				-selectforeground black               \
+				-exportselection no                   \
+			]
 			::widget::textPreventSelection $text
 			bind $text <MouseWheel> { break }
 			if {[tk windowingsystem] eq "x11"} {
@@ -355,8 +366,6 @@ proc BuildTab {nb boardSize sw sh specified} {
 			grid $board -column [expr {2*($col + 1)}] -row [expr {4*($row + 1)}]
 			grid $text  -column [expr {2*($col + 1)}] -row [expr {4*($row + 1) + 2}] -sticky ew
 			$text tag configure figurine -font $::font::figurine
-			bind $text <Enter> [namespace code [list ShowMoves $text]]
-			bind $text <Leave> [namespace code [list HideMoves $text]]
 		}
 	}
 
@@ -374,18 +383,6 @@ proc BuildTab {nb boardSize sw sh specified} {
 
 	grid columnconfigure $f [list 1 [lindex $cols end]] -weight 1 -minsize 5
 	grid rowconfigure $f [list 3 [lindex $rows end]] -weight 1 -minsize 5
-}
-
-
-proc ShowMoves {text} {
-	if {[$text count -displaylines 1.0 2.0] > 2} {
-		::gametable::showMoves $text [string trim [$text get 1.0 end]]
-	}
-}
-
-
-proc HideMoves {text} {
-	::gametable::hideMoves $text
 }
 
 
@@ -464,15 +461,17 @@ proc Destroy {nb} {
 		variable Priv
 
 		catch { destroy $nb.__menu__ }
+
 		set key $Vars(base):$Vars(number):$Vars(view)
-		if {[incr Priv($key:count) -1] == 0} {
-			unset Priv($key)
-			unset Priv($key:count)
-		}
+		set i [lsearch $Priv($key) [winfo toplevel $nb]]
+		if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
+		if {[llength $Priv($key)] == 0} { array unset Priv $key }
+
 		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
 		if {[info exists Vars(subscribe:tree)]} {
 			::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 		}
+
 		namespace delete [namespace current]::${nb}
 	}
 }

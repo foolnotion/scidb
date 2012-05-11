@@ -20,22 +20,22 @@ INDEX Ablage-Datenbank
 TITLE Die Ablage-Datenbank
 
 <p>
-Scidb stellt bereits bei Programmstart eine geÃ¶ffnete
-Ablage-Datenbank zur VerfÃ¼gung, welche sich wie eine normale Datenbank verhÃ¤lt,
-mit der Ausnahme, daÃŸ sie im Hauptspeicherbereich existiert und nicht auf der
+Scidb stellt bereits bei Programmstart eine geöffnete
+Ablage-Datenbank zur Verfügung, welche sich wie eine normale Datenbank verhält,
+mit der Ausnahme, daß sie im Hauptspeicherbereich existiert und nicht auf der
 Festplatte gespeichert wird.  Damit hat sie nur ein relative begrenztes
-AufnahmevermÃ¶gen. Der vordefinierte Name fÃ¼r diese Datenbank ist
+Aufnahmevermögen. Der vordefinierte Name für diese Datenbank ist
 <b>%::application::database::mc::T_Clipbase%</b>.
 </p>
  
 <!-- p>
-Die Ablage ist nÃ¼tzlich als eine temporÃ¤re Datenbank, zum ZusammenfÃ¼hren von
+Die Ablage ist nützlich als eine temporäre Datenbank, zum Zusammenführen von
 Suchergebnissen aus der Suche in mehreren Datenbanken, oder zur Behandlung
-der Suchergebnisse als eine eigenstÃ¤ndige Datenbank. 
+der Suchergebnisse als eine eigenständige Datenbank. 
 </p -->
    
 <p>
-Die Ablage kann nicht geschlossen werden. Es exisitiert eine MenÃ¼funktion zum Leeren
+Die Ablage kann nicht geschlossen werden. Es exisitiert eine Menüfunktion zum Leeren
 der Ablage (siehe <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>

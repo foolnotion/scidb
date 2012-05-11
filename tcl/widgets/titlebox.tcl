@@ -47,15 +47,35 @@ set Title(NM)		"National Master (USCF)"
 set Title(SM)		"Senior Master (USCF)"
 set Title(LM)		"Life Master (USCF)"
 set Title(CGM)		"Correspondence Grandmaster (ICCF)"
-set Title(CIM)		"Correspondence International Master (ICC)"
+set Title(CIM)		"Correspondence International Master (ICCF)"
 set Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-set Title(CILM)	"Correspondence Lady International Master (ICC)"
+set Title(CILM)	"Correspondence Lady International Master (ICCF)"
 set Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 }
 
 
 variable titles { GM IM FM CM WGM WIM WFM WCM HGM CGM CLGM CIM CILM CSIM NM SM LM }
+
+array set Association {
+	GM		FIDE
+	IM		FIDE
+	FM		FIDE
+	CM		FIDE
+	WGM	FIDE
+	WIM	FIDE
+	WFM	FIDE
+	WCM	FIDE
+	HGM	FIDE
+	CGM	ICCF
+	CLGM	ICCF
+	CIM	ICCF
+	CILM	ICCF
+	CSIM	ICCF
+	NM		USCF
+	SM		USCF
+	LM		USCF
+}
 
 
 proc Build {w args} {
@@ -94,10 +114,12 @@ proc Build {w args} {
 		-invalidcommand { bell } \
 		-exportselection no \
 		-state $opts(-state) \
+		-highlightbackground whitesmoke \
+		-highlightforeground black \
 		;
 
-	$w addcol text -id title -width 4
-	$w addcol text -id descr -foreground darkgreen
+	$w addcol text  -id title -width 4
+	$w addcol text  -id descr -foreground darkgreen
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 #	bind $w <FocusOut> [namespace code [list Completion $w]]
@@ -171,12 +193,17 @@ proc WidgetProc {w command args} {
 proc SetupList {w} {
 	variable mc::Title
 	variable titles
+	variable Association
 
 	$w listinsert { "\u2014" } -index 0
 
 	set index 0
 	foreach title $titles {
-		$w listinsert [list $title $Title($title)] -index [incr index]
+		switch $Association($title) {
+			ICCF		{ set highlight yes }
+			default	{ set highlight no  }
+		}
+		$w listinsert [list $title $Title($title)] -index [incr index] -highlight $highlight
 	}
 
 	$w resize

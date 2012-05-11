@@ -956,7 +956,11 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 			result.format("%u", board.moveNumber());
 			result += "...";
 
-			if (!(flags & SuppressSpace) || (flags & ExportFormat))
+			if (flags & ExportFormat)
+				result += " ";
+			else if (flags & UseZeroWidthSpace)
+				result += "\xE2\x80\x8B";
+			else if (!(flags & SuppressSpace))
 				result += " ";
 		}
 	}
@@ -967,7 +971,11 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 			result.format("%u", board.moveNumber());
 			result += '.';
 
-			if (!(flags & SuppressSpace) || (flags & ExportFormat))
+			if (flags & ExportFormat)
+				result += " ";
+			else if (flags & UseZeroWidthSpace)
+				result += "\xE2\x80\x8B";
+			else if (!(flags & SuppressSpace))
 				result += " ";
 		}
 	}
@@ -2597,7 +2605,7 @@ Game::setStartPosition(unsigned idn)
 
 
 unsigned
-Game::dumpMoves(mstl::string& result, unsigned length)
+Game::dumpMoves(mstl::string& result, unsigned length, unsigned flags)
 {
 	if (atLineEnd())
 		return 0;
@@ -2612,7 +2620,7 @@ Game::dumpMoves(mstl::string& result, unsigned length)
 			return n;
 
 		m_currentNode = m_currentNode->next();
-		printSan(result, SuppressSpace | WhiteNumbers | (result.empty() ? BlackNumbers : 0));
+		printSan(result, flags | (result.empty() ? BlackNumbers : 0));
 		m_currentNode = m_currentNode->prev();
 		forward();
 		result += ' ';
@@ -2625,9 +2633,9 @@ Game::dumpMoves(mstl::string& result, unsigned length)
 
 
 unsigned
-Game::dumpMoves(mstl::string& result)
+Game::dumpMoves(mstl::string& result, unsigned flags)
 {
-	return dumpMoves(result, mstl::numeric_limits<unsigned>::max());
+	return dumpMoves(result, mstl::numeric_limits<unsigned>::max(), flags);
 }
 
 

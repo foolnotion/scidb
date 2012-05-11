@@ -92,13 +92,14 @@ proc open {parent base info view index {fen {}}} {
 	set number [::gametable::column $info number]
 	set name [file rootname [file tail $base]]
 	if {[info exists Priv($base:$number:$view)]} {
+		set dlg [lindex $Priv($base:$number:$view) 0]
 		switch [tk windowingsystem] {
 			x11 {
-				wm withdraw $Priv($base:$number:$view)
-				wm deiconify $Priv($base:$number:$view)
+				wm withdraw $dlg
+				wm deiconify $dlg
 			}
 			default {
-				raise $Priv($base:$number:$view)
+				raise $dlg
 			}
 		}
 		return
@@ -106,8 +107,7 @@ proc open {parent base info view index {fen {}}} {
 
 	set position [incr Priv(count)]
 	set dlg $parent.browser$position
-	set Priv($base:$number:$view) $dlg
-	incr Priv($base:$number:$view:count)
+	lappend Priv($base:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
 
 	set top [::ttk::frame $dlg.top]
@@ -503,16 +503,12 @@ proc NextGame {parent position {step 0}} {
 	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
 	set Vars(result) [::util::formatResult [::gametable::column $Vars(info) result]]
 	set Vars(number) [::gametable::column $Vars(info) number]
-	if {$step} {
-		set key $Vars(base):$number:$Vars(view)
-		if {[incr Priv($key:count) -1] == 0} {
-			unset Priv($key)
-			unset Priv($key:count)
-		}
-		set key $Vars(base):$Vars(number):$Vars(view)
-		set Priv($key) [winfo toplevel $parent]
-		incr Priv($key:count)
-	}
+	set key $Vars(base):$number:$Vars(view)
+	set i [lsearch $Priv($key) $parent]
+	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
+	if {[llength $Priv($key)] == 0} { array unset Priv $key }
+	set key $Vars(base):$Vars(number):$Vars(view)
+	lappend Priv($key) [winfo toplevel $parent]
 	ConfigureButtons $position
 	SetTitle $position
 	set number [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
@@ -876,14 +872,13 @@ proc Destroy {dlg w position base} {
 		::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 	}
 
-	if {$Vars(fullscreen)} { set Priv(register) 1 }
-
-	::scidb::game::release $position
 	set key $Vars(base):$Vars(number):$Vars(view)
-	if {[incr Priv($key:count) -1] == 0} {
-		unset Priv($key)
-		unset Priv($key:count)
-	}
+	set i [lsearch $Priv($key) $dlg]
+	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
+	if {[llength $Priv($key)] == 0} { array unset Priv $key }
+
+	if {$Vars(fullscreen)} { set Priv(register) 1 }
+	::scidb::game::release $position
 	namespace delete [namespace current]::${position}
 }
 

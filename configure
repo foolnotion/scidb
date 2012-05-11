@@ -1458,6 +1458,16 @@ if {[string length $gxxVer]} {
             puts "on this system, you may not get a proper error message"
             puts "in case of an exception."
         }
+        puts "Furthermore the distributed Tk library is broken, some"
+        puts "windows of the application will be frozen. You have to"
+        puts "use a self-compiled Tk library if you like to avoid this"
+        puts "problem."
+        puts "It is highly recommended to build Scidb on a working Unix"
+        puts "system. Your installed system is only a pseudo-Unix system."
+        puts "It is broken and distorted due to the \"kernel hardening\""
+        puts "paranoia, which assumes that every software is an attacker."
+        puts "But Scidb is definitively not an attacker and requires a"
+        puts "sane Unix system."
     }
 
     exit 0

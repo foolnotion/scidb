@@ -61,6 +61,7 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Bal"
 ::mc::Lite				"Világos"
+::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Módosít"
 ::mc::No					"Nem"
 ::mc::NotAvailable	"Nem elérhető" ;# I put it back, since n/e has no meaning in hungarian, unlike n/a in english; Zoltan 2010.02.11
@@ -123,6 +124,7 @@
 ::widget::mc::Next		"&Következő"
 ::widget::mc::First		"&Első"
 ::widget::mc::Last		"&Utolsó"
+::widget::mc::Help		"&Help" ;# NEW
 
 ### util ###############################################################
 
@@ -1494,7 +1496,7 @@
 ::titlebox::mc::Title(CGM)	"Correspondence Grandmaster (ICCF)"
 ::titlebox::mc::Title(CIM)	"Correspondence International Master (ICCF)"
 ::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICC)"
+::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 
 ### messagebox #########################################################
@@ -1719,6 +1721,7 @@
 ::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
 ::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
 ::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
+::fsbox::mc::CannotOverwrite			"Cannot overwrite file '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Eszköztár"

@@ -104,13 +104,12 @@ proc BuildDialog {dlg} {
 proc BuildAboutFrame {w} {
 	::html $w.t \
 		-imagecmd [namespace code GetImage] \
-		-center no \
+		-center yes \
 		-width 580 \
 		-height 400 \
 		-borderwidth 1 \
 		-relief sunken \
 		-doublebuffer no \
-		-center yes \
 		-exportselection yes \
 		;
 	pack $w.t
