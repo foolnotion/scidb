@@ -61,7 +61,6 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Bal"
 ::mc::Lite				"Világos"
-::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Módosít"
 ::mc::No					"Nem"
 ::mc::NotAvailable	"Nem elérhető" ;# I put it back, since n/e has no meaning in hungarian, unlike n/a in english; Zoltan 2010.02.11
@@ -126,6 +125,10 @@
 ::widget::mc::Last		"&Utolsó"
 ::widget::mc::Help		"&Help" ;# NEW
 
+::widget::mc::Control(minimize)	"Minimize" ;# NEW
+::widget::mc::Control(restore)	"Leave Full-screen" ;# NEW
+::widget::mc::Control(close)	"Bezár"
+
 ### util ###############################################################
 
 ::util::mc::IOErrorOccurred					"I/O hiba történt"
@@ -188,9 +191,11 @@
 ::menu::mc::Help							"&Súgó"
 ::menu::mc::Contact						"&Contact (Web Browser)" ;# NEW
 ::menu::mc::Quit							"&Kilépés"
+::menu::mc::Extras						"E&xtras" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Hiba jelentés"
 ::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
+::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
 
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
@@ -803,6 +808,12 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock" ;# NEW
 ::twm::mc::Close	"Bezár"
+
+### fonts ##############################################################
+::font::mc::ChessBaseFontsInstalled		"ChessBase fonts successfully installed." ;# NEW
+::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
+::font::mc::NoChessBaseFontFound		"No ChessBase font found in folder '%s'." ;# NEW
+::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"kiinduló állás"

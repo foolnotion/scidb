@@ -61,7 +61,6 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Vänster"
 ::mc::Lite				"Ljus"
-::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Ändra"
 ::mc::No					"nej"
 ::mc::NotAvailable	"n/a"
@@ -126,6 +125,10 @@
 ::widget::mc::Last		"&Sista"
 ::widget::mc::Help		"&Help" ;# NEW
 
+::widget::mc::Control(minimize)	"Minimize" ;# NEW
+::widget::mc::Control(restore)	"Lämna helskärm"
+::widget::mc::Control(close)		"Stäng"
+
 ### util ###############################################################
 
 ::util::mc::IOErrorOccurred					"I/O fel uppstod"
@@ -186,9 +189,11 @@
 ::menu::mc::Help							"&Hjälp"
 ::menu::mc::Contact						"&Kontakt (Webbläsare)"
 ::menu::mc::Quit							"&Avsluta"
+::menu::mc::Extras						"E&xtras" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Felrapport"
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
+::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
@@ -800,6 +805,12 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock					"Avdocka"
 ::twm::mc::Close					"Stäng"
+
+### fonts ##############################################################
+::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed." ;# NEW
+::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
+::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
+::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"

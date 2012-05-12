@@ -113,12 +113,12 @@ proc open {parent base info view index {fen {}}} {
 	set top [::ttk::frame $dlg.top]
 	set bot [tk::frame $dlg.bot]
 	::ttk::separator $dlg.sep -class Dialog
-	grid $dlg.top -column 0 -row 0 -sticky nsew
-	grid $dlg.sep -column 0 -row 1 -sticky nsew
-	grid $dlg.bot -column 0 -row 2 -sticky nsew
+	grid $dlg.top -column 0 -row 1 -sticky nsew
+	grid $dlg.sep -column 0 -row 2 -sticky nsew
+	grid $dlg.bot -column 0 -row 3 -sticky nsew
 
 	grid columnconfigure $dlg 0 -weight 1
-	grid rowconfigure $dlg 0 -weight 1
+	grid rowconfigure $dlg 1 -weight 1
 
 	set lt [::ttk::frame $top.lt]
 	set rt [::ttk::frame $top.rt]
@@ -178,7 +178,8 @@ proc open {parent base info view index {fen {}}} {
 	# PGN side
 	tk::text $rt.header \
 		-background $Options(background:header) \
-		-height 3 -width 0 \
+		-height 3 \
+		-width 0 \
 		-state disabled \
 		-takefocus 0 \
 		-undo 0 \
@@ -188,7 +189,8 @@ proc open {parent base info view index {fen {}}} {
 		-cursor {} \
 		;
 	tk::text $rt.pgn \
-		-height 0 -width 0 \
+		-height 0 \
+		-width 0 \
 		-yscrollcommand [list ::scrolledframe::sbset $rt.sb] \
 		-state disabled \
 		-takefocus 0 \
@@ -280,7 +282,6 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(subscribe:close) [list [namespace current]::Close $base $position]
 
 	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
-	bind $dlg <F11>						[namespace code [list ViewFullscreen $position $board]]
 	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
 	bind $dlg <Return>					{+ break }
 	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
@@ -302,6 +303,9 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
 	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
+	if {[UseFullscreen?]} {
+		bind $dlg <F11>					[namespace code [list ViewFullscreen $position $board]]
+	}
 
 	wm withdraw $dlg
 #	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
@@ -1016,14 +1020,16 @@ proc PopupMenu {parent board position {what ""}} {
 			-accelerator "${::mc::Ctrl}-\u2212" \
 			;
 	}
-	if {$Vars(fullscreen)} { set var LeaveFullscreen } else { set var Fullscreen }
-	$menu add command \
-		-label " [::mc::stripAmpersand [set ::menu::mc::$var]]" \
-		-image $::icon::16x16::fullscreen \
-		-compound left \
-		-command [namespace code [list ViewFullscreen $position $board]] \
-		-accelerator "F11" \
-		;
+	if {[UseFullscreen?]} {
+		if {$Vars(fullscreen)} { set var LeaveFullscreen } else { set var Fullscreen }
+		$menu add command \
+			-label " [::mc::stripAmpersand [set ::menu::mc::$var]]" \
+			-image $::icon::16x16::fullscreen \
+			-compound left \
+			-command [namespace code [list ViewFullscreen $position $board]] \
+			-accelerator "F11" \
+			;
+	}
 
 	tk_popup $menu {*}[winfo pointerxy $dlg]
 }
@@ -1074,12 +1080,28 @@ proc ChangeBoardSize {position board delta} {
 		}
 
 		fullscreen {
-			set boardSize [expr {[winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size)}]
+			set boardSize \
+				[expr {[winfo screenheight $dlg] - [winfo height $dlg] - 19 + 8*$Options(board:size)}]
 			set newSize [expr {$boardSize/8}]
 			unset delta
+
+			if {[info exists Vars(control)]} {
+				grid $Vars(control)
+			} else {
+				set Vars(control) [::widget::dialogFullscreenButtons $dlg]
+				grid $Vars(control) -row 0 -column 0 -sticky ens
+				grid rowconfigure $dlg 0 -minsize 19
+				$Vars(control).minimize configure -command [list wm iconify $dlg]
+				$Vars(control).restore configure \
+					-command [namespace code [list ViewFullscreen $position $board]] \
+					;
+				$Vars(control).close configure -command [list destroy $dlg]
+			}
 		}
 
 		restore {
+			grid remove $Vars(control)
+			grid rowconfigure $dlg 0 -minsize 0
 			wm geometry $dlg +$Vars(pos:x)+$Vars(pos:y)
 			set newSize $Options(board:size)
 			set delta 0
@@ -1121,6 +1143,13 @@ proc ChangeBoardSize {position board delta} {
 			wm geometry $dlg +[min $x0 $x1]+[min $y0 $y1]
 		}
 	}
+}
+
+
+proc UseFullscreen? {} {
+	set sw [winfo screenwidth .application]
+	set sh [winfo screenheight .application]
+	return [expr {$sh + 350 <= $sw}]
 }
 
 

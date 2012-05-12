@@ -231,6 +231,7 @@ array set Colors {
 	federation						darkblue
 	score								darkgreen
 	ratingType						darkblue
+	date								darkblue
 	eventDate						darkblue
 	eventCountry					darkblue
 	taglistOutline					gray

@@ -60,7 +60,6 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Left"
 ::mc::Lite				"Light"
-::mc::Minimize			"Minimize"
 ::mc::Modify			"Modify"
 ::mc::No					"no"
 ::mc::NotAvailable	"n/a"
@@ -125,6 +124,10 @@
 ::widget::mc::Last		"Las&t"
 ::widget::mc::Help		"&Help"
 
+::widget::mc::Control(minimize)	"Minimize"
+::widget::mc::Control(restore)	"Leave Full-screen"
+::widget::mc::Control(close)		"Close"
+
 ### util ###############################################################
 
 ::util::mc::IOErrorOccurred					"I/O Error occurred"
@@ -187,9 +190,11 @@
 ::menu::mc::Help							"&Help"
 ::menu::mc::Contact						"&Contact (Web Browser)"
 ::menu::mc::Quit							"&Quit"
+::menu::mc::Extras						"E&xtras"
 
 ::menu::mc::ContactBugReport			"&Bug Report"
 ::menu::mc::ContactFeatureRequest	"&Feature Request"
+::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts"
 
 ::menu::mc::OpenFile						"Open a Scidb File"
 ::menu::mc::NewFile						"Create a Scidb File"
@@ -801,6 +806,12 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock"
 ::twm::mc::Close	"Close"
+
+### fonts ##############################################################
+::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed."
+::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed."
+::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'."
+::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Start Position"

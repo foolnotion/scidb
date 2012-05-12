@@ -1827,6 +1827,16 @@ proc AddBookmark {w} {
 	variable [namespace parent]::${w}::Vars
 	variable Bookmarks
 
+#	set ReallyAddBookmark "A bookmark for folder '%folder%' already exists, with name '%name%'. Really add this bookmark again?"
+#	set i [lsearch -index 0 $Bookmarks(user) $Vars(folder)]
+#	if {$i >= 0} {
+#		set msg [string map \
+#			[list %name% [lindex $Bookmarks(user) $i 1] %folder% [file tail $Vars(folder)]] \
+#			[set [namespace parent]::mc::ReallyAddBookmark] \
+#		]
+#		set reply [messageBox -yesno -parent $w -icon question -message $msg]
+#	}
+
 	lappend Bookmarks(user) $Vars(folder) [file tail $Vars(folder)]
 	set list {}
 	set index -1

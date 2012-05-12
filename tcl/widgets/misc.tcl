@@ -36,6 +36,10 @@ set Last			"Las&t"
 set First		"&First"
 set Help			"&Help"
 
+set Control(minimize)	"Minimize"
+set Control(restore)		"Leave Full-screen"
+set Control(close)		"Close"
+
 } ;# namespace mc
 
 set Priv(busy:state) 0
@@ -246,6 +250,44 @@ proc dialogSetTitle {dlg cmd} {
 }
 
 
+proc dialogFullscreenButtons {parent} {
+	tk::frame $parent.__control__ -borderwidth 0 -takefocus 0
+
+	tk::button $parent.__control__.minimize \
+		-image $icon::12x12::minimize \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-takefocus 0 \
+		;
+	::tooltip::tooltip $parent.__control__.minimize [namespace current]::mc::Control(minimize)
+
+	tk::button $parent.__control__.restore \
+		-image $icon::12x12::restore \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-takefocus 0 \
+		;
+	::tooltip::tooltip $parent.__control__.restore [namespace current]::mc::Control(restore)
+
+	tk::button $parent.__control__.close \
+		-image $icon::12x12::close \
+		-relief flat \
+		-overrelief raised \
+		-borderwidth 1 \
+		-takefocus 0 \
+		;
+	::tooltip::tooltip $parent.__control__.close [namespace current]::mc::Control(close)
+
+	pack $parent.__control__.minimize -side left -fill y -expand yes
+	pack $parent.__control__.restore -side left -fill y -expand yes
+	pack $parent.__control__.close -side left -fill y -expand yes
+
+	return $parent.__control__
+}
+
+
 proc buttonSetText {w var args} {
 	if {[$w cget -compound] eq "left"} {
 		::tk::SetAmpText $w " [set $var]"
@@ -381,6 +423,31 @@ proc SetDialogTitle {dlg cmd} {
 	wm title $dlg [eval $cmd]
 }
 
+
+namespace eval icon {
+namespace eval 12x12 {
+
+set restore [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAQElEQVQY02N8z4AdsMAYgv+R
+	hd8zMjEQ0sHA8J4RWTcLwhiYYRAFhIxCNgaikwVTLXFGofqCgYGBgRGXz3EaBQCJyw4hsZ0N
+	1AAAAABJRU5ErkJggg==
+}]
+
+set minimize [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAAH0lEQVQY02P8z4AdMDEMKQkW
+	CMWI5J3/jHh1MJLscwAXlAQX2HQFpAAAAABJRU5ErkJggg==
+}]
+
+set close [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAQAAAD8fJRsAAAApklEQVQY033OsY4BARSF4S8U
+	Emw27NARr7DvINErVOIlvAOJYpttSUS3UUg0PIpuOp1KMhOjmC1mhkac6uTec+9/eKuyiVbu
+	u0ZKxXjqbK2Brr3QJFs1LSVif74d3V0tVLObLxs3sYtEZO7jSWnbSqVSv1k6x6j5zF2g8sx3
+	HCQioZvYumjYsnMX+dGzkYis1LN3Y6GZKgJLJ8MCUdJ/NAkMHuRX+gd3xCejvVN16wAAAABJ
+	RU5ErkJggg==
+}]
+
+} ;# namespace 12x12
+} ;# namespace icon
 } ;# namespace widget
 
 

@@ -27,6 +27,14 @@
 ::util::source font-management
 
 namespace eval font {
+namespace eval mc {
+
+set ChessBaseFontsInstalled				"ChessBase fonts successfully installed."
+set ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed."
+set NoChessBaseFontFound					"No ChessBase font found in folder '%s'."
+set ChessBaseFontsAlreadyInstalled		"ChessBase fonts already installed. Install anyway?"
+
+} ;# namespace mc
 
 namespace import ::tcl::mathfunc::int
 
@@ -840,6 +848,63 @@ array set DiagramChessBaseEncoding {
 
 set FigurineChessBaseEncoding {"\u2654" K "\u2655" Q "\u2656" R "\u2657" L "\u2658" N "\u2659" P}
 
+
+proc SetupChessBaseFonts {} {
+	variable fonts
+	variable FigurineChessBaseEncoding
+	variable FigurineSymbolChessBaseEncoding
+	variable DiagramChessBaseEncoding
+	variable chessFigurineFonts
+	variable chessFigurineFontsMap
+	variable chessSymbolFonts
+	variable chessSymbolFontsMap
+	variable chessDiagramFonts
+	variable chessDiagramFontsMap
+
+	# Chess figurine fonts:
+	foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
+		if {$font in $fonts} {
+			lappend chessFigurineFonts $font
+			set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
+		} else {
+			set font [string tolower $font]
+			if {$font in $fonts} {
+				lappend chessFigurineFonts $font
+				set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
+			}
+		}
+	}
+
+	# Chess symbol fonts:
+	foreach font {{FigurineCB AriesSP} {FigurineCB LetterSP} {FigurineCB TimeSP}} {
+		if {$font in $fonts} {
+			lappend chessSymbolFonts $font
+			set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
+		} else {
+			set font [string tolower $font]
+			if {$font in $fonts} {
+				lappend chessSymbolFonts $font
+				set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
+			}
+		}
+	}
+
+	# Chess diagram fonts
+	foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
+		if {$font in $fonts} {
+			lappend chessDiagramFonts $font
+			set chessDiagramFontsMap($font) DiagramChessBaseEncoding
+		} else {
+			set font [string tolower $font]
+			if {$font in $fonts} {
+				lappend chessDiagramFonts $font
+				set chessDiagramFontsMap($font) DiagramChessBaseEncoding
+			}
+		}
+	}
+}
+
+
 # Chess figurine fonts:
 set fonts [::dialog::choosefont::fontFamilies]
 set chessFigurineFonts {}
@@ -847,19 +912,6 @@ foreach font $fonts {
 	if {[string match -nocase {Scidb Chess *} $font]} {
 		lappend chessFigurineFonts $font
 		set chessFigurineFontsMap($font) {}
-	}
-}
-# seems not be appropriate for figurine symbols
-foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
-	if {$font in $fonts} {
-		lappend chessFigurineFonts $font
-		set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
-	} else {
-		set font [string tolower $font]
-		if {$font in $fonts} {
-			lappend chessFigurineFonts $font
-			set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
-		}
 	}
 }
 
@@ -876,18 +928,6 @@ foreach font $fonts {
 		set chessSymbolFontsMap($font) $enc
 	}
 }
-foreach font {{FigurineCB AriesSP} {FigurineCB LetterSP} {FigurineCB TimeSP}} {
-	if {$font in $fonts} {
-		lappend chessSymbolFonts $font
-		set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
-	} else {
-		set font [string tolower $font]
-		if {$font in $fonts} {
-			lappend chessSymbolFonts $font
-			set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
-		}
-	}
-}
 
 # Chess diagram fonts
 set chessDiagramFonts {}
@@ -900,18 +940,9 @@ foreach font $fonts {
 		set chessDiagramFontsMap($font) $enc
 	}
 }
-foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
-	if {$font in $fonts} {
-		lappend chessDiagramFonts $font
-		set chessDiagramFontsMap($font) DiagramChessBaseEncoding
-	} else {
-		set font [string tolower $font]
-		if {$font in $fonts} {
-			lappend chessDiagramFonts $font
-			set chessDiagramFontsMap($font) DiagramChessBaseEncoding
-		}
-	}
-}
+
+SetupChessBaseFonts
+
 
 variable defaultFigurineFont {Scidb Chess Traveller}
 variable defaultDiagramFont  {Scidb Diagram Merida}
@@ -1153,12 +1184,25 @@ proc splitAnnotation {text} {
 if {$tcl_platform(platform) ne "windows"} {
 
 	proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
+		global tcl_platform
+		variable fonts
+
+		if {{FigurineCB AriesSP} in $fonts} {
+			set msg $mc::ChessBaseFontsAlreadyInstalled
+			set reply [::dialog::question -parent $parent -message $msg]
+			if {$reply eq "no"} { return }
+		}
+
 		if {![file isdirectory $windowsFontDir]} {
 			::dialog::error -parent $parent -message [format $mc::CannotFindDirectory $windowsFontDir]
 			return 0
 		}
 
-		set fontDir [file join $::scidb::dir::home .fonts]
+		if {$tcl_platform(os) eq "Darwin"} {
+			set fontDir /Library/Fonts/
+		} else {
+			set fontDir [file join $::scidb::dir::home .fonts]
+		}
 		if {![file isdirectory $fontDir]} {
 			if {[catch { file mkdir $fontDir }]} {
 				::dialog::error -parent $parent -message [format $mc::CannotCreateDirectory $fontDir]
@@ -1168,20 +1212,36 @@ if {$tcl_platform(platform) ne "windows"} {
 
 		set count 0
 
+		::widget::busyCursor on
 		foreach font {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
 							SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
 							SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg} {
-			if {[file readable $font.ttf]} {
-				file copy -force $font.ttf $fontDir
+			set file [file join $windowsFontDir $font.ttf]
+			if {[file readable $file]} {
+				file copy -force $file $fontDir
 				incr count
 			}
 		}
 
-		if {$count && $tcl_platform(platform) eq "unix"} {
-			catch { exec fc-cache -f $fontDir }
-			::chooseFont::resetFonts
+		if {$count == 0} {
+			::dialog::info -parent $parent -message [format $mc::NoChessBaseFontFound $windowsFontDir]
+		} else {
+			if {$tcl_platform(platform) eq "unix"} {
+				catch { exec fc-cache -f $fontDir }
+			}
+
+			::dialog::::choosefont::resetFonts
+			set fonts [::dialog::choosefont::fontFamilies]
+
+			if {{FigurineCB AriesSP} in $fonts} {
+				SetupChessBaseFonts
+				::dialog::info -parent $parent -message $mc::ChessBaseFontsInstalled
+			} else {
+				::dialog::error -parent $parent -message $mc::ChessBaseFontsInstallationFailed
+			}
 		}
 
+		::widget::busyCursor off
 		return $count
 	}
 

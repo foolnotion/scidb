@@ -61,7 +61,6 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Sinistra"
 ::mc::Lite				"Chiara"
-::mc::Minimize			"Minimize" ;# NEW
 ::mc::Modify			"Cambia"
 ::mc::No					"no"
 ::mc::NotAvailable	"n/a"
@@ -126,6 +125,10 @@
 ::widget::mc::Last		"&Ultima"
 ::widget::mc::Help		"&Help" ;# NEW
 
+::widget::mc::Control(minimize)	"Minimize" ;# NEW
+::widget::mc::Control(restore)	"Leave Full-screen" ;# NEW
+::widget::mc::Control(close)		"Chiudi"
+
 ### util ###############################################################
 
 ::util::mc::IOErrorOccurred					"Errore Input/Output"
@@ -188,9 +191,11 @@
 ::menu::mc::Help							"&Aiuto"
 ::menu::mc::Contact						"&Contenuti (browser)"
 ::menu::mc::Quit							"&Esci"
+::menu::mc::Extras						"E&xtras" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Segnala Bug"
 ::menu::mc::ContactFeatureRequest	"&Richiesta Funzione"
+::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
@@ -802,6 +807,12 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock" ;# NEW
 ::twm::mc::Close	"Chiudi"
+
+### fonts ##############################################################
+::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed." ;# NEW
+::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
+::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
+::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Posizione di partenza"

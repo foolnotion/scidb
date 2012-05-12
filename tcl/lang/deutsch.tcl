@@ -59,7 +59,6 @@
 ::mc::Layout			"Layout"
 ::mc::Left				"Links"
 ::mc::Lite				"Hell"
-::mc::Minimize			"Minimieren"
 ::mc::Modify			"Ändern"
 ::mc::No					"nein"
 ::mc::NotAvailable	"n/v"
@@ -124,6 +123,10 @@
 ::widget::mc::Last		"Le&tzte"
 ::widget::mc::Help		"&Hilfe"
 
+::widget::mc::Control(minimize)	"Minimieren"
+::widget::mc::Control(restore)	"Vollbild verlassen"
+::widget::mc::Control(close)		"Schliessen"
+
 ### util ###############################################################
 
 ::util::mc::IOErrorOccurred					"Ein Lese/Schreibfehler trat auf"
@@ -186,9 +189,11 @@
 ::menu::mc::Help							"&Hilfe"
 ::menu::mc::Contact						"&Kontakt (Web-Browser)"
 ::menu::mc::Quit							"&Beenden"
+::menu::mc::Extras						"E&xtras"
 
 ::menu::mc::ContactBugReport			"&Fehlerbericht"
 ::menu::mc::ContactFeatureRequest	"Funktions&wunsch"
+::menu::mc::InstallChessBaseFonts	"ChessBase-Zeichensätze installieren"
 
 ::menu::mc::OpenFile						"Eine Scidb-Datei öffnen"
 ::menu::mc::NewFile						"Eine Scidb-Datei anlegen"
@@ -800,6 +805,12 @@
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Abkopplen"
 ::twm::mc::Close	"Schliessen"
+
+### fonts ##############################################################
+::font::mc::ChessBaseFontsInstalled				"Die ChessBase-Zeichensätze wurden erfolgreich installiert."
+::font::mc::ChessBaseFontsInstallationFailed	"Die Installation der ChessBase-Zeichensätze schlug fehl."
+::font::mc::NoChessBaseFontFound					"Es wurde kein ChessBase-Zeichensatz im Verzeichnis '%s' gefunden."
+::font::mc::ChessBaseFontsAlreadyInstalled	"Die ChessBase-Zeichensätze sind bereits installiert. Trotzdem installieren?"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"

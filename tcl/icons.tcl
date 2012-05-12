@@ -2718,6 +2718,23 @@ namespace eval 16x16 {
 		rkJggg==
 	}]
 
+	set fonts [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACmUlEQVQ4y42Ry2tUVxyAvzNz
+		594xN3PvzDjajNMxL9TGGDTQbEq76dKN4KZQFIQiCi2l/Q+6KS7FldiCG1Fx5UZE0GA0Cx/t
+		IgghShzTRBMTh9x5Zca5N+fRhSZqoqXf8nB+H+d8P3Gt67Ofiz09X1sJ29iA0lpIre2YbQsh
+		BBbwul5X408en/6x2RpnA9bOrvy3ew4MH6pWq2o1ClU2m00kfV9UFhZUqx1GXtq3Y0rH/p6b
+		u8HHBHarmXr24H75z6mp32mHwa8jX57KFQqFa/fu/XV+6dXZg+n0yMH+vhMvpewCckD87WwM
+		aIibvndjSZv6kUbj6BnIfL+zODbmeXtu7R2skMvN6TDcsl3KvpZtB2EiEWitY5ZlmVarJUZH
+		R89bp2v1X2oggVABZmmJstaobDb9vFSSjUajUi0Wo8He3u0TExMdi4uLs77vZ7u7u/OO4/Rb
+		1+Hx2n8MQBhRbTa5fefOQmlq6jjwdGho6KJRamRycvLR9PT0EaAwMDBwaWVlJWVtjGKAnnqD
+		QrP1pATjgC6Xy6HWmkqlEgGvgBczMzMXtNbhRwXfKUVWqfJdeA0kl5eXqVarSCkBBLDabrd/
+		A2IfCsSbxgKIaQz6zbGUEiklxpj3b6+ureIdcQQuAg9EErOWZcPgB6wLznawrbeT4bhHSviQ
+		TtF1LsXwN3Fc/oN1QaGTY4NbuWxcckESmff5an+Gq7sTDHd6nspkMrjuZtd6g7EmN+9H1LUg
+		MgatDUJqoochz4p9n1udrksQBJRKpU3ZPkn/rt1fFHbkD2czmZ9c183XarXnQRD8MT8/f2V2
+		dnZ6c8QNdCSdA2nfP+k4ThRF0T+O42jP836Ix+P7/tcLbNvOWJZVBPTbNQrAKKXmtdYVgH8B
+		SJEt3/iOq64AAAAASUVORK5CYII=
+	}]
+
 } ;# namespace 16x16
 
 namespace eval 22x22 {

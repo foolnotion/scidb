@@ -713,8 +713,8 @@ proc showMoves {path moves result showEmpty {width 50}} {
 		::shadow::allow $w
 	}
 	set t $w.f.text
-	$t delete 1.0 end
 	$t configure -width $width -state normal
+	$t delete 1.0 end
 	set moves [::font::splitMoves $moves]
 	set complete 1
 	if {[string length $moves] == 0} {

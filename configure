@@ -357,7 +357,7 @@ proc FindTclTkPathsAqua {} {
 proc findTclTkPaths {} {
     global tclv tclv_nodot configure package tcl_platform
 
-    if {"$tcl_platform(os)" eq "Darwin" && [FindTclTkPathsAqua]} {
+    if {$tcl_platform(os) eq "Darwin" && [FindTclTkPathsAqua]} {
         # Frameworks found, stop looking for paths:
         return 1
     }
@@ -1156,7 +1156,7 @@ proc writeMakefile {{type ""}} {
     }
     set option(DATADIR) $dir/$option(SCRIPT)
 
-    if {"$tcl_platform(os)" eq "Darwin"} {
+    if {$tcl_platform(os) eq "Darwin"} {
         set option(FONTDIR) /Library/Fonts/
     } else {
         if {  [string match {/usr/local*} $configure(prefix)]
