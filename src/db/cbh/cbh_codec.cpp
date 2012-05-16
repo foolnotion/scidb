@@ -29,7 +29,7 @@
 // http://talkchess.com/forum/viewtopic.php?topic_view=threads&p=287896&t=29468&sid=a535ba2e9a17395e2582bdddf57c2425
 
 // Required files:	.cba .cbc .cbg .cbh .cbp .cbt
-// Used files:			.cba .cbc .cbg .cbh .cbp .cbt .cbs .cbe .cbj .ini
+// Used files:			.cba .cbc .cbg .cbh .cbp .cbt .cbs .cbe .cbj .ini .html/*
 
 #include "cbh_codec.h"
 #include "cbh_decoder.h"
@@ -2023,8 +2023,7 @@ Codec::decodeGuidingText(ByteStream& strm)
 {
 	M_ASSERT(m_gameStream.is_open());
 
-if (::getenv("SCIDB_GUIDING_TEXT") == 0)
-	return;
+if (::getenv("SCIDB_GUIDING_TEXT") == 0) return;
 
 	Byte flags = strm.get();
 
@@ -2033,7 +2032,7 @@ if (::getenv("SCIDB_GUIDING_TEXT") == 0)
 
 	unsigned offset			= strm.uint32();
 
-printf("skip(0): %02x %02x %02x\n", Byte(strm.data()[0]), Byte(strm.data()[1]), Byte(strm.data()[2]));
+//printf("skip(0): %02x %02x %02x\n", Byte(strm.data()[0]), Byte(strm.data()[1]), Byte(strm.data()[2]));
 	strm.skip(3);
 
 	unsigned tournamentId	= strm.uint24();
@@ -2041,17 +2040,21 @@ printf("skip(0): %02x %02x %02x\n", Byte(strm.data()[0]), Byte(strm.data()[1]), 
 	unsigned annotatorId		= strm.uint24();;
 	unsigned round				= strm.get();
 
-printf("offset:     %u\n", offset);
-printf("tournament: %u\n", tournamentId);
-printf("source:     %u\n", sourceId);
-printf("annotator:  %u\n", annotatorId);
-printf("round:      %u\n", round);
+//printf("offset:     %u\n", offset);
+//printf("tournament: %u\n", tournamentId);
+//printf("source:     %u\n", sourceId);
+//printf("annotator:  %u\n", annotatorId);
+//printf("round:      %u\n", round);
 
 #if 0
-	if (NamebaseEntry* annotator = getAnnotator(strm.uint24()))
-		info.m_annotator = annotator;
-	if (Source* source = getSource(strm.uint24()))
-		m_sourceMap[&info] = source;
+	if (NamebaseEntry* annotator = getAnnotator(annotatorId))
+		send(annotator);
+	if (Source* source = getSource(sourceId))
+		send(source);
+	if (NamebaseEvent* event = getEvent(tournamentId))
+		send(event);
+	if (round)
+		send(round);
 #endif
 
 	char header[8];
@@ -2081,7 +2084,7 @@ printf("round:      %u\n", round);
 			return; // data is encoded
 
 		size = (size & 0x3fffffff) - sizeof(header);
-printf("skip(1): %02x %02x\n", Byte(bstrm.data()[0]), Byte(bstrm.data()[1]));
+//printf("skip(1): %02x %02x\n", Byte(bstrm.data()[0]), Byte(bstrm.data()[1]));
 
 		unsigned type = bstrm.get();
 
@@ -2113,7 +2116,7 @@ printf("skip(1): %02x %02x\n", Byte(bstrm.data()[0]), Byte(bstrm.data()[1]));
 				bstrm.get(str, length);
 				::replaceNewlines(str);
 
-printf("lang=%u, length=%u: '%s'\n", lang, length, str.c_str());
+//printf("lang=%u, length=%u: '%s'\n", lang, length, str.c_str());
 			}
 		}
 
@@ -2147,14 +2150,14 @@ printf("lang=%u, length=%u: '%s'\n", lang, length, str.c_str());
 				str.clear();
 				bstrm.get(str, length);
 				::replaceNewlines(str);
-printf("id=%u, lang=%u: '%s'\n", id, lang, str.c_str());
+//printf("id=%u, lang=%u: '%s'\n", id, lang, str.c_str());
 				bstrm.get(); // nul byte?
 			}
 		}
 		else
 		{
 			unsigned lang	= bstrm.get();			// really is language?
-			unsigned id		= bstrm.uint32LE();	// which id?
+			unsigned id		= bstrm.uint32LE();	// title id?
 
 			while (bstrm.remaining() > 4)
 			{
@@ -2171,7 +2174,7 @@ printf("id=%u, lang=%u: '%s'\n", id, lang, str.c_str());
 
 				if (bstrm.remaining() > 9)
 				{
-					id = bstrm.uint32();	// which?
+					id = bstrm.uint32();	// title id?
 					lang = bstrm.get();	// really?
 				}
 			}

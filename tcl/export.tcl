@@ -1966,7 +1966,7 @@ proc UpdateSample {family} {
 		Figurines {
 			variable ::font::chessFigurineFontsMap
 			set encoding $chessFigurineFontsMap($family)
-			set sample [join [split $::font::figurines(graphic) {}] " "]
+			set sample [join $::font::figurines(graphic) " "]
 			if {[llength $encoding]} { set sample [string map $encoding $sample] }
 		}
 

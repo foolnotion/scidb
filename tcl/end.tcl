@@ -188,6 +188,7 @@ switch $::scidb::revision {
 	96 {
 		set ::crosstable::RecentlyUsedHistory {}
 		set ::crosstable::MostRecentHistory {}
+		array unset ::browser::Options font:bold
 	}
 }
 

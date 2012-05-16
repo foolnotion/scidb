@@ -27,7 +27,7 @@ The active database will be highlighted with a yellow background.
 </p>
 
 <p>
-While pressing the middle mouse button (i.e. the scroll wheel) an
+While keeping the middle mouse button (i.e. the scroll wheel) pressed an
 information box will be shown.
 </p>
 

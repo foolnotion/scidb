@@ -27,8 +27,8 @@ Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 </p>
 
 <p>
-Mit der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine Informationsbox
-angezeigt.
+Mit Halten der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine
+Informationsbox angezeigt.
 </p>
 
 <h3>Administration</h3>

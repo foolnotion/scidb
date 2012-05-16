@@ -1,6 +1,11 @@
 [Mai 2012] ===================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #324)
+------------------------------------------------------------------------------
+* Spanish translation removed; Benigno Hernandez did never respond.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #322)
 ------------------------------------------------------------------------------
 * Installation of ChessBase fonts integrated.
@@ -47,9 +52,9 @@ Scidb 1.0 BETA (rev. #315)
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #312)
 ------------------------------------------------------------------------------
-* Automatic detection of character set while encoding si3/si4 games. An info
-message will be displayed if the detected charset differs from the charset of
-the database.
+* Automatic detection of character set while encoding si3/si4/cbh games. An
+info message will be displayed if the detected charset differs from the charset
+of the database.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #311)

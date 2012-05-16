@@ -1170,9 +1170,9 @@ proc Select {w {autoComplete 0}} {
 		set e $w.e${attr}
 		set l $w.l${attr}s
 		$l selection clear 0 end
-		if {[$e selection present]} {
-			$e delete sel.first sel.last
-		}
+#		if {[$e selection present]} {
+#			$e delete sel.first sel.last
+#		}
 	   set value [string tolower $S(current,$var)]
 
 		if {[string length $value] > 0} {

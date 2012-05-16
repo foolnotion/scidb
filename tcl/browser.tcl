@@ -57,11 +57,15 @@ set MergeGame				"Merge Game"
 namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
-set Priv(count) 100
-set Priv(register) 1
+array set Priv {
+	count					100
+	fullscreen:size	0
+	controls:height	19
+}
 
 array set Options {
 	font						TkTextFont
+	fullscreen				0
 	board:size				40
 	autoplay:delay			2500
 	repeat:interval		300
@@ -74,21 +78,14 @@ array set Options {
 	foreground:empty		#666666
 }
 
-set Options(font:bold) [list \
-	[font configure $Options(font) -family] \
-	[font configure $Options(font) -size] \
-	bold \
-]
-
 
 proc open {parent base info view index {fen {}}} {
 	variable Options
 	variable Priv
 
-	if {$Priv(register)} {
+	if {$Priv(count) == 100} {
 		::board::registerSize $Options(board:size)
 	}
-
 	set number [::gametable::column $info number]
 	set name [file rootname [file tail $base]]
 	if {[info exists Priv($base:$number:$view)]} {
@@ -235,7 +232,8 @@ proc open {parent base info view index {fen {}}} {
 	grid columnconfigure $bot 3 -weight 1
 	grid rowconfigure $bot {0 2} -minsize $::theme::padding
 
-	$rt.header tag configure bold -font $Options(font:bold)
+	set bold [list [font configure $Options(font) -family] [font configure $Options(font) -size] bold]
+	$rt.header tag configure bold -font $bold
 	$rt.header tag configure figurine -font $::font::figurine
 	foreach t {white black event} {
 		$rt.header tag bind $t <ButtonPress-3> [namespace code [list PopupMenu $dlg $board $position $t]]
@@ -303,9 +301,6 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
 	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
-	if {[UseFullscreen?]} {
-		bind $dlg <F11>					[namespace code [list ViewFullscreen $position $board]]
-	}
 
 	wm withdraw $dlg
 #	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
@@ -332,7 +327,14 @@ proc open {parent base info view index {fen {}}} {
 		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
 	}
 
+	update idletasks
 	::scidb::game::go $position position $Vars(fen)
+
+	set Priv(minSize) [expr {[winfo width $dlg] - [winfo width $lt]}]
+	if {[UseFullscreen?]} {
+		bind $dlg <F11> [namespace code [list ViewFullscreen $position $board]]
+	}
+
 	return $position
 }
 
@@ -881,7 +883,6 @@ proc Destroy {dlg w position base} {
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
-	if {$Vars(fullscreen)} { set Priv(register) 1 }
 	::scidb::game::release $position
 	namespace delete [namespace current]::${position}
 }
@@ -1060,11 +1061,15 @@ proc MergeGame {parent position} {
 proc ChangeBoardSize {position board delta} {
 	variable ${position}::Vars
 	variable Options
+	variable Priv
 
-	update idletasks
+	if {$Vars(fullscreen) && $delta ne "fullscreen"} { return }
 
 	set dlg [winfo toplevel $board]
-	set maxSize [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size) - 75)/8}]
+	set max1 [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size) - 75)/8}]
+	set max2 [expr {([winfo screenwidth $dlg] - $Priv(minSize) - 16)/8}]
+	set maxSize [min $max1 $max2]
+	set maxSize [expr {$maxSize - ($maxSize % 5)}]
 
 	switch $delta {
 		max {
@@ -1080,8 +1085,8 @@ proc ChangeBoardSize {position board delta} {
 		}
 
 		fullscreen {
-			set boardSize \
-				[expr {[winfo screenheight $dlg] - [winfo height $dlg] - 19 + 8*$Options(board:size)}]
+			set boardSize [expr {[winfo screenheight $dlg] - [winfo height $dlg] -
+										$Priv(controls:height) + 8*$Options(board:size)}]
 			set newSize [expr {$boardSize/8}]
 			unset delta
 
@@ -1090,7 +1095,7 @@ proc ChangeBoardSize {position board delta} {
 			} else {
 				set Vars(control) [::widget::dialogFullscreenButtons $dlg]
 				grid $Vars(control) -row 0 -column 0 -sticky ens
-				grid rowconfigure $dlg 0 -minsize 19
+				grid rowconfigure $dlg 0 -minsize $Priv(controls:height)
 				$Vars(control).minimize configure -command [list wm iconify $dlg]
 				$Vars(control).restore configure \
 					-command [namespace code [list ViewFullscreen $position $board]] \
@@ -1122,8 +1127,14 @@ proc ChangeBoardSize {position board delta} {
 	}
 
 	if {$newSize != $Vars(board:size)} {
-		::board::unregisterSize $Vars(board:size)
-		::board::registerSize $newSize
+		if {$Vars(fullscreen)} {
+			if {$Priv(fullscreen:size) == 0} {
+				::board::registerSize $newSize
+				set Priv(fullscreen:size) $newSize
+			}
+		} elseif {$Vars(board:size) != $Priv(fullscreen:size)} {
+			::board::unregisterSize $Vars(board:size)
+		}
 		::board::stuff::resize $board $newSize 1
 		grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]
 		set Vars(board:size) $newSize
@@ -1147,9 +1158,11 @@ proc ChangeBoardSize {position board delta} {
 
 
 proc UseFullscreen? {} {
+	variable Priv
+
 	set sw [winfo screenwidth .application]
 	set sh [winfo screenheight .application]
-	return [expr {$sh + 350 <= $sw}]
+	return [expr {$sh + $Priv(minSize) - $Priv(controls:height) <= $sw}]
 }
 
 

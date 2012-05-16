@@ -196,7 +196,7 @@ proc open {parent {file {}} args} {
 	bind $dlg <Alt-Right>		[namespace code GoForward]
 	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $dlg $pw.control]]
 
-	bind $nb <<LanguageChanged>> [namespace code UpdateTitle]
+	bind $nb <<LanguageChanged>> [namespace code Update]
 	$nb select $nb.$Priv(tab)
 
 	### Right side #######################################
@@ -383,7 +383,6 @@ proc BuildFrame {w} {
 		-linestyle solid \
 		;
 	set Priv(contents:tree) $t
-	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
 	set height [font metrics [$t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
 	$t configure -itemheight $height
@@ -440,7 +439,7 @@ proc BuildFrame {w} {
 	grid columnconfigure $w 0 -weight 1
 	grid rowconfigure $w 0 -weight 1
 
-	Update $t
+	Update
 }
 
 
@@ -512,7 +511,7 @@ proc FilterContents {contents exclude} {
 }
 
 
-proc Update {t} {
+proc Update {} {
 	global tcl_platform
 	variable [namespace parent]::Priv
 	variable [namespace parent]::Contents
@@ -526,6 +525,7 @@ proc Update {t} {
 		set Contents [FilterContents $Contents $UnixOnly]
 	}
 	array unset Priv uri:*
+	set t $Priv(contents)
 	$t item delete all
 	FillContents $t 0 root $Contents
 	catch { $t activate 1 }
@@ -577,7 +577,6 @@ proc BuildFrame {w} {
 		-linestyle solid \
 		;
 	set Priv(index:tree) $t
-	bind $t <<LanguageChanged>> [namespace code [list Update $t]]
 	bind $t <Any-KeyPress> [namespace code { Select %W %A }]
 	set height [font metrics [$t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
@@ -626,13 +625,14 @@ proc BuildFrame {w} {
 	grid columnconfigure $w 0 -weight 1
 	grid rowconfigure $w 0 -weight 1
 
-	Update $t
+	Update
 }
 
 
-proc Update {t} {
+proc Update {} {
 	variable [namespace parent]::Priv
 
+	set t $Priv(index:tree)
 	if {![winfo exists $t]} { return }
 
 	set Index {}
@@ -780,7 +780,6 @@ proc BuildFrame {w} {
 		-linestyle solid \
 		;
 	set Priv(search:tree) $t
-	bind $t <<LanguageChanged>> [list $t item delete all]
 	set height [font metrics [$t cget -font] -linespace]
 	if {$height < 18} { set height 18 }
 	$t configure -itemheight $height
@@ -950,6 +949,12 @@ proc LoadPage {t item} {
 	}
 }
 
+
+proc Update {} {
+	variable [namespace parent]::Priv
+	$Priv(search:tree) item delete all
+}
+
 } ;# namespace search
 
 
@@ -991,6 +996,15 @@ proc UpdateTitle {} {
 	}
 
 	wm title $Priv(dlg) $title
+}
+
+
+proc Update {} {
+	UpdateTitle
+	ReloadCurrentPage
+	index::Update
+	contents::Update
+	search::Update
 }
 
 
@@ -1223,8 +1237,6 @@ proc BuildHtmlFrame {dlg w} {
 		-showhyphens 1 \
 		-latinligatures $Priv(latinligatures) \
 		;
-
-	bind $w <<LanguageChanged>> [namespace code ReloadCurrentPage]
 
 	$w handler node link [namespace current]::LinkHandler
 	$w handler node a    [namespace current]::A_NodeHandler

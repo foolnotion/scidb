@@ -18,45 +18,24 @@
 
 TITLE What's new?
 
-<dir>
-  <li><p>Game history</p></li>
-  <li><p>Help dialog (with a few help pages)</p></li>
-  <li><p>New file selection box with extraneous functions:</p>
-    <ul type="circle">
-      <li>Delete database</li>
-      <li>Rename database</li>
-      <li>Duplicate database</li>
-      <li>Create new folder</li>
-      <li>Selection of database encoding</li>
-    </ul>
-  </li>
-  <li><p>Automatic detection of database encoding</p></li>
-  <li><p>Enhanced Scidb database format; now it exists a new comment type: move information.
-  This provides a compact storage and, in a future version, a facilitated input.</p></li>
-  <li><p>Automatic upgrade to the new database format</p></li>
-  <li><p>Revised export dialog</p></li>
-  <li><p>Undo/redo in comment editor</p></li>
-  <li><p>Improved behaviour of the HTML window</p>
-    <ul type="circle">
-      <li>Double buffering for flicker-free display</li>
-      <li>Automatic hyphenation</li>
-    </ul>
-  </li>
-  <li><p>Accelerated popup of the game save dialog</p></li>
-  <li><p>Improved tournament table:</p>
-    <ul type="circle">
-      <li>Additional scoring system "Bilbao" (three points for a win)</li>
-      <li>Additional tie-breaks</li>
-    </ul>
-  </li>
-  <li><p>The export to .si3/.si4 now offers a selection of the <abbr>PGN</abbr>-Tags (a restriction of the tags is accelerating the position tree)</p></li>
-  <li><p>Selection dialog of database symbols is revised</p></li>
-  <li><p>New feature in game editor: copy/move comments between different languages</p></li>
-  <li><p>Drop-down shadows (experimental)</p></li>
-  <li><p>Partial translation into Hungarian; the translation is still in progress</p></li>
-  <li><p>Ths Spanish translation is taken out temporary due to incompleteness. Volunteers for the translation: please look at <a href="Contact-Information.html">Contact information</a></p></li>
-  <li><p><acronym>UNIX</acronym> man pages</p></li>
-</dir>
+<ul>
+  <li>Installation of ChessBase fonts integrated</li>
+  <li>More help pages</li>
+  <li>Full-screen mode tweaked</li>
+  <li>Command line tool added for conversion of databases to Scidb format (.sci)</li>
+  <li>HTML widget reworked: saving resources in a highly significant way</li>
+  <li>Swedish localisation integrated (thanks to Lars Ekman)</li>
+  <li>Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
+  <li>Game browser: Full-screen mode, and also maximize/minimize board, integrated</li>
+  <li>File selection dialog improved</li>
+  <li>Game-Save/Replace dialog improved</li>
+  <li>Archiving databases integrated</li>
+  <li>Drag&amp;Drop of files integrated: database switcher is drop target</li>
+  <li>Database window: docking/undocking of list tabs integrated</li>
+  <li>Move input with mouse overworked (if move suggestion is disabled)</li>
+  <li>Menu bar removed: instead a simple main menu exists; this is state-of-the-art,
+      and the layout will be improved</li>
+</ul>
 
 END
 

@@ -31,11 +31,12 @@ namespace eval i18n {
 set languages {
    { Deutsch   de    iso8859-1   deutsch.tcl  }
    { English   en    iso8859-1   english.tcl  }
-   { Español  es    macRoman    espanol.tcl  }
    { Italiano  it    utf-8       italiano.tcl }
    { Magyar    hu    utf-8       magyar.tcl   }
    { Svenska   sv    utf-8       svenska.tcl  }
 }
+#  removed, because Benigno Hernandez did never respond
+#  { Español  es    macRoman    espanol.tcl  }
 
 } ;# namespace i18n
 

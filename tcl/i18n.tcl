@@ -393,6 +393,10 @@ proc selectLang {{lang {}}} {
 	array unset EcoMatch
 
 	set file [file join $::scidb::dir::share lang eco $mc::input($Language)]
+	if {![file readable $file]} {
+		# use English descriptions as fallback
+		set file [file join $::scidb::dir::share lang eco $mc::input(English)]
+	}
 	if {[file readable $file]} {
 		set f [open $file r]
 		chan configure $f -encoding $encoding

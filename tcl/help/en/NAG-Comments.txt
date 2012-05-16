@@ -17,10 +17,13 @@
 *********************************************************************** -->
 
 INDEX NAG annotation values
+INDEX Numerical annotation glyph
 TITLE NAG annotation values
 
 <annotation>
-<acronym>NAG</acronym> = Numeric Annotation Glyph
+<!-- Translators: don't translate first description, instead  -->
+<!-- Translators: de-comment and translate second description -->
+<acronym>NAG</acronym> = Numeric Annotation Glyph<!-- = "numeric annotation glyph" -->
 </annotation>
 
 <p>
@@ -33,6 +36,7 @@ defines the following <acronym>NAG</acronym> values:
   <p>Infix annotations:</p>
 
   <ol start="1">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(1..6))%</li>
   </ol>
 </box>
@@ -41,6 +45,7 @@ defines the following <acronym>NAG</acronym> values:
   <p>Suffix annotations:</p>
 
   <ol start="7">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(7..139))%</li>
   </ol>
 </box>
@@ -53,6 +58,7 @@ Other proposed <acronym>NAG</acronym> values are:
   <p>Prefix annotations:</p>
 
   <ol start="140">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(140..145))%</li>
   </ol>
 </box>
@@ -61,6 +67,7 @@ Other proposed <acronym>NAG</acronym> values are:
   <p>Suffix annotations:</p>
 
   <ol start="146">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(146..154))%</li>
   </ol>
 </box>
@@ -73,6 +80,7 @@ Scidb is defining some more <acronym>NAG</acronym> values:
   <p>Suffix annotations:</p>
 
   <ol start="155">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(155..172))%</li>
   </ol>
 </box>
@@ -84,6 +92,7 @@ values are required:
 
 <box>
   <ol start="173">
+    <!-- Translators: don't translate -->
     <li>%::annotation::mc::Nag(ENUM(173..184))%</li>
   </ol>
 </box>

@@ -41,6 +41,7 @@ set Index {
   { N
     {
       {{NAG annotation values} {NAG-Comments.html} {}}
+      {{Numerical annotation glyph} {NAG-Comments.html} {}}
     }
   }
   { T

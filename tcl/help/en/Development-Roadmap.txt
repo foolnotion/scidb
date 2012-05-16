@@ -29,6 +29,7 @@ TITLE Development roadmap
   <li>Document generation:: LaTeX export</li>
   <li>Windows support</li>
   <li>Database compression (elimination of deleted games)</li>
+  <li>Input of moves with keyboard</li>
   <li>Board photo</li>
 </dir>
 

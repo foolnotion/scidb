@@ -17,7 +17,8 @@
 *********************************************************************** -->
 
 INDEX NAG-Kommentarwerte
-TITLE <acronym>NAG</acronym>-Kommentarwerte
+INDEX Numerisches Anmerkungszeichen
+TITLE NAG-Kommentarwerte
 
 <annotation>
 <acronym>NAG</acronym> = Numeric Annotation Glyph = "numerisches Anmerkungszeichen"
