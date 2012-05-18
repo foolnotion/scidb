@@ -33,9 +33,17 @@
 ::mc::AsciiMapping	{}
 ::mc::SortOrder		{}
 
-::mc::Alt				"Alt"
-::mc::Ctrl				"Ctrl"
-::mc::Shift				"Shift"
+::mc::Key(Alt)			"Alt"
+::mc::Key(Ctrl)		"Ctrl"
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"End"
+::mc::Key(Home)		"Home"
+::mc::Key(Left)		"\u2190"
+::mc::Key(Next)		"Page\u2193"	;# Page Down
+::mc::Key(Prior)		"Page\u2191"	;# Page Up
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Shift"
+::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment		"Alignment"
 ::mc::Apply				"Apply"
@@ -1331,8 +1339,8 @@
 ::help::mc::MatchCase				"Match case"
 ::help::mc::TitleOnly				"Search in titles only"
 ::help::mc::CurrentPageOnly		"Search in current page only"
-::help::mc::GoBack					"Go back one page (Alt-Left)"
-::help::mc::GoForward				"Go forward one page (Alt-Right)"
+::help::mc::GoBack					"Go back one page"
+::help::mc::GoForward				"Go forward one page"
 ::help::mc::GotoPage					"Go to page '%s'"
 ::help::mc::ExpandAllItems			"Expand all items"
 ::help::mc::CollapseAllItems		"Collapse all items"
@@ -2124,10 +2132,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"One month forward (Shift-Right)"
-::calendar::mc::OneMonthBackward	"One month backward (Shift-Left)"
-::calendar::mc::OneYearForward	"One year forward (Ctrl-Right)"
-::calendar::mc::OneYearBackward	"One year backward (Ctrl-Left)"
+::calendar::mc::OneMonthForward	"One month forward (Shift \u2192)"
+::calendar::mc::OneMonthBackward	"One month backward (Shift \u2190)"
+::calendar::mc::OneYearForward	"One year forward (Ctrl \u2192)"
+::calendar::mc::OneYearBackward	"One year backward (Ctrl \u2190)"
 
 ::calendar::mc::Su	"Su"
 ::calendar::mc::Mo	"Mo"

@@ -67,8 +67,10 @@ array set Options {
 	font						TkTextFont
 	fullscreen				0
 	board:size				40
+	miniboard:size			30
 	autoplay:delay			2500
 	repeat:interval		300
+	hilite					#ebf4f5
 	background:pgn			white
 	background:header		#ebf4f5
 	background:hilite		cornflowerblue
@@ -106,6 +108,8 @@ proc open {parent base info view index {fen {}}} {
 	set dlg $parent.browser$position
 	lappend Priv($base:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
+	namespace eval [namespace current]::${position} {}
+	variable ${position}::Vars
 
 	set top [::ttk::frame $dlg.top]
 	set bot [tk::frame $dlg.bot]
@@ -140,26 +144,27 @@ proc open {parent base info view index {fen {}}} {
 		;
 	::tooltip::tooltip $controls.rotateBoard ::overview::mc::RotateBoard
 	grid $controls.rotateBoard -row 0 -column 0
-	foreach {control column key tipvar} {	GotoStart 4 <Home> GotoStartOfGame
-														FastBackward 5 <Prior> GoBackFast
-														Backward 6 <Left> GoBackward
-														Forward 7 <Right> GoForward
-														FastForward 8 <Next> GoForwardFast
-														GotoEnd 9 <End> GotoEndOfGame} {
+	foreach {control column key tipvar} {	GotoStart 4 Home GotoStartOfGame
+														FastBackward 5 Prior GoBackFast
+														Backward 6 Left GoBackward
+														Forward 7 Right GoForward
+														FastForward 8 Next GoForwardFast
+														GotoEnd 9 End GotoEndOfGame} {
 		set w $controls.[string tolower $control 0 0]
+		set Vars(control:$key) $w
 		tk::button $w \
 			-image [set ::icon::22x22::control$control] \
 			-background $background \
 			-takefocus 0 \
-			-command [list event generate $w $key] \
+			-command [list event generate $w <$key>] \
 			;
-		::tooltip::tooltip $w [namespace current]::mc::$tipvar
 		grid $w -row 0 -column $column
 	}
 	foreach control {FastBackward Backward Forward FastForward} {
 		set w $controls.[string tolower $control 0 0]
 		$w configure -repeatdelay $::theme::repeatDelay -repeatinterval $Options(repeat:interval)
 	}
+	SetupControlButtons $position
 	tk::button $controls.autoplay \
 		-takefocus 0 \
 		-background $background \
@@ -239,11 +244,9 @@ proc open {parent base info view index {fen {}}} {
 		$rt.header tag bind $t <ButtonPress-3> [namespace code [list PopupMenu $dlg $board $position $t]]
 	}
 	$rt.pgn tag configure figurine -font $::font::figurine
-	$rt.pgn tag configure result -foreground $Options(foreground:result)
+	$rt.pgn tag configure result -foreground $Options(foreground:result) -font $bold
 	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
-	namespace eval [namespace current]::${position} {}
-	variable ${position}::Vars
 	set Vars(pgn) $rt.pgn
 	set Vars(board) $board
 	set Vars(autoplay) 0
@@ -349,6 +352,33 @@ proc load {parent base info view index windowId} {
 	variable ${windowId}::Vars
 	NextGame $Vars(dlg) $windowId [expr {$index - $Vars(index)}]
 	return $windowId
+}
+
+
+proc showPosition {parent position key {state 0}} {
+	set w .application.showboard
+
+	if {![winfo exists $w]} {
+		variable Options
+
+		destroy [::util::makePopup $w]
+		::board::stuff::new $w.board $Options(miniboard:size) 2
+		pack $w.board
+	}
+
+	if {[llength $key] == 0} { set key [::scidb::game::query start] }
+	set fen [::scidb::game::board $position $key]
+	# show pawn structure if shift key is held down (or shift key is locked)
+	if {($state & 3) == 1 || ($state & 3) == 2} {
+		set fen [string map {K . Q . R . B . N . k . q . r . b . n .} $fen]
+	}
+	::board::stuff::update $w.board $fen
+	::tooltip::popup $parent $w cursor
+}
+
+
+proc hidePosition {parent} {
+	::tooltip::popdown .application.showboard
 }
 
 
@@ -566,8 +596,23 @@ proc LanguageChanged {position} {
 		$w configure -state disabled
 	}
 
+	SetupControlButtons $position
 	UpdateHeader $position
 	SetTitle $position
+}
+
+
+proc SetupControlButtons {position} {
+	variable ${position}::Vars
+
+	foreach {control var} {	Home	GotoStartOfGame
+									Prior	GoBackFast
+									Left	GoBackward
+									Right	GoForward
+									Next	GoForwardFast
+									End	GotoEndOfGame} {
+		::tooltip::tooltip $Vars(control:$control) "[set mc::$var] ($::mc::Key($control))"
+	}
 }
 
 
@@ -717,14 +762,20 @@ proc UpdatePGN {position data} {
 				set current $Vars(current)
 				set Vars(current) {}
 				set Vars(active) {}
-				set Vars(key) ""
 			}
 
 			move {
-				set key $Vars(key)
-				set Vars(key) [lindex $node 1]
+				set key [lindex $node 1]
+				set moves [lindex $node 2]
 
-				foreach move [lindex $node 2] {
+				if {[llength $moves] == 0} {
+					if {![::scidb::game::query $position empty?]} {
+						$w insert end "\u200b" $key
+#						PrintMove $w $position $key "\u27a4 "
+					}
+				}
+
+				foreach move $moves {
 					switch [lindex $move 0] {
 						annotation - marks { ;# skip }
 
@@ -737,10 +788,7 @@ proc UpdatePGN {position data} {
 								$w insert end "$moveNo." $key
 							}
 							foreach {text tag} [::font::splitMoves $san] {
-								$w insert end $text [list {*}$tag $key]
-								$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
-								$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-								$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
+								PrintMove $w $position $key $text $tag
 							}
 							if {!$legal} {
 								$w insert end "\u26A1" illegal
@@ -754,16 +802,13 @@ proc UpdatePGN {position data} {
 			}
 
 			result {
-				set key $Vars(key)
+				set key [lindex $node 1]
 				set Vars(result) [list [::util::formatResult [lindex $node 1]] [list $key result]]
 				if {[::scidb::game::query $position length] == 0} {
 					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
 				}
 				$w insert end " "
 				$w insert end {*}$Vars(result)
-				$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
-				$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-				$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Options(background:pgn) }
 				}
@@ -791,6 +836,16 @@ proc UpdatePGN {position data} {
 }
 
 
+proc PrintMove {w position key text {tag ""}} {
+	$w insert end $text [list {*}$tag $key]
+	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
+	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
+	$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
+	$w tag bind $key <ButtonPress-2> [namespace code [list showPosition $w $position $key %s]]
+	$w tag bind $key <ButtonRelease-2> [namespace code [list hidePosition $w]]
+}
+
+
 proc Tooltip {path nag} {
 	variable ::annotation::mc::Nag
 
@@ -803,9 +858,10 @@ proc Tooltip {path nag} {
 
 proc EnterMove {position key} {
 	variable ${position}::Vars
+	variable Options
 
 	if {$Vars(current) ne $key} {
-		$Vars(pgn) tag configure $key -background #ebf4f5
+		$Vars(pgn) tag configure $key -background $Options(hilite)
 		$Vars(pgn) configure -cursor hand2
 	}
 
@@ -1011,14 +1067,14 @@ proc PopupMenu {parent board position {what ""}} {
 			-image $::icon::16x16::maximize \
 			-compound left \
 			-command [namespace code [list ChangeBoardSize $position $board max]] \
-			-accelerator "${::mc::Ctrl}-+" \
+			-accelerator "${::mc::Key(Ctrl)}-+" \
 			;
 		$menu add command \
 			-label " $mc::MinimizeBoardSize" \
 			-image $::icon::16x16::minimize \
 			-compound left \
 			-command [namespace code [list ChangeBoardSize $position $board min]] \
-			-accelerator "${::mc::Ctrl}-\u2212" \
+			-accelerator "${::mc::Key(Ctrl)}-\u2212" \
 			;
 	}
 	if {[UseFullscreen?]} {

@@ -1277,7 +1277,7 @@ proc PopupMenu {parent} {
 	$m add separator
 
 	if {$Vars(undoStackIndex:$lang) == 0} { set state disabled } else { set state normal }
-	set accel "$::mc::Ctrl-"
+	set accel "$::mc::Key(Ctrl)-"
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::undo \

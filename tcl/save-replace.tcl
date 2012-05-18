@@ -327,7 +327,7 @@ proc open {parent base position {number 0}} {
 	catch { wm attributes $dlg -type dialog }
 	wm title $dlg $Priv(title)
 	wm resizable $dlg no no
-	wm protocol $dlg WM_DELETE_WINDOW [list wm withdraw $dlg]
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Withdraw $dlg]]
 	::util::place $dlg center [winfo toplevel $parent]
 	wm deiconify $dlg
 
@@ -353,6 +353,12 @@ proc open {parent base position {number 0}} {
 	# Finalization ############################################
 	focus $dlg.top.white-name
 	$dlg.top.white-name selection range 0 end
+
+	::ttk::grabWindow $dlg
+	set Priv(finished) 0
+   tkwait variable [namespace current]::Priv(finished)
+	::ttk::releaseGrab $dlg
+
 	return $dlg
 }
 
@@ -584,7 +590,7 @@ proc Build {dlg base position number} {
 		BindMatchKeys $top $side
 	}
 
-	bind $top.white-player-l <Destroy> [list wm withdraw $dlg]
+#	bind $top.white-player-l <Destroy> [list wm withdraw $dlg]
 
 	# Game Data ###############################################
 	ttk::labelbar $top.game [namespace current]::mc::GameData
@@ -1027,7 +1033,7 @@ proc Build {dlg base position number} {
 	# Dialog Buttons ##########################################
 	::widget::dialogButtons $dlg {ok cancel} ok
 	$dlg.ok configure -command [namespace code [list Save $top $fields]]
-	$dlg.cancel configure -command [list wm withdraw $dlg]
+	$dlg.cancel configure -command [namespace code [list Withdraw $dlg]]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
@@ -2643,7 +2649,15 @@ proc Save {top fields} {
 	unset BlackRating
 
 	::widget::busyCursor off
-	if {$rc} { wm withdraw [winfo toplevel $top] }
+	if {$rc} { Withdraw [winfo toplevel $top] }
+}
+
+
+proc Withdraw {dlg} {
+	variable Priv
+
+	wm withdraw $dlg
+	set Priv(finished) 1
 }
 
 

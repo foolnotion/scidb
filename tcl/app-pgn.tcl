@@ -140,7 +140,7 @@ array set Options {
 	tabstop-1			6.0
 	tabstop-2			0.7
 	tabstop-3			12.0
-	board-size			30
+	diagram-size		30
 	diagram-show		1
 	diagram-pad-x		25
 	diagram-pad-y		5
@@ -909,7 +909,6 @@ proc Update {position data} {
 
 #set clock0 [clock milliseconds]
 	set w $Vars(pgn:$position)
-	set startLevel -1
 
 	foreach node $data {
 		switch [lindex $node 0] {
@@ -1129,6 +1128,7 @@ proc UpdateHeader {position w data} {
 
 proc InsertMove {position w level key data} {
 	variable Options
+	variable Vars
 
 	if {[llength $data] == 0} {
 		# NOTE: We need a blind character between the marks because
@@ -1192,11 +1192,7 @@ proc InsertMove {position w level key data} {
 			}
 
 			ply {
-				if {[llength $prefixAnnotation]} {
-					PrintAnnotation $w $position $level $key $prefixAnnotation 1
-					$w insert current "\u2006"
-				}
-				PrintMove $position $w $level $key [lindex $node 1]
+				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
 				if {[llength $suffixAnnotation]} {
 					PrintAnnotation $w $position $level $key $suffixAnnotation 0
 				}
@@ -1253,7 +1249,7 @@ proc InsertDiagram {position w level key data} {
 			board {
 				set linespace [font metrics [$Vars(pgn:0) cget -font] -linespace]
 				set borderSize 2
-				set size $Options(board-size)
+				set size $Options(diagram-size)
 				set alignment [expr {$linespace - ((8*$size + 2*$borderSize) % $linespace)}]
 				if {$alignment/2 < $Options(diagram-pad-y) - 1} { incr alignment $linespace }
 				if {$alignment/2 - $Options(diagram-pad-y) >= 8} {
@@ -1283,7 +1279,7 @@ proc InsertDiagram {position w level key data} {
 }
 
 
-proc PrintMove {position w level key data} {
+proc PrintMove {position w level key data annotation} {
 	variable Options
 
 	lassign $data moveNo stm san legal
@@ -1304,7 +1300,17 @@ proc PrintMove {position w level key data} {
 			$w insert current "\t"
 			if {$stm eq "black"} { $w insert current "...\t" main }
 		} 
+
+		if {[llength $annotation]} {
+			PrintAnnotation $w $position $level $key $annotation 1
+			$w insert current "\u2006"
+		}
 	} else {
+		if {[llength $annotation]} {
+			PrintAnnotation $w $position $level $key $annotation 1
+			$w insert current "\u2006"
+		}
+
 		lappend tags $key
 
 		if {$moveNo} {
@@ -1315,13 +1321,7 @@ proc PrintMove {position w level key data} {
 	}
 
 	foreach {text tag} [::font::splitMoves $san] {
-		$w insert current $text [list {*}$tags $tag]
-		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
-		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-		$w tag bind $key <Any-Button> [namespace code [list HidePosition $w]]
-		$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key]]
-		$w tag bind $key <ButtonRelease-2> [namespace code [list HidePosition $w]]
+		PrintSingleMove $position $w $key $text [list {*}$tags $tag]
 	}
 
 	if {!$legal} {
@@ -1332,6 +1332,17 @@ proc PrintMove {position w level key data} {
 		$w tag bind illegal <Any-Leave> +[namespace code [list Tooltip $w hide]]
 		$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
 	}
+}
+
+
+proc PrintSingleMove {position w key text tags} {
+	$w insert current $text [list {*}$tags]
+	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
+	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
+	$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+	$w tag bind $key <ButtonPress-2> [list ::browser::showPosition $w $position $key %s]
+	$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
+	$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
 }
 
 
@@ -1458,7 +1469,6 @@ proc PrintMoveInfo {position w level key data} {
 
 
 proc PrintAnnotation {w position level key nags isPrefix} {
-	variable Vars
 	variable Options
 
 	set annotation [::font::splitAnnotation $nags]
@@ -1478,7 +1488,9 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
 			if {[lindex [split [$w index current] .] end] ne "0"} {
-				$w insert current " "
+				if {!$isPrefix || !$Options(column-style)} {
+					$w insert current " "
+				}
 			}
 			set prevSym 1
 		} elseif {$value <= 6} {
@@ -1697,28 +1709,6 @@ proc EditInfo {w position {key {}}} {
 }
 
 
-proc ShowPosition {parent position key} {
-	set w $parent.showboard
-
-	if {![winfo exists $w]} {
-		variable Options
-
-		destroy [::util::makePopup $w]
-		::board::stuff::new $w.board $Options(board-size) 2
-		pack $w.board
-	}
-
-	if {[llength $key] == 0} { set key [::scidb::game::query start] }
-	::board::stuff::update $w.board [::scidb::game::board $position $key]
-	::tooltip::popup $parent $w cursor
-}
-
-
-proc HidePosition {parent} {
-	::tooltip::popdown $parent.showboard
-}
-
-
 proc Tooltip {path nag} {
 	variable ::annotation::mc::Nag
 
@@ -1834,7 +1824,7 @@ proc PopupMenu {parent position} {
 		$menu add command \
 			-label $mc::StopTrialMode \
 			-command ::game::flipTrialMode \
-			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
+			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
 			;
 		$menu add separator
 	} else {
@@ -1869,7 +1859,7 @@ proc PopupMenu {parent position} {
 		$menu add command \
 			-label $mc::StartTrialMode \
 			-command ::game::flipTrialMode \
-			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
+			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
 			;
 		$menu add command -label $mc::Command(game:transpose) -command [namespace code TransposeGame]
 
@@ -2043,7 +2033,7 @@ proc PopupMenu {parent position} {
 			-label "$mc::EditAnnotation..." \
 			-state $state \
 			-command [namespace code [list editAnnotation $position]] \
-			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-annotation)]" \
+			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-annotation)]" \
 			;
 		if {[::scidb::game::position atStart?]} {
 			$menu add command \
@@ -2054,12 +2044,14 @@ proc PopupMenu {parent position} {
 			$menu add command \
 				-label "$mc::EditCommentAfter..." \
 				-command [namespace code [list editComment p $position]] \
-				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
+				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
+			set accel "$::mc::Key(Ctrl)-$::mc::Key(Shift)-"
+			append accel "[set [namespace parent]::board::mc::Accel(edit-comment)]"
 			$menu add command \
 				-label "$mc::EditCommentBefore..." \
 				-command [namespace code [list editComment a $position]] \
-				-accel "$::mc::Ctrl-$::mc::Shift-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
+				-accel $Accel \
 				;
 		}
 		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {
@@ -2078,7 +2070,7 @@ proc PopupMenu {parent position} {
 			-label "$::marks::mc::MarksPalette..." \
 			-state $state \
 			-command [namespace code [list openMarksPalette $position]] \
-			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(edit-marks)]" \
+			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-marks)]" \
 			;
 
 		$menu add separator
@@ -2100,7 +2092,7 @@ proc PopupMenu {parent position} {
 	foreach action {undo redo} {
 		set cmd [::scidb::game::query $action]
 		set label [set ::mc::[string toupper $action 0 0]]
-		set accel "$::mc::Ctrl-"
+		set accel "$::mc::Key(Ctrl)-"
 		if {$action eq "undo"} { append accel "Z" } else { append accel "Y" }
 		if {[llength $cmd]} {
 			append label " '"
@@ -2143,7 +2135,7 @@ proc PopupMenu {parent position} {
 				-label [format $mc::ReplaceGame $name] \
 				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
 				-state $state \
-				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(replace-game)]" \
+				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-game)]" \
 				;
 
 			if {![::scidb::game::query modified?]} { set state disabled }
@@ -2151,7 +2143,7 @@ proc PopupMenu {parent position} {
 				-label [format $mc::ReplaceMoves $name] \
 				-command [namespace code [list replaceMoves $parent]] \
 				-state $state \
-				-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(replace-moves)]" \
+				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-moves)]" \
 				;
 		}
 
@@ -2166,7 +2158,7 @@ proc PopupMenu {parent position} {
 			-label [format $mc::AddNewGame [::util::databaseName $actual]] \
 			-command [list ::dialog::save::open $parent $actual $position] \
 			-state $state \
-			-accel "$::mc::Ctrl-[set [namespace parent]::board::mc::Accel(add-new-game)]" \
+			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(add-new-game)]" \
 			;
 
 		menu $menu.save
@@ -2746,7 +2738,7 @@ switch [tk windowingsystem] {
 		# IMPORTANT NOTE:
 		# under windows the cursor wil be displayed with size 32x32
 		# (source: http://wiki.tcl.tk/8674)
-		# but probably this information is wrong
+		# but probably this information is not up-to-date
 		set file1 [file join $::scidb::dir::share cursor collapse-16x16.$ext]
 		set file2 [file join $::scidb::dir::share cursor expand-16x16.$ext]
 		if {[file readable $file1] && [file readable $file2]} {

@@ -31,11 +31,11 @@ The Scidb web page is located at
 
 Volunteers are welcome for:
 
-<dir>
+<ul>
   <li>Testing Scidb</li>
   <li>Translation into other languages</li>
   <li>Writing help pages</li>
-</dir>
+</ul>
 
 Please send a message to the author, so that this tasks
 can be coordinated.
@@ -63,7 +63,7 @@ How a message can be sent:
 Scidb users may find the following websites interesting:
 </p>
 
-<dir>
+<ul>
   <li><p>
     <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
        style="line-height: 150%;">
@@ -148,7 +148,7 @@ Scidb users may find the following websites interesting:
     ECO-Code</a><br/>
     An overview about the ECO code.
   </p></li>
-</dir>
+</ul>
 
 END
 

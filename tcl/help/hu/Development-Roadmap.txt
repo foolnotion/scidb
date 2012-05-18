@@ -20,7 +20,7 @@ TITLE Development roadmap
 
 <h2>Features for next releases</h2>
 
-<dir>
+<ul>
   <li>Analysis window: launch external chess engines</li>
   <li>Search functions: search by header, position search, etc.</li>
   <li>Filter functions: game filter, player filter</li>
@@ -31,11 +31,11 @@ TITLE Development roadmap
   <li>Database compression (elimination of deleted games)</li>
   <li>Input of moves with keyboard</li>
   <li>Board photo</li>
-</dir>
+</ul>
 
 <h2>Features for the far future</h2>
 
-<dir>
+<ul>
   <li>Duplicate detection</li>
   <li>Loading databases from the Internet</li>
   <li>Player dictionary dialog</li>
@@ -44,15 +44,15 @@ TITLE Development roadmap
   <li>Tip of the Day window</li>
   <li>Usage of end-game tables</li>
   <li>3D chessboard</li>
-</dir>
+</ul>
 
 <h2>Volunteers wanted for...</h2>
 
-<dir>
+<ul>
   <li>More languages</li>
   <li>More chess board themes</li>
   <li>More help pages</li>
-</dir>
+</ul>
 
 END
 

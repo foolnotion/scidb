@@ -149,16 +149,15 @@ proc build {w width height} {
 		-command [namespace code [list ToggleSideToMove $canv] \
 	]
 
-	foreach {action key tipvar} {	GotoStart Home		GotoStartOfGame
-											FastBack  Prior	GoBackFast
-											Back      Left		GoBackward
-											Fwd       Right	GoForward
-											FastFwd   Next		GoForwardFast
-											GotoEnd   End		GotoEndOfGame} {
+	foreach {action key} {	GotoStart Home
+									FastBack  Prior
+									Back      Left
+									Fwd       Right
+									FastFwd   Next
+									GotoEnd   End} {
 		set Vars([string tolower $action 0]) \
 			[::toolbar::add $tbControl button \
 				-state disabled \
-				-tooltipvar ::browser::mc::$tipvar \
 				-image [set ::icon::toolbarCtrl${action}] \
 				-command [namespace code Go$key]]
 	}
@@ -166,12 +165,10 @@ proc build {w width height} {
 	::toolbar::addSeparator $tbControl
 	set Vars(enterVar) [::toolbar::add $tbControl button \
 		-state disabled \
-		-tooltipvar [namespace current]::mc::GoIntoNextVar \
 		-image [set ::icon::toolbarCtrlEnterVar] \
 		-command [namespace code GoDown]]
 	set Vars(leaveVar) [::toolbar::add $tbControl button \
 		-state disabled \
-		-tooltipvar [namespace current]::mc::GoIntPrevVar \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code GoUp]]
 	
@@ -931,6 +928,22 @@ proc LanguageChanged {} {
 
 	bind <Control-Shift-[string tolower $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
 	bind <Control-Shift-[string toupper $Accel(edit-comment)]> $Vars(cmd:shift:edit-comment)
+
+	foreach {action key tipvar} {	GotoStart	Home	GotoStartOfGame
+											FastBack		Prior	GoBackFast
+											Back			Left	GoBackward
+											Fwd			Right	GoForward
+											FastFwd		Next	GoForwardFast
+											GotoEnd		End	GotoEndOfGame} {
+		set tip "[set ::browser::mc::$tipvar] ($::mc::Key($key))"
+		::toolbar::childconfigure $Vars([string tolower $action 0]) -tooltip $tip
+	}
+
+	foreach {action key tipvar} {	EnterVar		Down	GoIntoNextVar
+											LeaveVar		Up		GoIntPrevVar} {
+		set tip "[set mc::$tipvar] ($::mc::Key($key))"
+		::toolbar::childconfigure $Vars([string tolower $action 0]) -tooltip $tip
+	}
 }
 
 

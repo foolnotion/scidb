@@ -25,10 +25,10 @@ package provide calendar 1.0
 namespace eval calendar {
 namespace eval mc {
 
-set OneMonthForward	"One month forward (Shift-Right)"
-set OneMonthBackward	"One month backward (Shift-Left)"
-set OneYearForward	"One year forward (Ctrl-Right)"
-set OneYearBackward	"One year backward (Ctrl-Left)"
+set OneMonthForward	"One month forward (Shift-\u2192)"
+set OneMonthBackward	"One month backward (Shift-\u2190)"
+set OneYearForward	"One year forward (Ctrl-\u2192)"
+set OneYearBackward	"One year backward (Ctrl-\u2190)"
 
 set Su "Su"
 set Mo "Mo"

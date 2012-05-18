@@ -19,7 +19,7 @@
 INDEX Selezionatore di Database
 TITLE Il Selezionatore di Database
 
-<dir><img src="images/database-switcher.png"/></dir>
+<ul><img src="images/database-switcher.png"/></ul>
 
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
@@ -38,7 +38,7 @@ Premendo il tasto centrale del mouse (o la rotella) apparirà una finestra infor
 Per l'amministrazione del database è disponibile un menu contestuale:
 </p>
 
-<dir><img src="images/database-switcher-menu.png"/></dir>
+<ul><img src="images/database-switcher-menu.png"/></ul>
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
@@ -118,7 +118,7 @@ Open the help dialog about the database switcher.
 </p>
 -->
 
-<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
+<ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>

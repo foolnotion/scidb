@@ -189,6 +189,7 @@ switch $::scidb::revision {
 		set ::crosstable::RecentlyUsedHistory {}
 		set ::crosstable::MostRecentHistory {}
 		array unset ::browser::Options font:bold
+		array unset ::application::pgn::Options board-size
 	}
 }
 

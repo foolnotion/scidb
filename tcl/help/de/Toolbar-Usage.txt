@@ -27,7 +27,7 @@ einstellbar. Dies wird an Beispielen erläutert.
 
 <h3>%::toolbar::mc::Orientation%</h3>
 
-<dir><img src="images/toolbar-usage-dnd-hover.png"/></dir>
+<ul><img src="images/toolbar-usage-dnd-hover.png"/></ul>
 
 <p>
 Wir verschieben die Funktionsleiste "%::application::board::mc::Control%" nach oben.
@@ -36,14 +36,14 @@ gehalten und die Leiste nach oben verschoben. Solange die Funktionsleiste nicht 
 Fenster einrastet, wird ein schwarzer Rahmen angezeigt.
 </p>
 
-<dir><img src="images/toolbar-usage-move-float.png"/></dir>
+<ul><img src="images/toolbar-usage-move-float.png"/></ul>
 
 <p>
 Lassen wir hier die Maus los, dann haben wir eine schwebende Funktionsleiste.
 <note/>Nicht alle Funktionsleisten können schwebend positioniert werden.
 </p>
 
-<dir><img src="images/toolbar-usage-float.png"/></dir>
+<ul><img src="images/toolbar-usage-float.png"/></ul>
 
 <p>
 Durch einen Doppelklick auf die gelbe Kopfzeile wird die Funktionsleiste wieder an
@@ -56,20 +56,20 @@ Nun verschieben wir die Funktionsleiste an die obere Position. Ein roter Rahmen
 zeigt an, daß eine Einraststelle vorliegt.
 </p>
 
-<dir><img src="images/toolbar-usage-move-locked.png"/></dir>
+<ul><img src="images/toolbar-usage-move-locked.png"/></ul>
 
 <p>
 An dieser Stelle lassen wir die Funktionsleiste los.
 </p>
 
-<dir><img src="images/toolbar-usage-locked.png"/></dir>
+<ul><img src="images/toolbar-usage-locked.png"/></ul>
 
 <p>
 Die Funktionalität des Positionierens ist auch unter dem kontextsensitiven Menü
 einer Funktionsleiste erreichbar.
 </p>
 
-<dir><img src="images/toolbar-usage-menu-orientation.png"/></dir>
+<ul><img src="images/toolbar-usage-menu-orientation.png"/></ul>
 
 <p>
 Es ist bei den einzelnen Funktionsleisten verschieden, welche Positionierungen
@@ -80,7 +80,7 @@ zugelassen sind.
 Im nächsten Beispiel sind die oberen Funktionsleisten minimiert.
 </p>
 
-<dir><img src="images/toolbar-usage-minimized.png"/></dir>
+<ul><img src="images/toolbar-usage-minimized.png"/></ul>
 
 <p>
 Ein Klick auf die Dragleiste (die geriffelte Leiste) läßt die Funktionsleiste
@@ -93,7 +93,7 @@ wieder expandieren.
 Die Funktionsleisten können auch ausgerichtet werden.
 </p>
 
-<dir><img src="images/toolbar-usage-menu-alignment.png"/></dir>
+<ul><img src="images/toolbar-usage-menu-alignment.png"/></ul>
 
 <p>
 Normalerweise sind diese Leisten immer nach Links ausgerichtet, doch bei manchen
@@ -106,7 +106,7 @@ ist eine Ausrichtung in die Mitte oder sogar nach Rechts sinnvoll.
 Jede Leiste läßt eine individuelle Einstellung der Piktogrammgröße zu.
 </p>
 
-<dir><img src="images/toolbar-usage-menu-icon-size.png"/></dir>
+<ul><img src="images/toolbar-usage-menu-icon-size.png"/></ul>
 
 <p>
 Normalerweise wird die Einstellung "%::toolbar::mc::Default%" gewählt, d.h. es wird
@@ -121,7 +121,7 @@ vorgegeben ist.
 Auch ein Ein- oder Ausblenden einer Leiste wird im kontextsensitiven Menü angeboten:
 </p>
 
-<dir><img src="images/toolbar-usage-menu-toolbar.png"/></dir>
+<ul><img src="images/toolbar-usage-menu-toolbar.png"/></ul>
 
 <p>
 Diese Funktionalität ist ebenso im Hauptmenü unter
@@ -137,7 +137,7 @@ Letzlich gibt es noch eine besondere Einstellung, was hier am Beispiel des
 Kommentardialogs gezeigt wird.
 </p>
 
-<dir><img src="images/toolbar-usage-menu-expand.png"/></dir>
+<ul><img src="images/toolbar-usage-menu-expand.png"/></ul>
 
 <p>
 Wir lassen nun die obere Leiste expandieren, indem wir den Menüpunkt
@@ -145,7 +145,7 @@ Wir lassen nun die obere Leiste expandieren, indem wir den Menüpunkt
 auswählen. Das Resultat:
 </p>
 
-<dir><img src="images/toolbar-usage-expanded.png"/></dir>
+<ul><img src="images/toolbar-usage-expanded.png"/></ul>
 
 END
 

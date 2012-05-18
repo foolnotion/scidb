@@ -34,9 +34,17 @@
 ::mc::AsciiMapping	{Å A à a À A å a è e È E é e É E ì i Ì i  ò o Ò O ù u Ù U}
 ::mc::SortOrder		{A À Å B C D E È É F G H I Ì J K L M N O Ò P Q R S T U Ù V W X Y Z a à å b c d e è é f g h i ì j k l m n o ò p q r s t u ù v w x y z}
 
-::mc::Alt				"Alt" ;# NEW
-::mc::Ctrl				"Ctrl" ;# NEW
-::mc::Shift				"Shift" ;# NEW
+::mc::Key(Alt)			"Alt" ;# NEW
+::mc::Key(Ctrl)		"Ctrl" ;# NEW
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"End" ;# NEW
+::mc::Key(Home)		"Home" ;# NEW
+::mc::Key(Left)		"\u2190"
+::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
+::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"
@@ -1332,8 +1340,8 @@
 ::help::mc::MatchCase				"Corrispondi capitalizzazione"
 ::help::mc::TitleOnly				"Cerca solo nei titoli"
 ::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
-::help::mc::GoBack					"Vai indietro una pagina (Alt-Left)"
-::help::mc::GoForward				"Vai avanti una pagina (Alt-Right)"
+::help::mc::GoBack					"Vai indietro una pagina"
+::help::mc::GoForward				"Vai avanti una pagina"
 ::help::mc::GotoPage					"Vai alla pagina '%s'"
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
@@ -2126,10 +2134,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"Un mese avanti (Shift-Destra)"
-::calendar::mc::OneMonthBackward	"Un mese indietro (Shift-Sinistra)"
-::calendar::mc::OneYearForward	"Un anno avanti (Ctrl-Destra)"
-::calendar::mc::OneYearBackward	"Un anno indietro (Ctrl-Sinistra)"
+::calendar::mc::OneMonthForward	"Un mese avanti (Shift \u2192)"
+::calendar::mc::OneMonthBackward	"Un mese indietro (Shift \u2190)"
+::calendar::mc::OneYearForward	"Un anno avanti (Ctrl \u2192)"
+::calendar::mc::OneYearBackward	"Un anno indietro (Ctrl \u2190)"
 
 ::calendar::mc::Su	"Do"
 ::calendar::mc::Mo	"Lu"

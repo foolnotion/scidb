@@ -38,7 +38,7 @@ set MatchEntireWord		"Match entire word"
 set MatchCase				"Match case"
 set TitleOnly				"Search in titles only"
 set CurrentPageOnly		"Search in current page only"
-set GoBack					"Go back one page (Alt-Left)"
+set GoBack					"Go back one page"
 set GoForward				"Go forward one page (Alt-Right)"
 set GotoPage				"Go to page '%s'"
 set ExpandAllItems		"Expand all items"
@@ -117,7 +117,7 @@ proc open {parent {file {}} args} {
 
 	set Priv(topic) ""
 	set Priv(dlg) $dlg
-	set Priv(minsize) 200
+	set Priv(minsize) 260
 	set Priv(recent) {}
 	set Priv(grab) {}
 
@@ -144,14 +144,12 @@ proc open {parent {file {}} args} {
 		-command [namespace code GoBack] \
 		-state disabled \
 		;
-	::tooltip::tooltip $buttons.back [namespace current]::mc::GoBack
 	set Priv(button:back) $buttons.back
 	ttk::button $buttons.forward \
 		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlForward] \
 		-command [namespace code GoForward] \
 		-state disabled \
 		;
-	::tooltip::tooltip $buttons.forward [namespace current]::mc::GoForward
 	ttk::button $buttons.expand \
 		-image $icon::16x16::collapse \
 		-command [namespace code ExpandAllItems] \
@@ -996,6 +994,11 @@ proc UpdateTitle {} {
 	}
 
 	wm title $Priv(dlg) $title
+
+	set tip "$mc::GoBack ($::mc::Key(Alt)-$::mc::Key(Left))"
+	::tooltip::tooltip $Priv(button:back) $tip
+	set tip "$mc::GoForward ($::mc::Key(Alt)-$::mc::Key(Right))"
+	::tooltip::tooltip $Priv(button:forward) $tip
 }
 
 
@@ -1161,7 +1164,7 @@ proc ToggleIndex {} {
 	if {$Priv(control) in [$pw panes]} {
 		$pw forget $Priv(control)
 	} else {
-		$pw add $Priv(control) -sticky nswe -stretch never -minsize 200 -before [$pw panes]
+		$pw add $Priv(control) -sticky nswe -stretch never -minsize $Priv(minsize) -before [$pw panes]
 	}
 }
 
@@ -1563,13 +1566,13 @@ proc Parse {file wantedFile moveto {match {}}} {
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
 			<p>[format $mc::CantFindFile [list <ragged><b>$file</b></ragged>]]</p><br>
-			<p><div style='background:yellow; border:1px solid black;'>
+			<p><div style='background: lightgoldenrod; border: 1px solid black;'>
 			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
 			</div></p>
 		"
 		if {[llength $alternatives]} {
 			append content "<br/><br/><br/>"
-			append content "<div style='background:#f5f5f5; border:1px solid black;'>"
+			append content "<div style='background: #f5f5f5; border: 1px solid black;'>"
 			append content "<blockquote><p>$mc::ProbablyTheHelp:</p>"
 			append content "<dl>"
 			foreach alt $alternatives {

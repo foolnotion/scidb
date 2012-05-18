@@ -19,7 +19,7 @@
 INDEX Database switcher
 TITLE The Database switcher
 
-<dir><img src="images/database-switcher.png"/></dir>
+<ul><img src="images/database-switcher.png"/></ul>
 
 <p>
 The database switcher provides easy navigation between databases.
@@ -37,7 +37,7 @@ information box will be shown.
 For adminstration of the database a context-sensitive menu is available:
 </p>
 
-<dir><img src="images/database-switcher-menu.png"/></dir>
+<ul><img src="images/database-switcher-menu.png"/></ul>
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
@@ -119,7 +119,7 @@ Selection of the symbol size for the database tiles.
 Open the help dialog about the database switcher.
 </p>
 
-<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
+<ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>

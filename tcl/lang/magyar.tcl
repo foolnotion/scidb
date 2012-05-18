@@ -34,9 +34,17 @@
 ::mc::AsciiMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
-::mc::Alt				"Alt" ;# NEW
-::mc::Ctrl				"Ctrl" ;# NEW
-::mc::Shift				"Shift" ;# NEW
+::mc::Key(Alt)			"Alt" ;# NEW
+::mc::Key(Ctrl)		"Ctrl" ;# NEW
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"End" ;# NEW
+::mc::Key(Home)		"Home" ;# NEW
+::mc::Key(Left)		"\u2190"
+::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
+::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment		"Sorba rendezés(?)"
 ::mc::Apply				"Alkalmaz"
@@ -1333,8 +1341,8 @@
 ::help::mc::MatchCase				"Match case" ;# NEW
 ::help::mc::TitleOnly				"Keresés csak a címek között"
 ::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
-::help::mc::GoBack					"Egy oldallal vissza (Alt-Left)"
-::help::mc::GoForward				"Egy oldallal előre (Alt-Right)"
+::help::mc::GoBack					"Egy oldallal vissza"
+::help::mc::GoForward				"Egy oldallal előre"
 ::help::mc::GotoPage					"Menj a '%s'-dik oldalra"
 ::help::mc::ExpandAllItems			"Kibontás"
 ::help::mc::CollapseAllItems		"Összecsukás"
@@ -2126,10 +2134,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"Egy hónappal előre (Shift-Right)"
-::calendar::mc::OneMonthBackward	"Egy hónappal vissza (Shift-Left)"
-::calendar::mc::OneYearForward	"Egy évvel előre (Ctrl-Right)"
-::calendar::mc::OneYearBackward	"Egy évvel vissza (Ctrl-Left)"
+::calendar::mc::OneMonthForward	"Egy hónappal előre (Shift \u2192)"
+::calendar::mc::OneMonthBackward	"Egy hónappal vissza (Shift \u2190)"
+::calendar::mc::OneYearForward	"Egy évvel előre (Ctrl \u2192)"
+::calendar::mc::OneYearBackward	"Egy évvel vissza (Ctrl \u2190)"
 
 ::calendar::mc::Su	"Va"
 ::calendar::mc::Mo	"Hé"

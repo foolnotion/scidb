@@ -34,7 +34,7 @@ externen Verweise geöffnet werden, festzulegen:
 
   <li><p>
     Es wird der Verweis <nobr><code>"x-www-browser"</code></nobr> benutzt.
-    Unter Debian/Ubuntu kann dieser Verweis mittels
+    Unter Debian/<wbr/>Ubuntu/<wbr/>Mint kann dieser Verweis mittels
     <box>
       <p><code>sudo update-alternatives <nobr>--config</nobr> <nobr>x-www-browser</nobr></code></p>
     </box>

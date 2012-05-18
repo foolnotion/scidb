@@ -34,9 +34,17 @@
 ::mc::AsciiMapping	{ä a à a á a å a æ a é e ë e ç c í i ñ n ö o õ o ø o ü u ß ss Å A Ä A Ö O Ü U}
 ::mc::SortOrder		{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z Å Ä Ö a b c d e f g h i j k l m n o p q r s t u v w x y z å ä ö}
 
-::mc::Alt				"Alt" ;# NEW
-::mc::Ctrl				"Ctrl" ;# NEW
-::mc::Shift				"Shift" ;# NEW
+::mc::Key(Alt)			"Alt"
+::mc::Key(Ctrl)		"Ctrl" ;# NEW
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"End" ;# NEW
+::mc::Key(Home)		"Home" ;# NEW
+::mc::Key(Left)		"\u2190"	;# "Vänster"
+::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
+::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)		"\u2192" ;# "Höger"
+::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment		"Justering"
 ::mc::Apply				"Verkställ"
@@ -1329,8 +1337,8 @@
 ::help::mc::MatchCase				"Matcha gemener/versaler"
 ::help::mc::TitleOnly				"Sök endast bland titlar"
 ::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
-::help::mc::GoBack					"Gå bakåt en sida(Alt-vänster)"
-::help::mc::GoForward				"Gå framåt en sida (Alt-höger)"
+::help::mc::GoBack					"Gå bakåt en sida"
+::help::mc::GoForward				"Gå framåt en sida"
 ::help::mc::GotoPage					"Gå till sida '%s'"
 ::help::mc::ExpandAllItems			"Expand all items"
 ::help::mc::CollapseAllItems		"Collapse all items"
@@ -2123,10 +2131,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"En månad framåt(Shift-höger)"
-::calendar::mc::OneMonthBackward	"En månad bakåt(Shift-vänster)"
-::calendar::mc::OneYearForward	"Ett år framåt (Ctrl-höger)"
-::calendar::mc::OneYearBackward	"Ett år bakåt(Ctrl-vänster)"
+::calendar::mc::OneMonthForward	"En månad framåt(Shift \u2192)"
+::calendar::mc::OneMonthBackward	"En månad bakåt(Shift \u2190)"
+::calendar::mc::OneYearForward	"Ett år framåt (Ctrl \u2192)"
+::calendar::mc::OneYearBackward	"Ett år bakåt(Ctrl \u2190)"
 
 ::calendar::mc::Su	"Sö"
 ::calendar::mc::Mo	"Må"

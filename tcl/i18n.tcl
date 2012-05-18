@@ -28,9 +28,17 @@
 
 namespace eval mc {
 
-set Alt				"Alt"
-set Ctrl				"Ctrl"
-set Shift			"Shift"
+set Key(Alt)		"Alt"
+set Key(Ctrl)		"Ctrl"
+set Key(Down)		"\u2193"
+set Key(End)		"End"
+set Key(Home)		"Home"
+set Key(Left)		"\u2190"
+set Key(Next)		"Page\u2193"	;# Page Down
+set Key(Prior)		"Page\u2191"	;# Page Up
+set Key(Right)		"\u2192"
+set Key(Shift)		"Shift"
+set Key(Up)			"\u2191"
 
 set Alignment		"Alignment"
 set Apply			"Apply"

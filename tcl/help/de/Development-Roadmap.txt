@@ -20,7 +20,7 @@ TITLE Entwicklungsplanung
 
 <h2>Funktionen für die nächsten Veröffentlichungen</h2>
 
-<dir>
+<ul>
   <li>Analyse-Fenster: Starten von externen Schachprogramme</li>
   <li>Suchfunktionen: Partiedatensuche, Positionssuche, etc.</li>
   <li>Filterfunktionen: Partienfilter, Spielerfilter</li>
@@ -31,11 +31,11 @@ TITLE Entwicklungsplanung
   <li>Datenbankkomprimierung (Eliminierung der gelöschten Partien)</li>
   <li>Eingabe der Züge mit der Tastatur</li>
   <li>Brettfoto</li>
-</dir>
+</ul>
 
 <h2>Funktionen für spätere Veröffentlichungen</h2>
 
-<dir>
+<ul>
   <li>Dublettensuche</li>
   <li>Laden von Datenbanken aus dem Internet</li>
   <li>Dialog für die Spielerbibliothek</li>
@@ -44,15 +44,15 @@ TITLE Entwicklungsplanung
   <li>Tip-des-Tages-Fenster</li>
   <li>Benutzung von Endspieltabellen</li>
   <li>3D-Schachbrett</li>
-</dir>
+</ul>
 
 <h2>Freiwillige gesucht für...</h2>
 
-<dir>
+<ul>
   <li>Mehr Sprachen</li>
   <li>Mehr Schachbrett-Themen</li>
   <li>Mehr Hilfeseiten</li>
-</dir>
+</ul>
 
 END
 

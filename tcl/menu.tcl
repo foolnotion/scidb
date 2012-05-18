@@ -218,7 +218,7 @@ proc build {menu} {
 		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::log \
-		-accelerator "${::mc::Ctrl}+L" \
+		-accelerator "${::mc::Key(Ctrl)}+L" \
 		-command ::log::show \
 		;
 
@@ -291,7 +291,7 @@ proc build {menu} {
 		-underline [incr ul] \
 		-image $::icon::16x16::exit \
 		-command ::application::shutdown \
-		-accelerator "${::mc::Ctrl}+Q" \
+		-accelerator "${::mc::Key(Ctrl)}+Q" \
 		;
 }
 

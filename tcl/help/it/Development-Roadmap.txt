@@ -20,7 +20,7 @@ TITLE Piano di Sviluppo
 
 <h2>Funzioni per le prossime release</h2>
 
-<dir>
+<ul>
   <li>Finestra Analisi: lancia un motore di scacchi esterno</li>
   <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
   <li>Funzioni di Filtro: filtro partita, giocatore</li>
@@ -31,11 +31,11 @@ TITLE Piano di Sviluppo
   <li>Compressione Database (eliminazione partite cancellate)</li>
   <!-- NEW<li>Input of moves with keyboard</li>-->
   <li>Foto Scacchiera</li>
-</dir>
+</ul>
 
 <h2>Funzioni per il lontano futuro</h2>
 
-<dir>
+<ul>
   <li>Rilevamento partite doppie</li>
   <!-- NEW<li>Loading databases from the Internet</li>-->
   <!-- NEW<li>Player dictionary dialog</li>-->
@@ -44,15 +44,15 @@ TITLE Piano di Sviluppo
   <li>Finestra del "Consiglio del Giorno"</li>
   <li>Uso di tavole dei finali</li>
   <li>Scacchiera 3D</li>
-</dir>
+</ul>
 
 <h2>Si cercano volontari per...</h2>
 
-<dir>
+<ul>
   <li>Aumentare le lingue supportate</li>
   <li>Aumentare i temi della scacchiera</li>
   <li>Scrivere le pagine di aiuto</li>
-</dir>
+</ul>
 
 END
 

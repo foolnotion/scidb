@@ -32,9 +32,17 @@
 ::mc::SortMapping		{Ä ae ä ae Ö Oe ö oe Ü Ue ü ue ß ss Å A å a  Ã A  ã a  é e  è e  ø oe ì i  Ì I}
 ::mc::AsciiMapping	{Ä a  ä a  Ö O  ö o  Ü U  ü u  ß ss Å A å a  Ã A  ã a  é e  è e  ø o  ì i  Ì I}
 
-::mc::Alt				"Alt"
-::mc::Ctrl				"Strg"
-::mc::Shift				"Umschalt"
+::mc::Key(Alt)			"Alt"
+::mc::Key(Ctrl)		"Strg"
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"Ende"
+::mc::Key(Home)		"Pos1"
+::mc::Key(Left)		"\u2190"
+::mc::Key(Next)		"Bild\u2193"
+::mc::Key(Prior)		"Bild\u2191"
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Umschalt"
+::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment		"Ausrichtung"
 ::mc::Apply				"Anwenden"
@@ -1330,8 +1338,8 @@
 ::help::mc::MatchCase				"Groß-/Kleinschreibung beachten"
 ::help::mc::TitleOnly				"Nur in Titeln suchen"
 ::help::mc::CurrentPageOnly		"Nur auf der aktuellen Seite suchen"
-::help::mc::GoBack					"Eine Seite zurück (Alt-Links)"
-::help::mc::GoForward				"Eine Seite vorwärts (Alt-Rechts)"
+::help::mc::GoBack					"Eine Seite zurück"
+::help::mc::GoForward				"Eine Seite vorwärts"
 ::help::mc::GotoPage					"Wechsle zur Seite '%s'"
 ::help::mc::ExpandAllItems			"Alle Elemente expandieren"
 ::help::mc::CollapseAllItems		"Alle Elemente zusammenfalten"
@@ -2123,10 +2131,10 @@
 ::encoding::mc::Font(hi)	"Devanagari"
 
 ### Calendar ###########################################################
-::calendar::mc::OneMonthForward	"Einen Monat vorwärts (Umschalt-Rechts)"
-::calendar::mc::OneMonthBackward	"Einen Monat zurück (Umschalt-Links)"
-::calendar::mc::OneYearForward	"Ein Jahr vorwärts (Strg-Rechts)"
-::calendar::mc::OneYearBackward	"Ein Jahr zurück (Strg-Links)"
+::calendar::mc::OneMonthForward	"Einen Monat vorwärts (Umschalt \u2192)"
+::calendar::mc::OneMonthBackward	"Einen Monat zurück (Umschalt \u2190)"
+::calendar::mc::OneYearForward	"Ein Jahr vorwärts (Strg \u2192)"
+::calendar::mc::OneYearBackward	"Ein Jahr zurück (Strg \u2190)"
 
 ::calendar::mc::Su	"So"
 ::calendar::mc::Mo	"Mo"

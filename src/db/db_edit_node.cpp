@@ -1224,6 +1224,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 		work.pop(const_cast<Move*>(static_cast<Move const*>(result.back()))->m_list);
 		result.push_back(new Diagram(
 			work, node->annotation().contains(nag::Diagram) ? color::White : color::Black));
+		work.m_isVirgin = false;
 		work.pushParagraph(Spacing::Diagram);
 		work.needMoveNo = true;
 	}
