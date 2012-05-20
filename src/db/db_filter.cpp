@@ -259,6 +259,14 @@ Filter::search(Query const& query, DatabaseContent const& content)
 
 
 void
+Filter::swap(Filter& filter)
+{
+	m_set.swap(filter.m_set);
+	mstl::swap(m_count, filter.m_count);
+}
+
+
+void
 Filter::dump() const
 {
 	for (int i = m_set.find_first(); i != Invalid; i = m_set.find_next(i))

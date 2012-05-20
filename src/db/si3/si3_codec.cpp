@@ -2184,4 +2184,18 @@ Codec::getSuffixes(mstl::string const& filename, StringList& result)
 		result.push_back("ssc");
 }
 
+
+void
+Codec::removeAllFiles(mstl::string const& rootname)
+{
+	M_ASSERT(!m_gameStream.is_open());
+
+	mstl::string base(rootname);
+
+	::sys::file::deleteIt(base + m_extNamebase);
+	::sys::file::deleteIt(base + m_extGame);
+	::sys::file::deleteIt(base + m_extIndex);
+	::sys::file::deleteIt(base + ".ssc");
+}
+
 // vi:set ts=3 sw=3:

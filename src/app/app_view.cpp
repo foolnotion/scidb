@@ -92,6 +92,24 @@ View::View(Application& app, Database& db)
 }
 
 
+View::View(View& view, db::Database& db)
+	:m_app(view.m_app)
+	,m_db(db)
+	,m_gameUpdateMode(view.m_gameUpdateMode)
+	,m_playerUpdateMode(view.m_playerUpdateMode)
+	,m_eventUpdateMode(view.m_eventUpdateMode)
+	,m_annotatorUpdateMode(view.m_annotatorUpdateMode)
+{
+	m_gameFilter.swap(view.m_gameFilter);
+	m_playerFilter.swap(view.m_playerFilter);
+	m_eventFilter.swap(view.m_eventFilter);
+	m_gameSelector.swap(view.m_gameSelector);
+	m_playerSelector.swap(view.m_playerSelector);
+	m_eventSelector.swap(view.m_eventSelector);
+	m_annotatorSelector.swap(view.m_annotatorSelector);
+}
+
+
 View::View(	Application& app,
 				Database& db,
 				UpdateMode gameUpdateMode,

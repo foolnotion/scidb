@@ -287,6 +287,7 @@
 ::application::database::mc::FileCreate					"Create Archive..." ;# NEW
 ::application::database::mc::FileCreate					"Create archive..." ;# NEW
 ::application::database::mc::FileClose						"Bezárás"
+::application::database::mc::FileCompress					"Compress" ;# NEW
 ::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games							"&Játszmák"
@@ -305,6 +306,7 @@
 ::application::database::mc::Failed							"meghiúsult"
 ::application::database::mc::LoadMessage					"Adatbázis megnyitása: %s"
 ::application::database::mc::UpgradeMessage				"Adatbázis frissítése %s"
+::application::database::mc::CompressMessage				"Compressing database %s" ;# NEW
 ::application::database::mc::CannotOpenFile				"A fájl nem nyitható meg olvasásra: '%s'."
 ::application::database::mc::EncodingFailed				"%s kódolása sikertelen."
 ::application::database::mc::DatabaseAlreadyOpen		"Az '%s' adatbázis már meg van nyitva."

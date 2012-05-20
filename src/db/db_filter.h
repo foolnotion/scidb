@@ -93,6 +93,8 @@ public:
 
 	/// resize the filter to the specified size (keeps the current filter content)
 	void resize(unsigned newSize, ResizeMode mode);
+	/// swap internal data
+	void swap(Filter& filter);
 
 	/// compress filter
 	void compress();

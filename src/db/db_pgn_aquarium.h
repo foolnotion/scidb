@@ -399,7 +399,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco sviluppa un attacco pericoloso.</:it>"
 					"<:ru>Белые развивают опасную атаку.</:ru>"
-					"<:sv>Vit utvecklar ett farligt anfall.</:sv>"
+					"<:sv>Vit bygger upp ett farligt anfall.</:sv>"
 					"</xml>",
 	/* 250 */	"<xml>"
 					"<:de>Schwarz entwickelt einen gefährlichen Angriff.</:de>"
@@ -409,7 +409,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero sviluppa un attacco pericoloso.</:it>"
 					"<:ru>Черные развивают опасную атаку.</:ru>"
-					"<:sv>Svart utvecklar ett farligt anfall.</:sv>"
+					"<:sv>Svart bygger upp ett farligt anfall.</:sv>"
 					"</xml>",
 	/* 251 */	"<xml>"
 					"<:de>Weiß hat das Läuferpaar.</:de>"
@@ -459,7 +459,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco perde il diritto di arroccare.</:it>"
 					"<:ru>Белый король лишился рокировки.</:ru>"
-					"<:sv>Vita kungen berövas på rockaden.</:sv>"
+					"<:sv>Vit förlorar rätten till rockad.</:sv>"
 					"</xml>",
 	/* 256 */	"<xml>"
 					"<:de>Der schwarze König ist der Rochade beraubt.</:de>"
@@ -469,7 +469,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero perde il diritto di arroccare.</:it>"
 					"<:ru>Черный король лишился рокировки.</:ru>"
-					"<:sv>Svarta kungen berövas på rockaden.</:sv>"
+					"<:sv>Svart förlorar rätten till rockad.</:sv>"
 					"</xml>",
 	/* 257 */	"<xml>"
 					"<:de>Im bevorstehenden Endspiel sind die weißen Chancen etwas besser.</:de>"
@@ -519,7 +519,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Scambio di colpi da entrambi i lati.</:it>"
 					"<:ru>Стороны обмениваются ударами.</:ru>"
-					"<:sv>Dubbelsidig sluggerfest.</:sv>"
+					"<:sv>Slagväxling.</:sv>"
 					"</xml>",
 	/* 262 */	0,
 	/* 263 */	"<xml>"
@@ -530,7 +530,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Bianco.</:it>"
 					"<:ru>Неприятная связка, дающая небольшой перевес белым.</:ru>"
-					"<:sv>En obehaglig bindning ger en liten fördel till vit.</:sv>"
+					"<:sv>En obehaglig bindning ger fördel till vit.</:sv>"
 					"</xml>",
 	/* 264 */	"<xml>"
 					"<:de>Eine unangenehme Fesselung, die Schwarz einen Vorteil garantiert.</:de>"
@@ -540,7 +540,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Un'inchiodatura fastidiosa garantisce un leggero vantaggio al Nero.</:it>"
 					"<:ru>Неприятная связка, дающая небольшой перевес черным.</:ru>"
-					"<:sv>En obehaglig bindning ger en liten fördel till svart.</:sv>"
+					"<:sv>En obehaglig bindning ger fördel till svart.</:sv>"
 					"</xml>",
 	/* 265 */	"<xml>"
 					"<:de>Weiß hat eine gute Kompensation für das geopferte Material.</:de>"
@@ -550,7 +550,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha buon compenso per il materiale sacrificato.</:it>"
 					"<:ru>У белых хорошая компенсация за материальный перевес.</:ru>"
-					"<:sv>Vit har bra kompensation för offrade matrialet.</:sv>"
+					"<:sv>Vit har bra kompensation för det offrade materialet.</:sv>"
 					"</xml>",
 	/* 266 */	"<xml>"
 					"<:de>Schwarz hat eine gute Kompensation für das geopferte Material.</:de>"
@@ -560,7 +560,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha buon compenso per il materiale sacrificato.</:it>"
 					"<:ru>У черных хорошая компенсация за материальный перевес.</:ru>"
-					"<:sv>Svart har bra kompensation för offrade matrialet.</:sv>"
+					"<:sv>Svart har bra kompensation för det offrade materialet.</:sv>"
 					"</xml>",
 	/* 267 */	"<xml>"
 					"<:de>Weiß hat keine Kompensation für das Materialdefizit.</:de>"
@@ -570,7 +570,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco non ha alcun compenso per il materiale in meno.</:it>"
 					"<:ru>У белых нет компенсации за отсутствующий материал.</:ru>"
-					"<:sv>Vit har ingen kompensation för saknade matrialet.</:sv>"
+					"<:sv>Vit har ingen kompensation för materialet.</:sv>"
 					"</xml>",
 	/* 268 */	"<xml>"
 					"<:de>Schwarz hat keine Kompensation für das Materialdefizit.</:de>"
@@ -580,7 +580,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero non ha alcun compenso per il materiale in meno.</:it>"
 					"<:ru>У черных нет компенсации за отсутствующий материал.</:ru>"
-					"<:sv>Svart har ingen kompensation för saknade matrialet.</:sv>"
+					"<:sv>Svart har ingen kompensation för  materialet.</:sv>"
 					"</xml>",
 	/* 269 */	"<xml>"
 					"<:de>Weiß hat einen Materialvorteil.</:de>"
@@ -590,7 +590,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Bianco ha vantaggio materiale.</:it>"
 					"<:ru>У белых материальный перевес</:ru>"
-					"<:sv>Vit har matriell fördel.</:sv>"
+					"<:sv>Vit har materiell fördel.</:sv>"
 					"</xml>",
 	/* 270 */	"<xml>"
 					"<:de>Schwarz hat einen Materialvorteil.</:de>"
@@ -600,7 +600,7 @@ static char const* Phrases200[] =
 //					"<:hy></:hy>"
 					"<:it>Il Nero ha vantaggio materiale.</:it>"
 					"<:ru>У черных материальный перевес.</:ru>"
-					"<:sv>Svart har matriell fördel.</:sv>"
+					"<:sv>Svart har materiell fördel.</:sv>"
 					"</xml>",
 	/* 271 */	"<xml>"
 					"<:de>Das Schliessen der Position favorisiert Weiß.</:de>"

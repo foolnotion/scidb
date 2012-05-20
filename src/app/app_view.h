@@ -74,6 +74,7 @@ public:
 	static unsigned const DefaultView = 0;
 
 	View(Application& app, db::Database& db);
+	View(View& view, db::Database& db);
 	View(	Application& app,
 			db::Database& db,
 			UpdateMode gameUpdateMode,

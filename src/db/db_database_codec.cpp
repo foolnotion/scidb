@@ -240,9 +240,6 @@ DatabaseCodec::makeCodec(mstl::string const& name)
 	if (ext == "cbh")
 		return new cbh::Codec();
 
-	if (ext.empty())
-		return new sci::Codec;
-
 	if (ext == "sci")
 		return sci::Codec::makeCodec(name);
 
@@ -341,6 +338,13 @@ DatabaseCodec::updateHeader(mstl::string const&)
 
 void
 DatabaseCodec::save(mstl::string const&, unsigned, Progress&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::removeAllFiles(mstl::string const& rootname)
 {
 	M_RAISE("should not be used");
 }

@@ -2221,6 +2221,14 @@ Codec::rename(mstl::string const& oldName, mstl::string const& newName)
 
 
 void
+Codec::removeAllFiles(mstl::string const& rootname)
+{
+	M_ASSERT(!m_gameStream.is_open());
+	remove(rootname);
+}
+
+
+void
 Codec::remove(mstl::string const& fileName)
 {
 	mstl::string base(::util::misc::file::rootname(fileName));

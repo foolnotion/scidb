@@ -1213,4 +1213,12 @@ Selector::update(unsigned newSize)
 	}
 }
 
+
+void
+Selector::swap(Selector& selector)
+{
+	m_map.swap(selector.m_map);
+	m_list.swap(selector.m_list);
+}
+
 // vi:set ts=3 sw=3:

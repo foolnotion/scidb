@@ -284,6 +284,7 @@
 ::application::database::mc::FileImport					"PGN-Dateien importieren..."
 ::application::database::mc::FileCreate					"Archiv erzeugen..."
 ::application::database::mc::FileClose						"Schliessen"
+::application::database::mc::FileCompress					"Komprimieren"
 ::application::database::mc::HelpSwitcher					"Hilfe zum Datenbankumschalter"
 
 ::application::database::mc::Games							"&Partien"
@@ -302,6 +303,7 @@
 ::application::database::mc::Failed							"fehlgeschlagen"
 ::application::database::mc::LoadMessage					"Datenbank %s öffnen"
 ::application::database::mc::UpgradeMessage				"Datenbank %s aktualisieren"
+::application::database::mc::CompressMessage				"Datenbank %s komprimieren"
 ::application::database::mc::CannotOpenFile				"Die Datei '%s' kann nicht geöffnet werden."
 ::application::database::mc::EncodingFailed				"Die Enkodierung %s ist fehlgeschlagen."
 ::application::database::mc::DatabaseAlreadyOpen		"Die Datenbank '%s' ist bereits geöffnet."

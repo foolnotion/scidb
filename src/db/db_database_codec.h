@@ -161,6 +161,7 @@ public:
 	virtual void reloadDescription(mstl::string const& rootname);
 	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
 	virtual void close() = 0;
+	virtual void removeAllFiles(mstl::string const& rootname);
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 

@@ -102,6 +102,7 @@ public:
 	void unlock(mstl::string const& rootname) override;
 	void close() override;
 	void sync() override;
+	void removeAllFiles(mstl::string const& rootname) override;
 	void writeNamebases(mstl::ostream& stream, util::Progress* progress) override;
 	void writeIndex(mstl::ostream& strm, util::Progress& progress);
 	void writeGames(mstl::ostream& strm, util::Progress& progress);

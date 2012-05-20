@@ -286,6 +286,7 @@
 ::application::database::mc::FileImport					"Importa file PGN..."
 ::application::database::mc::FileCreate					"Create Archive..." ;# NEW
 ::application::database::mc::FileClose						"Chiudi"
+::application::database::mc::FileCompress					"Compress" ;# NEW
 ::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games							"&Partite"
@@ -303,7 +304,8 @@
 ::application::database::mc::None							"nessuno"
 ::application::database::mc::Failed							"fallito"
 ::application::database::mc::LoadMessage					"Sto aprendo il database %s"
-::application::database::mc::UpgradeMessage				"Aggiornamento Database %s"
+::application::database::mc::UpgradeMessage				"Aggiornamento database %s"
+::application::database::mc::CompressMessage				"Compressing database %s" ;# NEW
 ::application::database::mc::CannotOpenFile				"Non è possibile aprire il file '%s'."
 ::application::database::mc::EncodingFailed				"Codifica di %s fallita."
 ::application::database::mc::DatabaseAlreadyOpen		"Il database '%s' è già aperto."

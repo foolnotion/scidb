@@ -1188,8 +1188,13 @@ proc ChangeBoardSize {position board delta} {
 				::board::registerSize $newSize
 				set Priv(fullscreen:size) $newSize
 			}
-		} elseif {$Vars(board:size) != $Priv(fullscreen:size)} {
-			::board::unregisterSize $Vars(board:size)
+		} else {
+			if {$newSize != $Priv(fullscreen:size)} {
+				::board::registerSize $newSize
+			}
+			if {$Vars(board:size) != $Priv(fullscreen:size)} {
+				::board::unregisterSize $Vars(board:size)
+			}
 		}
 		::board::stuff::resize $board $newSize 1
 		grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]

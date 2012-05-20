@@ -82,6 +82,7 @@ using namespace mstl;
 static char const* CmdAttach			= "::scidb::db::attach";
 static char const* CmdClear			= "::scidb::db::clear";
 static char const* CmdClose			= "::scidb::db::close";
+static char const* CmdCompress		= "::scidb::db::compress";
 static char const* CmdCount			= "::scidb::db::count";
 static char const* CmdFetch			= "::scidb::db::fetch";
 static char const* CmdImport			= "::scidb::db::import";
@@ -2095,7 +2096,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "checksum", "idn", "eco", "ratingTypes",
-		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?", "memoryOnly?",
+		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?", "memoryOnly?", "compress?",
 		0
 	};
 	static char const* args[] =
@@ -2140,6 +2141,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"?<database>?",
 		"<database>",
 		"?<database>?",
+		"<database>",
 		0
 	};
 	enum
@@ -2150,7 +2152,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
 		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
 		Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
-		Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly,
+		Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly, Cmd_Compress,
 	};
 
 	if (objc < 2)
@@ -2522,8 +2524,14 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return getRatingTypes(index, objc == 4 ? stringFromObj(objc, objv, 3) : 0);
 
 		case Cmd_MemoryOnly:
-			char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
-			setResult(Scidb->cursor(base).database().isMemoryOnly());
+			{
+				char const* base = objc < 3 ? "" : stringFromObj(objc, objv, 2);
+				setResult(Scidb->cursor(base).database().isMemoryOnly());
+			}
+			return TCL_OK;
+
+		case Cmd_Compress:
+			setResult(Scidb->cursor(stringFromObj(objc, objv, 2)).database().shouldCompress());
 			return TCL_OK;
 	}
 
@@ -3206,6 +3214,22 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdCompress(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> <progress-cmd> <progress-arg>");
+		return TCL_ERROR;
+	}
+
+	Progress progress(objv[2], objv[3]);
+	scidb->compressBase(scidb->cursor(stringFromObj(objc, objv, 1)), progress);
+
+	return TCL_OK;
+}
+
+
+static int
 cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 6)
@@ -3417,6 +3441,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdAttach,		cmdAttach);
 	createCommand(ti, CmdClear,			cmdClear);
 	createCommand(ti, CmdClose,			cmdClose);
+	createCommand(ti, CmdCompress,		cmdCompress);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdFetch,			cmdFetch);
 	createCommand(ti, CmdImport,		cmdImport);

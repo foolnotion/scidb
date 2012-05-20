@@ -80,6 +80,7 @@ static unsigned Counter = 0;
 
 Database::Database(Database const& db, mstl::string const& name)
 	:DatabaseContent(db)
+	,m_codec(DatabaseCodec::makeCodec(name))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
@@ -89,6 +90,7 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
 {
+	m_codec->open(this, m_encoding);
 }
 
 
@@ -222,10 +224,11 @@ Database::save(util::Progress& progress, unsigned start)
 	M_REQUIRE(start <= countGames());
 	M_REQUIRE(!usingAsyncReader());
 
+	m_namebases.update();
+
 	if (isMemoryOnly())
 		return;
 
-	m_namebases.update();
 	m_codec->reset();
 	m_codec->save(m_rootname, start, progress);
 	m_codec->updateHeader(m_rootname);
@@ -293,6 +296,40 @@ Database::close()
 		delete m_codec;
 		m_codec = 0;
 	}
+}
+
+
+void
+Database::remove()
+{
+	M_REQUIRE(format() == format::Scidb || format() == format::Scid3 || format() == format::Scid4);
+
+	if (m_codec)
+		m_codec->close(); // we don't need sync()
+
+	if (!isMemoryOnly())
+		m_codec->removeAllFiles(m_rootname);
+
+	if (m_codec)
+	{
+		delete m_codec;
+		m_codec = 0;
+	}
+}
+
+
+bool
+Database::shouldCompress() const
+{
+	if (!isReadOnly())
+	{
+		format::Type format = this->format();
+
+		if (format::isScidFormat(format) || format == format::Scidb)
+			return m_statistic.deleted > 0;
+	}
+	
+	return false;
 }
 
 
@@ -755,10 +792,12 @@ Database::recode(mstl::string const& encoding, util::Progress& progress)
 void
 Database::rename(mstl::string const& name)
 {
-	M_REQUIRE(!isMemoryOnly());
-	M_REQUIRE(util::misc::file::suffix(name) == util::misc::file::suffix(this->name()));
+// Not working in case of Clipbase.
+//	M_REQUIRE(util::misc::file::suffix(name) == util::misc::file::suffix(this->name()));
 
-	m_codec->rename(m_name, name);
+	if (!isMemoryOnly())
+		m_codec->rename(m_name, name);
+
 	m_name = name;
 	m_rootname = file::rootname(m_name);
 }

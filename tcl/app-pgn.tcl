@@ -2051,7 +2051,7 @@ proc PopupMenu {parent position} {
 			$menu add command \
 				-label "$mc::EditCommentBefore..." \
 				-command [namespace code [list editComment a $position]] \
-				-accel $Accel \
+				-accel $accel \
 				;
 		}
 		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {

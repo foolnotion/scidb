@@ -116,6 +116,7 @@ public:
 	void reloadNamebases(mstl::string const& rootname, util::Progress& progress) override;
 	void close() override;
 	void sync() override;
+	void removeAllFiles(mstl::string const& rootname) override;
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;

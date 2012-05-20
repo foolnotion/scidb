@@ -410,9 +410,11 @@ Cursor::compress(::util::Progress& progress)
 
 	if (deleted == 0)
 		return false;
-
+	
 	mstl::string orig(m_db->name());
-	mstl::string name(".");
+	mstl::string name;
+
+	name.append('.');
 	name.append(::util::misc::file::rootname(m_db->name()));
 	name.append(".compress.293528376");
 	name.append(::util::misc::file::suffix(m_db->name()));
@@ -457,6 +459,7 @@ Cursor::compress(::util::Progress& progress)
 					case save::TooManyEventNames:
 					case save::TooManySiteNames:
 					case save::TooManyRoundNames:
+						compressed->remove();
 						M_THROW(Exception("Compression failed: save state %d", int(state)));
 						break;
 				}
@@ -471,6 +474,18 @@ Cursor::compress(::util::Progress& progress)
 
 	m_db = compressed.release();
 	m_db->rename(orig);
+
+	ViewList viewList;
+
+	for (unsigned i = 0; i < m_viewList.size(); ++i)
+	{
+		viewList.push_back(new View(*m_viewList[i], *m_db));
+		delete m_viewList[i];
+	}
+
+	m_viewList.clear();
+	m_viewList.swap(viewList);
+	updateViews();
 
 	return true;
 }

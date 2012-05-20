@@ -37,6 +37,7 @@ set FileExport					"Export..."
 set FileImport					"Import PGN files..."
 set FileCreate					"Create Archive..."
 set FileClose					"Close"
+set FileCompress				"Compress"
 set HelpSwitcher				"Help for Database Switcher"
 
 set Games						"&Games"
@@ -53,8 +54,9 @@ set Tiny							"Tiny"
 set Empty						"empty"
 set None							"none"
 set Failed						"failed"
-set LoadMessage				"Opening Database %s"
-set UpgradeMessage			"Upgrading Database %s"
+set LoadMessage				"Opening database %s"
+set UpgradeMessage			"Upgrading database %s"
+set CompressMessage			"Compressing database %s"
 set CannotOpenFile			"Cannot open file '%s'."
 set EncodingFailed			"Encoding %s failed."
 set DatabaseAlreadyOpen		"Database '%s' is already open."
@@ -1535,45 +1537,54 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-font $options(menu:headerfont)                   \
 			;
 		$menu add separator
-		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {}
+		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {} {}
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
-			0 0 fileExport {}
-		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {}
+			0 0 fileExport {} {}
+		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {} {}
+		if {$isClipbase || ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
+			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
+			lappend specs command \
+				"$mc::FileCompress" \
+				[namespace code [list Compress $top $file]] \
+				1 0 {} {} $state \
+				;
+		}
 		lappend specs command "$mc::FileCreate" \
-				[list ::menu::dbCreateArchive $top $file] 0 0 filetypeArchive {}
-		lappend specs separator {} {} {} {} {} {}
+				[list ::menu::dbCreateArchive $top $file] 0 0 filetypeArchive {} {}
+		lappend specs separator {} {} {} {} {} {} {}
 		if {$file ne $clipbaseName} {
 			lappend specs command $mc::FileClose \
-				[namespace code [list closeBase $canv $file $i]] 0 0 close {}
+				[namespace code [list closeBase $canv $file $i]] 0 0 close {} {}
 			lappend specs command "$mc::ChangeIcon..." \
-				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {}
+				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {} {}
 			lappend specs command "$mc::EditDescription..." \
-				[list [namespace current]::EditDescription $canv $i] 1 0 {} {}
+				[list [namespace current]::EditDescription $canv $i] 1 0 {} {} {}
 		} else {
 			lappend specs command \
 				$mc::EmptyClipbase \
 				[list [namespace current]::EmptyClipbase $canv] \
-				0 0 trash {} \
+				0 0 trash {} {} \
 				;
 		}
 		switch $ext {
 			si3 - si4 - cbh - pgn {
 				if {[file readable $file]} {
-					lappend specs	command \
-										"$mc::Recode..." \
-										[namespace code [list Recode $i $top]] \
-										0 1 {} {} \
-										;
+					lappend specs command \
+						"$mc::Recode..." \
+						[namespace code [list Recode $i $top]] \
+						0 1 {} {} {} \
+						;
 				}
 			}
 		}
+
 		# TODO:
 		#	if {	[::scidb::view::count games $file 0] == [::scidb::db::count games $file]
 		#		&& [::scidb::view::query sorted $file]} {
 		#		lappend specs command "Save current order" \
-		#			[namespace code [list SaveOrder $i $top]] 1 0 disk {}
+		#			[namespace code [list SaveOrder $i $top]] 1 0 disk {} {}
 		#	}
-		lappend specs separator {} {} {} {} {} {}
+		lappend specs separator {} {} {} {} {} {} {}
 
 		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
 			lappend specs \
@@ -1583,22 +1594,25 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 				[expr {![::scidb::db::get writeable? $file]}] \
 				0 lock \
 				[namespace current]::Vars(flag:readonly) \
+				{} \
 				;
-			lappend specs separator {} {} {} {} {} {}
+			lappend specs separator {} {} {} {} {} {} {}
 		}
 	}
-	lappend specs command $mc::FileNew [list ::menu::dbNew $top] 0 0 docNew {}
-	lappend specs command $mc::FileOpen [list ::menu::dbOpen $top] 0 0 docOpen {}
+	lappend specs command $mc::FileNew [list ::menu::dbNew $top] 0 0 docNew {} {}
+	lappend specs command $mc::FileOpen [list ::menu::dbOpen $top] 0 0 docOpen {} {}
 
-	foreach {type text cmd writableOnly notSci icon var} $specs {
+	foreach {type text cmd writableOnly notSci icon var state} $specs {
 		if {$type eq "separator"} {
 			$menu add separator
 		} else {
 			if {[llength $icon] == 0} { set icon none }
-			if {($writableOnly && $readonly) || ($notSci && $isSciFormat)} {
-				set state disabled
-			} else {
-				set state normal
+			if {[llength $state] == 0} {
+				if {($writableOnly && $readonly) || ($notSci && $isSciFormat)} {
+					set state disabled
+				} else {
+					set state normal
+				}
 			}
 			set entry {}
 			lappend entry $type
@@ -1763,6 +1777,14 @@ proc ChangeIconSize {canv} {
 
 	update idletasks
 	LayoutSwitcher
+}
+
+
+proc Compress {parent file} {
+	set cmd [list ::scidb::db::compress $file]
+	set name [::util::databaseName $file]
+	set options [list -message [format $mc::CompressMessage $name]]
+	::util::catchIoError [list ::progress::start $parent $cmd {} $options]
 }
 
 
