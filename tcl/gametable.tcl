@@ -1621,7 +1621,7 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::setup \
-				-label " $::dialog::::save::mc::EditCharacteristics" \
+				-label " $::dialog::save::mc::EditCharacteristics" \
 				-command [list ::dialog::save::open $path $base {} [column $info number]] \
 				;
 		}

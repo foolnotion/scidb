@@ -27,6 +27,7 @@ namespace misc {
 namespace file
 {
 	bool hasSuffix(mstl::string const& path);
+	mstl::string dirname(mstl::string const& path);
 	mstl::string basename(mstl::string const& path);
 	mstl::string rootname(mstl::string const& path);
 	mstl::string suffix(mstl::string const& path);

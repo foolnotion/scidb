@@ -114,7 +114,7 @@ proc build {parent} {
 	}
 	set table [::scrolledtable::build $lt $columns]
 	::scidb::db::subscribe annotatorList \
-		[namespace current]::::names::TableUpdate \
+		[namespace current]::names::TableUpdate \
 		[namespace current]::Close \
 		$top
 

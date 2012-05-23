@@ -998,7 +998,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 
 
 save::State
-DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
+DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocation allocation)
 {
 	M_REQUIRE(isOpen());
 
@@ -1013,11 +1013,22 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info)
 	mstl::string site;
 	mstl::string annotator;
 
-	whitePlayer.hook(info.playerName(color::White));
-	blackPlayer.hook(info.playerName(color::Black));
-	event.hook(info.event());
-	site.hook(info.site());
-	annotator.hook(info.annotator());
+	if (allocation == Alloc)
+	{
+		namebase(Namebase::Player).copy(whitePlayer, info.playerName(color::White));
+		namebase(Namebase::Player).copy(blackPlayer, info.playerName(color::Black));
+		namebase(Namebase::Event).copy(event, info.event());
+		namebase(Namebase::Site).copy(site, info.site());
+		namebase(Namebase::Annotator).copy(annotator, info.annotator());
+	}
+	else
+	{
+		whitePlayer.hook(info.playerName(color::White));
+		blackPlayer.hook(info.playerName(color::Black));
+		event.hook(info.event());
+		site.hook(info.site());
+		annotator.hook(info.annotator());
+	}
 
 	unsigned maxAnnotatorCount = this->maxAnnotatorCount();
 

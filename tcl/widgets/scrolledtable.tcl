@@ -243,8 +243,8 @@ proc update {path base size} {
 	::table::clear $table $Vars(size) $Vars(height)
 
 	set Vars(start) [expr {max(0, min($Vars(start:$base), $Vars(size) - $Vars(height)))}]
-	set Vars(active) $Vars(active:$base)
-	set Vars(selection) $Vars(selection:$base)
+	set Vars(active) [expr {min($size - 1, $Vars(active:$base))}]
+	set Vars(selection) [expr {min($size - 1, $Vars(selection:$base))}]
 	set Vars(base) $base
 
 	set height [expr {min([::table::height $table], $Vars(height))}]

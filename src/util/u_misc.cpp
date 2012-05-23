@@ -54,6 +54,18 @@ util::misc::file::hasSuffix(mstl::string const& path)
 
 
 mstl::string
+util::misc::file::dirname(mstl::string const& path)
+{
+	char const* p = ::strrchr(path.c_str(), Separator);
+
+	if (!p)
+		return mstl::string::empty_string;
+
+	return mstl::string(path.begin(), p + 1);
+}
+
+
+mstl::string
 util::misc::file::basename(mstl::string const& path)
 {
 	char const* p = ::strrchr(path.c_str(), Separator);

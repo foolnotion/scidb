@@ -2109,8 +2109,8 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'a': setResult(scidb->game(pos).countAnnotations()); break;	// annotations
 		case 'i': setResult(scidb->game(pos).countMoveInfo()); break;		// info
 		case 'm': setResult(scidb->game(pos).countMarks()); break;			// marks
-		case 'c': setResult(scidb->game(pos).countComments()); break;			// comments
-		case 'v': setResult(scidb->game(pos).countVariations()); break;		// variations
+		case 'c': setResult(scidb->game(pos).countComments()); break;		// comments
+		case 'v': setResult(scidb->game(pos).countVariations()); break;	// variations
 		case 'h': setResult(scidb->game(pos).countHalfMoves()); break;		// halfmoves
 		case 'l': setResult(scidb->game(pos).countLength()); break;			// length
 		default:  return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);

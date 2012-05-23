@@ -322,6 +322,76 @@ proc release {position} {
 }
 
 
+proc closeAll {parent base {detail ""}} {
+	variable List
+	variable Options
+
+	set openGames {}
+	set modifiedGames {}
+	set pos 0
+
+	foreach entry $List {
+		lassign $entry time modified locked database crc tags
+		lassign $database name codec number
+
+		if {$base eq $name} {
+			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
+			set entry [list $pos $index $time $modified $locked $number $tags]
+			if {$modified} { lappend modifiedGames $entry } else { lappend openGames $entry }
+		}
+
+		incr pos
+	}
+
+	if {[llength $modifiedGames]} {
+		set modifiedGames [lsort -index 1 -integer $modifiedGames]
+		append msg [format $mc::SomeGamesAreModified [::util::databaseName $base]]
+		append msg <embed>
+
+		set reply [::dialog::question \
+			-parent $parent \
+			-message $msg \
+			-detail $detail \
+			-buttons {yes cancel} \
+			-default cancel \
+			-embed [namespace code [list EmbedReleaseMessage $modifiedGames]] \
+		]
+
+		if {$reply eq "cancel"} { return 0 }
+		unset msg
+	}
+
+	if {[llength $openGames] == 0} { return 1 }
+
+	set openGames [lsort -index 1 -integer $openGames]
+	set name [::util::databaseName $base]
+	append msg [format $mc::CloseAllGames $name]
+	append msg <embed>
+	set base
+
+	set reply [::dialog::question \
+		-parent $parent \
+		-title "$::scidb::app: $mc::CloseDatabase" \
+		-message $msg \
+		-detail $detail \
+		-buttons {cancel yes} \
+		-default yes \
+		-embed [namespace code [list EmbedReleaseMessage $openGames]] \
+	]
+
+	if {$reply eq "cancel"} { return 0 }
+
+	foreach entry [concat $openGames $modifiedGames] {
+		set pos [lindex $entry 0]
+		::application::pgn::release $pos
+		::scidb::game::release $pos	;# release scratch game
+	}
+
+	::application::pgn::select
+	return 1
+}
+
+
 proc releaseAll {parent base} {
 	variable List
 	variable Options
@@ -345,7 +415,7 @@ proc releaseAll {parent base} {
 
 	if {[llength $modifiedGames]} {
 		set modifiedGames [lsort -index 1 -integer $modifiedGames]
-		append msg [format $mc::SomeGamesAreModified [::util::::databaseName $base]]
+		append msg [format $mc::SomeGamesAreModified [::util::databaseName $base]]
 		append msg <embed>
 
 		set reply [::dialog::question \
@@ -357,9 +427,9 @@ proc releaseAll {parent base} {
 			-embed [namespace code [list EmbedReleaseMessage $modifiedGames]] \
 		]
 
-		if {$reply eq "cancel"} {
-			return 0
-		} elseif {$reply eq "yes"} {
+		if {$reply eq "cancel"} { return 0 }
+
+		if {$reply eq "yes"} {
 			set Options(answer:closeAnyway) 1
 		} else {
 			set Options(answer:closeAnyway) 0
@@ -376,7 +446,7 @@ proc releaseAll {parent base} {
 
 	if {$Options(askAgain:releaseAll)} {
 		set openGames [lsort -index 1 -integer $openGames]
-		set name [::util::::databaseName $base]
+		set name [::util::databaseName $base]
 		append msg [format $mc::CloseAllGames $name]
 		append msg <embed>
 		set base

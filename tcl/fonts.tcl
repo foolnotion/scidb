@@ -1230,7 +1230,7 @@ if {$tcl_platform(platform) ne "windows"} {
 				catch { exec fc-cache -f $fontDir }
 			}
 
-			::dialog::::choosefont::resetFonts
+			::dialog::choosefont::resetFonts
 			set fonts [::dialog::choosefont::fontFamilies]
 
 			if {{FigurineCB AriesSP} in $fonts} {

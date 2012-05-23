@@ -96,7 +96,8 @@ public:
 
 	typedef format::Type Format;
 
-	enum Section { InfoTags, GameTags };
+	enum Section		{ InfoTags, GameTags };
+	enum Allocation	{ Hook, Alloc };
 
 //	static unsigned const Decode_Tags		= 1 << 0;
 //	static unsigned const Decode_Comments	= 1 << 1;
@@ -177,7 +178,7 @@ public:
 	save::State exportGame(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
 
 	virtual util::ByteStream getGame(GameInfo const& info);
-	save::State addGame(util::ByteStream const& gameData, GameInfo const& info);
+	save::State addGame(util::ByteStream const& gameData, GameInfo const& info, Allocation allocation);
 	save::State addGame(util::ByteStream& gameData, TagSet const& tags, Consumer& consumer);
 	save::State saveGame(util::ByteStream const& gameData, TagSet const& tags, Provider const& provider);
 	save::State updateCharacteristics(unsigned index, TagSet const& tags);

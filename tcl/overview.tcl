@@ -137,6 +137,15 @@ proc open {parent base info view index {fen {}}} {
 }
 
 
+proc closeAll {base} {
+	variable Priv
+
+	foreach key [array names Priv $base:*] {
+		foreach dlg $Priv($key) { destroy $dlg }
+	}
+}
+
+
 proc load {parent base info view index windowId} {
 	if {[llength $windowId] == 0} { set windowId _ }
 

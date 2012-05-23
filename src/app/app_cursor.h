@@ -157,7 +157,7 @@ public:
 	void setDescription(mstl::string const& description);
 
 	// Compress the database.
-	bool compress(::util::Progress& progress);
+	bool compact(::util::Progress& progress);
 
 	SubscriberP subscriber() const;
 	void setSubscriber(SubscriberP subscriber);

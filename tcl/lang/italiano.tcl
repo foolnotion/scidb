@@ -286,7 +286,7 @@
 ::application::database::mc::FileImport					"Importa file PGN..."
 ::application::database::mc::FileCreate					"Create Archive..." ;# NEW
 ::application::database::mc::FileClose						"Chiudi"
-::application::database::mc::FileCompress					"Compress" ;# NEW
+::application::database::mc::FileCompact					"Compact" ;# NEW
 ::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games							"&Partite"
@@ -305,7 +305,7 @@
 ::application::database::mc::Failed							"fallito"
 ::application::database::mc::LoadMessage					"Sto aprendo il database %s"
 ::application::database::mc::UpgradeMessage				"Aggiornamento database %s"
-::application::database::mc::CompressMessage				"Compressing database %s" ;# NEW
+::application::database::mc::CompactMessage				"Compacting database %s" ;# NEW
 ::application::database::mc::CannotOpenFile				"Non è possibile aprire il file '%s'."
 ::application::database::mc::EncodingFailed				"Codifica di %s fallita."
 ::application::database::mc::DatabaseAlreadyOpen		"Il database '%s' è già aperto."
@@ -325,6 +325,7 @@
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
 ::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
 ::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
+::application::database::mc::CompactDetail				"All games must be closed before a compaction can be done." ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames					"%s partite registrate"

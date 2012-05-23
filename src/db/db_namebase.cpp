@@ -702,6 +702,18 @@ Namebase::shrink(unsigned oldLength, unsigned newLength)
 
 
 void
+Namebase::copy(mstl::string& dst, mstl::string const& src)
+{
+	M_REQUIRE(src.size() <= NamebaseEntry::MaxNameLength);
+
+	unsigned length = src.size();
+	char* s = m_stringAllocator.alloc(length + 1);
+	::memcpy(s, src, length + 1);
+	dst.hook(s, length);
+}
+
+
+void
 Namebase::cleanup()
 {
 	M_REQUIRE(isReadonly());

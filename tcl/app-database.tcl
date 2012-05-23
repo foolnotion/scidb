@@ -37,7 +37,7 @@ set FileExport					"Export..."
 set FileImport					"Import PGN files..."
 set FileCreate					"Create Archive..."
 set FileClose					"Close"
-set FileCompress				"Compress"
+set FileCompact				"Compact"
 set HelpSwitcher				"Help for Database Switcher"
 
 set Games						"&Games"
@@ -56,7 +56,7 @@ set None							"none"
 set Failed						"failed"
 set LoadMessage				"Opening database %s"
 set UpgradeMessage			"Upgrading database %s"
-set CompressMessage			"Compressing database %s"
+set CompactMessage			"Compacting database %s"
 set CannotOpenFile			"Cannot open file '%s'."
 set EncodingFailed			"Encoding %s failed."
 set DatabaseAlreadyOpen		"Database '%s' is already open."
@@ -76,6 +76,7 @@ set EmptyUriList				"Drop content is empty."
 set OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
 set SelectDatabases			"Select the databases to be opened"
 set ExtractArchive			"Extract archive %s"
+set CompactDetail				"All games must be closed before a compaction can be done."
 
 set RecodingDatabase			"Recoding %base from %from to %to"
 set RecodedGames				"%s game(s) recoded"
@@ -1544,8 +1545,8 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		if {$isClipbase || ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
 			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
 			lappend specs command \
-				"$mc::FileCompress" \
-				[namespace code [list Compress $top $file]] \
+				"$mc::FileCompact" \
+				[namespace code [list Compact $top $file]] \
 				1 0 {} {} $state \
 				;
 		}
@@ -1780,11 +1781,15 @@ proc ChangeIconSize {canv} {
 }
 
 
-proc Compress {parent file} {
-	set cmd [list ::scidb::db::compress $file]
-	set name [::util::databaseName $file]
-	set options [list -message [format $mc::CompressMessage $name]]
-	::util::catchIoError [list ::progress::start $parent $cmd {} $options]
+proc Compact {parent file} {
+	if {[::game::closeAll $parent $file $mc::CompactDetail]} {
+		::browser::closeAll $file
+		::overview::closeAll $file
+		set cmd [list ::scidb::db::compact $file]
+		set name [::util::databaseName $file]
+		set options [list -message [format $mc::CompactMessage $name]]
+		::util::catchIoError [list ::progress::start $parent $cmd {} $options]
+	}
 }
 
 

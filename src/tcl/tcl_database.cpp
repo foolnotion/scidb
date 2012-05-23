@@ -82,7 +82,7 @@ using namespace mstl;
 static char const* CmdAttach			= "::scidb::db::attach";
 static char const* CmdClear			= "::scidb::db::clear";
 static char const* CmdClose			= "::scidb::db::close";
-static char const* CmdCompress		= "::scidb::db::compress";
+static char const* CmdCompact			= "::scidb::db::compact";
 static char const* CmdCount			= "::scidb::db::count";
 static char const* CmdFetch			= "::scidb::db::fetch";
 static char const* CmdImport			= "::scidb::db::import";
@@ -3214,7 +3214,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdCompress(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+cmdCompact(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4)
 	{
@@ -3223,7 +3223,7 @@ cmdCompress(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	Progress progress(objv[2], objv[3]);
-	scidb->compressBase(scidb->cursor(stringFromObj(objc, objv, 1)), progress);
+	scidb->compactBase(scidb->cursor(stringFromObj(objc, objv, 1)), progress);
 
 	return TCL_OK;
 }
@@ -3438,27 +3438,27 @@ namespace db {
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdAttach,		cmdAttach);
+	createCommand(ti, CmdAttach,			cmdAttach);
 	createCommand(ti, CmdClear,			cmdClear);
 	createCommand(ti, CmdClose,			cmdClose);
-	createCommand(ti, CmdCompress,		cmdCompress);
+	createCommand(ti, CmdCompact,			cmdCompact);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdFetch,			cmdFetch);
-	createCommand(ti, CmdImport,		cmdImport);
-	createCommand(ti, CmdLoad,			cmdLoad);
-	createCommand(ti, CmdNew,			cmdNew);
-	createCommand(ti, CmdSet,			cmdSet);
-	createCommand(ti, CmdGet,			cmdGet);
+	createCommand(ti, CmdImport,			cmdImport);
+	createCommand(ti, CmdLoad,				cmdLoad);
+	createCommand(ti, CmdNew,				cmdNew);
+	createCommand(ti, CmdSet,				cmdSet);
+	createCommand(ti, CmdGet,				cmdGet);
 	createCommand(ti, CmdMatch,			cmdMatch);
-	createCommand(ti, CmdRecode,		cmdRecode);
-	createCommand(ti, CmdReverse,		cmdReverse);
-	createCommand(ti, CmdSave,			cmdSave);
-	createCommand(ti, CmdSort,			cmdSort);
-	createCommand(ti, CmdSubscribe,	cmdSubscribe);
-	createCommand(ti, CmdSwitch,		cmdSwitch);
+	createCommand(ti, CmdRecode,			cmdRecode);
+	createCommand(ti, CmdReverse,			cmdReverse);
+	createCommand(ti, CmdSave,				cmdSave);
+	createCommand(ti, CmdSort,				cmdSort);
+	createCommand(ti, CmdSubscribe,		cmdSubscribe);
+	createCommand(ti, CmdSwitch,			cmdSwitch);
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
-	createCommand(ti, CmdUpdate,		cmdUpdate);
-	createCommand(ti, CmdUpgrade,		cmdUpgrade);
+	createCommand(ti, CmdUpdate,			cmdUpdate);
+	createCommand(ti, CmdUpgrade,			cmdUpgrade);
 	createCommand(ti, CmdWrite,			cmdWrite);
 }
 

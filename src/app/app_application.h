@@ -207,7 +207,7 @@ public:
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
 
 	void clearBase(Cursor& cursor);
-	void compressBase(Cursor& cursor, ::util::Progress& progress);
+	void compactBase(Cursor& cursor, ::util::Progress& progress);
 
 	void setReferenceBase(Cursor* cursor);
 	void setSwitchReferenceBase(bool flag);
