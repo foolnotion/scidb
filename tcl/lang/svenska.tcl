@@ -323,7 +323,7 @@
 ::application::database::mc::OverwriteExistingFiles	"Skriver över existerande filer i folder '%s'?"
 ::application::database::mc::SelectDatabases				"Välj databaser som ska öppnas"
 ::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
-::application::database::mc::CompactDetail				"All games must be closed before a compaction can be done." ;# NEW
+::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done." ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames					"%s parti(er) omkodade"

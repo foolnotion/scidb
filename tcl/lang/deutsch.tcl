@@ -323,7 +323,7 @@
 ::application::database::mc::OverwriteExistingFiles	"Die existierenden Dateien im Verzeichnis '%s' überschreiben?"
 ::application::database::mc::SelectDatabases				"Die zu öffnenden Datenbanken selektieren"
 ::application::database::mc::ExtractArchive				"Archiv %s extrahieren"
-::application::database::mc::CompactDetail				"Alle Partien müssen geschlossen werden bevor eine Kompaktierung erfolgen kann."
+::application::database::mc::CompactDetail				"Alle Partien müssen geschlossen sein bevor eine Kompaktierung erfolgen kann."
 
 ::application::database::mc::RecodingDatabase			"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames					"%s Partie(n) umkodiert"

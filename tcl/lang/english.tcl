@@ -324,7 +324,7 @@
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
 ::application::database::mc::SelectDatabases				"Select the databases to be opened"
 ::application::database::mc::ExtractArchive				"Extract archive %s"
-::application::database::mc::CompactDetail				"All games must be closed before a compaction can be done."
+::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done."
 
 ::application::database::mc::RecodingDatabase			"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"

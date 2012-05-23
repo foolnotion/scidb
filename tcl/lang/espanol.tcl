@@ -231,113 +231,117 @@
 ::application::board::mc::KeyEditMarks			"M"
 
 ### application::database ##############################################
-::application::database::mc::FileOpen					"Abrir Base..."
-::application::database::mc::FileOpenRecent			"Abrir Recientes"
-::application::database::mc::FileNew					"Nueva Base..."
-::application::database::mc::FileExport				"Exportar..."
-::application::database::mc::FileImport				"Importar archivos PGN..."
-::application::database::mc::FileClose					"Cerrar"
-::application::database::mc::HelpSwitcher				"Help for Database Switcher" ;# NEW
+::application::database::mc::FileOpen						"Abrir Base..."
+::application::database::mc::FileOpenRecent				"Abrir Recientes"
+::application::database::mc::FileNew						"Nueva Base..."
+::application::database::mc::FileExport					"Exportar..."
+::application::database::mc::FileImport					"Importar archivos PGN..."
+::application::database::mc::FileClose						"Cerrar"
+::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
-::application::database::mc::Games						"&Partidas"
-::application::database::mc::Players					"&Jugadores"
-::application::database::mc::Events						"Even&tos"
-::application::database::mc::Annotators				"&Comentaristas"
+::application::database::mc::Games							"&Partidas"
+::application::database::mc::Players						"&Jugadores"
+::application::database::mc::Events							"Even&tos"
+::application::database::mc::Annotators					"&Comentaristas"
 
-::application::database::mc::File						"Archivo"
-::application::database::mc::SymbolSize				"Tama–o del s’mbolo"
-::application::database::mc::Large						"Grande"
-::application::database::mc::Medium						"Mediano"
-::application::database::mc::Small						"Peque–o"
-::application::database::mc::Tiny						"Diminuto"
-::application::database::mc::Empty						"vac’o"
-::application::database::mc::None						"ninguno"
-::application::database::mc::Failed						"fallido"
-::application::database::mc::LoadMessage				"Abrir Base %s"
-::application::database::mc::UpgradeMessage			"Upgrading Database %s" ;# NEW
-::application::database::mc::CannotOpenFile			"No se puede abrir el archivo '%s'."
-::application::database::mc::EncodingFailed			"Fallo en la codificaci—n de %s."
-::application::database::mc::DatabaseAlreadyOpen	"La Base '%s' ya est‡ abierta."
-::application::database::mc::Properties				"Propiedades"
-::application::database::mc::Preload					"Precarga"
-::application::database::mc::MissingEncoding			"Codificaci—n %s perdida (usar %s en su lugar)"
-::application::database::mc::DescriptionTooLarge	"Descripci—n demasiado grande."
-::application::database::mc::DescrTooLargeDetail	"La entrada contiene %d caracteres, pero s—lo se permiten %d."
-::application::database::mc::ClipbaseDescription	"Base temporal, no se guarda al disco."
-::application::database::mc::HardLinkDetected		"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
-::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::CannotOpenUri			"Cannot open the following URI:" ;# NEW
-::application::database::mc::InvalidUri				"Drop content is not a valid URI list." ;# NEW
-::application::database::mc::UriRejected				"The following files are rejected:" ;# NEW
-::application::database::mc::UriRejectedDetail		"Only Scidb databases can be opened:" ;# NEW
-::application::database::mc::EmptyUriList				"Drop content is empty." ;# NEW
+::application::database::mc::File							"Archivo"
+::application::database::mc::SymbolSize					"Tama–o del s’mbolo"
+::application::database::mc::Large							"Grande"
+::application::database::mc::Medium							"Mediano"
+::application::database::mc::Small							"Peque–o"
+::application::database::mc::Tiny							"Diminuto"
+::application::database::mc::Empty							"vac’o"
+::application::database::mc::None							"ninguno"
+::application::database::mc::Failed							"fallido"
+::application::database::mc::LoadMessage					"Abrir Base %s"
+::application::database::mc::UpgradeMessage				"Upgrading Database %s" ;# NEW
+::application::database::mc::CannotOpenFile				"No se puede abrir el archivo '%s'."
+::application::database::mc::EncodingFailed				"Fallo en la codificaci—n de %s."
+::application::database::mc::DatabaseAlreadyOpen		"La Base '%s' ya est‡ abierta."
+::application::database::mc::Properties					"Propiedades"
+::application::database::mc::Preload						"Precarga"
+::application::database::mc::MissingEncoding				"Codificaci—n %s perdida (usar %s en su lugar)"
+::application::database::mc::DescriptionTooLarge		"Descripci—n demasiado grande."
+::application::database::mc::DescrTooLargeDetail		"La entrada contiene %d caracteres, pero s—lo se permiten %d."
+::application::database::mc::ClipbaseDescription		"Base temporal, no se guarda al disco."
+::application::database::mc::HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved." ;# NEW
+::application::database::mc::HardLinkDetectedDetail	 "If we load this database twice the application may crash due to the usage of threads." ;# NEW
+::application::database::mc::CannotOpenUri				"Cannot open the following URI:" ;# NEW
+::application::database::mc::InvalidUri					"Drop content is not a valid URI list." ;# NEW
+::application::database::mc::UriRejected					"The following files are rejected:" ;# NEW
+::application::database::mc::UriRejectedDetail			"Only Scidb databases can be opened:" ;# NEW
+::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
+::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
+::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
+::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
+::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done." ;# NEW
 
-::application::database::mc::RecodingDatabase		"Recodificar %base de %from a %to"
-::application::database::mc::RecodedGames				"%s partida(s) recodificadas"
+::application::database::mc::RecodingDatabase			"Recodificar %base de %from a %to"
+::application::database::mc::RecodedGames					"%s partida(s) recodificadas"
 
-::application::database::mc::GameCount					"Partidas"
-::application::database::mc::DatabasePath				"ruta a la Base"
-::application::database::mc::DeletedGames				"Partidas eliminadas"
-::application::database::mc::Description				"Descripci—n"
-::application::database::mc::Created					"Creada"
-::application::database::mc::LastModified				"òltima modificaci—n"
-::application::database::mc::Encoding					"Codificar"
-::application::database::mc::YearRange					"Rango de a–os"
-::application::database::mc::RatingRange				"Rango de ratings"
-::application::database::mc::Result						"Resultado"
-::application::database::mc::Score						"puntuaci—n"
-::application::database::mc::Type						"Tipo"
-::application::database::mc::ReadOnly					"S—lo lectura"
+::application::database::mc::GameCount						"Partidas"
+::application::database::mc::DatabasePath					"ruta a la Base"
+::application::database::mc::DeletedGames					"Partidas eliminadas"
+::application::database::mc::Description					"Descripci—n"
+::application::database::mc::Created						"Creada"
+::application::database::mc::LastModified					"òltima modificaci—n"
+::application::database::mc::Encoding						"Codificar"
+::application::database::mc::YearRange						"Rango de a–os"
+::application::database::mc::RatingRange					"Rango de ratings"
+::application::database::mc::Result							"Resultado"
+::application::database::mc::Score							"puntuaci—n"
+::application::database::mc::Type							"Tipo"
+::application::database::mc::ReadOnly						"S—lo lectura"
 
-::application::database::mc::ChangeIcon				"Cambiar ’cono"
-::application::database::mc::Recode						"Recodificar"
-::application::database::mc::EditDescription			"Editar Descripci—n"
-::application::database::mc::EmptyClipbase			"vaciar Base temporal"
+::application::database::mc::ChangeIcon					"Cambiar ’cono"
+::application::database::mc::Recode							"Recodificar"
+::application::database::mc::EditDescription				"Editar Descripci—n"
+::application::database::mc::EmptyClipbase				"vaciar Base temporal"
 
-::application::database::mc::T_Unspecific				"Inespec’fico"
-::application::database::mc::T_Temporary				"Temporario"
-::application::database::mc::T_Work						"Trabajo"
-::application::database::mc::T_Clipbase				"Base temporal"
-::application::database::mc::T_MyGames					"Mis partidas"
-::application::database::mc::T_Informant				"Informador"
-::application::database::mc::T_LargeDatabase			"Gran Base"
-::application::database::mc::T_CorrespondenceChess	"Ajedrez por Correspondencia"  
-::application::database::mc::T_EmailChess				"Ajedrez por email"
-::application::database::mc::T_InternetChess			"Ajedrez por Internet"
-::application::database::mc::T_ComputerChess			"Ajedrez por computadora"
-::application::database::mc::T_Chess960				"Ajedrez 960"
-::application::database::mc::T_PlayerCollection		"Colecci—n de jugadores"
-::application::database::mc::T_Tournament				"Torneo"
-::application::database::mc::T_TournamentSwiss		"Torneo suizo"
-::application::database::mc::T_GMGames					"Partidas de GM"
-::application::database::mc::T_IMGames					"Partidas de IM"
-::application::database::mc::T_BlitzGames				"Partidas r‡pidas"
-::application::database::mc::T_Tactics					"T‡ctica"
-::application::database::mc::T_Endgames				"Finales"
-::application::database::mc::T_Analysis				"An‡lisis"
-::application::database::mc::T_Training				"Entrenamiento"
-::application::database::mc::T_Match					"Competencia"
-::application::database::mc::T_Studies					"Estudios"
-::application::database::mc::T_Jewels					"Joyas"
-::application::database::mc::T_Problems				"Problemas"
-::application::database::mc::T_Patzer					"Novato"
-::application::database::mc::T_Gambit					"Gambito"
-::application::database::mc::T_Important				"Importante"
-::application::database::mc::T_Openings				"Aperturas"
-::application::database::mc::T_OpeningsWhite			"Aperturas de las Blancas"
-::application::database::mc::T_OpeningsBlack			"Aperturas de las Negras"
+::application::database::mc::T_Unspecific					"Inespec’fico"
+::application::database::mc::T_Temporary					"Temporario"
+::application::database::mc::T_Work							"Trabajo"
+::application::database::mc::T_Clipbase					"Base temporal"
+::application::database::mc::T_MyGames						"Mis partidas"
+::application::database::mc::T_Informant					"Informador"
+::application::database::mc::T_LargeDatabase				"Gran Base"
+::application::database::mc::T_CorrespondenceChess		"Ajedrez por Correspondencia"  
+::application::database::mc::T_EmailChess					"Ajedrez por email"
+::application::database::mc::T_InternetChess				"Ajedrez por Internet"
+::application::database::mc::T_ComputerChess				"Ajedrez por computadora"
+::application::database::mc::T_Chess960					"Ajedrez 960"
+::application::database::mc::T_PlayerCollection			"Colecci—n de jugadores"
+::application::database::mc::T_Tournament					"Torneo"
+::application::database::mc::T_TournamentSwiss			"Torneo suizo"
+::application::database::mc::T_GMGames						"Partidas de GM"
+::application::database::mc::T_IMGames						"Partidas de IM"
+::application::database::mc::T_BlitzGames					"Partidas r‡pidas"
+::application::database::mc::T_Tactics						"T‡ctica"
+::application::database::mc::T_Endgames					"Finales"
+::application::database::mc::T_Analysis					"An‡lisis"
+::application::database::mc::T_Training					"Entrenamiento"
+::application::database::mc::T_Match						"Competencia"
+::application::database::mc::T_Studies						"Estudios"
+::application::database::mc::T_Jewels						"Joyas"
+::application::database::mc::T_Problems					"Problemas"
+::application::database::mc::T_Patzer						"Novato"
+::application::database::mc::T_Gambit						"Gambito"
+::application::database::mc::T_Important					"Importante"
+::application::database::mc::T_Openings					"Aperturas"
+::application::database::mc::T_OpeningsWhite				"Aperturas de las Blancas"
+::application::database::mc::T_OpeningsBlack				"Aperturas de las Negras"
 
-::application::database::mc::OpenDatabase				"Abrir Base"
-::application::database::mc::NewDatabase				"Nueva Base"
-::application::database::mc::CloseDatabase			"Cerrar Base '%s'"
-::application::database::mc::SetReadonly				"Set Database '%s' readonly" ;# NEW
-::application::database::mc::SetWriteable				"Set Database '%s' writeable" ;# NEW
+::application::database::mc::OpenDatabase					"Abrir Base"
+::application::database::mc::NewDatabase					"Nueva Base"
+::application::database::mc::CloseDatabase				"Cerrar Base '%s'"
+::application::database::mc::SetReadonly					"Set Database '%s' readonly" ;# NEW
+::application::database::mc::SetWriteable					"Set Database '%s' writeable" ;# NEW
 
-::application::database::mc::OpenReadonly				"Abrir en solo-lectura"
-::application::database::mc::OpenWriteable			"Abrir con permiso de escritura"
+::application::database::mc::OpenReadonly					"Abrir en solo-lectura"
+::application::database::mc::OpenWriteable				"Abrir con permiso de escritura"
 
-::application::database::mc::UpgradeDatabase			"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?" ;# NEW
-::application::database::mc::UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you cannot set it writeable." ;# NEW
+::application::database::mc::UpgradeDatabase				"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?" ;# NEW
+::application::database::mc::UpgradeDatabaseDetail		"\"No\" will open the database readonly, and you cannot set it writeable." ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"

@@ -329,6 +329,7 @@ proc closeAll {parent base {detail ""}} {
 	set openGames {}
 	set modifiedGames {}
 	set pos 0
+	set query 1
 
 	foreach entry $List {
 		lassign $entry time modified locked database crc tags
@@ -358,6 +359,7 @@ proc closeAll {parent base {detail ""}} {
 		]
 
 		if {$reply eq "cancel"} { return 0 }
+		set query 0
 		unset msg
 	}
 
@@ -369,17 +371,19 @@ proc closeAll {parent base {detail ""}} {
 	append msg <embed>
 	set base
 
-	set reply [::dialog::question \
-		-parent $parent \
-		-title "$::scidb::app: $mc::CloseDatabase" \
-		-message $msg \
-		-detail $detail \
-		-buttons {cancel yes} \
-		-default yes \
-		-embed [namespace code [list EmbedReleaseMessage $openGames]] \
-	]
+	if {$query} {
+		set reply [::dialog::question \
+			-parent $parent \
+			-title "$::scidb::app: $mc::CloseDatabase" \
+			-message $msg \
+			-detail $detail \
+			-buttons {cancel yes} \
+			-default yes \
+			-embed [namespace code [list EmbedReleaseMessage $openGames]] \
+		]
 
-	if {$reply eq "cancel"} { return 0 }
+		if {$reply eq "cancel"} { return 0 }
+	}
 
 	foreach entry [concat $openGames $modifiedGames] {
 		set pos [lindex $entry 0]
