@@ -322,9 +322,13 @@ proc release {position} {
 }
 
 
-proc closeAll {parent base {detail ""}} {
+proc closeAll {parent base {title ""} {detail ""}} {
 	variable List
 	variable Options
+
+	if {[string length $title] == 0} {
+		set title $mc::CloseDatabase
+	}
 
 	set openGames {}
 	set modifiedGames {}
@@ -351,6 +355,7 @@ proc closeAll {parent base {detail ""}} {
 
 		set reply [::dialog::question \
 			-parent $parent \
+			-title "$::scidb::app: $title" \
 			-message $msg \
 			-detail $detail \
 			-buttons {yes cancel} \
@@ -374,7 +379,7 @@ proc closeAll {parent base {detail ""}} {
 	if {$query} {
 		set reply [::dialog::question \
 			-parent $parent \
-			-title "$::scidb::app: $mc::CloseDatabase" \
+			-title "$::scidb::app: $title" \
 			-message $msg \
 			-detail $detail \
 			-buttons {cancel yes} \
@@ -424,6 +429,7 @@ proc releaseAll {parent base} {
 
 		set reply [::dialog::question \
 			-parent $parent \
+			-title "$::scidb::app: $mc::CloseDatabase" \
 			-message $msg \
 			-check [namespace current]::Options(askAgain:closeAnyway) \
 			-buttons {yes no} \

@@ -324,6 +324,9 @@
 ::application::database::mc::SelectDatabases				"Die zu öffnenden Datenbanken selektieren"
 ::application::database::mc::ExtractArchive				"Archiv %s extrahieren"
 ::application::database::mc::CompactDetail				"Alle Partien müssen geschlossen sein bevor eine Kompaktierung erfolgen kann."
+::application::database::mc::ReallyCompact				"Soll die Datenbank '%s' wirklich kompaktiert werden?"
+::application::database::mc::ReallyCompactDetail(1)	"Eine Partie wird dabei entfernt."
+::application::database::mc::ReallyCompactDetail(N)	"%s Partien werden dabei entfernt."
 
 ::application::database::mc::RecodingDatabase			"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames					"%s Partie(n) umkodiert"
