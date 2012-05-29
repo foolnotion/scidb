@@ -1283,7 +1283,7 @@ proc VisitItem {t mode item} {
 proc VisitElem {t mode item elem} {
 	if {[string length $item] == 0} { return }
 	if {![$t item enabled $item]} { return }
-	if {$elem ne "elemTxt"} { return }
+	if {$elem ne "elemTxt" && $elem ne "elemBrd"} { return }
 
 	switch $mode {
 		enter {
@@ -1760,7 +1760,7 @@ bind HelpTree <ButtonPress-1> {
 	lassign $id where item arg1 _ _ elem
 	if {$arg1 eq "button"} {
 		TreeCtrl::ButtonPress1 %W %x %y
-	} elseif {$where eq "item" && $arg1 eq "column" && $elem eq "elemTxt"} {
+	} elseif {$where eq "item" && $arg1 eq "column" && ($elem eq "elemTxt" || $elem eq "elemBrd")} {
 		TreeCtrl::ButtonPress1 %W %x %y
 		%W selection clear
 		%W selection add $item

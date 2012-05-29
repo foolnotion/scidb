@@ -16,7 +16,7 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Toolbar
+INDEX Toolbars
 TITLE Usage of the toolbars
 
 <p>

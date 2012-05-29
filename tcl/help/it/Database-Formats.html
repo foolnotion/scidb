@@ -38,7 +38,7 @@
   <h1 class="title">Formati Database</h1>
 </div>
 
-<h2><img src="../images/ft-scidb.png"> Scidb (<abbr>.sci</abbr>)</h2>
+<h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
 
@@ -71,12 +71,12 @@ A database in Scidb's format is divided into several files:
 </div>
 -->
 
-<h2><img src="../images/ft-scid.png"> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
 <!-- NEW
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
 Scid databases will be opened in read-only mode, the user may switch to
 writeable mode after opening. The last mode will be prerserved while
 re-opening the database.
@@ -117,12 +117,12 @@ This format resembles structurally Scidb's format:
 </div>
 -->
 
-<h2><img src="../images/ft-chessbase.png"> ChessBase (<abbr>.cbh</abbr>)</h2>
+<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura è supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita dell'operazione di decodifica.
 
 <!-- NEW
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
 ChessBase databases cannot be used as reference database.
 </div>
 
@@ -138,22 +138,22 @@ A database in ChessBase format is divided into many separate files, the importan
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh =&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg =&nbsp;</kbd></td><td>Game moves and variations</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cba =&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs =&nbsp;</kbd></td><td>Source index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp =&nbsp;</kbd></td><td>Players index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc =&nbsp;</kbd></td><td>Commentators index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt =&nbsp;</kbd></td><td>Tournament index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe =&nbsp;</kbd></td><td>Team index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj =&nbsp;</kbd></td><td>Team information</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini =&nbsp;</kbd></td><td>Database initialisation file</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Game data</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Game moves and variations</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cba &nbsp;=&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs &nbsp;=&nbsp;</kbd></td><td>Source index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp &nbsp;=&nbsp;</kbd></td><td>Players index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc &nbsp;=&nbsp;</kbd></td><td>Commentators index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Tournament index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Team index</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Team information</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Database initialisation file</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML document folder</td></tr>
   </table>
 </div>
 -->
 
-<h2><img src="../images/ft-pgn.png"> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
 Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 
@@ -169,7 +169,7 @@ A complete specification of this format will be found at
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2 id="Database-Archive"><img src="../images/ft-archive.png"> Database archive (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Database archive (<abbr>.scv</abbr>)</h2>
 
 <p>
 Scidb's database archive is based on an independent archive format,

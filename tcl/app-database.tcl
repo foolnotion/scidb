@@ -1545,7 +1545,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {} {}
 		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {} {}
-		if {$isClipbase || ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
+		if {$isClipbase || $ext eq "sci"} {
 			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
 			lappend specs command \
 				"$mc::FileCompact" \

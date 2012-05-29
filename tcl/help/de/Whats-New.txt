@@ -35,6 +35,7 @@ TITLE Was ist neu?
   <li>Zugeingabe mit der Maus überarbeitet (wenn Zugvorschlag abgeschaltet ist)</li>
   <li>Menüleiste entfernt, stattdessen exisitiert ein simples Hauptmenü;
       dies ist zeitgemäß und verbessert das Layout</li>
+  <li>Kompaktieren von Datenbanken (nur .sci) integriert</li>
 </ul>
 
 END

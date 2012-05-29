@@ -476,8 +476,9 @@
 ::application::pgn::mc::InvalidInput						"Ogiltigt inmatning '%d'."
 ::application::pgn::mc::MustBeEven							"Inmatning måste vara ett jämnt nummer."
 ::application::pgn::mc::MustBeOdd							"Inmatning måste vara ett ojämnt nummer."
-::application::pgn::mc::ReplaceMovesSucceeded			"Game moves successfully replaced."
 ::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s"
+::application::pgn::mc::ReallyReplaceMoves				"Really replace moves of current game?" ;# NEW
+::application::pgn::mc::CurrentGameIsNotModified		"Current game is not modified." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Redigera schacktecken"
 ::application::pgn::mc::EditMoveInformation				"Redigera draginformation"

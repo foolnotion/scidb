@@ -242,7 +242,7 @@ proc Open {type args} {
 	set Priv($type:type) $type
 	set geometry $data(-geometry)
 	if {[string match last* $geometry]} { set geometry [geometry $geometry] }
-	set minh 350
+	if {![info exists Priv(minheight)]} { set Priv(minheight) 350 }
 
 	if {$data(-needencoding)} {
 		if {[llength $opts(-defaultencoding)] == 0} {
@@ -301,14 +301,14 @@ proc Open {type args} {
 			update idletasks
 			set linespace [font metrics TkTextFont -linespace]
 			if {$linespace < 20} { set linespace 20 }
-			set minh [winfo height $w]
-			wm minsize $w 640 $minh
-			set h [expr {$minh + max($data(-rows) - [::fsbox::countRows $w.fsbox],0)*$linespace}]
+			set Priv(minheight) [winfo height $w]
+			set h [expr {$Priv(minheight) + max($data(-rows) - [::fsbox::countRows $w.fsbox],0)*$linespace}]
 			if {[info exists data(-width)]} { set width $data(-width) } else { set width 680 }
 			set geometry "${width}x${h}[geometry pos]"
 		} else {
 			scan $geometry "%dx%d" dw dh
 		}
+		wm minsize $w 640 $Priv(minheight)
 		wm geometry $w $geometry
 		update idletasks
 	} else {

@@ -2093,7 +2093,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		"clipbase", "scratchbase", "types", "type", "name", "codec", "encoding", "created?",
 		"modified?", "gameInfo", "playerInfo", "eventInfo", "annotator", "gameIndex", "playerIndex",
-		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
+		"eventIndex", "annotatorIndex", "description", "",
 		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
 		"minYear", "maxYear", "maxUsage", "tags", "checksum", "idn", "eco", "ratingTypes",
 		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?", "memoryOnly?", "compress?",

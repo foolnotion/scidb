@@ -14,9 +14,15 @@ set Index {
       {{Datenbankumschalter} {Database-Switcher.html} {}}
     }
   }
+  { E
+    {
+      {{ECO-Code} {ECO-Code.html} {}}
+      {{Encyclopedie der Schacheröffnungen} {ECO-Code.html} {}}
+    }
+  }
   { F
     {
-      {{Funktionsleiste} {Toolbar-Usage.html} {}}
+      {{Funktionsleisten} {Toolbar-Usage.html} {}}
     }
   }
   { H

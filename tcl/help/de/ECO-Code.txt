@@ -1,0 +1,210 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX ECO-Code
+INDEX Encyclopedie der Schacheröffnungen
+TITLE ECO-Code
+
+<!-- Taken from http://de.wikipedia.org/wiki/ECO-Code -->
+
+<p>
+Mit der Bezeichnung ECO-Codes (Encyclopedia of Chess Openings, deutsch auch ECO-Schlüssel)
+wird ein international verwendetes System zur Systematisierung von Eröffnungen des
+Schachspiels bezeichnet. Die Eröffnungsvarianten werden durchwegs mit Symbolen dargestellt
+und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international verständlich sind.
+</p>
+
+<ul>
+  <li><a href="#Openings">Enthaltene Eröffnungen</a></li>
+  <li><a href="#Main">Haupt-ECO-Codes</a></li>
+  <li><a href="#Links">Links</a></li>
+</ul>
+
+<!-- Taken from http://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings -->
+
+<h2 id="Openings">Enthaltene Eröffnungen</h2>
+
+<box>
+  <p>
+    Hauptgruppe <b>A</b>: Flankeneröffnungen
+  </p>
+  <ul>
+    <li>Benkö Gambit</li>
+    <li>Benoni Verteidigung</li>
+    <li>Bird Eröffnung</li>
+    <li>Holländische Verteidigung</li>
+    <li>Englische Eröffnung</li>
+    <li>Irreguläre Eröffnung, etc.</li>
+    <li>Altindische Verteidigung</li>
+    <li>Réti Eröffnung</li>
+  </ul>
+</box>
+
+<box>
+  <p>
+    Hauptgruppe <b>B</b>: Halboffene Spiele ohne Französische Verteidigung
+  </p>
+  <ul>
+    <li>Aljechin Verteidigung</li>
+    <li>Caro-Kann Verteidigung</li>
+    <li>Moderne Verteidigung</li>
+    <li>Pirc Verteidigung</li>
+    <li>Skandinavische Verteidigung, etc.</li>
+    <li>Sizilianische Verteidigung</li>
+  </ul>
+</box>
+
+<box>
+  <p>
+    Hauptgruppe <b>C</b>: Offene spiele und die Französische Verteidigung
+  </p>
+  <ul>
+    <li>Vierspringerspiel, etc.</li>
+    <li>Französische Verteidigung</li>
+    <li>Italienisch (Giuoco Piano und Zweispringerspiel i.N.)</li>
+    <li>Königsgambit</li>
+    <li>Russische Verteidigung</li>
+    <li>Philidor Verteidigung</li>
+    <li>Spanisch</li>
+    <li>Schottische Partie</li>
+  </ul>
+</box>
+
+<box>
+  <p>
+    Hauptgruppe <b>D</b>: Geschlossene und halbgeschlossene Spiele
+      (beinhaltet Grünfeld Verteidigung aber keine anderen Indischen Verteidigungen)
+  </p>
+  <ul>
+    <li>Damengambit
+      <ul type="square">
+        <li>Angenommen</li>
+        <li>Abgelehnt (Slawiwch, Orthodox, Tarrasch, Tartakower, Albins Gegengambit, etc.)</li>
+      </ul>
+    </li>
+    <li>Grünfeld Verteidigungen</li>
+    <li>Damenbauernspiel, etc.</li>
+  </ul>
+</box>
+
+<box>
+  <p>
+    Hauptgruppe <b>E</b>: Indische Verteidigung (ohne Grünfeld Verteidigung und Altindische Verteidigung)
+  </p>
+  <ul>
+    <li>Nimzoindische Verteidigung</li>
+    <li>Damenindische Verteidigung</li>
+    <li>Königsindische Verteidigung</li>
+  </ul>
+</box>
+
+<h2 id="Main">Haupt-ECO-Codes</h2>
+
+<box>
+  <p>Hauptgruppe <b>A</b></p>
+  <ul>
+    <li>
+      Anderer erster Zug von Weiß als <nobr>1.e4</nobr> oder <nobr>1.d4</nobr> (A00&#x2011;A39)
+    </li>
+    <li>
+      <nobr>1.d4</nobr> ohne <nobr>1...d5</nobr>,
+      <nobr>1...&Knight;f6</nobr>: Atypische Entgegnungen zu <nobr>1.d4</nobr>
+      (A40&#x2011;A44)
+    </li>
+    <li>
+      <nobr>1.d4</nobr> &Knight;f6 ohne <nobr>2.c4</nobr>:
+      Atypische Entgegnungen zu <nobr>1...&Knight;f6</nobr> (A45&#x2011;A49)
+    </li>
+    <li>
+      <nobr>1.d4</nobr> &Knight;f6 <nobr>2.c4</nobr> ohne <nobr>2...e6</nobr>,
+      <nobr>2...g6</nobr>: Atypische Inidsche Systeme (A50&#x2011;A79)
+    </li>
+    <li>
+      <nobr>1.d4</nobr> f5: Holländische Verteidigung (A80-A99)
+    </li>
+  </ul>
+</box>
+
+<box>
+  <p>Hauptgruppe <b>B</b></p>
+  <ul>
+    <li>
+      <nobr>1.e4</nobr> ohne <nobr>1...c5</nobr>, <nobr>1...e6</nobr>,
+      <nobr>1...e5</nobr> (B00&#x2011;B09)
+    </li>
+    <li>
+      <nobr>1.e4</nobr> c6: Caro-Kann Verteidigung (B10&#x2011;B19)
+    </li>
+    <li>
+      <nobr>1.e4</nobr> c5: Sizilianische Verteidigung (B20&#x2011;B99)
+    </li>
+  </ul>
+</box>
+
+<box>
+  <p>Hauptgruppe <b>C</b></p>
+  <ul>
+    <li>
+      <nobr>1.e4</nobr> e6: Französische Verteidigung (C00&#x2011;C19)
+    </li>
+    <li>
+      <nobr>1.e4</nobr> e5: Doppelkönigsbauernspiele (C20&#x2011;C99)
+    </li>
+  </ul>
+</box>
+
+<box>
+  <p>Hauptgruppe <b>D</b></p>
+  <ul>
+    <li>
+        <nobr>1.d4</nobr> d5: Doppeldamenbauernspiele (D00&#x2011;D69)
+      </li>
+    <li>
+      <nobr>1.d4</nobr> &Knight;f6 <nobr>2.c4</nobr> g6 mit <nobr>3...d5</nobr>:
+      Grünfeld Verteidigung (D70&#x2011;D99)
+    </li>
+  </ul>
+</box>
+
+<box>
+  <p>Hauptgruppe <b>E</b></p>
+  <ul>
+    <li>
+      <nobr>1.d4</nobr> &Knight;f6 <nobr>2.c4</nobr> e6:
+      Indische Systeme mit <nobr>...e6</nobr> (E00&#x2011;E59)
+    </li>
+    <li>
+      <nobr>1.d4</nobr> &Knight;f6 <nobr>2.c4</nobr> g6 ohne <nobr>3...d5</nobr>:
+      Indische Systeme mit <nobr>...g6</nobr> (außer Grünfeld) (E60&#x2011;E99)
+    </li>
+  </ul>
+</box>
+
+<h2>Links</h2>
+
+<ul>
+  <li><a href="http://de.wikipedia.org/wiki/ECO-Code">ECO-Code &#x002d; Wikipedia</a></li>
+  <li><a href="http://www.geocities.com/siliconvalley/lab/7378/eco.htm">Liste der ECO-Codes</a>
+      (in Englisch)
+  </li>
+  <li><a href="http://en.wikipedia.org/wiki/List_of_chess_openings">List of chess openings</a></li>
+</ul>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

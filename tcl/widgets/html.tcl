@@ -254,7 +254,7 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] $command <px>\""
 			}
 			variable Margin
-			set height [winfo height $w.sub.html]
+			set height [lindex [$w.sub.html bbox [$w.sub.html node]] 3]
 			set y [expr {max(0, [lindex $args 0] - $Margin)}]
 			set fraction [expr {double($y)/double($height)}]
 			return [$w.sub.html yview moveto $fraction]

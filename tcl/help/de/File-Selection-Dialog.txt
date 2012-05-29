@@ -39,14 +39,14 @@ Diese Leiste zeigt den Pfad des aktuellen Verzeichnissstandorts an, und erlaubt 
 Wechsel zu übergeordneten Verzeichnissen, sowie auch zu untergeordneten Verzeichnissen.
 </p>
 
-<ul><img src="images/file-selection-box-navigation-folder.png"/></ul>
+<dir><img src="images/file-selection-box-navigation-folder.png" alt="folder" /></dir>
 
 <p>
 Die übergeordneten Verzeichnisse werden durch Anklicken der Verzeichnisschaltflächen
 gewählt.
 </p>
 
-<ul><img src="images/file-selection-box-navigation-arrow.png"/></ul>
+<dir><img src="images/file-selection-box-navigation-arrow.png" alt="arrow" /></dir>
 
 <p>
 Die untergeordneten Verzeichnisse werden durch Anklicken der zugehörigen
@@ -65,25 +65,25 @@ Durch Halten der mittleren Maustaste auf einem Verweis wird der zugehörige Pfad 
 Es gibt voreingestellte Verweise, die nicht löschbar sind:
 </p>
 
-<h4><img src="../images/fsbox-favorites.png"> %::fsbox::mc::Favorites%</h4>
+<h4><img src="../images/fsbox-favorites.png" alt="favorites" /> %::fsbox::mc::Favorites%</h4>
 
 <p>
 Dieser Ordner enthält die meistbesuchten Verzeichnisse.
 </p>
 
-<h4><img src="../images/fsbox-visited.png"> %::fsbox::mc::LastVisited%</h4>
+<h4><img src="../images/fsbox-visited.png" alt="visited" /> %::fsbox::mc::LastVisited%</h4>
 
 <p>
 In diesem Ordner sind die zuletzt besuchten Verzeichnisse enthalten.
 </p>
 
-<h4><img src="../images/fsbox-filesystem.png"> %::fsbox::mc::FileSystem%</h4>
+<h4><img src="../images/fsbox-filesystem.png" alt="filesystem" /> %::fsbox::mc::FileSystem%</h4>
 
 <p>
 Dies ermöglicht die Direktanwahl der Wurzel des Dateisystems.
 </p>
 
-<h4><img src="../images/fsbox-desktop.png"> %::fsbox::mc::Desktop%</h4>
+<h4><img src="../images/fsbox-desktop.png" alt="desktop" /> %::fsbox::mc::Desktop%</h4>
 
 <p>
 Dieser Ordner listet alle in <code>~/Desktop</code> angelegten Dateiverknüpfungen auf.
@@ -93,14 +93,14 @@ sind.
 vorhanden ist.
 </p>
 
-<h4><img src="../images/fsbox-trash.png"> %::fsbox::mc::Trash%</h4>
+<h4><img src="../images/fsbox-trash.png" alt="trash" /> %::fsbox::mc::Trash%</h4>
 
 <p>
 Über diesen Verweis werden die Inhalte des Müllkorbs aufgelistet.
 <note/>Dieser Verweis existiert nur unter KDE/Unix.
 </p>
 
-<h4><img src="../images/fsbox-home.png"> %::fsbox::mc::Home%</h4>
+<h4><img src="../images/fsbox-home.png" alt="home" /> %::fsbox::mc::Home%</h4>
 
 <p>
 Dies ermöglicht eine Direktanwahl des Heimverzeichnisses.
@@ -114,11 +114,11 @@ Mit dem kontextsensitiven Menü, oder alternativ mit der Funktionsleiste, sind fo
 Operationen zur Verweisverwaltung möglich:
 </p>
 
-<h4><img src="../images/fsbox-add.png"> %::fsbox::mc::AddBookmark%</h4>
+<h4><img src="../images/fsbox-add.png" alt="add" /> %::fsbox::mc::AddBookmark%</h4>
 
-<h4><img src="../images/fsbox-minus.png"> %::fsbox::mc::RemoveBookmark%</h4>
+<h4><img src="../images/fsbox-minus.png" alt="minus" /> %::fsbox::mc::RemoveBookmark%</h4>
 
-<h4><img src="../images/fsbox-rename.png"> %::fsbox::mc::RenameBookmark%</h4>
+<h4><img src="../images/fsbox-rename.png" alt="rename" /> %::fsbox::mc::RenameBookmark%</h4>
 
 <h3 id="FileList">Dateianzeige</h3>
 -->
@@ -139,7 +139,7 @@ Datei angezeigt.
 Die Dateioperationen im einzelnen:
 </p>
 
-<h4><img src="../images/fsbox-delete.png"> %::fsbox::mc::Delete%</h4>
+<h4><img src="../images/fsbox-delete.png" alt="delete" /> %::fsbox::mc::Delete%</h4>
 
 <p>
 Das Entfernen der selektierten Datenbank. Unter KDE/Unix wird sie in den Müllkorb
@@ -148,7 +148,7 @@ werden kann. In jedem Fall muß zuvor diese Operation noch einmal in einem
 Dialog bestätigt werden.
 </p>
 
-<h4><img src="../images/fsbox-rename.png"> %::fsbox::mc::Rename%</h4>
+<h4><img src="../images/fsbox-rename.png" alt="rename" /> %::fsbox::mc::Rename%</h4>
 
 <p>
 Das Umbenennen der selektierten Datenbank. Diese Operation kann mit <key>ESC</key>
@@ -158,7 +158,7 @@ berücksichtigt, um einen Austausch auch zwischen den unterschiedlichen
 Betriebssystemen zu unterstützen.
 </p>
 
-<h4><img src="../images/fsbox-duplicate.png"> %::fsbox::mc::Duplicate%</h4>
+<h4><img src="../images/fsbox-duplicate.png" alt="duplicate" /> %::fsbox::mc::Duplicate%</h4>
 
 <p>
 Die selektierte Datenbank wird dupliziert, allerdings erst nach Eingabe des neuen
@@ -167,14 +167,14 @@ keine bereits vorhandene Datenbank überschrieben, ein Überschreiben einer bereit
 vorhandenen Datenbank ist also nicht möglich.
 </p>
 
-<h4><img src="../images/fsbox-archive.png"> %::menu::mc::CreateArchive%</h4>
+<h4><img src="../images/fsbox-archive.png" alt="archive" /> %::menu::mc::CreateArchive%</h4>
 
 <p>
 Die aktuell selektierte Datenbank wird archiviert. Der Archivname wird mit
 einem weiteren Dateiauswahldialog ermittelt.
 </p>
 
-<h4><img src="../images/fsbox-newfolder.png"> %::fsbox::mc::NewFolder%</h4>
+<h4><img src="../images/fsbox-newfolder.png" alt="newfolder" /> %::fsbox::mc::NewFolder%</h4>
 
 <p>
 Ein neues Unterverzeichnis wird angelegt, aber erst nach Eingabe des
@@ -203,7 +203,7 @@ Hier kann die Auswahl der Datenbanktypen eingeschränkt werden. Eine Übersicht
 
 <h3 id="Encoding">Auswahl der Enkodierung</h3>
 
-<ul><img src="images/file-selection-box-encoding.png"/></ul>
+<dir><img src="images/file-selection-box-encoding.png" alt="encoding" /></dir>
 
 <p>
 Die Auswahl der passenden Enkodierung hängt vom Datenbankformat ab.

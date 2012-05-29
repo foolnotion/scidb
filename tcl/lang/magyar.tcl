@@ -479,8 +479,9 @@
 ::application::pgn::mc::InvalidInput						"Érvénytelen input '%d'."
 ::application::pgn::mc::MustBeEven						"Inputnak páros számnak kell lennie."
 ::application::pgn::mc::MustBeOdd							"Inputnak páratlan számnak kell lennie."
-::application::pgn::mc::ReplaceMovesSucceeded			"Game moves successfully replaced."
 ::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
+::application::pgn::mc::ReallyReplaceMoves			"Really replace moves of current game?" ;# NEW
+::application::pgn::mc::CurrentGameIsNotModified		"Current game is not modified." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Értékelés szerkesztése"
 ::application::pgn::mc::EditMoveInformation				"Lépés információ szerkesztése"

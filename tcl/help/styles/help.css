@@ -33,7 +33,9 @@ h1 { font-size: 140%; background: #eeffff; }
 h2 { font-size: 140%; background-color: #e5eeff; }
 h3 { font-size: 110%; background-color: #e5eeff; }
 
-h1.title { text-align: center; background-color: #6495ed }
+h1.title { text-align: center; background-color: #6495ed; }
+
+span.chess { font-family: Scidb Chess Traveller; font-size: 90% }
 
 div.title {
   color:					white;

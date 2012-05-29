@@ -490,6 +490,7 @@ proc reset {w type args} {
 	set Vars(tip:backward) ""
 
 	CheckInitialFile $w
+	DirChanged $w 0
 	changeFileDialogType $w $type
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
 	filelist::RefreshFileList $w
@@ -2003,24 +2004,26 @@ proc PopupMenu {w x y} {
 		incr count
 	}
 
-	set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
-	if {$sel >= 0} {
-		set name [lindex $Bookmarks(user) $sel 1]
-		set text [format [Tr RemoveBookmark] $name]
-		$m add command                                        \
-			-compound left                                     \
-			-image $icon::16x16::minus                         \
-			-label " $text"                                    \
-			-command [namespace code [list RemoveBookmark $w]] \
-			;
-		set text [format [Tr RenameBookmark] $name]
-		$m add command                                        \
-			-compound left                                     \
-			-image $icon::16x16::modify                        \
-			-label " $text"                                    \
-			-command [namespace code [list RenameBookmark $w]] \
-			;
-		incr count
+	if {[::toolbar::childcget $Vars(button:minus) -state] eq "normal"} {
+		set sel [expr {[$t item id active] - [llength $Vars(bookmarks)] - 1}]
+		if {$sel >= 0} {
+			set name [lindex $Bookmarks(user) $sel 1]
+			set text [format [Tr RemoveBookmark] $name]
+			$m add command                                        \
+				-compound left                                     \
+				-image $icon::16x16::minus                         \
+				-label " $text"                                    \
+				-command [namespace code [list RemoveBookmark $w]] \
+				;
+			set text [format [Tr RenameBookmark] $name]
+			$m add command                                        \
+				-compound left                                     \
+				-image $icon::16x16::modify                        \
+				-label " $text"                                    \
+				-command [namespace code [list RenameBookmark $w]] \
+				;
+			incr count
+		}
 	}
 
 	if {$count > 0} {
@@ -4235,23 +4238,23 @@ set document [image create photo -data {
 	RK5CYII=
 }]
 
-#set ok [image create photo -data {
-#	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-#	CXBIWXMAAABIAAAASABGyWs+AAACp0lEQVQ4y42TT0gUYRjGn2/mm53Z2XHdXbc1U9HV/kiB
-#	JZZ0COoSJIKhYVaHLtI/KDoUBUV2KKIiIsqrh6jsz8WQDtalTkEURVoGIbGs7j/Ndt1dd2d2
-#	5vu+DlERFfqeXnh5Hl54fo+MJYykU7irDdXXsIzZRQvcZL9u8lIM1CoP9DbfHWNtsJ/bdq3k
-#	kUuhlppY7kta0KUYyG6pMrStoaulb6dWx8LN5F3yzPiT5zFAnJAWFWsUvqbg8aqeJk0mCrwu
-#	L9ZvbIM/GPRnW3KRRT8oa6qoUbeWH5MNBQIClmNh8NrV9As6ultqk95QAFBUBXrAAJM5mMVQ
-#	nM0DAPRqL8gKcim4v85gsGGxPO6fuxiLhD+1Q8eE3k8ZDW6uoQS806GsVTNUTRDpgTQmvy7l
-#	LahhvdnXG9onFA6bm3h7fTiTrI10MG5/VM6CLyzkQfOzmd5Al+9uoN0PYgBz9+YO8km+zu3x
-#	ROlyesHY4ZcZL2Fq8H0xoUR2sXL2QT+v8OzXDGALyGWNgUnmWAeMTYYHLgJttebKxvMpl6ES
-#	o8d72dXoJumHCTs2G9krtcrP5FMlVpxegGDiByOFz/NF5NXbPMsAR0DySOCErbF95g19i0Hm
-#	R2ZYfDraJzaQEXa6wHiKg3P+OyXBOKiszBCvOKSGNQJKkB1Krwr1VdU7sRKSrxIn0UkH+eEC
-#	41EGZjl/UsodDl3Tx4oTxThMALZA5dEqg1ZQJIZjQ6KX3pKvOAwZAlHif8UsAYAtO8LJiHdY
-#	EIAJqLUupAbiY6JHOSI/YtwczQuetf/dEwD4NpaCE7VfOnEHIieQHEjErXZ0+01/QTxmHOL/
-#	oJGfS3XHyvpcbnZcECSsPeh2pkoT4qbFFUdBybQWN/DWBWAxKwgJ82y7YPQpuDldWLRo3wEp
-#	ZjhR3++h3QAAAABJRU5ErkJggg==
-#}]
+# set ok [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+# 	CXBIWXMAAABIAAAASABGyWs+AAACp0lEQVQ4y42TT0gUYRjGn2/mm53Z2XHdXbc1U9HV/kiB
+# 	JZZ0COoSJIKhYVaHLtI/KDoUBUV2KKIiIsqrh6jsz8WQDtalTkEURVoGIbGs7j/Ndt1dd2d2
+# 	5vu+DlERFfqeXnh5Hl54fo+MJYykU7irDdXXsIzZRQvcZL9u8lIM1CoP9DbfHWNtsJ/bdq3k
+# 	kUuhlppY7kta0KUYyG6pMrStoaulb6dWx8LN5F3yzPiT5zFAnJAWFWsUvqbg8aqeJk0mCrwu
+# 	L9ZvbIM/GPRnW3KRRT8oa6qoUbeWH5MNBQIClmNh8NrV9As6ultqk95QAFBUBXrAAJM5mMVQ
+# 	nM0DAPRqL8gKcim4v85gsGGxPO6fuxiLhD+1Q8eE3k8ZDW6uoQS806GsVTNUTRDpgTQmvy7l
+# 	LahhvdnXG9onFA6bm3h7fTiTrI10MG5/VM6CLyzkQfOzmd5Al+9uoN0PYgBz9+YO8km+zu3x
+# 	ROlyesHY4ZcZL2Fq8H0xoUR2sXL2QT+v8OzXDGALyGWNgUnmWAeMTYYHLgJttebKxvMpl6ES
+# 	o8d72dXoJumHCTs2G9krtcrP5FMlVpxegGDiByOFz/NF5NXbPMsAR0DySOCErbF95g19i0Hm
+# 	R2ZYfDraJzaQEXa6wHiKg3P+OyXBOKiszBCvOKSGNQJKkB1Krwr1VdU7sRKSrxIn0UkH+eEC
+# 	41EGZjl/UsodDl3Tx4oTxThMALZA5dEqg1ZQJIZjQ6KX3pKvOAwZAlHif8UsAYAtO8LJiHdY
+# 	EIAJqLUupAbiY6JHOSI/YtwczQuetf/dEwD4NpaCE7VfOnEHIieQHEjErXZ0+01/QTxmHOL/
+# 	oJGfS3XHyvpcbnZcECSsPeh2pkoT4qbFFUdBybQWN/DWBWAxKwgJ82y7YPQpuDldWLRo3wEp
+# 	ZjhR3++h3QAAAABJRU5ErkJggg==
+# }]
 
 set cancel [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA

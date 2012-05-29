@@ -579,16 +579,16 @@ proc replace {parent} {
 }
 
 
-proc replaceMoves {parent} {
-	if {[::scidb::game::current] != 9} {
-		set base [::scidb::db::get name]
-		set number [::scidb::game::number]
-
-		if {[::dialog::save::checkIfWriteable $parent $base -1 $number]} {
-			::application::pgn::replaceMoves $parent
-		}
-	}
-}
+# proc replaceMoves {parent} {
+# 	if {[::scidb::game::current] != 9} {
+# 		set base [::scidb::db::get name]
+# 		set number [::scidb::game::number]
+# 
+# 		if {[::dialog::save::checkIfWriteable $parent $base -1 $number]} {
+# 			::application::pgn::replaceMoves $parent
+# 		}
+# 	}
+# }
 
 
 proc clearHistory {} {

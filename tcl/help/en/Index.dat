@@ -18,6 +18,12 @@ set Index {
       {{Database switcher} {Database-Switcher.html} {}}
     }
   }
+  { E
+    {
+      {{ECO-Code} {ECO-Code.html} {}}
+      {{Encyclopedia of Chess Openings} {ECO-Code.html} {}}
+    }
+  }
   { F
     {
       {{File formats} {Database-Formats.html} {}}
@@ -46,7 +52,7 @@ set Index {
   }
   { T
     {
-      {{Toolbar} {Toolbar-Usage.html} {}}
+      {{Toolbars} {Toolbar-Usage.html} {}}
     }
   }
   { W

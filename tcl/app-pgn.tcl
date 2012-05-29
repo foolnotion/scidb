@@ -69,8 +69,9 @@ set NumberOfMoves						"Number of moves (in main line):"
 set InvalidInput						"Invalid input '%d'."
 set MustBeEven							"Input must be an even number."
 set MustBeOdd							"Input must be an odd number."
-set ReplaceMovesSucceeded			"Game moves successfully replaced."
 set CannotOpenCursorFiles			"Cannot open cursor files: %s"
+set ReallyReplaceMoves				"Really replace moves of current game?"
+set CurrentGameIsNotModified		"Current game is not modified."
 
 set StartTrialMode					"Start Trial Mode"
 set StopTrialMode						"Stop Trial Mode"
@@ -540,8 +541,11 @@ proc redo {} { Undo redo }
 
 
 proc replaceMoves {parent} {
-	if {![::util::catchIoError [list ::scidb::game::update moves]]} {
-		::dialog::info -parent $parent -message $mc::ReplaceMovesSucceeded
+	if {[::scidb::game::query modified?]} {
+		set reply [::dialog::question -parent $parent -message $mc::ReallyReplaceMoves]
+		if {$reply eq "yes"} { ::util::catchIoError [list ::scidb::game::update moves }
+	} else {
+		::dialog::info -parent $parent -message $mc::CurrentGameIsNotModified
 	}
 }
 

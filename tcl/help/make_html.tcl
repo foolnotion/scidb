@@ -72,8 +72,8 @@ set HtmlMapping {
 	<menuitem>		{<span class="menuitem">}
 	</menuitem>		{</span>}
 
-	<note/>			{<br/><img src="../images/note.png"/> }
-	<note>			{<p><img src="../images/note.png"/> }
+	<note/>			{<br/><img src="../images/note.png" alt="note" /> }
+	<note>			{<p><img src="../images/note.png" alt="note" /> }
 	</note>			{</p>}
 
 	<nobr>			{<span style="white-space:nowrap;">}
@@ -85,8 +85,18 @@ set HtmlMapping {
 	<verbatim>		{<div class="box"><pre><code>}
 	</verbatim>		{</code></pre></div>}
 
-	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0"/>}
+	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />}
 	</annotation>	{</div>}
+
+	<dir>				{<ul style="list-style-type: none"><li>}
+	</dir>			{</li></ul>}
+
+	&King;			{<span class="chess">&#x2654;</span>}
+	&Queen;			{<span class="chess">&#x2655;</span>}
+	&Rook;			{<span class="chess">&#x2656;</span>}
+	&Bishop;			{<span class="chess">&#x2657;</span>}
+	&Knight;			{<span class="chess">&#x2658;</span>}
+	&Pawn;			{<span class="chess">&#x2659;</span>}
 }
 
 set KeyMapping {

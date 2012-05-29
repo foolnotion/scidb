@@ -16,7 +16,7 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Funktionsleiste
+INDEX Funktionsleisten
 TITLE Umgang mit Funktionsleisten
 
 <p>
