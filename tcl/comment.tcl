@@ -140,8 +140,7 @@ proc open {parent pos lang} {
 
 	# Currently the undo/redo mechanism of the text widget is not working properly
 	# (and quite useless). The Tk team does not like to handle this problem (see
-	# bug item #3192483). This comment widget has his own undo/redo implementation -
-	# the Tcl/Tk team is a looser team.
+	# bug item #3192483). This comment widget has its own undo/redo implementation.
 	tk::text $top.text \
 		-height 6 \
 		-width 0 \

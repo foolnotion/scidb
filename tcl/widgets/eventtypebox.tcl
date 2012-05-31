@@ -91,6 +91,7 @@ proc Build {w args} {
 		-exportselection no \
 		-column type \
 		-state $opts(-state) \
+		-cursor xterm \
 		;
 	$w.__w__ addcol image -id icon
 	$w.__w__ addcol text -id type

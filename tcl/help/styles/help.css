@@ -92,6 +92,20 @@ td.standard {
 	padding-right:		0.5em;
 }
 
+table.eco {
+	white-space:	nowrap;
+	border:			1px solid gray;
+}
+
+td.eco {
+	padding-left:	0.5em;
+	padding-right:	0.5em;
+}
+
+tr.stripes {
+	background: #d3e4e5;
+}
+
 kbd.key {
 	font-size:			smaller;
 	border-width:		0.2em;

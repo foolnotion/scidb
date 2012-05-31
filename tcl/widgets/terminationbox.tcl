@@ -95,6 +95,7 @@ proc Build {w args} {
 		-validate key \
 		-validatecommand { return [string is alpha %P] || [regexp {[-]*} %P] } \
 		-state $opts(-state) \
+		-cursor xterm \
 		;
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id reason

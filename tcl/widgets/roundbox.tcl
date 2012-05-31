@@ -34,7 +34,7 @@ proc roundbox {w args} {
 namespace eval roundbox {
 
 proc Build {w args} {
-	array set opts { -useString 1 }
+	array set opts { -useString 1 -cursor xterm }
 	array set opts $args
 
 	namespace eval [namespace current]::$w {}

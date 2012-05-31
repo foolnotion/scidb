@@ -782,6 +782,31 @@ proc WordSelect {w from to} {
 } ;# namespace entry
 
 
+namespace eval combobox {
+
+bind TCombobox <Motion>	+[namespace code { CBMotion %W %x %y }]
+
+proc CBMotion {w x y} {
+	variable Priv
+
+	# The implementation of ttk::combobox is a bit clumsy.
+	# The downarrow button should always have a left_ptr cursor.
+
+	if {[$w identify $x $y] eq "downarrow"} {
+		if {[$w cget -cursor] ne "left_ptr"} {
+			set Priv(cursor) [$w cget -cursor]
+			$w configure -cursor left_ptr
+		}
+	} else {
+		if {[$w cget -cursor] eq "left_ptr" && [info exists Priv(cursor)]} {
+			$w configure -cursor $Priv(cursor)
+		}
+	}
+}
+
+} ;# namespace combobox
+
+
 namespace eval theme::clam {
 
 ttk::style theme settings clam {

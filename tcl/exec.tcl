@@ -314,7 +314,7 @@ proc Execute {path} {
 			set Vars(infoBox:$path) \
 				[::dialog::info -buttons {} -title $::scidb::app -message $msg -topmost yes]
 		}
-	} else {
+	} elseif {[llength $path]} {
 		openBases [list $path]
 	}
 }

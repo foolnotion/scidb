@@ -215,7 +215,7 @@
 "Keoni-Hiva Gambit Delayed"								"Verzögertes Keoni-Hiva Gambit"
 "Kiel Variation"												"Kieler Variante"
 "King's Head Opening"										"Königshaupt-Eröffnung"
-"King's Indian Attack"										"Königsindischer Angriff"
+"King's Indian Attack"										"Königsindisch im Anzug"
 "King's Indian Defence"										"Königsindische Verteidigung"
 "King's Indian System"										"Königsindisches System"
 "Kingfisher Gambit"											"Eisvogel-Gambit"

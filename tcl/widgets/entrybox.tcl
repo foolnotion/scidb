@@ -34,7 +34,7 @@ proc entrybox {w args} {
 namespace eval entrybox {
 
 proc Build {w args} {
-	ttk::entry $w -exportselection no {*}$args
+	ttk::entry $w -exportselection no -cursor xterm {*}$args
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 	return $w

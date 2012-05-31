@@ -168,7 +168,7 @@ proc Build {w args} {
 	if {$opts(-usescroll)} {
 		$t configure -yscrollcommand [list $w.vsb set]
 		::ttk::scrollbar $w.vsb -orient vertical -command [list $t yview] -takefocus 0
-		bind $w.vsb <Button-1> [namespace code [list Focus $t]]
+#		bind $w.vsb <Button-1> [namespace code [list Focus $t]]
 		grid $w.vsb -row 0 -column 1 -sticky ns
 	}
 	if {$opts(-columns) > 1} {
@@ -1251,7 +1251,7 @@ proc Prior {t} {
 
 
 proc Focus {t} {
-	if {[$t cget -state] ne "disabled"} { focus $t }
+	if {[$t cget -state] ne "disabled"} { after idle [list focus $t] }
 }
 
 

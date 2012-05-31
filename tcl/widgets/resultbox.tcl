@@ -80,6 +80,7 @@ proc Build {w args} {
 		-validate key \
 		-validatecommand { return [regexp {^[*012/=-]*$} %P] } \
 		-invalidcommand bell \
+		-cursor xterm \
 		;
 	$w.__w__ current 0
 	ttk::label $w.keys -borderwidth 0 -text $keys
