@@ -107,7 +107,7 @@ set KeyMapping {
 proc print {chan source title body} {
 	variable lang
 
-	set headerMap [list %TITLE% $title %HELP% $::help::mc::Help]
+	set headerMap [list %TITLE% $title %HELP% $::help::mc::Help %LANG% $lang]
 
 	puts $chan $::HtmlDocType
 	puts $chan "<!-- Generated from $source -->"

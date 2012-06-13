@@ -1378,6 +1378,19 @@ title::best(unsigned titles)
 }
 
 
+char
+species::toChar(ID type)
+{
+	switch (int(type))
+	{
+		case Human:		return *StrHuman;
+		case Program:	return *StrProgram;
+	}
+
+	return '?';
+}
+
+
 mstl::string const&
 species::toString(ID type)
 {

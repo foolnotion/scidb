@@ -1,0 +1,98 @@
+/* player-card.css */
+
+body {
+	background-color:#efefef;
+}
+div {
+	width: 800px;
+}
+span.chess {
+	font-family: Scidb Chess Traveller;
+	font-size: 90%;
+}
+td, th {
+	padding-top: .2em;
+	padding-bottom: .2em;
+	padding-left: .4em;
+	padding-right: .4em;
+}
+#rating table {
+	table-layout: fixed;
+	color: #363636;
+	background: #92c428;
+	border-spacing: 1;
+}
+#rating tbody th, thead th {
+	border: 1px solid #03476f;
+	background: #4591ad;
+	color: #ffffff;
+}
+#rating thead th {
+	text-align: center;
+}
+#rating tbody th {
+	text-align: left;
+}
+#rating tbody td {
+	border: 1px solid #62831b;
+	vertical-align: top;
+	text-align: right;
+}
+#rating tbody td.odd {
+	background: #aee239;
+}
+#rating tfoot table {
+	border-spacing: 0;
+}
+#rating tfoot td {
+	border: 0;
+	/*background: #007d00;*/
+	background: #496d49;
+	color: #ffffff;
+	text-align: left;
+}
+#eco table {
+	color: #363636;
+	background: #92c428;
+	border-spacing: 0;
+}
+#eco th {
+	text-align: center;
+}
+#eco td {
+	vertical-align: top;
+}
+#eco tr.odd {
+	background: #aee239;
+}
+#info table {
+	border-spacing: 0;
+}
+td.photo {
+	padding: .8em;
+	vertical-align: center;
+	text-align: right;
+}
+	table.span {
+	margin-top: 8px;
+	width: 100%;
+}
+div.header {
+	border: 1px solid black;
+	font-size: 180%;
+	text-align: center;
+	color: #ffffff;
+	background-color: #4591ad;
+	padding-top: .2em;
+	padding-bottom: .2em;
+	width: 798px;
+}
+div.box {
+	color: #000000;
+	background: #aee239;
+	border: 1px solid black;
+	border-radius: 0.5em;
+	width: 798px;
+}
+
+/* vi: set ts=3 sw=3: */

@@ -116,7 +116,6 @@ proc Build {w args} {
 		-state $opts(-state) \
 		-highlightbackground whitesmoke \
 		-highlightforeground black \
-		-cursor xterm \
 		;
 
 	$w addcol text  -id title -width 4

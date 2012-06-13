@@ -1,10 +1,26 @@
-[Mai 2012] ===================================================================
+[June 2012] ==================================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #334)
+------------------------------------------------------------------------------
+* HTML widget: double buffering overworked. This is the first really working
+version. It's a hard thing to implement such a critical task in a third party
+library.
+
+* HTML widget: support for table attribute 'fixed-layout' implemented.
+
+* First version of a player card implemented (left mouse click on a player
+name, or via context sensitive menu).
+
+* Crosstable: optionally show win/draw/loss sub-totals.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #333)
 ------------------------------------------------------------------------------
-* Spanish translation re-activated: Juan Carlos Vásquez is doing the
-translation.
+* Spanish translation re-activated: Juan Carlos Vásquez is (probably) doing
+the translation.
+
+[Mai 2012] ===================================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #327)

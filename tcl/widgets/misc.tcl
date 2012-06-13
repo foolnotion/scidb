@@ -52,6 +52,57 @@ proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
 proc focusPrev {w prev} { set [namespace current]::Priv(prev:$w) $prev }
 
 
+proc showTrace {path text useHorzScroll closeCmd} {
+	set txt $path.f.text
+
+	if {[winfo exists $path]} {
+		$txt configure -state normal
+		$txt delete 1.0 end
+	} else {
+		tk::toplevel $path -class Scidb
+		set f [::ttk::frame $path.f]
+
+		if {$useHorzScroll} {
+			set wrap none
+			set xscrollcommand [list -xscrollcommand [list $f.hsb set]]
+		} else {
+			set wrap word
+			set xscrollcommand {}
+		}
+		tk::text $f.text \
+			-width 100 \
+			-height 40 \
+			-yscrollcommand [list $f.vsb set] \
+			{*}$xscrollcommand \
+			-wrap $wrap \
+			-setgrid 1 \
+			;
+		if {$useHorzScroll} {
+			ttk::scrollbar $f.hsb -orient horizontal -command [list $f.text xview]
+		}
+		ttk::scrollbar $f.vsb -orient vertical -command [list ::widget::textLineScroll $f.text]
+		pack $f -expand yes -fill both
+		grid $f.text -row 1 -column 1 -sticky nsew
+		if {$useHorzScroll} {
+			grid $f.hsb  -row 2 -column 1 -sticky ew
+		}
+		grid $f.vsb  -row 1 -column 2 -sticky ns
+		grid rowconfigure $f 1 -weight 1
+		grid columnconfigure $f 1 -weight 1
+		dialogButtons $path close close
+		if {[llength $closeCmd]} {
+			$path.close configure -command $closeCmd
+		}
+#		::util::place $path center $w
+		wm protocol $path WM_DELETE_WINDOW $closeCmd
+		wm deiconify $path
+	}
+
+	$txt insert end $text
+	$txt configure -state disabled
+}
+
+
 proc textLineScroll {w cmd args} {
 	switch $cmd {
 		moveto {

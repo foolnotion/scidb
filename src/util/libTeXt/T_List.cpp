@@ -89,9 +89,8 @@ getList(Environment& env, char const* msg)
 }
 
 
-inline
-static ListP
-getListToken(Environment& env)
+ListP
+List::getListToken(Environment& env)
 {
 	return env.getFinalToken(::verifyListToken);
 }
@@ -101,8 +100,18 @@ static void
 performAppend(Environment& env)
 {
 	// NOTE: getListToken(env)->append(env.getUndefinedToken()) isn't working due to a gcc-3.x bug!
-	ListP token = getListToken(env);
+	ListP token = List::getListToken(env);
 	token->append(env.getUndefinedToken());
+}
+
+
+static void
+performJoin(Environment& env)
+{
+	ListP		token1 = List::getListToken(env);
+	TokenP	token2 = env.getUnboundToken();
+
+	env.putUnboundToken(token1->join(token2));
 }
 
 
@@ -110,7 +119,7 @@ static void
 performPrepend(Environment& env)
 {
 	// NOTE: getListToken(env)->prepend(env.getUndefinedToken()) isn't working due to a gcc-3.x bug!
-	ListP token = getListToken(env);
+	ListP token = List::getListToken(env);
 	token->prepend(env.getUndefinedToken());
 }
 
@@ -118,7 +127,7 @@ performPrepend(Environment& env)
 static void
 performFront(Environment& env)
 {
-	ListP list = getListToken(env);
+	ListP list = List::getListToken(env);
 	env.putUnboundToken(list->isEmpty() ? env.getToken(Token::T_Empty) : list->front());
 }
 
@@ -126,7 +135,7 @@ performFront(Environment& env)
 static void
 performBack(Environment& env)
 {
-	ListP list = getListToken(env);
+	ListP list = List::getListToken(env);
 	env.putUnboundToken(list->isEmpty() ? env.getToken(Token::T_Empty) : list->back());
 }
 
@@ -134,7 +143,7 @@ performBack(Environment& env)
 static void
 performPopfront(Environment& env)
 {
-	ListP list = getListToken(env);
+	ListP list = List::getListToken(env);
 
 	if (!list->isEmpty())
 		list->popFront();
@@ -144,7 +153,7 @@ performPopfront(Environment& env)
 static void
 performPopback(Environment& env)
 {
-	ListP list = getListToken(env);
+	ListP list = List::getListToken(env);
 
 	if (!list->isEmpty())
 		list->popBack();
@@ -154,7 +163,7 @@ performPopback(Environment& env)
 static void
 performReverse(Environment& env)
 {
-	getListToken(env)->reverse();
+	List::getListToken(env)->reverse();
 }
 
 
@@ -163,7 +172,7 @@ performRotate(Environment& env)
 {
 	// NOTE: getListToken(env)->rotate(env.getFinalToken(::verifyNumberToken)->value()) isn't working
 	// due to a gcc-3.x bug!
-	ListP token = getListToken(env);
+	ListP token = List::getListToken(env);
 	token->rotate(env.getFinalToken(Verify::numberToken)->value());
 }
 
@@ -171,21 +180,21 @@ performRotate(Environment& env)
 static void
 performLength(Environment& env)
 {
-	env.putUnboundToken(env.numberToken(getListToken(env)->length()));
+	env.putUnboundToken(env.numberToken(List::getListToken(env)->length()));
 }
 
 
 static void
 performFlatten(Environment& env)
 {
-	getListToken(env)->flatten();
+	List::getListToken(env)->flatten();
 }
 
 
 static void
 performFind(Environment& env)
 {
-	ListP list = getListToken(env);
+	ListP list = List::getListToken(env);
 	env.putUnboundToken(env.numberToken(list->find(env.getExpandableToken())));
 }
 
@@ -195,7 +204,7 @@ performIndex(Environment& env)
 {
 	// NOTE: getListToken(env)->index(env.getFinalToken(::verifyNumberToken)->value()) isn't working
 	// due to a gcc-3.x bug!
-	ListP 	list	= getListToken(env);
+	ListP 	list	= List::getListToken(env);
 	TokenP	token	= list->index(env.getFinalToken(Verify::numberToken)->value());
 
 	if (!token)
@@ -224,7 +233,7 @@ static void
 performLet(Environment& env)
 {
 	TokenP	cs		= env.getUndefinedToken(Verify::controlSequenceToken);
-	ListP		list	= getListToken(env);
+	ListP		list	= List::getListToken(env);
 	TokenP	index	= env.getFinalToken(Verify::numberToken);
 	TokenP	token	= list->index(index->value());
 
@@ -238,7 +247,7 @@ performLet(Environment& env)
 static void
 performSet(Environment& env)
 {
-	ListP		list	= getListToken(env);
+	ListP		list	= List::getListToken(env);
 	Value		index	= env.getFinalToken(Verify::numberToken)->value();
 	TokenP	cs		= env.getExpandableToken();
 
@@ -252,14 +261,14 @@ performSet(Environment& env)
 static void
 performBind(Environment& env)
 {
-	getListToken(env)->bind(env);
+	List::getListToken(env)->bind(env);
 }
 
 
 static void
 performAssign(Environment& env)
 {
-	ListP value = getListToken(env);
+	ListP value = List::getListToken(env);
 	ListP vars	= getList(env, "unexpected end of file");
 
 	for (unsigned i = 0, length = mstl::min(value->length(), vars->length()); i < length; ++i)
@@ -296,6 +305,7 @@ List::doRegister(Environment& env)
 	env.bindMacro(new GenericExpandableToken("\\lfind",	::performFind));
 
 	env.bindMacro(new GenericFinalToken("\\lappend",	::performAppend));
+	env.bindMacro(new GenericFinalToken("\\ljoin",		::performJoin));
 	env.bindMacro(new GenericFinalToken("\\lprepend",	::performPrepend));
 	env.bindMacro(new GenericFinalToken("\\lpopfront",	::performPopfront));
 	env.bindMacro(new GenericFinalToken("\\lpopback",	::performPopback));

@@ -697,6 +697,7 @@ app_view.o: ../db/si3/si3_encoder_position.ipp
 app_view.o: ../db/si3/si3_common.h
 app_view.o: ../util/libTeXt/T_Controller.h
 app_view.o: ../util/libTeXt/T_Receptacle.h
+app_view.o: ../util/libTeXt/T_Base.h
 app_view.o: ../util/libTeXt/T_Receptacle.ipp
 app_view.o: ../util/libTeXt/T_Consumer.h
 app_view.o: ../util/libTeXt/T_Object.h

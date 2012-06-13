@@ -783,42 +783,59 @@
 ::gametable::mc::GameFlags(I)				"Szabálytalan lépés"
 
 ### playertable ########################################################
-::playertable::mc::F_LastName					"Családnév"
-::playertable::mc::F_FirstName				"Keresztnév"
-::playertable::mc::F_FideID					"Fide azonosító"
-::playertable::mc::F_Title						"Cím"
-::playertable::mc::F_Frequency				"Gyakorisg"
+::playertable::mc::F_LastName			"Családnév"
+::playertable::mc::F_FirstName			"Keresztnév"
+::playertable::mc::F_FideID			"Fide azonosító"
+::playertable::mc::F_Title			"Cím"
+::playertable::mc::F_Frequency			"Gyakorisg"
 
-::playertable::mc::T_Federation				"Szövetség"
-::playertable::mc::T_RatingType				"Rating Type"
-::playertable::mc::T_Type						"Típus"
-::playertable::mc::T_Sex						"Neme"
-::playertable::mc::T_PlayerInfo				"Info Flag"
+::playertable::mc::T_Federation			"Szövetség"
+::playertable::mc::T_RatingType			"Rating Type"
+::playertable::mc::T_Type			"Típus"
+::playertable::mc::T_Sex			"Neme"
+::playertable::mc::T_PlayerInfo			"Info Flag"
 
-::playertable::mc::Find							"Keresés"
-::playertable::mc::StartSearch				"Keresés indítása"
-::playertable::mc::ClearEntries				"Bejegyzések törlése"
-::playertable::mc::NotFound					"Nem található."
+::playertable::mc::Find				"Keresés"
+::playertable::mc::StartSearch			"Keresés indítása"
+::playertable::mc::ClearEntries			"Bejegyzések törlése"
+::playertable::mc::NotFound			"Nem található."
 
-::playertable::mc::Name							"Név"
-::playertable::mc::HighestRating				"Legmagasabb ELO pontszám"
-::playertable::mc::MostRecentRating			"Legutolsó ELO pontszám"
-::playertable::mc::DateOfBirth				"Születési dátum"
-::playertable::mc::DateOfDeath				"Elhalálozás dátuma"
-::playertable::mc::FideID						"Fide azonosító"
+::playertable::mc::Name				"Név"
+::playertable::mc::HighestRating		"Legmagasabb ELO pontszám"
+::playertable::mc::MostRecentRating		"Legutolsó ELO pontszám"
+::playertable::mc::DateOfBirth			"Születési dátum"
+::playertable::mc::DateOfDeath			"Elhalálozás dátuma"
+::playertable::mc::FideID			"Fide azonosító"
 
-::playertable::mc::OpenInWebBrowser			"Mgnyitás böngészőben..."
-::playertable::mc::OpenPlayerCard			"%s játékos adatlapjának megynitása"
-::playertable::mc::OpenFileCard				"%s fájl adatlapjának megnyitása"
-::playertable::mc::OpenFideRatingHistory	"Fide értékszámának alakulása"
-::playertable::mc::OpenWikipedia				"Wikipédia életrajz megnyitása"
-::playertable::mc::OpenViafCatalog			"VIAF katalógus megnyitása"
-::playertable::mc::OpenPndCatalog			"A Német Országos Könyvtár katalógusának megynitása"
-::playertable::mc::OpenChessgames			"chessgames.com játszmagyűjtemény"
-::playertable::mc::SeachIn365ChessCom		"Keresés a 365Chess.com -on"
+::playertable::mc::ShowPlayerCard		"Show Player Card..." ;# NEW
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
+
+### player-card ########################################################
+::playercard::mc::PlayerCard		"Player Card" ;# NEW
+::playercard::mc::Latest		"Latest" ;# NEW
+::playercard::mc::Highest		"Highest" ;# NEW
+::playercard::mc::Minimal		"Minimal" ;# NEW
+::playercard::mc::Maximal		"Maximal" ;# NEW
+::playercard::mc::Win			"Win" ;# NEW
+::playercard::mc::Draw			"Draw" ;# NEW
+::playercard::mc::Loss			"Loss" ;# NEW
+::playercard::mc::Total			"Total" ;# NEW
+::playercard::mc::FirstGamePlayed	"First game played" ;# NEW
+::playercard::mc::LastGamePlayed	"Last game played" ;# NEW
+::playercard::mc::WhiteMostPlayed	"Most common openings as White" ;# NEW
+::playercard::mc::BlackMostPlayed	"Most common openings as Black" ;# NEW
+
+::playercard::mc::OpenInWebBrowser	"Mgnyitás böngészőben"
+::playercard::mc::OpenPlayerCard	"%s játékos adatlapjának megynitása"
+::playercard::mc::OpenFileCard		"%s fájl adatlapjának megnyitása"
+::playercard::mc::OpenFideRatingHistory	"Fide értékszámának alakulása"
+::playercard::mc::OpenWikipedia		"Wikipédia életrajz megnyitása"
+::playercard::mc::OpenViafCatalog	"VIAF katalógus megnyitása"
+::playercard::mc::OpenPndCatalog	"A Német Országos Könyvtár katalógusának megynitása"
+::playercard::mc::OpenChessgames	"chessgames.com játszmagyűjtemény"
+::playercard::mc::SeachIn365ChessCom	"Keresés a 365Chess.com -on"
 
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock" ;# NEW
@@ -1382,6 +1399,7 @@
 ::crosstable::mc::Settings		"Beállítások"
 ::crosstable::mc::RevertToStart		"Kiinduló értékek visszaállítása"
 ::crosstable::mc::UpdateDisplay		"Képernyő frissítése"
+::crosstable::mc::ShowPlayerCard	"Show Player Card" ;# NEW
 
 ::crosstable::mc::Traditional				"Hagyományos"
 ::crosstable::mc::Bilbao					"Bilbao" ;# NEW
@@ -1422,6 +1440,7 @@
 ::crosstable::mc::ShowHtml			"HTML megnyitása"
 ::crosstable::mc::ShowRating			"Értékszám"
 ::crosstable::mc::ShowPerformance		"Teljesítmény"
+::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
 ::crosstable::mc::ShowTiebreak			"Rövidített játszma"
 ::crosstable::mc::ShowOpponent			"Ellenfél (as Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Kiütéses Táblázat Stílus" ;# ?

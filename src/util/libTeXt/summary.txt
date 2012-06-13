@@ -160,6 +160,7 @@ Miscellaneous
 \context					Expandable	expanding	GenericExpandable
 \compare					Expandable	expanding	GenericExpandable		final, final
 \length					Expandable	expanding	GenericExpandable		undefined
+\tmap						Final			expanding	GenericFinal			text/list, text/list
 
 Nothing
 ----------------------------------------------------------------------------------------------
@@ -194,3 +195,7 @@ modifying	: modifies a token
 expanding	: put new Token(s) into queue
 tracing		: sends some info to log stream
 error			: thowing an error
+
+==============================================================================================
+
+building a list: \def\m${\tokA\tokB}

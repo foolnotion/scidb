@@ -63,7 +63,6 @@ proc Build {w args} {
 		-justify right \
 		-textvariable $opts(-textvariable) \
 		-command [namespace code [list Focus $w.__w__]] \
-		-cursor xterm \
 		;
 	::validate::spinboxInt $w.__w__
 	::theme::configureSpinbox $w.__w__

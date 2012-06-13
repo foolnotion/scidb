@@ -6,6 +6,12 @@ Some enhancements:
 	Double buffering implemented. You have to define USE_DOUBLE_BUFFERING=1
 	during compile time.
 
+	Support for table attribute 'fixed-layout' implemented.
+
+	Support for zero width ligatures.
+
+	Some fixes in line breaking algorithm (the layout algorithm is still a mess).
+
 new commands:
 
 	<pathname> charset
@@ -66,5 +72,3 @@ and has new dynamic flags:
 	<node> set dynamic user1	# alias for flag user
 	<node> set dynamic user2
 	<node> set dynamic user3
-
-Furthermore the widget is supporting zero width ligatures.

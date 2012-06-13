@@ -94,6 +94,7 @@ struct PopUnboundToken : public PopToken
 
 struct PopFinalToken : public PopToken
 {
+	// TODO: we have to expand TextToken and ListToken to avoid recursions!?
 	TokenP operator()(Environment& env) const { return env.getFinalToken(); }
 };
 
@@ -422,12 +423,12 @@ Macros::performCsname(Environment& env)
 			case Token::T_LeftBrace:
 			case Token::T_RightBrace:
 			case Token::T_Number:
+			case Token::T_List:
 				csname += token->name();
 				break;
 
 			case Token::T_Text:
-				env.putUnboundToken(token);
-				env.putFinalToken(env.getFinalToken());
+				csname += static_cast<TextToken*>(token.get())->content();
 				break;
 
 			case Token::T_Parameter:

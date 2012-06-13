@@ -105,6 +105,7 @@ proc BuildAboutFrame {w} {
 	::html $w.t \
 		-imagecmd [namespace code GetImage] \
 		-center yes \
+		-fittowidth yes \
 		-width 580 \
 		-height 400 \
 		-borderwidth 1 \

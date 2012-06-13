@@ -2559,90 +2559,117 @@ elapsed_time()
 
 #ifdef USE_DOUBLE_BUFFERING
 
+static int
+IntersectRect(XRectangle *r3, const XRectangle *r1, const XRectangle *r2) 
+{ 
+    XRectangle result;
+
+    result.x = MAX(r1->x, r2->x);
+    result.y = MAX(r1->y, r2->y);
+    result.width = MIN(r1->x + r1->width, r2->x + r2->width) - result.x;
+    result.height = MIN(r1->y + r1->height, r2->y + r2->height) - result.y;
+    memcpy(r3, &result, sizeof(result));
+
+    return result.width > 0 && result.height > 0; 
+}
+
 static void
-updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, resize)
+resizeDoubleBuffer(pTree, pixmap, gc)
+    HtmlTree *pTree;
+    Pixmap pixmap;
+    GC gc;
+{
+    if (pTree->options.doublebuffer) {
+        Tk_Window   win = pTree->docwin;
+        XRectangle  docRect;
+
+        int screenW = WidthOfScreen(Tk_Screen(win));
+        int screenH = HeightOfScreen(Tk_Screen(win));
+
+        docRect.width = MIN(WidthOfScreen(Tk_Screen(win)), Tk_Width(win));
+        docRect.height = MIN(HeightOfScreen(Tk_Screen(win)), Tk_Height(win));
+        docRect.x = MAX(0, docRect.width - Tk_X(win) - screenW);
+        docRect.y = MAX(0, docRect.height - Tk_Y(win) - screenH);
+
+        if (pTree->buffer == None || memcmp(&pTree->bufferRect, &docRect, sizeof(docRect)) != 0) {
+            Display    *display = Tk_Display(win);
+            TkRegion    region  = None;
+            Pixmap      buffer;
+            
+            buffer = Tk_GetPixmap(display, Tk_WindowId(win), docRect.width, docRect.height, Tk_Depth(win));
+            
+            if (buffer != None) {
+                XRectangle saveRect;
+
+                region = TkCreateRegion();
+
+                if (pTree->buffer != None &&
+                        pTree->bufferRegion != None &&
+                        IntersectRect(&saveRect, &pTree->docRect, &docRect) &&
+                        IntersectRect(&saveRect, &pTree->bufferRect, &saveRect)) {
+                    if (TkRectInRegion( pTree->bufferRegion,
+                                        saveRect.x, saveRect.y,
+                                        saveRect.width, saveRect.height) == RectangleIn) {
+                        int sx = MAX(docRect.x - pTree->docRect.x, 0);
+                        int sy = MAX(docRect.y - pTree->docRect.y, 0);
+                        int dx = MAX(pTree->docRect.x - docRect.x, 0);
+                        int dy = MAX(pTree->docRect.y - docRect.y, 0);
+
+                        XCopyArea(  display, pTree->buffer, buffer, gc,
+                                    sx, sy, saveRect.width, saveRect.height, dx, dy);
+                        TkUnionRectWithRegion(&saveRect, region, region);
+                    }
+                }
+            }
+
+            if (pTree->bufferRegion)
+                TkDestroyRegion(pTree->bufferRegion);
+            pTree->bufferRegion = region;
+
+            if (pTree->buffer)
+                Tk_FreePixmap(display, pTree->buffer);
+            pTree->buffer = buffer;
+
+            memcpy(&pTree->bufferRect, &docRect, sizeof(docRect));
+        }
+
+        pTree->docRect.x = -Tk_X(win);
+        pTree->docRect.y = -Tk_Y(win);
+        pTree->docRect.width = Tk_Width(pTree->tkwin);
+        pTree->docRect.height = Tk_Height(pTree->tkwin);
+    }
+}
+
+static void
+updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h)
     HtmlTree *pTree;
     Pixmap pixmap;
     GC gc;
     int x, y, w, h;
-    int resize;
 {
-    if (pTree->options.doublebuffer) {
-        Tk_Window  win     = pTree->docwin;
-        Display   *display = Tk_Display(win);
+    if (pTree->buffer) {
+        Display   *display = Tk_Display(pTree->docwin);
         XRectangle rect;
+        XRectangle updateRect;
 
-        if (pTree->bufferRegion == None) {
-            pTree->bufferRegion = TkCreateRegion();
-            memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
-        } else if (resize) {
-            int screenW = WidthOfScreen (Tk_Screen(win));
-            int screenH = HeightOfScreen(Tk_Screen(win));
+        rect.x = x;
+        rect.y = y;
+        rect.width = w;
+        rect.height = h;
 
-            if (   x < pTree->bufferRect.x
-                || y < pTree->bufferRect.y
-                || pTree->bufferRect.x + pTree->bufferRect.width  < x + w
-                || pTree->bufferRect.y + pTree->bufferRect.height < y + h) {
+        if (IntersectRect(&updateRect, &pTree->bufferRect, &rect)) {
+            int sx = rect.x - updateRect.x;
+            int sy = rect.y - updateRect.y;
+            int dx = updateRect.x - pTree->bufferRect.x;
+            int dy = updateRect.y - pTree->bufferRect.y;
 
-                rect.width  = MIN(screenW, MAX(pTree->bufferRect.width,  w));
-                rect.height = MIN(screenH, MAX(pTree->bufferRect.height, h));
-                rect.x      = MAX(MIN(x, pTree->bufferRect.x), x + rect.width  - screenW);
-                rect.y      = MAX(MIN(y, pTree->bufferRect.y), y + rect.height - screenH);
+            XCopyArea(
+                display, pixmap, pTree->buffer, gc,
+                sx, sy, updateRect.width, updateRect.height, dx, dy);
 
-                Pixmap buffer = Tk_GetPixmap(display,
-                                            Tk_WindowId(win),
-                                            rect.width, rect.height,
-                                            Tk_Depth(win));
-
-                if (buffer) {
-                    TkRegion region = TkCreateRegion();
-
-                    int sx = MAX(rect.x - pTree->bufferRect.x, 0);
-                    int sy = MAX(rect.y - pTree->bufferRect.y, 0);
-                    int dx = MAX(pTree->bufferRect.x - rect.x, 0);
-                    int dy = MAX(pTree->bufferRect.y - rect.y, 0);
-                    int sw = MIN(pTree->bufferRect.width  - sx, rect.width  - dx);
-                    int sh = MIN(pTree->bufferRect.height - sy, rect.height - dy);
-
-                    if (sw > 0 && sh > 0)
-                        XCopyArea(display, pTree->buffer, buffer, gc, sx, sy, sw, sh, dx, dy);
-
-                    memcpy(&pTree->bufferRect, &rect, sizeof(rect));
-
-                    rect.x += dx;
-                    rect.y += dy;
-                    rect.width  = sw;
-                    rect.height = sh;
-
-                    TkUnionRectWithRegion(&rect, region, region);
-                    TkIntersectRegion(region, pTree->bufferRegion, region);
-                    TkDestroyRegion(pTree->bufferRegion);
-                    pTree->bufferRegion = region;
-
-                    if (pTree->buffer)
-                        Tk_FreePixmap(display, pTree->buffer);
-                    pTree->buffer = buffer;
-                }
-            }
-        }
-
-        if (pTree->buffer) {
-            rect.x      = MAX(x, pTree->bufferRect.x);
-            rect.y      = MAX(y, pTree->bufferRect.y);
-            rect.width  = MIN(w, MAX(0, pTree->bufferRect.x + pTree->bufferRect.width  - rect.x));
-            rect.height = MIN(h, MAX(0, pTree->bufferRect.y + pTree->bufferRect.height - rect.y));
-            rect.width  = MIN(rect.width,  pTree->bufferRect.width);
-            rect.height = MIN(rect.height, pTree->bufferRect.height);
-
-            if (rect.width > 0 && rect.height > 0) {
-                XCopyArea(
-                    display, pixmap, pTree->buffer, gc,
-                    0, 0, rect.width, rect.height,
-                    rect.x - pTree->bufferRect.x, rect.y - pTree->bufferRect.y
-                );
-
-                TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
-            }
+            if (pTree->bufferRegion == None)
+                pTree->bufferRegion = TkCreateRegion();
+            TkUnionRectWithRegion(&rect, pTree->bufferRegion, pTree->bufferRegion);
         }
     }
 }
@@ -2817,7 +2844,7 @@ restart_time();
 #endif
         XCopyArea(display, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
 #ifdef USE_DOUBLE_BUFFERING
-        updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, 0);
+        updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
 #endif
 
 #ifdef MEASURE_TIME
@@ -4803,7 +4830,8 @@ widgetRepair(pTree, x, y, w, h, g)
     XCopyArea(pDisp, pixmap, Tk_WindowId(pTree->docwin), gc, 0, 0, w, h, x, y);
 
 #ifdef USE_DOUBLE_BUFFERING
-    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h, 1);
+    resizeDoubleBuffer(pTree, pixmap, gc);
+    updateDoubleBuffer(pTree, pixmap, gc, x, y, w, h);
 #endif
 
     Tk_FreePixmap(pDisp, pixmap);

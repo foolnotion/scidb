@@ -575,6 +575,15 @@ inlineContextAddInlineCanvas(p, eType, pNode)
     return &pBox->canvas;
 }
 
+static int
+isAlnum(ch)
+    Tcl_UniChar ch;
+{
+    if (Tcl_UniCharIsAlnum(ch))
+        return 1;
+    return 0x2654 <= ch && ch <= 0x2659; // is a (white) chess figurine
+}
+
 static void
 fixLineBreak(p, zText, nText)
     InlineContext *p;
@@ -593,13 +602,13 @@ fixLineBreak(p, zText, nText)
                 Tcl_UtfToUniChar(zText, &ch);
 
                 if (strchr("{([", zLast[nLast - 1])) {
-                    if (Tcl_UniCharIsAlnum(ch)) {
+                    if (isAlnum(ch)) {
                         InlineBox *pBox = &p->aInline[p->nInline - 1];
                         pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
                     }
-                } else if (strchr("})]", zText[0]) || Tcl_UniCharIsPunct(ch)) {
+                } else if (strchr("})]", zText[0]) || Tcl_UniCharIsPunct(ch) || isAlnum(ch)) {
                     Tcl_UtfToUniChar(Tcl_UtfPrev(zLast + nLast, zLast), &ch);
-                    if (Tcl_UniCharIsAlnum(ch)) {
+                    if (isAlnum(ch)) {
                         InlineBox *pBox = &p->aInline[p->nInline - 1];
                         pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
                     }

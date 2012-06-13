@@ -25,6 +25,15 @@
 // ======================================================================
 
 #include "db_player.h"
+#include "db_namebase_entry.h"
+#include "db_player_stats.h"
+#include "db_eco_table.h"
+
+#include "T_Receptacle.h"
+#include "T_ListToken.h"
+#include "T_TextToken.h"
+#include "T_NumberToken.h"
+#include "T_Environment.h"
 
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
@@ -36,6 +45,7 @@
 #include "m_algorithm.h"
 #include "m_istream.h"
 #include "m_utility.h"
+#include "m_bit_functions.h"
 #include "m_assert.h"
 #include "m_stdio.h"
 
@@ -46,6 +56,7 @@
 #include <string.h>
 
 using namespace db;
+using namespace TeXt;
 
 //#define DEBUG
 
@@ -2677,6 +2688,219 @@ Player::parseComputerList(mstl::istream& stream)
 	DEBUG(::printf("Aliases total:       %u\n", ::aliasDict.used()));
 	DEBUG(::printf("ASCII total:         %u\n", ::asciiDict.size()));
 	DEBUG(::printf("-----------------------------------------------------\n"));
+}
+
+
+void
+Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
+								NamebasePlayer const& player,
+								PlayerStats const& stats)
+{
+	typedef mstl::ref_counted_ptr<TeXt::ListToken> List;
+
+	mstl::string::size_type n = player.name().find(',');
+	mstl::string::size_type k = n;
+
+	if (k != mstl::string::npos)
+	{
+		++k;
+		while (::isspace(player.name()[k]))
+			++k;
+	}
+
+	mstl::string forename, surname;
+
+	if (n == mstl::string::npos)
+	{
+		surname.assign(player.name());
+	}
+	else
+	{
+		forename.assign(player.name(), k, mstl::string::npos);
+		surname.assign(player.name(), 0, n);
+	}
+
+	mstl::string fideID;
+
+	if (unsigned id = mstl::abs(player.findFideID()))
+		fideID.format("%u", id);
+
+	List titleList(new ListToken);
+	List ratings(new ListToken);
+
+	if (Player const* p = player.player())
+	{
+		unsigned titles = p->titles();
+
+		while (titles)
+		{
+			unsigned t = 1u << mstl::bf::lsb_index(titles);
+			titleList->append(title::toString(title::toID(t)));
+			titles &= ~t;
+		}
+
+		List rating(new ListToken);
+		rating->append("Elo");
+		rating->append(p->latestElo());
+		rating->append(p->highestElo());
+		ratings->append(rating);
+
+		if (p->ratingType() != rating::Any && p->ratingType() != rating::Elo)
+		{
+			List rating(new ListToken);
+			rating->append(rating::toString(p->ratingType()));
+			rating->append(p->latestRating());
+			rating->append(p->highestRating());
+			ratings->append(rating);
+		}
+	}
+	else
+	{
+		title::ID title = player.title();
+
+		if (title != title::None)
+			titleList->append(title::toString(title));
+	}
+
+	receptacle.add("Forename", forename);
+	receptacle.add("Surname", surname);
+	receptacle.add("ID-Fide", fideID);
+	receptacle.add("Sex", sex::toChar(player.findSex()));
+	receptacle.add("Species", species::toChar(player.findType()));
+	receptacle.add("Titles", titleList);
+	receptacle.add("Federation", country::toString(player.findFederation()));
+	receptacle.add("Ratings", ratings);
+
+	if (Player const* p = player.player())
+	{
+		List wikiList(new ListToken);
+
+		for (LangMap::const_iterator i = ::langMap.begin(); i != ::langMap.end(); ++i)
+		{
+			Lookup::const_iterator k = i->second->find(p);
+
+			if (k != i->second->end())
+			{
+				List pair(new ListToken);
+				pair->append(i->first);
+				pair->append(k->second);
+				wikiList->append(pair);
+			}
+		}
+
+		if (!wikiList->isEmpty())
+			receptacle.add("Wikipedia", wikiList);
+		if (p->dateOfBirth())
+			receptacle.add("BirthDay", p->dateOfBirth().asString());
+		if (p->dateOfDeath())
+			receptacle.add("DeathDay", p->dateOfDeath().asString());
+		if (!p->dsbID().empty())
+			receptacle.add("ID-DSB", p->dsbID());
+		if (!p->ecfID().empty())
+			receptacle.add("ID-ECF", p->ecfID());
+		if (p->iccfID())
+			receptacle.add("ICCF-ID", Value(p->iccfID()));
+		if (p->viafID())
+			receptacle.add("ID-VIAF", Value(p->viafID()));
+		if (!p->pndID().empty())
+			receptacle.add("ID-PND", p->pndID());
+		if (!p->chessgamesID().empty())
+			receptacle.add("ID-ChessGames", p->chessgamesID());
+	}
+
+	List gameCount(new ListToken);
+	gameCount->append(Value(stats.countGames(color::White)));
+
+	List whiteResult(new ListToken);
+	whiteResult->append(Value(stats.score(color::White, result::White)));
+	whiteResult->append(Value(stats.score(color::White, result::Draw)));
+	whiteResult->append(Value(stats.score(color::White, result::Black)));
+	whiteResult->append(Value(stats.countGames(color::White)));
+
+	List blackResult(new ListToken);
+	blackResult->append(Value(stats.score(color::Black, result::Black)));
+	blackResult->append(Value(stats.score(color::Black, result::Draw)));
+	blackResult->append(Value(stats.score(color::Black, result::White)));
+	blackResult->append(Value(stats.countGames(color::Black)));
+
+	List totalResult(new ListToken);
+	totalResult->append(Value(stats.score(result::White)));
+	totalResult->append(Value(stats.score(result::Draw)));
+	totalResult->append(Value(stats.score(result::Black)));
+	totalResult->append(Value(stats.countGames()));
+
+	List result(new ListToken);
+	result->append(whiteResult);
+	result->append(blackResult);
+	result->append(totalResult);
+
+	List score(new ListToken);
+	score->append(Value(stats.percentage(color::White)*100.0));
+	score->append(Value(stats.percentage(color::Black)*100.0));
+	score->append(Value(stats.percentage()*100.0));
+
+	List whiteEcoLines(new ListToken);
+	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::White)); i < n; ++i)
+	{
+		List ecoLine(new ListToken);
+		mstl::string line;
+		Eco code(stats.ecoLine(color::White, i));
+		EcoTable::specimen().getLine(code).print(line);
+		ecoLine->append(code.asString());
+		ecoLine->append(Value(stats.ecoCount(color::White, i)));
+		ecoLine->append(line);
+		whiteEcoLines->append(ecoLine);
+	}
+
+	List blackEcoLines(new ListToken);
+	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::Black)); i < n; ++i)
+	{
+		List ecoLine(new ListToken);
+		mstl::string line;
+		Eco code(stats.ecoLine(color::Black, i));
+		EcoTable::specimen().getLine(code).print(line);
+		ecoLine->append(code.asString());
+		ecoLine->append(Value(stats.ecoCount(color::Black, i)));
+		ecoLine->append(line);
+		blackEcoLines->append(ecoLine);
+	}
+
+	List ecoLines(new ListToken);
+	ecoLines->append(whiteEcoLines);
+	ecoLines->append(blackEcoLines);
+
+	List ratingRange(new ListToken);
+
+	for (int r = 0; r < rating::Last; ++r)
+	{
+		Value minRating = stats.minRating(rating::Type(r));
+		Value maxRating = stats.maxRating(rating::Type(r));
+
+		if (minRating && maxRating)
+		{
+			List rating(new ListToken);
+			rating->append(rating::toString(rating::Type(r)));
+			rating->append(minRating);
+			rating->append(maxRating);
+			ratingRange->append(rating);
+		}
+	}
+
+	mstl::string firstDate;
+	if (stats.firstDate())
+		firstDate.assign(stats.firstDate().asString());
+
+	mstl::string lastDate;
+	if (stats.lastDate())
+		lastDate.assign(stats.lastDate().asString());
+
+	receptacle.add("GameCount", gameCount);
+	receptacle.add("FirstDate", firstDate);
+	receptacle.add("LastDate", lastDate);
+	receptacle.add("RatingRange", ratingRange);
+	receptacle.add("Result", result);
+	receptacle.add("Score", score);
+	receptacle.add("EcoLines", ecoLines);
 }
 
 

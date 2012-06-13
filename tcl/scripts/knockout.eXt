@@ -14,7 +14,7 @@
 % ======================================================================
 
 % ======================================================================
-% Copyright: (C) 2011 Gregor Cramer
+% Copyright: (C) 2011-2012 Gregor Cramer
 % ======================================================================
 
 % ======================================================================
@@ -25,25 +25,27 @@
 % ======================================================================
 
 \input\plain
+\input\xhtml
 
 %%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \def\check-optional-token#tok#dflt{%
 	\ifx#tok\undefined
-		\message{WARNING: Token \string#tok is not defined (default is \string#dflt).}%
+		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
 		\let#tok#dflt%
 	\fi
 }
 \def\check-mandatory-token#tok{%
 	\ifx#tok\undefined
 		\errorcontextlines\0
-		\errmessage{ERROR: Token \string#tok is not defined.}%
+		\errmessage{ERROR: Token \string#tok is not defined}%
 	\fi
 }
 
 \check-optional-token\ShowRating\1
 %\check-optional-token\ShowTiebreaks\1
 %\check-optional-token\ShowPerformance\1
+%\check-optional-token\ShowWinDrawLoss\0
 %\check-optional-token\ShowChange\1
 \check-optional-token\ShowCountry\1
 \check-optional-token\UsePyramid\0
@@ -54,6 +56,8 @@
 \check-mandatory-token\DecimalPoint
 \check-mandatory-token\Linespace
 \check-mandatory-token\CharWidth
+\check-mandatory-token\Lang
+\check-mandatory-token\Title
 
 \check-mandatory-token\Players
 \check-mandatory-token\AverageRating
@@ -151,7 +155,7 @@
 	\foreach \row \Results {%
 		\foreach \pairing \row {%
 			\for \j \0 \2 {%
-				\expandafter\lassign\lindex\pairing\j{\unused\progress}
+				\lassign\lindex\pairing\j{\unused\progress}
 				\div\progress\2 \let-digits\n\progress \max\ndigits-progress\n
 			}%
 		}%
@@ -162,10 +166,11 @@
 
 \lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
 
-<html><body>\cr
+\xhtml-head\Lang\Title\relax
+<body>\cr
 <p><nobr>\cr
 <big>
-<font color="blue">\event</font>%
+<span recv="event" style="color: blue;">\event</span>
 \let\comma\empty
 \unless\ifempty\site\ \site\def\comma{, }\fi
 \unless\ifempty\country\ <img src="\country"/>\let\comma\empty\fi
@@ -193,22 +198,22 @@
 %%% output table %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \def\print-player#index#rank#progress{%
-	\expandafter\lassign\lindex\Players#rank{\country\name}%
+	\lassign\lindex\Players#rank{\country\name}%
 	\begin-row
 	\if\ShowCountry\1
 		\def\col-width{21}
-		\begin-col-end{\unless\ifempty\country <img src="\country">\fi}
+		\begin-col-end{\unless\ifempty\country <img src="\country">\fi}%
 	\fi
 	\def\col-rank{\increment#rank}%
-	\def\col-recv{#index-#rank}
-	\def\col-mark{#index-#rank}
+	\def\col-recv{#index-#rank}%
+	\def\col-mark{#index-#rank}%
 	\def\col-send{%
 		\let\delim\empty
 		\for \k \0 \n {%
 			\delim
 			\unless\if#index\k
 				\k-\rank
-				\let\delim:
+				\let\delim:%
 			\fi
 		}
 	}
@@ -216,11 +221,11 @@
 	\begin-col-end\thick-space
 	\let\points\progress \div\points\2
 	\let\frac\progress \mod\frac\2 \mul\frac\5
-	\def\col-width{\width\ndigits-progress}
-	\def\col-align{right}
-	\begin-col-end{<b>\points</b>}
+	\def\col-width{\width\ndigits-progress}%
+	\def\col-align{right}%
+	\begin-col-end{<b>\points</b>}%
 	\let\col-width\CharWidth
-	\begin-col-end{<b>\DecimalPoint\frac</b>}
+	\begin-col-end{<b>\DecimalPoint\frac</b>}%
 	\end-row
 }
 
@@ -238,11 +243,11 @@
 			\when \2 \let\result\1
 			\when \1 \def\result{\fraction-one-half}%
 		\fi
-		\def\col-align{center}
+		\def\col-align{center}%
 		\let\col-width\result-width
 		\let\col-recv\col-game
-		\begin-col-end{<font color="blue">\result</font>}
-	}
+		\begin-col-end{<font color="blue">\result</font>}%
+	}%
 	\end-row
 	\end-table
 	\end-col
@@ -256,10 +261,10 @@
 \begin-row
 \for \i \0 \n {%
 	\if\UsePyramid\1
-		\def\col-valign{center}
+		\def\col-valign{center}%
 		\let\index\n \sub\index\i \sub\index\1
 	\else
-		\def\col-valign{top}
+		\def\col-valign{top}%
 		\let\index\i
 	\fi
 	\xlet\row\lindex\Results\index
@@ -274,9 +279,9 @@
 		\begin-row
 		\begin-col
 		\begin-table\0\0\0\100
-		\expandafter\lassign\lindex\pairing\0{\rank\progress}
+		\lassign\lindex\pairing\0{\rank\progress}%
 		\print-player\index\rank\progress
-		\expandafter\lassign\lindex\pairing\1{\rank\progress}
+		\lassign\lindex\pairing\1{\rank\progress}%
 		\print-player\index\rank\progress
 		\expandafter\print-results\lindex\pairing\2
 		\end-table
@@ -285,7 +290,7 @@
 		\end-table
 		\end-col
 		\end-row
-	}
+	}%
 	\end-table
 	\end-col
 }
@@ -296,11 +301,12 @@
 
 \cr
 <p>\cr
-\lassign\results{\unused\won\draw\lost}%
+\lassign\results{\win\loss\draw}%
 \numGames\ \if\numGames\1\Game\else\Games\fi
-\ (+\won\thick-space\ =\lost\thick-space\ \minus\draw)\cr
+\ (+\win\thick-space\ =\draw\thick-space\ \minus\loss)\cr
 </p>\cr
-</body></html>
+</body>
+\xhtml-foot
 
 %%% end of file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bye

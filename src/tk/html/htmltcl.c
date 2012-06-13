@@ -804,6 +804,13 @@ HtmlCallbackRestyle(pTree, pNode)
      */
     HtmlTextInvalidate(pTree);
     HtmlCssSearchInvalidateCache(pTree);
+
+#ifdef USE_DOUBLE_BUFFERING
+    if (pTree->bufferRegion) {
+        TkDestroyRegion(pTree->bufferRegion);
+        pTree->bufferRegion = None;
+	 }
+#endif
 }
 
 /*
@@ -865,13 +872,6 @@ HtmlCallbackLayout(pTree, pNode)
 {
     if (pNode) {
         HtmlNode *p;
-
-#ifdef USE_DOUBLE_BUFFERING
-        if (pTree->bufferRegion) {
-            TkDestroyRegion(pTree->bufferRegion);
-            pTree->bufferRegion = NULL;
-        }
-#endif
 
         snapshotLayout(pTree);
         if (!pTree->cb.flags) {
@@ -995,6 +995,28 @@ HtmlCallbackDamage(pTree, x, y, w, h)
     pNew->h = h;
     pNew->pNext = pTree->cb.pDamage;
     pTree->cb.pDamage = pNew;
+
+#ifdef USE_DOUBLE_BUFFERING
+    if (pTree->bufferRegion) {
+        TkRegion region = TkCreateRegion();
+        XRectangle rect;
+
+        rect.x = x;
+        rect.y = y;
+        rect.width = w;
+        rect.height = h;
+
+        if (w != 10000 || h != 10000)
+        {
+            rect.x += pTree->iScrollX;
+            rect.y += pTree->iScrollY;
+        }
+
+        TkUnionRectWithRegion(&rect, region, region);
+        TkSubtractRegion(pTree->bufferRegion, region, pTree->bufferRegion);
+        TkDestroyRegion(region);
+    }
+#endif
 
     if (!pTree->cb.flags) {
         Tcl_DoWhenIdle(callbackHandler, (ClientData)pTree);
@@ -1202,6 +1224,12 @@ eventHandler(clientData, pEvent)
                 iWidth != pTree->iCanvasWidth ||
                 iHeight != pTree->iCanvasHeight
             ) {
+#ifdef USE_DOUBLE_BUFFERING
+                if (pTree->bufferRegion) {
+                    TkDestroyRegion(pTree->bufferRegion);
+                    pTree->bufferRegion = None;
+                }
+#endif
                 HtmlCallbackLayout(pTree, pTree->pRoot);
                 snapshotZero(pTree);
                 HtmlCallbackDamage(pTree, 0, 0, iWidth, iHeight);
@@ -1819,7 +1847,7 @@ parseCmd(clientData, interp, objc, objv)
 #ifdef USE_DOUBLE_BUFFERING
     if (pTree->bufferRegion) {
         TkDestroyRegion(pTree->bufferRegion);
-        pTree->bufferRegion = NULL;
+        pTree->bufferRegion = None;
     }
 #endif
 
@@ -2887,6 +2915,7 @@ newWidget(clientData, interp, objc, objv)
     pTree->buffer = None;
     pTree->bufferRegion = None;
     memset(&pTree->bufferRect, 0, sizeof(pTree->bufferRect));
+    memset(&pTree->docRect, 0, sizeof(pTree->docRect));
 #endif
 
 #if defined(USE_LATIN_LIGATURES) && defined(HAVE_XFT)

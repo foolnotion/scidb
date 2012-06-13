@@ -805,18 +805,35 @@
 ::playertable::mc::DateOfDeath				"Date of death"
 ::playertable::mc::FideID						"Fide ID"
 
-::playertable::mc::OpenInWebBrowser			"Open in web browser..."
-::playertable::mc::OpenPlayerCard			"Open %s player card"
-::playertable::mc::OpenFileCard				"Open %s file card"
-::playertable::mc::OpenFideRatingHistory	"Open Fide rating history"
-::playertable::mc::OpenWikipedia				"Open Wikipedia biography"
-::playertable::mc::OpenViafCatalog			"Open VIAF catalog"
-::playertable::mc::OpenPndCatalog			"Open catalog of Deutsche Nationalbibliothek"
-::playertable::mc::OpenChessgames			"chessgames.com game collection"
-::playertable::mc::SeachIn365ChessCom		"Search in 365Chess.com"
+::playertable::mc::ShowPlayerCard			"Show Player Card..."
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance"
+
+### player-card ########################################################
+::playercard::mc::PlayerCard					"Player Card"
+::playercard::mc::Latest						"Latest"
+::playercard::mc::Highest						"Highest"
+::playercard::mc::Minimal						"Minimal"
+::playercard::mc::Maximal						"Maximal"
+::playercard::mc::Win							"Win"
+::playercard::mc::Draw							"Draw"
+::playercard::mc::Loss							"Loss"
+::playercard::mc::Total							"Total"
+::playercard::mc::FirstGamePlayed			"First game played"
+::playercard::mc::LastGamePlayed				"Last game played"
+::playercard::mc::WhiteMostPlayed			"Most common openings as White"
+::playercard::mc::BlackMostPlayed			"Most common openings as Black"
+
+::playercard::mc::OpenInWebBrowser			"Open in web browser"
+::playercard::mc::OpenPlayerCard				"Open %s player card"
+::playercard::mc::OpenFileCard				"Open %s file card"
+::playercard::mc::OpenFideRatingHistory	"Open Fide rating history"
+::playercard::mc::OpenWikipedia				"Open Wikipedia biography"
+::playercard::mc::OpenViafCatalog			"Open VIAF catalog"
+::playercard::mc::OpenPndCatalog				"Open catalog of Deutsche Nationalbibliothek"
+::playercard::mc::OpenChessgames				"chessgames.com game collection"
+::playercard::mc::SeachIn365ChessCom		"Search in 365Chess.com"
 
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock"
@@ -1381,6 +1398,7 @@
 ::crosstable::mc::Settings					"Settings"
 ::crosstable::mc::RevertToStart			"Revert to initial values"
 ::crosstable::mc::UpdateDisplay			"Update display"
+::crosstable::mc::ShowPlayerCard			"Show Player Card"
 
 ::crosstable::mc::Traditional				"Traditional"
 ::crosstable::mc::Bilbao					"Bilbao"
@@ -1421,6 +1439,7 @@
 ::crosstable::mc::ShowHtml					"Show HTML"
 ::crosstable::mc::ShowRating				"Rating"
 ::crosstable::mc::ShowPerformance		"Performance"
+::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss"
 ::crosstable::mc::ShowTiebreak			"Tiebreak"
 ::crosstable::mc::ShowOpponent			"Opponent (as Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Knockout Table Style"

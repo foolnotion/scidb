@@ -99,6 +99,7 @@ HR {
 TABLE { 
   display: table;
   border-spacing: 2px;
+  table-layout: auto;
 
   border-bottom-color: grey25;
   border-right-color: grey25;

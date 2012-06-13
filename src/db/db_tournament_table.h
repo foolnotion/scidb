@@ -109,6 +109,7 @@ public:
 	unsigned averageElo() const;
 	unsigned fideCategory() const;
 	unsigned countPlayers() const;
+	int getPlayerId(unsigned ranking, color::ID& side) const;
 	NamebasePlayer const* getPlayer(unsigned ranking) const;
 
 	void emit(	TeXt::Receptacle& receptacle,

@@ -1968,7 +1968,8 @@ proc SelectBackgroundColor {which setter eraser} {
 							-modal true \
 							-parent $setter \
 							-place centeronparent]
-	
+
+	if {![winfo exists $eraser]} { return } ;# may happen if dialog is destroyed
 	if {[llength $selection] == 0} { return }
 	set n [string first ":" $selection]
 

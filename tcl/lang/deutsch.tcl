@@ -804,18 +804,35 @@
 ::playertable::mc::DateOfDeath				"Todesdatum"
 ::playertable::mc::FideID						"Fide ID"
 
-::playertable::mc::OpenInWebBrowser			"Im Web-Browser öffnen..."
-::playertable::mc::OpenPlayerCard			"%s-Spielerkartei"
-::playertable::mc::OpenFileCard				"%s-Karteikarte"
-::playertable::mc::OpenFideRatingHistory	"Fide-Wertungszahlentwicklung"
-::playertable::mc::OpenWikipedia				"Wikipedia Biographie"
-::playertable::mc::OpenViafCatalog			"VIAF-Katalog"
-::playertable::mc::OpenPndCatalog			"Katalog der Deutschen Nationalbibliothek"
-::playertable::mc::OpenChessgames			"chessgames.com Partiensammlung"
-::playertable::mc::SeachIn365ChessCom		"Suche in 365Chess.com"
+::playertable::mc::ShowPlayerCard			"Spielerkarteikarte öffnen..."
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Teilnehmerzahl"
+
+### player-card ########################################################
+::playercard::mc::PlayerCard					"Spielerkarteikarte"
+::playercard::mc::Latest						"Neueste"
+::playercard::mc::Highest						"Höchste"
+::playercard::mc::Minimal						"Minimale"
+::playercard::mc::Maximal						"Maximale"
+::playercard::mc::Win							"Gewonnen"
+::playercard::mc::Draw							"Remis"
+::playercard::mc::Loss							"Verloren"
+::playercard::mc::Total							"Gesamt"
+::playercard::mc::FirstGamePlayed			"Zuerst gespielte Partie"
+::playercard::mc::LastGamePlayed				"Zuletzt gespielte Partie"
+::playercard::mc::WhiteMostPlayed			"Häufigste Eröffnungen mit Weiß"
+::playercard::mc::BlackMostPlayed			"Häufigste Eröffnungen mit Schwarz"
+
+::playercard::mc::OpenInWebBrowser			"Im Web-Browser öffnen"
+::playercard::mc::OpenPlayerCard				"%s-Spielerkartei"
+::playercard::mc::OpenFileCard				"%s-Karteikarte"
+::playercard::mc::OpenFideRatingHistory	"Fide-Wertungszahlentwicklung"
+::playercard::mc::OpenWikipedia				"Wikipedia Biographie"
+::playercard::mc::OpenViafCatalog			"VIAF-Katalog"
+::playercard::mc::OpenPndCatalog				"Katalog der Deutschen Nationalbibliothek"
+::playercard::mc::OpenChessgames				"chessgames.com Partiensammlung"
+::playercard::mc::SeachIn365ChessCom		"Suche in 365Chess.com"
 
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Abkopplen"
@@ -1380,6 +1397,7 @@
 ::crosstable::mc::Settings					"Einstellungen"
 ::crosstable::mc::RevertToStart			"Zu den Startwerten zurückkehren"
 ::crosstable::mc::UpdateDisplay			"Anzeige aktualisieren"
+::crosstable::mc::ShowPlayerCard			"Spielerkarte zeigen"
 
 ::crosstable::mc::Traditional				"Traditionell"
 ::crosstable::mc::Bilbao					"Bilbao"
@@ -1420,6 +1438,7 @@
 ::crosstable::mc::ShowHtml					"HTML zeigen"
 ::crosstable::mc::ShowRating				"Wertungszahl"
 ::crosstable::mc::ShowPerformance		"Erfolgszahl"
+::crosstable::mc::ShowWinDrawLoss		"Gewinn/Remis/Verlust"
 ::crosstable::mc::ShowTiebreak			"Feinwertung"
 ::crosstable::mc::ShowOpponent			"Opponent (als Kurzinfo)"
 ::crosstable::mc::KnockoutStyle			"K.O.-Tabellentyp"

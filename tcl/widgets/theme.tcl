@@ -555,6 +555,19 @@ bind TEntry <Control-Key-slash> {
 	}
 }
 
+# an entry should have a xterm cursor if in normal state
+bind TEntry <Enter> {
+	%W instate {!readonly !disabled} {
+		%W configure -cursor xterm
+	}
+}
+
+bind TEntry <Leave> {
+	%W instate {!readonly !disabled} {
+		%W configure -cursor {}
+	}
+}
+
 bind THorzScale <ButtonPress-1>		[bind TScale <ButtonPress-1>]
 bind THorzScale <B1-Motion>			[bind TScale <B1-Motion>]
 bind THorzScale <ButtonRelease-1>	[bind TScale <ButtonRelease-1>]
@@ -784,23 +797,23 @@ proc WordSelect {w from to} {
 
 namespace eval combobox {
 
+# The implementation of ttk::combobox is a bit clumsy.
+# The textarea, but only the textarea, should have a
+# xterm cursor.
+
 bind TCombobox <Motion>	+[namespace code { CBMotion %W %x %y }]
 
 proc CBMotion {w x y} {
 	variable Priv
 
-	# The implementation of ttk::combobox is a bit clumsy.
-	# The downarrow button should always have a left_ptr cursor.
+	set cursor [$w cget -cursor]
 
-	if {[$w identify $x $y] eq "downarrow"} {
-		if {[$w cget -cursor] ne "left_ptr"} {
-			set Priv(cursor) [$w cget -cursor]
-			$w configure -cursor left_ptr
+	if {[$w identify $x $y] eq "textarea"} {
+		if {[$w cget -state] eq "normal" && $cursor ne "xterm"} {
+			$w configure -cursor xterm
 		}
-	} else {
-		if {[$w cget -cursor] eq "left_ptr" && [info exists Priv(cursor)]} {
-			$w configure -cursor $Priv(cursor)
-		}
+	} elseif {[llength $cursor]} {
+		$w configure -cursor {}
 	}
 }
 

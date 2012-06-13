@@ -1074,7 +1074,7 @@ proc UpdateName {top nameField fideIdField} {
 
 	set fideId [$top.$fideIdField get]
 	if {[string length $fideId] && [string length [$top.$nameField get]] == 0} {
-		$top.$nameField set [::scidb::misc::lookup $fideId -unicode $Options(unicode)]
+		$top.$nameField set [::scidb::misc::lookup player $fideId -unicode $Options(unicode)]
 	}
 }
 

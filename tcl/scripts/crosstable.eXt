@@ -14,7 +14,7 @@
 % ======================================================================
 
 % ======================================================================
-% Copyright: (C) 2011 Gregor Cramer
+% Copyright: (C) 2011-2012 Gregor Cramer
 % ======================================================================
 
 % ======================================================================
@@ -25,25 +25,27 @@
 % ======================================================================
 
 \input\plain
+\input\xhtml
 
 %%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \def\check-optional-token#tok#dflt{%
 	\ifx#tok\undefined
-		\message{WARNING: Token \string#tok is not defined (default is \string#dflt).}%
+		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
 		\let#tok#dflt%
 	\fi
 }
 \def\check-mandatory-token#tok{%
 	\ifx#tok\undefined
 		\errorcontextlines\0
-		\errmessage{ERROR: Token \string#tok is not defined.}%
+		\errmessage{ERROR: Token \string#tok is not defined}%
 	\fi
 }
 
 \check-optional-token\ShowRating\1
 \check-optional-token\ShowTiebreaks\1
 \check-optional-token\ShowPerformance\1
+\check-optional-token\ShowWinDrawLoss\1
 \check-optional-token\ShowChange\1
 \check-optional-token\ShowCountry\1
 \check-optional-token\CellSpacing\1
@@ -54,6 +56,8 @@
 \check-mandatory-token\DecimalPoint
 \check-mandatory-token\Linespace
 \check-mandatory-token\CharWidth
+\check-mandatory-token\Lang
+\check-mandatory-token\Title
 
 \check-mandatory-token\Players
 \check-mandatory-token\AverageRating
@@ -140,10 +144,14 @@
 	\let\count-change\0
 	\let\ndigits-ngames\0
 	\let\ndigits-score\0
+	\let\ndigits-win\0
+	\let\ndigits-draw\0
+	\let\ndigits-loss\0
+	\let\ndigits-tiebreaks${}%
 	\let\ntb\0
 	\for \i \0 \nplayers {%
-		\expandafter\lassign\lindex\Players\i
-			{\country\unused\elo\score\ngames\performance\change\tiebreaks}%
+		\lassign\lindex\Players\i
+			{\country\unused\elo\score\ngames\performance\change\tiebreaks\win-draw-loss}%
 		\unless\ifempty\country \incr\count-countries \fi
 		\unless\if\elo\0 \incr\count-ratings \fi
 		\unless\if\performance\0 \incr\count-performance \fi
@@ -151,17 +159,22 @@
 		\let-digits\n\ngames \max\ndigits-ngames\n
 		\xlet\n\llength\tiebreaks \max\ntb\n
 		\div\score\2 \let-digits\n\score \max\ndigits-score\n
+		\lassign\win-draw-loss{\win\draw\loss}%
+		\let-digits\n\win \max\ndigits-win\n
+		\let-digits\n\draw \max\ndigits-draw\n
+		\let-digits\n\loss \max\ndigits-loss\n
 	}%
+	\max\ndigits-win\1 \max\ndigits-draw\1 \max\ndigits-loss\1
+	\incr\ndigits-win \incr\ndigits-draw \incr\ndigits-loss
 	\if\count-countries\0 \let\ShowCountry\0 \fi
 	\if\count-ratings\0 \let\ShowRating\0 \fi
 	\if\count-performance\0 \let\ShowPerformance\0 \fi
 	\if\count-change\0 \let\ShowChange\0 \fi
-	\let\ndigits-tiebreaks${}%
 	\for \k \0 \ntb {%
 		\let\ndigits-pts\0
 		\let\ndigits-frc\0
 		\for \i \0 \nplayers {%
-			\expandafter\llet\expandafter\tiebreaks\lindex\Players\i\7
+			\llet\tiebreaks\lindex\Players\i\7
 			\llet\tb\tiebreaks\k
 			\iflist\tb
 				\lassign\tb{\pts\frc}%
@@ -188,7 +201,7 @@
 
 \def\print-players{%
 	\for \i \0 \nplayers {%
-		\expandafter\lassign\lindex\Players\i{\country\name\elo}%
+		\lassign\lindex\Players\i{\country\name\elo}%
 		\begin-row
 		\def\col-align{right}%
 		\begin-col-end{\increment\i}%
@@ -234,7 +247,7 @@
 				\xlet\result\lindex\row\c
 				\xlet\k\llength\result
 				\if\k\1
-					\expandafter\lassign\lindex\result\0{\pts\game-index}%
+					\lassign\lindex\result\0{\pts\game-index}%
 					\def\col-align{center}%
 					\let\col-width\Linespace
 					\def\col-recv{cell-\r-\c}%
@@ -246,7 +259,7 @@
 					\begin-table\0\0\0
 					\begin-row
 					\for \i \0 \k {%
-						\expandafter\lassign\lindex\result\i{\pts\game-index}%
+						\lassign\lindex\result\i{\pts\game-index}%
 						\def\col-align{center}%
 						\let\col-width\result-width
 						\def\col-recv{cell-\r-\c-\i}%
@@ -266,8 +279,8 @@
 
 \def\print-scores{%
 	\for \i \0 \nplayers {%
-		\expandafter\lassign\lindex\Players\i
-			{\unused\unused\unused\score\ngames\performance\change\tiebreaks}%
+		\lassign\lindex\Players\i
+			{\unused\unused\unused\score\ngames\performance\change\tiebreaks\win-draw-loss}%
 		\begin-row
 		\begin-col-end\empty
 		\let\points\score \div\points\2
@@ -295,7 +308,7 @@
 				\begin-col
 				\begin-table\0\0\0
 				\begin-row
-				\expandafter\lassign\lindex\ndigits-tiebreaks\k{\ndigits-pts\ndigits-frc}%
+				\lassign\lindex\ndigits-tiebreaks\k{\ndigits-pts\ndigits-frc}%
 				\def\col-align{right}%
 				\def\col-width{\width\ndigits-pts}%
 				\iflist\tb
@@ -312,6 +325,27 @@
 				\end-table
 				\end-col
 			}%
+		\fi
+		\unless\if\ShowWinDrawLoss\0
+			\lassign\win-draw-loss{\win\draw\loss}%
+			\begin-col-end\empty
+			\begin-col
+			\begin-table\0\0\0
+			\begin-row
+			\def\col-align{right}%
+			\def\col-width{\width\ndigits-win}%
+			\begin-col-end{<font color="green">+\win</font>}%
+			\begin-col-end\thick-space
+			\def\col-align{right}%
+			\def\col-width{\width\ndigits-draw}%
+			\begin-col-end{<font color="green">=\draw</font>}%
+			\begin-col-end\thick-space
+			\def\col-align{right}%
+			\def\col-width{\width\ndigits-loss}%
+			\begin-col-end{<font color="green">\minus\loss</font>}%
+			\end-row
+			\end-table
+			\end-col
 		\fi
 		\unless\if\ShowPerformance\0
 			\begin-col-end\empty
@@ -338,9 +372,10 @@
 
 \lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
 
-<html><body><big>\cr
+\xhtml-head\Lang\Title\relax
+<body><big>\cr
 <p><nobr>\cr
-<font color="blue">\event</font>%
+<span recv="event" style="color: blue;">\event</span>
 \let\comma\empty
 \unless\ifempty\site\ \site\def\comma{, }\fi
 \unless\ifempty\country\ <img src="\country"/>\let\comma\empty\fi
@@ -446,11 +481,12 @@
 
 \cr
 <p>\cr
-\lassign\results{\unused\won\draw\lost}%
+\lassign\results{\win\loss\draw}%
 \numGames\ \if\numGames\1\Game\else\Games\fi
-\ (+\won\thick-space\ =\lost\thick-space\ \minus\draw)\cr
+\ (+\win\thick-space\ =\draw\thick-space\ \minus\loss)\cr
 </p>\cr
-</body></html>
+</body>
+\xhtml-foot
 
 %%% end of file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bye

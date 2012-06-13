@@ -804,18 +804,35 @@
 ::playertable::mc::DateOfDeath				"Dödsdatum"
 ::playertable::mc::FideID						"Fide ID"
 
-::playertable::mc::OpenInWebBrowser			"Öppna i webbrowser..."
-::playertable::mc::OpenPlayerCard			"Öppna %s player card"
-::playertable::mc::OpenFileCard				"Öppna %s file card"
-::playertable::mc::OpenFideRatingHistory	"Öppna Fide ratinghistorik"
-::playertable::mc::OpenWikipedia				"Öppna Wikipedia biografi"
-::playertable::mc::OpenViafCatalog			"Öppna VIAF katalog"
-::playertable::mc::OpenPndCatalog			"Öppna katalog i Deutsche Nationalbibliothek"
-::playertable::mc::OpenChessgames			"chessgames.com partisamling"
-::playertable::mc::SeachIn365ChessCom		"Sök i 365Chess.com"
+::playertable::mc::ShowPlayerCard			"Show Player Card..." ;# NEW
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Attendance"
+
+### player-card ########################################################
+::playercard::mc::PlayerCard					"Player Card" ;# NEW
+::playercard::mc::Latest						"Latest" ;# NEW
+::playercard::mc::Highest						"Highest" ;# NEW
+::playercard::mc::Minimal						"Minimal" ;# NEW
+::playercard::mc::Maximal						"Maximal" ;# NEW
+::playercard::mc::Win							"Win" ;# NEW
+::playercard::mc::Draw							"Draw" ;# NEW
+::playercard::mc::Loss							"Loss" ;# NEW
+::playercard::mc::Total							"Total" ;# NEW
+::playercard::mc::FirstGamePlayed			"First game played" ;# NEW
+::playercard::mc::LastGamePlayed				"Last game played" ;# NEW
+::playercard::mc::WhiteMostPlayed			"Most common openings as White" ;# NEW
+::playercard::mc::BlackMostPlayed			"Most common openings as Black" ;# NEW
+
+::playercard::mc::OpenInWebBrowser			"Öppna i webbrowser"
+::playercard::mc::OpenPlayerCard				"Öppna %s player card"
+::playercard::mc::OpenFileCard				"Öppna %s file card"
+::playercard::mc::OpenFideRatingHistory	"Öppna Fide ratinghistorik"
+::playercard::mc::OpenWikipedia				"Öppna Wikipedia biografi"
+::playercard::mc::OpenViafCatalog			"Öppna VIAF katalog"
+::playercard::mc::OpenPndCatalog				"Öppna katalog i Deutsche Nationalbibliothek"
+::playercard::mc::OpenChessgames				"chessgames.com partisamling"
+::playercard::mc::SeachIn365ChessCom		"Sök i 365Chess.com"
 
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock					"Avdocka"
@@ -1379,6 +1396,7 @@
 ::crosstable::mc::Settings					"Inställningar"
 ::crosstable::mc::RevertToStart			"Återgå till de ursprungliga värdena"
 ::crosstable::mc::UpdateDisplay			"Uppdatera displayen"
+::crosstable::mc::ShowPlayerCard			"Show Player Card" ;# NEW
 
 ::crosstable::mc::Traditional				"Traditionellt"
 ::crosstable::mc::Bilbao					"Bilbao"
@@ -1419,6 +1437,7 @@
 ::crosstable::mc::ShowHtml					"Visa HTML"
 ::crosstable::mc::ShowRating				"Rating"
 ::crosstable::mc::ShowPerformance		"Performance"
+::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
 ::crosstable::mc::ShowTiebreak			"Tiebreak"
 ::crosstable::mc::ShowOpponent			"Motståndare (som Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Knockout Table Style"

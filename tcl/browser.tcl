@@ -89,7 +89,7 @@ proc open {parent base info view index {fen {}}} {
 		::board::registerSize $Options(board:size)
 	}
 	set number [::gametable::column $info number]
-	set name [file rootname [file tail $base]]
+	set name [::util::databaseName $base]
 	if {[info exists Priv($base:$number:$view)]} {
 		set dlg [lindex $Priv($base:$number:$view) 0]
 		switch [tk windowingsystem] {
@@ -673,8 +673,9 @@ proc UpdateHeader {position} {
 	foreach side {white black} {
 		$text tag bind $side <Any-Enter>			[namespace code [list EnterItem $position $side]]
 		$text tag bind $side <Any-Leave>			[namespace code [list LeaveItem $position $side]]
-		$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayer $position $side]]
-		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayer $position $side]]
+		$text tag bind $side <ButtonPress-1>	[namespace code [list ShowPlayerCard $position $side]]
+		$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayerInfo $position $side]]
+		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayerInfo $position $side]]
 	}
 
 	set Vars(opening) [makeOpeningLines $data]
@@ -701,13 +702,13 @@ proc ShowEvent {position} {
 	set index [expr {$Vars(number) - 1}]
 
 	set info [scidb::db::fetch eventInfo $index $base -card]
-	::eventtable::showInfo $Vars(header) $info
+	::eventtable::popupInfo $Vars(header) $info
 }
 
 
 proc HideEvent {position} {
 	variable ${position}::Vars
-	::eventtable::hideInfo $Vars(header)
+	::eventtable::popdownInfo $Vars(header)
 }
 
 
@@ -738,7 +739,15 @@ proc LeaveItem {position item {force no}} {
 }
 
 
-proc ShowPlayer {position side} {
+proc ShowPlayerCard {position side} {
+	variable ${position}::Vars
+
+	if {$Vars(closed)} { return }
+	::playercard::show $Vars(base) [expr {$Vars(number) - 1}] $side
+}
+
+
+proc ShowPlayerInfo {position side} {
 	variable ${position}::Vars
 
 	if {$Vars(closed)} { return }
@@ -747,13 +756,13 @@ proc ShowPlayer {position side} {
 	set index [expr {$Vars(number) - 1}]
 
 	set info [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
-	::playertable::showInfo $Vars(header) $info
+	::playercard::popupInfo $Vars(header) $info
 }
 
 
-proc HidePlayer {position side} {
+proc HidePlayerInfo {position side} {
 	variable ${position}::Vars
-	::playertable::hideInfo $Vars(header)
+	::playercard::popdownInfo $Vars(header)
 }
 
 
@@ -1013,7 +1022,7 @@ proc PopupMenu {parent board position {what ""}} {
 		switch $what {
 			white - black {
 				set info [scidb::db::fetch ${what}PlayerInfo $index $Vars(base) -card -ratings {Elo Elo}]
-				::playertable::popupMenu $menu $info
+				::playertable::popupMenu $menu $Vars(base) $info [list [expr {$Vars(number) - 1}] $what]
 			}
 
 			event {

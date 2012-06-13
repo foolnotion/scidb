@@ -284,7 +284,6 @@ Producer*
 ListToken::getProducer(TokenP const& self) const
 {
 	M_REQUIRE(self.get() == this);
-
 	return new TokenProducer(self); // MEMORY
 }
 
@@ -401,6 +400,26 @@ void
 ListToken::prepend(TokenP const& token)
 {
 	m_tokenList.push_front(token);
+}
+
+
+TokenP
+ListToken::join(TokenP const& delim)
+{
+	ListToken* result = new ListToken; // MEMORY
+
+	TokenList::const_iterator b = m_tokenList.begin();
+	TokenList::const_iterator e = m_tokenList.end();
+
+	for (TokenList::const_iterator i = b; i != e; ++i)
+	{
+		if (i != b)
+			result->append(delim);
+
+		result->append(*i);
+	}
+
+	return TokenP(result);
 }
 
 

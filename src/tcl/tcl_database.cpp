@@ -44,6 +44,7 @@
 #include "db_database_codec.h"
 #include "db_game_info.h"
 #include "db_player.h"
+#include "db_player_stats.h"
 #include "db_site.h"
 #include "db_statistic.h"
 #include "db_pgn_reader.h"
@@ -53,6 +54,8 @@
 #include "si3_decoder.h"
 #include "si3_encoder.h"
 #include "sci_codec.h"
+
+#include "T_Controller.h"
 
 #include "u_zstream.h"
 #include "u_zlib_ostream.h"
@@ -66,6 +69,7 @@
 #include "m_algorithm.h"
 #include "m_limits.h"
 #include "m_tuple.h"
+#include "m_sstream.h"
 
 #include <tcl.h>
 #include <string.h>
@@ -91,6 +95,8 @@ static char const* CmdNew				= "::scidb::db::new";
 static char const* CmdSet				= "::scidb::db::set";
 static char const* CmdGet				= "::scidb::db::get";
 static char const* CmdMatch			= "::scidb::db::match";
+static char const* CmdPlayerCard		= "::scidb::db::playerCard";
+static char const* CmdPlayerInfo		= "::scidb::db::playerInfo";
 static char const* CmdRecode			= "::scidb::db::recode";
 static char const* CmdReverse			= "::scidb::db::reverse";
 static char const* CmdSave				= "::scidb::db::save";
@@ -1592,7 +1598,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	if (info.idn() == chess960::StandardIdn)
 	{
 		if (eop)
-			EcoTable::specimen().getLine(eop).print(overview);
+			EcoTable::specimen().getLine(eop).print(overview, encoding::Utf8);
 	}
 	else if (info.idn())
 	{
@@ -1743,7 +1749,7 @@ getPlayerInfo(int index, int view, char const* database, unsigned which)
 
 
 static int
-getPlayerInfo(	int index, int view, char const* database, Ratings const& ratings, bool info, bool idCard)
+getPlayerInfo(int index, int view, char const* database, Ratings const& ratings, bool info, bool idCard)
 {
 	Cursor const& cursor = Scidb->cursor(database);
 
@@ -1992,17 +1998,114 @@ getRatingTypes(int index, char const* database)
 
 
 static int
+cmdPlayerInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 3 && objc != 4)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> (<player-index> | <game-index> <side>)");
+		return TCL_ERROR;
+	}
+
+	Database const&         base(Scidb->cursor(stringFromObj(objc, objv, 1)).database());
+	unsigned                index(unsignedFromObj(objc, objv, 2));
+	NamebasePlayer const*   player;
+
+	if (objc == 3)
+		player = &base.player(index);
+	else
+		player = &base.player(index, color::fromSide(stringFromObj(objc, objv, 3)));
+
+	Ratings ratings(rating::Any, rating::Any);
+	return getPlayerInfo(*player, ratings, true, true);
+}
+
+
+static int
+cmdPlayerCard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	struct Log : public TeXt::Controller::Log
+	{
+		void error(mstl::string const& msg) { str = msg; }
+		mstl::string str;
+	};
+
+	if (objc != 6 && objc != 7)
+	{
+		Tcl_WrongNumArgs(
+			ti,
+			1,
+			objv,
+			"<search-dir> <script> <preamble> <database> (<player-index> | <game-index> <side>)");
+		return TCL_ERROR;
+	}
+
+	unsigned						index(unsignedFromObj(objc, objv, 5));
+	Database const&			base(Scidb->cursor(stringFromObj(objc, objv, 4)).database());
+	mstl::string				preamble(stringFromObj(objc, objv, 3));
+	mstl::string				searchDir(stringFromObj(objc, objv, 1));
+	mstl::string				script(stringFromObj(objc, objv, 2));
+	TeXt::Controller::LogP	myLog(new Log);
+	TeXt::Controller			controller(searchDir, TeXt::Controller::AbortMode, myLog);
+	mstl::istringstream		src(preamble);
+	mstl::ostringstream		dst;
+	mstl::ostringstream		out;
+	NamebasePlayer const*	player;
+
+	if (objc == 6)
+		player = &base.player(index);
+	else
+		player = &base.player(index, color::fromSide(stringFromObj(objc, objv, 6)));
+
+	base.emitPlayerCard(controller.receptacle(), *player);
+
+	if (controller.processInput(src, dst, &out, &out) >= 0)
+	{
+		int rc = controller.processInput(script, dst, &out, &out);
+
+		if (rc == TeXt::Controller::OpenInputFileFailed)
+			out.write(static_cast<Log*>(myLog.get())->str);
+	}
+
+	mstl::string htm(dst.str());
+	mstl::string log(out.str());
+
+	if (!htm.empty() && htm.back() == '\n')
+		htm.set_size(htm.size() - 1);
+	if (!log.empty() && log.back() == '\n')
+		log.set_size(log.size() - 1);
+
+	Tcl_Obj* args[2];
+	args[0] = Tcl_NewStringObj(htm, htm.size());
+	args[1] = Tcl_NewStringObj(log, log.size());
+
+	setResult(2, args);
+
+	return TCL_OK;
+}
+
+
+static int
 cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "eventInfo", "whitePlayerInfo", "blackPlayerInfo", 0 };
+	static char const* subcommands[] =
+	{
+		"eventInfo", "whitePlayerInfo", "blackPlayerInfo", "whitePlayerStats", "blackPlayerStats", 0
+	};
 	static char const* args[] =
 	{
 		"<game-index> <database>",
 		"<game-index> <database>",
 		"<game-index> <database>",
+		"<game-index> <database>",
+		"<game-index> <database>",
 		0,
 	};
-	enum { Cmd_EventInfo, Cmd_WhitePlayerInfo, Cmd_BlackPlayerInfo };
+	enum
+	{
+		Cmd_EventInfo,
+		Cmd_WhitePlayerInfo, Cmd_BlackPlayerInfo,
+		Cmd_WhitePlayerStats, Cmd_BlackPlayerStats
+	};
 
 	int index = intFromObj(objc, objv, 2);
 
@@ -2033,7 +2136,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_WhitePlayerInfo:
-		case Cmd_BlackPlayerInfo: // fallthru
+		case Cmd_BlackPlayerInfo:
 			{
 				Ratings ratings(rating::Any, rating::Any);
 
@@ -2080,6 +2183,14 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				return getPlayerInfo(*info.playerEntry(side), ratings, infoWanted, idCard);
 			}
 			break;
+
+		case Cmd_WhitePlayerStats:
+		case Cmd_BlackPlayerStats:
+			{
+				color::ID side = idx == Cmd_WhitePlayerStats ? color::White : color::Black;
+				return getPlayerStats(cursor.database(), *info.playerEntry(side));
+			}
+			break;
 	}
 
 	return usage(::CmdFetch, nullptr, nullptr, subcommands, args);
@@ -2092,11 +2203,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"clipbase", "scratchbase", "types", "type", "name", "codec", "encoding", "created?",
-		"modified?", "gameInfo", "playerInfo", "eventInfo", "annotator", "gameIndex", "playerIndex",
-		"eventIndex", "annotatorIndex", "description", "stats", "readonly?", "encodingState",
-		"deleted?", "open?", "lastChange", "customFlags", "gameFlags", "gameNumber",
-		"minYear", "maxYear", "maxUsage", "tags", "checksum", "idn", "eco", "ratingTypes",
-		"lookupPlayer", "lookupEvent", "writeable?", "upgrade?", "memoryOnly?", "compress?",
+		"modified?", "gameInfo", "playerInfo", "playerStats", "eventInfo", "annotator",
+		"gameIndex", "playerIndex", "eventIndex", "annotatorIndex", "description", "stats",
+		"readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
+		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum",
+		"idn", "eco", "ratingTypes", "lookupPlayer", "lookupEvent", "writeable?", "upgrade?",
+		"memoryOnly?", "compress?",
 		0
 	};
 	static char const* args[] =
@@ -2111,6 +2223,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"?<database>?",
 		"?<database>?",
 		"<index> ?<view>? ?<database>?",
+		"<index> ?<view>? ?<database> <which>?",
 		"<index> ?<view>? ?<database> <which>?",
 		"<index> ?<view>? ?<database> <which>?",
 		"<index> ?<view>?",
@@ -2147,12 +2260,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	enum
 	{
 		Cmd_Clipbase, Cmd_Scratchbase, Cmd_Types, Cmd_Type, Cmd_Name, Cmd_Codec, Cmd_Encoding,
-		Cmd_Created, Cmd_Modified, Cmd_GameInfo, Cmd_PlayerInfo, Cmd_EventInfo, Cmd_Annotator,
-		Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_AnnotatorIndex, Cmd_Description,
-		Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open, Cmd_LastChange,
-		Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage,
-		Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer, Cmd_LookupEvent,
-		Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly, Cmd_Compress,
+		Cmd_Created, Cmd_Modified, Cmd_GameInfo, Cmd_PlayerInfo, Cmd_PlayerStats, Cmd_EventInfo,
+		Cmd_Annotator, Cmd_GameIndex, Cmd_PlayerIndex, Cmd_EventIndex, Cmd_AnnotatorIndex,
+		Cmd_Description, Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open,
+		Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear,
+		Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer,
+		Cmd_LookupEvent, Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly, Cmd_Compress,
 	};
 
 	if (objc < 2)
@@ -2232,6 +2345,20 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				return getGameInfo(index, view, database, unsignedFromObj(objc, objv, 5));
 			}
+
+        case Cmd_PlayerStats:
+            {
+                if (objc < 3 || Tcl_GetIntFromObj(ti, objv[2], &index) != TCL_OK)
+                    return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+
+                if (objc >= 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
+                    return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+
+                char const* database = objc < 5 ? 0 : stringFromObj(objc, objv, 4);
+                Database const& base = Scidb->cursor(database).database();
+                return getPlayerStats(base, base.player(index));
+            }
+            break;
 
 		case Cmd_PlayerInfo:
 			{
@@ -3272,6 +3399,33 @@ cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static Tcl_Obj*
+wikiLinkList(Player const* player)
+{
+	typedef Player::AssocList	AssocList;
+
+	AssocList wikiLinks;
+
+	if (player->wikipediaLinks(wikiLinks))
+	{
+		Tcl_Obj* objs[mstl::mul2(wikiLinks.size())];
+		unsigned n = 0;
+
+		for (unsigned i = 0; i < wikiLinks.size(); ++i)
+		{
+			Player::Assoc const& assoc = wikiLinks[i];
+
+			objs[n++] = Tcl_NewStringObj(assoc.first, -1);
+			objs[n++] = Tcl_NewStringObj(assoc.second, -1);
+		}
+
+		return Tcl_NewListObj(n, objs);
+	}
+
+	return Tcl_NewListObj(0, 0);
+}
+
+
 int
 tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, bool info, bool idCard)
 {
@@ -3370,7 +3524,6 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 
 		if (p)
 		{
-			typedef Player::AssocList	AssocList;
 			typedef Player::StringList	StringList;
 
 			dateOfBirth = p->dateOfBirth();
@@ -3381,24 +3534,7 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 			viafID = p->viafID();
 			pndID = p->pndID();
 			chessgamesID = p->chessgamesID();
-
-			AssocList wikiLinks;
-
-			if (p->wikipediaLinks(wikiLinks))
-			{
-				Tcl_Obj* objs[mstl::mul2(wikiLinks.size())];
-				unsigned n = 0;
-
-				for (unsigned i = 0; i < wikiLinks.size(); ++i)
-				{
-					Player::Assoc const& assoc = wikiLinks[i];
-
-					objs[n++] = Tcl_NewStringObj(assoc.first, -1);
-					objs[n++] = Tcl_NewStringObj(assoc.second, -1);
-				}
-
-				wikiLinkList = Tcl_NewListObj(n, objs);
-			}
+			wikiLinkList = ::wikiLinkList(p);
 
 			StringList const& aliases = p->aliases();
 
@@ -3432,6 +3568,72 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 }
 
 
+int
+tcl::db::getPlayerStats(Database const& database, NamebasePlayer const& player)
+{
+	PlayerStats stats;
+	database.playerStatistic(player, stats);
+
+	Tcl_Obj* objv[7];
+	Tcl_Obj* objs[4];
+
+	objs[0] = Tcl_NewStringObj(stats.firstDate().asString(), -1);
+	objs[1] = Tcl_NewStringObj(stats.lastDate().asString(), -1);
+	objv[0] = Tcl_NewListObj(2, objs);
+
+	objs[0] = Tcl_NewIntObj(stats.minRating(rating::Elo));
+	objs[1] = Tcl_NewIntObj(stats.maxRating(rating::Elo));
+	objv[1] = Tcl_NewListObj(2, objs);
+
+	objv[2] = Tcl_NewIntObj(stats.countGames());
+
+	objs[0] = Tcl_NewIntObj(stats.score(color::White, result::White));
+	objs[1] = Tcl_NewIntObj(stats.score(color::White, result::Black));
+	objs[2] = Tcl_NewIntObj(stats.score(color::White, result::Draw));
+	objs[3] = Tcl_NewIntObj(int(stats.percentage(color::White)*100.0));
+	objv[3] = Tcl_NewListObj(4, objs);
+
+	objs[0] = Tcl_NewIntObj(stats.score(color::Black, result::Black));
+	objs[1] = Tcl_NewIntObj(stats.score(color::Black, result::White));
+	objs[2] = Tcl_NewIntObj(stats.score(color::Black, result::Draw));
+	objs[3] = Tcl_NewIntObj(int(stats.percentage(color::Black)*100.0));
+	objv[4] = Tcl_NewListObj(4, objs);
+
+	objs[0] = Tcl_NewIntObj(stats.score(result::White));
+	objs[1] = Tcl_NewIntObj(stats.score(result::Black));
+	objs[2] = Tcl_NewIntObj(stats.score(result::Draw));
+	objs[3] = Tcl_NewIntObj(int(stats.percentage()*100.0));
+	objv[5] = Tcl_NewListObj(4, objs);
+
+	objs[0] = Tcl_NewListObj(0, 0);
+	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::White)); i < n; ++i)
+	{
+		Tcl_Obj* argv[2];
+		mstl::string line;
+
+		EcoTable::specimen().getLine(stats.ecoLine(color::White, i)).print(line, encoding::Utf8);
+		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::White, i));
+		argv[1] = Tcl_NewStringObj(line, line.size());
+		Tcl_ListObjAppendElement(0, objs[0], Tcl_NewListObj(2, argv));
+	}
+	objs[1] = Tcl_NewListObj(0, 0);
+	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::Black)); i < n; ++i)
+	{
+		Tcl_Obj* argv[2];
+		mstl::string line;
+
+		EcoTable::specimen().getLine(stats.ecoLine(color::Black, i)).print(line, encoding::Utf8);
+		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::Black, i));
+		argv[1] = Tcl_NewStringObj(line, line.size());
+		Tcl_ListObjAppendElement(0, objs[1], Tcl_NewListObj(2, argv));
+	}
+	objv[6] = Tcl_NewListObj(2, objs);
+
+	setResult(U_NUMBER_OF(objv), objv);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace db {
 
@@ -3450,6 +3652,8 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSet,				cmdSet);
 	createCommand(ti, CmdGet,				cmdGet);
 	createCommand(ti, CmdMatch,			cmdMatch);
+	createCommand(ti, CmdPlayerCard,	cmdPlayerCard);
+	createCommand(ti, CmdPlayerInfo,	cmdPlayerInfo);
 	createCommand(ti, CmdRecode,			cmdRecode);
 	createCommand(ti, CmdReverse,			cmdReverse);
 	createCommand(ti, CmdSave,				cmdSave);

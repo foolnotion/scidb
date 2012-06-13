@@ -84,7 +84,6 @@ proc Build {w args} {
 		-exportselection no \
 		-state $opts(-state) \
 		-textvariable $opts(-textvariable) \
-		-cursor xterm \
 		;
 	pack $w.__w__ -side left
 

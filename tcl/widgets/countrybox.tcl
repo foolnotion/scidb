@@ -71,7 +71,6 @@ proc Build {w args} {
 		-disabledforeground black \
 		-disabledfont $bold \
 		-state $opts(-state) \
-		-cursor xterm \
 		;
 
 	$w addcol text  -id code -foreground darkgreen -font TkFixedFont -width 3 -justify center

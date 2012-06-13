@@ -123,16 +123,19 @@ cmdMake(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "bestMode", "playerName", "playerInfo", "playerCount", 0 };
+	static char const* subcommands[] = {
+		"bestMode", "playerName", "playerId", "playerInfo", "playerCount", 0
+	};
 	static char const* args[] =
 	{
 		"<baseId> <view>",
 		"<baseId> <view> <ranking>",
 		"<baseId> <view> <ranking>",
+		"<baseId> <view> <ranking>",
 		"<baseId> <view>",
 		0
 	};
-	enum { Cmd_BestMode, Cmd_PlayerName, Cmd_PlayerInfo, Cmd_PlayerCount };
+	enum { Cmd_BestMode, Cmd_PlayerName, Cmd_PlayerId, Cmd_PlayerInfo, Cmd_PlayerCount };
 
 	if (objc < 4)
 		return usage(::CmdGet, nullptr, nullptr, subcommands, args);
@@ -163,6 +166,20 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_PlayerName:
 			setResult(table->getPlayer(unsignedFromObj(objc, objv, 4))->name());
+			break;
+
+		case Cmd_PlayerId:
+			{
+				color::ID side;
+				unsigned ranking = unsignedFromObj(objc, objv, 4);
+				int index = table->getPlayerId(ranking - 1, side);
+				if (index < 0)
+					return error(CmdGet, nullptr, nullptr, "invalid ranking number %u", ranking);
+				Tcl_Obj* objs[2];
+				objs[0] = Tcl_NewIntObj(index);
+				objs[1] = Tcl_NewStringObj(color::printColor(side), -1);
+				setResult(2, objs);
+			}
 			break;
 
 		case Cmd_PlayerInfo:
@@ -337,6 +354,7 @@ cmdEmit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	table->emit(controller.receptacle(), scoringSystem, tiebreakRules, order, knockoutOrder, mode);
 
 	mstl::string preamble(stringFromObj(objc, objv, 10));
+
 	mstl::istringstream src(preamble);
 	mstl::ostringstream dst;
 	mstl::ostringstream out;

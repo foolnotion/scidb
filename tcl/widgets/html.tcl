@@ -46,6 +46,22 @@ variable Margin	8 ;# do not change!
 variable MaxWidth	12000
 
 
+proc defaultCSS {monoFamilies textFamilies} {
+	set css "
+		:link    { color: blue2; text-decoration: none; }
+		:visited { color: purple; text-decoration: none; }
+		/*:user	{ color: red3; text-decoration: none; }*/
+		:user		{ color: blue2; text-decoration: underline; }	/* http link */
+		:user2	{ color: purple; text-decoration: underline; }	/* http visited */
+		:user3	{ color: black; text-decoration: underline; }	/* invalid link */
+		:hover   { text-decoration: underline; background: yellow; }
+		.match	{ background: yellow; color: black; }
+		html		{ font-family: [join $textFamilies ","]; }
+		pre, tt, code, kbd { font-family: [join $monoFamilies ","]; }
+	"
+}
+
+
 proc Build {w args} {
 	array set opts {
 		-width				800
@@ -55,9 +71,14 @@ proc Build {w args} {
 		-relief				{}
 		-exportselection	no
 		-center				no
+		-fittowidth			no
 		-imagecmd			{}
 		-doublebuffer		yes
 		-latinligatures	yes
+		-useHorzScroll		yes
+		-useVertScroll		yes
+		-keepHorzScroll	no
+		-keepVertScroll	no
 		-showhyphens		0
 		-delay				0
 		-css					{}
@@ -69,7 +90,8 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center {}
+			-delay - -css - -center - -fittowidth -
+			-useHorzScroll - -useVertScroll - -keepHorzScroll - -keepVertScroll {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -showhyphens -
@@ -89,10 +111,14 @@ proc Build {w args} {
 	tk::frame $w {*}$options
 	tk::frame $w.sub -background $opts(-background) -borderwidth 0 
 	set html $w.sub.html
-	::scrolledframe::scrollbar $w.v -orient "vertical" -command [list $html yview]
-	::scrolledframe::scrollbar $w.h -orient "horizontal" -command [list $html xview]
-	grid $w.v -row 0 -column 1 -sticky ns
-	grid $w.h -row 1 -column 0 -sticky ew
+	if {$opts(-useVertScroll)} {
+		::scrolledframe::scrollbar $w.v -orient "vertical" -command [list $html yview]
+		grid $w.v -row 0 -column 1 -sticky ns
+	}
+	if {$opts(-useHorzScroll)} {
+		::scrolledframe::scrollbar $w.h -orient "horizontal" -command [list $html xview]
+		grid $w.h -row 1 -column 0 -sticky ew
+	}
 	grid $w.sub -row 0 -column 0 -sticky nsew
 	grid columnconfigure $w {0} -weight 1
 	grid rowconfigure $w {0} -weight 1
@@ -122,10 +148,13 @@ proc Build {w args} {
 		sel:state		0
 	}
 
-	set Priv(delay)  $opts(-delay)
-	set Priv(center) $opts(-center)
-	set Priv(bw)     $opts(-borderwidth)
-	set Priv(css)    $opts(-css)
+	set Priv(delay)		$opts(-delay)
+	set Priv(center)		$opts(-center)
+	set Priv(fittowidth)	$opts(-fittowidth)
+	set Priv(bw)    		$opts(-borderwidth)
+	set Priv(css)   		$opts(-css)
+	set Priv(minbbox)		{}
+	set Priv(styleCount)	0
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
@@ -136,26 +165,55 @@ proc Build {w args} {
 		$w.sub configure -width $opts(-width) -height $opts(-height)
 	}
 
-	__html_widget $html {*}$htmlOptions \
-		-shrink no \
-		-yscrollcommand [namespace code [list SbSet $w.v]] \
-		-xscrollcommand [namespace code [list SbSet $w.h]] \
-		-yscrollincrement 10 \
-		-xscrollincrement 10 \
-		;
+	if {$opts(-useVertScroll)} { set shrink no } else { set shrink yes }
+	__html_widget $html {*}$htmlOptions -shrink $shrink
+	$html handler script style [namespace code [list StyleHandler $html]]
+
+	if {$opts(-useHorzScroll)} {
+		if {$opts(-keepHorzScroll)} {
+			set cmd [list $w.h set]
+		} else {
+			set cmd [namespace code [list SbSet $w.h]]
+		}
+		$html configure -xscrollcommand $cmd -xscrollincrement 10
+	}
+	if {$opts(-useVertScroll)} {
+		if {$opts(-keepVertScroll)} {
+			set cmd [list $w.v set]
+		} else {
+			set cmd [namespace code [list SbSet $w.v]]
+		}
+		$html configure -yscrollcommand $cmd -yscrollincrement 10
+	}
 
 	if {$Priv(center)} {
 		place $html -x 0 -y 0
-		bind $w.sub <Configure> [namespace code { Place %W %w %h }]
+		bind $w.sub <Configure> [namespace code { Place %W }]
 	} else {
 		pack $html -fill both -expand yes
-		bind $w <Configure> [namespace code { Configure %W %w %# }]
+		if {$opts(-useVertScroll)} {
+			bind $w <Configure> [namespace code { Configure %W %w %# }]
+		}
 	}
 
 	SelectionClear $html
 	selection handle $html [namespace code [list SelectionHandler $html]]
 
 	return $w
+}
+
+
+proc StyleHandler {w node contents} {
+	variable [winfo parent [winfo parent $w]]::Priv
+
+	incr Priv(styleCount)
+	set id "author.[format %.4d $Priv(styleCount)]"
+	$w style -id $id.9999 -importcmd [namespace code [list ImportHandler $w]] $contents
+}
+
+
+proc ImportHandler {w parentid uri} {
+	puts stderr "html.tcl: ImportHandler not yet implemented"
 }
 
 
@@ -175,21 +233,35 @@ proc WidgetProc {w command args} {
 			$w.sub.html reset
 			$w.sub.html xview moveto 0
 			$w.sub.html yview moveto 0
-			if {$Priv(center)} { $w.sub.html configure -fixedwidth $MaxWidth }
+			if {!$Priv(fittowidth)} {
+				$w.sub.html configure -fixedwidth $MaxWidth
+			}
 			$w.sub.html parse -final [lindex $args 0]
 			if {[string length $Priv(css)]} { $w.sub.html style -id user $Priv(css) }
-			if {$Priv(center)} {
-				set bbox [ComputeBoundingBox $w.sub.html [$w.sub.html node]]
-				if {[llength $bbox] == 0} {
-					set width [winfo width $w.sub]
-				} else {
-					set width [expr {min([lindex $bbox 2], 4000) + $Margin}]
-				}
+			set Priv(minbbox) {}
+			if {$Priv(center) || !$Priv(fittowidth)} {
+				set bbox [$w minbbox]
+				if {[llength $bbox] == 0} { set bbox [$w bbox] }
+				set width [expr {min([lindex $bbox 2], 4000) + $Margin}]
 				$w.sub.html configure -fixedwidth $width
+			}
+			if {$Priv(center)} {
 				update idletasks
-				after idle [namespace code [list Place $w.sub [winfo width $w.sub] [winfo height $w.sub]]]
+				after idle [namespace code [list Place $w.sub]]
 			}
 			return
+		}
+
+		minbbox {
+			if {[llength $Priv(minbbox)] == 0} {
+				if {$Priv(fittowidth)} {
+					set maxWidth [$w.sub cget -width]
+				} else {
+					set maxWidth [set [namespace current]::MaxWidth]
+				}
+				set Priv(minbbox) [ComputeBoundingBox $w.sub.html [$w.sub.html node] $maxWidth]
+			}
+			return $Priv(minbbox)
 		}
 
 		handler - search - style {
@@ -295,9 +367,13 @@ proc WidgetProc {w command args} {
 }
 
 
-proc Place {w width height} {
+proc Place {w} {
 	variable [winfo parent $w]::Priv
+	variable MaxWidth
 
+	set width [winfo width $w]
+	set height [winfo height $w]
+	if {$width == 1} { return }
 	lassign [$w.html visbbox] _ _ htmlWidth htmlHeight
 	set xdelta [expr {max(0, ($width - $htmlWidth)/2)}]
 	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
@@ -343,14 +419,14 @@ proc VsbWidth {parent} {
 }
 
 
-proc ComputeBoundingBox {w node} {
+proc ComputeBoundingBox {w node maxWidth} {
 	variable MaxWidth
 	variable Margin
 
 	set tag [$node tag]
 	set result {}
 
-	if {[string length $tag]} {
+	if {[string length $tag] > 0} {
 		switch -- $tag {
 			html {}
 			head { return $result }
@@ -358,7 +434,7 @@ proc ComputeBoundingBox {w node} {
 				if {$tag ne "body"} {
 					set bbox [$w bbox $node]
 					if {[llength $bbox]} {
-						if {[lindex $bbox 2] == $MaxWidth - $Margin} { lset bbox 2 0 }
+						if {[lindex $bbox 2] == $maxWidth - $Margin} { lset bbox 2 0 }
 						set result $bbox
 					}
 				}
@@ -368,8 +444,8 @@ proc ComputeBoundingBox {w node} {
 
 	if {[llength $result] == 0 || [lindex $result 2] == 0} {
 		foreach n [$node children] {
-			set bbox [ComputeBoundingBox $w $n]
-			if {[llength $bbox] > 0 && [lindex $bbox 2] > 0} {
+			set bbox [ComputeBoundingBox $w $n $maxWidth]
+			if {[llength $bbox] > 0} {
 				set result [CombineBox $result $bbox]
 			}
 		}

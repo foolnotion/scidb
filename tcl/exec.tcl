@@ -94,6 +94,28 @@ if {[info patchlevel] eq "8.5.10"} {
 
 namespace eval process {
 
+set ProgramOptions [list                                                                     \
+	[list "--"                      "Only file names after this"]                             \
+	[list "--help"                  "Print help (this message) and exit"]                     \
+	[list "--version"               "Print version information and exit"]                     \
+	[list "--full-screen"           "Start program with full-screen modus"]                   \
+	[list "--show-board"            "Switch to board tab immediately after startup"]          \
+	[list "--re-open"               "Re-open databases from last session"]                    \
+	[list "--fast-load"             "Do only load the mandatory files at startup"]            \
+	[list "--first-time"            "Delete option file and recovery files at startup"        \
+	                                "(starting $::scidb::app as it would be the first time)"] \
+	[list "--elo-only"              "Do not load rating files except ELO rating"]             \
+	[list "--print-recovery-files"  "Print recovery files from last session and exit"]        \
+	[list "--delete-recovery-files" "Delete recovery files and exit"]                         \
+	[list "--dont-recover"          "Do not recover unsaved games from last session"]         \
+	[list "--recover-old"           "Recover games from older sessions"                       \
+	                                "(will skip games from last session)"]                    \
+	[list "--single-process"        "Forcing a single process of $::scidb::app"               \
+	                                "(you shouldn't use this option; only for testing)"]      \
+	[list "--force-grab"            "Do not suppress grabs in debug mode"                     \
+	                                "(only for debugging)"]                                   \
+]
+
 array set Options {}
 variable Arguments {}
 
@@ -117,6 +139,7 @@ proc ParseArgs {} {
 	global argc argv
 	variable Options
 	variable Arguments
+	variable ProgramOptions
 
 	for {set i 0} {$i < $argc} {incr i} {
 		set arg [lindex $argv $i]
@@ -131,11 +154,8 @@ proc ParseArgs {} {
 		set option [string range $arg 2 end]
 		set Options($option) 1
 
-		switch -- $option {
-			{} - help - version - full-screen - show-board - re-open - fast-load - first-time -
-			elo-only - print-recovery-files - delete-recovery-files - dont-recover - recover-old -
-			single-process - force-grab {}
-			default { puts stderr "Unrecognized option: $option" }
+		if {[lsearch -index 0 $ProgramOptions $arg] == -1} {
+			puts stderr "Unrecognized option: $arg"
 		}
 	}
 
@@ -155,25 +175,27 @@ if {[testOption help]} {
 	puts "Usage: $::argv0 \[options ...] \[database ...]"
 	puts ""
 	puts "Options:"
-	puts "  --                      Only file names after this"
-	puts "  --help                  Print help (this message) and exit"
-	puts "  --version               Print version information and exit"
-	puts "  --full-screen           Start program with full-screen modus"
-	puts "  --show-board            Switch to board tab immediately after startuo"
-	puts "  --re-open               Re-open databases from last session"
-	puts "  --fast-load             Do only load the mandatory files at startup"
-	puts "  --first-time            Delete option file and recovery files at startup"
-	puts "                          (starting $::scidb::app as it would be the first time)"
-	puts "  --elo-only              Do not load rating files except ELO rating"
-	puts "  --print-recovery-files  Print recovery files from last session and exit"
-	puts "  --delete-recovery-files Delete recovery files and exit"
-	puts "  --dont-recover          Do not recover unsaved games from last session"
-	puts "  --recover-old           Recover games from older sessions"
-	puts "                          (will skip games from last session)"
-	puts "  --single-process        Forcing a single process of $::scidb::app"
-	puts "                          (you shouldn't use this option; only for testing)"
-	puts "  --force-grab            Do not suppress grabs in debug mode"
-	puts "                          (only for debugging)"
+
+	set maxlen 0
+	foreach opts $ProgramOptions {
+		set maxlen [expr {max($maxlen, [string length [lindex $opts 0]])}]
+	}
+	foreach opts $ProgramOptions {
+		set i 0
+		foreach s $opts {
+			if {$i == 0} {
+				puts -nonewline "  "
+				puts -nonewline $s
+				set spaces [expr {$maxlen + 1 - [string length $s]}]
+			} else {
+				puts -nonewline [string repeat " " $spaces]
+				puts $s
+				set spaces [expr {$maxlen + 3}]
+			}
+			incr i
+		}
+	}
+
 	puts ""
 	puts "Options recognised by GUI (Tk) library:"
 	puts "  -geometry GEOMETRY      Use GEOMETRY for initial geometry"
@@ -181,6 +203,8 @@ if {[testOption help]} {
 	puts "  -sync                   Use synchronous mode for display server"
 	exit 0
 }
+
+unset ProgramOptions
 
 } ;# namespace process
 
@@ -265,22 +289,18 @@ proc SendPath {port} {
 	global argc
 	global argv
 
+	set args {}
+
 	for {set i 0} {$i < $argc} {incr i} {
 		set arg [lindex $argv $i]
 
-		if {[string index $arg 0] eq "-"} {
-			incr i
-		} else {
-			set chan [socket 127.0.0.1 $port]
-			puts $chan $arg
-			flush $chan
-			close $chan
-			return
+		if {[string index $arg 0] ne "-"} {
+			lappend args $arg
 		}
 	}
 	
 	set chan [socket 127.0.0.1 $port]
-	puts $chan ""
+	puts $chan $args
 	flush $chan
 	close $chan
 }
@@ -293,29 +313,33 @@ proc Incoming {chan addr port} {
 
 
 proc IncomingOffered {chan} {
-	if {[gets $chan path] >= 0} {
+	if {[gets $chan pathList] >= 0} {
 		fileevent $chan readable {}
 #		fconfigure $chan -blocking 1
-		after idle [namespace code [list Execute $path]]
+		after idle [namespace code [list Execute $pathList]]
 	}
 }
 
 
-proc Execute {path} {
+proc Execute {pathList} {
 	variable blocked
 	variable postponed
 	variable Vars
 
-	if {$blocked && [string length $path]} {
-		if {![info exists Vars(infoBox:$path)]} {
-			set postponed 1
-			lappend Vars(pending) $path
-			set msg [format $mc::PostponedMessage $path]
-			set Vars(infoBox:$path) \
-				[::dialog::info -buttons {} -title $::scidb::app -message $msg -topmost yes]
+	if {[llength $pathList]} {
+		if {$blocked} {
+			foreach path $pathList {
+				if {![info exists Vars(infoBox:$path)]} {
+					set postponed 1
+					lappend Vars(pending) $path
+					set msg [format $mc::PostponedMessage $path]
+					set Vars(infoBox:$path) \
+						[::dialog::info -buttons {} -title $::scidb::app -message $msg -topmost yes]
+				}
+			}
+		} else {
+			openBases $pathList
 		}
-	} elseif {[llength $path]} {
-		openBases [list $path]
 	}
 }
 

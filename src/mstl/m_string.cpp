@@ -485,7 +485,7 @@ string::assign(string const& s, size_type pos, size_type len)
 	if (len == npos)
 		len = s.size() - pos;
 
-	return assign(s.m_data, len);
+	return assign(s.m_data + pos, len);
 }
 
 
@@ -843,7 +843,7 @@ string::find(string const& s, size_type pos) const
 {
 	M_REQUIRE(pos <= size());
 
-	const_pointer p = ::strstr(s.m_data + pos, s);
+	const_pointer p = ::strstr(m_data + pos, s);
 	return p ? p - m_data : npos;
 }
 

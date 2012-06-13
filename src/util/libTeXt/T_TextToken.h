@@ -23,9 +23,15 @@
 
 namespace TeXt {
 
+class ListToken;
+class Producer;
+
 class TextToken : public FinalToken
 {
 public:
+
+	typedef mstl::ref_counted_ptr<ListToken> ListP;
+	typedef mstl::ref_counted_ptr<TextToken> TextP;
 
 	TextToken();
 	TextToken(mstl::string const& str);
@@ -40,6 +46,12 @@ public:
 
 	TokenP performThe(Environment& env) const override;
 	void perform(Environment& env) override;
+
+	void map(Environment& env, ListP const& mapping);
+
+	Producer* getProducer(TokenP const& self) const;
+
+	static TextP convert(Environment& env, TokenP token);
 
 private:
 

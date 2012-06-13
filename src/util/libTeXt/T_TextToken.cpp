@@ -17,8 +17,13 @@
 // ======================================================================
 
 #include "T_TextToken.h"
+#include "T_ListToken.h"
+#include "T_TextProducer.h"
 #include "T_Environment.h"
+#include "T_AhoCorasick.h"
 
+#include "m_vector.h"
+#include "m_string.h"
 #include "m_assert.h"
 
 using namespace TeXt;
@@ -89,6 +94,127 @@ TokenP
 TextToken::performThe(Environment& env) const
 {
 	return TokenP(new TextToken(m_str)); // MEMORY
+}
+
+
+Producer*
+TextToken::getProducer(TokenP const& self) const
+{
+	M_REQUIRE(self.get() == this);
+	return new TextProducer(m_str); // MEMORY
+}
+
+
+TextToken::TextP
+TextToken::convert(Environment& env, TokenP token)
+{
+	switch (Token::Type type = token->type())
+	{
+		case Token::T_Text:
+			// no action
+			break;
+
+		case Token::T_Ascii:
+			token.reset(new TextToken(token->name())); // MEMORY
+			break;
+
+		case Token::T_Number:
+			token.reset(new TextToken(token->description(env))); // MEMORY
+			break;
+
+		case Token::T_Undefined:
+			{
+				mstl::string result;
+				env.perform(token, result);
+				token.reset(new TextToken(result)); // MEMORY
+			}
+			break;
+
+		default:
+			switch (type)
+			{
+				case Token::T_List:
+					token = token->performThe(env);
+					break;
+
+				case Token::T_LeftBrace:
+					token.reset(new ListToken(env)); // MEMORY
+					break;
+
+				default:
+					token.reset(new ListToken(token)); // MEMORY
+					break;
+			}
+			static_cast<ListToken*>(token.get())->flatten();
+			token.reset(new TextToken(token->description(env))); // MEMORY
+			break;
+	}
+
+	return token;
+}
+
+
+namespace {
+
+struct MultipleSearch : public AhoCorasick
+{
+	typedef mstl::vector<mstl::string const*> StringList;
+
+	MultipleSearch(mstl::string const& text) :m_text(text), m_offset(0) {}
+
+	void match(unsigned position, unsigned index, unsigned length) override
+	{
+		M_ASSERT(position >= m_offset);
+		M_ASSERT(index < m_stringList.size());
+		M_ASSERT(m_offset + length <= m_text.size());
+
+		m_result.append(m_text, m_offset, position - m_offset);
+		m_result.append(*m_stringList[index]);
+		m_offset = position + length;
+	}
+
+	bool map(Environment& env, TextToken::ListP const& mapping)
+	{
+		mstl::vector<TokenP> tokens;
+		unsigned n = mapping->length();
+
+		tokens.reserve(mstl::div2(n));
+		m_stringList.reserve(mstl::div2(n));
+
+		for (unsigned i = 0; i < n; i += 2)
+		{
+			TextToken::TextP from(TextToken::convert(env, mapping->index(i)));
+			TextToken::TextP to(TextToken::convert(env, mapping->index(i + 1)));
+
+			tokens.push_back(to);
+			m_stringList.push_back(&to->content());
+			add(from->content());
+		}
+
+		bool rc = search(m_text);
+
+		if (rc)
+			m_result.append(m_text, m_offset, m_text.size() - m_offset);
+
+		return rc;
+	}
+
+	mstl::string const&	m_text;
+	StringList				m_stringList;
+	mstl::string			m_result;
+	unsigned					m_offset;
+};
+
+} // namespace
+
+
+void
+TextToken::map(Environment& env, ListP const& mapping)
+{
+	MultipleSearch search(m_str);
+
+	if (search.map(env, mapping))
+		m_str.swap(search.m_result);
 }
 
 // vi:set ts=3 sw=3:

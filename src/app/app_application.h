@@ -161,6 +161,7 @@ public:
 	Cursor const& cursor(char const* name) const;
 	Cursor& cursor(mstl::string const& name);
 	Cursor const& cursor(mstl::string const& name) const;
+	Cursor const& cursor(unsigned databaseId) const;
 
 	db::Game& game(unsigned position = InvalidPosition);
 	db::Game const& game(unsigned position = InvalidPosition) const;

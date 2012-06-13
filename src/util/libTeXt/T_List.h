@@ -23,11 +23,17 @@
 
 namespace TeXt {
 
+class ListToken;
+
 class List : public Package
 {
 public:
 
+	typedef mstl::ref_counted_ptr<ListToken> ListP;
+
 	List();
+
+	static ListP getListToken(Environment& env);
 
 private:
 

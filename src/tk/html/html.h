@@ -685,6 +685,7 @@ struct HtmlTree {
 #ifdef USE_DOUBLE_BUFFERING
     Pixmap buffer;
     XRectangle bufferRect;
+    XRectangle docRect;
     struct TkRegion_ *bufferRegion;
 #endif
 

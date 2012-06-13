@@ -1804,7 +1804,7 @@ Environment::perform(TokenP const& token, mstl::string& result)
 
 	try
 	{
-		expand(token);
+		putUnboundToken(token);
 
 		while (TokenP t = m_impl->getFinalToken(*this, AllowNull))
 			result += t->name();

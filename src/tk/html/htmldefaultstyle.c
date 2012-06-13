@@ -282,6 +282,7 @@
         "TABLE { \n" \
         "  display: table;\n" \
         "  border-spacing: 2px;\n" \
+        "  table-layout: auto;\n" \
         "\n" \
         "  border-bottom-color: grey25;\n" \
         "  border-right-color: grey25;\n" \

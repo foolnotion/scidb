@@ -1842,6 +1842,20 @@ Application::setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves
 }
 
 
+
+Cursor const&
+Application::cursor(unsigned databaseId) const
+{
+	for (CursorMap::const_iterator i = m_cursorMap.begin(); i != m_cursorMap.end(); ++i)
+	{
+		if (i->second->database().id() == databaseId)
+			return *i->second;
+	}
+
+	return cursor(); // fallback; should never be reached
+}
+
+
 void
 Application::finalize()
 {

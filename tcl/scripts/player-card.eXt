@@ -1,0 +1,383 @@
+% ======================================================================
+% Author : $Author$
+% Version: $Revision: 145 $
+% Date   : $Date: 2011-12-01 08:54:52 +0100 (Thu, 01 Dec 2011) $
+% Url    : $URL$
+% ======================================================================
+
+% ======================================================================
+%    _/|            __
+%   // o\         /    )           ,        /    /
+%   || ._)    ----\---------__----------__-/----/__-
+%   //__\          \      /   '  /    /   /    /   )
+%   )___(     _(____/____(___ __/____(___/____(___/_
+% ======================================================================
+
+% ======================================================================
+% Copyright: (C) 2012 Gregor Cramer
+% ======================================================================
+
+% ======================================================================
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+% ======================================================================
+
+\input\plain
+\input\xhtml
+
+\indentchar\ %
+\indentstep\2
+
+%%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\check-optional-token#tok#dflt{%
+	\ifx#tok\undefined
+		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
+		\let#tok#dflt%
+	\fi
+}
+\def\check-mandatory-token#tok{%
+	\ifx#tok\undefined
+		\errorcontextlines\0
+		\errmessage{ERROR: Token \string#tok is not defined}%
+	\fi
+}
+
+\check-mandatory-token\FormatDate
+\check-mandatory-token\Lang
+\check-mandatory-token\Title
+
+\ifx\BirthDay\undefined \let\BirthDay\relax \fi
+\ifx\DeathDay\undefined \let\DeathDay\relax \fi
+
+%%% helpers %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\let-digits#1#2{\ifx#2\0 \let#1\1 \else \xlet@n\log10#2\add@n\1 \let#1@n\fi}
+
+\def\format-score#score{%
+	\let\dec#score\div\dec\100
+	\let\frc#score\mod\frc\100
+	\let-digits\n\frc
+	\dec.\frc
+	\ifx\n\1 0\fi
+}
+
+\def\format-rating#rating{%
+	\begingroup
+	\edef\r{#rating}%
+	\unless\ifempty\r%
+		\iflower\r\0
+			\let\v\0 \sub\v\r
+			(\v)%
+		\else
+			\r
+		\fi
+	\fi
+	\endgroup
+}
+
+\def\format-eco#eco.#rest\end{#eco}
+
+%%% HTML tags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\expandafter\def\csname col!attrs\endcsname{%
+	\unless\ifempty\col-valign \space valign="\col-valign"\let\col-valign\empty\fi
+	\unless\ifempty\col-align \space align="\col-align"\let\col-align\empty\fi
+	\unless\ifempty\col-title \space title="\col-title"\let\col-title\empty\fi
+	\unless\ifempty\col-class \space class="\col-class"\let\col-class\empty\fi
+	\unless\ifempty\col-width \space width="\col-width"\let\col-width\empty\fi
+	\unless\ifempty\col-span \space colspan="\col-span"\let\col-span\empty\fi
+}
+
+\expandafter\def\csname row!attrs\endcsname{%
+	\unless\ifempty\row-class \space class="\row-class"\let\row-class\empty\fi
+	\unless\ifempty\row-eco \space eco="\row-eco"\let\row-eco\empty\fi
+}
+
+\let\col-valign\empty
+\let\col-align\empty
+\let\col-title\empty
+\let\col-class\empty
+\let\col-width\empty
+\let\col-span\empty
+
+\let\row-class\empty
+\let\row-eco\empty
+
+\def\begin-div#class#id{%
+	<div%
+	\unless\ifempty#class\ class="#class"\fi
+	\unless\ifempty#id\ id="#id"\fi
+	>\incr\indent\cr
+}
+\def\end-div{\decr\indent</div>\cr}
+
+\def\begin-table#class#width{%
+	<table%
+	\unless\ifempty#class\ class="#class"\fi
+	\unless\ifempty#width\ width="#width"\fi
+	>\incr\indent\cr
+}
+\def\end-table{\decr\indent</table>\cr}
+
+\def\begin-table-head{<thead>\incr\indent\cr}
+\def\end-table-head{\decr\indent</thead>\cr}
+
+\def\begin-table-foot{<tfoot>\incr\indent\cr}
+\def\end-table-foot{\decr\indent</tfoot>\cr}
+
+\def\begin-table-body{<tbody>\incr\indent\cr}
+\def\end-table-body{\decr\indent</tbody>\cr}
+
+\def\begin-row{<tr\csname row!attrs\endcsname>\incr\indent\cr}
+\def\end-row{\decr\indent</tr>\cr}
+
+\def\begin-head{<th\csname col!attrs\endcsname>\incr\indent\cr}
+\def\end-head{\decr\indent</th>\cr}
+\def\begin-head-end#1{<th\csname col!attrs\endcsname>#1</th>\cr}
+
+\def\begin-col{<td\csname col!attrs\endcsname>\incr\indent\cr}
+\def\end-col{\decr\indent</td>\cr}
+\def\begin-col-end#1{<td\csname col!attrs\endcsname>#1</td>\cr}
+
+\def\img#src#alt#border{<img src="#src" alt="#alt" style="border: #border;" />}
+
+\def\K{<span class="chess">&\#x2654;</span>}
+\def\Q{<span class="chess">&\#x2655;</span>}
+\def\R{<span class="chess">&\#x2656;</span>}
+\def\B{<span class="chess">&\#x2657;</span>}
+\def\N{<span class="chess">&\#x2658;</span>}
+\def\P{<span class="chess">&\#x2659;</span>}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\xhtml-head\Lang\Title{player-card.css}%
+
+<body>
+\incr\indent
+
+%%% Player Information %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin-div{header}{}%
+<b>\Forename\ \Surname</b>
+\end-div
+%
+\begin-div{box}{info}%
+\begin-table{}{100\%}%
+\begin-row
+\def\col-valign{top}%
+\begin-col
+\begin-table{}{}%
+\begin-row
+\begin-col-end{\Label-Surname:}%
+\begin-col-end\Surname
+\end-row
+\begin-row
+\begin-col-end{\Label-Forename:}%
+\begin-col-end\Forename
+\end-row
+\begin-row
+\begin-col-end{\Label-Federation:}%
+\begin-col-end{\FormatFederation\Federation&ensp;\img{flag}\Federation{1px solid \#92c428}}%
+\end-row
+\begin-row
+\begin-col-end{\Label-FIDE-ID:}%
+\begin-col-end\ID-Fide
+\end-row
+\begin-row
+\begin-col-end{\Label-Title:}%
+\edef\titles{\ljoin\Titles${, }}%
+\let\col-title\titles
+\begin-col-end\titles
+\end-row
+\end-table
+\end-col
+\def\col-valign{top}%
+\begin-col
+\begin-table{}{}%
+\unless\ifx\Birthday\relax
+	\begin-row
+	\begin-col-end{\Label-Birthday:}%
+	\begin-col-end{\FormatDate\BirthDay}%
+	\end-row
+\fi
+\unless\ifx\DeathDay\relax
+	\begin-row
+	\begin-col-end{\Label-Deathday:}%
+	\begin-col-end{\FormatDate\DeathDay}%
+	\end-row
+\fi
+\end-table
+\end-col
+\def\col-class{photo}%
+\begin-col-end{\img{photo}{\Surname\ \Forename}{2px solid white}}%
+\end-row
+\end-table
+\end-div
+
+%%% Ratings %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\let\Elo${{Elo}\empty\empty\empty\empty}%
+\let\DWZ${{DWZ}\empty\empty\empty\empty}%
+\let\ECF${{ECF}\empty\empty\empty\empty}%
+\let\Rapid${{Rapid}\empty\empty\empty\empty}%
+\let\IPS${{IPS}\empty\empty\empty\empty}%
+\let\ICCF${{ICCF}\empty\empty\empty\empty}%
+\let\USCF${{USCF}\empty\empty\empty\empty}%
+\let\Rating${{Rating}\empty\empty\empty\empty}%
+\let\RatingTypes${\Elo\DWZ\ECF\Rapid\IPS\ICCF\USCF\Rating}%
+\let\fstcol${\Label-Latest\Label-Highest\Label-Minimal\Label-Maximal}%
+\let\minimal\empty
+\let\maximal\empty
+\foreach\group\Ratings{%
+	\lassign\group{\rating\latest\highest}%
+	\expandafter\lset\csname\rating\endcsname\1\latest
+	\expandafter\lset\csname\rating\endcsname\2\highest
+}%
+\foreach\group\RatingRange{%
+	\lassign\group{\rating\min\max}%
+	\expandafter\lset\csname\rating\endcsname\3\min
+	\expandafter\lset\csname\rating\endcsname\4\max
+}%
+\begin-div{}{rating}%
+\begin-table{span}{}%
+\begin-table-head
+\begin-row
+\begin-head-end\empty
+\foreach\type\RatingTypes{%
+	\begin-head-end{\lindex\type\0}%
+}%
+\end-row
+\end-table-head
+\begin-table-body
+\for \i \0 \4 {%
+	\begin-row
+	\begin-head-end{\lindex\fstcol\i}%
+	\let\r\1
+	\foreach\type\RatingTypes{%
+		\let\k\i \incr\k
+		\ifodd\r \def\col-class{odd}\fi \incr\r
+		\let\rating\0
+		\expandafter\let\expandafter\rating\lindex\type\k
+		\begin-col-end{\unless\ifx\rating\0 \format-rating\rating \fi}%
+	}%
+	\end-row
+}%
+\end-table-body
+\end-table
+\end-div
+
+%%% Win/Draw/Loss %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin-div{}{rating}%
+\begin-table{span}{}%
+\begin-table-head
+\begin-row
+\begin-head-end\empty
+\begin-head-end{\Label-Win}%
+\begin-head-end{\Label-Draw}%
+\begin-head-end{\Label-Loss}%
+\begin-head-end{\Label-Total}%
+\begin-head-end{\Label-Score}%
+\end-row
+\end-table-head
+\begin-table-body
+\let\what${\Label-White\Label-Black\Label-Total}%
+\let\i\0
+\foreach\group\Result{%
+	\lassign\group{\w\d\l\n}%
+	\begin-row
+	\begin-head-end{\lindex\what\i}%
+	\def\col-class{odd}%
+	\begin-col-end\w
+	\begin-col-end\d
+	\def\col-class{odd}%
+	\begin-col-end\l
+	\begin-col-end\n
+	\def\col-class{odd}%
+	\begin-col-end{\expandafter\format-score\lindex\Score\i\%}%
+	\end-row
+	\incr\i
+}%
+\end-table-body
+\begin-table-foot
+\begin-row
+\let\col-span\6
+\begin-col
+\begin-table{}{100\%}%
+\begin-col-end{\Label-First-Game-Played: \FormatDate\FirstDate}%
+\begin-col-end{\Label-Last-Game-Played: \FormatDate\LastDate}%
+\end-table
+\end-col
+\end-row
+\end-table-foot
+\end-table
+\end-div
+
+%%% Repertoire %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\xlet\ecoLines\lindex\EcoLines\0
+\ifgreater\llength\ecoLines\0
+	\begin-div{}{eco}%
+	\begin-table{span}{}%
+	\begin-table-head
+	\begin-row
+	\let\col-span\3
+	\begin-head-end{\Label-White-Most-Played}%
+	\end-row
+	\end-table-head
+	\begin-table-body
+	\let\r\1
+	\foreach\ecoLine\ecoLines{%
+		\lassign\ecoLine{\eco\count\line}%
+		\edef\line{\tmap\line${K\K Q\Q R\R B\B N\N P\P}}%
+		\def\row-class{eco}%
+		\ifodd\r \def\row-class{odd}\fi
+		\incr\r
+		\begin-row
+		\begin-col-end{\expandafter\format-eco\eco\end}%
+		\def\col-width{100\%}%
+		\begin-col-end{\line}%
+		\def\col-align{right}%
+		\begin-col-end{\count}%
+		\end-row
+	}%
+	\end-table-body
+	\end-table
+	\end-div
+\fi
+
+\xlet\ecoLines\lindex\EcoLines\1
+\ifgreater\llength\ecoLines\0
+	\begin-div{}{eco}%
+	\begin-table{span}{}%
+	\begin-table-head
+	\begin-row
+	\let\col-span\3
+	\begin-head-end{\Label-Black-Most-Played}%
+	\end-row
+	\end-table-head
+	\begin-table-body
+	\foreach\ecoLine\ecoLines{%
+		\lassign\ecoLine{\eco\count\line}%
+		\edef\line{\tmap\line${K\K Q\Q R\R B\B N\N P\P}}%
+		\def\row-eco{\eco}%
+		\ifodd\r \def\row-class{odd}\fi
+		\incr\r
+		\begin-row
+		\begin-col-end{\expandafter\format-eco\eco\end}%
+		\def\col-width{100\%}%
+		\begin-col-end{\line}%
+		\def\col-align{right}%
+		\begin-col-end{\count}%
+		\end-row
+	}%
+	\end-table-body
+	\end-table
+	\end-div
+\fi
+
+%%% Finish %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\decr\indent
+</body>
+\decr\indent
+\xhtml-foot
+\bye
+
+% vi:set ts=3 sw=3:

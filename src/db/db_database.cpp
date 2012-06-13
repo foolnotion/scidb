@@ -35,6 +35,7 @@
 #include "db_producer.h"
 #include "db_eco_table.h"
 #include "db_tournament_table.h"
+#include "db_player_stats.h"
 #include "db_filter.h"
 #include "db_query.h"
 #include "db_search.h"
@@ -995,6 +996,60 @@ Database::countPlayers(NamebaseEvent const& event, unsigned& averageElo, unsigne
 	}
 
 	return eloSet.size();
+}
+
+
+NamebasePlayer const&
+Database::player(unsigned gameIndex, color::ID side) const
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(gameIndex < countGames());
+
+	return *m_gameInfoList[gameIndex]->playerEntry(side);
+}
+
+
+void
+Database::emitPlayerCard(TeXt::Receptacle& receptacle, NamebasePlayer const& player) const
+{
+	PlayerStats stats;
+	playerStatistic(player, stats);
+	Player::emitPlayerCard(receptacle, player, stats);
+}
+
+
+void
+Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) const
+{
+	enum { Blank = 1 + color::White + color::Black };
+
+	for (unsigned i = 0, n = m_gameInfoList.size(); i < n; ++i)
+	{
+		GameInfo const* info = m_gameInfoList[i];
+		int side = Blank;
+
+		if (info->playerEntry(color::White) == &player)
+			side = color::White;
+		else if (info->playerEntry(color::Black) == &player)
+			side = color::Black;
+
+		if (side != Blank)
+		{
+			color::ID		color			= color::ID(side);
+			rating::Type	ratingType	= info->ratingType(color);
+
+			if (ratingType != rating::Elo)
+				stats.addRating(ratingType, info->rating(color));
+
+			stats.addRating(rating::Elo, info->elo(color));
+			stats.addDate(info->date());
+			stats.addScore(color, info->result());
+			if (info->idn() == chess960::StandardIdn)
+				stats.addEco(color, info->ecoKey());
+		}
+	}
+
+	stats.finish();
 }
 
 // vi:set ts=3 sw=3:

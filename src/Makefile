@@ -383,10 +383,10 @@ cbh2si4.o: mstl/m_backtrace.h
 cbh2si4.o: mstl/m_exception.ipp
 cbh2si4.o: db/db_eco.ipp
 cbh2si4.o: db/db_line.h
-cbh2si4.o: db/db_line.ipp
-cbh2si4.o: db/db_home_pawns.h
 cbh2si4.o: db/db_common.h
 cbh2si4.o: db/db_common.ipp
+cbh2si4.o: db/db_line.ipp
+cbh2si4.o: db/db_home_pawns.h
 cbh2si4.o: db/db_home_pawns.ipp
 cbh2si4.o: mstl/m_map.h
 cbh2si4.o: mstl/m_vector.h
@@ -534,10 +534,10 @@ cdb2sci.o: mstl/m_backtrace.h
 cdb2sci.o: mstl/m_exception.ipp
 cdb2sci.o: db/db_eco.ipp
 cdb2sci.o: db/db_line.h
-cdb2sci.o: db/db_line.ipp
-cdb2sci.o: db/db_home_pawns.h
 cdb2sci.o: db/db_common.h
 cdb2sci.o: db/db_common.ipp
+cdb2sci.o: db/db_line.ipp
+cdb2sci.o: db/db_home_pawns.h
 cdb2sci.o: db/db_home_pawns.ipp
 cdb2sci.o: mstl/m_map.h
 cdb2sci.o: mstl/m_vector.h

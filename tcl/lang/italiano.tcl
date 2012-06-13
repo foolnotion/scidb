@@ -806,18 +806,35 @@
 ::playertable::mc::DateOfDeath				"Data di morte"
 ::playertable::mc::FideID						"ID Fide"
 
-::playertable::mc::OpenInWebBrowser			"Apri nel browser..."
-::playertable::mc::OpenPlayerCard			"Apri profilo utente %s"
-::playertable::mc::OpenFileCard				"Apri profilo file %s"
-::playertable::mc::OpenFideRatingHistory	"Apri storia punteggio FIDE"
-::playertable::mc::OpenWikipedia				"Apri biografia Wikipedia"
-::playertable::mc::OpenViafCatalog			"Apri catalogo VIAF"
-::playertable::mc::OpenPndCatalog			"Apri catalogo della Deutsche Nationalbibliothek"
-::playertable::mc::OpenChessgames			"Collezione partite chessgames.com"
-::playertable::mc::SeachIn365ChessCom		"Cerca in 365Chess.com"
+::playertable::mc::ShowPlayerCard			"Show Player Card..." ;# NEW
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"  ;#Attendance
+
+### player-card ########################################################
+::playercard::mc::PlayerCard					"Player Card" ;# NEW
+::playercard::mc::Latest						"Latest" ;# NEW
+::playercard::mc::Highest						"Highest" ;# NEW
+::playercard::mc::Minimal						"Minimal" ;# NEW
+::playercard::mc::Maximal						"Maximal" ;# NEW
+::playercard::mc::Win							"Win" ;# NEW
+::playercard::mc::Draw							"Draw" ;# NEW
+::playercard::mc::Loss							"Loss" ;# NEW
+::playercard::mc::Total							"Total" ;# NEW
+::playercard::mc::FirstGamePlayed			"First game played" ;# NEW
+::playercard::mc::LastGamePlayed				"Last game played" ;# NEW
+::playercard::mc::WhiteMostPlayed			"Most common openings as White" ;# NEW
+::playercard::mc::BlackMostPlayed			"Most common openings as Black" ;# NEW
+
+::playercard::mc::OpenInWebBrowser			"Apri nel browser"
+::playercard::mc::OpenPlayerCard				"Apri profilo utente %s"
+::playercard::mc::OpenFileCard				"Apri profilo file %s"
+::playercard::mc::OpenFideRatingHistory	"Apri storia punteggio FIDE"
+::playercard::mc::OpenWikipedia				"Apri biografia Wikipedia"
+::playercard::mc::OpenViafCatalog			"Apri catalogo VIAF"
+::playercard::mc::OpenPndCatalog				"Apri catalogo della Deutsche Nationalbibliothek"
+::playercard::mc::OpenChessgames				"Collezione partite chessgames.com"
+::playercard::mc::SeachIn365ChessCom		"Cerca in 365Chess.com"
 
 ### twm - tiled window manager #########################################
 ::twm::mc::Undock	"Undock" ;# NEW
@@ -1382,6 +1399,7 @@
 ::crosstable::mc::Settings					"Opzioni"
 ::crosstable::mc::RevertToStart			"Torna ai valori iniziali"
 ::crosstable::mc::UpdateDisplay			"Aggiorna visualizzazione"
+::crosstable::mc::ShowPlayerCard			"Show Player Card" ;# NEW
 
 ::crosstable::mc::Traditional				"Tradizionale"
 ::crosstable::mc::Bilbao					"Bilbao"
@@ -1422,6 +1440,7 @@
 ::crosstable::mc::ShowHtml					"Mostra HTML"
 ::crosstable::mc::ShowRating				"Elo"
 ::crosstable::mc::ShowPerformance		"Performance"
+::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
 ::crosstable::mc::ShowTiebreak			"Tiebreak"
 ::crosstable::mc::ShowOpponent			"Avversario (come Tooltip)" ;# ??
 ::crosstable::mc::KnockoutStyle			"Stile Tabella Knockout"

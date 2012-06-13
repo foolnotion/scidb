@@ -304,6 +304,9 @@ proc databaseName {base {withExtension 1}} {
 			.zip {
 				set ext .pgn
 			}
+			.sci {
+				set ext ""
+			}
 		}
 
 		if {[string length $ext]} { append name " $ext" }

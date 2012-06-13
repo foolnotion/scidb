@@ -27,6 +27,8 @@
 #ifndef _db_line_included
 #define _db_line_included
 
+#include "db_common.h"
+
 #include "u_base.h"
 
 namespace mstl { class string; }
@@ -55,8 +57,7 @@ struct Line
 
 	uint16_t operator[](unsigned n) const;
 
-	mstl::string& print(mstl::string& result) const;
-	mstl::string& dump(mstl::string& result) const;
+	mstl::string& print(mstl::string& result, encoding::CharSet charSet = encoding::Latin1) const;
 	void dump() const;
 
 	void copy(Line const& line);

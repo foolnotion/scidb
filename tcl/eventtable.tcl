@@ -175,8 +175,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<LanguageChanged>> [namespace code [list BindAccelerators $path]]
 
 	bind $path <ButtonPress-2>			[namespace code [list ShowInfo $path %x %y]]
-	bind $path <ButtonRelease-2>		[namespace code [list hideInfo $path]]
-	bind $path <ButtonPress-3>			+[namespace code [list hideInfo $path]]
+	bind $path <ButtonRelease-2>		[namespace code [list popdownInfo $path]]
+	bind $path <ButtonPress-3>			+[namespace code [list popdownInfo $path]]
 
 	set Vars(viewcmd) $getViewCmd
 	BindAccelerators $path
@@ -315,7 +315,7 @@ proc see {path position} {
 }
 
 
-proc showInfo {path info} {
+proc popupInfo {path info} {
 	set w $path.showinfo
 	catch { destroy $w }
 	set top [::util::makePopup $w]
@@ -379,7 +379,7 @@ proc showInfo {path info} {
 }
 
 
-proc hideInfo {path} {
+proc popdownInfo {path} {
 	::tooltip::popdown $path.showinfo
 }
 
@@ -592,7 +592,7 @@ proc ShowInfo {path x y} {
 	set base [::scrolledtable::base $table]
 	set view [{*}$Vars(viewcmd) $base]
 	set info [scidb::db::get eventInfo $index $view $base -card]
-	showInfo $path $info
+	popupInfo $path $info
 }
 
 

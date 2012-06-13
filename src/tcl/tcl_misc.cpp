@@ -32,6 +32,7 @@
 #include "db_comment.h"
 #include "db_player.h"
 #include "db_database_codec.h"
+#include "db_eco_table.h"
 
 #include "si3_codec.h"
 #include "sci_codec.h"
@@ -655,23 +656,45 @@ cmdDebug(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	::db::Player const* player = ::db::Player::findPlayer(unsignedFromObj(objc, objv, 1));
-	bool unicodeFlag = false;
+	char const* which = stringFromObj(objc, objv, 1);
 
-	if (objc > 2)
+	if (::strcmp(which, "player") == 0)
 	{
-		if (strcmp(stringFromObj(objc, objv, 2), "-unicode") != 0)
-			return error(CmdLookup, 0, 0, "unknown option '%s'", stringFromObj(objc, objv, 2));
+		::db::Player const* player = ::db::Player::findPlayer(unsignedFromObj(objc, objv, 2));
+		bool unicodeFlag = false;
 
-		unicodeFlag = boolFromObj(objc, objv, 3);
+		if (objc > 3)
+		{
+			if (strcmp(stringFromObj(objc, objv, 3), "-unicode") != 0)
+				return error(CmdLookup, 0, 0, "unknown option '%s'", stringFromObj(objc, objv, 3));
+
+			unicodeFlag = boolFromObj(objc, objv, 4);
+		}
+
+		if (!player)
+			setResult("");
+		else if (unicodeFlag)
+			setResult(player->name());
+		else
+			setResult(player->asciiName());
 	}
+	else if (::strcmp(which, "countryCode") == 0)
+	{
+		setResult(::db::country::toString(::db::country::fromString(stringFromObj(objc, objv, 2))));
+	}
+	else if (::strcmp(which, "opening") == 0)
+	{
+		::db::Eco eco(stringFromObj(objc, objv, 2));
+		mstl::string opening, shortOpening, variation, subVariation;
+		::db::EcoTable::specimen().getOpening(eco, opening, shortOpening, variation, subVariation);
 
-	if (!player)
-		setResult("");
-	else if (unicodeFlag)
-		setResult(player->name());
-	else
-		setResult(player->asciiName());
+		Tcl_Obj* objs[4];
+		objs[0] = Tcl_NewStringObj(opening, opening.size());
+		objs[1] = Tcl_NewStringObj(shortOpening, shortOpening.size());
+		objs[2] = Tcl_NewStringObj(variation, variation.size());
+		objs[3] = Tcl_NewStringObj(subVariation, subVariation.size());
+		setResult(U_NUMBER_OF(objs), objs);
+	}
 
 	return TCL_OK;
 }
@@ -829,7 +852,7 @@ cmdHtmlHyphenate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	util::html::Hyphenate hyphenate(
 		stringFromObj(objc, objv, 1),
 		stringFromObj(objc, objv, 2),
-		util::html::Hyphenate::KeepInCache);
+		::cacheCount ? util::html::Hyphenate::KeepInCache : util::html::Hyphenate::DontKeepInCache);
 
 	hyphenate.parse(document, length);
 	setResult(hyphenate.result());

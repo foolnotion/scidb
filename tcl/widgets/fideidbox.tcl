@@ -59,7 +59,6 @@ proc Build {w args} {
 		-validatecommand [namespace code { ValidateFideId %P %S }] \
 		-invalidcommand { bell } \
 		-state $opts(-state) \
-		-cursor xterm \
 		;
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]

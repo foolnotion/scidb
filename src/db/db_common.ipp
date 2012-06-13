@@ -71,6 +71,14 @@ inline bool isWhite(ID color) { return color == White; }
 inline bool isBlack(ID color) { return color == Black; }
 
 inline
+ID
+fromSide(char const* side)
+{
+	M_REQUIRE(side);
+	return *side == 'w' ? White : Black;
+}
+
+inline
 char const*
 printColor(ID color)
 {
@@ -186,6 +194,14 @@ opponent(ID result)
 	}
 
 	return result;
+}
+
+
+inline
+ID
+fromColor(color::ID color)
+{
+	return isWhite(color) ? White : Black;
 }
 
 

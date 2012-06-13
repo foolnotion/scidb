@@ -40,6 +40,7 @@ namespace mstl { class fstream; }
 namespace mstl { class ostream; }
 namespace util { class Progress; }
 namespace util { class ByteStream; }
+namespace TeXt { class Receptacle; }
 
 namespace db {
 
@@ -53,6 +54,7 @@ class Producer;
 class Statistic;
 class NamebaseEntry;
 class NamebasePlayer;
+class PlayerStats;
 class TournamentTable;
 class Filter;
 class Log;
@@ -146,6 +148,8 @@ public:
 	GameInfo& gameInfo(unsigned index);
 	/// Returns the player at given index.
 	NamebasePlayer const& player(unsigned index) const;
+	/// Returns the player for given game index and specified side.
+	NamebasePlayer const& player(unsigned gameIndex, color::ID side) const;
 	/// Returns the event at given index.
 	NamebaseEvent const& event(unsigned index) const;
 	/// Returns the annotator at given index.
@@ -216,6 +220,10 @@ public:
 
 	/// Build tournament table for selected games.
 	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;
+	/// Generate player dossier from whole database for given player.
+	void playerStatistic(NamebasePlayer const& player, PlayerStats& stats) const;
+	/// Generate player card information for given player.
+	void emitPlayerCard(TeXt::Receptacle& receptacle, NamebasePlayer const& player) const;
 
 	/// Open an asynchronous game stream (block file) reader for findExactPositionAsync() operation.
 	void openAsyncReader();

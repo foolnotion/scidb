@@ -109,7 +109,6 @@ proc Build {w args} {
 		-validate key \
 		-validatecommand [namespace code [list ValidateYear $w %P]] \
 		-invalidcommand { bell } \
-		-cursor xterm \
 		;
 	ttk::label $w.dot1 \
 		-text "." \

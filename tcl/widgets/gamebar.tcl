@@ -337,8 +337,9 @@ proc insert {gamebar at id tags} {
 	foreach side {white black} {
 		set tag ${side}Input${id}
 
-		$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowPlayer $gamebar $id $side]]
-		$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HidePlayer $gamebar $id $side]]
+		$gamebar bind $tag <ButtonPress-1>		[namespace code [list ShowPlayerCard $gamebar $id $side]]
+		$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowPlayerInfo $gamebar $id $side]]
+		$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HidePlayerInfo $gamebar $id $side]]
 		$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupPlayerMenu $gamebar $id $side]]
 
 		$gamebar bind $tag <Enter>	[namespace code [list EnterPlayer $gamebar $id $side]]
@@ -1295,7 +1296,9 @@ proc PopupPlayerMenu {gamebar id side} {
 
 	if {[::scidb::db::get open? $base]} {
 		set Specs(player:locked) 1
-		::playertable::popupMenu $menu [GetPlayerInfo $gamebar $id $side]
+		lassign [::scidb::game::sink? $id] base gameIndex
+		set info [GetPlayerInfo $gamebar $id $side]
+		::playertable::popupMenu $menu $base $info [list $gameIndex $side]
 		$menu add separator
 	}
 
@@ -1960,7 +1963,7 @@ proc ShowEvent {gamebar id} {
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
-		::eventtable::showInfo $gamebar $info
+		::eventtable::popupInfo $gamebar $info
 	} else {
 		ShowTags $gamebar $id
 	}
@@ -1975,7 +1978,7 @@ proc HideEvent {gamebar id} {
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
-		::eventtable::hideInfo $gamebar
+		::eventtable::popdownInfo $gamebar
 	} else {
 		HideTags $gamebar
 	}
@@ -1993,7 +1996,7 @@ proc GetPlayerName {gamebar id side} {
 }
 
 
-proc ShowPlayer {gamebar id side} {
+proc ShowPlayerCard {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
@@ -2002,14 +2005,29 @@ proc ShowPlayer {gamebar id side} {
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
-		::playertable::showInfo $gamebar $info
+		lassign [::scidb::game::sink? $id] base index
+		::playercard::show $base $index $side
+	}
+}
+
+
+proc ShowPlayerInfo {gamebar id side} {
+	variable Specs
+
+	set sid $Specs(selected:$gamebar)
+	set info [GetPlayerInfo $gamebar $sid $side]
+	set name [lindex $info 0]
+	if {$name eq "?" || $name eq "-"} { set name "" }
+
+	if {[string length $name]} {
+		::playercard::popupInfo $gamebar $info
 	} else {
 		ShowTags $gamebar $id
 	}
 }
 
 
-proc HidePlayer {gamebar id side} {
+proc HidePlayerInfo {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
@@ -2017,7 +2035,7 @@ proc HidePlayer {gamebar id side} {
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
-		::playertable::hideInfo $gamebar
+		::playercard::popdownInfo $gamebar
 	} else {
 		HideTags $gamebar
 	}

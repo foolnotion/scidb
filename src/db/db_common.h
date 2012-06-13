@@ -47,6 +47,7 @@ namespace color
 	bool isBlack(ID color);
 
 	char const* printColor(ID color);
+	ID fromSide(char const* side);
 }
 
 namespace piece
@@ -363,6 +364,7 @@ namespace result
 	mstl::string const& toString(ID result);
 	ID fromString(mstl::string const& s);
 	ID opponent(ID result);
+	ID fromColor(color::ID color);
 	unsigned value(ID result);
 }
 
@@ -526,6 +528,7 @@ namespace species
 		Program,
 	};
 
+	char toChar(ID type);
 	mstl::string const& toString(ID type);
 	ID fromString(char const* s);
 

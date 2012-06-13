@@ -98,6 +98,8 @@ opponentElo(unsigned elo, unsigned oppElo)
 
 struct TournamentTable::Player
 {
+	enum { Win, Draw, Loss };
+
 	typedef TournamentTable::Clash Clash;
 	typedef mstl::vector<Clash*> ClashList;
 	typedef Clash* Lookup[::MaxRounds + 1];
@@ -117,6 +119,7 @@ struct TournamentTable::Player
 	unsigned			performance;
 	int				ratingChange;
 	unsigned			score[2];
+	unsigned			winDrawLoss[3];
 	unsigned			medianScore;
 	unsigned			lastProgress;
 	unsigned			maxRound;
@@ -162,7 +165,7 @@ debugPlayer(TournamentTable::Player const* player)
 	printf("Bilbao Score:   %u\n", player->score[TournamentTable::Bilbao]);
 	printf("Median Score:   %u\n", player->medianScore);
 	printf("Max.Round:      %u\n", player->maxRound);
-	printf("Game Count:     %u\n", player->clashList.size());
+	printf("Game Count:     %u\n", unsigned(player->clashList.size()));
 	printf("Elo:            %u\n", player->elo);
 	printf("Performance:    %u\n", player->performance);
 	printf("Rating Change:  %d\n", player->ratingChange);
@@ -174,6 +177,10 @@ debugPlayer(TournamentTable::Player const* player)
 	for (unsigned i = 0; i < unsigned(TournamentTable::LastBuchholz); ++i)
 		printf(" %u", player->refinedBuchholz[i]);
 	printf("\n");
+	printf("Win/Draw/Loss:  +%u =%u -%u\n",
+				player->winDrawLoss[TournamentTable::Player::Win],
+				player->winDrawLoss[TournamentTable::Player::Draw],
+				player->winDrawLoss[TournamentTable::Player::Loss]);
 	printf("Opp. Elo Count: %u\n", player->oppEloCount);
 	printf("Opp. Elo Total: %u\n", player->oppEloTotal);
 	printf("Opp. Elo Score: %u\n", player->oppEloScore);
@@ -225,6 +232,7 @@ TournamentTable::Player::Player(NamebasePlayer const* entry, unsigned ranking)
 	,oppEloScore(0)
 {
 	::memset(score, 0, sizeof(score));
+	::memset(winDrawLoss, 0, sizeof(winDrawLoss));
 	::memset(lookup, 0, sizeof(lookup));
 	::memset(tiebreak, 0, sizeof(tiebreak));
 	::memset(refinedBuchholz, 0, sizeof(refinedBuchholz));
@@ -585,6 +593,7 @@ TournamentTable::computeScores()
 				switch (int(clash->result))
 				{
 					case result::White:
+						++player->winDrawLoss[Player::Win];
 						player->score[Traditional] += 2;
 						player->score[Bilbao] += 6;
 						whiteMedianScore = 2;
@@ -593,6 +602,7 @@ TournamentTable::computeScores()
 						break;
 
 					case result::Black:
+						++player->winDrawLoss[Player::Loss];
 						opponent->score[Traditional] += 2;
 						opponent->score[Bilbao] += 6;
 						blackMedianScore = 2;
@@ -601,6 +611,7 @@ TournamentTable::computeScores()
 						break;
 
 					case result::Draw:
+						++player->winDrawLoss[Player::Draw];
 						player->score[Traditional] += 1;
 						player->score[Bilbao] += 2;
 						opponent->score[Traditional] += 1;
@@ -942,7 +953,7 @@ TournamentTable::computeTiebreaks()
 			{
 				player->refinedBuchholz[Buchholz] += opponent->tiebreak[Buchholz];
 				player->refinedBuchholz[MedianBuchholz] += opponent->tiebreak[MedianBuchholz];
-				player->refinedBuchholz[ModifiedMedianBuchholz] += opponent->tiebreak[ModifiedMedianBuchholz];
+				player->refinedBuchholz[ModifiedMedianBuchholz] +=opponent->tiebreak[ModifiedMedianBuchholz];
 			}
 		}
 	}
@@ -1106,6 +1117,12 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 
 	List header(new ListToken);
 	List players(new ListToken);
+	List results(new ListToken);
+
+	results->append(m_resultCount[result::White]);
+	results->append(m_resultCount[result::Black]);
+	results->append(m_resultCount[result::Draw]);
+	results->append(m_resultCount[result::Lost]);
 
 	header->append(receptacle.env().newUndefinedToken(descr));
 	header->append(m_event.name());
@@ -1116,15 +1133,15 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 	header->append(m_avgElo);
 	header->append(fideCategory());
 	header->append(m_numGames);
-	header->append(m_resultCount, m_resultCount + U_NUMBER_OF(m_resultCount));
+	header->append(results);
 
 	// \let\Players${
 	//		{
-	// 		{{UKR} {Kasparov, Garry} \6 \2662 \2540 \+17 {\69}}}
-	//			{{ENG} {Short, Nigel D } \6 \2524 \2445 \+14 {\60}}}
-	// 		{{HUN} {Polgar, Judit  } \3 \2261 \2200 \+3  {\31}}}
-	// 		{{USA} {Polgar, Sofia  } \2 \2100 \2420 \-9  {\12}}}
-	//			{{SUI} {Abazi, Sahit   } \1 \1955 \2095 \-3  {\7 }}}
+	// 		{{UKR} {Kasparov, Garry} \6 \2662 \2540 \+17 {\69} {\5 \1 \0}}}
+	//			{{ENG} {Short, Nigel D } \6 \2524 \2445 \+14 {\60} {\4 \1 \1}}}
+	// 		{{HUN} {Polgar, Judit  } \3 \2261 \2200 \+3  {\31} {\4 \0 \2}}}
+	// 		{{USA} {Polgar, Sofia  } \2 \2100 \2420 \-9  {\12} {\2 \2 \2}}}
+	//			{{SUI} {Abazi, Sahit   } \1 \1955 \2095 \-3  {\7 } {\2 \0 \4}}}
 	//		}
 	// }
 
@@ -1154,6 +1171,11 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 
 		playerGroup->append(data);
 
+		List winDrawLoss(new ListToken);
+		winDrawLoss->append(player->winDrawLoss[Player::Win]);
+		winDrawLoss->append(player->winDrawLoss[Player::Draw]);
+		winDrawLoss->append(player->winDrawLoss[Player::Loss]);
+
 		data->append(country::toString(entry->findFederation()));
 		data->append(entry->name());
 		data->append(player->elo);
@@ -1162,6 +1184,7 @@ TournamentTable::emit(	TeXt::Receptacle& receptacle,
 		data->append(player->performance);
 		data->append(player->ratingChange);
 		data->append(tiebreaks);
+		data->append(winDrawLoss);
 
 		Tiebreak lastRule = None;
 
@@ -1585,6 +1608,32 @@ TournamentTable::getPlayer(unsigned ranking) const
 	}
 
 	return 0; // should not be reached
+}
+
+
+int
+TournamentTable::getPlayerId(unsigned ranking, color::ID& side) const
+{
+	M_REQUIRE(ranking < countPlayers());
+
+	for (unsigned i = 0; i < m_playerMap.size(); ++i)
+	{
+		Player const* player = m_playerMap.container()[i].second;
+
+		if (player->ranking == ranking)
+		{
+			for (unsigned k = 0; k < player->clashList.size(); ++k)
+			{
+				if (player->clashList[k]->player == player)
+				{
+					side = player->clashList[k]->color;
+					return player->clashList[k]->gameIndex;
+				}
+			}
+		}
+	}
+
+	return -1;
 }
 
 // vi:set ts=3 sw=3:

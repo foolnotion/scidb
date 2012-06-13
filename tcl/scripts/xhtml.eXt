@@ -1,0 +1,55 @@
+% ======================================================================
+% Author : $Author$
+% Version: $Revision: 145 $
+% Date   : $Date: 2011-12-01 08:54:52 +0100 (Thu, 01 Dec 2011) $
+% Url    : $URL$
+% ======================================================================
+
+% ======================================================================
+%    _/|            __
+%   // o\         /    )           ,        /    /
+%   || ._)    ----\---------__----------__-/----/__-
+%   //__\          \      /   '  /    /   /    /   )
+%   )___(     _(____/____(___ __/____(___/____(___/_
+% ======================================================================
+
+% ======================================================================
+% Copyright: (C) 2012 Gregor Cramer
+% ======================================================================
+
+% ======================================================================
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+% ======================================================================
+
+\def\xhtml-head#lang#title#style{%
+	<?xml version="1.0" encoding="utf-8"?>\cr\cr
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"\cr
+	\incr\indent
+		"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\cr\cr
+	\decr\indent
+	<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='#lang'>\cr
+	<head>\cr
+	\incr\indent
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />\cr
+		<meta http-equiv="content-language" content="#lang" />\cr
+		<meta http-equiv="content-style-type" content="text/css" />\cr
+		<meta name="author" content="Scidb" />\cr
+		<meta name="keywords" content="chess, scidb">\cr
+		<meta name="generator" content="scidb.sourceforge.net" />\cr
+%		<meta name="page-type" content="Player Card">\cr
+%		<meta name="description" content="Player Card" />\cr
+		<link rel="icon" href="http://scidb.sourceforge.net/images/scidb.ico" type="image/x-icon" />\cr
+		<link rel="shortcut icon" href="http://scidb.sourceforge.net/images/scidb.ico" />\cr
+		<title>#title</title>\cr
+		\unless\ifempty#style%
+			<link rel="stylesheet" type="text/css" media="screen" href="#style"\cr
+		\fi
+	\decr\indent
+	<head>\cr}
+
+\def\xhtml-foot{</html>}
+
+% vi:set ts=3 sw=3:

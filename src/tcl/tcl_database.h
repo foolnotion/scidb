@@ -51,6 +51,7 @@ namespace tcl
 								Ratings const& ratings,
 								bool info,
 								bool idCard);
+		int getPlayerStats(::db::Database const& db, ::db::NamebasePlayer const& player);
 		int getTags(::db::TagSet const& tags, bool userSuppliedOnly);
 
 		char const* lookupType(::db::type::ID type);

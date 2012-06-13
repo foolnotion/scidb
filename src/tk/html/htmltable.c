@@ -133,7 +133,7 @@ static CellCallback tableColWidthSingleSpan;
 static CellCallback tableColWidthMultiSpan;
 
 /* Figure out the actual column widths (TableData.aWidth[]). */
-static void tableCalculateCellWidths(TableData *, int, int);
+static void tableCalculateCellWidths(TableData *, int, int, int, int);
 
 /* A row and cell callback (used together in a single iteration) to draw
  * the table content. All the actual drawing is done here. Everything
@@ -1376,10 +1376,12 @@ logWidthStage(nStage, pStageLog, nWidth, aWidth)
 
 
 static void
-tableCalculateCellWidths(pData, availablewidth, isAuto)
+tableCalculateCellWidths(pData, availablewidth, isAuto, isFixedLayout, expandable)
     TableData *pData;
     int availablewidth;    /* Total width available for cells */
     int isAuto;            /* True if the 'width' of the <table> was "auto" */
+    int isFixedLayout;     /* True if 'table-layout' is set to "fixed" */
+    int expandable;        /* True if columns are expdable */
 {
     /* The values of the following variables are set in the "analysis loop"
      * (the first loop below) and thereafter left unchanged.
@@ -1396,6 +1398,11 @@ tableCalculateCellWidths(pData, availablewidth, isAuto)
     int jj;
 
     int iRemaining = availablewidth;
+
+    if (expandable) {
+        /* be conform with HTML standard */
+        isFixedLayout = 0;
+    }
 
     /* Local handles for the input arrays */
     int *aMinWidth = pData->aMinWidth;
@@ -1502,7 +1509,7 @@ tableCalculateCellWidths(pData, availablewidth, isAuto)
     logWidthStage(3, pStageLog, pData->nCol, aWidth);
 
     /* Allocate pixels to auto width columns */
-    if (iRemaining > 0) {
+    if (iRemaining > 0 && !isFixedLayout) {
         int iMA = iMaxAuto;
         iRemaining += iMinAuto;
         for (ii = 0; iMA > 0 && ii < pData->nCol; ii++) {
@@ -1544,8 +1551,45 @@ tableCalculateCellWidths(pData, availablewidth, isAuto)
     }
     logWidthStage(6, pStageLog, pData->nCol, aWidth);
 
-    /* Force pixels into any columns (not subject to max-width!) */
-    if (iRemaining > 0) {
+    if (isFixedLayout) {
+        if (nAutoCol > 0) {
+            int iMaxWidth = 0;
+            int available = availablewidth;
+            for (ii = 0; ii < pData->nCol; ii++) {
+                if (aReqWidth[ii].eType == CELL_WIDTH_AUTO) {
+                    iMaxWidth = MAX(iMaxWidth, aWidth[ii]);
+                } else {
+                    available -= aWidth[ii];
+                }
+            }
+            if (expandable) {
+                for (ii = 0; ii < pData->nCol; ii++) {
+                    if (aReqWidth[ii].eType == CELL_WIDTH_AUTO) {
+                        aWidth[ii] = iMaxWidth;
+                    }
+                }
+            } else {
+                if (iRemaining > 0) {
+                    int colWidth = (int)((double)available/(double)nAutoCol + 0.5);
+                    for (ii = 0; ii < pData->nCol; ii++) {
+                        if (aReqWidth[ii].eType == CELL_WIDTH_AUTO) {
+                            int incr = MIN(iRemaining, iMaxWidth - aWidth[ii]);
+                            iRemaining -= incr;
+                            aWidth[ii] += incr;
+                        }
+                    }
+                    for (ii = 0; ii < pData->nCol; ii++) {
+                        if (aReqWidth[ii].eType == CELL_WIDTH_AUTO) {
+                            int incr = MIN(iRemaining, MAX(0, colWidth - aWidth[ii]));
+                            iRemaining -= incr;
+                            aWidth[ii] += incr;
+                        }
+                    }
+                }
+            }
+        }
+    } else if (iRemaining > 0) {
+        /* Force pixels into any columns (not subject to max-width!) */
         for (ii = 0; ii < pData->nCol; ii++) {
             int w = iRemaining / (pData->nCol - ii);
             iRemaining -= w;
@@ -1764,6 +1808,8 @@ HtmlTableLayout(pLayout, pBox, pNode)
     int nCol = 0;             /* Number of columns in this table */
     int i;
     int availwidth;           /* Total width available for cells */
+    int expandable = 1;       /* Whether columns are expandable */
+    int fixedLayout;          /* Whether table has fixed layout */
 
     int *aMinWidth = 0;       /* Minimum width for each column */
     int *aMaxWidth = 0;       /* Minimum width for each column */
@@ -1846,9 +1892,13 @@ HtmlTableLayout(pLayout, pBox, pNode)
 
     pBox->width = 0;
     availwidth = (pBox->iContaining - (nCol+1) * data.border_spacing);
+    if ((pV->mask & PROP_MASK_WIDTH) || pV->iWidth >= 0) {
+        expandable = 0;
+    }
+    fixedLayout = pV->eTableLayout == CSS_CONST_FIXED;
     switch (pLayout->minmaxTest) {
         case 0:
-            tableCalculateCellWidths(&data, availwidth, 0);
+            tableCalculateCellWidths(&data, availwidth, 0, fixedLayout, expandable);
             for (i = 0; i < nCol; i++) {
                 pBox->width += aWidth[i];
             }
@@ -1906,3 +1956,5 @@ LOG {
 }
     return TCL_OK;
 }
+
+/* vi: set ts=4 sw=4 et: */

@@ -64,6 +64,13 @@ set PageNotAvailable		"This page is not available"
 variable Geometry {}
 variable Lang {}
 
+array set Colors {
+	foreground:gray		#999999
+	foreground:litegray	#696969
+	background:gray		#f5f5f5
+	background:emphasize	lightgoldenrod
+}
+
 # we will not use latin ligatures because they are looking bad with some fonts
 array set Priv {
 	tab				contents
@@ -442,6 +449,8 @@ proc BuildFrame {w} {
 
 
 proc FillContents {t depth root contents} {
+	variable [namespace parent]::Colors
+
 	variable [namespace parent]::icon::16x16::library
 	variable [namespace parent]::icon::16x16::document
 	variable [namespace parent]::icon::16x16::bookClosed
@@ -458,7 +467,7 @@ proc FillContents {t depth root contents} {
 				if {[llength $topic] > 0} {
 					set file [[namespace parent]::FullPath [lindex $topic 1]]
 					if {![file readable $file]} {
-						lappend fill -fill #999999
+						lappend fill -fill $Colors(foreground:gray)
 						$t item enabled $item no
 					} elseif {[llength $topic] > 2} {
 						set Priv(uri:$item) [::tkhtml::uri $file#[lindex $topic 2]]
@@ -829,6 +838,7 @@ proc BuildFrame {w} {
 proc Search {t} {
 	variable [namespace parent]::Contents
 	variable [namespace parent]::Priv
+	variable [namespace parent]::Colors
 
 	set search $Priv(search:entry)
 	if {[string length $search] == 0} { return }
@@ -887,7 +897,7 @@ proc Search {t} {
 		$t item style set $item item styText
 		$t item element configure $item item elemTxt \
 			-text [set [namespace parent]::mc::NoMatch] \
-			-fill #696969 \
+			-fill $Colors(foreground:litegray) \
 			;
 		$t item enabled $item no
 		$t item lastchild root $item
@@ -1180,55 +1190,15 @@ proc ShowIndex {} {
 proc BuildHtmlFrame {dlg w} {
 	variable Priv
 
-	# Find appropriate fixed fonts
-	set defaultFixedFamilies {{Arial Monospaced} {Bitstream Vera Sans Mono} TkFixedFont}
-	set monoFamilies {}
-	foreach fam $defaultFixedFamilies {
-		array set attrs [font actual [list $fam]]
-		set f $attrs(-family)
-		if {($f eq $fam || [string match Tk* $fam]) && $f ni $monoFamilies} {
-			lappend monoFamilies $f
-		}
-	}
-	lappend monoFamilies Monospace Fixed
-
-	# Find appropriate text fonts
-	set defaultTextFamilies {	Arial
-										{Bitstream Vera Sans}
-										TkTextFont
-										{DejaVu Sans}
-										Verdana
-										{Lucida Grande}
-										Lucida}
-	set textFamilies {}
-	foreach fam $defaultTextFamilies {
-		array set attrs [font actual [list $fam]]
-		set f $attrs(-family)
-		if {($f eq $fam || [string match Tk* $fam]) && $f ni $textFamilies} {
-			lappend textFamilies $f
-		}
-	}
-	lappend textFamilies Sans-Serif Helvetica
-
 	# setup css script
-	set css "
-		:link    { color: blue2; text-decoration: none; }
-		:visited { color: purple; text-decoration: none; }
-		/*:user	{ color: red3; text-decoration: none; }*/
-		:user		{ color: blue2; text-decoration: underline; }	/* http link */
-		:user2	{ color: purple; text-decoration: underline; }	/* http visited */
-		:user3	{ color: black; text-decoration: underline; }	/* invalid link */
-		:hover   { text-decoration: underline; background: yellow; }
-		.match	{ background: yellow; color: black; }
-		html		{ font-family: [join $textFamilies ","]; }
-		pre, tt, code, kbd { font-family: [join $monoFamilies ","]; }
-	"
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 
 	# build HTML widget
 	set height [expr {min([winfo screenheight $dlg] - 60, 800)}]
 	::html $w \
 		-imagecmd [namespace code GetImage] \
 		-center no \
+		-fittowidth yes \
 		-width 600 \
 		-height $height \
 		-cursor left_ptr \
@@ -1519,6 +1489,7 @@ proc Load {file {wantedFile {}} {match {}} {position {}}} {
 
 
 proc Parse {file wantedFile moveto {match {}}} {
+	variable Colors
 	variable Nodes
 	variable Priv
 
@@ -1566,13 +1537,13 @@ proc Parse {file wantedFile moveto {match {}}} {
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
 			<p>[format $mc::CantFindFile [list <ragged><b>$file</b></ragged>]]</p><br>
-			<p><div style='background: lightgoldenrod; border: 1px solid black;'>
+			<p><div style='background: $Colors(background:emphasize); border: 1px solid black;'>
 			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
 			</div></p>
 		"
 		if {[llength $alternatives]} {
 			append content "<br/><br/><br/>"
-			append content "<div style='background: #f5f5f5; border: 1px solid black;'>"
+			append content "<div style='background: $Colors(background:gray); border: 1px solid black;'>"
 			append content "<blockquote><p>$mc::ProbablyTheHelp:</p>"
 			append content "<dl>"
 			foreach alt $alternatives {

@@ -88,7 +88,6 @@ proc Build {w args} {
 		-exportselection no \
 		-column mode \
 		-state $opts(-state) \
-		-cursor xterm \
 		;
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id mode

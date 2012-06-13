@@ -80,6 +80,7 @@ set ShowLog					"Show Log"
 set ShowHtml				"Show HTML"
 set ShowRating				"Show Rating"
 set ShowPerformance		"Show Performance"
+set ShowWinDrawLoss		"Show Win/Draw/Loss"
 set ShowTiebreak			"Show Tiebreak"
 set ShowOpponent			"Show Opponent (as Tooltip)"
 set KnockoutStyle			"Knockout Table Style"
@@ -190,6 +191,7 @@ array set Options {
 	fmt:spacing			1
 	fmt:pyramid			0
 	show:rating			1
+	show:winDrawLoss	0
 	show:performance	1
 	show:tiebreak		1
 	show:opponent		1
@@ -214,9 +216,9 @@ proc open {parent base index view source} {
 
 	if {$source eq "game"} {
 		set number [::scidb::db::get gameNumber $base $index $view]
-		set info [::scidb::db::fetch eventInfo $number $base]
+		set info [::scidb::db::fetch eventInfo $number $base -card]
 	} else { ;# $source eq "event"
-		set info [::scidb::db::get eventInfo $index $view $base]
+		set info [::scidb::db::get eventInfo $index $view $base -card]
 		set number [::scidb::db::get eventIndex $index $view $base]
 	}
 
@@ -276,8 +278,9 @@ proc open {parent base index view source} {
 
 	ttk::frame $top
 	ttk::frame $canv
-	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes 
+	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes -fittowidth no
 	$html handler node td [namespace current]::NodeHandler
+	$html handler node span [namespace current]::NodeHandler
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
 
 	set tb [::toolbar::toolbar $dlg \
@@ -457,7 +460,7 @@ proc NextEvent {step} {
 	incr Vars(index) $step
 	set number [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
 	::scidb::view::search $Vars(base) $Vars(viewId) null none [list event $number]
-	set Vars(info) [::scidb::db::get eventInfo $Vars(index) $Vars(viewId) $Vars(base)]
+	set Vars(info) [::scidb::db::get eventInfo $Vars(index) $Vars(viewId) $Vars(base) -card]
 	set Vars(tableId) [::scidb::crosstable::make $Vars(base) $Vars(viewId)]
 	set Vars(warning) 0
 	set Vars(lastMode) ""
@@ -695,6 +698,8 @@ proc Update {{setup 0}} {
 	if {$Options(fmt:pyramid)} { set knockoutOrder pyramid } else { set knockoutOrder triangle }
 
 	set preamble "
+		\\def\\Lang{$::mc::langID}
+		\\def\\Title{$mc::TournamentTable:$Vars(eventName)}
 		\\def\\FormatDate#date{\\%date\\%#date}
 		\\def\\AverageRating{$mc::AverageRating}
 		\\def\\Category{$mc::Category}
@@ -710,6 +715,7 @@ proc Update {{setup 0}} {
 		\\let\\ShowRating\\$Options(show:rating)
 		\\let\\ShowTiebreaks\\$Options(show:tiebreak)
 		\\let\\ShowPerformance\\$Options(show:performance)
+		\\let\\ShowWinDrawLoss\\$Options(show:winDrawLoss)
 		\\let\\ShowChange\\1
 		\\let\\ShowCountry\\1
 	"
@@ -811,54 +817,26 @@ proc ConfigureButtons {} {
 }
 
 
-proc ShowTrace {which} {
-	variable Vars
-
-	set dlg [winfo toplevel $Vars(html)].$which
-	set txt $dlg.f.text
-
-	if {[winfo exists $dlg]} {
-		$txt configure -state normal
-		$txt delete 1.0 end
-	} else {
-		tk::toplevel $dlg -class Scidb
-		set f [::ttk::frame $dlg.f]
-
-		tk::text $f.text \
-			-width 100 \
-			-height 40 \
-			-yscrollcommand [list $f.vsb set] \
-			-xscrollcommand [list $f.hsb set] \
-			-wrap [expr {$which eq "log" ? "word" : "none"}] \
-			-setgrid 1 \
-			;
-		ttk::scrollbar $f.hsb -orient horizontal -command [list $f.text xview]
-		ttk::scrollbar $f.vsb -orient vertical -command [list ::widget::textLineScroll $f.text]
-		pack $f -expand yes -fill both
-		grid $f.text -row 1 -column 1 -sticky nsew
-		grid $f.hsb  -row 2 -column 1 -sticky ew
-		grid $f.vsb  -row 1 -column 2 -sticky ns
-		grid rowconfigure $f 1 -weight 1
-		grid columnconfigure $f 1 -weight 1
-		if {$which eq "log"} { grid remove $f.hsb }
-		::widget::dialogButtons $dlg close close
-		$dlg.close configure -command [namespace code [list CloseTrace $which]]
-#		::util::place $dlg center $w
-		wm protocol $dlg WM_DELETE_WINDOW [namespace code [list CloseTrace $which]]
-		wm deiconify $dlg
-	}
-
-	$txt insert end $Vars(output:$which)
-	$txt configure -state disabled
-}
-
-
 proc CloseTrace {which} {
 	variable Options
 	variable Vars
 
 	set Options(debug:$which) 0
 	catch { destroy [winfo toplevel $Vars(html)].$which }
+}
+
+
+proc ShowTrace {which} {
+	variable Vars
+
+	if {$which eq "log"} {
+		set useHorzScroll 0
+	} else {
+		set useHorzScroll 1
+	}
+	set path [winfo toplevel $Vars(html)].$which
+	set closeCmd [namespace code [list CloseTrace $which]]
+	::widget::showTrace $path $Vars(output:$which) $useHorzScroll $closeCmd
 }
 
 
@@ -879,6 +857,9 @@ proc Destroy {dlg w unsubscribe} {
 	variable Vars
 	variable Defaults
 	variable ImageCache
+
+	catch { destroy $dlg.html }
+	catch { destroy $dlg.log }
 
 	if {$unsubscribe} { ::scidb::view::unsubscribe {*}$Vars(subscribe) }
 	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
@@ -911,6 +892,15 @@ proc Open {which gameIndex} {
 }
 
 
+proc ShowPlayerCard {rank} {
+	variable Vars
+
+	Tooltip hide
+	lassign [::scidb::crosstable::get playerId $Vars(tableId) $Vars(viewId) $rank]] gameIndex side
+	::playercard::show $Vars(base) $gameIndex $side
+}
+
+
 proc Tooltip {msg} {
 	variable Vars
 
@@ -927,7 +917,7 @@ proc NodeHandler {node} {
 	variable Nodes
 
 	set attr [$node attribute -default {} recv]
-	if {[llength $attr]} { set Nodes($attr) $node }
+	if {[string length $attr]} { set Nodes($attr) $node }
 }
 
 
@@ -941,9 +931,7 @@ proc MouseEnter {node} {
 	if {[llength $country]} {
 		set Vars(tooltip) $node
 		Tooltip [::country::name $country]
-	}
-
-	if {$Options(show:opponent)} {
+	} elseif {$Options(show:opponent)} {
 		set rank [$node attribute -default {} player]
 		if {[llength $rank]} {
 			set Vars(tooltip) $node
@@ -960,7 +948,7 @@ proc MouseLeave {node {stimulate 0}} {
 
 	if {$Vars(tooltip) eq $node} {
 		set Vars(tooltip) ""
-		foreach attr {src player} {
+		foreach attr {src player id} {
 			set content [$node attribute -default {} $attr]
 			if {[llength $content]} { Tooltip hide }
 		}
@@ -1059,6 +1047,10 @@ proc Mouse1Down {node} {
 		$Vars(html) stimulate
 		::tooltip::hide
 	}
+#	set rank [$node attribute -default {} rank]
+#	if {[string length $rank]} {
+#		ShowPlayerCard $rank
+#	}
 	set mark [$node attribute -default {} mark]
 	if {[string length $mark]} {
 		set idList [$node attribute -default {} send]
@@ -1083,7 +1075,13 @@ proc Mouse2Down {node} {
 		if {[string length $rank]} {
 			MouseEnter $node
 			set info [::scidb::crosstable::get playerInfo $Vars(tableId) $Vars(viewId) $rank]
-			::playertable::showInfo $Path $info
+			::playercard::popupInfo $Path $info
+		} else {
+			set id [$node attribute -default {} recv]
+			if {$id eq "event"} {
+				MouseEnter $node
+				::eventtable::popupInfo $Path $Vars(info)
+			}
 		}
 	}
 }
@@ -1098,7 +1096,8 @@ proc Mouse2Up {node} {
 	if {[string length $attr] == 0} { return }
 
 	::gametable::hideGame $Path
-	::playertable::hideInfo $Path
+	::playercard::popdownInfo $Path
+	::eventtable::popdownInfo $Path
 	MouseLeave $node 1
 }
 
@@ -1113,42 +1112,55 @@ proc Mouse3Down {node} {
 		return [PopupMenu]
 	}
 
+	set rank [$node attribute -default {} rank]
 	set gameIndex [$node attribute -default {} game]
-	if {[string length $gameIndex] == 0} { return }
+
+	if {[llength $rank] == 0 && [llength $gameIndex] == 0} { return }
 
 	set m $Path.popup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
 
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::browse \
-		-label " $::browser::mc::BrowseGame" \
-		-command [namespace code [list Open browser $gameIndex]] \
-		;
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::overview \
-		-label " $::overview::mc::Overview" \
-		-command [namespace code [list Open overview $gameIndex]] \
-		;
-	$m add command \
-		-compound left \
-		-image $::icon::16x16::document \
-		-label " $::browser::mc::LoadGame" \
-		-command [namespace code [list Open pgn $gameIndex]] \
-		;
-	# TODO: add Merge Game
+	if {[llength $rank]} {
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::playercard \
+			-label " $::playertable::mc::ShowPlayerCard" \
+			-command [namespace code [list ShowPlayerCard $rank]] \
+			;
+	} else {
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::browse \
+			-label " $::browser::mc::BrowseGame" \
+			-command [namespace code [list Open browser $gameIndex]] \
+			;
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::overview \
+			-label " $::overview::mc::Overview" \
+			-command [namespace code [list Open overview $gameIndex]] \
+			;
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::document \
+			-label " $::browser::mc::LoadGame" \
+			-command [namespace code [list Open pgn $gameIndex]] \
+			;
+		# TODO: add Merge Game
+	}
 
-	$m add separator
-	BuildMenu $m
+	if {[info exists m]} {
+		$m add separator
+		BuildMenu $m
 
-	MouseEnter $node
-	set _Popup 1
-	bind $m <<MenuUnpost>> [list unset [namespace current]::_Popup]
-	bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $node 1]]
-	tk_popup $m {*}[winfo pointerxy $Path]
+		MouseEnter $node
+		set _Popup 1
+		bind $m <<MenuUnpost>> [list unset [namespace current]::_Popup]
+		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $node 1]]
+		tk_popup $m {*}[winfo pointerxy $Path]
+	}
 }
 
 
@@ -1159,7 +1171,7 @@ proc BuildMenu {m} {
 	set sub [menu $m.display]
 
 	if {$Vars(bestMode) eq "knockout"} { set state disabled } else { set state normal }
-	foreach opt {rating performance tiebreak} {
+	foreach opt {rating performance tiebreak winDrawLoss} {
 		$sub add checkbutton \
 			-label [set mc::Show[string toupper $opt 0 0]] \
 			-command [namespace code Update] \
