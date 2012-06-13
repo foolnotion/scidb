@@ -83,23 +83,30 @@ proc show {base args} {
 	variable Counter
 
 	set info [::scidb::db::playerInfo $base {*}$args]
-	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth dateOfDeath
+	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth _
 	if {[string length $name] == 0} { return }
-	set key card:$base:$name:$fideID:$type:$sex:$country:$titles:$dateOfBirth:$dateOfDeath
+	set key card:$base:$name:$fideID:$type:$sex:$country:$titles:$dateOfBirth
 
 	if {[info exists Vars($key)]} {
-		wm withdraw $Vars($key)
-		wm deiconify $Vars($key)
+		if {$Vars($key:open)} {
+			wm withdraw $Vars($key)
+			wm deiconify $Vars($key)
+		} else {
+			set Vars($key:open) 1
+			UpdateContent $Vars($key).content $key $base $name [list $base {*}$args]
+		}
 		return
 	}
 
 	::widget::busyCursor on
 
+	::scidb::db::subscribe dbInfo {} [namespace current]::Close $key
 	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 	set dlg [tk::toplevel .application.__card__[incr Counter] -class Scidb]
-	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W 1]]
-	wm withdraw $dlg
 	set Vars($key) $dlg
+	set Vars($key:open) 1
+	bind $dlg <Destroy> [namespace code [list Destroy $dlg $key %W 1]]
+	wm withdraw $dlg
 
 	::html $dlg.content \
 		-imagecmd [namespace code [list GetImage $info]] \
@@ -118,16 +125,18 @@ proc show {base args} {
 		-useVertScroll yes \
 		-keepVertScroll yes \
 		;
+	set updateCmd [list UpdateContent $dlg.content $key $base $name [list $base {*}$args]]
 	$dlg.content handler node link [list [namespace current]::LinkHandler $dlg.content]
 	bind [winfo parent [$dlg.content drawable]] <ButtonPress-3> [namespace code [list PopupMenu $key]]
 	pack $dlg.content -fill both -expand yes
-	bind $dlg.content <Destroy> [list array unset [namespace current]::Vars $key]
+	bind $dlg.content <Destroy> [list array unset [namespace current]::Vars $key*]
+	bind $dlg.content <<LanguageChanged>> [namespace code $updateCmd]
 	$dlg.content onmouseover [namespace code [list MouseEnter $dlg.content]]
 	$dlg.content onmouseout [namespace code [list MouseLeave $dlg.content]]
 	$dlg.content onmousedown3 [namespace code [list Mouse3Down $dlg.content $key $info]]
 	set Vars($dlg.content:tooltip) ""
 
-	set geometry [Update $dlg.content $key $base $name [list $base {*}$args]]
+	set geometry [{*}$updateCmd]
 	::widget::busyCursor off
 
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -348,9 +357,11 @@ proc buildWebMenu {parent m info} {
 }
 
 
-proc Update {w key base name playerCardArgs} {
+proc UpdateContent {w key base name playerCardArgs} {
 	variable Vars
 	variable Options
+
+	if {!$Vars($key:open)} { return }
 
 	set preamble "
 		\\def\\FormatDate#date{\\%date\\%(#date)}
@@ -619,11 +630,18 @@ proc PopupMenu {key} {
 }
 
 
-proc Destroy {dlg w unsubscribe} {
+proc Destroy {dlg key w unsubscribe} {
 	if {$w ne $dlg} { return }
 
 	catch { destroy $dlg.html }
 	catch { destroy $dlg.log }
+
+	::scidb::db::unsubscribe dbInfo {} [namespace current]::Close $key
+}
+
+
+proc Close {key args} {
+	set [namespace current]::Vars($key:open) 0
 }
 
 

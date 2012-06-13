@@ -2680,13 +2680,13 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	static char const* subcommands[] =
 	{
-		"dbInfo", "gameList", "playerList", "annotatorList",
-		"eventList", "gameInfo", "gameHistory", "gameSwitch", "tree", 0
+		"dbInfo", "gameList", "playerList", "annotatorList", "eventList",
+		"gameInfo", "gameHistory", "gameSwitch", "tree", 0
 	};
 	enum
 	{
-		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList,
-		Cmd_EventList, Cmd_GameInfo, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree,
+		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_EventList,
+		Cmd_GameInfo, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -2766,13 +2766,13 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	static char const* subcommands[] =
 	{
-		"dbInfo", "gameList", "playerList", "eventList",
-		"annotatorList", "gameInfo", "gameHistory", "tree", 0
+		"dbInfo", "gameList", "playerList", "eventList", "annotatorList",
+		"gameInfo", "gameHistory", "tree", 0
 	};
 	enum
 	{
-		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList,
-		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameHistory, Cmd_Tree
+		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_AnnotatorList,
+		Cmd_GameInfo, Cmd_GameHistory, Cmd_Tree
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());

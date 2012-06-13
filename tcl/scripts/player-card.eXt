@@ -194,7 +194,7 @@
 \def\col-valign{top}%
 \begin-col
 \begin-table{}{}%
-\unless\ifx\Birthday\relax
+\unless\ifx\BirthDay\relax
 	\begin-row
 	\begin-col-end{\Label-Birthday:}%
 	\begin-col-end{\FormatDate\BirthDay}%
@@ -202,7 +202,7 @@
 \fi
 \unless\ifx\DeathDay\relax
 	\begin-row
-	\begin-col-end{\Label-Deathday:}%
+	\begin-col-end{\Label-DeathDay:}%
 	\begin-col-end{\FormatDate\DeathDay}%
 	\end-row
 \fi
@@ -327,7 +327,7 @@
 	\foreach\ecoLine\ecoLines{%
 		\lassign\ecoLine{\eco\count\line}%
 		\edef\line{\tmap\line${K\K Q\Q R\R B\B N\N P\P}}%
-		\def\row-class{eco}%
+		\def\row-eco{\eco}%
 		\ifodd\r \def\row-class{odd}\fi
 		\incr\r
 		\begin-row

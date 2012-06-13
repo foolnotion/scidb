@@ -179,7 +179,7 @@ array set Defaults {
 
 array set Options {
 	visible				10
-	prop:background	#fff5d6
+	prop:background	#aee239
 }
 
 variable ClipbaseType	[::scidb::db::get clipbase type]

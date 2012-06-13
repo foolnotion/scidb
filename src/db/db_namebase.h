@@ -197,6 +197,11 @@ public:
 
 	unsigned findMatches(mstl::string const& name, Matches& result, unsigned maxMatches = 9) const;
 
+	int lookupPosition(PlayerEntry const* entry) const;
+	int lookupPosition(EventEntry const* entry) const;
+	int lookupPosition(SiteEntry const* entry) const;
+	int lookupPosition(Entry const* entry) const;
+
 	char* alloc(unsigned length);
 	void copy(mstl::string& dst, mstl::string const& src);
 	void shrink(unsigned oldLength, unsigned newLength);

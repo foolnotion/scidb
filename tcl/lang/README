@@ -1,0 +1,58 @@
+How to translate the language files
+-------------------------------------------------------------------------------
+
+It is required that your Scidb version is up-to-date. For this you should build
+Scidb from the repository. Please install package Subversion:
+
+   apt-get install subversion   # (Debian/Ubuntu/Mint)
+
+Fetch the repository version:
+
+    svn co https://scidb.svn.sourceforge.net/svnroot/scidb scidb
+
+The latter argument is the destination directory. Change into the destination
+directory and build the project as usual:
+
+   ./configure
+   make
+   sudo make install
+
+To be up-to-date with the repository an update is required from time to time.
+Change into your installation directory and do
+
+   svn update
+   make
+   sudo make install
+
+The concerned translation file is "tcl/espanol.tcl" (as an example).
+Please note:
+
+   - Only the strings (content inside double quote delimiters) should be
+     modified.
+
+   - It is possible to add comments after a string in this way:
+
+        ::menu::mc::LeaveFullscreen "Leave &pantalla completa" ;# ok?
+
+     Note that the sequence ' ;#' after the double quote is mandatory (don't
+     forget the space).
+
+If you like to see the changes, go into sub-directory "tcl/" and do
+
+   sudo make install-lang
+
+I'm assuming that you will change "tcl/espanol.tcl" in your installation
+directory, but another possibility is to change the file
+"/usr/local/share/scidb-beta/lang/espanol.tcl", in this way you don't need
+to distribute the modification. Please note that editing the file
+"/usr/local/share/scidb-beta/lang/espanol.tcl" requires super-user rights.
+
+Currently the translation file is encoded with character set UTF-8. An
+appropriate editor might be "gedit". If you prefer another character set, for
+example ISO8859-1, send me a message, I will change the encoding.
+
+If you're ready, please send the translation file, I will do a merge into the
+old translation file (a merge is required because I'm constantly changing the
+translation files).
+
+# vi:set ts=3 sw=3 et:
