@@ -115,6 +115,7 @@ SOURCES = \
 	import.tcl \
 	browser.tcl \
 	overview.tcl \
+	player-card.tcl \
 	setup-board.tcl \
 	setup-position.tcl \
 	crosstable.tcl \
