@@ -1319,10 +1319,7 @@ Application::treeIsUpToDate(Tree::Key const& key) const
 
 	Runnable::TreeP tree(Tree::lookup(base, g.game->currentBoard(), key.mode(), key.ratingType()));
 
-	if (!tree)
-		return false;
-
-	return tree->key() == key;
+	return tree ? tree->key() == key : false;
 }
 
 

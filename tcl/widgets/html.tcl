@@ -379,7 +379,7 @@ proc Place {w} {
 	set ydelta [expr {max(0, ($height - $htmlHeight)/2)}]
 	if {$ydelta > 0} { set height $htmlHeight }
 	if {$xdelta > 0} { set width $htmlWidth }
-	$w.html configure -width $width -height $height
+	$w.html configure -forcewidth 1 -width $width -height $height
 	place $w.html -x $xdelta -y $ydelta
 	$w.html xview scroll 0 units
 	$w.html yview scroll 0 units

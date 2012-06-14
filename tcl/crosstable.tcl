@@ -278,7 +278,8 @@ proc open {parent base index view source} {
 
 	ttk::frame $top
 	ttk::frame $canv
-	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes -fittowidth no
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes -fittowidth no -css $css
 	$html handler node td [namespace current]::NodeHandler
 	$html handler node span [namespace current]::NodeHandler
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
@@ -1249,6 +1250,7 @@ proc BuildMenu {m} {
 			;
 	}
 
+	$m add separator
 	$m add cascade -label $mc::Debugging -menu $sub
 }
 

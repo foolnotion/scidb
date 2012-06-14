@@ -7,8 +7,13 @@ How to translate the help files
 
 2. Change into the created sub-directory, e.g. "tcl/lang/es/".
 
-3. Copy the Makefile into your sub-directory:
+3. Copy some required files into your sub-directory
       > cp ../en/Makefile .
+      > cp ../en/Overview.txt .
+      > cp ../en/Welcome.txt .
+      > cp ../en/Whats-New.txt .
+      > cp ../en/Development-Roadmap.txt .
+   and do the translation (not the Makefile of course).
 
 2. Copy the wanted .txt file from "../en/", for example
          cp ../en/Clipbase.txt .

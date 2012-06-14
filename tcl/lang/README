@@ -24,7 +24,6 @@ Change into your installation directory and do
    make
    sudo make install
 
-The concerned translation file is "tcl/espanol.tcl" (as an example).
 Please note:
 
    - Only the strings (content inside double quote delimiters) should be
