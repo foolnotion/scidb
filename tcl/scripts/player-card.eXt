@@ -24,26 +24,9 @@
 % (at your option) any later version.
 % ======================================================================
 
-\input\plain
-\input\xhtml
-
-\indentchar\ %
-\indentstep\2
+\input\common
 
 %%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\def\check-optional-token#tok#dflt{%
-	\ifx#tok\undefined
-		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
-		\let#tok#dflt%
-	\fi
-}
-\def\check-mandatory-token#tok{%
-	\ifx#tok\undefined
-		\errorcontextlines\0
-		\errmessage{ERROR: Token \string#tok is not defined}%
-	\fi
-}
 
 \check-mandatory-token\FormatDate
 \check-mandatory-token\Lang
@@ -81,38 +64,6 @@
 \def\format-eco#eco.#rest\end{#eco}
 
 %%% HTML tags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\expandafter\def\csname col!attrs\endcsname{%
-	\unless\ifempty\col-valign \space valign="\col-valign"\let\col-valign\empty\fi
-	\unless\ifempty\col-align \space align="\col-align"\let\col-align\empty\fi
-	\unless\ifempty\col-title \space title="\col-title"\let\col-title\empty\fi
-	\unless\ifempty\col-class \space class="\col-class"\let\col-class\empty\fi
-	\unless\ifempty\col-width \space width="\col-width"\let\col-width\empty\fi
-	\unless\ifempty\col-span \space colspan="\col-span"\let\col-span\empty\fi
-}
-
-\expandafter\def\csname row!attrs\endcsname{%
-	\unless\ifempty\row-class \space class="\row-class"\let\row-class\empty\fi
-	\unless\ifempty\row-eco \space eco="\row-eco"\let\row-eco\empty\fi
-}
-
-\let\col-valign\empty
-\let\col-align\empty
-\let\col-title\empty
-\let\col-class\empty
-\let\col-width\empty
-\let\col-span\empty
-
-\let\row-class\empty
-\let\row-eco\empty
-
-\def\begin-div#class#id{%
-	<div%
-	\unless\ifempty#class\ class="#class"\fi
-	\unless\ifempty#id\ id="#id"\fi
-	>\incr\indent\cr
-}
-\def\end-div{\decr\indent</div>\cr}
-
 \def\begin-table#class#width{%
 	<table%
 	\unless\ifempty#class\ class="#class"\fi
@@ -121,39 +72,10 @@
 }
 \def\end-table{\decr\indent</table>\cr}
 
-\def\begin-table-head{<thead>\incr\indent\cr}
-\def\end-table-head{\decr\indent</thead>\cr}
-
-\def\begin-table-foot{<tfoot>\incr\indent\cr}
-\def\end-table-foot{\decr\indent</tfoot>\cr}
-
-\def\begin-table-body{<tbody>\incr\indent\cr}
-\def\end-table-body{\decr\indent</tbody>\cr}
-
-\def\begin-row{<tr\csname row!attrs\endcsname>\incr\indent\cr}
-\def\end-row{\decr\indent</tr>\cr}
-
-\def\begin-head{<th\csname col!attrs\endcsname>\incr\indent\cr}
-\def\end-head{\decr\indent</th>\cr}
-\def\begin-head-end#1{<th\csname col!attrs\endcsname>#1</th>\cr}
-
-\def\begin-col{<td\csname col!attrs\endcsname>\incr\indent\cr}
-\def\end-col{\decr\indent</td>\cr}
-\def\begin-col-end#1{<td\csname col!attrs\endcsname>#1</td>\cr}
-
-\def\img#src#alt#border{<img src="#src" alt="#alt" style="border: #border;" />}
-
-\def\K{<span class="chess">&\#x2654;</span>}
-\def\Q{<span class="chess">&\#x2655;</span>}
-\def\R{<span class="chess">&\#x2656;</span>}
-\def\B{<span class="chess">&\#x2657;</span>}
-\def\N{<span class="chess">&\#x2658;</span>}
-\def\P{<span class="chess">&\#x2659;</span>}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\xhtml-head\Lang\Title{player-card.css}%
+\xhtml-head\Lang\Title{player-card.css}\cr
 
-<body>
+<body>\cr
 \incr\indent
 
 %%% Player Information %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,7 +131,7 @@
 \end-table
 \end-col
 \def\col-class{photo}%
-\begin-col-end{\img{photo}{\Surname\ \Forename}{2px solid white}}%
+\begin-col-end{\img{photo}{Player}{2px solid white}}%
 \end-row
 \end-table
 \end-div
@@ -375,7 +297,7 @@
 
 %%% Finish %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \decr\indent
-</body>
+</body>\cr
 \decr\indent
 \xhtml-foot
 \bye

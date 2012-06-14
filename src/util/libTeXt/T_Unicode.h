@@ -42,6 +42,7 @@ private:
 
 	void performUcPref(Environment& env);
 	void performUcSuff(Environment& env);
+	void performUcMap(Environment& env);
 
 	FilterP m_filter;
 };

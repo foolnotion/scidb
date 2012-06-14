@@ -24,23 +24,9 @@
 % (at your option) any later version.
 % ======================================================================
 
-\input\plain
-\input\xhtml
+\input\common
 
 %%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\def\check-optional-token#tok#dflt{%
-	\ifx#tok\undefined
-		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
-		\let#tok#dflt%
-	\fi
-}
-\def\check-mandatory-token#tok{%
-	\ifx#tok\undefined
-		\errorcontextlines\0
-		\errmessage{ERROR: Token \string#tok is not defined}%
-	\fi
-}
 
 \check-optional-token\ShowRating\1
 \check-optional-token\ShowTiebreaks\1
@@ -74,17 +60,6 @@
 \tracingmacros\Tracing
 \errorcontextlines\2
 
-%%% options %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\utf-8\1
-\ucpref{\&\#}
-\ucsuff;
-
-\fillchar 0
-\indentchar\ %
-\indentstep\2
-\let^^M\empty
-
 %%% layout  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \let\cell-padding\CellPadding \decr\cell-padding
@@ -107,33 +82,12 @@
 
 %%% HTML tags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\expandafter\def\csname col!attrs\endcsname{%
-	\unless\ifempty\col-align \space align="\col-align"\let\col-align\empty\fi
-	\unless\ifempty\col-width \space width="\col-width{}px"\let\col-width\empty\fi
-	\unless\ifempty\col-recv \space recv="\col-recv"\let\col-recv\empty\fi
-	\unless\ifempty\col-send \space send="\col-send"\let\col-send\empty\fi
-	\unless\ifempty\col-rank \space rank="\col-rank"\let\col-rank\empty\fi
-	\unless\if\col-game\0 \space game="\decrement\col-game"\let\col-game\0\fi
-}
-
-\let\col-align\empty
-\let\col-width\empty
-\let\col-recv\empty
-\let\col-send\empty
-\let\col-rank\empty
-\let\col-game\0
-
 \def\begin-table#border#padding#spacing{%
 	<table border="#border" cellpadding="#padding" cellspacing="#spacing">\cr
 	\incr\indent
 }
 
 \def\end-table{\decr\indent</table>\cr}
-\def\begin-col{<td\csname col!attrs\endcsname>\cr \incr\indent}
-\def\end-col{\decr\indent</td>\cr}
-\def\begin-row{<tr>\cr \incr\indent}
-\def\end-row{\decr\indent</tr>\cr}
-\def\begin-col-end#1{<td\csname col!attrs\endcsname>#1</td>\cr}
 
 %%% print macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -372,7 +326,7 @@
 
 \lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
 
-\xhtml-head\Lang\Title\relax
+\xhtml-head\Lang\Title{crosstable.css}%
 <body><big>\cr
 <p><nobr>\cr
 <span recv="event" style="color: blue;">\event</span>

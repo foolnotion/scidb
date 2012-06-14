@@ -82,6 +82,7 @@ proc Build {w args} {
 		-showhyphens		0
 		-delay				0
 		-css					{}
+		-importdir			{}
 	}
 
 	array set opts $args
@@ -90,7 +91,7 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -fittowidth -
+			-delay - -css - -center - -fittowidth - -importdir -
 			-useHorzScroll - -useVertScroll - -keepHorzScroll - -keepVertScroll {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
@@ -153,6 +154,7 @@ proc Build {w args} {
 	set Priv(fittowidth)	$opts(-fittowidth)
 	set Priv(bw)    		$opts(-borderwidth)
 	set Priv(css)   		$opts(-css)
+	set Priv(importdir)	$opts(-importdir)
 	set Priv(minbbox)		{}
 	set Priv(styleCount)	0
 
@@ -168,6 +170,9 @@ proc Build {w args} {
 	if {$opts(-useVertScroll)} { set shrink no } else { set shrink yes }
 	__html_widget $html {*}$htmlOptions -shrink $shrink
 	$html handler script style [namespace code [list StyleHandler $html]]
+	if {[string length $Priv(importdir)]} {
+		$html handler node link [list [namespace current]::LinkHandler $html]
+	}
 
 	if {$opts(-useHorzScroll)} {
 		if {$opts(-keepHorzScroll)} {
@@ -212,8 +217,30 @@ proc StyleHandler {w node contents} {
 }
 
 
+proc LinkHandler {w node} {
+	if {[$node attribute rel] eq "stylesheet"} {
+		set uri [$node attribute -default {} href]
+		if {[string length $uri]} { ImportHandler $w author $uri }
+	}
+}
+
+
 proc ImportHandler {w parentid uri} {
-	puts stderr "html.tcl: ImportHandler not yet implemented"
+	variable [winfo parent [winfo parent $w]]::Priv
+
+	set file [file join $Priv(importdir) $uri]
+
+	if {[file readable $file]} {
+		set fd [::open $file r]
+		chan configure $fd -encoding utf-8
+		set contents [read $fd]
+		close $fd
+
+		incr Priv(styleCount)
+		set id "$parentid.[format %.4d $Priv(styleCount)]"
+		set handler [namespace code [list ImportHandler $w]]
+		$w style -id $id.9999 -importcmd $handler $contents
+	}
 }
 
 

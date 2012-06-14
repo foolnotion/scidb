@@ -178,6 +178,7 @@ Unicode
 ----------------------------------------------------------------------------------------------
 \ucpref					Final			setting		GenericFinal			undefined
 \ucsuff					Final			setting		GenericFinal			undefined
+\ucmap					Final			setting		GenericFinal			number, undefined
 \utf-8					Final			setting		GenericValue			number/ascii
 
 Values

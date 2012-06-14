@@ -1733,11 +1733,12 @@ proc Undo {action} {
 	variable Vars
 
 	if {[llength [::scidb::game::query $action]]} {
-		::widget::busyCursor on
+#		Do not use busy cursor, because the KeyRelease event will be lost!
+#		::widget::busyCursor on
 		::scidb::game::execute $action
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
 		::annotation::update
-		::widget::busyCursor off
+#		::widget::busyCursor off
 	}
 }
 

@@ -33,6 +33,7 @@ public:
 	RefID refID() const override;
 	mstl::string name() const override;
 	mstl::string meaning() const override;
+	mstl::string text() const override;
 	Value value() const override;
 
 	void traceCommand(Environment& env) const override;

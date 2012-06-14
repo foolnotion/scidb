@@ -37,6 +37,7 @@ public:
 	mstl::string name() const override;
 	mstl::string name(Environment& env) const override;
 	mstl::string meaning() const override;
+	mstl::string text() const override;
 	mstl::string description(Environment& env) const override;
 	Value value() const override;
 	RefID refID() const override;

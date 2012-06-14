@@ -101,13 +101,14 @@ proc show {base args} {
 	::widget::busyCursor on
 
 	::scidb::db::subscribe dbInfo {} [namespace current]::Close $key
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 	set dlg [tk::toplevel .application.__card__[incr Counter] -class Scidb]
 	set Vars($key) $dlg
 	set Vars($key:open) 1
 	bind $dlg <Destroy> [namespace code [list Destroy $dlg $key %W 1]]
 	wm withdraw $dlg
 
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set dir [file join $::scidb::dir::share scripts]
 	::html $dlg.content \
 		-imagecmd [namespace code [list GetImage $info]] \
 		-center no \
@@ -119,6 +120,7 @@ proc show {base args} {
 		-relief sunken \
 		-doublebuffer no \
 		-exportselection yes \
+		-importdir $dir \
 		-css $css \
 		-showhyphens 0 \
 		-useHorzScroll no \
@@ -126,7 +128,6 @@ proc show {base args} {
 		-keepVertScroll yes \
 		;
 	set updateCmd [list UpdateContent $dlg.content $key $base $name [list $base {*}$args]]
-	$dlg.content handler node link [list [namespace current]::LinkHandler $dlg.content]
 	bind [winfo parent [$dlg.content drawable]] <ButtonPress-3> [namespace code [list PopupMenu $key]]
 	pack $dlg.content -fill both -expand yes
 	bind $dlg.content <Destroy> [list array unset [namespace current]::Vars $key*]
@@ -550,27 +551,27 @@ proc Tooltip {w msg} {
 }
 
 
-proc LinkHandler {w node} {
-	if {[$node attribute rel] eq "stylesheet"} {
-		set uri [$node attribute -default {} href]
-		if {[string length $uri]} { ImportHandler $w author $uri }
-	}
-}
-
-
-proc ImportHandler {w parentid uri} {
-	variable _StyleCount
-
-	set file [file join $::scidb::dir::share scripts $uri]
-	set fd [::open $file r]
-	chan configure $fd -encoding utf-8
-	set content [read $fd]
-	close $fd
-
-	set id "$parentid.[format %.4d [incr _StyleCount]]"
-	set handler [namespace code [list ImportHandler $id]]
-	$w style -id $id.9999 -importcmd $handler $content
-}
+# proc LinkHandler {w node} {
+# 	if {[$node attribute rel] eq "stylesheet"} {
+# 		set uri [$node attribute -default {} href]
+# 		if {[string length $uri]} { ImportHandler $w author $uri }
+# 	}
+# }
+# 
+# 
+# proc ImportHandler {w parentid uri} {
+# 	variable _StyleCount
+# 
+# 	set file [file join $::scidb::dir::share scripts $uri]
+# 	set fd [::open $file r]
+# 	chan configure $fd -encoding utf-8
+# 	set content [read $fd]
+# 	close $fd
+# 
+# 	set id "$parentid.[format %.4d [incr _StyleCount]]"
+# 	set handler [namespace code [list ImportHandler $id]]
+# 	$w style -id $id.9999 -importcmd $handler $content
+# }
 
 
 proc GetImage {info code} {

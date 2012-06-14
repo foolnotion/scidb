@@ -86,7 +86,7 @@ set Columns {
 variable columns {}
 foreach col $Columns { lappend columns [lindex $col 0] }
 
-array set Options {
+array set Defaults {
 	country-code	flags
 
 	exclude-elo		1
@@ -98,6 +98,7 @@ array set Options {
 	rating2:type	DWZ
 }
 
+array set Options {}
 variable Find {}
 
 
@@ -105,6 +106,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable ::gametable::ratings
 	variable Columns
 	variable Options
+	variable Defaults
 	variable Find
 	variable columns
 
@@ -119,8 +121,12 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	array set Vars {
 		columns			{}
-		find-current	{}
 		selectcmd		{}
+		find-current	{}
+	}
+
+	if {[array size Options] == 0} {
+		array set Options [array get Defaults]
 	}
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
@@ -275,6 +281,8 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			-values $Find \
 			-textvariable [namespace current]::${path}::Vars(find-current)] \
 			;
+		trace add variable [namespace current]::${path}::Vars(find-current) \
+			write [namespace code [list Find $path $cb]]
 		::bind $cb <Return> [namespace code [list Find $path $cb]]
 		::toolbar::add $tbFind button \
 			-image $::icon::22x22::enter \
@@ -721,7 +729,7 @@ proc SortColumn {path id dir} {
 }
 
 
-proc Find {path combo} {
+proc Find {path combo args} {
 	variable ${path}::Vars
 	variable Find
 
@@ -730,16 +738,20 @@ proc Find {path combo} {
 	set base [::scrolledtable::base $path.table]
 	set view [{*}$Vars(viewcmd) $base]
 	set i [::scidb::view::find player $base $view $value]
-	if {[string length $value] > 2} {
-		lappend Find $value
-		set Find [lsort -dictionary -increasing -unique $Find]
-		::toolbar::childconfigure $combo -values $Find
-	}
-	if {$i >= 0} {
+	if {[llength $args] == 0} {
+		if {[string length $value] > 2} {
+			lappend Find $value
+			set Find [lsort -dictionary -increasing -unique $Find]
+			::toolbar::childconfigure $combo -values $Find
+		}
+		if {$i >= 0} {
+			::scrolledtable::see $path.table $i
+			::scrolledtable::focus $path.table
+		} else {
+			::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
+		}
+	} elseif {$i >= 0} {
 		::scrolledtable::see $path.table $i
-		::scrolledtable::focus $path.table
-	} else {
-		::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
 	}
 }
 

@@ -84,6 +84,13 @@ Token::name(Environment& env) const
 }
 
 
+mstl::string
+Token::text() const
+{
+	return name();
+}
+
+
 TokenP
 Token::performThe(Environment&) const
 {

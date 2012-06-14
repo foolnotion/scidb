@@ -241,6 +241,18 @@ ListToken::meaning() const
 
 
 mstl::string
+ListToken::text() const
+{
+	mstl::string result;
+
+	for (TokenList::const_iterator i = m_tokenList.begin(); i != m_tokenList.end(); ++i)
+		result.append((*i)->text());
+
+	return result;
+}
+
+
+mstl::string
 ListToken::description(Environment& env) const
 {
 	mstl::string	result;

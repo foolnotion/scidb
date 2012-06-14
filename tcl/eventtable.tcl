@@ -56,20 +56,23 @@ array set Defaults {
 }
 
 array set Options {}
+variable Find {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable Columns
 	variable Defaults
 	variable Options
+	variable Find
 	variable columns
 
 	namespace eval [namespace current]::$path {}
 	variable [namespace current]::${path}::Vars
 
 	array set Vars {
-		columns		{}
-		selectcmd	{}
+		columns			{}
+		selectcmd		{}
+		find-current	{}
 	}
 
 	if {[array size Options] == 0} {
@@ -159,7 +162,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lappend Vars(columns) $id
 	}
 
+	set options(-usefind) 0
 	array set options $args
+	set useFind $options(-usefind)
+	unset options(-usefind)
 	if {[info exists options(-selectcmd)]} {
 		set Vars(selectcmd) $options(-selectcmd)
 		unset options(-selectcmd)
@@ -180,6 +186,37 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	set Vars(viewcmd) $getViewCmd
 	BindAccelerators $path
+
+	if {$useFind} {
+		set tbFind [::toolbar::toolbar $path \
+			-id find \
+			-hide 1 \
+			-side bottom \
+			-alignment left \
+			-allow {top bottom} \
+			-tooltipvar ::playertable::mc::Find] \
+			;
+		::toolbar::add $tbFind label -float 0 -textvar [::mc::var ::playertable::mc::Find ":"]
+		set cb [::toolbar::add $tbFind ttk::combobox \
+			-width 20 \
+			-takefocus 1 \
+			-values $Find \
+			-textvariable [namespace current]::${path}::Vars(find-current)] \
+			;
+		trace add variable [namespace current]::${path}::Vars(find-current) \
+			write [namespace code [list Find $path $cb]]
+		::bind $cb <Return> [namespace code [list Find $path $cb]]
+		::toolbar::add $tbFind button \
+			-image $::icon::22x22::enter \
+			-tooltipvar ::playertable::mc::StartSearch \
+			-command [namespace code [list Find $path $cb]] \
+			;
+		::toolbar::add $tbFind button \
+			-image $::icon::22x22::clear \
+			-tooltipvar ::playertable::mc::ClearEntries \
+			-command [namespace code [list Clear $path $cb]] \
+			;
+	}
 
 	return $Vars(table)
 }
@@ -578,6 +615,43 @@ proc SortColumn {path id dir {rating {}}} {
 	}
 	::widget::busyCursor off
 	::scrolledtable::updateColumn $path $selection $see
+}
+
+
+proc Find {path combo args} {
+	variable ${path}::Vars
+	variable Find
+
+	set value $Vars(find-current)
+	if {[string length $value] == 0} { return }
+	set base [::scrolledtable::base $path]
+	set view [{*}$Vars(viewcmd) $base]
+	set i [::scidb::view::find event $base $view $value]
+	if {[llength $args] == 0} {
+		if {[string length $value] > 2} {
+			lappend Find $value
+			set Find [lsort -dictionary -increasing -unique $Find]
+			::toolbar::childconfigure $combo -values $Find
+		}
+		if {$i >= 0} {
+			::scrolledtable::see $path $i
+			::scrolledtable::focus $path
+		} else {
+			::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
+		}
+	} elseif {$i >= 0} {
+		::scrolledtable::see $path $i
+	}
+}
+
+
+proc Clear {path combo} {
+	variable ${path}::Vars
+	variable Find
+
+	set Find {}
+	::toolbar::childconfigure $combo -values {}
+	set Vars(find-current) {}
 }
 
 

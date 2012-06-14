@@ -83,6 +83,13 @@ TextToken::meaning() const
 }
 
 
+mstl::string
+TextToken::text() const
+{
+	return m_str;
+}
+
+
 void
 TextToken::perform(Environment& env)
 {
@@ -115,11 +122,15 @@ TextToken::convert(Environment& env, TokenP token)
 			break;
 
 		case Token::T_Ascii:
-			token.reset(new TextToken(token->name())); // MEMORY
+			token.reset(new TextToken(token->text())); // MEMORY
 			break;
 
 		case Token::T_Number:
-			token.reset(new TextToken(token->description(env))); // MEMORY
+			token.reset(new TextToken(token->text())); // MEMORY
+			break;
+
+		case Token::T_List:
+			token.reset(new TextToken(token->text())); // MEMORY
 			break;
 
 		case Token::T_Undefined:
@@ -133,10 +144,6 @@ TextToken::convert(Environment& env, TokenP token)
 		default:
 			switch (type)
 			{
-				case Token::T_List:
-					token = token->performThe(env);
-					break;
-
 				case Token::T_LeftBrace:
 					token.reset(new ListToken(env)); // MEMORY
 					break;
@@ -146,7 +153,7 @@ TextToken::convert(Environment& env, TokenP token)
 					break;
 			}
 			static_cast<ListToken*>(token.get())->flatten();
-			token.reset(new TextToken(token->description(env))); // MEMORY
+			token.reset(new TextToken(token->text())); // MEMORY
 			break;
 	}
 

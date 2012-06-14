@@ -1807,7 +1807,7 @@ Environment::perform(TokenP const& token, mstl::string& result)
 		putUnboundToken(token);
 
 		while (TokenP t = m_impl->getFinalToken(*this, AllowNull))
-			result += t->name();
+			result += t->text();
 	}
 	catch (EndOfExecutionProducer::Exception)
 	{

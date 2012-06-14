@@ -59,6 +59,13 @@ AsciiToken::name() const
 }
 
 
+mstl::string
+AsciiToken::text() const
+{
+	return mstl::string(1, m_value);
+}
+
+
 Value
 AsciiToken::value() const
 {

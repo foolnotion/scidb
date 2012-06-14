@@ -25,6 +25,7 @@
 % ======================================================================
 
 \def\xhtml-head#lang#title#style{%
+	\ucusemap\0
 	<?xml version="1.0" encoding="utf-8"?>\cr\cr
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"\cr
 	\incr\indent
@@ -48,7 +49,8 @@
 			<link rel="stylesheet" type="text/css" media="screen" href="#style"\cr
 		\fi
 	\decr\indent
-	<head>\cr}
+	<head>\cr
+	\ucusemap\1}
 
 \def\xhtml-foot{</html>}
 

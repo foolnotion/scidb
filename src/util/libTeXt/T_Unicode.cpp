@@ -20,11 +20,15 @@
 #include "T_OutputFilter.h"
 #include "T_TextToken.h"
 #include "T_AsciiToken.h"
+#include "T_GenericFinalToken.h"
 #include "T_GenericValueToken.h"
 #include "T_Messages.h"
 #include "T_Miscellaneous.h"
+#include "T_Verify.h"
 #include "T_Environment.h"
 
+#include "m_map.h"
+#include "m_string.h"
 #include "m_utility.h"
 #include "m_assert.h"
 
@@ -93,6 +97,7 @@ isAscii(char const* s)
 struct Unicode::UnicodeFilter : public OutputFilter
 {
 	typedef Miscellaneous::TextTokenP TextTokenP;
+	typedef mstl::map<uint32_t,mstl::string> Map;
 
 	UnicodeFilter()
 		:OutputFilter(10000)
@@ -133,6 +138,21 @@ struct Unicode::UnicodeFilter : public OutputFilter
 					{
 						Messages::errmessage(env, "Invalid UTF-8 sequence", Messages::Incorrigible);
 					}
+					else if (env.associatedValue(m_useMap))
+					{
+						Map::const_iterator i = m_map.find(cp);
+
+						if (i == m_map.end())
+						{
+							result.append(m_pref->content());
+							result.format("x%04x", cp);
+							result.append(m_suff->content());
+						}
+						else
+						{
+							result.append(i->second);
+						}
+					}
 					else
 					{
 						result.append(m_pref->content());
@@ -146,8 +166,15 @@ struct Unicode::UnicodeFilter : public OutputFilter
 		}
 	}
 
-	TextTokenP m_pref;
-	TextTokenP m_suff;
+	void add(uint32_t codePoint, mstl::string const& subst)
+	{
+		m_map[codePoint] = subst;
+	}
+
+	TextTokenP	m_pref;
+	TextTokenP	m_suff;
+	Token::Type m_useMap;
+	Map			m_map;
 };
 
 
@@ -220,13 +247,27 @@ Unicode::performUcSuff(Environment& env)
 
 
 void
+Unicode::performUcMap(Environment& env)
+{
+	TokenP codePoint(env.getFinalToken(Verify::numberToken));
+	TokenP subst(env.getFinalToken());
+
+	m_filter->add(codePoint->value(), subst->text());
+}
+
+
+void
 Unicode::doRegister(Environment& env)
 {
 	env.pushFilter(m_filter);
 
 	env.bindMacro(new UcPrefToken("\\ucpref", Func(&Unicode::performUcPref, this), m_filter));
 	env.bindMacro(new UcSuffToken("\\ucsuff", Func(&Unicode::performUcSuff, this), m_filter));
+	m_filter->m_useMap = bindMacro(env, new GenericValueToken("\\ucusemap"));
+	env.bindMacro(new GenericFinalToken("\\ucmap", Func(&Unicode::performUcMap, this)));
 	env.bindMacro(new GenericValueToken("\\utf-8",	Token::T_Utf8));
+
+	env.associate(m_filter->m_useMap, 1);
 }
 
 // vi:set ts=3 sw=3:

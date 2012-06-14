@@ -1,0 +1,148 @@
+% ======================================================================
+% Author : $Author$
+% Version: $Revision: 145 $
+% Date   : $Date: 2011-12-01 08:54:52 +0100 (Thu, 01 Dec 2011) $
+% Url    : $URL$
+% ======================================================================
+
+% ======================================================================
+%    _/|            __
+%   // o\         /    )           ,        /    /
+%   || ._)    ----\---------__----------__-/----/__-
+%   //__\          \      /   '  /    /   /    /   )
+%   )___(     _(____/____(___ __/____(___/____(___/_
+% ======================================================================
+
+% ======================================================================
+% Copyright: (C) 2012 Gregor Cramer
+% ======================================================================
+
+% ======================================================================
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation; either version 2 of the License, or
+% (at your option) any later version.
+% ======================================================================
+
+\input\plain
+\input\xhtml
+
+%%% options %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\fillchar 0
+\indentchar\ %
+\indentstep\2
+\let^^M\empty
+
+%%% UTF-8 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\let\K${<span class="chess">&\#x2654;</span>}
+\let\Q${<span class="chess">&\#x2655;</span>}
+\let\R${<span class="chess">&\#x2656;</span>}
+\let\B${<span class="chess">&\#x2657;</span>}
+\let\N${<span class="chess">&\#x2658;</span>}
+\let\P${<span class="chess">&\#x2659;</span>}
+
+\ucmap\9812\K
+\ucmap\9813\Q
+\ucmap\9814\R
+\ucmap\9815\B
+\ucmap\9816\N
+\ucmap\9817\P
+
+\utf-8\1
+\ucpref{\&\#}
+\ucsuff;
+
+%%% tracing %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifx\Tracing\undefined \let\Tracing\0 \fi
+\tracingcommands\Tracing
+\tracingmacros\Tracing
+\errorcontextlines\2
+
+%%% check variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\check-optional-token#tok#dflt{%
+	\ifx#tok\undefined
+		\message{WARNING: Token \string#tok is not defined (default is \string#dflt)}%
+		\let#tok#dflt%
+	\fi
+}
+
+\def\check-mandatory-token#tok{%
+	\ifx#tok\undefined
+		\errorcontextlines\0
+		\errmessage{ERROR: Token \string#tok is not defined}%
+	\fi
+}
+
+%%% HTML tags %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\expandafter\def\csname col!attrs\endcsname{%
+	\unless\ifempty\col-align \space align="\col-align"\let\col-align\empty\fi
+	\unless\ifempty\col-class \space class="\col-class"\let\col-class\empty\fi
+	\unless\if\col-game\0 \space game="\decrement\col-game"\let\col-game\0\fi
+	\unless\ifempty\col-mark \space mark="\col-mark"\let\col-mark\empty\fi
+	\unless\ifempty\col-player \space player="\col-player"\let\col-player\empty\fi
+	\unless\ifempty\col-rank \space rank="\col-rank"\let\col-rank\empty\fi
+	\unless\ifempty\col-recv \space recv="\col-recv"\let\col-recv\empty\fi
+	\unless\ifempty\col-send \space send="\col-send"\let\col-send\empty\fi
+	\unless\ifempty\col-span \space colspan="\col-span"\let\col-span\empty\fi
+	\unless\ifempty\col-title \space title="\col-title"\let\col-title\empty\fi
+	\unless\ifempty\col-valign \space valign="\col-valign"\let\col-valign\empty\fi
+	\unless\ifempty\col-width \space width="\col-width"\let\col-width\empty\fi
+}
+
+\expandafter\def\csname row!attrs\endcsname{%
+	\unless\ifempty\row-class \space class="\row-class"\let\row-class\empty\fi
+	\unless\ifempty\row-eco \space eco="\row-eco"\let\row-eco\empty\fi
+}
+
+\let\col-align\empty
+\let\col-class\empty
+\let\col-game\0
+\let\col-mark\empty
+\let\col-player\empty
+\let\col-rank\empty
+\let\col-recv\empty
+\let\col-send\empty
+\let\col-span\empty
+\let\col-title\empty
+\let\col-valign\empty
+\let\col-width\empty
+
+\let\row-class\empty
+\let\row-eco\empty
+
+\def\begin-div#class#id{%
+	<div%
+	\unless\ifempty#class\ class="#class"\fi
+	\unless\ifempty#id\ id="#id"\fi
+	>\incr\indent\cr
+}
+\def\end-div{\decr\indent</div>\cr}
+
+\def\begin-table-head{<thead>\incr\indent\cr}
+\def\end-table-head{\decr\indent</thead>\cr}
+
+\def\begin-table-foot{<tfoot>\incr\indent\cr}
+\def\end-table-foot{\decr\indent</tfoot>\cr}
+
+\def\begin-table-body{<tbody>\incr\indent\cr}
+\def\end-table-body{\decr\indent</tbody>\cr}
+
+\def\begin-row{<tr\csname row!attrs\endcsname>\incr\indent\cr}
+\def\end-row{\decr\indent</tr>\cr}
+
+\def\begin-head{<th\csname col!attrs\endcsname>\incr\indent\cr}
+\def\end-head{\decr\indent</th>\cr}
+\def\begin-head-end#1{<th\csname col!attrs\endcsname>#1</th>\cr}
+
+\def\begin-col{<td\csname col!attrs\endcsname>\incr\indent\cr}
+\def\end-col{\decr\indent</td>\cr}
+\def\begin-col-end#1{<td\csname col!attrs\endcsname>#1</td>\cr}
+
+\def\img#src#alt#border{<img src="#src" alt="#alt" style="border: #border;" />}
+
+% vi:set ts=3 sw=3:

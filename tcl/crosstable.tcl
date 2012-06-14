@@ -279,7 +279,15 @@ proc open {parent base index view source} {
 	ttk::frame $top
 	ttk::frame $canv
 	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
-	::html $html -imagecmd [namespace code GetImage] -delay 10 -center yes -fittowidth no -css $css
+	set dir [file join $::scidb::dir::share scripts]
+	::html $html \
+		-imagecmd [namespace code GetImage] \
+		-delay 10 \
+		-center yes \
+		-fittowidth no \
+		-css $css \
+		-importdir $dir \
+		;
 	$html handler node td [namespace current]::NodeHandler
 	$html handler node span [namespace current]::NodeHandler
 	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]

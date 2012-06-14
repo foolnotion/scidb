@@ -180,6 +180,8 @@ Game::Game(Game const& game)
 	,m_line(m_lineBuf[0])
 {
 	*this = game;
+	m_tags = game.m_tags;
+	m_engines = game.m_engines;
 }
 
 

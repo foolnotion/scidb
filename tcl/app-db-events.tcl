@@ -64,6 +64,7 @@ proc build {parent} {
 
 	::eventtable::build $lt [namespace code [list View $top]] {} \
 		-selectcmd [list [namespace current]::events::Search $top] \
+		-usefind 1 \
 		;
 
 	tk::panedwindow $rt -orient vertical -opaqueresize true -borderwidth 0

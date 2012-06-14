@@ -95,6 +95,7 @@ public:
 	mstl::string name(Environment& env) const;
 	virtual mstl::string meaning() const;
 	virtual mstl::string description(Environment& env) const;
+	virtual mstl::string text() const;
 	virtual Value value() const;
 	virtual bool isEmpty() const;
 	virtual RefID refID() const;

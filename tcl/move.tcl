@@ -300,6 +300,8 @@ proc dragPiece {x y} {
 
 
 proc addMove {san noMoveCmd {force no}} {
+	variable ::application::board::board
+
 	if {[::scidb::game::position atEnd?]} {
 		application::pgn::ensureScratchGame
 		set action "add"
@@ -315,6 +317,8 @@ proc addMove {san noMoveCmd {force no}} {
 				}
 			}
 		}
+		::board::stuff::finishDrag $board
+		update idletasks
 		set action [ConfirmReplaceMove]
 	}
 
@@ -491,6 +495,7 @@ proc ConfirmReplaceMove {} {
 
 
 proc Unlock {} {
+puts "Unlock"
 	set [namespace current]::Lock 0
 	set [namespace current]::Disabled 0
 }

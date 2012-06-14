@@ -40,6 +40,7 @@ public:
 	RefID refID() const override;
 	mstl::string name() const override;
 	mstl::string meaning() const override;
+	mstl::string text() const override;
 	mstl::string const& content() const override;
 	bool isEqualTo(Token const& token) const override;
 	bool isEmpty() const override;

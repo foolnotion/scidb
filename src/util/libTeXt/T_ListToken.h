@@ -70,6 +70,7 @@ public:
 	Type type() const override;
 	mstl::string name() const override;
 	mstl::string meaning() const override;
+	mstl::string text() const override;
 	mstl::string description(Environment& env) const override;
 	Producer* getProducer(TokenP const& self) const;
 	Value length() const;

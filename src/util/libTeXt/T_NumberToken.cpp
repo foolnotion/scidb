@@ -67,6 +67,13 @@ NumberToken::meaning() const
 
 
 mstl::string
+NumberToken::text() const
+{
+	return mstl::string::cast(m_value);
+}
+
+
+mstl::string
 NumberToken::description(Environment&) const
 {
 	return mstl::string::cast(m_value);
