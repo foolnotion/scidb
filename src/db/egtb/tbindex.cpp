@@ -6210,7 +6210,7 @@ static void VCheckSize
     if (cb != cbOk1 && cb != cbOk2)
         {
         printf ("*** %s corrupted "
-                DEC_INDEX_FORMAT" "DEC_INDEX_FORMAT" "DEC_INDEX_FORMAT"\n",
+                DEC_INDEX_FORMAT " " DEC_INDEX_FORMAT " " DEC_INDEX_FORMAT "\n",
                 rgchTbName, cbOk1, cbOk2, cb);
         exit (1);
         }

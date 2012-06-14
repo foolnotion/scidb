@@ -1294,7 +1294,7 @@ Player::insertPlayer(mstl::string& name, unsigned region, country::Code federati
 			else
 			{
 				DEBUG(::printf("'%s' does not fit region 1, 2, and 4\n", name.c_str()));
-				return false;
+				return 0;;
 			}
 		}
 		else
@@ -1306,7 +1306,7 @@ Player::insertPlayer(mstl::string& name, unsigned region, country::Code federati
 	if (!sys::utf8::Codec::fitsRegion(name, region))
 	{
 		DEBUG(::printf("'%s' does not fit region %u\n", name.c_str(), region));
-		return false;
+		return 0;;
 	}
 
 	mstl::string ascii;
