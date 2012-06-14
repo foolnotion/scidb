@@ -279,9 +279,10 @@
 # define nullptr NULL
 #endif
 
-#if !HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES
+// XXX preliminary
+//#if !HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES
 # define override
-#endif
+//#endif
 
 #if !HAVE_0X_ALLOWING_MOVE_CONSTRUCTORS_TO_THROW
 # define noexcept
