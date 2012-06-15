@@ -33,7 +33,7 @@ private:
 
 public:
 
-	static double constexpr Load = 70.0;
+	static double const Load = 70.0;
 
 	typedef Value					value_type;
 	typedef Key						key_type;

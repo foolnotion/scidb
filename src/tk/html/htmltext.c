@@ -1851,7 +1851,7 @@ copyText(char* dst, const char* src, unsigned len)
     char* p = dst;
 
     for ( ; src < e; ++src) {
-        if (src[0] == 0xC2 && src < e - 1 && src[1] == 0xAD) {
+        if (src[0] == (char)0xC2 && src < e - 1 && src[1] == (char)0xAD) {
             ++src;
         } else {
             *p++ = *src;
