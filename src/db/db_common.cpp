@@ -178,21 +178,12 @@ namespace utf8 {
 static mstl::string const Table[7] =
 {
 	"",
-#ifdef HAVE_0X_UNIVERSAL_CHARACTER_NAME_LITERALS
-	"\u2654",
-	"\u2655",
-	"\u2656",
-	"\u2657"
-	"\u2658"
-	"\u2659"
-#else
 	"\xe2\x99\x94",
 	"\xe2\x99\x95",
 	"\xe2\x99\x96",
 	"\xe2\x99\x97",
 	"\xe2\x99\x98",
 	"\xe2\x99\x99",
-#endif
 };
 
 } // namespace utf8
