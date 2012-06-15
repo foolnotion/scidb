@@ -2835,9 +2835,9 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 	result->append(totalResult);
 
 	List score(new ListToken);
-	score->append(Value(stats.percentage(color::White)*100.0));
-	score->append(Value(stats.percentage(color::Black)*100.0));
-	score->append(Value(stats.percentage()*100.0));
+	score->append(Value((stats.percentage(color::White) + 0.005)*100.0));
+	score->append(Value((stats.percentage(color::Black) + 0.005)*100.0));
+	score->append(Value((stats.percentage() + 0.005)*100.0));
 
 	List whiteEcoLines(new ListToken);
 	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::White)); i < n; ++i)

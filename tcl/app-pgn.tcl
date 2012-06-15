@@ -1827,7 +1827,9 @@ proc PopupMenu {parent position} {
 
 	if {[::game::trialMode?]} {
 		$menu add command \
-			-label $mc::StopTrialMode \
+			-label " $mc::StopTrialMode" \
+			-image $::icon::16x16::delete \
+			-compound left \
 			-command ::game::flipTrialMode \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(trial-mode)]" \
 			;
@@ -1961,11 +1963,15 @@ proc PopupMenu {parent position} {
 
 		if {[::scidb::game::position atStart?]} {
 			$menu add command \
-				-label $mc::InsertDiagram \
+				-label " $mc::InsertDiagram" \
+				-image $::icon::16x16::board \
+				-compound left \
 				-command [list ::annotation::setNags suffix 155] \
 				;
 			$menu add command \
-				-label $mc::InsertDiagramFromBlack \
+				-label " $mc::InsertDiagramFromBlack" \
+				-image $::icon::16x16::board \
+				-compound left \
 				-command [list ::annotation::setNags suffix 156] \
 				;
 		} else {
@@ -2035,44 +2041,58 @@ proc PopupMenu {parent position} {
 
 		if {[::annotation::open?]} { set state disabled } else { set state normal }
 		$menu add command \
-			-label "$mc::EditAnnotation..." \
+			-label " $mc::EditAnnotation..." \
+			-image $::icon::16x16::annotation \
+			-compound left \
 			-state $state \
 			-command [namespace code [list editAnnotation $position]] \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-annotation)]" \
 			;
 		if {[::scidb::game::position atStart?]} {
 			$menu add command \
-				-label "$mc::EditPrecedingComment..." \
+				-label " $mc::EditPrecedingComment..." \
+				-image $::fsbox::bookmarks::icon::16x16::modify \
+				-compound left \
 				-command [namespace code [list editComment p $position]] \
 				;
 		} else {
 			$menu add command \
-				-label "$mc::EditCommentAfter..." \
+				-label " $mc::EditCommentAfter..." \
+				-image $::fsbox::bookmarks::icon::16x16::modify \
+				-compound left \
 				-command [namespace code [list editComment p $position]] \
 				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
 			set accel "$::mc::Key(Ctrl)-$::mc::Key(Shift)-"
 			append accel "[set [namespace parent]::board::mc::Accel(edit-comment)]"
 			$menu add command \
-				-label "$mc::EditCommentBefore..." \
+				-label " $mc::EditCommentBefore..." \
+				-image $::fsbox::bookmarks::icon::16x16::modify \
+				-compound left \
 				-command [namespace code [list editComment a $position]] \
 				-accel $accel \
 				;
 		}
 		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {
 			$menu add command \
-				-label "$mc::EditTrailingComment..." \
+				-label " $mc::EditTrailingComment..." \
+				-image $::fsbox::bookmarks::icon::16x16::modify \
+				-compound left \
 				-command [namespace code [list editComment e $position]] \
 				;
 		}
 		$menu add command \
 			-label "$mc::EditMoveInformation..." \
+			-image $::icon::16x16::clock \
+			-compound left \
 			-state $state \
 			-command [namespace code [list EditInfo $parent $position]] \
 			;
 		if {[::marks::open?]} { set state disabled } else { set state normal }
 		$menu add command \
-			-label "$::marks::mc::MarksPalette..." \
+			-label " $::marks::mc::MarksPalette..." \
+			-image $::icon::16x16::mark \
+			-compound left \
 			-state $state \
 			-command [namespace code [list openMarksPalette $position]] \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-marks)]" \
@@ -2082,12 +2102,16 @@ proc PopupMenu {parent position} {
 
 		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
 			$menu add command \
-				-label "$::import::mc::ImportPgnGame..." \
+				-label " $::import::mc::ImportPgnGame..." \
+				-image $::icon::16x16::pgn \
+				-compound left \
 				-command [namespace code PasteClipboardGame] \
 				;
 		}
 		$menu add command \
-			-label "$::import::mc::ImportPgnVariation..." \
+			-label " $::import::mc::ImportPgnVariation..." \
+			-image $::icon::16x16::filetypePGN \
+			-compound left \
 			-command [namespace code PasteClipboardVariation] \
 			;
 
@@ -2137,7 +2161,9 @@ proc PopupMenu {parent position} {
 			set name [::util::databaseName $base]
 
 			$menu add command \
-				-label [format $mc::ReplaceGame $name] \
+				-label " [format $mc::ReplaceGame $name]" \
+				-image $::icon::16x16::save \
+				-compound left \
 				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-game)]" \
@@ -2145,7 +2171,9 @@ proc PopupMenu {parent position} {
 
 			if {![::scidb::game::query modified?]} { set state disabled }
 			$menu add command \
-				-label [format $mc::ReplaceMoves $name] \
+				-label " [format $mc::ReplaceMoves $name]" \
+				-image $::icon::16x16::save \
+				-compound left \
 				-command [namespace code [list replaceMoves $parent]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-moves)]" \
@@ -2160,7 +2188,9 @@ proc PopupMenu {parent position} {
 			set state normal
 		}
 		$menu add command \
-			-label [format $mc::AddNewGame [::util::databaseName $actual]] \
+			-label " [format $mc::AddNewGame [::util::databaseName $actual]]" \
+			-image $::icon::16x16::saveAs \
+			-compound left \
 			-command [list ::dialog::save::open $parent $actual $position] \
 			-state $state \
 			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(add-new-game)]" \
@@ -2183,7 +2213,9 @@ proc PopupMenu {parent position} {
 		if {$count} { set state normal } else { set state disabled }
 		$menu add cascade \
 			-menu $menu.save \
-			-label [format $mc::AddNewGame ""] \
+			-label " [format $mc::AddNewGame {}]" \
+			-image $::icon::16x16::saveAs \
+			-compound left \
 			-state $state \
 			;
 		$menu add separator
@@ -2206,7 +2238,12 @@ proc PopupMenu {parent position} {
 	}
 
 	menu $menu.display
-	$menu add cascade -menu $menu.display -label $mc::Display
+	$menu add cascade \
+		-menu $menu.display \
+		-label " $mc::Display" \
+		-image $::icon::16x16::paragraphSpacing \
+		-compound left \
+		;
 	array unset state
 
 	foreach {label var} {ColumnStyle column-style

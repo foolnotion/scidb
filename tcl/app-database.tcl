@@ -78,7 +78,7 @@ set SelectDatabases			"Select the databases to be opened"
 set ExtractArchive			"Extract archive %s"
 set CompactDetail				"All games must be closed before a compaction can be done."
 set ReallyCompact				"Really compact database '%s'?"
-set ReallyCompactDetail(1)	"One game will be deleted."
+set ReallyCompactDetail(1)	"Only one game will be deleted."
 set ReallyCompactDetail(N)	"%s games will be deleted."
 
 set RecodingDatabase			"Recoding %base from %from to %to"
@@ -1548,7 +1548,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		if {$isClipbase || $ext eq "sci"} {
 			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
 			lappend specs command \
-				"$mc::FileCompact" \
+				"$mc::FileCompact..." \
 				[namespace code [list Compact $top $file]] \
 				1 0 {} {} $state \
 				;

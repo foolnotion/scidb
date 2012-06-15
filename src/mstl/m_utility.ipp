@@ -29,12 +29,12 @@ template <size_t N> struct signed_arithmetic;
 template <>
 struct signed_arithmetic<1>
 {
-	template <typename T> inline static T div2(T x) { return x/2; }
-	template <typename T> inline static T div4(T x) { return x/4; }
-	template <typename T> inline static T mod2(T x) { return x%2; }
-	template <typename T> inline static T mod4(T x) { return x%4; }
-	template <typename T> inline static T mul2(T x) { return x*2; }
-	template <typename T> inline static T mul4(T x) { return x*4; }
+	template <typename T> inline static constexpr T div2(T x) { return x/2; }
+	template <typename T> inline static constexpr T div4(T x) { return x/4; }
+	template <typename T> inline static constexpr T mod2(T x) { return x%2; }
+	template <typename T> inline static constexpr T mod4(T x) { return x%4; }
+	template <typename T> inline static constexpr T mul2(T x) { return x*2; }
+	template <typename T> inline static constexpr T mul4(T x) { return x*4; }
 
 	template <typename T>
 	inline
@@ -52,13 +52,13 @@ struct signed_arithmetic<1>
 template <>
 struct signed_arithmetic<0>
 {
-	template <typename T> inline static T div2(T x) { return x >> 1; }
-	template <typename T> inline static T div4(T x) { return x >> 2; }
-	template <typename T> inline static T mod2(T x) { return x & 1; }
-	template <typename T> inline static T mod4(T x) { return x & 3; }
-	template <typename T> inline static T mul2(T x) { return x << 1; }
-	template <typename T> inline static T mul4(T x) { return x << 2; }
-	template <typename T> inline static T abs(T x)  { return x; }
+	template <typename T> inline static T constexpr div2(T x) { return x >> 1; }
+	template <typename T> inline static T constexpr div4(T x) { return x >> 2; }
+	template <typename T> inline static T constexpr mod2(T x) { return x & 1; }
+	template <typename T> inline static T constexpr mod4(T x) { return x & 3; }
+	template <typename T> inline static T constexpr mul2(T x) { return x << 1; }
+	template <typename T> inline static T constexpr mul4(T x) { return x << 2; }
+	template <typename T> inline static T constexpr abs(T x)  { return x; }
 };
 
 } // namespace bits
@@ -175,7 +175,7 @@ advance(void* i, size_t offset)
 
 template <>
 inline
-ptrdiff_t
+constexpr ptrdiff_t
 distance(void* first, void* last)
 {
 	return static_cast<char*>(last) - static_cast<char*>(first);

@@ -4043,7 +4043,7 @@ set restore [image create photo -data {
 	5bcAAAAASUVORK5CYII=
 }]
 
-set modify [set ::fsbox::bookmarks::icon::16x16::modify]
+set modify $::fsbox::bookmarks::icon::16x16::modify
 
 set duplicate [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVjGABli9ydt+7s7/j/

@@ -326,7 +326,7 @@
 ::application::database::mc::ExtractArchive				"Extract archive %s"
 ::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done."
 ::application::database::mc::ReallyCompact				"Really compact database '%s'?"
-::application::database::mc::ReallyCompactDetail(1)	"One game will be deleted."
+::application::database::mc::ReallyCompactDetail(1)	"Only one game will be deleted."
 ::application::database::mc::ReallyCompactDetail(N)	"%s games will be deleted."
 
 ::application::database::mc::RecodingDatabase			"Recoding %base from %from to %to"

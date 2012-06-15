@@ -291,7 +291,7 @@
 // C++Ox definitions //////////////////////////////////////////////////////////
 
 #if !HAVE_0X_CONSTANT_EXPRESSIONS
-#define constexpr
+#define constexpr const
 #endif
 
 #if !HAVE_0X_NULL_POINTER_CONSTANT
