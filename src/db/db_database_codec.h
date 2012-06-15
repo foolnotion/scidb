@@ -229,7 +229,7 @@ protected:
 									GameData const& data,
 									Signature const& signature,
 									TagBits const& allowedTags,
-									bool allowExtraTags) override;
+									bool allowExtraTags);
 	virtual unsigned putGame(util::ByteStream const& data);
 	virtual unsigned putGame(	util::ByteStream const& strm,
 										unsigned prevOffset,

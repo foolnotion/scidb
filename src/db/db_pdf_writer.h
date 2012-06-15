@@ -54,7 +54,7 @@ public:
 	~PdfWriter() throw();
 
 	void writeTag(mstl::string const& name, mstl::string const& value) override;
-	void writeComment(Comment const& comment, MarkSet const& marks) override;
+	void writeComment(Comment const& comment, MarkSet const& marks);
 	void writeMove(Move const& move,
 						mstl::string const& moveNumber,
 						Annotation const& annotation,

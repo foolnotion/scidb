@@ -80,7 +80,7 @@ public:
 		virtual void protocolEnd() = 0;
 
 		virtual void processMessage(mstl::string const& message) = 0;
-		virtual void sendNumberOfVariations() override = 0;
+		virtual void sendNumberOfVariations() = 0;
 		virtual void doMove(db::Game const& game, db::Move const& lastMove) = 0;
 
 		virtual Result probeResult() const = 0;

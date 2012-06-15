@@ -109,7 +109,7 @@ AsciiToken::perform(Environment& env)
 
 
 TokenP
-AsciiToken::performThe(Environment& env)
+AsciiToken::performThe(Environment& env) const
 {
 	return env.asciiToken(m_value);
 }

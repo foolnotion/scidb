@@ -96,10 +96,10 @@ public:
 	util::ByteStream getGame(GameInfo const& info) override;
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress) override;
 	void attach(mstl::string const& rootname, util::Progress& progress) override;
-	void update(mstl::string const& rootname) override;
+	void update(mstl::string const& rootname);
 	void update(mstl::string const& rootname, unsigned index, bool updateNamebase) override;
 	void updateHeader(mstl::string const& rootname) override;
-	void unlock(mstl::string const& rootname) override;
+	void unlock(mstl::string const& rootname);
 	void close() override;
 	void sync() override;
 	void removeAllFiles(mstl::string const& rootname) override;

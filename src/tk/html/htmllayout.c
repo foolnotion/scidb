@@ -243,11 +243,11 @@ static void wrapContent(LayoutContext*, BoxContext*, BoxContext*, HtmlNode*);
  *---------------------------------------------------------------------------
  */
 void
-nodeGetBoxProperties(pLayout, pNode, iContaining, pBoxProperties)
-    LayoutContext *pLayout;            /* Unused */
-    HtmlNode *pNode;                   /* Node to calculate values for */
-    int iContaining;                   /* Width of pNode's containing block */
-    BoxProperties *pBoxProperties;     /* OUT: Write pixel values here */
+nodeGetBoxProperties(
+    LayoutContext *pLayout,            /* Unused */
+    HtmlNode *pNode,                   /* Node to calculate values for */
+    int iContaining,                   /* Width of pNode's containing block */
+    BoxProperties *pBoxProperties)     /* OUT: Write pixel values here */
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
 
@@ -306,11 +306,11 @@ nodeGetBoxProperties(pLayout, pNode, iContaining, pBoxProperties)
  *---------------------------------------------------------------------------
  */
 void
-nodeGetMargins(pLayout, pNode, iContaining, pMargins)
-    LayoutContext *pLayout;
-    HtmlNode *pNode;
-    int iContaining;
-    MarginProperties *pMargins;
+nodeGetMargins(
+    LayoutContext *pLayout,
+    HtmlNode *pNode,
+    int iContaining,
+    MarginProperties *pMargins)
 {
     int iMarginTop;
     int iMarginRight;
@@ -374,8 +374,7 @@ nodeGetMargins(pLayout, pNode, iContaining, pMargins)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowMarginQuery(pNormal)
-    NormalFlow *pNormal;
+normalFlowMarginQuery(NormalFlow *pNormal)
 {
     int iMargin = pNormal->iMinMargin + pNormal->iMaxMargin;
     if (pNormal->nonegative) {
@@ -383,12 +382,9 @@ normalFlowMarginQuery(pNormal)
     }
     return iMargin;
 }
+
 static void
-normalFlowMarginCollapse(pLayout, pNode, pNormal, pY)
-    LayoutContext *pLayout;
-    HtmlNode *pNode;
-    NormalFlow *pNormal;
-    int *pY;
+normalFlowMarginCollapse(LayoutContext *pLayout, HtmlNode *pNode, NormalFlow *pNormal, int *pY)
 {
     NormalFlowCallback *pCallback = pNormal->pCallbackList;
     int iMargin = pNormal->iMinMargin + pNormal->iMaxMargin;
@@ -415,12 +411,9 @@ normalFlowMarginCollapse(pLayout, pNode, pNormal, pY)
 		, NULL);
     }
 }
+
 static void
-normalFlowMarginAdd(pLayout, pNode, pNormal, y)
-    LayoutContext *pLayout;
-    HtmlNode *pNode;
-    NormalFlow *pNormal;
-    int y;
+normalFlowMarginAdd(LayoutContext *pLayout, HtmlNode *pNode, NormalFlow *pNormal, int y)
 {
     if (pNormal->isValid && (!pNormal->nonegative || y >= 0)) {
         assert(pNormal->iMaxMargin >= 0);
@@ -445,17 +438,14 @@ normalFlowMarginAdd(pLayout, pNode, pNormal, y)
 }
 
 static void
-normalFlowCbAdd(pNormal, pCallback)
-    NormalFlow *pNormal;
-    NormalFlowCallback *pCallback;
+normalFlowCbAdd(NormalFlow *pNormal, NormalFlowCallback *pCallback)
 {
     pCallback->pNext = pNormal->pCallbackList;
     pNormal->pCallbackList = pCallback;
 }
+
 static void
-normalFlowCbDelete(pNormal, pCallback)
-    NormalFlow *pNormal;
-    NormalFlowCallback *pCallback;
+normalFlowCbDelete(NormalFlow *pNormal, NormalFlowCallback *pCallback)
 {
     NormalFlowCallback *pCallbackList = pNormal->pCallbackList;
     if (pCallback == pCallbackList) {
@@ -489,8 +479,7 @@ normalFlowCbDelete(pNormal, pCallback)
  *---------------------------------------------------------------------------
  */
 static int
-nodeIsReplaced(pNode)
-    HtmlNode *pNode;
+nodeIsReplaced(HtmlNode *pNode)
 {
     HtmlElementNode *pElem = HtmlNodeAsElement(pNode);
     assert(!pElem || pElem->pPropertyValues);
@@ -503,10 +492,7 @@ nodeIsReplaced(pNode)
 }
 
 static void
-considerMinMaxHeight(pNode, iContaining, piHeight)
-    HtmlNode *pNode;
-    int iContaining;
-    int *piHeight;
+considerMinMaxHeight(HtmlNode *pNode, int iContaining, int *piHeight)
 {
     int iHeight = *piHeight;
     if (iHeight != PIXELVAL_AUTO) {
@@ -553,10 +539,10 @@ considerMinMaxHeight(pNode, iContaining, piHeight)
  *---------------------------------------------------------------------------
  */
 int
-getHeight(pNode, iHeight, iContainingHeight)
-    HtmlNode *pNode;             /* Node to determine height of */
-    int iHeight;                 /* Natural Content height */
-    int iContainingHeight;       /* Containing height, or PIXELVAL_AUTO */
+getHeight(
+    HtmlNode *pNode,             /* Node to determine height of */
+    int iHeight,                 /* Natural Content height */
+    int iContainingHeight)       /* Containing height, or PIXELVAL_AUTO */
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
 
@@ -570,9 +556,7 @@ getHeight(pNode, iHeight, iContainingHeight)
 }
 
 static int
-getWidth(iWidthCalculated, iWidthContent)
-    int iWidthCalculated;
-    int iWidthContent;
+getWidth(int iWidthCalculated, int iWidthContent)
 {
     if (iWidthCalculated < 0) {
         return iWidthContent;
@@ -581,10 +565,7 @@ getWidth(iWidthCalculated, iWidthContent)
 }
 
 static int
-getWidthProperty(pLayout, pComputed, iContaining)
-    LayoutContext *pLayout;
-    HtmlComputedValues *pComputed;
-    int iContaining;
+getWidthProperty(LayoutContext *pLayout, HtmlComputedValues *pComputed, int iContaining)
 {
     return PIXELVAL(
         pComputed, WIDTH, pLayout->minmaxTest ? PIXELVAL_AUTO : iContaining
@@ -592,10 +573,7 @@ getWidthProperty(pLayout, pComputed, iContaining)
 }
 
 static void
-considerMinMaxWidth(pNode, iContaining, piWidth)
-    HtmlNode *pNode;
-    int iContaining;
-    int *piWidth;
+considerMinMaxWidth(HtmlNode *pNode, int iContaining, int *piWidth)
 {
     int iWidth = *piWidth;
     if (iWidth != PIXELVAL_AUTO) {
@@ -650,11 +628,11 @@ considerMinMaxWidth(pNode, iContaining, piWidth)
  *---------------------------------------------------------------------------
  */
 static int
-doHorizontalBlockAlign(pLayout, pNode, pMargin, iSpareWidth)
-    LayoutContext *pLayout;
-    HtmlNode *pNode;
-    MarginProperties *pMargin;
-    int iSpareWidth;
+doHorizontalBlockAlign(
+    LayoutContext *pLayout,
+    HtmlNode *pNode,
+    MarginProperties *pMargin,
+    int iSpareWidth)
 {
     int iRet = 0;
 
@@ -723,13 +701,13 @@ doHorizontalBlockAlign(pLayout, pNode, pMargin, iSpareWidth)
  *---------------------------------------------------------------------------
  */
 static void
-createScrollbars(pTree, pNode, iWidth, iHeight, iHorizontal, iVertical)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
-    int iWidth;
-    int iHeight;
-    int iHorizontal;
-    int iVertical;
+createScrollbars(
+    HtmlTree *pTree,
+    HtmlNode *pNode,
+    int iWidth,
+    int iHeight,
+    int iHorizontal,
+    int iVertical)
 {
     HtmlElementNode *pElem = (HtmlElementNode *)pNode;
     HtmlNodeScrollbars *p;
@@ -816,13 +794,13 @@ createScrollbars(pTree, pNode, iWidth, iHeight, iHorizontal, iVertical)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutOverflow(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutOverflow(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
     int eOverflow = pV->eOverflow;
@@ -997,13 +975,13 @@ normalFlowLayoutOverflow(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutFloat(pLayout, pBox, pNode, pY, pDoNotUse, pNormal)
-    LayoutContext *pLayout;   /* Layout context */
-    BoxContext *pBox;         /* Containing box context */
-    HtmlNode *pNode;          /* Node that generates floating box */
-    int *pY;                  /* IN/OUT: y-coord to draw float at */
-    InlineContext *pDoNotUse; /* Unused by this function */
-    NormalFlow *pNormal;
+normalFlowLayoutFloat(
+    LayoutContext *pLayout,   /* Layout context */
+    BoxContext *pBox,         /* Containing box context */
+    HtmlNode *pNode,          /* Node that generates floating box */
+    int *pY,                  /* IN/OUT: y-coord to draw float at */
+    InlineContext *pDoNotUse, /* Unused by this function */
+    NormalFlow *pNormal)
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
     int eFloat = pV->eFloat;
@@ -1204,10 +1182,7 @@ normalFlowLayoutFloat(pLayout, pBox, pNode, pY, pDoNotUse, pNormal)
  *---------------------------------------------------------------------------
  */
 static void
-getRomanIndex(zBuf, index, isUpper)
-    char *zBuf;
-    int index;
-    int isUpper;
+getRomanIndex(char *zBuf, int index, int isUpper)
 {
     int i = 0;
     int j;
@@ -1276,11 +1251,11 @@ getRomanIndex(zBuf, index, isUpper)
  *---------------------------------------------------------------------------
  */
 static int
-markerBoxLayout(pLayout, pBox, pNode, pVerticalOffset)
-    LayoutContext *pLayout;       /* IN: Layout context */
-    HtmlNode *pNode;              /* IN: Node with "display:list-item" */
-    BoxContext *pBox;             /* OUT: Generated box */
-    int *pVerticalOffset;         /* OUT: Ascent of generated box */
+markerBoxLayout(
+    LayoutContext *pLayout,       /* IN: Layout context */
+    BoxContext *pBox,             /* OUT: Generated box */
+    HtmlNode *pNode,              /* IN: Node with "display:list-item" */
+    int *pVerticalOffset)         /* OUT: Ascent of generated box */
 {
     HtmlComputedValues *pComputed = HtmlNodeComputedValues(pNode);
     int mmt = pLayout->minmaxTest;
@@ -1425,13 +1400,13 @@ markerBoxLayout(pLayout, pBox, pNode, pVerticalOffset)
  *---------------------------------------------------------------------------
  */
 static int
-inlineLayoutDrawLines(pLayout, pBox, pContext, forceflag, pY, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    InlineContext *pContext;
-    int forceflag;               /* True to lay out final, incomplete line. */
-    int *pY;                     /* IN/OUT: Y-coordinate in sBox.vc. */
-    NormalFlow *pNormal;
+inlineLayoutDrawLines(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    InlineContext *pContext,
+    int forceflag,               /* True to lay out final, incomplete line. */
+    int *pY,                     /* IN/OUT: Y-coordinate in sBox.vc. */
+    NormalFlow *pNormal)
 {
     int have;
     do {
@@ -1532,10 +1507,7 @@ inlineLayoutDrawLines(pLayout, pBox, pContext, forceflag, pY, pNormal)
  *---------------------------------------------------------------------------
  */
 int
-HtmlLayoutNodeContent(pLayout, pBox, pNode)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
+HtmlLayoutNodeContent(LayoutContext *pLayout, BoxContext *pBox, HtmlNode *pNode)
 {
     int eDisplay = DISPLAY(HtmlNodeComputedValues(pNode));
     assert(!nodeIsReplaced(pNode));
@@ -1610,10 +1582,7 @@ HtmlLayoutNodeContent(pLayout, pBox, pNode)
  *---------------------------------------------------------------------------
  */
 static void
-drawReplacementContent(pLayout, pBox, pNode)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
+drawReplacementContent(LayoutContext *pLayout, BoxContext *pBox, HtmlNode *pNode)
 {
     int iWidth;
     int height;
@@ -1738,10 +1707,7 @@ drawReplacementContent(pLayout, pBox, pNode)
  *---------------------------------------------------------------------------
  */
 static void
-drawReplacement(pLayout, pBox, pNode)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
+drawReplacement(LayoutContext *pLayout, BoxContext *pBox, HtmlNode *pNode)
 {
     BoxProperties box;                /* Box properties of pNode */
     MarginProperties margin;          /* Margin properties of pNode */
@@ -1759,12 +1725,12 @@ drawReplacement(pLayout, pBox, pNode)
 
 
 static void
-drawAbsolute(pLayout, pBox, pStaticCanvas, x, y)
-    LayoutContext *pLayout;       /* Layout context */
-    BoxContext *pBox;             /* Padding edge box to draw to */
-    HtmlCanvas *pStaticCanvas;    /* Canvas containing static positions */
-    int x;                        /* Offset of padding edge in pStaticCanvas */
-    int y;                        /* Offset of padding edge in pStaticCanvas */
+drawAbsolute(
+    LayoutContext *pLayout,       /* Layout context */
+    BoxContext *pBox,             /* Padding edge box to draw to */
+    HtmlCanvas *pStaticCanvas,    /* Canvas containing static positions */
+    int x,                        /* Offset of padding edge in pStaticCanvas */
+    int y)                        /* Offset of padding edge in pStaticCanvas */
 {
     NodeList *pList;
     NodeList *pNext;
@@ -2074,11 +2040,7 @@ drawAbsolute(pLayout, pBox, pStaticCanvas, x, y)
  *---------------------------------------------------------------------------
  */
 static void
-wrapContent(pLayout, pBox, pContent, pNode)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    BoxContext *pContent;
-    HtmlNode *pNode;
+wrapContent(LayoutContext *pLayout, BoxContext *pBox, BoxContext *pContent, HtmlNode *pNode)
 {
     HtmlComputedValues *pV= HtmlNodeComputedValues(pNode);
     MarginProperties margin;      /* Margin properties of pNode */
@@ -2215,16 +2177,16 @@ wrapContent(pLayout, pBox, pContent, pNode)
 }
 
 void
-HtmlLayoutDrawBox(pTree, pCanvas, x, y, w, h, pNode, flags, size_only)
-    HtmlTree *pTree;
-    HtmlCanvas *pCanvas;
-    int x;
-    int y;
-    int w;
-    int h;
-    HtmlNode *pNode;
-    int flags;
-    int size_only;
+HtmlLayoutDrawBox(
+    HtmlTree *pTree,
+    HtmlCanvas *pCanvas,
+    int x,
+    int y,
+    int w,
+    int h,
+    HtmlNode *pNode,
+    int flags,
+    int size_only)
 {
     if (size_only) {
         HtmlDrawBox(pCanvas, x, y, w, h, pNode, flags, size_only, 0);
@@ -2253,13 +2215,13 @@ HtmlLayoutDrawBox(pTree, pCanvas, x, y, w, h, pNode, flags, size_only)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutTable(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutTable(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     int iMinWidth;                     /* Minimum from blockMinMaxWidth */
     int iMaxWidth;                     /* Maximum from blockMinMaxWidth */
@@ -2400,13 +2362,13 @@ normalFlowLayoutTable(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutTableComponent(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutTableComponent(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     int nChild;
     int ii;
@@ -2480,13 +2442,13 @@ normalFlowLayoutTableComponent(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutReplaced(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutReplaced(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     MarginProperties margin;          /* Margin properties of pNode */
 
@@ -2536,10 +2498,7 @@ normalFlowLayoutReplaced(pLayout, pBox, pNode, pY, pContext, pNormal)
 }
 
 static void
-setValueCallback(pNormal, pCallback, y)
-    NormalFlow *pNormal;
-    NormalFlowCallback *pCallback;
-    int y;
+setValueCallback(NormalFlow *pNormal, NormalFlowCallback *pCallback, int y)
 {
     *(int *)(pCallback->clientData) = y;
     normalFlowCbDelete(pNormal, pCallback);
@@ -2559,13 +2518,13 @@ setValueCallback(pNormal, pCallback, y)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutBlock(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutBlock(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
 
@@ -2742,11 +2701,7 @@ normalFlowLayoutBlock(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowClearFloat(pBox, pNode, pNormal, y)
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    NormalFlow *pNormal;
-    int y;
+normalFlowClearFloat(BoxContext *pBox, HtmlNode *pNode, NormalFlow *pNormal, int y)
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(pNode);
     int eClear = pV->eClear;
@@ -2779,13 +2734,13 @@ normalFlowClearFloat(pBox, pNode, pNormal, y)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutText(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutText(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     HtmlInlineContextAddText(pContext, pNode);
     return 0;
@@ -2805,13 +2760,13 @@ normalFlowLayoutText(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutReplacedInline(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutReplacedInline(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     BoxContext sBox;
     HtmlCanvas canvas;
@@ -2855,13 +2810,13 @@ normalFlowLayoutReplacedInline(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static void
-layoutChildren(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+layoutChildren(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     int ii;
 
@@ -2898,13 +2853,13 @@ layoutChildren(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutInline(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutInline(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     InlineBorder *pBorder;
     pBorder = HtmlGetInlineBorder(pLayout, pContext, pNode);
@@ -2928,13 +2883,13 @@ normalFlowLayoutInline(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutInlineBlock(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutInlineBlock(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     BoxContext sBox;           /* Content */
     BoxContext sBox2;          /* After wrapContent() */
@@ -2988,13 +2943,13 @@ normalFlowLayoutInlineBlock(pLayout, pBox, pNode, pY, pContext, pNormal)
 }
 
 static int
-normalFlowLayoutAbsolute(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutAbsolute(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     /* If this call is part of a min-max test, then ignore the absolutely
      * positioned block completely. It does not contribute to the width or
@@ -3030,13 +2985,13 @@ normalFlowLayoutAbsolute(pLayout, pBox, pNode, pY, pContext, pNormal)
 }
 
 static int
-normalFlowLayoutFixed(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutFixed(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     if (pLayout->minmaxTest == 0) {
         int y = *pY + normalFlowMarginQuery(pNormal);
@@ -3067,9 +3022,7 @@ normalFlowLayoutFixed(pLayout, pBox, pNode, pY, pContext, pNormal)
  *---------------------------------------------------------------------------
  */
 static void
-appendVerticalMarginsToObj(pObj, pNormal)
-    Tcl_Obj *pObj;
-    NormalFlow *pNormal;
+appendVerticalMarginsToObj(Tcl_Obj *pObj, NormalFlow *pNormal)
 {
     char zBuf[1024];
     sprintf(zBuf, "min=%d max=%d isValid=%d nonegative=%d",
@@ -3097,13 +3050,13 @@ appendVerticalMarginsToObj(pObj, pNormal)
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutNode(pLayout, pBox, pNode, pY, pContext, pNormal)
-    LayoutContext *pLayout;
-    BoxContext *pBox;
-    HtmlNode *pNode;
-    int *pY;
-    InlineContext *pContext;
-    NormalFlow *pNormal;
+normalFlowLayoutNode(
+    LayoutContext *pLayout,
+    BoxContext *pBox,
+    HtmlNode *pNode,
+    int *pY,
+    InlineContext *pContext,
+    NormalFlow *pNormal)
 {
     typedef struct FlowType FlowType;
     struct FlowType {
@@ -3327,13 +3280,13 @@ static int aDebugStoreCacheCond[LAYOUT_CACHE_N_STORE_COND + 1];
  *---------------------------------------------------------------------------
  */
 static int
-normalFlowLayoutFromCache(pLayout, pBox, pElem, pNormal, iLeft, iRight)
-    LayoutContext *pLayout;       /* Layout context */
-    BoxContext *pBox;             /* Box context to draw to */
-    HtmlElementNode *pElem;       /* Node to start drawing at */
-    NormalFlow *pNormal;
-    int iLeft;
-    int iRight;
+normalFlowLayoutFromCache(
+    LayoutContext *pLayout,       /* Layout context */
+    BoxContext *pBox,             /* Box context to draw to */
+    HtmlElementNode *pElem,       /* Node to start drawing at */
+    NormalFlow *pNormal,
+    int iLeft,
+    int iRight)
 {
     int cache_mask = (1 << pLayout->minmaxTest);
 
@@ -3422,11 +3375,11 @@ normalFlowLayoutFromCache(pLayout, pBox, pElem, pNormal, iLeft, iRight)
  *---------------------------------------------------------------------------
  */
 static void
-normalFlowLayout(pLayout, pBox, pNode, pNormal)
-    LayoutContext *pLayout;       /* Layout context */
-    BoxContext *pBox;             /* Box context to draw to */
-    HtmlNode *pNode;              /* Node to start drawing at */
-    NormalFlow *pNormal;
+normalFlowLayout(
+    LayoutContext *pLayout,       /* Layout context */
+    BoxContext *pBox,             /* Box context to draw to */
+    HtmlNode *pNode,              /* Node to start drawing at */
+    NormalFlow *pNormal)
 {
     InlineContext *pContext;
     int y = 0;
@@ -3642,11 +3595,7 @@ normalFlowLayout(pLayout, pBox, pNode, pNormal)
  *---------------------------------------------------------------------------
  */
 int
-blockMinMaxWidth(pLayout, pNode, pMin, pMax)
-    LayoutContext *pLayout;
-    HtmlNode *pNode;
-    int *pMin;
-    int *pMax;
+blockMinMaxWidth(LayoutContext *pLayout, HtmlNode *pNode, int *pMin, int *pMax)
 {
     BoxContext sBox;
     HtmlLayoutCache *pCache;
@@ -3765,10 +3714,7 @@ blockMinMaxWidth(pLayout, pNode, pMin, pMax)
  *---------------------------------------------------------------------------
  */
 static void
-doConfigureCmd(pTree, pElem, iContaining)
-    HtmlTree *pTree;
-    HtmlElementNode *pElem;
-    int iContaining;
+doConfigureCmd(HtmlTree *pTree, HtmlElementNode *pElem, int iContaining)
 {
     Tcl_Obj *pConfigure;                           /* -configurecmd script */
 
@@ -3867,8 +3813,7 @@ doConfigureCmd(pTree, pElem, iContaining)
  *---------------------------------------------------------------------------
  */
 int
-HtmlLayout(pTree)
-    HtmlTree *pTree;
+HtmlLayout(HtmlTree *pTree)
 {
     HtmlNode *pBody = 0;
     int rc = TCL_OK;
@@ -4042,9 +3987,7 @@ HtmlLayout(pTree)
  *---------------------------------------------------------------------------
  */
 void
-HtmlLayoutInvalidateCache(pTree, pNode)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
+HtmlLayoutInvalidateCache(HtmlTree *pTree, HtmlNode *pNode)
 {
     if (!HtmlNodeIsText(pNode)) {
         HtmlElementNode *pElem = (HtmlElementNode *)pNode;
@@ -4057,3 +4000,5 @@ HtmlLayoutInvalidateCache(pTree, pNode)
         }
     }
 }
+
+/* vi:set ts=4 sw=4 et: */

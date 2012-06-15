@@ -50,9 +50,7 @@
 #include <stdint.h>
 
 void
-HtmlDelScrollbars(pTree, pNode)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
+HtmlDelScrollbars(HtmlTree *pTree, HtmlNode *pNode)
 {
     HtmlElementNode *pElem = (HtmlElementNode *)pNode;
 
@@ -96,9 +94,7 @@ HtmlDelScrollbars(pTree, pNode)
 }
 
 void
-HtmlDelStackingInfo(pTree, pElem)
-    HtmlTree *pTree;
-    HtmlElementNode *pElem;
+HtmlDelStackingInfo(HtmlTree *pTree, HtmlElementNode *pElem)
 {
     HtmlNodeStack *pStack = pElem->pStack;
     if (pStack && pStack->pElem == pElem){
@@ -124,8 +120,7 @@ HtmlDelStackingInfo(pTree, pElem)
 #define STACK_AUTO      2
 #define STACK_CONTEXT   3
 static int
-stackType(p)
-    HtmlNode *p;
+stackType(HtmlNode *p)
 {
     HtmlComputedValues *pV = HtmlNodeComputedValues(p);
 
@@ -153,9 +148,7 @@ stackType(p)
 }
 
 static void
-addStackingInfo(pTree, pElem)
-    HtmlTree *pTree;
-    HtmlElementNode *pElem;
+addStackingInfo(HtmlTree *pTree, HtmlElementNode *pElem)
 {
     HtmlNode *pNode = (HtmlNode *)pElem;
     int eStack = stackType(pNode);
@@ -213,10 +206,7 @@ struct StackCompare {
  *---------------------------------------------------------------------------
  */
 static int
-scoreStack(pParentStack, pStack, eStack)
-    HtmlNodeStack *pParentStack;
-    HtmlNodeStack *pStack;
-    int eStack;
+scoreStack(HtmlNodeStack *pParentStack, HtmlNodeStack *pStack, int eStack)
 {
     int z;
     if (pStack == pParentStack) {
@@ -236,9 +226,7 @@ scoreStack(pParentStack, pStack, eStack)
          x == x->pStack->pElem && x->pStack->eType == STACK_CONTEXT \
 )
 
-static void setStackingContext(p, ppOut)
-    HtmlElementNode *p;
-    HtmlNodeStack **ppOut;
+static void setStackingContext(HtmlElementNode *p, HtmlNodeStack **ppOut)
 {
     if (p == p->pStack->pElem) {
         HtmlNodeStack *pS = p->pStack;
@@ -250,9 +238,7 @@ static void setStackingContext(p, ppOut)
 
 
 static int
-stackCompare(pVoidLeft, pVoidRight)
-    const void *pVoidLeft;
-    const void *pVoidRight;
+stackCompare(const void *pVoidLeft, const void *pVoidRight)
 {
     StackCompare *pLeft = (StackCompare *)pVoidLeft;
     StackCompare *pRight = (StackCompare *)pVoidRight;
@@ -382,10 +368,7 @@ stackCompare(pVoidLeft, pVoidRight)
   #define checkStackSort(a,b,c)
 #else
 static void
-checkStackSort(pTree, aStack, nStack)
-    HtmlTree *pTree;
-    StackCompare *aStack;
-    int nStack;
+checkStackSort(HtmlTree *pTree, StackCompare *aStack, int nStack)
 {
 #if 0
     int ii;
@@ -421,8 +404,7 @@ checkStackSort(pTree, aStack, nStack)
  *---------------------------------------------------------------------------
  */
 void
-HtmlRestackNodes(pTree)
-    HtmlTree *pTree;
+HtmlRestackNodes(HtmlTree *pTree)
 {
     HtmlNodeStack *pStack;
     StackCompare *apTmp;
@@ -484,10 +466,7 @@ printf("Stack %d: %s %s\n", iTmp,
  *---------------------------------------------------------------------------
  */
 static int
-styleNodeImmediately(pTree, pNode, clientData)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
-    ClientData clientData;
+styleNodeImmediately(HtmlTree *pTree, HtmlNode *pNode, ClientData clientData)
 {
     CONST char *zStyle;      /* Value of "style" attribute for node */
     int trashDynamics = (int)((intptr_t)clientData);
@@ -580,10 +559,7 @@ styleNodeImmediately(pTree, pNode, clientData)
  *---------------------------------------------------------------------------
  */
 static int
-styleNode(pTree, pNode, clientData)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
-    ClientData clientData;
+styleNode(HtmlTree *pTree, HtmlNode *pNode, ClientData clientData)
 {
     CONST char *zStyle;      /* Value of "style" attribute for node */
     int trashDynamics = (int)((intptr_t)clientData);
@@ -713,9 +689,7 @@ styleNode(pTree, pNode, clientData)
  *---------------------------------------------------------------------------
  */
 int
-HtmlStyleApply(pTree, pNode)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
+HtmlStyleApply(HtmlTree *pTree, HtmlNode *pNode)
 {
     int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
     HtmlLog(pTree, "STYLEENGINE", "START");
@@ -737,9 +711,7 @@ HtmlStyleApply(pTree, pNode)
  *---------------------------------------------------------------------------
  */
 int
-HtmlStyleApplyImmediately(pTree, pNode)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
+HtmlStyleApplyImmediately(HtmlTree *pTree, HtmlNode *pNode)
 {
     int isRoot = ((pNode == pTree->pRoot) ? 1 : 0);
     HtmlLog(pTree, "STYLEENGINE", "START");
@@ -761,11 +733,11 @@ HtmlStyleApplyImmediately(pTree, pNode)
  *---------------------------------------------------------------------------
  */
 int
-HtmlStyleSyntaxErrs(clientData, interp, objc, objv)
-    ClientData clientData;             /* The HTML widget */
-    Tcl_Interp *interp;                /* The interpreter */
-    int objc;                          /* Number of arguments */
-    Tcl_Obj *CONST objv[];             /* List of all arguments */
+HtmlStyleSyntaxErrs(
+    ClientData clientData,             /* The HTML widget */
+    Tcl_Interp *interp,                /* The interpreter */
+    int objc,                          /* Number of arguments */
+    Tcl_Obj *CONST objv[])             /* List of all arguments */
 {
     HtmlTree *pTree = (HtmlTree *)clientData;
     int nSyntaxErrs = 0;
@@ -776,3 +748,4 @@ HtmlStyleSyntaxErrs(clientData, interp, objc, objv)
     return TCL_OK;
 }
 
+/* vi: set ts=4 sw=4 et: */

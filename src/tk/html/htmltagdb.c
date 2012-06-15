@@ -60,10 +60,7 @@
 extern HtmlTokenMap HtmlMarkupMap[];
 
 static int
-textContent(pTree, pNode, tag)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
-    int tag;
+textContent(HtmlTree *pTree, HtmlNode *pNode, int tag)
 {
     if (tag == Html_Space || tag == Html_Text) {
         return TAG_OK;
@@ -85,8 +82,7 @@ textContent(pTree, pNode, tag)
  *---------------------------------------------------------------------------
  */
 HtmlTokenMap *
-HtmlMarkup(markup)
-    int markup;
+HtmlMarkup(int markup)
 {
     if (markup == Html_Text || markup == Html_Space) {
         static HtmlTokenMap textmapentry = {
@@ -120,8 +116,7 @@ HtmlMarkup(markup)
  *---------------------------------------------------------------------------
  */
 Html_u8
-HtmlMarkupFlags(markup)
-    int markup;
+HtmlMarkupFlags(int markup)
 {
     int i = markup-Html_A;
     if (i>=0 && i<HTML_MARKUP_COUNT){
@@ -150,8 +145,7 @@ HtmlMarkupFlags(markup)
  *---------------------------------------------------------------------------
  */
 CONST char *
-HtmlMarkupName(markup)
-    int markup;
+HtmlMarkupName(int markup)
 {
     int i = markup-Html_A;
     if (i>=0 && i<HTML_MARKUP_COUNT){
@@ -164,3 +158,5 @@ HtmlMarkupName(markup)
 
     return "unknown";
 }
+
+/* vi: set ts=4 sw=4 et: */

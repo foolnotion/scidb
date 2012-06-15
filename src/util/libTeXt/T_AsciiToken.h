@@ -37,7 +37,7 @@ public:
 	Value value() const override;
 
 	void traceCommand(Environment& env) const override;
-	TokenP performThe(Environment& env) override;
+	TokenP performThe(Environment& env) const override;
 	void perform(Environment& env) override;
 
 private:

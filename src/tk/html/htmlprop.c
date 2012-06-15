@@ -318,7 +318,8 @@ static unsigned char ligTable[7][3] = {
  *
  *---------------------------------------------------------------------------
  */
-static PropertyDef *getPropertyDef(int eProp){
+static PropertyDef *getPropertyDef(int eProp)
+{
     static int isInit = 0;
     static PropertyDef *a[CSS_PROPERTY_MAX_PROPERTY+1];
 
@@ -382,9 +383,7 @@ static PropertyDef *getPropertyDef(int eProp){
  *---------------------------------------------------------------------------
  */
 char *
-HtmlPropertyToString(pProp, pzFree)
-    CssProperty *pProp;
-    char **pzFree;
+HtmlPropertyToString(CssProperty *pProp, char **pzFree)
 {
     char *zRet = (char *)HtmlCssPropertyGetString(pProp);
     *pzFree = 0;
@@ -448,9 +447,7 @@ HtmlPropertyToString(pProp, pzFree)
  *---------------------------------------------------------------------------
  */
 static float
-pixelsToPoints(p, pixels)
-    HtmlComputedValuesCreator *p;
-    int pixels;
+pixelsToPoints(HtmlComputedValuesCreator *p, int pixels)
 {
     double mm;
     Tcl_Obj *pObj = Tcl_NewIntObj(pixels);
@@ -489,10 +486,7 @@ pixelsToPoints(p, pixels)
  *---------------------------------------------------------------------------
  */
 static int
-physicalToPixels(p, rVal, type)
-    HtmlComputedValuesCreator *p;
-    double rVal;
-    char type;
+physicalToPixels(HtmlComputedValuesCreator *p, double rVal, char type)
 {
     char zBuf[64];
     int pixels;
@@ -519,9 +513,7 @@ physicalToPixels(p, rVal, type)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetFontStyle(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetFontStyle(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     int eType = pProp->eType;
     if (eType == CSS_CONST_INHERIT) {
@@ -538,9 +530,7 @@ propertyValuesSetFontStyle(p, pProp)
 }
 
 static int
-propertyValuesSetContent(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetContent(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     if (pProp->eType == CSS_TYPE_STRING && p->pzContent) {
         int nBytes = strlen(pProp->v.zVal) + 1;
@@ -554,9 +544,7 @@ propertyValuesSetContent(p, pProp)
 }
 
 static int
-propertyValuesSetZIndex(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetZIndex(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     if (pProp->eType == CSS_TYPE_FLOAT) {
         p->values.iZIndex = (int)pProp->v.rVal;
@@ -588,9 +576,7 @@ propertyValuesSetZIndex(p, pProp)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetFontWeight(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetFontWeight(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     int eType = pProp->eType;
     if (eType == CSS_CONST_INHERIT) {
@@ -635,9 +621,7 @@ propertyValuesSetFontWeight(p, pProp)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetFontFamily(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetFontFamily(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     const char *z;
 
@@ -660,56 +644,55 @@ propertyValuesSetFontFamily(p, pProp)
 }
 
 static Tcl_Obj*
-propertyValuesObjFontSize(p)
-    HtmlComputedValues *p;
+propertyValuesObjFontSize(HtmlComputedValues *p)
 {
     char zBuf[64];
     int iFontSize = p->fFont->pKey->iFontSize;
     sprintf(zBuf, "%.3fpts", (float)iFontSize / 1000);
     return Tcl_NewStringObj(zBuf, -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjFontStyle(p)
-    HtmlComputedValues *p;
+propertyValuesObjFontStyle(HtmlComputedValues *p)
 {
     if (p->fFont->pKey->isItalic) {
         return Tcl_NewStringObj("italic", -1);
     }
     return Tcl_NewStringObj("normal", -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjFontFamily(p)
-    HtmlComputedValues *p;
+propertyValuesObjFontFamily(HtmlComputedValues *p)
 {
     return Tcl_NewStringObj(p->fFont->pKey->zFontFamily, -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjFontWeight(p)
-    HtmlComputedValues *p;
+propertyValuesObjFontWeight(HtmlComputedValues *p)
 {
     if (p->fFont->pKey->isBold) {
         return Tcl_NewStringObj("bold", -1);
     }
     return Tcl_NewStringObj("normal", -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjContent(p)
-    HtmlComputedValues *p;
+propertyValuesObjContent(HtmlComputedValues *p)
 {
     return Tcl_NewStringObj("", -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjZIndex(p)
-    HtmlComputedValues *p;
+propertyValuesObjZIndex(HtmlComputedValues *p)
 {
     if (p->iZIndex == PIXELVAL_AUTO) {
         return Tcl_NewStringObj("auto", -1);
     }
     return Tcl_NewIntObj(p->iZIndex);
 }
+
 static Tcl_Obj*
-propertyValuesObjLineHeight(p)
-    HtmlComputedValues *p;
+propertyValuesObjLineHeight(HtmlComputedValues *p)
 {
     char zBuf[64];
     int iVal = p->iLineHeight;
@@ -723,9 +706,9 @@ propertyValuesObjLineHeight(p)
     }
     return Tcl_NewStringObj(zBuf, -1);
 }
+
 static Tcl_Obj*
-propertyValuesObjVerticalAlign(p)
-    HtmlComputedValues *p;
+propertyValuesObjVerticalAlign(HtmlComputedValues *p)
 {
     char zBuf[64];
     if (p->eVerticalAlign) {
@@ -755,9 +738,7 @@ propertyValuesObjVerticalAlign(p)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetFontSize(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetFontSize(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     int iPoints = 0;
     int iPixels = 0;
@@ -899,9 +880,7 @@ propertyValuesSetFontSize(p, pProp)
 }
 
 static unsigned char *
-getInheritPointer(p, pVar)
-    HtmlComputedValuesCreator *p;
-    unsigned char *pVar;
+getInheritPointer(HtmlComputedValuesCreator *p, unsigned char *pVar)
 {
     const int values_offset = Tk_Offset(HtmlComputedValuesCreator, values);
     const int fontkey_offset = Tk_Offset(HtmlComputedValuesCreator, fontKey);
@@ -963,11 +942,11 @@ getInheritPointer(p, pVar)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetEnum(p, pEVar, aOptions, pProp)
-    HtmlComputedValuesCreator *p;
-    unsigned char *pEVar;
-    unsigned char *aOptions;
-    CssProperty *pProp;
+propertyValuesSetEnum(
+    HtmlComputedValuesCreator *p,
+    unsigned char *pEVar,
+    unsigned char *aOptions,
+    CssProperty *pProp)
 {
     int val = pProp->eType;
     unsigned char *pOpt;
@@ -990,9 +969,7 @@ propertyValuesSetEnum(p, pEVar, aOptions, pProp)
 }
 
 static void
-decrementColorRef(pTree, pColor)
-    HtmlTree *pTree;
-    HtmlColor *pColor;
+decrementColorRef(HtmlTree *pTree, HtmlColor *pColor)
 {
     if (pColor) {
         pColor->nRef--;
@@ -1011,8 +988,7 @@ decrementColorRef(pTree, pColor)
 
 #ifndef NDEBUG
 static int
-dumpColorTable(pTree)
-    HtmlTree *pTree;
+dumpColorTable(HtmlTree *pTree)
 {
     Tcl_HashSearch search;
     Tcl_HashEntry *pEntry;
@@ -1052,10 +1028,7 @@ dumpColorTable(pTree)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetColor(p, pCVar, pProp)
-    HtmlComputedValuesCreator *p;
-    HtmlColor **pCVar;
-    CssProperty *pProp;
+propertyValuesSetColor(HtmlComputedValuesCreator *p, HtmlColor **pCVar, CssProperty *pProp)
 {
     Tcl_HashEntry *pEntry;
     int newEntry = 0;
@@ -1177,12 +1150,12 @@ setcolor_out:
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetLength(p, pIVal, em_mask, pProp, allowNegative)
-    HtmlComputedValuesCreator *p;
-    int *pIVal;
-    unsigned int em_mask;
-    CssProperty *pProp;
-    int allowNegative;
+propertyValuesSetLength(
+    HtmlComputedValuesCreator *p,
+    int *pIVal,
+    unsigned int em_mask,
+    CssProperty *pProp,
+    int allowNegative)
 {
     int iVal;
     double rZoomedVal = pProp->v.rVal * p->pTree->options.zoom;
@@ -1263,9 +1236,7 @@ propertyValuesSetLength(p, pIVal, em_mask, pProp, allowNegative)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetLineHeight(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetLineHeight(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     int rc = 1;
 
@@ -1328,10 +1299,7 @@ propertyValuesSetLineHeight(p, pProp)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetImage(p, pImVar, pProp)
-    HtmlComputedValuesCreator *p;
-    HtmlImage2 **pImVar;
-    CssProperty *pProp;
+propertyValuesSetImage(HtmlComputedValuesCreator *p, HtmlImage2 **pImVar, CssProperty *pProp)
 {
     HtmlImage2 *pNew = 0;
     CONST char *zUrl = 0;
@@ -1381,9 +1349,7 @@ propertyValuesSetImage(p, pImVar, pProp)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetVerticalAlign(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+propertyValuesSetVerticalAlign(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     static const unsigned int MASK = PROP_MASK_VERTICAL_ALIGN;
     int rc = 0;
@@ -1465,12 +1431,12 @@ propertyValuesSetVerticalAlign(p, pProp)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetSize(p, pIVal, p_mask, pProp, allow_mask)
-    HtmlComputedValuesCreator *p;
-    int *pIVal;
-    unsigned int p_mask;
-    CssProperty *pProp;
-    unsigned int allow_mask;
+propertyValuesSetSize(
+    HtmlComputedValuesCreator *p,
+    int *pIVal,
+    unsigned int p_mask,
+    CssProperty *pProp,
+    unsigned int allow_mask)
 {
     assert(p_mask != 0);
 
@@ -1572,11 +1538,11 @@ propertyValuesSetSize(p, pIVal, p_mask, pProp, allow_mask)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesSetBorderWidth(p, pIVal, em_mask, pProp)
-    HtmlComputedValuesCreator *p;
-    int *pIVal;
-    unsigned int em_mask;
-    CssProperty *pProp;
+propertyValuesSetBorderWidth(
+    HtmlComputedValuesCreator *p,
+    int *pIVal,
+    unsigned int em_mask,
+    CssProperty *pProp)
 {
     int eType = pProp->eType;
 
@@ -1642,10 +1608,7 @@ propertyValuesSetBorderWidth(p, pIVal, em_mask, pProp)
  *---------------------------------------------------------------------------
  */
 static HtmlComputedValuesCreator *
-getPrototypeCreator(pTree, pMask, piCopyBytes)
-    HtmlTree *pTree;
-    unsigned int *pMask;
-    int *piCopyBytes;
+getPrototypeCreator(HtmlTree *pTree, unsigned int *pMask, int *piCopyBytes)
 {
     static int sMask = 0;
     static int sCopyBytes = sizeof(HtmlComputedValues);
@@ -1746,11 +1709,11 @@ getPrototypeCreator(pTree, pMask, piCopyBytes)
  *---------------------------------------------------------------------------
  */
 void
-HtmlComputedValuesInit(pTree, pNode, pParent, p)
-    HtmlTree *pTree;
-    HtmlNode *pNode;                 /* Node to use for LOG blocks */
-    HtmlNode *pParent;               /* Node to inherit properties from */
-    HtmlComputedValuesCreator *p;
+HtmlComputedValuesInit(
+    HtmlTree *pTree,
+    HtmlNode *pNode,                 /* Node to use for LOG blocks */
+    HtmlNode *pParent,               /* Node to inherit properties from */
+    HtmlComputedValuesCreator *p)
 {
     HtmlComputedValues *pValues = &p->values;
     char *values = (char *)pValues;
@@ -1808,10 +1771,7 @@ HtmlComputedValuesInit(pTree, pNode, pParent, p)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesTclScript(p, eProp, zScript)
-    HtmlComputedValuesCreator *p;
-    int eProp;
-    const char *zScript;
+propertyValuesTclScript(HtmlComputedValuesCreator *p, int eProp, const char *zScript)
 {
     int rc;
     const char *zRes;
@@ -1895,10 +1855,7 @@ propertyValuesTclScript(p, eProp, zScript)
  *---------------------------------------------------------------------------
  */
 static int
-propertyValuesAttr(p, eProp, zArglist)
-    HtmlComputedValuesCreator *p;
-    int eProp;
-    const char *zArglist;
+propertyValuesAttr(HtmlComputedValuesCreator *p, int eProp, const char *zArglist)
 {
     int rc = 1;
     char *zCopy;
@@ -1955,9 +1912,7 @@ propertyValuesAttr(p, eProp, zArglist)
     return rc;
 }
 
-void HtmlComputedValuesFreeProperty(p, pProp)
-    HtmlComputedValuesCreator *p;
-    CssProperty *pProp;
+void HtmlComputedValuesFreeProperty(HtmlComputedValuesCreator *p, CssProperty *pProp)
 {
     pProp->v.p = (void *)p->pDeleteList;
     p->pDeleteList = pProp;
@@ -1989,10 +1944,7 @@ void HtmlComputedValuesFreeProperty(p, pProp)
  *---------------------------------------------------------------------------
  */
 int
-HtmlComputedValuesSet(p, eProp, pProp)
-    HtmlComputedValuesCreator *p;
-    int eProp;
-    CssProperty *pProp;
+HtmlComputedValuesSet(HtmlComputedValuesCreator *p, int eProp, CssProperty *pProp)
 {
     PropertyDef *pDef = getPropertyDef(eProp);
 
@@ -2074,12 +2026,7 @@ HtmlComputedValuesSet(p, eProp, pProp)
 # ifdef __WIN32__
 
 void
-MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
-    HtmlTree* pTree;
-    HtmlFont* pFont;
-    const char* zFamily;
-    int isBold;
-    int isItalic;
+MeasureLatinLigatures(HtmlTree* pTree, HtmlFont* pFont, const char* zFamily, int isBold, int isItalic)
 {
     LOGFONTA lf;
     HPDF_UINT32 len;
@@ -2148,12 +2095,7 @@ MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
 # ifdef __unix__
 
 void
-MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
-    HtmlTree* pTree;
-    HtmlFont* pFont;
-    const char* zFamily;
-    int isBold;
-    int isItalic;
+MeasureLatinLigatures(HtmlTree* pTree, HtmlFont* pFont, const char* zFamily, int isBold, int isItalic)
 {
 #  ifdef HAVE_XFT
 
@@ -2216,8 +2158,7 @@ MeasureLatinLigatures(pTree, pFont, zFamily, isBold, isItalic)
  *---------------------------------------------------------------------------
  */
 static void *
-allocateNewFont(clientData)
-    ClientData clientData;
+allocateNewFont(ClientData clientData)
 {
     HtmlComputedValuesCreator *p = (HtmlComputedValuesCreator *)clientData;
     HtmlTree *pTree = p->pTree;
@@ -2366,8 +2307,7 @@ allocateNewFont(clientData)
  *---------------------------------------------------------------------------
  */
 static void
-setDisplay97(p)
-    HtmlComputedValuesCreator *p;
+setDisplay97(HtmlComputedValuesCreator *p)
 {
     switch (p->values.eDisplay) {
         case CSS_CONST_INLINE_TABLE:
@@ -2402,8 +2342,7 @@ setDisplay97(p)
  *---------------------------------------------------------------------------
  */
 HtmlComputedValues *
-HtmlComputedValuesFinish(p)
-    HtmlComputedValuesCreator *p;
+HtmlComputedValuesFinish(HtmlComputedValuesCreator *p)
 {
     Tcl_HashEntry *pEntry;
     int ne;                /* New Entry */
@@ -2719,9 +2658,7 @@ HtmlComputedValuesFinish(p)
  *---------------------------------------------------------------------------
  */
 void
-HtmlFontRelease(pTree, pFont)
-    HtmlTree *pTree;
-    HtmlFont *pFont;
+HtmlFontRelease(HtmlTree *pTree, HtmlFont *pFont)
 {
     if (pFont) {
         pFont->nRef--;
@@ -2773,8 +2710,7 @@ HtmlFontRelease(pTree, pFont)
  *---------------------------------------------------------------------------
  */
 void
-HtmlFontReference(pFont)
-    HtmlFont *pFont;
+HtmlFontReference(HtmlFont *pFont)
 {
     assert(pFont);
     assert(pFont->nRef >= 0);
@@ -2782,17 +2718,14 @@ HtmlFontReference(pFont)
 }
 
 void
-HtmlComputedValuesReference(pValues)
-    HtmlComputedValues *pValues;
+HtmlComputedValuesReference(HtmlComputedValues *pValues)
 {
     assert(pValues->nRef > 0);
     pValues->nRef++;
 }
 
 void
-HtmlComputedValuesRelease(pTree, pValues)
-    HtmlTree *pTree;
-    HtmlComputedValues *pValues;
+HtmlComputedValuesRelease(HtmlTree *pTree, HtmlComputedValues *pValues)
 {
     if (pValues) {
         pValues->nRef--;
@@ -2868,8 +2801,7 @@ HtmlComputedValuesRelease(pTree, pValues)
  *---------------------------------------------------------------------------
  */
 void
-HtmlComputedValuesSetupTables(pTree)
-    HtmlTree *pTree;
+HtmlComputedValuesSetupTables(HtmlTree *pTree)
 {
     static struct CssColor {
         char *css;
@@ -2980,9 +2912,7 @@ HtmlComputedValuesSetupTables(pTree)
  *---------------------------------------------------------------------------
  */
 void
-HtmlFontCacheClear(pTree, isReinit)
-    HtmlTree *pTree;
-    int isReinit;
+HtmlFontCacheClear(HtmlTree *pTree, int isReinit)
 {
     HtmlFont *pFont;
     HtmlFont *pNext;
@@ -3040,8 +2970,7 @@ HtmlFontCacheClear(pTree, isReinit)
  *---------------------------------------------------------------------------
  */
 void
-HtmlComputedValuesCleanupTables(pTree)
-    HtmlTree *pTree;
+HtmlComputedValuesCleanupTables(HtmlTree *pTree)
 {
     CONST char **pzCursor;
 
@@ -3095,9 +3024,7 @@ HtmlComputedValuesCleanupTables(pTree)
 }
 
 static Tcl_Obj *
-getPropertyObj(pValues, eProp)
-    HtmlComputedValues *pValues;
-    int eProp;
+getPropertyObj(HtmlComputedValues *pValues, int eProp)
 {
     Tcl_Obj *pValue = 0;
     PropertyDef *pDef;
@@ -3197,10 +3124,10 @@ getPropertyObj(pValues, eProp)
  *---------------------------------------------------------------------------
  */
 int
-HtmlNodeGetProperty(interp, pProp, pValues)
-    Tcl_Interp *interp;                 /* Interpreter to set result in */
-    Tcl_Obj *pProp;                     /* Property name */
-    HtmlComputedValues *pValues;        /* Read value from here */
+HtmlNodeGetProperty(
+    Tcl_Interp *interp,                 /* Interpreter to set result in */
+    Tcl_Obj *pProp,                     /* Property name */
+    HtmlComputedValues *pValues)        /* Read value from here */
 {
     int nProp;
     const char *zProp = Tcl_GetStringFromObj(pProp, &nProp);
@@ -3230,9 +3157,7 @@ HtmlNodeGetProperty(interp, pProp, pValues)
 }
 
 int
-HtmlNodeProperties(interp, pValues)
-    Tcl_Interp *interp;
-    HtmlComputedValues *pValues;
+HtmlNodeProperties(Tcl_Interp *interp, HtmlComputedValues *pValues)
 {
     int ii;
     Tcl_Obj *pRet = Tcl_NewObj();
@@ -3261,9 +3186,7 @@ HtmlNodeProperties(interp, pValues)
 #define HTML_REQUIRE_PAINT  1
 #define HTML_OK     0
 int
-HtmlComputedValuesCompare(pV1, pV2)
-    HtmlComputedValues *pV1;
-    HtmlComputedValues *pV2;
+HtmlComputedValuesCompare(HtmlComputedValues *pV1, HtmlComputedValues *pV2)
 {
     unsigned char *v1 = (unsigned char *)pV1;
     unsigned char *v2 = (unsigned char *)pV2;

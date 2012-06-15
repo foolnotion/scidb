@@ -53,13 +53,6 @@ NumberToken::name() const
 
 
 mstl::string
-NumberToken::name(Environment&) const
-{
-	return name();
-}
-
-
-mstl::string
 NumberToken::meaning() const
 {
 	return "the number " + mstl::string::cast(m_value);

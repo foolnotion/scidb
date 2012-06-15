@@ -44,7 +44,7 @@ using namespace util;
 #define IS_WRITEABLE	(static_cast<ZStream::Handle*>(cookie)->mode & mstl::ios_base::out)
 
 
-static unsigned char const gzipMagic [2] = { '\037', '\213' };
+static unsigned char const gzipMagic [2] = { '\037', static_cast<unsigned char>('\213') };
 static unsigned char const zzipMagic [4] = { 'P', 'K', '\003', '\004' };
 
 static double const DecompressionFactor = 3.365;

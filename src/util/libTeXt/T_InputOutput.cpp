@@ -118,7 +118,7 @@ createInput(Environment& env, mstl::string const& filename)
 		pathname += suffix;
 
 		if (!InputOutput::searchFile(env.searchDirs(), pathname))
-			return false;
+			return 0;
 
 		stream.reset(new mstl::ifstream(pathname));
 	}

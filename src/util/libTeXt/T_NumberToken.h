@@ -29,13 +29,10 @@ public:
 
 	NumberToken(Value value);
 
-	bool operator==(Token const& token) const override;
-
 	bool isNumber() const override;
 
 	Type type() const override;
 	mstl::string name() const override;
-	mstl::string name(Environment& env) const override;
 	mstl::string meaning() const override;
 	mstl::string text() const override;
 	mstl::string description(Environment& env) const override;

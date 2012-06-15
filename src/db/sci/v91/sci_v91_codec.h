@@ -97,10 +97,10 @@ public:
 	util::ByteStream getGame(GameInfo const& info) override;
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress) override;
 	void attach(mstl::string const& rootname, util::Progress& progress) override;
-	void update(mstl::string const& rootname) override;
+	void update(mstl::string const& rootname);
 	void update(mstl::string const& rootname, unsigned index, bool updateNamebase) override;
 	void updateHeader(mstl::string const& rootname) override;
-	void unlock(mstl::string const& rootname) override;
+	void unlock(mstl::string const& rootname);
 	void close() override;
 	void sync() override;
 
@@ -108,7 +108,7 @@ public:
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, mstl::string*) override;
 
-	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature) override;
+	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	Consumer* getConsumer(format::Type srcFormat) override;
 
 	void reset() override;

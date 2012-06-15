@@ -93,7 +93,7 @@ template<typename T> T& forward(typename mstl::remove_reference<T>::type& t)	{ r
 
 template <typename T>
 inline
-T
+constexpr T
 min(T a, T b)
 {
 #ifdef WITHOUT_BRANCHING
@@ -107,7 +107,7 @@ min(T a, T b)
 
 template <typename T>
 inline
-T
+constexpr T
 max(T a, T b)
 {
 #ifdef WITHOUT_BRANCHING
@@ -121,7 +121,7 @@ max(T a, T b)
 
 template <typename T>
 inline
-T
+constexpr T
 min(T a, T b, T c)
 {
 	return min(a, min(b, c));
@@ -130,18 +130,18 @@ min(T a, T b, T c)
 
 template <typename T>
 inline
-T
+constexpr T
 max(T a, T b, T c)
 {
 	return max(a, max(b, c));
 }
 
 
-template <typename T> inline T sqr(T x) { return x*x; }
+template <typename T> inline constexpr T sqr(T x) { return x*x; }
 
 
-template <typename T> inline T advance(T i, size_t offset)			{ return i + offset; }
-template <typename T> inline ptrdiff_t distance(T first, T last)	{ return last - first; }
+template <typename T> inline constexpr T advance(T i, size_t offset)			{ return i + offset; }
+template <typename T> inline constexpr ptrdiff_t distance(T first, T last)	{ return last - first; }
 
 
 template <typename T>
@@ -194,7 +194,7 @@ align(T n, size_t grain)
 
 template <typename T>
 inline
-bool
+constexpr bool
 is_odd(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -204,7 +204,7 @@ is_odd(T x)
 
 template <typename T>
 inline
-bool
+constexpr bool
 is_even(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -214,7 +214,7 @@ is_even(T x)
 
 template <typename T>
 inline
-bool
+constexpr bool
 is_pow_2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -224,7 +224,7 @@ is_pow_2(T x)
 
 template <typename T>
 inline
-bool
+constexpr bool
 is_not_pow_2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -234,7 +234,7 @@ is_not_pow_2(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 abs(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -244,7 +244,7 @@ abs(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 signum(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -254,7 +254,7 @@ signum(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 div2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -264,7 +264,7 @@ div2(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 div4(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -274,7 +274,7 @@ div4(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 mod2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -284,7 +284,7 @@ mod2(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 mod4(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -294,7 +294,7 @@ mod4(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 mul2(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -304,7 +304,7 @@ mul2(T x)
 
 template <typename T>
 inline
-T
+constexpr T
 mul4(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -314,7 +314,7 @@ mul4(T x)
 
 template <typename T>
 inline
-unsigned
+constexpr unsigned
 log2_floor(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");
@@ -339,7 +339,7 @@ log2_ceil(T x)
 
 template <typename T>
 inline
-bool
+constexpr bool
 is_between(T x, T a, T b)
 {
 	return a <= x && x <= b;

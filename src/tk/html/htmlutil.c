@@ -64,10 +64,7 @@ struct InstGlobal {
 )
 
 static void
-updateInstData(pGlobal, p, iClicks)
-    InstGlobal *pGlobal;
-    InstCommand *p;
-    int iClicks;
+updateInstData(InstGlobal *pGlobal, InstCommand *p, int iClicks)
 {
     InstVector vector;
     InstData *pData;
@@ -90,11 +87,7 @@ updateInstData(pGlobal, p, iClicks)
 }
 
 void *
-HtmlInstrumentCall2(pClientData, iCall, xFunc, clientData)
-    ClientData pClientData;
-    int iCall;
-    void *(*xFunc)(ClientData);
-    ClientData clientData;
+HtmlInstrumentCall2(ClientData pClientData, int iCall, void *(*xFunc)(ClientData), ClientData clientData)
 {
     InstGlobal *pGlobal = (InstGlobal *)pClientData;
     InstCommand *p = &pGlobal->aCommand[iCall];
@@ -118,12 +111,9 @@ HtmlInstrumentCall2(pClientData, iCall, xFunc, clientData)
     updateInstData(pGlobal, p, (int)iClicks);
     return pRet;
 }
+
 void
-HtmlInstrumentCall(pClientData, iCall, xFunc, clientData)
-    ClientData pClientData;
-    int iCall;
-    void (*xFunc)(ClientData);
-    ClientData clientData;
+HtmlInstrumentCall(ClientData pClientData, int iCall, void (*xFunc)(ClientData), ClientData clientData)
 {
     InstGlobal *pGlobal = (InstGlobal *)pClientData;
     InstCommand *p = &pGlobal->aCommand[iCall];
@@ -147,11 +137,11 @@ HtmlInstrumentCall(pClientData, iCall, xFunc, clientData)
 }
 
 static int
-execInst(clientData, interp, objc, objv)
-    ClientData clientData;
-    Tcl_Interp *interp;                /* Current interpreter. */
-    int objc;                          /* Number of arguments. */
-    Tcl_Obj *CONST objv[];             /* Argument strings. */
+execInst(
+    ClientData clientData,
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[])             /* Argument strings. */
 {
     InstCommand *p = (InstCommand *)clientData;
     InstGlobal *pGlobal = p->pGlobal;
@@ -177,15 +167,14 @@ execInst(clientData, interp, objc, objv)
 }
 
 static void
-freeInstStruct(p)
-    InstCommand *p;
+freeInstStruct(InstCommand *p)
 {
     Tcl_DecrRefCount(p->pFullName);
     ckfree((void *)p);
 }
+
 static void
-freeInstCommand(clientData)
-    ClientData clientData;
+freeInstCommand(ClientData clientData)
 {
     InstCommand *p = (InstCommand *)clientData;
     if (p->info.deleteProc) {
@@ -195,11 +184,11 @@ freeInstCommand(clientData)
 }
 
 static int
-instCommand(clientData, interp, objc, objv)
-    ClientData clientData;             /* Pointer to InstGlobal structure */
-    Tcl_Interp *interp;                /* Current interpreter. */
-    int objc;                          /* Number of arguments. */
-    Tcl_Obj *CONST objv[];             /* Argument strings. */
+instCommand(
+    ClientData clientData,             /* Pointer to InstGlobal structure */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[])             /* Argument strings. */
 {
     InstGlobal *pGlobal = (InstGlobal *)clientData;
     Tcl_Command token;
@@ -235,11 +224,11 @@ instCommand(clientData, interp, objc, objv)
 }
 
 static int
-instVectors(clientData, interp, objc, objv)
-    ClientData clientData;             /* Unused */
-    Tcl_Interp *interp;                /* Current interpreter. */
-    int objc;                          /* Number of arguments. */
-    Tcl_Obj *CONST objv[];             /* Argument strings. */
+instVectors(
+    ClientData clientData,             /* Unused */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[])             /* Argument strings. */
 {
     InstGlobal *pGlobal = (InstGlobal *)clientData;
     Tcl_Obj *pRet;
@@ -279,11 +268,11 @@ instVectors(clientData, interp, objc, objv)
 }
 
 static int
-instZero(clientData, interp, objc, objv)
-    ClientData clientData;             /* InstGlobal structure */
-    Tcl_Interp *interp;                /* Current interpreter. */
-    int objc;                          /* Number of arguments. */
-    Tcl_Obj *CONST objv[];             /* Argument strings. */
+instZero(
+    ClientData clientData,             /* InstGlobal structure */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[])             /* Argument strings. */
 {
     InstGlobal *pGlobal = (InstGlobal *)clientData;
     InstCommand *p;
@@ -341,11 +330,11 @@ instZero(clientData, interp, objc, objv)
  *---------------------------------------------------------------------------
  */
 static int
-instrument_objcmd(clientData, interp, objc, objv)
-    ClientData clientData;             /* Unused */
-    Tcl_Interp *interp;                /* Current interpreter. */
-    int objc;                          /* Number of arguments. */
-    Tcl_Obj *CONST objv[];             /* Argument strings. */
+instrument_objcmd(
+    ClientData clientData,             /* Unused */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *CONST objv[])             /* Argument strings. */
 {
     int iChoice;
     struct SubCmd {
@@ -372,16 +361,14 @@ instrument_objcmd(clientData, interp, objc, objv)
 }
 
 static void
-instDelCommand(clientData)
-    ClientData clientData;
+instDelCommand(ClientData clientData)
 {
     /* InstGlobal *p = (InstGlobal *)clientData; */
     /* TODO */
 }
 
 void
-HtmlInstrumentInit(interp)
-    Tcl_Interp *interp;
+HtmlInstrumentInit(Tcl_Interp *interp)
 {
     InstGlobal *p = (InstGlobal *)ckalloc(sizeof(InstGlobal));
     memset(p, 0, sizeof(InstGlobal));
@@ -410,12 +397,11 @@ HtmlInstrumentInit(interp)
 
 #else  /* TKHTML_ENABLE_PROFILE */
 void
-HtmlInstrumentInit(interp)
-    Tcl_Interp *interp;
+HtmlInstrumentInit(Tcl_Interp *interp)
 {
     /* No-op */
 }
 
 #endif
 
-
+/* vi: set ts=4 sw=4 et: */

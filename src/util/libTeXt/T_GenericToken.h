@@ -40,7 +40,7 @@ public:
 
 	Type type() const override;
 	mstl::string name() const override;
-	void perform(Environment& env) override;
+	void perform(Environment& env) const;
 
 	void setType(Type type);
 

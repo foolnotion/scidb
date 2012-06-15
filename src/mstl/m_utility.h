@@ -50,36 +50,36 @@ namespace noncopyable_	// protection from unintended ADL
 
 typedef noncopyable_::noncopyable noncopyable;
 
-template <typename T> bool is_odd(T x);
-template <typename T> bool is_even(T x);
-template <typename T> bool is_pow_2(T x);
-template <typename T> bool is_not_pow_2(T x);
+template <typename T> constexpr bool is_odd(T x);
+template <typename T> constexpr bool is_even(T x);
+template <typename T> constexpr bool is_pow_2(T x);
+template <typename T> constexpr bool is_not_pow_2(T x);
 
-template <typename T> T sqr(T x);
-template <typename T> T abs(T x);
-template <typename T> T min(T a, T b);
-template <typename T> T max(T a, T b);
-template <typename T> T min(T a, T b, T c);
-template <typename T> T max(T a, T b, T c);
-template <typename T> T signum(T x);
+template <typename T> constexpr T sqr(T x);
+template <typename T> constexpr T abs(T x);
+template <typename T> constexpr T min(T a, T b);
+template <typename T> constexpr T max(T a, T b);
+template <typename T> constexpr T min(T a, T b, T c);
+template <typename T> constexpr T max(T a, T b, T c);
+template <typename T> constexpr T signum(T x);
 
-template <typename T> T div2(T x);
-template <typename T> T div4(T x);
-template <typename T> T mod2(T x);
-template <typename T> T mod4(T x);
-template <typename T> T mul2(T x);
-template <typename T> T mul4(T x);
+template <typename T> constexpr T div2(T x);
+template <typename T> constexpr T div4(T x);
+template <typename T> constexpr T mod2(T x);
+template <typename T> constexpr T mod4(T x);
+template <typename T> constexpr T mul2(T x);
+template <typename T> constexpr T mul4(T x);
 
-template <typename T> unsigned log2_floor(T x);
+template <typename T> constexpr unsigned log2_floor(T x);
 template <typename T> unsigned log2_ceil(T x);
 
-template <typename T> bool is_between(T x, T a, T b);
+template <typename T> constexpr bool is_between(T x, T a, T b);
 
 template <typename T> void swap(T& a, T& b);
 template <typename T, size_t N> void swap(T(& a)[N], T(& b)[N]);
-template <typename T> T advance(T i, size_t offset);
+template <typename T> constexpr T advance(T i, size_t offset);
 template <typename T> T align(T n, size_t grain);
-template <typename T> ptrdiff_t distance(T first, T last);
+template <typename T> constexpr ptrdiff_t distance(T first, T last);
 
 #if USE_0X_STANDARD
 

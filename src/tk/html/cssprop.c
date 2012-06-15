@@ -16,9 +16,7 @@ struct HashEntry {
  * and 127, inclusive.
  */
 static int 
-Hash(nString, zString) 
-    int nString;
-    const char *zString;
+Hash(int nString, const char *zString)
 {
     unsigned int result = 0;
     const char *string = zString;
@@ -34,11 +32,7 @@ Hash(nString, zString)
 }
 
 static int
-Lookup(nString, zString, aTable, aHashTable) 
-    int nString;
-    const char *zString;
-    int *aTable;
-    HashEntry *aHashTable;
+Lookup(int nString, const char *zString, int *aTable, const HashEntry *aHashTable)
 {
     int t;
 
@@ -197,9 +191,7 @@ static const HashEntry aHtmlCssConstant[] = {
 
 
 int
-HtmlCssConstantLookup(n, z)
-    int n;
-    const char *z;
+HtmlCssConstantLookup(int n, const char *z)
 {
     int aTable[] = {
         CSS_CONST_LIME - 100, CSS_CONST_MEDIUM - 100, -101, 
@@ -249,8 +241,7 @@ HtmlCssConstantLookup(n, z)
 
 
 const char *
-HtmlCssConstantToString(e)
-    int e;
+HtmlCssConstantToString(int e)
 {
     return aHtmlCssConstant[e - 100].zString;
 }
@@ -385,9 +376,7 @@ static const HashEntry aHtmlCssProperty[] = {
 
 
 int
-HtmlCssPropertyLookup(n, z)
-    int n;
-    const char *z;
+HtmlCssPropertyLookup(int n, const char *z)
 {
     int aTable[] = {
         -1, -1, CSS_PROPERTY_TEXT_DECORATION - 0, 
@@ -447,8 +436,7 @@ HtmlCssPropertyLookup(n, z)
 
 
 const char *
-HtmlCssPropertyToString(e)
-    int e;
+HtmlCssPropertyToString(int e)
 {
     return aHtmlCssProperty[e - 0].zString;
 }

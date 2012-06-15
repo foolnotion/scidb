@@ -60,7 +60,7 @@ GenericToken::setType(Type type)
 
 
 void
-GenericToken::perform(Environment& env)
+GenericToken::perform(Environment& env) const
 {
 	m_func(env);
 }

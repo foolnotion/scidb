@@ -29,10 +29,7 @@ struct CssDynamic {
 };
 
 void
-HtmlCssAddDynamic(pElem, pSelector, isSet)
-    HtmlElementNode *pElem;
-    CssSelector *pSelector;
-    int isSet;
+HtmlCssAddDynamic(HtmlElementNode *pElem, CssSelector *pSelector, int isSet)
 {
     CssDynamic *pNew;
     for (pNew = pElem->pDynamic; pNew ; pNew = pNew->pNext) {
@@ -48,8 +45,7 @@ HtmlCssAddDynamic(pElem, pSelector, isSet)
 }
 
 void
-HtmlCssFreeDynamics(pElem)
-    HtmlElementNode *pElem;
+HtmlCssFreeDynamics(HtmlElementNode *pElem)
 {
     CssDynamic *p = pElem->pDynamic;
     while (p) {
@@ -62,10 +58,7 @@ HtmlCssFreeDynamics(pElem)
 
 
 static int
-checkDynamicCb(pTree, pNode, clientData)
-    HtmlTree *pTree;
-    HtmlNode *pNode;
-    ClientData clientData;
+checkDynamicCb(HtmlTree *pTree, HtmlNode *pNode, ClientData clientData)
 {
     if (!HtmlNodeIsText(pNode)) {
         HtmlElementNode *pElem = (HtmlElementNode *)pNode;
@@ -82,8 +75,7 @@ checkDynamicCb(pTree, pNode, clientData)
 }
 
 void
-HtmlCssCheckDynamic(pTree)
-    HtmlTree *pTree;
+HtmlCssCheckDynamic(HtmlTree *pTree)
 {
     if (pTree->cb.pDynamic) {
         HtmlNode *pParent = HtmlNodeParent(pTree->cb.pDynamic);
@@ -102,9 +94,7 @@ HtmlCssCheckDynamic(pTree)
 }
 
 int
-HtmlCssTclNodeDynamics(interp, pNode)
-    Tcl_Interp *interp;
-    HtmlNode *pNode;
+HtmlCssTclNodeDynamics(Tcl_Interp *interp, HtmlNode *pNode)
 {
     Tcl_Obj *pRet = Tcl_NewObj();
     if (!HtmlNodeIsText(pNode)) {
@@ -120,3 +110,4 @@ HtmlCssTclNodeDynamics(interp, pNode)
     return TCL_OK;
 }
 
+// vi:set ts=4 sw=4 et:

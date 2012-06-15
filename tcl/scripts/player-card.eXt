@@ -118,7 +118,7 @@
 \begin-table{}{}%
 \unless\ifx\BirthDay\relax
 	\begin-row
-	\begin-col-end{\Label-Birthday:}%
+	\begin-col-end{\Label-BirthDay:}%
 	\begin-col-end{\FormatDate\BirthDay}%
 	\end-row
 \fi

@@ -102,3 +102,5 @@ HtmlTokenMap HtmlMarkupMap[] = {
   {"xmp",          Html_XMP,          0, 0, 0},
   {"bgsound",      Html_BGSOUND,      0|HTMLTAG_EMPTY, 0, 0},
 };
+
+/* vi: set ts=4 sw=4 et: */

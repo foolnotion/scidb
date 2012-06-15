@@ -77,9 +77,9 @@
  *---------------------------------------------------------------------------
  */
 static int
-compareCaseInsensitiveKey(keyPtr, hPtr)
-    VOID *keyPtr;               /* New key to compare. */
-    Tcl_HashEntry *hPtr;        /* Existing key to compare. */
+compareCaseInsensitiveKey(
+    VOID *keyPtr,               /* New key to compare. */
+    Tcl_HashEntry *hPtr)        /* Existing key to compare. */
 {
     CONST char *p1 = (CONST char *) keyPtr;
     CONST char *p2 = (CONST char *) hPtr->key.string;
@@ -104,9 +104,9 @@ compareCaseInsensitiveKey(keyPtr, hPtr)
  *---------------------------------------------------------------------------
  */
 static unsigned int
-hashCaseInsensitiveKey(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key from which to compute hash value. */
+hashCaseInsensitiveKey(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key from which to compute hash value. */
 {
     CONST char *string = (CONST char *) keyPtr;
     unsigned int result;
@@ -136,9 +136,9 @@ hashCaseInsensitiveKey(tablePtr, keyPtr)
  *---------------------------------------------------------------------------
  */
 static Tcl_HashEntry *
-allocCaseInsensitiveEntry(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key to store in the hash table entry. */
+allocCaseInsensitiveEntry(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key to store in the hash table entry. */
 {
     CONST char *string = (CONST char *) keyPtr;
     Tcl_HashEntry *hPtr;
@@ -215,9 +215,9 @@ HtmlCaseInsenstiveHashType()
  *---------------------------------------------------------------------------
  */
 static unsigned int
-hashFontKey(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key from which to compute hash value. */
+hashFontKey(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key from which to compute hash value. */
 {
     HtmlFontKey *pKey = (HtmlFontKey *) keyPtr;
     CONST char *zFontFamily = pKey->zFontFamily;
@@ -251,9 +251,9 @@ hashFontKey(tablePtr, keyPtr)
  *---------------------------------------------------------------------------
  */
 static int
-compareFontKey(keyPtr, hPtr)
-    VOID *keyPtr;               /* New key to compare. */
-    Tcl_HashEntry *hPtr;        /* Existing key to compare. */
+compareFontKey(
+    VOID *keyPtr,               /* New key to compare. */
+    Tcl_HashEntry *hPtr)        /* Existing key to compare. */
 {
     HtmlFontKey *p1 = (HtmlFontKey *) keyPtr;
     HtmlFontKey *p2 = (HtmlFontKey *) hPtr->key.string;
@@ -283,9 +283,9 @@ compareFontKey(keyPtr, hPtr)
  *---------------------------------------------------------------------------
  */
 static Tcl_HashEntry *
-allocFontEntry(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key to store in the hash table entry. */
+allocFontEntry(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key to store in the hash table entry. */
 {
     HtmlFontKey *pKey = (HtmlFontKey *)keyPtr;
     unsigned int size;
@@ -368,9 +368,9 @@ HtmlFontKeyHashType()
  *---------------------------------------------------------------------------
  */
 static unsigned int
-hashValuesKey(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key from which to compute hash value. */
+hashValuesKey(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key from which to compute hash value. */
 {
     HtmlComputedValues *p= (HtmlComputedValues *)keyPtr;
     unsigned int result = 0;
@@ -404,9 +404,9 @@ hashValuesKey(tablePtr, keyPtr)
  *---------------------------------------------------------------------------
  */
 static int
-compareValuesKey(keyPtr, hPtr)
-    VOID *keyPtr;               /* New key to compare. */
-    Tcl_HashEntry *hPtr;        /* Existing key to compare. */
+compareValuesKey(
+    VOID *keyPtr,               /* New key to compare. */
+    Tcl_HashEntry *hPtr)        /* Existing key to compare. */
 {
     unsigned char *p1 = (unsigned char *) keyPtr;
     unsigned char *p2 = (unsigned char *) hPtr->key.string;
@@ -447,9 +447,9 @@ freeValuesEntry(hPtr)
  *---------------------------------------------------------------------------
  */
 static Tcl_HashEntry *
-allocValuesEntry(tablePtr, keyPtr)
-    Tcl_HashTable *tablePtr;    /* Hash table. */
-    VOID *keyPtr;               /* Key to store in the hash table entry. */
+allocValuesEntry(
+    Tcl_HashTable *tablePtr,    /* Hash table. */
+    VOID *keyPtr)               /* Key to store in the hash table entry. */
 {
     HtmlComputedValues *pKey = (HtmlComputedValues *)keyPtr;
     HtmlComputedValues *pStoredKey;
@@ -508,3 +508,4 @@ Tcl_HashKeyType * HtmlComputedValuesHashType()
     return &hash_key_type;
 }
 
+// vi:set ts=4 sw=4 et:

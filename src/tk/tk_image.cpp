@@ -68,6 +68,18 @@ using namespace tcl;
 #define BGRA	2,1,0,3
 
 
+template <typename PixBuf>
+static void blur_image(PixBuf const& src, PixBuf& dst, double radius);
+template <typename PixBuf>
+static void scale_image(PixBuf const& src, PixBuf& dst, double scale_x, double scale_y);
+template <typename PixBuf>
+static void rot_90_image(PixBuf const& src, PixBuf& dst);
+template <typename PixBuf>
+static void rot180_image(PixBuf const& src, PixBuf& dst);
+template <typename PixBuf>
+static void rot270_image(PixBuf const& src, PixBuf& dst);
+
+
 namespace {
 
 enum { Dir_X, Dir_Y };
