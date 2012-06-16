@@ -113,6 +113,13 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
 
+	if {[array size Options] < [array size Defaults]} {
+		array set Options [array get Defaults]
+	}
+
+	set mc::F_Rating1 $Options(rating1:type)
+	set mc::F_Rating2 $Options(rating2:type)
+
 	RefreshHeader 1
 	RefreshHeader 2
 
@@ -121,13 +128,6 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		selectcmd		{}
 		find-current	{}
 	}
-
-	if {[array size Options] == 0} {
-		array set Options [array get Defaults]
-	}
-
-	set mc::F_Rating1 $Options(rating1:type)
-	set mc::F_Rating2 $Options(rating2:type)
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
 

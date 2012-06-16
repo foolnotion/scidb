@@ -291,7 +291,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		positioncmd	{}
 	}
 
-	if {[array size Options] == 0} {
+	if {[array size Options] < [array size Defaults]} {
 		array set Options [array get Defaults]
 	}
 
