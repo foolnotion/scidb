@@ -47,6 +47,12 @@
 #include <unistd.h>
 #include <tcl.h>
 
+// On "modern" Linux distributions the static object
+// initialization is not working properly!
+#ifndef BROKEN_LINKER_HACK
+# define BROKEN_LINKER_HACK
+#endif
+
 #ifdef BROKEN_LINKER_HACK
 # include "db_board.h"
 # include "db_board_base.h"
