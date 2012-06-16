@@ -82,22 +82,19 @@ set ChooseAnotherSquareStyle	\
 
 namespace import ::tcl::mathfunc::min
 
-variable RecentTextures			[lrepeat 6 {{} {}}]
-variable PieceSetListCount		11
-variable BoardSize				[expr {45*$PieceSetListCount}]
-variable SquareSize				[expr {($BoardSize - 66)/4}]
-variable InitialPosition		{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk}}
-variable EditStylePath			.board_options_edit_style_[clock milliseconds]
-variable FixedBackground		#fff5d6
-variable ModifiedBackground	brown
-variable ModifiedForeground	white
-variable BorderWidth
-variable ChangeWS
+variable RecentTextures		[lrepeat 6 {{} {}}]
+variable InitialPosition	{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk}}
 variable NameList
-variable Widget
-variable Position
-variable Time
-variable Identifier
+
+array set Options {
+	modifiedForeground	white
+	modifiedBackground	brown
+	fixedBackground		#fff5d6
+	pieceSetListCount		11
+	figurineSize			18
+}
+set Options(boardSize)	[expr {45*$Options(pieceSetListCount)}]
+set Options(squareSize)	[expr {($Options(boardSize) - 66)/4}]
 
 array set RecentColors {
 	coordinates	{ {} {} {} {} {} {} }
@@ -129,8 +126,7 @@ proc makeBasicFrame {path} {
 	variable [namespace parent]::colors
 	variable [namespace parent]::layout
 	variable AnimationTimeList
-	variable Widget
-	variable Time
+	variable Vars
 
 	# Layout #######################################
 
@@ -139,29 +135,29 @@ proc makeBasicFrame {path} {
 	::ttk::checkbutton $f.border \
 		-textvar [namespace current]::mc::ShowBorder \
 		-variable [namespace parent]::layout(border) \
-		-command [namespace code { ToggleShowBorder }]
+		-command [namespace code ToggleShowBorder]
 	::ttk::checkbutton $f.mv \
 		-textvar [namespace current]::mc::ShowMaterialValues \
 		-variable [namespace parent]::layout(material-values) \
-		-command [namespace code { RefreshBoard }]
+		-command [namespace code RefreshBoard]
 	::ttk::checkbutton $f.mvbar \
 		-textvar [namespace current]::mc::ShowMaterialBar \
 		-variable [namespace parent]::layout(material-bar) \
-		-command [namespace code { RefreshBoard }]
-	set Widget(bar) $f.mvbar
+		-command [namespace code ToggleMaterialBar]
+	set Vars(widget:bar) $f.mvbar
 	::ttk::checkbutton $f.stm \
 		-textvar [namespace current]::mc::ShowSideToMove \
 		-variable [namespace parent]::layout(side-to-move) \
-		-command [namespace code { RefreshBoard }]
+		-command [namespace code RefreshBoard]
 	::ttk::checkbutton $f.coords \
 		-textvar [namespace current]::mc::ShowCoordinates \
 		-variable [namespace parent]::layout(coordinates) \
-		-command [namespace code { ToggleShowCoords }]
+		-command [namespace code ToggleShowCoords]
 	::ttk::checkbutton $f.embossed \
 		-textvar [namespace current]::mc::Embossed \
 		-variable [namespace parent]::layout(coords-embossed) \
-		-command [namespace code { RefreshBoard }]
-	set Widget(embossed) $f.embossed
+		-command [namespace code RefreshBoard]
+	set Vars(widget:embossed) $f.embossed
 	
 	grid $f.border			-row  1 -column 1 -sticky w -columnspan 2
 	grid $f.mv				-row  3 -column 1 -sticky w -columnspan 2
@@ -208,8 +204,8 @@ proc makeBasicFrame {path} {
 	bind $f.s_selected <FocusOut> [namespace code { RefreshBoard }]
 	::validate::spinboxInt $f.s_selected
 	::theme::configureSpinbox $f.s_selected
-	set Widget(suggested) $f.s_suggested
-	if {!$hilite(show-suggested)} { $Widget(suggested) configure -state disabled }
+	set Vars(widget:suggested) $f.s_suggested
+	if {!$hilite(show-suggested)} { $Vars(widget:suggested) configure -state disabled }
 
 	grid $f.suggested		-row 1 -column 1 -sticky we -columnspan 3
 	grid $f.l_suggested	-row 3 -column 1 -sticky we
@@ -240,16 +236,16 @@ proc makeBasicFrame {path} {
 		-textvar [namespace current]::mc::Coordinates \
 		-command [namespace code [list SelectCoordsColor user $f.coords_color]] \
 		-state disabled
-	set Widget(coordinates) $f.coords_color
+	set Vars(widget:coordinates) $f.coords_color
 	if {$layout(coordinates) && $colors(locked)} {
-		$Widget(coordinates) configure -state normal
+		$Vars(widget:coordinates) configure -state normal
 		::tooltip::tooltip \
-			$Widget(coordinates) \
+			$Vars(widget:coordinates) \
 			"${::mc::Color}: [extendColorName $colors(user,coordinates)]"
 	}
-	set Widget(background) $f.background
-	set Widget(erase_background) $f.erase_background
-	set Widget(border-color) $f.border
+	set Vars(widget:background) $f.background
+	set Vars(widget:erase_background) $f.erase_background
+	set Vars(widget:border-color) $f.border
 	ToggleLock
 
 	grid $f.background			-row 1 -column 1 -sticky we
@@ -267,7 +263,7 @@ proc makeBasicFrame {path} {
 #				-textvar [namespace current]::mc::Effects]]
 #
 #	::ttk::label $f.l_animation -textvar [::mc::var [namespace current]::mc::AnimationTime :]
-#	::ttk::label $f.v_animation -textvar [namespace current]::Time
+#	::ttk::label $f.v_animation -textvar [namespace current]::Vars(time)
 #	# NOTE: currently ::ttk::scale is causing a core dump
 #	if {0} {
 #		::ttk::scale $f.s_animation \
@@ -312,8 +308,8 @@ proc makeBasicFrame {path} {
 	::ttk::button $f.editList \
 		-textvar [::mc::var [namespace current]::mc::EditList ...] \
 		-command [namespace code [list EditStyles $f.editList theme]]
-	set Widget(theme,save) $f.save
-	set Widget(theme,edit) $f.editList
+	set Vars(widget:theme:save) $f.save
+	set Vars(widget:theme:edit) $f.editList
 	ConfigThemeSelectionFrame
 
 	grid $f.list		-row 1 -column 1 -sticky nswe
@@ -335,6 +331,7 @@ proc makeBasicFrame {path} {
 	grid rowconfigure $path {2 4} -minsize $::theme::pady
 
 	bind $path.layout <Destroy> +[namespace code { forgetTextures }]
+	set Vars(registered) {}
 }
 
 
@@ -345,7 +342,7 @@ proc ScaleMove {scale delta} {
 
 #proc UpdateAnimationTime {val} {
 #	variable [namespace parent]::effects
-#	variable Time
+#	variable Vars
 #
 #	if {$val < 10} {
 #		set effects(animation) 0
@@ -354,21 +351,21 @@ proc ScaleMove {scale delta} {
 #	}
 #
 #	if {$effects(animation) == 0} {
-#		set Time [set [namespace current]::mc::Off]
+#		set Vars(time) [set [namespace current]::mc::Off]
 #	} else {
-#		set Time "$effects(animation) ([set [namespace current]::mc::MilliSeconds])"
+#		set Vars(time) "$effects(animation) ([set [namespace current]::mc::MilliSeconds])"
 #	}
 #}
 
 
 proc ConfigureListbox {w} {
-	variable FixedBackground
+	variable Options
 
 	set fg [$w cget -selectforeground]
-	if {$fg eq "#ffffff"} { set fg $FixedBackground }
+	if {$fg eq "#ffffff"} { set fg $Options(fixedBackground) }
 
-	$w itemconfigure 0 -background $FixedBackground -selectforeground $fg
-	$w itemconfigure 1 -background $FixedBackground -selectforeground $fg
+	$w itemconfigure 0 -background $Options(fixedBackground) -selectforeground $fg
+	$w itemconfigure 1 -background $Options(fixedBackground) -selectforeground $fg
 }
 
 
@@ -384,7 +381,7 @@ proc SetSelection {list n} {
 proc BuildThemeListbox {f height} {
 	variable [namespace parent]::theme::style
 	variable [namespace parent]::theme::styleNames
-	variable Widget
+	variable Vars
 
 	if {$height <= 1} { return }
 	bind $f <Configure> {}
@@ -403,67 +400,65 @@ proc BuildThemeListbox {f height} {
 	ConfigureListbox $f.content
 	::ttk::scrollbar $f.vsb -orient vertical -command "$f.content yview"
 	bind $f.vsb <ButtonPress-1> [list focus $f.content]
-	set Widget(theme,list) $f.content
+	set Vars(widget:theme:list) $f.content
 	grid $f.content	-row 0 -column 0 -sticky nswe
 	grid $f.vsb			-row 0 -column 1 -sticky nswe
 	grid columnconfigure $f 0 -weight 1
 	grid rowconfigure $f 1 -weight 1
 	bind $f.content <<ListboxSelect>> [namespace code { ThemeSelected %W }]
-	bind $f.content <Destroy> [namespace code { array unset Widget theme,* }]
-	TabChanged $Widget(tabs)
+	bind $f.content <Destroy> [namespace code { array unset Vars widget:theme,* }]
+	TabChanged $Vars(widget:tabs)
 }
 
 
 proc makePieceSetSelectionFrame {path} {
-	variable Widget
-	variable PieceSetListCount
+	variable Vars
+	variable Options
 
-	[namespace parent]::pieceset::makePieceSelectionFrame $path $PieceSetListCount
+	[namespace parent]::pieceset::makePieceSelectionFrame $path $Options(pieceSetListCount)
 	bind $path <<PieceSetChanged>> [namespace code { PieceSetSelected %d }]
-	set Widget(pieceset) $path
+	set Vars(widget:pieceset) $path
 }
 
 
 proc ConfigStyleSelectionFrame {which} {
-	variable Widget
-	variable ModifiedBackground
-	variable ModifiedForeground
+	variable Vars
+	variable Options
 
 	if {$which eq "theme"} {
 		ConfigThemeSelectionFrame
 	} else {
-		if {[lindex [$Widget($which,list) curselection] 0] == 0} {
-			$Widget($which,ws) configure \
+		if {[lindex [$Vars(widget:$which:list) curselection] 0] == 0} {
+			$Vars(widget:$which:ws) configure \
 				-textvar [::mc::var [namespace current]::mc::ChangeWorkingSet ...] \
 				-command [namespace code [list OpenConfigDialog $which]]
 		} else {
-			$Widget($which,ws) configure \
+			$Vars(widget:$which:ws) configure \
 				-textvar [namespace current]::mc::CopyToWorkingSet \
 				-command [namespace code [list CopyToWorkingSet $which]]
 		}
 
 		if {[[namespace parent]::isWorkingSet $which]} {
-			$Widget($which,save) configure -state normal
+			$Vars(widget:$which:save) configure -state normal
 		} else {
-			$Widget($which,save) configure -state disabled
+			$Vars(widget:$which:save) configure -state disabled
 		}
 
 		if {[[namespace parent]::workingSetIsModified $which]} {
-			$Widget($which,list) itemconfigure 0 \
-				-foreground $ModifiedBackground \
-				-selectforeground $ModifiedForeground \
-				-selectbackground $ModifiedBackground \
+			$Vars(widget:$which:list) itemconfigure 0 \
+				-foreground $Options(modifiedBackground) \
+				-selectforeground $Options(modifiedForeground) \
+				-selectbackground $Options(modifiedBackground) \
 				;
 		} else {
-			$Widget($which,list) itemconfigure 0 -foreground {} -selectbackground {}
+			$Vars(widget:$which:list) itemconfigure 0 -foreground {} -selectbackground {}
 		}
 	}
 }
 
 
 proc makeStyleSelectionFrame {path} {
-	variable SquareSize
-	variable Widget
+	variable Vars
 
 	foreach {which label} {square SquareStyle piece PieceStyle} {
 		variable [namespace parent]::${which}::style
@@ -489,10 +484,10 @@ proc makeStyleSelectionFrame {path} {
 		::ttk::button $f.editList \
 			-textvar [::mc::var [namespace current]::mc::EditList ...] \
 			-command [namespace code [list EditStyles $f.editList $which]]
-		set Widget($which,ws) $f.ws
-		set Widget($which,list) $f.content
-		set Widget($which,edit) $f.editList
-		set Widget($which,save) $f.save
+		set Vars(widget:$which:ws) $f.ws
+		set Vars(widget:$which:list) $f.content
+		set Vars(widget:$which:edit) $f.editList
+		set Vars(widget:$which:save) $f.save
 
 		grid $f.content	-row 0 -column 0 -sticky nswe
 		grid $f.vsb			-row 0 -column 1 -sticky nswe
@@ -516,36 +511,35 @@ proc makeStyleSelectionFrame {path} {
 
 
 proc CopyToWorkingSet {which} {
-	variable Widget
+	variable Vars
 
 	[namespace parent]::copyToWorkingSet $which
-	SetSelection $Widget($which,list) 0
+	SetSelection $Vars(widget:$which:list) 0
 	ConfigStyleSelectionFrame $which
 }
 
 
 proc OpenConfigDialog {which} {
-	variable SquareSize
-	variable Widget
-	variable ChangeWS
+	variable Options
+	variable Vars
 
-	$Widget($which,ws) configure -state disabled
-	$Widget($which,edit) configure -state disabled
-	$Widget($which,list) configure -state disabled
-	$Widget($which,list) configure -state disabled
+	$Vars(widget:$which:ws) configure -state disabled
+	$Vars(widget:$which:edit) configure -state disabled
+	$Vars(widget:$which:list) configure -state disabled
+	$Vars(widget:$which:list) configure -state disabled
 
-	if {[incr ChangeWS] == 1} {
-		$Widget(theme,list) configure -state disabled
-		$Widget(theme,save) configure -state disabled
-		$Widget(theme,edit) configure -state disabled
+	if {[incr Vars(changeWS)] == 1} {
+		$Vars(widget:theme:list) configure -state disabled
+		$Vars(widget:theme:save) configure -state disabled
+		$Vars(widget:theme:edit) configure -state disabled
 	}
 
 	[namespace parent]::acquireWorkingSet $which
 
 	[namespace parent]::${which}::openConfigDialog \
-		$Widget($which,ws) \
-		$SquareSize \
-		[namespace code [list ConfigDialogClosed $Widget($which,ws) $which]] \
+		$Vars(widget:$which:ws) \
+		$Options(squareSize) \
+		[namespace code [list ConfigDialogClosed $Vars(widget:$which:ws) $which]] \
 		[namespace code [list ApplyWorkingSet $which]] \
 		[namespace code [list ResetWorkingSet $which]] \
 		;
@@ -553,9 +547,9 @@ proc OpenConfigDialog {which} {
 
 
 proc EnterName {parent labelText} {
-	variable Identifier
+	variable Vars
 
-	set Identifier ""
+	set Vars(identifier) ""
 	set dlg [tk::toplevel ${parent}.enterName -class Scidb]
 	set f [::ttk::frame $dlg.top]
 	::ttk::label $f.l -text $labelText
@@ -576,7 +570,7 @@ proc EnterName {parent labelText} {
 	::widget::dialogButtons $dlg {ok cancel} ok false
 	$dlg.cancel configure -command "destroy $dlg"
 	$dlg.ok configure -command "
-		set [namespace current]::Identifier \[string trim \[$f.e get\]\]
+		set [namespace current]::Vars(identifier) \[string trim \[$f.e get\]\]
 		destroy $dlg
 	"
 
@@ -591,14 +585,13 @@ proc EnterName {parent labelText} {
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
 
-	return $Identifier
+	return $Vars(identifier)
 }
 
 
 proc SaveTheme {parent} {
 	variable [namespace parent]::theme::styleNames
-	variable Identifier
-	variable Widget
+	variable Vars
 
 	if {[[namespace parent]::isWorkingSet piece]} {
 		set msg [format	$mc::CannotUsePieceWorkingSet \
@@ -617,8 +610,8 @@ proc SaveTheme {parent} {
 	if {[llength $name] == 0} { return }
 
 	set identifier [[namespace parent]::saveWorkingSet $name theme]
-	SetSelection $Widget(theme,list) [lsearch -exact $styleNames $identifier]
-	ThemeSelected $Widget(theme,list) $styleNames
+	SetSelection $Vars(widget:theme:list) [lsearch -exact $styleNames $identifier]
+	ThemeSelected $Vars(widget:theme:list) $styleNames
 }
 
 
@@ -629,14 +622,14 @@ proc SaveWorkingSet {parent which} {
 
 proc SavePieceStyle {parent} {
 	variable [namespace parent]::piece::styleNames
-	variable Widget
+	variable Vars
 
 	set name [EnterName $parent "[set [namespace current]::mc::NameOfPieceStyle]:"]
 	if {[llength $name] == 0} { return }
 
 	set identifier [[namespace parent]::saveWorkingSet $name piece]
-	SetSelection $Widget(piece,list) [lsearch -exact $styleNames $identifier]
-	PieceStyleSelected $Widget(piece,list) $styleNames
+	SetSelection $Vars(widget:piece:list) [lsearch -exact $styleNames $identifier]
+	PieceStyleSelected $Vars(widget:piece:list) $styleNames
 	ConfigStyleSelectionFrame piece
 }
 
@@ -645,8 +638,7 @@ proc SaveSquareStyle {parent} {
 	variable [namespace parent]::square::style
 	variable [namespace parent]::layout
 	variable [namespace parent]::colors
-	variable Identifier
-	variable Widget
+	variable Vars
 
 	set showBorder	$layout(border)
 	set showCoords	$layout(coordinates)
@@ -656,7 +648,7 @@ proc SaveSquareStyle {parent} {
 	ConfigureBoard
 	RefreshBoard
 
-	set Identifier ""
+	set Vars(identifier) ""
 	set dlg [tk::toplevel ${parent}.saveSquareStyle -class Scidb]
 	set f [::ttk::frame $dlg.top]
 	pack $f -fill both -expand yes
@@ -701,7 +693,7 @@ proc SaveSquareStyle {parent} {
 	$dlg.ok configure -command "
 		set name \[string trim \[$entry get\]\]
 		if {\[llength \$name\]} {
-			set [namespace current]::Identifier \[[namespace parent]::saveWorkingSet \$name square\]
+			set [namespace current]::Vars(identifier) \[[namespace parent]::saveWorkingSet \$name square\]
 			destroy $dlg
 		}
 	"
@@ -717,10 +709,10 @@ proc SaveSquareStyle {parent} {
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
 
-	if {[llength $Identifier]} {
+	if {[llength $Vars(identifier)]} {
 		variable [namespace parent]::square::styleNames
-		SetSelection $Widget(square,list) [lsearch -exact $styleNames $Identifier]
-		SquareStyleSelected $Widget(square,list) $styleNames
+		SetSelection $Vars(widget:square:list) [lsearch -exact $styleNames $Vars(identifier)]
+		SquareStyleSelected $Vars(widget:square:list) $styleNames
 		ConfigStyleSelectionFrame square
 	}
 
@@ -739,7 +731,7 @@ proc SaveSquareStyle {parent} {
 
 
 proc ApplyWorkingSet {which {apply false}} {
-	variable Widget
+	variable Vars
 
 	if {$apply} {
 		[namespace parent]::changeWorkingSet $which
@@ -764,22 +756,21 @@ proc ResetWorkingSet {which} {
 
 
 proc ConfigDialogClosed {parent which} {
-	variable ChangeWS
-	variable Widget
+	variable Vars
 
 	[namespace parent]::releaseWorkingSet $which
 
 	if {![winfo exists $parent]} { return }
 
 	$parent configure -state normal
-	$Widget($which,edit) configure -state normal
-	$Widget($which,list) configure -state normal
-	$Widget($which,list) configure -state normal
+	$Vars(widget:$which:edit) configure -state normal
+	$Vars(widget:$which:list) configure -state normal
+	$Vars(widget:$which:list) configure -state normal
 
-	if {[incr ChangeWS -1] == 0} {
-		$Widget(theme,save) configure -state normal
-		$Widget(theme,edit) configure -state normal
-		$Widget(theme,list) configure -state normal
+	if {[incr Vars(changeWS) -1] == 0} {
+		$Vars(widget:theme:save) configure -state normal
+		$Vars(widget:theme:edit) configure -state normal
+		$Vars(widget:theme:list) configure -state normal
 	}
 
 	ConfigStyleSelectionFrame $which
@@ -787,21 +778,19 @@ proc ConfigDialogClosed {parent which} {
 
 
 proc makeFrame {path} {
-	variable BoardSize
-	variable SquareSize
-	variable Widget
-	variable ChangeWS
+	variable Options
+	variable Vars
 
 	set top [::ttk::frame $path.top]
 	pack $top
 
 	[namespace parent]::prepareNameLists
-	set ChangeWS 0
+	set Vars(changeWS) 0
 
 	# Notebook #####################################
 	set nb [::ttk::notebook $top.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
-	set Widget(tabs) $nb
+	set Vars(widget:tabs) $nb
 
 	makeBasicFrame [::ttk::frame $nb.basic]
 	makeStyleSelectionFrame [::ttk::frame $nb.styles]
@@ -817,14 +806,15 @@ proc makeFrame {path} {
 	# Preview ######################################
 	set f [::ttk::labelframe $top.preview \
 				-labelwidget [::ttk::label $top.lpreview -textvar ::mc::Preview]]
-	set Widget(canv,preview) [tk::canvas $f.board -width $BoardSize -borderwidth 1 -relief solid]
+	set Vars(widget:canv:preview) \
+		[tk::canvas $f.board -width $Options(boardSize) -borderwidth 1 -relief solid]
 	::theme::configureCanvas $f.board
 	$f.board xview moveto 0
 	$f.board yview moveto 0
 	pack $f.board -padx $::theme::padx -pady $::theme::pady -fill both -expand yes
 
 	bind $f.board <Configure> [namespace code { DrawBoard %h %w }]
-	bind $f.board <Destroy> [namespace code { array unset Widget }]
+	bind $f.board <Destroy> [namespace code { array unset Vars widget:* }]
 
 	# Top Frame ####################################
 	grid $top.nb		-row 1 -column 1 -sticky nswe
@@ -836,23 +826,23 @@ proc makeFrame {path} {
 
 
 proc isOpen {} {
-	variable Widget
-	return [info exists Widget(dialog)]
+	variable Vars
+	return [info exists Vars(widget:dialog)]
 }
 
 
 proc openConfigDialog {parent applyProc} {
-	variable Widget
+	variable Vars
 
 	[namespace parent]::acquire
 	set path $parent
 	if {$parent ne "."} { set path "$path." }
 	set dlg ${path}boardConfigDialog
-	set Widget(dialog) $dlg
+	set Vars(widget:dialog) $dlg
 	tk::toplevel $dlg -class Dialog
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Cancel $dlg $applyProc]]
 	bind $dlg <Escape> [namespace code [list Cancel $dlg $applyProc]]
-	bind $dlg <Destroy> "if {{$dlg} eq {%W}} { array unset [namespace current]::Widget }"
+	bind $dlg <Destroy> "if {{$dlg} eq {%W}} { array unset [namespace current]::Vars widget:* }"
 	wm withdraw $dlg
 	wm title $dlg "$::scidb::app: [set [namespace current]::mc::BoardSetup]"
 	wm transient $dlg [winfo toplevel $parent]
@@ -879,9 +869,9 @@ proc Cancel {dlg applyProc} {
 
 proc Apply {applyProc} {
 	variable [namespace parent]::needRefresh
-	variable Widget
+	variable Vars
 
-	$Widget(dialog) configure -cursor watch
+	$Vars(widget:dialog) configure -cursor watch
 	[namespace parent]::apply
 	foreach which {piece lite dark white black} {
 		set needRefresh($which,all) true
@@ -889,25 +879,25 @@ proc Apply {applyProc} {
 	[namespace parent]::setupSquares all
 	[namespace parent]::setupPieces all
 	eval $applyProc
-	$Widget(dialog) configure -cursor {}
+	$Vars(widget:dialog) configure -cursor {}
 }
 
 
 proc Reset {applyProc} {
 	variable [namespace parent]::needRefresh
-	variable Widget
+	variable Vars
 
-	$Widget(dialog) configure -cursor watch
+	$Vars(widget:dialog) configure -cursor watch
 	[namespace parent]::reset
 	foreach which {piece lite dark white black} {
 		set needRefresh($which,all) true
 	}
 	[namespace parent]::setupSquares all
 	[namespace parent]::setupPieces all
-	setBackground $Widget(canv,preview) window
-	setBackground $Widget(canv,border) border
+	setBackground $Vars(widget:canv:preview) window
+	setBackground $Vars(widget:canv:border) border
 	eval $applyProc
-	$Widget(dialog) configure -cursor {}
+	$Vars(widget:dialog) configure -cursor {}
 	SetCurrentSelection theme
 	SetCurrentSelection piece
 	SetCurrentSelection square
@@ -919,7 +909,7 @@ proc Reset {applyProc} {
 
 
 proc SetCurrentSelection {which} {
-	variable Widget
+	variable Vars
 
 	set identifier [[namespace parent]::currentStyle $which]
 	if {$identifier eq [set [namespace parent]::workingSetId]} {
@@ -930,19 +920,19 @@ proc SetCurrentSelection {which} {
 		variable [namespace parent]::${which}::styleNames
 		set index [lsearch -exact $styleNames $identifier]
 	}
-	SetSelection $Widget($which,list) $index
+	SetSelection $Vars(widget:$which:list) $index
 }
 
 
 proc TabChanged {nb} {
-	variable Widget
+	variable Vars
 
 	if {[string match *pieceSet [$nb select]]} {
 		[namespace parent]::pieceset::updatePieceSet [$nb select]
 	} elseif {[string match *styles [$nb select]]} {
 		SetCurrentSelection piece
 		SetCurrentSelection square
-	} elseif {[info exist Widget(theme,list)]} {
+	} elseif {[info exist Vars(widget:theme:list)]} {
 		SetCurrentSelection theme
 	}
 
@@ -959,86 +949,92 @@ proc ToggleLock {} {
 	variable [namespace parent]::square::style
 	variable [namespace parent]::colors
 	variable [namespace parent]::layout
-	variable Widget
+	variable Vars
 
 	if {$colors(locked)} {
-		$Widget(background) configure -state normal
+		$Vars(widget:background) configure -state normal
 		foreach attr {background-tile background-color border-tile border-color coordinates} {
 			set colors(hint,$attr) $colors(user,$attr)
 		}
 		SetRecent window $style(hint,background-color) $style(hint,background-tile)
 		SetRecent border $style(hint,border-color) $style(hint,border-tile)
 	} else {
-		$Widget(background) configure -state disabled
+		$Vars(widget:background) configure -state disabled
 		foreach attr {background-tile background-color border-tile border-color coordinates} {
 			set colors(hint,$attr) $style(hint,$attr)
 		}
 	}
 	if {$colors(locked) && [llength $colors(user,background-color)]} {
-		$Widget(erase_background) configure -state normal
+		$Vars(widget:erase_background) configure -state normal
 	} else {
-		$Widget(erase_background) configure -state disabled
+		$Vars(widget:erase_background) configure -state disabled
 	}
 	if {$colors(locked) && $layout(coordinates)} {
-		$Widget(coordinates) configure -state normal
+		$Vars(widget:coordinates) configure -state normal
 	} else {
-		$Widget(coordinates) configure -state disabled
+		$Vars(widget:coordinates) configure -state disabled
 	}
 	if {$colors(locked) && $layout(border)} {
-		$Widget(border-color) configure -state normal
+		$Vars(widget:border-color) configure -state normal
 	} else {
-		$Widget(border-color) configure -state disabled
+		$Vars(widget:border-color) configure -state disabled
 	}
 
-	if {[info exists Widget(canv,preview)]} { RefreshBoard }
+	if {[info exists Vars(widget:canv:preview)]} { RefreshBoard }
 	SetColorTooltips
 }
 
 
 proc SetColorTooltips {} {
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	if {$colors(locked)} {
 		if {[llength $colors(user,background-tile)]} {
 			::tooltip::tooltip \
-				$Widget(background) \
+				$Vars(widget:background) \
 				"${::mc::Texture}: [file join tile {*}$colors(user,background-tile)]"
 		} elseif {[llength $colors(user,background-color)]} {
 			::tooltip::tooltip \
-				$Widget(background) \
+				$Vars(widget:background) \
 				"[set [namespace current]::mc::SolidColor]: \
 				[extendColorName $colors(user,background-color)]"
 		}
 		if {[llength $colors(user,border-tile)]} {
 			::tooltip::tooltip \
-				$Widget(border-color) \
+				$Vars(widget:border-color) \
 				"${::mc::Texture}: [file join tile {*}$colors(user,border-tile)]"
 		} elseif {[llength $colors(user,border-color)]} {
 			::tooltip::tooltip \
-				$Widget(border-color) \
+				$Vars(widget:border-color) \
 				"[set [namespace current]::mc::SolidColor]: \
 				[extendColorName $colors(user,border-color)]"
 		}
 		if {[llength $colors(user,coordinates)]} {
 			::tooltip::tooltip \
-				$Widget(coordinates) \
+				$Vars(widget:coordinates) \
 				"${::mc::Color}: [extendColorName $colors(user,coordinates)]"
 		}
 	}
 }
 
 
+proc ToggleMaterialBar {} {
+	ConfigureBoard
+	RefreshBoard
+}
+
+
 proc ToggleShowSuggested {} {
 	variable [namespace parent]::hilite
-	variable Widget
+	variable Vars
 
 	RefreshBoard
 
 	if {$hilite(show-suggested)} {
-		$Widget(suggested) configure -state normal
+		$Vars(widget:suggested) configure -state normal
 	} else {
-		$Widget(suggested) configure -state disabled
+		$Vars(widget:suggested) configure -state disabled
 	}
 }
 
@@ -1046,15 +1042,15 @@ proc ToggleShowSuggested {} {
 proc ToggleShowBorder {} {
 	variable [namespace parent]::layout
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	ConfigureBoard
 	RefreshBoard
 
 	if {$layout(border) && $colors(locked)} {
-		$Widget(border-color) configure -state normal
+		$Vars(widget:border-color) configure -state normal
 	} else {
-		$Widget(border-color) configure -state disabled
+		$Vars(widget:border-color) configure -state disabled
 	}
 }
 
@@ -1062,39 +1058,43 @@ proc ToggleShowBorder {} {
 proc ToggleShowCoords {} {
 	variable [namespace parent]::layout
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	ConfigureBoard
 	RefreshBoard
 
 	if {$layout(coordinates)} {
-		$Widget(embossed) configure -state normal
+		$Vars(widget:embossed) configure -state normal
 	} else {
-		$Widget(embossed) configure -state disabled
+		$Vars(widget:embossed) configure -state disabled
 	}
 
 	if {$layout(coordinates) && $colors(locked)} {
-		$Widget(coordinates) configure -state normal
+		$Vars(widget:coordinates) configure -state normal
 		::tooltip::tooltip \
-			$Widget(coordinates) \
+			$Vars(widget:coordinates) \
 			"${::mc::Color}: extendColorName $colors(user,coordinates)]"
 	} else {
-		$Widget(coordinates) configure -state disabled
-		::tooltip::tooltip $Widget(coordinates) ""
+		$Vars(widget:coordinates) configure -state disabled
+		::tooltip::tooltip $Vars(widget:coordinates) ""
 	}
 }
 
 
 proc EditStyles {parent which} {
 	variable [namespace parent]::${which}::styleNames
-	variable Widget
-	variable EditStylePath
+	variable _EditStylePath
 	variable icon::15x15::ArrowUp
 	variable icon::15x15::ArrowDown
 	variable NameList
+	variable Vars
+
+	if {![info exists _EditStylePath]} {
+		set _EditStylePath .board_options_edit_style_[clock milliseconds]
+	}
 
 	$parent configure -state disabled
-	set dlg [toplevel $EditStylePath]
+	set dlg [toplevel $_EditStylePath]
 	wm withdraw $dlg
 	set top [::ttk::frame $dlg.top]
 	set NameList [lreplace [concat $styleNames] 0 1]
@@ -1110,7 +1110,7 @@ proc EditStyles {parent which} {
 		-exportselection false \
 		-yscrollcommand [list ::scrolledframe::sbset $lt.vsb] \
 		-listvariable [namespace current]::NameList
-	set n [$Widget($which,list) curselection]
+	set n [$Vars(widget:$which:list) curselection]
 	if {$n < 2} { set n 0 } else { incr n -2 }
 	$lt.content selection set $n
 	$lt.content activate $n
@@ -1152,7 +1152,7 @@ proc EditStyles {parent which} {
 	grid rowconfigure $rt 8 -weight 1
 	grid columnconfigure $rt 2 -minsize $::theme::padx
 
-	set Widget(buttons) $rt
+	set Vars(widget:buttons) $rt
 	ConfigureButtons $which $lt.content
 
 	# top frame ####################################
@@ -1168,7 +1168,7 @@ proc EditStyles {parent which} {
 	bind $dlg <Destroy> "
 		if {{$dlg} == {%W} && \[winfo exists $parent\]} {
 			$parent configure -state normal
-			[namespace current]::StyleSelected $which $Widget($which,list)
+			[namespace current]::StyleSelected $which $Vars(widget:$which:list)
 		}"
 
 	# map window ###################################
@@ -1188,7 +1188,7 @@ proc EditStyles {parent which} {
 
 
 proc ConfigureButtons {which listbox} {
-	variable Widget
+	variable Vars
 	variable NameList
 
 	set index [lindex [$listbox curselection] 0]
@@ -1196,21 +1196,21 @@ proc ConfigureButtons {which listbox} {
 
 	if {$which ne "theme"} {
 		if {[llength [[namespace parent]::referees $which $identifier]]} {
-			$Widget(buttons).delete configure -state disabled
+			$Vars(widget:buttons).delete configure -state disabled
 		} else {
-			$Widget(buttons).delete configure -state normal
+			$Vars(widget:buttons).delete configure -state normal
 		}
 	}
 
 	if {$index == 0} {
-		$Widget(buttons).up configure -state disabled
+		$Vars(widget:buttons).up configure -state disabled
 	} else {
-		$Widget(buttons).up configure -state normal
+		$Vars(widget:buttons).up configure -state normal
 	}
 	if {$index == [llength $NameList] - 1} {
-		$Widget(buttons).down configure -state disabled
+		$Vars(widget:buttons).down configure -state disabled
 	} else {
-		$Widget(buttons).down configure -state normal
+		$Vars(widget:buttons).down configure -state normal
 	}
 }
 
@@ -1231,7 +1231,7 @@ proc DeleteFile {listbox filename} {
 proc DeleteStyle {listbox which} {
 	variable [namespace parent]::${which}::styleNames
 	variable NameList
-	variable Widget
+	variable Vars
 
 	set identifier [lindex $NameList [$listbox curselection]]
 	set filename [[namespace parent]::filename $identifier $which]
@@ -1248,7 +1248,7 @@ proc DeleteStyle {listbox which} {
 					-message [format [set [namespace current]::mc::ConfirmDelete] $identifier] \
 					-detail [format [set [namespace current]::mc::YouCannotReverse] $filename]]
 	if {$reply ne "ok" || ![DeleteFile $listbox $filename]} { return false }
-	set shortId [lindex $styleNames [$Widget($which,list) curselection]]
+	set shortId [lindex $styleNames [$Vars(widget:$which:list) curselection]]
 	set longId [[namespace parent]::mapToLongId $shortId $which]
 	[namespace parent]::removeStyle $identifier $which
 	ResetSelection $longId $which
@@ -1266,12 +1266,12 @@ proc DeleteStyle {listbox which} {
 
 proc ResetSelection {longId which} {
 	variable [namespace parent]::${which}::styleNames
-	variable Widget
+	variable Vars
 
 	set index -1
 	catch { set index [lsearch -exact $styleNames [[namespace parent]::mapToShortId $longId $which]] }
 	if {$index == -1} { set index 0 }
-	SetSelection $Widget($which,list) $index
+	SetSelection $Vars(widget:$which:list) $index
 }
 
 
@@ -1311,9 +1311,9 @@ proc ResetSelection {longId which} {
 
 proc MoveStyleEntry {list delta which} {
 	variable NameList
-	variable Widget
+	variable Vars
 
-	set name [GetStyleName $which [$Widget($which,list) curselection]]
+	set name [GetStyleName $which [$Vars(widget:$which:list) curselection]]
 	set longId [[namespace parent]::mapToLongId $name $which]
 	set i [lindex [$list curselection] 0]
 	set k [expr {$i + $delta}]
@@ -1331,8 +1331,8 @@ proc MoveStyleEntry {list delta which} {
 
 proc MakeHiliteRect {canv tag} {
 	variable [namespace parent]::hilite
-	variable SquareSize
-	variable Position
+	variable Options
+	variable Vars
 
 	$canv delete $tag:h
 
@@ -1341,9 +1341,10 @@ proc MakeHiliteRect {canv tag} {
 			$canv \
 			$tag \
 			h \
-			$SquareSize \
-			$Position(x,$tag) \
-			$Position(y,$tag)
+			$Options(squareSize) \
+			$Vars(position:x:$tag) \
+			$Vars(position:y:$tag) \
+			;
 		$canv itemconfigure $tag:h -state normal
 		$canv raise piece
 		$canv raise shadow
@@ -1357,11 +1358,11 @@ proc RefreshBoard {} {
 	variable [namespace parent]::layout
 	variable [namespace parent]::colors
 	variable [namespace parent]::square::style
-	variable Widget
+	variable Vars
 
-	set canv $Widget(canv,preview)
-	set board $Widget(board)
-	set border $Widget(canv,border)
+	set canv $Vars(widget:canv:preview)
+	set board $Vars(widget:board)
+	set border $Vars(widget:canv:border)
 
 	$canv itemconfigure stm		-state hidden
 	$canv itemconfigure mv		-state hidden
@@ -1404,9 +1405,9 @@ proc RefreshBoard {} {
 	}
 
 	if {$layout(material-values)} {
-		$Widget(bar) configure -state normal
+		$Vars(widget:bar) configure -state normal
 	} else {
-		$Widget(bar) configure -state disabled
+		$Vars(widget:bar) configure -state disabled
 	}
 
 	MakeHiliteRect $board selected
@@ -1415,38 +1416,38 @@ proc RefreshBoard {} {
 	$board raise black
 	$board raise white
 
-	setBackground $Widget(canv,preview) window
+	setBackground $Vars(widget:canv:preview) window
 	if {[llength $colors(hint,background-color)]} {
-		$Widget(canv,preview) configure -background $colors(hint,background-color)
+		$Vars(widget:canv:preview) configure -background $colors(hint,background-color)
 	} elseif {[llength $colors(hint,background-tile)] == 0} {
-		::theme::configureBackground $Widget(canv,preview)
+		::theme::configureBackground $Vars(widget:canv:preview)
 	}
 
-	setBackground $Widget(canv,border) border
+	setBackground $Vars(widget:canv:border) border
 	if {[llength $colors(hint,border-color)]} {
-		$Widget(canv,border) configure -background $colors(hint,border-color)
+		$Vars(widget:canv:border) configure -background $colors(hint,border-color)
 	}
 }
 
 
 proc ConfigureBoard {} {
 	variable [namespace parent]::layout
-	variable SquareSize
-	variable Widget
-	variable BorderWidth
+	variable Options
+	variable Vars
 
-	set border $Widget(canv,border)
-	set preview $Widget(canv,preview)
-	set board $Widget(board)
+	set border $Vars(widget:canv:border)
+	set preview $Vars(widget:canv:preview)
+	set board $Vars(widget:board)
 
 	set w [winfo width $preview]
 	set h [winfo height $preview]
+	set squareSize $Options(squareSize)
 
 	# compute dimensions ###########################
-	set x1 [expr {($w - 4*$SquareSize)/2}]
-	set y1 [expr {($h - 4*$SquareSize)/2}]
-	set x2 [expr {$x1 + 4*$SquareSize}]
-	set y2 [expr {$y1 + 4*$SquareSize}]
+	set x1 [expr {($w - 4*$squareSize)/2}]
+	set y1 [expr {($h - 4*$squareSize)/2}]
+	set x2 [expr {$x1 + 4*$squareSize}]
+	set y2 [expr {$y1 + 4*$squareSize}]
 
 	if {$layout(border)} {
 		if {$layout(coordinates)} {
@@ -1458,8 +1459,8 @@ proc ConfigureBoard {} {
 		set bdw 0
 	}
 
-	if {$BorderWidth == $bdw} { return }
-	set BorderWidth bdw
+	if {$Vars(borderWidth) == $bdw} { return }
+	set Vars(borderWidth) bdw
 
 	# configure windows ############################
 	set u1 [expr {$x1 - $bdw}]
@@ -1476,10 +1477,10 @@ proc ConfigureBoard {} {
 	$board configure -width [expr {$x2 - $x1}] -height [expr {$y2 - $y1}]
 
 	# draw border lines ############################
-	drawBorderlines $border [expr {4*$SquareSize + 2*$bdw}]
+	drawBorderlines $border [expr {4*$squareSize + 2*$bdw}]
 
 	# configure side to move #######################
-	set stmSize 19	;#[expr {$SquareSize/4 + 5}]
+	set stmSize 19	;#[expr {$squareSize/4 + 5}]
 	set stmGap	7	;#[expr {$stmSize/3}]
 	set x [expr {$x2 + $stmGap + $bdw}]
 	set y [expr {$y1 + $stmGap}]
@@ -1488,6 +1489,18 @@ proc ConfigureBoard {} {
 	$preview coords stmw $x $y
 
 	# configure material values ####################
+	set pieceSize $Options(figurineSize)
+	if {$layout(material-bar)} { incr pieceSize -1 }
+	::board::pieceset::registerFigurines $pieceSize $layout(material-bar)
+	if {[llength $Vars(registered)]} { ::board::pieceset::unregisterFigurines {*}$Vars(registered) }
+	set Vars(registered) [list $pieceSize $layout(material-bar)]
+
+	foreach {i c} {0 b 1 b 2 w 3 w} {
+		$preview delete mv$i
+		set img photo_Piece(figurine,$layout(material-bar),${c}p,$pieceSize)
+		$preview create image 0 0 -image $img -tag [list mv mv$i] -anchor nw
+	}
+
 	set mvGap	3
 	set mvS		16
 	set x3		[expr {$x2 + $stmGap + $bdw}]
@@ -1501,8 +1514,8 @@ proc ConfigureBoard {} {
 	incr x4 -1; incr y4 -1
 	$preview coords mvbar3 $x3 $y3 $x4 $y4
 
-	set x $x3
-	set y [expr {$y1 + 2*$SquareSize - 2*$mvS - $mvGap - $mvGap/2}]
+	set x [expr {$x3 - 1}]
+	set y [expr {$y1 + 2*$squareSize - 2*$mvS - $mvGap - $mvGap/2}]
 	foreach {i c} {0 b 1 b 2 w 3 w} {
 		$preview coords mv$i $x $y
 		incr y [expr {$mvS + $mvGap}]
@@ -1515,53 +1528,52 @@ proc DrawBoard {h w} {
 	variable [namespace parent]::needRefresh
 	variable ::application::board::stmWhite
 	variable ::application::board::stmBlack
-	variable SquareSize
 	variable InitialPosition
-	variable Widget
-	variable Position
 	variable HilitePos
-	variable BorderWidth
+	variable Options
+	variable Vars
 
 	if {$h <= 1 || $w <= 1} { return }
-	set canv $Widget(canv,preview)
+	set canv $Vars(widget:canv:preview)
 	bind $canv <Configure> {}
-	set SquareSize [min $SquareSize [expr {($h - 60)/4}]]
-	set BorderWidth -1
+	set Options(squareSize) [min $Options(squareSize) [expr {($h - 60)/4}]]
+	set Vars(borderWidth) -1
+	set squareSize $Options(squareSize)
 	update idletasks
 
-	set needRefresh(piece,$SquareSize) true
-	set needRefresh(lite,$SquareSize) true
-	set needRefresh(dark,$SquareSize) true
+	set needRefresh(piece,$squareSize) true
+	set needRefresh(lite,$squareSize) true
+	set needRefresh(dark,$squareSize) true
 
-	[namespace parent]::registerSize $SquareSize
-	[namespace parent]::setupSquares $SquareSize
+	[namespace parent]::registerSize $squareSize
+	[namespace parent]::setupSquares $squareSize
 
 	# compute dimensions ###########################
-	set x1 [expr {($w - 4*$SquareSize)/2}]
-	set y1 [expr {($h - 4*$SquareSize)/2}]
-	set x2 [expr {$x1 + 4*$SquareSize}]
-	set y2 [expr {$y1 + 4*$SquareSize}]
+	set x1 [expr {($w - 4*$squareSize)/2}]
+	set y1 [expr {($h - 4*$squareSize)/2}]
+	set x2 [expr {$x1 + 4*$squareSize}]
+	set y2 [expr {$y1 + 4*$squareSize}]
 
 	# board window #################################
 	set bord [tk::canvas $canv.border -relief raised]
 	set board [tk::canvas $bord.board -borderwidth 0]
 	$canv create window 0 0 -anchor nw -window $bord -tag board
 	$bord create window 0 0 -anchor nw -window $board -tag board
-	set Widget(canv,border) $bord
-	set Widget(board) $board
+	set Vars(widget:canv:border) $bord
+	set Vars(widget:board) $board
 
 	# 4x4 board ####################################
-	after 50 [namespace code [list [namespace parent]::setupPieces $SquareSize]]
+	after 50 [namespace code [list [namespace parent]::setupPieces $squareSize]]
 	set y 0
 
-	for {set row 0} {$row < 4} {incr row; incr y $SquareSize} {
+	for {set row 0} {$row < 4} {incr row; incr y $squareSize} {
 		set x 0
-		for {set col 0} {$col < 4} {incr col; incr x $SquareSize} {
+		for {set col 0} {$col < 4} {incr col; incr x $squareSize} {
 			set color [expr {($row + $col) % 2 ? "lite" : "dark"}]
-			$board create image $x $y -anchor nw -image photo_Square($color,$SquareSize)
+			$board create image $x $y -anchor nw -image photo_Square($color,$squareSize)
 			set piece [lindex $InitialPosition $row $col]
 			if {$piece != ""} {
-				$board create image $x $y -anchor nw -image photo_Piece($piece,$SquareSize) -tag piece
+				$board create image $x $y -anchor nw -image photo_Piece($piece,$squareSize) -tag piece
 			}
 		}
 	}
@@ -1581,7 +1593,8 @@ proc DrawBoard {h w} {
 	$board create line $mx 1 $mx $my -fill white -tag white
 
 	# side to move #################################
-	set stmSize 19	;#[expr {$SquareSize/4 + 5}]
+	set pieceSize $Options(figurineSize)
+	set stmSize [expr {$pieceSize + 2}]	;#[expr {$squareSize/4 + 5}]
 
 	if {[info exists [namespace current]::Stm(white)]} { image delete [namespace current]::Stm(white) }
 	if {[info exists [namespace current]::Stm(black)]} { image delete [namespace current]::Stm(black) }
@@ -1596,22 +1609,19 @@ proc DrawBoard {h w} {
 	$canv create rectangle 0 0 0 0 -fill white -width 0 -tags {mvbar mvbar1}
 	$canv create rectangle 0 0 0 0 -fill black -width 0 -tag {mvbar mvbar2}
 	$canv create rectangle 0 0 0 0  -fill #e6e6e6 -width 0 -tag {mvbar mvbar3}
-	foreach {i c} {0 b 1 b 2 w 3 w} {
-		$canv create image 0 0 -image $::icon::16x16::piece(${c}p) -tag [list mv mv$i] -anchor nw
-	}
 
 	# hiliting #####################################
-	set Position(x,selected)	[expr {$HilitePos(x,selected)*$SquareSize}]
-	set Position(y,selected)	[expr {$HilitePos(y,selected)*$SquareSize}]
-	set Position(x,suggested)	[expr {$HilitePos(x,suggested)*$SquareSize}]
-	set Position(y,suggested)	[expr {$HilitePos(y,suggested)*$SquareSize}]
+	set Vars(position:x:selected)		[expr {$HilitePos(x,selected)*$squareSize}]
+	set Vars(position:y:selected)		[expr {$HilitePos(y,selected)*$squareSize}]
+	set Vars(position:x:suggested)	[expr {$HilitePos(x,suggested)*$squareSize}]
+	set Vars(position:y:suggested)	[expr {$HilitePos(y,suggested)*$squareSize}]
 
 	# coordinates ##################################
 	set bdw	20
 	set x3	[expr {$x1 - 10}]
-	set y3	[expr {$y1 + $SquareSize/2}]
+	set y3	[expr {$y1 + $squareSize/2}]
 	set x4	12
-	set y4	[expr {$bdw + $SquareSize/2}]
+	set y4	[expr {$bdw + $squareSize/2}]
 
 	foreach row {1 2 3 4} {
 		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] \
@@ -1624,13 +1634,13 @@ proc DrawBoard {h w} {
 		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] \
 			-justify right -text $row -fill black -tag coords -tag bcoords
 		$bord create text $x4 $y4 -justify right -text $row -tag coords
-		incr y3 $SquareSize
-		incr y4 $SquareSize
+		incr y3 $squareSize
+		incr y4 $squareSize
 	}
-	set x3 [expr {$x1 + $SquareSize/2}]
+	set x3 [expr {$x1 + $squareSize/2}]
 	set y3 [expr {$y2 + 10}]
-	set x4 [expr {$SquareSize/2 + $bdw}]
-	set y4 [expr {4*$SquareSize + $bdw + $bdw/2 - 1}]
+	set x4 [expr {$squareSize/2 + $bdw}]
+	set y4 [expr {4*$squareSize + $bdw + $bdw/2 - 1}]
 	foreach col {a b c d} {
 		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] -text $col -fill white -tag coords -tag wcoords
 		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] -text $col -fill black -tag coords -tag bcoords
@@ -1638,8 +1648,8 @@ proc DrawBoard {h w} {
 		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] -text $col -fill white -tag coords -tag wcoords
 		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] -text $col -fill black -tag coords -tag bcoords
 		$bord create text $x4 $y4 -text $col -tag coords
-		incr x3 $SquareSize
-		incr x4 $SquareSize
+		incr x3 $squareSize
+		incr x4 $squareSize
 	}
 	
 	# background ###################################
@@ -1686,14 +1696,14 @@ proc GetStyleName {which index} {
 
 proc ThemeSelected {list {nameList {}}} {
 	variable [namespace parent]::colors
-	variable SquareSize
+	variable Options
 
 	# strange: we can get a <<ListboxSelect>> event although the listbox is disabled
 	if {[$list cget -state] eq "disabled"} { return }
 
 	[winfo toplevel $list] configure -cursor watch
 	update idletasks
-	setTheme [GetCurrentSelection $list $nameList theme] $SquareSize
+	setTheme [GetCurrentSelection $list $nameList theme] $Options(squareSize)
 	[winfo toplevel $list] configure -cursor {}
 
 	variable [namespace parent]::square::style
@@ -1705,19 +1715,19 @@ proc ThemeSelected {list {nameList {}}} {
 
 
 proc ConfigThemeSelectionFrame {} {
-	variable Widget
+	variable Vars
 	variable [namespace parent]::theme::styleNames
 
 	if {[[namespace parent]::isWorkingSet]} {
-		$Widget(theme,save) configure -state normal
+		$Vars(widget:theme:save) configure -state normal
 	} else {
-		$Widget(theme,save) configure -state disabled
+		$Vars(widget:theme:save) configure -state disabled
 	}
 
 	if {[llength $styleNames] <= 2} {
-		$Widget(theme,edit) configure -state disabled
+		$Vars(widget:theme:edit) configure -state disabled
 	} else {
-		$Widget(theme,edit) configure -state normal
+		$Vars(widget:theme:edit) configure -state normal
 	}
 }
 
@@ -1744,12 +1754,12 @@ proc SetColors {} {
 
 
 proc SquareStyleSelected {list {nameList {}}} {
-	variable SquareSize
-	variable Widget
+	variable Options
+	variable Vars
 
 	[winfo toplevel $list] configure -cursor watch
 	update idletasks
-	setSquareStyle [GetCurrentSelection $list $nameList square] $SquareSize
+	setSquareStyle [GetCurrentSelection $list $nameList square] $Options(squareSize)
 	[winfo toplevel $list] configure -cursor {}
 
 	SetRecentColors border border
@@ -1761,11 +1771,11 @@ proc SquareStyleSelected {list {nameList {}}} {
 
 
 proc PieceStyleSelected {list {nameList {}}} {
-	variable SquareSize
+	variable Options
 
 	[winfo toplevel $list] configure -cursor watch
 	update idletasks
-	setPieceStyle [GetCurrentSelection $list $nameList piece] $SquareSize
+	setPieceStyle [GetCurrentSelection $list $nameList piece] $Options(squareSize)
 	[winfo toplevel $list] configure -cursor {}
 
 	ConfigStyleSelectionFrame piece
@@ -1774,14 +1784,14 @@ proc PieceStyleSelected {list {nameList {}}} {
 
 
 proc PieceSetSelected {identifier} {
-	variable SquareSize
-	variable Widget
+	variable Options
+	variable Vars
 
-	[winfo toplevel $Widget(pieceset)] configure -cursor watch
+	[winfo toplevel $Vars(widget:pieceset)] configure -cursor watch
 	update idletasks
-	setPieceSet $identifier $SquareSize
+	setPieceSet $identifier $Options(squareSize)
 	[namespace parent]::piece::notifyPieceSetChanged
-	[winfo toplevel $Widget(pieceset)] configure -cursor {}
+	[winfo toplevel $Vars(widget:pieceset)] configure -cursor {}
 	ConfigThemeSelectionFrame
 }
 
@@ -1870,11 +1880,11 @@ proc SetRecent {what recentColor recentTexture} {
 
 proc SetBorderTexture {setter which tile} {
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	set colors(hint,border-tile) $tile
 
-	if {[setBackground $Widget(canv,border) border]} {
+	if {[setBackground $Vars(widget:canv:border) border]} {
 		set colors(hint,border-color) {}
 	} else {
 		set colors(hint,border-tile) {}
@@ -1932,10 +1942,10 @@ proc SelectBorderColor {which setter} {
 
 proc SetBackgroundTexture {setter which tile} {
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	set colors(hint,background-tile) $tile
-	if {[setBackground $Widget(canv,preview) window]} {
+	if {[setBackground $Vars(widget:canv:preview) window]} {
 		set colors(hint,background-color) {}
 		# NOTE: we do not provide full language support; not needed here
 		::tooltip::tooltip $setter "${::mc::Texture}: [file join tile {*}$colors(hint,background-tile)]"
@@ -1949,7 +1959,7 @@ proc SelectBackgroundColor {which setter eraser} {
 	variable [namespace parent]::colors
 	variable RecentColors
 	variable RecentTextures
-	variable Widget
+	variable Vars
 
 	if {[llength $colors(user,background-color)] || [llength $colors(user,background-tile)]} {
 		set showEraser true
@@ -1979,7 +1989,7 @@ proc SelectBackgroundColor {which setter eraser} {
 		set colors(hint,background-color) $selection
 		set colors(hint,background-tile) {}
 		$eraser configure -state normal
-		setBackground $Widget(canv,preview) window
+		setBackground $Vars(widget:canv:preview) window
 		::tooltip::tooltip $setter "${::mc::Color}: [extendColorName $selection]"
 	} else {
 		if {$n > 0} {
@@ -2007,13 +2017,13 @@ proc SelectBackgroundColor {which setter eraser} {
 
 proc EraseBackgroundColor {which setter eraser} {
 	variable [namespace parent]::colors
-	variable Widget
+	variable Vars
 
 	SetRecentColors window background
 	set colors(hint,background-color) {}
 	set colors(hint,background-tile) {}
 	$eraser configure -state disabled
-	setBackground $Widget(canv,preview) window
+	setBackground $Vars(widget:canv:preview) window
 	RefreshBoard
 	::tooltip::tooltip $setter {}
 

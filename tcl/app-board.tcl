@@ -85,6 +85,8 @@ proc build {w width height} {
 	set Vars(widget:parent) $w
 	set Vars(autoplay) 0
 	set Vars(active) 0
+	set Vars(material) {}
+	set Vars(registered) {}
 	$board configure -cursor crosshair
 	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
 	::bind $canv <Destroy> [namespace code [list activate $w 0]]
@@ -325,6 +327,7 @@ proc GotFocus {w} {
 
 
 proc Preload {width height} {
+	variable ::board::layout
 	variable Attr
 	variable Dim
 
@@ -335,6 +338,7 @@ proc Preload {width height} {
 	::board::registerSize $Dim(squaresize)
 	::board::setupSquares $Dim(squaresize)
 	::board::setupPieces $Dim(squaresize)
+	::board::pieceset::registerFigurines $Dim(piece:size) $layout(material-bar)
 }
 
 
@@ -441,6 +445,7 @@ proc Apply {canv} {
 
 
 proc RebuildBoard {canv width height} {
+	variable ::board::layout
 	variable Dim
 	variable Vars
 	variable board
@@ -460,6 +465,15 @@ proc RebuildBoard {canv width height} {
 		$Vars(widget:border) configure -background [$canv cget -background]
 	}
 
+	set pieceSize $Dim(piece:size)
+	set inuse 0
+	catch { set inuse [image inuse photo_Piece(figurine,$layout(material-bar),wq,$pieceSize)] }
+	if {$inuse == 0} {
+		::board::pieceset::registerFigurines $pieceSize $layout(material-bar)
+		if {[llength $Vars(registered)]} { ::board::pieceset::unregisterFigurines {*}$Vars(registered) }
+		set Vars(registered) [list $pieceSize $layout(material-bar)]
+	}
+
 	BuildBoard $canv
 	ConfigureBoard $canv
 	DrawMaterialValues $canv
@@ -475,28 +489,36 @@ proc RebuildBoard {canv width height} {
 
 proc DrawMaterialValues {canv} {
 	variable ::board::layout
+	variable Vars
 
-	if {!$layout(material-values)} { return }
+	if {$layout(material-values)} {
+		set material [::scidb::game::material]
+		if {[string equal $material $Vars(material)]} { return }
 
-	$canv delete material
-	lassign [::scidb::game::material] p n b r q
+		$canv delete material
+		lassign $material p n b r q
 
-	# match knights and bishops
-	for {} {$n < 0 && $b > 0} {incr b -1} {incr n}
-	for {} {$b < 0 && $n > 0} {incr n -1} {incr b}
+		# match knights and bishops
+		for {} {$n < 0 && $b > 0} {incr b -1} {incr n}
+		for {} {$b < 0 && $n > 0} {incr n -1} {incr b}
 
-	set sum [expr {abs($p) + abs($n) + abs($b) + abs($r) + abs($q)}]
-	set rank 0
+		set sum [expr {abs($p) + abs($n) + abs($b) + abs($r) + abs($q)}]
+		set rank 0
 
-	AddMaterial $q "q" $canv $rank $sum; incr rank [abs $q]
-	AddMaterial $r "r" $canv $rank $sum; incr rank [abs $r]
-	AddMaterial $b "b" $canv $rank $sum; incr rank [abs $b]
-	AddMaterial $n "n" $canv $rank $sum; incr rank [abs $n]
-	AddMaterial $p "p" $canv $rank $sum
+		AddMaterial $q "q" $canv $rank $sum; incr rank [abs $q]
+		AddMaterial $r "r" $canv $rank $sum; incr rank [abs $r]
+		AddMaterial $b "b" $canv $rank $sum; incr rank [abs $b]
+		AddMaterial $n "n" $canv $rank $sum; incr rank [abs $n]
+		AddMaterial $p "p" $canv $rank $sum
+	} elseif {[string length $Vars(material)]} {
+		$canv delete material
+		set Vars(material) {}
+	}
 }
 
 
 proc AddMaterial {count piece canv rank sum} {
+	variable ::board::layout
 	variable Dim
 
 	if {$count == 0} { return }
@@ -516,12 +538,12 @@ proc AddMaterial {count piece canv rank sum} {
 		set color "w"
 	}
 
+	set pieceSize $Dim(piece:size)
+	set img photo_Piece(figurine,$layout(material-bar),${color}${piece},$pieceSize)
+
 	for {set i 0} {$i < $count} {incr i} {
 		set n [expr {$i + $rank}]
-		$canv create image $x $y \
-			-image [set ::icon::${res}::piece(${color}${piece})] \
-			-tags [list material mv$n] \
-			-anchor nw
+		$canv create image $x $y -image $img -tags [list material mv$n] -anchor nw
 		incr y $offs
 	}
 }
@@ -542,6 +564,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	if {$layout(side-to-move) || $layout(material-values)} {
 		if {$layout(side-to-move)} { set minsize 64 } else { set minsize 34 }
+#		set Dim(stm)	[expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/32 + 5))}]
 		set Dim(stm)	[expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/32 + 5))}]
 		set Dim(gap)	[expr {max(7, $Dim(stm)/3)}]
 	} else {
@@ -601,12 +624,12 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		$Vars(widget:border) delete mvbar mv
 	}
 
-	if {$Dim(stm) < 24} {
-		set Dim(piece) 16
-	} elseif {$Dim(stm) < 34} {
-		set Dim(piece) 22
+	if {$layout(material-bar)} {
+		set Dim(piece) [expr {$Dim(stm) - 2}]
+		set Dim(piece:size) [expr {$Dim(stm) - 3}]
 	} else {
-		set Dim(piece) 32
+		set Dim(piece) $Dim(stm)
+		set Dim(piece:size) $Dim(stm)
 	}
 }
 
@@ -650,9 +673,10 @@ proc ConfigureBoard {canv} {
 
 	set state hidden
 	if {$layout(material-values) && $layout(material-bar)} {
-		set dist [expr {$Dim(piece)/8}]
-		set x3 [expr {$Dim(border:x2) + $Dim(gap) + ($Dim(stm) - $Dim(piece) - $dist)/2}]
-		set x4 [expr {$x3 + $Dim(piece) + $dist}]
+		set size $Dim(piece)
+		set dist [expr {$size/8}]
+		set x3 [expr {$Dim(border:x2) + $Dim(gap) + ($Dim(stm) - $size - $dist)/2}]
+		set x4 [expr {$x3 + $size + $dist}]
 
 		if {$layout(side-to-move)} {
 			set y3 [expr {$Dim(border:y1) + $Dim(stm) + 2*$Dim(gap) + 1}]

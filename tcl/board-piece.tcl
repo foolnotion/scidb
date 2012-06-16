@@ -1515,9 +1515,10 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	set tb1 [::toolbar::toolbar $dlg -tooltipvar [namespace current]::mc::PieceSelection]
 	set tb2 [::toolbar::toolbar $dlg -tooltipvar [namespace current]::mc::BackgroundSelection]
 
+	MakeToolbarIcons
 	foreach piece {k q r b n p} {
 		::toolbar::add $tb1 button \
-			-image $::icon::toolbarPiece($piece) \
+			-image $Vars(toolbarPiece:$piece) \
 			-command [namespace code [list SetPiece $piece]] \
 			-variable [namespace current]::Piece \
 			-value $piece
@@ -1635,6 +1636,24 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	catch { focus $dlg.f.top.lt.fill }
 #	tkwait window $dlg
 #	ttk::releaseGrab $dlg
+}
+
+
+proc MakeToolbarIcons {} {
+	variable Vars
+
+	if {![info exists Vars(toolbarPiece:k)]} {
+		[namespace parent]::pieceset::registerFigurines 16 0
+		[namespace parent]::pieceset::registerFigurines 22 0
+		[namespace parent]::pieceset::registerFigurines 32 0
+		foreach p {k q r b n p} {
+			set Vars(toolbarPiece:$p) [list \
+				[::icon::makeStateSpecificIcons photo_Piece(figurine,0,b$p,22)] \
+				[::icon::makeStateSpecificIcons photo_Piece(figurine,0,b$p,16)] \
+				[::icon::makeStateSpecificIcons photo_Piece(figurine,0,b$p,32)] \
+			]
+		}
+	}
 }
 
 

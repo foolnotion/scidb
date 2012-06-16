@@ -52,6 +52,7 @@ array set Options {
 	askToReplaceMoves		1
 	defaultAction			replace
 	searchDepth				3
+	figurineSize			24
 }
 
 variable Disabled	0
@@ -388,6 +389,7 @@ proc EnterVariation {varno} {
 
 proc AddMove {sq1 sq2 allowIllegalMove} {
 	variable ::application::board::board
+	variable Options
 	variable Leave
 
 	if {$sq2 == -1} { return [::board::stuff::setDragSquare $board] }
@@ -419,12 +421,15 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 
 	if {[scidb::pos::promotion? $sq1 $sq2 $allowIllegalMove]} {
 		if {![winfo exists $board.popup_promotion]} {
+			set color [string index [::board::stuff::piece $board $sq1] 0]
 			set m [menu $board.popup_promotion -tearoff false]
 			catch { wm attributes $m -type popup_menu }
-			$m add command -image $::icon::22x22::piece(bq) -command [namespace code { set _promoted 2 }]
-			$m add command -image $::icon::22x22::piece(br) -command [namespace code { set _promoted 3 }]
-			$m add command -image $::icon::22x22::piece(bb) -command [namespace code { set _promoted 4 }]
-			$m add command -image $::icon::22x22::piece(bn) -command [namespace code { set _promoted 5 }]
+			foreach {p n} {q 2 r 3 b 4 n 5} {
+				$m add command \
+					-image photo_Piece(figurine,1,$color$p,$Options(figurineSize)) \
+					-command [namespace code [list set _promoted $n]] \
+					;
+			}
 		}
 		set Leave 0
 		variable _trigger 0
@@ -495,10 +500,12 @@ proc ConfirmReplaceMove {} {
 
 
 proc Unlock {} {
-puts "Unlock"
 	set [namespace current]::Lock 0
 	set [namespace current]::Disabled 0
 }
+
+
+::board::pieceset::registerFigurines $Options(figurineSize) 1
 
 } ;# namespace move
 

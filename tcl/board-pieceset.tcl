@@ -33,6 +33,7 @@ namespace export isOutline computeStartOffset computeStopOffset makePieces
 namespace export makePieceSelectionFrame updatePieceSet
 
 variable Listbox
+variable FigurineDict [dict create]
 
 variable RegExpBBox			{scidb:bbox=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
 variable RegExpScale			{scidb:scale=\"([0-9]*[.]?[0-9]+)\"}
@@ -135,25 +136,82 @@ proc makePieces {size {pieces all}} {
 		set strokeColors [list $style(color,w,stroke) $style(color,b,stroke)]
 	}
 
-	MakePieces \
-		$pieceSet \
-		$pieces \
-		$size \
-		$style(zoom) \
-		$style(contour) \
-		$style(shadow) \
-		$fillColors \
-		$strokeColors \
-		[list $style(color,w,texture) $style(color,b,texture) ] \
-		[list $style(color,w,contour) $style(color,b,contour) ] \
-		[list $grad(w) $grad(b)] \
-		$style(opacity) \
-		$style(diffusion) \
-		$style(useWhitePiece)
+	set texture [list $style(color,w,texture) $style(color,b,texture)]
+	set contour [list $style(color,w,contour) $style(color,b,contour)]
+	set gradients [list $grad(w) $grad(b)]
+	set pieceSet [lindex $::board_PieceSet [lsearch -exact -index 0 $::board_PieceSet $pieceSet]]
+
+	MakePieces               \
+		{}                    \
+		$pieceSet             \
+		$pieces               \
+		$size                 \
+		$style(zoom)          \
+		$style(contour)       \
+		$style(shadow)        \
+		$fillColors           \
+		$strokeColors         \
+		$texture              \
+		$contour              \
+		$gradients            \
+		$style(opacity)       \
+		$style(diffusion)     \
+		$style(useWhitePiece) \
+		;
 }
 
 
-proc MakePieces {	fontName pieceList size scale contour shadow fillColors strokeColors
+proc registerFigurines {size dontUseContour} {
+	variable FigurineDict
+
+	set key $size,$dontUseContour
+	if {[dict get [dict incr FigurineDict $key] $key] == 1} {
+		set prefix figurine,$dontUseContour
+		foreach p {wk bk wq wr wb wn wp bq br bb bn bp} {
+			image create photo photo_Piece($prefix,$p,$size) -width $size -height $size
+		}
+		MakeFigurines $size $dontUseContour
+	}
+}
+
+
+proc unregisterFigurines {size dontUseContour} {
+	variable FigurineDict
+
+	set key $size,$dontUseContour
+	if {[dict get [dict incr BoardSizeDict $key -1] $key] == 0} {
+		set prefix figurine,$dontUseContour
+		foreach p {wk bk wq wr wb wn wp bq br bb bn bp} { image delete photo_Piece($prefix,$p,$size) }
+	}
+}
+
+
+proc MakeFigurines {size dontUseContour} {
+	set pieceList {wk bk wq wr wb wn wp bq br bb bn bp}
+	set pieceSet [lindex $::board_PieceSet [lsearch -exact -index 0 $::board_PieceSet Cases]]
+	set prefix figurine,$dontUseContour
+	if {$dontUseContour} { set contour 0.0 } else { set contour 1.0 }
+	MakePieces             \
+		$prefix,            \
+		$pieceSet           \
+		$pieceList          \
+		$size               \
+		1.2                 \
+		$contour            \
+		0.07333333333333333 \
+		{{} {}}             \
+		{{} {}}             \
+		{{} {}}             \
+		{#ffffff #eeeeee}   \
+		{{} {}}             \
+		0.5019607843137255  \
+		linear              \
+		no                  \
+		;
+}
+
+
+proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors strokeColors
 						textures contourColors gradients shadowOpacity shadowDiffuse useWhitePiece } {
 	variable RegExpBBox
 	variable RegExpScale
@@ -166,10 +224,10 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 	lassign $contourColors contourColor(w) contourColor(b)
 	lassign $textures texture(w) texture(b)
 
-	set pieceSet [lindex $::board_PieceSet [lsearch -exact -index 0 $::board_PieceSet $fontName]]
-	set fontName [string map {"-" "_" " " ""} $fontName]
+	set fontName [string map {"-" "_" " " ""} [lindex $pieceSet 0]]
 	set source [lindex $pieceSet 1]
-	set strokeWidth -1
+	set strokeWidth(w) -1
+	set strokeWidth(b) -1
 	set contourWidth 0
 	set sampleSize 0
 	set gradient(w) {}
@@ -181,10 +239,12 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 		set value [lindex $attr 1]
 
 		switch -exact -- [lindex $attr 0] {
-			stroke		{ set strokeWidth $value }
-			contour		{ set contourWidth $value }
-			sampling		{ set sampleSize $value }
-			overstroke	{ set overstroke $value }
+			stroke			{ set strokeWidth(w) $value; set strokeWidth(b) $value }
+			stroke-white	{ set strokeWidth(w) $value }
+			stroke-black	{ set strokeWidth(b) $value }
+			contour			{ set contourWidth $value }
+			sampling			{ set sampleSize $value }
+			overstroke		{ set overstroke $value }
 		}
 	}
 
@@ -271,7 +331,7 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 		regexp $RegExpBBox $font($pieceColor$p) dummy minX minY maxX maxY
 		regexp $RegExpScale $font($pieceColor$p) dummy pieceScale
 		regexp $RegExpTranslation $font($pieceColor$p) dummy pieceMoveX pieceMoveY
-		photo_Piece($c$p,$size) blank
+		photo_Piece($prefix$c$p,$size) blank
 
 		if {$pieceScale <= 1} {
 			set strokeScale [expr {3.0/$pieceScale - 2.0}]
@@ -288,7 +348,7 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 		if {$useBackground} {
 			set maskStrokeWidth [expr $contourStrokeWidth/($scale*$pieceScale)]
 			if {$fontIsOutline && [llength $grad] && $pieceColor eq "b"} {
-				set maskStrokeWidth [expr {max(0, $maskStrokeWidth - 2*($strokeWidth*$strokeScale))}]
+				set maskStrokeWidth [expr {max(0, $maskStrokeWidth - 2*($strokeWidth($c)*$strokeScale))}]
 			}
 			image create photo piece(bg) -width $sampleSize -height $sampleSize
 			::scidb::tk::image create font($pieceColor$p,mask) piece(bg) \
@@ -332,7 +392,7 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 				-sharpen $fontIsOutline \
 				-scale [expr {$scale*$pieceScale}] \
 				-translate $pieceMoveX $pieceMoveY \
-				-stroke-width [expr {$strokeWidth*$strokeScale}] \
+				-stroke-width [expr {$strokeWidth($c)*$strokeScale}] \
 				-stroke $fillColor($c) \
 				-fill $fillColor($c)
 			piece(bg) copy piece(tp)
@@ -381,7 +441,7 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 					-scale [expr $scale*$pieceScale] \
 					-translate $pieceMoveX $pieceMoveY \
 					-outline true \
-					-stroke-width [expr {$strokeWidth*$strokeScale}] \
+					-stroke-width [expr {$strokeWidth($c)*$strokeScale}] \
 					-stroke $strokeColor($c) \
 					-fill $strokeColor($c)
 				piece(fg) copy piece(tp)
@@ -423,7 +483,7 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 				-translate $pieceMoveX $pieceMoveY \
 				-outline $fontIsOutline \
 				-gradient $grad \
-				-stroke-width [expr $strokeWidth*$strokeScale] \
+				-stroke-width [expr $strokeWidth($c)*$strokeScale] \
 				-stroke $strokeColor($c) \
 				-fill $color
 		}
@@ -439,27 +499,27 @@ proc MakePieces {	fontName pieceList size scale contour shadow fillColors stroke
 
 			if {$useTexture} {
 				set temp [image create photo -width $size -height $size]
-				::scidb::tk::image copy piece(sample) photo_Piece($c$p,$size)
+				::scidb::tk::image copy piece(sample) photo_Piece($prefix$c$p,$size)
 				::scidb::tk::image copy piece(fg) $temp
-				photo_Piece($c$p,$size) copy piece(tex)
-				photo_Piece($c$p,$size) copy $temp
+				photo_Piece($prefix$c$p,$size) copy piece(tex)
+				photo_Piece($prefix$c$p,$size) copy $temp
 				image delete $temp
 				image delete piece(sample)
 			} else {
 				piece(sample) copy piece(fg)
-				::scidb::tk::image copy piece(sample) photo_Piece($c$p,$size)
+				::scidb::tk::image copy piece(sample) photo_Piece($prefix$c$p,$size)
 				image delete piece(sample)
 			}
 		} else {
 			if {$shadow > 0} {
 				set offs [expr {$shadowDiffuse ne "none" ? 1 : max(2, $shadowSize)}]
 				set s [expr {$sampleSize - $offs}]
-				photo_Piece($c$p,$size) copy piece(sh) \
+				photo_Piece($prefix$c$p,$size) copy piece(sh) \
 					-from 0 0 $s $s -to $offs $offs $sampleSize $sampleSize
 			}
-			if {$contour > 0 || $fontIsOutline} { photo_Piece($c$p,$size) copy piece(bg) }
-			if {$useTexture} { photo_Piece($c$p,$size) copy piece(tex) }
-			photo_Piece($c$p,$size) copy piece(fg)
+			if {$contour > 0 || $fontIsOutline} { photo_Piece($prefix$c$p,$size) copy piece(bg) }
+			if {$useTexture} { photo_Piece($prefix$c$p,$size) copy piece(tex) }
+			photo_Piece($prefix$c$p,$size) copy piece(fg)
 		}
 
 		image delete piece(fg)

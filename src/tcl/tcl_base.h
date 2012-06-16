@@ -68,6 +68,11 @@ void setResult(unsigned long result);
 int ioError(mstl::string const& file, mstl::string const& error, mstl::string const& message);
 
 int
+error(
+	char const* cmd, char const* subcmd, char const* subsubcmd,
+	char const* format, va_list ap);
+
+int
 __attribute__((__format__(__printf__, 4, 5)))
 error(
 	char const* cmd, char const* subcmd, char const* subsubcmd,
