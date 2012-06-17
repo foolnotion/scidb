@@ -1174,10 +1174,8 @@ namespace tag
 			NameLookup[NameMap[i].id] = &NameMap[i].name;
 
 #ifndef NDEBUG
-# if !__GNUC_PREREQ(7,0)
-		for (int i = 0; i < ExtraTag; ++i)
-			assert(NameLookup[i]);
-# endif
+//		for (int i = 0; i < ExtraTag; ++i)
+//			assert(NameLookup[i]);
 #endif
 
 		IsWhiteRating.set(WhiteDWZ);
