@@ -1498,12 +1498,12 @@
 ::annotation::mc::TooManyNags						"Zuviele Anmerkungen (die letzte wurde ignoriert)."
 ::annotation::mc::TooManyNagsDetail				"Maximal %d Anmerkungen pro Halbzug sind möglich."
 
-::annotation::mc::PrefixedCommentaries				"Vorangestellte Kommentierungen"
-::annotation::mc::MoveAssesments						"Zugbewertungen"
-::annotation::mc::PositionalAssessments			"Stellungsbewertungen"
-::annotation::mc::TimePressureCommentaries		"Zeitnotkommentierungen"
-::annotation::mc::AdditionalCommentaries			"Zusätzliche Kommentierungen"
-::annotation::mc::ChessBaseCommentaries			"ChessBase-Kommentierungen"
+::annotation::mc::PrefixedCommentaries			"Vorangestellte Kommentierungen"
+::annotation::mc::MoveAssesments					"Zugbewertungen"
+::annotation::mc::PositionalAssessments		"Stellungsbewertungen"
+::annotation::mc::TimePressureCommentaries	"Zeitnotkommentierungen"
+::annotation::mc::AdditionalCommentaries		"Zusätzliche Kommentierungen"
+::annotation::mc::ChessBaseCommentaries		"ChessBase-Kommentierungen"
 
 ### marks ##############################################################
 ::marks::mc::MarksPalette			"Markierungen - Palette"

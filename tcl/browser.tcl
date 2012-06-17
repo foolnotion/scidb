@@ -489,7 +489,7 @@ proc Update2 {position} {
 	variable ${position}::Vars
 
 	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-	set Vars(fen) [::scidb::game::fen]
+	set Vars(fen) [::scidb::game::fen $position]
 	ConfigureButtons $position
 }
 
@@ -1041,7 +1041,7 @@ proc PopupMenu {parent board position {what ""}} {
 		-label " $mc::LoadGame" \
 		-image $::icon::16x16::document \
 		-compound left \
-		-command [namespace code [list LoadGame $dlg $position]] \
+		-command [namespace code [list LoadGame $dlg $position [::scidb::game::fen $position]]] \
 		-state $state \
 		;
 #	$menu add command \
@@ -1121,9 +1121,9 @@ proc ViewFullscreen {position board} {
 }
 
 
-proc LoadGame {parent position} {
+proc LoadGame {parent position fen} {
 	variable ${position}::Vars
-	::widget::busyOperation ::game::new $parent $Vars(base) [expr {$Vars(number) - 1}] $Vars(fen)
+	::widget::busyOperation ::game::new $parent $Vars(base) [expr {$Vars(number) - 1}] $fen
 }	
 
 

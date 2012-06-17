@@ -638,8 +638,9 @@ proc recover {} {
 	if {[::process::testOption recover-old]} { append pattern .bak }
 
 	log::open $mc::Recovery
+	set files [lsort -dictionary [glob -directory $::scidb::dir::backup -nocomplain $pattern]]
 
-	foreach file [glob -directory $::scidb::dir::backup -nocomplain $pattern] {
+	foreach file $files {
 		if {![::process::testOption dont-recover]} {
 			if {[file readable $file]} {
 				set position [string range $file 5 end-4]
@@ -683,6 +684,7 @@ proc recover {} {
 						set index [lindex $key 2]
 						::scidb::game::sink $count $base $index
 						::application::pgn::add $count $base $tags
+						::application::pgn::setModified $count
 						::scidb::game::modified $count
 						incr count
 					}
