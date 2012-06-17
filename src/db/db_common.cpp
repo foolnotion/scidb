@@ -51,6 +51,9 @@ namespace tag {
 
 struct Pair { mstl::string name; ID id; };
 
+#if __GNUC_PREREQ(7,0)
+__attribute__((init_priority(1000)))
+#endif
 static Pair const NameMap[] =
 {
 	{ "Annotator",				Annotator },
@@ -1164,8 +1167,6 @@ namespace tag
 		static_assert(ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 #ifndef NDEBUG
-		if (NameMap[0].name == 0)
-			return; // NameMap not yyet initialized
 		::memset(NameLookup, 0, sizeof(NameLookup));
 #endif
 
@@ -1173,8 +1174,10 @@ namespace tag
 			NameLookup[NameMap[i].id] = &NameMap[i].name;
 
 #ifndef NDEBUG
+# if !__GNUC_PREREQ(7,0)
 		for (int i = 0; i < ExtraTag; ++i)
 			assert(NameLookup[i]);
+# endif
 #endif
 
 		IsWhiteRating.set(WhiteDWZ);
@@ -1204,7 +1207,11 @@ namespace tag
 
 
 static void
+#if __GNUC_PREREQ(7,0)
+__attribute__((constructor(65535)))
+#else
 __attribute__((constructor))
+#endif
 initialize()
 {
 	castling::initialize();
