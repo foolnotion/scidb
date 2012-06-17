@@ -1164,6 +1164,8 @@ namespace tag
 		static_assert(ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
 
 #ifndef NDEBUG
+		if (NameMap[0].name == 0)
+			return; // NameMap not yyet initialized
 		::memset(NameLookup, 0, sizeof(NameLookup));
 #endif
 
