@@ -52,6 +52,30 @@ proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
 proc focusPrev {w prev} { set [namespace current]::Priv(prev:$w) $prev }
 
 
+proc bindMouseWheel {w} {
+	switch [tk windowingsystem] {
+		x11 {
+			bind $w <Button-4> { %W yview scroll -5 units }
+			bind $w <Button-5> { %W yview scroll +5 units }
+		}
+		aqua {
+			bind $w <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
+		}
+		win32 {
+			bind $w <MouseWheel> { %W yview scroll [expr {-(%D/120)*4}] units }
+		}
+	}
+	if {[string first . $w] >= 0} {
+		if {[tk windowingsystem] eq "x11"} {
+			bind $w <Button-4> {+ break }
+			bind $w <Button-5> {+ break }
+		} else {
+			bind $w <MouseWheel> {+ break }
+		}
+	}
+}
+
+
 proc showTrace {path text useHorzScroll closeCmd} {
 	set txt $path.f.text
 

@@ -369,8 +369,8 @@ proc BuildTab {nb boardSize sw sh specified} {
 			::widget::textPreventSelection $text
 			bind $text <MouseWheel> { break }
 			if {[tk windowingsystem] eq "x11"} {
-				bind $text <4> { break }
-				bind $text <5> { break }
+				bind $text <Button-4> { break }
+				bind $text <Button-5> { break }
 			}
 			grid $board -column [expr {2*($col + 1)}] -row [expr {4*($row + 1)}]
 			grid $text  -column [expr {2*($col + 1)}] -row [expr {4*($row + 1) + 2}] -sticky ew

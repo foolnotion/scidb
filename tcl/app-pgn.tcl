@@ -236,16 +236,7 @@ proc build {parent width height} {
 
 		::widget::textPreventSelection $pgn
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
-
-		if {[string equal "x11" [tk windowingsystem]]} {
-			bind $pgn <4> { %W yview scroll -1 units }
-			bind $pgn <5> { %W yview scroll +1 units }
-			bind $pgn <4> {+ break }
-			bind $pgn <5> {+ break }
-		} else {
-			bind $pgn <MouseWheel> { %W yview scroll [expr {-(%D/120)}] units }
-			bind $pgn <MouseWheel> {+ break }
-		}
+		::widget::bindMouseWheel $pgn
 
 		grid $pgn -row 1 -column 1 -sticky nsew
 		grid $sb -row 1 -column 2 -sticky ns

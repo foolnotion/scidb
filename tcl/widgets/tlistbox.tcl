@@ -55,6 +55,19 @@ bind TListBox <Left>			[namespace code { Left %W }]
 bind TListBox <Right>		[namespace code { Right %W }]
 bind TListBox <Key-space>	[namespace code { SelectActive %W }]
 
+switch [tk windowingsystem] {
+	x11 {
+		bind TListBox <Button-4> { %W yview scroll -5 units }
+		bind TListBox <Button-5> { %W yview scroll +5 units }
+	}
+	aqua {
+		bind TreeCtrl <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
+	}
+	win32 {
+		bind TreeCtrl <MouseWheel> { %W yview scroll [expr {-(%D/120)*4}] units }
+	}
+}
+
 bind TListBox <<PasteSelection>>	{ break }
 
 

@@ -467,16 +467,16 @@ ttk::copyBindings TCombobox TTCombobox
 bind TTCombobox <B1-Leave>	{ break } ;# avoid AutoScroll (bug in Tk)
 #bind TTCombobox <<PasteSelection>> { %W forgeticon }	;# not working! why?
 
-rename ttk::combobox::Press				ttk::combobox::Press_orig_
-rename ttk::combobox::LBSelect			ttk::combobox::LBSelect_orig_
-rename ttk::combobox::LBSelected			ttk::combobox::LBSelected_orig_
-rename ttk::combobox::LBMaster			ttk::combobox::LBMaster_orig_
-rename ttk::combobox::LBHover				ttk::combobox::LBHover_orig_
-rename ttk::combobox::PlacePopdown		ttk::combobox::PlacePopdown_orig_
-rename ttk::combobox::Post					ttk::combobox::Post_orig_
-rename ttk::combobox::Unpost				ttk::combobox::Unpost_orig_
-rename ttk::combobox::PopdownWindow		ttk::combobox::PopdownWindow_orig_
-rename ttk::combobox::ConfigureListbox	ttk::combobox::ConfigureListbox_orig_
+rename ttk::combobox::Press				ttk::combobox::Press_tcb_orig_
+rename ttk::combobox::LBSelect			ttk::combobox::LBSelect_tcb_orig_
+rename ttk::combobox::LBSelected			ttk::combobox::LBSelected_tcb_orig_
+rename ttk::combobox::LBMaster			ttk::combobox::LBMaster_tcb_orig_
+rename ttk::combobox::LBHover				ttk::combobox::LBHover_tcb_orig_
+rename ttk::combobox::PlacePopdown		ttk::combobox::PlacePopdown_tcb_orig_
+rename ttk::combobox::Post					ttk::combobox::Post_tcb_orig_
+rename ttk::combobox::Unpost				ttk::combobox::Unpost_tcb_orig_
+rename ttk::combobox::PopdownWindow		ttk::combobox::PopdownWindow_tcb_orig_
+rename ttk::combobox::ConfigureListbox	ttk::combobox::ConfigureListbox_tcb_orig_
 
 
 namespace eval ttk {
@@ -490,6 +490,16 @@ bind TComboboxListbox <Any-KeyPress>		[namespace code { LBSearch %W %A %K }]
 bind TComboboxListbox <<PrevWindow>>		[namespace code { LBTab %W prev }]
 bind TComboboxListbox <Motion>				[namespace code { LBHover %W %x %y }]
 bind TComboboxListbox <Map>					{ focus -force %W }
+
+bind TComboboxListbox <ButtonPress-4> {
+	%W yview scroll -5 units
+	after idle { ttk::combobox::LBHover %W %x %y }
+}
+
+bind TComboboxListbox <ButtonPress-5> {
+	%W yview scroll +5 units
+	after idle { ttk::combobox::LBHover %W %x %y }
+}
 
 
 switch -- [tk windowingsystem] {
@@ -511,7 +521,7 @@ proc Press {mode cb x y} {
 	}
 
 	if {$Priv($cb:focusmodel) eq "passive"} {
-		Press_orig_ $mode $cb $x $y
+		Press_tcb_orig_ $mode $cb $x $y
 	} else {
 		Post $cb
 	}
@@ -520,7 +530,7 @@ proc Press {mode cb x y} {
 
 proc LBMaster {lb} {
 	if {[winfo class $lb] eq "Listbox"} {
-		return [LBMaster_orig_ $lb]
+		return [LBMaster_tcb_orig_ $lb]
 	}
 
 	return [winfo parent [winfo parent [winfo parent $lb]]]
@@ -529,7 +539,7 @@ proc LBMaster {lb} {
 
 proc LBSelect {lb} {
 	if {[winfo class $lb] eq "Listbox"} {
-		return [LBSelect_orig_ $lb]
+		return [LBSelect_tcb_orig_ $lb]
 	}
 
 	set cb [LBMaster $lb]
@@ -546,7 +556,7 @@ proc LBSelect {lb} {
 
 proc LBSelected {lb} {
 	if {[winfo class $lb] eq "Listbox"} {
-		return [LBSelected_orig_ $lb]
+		return [LBSelected_tcb_orig_ $lb]
 	}
 
 	set cb [LBMaster $lb]
@@ -573,7 +583,7 @@ proc LBHover {w x y} {
 		$w activate [list nearest $x $y]
 		$w select [list nearest $x $y]
 	} else {
-		return [LBHover_orig_ $w $x $y]
+		return [LBHover_tcb_orig_ $w $x $y]
 	}
 }
 
@@ -593,7 +603,7 @@ proc LBSearch {lb code sym} {
 
 proc PlacePopdown {cb popdown} {
 	if {[winfo class $cb] ne "TTCombobox"} {
-		return [PlacePopdown_orig_ $cb $popdown]
+		return [PlacePopdown_tcb_orig_ $cb $popdown]
 	}
 
 	set x [winfo rootx $cb]
@@ -620,13 +630,13 @@ proc PlacePopdown {cb popdown} {
 
 proc Post {cb} {
 	if {[$cb instate disabled]} { return }
-	Post_orig_ $cb
+	Post_tcb_orig_ $cb
 	event generate $cb <<ComboboxPosted>> -when mark
 }
 
 
 proc Unpost {cb} {
-	Unpost_orig_ $cb
+	Unpost_tcb_orig_ $cb
 
 	variable ::ttk::tcombobox::Priv
 	if {[info exists Priv($cb:focus)]} {
@@ -642,7 +652,7 @@ proc Unpost {cb} {
 
 proc PopdownWindow {cb} {
 	if {[winfo class $cb] ne "TTCombobox"} {
-		PopdownWindow_orig_ $cb
+		PopdownWindow_tcb_orig_ $cb
 	}
 
 	return $cb.popdown
@@ -651,7 +661,7 @@ proc PopdownWindow {cb} {
 
 proc ConfigureListbox {cb} {
 	if {[winfo class $cb] ne "TTCombobox"} {
-		return [ConfigureListbox_orig_ $cb]
+		return [ConfigureListbox_tcb_orig_ $cb]
 	}
 
 	set popdown [PopdownWindow $cb]

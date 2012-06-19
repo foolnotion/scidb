@@ -627,10 +627,10 @@ set Dot [image create photo -data {
 # We fix a problem with tk::ButtonEnter; this function is not working
 # well if it is called twice (this may happen under some circumstances).
 
-rename tk::ButtonEnter tk::ButtonEnter_orig_
-rename ttk::entry::CharSelect ttk::entry::CharSelect_orig_
-rename ttk::entry::WordSelect ttk::entry::WordSelect_orig_
-rename ttk::entry::LineSelect ttk::entry::LineSelect_orig_
+rename tk::ButtonEnter tk::ButtonEnter_theme_orig_
+rename ttk::entry::CharSelect ttk::entry::CharSelect_theme_orig_
+rename ttk::entry::WordSelect ttk::entry::WordSelect_theme_orig_
+rename ttk::entry::LineSelect ttk::entry::LineSelect_theme_orig_
 
 namespace eval tk {
 
@@ -638,7 +638,7 @@ proc ButtonEnter {w} {
 	variable ::tk::Priv
 
 	if {$Priv(window) ne $w} {
-		ButtonEnter_orig_ $w
+		ButtonEnter_theme_orig_ $w
 	}
 }
 
@@ -772,7 +772,7 @@ proc Press {w x} {
 # should not select if readonly!
 proc LineSelect {w from to} {
 	$w instate !readonly {
-		LineSelect_orig_ $w $from $to
+		LineSelect_theme_orig_ $w $from $to
 	}
 }
 
@@ -780,7 +780,7 @@ proc LineSelect {w from to} {
 # should not select if readonly!
 proc CharSelect {w from to} {
 	$w instate !readonly {
-		CharSelect_orig_ $w $from $to
+		CharSelect_theme_orig_ $w $from $to
 	}
 }
 
@@ -788,7 +788,7 @@ proc CharSelect {w from to} {
 # should not select if readonly!
 proc WordSelect {w from to} {
 	$w instate !readonly {
-		WordSelect_orig_ $w $from $to
+		WordSelect_theme_orig_ $w $from $to
 	}
 }
 
@@ -815,6 +815,32 @@ proc CBMotion {w x y} {
 	} elseif {[llength $cursor]} {
 		$w configure -cursor {}
 	}
+}
+
+
+if {[tk windowingsystem] eq "x11"} {
+
+# Bug in Tk: Mouse wheel is generating a button press event.
+# This shouldn't unpost the list box.
+bind ComboboxPopdown <ButtonPress> {
+	if {%b <= 3} { ttk::combobox::Unpost [winfo parent %W] }
+}
+
+
+# We like to bind the mouse wheel to the list box.
+bind ComboboxListbox <ButtonPress-4> {
+	%W yview scroll -5 units
+	after idle { ttk::combobox::LBHover %W %x %y }
+}
+
+bind ComboboxListbox <ButtonPress-5> {
+	%W yview scroll +5 units
+	after idle { ttk::combobox::LBHover %W %x %y }
+}
+
+bind ComboboxPopdown <ButtonPress-4> { %W.l yview scroll -5 units }
+bind ComboboxPopdown <ButtonPress-5> { %W.l yview scroll +5 units }
+
 }
 
 } ;# namespace combobox
