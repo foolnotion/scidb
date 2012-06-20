@@ -33,6 +33,10 @@ set ChessBaseFontsInstalled				"ChessBase fonts successfully installed."
 set ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed."
 set NoChessBaseFontFound					"No ChessBase font found in folder '%s'."
 set ChessBaseFontsAlreadyInstalled		"ChessBase fonts already installed. Install anyway?"
+set ChooseMountPoint							"Mount point of Windows installation partition"
+set CopyingChessBaseFonts					"Copying ChessBase fonts"
+set CopyFile									"Copy file %s"
+set UpdateFontCache							"Updating font cache"
 
 } ;# namespace mc
 
@@ -1231,8 +1235,8 @@ proc htmlTextFamilies {} {
 if {$tcl_platform(platform) ne "windows"} {
 
 	proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
-		global tcl_platform
 		variable fonts
+		variable _Count
 
 		if {{FigurineCB AriesSP} in $fonts} {
 			set msg $mc::ChessBaseFontsAlreadyInstalled
@@ -1241,11 +1245,26 @@ if {$tcl_platform(platform) ne "windows"} {
 		}
 
 		if {![file isdirectory $windowsFontDir]} {
-			::dialog::error -parent $parent -message [format $mc::CannotFindDirectory $windowsFontDir]
-			return 0
+			set result [::dialog::chooseDir \
+				-parent $parent \
+				-geometry last \
+				-title $mc::ChooseMountPoint \
+				-initialdir [::fsbox::fileSeparator] \
+				-actions {} \
+			]
+			lassign $result windowsFontDir
+			if {[string length $windowsFontDir] == 0} { return }
+			if {![string match */WINDOWS/Fonts $windowsFontDir]} {
+				append windowsFontDir /WINDOWS/Fonts
+			}
+			if {![file isdirectory $windowsFontDir]} {
+				set msg [format $::fsbox::mc::DirectoryDoesNotExist $windowsFontDir]
+				::dialog::error -parent $parent -message $msg
+				return 0
+			}
 		}
 
-		if {$tcl_platform(os) eq "Darwin"} {
+		if {$::tcl_platform(os) eq "Darwin"} {
 			set fontDir /Library/Fonts/
 		} else {
 			set fontDir [file join $::scidb::dir::home .fonts]
@@ -1257,24 +1276,45 @@ if {$tcl_platform(platform) ne "windows"} {
 			}
 		}
 
-		set count 0
+		set fonts {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
+						SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
+						SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg}
 
-		::widget::busyCursor on
-		foreach font {	DiaTTCry DiaTTFri DiaTTHab DiaTTOld DiaTTUSA Diablindall
-							SpArFgBI SpArFgBd SpArFgIt SpArFgRg SpLtFgBI SpLtFgBd
-							SpLtFgIt SpLtFgRg SpTmFgBI SpTmFgBd SpTmFgIt SpTmFgRg} {
-			set file [file join $windowsFontDir $font.ttf]
+		set _Count 0
+		::dialog::progressBar $parent.progress \
+			-title $::dialog::choosefont::mc::Wait \
+			-message "$mc::CopyingChessBaseFonts..." \
+			-maximum [llength $fonts] \
+			-variable [namespace current]::_Count \
+			-command [namespace code [list CopyChessBaseFonts $parent $windowsFontDir $fontDir $fonts]] \
+			-close no \
+			;
+
+		return $_Count
+	}
+
+	proc CopyChessBaseFonts {parent srcDir dstDir fonts} {
+		variable _Count
+
+		foreach font $fonts {
+			set file [file join $srcDir $font.ttf]
 			if {[file readable $file]} {
-				file copy -force $file $fontDir
-				incr count
+				incr _Count
+				update idletasks
+				::dialog::progressbar::setMessage $parent.progress [format $mc::CopyFile [file tail $file]]
+				update idletasks
+				catch { file copy -force $file $dstDir }
 			}
 		}
 
-		if {$count == 0} {
-			::dialog::info -parent $parent -message [format $mc::NoChessBaseFontFound $windowsFontDir]
+		if {$_Count == 0} {
+			destroy $parent.progress
+			::dialog::info -parent $parent -message [format $mc::NoChessBaseFontFound $srcDir]
 		} else {
-			if {$tcl_platform(platform) eq "unix"} {
-				catch { exec fc-cache -f $fontDir }
+			if {$::tcl_platform(platform) eq "unix"} {
+				::dialog::progressbar::setMessage $parent.progress $mc::UpdateFontCache
+				update idletasks
+				catch { exec fc-cache -f $dstDir }
 			}
 
 			::dialog::choosefont::resetFonts
@@ -1282,14 +1322,13 @@ if {$tcl_platform(platform) ne "windows"} {
 
 			if {{FigurineCB AriesSP} in $fonts} {
 				SetupChessBaseFonts
+				destroy $parent.progress
 				::dialog::info -parent $parent -message $mc::ChessBaseFontsInstalled
 			} else {
+				destroy $parent.progress
 				::dialog::error -parent $parent -message $mc::ChessBaseFontsInstallationFailed
 			}
 		}
-
-		::widget::busyCursor off
-		return $count
 	}
 
 }

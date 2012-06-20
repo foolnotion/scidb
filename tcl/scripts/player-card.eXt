@@ -80,7 +80,7 @@
 
 %%% Player Information %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin-div{header}{}%
-<b>\Forename\ \Surname</b>
+<b>\Forename\ \Surname</b>\cr
 \end-div
 %
 \begin-div{box}{info}%
@@ -172,6 +172,7 @@
 \begin-table-body
 \for \i \0 \4 {%
 	\begin-row
+	\def\col-class{fst}%
 	\begin-head-end{\lindex\fstcol\i}%
 	\let\r\1
 	\foreach\type\RatingTypes{%
@@ -206,6 +207,7 @@
 \foreach\group\Result{%
 	\lassign\group{\w\d\l\n}%
 	\begin-row
+	\def\col-class{fst}%
 	\begin-head-end{\lindex\what\i}%
 	\def\col-class{odd}%
 	\begin-col-end\w

@@ -60,6 +60,7 @@ set RenameBookmark				"Rename Bookmark '%s'"
 
 set Filename						"File &name:"
 set Filenames						"File &names:"
+set Directory						"Directory:"
 set FilesType						"Files of &type:"
 set FileEncoding					"File &encoding:"
 
@@ -119,6 +120,7 @@ set CannotDelete					"Cannot delete file '%s'."
 set CannotRename					"Cannot rename file '%s'."
 set CannotDeleteDetail			"This file is currently in use."
 set CannotOverwrite				"Cannot overwrite file '%s'."
+set PermissionDenied				"Permission denied for directory '%s'."
 
 }
 
@@ -190,6 +192,7 @@ proc fsbox {w type args} {
 		-helpicon					{}
 		-helplabel					{}
 		-isusedcommand				{}
+		-actions						{delete rename copy new}
 	}
 
 	array set opts $args
@@ -201,7 +204,8 @@ proc fsbox {w type args} {
 							fileicons showhidden sizecommand selectencodingcommand validatecommand
 							deletecommand renamecommand duplicatecommand okcommand cancelcommand
 							inspectcommand initialfile bookmarkswidth customcommand customicon
-							customtooltip customfiletypes helpcommand helpicon helplabel isusedcommand} {
+							customtooltip customfiletypes helpcommand helpicon helplabel
+							isusedcommand actions} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -269,7 +273,14 @@ proc fsbox {w type args} {
 	tk::panedwindow $top.main -sashwidth 7 -sashrelief flat
 	set Vars(widget:panedwindow) $top.main
 
-	if {$Vars(multiple)} { set lbl [Tr Filenames] } else { set lbl [Tr Filename] }
+	if {$Vars(type) eq "dir"} {
+		set Vars(multiple) 0
+		set lbl [Tr Directory]
+	} elseif {$Vars(multiple)} {
+		set lbl [Tr Filenames]
+	} else {
+		set lbl [Tr Filename]
+	}
 	::tk::AmpWidget ttk::label $top.lbl_filename -text $lbl
 	set Vars(widget:filename) [ttk::entry $top.ent_filename \
 		-cursor xterm \
@@ -358,7 +369,7 @@ proc fsbox {w type args} {
 	if {$type eq "save"} {
 		set Vars(button:mode) [tk::AmpWidget ttk::checkbutton $buttons.mode  \
 			-variable [namespace current]::${w}::Vars(savemode:value) \
-			-text $mc::AppendToExisitingFile \
+			-text [Tr AppendToExisitingFile] \
 			-command [namespace code [list SetupSaveMode $w]] \
 			-onvalue append \
 			-offvalue overwrite \
@@ -368,7 +379,7 @@ proc fsbox {w type args} {
 		-class TButton \
 		-default active \
 		-compound left \
-		-command [namespace code [list Activate $w]] \
+		-command [namespace code [list Activate $w yes]] \
 	]
 	set Vars(button:cancel) [tk::AmpWidget ttk::button $buttons.cancel  \
 		-class TButton \
@@ -540,6 +551,8 @@ proc changeFileDialogType {w type} {
 
 proc setFileTypes {w filetypes {defaultextension ""}} {
 	variable ${w}::Vars
+
+	if {![info exists Vars(widget:filetypes:combobox)]} { return }
 
 	set Vars(defaultextension) $defaultextension
 	set Vars(filetypes) $filetypes
@@ -719,6 +732,8 @@ proc Tr {tok {args {}}} {
 	return [mc [namespace current]::mc::$tok {*}$args]
 }
 
+namespace export Tr
+
 
 proc GetFileSize {file mtime} {
 	set size [expr {[file size $file]/1024 + 1}]
@@ -741,7 +756,12 @@ proc ValidateFile {file {size {}}} {
 proc CheckInitialFile {w} {
 	variable ${w}::Vars
 
-	if {[string length $Vars(initialfile)]} {
+	if {$Vars(type) eq "dir"} {
+		if {[string length $Vars(initialfile)] == 0} {
+			set Vars(initialfile) [fileSeparator]
+		}
+		ChangeDir $w $Vars(initialfile)
+	} elseif {[string length $Vars(initialfile)]} {
 		set t $Vars(widget:list:file)
 		set i [expr {[llength $Vars(list:folder)] + 1}]
 		set sel 0
@@ -782,7 +802,7 @@ proc CheckEncoding {w file} {
 proc CheckFileEncoding {w} {
 	variable ${w}::Vars
 
-	set file [$Vars(widget:filename) get]
+	set file $Vars(initialfile)
 
 	if {[llength $file]} {
 		if {[string length [file extension $file]] == 0 && [string length $Vars(defaultextension)]} {
@@ -1120,7 +1140,7 @@ proc DirChanged {w {useHistory 1}} {
 	}
 
 	set Vars(bookmark:folder) ""
-	foreach what {delete rename copy new} { set Vars(disable:$what) 0 }
+	foreach action {delete rename copy new} { set Vars(disable:$action) 0 }
 	::toolbar::childconfigure $Vars(button:add) -state normal
 
 	if {[string length $Vars(folder:trash)] > 0 && [string match $Vars(folder:trash)* $Vars(folder)]} {
@@ -1132,7 +1152,7 @@ proc DirChanged {w {useHistory 1}} {
 
 	foreach f {desktop trash} {
 		if {[string length $Vars(folder:$f)] > 0 && [string match $Vars(folder:$f)* $Vars(folder)]} {
-			foreach what {delete rename copy new} { set Vars(disable:$what) 1 }
+			foreach action {delete rename copy new} { set Vars(disable:$action) 1 }
 			::toolbar::childconfigure $Vars(button:add) -state disabled
 		}
 	}
@@ -1154,7 +1174,7 @@ proc DirChanged {w {useHistory 1}} {
 	}
 
 	set Vars(bookmark:folder) $folder
-	set tip [format $mc::AddBookmark [file tail $folder]]
+	set tip [format [Tr AddBookmark] [file tail $folder]]
 	::toolbar::childconfigure $Vars(button:add) -tooltip $tip
 	filelist::ConfigureButtons $w
 }
@@ -1165,13 +1185,13 @@ proc GetStartMenu {w} {
 	variable bookmarks::Bookmarks
 
 	foreach folder {Favorites LastVisited} {
-		lappend start $Vars(icon:[string tolower $folder]) [set mc::$folder] $folder
+		lappend start $Vars(icon:[string tolower $folder]) [Tr $folder] $folder
 	}
 	lappend start "" "" ""
 	foreach folder {FileSystem Desktop Trash Home} {
 		set id [string tolower $folder]
 		if {[llength $Vars(folder:$id)]} {
-			lappend start $Vars(icon:$id) [set mc::$folder] $Vars(folder:$id)
+			lappend start $Vars(icon:$id) [Tr $folder] $Vars(folder:$id)
 		}
 	}
 	if {[llength $Bookmarks(user)]} {
@@ -1189,6 +1209,17 @@ proc GetStartMenu {w} {
 
 proc ChangeDir {w path {useHistory 1}} {
 	variable ${w}::Vars
+
+	if {[catch {glob -nocomplain -directory $path -types d .*} result err]} {
+		set msg [format [Tr PermissionDenied] $path]
+		messageBox                    \
+			-type ok                   \
+			-icon error                \
+			-parent $Vars(widget:main) \
+			-message $msg              \
+			;
+		return
+	}
 
 	set Vars(prevFolder) $Vars(folder)
 	if {[string length $Vars(prevFolder)] == 0} {
@@ -1233,6 +1264,10 @@ proc ChangeDir {w path {useHistory 1}} {
 		}
 	}
 
+	if {$Vars(type) eq "dir" && $Vars(initialfile) ne $path} {
+		set Vars(initialfile) $path
+	}
+
 	$Vars(widget:list:file) item delete all
 	filelist::Glob $w yes
 	if {$Vars(prevFolder) ne $Vars(folder)} {
@@ -1272,7 +1307,7 @@ proc Cancel {w} {
 }
 
 
-proc Activate {w} {
+proc Activate {w {exit no}} {
 	variable ${w}::Vars
 
 	switch $Vars(glob) {
@@ -1286,7 +1321,7 @@ proc Activate {w} {
 
 	if {$Vars(multiple)} {
 		set even 0
-		foreach list [string trim [split [$Vars(widget:filename) get] \"]] {
+		foreach list [string trim [split $Vars(initialfile) \"]] {
 			if {$even} { set list [list $list] }
 			set even [expr {1 - $even}]
 			foreach file $list {
@@ -1303,7 +1338,7 @@ proc Activate {w} {
 			}
 		}
 	} else {
-		set file [string trim [$Vars(widget:filename) get]]
+		set file [string trim $Vars(initialfile)]
 		if {[string length $file]} {
 			if {$Vars(type) eq "save"} {
 				set fullname $file
@@ -1398,13 +1433,17 @@ proc Activate {w} {
 		}
 	}
 
-	if {[llength $Vars(okcommand)]} {
-		if {!$Vars(multiple)} { set files [lindex $files 0] }
-		if {[llength $Vars(selectencodingcommand)]} {
-			{*}$Vars(okcommand) $files $Vars(encodingVar)
-		} else {
-			{*}$Vars(okcommand) $files
+	if {$exit} {
+		if {[llength $Vars(okcommand)]} {
+			if {!$Vars(multiple)} { set files [lindex $files 0] }
+			if {[llength $Vars(selectencodingcommand)]} {
+				{*}$Vars(okcommand) $files $Vars(encodingVar)
+			} else {
+				{*}$Vars(okcommand) $files
+			}
 		}
+	} elseif {$Vars(type) eq "dir" && [llength $files]} {
+		ChangeDir $w [lindex $files 0]
 	}
 }
 
@@ -1520,8 +1559,8 @@ proc CheckIfInUse {w file mode} {
 	variable ${w}::Vars
 
 	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $Vars(folder) $file]} {
-		set msg [format [set mc::Cannot[string toupper $mode 0 0]] [file tail $file]]
-		set detail [set mc::CannotDeleteDetail]
+		set msg [format [Tr Cannot[string toupper $mode 0 0]] [file tail $file]]
+		set detail [Tr CannotDeleteDetail]
 		messageBox                    \
 			-type ok                   \
 			-icon info                 \
@@ -1571,8 +1610,7 @@ array set Bookmarks {
 
 set BookmarkSize 15
 
-
-proc Tr {tok args} { return [[namespace parent]::Tr $tok {*}$args] }
+namespace import [namespace parent]::Tr
 
 
 proc Build {w path args} {
@@ -1793,7 +1831,7 @@ proc LayoutBookmarks {w} {
 			$t item style set $item root style
 			$t item element configure $item root \
 				elemImg -image $icon + \
-				elemTxt -text [set [namespace parent]::mc::$text] \
+				elemTxt -text [Tr $text] \
 				;
 		}
 		$t item lastchild root $item
@@ -1833,12 +1871,16 @@ proc AddBookmark {w} {
 #	if {$i >= 0} {
 #		set msg [string map \
 #			[list %name% [lindex $Bookmarks(user) $i 1] %folder% [file tail $Vars(folder)]] \
-#			[set [namespace parent]::mc::ReallyAddBookmark] \
+#			[Tr ReallyAddBookmark] \
 #		]
 #		set reply [messageBox -yesno -parent $w -icon question -message $msg]
 #	}
 
-	lappend Bookmarks(user) $Vars(folder) [file tail $Vars(folder)]
+	set folder $Vars(folder)
+#	while {[file type $folder] eq "link"} {
+#		set folder [file readlink $folder]
+#	}
+	lappend Bookmarks(user) [list [file normalize $folder] [file tail $Vars(folder)]]
 	set list {}
 	set index -1
 	foreach entry $Bookmarks(user) {
@@ -1933,9 +1975,9 @@ proc Selected {w sel} {
 
 	if {[string is integer -strict $sel] && $sel > [llength $Vars(bookmarks)]} {
 		set name [lindex $Bookmarks(user) [expr {$sel - [llength $Vars(bookmarks)] - 1}] 1]
-		set tip [format [set [namespace parent]::mc::RemoveBookmark] [file tail $name]]
+		set tip [format [Tr RemoveBookmark] [file tail $name]]
 		::toolbar::childconfigure $Vars(button:minus) -state normal -tooltip $tip
-		set tip [format [set [namespace parent]::mc::RenameBookmark] [file tail $name]]
+		set tip [format [Tr RenameBookmark] [file tail $name]]
 		::toolbar::childconfigure $Vars(button:modify) -state normal -tooltip $tip
 	} else {
 		::toolbar::childconfigure $Vars(button:minus) -state disabled
@@ -2086,9 +2128,7 @@ set modify [image create photo -data {
 namespace eval filelist {
 
 namespace import ::tcl::mathfunc::max
-
-
-proc Tr {tok args} { return [[namespace parent]::Tr $tok {*}$args] }
+namespace import [namespace parent]::Tr
 
 
 proc Build {w path args} {
@@ -2166,25 +2206,35 @@ proc Build {w path args} {
 	]
 
 	::toolbar::add $tb separator
+	set count 0
 
-	set Vars(button:delete) [::toolbar::add $tb button \
-		-image $icon::16x16::iconDelete                 \
-		-command [namespace code [list DeleteFile $w]]  \
-		-tooltip [Tr Delete]                            \
-		-state disabled                                 \
-	]
-	set Vars(button:rename) [::toolbar::add $tb button \
-		-image $icon::16x16::iconModify                 \
-		-command [namespace code [list RenameFile $w]]  \
-		-tooltip [Tr Rename]                            \
-		-state disabled                                 \
-	]
-	set Vars(button:copy) [::toolbar::add $tb button     \
-		-image $icon::16x16::iconDuplicate                \
-		-command [namespace code [list DuplicateFile $w]] \
-		-tooltip [Tr Duplicate]                           \
-		-state disabled                                   \
-	]
+	if {"delete" in $Vars(actions)} {
+		set Vars(button:delete) [::toolbar::add $tb button \
+			-image $icon::16x16::iconDelete                 \
+			-command [namespace code [list DeleteFile $w]]  \
+			-tooltip [Tr Delete]                            \
+			-state disabled                                 \
+		]
+		incr count
+	}
+	if {"rename" in $Vars(actions)} {
+		set Vars(button:rename) [::toolbar::add $tb button \
+			-image $icon::16x16::iconModify                 \
+			-command [namespace code [list RenameFile $w]]  \
+			-tooltip [Tr Rename]                            \
+			-state disabled                                 \
+		]
+		incr count
+	}
+	if {"copy" in $Vars(actions) && $Vars(type) ne "dir"} {
+		set Vars(button:copy) [::toolbar::add $tb button     \
+			-image $icon::16x16::iconDuplicate                \
+			-command [namespace code [list DuplicateFile $w]] \
+			-tooltip [Tr Duplicate]                           \
+			-state disabled                                   \
+		]
+		incr count
+	}
 	if {[llength $Vars(customcommand)] && [llength $Vars(customicon)]} {
 		set Vars(button:custom) [::toolbar::add $tb button       \
 			-image $Vars(customicon)                              \
@@ -2192,14 +2242,18 @@ proc Build {w path args} {
 			-tooltip $Vars(customtooltip)                         \
 			-state disabled                                       \
 		]
+		incr count
 	}
-	set Vars(button:new) [::toolbar::add $tb button  \
-		-image $icon::16x16::iconAdd                  \
-		-command [namespace code [list NewFolder $w]] \
-		-tooltip [Tr NewFolder]                       \
-	]
+	if {"new" in $Vars(actions)} {
+		set Vars(button:new) [::toolbar::add $tb button  \
+			-image $icon::16x16::iconAdd                  \
+			-command [namespace code [list NewFolder $w]] \
+			-tooltip [Tr NewFolder]                       \
+		]
+		incr count
+	}
 
-	::toolbar::add $tb separator
+	if {$count > 0} { ::toolbar::add $tb separator }
 
 	if {$Options(show:layout) eq "list"} {
 		set tooltip ListLayout
@@ -2367,49 +2421,51 @@ proc DetailsLayout {w} {
 
 	set background [[namespace parent]::GetHeaderBackground $w]
 
-	$t column create                            \
-		-background $background                  \
-		-text [set [namespace parent]::mc::Name] \
-		-tags name                               \
-		-minwidth [expr {10*$Vars(charwidth)}]   \
-		-arrow up                                \
-		-borderwidth $Vars(borderwidth)          \
-		-steady yes                              \
-		-textpadx $Vars(textpadx)                \
-		-textpady $Vars(textpady)                \
-		-font $Vars(font)                        \
-		-expand yes                              \
-		-squeeze yes                             \
-		{*}$copts(name)                          \
+	$t column create                          \
+		-background $background                \
+		-text [Tr Name]                        \
+		-tags name                             \
+		-minwidth [expr {10*$Vars(charwidth)}] \
+		-arrow up                              \
+		-borderwidth $Vars(borderwidth)        \
+		-steady yes                            \
+		-textpadx $Vars(textpadx)              \
+		-textpady $Vars(textpady)              \
+		-font $Vars(font)                      \
+		-expand yes                            \
+		-squeeze yes                           \
+		{*}$copts(name)                        \
 		;
-	$t column create                            \
-		-background $background                  \
-		-text [set [namespace parent]::mc::Size] \
-		-tags size                               \
-		-justify right                           \
-		-width [expr {11*$Vars(charwidth)}]      \
-		-minwidth [expr {6*$Vars(charwidth)}]    \
-		-arrowside left                          \
-		-arrowgravity right                      \
-		-borderwidth $Vars(borderwidth)          \
-		-steady yes                              \
-		-textpadx $Vars(textpadx)                \
-		-textpady $Vars(textpady)                \
-		-font $Vars(font)                        \
-		{*}$copts(size)                          \
-		;
-	$t column create                                \
-		-background $background                      \
-		-text [set [namespace parent]::mc::Modified] \
-		-tags modified                               \
-		-width [expr {18*$Vars(charwidth)}]          \
-		-minwidth [expr {10*$Vars(charwidth)}]       \
-		-borderwidth $Vars(borderwidth)              \
-		-steady yes                                  \
-		-textpadx $Vars(textpadx)                    \
-		-textpady $Vars(textpady)                    \
-		-font $Vars(font)                            \
-		{*}$copts(modified)                          \
+	if {$Vars(type) ne "dir"} {
+		$t column create                         \
+			-background $background               \
+			-text [Tr Size]                       \
+			-tags size                            \
+			-justify right                        \
+			-width [expr {11*$Vars(charwidth)}]   \
+			-minwidth [expr {6*$Vars(charwidth)}] \
+			-arrowside left                       \
+			-arrowgravity right                   \
+			-borderwidth $Vars(borderwidth)       \
+			-steady yes                           \
+			-textpadx $Vars(textpadx)             \
+			-textpady $Vars(textpady)             \
+			-font $Vars(font)                     \
+			{*}$copts(size)                       \
+			;
+	}
+	$t column create                          \
+		-background $background                \
+		-text [Tr Modified]                    \
+		-tags modified                         \
+		-width [expr {18*$Vars(charwidth)}]    \
+		-minwidth [expr {10*$Vars(charwidth)}] \
+		-borderwidth $Vars(borderwidth)        \
+		-steady yes                            \
+		-textpadx $Vars(textpadx)              \
+		-textpady $Vars(textpady)              \
+		-font $Vars(font)                      \
+		{*}$copts(modified)                    \
 		;
 	
 	$t element create elemImg image ;# -image [set [namespace parent]::icon::16x16::folder]
@@ -2431,16 +2487,16 @@ proc DetailsLayout {w} {
 		]                                               \
 		-lines 1                                        \
 		;
-	$t element create txtDate text                      \
-		-fill [list                                      \
-			$Vars(selectionforeground) {selected focus}   \
-			$Vars(selectionforeground) {selected hilite}  \
-			$Vars(inactiveforeground)  {selected !focus}  \
-			$Vars(activeforeground) {hilite}              \
-		]                                                \
-		-datatype time                                   \
-		-format [set [namespace parent]::mc::TimeFormat] \
-		-lines 1                                         \
+	$t element create txtDate text                     \
+		-fill [list                                     \
+			$Vars(selectionforeground) {selected focus}  \
+			$Vars(selectionforeground) {selected hilite} \
+			$Vars(inactiveforeground)  {selected !focus} \
+			$Vars(activeforeground) {hilite}             \
+		]                                               \
+		-datatype time                                  \
+		-format [Tr TimeFormat]                         \
+		-lines 1                                        \
 		;
 	$t element create elemSel rect                     \
 		-fill [list                                     \
@@ -2478,54 +2534,78 @@ proc DetailsLayout {w} {
 	$t style layout $s elemSel -union {txtDate} -ipadx 2 -iexpand nsew
 	$t style layout $s elemBrd -iexpand xy -detach yes
 
-	set Vars(scriptDir) {
-		set item [$t item create -open no]
-		if {[llength $icon] == 0} { set icon $::fsbox::icon::16x16::folder }
-		if {[llength $folder] == 0} { set folder [file tail $path] }
-		$t item style set $item name styName size stySize modified styDate
-		$t item element configure $item \
-			name elemImg -image $icon , \
-			name txtName -text $folder , \
-			modified txtDate -data [file mtime $path]
-		$t item lastchild root $item
-	}
+	if {$Vars(type) eq "dir"} {
+		set Vars(scriptDir) {
+			set item [$t item create -open no]
+			if {[llength $icon] == 0} { set icon $::fsbox::icon::16x16::folder }
+			if {[llength $folder] == 0} { set folder [file tail $path] }
+			$t item style set $item name styName modified styDate
+			$t item element configure $item \
+				name elemImg -image $icon , \
+				name txtName -text $folder , \
+				modified txtDate -data [file mtime $path]
+			$t item lastchild root $item
+		}
 
-	set Vars(scriptNewDir) {
-		set item [$t item create -open no]
-		if {[llength $folder] == 0} { set folder [file tail $path] }
-		$t item style set $item name styName size stySize modified styDate
-		$t item element configure $item \
-			name elemImg -image $icon , \
-			name txtName -text $folder
-		$t item lastchild root $item
-	}
+		set Vars(scriptNewDir) {
+			set item [$t item create -open no]
+			if {[llength $folder] == 0} { set folder [file tail $path] }
+			$t item style set $item name styName modified styDate
+			$t item element configure $item \
+				name elemImg -image $icon , \
+				name txtName -text $folder
+			$t item lastchild root $item
+		}
+	} else {
+		set Vars(scriptDir) {
+			set item [$t item create -open no]
+			if {[llength $icon] == 0} { set icon $::fsbox::icon::16x16::folder }
+			if {[llength $folder] == 0} { set folder [file tail $path] }
+			$t item style set $item name styName size stySize modified styDate
+			$t item element configure $item \
+				name elemImg -image $icon , \
+				name txtName -text $folder , \
+				modified txtDate -data [file mtime $path]
+			$t item lastchild root $item
+		}
 
-	set Vars(scriptFile) {
-		set mtime [file mtime $file]
-		set size [{*}$Vars(sizecommand) $file $mtime]
-		set valid [{*}$Vars(validatecommand) $file $size]
-		if {$valid} {
-			set valid 1
+		set Vars(scriptNewDir) {
+			set item [$t item create -open no]
+			if {[llength $folder] == 0} { set folder [file tail $path] }
+			$t item style set $item name styName size stySize modified styDate
+			$t item element configure $item \
+				name elemImg -image $icon , \
+				name txtName -text $folder
+			$t item lastchild root $item
+		}
+
+		set Vars(scriptFile) {
+			set mtime [file mtime $file]
+			set size [{*}$Vars(sizecommand) $file $mtime]
+			set valid [{*}$Vars(validatecommand) $file $size]
+			if {$valid} {
+				set valid 1
+				set item [$t item create -open no]
+				$t item style set $item name styName size stySize modified styDate
+				set icon [GetFileIcon $w $file]
+				$t item element configure $item \
+					name elemImg -image $icon , \
+					name txtName -text [file tail $file] , \
+					size txtSize -text $size , \
+					modified txtDate -data $mtime
+				$t item lastchild root $item
+			}
+		}
+
+		set Vars(scriptNewFile) {
 			set item [$t item create -open no]
 			$t item style set $item name styName size stySize modified styDate
 			set icon [GetFileIcon $w $file]
 			$t item element configure $item \
 				name elemImg -image $icon , \
-				name txtName -text [file tail $file] , \
-				size txtSize -text $size , \
-				modified txtDate -data $mtime
+				name txtName -text [file tail $file]
 			$t item lastchild root $item
 		}
-	}
-
-	set Vars(scriptNewFile) {
-		set item [$t item create -open no]
-		$t item style set $item name styName size stySize modified styDate
-		set icon [GetFileIcon $w $file]
-		$t item element configure $item \
-			name elemImg -image $icon , \
-			name txtName -text [file tail $file]
-		$t item lastchild root $item
 	}
 }
 
@@ -2843,7 +2923,9 @@ proc Glob {w refresh} {
 		}
 
 		$Vars(widget:list:file) column configure $Vars(sort-column) -arrow $arrow
-		::toolbar::childconfigure $Vars(button:new) -state $state
+		if {[info exists Vars(button:new)]} {
+			::toolbar::childconfigure $Vars(button:new) -state $state
+		}
 
 		set Vars(list:folder) {}
 		set filelist {}
@@ -2903,7 +2985,7 @@ proc Glob {w refresh} {
 			} elseif {	[string length  $Vars(folder:trash)] > 0
 						&& [string match $Vars(folder:trash)* $path]} {
 				set icon [set [namespace parent]::icon::16x16::trash]
-				set folder [set [namespace parent]::mc::Trash]
+				set folder [Tr Trash]
 				if {$path ne $Vars(folder:trash)} { append folder ": " [file tail $path] }
 			}
 		}
@@ -3031,14 +3113,15 @@ proc ConfigureButtons {w} {
 #		set Vars(state:rename) disabled
 #	}
 
-	foreach what {delete rename copy new} {
-		if {$Vars(disable:$what)} { set Vars(state:$what) disabled }
+	foreach action {delete rename copy new} {
+		if {$Vars(disable:$action) || $action ni $Vars(actions)} { set Vars(state:$action) disabled }
 	}
 
-	::toolbar::childconfigure $Vars(button:delete) -state $Vars(state:delete)
-	::toolbar::childconfigure $Vars(button:rename) -state $Vars(state:rename)
-	::toolbar::childconfigure $Vars(button:copy)   -state $Vars(state:copy)
-	::toolbar::childconfigure $Vars(button:new)    -state $Vars(state:new)
+	foreach action {delete rename copy new} {
+		if {[info exists Vars(button:$action)]} {
+			::toolbar::childconfigure $Vars(button:$action) -state $Vars(state:$action)
+		}
+	}
 
 	if {[info exists Vars(button:custom)]} {
 		if {	[llength $Vars(selected:files)] == 1
@@ -3055,7 +3138,7 @@ proc ConfigureButtons {w} {
 	}
 
 	# NOTE ktrash is not working
-	if {$Vars(delete:action) eq "restore"} {
+	if {[info exists Vars(button:delete)] && $Vars(delete:action) eq "restore"} {
 		::toolbar::childconfigure $Vars(button:delete) -state disabled
 	}
 }
@@ -3085,25 +3168,26 @@ proc SelectFiles {w selection} {
 		}
 	}
 
-	switch $Vars(type) {
-		dir		{ set type folders }
-		default	{ set type files }
-	}
-
-	set filenames ""
-	foreach file $Vars(selected:$type) {
-		if {$Vars(multiple) && ([llength $Vars(selected:$type)] > 1 || [string first " " $file] >= 0)} {
-			set delim "\""
-		} else {
-			set delim ""
+	if {$Vars(type) eq "dir"} {
+		if {[llength $Vars(selected:folders)]} {
+			set Vars(initialfile) [lindex $Vars(selected:folders) 0]
 		}
-		if {[string length $filenames]} { append filenames " " }
-		append filenames $delim
-		append filenames [file tail $file]
-		append filenames $delim
-	}
-	if {[string length $filenames]} {
-		set Vars(initialfile) $filenames
+	} else {
+		set filenames ""
+		foreach file $Vars(selected:files) {
+			if {$Vars(multiple) && ([llength $Vars(selected:files)] > 1 || [string first " " $file] >= 0)} {
+				set delim "\""
+			} else {
+				set delim ""
+			}
+			if {[string length $filenames]} { append filenames " " }
+			append filenames $delim
+			append filenames [file tail $file]
+			append filenames $delim
+		}
+		if {[string length $filenames]} {
+			set Vars(initialfile) $filenames
+		}
 	}
 
 	ConfigureButtons $w

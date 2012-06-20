@@ -190,6 +190,7 @@ switch $::scidb::revision {
 		set ::crosstable::MostRecentHistory {}
 		array unset ::browser::Options font:bold
 		array unset ::application::pgn::Options board-size
+		array unset ::dialog::fsbox::Priv lastFolder
 	}
 }
 

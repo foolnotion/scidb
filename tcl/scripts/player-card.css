@@ -27,6 +27,9 @@ td, th {
 	background: #4591ad;
 	color: #ffffff;
 }
+#rating th.fst {
+	width: 118px;
+}
 #rating thead th {
 	text-align: center;
 }

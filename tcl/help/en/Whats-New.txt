@@ -38,6 +38,7 @@ TITLE What's new?
   <li>Compacting database (.sci only) integrated</li>
   <li>Installation of ChessBase fonts integrated</li>
   <li>Tournament table: optional display of win/draw/loss</li>
+  <li>Mouse wheel support for all lists and the chess board</li>
 </ul>
 
 END

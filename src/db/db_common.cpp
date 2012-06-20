@@ -51,8 +51,8 @@ namespace tag {
 
 struct Pair { mstl::string name; ID id; };
 
-#if __GNUC_PREREQ(7,0)
-__attribute__((init_priority(1000)))
+#if __GNUC_PREREQ(4,7)
+__attribute__((init_priority(65534)))
 #endif
 static Pair const NameMap[] =
 {
@@ -1174,8 +1174,8 @@ namespace tag
 			NameLookup[NameMap[i].id] = &NameMap[i].name;
 
 #ifndef NDEBUG
-//		for (int i = 0; i < ExtraTag; ++i)
-//			assert(NameLookup[i]);
+		for (int i = 0; i < ExtraTag; ++i)
+			assert(NameLookup[i]);
 #endif
 
 		IsWhiteRating.set(WhiteDWZ);
@@ -1205,7 +1205,7 @@ namespace tag
 
 
 static void
-#if __GNUC_PREREQ(7,0)
+#if __GNUC_PREREQ(4,7)
 __attribute__((constructor(65535)))
 #else
 __attribute__((constructor))

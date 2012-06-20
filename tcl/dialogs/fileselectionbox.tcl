@@ -66,7 +66,8 @@ set Open							"Open"
 }
 
 array set Priv {
-	lastFolder ""
+	lastFolder:ChooseDir ""
+	lastFolder:FileDialog ""
 	dialog {}
 }
 array set FileSizeCache {}
@@ -118,11 +119,11 @@ array set FileType [list      \
 ]
 
 
-proc geometry {{whichPart size}} {
+proc geometry {class {whichPart size}} {
 	variable Priv
 
-	if {[info exists Priv(geometry)]} {
-		set geom $Priv(geometry)
+	if {[info exists Priv(geometry:$class)]} {
+		set geom $Priv(geometry:$class)
 		if {$geom eq ""} { return "" }
 
 		switch -glob -- $whichPart {
@@ -137,7 +138,7 @@ proc geometry {{whichPart size}} {
 			}
 		}
 	} else {
-		set Priv(geometry) ""
+		set Priv(geometry:$class) ""
 		return ""
 	}
 
@@ -191,7 +192,7 @@ proc Open {type args} {
 		-needencoding	0
 		-rows				10
 	}
-	set opts(-initialdir) $Priv(lastFolder)
+	set opts(-initialdir) $Priv(lastFolder:$class)
 	set opts(-defaultencoding) {}
 
 	array set data $args
@@ -225,10 +226,10 @@ proc Open {type args} {
 	if {$data(-embed)} {
 		::ttk::frame $w -class $class -takefocus 0
 		set dlg [winfo toplevel $w]
-		bind $dlg <Destroy> [namespace code [list TraceLastFolder $dlg %W $w]]
+		bind $dlg <Destroy> [namespace code [list TraceLastFolder $dlg %W $w $class]]
 	} elseif {$create} {
 		tk::toplevel $w -class $class
-		bind $w <Configure> [namespace code [list RecordGeometry $w %W %w]]
+		bind $w <Configure> [namespace code [list RecordGeometry $w %W %w $class]]
 		wm withdraw $w
 		if {[winfo viewable [winfo toplevel $data(-parent)]]} {
 			wm transient $w $data(-parent)
@@ -241,7 +242,7 @@ proc Open {type args} {
 
 	set Priv($type:type) $type
 	set geometry $data(-geometry)
-	if {[string match last* $geometry]} { set geometry [geometry $geometry] }
+	if {[string match last* $geometry]} { set geometry [geometry $class $geometry] }
 	if {![info exists Priv(minheight)]} { set Priv(minheight) 350 }
 
 	if {$data(-needencoding)} {
@@ -364,7 +365,7 @@ proc Open {type args} {
 	::ttk::releaseGrab $w
 	wm withdraw $w
 
-	set Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
+	set Priv(lastFolder:$class) [::fsbox::lastFolder $w.fsbox]
 
 	lassign $Priv($type:$w:result) path encoding
 	if {[llength $path] == 0} { return {} }
@@ -394,9 +395,9 @@ proc LanguageChanged {w} {
 }
 
 
-proc TraceLastFolder {dlg dlg2 w} {
+proc TraceLastFolder {dlg dlg2 w class} {
 	if {$dlg eq $dlg2} {
-		set [namespace current]::Priv(lastFolder) [::fsbox::lastFolder $w.fsbox]
+		set [namespace current]::Priv(lastFolder:$class) [::fsbox::lastFolder $w.fsbox]
 	}
 }
 
@@ -677,7 +678,7 @@ proc OkCmd {type files {encoding ""}} {
 }
 
 
-proc RecordGeometry {dlg window width} {
+proc RecordGeometry {dlg window width class} {
 	variable Priv
 
 	if {$window eq $dlg} {
@@ -690,17 +691,18 @@ proc RecordGeometry {dlg window width} {
 		set rh [winfo reqheight $dlg]
 
 		if {$gw != $rw || $gh != $rh} {
-			set Priv(geometry) $g
-		} elseif {[llength $Priv(geometry)]} {
-			scan $Priv(geometry) "%ux%u" pw ph
-			if {$gw < $pw || $gh < $ph} { set Priv(geometry) $g }
+			set Priv(geometry:$class) $g
+		} elseif {[llength $Priv(geometry:$class)]} {
+			scan $Priv(geometry:$class) "%ux%u" pw ph
+			if {$gw < $pw || $gh < $ph} { set Priv(geometry:$class) $g }
 		}
 	}
 }
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Priv(lastFolder)
+	::options::writeItem $chan [namespace current]::Priv(lastFolder:ChooseDir)
+	::options::writeItem $chan [namespace current]::Priv(lastFolder:FileDialog)
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

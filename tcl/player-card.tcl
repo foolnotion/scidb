@@ -75,6 +75,8 @@ array set Options {
 }
 
 set Counter 0
+set Photo ""
+array set ImageCache {}
 
 
 proc show {base args} {
@@ -150,6 +152,8 @@ proc show {base args} {
 
 
 proc popupInfo {path info} {
+	variable Photo
+
 	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth dateOfDeath
 	if {[string length $name] == 0} { return }
 	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
@@ -206,9 +210,10 @@ proc popupInfo {path info} {
 	grid columnconfigure $f {2 6} -minsize 2
 	grid rowconfigure $f [list 0 [incr row -1]] -minsize 2
 
-	if {[FindPlayerPhoto $name $info]} {
+	set Photo [FindPlayerPhoto $name $info]
+	if {[string length $Photo]} {
 		tk::frame $top.lt -background $bg -borderwidth 0
-		set lbl [tk::label $top.lt.photo -background $bg -image PlayerPhoto_ -relief solid]
+		set lbl [tk::label $top.lt.photo -background $bg -image $Photo -relief solid]
 		grid $lbl -column 1 -row 1
 	}
 
@@ -235,6 +240,12 @@ proc popupInfo {path info} {
 
 
 proc popdownInfo {path} {
+	variable Photo
+
+	if {[string length $Photo]} {
+		image delete $Photo
+		set Photo ""
+	}
 	::tooltip::popdown $path.showinfo
 }
 
@@ -551,59 +562,44 @@ proc Tooltip {w msg} {
 }
 
 
-# proc LinkHandler {w node} {
-# 	if {[$node attribute rel] eq "stylesheet"} {
-# 		set uri [$node attribute -default {} href]
-# 		if {[string length $uri]} { ImportHandler $w author $uri }
-# 	}
-# }
-# 
-# 
-# proc ImportHandler {w parentid uri} {
-# 	variable _StyleCount
-# 
-# 	set file [file join $::scidb::dir::share scripts $uri]
-# 	set fd [::open $file r]
-# 	chan configure $fd -encoding utf-8
-# 	set content [read $fd]
-# 	close $fd
-# 
-# 	set id "$parentid.[format %.4d [incr _StyleCount]]"
-# 	set handler [namespace code [list ImportHandler $id]]
-# 	$w style -id $id.9999 -importcmd $handler $content
-# }
-
-
 proc GetImage {info code} {
 	lassign $info name _ species sex _ _ _ country
+	set img {}
 
-	switch $code {
+	switch -glob -- $code {
+		*.png {
+			variable ImageCache
+			if {![info exists ImageCache($code)]} {
+				set ImageCache($code) [image create photo -file $code]
+			}
+			set img $ImageCache($code)
+		}
+
 		flag {
 			if {[llength $country]} {
-				set src $::country::icon::flag($country)
-				set img [image create photo -width [image width $src] -height [image height $src]]
-				$img copy $src
-				return $img
+				set img $::country::icon::flag($country)
 			}
 		}
 
 		photo {
-			if {[FindPlayerPhoto $name $info]} {
-				set src PlayerPhoto_
-			} elseif {$species eq "program"} {
-				set src $icon::80x80::engine
+			set img [FindPlayerPhoto $name $info]
+			if {[string length $img] > 0} { return $img }
+			if {$species eq "program"} {
+				set img $icon::80x80::engine
 			} elseif {$sex eq "f"} {
-				set src $icon::80x80::female
+				set img $icon::80x80::female
 			} else {
-				set src $icon::80x80::male
+				set img $icon::80x80::male
 			}
-			set img [image create photo -width [image width $src] -height [image height $src]]
-			$img copy $src
-			return $img
 		}
 	}
 
-	return {}
+	return [list $img [namespace code DoNothing]]
+}
+
+
+proc DoNothing {args} {
+	# nothing to do
 }
 
 
@@ -698,6 +694,7 @@ proc FindPlayerPhoto {name info} {
 	set key [NormalizeName $name]
 	set file [FindPhotoFile $key]
 	set found $file
+	set img ""
 
 	if {[string length $found] == 0} {
 		set aliases [lindex $info 20]
@@ -712,16 +709,16 @@ proc FindPlayerPhoto {name info} {
 		}
 	}
 
-	if {[string length $found] == 0} { return 0 }
-
-	catch {
-		set fd [open $found rb]
-		set data [read $fd]
-		image create photo PlayerPhoto_ -data $data
-		set rc 1
+	if {[string length $found] > 0} {
+		catch {
+			set fd [open $found rb]
+			set data [read $fd]
+			close $fd
+			set img [image create photo -data $data]
+		}
 	}
 
-	return $rc
+	return $img
 }
 
 

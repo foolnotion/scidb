@@ -1641,7 +1641,7 @@ proc DrawBoard {h w} {
 	set y3 [expr {$y2 + 10}]
 	set x4 [expr {$squareSize/2 + $bdw}]
 	set y4 [expr {4*$squareSize + $bdw + $bdw/2 - 1}]
-	foreach col {a b c d} {
+	foreach col {A B C D} {
 		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] -text $col -fill white -tag coords -tag wcoords
 		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] -text $col -fill black -tag coords -tag bcoords
 		$canv create text $x3 $y3 -text $col -tag coords

@@ -37,6 +37,7 @@ set Error			"Error"
 set Warning			"Warning"
 set Information	"Information"
 set Question		"Query"
+set Wait				"Wait"
 
 set DontAskAgain	"Don't ask again"
 #################################################################

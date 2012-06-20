@@ -817,6 +817,8 @@ proc CBMotion {w x y} {
 	}
 }
 
+# we want the invocation with a space key-press:
+bind TCombobox <KeyPress-space> { ttk::combobox::Post %W }
 
 if {[tk windowingsystem] eq "x11"} {
 

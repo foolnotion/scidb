@@ -2184,7 +2184,8 @@ cmdBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb->game().currentBoard().toFen());
+	int pos = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
+	setResult(Scidb->game(pos).currentBoard().toFen());
 	return TCL_OK;
 }
 

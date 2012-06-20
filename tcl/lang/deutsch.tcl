@@ -271,9 +271,9 @@
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"K"
 ::application::board::mc::Accel(edit-marks)			"M"
-::application::board::mc::Accel(add-new-game)		"H"
-::application::board::mc::Accel(replace-game)		"E"
-::application::board::mc::Accel(replace-moves)		"F"
+::application::board::mc::Accel(add-new-game)		"S"
+::application::board::mc::Accel(replace-game)		"R"
+::application::board::mc::Accel(replace-moves)		"T"
 ::application::board::mc::Accel(trial-mode)			"V"
 
 ### application::database ##############################################
@@ -843,6 +843,10 @@
 ::font::mc::ChessBaseFontsInstallationFailed	"Die Installation der ChessBase-Zeichensätze schlug fehl."
 ::font::mc::NoChessBaseFontFound					"Es wurde kein ChessBase-Zeichensatz im Verzeichnis '%s' gefunden."
 ::font::mc::ChessBaseFontsAlreadyInstalled	"Die ChessBase-Zeichensätze sind bereits installiert. Trotzdem installieren?"
+::font::mc::ChooseMountPoint						"Mount-Point der Windows-Installationspartition"
+::font::mc::CopyingChessBaseFonts				"ChessBase-Zeichensätze kopieren"
+::font::mc::CopyFile									"Datei %s kopieren"
+::font::mc::UpdateFontCache						"Zeichensatz-Cache aktualisieren"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"
@@ -1705,6 +1709,7 @@
 
 ::fsbox::mc::Filename						"Datei&name:"
 ::fsbox::mc::Filenames						"Datei&namen:"
+::fsbox::mc::Directory						"Verzeich&nis:"
 ::fsbox::mc::FilesType						"Datei&typus:"
 ::fsbox::mc::FileEncoding					"Datei&enkodierung:"
 
@@ -1764,6 +1769,7 @@
 ::fsbox::mc::CannotRename					"Die Datei '%s' kann nicht unbenannt werden."
 ::fsbox::mc::CannotDeleteDetail			"Diese Datei ist zur Zeit in Gebrauch."
 ::fsbox::mc::CannotOverwrite				"Die Datei '%s' kann nicht überschrieben werden."
+::fsbox::mc::PermissionDenied				"Keine Berechtigung für das Verzeichnis '%s' vorhanden."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Funktionsleiste"

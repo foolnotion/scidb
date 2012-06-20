@@ -94,8 +94,6 @@ set CrosstableLimitDetail "'%s' is choosing another table mode."
 
 namespace import ::tcl::mathfunc::max
 
-variable ImageCache
-
 array set Nodes {}
 
 array set Colors {
@@ -538,16 +536,12 @@ proc SetTitle {dlg} {
 
 
 proc GetImage {code} {
-	variable ImageCache
+	return [list $::country::icon::flag($code) [namespace code DoNothing]]
+}
 
-	if {![info exists ImageCache($code)]} {
-		set src $::country::icon::flag($code)
-		set img [image create photo -width [image width $src] -height [image height $src]]
-		$img copy $src
-		set ImageCache($code) $img
-	}
 
-	return $ImageCache($code)
+proc DoNothing {args} {
+	# nothing to do
 }
 
 
@@ -622,7 +616,6 @@ proc Update {{setup 0}} {
 	variable Vars
 	variable Defaults
 	variable Options
-	variable ImageCache
 	variable Scripts
 	variable Highlighted
 	variable Marks
@@ -634,8 +627,6 @@ proc Update {{setup 0}} {
 	set base $Vars(base)
 	set index $Vars(index)
 	set viewId $Vars(viewId)
-
-	array unset ImageCache
 
 	if {$setup} {
 		variable TiebreakList
@@ -865,7 +856,6 @@ proc Destroy {dlg w unsubscribe} {
 
 	variable Vars
 	variable Defaults
-	variable ImageCache
 
 	catch { destroy $dlg.html }
 	catch { destroy $dlg.log }
@@ -876,7 +866,6 @@ proc Destroy {dlg w unsubscribe} {
 		set Vars(closed) 1
 		::scidb::view::close $Vars(base) $Vars(viewId)
 	}
-	array unset ImageCache
 	array set Vars [array get Defaults]
 }
 

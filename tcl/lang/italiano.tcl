@@ -845,6 +845,10 @@
 ::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
 ::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
 ::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
+::font::mc::ChooseMountPoint						"Mount point of Windows installation partition" ;# NEW
+::font::mc::CopyingChessBaseFonts				"Copying ChessBase fonts" ;# NEW
+::font::mc::CopyFile									"Copy file %s" ;# NEW
+::font::mc::UpdateFontCache						"Updating font cache" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Posizione di partenza"
@@ -1707,6 +1711,7 @@
 
 ::fsbox::mc::Filename						"Nom&e file:"
 ::fsbox::mc::Filenames						"Nom&i file:"
+::fsbox::mc::Directory						"&Cartella:" ;# NEW
 ::fsbox::mc::FilesType						"File del &tipo:"
 ::fsbox::mc::FileEncoding					"&Codifica File:"
 
@@ -1767,6 +1772,7 @@
 ::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
 ::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
 ::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
+::fsbox::mc::PermissionDenied				"Permission denied for directory '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"

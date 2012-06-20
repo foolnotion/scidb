@@ -69,7 +69,10 @@ proc Build {w args} {
 		}
 	}
 
-	ttk::combobox $w -class TEntryButtonBox {*}[array get opts]
+	ttk::combobox $w -class TEntryButtonBox -style entrybuttonbox.TCombobox {*}[array get opts]
+
+	ChangeStyle $w
+	bind $w <<ThemeChanged>> [namespace code [list ChangeStyle $w]]
 	bind $w <<ComboboxSelected>> [namespace code [list ComboboxSelected $w]]
 	catch { rename ::$w $w.__w__ }
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -125,12 +128,92 @@ proc WidgetProc {w command args} {
 	return [$w.__w__ $command {*}$args]
 }
 
+
+proc ChangeStyle {w} {
+	if {"entrybuttonbox.downarrow" ni [ttk::style element names]} {
+		if {[font metrics [$w cget -font] -linespace] == 15} {
+			set icon $icon::dots([::theme::currentTheme])
+		} else {
+			set icon $icon::14x16::open
+		}
+		ttk::style element create entrybuttonbox.downarrow image $icon
+		ttk::style layout entrybuttonbox.TCombobox {
+			Combobox.field -sticky nswe -children {
+				entrybuttonbox.downarrow -side right -sticky ns
+				Combobox.padding -expand 1 -sticky nswe -children {
+					Combobox.textarea -sticky nswe
+				}
+			}
+		} 
+	}
+	$w configure -style entrybuttonbox.TCombobox
+}
+
+
+namespace eval icon {
+namespace eval 14x16 {
+
+set open [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAAQCAMAAAARSr4IAAAA9lBMVEW4vLy2urpQWlpQWlpQ
+	WlqBiIiEi4uzt7e2urqgpqahp6eZoaGaoaGboaGboqJYYmJZY2NaZGRbZWVdZmZdZ2deaGhf
+	aWlibGxjbW1mcHBrdHRueHhxe3t2gIB9h4d+hoaAiYmCi4uCjYyEj46Hjo6Hk5GJkpKJlZOK
+	lJSLk5OLlZWMmZaOm5iRn5uToZ2WpKCYpaKaoqKbqqWcq6adpaWdq6afqqegp6ehq6mirauk
+	sKymr66msLCssrKwurqyvLy1v7+4v7+5v7+5w8O7wMC9x8fBy8vEzs7FysrI0tLM1tbQ2trY
+	4eHa4+Pg5ubh5+fx9PT09vZjn+UlAAAAAXRSTlMAQObYZgAAAHpJREFUCB0FwdFJQ1EQBcDZ
+	lzURJMQvK7CN9G49IgYEUcm7e5wBAJTD8wn4u43q66WAfL1NP51XgDpfbn1c78tj5dfh5ahX
+	7vENk2iZABU6MwFqouU+gNCyB6jEBgB0Zg2wDV3rFWCnH/YpINP69rEB+FRO20ZV2X/iH/pG
+	OwhaoTPGAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 14x16
+# namespace eval 12x16 {
+#
+# set dots [image create photo -data {
+	# iVBORw0KGgoAAAANSUhEUgAAAAwAAAAQCAQAAACIaFaMAAAAF0lEQVQY02NgGAVYwX+G/2gk
+	# AxMdrAUAn9YF/e5hLfQAAAAASUVORK5CYII=
+# }]
+#
+# } ;# namespace 12x16
+namespace eval 14x17 {	;# alt
+
+set normal [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAARCAAAAADIo8JDAAAAIklEQVQI12P4jwwYGP7fRICm
+	QcRlYIAirFy8epuQAAMaAACYlKF3/7a3CQAAAABJRU5ErkJggg==
+}]
+
+set active [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA4AAAARCAAAAADIo8JDAAAAIklEQVQI12P4jwwYGP6/QYCm
+	QcRlYIAirFy8epuQAAMaAABh96wBoaEfRAAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 14x17
+namespace eval 13x17 {	;# default
+
+set normal [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA0AAAARCAAAAAAjlHlAAAAAHklEQVQI12P4jwwY/t9EgKYB
+	5zEwQBEWHtGmNCEBAMi2rEtkp1/8AAAAAElFTkSuQmCC
+}]
+
+set active [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA0AAAARCAAAAAAjlHlAAAAAHklEQVQI12P4jwwY/r9BgKYB
+	5zEwQBEWHtGmNCEBADuPt6ZjsVvUAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 13x17
+
+set dots(default)	[list $13x17::normal active $13x17::active]
+set dots(alt)		[list $14x17::normal active $14x17::active]
+set dots(clam)		$14x16::open
+
+} ;# namespace icon
 } ;# namespace entrybuttonbox
 } ;# namespace ttk
 
 ttk::copyBindings TEntry TEntryButtonBox
+ttk::copyBindings TCombobox TEntryButtonBox
 
 bind TEntryButtonBox <KeyPress-Down>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }
+bind TEntryButtonBox <KeyPress-space>	{ {*}[set ttk::entrybuttonbox::%W::Vars(-command)] }
 bind TEntryButtonBox <<TraverseIn>>		{ ttk::combobox::TraverseIn %W  }
 
 bind TEntryButtonBox <ButtonPress-1> {

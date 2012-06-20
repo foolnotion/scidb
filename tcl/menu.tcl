@@ -260,12 +260,13 @@ proc build {menu} {
 			;
 
 		lassign [::tk::UnderlineAmpersand $mc::InstallChessBaseFonts] text ul
+		set cmd [namespace code [list ::font::installChessBaseFonts .application]]
 		$m add command \
 			-compound left \
 			-label " $text" \
 			-underline $ul \
 			-image $::icon::16x16::fonts \
-			-command [namespace code [list ::font::installChessBaseFonts .application]] \
+			-command $cmd \
 			;
 	}
 

@@ -846,6 +846,10 @@
 ::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
 ::font::mc::NoChessBaseFontFound		"No ChessBase font found in folder '%s'." ;# NEW
 ::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
+::font::mc::ChooseMountPoint			"Mount point of Windows installation partition" ;# NEW
+::font::mc::CopyingChessBaseFonts		"Copying ChessBase fonts" ;# NEW
+::font::mc::CopyFile				"Copy file %s" ;# NEW
+::font::mc::UpdateFontCache			"Updating font cache" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"kiinduló állás"
@@ -1707,6 +1711,7 @@
 
 ::fsbox::mc::Filename						"Fájl &név:"
 ::fsbox::mc::Filenames						"Fájl &nevek:"
+::fsbox::mc::Directory						"Kö&nyvtár:" ;# NEW
 ::fsbox::mc::FilesType						"Fájl &típusok:"
 ::fsbox::mc::FileEncoding					"Fájl &kódolás:"
 
@@ -1758,15 +1763,16 @@
 ::fsbox::mc::MissingFileExtension		"'%s': hiányzó kiterjesztés."
 ::fsbox::mc::FileAlreadyExists			"\"%s\" fájl már létezik.\n\nFelül akarod írni?"
 ::fsbox::mc::CannotOverwriteDirectory	"'%s' könyvtár nem írható felül."
-::fsbox::mc::FileDoesNotExist				"\"%s\" fájl nem létezik."
+::fsbox::mc::FileDoesNotExist			"\"%s\" fájl nem létezik."
 ::fsbox::mc::DirectoryDoesNotExist		"\"%s\" könyvtár nem létezik."
 ::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 ::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..."
 ::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
-::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
-::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
+::fsbox::mc::CannotDelete			"Cannot delete file '%s'." ;# NEW
+::fsbox::mc::CannotRename			"Cannot rename file '%s'." ;# NEW
 ::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
 ::fsbox::mc::CannotOverwrite			"Cannot overwrite file '%s'." ;# NEW
+::fsbox::mc::PermissionDenied			"Permission denied for directory '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Eszköztár"

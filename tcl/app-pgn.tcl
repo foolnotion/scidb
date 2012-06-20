@@ -2102,7 +2102,7 @@ proc PopupMenu {parent position} {
 				;
 		}
 		$menu add command \
-			-label "$mc::EditMoveInformation..." \
+			-label " $mc::EditMoveInformation..." \
 			-image $::icon::16x16::clock \
 			-compound left \
 			-state $state \
@@ -2151,7 +2151,7 @@ proc PopupMenu {parent position} {
 		$menu add command \
 			-compound left \
 			-image [set ::icon::16x16::$action] \
-			-label $label \
+			-label " $label" \
 			-command [namespace code [list Undo $action]] \
 			-state [expr {[llength $cmd] ? "normal" : "disabled"}] \
 			-accelerator $accel \

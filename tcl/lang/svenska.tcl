@@ -843,6 +843,10 @@
 ::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
 ::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
 ::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
+::font::mc::ChooseMountPoint						"Mount point of Windows installation partition" ;# NEW
+::font::mc::CopyingChessBaseFonts				"Copying ChessBase fonts" ;# NEW
+::font::mc::CopyFile									"Copy file %s" ;# NEW
+::font::mc::UpdateFontCache						"Updating font cache" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"
@@ -1704,6 +1708,7 @@
 
 ::fsbox::mc::Filename						"Fil&namn:"
 ::fsbox::mc::Filenames						"Fil&namn:"
+::fsbox::mc::Directory						"&Folder:" ;# NEW
 ::fsbox::mc::FilesType						"Filer av &typ:"
 ::fsbox::mc::FileEncoding					"Fil&kodning:"
 
@@ -1764,6 +1769,7 @@
 ::fsbox::mc::CannotRename					"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::CannotDeleteDetail			"Filen används."
 ::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
+::fsbox::mc::PermissionDenied				"Permission denied for directory '%s'." ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Verktygsfält"

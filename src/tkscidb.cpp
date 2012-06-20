@@ -39,11 +39,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// On "modern" Linux distributions the static object
-// initialization is not working properly!
-#ifndef BROKEN_LINKER_HACK
-# define BROKEN_LINKER_HACK
-#endif
+//#ifndef BROKEN_LINKER_HACK
+//# define BROKEN_LINKER_HACK
+//#endif
 
 #ifdef BROKEN_LINKER_HACK
 # include "db_board.h"

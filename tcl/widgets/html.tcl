@@ -213,7 +213,11 @@ proc StyleHandler {w node contents} {
 
 	incr Priv(styleCount)
 	set id "author.[format %.4d $Priv(styleCount)]"
-	$w style -id $id.9999 -importcmd [namespace code [list ImportHandler $w]] $contents
+	$w style \
+		-id $id.9999 \
+		-importcmd [namespace code [list ImportHandler $w]] \
+		-urlcmd [namespace code [list UrlHandler $w]] \
+		$contents
 }
 
 
@@ -239,8 +243,13 @@ proc ImportHandler {w parentid uri} {
 		incr Priv(styleCount)
 		set id "$parentid.[format %.4d $Priv(styleCount)]"
 		set handler [namespace code [list ImportHandler $w]]
-		$w style -id $id.9999 -importcmd $handler $contents
+		$w style -id $id.9999 -importcmd $handler -urlcmd [namespace code [list UrlHandler $w]] $contents
 	}
+}
+
+
+proc UrlHandler {w args} {
+	puts "UrlHandler: $args"
 }
 
 

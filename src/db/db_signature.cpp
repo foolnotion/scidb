@@ -49,9 +49,19 @@ enum { BitMask		= (1 << BitLength) - 1 };
 #ifdef USE_HASH
 
 typedef mstl::hash<uint32_t,bool> Hash;
+
+#if __GNUC_PREREQ(4,7)
+__attribute__((init_priority(65534)))
+#endif
 Hash pawnStructureHash;
 
-static void __attribute__((constructor)) initialize() { Signature::initialize(); }
+static void
+#if __GNUC_PREREQ(4,7)
+__attribute__((constructor(65535)))
+#else
+__attribute__((constructor))
+#endif
+initialize() { Signature::initialize(); }
 
 #endif
 
@@ -228,6 +238,8 @@ void
 Signature::initialize()
 {
 #ifdef USE_HASH
+	if (!pawnStructureHash.empty())
+		return;
 
 	// 500.0/Load
 	// --------------------------------

@@ -1501,34 +1501,6 @@ tableCalculateCellWidths(
     }
     logWidthStage(4, pStageLog, pData->nCol, aWidth);
 
-    /* Force pixels into fixed columns (subject to max-width) */
-    if (iRemaining > 0) {
-        int iME = iMaxExplicit;
-        for (ii = 0; ii < pData->nCol; ii++) {
-            if (aReqWidth[ii].eType == CELL_WIDTH_PIXELS) {
-                int w = iRemaining * aMaxWidth[ii] / iME;
-                iME -= aMaxWidth[ii];
-                iRemaining -= w;
-                aWidth[ii] += w;
-            }
-        }
-    }
-    logWidthStage(5, pStageLog, pData->nCol, aWidth);
-
-    /* Force pixels into percent columns (not subject to max-width!) */
-    if (iRemaining > 0 && fTotalPercent < 100.0) {
-        float fTP = fTotalPercent;
-        for (ii = 0; ii < pData->nCol; ii++) {
-            if (aReqWidth[ii].eType == CELL_WIDTH_PERCENT) {
-                int w = iRemaining * aReqWidth[ii].x.fVal / fTP;
-                fTP -= aReqWidth[ii].x.fVal;
-                iRemaining -= w;
-                aWidth[ii] += w;
-            }
-        }
-    }
-    logWidthStage(6, pStageLog, pData->nCol, aWidth);
-
     if (isFixedLayout) {
         if (nAutoCol > 0) {
             int iMaxWidth = 0;
@@ -1567,11 +1539,39 @@ tableCalculateCellWidths(
             }
         }
     } else if (iRemaining > 0) {
-        /* Force pixels into any columns (not subject to max-width!) */
+        /* Force pixels into fixed columns (subject to max-width) */
+        int iME = iMaxExplicit;
         for (ii = 0; ii < pData->nCol; ii++) {
-            int w = iRemaining / (pData->nCol - ii);
-            iRemaining -= w;
-            aWidth[ii] += w;
+            if (aReqWidth[ii].eType == CELL_WIDTH_PIXELS) {
+                int w = iRemaining * aMaxWidth[ii] / iME;
+                iME -= aMaxWidth[ii];
+                iRemaining -= w;
+                aWidth[ii] += w;
+            }
+        }
+        logWidthStage(5, pStageLog, pData->nCol, aWidth);
+
+        /* Force pixels into percent columns (not subject to max-width!) */
+        if (iRemaining > 0 && fTotalPercent < 100.0) {
+            float fTP = fTotalPercent;
+            for (ii = 0; ii < pData->nCol; ii++) {
+                if (aReqWidth[ii].eType == CELL_WIDTH_PERCENT) {
+                    int w = iRemaining * aReqWidth[ii].x.fVal / fTP;
+                    fTP -= aReqWidth[ii].x.fVal;
+                    iRemaining -= w;
+                    aWidth[ii] += w;
+                }
+            }
+        }
+        logWidthStage(6, pStageLog, pData->nCol, aWidth);
+
+        /* Force pixels into any columns (not subject to max-width!) */
+        if (iRemaining > 0) {
+            for (ii = 0; ii < pData->nCol; ii++) {
+                int w = iRemaining / (pData->nCol - ii);
+                iRemaining -= w;
+                aWidth[ii] += w;
+            }
         }
     }
     logWidthStage(7, pStageLog, pData->nCol, aWidth);
