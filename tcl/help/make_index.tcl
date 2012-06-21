@@ -38,13 +38,31 @@ proc getArg {line} {
 }
 
 
+proc readTranslationFile {file encoding} {
+	set f [open $file r]
+	chan configure $f -encoding $encoding
+
+	while {[gets $f line] >= 0} {
+		if {[string match *AsciiMapping* $line]} {
+			set var [lindex $line 0]
+			set value [string map {& {} "..." {}} [lindex $line 1]]
+			set ns [join [lrange [split $var ::] 1 end-2] ::]
+			if {[llength $ns]} { namespace eval $ns {} }
+			set $var $value
+		}
+	}
+
+	close $f
+}
+
+
 encoding system utf-8
 set lang [file tail [pwd]] 
-set file [file join .. .. lang localization.tcl]
-source $file
+set localizationFile [file join .. .. lang localization.tcl]
+source $localizationFile
 
 foreach entry $i18n::languages {
-	lassign $entry _ codeName charset _
+	lassign $entry _ codeName charset translationFile
 	if {$codeName eq $lang} { break }
 }
 
@@ -55,6 +73,12 @@ if {$codeName ne $lang} {
 	exit 1
 }
 
+set transFile [file join .. .. lang $translationFile]
+if {![file readable $transFile]} {
+	puts stderr "Error([info script]): Cannot open file \"$transFile\"."
+	exit 1
+}
+readTranslationFile $transFile $charset
 
 array set index {}
 
@@ -69,7 +93,7 @@ foreach file [glob *.txt] {
 		if {[string match INDEX* $line]} {
 			set item [getArg $line]
 			lassign [split $item #] wref fragment
-			set alph [string toupper [string index $wref 0]]
+			set alph [string map $::mc::AsciiMapping [string toupper [string index $wref 0]]]
 			set path [file rootname $file]
 			append path .html
 			lappend index($alph) [list $wref $path $fragment]

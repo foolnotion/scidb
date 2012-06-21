@@ -1,6 +1,13 @@
 [June 2012] ==================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #356)
+------------------------------------------------------------------------------
+- agg library: font support (freetype) added. But this has a price, the
+minimal gcc compiler version now is 4.1 (was 3.4 before). The configure script
+is updated for freetype support.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #354)
 ------------------------------------------------------------------------------
 - Mouse wheel bindings implemented (thanks to Steve for his suggestion).

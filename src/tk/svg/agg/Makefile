@@ -15,9 +15,10 @@ include ../../../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I.
-CFLAGS	+= $(OPTIMIZE) $(C_DEBUG)
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG)
+INCLUDE			= -I. $(FREETYPE_INC)
+CFLAGS			+= $(OPTIMIZE) $(C_DEBUG)
+CXXFLAGS			+= $(OPTIMIZE) $(CXX_DEBUG)
+EXTRA_CXXFLAGS	+= $(HAVE_FREETYPE)
 
 SRC_CXX=\
 	agg_arc.cpp \
@@ -25,23 +26,24 @@ SRC_CXX=\
 	agg_bezier_arc.cpp \
 	agg_bspline.cpp \
 	agg_curves.cpp \
-	agg_vcgen_contour.cpp \
-	agg_vcgen_dash.cpp \
-	agg_vcgen_markers_term.cpp \
-	agg_vcgen_smooth_poly1.cpp \
-	agg_vcgen_stroke.cpp \
-	agg_vcgen_bspline.cpp \
+	agg_embedded_raster_fonts.cpp \
+	agg_font_freetype.cpp \
 	agg_gsv_text.cpp \
 	agg_image_filters.cpp \
 	agg_line_aa_basics.cpp \
 	agg_line_profile_aa.cpp \
 	agg_rounded_rect.cpp \
 	agg_sqrt_tables.cpp \
-	agg_embedded_raster_fonts.cpp \
 	agg_trans_affine.cpp \
-	agg_trans_warp_magnifier.cpp \
-	agg_trans_single_path.cpp \
 	agg_trans_double_path.cpp \
+	agg_trans_single_path.cpp \
+	agg_trans_warp_magnifier.cpp \
+	agg_vcgen_bspline.cpp \
+	agg_vcgen_contour.cpp \
+	agg_vcgen_dash.cpp \
+	agg_vcgen_markers_term.cpp \
+	agg_vcgen_smooth_poly1.cpp \
+	agg_vcgen_stroke.cpp \
 	agg_vpgen_clip_polygon.cpp \
 	agg_vpgen_clip_polyline.cpp \
 	agg_vpgen_segmentator.cpp \
@@ -77,7 +79,7 @@ $(LIB).a: $(OBJS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
-	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
@@ -102,45 +104,9 @@ agg_curves.o: agg_array.h
 agg_curves.o: agg_basics.h
 agg_curves.o: agg_config.h
 agg_curves.o: agg_math.h
-agg_vcgen_contour.o: agg_vcgen_contour.h
-agg_vcgen_contour.o: agg_math_stroke.h
-agg_vcgen_contour.o: agg_math.h
-agg_vcgen_contour.o: agg_basics.h
-agg_vcgen_contour.o: agg_config.h
-agg_vcgen_contour.o: agg_vertex_sequence.h
-agg_vcgen_contour.o: agg_array.h
-agg_vcgen_dash.o: agg_vcgen_dash.h
-agg_vcgen_dash.o: agg_basics.h
-agg_vcgen_dash.o: agg_config.h
-agg_vcgen_dash.o: agg_vertex_sequence.h
-agg_vcgen_dash.o: agg_array.h
-agg_vcgen_dash.o: agg_math.h
-agg_vcgen_dash.o: agg_shorten_path.h
-agg_vcgen_markers_term.o: agg_vcgen_markers_term.h
-agg_vcgen_markers_term.o: agg_basics.h
-agg_vcgen_markers_term.o: agg_config.h
-agg_vcgen_markers_term.o: agg_vertex_sequence.h
-agg_vcgen_markers_term.o: agg_array.h
-agg_vcgen_markers_term.o: agg_math.h
-agg_vcgen_smooth_poly1.o: agg_vcgen_smooth_poly1.h
-agg_vcgen_smooth_poly1.o: agg_basics.h
-agg_vcgen_smooth_poly1.o: agg_config.h
-agg_vcgen_smooth_poly1.o: agg_vertex_sequence.h
-agg_vcgen_smooth_poly1.o: agg_array.h
-agg_vcgen_smooth_poly1.o: agg_math.h
-agg_vcgen_stroke.o: agg_vcgen_stroke.h
-agg_vcgen_stroke.o: agg_math_stroke.h
-agg_vcgen_stroke.o: agg_math.h
-agg_vcgen_stroke.o: agg_basics.h
-agg_vcgen_stroke.o: agg_config.h
-agg_vcgen_stroke.o: agg_vertex_sequence.h
-agg_vcgen_stroke.o: agg_array.h
-agg_vcgen_stroke.o: agg_shorten_path.h
-agg_vcgen_bspline.o: agg_vcgen_bspline.h
-agg_vcgen_bspline.o: agg_basics.h
-agg_vcgen_bspline.o: agg_config.h
-agg_vcgen_bspline.o: agg_array.h
-agg_vcgen_bspline.o: agg_bspline.h
+agg_embedded_raster_fonts.o: agg_embedded_raster_fonts.h
+agg_embedded_raster_fonts.o: agg_basics.h
+agg_embedded_raster_fonts.o: agg_config.h
 agg_gsv_text.o: agg_gsv_text.h
 agg_gsv_text.o: agg_array.h
 agg_gsv_text.o: agg_basics.h
@@ -180,25 +146,61 @@ agg_rounded_rect.o: agg_config.h
 agg_rounded_rect.o: agg_arc.h
 agg_sqrt_tables.o: agg_basics.h
 agg_sqrt_tables.o: agg_config.h
-agg_embedded_raster_fonts.o: agg_embedded_raster_fonts.h
-agg_embedded_raster_fonts.o: agg_basics.h
-agg_embedded_raster_fonts.o: agg_config.h
 agg_trans_affine.o: agg_trans_affine.h
 agg_trans_affine.o: agg_basics.h
 agg_trans_affine.o: agg_config.h
-agg_trans_warp_magnifier.o: agg_trans_warp_magnifier.h
-agg_trans_single_path.o: agg_math.h
-agg_trans_single_path.o: agg_basics.h
-agg_trans_single_path.o: agg_config.h
-agg_trans_single_path.o: agg_vertex_sequence.h
-agg_trans_single_path.o: agg_array.h
-agg_trans_single_path.o: agg_trans_single_path.h
 agg_trans_double_path.o: agg_math.h
 agg_trans_double_path.o: agg_basics.h
 agg_trans_double_path.o: agg_config.h
 agg_trans_double_path.o: agg_trans_double_path.h
 agg_trans_double_path.o: agg_vertex_sequence.h
 agg_trans_double_path.o: agg_array.h
+agg_trans_single_path.o: agg_math.h
+agg_trans_single_path.o: agg_basics.h
+agg_trans_single_path.o: agg_config.h
+agg_trans_single_path.o: agg_vertex_sequence.h
+agg_trans_single_path.o: agg_array.h
+agg_trans_single_path.o: agg_trans_single_path.h
+agg_trans_warp_magnifier.o: agg_trans_warp_magnifier.h
+agg_vcgen_bspline.o: agg_vcgen_bspline.h
+agg_vcgen_bspline.o: agg_basics.h
+agg_vcgen_bspline.o: agg_config.h
+agg_vcgen_bspline.o: agg_array.h
+agg_vcgen_bspline.o: agg_bspline.h
+agg_vcgen_contour.o: agg_vcgen_contour.h
+agg_vcgen_contour.o: agg_math_stroke.h
+agg_vcgen_contour.o: agg_math.h
+agg_vcgen_contour.o: agg_basics.h
+agg_vcgen_contour.o: agg_config.h
+agg_vcgen_contour.o: agg_vertex_sequence.h
+agg_vcgen_contour.o: agg_array.h
+agg_vcgen_dash.o: agg_vcgen_dash.h
+agg_vcgen_dash.o: agg_basics.h
+agg_vcgen_dash.o: agg_config.h
+agg_vcgen_dash.o: agg_vertex_sequence.h
+agg_vcgen_dash.o: agg_array.h
+agg_vcgen_dash.o: agg_math.h
+agg_vcgen_dash.o: agg_shorten_path.h
+agg_vcgen_markers_term.o: agg_vcgen_markers_term.h
+agg_vcgen_markers_term.o: agg_basics.h
+agg_vcgen_markers_term.o: agg_config.h
+agg_vcgen_markers_term.o: agg_vertex_sequence.h
+agg_vcgen_markers_term.o: agg_array.h
+agg_vcgen_markers_term.o: agg_math.h
+agg_vcgen_smooth_poly1.o: agg_vcgen_smooth_poly1.h
+agg_vcgen_smooth_poly1.o: agg_basics.h
+agg_vcgen_smooth_poly1.o: agg_config.h
+agg_vcgen_smooth_poly1.o: agg_vertex_sequence.h
+agg_vcgen_smooth_poly1.o: agg_array.h
+agg_vcgen_smooth_poly1.o: agg_math.h
+agg_vcgen_stroke.o: agg_vcgen_stroke.h
+agg_vcgen_stroke.o: agg_math_stroke.h
+agg_vcgen_stroke.o: agg_math.h
+agg_vcgen_stroke.o: agg_basics.h
+agg_vcgen_stroke.o: agg_config.h
+agg_vcgen_stroke.o: agg_vertex_sequence.h
+agg_vcgen_stroke.o: agg_array.h
+agg_vcgen_stroke.o: agg_shorten_path.h
 agg_vpgen_clip_polygon.o: agg_vpgen_clip_polygon.h
 agg_vpgen_clip_polygon.o: agg_basics.h
 agg_vpgen_clip_polygon.o: agg_config.h

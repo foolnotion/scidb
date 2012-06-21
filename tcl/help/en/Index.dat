@@ -8,6 +8,8 @@ set Index {
     {
       {{Clipbase} {Clipbase.html} {}}
       {{Command line options} {Command-Line-Options.html} {}}
+      {{Compress} {Database-Switcher.html} {Compact}}
+      {{Compress database} {Database-Switcher.html} {Compact}}
       {{Contact information} {Contact-Information.html} {}}
     }
   }

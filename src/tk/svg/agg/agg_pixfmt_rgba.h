@@ -1872,7 +1872,7 @@ namespace agg
                                    unsigned len, 
                                    const color_type& c)
         {
-            value_type* p = static_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
+            value_type* p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
             pixel_type v;
             reinterpret_cast<value_type*>(&v)[order_type::R] = c.r;
             reinterpret_cast<value_type*>(&v)[order_type::G] = c.g;
@@ -1914,7 +1914,7 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = static_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
+                value_type* p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
                 calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
                 if(alpha == base_mask)
                 {
@@ -2012,7 +2012,7 @@ namespace agg
         {
             if (c.a)
             {
-                value_type* p = static_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
+                value_type* p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
                 do 
                 {
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
@@ -2045,7 +2045,7 @@ namespace agg
             {
                 do 
                 {
-                    value_type* p = static_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
+                    value_type* p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
                     calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
                     if(alpha == base_mask)
                     {
@@ -2109,7 +2109,7 @@ namespace agg
                                const int8u* covers,
                                int8u cover)
         {
-            value_type* p = static_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
+            value_type* p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y, len)) + (x << 2);
             if(covers)
             {
                 do 
@@ -2173,7 +2173,7 @@ namespace agg
             {
                 do 
                 {
-                    p = static_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
+                    p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
                     cob_type::copy_or_blend_pix(p, 
                                                 colors->r, 
                                                 colors->g, 
@@ -2190,7 +2190,7 @@ namespace agg
                 {
                     do 
                     {
-                        p = static_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
+                        p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
                         cob_type::copy_or_blend_pix(p, 
                                                     colors->r, 
                                                     colors->g, 
@@ -2204,7 +2204,7 @@ namespace agg
                 {
                     do 
                     {
-                        p = static_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
+                        p = reinterpret_cast<value_type*>(m_rbuf->row_ptr(x, y++, 1)) + (x << 2);
                         cob_type::copy_or_blend_pix(p, 
                                                     colors->r, 
                                                     colors->g, 
@@ -2288,12 +2288,12 @@ namespace agg
                         int8u cover)
         {
             typedef typename SrcPixelFormatRenderer::order_type src_order;
-            const value_type* psrc = static_cast<value_type*>(from.row_ptr(ysrc));
+            const value_type* psrc = reinterpret_cast<const value_type*>(from.row_ptr(ysrc));
             if(psrc)
             {
                 psrc += xsrc << 2;
                 value_type* pdst = 
-                    static_cast<value_type*>(m_rbuf->row_ptr(xdst, ydst, len)) + (xdst << 2);
+                    reinterpret_cast<value_type*>(m_rbuf->row_ptr(xdst, ydst, len)) + (xdst << 2);
                 int incp = 4;
                 if(xdst > xsrc)
                 {

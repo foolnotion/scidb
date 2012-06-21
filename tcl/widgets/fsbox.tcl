@@ -3024,7 +3024,7 @@ proc InvokeFile {w args} {
 
 	if {$sel >= [llength $Vars(list:folder)]} {
 		SelectFiles $w [expr {$sel - [llength $Vars(list:folder)]}]]
-		if {!$Vars(multiple)} { [namespace parent]::Activate $w }
+		if {!$Vars(multiple)} { [namespace parent]::Activate $w yes }
 	} elseif {$Vars(type) ne "dir"} {
 		[namespace parent]::VisitItem $w $t leave [expr {$sel + 1}]
 		set folder [lindex $Vars(list:folder) $sel]

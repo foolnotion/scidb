@@ -169,16 +169,17 @@ set configure(tcl-version) [findBestTclVersion]
 set configure(gcc-version) ""
 
 array set package {
-    zlib-inc    {}
-    zlib-lib    -lz
-    zziplib-inc {}
-    zziplib-lib -lzzip
-    expat-inc   {}
-    expat-lib   -lexpat
-    tcl-inc     {}
-    tcl-lib     {}
-    x-inc       {}
-    x-lib       {}
+    zlib-inc     {}
+    zlib-lib     -lz
+    zziplib-inc  {}
+    zziplib-lib  -lzzip
+    expat-inc    {}
+    expat-lib    -lexpat
+    tcl-inc      {}
+    tcl-lib      {}
+    x-inc        {}
+    x-lib        {}
+    freetype-inc {}
 }
 
 array set feature {
@@ -214,6 +215,7 @@ array set compiler {
 array set option {
     EXTRA_CXXFLAGS  {}
     HAVE_XFT        {}
+    HAVE_FREETYPE   {}
 }
 
 array set defaults {
@@ -235,6 +237,7 @@ array set subdir {
 set engines {{micromax MicroMax} {fruit TogaII-1.3.1}}
 
 set instableTkLibrary ""
+set MinGCCVersion "4.1"
 
 
 foreach name [array names environment] {
@@ -658,6 +661,33 @@ proc findFontconfig {} {
 }
 
 
+# findFreetype:
+#    Find the freetype paths.
+#    Returns 1 on success, 0 on failure.
+#
+proc findFreetype {} {
+    variable option
+    variable package
+
+    set path {
+        /usr/local/include/freetype2/freetype/config
+        /usr/include/freetype2/freetype/config
+    }
+
+    puts -nonewline "    Checking if your system has freetype 2: "
+    set dir [FindDir "ftheader.h" $path]
+
+    if {[string length $dir]} {
+        set option(HAVE_FREETYPE) "-DHAVE_FREETYPE"
+        set package(freetype-inc) "-I/[file join {*}[lrange [split $dir /] 0 end-2]]"
+        puts "yes."
+    } else {
+        set option(HAVE_FREETYPE) 0
+        puts "no."
+    }
+}
+
+
 # testzlib_sh:
 #    Script used to test if the system has zlib installed,
 #    and if it is the right version.
@@ -969,7 +999,7 @@ proc probe {file script} {
 
 
 # checkGCC:
-#    Checks whether gcc/g++ is installed (minimum version is 3.4).
+#    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
     global TestGCC
     global TestSSE2
@@ -1007,7 +1037,7 @@ proc checkGCC {cc} {
         }
         if {$i < [string length $version]} {
             set version [string range $version $i [expr {$i + 2}]]
-            if {[string compare $version "3.4"] >= 0} { set result 1 }
+            if {[string compare $version $::MinGCCVersion] >= 0} { set result 1 }
         } else {
             set result 0
             set version ""
@@ -1422,6 +1452,7 @@ if {[string length $gxxVer]} {
 
     if {$::tcl_platform(platform) eq "unix"} {
         findFontconfig
+        findFreetype
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {

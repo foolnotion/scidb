@@ -34,9 +34,10 @@ hängt von der Bildschirmgröße und des gewählten Reiters ab. Unterhalb
 jeder Position sieht man die Züge die zu dieser Position führten,
 d.h. das letzte Brett zeigt die Endstellung. Manchmal sind nicht alle
 Züge innerhalb des Textfensters zu sehen. In diesem Fall läßt sich die
-Ansicht rollen, indem man mit dem Mauszeiger mit gehaltener linker
+Ansicht rollen, indem man entweder mit dem Mauszeiger mit gehaltener linker
 Maustaste in das Textfenster klickt und durch Ziehen nach oben oder
-nach unten rollt (siehe Grafik).
+nach unten rollt, oder das Mausrad benutzt während der Mauszeiger über
+das Textfeld gehalten wird (siehe Grafik).
 </p>
 
 <ul><img src="../images/game-browser-scroll-text.png"/></ul>

@@ -9,6 +9,7 @@ set Index {
     {
       {{Dateiauswahldialog} {File-Selection-Dialog.html} {}}
       {{Dateiformate} {Database-Formats.html} {}}
+      {{Datenbank komprimieren} {Database-Switcher.html} {Compact}}
       {{Datenbankarchiv} {Database-Formats.html} {Database-Archive}}
       {{Datenbankformate} {Database-Formats.html} {}}
       {{Datenbankumschalter} {Database-Switcher.html} {}}
@@ -33,6 +34,7 @@ set Index {
   { K
     {
       {{Kommandozeilenoptionen} {Command-Line-Options.html} {}}
+      {{Komprimieren} {Database-Switcher.html} {Compact}}
       {{Kontaktinformationen} {Contact-Information.html} {}}
     }
   }
@@ -53,14 +55,14 @@ set Index {
       {{Partiemarkierungen} {Game-Flags.html} {}}
     }
   }
+  { U
+    {
+      {{Übersichts-Browser} {Game-Overview.html} {}}
+    }
+  }
   { W
     {
       {{Webseite} {Contact-Information.html} {Homepage}}
-    }
-  }
-  { Ü
-    {
-      {{Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
 }
