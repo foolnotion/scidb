@@ -21,6 +21,10 @@
 
 #ifndef __OPTIMIZE__
 
+#ifdef __clang__
+class type_info; // because of a cyclic bug in gcc headers
+#endif
+
 #include <typeinfo>
 
 namespace mstl {

@@ -169,6 +169,7 @@ Game::Game()
 	,m_linebreakMaxLineLengthVar(0)
 	,m_linebreakMinCommentLength(0)
 	,m_displayStyle(display::CompactStyle)
+	,m_moveStyle(move::ShortAlgebraic)
 {
 }
 
@@ -225,8 +226,9 @@ Game::operator=(Game const& game)
 		m_linebreakThreshold				= game.m_linebreakThreshold;
 		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
 		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
-		m_linebreakMinCommentLength		= game.m_linebreakMinCommentLength;
+		m_linebreakMinCommentLength	= game.m_linebreakMinCommentLength;
 		m_displayStyle						= game.m_displayStyle;
+		m_moveStyle							= game.m_moveStyle;
 
 		m_line.copy(game.m_line);
 
@@ -939,7 +941,11 @@ Game::marks(edit::Key const& key) const
 
 
 mstl::string&
-Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigned flags)
+Game::printMove(	Board const& board,
+						MoveNode* node,
+						mstl::string& result,
+						unsigned flags,
+						move::Notation form)
 {
 	M_ASSERT(node);
 
@@ -983,7 +989,24 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 	}
 
 	// move
-	move.printSan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
+	switch (form)
+	{
+		case move::Algebraic:
+			move.printAlgebraic(result);
+			break;
+		case move::ShortAlgebraic:
+			move.printSan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
+			break;
+		case move::LongAlgebraic:
+			move.printLan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
+			break;
+		case move::Correspondence:
+			move.printNumeric(result);
+			break;
+		case move::Telegraphic:
+			move.printAlphabetic(result);
+			break;
+	}
 
 	if (!(flags & ExportFormat) && !move.givesMate() && board.isDoubleCheck())
 		result += '+';
@@ -1001,9 +1024,9 @@ Game::printSan(Board const& board, MoveNode* node, mstl::string& result, unsigne
 
 
 mstl::string&
-Game::printSan(mstl::string& result, unsigned flags) const
+Game::printMove(mstl::string& result, unsigned flags, move::Notation style) const
 {
-	return printSan(m_currentBoard, m_currentNode, result, flags);
+	return printMove(m_currentBoard, m_currentNode, result, flags, style);
 }
 
 
@@ -1016,7 +1039,7 @@ Game::getNextMove(unsigned flags)
 
 	m_currentNode = m_currentNode->next();
 	doMove();
-	printSan(san, flags);
+	printMove(san, flags);
 	undoMove();
 	m_currentNode = m_currentNode->prev();
 
@@ -1304,7 +1327,7 @@ Game::getMoves(StringList& result, unsigned flags)
 
 	forward();
 	result.push_back();
-	printSan(result.back(), flags);
+	printMove(result.back(), flags);
 
 	for (unsigned i = 0; i < m_currentNode->variationCount(); ++i)
 	{
@@ -1314,7 +1337,7 @@ Game::getMoves(StringList& result, unsigned flags)
 		{
 			forward();
 			result.push_back();
-			printSan(result.back(), flags);
+			printMove(result.back(), flags);
 		}
 
 		exitVariation();
@@ -2622,7 +2645,7 @@ Game::dumpMoves(mstl::string& result, unsigned length, unsigned flags)
 			return n;
 
 		m_currentNode = m_currentNode->next();
-		printSan(result, flags | (result.empty() ? BlackNumbers : 0));
+		printMove(result, flags | (result.empty() ? BlackNumbers : 0));
 		m_currentNode = m_currentNode->prev();
 		forward();
 		result += ' ';
@@ -3054,9 +3077,10 @@ Game::updateSubscriber(unsigned action)
 															m_startBoard,
 															m_startNode,
 															m_linebreakThreshold,
-															m_linebreakMaxLineLengthMain));
+															m_linebreakMaxLineLengthMain,
+															m_displayStyle));
 			m_editNode = editNode.release();
-			m_subscriber->updateEditor(m_editNode);
+			m_subscriber->updateEditor(m_editNode, m_moveStyle);
 		}
 		else
 		{
@@ -3076,7 +3100,7 @@ Game::updateSubscriber(unsigned action)
 
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
-			m_subscriber->updateEditor(diff, m_tags);
+			m_subscriber->updateEditor(diff, m_tags, m_moveStyle);
 			delete m_editNode;
 			m_editNode = editNode.release();
 		}
@@ -3120,7 +3144,8 @@ Game::setup(unsigned linebreakThreshold,
 				unsigned linebreakMaxLineLengthMain,
 				unsigned linebreakMaxLineLengthVar,
 				unsigned linebreakMinCommentLength,
-				unsigned displayStyle)
+				unsigned displayStyle,
+				move::Notation moveStyle)
 {
 	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
 	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
@@ -3129,8 +3154,9 @@ Game::setup(unsigned linebreakThreshold,
 	m_linebreakThreshold				= linebreakThreshold;
 	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
 	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
-	m_linebreakMinCommentLength		= linebreakMinCommentLength;
+	m_linebreakMinCommentLength	= linebreakMinCommentLength;
 	m_displayStyle						= displayStyle;
+	m_moveStyle							= moveStyle;
 }
 
 

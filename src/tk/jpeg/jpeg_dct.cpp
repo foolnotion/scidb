@@ -36,6 +36,10 @@ __mm_shuffle_ps_DD(__m128 u, __m128 v) { return _mm_shuffle_ps(u, v, 0xDD); }
 inline static __m128 __attribute__((always_inline))
 __mm_shuffle_ps_EE(__m128 u, __m128 v) { return _mm_shuffle_ps(u, v, 0xEE); }
 
+#ifdef __clang__
+extern __v4sf __builtin_ia32_movlhps(__v4sf, __v4sf);
+#endif
+
 } // extern "C"
 
 #include <stdint.h>

@@ -224,6 +224,22 @@ Move::printAlphabetic(mstl::string& s) const
 
 
 mstl::string&
+Move::print(mstl::string& s, move::Notation form, encoding::CharSet charSet) const
+{
+	switch (form)
+	{
+		case move::Algebraic:		printAlgebraic(s); break;
+		case move::ShortAlgebraic:	printSan(s, charSet); break;
+		case move::LongAlgebraic:	printLan(s, charSet); break;
+		case move::Correspondence:	printNumeric(s); break;
+		case move::Telegraphic:		printAlphabetic(s); break;
+	}
+
+	return s;
+}
+
+
+mstl::string&
 Move::dump(mstl::string& result) const
 {
 	if (isEmpty())

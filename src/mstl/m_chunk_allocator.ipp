@@ -26,9 +26,8 @@
 
 namespace mstl {
 
-template <typename T>
-chunk_allocator<T>::chunk_allocator(size_t chunk_size)
-	:m_zero(false)
+template <typename T, bool Zero>
+chunk_allocator<T,Zero>::chunk_allocator(size_t chunk_size)
 {
 	static size_t const page_size				= 4096;					// must be power of 2
 	static size_t const malloc_header_size	= 4*sizeof(void*);	// should be always sufficient
@@ -49,9 +48,11 @@ chunk_allocator<T>::chunk_allocator(size_t chunk_size)
 }
 
 
-template <typename T>
-chunk_allocator<T>::~chunk_allocator()
+template <typename T, bool Zero>
+chunk_allocator<T,Zero>::~chunk_allocator()
 {
+	static_assert(is_pod<T>::value || !Zero, "value type not POD");
+
 	for (typename chunk_list::iterator i = m_chunk_list.begin(); i != m_chunk_list.end(); ++i)
 	{
 		bits::destroy(i->base, i->curr);
@@ -60,18 +61,18 @@ chunk_allocator<T>::~chunk_allocator()
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 bool
-chunk_allocator<T>::canRelease() const
+chunk_allocator<T,Zero>::canRelease() const
 {
 	M_ASSERT(!m_chunk_list.empty());
 	return m_chunk_list.top().curr > m_chunk_list.top().base;
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 bool
-chunk_allocator<T>::canShrink(size_t size) const
+chunk_allocator<T,Zero>::canShrink(size_t size) const
 {
 	M_ASSERT(!m_chunk_list.empty());
 	return m_chunk_list.top().curr >= m_chunk_list.top().base + size;
@@ -79,48 +80,36 @@ chunk_allocator<T>::canShrink(size_t size) const
 
 
 
-template <typename T>
+template <typename T, bool Zero>
 bool
-chunk_allocator<T>::empty() const
+chunk_allocator<T,Zero>::empty() const
 {
 	return m_chunk_list.size() == 1 && m_chunk_list.top().base == m_chunk_list.top().curr;
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 inline
 size_t
-chunk_allocator<T>::chunk_size() const
+chunk_allocator<T,Zero>::chunk_size() const
 {
 	return m_chunk_size;
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 inline
 size_t
-chunk_allocator<T>::elems_per_chunk() const
+chunk_allocator<T,Zero>::elems_per_chunk() const
 {
 	return m_num_elems;
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 inline
 void
-chunk_allocator<T>::set_zero()
-{
-	static_assert(is_pod<T>::value, "value type not POD");
-
-	m_zero = true;
-	::memset(m_chunk_list.top().base, 0, m_chunk_size);
-}
-
-
-template <typename T>
-inline
-void
-chunk_allocator<T>::clear()
+chunk_allocator<T,Zero>::clear()
 {
 	for (typename chunk_list::iterator i = m_chunk_list.begin(); i != m_chunk_list.end(); ++i)
 	{
@@ -133,25 +122,25 @@ chunk_allocator<T>::clear()
 }
 
 
-template <typename T>
-typename chunk_allocator<T>::chunk*
-chunk_allocator<T>::new_chunk()
+template <typename T, bool Zero>
+typename chunk_allocator<T,Zero>::chunk*
+chunk_allocator<T,Zero>::new_chunk()
 {
 	m_chunk_list.push();
 	chunk& c = m_chunk_list.top();
 	c.curr = c.base = static_cast<T*>(::malloc(m_chunk_size));
 
-	if (m_zero)
+	if (Zero)
 		::memset(c.base, 0, m_chunk_size);
 
 	return &c;
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 inline
 T*
-chunk_allocator<T>::alloc()
+chunk_allocator<T,Zero>::alloc()
 {
 	M_ASSERT(!m_chunk_list.empty());
 
@@ -166,9 +155,9 @@ chunk_allocator<T>::alloc()
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 T*
-chunk_allocator<T>::alloc(size_t length)
+chunk_allocator<T,Zero>::alloc(size_t length)
 {
 	// otherwise uninitialized_fill_n(p, length, T()) is required
 	static_assert(is_pod<T>::value, "value type not POD");
@@ -189,9 +178,9 @@ chunk_allocator<T>::alloc(size_t length)
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 void
-chunk_allocator<T>::release()
+chunk_allocator<T,Zero>::release()
 {
 	M_REQUIRE(canRelease());
 
@@ -200,9 +189,9 @@ chunk_allocator<T>::release()
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 void
-chunk_allocator<T>::shrink(size_t allocatedLength, size_t newLength)
+chunk_allocator<T,Zero>::shrink(size_t allocatedLength, size_t newLength)
 {
 	static_assert(is_pod<T>::value, "value type not POD");
 	M_REQUIRE(newLength <= allocatedLength);
@@ -216,9 +205,9 @@ chunk_allocator<T>::shrink(size_t allocatedLength, size_t newLength)
 }
 
 
-template <typename T>
+template <typename T, bool Zero>
 unsigned
-chunk_allocator<T>::lookup(T const* p) const
+chunk_allocator<T,Zero>::lookup(T const* p) const
 {
 	for (unsigned i = 0; i < m_chunk_list.size(); ++i)
 	{

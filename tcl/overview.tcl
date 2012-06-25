@@ -87,13 +87,13 @@ proc open {parent base info view index {fen {}}} {
 
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
-	bind $nb <<LanguageChanged>> [namespace code [list SetTitle $nb]]
-	bind $dlg <Key-[string tolower $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
+	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
 	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base]]
-	bind $dlg <F1> { ::help::open .application Overview-Browser }
+	bind $dlg <F1> { ::help::open .application Game-Overview }
 
 	namespace eval $nb {}
 	variable ${nb}::Vars
+	set Vars(dlg) $dlg
 	set Vars(index) $index
 	set Vars(number) $number
 	set Vars(base) $base
@@ -116,6 +116,8 @@ proc open {parent base info view index {fen {}}} {
 	bind $nb <Destroy> [namespace code [list Destroy $nb]]
 	$dlg.previous configure -command [namespace code [list NextGame $nb $base -1]]
 	$dlg.next configure -command [namespace code [list NextGame $nb $base +1]]
+
+	SetAccelerator $nb
 
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -317,6 +319,28 @@ proc NextGame {nb base {step 0}} {
 			$text configure -state disabled
 		}
 	}
+}
+
+
+proc LanguageChanged {nb} {
+	SetAccelerator $nb
+	SetTitle $nb
+}
+
+
+proc SetAccelerator {nb} {
+	variable ${nb}::Vars
+	variable Accelerator
+
+	if {[info exists Accelerator]} {
+		bind $Vars(dlg) <Key-[string tolower $Accelerator]> {#}
+		bind $Vars(dlg) <Key-[string toupper $Accelerator]> {#}
+	}
+
+	bind $Vars(dlg) <Key-[string tolower $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
+	bind $Vars(dlg) <Key-[string toupper $mc::AcceleratorRotate]> [namespace code [list RotateBoard $nb]]
+
+	set Accelerator $mc::AcceleratorRotate
 }
 
 

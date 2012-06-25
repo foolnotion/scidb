@@ -24,7 +24,7 @@
 
 namespace mstl {
 
-template <typename T>
+template <typename T, bool Zero = false>
 class chunk_allocator
 {
 public:
@@ -79,7 +79,6 @@ private:
 	size_t		m_chunk_size;
 	size_t		m_num_elems;
 	chunk_list	m_chunk_list;
-	bool			m_zero;
 };
 
 } // namespace mstl

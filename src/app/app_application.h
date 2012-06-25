@@ -147,7 +147,7 @@ public:
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
 	void switchBase(mstl::string const& name);
-	void refreshGame(unsigned position = InvalidPosition, bool radical = false);
+	void refreshGame(unsigned position = InvalidPosition, bool immediate = false);
 
 	Cursor& clipBase();
 	Cursor const& clipBase() const;
@@ -203,7 +203,8 @@ public:
 						unsigned linebreakMaxLineLengthMain,
 						unsigned linebreakMaxLineLengthVar,
 						unsigned linebreakMinCommentLength,
-						unsigned displayStyle);
+						unsigned displayStyle,
+						db::move::Notation moveStyle);
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
 

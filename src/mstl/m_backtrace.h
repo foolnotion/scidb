@@ -24,7 +24,7 @@
 namespace mstl {
 
 class ostringstream;
-template <typename T> class chunk_allocator;
+template <typename T, bool Zero> class chunk_allocator;
 
 class backtrace
 {
@@ -44,7 +44,7 @@ public:
 private:
 
 #ifndef __OPTIMIZE__
-	typedef chunk_allocator<char> allocator;
+	typedef chunk_allocator<char,false> allocator;
 
 	void symbols();
 # ifdef __unix__

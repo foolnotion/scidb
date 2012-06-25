@@ -157,6 +157,8 @@ proc archive::tick {progress n} {
 	update
 }
 
+proc scrolledframe::MapWindow {w} { ::scidb::misc::mapWindow $w }
+
 log::finishLayout
 
 # --- Read options -----------------------------------------------------

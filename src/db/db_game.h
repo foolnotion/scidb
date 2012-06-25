@@ -72,13 +72,16 @@ public:
 	// a move string.
 	enum
 	{
-		MoveOnly				= 0,			//*< Only the algebraic notation should be included
-		WhiteNumbers		= 1 << 0,	//*< White moves should be preceded by a move number
-		BlackNumbers		= 1 << 1,	//*< Black moves should be preceded by a move number
-		IncludeAnnotation	= 1 << 2,	//*< Nags/symbolic annotation should be included
-		SuppressSpace		= 1 << 3,	//*< Don't add space after move number
-		UseZeroWidthSpace	= 1 << 4,	//*< Use zero width space after move number
-		ExportFormat		= 1 << 5,	//*< Use PGN standard (superseeds other flags)
+		MoveOnly					= 0,			//*< Only the algebraic notation should be included
+		WhiteNumbers			= 1 << 0,	//*< White moves should be preceded by a move number
+		BlackNumbers			= 1 << 1,	//*< Black moves should be preceded by a move number
+		IncludeAnnotation		= 1 << 2,	//*< Nags/symbolic annotation should be included
+		SuppressSpace			= 1 << 3,	//*< Don't add space after move number
+		UseZeroWidthSpace		= 1 << 4,	//*< Use zero width space after move number
+		ExportFormat			= 1 << 5,	//*< Use PGN standard (superseeds other flags)
+		LongForm					= 1 << 6,	//*< Print long algebraic notation
+		CorrespondenceForm	= 1 << 7,	//*< Print correspondence form
+		TelegraphicForm		= 1 << 8,	//*< Print telegraphic form
 	};
 
 	enum
@@ -145,8 +148,8 @@ public:
 		virtual void boardSetup(Board const& board) = 0;
 		virtual void boardMove(Board const& board, Move const& move, bool forward) = 0;
 
-		virtual void updateEditor(edit::Root const* node) = 0;
-		virtual void updateEditor(DiffList const& nodes, TagSet const& tags) = 0;
+		virtual void updateEditor(edit::Root const* node, move::Notation moveStyle) = 0;
+		virtual void updateEditor(DiffList const& nodes, TagSet const& tags, move::Notation moveStyle) = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
@@ -244,8 +247,10 @@ public:
 	uint32_t flags() const override;
 	/// Return subscriber.
 	Subscriber* subscriber() const;
-	/// Print current move in short algebraic notation
-	mstl::string& printSan(mstl::string& result, unsigned flags = ExportFormat) const;
+	/// Print current move in given notation
+	mstl::string& printMove(mstl::string& result,
+									unsigned flags = ExportFormat,
+									move::Notation style = move::ShortAlgebraic) const;
 	/// Print FEN at current position
 	mstl::string& printFen(mstl::string& result) const;
 	/// Print FEN at given position
@@ -304,6 +309,8 @@ public:
 	MarkSet const& marks(edit::Key const& key) const;
 	/// Get current language set.
 	LanguageSet const& languageSet() const;
+	/// Get move style.
+	move::Notation moveStyle() const;
 
 	// Moving through game
 
@@ -503,7 +510,8 @@ public:
 					unsigned linebreakMaxLineLengthMain,
 					unsigned linebreakMaxLineLengthVar,
 					unsigned linebreakMinCommentLength,
-					unsigned displayStyle);
+					unsigned displayStyle,
+					move::Notation moveStyle);
 
 	Board const& getFinalBoard() const override;
 	Board const& getStartBoard() const override;
@@ -598,10 +606,11 @@ private:
 	Move parseMove(mstl::string const& san) const;
 
 	static bool checkConsistency(MoveNode* node, Board& board, Force flag);
-	static mstl::string& printSan(Board const& board,
-											MoveNode* node,
-											mstl::string& result,
-											unsigned flags);
+	static mstl::string& printMove(	Board const& board,
+												MoveNode* node,
+												mstl::string& result,
+												unsigned flags,
+												move::Notation form);
 
 	mutable SubscriberP m_subscriber;
 
@@ -633,6 +642,7 @@ private:
 	unsigned			m_linebreakMaxLineLengthVar;
 	unsigned			m_linebreakMinCommentLength;
 	unsigned			m_displayStyle;
+	move::Notation	m_moveStyle;
 };
 
 } // namebase db

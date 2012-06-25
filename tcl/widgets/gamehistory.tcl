@@ -47,7 +47,7 @@ set Games			"Games"
 proc Build {w args} {
 	set myList {}
 
-	set parent [::scrolledframe $w -fill both -background white -borderwidth 0 {*}$args]
+	set parent [::scrolledframe $w -fill both -background white -borderwidth 0 -wheelunits 1 {*}$args]
 	set f $parent.f
 	set t $f.t
 	set h $f.h
@@ -61,8 +61,9 @@ proc Build {w args} {
 	grid $f
 	grid anchor $parent center
 
+	set lbl [namespace current]::mc::GameHistory
 	::tk::label $h            \
-		-textvariable [namespace current]::mc::GameHistory \
+		-textvariable $lbl     \
 		-background white      \
 		-font $boldFont        \
 		-padx 6                \
@@ -82,6 +83,7 @@ proc Build {w args} {
 		-font $font           \
 		-background white     \
 		;
+	::scrolledframe::bindMousewheel $parent $t
 	$t state define hilite
 	$t column create -tags game
 	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred
@@ -327,18 +329,32 @@ proc SelectionChanged {w} {
 	}
 }
 
+
+proc SetActiveItem {w item} {
+	if {[string length $item] > 0} {
+		::TreeCtrl::SetActiveItem $w $item
+		lassign [$w item bbox $item] x0 y0 x1 y1
+		incr x0 [winfo x $w]
+		incr x1 [winfo x $w]
+		incr y0 [winfo y $w]
+		incr y1 [winfo y $w]
+		[winfo parent [winfo parent $w]] see $x0 $y0 $x1 $y1
+	}
+}
+
 } ;# namespace history
 } ;# namespace game
 
 
-bind GHist <KeyPress-Up>			{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active -1] }
-bind GHist <KeyPress-Down>			{ TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active +1] }
-bind GHist <KeyPress-Home>			{ TreeCtrl::SetActiveItem %W [%W item id {first visible state enabled}]}
-bind GHist <KeyPress-End>			{ TreeCtrl::SetActiveItem %W [%W item id {last visible state enabled}] }
-bind GHist <KeyPress-space>		{ TreeCtrl::SetActiveItem %W [%W item id active] }
+bind GHist <KeyPress-Up>	{ game::history::SetActiveItem %W [TreeCtrl::UpDown %W active -1] }
+bind GHist <KeyPress-Down>	{ game::history::SetActiveItem %W [TreeCtrl::UpDown %W active +1] }
+bind GHist <KeyPress-Home>	{ game::history::SetActiveItem %W [%W item id {first visible state enabled}]}
+bind GHist <KeyPress-End>	{ game::history::SetActiveItem %W [%W item id {last visible state enabled}] }
+
+bind GHist <KeyPress-space>		{ game::history::SetActiveItem %W [%W item id active] }
 bind GHist <Shift-KeyPress-Down>	{ TreeCtrl::Extend %W below }
 bind GHist <Shift-KeyPress-Up>	{ TreeCtrl::Extend %W above }
-bind GHist <ButtonPress-1>			{ TreeCtrl::SetActiveItem %W [::TreeCtrl::ButtonPress1 %W %x %y] }
+bind GHist <ButtonPress-1>			{ game::history::SetActiveItem %W [TreeCtrl::ButtonPress1 %W %x %y] }
 bind GHist <ButtonRelease-1>		{ TreeCtrl::Release1 %W %x %y }
 bind GHist <Button1-Motion>		{ TreeCtrl::Motion1 %W %x %y }
 bind GHist <Button1-Leave>			{ TreeCtrl::Leave1 %W %x %y }

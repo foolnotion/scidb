@@ -563,7 +563,7 @@ HPDF_TextAnnot_SetIcon  (HPDF_Annotation  annot,
     if (!CheckSubType (annot, HPDF_ANNOT_TEXT_NOTES))
         return HPDF_INVALID_ANNOTATION;
 
-    if (icon < 0 || icon >= HPDF_ANNOT_ICON_EOF)
+    if (icon >= HPDF_ANNOT_ICON_EOF)
         return HPDF_RaiseError (annot->error, HPDF_ANNOT_INVALID_ICON,
                 (HPDF_STATUS)icon);
 

@@ -654,7 +654,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	m_gameData->sync();
 	m_hasMagic = true;
 
-	writeNamebases(namebaseStream);
+	writeAllNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -681,7 +681,7 @@ Codec::doClear(mstl::string const& rootname)
 	m_gameData = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength, m_magicGameFile);
 	m_hasMagic = true;
 
-	writeNamebases(namebaseStream);
+	writeAllNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -713,8 +713,8 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	mstl::fstream indexStream;
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
 
-	writeNamebases(namebaseFilename);
-	writeIndex(indexStream, start, progress);
+	writeAllNamebases(namebaseFilename);
+	writeIndexEntries(indexStream, start, progress);
 }
 
 
@@ -768,7 +768,7 @@ Codec::update(mstl::string const& rootname)
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
-	writeNamebases(namebaseFilename);
+	writeAllNamebases(namebaseFilename);
 	updateIndex(indexStream);
 }
 
@@ -796,7 +796,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 	// We cannot use flag updateNamebase, because the frequency may have changed!
 	mstl::string namebaseFilename(rootname + m_extNamebase);
 	checkPermissions(namebaseFilename);
-	writeNamebases(namebaseFilename);
+	writeAllNamebases(namebaseFilename);
 
 	GameInfo* info = gameInfoList()[index];
 
@@ -862,7 +862,7 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::writeIndex(mstl::fstream& fstrm, unsigned start, Progress& progress)
+Codec::writeIndexEntries(mstl::fstream& fstrm, unsigned start, Progress& progress)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
@@ -1889,7 +1889,7 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 void
-Codec::writeNamebases(mstl::string const& filename)
+Codec::writeAllNamebases(mstl::string const& filename)
 {
 	mstl::string namebaseTempFilename(filename + ".temp.38583276");
 
@@ -1897,7 +1897,7 @@ Codec::writeNamebases(mstl::string const& filename)
 	{
 		mstl::fstream namebaseStream;
 		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
-		writeNamebases(namebaseStream);
+		writeAllNamebases(namebaseStream);
 		sys::file::rename(namebaseTempFilename, filename, true);
 	}
 	catch (...)
@@ -1909,7 +1909,7 @@ Codec::writeNamebases(mstl::string const& filename)
 
 
 void
-Codec::writeNamebases(mstl::fstream& stream)
+Codec::writeAllNamebases(mstl::fstream& stream)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 

@@ -1865,7 +1865,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 										char* e = const_cast<char*>(s);
 										unsigned nag = ::strtoul(s, &e, 10);
 
-										if (0 <= nag && nag < nag::Scidb_Last)
+										if (nag < nag::Scidb_Last)
 										{
 											result.m_content.append("<nag>", 5);
 											result.m_content.append(s, e - s);

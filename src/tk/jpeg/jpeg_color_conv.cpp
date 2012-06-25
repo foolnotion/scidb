@@ -153,8 +153,10 @@ template <int N> int32_t clamp(int32_t sample);
 template <int N, int M> int32_t resample(JPEGSample v);
 
 template <> inline int32_t resample< 8, 8>(JPEGSample v) { return v; }
+#ifdef JPEG_SUPPORT_12_BIT
 template <> inline int32_t resample< 8,16>(JPEGSample v) { return (v << 8) + v; }
 template <> inline int32_t resample<12,16>(JPEGSample v) { return (v << 4) + (v + 136)/273; }
+#endif
 
 template <>
 inline
@@ -164,6 +166,7 @@ clamp<8>(int32_t sample)
 	return sample & 0xffffff00 ? (~sample >> (sizeof(JPEGSample)*8 - 1)) & 0x000000ff : sample;
 }
 
+#ifdef JPEG_SUPPORT_12_BIT
 template <>
 inline
 int32_t
@@ -171,7 +174,7 @@ clamp<12>(int32_t sample)
 {
 	return sample & 0xfffff000 ? (~sample >> (sizeof(JPEGSample)*8 - 1)) & 0x00000fff : sample;
 }
-
+#endif
 
 inline
 int32_t

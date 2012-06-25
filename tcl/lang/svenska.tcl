@@ -46,6 +46,12 @@
 ::mc::Key(Shift)		"Shift" ;# NEW
 ::mc::Key(Up)			"\u2191"
 
+::mc::MoveForm(alg)	"Algebraic" ;# NEW
+::mc::MoveForm(san)	"Short Algebraic" ;# NEW
+::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
+::mc::MoveForm(cor)	"Correspondence" ;# NEW
+::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+
 ::mc::Alignment		"Justering"
 ::mc::Apply				"Verkställ"
 ::mc::Archive			"Arkiv"
@@ -467,6 +473,7 @@
 ::application::pgn::mc::ShowMoveInfo						"Visa drag information"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Fet text för huvudlinjens drag"
 ::application::pgn::mc::ShowDiagrams						"Visa diagram"
+::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
 ::application::pgn::mc::Languages							"Språk"
 ::application::pgn::mc::CollapseVariations				"Visa varianter"
 ::application::pgn::mc::ExpandVariations					"Dölj varianter"
@@ -504,6 +511,7 @@
 ::application::tree::mc::UseQuickMode						"Använd snabbsökning"
 ::application::tree::mc::AutomaticSearch					"Automatisk sökning"
 ::application::tree::mc::LockReferenceBase				"Lås referensdatabas"
+::application::tree::mc::SwitchReferenceBase				"Switch reference database" ;# NEW
 ::application::tree::mc::TransparentBar					"Transparent bar"
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
@@ -1372,6 +1380,7 @@
 ::help::mc::CollapseAllItems		"Collapse all items"
 ::help::mc::SelectLanguage			"Välj språk"
 ::help::mc::NoHelpAvailable		"Det finns inga hjälpfiler på engelska.\nVälj ett annat språk\nför hjälpdialogen."
+::help::mc::NoHelpAvailableAtAll	"No help files available for this topic." ;# NEW
 ::help::mc::KeepLanguage			"Använd samma språk %s för kommande sessioner?"
 ::help::mc::ParserError				"Fel vid parsning av fil %s."
 ::help::mc::NoMatch					"Ingen träff"

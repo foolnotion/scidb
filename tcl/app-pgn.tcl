@@ -61,6 +61,7 @@ set ShowMoveInfo						"Show Move Information"
 set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
 set ShowDiagrams						"Show Diagrams"
 set Languages							"Languages"
+set MoveNotation						"Move Notation"
 set CollapseVariations				"Collapse Variations"
 set ExpandVariations					"Expand Variations"
 set EmptyGame							"Empty Game"
@@ -136,11 +137,9 @@ array set Options {
 	indent-comment		1
 	indent-var			1
 	column-style		0
+	move-style			san
 	paragraph-spacing	0
 	show-move-info		0
-	tabstop-1			6.0
-	tabstop-2			0.7
-	tabstop-3			12.0
 	diagram-size		30
 	diagram-show		1
 	diagram-pad-x		25
@@ -150,6 +149,7 @@ array set Options {
 variable Vars
 variable CharLimit 250
 variable Counter 0
+variable MoveStyles { alg san lan cor tel }
 
 
 proc build {parent width height} {
@@ -1813,6 +1813,7 @@ proc PopupMenu {parent position} {
 	variable ::annotation::LastNag
 	variable ::scidb::clipbaseName
 	variable ::scidb::scratchbaseName
+	variable MoveStyles
 	variable Options
 	variable Vars
 
@@ -2283,6 +2284,19 @@ proc PopupMenu {parent position} {
 			;
 	}
 
+	menu $menu.display.moveStyles -tearoff no
+	$menu.display add cascade -menu $menu.display.moveStyles -label $mc::MoveNotation
+	foreach style $MoveStyles {
+		$menu.display.moveStyles add radiobutton \
+			-compound left \
+			-label $::mc::MoveForm($style) \
+			-variable [namespace current]::Options(move-style) \
+			-value $style \
+			-command [namespace code [list Refresh move-style]] \
+			;
+		::theme::configureRadioEntry $menu.display.moveStyles end
+	}
+
 	menu $menu.display.languages -tearoff no
 	$menu.display add cascade -menu $menu.display.languages -label $mc::Languages
 	$menu.display.languages add checkbutton \
@@ -2646,8 +2660,6 @@ proc Refresh {var} {
 	variable Colors
 	variable Vars
 
-	set radical ""
-
 	if {$var eq "mainline-bold"} {
 		if {$Options(mainline-bold)} {
 			set mainFont $Vars(font-bold)
@@ -2675,8 +2687,7 @@ proc Refresh {var} {
 		}
 	}
 
-	if {$var eq "diagram-show"} { set radical "" } else { set radical "-radical" }
-	::widget::busyOperation ::scidb::game::refresh {*}$radical
+	::widget::busyOperation ::scidb::game::refresh
 }
 
 
@@ -2705,9 +2716,11 @@ proc SetupStyle {{position {}}} {
 		set thresholds {240 80 60 0}
 	}
 
-	::scidb::game::setup {*}$position \
+	::scidb::game::setup \
+		{*}$position \
 		{*}$thresholds \
 		$Options(column-style) \
+		$Options(move-style) \
 		$Options(paragraph-spacing) \
 		$Options(diagram-show) \
 		$Options(show-move-info) \
@@ -2720,7 +2733,7 @@ proc LanguageChanged {} {
 
 	foreach position [::game::usedPositions?] {
 		if {[::scidb::game::query $position length] == 0} {
-			::scidb::game::refresh $position -radical
+			::scidb::game::refresh $position
 		} else {
 			set w $Vars(pgn:$position)
 			$w configure -state normal

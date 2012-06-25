@@ -144,7 +144,6 @@ namespace
 			u32[ 7] = mstl::bo::swap(u32[ 7]);
 			u32[ 8] = mstl::bo::swap(u32[ 8]);
 			u32[ 9] = mstl::bo::swap(u32[ 9]);
-			u32[10] = mstl::bo::swap(u32[10]);
 #endif
 		};
 	};
@@ -489,8 +488,8 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 	m_gameData->sync();
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, attach ? Truncate : 0);
-	writeNamebases(namebaseStream);
-	writeIndex(indexStream, start, progress);
+	writeAllNamebases(namebaseStream);
+	writeIndexEntries(indexStream, start, progress);
 }
 
 
@@ -539,7 +538,7 @@ Codec::update(mstl::string const& rootname)
 	m_gameData->sync();
 	indexStream.open(indexFilename, mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase);
-	writeNamebases(namebaseStream);
+	writeAllNamebases(namebaseStream);
 	updateIndex(indexStream);
 }
 
@@ -568,7 +567,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 
 		checkPermissions(namebaseFilename);
 		openFile(namebaseStream, namebaseFilename, MagicNamebase);
-		writeNamebases(namebaseStream);
+		writeAllNamebases(namebaseStream);
 	}
 
 	GameInfo* info = gameInfoList()[index];
@@ -602,7 +601,11 @@ Codec::updateHeader(mstl::string const& rootname)
 
 
 void
-Codec::doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature)
+Codec::doEncoding(util::ByteStream& strm,
+						GameData const& data,
+						Signature const& signature,
+						TagBits const&,
+						bool)
 {
 	M_ASSERT(gameInfoList().size() <= maxGameCount());
 	M_ASSERT(namebase(Namebase::Player).size() <= maxPlayerCount());
@@ -753,7 +756,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	openFile(m_gameStream, gameFilename, Truncate);
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
-	writeNamebases(namebaseStream);
+	writeAllNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 	doOpen(encoding);
 }
@@ -772,7 +775,7 @@ Codec::doClear(mstl::string const& rootname)
 	openFile(m_gameStream, gameFilename, Truncate);
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
-	writeNamebases(namebaseStream);
+	writeAllNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 
 	doOpen(sys::utf8::Codec::utf8());
@@ -945,7 +948,7 @@ Codec::writeIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress)
+Codec::writeIndexEntries(mstl::fstream& fstrm, unsigned start, util::Progress& progress)
 {
 	writeIndexHeader(fstrm);
 
@@ -1485,7 +1488,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::P
 
 
 void
-Codec::writeNamebases(mstl::fstream& stream)
+Codec::writeAllNamebases(mstl::fstream& stream)
 {
 	if (!namebases().isModified())
 		return;

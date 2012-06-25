@@ -29,35 +29,36 @@
 namespace eval help {
 namespace eval mc {
 
-set Contents				"&Contents"
-set Index					"&Index"
-set Search					"&Search"
+set Contents					"&Contents"
+set Index						"&Index"
+set Search						"&Search"
 
-set Help						"Help"
-set MatchEntireWord		"Match entire word"
-set MatchCase				"Match case"
-set TitleOnly				"Search in titles only"
-set CurrentPageOnly		"Search in current page only"
-set GoBack					"Go back one page"
-set GoForward				"Go forward one page (Alt-Right)"
-set GotoPage				"Go to page '%s'"
-set ExpandAllItems		"Expand all items"
-set CollapseAllItems		"Collapse all items"
-set SelectLanguage		"Select Language"
-set KeepLanguage			"Keep language %s for subsequent sessions?"
-set NoHelpAvailable		"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
-set ParserError			"Error while parsing file %s."
-set NoMatch					"No match is found"
-set MaxmimumExceeded		"Maximal number of matches exceeded in some pages."
-set OnlyFirstMatches		"Only first %s matches per page will be shown."
-set HideIndex				"Hide index"
-set ShowIndex				"Show index"
+set Help							"Help"
+set MatchEntireWord			"Match entire word"
+set MatchCase					"Match case"
+set TitleOnly					"Search in titles only"
+set CurrentPageOnly			"Search in current page only"
+set GoBack						"Go back one page"
+set GoForward					"Go forward one page (Alt-Right)"
+set GotoPage					"Go to page '%s'"
+set ExpandAllItems			"Expand all items"
+set CollapseAllItems			"Collapse all items"
+set SelectLanguage			"Select Language"
+set KeepLanguage				"Keep language %s for subsequent sessions?"
+set NoHelpAvailable			"No help files available for language English.\nPlease choose an alternative language\nfor the help dialog."
+set NoHelpAvailableAtAll	"No help files available for this topic."
+set ParserError				"Error while parsing file %s."
+set NoMatch						"No match is found"
+set MaxmimumExceeded			"Maximal number of matches exceeded in some pages."
+set OnlyFirstMatches			"Only first %s matches per page will be shown."
+set HideIndex					"Hide index"
+set ShowIndex					"Show index"
 
-set FileNotFound			"File not found."
-set CantFindFile			"Can't find the file at %s."
-set IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that."
-set ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you"
-set PageNotAvailable		"This page is not available"
+set FileNotFound				"File not found."
+set CantFindFile				"Can't find the file at %s."
+set IncompleteHelpFiles		"It seems that the help files are still incomplete. Sorry about that."
+set ProbablyTheHelp			"Probably the help page in a different language may be an alternative for you"
+set PageNotAvailable			"This page is not available"
 
 } ;# namespace mc
 
@@ -290,6 +291,19 @@ proc CheckLanguage {parent helpFile} {
 		if {[file readable $file]} { return "found" }
 	}
 
+	set codes {}
+	foreach lang [lsort [array names ::mc::input]] {
+		if {[string length $lang]} {
+			set code [set ::mc::lang$lang]
+			set file [file normalize [file join $::scidb::dir::help $code $helpFile]]
+			if {[file readable $file]} { lappend codes $code }
+		}
+	}
+
+	if {[llength $codes] == 0} {
+		return [::dialog::info -parent $parent -message $mc::NoHelpAvailableAtAll]
+	}
+
 	set Lang {}
 	set dlg $parent.lang
 	tk::toplevel $dlg -class Scidb
@@ -299,25 +313,19 @@ proc CheckLanguage {parent helpFile} {
 	ttk::label $top.msg -text $mc::NoHelpAvailable
 	pack $top.msg -side top -padx $::theme::padx -pady $::theme::pady
 	set focus ""
-	foreach lang [lsort [array names ::mc::input]] {
-		if {[string length $lang]} {
-			set code [set ::mc::lang$lang]
-			set file [file normalize [file join $::scidb::dir::help $code $helpFile]]
-			if {[file readable $file]} {
-				set icon ""
-				catch { set icon $flag([set ::mc::langToCountry($code)]) }
-				if {[string length $icon] == 0} { set icon none }
-				ttk::button $top.$code \
-					-style aligned.TButton \
-					-text " $::encoding::mc::Lang($code)" \
-					-image $icon \
-					-compound left \
-					-command [namespace code [list SetupLang $code]] \
-					;
-				pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
-				bind $top.$code <Return> { event generate %W <Key-space>; break }
-			}
-		}
+	foreach code $codes {
+		set icon ""
+		catch { set icon $flag([set ::mc::langToCountry($code)]) }
+		if {[string length $icon] == 0} { set icon none }
+		ttk::button $top.$code \
+			-style aligned.TButton \
+			-text " $::encoding::mc::Lang($code)" \
+			-image $icon \
+			-compound left \
+			-command [namespace code [list SetupLang $code]] \
+			;
+		pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
+		bind $top.$code <Return> { event generate %W <Key-space>; break }
 	}
 	::widget::dialogButtons $dlg cancel cancel yes
 	$dlg.cancel configure -command [list destroy $dlg]

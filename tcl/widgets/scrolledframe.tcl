@@ -45,8 +45,8 @@ proc scrolledframe {path args} {
 				lappend frameOpts $key $opts($key)
 				array unset opts $key
 			}
-			-avoidconfigureresize {
-				lappend scrollOpts -avoidconfigureresize $opts($key)
+			-avoidconfigureresize - -wheelunits {
+				lappend scrollOpts $key $opts($key)
 				array unset opts $key
 			}
 		}
@@ -139,6 +139,7 @@ proc scrolledframe {w args} {
 		-xscrollincrement			20
 		-yscrollincrement			20
 		-avoidconfigureresize	no
+		-wheelunits             5
 	}
 	array set opts $args
 	# create a scrolled frame
@@ -172,14 +173,23 @@ proc scrolledframe {w args} {
 	set ($w:filly) 0
 	set ($w:expandx) 0
 	set ($w:expandy) 0
+	set ($w:wheelunits) $opts(-wheelunits)
 	if {!$opts(-avoidconfigureresize)} {
 		bind $w <Configure> [namespace code [list Resize $w %#]]
 		bind $w.scrolled <Configure> [namespace code [list Resize $w %#]]
 	}
 	array unset opts -avoidconfigureresize
+	array unset opts -wheelunits
 	set args [array get opts]
 	if {[llength $args]} [list uplevel 1 [namespace current]::Config $w $args]
+	BindMousewheel $w $w 
+	BindMousewheel $w $w.scrolled
 	return $w
+}
+
+
+proc bindMousewheel {w recv} {
+	BindMousewheel [winfo parent $w] $recv
 }
 
 
@@ -202,10 +212,13 @@ proc scrollbar {path args} {
 
 proc Map {w} {
 	# Due to a bug in the Tk library we have to force window mapping
-	[winfo parent $w] configure -width 0
-	Resize $w.__scrolledframe__ 0 force
+	grid remove $w.__vs__
+	MapWindow $w.__scrolledframe__
 	bind $w <Map> {#}
 }
+
+
+proc MapWindow {w} {} ;# the user has to implement this
 
 
 # --------------
@@ -220,7 +233,7 @@ proc Map {w} {
 proc Dispatch {w cmd args} {
 	switch -- $cmd {
 		resize		{ Resize $w 0 }
-		see			{ See $w [lindex $args 0] }
+		see			{ See $w {*}$args }
 		viewbox		{ return [ViewBox $w] }
 		vsbwidth		{ return [VsbWidth $w] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
@@ -545,6 +558,31 @@ proc Yview {w {cmd ""} args} {
 }
 
 
+proc BindMousewheel {w recv} {
+	variable {}
+
+	set units $($w:wheelunits)
+
+	switch [tk windowingsystem] {
+		x11 {
+			bind $recv <Button-4> [namespace code [list Yview $w scroll -$units units]]
+			bind $recv <Button-5> [namespace code [list Yview $w scroll +$units units]]
+			bind $recv <Button-4> {+ break }
+			bind $recv <Button-5> {+ break }
+		}
+		aqua {
+			bind $recv <MouseWheel> [namespace code [list Yview $w scroll [expr {-(%D)}] units]]
+			bind $recv <MouseWheel> {+ break }
+		}
+		win32 {
+			bind $recv <MouseWheel> \
+				[namespace code [list Yview $w scroll [expr {-(%D/120)*max(1, $units - 1)}] units]]
+			bind $recv <MouseWheel> {+ break }
+		}
+	}
+}
+
+
 proc ViewBox {w} {
 	set parent [winfo parent $w]
 
@@ -593,21 +631,34 @@ proc VsbWidth {w} {
 }
 
 
-proc See {w child} {
+proc See {w args} {
 	set hs [winfo parent $w].__hs__
 	set vs [winfo parent $w].__vs__
+
+	if {[llength $args] == 1} {
+		set child [lindex $args 0]
+		set xc [winfo x $child]
+		set yc [winfo y $child]
+		set wc [winfo width $child]
+		set hc [winfo height $child]
+	} elseif {[llength $args] == 4} {
+		lassign $args xc yc x2 y2
+		set wc [expr {$x2 - $xc}]
+		set hc [expr {$y2 - $yc}]
+	} else {
+		error "invalid arguments: should be \"$w see child\" or \"$w see x0 y0 x1 y1\""
+	}
 
 	if {[winfo exists $hs]} {
 		lassign [$hs get] first last
 		set wv [winfo width $w.scrolled]
-		set xc [winfo x $child]
 		set x0 [expr {round($first*$wv)}]
 		set x1 [expr {round($last*$wv)}]
 
 		if {$xc < $x0} {
 			$w xview moveto [expr {double($xc)/double($wv)}]
-		} elseif {$xc + [winfo width $child] > $x1} {
-			set x [expr {$xc + min(0, [winfo width $child] - [winfo width $w])}]
+		} elseif {$xc + $wc > $x1} {
+			set x [expr {$xc + min(0, $wc - [winfo width $w])}]
 			$w xview moveto [expr {double($x)/double($wv)}]
 		}
 	}
@@ -615,14 +666,13 @@ proc See {w child} {
 	if {[winfo exists $vs]} {
 		lassign [$vs get] first last
 		set hv [winfo height $w.scrolled]
-		set yc [winfo y $child]
 		set y0 [expr {round($first*$hv)}]
 		set y1 [expr {round($last*$hv)}]
 
 		if {$yc < $y0} {
 			$w yview moveto [expr {double($yc)/double($hv)}]
-		} elseif {$yc + [winfo height $child] > $y1} {
-			set y [expr {$yc + min(0, [winfo height $child] - [winfo height $w])}]
+		} elseif {$yc + $hc > $y1} {
+			set y [expr {$yc + min(0, $hc - [winfo height $w])}]
 			$w yview moveto [expr {double($y)/double($hv)}]
 		}
 	}

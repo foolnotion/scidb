@@ -1,0 +1,56 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Partien-Browser
+TITLE Der Partien-Browser
+
+<p>
+Der Partien-Browser wird mit einer Partie aus einer Partieliste
+geöffnet. Der Browser ist an diese Partieliste gebunden. Wird diese
+Partieliste geschlossen während der Browser noch offen ist, kann
+keine weitere Partie mehr geladen werden.
+</p>
+
+<p>
+Der Partien-Browser zeigt Partien in einfacher Form, d.h. ohne
+Anmerkungen, Kommentare und Untervarianten. Der Browser eignet
+sich insbesondere zum Sichten einer Partienliste.
+</p>
+
+<p>
+Zur Einstellung der Brettgröße sowie der Anzeige steht ein
+kontextsensitives Menü bereit.
+</p>
+
+<p>
+Der Partienkopf enthält drei Schaltflächen: das Ereignis und die
+Spielernamen. Durch Klicken und Halten der mittleren Maustaste auf
+einer Schaltfläche wird eine Informationsbox angezeigt. Durch
+Anklicken eines Spielernamens wird die Karteikarte dieses Spielers
+geöffnet.
+</p>
+
+<p>
+Wird der Mauszeiger ausserhalb des Textfensters (mit den Partiezügen)
+positioniert, aber noch innerhalb des Dialogs, kann das Mausrad zum
+Vorspielen der Züge eingesetzt werden.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

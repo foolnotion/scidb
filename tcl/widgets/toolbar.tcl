@@ -1972,7 +1972,7 @@ proc Tooltip {mode w} {
 
 	if {	$mode eq "show"
 		&& [info exists Specs(state:$w:$toolbar)]
-		&& $Specs(state:$w:$toolbar) ne "normal"} {
+		&& $Specs(state:$w:$toolbar) eq "disabled"} {
 
 		return
 	}

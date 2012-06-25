@@ -85,7 +85,7 @@ private:
 	typedef mstl::vector<Node*> List;
 	typedef List::const_iterator Iterator;
 
-	typedef mstl::chunk_allocator<Node> NodeAlloc;
+	typedef mstl::chunk_allocator<Node,true> NodeAlloc;
 	typedef mstl::chunk_allocator<char> StringAlloc;
 	typedef sys::utf8::Codec Codec;
 

@@ -93,7 +93,7 @@ HPDF_Page_SetLineCap  (HPDF_Page     page,
     if (ret != HPDF_OK)
         return ret;
 
-    if (line_cap < 0 || line_cap >= HPDF_LINECAP_EOF)
+    if (line_cap >= HPDF_LINECAP_EOF)
         return HPDF_RaiseError (page->error, HPDF_PAGE_OUT_OF_RANGE,
                 (HPDF_STATUS)line_cap);
 
@@ -126,7 +126,7 @@ HPDF_Page_SetLineJoin  (HPDF_Page      page,
     if (ret != HPDF_OK)
         return ret;
 
-    if (line_join < 0 || line_join >= HPDF_LINEJOIN_EOF)
+    if (line_join >= HPDF_LINEJOIN_EOF)
         return HPDF_RaiseError (page->error, HPDF_PAGE_OUT_OF_RANGE,
                 (HPDF_STATUS)line_join);
 

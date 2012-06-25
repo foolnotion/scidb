@@ -16,9 +16,9 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Partie-Übersichts-Browser
+INDEX Partien-Übersichts-Browser
 INDEX Übersichts-Browser
-TITLE Der Partie-Übersichts-Browser
+TITLE Der Partien-Übersichts-Browser
 
 <p>
 Der Übersichts-Browser wird mit einer Partie aus einer Partieliste
@@ -49,7 +49,7 @@ Funktionen:
 
 <ul>
 	<li>Die Bretter drehen</li>
-	<li>Die aktuelle Partie in den Partie-Editor laden</li>
+	<li>Die aktuelle Partie in den Partien-Editor laden</li>
 	<li>Die erste Partie in der Partieliste laden</li>
 	<li>Die letzte Partie in der Partieliste laden</li>
 </ul>

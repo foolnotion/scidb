@@ -594,7 +594,7 @@ function<R (T1,T2,T3)>::invoke_null::invoke(function_base*, T1, T2, T3)
 template <typename R, typename T1, typename T2, typename T3, typename T4>
 inline
 function<R (T1,T2,T3,T4)>::function(R (*func)(T1, T2, T3, T4))
-	:function_base(reinterpret_cast<void (function_base::*)()>(func))
+	:function_base(reinterpret_cast<void (*)()>(func))
 	,invoker_(invoke_func::invoke)
 {
 }

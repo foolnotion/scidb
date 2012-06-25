@@ -636,7 +636,7 @@ View::exportGames(mstl::string const& filename,
 		{
 			int64_t size;
 
-			if (size > 0 && type != util::ZStream::Zip && util::ZStream::size(filename, size))
+			if (type != util::ZStream::Zip && util::ZStream::size(filename, size) > 0)
 				flags |= PgnWriter::Flag_Append_Games;
 
 			mode |= mstl::ios_base::app;

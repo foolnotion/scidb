@@ -970,7 +970,11 @@ Move::Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const
 {
 	M_ASSERT(!move->atLineStart());
 
-	spacing.pushSpace();
+	if (color::isWhite(move->move().color()) && (spacing.m_displayStyle & display::ColumnStyle))
+		spacing.pushBreak();
+	else
+		spacing.pushSpace();
+
 	spacing.pop(m_list);
 
 	if (move->hasAnnotation())
@@ -1111,10 +1115,13 @@ Root::makeList(TagSet const& tags,
 					db::Board const& startBoard,
 					MoveNode const* node,
 					unsigned linebreakThreshold,
-					unsigned linebreakMaxLineLength)
+					unsigned linebreakMaxLineLength,
+					unsigned displayStyle)
 {
 	M_REQUIRE(node);
 	M_REQUIRE(node->atLineStart());
+	M_REQUIRE(	(displayStyle & display::CompactStyle) == display::CompactStyle
+				|| (displayStyle & display::ColumnStyle) == display::ColumnStyle);
 
 	if (node->countHalfMoves() <= linebreakThreshold)
 		linebreakMaxLineLength = ::DontSetBreaks;
@@ -1137,6 +1144,7 @@ Root::makeList(TagSet const& tags,
 	key.addPly(plyNumber);
 	result.push_back(new Move(key));
 	spacing.m_linebreakMaxLineLength = linebreakMaxLineLength;
+	spacing.m_displayStyle = displayStyle;
 
 	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
@@ -1163,13 +1171,12 @@ Root::makeList(TagSet const& tags,
 					unsigned linebreakMaxLineLength,
 					unsigned linebreakMaxLineLengthVar,
 					unsigned linebreakMinCommentLength,
-					unsigned m_displayStyle)
+					unsigned displayStyle)
 {
 	M_REQUIRE(node);
 	M_REQUIRE(node->atLineStart());
-	M_REQUIRE(m_displayStyle & (display::CompactStyle | display::ColumnStyle));
-	M_REQUIRE((m_displayStyle & (display::CompactStyle | display::ColumnStyle))
-					!= (display::CompactStyle | display::ColumnStyle));
+	M_REQUIRE(	(displayStyle & display::CompactStyle) == display::CompactStyle
+				|| (displayStyle & display::ColumnStyle) == display::ColumnStyle);
 
 	Work work;
 	work.board = startBoard;
@@ -1178,10 +1185,10 @@ Root::makeList(TagSet const& tags,
 	work.wantedLanguages = &wantedLanguages;
 	work.linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
 	work.linebreakMinCommentLength = linebreakMinCommentLength;
-	work.m_displayStyle = m_displayStyle;
 	work.isEmpty = node->isEmptyLine();
+	work.m_displayStyle = displayStyle;
 
-	if ((m_displayStyle & display::CompactStyle) && node->countHalfMoves() > linebreakThreshold)
+	if ((displayStyle & display::CompactStyle) && node->countHalfMoves() > linebreakThreshold)
 		work.m_linebreakMaxLineLength = linebreakMaxLineLength;
 
 	Root*			root	= new Root;

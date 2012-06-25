@@ -78,7 +78,7 @@ protected:
 
 private:
 
-	void sendComment(	Comment const& preComment,
+	void sendComments(Comment const& preComment,
 							Comment const& comment,
 							Annotation const& annotation,
 							MarkSet const& marks);

@@ -51,8 +51,9 @@ set Index {
   }
   { P
     {
-      {{Partie-Übersichts-Browser} {Game-Overview.html} {}}
       {{Partiemarkierungen} {Game-Flags.html} {}}
+      {{Partien-Browser} {Game-Browser.html} {}}
+      {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
   { U

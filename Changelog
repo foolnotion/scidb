@@ -1,16 +1,30 @@
 [June 2012] ==================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #358)
+------------------------------------------------------------------------------
+* Some fixes for the clang compiler.
+
+* Notation styles Algebraic (normal, short, and long), Correspondence, and
+Telegraphic now available.
+
+* New help page for Game Browser.
+
+* Game browser now has an optional column style.
+
+* The minimal gcc compiler version is 3.4 again (was a mistake).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #356)
 ------------------------------------------------------------------------------
-- agg library: font support (freetype) added. But this has a price, the
+* agg library: font support (freetype) added. But this has a price, the
 minimal gcc compiler version now is 4.1 (was 3.4 before). The configure script
 is updated for freetype support.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #354)
 ------------------------------------------------------------------------------
-- Mouse wheel bindings implemented (thanks to Steve for his suggestion).
+* Mouse wheel bindings implemented (thanks to Steve for his suggestion).
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #348)

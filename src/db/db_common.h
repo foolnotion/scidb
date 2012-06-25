@@ -414,6 +414,7 @@ namespace move {
 
 	enum Constraint	{ DontAllowIllegalMove, AllowIllegalMove };
 	enum Position		{ Ante, Post };
+	enum Notation		{ Algebraic, ShortAlgebraic, LongAlgebraic, Correspondence, Telegraphic };
 
 } // namespace move
 

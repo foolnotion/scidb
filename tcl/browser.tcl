@@ -78,6 +78,12 @@ array set Options {
 	background:current	#ffdd76
 	foreground:result		black
 	foreground:empty		#666666
+	style:column			no
+	style:move				san
+	tabstop-1				4.0
+	tabstop-2				0.7
+	tabstop-3				8.0
+	tabstop-3:add			4.0
 }
 
 
@@ -145,10 +151,10 @@ proc open {parent base info view index {fen {}}} {
 		-takefocus 0 \
 		-background $background \
 		-image $::icon::22x22::rotateBoard \
-		-command [namespace code [list RotateBoard $board]] \
+		-command [namespace code [list RotateBoard $position]] \
 		;
-	::tooltip::tooltip $controls.rotateBoard ::overview::mc::RotateBoard
 	grid $controls.rotateBoard -row 0 -column 0
+	set Vars(control:rotate) $controls.rotateBoard
 	foreach {control column key tipvar} {	GotoStart 4 Home GotoStartOfGame
 														FastBackward 5 Prior GoBackFast
 														Backward 6 Left GoBackward
@@ -169,18 +175,17 @@ proc open {parent base info view index {fen {}}} {
 		set w $controls.[string tolower $control 0 0]
 		$w configure -repeatdelay $::theme::repeatDelay -repeatinterval $Options(repeat:interval)
 	}
-	SetupControlButtons $position
 	tk::button $controls.autoplay \
 		-takefocus 0 \
 		-background $background \
 		-image $::icon::22x22::playerStart \
 		-command [namespace code [list ToggleAutoPlay $position 1]] \
 		;
-	::tooltip::tooltip $controls.autoplay [namespace current]::mc::StartAutoplay
+	set Vars(control:autoplay) $controls.autoplay
 	grid $controls.autoplay -row 0 -column 11
 	grid columnconfigure $controls {1 10} -minsize 10
-	grid columnconfigure $controls {2 13} -minsize 22
-	grid columnconfigure $controls {3 12} -weight 1
+	grid columnconfigure $controls {2 12} -minsize 22
+	grid columnconfigure $controls {3 13} -weight 1
 
 	# PGN side
 	tk::text $rt.header \
@@ -256,9 +261,8 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(pgn) $rt.pgn
 	set Vars(board) $board
 	set Vars(autoplay) 0
-	set Vars(autoplay:control) $controls.autoplay
-	set Vars(forward:control) $buttons.forward
-	set Vars(backward:control) $buttons.backward
+	set Vars(control:forward) $buttons.forward
+	set Vars(control:backward) $buttons.backward
 	set Vars(afterid) {}
 	set Vars(afterid2) {}
 	set Vars(header) $rt.header
@@ -293,7 +297,6 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Return>					{+ break }
 	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
 	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
-	bind $dlg <Control-r>				[namespace code [list RotateBoard $board]]
 	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
 	bind $dlg <Left>						[namespace code [list Goto $position -1]]
 	bind $dlg <Right>						[namespace code [list Goto $position +1]]
@@ -310,6 +313,9 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
 	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <F1>							{ ::help::open .application Game-Browser }
+
+	SetupControlButtons $position
 
 	wm withdraw $dlg
 #	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
@@ -324,7 +330,7 @@ proc open {parent base info view index {fen {}}} {
 	bind $rt.header <<LanguageChanged>> [namespace code [list LanguageChanged $position]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
 
-	::scidb::game::setup $position 240 80 0 0 no no no no
+	SetupStyle $position no
 
 	::scidb::game::subscribe board {*}$Vars(subscribe:board)
 	::scidb::game::subscribe pgn {*}$Vars(subscribe:pgn)
@@ -456,18 +462,56 @@ if {0} {
 }
 
 
+proc SetupStyle {position {refresh yes}} {
+	variable ${position}::Vars
+	variable Options
+
+	if {$Options(style:column)} { set thresholds {0 0 0 0} } else { set thresholds {240 80 60 0} }
+
+	if {$Options(style:column)} {
+		set charwidth [font measure [$Vars(pgn) cget -font] "0"]
+
+		set tab1 [expr {round($Options(tabstop-1)*$charwidth)}]
+		set tab2 [expr {$tab1 + round($Options(tabstop-2)*$charwidth)}]
+		set tab3 [expr {$tab2 + round($Options(tabstop-3)*$charwidth)}]
+
+		if {$Options(style:move) eq "lan"} {
+			set tab3 [expr {$tab3 + $Options(tabstop-3:add)*$charwidth}]
+		}
+
+		$Vars(pgn) configure -tabs [list $tab1 right $tab2 $tab3] -tabstyle wordprocessor
+	} else {
+		$Vars(pgn) configure -tabs {} -tabstyle tabular
+	}
+
+	::scidb::game::setup \
+		$position \
+		{*}$thresholds \
+		$Options(style:column) \
+		$Options(style:move) \
+		no \
+		no \
+		no \
+		;
+
+	if {$refresh} {
+		::widget::busyOperation ::scidb::game::refresh $position -immediate
+	}
+}
+
+
 proc ConfigureButtons {position} {
 	variable ${position}::Vars
 
 	if {$Vars(index) == -1} {
-		$Vars(backward:control) configure -state disabled
-		$Vars(forward:control) configure -state disabled
+		$Vars(control:backward) configure -state disabled
+		$Vars(control:forward) configure -state disabled
 	} else {
 		if {$Vars(index) == 0} { set state disabled } else { set state normal }
-		$Vars(backward:control) configure -state $state
+		$Vars(control:backward) configure -state $state
 		set count [scidb::view::count games $Vars(base) $Vars(view)]
 		if {$Vars(index) + 1 == $count} { set state disabled } else { set state normal }
-		$Vars(forward:control) configure -state $state
+		$Vars(control:forward) configure -state $state
 	}
 }
 
@@ -619,6 +663,7 @@ proc LanguageChanged {position} {
 
 proc SetupControlButtons {position} {
 	variable ${position}::Vars
+	variable Accelerator
 
 	foreach {control var} {	Home	GotoStartOfGame
 									Prior	GoBackFast
@@ -628,6 +673,22 @@ proc SetupControlButtons {position} {
 									End	GotoEndOfGame} {
 		::tooltip::tooltip $Vars(control:$control) "[set mc::$var] ($::mc::Key($control))"
 	}
+
+	::tooltip::tooltip $Vars(control:rotate) \
+		"$::overview::mc::RotateBoard ($::overview::mc::AcceleratorRotate)"
+
+	SetAutoPlayTooltip $position
+
+	if {[info exists Accelerator]} {
+		bind $Vars(dlg) <Key-[string tolower $Accelerator]> {#}
+		bind $Vars(dlg) <Key-[string toupper $Accelerator]> {#}
+	}
+
+	set accel $::overview::mc::AcceleratorRotate
+	bind $Vars(dlg) <Key-[string tolower $accel]> [namespace code [list RotateBoard $position]]
+	bind $Vars(dlg) <Key-[string toupper $accel]> [namespace code [list RotateBoard $position]]
+
+	set Accelerator $::overview::mc::AcceleratorRotate
 }
 
 
@@ -808,8 +869,10 @@ proc UpdatePGN {position data} {
 
 						ply {
 							lassign [lindex $move 1] moveNo stm san legal
+							if {$Options(style:column)} { $w insert end "\t" }
 							if {$moveNo > 0} {
 								$w insert end "$moveNo." $key
+								if {$Options(style:column)} { $w insert end "\t" }
 							}
 							foreach {text tag} [::font::splitMoves $san] {
 								PrintMove $w $position $key $text $tag
@@ -831,7 +894,8 @@ proc UpdatePGN {position data} {
 				if {[::scidb::game::query $position length] == 0} {
 					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
 				}
-				$w insert end " "
+				if {$Options(style:column)} { set space "\n" } else { set space " " }
+				$w insert end $space
 				$w insert end {*}$Vars(result)
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Options(background:pgn) }
@@ -918,7 +982,7 @@ proc UpdateBoard {position cmd data} {
 proc ToggleAutoPlay {position {hide 0}} {
 	variable ${position}::Vars
 
-	set w $Vars(autoplay:control)
+	set w $Vars(control:autoplay)
 
 	if {[$w cget -image] eq $::icon::22x22::playerStart} {
 		$w configure -image $::icon::22x22::playerStop
@@ -933,13 +997,27 @@ proc ToggleAutoPlay {position {hide 0}} {
 		set tooltipVar StartAutoplay
 	}
 
-	::tooltip::tooltip $w [namespace current]::mc::$tooltipVar
+	SetAutoPlayTooltip $position
 	if {$hide} { ::tooltip::tooltip hide }
 }
 
 
-proc RotateBoard {board} {
-	::board::stuff::rotate $board
+proc SetAutoPlayTooltip {position} {
+	variable ${position}::Vars
+
+	if {[$Vars(control:autoplay) cget -image] eq $::icon::22x22::playerStart} {
+		set tooltipVar StartAutoplay
+	} else {
+		set tooltipVar StartAutoplay
+	}
+
+	::tooltip::tooltip $Vars(control:autoplay) "[set mc::$tooltipVar] ($::mc::Key(Ctrl)-A)"
+}	
+
+
+proc RotateBoard {position} {
+	variable ${position}::Vars
+	::board::stuff::rotate $Vars(board)
 }
 
 
@@ -1111,6 +1189,35 @@ proc PopupMenu {parent board position {what ""}} {
 			-accelerator "F11" \
 			;
 	}
+
+	$menu add separator
+	$menu add checkbutton \
+		-label $::application::pgn::mc::ColumnStyle \
+		-command [namespace code [list SetupStyle $position]] \
+		-variable [namespace current]::Options(style:column) \
+		;
+	menu $menu.moveStyles -tearoff no
+	$menu add cascade -menu $menu.moveStyles -label $::application::pgn::mc::MoveNotation
+	foreach style $::application::pgn::MoveStyles {
+		$menu.moveStyles add radiobutton \
+			-compound left \
+			-label $::mc::MoveForm($style) \
+			-variable [namespace current]::Options(style:move) \
+			-value $style \
+			-command [namespace code [list SetupStyle $position]] \
+			;
+		::theme::configureRadioEntry $menu.moveStyles end
+	}
+
+
+	$menu add separator
+	$menu add command \
+		-label " $::help::mc::Help" \
+		-image $::icon::16x16::help \
+		-compound left \
+		-command { ::help::open .application Game-Browser } \
+		-accelerator "F1" \
+		;
 
 	tk_popup $menu {*}[winfo pointerxy $dlg]
 }

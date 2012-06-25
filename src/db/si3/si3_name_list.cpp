@@ -92,7 +92,6 @@ NameList::NameList()
 	,m_nodeAlloc(32768)
 	,m_stringAlloc(32768)
 {
-	m_nodeAlloc.set_zero();
 }
 
 

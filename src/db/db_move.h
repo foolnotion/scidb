@@ -217,6 +217,10 @@ public:
 	mstl::string& printNumeric(mstl::string& s) const;
 	/// Print telegraphic form.
 	mstl::string& printAlphabetic(mstl::string& s) const;
+	/// Print in given notation style.
+	mstl::string& print(	mstl::string& s,
+								move::Notation style,
+								encoding::CharSet charSet = encoding::Latin1) const;
 
 	/// Make empty move.
 	void clear();

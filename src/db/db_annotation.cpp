@@ -65,8 +65,10 @@ append(mstl::string& result, mstl::string const& s)
 }
 
 
-struct Annotation::Default
+class Annotation::Default
 {
+public:
+
 	Default()
 	{
 		for (unsigned i = 0; i < U_NUMBER_OF(m_sets); ++i)

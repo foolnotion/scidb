@@ -1969,7 +1969,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				case 3:	if (::strcasecmp(value, "FRC") == 0)
 								m_variant = variant::Chess960;
 							break;
-				case 4:	if (::strcasecmp(value, "SFRC") == 0); // Symmetrical Fischerandom
+				case 4:	if (::strcasecmp(value, "SFRC") == 0) // Symmetrical Fischerandom
 								m_variant = variant::Chess960;
 							break;
 				case 7:	if (::strcasecmp(value, "Shuffle") == 0)

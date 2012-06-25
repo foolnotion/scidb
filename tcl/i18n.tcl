@@ -40,6 +40,12 @@ set Key(Right)		"\u2192"
 set Key(Shift)		"Shift"
 set Key(Up)			"\u2191"
 
+set MoveForm(alg)	"Algebraic"
+set MoveForm(san)	"Short Algebraic"
+set MoveForm(lan)	"Long Algebraic"
+set MoveForm(cor)	"Correspondence"
+set MoveForm(tel)	"Telegraphic"
+
 set Alignment		"Alignment"
 set Apply			"Apply"
 set Archive			"Archive"

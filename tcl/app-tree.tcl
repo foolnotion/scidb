@@ -43,6 +43,7 @@ set UseFastMode						"Use accelerated mode"
 set UseQuickMode						"Use quick mode"
 set AutomaticSearch					"Automatic search"
 set LockReferenceBase				"Lock reference database"
+set SwitchReferenceBase				"Switch reference database"
 set TransparentBar					"Transparent bar"
 set NoGamesFound						"No games found"
 
@@ -388,6 +389,7 @@ proc build {parent width height} {
 		-exportselection no \
 		-state readonly \
 		-textvariable [namespace current]::Vars(name) \
+		-tooltipvar [namespace current]::mc::SwitchReferenceBase \
 		-showcolumns {name} \
 		]
 	$switcher configure -postcommand [namespace code [list FillSwitcher $switcher]]

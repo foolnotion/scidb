@@ -34,6 +34,24 @@
 ::mc::AsciiMapping	{‡ a ç A Ž e ƒ E ’ i ê I – n „ N — o î O œ u ò U}
 ::mc::SortOrder		{A ç B C D E ƒ F G H I ê J K L M N „ O î P Q R S T U ò V W X Y Z a ‡ b c d e Ž f g h i ’ j k l m n – o — p q r s t u œ v w x y z}
 
+::mc::Key(Alt)			"Alt"
+::mc::Key(Ctrl)		"Ctrl"
+::mc::Key(Down)		"\u2193"
+::mc::Key(End)			"End"
+::mc::Key(Home)		"Home"
+::mc::Key(Left)		"\u2190"
+::mc::Key(Next)		"Page\u2193"	;# Page Down
+::mc::Key(Prior)		"Page\u2191"	;# Page Up
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Shift"
+::mc::Key(Up)			"\u2191"
+
+::mc::oveForm(alg)	"Algebraic" ;# NEW
+::mc::MoveForm(san)	"Short Algebraic" ;# NEW
+::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
+::mc::MoveForm(cor)	"Correspondence" ;# NEW
+::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+
 ::mc::Alignment		"Alineaci—n"
 ::mc::Apply				"Aplicar"
 ::mc::Background		"Fondo"
@@ -160,8 +178,6 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
-::menu::mc::Ctrl							"Ctrl"
-::menu::mc::Shift							"Shift"
 
 ::menu::mc::AllScidbFiles				"Todos los archivos Scidb"
 ::menu::mc::AllScidbBases				"Todas las bases Scidb"
@@ -416,6 +432,7 @@
 ::application::pgn::mc::BoldTextForMainlineMoves		"Negrita para las jugadas de la L’nea principal"
 ::application::pgn::mc::ShowDiagrams						"Mostrar diagramas"
 ::application::pgn::mc::Languages							"Idiomas"
+::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
 ::application::pgn::mc::CollapseVariations				"Contraer variantes"
 ::application::pgn::mc::ExpandVariations					"Expandir variantes"
 ::application::pgn::mc::EmptyGame							"Vaciar partida"
@@ -452,6 +469,7 @@
 ::application::tree::mc::UseQuickMode						"Usar bœsqueda r‡pida"
 ::application::tree::mc::AutomaticSearch					"Busqueda autom‡tica"
 ::application::tree::mc::LockReferenceBase				"Bloquear base de referencia"
+::application::tree::mc::SwitchReferenceBase				"Switch reference database" ;# NEW
 ::application::tree::mc::TransparentBar					"Barras transparentes"
 
 ::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
@@ -1290,6 +1308,7 @@
 ::help::mc::CollapseAllItems		"Collapse all items" ;# NEW
 ::help::mc::SelectLanguage			"Select Language" ;# NEW
 ::help::mc::NoHelpAvailable		"No help files available for language Spanish.\nPlease choose an alternative language\nfor the help dialog." ;# NEW
+::help::mc::NoHelpAvailableAtAll	"No help files available for this topic." ;# NEW
 ::help::mc::KeepLanguage			"Keep language %s for subsequent sessions?" ;# NEW
 ::help::mc::ParserError				"Error while parsing file %s." ;# NEW
 ::help::mc::NoMatch					"No match is found" ;# NEW

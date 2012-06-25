@@ -150,8 +150,8 @@ toString(Game::Command command)
 		case Game::StripMarks:			return "strip:marks";
 		case Game::StripComments:		return "strip:comments";
 		case Game::StripVariations:	return "strip:variations";
-		case Game::CopyComments:			return "copy:comments";
-		case Game::MoveComments:			return "move:comments";
+		case Game::CopyComments:		return "copy:comments";
+		case Game::MoveComments:		return "move:comments";
 		case Game::Clear:					return "game:clear";
 		case Game::Transpose:			return "game:transpose";
 	}
@@ -190,8 +190,9 @@ public:
 
 	typedef edit::Comment::VarPos VarPos;
 
-	Visitor()
+	Visitor(move::Notation moveStyle)
 		:m_objc(0)
+		,m_moveStyle(moveStyle)
 	{
 		if (m_action == 0)
 		{
@@ -413,7 +414,7 @@ public:
 	{
 		mstl::string san;
 
-		move.printSan(san, encoding::Utf8);
+		move.print(san, m_moveStyle, encoding::Utf8);
 
 		Tcl_Obj* objv_1[4];
 
@@ -585,10 +586,10 @@ public:
 		m_objc = 0;
 	}
 
-	Tcl_Obj* m_list;
-
-	Tcl_Obj* m_objv[10];
-	unsigned m_objc;
+	Tcl_Obj*			m_list;
+	Tcl_Obj*			m_objv[10];
+	unsigned			m_objc;
+	move::Notation	m_moveStyle;
 
 	static Tcl_Obj* m_action;
 	static Tcl_Obj* m_clear;
@@ -675,12 +676,12 @@ Tcl_Obj* Visitor::m_s				= 0;
 
 struct Subscriber : public Game::Subscriber
 {
-	Tcl_Obj*	m_board;
-	Tcl_Obj*	m_tree;
-	Tcl_Obj*	m_pgn;
-	Tcl_Obj*	m_state;
-	Tcl_Obj*	m_position;
-	bool		m_mainlineOnly;
+	Tcl_Obj*		m_board;
+	Tcl_Obj*		m_tree;
+	Tcl_Obj*		m_pgn;
+	Tcl_Obj*		m_state;
+	Tcl_Obj*		m_position;
+	bool			m_mainlineOnly;
 
 	static Tcl_Obj* m_action;
 	static Tcl_Obj* m_set;
@@ -762,23 +763,23 @@ struct Subscriber : public Game::Subscriber
 			invoke(__func__, m_state, m_position, locked ? m_true : m_false, nullptr);
 	}
 
-	void updateEditor(edit::Root const* node) override
+	void updateEditor(edit::Root const* node, move::Notation moveStyle) override
 	{
 		M_ASSERT(node);
 
 		if (m_pgn)
 		{
-			Visitor visitor;
+			Visitor visitor(moveStyle);
 			node->visit(visitor);
 			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
 	}
 
-	void updateEditor(Game::DiffList const& nodes, TagSet const& tags) override
+	void updateEditor(Game::DiffList const& nodes, TagSet const& tags, move::Notation moveStyle) override
 	{
 		if (m_pgn)
 		{
-			Visitor visitor;
+			Visitor visitor(moveStyle);
 			edit::Node::visit(visitor, nodes, tags);
 			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
@@ -1221,21 +1222,21 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	bool radical = false;
+	bool immediate = false;
 
 	if (objc >= 2)
 	{
 		char const* option = stringFromObj(objc, objv, objc - 1);
 
-		if (::strcmp(option, "-radical") == 0)
+		if (::strcmp(option, "-immediate") == 0)
 		{
-			radical = true;
+			immediate = true;
 			--objc;
 		}
 	}
 
 	unsigned position = objc > 1 ? unsignedFromObj(objc, objv, 1) : Application::InvalidPosition;
-	scidb->refreshGame(position, radical);
+	scidb->refreshGame(position, immediate);
 	return TCL_OK;
 }
 
@@ -2246,7 +2247,7 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int position = -1;
 	int arg = 1;
 
-	if (objc == 10)
+	if (objc == 11)
 		position = intFromObj(objc, objv, arg++);
 
 	unsigned linebreakThreshold			= unsignedFromObj(objc, objv, arg++);
@@ -2255,11 +2256,15 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned linebreakMinCommentLength	= unsignedFromObj(objc, objv, arg++);
 
 	bool columnStyle			= boolFromObj(objc, objv, arg++);
+
+	char const* moveStyle = stringFromObj(objc, objv, arg++);
+
 	bool paragraphSpacing	= boolFromObj(objc, objv, arg++);
 	bool showDiagram			= boolFromObj(objc, objv, arg++);
 	bool showMoveInfo			= boolFromObj(objc, objv, arg++);
 
-	unsigned displayStyle = columnStyle ? display::ColumnStyle : display::CompactStyle;
+	unsigned			displayStyle = columnStyle ? display::ColumnStyle : display::CompactStyle;
+	move::Notation	moveForm;
 
 	if (showDiagram)
 		displayStyle |= display::ShowDiagrams;
@@ -2268,13 +2273,27 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (showMoveInfo)
 		displayStyle |= display::ShowMoveInfo;
 
+	if (strcmp(moveStyle, "alg") == 0)
+		moveForm = move::Algebraic;
+	else if (strcmp(moveStyle, "san") == 0)
+		moveForm = move::ShortAlgebraic;
+	else if (strcmp(moveStyle, "lan") == 0)
+		moveForm = move::LongAlgebraic;
+	else if (strcmp(moveStyle, "cor") == 0)
+		moveForm = move::Correspondence;
+	else if (strcmp(moveStyle, "tel") == 0)
+		moveForm = move::Telegraphic;
+	else
+		return error(::CmdSetup, nullptr, nullptr, "unexpected move style '%s'", moveStyle);
+
 	if (position >= 0)
 	{
 		scidb->game(position).setup(linebreakThreshold,
 											linebreakMaxLineLengthMain,
 											linebreakMaxLineLengthVar,
 											linebreakMinCommentLength,
-											displayStyle);
+											displayStyle,
+											moveForm);
 	}
 	else
 	{
@@ -2282,7 +2301,8 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							linebreakMaxLineLengthMain,
 							linebreakMaxLineLengthVar,
 							linebreakMinCommentLength,
-							displayStyle);
+							displayStyle,
+							moveForm);
 	}
 
 	return TCL_OK;

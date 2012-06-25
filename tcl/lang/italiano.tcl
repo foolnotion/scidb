@@ -46,6 +46,12 @@
 ::mc::Key(Shift)		"Shift" ;# NEW
 ::mc::Key(Up)			"\u2191"
 
+::mc::MoveForm(alg)	"Algebraic" ;# NEW
+::mc::MoveForm(san)	"Short Algebraic" ;# NEW
+::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
+::mc::MoveForm(cor)	"Correspondence" ;# NEW
+::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"
 ::mc::Archive			"Archive" ;# NEW
@@ -470,6 +476,7 @@
 ::application::pgn::mc::BoldTextForMainlineMoves		"Grassetto per mosse nella linea principale"
 ::application::pgn::mc::ShowDiagrams						"Mostra diagrammi"
 ::application::pgn::mc::Languages							"Lingue"
+::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
 ::application::pgn::mc::CollapseVariations				"Comprimi Varianti" ;# "collapse"
 ::application::pgn::mc::ExpandVariations					"Espandi Varianti"
 ::application::pgn::mc::EmptyGame							"Partita Vuota"
@@ -506,6 +513,7 @@
 ::application::tree::mc::UseQuickMode						"Usa ricerca rapida"
 ::application::tree::mc::AutomaticSearch					"Ricerca automatica"
 ::application::tree::mc::LockReferenceBase				"Blocca il database di riferimento"
+::application::tree::mc::SwitchReferenceBase				"Switch reference database" ;# NEW
 ::application::tree::mc::TransparentBar					"Barra trasparente"
 
 ::application::tree::mc::FromWhitesPerspective			"Dalla prospettiva del bianco"
@@ -1375,6 +1383,7 @@
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
 ::help::mc::SelectLanguage			"Selezione Lingua"
 ::help::mc::NoHelpAvailable		"Nessun file di aiuto disponibile per la lingua italiana.\nPer favore scelti una lingua alternativa\nper la finestra di aiuto."
+::help::mc::NoHelpAvailableAtAll	"No help files available for this topic." ;# NEW
 ::help::mc::KeepLanguage			"Mantenere la lingua %s per le prossime sessioni?"
 ::help::mc::ParserError				"Errore nel parsing del file %s."
 ::help::mc::NoMatch					"Nessuna corrispondenza trovata"

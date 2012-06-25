@@ -38,7 +38,7 @@ public:
 	bool is_buffered() const;
 	bool is_unbuffered() const;
 
-	int64_t size();
+	int64_t size() const override;
 	unsigned bufsize() const;
 	char* buffer() const;
 	uint64_t mtime();

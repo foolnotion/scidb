@@ -126,7 +126,7 @@ typedef struct
 
 #ifndef S_ISDIR
 #define S_ISDIR(m)	((m & S_IFMT) == S_IFDIR)	/* is a directory */
-#endif  S_ISDIR
+#endif
 
 
 /*

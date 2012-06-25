@@ -162,7 +162,8 @@ public:
 									db::Board const& startBoard,
 									MoveNode const* node,
 									unsigned linebreakThreshold,
-									unsigned linebreakMaxLineLength);
+									unsigned linebreakMaxLineLength,
+									unsigned displayStyle);
 	static Root* makeList(	TagSet const& tags,
 									uint16_t idn,
 									Eco eco,

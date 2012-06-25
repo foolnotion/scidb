@@ -61,7 +61,7 @@ void VarConsumer::endMoveSection(result::ID) {}
 
 
 void
-VarConsumer::sendComment(	Comment const& preComment,
+VarConsumer::sendComments(	Comment const& preComment,
 									Comment const& comment,
 									Annotation const& annotation,
 									MarkSet const& marks)
@@ -82,7 +82,7 @@ VarConsumer::sendPrecedingComment(Comment const& comment,
 											Annotation const& annotation,
 											MarkSet const& marks)
 {
-	sendComment(Comment(), comment, annotation, marks);
+	sendComments(Comment(), comment, annotation, marks);
 }
 
 
@@ -150,7 +150,7 @@ VarConsumer::sendMove(	Move const& move,
 	if (!sendMove(move))
 		return false;
 
-	sendComment(preComment, comment, annotation, marks);
+	sendComments(preComment, comment, annotation, marks);
 	return true;
 }
 

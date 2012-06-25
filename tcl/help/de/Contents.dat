@@ -20,8 +20,8 @@ set Contents {
   {
     {{{Scidb-Fenster und Dialoge} {Overview.html} {windows-and-dialogs}}}
     {{{Datenbankumschalter} {Database-Switcher.html}}}
-    {{{Partie-Browser} {Game-Browser.html}}}
-    {{{Partie-Übersichts-Browser} {Game-Overview.html}}}
+    {{{Partien-Browser} {Game-Browser.html}}}
+    {{{Partien-Übersichts-Browser} {Game-Overview.html}}}
     {{{Partietext-Fenster} {Game-Text-Window.html}}}
     {{{Partienhistorie} {Game-History-Window.html}}}
     {{{Schachbrett} {Board-Window.html}}}

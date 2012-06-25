@@ -108,7 +108,11 @@ public:
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, mstl::string*) override;
 
-	void doEncoding(util::ByteStream& strm, GameData const& data, Signature const& signature);
+	void doEncoding(	util::ByteStream& strm,
+							GameData const& data,
+							Signature const& signature,
+							TagBits const& allowedTags,
+							bool allowExtraTags);
 	Consumer* getConsumer(format::Type srcFormat) override;
 
 	void reset() override;
@@ -135,9 +139,9 @@ private:
 	void readPlayerbase(util::ByteStream& bstrm, Namebase& base, unsigned count,util::Progress& progress);
 
 	void updateIndex(mstl::fstream& fstrm);
-	void writeIndex(mstl::fstream& fstrm, unsigned start, util::Progress& progress);
+	void writeIndexEntries(mstl::fstream& fstrm, unsigned start, util::Progress& progress);
 	void writeIndexHeader(mstl::fstream& fstrm);
-	void writeNamebases(mstl::fstream& stream);
+	void writeAllNamebases(mstl::fstream& stream);
 	void writeNamebase(util::ByteStream& bstrm, Namebase& base);
 	void writeSitebase(util::ByteStream& bstrm, Namebase& base);
 	void writeEventbase(util::ByteStream& bstrm, Namebase& base);

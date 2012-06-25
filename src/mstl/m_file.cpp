@@ -45,8 +45,8 @@ file::~file() throw()
 }
 
 
-unsigned long
-file::size()
+int64_t
+file::size() const
 {
 	M_REQUIRE(is_open());
 
@@ -54,7 +54,7 @@ file::size()
 	st.st_size = 0;
 
 	if (::fstat(fileno(m_fp), &st) == -1)
-		setstate(m_open ? badbit | failbit : failbit);
+		return -1;
 
 	return st.st_size;
 }

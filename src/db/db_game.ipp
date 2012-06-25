@@ -33,6 +33,7 @@ inline Eco const& Game::ecoCode() const				{ return m_eco; }
 inline uint16_t Game::idn() const						{ return m_idn; }
 inline uint32_t Game::flags() const						{ return m_flags; }
 inline edit::Key const& Game::currentKey() const	{ return m_currentKey; }
+inline move::Notation Game::moveStyle() const		{ return m_moveStyle; }
 
 inline bool Game::isMainline() const					{ return m_currentKey.level() == 0; }
 inline bool Game::isVariation() const					{ return m_currentKey.level() > 0; }

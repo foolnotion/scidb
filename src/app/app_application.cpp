@@ -1188,7 +1188,7 @@ Application::endTrialMode()
 
 
 void
-Application::refreshGame(unsigned position, bool radical)
+Application::refreshGame(unsigned position, bool immediate)
 {
 	M_REQUIRE(containsGameAt(position));
 
@@ -1197,7 +1197,7 @@ Application::refreshGame(unsigned position, bool radical)
 
 	EditGame& game = m_gameMap.find(position)->second;
 
-	if (position == m_position)
+	if (position == m_position || immediate)
 		game.game->refreshSubscriber(Game::UpdateAll);
 	else
 		game.refresh = 2;
@@ -1809,7 +1809,8 @@ Application::setupGame(	unsigned linebreakThreshold,
 								unsigned linebreakMaxLineLengthMain,
 								unsigned linebreakMaxLineLengthVar,
 								unsigned linebreakMinCommentLength,
-								unsigned displayStyle)
+								unsigned displayStyle,
+								move::Notation moveStyle)
 {
 	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
 	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
@@ -1821,7 +1822,8 @@ Application::setupGame(	unsigned linebreakThreshold,
 										linebreakMaxLineLengthMain,
 										linebreakMaxLineLengthVar,
 										linebreakMinCommentLength,
-										displayStyle);
+										displayStyle,
+										moveStyle);
 
 		i->second.refresh = 1;
 	}
