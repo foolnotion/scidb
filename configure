@@ -238,6 +238,7 @@ set engines {{micromax MicroMax} {fruit TogaII-1.3.1}}
 
 set instableTkLibrary ""
 set MinGCCVersion "3.4"
+set MinClangVersion "3.1"
 
 
 foreach name [array names environment] {
@@ -903,7 +904,7 @@ proc checkExpat {} {
 
 
 # TestGCC.sh:
-#    Script used to test if the system has expat installed.
+#    Script used to test if the system has gcc installed.
 #
 set TestGCC {#!/bin/sh
 cat <<EOF > testgcc.c
@@ -998,6 +999,61 @@ proc probe {file script} {
 }
 
 
+# checkClang
+#    Checks whether clang/clang++ is installed.
+proc checkClang {cc} {
+    global TestGCC
+    global TestSSE2
+    global TestSyncBuiltin
+    variable environment
+    variable option
+    variable compiler
+
+    if {$cc eq "CC"} { set clang clang } else { set clang clang++ }
+    puts -nonewline "    Checking if your system has $clang installed: "
+    flush stdout
+    set found [probe testgcc [regsub -all __CC__ $TestGCC $environment($cc)]]
+    set version ""
+    if {!$found} {
+        puts "no,\n    '$environment($cc): command not found'"
+    } else {
+        set identifier ""
+        catch {exec $environment($cc) --version} identifier
+        if {![regexp {[0-9]+\.[0-9]+} $identifier version]} {
+            puts "yes,\n    but existing $clang version is too old."
+            set version ""
+        } elseif {[string compare $version $::MinClangVersion] == -1} {
+            puts "yes,\n    but existing $clang version $version is too old."
+            puts "\n    The required version is $::MinClangVersion and higher."
+            set version ""
+        } else {
+            puts "yes (version $version)."
+        }
+    }
+    if {[string length $version] > 0 && $cc eq "CXX"} {
+        set option(EXTRA_CXXFLAGS) "-std=c++0x"
+        puts -nonewline "    Checking if your compiler supports SSE2: "
+        flush stdout
+        if {[probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
+            set compiler(simd) -mno-sse2 ;# because of undefined symbol __builtin_ia32_movlhps
+            puts "yes."
+        } else {
+            puts "no."
+        }
+        flush stdout
+        Append option(EXTRA_CFLAGS) -Wno-gnu
+        Append option(EXTRA_CFLAGS) -Wno-invalid-source-encoding
+        Append option(EXTRA_CXXFLAGS) -fexceptions
+        Append option(EXTRA_CXXFLAGS) -Wno-mismatched-tags
+        Append option(EXTRA_CXXFLAGS) -Wno-gnu
+        Append option(EXTRA_CXXFLAGS) -Wno-invalid-source-encoding
+        set environment(CC) clang
+        set environment(CXX) clang++
+    }
+    return $version
+}
+
+
 # checkGCC:
 #    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
@@ -1010,6 +1066,7 @@ proc checkGCC {cc} {
     global compiler
     global option
 
+    if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
     flush stdout
@@ -1027,33 +1084,23 @@ proc checkGCC {cc} {
         set found [probe testgcc [regsub -all __CC__ $TestGCC $environment($cc)]]
     }
     set version ""
-    set result 0
     if {!$found} {
         puts "no,\n    '$environment($cc): command not found'"
     } else {
-        catch {exec $environment($cc) --version} version
-        for {set i 0} {$i < [string length $version]} {incr i} {
-            if {[string is integer [string index $version $i]]} { break }
-        }
-        if {$i < [string length $version]} {
-            set version [string range $version $i [expr {$i + 2}]]
-            if {[string compare $version $::MinGCCVersion] >= 0} { set result 1 }
-        } else {
-            set result 0
+        set identifier ""
+        catch {exec $environment($cc) --version} identifier
+        if {![regexp {[0-9]+\.[0-9]+} $identifier version]} {
+            puts "yes,\n    but existing $gcc version is too old."
             set version ""
-        }
-        if {$result == 1} {
+        } elseif {[string compare $version $::MinGCCVersion] >= 0} {
             puts "yes (version $version)."
         } else {
-            if {[string length $version]} {
-                puts "yes,\n    but existing $gcc version $version is too old."
-            } else {
-                puts "yes,\n    but existing $gcc version is too old."
-            }
+            puts "yes,\n    but existing $gcc version $version is too old."
+            puts "\n    The required version is $::MinGCCVersion and higher."
             set version ""
         }
     }
-    if {$result && $cc eq "CXX"} {
+    if {[string length $version] > 0 && $cc eq "CXX"} {
         if {[string compare $version "4.3"] >= 0} {
             set option(EXTRA_CXXFLAGS) "-std=c++0x"
         }
@@ -1329,6 +1376,8 @@ proc usage {rc} {
     } else {
     puts "  --gcc-version=VER        GNU compiler version"
     }
+    puts "                           you may use 'clang' instead of a version for the"
+    puts "                           clang compiler"
     puts ""
     puts "Packages:"
     puts "  --with-zlib-inc=DIR      path to Zlib compression library headers"
