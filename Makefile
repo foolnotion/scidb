@@ -21,6 +21,9 @@ all: Makefile.in
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C man
 
+check-build:
+	@$(MAKE) -C src check-build
+
 depend:
 #	@$(MAKE) -C engines depend
 	@$(MAKE) -C src depend

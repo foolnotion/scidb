@@ -84,7 +84,13 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				return TCL_ERROR;
 			}
 
-			db::EcoTable::specimen().load(stream);
+			try {
+				db::EcoTable::specimen().load(stream);
+			}
+			catch (...) {
+				appendResult("exception caught during load of file '%s'", path);
+				return TCL_ERROR;
+			}
 		}
 		else
 		{

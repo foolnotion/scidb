@@ -84,7 +84,7 @@ set StripOriginalComments			"Strip original comments"
 
 set AddNewGame							"Save: Add New Game to %s..."
 set ReplaceGame						"Save: Replace Game in %s..."
-set ReplaceMoves						"Save: Replace Moves Only in Game"
+set ReplaceMoves						"Save: Replace Moves Only in Game..."
 
 set EditAnnotation					"Edit annotation"
 set EditMoveInformation				"Edit move information"
@@ -149,7 +149,7 @@ array set Options {
 variable Vars
 variable CharLimit 250
 variable Counter 0
-variable MoveStyles { alg san lan cor tel }
+variable MoveStyles { san lan alg cor tel }
 
 
 proc build {parent width height} {

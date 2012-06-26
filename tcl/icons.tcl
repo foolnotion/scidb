@@ -1695,7 +1695,7 @@ namespace eval 16x16 {
 		U0mSRk/dLtzx+GHTf4Rvr/6GjnFu/ZQAAAAASUVORK5CYII=
 	}]
 
-	set save [image create photo -data {
+	set saveAs [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABaFBM
 		VEX///8hS4ghTIkhTIkjTYojTYopU48gSocgSodCca5Fc69GZo1HdrFJd7JKd7JMerRNbJBP
 		fLZTWFpTf7dTf7hUf7ZVV1NVWlxVfrVWgrtXXFxXXV5XgLZYfq5ZXl9ZX2BZhb1bhLpch79f
@@ -1711,7 +1711,7 @@ namespace eval 16x16 {
 		YII=
 	}]
 
-	set saveAs [image create photo -data {
+	set save [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw
 		SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA
 		AAJ/SURBVDiNjZPbS1RRFMZ/58xFHed4GwM1x2sgUWrQBYyKqEhQDOnyENqb+ScEvZeWiKA9

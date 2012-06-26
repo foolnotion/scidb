@@ -467,7 +467,7 @@
 
 ::application::pgn::mc::AddNewGame							"Save: Add New Game to %s..."
 ::application::pgn::mc::ReplaceGame							"Save: Replace Game in %s..."
-::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game"
+::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game..."
 
 ::application::pgn::mc::ColumnStyle							"Column Style"
 ::application::pgn::mc::UseParagraphSpacing				"Use Paragraph Spacing"

@@ -468,7 +468,7 @@
 
 ::application::pgn::mc::AddNewGame							"Salva: Aggiunti nuova partita a %s..."
 ::application::pgn::mc::ReplaceGame							"Salva: Rimpiazza partita in %s..."
-::application::pgn::mc::ReplaceMoves						"Salva: Sostituisci solo mosse nella partita"
+::application::pgn::mc::ReplaceMoves						"Salva: Sostituisci solo mosse nella partita..."
 
 ::application::pgn::mc::ColumnStyle							"Stile colonna"
 ::application::pgn::mc::UseParagraphSpacing				"Usa spaziatura di paragrafo"

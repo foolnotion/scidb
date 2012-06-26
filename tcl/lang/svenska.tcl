@@ -466,7 +466,7 @@
 
 ::application::pgn::mc::AddNewGame							"Spara: Lägg till nytt parti till %s..."
 ::application::pgn::mc::ReplaceGame							"Spara: Ersätt parti i %s..."
-::application::pgn::mc::ReplaceMoves						"Spara: Ersätt bara dragen i partiet"
+::application::pgn::mc::ReplaceMoves						"Spara: Ersätt bara dragen i partiet..."
 
 ::application::pgn::mc::ColumnStyle							"Kolumnformat"
 ::application::pgn::mc::UseParagraphSpacing				"Använd styckeavstånd"

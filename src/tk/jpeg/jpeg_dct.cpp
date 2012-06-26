@@ -37,7 +37,13 @@ inline static __m128 __attribute__((always_inline))
 __mm_shuffle_ps_EE(__m128 u, __m128 v) { return _mm_shuffle_ps(u, v, 0xEE); }
 
 #ifdef __clang__
-extern __v4sf __builtin_ia32_movlhps(__v4sf, __v4sf);
+// missing builtin function:
+static __v4sf
+__builtin_ia32_movlhps(__v4sf __r, __v4sf __s)
+{
+	(reinterpret_cast<__m64*>(&__r))[1] = (reinterpret_cast<__m64*>(&__s))[0];
+	return __r;
+}
 #endif
 
 } // extern "C"

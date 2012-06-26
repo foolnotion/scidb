@@ -71,6 +71,25 @@ TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progre
 all: recursive cbh2si4 cdb2sci $(PROGRAM)
 tkscidb-only: recursive $(PROGRAM)
 
+check-build:
+	@echo -n "Check build: "
+	@if [ "`$(PROGRAM) check-build.tcl`" = "OK" ]; then                  \
+		echo "OK";                                                        \
+	else                                                                 \
+		echo "FAILED";                                                    \
+		echo "";                                                          \
+		echo "The executable is corrupted due to a broken linker.";       \
+		echo "It is recommended to rebuild this program in the";          \
+		echo "following way:";                                            \
+		echo "";                                                          \
+		echo "  > CXXFLAGS=\"-Wall -DBROKEN_LINKER_HACK=1\" ./configure"; \
+		echo "  > make clean";                                            \
+		echo "  > make";                                                  \
+		echo "  > make check-build";                                      \
+		echo "";                                                          \
+		exit 1;                                                           \
+	fi
+
 install-executables: recursive cbh2si4 cdb2sci $(PROGRAM)
 	@echo "Install executables"
 	@install -m 755 -d $(BINDIR)

@@ -469,7 +469,7 @@
 
 ::application::pgn::mc::AddNewGame							"Mentés: új játszma hozzáadása %s-hez..."
 ::application::pgn::mc::ReplaceGame							"Mentés: Játszma felülírása %s-ben..."
-::application::pgn::mc::ReplaceMoves						"Mentés: Replace Moves Only in Game"
+::application::pgn::mc::ReplaceMoves						"Mentés: Replace Moves Only in Game..."
 
 ::application::pgn::mc::ColumnStyle							"Oszlop stílus"
 ::application::pgn::mc::UseParagraphSpacing				"Bekezdés stílus"

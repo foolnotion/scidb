@@ -103,8 +103,16 @@ proc load {msg type path} {
 	if {[catch {::scidb::app::load $type $path} err]} {
 		set msg [format $mc::FileIsCorrupt $path]
 		if {$type eq "eco"} {
-			append str $mc::SevereError \n $msg \n\n $mc::ProgramAborting
-			dialog::error -message $str
+			append str $mc::SevereError .\n $msg \n\n $mc::ProgramAborting
+			set detail ""
+			if {$type eq "eco"} {
+				append detail "This error may occur due to a defect executable, caused by a broken linker."
+				append detail "\n\n"
+				append detail "Please change to your installation directory of Scidb and invoke"
+				append detail "\n   > make check-build\n"
+				append detail "for further details."
+			}
+			dialog::error -message $str -detail $detail
 			exit 1
 		} else {
 			lappend Log error $msg error $err
