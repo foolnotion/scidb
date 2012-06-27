@@ -144,12 +144,15 @@ array set Options {
 	diagram-show		1
 	diagram-pad-x		25
 	diagram-pad-y		5
+	tabstop-1			6.0
+	tabstop-2			0.7
+	tabstop-3			12.0
 }
 
 variable Vars
 variable CharLimit 250
 variable Counter 0
-variable MoveStyles { san lan alg cor tel }
+variable MoveStyles { san lan alg eng cor tel }
 
 
 proc build {parent width height} {
@@ -2687,7 +2690,7 @@ proc Refresh {var} {
 		}
 	}
 
-	::widget::busyOperation ::scidb::game::refresh
+	::widget::busyOperation ::scidb::game::refresh -all
 }
 
 
