@@ -39,7 +39,7 @@ TITLE Was ist neu?
   <li>Installation der ChessBase-Zeichensätze integriert</li>
   <li>Turniertabelle: Optionale Anzeige von Gewinn/Remis/Verlust</li>
   <li>Mausradunterstützung für alle Listen und das Schachbrett</li>
-  <li>Algebraische- (Normal-, Kurz- und Langform), Korrespondenz-, und telegrafische Notation verfügbar</li>
+  <li>Algebraische- (Normal-, Kurz- und Langform), Englische, Korrespondenz- und telegrafische Notation verfügbar</li>
 </ul>
 
 END

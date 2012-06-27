@@ -4169,7 +4169,7 @@ Board::isValidMove(Move const& move, move::Constraint flag) const
 	if (move.isNull())
 	{
 		unsigned state = checkState();
-		return state & (CheckMate | StaleMate) == state;
+		return (state & (CheckMate | StaleMate)) == 0;
 	}
 
 	if (flag == move::AllowIllegalMove)
