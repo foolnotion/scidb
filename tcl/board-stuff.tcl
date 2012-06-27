@@ -319,6 +319,12 @@ proc rotate {w} {
 }
 
 
+proc rotated? {w} {
+	variable ${w}::Board
+	return $Board(flip)
+}
+
+
 proc rebuild {w} {
 	Build $w
 	update $w

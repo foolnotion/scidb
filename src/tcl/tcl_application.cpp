@@ -51,13 +51,14 @@ using namespace tcl::app;
 Application* tcl::app::scidb = 0;
 Application const* tcl::app::Scidb = 0;
 
-static char const* CmdBases		= "::scidb::app::bases";
-static char const* CmdClose		= "::scidb::app::close";
-static char const* CmdCount		= "::scidb::app::count";
-static char const* CmdFinalize	= "::scidb::app::finalize";
-static char const* CmdGet			= "::scidb::app::get";
-static char const* CmdLoad			= "::scidb::app::load";
-static char const* CmdLookup		= "::scidb::app::lookup";
+static char const* CmdBases			= "::scidb::app::bases";
+static char const* CmdClose			= "::scidb::app::close";
+static char const* CmdCount			= "::scidb::app::count";
+static char const* CmdFinalize		= "::scidb::app::finalize";
+static char const* CmdGet				= "::scidb::app::get";
+static char const* CmdInitialized	= "::scidb::app::initialized?";
+static char const* CmdLoad				= "::scidb::app::load";
+static char const* CmdLookup			= "::scidb::app::lookup";
 
 
 static int
@@ -371,6 +372,13 @@ cmdFinalize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdInitialized(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	return db::tag::initializeIsOk() ? TCL_OK : TCL_ERROR;
+}
+
+
 void
 tcl::app::setup(::app::Application* app)
 {
@@ -382,13 +390,14 @@ tcl::app::setup(::app::Application* app)
 void
 tcl::app::init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdBases,		cmdBases);
-	createCommand(ti, CmdClose,		cmdClose);
-	createCommand(ti, CmdCount,		cmdCount);
-	createCommand(ti, CmdFinalize,	cmdFinalize);
-	createCommand(ti, CmdGet,			cmdGet);
-	createCommand(ti, CmdLoad,			cmdLoad);
-	createCommand(ti, CmdLookup,		cmdLookup);
+	createCommand(ti, CmdBases,			cmdBases);
+	createCommand(ti, CmdClose,			cmdClose);
+	createCommand(ti, CmdCount,			cmdCount);
+	createCommand(ti, CmdFinalize,		cmdFinalize);
+	createCommand(ti, CmdGet,				cmdGet);
+	createCommand(ti, CmdInitialized,	cmdInitialized);
+	createCommand(ti, CmdLoad,				cmdLoad);
+	createCommand(ti, CmdLookup,			cmdLookup);
 }
 
 // vi:set ts=3 sw=3:

@@ -275,8 +275,8 @@ proc goto {step} {
 
 proc update {position cmd data} {
 	variable ::board::layout
-	variable Vars
 	variable board
+	variable Vars
 
 	switch $cmd {
 		set	{ ::board::stuff::update $board $data }
@@ -298,6 +298,12 @@ proc updateMarks {marks} {
 		::move::leaveSquare
 		::move::enterSquare
 	}
+}
+
+
+proc rotated? {} {
+	variable board
+	return [::board::stuff::rotated? $board]
 }
 
 

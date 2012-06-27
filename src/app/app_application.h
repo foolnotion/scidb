@@ -147,6 +147,7 @@ public:
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
 	void switchBase(mstl::string const& name);
+	void refreshGames();
 	void refreshGame(unsigned position = InvalidPosition, bool immediate = false);
 
 	Cursor& clipBase();

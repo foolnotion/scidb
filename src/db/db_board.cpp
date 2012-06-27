@@ -36,6 +36,7 @@
 #include "db_rand64.h"
 
 #include "m_assert.h"
+#include "m_bitfield.h"
 #include "m_bit_functions.h"
 #include "m_utility.h"
 #include "m_stdio.h"
@@ -52,6 +53,24 @@ using namespace db::castling;
 using namespace db::board;
 
 namespace bf = mstl::bf;
+
+static uint64_t const DarkSquares	= A1 | C1 | E1 | G1
+												| B2 | D2 | F2 | H2
+												| A3 | C3 | E3 | G3
+												| B4 | D4 | F4 | H4
+												| A5 | C5 | E5 | G5
+												| B6 | D6 | F6 | H6
+												| A7 | C7 | E7 | G7
+												| B8 | D8 | F8 | H8;
+
+static uint64_t const LiteSquares	= B1 | D1 | F1 | H1
+												| A2 | C2 | E2 | G2
+												| B3 | D3 | F3 | H3
+												| A4 | C4 | E4 | G4
+												| B5 | D5 | F5 | G5
+												| A6 | C6 | E6 | G6
+												| B7 | D7 | F7 | H7
+												| A8 | C8 | E8 | G8;
 
 Board Board::m_standardBoard;
 Board Board::m_shuffleChessBoard;
@@ -104,6 +123,49 @@ static uint64_t
 epSquareHashKey(Square s)
 {
 	return rand64::EnPassant[s - (rank(s) == Rank3 ? a3 : a6)];
+}
+
+
+static char const*
+skipPromotion(char const* s)
+{
+	char const* t = s;
+
+	// skip promotion as in bc8Q, bxc8=Q, bxc8=(Q), bxc8(Q), bxc8/Q, or bxc8/(Q)
+
+	if (*t == '=' || *t == '/')
+		++s;
+
+	char match = '\0';
+
+	if (*t == '(')
+	{
+		match = ')';
+		++t;
+	}
+
+	switch (*t)
+	{
+		case 'Q': case 'q':
+		case 'R': case 'r':
+		case 'B': case 'b':
+		case 'N': case 'n':
+			++t;
+			break;
+
+		default:
+			return s;
+	}
+
+	if (match)
+	{
+		if (*t != match)
+			return s;
+
+		++t;
+	}
+
+	return t;
 }
 
 
@@ -230,6 +292,15 @@ Board::pawnProgressAdd(unsigned color, unsigned at)
 }
 
 
+unsigned
+Board::checkState(Move const& move) const
+{
+	Board peek(*this);
+	peek.doMove(move);
+	return peek.checkState();
+}
+
+
 bool
 Board::isDoubleCheck() const
 {
@@ -346,10 +417,36 @@ Board::isIntoCheck(Move const& move) const
 }
 
 
-Board::Status
+bool
+Board::givesMate() const
+{
+	if (!givesCheck())
+		return false;
+
+	MoveList moves;
+	generateMoves(moves);
+
+	for (unsigned i = 0; i < moves.size(); ++i)
+	{
+		if (!isIntoCheck(moves[i]))
+			return false;
+	}
+
+	return true;
+}
+
+
+unsigned
 Board::checkState() const
 {
-	Status state = isInCheck() ? Check : NoCheck;
+	unsigned state = NoCheck;
+
+	switch (count(attacks(m_stm ^ 1, m_ksq[m_stm])))
+	{
+		case 0:  break;
+		case 1:  state |= Check; break;
+		default: state |= Check | DoubleCheck; break;
+	}
 
 	MoveList moves;
 	generateMoves(moves);
@@ -360,7 +457,7 @@ Board::checkState() const
 			return state;
 	}
 
-	return state == Check ? CheckMate : StaleMate;
+	return (state & Check) ? state | CheckMate : state | StaleMate;
 }
 
 
@@ -399,88 +496,212 @@ Board::setEnPassantFyle(color::ID color, Fyle fyle)
 
 
 void
-Board::removeIllegal(Move const& move, uint64_t& b) const
+Board::removeIllegalFrom(Move move, uint64_t& b) const
 {
-	uint64_t	mask	= 1;
-	Move		m		= move;
+	typedef mstl::bitfield<uint64_t> BitField;
 
-	for (int sq = 0; sq < 64; sq++, mask <<= 1)
+	BitField squares(b);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
 	{
-		if (b & mask)
-		{
-			m.setFrom(sq);
+		move.setFrom(sq);
 
-			if (isIntoCheck(m))
-				b &= ~mask;
-		}
+		if (isIntoCheck(move))
+			b &= ~setBit(sq);
+	}
+}
+
+
+void
+Board::removeIllegalTo(Move move, uint64_t& b) const
+{
+	typedef mstl::bitfield<uint64_t> BitField;
+
+	BitField squares(b);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
+	{
+		move.setTo(sq);
+
+		if (isIntoCheck(move))
+			b &= ~setBit(sq);
 	}
 }
 
 
 Move&
-Board::prepareForSan(Move& move) const
+Board::prepareForPrint(Move& move) const
 {
-	if (!move.isNull())
+	if (!move.isPrintable())
 	{
-		if (!move.isCastling())
+		if (!move.isNull())
 		{
-			int from	= move.from();
-			int to	= move.to();
+			Board peek(*this);
+			peek.doMove(move);
 
-			if (m_piece[from] != piece::Pawn)
+			unsigned state = NoCheck;
+
+			if (peek.isInCheck())
 			{
-				// we may need disambiguation
-				uint64_t others = 0;
+				move.setCheck();
+				state |= Check;
 
-				switch (m_piece[from])
+				if (peek.checkState() & CheckMate)
 				{
-					case piece::Knight:	others = m_knights & knightAttacks(to); break;
-					case piece::Bishop:	others = m_bishops & bishopAttacks(to); break;
-					case piece::Rook:		others = m_rooks & rookAttacks(to); break;
-					case piece::Queen:	others = m_queens & queenAttacks(to); break;
-					case piece::King:		others = m_kings & kingAttacks(to); break;
+					move.setMate();
+					state |= CheckMate;
 				}
+			}
 
-				others ^= setBit(from);
-				others &= m_occupiedBy[m_stm];
+			if (!move.isCastling())
+			{
+				int from	= move.from();
+				int to	= move.to();
 
-				// Do not disambiguate with moves that put oneself in check.
-				if (others)
+				if (m_piece[from] != piece::Pawn)
 				{
-					if (move.isLegal())
-						removeIllegal(move, others);
+					// we may need disambiguation
+					uint64_t others = 0;
 
+					switch (m_piece[from])
+					{
+						case piece::Knight:	others = m_knights & knightAttacks(to); break;
+						case piece::Bishop:	others = m_bishops & bishopAttacks(to); break;
+						case piece::Rook:		others = m_rooks & rookAttacks(to); break;
+						case piece::Queen:	others = m_queens & queenAttacks(to); break;
+						case piece::King:		others = m_kings & kingAttacks(to); break;
+					}
+
+					others ^= setBit(from);
+					others &= m_occupiedBy[m_stm];
+
+					// Do not disambiguate with moves that put oneself in check.
 					if (others)
 					{
-						if (others & RankMask[::rank(from)])
-							move.setNeedsFyle();
+						if (move.isLegal())
+							removeIllegalFrom(move, others);
 
-						if (others & FyleMask[::fyle(from)])
-							move.setNeedsRank();
-						else
-							move.setNeedsFyle();
+						if (state & (Check | CheckMate))
+						{
+							uint64_t movers = 0;
+
+							switch (m_piece[from])
+							{
+								case piece::Knight:	movers = m_knights; break;
+								case piece::Rook:		movers = m_rooks; break;
+								case piece::Queen:	movers = m_queens; break;
+								case piece::King:		movers = m_kings; break;
+
+								case piece::Bishop:
+									movers = m_bishops;
+									if (color::isWhite(sq::color(sq::ID(from))))
+										movers &= ::LiteSquares;
+									else
+										movers &= ::DarkSquares;
+									break;
+							}
+
+							// this is confusing if more than one of the moving piece exists
+							if (count(movers & m_occupiedBy[m_stm]) == 1)
+							{
+								if (state & CheckMate)
+									filterCheckMateMovesTo(move, others);
+								else
+									filterCheckMovesTo(move, others);
+							}
+						}
+
+						if (others)
+						{
+							if (others & RankMask[::rank(from)])
+								move.setNeedsFyle();
+
+							if (others & FyleMask[::fyle(from)])
+								move.setNeedsRank();
+							else
+								move.setNeedsFyle();
+						}
+					}
+
+					// we may need disambiguation of destination square
+					if (move.captured() != piece::None)
+					{
+						// case 1: more than one piece of same type which can capture
+						// case 2: this piece can capture more pieces of this type
+						uint64_t others[2] = { 0, 0 }; // otherwise gcc will complain
+
+						switch (m_piece[from])
+						{
+							case piece::Knight:
+								others[0] = m_knights & knightAttacks(to);
+								others[1] = knightAttacks(from);
+								break;
+
+							case piece::Bishop:
+								others[0] = m_bishops & bishopAttacks(to);
+								others[1] = bishopAttacks(from);
+								break;
+
+							case piece::Rook:
+								others[0] = m_rooks & rookAttacks(to);
+								others[1] = rookAttacks(from);
+								break;
+
+							case piece::Queen:
+								others[0] = m_queens & queenAttacks(to);
+								others[1] = queenAttacks(from);
+								break;
+
+							case piece::King:
+								others[0] = m_kings & kingAttacks(to);
+								others[1] = kingAttacks(from);
+								break;
+						}
+
+						others[0] ^= setBit(from);
+						others[0] &= m_occupiedBy[m_stm];
+
+						others[1] ^= setBit(to);
+						others[1] &= m_occupiedBy[m_stm ^ 1];
+
+						switch (m_piece[to])
+						{
+							case piece::Pawn:		others[1] &= m_pawns; break;
+							case piece::Knight:	others[1] &= m_knights; break;
+							case piece::Bishop:	others[1] &= m_bishops; break;
+							case piece::Rook:		others[1] &= m_rooks; break;
+							case piece::Queen:	others[1] &= m_queens; break;
+						}
+
+						if (move.isLegal())
+						{
+							if (others[0])
+								removeIllegalFrom(move, others[0]);
+
+							if (others[1])
+								removeIllegalTo(move, others[1]);
+						}
+
+						// this may be confusing if more than one of captured piece exists
+						if (state & (Check | CheckMate))
+							filterCheckMovesFrom(move, others[1]);
+
+						if (others[0] | others[1])
+							move.setNeedsDestinationSquare();
 					}
 				}
-			}
-			else if (m_piece[to] != piece::Empty || move.isEnPassant())
-			{
-				move.setNeedsFyle();	// capture
+				else if (m_piece[to] != piece::Empty || move.isEnPassant())
+				{
+					// we may need disambiguation of pawn captures
+					if (pawnCapturesTo(to) ^ setBit(from))
+						move.setNeedsFyle();
+				}
 			}
 		}
 
-		Board peek(*this);
-		peek.doMove(move);
-
-		if (peek.isInCheck())
-		{
-			move.setCheck();
-
-			if (peek.checkState() == CheckMate)
-				move.setMate();
-		}
+		move.setPrintable();
 	}
 
-	move.setPrintable();
 	return move;
 }
 
@@ -918,7 +1139,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (givesCheck())
 		{
 			if (isInCheck())
-				return DoubleCheck;
+				return BothInCheck;
 
 			return OppositeCheck;
 		}
@@ -2150,6 +2371,98 @@ Board::filterLegalMoves(MoveList& result) const
 
 
 void
+Board::filterCheckMovesTo(Move move, uint64_t& movers) const
+{
+	typedef mstl::bitfield<uint64_t> BitField;
+
+	Board peek(*this);
+	BitField squares(movers);
+
+	prepareUndo(move);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
+	{
+		move.setTo(sq);
+		peek.doMove(move);
+
+		if (!peek.givesCheck())
+			movers &= ~setBit(sq);
+
+		peek.undoMove(move);
+	}
+}
+
+
+void
+Board::filterCheckMateMovesTo(Move move, uint64_t& movers) const
+{
+	typedef mstl::bitfield<uint64_t> BitField;
+
+	Board peek(*this);
+	BitField squares(movers);
+
+	prepareUndo(move);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
+	{
+		move.setTo(sq);
+		peek.doMove(move);
+
+		if (!peek.givesMate())
+			movers &= ~setBit(sq);
+
+		peek.undoMove(move);
+	}
+}
+
+
+void
+Board::filterCheckMovesFrom(Move move, uint64_t& movers) const
+{
+	typedef mstl::bitfield<uint64_t> BitField;
+
+	Board peek(*this);
+	BitField squares(movers);
+
+	prepareUndo(move);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
+	{
+		move.setFrom(sq);
+		peek.doMove(move);
+
+		if (!peek.givesCheck())
+			movers &= ~setBit(sq);
+
+		peek.undoMove(move);
+	}
+}
+
+
+void
+Board::filterCheckMateMovesFrom(Move move, uint64_t& movers) const
+{
+	typedef mstl::bitfield<uint64_t> BitField;
+
+	Board peek(*this);
+	BitField squares(movers);
+
+	prepareUndo(move);
+
+	for (unsigned sq = squares.find_first(); sq != BitField::npos; sq = squares.find_next(sq))
+	{
+		move.setFrom(sq);
+		peek.doMove(move);
+
+		if (!peek.givesMate())
+			movers &= ~setBit(sq);
+
+		peek.undoMove(move);
+	}
+}
+
+
+void
 Board::genCastleShort(MoveList& result, color::ID side) const
 {
 	M_ASSERT(m_castleRookCurrent[::kingSideIndex(side)] != Null);
@@ -2220,18 +2533,19 @@ Board::generateMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank8)
 			{
-				result.append(Move::genCapturePromote(to - 9, to, piece::Queen, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Rook, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Queen, captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Rook, captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Bishop, captured));
 			}
 			else
 			{
-				result.append(Move::genPawnCapture(to - 9, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to - 9, to, captured));
 			}
 		}
 
@@ -2239,18 +2553,19 @@ Board::generateMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank8)
 			{
-				result.append(Move::genCapturePromote(to - 7, to, piece::Queen, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Rook, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Queen, captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Rook, captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Bishop, captured));
 			}
 			else
 			{
-				result.append(Move::genPawnCapture(to - 7, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to - 7, to, captured));
 			}
 		}
 
@@ -2470,18 +2785,19 @@ Board::generatePawnCapturingMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank8)
 			{
-				result.append(Move::genCapturePromote(to - 9, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Queen,  captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Rook,   captured));
+				result.append(Move::genCapturePromote(to - 9, to, piece::Bishop, captured));
 			}
 			else
 			{
-				result.append(Move::genPawnCapture(to - 9, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to - 9, to, captured));
 			}
 		}
 
@@ -2489,18 +2805,19 @@ Board::generatePawnCapturingMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank8)
 			{
-				result.append(Move::genPawnCapture(to - 7, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to - 7, to, captured));
 			}
 			else
 			{
-				result.append(Move::genCapturePromote(to - 7, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Queen,  captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Rook,   captured));
+				result.append(Move::genCapturePromote(to - 7, to, piece::Bishop, captured));
 			}
 		}
 	}
@@ -2522,18 +2839,19 @@ Board::generatePawnCapturingMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank1)
 			{
-				result.append(Move::genCapturePromote(to + 9, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to + 9, to, piece::Queen,  captured));
+				result.append(Move::genCapturePromote(to + 9, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to + 9, to, piece::Rook,   captured));
+				result.append(Move::genCapturePromote(to + 9, to, piece::Bishop, captured));
 			}
 			else
 			{
-				result.append(Move::genPawnCapture(to + 9, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to + 9, to, captured));
 			}
 		}
 
@@ -2541,18 +2859,19 @@ Board::generatePawnCapturingMoves(MoveList& result) const
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint32_t to = lsbClear(moves);
+			uint32_t captured = m_piece[to];
 
 			if (::rank(to) == Rank1)
 			{
-				result.append(Move::genCapturePromote(to + 7, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Bishop, m_piece[to]));
+				result.append(Move::genCapturePromote(to + 7, to, piece::Queen,  captured));
+				result.append(Move::genCapturePromote(to + 7, to, piece::Knight, captured));
+				result.append(Move::genCapturePromote(to + 7, to, piece::Rook,   captured));
+				result.append(Move::genCapturePromote(to + 7, to, piece::Bishop, captured));
 			}
 			else
 			{
-				result.append(Move::genPawnCapture(to + 7, to, m_piece[to]));
+				result.append(Move::genPawnCapture(to + 7, to, captured));
 			}
 		}
 	}
@@ -2643,6 +2962,19 @@ Board::generateCapturingMoves(MoveList& result) const
 			result.append(Move::genKingMove(m_ksq[m_stm], to, m_piece[to]));
 		}
 	}
+}
+
+
+Move*
+Board::findMatchingMove(MoveList& list, unsigned state) const
+{
+	for (Move* m = list.begin(); m != list.end(); ++m)
+	{
+		if ((checkState(*m) & state) != 0)
+			return m;
+	}
+
+	return 0;
 }
 
 
@@ -2749,20 +3081,39 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 			{
 				M_ASSERT(fromFyle != -1);
 
-				MoveList moveList;
-				generatePawnCapturingMoves(moveList);
-				Move* m = moveList.begin();
+				char const* t = ::skipPromotion(s);
 
-				while (	m != moveList.end()
-						&& (	::fyle(m->from()) != fromFyle
-							|| ::fyle(m->to()) != toFyle
-							|| (flag == move::DontAllowIllegalMove && !checkIfLegalMove(*m))))
+				MoveList moveList;
+				MoveList validList;
+				generatePawnCapturingMoves(moveList);
+				Move* m = 0;
+
+				for (Move* m = moveList.begin(); m != moveList.end(); ++m)
 				{
-					++m;
+					if (	::fyle(m->from()) == fromFyle
+						&& ::fyle(m->to()) == toFyle
+						&& (flag != move::DontAllowIllegalMove || checkIfLegalMove(*m)))
+					{
+						validList.push(*m);
+					}
 				}
 
-				if (m == moveList.end())
-					return 0;
+				if (*t == '#')
+					m = findMatchingMove(validList, CheckMate);
+
+				if (m == 0 && (t[0] == '+' && t[1] == '+'))
+					m = findMatchingMove(validList, DoubleCheck);
+
+				if (m == 0 && (*t == '#' || *t == '+'))
+					m = findMatchingMove(validList, Check | DoubleCheck | CheckMate);
+
+				if (m == 0)
+				{
+					if (validList.isEmpty())
+						return 0;
+
+					m = validList.begin();
+				}
 
 				fromSquare = m->from();
 				toSquare = m->to();
@@ -2838,8 +3189,8 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 
 		if (move.isPromotion())
 		{
-			// Promotion as in bc8Q, bxc8=Q, bxc8=(Q), or bxc8(Q)
-			if (*s == '=')
+			// Promotion as in bc8Q, bxc8=Q, bxc8=(Q), bxc8(Q), bxc8/Q, or bxc8/(Q)
+			if (*s == '=' || *s == '/')
 				++s;
 
 			if (*s == '(')
@@ -2916,6 +3267,62 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 
 		// If not yet fully disambiguated, all but one move must be illegal.
 		// Cycle through them, and pick the first legal move.
+
+		// Only mating moves will be regarded.
+		if (*s == '#')
+		{
+			uint64_t m = match;
+
+			while (m)
+			{
+				fromSquare = lsbClear(m);
+
+				M_ASSERT(type == m_piece[fromSquare]);
+
+				move = prepareMove(fromSquare, toSquare, flag);
+
+				if (move.isLegal() && (checkState(move) & CheckMate))
+					return s;
+			}
+		}
+
+		// Only double checking moves will be regarded.
+		if (s[0] == '+' && s[1] == '+')
+		{
+			uint64_t m = match;
+
+			while (m)
+			{
+				fromSquare = lsbClear(m);
+
+				M_ASSERT(type == m_piece[fromSquare]);
+
+				move = prepareMove(fromSquare, toSquare, flag);
+
+				if (move.isLegal() && (checkState(move) & DoubleCheck))
+					return s;
+			}
+		}
+
+		// Only checking moves will be regarded.
+		if (*s == '#' || *s == '+')
+		{
+			uint64_t m = match;
+
+			while (m)
+			{
+				fromSquare = lsbClear(m);
+
+				M_ASSERT(type == m_piece[fromSquare]);
+
+				move = prepareMove(fromSquare, toSquare, flag);
+
+				if (move.isLegal() && (checkState(move) & (Check | DoubleCheck | CheckMate)))
+					return s;
+			}
+		}
+
+		// All moves will be regarded.
 		while (match)
 		{
 			fromSquare = lsbClear(match);
@@ -3605,6 +4012,39 @@ Board::pawnMovesFrom(Square s) const
 }
 
 
+uint64_t
+Board::pawnCapturesTo(Square s) const
+{
+	uint64_t attackers	= 0;
+	uint64_t destination	= setBit(s);
+
+	if (m_stm == White)
+	{
+		// en passant moves
+		if (m_epSquare != Null)
+			attackers |= PawnAttacks[Black][m_epSquare];
+
+		// captures
+		attackers |= ::shiftDownRight(destination);
+		attackers |= ::shiftDownLeft(destination);
+		attackers &= m_occupiedBy[White];
+	}
+	else
+	{
+		// en passant moves
+		if (m_epSquare != Null)
+			attackers |= PawnAttacks[White][m_epSquare];
+
+		// captures
+		attackers |= ::shiftUpLeft(destination);
+		attackers |= ::shiftUpRight(destination);
+		attackers &= m_occupiedBy[Black];
+	}
+
+	return attackers & m_pawns;
+}
+
+
 bool
 Board::checkMove(Move const& move, move::Constraint flag) const
 {
@@ -3728,8 +4168,8 @@ Board::isValidMove(Move const& move, move::Constraint flag) const
 
 	if (move.isNull())
 	{
-		Status state = checkState();
-		return state != CheckMate && state != StaleMate;
+		unsigned state = checkState();
+		return state & (CheckMate | StaleMate) == state;
 	}
 
 	if (flag == move::AllowIllegalMove)
@@ -4303,32 +4743,14 @@ Board::doMoves(char const* text)
 bool
 Board::hasBishopOnDark(color::ID side) const
 {
-	static uint64_t const DarkSquares	= A1 | C1 | E1 | G1
-													| B2 | D2 | F2 | H2
-													| A3 | C3 | E3 | G3
-													| B4 | D4 | F4 | H4
-													| A5 | C5 | E5 | G5
-													| B6 | D6 | F6 | H6
-													| A7 | C7 | E7 | G7
-													| B8 | D8 | F8 | H8;
-
-	return bishops(side) & DarkSquares;
+	return bishops(side) & ::DarkSquares;
 }
 
 
 bool
 Board::hasBishopOnLite(color::ID side) const
 {
-	static uint64_t const LiteSquares	= B1 | D1 | F1 | H1
-													| A2 | C2 | E2 | G2
-													| B3 | D3 | F3 | H3
-													| A4 | C4 | E4 | G4
-													| B5 | D5 | F5 | G5
-													| A6 | C6 | E6 | G6
-													| B7 | D7 | F7 | H7
-													| A8 | C8 | E8 | G8;
-
-	return bishops(side) & LiteSquares;
+	return bishops(side) & ::LiteSquares;
 }
 
 

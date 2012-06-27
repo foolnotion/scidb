@@ -2071,7 +2071,7 @@ db::Guess::evaluatePassedPawnRaces()
 
 	for (int color = 0; color < 2; ++color)
 	{
-		sq::ID (*flip)(sq::ID) = (color ? ::identicalSquare : sq::flipRank);
+		sq::ID (*flip)(sq::ID) = (color ? ::wflip : ::bflip);
 
 		color::ID	side		= color ? White : Black;
 		color::ID	opponent	= opposite(side);

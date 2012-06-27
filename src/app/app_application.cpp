@@ -1134,6 +1134,8 @@ Application::switchGame(unsigned position)
 
 	EditGame& game = m_gameMap[position];
 
+	m_position = position;
+
 	if (game.refresh)
 	{
 		if (game.refresh == 2)
@@ -1148,11 +1150,9 @@ Application::switchGame(unsigned position)
 		game.game->updateSubscriber(Game::UpdateBoard);
 	}
 
-	m_position = position;
-
 	if (m_subscriber)
 	{
-		m_subscriber->gameSwitched(m_position);
+		m_subscriber->gameSwitched(position);
 
 		if (m_referenceBase)
 			m_subscriber->updateTree(m_referenceBase->name());
@@ -1184,6 +1184,17 @@ Application::endTrialMode()
 	game.game = game.backup;
 	game.game->moveTo(game.backup->currentKey());
 	game.backup = 0;
+}
+
+
+void
+Application::refreshGames()
+{
+	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	{
+		if (i->second.cursor == m_scratchBase)
+			i->second.refresh = 2;
+	}
 }
 
 

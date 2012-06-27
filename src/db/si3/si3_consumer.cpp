@@ -320,7 +320,7 @@ Consumer::checkMove(Move const& move)
 	mstl::string msg("Invalid move: ");	// TODo: i18n
 	Move m(move);
 
-	board.prepareForSan(m);
+	board.prepareForPrint(m);
 	m.printSan(msg);
 	m_strm.put(token::Comment);
 	m_comments.push_back(Comment(msg, false, false)); // set english flag?

@@ -49,6 +49,7 @@
 ::mc::MoveForm(alg)	"Algebraic" ;# NEW
 ::mc::MoveForm(san)	"Short Algebraic" ;# NEW
 ::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
+::mc::MoveForm(eng)	"English" ;# NEW
 ::mc::MoveForm(cor)	"Correspondence" ;# NEW
 ::mc::MoveForm(tel)	"Telegraphic" ;# NEW
 

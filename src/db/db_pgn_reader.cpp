@@ -3370,6 +3370,20 @@ PgnReader::parseLowercaseZ(Token prevToken, int)
 
 
 PgnReader::Token
+PgnReader::parseMate(Token prevToken, int c)
+{
+	// skip "mate"
+	if (::strncmp(m_linePos, "ate", 3) == 0 && !::isalpha(m_linePos[3]))
+	{
+		setLinePos(m_linePos + 3);
+		return prevToken;
+	}
+
+	return unexpectedSymbol(prevToken, c);
+}
+
+
+PgnReader::Token
 PgnReader::parseMinusSign(Token prevToken, int)
 {
 	// Move suffix: "-+", "--+", "--++" "-/+", "->", "->/<-"
@@ -3454,6 +3468,36 @@ PgnReader::parseMove(Token prevToken, int c)
 
 	if (__builtin_expect(e == 0, 0))
 	{
+		// skip "ch", "dbl ch", "check", and "double check"
+		switch (c)
+		{
+			case 'c':
+				if (::strncmp(m_linePos, "heck", 4) == 0 && !::isalpha(m_linePos[4]))
+				{
+					setLinePos(m_linePos + 4);
+					return prevToken;
+				}
+				if (m_linePos[0] == 'h' && !::isalpha(m_linePos[2]))
+				{
+					setLinePos(m_linePos + 2);
+					return prevToken;
+				}
+				break;
+
+			case 'd':
+				if (::strncmp(m_linePos, "bl ch", 5) == 0 && !::isalpha(m_linePos[5]))
+				{
+					setLinePos(m_linePos + 5);
+					return prevToken;
+				}
+				if (::strncmp(m_linePos, "ouble check", 11) == 0 && !::isalpha(m_linePos[11]))
+				{
+					setLinePos(m_linePos + 11);
+					return prevToken;
+				}
+				break;
+		}
+
 		error(InvalidToken,
 				m_prevPos,
 				inverseFigurineMapping(mstl::string(m_linePos - 1, ::skipMoveToken(m_linePos))));
@@ -4230,7 +4274,7 @@ PgnReader::nextToken(Token prevToken)
 		/* 106 j  */ &PgnReader::unexpectedSymbol,
 		/* 107 k  */ &PgnReader::unexpectedSymbol,
 		/* 108 l  */ &PgnReader::unexpectedSymbol,
-		/* 109 m  */ &PgnReader::unexpectedSymbol,
+		/* 109 m  */ &PgnReader::parseMate,
 		/* 110 n  */ &PgnReader::parseLowercaseN,
 		/* 111 o  */ &PgnReader::parseLowercaseO,
 		/* 112 p  */ &PgnReader::unexpectedSymbol,

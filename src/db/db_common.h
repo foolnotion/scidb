@@ -107,10 +107,13 @@ namespace piece
 
 	ID piece(Type type, db::color::ID color);
 
-	/// Return ASCII character for given piece to be used in FEN
+	/// Return ASCII character for given piece to be used in FEN.
 	char print(ID piece);
-	/// Return the ASCII character for a given piece type
+	/// Return the ASCII character for a given piece type.
 	char print(Type type);
+
+	/// Return the numerical ASCII value for given piece type.
+	char printNumeric(Type type);
 
 	Type fromLetter(char piece);
 	ID pieceFromLetter(char piece);
@@ -155,6 +158,8 @@ namespace sq
 	ID flipFyle(ID s);
 	ID flipRank(ID s);
 
+	Rank flipRank(Rank rank);
+
 	Rank homeRank(db::color::ID color);
 	Rank pawnRank(db::color::ID color);
 
@@ -164,10 +169,13 @@ namespace sq
 	char printFyle(Square square);
 	char printFYLE(Square square);
 	char printRank(Square square);
+	char printRank(Rank rank);
 
 	char const* printAlgebraic(Square square);
 	char const* printNumeric(Square square);
 	char const* printAlphabetic(Square square);
+	char const* printDescriptive(Square square);
+	char const* printDescriptive(Square square, color::ID color);
 }
 
 namespace opening
@@ -406,7 +414,7 @@ namespace castling
 
 	mstl::string& print(Rights rights, mstl::string& result);
 
-	void initialize(); // only a hack for corrupted systems like Deb ian Wheezy
+	void initialize();		// only a hack for corrupted systems like Deb ian Wheezy
 
 } // namespace castling
 
@@ -414,7 +422,11 @@ namespace move {
 
 	enum Constraint	{ DontAllowIllegalMove, AllowIllegalMove };
 	enum Position		{ Ante, Post };
-	enum Notation		{ Algebraic, ShortAlgebraic, LongAlgebraic, Correspondence, Telegraphic };
+
+	enum Notation
+	{
+		Algebraic, ShortAlgebraic, LongAlgebraic, Descriptive,  Correspondence, Telegraphic
+	};
 
 } // namespace move
 
@@ -516,7 +528,8 @@ namespace tag
 	ID fromName(mstl::string const& tag);
 	ID fromName(char const* name, unsigned length);
 
-	void initialize(); // only a hack for corrupted systems like Deb ian Wheezy
+	void initialize();		// only a hack for corrupted systems like Deb ian Wheezy
+	bool initializeIsOk();	// only a hack for g++-4.7
 
 } // namespace tag
 

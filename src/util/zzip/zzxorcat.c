@@ -86,7 +86,8 @@ main (int argc, char ** argv)
             {
                 buf[n] = '\0';
 #	      ifdef STDOUT_FILENO
-                write (STDOUT_FILENO, buf, n);
+                if (write (STDOUT_FILENO, buf, n) == -1)
+						 perror("zzlib: write failed");
 #	      else
                 fwrite (buf, 1, n, stdout);
 #             endif

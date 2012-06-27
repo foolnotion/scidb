@@ -1343,9 +1343,14 @@ proc PrintSingleMove {position w key text tags} {
 	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
 	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
 	$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-	$w tag bind $key <ButtonPress-2> [list ::browser::showPosition $w $position $key %s]
+	$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
 	$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
 	$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
+}
+
+
+proc ShowPosition {position w key state} {
+	::browser::showPosition $w $position [[namespace parent]::board::rotated?] $key $state
 }
 
 

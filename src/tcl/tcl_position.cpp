@@ -232,17 +232,10 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (sq1 == sq::Null || sq2 == sq::Null)
 	{
-		switch (Scidb->game().currentBoard().checkState())
-		{
-			case Board::CheckMate:
-			case Board::StaleMate:
-				setResult(0);	// null move not allowed
-				break;
-
-			default:
-				setResult(1);
-				break;
-		}
+		if (Scidb->game().currentBoard().checkState() & (Board::CheckMate | Board::StaleMate))
+			setResult(0);	// null move not allowed
+		else
+			setResult(1);
 	}
 	else
 	{
@@ -361,7 +354,7 @@ cmdSan(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		mstl::string san;
-		Scidb->game().currentBoard().prepareForSan(move);
+		Scidb->game().currentBoard().prepareForPrint(move);
 		move.printSan(san);
 		setResult(san);
 	}

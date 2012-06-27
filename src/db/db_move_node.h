@@ -167,7 +167,7 @@ public:
 	void setComment(Comment const& comment, move::Position position);
 	void setInfoFlag(bool flag = true);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
-	void prepareForSan(Board const& board);
+	void prepareForPrint(Board const& board);
 	void transpose();
 	void finish(Board const& board);
 	void unfold();

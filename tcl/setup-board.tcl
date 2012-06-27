@@ -96,7 +96,7 @@ set UnsupportedVariant		"Position is a start position but not a Shuffle Chess po
 set Error(InvalidFen)					"FEN is invalid."
 set Error(NoWhiteKing)					"Missing white king."
 set Error(NoBlackKing)					"Missing black king."
-set Error(DoubleCheck)					"Both kings are in check."
+set Error(BothInCheck)					"Both kings are in check."
 set Error(OppositeCheck)				"Side not to move is in check."
 set Error(TooManyWhitePawns)			"Too many white pawns."
 set Error(TooManyBlackPawns)			"Too many black pawns."

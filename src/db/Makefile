@@ -197,6 +197,8 @@ db_board.o: db_board.ipp
 db_board.o: db_board_base.h
 db_board.o: db_board_base.ipp
 db_board.o: db_rand64.h
+db_board.o: ../mstl/m_bitfield.h
+db_board.o: ../mstl/m_bitfield.ipp
 db_board.o: ../mstl/m_stdio.h
 db_board_base.o: db_board_base.h
 db_board_base.o: db_common.h

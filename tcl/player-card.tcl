@@ -594,6 +594,7 @@ proc GetImage {info code} {
 		}
 	}
 
+	if {[string length $img] == 0} { return $img }
 	return [list $img [namespace code DoNothing]]
 }
 

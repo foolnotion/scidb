@@ -1173,7 +1173,7 @@ namespace tag
 		for (unsigned i = 0; i < U_NUMBER_OF(NameMap); ++i)
 			NameLookup[NameMap[i].id] = &NameMap[i].name;
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && !__GNUC_PREREQ(4,7)
 		for (int i = 0; i < ExtraTag; ++i)
 			assert(NameLookup[i]);
 #endif
@@ -1199,6 +1199,8 @@ namespace tag
 		IsRating |= IsWhiteRating;
 		IsRating |= IsBlackRating;
 	}
+
+	bool initializeIsOk() { return NameLookup[0] != 0; }
 
 } // namespace tag
 } // namespace db
@@ -1585,7 +1587,7 @@ material::si3::utf8::print(Signature sig, mstl::string& result)
 char const*
 sq::printAlgebraic(Square square)
 {
-	char const* Squares[64] =
+	static char const* Squares[64] =
 	{
 		"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
 		"a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
@@ -1605,9 +1607,48 @@ sq::printAlgebraic(Square square)
 
 
 char const*
+sq::printDescriptive(Square square)
+{
+	static char const* Squares[8] =
+	{
+		"QR", "QN", "QB", "Q", "K", "KB", "KN", "KR",
+	};
+
+	return Squares[square % 8];
+}
+
+
+char const*
+sq::printDescriptive(Square square, color::ID color)
+{
+	static char const* Squares[64] =
+	{
+		"QR1", "QN1", "QB1", "Q1", "K1", "KB1", "KN1", "KR1",
+		"QR2", "QN2", "QB2", "Q2", "K2", "KB2", "KN2", "KR2",
+		"QR3", "QN3", "QB3", "Q3", "K3", "KB3", "KN3", "KR3",
+		"QR4", "QN4", "QB4", "Q4", "K4", "KB4", "KN4", "KR4",
+		"QR5", "QN5", "QB5", "Q5", "K5", "KB5", "KN5", "KR5",
+		"QR6", "QN6", "QB6", "Q6", "K6", "KB6", "KN6", "KR6",
+		"QR7", "QN7", "QB7", "Q7", "K7", "KB7", "KN7", "KR7",
+		"QR8", "QN8", "QB8", "Q8", "K8", "KB8", "KN8", "KR8",
+	};
+
+	if (square >= U_NUMBER_OF(Squares))
+		return "--";
+
+   Rank r = rank(square);
+
+   if (color::isBlack(color))
+      r = flipRank(r);
+
+	return Squares[make(fyle(square), r)];
+}
+
+
+char const*
 sq::printNumeric(Square square)
 {
-	char const* Squares[64] =
+	static char const* Squares[64] =
 	{
 		"11", "21", "31", "41", "51", "61", "71", "81",
 		"12", "22", "32", "42", "52", "62", "72", "82",
@@ -1629,7 +1670,7 @@ sq::printNumeric(Square square)
 char const*
 sq::printAlphabetic(Square square)
 {
-	char const* Squares[64] =
+	static char const* Squares[64] =
 	{
 		"BA", "CA", "DA", "FA", "GA", "HA", "KA", "LA",
 		"BE", "CE", "DE", "FE", "GE", "HE", "KE", "LE",

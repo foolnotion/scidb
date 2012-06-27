@@ -68,12 +68,13 @@ SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/t
 
 TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(PROGRAM)
 
-all: recursive cbh2si4 cdb2sci $(PROGRAM)
+all: check-mtime recursive cbh2si4 cdb2sci $(PROGRAM)
 tkscidb-only: recursive $(PROGRAM)
 
 check-build:
-	@echo -n "Check build: "
-	@if [ "`$(PROGRAM) check-build.tcl`" = "OK" ]; then                  \
+	@echo -n "Check build: ";                                            \
+	pwd=`pwd`;                                                           \
+	if [ "`$$pwd/$(PROGRAM) check-build.tcl`" = "OK" ]; then             \
 		echo "OK";                                                        \
 	else                                                                 \
 		echo "FAILED";                                                    \
@@ -83,11 +84,19 @@ check-build:
 		echo "following way:";                                            \
 		echo "";                                                          \
 		echo "  > CXXFLAGS=\"-Wall -DBROKEN_LINKER_HACK=1\" ./configure"; \
-		echo "  > make clean";                                            \
-		echo "  > make";                                                  \
-		echo "  > make check-build";                                      \
 		echo "";                                                          \
 		exit 1;                                                           \
+	fi
+
+check-mtime:
+	@if [ -f $(PROGRAM) ]; then                              \
+		if [ $(PROGRAM) -ot ../Makefile.in ]; then            \
+			echo "src/$(PROGRAM) is older than Makefile.in.";  \
+			echo "It is recommended to use \"make clean\" at"; \
+			echo "first. Touch src/$(PROGRAM) if you think";   \
+			echo "you don't need this.";                       \
+			exit 1;                                            \
+		fi                                                    \
 	fi
 
 install-executables: recursive cbh2si4 cdb2sci $(PROGRAM)

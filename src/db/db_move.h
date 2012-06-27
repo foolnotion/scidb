@@ -56,6 +56,7 @@ private:
 	enum
 	{
 		Shift_Promotion	= 12,
+		Shift_Destination	= 14,
 		Shift_Piece			= 15,	Shift_Action = Shift_Piece,
 		Shift_Castling		= 18,
 		Shift_TwoForward	= 19,
@@ -76,6 +77,7 @@ private:
 		Bit_Castling		= 1 << Shift_Castling,
 		Bit_TwoForward		= 1 << Shift_TwoForward,
 		Bit_Promote			= 1 << Shift_Promote,
+		Bit_Destination	= 1 << Shift_Destination,
 		Bit_EnPassant		= 1 << Shift_EnPassant,
 		Bit_BlackToMove	= 1 << Shift_SideToMove,
 		Bit_Fyle				= 1 << Shift_Fyle,
@@ -206,6 +208,8 @@ public:
 	bool needsFyle() const;
 	/// Check whether rank is needed to dissolve disambiguation.
 	bool needsRank() const;
+	// Check whether square is needed to dissolve disambiguation of capturing.
+	bool needsDestinationSquare() const;
 
 	/// Print algebraic form.
 	mstl::string& printAlgebraic(mstl::string& s) const;
@@ -213,6 +217,8 @@ public:
 	mstl::string& printLan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print SAN (short algebraic noatation).
 	mstl::string& printSan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
+	/// Print descriptive (english) form.
+	mstl::string& printDescriptive(mstl::string& s) const;
 	/// Print correspondence form.
 	mstl::string& printNumeric(mstl::string& s) const;
 	/// Print telegraphic form.
@@ -318,6 +324,8 @@ private:
 	void setNeedsFyle();
 	/// Mark this move that SAN needs rank.
 	void setNeedsRank();
+	/// Mark this capturing move that descriptive notation needs destination square.
+	void setNeedsDestinationSquare();
 	/// Mark move as prepared for printing.
 	void setPrintable();
 
@@ -337,32 +345,32 @@ private:
 	// - move is empty if all bits are zero
 	// - move is null if only the legality status is set
 	// - the first 12/14 bits are usable as a short move value
-	// 00000000 00000000 00000000 00111111 = from square     = bits  1-6
-	// 00000000 00000000 00001111 11000000 = to square       = bits  7-12
-	// 00000000 00000000 00110000 00000000 = promotion piece = bits 13-14
-	// 00000000 00000000 01000000 00000000 = <unused>        = bits 15
-	// 00000000 00000011 10000000 00000000 = piece type      = bits 16-18
-	// 00000000 00000100 00000000 00000000 = castle          = bit  19
-	// 00000000 00001000 00000000 00000000 = pawn 2 forward  = bit  20
-	// 00000000 00010000 00000000 00000000 = promotion       = bit  21
-	// 00000000 11100000 00000000 00000000 = capture piece   = bits 22-24
-	// 00000001 00000000 00000000 00000000 = en passant      = bit  25
-	// 00000010 00000000 00000000 00000000 = side to move    = bit  26
-	// 00000100 00000000 00000000 00000000 = SAN needs fyle  = bit  27
-	// 00001000 00000000 00000000 00000000 = SAN needs rank  = bit  28
-	// 00010000 00000000 00000000 00000000 = gives mate?     = bit  29
-	// 00100000 00000000 00000000 00000000 = gives check?    = bit  30
-	// 01000000 00000000 00000000 00000000 = printable?		= bit  31
-	// 10000000 00000000 00000000 00000000 = legality status = bit  32
+	// 00000000 00000000 00000000 00111111 = from square       = bits  1-6
+	// 00000000 00000000 00001111 11000000 = to square         = bits  7-12
+	// 00000000 00000000 00110000 00000000 = promotion piece   = bits 13-14
+	// 00000000 00000000 01000000 00000000 = needs destination = bits 15
+	// 00000000 00000011 10000000 00000000 = piece type        = bits 16-18
+	// 00000000 00000100 00000000 00000000 = castle            = bit  19
+	// 00000000 00001000 00000000 00000000 = pawn 2 forward    = bit  20
+	// 00000000 00010000 00000000 00000000 = promotion         = bit  21
+	// 00000000 11100000 00000000 00000000 = capture piece     = bits 22-24
+	// 00000001 00000000 00000000 00000000 = en passant        = bit  25
+	// 00000010 00000000 00000000 00000000 = side to move      = bit  26
+	// 00000100 00000000 00000000 00000000 = SAN needs fyle    = bit  27
+	// 00001000 00000000 00000000 00000000 = SAN needs rank    = bit  28
+	// 00010000 00000000 00000000 00000000 = gives mate?       = bit  29
+	// 00100000 00000000 00000000 00000000 = gives check?      = bit  30
+	// 01000000 00000000 00000000 00000000 = printable?		  = bit  31
+	// 10000000 00000000 00000000 00000000 = legality status   = bit  32
 	uint32_t m;
 
 	// The undo definition 'u' bitfield layout:
-	// 00000000 00000000 11111111 11111111 = half move clock  = bits  1-16
-	// 00000000 11111111 00000000 00000000 = prev. ep square  = bits 17-24
-	// 00001111 00000000 00000000 00000000 = castling rights  = bits 25-28
-	// 00010000 00000000 00000000 00000000 = ep sq exists?    = bits 29
-	// 01100000 00000000 00000000 00000000 = <unused>         = bits 30-31
-	// 10000000 00000000 00000000 00000000 = prepared?        = bits 32
+	// 00000000 00000000 11111111 11111111 = half move clock   = bits  1-16
+	// 00000000 11111111 00000000 00000000 = prev. ep square   = bits 17-24
+	// 00001111 00000000 00000000 00000000 = castling rights   = bits 25-28
+	// 00010000 00000000 00000000 00000000 = ep sq exists?     = bits 29
+	// 01100000 00000000 00000000 00000000 = <unused>          = bits 30-31
+	// 10000000 00000000 00000000 00000000 = prepared?         = bits 32
 	uint32_t u;
 
 	static Move const m_null;

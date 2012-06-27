@@ -94,9 +94,10 @@ inline Rank rank(Square square) { return Rank(square >> 3); }
 
 inline ID make(Square fyle, Square rank) { return ID((rank << 3) | fyle); }
 
-inline char printFyle(Square square) { return 'a' + fyle(square); }
-inline char printFYLE(Square square) { return 'A' + fyle(square); }
-inline char printRank(Square square) { return '1' + rank(square); }
+inline char printFyle(Square square)	{ return 'a' + fyle(square); }
+inline char printFYLE(Square square)	{ return 'A' + fyle(square); }
+inline char printRank(Square square)	{ return '1' + rank(square); }
+inline char printRank(Rank rank)			{ return '1' + rank; }
 
 inline ID rankToSquare(Rank rank) { return ID(rank << 3); }
 
@@ -109,6 +110,8 @@ inline int distance(ID a, ID b) { return mstl::max(fyleDistance(a, b), rankDista
 
 inline ID flipFyle(ID s)	{ return make(Fyle(Rank8 - fyle(s)), rank(s)); }
 inline ID flipRank(ID s)	{ return make(fyle(s), Rank(Rank8 - rank(s))); }
+
+inline Rank flipRank(Rank rank)	{ return Rank(Rank8 - rank); }
 
 inline Rank homeRank(db::color::ID color) { return color == db::color::White ? Rank1 : Rank8; }
 inline Rank pawnRank(db::color::ID color) { return color == db::color::White ? Rank2 : Rank7; }
@@ -161,6 +164,14 @@ print(Type type)
 	M_ASSERT(type <= 6);
 	return " KQRBNP"[type];
 };
+
+inline
+char
+printNumeric(Type type)
+{
+	static_assert(King == 1 && Queen == 2, "change numeric conversion");
+	return '0' + unsigned(type) - 1;
+}
 
 } // namespace piece
 

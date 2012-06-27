@@ -83,20 +83,18 @@ class Board : protected board::UniquePosition, protected Signature
 {
 public:
 
-	enum Status
-	{
-		CheckMate,					///< side to move is check mate
-		StaleMate,					///< side to move is stale mate
-		Check,						///< side to move is in check (and neither check mate nor stale mate)
-		NoCheck,						///< side to move is not in check (and not stale mate)
-	};
+	static unsigned const NoCheck			= 0;			///< side to move is not in check
+	static unsigned const Check			= 1 << 0;	///< side to move is in check
+	static unsigned const DoubleCheck	= 1 << 1;	///< side to move is in double check
+	static unsigned const CheckMate		= 1 << 2;	///< side to move is check mate
+	static unsigned const StaleMate		= 1 << 3;	///< side to move is stale mate
 
 	enum SetupStatus
 	{
 		Valid,						///< position seems to be valid (cannot detect all invalid cases)
 		NoWhiteKing,				///< white king is missing
 		NoBlackKing,				///< black king is missing
-		DoubleCheck,				///< both kings are in check
+		BothInCheck,				///< both kings are in check
 		OppositeCheck,				///< opposite king is in check
 		TooManyWhitePawns,		///< more than eight white pawns
 		TooManyBlackPawns,		///< more than eight black pawns
@@ -198,6 +196,8 @@ public:
 	bool isInCheck() const;
 	/// Return true if side not to move is in check
 	bool givesCheck() const;
+	/// Return true if side not to move is mate
+	bool givesMate() const;
 	/// Return true if side to move is in double check
 	bool isDoubleCheck() const;
 	/// Test to see if given color has the right to castle on kingside
@@ -234,7 +234,9 @@ public:
 	bool isUnambiguous(castling::Index castling) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
-	Status checkState() const;
+	unsigned checkState() const;
+	/// Returns current board state after moving (check mate, stale mate, ...)
+	unsigned checkState(Move const& move) const;
 	/// Is piece sitting on given square moveable?
 	bool isMovable(Square s, move::Constraint flag = move::AllowIllegalMove) const;
 	/// Return number of ply since a pawn move or capture
@@ -297,7 +299,7 @@ public:
 	/// Return a position description based on current board position
 	mstl::string asString() const;
 	/// Prepare move for printing a SAN
-	Move& prepareForSan(Move& move) const;
+	Move& prepareForPrint(Move& move) const;
 	/// Returns the IDN (chess 960 unique IDentification Number)
 	unsigned computeIdn() const;
 
@@ -389,6 +391,8 @@ private:
 
 	/// Return all possible pawn moves from given square
 	uint64_t pawnMovesFrom(Square square) const;
+	/// Return all possible pawn moves capturing pawn on given square
+	uint64_t pawnCapturesTo(Square square) const;
 
 	/// Return all squares attacked by a knight on given square
 	uint64_t knightAttacks(Square square) const;
@@ -404,9 +408,16 @@ private:
 	uint64_t attacks(unsigned color, Square square) const;
 
 	/// Remove impossible moves from given board to aid disambiguation
-	void removeIllegal(Move const& move, uint64_t& b) const;
+	void removeIllegalTo(Move move, uint64_t& b) const;
+	/// Remove impossible moves from given board to aid disambiguation
+	void removeIllegalFrom(Move move, uint64_t& b) const;
 	/// Return move with castling details, return empty move if no castle is possible
 	Move prepareCastle(Square from, Square to, move::Constraint flag) const;
+
+   void filterCheckMovesTo(Move move, uint64_t& movers) const;
+   void filterCheckMateMovesTo(Move move, uint64_t& movers) const;
+   void filterCheckMovesFrom(Move move, uint64_t& movers) const;
+   void filterCheckMateMovesFrom(Move move, uint64_t& movers) const;
 
 	/// Swap the side to move
 	void swapToMove();
@@ -445,6 +456,8 @@ private:
 	bool shortCastlingBlackIsPossible() const;
 	bool longCastlingWhiteIsPossible() const;
 	bool longCastlingBlackIsPossible() const;
+
+	Move* findMatchingMove(MoveList& list, unsigned state) const;
 
 	// hashing functions
 	void hashPiece(Square s, piece::ID piece);

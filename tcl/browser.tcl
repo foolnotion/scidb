@@ -376,7 +376,13 @@ proc load {parent base info view index windowId} {
 }
 
 
-proc showPosition {parent position key {state 0}} {
+proc ShowPosition {parent position key {state 0}} {
+	variable ${position}::Vars
+	showPosition $parent $position [::board::stuff::rotated? $Vars(board)] $key $state
+}
+
+
+proc showPosition {parent position flip key {state 0}} {
 	set w .application.showboard
 
 	if {![winfo exists $w]} {
@@ -392,6 +398,9 @@ proc showPosition {parent position key {state 0}} {
 	# show pawn structure if shift key is held down (or shift key is locked)
 	if {($state & 3) == 1 || ($state & 3) == 2} {
 		set fen [string map {K . Q . R . B . N . k . q . r . b . n .} $fen]
+	}
+	if {$flip != [::board::stuff::rotated? $w.board]} {
+		::board::stuff::rotate $w.board
 	}
 	::board::stuff::update $w.board $fen
 	::tooltip::popup $parent $w cursor
@@ -929,7 +938,7 @@ proc PrintMove {w position key text {tag ""}} {
 	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
 	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
 	$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
-	$w tag bind $key <ButtonPress-2> [namespace code [list showPosition $w $position $key %s]]
+	$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key %s]]
 	$w tag bind $key <ButtonRelease-2> [namespace code [list hidePosition $w]]
 }
 

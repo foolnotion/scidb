@@ -310,6 +310,7 @@ proc DetectSuSE {file} {
 
 proc detectUnixDistribution {} {
     variable distribution
+    variable release
 
     set distribution(os) [exec uname -s]
     set distribution(machine) [exec uname -m]
@@ -331,7 +332,7 @@ proc detectUnixDistribution {} {
             DetectRedHat /etc/mandrake-release
         } elseif {[file readable /etc/redhat-release]} {
             DetectRedHat /etc/redhat-release
-        } elseif {[file readable /etc/debian_version]} {
+        } elseif {0 && [file readable /etc/debian_version]} {
             set distribution(distributor) "Debian"
             set fd [open /etc/debian_version r]; gets $fd line; close $fd
             set distribution(revision) $line
@@ -339,7 +340,8 @@ proc detectUnixDistribution {} {
             set files [glob -directory /etc -types f *-release]
             if {[llength $files] == 1} {
                 variable release
-                catch { set distribution(distributor) $release([lindex $files 0]) }
+                set id [string range [file tail [lindex $files 0]] 0 end-8]
+                catch { set distribution(distributor) $release($id) }
             } elseif {[llength $files] == 0]} {
                 if {[file readable /etc/knoppix_version]} {
                     set distribution(distributor) "Knoppix"
@@ -1394,7 +1396,11 @@ proc writeMakefile {{type ""}} {
     # Summary info
     if {$success} {
         puts "Makefile.in configured for your system was written."
-        puts "Now just type \"make\" to compile Scidb."
+        puts -nonewline "Now just type \""
+        if {[file readable tcl/$option(PROGRAM)]} {
+            puts -nonewline "make clean; "
+        }
+        puts "make\" to compile Scidb."
     } else {
         puts "Not all settings could be determined!"
         puts "The default Makefile.in was written."

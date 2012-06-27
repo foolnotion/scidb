@@ -12,7 +12,7 @@
 
 MAKEFLAGS += --no-print-directory
 
-all: Makefile.in
+all: Makefile.in check-mtime
 #	@$(MAKE) -C engines
 #	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
@@ -20,9 +20,22 @@ all: Makefile.in
 	@$(MAKE) -C tcl
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C man
+	@echo ""
+	@echo "Now it is recommended to use \"make check-build\"."
 
 check-build:
 	@$(MAKE) -C src check-build
+	@echo ""
+	@echo "Now type either \"make install\" or \"sudo make install\""
+	@echo "for installation."
+
+check-mtime:
+	@if [ Makefile.in -ot configure ]; then                    \
+		echo "Makefile.in is older than the configure script."; \
+		echo "It is recommended to re-configure. Touch";        \
+		echo "Makefile.in if you think you don't need this.";   \
+		exit 1;                                                 \
+	fi
 
 depend:
 #	@$(MAKE) -C engines depend
@@ -34,8 +47,10 @@ clean:
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tcl clean
 	@$(MAKE) -C man clean
+	@echo ""
+	@echo "Now you may use \"make\" to build the program."
 
-install: install-subdirs # update-etc-magic
+install: check-mtime install-subdirs # update-etc-magic
 
 uninstall:
 #	@$(MAKE) -C engines uninstall

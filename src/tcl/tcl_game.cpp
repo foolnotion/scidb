@@ -1223,6 +1223,7 @@ static int
 cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	bool immediate = false;
+	bool all = false;
 
 	if (objc >= 2)
 	{
@@ -1233,10 +1234,20 @@ cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			immediate = true;
 			--objc;
 		}
+		else if (::strcmp(option, "-all") == 0)
+		{
+			all = true;
+			--objc;
+		}
 	}
 
 	unsigned position = objc > 1 ? unsignedFromObj(objc, objv, 1) : Application::InvalidPosition;
+
+	if (all)
+		scidb->refreshGames();
+
 	scidb->refreshGame(position, immediate);
+
 	return TCL_OK;
 }
 
@@ -2279,6 +2290,8 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		moveForm = move::ShortAlgebraic;
 	else if (strcmp(moveStyle, "lan") == 0)
 		moveForm = move::LongAlgebraic;
+	else if (strcmp(moveStyle, "eng") == 0)
+		moveForm = move::Descriptive;
 	else if (strcmp(moveStyle, "cor") == 0)
 		moveForm = move::Correspondence;
 	else if (strcmp(moveStyle, "tel") == 0)
@@ -2718,11 +2731,11 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdBoard,		cmdBoard);
 	createCommand(ti, CmdClear,		cmdClear);
-	createCommand(ti, CmdCopy,		cmdCopy);
+	createCommand(ti, CmdCopy,			cmdCopy);
 	createCommand(ti, CmdCount,		cmdCount);
 	createCommand(ti, CmdCurrent,		cmdCurrent);
 	createCommand(ti, CmdDump,			cmdDump);
-	createCommand(ti, CmdExchange,		cmdExchange);
+	createCommand(ti, CmdExchange,	cmdExchange);
 	createCommand(ti, CmdExecute,		cmdExecute);
 	createCommand(ti, CmdExport,		cmdExport);
 	createCommand(ti, CmdFen,			cmdFen);
@@ -2732,10 +2745,10 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdInfo,			cmdInfo);
 	createCommand(ti, CmdLangSet,		cmdLangSet);
 	createCommand(ti, CmdLevel,		cmdLevel);
-	createCommand(ti, CmdLink,		cmdLink);
+	createCommand(ti, CmdLink,			cmdLink);
 	createCommand(ti, CmdLoad,			cmdLoad);
-	createCommand(ti, CmdMaterial,		cmdMaterial);
-	createCommand(ti, CmdModified,		cmdModified);
+	createCommand(ti, CmdMaterial,	cmdMaterial);
+	createCommand(ti, CmdModified,	cmdModified);
 	createCommand(ti, CmdMove,			cmdMove);
 	createCommand(ti, CmdMoveto,		cmdMoveto);
 	createCommand(ti, CmdNew,			cmdNew);
@@ -2750,14 +2763,14 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdRelease,		cmdRelease);
 	createCommand(ti, CmdReplace,		cmdReplace);
 	createCommand(ti, CmdSave,			cmdSave);
-	createCommand(ti, CmdSetup,			cmdSetup);
-	createCommand(ti, CmdSink,		cmdSink);
+	createCommand(ti, CmdSetup,		cmdSetup);
+	createCommand(ti, CmdSink,			cmdSink);
 	createCommand(ti, CmdSink_,		cmdSink_);
-	createCommand(ti, CmdStrip,			cmdStrip);
+	createCommand(ti, CmdStrip,		cmdStrip);
 	createCommand(ti, CmdSubscribe,	cmdSubscribe);
 	createCommand(ti, CmdTags,			cmdTags);
 	createCommand(ti, CmdTranspose,	cmdTranspose);
-	createCommand(ti, CmdTrial,			cmdTrial);
+	createCommand(ti, CmdTrial,		cmdTrial);
 	createCommand(ti, CmdUndoSetup,	cmdUndoSetup);
 	createCommand(ti, CmdUpdate,		cmdUpdate);
 	createCommand(ti, CmdVariation,	cmdVariation);

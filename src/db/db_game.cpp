@@ -1000,6 +1000,9 @@ Game::printMove(	Board const& board,
 		case move::LongAlgebraic:
 			move.printLan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
 			break;
+		case move::Descriptive:
+			move.printDescriptive(result);
+			break;
 		case move::Correspondence:
 			move.printNumeric(result);
 			break;
@@ -1008,8 +1011,13 @@ Game::printMove(	Board const& board,
 			break;
 	}
 
-	if (!(flags & ExportFormat) && !move.givesMate() && board.isDoubleCheck())
+	if (	!(flags & ExportFormat)
+		&& form != move::Descriptive
+		&& !move.givesMate()
+		&& board.isDoubleCheck())
+	{
 		result += '+';
+	}
 
 	// annotation
 	if (flags & IncludeAnnotation)
@@ -1898,7 +1906,7 @@ Game::addVariation(MoveNodeP node)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForSan(n->move());
+		board.prepareForPrint(n->move());
 		board.doMove(n->move());
 	}
 
@@ -2286,7 +2294,7 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForSan(n->move());
+		board.prepareForPrint(n->move());
 		board.doMove(n->move());
 	}
 

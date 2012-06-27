@@ -71,7 +71,7 @@ MoveNode::MoveNode(Board const& board, Move const& move)
 	M_REQUIRE(board.isValidMove(move));
 
 	board.prepareUndo(m_move);
-	board.prepareForSan(m_move);
+	board.prepareForPrint(m_move);
 }
 
 
@@ -142,7 +142,7 @@ MoveNode::setMove(Board const& board, Move const& move)
 
 	m_move = move;
 	board.prepareUndo(m_move);
-	board.prepareForSan(m_move);
+	board.prepareForPrint(m_move);
 }
 
 
@@ -518,9 +518,9 @@ MoveNode::variationNumber(MoveNode const* node) const
 
 
 void
-MoveNode::prepareForSan(Board const& board)
+MoveNode::prepareForPrint(Board const& board)
 {
-	board.prepareForSan(m_move);
+	board.prepareForPrint(m_move);
 }
 
 
@@ -841,7 +841,7 @@ MoveNode::finish(Board const& board)
 			node->m_variations[i]->finish(myBoard);
 
 		myBoard.prepareUndo(node->m_move);
-		myBoard.prepareForSan(node->m_move);
+		myBoard.prepareForPrint(node->m_move);
 		myBoard.doMove(node->m_move);
 	}
 }

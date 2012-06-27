@@ -96,7 +96,7 @@ validate(Board const& board)
 
 		case Board::NoWhiteKing:				error = "NoWhiteKing"; break;
 		case Board::NoBlackKing:				error = "NoBlackKing"; break;
-		case Board::DoubleCheck:				error = "DoubleCheck"; break;
+		case Board::BothInCheck:				error = "BothInCheck"; break;
 		case Board::OppositeCheck:				error = "OppositeCheck"; break;
 		case Board::TooManyWhitePawns:		error = "TooManyWhitePawns"; break;
 		case Board::TooManyBlackPawns:		error = "TooManyBlackPawns"; break;

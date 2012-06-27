@@ -135,21 +135,22 @@ inline uint32_t Move::removal() const			{ return (m >> Shift_Removal) & Mask_Rem
 inline uint32_t Move::data() const				{ return m; }
 inline unsigned Move::index() const				{ return m & 0x3fff; }
 
-inline bool Move::givesCheck() const			{ return m & Bit_Check; }
-inline bool Move::givesMate() const				{ return m & Bit_Mate; }
-inline bool Move::isCastling() const			{ return m & Bit_Castling; }
-inline bool Move::isDoubleAdvance() const		{ return m & Bit_TwoForward; }
-inline bool Move::isEmpty() const				{ return m == 0; }
-inline bool Move::isEnPassant() const			{ return m & Bit_EnPassant; }
-inline bool Move::isLegal() const				{ return m & Bit_Legality; }
-inline bool Move::isIllegal() const				{ return (m & Bit_Legality) == 0; }
-inline bool Move::isNull() const					{ return isLegal() && index() == 0; }
-inline bool Move::isInvalid() const				{ return index() == Invalid; }
-inline bool Move::isPromotion() const			{ return m & Bit_Promote; }
-inline bool Move::isSpecial() const				{ return m & Bits_Special; }
-inline bool Move::isPrintable() const			{ return m & Bit_Printable; }
-inline bool Move::needsFyle() const				{ return m & Bit_Fyle; }
-inline bool Move::needsRank() const				{ return m & Bit_Rank; }
+inline bool Move::givesCheck() const					{ return m & Bit_Check; }
+inline bool Move::givesMate() const						{ return m & Bit_Mate; }
+inline bool Move::isCastling() const					{ return m & Bit_Castling; }
+inline bool Move::isDoubleAdvance() const				{ return m & Bit_TwoForward; }
+inline bool Move::isEmpty() const						{ return m == 0; }
+inline bool Move::isEnPassant() const					{ return m & Bit_EnPassant; }
+inline bool Move::isLegal() const						{ return m & Bit_Legality; }
+inline bool Move::isIllegal() const						{ return (m & Bit_Legality) == 0; }
+inline bool Move::isNull() const							{ return isLegal() && index() == 0; }
+inline bool Move::isInvalid() const						{ return index() == Invalid; }
+inline bool Move::isPromotion() const					{ return m & Bit_Promote; }
+inline bool Move::isSpecial() const						{ return m & Bits_Special; }
+inline bool Move::isPrintable() const					{ return m & Bit_Printable; }
+inline bool Move::needsFyle() const						{ return m & Bit_Fyle; }
+inline bool Move::needsRank() const						{ return m & Bit_Rank; }
+inline bool Move::needsDestinationSquare() const	{ return m & Bit_Destination; }
 
 inline void Move::clear()							{ m = 0; }
 inline bool Move::preparedForUndo() const		{ return u & 0x80000000; }
@@ -168,6 +169,7 @@ inline void Move::setIllegalMove()				{ m &= ~Bit_Legality; }
 inline void Move::setMate()						{ m |= Bit_Mate; }
 inline void Move::setNeedsFyle()					{ m |= Bit_Fyle; }
 inline void Move::setNeedsRank()					{ m |= Bit_Rank; }
+inline void Move::setNeedsDestinationSquare(){ m |= Bit_Destination; }
 inline void Move::setPrintable()					{ m |= Bit_Printable; }
 inline void Move::setTwoForward()				{ m |= Bit_TwoForward; }
 

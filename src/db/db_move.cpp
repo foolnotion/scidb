@@ -190,6 +190,78 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
+Move::printDescriptive(mstl::string& s) const
+{
+	if (isNull())
+	{
+		s += "null";	// arbitrarely choosen
+	}
+	else if (isCastling())
+	{
+		if (isShortCastling())
+			s += "O-O";
+		else
+			s += "O-O-O";
+	}
+	else
+	{
+		if (captured() == piece::None)
+		{
+			s += piece::print(pieceMoved());
+
+			if (needsFyle() || needsRank())
+			{
+				s += '(';
+				s += sq::printDescriptive(from(), color());
+				s += ')';
+			}
+
+			s += '-';
+			s += sq::printDescriptive(to(), color());
+		}
+		else
+		{
+			s += piece::print(pieceMoved());
+
+			if (needsFyle() || needsRank())
+			{
+				s += '(';
+				s += sq::printDescriptive(from(), color());
+				s += ')';
+			}
+
+			s += 'x';
+			s += piece::print(captured());
+
+			if (needsDestinationSquare())
+			{
+				s += '(';
+				s += sq::printDescriptive(to(), color());
+				s += ')';
+			}
+		}
+
+		if (isPromotion())
+		{
+			s += '(';
+			s += piece::print(promoted());
+			s += ')';
+		}
+
+		if (givesMate())
+			s += "++";
+		else if (givesCheck())
+			s += '+';
+
+		if (isEnPassant())
+			s += " e.p.";
+	}
+
+	return s;
+}
+
+
+mstl::string&
 Move::printNumeric(mstl::string& s) const
 {
 	if (isNull())
@@ -200,6 +272,9 @@ Move::printNumeric(mstl::string& s) const
 	{
 		s += sq::printNumeric(from());
 		s += sq::printNumeric(to());
+
+		if (isPromotion())
+			s += piece::printNumeric(promoted());
 	}
 
 	return s;
@@ -217,6 +292,9 @@ Move::printAlphabetic(mstl::string& s) const
 	{
 		s += sq::printAlphabetic(from());
 		s += sq::printAlphabetic(to());
+
+		if (isPromotion())
+			s += piece::print(promoted());
 	}
 
 	return s;
@@ -231,6 +309,7 @@ Move::print(mstl::string& s, move::Notation form, encoding::CharSet charSet) con
 		case move::Algebraic:		printAlgebraic(s); break;
 		case move::ShortAlgebraic:	printSan(s, charSet); break;
 		case move::LongAlgebraic:	printLan(s, charSet); break;
+		case move::Descriptive:		printDescriptive(s); break;
 		case move::Correspondence:	printNumeric(s); break;
 		case move::Telegraphic:		printAlphabetic(s); break;
 	}

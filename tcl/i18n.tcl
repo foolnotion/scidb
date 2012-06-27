@@ -43,6 +43,7 @@ set Key(Up)			"\u2191"
 set MoveForm(alg)	"Algebraic"
 set MoveForm(san)	"Short Algebraic"
 set MoveForm(lan)	"Long Algebraic"
+set MoveForm(eng)	"English"
 set MoveForm(cor)	"Correspondence"
 set MoveForm(tel)	"Telegraphic"
 

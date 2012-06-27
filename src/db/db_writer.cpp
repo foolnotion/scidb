@@ -420,7 +420,7 @@ Writer::writeMove(Move const& move,
 	if (!move.isPrintable())
 	{
 		Move m(move);
-		board().prepareForSan(m);
+		board().prepareForPrint(m);
 		writeMove(m, m_moveNumber, annotation, marks, preComment, comment);
 	}
 	else

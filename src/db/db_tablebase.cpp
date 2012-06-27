@@ -156,11 +156,11 @@ Tablebase::getOnlineQuery(Board const& board, Move& result)
 	{
 		case 'E':	// "Error"
 			{
-				Board::Status state = board.checkState();
+				unsigned state = board.checkState();
 
-				if (state == Board::CheckMate)
+				if (state & Board::CheckMate)
 					return tb::Is_Check_Mate;
-				if (state == Board::StaleMate)
+				if (state & Board::StaleMate)
 					return tb::Is_Stale_Mate;
 
 				return tb::Illegal_Position;

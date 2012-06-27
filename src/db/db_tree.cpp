@@ -702,7 +702,7 @@ Tree::makeTree(TreeP tree,
 			if (info.move())
 			{
 				info.move().setColor(myPosition.sideToMove());
-				myPosition.prepareForSan(info.move());
+				myPosition.prepareForPrint(info.move());
 			}
 
 			if (	line.length <= opening::Max_Line_Length
