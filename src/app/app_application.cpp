@@ -1816,6 +1816,22 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 
 
 void
+Application::bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(isScratchGame(position));
+
+	EditGame& game = m_gameMap.find(position)->second;
+		
+	game.sourceBase = name;
+	game.sourceIndex = index;
+
+	if (m_subscriber)
+		m_subscriber->updateGameInfo(position);
+}
+
+
+void
 Application::setupGame(	unsigned linebreakThreshold,
 								unsigned linebreakMaxLineLengthMain,
 								unsigned linebreakMaxLineLengthVar,

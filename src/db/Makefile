@@ -2530,6 +2530,8 @@ db_pgn_reader.o: db_site.ipp
 db_pgn_reader.o: db_eco.h
 db_pgn_reader.o: db_eco.ipp
 db_pgn_reader.o: db_pgn_aquarium.h
+db_pgn_reader.o: ../util/u_nul_string.h
+db_pgn_reader.o: ../util/u_nul_string.ipp
 db_pgn_reader.o: ../util/u_progress.h
 db_pgn_reader.o: ../util/u_progress.ipp
 db_pgn_reader.o: ../util/u_zstream.h
@@ -5422,6 +5424,8 @@ si3/si3_decoder.o: db_producer.ipp
 si3/si3_decoder.o: db_reader.ipp
 si3/si3_decoder.o: db_exception.h
 si3/si3_decoder.o: ../util/u_exception.h
+si3/si3_decoder.o: ../util/u_nul_string.h
+si3/si3_decoder.o: ../util/u_nul_string.ipp
 si3/si3_decoder.o: ../util/u_byte_stream.h
 si3/si3_decoder.o: ../util/u_byte_stream.ipp
 si3/si3_decoder.o: ../sys/sys_utf8.h

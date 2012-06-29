@@ -35,6 +35,7 @@
 #include "db_eco.h"
 #include "db_pgn_aquarium.h"
 
+#include "u_nul_string.h"
 #include "u_progress.h"
 #include "u_zstream.h"
 
@@ -1186,6 +1187,39 @@ PgnReader::putMove(bool lastMove)
 			{
 				M_ASSERT(m_postIndex <= m_comments.size());
 
+				if (	lastMove
+					&& (	!m_tags.contains(tag::Termination)
+						|| termination::fromString(m_tags.value(tag::Termination)) == termination::Unknown))
+				{
+					for (unsigned j = 0; j < m_comments.size(); ++j)
+					{
+						Comment const& comment = m_comments[j];
+
+						switch (::toupper(*comment.content().c_str()))
+						{
+							case 'B':
+								if (::strcasecmp(comment.content(), "Black forfeits on time") == 0)
+									m_tags.set(tag::Termination, termination::toString(termination::TimeForfeit));
+								break;
+
+							case 'W':
+								if (::strcasecmp(comment.content(), "White forfeits on time") == 0)
+									m_tags.set(tag::Termination, termination::toString(termination::TimeForfeit));
+								break;
+
+							case 'F':
+								if (::strcasecmp(comment.content(), "Forfeits on time") == 0)
+									m_tags.set(tag::Termination, termination::toString(termination::TimeForfeit));
+								break;
+
+							case 'T':
+								if (::strcasecmp(comment.content(), "Time forfeits") == 0)
+									m_tags.set(tag::Termination, termination::toString(termination::TimeForfeit));
+								break;
+						}
+					}
+				}
+
 				::join(m_comments.begin(), m_comments.begin() + m_postIndex);
 
 				if (m_postIndex == m_comments.size())
@@ -1735,9 +1769,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					if (!s)
 						return false;
 
-					mstl::string v;
-					*(value.end() - 1) = '\0';
-					v.hook(s + 1, (value.end() - 1) - (s + 1));
+					util::NulString v(s + 1, (value.end() - 1) - (s + 1));
 
 					switch (time::Mode mode = time::fromString(v))
 					{
@@ -2452,7 +2484,7 @@ PgnReader::getTerminationReason(mstl::string const& value)
 		}
 	}
 
-	return termination::Unknown;
+	return reason;
 }
 
 
@@ -4458,11 +4490,8 @@ PgnReader::extractCountryFromSite(mstl::string& data)
 				--s;
 			}
 
-			mstl::string str;
-			str.hook(s + 1, e - s - 1);
-			*e = '\0';
+			util::NulString str(s + 1, e - s - 1);
 			country = Site::findCountryCode(str);
-			*e = ')';
 
 			if (country == country::Unknown)
 				return country::Unknown;
@@ -4497,8 +4526,7 @@ PgnReader::extractCountryFromSite(mstl::string& data)
 			while (::isspace(*s))
 				++s;
 
-			mstl::string str;
-			str.hook(s, e - s + 1);
+			::util::NulString str(s, e - s + 1);
 
 			if ((country = Site::findCountryCode(str)) == country::Unknown)
 				return country::Unknown;

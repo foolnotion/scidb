@@ -1966,12 +1966,60 @@ result::fromString(mstl::string const& s)
 termination::Reason
 termination::fromString(mstl::string const& s)
 {
-	static_assert(U_NUMBER_OF(Lookup) == Unterminated + 1, "termination::Lookup expired");
-
-	for (unsigned i = 1; i < U_NUMBER_OF(Lookup); ++i)
+	switch (::toupper(*s.c_str()))
 	{
-		if (::strcasecmp(s, Lookup[i]) == 0)
-			return Reason(i);
+		case 'A':
+			if (::strcasecmp(s, "Abandoned") == 0)
+				return Abandoned;
+			if (::strcasecmp(s, "Adjudication") == 0)
+				return Adjudication;
+			break;
+
+		case 'B':
+			if (::strcasecmp(s, "Black forfeits on time") == 0)
+				return TimeForfeit;
+			break;
+
+		case 'D':
+			if (::strcasecmp(s, "Death") == 0)
+				return Death;
+			break;
+
+		case 'E':
+			if (::strcasecmp(s, "Emergency") == 0)
+				return Emergency;
+			break;
+
+		case 'N':
+			if (::strcasecmp(s, "Normal") == 0)
+				return Normal;
+			break;
+
+		case 'R':
+			if (::strcasecmp(s, "RulesInfraction") == 0)
+				return RulesInfraction;
+			if (::strcasecmp(s, "Rules Infraction") == 0)
+				return RulesInfraction;
+			break;
+
+		case 'T':
+			if (::strcasecmp(s, "TimeForfeit") == 0)
+				return TimeForfeit;
+			if (::strcasecmp(s, "Time Forfeit") == 0)
+				return TimeForfeit;
+			break;
+
+		case 'U':
+			if (::strcasecmp(s, "Unplayed") == 0)
+				return Unplayed;
+			if (::strcasecmp(s, "Unterminated") == 0)
+				return Unterminated;
+			break;
+
+		case 'W':
+			if (::strcasecmp(s, "White forfeits on time") == 0)
+				return TimeForfeit;
+			break;
 	}
 
 	return Unknown;

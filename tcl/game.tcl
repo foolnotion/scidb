@@ -677,6 +677,8 @@ proc recover {} {
 							-encoding utf-8 \
 							-variation 0 \
 							-scidb 1 \
+							-database [lindex $key 0] \
+							-index [lindex $key 2] \
 							;
 						Update _ $count
 						set tags [lindex $List $count 5]
@@ -907,9 +909,9 @@ proc Update {_ position} {
 
 	if {$position < $MaxPosition} {
 		set key    [lindex $List $position 3]
-		set base   [::scidb::game::query $position database]
 		set tags   [::scidb::game::tags $position]
-		set number [expr {[::scidb::game::number $position] - 1}]
+
+		lassign [::scidb::game::link? $position] base number
 
 		set i [lsearch -index 1 $History $key]
 		if {$i >= 0} {
@@ -921,7 +923,7 @@ proc Update {_ position} {
 
 		lset List $position 3 0 $base
 		lset List $position 3 1 [::scidb::db::get codec $base]
-		lset List $position 3 2 [::scidb::game::index $position]
+		lset List $position 3 2 $number
 		lset List $position 1 [::scidb::game::query $position modified?]
 		lset List $position 4 [::scidb::game::query $position checksum]
 		lset List $position 5 $tags

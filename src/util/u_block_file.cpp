@@ -377,11 +377,10 @@ BlockFile::sync()
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isInSyncMode());
 
-	if (!m_stream || !m_isDirty)
+	if (!m_stream || !m_isDirty || m_view.m_buffer.m_number == InvalidBlock)
 		return true;
 
 	M_ASSERT(m_view.m_buffer.m_data);
-	M_ASSERT(m_view.m_buffer.m_number != InvalidBlock);
 
 	m_stream->seekp(fileOffset(m_view.m_buffer.m_number), mstl::ios_base::beg);
 	M_ASSERT(m_stream->tellp() == m_view.m_buffer.m_number*m_blockSize);
@@ -522,9 +521,6 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 	if (nbytes == 0)
 		return 0;
 
-	M_ASSERT(m_view.m_buffer.m_data);
-	M_ASSERT(m_view.m_buffer.m_number != InvalidBlock);
-
 	unsigned blockNo		= blockNumber(offset);
 	unsigned blockOffset	= this->blockOffset(offset);
 
@@ -538,11 +534,17 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 		nbytes += 3;
 	}
 
-	unsigned oldSpan = countSpans(minSize);
 	unsigned newSpan = countSpans(nbytes);
+	unsigned oldSpan = countSpans(minSize);
 
 	if (nbytes <= minSize)
 	{
+		if (m_view.m_buffer.m_number != blockNo)
+		{
+			if (unsigned rc = fetch(m_view, blockNo, oldSpan))
+				return rc;
+		}
+
 		resize(m_view, newSpan);
 		copy(buf, blockOffset, nbytes);
 		::zero(m_view.m_buffer.m_data + blockOffset + minSize, minSize - nbytes);

@@ -542,7 +542,7 @@ proc redo {} { Undo redo }
 proc replaceMoves {parent} {
 	if {[::scidb::game::query modified?]} {
 		set reply [::dialog::question -parent $parent -message $mc::ReallyReplaceMoves]
-		if {$reply eq "yes"} { ::util::catchIoError [list ::scidb::game::update moves }
+		if {$reply eq "yes"} { ::util::catchIoError [list ::scidb::game::update moves] }
 	} else {
 		::dialog::info -parent $parent -message $mc::CurrentGameIsNotModified
 	}

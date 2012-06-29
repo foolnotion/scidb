@@ -208,6 +208,7 @@ public:
 						db::move::Notation moveStyle);
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
+	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
 
 	void clearBase(Cursor& cursor);
 	void compactBase(Cursor& cursor, ::util::Progress& progress);

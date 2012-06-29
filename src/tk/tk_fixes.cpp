@@ -23,6 +23,8 @@
 #include <tkInt.h>
 #undef namespace_
 
+#ifndef DISCARD_TK_FIXES
+
 //#define FIX_TK_POINTER_EVENTS
 #define FIX_TK_GRAB_STATE
 
@@ -523,5 +525,11 @@ tk::fixes_init(Tcl_Interp*)
     }
 #endif
 }
+
+#else // DISCARD_TK_FIXES
+
+void tk::fixes_init(Tcl_Interp*) {}
+
+#endif // DISCARD_TK_FIXES
 
 // vi:set ts=8 sw=4:

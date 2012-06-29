@@ -989,7 +989,7 @@ proc TableFill {path args} {
 
 					termination {
 						if {$codec ne "sci"} {
-							lappend text $::mc::NotAvailableSign]
+							lappend text $::mc::NotAvailableSign
 						} elseif {[string length $item]} {
 							lappend text [list @ [set ::terminationbox::icon::12x12::$item]]
 						} else {
