@@ -481,38 +481,96 @@ Decoder::decodeTags(TagSet& tags)
 {
 	Byte significance[2] = { 2, 2 };
 	mstl::string out;
-	Byte b;
+	Byte tagLen;
 
-	while ((b = m_strm.get()))
+	while ((tagLen = m_strm.get()))
 	{
-		if (b <= ::Max_Tag_Length)
+		if (tagLen <= ::Max_Tag_Length)
 		{
 			char*	tag = const_cast<char*>(reinterpret_cast<char const*>(m_strm.data()));
 
-			m_strm.skip(b);
-			Byte c = m_strm.get();
+			m_strm.skip(tagLen);
+			Byte len = m_strm.get();
 
 			// NOTE: we ignore invalid tags (Scid bug)
-			if (PgnReader::validateTagName(tag, b))
+			if (PgnReader::validateTagName(tag, tagLen))
 			{
 				// look if this is a known tag with an unusual notation
 
-				switch (tag::ID id = tag::fromName(tag, b))
+				switch (tag::ID id = tag::fromName(tag, tagLen))
 				{
 					case tag::TimeControl:
 						if (!tags.contains(tag::TimeMode))
 						{
-							mstl::string s(reinterpret_cast<char const*>(m_strm.data()), b);
+							mstl::string s(reinterpret_cast<char const*>(m_strm.data()), len);
 							time::Mode mode = PgnReader::getTimeModeFromTimeControl(s);
 
 							if (mode != time::Unknown)
+							{
 								tags.set(tag::TimeMode, time::toString(mode));
+
+								if (mode == time::Corr && !tags.contains(tag::EventType))
+									tags.set(tag::EventType, event::toString(event::PaperMail));
+							}
 						}
-						tags.set(id, reinterpret_cast<char const*>(m_strm.data()), c);
+						tags.set(tag::TimeControl, reinterpret_cast<char const*>(m_strm.data()), len);
 						break;
 
 					case tag::Variant:
-						m_hasVariantTag = true;
+						{
+							char const* s = reinterpret_cast<char const*>(m_strm.data());
+
+							switch (len)
+							{
+								case 3:	if (::strcasecmp(s, "FRC") == 0)
+												tags.set(tag::Variant, chess960::identifier());
+											break;
+								case 4:	if (::strcasecmp(s, "SFRC") == 0) // Symmetrical Fischerandom
+												tags.set(tag::Variant, chess960::identifier());
+											break;
+								case 7:	if (::strcasecmp(s, "Shuffle") == 0)
+												tags.set(tag::Variant, shuffle::identifier());
+											break;
+								case 8:	if (::strcasecmp(s, "Chess960") == 0)
+												tags.set(tag::Variant, chess960::identifier());
+											break;
+								case 9:	if (	::strcasecmp(s, "Chess 960") == 0
+												|| ::strcasecmp(s, "Chess-960") == 0)
+											{
+												tags.set(tag::Variant, chess960::identifier());
+											}
+											break;
+								case 12:	if (::strcasecmp(s, "Fischerandom") == 0)
+												tags.set(tag::Variant, chess960::identifier());
+											else if (::strcasecmp(s, "ShuffleChess") == 0)
+												tags.set(tag::Variant, shuffle::identifier());
+											break;
+								case 13:	if (::strcasecmp(s, "Fischerrandom") == 0)
+												tags.set(tag::Variant, chess960::identifier());
+											else if (::strcasecmp(s, "Shuffle Chess") == 0)
+												tags.set(tag::Variant, shuffle::identifier());
+											else if (::strcasecmp(s, "Shuffle-Chess") == 0)
+												tags.set(tag::Variant, shuffle::identifier());
+											break;
+							}
+
+							if (tags.contains(tag::Variant))
+								m_hasVariantTag = true;
+							else
+								tags.setExtra(tag, tagLen, s, len);
+						}
+						break;
+
+					case tag::Termination:
+						{
+							mstl::string v;
+							v.hook(const_cast<char*>(reinterpret_cast<char const*>(m_strm.data())), len);
+							termination::Reason reason = PgnReader::getTerminationReason(v);
+							if (reason == termination::Unknown)
+								tags.setExtra(tag, tagLen, v, len);
+							else
+								tags.set(tag::Termination, termination::toString(reason));
+						}
 						break;
 
 					case tag::Fen: // should not happen
@@ -521,11 +579,11 @@ Decoder::decodeTags(TagSet& tags)
 					case tag::ExtraTag:
 						{
 							mstl::string in;
-							in.hook(reinterpret_cast<char*>(m_strm.data()), c);
+							in.hook(reinterpret_cast<char*>(m_strm.data()), len);
 							m_codec->convertToUtf8(in, out);
 							if (!sys::utf8::validate(out))
 								m_codec->forceValidUtf8(out);
-							tags.setExtra(tag, b, out, c);
+							tags.setExtra(tag, tagLen, out, len);
 						}
 						break;
 
@@ -533,7 +591,7 @@ Decoder::decodeTags(TagSet& tags)
 						// this case happens if a tag like "Eventdate" is detected
 						{
 							Date date;
-							date.parseFromString(reinterpret_cast<char const*>(m_strm.data()), b);
+							date.parseFromString(reinterpret_cast<char const*>(m_strm.data()), len);
 							if (date)
 								tags.set(tag::EventDate, date.asString());
 						}
@@ -542,7 +600,7 @@ Decoder::decodeTags(TagSet& tags)
 					default:
 						{
 							mstl::string in;
-							in.hook(reinterpret_cast<char*>(m_strm.data()), c);
+							in.hook(reinterpret_cast<char*>(m_strm.data()), len);
 							m_codec->convertToUtf8(in, out);
 							if (!sys::utf8::validate(out))
 								m_codec->forceValidUtf8(out);
@@ -561,22 +619,22 @@ Decoder::decodeTags(TagSet& tags)
 				}
 			}
 
-			m_strm.skip(c);
+			m_strm.skip(len);
 		}
 		else
 		{
-			switch (b)
+			switch (tagLen)
 			{
 				case 245:	// event date
 					{
 						char const*	data = reinterpret_cast<char const*>(m_strm.data());
+						Byte len = m_strm.get();
 						Date date;
 
-						b = m_strm.get();
-						date.parseFromString(data, b);
+						date.parseFromString(data, len);
 						if (date)
 							tags.set(tag::EventDate, date.asString());
-						m_strm.skip(b);
+						m_strm.skip(len);
 					}
 					break;
 
@@ -587,18 +645,18 @@ Decoder::decodeTags(TagSet& tags)
 
 						date.setYMD(value >> 9, (value >> 5) & 15, value & 31);
 						if (date)
-							tags.set(tag::EventDate, mstl::string(date.asString(), b));
+							tags.set(tag::EventDate, mstl::string(date.asString()));
 					}
 					break;
 
 				default:		// a common tag name, not explicitly stored
 					{
-						tag::ID tag = ::CommonTags[b - ::Max_Tag_Length - 1];
+						tag::ID tag = ::CommonTags[tagLen - ::Max_Tag_Length - 1];
 
 						if (__builtin_expect(tag == tag::ExtraTag, 0))
 							throwCorruptData();
 
-						Byte b = m_strm.get();
+						Byte len = m_strm.get();
 
 						switch (unsigned(tag))
 						{
@@ -609,11 +667,11 @@ Decoder::decodeTags(TagSet& tags)
 								{
 									mstl::string in;
 
-									Byte&	c = m_strm[m_strm.tellg() + b];
+									Byte&	c = m_strm[m_strm.tellg() + len];
 									Byte	d = c;
 
 									c = '\0';
-									in.hook(const_cast<char*>(reinterpret_cast<char const*>(m_strm.data())), b);
+									in.hook(const_cast<char*>(reinterpret_cast<char const*>(m_strm.data())), len);
 									m_codec->convertToUtf8(in, out);
 									if (!sys::utf8::validate(out))
 										m_codec->forceValidUtf8(out);
@@ -629,8 +687,8 @@ Decoder::decodeTags(TagSet& tags)
 						}
 
 						if (tag != tag::ExtraTag)
-							tags.set(tag::toName(tag), reinterpret_cast<char const*>(m_strm.data()), b);
-						m_strm.skip(b);
+							tags.set(tag::toName(tag), reinterpret_cast<char const*>(m_strm.data()), len);
+						m_strm.skip(len);
 					}
 					break;
 			}

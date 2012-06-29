@@ -332,17 +332,17 @@ proc detectUnixDistribution {} {
             DetectRedHat /etc/mandrake-release
         } elseif {[file readable /etc/redhat-release]} {
             DetectRedHat /etc/redhat-release
-        } elseif {0 && [file readable /etc/debian_version]} {
+        } elseif {[file readable /etc/debian_version]} {
             set distribution(distributor) "Debian"
             set fd [open /etc/debian_version r]; gets $fd line; close $fd
             set distribution(revision) $line
         } else {
-            set files [glob -directory /etc -types f *-release]
+            set files [glob -nocomplain -directory /etc -types f *-release]
             if {[llength $files] == 1} {
                 variable release
                 set id [string range [file tail [lindex $files 0]] 0 end-8]
                 catch { set distribution(distributor) $release($id) }
-            } elseif {[llength $files] == 0]} {
+            } elseif {[llength $files] == 0} {
                 if {[file readable /etc/knoppix_version]} {
                     set distribution(distributor) "Knoppix"
                 } elseif {[file readable /etc/slackware-version]} {

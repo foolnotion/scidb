@@ -2005,36 +2005,15 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			return false;	// we will set this tag later by our own
 
 		case tag::Termination:
+			if (!value.empty() && value != "?" && value != "-")
 			{
-				termination::Reason reason = termination::fromString(value);
+				termination::Reason reason = getTerminationReason(value);
 
-				if (reason == termination::Unknown)
+				if (reason == termination::Unknown && ::strcasecmp(value, "unknown") == 0)
 				{
-					static mstl::string const Resigned("resigned");
-					static mstl::string const WonByResignation("won by resignation");
-
-					if (::matchSuffix(value, Resigned) || ::matchSuffix(value, WonByResignation))
-					{
-						value = "normal";
-					}
-					else if (::strcasecmp(value, "unknown") == 0)
-					{
-						return false;
-					}
-					else if (value != "?" && value != "-")
-					{
-						value.strip();
-						value.strip('-');
-
-						reason = termination::fromString(value);
-
-						if (reason == termination::Unknown)
-						{
-							warning(UnknownTermination, m_prevPos, value);
-							m_tags.setExtra(tag::toName(tag), value);
-							return false;
-						}
-					}
+					warning(UnknownTermination, m_prevPos, value);
+					m_tags.setExtra(tag::toName(tag), value);
+					return false;
 				}
 			}
 			break;
@@ -2448,6 +2427,32 @@ PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
 		return time::Rapid;
 
 	return time::Normal;
+}
+
+
+termination::Reason
+PgnReader::getTerminationReason(mstl::string const& value)
+{
+	termination::Reason reason = termination::fromString(value);
+
+	if (reason == termination::Unknown)
+	{
+		static mstl::string const Resigned("resigned");
+		static mstl::string const WonByResignation("won by resignation");
+
+		if (::matchSuffix(value, Resigned) || ::matchSuffix(value, WonByResignation))
+			return termination::Normal;
+
+		if (value.size() > 1)
+		{
+			mstl::string v(value);
+			v.strip('-');
+
+			return termination::fromString(value);
+		}
+	}
+
+	return termination::Unknown;
 }
 
 

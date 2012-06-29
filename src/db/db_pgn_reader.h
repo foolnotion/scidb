@@ -172,6 +172,7 @@ public:
 	static Tag extractPlayerData(mstl::string& data, mstl::string& value);
 	static country::Code extractCountryFromSite(mstl::string& data);
 	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
+	static termination::Reason getTerminationReason(mstl::string const& value);
 	static event::Mode getEventMode(char const* event, char const* site);
 	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
 	static bool getAttributes(mstl::string const& filename, int& numGames, mstl::string* description = 0);

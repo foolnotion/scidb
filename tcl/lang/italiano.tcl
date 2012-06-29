@@ -323,7 +323,7 @@
 ::application::database::mc::DescrTooLargeDetail		"Il campo contiene %d caratteri, ma solo %d sono permessi."
 ::application::database::mc::ClipbaseDescription		"Database temporaneo, non è salvato sul disco"
 ::application::database::mc::HardLinkDetected			"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
-::application::database::mc::HardLinkDetectedDetail "Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
+::application::database::mc::HardLinkDetectedDetail	"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
 ::application::database::mc::CannotOpenUri				"Cannot open the following URI:" ;# NEW
 ::application::database::mc::InvalidUri					"Drop content is not a valid URI list." ;# NEW
 ::application::database::mc::UriRejected					"The following files are rejected:" ;# NEW
@@ -1766,7 +1766,6 @@
 ::fsbox::mc::ContainsTwoDots				"Contiene due punti consecutivi."
 ::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Contiene caratteri riservati: %s."
 ::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
-::fsbox::mc::ReservedCharsDetails		"Control characters (ASCII 0-31) are also forbidden." ;# NEW
 ::fsbox::mc::IsReservedName				"In alcuni sistemi operativi questo è un nome riservato."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Estensione file '%s' non valida."

@@ -31,6 +31,7 @@
 ### global #############################################################
 ::mc::SortMapping		{Ä ae ä ae Ö Oe ö oe Ü Ue ü ue ß ss Å A å a  Ã A  ã a  é e  è e  ø oe ì i  Ì I}
 ::mc::AsciiMapping	{Ä a  ä a  Ö O  ö o  Ü U  ü u  ß ss Å A å a  Ã A  ã a  é e  è e  ø o  ì i  Ì I}
+::mc::SortOrder		{}
 
 ::mc::Key(Alt)			"Alt"
 ::mc::Key(Ctrl)		"Strg"
@@ -321,7 +322,7 @@
 ::application::database::mc::DescrTooLargeDetail		"Die Eingabe beinhaltet %d Zeichen, aber nur %d Zeichen sind erlaubt."
 ::application::database::mc::ClipbaseDescription		"Temporäre Datenbank, wird nicht auf der Festplatte gehalten."
 ::application::database::mc::HardLinkDetected			"Die Datei '%file1' kann nicht geladen werden weil sie bereits als Datei '%file2' geladen wurde. Dies kann nur geschehen wenn harte Links involviert sind."
-::application::database::mc::HardLinkDetectedDetail "Wenn diese Datei zweifach geladen wird kann die Applikation abstürzen aufgrund der Verwndung von Subprozessen (Threads)."
+::application::database::mc::HardLinkDetectedDetail	"Wenn diese Datei zweifach geladen wird kann die Applikation abstürzen aufgrund der Verwndung von Subprozessen (Threads)."
 ::application::database::mc::CannotOpenUri				"Die folgenden URI können nicht geöffnet werden:"
 ::application::database::mc::InvalidUri					"Der Drop-Inhalt ist keine gültige URI-Liste."
 ::application::database::mc::UriRejected					"Die folgenden Dateien wurden zurückgewiesen:"

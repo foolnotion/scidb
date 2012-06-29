@@ -321,7 +321,7 @@
 ::application::database::mc::DescrTooLargeDetail		"Posten innehåller %d tecken, men bara %d tecken är tillåtet."
 ::application::database::mc::ClipbaseDescription		"Temporär databas, lagras inte på disk."
 ::application::database::mc::HardLinkDetected			"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
-::application::database::mc::HardLinkDetectedDetai	l "Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
+::application::database::mc::HardLinkDetectedDetail	"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
 ::application::database::mc::CannotOpenUri				"Kan inte öppna följande  URI:"
 ::application::database::mc::InvalidUri					"Innehåll som släpps är inte en giltig URI-lista."
 ::application::database::mc::UriRejected					"Följande filer är förkastade:"
@@ -474,8 +474,8 @@
 ::application::pgn::mc::ShowMoveInfo						"Visa drag information"
 ::application::pgn::mc::BoldTextForMainlineMoves		"Fet text för huvudlinjens drag"
 ::application::pgn::mc::ShowDiagrams						"Visa diagram"
-::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
 ::application::pgn::mc::Languages							"Språk"
+::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
 ::application::pgn::mc::CollapseVariations				"Visa varianter"
 ::application::pgn::mc::ExpandVariations					"Dölj varianter"
 ::application::pgn::mc::EmptyGame							"Töm parti"
@@ -1021,6 +1021,7 @@
 ::import::mc::TooManyNags							"För många NAG's (latter ignored)"
 ::import::mc::IllegalCastling						"Otillåten rockad"
 ::import::mc::IllegalMove							"Ogiltigt drag"
+::import::mc::CastlingCorrection					"Castling correction" ;# NEW
 ::import::mc::UnsupportedVariant					"Unsupported chess variant"
 ::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
 ::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte header result"
@@ -1200,14 +1201,14 @@
 ::dialog::save::mc::PressToSelect				"Tryck Ctrl+0 till Ctrl+9 (eller vänster musknapp) för att välja"
 ::dialog::save::mc::PressForWhole				"Tryck Alt-0 till Alt-9 (eller mellersta musknappen) för helt dataset"
 ::dialog::save::mc::EditTags						"Bearbeta tags"
-::dialog::save::mc::DeleteThisTag				"Radera tag '%s'?"
+::dialog::save::mc::RemoveThisTag				"Radera tag '%s'?"
 ::dialog::save::mc::TagAlreadyExists			"Tagnamnet '%s' finns redan."
-::dialog::save::mc::TagDeleted					"Extra tag '%s' (aktuellt värde: '%s') kommer att raderas."
+::dialog::save::mc::TagRemoved					"Extra tag '%s' (aktuellt värde: '%s') kommer att raderas."
 ::dialog::save::mc::TagNameIsReserved			"Tagnamnet '%s' är reserverat."
 ::dialog::save::mc::Locked							"Spärrad"
 ::dialog::save::mc::OtherTag						"Fler tags"
 ::dialog::save::mc::NewTag							"Ny tag"
-::dialog::save::mc::DeleteTag						"Radera tag"
+::dialog::save::mc::RemoveTag						"Radera tag"
 ::dialog::save::mc::SetToGameDate				"Ange partidatum"
 ::dialog::save::mc::SaveGameFailed				"Partiet kunde inte sparas."
 ::dialog::save::mc::SaveGameFailedDetail		"Se log för detaljer."
@@ -1674,7 +1675,7 @@
 ::dialog::choosefont::mc::Regular			"Normalt"
 ::dialog::choosefont::mc::Bold				"Fet"
 ::dialog::choosefont::mc::Italic				"Kursivt"
-::dialog::choosefont::mc::Bold Italic		"Fet kursivt"
+{::dialog::choosefont::mc::Bold Italic}	"Fet kursivt"
 
 ::dialog::choosefont::mc::Effects			"Effekter"
 ::dialog::choosefont::mc::Filter				"Filter"
@@ -1763,7 +1764,6 @@
 ::fsbox::mc::ContainsTwoDots				"Innehåller två punkter efter varandra."
 ::fsbox::mc::ContainsReservedChars		"Innehåller reserverade tecken: %s, eller ett kontrolltecken (ASCII 0-31)."
 ::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
-::fsbox::mc::ReservedCharsDetails		"Control characters (ASCII 0-31) are also forbidden." ;# NEW
 ::fsbox::mc::IsReservedName				"I somliga operativsystem är detta ett reserverad namn."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Ogiltigt filtillägg i '%s'."

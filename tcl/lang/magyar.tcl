@@ -292,7 +292,6 @@
 ::application::database::mc::FileExport					"Export..."
 ::application::database::mc::FileImport					"PGN fájlok importálás..."
 ::application::database::mc::FileCreate					"Create Archive..." ;# NEW
-::application::database::mc::FileCreate					"Create archive..." ;# NEW
 ::application::database::mc::FileClose						"Bezárás"
 ::application::database::mc::FileCompact					"Compact" ;# NEW
 ::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
@@ -324,7 +323,7 @@
 ::application::database::mc::DescrTooLargeDetail		"A mező %d karaktert tartalmaz, de csak %d megengedett."
 ::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
 ::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
-::application::database::mc::HardLinkDetectedDetail "If we load this database twice the application may crash due to the usage of threads." ;# NEW
+::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads." ;# NEW
 ::application::database::mc::CannotOpenUri				"Cannot open the following URI:" ;# NEW
 ::application::database::mc::InvalidUri					"Drop content is not a valid URI list." ;# NEW
 ::application::database::mc::UriRejected					"The following files are rejected:" ;# NEW
@@ -1766,7 +1765,6 @@
 ::fsbox::mc::ContainsTwoDots				"Két egymásutáni pontot tartalmaz."
 ::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Fenntartott karaktereket tartalmaz: %s."
 ::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
-::fsbox::mc::ReservedCharsDetails		"Control characters (ASCII 0-31) are also forbidden." ;# NEW
 ::fsbox::mc::IsReservedName				"Ez egy fenntartott név néhány operációs rendszeren."
 ::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"'%s': érvénytelen kiterjesztés."
