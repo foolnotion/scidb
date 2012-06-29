@@ -16,20 +16,20 @@ How to translate the help files
    and do the translation (not the Makefile of course).
 
 2. Copy the wanted .txt file from "../en/", for example
-         cp ../en/Clipbase.txt .
+      > cp ../en/Clipbase.txt .
    and do your translation.
    Note that only the *.txt should be translated, not the *.html files!
 
 3. Generate the .html file(s) with:
-        > make
+      > make
 
 4. If you like to see the results in Scidb you have to distribute the files.
    Change back to the "tcl/" directory and type
-        > make build-help
+      > make build-help
       > sudo make install-help
 
 5. Add new files with the command
-        > svn add tcl/help/es/NewFile.*
+      > svn add tcl/help/es/NewFile.*
    (Note that "tcl/help/es/" is the sub-directory for Spanish!)
    You have to change to the root (installation) directory before invoking
    the svn command. This is a local change, it's not a commit to the

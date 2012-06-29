@@ -1,0 +1,48 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE What's new?
+
+<ul>
+  <li>More help pages</li>
+  <li>Full-screen mode tweaked</li>
+  <li>Command line tool cdb2sci added for conversion of databases to Scidb format (.sci)</li>
+  <li>HTML widget reworked: saving resources in a highly significant way</li>
+  <li>Swedish localisation integrated (thanks to Lars Ekman)</li>
+  <li>Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
+  <li>Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
+  <li>File selection dialog improved</li>
+  <li>Game-Save/Replace dialog improved</li>
+  <li>Player notecards implemented</li>
+  <li>Archiving databases integrated</li>
+  <li>Drag&amp;Drop of files integrated: database switcher is drop target</li>
+  <li>Database window: docking/undocking of list tabs integrated</li>
+  <li>Move input with mouse overworked (if move suggestion is disabled)</li>
+  <li>Menu bar removed: instead a simple main menu exists; this is state-of-the-art,
+      and the layout will be improved</li>
+  <li>Compacting database (.sci only) integrated</li>
+  <li>Installation of ChessBase fonts integrated</li>
+  <li>Tournament table: optional display of win/draw/loss</li>
+  <li>Mouse wheel support for all lists and the chess board</li>
+  <li>Algebraic (normal, short, and long), English, Correspondence, and Telegraphic move notations available</li>
+  <li>Spanish translation reactivated (thanks to Juan Carlos Vásquez)</li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

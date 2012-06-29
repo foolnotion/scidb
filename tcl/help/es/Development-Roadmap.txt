@@ -1,0 +1,59 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Development roadmap
+
+<h2>Features for next releases</h2>
+
+<ul>
+  <li>Analysis window: launch external chess engines</li>
+  <li>Search functions: search by header, position search, etc.</li>
+  <li>Filter functions: game filter, player filter</li>
+  <li>Drag &amp; Drop of games into different databases</li>
+  <li>Flexible window layout</li>
+  <li>Document generation:: LaTeX export</li>
+  <li>Windows support</li>
+  <li>Database compression (elimination of deleted games)</li>
+  <li>Input of moves with keyboard</li>
+  <li>Board photo</li>
+</ul>
+
+<h2>Features for the far future</h2>
+
+<ul>
+  <li>Duplicate detection</li>
+  <li>Loading databases from the Internet</li>
+  <li>Player dictionary dialog</li>
+  <li>Document generation: PDF export and HTML export</li>
+  <li>Dialog for spell checking player names</li>
+  <li>Tip of the Day window</li>
+  <li>Usage of end-game tables</li>
+  <li>3D chessboard</li>
+</ul>
+
+<h2>Volunteers wanted for...</h2>
+
+<ul>
+  <li>More languages</li>
+  <li>More chess board themes</li>
+  <li>More help pages</li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->
