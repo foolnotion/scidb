@@ -191,6 +191,7 @@
 ::menu::mc::ScidBases					"Scid databaser"
 ::menu::mc::ScidbBases					"Scidb databaser"
 ::menu::mc::ChessBaseBases				"ChessBase databaser"
+::menu::mc::ScidbArchives				"Scidb arkiv"
 ::menu::mc::PGNFilesArchives			"PGN filer/arkiv"
 ::menu::mc::PGNFiles						"PGN filer"
 ::menu::mc::PGNArchives					"PGN arkiv"

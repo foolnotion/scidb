@@ -16,6 +16,7 @@
 # ======================================================================
 # Copyright: (C) 2011-2012 Gregor Cramer
 # Copyright: (C) 2011 Carlos Fernando Gonzalez
+# Copyright: (C) 2012 Juan Carlos Vasquez R.
 # ======================================================================
 
 # ======================================================================
@@ -34,28 +35,28 @@
 ::mc::AsciiMapping	{á a Á A é e É E í i Í I ñ n Ñ N ó o Ó O ú u Ú U}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N Ñ O Ó P Q R S T U Ú V W X Y Z a á b c d e é f g h i í j k l m n ñ o ó p q r s t u ú v w x y z}
 
-::mc::Key(Alt)			"Alt" ;# NEW
-::mc::Key(Ctrl)		"Ctrl" ;# NEW
+::mc::Key(Alt)			"Alt" 
+::mc::Key(Ctrl)		"Ctrl" 
 ::mc::Key(Down)		"\u2193"
-::mc::Key(End)			"End" ;# NEW
-::mc::Key(Home)		"Home" ;# NEW
+::mc::Key(End)			"Fin"
+::mc::Key(Home)		"Inicio"
 ::mc::Key(Left)		"\u2190"
-::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
-::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
+::mc::Key(Next)		"P\207gina\u2193"
+::mc::Key(Prior)		"P\207gina\u2191"
 ::mc::Key(Right)		"\u2192"
-::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Shift)		"May\222sculas" 
 ::mc::Key(Up)			"\u2191"
 
-::mc::MoveForm(alg)	"Algebraic" ;# NEW
-::mc::MoveForm(san)	"Short Algebraic" ;# NEW
-::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
-::mc::MoveForm(eng)	"English" ;# NEW
-::mc::MoveForm(cor)	"Correspondence" ;# NEW
-::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+::mc::MoveForm(alg)	"Algebraica" 
+::mc::MoveForm(san)	"Algebraica Corta" 
+::mc::MoveForm(lan)	"Algebraica Larga" 
+::mc::MoveForm(eng)	"Ingl\216s" 
+::mc::MoveForm(cor)	"Correspondencia" 
+::mc::MoveForm(tel)	"Telegrafico" 
 
 ::mc::Alignment		"Alineación"
 ::mc::Apply				"Aplicar"
-::mc::Archive			"Archive" ;# NEW
+::mc::Archive			"Archivo" 
 ::mc::Background		"Fondo"
 ::mc::Black				"Negras"
 ::mc::Bottom			"Inferior"
@@ -85,7 +86,7 @@
 ::mc::PieceSet			"Piezas"
 ::mc::Preview			"Vista previa"
 ::mc::Redo				"Deshacer"
-::mc::Remove			"Remove" ;# NEW
+::mc::Remove			"Quitar" 
 ::mc::Reset				"Restablecer"
 ::mc::Right				"Derecha"
 ::mc::SelectAll		"Seleccionar todo"
@@ -138,9 +139,9 @@
 ::widget::mc::Next		"Pró&ximo"
 ::widget::mc::First		"Pr&imero" 
 ::widget::mc::Last		"Últi&mo" 
-::widget::mc::Help		"&Help" ;# NEW
+::widget::mc::Help		"Ayuda" 
 
-::widget::mc::Control(minimize)	"Minimize" ;# NEW
+::widget::mc::Control(minimize)	"Minimizar" 
 ::widget::mc::Control(restore)	"Salir de pantalla completa"
 ::widget::mc::Control(close)		"Cerrar"
 
@@ -206,29 +207,29 @@
 ::menu::mc::Help							"&Ayuda"
 ::menu::mc::Contact						"&Contenidos (navegador web)"
 ::menu::mc::Quit							"&Salir"
-::menu::mc::Extras						"E&xtras" ;# NEW
+::menu::mc::Extras						"E&xtras" 
 
 ::menu::mc::ContactBugReport			"&Reporte de errores"
 ::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
-::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
+::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
 
 ::menu::mc::OpenFile						"Abrir un archivo Scidb"
 ::menu::mc::NewFile						"Crear un archivo Scidb"
 ::menu::mc::ImportFiles					"Importar archivos PGN..."
-::menu::mc::Archiving					"Archiving" ;# NEW
-::menu::mc::CreateArchive				"Create Archive" ;# NEW
-::menu::mc::BuildArchive				"Create archive %s" ;# NEW
-::menu::mc::Data							"%s data" ;# NEW
+::menu::mc::Archiving					"Archivando" 
+::menu::mc::CreateArchive				"Crear Archivo" 
+::menu::mc::BuildArchive				"Crear archivo %s" 
+::menu::mc::Data							"%s datos" 
 
 ### load ###############################################################
-::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
+::load::mc::SevereError				"Error severo al cargar archivo ECO" 
 ::load::mc::FileIsCorrupt			"El archivo %s está corrupto:"
-::load::mc::ProgramAborting		"Program is aborting." ;# NEW
+::load::mc::ProgramAborting		"Abortando programa." ;# NEW
 
 ::load::mc::Loading					"Cargando %s"
 ::load::mc::ReadingOptionsFile	"Leer archivo de opciones"
 ::load::mc::StartupFinished		"Inicio del programa completado"
-::load::mc::SystemEncoding			"System encoding is '%s'" ;# NEW
+::load::mc::SystemEncoding			"La codificaci\227n del sistema es '%s'"
 
 ::load::mc::ECOFile					"archivo ECO"
 ::load::mc::EngineFile				"archivo de motor"
@@ -243,21 +244,21 @@
 ::load::mc::Icons						"íconos"
 
 ### archive ############################################################
-::archive::mc::CorruptedArchive			"Archive '%s' is corrupted." ;# NEW
-::archive::mc::NotAnArchive				"'%s' is not an archive." ;# NEW
-::archive::mc::CorruptedHeader			"Archive header in '%s' is corrupted." ;# NEW
-::archive::mc::CannotCreateFile			"Failed to create file '%s'." ;# NEW
-::archive::mc::FailedToExtractFile		"Failed to extract file '%s'." ;# NEW
-::archive::mc::UnknownCompression		"Unknown compression method '%s'." ;# NEW
-::archive::mc::ChecksumError				"Checksum error while extracting '%s'." ;# NEW
-::archive::mc::ChecksumErrorDetail		"The extracted file '%s' will be corrupted." ;# NEW
-::archive::mc::FileNotReadable			"File '%s' is not readable." ;# NEW
-::archive::mc::UsingRawInstead			"Using compression method 'raw' instead." ;# NEW
-::archive::mc::CannotOpenArchive			"Cannot open archive '%s'." ;# NEW
-::archive::mc::CouldNotCreateArchive	"Could not create archive '%s'." ;# NEW
+::archive::mc::CorruptedArchive			"Archivo '%s' est\207 corrupto."
+::archive::mc::NotAnArchive				"'%s' no es un archivo."
+::archive::mc::CorruptedHeader			"El encabezado del archivo en '%s' est\207 corrupto."
+::archive::mc::CannotCreateFile			"No se pudo crear e archivo '%s'."
+::archive::mc::FailedToExtractFile		"No se pudo extraer el archivo '%s'."
+::archive::mc::UnknownCompression		"M\216todo de compresi\227n desconocido '%s'." 
+::archive::mc::ChecksumError				"Error de checksum al extraer '%s'." 
+::archive::mc::ChecksumErrorDetail		"El archivo extra\222do '%s' se corromper\207." 
+::archive::mc::FileNotReadable			"El archivo '%s' no puede leerse." ;
+::archive::mc::UsingRawInstead			"Usando m\216todo 'raw' de compresi\227n." 
+::archive::mc::CannotOpenArchive			"No se puede abrir el archivo '%s'." 
+::archive::mc::CouldNotCreateArchive	"No se puede crear el archivo '%s'." ;
 
-::archive::mc::PackFile						"Pack %s" ;# NEW
-::archive::mc::UnpackFile					"Unpack %s" ;# NEW
+::archive::mc::PackFile						"Comprimir %s" ;
+::archive::mc::UnpackFile					"Descomprimir %s" ;
 
 ### application ########################################################
 ::application::mc::Database				"&Base"
@@ -280,10 +281,10 @@
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
 ::application::board::mc::Accel(edit-marks)			"M"
-::application::board::mc::Accel(add-new-game)		"S" ;# NEW
-::application::board::mc::Accel(replace-game)		"R" ;# NEW
-::application::board::mc::Accel(replace-moves)		"V" ;# NEW
-::application::board::mc::Accel(trial-mode)			"T" ;# NEW
+::application::board::mc::Accel(add-new-game)		"S" 
+::application::board::mc::Accel(replace-game)		"R" 
+::application::board::mc::Accel(replace-moves)		"V" 
+::application::board::mc::Accel(trial-mode)			"T" 
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Abrir Base..."
@@ -291,9 +292,9 @@
 ::application::database::mc::FileNew						"Nueva Base..."
 ::application::database::mc::FileExport					"Exportar..."
 ::application::database::mc::FileImport					"Importar archivos PGN..."
-::application::database::mc::FileCreate					"Create Archive..." ;# NEW
+::application::database::mc::FileCreate					"Crear Archivo..."
 ::application::database::mc::FileClose						"Cerrar"
-::application::database::mc::FileCompact					"Compact" ;# NEW
+::application::database::mc::FileCompact					"Compactar"
 ::application::database::mc::HelpSwitcher					"Ayuda con el Cambiador de Bases de Datos"
 
 ::application::database::mc::Games							"&Partidas"
@@ -312,7 +313,7 @@
 ::application::database::mc::Failed							"fallido"
 ::application::database::mc::LoadMessage					"Abrir Base %s"
 ::application::database::mc::UpgradeMessage				"Actualizando Database %s"
-::application::database::mc::CompactMessage				"Compacting database %s" ;# NEW
+::application::database::mc::CompactMessage				"Compactando base de datos %s" 
 ::application::database::mc::CannotOpenFile				"No se puede abrir el archivo '%s'."
 ::application::database::mc::EncodingFailed				"Fallo en la codificación de %s."
 ::application::database::mc::DatabaseAlreadyOpen		"La Base '%s' ya está abierta."
@@ -333,9 +334,9 @@
 ::application::database::mc::SelectDatabases				"Seleccione las bases de datos que se abrir\207n"
 ::application::database::mc::ExtractArchive				"Extracer archivo %s"
 ::application::database::mc::CompactDetail				"Todos los juegos deben cerrarse para poder compactar."
-::application::database::mc::ReallyCompact				"Really compact database '%s'?" ;# NEW
-::application::database::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
-::application::database::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
+::application::database::mc::ReallyCompact				"\300Realmente desea compactar la base de datos '%s'?" 
+::application::database::mc::ReallyCompactDetail(1)	"Solamente se borrar\207 una partida." 
+::application::database::mc::ReallyCompactDetail(N)	"Se borrar\207n %s partidas."
 
 ::application::database::mc::RecodingDatabase			"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames					"%s partida(s) recodificadas"
@@ -477,7 +478,7 @@
 ::application::pgn::mc::BoldTextForMainlineMoves		"Negrita para las jugadas de la Línea principal"
 ::application::pgn::mc::ShowDiagrams						"Mostrar diagramas"
 ::application::pgn::mc::Languages							"Idiomas"
-::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
+::application::pgn::mc::MoveNotation						"Anotaci\227n de Jugadas"
 ::application::pgn::mc::CollapseVariations				"Contraer variantes"
 ::application::pgn::mc::ExpandVariations					"Expandir variantes"
 ::application::pgn::mc::EmptyGame							"Vaciar partida"
@@ -487,8 +488,8 @@
 ::application::pgn::mc::MustBeEven							"La entrada debe ser par."
 ::application::pgn::mc::MustBeOdd							"La entrada debe ser impar."
 ::application::pgn::mc::CannotOpenCursorFiles			"No se puede abrir el archivo: %s"
-::application::pgn::mc::ReallyReplaceMoves				"Really replace moves of current game?" ;# NEW
-::application::pgn::mc::CurrentGameIsNotModified		"Current game is not modified." ;# NEW
+::application::pgn::mc::ReallyReplaceMoves				"\300Realmente desea reemplazar las jugadas de la partida actual?"
+::application::pgn::mc::CurrentGameIsNotModified		"La partida actual no fue modificada."
 
 ::application::pgn::mc::EditAnnotation						"Editar nota"
 ::application::pgn::mc::EditMoveInformation				"Editar informaci\227n de la jugada"
@@ -515,7 +516,7 @@
 ::application::tree::mc::UseQuickMode						"Usar búsqueda rápida"
 ::application::tree::mc::AutomaticSearch					"Busqueda automática"
 ::application::tree::mc::LockReferenceBase				"Bloquear base de referencia"
-::application::tree::mc::SwitchReferenceBase				"Switch reference database" ;# NEW
+::application::tree::mc::SwitchReferenceBase				"Cambiar base de datos de referencia"
 ::application::tree::mc::TransparentBar					"Barras transparentes"
 
 ::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
@@ -568,7 +569,7 @@
 ::board::options::mc::ShowBorder				"Mostrar borde"
 ::board::options::mc::ShowCoordinates		"Mostrar coordenadas"
 ::board::options::mc::ShowMaterialValues	"Mostrar material"
-::board::options::mc::ShowMaterialBar		"Show Material Bar" ;# NEW previously "Mostrar barras"
+::board::options::mc::ShowMaterialBar		"Mostrar Barra de Matrial" 
 ::board::options::mc::ShowSideToMove		"Mostrar el lado que mueve"
 ::board::options::mc::ShowSuggestedMove	"Mostar jugada sugerida"
 ::board::options::mc::SuggestedMove			"Jugada sugerida"
@@ -816,25 +817,25 @@
 ::playertable::mc::DateOfDeath				"Fecha de fallecimiento"
 ::playertable::mc::FideID						"Fide ID"
 
-::playertable::mc::ShowPlayerCard			"Show Player Card..." ;# NEW
+::playertable::mc::ShowPlayerCard			"Mostrar Tarjeta del Jugador..." 
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Asistencia"
 
 ### player-card ########################################################
-::playercard::mc::PlayerCard					"Player Card" ;# NEW
-::playercard::mc::Latest						"Latest" ;# NEW
-::playercard::mc::Highest						"Highest" ;# NEW
-::playercard::mc::Minimal						"Minimal" ;# NEW
-::playercard::mc::Maximal						"Maximal" ;# NEW
-::playercard::mc::Win							"Win" ;# NEW
-::playercard::mc::Draw							"Draw" ;# NEW
-::playercard::mc::Loss							"Loss" ;# NEW
-::playercard::mc::Total							"Total" ;# NEW
-::playercard::mc::FirstGamePlayed			"First game played" ;# NEW
-::playercard::mc::LastGamePlayed				"Last game played" ;# NEW
-::playercard::mc::WhiteMostPlayed			"Most common openings as White" ;# NEW
-::playercard::mc::BlackMostPlayed			"Most common openings as Black" ;# NEW
+::playercard::mc::PlayerCard					"Tarjeta del Jugador"
+::playercard::mc::Latest						"M\207as reciente"
+::playercard::mc::Highest						"M\207s alto"
+::playercard::mc::Minimal						"Minimo"
+::playercard::mc::Maximal						"Maximo" 
+::playercard::mc::Win							"Ganadas" 
+::playercard::mc::Draw							"Tablas" 
+::playercard::mc::Loss							"P\216rdidas" 
+::playercard::mc::Total							"Total" 
+::playercard::mc::FirstGamePlayed			"Primera partida jugada" 
+::playercard::mc::LastGamePlayed				"\362ltima partida jugada"
+::playercard::mc::WhiteMostPlayed			"Aperturas m\207s comunes con blancas"
+::playercard::mc::BlackMostPlayed			"Aperturas m\207s comunes con negras"
 
 ::playercard::mc::OpenInWebBrowser			"Abrir en un navegador"
 ::playercard::mc::OpenPlayerCard				"Abrir la tarjeta del jugador %s"
@@ -851,14 +852,14 @@
 ::twm::mc::Close	"Cerrar"
 
 ### fonts ##############################################################
-::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed." ;# NEW
-::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
-::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
-::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
-::font::mc::ChooseMountPoint						"Firstly you have to choose the mount point of the Windows install ation partition." ;# NEW
-::font::mc::CopyingChessBaseFonts				"Copying ChessBase fonts" ;# NEW
-::font::mc::CopyFile									"Copy file %s" ;# NEW
-::font::mc::UpdateFontCache						"Updating font cache" ;# NEW
+::font::mc::ChessBaseFontsInstalled				"Las fuentes de ChessBase se instalaron correctamente."
+::font::mc::ChessBaseFontsInstallationFailed	"Fall\227 la instalaci\227n de las fuentes de ChessBase."
+::font::mc::NoChessBaseFontFound					"No se encontraron las fuentes de ChessBase en la carpeta '%s'." 
+::font::mc::ChessBaseFontsAlreadyInstalled	"Las fuentes de ChessBase ya se encuentran instaladas. \300Instalar nuevamente?"
+::font::mc::ChooseMountPoint						"Primero debe escoger el punto de montaje de la partici\227n que contiene la instalaci\227 de Windows."
+::font::mc::CopyingChessBaseFonts				"Copiando fuentes de ChessBase"
+::font::mc::CopyFile									"Copiar archivo %s"
+::font::mc::UpdateFontCache						"Actualizando cach\216 de fuentes"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Iniciar posición"
@@ -1024,7 +1025,7 @@
 ::import::mc::TooManyNags							"Demasiados NAG's (se ignorará el último)"
 ::import::mc::IllegalCastling						"Enroque ilegal"
 ::import::mc::IllegalMove							"Jugada ilegal"
-::import::mc::CastlingCorrection					"Castling correction" ;# NEW
+::import::mc::CastlingCorrection					"Correcci\227n del enroque"
 ::import::mc::UnsupportedVariant					"Variante de ajedrez no soportada"
 ::import::mc::DecodingFailed						"No se pudo decodificar esta partida"
 ::import::mc::ResultDidNotMatchHeaderResult	"El resultado no es igual al resultado del encabezado"
@@ -1200,7 +1201,7 @@
 ::dialog::save::mc::GameData						"Datos de la partida"
 ::dialog::save::mc::Event							"Evento"
 
-::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / Extra Tags" ;# NEW (changed)
+::dialog::save::mc::MatchesExtraTags			"Etiquetas iguales / Extra Etiquetas"
 ::dialog::save::mc::PressToSelect				"Presione Ctrl+0 a Ctrl+9 (o el botón izquierdo del ratón) para seleccionar"
 ::dialog::save::mc::PressForWhole				"Presione Alt-0 a Alt-9 (o el botón medio del ratón) para grupo de datos completo"
 ::dialog::save::mc::EditTags						"Editar etiquetas"
@@ -1210,7 +1211,7 @@
 ::dialog::save::mc::TagNameIsReserved			"El nombre de etiqueta '%s' está reservado."
 ::dialog::save::mc::Locked							"Bloqueado"
 ::dialog::save::mc::OtherTag						"Otra etiqueta"
-::dialog::save::mc::NewTag							"Nueva etiqueta" ;# NEW change to "Add tag"
+::dialog::save::mc::NewTag							"Agregar nueva etiqueta"
 ::dialog::save::mc::RemoveTag						"Etiqueta eliminada"
 ::dialog::save::mc::SetToGameDate				"Establecer fecha de la partida"
 ::dialog::save::mc::SaveGameFailed				"Guardado de la partida fallido."
@@ -1230,7 +1231,7 @@
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
 ::dialog::save::mc::Label(value)					"Valor"
 ::dialog::save::mc::Label(title)					"Título"
-::dialog::save::mc::Label(rating)				"Rating" ;# NEW
+::dialog::save::mc::Label(rating)				"Rating"
 ::dialog::save::mc::Label(federation)			"Federación"
 ::dialog::save::mc::Label(country)				"País"
 ::dialog::save::mc::Label(eventType)			"Tipo"
@@ -1245,7 +1246,7 @@
 ::dialog::save::mc::Label(eventMode)			"Modo"
 ::dialog::save::mc::Label(timeMode)				"Tiempo"
 ::dialog::save::mc::Label(frequency)			"Frecuencia"
-::dialog::save::mc::Label(score)					"Second rating" ;# NEW
+::dialog::save::mc::Label(score)					"Rating secundario"
 
 ::dialog::save::mc::GameBase						"Base de partidas"
 ::dialog::save::mc::PlayerBase					"Base de jugadores"
@@ -1312,8 +1313,8 @@
 ::game::mc::RemoveSelectedGame			"Remover el juego seleccionado del historial"
 ::game::mc::GameDataCorrupted				"Los datos de la partida son erróneos."
 ::game::mc::GameDecodingFailed			"No se pudo decodificar esta partida."
-::game::mc::GameDecodingChanged			"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set." ;# NEW
-::game::mc::GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited." ;# NEW
+::game::mc::GameDecodingChanged			"La base de datos fue abierta usando el juego de caracteres '%base%', pero esta partida parece estar codificada usando '%game%', por ello, esta partida se cargar\207 usando el juego de caracteres detectado."
+::game::mc::GameDecodingChangedDetail	"Probablemente se abri\207 la base de datos con el juego de caracteres equivocado. Note que la detecci\227n autom\207tica del juego de caracteres es limitada."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Todos los idiomas"
@@ -1414,7 +1415,7 @@
 ::crosstable::mc::Settings					"Configuraciones"
 ::crosstable::mc::RevertToStart			"Volver a los valores iniciales"
 ::crosstable::mc::UpdateDisplay			"Actualizar el visor"
-::crosstable::mc::ShowPlayerCard			"Show Player Card" ;# NEW
+::crosstable::mc::ShowPlayerCard			"Mostrar tarjeta del jugador"
 
 ::crosstable::mc::Traditional				"Tradicional"
 ::crosstable::mc::Bilbao					"Bilbao"
@@ -1455,7 +1456,7 @@
 ::crosstable::mc::ShowHtml					"Mostrar HTML"
 ::crosstable::mc::ShowRating				"Rating"
 ::crosstable::mc::ShowPerformance		"Desempeño"
-::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
+::crosstable::mc::ShowWinDrawLoss		"Ganadas/Tablas/Perdidas"
 ::crosstable::mc::ShowTiebreak			"Desempate"
 ::crosstable::mc::ShowOpponent			"Oponente (como Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Estilo tabla de Knockout"
@@ -1555,8 +1556,8 @@
 ::titlebox::mc::Title(LM)		"Maestro de por Vida (USCF)"
 ::titlebox::mc::Title(CGM)		"Gran Maestro por Correspondencia (ICCF)"
 ::titlebox::mc::Title(CIM)		"Maestro Internacional por Correspondencia (ICCF)"
-::titlebox::mc::Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)" ;# NEW
-::titlebox::mc::Title(CILM)	"Correspondence Lady International Master (ICCF)" ;# NEW
+::titlebox::mc::Title(CLGM)	"Gran Maestro Femenino por Correspondencia (ICCF)"
+::titlebox::mc::Title(CILM)	"Maestro Internacional Femenino por Correspondencia (ICCF)"
 ::titlebox::mc::Title(CSIM)	"Maestro Internacional Senior por Correspondencia (ICCF)"
 
 ### messagebox #########################################################
@@ -1572,7 +1573,7 @@
 ::dialog::mc::Error			"Error"
 ::dialog::mc::Warning		"Advertencia"
 ::dialog::mc::Information	"Información"
-::dialog::mc::Question		"Pregunta" ;# NEW english content is "Confirm"
+::dialog::mc::Question		"Confirmar"
 
 ::dialog::mc::DontAskAgain	"No pregunte nuevamente"
 
@@ -1621,21 +1622,21 @@
 ::table::mc::AccelSqueezeColumns		"Ctrl+#"
 
 ### fileselectionbox ###################################################
-::dialog::fsbox::mc::ScidbDatabase			"Scidb Database" ;# NEW
-::dialog::fsbox::mc::ScidDatabase			"Scid Database" ;# NEW
-::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase Database" ;# NEW
-::dialog::fsbox::mc::PortableGameFile		"Portable Game File" ;# NEW
-::dialog::fsbox::mc::ZipArchive				"ZIP Archive" ;# NEW
-::dialog::fsbox::mc::ScidbArchive			"Scidb Arvchive" ;# NEW
-::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
-::dialog::fsbox::mc::HypertextFile			"Hypertext File" ;# NEW
-::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
-::dialog::fsbox::mc::LinkTo					"Link to %s" ;# NEW
-::dialog::fsbox::mc::LinkTarget				"Link target" ;# NEW
-::dialog::fsbox::mc::Directory				"Directory" ;# NEW
+::dialog::fsbox::mc::ScidbDatabase			"Base de datos Scidb"
+::dialog::fsbox::mc::ScidDatabase			"Base de datos Scid"
+::dialog::fsbox::mc::ChessBaseDatabase		"Base de datos ChessBase" 
+::dialog::fsbox::mc::PortableGameFile		"Archivo PGN"
+::dialog::fsbox::mc::ZipArchive				"Archivo ZIP" 
+::dialog::fsbox::mc::ScidbArchive			"Archivo Scidb" 
+::dialog::fsbox::mc::PortableDocumentFile	"Archivo PDF" 
+::dialog::fsbox::mc::HypertextFile			"Archivo HTML"
+::dialog::fsbox::mc::TypesettingFile		"Archivo LATEX"
+::dialog::fsbox::mc::LinkTo					"V\222nculo a %s" 
+::dialog::fsbox::mc::LinkTarget				"Destino del v\222nculo" 
+::dialog::fsbox::mc::Directory				"Directorio" 
 
-::dialog::fsbox::mc::Content					"Content" ;# NEW
-::dialog::fsbox::mc::Open						"Open" ;# NEW
+::dialog::fsbox::mc::Content					"Contenido" 
+::dialog::fsbox::mc::Open						"Abrir" 
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&Aceptar"
@@ -1675,10 +1676,10 @@
 ::dialog::choosefont::mc::Underline			"S&ubrayado"
 ::dialog::choosefont::mc::Color				"Color"
 
-::dialog::choosefont::mc::Regular			"Regular" ;# NEW
-::dialog::choosefont::mc::Bold				"Bold" ;# NEW
-::dialog::choosefont::mc::Italic				"Italic" ;# NEW
-{::dialog::choosefont::mc::Bold Italic}	"Bold Italic" ;# NEW
+::dialog::choosefont::mc::Regular			"Regular" 
+::dialog::choosefont::mc::Bold				"Negrita" 
+::dialog::choosefont::mc::Italic				"Italica" 
+{::dialog::choosefont::mc::Bold Italic}	"Negrita Italica" 
 
 ::dialog::choosefont::mc::Effects			"Efectos"
 ::dialog::choosefont::mc::Filter				"Filtro"
@@ -1718,7 +1719,7 @@
 
 ::fsbox::mc::AddBookmark					"Agregar Marcador '%s'"
 ::fsbox::mc::RemoveBookmark				"Quitar Marcador '%s'"
-::fsbox::mc::RenameBookmark				"Rename Bookmark '%s'" ;# NEW
+::fsbox::mc::RenameBookmark				"Renombrar Marcador '%s'"
 
 ::fsbox::mc::Filename						"&Nombre del archivo:"
 ::fsbox::mc::Filenames						"&Nombres del archivo:"
@@ -1751,7 +1752,7 @@
 ::fsbox::mc::ReallyDelete(folder,r)		"\300Realmente desea borrar la carpeta de solo lectura '%s'? Esta operaci\227n no puede revertirse."
 ::fsbox::mc::DeleteFailed					"No se pudo borrar '%s'."
 ::fsbox::mc::RestoreFailed					"No se pudo restaurar '%s'."
-::fsbox::mc::CommandFailed					"Command '%s' failed." ;# NEW
+::fsbox::mc::CommandFailed					"Fall\227 el comando '%s'."
 ::fsbox::mc::CopyFailed						"No se pudo copiar el archivo '%s': permiso denegado."
 ::fsbox::mc::CannotCopy						"No se puede crear una copia porque el archivo '%s' ya existe."
 ::fsbox::mc::CannotDuplicate				"No se puede duplicar el archivo '%s': no se tiene permisos de lectura."
@@ -1768,21 +1769,21 @@
 ::fsbox::mc::ContainsReservedChars		"Contiene caracteres reservados: %s, o un caracter de control (ASCII 0-31)."
 ::fsbox::mc::InvalidFileName				"El nombre de archivo no puede comenzar con un gui\227n, y no puede terminar con un espacio o punto."
 ::fsbox::mc::IsReservedName				"En algunos sistemas operativos este es un nombre reservado."
-::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
+::fsbox::mc::FilenameTooLong				"Un nombre de archivo debe tener menos de 256 caracteres."
 ::fsbox::mc::InvalidFileExtension		"Extensi\227n de archivo inv\207lida en '%s'."
 ::fsbox::mc::MissingFileExtension		"El archivo '%s' no tiene extensi\227n."
 ::fsbox::mc::FileAlreadyExists			"El archivo '%s' ya existe.\n¿Quiere sobreescribirlo?"
-::fsbox::mc::CannotOverwriteDirectory	"Cannot overwite directory '%s'." ;# NEW
+::fsbox::mc::CannotOverwriteDirectory	"No se puede sobrescribir el directorio '%s'."
 ::fsbox::mc::FileDoesNotExist				"El archivo '%s' no existe."
 ::fsbox::mc::DirectoryDoesNotExist		"El directorio '%s' no existe."
 ::fsbox::mc::CannotOpenOrCreate			"No se puede abrir/crear '%s'. Por favor escoja un directorio."
 ::fsbox::mc::WaitWhileDuplicating		"Por favor espere mientras se duplica el archivo..."
 ::fsbox::mc::FileHasDisappeared			"El archivo '%s' ha desaparecido."
-::fsbox::mc::CannotDelete					"Cannot delete file '%s'." ;# NEW
-::fsbox::mc::CannotRename					"Cannot rename file '%s'." ;# NEW
-::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
-::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
-::fsbox::mc::PermissionDenied				"Permission denied for directory '%s'." ;# NEW
+::fsbox::mc::CannotDelete					"No se puede borrar el archivo '%s'."
+::fsbox::mc::CannotRename					"No se puede renombrar el archivo '%s'."
+::fsbox::mc::CannotDeleteDetail			"El archivo se encuentra en uso."
+::fsbox::mc::CannotOverwrite				"No se puede sobrescribir el archivo '%s'." 
+::fsbox::mc::PermissionDenied				"Permiso denegado para el directorio '%s'."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"
@@ -2106,7 +2107,7 @@
 ::encoding::mc::Lang(cy)	"Galés"
 ::encoding::mc::Lang(da)	"Danés"
 ::encoding::mc::Lang(de)	"Alemán"
-::encoding::mc::Lang(de+)	"Deutsch (reformed)" ;# NEW
+::encoding::mc::Lang(de+)	"Alemán (reformado)"
 ::encoding::mc::Lang(el)	"Griego"
 ::encoding::mc::Lang(en)	"Inglés"
 ::encoding::mc::Lang(eo)	"Esperanto"
@@ -2168,9 +2169,9 @@
 ::encoding::mc::Lang(uz)	"Uzbeko"
 ::encoding::mc::Lang(vi)	"Vietnamita"
 ::encoding::mc::Lang(wa)	"Walloon"
-::encoding::mc::Lang(wen)	"Sorbian"
-::encoding::mc::Lang(hsb)	"Upper Sorbian" ;# NEW
-::encoding::mc::Lang(dsb)	"Lower Sorbian" ;# NEW
+::encoding::mc::Lang(wen)	"Sorbio"
+::encoding::mc::Lang(hsb)	"Alto Sorbio"
+::encoding::mc::Lang(dsb)	"Bajo Sorbio"
 ::encoding::mc::Lang(zh)	"Chino"
 
 ::encoding::mc::Font(hi)	"Devanagari"
