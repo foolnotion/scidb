@@ -83,15 +83,6 @@ Database::player(unsigned index) const
 
 
 inline
-NamebaseEvent const&
-Database::event(unsigned index) const
-{
-	M_REQUIRE(index < countEvents());
-	return *m_namebases(Namebase::Event).event(index);
-}
-
-
-inline
 mstl::string const&
 Database::encoding() const
 {

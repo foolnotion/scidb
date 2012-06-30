@@ -97,16 +97,7 @@ proc open {parent base info view index {fen {}}} {
 	set number [::gametable::column $info number]
 	set name [::util::databaseName $base]
 	if {[info exists Priv($base:$number:$view)]} {
-		set dlg [lindex $Priv($base:$number:$view) 0]
-		switch [tk windowingsystem] {
-			x11 {
-				wm withdraw $dlg
-				wm deiconify $dlg
-			}
-			default {
-				raise $dlg
-			}
-		}
+		::widget::dialogRaise [lindex $Priv($base:$number:$view) 0]
 		return
 	}
 	set position [incr Priv(count)]

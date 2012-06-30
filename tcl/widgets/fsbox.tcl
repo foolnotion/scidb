@@ -716,6 +716,23 @@ proc makeStateSpecificIcons {img} {
 }
 
 
+proc checkIsKDE {} {
+	variable _IsKDE
+
+	if {![info exists _IsKDE]} {
+		if {[tk windowingsystem] eq "x11"} {
+			set atoms {}
+			catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
+			set _IsKDE [expr {[string length $atoms] > 0}]
+		} else {
+			set _IsKDE 0
+		}
+	}
+
+	return $_IsKDE
+}
+
+
 proc x11NoWindowDecor {w} {}
 
 
@@ -1578,13 +1595,7 @@ proc CheckIsKDE {w} {
 	variable ${w}::Vars
 
 	if {![info exists Vars(iskde)]} {
-		if {[tk windowingsystem] eq "x11"} {
-			set atoms {}
-			catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
-			set Vars(iskde) [expr {[llength $atoms] > 0}]
-		} else {
-			set Vars(iskde) 0
-		}
+		set Vars(iskde) [checkIsKDE]
 		if {$Vars(iskde)} {
 			set Vars(exec:delete) [auto_execok kioclient]
 			if {[llength $Vars(exec:delete)] == 0} {

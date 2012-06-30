@@ -145,7 +145,7 @@ proc Show {} {
 	}
 
 	switch [wm state $Log] {
-		withdrawn - iconic {
+		withdrawn - iconic - icon {
 			if {$Priv(center)} {
 				raise $Log
 				::util::place $Log center .application
@@ -157,9 +157,17 @@ proc Show {} {
 	
 		default {
 			if {$Priv(show) && $Priv(visibility) ne "VisibilityUnobscured"} {
+				if {[::fsbox::checkIsKDE]} {
+					set geom [wm geometry $Log]
+					if {[string length $geom]} {
+						set geom [string range $geom [string first + $geom] end]
+						catch { wm geometry $Log $geom }
+					}
+					wm withdraw $dlg
+				}
+				wm deiconify $dlg
 				raise $Log
-				wm deiconify $Log
-				focus $Log
+				focus -force $Log
 			}
 		}
 	}

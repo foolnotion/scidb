@@ -2132,7 +2132,7 @@ proc PopupMenu {parent position} {
 		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
 			$menu add command \
 				-label " $::import::mc::ImportPgnGame..." \
-				-image $::icon::16x16::pgn \
+				-image $::icon::16x16::filetypePGN \
 				-compound left \
 				-command [namespace code PasteClipboardGame] \
 				;

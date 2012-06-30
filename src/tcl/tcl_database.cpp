@@ -89,6 +89,7 @@ static char const* CmdClose			= "::scidb::db::close";
 static char const* CmdCompact			= "::scidb::db::compact";
 static char const* CmdCount			= "::scidb::db::count";
 static char const* CmdFetch			= "::scidb::db::fetch";
+static char const* CmdFind				= "::scidb::db::find";
 static char const* CmdImport			= "::scidb::db::import";
 static char const* CmdLoad				= "::scidb::db::load";
 static char const* CmdNew				= "::scidb::db::new";
@@ -115,6 +116,30 @@ static char const User3 = GameInfo::mapFlag(GameInfo::Flag_User3);
 static char const User4 = GameInfo::mapFlag(GameInfo::Flag_User4);
 static char const User5 = GameInfo::mapFlag(GameInfo::Flag_User5);
 static char const User6 = GameInfo::mapFlag(GameInfo::Flag_User6);
+
+
+enum
+{
+	PlayerKey_Name,
+	PlayerKey_FideID,
+	PlayerKey_Sex,
+	PlayerKey_Country,
+	PlayerKey_Title,
+	PlayerKey_Type,
+	PlayerKey_LAST,
+};
+
+enum
+{
+	EventKey_Name,
+	EventKey_Type,
+	EventKey_Date,
+	EventKey_TimeMode,
+	EventKey_EventMode,
+	EventKey_Site,
+	EventKey_SiteCountry,
+	EventKey_LAST,
+};
 
 
 __attribute__((unused))
@@ -1365,6 +1390,41 @@ playerRatings(NamebasePlayer const& player, rating::Type type, int16_t* ratings)
 
 
 static int
+getPlayerKey(NamebasePlayer const& player)
+{
+	Tcl_Obj* objv[PlayerKey_LAST];
+
+	objv[PlayerKey_Name]		= Tcl_NewStringObj(player.name(), player.name().size());
+	objv[PlayerKey_FideID]	= player.haveFideId() ? Tcl_NewIntObj(player.fideID()) : Tcl_NewListObj(0, 0);
+	objv[PlayerKey_Sex]		= Tcl_NewStringObj(sex::toString(player.sex()), -1);
+	objv[PlayerKey_Country]	= Tcl_NewStringObj(country::toString(player.federation()), -1);
+	objv[PlayerKey_Title]	= Tcl_NewStringObj(title::toString(player.title()), -1);
+	objv[PlayerKey_Type]		= Tcl_NewStringObj(species::toString(player.type()), -1);
+
+	setResult(U_NUMBER_OF(objv), objv);
+	return TCL_OK;
+}
+
+
+static int
+getEventKey(NamebaseEvent const& event)
+{
+	Tcl_Obj* objv[EventKey_LAST];
+
+	objv[EventKey_Name]			= Tcl_NewStringObj(event.name(), event.name().size());
+	objv[EventKey_Type]			= Tcl_NewStringObj(event::toString(event.type()), -1);
+	objv[EventKey_Date]			= Tcl_NewStringObj(event.date().asString(), -1);
+	objv[EventKey_TimeMode]		= Tcl_NewStringObj(time::toString(event.timeMode()), -1);
+	objv[EventKey_EventMode]	= Tcl_NewStringObj(event::toString(event.eventMode()), -1);
+	objv[EventKey_Site]			= Tcl_NewStringObj(event.site()->name(), event.site()->name().size());
+	objv[EventKey_SiteCountry]	= Tcl_NewStringObj(country::toString(event.site()->country()), -1);
+
+	setResult(U_NUMBER_OF(objv), objv);
+	return TCL_OK;
+}
+
+
+static int
 getGameInfo(int index, int view, char const* database, unsigned which)
 {
 	Cursor const& cursor = Scidb->cursor(database);
@@ -2208,53 +2268,55 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
 		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum",
 		"idn", "eco", "ratingTypes", "lookupPlayer", "lookupEvent", "writeable?", "upgrade?",
-		"memoryOnly?", "compress?",
+		"memoryOnly?", "compress?", "playerKey", "eventKey",
 		0
 	};
 	static char const* args[] =
 	{
-		"<name>|<type>",
-		"<name>|<type>",
-		"sci|si3|si4",
-		"?<database>?",
-		"",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"<index> ?<view>? ?<database>?",
-		"<index> ?<view>? ?<database> <which>?",
-		"<index> ?<view>? ?<database> <which>?",
-		"<index> ?<view>? ?<database> <which>?",
-		"<index> ?<view>?",
-		"<number> ?<view>? ?<database>?",
-		"<number> ?<view>? ?<database>?",
-		"<number> ?<view>? ?<database>?",
-		"<number> ?<view>? ?<database>?",
-		"?<database>?",
-		"<database>",
-		"?<database>?",
-		"?<database>?",
-		"<index> ?<view>? ?<database>?",
-		"<database>",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"?<database>?",
-		"?<database>? <namebase-type>",
-		"<number> ?<database>?",
-		"<number> ?<database>?",
-		"<number> ?<database>?",
-		"<number> ?<database>?",
-		"<number> ?<database>?",
-		"<index> ?<view>? ?<database>?",
-		"<index> ?<view>? ?<database>?",
-		"?<database>?",
-		"<database>",
-		"?<database>?",
-		"<database>",
+		/* clipbase			*/ "<name>|<type>",
+		/* scratchbase		*/ "<name>|<type>",
+		/* types				*/ "sci|si3|si4",
+		/* type				*/ "?<database>?",
+		/* name				*/ "",
+		/* codec				*/ "?<database>?",
+		/* encoding			*/ "?<database>?",
+		/* created?			*/ "?<database>?",
+		/* modified?		*/ "?<database>?",
+		/* gameInfo			*/ "<index> ?<view>? ?<database>?",
+		/* playerInfo		*/ "<index> ?<view>? ?<database> <which>?",
+		/* playerStats		*/ "<index> ?<view>? ?<database> <which>?",
+		/* eventInfo		*/ "<index> ?<view>? ?<database> <which>?",
+		/* annotator		*/ "<index> ?<view>?",
+		/* gameIndex		*/ "<number> ?<view>? ?<database>?",
+		/* playerIndex		*/ "<number> ?<view>? ?<database>?",
+		/* eventIndex		*/ "<number> ?<view>? ?<database>?",
+		/* annotatorIndex	*/ "<number> ?<view>? ?<database>?",
+		/* description		*/ "?<database>?",
+		/* stats				*/ "<database>",
+		/* readonly?		*/ "?<database>?",
+		/* encodingState	*/ "?<database>?",
+		/* deleted?			*/ "<index> ?<view>? ?<database>?",
+		/* open?				*/ "<database>",
+		/* lastChange		*/ "?<database>?",
+		/* customFlags		*/ "?<database>?",
+		/* gameFlags		*/ "?<database>?",
+		/* gameNumber		*/ "?<database>?",
+		/* minYear			*/ "?<database>?",
+		/* maxYear			*/ "?<database>?",
+		/* maxUsage			*/ "?<database>? <namebase-type>",
+		/* tags				*/ "<number> ?<database>?",
+		/* checksum			*/ "<number> ?<database>?",
+		/* idn				*/ "<number> ?<database>?",
+		/* eco				*/ "<number> ?<database>?",
+		/* ratingTypes		*/ "<number> ?<database>?",
+		/* lookupPlayer	*/ "<index> ?<view>? ?<database>?",
+		/* lookupEvent		*/ "<index> ?<view>? ?<database>?",
+		/* writeable?		*/ "?<database>?",
+		/* upgrade?			*/ "<database>",
+		/* memoryOnly?		*/ "?<database>?",
+		/* compress?		*/ "<database>",
+		/* playerKey		*/ "<database> (<player-index> | <game-index> <side>)",
+		/* eventKey			*/ "<database> game|event <event>",
 		0
 	};
 	enum
@@ -2265,7 +2327,8 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Description, Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState, Cmd_Deleted, Cmd_Open,
 		Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber, Cmd_MinYear, Cmd_MaxYear,
 		Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes, Cmd_LookupPlayer,
-		Cmd_LookupEvent, Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly, Cmd_Compress,
+		Cmd_LookupEvent, Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly, Cmd_Compress, Cmd_PlayerKey,
+		Cmd_EventKey,
 	};
 
 	if (objc < 2)
@@ -2660,6 +2723,34 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Compress:
 			setResult(Scidb->cursor(stringFromObj(objc, objv, 2)).database().shouldCompress());
 			return TCL_OK;
+
+		case Cmd_PlayerKey:
+			{
+				if (objc != 4 && objc != 5)
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+
+				Database const&	base(Scidb->cursor(stringFromObj(objc, objv, 2)).database());
+				unsigned				index(unsignedFromObj(objc, objv, 3));
+
+				if (objc == 4)
+					getPlayerKey(base.player(index));
+				else
+					getPlayerKey(base.player(index, color::fromSide(stringFromObj(objc, objv, 4))));
+			}
+			return TCL_OK;
+
+		case Cmd_EventKey:
+			{
+				if (objc != 5)
+					return usage(::CmdGet, nullptr, nullptr, subcommands, args);
+
+				Database const&	base(Scidb->cursor(stringFromObj(objc, objv, 2)).database());
+				char const*			what(stringFromObj(objc, objv, 3));
+				unsigned				index(unsignedFromObj(objc, objv, 4));
+
+				getEventKey(base.event(index, *what == 'e' ? Database::EventIndex : Database::GameIndex));
+			}
+			return TCL_OK;
 	}
 
 	return usage(::CmdGet, nullptr, nullptr, subcommands, args);
@@ -3025,7 +3116,7 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	database	= Tcl_GetString(objv[2]);
 
 	if (objc == 4 && Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
-		return error(::CmdReverse, nullptr, nullptr, "integer expected for view argument");
+		return error(CmdReverse, nullptr, nullptr, "integer expected for view argument");
 
 	switch (index)
 	{
@@ -3247,6 +3338,83 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	setResult(resultSize, result);
+	return TCL_OK;
+}
+
+
+static int
+cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 4)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "player|event|annotator <database> <key>");
+		return TCL_ERROR;
+	}
+
+	char const*	database	= stringFromObj(objc, objv, 2);
+	Tcl_Obj*		keyObj	= objv[3];
+	unsigned		numObjs	= 0;
+
+	if (strcmp(stringFromObj(objc, objv, 1), "player") == 0)
+		numObjs = PlayerKey_LAST;
+	else if (strcmp(stringFromObj(objc, objv, 1), "event") == 0)
+		numObjs = EventKey_LAST;
+	else if (strcmp(stringFromObj(objc, objv, 1), "annotator") == 0)
+		numObjs = 1;
+	else
+		return error(CmdFind, nullptr, nullptr, "only 'player', 'event', or 'annotator' is allowed");
+
+	Tcl_Obj* objs[numObjs];
+	memset(objs, 0, sizeof(objs));
+
+	for (unsigned i = 0; i < numObjs; ++i)
+	{
+		Tcl_ListObjIndex(ti, keyObj, i, &objs[i]);
+
+		if (objs[i] == 0)
+			return error(CmdFind, nullptr, nullptr, "invalid info list");
+	}
+
+	Database const& db = Scidb->cursor(database).database();
+	int index = -1;
+
+	if (strcmp(stringFromObj(objc, objv, 1), "player") == 0)
+	{
+		int fideId = 0;
+		Tcl_GetIntFromObj(ti, objs[PlayerKey_FideID], &fideId);
+		
+		index = db.namebase(Namebase::Player).findPlayerIndex(
+						Tcl_GetString(objs[PlayerKey_Name]),
+						fideId,
+						country::fromString(Tcl_GetString(objs[PlayerKey_Country])),
+						title::fromString(Tcl_GetString(objs[PlayerKey_Title])),
+						species::fromString(Tcl_GetString(objs[PlayerKey_Type])),
+						sex::fromString(Tcl_GetString(objs[PlayerKey_Sex])));
+	}
+	else if (strcmp(stringFromObj(objc, objv, 1), "event") == 0)
+	{
+		NamebaseSite const* site = db.namebase(Namebase::Site).findSite(
+												Tcl_GetString(objs[EventKey_Site]),
+												country::fromString(Tcl_GetString(objs[EventKey_SiteCountry])));
+
+		if (site)
+		{
+			index = db.namebase(Namebase::Event).findEventIndex(
+				Tcl_GetString(objs[EventKey_Name]),
+				Date(Tcl_GetString(objs[EventKey_Date])),
+				event::typeFromString(Tcl_GetString(objs[EventKey_Type])),
+				time::fromString(Tcl_GetString(objs[EventKey_TimeMode])),
+				event::modeFromString(Tcl_GetString(objs[EventKey_EventMode])),
+				site
+			);
+		}
+	}
+	else if (strcmp(stringFromObj(objc, objv, 1), "annotator") == 0)
+	{
+		index = db.namebase(Namebase::Annotator).findAnnotatorIndex(Tcl_GetString(objs[0]));
+	}
+	
+	setResult(index);
 	return TCL_OK;
 }
 
@@ -3646,14 +3814,15 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdCompact,			cmdCompact);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdFetch,			cmdFetch);
+	createCommand(ti, CmdFind,				cmdFind);
 	createCommand(ti, CmdImport,			cmdImport);
 	createCommand(ti, CmdLoad,				cmdLoad);
 	createCommand(ti, CmdNew,				cmdNew);
 	createCommand(ti, CmdSet,				cmdSet);
 	createCommand(ti, CmdGet,				cmdGet);
 	createCommand(ti, CmdMatch,			cmdMatch);
-	createCommand(ti, CmdPlayerCard,	cmdPlayerCard);
-	createCommand(ti, CmdPlayerInfo,	cmdPlayerInfo);
+	createCommand(ti, CmdPlayerCard,		cmdPlayerCard);
+	createCommand(ti, CmdPlayerInfo,		cmdPlayerInfo);
 	createCommand(ti, CmdRecode,			cmdRecode);
 	createCommand(ti, CmdReverse,			cmdReverse);
 	createCommand(ti, CmdSave,				cmdSave);

@@ -196,6 +196,7 @@ proc InitBase {path base} {
 		set Vars($base:sort:events) $Defaults(sort:events)
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 		set Vars($base:select) -1
+		set Vars($base:selected:key) {}
 		::playertable::init $path.players $base
 		::gametable::init $path.info.games $base
 		::eventtable::init $path.info.events $base
@@ -234,16 +235,25 @@ proc Update2 {path base} {
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 	set selected [::playertable::selectedPlayer $path.players $base]
+	set view $Vars($base:view)
 
 	if {$selected >= 0 && $lastChange < $Vars($base:lastChange)} {
-		[namespace parent]::players::Search $path $base $Vars($base:view)
+		if {[llength $Vars($base:selected:key)]} {
+			set index [::scidb::db::find player $base $Vars($base:selected:key)]
+			if {$index >= 0} {
+				set selected [::scidb::db::get lookupPlayer $index $view $base]
+				[namespace parent]::players::Search $path $base $view $selected
+			} else {
+				[namespace parent]::players::Reset $path $base
+			}
+		}
 	} else {
 		set Vars($base:lastChange) $lastChange
 
-		set n [::scidb::view::count games $base $Vars($base:view)]
+		set n [::scidb::view::count games $base $view]
 		after idle [list ::gametable::update $path.info.games $base $n]
 
-		set n [::scidb::view::count events $base $Vars($base:view)]
+		set n [::scidb::view::count events $base $view]
 		after idle [list ::eventtable::update $path.info.events $base $n]
 	}
 }
@@ -253,7 +263,18 @@ proc Update2 {path base} {
 
 namespace eval players {
 
-proc Search {path base view} {
+proc Reset {path base} {
+	variable [namespace parent]::${path}::Vars
+
+	::eventtable::clear $path.info.events
+	::gametable::clear $path.info.games
+	::playertable::select $path.players none
+	::playertable::activate $path.players none
+	set Vars($base:selected:key) {}
+}
+
+
+proc Search {path base view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
@@ -261,9 +282,22 @@ proc Search {path base view} {
 	::gametable::select $path.info.games none
 	::eventtable::activate $path.info.events none
 	::eventtable::select $path.info.events none
-	set selected [::playertable::selectedPlayer $path.players $base]
-	# TODO: we do an exact search, but probably we like to seach only for player name!
-	::scidb::view::search $base $view null events [list player $selected]
+
+	if {$selected == -1} {
+		set selected [::playertable::selectedPlayer $path.players $base]
+		if {$selected >= 0} {
+			set index [::scidb::db::get playerIndex $selected $view $base]
+			set Vars($base:selected:key) [scidb::db::get playerKey $base $index]
+		}
+	}
+
+	if {$selected >= 0} {
+		# TODO: we do an exact search, but probably we like to seach only for player name!
+		::scidb::view::search $base $view null events [list player $selected]
+	} else {
+		Reset $path $base
+	}
+
 	::widget::busyCursor off
 }
 

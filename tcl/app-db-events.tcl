@@ -187,6 +187,7 @@ proc InitBase {path base} {
 		set Vars($base:sort:players) $Defaults(sort:players)
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 		set Vars($base:select) -1
+		set Vars($base:selected:key) {}
 		::eventtable::init $path.events $base
 		::playertable::init $path.info.players $base
 		::gametable::init $path.info.games $base
@@ -225,9 +226,18 @@ proc Update2 {path base} {
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 	set selected [::eventtable::selectedEvent $path.events $base]
+	set view $Vars($base:view)
 
 	if {$selected >= 0 && $lastChange < $Vars($base:lastChange)} {
-		[namespace parent]::events::Search $path $base $Vars($base:view)
+		if {[llength $Vars($base:selected:key)]} {
+			set index [::scidb::db::find event $base $Vars($base:selected:key)]
+			if {$index >= 0} {
+				set selected [::scidb::db::get lookupEvent $index $view $base]
+				[namespace parent]::events::Search $path $base $view $selected
+			} else {
+				[namespace parent]::events::Reset $path $base
+			}
+		}
 	} else {
 		set Vars($base:lastChange) $lastChange
 
@@ -244,7 +254,17 @@ proc Update2 {path base} {
 
 namespace eval events {
 
-proc Search {path base view} {
+proc Reset {path base} {
+	variable [namespace parent]::${path}::Vars
+
+	::playertable::clear $path.info.players
+	::gametable::clear $path.info.games
+	::eventtable::select $path.events none
+	set Vars($base:selected:key) {}
+}
+
+
+proc Search {path base view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
@@ -252,8 +272,22 @@ proc Search {path base view} {
 	::gametable::select $path.info.games none
 	::playertable::activate $path.info.players none
 	::playertable::select $path.info.players none
-	set selected [::eventtable::selectedEvent $path.events $base]
-	::scidb::view::search $base $view null player [list event $selected]
+
+	if {$selected == -1} {
+		set selected [::eventtable::selectedEvent $path.events $base]
+		if {$selected >= 0} {
+			set index [::scidb::db::get eventIndex $selected $view $base]
+			set Vars($base:selected:key) [scidb::db::get eventKey $base event $index]
+		}
+	}
+
+	if {$selected >= 0} {
+		# TODO: we do an exact search, but probably we like to seach only for player name!
+		::scidb::view::search $base $view null player [list event $selected]
+	} else {
+		Reset $path $base
+	}
+
 	::widget::busyCursor off
 }
 

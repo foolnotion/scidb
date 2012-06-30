@@ -72,6 +72,9 @@ public:
 
 	static int compare(char const* lhs, char const* rhs);
 
+	// XXX not working; one instance per database is needed
+	static NamebaseEntry* emptyEntry();
+
 private:
 
 	friend class Namebase;
@@ -79,6 +82,8 @@ private:
 	mstl::string	m_name;
 	uint32_t			m_frequency;
 	uint32_t			m_id;
+
+	static NamebaseEntry* m_emptyEntry;
 
 #ifdef DEBUG_SI4
 public: int m_orig_freq;
@@ -248,11 +253,11 @@ public:
 				title::ID title,
 				species::ID type,
 				sex::ID sex,
+				bool fideIdFlag,
 				bool federationFlag,
 				bool typeFlag,
 				bool sexFlag,
-				bool titleFlag,
-				bool fideIdFlag);
+				bool titleFlag);
 
 		bool operator<(Value value) const;
 
@@ -279,15 +284,16 @@ public:
 	{
 		Key(NamebasePlayer const& player);
 		Key(	mstl::string const& name,
+				uint32_t fideID,
 				country::Code federation,
 				title::ID title,
 				species::ID type,
 				sex::ID sex,
+				bool fideIdFlag,
 				bool federationFlag,
 				bool typeFlag,
 				bool sexFlag,
-				bool titleFlag,
-				bool fideIdFlag);
+				bool titleFlag);
 
 		static uint32_t makeValue(NamebasePlayer const& player);
 		static uint32_t makeValue(	country::Code federation,
@@ -296,6 +302,7 @@ public:
 											sex::ID sex);
 
 		mstl::string const& name;
+		uint32_t fideID;
 		Value value;
 	};
 

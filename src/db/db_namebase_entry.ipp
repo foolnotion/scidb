@@ -45,6 +45,7 @@ inline bool NamebaseEntry::used() const						{ return m_frequency > 0; }
 inline mstl::string const& NamebaseEntry::name() const		{ return m_name; }
 inline unsigned NamebaseEntry::frequency() const			{ return m_frequency; }
 inline unsigned NamebaseEntry::id() const						{ return m_id; }
+inline NamebaseEntry* NamebaseEntry::emptyEntry()			{ return m_emptyEntry; }
 
 inline void NamebaseEntry::ref()									{ ++m_frequency; }
 inline void NamebaseEntry::deref()								{ M_REQUIRE(frequency() > 0); --m_frequency; }
@@ -406,11 +407,11 @@ NamebasePlayer::Value::Value(	country::Code federation,
 										title::ID title,
 										species::ID type,
 										sex::ID sex,
+										bool fideIdFlag,
 										bool federationFlag,
 										bool titleFlag,
 										bool typeFlag,
-										bool sexFlag,
-										bool fideIdFlag)
+										bool sexFlag)
 	:m_species(type)
 	,m_sex(sex)
 	,m_federation(federation)
@@ -439,17 +440,19 @@ NamebasePlayer::Key::Key(NamebasePlayer const& player)
 
 inline
 NamebasePlayer::Key::Key(	mstl::string const& name,
+									uint32_t fideID,
 									country::Code country,
 									title::ID title,
 									species::ID type,
 									sex::ID sex,
+									bool fideIdFlag,
 									bool federationFlag,
 									bool titleFlag,
 									bool typeFlag,
-									bool sexFlag,
-									bool fideIdFlag)
+									bool sexFlag)
 	:name(name)
-	,value(country, title, type, sex, federationFlag, titleFlag, typeFlag, sexFlag, fideIdFlag)
+	,fideID(fideID)
+	,value(country, title, type, sex, fideIdFlag, federationFlag, titleFlag, typeFlag, sexFlag)
 {
 }
 
@@ -488,6 +491,14 @@ NamebasePlayer::operator<(NamebasePlayer const& player) const
 	if (cmp < 0) return true;
 	if (cmp > 0) return false;
 
+	if (m_fideIdFlag && player.m_fideIdFlag)
+	{
+		M_ASSERT(m_player);
+		M_ASSERT(player.m_player);
+
+		return m_player->fideID() < player.m_player->fideID();
+	}
+
 	return (m_value & SortMask) < (player.m_value & SortMask);
 }
 
@@ -496,8 +507,11 @@ inline
 bool
 NamebasePlayer::operator==(Key const& key) const
 {
+	M_ASSERT(!m_fideIdFlag || m_player);
+
 	return	NamebaseEntry::compare(name(), key.name) == 0
-			&& (m_value & SortMask) == (key.value.m_key & SortMask);
+			&& (m_value & SortMask) == (key.value.m_key & SortMask)
+			&& (!m_fideIdFlag || m_player->fideID() == key.fideID);
 }
 
 
@@ -510,7 +524,22 @@ NamebasePlayer::operator<(Key const& key) const
 	if (cmp < 0) return true;
 	if (cmp > 0) return false;
 
+	if (m_fideIdFlag && key.fideID)
+	{
+		M_ASSERT(m_player);
+		return m_player->fideID() < key.fideID;
+	}
+
 	return (m_value & SortMask) < (key.value.m_key & SortMask);
+}
+
+
+inline
+uint32_t
+NamebasePlayer::fideID() const
+{
+	M_ASSERT(m_player != 0 || m_fideIdFlag == 0);
+	return m_fideIdFlag ? m_player->fideID() : 0;
 }
 
 
@@ -543,15 +572,6 @@ sex::ID
 NamebasePlayer::sex() const
 {
 	return m_sexFlag ? sex::ID(m_sex) : sex::Unspecified;
-}
-
-
-inline
-uint32_t
-NamebasePlayer::fideID() const
-{
-	M_ASSERT(m_player != 0 || m_fideIdFlag == 0);
-	return m_fideIdFlag ? m_player->fideID() : 0;
 }
 
 

@@ -99,6 +99,23 @@ public:
 	Entry const* entryAt(unsigned index) const;
 	Entry* entryAt(unsigned index);
 
+	int findPlayerIndex(	mstl::string const& name,
+								uint32_t fideID,
+								country::Code country,
+								title::ID title,
+								species::ID type,
+								sex::ID sex) const;
+	int findEventIndex(	mstl::string const& name,
+								Date const& date,
+								event::Type type,
+								time::Mode timeMode,
+								event::Mode eventMode,
+								NamebaseSite const* site) const;
+	int findSiteIndex(mstl::string const& name, country::Code country) const;
+	int findAnnotatorIndex(mstl::string const& name) const;
+
+	NamebaseSite const* findSite(mstl::string const& name, country::Code country) const;
+
 	void setMaxFrequency(unsigned frequency);
 	void setMaxUsage(unsigned usage);
 	void setNextId(unsigned id);

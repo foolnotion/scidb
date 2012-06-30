@@ -418,8 +418,8 @@ namespace castling
 
 } // namespace castling
 
-namespace move {
-
+namespace move
+{
 	enum Constraint	{ DontAllowIllegalMove, AllowIllegalMove };
 	enum Position		{ Ante, Post };
 

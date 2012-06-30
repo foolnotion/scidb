@@ -1574,8 +1574,9 @@ Application::saveGame(Cursor& cursor, bool replace)
 		state = db.addGame(*g.game);
 		g.game->setIndex(g.index = db.countGames() - 1);
 		g.sourceBase = cursor.name();
-		cursor.updateViews();
 	}
+
+	cursor.updateViews();
 
 	GameInfo& info	= cursor.base().gameInfo(g.index);
 	info.setIllegalMove(g.game->containsIllegalMoves());
@@ -1666,6 +1667,7 @@ Application::updateMoves()
 			game.game->setIsModified(false);
 			game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
 			m_subscriber->updateDatabaseInfo(name);
+			m_subscriber->updateGameInfo(m_position); // because of changed checksums
 
 			if (m_current == &cursor)
 			{
@@ -1708,6 +1710,8 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 		game->game->setTags(tags);
 		game->crcIndex = cursor.base().computeChecksum(index);
 	}
+
+	cursor.updateViews();
 
 	if (m_subscriber)
 	{

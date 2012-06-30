@@ -1412,7 +1412,6 @@
 ::crosstable::mc::Settings		"Beállítások"
 ::crosstable::mc::RevertToStart		"Kiinduló értékek visszaállítása"
 ::crosstable::mc::UpdateDisplay		"Képernyő frissítése"
-::crosstable::mc::ShowPlayerCard	"Show Player Card" ;# NEW
 
 ::crosstable::mc::Traditional				"Hagyományos"
 ::crosstable::mc::Bilbao					"Bilbao" ;# NEW

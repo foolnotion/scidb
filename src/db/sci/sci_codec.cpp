@@ -1445,8 +1445,6 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 		unsigned maxUsage = bstrm.uint24();
 		unsigned nextId = bstrm.uint24();
 
-		M_ASSERT(nextId >= size);
-
 		m_lookup[i].resize(nextId);
 
 		switch (i)

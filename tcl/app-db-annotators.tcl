@@ -227,7 +227,7 @@ proc InitBase {path base} {
 		set Vars($base:view) [::scidb::view::new $base slave slave slave master]
 		set Vars($base:update) 1
 		set Vars($base:sort) $Defaults(sort)
-		set Vars($base:annotator) {}
+		set Vars($base:annotator) ""
 		set Vars($base:after:games) {}
 		set Vars($base:after:names) {}
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
@@ -255,11 +255,19 @@ proc GameTableUpdate2 {path base} {
 
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
+	set view $Vars($base:view)
 
 	if {[llength $Vars($base:annotator)] && $lastChange < $Vars($base:lastChange)} {
-		[namespace parent]::names::TableSearch $path $base $Vars($base:view)
+		if {[string length $Vars($base:annotator)]} {
+			set selected [::scidb::db::find annotator $base $Vars($base:annotator)]
+			if {$selected >= 0} {
+				[namespace parent]::names::TableSearch $path $base $view
+			} else {
+				[namespace parent]::names::Reset $path $base
+			}
+		}
 	} else {
-		set n [::scidb::view::count games $base $Vars($base:view)]
+		set n [::scidb::view::count games $base $view]
 		after idle [list ::gametable::update $path.pairings $base $n]
 	}
 }
@@ -273,6 +281,16 @@ proc TableOptions {path} {
 
 
 namespace eval names {
+
+proc Reset {path base} {
+	variable [namespace parent]::${path}::Vars
+
+	::gametable::clear $path.pairings
+	::scrolledtable::select $path.names none
+	::scrolledtable::activate none
+	set Vars($base:annotator) ""
+}
+
 
 proc UpdateTable {path base} {
 	variable [namespace parent]::${path}::Vars
@@ -371,7 +389,7 @@ proc SortColumn {path id dir} {
 	set base [::scidb::db::get name]
 	set view $Vars($base:view)
 	set see 0
-	if {[llength $Vars($base:annotator)]} {
+	if {[string length $Vars($base:annotator)]} {
 		set selection [::scrolledtable::selection $path.names]
 		if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $path.names]} { set see 1 }
 	} else {

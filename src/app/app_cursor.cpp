@@ -487,8 +487,15 @@ Cursor::compact(::util::Progress& progress)
 
 	for (unsigned i = 0; i < m_viewList.size(); ++i)
 	{
-		viewList.push_back(new View(*m_viewList[i], *m_db));
-		delete m_viewList[i];
+		if (m_viewList[i])
+		{
+			viewList.push_back(new View(*m_viewList[i], *m_db));
+			delete m_viewList[i];
+		}
+		else
+		{
+			viewList.push_back(0);
+		}
 	}
 
 	m_viewList.clear();

@@ -186,6 +186,32 @@ proc menuTextvarHook {m index var {args {}}} {
 }
 
 
+proc dialogRaise {dlg} {
+	switch [wm state $dlg] {
+		withdrawn - iconic - icon {
+			wm deiconify $dlg
+		}
+
+		default {
+			if {[::fsbox::checkIsKDE]} {
+				# stupid handling of KDE: without withdrawing
+				# the window will not be raised
+				set geom [wm geometry $dlg]
+				if {[string length $geom]} {
+					set geom [string range $geom [string first + $geom] end]
+					catch { wm geometry $dlg $geom }
+				}
+				wm withdraw $dlg
+			}
+			wm deiconify $dlg
+		}
+	}
+
+	raise $dlg
+	focus -force $dlg
+}
+
+
 proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
 	variable ButtonOrder
 

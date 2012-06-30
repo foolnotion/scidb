@@ -1412,7 +1412,6 @@
 ::crosstable::mc::Settings					"Inställningar"
 ::crosstable::mc::RevertToStart			"Återgå till de ursprungliga värdena"
 ::crosstable::mc::UpdateDisplay			"Uppdatera displayen"
-::crosstable::mc::ShowPlayerCard			"Show Player Card" ;# NEW
 
 ::crosstable::mc::Traditional				"Traditionellt"
 ::crosstable::mc::Bilbao					"Bilbao"

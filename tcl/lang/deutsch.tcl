@@ -1412,7 +1412,6 @@
 ::crosstable::mc::Settings					"Einstellungen"
 ::crosstable::mc::RevertToStart			"Zu den Startwerten zurückkehren"
 ::crosstable::mc::UpdateDisplay			"Anzeige aktualisieren"
-::crosstable::mc::ShowPlayerCard			"Spielerkarte zeigen"
 
 ::crosstable::mc::Traditional				"Traditionell"
 ::crosstable::mc::Bilbao					"Bilbao"

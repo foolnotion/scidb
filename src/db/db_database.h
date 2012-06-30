@@ -68,6 +68,7 @@ public:
 
 	enum Storage	{ MemoryOnly, OnDisk };
 	enum Mode		{ ReadOnly, ReadWrite };
+	enum Access		{ GameIndex, EventIndex };
 
 	Database(Database const& db, mstl::string const& name);
 	Database(mstl::string const& name,
@@ -151,7 +152,7 @@ public:
 	/// Returns the player for given game index and specified side.
 	NamebasePlayer const& player(unsigned gameIndex, color::ID side) const;
 	/// Returns the event at given index.
-	NamebaseEvent const& event(unsigned index) const;
+	NamebaseEvent const& event(unsigned index, Access access = EventIndex) const;
 	/// Returns the annotator at given index.
 	NamebaseEntry const& annotator(unsigned index) const;
 	/// Collect tags specific for current database format.

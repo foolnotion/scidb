@@ -1343,6 +1343,20 @@ proc BuildMenu {gamebar id side menu} {
 			}
 		}
 
+	lassign [::scidb::game::link? $id] base index
+	if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+		set flag [::scidb::db::get deleted? $index -1 $base]
+		if {$flag} { set var UndeleteGame } else { set var DeleteGame }
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::remove \
+			-label " [set ::gametable::mc::$var]" \
+			-command [namespace code [list ::gametable::deleteGame $base $index]] \
+			;
+		::gametable::addGameFlagsMenuEntry $menu $base -1 $index
+		$menu add separator
+	}
+
 #	 currently not working
 #		foreach {num text} [list 0 $mc::Players 2 $mc::Event 3 $mc::Site] {
 #			$menu add radiobutton \

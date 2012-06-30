@@ -225,7 +225,7 @@ proc open {parent {file {}} args} {
 	wm minsize $dlg 600 300
 	if {[string length $file] == 0} {
 		if {[llength $Geometry] == 0} {
-			wm deiconify $dlg
+			::widget::dialogRaise $dlg
 			update idletasks
 			set Geometry [winfo width $dlg]x[winfo height $dlg]
 			focus $Priv($Priv(tab))

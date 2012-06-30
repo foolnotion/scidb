@@ -1714,6 +1714,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 	typedef Namebase::Type Type;
 
 	M_ASSERT(m_codec && m_codec->hasEncoding());
+	M_ASSERT(count >= base.size());
 	M_ASSERT(count <= limit);
 	M_ASSERT(m_codec);
 

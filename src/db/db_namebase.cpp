@@ -522,8 +522,8 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 	if (limit)
 	{
-		NamebasePlayer::Key key(name, federation, title, type, sex,
-										federationFlag, titleFlag, typeFlag, sexFlag, fideIdFlag);
+		NamebasePlayer::Key key(name, fideID, federation, title, type, sex,
+										fideIdFlag, federationFlag, titleFlag, typeFlag, sexFlag);
 
 		List::iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
 
@@ -650,6 +650,105 @@ Namebase::append(mstl::string const& name, unsigned id)
 }
 
 
+int
+Namebase::findPlayerIndex(	mstl::string const& name,
+									uint32_t fideID,
+									country::Code country,
+									title::ID title,
+									species::ID type,
+									sex::ID sex) const
+{
+	M_REQUIRE(this->type() == Player);
+
+	NamebasePlayer::Key key(name,
+									fideID,
+									country,
+									title,
+									type,
+									sex,
+									fideID != 0,
+									country != country::Unknown,
+									title != title::None,
+									type != species::Unspecified,
+									sex != sex::Unspecified);
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+	if (i != m_list.end() && *static_cast<PlayerEntry const*>(*i) == key)
+		return i - m_list.begin();
+
+	return -1;
+}
+
+
+int
+Namebase::findEventIndex(	mstl::string const& name,
+									Date const& date,
+									event::Type type,
+									time::Mode timeMode,
+									event::Mode eventMode,
+									NamebaseSite const* site) const
+{
+	M_REQUIRE(this->type() == Event);
+	M_REQUIRE(site);
+
+	NamebaseEvent::Key key(name, type, date, timeMode, eventMode, const_cast<NamebaseSite*>(site));
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+	if (i != m_list.end() && *static_cast<EventEntry const*>(*i) == key)
+		return i - m_list.begin();
+
+	return -1;
+}
+
+
+int
+Namebase::findSiteIndex(mstl::string const& name, country::Code country) const
+{
+	M_REQUIRE(this->type() == Site);
+
+	NamebaseSite::Key key(name, country);
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+	if (i != m_list.end() && *static_cast<SiteEntry const*>(*i) == key)
+		return i - m_list.begin();
+
+	return -1;
+}
+
+
+int
+Namebase::findAnnotatorIndex(mstl::string const& name) const
+{
+	M_REQUIRE(this->type() == Annotator);
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), name);
+
+	if (i != m_list.end() && *static_cast<Entry const*>(*i) == name)
+		return i - m_list.begin();
+
+	return -1;
+}
+
+
+NamebaseSite const*
+Namebase::findSite(mstl::string const& name, country::Code country) const
+{
+	M_REQUIRE(this->type() == Site);
+
+	NamebaseSite::Key key(name, country);
+
+	List::const_iterator i = mstl::lower_bound(m_list.begin(), m_list.end(), key);
+
+	if (i != m_list.end() && *static_cast<SiteEntry const*>(*i) == key)
+		return static_cast<NamebaseSite*>(*i);
+
+	return 0;
+}
+
+
 void
 Namebase::clear()
 {
@@ -752,13 +851,16 @@ Namebase::update()
 {
 	M_REQUIRE(!isReadonly());
 
-	unsigned index = 0;
-
 	IdSet	usedSet(mstl::max(List::size_type(m_nextId), m_list.size()));
 	List	prepareSet;
 
 	if (m_isModified)
 		m_isOriginal = false;
+
+	unsigned index		= 0;
+	unsigned used		= m_used;
+	unsigned maxUsage	= m_maxUsage;
+	unsigned maxFreq	= m_maxFreq;
 
 	m_maxFreq = 0;
 	m_maxUsage = 0;
@@ -854,6 +956,10 @@ Namebase::update()
 	m_map.resize(m_used);
 	m_isConsistent = true;
 	m_isPrepared = true;
+
+	if (used != m_used || maxUsage != m_maxUsage || maxFreq != m_maxFreq)
+		m_isModified = true;
+
 }
 
 
