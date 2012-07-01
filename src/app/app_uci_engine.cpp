@@ -166,6 +166,7 @@ uci::Engine::Engine()
 	,m_hasOwnBook(false)
 	,m_hasShowCurrLine(false)
 	,m_hasPonder(false)
+	,m_stopAnalyizeIsPending(false)
 {
 }
 
@@ -273,7 +274,7 @@ uci::Engine::startAnalysis(Board const& board)
 
 
 bool
-uci::Engine::startAnalysis(Game const& game, bool isNewGame)
+uci::Engine::startAnalysis(Game const& game, bool /*isNewGame*/)
 {
 	if (!prepareStartAnalysis(game.startBoard()))
 		return false;
@@ -286,8 +287,7 @@ uci::Engine::startAnalysis(Game const& game, bool isNewGame)
 	m_waitingOn = "position";
 
 	send("stop");
-	if (isNewGame)
-		send("ucinewgame"); // clear's all states
+	send("ucinewgame"); // clear's all states
 	send("isready");
 
 	return true;
@@ -298,7 +298,12 @@ bool
 uci::Engine::stopAnalysis()
 {
 	if (isAnalyzing())
+	{
 		send("stop");
+		m_stopAnalyizeIsPending = true;
+
+		// the engine should now send final info and bestmove
+	}
 
 	return true;
 }
@@ -319,6 +324,7 @@ uci::Engine::protocolEnd()
 	// Some engines in analyze mode may not react as expected
 	// to "quit" so ensure the engine exits analyze mode first:
 	stopAnalysis();
+	m_stopAnalyizeIsPending = false;
 	send("quit");
 }
 
@@ -376,6 +382,11 @@ uci::Engine::processMessage(mstl::string const& message)
 							send("setoption name UCI_LimitStrength value false");
 						}
 					}
+
+#if 0
+					send("setoption name NalimovCache value true");
+					send("setoption name NalimovPath value d:\tb;c\tb");
+#endif
 				}
 				else if (m_waitingOn == "position")
 				{
@@ -400,17 +411,25 @@ uci::Engine::processMessage(mstl::string const& message)
 
 				m_waitingOn = "";
 			}
+			else if (::strcmp(message, "registration checking") == 0)
+			{
+				// TODO:
+				// send("register %s", registration());
+				// wait for "registration ok" or "registration error"
+				error("engine requires registration");
+				deactivate();
+			}
 			break;
 
 		case 'i':
-			if (isAnalyzing())
+			if (::strncmp(message, "id name ", 8) == 0)
+			{
+				setIdentifier(message.c_str() + 8);
+			}
+			else if (isAnalyzing() || m_stopAnalyizeIsPending)
 			{
 				if (::strncmp(message, "info ", 5) == 0)
 					parseInfo(::skipSpaces(message.c_str() + 5));
-			}
-			else if (::strncmp(message, "id name ", 8) == 0)
-			{
-				setIdentifier(message.c_str() + 8);
 			}
 			break;
 
@@ -420,8 +439,16 @@ uci::Engine::processMessage(mstl::string const& message)
 			break;
 
 		case 'b':
-			if (isAnalyzing() && ::strncmp(message, "bestmove ", 9) == 0)
+			if (m_stopAnalyizeIsPending && ::strncmp(message, "bestmove ", 9) == 0)
 				parseBestMove(message.c_str() + 9);
+			break;
+
+		case 'c':
+			if (::strcmp(message, "copyprotection checking") == 0)
+			{
+				error("engine has copy protection");
+				deactivate();
+			}
 			break;
 	}
 }
@@ -431,6 +458,8 @@ void
 uci::Engine::parseBestMove(char const* msg)
 {
 	char const* s = ::skipSpaces(msg);
+
+	m_stopAnalyizeIsPending = false;
 
 	if (Move move = m_board.parseMove(s))
 	{

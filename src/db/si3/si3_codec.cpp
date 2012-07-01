@@ -737,7 +737,7 @@ Codec::attach(mstl::string const& rootname, Progress& progress)
 	m_gameStream.set_unbuffered();
 	m_gameStream.open(sys::file::internalName(gameFilename), mode);
 	progress.message("read-game");
-	m_gameData->attach(&m_gameStream);
+	m_gameData->attach(&m_gameStream, &progress);
 	save(rootname, 0, progress, true);
 }
 

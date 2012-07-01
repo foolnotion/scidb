@@ -360,7 +360,8 @@ BlockFile::save(mstl::ostream& stream, Progress* progress)
 			}
 		}
 
-		progress->finish();
+		if (progress)
+			progress->finish();
 
 		if (__builtin_expect(!stream.write(m_cache.back(), m_sizeInfo.back()), 0))
 			return false;

@@ -147,9 +147,9 @@ proc WidgetProc {w command args} {
 			set item [$w.__w__ current]
 			if {$item <= 0} { return "" }
 			if {[lindex $types [expr {$item - 1}]] eq $mc::Gender(c)} {
-				return "Program"
+				return "program"
 			}
-			return "Human"
+			return "human"
 		}
 
 		valid? {

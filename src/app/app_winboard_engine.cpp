@@ -413,6 +413,9 @@ winboard::Engine::stopAnalysis()
 
 		reset();
 //		setAnalyzing(false);
+
+		// TODO: we should send now the best move so far
+		// because the UCI protocol is doing this
 	}
 
 	return true;

@@ -81,6 +81,7 @@ private:
 	bool				m_hasShowCurrLine;
 	bool				m_hasShowRefutations;
 	bool				m_hasPonder;
+	bool				m_stopAnalyizeIsPending;
 };
 
 } // namespace uci
