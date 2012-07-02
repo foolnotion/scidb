@@ -661,13 +661,11 @@ proc Init {dlg} {
 			if {$atStart} { set state "disabled" } else { set state "normal" }
 			foreach group {0 1 2 3 4 5} {
 				foreach child [winfo children $dlg.top.std.f${group}] {
-					if {[string match {*.15[56]} $child]} {
-						$child configure -state normal
-					} else {
-						$child configure -state $state
-					}
+					$child configure -state $state
 				}
 			}
+			$dlg.top.std.f4.155 configure -state normal
+			$dlg.top.std.f4.156 configure -state normal
 		}
 	}
 }

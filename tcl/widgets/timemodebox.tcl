@@ -322,6 +322,7 @@ namespace eval 12x12 {
 #}]
 
 set Mode(normal) $::eventtypebox::icon::12x12::Type(tourn)
+# TODO: use 12x12 clock instead
 
 #set Mode(rapid) [image create photo -data {
 #	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABlElEQVQoz2NgwAQsbGxsGfb2

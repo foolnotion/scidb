@@ -57,14 +57,14 @@ bind TListBox <Key-space>	[namespace code { SelectActive %W }]
 
 switch [tk windowingsystem] {
 	x11 {
-		bind TListBox <Button-4> { %W yview scroll -5 units }
-		bind TListBox <Button-5> { %W yview scroll +5 units }
+		bind TListBox <Button-4> { %W yview scroll -1 units }
+		bind TListBox <Button-5> { %W yview scroll +1 units }
 	}
 	aqua {
 		bind TreeCtrl <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
 	}
 	win32 {
-		bind TreeCtrl <MouseWheel> { %W yview scroll [expr {-(%D/120)*4}] units }
+		bind TreeCtrl <MouseWheel> { %W yview scroll [expr {-(%D/120)}] units }
 	}
 }
 

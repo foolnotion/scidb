@@ -296,6 +296,7 @@ proc move {w list} {
 			$w.c raise input
 		} else {
 			# castling w/o moving king and w/o rook
+			# TODO: probably we should animate a piece swap twice times
 			return
 		}
 

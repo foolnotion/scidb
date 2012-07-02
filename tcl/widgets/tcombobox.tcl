@@ -492,12 +492,12 @@ bind TComboboxListbox <Motion>				[namespace code { LBHover %W %x %y }]
 bind TComboboxListbox <Map>					{ focus -force %W }
 
 bind TComboboxListbox <ButtonPress-4> {
-	%W yview scroll -5 units
+	%W yview scroll -1 units
 	after idle { ttk::combobox::LBHover %W %x %y }
 }
 
 bind TComboboxListbox <ButtonPress-5> {
-	%W yview scroll +5 units
+	%W yview scroll +1 units
 	after idle { ttk::combobox::LBHover %W %x %y }
 }
 

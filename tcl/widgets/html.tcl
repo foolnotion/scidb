@@ -694,7 +694,7 @@ proc SelectionExtend {w x y {node {}}} {
 	variable [winfo parent [winfo parent $w]]::Priv
 
 	if {![$w cget -exportselection]} { return }
-	if {!$Priv(sel:state)} { return }
+	if {!$Priv(sel:state)} { return } ;# this may happen during a double click
 	if {$Priv(sel:ignore)} { return }
 
 	set to [$w node -index $x $y]
