@@ -621,6 +621,11 @@ proc setOptions {path options} {
 }
 
 
+proc see {path position} {
+	::scrolledtable::see $path $position
+}
+
+
 proc scroll {path position} {
 	::scrolledtable::scroll $path $position
 }

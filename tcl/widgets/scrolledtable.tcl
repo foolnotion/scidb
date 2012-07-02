@@ -307,7 +307,7 @@ proc scroll {path position {units 1}} {
 
 		default		{
 			if {[string is integer -strict $position]} {
-				set start [expr {max(0, min($Vars(size) - 1, $Vars(start) + $position))}]
+				set start [expr {max(0, min($Vars(size) - 1, $position))}]
 				if {$start == $Vars(start)} { return }
 				::tooltip::hide
 				SetStart $table $start

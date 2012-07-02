@@ -321,8 +321,20 @@ namespace eval 12x12 {
 #	tlaciZJA/kpqvkGD6/+SH0mU4K2igZ6gAAAAAElFTkSuQmCC
 #}]
 
-set Mode(normal) $::eventtypebox::icon::12x12::Type(tourn)
-# TODO: use 12x12 clock instead
+set Mode(normal) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAABIAAAASABGyWs+AAACEElEQVQozwXBy0tUUQAH4N953HvuY+5cZ5oczRADnaZF
+	GEjTIjCSdoItCsLAVcv+gTYStQpaFFLt3Luqha5rEYWgggYuSrLxNZkzOjqP632dc/o+AgCr
+	i4uIhLCLu3sT53//TQXts9HwaD9u/dn7flKrf/zdSdYck8lnOz9Btufn0Y7ivtzNyvN2EE0T
+	zvyzsAXreBns+FQ3V7ZrR6tbc5ut5J3PdMDuDw1lC57/Jh4YfNL0PMvM5yCpgiA16LxLrPLl
+	bFbwO6x6GC0ExjfqhNFM3cs9PHVdXMg6IFpBKwmAwTUYnIwAHb9hFitXnz5gwW0apGrGLI3Y
+	wmBIUgmlFLTW0DKETrvQSRfCBgqV4Uu5fPYR7xJSsoSASwjiJEGSKlQPDuEd76DgKGgAEhRa
+	a9gX/VEuw3NFCRCEIZTSMGQTXrABxyRwLBNaA6mSSLkEzWTAVf1oM6gdjHd6cujjDThnyxjJ
+	tGAaJjijkEqj0dVwiY3YcH+wKb8HmpJ7TrFjeu0VMBVAmCYMg0MTCkopksSArGf216vNl2xs
+	4MqvfH2vmOcnY6cWI5bNEUsCxig6sUasHPS65XB3J3o9Pfd2gT3u708aoVxWtTbsQJVcIZw4
+	JoSnHH7sSSIHd7e6mVfvPy19mJy4GxEAmL1ewYnUZpnJW73F3KRXyF4Tni8T7mxUz9OlF18+
+	rw/3+PLrxhr+AzZY8+JGnZ0JAAAAAElFTkSuQmCC
+}]
 
 #set Mode(rapid) [image create photo -data {
 #	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABlElEQVQoz2NgwAQsbGxsGfb2

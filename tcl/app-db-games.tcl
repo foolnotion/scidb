@@ -351,10 +351,10 @@ proc Goto {table} {
 	variable ${table}::Vars
 
 	set Vars(gameno) [string trim [string map {. "" , ""} $Vars(gameno)]]
-	if {[llength $Vars(gameno)] && [string is integer $Vars(gameno)] && $Vars(gameno) > 0} {
+	if {[string is integer -strict $Vars(gameno)] && $Vars(gameno) > 0} {
 		set index [::scidb::db::get gameIndex [expr {$Vars(gameno) - 1}] 0]
 		if {$index >= 0} {
-			::gametable::scroll $table $index
+			::gametable::see $table $index
 			after idle [list ::gametable::activate $table [::gametable::indexToRow $table $index]]
 		}
 	}

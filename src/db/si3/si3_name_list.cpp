@@ -310,7 +310,14 @@ NameList::addEntry(unsigned originalId, NamebaseEntry* entry)
 {
 	M_ASSERT(m_lookup[originalId]);
 
-	unsigned id = entry->id();
+	unsigned id = m_usedIdSet.find_first_not();
+
+	if (id == m_usedIdSet.npos)
+	{
+		id = m_usedIdSet.size();
+		m_usedIdSet.resize(id + mstl::max(50u, (id*9)/10));
+		m_usedIdSet.set(id);
+	}
 
 	if (id >= m_lookup.size())
 		reserve(id + 1);

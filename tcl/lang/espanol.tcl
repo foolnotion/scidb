@@ -224,7 +224,7 @@
 ### load ###############################################################
 ::load::mc::SevereError				"Error severo al cargar archivo ECO" 
 ::load::mc::FileIsCorrupt			"El archivo %s está corrupto:"
-::load::mc::ProgramAborting		"Abortando programa." ;# NEW
+::load::mc::ProgramAborting		"Abortando programa."
 
 ::load::mc::Loading					"Cargando %s"
 ::load::mc::ReadingOptionsFile	"Leer archivo de opciones"
@@ -300,7 +300,7 @@
 ::application::database::mc::Games							"&Partidas"
 ::application::database::mc::Players						"&Jugadores"
 ::application::database::mc::Events							"Even&tos"
-::application::database::mc::Sites							"&Sites" ;# NEW
+::application::database::mc::Sites							"Lugare&s"
 ::application::database::mc::Annotators					"&Comentaristas"
 
 ::application::database::mc::File							"Archivo"

@@ -86,7 +86,7 @@ strippedLength(char const* s, unsigned len)
 {
 	while (len > 0 && ::isspace(s[len - 1]))
 		--len;
-	
+
 	return len;
 }
 

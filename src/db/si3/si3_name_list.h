@@ -60,6 +60,7 @@ public:
 	NameList();
 
 	bool isEmpty() const;
+	bool hasId(unsigned id) const;
 
 	Node* operator[](unsigned i) const;
 

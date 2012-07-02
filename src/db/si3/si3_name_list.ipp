@@ -30,6 +30,7 @@ namespace db {
 namespace si3 {
 
 inline bool NameList::isEmpty() const				{ return m_size == 0; }
+inline bool NameList::hasId(unsigned id) const	{ return m_lookup[id] != 0; }
 
 inline unsigned NameList::size() const				{ return m_size; }
 inline unsigned NameList::maxFrequency() const	{ return m_maxFrequency; }
