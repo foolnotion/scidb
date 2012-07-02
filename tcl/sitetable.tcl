@@ -62,6 +62,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	variable columns
 	variable Columns
 	variable Options
+	variable Defaults
 	variable Find
 
 	array set Vars {
