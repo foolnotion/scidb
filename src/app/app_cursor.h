@@ -86,6 +86,8 @@ public:
 	unsigned countPlayers() const;
 	/// Count number of events in database.
 	unsigned countEvents() const;
+	/// Count number of sites in database.
+	unsigned countSites() const;
 	/// Count number of annotators in database.
 	unsigned countAnnotators() const;
 	/// Return database index of current game.
@@ -96,6 +98,8 @@ public:
 	unsigned playerIndex(unsigned index, unsigned view) const;
 	/// Return event index of specified event in given view.
 	unsigned eventIndex(unsigned index, unsigned view) const;
+	/// Return site index of specified event in given view.
+	unsigned siteIndex(unsigned index, unsigned view) const;
 	/// Return annotator index of specified player in given view.
 	unsigned annotatorIndex(unsigned index, unsigned view) const;
 	/// Return name of database (may be a file name)
@@ -109,6 +113,7 @@ public:
 	unsigned newView(	View::UpdateMode gameUpdateMode,
 							View::UpdateMode playerUpdateMode,
 							View::UpdateMode eventUpdateMode,
+							View::UpdateMode siteUpdateMode,
 							View::UpdateMode annotatorUpdateMode);
 	/// Create new view for tree and return the identifier.
 	unsigned newTreeView();

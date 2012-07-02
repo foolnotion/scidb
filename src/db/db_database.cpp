@@ -1014,11 +1014,11 @@ Database::player(unsigned gameIndex, color::ID side) const
 NamebaseEvent const&
 Database::event(unsigned index, Access access) const
 {
-	M_REQUIRE(access == EventIndex ? index < countEvents() : index < countGames());
+	M_REQUIRE(access == MyIndex ? index < countEvents() : index < countGames());
 
 	switch (access)
 	{
-		case EventIndex:
+		case MyIndex:
 			return *m_namebases(Namebase::Event).event(index);
 
 		case GameIndex:
@@ -1028,6 +1028,23 @@ Database::event(unsigned index, Access access) const
 	return *m_namebases(Namebase::Event).event(0); // never reached
 }
 
+
+NamebaseSite const&
+Database::site(unsigned index, Access access) const
+{
+	M_REQUIRE(access == MyIndex ? index < countSites() : index < countGames());
+
+	switch (access)
+	{
+		case MyIndex:
+			return *m_namebases(Namebase::Site).site(index);
+
+		case GameIndex:
+			return *m_gameInfoList[index]->eventEntry()->site();
+	}
+
+	return *m_namebases(Namebase::Event).site(0); // never reached
+}
 
 void
 Database::emitPlayerCard(TeXt::Receptacle& receptacle, NamebasePlayer const& player) const

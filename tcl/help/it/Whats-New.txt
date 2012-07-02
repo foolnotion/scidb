@@ -20,6 +20,7 @@ TITLE Novità
 
 <ul><!-- NEW -->
   <li>More help pages</li>
+  <li>New database tab: list of sites</li>
   <li>Full-screen mode tweaked</li>
   <li>Command line tool cdb2sci added for conversion of databases to Scidb format (.sci)</li>
   <li>HTML widget reworked: saving resources in a highly significant way</li>

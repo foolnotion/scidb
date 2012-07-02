@@ -249,7 +249,7 @@ proc open {parent base index view source} {
 	set Vars(prevTiebreaks) ""
 	set Vars(prevScoring) ""
 	set Vars(tooltip) ""
-	set Vars(viewId) [::scidb::view::new $base slave slave slave slave]
+	set Vars(viewId) [::scidb::view::new $base slave slave slave slave slave]
 	set Vars(subscribe) [list [namespace current]::Close $base $dlg]
 
 	if {$source eq "game"} { set search gameevent } else { set search event }

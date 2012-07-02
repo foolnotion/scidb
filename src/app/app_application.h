@@ -90,6 +90,10 @@ public:
 		virtual void updateEventList(mstl::string const& filename, unsigned view) = 0;
 		virtual void updateEventList(mstl::string const& filename, unsigned view, unsigned index) = 0;
 
+		virtual void updateSiteList(mstl::string const& filename) = 0;
+		virtual void updateSiteList(mstl::string const& filename, unsigned view) = 0;
+		virtual void updateSiteList(mstl::string const& filename, unsigned view, unsigned index) = 0;
+
 		virtual void updateAnnotatorList(mstl::string const& filename) = 0;
 		virtual void updateAnnotatorList(mstl::string const& filename, unsigned view) = 0;
 		virtual void updateAnnotatorList(mstl::string const& filename, unsigned view, unsigned index) = 0;
@@ -106,7 +110,7 @@ public:
 	typedef mstl::vector<Cursor*> CursorList;
 
 	enum CloseMode	{ Except_Clipbase, Including_Clipbase };
-	enum Filter		{ None = 0, Players = 1, Events = 2 };
+	enum Filter		{ None = 0, Players = 1 << 0, Events = 1 << 1, Sites = 1 << 2 };
 
 	Application();
 	~Application() throw();
@@ -247,11 +251,16 @@ public:
 					db::order::ID order);
 	void sort(	Cursor& cursor,
 					unsigned view,
+					db::attribute::site::ID attr,
+					db::order::ID order);
+	void sort(	Cursor& cursor,
+					unsigned view,
 					db::attribute::annotator::ID attr,
 					db::order::ID order);
 	void reverse(Cursor& cursor, unsigned view, db::attribute::game::ID attr);
 	void reverse(Cursor& cursor, unsigned view, db::attribute::player::ID attr);
 	void reverse(Cursor& cursor, unsigned view, db::attribute::event::ID attr);
+	void reverse(Cursor& cursor, unsigned view, db::attribute::site::ID attr);
 	void reverse(Cursor& cursor, unsigned view, db::attribute::annotator::ID attr);
 
 	void setSubscriber(SubscriberP subscriber);

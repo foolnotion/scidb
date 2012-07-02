@@ -485,7 +485,7 @@ compSex(unsigned const* lhs, unsigned const* rhs)
 
 	if (sexL != sexR)
 		return int(sexL) - int(sexR);
-	
+
 	return int(l.findType()) - int(r.findType());
 }
 
@@ -555,6 +555,23 @@ DEF_COMPARE(Frequency, frequency());
 
 } // namespace event
 
+namespace site {
+
+#undef DEF_COMPARE
+
+#define DEF_COMPARE(Func,Accessor) \
+	static int \
+	comp##Func(unsigned const* lhs, unsigned const* rhs) \
+	{ \
+		return compare(database->site(*lhs).Accessor, database->site(*rhs).Accessor); \
+	}
+
+DEF_COMPARE(Country, country());
+DEF_COMPARE(Site, name());
+DEF_COMPARE(Frequency, frequency());
+
+} // namespace site
+
 namespace annotator {
 
 #undef DEF_COMPARE
@@ -570,6 +587,34 @@ DEF_COMPARE(Name, name());
 DEF_COMPARE(Frequency, frequency());
 
 } // namespace annotator
+
+
+void
+Selector::finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc)
+{
+	M_ASSERT(m_map.size() <= numEntries);
+	M_ASSERT(compFunc);
+
+	if (numEntries != m_map.size())
+	{
+		unsigned k = m_map.size();
+
+		m_map.resize(numEntries);
+
+		for (unsigned i = k; i < numEntries; ++i)
+			m_map[i] = i;
+	}
+
+	::database = &db;
+
+	if (order == order::Descending)
+	{
+		::compareFunc = compFunc;
+		compFunc = ::reverseCompare;
+	}
+
+	::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), compFunc);
+}
 
 
 void
@@ -692,37 +737,9 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 	}
 
 	if (func)
-	{
-		unsigned n = db.countGames();
-
-		M_ASSERT(m_map.size() <= n);
-
-		if (n != m_map.size())
-		{
-			unsigned k = m_map.size();
-
-			m_map.resize(n);
-
-			for (unsigned i = k; i < n; ++i)
-				m_map[i] = i;
-		}
-
-		Compar f = reinterpret_cast<Compar>(func);
-
-		::database = &db;
-
-		if (order == order::Descending)
-		{
-			::compareFunc = f;
-			f = reverseCompare;
-		}
-
-		::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), f);
-	}
+		finish(db, db.countGames(), order, reinterpret_cast<Compar>(func));
 	else
-	{
 		m_map.release();
-	}
 }
 
 
@@ -793,33 +810,7 @@ Selector::sort(Database const& db, attribute::player::ID attr, order::ID order, 
 			return;
 	}
 
-	M_ASSERT(func);
-
-	unsigned n = db.countPlayers();
-
-	M_ASSERT(m_map.size() <= n);
-
-	if (n != m_map.size())
-	{
-		unsigned k = m_map.size();
-
-		m_map.resize(n);
-
-		for (unsigned i = k; i < n; ++i)
-			m_map[i] = i;
-	}
-
-	Compar f = reinterpret_cast<Compar>(func);
-
-	::database = &db;
-
-	if (order == order::Descending)
-	{
-		::compareFunc = f;
-		f = reverseCompare;
-	}
-
-	::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), f);
+	finish(db, db.countPlayers(), order, reinterpret_cast<Compar>(func));
 }
 
 
@@ -844,33 +835,27 @@ Selector::sort(Database const& db, attribute::event::ID attr, order::ID order)
 		case attribute::event::LastColumn:	return;
 	}
 
-	M_ASSERT(func);
+	finish(db, db.countEvents(), order, reinterpret_cast<Compar>(func));
+}
 
-	unsigned n = db.countEvents();
 
-	M_ASSERT(m_map.size() <= n);
+void
+Selector::sort(Database const& db, attribute::site::ID attr, order::ID order)
+{
+	typedef int(*InfoCompar)(unsigned const*, unsigned const*);
+	typedef int(*Compar)(void const*, void const*);
 
-	if (n != m_map.size())
+	InfoCompar func = 0;
+
+	switch (attr)
 	{
-		unsigned k = m_map.size();
-
-		m_map.resize(n);
-
-		for (unsigned i = k; i < n; ++i)
-			m_map[i] = i;
+		case attribute::site::Country:		func = ::site::compCountry; break;
+		case attribute::site::Site:			func = ::site::compSite; break;
+		case attribute::site::Frequency:		func = ::site::compFrequency; break;
+		case attribute::site::LastColumn:	return;
 	}
 
-	Compar f = reinterpret_cast<Compar>(func);
-
-	::database = &db;
-
-	if (order == order::Descending)
-	{
-		::compareFunc = f;
-		f = reverseCompare;
-	}
-
-	::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), f);
+	finish(db, db.countSites(), order, reinterpret_cast<Compar>(func));
 }
 
 
@@ -891,31 +876,7 @@ Selector::sort(Database const& db, attribute::annotator::ID attr, order::ID orde
 
 	M_ASSERT(func);
 
-	unsigned n = db.countAnnotators();
-
-	M_ASSERT(m_map.size() <= n);
-
-	if (n != m_map.size())
-	{
-		unsigned k = m_map.size();
-
-		m_map.resize(n);
-
-		for (unsigned i = k; i < n; ++i)
-			m_map[i] = i;
-	}
-
-	Compar f = reinterpret_cast<Compar>(func);
-
-	::database = &db;
-
-	if (order == order::Descending)
-	{
-		::compareFunc = f;
-		f = reverseCompare;
-	}
-
-	::qsort(m_map.begin(), m_map.size(), sizeof(Map::value_type), f);
+	finish(db, db.countAnnotators(), order, reinterpret_cast<Compar>(func));
 }
 
 
@@ -1017,6 +978,34 @@ Selector::findEvent(Database const& db, mstl::string const& name) const
 
 
 int
+Selector::findSite(Database const& db, mstl::string const& name) const
+{
+	unsigned n = m_map.size();
+
+	if (n == 0)
+	{
+		n = db.countSites();
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (db.site(i).name() == name)
+				return i;
+		}
+	}
+	else
+	{
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (db.site(m_map[i]).name() == name)
+				return i;
+		}
+	}
+
+	return -1;
+}
+
+
+int
 Selector::findAnnotator(Database const& db, mstl::string const& name) const
 {
 	unsigned n = m_map.size();
@@ -1099,6 +1088,33 @@ Selector::searchEvent(Database const& db, mstl::string const& name) const
 	return -1;
 }
 
+
+int
+Selector::searchSite(Database const& db, mstl::string const& name) const
+{
+	unsigned n = m_map.size();
+
+	if (n == 0)
+	{
+		n = db.countSites();
+
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (::sys::utf8::caseMatch(db.site(i).name(), name, name.size()))
+				return i;
+		}
+	}
+	else
+	{
+		for (unsigned i = 0; i < n; ++i)
+		{
+			if (::sys::utf8::caseMatch(db.site(m_map[i]).name(), name, name.size()))
+				return i;
+		}
+	}
+
+	return -1;
+}
 
 int
 Selector::searchAnnotator(Database const& db, mstl::string const& name) const

@@ -86,6 +86,7 @@ View::View(Application& app, Database& db)
 	,m_gameUpdateMode(AddNewGames)
 	,m_playerUpdateMode(AddNewGames)
 	,m_eventUpdateMode(AddNewGames)
+	,m_siteUpdateMode(AddNewGames)
 	,m_annotatorUpdateMode(AddNewGames)
 {
 	initialize();
@@ -98,14 +99,17 @@ View::View(View& view, db::Database& db)
 	,m_gameUpdateMode(view.m_gameUpdateMode)
 	,m_playerUpdateMode(view.m_playerUpdateMode)
 	,m_eventUpdateMode(view.m_eventUpdateMode)
+	,m_siteUpdateMode(view.m_siteUpdateMode)
 	,m_annotatorUpdateMode(view.m_annotatorUpdateMode)
 {
 	m_gameFilter.swap(view.m_gameFilter);
 	m_playerFilter.swap(view.m_playerFilter);
 	m_eventFilter.swap(view.m_eventFilter);
+	m_siteFilter.swap(view.m_siteFilter);
 	m_gameSelector.swap(view.m_gameSelector);
 	m_playerSelector.swap(view.m_playerSelector);
 	m_eventSelector.swap(view.m_eventSelector);
+	m_siteSelector.swap(view.m_siteSelector);
 	m_annotatorSelector.swap(view.m_annotatorSelector);
 }
 
@@ -115,12 +119,14 @@ View::View(	Application& app,
 				UpdateMode gameUpdateMode,
 				UpdateMode playerUpdateMode,
 				UpdateMode eventUpdateMode,
+				UpdateMode siteUpdateMode,
 				UpdateMode annotatorUpdateMode)
 	:m_app(app)
 	,m_db(db)
 	,m_gameUpdateMode(gameUpdateMode)
 	,m_playerUpdateMode(playerUpdateMode)
 	,m_eventUpdateMode(eventUpdateMode)
+	,m_siteUpdateMode(siteUpdateMode)
 	,m_annotatorUpdateMode(annotatorUpdateMode)
 {
 	initialize();
@@ -136,6 +142,9 @@ View::initialize()
 	m_eventFilter.resize(m_db.countEvents(), Filter::LeaveEmpty);
 	m_eventFilter.set();
 
+	m_siteFilter.resize(m_db.countSites(), Filter::LeaveEmpty);
+	m_siteFilter.set();
+
 	m_playerFilter.resize(m_db.countPlayers(), Filter::LeaveEmpty);
 	m_playerFilter.set();
 }
@@ -147,10 +156,12 @@ View::update()
 	m_gameFilter.resize(m_db.countGames(), ::map(m_gameUpdateMode));
 	m_playerFilter.resize(m_db.countPlayers(), ::map(m_playerUpdateMode));
 	m_eventFilter.resize(m_db.countEvents(), ::map(m_eventUpdateMode));
+	m_siteFilter.resize(m_db.countSites(), ::map(m_siteUpdateMode));
 
 	m_gameSelector.update(m_db.countGames());
 	m_playerSelector.update(m_db.countPlayers());
 	m_eventSelector.update(m_db.countEvents());
+	m_siteSelector.update(m_db.countSites());
 	m_annotatorSelector.update(m_db.countAnnotators());
 }
 
@@ -180,6 +191,13 @@ unsigned
 View::eventIndex(unsigned index) const
 {
 	return m_eventSelector.lookup(index);
+}
+
+
+unsigned
+View::siteIndex(unsigned index) const
+{
+	return m_siteSelector.lookup(index);
 }
 
 
@@ -235,6 +253,20 @@ View::lookupEvent(unsigned number) const
 
 
 int
+View::lookupSite(mstl::string const& name) const
+{
+	return m_siteSelector.findSite(m_db, name);
+}
+
+
+int
+View::lookupSite(unsigned number) const
+{
+	return m_siteFilter.contains(number) ? int(m_siteSelector.find(number)) : -1;
+}
+
+
+int
 View::lookupAnnotator(mstl::string const& name) const
 {
 	return m_annotatorSelector.findAnnotator(m_db, name);
@@ -256,6 +288,13 @@ View::findEvent(mstl::string const& title) const
 
 
 int
+View::findSite(mstl::string const& title) const
+{
+	return m_siteSelector.searchSite(m_db, title);
+}
+
+
+int
 View::findAnnotator(mstl::string const& name) const
 {
 	return m_annotatorSelector.searchAnnotator(m_db, name);
@@ -273,7 +312,7 @@ View::sort(attribute::game::ID attr, order::ID order, rating::Type ratingType)
 void
 View::sort(attribute::player::ID attr, order::ID order, rating::Type ratingType)
 {
-	m_playerSelector.sort(m_db,  attr, order, ratingType);
+	m_playerSelector.sort(m_db, attr, order, ratingType);
 	m_playerSelector.update(m_playerFilter);
 }
 
@@ -281,8 +320,16 @@ View::sort(attribute::player::ID attr, order::ID order, rating::Type ratingType)
 void
 View::sort(db::attribute::event::ID attr, db::order::ID order)
 {
-	m_eventSelector.sort(m_db,  attr, order);
+	m_eventSelector.sort(m_db, attr, order);
 	m_eventSelector.update(m_eventFilter);
+}
+
+
+void
+View::sort(db::attribute::site::ID attr, db::order::ID order)
+{
+	m_siteSelector.sort(m_db, attr, order);
+	m_siteSelector.update(m_siteFilter);
 }
 
 
@@ -315,6 +362,14 @@ View::reverse(attribute::event::ID)
 {
 	m_eventSelector.reverse(m_db);
 	m_eventSelector.update(m_eventFilter);
+}
+
+
+void
+View::reverse(attribute::site::ID)
+{
+	m_siteSelector.reverse(m_db);
+	m_siteSelector.update(m_siteFilter);
 }
 
 
@@ -378,18 +433,32 @@ View::filterEvents()
 
 
 void
+View::filterSites()
+{
+	mstl::bitset f(m_db.namebase(Namebase::Site).nextId());
+
+	m_siteFilter.reset();
+
+	for (int i = m_gameFilter.next(); i != Filter::Invalid; i = m_gameFilter.next(i))
+		f.set(m_db.gameInfo(i).eventEntry()->site()->id());
+
+	for (unsigned i = 0; i < m_db.countSites(); ++i)
+	{
+		if (f.test(m_db.site(i).id()))
+			m_siteFilter.add(i);
+	}
+
+	m_siteSelector.update(m_siteFilter);
+}
+
+
+void
 View::setGameFilter(Filter const& filter)
 {
 	M_REQUIRE(filter.size() == m_db.countGames());
 
 	m_gameFilter = filter;
 	m_gameSelector.update(m_gameFilter);
-}
-
-
-void
-View::shortenFilter(Filter const& filter)
-{
 }
 
 

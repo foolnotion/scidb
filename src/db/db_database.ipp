@@ -42,6 +42,7 @@ inline unsigned Database::id() const							{ return m_id; }
 inline unsigned Database::countGames() const					{ return m_gameInfoList.size(); }
 inline unsigned Database::countPlayers() const				{ return m_namebases(Namebase::Player).used(); }
 inline unsigned Database::countEvents() const				{ return m_namebases(Namebase::Event).used(); }
+inline unsigned Database::countSites() const					{ return m_namebases(Namebase::Site).used(); }
 inline mstl::string const& Database::name() const			{ return m_name; }
 inline mstl::string const& Database::description() const	{ return m_description; }
 inline type::ID Database::type() const							{ return m_type; }

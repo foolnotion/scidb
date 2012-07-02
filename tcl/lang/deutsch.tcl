@@ -298,6 +298,7 @@
 ::application::database::mc::Games							"&Partien"
 ::application::database::mc::Players						"Sp&ieler"
 ::application::database::mc::Events							"&Turniere"
+::application::database::mc::Sites							"&Orte"
 ::application::database::mc::Annotators					"&Kommentatoren"
 
 ::application::database::mc::File							"Datei"

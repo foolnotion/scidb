@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2011-2012 Gregor Cramer
+# Copyright: (C) 2012 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -24,26 +24,24 @@
 # (at your option) any later version.
 # ======================================================================
 
-::util::source event-table
+::util::source site-table
 
-namespace eval eventtable {
+namespace eval sitetable {
 namespace eval mc {
 
-set Attendance "Attendance"
+set T_Country "Country"
+
+# translation not needed (TODO)
+set F_Country	"\u2691"
 
 }
 
 #		ID   		Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
 #	----------------------------------------------------------------------------------
 set Columns {
-	{ event			left		10		 0		14			1			0			1			{}			}
-	{ eventType		left		 2		 8		 6			0			1			0			{}			}
-	{ eventDate		left		 5		10		10			0			1			0			darkred	}
-	{ eventMode		center	 0		 0		14px		0			1			1			{}			}
-	{ timeMode		center	 0		 0		14px		0			1			1			{}			}
-	{ eventCountry	center	 0		 0		 5			0			1			0			{}			}
-	{ site			left		10		 0		14			1			1			1			{}			}
-	{ frequency		right		 4		 8		 5			0			1			1			{}			}
+	{ site			left		20		 0		24			1			0			1			{}				}
+	{ country		center	 0		 0		 5			0			1			0			darkgreen	}
+	{ frequency		right		 4		 8		 5			0			1			1			{}				}
 }
 
 variable columns {}
@@ -52,7 +50,6 @@ foreach col $Columns { lappend columns [lindex $col 0] }
 array set Defaults {
 	sort				{}
 	country-code	flags
-	eventtype-icon	1
 }
 
 array set Options {}
@@ -60,18 +57,15 @@ variable Find {}
 
 
 proc build {path getViewCmd {visibleColumns {}} {args {}}} {
-	variable Columns
-	variable Defaults
-	variable Options
-	variable Find
-	variable columns
-
 	namespace eval [namespace current]::$path {}
 	variable [namespace current]::${path}::Vars
+	variable columns
+	variable Columns
+	variable Options
+	variable Find
 
 	array set Vars {
 		columns			{}
-		selectcmd		{}
 		find-current	{}
 	}
 
@@ -86,34 +80,16 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lassign $column id adjustment minwidth maxwidth width stretch removable ellipsis color
 		set menu {}
 
-		switch $id {
-			eventCountry {
-				foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
-					lappend menu [list radiobutton \
-						-command [namespace code [list Refresh $path]] \
-						-labelvar ::gametable::mc::$labelvar \
-						-variable [namespace current]::Options(country-code) \
-						-value $value \
-					]
-				}
-				lappend menu { separator }
-			}
-
-			eventType {
+		if {$id eq "country"} {
+			foreach {labelvar value} {Flags flags PGN_CountryCode PGN ISO_CountryCode ISO} {
 				lappend menu [list radiobutton \
-					-command [namespace code [list RefreshEventType $path]] \
-					-labelvar ::gametable::mc::Icons \
-					-variable [namespace current]::Options(eventtype-icon) \
-					-value 1 \
+					-command [namespace code [list Refresh $path]] \
+					-labelvar ::gametable::mc::$labelvar \
+					-variable [namespace current]::Options(country-code) \
+					-value $value \
 				]
-				lappend menu [list radiobutton \
-					-command [namespace code [list RefreshEventType $path]] \
-					-labelvar ::gametable::mc::Abbreviations \
-					-variable [namespace current]::Options(eventtype-icon) \
-					-value 0 \
-				]
-				lappend menu { separator }
 			}
+			lappend menu { separator }
 		}
 
 		lappend menu [list command \
@@ -131,12 +107,19 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lappend menu { separator }
 
 		set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
-		if {$id eq "frequency"} {
-			set fvar ::playertable::mc::F_Frequency
-			set tvar ::playertable::mc::T_Frequency
-		} else {
-			set fvar ::gametable::mc::F_[string toupper $id 0 0]
-			set tvar ::gametable::mc::T_[string toupper $id 0 0]
+		switch $id {
+			site {
+				set fvar ::gametable::mc::F_Site
+				set tvar ::gametable::mc::T_Site
+			}
+			frequency {
+				set fvar ::playertable::mc::F_Frequency
+				set tvar ::playertable::mc::T_Frequency
+			}
+			country {
+				set fvar [namespace current]::mc::F_Country
+				set tvar [namespace current]::mc::T_Country
+			}
 		}
 		if {![info exists $tvar]} { set tvar {} }
 		if {![info exists $fvar]} { set fvar $tvar }
@@ -171,21 +154,14 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		unset options(-selectcmd)
 		set args [array get options]
 	}
-	lappend args -popupcmd [namespace code PopupMenu]
+#	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
-	RefreshEventType $path
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
 	::bind $path <<TableVisit>>		[namespace code [list TableVisit $path %d]]
-	::bind $path <<LanguageChanged>> [namespace code [list BindAccelerators $path]]
-
-	bind $path <ButtonPress-2>			[namespace code [list ShowInfo $path %x %y]]
-	bind $path <ButtonRelease-2>		[namespace code [list popdownInfo $path]]
-	bind $path <ButtonPress-3>			+[namespace code [list popdownInfo $path]]
 
 	set Vars(viewcmd) $getViewCmd
-	BindAccelerators $path
 
 	if {$useFind} {
 		set tbFind [::toolbar::toolbar $path \
@@ -286,7 +262,7 @@ proc borderwidth {path} {
 }
 
 
-proc selectedEvent {path base} {
+proc selectedSite {path base} {
 	variable ${path}::Vars
 	return $Vars($base:index) 
 }
@@ -352,102 +328,8 @@ proc see {path position} {
 }
 
 
-proc popupInfo {path info} {
-	set w $path.showinfo
-	catch { destroy $w }
-	set top [::util::makePopup $w]
-	set bg [$top cget -background]
-
-	set f [tk::frame $top.f -borderwidth 0 -background $bg]
-	grid $f -column 3 -row 1
-
-	set columns {event type eventDate eventMode timeMode
-					country site frequency attendance averageRating category}
-	lassign $info {*}$columns
-	set countryCode $country
-	set country [::country::name $country]
-	if {[string length $type]} { set type $::eventtypebox::mc::Type($type) } else { set type "" }
-	if {[string length $timeMode]} {
-		set timeMode $::timemodebox::mc::Mode($timeMode)
-	} else {
-		set timeMode ""
-	}
-	set eventDate [::locale::formatDate $eventDate]
-	if {[string length $eventMode] > 1} { set mode [set ::eventmodebox::mc::$eventMode] }
-	set row 1
-	foreach var $columns {
-		if {$var ne "frequency"} {
-			set value [set $var]
-			if {[string length $value] == 0 || $value == 0} { set value "\u2013" }
-			set attr [string toupper $var 0 0]
-			if {[info exists ::gametable::mc::F_$attr]} {
-				set text [set ::gametable::mc::F_$attr]
-			} elseif {[info exists ::dialog::save::mc::Label($var)]} {
-				set text [set ::dialog::save::mc::Label($var)]
-			} elseif {[info exists ::crosstable::mc::$attr]} {
-				set text [set ::crosstable::mc::$attr]
-			} else {
-				set text [set mc::$attr]
-			}
-			tk::label $f.lbl$row -background $bg -text "$text:"
-			tk::label $f.val$row -background $bg -text $value -justify left
-			grid $f.lbl$row -row $row -column 3 -sticky nw
-			grid $f.val$row -row $row -column 5 -sticky w
-#			grid rowconfigure $f [expr {$row + 1}] -minsize $::theme::padding
-			incr row 2
-		}
-	}
-	grid columnconfigure $f 4 -minsize $::theme::padding
-	grid columnconfigure $f {2 6} -minsize 2
-	grid rowconfigure $f [list 0 [incr row -1]] -minsize 2
-
-	set icon [::country::countryFlag $countryCode]
-	if {[llength $icon]} {
-		if {![winfo exists $top.lt]} { tk::frame $top.lt -background $bg -borderwidth 0 }
-		set lbl [tk::label $top.lt.flag -background $bg -image $icon -borderwidth 0]
-		grid $lbl -column 1 -row 3 -sticky n
-		grid $top.lt -column 1 -row 1
-		grid columnconfigure $top 0 -minsize 2
-		grid columnconfigure $top 2 -minsize $::theme::padding
-		grid rowconfigure $top {0 2} -minsize 2
-	}
-
-	::tooltip::popup $path $w cursor
-}
-
-
-proc popdownInfo {path} {
-	::tooltip::popdown $path.showinfo
-}
-
-
-proc popupMenu {parent menu base view index source} {
-	$menu add command \
-		-compound left \
-		-image $::icon::16x16::crossTable \
-		-label " $::gametable::mc::ShowTournamentTable" \
-		-command [namespace code [list OpenCrosstable $parent $source $base $view $index]] \
-		;
-}
-
-
 proc Refresh {path} {
 	::scrolledtable::refresh $path
-}
-
-
-proc RefreshEventType {path} {
-	variable Options
-
-	if {$Options(eventtype-icon)} {
-		set justification center
-	} else {
-		set justification left
-	}
-
-	::scrolledtable::clearColumn $path eventType
-	::scrolledtable::setColumnJustification $path eventType $justification
-	Refresh $path
 }
 
 
@@ -458,7 +340,8 @@ proc TableSelected {path index} {
 		::widget::busyCursor on
 		set base [::scrolledtable::base $path]
 		set view [{*}$Vars(viewcmd) $base]
-		set Vars($base:index) [::scidb::db::get eventIndex $index $view $base]
+		set Vars($base:index) [::scidb::db::get siteIndex $index $view $base]
+		set Vars($base:index) $index
 		{*}$Vars(selectcmd) $base $view
 		::widget::busyCursor off
 	}
@@ -473,7 +356,7 @@ proc TableFill {path args} {
 
 	set codec [::scidb::db::get codec $base]
 	set view [{*}$Vars(viewcmd) $base]
-	set last [expr {min($last, [scidb::view::count events $base $view] - $start)}]
+	set last [expr {min($last, [scidb::view::count sites $base $view] - $start)}]
 
 	if {![info exists Vars($base:index)]} {
 		set Vars($base:index) -1
@@ -481,7 +364,7 @@ proc TableFill {path args} {
 
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
-		set line [::scidb::db::get eventInfo $index $view $base]
+		set line [::scidb::db::get siteInfo $index $view $base]
 		set text {}
 		set k 0
 
@@ -490,15 +373,7 @@ proc TableFill {path args} {
 				set item [lindex $line $k]
 
 				switch $id {
-					event {
-						if {[string length $item] == 0} {
-							lappend text "-"
-						} else {
-							lappend text $item
-						}
-					}
-
-					eventCountry {
+					country {
 						if {[string length $item] == 0} {
 							if {$Options(country-code) eq "flags"} {
 								lappend text [list @ {}]
@@ -514,42 +389,12 @@ proc TableFill {path args} {
 						}
 					}
 
-					eventType {
-						if {[string length $item]} {
-							if {$Options(eventtype-icon)} {
-								lappend text [list @ $::eventtypebox::icon::12x12::Type($item)]
-							} else {
-								lappend text $::gametable::mc::EventType($item)
-							}
-						} elseif {$codec eq "si3" || $codec eq "si4"} {
-							lappend text $::mc::NotAvailableSign
-						} else {
-							lappend text {}
-						}
-					}
-
-					eventMode {
-						if {[string length $item] > 0} {
-							lappend text [list @ [set ::eventmodebox::icon::12x12::$item]]
-						} else {
-							lappend text [list @ $::icon::12x12::none]
-						}
-					}
-
-					timeMode {
-						if {[string length $item] > 0} {
-							lappend text [list @ $::timemodebox::icon::12x12::Mode($item)]
-						} else {
-							lappend text [list @ $::icon::12x12::none]
-						}
-					}
-
 					default {
 						lappend text $item
 					}
 				}
 			} else {
-				lappend text {}
+				lappend text ""
 			}
 
 			incr k
@@ -570,27 +415,19 @@ proc TableVisit {table data} {
 		return
 	}
 
-	switch $id {
-		eventCountry - eventType - eventMode - timeMode {}
-		default { return }
-	}
+	if {$id ne "country"} { return }
 
 	set view [{*}$Vars(viewcmd) $base]
 	set row  [::scrolledtable::rowToIndex $table $row]
 	set col  [lsearch -exact $Vars(columns) $id]
-	set item [::scidb::db::get eventInfo $row $view $base $col]
+	set item [::scidb::db::get siteInfo $row $view $base $col]
 
-	if {[string length $item] == 0} { return }
+	if {[string length $item] > 0} {
+		set tip [::country::name $item]
 
-	switch $id {
-		eventCountry	{ set tip [::country::name $item] }
-		eventType		{ set tip $::eventtypebox::mc::Type($item) }
-		eventMode		{ set tip [set ::eventmodebox::mc::$item] }
-		timeMode			{ set tip $::timemodebox::mc::Mode($item) }
-	}
-
-	if {[string length $tip]} {
-		::tooltip::show $table $tip
+		if {[string length $tip]} {
+			::tooltip::show $table $tip
+		}
 	}
 }
 
@@ -605,15 +442,15 @@ proc SortColumn {path id dir {rating {}}} {
 	set selection [::scrolledtable::selection $path]
 	if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $path]} { set see 1 }
 	if {$dir eq "reverse"} {
-		::scidb::db::reverse event $base $view
+		::scidb::db::reverse site $base $view
 	} else {
 		set options {}
 		if {$dir eq "descending"} { lappend options -descending }
 		set column [::scrolledtable::columnNo $path $id]
-		::scidb::db::sort event $base $column $view {*}$options
+		::scidb::db::sort site $base $column $view {*}$options
 	}
 	if {$selection >= 0} {
-		set selection [::scidb::db::get lookupEvent $selection $view $base]
+		set selection [::scidb::db::get lookupSite $selection $view $base]
 	}
 	::widget::busyCursor off
 	::scrolledtable::updateColumn $path $selection $see
@@ -628,7 +465,7 @@ proc Find {path combo args} {
 	if {[string length $value] == 0} { return }
 	set base [::scrolledtable::base $path]
 	set view [{*}$Vars(viewcmd) $base]
-	set i [::scidb::view::find event $base $view $value]
+	set i [::scidb::view::find site $base $view $value]
 	if {[llength $args] == 0} {
 		if {[string length $value] > 2} {
 			lappend Find $value
@@ -657,71 +494,12 @@ proc Clear {path combo} {
 }
 
 
-proc ShowInfo {path x y} {
-	variable ${path}::Vars
-
-	set table $path
-	set index [::scrolledtable::at $table $y]
-	if {![string is digit $index]} { return }
-	::scrolledtable::focus $table
-	::scrolledtable::activate $table [::scrolledtable::indexToRow $table $index]
-	set base [::scrolledtable::base $table]
-	set view [{*}$Vars(viewcmd) $base]
-	set info [scidb::db::get eventInfo $index $view $base -card]
-	popupInfo $path $info
-}
-
-
-proc PopupMenu {path menu base index} {
-	variable ${path}::Vars
-
-	if {$index eq "none" || $index eq "outside"} { return }
-	popupMenu $path $menu $base [{*}$Vars(viewcmd) $base] $index event
-}
-
-
-proc BindAccelerators {path} {
-	variable ${path}::Vars
-
-	foreach {accel proc} [list $::gametable::mc::AccelTournTable OpenCrosstable] {
-		set cmd [namespace code [list $proc $path event]]
-		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
-		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
-	}
-}
-
-
-proc OpenCrosstable {path source {base {}} {view -1} {index -1}} {
-	if {$index == -1} { set index [::scrolledtable::active $path] }
-	if {$index == -1} { return }
-
-	if {[string length $base] == 0} {
-		set base [::scrolledtable::base $path]
-	}
-
-	if {$view == -1} {
-		variable ${path}::Vars
-		set view [{*}$Vars(viewcmd) $base]
-	}
-
-	::crosstable::open $path $base $index $view $source
-}
-
-
 proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Options
 }
 
 ::options::hookWriter [namespace current]::WriteOptions
 
-
-namespace eval icon {
-namespace eval 12x12 {
-
-set I_TimeMode $::terminationbox::icon::12x12::TimeForfeit
-
-} ;# namespace 12x12
-} ;# namespace icon
-} ;# namespace eventtable
+} ;# namespace sitetable
 
 # vi:set ts=3 sw=3:

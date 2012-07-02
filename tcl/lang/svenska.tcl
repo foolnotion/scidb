@@ -298,6 +298,7 @@
 ::application::database::mc::Games							"&Partier"
 ::application::database::mc::Players						"&Spelare"
 ::application::database::mc::Events							"&Tävlingar"
+::application::database::mc::Sites							"&Sites" ;# NEW
 ::application::database::mc::Annotators					"&Kommentatorer"
 
 ::application::database::mc::File							"Fil"

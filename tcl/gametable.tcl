@@ -1311,7 +1311,7 @@ proc TableFill {path args} {
 				switch $id {
 					whiteType - blackType - idn { set $id [lindex $line $k] }
 				}
-				lappend text ""
+				lappend text {}
 			}
 
 			incr k

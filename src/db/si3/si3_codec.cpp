@@ -1299,9 +1299,11 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 		m_eventList->addEntry(eventId, event);
 	}
 
+	if (event->frequency() == 0)
+		site->ref();
+
 	round->ref();
 	event->ref();
-	site->ref();
 
 	item.m_event = event;
 
@@ -1923,6 +1925,21 @@ Codec::writeAllNamebases(mstl::fstream& stream)
 	m_eventList ->update(namebase(Namebase::Event ), *m_codec);
 	m_siteList  ->update(namebase(Namebase::Site  ), *m_codec);
 	m_roundList ->update(namebase(Namebase::Round ), *m_codec);
+
+	// we have to recomnpute frequency values of site base
+	// Scidb: one ref for each event with this site
+	// Scid:  one ref for each game with this site
+	for (unsigned i = 0; i < m_siteList->size(); ++i)
+		(*m_siteList)[i]->frequency = 0;
+
+	m_siteList->resetMaxFrequency();
+
+	for (unsigned i = 0; i < m_eventList->size(); ++i)
+	{
+		NameList::Node const* event = (*m_eventList)[i];
+		unsigned siteId = static_cast<NamebaseEvent*>(event->entry)->site()->id();
+		m_siteList->updateMaxFrequency(m_siteList->lookup(siteId)->frequency += event->frequency);
+	}
 
 	// ensure that the frequencies do not overflow (but this should be impossible)
 	::checkNamebase(m_playerList->maxFrequency(), "maximal frequency exceeded in player base");

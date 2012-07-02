@@ -86,6 +86,7 @@ SOURCES = \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \
+	sitetable.tcl \
 	progress.tcl \
 	board-texture.tcl \
 	board-pieceset.tcl \
@@ -105,6 +106,7 @@ SOURCES = \
 	app-db-games.tcl \
 	app-db-players.tcl \
 	app-db-events.tcl \
+	app-db-sites.tcl \
 	app-pgn.tcl \
 	app-tree.tcl \
 	app-tree-games.tcl \

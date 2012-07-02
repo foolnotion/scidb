@@ -243,9 +243,11 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 		namebases(Namebase::Annotator).ref(m_annotator);
 	}
 
+	if (event->frequency() == 0)
+		namebases(Namebase::Site).ref(event->site());
+
 	namebases(Namebase::Player).ref(m_player[color::White] = whitePlayer);
 	namebases(Namebase::Player).ref(m_player[color::Black] = blackPlayer);
-	namebases(Namebase::Site).ref(event->site());
 	namebases(Namebase::Event).ref(m_event = event);
 
 	m_dateYear		= Date::Zero10Bits;
@@ -477,9 +479,11 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_player[Black]	= blackPlayer;
 	m_event				= event;
 
+	if (event->frequency() == 0)
+		namebases(Namebase::Site).ref(event->site());
+
 	namebases(Namebase::Player).ref(whitePlayer);
 	namebases(Namebase::Player).ref(blackPlayer);
-	namebases(Namebase::Site).ref(event->site());
 	namebases(Namebase::Event).ref(event);
 }
 
@@ -645,8 +649,10 @@ GameInfo::reset(Namebases& namebases)
 	{
 		namebases(Namebase::Player).deref(m_player[White]);
 		namebases(Namebase::Player).deref(m_player[Black]);
-		namebases(Namebase::Site  ).deref(m_event->site());
 		namebases(Namebase::Event ).deref(m_event);
+
+		if (m_event->frequency() == 0)
+			namebases(Namebase::Site).deref(m_event->site());
 
 		unsigned gameOffset = m_gameOffset;
 
@@ -673,8 +679,10 @@ GameInfo::resetCharacteristics(Namebases& namebases)
 
 	namebases(Namebase::Player).deref(m_player[White]);
 	namebases(Namebase::Player).deref(m_player[Black]);
-	namebases(Namebase::Site  ).deref(m_event->site());
 	namebases(Namebase::Event ).deref(m_event);
+
+	if (m_event->frequency() == 0)
+		namebases(Namebase::Site).deref(m_event->site());
 
 	if (!hasGameRecordLength())
 		namebases(Namebase::Annotator).deref(m_annotator);
@@ -694,9 +702,11 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 {
 	*this = oldInfo;
 
+	if (m_event->frequency() == 0)
+		namebases(Namebase::Site  ).ref(m_event->site());
+
 	namebases(Namebase::Player).ref(m_player[White]);
 	namebases(Namebase::Player).ref(m_player[Black]);
-	namebases(Namebase::Site  ).ref(m_event->site());
 	namebases(Namebase::Event ).ref(m_event);
 
 	if (!hasGameRecordLength())

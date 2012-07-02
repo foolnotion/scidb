@@ -61,8 +61,12 @@ public:
 
 	bool isEmpty() const;
 
+	Node* operator[](unsigned i) const;
+
 	unsigned size() const;
 	unsigned maxFrequency() const;
+
+	Node* lookup(unsigned id);
 	Node const* lookup(unsigned id) const;
 
 	Node const* first() const;
@@ -79,6 +83,9 @@ public:
 	void addEntry(unsigned originalId, NamebaseEntry* entry);
 	void update(Namebase& base, sys::utf8::Codec& codec);
 	void reserve(unsigned size);
+
+	void resetMaxFrequency();
+	void updateMaxFrequency(unsigned freq);
 
 private:
 

@@ -36,6 +36,7 @@ namespace db {
 class GameInfo;
 class NamebasePlayer;
 class NamebaseEvent;
+class NamebaseSite;
 class NamebaseAnnotator;
 
 class Search : public mstl::ref_counter
@@ -107,6 +108,19 @@ public:
 private:
 
 	NamebaseEvent const* m_entry;
+};
+
+class SearchSite : public Search
+{
+public:
+
+	SearchSite(NamebaseSite const* entry);
+
+	bool match(GameInfo const& info) const override;
+
+private:
+
+	NamebaseSite const* m_entry;
 };
 
 class SearchAnnotator : public Search

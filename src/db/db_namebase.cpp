@@ -897,7 +897,7 @@ Namebase::update()
 		}
 
 #ifdef DEBUG_SI4
-		if ((*i)->m_orig_freq >= 0)
+		if (m_type != Site && (*i)->m_orig_freq >= 0)
 		{
 			if (m_type == Event)
 			{

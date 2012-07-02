@@ -30,6 +30,7 @@ inline unsigned View::countGames() const		{ return m_gameFilter.count(); }
 inline unsigned View::totalGames() const		{ return m_gameFilter.size(); }
 inline unsigned View::countPlayers() const	{ return m_playerFilter.count(); }
 inline unsigned View::countEvents() const		{ return m_eventFilter.count(); }
+inline unsigned View::countSites() const		{ return m_siteFilter.count(); }
 inline unsigned View::totalPlayers() const	{ return m_playerFilter.size(); }
 inline unsigned View::totalEvents() const		{ return m_eventFilter.size(); }
 

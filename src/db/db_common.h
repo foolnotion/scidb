@@ -1277,6 +1277,19 @@ namespace attribute
 		};
 	};
 
+	namespace site
+	{
+		enum ID
+		{
+			Site,
+			Country,
+			Frequency,
+
+			// last column
+			LastColumn,
+		};
+	};
+
 	namespace annotator
 	{
 		enum ID

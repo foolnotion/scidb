@@ -299,6 +299,7 @@
 ::application::database::mc::Games							"&Partite"
 ::application::database::mc::Players						"&Giocatori"
 ::application::database::mc::Events							"&Eventi"
+::application::database::mc::Sites							"&Sites" ;# NEW
 ::application::database::mc::Annotators					"&Commentatori"
 
 ::application::database::mc::File							"File"

@@ -149,6 +149,7 @@ Application::Subscriber::updateList(mstl::string const& filename)
 	updateGameList(filename);
 	updatePlayerList(filename);
 	updateEventList(filename);
+	updateSiteList(filename);
 	updateAnnotatorList(filename);
 }
 
@@ -159,6 +160,7 @@ Application::Subscriber::updateList(mstl::string const& filename, unsigned view)
 	updateGameList(filename, view);
 	updatePlayerList(filename, view);
 	updateEventList(filename, view);
+	updateSiteList(filename, view);
 	updateAnnotatorList(filename, view);
 }
 
@@ -747,6 +749,9 @@ Application::searchGames(Cursor& cursor, Query const& query, unsigned view, unsi
 	if (filter & Players)
 		v.filterPlayers();
 
+	if (filter & Sites)
+		v.filterSites();
+
 	if (m_subscriber && m_current == &cursor)
 	{
 		m_subscriber->updateGameList(cursor.name(), view);
@@ -756,6 +761,9 @@ Application::searchGames(Cursor& cursor, Query const& query, unsigned view, unsi
 
 		if (filter & Events)
 			m_subscriber->updateEventList(cursor.name(), view);
+
+		if (filter & Sites)
+			m_subscriber->updateSiteList(cursor.name(), view);
 	}
 }
 
@@ -802,6 +810,19 @@ Application::sort(Cursor& cursor,
 
 
 void
+Application::sort(Cursor& cursor,
+						unsigned view,
+						db::attribute::site::ID attr,
+						db::order::ID order)
+{
+	cursor.view(view).sort(attr, order);
+
+	if (m_subscriber)
+		m_subscriber->updateSiteList(cursor.name(), view);
+}
+
+
+void
 Application::sort(Cursor& cursor, unsigned view, attribute::annotator::ID attr, order::ID order)
 {
 	cursor.view(view).sort(attr, order);
@@ -838,6 +859,16 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::event::ID attr)
 
 	if (m_subscriber)
 		m_subscriber->updateEventList(cursor.name(), view);
+}
+
+
+void
+Application::reverse(Cursor& cursor, unsigned view, attribute::site::ID attr)
+{
+	cursor.view(view).reverse(attr);
+
+	if (m_subscriber)
+		m_subscriber->updateSiteList(cursor.name(), view);
 }
 
 
@@ -998,6 +1029,7 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 		m_subscriber->updateGameList(cursor.name(), view, index);
 		m_subscriber->updatePlayerList(cursor.name(), view);
 		m_subscriber->updateEventList(cursor.name(), view);
+		m_subscriber->updateSiteList(cursor.name(), view);
 		m_subscriber->updateAnnotatorList(cursor.name(), view);
 	}
 }
@@ -1608,6 +1640,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 							m_subscriber->updateGameList(db.name(), i, g.game->index());
 							m_subscriber->updatePlayerList(db.name(), i);
 							m_subscriber->updateEventList(db.name(), i);
+							m_subscriber->updateSiteList(db.name(), i);
 							m_subscriber->updateAnnotatorList(db.name(), i);
 						}
 						else
@@ -1735,6 +1768,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 						m_subscriber->updateGameList(name, i, index);
 						m_subscriber->updatePlayerList(name, i);
 						m_subscriber->updateEventList(name, i);
+						m_subscriber->updateSiteList(name, i);
 						m_subscriber->updateAnnotatorList(name, i);
 					}
 				}

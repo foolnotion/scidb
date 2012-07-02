@@ -1967,9 +1967,10 @@ Codec::getEvent(uint32_t ref)
 	{
 		NamebaseEvent* event = static_cast<NamebaseEvent*>(p->second);
 
-		event->ref();
-		event->site()->ref();
+		if (event->frequency() == 0)
+			event->site()->ref();
 
+		event->ref();
 		return event;
 	}
 
@@ -1982,10 +1983,10 @@ Codec::getEvent(uint32_t ref)
 									mstl::string::empty_string,
 									country::Unknown,
 									m_eventMap.size() + 1));
+		m_illegalEvent->site()->ref();
 	}
 
 	m_illegalEvent->ref();
-	m_illegalEvent->site()->ref();
 
 	return m_illegalEvent;
 }

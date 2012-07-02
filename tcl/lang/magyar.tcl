@@ -299,6 +299,7 @@
 ::application::database::mc::Games							"&Játszmák"
 ::application::database::mc::Players						"&Játékosok"
 ::application::database::mc::Events							"&Versenyek"
+::application::database::mc::Sites							"&Sites" ;# NEW
 ::application::database::mc::Annotators					"&Elemző"
 
 ::application::database::mc::File							"Fájl"

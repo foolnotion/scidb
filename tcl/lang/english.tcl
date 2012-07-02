@@ -298,6 +298,7 @@
 ::application::database::mc::Games							"&Games"
 ::application::database::mc::Players						"&Players"
 ::application::database::mc::Events							"&Events"
+::application::database::mc::Sites							"&Sites"
 ::application::database::mc::Annotators					"&Annotators"
 
 ::application::database::mc::File							"File"

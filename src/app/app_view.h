@@ -80,6 +80,7 @@ public:
 			UpdateMode gameUpdateMode,
 			UpdateMode playerUpdateMode,
 			UpdateMode eventUpdateMode,
+			UpdateMode siteUpdateMode,
 			UpdateMode annotatorUpdateMode);
 
 	/// Return application.
@@ -97,6 +98,8 @@ public:
 	unsigned countAnnotators() const;
 	/// Return number of events in filter.
 	unsigned countEvents() const;
+	/// Return number of sites in filter.
+	unsigned countSites() const;
 	/// Return size of player filter.
 	unsigned totalPlayers() const;
 	/// Return size of event filter.
@@ -114,6 +117,10 @@ public:
 	int lookupEvent(mstl::string const& name) const;
 	/// Return index in current selector of given event number.
 	int lookupEvent(unsigned number) const;
+	/// Return index in current selector of given site.
+	int lookupSite(mstl::string const& name) const;
+	/// Return index in current selector of given site number.
+	int lookupSite(unsigned number) const;
 	/// Return index in current selector of given annotator number.
 	int lookupAnnotator(mstl::string const& name) const;
 	/// Return database index according to current selector.
@@ -122,12 +129,16 @@ public:
 	unsigned playerIndex(unsigned index) const;
 	/// Return event index according to current selector.
 	unsigned eventIndex(unsigned index) const;
+	/// Return site index according to current selector.
+	unsigned siteIndex(unsigned index) const;
 	/// Return annotator index according to current selector.
 	unsigned annotatorIndex(unsigned index) const;
 	/// Return index of first matching player.
 	int findPlayer(mstl::string const& name) const;
 	/// Return index of first matching event.
 	int findEvent(mstl::string const& title) const;
+	/// Return index of first matching site.
+	int findSite(mstl::string const& title) const;
 	/// Return index of first matching annotator.
 	int findAnnotator(mstl::string const& name) const;
 
@@ -150,6 +161,8 @@ public:
 	/// Sort database (using a selector).
 	void sort(db::attribute::event::ID attr, db::order::ID order);
 	/// Sort database (using a selector).
+	void sort(db::attribute::site::ID attr, db::order::ID order);
+	/// Sort database (using a selector).
 	void sort(db::attribute::annotator::ID attr, db::order::ID order);
 	/// Reverse database (using a selector).
 	void reverse(db::attribute::game::ID attr);
@@ -158,6 +171,8 @@ public:
 	/// Reverse database (using a selector).
 	void reverse(db::attribute::event::ID attr);
 	/// Reverse database (using a selector).
+	void reverse(db::attribute::site::ID attr);
+	/// Reverse database (using a selector).
 	void reverse(db::attribute::annotator::ID attr);
 	/// Do a search for games (modifies the filter).
 	void searchGames(db::Query const& query);
@@ -165,13 +180,13 @@ public:
 	void filterPlayers();
 	/// Set event filter according to game filter.
 	void filterEvents();
+	/// Set site filter according to game filter.
+	void filterSites();
 
 	/// Reflect database changes (number of games),
 	void update();
 	/// Set game filter.
 	void setGameFilter(db::Filter const& filter);
-	/// Delete removed games from filter.
-	void shortenFilter(db::Filter const& filter);
 
 	/// Build tournament table for all games in current view.
 	db::TournamentTable* makeTournamentTable() const;
@@ -215,13 +230,16 @@ private:
 	UpdateMode		m_gameUpdateMode;
 	UpdateMode		m_playerUpdateMode;
 	UpdateMode		m_eventUpdateMode;
+	UpdateMode		m_siteUpdateMode;
 	UpdateMode		m_annotatorUpdateMode;
 	db::Filter		m_gameFilter;
 	db::Filter		m_playerFilter;
 	db::Filter		m_eventFilter;
+	db::Filter		m_siteFilter;
 	db::Selector	m_gameSelector;
 	db::Selector	m_playerSelector;
 	db::Selector	m_eventSelector;
+	db::Selector	m_siteSelector;
 	db::Selector	m_annotatorSelector;	// not yet used
 };
 

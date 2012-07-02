@@ -237,6 +237,8 @@ if {[::scidb::misc::debug?]} {
 	if {![::process::testOption force-grab]} { proc grab {args} {} }
 }
 
+proc decr {w} { uplevel [list incr $w -1] }
+
 ### need to predefine some namespaces ################################
 
 namespace eval menu {}

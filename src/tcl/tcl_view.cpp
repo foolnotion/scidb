@@ -154,15 +154,15 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 
 	static char const* subcommands[] =
 	{
-		"OR", "AND", "NOT", "player", "event", "gameevent", "annotator", 0
+		"OR", "AND", "NOT", "player", "event", "site", "gameevent", "annotator", 0
 	};
 	static char const* args[] =
 	{
-		"<query>+", "<query>+", "<query>+", "<string>", "<string>", "<string>"
+		"<query>+", "<query>+", "<query>+", "<string>", "<string>", "<string>", "<string>", "<string>", 0
 	};
 	enum
 	{
-		OR, AND, NOT, Player, Event, GameEvent, Annotator
+		OR, AND, NOT, Player, Event, Site, GameEvent, Annotator
 	};
 
 	SearchP search;
@@ -210,6 +210,15 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			search = new SearchEvent(db.gameInfo(unsignedFromObj(2, objv, 1)).eventEntry());
 			break;
 
+		case Site:
+			if (objc != 2)
+			{
+				error(CmdSearch, "event", 0, "invalid query");
+				return search;
+			}
+			search = new SearchSite(&db.site(unsignedFromObj(2, objv, 1)));
+			break;
+
 		case Annotator:
 			if (objc != 2)
 			{
@@ -232,7 +241,7 @@ static int
 cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const*			base		= stringFromObj(objc, objv, 1);
-	View::UpdateMode	mode[4];
+	View::UpdateMode	mode[5];
 
 	for (unsigned i = 0; i < U_NUMBER_OF(mode); ++i)
 	{
@@ -246,7 +255,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			error(CmdNew, 0, 0, "unknown resize mode '%s'", arg);
 	}
 
-	appendResult("%u", scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3]));
+	appendResult("%u", scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
 	return TCL_OK;
 }
 
@@ -273,9 +282,9 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "games", "players", "annotators", "events", 0 };
+	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
 	static char const* args[] = { "<database> <view>" };
-	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events };
+	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites };
 
 	if (objc != 4)
 		return usage(CmdCount, nullptr, nullptr, subcommands, args);
@@ -302,6 +311,10 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Events:
 			appendResult("%u", Scidb->cursor(database).view(view).countEvents());
 			return TCL_OK;
+
+		case Cmd_Sites:
+			appendResult("%u", Scidb->cursor(database).view(view).countSites());
+			return TCL_OK;
 	}
 
 	return usage(CmdCount, nullptr, nullptr, subcommands, args);
@@ -311,13 +324,13 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "player", "event", "annotator", 0 };
+	static char const* subcommands[] = { "player", "event", "site", "annotator", 0 };
 	static char const* args[] = { "<database> <view>" };
-	enum { Cmd_Player, Cmd_Event, Cmd_Annotator };
+	enum { Cmd_Player, Cmd_Event, Cmd_Site, Cmd_Annotator };
 
 	if (objc != 5)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "player|event|annotator <database> <view> <string>");
+		Tcl_WrongNumArgs(ti, 1, objv, "player|event|site|annotator <database> <view> <string>");
 		return TCL_ERROR;
 	}
 
@@ -343,6 +356,10 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			appendResult("%d", v.findEvent(name));
 			break;
 
+		case Cmd_Site:
+			appendResult("%d", v.findSite(name));
+			break;
+
 		case Cmd_Annotator:
 			appendResult("%d", v.findAnnotator(name));
 			break;
@@ -360,7 +377,10 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc < 5 || 6 < objc)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<database> <view> <operator> <none|events|players> ?<query>?");
+		Tcl_WrongNumArgs(	ti,
+								1,
+								objv,
+								"<database> <view> <operator> <none|events|sites|players> ?<query>?");
 		return TCL_ERROR;
 	}
 
@@ -392,6 +412,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'n': break;												// none
 		case 'e': filter |= Application::Events; break;		// events
 		case 'p': filter |= Application::Players; break;	// players
+		case 's': filter |= Application::Sites; break;		// sites
 
 		default:  return error(CmdSearch, 0, 0, "invalid filter argument %s", f);
 	}
@@ -401,8 +422,8 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (Tcl_GetIntFromObj(ti, objv[2], &view) != TCL_OK)
 		return error(CmdSearch, 0, 0, "unsigned integer expected for view");
 
-	// TODO: we don't like to interrupt tree search!
-	Cursor& cursor = scidb->cursor(database);
+	// NOTE: we don't like to interrupt tree search!
+	Cursor const& cursor = Scidb->cursor(database);
 
 	SearchP search;
 
@@ -412,7 +433,10 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (!search && objc == 6)
 		return TCL_ERROR;
 
-	scidb->searchGames(cursor, Query(mstl::ref_counted_ptr<Search>(search), op), view, filter);
+	scidb->searchGames(	const_cast<Cursor&>(cursor),
+								Query(mstl::ref_counted_ptr<Search>(search), op),
+								view,
+								filter);
 
 	return TCL_OK;
 }
@@ -610,6 +634,8 @@ cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		setResult(view.lookupPlayer(index));
 	else if (::strcmp(attr, "event") == 0)
 		setResult(view.lookupEvent(index));
+	else if (::strcmp(attr, "site") == 0)
+		setResult(view.lookupSite(index));
 	else if (::strcmp(attr, "game") == 0)
 		setResult(view.lookupGame(index));
 	else

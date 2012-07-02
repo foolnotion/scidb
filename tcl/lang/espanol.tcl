@@ -300,6 +300,7 @@
 ::application::database::mc::Games							"&Partidas"
 ::application::database::mc::Players						"&Jugadores"
 ::application::database::mc::Events							"Even&tos"
+::application::database::mc::Sites							"&Sites" ;# NEW
 ::application::database::mc::Annotators					"&Comentaristas"
 
 ::application::database::mc::File							"Archivo"

@@ -885,6 +885,7 @@ proc SetHighlighting {table} {
 proc PopupMenu {table y} {
 	variable ${table}::Vars
 
+	::tooltip::hide
 	set row [::table::at $table $y]
 
 	switch $row {

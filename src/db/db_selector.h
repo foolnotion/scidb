@@ -60,9 +60,11 @@ public:
 
 	int findPlayer(Database const& db, mstl::string const& name) const;
 	int findEvent(Database const& db, mstl::string const& name) const;
+	int findSite(Database const& db, mstl::string const& name) const;
 	int findAnnotator(Database const& db, mstl::string const& name) const;
 	int searchPlayer(Database const& db, mstl::string const& name) const;
 	int searchEvent(Database const& db, mstl::string const& name) const;
+	int searchSite(Database const& db, mstl::string const& name) const;
 	int searchAnnotator(Database const& db, mstl::string const& name) const;
 
 	void sort(	Database const& db,
@@ -77,6 +79,9 @@ public:
 					attribute::event::ID attr,
 					order::ID order = order::Ascending);
 	void sort(	Database const& db,
+					attribute::site::ID attr,
+					order::ID order = order::Ascending);
+	void sort(	Database const& db,
 					attribute::annotator::ID attr,
 					order::ID order = order::Ascending);
 
@@ -89,6 +94,9 @@ public:
 private:
 
 	typedef mstl::vector<unsigned> Map;
+	typedef int(*Compar)(void const*, void const*);
+
+	void finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc);
 
 	Map m_map;
 	Map m_list;

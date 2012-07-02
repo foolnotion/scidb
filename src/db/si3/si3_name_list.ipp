@@ -35,8 +35,19 @@ inline unsigned NameList::size() const				{ return m_size; }
 inline unsigned NameList::maxFrequency() const	{ return m_maxFrequency; }
 
 #ifdef DEBUG_SI4
-inline NameList::Node* NameList::back() { return m_list.back(); }
+inline NameList::Node* NameList::back()			{ return m_list.back(); }
 #endif
+
+inline void NameList::resetMaxFrequency()			{ m_maxFrequency = 0; }
+
+
+inline
+void
+NameList::updateMaxFrequency(unsigned freq)
+{
+	if (freq > m_maxFrequency)
+		m_maxFrequency = freq;
+}
 
 
 inline
@@ -44,6 +55,26 @@ NameList::Node const*
 NameList::next() const
 {
 	return (++m_first == m_last) ? 0 : *m_first;
+}
+
+
+inline
+NameList::Node*
+NameList::operator[](unsigned i) const
+{
+	M_ASSERT(i < size());
+	return m_list[i];
+}
+
+
+inline
+NameList::Node*
+NameList::lookup(unsigned id)
+{
+	M_ASSERT(id < m_lookup.size());
+	M_ASSERT(m_lookup[id]);
+
+	return m_lookup[id];
 }
 
 

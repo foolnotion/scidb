@@ -224,7 +224,7 @@ proc InitBase {path base} {
 
 	if {![info exists Vars($base:view)]} {
 		set Vars($base:initializing) 1
-		set Vars($base:view) [::scidb::view::new $base slave slave slave master]
+		set Vars($base:view) [::scidb::view::new $base slave slave slave slave master]
 		set Vars($base:update) 1
 		set Vars($base:sort) $Defaults(sort)
 		set Vars($base:annotator) ""
@@ -375,6 +375,7 @@ proc TableSearch {path base view} {
 	::widget::busyCursor on
 	::gametable::activate $path.pairings none
 	::gametable::select $path.pairings none
+	::gametable::scroll $path.pairings home
 	::scidb::view::search $base $view null none [list annotator $Vars($base:annotator)]
 	::widget::busyCursor off
 }

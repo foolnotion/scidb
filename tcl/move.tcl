@@ -500,8 +500,11 @@ proc ConfirmReplaceMove {} {
 
 
 proc Unlock {} {
-	set [namespace current]::Lock 0
-	set [namespace current]::Disabled 0
+	variable Lock
+	variable Disabled
+
+	set Lock 0
+	set Disabled 0
 }
 
 

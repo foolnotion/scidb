@@ -38,6 +38,7 @@ SearchOpNot::~SearchOpNot() throw() {}
 
 SearchPlayer::SearchPlayer(NamebasePlayer const* entry) :m_entry(entry) {}
 SearchEvent::SearchEvent(NamebaseEvent const* entry) :m_entry(entry) {}
+SearchSite::SearchSite(NamebaseSite const* entry) :m_entry(entry) {}
 SearchOpNot::SearchOpNot(SearchP const& search) :m_search(search) { M_REQUIRE(search); }
 SearchAnnotator::SearchAnnotator(mstl::string const& name) :m_name(name) {}
 
@@ -80,6 +81,13 @@ bool
 SearchEvent::match(GameInfo const& info) const
 {
 	return info.eventEntry() == m_entry;
+}
+
+
+bool
+SearchSite::match(GameInfo const& info) const
+{
+	return info.eventEntry()->site() == m_entry;
 }
 
 
