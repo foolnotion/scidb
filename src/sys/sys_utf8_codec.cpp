@@ -2029,6 +2029,14 @@ Codec::windows()
 
 
 mstl::string const&
+Codec::ascii()
+{
+	static mstl::string const Name("ascii");
+	return Name;
+}
+
+
+mstl::string const&
 Codec::automatic()
 {
 	static mstl::string const Name("auto");

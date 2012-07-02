@@ -426,6 +426,18 @@ replaceNewlines(mstl::string& s)
 }
 
 
+static unsigned
+strippedLen(char const* s)
+{
+	unsigned len = strlen(s);
+
+	while (len > 0 && ::isspace(s[len - 1]))
+		--len;
+	
+	return len;
+}
+
+
 Codec::Tournament::Tournament() :category(0) ,rounds(0) {}
 Codec::Tournament::Tournament(Byte cat, Byte nrounds) :category(cat) ,rounds(nrounds) {}
 
@@ -563,7 +575,7 @@ Codec::Report(char const* charset)
 {
 	if (::sys::utf8::Codec::latin1() == charset)
 		m_encoding.assign(::sys::utf8::Codec::windows());
-	else
+	else if (::sys::utf8::Codec::ascii() != charset)
 		m_encoding.assign(charset);
 }
 
@@ -772,12 +784,12 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 40);
 
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 			mapPlayerName(name);
 			toUtf8(name);
 
 			strm.read(city.data(), 30);
-			city.set_size(::strlen(city.c_str()));
+			city.set_size(::strippedLen(city));
 			toUtf8(city);
 
 			if (city.empty())
@@ -904,13 +916,13 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 30);
-			str.set_size(::strlen(str.c_str()));
+			str.set_size(::strippedLen(str));
 
 			char* p = str.data() + str.size();
 
 			str.append(", ", 2);
 			strm.read(p + 2, 20);
-			str.set_size(::strlen(p + 2) + str.size());
+			str.set_size(::strippedLen(p + 2) + str.size());
 
 			if (p + 2 == str.end())
 				str.resize(str.size() - 2);
@@ -984,7 +996,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 45);
-			str.set_size(::strlen(str.c_str()));
+			str.set_size(::strippedLen(str));
 
 			if (!str.empty())
 			{
@@ -1050,7 +1062,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 25);
-			str.set_size(::strlen(str.c_str()));
+			str.set_size(::strippedLen(str));
 
 			strm.seekg(20, mstl::ios_base::cur);
 
@@ -1146,7 +1158,7 @@ Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(str.data(), 45);
-			str.set_size(::strlen(str.c_str()));
+			str.set_size(::strippedLen(str));
 			toUtf8(str);
 
 			unsigned char buf[10];
@@ -1436,7 +1448,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 40);
 
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
@@ -1448,7 +1460,7 @@ Codec::reloadTournamentData(mstl::string const& rootname, util::Progress& progre
 			}
 
 			strm.read(city.data(), 30);
-			city.set_size(::strlen(city.c_str()));
+			city.set_size(::strippedLen(city));
 			m_codec->toUtf8(city);
 
 			if (!sys::utf8::Codec::is7BitAscii(city))
@@ -1512,13 +1524,13 @@ Codec::reloadPlayerData(mstl::string const& rootname, util::Progress& progress)
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 30);
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 
 			char* p = name.data() + name.size();
 
 			name.append(", ", 2);
 			strm.read(p + 2, 20);
-			name.set_size(::strlen(p + 2) +name.size());
+			name.set_size(::strippedLen(p + 2) + name.size());
 
 			if (p + 2 == name.end())
 				name.resize(name.size() - 2);
@@ -1578,7 +1590,7 @@ Codec::reloadAnnotatorData(mstl::string const& rootname, util::Progress& progres
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 45);
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
@@ -1644,7 +1656,7 @@ Codec::reloadSourceData(mstl::string const& rootname, util::Progress& progress)
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 25);
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
 			if (!sys::utf8::Codec::is7BitAscii(name))
@@ -1710,7 +1722,7 @@ Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
 		{
 			strm.seekg(5, mstl::ios_base::cur);
 			strm.read(name.data(), 45);
-			name.set_size(::strlen(name.c_str()));
+			name.set_size(::strippedLen(name));
 			m_codec->toUtf8(name);
 
 			if (!sys::utf8::Codec::is7BitAscii(name))

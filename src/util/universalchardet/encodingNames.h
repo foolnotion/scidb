@@ -36,6 +36,7 @@
 
 #else // Tcl
 
+# define CS_ASCII           "ascii"
 # define CS_BIG_5           "big5"
 # define CS_EUC_JP          "euc-jp"
 # define CS_EUC_KR          "euc-kr"

@@ -71,7 +71,6 @@ private:
 
 	void determineCharsetComments(MoveNode* node);
 	void determineCharsetTags();
-	void determineCharsetFinish();
 
 	void decodeVariation(unsigned level = 0);
 	Byte decodeMove(Byte value);
@@ -104,7 +103,6 @@ private:
 	MoveNode*			m_currentNode;
 	Move					m_move;
 	bool					m_hasVariantTag;
-	bool					m_isLatin1;
 
 #ifdef DEBUG_SI4
 	HomePawns m_homePawns;

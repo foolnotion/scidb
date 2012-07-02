@@ -296,6 +296,9 @@ void nsUniversalDetector::DataEnd()
     }
     break;
   case eEscAscii:
+#ifdef CS_ASCII
+    Report(CS_ASCII);
+#endif
     break;
   default:
     ;

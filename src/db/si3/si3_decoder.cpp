@@ -97,7 +97,6 @@ Decoder::Decoder(ByteStream& strm, sys::utf8::Codec& codec)
 	,m_codec(&codec)
 	,m_currentNode(0)
 	,m_hasVariantTag(false)
-	,m_isLatin1(true)
 {
 }
 
@@ -956,7 +955,7 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 		determineCharsetComments(&start);
 		m_strm.seekg(pos);
 	}
-	determineCharsetFinish();
+	DataEnd();
 
 	decodeComments(&start, &consumer);
 	decodeVariation(consumer, &start);
@@ -1022,7 +1021,7 @@ Decoder::doDecoding(GameData& data)
 		determineCharsetComments(data.m_startNode);
 		m_strm.seekg(pos);
 	}
-	determineCharsetFinish();
+	DataEnd();
 
 	decodeComments(data.m_startNode);
 
@@ -1265,20 +1264,8 @@ Decoder::decodeType(unsigned type)
 void
 Decoder::Report(char const* charset)
 {
-	if (m_codec->encoding() != charset)
+	if (sys::utf8::Codec::ascii() != charset && m_codec->encoding() != charset)
 		m_codec = new sys::utf8::Codec(charset);
-
-	m_isLatin1 = false;
-}
-
-
-void
-Decoder::determineCharsetFinish()
-{
-	DataEnd();
-
-	if (m_isLatin1 && m_codec->encoding() != sys::utf8::Codec::latin1())
-		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
 }
 
 

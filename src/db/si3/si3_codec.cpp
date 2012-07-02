@@ -59,6 +59,7 @@
 #include "m_stdio.h"
 
 #include <string.h>
+#include <ctype.h>
 
 using namespace db;
 using namespace db::si3;
@@ -78,6 +79,16 @@ static mstl::string const MagicGameFile("Scid.sg\0", 8);
 static mstl::string const MagicNamebase("Scid.sn\0", 8);
 static mstl::string const Ext3("si3");
 static mstl::string const Ext4("si4");
+
+
+static unsigned
+strippedLength(char const* s, unsigned len)
+{
+	while (len > 0 && ::isspace(s[len - 1]))
+		--len;
+	
+	return len;
+}
 
 
 inline
@@ -336,7 +347,8 @@ Codec::gameFlags() const
 void
 Codec::Report(char const* charset)
 {
-	m_encoding.assign(charset);
+	if (::sys::utf8::Codec::ascii() != charset)
+		m_encoding.assign(charset);
 }
 
 
@@ -1775,7 +1787,8 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			bstrm.get(buf + prefix, length - prefix);
 		}
 
-		str.set_size(length);
+		// Bug in Scid: it is possible to enter trailing spaces.
+		str.set_size(::strippedLength(str, length));
 		m_codec->toUtf8(str, name);
 
 		if (!sys::utf8::validate(name))
@@ -1788,7 +1801,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 		{
 			char* p = base.alloc(name.size());
 			::memcpy(p, name.c_str(), name.size() + 1);
-			name.hook(p);
+			name.hook(p, name.size());
 		}
 
 		switch (int(type))
