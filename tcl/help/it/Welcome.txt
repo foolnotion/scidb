@@ -61,8 +61,8 @@ Scidb:
   </li>
 </ol>
 
-<p><!-- NEW: replace 'three years' with 'four years' -->
-Divertitevi con Scidb, il cui sviluppo ha richiesto già tre anni!
+<p>
+Divertitevi con Scidb, il cui sviluppo ha richiesto già quattro anni!
 </p>
 
 <h2>Links</h2>

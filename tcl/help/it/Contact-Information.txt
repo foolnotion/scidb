@@ -84,7 +84,17 @@ Gli utenti di Scidb posso avere interesse nel visitare i seguenti siti:
     Recensioni di Scidb</a><br/>
     Questo sito offre la possibilità di recensire l'applicazione.
   </p></li>
+  <li><p>
+    <a href="https://lists.sourceforge.net/lists/listinfo/scidb-users"
+       style="line-height: 150%;">
+    Iscriviti alla Mailing List degli Utenti Scidb</a><br/>
+    Qui puoi iscriverti come membro della "Scidb Users Mailing List". 
+    Questa lista utenti presenta informazioni, novità e proposte. I membri
+    di questa lista possono mandare messaggi che saranno distribuiti a tutti
+    gli altri iscritti automaticamente.
 
+
+  </p></li>
   <li><p>
     <a href="http://sourceforge.net/apps/aguestbook/scidb/sign.php"
        style="line-height: 150%;">

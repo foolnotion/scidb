@@ -21,7 +21,7 @@ set Contents {
     {{{Scidb- finestre e interfacce} {Overview.html} {windows-and-dialogs}}}
     {{{Cambio Database} {Database-Switcher.html}}}
     {{{Browser Partite} {Game-Browser.html}}}
-    {{{Panoramica Partita} {Game-Overview.html}}}
+    {{{Browser di panoramica fama} {Game-Overview.html}}}
     {{{Finestra di Testo della Partita} {Game-Text-Window.html}}}
     {{{Storia Partita} {Game-History-Window.html}}}
     {{{Scacchiera} {Board-Window.html}}}
@@ -38,7 +38,7 @@ set Contents {
   {
     {{{Ulteriori Informazioni} {Overview.html} {further-information}}}
     {{{Codici Partita} {Game-Flags.html}}}
-    {{{Specification of database archive (English)} {../en/Database-Archive.html}}}
+    {{{Specifiche sull'archivio database (English)} {../en/Database-Archive.html}}}
     {{{Opzioni nella Linea di Comando} {Command-Line-Options.html}}}
     {{{Valori delle annotazioni in NAG} {NAG-Comments.html}}}
     {{{Contatti} {Contact-Information.html}}}

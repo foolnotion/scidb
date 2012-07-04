@@ -29,7 +29,7 @@ TITLE Piano di Sviluppo
   <li>Generazione documenti: esportazione in LaTeX</li>
   <li>Supporto per il sistema operativo Windows</li>
   <li>Compressione Database (eliminazione partite cancellate)</li>
-  <!-- NEW<li>Input of moves with keyboard</li>-->
+  <li>Inserimento mosse tramite tastiera</li>
   <li>Foto Scacchiera</li>
 </ul>
 
@@ -37,8 +37,8 @@ TITLE Piano di Sviluppo
 
 <ul>
   <li>Rilevamento partite doppie</li>
-  <!-- NEW<li>Loading databases from the Internet</li>-->
-  <!-- NEW<li>Player dictionary dialog</li>-->
+  <li>Caricare database da internet</li>
+  <li>Interfaccia dizionario giocatori</li>
   <li>Generazione documenti: esportazione in PDF e HTML</li>
   <li>Interfaccia per controllare l'ortografia dei giocatori</li>
   <li>Finestra del "Consiglio del Giorno"</li>
