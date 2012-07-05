@@ -362,14 +362,9 @@ proc load {parent base info view index windowId} {
 	}
 
 	variable ${windowId}::Vars
-	NextGame $Vars(dlg) $windowId [expr {$index - $Vars(index)}]
+	set Vars(index) $index
+	NextGame $Vars(dlg) $windowId 0
 	return $windowId
-}
-
-
-proc ShowPosition {parent position key {state 0}} {
-	variable ${position}::Vars
-	showPosition $parent $position [::board::stuff::rotated? $Vars(board)] $key $state
 }
 
 
@@ -459,6 +454,12 @@ if {0} {
 	}
 
 	return [list [list $opening1 eco] $opening2 [list $opening3 eco]]
+}
+
+
+proc ShowPosition {parent position key {state 0}} {
+	variable ${position}::Vars
+	showPosition $parent $position [::board::stuff::rotated? $Vars(board)] $key $state
 }
 
 

@@ -183,6 +183,8 @@ private:
 	mstl::fstream		m_gameStream;
 	mstl::fstream		m_annotationStream;
 	mstl::fstream		m_teamStream;
+	unsigned				m_teamRecords;
+	unsigned				m_teamRecordSize;
 	AnnotationMap		m_annotationMap;
 	BaseMap				m_playerMap;
 	BaseMap				m_eventMap;

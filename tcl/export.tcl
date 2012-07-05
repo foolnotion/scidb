@@ -144,13 +144,13 @@ set Option(pgn,include_marks)								"Export marks (as comments)"
 set Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
 set Option(pgn,use_chessbase_format)					"Use ChessBase format"
 set Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
-set Option(pgn,include_termination_tag)				"Write tag 'Termination'"
-set Option(pgn,include_mode_tag)							"Write tag 'Mode'"
+#set Option(pgn,include_termination_tag)				"Write tag 'Termination'"
+#set Option(pgn,include_mode_tag)							"Write tag 'Mode'"
 set Option(pgn,include_opening_tag)						"Write tags 'Opening', 'Variation', 'Subvariation'"
 set Option(pgn,include_setup_tag)						"Write tag 'Setup' (if needed)"
 set Option(pgn,include_variant_tag)						"Write tag 'Variant' (if needed)"
 set Option(pgn,include_position_tag)					"Write tag 'Position' (if needed)"
-set Option(pgn,include_time_mode_tag)					"Write tag 'TimeMode' (if needed)"
+#set Option(pgn,include_time_mode_tag)					"Write tag 'TimeMode' (if needed)"
 set Option(pgn,exclude_extra_tags)						"Exclude extraneous tags"
 set Option(pgn,indent_variations)						"Indent variations"
 set Option(pgn,indent_comments)							"Indent comments"
@@ -164,6 +164,7 @@ set Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
 set Option(pgn,append_mode_to_event_type)				"Add mode after event type"
 set Option(pgn,comment_to_html)							"Write comment in HTML style"
 set Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
+set Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding"
 
 } ;# namespace mc
 
@@ -478,7 +479,8 @@ array set Flags {
 	pgn,comment_to_html							25
 	pgn,use_chessbase_format					26
 	pgn,use_scidb_import_format				27
-	pgn,exclude_games_with_illegal_moves	28
+	pgn,use_utf8_encoding						28
+	pgn,exclude_games_with_illegal_moves	29
 }
 
 array set Defaults {
@@ -486,8 +488,8 @@ array set Defaults {
 	pgn,flag,include_comments						1
 	pgn,flag,include_moveinfo						1
 	pgn,flag,include_marks							1
-	pgn,flag,include_termination_tag				0
-	pgn,flag,include_mode_tag						0
+	pgn,flag,include_termination_tag				1
+	pgn,flag,include_mode_tag						1
 	pgn,flag,include_opening_tag					1
 	pgn,flag,include_setup_tag						1
 	pgn,flag,include_variant_tag					1
@@ -508,6 +510,7 @@ array set Defaults {
 	pgn,flag,use_chessbase_format					0
 	pgn,flag,comment_to_html						0
 	pgn,flag,use_scidb_import_format				0
+	pgn,flag,use_utf8_encoding						0
 	pgn,flag,exclude_games_with_illegal_moves	0
 
 	pdf,fonts,embed									1
@@ -612,9 +615,9 @@ array set Fields {
 				indent_comments convert_lost_result_to_comment use_scidb_import_format
 				use_chessbase_format append_mode_to_event_type symbolic_annotation_style
 				extended_symbolic_style shredder_fen column_style convert_null_moves comment_to_html
-				space_after_move_number include_termination_tag include_mode_tag include_opening_tag
-				include_setup_tag include_variant_tag include_position_tag include_time_mode_tag
-				exclude_extra_tags exclude_games_with_illegal_moves
+				space_after_move_number include_opening_tag include_setup_tag include_variant_tag
+				include_position_tag exclude_extra_tags exclude_games_with_illegal_moves
+				use_utf8_encoding
 			}
 	scid	{}
 }
@@ -3056,8 +3059,19 @@ proc DoExport {parent dlg file} {
 	}
 
 	switch $Values(Type) {
-		scidb - tex - html { set encoding "utf-8" }
-		default { set encoding $Values($Values(Type),encoding) }
+		pgn {
+			if {$Option(pgn,use_utf8_encoding)} {
+				set encoding "utf-8"
+			} else {
+				set encoding $Values($Values(Type),encoding)
+			}
+		}
+		scidb - tex - html {
+			set encoding "utf-8"
+		}
+		default {
+			set encoding $Values($Values(Type),encoding)
+		}
 	}
 
 	if {$Values(Type) eq "pdf"} {

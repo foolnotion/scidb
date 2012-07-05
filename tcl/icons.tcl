@@ -157,15 +157,26 @@ namespace eval 12x12 {
 
 	set computer $program
 
+#	set human [image create photo -data {
+#		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABU0lEQVQoz4WQyytEYRiHn+PM
+#		9XxzvjljIuWyUxaysZiyYzHGRlE2MkpkmmSjlOyVwk5GSSNsLFkNxYp/ADVYDg2NWw1nFppz
+#		jo3c0vit3rdfT+/Tq/Ar8wOchA2ahZfjwWX6f/dV35fVMbZFqKmjUBQ1plLft57gsCJgmkSH
+#		Jhdo7xwmd/NKvkBtReDukX1D89Dd08fo1CLY5PkvzhITzuma42S3nEySkYoXAHIPqJj32Hvx
+#		mViK9L/A0TVXj2WN7AtPfxkon5PsjmEpdTubs+nGhhqkrtHaPh7B55R4Pjj/CQSiycW5xIoR
+#		1AlXS4ygwO/34vWouD0uWiOJFl4yl9+UVJeUgpChUx2SGIaOlAK/5qNcttlITV8guuIALgDs
+#		Kiug+ZG6wAgG0HUNRVEoFk3yt88f71P0LyW1rRdsC6v8CnYJVAsAt9uDisB2Aryd7QK8Axx4
+#		Yp5n1/SZAAAAAElFTkSuQmCC
+#	}]
+
 	set human [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABU0lEQVQoz4WQyytEYRiHn+PM
-		9XxzvjljIuWyUxaysZiyYzHGRlE2MkpkmmSjlOyVwk5GSSNsLFkNxYp/ADVYDg2NWw1nFppz
-		jo3c0vit3rdfT+/Tq/Ar8wOchA2ahZfjwWX6f/dV35fVMbZFqKmjUBQ1plLft57gsCJgmkSH
-		Jhdo7xwmd/NKvkBtReDukX1D89Dd08fo1CLY5PkvzhITzuma42S3nEySkYoXAHIPqJj32Hvx
-		mViK9L/A0TVXj2WN7AtPfxkon5PsjmEpdTubs+nGhhqkrtHaPh7B55R4Pjj/CQSiycW5xIoR
-		1AlXS4ygwO/34vWouD0uWiOJFl4yl9+UVJeUgpChUx2SGIaOlAK/5qNcttlITV8guuIALgDs
-		Kiug+ZG6wAgG0HUNRVEoFk3yt88f71P0LyW1rRdsC6v8CnYJVAsAt9uDisB2Aryd7QK8Axx4
-		Yp5n1/SZAAAAAElFTkSuQmCC
+		iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABVklEQVQoz4WPyytEARSHvztP
+		9zH3YSKPspGysrGilFl4FjXKRihRkpSs+A8UdkKEBRtLFkLJhqUFqUFWk4aYMZNrZjNz77UQ
+		pknjtzqnc77OdwQKMt/PRVCnTvZzPrBMX+Hcld+sjbErGzXNL+9yWVqoDm+Oc1oUSKdpH5xa
+		oDE0TPTxg9gL5UWB5wTHuuSjoyvM6Mwi2MT4L84Sk871huNEdpyjCUaKXgCIxnGTfsU+GJrt
+		XGX7X+DwgftETiJi8vaXgeenUkKd5LIVl8HW7eczqKndW0fcuqLEyZA8ufleEwAQmya62xpW
+		1ICCYahoqowo+vH73BilGuMzO/WYR3e/SnbWoygSmhbA0FV0XUFVJUTJTyr1ztx0zy1Sy1Ce
+		kteqqqzC53WhazKKIiIIAqaZIfaUIp5IgkPgV8nd0Au2hZX7gGwGXNbXh14fbmRsRyEb2Qf4
+		BBlNaTxxqaVVAAAAAElFTkSuQmCC
 	}]
 
 	set whitePawn [image create photo -data {

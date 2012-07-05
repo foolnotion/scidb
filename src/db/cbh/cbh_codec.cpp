@@ -433,7 +433,7 @@ strippedLen(char const* s)
 
 	while (len > 0 && ::isspace(s[len - 1]))
 		--len;
-	
+
 	return len;
 }
 
@@ -491,6 +491,8 @@ Codec::gameFlags() const
 
 Codec::Codec()
 	:m_codec(0)
+	,m_teamRecords(0)
+	,m_teamRecordSize(0)
 	,m_encoding(::sys::utf8::Codec::windows())
 	,m_allocator(32768)
 	,m_sourceBase(Namebase::Annotator)
@@ -1103,16 +1105,43 @@ Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 		return;
 	openFile(m_teamStream, filenameJ, Readonly);
 
-	if (m_teamStream.size()/78 < m_numGames)
 	{
-		// Currently we cannot support the decoding of teams in all cases.
-		// ---------------------------------------------------------------
-		// Problem: Big2010.cbh contains 4463292 records, but Big2010.cbj
-		// has only 4454749 records, and the highest game number with team
-		// data exceeds the number of records in Big2010.cbj.
+		char hdr[12];
 
-		m_teamStream.close();
-		return;
+		if (!m_teamStream.read(reinterpret_cast<Byte*>(hdr), sizeof(hdr)))
+			IO_RAISE(Index, Read_Error, "unexpected end of file");
+
+		m_teamRecordSize = hdr[4];
+		m_teamRecords = mstl::bo::swapLE(*(reinterpret_cast<uint32_t*>(hdr + 8)));
+
+		unsigned expectedSize = m_teamRecords*m_teamRecordSize;
+		expectedSize += m_teamStream.size()%m_teamRecordSize;
+
+		if (expectedSize != m_teamStream.size())
+		{
+			fprintf(
+				stderr,
+				"File \"%s\" has %u records, but %u records are expected (record size is %u)\n",
+				filenameJ.c_str(),
+				unsigned(m_teamStream.size()/m_teamRecordSize),
+				m_teamRecords,
+				m_teamRecordSize);
+
+			m_teamStream.close();
+			m_teamRecords = 0;
+			return;
+		}
+
+		if (m_teamRecords != m_numGames)
+		{
+			fprintf(
+				stderr,
+				"File \"%s\" has %u records, but index has %u records (%d missing)\n",
+				filenameJ.c_str(),
+				m_teamRecords,
+				m_numGames,
+				int(m_numGames - m_teamRecords));
+		}
 	}
 
 	mstl::fstream	strm;
@@ -1165,10 +1194,17 @@ Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 			strm.read(buf, 10);
 			ByteStream bstrm(buf, sizeof(buf));
 
-			bstrm.skip(4);
+			unsigned number	= bstrm.uint32LE();
+			unsigned year2		= bstrm.get();
+			unsigned year  	= bstrm.uint16LE();
 
-			unsigned year2 = bstrm.get();
-			unsigned year  = bstrm.uint16LE();
+			if (number)
+			{
+				str.append(' ');
+
+				if (str.appendRomanNumber(number) == 0)
+					str.format("%u", number);
+			}
 
 			if (year && !str.empty())
 			{
@@ -1189,6 +1225,9 @@ Codec::readTeamData(mstl::string const& rootname, util::Progress& progress)
 			char* p = m_sourceBase.alloc(str.size());
 			::strncpy(p, str, str.size());
 			team->title.hook(p, str.size());
+
+			// next 4 bytes: number of games with this team?
+			// next 4 bytes: first game id with this team?
 
 			strm.seekg(RecordSize - 54 - sizeof(buf), mstl::ios_base::cur);
 		}
@@ -1682,7 +1721,7 @@ Codec::reloadTeamData(mstl::string const& rootname, util::Progress& progress)
 {
 	static unsigned const RecordSize = 72;
 
-	if (!m_teamStream.is_open())
+	if (m_teamRecords == 0)
 		return;
 
 	mstl::string	name;
@@ -1795,7 +1834,7 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 
 	infoList.reserve(m_numGames);
 	m_sourceMap.reserve(unsigned(m_numGames*(100/SourceMap::Load)));
-	if (m_teamStream.is_open())
+	if (m_teamRecords)
 		m_gameIndexLookup.reserve(m_numGames);
 
 	for (unsigned i = 0; i < m_numGames; ++i)
@@ -1816,7 +1855,7 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 			infoList.push_back(allocGameInfo());
 			decodeIndex(bstrm, *infoList.back());
 
-			if (m_teamStream.is_open())
+			if (m_teamRecords)
 				m_gameIndexLookup[infoList.back()] = i;
 		}
 		else
@@ -2397,18 +2436,20 @@ Codec::addEventTags(TagSet& tags, GameInfo const& info)
 void
 Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 {
-	unsigned const RecordSize = 78;
-
-	if (!m_teamStream.is_open())
+	if (m_teamRecords == 0)
 		return;
-
-	uint32_t buf[2];
 
 	M_ASSERT(m_gameIndexLookup.find(&info) != m_gameIndexLookup.end());
 
 	unsigned gameIndex = m_gameIndexLookup.find(&info)->second;
 
-	if (!m_teamStream.seekg(m_teamStream.size()%RecordSize + gameIndex*RecordSize, mstl::ios_base::beg))
+	if (m_teamRecords <= gameIndex)
+		return;
+
+	uint32_t buf[2];
+	unsigned offset = m_teamStream.size()%m_teamRecordSize + gameIndex*m_teamRecordSize;
+
+	if (!m_teamStream.seekg(offset, mstl::ios_base::beg))
 		IO_RAISE(Index, Read_Error, "seek failed");
 	if (!m_teamStream.read(reinterpret_cast<Byte*>(buf), sizeof(buf)))
 		IO_RAISE(Index, Read_Error, "unexpected end of file");
@@ -2529,8 +2570,8 @@ Codec::getAttributes(mstl::string const& filename,
 
 	if (	record[0] != 0
 		|| record[1] != 0
-		|| (	record[2] != 0x2c	// CB 9/10/11
-			&& record[2] != 0x24)// CB Light
+		|| (	record[2] != 0x2c		// CB 9/10/11
+			&& record[2] != 0x24)	// CB Light
 		|| record[3] != 0
 		|| record[4] != 0x2e
 		|| record[5] != 0x01)
@@ -2595,7 +2636,6 @@ Codec::getSuffixes(mstl::string const&, StringList& result)
 	result.push_back("rb0");
 	result.push_back("rb1");
 	result.push_back("rb2");
-
 }
 
 // vi:set ts=3 sw=3:

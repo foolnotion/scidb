@@ -29,66 +29,66 @@
 namespace eval crosstable {
 namespace eval mc {
 
-set TournamentTable		"Tournament Table"
-set AverageRating			"Average Rating"
-set Category				"Category"
-set Games					"games"
-set Game						"game"
+set TournamentTable			"Tournament Table"
+set AverageRating				"Average Rating"
+set Category					"Category"
+set Games						"games"
+set Game							"game"
 
-set ScoringSystem			"Scoring System"
-set Tiebreak				"Tie-break Rule"
-set Settings				"Settings"
-set RevertToStart			"Revert to initial values"
-set UpdateDisplay			"Update display"
+set ScoringSystem				"Scoring System"
+set Tiebreak					"Tie-break Rule"
+set Settings					"Settings"
+set RevertToStart				"Revert to initial values"
+set UpdateDisplay				"Update display"
 
-set Traditional			"Traditional"
-set Bilbao					"Bilbao"
+set Traditional				"Traditional"
+set Bilbao						"Bilbao"
 
-set None						"None"
-set Buchholz				"Buchholz"
-set MedianBuchholz		"Median-Buchholz"
+set None							"None"
+set Buchholz					"Buchholz"
+set MedianBuchholz			"Median-Buchholz"
 set ModifiedMedianBuchholz "Mod. Median Buchholz"
-set RefinedBuchholz		"Refined-Buchholz"
-set SonnebornBerger		"Sonneborn-Berger"
-set Progressive			"Progressive Score"
-set KoyaSystem				"Koya-System"
-set GamesWon				"Number of Games Won"
-set GamesWonWithBlack	"Number of Games Won with Black"
-set ParticularResult		"Particular Result"
-set TraditionalScoring	"Traditional Scoring"
+set RefinedBuchholz			"Refined-Buchholz"
+set SonnebornBerger			"Sonneborn-Berger"
+set Progressive				"Progressive Score"
+set KoyaSystem					"Koya-System"
+set GamesWon					"Number of Games Won"
+set GamesWonWithBlack		"Number of Games Won with Black"
+set ParticularResult			"Particular Result"
+set TraditionalScoring		"Traditional Scoring"
 
-set Crosstable				"Crosstable"
-set Scheveningen			"Scheveningen"
-set Swiss					"Swiss System"
-set Match					"Match"
-set Knockout				"Knockout"
-set RankingList			"Ranking List"
+set Crosstable					"Crosstable"
+set Scheveningen				"Scheveningen"
+set Swiss						"Swiss System"
+set Match						"Match"
+set Knockout					"Knockout"
+set RankingList				"Ranking List"
 
-set Order					"Order"
-set Type						"Table Type"
-set Score					"Score"
-set Alphabetical			"Alphabetical"
-set Rating					"Rating"
-set Federation				"Federation"
+set Order						"Order"
+set Type							"Table Type"
+set Score						"Score"
+set Alphabetical				"Alphabetical"
+set Rating						"Rating"
+set Federation					"Federation"
 
-set Debugging				"Debugging"
-set Display					"Display"
-set Style					"Style"
-set Spacing					"Spacing"
-set Padding					"Padding"
-set ShowLog					"Show Log"
-set ShowHtml				"Show HTML"
-set ShowRating				"Show Rating"
-set ShowPerformance		"Show Performance"
-set ShowWinDrawLoss		"Show Win/Draw/Loss"
-set ShowTiebreak			"Show Tiebreak"
-set ShowOpponent			"Show Opponent (as Tooltip)"
-set KnockoutStyle			"Knockout Table Style"
-set Pyramid					"Pyramid"
-set Triangle				"Triangle"
+set Debugging					"Debugging"
+set Display						"Display"
+set Style						"Style"
+set Spacing						"Spacing"
+set Padding						"Padding"
+set ShowLog						"Show Log"
+set ShowHtml					"Show HTML"
+set ShowRating					"Show Rating"
+set ShowPerformance			"Show Performance"
+set ShowWinDrawLoss			"Show Win/Draw/Loss"
+set ShowTiebreak				"Show Tiebreak"
+set ShowOpponent				"Show Opponent (as Tooltip)"
+set KnockoutStyle				"Knockout Table Style"
+set Pyramid						"Pyramid"
+set Triangle					"Triangle"
 
-set CrosstableLimit	"The crosstable limit of %d players will be exceeded."
-set CrosstableLimitDetail "'%s' is choosing another table mode."
+set CrosstableLimit			"The crosstable limit of %d players will be exceeded."
+set CrosstableLimitDetail	"'%s' is choosing another table mode."
 
 } ;# namespace mc
 
@@ -111,40 +111,12 @@ array set Scripts {
 	rankingList		"rankingList.eXt"
 }
 
-set TypeList {
-	crosstable
-	scheveningen
-	swiss
-	match
-	knockout
-	rankingList
-}
-
-set ScoringList {
-	traditional
-	bilbao
-}
-
-set TiebreakList {
-	none
-	sonnebornBerger
-	buchholz
-	medianBuchholz
-	modifiedMedianBuchholz
-	refinedBuchholz
-	progressive
-	koyaSystem
-	gamesWon
-	gamesWonWithBlack
-	particularResult
-	traditionalScoring
-}
-
-set OrderList {
-	score
-	alphabetical
-	rating
-	federation
+array set ListEntries {
+	type		{ crosstable scheveningen swiss match knockout rankingList }
+	scoring	{ traditional bilbao }
+	tiebreak	{ none sonnebornBerger buchholz medianBuchholz modifiedMedianBuchholz refinedBuchholz
+					progressive koyaSystem gamesWon gamesWonWithBlack particularResult traditionalScoring }
+	order		{ score alphabetical rating federation }
 }
 
 variable RecentlyUsedHistory {}
@@ -169,10 +141,6 @@ array set RecentlyUsedScoring {
 }
 
 array set Defaults {
-	base					{}
-	index					-1
-	number				-1
-	frozen				0
 	scoring				traditional
 	tiebreaks			{}
 	bestMode				rankingList
@@ -195,22 +163,23 @@ array set Options {
 	show:opponent		1
 }
 
-array set Vars [array get Defaults]
-variable Path .application.crosstable
+array set List {}
+array set Key {}
+array set Locked {}
+
 variable Geometry "1024x768"
+variable Counter 0
+variable Reuse ""
 
 
 proc open {parent base index view source} {
-	variable TiebreakList
-	variable ScoringList
-	variable OrderList
-	variable TypeList
-	variable Vars
+	variable ListEntries
 	variable Options
+	variable Defaults
 	variable Geometry
-	variable Path
-
-	set dlg $Path
+	variable Counter
+	variable Reuse
+	variable Key
 
 	if {$source eq "game"} {
 		set number [::scidb::db::get gameNumber $base $index $view]
@@ -221,22 +190,38 @@ proc open {parent base index view source} {
 	}
 
 	lassign $info title type date mode timeMode country site
-	set key [list $base $site $title $type $date $mode $timeMode]
+	set key "key:$base:$site:$title:$type:$date:$mode:$timeMode"
 
-	if {$Vars(base) eq $base && $Vars(key) == $key} {
-		raise $dlg
-		focus $dlg
+	if {[info exists Key($key)]} {
+		set dlg $Key($key)
+		variable ${dlg}::Vars
+		if {$Vars(open)} {
+			::widget::dialogRaise $dlg
+		} else {
+			set Vars(open) 1
+			::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
+			set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
+			UpdateContent $dlg 1
+		}
 		return
 	}
 
-	set Vars(closed) 0
-	if {[winfo exists $dlg]} { Destroy $dlg $dlg 0 }
-	set Vars(closed) 0
+	if {[string length $Reuse]} {
+		set dlg $Reuse
+	} else {
+		set dlg .application.crosstable_[incr Counter]
+		set Reuse $dlg
+	}
+
+	namespace eval [namespace current]::$dlg {}
+	variable ${dlg}::Vars
+	array set Vars [array get Defaults]
 
 	set top $dlg.top
 	set canv $top.canv
 	set html $canv.html
 
+	set Vars(open) 1
 	set Vars(html) $html
 	set Vars(base) $base
 	set Vars(view) $view
@@ -249,26 +234,25 @@ proc open {parent base index view source} {
 	set Vars(prevTiebreaks) ""
 	set Vars(prevScoring) ""
 	set Vars(tooltip) ""
-	set Vars(viewId) [::scidb::view::new $base slave slave slave slave slave]
-	set Vars(subscribe) [list [namespace current]::Close $base $dlg]
 
+	if {[info exists Vars(tableId)]} {
+		::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
+	}
+	if {![info exists Vars(viewId)]} {
+		set Vars(viewId) [::scidb::view::new $base slave slave slave slave slave]
+	}
 	if {$source eq "game"} { set search gameevent } else { set search event }
 	::scidb::view::search $base $Vars(viewId) null none [list $search $number]
 
 	if {[winfo exists $dlg]} {
+		::widget::dialogRaise $dlg
 		set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
-		Update 1
-		raise $dlg
-		focus $dlg
+		UpdateContent $dlg 1
 		return
 	}
 
+	set Vars(subscribe) [list [namespace current]::Close $base $dlg]
 	::scidb::view::subscribe {*}$Vars(subscribe)
-
-	set Vars(tiebreakList) {}
-	set Vars(orderList) {}
-	set Vars(typeList) {}
-	set Vars(scoringList) {}
 
 	tk::toplevel $dlg -class Scidb
 	bind $dlg <Destroy> [namespace code [list Destroy $dlg %W 1]]
@@ -288,7 +272,10 @@ proc open {parent base index view source} {
 		;
 	$html handler node td [namespace current]::NodeHandler
 	$html handler node span [namespace current]::NodeHandler
-	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code PopupMenu]
+	bind [winfo parent [$html drawable]] <ButtonPress-3> [namespace code [list PopupMenu $dlg]]
+
+	if {![info exists List(order)]} { MakeLists }
+	variable List
 
 	set tb [::toolbar::toolbar $dlg \
 				-id settings \
@@ -297,13 +284,9 @@ proc open {parent base index view source} {
 				-padx 4 \
 				-pady 2 \
 			]
-	foreach entry $TiebreakList { lappend Vars(tiebreakList) [set mc::[string toupper $entry 0 0]] }
-	foreach entry $ScoringList { lappend Vars(scoringList) [set mc::[string toupper $entry 0 0]] }
-	foreach entry $OrderList { lappend Vars(orderList) [set mc::[string toupper $entry 0 0]] }
-	foreach entry $TypeList { lappend Vars(typeList) [set mc::[string toupper $entry 0 0]] }
-	set Vars(value:order) [lindex $Vars(orderList) 0]
-	set Vars(value:type) [lindex $Vars(typeList) 0]
-	set Vars(value:scoring) [lindex $Vars(scoringList) 0]
+	set Vars(value:order) [lindex $List(order) 0]
+	set Vars(value:type) [lindex $List(type) 0]
+	set Vars(value:scoring) [lindex $List(scoring) 0]
 
 	set f1 [::toolbar::add $tb frame]
 	set f2 [::toolbar::add $tb frame]
@@ -314,8 +297,7 @@ proc open {parent base index view source} {
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
-		-values $Vars(typeList) \
-		-textvar [namespace current]::Vars(value:type) \
+		-textvar [namespace current]::${dlg}::Vars(value:type) \
 		-width 16 \
 		;
 	set Vars(widget:type) $f1.choose_type
@@ -325,8 +307,7 @@ proc open {parent base index view source} {
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
-		-values $Vars(orderList) \
-		-textvar [namespace current]::Vars(value:order) \
+		-textvar [namespace current]::${dlg}::Vars(value:order) \
 		-width 12 \
 		;
 	set Vars(widget:order) $f1.choose_order
@@ -337,21 +318,20 @@ proc open {parent base index view source} {
 		-takefocus 0 \
 		-exportselection 0 \
 		-state readonly  \
-		-values $Vars(scoringList) \
-		-textvar [namespace current]::Vars(value:scoring) \
+		-textvar [namespace current]::${dlg}::Vars(value:scoring) \
 		-width 12 \
 		;
-
+	
 	::toolbar::add $tb separator
 	::toolbar::add $tb button \
 		-image $icon::32x32::go \
-		-command [namespace code Refresh] \
+		-command [namespace code [list Refresh $dlg]] \
 		-tooltipvar [namespace current]::mc::UpdateDisplay \
 		-padx 4 \
 		;
 	::toolbar::add $tb button \
 		-image $icon::32x32::reset \
-		-command [namespace code Reset] \
+		-command [namespace code [list Reset $dlg]] \
 		-tooltipvar [namespace current]::mc::RevertToStart \
 		-padx 4 \
 		;
@@ -364,20 +344,19 @@ proc open {parent base index view source} {
 	grid $f1.choose_scoring -row 5 -column 3 -sticky ew
 
 	foreach i {1 2 3 4 5 6} {
-		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
-		set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
 		set f [set f[expr {($i - 1)/3 + 2}]]
 		set r [expr {($i*2 - 1)%6}]
+		set Vars(label:tiebreak$i) {}
 		tk::label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
 		set Vars(widget:tiebreak$i) $f.choose$i
+		set Vars(value:tiebreak$i) [lindex $List(tiebreak) 0]
 		::ttk::combobox $Vars(widget:tiebreak$i) \
 			-takefocus 0 \
 			-exportselection 0 \
 			-state readonly  \
-			-values $Vars(tiebreakList) \
-			-textvar [namespace current]::Vars(value:tiebreak$i) \
+			-textvar [namespace current]::${dlg}::Vars(value:tiebreak$i) \
 			-width 23 \
-			-height [llength $TiebreakList] \
+			-height [llength $ListEntries(tiebreak)] \
 			;
 		grid $f.label$i  -row $r -column 1 -sticky w
 		grid $f.choose$i -row $r -column 3 -sticky ew
@@ -393,12 +372,14 @@ proc open {parent base index view source} {
 	grid columnconfigure $f3 0 -minsize $::theme::padX
 	grid columnconfigure $f3 4 -minsize $::theme::padding
 
-	$html onmouseover		[namespace current]::MouseEnter
-	$html onmouseout		[namespace current]::MouseLeave
-	$html onmousedown1	[namespace current]::Mouse1Down
-	$html onmousedown2	[namespace current]::Mouse2Down
-	$html onmouseup2		[namespace current]::Mouse2Up
-	$html onmousedown3	[namespace current]::Mouse3Down
+	InsertEntries $dlg
+
+	$html onmouseover		[namespace code [list MouseEnter $dlg]]
+	$html onmouseout		[namespace code [list MouseLeave $dlg]]
+	$html onmousedown1	[namespace code [list Mouse1Down $dlg]]
+	$html onmousedown2	[namespace code [list Mouse2Down $dlg]]
+	$html onmouseup2		[namespace code [list Mouse2Up   $dlg]]
+	$html onmousedown3	[namespace code [list Mouse3Down $dlg]]
 
 	pack $top -expand yes -fill both
 
@@ -414,8 +395,8 @@ proc open {parent base index view source} {
 
 	if {$source eq "event"} {
 		::widget::dialogButtons $dlg {close previous next} close
-		$dlg.previous configure -command [namespace code [list NextEvent -1]]
-		$dlg.next configure -command [namespace code [list NextEvent +1]]
+		$dlg.previous configure -command [namespace code [list NextEvent $dlg -1]]
+		$dlg.next configure -command [namespace code [list NextEvent $dlg +1]]
 	} else {
 		::widget::dialogButtons $dlg close close
 	}
@@ -423,7 +404,7 @@ proc open {parent base index view source} {
 
 	::update
 	set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
-	Update 1
+	UpdateContent $dlg 1
 
 	scan $Geometry "%dx%d" w h
 	set w [max 1024 $w]
@@ -440,13 +421,8 @@ proc open {parent base index view source} {
 }
 
 
-proc Close {dlg base {view {}}} {
-	variable Vars
-
-	if {!$Vars(closed) && $base eq $Vars(base) && ([llength $view] == 0 || $view == $Vars(viewId))} {
-		set Vars(closed) 1
-		destroy $dlg
-	}
+proc Close {dlg args} {
+	set [namespace current]::${dlg}::Vars(open) 0
 }
 
 
@@ -460,8 +436,8 @@ proc RecordGeometry {dlg} {
 }
 
 
-proc NextEvent {step} {
-	variable Vars
+proc NextEvent {dlg step} {
+	variable ${dlg}::Vars
 
 	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 	incr Vars(index) $step
@@ -474,63 +450,67 @@ proc NextEvent {step} {
 	set Vars(prevMode) ""
 	set Vars(prevTiebreaks) ""
 	set Vars(prevScoring) ""
-	Update 1
+	UpdateContent $dlg 1
+}
+
+
+proc MakeLists {} {
+	variable ListEntries
+	variable List
+
+	foreach attr {tiebreak scoring order type} {
+		set List($attr) {}
+		foreach entry $ListEntries($attr) { lappend List($attr) [set mc::[string toupper $entry 0 0]] }
+	}
+}
+
+
+proc InsertEntries {dlg} {
+	variable List
+	variable ${dlg}::Vars
+
+	set parent $Vars(widget:tiebreak1)
+	foreach i {1 2 3 4 5 6} {
+		set n [lsearch $List(tiebreak) $Vars(value:tiebreak$i)]
+		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
+		$Vars(widget:tiebreak$i) configure -values $List(tiebreak)
+		set clone [::toolbar::lookupClone $parent $Vars(widget:tiebreak$i)]
+		if {[llength $clone]} { $clone configure -values $List(tiebreak) }
+		if {$n >= 0} { set Vars(value:tiebreak$i) [lindex $List(tiebreak) $n] }
+	}
+
+	set n [lsearch $List(scoring) $Vars(value:scoring)]
+	$Vars(widget:scoring) configure -values $List(scoring)
+	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:scoring)] $Vars(widget:scoring)]
+	if {[llength $clone]} { $clone configure -values $List(scoring) }
+	if {$n >= 0} { set Vars(value:scoring) [lindex $List(scoring) $n] }
+
+	set n [lsearch $List(order) $Vars(value:order)]
+	$Vars(widget:order) configure -values $List(order)
+	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:order)] $Vars(widget:order)]
+	if {[llength $clone]} { $clone configure -values $List(order) }
+	if {$n >= 0} { set Vars(value:order) [lindex $List(order) $n] }
+
+	set n [lsearch $List(type) $Vars(value:type)]
+	$Vars(widget:type) configure -values $List(type)
+	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:type)] $Vars(widget:type)]
+	if {[llength $clone]} { $clone configure -values $List(type) }
+	if {$n >= 0} { set Vars(value:type) [lindex $List(type) $n] }
 }
 
 
 proc LanguageChanged {dlg w} {
-	variable Vars
-	variable TiebreakList
-	variable ScoringList
-	variable OrderList
-	variable TypeList
-
 	if {$dlg ne $w} { return }
 
 	SetTitle $dlg
-
-	set parent $Vars(widget:tiebreak1)
-	foreach entry $TiebreakList { lappend tiebreakList [set mc::[string toupper $entry 0 0]] }
-	foreach i {1 2 3 4 5 6} {
-		set n [lsearch $Vars(tiebreakList) $Vars(value:tiebreak$i)]
-		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
-		$Vars(widget:tiebreak$i) configure -values $tiebreakList
-		set clone [::toolbar::lookupClone $parent $Vars(widget:tiebreak$i)]
-		if {[llength $clone]} { $clone configure -values $tiebreakList }
-		if {$n >= 0} { set Vars(value:tiebreak$i) [lindex $tiebreakList $n] }
-	}
-	set Vars(tiebreakList) $tiebreakList
-
-	set n [lsearch $Vars(scoringList) $Vars(value:scoring)]
-	foreach entry $ScoringList { lappend scoringList [set mc::[string toupper $entry 0 0]] }
-	$Vars(widget:scoring) configure -values $scoringList
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:scoring)] $Vars(widget:scoring)]
-	if {[llength $clone]} { $clone configure -values $scoringList }
-	if {$n >= 0} { set Vars(value:scoring) [lindex $scoringList $n] }
-	set Vars(scoringList) $scoringList
-
-	set n [lsearch $Vars(orderList) $Vars(value:order)]
-	foreach entry $OrderList { lappend orderList [set mc::[string toupper $entry 0 0]] }
-	$Vars(widget:order) configure -values $orderList
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:order)] $Vars(widget:order)]
-	if {[llength $clone]} { $clone configure -values $orderList }
-	if {$n >= 0} { set Vars(value:order) [lindex $orderList $n] }
-	set Vars(orderList) $orderList
-
-	set n [lsearch $Vars(typeList) $Vars(value:type)]
-	foreach entry $TypeList { lappend typeList [set mc::[string toupper $entry 0 0]] }
-	$Vars(widget:type) configure -values $typeList
-	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:type)] $Vars(widget:type)]
-	if {[llength $clone]} { $clone configure -values $typeList }
-	if {$n >= 0} { set Vars(value:type) [lindex $typeList $n] }
-	set Vars(typeList) $typeList
-
-	Update
+	MakeLists
+	InsertEntries $dlg
+	UpdateContent $dlg
 }
 
 
 proc SetTitle {dlg} {
-	variable Vars
+	variable ${dlg}::Vars
 	wm title $dlg "$::scidb::app: $mc::TournamentTable$Vars(eventName)"
 }
 
@@ -545,46 +525,44 @@ proc DoNothing {args} {
 }
 
 
-proc Reset {} {
-	variable Vars
+proc Reset {dlg} {
+	variable ${dlg}::Vars
 
-	foreach attr [array names Vars reset:*] {
+	foreach attr [array names Vars reset:*:$dlg] {
 		set Vars([string range $attr 6 end]) $Vars($attr)
 	}
-	Refresh
+	Refresh $dlg
 }
 
 
-proc Refresh {} {
-	variable Vars
-	variable TypeList
-	variable OrderList
-	variable TiebreakList
-	variable ScoringList
+proc Refresh {dlg} {
+	variable ${dlg}::Vars
+	variable List
+	variable ListEntries
 
 	set Vars(prevMode) $Vars(bestMode)
 	set Vars(prevTiebreaks) $Vars(tiebreaks)
 	set Vars(prevScoring) $Vars(scoring)
-	set Vars(order) [lindex $OrderList [lsearch $Vars(orderList) $Vars(value:order)]]
-	set Vars(bestMode) [lindex $TypeList [lsearch $Vars(typeList) $Vars(value:type)]]
-	set Vars(scoring) [lindex $ScoringList [lsearch $Vars(scoringList) $Vars(value:scoring)]]
+	set Vars(order) [lindex $ListEntries(order) [lsearch $List(order) $Vars(value:order)]]
+	set Vars(bestMode) [lindex $ListEntries(type) [lsearch $List(type) $Vars(value:type)]]
+	set Vars(scoring) [lindex $ListEntries(scoring) [lsearch $List(scoring) $Vars(value:scoring)]]
 	set Vars(tiebreaks) {}
 	for {set i 1} {$i <= 6} {incr i} {
-		set n [lsearch $Vars(tiebreakList) $Vars(value:tiebreak$i)]
-		if {$n > 0} { lappend Vars(tiebreaks) [lindex $TiebreakList $n] }
+		set n [lsearch $List(tiebreak) $Vars(value:tiebreak$i)]
+		if {$n > 0} { lappend Vars(tiebreaks) [lindex $ListEntries(tiebreak) $n] }
 	}
 
-	Update
-	UpdateHistory
+	UpdateContent $dlg
+	UpdateHistory $dlg
 }
 
 
-proc UpdateHistory {} {
+proc UpdateHistory {dlg} {
 	variable RecentlyUsedTiebreaks
 	variable RecentlyUsedScoring
 	variable RecentlyUsedHistory
 	variable MostRecentHistory
-	variable Vars
+	variable ${dlg}::Vars
 
 	set RecentlyUsedTiebreaks($Vars(bestMode)) $Vars(tiebreaks)
 	set RecentlyUsedScoring($Vars(bestMode)) $Vars(scoring)
@@ -612,16 +590,16 @@ proc UpdateHistory {} {
 }
 
 
-proc Update {{setup 0}} {
-	variable Vars
+proc UpdateContent {dlg {setup 0}} {
+	variable ${dlg}::Vars
+	variable List
 	variable Defaults
 	variable Options
 	variable Scripts
 	variable Highlighted
 	variable Marks
 	variable Nodes
-	variable TypeList
-	variable ScoringList
+	variable ListEntries
 
 	set w $Vars(html)
 	set base $Vars(base)
@@ -629,9 +607,6 @@ proc Update {{setup 0}} {
 	set viewId $Vars(viewId)
 
 	if {$setup} {
-		variable TiebreakList
-		variable OrderList
-		variable TypeList
 		variable RecentlyUsedHistory
 		variable RecentlyUsedScoring
 		variable RecentlyUsedTiebreaks
@@ -645,7 +620,11 @@ proc Update {{setup 0}} {
 		set timeMode [lindex $info [::eventtable::columnIndex timeMode]]
 		set eventCountry [lindex $info [::eventtable::columnIndex eventCountry]]
 		set site [lindex $info [::eventtable::columnIndex site]]
-		if {[string length $name] <= 1} { set Vars(eventName) "" } else { set Vars(eventName) " ($name)" }
+		if {[string length $name] <= 1} {
+			set Vars(eventName) ""
+		} else {
+			set Vars(eventName) " ($name)"
+		}
 		set Vars(event) [list $name $eventDate $site $eventCountry $eventType $eventMode $timeMode]
 		set i [lsearch -index 0 $RecentlyUsedHistory $Vars(event)]
 
@@ -666,13 +645,13 @@ proc Update {{setup 0}} {
 
 		set i 0
 		foreach tb $tiebreaks {
-			set Vars(value:tiebreak[incr i]) [lindex $Vars(tiebreakList) [lsearch $TiebreakList $tb]]
+			set Vars(value:tiebreak[incr i]) [lindex $List(tiebreak) [lsearch $ListEntries(tiebreak) $tb]]
 		}
 		for {incr i} {$i <= 6} {incr i} {
-			set Vars(value:tiebreak$i) [lindex $Vars(tiebreakList) 0]
+			set Vars(value:tiebreak$i) [lindex $List(tiebreak) 0]
 		}
-		set Vars(value:scoring) [lindex $Vars(scoringList) [lsearch $ScoringList $scoring]]
-		set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $bestMode]]
+		set Vars(value:scoring) [lindex $List(scoring) [lsearch $ListEntries(scoring) $scoring]]
+		set Vars(value:type) [lindex $List(type) [lsearch $ListEntries(type) $bestMode]]
 		set Vars(bestMode) $bestMode
 		set Vars(tiebreaks) $tiebreaks
 		set Vars(scoring) $scoring
@@ -681,7 +660,7 @@ proc Update {{setup 0}} {
 			set Vars(reset:$attr) $Vars($attr)
 		}
 		SetTitle [winfo toplevel $w]
-		ConfigureButtons
+		ConfigureButtons $dlg
 	}
 
 	set font [$w font]
@@ -745,9 +724,9 @@ proc Update {{setup 0}} {
 						set Vars(bestMode) [::scidb::crosstable::get bestMode $Vars(tableId) $viewId]
 						set Vars(bestMode) [string tolower $Vars(bestMode) 0 0]
 						if {$Vars(bestMode) eq "crosstable"} { set Vars(bestMode) rankingList }
-						set Vars(value:type) [lindex $Vars(typeList) [lsearch $TypeList $Vars(bestMode)]]
-						UpdateHistory
-						after idle [namespace code Update]
+						set Vars(value:type) [lindex $List(type) [lsearch $ListEntries(type) $Vars(bestMode)]]
+						UpdateHistory $dlg
+						after idle [namespace code [list UpdateContent $dlg]]
 					}
 					return
 				}
@@ -789,7 +768,7 @@ proc Update {{setup 0}} {
 	set w [winfo toplevel $w]
 	foreach attr {log html} {
 		if {$show($attr)} {
-			ShowTrace $attr
+			ShowTrace $dlg $attr
 		} elseif {[winfo exists $w.$attr]} {
 			destroy $w.$attr
 		}
@@ -798,8 +777,8 @@ proc Update {{setup 0}} {
 }
 
 
-proc ConfigureButtons {} {
-	variable Vars
+proc ConfigureButtons {dlg} {
+	variable ${dlg}::Vars
 
 	set dlg [winfo toplevel $Vars(html)]
 	if {![winfo exists $dlg.next]} { return }
@@ -817,17 +796,17 @@ proc ConfigureButtons {} {
 }
 
 
-proc CloseTrace {which} {
+proc CloseTrace {dlg which} {
 	variable Options
-	variable Vars
+	variable ${dlg}::Vars
 
 	set Options(debug:$which) 0
 	catch { destroy [winfo toplevel $Vars(html)].$which }
 }
 
 
-proc ShowTrace {which} {
-	variable Vars
+proc ShowTrace {dlg which} {
+	variable ${dlg}::Vars
 
 	if {$which eq "log"} {
 		set useHorzScroll 0
@@ -835,18 +814,18 @@ proc ShowTrace {which} {
 		set useHorzScroll 1
 	}
 	set path [winfo toplevel $Vars(html)].$which
-	set closeCmd [namespace code [list CloseTrace $which]]
+	set closeCmd [namespace code [list CloseTrace $dlg $which]]
 	::widget::showTrace $path $Vars(output:$which) $useHorzScroll $closeCmd
 }
 
 
-proc ToggleTrace {which} {
+proc ToggleTrace {dlg which} {
 	variable Options
 
 	if {$Options(debug:$which)} {
-		ShowTrace $which
+		ShowTrace $dlg $which
 	} else {
-		CloseTrace $which
+		CloseTrace $dlg $which
 	}
 }
 
@@ -854,26 +833,27 @@ proc ToggleTrace {which} {
 proc Destroy {dlg w unsubscribe} {
 	if {$w ne $dlg} { return }
 
-	variable Vars
-	variable Defaults
+	variable ${dlg}::Vars
+	variable Key
 
 	catch { destroy $dlg.html }
 	catch { destroy $dlg.log }
 
 	if {$unsubscribe} { ::scidb::view::unsubscribe {*}$Vars(subscribe) }
 	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
-	if {!$Vars(closed)} {
-		set Vars(closed) 1
+	if {$Vars(open)} {
+		set Vars(open) 0
 		::scidb::view::close $Vars(base) $Vars(viewId)
 	}
-	array set Vars [array get Defaults]
+	namespace delete [namespace current]::$dlg
+	array unset Key $dlg
 }
 
 
-proc Open {which gameIndex} {
-	variable Vars
+proc Open {dlg which gameIndex} {
+	variable ${dlg}::Vars
 
-	Tooltip hide
+	Tooltip $dlg hide
 
 	set base $Vars(base)
 	set path $Vars(html)
@@ -884,23 +864,23 @@ proc Open {which gameIndex} {
 		set viewId $Vars(viewId)
 		set index [::scidb::view::map game $base $viewId $gameIndex]
 		set info [::scidb::db::get gameInfo $index $viewId $base]
-		set Vars(${which}Id) \
-			[::widget::busyOperation ::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]
+		set Vars(${which}Id) [::widget::busyOperation \
+			::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]
 	}
 }
 
 
-proc ShowPlayerCard {rank} {
-	variable Vars
+proc ShowPlayerCard {dlg rank} {
+	variable ${dlg}::Vars
 
-	Tooltip hide
+	Tooltip $dlg hide
 	lassign [::scidb::crosstable::get playerId $Vars(tableId) $Vars(viewId) $rank]] gameIndex side
 	::playercard::show $Vars(base) $gameIndex $side
 }
 
 
-proc Tooltip {msg} {
-	variable Vars
+proc Tooltip {dlg msg} {
+	variable ${dlg}::Vars
 
 	if {$msg eq "hide"} {
 		::tooltip::hide yes
@@ -919,8 +899,8 @@ proc NodeHandler {node} {
 }
 
 
-proc MouseEnter {node} {
-	variable Vars
+proc MouseEnter {dlg node} {
+	variable ${dlg}::Vars
 	variable Options
 
 	HandleEnterLeave $node EnterNode
@@ -928,19 +908,19 @@ proc MouseEnter {node} {
 	set country [$node attribute -default {} src]
 	if {[llength $country]} {
 		set Vars(tooltip) $node
-		Tooltip [::country::name $country]
+		Tooltip $dlg [::country::name $country]
 	} elseif {$Options(show:opponent)} {
 		set rank [$node attribute -default {} player]
 		if {[llength $rank]} {
 			set Vars(tooltip) $node
-			Tooltip [::scidb::crosstable::get playerName $Vars(tableId) $Vars(viewId) $rank]
+			Tooltip $dlg [::scidb::crosstable::get playerName $Vars(tableId) $Vars(viewId) $rank]
 		}
 	}
 }
 
 
-proc MouseLeave {node {stimulate 0}} {
-	variable Vars
+proc MouseLeave {dlg node {stimulate 0}} {
+	variable ${dlg}::Vars
 
 	HandleEnterLeave $node LeaveNode
 
@@ -948,7 +928,7 @@ proc MouseLeave {node {stimulate 0}} {
 		set Vars(tooltip) ""
 		foreach attr {src player id} {
 			set content [$node attribute -default {} $attr]
-			if {[llength $content]} { Tooltip hide }
+			if {[llength $content]} { Tooltip $dlg hide }
 		}
 	}
 
@@ -960,8 +940,6 @@ proc MouseLeave {node {stimulate 0}} {
 
 
 proc HandleEnterLeave {node action} {
-	variable Vars
-
 	set id [$node attribute -default {} recv]
 	if {[string length $id]} { $action $id }
 
@@ -1035,19 +1013,19 @@ proc Hilite {idList} {
 }
 
 
-proc Mouse1Down {node} {
-	variable Vars
+proc Mouse1Down {dlg node} {
+	variable ${dlg}::Vars
 
 	if {[llength $node] == 0} { return }
 	set gameIndex [$node attribute -default {} game]
 	if {[string length $gameIndex]} {
-		Open browser $gameIndex
+		Open $dlg browser $gameIndex
 		$Vars(html) stimulate
 		::tooltip::hide
 	}
 #	set rank [$node attribute -default {} rank]
 #	if {[string length $rank]} {
-#		ShowPlayerCard $rank
+#		ShowPlayerCard $dlg $rank
 #	}
 	set mark [$node attribute -default {} mark]
 	if {[string length $mark]} {
@@ -1059,55 +1037,49 @@ proc Mouse1Down {node} {
 }
 
 
-proc Mouse2Down {node} {
-	variable Vars
-	variable Path
+proc Mouse2Down {dlg node} {
+	variable ${dlg}::Vars
 
 	if {[llength $node] == 0} { return }
 	set gameIndex [$node attribute -default {} game]
 	if {[string length $gameIndex]} {
-		MouseEnter $node
-		::gametable::showGame $Path $Vars(base) -1 $gameIndex 
+		MouseEnter $dlg $node
+		::gametable::showGame $dlg $Vars(base) -1 $gameIndex 
 	} else {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
-			MouseEnter $node
+			MouseEnter $dlg $node
 			set info [::scidb::crosstable::get playerInfo $Vars(tableId) $Vars(viewId) $rank]
-			::playercard::popupInfo $Path $info
+			::playercard::popupInfo $dlg $info
 		} else {
 			set id [$node attribute -default {} recv]
 			if {$id eq "event"} {
-				MouseEnter $node
-				::eventtable::popupInfo $Path $Vars(info)
+				MouseEnter $dlg $node
+				::eventtable::popupInfo $dlg $Vars(info)
 			}
 		}
 	}
 }
 
 
-proc Mouse2Up {node} {
-	variable Path
-	variable Vars
-
+proc Mouse2Up {dlg node} {
 	if {[llength $node] == 0} { return }
 	set attr [$node attribute -default {} recv]
 	if {[string length $attr] == 0} { return }
 
-	::gametable::hideGame $Path
-	::playercard::popdownInfo $Path
-	::eventtable::popdownInfo $Path
-	MouseLeave $node 1
+	::gametable::hideGame $dlg
+	::playercard::popdownInfo $dlg
+	::eventtable::popdownInfo $dlg
+	MouseLeave $dlg $node 1
 }
 
 
-proc Mouse3Down {node} {
-	variable Vars
-	variable Path
+proc Mouse3Down {dlg node} {
 	variable _Popup
 
 	if {[llength $node] == 0} {
 		if {[info exists _Popup]} { return }
-		return [PopupMenu]
+		return [PopupMenu $dlg]
 	}
 
 	set rank [$node attribute -default {} rank]
@@ -1115,7 +1087,7 @@ proc Mouse3Down {node} {
 
 	if {[llength $rank] == 0 && [llength $gameIndex] == 0} { return }
 
-	set m $Path.popup
+	set m $dlg.popup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
@@ -1125,46 +1097,46 @@ proc Mouse3Down {node} {
 			-compound left \
 			-image $::icon::16x16::playercard \
 			-label " $::playertable::mc::ShowPlayerCard" \
-			-command [namespace code [list ShowPlayerCard $rank]] \
+			-command [namespace code [list ShowPlayerCard $dlg $rank]] \
 			;
 	} else {
 		$m add command \
 			-compound left \
 			-image $::icon::16x16::browse \
 			-label " $::browser::mc::BrowseGame" \
-			-command [namespace code [list Open browser $gameIndex]] \
+			-command [namespace code [list Open $dlg browser $gameIndex]] \
 			;
 		$m add command \
 			-compound left \
 			-image $::icon::16x16::overview \
 			-label " $::overview::mc::Overview" \
-			-command [namespace code [list Open overview $gameIndex]] \
+			-command [namespace code [list Open $dlg overview $gameIndex]] \
 			;
 		$m add command \
 			-compound left \
 			-image $::icon::16x16::document \
 			-label " $::browser::mc::LoadGame" \
-			-command [namespace code [list Open pgn $gameIndex]] \
+			-command [namespace code [list Open $dlg pgn $gameIndex]] \
 			;
 		# TODO: add Merge Game
 	}
 
 	if {[info exists m]} {
 		$m add separator
-		BuildMenu $m
+		BuildMenu $dlg $m
 
-		MouseEnter $node
+		MouseEnter $dlg $node
 		set _Popup 1
 		bind $m <<MenuUnpost>> [list unset [namespace current]::_Popup]
-		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $node 1]]
-		tk_popup $m {*}[winfo pointerxy $Path]
+		bind $m <<MenuUnpost>> +[namespace code [list MouseLeave $dlg $node 1]]
+		tk_popup $m {*}[winfo pointerxy $dlg]
 	}
 }
 
 
-proc BuildMenu {m} {
+proc BuildMenu {dlg m} {
 	variable Options
-	variable Vars
+	variable ${dlg}::Vars
 
 	set sub [menu $m.display]
 
@@ -1172,7 +1144,7 @@ proc BuildMenu {m} {
 	foreach opt {rating performance tiebreak winDrawLoss} {
 		$sub add checkbutton \
 			-label [set mc::Show[string toupper $opt 0 0]] \
-			-command [namespace code Update] \
+			-command [namespace code [list UpdateContent $dlg]] \
 			-variable [namespace current]::Options(show:$opt) \
 			-state $state \
 			;
@@ -1196,7 +1168,7 @@ proc BuildMenu {m} {
 	foreach pad {1 2 3 4 5 6} {
 		$sub.padding add radiobutton \
 			-label $pad \
-			-command [namespace code Update] \
+			-command [namespace code [list UpdateContent $dlg]] \
 			-variable [namespace current]::Options(fmt:padding) \
 			-value $pad \
 			;
@@ -1205,7 +1177,7 @@ proc BuildMenu {m} {
 	foreach spc {0 1} {
 		$sub.spacing add radiobutton \
 			-label $spc \
-			-command [namespace code Update] \
+			-command [namespace code [list UpdateContent $dlg]] \
 			-variable [namespace current]::Options(fmt:spacing) \
 			-value $spc \
 			;
@@ -1221,7 +1193,7 @@ proc BuildMenu {m} {
 	set text $mc::Triangle
 	$sub.knockout add radiobutton \
 		-label $text \
-		-command [namespace code Update] \
+		-command [namespace code [list UpdateContent $dlg]] \
 		-variable [namespace current]::Options(fmt:pyramid) \
 		-value 0 \
 		;
@@ -1229,7 +1201,7 @@ proc BuildMenu {m} {
 	set text $mc::Pyramid
 	$sub.knockout add radiobutton \
 		-label $text \
-		-command [namespace code Update] \
+		-command [namespace code [list UpdateContent $dlg]] \
 		-variable [namespace current]::Options(fmt:pyramid) \
 		-value 1 \
 		;
@@ -1242,7 +1214,7 @@ proc BuildMenu {m} {
 	foreach opt {html log} {
 		$sub add checkbutton \
 			-label [set mc::Show[string toupper $opt 0 0]] \
-			-command [namespace code [list ToggleTrace $opt]] \
+			-command [namespace code [list ToggleTrace $dlg $opt]] \
 			-variable [namespace current]::Options(debug:$opt) \
 			;
 	}
@@ -1252,18 +1224,17 @@ proc BuildMenu {m} {
 }
 
 
-proc PopupMenu {} {
-	variable Vars
-	variable Path
+proc PopupMenu {dlg} {
+	variable ${dlg}::Vars
 
-	set m $Path.popup
+	set m .application.__crosstable_popup__
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
-	BuildMenu $m
+	BuildMenu $dlg $m
 	bind $m <<MenuUnpost>> [list $Vars(html) stimulate]
 	bind $m <<MenuUnpost>> +::tooltip::hide
-	tk_popup $m {*}[winfo pointerxy $Path]
+	tk_popup $m {*}[winfo pointerxy $dlg]
 }
 
 

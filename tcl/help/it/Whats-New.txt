@@ -18,7 +18,7 @@
 
 TITLE Novità 
 
-<ul><!-- NEW -->
+<ul>
   <li>Più pagine di aiuto</li>
   <li>Nuova tab database: lista dei luoghi</li>
   <li>Modificata modalità a tutto schermo</li>
@@ -41,6 +41,7 @@ TITLE Novità 
   <li>Supportato scorrimento con rotella del mouse per tutte le liste e la scacchiera</li>
   <li>Notazione delle mosse disponibile per Algebrica (normal, breve e completa), Inglese, Corrispondenza e Telegrafo</li>
   <li>Traduzione in spagnolo ripristinata (grazie a Juan Carlos Vásquez)</li>
+  <!--NEW<li>Some icons newly designed</li>-->
 </ul>
 
 END

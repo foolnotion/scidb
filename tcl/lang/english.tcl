@@ -1190,6 +1190,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Add mode after event type"
 ::export::mc::Option(pgn,comment_to_html)							"Write comment in HTML style"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
+::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Save Game"

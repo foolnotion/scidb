@@ -406,7 +406,7 @@ PgnReader::Pos::Pos() : line(0), column(0) {}
 
 
 PgnReader::PgnReader(mstl::istream& stream,
-							sys::utf8::Codec& codec,
+							mstl::string const& encoding,
 							int firstGameNumber,
 							Modification modification,
 							ResultMode resultMode)
@@ -435,9 +435,14 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_encodingFailed(false)
 	,m_postIndex(0)
 	,m_variant(variant::Unknown)
-	,m_codec(codec)
+	,m_encoding(encoding)
 {
-	M_REQUIRE(codec.hasEncoding());
+	M_REQUIRE(encoding == sys::utf8::Codec::automatic() || sys::utf8::Codec::checkEncoding(encoding));
+
+	if (encoding == sys::utf8::Codec::automatic())
+		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
+	else
+		m_codec = new sys::utf8::Codec(encoding);
 
 	::memset(m_countWarnings, 0, sizeof(m_countWarnings));
 	::memset(m_countErrors, 0, sizeof(m_countErrors));
@@ -452,7 +457,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 
 PgnReader::~PgnReader() throw()
 {
-	// no action
+	delete m_codec;
 }
 
 
@@ -466,14 +471,14 @@ PgnReader::description() const
 bool
 PgnReader::encodingFailed() const
 {
-	return m_codec.failed();
+	return m_codec->failed();
 }
 
 
 mstl::string const&
 PgnReader::encoding() const
 {
-	return m_codec.encoding();
+	return m_codec->encoding();
 }
 
 
@@ -669,6 +674,8 @@ PgnReader::process(Progress& progress)
 		unsigned	frequency		= progress.frequency(numGames, 1000);
 		unsigned	reportAfter		= frequency;
 		unsigned	count				= 0;
+
+		// TODO: do a correction of the estimation periodically.
 
 		ProgressWatcher watcher(progress, numGames);
 
@@ -1154,20 +1161,20 @@ PgnReader::finishGame()
 void
 PgnReader::convertToUtf(mstl::string& s)
 {
-	m_codec.toUtf8(s);
+	m_codec->toUtf8(s);
 
 	if (!sys::utf8::validate(s))
 	{
 		// user has chosen wrong encoding
-		m_codec.forceValidUtf8(s);
+		m_codec->forceValidUtf8(s);
 	}
 
-	if (__builtin_expect(m_codec.failed(), 0))
+	if (__builtin_expect(m_codec->failed(), 0))
 	{
 		if (!m_encodingFailed)
 		{
 			warning(EncodingFailed, m_prevPos);
-			m_codec.reset();
+			m_codec->reset();
 			m_encodingFailed = true;
 		}
 	}
@@ -1481,11 +1488,34 @@ PgnReader::searchTag()
 		while (::isspace(c))
 			c = get(true);
 
-		if (c == '\0')
-			return kEoi;
+		switch (c)
+		{
+			case '\0':	return kEoi;
+			case '[':	return kTag;
 
-		if (c == '[')
-			return kTag;
+			case 0xef:
+				if ((c = get(true)) == 0xbb)
+				{
+					if ((c = get(true)) == 0xbf)
+					{
+						// UTF-8 BOM detected
+						if (m_encoding == sys::utf8::Codec::automatic())
+						{
+							delete m_codec;
+							m_codec = new sys::utf8::Codec(sys::utf8::Codec::utf8());
+						}
+					}
+					else
+					{
+						putback(c);
+					}
+				}
+				else
+				{
+					putback(c);
+				}
+				break;
+		}
 
 		skipLine();
 	}

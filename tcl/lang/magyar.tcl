@@ -1191,6 +1191,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)	"Add mode after event type"
 ::export::mc::Option(pgn,comment_to_html)		"Megjegyzés írása HTML stílusban"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Érvénytelen lépést tartalmazó játszmák elvetése"
+::export::mc::Option(pgn,use_utf8_encoding)		"Use UTF-8 encoding" ;# NEW
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame			"Játszma mentése"

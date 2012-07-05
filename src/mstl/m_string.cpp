@@ -48,6 +48,41 @@
 using namespace mstl;
 
 
+static char const* Roman[] =
+{
+	"M",	// 1000
+	"CM",	// 900
+	"D",	// 500
+	"CD",	// 400
+	"C",	// 100
+	"XC",	// 90
+	"L",	// 50
+	"XL",	// 40
+	"X",	// 10
+	"IX",	// 9
+	"V",	// 5
+	"IV",	// 4
+	"I",	// 1
+};
+
+static unsigned const Arabic[] =
+{
+	1000,		// M
+	900,		// CM
+	500,		// D
+	400,		// CD
+	100,		// C
+	90,		// XC
+	50,		// L
+	40,		// XL
+	10,		// X
+	9,			// IX
+	5,			// V
+	4,			// IV
+	1,			// I
+};
+
+
 char const* string::m_empty = "";
 string const string::empty_string(static_cast<__EMPTY__ const&>(string::__EMPTY__()));
 
@@ -63,11 +98,11 @@ cast(T value, char const* format)
 }
 
 
-inline static string cast(int8_t   v) { return cast(v, "%" PRId8); }
+inline static string cast(int8_t   v) { return cast(v, "%" PRId8);  }
 inline static string cast(int16_t  v) { return cast(v, "%" PRId16); }
 inline static string cast(int32_t  v) { return cast(v, "%" PRId32); }
 inline static string cast(int64_t  v) { return cast(v, "%" PRId64); }
-inline static string cast(uint8_t  v) { return cast(v, "%" PRIu8); }
+inline static string cast(uint8_t  v) { return cast(v, "%" PRIu8);  }
 inline static string cast(uint16_t v) { return cast(v, "%" PRIu16); }
 inline static string cast(uint32_t v) { return cast(v, "%" PRIu32); }
 inline static string cast(uint64_t v) { return cast(v, "%" PRIu64); }
@@ -1107,6 +1142,66 @@ string::substr(size_type pos, size_type len) const
 	M_REQUIRE(len == npos || pos + len <= size());
 
 	return mstl::string(m_data + pos, len == npos ? m_size - pos : len);
+}
+
+
+unsigned
+string::appendRomanNumber(unsigned n)
+{
+	if (n == 0 || n > 3999)
+		return 0;
+
+	unsigned	remainder	= n;
+	unsigned	len			= 0;
+	char		buf[100];
+
+	for (unsigned i = 0; i < sizeof(::Roman)/sizeof(::Roman[0]) && remainder > 0; ++i)
+	{
+		while (remainder >= ::Arabic[i])
+		{
+			M_ASSERT(len < sizeof(buf) - 2);
+
+			char const* rn = ::Roman[i];
+
+			buf[len++] = rn[0];
+			if (rn[1])
+				buf[len++] = rn[1];
+
+			remainder -= ::Arabic[i];
+		}
+	}
+
+	append(buf, len);
+	return len;
+}
+
+
+int
+string::toArabic(size_type pos, size_type len) const
+{
+	M_REQUIRE(pos <= m_size);
+	M_REQUIRE(len == npos || pos + len <= m_size);
+
+	if (len == npos)
+		len = m_size - pos;
+
+	char const* s = m_data + pos;
+	char const* e = s + len;
+
+	int arabic = 0;
+
+	for (unsigned i = 0; i < sizeof(::Roman)/sizeof(::Roman[0]) && s < e; ++i)
+	{
+		char const* rn = ::Roman[i];
+
+		while (::toupper(s[0]) == rn[0] && (rn[1] == '\0' || (s + 1 < e && ::toupper(s[1]) == rn[1])))
+		{
+			arabic += ::Arabic[i];
+			s += (rn[1] ? 2 : 1);
+		}
+	}
+
+	return s == e ? arabic : -1;
 }
 
 // vi:set ts=3 sw=3:

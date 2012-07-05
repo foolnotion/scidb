@@ -73,7 +73,8 @@ public:
 	static unsigned const Flag_Comment_To_Html							= 1 << 25;
 	static unsigned const Flag_Use_ChessBase_Format						= 1 << 26;
 	static unsigned const Flag_Use_Scidb_Import_Format					= 1 << 27;
-	static unsigned const Flag_LAST											= Flag_Use_Scidb_Import_Format;
+	static unsigned const Flag_Write_UTF8_BOM								= 1 << 28;
+	static unsigned const Flag_LAST											= Flag_Write_UTF8_BOM;
 
 	Writer(format::Type srcFormat, unsigned flags, mstl::string const& encoding);
 

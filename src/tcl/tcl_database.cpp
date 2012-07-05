@@ -955,8 +955,6 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	typedef tcl::PgnReader::Encoder Encoder;
-
 	if (objc != 7 && objc != 9)
 	{
 		Tcl_WrongNumArgs(
@@ -973,9 +971,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
-
-			if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
-				encoding = sys::utf8::Codec::latin1();
 		}
 		else
 		{
@@ -1000,10 +995,9 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		char const*		db(stringFromObj(objc, objv, 1));
 		Cursor&			cursor(scidb->cursor(db));
-		Encoder			encoder(encoding);
 
 		tcl::PgnReader	reader(	stream,
-										encoder,
+										encoding,
 										objv[3],
 										objv[4],
 										tcl::PgnReader::Normalize,
@@ -2056,7 +2050,7 @@ getSiteInfo(int index, int view)
 
 	if (view >= 0)
 		index = cursor.siteIndex(index, view);
-	
+
 	NamebaseSite const& site = cursor.database().site(index);
 
 	Tcl_Obj* objv[attribute::site::LastColumn];
@@ -3625,7 +3619,7 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		int fideId = 0;
 		Tcl_GetIntFromObj(ti, objs[PlayerKey_FideID], &fideId);
-		
+
 		index = db.namebase(Namebase::Player).findPlayerIndex(
 						Tcl_GetString(objs[PlayerKey_Name]),
 						fideId,
@@ -3663,7 +3657,7 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		index = db.namebase(Namebase::Annotator).findAnnotatorIndex(Tcl_GetString(objs[0]));
 	}
-	
+
 	setResult(index);
 	return TCL_OK;
 }

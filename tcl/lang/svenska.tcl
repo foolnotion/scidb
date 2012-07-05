@@ -1190,6 +1190,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Lägg till modus efter tävlingstyp"
 ::export::mc::Option(pgn,comment_to_html)							"Skriv kommentar i HTML-format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Uteslut partier med ogiltiga drag"
+::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Spara partiet"

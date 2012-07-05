@@ -139,7 +139,7 @@ public:
 	};
 
 	PgnReader(	mstl::istream& stream,
-					sys::utf8::Codec& codec,
+					mstl::string const& encoding,
 					int firstGameNumber = 0,
 					Modification modification = Normalize,
 					ResultMode resultMode = UseResultTag);
@@ -355,7 +355,8 @@ private:
 	variant::Type		m_variant;
 	mstl::string		m_figurine;
 	mstl::string		m_description;
-	sys::utf8::Codec&	m_codec;
+	mstl::string		m_encoding;
+	sys::utf8::Codec*	m_codec;
 };
 
 } // namespace db

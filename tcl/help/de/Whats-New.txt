@@ -42,6 +42,7 @@ TITLE Was ist neu?
   <li>Mausradunterstützung für alle Listen und das Schachbrett</li>
   <li>Algebraische- (Normal-, Kurz- und Langform), Englische, Korrespondenz- und telegrafische Notation verfügbar</li>
   <li>Spanische Lokalisierung reaktiviert (Dank an Juan Carlos Vásquez)</li>
+  <li>Einige Icons neu gestaltet</li>
 </ul>
 
 END

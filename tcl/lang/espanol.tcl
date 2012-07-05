@@ -27,7 +27,7 @@
 # ======================================================================
 
 # ======================================================================
-# File encoding: macRoman
+# File encoding: utf-8
 # ======================================================================
 
 ### global #############################################################
@@ -1193,6 +1193,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Agregar modo tras el tipo de evento"
 ::export::mc::Option(pgn,comment_to_html)							"Escribir comentario en estilo HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Excluir partidas con jugadas ilegales"
+::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Guardar partida"

@@ -116,6 +116,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Include_Position_Tag);
 		addFlag(Flag_Include_Time_Mode_Tag);
 		addFlag(Flag_Use_Shredder_FEN);
+		addFlag(Flag_Write_UTF8_BOM);
 
 		removeFlag(Flag_Exclude_Extra_Tags);
 		removeFlag(Flag_Symbolic_Annotation_Style);
@@ -124,6 +125,13 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		removeFlag(Flag_Convert_Lost_Result_To_Comment);
 		removeFlag(Flag_Append_Mode_To_Event_Type);
 		removeFlag(Flag_Use_Scidb_Import_Format);
+	}
+
+	if (	test(Flag_Write_UTF8_BOM)
+		&& !test(Mode_PGN_Standard)
+		&& encoding == sys::utf8::Codec::utf8())
+	{
+		m_strm.write("\xef\xbb\xbf\n"); // UTF-8 BOM
 	}
 }
 

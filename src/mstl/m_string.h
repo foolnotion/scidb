@@ -175,6 +175,9 @@ public:
 	int format(const_pointer fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 	int vformat(const_pointer fmt, va_list args);
 
+	unsigned appendRomanNumber(unsigned n);
+	int toArabic(size_type pos = 0, size_type len = npos) const;
+
 	void trim();
 	void ltrim();
 	void rtrim();
