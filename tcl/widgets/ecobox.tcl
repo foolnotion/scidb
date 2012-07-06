@@ -133,7 +133,7 @@ proc LanguageChanged {w var} {
 proc ValidateEco {eco key} {
 	switch [string length $eco] {
 		0 { return 1 }
-		1 { return [string match {[A-Ea-e]} $eco] }
+		1 { return [expr {$eco eq " " || [string match {[A-Ea-e]} $eco]}] }
 		2 { return [string match {[A-Ea-e][0-9]} $eco] }
 		3 { return [string match {[A-Ea-e][0-9][0-9]} $eco] }
 	}
@@ -145,16 +145,19 @@ proc ValidateEco {eco key} {
 proc Completion {w code sym var} {
 	if {$sym eq "Tab"} {
 		after idle [namespace code [list Completion2 $w $var no]]
-	} elseif {[string is alnum -strict $code]} {
+	} elseif {[string is alnum -strict $code] || $code eq " "} {
 		after idle [namespace code [list Completion2 $w $var yes]]
 	}
 }
 
 
 proc Completion2 {w var selection} {
-	set content [string toupper [set $var] 0 1]
+	set content [string trimleft [string toupper [set $var] 0 1]]
+	set len [string length $content]
 
-	if {[string length $content] >= 3} {
+	if {$len == 0} {
+		set $var ""
+	} elseif {[string length $content] >= 3} {
 		set content [string range $content 0 2]
 		lassign [::scidb::app::lookup ecoCode $content] opening shortOpening variation subvar
 		append content " \u2013 "

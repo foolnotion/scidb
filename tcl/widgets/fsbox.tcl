@@ -301,6 +301,7 @@ proc fsbox {w type args} {
 		-command [namespace code [list SelectEncoding $w]] \
 	]
 	bind $Vars(widget:encoding:label) <<AltUnderlined>> [list $Vars(widget:encoding:entry) invoke]
+	bind $Vars(widget:encoding:entry) <Any-ButtonPress> {+ ::tooltip::tooltip hide }
 	tooltip $top.ent_encoding [Tr SelectEncoding]
 
 	if {[llength $Vars(selectencodingcommand)]} {

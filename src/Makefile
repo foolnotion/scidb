@@ -30,6 +30,7 @@ LIBS_BASE = \
 LIBS = \
 	app/libapp.a \
 	db/libdb.a \
+	mstl/libmstl.a \
 	sys/libsys.a \
 	util/libTeXt/libTeXt.a \
 	util/libharu/libharu.a \
@@ -60,7 +61,7 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
+ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) $(CURL_LIB) -lpthread
 ALL_TK_LIBS = $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 #ALL_TK_LIBS = $(TK_LIBS) /usr/local/lib/libtk.a $(X_LIBRARY) -lXft -lXss
 

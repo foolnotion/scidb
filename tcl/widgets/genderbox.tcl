@@ -166,7 +166,7 @@ proc WidgetProc {w command args} {
 			}
 			set value [lindex $args 0]
 			if {[info exists mc::Gender($value)]} {
-				$w.__w__ current search sex  $mc::Gender($value)
+				$w.__w__ current search sex $mc::Gender($value)
 			} else {
 				$w.__w__ current 0
 			}
@@ -294,7 +294,7 @@ proc ShowIcon {w} {
 	variable types
 
 	set content [$w get]
-	if {[string length $content]} {
+	if {[string length $content] > 1} {
 		set idx [$w.__w__ find $content]
 		if {$idx >= 1} {
 			set img $icon::12x12::Gender([lindex $types [expr {$idx - 1}]])

@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci
+INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci -I../util/curl/include
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
@@ -38,8 +38,12 @@ SRC_CXX = \
 	tcl_view.cpp \
 	tcl_zlib.cpp \
 
-SRC	= $(SRC_CXX)
-OBJS	= $(SRC_CXX:.cpp=.o)
+SRC_C = \
+	tclcurl-multi.c \
+	tclcurl.c \
+
+SRC	= $(SRC_CXX) $(SRC_C)
+OBJS	= $(SRC_CXX:.cpp=.o) $(SRC_C:.c=.o)
 LIB	= libtcl
 
 all: $(LIB).a
@@ -59,6 +63,10 @@ $(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
 	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	@$(RANLIB) $(LIB).a
+
+.c.o:
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"

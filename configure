@@ -125,6 +125,8 @@ array set package {
     zziplib-lib  -lzzip
     expat-inc    {}
     expat-lib    -lexpat
+    curl-inc     {}
+    curl-lib     -lcurl
     tcl-inc      {}
     tcl-lib      {}
     x-inc        {}
@@ -182,6 +184,7 @@ array set subdir {
     zlib    {}
     zziplib {}
     expat   {}
+    curl    {}
 }
 
 array set distribution {
@@ -668,10 +671,9 @@ proc findTclTkPaths {} {
         if {[string length $configure(x-includes)] == 0} {
             puts "not found"
         } else {
-            set n [expr {[string length $configure(x-includes)] - [string length $file] - 2}]
-            set configure(x-includes) [string range $configure(x-includes) 0 $n]
             set package(x-inc) [MakeOption -I $configure(x-includes)]
             puts $configure(x-includes)
+            set configure(x-includes) {} ;# not required
         }
     }
 
@@ -853,7 +855,7 @@ proc checkZlib {} {
     if {[SystemHasZlib]} {
         puts "yes."
     } else {
-        puts "no."
+        puts "no (use bundled library)."
         set subdir(zlib) "util/zlib"
         set package(zlib-lib) "util/zlib/libz.a"
     }
@@ -923,7 +925,7 @@ proc checkZziplib {} {
     if {[SystemHasZziplib]} {
         puts "yes."
     } else {
-        puts "no."
+        puts "no (use bundled library)."
         set subdir(zziplib) "util/zzip"
         set package(zziplib-lib) "util/zzip/libzzip.a"
     }
@@ -994,10 +996,97 @@ proc checkExpat {} {
     if {[SystemHasExpat]} {
         puts "yes."
     } else {
-        puts "no."
+        puts "no (use bundled library)."
         set subdir(expat) "util/expat"
         set package(expat-lib) "util/expat/libexpat.a"
     }
+}
+
+
+# Testcurl.sh:
+#    Script used to test if the system has curl installed.
+#
+set TestCurl {#!/bin/sh
+cat <<EOF > testcurl.c
+#include <curl/curl.h>
+int main()
+{
+    (void)curl_version();
+    return 0;
+}
+EOF
+
+__CC__ -o testcurl testcurl.c __curl-inc__ __curl-lib__
+if [ -f testcurl ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# SystemHascurl:
+#    Determines if the system has curl installed. If not,
+#    the curl version that comes with Scidb will be used.
+#
+proc SystemHasCurl {} {
+    global TestCurl
+    global environment
+    global package
+
+    set testCurl [regsub -all __CC__ $TestCurl $environment(CC)]
+    set testCurl [regsub -all __curl-inc__ $testCurl $package(curl-inc)]
+    set testCurl [regsub -all __curl-lib__ $testCurl $package(curl-lib)]
+
+    flush stdout
+    if {[catch {open testcurl.sh w} f]} { return 0 }
+    puts $f [regsub -all __CC__ $testCurl $environment(CC)]
+    close $f
+    set result 0
+    if {![catch {exec sh testcurl.sh} err]} { set result 1 }
+    catch { file delete -force testcurl.sh }
+    catch { file delete -force testcurl.c }
+    catch { file delete -force testcurl }
+    return $result
+}
+
+
+# checCurl:
+#    Checks whether the system has the curl library installed,
+#    if necessary. 
+#
+proc checkCurl {} {
+    global package
+    global subdir
+
+    set error ""
+
+    # check if headers are installed, otherwise use our own.
+    if {[string length $package(curl-inc)] > 0} {
+        if {[llength [FindDir curl.h $package(curl-inc)/curl]] == 0} {
+            set error "Cannot find curl header files in '$package(curl-inc)/curl'"
+            set package(curl-inc) ""
+        }
+    }
+
+    if {[string length $package(curl-inc)] == 0} {
+        if {[llength [FindDir curl.h {/usr/local/include/curl /usr/include/curl}]] == 0} {
+            set package(curl-inc) [MakeOption -I [pwd]/src/util/curl/include]
+        }
+    }
+
+    puts -nonewline "    Checking if your system already has libcurl installed: "
+    flush stdout
+
+    if {[SystemHasCurl]} {
+        set result "yes"
+    } else {
+        set result "no (use bundled library)"
+        set subdir(curl) "util/curl"
+        set package(curl-lib) "[MakeOption -L util/curl] -lcurl"
+    }
+    puts "${result}."
+    if {[string length $error]} { puts $error }
 }
 
 
@@ -1489,6 +1578,8 @@ proc usage {rc} {
     puts "  --with-zziplib-lib=DIR   link options for Zziplib zip library"
     puts "  --with-expat-inc=DIR     path to Expat XML Parser headers"
     puts "  --with-expat-lib=DIR     link options for Expat XML Parser library"
+    puts "  --with-curl-inc=DIR      path to libcurl headers"
+    puts "  --with-curl-lib=DIR      link options for libcurl library"
     puts ""
     puts "Optional Features:"
     puts "  --disable-FEATURE        do not include FEATURE (same as --enable-FEATURE=no)"
@@ -1606,6 +1697,7 @@ if {[string length $gxxVer]} {
     checkZlib
     checkZziplib
     checkExpat
+    checkCurl
 
     if {[isInsaneUnixRelease]} {
         if {![string match Debian* $insaneRelease]} {

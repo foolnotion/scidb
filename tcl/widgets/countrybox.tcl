@@ -228,10 +228,12 @@ proc Completion {w code sym var} {
 
 proc Completion2 {w var prevContent} {
 	set content [string trimleft [set $var]]
+	set len [string length $content]
 
-	if {	[string length $content]
-		&& (	[string range $content 0 end-1] eq $prevContent
-			|| [string match {*([A-Z][A-Z][A-Z])} $prevContent])} {
+	if {$len == 0} {
+		$w.__w__ current 0
+	} elseif {	[string range $content 0 end-1] eq $prevContent
+				|| [string match {*([A-Z][A-Z][A-Z])} $prevContent]} {
 		Search $w $var 0
 	}
 

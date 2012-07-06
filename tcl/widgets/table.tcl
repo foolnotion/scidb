@@ -1138,8 +1138,6 @@ proc Release {table x y} {
 proc SetSelection {table args} {
 	variable ${table}::Vars
 
-	if {$Vars(active) < 0} { return }
-
 	set invoke 0
 
 	if {[llength $args] == 3} {
@@ -1150,6 +1148,7 @@ proc SetSelection {table args} {
 		if {$row >= $Vars(rows)} { return }
 		if {$state & 1} { set invoke 1 }
 	} elseif {[lindex $args 0] & 1} {
+		if {$Vars(active) < 0} { return }
 		set invoke 1
 	}
 

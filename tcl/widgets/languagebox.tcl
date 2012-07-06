@@ -292,7 +292,7 @@ proc ShowCountry {cb} {
 	variable ${cb}::None
 
 	set content [$cb get]
-	if {[string length $content]} {
+	if {[string length $content] > 1} {
 		set n [lsearch -index 1 $Values $content]
 		if {$n >= 1 || (!$None && $n == 0)} {
 			set code [::mc::countryForLang [lindex $Values $n 2]]

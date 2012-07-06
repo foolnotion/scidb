@@ -21,7 +21,7 @@
 namespace mstl {
 namespace bits {
 
-extern void rotate_fast(void* first, void* middle, void* last);
+void rotate_fast(void* first, void* middle, void* last);
 
 }
 

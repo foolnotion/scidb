@@ -233,11 +233,11 @@ proc Completion2 {w var prevContent} {
 	variable types
 
 	set content [string trimleft [set $var]]
-
 	set len [string length $content]
-	if {$len == 0} { return }
 
-	if {$len == 1 && [string is digit -strict $content]} {
+	if {$len == 0} {
+		$w.__w__ current 0
+	} elseif {$len == 1 && [string is digit -strict $content]} {
 		if {$content <= [llength $types]} {
 			$w.__w__ current $content
 			$w.__w__ icursor end
@@ -293,7 +293,7 @@ proc ShowIcon {w} {
 	variable types
 
 	set content [$w get]
-	if {[string length $content]} {
+	if {[string length $content] > 1} {
 		set idx [$w.__w__ find $content]
 		if {$idx >= 1} {
 			set img $icon::12x12::Type([lindex $types [expr {$idx - 1}]])
