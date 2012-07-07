@@ -10,10 +10,13 @@ Copyright (C) 2002-2003 Christian Krone
 Copyright (C) 2003 ActiveState Corporation
 
 ** Tkhtml3
+Copyright (C) 2011-2012 Gregor Cramer
 Copyright (C) 2005 Dan Kennedy
 
 ** TkDND
-Copyright (C) Georgios Petasis, Aghia Paraskevi, Laurent Riesterer
+Copyright (C) Georgios Petasis, Athens, Greece, <petasisg@yahoo.gr>
+Copyright (C) Laurent Riesterer, Rennes, France, <laurent.riesterer@free.fr>
+Copyright (c) 2009-2010 Kevin Walzer/WordTech Communications LLC
 
 ** TkOGL
 no copyrights
@@ -22,6 +25,7 @@ no copyrights
 Copyright 1993-1998 Lucent Technologies, Inc.
 
 ** libharu
+Copyright (C) 2011-2012 Gregor Cramer
 Copyright (C) 2007-2008 Antony Dovgal
 Copyright (C) 1999-2006 Takeshi Kanno
 
@@ -34,6 +38,9 @@ Copyright (C) 1998 Netscape Communications Corporation
 
 ** expat
 Copyright (C) 1998-2000 Thai Open Source Software Center Ltd
+
+** libcurl
+Copyright (c) 1996 - 2012, Daniel Stenberg, <daniel@haxx.se>
 
 ** Anti-Grain Geometry (agg)
 Copyright (C) 2002-2005 Maxim Shemanarev
@@ -64,12 +71,6 @@ Copyright (C) 2005-09-14 Jose de Paula
 ** Toga
 no copyrights
 
-** Gullydeckel
-no copyrights
-
 ** Stockfish
 Copyright (C) 2008-2010 Marco Costalba, Joona Kiiski, Tord Romstad
 Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-
-** TSCP
-Copyright (C) 1997 Tom Kerrigan

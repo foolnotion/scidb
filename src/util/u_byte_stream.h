@@ -143,6 +143,7 @@ public:
 	void advance(unsigned n);
 	void skipString();
 	void seekg(unsigned offset);
+	void seekp(unsigned offset);
 
 	void provide();
 	void provide(unsigned size);

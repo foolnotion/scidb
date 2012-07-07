@@ -96,6 +96,7 @@ private:
 	bool					m_endOfRun;
 	bool					m_danglingPop;
 	unsigned				m_danglingEndMarker;
+	unsigned				m_lastCommentPos;
 };
 
 } // namespace sci

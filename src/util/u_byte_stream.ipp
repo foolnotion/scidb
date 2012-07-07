@@ -201,6 +201,15 @@ ByteStream::seekg(unsigned offset)
 	m_getp = m_base + offset;
 }
 
+
+inline
+void
+ByteStream::seekp(unsigned offset)
+{
+	M_REQUIRE(offset <= tellp());
+	m_putp = m_base + offset;
+}
+
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
 inline

@@ -39,6 +39,7 @@
 #include "sys_utf8_codec.h"
 
 #include <ctype.h>
+#include <string.h>
 
 #ifdef NREQ
 # define DEBUG(x)
@@ -65,6 +66,7 @@ Consumer::Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedT
 	,m_endOfRun(false)
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
+	,m_lastCommentPos(0)
 {
 }
 
@@ -95,10 +97,59 @@ Consumer::beginGame(TagSet const& tags)
 	m_endOfRun = false;
 	m_danglingPop = false;
 	m_danglingEndMarker = 1;
+	m_lastCommentPos = 0;
 
 	return true;
 }
 
+#if 0
+
+save::State
+Consumer::endGame(TagSet const& tags)
+{
+	TagSet const* tagSet = &tags;
+	TagSet* myTags = 0;
+
+	if (m_text.tellp() > 0 && m_lastCommentPos == plyCount() && !tags.contains(tag::Termination))
+	{
+		result::ID result = result::fromString(tags.value(tag::Result));
+
+		if (result == result::White || result == result::Black)
+		{
+			Byte const* s = m_text.data() + m_text.tellp() - 1;
+
+			while (s > m_text.base() && s[-1])
+				--s;
+
+			if (	::strcasecmp(reinterpret_cast<char const*>(s), "time") == 0
+				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time/") == 0
+				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time!") == 0
+				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time forfeit") == 0)
+			{
+				myTags = new TagSet(tags);
+				myTags->set(tag::Termination, termination::toString(termination::TimeForfeit));
+				tagSet = myTags;
+			}
+		}
+	}
+
+	unsigned dataOffset = m_strm.tellp();
+
+	encodeTextSection();
+	encodeDataSection(engines());
+	encodeTags(*tagSet, allowedTags(), allowExtraTags());
+	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
+
+	m_stream.provide();
+	save::State state = m_codec.addGame(m_stream, *tagSet, *this);
+
+	if (myTags)
+		delete myTags;
+
+	return state;
+}
+
+#else
 
 save::State
 Consumer::endGame(TagSet const& tags)
@@ -108,12 +159,14 @@ Consumer::endGame(TagSet const& tags)
 	encodeTextSection();
 	encodeDataSection(engines());
 	encodeTags(tags, allowedTags(), allowExtraTags());
-	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
 
+	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
 	m_stream.provide();
+
 	return m_codec.addGame(m_stream, tags, *this);
 }
 
+#endif
 
 void Consumer::start() {}
 void Consumer::finish() {}
@@ -190,6 +243,9 @@ Consumer::writeComment(	Comment const& preComment,
 		m_strm.put(token::Comment);
 		m_data.put(flag);
 		m_endOfRun = true;
+
+		if (isMainline())
+			m_lastCommentPos = plyCount() + 1;
 	}
 }
 
@@ -226,6 +282,9 @@ Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 		m_strm.put(token::Comment);
 		m_data.put(flag);
 		m_endOfRun = true;
+
+		if (isMainline())
+			m_lastCommentPos = plyCount() + 1;
 	}
 }
 
