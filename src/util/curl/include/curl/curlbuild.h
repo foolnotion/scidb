@@ -152,40 +152,84 @@
 #  include <sys/socket.h>
 #endif
 
+#include <inttypes.h>
+
+#if __WORDSIZE == 64 /* ---------------------------------------------------- */
+
 /* The size of `long', as computed by sizeof. */
-#define CURL_SIZEOF_LONG 4
+# define CURL_SIZEOF_LONG 8
 
 /* Integral data type used for curl_socklen_t. */
-#define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+# define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
 
 /* The size of `curl_socklen_t', as computed by sizeof. */
-#define CURL_SIZEOF_CURL_SOCKLEN_T 4
+# define CURL_SIZEOF_CURL_SOCKLEN_T sizeof(socklen_t)
 
 /* Data type definition of curl_socklen_t. */
 typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
 
 /* Signed integral data type used for curl_off_t. */
-#define CURL_TYPEOF_CURL_OFF_T int64_t
+# define CURL_TYPEOF_CURL_OFF_T int64_t
 
 /* Data type definition of curl_off_t. */
 typedef CURL_TYPEOF_CURL_OFF_T curl_off_t;
 
 /* curl_off_t formatting string directive without "%" conversion specifier. */
-#define CURL_FORMAT_CURL_OFF_T "lld"
+# define CURL_FORMAT_CURL_OFF_T PRId64
 
 /* unsigned curl_off_t formatting string without "%" conversion specifier. */
-#define CURL_FORMAT_CURL_OFF_TU "llu"
+# define CURL_FORMAT_CURL_OFF_TU PRIu64
 
 /* curl_off_t formatting string directive with "%" conversion specifier. */
-#define CURL_FORMAT_OFF_T "%lld"
+# define CURL_FORMAT_OFF_T PRId64
 
 /* The size of `curl_off_t', as computed by sizeof. */
-#define CURL_SIZEOF_CURL_OFF_T 8
+# define CURL_SIZEOF_CURL_OFF_T 8
 
 /* curl_off_t constant suffix. */
-#define CURL_SUFFIX_CURL_OFF_T LL
+# define CURL_SUFFIX_CURL_OFF_T LL
 
 /* unsigned curl_off_t constant suffix. */
-#define CURL_SUFFIX_CURL_OFF_TU ULL
+# define CURL_SUFFIX_CURL_OFF_TU ULL
+
+#else /* ------------------------------------------------------------------- */
+
+/* The size of `long', as computed by sizeof. */
+# define CURL_SIZEOF_LONG 4
+
+/* Integral data type used for curl_socklen_t. */
+# define CURL_TYPEOF_CURL_SOCKLEN_T socklen_t
+
+/* The size of `curl_socklen_t', as computed by sizeof. */
+# define CURL_SIZEOF_CURL_SOCKLEN_T sizeof(socklen_t)
+
+/* Data type definition of curl_socklen_t. */
+typedef CURL_TYPEOF_CURL_SOCKLEN_T curl_socklen_t;
+
+/* Signed integral data type used for curl_off_t. */
+# define CURL_TYPEOF_CURL_OFF_T int32_t
+
+/* Data type definition of curl_off_t. */
+typedef CURL_TYPEOF_CURL_OFF_T curl_off_t;
+
+/* curl_off_t formatting string directive without "%" conversion specifier. */
+# define CURL_FORMAT_CURL_OFF_T PRId32
+
+/* unsigned curl_off_t formatting string without "%" conversion specifier. */
+# define CURL_FORMAT_CURL_OFF_TU PRIu32
+
+/* curl_off_t formatting string directive with "%" conversion specifier. */
+# define CURL_FORMAT_OFF_T PRId32
+
+/* The size of `curl_off_t', as computed by sizeof. */
+# define CURL_SIZEOF_CURL_OFF_T 4
+
+/* curl_off_t constant suffix. */
+# define CURL_SUFFIX_CURL_OFF_T L
+
+/* unsigned curl_off_t constant suffix. */
+# define CURL_SUFFIX_CURL_OFF_TU UL
+
+#endif /* ------------------------------------------------------------------ */
 
 #endif /* __CURL_CURLBUILD_H */
