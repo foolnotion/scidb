@@ -1272,6 +1272,14 @@ db_game.o: ../mstl/m_ref_counter.ipp
 db_game.o: ../mstl/m_auto_ptr.h
 db_game.o: ../mstl/m_auto_ptr.ipp
 db_game.o: db_game.ipp
+db_game.o: db_game_info.h
+db_game.o: db_date.h
+db_game.o: db_date.ipp
+db_game.o: db_game_info.ipp
+db_game.o: db_namebase_entry.h
+db_game.o: db_namebase_entry.ipp
+db_game.o: db_player.h
+db_game.o: db_player.ipp
 db_game.o: db_move_node.h
 db_game.o: ../mstl/m_set.h
 db_game.o: ../mstl/m_set.ipp

@@ -35,11 +35,10 @@ set Cancel				"&Cancel"
 set BaseColors			"Base Colors"
 set UserColors			"User Colors"
 set RecentColors		"Recent Colors"
-set OldColor			"Old Color"
-set CurrentColor		"Current Color"
 set Old					"Old"
 set Current				"Current"
 set Color				"Color"
+set HexCode				"Hex Code"
 set ColorSelection	"Color Selection"
 set Red					"Red"
 set Green				"Green"
@@ -49,43 +48,35 @@ set Saturation			"Saturation"
 set Value				"Value"
 set Enter				"Enter"
 set AddColor			"Add current color to user colors"
-set ClickToEnter		"Click to enter hexadecimal value"
 #################################################################
 } ;# namespace mc
 
 ### Client Relevant Data ########################################
 variable iconOk {}
 variable iconCancel {}
+variable userColorList { {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} }
+variable recentColorList {}
 #################################################################
 
 namespace export choosecolor isOpen geometry addToList
 namespace export hsv2rgb rgb2hsv getActualColor
 namespace export lookupColorName extendColorName
+namespace export userColorList recentColorList
 
 namespace import ::tcl::mathfunc::*
 
-variable BaseColorList {
-	\#0000ff \#00ff00 \#00ffff \#ff0000 \#ff00ff \#ffff00
-	\#000099 \#009900 \#009999 \#990000 \#990099 \#999900
-	\#000000 \#333333 \#666666 \#999999 \#cccccc \#ffffff
+# variable baseColorList {
+# 	\#0000ff \#00ff00 \#00ffff \#ff0000 \#ff00ff \#ffff00
+# 	\#000099 \#009900 \#009999 \#990000 \#990099 \#999900
+# 	\#000000 \#333333 \#666666 \#999999 \#cccccc \#ffffff
+# }
+
+array set Options {
+	button:height	15
+	button:width	20
 }
 
-variable UserColorList { {} {} {} {} {} {} {} {} {} {} }
-variable RecentColorList {}
-
-variable RGB
-variable Widget
-variable Label ""
-variable Methods {circle swatches x11 rgb}
-variable NeedConfigure
-variable CurrMeth
-variable ButtonH 15
-variable ButtonW 20
-variable Geometry {}
-variable NotebookSize
-variable Receiver
-variable HexCode
-variable Focus
+variable Methods {}
 
 
 proc mc {tok} { return [::tk::msgcat::mc [set $tok]] }
@@ -97,144 +88,73 @@ if {![catch {package require tooltip}]} {
 }
 
 
-proc choosecolor {{args {}}} {
-	variable RecentColorList
+proc choosecolor {args} {
+	return [OpenDialog [ParseArguments {*}$args]]
+}
 
-	set parent .
-	set title [Tr Color]
-	set app [tk appname]
-	set class ""
-	set initialColor ""
-	set oldcolor ""
-	set geometry {}
-	set RecentColorList {}
-	set embedcmd {}
-	set height 0
-	set modal true
-	set place centeronscreen
-	set key [lindex $args 0]
 
-	while {$key ne ""} {
-		if {[llength $args] <= 1} {
-			return -code error "no value given to option \"$key\""
-		}
+proc setupColor {path rgb} {
+	variable Priv
 
-		set value [lindex $args 1]
-		set args [lreplace $args 0 1]
+	set Priv(rgb) $rgb
+	set Priv(hexcode) [string range $rgb 1 end]
+	ShowColor $path.lt.current $rgb
 
-		switch -exact -- $key {
-			-parent {
-				set parent $value
-				if {![winfo exists $parent]} {
-					return -code error "window name \"$parent\" doesn't exist"
-				}
-			}
-			
-			-app {
-				set app $value
-			}
 
-			-class {
-				set class $value
-			}
-
-			-place {
-				if {$value ne "centeronscreen" && $value ne "centeronparent"} {
-					return -code error "option \"$key\": invalid argument \"$value\""
-				}
-				set place $value
-			}
-
-			-title {
-				set title $value
-			}
-
-			-initialcolor {
-				if {$value ne ""} {
-					set initialColor [getActualColor $value]
-					if {$initialColor eq ""} {
-						return -code error "option \"$key\": invalid color \"$value\""
-					}
-				}
-			}
-
-			-oldcolor {
-				if {$value ne ""} {
-					set oldcolor [getActualColor $value]
-					if {$oldcolor eq ""} {
-						return -code error "option \"$key\": invalid color \"$value\""
-					}
-				}
-			}
-
-			-recentcolors {
-				foreach color $value {
-					set actual ""
-					if {$color ne ""} {
-						set actual [getActualColor $color]
-						if {$actual eq ""} {
-							return -code error "option \"$key\": invalid color \"$color\""
-						}
-					}
-					lappend RecentColorList $actual
-				}
-				if {[llength $RecentColorList] > 0} {
-					set n [expr {6 - ([llength $RecentColorList]%6)}]
-					if {$n < 6} {
-						set RecentColorList [concat $RecentColorList [lrepeat $n {}]]
-					}
-				}
-			}
-
-			-geometry {
-				if {$value eq "last"} {
-					set geometry [geometry]
-				} else {
-					if {[regexp {^(\d+x\d+)?(\+\d+\+\d+)?$} $value] == 0} {
-						return -code error \
-							"option \"$key\": invalid geometry '$value'; should be \[WxH\]\[+X+Y\]"
-					}
-					set geometry $value
-				}
-			}
-
-			-embedcmd {
-				set embedcmd $value
-			}
-
-			-height {
-				if {![string is integer $value]} {
-					return -code error "option \"$key\": value should be integer"
-				}
-				set height $value
-			}
-
-			-modal {
-				if {![string is boolean $value]} {
-					return -code error "option \"$key\": value should be boolean"
-				}
-				set modal $value
-			}
-
-			default {
-				return -code error \
-					"unknown option \"$key\": should be -app, -class, -embedcmd, -geometry, \
-					-height, -initialcolor, -modal, -parent, -recentcolors, or -title"
-			}
-		}
-
-		set key [lindex $args 0]
+	if {$Priv(configured)} {
+		scan $rgb "\#%2x%2x%2x" r g b
+		namespace eval $Priv(current-method) [list Update $r $g $b false]
 	}
+}
 
-	return [OpenDialog	$parent $class $app $title $modal $height $geometry \
-								$initialColor $oldcolor $embedcmd $place]
+
+proc setupRecentColors {path recentcolors} {
+	variable Options
+	variable icon::$Options(button:width)x$Options(button:height)::Empty
+
+	set row 1
+	set col 1
+	set count 0
+	set lt $path.lt
+
+	foreach c [set $recentcolors] {
+		set fround $lt.roundrecent$count
+		set fcolor $lt.colorrecent$count
+		set bg [$fround cget -background]
+		if {[llength $c] == 0} {
+			set tip ""
+			if {![winfo exists $fcolor.empty]} {
+				$fcolor configure -background $bg
+				pack [tk::label $fcolor.empty -borderwidth 0 -image $Empty]
+			}
+		} else {
+			catch { destroy $fcolor.empty }
+			$fcolor configure -background $c
+			set tip [extendColorName $c]
+		}
+		tooltip $fcolor $tip
+		if {[incr col] == 7} {
+			incr row
+			set col 1
+		}
+		incr count
+	}
+}
+
+
+proc embedFrame {path args} {
+	ttk::frame $path -takefocus 0
+	BuildFrame $path [ParseArguments {*}$args]
+	return $path
 }
 
 
 proc geometry {{whichPart size}} {
-	variable Geometry
+	variable Priv
 
-	set geom $Geometry
+	if {![winfo exists Priv(geometry)]} { return "" }
+
+	set geom $Priv(geometry)
 	if {$geom eq ""} { return "" }
 
 	switch -- $whichPart {
@@ -247,13 +167,13 @@ proc geometry {{whichPart size}} {
 
 
 proc getActualColor {color} {
-	variable Label
+	variable Priv
 
-	if {[llength $Label] == 0} {
-		set Label [tk::label ._choosecolor__should_be_unique_pathname_[clock seconds]]
+	if {![info exists Priv(label)]} {
+		set Priv(label) [tk::label ._choosecolor__should_be_unique_pathname_[clock seconds]]
 	}
-	if {[catch {$Label configure -background $color}]} { return "" }
-	lassign [winfo rgb $Label [$Label cget -background]] r g b
+	if {[catch {$Priv(label) configure -background $color}]} { return "" }
+	lassign [winfo rgb $Priv(label) [$Priv(label) cget -background]] r g b
 	return [format "#%02x%02x%02x" [expr {$r/257}] [expr {$g/257}] [expr {$b/257}]]
 }
 
@@ -278,7 +198,7 @@ proc lookupColorName {color} {
 				211 { set name "Light Gray" }
 				255 { set name "White" }
 
-				25 - 76 - 128 - 178 - 230 { set dummy "fails calculation below" }
+				25 - 76 - 128 - 178 - 230 { ;# "fails calculation below" }
 
 				default {
 					set v [expr {$r*0.3921568627450980392}]	;# we need full precision!
@@ -301,524 +221,8 @@ proc extendColorName {color} {
 
 
 proc isOpen {} {
-	variable Widget
-	return [info exists Widget]
-}
-
-
-proc Tr {tok} { return [mc [namespace current]::mc::$tok] }
-namespace export Tr
-
-
-proc OpenDialog {parent class app title modal adjHeight geometry initialColor oldcolor embedcmd place} {
-	variable BaseColorList
-	variable UserColorList
-	variable RecentColorList
-	variable NotebookSize
-	variable Widget
-	variable Receiver
-	variable Methods
-	variable CurrMeth
-	variable NeedConfigure
-	variable ButtonH
-	variable ButtonW
-	variable icon::${ButtonH}x${ButtonH}::GreenArrow
-	variable RGB
-	variable Embedded
-	variable iconOk
-	variable iconCancel
-
-	if {[isOpen]} {
-		return -code error "choosecolor dialog already open"
-	}
-	set Receiver {}
-	set Embedded {}
-
-	### Create Dialog ##############
-	set point [expr {$parent eq "." ? "" : "."}]
-	set dlg ${parent}${point}__choosecolor__
-	if {[llength $class]} {
-		tk::toplevel $dlg -class $class
-	} else {
-		tk::toplevel $dlg
-	}
-	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg %W]]
-	event add <<ChooseColorSelected>> ChooseColorSelected
-	event add <<ChooseColorReset>> ChooseColorReset
-
-	set NotebookSize(y) [[namespace current]::x11::ComputeHeight $adjHeight]
-	set NotebookSize(x) [[namespace current]::[lindex $Methods 0]::ComputeWidth $NotebookSize(y)]
-
-	### Top Frame ##################
-	set top [tk::frame $dlg.top]
-	set lt [tk::frame $top.lt -relief flat]
-	set rt [ttk::notebook $top.rt -takefocus 1]
-
-	grid $lt -row 1 -column 1 -sticky ns
-	grid $rt -row 1 -column 3 -sticky nsew
-	grid columnconfigure $top 2 -minsize 5
-	grid columnconfigure $top 3 -weight 1
-	grid rowconfigure $top 1 -weight 1
-
-	set count 0
-	set frow 0
-	set frows {}
-	foreach {type var name} [list	base BaseColorList BaseColors \
-											recent RecentColorList RecentColors \
-											user UserColorList UserColors] {
-		if {[llength [set $var]] == 0} { continue }
-
-		set f [ttk::labelframe $lt.$type -text [Tr $name]]
-		grid $f -sticky nwe -row $frow -column 0
-
-		set row 1
-		set col [expr {($type eq "user") + 1}]
-
-		foreach c [set $var] {
-			set fround [tk::frame $lt.round$type$count -relief raised -borderwidth 1]
-			if {[llength $c] == 0} { set c [$top cget -background] }
-			set fcolor [tk::frame $lt.color$type$count \
-										-width [expr {$ButtonW - 0}] \
-										-height [expr {$ButtonH - 0}] \
-										-highlightthickness 0 \
-										-relief flat \
-										-background $c]
-			pack $fcolor -in $fround -padx 0 -pady 0
-			grid $fround -in $f -row $row -column $col -padx 2 -pady 2
-
-			bind $fround <ButtonPress-1>	[namespace code [list SelectRGB $type $count]]
-			bind $fcolor <ButtonPress-1>	[namespace code [list SelectRGB $type $count]]
-			bind $fround <FocusIn>			[list $fround configure -relief sunken]
-			bind $fround <FocusOut>			[list $fround configure -relief raised]
-
-			incr count
-			if {[incr col] == 7} {
-				incr row
-				set col [expr {($type eq "user") + 1}]
-			}
-		}
-
-		set count 0
-		lappend frows [expr {$frow + 1}]
-		incr frow 2
-		grid columnconfigure $f {0 7} -minsize 3 -weight 1
-		grid rowconfigure $f 0 -minsize 3
-		grid rowconfigure $f $row -minsize 3
-	}
-
-	if {[llength $UserColorList] > 0} {
-		set add [tk::button $lt.add \
-						-image [set GreenArrow] \
-						-width [expr {$ButtonW - 2}] \
-						-height [expr {$ButtonH - 2}] \
-						-background [$top cget -background] \
-						-relief raised \
-						-borderwidth 1]
-		grid $add -in $lt.user -row 1 -column 1 -padx 2 -pady 2
-		bind $add <ButtonPress-1> [namespace code [list AddCurrentColor $lt]]
-		tooltip $lt.add [Tr AddColor]
-	}
-
-	set colorFrames {}
-	if {$oldcolor ne ""} { lappend colorFrames old Old }
-	if {$embedcmd eq "" || $oldcolor eq ""} { lappend colorFrames current Current }
-
-	if {$embedcmd ne ""} {
-		set Embedded [tk::frame $lt.embed]
-		grid $Embedded -row $frow -sticky nsew
-		lappend frows [expr {$frow - 1}]
-		set rcv [eval $embedcmd $Embedded]
-		lappend Receiver $rcv
-		bind $rcv <ButtonPress-1> [namespace code [list EnterColor $rcv $app]]
-		incr frow 2
-	}
-
-	foreach {type name} $colorFrames {
-		set fcolor [ttk::frame $lt.f$type -relief sunken -borderwidth 2]
-		set ccolor [tk::canvas $lt.$type -highlightthickness 0 -width 10 -height 10]
-		if {$oldcolor ne ""} {
-			$lt.$type create text 5 5 -anchor nw -text [Tr $name] -tags label
-		}
-		grid $fcolor -row $frow -sticky nsew
-		grid rowconfigure $lt $frow -weight 1 -minsize 30
-		pack $ccolor -in $fcolor -expand yes -fill both
-		incr frow 2
-	}
-
-	lappend frows [expr {$frow - 3}]
-	grid rowconfigure $lt $frows -minsize 5
-
-	if {$embedcmd eq "" || $oldcolor eq ""} {
-		lappend Receiver [list $lt.current]
-		bind $lt.current <<ChooseColorSelected>> [namespace code [list ShowColor $lt.current %d]]
-		bind $lt.current <ButtonPress-1> [namespace code [list EnterColor $lt.current $app]]
-	}
-
-	set count 1
-	foreach meth $Methods {
-		tk::frame $rt.$meth
-		namespace eval $meth [list MakeFrame $rt.$meth]
-		set icon [namespace eval $meth { Icon }]
-		if {$icon eq ""} {
-			$rt add $rt.$meth -sticky nsew -padding 5 -text [mc [string toupper $meth 0 0]]
-		} else {
-			$rt add $rt.$meth -sticky nsew -padding 5 -image $icon
-		}
-		set NeedConfigure($meth) 1
-		bind $dlg "<F$count>" [list $rt select [expr {$count - 1}]]
-		incr count
-	}
-	set CurrMeth [lindex $Methods 0]
-
-	bind $rt <<NotebookTabChanged>> [namespace code [list TabChanged $rt]]
-	bind $rt <Configure> [namespace code [list Configure $rt]]
-
-	### Setup ######################
-	if {[llength $initialColor] == 0} {
-		set initialColor [expr {$oldcolor eq "" ? "#ffffff" : $oldcolor}]
-	}
-	set Widget $top.lt
-	set RGB $initialColor
-	scan $RGB "\#%2x%2x%2x" r g b
-	if {$embedcmd eq "" || $oldcolor eq ""} { ShowColor $lt.current $RGB }
-	if {[llength $oldcolor]} { ShowColor $lt.old $oldcolor }
-	if {[llength $Embedded]} {
-		tooltip $Embedded "[Tr CurrentColor]: [extendColorName $RGB]\n[Tr ClickToEnter]"
-	}
-
-	### Button Frame ###############
-	set box [tk::frame $dlg.bbox]
-	tk::AmpWidget ttk::button $box.ok  -default active -command [namespace code [list Done $dlg 1 ]]
-	tk::AmpWidget ttk::button $box.cancel -command \
-		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $initialColor : $oldcolor}]]]
-	if {[llength iconOk] && [llength iconCancel]} {
-		$box.ok configure -compound left -image $iconOk
-		$box.cancel configure -compound left -image $iconCancel
-		tk::SetAmpText $box.ok " [Tr Ok]"
-		tk::SetAmpText $box.cancel " [Tr Cancel]"
-	} else {
-		tk::SetAmpText $box.ok [Tr Ok]
-		tk::SetAmpText $box.cancel [Tr Cancel]
-	}
-	bind $box.cancel <Return> { event generate %W <Key-space>; break }
-	bind $box.cancel <FocusIn>  "%W configure -default active; $box.ok configure -default normal"
-	bind $box.cancel <FocusOut> "%W configure -default normal; $box.ok configure -default active"
-	pack $box.ok -side left -padx 5
-	pack $box.cancel -side left -padx 5
-
-	set cancelCmd "$box.cancel invoke"
-	switch $::tcl_platform(platform) {
-		macintosh	{ bind $dlg <Command-period> $cancelCmd }
-		windows		{ bind $dlg <Escape> $cancelCmd }
-		x11			{ bind $dlg <Escape> $cancelCmd; bind $dlg <Control-c> $cancelCmd }
-	}
-	bind $dlg <Return> "focus $box.ok; event generate $box.ok <Key-space>"
-	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
-
-	### Dialog Layout ##############
-	set sep [ttk::separator $dlg.sep -orient horizontal]
-	pack $top -side top -expand yes -fill both -padx 5 -pady 5
-	pack $sep -side top -anchor ne -fill x
-	pack $box -side top -anchor ne -pady 2m
-
-	### Map Dialog ################
-   wm protocol $dlg WM_DELETE_WINDOW \
-		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $initialColor : $oldcolor}] ]]
-   wm title $dlg [expr {$app eq "" ? $title : "$app: $title"}]
-	Popup $dlg $parent $modal $rt $place $geometry
-	unset Widget
-
-	return $RGB
-}
-
-
-proc Popup {dlg parent modal focus {place {}} {geometry {}}} {
-	if {[winfo viewable [winfo toplevel $parent]] } {
-		wm transient $dlg [winfo toplevel $parent]
-	}
-	catch { wm attributes $dlg -type dialog }
-	wm iconname $dlg ""
-	wm withdraw $dlg
-	update idletasks
-	set rw [winfo reqwidth  $dlg]
-	set rh [winfo reqheight $dlg]
-	if {[string first "+" $geometry] >= 0} {
-		wm geometry $dlg $geometry
-	} else {
-		if {$geometry eq ""} {
-			set geometry [format "%dx%d" $rw $rh]
-			set w $rw
-			set h $rh
-		} else {
-			scan $geometry "%dx%d" w h
-		}
-		set sw [winfo screenwidth  $parent]
-		set sh [winfo screenheight $parent]
-		if {$parent eq "." || $place eq "centeronscreen"} {
-			set x0 [expr {($sw - $w)/2 - [winfo vrootx $parent]}]
-			set y0 [expr {($sh - $h)/2 - [winfo vrooty $parent]}]
-		} else {
-			set x0 [expr {[winfo rootx $parent] + ([winfo width  $parent] - $w)/2}]
-			set y0 [expr {[winfo rooty $parent] + ([winfo height $parent] - $h)/2}]
-		}
-		set x "+$x0"
-		set y "+$y0"
-		if {[tk windowingsystem] ne "win32"} {
-			if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
-			if {$x0 < 0}			{ set x "+0" }
-			if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
-			if {$y0 < 0}			{ set y "+0" }
-		}
-		if {[tk windowingsystem] eq "aqua"} {
-			# avoid the native menu bar which sits on top of everything
-			scan $y0 "%d" y
-			if {0 <= $y && $y < 22} { set y0 "+22" }
-		}
-		wm geometry $dlg $geometry${x}${y}
-	}
-	wm minsize $dlg $rw $rh
-	wm deiconify $dlg
-	if {$modal} { ttk::grabWindow $dlg }
-	focus $focus
-   tkwait window $dlg
-	if {$modal} { ttk::releaseGrab $dlg }
-}
-
-
-proc Done {dlg ok {oldcolor ""}} {
-	variable Receiver
-	variable Widget
-	variable RGB
-
-	if {!$ok} {
-		set RGB ""
-		foreach recv $Receiver {
-			if {$recv ne "$Widget.current"} {
-				event generate $recv <<ChooseColorReset>> -data $oldcolor
-			}
-		}
-	}
-	destroy $dlg
-}
-
-
-proc Configure {tabs} {
-	variable Methods
-	variable NeedConfigure
-
-	foreach meth $Methods {
-		set NeedConfigure($meth) 1
-	}
-
-	TabChanged $tabs true
-}
-
-
-proc RecordGeometry {dlg window} {
-	variable Geometry
-
-	if {$dlg ne $window} { return }
-
-	set g [winfo geometry $dlg]
-	scan $g "%ux%u" gw gh
-
-	if {$gw > 1} {
-		set rw [winfo reqwidth $dlg]
-		set rh [winfo reqheight $dlg]
-
-		if {$gw != $rw || $gh != $rh} {
-			set Geometry $g
-		} elseif {[llength $Geometry]} {
-			scan $Geometry "%ux%u" pw ph
-			if {$gw < $pw || $gh < $ph} { set Geometry $g }
-		}
-	}
-}
-
-
-proc TabChanged {tabs {resized false}} {
-	variable CurrMeth
-	variable NeedConfigure
-	variable RGB
-
-	set w [winfo width $tabs.$CurrMeth]
-
-	if {$w <= 1} { return }
-
-	set parts		[split [$tabs select] .]
-	set CurrMeth	[lindex $parts end]
-
-	if {$NeedConfigure($CurrMeth)} {
-		set h [winfo height $tabs.$CurrMeth]
-		namespace eval $CurrMeth [list Configure $w $h]
-		set NeedConfigure($CurrMeth) 0
-	}
-
-	scan $RGB "\#%2x%2x%2x" r g b
-	namespace eval $CurrMeth [list Update $r $g $b $resized]
-
-	if {!$resized} { focus $tabs }
-}
-
-
-proc addToList {lis color} {
-	if {$color eq ""} { return $lis }
-	set color [getActualColor $color]
-	set n [lsearch -exact $lis $color]
-	if {$n == -1} { set n end }
-	return [linsert [lreplace $lis $n $n] 0 $color]
-}
-
-
-proc AddCurrentColor {w} {
-	variable UserColorList
-	variable BaseColorList
-	variable RGB
-
-	set UserColorList [addToList $UserColorList $RGB]
-
-	set count 0
-	foreach color $UserColorList {
-		if {$color ne ""} {
-			$w.coloruser$count configure -background $color
-		}
-		incr count
-	}
-}
-
-
-proc ShowColor {w color} {
-	if {[string match *old $w]} {
-		tooltip $w "[Tr OldColor]: [extendColorName $color]"
-	} else {
-		tooltip $w "[Tr CurrentColor]: [extendColorName $color]\n[Tr ClickToEnter]"
-	}
-
-	$w configure -background $color
-	scan $color "\#%2x%2x%2x" r g b
-	set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
-	$w itemconfigure label -fill [expr {$luma < 128 ? "white" : "black"}]
-}
-
-
-proc SelectRGB {type count} {
-	variable CurrMeth
-	variable Widget
-	variable RGB
-
-	focus $Widget.round$type$count
-	SetColor [$Widget.color$type$count cget -background]
-	scan $RGB "\#%2x%2x%2x" r g b
-	namespace eval $CurrMeth [list Update $r $g $b false]
-}
-
-
-proc SetColor {rgb} {
-	variable RGB
-	variable Receiver
-	variable Embedded
-
-	if {[llength $Embedded]} { tooltip $Embedded "[Tr CurrentColor]: $rgb\n[Tr ClickToEnter]" }
-
-	set RGB $rgb
-	foreach recv $Receiver {
-		event generate $recv <<ChooseColorSelected>> -data $RGB
-	}
-}
-
-
-proc SetRGB {rgb} {
-	SetColor [format "#%02x%02x%02x" {*}$rgb]
-}
-
-
-proc SetHexCode {} {
-	variable HexCode
-	variable CurrMeth
-
-	if {[string length $HexCode] == 6} { 
-		SetColor "#$HexCode"
-		scan $HexCode "%2x%2x%2x" r g b
-		namespace eval $CurrMeth [list Update $r $g $b false]
-	}
-}
-
-
-proc CreateEntry {w} {
-	variable HexCode
-	variable RGB
-
-	set HexCode [string range $RGB 1 end]
-
-	ttk::frame $w.border -takefocus 1
-	pack $w.border
-	set f [ttk::frame $w.border.frame]
-	ttk::label $f.l -text "[Tr Enter]: #"
-	ttk::entry $f.e \
-		-width 8 \
-		-textvariable [namespace current]::HexCode \
-		-takefocus 1 \
-		-validatecommand {
-			return [expr {%d == 0 || ([string match \[0-9a-fA-F\]* "%S"] && [string length %s] <= 5)}]
-		} \
-		-invalidcommand { bell } \
-		;
-	$f.e configure -validate key
-	$f.e selection range 0 end
-	pack $f -padx 5 -pady 5
-	pack $f.l -side left
-	pack $f.e -side left
-
-	return [list $w.border $f.e]
-}
-
-
-proc EnterColor {parent app} {
-	variable Focus
-
-	set focus [focus]
-	if {[string match *.border.frame.e $focus]} { set focus $Focus } else { set Focus $focus }
-	if {$focus eq ""} { set focus [winfo toplevel $parent].top.rt }
-	set haveNoWindowDecor false
-	if {[tk windowingsystem] eq "x11"} { set haveNoWindowDecor [llength [info procs x11NoWindowDecor]] }
-
-	if {$haveNoWindowDecor || [tk windowingsystem] eq "aqua" || [winfo class $parent] ne "Canvas"} {
-		if {[winfo exists $parent.enter_color]} { return }
-		set w [tk::toplevel $parent.enter_color -class EnterColor]
-		lassign [CreateEntry $w] f e
-		bind $e <FocusOut>	"after idle { destroy $w }"
-		bind $e <Key-Return>	"[namespace current]::SetHexCode; focus $focus"
-		bind $e <Key-Tab>		"[namespace current]::SetHexCode; focus $focus"
-		bind $e <Key-Escape>	"focus $focus; break"
-
-		wm protocol $w WM_DELETE_WINDOW "destroy $w"
-		wm title $w ""
-		wm resizable $w false false
-		wm withdraw $w
-
-		if {$haveNoWindowDecor} {
-			$w.border configure -borderwidth 2 -relief raised
-			x11NoWindowDecor $w
-		} elseif {[tk windowingsystem] eq "aqua"} {
-			::tk::unsupported::MacWindowStyle style $w plainDBox {}
-		}
-
-		tooltip off
-		Popup $w $parent false $e
-		tooltip on
-	} elseif {[$parent gettags entry] eq ""} {
-		lassign [CreateEntry $parent] w e
-		$w configure -borderwidth 2 -relief raised
-		set xc [expr {[winfo width  $parent]/2}]
-		set yc [expr {[winfo height $parent]/2}]
-		$parent create window $xc $yc -window $w -anchor center -tag entry
-		bind $e <FocusOut>	"$parent delete entry; destroy $w; [namespace current]::tooltip on"
-		bind $e <Key-Return>	"[namespace current]::SetHexCode; focus $focus"
-		bind $e <Key-Tab>		"[namespace current]::SetHexCode; focus $focus"
-		bind $e <Key-Escape>	"focus $focus; break"
-		focus $e
-		tooltip off
-	}
+	variable Priv
+	return [expr {[info exists Priv(pane)] && [winfo exists $Priv(pane)]}]
 }
 
 
@@ -886,21 +290,633 @@ proc rgb2hsv {r g b} {
 }
 
 
+proc addToList {listvar color} {
+	if {[llength $color] == 0} { return }
+	set color [getActualColor $color]
+	set n [lsearch -exact [set $listvar] $color]
+	if {$n == -1} { set n end }
+	set $listvar [linsert [lreplace [set $listvar] $n $n] 0 $color]
+}
+
+
+proc Tr {tok} { return [mc [namespace current]::mc::$tok] }
+namespace export Tr
+
+
+proc OpenDialog {options} {
+	variable Priv
+	variable Methods
+	variable iconOk
+	variable iconCancel
+
+	if {[isOpen]} {
+		return -code error "choosecolor dialog already open"
+	}
+
+	array set opts $options
+	set oldcolor $opts(oldcolor)
+
+	### Create Dialog ##############
+	set point [expr {$opts(parent) eq "." ? "" : "."}]
+	set dlg $opts(parent)${point}__choosecolor__
+	if {[llength $opts(class)]} {
+		tk::toplevel $dlg -class $opts(class)
+	} else {
+		tk::toplevel $dlg
+	}
+	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg %W]]
+	event add <<ChooseColorSelected>> ChooseColorSelected
+	event add <<ChooseColorReset>> ChooseColorReset
+
+	set top [ttk::frame $dlg.top -takefocus 0]
+	BuildFrame $top $options
+
+	### Button Frame ###############
+	set box [tk::frame $dlg.bbox -takefocus 0]
+	tk::AmpWidget ttk::button $box.ok  -default active -command [namespace code [list Done $dlg 1 ]]
+	tk::AmpWidget ttk::button $box.cancel -command \
+		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $opts(initialcolor) : $oldcolor}]]]
+	if {[llength iconOk] && [llength iconCancel]} {
+		$box.ok configure -compound left -image $iconOk
+		$box.cancel configure -compound left -image $iconCancel
+		tk::SetAmpText $box.ok " [Tr Ok]"
+		tk::SetAmpText $box.cancel " [Tr Cancel]"
+	} else {
+		tk::SetAmpText $box.ok [Tr Ok]
+		tk::SetAmpText $box.cancel [Tr Cancel]
+	}
+	bind $box.cancel <Return> { event generate %W <Key-space>; break }
+	bind $box.cancel <FocusIn>  "%W configure -default active; $box.ok configure -default normal"
+	bind $box.cancel <FocusOut> "%W configure -default normal; $box.ok configure -default active"
+	pack $box.ok -side left -padx 5
+	pack $box.cancel -side left -padx 5
+
+	set cancelCmd "$box.cancel invoke"
+	switch $::tcl_platform(platform) {
+		macintosh	{ bind $dlg <Command-period> $cancelCmd }
+		windows		{ bind $dlg <Escape> $cancelCmd }
+		x11			{ bind $dlg <Escape> $cancelCmd; bind $dlg <Control-c> $cancelCmd }
+	}
+	bind $dlg <Return> "focus $box.ok; event generate $box.ok <Key-space>"
+	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
+
+	### Dialog Layout ##############
+	set sep [ttk::separator $dlg.sep -orient horizontal]
+	pack $top -side top -expand yes -fill both -padx 5 -pady 5
+	pack $sep -side top -anchor ne -fill x
+	pack $box -side top -anchor ne -pady 2m
+
+	### Map Dialog ################
+   wm protocol $dlg WM_DELETE_WINDOW \
+		[namespace code [list Done $dlg 0 [expr {$oldcolor eq "" ? $opts(initialcolor) : $oldcolor}] ]]
+   wm title $dlg [expr {$opts(app) eq "" ? $opts(title) : "$opts(app): $opts(title)"}]
+	Popup $dlg $opts(parent) $opts(modal) $top.rt $opts(place) $opts(geometry)
+
+	return $Priv(rgb)
+}
+
+
+proc BuildFrame {w options} {
+	variable Options
+	variable icon::$Options(button:height)x$Options(button:height)::GreenArrow
+	variable icon::$Options(button:width)x$Options(button:height)::Empty
+	variable Methods
+	variable Priv
+
+	array set opts $options
+	set oldcolor $opts(oldcolor)
+	set Priv(receiver) $opts(receiver)
+	set Priv(embedded) {}
+	set Priv(configured) 0
+
+	set Priv(notebook-size:y) [[namespace current]::x11::ComputeHeight \
+		$opts(height) \
+		[llength [set $opts(usercolors)]] \
+		[llength [set $opts(recentcolors)]] \
+	]
+	set Priv(notebook-size:x) \
+		[[namespace current]::[lindex $Methods 0]::ComputeWidth $Priv(notebook-size:y)]
+
+	### Top Frame ##################
+	set lt [ttk::frame $w.lt -relief flat -takefocus 0]
+	set rt [ttk::notebook $w.rt -takefocus 1]
+
+	grid $lt -row 1 -column 1 -sticky ns
+	grid $rt -row 1 -column 3 -sticky nsew
+	grid columnconfigure $w 2 -minsize 5
+	grid columnconfigure $w 3 -weight 1
+	grid rowconfigure $w 1 -weight 1
+
+	set count 0
+	set frow 0
+	set frows {}
+	foreach {type var name} [list \
+			user $opts(usercolors) UserColors \
+			recent $opts(recentcolors) RecentColors \
+		] {
+		if {[llength [set $var]] == 0} { continue }
+
+		set f [ttk::labelframe $lt.$type -text [Tr $name]]
+		grid $f -sticky nwe -row $frow -column 0
+
+		set row 1
+		set col [expr {($type eq "user") + 1}]
+
+		foreach c [set $var] {
+			set fround [tk::frame $lt.round$type$count -relief raised -borderwidth 1 -takefocus 0]
+			set bg [$fround cget -background]
+			set args {}
+			set color $c
+			if {[llength $color] == 0} { set color $bg }
+			set fcolor [tk::frame $lt.color$type$count \
+										-width $Options(button:width) \
+										-height $Options(button:height) \
+										-highlightthickness 0 \
+										-borderwidth 0 \
+										-background $color \
+			]
+			if {[llength $c] == 0} {
+				pack [tk::label $fcolor.empty -borderwidth 0 -image $Empty]
+			} else {
+				tooltip $fcolor [extendColorName $c]
+			}
+			pack $fcolor -in $fround -padx 0 -pady 0
+			grid $fround -in $f -row $row -column $col -padx 2 -pady 2
+
+			bind $fcolor <ButtonPress-1>		[list $fround configure -relief sunken]
+			bind $fcolor <ButtonRelease-1>	[list $fround configure -relief raised]
+			bind $fcolor <ButtonPress-1>		+[namespace code [list SelectRGB $type $count]]
+
+			incr count
+			if {[incr col] == 7} {
+				incr row
+				set col 1
+			}
+		}
+
+		set count 0
+		lappend frows [expr {$frow + 1}]
+		incr frow 2
+		grid columnconfigure $f {0 7} -minsize 3 -weight 1
+		grid rowconfigure $f 0 -minsize 3
+		grid rowconfigure $f $row -minsize 3
+	}
+
+	if {[llength [set $opts(usercolors)]] > 0} {
+		set add [tk::button $lt.add \
+			-image [set GreenArrow] \
+			-width [expr {$Options(button:width) - 2}] \
+			-height [expr {$Options(button:height) - 2}] \
+			-background $bg \
+			-relief raised \
+			-borderwidth 1 \
+			-takefocus 0 \
+			-command [namespace code [list AddCurrentColor $lt $opts(usercolors)]] \
+		]
+		grid $add -in $lt.user -row 1 -column 1 -padx 2 -pady 2
+		bind $add <ButtonPress-1> [list $add configure -relief sunken]
+		bind $add <ButtonRelease-1> [list $add configure -relief raised]
+		tooltip $lt.add [Tr AddColor]
+	}
+
+	set colorFrames {}
+	if {$oldcolor ne ""} { lappend colorFrames old Old }
+	if {$opts(embedcmd) eq "" || $oldcolor eq ""} { lappend colorFrames current Current }
+
+	if {$opts(embedcmd) ne ""} {
+		set Priv(embedded) [ttk::frame $lt.embed -takefocus 0]
+		grid $Priv(embedded) -row $frow -sticky nsew
+		lappend frows [expr {$frow - 1}]
+		set rcv [eval $opts(embedcmd) $Priv(embedded)]
+		if {$rcv ni $Priv(receiver)} { lappend Priv(receiver) $rcv }
+		incr frow 2
+	}
+
+	set n 0
+	foreach {type name} $colorFrames {
+		if {[llength $colorFrames] == 2 || $n == 1} {
+			set hex [ttk::frame $lt.hex -relief groove -borderwidth 2 -takefocus 0]
+			ttk::label $hex.lbl -text "$mc::HexCode: #"
+			ttk::entry $hex.code \
+				-width 0 \
+				-textvariable [namespace current]::Priv(hexcode) \
+				-validatecommand {
+					return [expr {	%d == 0
+									|| ([string match \[0-9a-fA-F\]* "%S"] && [string length "%P"] <= 6)}]
+				} \
+				-validate key \
+				-invalidcommand { bell } \
+				-exportselection yes \
+				;
+			bind $hex.code <FocusIn> [list $hex.code selection range 0 end]
+			bind $hex.code <FocusOut> [list $hex.code selection clear]
+			bind $hex.code <FocusOut> +[namespace code AcceptHexCode]
+			bind $hex.code <Return> [namespace code AcceptHexCode]
+			bind $hex.code <Return> {+ break }
+			grid $hex.lbl  -column 2 -row 1
+			grid $hex.code -column 4 -row 1 -sticky ew
+			grid columnconfigure $hex {0 5} -minsize 5
+			grid columnconfigure $hex 4 -weight 1
+			grid rowconfigure $hex {0 2} -minsize 1
+			grid $hex -row $frow -sticky ew
+			lappend frows [incr frow]
+			incr frow
+		}
+		set fcolor [ttk::frame $lt.f$type -relief sunken -borderwidth 1 -takefocus 0]
+		set ccolor [tk::canvas $lt.$type -highlightthickness 0 -width 10 -height 10]
+		if {$oldcolor ne ""} {
+			$lt.$type create text 5 5 -anchor nw -text [Tr $name] -tags label
+		}
+		grid $fcolor -row $frow -sticky nsew
+		grid rowconfigure $lt $frow -weight 1 -minsize 25
+		pack $ccolor -in $fcolor -expand yes -fill both
+		lappend frows [incr frow]
+		incr frow
+		incr n
+	}
+
+	set frows [lreplace $frows end end]
+	grid rowconfigure $lt $frows -minsize 5
+
+	if {$opts(embedcmd) eq "" || $oldcolor eq ""} {
+		lappend Priv(receiver) $lt.current
+		bind $lt.current <<ChooseColorSelected>> [namespace code [list ShowColor $lt.current %d]]
+	}
+
+	set count 1
+	foreach meth $Methods {
+		tk::frame $rt.$meth -takefocus 0
+		namespace eval $meth [list MakeFrame $rt.$meth]
+		set icon [namespace eval $meth { Icon }]
+		set args {}
+		if {$icon eq ""} {
+			lappend args -text [mc [string toupper $meth 0 0]]
+		} else {
+			lappend args -image $icon
+		}
+		$rt add $rt.$meth -sticky nsew -padding 5 {*}$args
+		set Priv(need-configure:$meth) 1
+		bind $w <F$count> [list $rt select [expr {$count - 1}]]
+		incr count
+	}
+	set Priv(current-method) [lindex $Methods 0]
+
+	bind $rt <<NotebookTabChanged>> [namespace code [list TabChanged $rt]]
+	bind $rt <Configure> [namespace code [list Configure $rt]]
+
+	### Setup ######################
+	if {[llength $opts(initialcolor)] == 0} {
+		set opts(initialcolor) [expr {$oldcolor eq "" ? "#ffffff" : $oldcolor}]
+	}
+	set Priv(pane) $w.lt
+	set Priv(rgb) $opts(initialcolor)
+	set Priv(hexcode) [string range $opts(initialcolor) 1 end]
+	scan $Priv(rgb) "\#%2x%2x%2x" r g b
+	if {$opts(embedcmd) eq "" || $oldcolor eq ""} { ShowColor $lt.current $Priv(rgb) }
+	if {[llength $oldcolor]} { ShowColor $lt.old $oldcolor }
+}
+
+
+proc ParseArguments {args} {
+	array set opts {
+		parent			.
+		class				""
+		initialcolor	""
+		oldcolor			""
+		geometry			{}
+		embedcmd			{}
+		height			0
+		modal				true
+		place				centeronscreen
+		usercolors		{}
+		receiver			{}
+		recentcolors	{}
+	}
+	set opts(usercolors)		[namespace current]::userColorList
+	set opts(recentcolors)	[namespace current]::recentColorList
+	set opts(title)			[Tr Color]
+	set opts(app)				[tk appname]
+
+	set key [lindex $args 0]
+	while {$key ne ""} {
+		if {[llength $args] <= 1} {
+			return -code error "no value given to option \"$key\""
+		}
+
+		set value [lindex $args 1]
+		set args [lreplace $args 0 1]
+
+		switch -exact -- $key {
+			-parent {
+				if {![winfo exists $value]} {
+					return -code error "window name \"$value\" doesn't exist"
+				}
+				set opts(parent) $value
+			}
+			
+			-place {
+				if {$value ne "centeronscreen" && $value ne "centeronparent"} {
+					return -code error "option \"$key\": invalid argument \"$value\""
+				}
+				set opts(place) $value
+			}
+
+			-initialcolor {
+				if {$value ne ""} {
+					set opts(initialcolor) [getActualColor $value]
+					if {$opts(initialcolor) eq ""} {
+						return -code error "option \"$key\": invalid color \"$value\""
+					}
+				}
+			}
+
+			-oldcolor {
+				if {$value ne ""} {
+					set opts(oldcolor) [getActualColor $value]
+					if {$opts(oldcolor) eq ""} {
+						return -code error "option \"$key\": invalid color \"$value\""
+					}
+				}
+			}
+
+			-recentcolors - usercolors {
+				set $value [MakeColorList [set $value]]
+				set opts([string range $key 1 end]) $value
+			}
+
+			-geometry {
+				if {$value eq "last"} {
+					set opts(geometry) [geometry]
+				} else {
+					if {[regexp {^(\d+x\d+)?(\+\d+\+\d+)?$} $value] == 0} {
+						return -code error \
+							"option \"$key\": invalid geometry '$value'; should be \[WxH\]\[+X+Y\]"
+					}
+					set opts(geometry) $value
+				}
+			}
+
+			-height {
+				if {![string is integer $value]} {
+					return -code error "option \"$key\": value should be integer"
+				}
+				set opts(height) $value
+			}
+
+			-modal {
+				if {![string is boolean $value]} {
+					return -code error "option \"$key\": value should be boolean"
+				}
+				set opts(modal) $value
+			}
+
+			-app - -class - -title - -embedcmd - -receiver {
+				set opts([string range $key 1 end]) $value
+			}
+
+			default {
+				return -code error \
+					"unknown option \"$key\": should be -app, -class, -embedcmd, -geometry, -height, \
+					-initialcolor, -modal, -parent, -receiver, -recentcolors, -usercolors, or -title"
+			}
+		}
+
+		set key [lindex $args 0]
+	}
+
+	return [array get opts]
+}
+
+
+proc MakeColorList {colors} {
+	set newColors {}
+	foreach color $colors {
+		set actual ""
+		if {$color ne ""} {
+			set actual [getActualColor $color]
+			if {$actual eq ""} { return -code error "option \"$key\": invalid color \"$color\"" }
+		}
+		lappend newColors $actual
+	}
+	if {[llength $newColors] > 0} {
+		set n [expr {6 - ([llength $newColors]%6)}]
+		if {$n < 6} { set newColors [concat $newColors [lrepeat $n {}]] }
+	}
+
+	return $newColors
+}
+
+
+proc Popup {dlg parent modal focus {place {}} {geometry {}}} {
+	if {[winfo viewable [winfo toplevel $parent]] } {
+		wm transient $dlg [winfo toplevel $parent]
+	}
+	catch { wm attributes $dlg -type dialog }
+	wm iconname $dlg ""
+	wm withdraw $dlg
+	update idletasks
+	set rw [winfo reqwidth  $dlg]
+	set rh [winfo reqheight $dlg]
+	if {[string first "+" $geometry] >= 0} {
+		wm geometry $dlg $geometry
+	} else {
+		if {$geometry eq ""} {
+			set geometry [format "%dx%d" $rw $rh]
+			set w $rw
+			set h $rh
+		} else {
+			scan $geometry "%dx%d" w h
+		}
+		set sw [winfo screenwidth  $parent]
+		set sh [winfo screenheight $parent]
+		if {$parent eq "." || $place eq "centeronscreen"} {
+			set x0 [expr {($sw - $w)/2 - [winfo vrootx $parent]}]
+			set y0 [expr {($sh - $h)/2 - [winfo vrooty $parent]}]
+		} else {
+			set x0 [expr {[winfo rootx $parent] + ([winfo width  $parent] - $w)/2}]
+			set y0 [expr {[winfo rooty $parent] + ([winfo height $parent] - $h)/2}]
+		}
+		set x "+$x0"
+		set y "+$y0"
+		if {[tk windowingsystem] ne "win32"} {
+			if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
+			if {$x0 < 0}			{ set x "+0" }
+			if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
+			if {$y0 < 0}			{ set y "+0" }
+		}
+		if {[tk windowingsystem] eq "aqua"} {
+			# avoid the native menu bar which sits on top of everything
+			scan $y0 "%d" y
+			if {0 <= $y && $y < 22} { set y0 "+22" }
+		}
+		wm geometry $dlg $geometry${x}${y}
+	}
+	wm minsize $dlg $rw $rh
+	wm deiconify $dlg
+	if {$modal} { ttk::grabWindow $dlg }
+	focus $focus
+   tkwait window $dlg
+	if {$modal} { ttk::releaseGrab $dlg }
+}
+
+
+proc Done {dlg ok {oldcolor ""}} {
+	variable Priv
+
+	if {!$ok} {
+		set Priv(rgb) ""
+		foreach recv $Priv(receiver) {
+			if {$recv ne "$Priv(pane).current"} {
+				event generate $recv <<ChooseColorReset>> -data $oldcolor
+			}
+		}
+	}
+	destroy $dlg
+}
+
+
+proc Configure {tabs} {
+	variable Methods
+	variable Priv
+
+	foreach meth $Methods {
+		set Priv(need-configure:$meth) 1
+	}
+
+	set Priv(configured) 1
+	TabChanged $tabs true
+}
+
+
+proc RecordGeometry {dlg window} {
+	variable Priv
+
+	if {$dlg ne $window} { return }
+
+	set g [winfo geometry $dlg]
+	scan $g "%ux%u" gw gh
+
+	if {$gw > 1} {
+		set rw [winfo reqwidth $dlg]
+		set rh [winfo reqheight $dlg]
+
+		if {$gw != $rw || $gh != $rh} {
+			set Priv(geometry) $g
+		} elseif {[info exists Priv(geometry)]} {
+			scan $Priv(geometry) "%ux%u" pw ph
+			if {$gw < $pw || $gh < $ph} { set Priv(geometry) $g }
+		}
+	}
+}
+
+
+proc TabChanged {tabs {resized false}} {
+	variable Priv
+
+	set w [winfo width $tabs.$Priv(current-method)]
+
+	if {$w <= 1} { return }
+
+	set parts [split [$tabs select] .]
+	set Priv(current-method) [lindex $parts end]
+
+	if {$Priv(need-configure:$Priv(current-method))} {
+		set h [winfo height $tabs.$Priv(current-method)]
+		namespace eval $Priv(current-method) [list Configure $w $h]
+		set Priv(need-configure:$Priv(current-method)) 0
+	}
+
+	scan $Priv(rgb) "\#%2x%2x%2x" r g b
+	namespace eval $Priv(current-method) [list Update $r $g $b $resized]
+
+	if {!$resized} { focus $tabs }
+}
+
+
+proc AddCurrentColor {w usercolors} {
+	variable Priv
+
+	addToList $usercolors $Priv(rgb)
+
+	set count 0
+	foreach color [set $usercolors] {
+		if {$color ne ""} {
+			set btn $w.coloruser$count
+			catch { destroy $btn.empty }
+			$btn configure -background $color
+			tooltip $btn [extendColorName $color]
+		}
+		incr count
+	}
+}
+
+
+proc ShowColor {w color} {
+	if {[string match *old $w]} {
+		tooltip $w [extendColorName $color]
+	}
+
+	$w configure -background $color
+	scan $color "\#%2x%2x%2x" r g b
+	set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
+	$w itemconfigure label -fill [expr {$luma < 128 ? "white" : "black"}]
+}
+
+
+proc SelectRGB {type count} {
+	variable Priv
+
+	set w $Priv(pane).color$type$count
+	SetColor [$w cget -background]
+	scan $Priv(rgb) "\#%2x%2x%2x" r g b
+	namespace eval $Priv(current-method) [list Update $r $g $b false]
+}
+
+
+proc SetColor {rgb} {
+	variable Priv
+
+	set Priv(rgb) $rgb
+	set Priv(hexcode) [string range $rgb 1 end]
+	foreach recv $Priv(receiver) {
+		event generate $recv <<ChooseColorSelected>> -data $rgb
+	}
+}
+
+
+proc SetRGB {rgb} {
+	SetColor [format "#%02x%02x%02x" {*}$rgb]
+}
+
+
+proc AcceptHexCode {} {
+	variable Priv
+
+	if {[string length $Priv(hexcode)] == 6} {
+		SetColor "#$Priv(hexcode)"
+		scan $Priv(hexcode) "%2x%2x%2x" r g b
+		namespace eval $Priv(current-method) [list Update $r $g $b false]
+	} else {
+		set Priv(hexcode) [string range $Priv(rgb) 1 end]
+		bell
+	}
+}
+
+
 proc Clip {val min max} {
 	if {$val < $min} { return $min }
 	if {$val > $max} { return $max }
 	return $val
 }
+namespace export Clip
 
 namespace eval circle {
 
-variable Widget
-variable Size
-variable HSV
-variable AfterId {}
+lappend [namespace parent]::Methods circle
 
 namespace import [namespace parent]::hsv2rgb
 namespace import [namespace parent]::rgb2hsv
+namespace import [namespace parent]::Clip
 namespace import ::tcl::mathfunc::*
 
 
@@ -909,32 +925,33 @@ proc ComputeWidth {height} {
 }
 
 
-proc Icon {} { variable icon::22x22::Circle; return $Circle }
+proc Icon {} { return $icon::22x22::Circle }
 
 
 proc MakeFrame {container} {
+	variable Vars
 	variable ColorCircle
-	variable Widget
-	variable Size
 
 	set size 218
-	set Size 0
+	set Vars(size) 0
+	set Vars(after) {}
 
 	set cchoose1 [tk::canvas $container.hs \
-							-width $size \
-							-height $size \
-							-borderwidth 2 \
-							-relief sunken \
-							-highlightthickness 1]
+		-width $size \
+		-height $size \
+		-borderwidth 2 \
+		-relief sunken \
+		-highlightthickness 1 \
+	]
 	set cchoose2 [tk::canvas $container.v \
-							-width 15 \
-							-height $size \
-							-borderwidth 2 \
-							-relief sunken \
-							-highlightthickness 1]
+		-width 15 \
+		-height $size \
+		-borderwidth 2 \
+		-relief sunken \
+	]
 	
 	place $cchoose1 -x 0 -y 0
-	place $cchoose2 -x 230 -y 0
+	place $cchoose2 -x 229 -y 0
 
 	bind $cchoose1 <Up>					[namespace code { MoveHS 0 +1 }]
 	bind $cchoose1 <Down>				[namespace code { MoveHS 0 -1 }]
@@ -961,15 +978,15 @@ proc MakeFrame {container} {
 	bind $cchoose2 <B1-Motion>			[namespace code { SelectV %x %y }]
 	bind $cchoose2 <ButtonPress-1>	{+ focus %W }
 
-	set Widget(hs) $cchoose1
-	set Widget(v) $cchoose2
+	set Vars(widget:hs) $cchoose1
+	set Vars(widget:v) $cchoose2
 }
 
 
 proc Configure {width height} {
 	variable [namespace parent]::icon::11x11::ArrowRight
-	variable Widget
-	variable Size
+	variable [namespace parent]::icon::11x11::ActiveArrowRight
+	variable Vars
 
 	incr height -6
 	incr width -17
@@ -980,30 +997,48 @@ proc Configure {width height} {
 		set size $height
 		set vbarSize [expr {round((0.067*$size)/(1 - 0.067))}]
 	}
-	if {$Size == $size} { return }
-	set Size $size
+	if {$Vars(size) == $size} { return }
+	set Vars(size) $size
 
 	### setup Hue-Saturation window #####################
-	$Widget(hs) configure -height $size
-	$Widget(hs) configure -width $size
-	$Widget(hs) xview moveto 0
-	$Widget(hs) yview moveto 0
-	$Widget(hs) delete all
-	MakeCircle $Widget(hs) $size {36 36 36 36 36 36 36 36 36 12 1}
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {n crosshair}
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {w crosshair}
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {e crosshair}
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {s crosshair}
+	$Vars(widget:hs) configure -height $size
+	$Vars(widget:hs) configure -width $size
+	$Vars(widget:hs) xview moveto 0
+	$Vars(widget:hs) yview moveto 0
+	$Vars(widget:hs) delete circle
+	MakeCircle $Vars(widget:hs) $size {36 36 36 36 36 36 36 36 36 12 1}
+
+	if {[llength [$Vars(widget:hs) find withtag crosshair1]] == 0} {
+		MakeCrossHair $Vars(widget:hs)
+	}
 
 	### setup Value window ##############################
-	$Widget(v) configure -height $size
-	$Widget(v) configure -width $vbarSize
-	$Widget(v) xview moveto 0
-	$Widget(v) yview moveto 0
-	$Widget(v) delete all
+	$Vars(widget:v) configure -height $size
+	$Vars(widget:v) configure -width $vbarSize
+	$Vars(widget:v) xview moveto 0
+	$Vars(widget:v) yview moveto 0
 
-	place forget $Widget(v)
-	place $Widget(v) -x [expr {$size + 11}] -y 0
+#	place forget $Vars(widget:v)
+	place $Vars(widget:v) -x [expr {$size + 11}] -y 0
+
+	if {[llength [$Vars(widget:v) find withtag all]] == 0} {
+		for {set i 1} {$i <= 255} {incr i} {
+			$Vars(widget:v) create rectangle 0 0 0 0 -width 0 -tags val[expr {255 - $i}]
+		}
+
+		$Vars(widget:v) create image 0 0 -anchor w -image $ArrowRight -tags target
+		$Vars(widget:v) create image 0 0 -anchor w -image $ActiveArrowRight -tags active
+		$Vars(widget:v) itemconfigure active -state hidden
+
+		bind $Vars(widget:v) <FocusIn> "
+			$Vars(widget:v) itemconfigure target -state hidden
+			$Vars(widget:v) itemconfigure active -state normal
+		"
+		bind $Vars(widget:v) <FocusOut> "
+			$Vars(widget:v) itemconfigure target -state normal
+			$Vars(widget:v) itemconfigure active -state hidden
+		"
+	}
 
 	set ncells	[min $size 255]
 	set step		[expr {double($size)/double($ncells)}]
@@ -1011,34 +1046,48 @@ proc Configure {width height} {
 
 	for {set i 1} {$i <= $ncells} {incr i} {
 		set y1 [expr {round($i*$step)}]
-		$Widget(v) create rectangle 0 $y0 $vbarSize $y1 -width 0 -tags val[expr {$ncells - $i}]
+		$Vars(widget:v) coords val[expr {$ncells - $i}] 0 $y0 $vbarSize $y1
 		set y0 $y1
 	}
+	for {} {$i <= 255} {incr i} {
+		$Vars(widget:v) coords val[expr {$ncells - $i}] 0 0 0 0
+	}
 
-	$Widget(v) create image 0 0 -anchor w -image $ArrowRight -tags target
+	$Vars(widget:hs) raise crosshair1
+	$Vars(widget:hs) raise crosshair2
+}
+
+
+proc MakeCrossHair {canv} {
+	$canv create line 0 0 1 1 -width 1 -tags {n1 crosshair1}
+	$canv create line 0 0 1 1 -width 1 -tags {w1 crosshair1}
+	$canv create line 0 0 1 1 -width 1 -tags {e1 crosshair1}
+	$canv create line 0 0 1 1 -width 1 -tags {s1 crosshair1}
+	$canv create line 0 0 1 1 -width 1 -tags {n2 crosshair2}
+	$canv create line 0 0 1 1 -width 1 -tags {w2 crosshair2}
+	$canv create line 0 0 1 1 -width 1 -tags {e2 crosshair2}
+	$canv create line 0 0 1 1 -width 1 -tags {s2 crosshair2}
 }
 
 
 proc Update {r g b afterResize} {
-	variable Widget
-	variable Size
-	variable HSV
+	variable Vars
 
-	set HSV [rgb2hsv $r $g $b]
-	lassign $HSV h s v
+	set Vars(hsv) [rgb2hsv $r $g $b]
+	lassign $Vars(hsv) h s v
 
 	Reflect $h $s
 	DrawValues
-	$Widget(v) coords target 1 [expr {round((1.0 - $v)*($Size - 1))}]
+	set y [expr {round((1.0 - $v)*($Vars(size) - 1))}]
+	$Vars(widget:v) coords target 1 $y
+	$Vars(widget:v) coords active 1 $y
 }
 
 
 proc Reflect {hue sat} {
-	variable Widget
-	variable Size
-	variable HSV
+	variable Vars
 
-	set w		[expr {$Size - 1}]
+	set w		[expr {$Vars(size) - 1}]
 	set x		[expr {round(0.5*$w*(1.0 + cos($hue*0.017453292519943)*$sat))}]
 	set y		[expr {round(0.5*$w*(1.0 + sin($hue*0.017453292519943)*$sat))}]
 	set y		[expr {$w - $y}]
@@ -1046,54 +1095,48 @@ proc Reflect {hue sat} {
 	set y		[expr {round($y)}]
 	set rgb	[hsv2rgb $hue $sat 1.0]
 
-	DrawCrosshair $Widget(hs) $x $y $rgb
+	DrawCrosshair $Vars(widget:hs) $x $y $rgb
 }
 
 
 proc SelectHS {x y} {
-	variable Widget
-	variable Size
-	variable AfterId
-	variable HSV
+	variable Vars
 
 	set x		[expr {$x - 3}]	;# take border into account
 	set y		[expr {$y - 3}]	;# take border into account
-	set y		[expr {$Size - $y - 1}]
-	set xc	[expr {$x/double(2*$Size) - 1.0}]
-	set yc	[expr {1.0 - $y/double(2*$Size)}]
-	set xh	[expr {$x - $Size/2.0}]
-	set yh	[expr {$y - $Size/2.0}]
+	set y		[expr {$Vars(size) - $y - 1}]
+	set xc	[expr {$x/double(2*$Vars(size)) - 1.0}]
+	set yc	[expr {1.0 - $y/double(2*$Vars(size))}]
+	set xh	[expr {$x - $Vars(size)/2.0}]
+	set yh	[expr {$y - $Vars(size)/2.0}]
 	set h		[expr {57.295779513082*atan2($yh,$xh)}]	;# 180/PI*atan2(yh,xy)
-	set s		[min [expr {2.0*(hypot($xh,$yh)/$Size)}] 1.0]
-	set v		[lindex $HSV 2]
+	set s		[min [expr {2.0*(hypot($xh,$yh)/$Vars(size))}] 1.0]
+	set v		[lindex $Vars(hsv) 2]
 
 	if {$h < 0} { set h [expr {$h + 360.0}] }
 
 	Reflect $h $s
 	[namespace parent]::SetRGB [hsv2rgb $h $s $v]
-	set HSV [list $h $s $v]
+	set Vars(hsv) [list $h $s $v]
 
-	after cancel $AfterId
-	set AfterId [after 30 [namespace code { DrawValues }]]
+	after cancel $Vars(after)
+	set Vars(after) [after 30 [namespace code { DrawValues }]]
 }
 
 
 proc MoveHS {xdir ydir {repeat 1}} {
-	variable AfterId
-	variable Widget
-	variable Size
-	variable HSV
+	variable Vars
 
-	lassign [[namespace parent]::circle::CrosshairCoords $Widget(hs)] x y
+	lassign [CrosshairCoords $Vars(widget:hs)] x y
 
-	set y [expr {$Size - $y}]
+	set y [expr {$Vars(size) - $y}]
 	set x [expr {$x + $repeat*$xdir}]
 	set y [expr {$y + $repeat*$ydir}]
 
 	for {} {$repeat > 0} {incr repeat -1} {
-		set xh	[expr {$x - $Size/2}]
-		set yh	[expr {$y - $Size/2}]
-		set s		[expr {2.0*(hypot($xh,$yh)/$Size)}]
+		set xh	[expr {$x - $Vars(size)/2}]
+		set yh	[expr {$y - $Vars(size)/2}]
+		set s		[expr {2.0*(hypot($xh,$yh)/$Vars(size))}]
 
 		if {$s <= 1.0} { break }
 
@@ -1103,57 +1146,54 @@ proc MoveHS {xdir ydir {repeat 1}} {
 
 	if {$s > 1.0} { return }
 
-	set y [expr {$Size - round($y)}]
+	set y [expr {$Vars(size) - round($y)}]
 	set x [expr {round($x)}]
 	set y [expr {round($y)}]
 	set h [expr {57.295779513082*atan2($yh,$xh)}]	;# 180/PI*atan2(yh,xy)
-	set v [lindex $HSV 2]
+	set v [lindex $Vars(hsv) 2]
 
 	if {$h < 0} { set h [expr {$h + 360.0}] }
 
-	set HSV [list $h $s $v]
+	set Vars(hsv) [list $h $s $v]
 	[namespace parent]::SetRGB [hsv2rgb $h $s $v]
-	DrawCrosshair $Widget(hs) $x $y [hsv2rgb $h $s 1.0]
+	DrawCrosshair $Vars(widget:hs) $x $y [hsv2rgb $h $s 1.0]
 
-	after cancel $AfterId
-	set AfterId [after idle [namespace code { DrawValues }]]
+	after cancel $Vars(after)
+	set Vars(after) [after idle [namespace code { DrawValues }]]
 }
 
 
 proc SelectV {x y} {
-	variable Widget
-	variable Size
-	variable HSV
+	variable Vars
 
-	set y [[namespace parent]::Clip $y 0 [expr {$Size - 1}]]
-	$Widget(v) coords target 1 $y
-	set v [expr {1.0 - double($y*$Size)/double($Size*($Size - 1))}]
-	set HSV [lreplace $HSV 2 2 $v]
-	[namespace parent]::SetRGB [hsv2rgb {*}$HSV]
+	set y [Clip $y 0 [expr {$Vars(size) - 1}]]
+	$Vars(widget:v) coords target 1 $y
+	$Vars(widget:v) coords active 1 $y
+	set v [expr {1.0 - double($y*$Vars(size))/double($Vars(size)*($Vars(size) - 1))}]
+	set Vars(hsv) [lreplace $Vars(hsv) 2 2 $v]
+	[namespace parent]::SetRGB [hsv2rgb {*}$Vars(hsv)]
 }
 
 
 proc MoveV {ydir} {
-	variable Widget
+	variable Vars
 
-	lassign [$Widget(v) coords target] x y
+	lassign [$Vars(widget:v) coords target] x y
 	SelectV [expr {round($x)}] [expr {round($y) + $ydir}]
 }
 
 
 proc DrawValues {} {
-	variable Widget
-	variable Size
-	variable HSV
+	variable Vars
 
-	set ncells	[min $Size 255]
+	set ncells	[min $Vars(size) 255]
 	set step		[expr {1.0/($ncells - 1)}]
 
-	lassign $HSV hue sat
+	lassign $Vars(hsv) hue sat
 
 	for {set i 0} {$i < $ncells} {incr i} {
 		set rgb [hsv2rgb $hue $sat [expr {$i*$step}]]
-		$Widget(v) itemconfigure val$i -fill [format "\#%02x%02x%02x" {*}$rgb]
+		$Vars(widget:v) itemconfigure val$i -fill [format "\#%02x%02x%02x" {*}$rgb]
 	}
 }
 
@@ -1177,9 +1217,11 @@ proc MakeCircle {canv size sectors} {
 			set c [format "#%02x%02x%02x" {*}[hsv2rgb $h $s 1]]
 
 			if {$nsecs == 1} {
-				$canv create arc $x1 $y1 $x2 $y2 -fill $c -outline $c -width 0 -style chord -extent 359.99
+				$canv create arc $x1 $y1 $x2 $y2 \
+					-fill $c -outline $c -width 0 -style chord -extent 359.99 -tags circle
 			} else {
-				$canv create arc $x1 $y1 $x2 $y2 -start $a -extent $angle -fill $c -outline $c -width 0
+				$canv create arc $x1 $y1 $x2 $y2 \
+					-start $a -extent $angle -fill $c -outline $c -width 0 -tags circle
 			}
 		}
 
@@ -1202,29 +1244,40 @@ proc DrawCrosshair {canv x y rgb} {
 	set size	[$canv cget -width]
 
 	if {$size > 300 } {
-		foreach d {n e s w} {
+		$canv itemconfigure crosshair2 -state hidden
+		foreach d {n1 e1 s1 w1} {
 			$canv itemconfigure $d -width 3
 		}
-		$canv coords n $x [expr {$y - 8}] $x [expr {$y - 2}]
-		$canv coords s $x [expr {$y + 3}] $x [expr {$y + 9}]
-		$canv coords e [expr {$x - 2}] $y [expr {$x - 8}] $y
-		$canv coords w [expr {$x + 3}] $y [expr {$x + 9}] $y
+		$canv coords n1 $x [expr {$y - 8}] $x [expr {$y - 2}]
+		$canv coords s1 $x [expr {$y + 3}] $x [expr {$y + 9}]
+		$canv coords e1 [expr {$x - 2}] $y [expr {$x - 8}] $y
+		$canv coords w1 [expr {$x + 3}] $y [expr {$x + 9}] $y
 	} else {
-		foreach d {n e s w} {
+		$canv itemconfigure crosshair2 -state normal
+		foreach d {n1 e1 s1 w1} {
 			$canv itemconfigure $d -width 1
 		}
-		$canv coords n $x [expr {$y - 6}] $x [expr {$y - 1}]
-		$canv coords s $x [expr {$y + 2}] $x [expr {$y + 7}]
-		$canv coords e [expr {$x - 1}] $y [expr {$x - 6}] $y
-		$canv coords w [expr {$x + 2}] $y [expr {$x + 7}] $y
+		set x1 $x
+		set y1 $y
+		set x2 [expr {$x + 1}]
+		set y2 [expr {$y + 1}]
+		$canv coords n1 $x1 [expr {$y1 - 6}] $x1 [expr {$y1 - 1}]
+		$canv coords n2 $x2 [expr {$y2 - 6}] $x2 [expr {$y2 - 1}]
+		$canv coords s1 $x1 [expr {$y1 + 2}] $x1 [expr {$y1 + 7}]
+		$canv coords s2 $x2 [expr {$y2 + 2}] $x2 [expr {$y2 + 7}]
+		$canv coords e1 [expr {$x1 - 1}] $y1 [expr {$x1 - 6}] $y1
+		$canv coords e2 [expr {$x2 - 1}] $y2 [expr {$x2 - 6}] $y2
+		$canv coords w1 [expr {$x1 + 2}] $y1 [expr {$x1 + 7}] $y1
+		$canv coords w2 [expr {$x2 + 2}] $y2 [expr {$x2 + 7}] $y2
+		$canv itemconfigure crosshair2 -fill [expr {$fg eq "white" ? "black" : "white"}]
 	}
 
-	$canv itemconfigure crosshair -fill $fg
+	$canv itemconfigure crosshair1 -fill $fg
 }
 
 
 proc CrosshairCoords {canv} {
-	lassign [$canv coords n] x y
+	lassign [$canv coords n1] x y
 
 	set y [expr {round($y)}]
 	set w [$canv cget -width]
@@ -1275,569 +1328,182 @@ set Circle [image create photo -data {
 } ;# namespace icon
 } ;# namespace circle
 
-namespace eval rgb {
-
-variable Width
-variable Widget
-variable Value
-
-namespace import [namespace parent]::rgb2hsv
-namespace import [namespace parent]::hsv2rgb
-namespace import [namespace parent]::Tr
-namespace import ::tcl::mathfunc::*
-
-
-proc Icon {} { variable icon::22x22::RGB; return $RGB }
-
-
-proc MakeFrame {container} {
-	variable Width
-	variable Widget
-	variable Value
-
-	set height 15
-	set width 220
-	set Width 0
-
-	set f [tk::frame $container.f]
-	pack $f -anchor n -expand yes -fill x -padx 5 -pady 10
-
-	set row 0
-	foreach which {r g b h s v} {
-		set Value($which) "0"
-		set Value(current,$which) "0"
-		tk::frame $f.f$which -borderwidth 2 -relief sunken
-		tk::canvas $f.c$which -width 100 -height $height
-		bind $f.c$which <FocusIn> "
-			$f.c$which itemconfigure target -state hidden
-			$f.c$which itemconfigure active -state normal
-		"
-		bind $f.c$which <FocusOut> "
-			$f.c$which itemconfigure target -state normal
-			$f.c$which itemconfigure active -state hidden
-		"
-		pack $f.c$which -in $f.f$which -fill both
-		$f.c$which yview moveto 0
-		ttk::label $f.l$which -text [string toupper $which]
-		switch -exact -- $which {
-			r { [namespace parent]::tooltip $f.l$which [Tr Red] }
-			g { [namespace parent]::tooltip $f.l$which [Tr Green] }
-			b { [namespace parent]::tooltip $f.l$which [Tr Blue] }
-			h { [namespace parent]::tooltip $f.l$which [Tr Hue] }
-			s { [namespace parent]::tooltip $f.l$which [Tr Saturation] }
-			v { [namespace parent]::tooltip $f.l$which [Tr Value] }
-		}
-		::ttk::spinbox $f.s$which \
-			-background white \
-			-from 0 \
-			-to [Maxima $which] \
-			-increment 1 \
-			-width 3 \
-			-justify right \
-			-textvariable [namespace current]::Value($which) \
-			-validatecommand {
-				return	[expr {%d == 0 \
-						|| (	[string match \[0-9\]* "%S"] \
-							&& [string length %s] <= 2)}]
-			} \
-			-invalidcommand { bell } \
-			-exportselection no \
-			;
-
-		grid $f.l$which -row $row -column 0 -sticky nw
-		grid $f.f$which -row $row -column 2 -sticky nwe
-		grid $f.s$which -row $row -column 4 -sticky ne
-
-		set Widget($which) $f.c$which
-		incr row 2
-	}
-
-	foreach which {r g b h s v} {
-		switch $which {
-			r - g - b { set what RGB }
-			h - s - v { set what HSV }
-		}
-		bind $f.c$which <Left>				[namespace code [list Move$what $which -1]]
-		bind $f.c$which <Right>				[namespace code [list Move$what $which +1]]
-		bind $f.c$which <Control-Left>	[namespace code [list Move$what $which -10]]
-		bind $f.c$which <Control-Right>	[namespace code [list Move$what $which +10]]
-		bind $f.c$which <Home>				[namespace code [list Move$what $which -9999]]
-		bind $f.c$which <End>				[namespace code [list Move$what $which +9999]]
-		bind $f.c$which <ButtonPress-1>	[namespace code [list Select${what}Value $which %x %y]]
-		bind $f.c$which <ButtonPress-1>	{+ focus %W }
-		bind $f.c$which <B1-Motion>		[namespace code [list Select${what}Value $which %x %y]]
-		bind $f.s$which <Return>			[namespace code [list Set${what}Value $which]]
-		bind $f.s$which <Return>			{+ break }
-		bind $f.s$which <FocusIn>			{ %W configure -validate key }
-		bind $f.s$which <FocusOut>			[namespace code [list Set${what}Value $which]]
-		bind $f.s$which <FocusOut>			{+ %W selection clear }
-		$f.s$which configure -command		[namespace code [list Set${what}Value $which]]
-	}
-
-	grid columnconfigure $f {1 3} -minsize 5
-	grid columnconfigure $f 2 -weight 1
-	grid rowconfigure $f {1 3 7 9} -minsize 12
-	grid rowconfigure $f 5 -minsize 25
-}
-
-
-proc Maxima {which} {
-	switch $which {
-		h { return 360 }
-		s -
-		v { return 100 }
-	}
-
-	return 255
-}
-
-
-proc Configure {width height} {
-	variable [namespace parent]::icon::11x11::ArrowUp
-	variable icon::11x11::ActiveArrowUp
-	variable Widget
-	variable Width
-
-	update idletasks
-
-	set width [winfo width $Widget(r)]
-	if {$width <= 1} {
-		set width [$Widget(r) cget -width]
-	}
-	if {$Width == $width} { return }
-
-	foreach which {r g b h s v} {
-		$Widget($which) delete all
-		$Widget($which) xview moveto 0
-	}
-
-	set Width $width
-	set height [$Widget(r) cget -height]
-	set nsteps [min 255 $width]
-	set scale [expr {1.0/($nsteps - 1)}]
-	set step [expr {1.0/$nsteps}]
-
-	foreach which {r g b} {
-		set bar $Widget($which)
-
-		switch -- $which {
-			r { set rgb {255 0 0} }
-			g { set rgb {0 255 0} }
-			b { set rgb {0 0 255} }
-		}
-
-		set hsv [rgb2hsv {*}$rgb]
-		lassign $hsv h s v
-
-		set x0 0
-		for {set i 0} {$i < $nsteps} {incr i} {
-			set v [expr {$scale*$i}]
-			#set v [sqrt $v]
-			set x1 [expr {round(($i + 1)*$step*$width)}]
-			set color [format "#%02x%02x%02x" {*}[hsv2rgb $h $s $v]]
-			$bar create rectangle $x0 0 $x1 $height -width 0 -fill $color
-			set x0 $x1
-		}
-	}
-
-	set bar $Widget(h)
-	for {set x 0} {$x < $width} {incr x} {
-		set h [expr {(360.0*$x)/($width - 1)}]
-		set color [format "#%02x%02x%02x" {*}[hsv2rgb $h 1.0 1.0]]
-		$bar create rectangle $x 0 $x $height -width 0 -fill $color
-	}
-
-	set hsv [rgb2hsv 238 221 130] ;# LightGoldenRod
-	lassign $hsv h s v
-	set bar $Widget(s)
-	for {set x 0} {$x < $width} {incr x} {
-		set s [expr {double($x)/($width - 1)}]
-		set color [format "#%02x%02x%02x" {*}[hsv2rgb $h $s $v]]
-		$bar create rectangle $x 0 $x $height -width 0 -fill $color
-	}
-
-	set bar $Widget(v)
-	for {set x 0} {$x < $width} {incr x} {
-		set v [expr {double($x)/($width - 1)}]
-		set color [format "#%02x%02x%02x" {*}[hsv2rgb 0 0 $v]]
-		$bar create rectangle $x 0 [expr {$x + 1}] $height -width 0 -fill $color
-	}
-
-	foreach which {r g b h s v} {
-		$Widget($which) create image 0 3 -image $ArrowUp -anchor n -tags target
-		$Widget($which) create image 0 3 -image $ActiveArrowUp -anchor n -tags active
-		$Widget($which) itemconfigure active -state hidden
-	}
-}
-
-
-proc Update {r g b afterResize} {
-	variable HSV
-
-	UpdateRGB $r $g $b
-	UpdateHSV [rgb2hsv $r $g $b]
-}
-
-
-proc SetSpinboxValue {which val} {
-	variable Value
-
-	if {$val != $Value($which)} {
-		set Value($which) $val
-		set Value(current,$which) $val
-	}
-}
-
-
-proc UpdateRGB {r g b} {
-	foreach which {r g b} {
-		SetSpinboxValue $which [set $which]
-		Reflect $which [set $which]
-	}
-}
-
-
-proc UpdateHSV {hsv} {
-	variable HSV
-
-	set HSV $hsv
-	lassign $hsv h s v
-
-	set h [expr {round($h)}]
-	set s [expr {round($s*100)}]
-	set v [expr {round($v*100)}]
-
-	foreach which {h s v} {
-		SetSpinboxValue $which [set $which]
-		Reflect $which [set $which]
-	}
-}
-
-
-proc Reflect {which val} {
-	variable Widget
-	variable Width
-
-	set x [expr {round((double($val)/double([Maxima $which]))*double($Width - 1))}]
-	$Widget($which) coords target $x 3
-	$Widget($which) coords active $x 3
-}
-
-
-proc SetRGBValue {which {val {}}} {
-	variable [namespace parent]::RGB
-	variable Value
-	variable HSV
-
-	if {[llength $val] == 0} {
-		set val [string trimleft $Value($which) "0"]
-	}
-	if {$val eq "" || $val < 0} { set val 0 }
-	if {$val > 255} { set val 255 }
-	if {$val == $Value(current,$which)} { return }
-	set Value(current,which) $val
-	SetSpinboxValue $which $val
-	scan $RGB "\#%2x%2x%2x" r g b
-
-	switch $which {
-		r { set r $val }
-		g { set g $val }
-		b { set b $val }
-	}
-
-	Reflect $which $val
-	[namespace parent]::SetRGB [list $r $g $b]
-	UpdateHSV [rgb2hsv $r $g $b]
-}
-
-
-proc SetHSVValue {which {val {}}} {
-	variable Value
-	variable HSV
-
-	if {[llength $val] == 0} {
-		set val [string trimleft $Value($which) "0"]
-	}
-	if {$val eq "" || $val < 0} { set val 0 }
-
-	switch $which {
-		h { if {$val > 360} { set val 360 } }
-		s -
-		v { if {$val > 100} { set val 100 } }
-	}
-
-	if {$val == $Value(current,$which)} { return }
-	set Value(current,$which) $val
-	SetSpinboxValue $which $val
-
-	switch $which {
-		h { set HSV [lreplace $HSV 0 0 $val] }
-		s { set HSV [lreplace $HSV 1 1 [expr {$val/100.0}]] }
-		v { set HSV [lreplace $HSV 2 2 [expr {$val/100.0}]] }
-	}
-
-	set rgb [hsv2rgb {*}$HSV]
-	Reflect $which $val
-	[namespace parent]::SetRGB $rgb
-	UpdateRGB {*}$rgb
-}
-
-
-proc SelectRGBValue {which x y} {
-	variable [namespace parent]::RGB
-	variable Widget
-	variable Width
-	variable HSV
-
-	incr x -2
-
-	set x [min $x [expr {$Width - 1}]]
-	set x [max 0 $x]
-	set d [expr {double($x*$Width*[Maxima $which])/double($Width*($Width - 1))}]
-
-	$Widget($which) coords target $x 3
-	$Widget($which) coords active $x 3
-	scan $RGB "\#%2x%2x%2x" r g b
-
-	switch $which {
-		r { set r [expr {round($d)}] }
-		g { set g [expr {round($d)}] }
-		b { set b [expr {round($d)}] }
-	}
-
-	[namespace parent]::SetRGB [list $r $g $b]
-	SetSpinboxValue $which [set $which]
-	UpdateHSV [rgb2hsv $r $g $b]
-}
-
-
-proc SelectHSVValue {which x y} {
-	variable [namespace parent]::RGB
-	variable Widget
-	variable Width
-	variable HSV
-
-	set x [min $x [expr {$Width - 1}]]
-	set x [max 0 $x]
-	set d [expr {(double($x)/double($Width - 1))}]
-
-	if {$which eq "h"} { set d [expr {$d*360}] }
-
-	$Widget($which) coords target $x 3
-	$Widget($which) coords active $x 3
-
-	switch $which {
-		h { set HSV [lreplace $HSV 0 0 $d] }
-		s { set HSV [lreplace $HSV 1 1 $d] }
-		v { set HSV [lreplace $HSV 2 2 $d] }
-	}
-
-	set rgb [hsv2rgb {*}$HSV]
-	[namespace parent]::SetRGB $rgb
-	UpdateRGB {*}$rgb
-
-	if {$which ne "h"} { set d [expr {$d*100}] }
-	SetSpinboxValue $which [expr {round($d)}]
-}
-
-
-proc MoveRGB {which step} {
-	variable Value
-
-	SetRGBValue $which [expr {$Value($which) + $step}]
-}
-
-
-proc MoveHSV {which step} {
-	variable Value
-
-	SetHSVValue $which [expr {$Value($which) + $step}]
-}
-
-namespace eval icon {
-namespace eval 11x11 {
-
-set ActiveArrowUp [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAf0lEQVQY043QsRHDIBBE0b0I
-	AppxAPF1oGpoQ9WQ4wbkdiC6dSSNPAZJP955wQL/CYAVD1sAEIDeDUVEtpwzAdRbVVVpZowx
-	XuoCYKu1kiRLKZf6oZKkmTGlNNRFRA51b6b/qHsjfajO9EVVOeusSwjh45x7ee+nf/be0Vp7
-	fwEX3Jjf4QNfoAAAAABJRU5ErkJggg==
-}]
-
-} ;# namespace 11x11
-
-namespace eval 22x22 {
-
-set RGB [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAACaElEQVQ4y62UT2gTURDGv5l5
-	b7PZhDSppKUB0bSCJYKIIIUqeBAUQdBDD4oUD3rSq3eRqnj3Ior24EE9Cj0IIsVDBb1VWyx4
-	kVr634JESjbZfc/DrmmsTdQ2A8O8eTv89jHvm0dDudTR4azzxBVTJLEgZUFi8Mc6ztHRGSxw
-	5vno9PfLL2dWfDQxdcrTdwY8XWQxIGVAOoKxNhFYUQTVv/bWVNDbd3FsavYZgLFmYHZg8/hP
-	cyiEBSVb1TC2aUyglt+tbV3Q7DyhMaZlxSdD91YDY/8NSICXw5uv5XlHqbctK4sdHURhdX+5
-	4ndGO7bOoAZePbLg2kDh443x2XJLsAAkCb2r6teS2+13wlWBXwkWfpNbz7GuC12HMw8yeZVK
-	JgDXBdwE4ChAawMtFlpbaDEQip0NhMI4Ag51h1+mKg9Pntlz9WzplQUA2je0e6JwJDvouUCy
-	wR1tI1cWWlloZaBimOIQTBu5UAj/20EzcmmisLZSWQIA5gTnsGOzYCGuViAburFW0CZTmhsH
-	hNZ3jiSY0BrRNqz/pLpUu7W+WHksnSpDVYB8wFaAQFvUVORaWaj48lTcU65fooVDhXB2em70
-	0fjg8rnS67rc3O7+vDc/s5La7nmTKRWOfbiycKLvfn3QKOFltO7qLdXKq9lop2HC/7reNEUE
-	IKjWeg8ceqdQOn39R9/x2/ByBGGABRABmOMomyJvnYuARJBPO1h8/+Ip++meYbgZaocqrLVY
-	XQ+Q2dt/vq1yixQdNYVhTVvBDe+1nW8nUDMjCMOywtzkTXbTI0acHJjR1Kkxly1riBnZtOMv
-	f568+xMPp9Zz9rIrQgAAAABJRU5ErkJggg==
-}]
-
-} ;# namespace 22x22
-} ;# namespace icon
-} ;# namespace rgb
-
 namespace eval swatches {
 
-variable Size
-variable Widget
-variable Palette
-variable Row
-variable Col
+lappend [namespace parent]::Methods swatches
+
+namespace import [namespace parent]::Clip
 
 
-proc Icon {} { variable icon::16x16::Swatches; return $Swatches }
+proc Icon {} { return $icon::16x16::Swatches }
 
 
 proc MakeFrame {container} {
-	variable Size
-	variable Widget
+	variable Vars
 
-	set f [tk::frame $container.f -relief flat]
+	set f [tk::frame $container.f -relief flat -takefocus 0]
 	pack $f -anchor n -expand yes -fill both -padx 5 -pady 5
 	set bg [::ttk::style lookup $::ttk::currentTheme -background]
-	set Widget [tk::canvas $f.buttons \
-						-height 100 \
-						-width 100 \
-						-highlightthickness 1 \
-						-highlightbackground [$f cget -background] \
-						-background [$f cget -background]]
-	pack $Widget -expand yes -fill both
+	set Vars(widget:buttons) [tk::canvas $f.buttons \
+		-height 100 \
+		-width 100 \
+		-background [$f cget -background] \
+	]
+	pack $Vars(widget:buttons) -expand yes -fill both
 
-	bind $Widget <Left>	[namespace code { Move -1  0 }]
-	bind $Widget <Right>	[namespace code { Move +1  0 }]
-	bind $Widget <Up>		[namespace code { Move  0 -1 }]
-	bind $Widget <Down>	[namespace code { Move  0 +1 }]
-	bind $Widget <space>	[namespace code { SetColor %W }]
+	bind $Vars(widget:buttons) <Left>	[namespace code { Move -1  0 }]
+	bind $Vars(widget:buttons) <Right>	[namespace code { Move +1  0 }]
+	bind $Vars(widget:buttons) <Up>		[namespace code { Move  0 -1 }]
+	bind $Vars(widget:buttons) <Down>	[namespace code { Move  0 +1 }]
+	bind $Vars(widget:buttons) <space>	[namespace code { SetColor %W }]
 
-	set Size(x) 0
-	set Size(y) 0
+	set Vars(size:x) 0
+	set Vars(size:y) 0
 }
 
 
 proc SetColor {w} {
-	variable Row
-	variable Col
-
-	[namespace parent]::SetColor [$w itemcget button-${Row}-${Col} -fill]
+	variable Vars
+	[namespace parent]::SetColor [$w itemcget button-$Vars(row)-$Vars(col) -fill]
 }
 
 
 proc Configure {width height} {
-	variable Size
-	variable Widget
+	variable Vars
 	variable Palette
 
 	update idletasks
 
-	set width [winfo width $Widget]
+	set width [winfo width $Vars(widget:buttons)]
 	if {$width <= 1} {
-		set width [$Widget cget -width]
+		set width [$Vars(widget:buttons) cget -width]
 	}
-	if {$Size(x) == $width && $Size(y) == $height} { return }
+	if {$Vars(size:x) == $width && $Vars(size:y) == $height} { return }
 
-	$Widget delete all
+	if {[llength [$Vars(widget:buttons) find withtag all]] == 0} {
+		set row	0
+		set col	0
 
-	set Size(x)	$width
-	set Size(y)	$height
+		foreach line $Palette {
+			foreach cell $line {
+				$Vars(widget:buttons) create rectangle 0 0 0 0 -width 0 -fill black -tags border-$row-$col
+				$Vars(widget:buttons) create rectangle 0 0 0 0 -width 0 -fill \#$cell -tags button-$row-$col
+				$Vars(widget:buttons) bind button-$row-$col <ButtonPress-1> \
+					[namespace code [list SelectColor button-$row-$col]]
+				set color [[namespace parent]::extendColorName \#$cell]
+				[namespace parent]::tooltip $Vars(widget:buttons) -item button-$row-$col $color
+				incr col
+			}
+
+			incr row
+			set col 0
+		}
+
+		$Vars(widget:buttons) create rectangle 0 0 0 0 -width 0 -fill white -tags {hilite white}
+		$Vars(widget:buttons) create rectangle 0 0 0 0 -width 0 -fill black -tags {hilite black}
+		$Vars(widget:buttons) create rectangle 0 0 0 0 -width 0 -fill black -tags {hilite color}
+		$Vars(widget:buttons) bind hilite <ButtonPress-1> [namespace code [list SelectColor color]]
+		$Vars(widget:buttons) raise white
+		$Vars(widget:buttons) raise black
+		$Vars(widget:buttons) raise color
+
+		bind $Vars(widget:buttons) <FocusIn> [namespace code ShowHilite]
+		bind $Vars(widget:buttons) <FocusOut> [namespace code ShowHilite]
+	}
+
+	set Vars(size:x) $width
+	set Vars(size:y) $height
 
 	incr height -10
 
 	set nrows	[llength $Palette]
 	set ncols	[llength [lindex $Palette 0]]
-	set hl		[expr {$width/$ncols <= 15 || $height/$nrows <= 15 ? 1 : 2}]
-	set pad		[expr {$hl + 1}]
-	set hbut		[expr {($width - ($ncols + 1)*$pad - 2)/$ncols}]
-	set vbut		[expr {($height - ($nrows + 1)*$pad - 2)/$nrows}]
-	set hpal		[expr {$ncols*$hbut + ($ncols + 1)*$pad}]
-	set vpal		[expr {$nrows*$vbut + ($nrows + 1)*$pad}]
+	set over		[expr {min(($width - $ncols + 1)/$ncols, ($height - $nrows + 1)/$nrows)/2 - 1}]
+	set over		[expr {min(10, max(6, $over))}]
+	set hbut		[expr {($width - 2*$over + 1)/$ncols}]
+	set vbut		[expr {($height - 2*$over + 1)/$nrows}]
+	set hpal		[expr {$ncols*$hbut - 1}]
+	set vpal		[expr {$nrows*$vbut - 1}]
 	set hmar		[expr {($width - $hpal)/2}]
 	set vmar		[expr {($height - $vpal)/2}]
 
 	set row	0
 	set col	0
-	set x		[expr {$hmar + $pad}]
-	set y		[expr {$vmar + $pad}]
+	set x		$hmar
+	set y		$vmar
 
 	foreach line $Palette {
 		foreach cell $line {
-			set bg \#$cell
-			$Widget create rectangle \
-				[expr {$x - $pad}] [expr {$y - $pad}] \
-				[expr {$x + $hbut + $pad}] [expr {$y + $vbut + $pad}] \
-				-width 0 \
-				-fill black \
-				-state hidden \
-				-tags "hilite-$row-$col hilite"
-			$Widget create rectangle \
-				[expr {$x - $pad + $hl}] [expr {$y - $pad + $hl}] \
-				[expr {$x + $hbut + $pad - $hl}] [expr {$y + $vbut + $pad - $hl}] \
-				-width 0 \
-				-fill white \
-				-state hidden \
-				-tags "hilite-$row-$col hilite"
-			$Widget create rectangle \
+			$Vars(widget:buttons) coords border-$row-$col \
 				$x $y \
-				[expr {$x + $hbut}] [expr {$y + $vbut}] \
-				-width 0 \
-				-fill black
-			$Widget create rectangle \
-				[expr {$x + 1}] [expr {$y + 1}] \
 				[expr {$x + $hbut - 1}] [expr {$y + $vbut - 1}] \
-				-width 0 \
-				-fill \#$cell \
-				-tags "button-$row-$col"
-			$Widget bind button-$row-$col <ButtonPress-1> "
-				$Widget itemconfigure hilite -state hidden
-				$Widget itemconfigure hilite-$row-$col -state normal
-				set [namespace current]::Row $row
-				set [namespace current]::Col $col
-				[namespace parent]::SetColor \#$cell
-			"
-			set color [[namespace parent]::extendColorName $bg]
-			$Widget bind button-$row-$col <ButtonPress-1> "+focus $Widget"
-			[namespace parent]::tooltip $Widget -item button-$row-$col $color
-			incr x [expr {$hbut + $pad}]
+				;
+			$Vars(widget:buttons) coords button-$row-$col \
+				[expr {$x + 1}] [expr {$y + 1}] \
+				[expr {$x + $hbut - 2}] [expr {$y + $vbut - 2}] \
+				;
+			incr x $hbut
 			incr col
 		}
 
-		set x [expr {$hmar + $pad}]
-		incr y [expr {$vbut + $pad}]
+		set x $hmar
+		incr y $vbut
 		incr row
 		set col 0
 	}
+
+	set Vars(over) $over
+}
+
+
+proc SelectColor {tag} {
+	variable Vars
+
+	set rgb [$Vars(widget:buttons) itemcget $tag -fill]
+	[namespace parent]::SetColor $rgb
+	[namespace current]::Reflect [string range $rgb 1 end]
+	focus $Vars(widget:buttons)
+}
+
+
+proc ShowHilite {} {
+	variable Vars
+
+	set o $Vars(over)
+	set color [$Vars(widget:buttons) itemcget button-$Vars(row)-$Vars(col) -fill]
+	lassign [$Vars(widget:buttons) coords button-$Vars(row)-$Vars(col)] x1 y1 x2 y2
+	if {[focus] eq $Vars(widget:buttons)} { set increments {-1 -2 0} } else { set increments {-1 -1 0} }
+	foreach tag {white black color} incr $increments {
+		$Vars(widget:buttons) coords $tag \
+			[expr {$x1 - $o}] [expr {$y1 - $o}] [expr {$x2 + $o}] [expr {$y2 + $o}]
+		incr o $incr
+	}
+	$Vars(widget:buttons) itemconfigure color -fill $color
+	set color [[namespace parent]::extendColorName $color]
+	[namespace parent]::tooltip $Vars(widget:buttons) -item color $color
 }
 
 
 proc Move {xdir ydir} {
-	variable Row
-	variable Col
-	variable Widget
+	variable Vars
 	variable Palette
 
-	set Row [[namespace parent]::Clip [expr {$Row + $ydir}] 0 [expr {[llength $Palette] - 1}]]
-	set Col [[namespace parent]::Clip [expr {$Col + $xdir}] 0 [expr {[llength [lindex $Palette 0]] - 1}]]
-	$Widget itemconfigure hilite -state hidden
-	$Widget itemconfigure hilite-$Row-$Col -state normal
+	set Vars(row) [Clip [expr {$Vars(row) + $ydir}] 0 [expr {[llength $Palette] - 1}]]
+	set Vars(col) [Clip [expr {$Vars(col) + $xdir}] 0 [expr {[llength [lindex $Palette 0]] - 1}]]
+
+	ShowHilite
+}
+
+
+proc Reflect {rgb} {
+	scan $rgb "%2x%2x%2x" r g b
+	Update $r $g $b no
 }
 
 
 proc Update {r g b afterResize} {
-	variable Widget
+	variable Vars
 	variable Palette
-	variable Row
-	variable Col
 
 	if {!$afterResize} {
 		set bestDist [expr {3*255*255 + 1}]
@@ -1856,8 +1522,8 @@ proc Update {r g b afterResize} {
 
 				if {$dist < $bestDist} {
 					set bestDist $dist
-					set Row $row
-					set Col $col
+					set Vars(row) $row
+					set Vars(col) $col
 				}
 
 				incr col
@@ -1868,43 +1534,42 @@ proc Update {r g b afterResize} {
 		}
 	}
 
-	$Widget itemconfigure hilite -state hidden
-	$Widget itemconfigure hilite-$Row-$Col -state normal
+	ShowHilite
 }
 
 
 set Palette {
-	{ eeeeee dddddd cccccc bbbbbb aaaaaa 999999 888888 \
+	{ ffffff eeeeee dddddd cccccc bbbbbb aaaaaa 999999 888888 \
 	  777777 666666 555555 444444 333333 222222 111111 000000 }
-	{ ffd6d6 ffded6 ffefd6 fff7d6 f7ffd6 f7ffd6 d6ffd6 \
+	{ eeeeee ffd6d6 ffded6 ffefd6 fff7d6 f7ffd6 f7ffd6 d6ffd6 \
 	  d6ffef d6ffff d6f7ff d6e7ff d6d6ff efd6ff ffd6ff ffd6ff }
-	{ ffb5b5 ffc6b5 ffdeb5 ffefb5 ffffb5 e7ffb5 b5ffb5 \
+	{ dddddd ffb5b5 ffc6b5 ffdeb5 ffefb5 ffffb5 e7ffb5 b5ffb5 \
 	  b5ffde bfffff b5e7ff c6d6ff c6c6ff deb5ff ffb5ff ffb5de }
-	{ ffa5a5 ffbda5 ffd6a5 ffe794 ffff94 d6ff94 a5ffa5 \
+	{ cccccc ffa5a5 ffbda5 ffd6a5 ffe794 ffff94 d6ff94 a5ffa5 \
 	  a5ffd6 a5ffff a5e7ff a5c6ff a5a5ff d6a5ff ffa5ff ffa5d6 }
-	{ ff9494 ffa584 ffc684 ffde73 ffff73 d6ff84 94ff94 \
+	{ bbbbbb ff9494 ffa584 ffc684 ffde73 ffff73 d6ff84 94ff94 \
 	  94ffce 84ffff 94deff 94b5ff 9494ff ce94ff ff84ff ff94ce }
-	{ ff8484 ff9473 ffb563 ffde63 ffff42 c6ff63 73ff73 \
+	{ aaaaaa ff8484 ff9473 ffb563 ffde63 ffff42 c6ff63 73ff73 \
 	  73ffbd 73ffff 84d6ff 84adff 8484ff c684ff ff73ff ff84c6 }
-	{ ff6363 ff7b52 ffad52 ffd642 f7f700 b5ff42 63ff63 \
+	{ 999999 ff6363 ff7b52 ffad52 ffd642 f7f700 b5ff42 63ff63 \
 	  63ffb5 52ffff 63ceff 73a5ff 7373ff b563ff ff52ff ff63b5 }
-	{ ff5252 ff7342 ff9c31 ffc600 f7f700 9cff00 52ff52 \
+	{ 888888 ff5252 ff7342 ff9c31 ffc600 f7f700 9cff00 52ff52 \
 	  52ffad 00f7f7 52c6ff 528cff 6363ff ad52ff ff42ff ff52ad }
-	{ ff4242 ff5a21 ff8400 f7b500 e7e700 94f700 00ff00 \
+	{ 777777 ff4242 ff5a21 ff8400 f7b500 e7e700 94f700 00ff00 \
 	  00ff84 00f5ff 42c6ff 4284ff 5252ff a542ff ff21ff ff42a5 }
-	{ ff2121 ff4200 e77300 d69c00 c6c600 84d600 00e700 \
+	{ 666666 ff2121 ff4200 e77300 d69c00 c6c600 84d600 00e700 \
 	  00e773 00d6d6 00adff 3173ff 3131ff 9421ff ff00ff ff2194 }
-	{ ff0000 e73900 d66b00 c69400 b5b500 73c600 00d600 \
+	{ 555555 ff0000 e73900 d66b00 c69400 b5b500 73c600 00d600 \
 	  00d66b 00c6c6 0094e7 0052ff 2121ff 8400ff e700e7 ff0084 }
-	{ e70000 c63100 b55a00 a57b00 a5a500 63a500 00b500 \
+	{ 444444 e70000 c63100 b55a00 a57b00 a5a500 63a500 00b500 \
 	  00b55a 00a5a5 0084c6 004ae7 0000ff 7300e7 cd00cd e70073 }
-	{ c60000 a52900 a55200 946b00 949400 5a9400 00a500 \
+	{ 333333 c60000 a52900 a55200 946b00 949400 5a9400 00a500 \
 	  00a552 009494 006ba5 0042c6 0000d6 6300c6 a500a5 c60063 }
-	{ 940000 942100 844200 846300 737300 528400 008400 \
+	{ 222222 940000 942100 844200 846300 737300 528400 008400 \
 	  008442 008484 006394 003194 0000a5 4a0094 940094 94004a }
-	{ 730000 731800 633100 634a00 636300 396300 006300 \
+	{ 111111 730000 731800 633100 634a00 636300 396300 006300 \
 	  006331 006363 004a73 002173 000084 390073 730073 730039 }
-	{ 520000 522100 522900 522900 525200 315200 005200 \
+	{ 000000 520000 522100 522900 522900 525200 315200 005200 \
 	  005229 005252 003152 001852 000052 290052 520052 520029 }
 }
 
@@ -1942,51 +1607,46 @@ set Swatches [image create photo -data {
 
 namespace eval x11 {
 
-variable Widget
-variable Visible
-variable Selection
-variable Size
-variable CellHeight 20
+lappend [namespace parent]::Methods x11
+
+set CellHeight 20
 
 
-proc ComputeHeight {adjHeight} {
-	variable [namespace parent]::RecentColorList
-	variable [namespace parent]::UserColorList
+proc ComputeHeight {adjHeight nusercolors nrecentcolors} {
 	variable CellHeight
+	variable Vars
 
-	set nrows [expr {([llength $RecentColorList] + 5)/6 + ([llength $UserColorList] + 4)/5 + 8}]
-	if {[llength $RecentColorList] > 0} { incr nrows }
-	if {[llength $RecentColorList] == 0 && [llength $UserColorList] == 0} { incr nrows 2 }
+	set nrows [expr {($nrecentcolors + 5)/6 + ($nusercolors + 5)/6 + 5}]
+	if {$nrecentcolors > 0} { incr nrows }
+	if {$nrecentcolors + $nusercolors == 0} { incr nrows 2 }
 	return [expr {$nrows*$CellHeight + [expr {($adjHeight/$CellHeight)*$CellHeight}] + 6}]
 }
 
 
-proc Icon {} { variable icon::22x22::Palette; return $Palette }
+proc Icon {} { return $icon::22x22::Palette }
 
 
 proc MakeFrame {container} {
-	variable [namespace parent]::NotebookSize
-	variable Palette
-	variable Widget
-	variable Visible
-	variable Selection
+	variable [namespace parent]::Priv
 	variable CellHeight
-	variable Size
+	variable Palette
+	variable Vars
 
-	set height	[expr {$NotebookSize(y) - 6}]
-	set width	[expr {$NotebookSize(x) - 6}]
+	set height	[expr {$Priv(notebook-size:y) - 6}]
+	set width	[expr {$Priv(notebook-size:x) - 6}]
 
 	set canvas [tk::canvas $container.list \
-  						-yscrollcommand [ list $container.vsb set] \
-						-yscrollincrement $CellHeight \
-						-highlightthickness 1 \
-		  				-width $width \
-						-height $height \
-						-relief sunken \
-						-borderwidth 2]
+		-yscrollcommand [ list $container.vsb set] \
+		-yscrollincrement $CellHeight \
+		-width $width \
+		-height $height \
+		-relief sunken \
+		-borderwidth 2 \
+	]
 	$canvas xview moveto 0
 	$canvas yview moveto 0
 	set scroll [ttk::scrollbar $container.vsb -orient vert -command "$canvas yview"]
+	bind $container.vsb <ButtonRelease-1> [list focus $container.list]
 	pack $scroll -side right -fill y
 	pack $canvas -side right -fill both -expand yes
 
@@ -2000,32 +1660,33 @@ proc MakeFrame {container} {
 	bind $canvas <Down>		[namespace code { Move %W +1 }]
 	bind $canvas <space>		[namespace code Enter]
 
-	set Widget(canvas) $canvas
-	set Widget(scrollbar) $scroll
-	set Size(x) 0
-	set Size(y) 0
-	set Selection -1
+	set Vars(widget:canvas) $canvas
+	set Vars(widget:scrollbar) $scroll
+	set Vars(size:x) 0
+	set Vars(size:y) 0
+	set Vars(selection) -1
 }
 
 
 proc Configure {width height} {
-	variable Size
-	variable Widget
+	variable Vars
 	variable Palette
-	variable Visible
+	variable CellHeight
 	variable icon::18x18::ArrowLeft
 	variable icon::18x18::ArrowRight
-	variable CellHeight
+	variable icon::18x18::ActiveArrowLeft
+	variable icon::18x18::ActiveArrowRight
 
-	set canv		$Widget(canvas)
-	set height	[expr {(($height - 6)/$CellHeight)*$CellHeight}]
+	set canv			$Vars(widget:canvas)
+	set cellHeight	$CellHeight
+	set height		[expr {(($height - 6)/$CellHeight)*$cellHeight}]
 
-	if {[winfo width $Widget(scrollbar)] <= 1 } { update idletasks }
+	if {[winfo width $Vars(widget:scrollbar)] <= 1 } { update idletasks }
 
-	if {$Size(x) != $width} {
-		set Size(x)	$width
-		set width	[expr {$width - [winfo width $Widget(scrollbar)]}]
-		set hyinc	[expr {$CellHeight/2}]
+	if {$Vars(size:x) != $width} {
+		set Vars(size:x)	$width
+		set width	[expr {$width - [winfo width $Vars(widget:scrollbar)]}]
+		set hyinc	[expr {$cellHeight/2}]
 		set hwidth	[expr {$width/2}]
 		set mark		0
 
@@ -2036,29 +1697,44 @@ proc Configure {width height} {
 			set fg [expr {$luma < 128 ? "white" : "black"}]
 			set color \#$color
 
-			$canv create rect 0 $mark $width [incr mark $CellHeight] -fill $color -outline {} -tags $color
+			$canv create rect 0 $mark $width [incr mark $cellHeight] -fill $color -outline {} -tags $color
 			$canv create text $hwidth [expr {$mark - $hyinc}] -text $name -fill $fg -tags $color
 			$canv bind $color <ButtonPress-1> [namespace code [list [namespace parent]::SetColor $color]]
 		}
 
-		$canv create image 10 9 -image $ArrowRight -tags right
-		$canv create image [expr {$width - 16}] 9 -image $ArrowLeft -tags left
-		$canv config -scrollregion "0 0 $height $mark"
+		$canv create image 10 9 -image $ArrowRight -tags right1
+		$canv create image 10 9 -image $ActiveArrowRight -tags right2
+		$canv create image [expr {$width - 15}] 9 -image $ArrowLeft -tags left1
+		$canv create image [expr {$width - 15}] 9 -image $ActiveArrowLeft -tags left2
+		$canv itemconfigure left2 -state hidden
+		$canv itemconfigure right2 -state hidden
+		$canv config -scrollregion [list 0 0 $height $mark]
+
+		bind $canv <FocusIn> "
+			$canv itemconfigure left1 -state hidden
+			$canv itemconfigure right1 -state hidden
+			$canv itemconfigure left2 -state normal
+			$canv itemconfigure right2 -state normal
+		"
+		bind $canv <FocusOut> "
+			$canv itemconfigure left1 -state normal
+			$canv itemconfigure right1 -state normal
+			$canv itemconfigure left2 -state hidden
+			$canv itemconfigure right2 -state hidden
+		"
 	}
 	
-	if {$Size(y) != $height} {
-		set Size(y)	$height
-		set Visible	[expr {$height/$CellHeight}]
-		$canv config -scrollregion [list 0 0 $height [expr {([llength $Palette]/2)*$CellHeight}]]
+	if {$Vars(size:y) != $height} {
+		set Vars(size:y) $height
+		set Vars(visible)	[expr {$height/$cellHeight}]
+		$canv config -scrollregion [list 0 0 $height [expr {([llength $Palette]/2)*$cellHeight}]]
 	}
 }
 
 
 proc Update {r g b afterResize} {
 	variable Palette
-	variable Widget
-	variable Visible
-	variable Selection
+	variable Vars
 
 	if {!$afterResize} {
 		set bestDist [expr {3*255*255 + 1}]
@@ -2084,19 +1760,19 @@ proc Update {r g b afterResize} {
 			incr i
 		}
 
-		set selection $Selection
-		set Selection -1
-		Hilite $Widget(canvas) $best
-		set first [First $Widget(canvas)]
-		set last [expr {$first + $Visible}]
+		set selection $Vars(selection)
+		set Vars(selection) -1
+		Hilite $Vars(widget:canvas) $best
+		set first [First $Vars(widget:canvas)]
+		set last [expr {$first + $Vars(visible)}]
 		if {$selection < $first || $last <= $selection} {
 			set n [expr {$best - $first}]
-			$Widget(canvas) yview scroll [expr {$n - $Visible/2}] units
+			$Vars(widget:canvas) yview scroll [expr {$n - $Vars(visible)/2}] units
 		}
 	} else {
-		set sel $Selection
-		set Selection -1
-		Hilite $Widget(canvas) $sel
+		set sel $Vars(selection)
+		set Vars(selection) -1
+		Hilite $Vars(widget:canvas) $sel
 	}
 }
 
@@ -2119,62 +1795,58 @@ proc First {w} {
 
 
 proc Hilite {w n} {
-	variable Palette
-	variable Visible
-	variable Selection
-	variable Widget
 	variable CellHeight
+	variable Palette
+	variable Vars
 
-	if {$n != $Selection} {
-		set Selection $n
+	if {$n != $Vars(selection)} {
+		set Vars(selection) $n
 		set first [First $w]
-		set last [expr {$first + $Visible - 1}]
+		set last [expr {$first + $Vars(visible) - 1}]
 
-		if {$Selection < $first} {
-			$w yview scroll [expr {$Selection - $first}] units
-		} elseif {$last < $Selection} {
-			$w yview scroll [expr {$Selection - $last}] units
+		if {$Vars(selection) < $first} {
+			$w yview scroll [expr {$Vars(selection) - $first}] units
+		} elseif {$last < $Vars(selection)} {
+			$w yview scroll [expr {$Vars(selection) - $last}] units
 		}
 
-		foreach which {left right} {
+		foreach which {left1 left2 right1 right2} {
 			lassign [$w coords $which] x1 y1 x2 y2
-			$w coords $which $x1 [expr {$CellHeight*$Selection + 10}]
+			$w coords $which $x1 [expr {$CellHeight*$Vars(selection) + 10}]
 		}
 	}
 }
 
 
 proc Prior {w} {
-	variable Visible
-	variable Selection
+	variable Vars
 
 	set first [First $w]
-	if {$first == $Selection} { incr first -$Visible }
+	if {$first == $Vars(selection)} { incr first -$Vars(visible) }
 	Hilite $w [Clip $first]
 }
 
 
 proc Next {w} {
-	variable Visible
-	variable Selection
+	variable Vars
 
 	set first [First $w]
-	set last [Clip [expr {$first + $Visible - 1}]]
-	if {$last == $Selection} { incr last $Visible }
+	set last [Clip [expr {$first + $Vars(visible) - 1}]]
+	if {$last == $Vars(selection)} { incr last $Vars(visible) }
 	Hilite $w [Clip $last]
 }
 
 
 proc Move {w dir} {
-	variable Selection
-	Hilite $w [Clip [expr {$Selection + $dir}]]
+	variable Vars
+	Hilite $w [Clip [expr {$Vars(selection) + $dir}]]
 }
 
 
 proc Select {w y} {
-	variable Selection
-	variable Palette
 	variable CellHeight
+	variable Palette
+	variable Vars
 
 	set y [$w canvasy $y]
 	set n [expr {int($y/$CellHeight)}]
@@ -2185,10 +1857,10 @@ proc Select {w y} {
 
 
 proc Enter {} {
-	variable Selection
 	variable Palette
+	variable Vars
 
-	[namespace parent]::SetColor "#[lindex $Palette [expr {2*$Selection}]]"
+	[namespace parent]::SetColor "#[lindex $Palette [expr {2*$Vars(selection)}]]"
 }
 
 
@@ -2407,21 +2079,431 @@ set ArrowRight [image create photo -data {
 	UNM0JnDzAqw3chxYM03TNQhY8gHsrJVvOA9vaAAAAABJRU5ErkJggg==
 }]
 
+set ActiveArrowLeft [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAQAAAD8x0bcAAAAAmJLR0QA/4ePzL8AAACOSURB
+	VCjPhdI9DoJAEIbhr8WEnl7pt7OGm+0BvAM90TPAnbTR4GuBYfnZ2Z1pn0y+zIxQutWWYwZo
+	EEUO1DQWUqNR1HR88DGkNgDgiPbggGZwoePNuhYUm7BBc8hzFATk9NBUceNlI/SH3zjcBl8m
+	Pm1kwfgydxm9eZYV9MkDO901VVxTKMAi93JI7tT/AP7LhwO7RmqrAAAAAElFTkSuQmCC
+}]
+
+set ActiveArrowRight [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAQAAAD8x0bcAAAAAmJLR0QA/4ePzL8AAACGSURB
+	VCjPhdK9DkBADADgriR2O3abmTfzAN7BLjwD7+QWQl3dkUOv2qTTl/4khWiCCkFOCKiOMtSo
+	xOwHalTjiq2BE5ReROHAyosk+EAUi4bpC34Q15FFF0zsMV6ksMEYYYMBchZZsBNgx81OB3Zx
+	DjyQ8oAbScCiwoCeB9eriOBEYScDygNd6IcD/vJ/qAAAAABJRU5ErkJggg==
+}]
+
 } ;# namespace 18x18
 
 namespace eval 22x22 {
 
 set Palette [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAAwklEQVQ4y9XUMQrCQBBA0Z9k
-	cW2CTRqbFAERwUbQiCCINop6Fg8jWHoVKystLO1S2mghBANrDOslZovMAR7DZ3e8bRTZ1Bgk
-	56I1KjWGXZ6LwnvAx9EoNPiesNoApccQjmRdfXWYwmHjDrARVt+gaANDYfjkMkVZ+Xy+gSha
-	Vj5euOrbfBCJwuHtVcfnplpddDyVRbMz6hcnmNlS9lRkjzo2Xh8LFoen7MdrFihVWnRhZbcN
-	rLsU3iSa28T0RNFM3/kDdxktoFQINH4AAAAASUVORK5CYII=
+	iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAABfVBMVEUAO2MAP2cALlgAOmMA
+	NF0APWUER2sJTHANS20cWnwZU3IxaYgZVXUraIYfWnkgXHsiXXwjXnwlYH4mYoAnY4EpZIIr
+	ZoQsaIYtaIcvaogwbIoxbYssXXdYiaJZeYqZuclgeomuyNUAAAAAebAAerAAerEAe7AFgbYI
+	g7Y8mb48mb8+Znw+Z31BmLRCncFDmbRtljltlzlulzlvmDxvr8JwmDx0obZ0pLh/o1aApFiE
+	o1OEpFiFpVqGpFWGpFeHlZ+IjpWOkZaUoquVmaGVsHOWmZ+WsXOZmp+fqrKguIWjpaqmr7Sm
+	uoWmu4ensripuL+uvsWxwci2pJ24ime4i2i4xs7AoovBzdPCnorCnovG0tfI1drMpI/MpY/Q
+	3OHW4+jX4ePX4eTa5OXtiU7tpTvtpz7upTfuvG3voy/vpDLvu2jxhELz9PD4dCT6sk368uL6
+	8uP7oSD7oSH7r0P7vWb8oSD97dX+Zwr+kAD/XgD/XwD/YAD/kAD/kQD/kgAY1T64AAAAInRS
+	TlMAABQUHh50dJ+frKy+vtjY2NjY2NjY2NjY2NjY8/P6+v7+ZNre/gAAAAFiS0dEIl1lXKwA
+	AADiSURBVBgZVcExTsNAEEDRmd1ZR0KQSFESwQ2g4iB0FByTjrNQIagAkYBkKQm2s7OfyvLy
+	noql1ZXKhI/dKVuYbe4MmWh++iqx2Tx4TOgoCbevv3pxv7ZGakPePoZ5xACZGHFulH2rIhpl
+	RACjvP+oSEBGvlxieH+IUiuDY1BCkBoFDE+NSi0mxyjbPkit5HOMfOyD1IpnDFCVmgIGqajU
+	NIHBtavUiB2GrxcqNdo3At4h/9A5xjDsz6R27Aes+PdhhsoI7Tsv2lzelCK1EJ4/owzdXKj5
+	y/akanG1UJnQ7jz/AVm9lOwac2MWAAAAAElFTkSuQmCC
 }]
 
 } ;# namespace 22x22
 } ;# namespace icon
 } ;# namespace x11
+
+namespace eval rgb {
+
+lappend [namespace parent]::Methods rgb
+
+namespace import [namespace parent]::rgb2hsv
+namespace import [namespace parent]::hsv2rgb
+namespace import [namespace parent]::Tr
+namespace import ::tcl::mathfunc::*
+
+
+proc Icon {} { return $icon::22x22::RGB }
+
+
+proc MakeFrame {container} {
+	variable Vars
+
+	set height 15
+	set width 220
+	set Vars(width) 0
+
+	set f [tk::frame $container.f -takefocus 0]
+	pack $f -anchor n -expand yes -fill x -padx 5 -pady 10
+
+	set row 0
+	foreach which {r g b h s v} {
+		set Vars(value:$which) "0"
+		set Vars(value:current:$which) "0"
+		tk::frame $f.f$which -borderwidth 2 -relief sunken -takefocus 0
+		tk::canvas $f.c$which -width 100 -height $height
+		bind $f.c$which <FocusIn> "
+			$f.c$which itemconfigure target -state hidden
+			$f.c$which itemconfigure active -state normal
+		"
+		bind $f.c$which <FocusOut> "
+			$f.c$which itemconfigure target -state normal
+			$f.c$which itemconfigure active -state hidden
+		"
+		pack $f.c$which -in $f.f$which -fill both
+		$f.c$which yview moveto 0
+		ttk::label $f.l$which -text [string toupper $which]
+		switch -exact -- $which {
+			r { [namespace parent]::tooltip $f.l$which [Tr Red] }
+			g { [namespace parent]::tooltip $f.l$which [Tr Green] }
+			b { [namespace parent]::tooltip $f.l$which [Tr Blue] }
+			h { [namespace parent]::tooltip $f.l$which [Tr Hue] }
+			s { [namespace parent]::tooltip $f.l$which [Tr Saturation] }
+			v { [namespace parent]::tooltip $f.l$which [Tr Value] }
+		}
+		::ttk::spinbox $f.s$which \
+			-background white \
+			-from 0 \
+			-to [Maxima $which] \
+			-increment 1 \
+			-width 3 \
+			-justify right \
+			-textvariable [namespace current]::Vars(value:$which) \
+			-validatecommand {
+				return	[expr {%d == 0 \
+						|| (	[string match \[0-9\]* "%S"] \
+							&& [string length %s] <= 2)}]
+			} \
+			-invalidcommand { bell } \
+			-exportselection no \
+			;
+
+		grid $f.l$which -row $row -column 0 -sticky nw
+		grid $f.f$which -row $row -column 2 -sticky nwe
+		grid $f.s$which -row $row -column 4 -sticky ne
+
+		set Vars(widget:$which) $f.c$which
+		incr row 2
+	}
+
+	foreach which {r g b h s v} {
+		switch $which {
+			r - g - b { set what RGB }
+			h - s - v { set what HSV }
+		}
+		bind $f.c$which <Left>				[namespace code [list Move$what $which -1]]
+		bind $f.c$which <Right>				[namespace code [list Move$what $which +1]]
+		bind $f.c$which <Control-Left>	[namespace code [list Move$what $which -10]]
+		bind $f.c$which <Control-Right>	[namespace code [list Move$what $which +10]]
+		bind $f.c$which <Home>				[namespace code [list Move$what $which -9999]]
+		bind $f.c$which <End>				[namespace code [list Move$what $which +9999]]
+		bind $f.c$which <ButtonPress-1>	[namespace code [list Select${what}Value $which %x %y]]
+		bind $f.c$which <ButtonPress-1>	{+ focus %W }
+		bind $f.c$which <B1-Motion>		[namespace code [list Select${what}Value $which %x %y]]
+		bind $f.s$which <Return>			[namespace code [list Set${what}Value $which]]
+		bind $f.s$which <Return>			{+ break }
+		bind $f.s$which <FocusIn>			{ %W configure -validate key }
+		bind $f.s$which <FocusOut>			[namespace code [list Set${what}Value $which]]
+		bind $f.s$which <FocusOut>			{+ %W selection clear }
+		$f.s$which configure -command		[namespace code [list Set${what}Value $which]]
+	}
+
+	grid columnconfigure $f {1 3} -minsize 5
+	grid columnconfigure $f 2 -weight 1
+	grid rowconfigure $f {1 3 7 9} -minsize 12
+	grid rowconfigure $f 5 -minsize 25
+}
+
+
+proc Maxima {which} {
+	switch $which {
+		h { return 360 }
+		s -
+		v { return 100 }
+	}
+
+	return 255
+}
+
+
+proc Configure {width height} {
+	variable [namespace parent]::icon::11x11::ArrowUp
+	variable [namespace parent]::icon::11x11::ActiveArrowUp
+	variable Vars
+
+	update idletasks
+
+	set width [winfo width $Vars(widget:r)]
+	if {$width <= 1} {
+		set width [$Vars(widget:r) cget -width]
+	}
+	if {$Vars(width) == $width} { return }
+
+	foreach which {r g b h s v} {
+		$Vars(widget:$which) delete all
+		$Vars(widget:$which) xview moveto 0
+	}
+
+	set Vars(width) $width
+	set height [$Vars(widget:r) cget -height]
+	set nsteps [min 255 $width]
+	set scale [expr {1.0/($nsteps - 1)}]
+	set step [expr {1.0/$nsteps}]
+
+	foreach which {r g b} {
+		set bar $Vars(widget:$which)
+
+		switch -- $which {
+			r { set rgb {255 0 0} }
+			g { set rgb {0 255 0} }
+			b { set rgb {0 0 255} }
+		}
+
+		set hsv [rgb2hsv {*}$rgb]
+		lassign $hsv h s v
+
+		set x0 0
+		for {set i 0} {$i < $nsteps} {incr i} {
+			set v [expr {$scale*$i}]
+			#set v [sqrt $v]
+			set x1 [expr {round(($i + 1)*$step*$width)}]
+			set color [format "#%02x%02x%02x" {*}[hsv2rgb $h $s $v]]
+			$bar create rectangle $x0 0 $x1 $height -width 0 -fill $color
+			set x0 $x1
+		}
+	}
+
+	set bar $Vars(widget:h)
+	for {set x 0} {$x < $width} {incr x} {
+		set h [expr {(360.0*$x)/($width - 1)}]
+		set color [format "#%02x%02x%02x" {*}[hsv2rgb $h 1.0 1.0]]
+		$bar create rectangle $x 0 $x $height -width 0 -fill $color
+	}
+
+	set hsv [rgb2hsv 238 221 130] ;# LightGoldenRod
+	lassign $hsv h s v
+	set bar $Vars(widget:s)
+	for {set x 0} {$x < $width} {incr x} {
+		set s [expr {double($x)/($width - 1)}]
+		set color [format "#%02x%02x%02x" {*}[hsv2rgb $h $s $v]]
+		$bar create rectangle $x 0 $x $height -width 0 -fill $color
+	}
+
+	set bar $Vars(widget:v)
+	for {set x 0} {$x < $width} {incr x} {
+		set v [expr {double($x)/($width - 1)}]
+		set color [format "#%02x%02x%02x" {*}[hsv2rgb 0 0 $v]]
+		$bar create rectangle $x 0 [expr {$x + 1}] $height -width 0 -fill $color
+	}
+
+	foreach which {r g b h s v} {
+		$Vars(widget:$which) create image 0 3 -image $ArrowUp -anchor n -tags target
+		$Vars(widget:$which) create image 0 3 -image $ActiveArrowUp -anchor n -tags active
+		$Vars(widget:$which) itemconfigure active -state hidden
+	}
+}
+
+
+proc Update {r g b afterResize} {
+	UpdateRGB $r $g $b
+	UpdateHSV [rgb2hsv $r $g $b]
+}
+
+
+proc SetSpinboxValue {which val} {
+	variable Vars
+
+	if {$val != $Vars(value:$which)} {
+		set Vars(value:$which) $val
+		set Vars(value:current:$which) $val
+	}
+}
+
+
+proc UpdateRGB {r g b} {
+	foreach which {r g b} {
+		SetSpinboxValue $which [set $which]
+		Reflect $which [set $which]
+	}
+}
+
+
+proc UpdateHSV {hsv} {
+	variable Vars
+
+	set Vars(hsv) $hsv
+	lassign $hsv h s v
+
+	set h [expr {round($h)}]
+	set s [expr {round($s*100)}]
+	set v [expr {round($v*100)}]
+
+	foreach which {h s v} {
+		SetSpinboxValue $which [set $which]
+		Reflect $which [set $which]
+	}
+}
+
+
+proc Reflect {which val} {
+	variable Vars
+
+	set x [expr {round((double($val)/double([Maxima $which]))*double($Vars(width) - 1))}]
+	$Vars(widget:$which) coords target $x 3
+	$Vars(widget:$which) coords active $x 3
+}
+
+
+proc SetRGBValue {which {val {}}} {
+	variable [namespace parent]::Priv
+	variable Vars
+
+	if {[llength $val] == 0} {
+		set val [string trimleft $Vars(value:$which) "0"]
+	}
+	if {$val eq "" || $val < 0} { set val 0 }
+	if {$val > 255} { set val 255 }
+	if {$val == $Vars(value:current:$which)} { return }
+	set Vars(value:current:which) $val
+	SetSpinboxValue $which $val
+	scan $Priv(rgb) "\#%2x%2x%2x" r g b
+
+	switch $which {
+		r { set r $val }
+		g { set g $val }
+		b { set b $val }
+	}
+
+	Reflect $which $val
+	[namespace parent]::SetRGB [list $r $g $b]
+	UpdateHSV [rgb2hsv $r $g $b]
+}
+
+
+proc SetHSVValue {which {val {}}} {
+	variable Vars
+
+	if {[llength $val] == 0} {
+		set val [string trimleft $Vars(value:$which) "0"]
+	}
+	if {$val eq "" || $val < 0} { set val 0 }
+
+	switch $which {
+		h { if {$val > 360} { set val 360 } }
+		s -
+		v { if {$val > 100} { set val 100 } }
+	}
+
+	if {$val == $Vars(value:current:$which)} { return }
+	set Vars(value:current:$which) $val
+	SetSpinboxValue $which $val
+
+	switch $which {
+		h { set Vars(hsv) [lreplace $Vars(hsv) 0 0 $val] }
+		s { set Vars(hsv) [lreplace $Vars(hsv) 1 1 [expr {$val/100.0}]] }
+		v { set Vars(hsv) [lreplace $Vars(hsv) 2 2 [expr {$val/100.0}]] }
+	}
+
+	set rgb [hsv2rgb {*}$Vars(hsv)]
+	Reflect $which $val
+	[namespace parent]::SetRGB $rgb
+	UpdateRGB {*}$rgb
+}
+
+
+proc SelectRGBValue {which x y} {
+	variable [namespace parent]::Priv
+	variable Vars
+
+	incr x -2
+
+	set x [min $x [expr {$Vars(width) - 1}]]
+	set x [max 0 $x]
+	set d [expr {double($x*$Vars(width)*[Maxima $which])/double($Vars(width)*($Vars(width) - 1))}]
+
+	$Vars(widget:$which) coords target $x 3
+	$Vars(widget:$which) coords active $x 3
+	scan $Priv(rgb) "\#%2x%2x%2x" r g b
+
+	switch $which {
+		r { set r [expr {round($d)}] }
+		g { set g [expr {round($d)}] }
+		b { set b [expr {round($d)}] }
+	}
+
+	[namespace parent]::SetRGB [list $r $g $b]
+	SetSpinboxValue $which [set $which]
+	UpdateHSV [rgb2hsv $r $g $b]
+}
+
+
+proc SelectHSVValue {which x y} {
+	variable Vars
+
+	set x [min $x [expr {$Vars(width) - 1}]]
+	set x [max 0 $x]
+	set d [expr {(double($x)/double($Vars(width) - 1))}]
+
+	if {$which eq "h"} { set d [expr {$d*360}] }
+
+	$Vars(widget:$which) coords target $x 3
+	$Vars(widget:$which) coords active $x 3
+
+	switch $which {
+		h { set Vars(hsv) [lreplace $Vars(hsv) 0 0 $d] }
+		s { set Vars(hsv) [lreplace $Vars(hsv) 1 1 $d] }
+		v { set Vars(hsv) [lreplace $Vars(hsv) 2 2 $d] }
+	}
+
+	set rgb [hsv2rgb {*}$Vars(hsv)]
+	[namespace parent]::SetRGB $rgb
+	UpdateRGB {*}$rgb
+
+	if {$which ne "h"} { set d [expr {$d*100}] }
+	SetSpinboxValue $which [expr {round($d)}]
+}
+
+
+proc MoveRGB {which step} {
+	variable Vars
+
+	SetRGBValue $which [expr {$Vars(value:$which) + $step}]
+}
+
+
+proc MoveHSV {which step} {
+	variable Vars
+
+	SetHSVValue $which [expr {$Vars(value:$which) + $step}]
+}
+
+namespace eval icon {
+namespace eval 22x22 {
+
+set RGB [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAACaElEQVQ4y62UT2gTURDGv5l5
+	b7PZhDSppKUB0bSCJYKIIIUqeBAUQdBDD4oUD3rSq3eRqnj3Ior24EE9Cj0IIsVDBb1VWyx4
+	kVr634JESjbZfc/DrmmsTdQ2A8O8eTv89jHvm0dDudTR4azzxBVTJLEgZUFi8Mc6ztHRGSxw
+	5vno9PfLL2dWfDQxdcrTdwY8XWQxIGVAOoKxNhFYUQTVv/bWVNDbd3FsavYZgLFmYHZg8/hP
+	cyiEBSVb1TC2aUyglt+tbV3Q7DyhMaZlxSdD91YDY/8NSICXw5uv5XlHqbctK4sdHURhdX+5
+	4ndGO7bOoAZePbLg2kDh443x2XJLsAAkCb2r6teS2+13wlWBXwkWfpNbz7GuC12HMw8yeZVK
+	JgDXBdwE4ChAawMtFlpbaDEQip0NhMI4Ag51h1+mKg9Pntlz9WzplQUA2je0e6JwJDvouUCy
+	wR1tI1cWWlloZaBimOIQTBu5UAj/20EzcmmisLZSWQIA5gTnsGOzYCGuViAburFW0CZTmhsH
+	hNZ3jiSY0BrRNqz/pLpUu7W+WHksnSpDVYB8wFaAQFvUVORaWaj48lTcU65fooVDhXB2em70
+	0fjg8rnS67rc3O7+vDc/s5La7nmTKRWOfbiycKLvfn3QKOFltO7qLdXKq9lop2HC/7reNEUE
+	IKjWeg8ceqdQOn39R9/x2/ByBGGABRABmOMomyJvnYuARJBPO1h8/+Ip++meYbgZaocqrLVY
+	XQ+Q2dt/vq1yixQdNYVhTVvBDe+1nW8nUDMjCMOywtzkTXbTI0acHJjR1Kkxly1riBnZtOMv
+	f568+xMPp9Zz9rIrQgAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 22x22
+} ;# namespace icon
+} ;# namespace rgb
 
 namespace eval icon {
 namespace eval 11x11 {
@@ -2433,11 +2515,24 @@ set ArrowUp [image create photo -data {
 	AAAASUVORK5CYII=
 }]
 
+set ActiveArrowUp [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAf0lEQVQY043QsRHDIBBE0b0I
+	AppxAPF1oGpoQ9WQ4wbkdiC6dSSNPAZJP955wQL/CYAVD1sAEIDeDUVEtpwzAdRbVVVpZowx
+	XuoCYKu1kiRLKZf6oZKkmTGlNNRFRA51b6b/qHsjfajO9EVVOeusSwjh45x7ee+nf/be0Vp7
+	fwEX3Jjf4QNfoAAAAABJRU5ErkJggg==
+}]
+
 set ArrowRight [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAcklEQVQY043OMQ6DMBBE0fWl
 	UlpK6QvlCr4QlJYofQ/3dmlXfJosQpCwjDTdm9VK730B3vIktVZSSgD2qJSCiOC9t0eKtbej
 	M74d/cPaGCPACnx+YuccIQRyziswA6/L5ROadnT82USa1pqNNGMMG32zAR8mrjjWt+mAAAAA
 	AElFTkSuQmCC
+}]
+
+set ActiveArrowRight [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAQAAAADpb+tAAAAUUlEQVQI12XMMRJAQBBE0Z8R
+	ku85VsyhlIMh5mLTAmxtbXf4/tTQX8z4Ri3CU5J0e0p616Sfm1SzJG0iWCsOnZqCg1yuP9rJ
+	5bcRwOAE0DkBDyxWXHFgN2EuAAAAAElFTkSuQmCC
 }]
 
 } ;# namespace 11x11
@@ -2455,6 +2550,19 @@ set ArrowRight [image create photo -data {
 #
 #} ;# namespace 12x12
 
+namespace eval 20x15 {
+
+set Empty [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABQAAAAPCAQAAABOkSfeAAAAAmJLR0QA/4ePzL8AAAAJcEhZ
+	cwAACxMAAAsTAQCanBgAAAAHdElNRQfcBw0HKxHw7bknAAAAHXRFWHRDb21tZW50AENyZWF0
+	ZWQgd2l0aCBUaGUgR0lNUO9kJW4AAACySURBVCjPhdIxDgFBGIbhP5GsCgkXIFE5AwewncIB
+	uIB1C5yAW+gl7kC2kFALCgoJieBVjGWYf7Jf/WbyZGaEZFsiCgjiGd9dmNIgQ2oIcGBERT2X
+	/z1Y0iXvxJxxd1UQtJhxU+I9Q8rWuQhFeqx5KogFHXKfGEGoMebkQdQtBEJAk7mK2DGgKlYq
+	lIhUxJ3V7w0YxERDuPcqBIQuQnsrg+izsRG+H5AgjinhO87SJjbhCzrFVmHf9TjpAAAAAElF
+	TkSuQmCC
+}]
+
+}
 namespace eval 15x15 {
 
 set GreenArrow [image create photo -data {

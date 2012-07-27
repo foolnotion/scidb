@@ -297,6 +297,7 @@ unset nag
 unset line
 
 variable Position	{}
+variable After {}
 variable Value
 variable MaxNags
 variable LastNag
@@ -405,7 +406,7 @@ proc open {parent} {
 					-offrelief flat \
 					-indicatoron off \
 					-variable [namespace current]::Value($nag) \
-					-font $::font::symbol \
+					-font $::font::symbol(text:normal)  \
 					-overrelief solid \
 					;
 				bind $f.$nag <2> [list after idle $buttonDownCmd]
@@ -486,16 +487,17 @@ proc open {parent} {
 	}
 	if {[llength $Position] == 2} {
 		::update idletasks
-		scan [winfo geometry [winfo toplevel $parent]] "%dx%d+%d+%d" tw th tx ty
-		set rx [expr {$tx + [lindex $Position 0]}]
-		set ry [expr {$ty + [lindex $Position 1]}]
-		set rw [winfo reqwidth $dlg]
-		set rh [winfo reqheight $dlg]
-		set sw [winfo screenwidth $dlg]
-		set sh [winfo screenheight $dlg]
-		set rx [expr {max(min($rx, $sw - $rw), 0)}]
-		set ry [expr {max(min($ry, $sh - $rh), 0)}]
-		wm geometry $dlg +$rx+$ry
+		if {[scan [winfo geometry [winfo toplevel $parent]] "%dx%d+%d+%d" tw th tx ty] == 4} {
+			set rx [expr {$tx + [lindex $Position 0]}]
+			set ry [expr {$ty + [lindex $Position 1]}]
+			set rw [winfo reqwidth $dlg]
+			set rh [winfo reqheight $dlg]
+			set sw [winfo screenwidth $dlg]
+			set sh [winfo screenheight $dlg]
+			set rx [expr {max(min($rx, $sw - $rw), 0)}]
+			set ry [expr {max(min($ry, $sh - $rh), 0)}]
+			wm geometry $dlg +$rx+$ry
+		}
 	} else {
 		::util::place $dlg center $parent
 	}
@@ -875,7 +877,10 @@ proc Configured {cb} {
 proc KeyStroke {cb code sym} {
 	variable LastNag
 	variable Current
+	variable After
 	variable ranges
+
+	after cancel $After
 
 	if {[string is integer -strict $code]} {
 		if {$Current == 0} {
@@ -890,11 +895,12 @@ proc KeyStroke {cb code sym} {
 		} else {
 			set current $Current
 			foreach range $ranges {
-				if {$current >= [lindex $range 1]} { incr current }
+				if {$Current >= [lindex $range 1]} { incr current }
 			}
 		}
 
 		$cb select $current
+		set After [after 1000 [list set [namespace current]::Current 0]]
 	} else {
 		set Current 0
 	}

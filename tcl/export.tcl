@@ -52,8 +52,6 @@ set Layout					"Layout"
 set PostscriptSpecials	"Postscript Specialities"
 set BoardSize				"Board Size"
 
-set Notation				"Notation"
-set Figurines				"Figurines"
 set Hyphenation			"Hyphenation"
 set None						"(none)"
 set Graphic					"Graphic"
@@ -103,6 +101,7 @@ set GameText				"Game Text"
 set Moves					"Moves"
 set MainLine				"Main Line"
 set Variation				"Variation"
+set Figurines				"Figurines"
 set Subvariation			"Subvariation"
 set Symbols					"Symbols"
 set Comments				"Comments"
@@ -216,6 +215,7 @@ array set PdfEncodingMap {
 set PdfEncodingList {}
 foreach key [array names PdfEncodingMap] { lappend PdfEncodingList $key }
 set PdfEncodingList [lsort -dictionary $PdfEncodingList]
+set Figurines {}
 
 set Paper(tex) {
 	{ A4 210 297 mm }
@@ -516,7 +516,7 @@ array set Defaults {
 	pdf,fonts,embed									1
 	pdf,fonts,builtin									0
 
-	pdf,moves,notation								short
+	pdf,moves,notation								san
 	pdf,moves,figurines								graphic
 	pdf,moves,hide-variations						0
 
@@ -563,7 +563,7 @@ array set Defaults {
 	{pdf,margins,US 5x7}								{  0.50  0.63   0.52  0.52 }
 	{pdf,margins,COMM 10}							{  0.64  0.85   0.43  0.43 }
 
-	tex,moves,notation								short
+	tex,moves,notation								san
 	tex,moves,figurines								graphic
 	tex,moves,hide-variations						0
 
@@ -591,7 +591,7 @@ array set Defaults {
 	tex,diagram,image-style							{Default Merida}
 	tex,diagram,image-size							200
 
-	html,moves,notation								short
+	html,moves,notation								san
 	html,moves,figurines								graphic
 	html,moves,hide-variations						0
 
@@ -998,77 +998,14 @@ namespace eval notation {
 proc BuildFrame {w} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::Info
-	variable [namespace parent]::Notation
-	variable [namespace parent]::NotationList
-	variable [namespace parent]::Figurines
-	variable [namespace parent]::FigurinesList
 	variable [namespace parent]::Colors
 
-	### Notation + Figurine #################################################################
-	set Notation {}
-	foreach entry {short long algebraic correspondence telegraphic} {
-		lappend Notation [list $entry [set [namespace parent]::mc::[string toupper $entry 0 0]]]
-	}
-	set NotationList {}
-	foreach entry $Notation { lappend NotationList [lindex $entry 1] }
+	::figurines::listbox $w.figurines -width 165 -variable [namespace parent]::Figurines
+	::notation::listbox $w.notation -width 180
+	$w.figurines connect $w.notation
 
-	set Figurines {}
-	foreach lang [array names ::font::figurines] {
-		if {$lang ne "graphic"} {
-			lappend Figurines [list $lang [::encoding::languageName $lang]]
-		}
-	}
-	set Figurines [lsort -index 1 -dictionary $Figurines]
-	set Figurines [linsert $Figurines 0 [list graphic [set [namespace parent]::mc::Graphic]]]
-	set FigurinesList {}
-	foreach entry $Figurines { lappend FigurinesList [lindex $entry 1] }
-
-	### Figurine #############################################################################
-	ttk::labelframe $w.figurines -text [set [namespace parent]::mc::Figurines]
-	set list [ttk::frame $w.figurines.list]
-	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 180]
-	$selbox addcol image -id icon
-	$selbox addcol text -id text -expand yes
-	foreach entry $Figurines {
-		lassign $entry lang name
-		set img $::country::icon::flag([::mc::countryForLang $lang])
-		$selbox insert [list $img $name]
-	}
-	$selbox resize
-	pack $selbox -anchor s
-	bind $selbox <<ListboxSelect>> [namespace code [list SetFigurines $w]]
-	bind $list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
-	set sample [tk::label $w.figurines.sample -borderwidth 1 -relief sunken]
-	tk::label $w.figurines.sample.text -background white
-	pack $w.figurines.sample.text -fill both -expand yes
-	pack propagate $sample 0
-
-	grid $list   -row 1 -column 1 -sticky ns
-	grid $sample -row 3 -column 1 -sticky ew
-	grid rowconfigure $w.figurines {0 2 4} -minsize $::theme::padding
-	grid rowconfigure $w.figurines {1} -weight 1
-	grid columnconfigure $w.figurines {0 2} -minsize $::theme::padding
-
-	### Notation #############################################################################
-	ttk::labelframe $w.notation -text [set [namespace parent]::mc::Notation]
-	set list [ttk::frame $w.notation.list]
-	set selbox [::tlistbox $list.selection -exportselection 0 -pady 1 -borderwidth 1 -minwidth 165]
-	$selbox addcol text -id text
-	foreach name $NotationList { $selbox insert [list $name] }
-	$selbox resize
-	pack $selbox -anchor s
-	bind $selbox <<ListboxSelect>> [namespace code [list SetNotation $w]]
-	bind $list <Configure> [list [namespace parent]::ConfigureTListbox %W %h]
-	set sample [tk::label $w.notation.sample -borderwidth 1 -relief sunken]
-	tk::label $w.notation.sample.text -background white
-	pack $w.notation.sample.text -fill both -expand yes
-	pack propagate $sample 0
-
-	grid $list   -row 1 -column 1 -sticky ns
-	grid $sample -row 3 -column 1 -sticky ew
-	grid rowconfigure $w.notation {0 2 4} -minsize $::theme::padding
-	grid rowconfigure $w.notation {1} -weight 1
-	grid columnconfigure $w.notation {0 2} -minsize $::theme::padding
+	bind $w.figurines <<ListboxSelect>> [namespace code [list SetFigurines %d]]
+	bind $w.notation <<ListboxSelect>> [namespace code [list SetNotation %d]]
 
 	### Style ################################################################################
 	ttk::labelframe $w.style -text [set [namespace parent]::mc::MainlineStyle]
@@ -1106,48 +1043,15 @@ proc BuildFrame {w} {
 }
 
 
-proc SetFigurines {w} {
-	variable [namespace parent]::Figurines
+proc SetFigurines {lang} {
 	variable [namespace parent]::Values
-
-	set type $Values(Type)
-	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
-	set Values($type,moves,figurines) $lang
-	if {$lang eq "graphic"} {
-		$w.figurines.sample.text configure -font ::font::figurine
-	} else {
-		$w.figurines.sample.text configure -font TkTextFont
-	}
-	$w.figurines.sample.text configure -text [join $::font::figurines($lang) " "]
-	if {[$w.notation.list.selection curselection] >= 0} { SetNotation $w }
+	set Values($Values(Type),moves,figurines) $lang
 }
 
 
-proc SetNotation {w} {
-	variable [namespace parent]::Notation
-	variable [namespace parent]::Figurines
+proc SetNotation {form} {
 	variable [namespace parent]::Values
-
-	set type $Values(Type)
-	set notation [lindex $Notation [$w.notation.list.selection curselection] 0]
-	set Values($type,moves,notation) $notation
-
-	set lang [lindex $Figurines [$w.figurines.list.selection curselection] 0]
-	if {$lang ne "graphic"} {
-		set n [lindex $::font::figurines($lang) 4]
-	} elseif {[info exists ::font::figurines($::mc::langID)]} {
-		set n [lindex $::font::figurines($::mc::langID) 4]
-	} else {
-		set n N
-	}
-
-	switch $notation {
-		short				{ $w.notation.sample.text configure -text "1.e4 ${n}f6" }
-		long				{ $w.notation.sample.text configure -text "1.e2-e4 ${n}g8-f6" }
-		algebraic		{ $w.notation.sample.text configure -text "1.e2e4 g8f6" }
-		correspondence	{ $w.notation.sample.text configure -text "1.5254 7866" }
-		telegraphic		{ $w.notation.sample.text configure -text "1.GEGO WATI" }
-	}
+	set Values($Values(Type),moves,notation) $form
 }
 
 
@@ -1171,18 +1075,12 @@ proc UpdateVariationFlag {} {
 proc Setup {pane} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::Info
-	variable [namespace parent]::Figurines
-	variable [namespace parent]::Notation
 	variable [namespace parent]::Styles
 
 	set type $Values(Type)
-	$pane.notation.list.selection select none
 
-	set index [lsearch -exact -index 0 $Figurines $Values($type,moves,figurines)]
-	$pane.figurines.list.selection select $index
-
-	set index [lsearch -exact -index 0 $Notation $Values($type,moves,notation)]
-	$pane.notation.list.selection select $index
+	$pane.notation select $Values($type,moves,notation)
+	$pane.figurines select $Values($type,moves,figurines)
 
 	set Info(column-style) $Styles($type,BasicStyle,GameText,Moves,MainLine,ColumnStyle)
 	set Info(hide-variations) $Values($type,moves,hide-variations)
@@ -1800,7 +1698,7 @@ proc BuildFrame {w} {
 			lset Styles($type,$Info(style)) 0 $family
 		}
 	}
-	::dialog::choosefont::build $w.fontsel $font {} $color
+	::dialog::choosefont::embedFrame $w.fontsel $font -color $color
 	bind $w.fontsel <<FontSelected>> [namespace code [list FontSelected %d]]
 	bind $w.fontsel <<FontColor>> [namespace code [list FontColor %d]]
 
@@ -1947,7 +1845,7 @@ proc UpdateSample {family} {
 
 	switch $Info(fontType) {
 		Diagram {
-			upvar 0 ::font::[set ::font::chessDiagramFontsMap($family)] encoding
+			upvar 0 ::font::[set ::font::chessDiagramFontsMap([string tolower $family])] encoding
 			foreach code {lite,wk lite,wq lite,wr lite,wb lite,wn lite,wp} {
 				append sample $encoding($code)
 			}
@@ -1955,7 +1853,7 @@ proc UpdateSample {family} {
 
 		Symbols {
 			set sample ""
-			upvar 0 ::font::[set ::font::chessSymbolFontsMap($family)] encoding
+			upvar 0 ::font::[set ::font::chessSymbolFontsMap([string tolower $family])] encoding
 			foreach nag {7 13 14 16 40 140 142 149 151 156} {
 				if {[info exists encoding($nag)]} {
 					if {[llength $sample]} { append sample " " }
@@ -1968,8 +1866,8 @@ proc UpdateSample {family} {
 
 		Figurines {
 			variable ::font::chessFigurineFontsMap
-			set encoding $chessFigurineFontsMap($family)
-			set sample [join $::font::figurines(graphic) " "]
+			set encoding $chessFigurineFontsMap([string tolower  $family])
+			set sample [join $::figurines::langSet(graphic) " "]
 			if {[llength $encoding]} { set sample [string map $encoding $sample] }
 		}
 
@@ -3146,9 +3044,14 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 				append preamble \
 					"\\def\\ImageStyle{$Values(tex,diagram,image-style) $Values(tex,diagram,image-size)}\n"
 			}
-			if {[string length $Values(tex,moves,figurines)] <= 3} {
+			if {[string length $Values(tex,moves,figurines)] ne "graphic"} {
 				append preamble "\\def\\UseLetters{"
-				foreach piece $::font::figurines($Values(tex,moves,figurines)) {
+				if {$Values(tex,moves,figurines) eq "user"} {
+					set set [namespace current]::Figurines
+				} else {
+					set set $::figurines::langSet($Values(tex,moves,figurines)
+				}
+				foreach piece $set {
 					# convert into UTF-8 sequence; e.g. "\u05d4\u05de" --> \xD7\x94\xd7\x9e
 					append preamble "\\utf8{[::scidb::misc::utf8sequence $piece]}"
 				}
@@ -3329,10 +3232,11 @@ proc CloseView {} {
 
 
 proc WriteOptions {chan} {
-	options::writeItem $chan [namespace current]::Values
-	options::writeItem $chan [namespace current]::Styles
-	options::writeItem $chan [namespace current]::si3::Tags no
-	options::writeItem $chan [namespace current]::sci::Tags no
+	::options::writeItem $chan [namespace current]::Values
+	::options::writeItem $chan [namespace current]::Styles
+	::options::writeItem $chan [namespace current]::Figurines
+	::options::writeItem $chan [namespace current]::si3::Tags no
+	::options::writeItem $chan [namespace current]::sci::Tags no
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

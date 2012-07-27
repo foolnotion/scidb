@@ -160,6 +160,7 @@ array set compiler {
     simd                        {}
     thread-support              {}
     no-stack-protector          {}
+    no-gzoffset                 {}
     var-tracking                {}
     var-tracking-assignments    {}
 }
@@ -801,6 +802,30 @@ int main()
     z_streamp z;
     deflateInit(z, 0);
     (void)crc32_combine(0, 0, 0);
+    { z_off_t (*f)(gzFile) = gzoffset; }
+    return 0;
+}
+EOF
+
+__CC__ -o testzlib testzlib.c __zlib-inc__ __zlib-lib__
+if [ -f testzlib ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# testgzoffset:
+#    Script used to test if the installed zlib has
+#    function gzoffset.
+#
+set TestGzOffset {#!/bin/sh
+cat <<EOF > testzlib.c
+#include <zlib.h>
+int main()
+{
+    z_off_t (*f)(gzFile) = gzoffset;
     return 0;
 }
 EOF
@@ -820,22 +845,36 @@ fi
 #
 proc SystemHasZlib {} {
     global TestZlib
+    global TestGzOffset
     global environment
     global package
+    global compiler
 
     set testZlib [regsub -all __CC__ $TestZlib $environment(CC)]
     set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
     set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
-
     flush stdout
     if {[catch {open testzlib.sh w} f]} { return 0 }
     puts $f $testZlib
     close $f
     set result 0
     if {![catch {exec sh testzlib.sh} err]} { set result 1 }
+
+    set testZlib [regsub -all __CC__ $TestGzOffset $environment(CC)]
+    set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
+    set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
+    flush stdout
+    if {[catch {open testzlib.sh w} f]} { return 0 }
+    puts $f $testZlib
+    close $f
+    if {[catch {exec sh testzlib.sh} err]} {
+        set compiler(no-gzoffset) -Dgzoffset=gztell
+    }
+
     catch { file delete -force testzlib.sh }
     catch { file delete -force testzlib.c }
     catch { file delete -force testzlib }
+ 
     return $result
 }
 
@@ -1354,6 +1393,10 @@ proc writeMakefile {{type ""}} {
 
     Append option(EXTRA_CXXFLAGS) $extra_c_flags
     Append option(EXTRA_CFLAGS) $extra_c_flags
+
+    if {[string length $compiler(no-gzoffset)]} {
+        Append option(EXTRA_CXXFLAGS) $compiler(no-gzoffset)
+    }
 
     set success [findTclTkPaths]
 

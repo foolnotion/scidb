@@ -62,15 +62,50 @@ struct Node::Spacing
 
 	struct Token
 	{
-		Token(unsigned lvl, Type t) :level(mstl::min(lvl, 255u)), space(t), context(None) {}
-		Token(unsigned lvl, Type t, Context c) :level(mstl::min(lvl, 255u)), space(t), context(c) {}
+		Token(unsigned lvl, Type t)
+			:level(mstl::min(lvl, 255u))
+			,number(0)
+			,space(t)
+			,context(None)
+			,isFirstOrLast(0)
+		{
+		}
+
+		Token(unsigned lvl, Type t, bool flag)
+			:level(mstl::min(lvl, 255u))
+			,number(0)
+			,space(t)
+			,context(None)
+			,isFirstOrLast(flag)
+		{
+		}
+
+		Token(unsigned lvl, Type t, Context c)
+			:level(mstl::min(lvl, 255u))
+			,number(0)
+			,space(t)
+			,context(c)
+			,isFirstOrLast(0)
+		{
+		}
+
+		Token(unsigned lvl, Type t, unsigned no, bool flag)
+			:level(mstl::min(lvl, 255u))
+			,number(mstl::min(no, 255u))
+			,space(t)
+			,context(None)
+			,isFirstOrLast(flag)
+		{
+		}
 
 		bool operator==(Type t) const { return space == t; }
 		bool operator!=(Type t) const { return space != t; }
 
 		uint8_t level;
+		uint8_t number;
 		uint8_t space:4;
-		uint8_t context:4;
+		uint8_t context:3;
+		uint8_t isFirstOrLast:1;
 	};
 
 	typedef mstl::stack<Token> TokenList;
@@ -80,8 +115,8 @@ struct Node::Spacing
 	void incrPlyCount();
 
 	void pushSpace();
-	void pushOpen();
-	void pushClose();
+	void pushOpen(bool istFirstVar, unsigned number = 0);
+	void pushClose(bool isLastVar);
 	void pushBreak();
 	void pushBreak(unsigned level);
 	void pushParagraph(Context context);
@@ -126,7 +161,7 @@ Node::Spacing::incrPlyCount()
 
 
 void
-Node::Spacing::pushOpen()
+Node::Spacing::pushOpen(bool istFirstVar, unsigned number)
 {
 	Type type;
 
@@ -139,17 +174,17 @@ Node::Spacing::pushOpen()
 		type = Para;
 
 	m_tokenList.push(Token(m_level, type));
-	m_tokenList.push(Token(m_level, Open));
+	m_tokenList.push(Token(m_level, Open, number, istFirstVar));
 	m_plyCount = 0;
 }
 
 
 void
-Node::Spacing::pushClose()
+Node::Spacing::pushClose(bool isLastVar)
 {
    m_tokenList.clear();
    m_tokenList.push(Token(0, Zero));
-   m_tokenList.push(Token(m_level, Close));
+   m_tokenList.push(Token(m_level, Close, isLastVar));
 }
 
 
@@ -242,10 +277,16 @@ Node::Spacing::pop(List& list)
 		{
 			case None:	/* skip */ break;
 			case Space:	list.push_back(new edit::Space); break;
-			case Open:	list.push_back(new edit::Space(Node::Open)); break;
-			case Close:	/* skip */; break;
+			case Close:	/* skip */ break;
 			case Para:	list.push_back(new edit::Space(token.level)); // fallthru
 			case Break:	list.push_back(new edit::Space(token.level)); break;
+
+			case Open:
+				if (token.number)
+					list.push_back(new edit::Space(token.level, token.number, token.isFirstOrLast));
+				else
+					list.push_back(new edit::Space(Node::Open, token.isFirstOrLast));
+				break;
 		}
 	}
 
@@ -433,10 +474,27 @@ Marks::operator==(Node const* node) const
 void
 Space::visit(Visitor& visitor) const
 {
-	if (m_level >= 0)
+	if (m_level >= 0 && m_number == 0)
+	{
 		visitor.linebreak(m_level);
+	}
+	else if (m_number == 0 || m_level > 3)
+	{
+		visitor.space(m_bracket, m_isFirstOrLast);
+	}
 	else
-		visitor.space(m_bracket);
+	{
+		mstl::string s;
+
+		switch (m_level)
+		{
+			case 1: s.format("%u", m_number); break;
+			case 2: s.append(char(((m_number - 1) % 26) + 'a')); break;
+			case 3: s.appendSmallRomanNumber(m_number); break;
+		}
+
+		visitor.number(s, m_isFirstOrLast);
+	}
 }
 
 
@@ -447,7 +505,8 @@ Space::operator==(Node const* node) const
 	M_ASSERT(dynamic_cast<Space const*>(node));
 
 	return	m_level == static_cast<Space const*>(node)->m_level
-			&& m_bracket == static_cast<Space const*>(node)->m_bracket;
+			&& m_bracket == static_cast<Space const*>(node)->m_bracket
+			&& m_number == static_cast<Space const*>(node)->m_number;
 }
 
 
@@ -766,7 +825,7 @@ Move::operator==(Node const* node) const
 }
 
 
-Move::Move(Work& work, MoveNode const* move, bool isEmptyGame)
+Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, unsigned varCount)
 	:KeyNode(work.key)
 	,m_ply(0)
 {
@@ -779,9 +838,13 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame)
 	}
 	else
 	{
-		work.pushOpen();
+		if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
+			work.pushOpen(varNo == 1, varNo);
+		else
+			work.pushOpen(varNo == 1);
+
+		work.pushSpace();
 		work.needMoveNo = true;
-		work.pop(m_list);
 	}
 
 	if (work.isFolded)
@@ -789,6 +852,7 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame)
 
 	if (move->hasMark())
 	{
+		work.pop(m_list);
 		m_list.push_back(new Marks(move->marks()));
 		work.m_isVirgin = false;
 		work.pushSpace();
@@ -936,7 +1000,7 @@ Move::Move(Work& work, MoveNode const* move)
 }
 
 
-Move::Move(Work& work, db::Comment const& comment)
+Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varCount)
 	:KeyNode(work.key)
 	,m_ply(0)
 {
@@ -955,8 +1019,17 @@ Move::Move(Work& work, db::Comment const& comment)
 
 	if (work.m_level > 0)
 	{
-		work.pushClose();
-	   m_list.push_back(new edit::Space(work.isFolded ? Node::Fold : Node::Close));
+		Node::Bracket bracket;
+
+		if (work.isFolded)
+			bracket = Node::Fold;
+		else if (/*varCount > 1 && */(work.m_displayStyle & display::ShowVariationNumbers))
+			bracket = Node::End;
+		else
+			bracket = Node::Close;
+
+		work.pushClose(varNo == varCount);
+	   m_list.push_back(new Space(bracket, varNo == varCount));
 	}
 	else
 	{
@@ -1163,7 +1236,7 @@ Root::makeList(TagSet const& tags,
 					uint16_t idn,
 					Eco eco,
 					db::Board const& startBoard,
-					LanguageSet const& langSet,
+					LanguageSet const& langSet, // unused
 					LanguageSet const& wantedLanguages,
 					EngineList const& engines,
 					MoveNode const* node,
@@ -1199,14 +1272,18 @@ Root::makeList(TagSet const& tags,
 	root->m_variation = var;
 	root->m_result = result::fromString(tags.value(tag::Result));
 
-	makeList(work, var->m_list, node);
+	makeList(work, var->m_list, node, 1, 1);
 
 	return root;
 }
 
 
 void
-Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
+Root::makeList(Work& work,
+					KeyNode::List& result,
+					MoveNode const* node,
+					unsigned varNo,
+					unsigned varCount)
 {
 	M_ASSERT(node);
 	M_ASSERT(node->atLineStart());
@@ -1220,7 +1297,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 	if (node->prev())
 		++work.m_level;
 
-	result.push_back(new Move(work, node, node->isEmptyLine()));
+	result.push_back(new Move(work, node, node->isEmptyLine(), varNo, varCount));
 
 	if (	!work.isFolded
 		&& (work.m_displayStyle & display::ShowDiagrams)
@@ -1311,7 +1388,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 						work.m_linebreakMaxLineLength = ::DontSetBreaks;
 					}
 
-					makeList(work, var->m_list, node->variation(i));
+					makeList(work, var->m_list, node->variation(i), i + 1, node->variationCount());
 					work.m_linebreakMaxLineLength = linebreakMaxLineLength;
 					M_ASSERT(work.m_level > 0);
 					--work.m_level;
@@ -1330,7 +1407,7 @@ Root::makeList(Work& work, KeyNode::List& result, MoveNode const* node)
 	}
 
 	work.key.addPly(work.board.plyNumber() + 1);
-	result.push_back(new Move(work, node->comment(move::Post)));
+	result.push_back(new Move(work, node->comment(move::Post), varNo, varCount));
 	work.key.removePly();
 }
 

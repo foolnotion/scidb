@@ -45,13 +45,6 @@
 ::mc::Key(Shift)		"Shift"
 ::mc::Key(Up)			"\u2191"
 
-::mc::MoveForm(alg)	"Algebraic"
-::mc::MoveForm(san)	"Short Algebraic"
-::mc::MoveForm(lan)	"Long Algebraic"
-::mc::MoveForm(eng)	"English"
-::mc::MoveForm(cor)	"Correspondence"
-::mc::MoveForm(tel)	"Telegraphic"
-
 ::mc::Alignment		"Alignment"
 ::mc::Apply				"Apply"
 ::mc::Archive			"Archive"
@@ -63,6 +56,7 @@
 ::mc::Close				"Close"
 ::mc::Color				"Color"
 ::mc::Colors			"Colors"
+::mc::Configuration	"Configuration"
 ::mc::Copy				"Copy"
 ::mc::Cut				"Cut"
 ::mc::Dark				"Dark"
@@ -80,6 +74,7 @@
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Number"
 ::mc::OK					"OK"
+::mc::Order				"Order"
 ::mc::Paste				"Paste"
 ::mc::PieceSet			"Piece Set"
 ::mc::Preview			"Preview"
@@ -467,16 +462,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffixed Commentaries"
 ::application::pgn::mc::StripOriginalComments			"Strip original comments"
 
-::application::pgn::mc::AddNewGame							"Save: Add New Game to %s..."
-::application::pgn::mc::ReplaceGame							"Save: Replace Game in %s..."
-::application::pgn::mc::ReplaceMoves						"Save: Replace Moves Only in Game..."
-
-::application::pgn::mc::ColumnStyle							"Column Style"
-::application::pgn::mc::UseParagraphSpacing				"Use Paragraph Spacing"
-::application::pgn::mc::ShowMoveInfo						"Show Move Information"
-::application::pgn::mc::BoldTextForMainlineMoves		"Bold Text for Main Line Moves"
-::application::pgn::mc::ShowDiagrams						"Show Diagrams"
-::application::pgn::mc::Languages							"Languages"
+::application::pgn::mc::LanguageSelection					"Language Selection"
 ::application::pgn::mc::MoveNotation						"Move Notation"
 ::application::pgn::mc::CollapseVariations				"Collapse Variations"
 ::application::pgn::mc::ExpandVariations					"Expand Variations"
@@ -642,6 +628,66 @@
 
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly "Preselected only"
+
+### pgn-setup ##########################################################
+::pgn::setup::mc::Configure(editor)				"Customize Editor"
+::pgn::setup::mc::Configure(browser)			"Customize Text Output"
+::pgn::setup::mc::Pixel								"pixel"
+::pgn::setup::mc::RevertSettings					"Revert to initial settings"
+::pgn::setup::mc::ResetSettings					"Reset to factory settings"
+::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?"
+
+::pgn::setup::mc::Setup(Appearance)				"Appearance"
+::pgn::setup::mc::Setup(Layout)					"Layout"
+::pgn::setup::mc::Setup(Diagrams)				"Diagrams"
+::pgn::setup::mc::Setup(MoveStyle)				"Move Style"
+
+::pgn::setup::mc::Setup(Fonts)					"Fonts"
+::pgn::setup::mc::Setup(font-and-size)			"Text font and size"
+::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)"
+::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)"
+::pgn::setup::mc::Setup(symbol-font)			"Symbols"
+
+::pgn::setup::mc::Setup(Colors)					"Colors"
+::pgn::setup::mc::Setup(Highlighting)			"Highlighting"
+::pgn::setup::mc::Setup(start-position)		"Start Position"
+::pgn::setup::mc::Setup(variations)				"Variations"
+::pgn::setup::mc::Setup(numbering)				"Numbering"
+::pgn::setup::mc::Setup(brackets)				"Brackets"
+::pgn::setup::mc::Setup(illegal-move)			"Illegal Move"
+::pgn::setup::mc::Setup(comments)				"Comments"
+::pgn::setup::mc::Setup(annotation)				"Annotation"
+::pgn::setup::mc::Setup(marks)					"Marks"
+::pgn::setup::mc::Setup(move-info)				"Move Information"
+::pgn::setup::mc::Setup(result)					"Result"
+::pgn::setup::mc::Setup(current-move)			"Current Move"
+::pgn::setup::mc::Setup(next-moves)				"Next Moves"
+::pgn::setup::mc::Setup(empty-game)				"Empty Game"
+
+::pgn::setup::mc::Setup(Hovers)					"Hovers"
+::pgn::setup::mc::Setup(hover-move)				"Move"
+::pgn::setup::mc::Setup(hover-comment)			"Comment"
+::pgn::setup::mc::Setup(hover-move-info)		"Move Information"
+
+::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout"
+::pgn::setup::mc::ParLayout(use-spacing)		"Use Paragraph Spacing"
+::pgn::setup::mc::ParLayout(column-style)		"Use Column Style"
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move"
+::pgn::setup::mc::ParLayout(mainline-bold)	"Bold Text for Main Line"
+
+::pgn::setup::mc::Section(Variations)			"Variation Layout"
+::pgn::setup::mc::Variations(width)				"Indent Width"
+::pgn::setup::mc::Variations(level)				"Indent Level"
+
+::pgn::setup::mc::Section(Display)				"Display"
+::pgn::setup::mc::Display(numbering)			"Show Variation Numbering"
+::pgn::setup::mc::Display(moveinfo)				"Show Move Information"
+
+::pgn::setup::mc::Section(Diagrams)				"Diagrams"
+::pgn::setup::mc::Diagrams(show)					"Show Diagrams"
+::pgn::setup::mc::Diagrams(square-size)		"Square Size"
+::pgn::setup::mc::Diagrams(indentation)		"Indent Width"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"
@@ -859,6 +905,11 @@
 ::font::mc::CopyFile									"Copy file %s"
 ::font::mc::UpdateFontCache						"Updating font cache"
 
+::font::mc::ChooseFigurineFont					"Choose figurine font"
+::font::mc::ChooseSymbolFont						"Choose symbol font"
+::font::mc::IncreaseFontSize						"Increase Font Size"
+::font::mc::DecreaseFontSize						"Decrease Font Size"
+
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Start Position"
 ::gamebar::mc::Players					"Players"
@@ -880,6 +931,10 @@
 ::gamebar::mc::GameNewChess960		"New Game: Chess 960"
 ::gamebar::mc::GameNewChess960Sym	"New Game: Chess 960 (symmetrical only)"
 ::gamebar::mc::GameNewShuffle			"New Game: Shuffle Chess"
+
+::gamebar::mc::AddNewGame				"Save: Add New Game to %s..."
+::gamebar::mc::ReplaceGame				"Save: Replace Game in %s..."
+::gamebar::mc::ReplaceMoves			"Save: Replace Moves Only in Game..."
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Browse Game"
@@ -1078,8 +1133,6 @@
 ::export::mc::PostscriptSpecials			"Postscript Specialities"
 ::export::mc::BoardSize						"Board Size"
 
-::export::mc::Notation						"Notation"
-::export::mc::Graphic						"Graphic"
 ::export::mc::Short							"Short"
 ::export::mc::Long							"Long"
 ::export::mc::Algebraic						"Algebraic"
@@ -1191,6 +1244,21 @@
 ::export::mc::Option(pgn,comment_to_html)							"Write comment in HTML style"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
 ::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding"
+
+### notation ###########################################################
+::notation::mc::Notation		"Notation"
+
+::notation::mc::MoveForm(alg)	"Algebraic"
+::notation::mc::MoveForm(san)	"Short Algebraic"
+::notation::mc::MoveForm(lan)	"Long Algebraic"
+::notation::mc::MoveForm(eng)	"English"
+::notation::mc::MoveForm(cor)	"Correspondence"
+::notation::mc::MoveForm(tel)	"Telegraphic"
+
+### figurine ###########################################################
+::figurines::mc::Figurines	"Figurines"
+::figurines::mc::Graphic	"Graphic"
+::figurines::mc::User		"User"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Save Game"
@@ -1643,11 +1711,10 @@
 ::dialog::choosecolor::mc::BaseColors		"Base Colors"
 ::dialog::choosecolor::mc::UserColors		"User Colors"
 ::dialog::choosecolor::mc::RecentColors	"Recent Colors"
-::dialog::choosecolor::mc::OldColor			"Old Color"
-::dialog::choosecolor::mc::CurrentColor	"Current Color"
 ::dialog::choosecolor::mc::Old				"Old"
 ::dialog::choosecolor::mc::Current			"Current"
 ::dialog::choosecolor::mc::Color				"Color"
+::dialog::choosecolor::mc::HexCode			"Hex Code"
 ::dialog::choosecolor::mc::ColorSelection	"Color Selection"
 ::dialog::choosecolor::mc::Red				"Red"
 ::dialog::choosecolor::mc::Green				"Green"
@@ -1657,7 +1724,6 @@
 ::dialog::choosecolor::mc::Value				"Value"
 ::dialog::choosecolor::mc::Enter				"Enter"
 ::dialog::choosecolor::mc::AddColor			"Add current color to user colors"
-::dialog::choosecolor::mc::ClickToEnter	"Click to enter hexadecimal value"
 
 ### choosefont #########################################################
 ::dialog::choosefont::mc::Apply				"&Apply"

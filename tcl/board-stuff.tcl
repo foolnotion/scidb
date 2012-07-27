@@ -605,7 +605,7 @@ proc drawText {canv squareSize color x y text} {
 	set y0 [expr {$y + $squareSize/2}]
 	scan [::dialog::choosecolor::getActualColor $color] "\#%2x%2x%2x" r g b
 	set luma	[expr {$r*0.2125 + $g*0.7154 + $b*0.0721}]
-	set font [list [font configure TkDefaultFont -family] $size bold]
+	set font [list [font configure TkFixedFont -family] $size bold]
 	set x1 [expr {$x0 + 1}]
 	set y1 [expr {$y0 + 1}]
 	set tags {mark text}

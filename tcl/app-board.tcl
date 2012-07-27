@@ -221,7 +221,12 @@ proc build {w width height} {
 	set Vars(cmd:trial-mode)			::game::flipTrialMode
 
 	LanguageChanged
-	bind <<LanguageChanged>> [namespace code LanguageChanged]
+
+	bind <<LanguageChanged>>	[namespace code LanguageChanged]
+	bind <Control-plus>			[list ::application::pgn::changeFontSize +1]
+	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
+	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
+	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
 
 	BuildBoard $canv
 	ConfigureBoard $canv
@@ -857,9 +862,11 @@ proc BuildBoard {canv} {
 
 proc Rotate {canv} {
 	variable board
+	variable Vars
 
 	::board::stuff::rotate $board
 	ConfigureBoard $canv
+	DrawMaterialValues $Vars(widget:frame)
 }
 
 

@@ -178,8 +178,6 @@ public:
 	bool isModified() const;
 	/// Return whether game is empty
 	bool isEmpty() const;
-	/// Return whether the game contains illegal moves.
-	bool containsIllegalMoves() const;
 	/// Return whether the game contains the given language at specified position.
 	bool containsLanguage(	edit::Key const& key,
 									move::Position position,
@@ -216,6 +214,10 @@ public:
 	bool hasVariations() const;
 	/// Return whether the game contains move information.
 	bool hasMoveInfo() const;
+	/// Return whether the game contains illegal moves (except illegal castlings).
+	bool containsIllegalMoves() const;
+	/// Return whether the game contains illegal castlings.
+	bool containsIllegalCastlings() const;
 
 	// Accessing game information
 
@@ -406,6 +408,8 @@ public:
 	void addMove(mstl::string const& san);
 	/// Adds a move at the current position
 	void addMove(Move const& move);
+	/// Adds moves to main line
+	void addMoves(MoveNodeP node);
 	/// Insert move after the current position
 	bool exchangeMove(mstl::string const& san, Force flag = OnlyIfRemainsConsistent);
 	/// Insert move after the current position
@@ -486,7 +490,7 @@ public:
 	/// Set the game start position from IDN.
 	void setStartPosition(unsigned idn);
 	/// Set the subscriber for this game (normally a PGN display)
-	void setSubscriber(SubscriberP subscriber, unsigned action = NoUpdate);
+	void setSubscriber(SubscriberP subscriber);
 	/// Traverse whole game.
 	void updateSubscriber(unsigned action = UpdateBoard | UpdatePgn);
 	/// Traverse whole game.
@@ -633,7 +637,6 @@ private:
 	bool				m_isIrreversible;
 	bool				m_isModified;
 	bool				m_wasModified;
-	bool				m_containsIllegalMoves;
 	mutable bool	m_finalBoardIsValid;
 	uint16_t			m_lineBuf[opening::Max_Line_Length][2];
 	mutable Line	m_line;

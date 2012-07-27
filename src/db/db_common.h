@@ -1099,11 +1099,12 @@ namespace display
 {
 	enum
 	{
-		CompactStyle		= 1 << 0,
-		ColumnStyle			= 1 << 1,
-		ParagraphSpacing	= 1 << 2,
-		ShowDiagrams		= 1 << 3,
-		ShowMoveInfo		= 1 << 4,
+		CompactStyle			= 1 << 0,
+		ColumnStyle				= 1 << 1,
+		ParagraphSpacing		= 1 << 2,
+		ShowDiagrams			= 1 << 3,
+		ShowMoveInfo			= 1 << 4,
+		ShowVariationNumbers	= 1 << 5,
 	};
 };
 

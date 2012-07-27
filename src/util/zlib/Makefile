@@ -16,7 +16,7 @@ include ../../../Makefile.in
 
 INCLUDE	= -I.
 DEBUG		= -DNDEBUG
-OPTIMIZE	= -O2
+OPTIMIZE	= -g #-O2
 CFLAGS	+= $(OPTIMIZE) $(DEBUG)
 
 SRC_C = \

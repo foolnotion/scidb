@@ -96,8 +96,15 @@ proc open {parent {file {}} args} {
 	variable Links
 	variable ExternalLinks
 	variable Geometry
+	
+	array set opts {
+		-transient	no
+		-parent		{}
+	}
+	array set opts $args
+	if {[llength $opts(-parent)] == 0} { set opts(-parent) $parent }
 
-	set Priv(check:lang) [CheckLanguage $parent $file]
+	set Priv(check:lang) [CheckLanguage $opts(-parent) $file]
 	if {$Priv(check:lang) eq "none"} { return "" }
 
 	if {[string length $file] == 0} {
@@ -217,8 +224,6 @@ proc open {parent {file {}} args} {
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
-	set opts(-transient) no
-	array set opts $args
 	if {$opts(-transient)} {
 		wm transient $dlg [winfo toplevel $parent]
 	}
@@ -301,7 +306,8 @@ proc CheckLanguage {parent helpFile} {
 	}
 
 	if {[llength $codes] == 0} {
-		return [::dialog::info -parent $parent -message $mc::NoHelpAvailableAtAll]
+		::dialog::info -parent $parent -message $mc::NoHelpAvailableAtAll
+		return "none"
 	}
 
 	set Lang {}
@@ -1728,7 +1734,7 @@ bind HelpTree <Motion> {
 	TreeCtrl::MotionInElems %W %x %y
 }
 
-bind TreeCtrl <Leave> {
+bind HelpTree <Leave> {
 	TreeCtrl::MotionInItems %W
 	TreeCtrl::MotionInElems %W
 }

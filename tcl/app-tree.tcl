@@ -321,7 +321,7 @@ proc build {parent width height} {
 		lappend Vars(styles) $id styTotal$id
 	}
 
-	::table::configure $tb move -font2 $::font::figurine
+	::table::configure $tb move -font2 $::font::figurine(text:normal)
 
 	::table::bind $tb <ButtonPress-2>	[namespace code [list ShowPlayerInfo $tb %x %y]]
 	::table::bind $tb <ButtonRelease-2>	[namespace code [list HideInfo $tb]]

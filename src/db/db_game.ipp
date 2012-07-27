@@ -40,7 +40,6 @@ inline bool Game::isVariation() const					{ return m_currentKey.level() > 0; }
 inline bool Game::atMainlineStart() const				{ return m_currentNode == m_startNode; }
 inline bool Game::hasUndo() const						{ return m_undoIndex > 0; }
 inline bool Game::hasRedo() const						{ return m_undoIndex < m_undoList.size(); }
-inline bool Game::containsIllegalMoves() const		{ return m_containsIllegalMoves; }
 inline bool Game::isModified() const					{ return m_isModified || m_undoIndex > 0; }
 inline bool Game::hasVariations() const				{ return countVariations() > 0; }
 inline bool Game::hasMoveInfo() const					{ return countMoveInfo() > 0; }

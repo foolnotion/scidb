@@ -175,6 +175,7 @@ Application::Application()
 	,m_position(InvalidPosition)
 	,m_fallbackPosition(InvalidPosition)
 	,m_isClosed(false)
+	,m_treeIsFrozen(false)
 	,m_subscriber(0)
 {
 	M_REQUIRE(!hasInstance());
@@ -684,10 +685,10 @@ Application::setReferenceBase(Cursor* cursor, bool isUserSet)
 			m_referenceBase->setReferenceBase(true);
 			m_referenceBase->newTreeView();
 
-			if (m_subscriber)
+			if (m_subscriber && !m_treeIsFrozen)
 				m_subscriber->updateTree(m_referenceBase->name());
 		}
-		else if (m_subscriber)
+		else if (m_subscriber && !m_treeIsFrozen)
 		{
 			m_subscriber->updateTree(mstl::string::empty_string);
 		}
@@ -1117,7 +1118,7 @@ Application::clearGame(Board const* startPosition)
 	game.game->clear(startPosition);
 	game.game->updateSubscriber(Game::UpdateBoard);
 
-	if (m_subscriber && m_referenceBase)
+	if (m_subscriber && m_referenceBase && !m_treeIsFrozen)
 		m_subscriber->updateTree(m_referenceBase->name());
 }
 
@@ -1186,7 +1187,7 @@ Application::switchGame(unsigned position)
 	{
 		m_subscriber->gameSwitched(position);
 
-		if (m_referenceBase)
+		if (m_referenceBase && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name());
 	}
 }
@@ -1321,7 +1322,7 @@ Application::clearBase(Cursor& cursor)
 		if (m_current == &cursor)
 			m_subscriber->updateList(cursor.name());
 
-		if (m_referenceBase == &cursor)
+		if (m_referenceBase == &cursor && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name());
 	}
 }
@@ -1343,7 +1344,7 @@ Application::compactBase(Cursor& cursor, ::util::Progress& progress)
 		if (m_current == &cursor)
 			m_subscriber->updateList(cursor.name());
 
-		if (cursor.isReferenceBase())
+		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name());
 	}
 }
@@ -1352,7 +1353,7 @@ Application::compactBase(Cursor& cursor, ::util::Progress& progress)
 bool
 Application::treeIsUpToDate(Tree::Key const& key) const
 {
-	if (m_referenceBase == 0 || !haveCurrentGame())
+	if (m_treeIsFrozen || m_referenceBase == 0 || !haveCurrentGame())
 		return true;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
@@ -1371,6 +1372,9 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 {
 	if (m_referenceBase == 0 || !haveCurrentGame())
 		return true;
+	
+	if (m_treeIsFrozen)
+		return false;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
 
@@ -1593,7 +1597,6 @@ Application::saveGame(Cursor& cursor, bool replace)
 	if (replace)
 	{
 		M_ASSERT(&cursor == g.cursor);
-		g.game->setFlags(cursor.base().gameInfo(g.index).flags());
 		g.game->setIndex(g.index);
 		// TODO: should be transaction save
 		state = db.updateGame(*g.game);
@@ -1611,7 +1614,6 @@ Application::saveGame(Cursor& cursor, bool replace)
 	cursor.updateViews();
 
 	GameInfo& info	= cursor.base().gameInfo(g.index);
-	info.setIllegalMove(g.game->containsIllegalMoves());
 
 	if (save::isOk(state))
 	{
@@ -1655,7 +1657,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 		g.game->updateSubscriber(Game::UpdatePgn);
 	}
 
-	if (m_subscriber && cursor.isReferenceBase())
+	if (m_subscriber && cursor.isReferenceBase() && !m_treeIsFrozen)
 		m_subscriber->updateTree(db.name());
 
 	return state;
@@ -1669,9 +1671,9 @@ Application::updateMoves()
 	M_REQUIRE(contains(sourceName()));
 	M_REQUIRE(!cursor(sourceName()).isReadOnly());
 
-	EditGame& game(m_gameMap.find(m_position)->second);
+	EditGame& g(m_gameMap.find(m_position)->second);
 
-	if (!game.game->isModified())
+	if (!g.game->isModified())
 		return save::Ok;
 
 	Cursor& cursor = this->cursor(sourceName());
@@ -1684,9 +1686,9 @@ Application::updateMoves()
 			Tree::clearCache(i->second->base());
 	}
 
-	game.game->setIndex(game.sourceIndex);
+	g.game->setIndex(g.sourceIndex);
 
-	save::State state = cursor.base().updateMoves(*game.game);
+	save::State state = cursor.base().updateMoves(*g.game);
 
 	if (m_subscriber)
 	{
@@ -1695,10 +1697,10 @@ Application::updateMoves()
 		if (save::isOk(state))
 		{
 			TagSet tags;
-			cursor.base().getGameTags(game.sourceIndex, tags);
+			cursor.base().getGameTags(g.sourceIndex, tags);
 
-			game.game->setIsModified(false);
-			game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
+			g.game->setIsModified(false);
+			g.crcMoves = tags.computeChecksum(g.game->computeChecksum());
 			m_subscriber->updateDatabaseInfo(name);
 			m_subscriber->updateGameInfo(m_position); // because of changed checksums
 
@@ -1707,12 +1709,12 @@ Application::updateMoves()
 				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
 				{
 					if (cursor.isViewOpen(i))
-						m_subscriber->updateGameList(name, i, game.sourceIndex);
+						m_subscriber->updateGameList(name, i, g.sourceIndex);
 				}
 			}
 		}
 
-		if (cursor.isReferenceBase())
+		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(name);
 	}
 
@@ -1778,7 +1780,7 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 				game->game->updateSubscriber(Game::UpdatePgn);
 		}
 
-		if (cursor.isReferenceBase())
+		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(name);
 	}
 
@@ -1860,7 +1862,7 @@ Application::bindGameToDatabase(unsigned position, mstl::string const& name, uns
 	M_REQUIRE(isScratchGame(position));
 
 	EditGame& game = m_gameMap.find(position)->second;
-		
+
 	game.sourceBase = name;
 	game.sourceIndex = index;
 

@@ -52,6 +52,7 @@ using namespace tcl::app;
 
 static char const* CmdFetch		= "::scidb::tree::fetch";
 static char const* CmdFinish		= "::scidb::tree::finish";
+static char const* CmdFreeze		= "::scidb::tree::freeze";
 static char const* CmdGet			= "::scidb::tree::get";
 static char const* CmdInit			= "::scidb::tree::init";
 static char const* CmdIsRefBase	= "::scidb::tree::isRefBase?";
@@ -367,6 +368,15 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+
+static int
+cmdFreeze(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	scidb->freezeTree(boolFromObj(objc, objv, 1));
+	return TCL_OK;
+}
+
+
 static int
 cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -493,6 +503,7 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdFetch,		cmdFetch);
 	createCommand(ti, CmdFinish,		cmdFinish);
+	createCommand(ti, CmdFreeze,		cmdFreeze);
 	createCommand(ti, CmdGet,			cmdGet);
 	createCommand(ti, CmdInit,			cmdInit);
 	createCommand(ti, CmdIsRefBase,	cmdIsRefBase);

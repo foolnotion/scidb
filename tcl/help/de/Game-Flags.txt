@@ -32,7 +32,16 @@ können deshalb vom Benutzer frei verwendet werden.
 <p>
 Die Markierungen und ihre Symbole im einzelnen:
 </p>
+
 INCLUDE ../Game-Flags.txt
+
+<p>
+Die beiden letzten Markierungen können nicht vom Benutzer eingestellt werden,
+sie werden automatisch gesetzt wenn eine Partie ungültige Rochaden oder sogar
+andere ungültige Züge (zum Beispiel der König zieht ins Schach) in der
+Hauptvariante enthält. Sind beide Markeriungen in einer Partie enthalten
+so wird nur die Markierung für <em>%::gametable::mc::GameFlags(I)%</em> angezeigt.
+</p>
 
 <p>
 Es gibt noch eine weitere besondere, nicht vom Benutzer einstellbare Markierung,

@@ -47,7 +47,9 @@ public:
 	bool is_open() const;
 
 	// NOTE: in case of GZIP stream the decompressed size is only an estimation
-	int64_t size() const;	// decompressed size
+	int64_t size() const override;	// decompressed size
+	uint64_t goffset() override;
+
 	Type type() const;
 
 	void open(char const* filename, Mode mode = mstl::ios_base::in);

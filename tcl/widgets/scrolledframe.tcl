@@ -211,7 +211,7 @@ proc scrollbar {path args} {
 
 
 proc Map {w} {
-	# Due to a bug in the Tk library we have to force window mapping
+	# Due to a bug (inside the Tk library?) we have to force window mapping
 	grid remove $w.__vs__
 	MapWindow $w.__scrolledframe__
 	bind $w <Map> {#}
@@ -232,7 +232,8 @@ proc MapWindow {w} {} ;# the user has to implement this
 # --------------
 proc Dispatch {w cmd args} {
 	switch -- $cmd {
-		resize		{ Resize $w 0 }
+		resize		{ Resize $w }
+		fit			{ Fit $w }
 		see			{ See $w {*}$args }
 		viewbox		{ return [ViewBox $w] }
 		vsbwidth		{ return [VsbWidth $w] }
@@ -342,7 +343,7 @@ proc Config {w args} {
 # parm1: widget name
 # parm2: pass anything to force resize even if dimensions are unchanged
 # --------------
-proc Resize {w req {force {}}} {
+proc Resize {w {req 0} {force {}}} {
 	variable {}
 	set force [llength $force]
 
@@ -378,6 +379,18 @@ proc Resize {w req {force {}}} {
 		# resize the horizontal scroll bar
 		Xview $w scroll 0 unit
 		# Xset $w
+	}
+}
+
+
+proc Fit {w} {
+	set parent [winfo parent $w]
+	set wd [winfo width $parent]
+	set ht [winfo height $parent]
+
+	if {$wd > 1 && $ht > 1} {
+		$w configure -width $wd -height $ht
+		Resize $w 0 force
 	}
 }
 
@@ -726,7 +739,7 @@ proc DoSbSet {sb first last} {
 		}
 	} else {
 		if {$sb ne [grid slaves $parent]} {
-			grid $sb
+			after idle [list grid $sb]
 		}
 	}
 

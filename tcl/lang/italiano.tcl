@@ -46,13 +46,6 @@
 ::mc::Key(Shift)		"Shift"
 ::mc::Key(Up)			"\u2191"
 
-::mc::MoveForm(alg)	"Algebrico"
-::mc::MoveForm(san)	"Algebrico Abbreviato"
-::mc::MoveForm(lan)	"Algebrico Completo"
-::mc::MoveForm(eng)	"Inglese"
-::mc::MoveForm(cor)	"Corrispondenza"
-::mc::MoveForm(tel)	"Telegrafico"
-
 ::mc::Alignment		"Allineamento"
 ::mc::Apply				"Applica"
 ::mc::Archive			"Archivio"
@@ -64,6 +57,7 @@
 ::mc::Close				"Chiudi"
 ::mc::Color				"Colore"
 ::mc::Colors			"Colori"
+::mc::Configuration	"Configuration" ;# NEW
 ::mc::Copy				"Copia"
 ::mc::Cut				"Taglia"
 ::mc::Dark				"Scura"
@@ -81,6 +75,7 @@
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Numero"
 ::mc::OK					"OK"
+::mc::Order				"Ordine"
 ::mc::Paste				"Incolla"
 ::mc::PieceSet			"Set di Pezzi"
 ::mc::Preview			"Anteprima"
@@ -468,16 +463,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Commenti dopo mossa"
 ::application::pgn::mc::StripOriginalComments			"Rimuovi commenti originali"
 
-::application::pgn::mc::AddNewGame							"Salva: Aggiunti nuova partita a %s..."
-::application::pgn::mc::ReplaceGame							"Salva: Rimpiazza partita in %s..."
-::application::pgn::mc::ReplaceMoves						"Salva: Sostituisci solo mosse nella partita..."
-
-::application::pgn::mc::ColumnStyle							"Stile colonna"
-::application::pgn::mc::UseParagraphSpacing				"Usa spaziatura di paragrafo"
-::application::pgn::mc::ShowMoveInfo						"Mostra Informazioni Mossa"
-::application::pgn::mc::BoldTextForMainlineMoves		"Grassetto per mosse nella linea principale"
-::application::pgn::mc::ShowDiagrams						"Mostra diagrammi"
-::application::pgn::mc::Languages							"Lingue"
+::application::pgn::mc::LanguageSelection					"Lingue" ;# NEW change to "Language Selection"
 ::application::pgn::mc::MoveNotation						"Muovi Notazione"
 ::application::pgn::mc::CollapseVariations				"Comprimi Varianti"
 ::application::pgn::mc::ExpandVariations					"Espandi Varianti"
@@ -643,6 +629,66 @@
 
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly "Solo preselezionato"
+
+### pgn-setup ##########################################################
+::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
+::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
+::pgn::setup::mc::Pixel								"pixel" ;# NEW
+::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
+::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
+::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
+
+::pgn::setup::mc::Setup(Appearance)				"Appearance" ;# NEW
+::pgn::setup::mc::Setup(Layout)					"Layout" ;# NEW
+::pgn::setup::mc::Setup(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Setup(MoveStyle)				"Move Style" ;# NEW
+
+::pgn::setup::mc::Setup(Fonts)					"Fonts" ;# NEW
+::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
+::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
+::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
+::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+
+::pgn::setup::mc::Setup(Colors)					"Colors" ;# NEW
+::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
+::pgn::setup::mc::Setup(start-position)		"Start Position" ;# NEW
+::pgn::setup::mc::Setup(variations)				"Variations" ;# NEW
+::pgn::setup::mc::Setup(numbering)				"Numbering" ;# NEW
+::pgn::setup::mc::Setup(brackets)				"Brackets" ;# NEW
+::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
+::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
+::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
+::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
+::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
+::pgn::setup::mc::Setup(result)					"Result" ;# NEW
+::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
+::pgn::setup::mc::Setup(next-moves)				"Next Moves" ;# NEW
+::pgn::setup::mc::Setup(empty-game)				"Empty Game" ;# NEW
+
+::pgn::setup::mc::Setup(Hovers)					"Hovers" ;# NEW
+::pgn::setup::mc::Setup(hover-move)				"Move" ;# NEW
+::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
+::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+
+::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::ParLayout(use-spacing)		"Usa spaziatura di paragrafo"
+::pgn::setup::mc::ParLayout(column-style)		"Stile colonna"
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(mainline-bold)	"Grassetto per mosse nella linea principale"
+
+::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
+::pgn::setup::mc::Variations(width)				"Indent Width" ;# NEW
+::pgn::setup::mc::Variations(level)				"Indent Level" ;# NEW
+
+::pgn::setup::mc::Section(Display)				"Display" ;# NEW
+::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
+::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+
+::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Diagrams(show)					"Mostra diagrammi"
+::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
+::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Segna partita come eliminata"
@@ -860,6 +906,11 @@
 ::font::mc::CopyFile									"Copiando i file %s"
 ::font::mc::UpdateFontCache						"Aggiornando cache caratteri"
 
+::font::mc::ChooseFigurineFont					"Choose figurine font" ;# NEW
+::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
+::font::mc::IncreaseFontSize						"Increase Font Size" ;# NEW
+::font::mc::DecreaseFontSize						"Decrease Font Size" ;# NEW
+
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Posizione di partenza"
 ::gamebar::mc::Players					"Giocatori"
@@ -881,6 +932,10 @@
 ::gamebar::mc::GameNewChess960		"Nuova Partita: Scacchi 960"
 ::gamebar::mc::GameNewChess960Sym	"Nuova Partita: Scacchi 960 (solo simmetrica)"
 ::gamebar::mc::GameNewShuffle			"Nuova Partita: Scacchi Shuffle"
+
+::gamebar::mc::AddNewGame				"Salva: Aggiunti nuova partita a %s..."
+::gamebar::mc::ReplaceGame				"Salva: Rimpiazza partita in %s..."
+::gamebar::mc::ReplaceMoves			"Salva: Sostituisci solo mosse nella partita..."
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"
@@ -1079,8 +1134,6 @@
 ::export::mc::PostscriptSpecials			"Speciali Postscript"
 ::export::mc::BoardSize						"Grandezza Scacchiera"
 
-::export::mc::Notation						"Notazione"
-::export::mc::Graphic						"Grafica"
 ::export::mc::Short							"Corto"
 ::export::mc::Long							"Lungo"
 ::export::mc::Algebraic						"Algebrico"
@@ -1192,6 +1245,21 @@
 ::export::mc::Option(pgn,comment_to_html)							"Scrivi commento in stile HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Escludi partite con mosse illegali"
 ::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
+
+### notation ###########################################################
+::notation::mc::Notation		"Notazione"
+
+::notation::mc::MoveForm(alg)	"Algebrico"
+::notation::mc::MoveForm(san)	"Algebrico Abbreviato"
+::notation::mc::MoveForm(lan)	"Algebrico Completo"
+::notation::mc::MoveForm(eng)	"Inglese"
+::notation::mc::MoveForm(cor)	"Corrispondenza"
+::notation::mc::MoveForm(tel)	"Telegrafico"
+
+### figurine ###########################################################
+::export::mc::Figurines	"Figurines"
+::export::mc::Graphic	"Grafica"
+::figurines::mc::User	"User" ;# NEW meaning is "user defined"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Salva Partita"
@@ -1644,11 +1712,10 @@
 ::dialog::choosecolor::mc::BaseColors		"Base Colori"
 ::dialog::choosecolor::mc::UserColors		"Colori utente"
 ::dialog::choosecolor::mc::RecentColors	"Colori recenti"
-::dialog::choosecolor::mc::OldColor			"Vecchi colori"
-::dialog::choosecolor::mc::CurrentColor	"Colori Attuali"
 ::dialog::choosecolor::mc::Old				"Vecchio"
 ::dialog::choosecolor::mc::Current			"Attuale"
 ::dialog::choosecolor::mc::Color				"Colore"
+::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Selezione Colore"
 ::dialog::choosecolor::mc::Red				"Rosso"
 ::dialog::choosecolor::mc::Green				"Verde"
@@ -1658,7 +1725,6 @@
 ::dialog::choosecolor::mc::Value				"Valore"
 ::dialog::choosecolor::mc::Enter				"Inserisci"
 ::dialog::choosecolor::mc::AddColor			"Aggiunti colore attuali ai colori utente"
-::dialog::choosecolor::mc::ClickToEnter	"Clicca per inserire un valore esadecimale"
 
 ### choosefont #########################################################
 ::dialog::choosefont::mc::Apply				"&Applica"

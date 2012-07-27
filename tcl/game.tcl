@@ -788,7 +788,10 @@ proc openGame {parent index} {
 
 	if {!$rc} {
 		set History [lreplace $History $index $index]
+		::application::pgn::historyChanged
 	}
+
+	return $rc
 }
 
 

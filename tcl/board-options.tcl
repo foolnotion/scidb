@@ -97,8 +97,8 @@ set Options(boardSize)	[expr {45*$Options(pieceSetListCount)}]
 set Options(squareSize)	[expr {($Options(boardSize) - 66)/4}]
 
 array set RecentColors {
-	coordinates	{ {} {} {} {} {} {} }
-	background	{ {} {} {} {} {} {} }
+	coordinates	{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	background	{ {} {} {} {} {} {} {} {} {} {} {} {} }
 }
 
 array set HilitePos {
@@ -153,10 +153,12 @@ proc makeBasicFrame {path} {
 		-textvar [namespace current]::mc::ShowCoordinates \
 		-variable [namespace parent]::layout(coordinates) \
 		-command [namespace code ToggleShowCoords]
+	if {$layout(coordinates)} { set state normal } else { set state disabled }
 	::ttk::checkbutton $f.embossed \
 		-textvar [namespace current]::mc::Embossed \
 		-variable [namespace parent]::layout(coords-embossed) \
-		-command [namespace code RefreshBoard]
+		-command [namespace code RefreshBoard] \
+		-state $state
 	set Vars(widget:embossed) $f.embossed
 	
 	grid $f.border			-row  1 -column 1 -sticky w -columnspan 2
@@ -351,9 +353,9 @@ proc ScaleMove {scale delta} {
 #	}
 #
 #	if {$effects(animation) == 0} {
-#		set Vars(time) [set [namespace current]::mc::Off]
+#		set Vars(time) $mc::Off
 #	} else {
-#		set Vars(time) "$effects(animation) ([set [namespace current]::mc::MilliSeconds])"
+#		set Vars(time) "$effects(animation) ($mc::MilliSeconds)"
 #	}
 #}
 
@@ -606,7 +608,7 @@ proc SaveTheme {parent} {
 		return
 	}
 
-	set name [EnterName $parent "[set [namespace current]::mc::NameOfThemeStyle]:"]
+	set name [EnterName $parent "$mc::NameOfThemeStyle:"]
 	if {[llength $name] == 0} { return }
 
 	set identifier [[namespace parent]::saveWorkingSet $name theme]
@@ -624,7 +626,7 @@ proc SavePieceStyle {parent} {
 	variable [namespace parent]::piece::styleNames
 	variable Vars
 
-	set name [EnterName $parent "[set [namespace current]::mc::NameOfPieceStyle]:"]
+	set name [EnterName $parent "$mc::NameOfPieceStyle:"]
 	if {[llength $name] == 0} { return }
 
 	set identifier [[namespace parent]::saveWorkingSet $name piece]
@@ -653,7 +655,7 @@ proc SaveSquareStyle {parent} {
 	set f [::ttk::frame $dlg.top]
 	pack $f -fill both -expand yes
 
-	set hints [::ttk::labelframe $f.hints -text [set [namespace current]::mc::ChooseColors]]
+	set hints [::ttk::labelframe $f.hints -text $mc::ChooseColors]
 	::ttk::button $hints.background \
 		-text $::mc::Background \
 		-command [namespace code [list SelectBackgroundColor hint $hints.background $hints.erase_bg]]
@@ -661,10 +663,10 @@ proc SaveSquareStyle {parent} {
 		-image [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::eraser] \
 		-command [namespace code [list EraseBackgroundColor hint $hints.background $hints.erase_bg]]
 	::ttk::button $hints.border \
-		-text [set [namespace current]::mc::Border] \
+		-text $mc::Border \
 		-command [namespace code [list SelectBorderColor hint $hints.border]]
 	::ttk::button $hints.coords \
-		-text [set [namespace current]::mc::Coordinates] \
+		-text $mc::Coordinates \
 		-command [namespace code [list SelectCoordsColor hint $hints.coords]]
 	
 	grid $hints.background	-row 1 -column 1 -sticky ew
@@ -675,7 +677,7 @@ proc SaveSquareStyle {parent} {
 	grid columnconfigure $hints 1 -weight 1
 	grid rowconfigure $hints {0 2 4 6} -minsize $::theme::pady
 
-	set lbl [::ttk::label $f.lbl -text "[set [namespace current]::mc::NameOfSquareStyle]:"]
+	set lbl [::ttk::label $f.lbl -text "$mc::NameOfSquareStyle:"]
 	set entry [::ttk::entry $f.entry]
 
 	grid $hints	-row 1 -column 1 -sticky ew
@@ -844,18 +846,18 @@ proc openConfigDialog {parent applyProc} {
 	bind $dlg <Escape> [namespace code [list Cancel $dlg $applyProc]]
 	bind $dlg <Destroy> "if {{$dlg} eq {%W}} { array unset [namespace current]::Vars widget:* }"
 	wm withdraw $dlg
-	wm title $dlg "$::scidb::app: [set [namespace current]::mc::BoardSetup]"
+	wm title $dlg "$::scidb::app: $mc::BoardSetup"
 	wm transient $dlg [winfo toplevel $parent]
 	wm iconname $dlg ""
 	wm resizable $dlg 0 0
 	makeFrame $dlg
-	::widget::dialogButtons $dlg {ok cancel apply reset} apply
+	::widget::dialogButtons $dlg {ok cancel apply revert} apply
 	$dlg.cancel configure -command [namespace code [list Cancel $dlg $applyProc]]
 	$dlg.ok configure -command "
 		[namespace current]::Apply {$applyProc}
 		destroy $dlg"
 	$dlg.apply configure -command [namespace code [list Apply $applyProc]]
-	$dlg.reset configure -command [namespace code [list Reset $applyProc]]
+	$dlg.revert configure -command [namespace code [list Reset $applyProc]]
 	wm deiconify $dlg
 }
 
@@ -1177,8 +1179,9 @@ proc EditStyles {parent which} {
 	wm protocol $dlg WM_DELETE_WINDOW "destroy $dlg"
 	wm title $dlg $::scidb::app
  	update idletasks
- 	scan [wm grid $dlg] "%d %d %d %d" bw bh wi hi
- 	wm minsize $dlg $bw $bh
+ 	if {[scan [wm grid $dlg] "%d %d %d %d" bw bh wi hi] >= 2} {
+		wm minsize $dlg $bw $bh
+	}
  	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	focus $lt.content
@@ -1220,7 +1223,7 @@ proc DeleteFile {listbox filename} {
 		# this should not happen
 		::dialog::error \
 			-parent $listbox \
-			-message [format [set [namespace current]::mc::NoPermission] $filename]
+			-message [format $mc::NoPermission $filename]
 		return false
 	}
 
@@ -1239,14 +1242,14 @@ proc DeleteStyle {listbox which} {
 	if {![file writable $filename]} {
 		::dialog::info \
 			-parent $listbox \
-			-message [format [set [namespace current]::mc::CannotDelete] $identifier] \
-			-detail [format [set [namespace current]::mc::IsWriteProtected] $filename]
+			-message [format $mc::CannotDelete $identifier] \
+			-detail [format [set $mc::IsWriteProtected $filename]
 		return
 	}
 	set reply [::dialog::warning \
 					-parent $listbox \
-					-message [format [set [namespace current]::mc::ConfirmDelete] $identifier] \
-					-detail [format [set [namespace current]::mc::YouCannotReverse] $filename]]
+					-message [format $mc::ConfirmDelete $identifier] \
+					-detail [format $mc::YouCannotReverse $filename]]
 	if {$reply ne "ok" || ![DeleteFile $listbox $filename]} { return false }
 	set shortId [lindex $styleNames [$Vars(widget:$which:list) curselection]]
 	set longId [[namespace parent]::mapToLongId $shortId $which]
@@ -1284,8 +1287,8 @@ proc ResetSelection {longId which} {
 #	if {![file writable $filename]} {
 #		::dialog::info \
 #			-parent $listbox \
-#			-message [format [set [namespace current]::mc::CannotRename] $identifier] \
-#			-detail [format [set [namespace current]::mc::IsWriteProtected] $filename]
+#			-message [format $mc::CannotRename $identifier] \
+#			-detail [format $mc::IsWriteProtected $filename]
 #		return
 #	}
 #	set name [[namespace parent]::mapToName $identifier $which]
@@ -1830,7 +1833,7 @@ proc SelectCoordsColor {which parent} {
 	set selection [::colormenu::popup $parent \
 							-class Dialog \
 							-initialcolor $colors(hint,coordinates) \
-							-recentcolors $RecentColors(coordinates) \
+							-recentcolors [namespace current]::RecentColors(coordinates) \
 							-geometry last \
 							-modal true \
 							-embedcmd [namespace current]::MakePreview \
@@ -1839,7 +1842,7 @@ proc SelectCoordsColor {which parent} {
 							-place centeronparent]
 	
 	if {[llength $selection]} {
-		set RecentColors(coordinates) [addToList $RecentColors(coordinates) $colors(hint,coordinates)]
+		addToList [namespace current]::RecentColors(coordinates) $colors(hint,coordinates)
 		set colors(hint,coordinates) $selection
 		if {$which eq "user"} { set colors(user,coordinates) $colors(hint,coordinates) }
 		::tooltip::tooltip $parent "${::mc::Color}: [extendColorName $selection]"
@@ -1873,7 +1876,7 @@ proc SetRecent {what recentColor recentTexture} {
 	}
 
 	if {[llength $recentColor]} {
-		set RecentColors(background) [addToList $RecentColors(background) $recentColor]
+		addToList [namespace current]::RecentColors(background) $recentColor
 	}
 }
 
@@ -1902,7 +1905,7 @@ proc SelectBorderColor {which setter} {
 	set selection [::colormenu::popup $setter \
 							-class Dialog \
 							-initialcolor $colors(user,border-color) \
-							-recentcolors $RecentColors(background) \
+							-recentcolors [namespace current]::RecentColors(background) \
 							-textures $RecentTextures \
 							-action [list texture $::icon::16x16::texture $mc::OpenTextureDialog] \
 							-geometry last \
@@ -1970,7 +1973,7 @@ proc SelectBackgroundColor {which setter eraser} {
 	set selection [::colormenu::popup $setter \
 							-class Dialog \
 							-initialcolor $colors(user,background-color) \
-							-recentcolors $RecentColors(background) \
+							-recentcolors [namespace current]::RecentColors(background) \
 							-textures $RecentTextures \
 							-eraser $showEraser \
 							-action [list texture $::icon::16x16::texture $mc::OpenTextureDialog] \

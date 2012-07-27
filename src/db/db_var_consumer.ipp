@@ -35,7 +35,7 @@ inline
 MoveNode const*
 VarConsumer::result() const
 {
-	M_REQUIRE(!notReleased());
+	M_REQUIRE(notReleased());
 	return m_result;
 }
 

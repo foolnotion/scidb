@@ -64,31 +64,22 @@ array set Priv {
 }
 
 array set Options {
-	font						TkTextFont
 	fullscreen				0
 	board:size				40
 	miniboard:size			30
 	autoplay:delay			2500
 	repeat:interval		300
-	hilite					#ebf4f5
-	background:pgn			white
 	background:header		#ebf4f5
 	background:hilite		cornflowerblue
 	foreground:hilite		white
-	background:current	#ffdd76
-	foreground:result		black
-	foreground:empty		#666666
-	style:column			no
-	style:move				san
-	tabstop-1				4.0
-	tabstop-2				0.7
-	tabstop-3				8.0
-	tabstop-3:add			4.0
 }
+
+array set Active {}
 
 
 proc open {parent base info view index {fen {}}} {
 	variable Options
+	variable Active
 	variable Priv
 
 	if {$Priv(count) == 100} {
@@ -113,6 +104,7 @@ proc open {parent base info view index {fen {}}} {
 	namespace eval [namespace current]::${position} {}
 	variable ${position}::Vars
 
+	set Active($position) $dlg
 	set top [::ttk::frame $dlg.top]
 	set bot [tk::frame $dlg.bot]
 	::ttk::separator $dlg.sep -class Dialog
@@ -188,29 +180,14 @@ proc open {parent base info view index {fen {}}} {
 		-undo 0 \
 		-exportselection 0 \
 		-wrap word \
-		-font $Options(font) \
 		-cursor {} \
 		;
-	tk::text $rt.pgn \
-		-height 0 \
-		-width 0 \
-		-yscrollcommand [list ::scrolledframe::sbset $rt.sb] \
-		-state disabled \
-		-takefocus 0 \
-		-exportselection 0 \
-		-undo 0 \
-		-wrap word \
-		-font $Options(font) \
-		-cursor {} \
-		;
-	::widget::bindMouseWheel $rt.pgn
 	::widget::textPreventSelection $rt.header
-	::widget::textPreventSelection $rt.pgn
-	::ttk::scrollbar $rt.sb -command [list $rt.pgn yview] -takefocus 0
+	set Vars(pgn) [::pgn::setup::buildText $rt.pgn browser]
+	$rt.header configure -font $::font::text(browser:normal)
 	
 	grid $rt.header	-row 1 -column 1 -columnspan 2 -sticky nsew
 	grid $rt.pgn		-row 3 -column 1 -sticky nsew -ipady 1
-	grid $rt.sb			-row 3 -column 2 -sticky ns
 	grid rowconfigure $rt {0 2 4} -minsize $::theme::padding
 	grid rowconfigure $rt 3 -weight 1
 	grid columnconfigure $rt 1 -weight 1
@@ -239,17 +216,13 @@ proc open {parent base info view index {fen {}}} {
 	grid columnconfigure $bot 3 -weight 1
 	grid rowconfigure $bot {0 2} -minsize $::theme::padding
 
-	set bold [list [font configure $Options(font) -family] [font configure $Options(font) -size] bold]
-	$rt.header tag configure bold -font $bold
-	$rt.header tag configure figurine -font $::font::figurine
+	$rt.header tag configure bold -font $::font::text(browser:bold)
+	$rt.header tag configure figurine -font $::font::figurine(text:normal)
 	foreach t {white black event} {
 		$rt.header tag bind $t <ButtonPress-3> [namespace code [list PopupMenu $dlg $board $position $t]]
 	}
-	$rt.pgn tag configure figurine -font $::font::figurine
-	$rt.pgn tag configure result -foreground $Options(foreground:result) -font $bold
-	$rt.pgn tag configure empty -foreground $Options(foreground:empty)
 
-	set Vars(pgn) $rt.pgn
+	set Vars(frame) $rt.pgn
 	set Vars(board) $board
 	set Vars(autoplay) 0
 	set Vars(control:forward) $buttons.forward
@@ -277,6 +250,7 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(locked) no
 	set Vars(info) $info
 	set Vars(fullscreen) 0
+	set Vars(next) {}
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
@@ -300,11 +274,15 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
 	bind $dlg <Key-minus>				[namespace code [list ChangeBoardSize $position $lt.board -5]]
 	bind $dlg <Key-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board -5]]
-	bind $dlg <Control-plus>			[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Control-KP_Add>			[namespace code [list ChangeBoardSize $position $lt.board max]]
-	bind $dlg <Control-minus>			[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeBoardSize $position $lt.board min]]
-	bind $dlg <F1>							{ ::help::open .application Game-Browser }
+	bind $dlg <Alt-plus>					[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Alt-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board max]]
+	bind $dlg <Alt-minus>				[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <Alt-KP_Subtract>		[namespace code [list ChangeBoardSize $position $lt.board min]]
+	bind $dlg <Control-plus>			[list ::font::changeSize browser +1]
+	bind $dlg <Control-KP_Add>			[list ::font::changeSize browser +1]
+	bind $dlg <Control-minus>			[list ::font::changeSize browser -1]
+	bind $dlg <Control-KP_Subtract>	[list ::font::changeSize browser -1]
+	bind $dlg <F1>							[list ::help::open .application Game-Browser -parent $dlg]
 
 	SetupControlButtons $position
 
@@ -398,6 +376,37 @@ proc hidePosition {parent} {
 }
 
 
+proc refresh {{regardFontSize no}} {
+	variable Active
+
+	::widget::busyCursor on
+	::pgn::setup::setupStyle browser
+
+	foreach position [array names Active] {
+		variable ${position}::Vars
+		::pgn::setup::configureText $Vars(frame)
+		::scidb::game::refresh $position -immediate
+	}
+
+	::widget::busyCursor off
+}
+
+
+proc resetGoto {w position} {
+	variable ${position}::Vars
+	variable ::pgn::browser::Colors
+
+	if {[llength $Vars(next)]} {
+		$w tag configure $Vars(next) -background $Colors(background)
+	}
+	if {[llength $Vars(current)]} {
+		$w tag configure $Vars(current) -background $Colors(background)
+	}
+	set Vars(current) {}
+	set Vars(next) {}
+}
+
+
 proc makeOpeningLines {data} {
 	lassign $data idn position eco opening variation subvar
 	set opening1 ""
@@ -465,35 +474,11 @@ proc ShowPosition {parent position key {state 0}} {
 
 proc SetupStyle {position {refresh yes}} {
 	variable ${position}::Vars
-	variable Options
+	variable ::pgn::browser::Colors
 
-	if {$Options(style:column)} { set thresholds {0 0 0 0} } else { set thresholds {240 80 60 0} }
-
-	if {$Options(style:column)} {
-		set charwidth [font measure [$Vars(pgn) cget -font] "0"]
-
-		set tab1 [expr {round($Options(tabstop-1)*$charwidth)}]
-		set tab2 [expr {$tab1 + round($Options(tabstop-2)*$charwidth)}]
-		set tab3 [expr {$tab2 + round($Options(tabstop-3)*$charwidth)}]
-
-		if {$Options(style:move) eq "lan"} {
-			set tab3 [expr {$tab3 + $Options(tabstop-3:add)*$charwidth}]
-		}
-
-		$Vars(pgn) configure -tabs [list $tab1 right $tab2 $tab3] -tabstyle wordprocessor
-	} else {
-		$Vars(pgn) configure -tabs {} -tabstyle tabular
-	}
-
-	::scidb::game::setup \
-		$position \
-		{*}$thresholds \
-		$Options(style:column) \
-		$Options(style:move) \
-		no \
-		no \
-		no \
-		;
+	if {[llength $Vars(next)]} { $Vars(pgn) tag configure $Vars(next) -background $Colors(background) }
+	::pgn::setup::setupStyle browser
+	::pgn::setup::configureText $Vars(frame)
 
 	if {$refresh} {
 		::widget::busyOperation ::scidb::game::refresh $position -immediate
@@ -652,7 +637,9 @@ proc LanguageChanged {position} {
 		$w configure -state normal
 		$w delete 1.0 end
 		$w insert end "<$::application::pgn::mc::EmptyGame> " empty
-		$w insert end {*}$Vars(result)
+		if {[string length $Vars(result)] > 1} {
+			$w insert end $Vars(result) result
+		}
 		$w configure -state disabled
 	}
 
@@ -834,11 +821,28 @@ proc HidePlayerInfo {position side} {
 }
 
 
-proc UpdatePGN {position data} {
-	variable ${position}::Vars
-	variable Options
+proc Dump {w} {
+	set dump [$w dump -all 1.0 end]
+	foreach {type attr pos} $dump {
+		if {$attr ne "current" && $attr ne "insert"} {
+			if {$attr eq "\n"} { set attr "\\n" }
+			if {$attr eq "\t"} { set attr "\\t" }
+			switch $type {
+				tagon - tagoff {}
+				default { puts "$pos: $type $attr" }
+			}
+		}
+	}
+	puts "==============================================="
+}
 
-	set w $Vars(pgn)
+
+proc UpdatePGN {position data {w {}}} {
+	variable ${position}::Vars
+	variable ::pgn::browser::Colors
+	variable ::pgn::browser::Options
+
+	if {[llength $w] == 0} { set w $Vars(pgn) }
 
 	foreach node $data {
 		switch [lindex $node 0] {
@@ -848,6 +852,7 @@ proc UpdatePGN {position data} {
 				set current $Vars(current)
 				set Vars(current) {}
 				set Vars(active) {}
+				set Vars(next) {}
 			}
 
 			move {
@@ -876,13 +881,8 @@ proc UpdatePGN {position data} {
 								if {$Options(style:column)} { $w insert end "\t" }
 							}
 							foreach {text tag} [::font::splitMoves $san] {
+								if {!$legal} { lappend tag illegal }
 								PrintMove $w $position $key $text $tag
-							}
-							if {!$legal} {
-								$w insert end "\u26A1" illegal
-								$w tag bind illegal <Any-Enter> +[namespace code [list Tooltip $w illegal]]
-								$w tag bind illegal <Any-Leave> +[namespace code [list Tooltip $w hide]]
-								$w tag bind illegal <ButtonPress-1> [list ::scidb::game::moveto $position $key]
 							}
 						}
 					}
@@ -890,16 +890,17 @@ proc UpdatePGN {position data} {
 			}
 
 			result {
-				set key [lindex $node 1]
-				set Vars(result) [list [::util::formatResult [lindex $node 1]] [list $key result]]
+				set Vars(result) [::util::formatResult [lindex $node 1]]
 				if {[::scidb::game::query $position length] == 0} {
 					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
 				}
-				if {$Options(style:column)} { set space "\n" } else { set space " " }
-				$w insert end $space
-				$w insert end {*}$Vars(result)
+				if {[string length $Vars(result)] > 1} {
+					if {$Options(style:column)} { set space "\n" } else { set space " " }
+					$w insert end $space
+					$w insert end $Vars(result) result
+				}
 				if {[llength $current]} {
-					catch { $w tag configure $current -background $Options(background:pgn) }
+					catch { $w tag configure $current -background $Colors(background) }
 				}
 				$w configure -state disabled
 			}
@@ -909,15 +910,24 @@ proc UpdatePGN {position data} {
 
 				if {$cmd eq "goto" } {
 					if {$Vars(current) eq $key} { return }
+					if {[llength $Vars(next)]} {
+						$w tag configure $Vars(next) -background $Colors(background)
+					}
+					if {$Options(style:column)} { set Vars(next) [::scidb::game::next keys $position] }
 					if {$Vars(active) eq $key} { $w configure -cursor {} }
 					set previous $Vars(current)
 					if {[llength $previous]} {
-						$w tag configure $previous -background $Options(background:pgn)
+						$w tag configure $previous -background $Colors(background)
 					}
-					$w tag configure $key -background $Options(background:current)
+					$w tag configure $key -background $Colors(background:current)
+					if {[llength $Vars(next)]} {
+						$w tag configure $Vars(next) -background $Colors(background:nextmove)
+					}
 					if {[llength $previous]} { $w see [lindex [$w tag nextrange $key 1.0] 0] }
 					set Vars(current) $key
-					if {[llength $previous] && $Vars(active) eq $previous} { EnterMove $position $previous }
+					if {[llength $previous] && $Vars(active) eq $previous} {
+						EnterMove $w $position $previous
+					}
 				}
 			}
 		}
@@ -927,11 +937,14 @@ proc UpdatePGN {position data} {
 
 proc PrintMove {w position key text {tag ""}} {
 	$w insert end $text [list {*}$tag $key]
-	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
-	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-	$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
-	$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key %s]]
-	$w tag bind $key <ButtonRelease-2> [namespace code [list hidePosition $w]]
+
+	if {$position >= 100} {
+		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $w $position $key]]
+		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $w $position $key]]
+		$w tag bind $key <ButtonPress-1> [list ::scidb::game::moveto $position $key]
+		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $w $position $key %s]]
+		$w tag bind $key <ButtonRelease-2> [namespace code [list hidePosition $w]]
+	}
 }
 
 
@@ -945,27 +958,33 @@ proc Tooltip {path nag} {
 }
 
 
-proc EnterMove {position key} {
+proc EnterMove {w position key} {
 	variable ${position}::Vars
-	variable Options
+	variable ::pgn::browser::Colors
 
 	if {$Vars(current) ne $key} {
-		$Vars(pgn) tag configure $key -background $Options(hilite)
-		$Vars(pgn) configure -cursor hand2
+		$w tag configure $key -background $Colors(hilite:move)
+		$w configure -cursor hand2
 	}
 
 	set Vars(active) $key
 }
 
 
-proc LeaveMove {position key} {
+proc LeaveMove {w position key} {
 	variable ${position}::Vars
+	variable ::pgn::browser::Colors
 
 	set Vars(active) {}
 
 	if {$Vars(current) ne $key} {
-		$Vars(pgn) tag configure $key -background white
-		$Vars(pgn) configure -cursor {}
+		if {$key in $Vars(next)} {
+			set color $Colors(background:nextmove)
+		} else {
+			set color $Colors(background)
+		}
+		$w tag configure $key -background $color
+		$w configure -cursor {}
 	}
 }
 
@@ -1023,6 +1042,8 @@ proc RotateBoard {position} {
 
 
 proc Destroy {dlg w position base} {
+	variable Active
+
 	if {$w ne $dlg} { return }
 
 	variable ${position}::Vars
@@ -1044,6 +1065,7 @@ proc Destroy {dlg w position base} {
 
 	::scidb::game::release $position
 	namespace delete [namespace current]::${position}
+	array unset Active $position
 }
 
 
@@ -1170,14 +1192,14 @@ proc PopupMenu {parent board position {what ""}} {
 			-image $::icon::16x16::maximize \
 			-compound left \
 			-command [namespace code [list ChangeBoardSize $position $board max]] \
-			-accelerator "${::mc::Key(Ctrl)}-+" \
+			-accelerator "${::mc::Key(Alt)} +" \
 			;
 		$menu add command \
 			-label " $mc::MinimizeBoardSize" \
 			-image $::icon::16x16::minimize \
 			-compound left \
 			-command [namespace code [list ChangeBoardSize $position $board min]] \
-			-accelerator "${::mc::Key(Ctrl)}-\u2212" \
+			-accelerator "${::mc::Key(Alt)} \u2212" \
 			;
 	}
 	if {[UseFullscreen?]} {
@@ -1192,31 +1214,48 @@ proc PopupMenu {parent board position {what ""}} {
 	}
 
 	$menu add separator
+	$menu add command \
+		-label " $::font::mc::IncreaseFontSize" \
+		-image $::icon::16x16::font(incr) \
+		-compound left \
+		-command [list ::font::changeSize browser +1] \
+		-accel "$::mc::Key(Ctrl) +" \
+		;
+	$menu add command \
+		-label " $::font::mc::DecreaseFontSize" \
+		-image $::icon::16x16::font(decr) \
+		-compound left \
+		-command [list ::font::changeSize browser -1] \
+		-accel "$::mc::Key(Ctrl) \u2212" \
+		;
 	$menu add checkbutton \
-		-label $::application::pgn::mc::ColumnStyle \
+		-label " $::pgn::setup::mc::ParLayout(column-style)" \
 		-command [namespace code [list SetupStyle $position]] \
-		-variable [namespace current]::Options(style:column) \
+		-variable ::pgn::browser::Options(style:column) \
 		;
 	menu $menu.moveStyles -tearoff no
-	$menu add cascade -menu $menu.moveStyles -label $::application::pgn::mc::MoveNotation
-	foreach style $::application::pgn::MoveStyles {
+	$menu add cascade -menu $menu.moveStyles -label " $::application::pgn::mc::MoveNotation"
+	foreach style $::notation::moveStyles {
 		$menu.moveStyles add radiobutton \
 			-compound left \
-			-label $::mc::MoveForm($style) \
-			-variable [namespace current]::Options(style:move) \
+			-label $::notation::mc::MoveForm($style) \
+			-variable ::pgn::browser::Options(style:move) \
 			-value $style \
 			-command [namespace code [list SetupStyle $position]] \
 			;
 		::theme::configureRadioEntry $menu.moveStyles end
 	}
-
+	$menu add command \
+		-label " $::pgn::setup::mc::Configure(browser)..." \
+		-command [namespace code [list ConfigureBrowser $parent]] \
+		;
 
 	$menu add separator
 	$menu add command \
 		-label " $::help::mc::Help" \
 		-image $::icon::16x16::help \
 		-compound left \
-		-command { ::help::open .application Game-Browser } \
+		-command [list ::help::open .application Game-Browser -parent $dlg ] \
 		-accelerator "F1" \
 		;
 
@@ -1224,9 +1263,22 @@ proc PopupMenu {parent board position {what ""}} {
 }
 
 
+proc ConfigureBrowser {parent} {
+	namespace eval [namespace current]::11 {}
+	variable 11::Vars
+
+	set Vars(next) {}
+	set Vars(current) {}
+	::scidb::game::new 11
+	::pgn::setup::openSetupDialog [winfo toplevel $parent] browser 11
+	::scidb::game::release 11
+	::scidb::tree::freeze 0
+	namespace delete [namespace current]::11
+}
+
+
 proc ViewFullscreen {position board} {
 	variable ${position}::Vars
-	variable Options
 
 	set Vars(fullscreen) [expr {!$Vars(fullscreen)}]
 	wm attributes [winfo toplevel $Vars(pgn)] -fullscreen $Vars(fullscreen)
@@ -1363,9 +1415,18 @@ proc WriteOptions {chan} {
 	options::writeItem $chan [namespace current]::Options
 }
 
-
 ::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace browser
+
+namespace eval pgn {
+namespace eval browser {
+
+proc refresh {regardFontSize}		{ ::browser::refresh $regardFontSize }
+proc resetGoto {w position}		{ ::browser::resetGoto $w $position }
+proc doLayout {position data w}	{ ::browser::UpdatePGN $position $data $w }
+
+} ;# browser
+} ;# pgn
 
 # vi:set ts=3 sw=3:

@@ -491,9 +491,9 @@ proc open {parent} {
 	grid columnconfigure $top {2 4} -minsize 10
 	grid rowconfigure $top 0 -minsize $::theme::padding
 
-	::widget::dialogButtons $dlg {ok cancel reset} ok
+	::widget::dialogButtons $dlg {ok cancel revert} ok
 	$dlg.cancel configure -command [list destroy $dlg]
-	$dlg.reset configure -command [namespace code Reset]
+	$dlg.revert configure -command [namespace code Reset]
 	$dlg.ok configure -command [namespace code Accept]
 
 	Update

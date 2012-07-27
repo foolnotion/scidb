@@ -108,6 +108,7 @@ public:
 	bool hasNote() const;
 	bool hasSupplement() const;
 	bool hasMoveInfo() const;
+	bool containsIllegalCastlings() const;
 	bool containsIllegalMoves() const;
 	bool containsEnglishLang() const;
 	bool containsOtherLang() const;

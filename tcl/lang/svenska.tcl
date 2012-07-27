@@ -46,13 +46,6 @@
 ::mc::Key(Shift)		"Shift" ;# NEW
 ::mc::Key(Up)			"\u2191"
 
-::mc::MoveForm(alg)	"Algebraic" ;# NEW
-::mc::MoveForm(san)	"Short Algebraic" ;# NEW
-::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
-::mc::MoveForm(eng)	"English" ;# NEW
-::mc::MoveForm(cor)	"Correspondence" ;# NEW
-::mc::MoveForm(tel)	"Telegraphic" ;# NEW
-
 ::mc::Alignment		"Justering"
 ::mc::Apply				"Verkställ"
 ::mc::Archive			"Arkiv"
@@ -64,6 +57,7 @@
 ::mc::Close				"Stäng"
 ::mc::Color				"Färg"
 ::mc::Colors			"Färger"
+::mc::Configuration	"Configuration" ;# NEW
 ::mc::Copy				"Kopiera"
 ::mc::Cut				"Klipp ut"
 ::mc::Dark				"Mörk"
@@ -81,11 +75,12 @@
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Nummer"
 ::mc::OK					"OK"
+::mc::Order				"Order" ;# NEW
 ::mc::Paste				"Klistra in"
-::mc::PieceSet			"Piece Set"
-::mc::Preview			"Preview"
-::mc::Redo				"Redo"
-::mc::Remove			"Remove" ;# NEW
+::mc::PieceSet			"Pjäser"
+::mc::Preview			"Förhandsgranska"
+::mc::Redo				"Gör om"
+::mc::Remove			"Ta bort"
 ::mc::Reset				"Återställ"
 ::mc::Right				"Höger"
 ::mc::SelectAll		"Markera allt"
@@ -138,9 +133,9 @@
 ::widget::mc::Next		"&Nästa"
 ::widget::mc::First		"&Första"
 ::widget::mc::Last		"&Sista"
-::widget::mc::Help		"&Help" ;# NEW
+::widget::mc::Help		"&Hjälp"
 
-::widget::mc::Control(minimize)	"Minimize" ;# NEW
+::widget::mc::Control(minimize)	"Minimera"
 ::widget::mc::Control(restore)	"Lämna helskärm"
 ::widget::mc::Control(close)		"Stäng"
 
@@ -159,29 +154,30 @@
 ::util::mc::IOError(EncodingFailed)			"kan inte skriva i namnbas fil"
 ::util::mc::IOError(MaxFileSizeExceeded)	"maximal filstorlek uppnådd"
 ::util::mc::IOError(LoadFailed)				"inläsningen misslyckades  (för många tävlingar)"
+
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond."
 
 ### progress ###########################################################
-::progress::mc::Progress							"Progress" ;# NEW
+::progress::mc::Progress							"Förlopp"
 
-::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
-::progress::mc::Message(preload-tournament)	"Pre-loading tournament index" ;# NEW
-::progress::mc::Message(preload-player)		"Pre-loading player index" ;# NEW
-::progress::mc::Message(preload-annotator)	"Pre-loading annotator index" ;# NEW
+::progress::mc::Message(preload-namebase)		"Förladdar namndatabas"
+::progress::mc::Message(preload-tournament)	"Förladdar turneringsindex"
+::progress::mc::Message(preload-player)		"Förladdar spelarindex"
+::progress::mc::Message(preload-annotator)	"Förladdar kommentatorindex"
 
-::progress::mc::Message(read-index)				"Loading index data" ;# NEW
-::progress::mc::Message(read-game)				"Loading game data" ;# NEW
-::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
-::progress::mc::Message(read-tournament)		"Loading tournament index" ;# NEW
-::progress::mc::Message(read-player)			"Loading player index" ;# NEW
-::progress::mc::Message(read-annotator)		"Loading annotator index" ;# NEW
-::progress::mc::Message(read-source)			"Loading source index" ;# NEW
-::progress::mc::Message(read-team)				"Loading team index" ;# NEW
-::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
+::progress::mc::Message(read-index)				"Laddar indexdata"
+::progress::mc::Message(read-game)				"Laddar partidata"
+::progress::mc::Message(read-namebase)			"Laddar namndatabas"
+::progress::mc::Message(read-tournament)		"Laddar turneringsindex"
+::progress::mc::Message(read-player)			"Laddar spelarindex"
+::progress::mc::Message(read-annotator)		"Laddar kommentatorindex"
+::progress::mc::Message(read-source)			"Laddar källindex"
+::progress::mc::Message(read-team)				"Laddar lagindex"
+::progress::mc::Message(read-init)				"Laddar initieringsdata"
 
-::progress::mc::Message(write-index)			"Writing index data" ;# NEW
-::progress::mc::Message(write-game)				"Writing game data" ;# NEW
-::progress::mc::Message(write-namebase)		"Writing namebase data" ;# NEW
+::progress::mc::Message(write-index)			"Skriver indexdata"
+::progress::mc::Message(write-game)				"Skriver partidata"
+::progress::mc::Message(write-namebase)		"Skriver namndatabas"
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
@@ -205,29 +201,29 @@
 ::menu::mc::Help							"&Hjälp"
 ::menu::mc::Contact						"&Kontakt (Webbläsare)"
 ::menu::mc::Quit							"&Avsluta"
-::menu::mc::Extras						"E&xtras" ;# NEW
+::menu::mc::Extras						"&Tillägg"
 
 ::menu::mc::ContactBugReport			"&Felrapport"
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
-::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
+::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
 ::menu::mc::ImportFiles					"Importera PGN fil..."
-::menu::mc::Archiving					"Archiving" ;# NEW
-::menu::mc::CreateArchive				"Create Archive" ;# NEW
-::menu::mc::BuildArchive				"Create archive %s" ;# NEW
+::menu::mc::Archiving					"Arkiverar"
+::menu::mc::CreateArchive				"Skapa arkiv"
+::menu::mc::BuildArchive				"Skapa arkiver %s"
 ::menu::mc::Data							"%s data" ;# NEW
 
 ### load ###############################################################
-::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
+::load::mc::SevereError				"Allvarlig fel vid laddning av ECO-fil"
 ::load::mc::FileIsCorrupt			"Filen %s är skadad:"
-::load::mc::ProgramAborting		"Program is aborting." ;# NEW
+::load::mc::ProgramAborting		"Programmet avbryter."
 
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::ReadingOptionsFile	"Läser alternativ"
 ::load::mc::StartupFinished		"Inläsning klar"
-::load::mc::SystemEncoding			"System encoding is '%s'" ;# NEW
+::load::mc::SystemEncoding			"Systemkodning är '%s'"
 
 ::load::mc::ECOFile					"ECO-fil"
 ::load::mc::EngineFile				"schackmotor"
@@ -255,8 +251,8 @@
 ::archive::mc::CannotOpenArchive			"Kan inte öppna arkiv '%s'."
 ::archive::mc::CouldNotCreateArchive	"Kan inte skapa arkiv '%s'."
 
-::archive::mc::PackFile						"Pack %s" ;# NEW
-::archive::mc::UnpackFile					"Unpack %s" ;# NEW
+::archive::mc::PackFile						"Packa %s"
+::archive::mc::UnpackFile					"Packa upp %s"
 
 ### application ########################################################
 ::application::mc::Database				"&Databas"
@@ -292,13 +288,13 @@
 ::application::database::mc::FileImport					"Importera PGN fil..."
 ::application::database::mc::FileCreate					"Skapa arkiv..."
 ::application::database::mc::FileClose						"Stäng"
-::application::database::mc::FileCompact					"Compact" ;# NEW
+::application::database::mc::FileCompact					"Komprimera"
 ::application::database::mc::HelpSwitcher					"Hjälp om databasväljare"
 
 ::application::database::mc::Games							"&Partier"
 ::application::database::mc::Players						"&Spelare"
 ::application::database::mc::Events							"&Tävlingar"
-::application::database::mc::Sites							"&Sites" ;# NEW
+::application::database::mc::Sites							"&Platser"
 ::application::database::mc::Annotators					"&Kommentatorer"
 
 ::application::database::mc::File							"Fil"
@@ -312,7 +308,7 @@
 ::application::database::mc::Failed							"misslyckades"
 ::application::database::mc::LoadMessage					"Öppnar databas %s"
 ::application::database::mc::UpgradeMessage				"Upgraderar databas %s"
-::application::database::mc::CompactMessage				"Compacting database %s" ;# NEW
+::application::database::mc::CompactMessage				"Komprimerar databas %s"
 ::application::database::mc::CannotOpenFile				"Kan inte öppna fil '%s'."
 ::application::database::mc::EncodingFailed				"Kodning %s misslyckades."
 ::application::database::mc::DatabaseAlreadyOpen		"Databasen '%s' är redan öppen."
@@ -331,11 +327,11 @@
 ::application::database::mc::EmptyUriList					"Innehåll som släpps är tomt."
 ::application::database::mc::OverwriteExistingFiles	"Skriver över existerande filer i folder '%s'?"
 ::application::database::mc::SelectDatabases				"Välj databaser som ska öppnas"
-::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
-::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done." ;# NEW
-::application::database::mc::ReallyCompact				"Really compact database '%s'?" ;# NEW
-::application::database::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
-::application::database::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
+::application::database::mc::ExtractArchive				"Packa upp arkiv %s"
+::application::database::mc::CompactDetail				"Alla partier måste stängas in komprimeringen kan börjas."
+::application::database::mc::ReallyCompact				"Är du säker att databasen '%s' ska komprimeras?"
+::application::database::mc::ReallyCompactDetail(1)	"Endast ett parti kommer bli raderade."
+::application::database::mc::ReallyCompactDetail(N)	"%s partier kommer bli raderade."
 
 ::application::database::mc::RecodingDatabase			"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames					"%s parti(er) omkodade"
@@ -467,17 +463,8 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffixed Commentaries"
 ::application::pgn::mc::StripOriginalComments			"Rensa original kommentarer"
 
-::application::pgn::mc::AddNewGame							"Spara: Lägg till nytt parti till %s..."
-::application::pgn::mc::ReplaceGame							"Spara: Ersätt parti i %s..."
-::application::pgn::mc::ReplaceMoves						"Spara: Ersätt bara dragen i partiet..."
-
-::application::pgn::mc::ColumnStyle							"Kolumnformat"
-::application::pgn::mc::UseParagraphSpacing				"Använd styckeavstånd"
-::application::pgn::mc::ShowMoveInfo						"Visa drag information"
-::application::pgn::mc::BoldTextForMainlineMoves		"Fet text för huvudlinjens drag"
-::application::pgn::mc::ShowDiagrams						"Visa diagram"
-::application::pgn::mc::Languages							"Språk"
-::application::pgn::mc::MoveNotation						"Move Notation" ;# NEW
+::application::pgn::mc::LanguageSelection					"Språk" ;# NEW change to "Language Selection"
+::application::pgn::mc::MoveNotation						"Notation"
 ::application::pgn::mc::CollapseVariations				"Visa varianter"
 ::application::pgn::mc::ExpandVariations					"Dölj varianter"
 ::application::pgn::mc::EmptyGame							"Töm parti"
@@ -486,9 +473,9 @@
 ::application::pgn::mc::InvalidInput						"Ogiltigt inmatning '%d'."
 ::application::pgn::mc::MustBeEven							"Inmatning måste vara ett jämnt nummer."
 ::application::pgn::mc::MustBeOdd							"Inmatning måste vara ett ojämnt nummer."
-::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s"
-::application::pgn::mc::ReallyReplaceMoves				"Really replace moves of current game?" ;# NEW
-::application::pgn::mc::CurrentGameIsNotModified		"Current game is not modified." ;# NEW
+::application::pgn::mc::CannotOpenCursorFiles			"Kan inte öppna markörfilen: %s"
+::application::pgn::mc::ReallyReplaceMoves				"Är du säker att dragen ska ersättas i aktuellt parti?"
+::application::pgn::mc::CurrentGameIsNotModified		"Aktuelt parti är inte ändrat."
 
 ::application::pgn::mc::EditAnnotation						"Redigera schacktecken"
 ::application::pgn::mc::EditMoveInformation				"Redigera draginformation"
@@ -514,7 +501,7 @@
 ::application::tree::mc::UseQuickMode						"Använd snabbsökning"
 ::application::tree::mc::AutomaticSearch					"Automatisk sökning"
 ::application::tree::mc::LockReferenceBase				"Lås referensdatabas"
-::application::tree::mc::SwitchReferenceBase				"Switch reference database" ;# NEW
+::application::tree::mc::SwitchReferenceBase				"Växla referensdatabas"
 ::application::tree::mc::TransparentBar					"Transparent bar"
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
@@ -567,7 +554,7 @@
 ::board::options::mc::ShowBorder				"Visa ram"
 ::board::options::mc::ShowCoordinates		"Visa kordinater"
 ::board::options::mc::ShowMaterialValues	"Visa materiella värde"
-::board::options::mc::ShowMaterialBar		"Show Material Bar" ;# NEW previously: "Visa stapel"
+::board::options::mc::ShowMaterialBar		"Visa material stapel"
 ::board::options::mc::ShowSideToMove		"Visa sida vid draget"
 ::board::options::mc::ShowSuggestedMove	"Visa föreslagna drag"
 ::board::options::mc::SuggestedMove			"Föreslagna drag"
@@ -643,6 +630,66 @@
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly "Endast förvalda"
 
+### pgn-setup ##########################################################
+::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
+::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
+::pgn::setup::mc::Pixel								"pixel" ;# NEW
+::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
+::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
+::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
+
+::pgn::setup::mc::Setup(Appearance)				"Appearance" ;# NEW
+::pgn::setup::mc::Setup(Layout)					"Layout" ;# NEW
+::pgn::setup::mc::Setup(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Setup(MoveStyle)				"Move Style" ;# NEW
+
+::pgn::setup::mc::Setup(Fonts)					"Fonts" ;# NEW
+::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
+::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
+::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
+::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+
+::pgn::setup::mc::Setup(Colors)					"Colors" ;# NEW
+::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
+::pgn::setup::mc::Setup(start-position)		"Start Position" ;# NEW
+::pgn::setup::mc::Setup(variations)				"Variations" ;# NEW
+::pgn::setup::mc::Setup(numbering)				"Numbering" ;# NEW
+::pgn::setup::mc::Setup(brackets)				"Brackets" ;# NEW
+::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
+::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
+::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
+::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
+::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
+::pgn::setup::mc::Setup(result)					"Result" ;# NEW
+::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
+::pgn::setup::mc::Setup(next-moves)				"Next Moves" ;# NEW
+::pgn::setup::mc::Setup(empty-game)				"Empty Game" ;# NEW
+
+::pgn::setup::mc::Setup(Hovers)					"Hovers" ;# NEW
+::pgn::setup::mc::Setup(hover-move)				"Move" ;# NEW
+::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
+::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+
+::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::ParLayout(use-spacing)		"Använd styckeavstånd"
+::pgn::setup::mc::ParLayout(column-style)		"Kolumnformat"
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(mainline-bold)	"Fet text för huvudlinjens drag"
+
+::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
+::pgn::setup::mc::Variations(width)				"Indent Width" ;# NEW
+::pgn::setup::mc::Variations(level)				"Indent Level" ;# NEW
+
+::pgn::setup::mc::Section(Display)				"Display" ;# NEW
+::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
+::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+
+::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Diagrams(show)					"Visa diagram"
+::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
+::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
+
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
 ::gametable::mc::UndeleteGame				"Ångra radering av partiet"
@@ -668,7 +715,7 @@
 ::gametable::mc::WhiteRating				"Vit rating"
 ::gametable::mc::BlackRating				"Svart rating"
 
-::gametable::mc::Flags						"Flager"
+::gametable::mc::Flags						"Flaggor"
 ::gametable::mc::PGN_CountryCode			"PGN landskod"
 ::gametable::mc::ISO_CountryCode			"ISO landskod"
 ::gametable::mc::ExcludeElo				"Exkludera Elo"
@@ -696,9 +743,9 @@
 ::gametable::mc::F_Termination			"Avslutning"
 ::gametable::mc::F_EventMode				"Mode"
 ::gametable::mc::F_Eco						"ECO"
-::gametable::mc::F_Flags					"Flagger"
+::gametable::mc::F_Flags					"Flaggor"
 ::gametable::mc::F_Material				"Material"
-::gametable::mc::F_Acv						"ACV"
+::gametable::mc::F_Acv						"SKV"
 ::gametable::mc::F_Idn						"960"
 ::gametable::mc::F_Position				"Position"
 ::gametable::mc::F_EventDate				"Tävlingsdatum"
@@ -715,7 +762,7 @@
 ::gametable::mc::F_Key						"Intern ECO-kod"
 
 ::gametable::mc::T_Number					"Nummer"
-::gametable::mc::T_Acv						"Annotations / Comments / Variations"
+::gametable::mc::T_Acv						"Schacktecken / Kommentarer / Varianter"
 ::gametable::mc::T_WhiteRatingType		"Vit ratingytyp"
 ::gametable::mc::T_BlackRatingType		"Svart ratingtyp"
 ::gametable::mc::T_WhiteCountry			"Vit förbund"
@@ -730,23 +777,23 @@
 ::gametable::mc::T_EventType				"Tävlingstyp"
 ::gametable::mc::T_Chess960Pos			"Schack960 position"
 ::gametable::mc::T_Deleted					"Raderad"
-::gametable::mc::T_EngFlag					"English språkflagga"
-::gametable::mc::T_OthFlag					"Other språkflagga"
+::gametable::mc::T_EngFlag					"Engelsk språkflagga"
+::gametable::mc::T_OthFlag					"Övrig språkflagga"
 ::gametable::mc::T_Idn						"Chess 960 Position Number"
 ::gametable::mc::T_Annotations			"Schacktecken"
-::gametable::mc::T_Comments				"Comments"
-::gametable::mc::T_Variations				"Variations"
+::gametable::mc::T_Comments				"Kommentarer"
+::gametable::mc::T_Variations				"Varianter"
 ::gametable::mc::T_TimeMode				"Time Mode"
 
-::gametable::mc::P_Rating					"Rating Score"
-::gametable::mc::P_RatingType				"Rating Type"
+::gametable::mc::P_Rating					"Ratingpoäng"
+::gametable::mc::P_RatingType				"Ratingtyp"
 ::gametable::mc::P_Country					"Land"
 ::gametable::mc::P_Title					"Titel"
 ::gametable::mc::P_Type						"Typ"
 ::gametable::mc::P_Date						"Datum"
 ::gametable::mc::P_Mode						"Mode"
-::gametable::mc::P_Sex						"Sex"
-::gametable::mc::P_Name						"Name"
+::gametable::mc::P_Sex						"Kön"
+::gametable::mc::P_Name						"Namn"
 
 ::gametable::mc::G_White					"Vit"
 ::gametable::mc::G_Black					"Svart"
@@ -815,29 +862,29 @@
 ::playertable::mc::DateOfDeath				"Dödsdatum"
 ::playertable::mc::FideID						"Fide ID"
 
-::playertable::mc::ShowPlayerCard			"Show Player Card..." ;# NEW
+::playertable::mc::ShowPlayerCard			"Visa spelarkort..."
 
 ### eventtable #########################################################
-::eventtable::mc::Attendance	"Attendance"
+::eventtable::mc::Attendance	"Deltagande"
 
 ### player-card ########################################################
-::playercard::mc::PlayerCard					"Player Card" ;# NEW
-::playercard::mc::Latest						"Latest" ;# NEW
-::playercard::mc::Highest						"Highest" ;# NEW
-::playercard::mc::Minimal						"Minimal" ;# NEW
-::playercard::mc::Maximal						"Maximal" ;# NEW
-::playercard::mc::Win							"Win" ;# NEW
-::playercard::mc::Draw							"Draw" ;# NEW
-::playercard::mc::Loss							"Loss" ;# NEW
-::playercard::mc::Total							"Total" ;# NEW
-::playercard::mc::FirstGamePlayed			"First game played" ;# NEW
-::playercard::mc::LastGamePlayed				"Last game played" ;# NEW
-::playercard::mc::WhiteMostPlayed			"Most common openings as White" ;# NEW
-::playercard::mc::BlackMostPlayed			"Most common openings as Black" ;# NEW
+::playercard::mc::PlayerCard					"Spelarkort"
+::playercard::mc::Latest						"Senast"
+::playercard::mc::Highest						"Högsta"
+::playercard::mc::Minimal						"Minimal"
+::playercard::mc::Maximal						"Maximal"
+::playercard::mc::Win							"Vinster"
+::playercard::mc::Draw							"Remier"
+::playercard::mc::Loss							"Förluster"
+::playercard::mc::Total							"Totalt"
+::playercard::mc::FirstGamePlayed			"Första parti spelat"
+::playercard::mc::LastGamePlayed				"Senaste parti spelat"
+::playercard::mc::WhiteMostPlayed			"Vanligaste öppning som vit"
+::playercard::mc::BlackMostPlayed			"Vanligaste öppning som svart"
 
 ::playercard::mc::OpenInWebBrowser			"Öppna i webbrowser"
-::playercard::mc::OpenPlayerCard				"Öppna %s player card"
-::playercard::mc::OpenFileCard				"Öppna %s file card"
+::playercard::mc::OpenPlayerCard				"Öppna %s spelarkort"
+::playercard::mc::OpenFileCard				"Öppna %s filkort"
 ::playercard::mc::OpenFideRatingHistory	"Öppna Fide ratinghistorik"
 ::playercard::mc::OpenWikipedia				"Öppna Wikipedia biografi"
 ::playercard::mc::OpenViafCatalog			"Öppna VIAF katalog"
@@ -850,14 +897,19 @@
 ::twm::mc::Close					"Stäng"
 
 ### fonts ##############################################################
-::font::mc::ChessBaseFontsInstalled				"ChessBase fonts successfully installed." ;# NEW
-::font::mc::ChessBaseFontsInstallationFailed	"Installation of ChessBase fonts failed." ;# NEW
-::font::mc::NoChessBaseFontFound					"No ChessBase font found in folder '%s'." ;# NEW
-::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBase fonts already installed. Install anyway?" ;# NEW
-::font::mc::ChooseMountPoint						"Mount point of Windows installation partition" ;# NEW
-::font::mc::CopyingChessBaseFonts				"Copying ChessBase fonts" ;# NEW
-::font::mc::CopyFile									"Copy file %s" ;# NEW
-::font::mc::UpdateFontCache						"Updating font cache" ;# NEW
+::font::mc::ChessBaseFontsInstalled				"ChessBasefonter har installerats."
+::font::mc::ChessBaseFontsInstallationFailed	"Installationen av ChessBasefonter misslyckades."
+::font::mc::NoChessBaseFontFound					"Inga ChessBasefonter hittades i folder '%s'."
+::font::mc::ChessBaseFontsAlreadyInstalled	"ChessBasefonter redan installerade. Ska installationen fortsätta ändå?"
+::font::mc::ChooseMountPoint						"Monteringspunkt för installationspartition av Windows"
+::font::mc::CopyingChessBaseFonts				"Kopierar ChessBasefonter"
+::font::mc::CopyFile									"Kopiera fil %s"
+::font::mc::UpdateFontCache						"Updatera font cache"
+
+::font::mc::ChooseFigurineFont					"Choose figurine font" ;# NEW
+::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
+::font::mc::IncreaseFontSize						"Increase Font Size" ;# NEW
+::font::mc::DecreaseFontSize						"Decrease Font Size" ;# NEW
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"
@@ -881,6 +933,10 @@
 ::gamebar::mc::GameNewChess960Sym	"Nytt parti: Chess 960 (endast symmetriskt)"
 ::gamebar::mc::GameNewShuffle			"Nytt parti: Shuffle Chess"
 
+::gamebar::mc::AddNewGame				"Spara: Lägg till nytt parti till %s..."
+::gamebar::mc::ReplaceGame				"Spara: Ersätt parti i %s..."
+::gamebar::mc::ReplaceMoves			"Spara: Ersätt bara dragen i partiet..."
+
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Titta igenom partiet"
 ::browser::mc::StartAutoplay		"Starta Autoplay"
@@ -893,13 +949,13 @@
 ::browser::mc::GotoEndOfGame		"Gå till slutet av partiet"
 ::browser::mc::IncreaseBoardSize	"Förstora brädet"
 ::browser::mc::DecreaseBoardSize	"Förminska brädet"
-::browser::mc::MaximizeBoardSize	"Maximize board size" ;# NEW
-::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
+::browser::mc::MaximizeBoardSize	"Maximera brädet"
+::browser::mc::MinimizeBoardSize	"Minimera brädet"
 ::browser::mc::GotoFirstGame		"Gå till första partiet"
 ::browser::mc::GotoLastGame		"Gå till sista partiet"
 
 ::browser::mc::LoadGame				"Ladda parti"
-::browser::mc::MergeGame			"Merge Game"
+::browser::mc::MergeGame			"Sammanfoga parti"
 
 ::browser::mc::IllegalMove			"Ogiltigt drag"
 ::browser::mc::NoCastlingRights	"Rockad ej tillåten"
@@ -1001,16 +1057,16 @@
 ::import::mc::MissingPlayerTags					"Spelare saknas"
 ::import::mc::MissingResult						"Resultat saknas (i slutet av move section)"
 ::import::mc::MissingResultTag					"Resultat saknas (i tag section)"
-::import::mc::InvalidRoundTag						"Ogiltig round tag"
-::import::mc::InvalidResultTag					"Ogiltig result tag"
-::import::mc::InvalidDateTag						"Ogiltig date tag"
-::import::mc::InvalidEventDateTag				"Ogiltig event date tag"
-::import::mc::InvalidTimeModeTag					"Ogiltig time mode tag"
-::import::mc::InvalidEcoTag						"Ogiltig ECO tag"
-::import::mc::InvalidTagName						"Ogiltig tag name (ignored)"
+::import::mc::InvalidRoundTag						"Ogiltig 'round tag'"
+::import::mc::InvalidResultTag					"Ogiltig 'result tag'"
+::import::mc::InvalidDateTag						"Ogiltig 'date tag'"
+::import::mc::InvalidEventDateTag				"Ogiltig 'event date tag'"
+::import::mc::InvalidTimeModeTag					"Ogiltig 'time mode tag'"
+::import::mc::InvalidEcoTag						"Ogiltig 'ECO tag'"
+::import::mc::InvalidTagName						"Ogiltig 'tag name' (ignored)"
 ::import::mc::InvalidCountryCode					"Ogiltig landskod"
-::import::mc::InvalidRating						"Ogiltigt ratingtal"
-::import::mc::InvalidNag							"Ogiltig NAG"
+::import::mc::InvalidRating						"Ogiltigt 'ratingtal'"
+::import::mc::InvalidNag							"Ogiltig 'NAG'"
 ::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
 ::import::mc::MissingFen							"FEN saknas (variant tag kommer att ignoreras)"
 ::import::mc::UnknownEventType					"Okänd tävlingstyp"
@@ -1023,20 +1079,20 @@
 ::import::mc::TooManyNags							"För många NAG's (latter ignored)"
 ::import::mc::IllegalCastling						"Otillåten rockad"
 ::import::mc::IllegalMove							"Ogiltigt drag"
-::import::mc::CastlingCorrection					"Castling correction" ;# NEW
+::import::mc::CastlingCorrection					"Rockad korrigering"
 ::import::mc::UnsupportedVariant					"Unsupported chess variant"
 ::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
-::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte header result"
+::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte resultatrubrik"
 ::import::mc::ValueTooLong							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
 ::import::mc::MaximalErrorCountExceeded		"Fler än maximalt tillåtna fel. Inga fler fel (av tidigare typ) kommer att rapporteras"
 ::import::mc::MaximalWarningCountExceeded		"Fler än maximalt tillåtna varningar. Inga fler varningar (av tidigare typ) kommer att rapporteras"
 ::import::mc::InvalidToken							"Ogiltigt tecken"
-::import::mc::InvalidMove							"Ogiltigt drag move"
+::import::mc::InvalidMove							"Ogiltigt drag"
 ::import::mc::UnexpectedSymbol					"Oväntad symbol"
-::import::mc::UnexpectedEndOfInput				"Unexpected end of input"
-::import::mc::UnexpectedResultToken				"Unexpected result token"
-::import::mc::UnexpectedTag						"Unexpected tag inside game"
-::import::mc::UnexpectedEndOfGame				"Unexpected end of game (missing result)"
+::import::mc::UnexpectedEndOfInput				"Oväntad end of input"
+::import::mc::UnexpectedResultToken				"Oväntad resultattecken"
+::import::mc::UnexpectedTag						"Oväntad tag inuti parti"
+::import::mc::UnexpectedEndOfGame				"Oväntad slut av parti (saknar resultat)"
 ::import::mc::TagNameExpected						"Syntaxfel: Tag name expected"
 ::import::mc::TagValueExpected					"Syntaxfel: Tag value expected"
 ::import::mc::InvalidFen							"Ogiltig FEN"
@@ -1078,8 +1134,6 @@
 ::export::mc::PostscriptSpecials			"Postscript-specialiteter"
 ::export::mc::BoardSize						"Brädstorlek"
 
-::export::mc::Notation						"Notation"
-::export::mc::Graphic						"Grafisk"
 ::export::mc::Short							"Kort"
 ::export::mc::Long							"Lång"
 ::export::mc::Algebraic						"Algebraisk"
@@ -1117,7 +1171,7 @@
 ::export::mc::ExportedGames				"%s partier exporterade"
 ::export::mc::NoGamesForExport			"Inga partier att exportera."
 ::export::mc::ResetDefaults				"Återställ till standardvärden"
-::export::mc::UnsupportedEncoding		"Kan inte använda kodering %s för PDF-dokument. Välj en alternativ kodering."
+::export::mc::UnsupportedEncoding		"Kan inte använda kodning %s för PDF-dokument. Välj en alternativ kodning."
 ::export::mc::DatabaseIsOpen				"Databasen '%s' är öppen. Den måste stängas först."
 
 ::export::mc::BasicStyle					"Grundstil"
@@ -1192,6 +1246,21 @@
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Uteslut partier med ogiltiga drag"
 ::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
 
+### notation ###########################################################
+::notation::mc::Notation		"Notation"
+
+::notation::mc::MoveForm(alg)	"Algebraisk"
+::notation::mc::MoveForm(san)	"Kort algebraisk"
+::notation::mc::MoveForm(lan)	"Long algebraisk"
+::notation::mc::MoveForm(eng)	"Engelskt"
+::notation::mc::MoveForm(cor)	"Korrespondens"
+::notation::mc::MoveForm(tel)	"Telegrafisk"
+
+### figurine ###########################################################
+::figurines::mc::Figurines	"Figuruppsättning"
+::figurines::mc::Graphic	"Grafisk"
+::figurines::mc::User		"User" ;# NEW meaning is "user defined"
+
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Spara partiet"
 ::dialog::save::mc::ReplaceGame					"Ersätt partiet"
@@ -1252,7 +1321,7 @@
 ::dialog::save::mc::EventBase						"Tävlingsdatabas"
 ::dialog::save::mc::SiteBase						"Platsdatabas"
 ::dialog::save::mc::AnnotatorBase				"Kommentatordatabas"
-::dialog::save::mc::History						"History"
+::dialog::save::mc::History						"Historik"
 
 ::dialog::save::mc::InvalidEntry					"'%s' är ingen giltig uppgift."
 ::dialog::save::mc::InvalidRoundEntry			"'%s' är ingen giltig ronduppgift."
@@ -1377,7 +1446,7 @@
 ::help::mc::MatchEntireWord		"Matcha hela ord"
 ::help::mc::MatchCase				"Matcha gemener/versaler"
 ::help::mc::TitleOnly				"Sök endast bland titlar"
-::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
+::help::mc::CurrentPageOnly		"Sök endast på aktuell sida"
 ::help::mc::GoBack					"Gå bakåt en sida"
 ::help::mc::GoForward				"Gå framåt en sida"
 ::help::mc::GotoPage					"Gå till sida '%s'"
@@ -1385,7 +1454,7 @@
 ::help::mc::CollapseAllItems		"Collapse all items"
 ::help::mc::SelectLanguage			"Välj språk"
 ::help::mc::NoHelpAvailable		"Det finns inga hjälpfiler på engelska.\nVälj ett annat språk\nför hjälpdialogen."
-::help::mc::NoHelpAvailableAtAll	"No help files available for this topic." ;# NEW
+::help::mc::NoHelpAvailableAtAll	"Inga hjälpfiler finns för detta ämne."
 ::help::mc::KeepLanguage			"Använd samma språk %s för kommande sessioner?"
 ::help::mc::ParserError				"Fel vid parsning av fil %s."
 ::help::mc::NoMatch					"Ingen träff"
@@ -1453,8 +1522,8 @@
 ::crosstable::mc::ShowLog					"Visa log"
 ::crosstable::mc::ShowHtml					"Visa HTML"
 ::crosstable::mc::ShowRating				"Rating"
-::crosstable::mc::ShowPerformance		"Performance"
-::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
+::crosstable::mc::ShowPerformance		"Prestation"
+::crosstable::mc::ShowWinDrawLoss		"Vinst/Remi/Förlust"
 ::crosstable::mc::ShowTiebreak			"Tiebreak"
 ::crosstable::mc::ShowOpponent			"Motståndare (som Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Knockout Table Style"
@@ -1571,7 +1640,7 @@
 ::dialog::mc::Error			"Fel"
 ::dialog::mc::Warning		"Varning"
 ::dialog::mc::Information	"Information"
-::dialog::mc::Question		"Fråga" ;# NEW english content is "Confirm"
+::dialog::mc::Question		"Bekräfta"
 
 ::dialog::mc::DontAskAgain	"Fråga inte fler gånger"
 
@@ -1643,11 +1712,10 @@
 ::dialog::choosecolor::mc::BaseColors		"Basfärger"
 ::dialog::choosecolor::mc::UserColors		"Använderpallett"
 ::dialog::choosecolor::mc::RecentColors	"Senaste färger"
-::dialog::choosecolor::mc::OldColor			"Gammal färg"
-::dialog::choosecolor::mc::CurrentColor	"Aktuell färg"
 ::dialog::choosecolor::mc::Old				"Tidigare"
 ::dialog::choosecolor::mc::Current			"Aktuell"
 ::dialog::choosecolor::mc::Color				"Färg"
+::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Färgval"
 ::dialog::choosecolor::mc::Red				"Rött"
 ::dialog::choosecolor::mc::Green				"Grönt"
@@ -1657,7 +1725,6 @@
 ::dialog::choosecolor::mc::Value				"Värde"
 ::dialog::choosecolor::mc::Enter				"Enter"
 ::dialog::choosecolor::mc::AddColor			"Lägg till aktuell färg till användarpallet"
-::dialog::choosecolor::mc::ClickToEnter	"Klicka för att ange hexadecimalt värde"
 
 ### choosefont #########################################################
 ::dialog::choosefont::mc::Apply				"&Verkställ"
@@ -1732,7 +1799,7 @@
 ::fsbox::mc::Trash							"Papperskorg"
 ::fsbox::mc::Home								"Hem"
 
-::fsbox::mc::SelectEncoding				"Välj koderig av database (öppnar en dialog)"
+::fsbox::mc::SelectEncoding				"Välj kodning av databas (öppnar en dialog)"
 ::fsbox::mc::SelectWhichType				"Välj vilken filtyp som ska visas"
 ::fsbox::mc::TimeFormat						"%Y-%m-%d %H:%M"
 
@@ -1765,9 +1832,9 @@
 ::fsbox::mc::FilenameNotAllowed			"Filnamnet '%s' är inte tillåtet."
 ::fsbox::mc::ContainsTwoDots				"Innehåller två punkter efter varandra."
 ::fsbox::mc::ContainsReservedChars		"Innehåller reserverade tecken: %s, eller ett kontrolltecken (ASCII 0-31)."
-::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
+::fsbox::mc::InvalidFileName				"Ett filnamn kan inte börja med ett bindestreck och kan inte sluta med ett blanksteg eller en punkt." ;# NEW
 ::fsbox::mc::IsReservedName				"I somliga operativsystem är detta ett reserverad namn."
-::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
+::fsbox::mc::FilenameTooLong				"Ett filnamn ska ha mindre än 256 tecken." ;# NEW
 ::fsbox::mc::InvalidFileExtension		"Ogiltigt filtillägg i '%s'."
 ::fsbox::mc::MissingFileExtension		"Inget filtillägg i '%s'."
 ::fsbox::mc::FileAlreadyExists			"Filen \"%s\" finns redan.\n\nVill du skriva över filen?"
@@ -1780,8 +1847,8 @@
 ::fsbox::mc::CannotDelete					"Kan inte radera filen '%s'."
 ::fsbox::mc::CannotRename					"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::CannotDeleteDetail			"Filen används."
-::fsbox::mc::CannotOverwrite				"Cannot overwrite file '%s'." ;# NEW
-::fsbox::mc::PermissionDenied				"Permission denied for directory '%s'." ;# NEW
+::fsbox::mc::CannotOverwrite				"Kan inte skriva över filen '%s'."
+::fsbox::mc::PermissionDenied				"Åtkomst nekad för foldern '%s'."
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Verktygsfält"
@@ -2009,7 +2076,7 @@
 ::country::mc::Samoa													"Samoa"
 ::country::mc::Serbia_and_Montenegro							"Serbien och Montenegro"
 ::country::mc::Scotland												"Skottland"
-::country::mc::At_Sea												"At Sea"
+::country::mc::At_Sea												"Till sjöss"
 ::country::mc::Senegal												"Senegal"
 ::country::mc::Seychelles											"Seychellerna"
 ::country::mc::South_Georgia_and_South_Sandwich_Islands	"South Georgia and South Sandwich Islands"
@@ -2022,7 +2089,7 @@
 ::country::mc::San_Marino											"San Marino"
 ::country::mc::Solomon_Islands									"Solomon Islands"
 ::country::mc::Somalia												"Somalia"
-::country::mc::Aboard_Spacecraft									"Aboard Spacecraft"
+::country::mc::Aboard_Spacecraft									"Ombord rymdskepp"
 ::country::mc::Saint_Pierre_and_Miquelon						"Saint Pierre and Miquelon"
 ::country::mc::Serbia												"Serbien"
 ::country::mc::Sri_Lanka											"Sri Lanka"
@@ -2092,29 +2159,29 @@
 ### Languages ##########################################################
 ::encoding::mc::Lang(FI)	"Fide"
 ::encoding::mc::Lang(af)	"Afrikaans"
-::encoding::mc::Lang(ar)	"Arabic"
-::encoding::mc::Lang(ast)	"Leonese"
-::encoding::mc::Lang(az)	"Azerbaijani"
+::encoding::mc::Lang(ar)	"Arabiska"
+::encoding::mc::Lang(ast)	"Leonesiska"
+::encoding::mc::Lang(az)	"Azerbajdzjanska"
 ::encoding::mc::Lang(bat)	"Baltic"
 ::encoding::mc::Lang(be)	"Belarusian"
 ::encoding::mc::Lang(bg)	"Bulgarian"
 ::encoding::mc::Lang(br)	"Breton"
 ::encoding::mc::Lang(bs)	"Bosnian"
 ::encoding::mc::Lang(ca)	"Catalan"
-::encoding::mc::Lang(cs)	"Czech"
+::encoding::mc::Lang(cs)	"Tjeckiska"
 ::encoding::mc::Lang(cy)	"Welsh"
-::encoding::mc::Lang(da)	"Danish"
-::encoding::mc::Lang(de)	"German"
-::encoding::mc::Lang(de+)	"Deutsch (reformed)"
-::encoding::mc::Lang(el)	"Greek"
-::encoding::mc::Lang(en)	"English"
+::encoding::mc::Lang(da)	"Danska"
+::encoding::mc::Lang(de)	"Tyska"
+::encoding::mc::Lang(de+)	"Deutsch (reformed)" ;# NEW
+::encoding::mc::Lang(el)	"Grekiska"
+::encoding::mc::Lang(en)	"Engelska"
 ::encoding::mc::Lang(eo)	"Esperanto"
-::encoding::mc::Lang(es)	"Spanish"
-::encoding::mc::Lang(et)	"Estonian"
+::encoding::mc::Lang(es)	"Spanska"
+::encoding::mc::Lang(et)	"Estniska"
 ::encoding::mc::Lang(eu)	"Basque"
-::encoding::mc::Lang(fi)	"Finnish"
+::encoding::mc::Lang(fi)	"Finska"
 ::encoding::mc::Lang(fo)	"Faroese"
-::encoding::mc::Lang(fr)	"French"
+::encoding::mc::Lang(fr)	"Franska"
 ::encoding::mc::Lang(fy)	"Frisian"
 ::encoding::mc::Lang(ga)	"Irish"
 ::encoding::mc::Lang(gd)	"Scottish"
@@ -2122,10 +2189,10 @@
 ::encoding::mc::Lang(he)	"Hebrew"
 ::encoding::mc::Lang(hi)	"Hindi"
 ::encoding::mc::Lang(hr)	"Croatian"
-::encoding::mc::Lang(hu)	"Hungarian"
+::encoding::mc::Lang(hu)	"Ungerska"
 ::encoding::mc::Lang(hy)	"Armenian"
 ::encoding::mc::Lang(ia)	"Interlingua"
-::encoding::mc::Lang(is)	"Icelandic"
+::encoding::mc::Lang(is)	"Isländska"
 ::encoding::mc::Lang(it)	"Italian"
 ::encoding::mc::Lang(iu)	"Inuktitut"
 ::encoding::mc::Lang(ja)	"Japanese"
@@ -2144,19 +2211,19 @@
 ::encoding::mc::Lang(ms)	"Malay"
 ::encoding::mc::Lang(mt)	"Maltese"
 ::encoding::mc::Lang(nl)	"Dutch"
-::encoding::mc::Lang(no)	"Norwegian"
+::encoding::mc::Lang(no)	"Norska"
 ::encoding::mc::Lang(oc)	"Occitan"
-::encoding::mc::Lang(pl)	"Polish"
+::encoding::mc::Lang(pl)	"Polska"
 ::encoding::mc::Lang(pt)	"Portuguese"
 ::encoding::mc::Lang(rm)	"Romansh"
 ::encoding::mc::Lang(ro)	"Romanian"
-::encoding::mc::Lang(ru)	"Russian"
+::encoding::mc::Lang(ru)	"Ryska"
 ::encoding::mc::Lang(se)	"Sami"
 ::encoding::mc::Lang(sk)	"Slovak"
 ::encoding::mc::Lang(sl)	"Slovenian"
 ::encoding::mc::Lang(sq)	"Albanian"
-::encoding::mc::Lang(sr)	"Serbian"
-::encoding::mc::Lang(sv)	"Swedish"
+::encoding::mc::Lang(sr)	"Serbiska"
+::encoding::mc::Lang(sv)	"Svenska"
 ::encoding::mc::Lang(sw)	"Swahili"
 ::encoding::mc::Lang(tg)	"Tajik"
 ::encoding::mc::Lang(th)	"Thai"

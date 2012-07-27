@@ -40,12 +40,12 @@ variable catchEmptyBackgroundError true
 variable bgerrorHandler ::tk::dialog::error::bgerror
 
 namespace import ::dialog::choosecolor::getActualColor
+namespace import ::tcl::mathfunc::min
 
 namespace export popup
 
 proc popup {parent args} {
-	variable ::dialog::choosecolor::BaseColorList
-	variable ::dialog::choosecolor::UserColorList
+	variable ::dialog::choosecolor::userColorList
 	variable selection
 	variable useGrab
 	variable haveTooltips
@@ -68,7 +68,7 @@ proc popup {parent args} {
 	set showEraser false
 	set recentColorList {}
 	set usedColorList {}
-	set baseColorList $BaseColorList
+	set baseColorList {}
 	set hasParentArg false
 	set dlgArgs {}
 	set userActions {}
@@ -87,7 +87,7 @@ proc popup {parent args} {
 
 		switch $key {
 			-recentcolors {
-				set recentColorList $value
+				set recentColorList [set $value]
 				lappend dlgArgs $key $value
 			}
 
@@ -159,7 +159,7 @@ proc popup {parent args} {
 	if {[llength $recentColorList]} { set colorList $recentColorList }
 
 	set col		0
-	set row		0
+	set row		1
 	set count	0
 	set colors	[concat $baseColorList]
 	set nb		[llength $baseColorList]
@@ -168,7 +168,7 @@ proc popup {parent args} {
 	set nr		0
 	set nt		0
 
-	foreach color $UserColorList {
+	foreach color $userColorList {
 		if {[llength $color] == 0 && ($nu == 0 || $nu % 6 == 0)} { break }
 		lappend colors $color
 		incr nu
@@ -191,6 +191,46 @@ proc popup {parent args} {
 		incr nt
 	}
 	if {$nt % 6} { lappend textureList {*}[lrepeat [expr {6 - ($nt % 6)}] {{} {}}] }
+
+	set actions [list palette [set [namespace current]::icon::16x16::palette] [Tr OpenColorDialog]]
+	lappend actions {*}$userActions
+	if {$showEraser} {
+		lappend actions erase [set [namespace current]::icon::16x16::eraser] [Tr EraseColor]
+	}
+	lappend actions close [set [namespace current]::icon::16x16::crossHand] [Tr Close]
+
+	set buttonList {}
+	set buttonRow {}
+
+	set col 0
+	foreach {name icon tip} $actions {
+		set f [tk::label $top.f.$name \
+					-highlightthickness 1 \
+					-highlightcolor black \
+					-highlightbackground $bg \
+					-background $bg \
+					-takefocus 1 \
+					-borderwidth 1 \
+					-width 16 \
+					-height 16 \
+					-image $icon]
+		grid $f -column $col -row $row
+		bind $f <ButtonPress-1> [namespace code [list set selection $name]]
+		bind $f <Return> [namespace code [list set selection $name]]
+		bind $f <space> [namespace code [list set selection $name]]
+		bind $f <Escape> [namespace code [list set selection close]]
+		bind $f <Enter> { focus %W }
+		lappend buttonRow $f
+		Tooltip $f $tip
+		incr col
+	}
+	lappend buttonList $buttonRow
+
+	grid rowconfigure $top.f [list 0 [expr {$row + 2}]] -minsize 2
+	grid [ttk::separator $top.f.sep1] -column 0 -row [expr {$row + 1}] -columnspan 6 -sticky we
+	incr row 2
+	set col 0
+	set buttonRow {}
 
 	foreach color $colors {
 		set actual ""
@@ -222,6 +262,7 @@ proc popup {parent args} {
 		bind $f <Enter> { focus %W }
 		grid $f -column $col -row $row
 		pack $b -padx 1 -pady 1
+		lappend buttonRow $f
 
 		if {[llength $color]} {
 			if {$count < $nb} {
@@ -242,11 +283,15 @@ proc popup {parent args} {
 		if {[incr col] == 6} {
 			set col 0
 			incr row 2
+			lappend buttonList $buttonRow
+			set buttonRow {}
 		}
 	}
 
+	set buttonRow {}
+
 	if {$nt > 0} {
-		grid [ttk::separator $top.f.sep1] -column 0 -row [expr {$row - 1}] -columnspan 6 -sticky we
+		grid [ttk::separator $top.f.sep2] -column 0 -row [expr {$row - 1}] -columnspan 6 -sticky we
 		foreach texture $textureList {
 			set f [tk::frame $top.f.color$col$row \
 						-highlightthickness 1 \
@@ -268,77 +313,48 @@ proc popup {parent args} {
 			bind $f <Enter> { focus %W }
 			grid $f -column $col -row $row
 			pack $b -padx 1 -pady 1
+			lappend buttonRow $f
 			if {[llength $tooltip]} { Tooltip $f "[Tr Texture]: $tooltip" }
 			incr count
 			if {[incr col] == 6} {
 				set col 0
 				incr row 2
+				lappend buttonList $buttonRow
 			}
 		}
-		grid [ttk::separator $top.f.sep2] -column 0 -row [expr {$row - 1}] -columnspan 6 -sticky we
 	}
 
-	for {set r 0} {$r < $row} {incr r 2} {
-		for {set c 0} {$c < 6} {incr c} {
-			set w $top.f.color
-			if {$r > 0} 						{ bind $w$c$r <Up>		"focus ${w}$c[expr {$r - 2}]" }
-			if {$r < $row - 2}				{ bind $w$c$r <Down>		"focus ${w}$c[expr {$r + 2}]" }
-			if {$c > 0}							{ bind $w$c$r <Left>		"focus ${w}[expr {$c - 1}]$r" }
-			if {$c == 0 && $r > 0}			{ bind $w$c$r <Left>		"focus ${w}5[expr {$r - 2}]" }
-			if {$c < 5}							{ bind $w$c$r <Right>	"focus ${w}[expr {$c + 1}]$r" }
-			if {$c == 5 && $r < $row - 2}	{ bind $w$c$r <Right>	"focus ${w}0[expr {$r + 2}]" }
+	foreach row $buttonList {
+		for {set i 0} {$i < [llength $row]} {incr i} {
+			set k [expr {$i + 1}]
+			bind [lindex $row $i] <Right> [list focus [lindex $row $k]]
+			bind [lindex $row $k] <Left>  [list focus [lindex $row $i]]
+		}
+	}
+	for {set i 0} {$i < [llength $buttonList] - 1} {incr i} {
+		set row0 [lindex $buttonList $i]
+		set row1 [lindex $buttonList [expr {$i + 1}]]
+		bind [lindex $row0 end] <Right> [list focus [lindex $row1 0]]
+		foreach b0 $row0 b1 $row1 {
+			if {[llength $b0] && [llength $b1]} { bind $b0 <Down> [list focus $b1] }
+		}
+	}
+	for {set i 1} {$i < [llength $buttonList]} {incr i} {
+		set row0 [lindex $buttonList [expr {$i - 1}]]
+		set row1 [lindex $buttonList $i]
+		bind [lindex $row1 0] <Left> [list focus [lindex $row0 end]]
+		foreach b0 $row0 b1 $row1 {
+			if {[llength $b0] && [llength $b1]} { bind $b1 <Up> [list focus $b0] }
 		}
 	}
 
-	grid rowconfigure $top.f [expr {2*(($nb + 5)/6) - 1}] -minsize 5
-	grid rowconfigure $top.f [expr {2*(($nb + $nu + 5)/6) - 1}] -minsize 5
-	grid rowconfigure $top.f [expr {2*(($nb + $nu + $nd + 5)/6) - 1}] -minsize 5
-	grid rowconfigure $top.f [expr {2*(($nb + $nu + $nd + $nr + 5)/6) - 1}] -minsize 5
-	grid rowconfigure $top.f [expr {2*(($nb + $nu + $nd + $nr + $nt + 5)/6) - 1}] -minsize 5
+	set sum 0
+	foreach v {nb nu nd nr nt} {
+		set sum [expr {$sum + [set $v]}]
+		set row [expr {2*(($sum + 5)/6) - 1}]
+		if {$row >= 0} { grid rowconfigure $top.f $row -minsize 5 }
+	}
 	grid columnconfigure $top.f 6 -minsize 1
-
-	set actions [list palette [set [namespace current]::icon::16x16::palette] [Tr OpenColorDialog]]
-	lappend actions {*}$userActions
-	if {$showEraser} {
-		lappend actions erase [set [namespace current]::icon::16x16::eraser] [Tr EraseColor]
-	}
-	lappend actions close [set [namespace current]::icon::16x16::crossHand] [Tr Close]
-
-	set col 0
-	foreach {name icon tip} $actions {
-		set f [tk::label $top.f.$name \
-					-highlightthickness 1 \
-					-highlightcolor black \
-					-highlightbackground $bg \
-					-background $bg \
-					-takefocus 1 \
-					-borderwidth 1 \
-					-width 16 \
-					-height 16 \
-					-image $icon]
-		grid $f -column $col -row $row
-		bind $f <ButtonPress-1> [namespace code [list set selection $name]]
-		bind $f <Return> [namespace code [list set selection $name]]
-		bind $f <space> [namespace code [list set selection $name]]
-		bind $f <Escape> [namespace code [list set selection close]]
-		bind $f <Enter> { focus %W }
-		bind $f <Up> "focus $top.f.color$col[expr {$row - 2}]"
-		if {$col == 0} {
-			bind $f <Left> "focus $top.f.color5[expr {$row - 2}]"
-			bind $top.f.color5[expr {$row - 2}] <Right> "focus $f"
-		}
-		if {$col > 0} {
-			bind $f <Left> "focus $top.f.[lindex $actions [expr {3*($col - 1)}]]"
-		}
-		if {3*($col + 1) < [llength $actions]} {
-			bind $f <Right> "focus  $top.f.[lindex $actions [expr {3*($col + 1)}]]"
-		}
-		bind $top.f.color$col[expr {$row - 2}] <Down> "focus $f"
-		Tooltip $f $tip
-		incr col
-	}
-
-	grid rowconfigure $top.f [expr {$row + 1}] -minsize 2
 
 	Tooltip on $top*
 	wm transient $top [winfo toplevel [winfo parent $top]]

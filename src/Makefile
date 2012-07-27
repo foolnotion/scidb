@@ -296,7 +296,7 @@ cdb2sci: cdb2sci.o $(LIBS)
 
 $(PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
+	$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"

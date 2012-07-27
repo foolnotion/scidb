@@ -341,8 +341,11 @@ Encoder::encodeMainline(MoveNode const* node)
 	{
 		node = node->next();
 
-		for ( ; node->isBeforeLineEnd() && !node->hasSupplement(); node = node->next())
+		for ( ; node->isBeforeLineEnd(); node = node->next())
 		{
+			if (node->hasSupplement())
+				return encodeVariation(node);
+
 			if (encodeMove(node->move()))
 			{
 				m_position.doMove(node->move());
@@ -351,7 +354,7 @@ Encoder::encodeMainline(MoveNode const* node)
 			else
 			{
 				m_position.doMove(node->move());
-				encodeVariation(node);
+				encodeVariation(node->next());
 				return;
 			}
 		}

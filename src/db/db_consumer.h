@@ -205,6 +205,8 @@ private:
 	bool					m_setupBoard;
 	bool					m_commentEngFlag;
 	bool					m_commentOthFlag;
+	bool					m_illegalCastling;
+	bool					m_illegalMove;
 };
 
 } // namespace db

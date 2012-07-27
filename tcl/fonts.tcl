@@ -38,6 +38,11 @@ set CopyingChessBaseFonts					"Copying ChessBase fonts"
 set CopyFile									"Copy file %s"
 set UpdateFontCache							"Updating font cache"
 
+set ChooseFigurineFont						"Choose figurine font"
+set ChooseSymbolFont							"Choose symbol font"
+set IncreaseFontSize							"Increase Font Size"
+set DecreaseFontSize							"Decrease Font Size"
+
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::int
@@ -260,6 +265,9 @@ array set ScidbSymbolTravellerEncoding {
 	144 "="
 	149 "\u00d0"
 	150 "\u00d1"
+	151 "\u00d7"
+	152 "\u00d7"
+	153 "\u00d8"
 	154 "\u00d9"
 	157 "\u00db"
 	158 "\u00dc"
@@ -274,6 +282,60 @@ array set ScidbSymbolTravellerEncoding {
 	176 "\uf016"
 	181 "\u00c5"
 }
+
+array set SymbolInformantEncoding {
+	  7 "\u00f3"
+	  8 "\u00ec"
+	 10 "\u003d"
+	 11 "\u003d\u003d"
+	 13 "\u00d5"
+	 14 "\u00a2"
+	 15 "\u00a3"
+	 17 "\u00a4"
+	 18 "+\u00bb"
+	 19 "\u00bb+"
+	 16 "\u00a5"
+	 32 "\u00b6"
+	 33 "\u00b6"
+	 36 "\u00ef"
+	 37 "\u00ef"
+	 40 "\u00ee"
+	 41 "\u00ee"
+	 44 "\u00a7"
+	 45 "\u00a7"
+	140 "\u00c5"
+	142 "\u00c4"
+	147 "\u005e"
+	148 "\u00cf"
+	150 "\u005c"
+	151 "\u00d2"
+	152 "\u00d2"
+	153 "\u00d3"
+	154 "\u00d4"
+	157 "\u00db"
+	158 "\u00da"
+	159 "\u00d9"
+	160 "\u003c"
+	164 "\u00c1"
+	165 "\u00b4"
+	166 "\u005f"
+	167 "\u00bf"
+	169 "\u007e"
+	170 "\u00d1"
+	171 "\u00df"
+	173 "\u00c1"
+	174 "\u00b0"
+	175 "\u00b6"
+	176 "\u00c2"
+	178 "\u00ee"
+	179 "\u00ef"
+	180 "\u007c"
+	181 "\u00a7"
+	182 "\u00d2"
+	183 "\u007d"
+	184 "\u007b"
+}
+# unused: \u00f5, \u00fa
 
 array set ScidbSymbolOleEncoding {
 	  8 "V"
@@ -861,7 +923,6 @@ set FigurineChessBaseEncoding {"\u2654" K "\u2655" Q "\u2656" R "\u2657" L "\u26
 
 
 proc SetupChessBaseFonts {} {
-	variable fonts
 	variable FigurineChessBaseEncoding
 	variable FigurineSymbolChessBaseEncoding
 	variable DiagramChessBaseEncoding
@@ -872,16 +933,18 @@ proc SetupChessBaseFonts {} {
 	variable chessDiagramFonts
 	variable chessDiagramFontsMap
 
+	set fonts [::dialog::choosefont::fontFamilies]
+
 	# Chess figurine fonts:
 	foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
 		if {$font in $fonts} {
 			lappend chessFigurineFonts $font
-			set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
+			set chessFigurineFontsMap([string tolower $font]) $FigurineChessBaseEncoding
 		} else {
 			set font [string tolower $font]
 			if {$font in $fonts} {
 				lappend chessFigurineFonts $font
-				set chessFigurineFontsMap($font) $FigurineChessBaseEncoding
+				set chessFigurineFontsMap([string tolower $font]) $FigurineChessBaseEncoding
 			}
 		}
 	}
@@ -890,12 +953,12 @@ proc SetupChessBaseFonts {} {
 	foreach font {{FigurineCB AriesSP} {FigurineCB LetterSP} {FigurineCB TimeSP}} {
 		if {$font in $fonts} {
 			lappend chessSymbolFonts $font
-			set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
+			set chessSymbolFontsMap([string tolower $font]) FigurineSymbolChessBaseEncoding
 		} else {
 			set font [string tolower $font]
 			if {$font in $fonts} {
 				lappend chessSymbolFonts $font
-				set chessSymbolFontsMap($font) FigurineSymbolChessBaseEncoding
+				set chessSymbolFontsMap([string tolower $font]) FigurineSymbolChessBaseEncoding
 			}
 		}
 	}
@@ -904,131 +967,96 @@ proc SetupChessBaseFonts {} {
 	foreach font {DiagramTTCrystals DiagramTTFritz DiagramTTHabsburg DiagramTTOldstyle DiagramTTUSCF} {
 		if {$font in $fonts} {
 			lappend chessDiagramFonts $font
-			set chessDiagramFontsMap($font) DiagramChessBaseEncoding
+			set chessDiagramFontsMap([string tolower $font]) DiagramChessBaseEncoding
 		} else {
 			set font [string tolower $font]
 			if {$font in $fonts} {
 				lappend chessDiagramFonts $font
-				set chessDiagramFontsMap($font) DiagramChessBaseEncoding
+				set chessDiagramFontsMap([string tolower $font]) DiagramChessBaseEncoding
 			}
 		}
 	}
 }
 
+proc AddFigurineFont {font} {
+	lappend [namespace current]::chessFigurineFonts $font
+	set [namespace current]::chessFigurineFontsMap([string tolower $font]) {}
+	::dialog::::choosefont::addFontFamily $font
+}
 
-# Chess figurine fonts:
-set fonts [::dialog::choosefont::fontFamilies]
+proc AddSymbolFont {font} {
+	lappend [namespace current]::chessSymbolFonts $font
+	set enc ScidbSymbol
+	append enc [lindex [split $font " "] 2] Encoding
+	if {![info exists [namespace current]::$enc]} { set enc SymbolDefaultEncoding }
+	set [namespace current]::chessSymbolFontsMap([string tolower $font]) $enc
+	::dialog::::choosefont::addFontFamily $font
+}
+
+proc AddDiagramFont {font} {
+	lappend [namespace current]::chessDiagramFonts $font
+	set enc Diagram
+	append enc [lindex [split $font " "] 2] Encoding
+	if {![info exists [namespace current]::$enc]} { set enc DiagramMarroquinEncoding }
+	set [namespace current]::chessDiagramFontsMap([string tolower $font]) $enc
+	::dialog::::choosefont::addFontFamily $font
+}
+
+proc FindOle!Fonts {} {
+	variable chessFigurineFonts
+	variable chessSymbolFonts
+
+	set reset 0
+
+	if {[lsearch -nocase $chessFigurineFonts {Scidb Chess Ole!}] == -1} {
+		array set opts [font actual {{Scidb Chess Ole!} -12}]
+		if {[string compare -nocase $opts(-family) {Scidb Chess Ole!}] == 0} {
+			AddFigurineFont $opts(-family)
+			set reset 1
+		}
+	}
+
+	if {[lsearch -nocase $chessSymbolFonts {Scidb Symbol Ole!}] == -1} {
+		array set opts [font actual {{Scidb Symbol Ole!} -12}]
+		if {[string compare -nocase $opts(-family) {Scidb Symbol Ole!}] == 0} {
+			AddSymbolFont $opts(-family)
+			set reset 1
+		}
+	}
+
+	if {$reset} { ::dialog::choosefont::resetFonts }
+}
+
 set chessFigurineFonts {}
-foreach font $fonts {
-	if {[string match -nocase {Scidb Chess *} $font]} {
-		lappend chessFigurineFonts $font
-		set chessFigurineFontsMap($font) {}
-	}
+foreach font [::dialog::choosefont::fontFamilies] {
+	if {[string match -nocase {Scidb Chess *} $font]} { AddFigurineFont $font }
 }
 
-# Chess symbol fonts:
-#   1. family name
-#   2. encoding map
 set chessSymbolFonts {}
-foreach font $fonts {
-	if {[string match -nocase {Scidb Symbol *} $font]} {
-		set enc ScidbSymbol
-		append enc [lindex [split $font " "] 2] Encoding
-		if {![info exists $enc]} { set enc SymbolDefaultEncoding }
-		lappend chessSymbolFonts $font
-		set chessSymbolFontsMap($font) $enc
-	}
+foreach font [::dialog::choosefont::fontFamilies] {
+	if {[string match -nocase {Scidb Symbol *} $font]} { AddSymbolFont $font }
 }
 
-# Chess diagram fonts
 set chessDiagramFonts {}
-foreach font $fonts {
-	if {[string match -nocase {Scidb Diagram *} $font]} {
-		set enc Diagram
-		append enc [lindex [split $font " "] 2] Encoding
-		if {![info exists $enc]} { set enc DiagramMarroquinEncoding }
-		lappend chessDiagramFonts $font
-		set chessDiagramFontsMap($font) $enc
-	}
+foreach font [::dialog::choosefont::fontFamilies] {
+	if {[string match -nocase {Scidb Diagram *} $font]} { AddDiagramFont $font }
 }
 
+FindOle!Fonts ;# Tk has problems with the Ole! fonts
 SetupChessBaseFonts
 
-
-variable defaultFigurineFont {Scidb Chess Traveller}
-variable defaultDiagramFont  {Scidb Diagram Merida}
-variable defaultSymbolFont   {Scidb Symbol Traveller}
-
-if {$defaultFigurineFont ni $fonts} { set defaultFigurineFont [string tolower $defaultFigurineFont] }
-if {$defaultDiagramFont  ni $fonts} { set defaultDiagramFont  [string tolower $defaultDiagramFont ] }
-if {$defaultSymbolFont   ni $fonts} { set defaultSymbolFont   [string tolower $defaultSymbolFont  ] }
-
-# Sources:
-# 	http://en.wikipedia.org/wiki/Algebraic_chess_notation
-# 	http://www.geocities.com/timessquare/metro/9154/nap-pieces.htm
-#
-# Alternatives:
-#	ru	{K F L S N P}
-#	sr	{K D T L S P}
-#	he	{mele malkah tseriya rats para ragl}
-array set figurines {
-	graphic	{\u2654 \u2655 \u2656 \u2657 \u2658 \u2659}
-	az			{S V T F A P}
-	bg			{\u0426 \u0414 \u0422 \u041e \u041a \u041f}
-	ca			{R D T A C P}
-	cs			{K D V S J P}
-	cy			{T B C E M G}
-	da			{K D T L S B}
-	de			{K D T L S B}
-	el			{\u03a1 \u0392 \u03a0 \u0391 \u0399 \u03a3}
-	en			{K Q R B N P}
-	eo			{R D T K C \u0108}
-	es			{R D T A C P}
-	et			{K L V O R E}
-	eu			{E D G Z S P}
-	fi			{K D T L R S}
-	fr			{R D T F C P}
-	ga			{R B C E D F}
-	gl			{R D T B C P}
-	he			{\u05de "\u05d4\u05de" \u05e6 \u05e8 \u05e4 "\u05d9\u05dc\u05d2\u05e8"}
-	hr			{K D T L S P}
-	hu			{K V B F H G}
-	ia			{R G T E C P}
-	is			{K D H B R P}
-	it			{R D T A C P}
-	la			{K G T E Q P}
-	lb			{K D T L P B}
-	lt			{K V B R \u017d P}
-	lv			{K D T L Z B}
-	ms			{R M T K G A}
-	nl			{K D T L P O}
-	no			{K D T L S B}
-	pl			{K H W G S P}
-	pt			{R D T B C P}
-	ro			{R D T N C P}
-	ru			{\u0420 \u0424 \u041b \u0421 \u041a \u041f}
-	sk			{K D V S J P}
-	sl			{K D T L S P}
-	sr			{\u041a \u0414 \u0422 \u041b \u0421 \u041f}
-	sv			{K D T L S B}
-	tr			{\u015e V K F A P}
-	uk			{\u0420 \u0424T \u0421 \u041a \u041f}
-}
-# TODO ------------------------------------------
-#	sq			------	Albanian			Mbret	Mbretëreshë Top  	Oficier  	Kal  	 	Pion
-#	br			------	Breton			roue 	rouanez 		tour 	marc'heg 	furlukin	pezh-gwerin
-#	gl			------	Galician			rei 	raíña 		torre cabalo 		bispo 	peón
-#	ku			------	Kurdish			ah 	abanî 		birc 	metran 		siwar 	piyon
-#	se			------	Sami
-#	gd			------	Scotish
-#	dsb		------	Lower Sorbian	kral 	dama 			torm 	bga 			kónik 	burik
-#	hsb		------	Upper Sorbian	kral 	dama 			wa 	bhar 			konik 	burik
-# Auxiliary -------------------------------------
-#	af			KDTLRP
-#	FI			KDTSNP
-#	fy			KDSFHB
-#	hi			RVHOGP
-# -----------------------------------------------
+# -------------------------
+# some good figurine fonts:
+# -------------------------
+# {Scidb Chess Alpha} bold
+# {Scidb Chess Cases} bold
+# {Scidb Chess Good Companion} bold
+# {Scidb Chess Informant} bold
+# {Scidb Chess Merida} bold
+# {Scidb Chess Motif} bold
+# {Scidb Chess Standard} bold
+# {Scidb Chess Traveller} normal
+# ----------------------------------
 
 variable UnicodeMap {
 	"\u2654" "&*\u2654&" \
@@ -1042,103 +1070,415 @@ variable UnicodeMap {
 variable GraphicMap
 variable LangMap
 
-variable pieceMap {
-	K "\u2654"
-	Q "\u2655"
-	R "\u2656"
-	B "\u2657"
-	N "\u2658"
-	P "\u2659"
+variable UseSymbols		0
+variable UseFigurines	0
+variable ContextList		{text}
+
+array set DefaultOptions {
+	figurine:use				1
+	figurine:lang				{}
+
+	symbol:family				{Scidb Symbol Traveller}
+	symbol:weight				normal
+
+	diagram:family				{Scidb Diagram Merida}
+
+	figurine:family:normal	{Scidb Chess Traveller}
+	figurine:weight:normal	normal
+
+	figurine:family:bold		{Scidb Chess Standard}
+	figurine:weight:bold		bold
 }
 
-set UseSymbols		[expr {[info exists chessSymbolFontsMap($defaultSymbolFont)]}]
-set UseFigurines	[expr {[info exists chessFigurineFontsMap($defaultFigurineFont)]}]
+array set Options [array get DefaultOptions]
 
-variable langFigurine en
 
-if {$UseSymbols} {
-	set symbol [font create ::font::symbol \
-						-family $defaultSymbolFont \
-						-size [font configure TkTextFont -size]]
-	set symbolb [font create ::font::symbolb \
-						-family $defaultSymbolFont \
-						-size [font configure TkTextFont -size] \
-						-weight bold]
-	set symbolEncoding $chessSymbolFontsMap($defaultSymbolFont)
-} else {
-	set symbol TkTextFont
-	set symbolb TkTextFont
+proc setupChessFonts {} {
+	variable chessSymbolFontsMap
+	variable chessFigurineFontsMap
+	variable symbol
+	variable symbolEncoding
+	variable UseSymbols
+	variable UseFigurines
+	variable Options
+
+	set UseSymbols [expr {[info exists chessSymbolFontsMap([string tolower $Options(symbol:family)])]}]
+	set UseFigurines 0
+
+	set fonts [::dialog::choosefont::fontFamilies]
+
+	foreach attr {figurine:family:normal figurine:family:bold symbol:family diagram:family} {
+		if {$Options($attr) ni $fonts} { set Options($attr) [string tolower $Options($attr)] }
+	}
+
+	if {	[info exists chessFigurineFontsMap([string tolower $Options(figurine:family:normal)])]
+		&&	[info exists chessFigurineFontsMap([string tolower $Options(figurine:family:bold)])]} {
+		set UseFigurines 1
+	}
+
+	registerTextFonts text {normal bold}
+	registerSymbolFonts text
+	set symbolEncoding $chessSymbolFontsMap([string tolower $Options(symbol:family)])
+
+	if {$UseFigurines && [::tk windowingsystem] eq "x11"} {
+		set UseFigurines 0
+		catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set UseFigurines 1 } }
+	}
+
+	useFigurines [expr {$UseFigurines && $Options(figurine:use)}] yes
 }
 
 
 proc useLanguage {lang} {
-	variable figurines
+	variable ::figurines::langSet
 	variable GraphicMap
+	variable Options
 
-	set langFigurine $lang
-	set GraphicMap {}
-	set graphic $figurines(graphic)
-	set figurine $figurines($lang)
+	if {$lang eq "graphic"} {
+		useFigurines yes
+	} else {
+		set GraphicMap {}
+		set graphic $langSet(graphic)
+		set figurine $langSet($lang)
 
-	for {set i 0} {$i < 5} {incr i} {
-		lappend GraphicMap [string index $graphic $i] [string index $figurine $i]
+		for {set i 0} {$i < 5} {incr i} {
+			lappend GraphicMap [lindex $graphic $i] [lindex $figurine $i]
+		}
+
+		lappend GraphicMap [lindex $graphic $i] ""
 	}
-
-	lappend GraphicMap [string index $graphic $i] ""
 }
 
 
-proc useFigurines {{flag 1}} {
+proc useFigurines {flag {force 0}} {
 	variable UseFigurines
-	variable defaultFigurineFont
-	variable chessFigurineFontsMap
+	variable Options
 	variable figurine
-	variable figurineSmall
 	variable figurineEncoding
+	variable chessFigurineFontsMap
 
-	set UseFigurines $flag
+	if {!$force && $Options(figurine:use) == $flag} { return }
+	set Options(figurine:use) $flag
 
-	if {$UseFigurines} {
-		set figurine [font create ::font::figurine \
-							-family $defaultFigurineFont \
-							-size [font configure TkTextFont -size]]
-		set figurineSmall [font create ::font::figurineSmall \
-							-family $defaultFigurineFont \
-							-size [font configure TkTooltipFont -size]]
-		set figurineEncoding $chessFigurineFontsMap($defaultFigurineFont)
+	unregisterFigurineFonts text
+	registerFigurineFonts text
+
+	set figurineEncoding(normal) $chessFigurineFontsMap([string tolower $Options(figurine:family:normal)])
+	set figurineEncoding(bold) $chessFigurineFontsMap([string tolower $Options(figurine:family:bold)])
+}
+
+
+proc useFigurines? {} {
+	variable UseFigurines
+	variable Options
+
+	return [expr {$UseFigurines && $Options(figurine:use)}]
+}
+
+
+proc registerTextFonts {context {styles {normal}}} {
+	variable Options
+	variable figurine
+	variable symbol
+	variable text
+
+	set style [lindex $styles 0]
+	if {[info exists text($context:$style)]} { return }
+
+	if {![info exists Options($context:size)]} {
+		array set fopts [font actual TkTextFont]
+		set family $fopts(-family)
+		set size $fopts(-size)
+		set Options($context:family) $family
+		set Options($context:slant) [Slant $style]
+		set Options($context:size) [expr {abs($size)}]
 	} else {
-		set figurine TkTextFont
-		set figurineSmall TkTooltipFont
+		set family $Options($context:family)
+		set slant $Options($context:slant)
+		set size [expr {-($Options($context:size))}]
 	}
+
+	foreach style $styles {
+		set text($context:$style) [font create ::font::text($context:$style) \
+			-family $family -weight [Weight $style] -slant [Slant $style] -size $size]
+	}
+}
+
+
+proc unregisterTextFonts {context} {
+	variable text
+
+	set styles {}
+	foreach style [array names text $context:*] {
+		lappend styles [lindex [split $style :] 1]
+		DeleteFont text($style)
+	}
+	array unset text $context:*
+	return $styles
+}
+
+
+proc resetTextFonts {context} {
+	variable Options
+	variable text
+
+	set styles [unregisterTextFonts $context]
+	array unset Options $context:*
+	registerTextFonts $context $styles
+}
+
+
+proc registerSymbolFonts {context} {
+	variable UseSymbols
+	variable Options
+	variable symbol
+	variable text
+
+	if {[info exists symbol($context:normal)]} { return }
+	set size [expr {-($Options($context:size))}]
+
+	if {$UseSymbols} {
+		set ascent [font metrics $text($context:normal) -ascent]
+		set symbol($context:normal) [font create ::font::symbol($context:normal) \
+			-family $Options(symbol:family) \
+			-weight $Options(symbol:weight) \
+			-size $size \
+		]
+		while {[font metrics $symbol($context:normal) -ascent] > $ascent} {
+			incr size
+			font delete $symbol($context:normal)
+			set symbol($context:normal) [font create ::font::symbol($context:normal) \
+				-family $Options(symbol:family) \
+				-weight $Options(symbol:weight) \
+				-size $size \
+			]
+		}
+		set symbol($context:bold) [font create ::font::symbol($context:bold) \
+			-family $Options(symbol:family) \
+			-weight bold \
+			-size $size \
+		]
+	} else {
+		set symbol($context:normal) $text($context:normal)
+		set symbol($context:bold) $text($context:bold)
+	}
+}
+
+
+proc unregisterSymbolFonts {context} {
+	variable symbol
+
+	foreach style [array names symbol $context:*] {
+		if {![string match text(* $symbol($style)] && ![string match Tk* $symbol($style)]} {
+			DeleteFont symbol($style)
+		}
+	}
+
+	array unset symbol $context:*
+}
+
+
+proc resetSymbolFonts {context} {
+	variable Options
+	variable DefaultOptions
+
+	unregisterSymbolFonts $context
+	set Options(symbol:family) $DefaultOptions(symbol:family)
+	set Options(symbol:weight) $DefaultOptions(symbol:weight)
+	registerSymbolFonts $context
+}
+
+
+proc registerFigurineFonts {context} {
+	variable UseFigurines
+	variable Options
+	variable figurine
+	variable text
+
+	if {[info exists figurine($context:normal)]} { return }
+	set size [expr {-$Options($context:size)}]
+
+	if {$UseFigurines && ($Options(figurine:use) || $context eq "text")} {
+		set ascent [font metrics $text($context:normal) -ascent]
+		set figurine($context:normal) [font create ::font::figurine($context:normal) \
+			-family $Options(figurine:family:normal) \
+			-weight $Options(figurine:weight:normal) \
+			-size $size \
+		]
+		while {[font metrics $figurine($context:normal) -ascent] > $ascent} {
+			incr size
+			font delete $figurine($context:normal)
+			set figurine($context:normal) [font create ::font::figurine($context:normal) \
+				-family $Options(figurine:family:normal) \
+				-weight $Options(figurine:weight:normal) \
+				-size $size \
+			]
+		}
+		set figurine($context:bold) [font create ::font::figurine($context:bold) \
+			-family $Options(figurine:family:bold) \
+			-weight $Options(figurine:weight:bold) \
+			-size $size \
+		]
+		if {$context eq "text"} {
+			set figurine(small:normal) [font create ::font::figurine(small:normal) \
+				-family $Options(figurine:family:normal) \
+				-weight $Options(figurine:weight:normal) \
+				-size [font configure TkTooltipFont -size] \
+			]
+		}
+	} else {
+		set figurine($context:normal) $text($context:normal)
+		set figurine($context:bold) $text($context:bold)
+		if {$context eq "text"} {
+			set figurine(small:normal) TkTooltipFont
+		}
+	}
+}
+
+
+proc unregisterFigurineFonts {context} {
+	variable figurine
+
+	foreach style [array names figurine $context:*] {
+		if {![string match text(* $figurine($style)] && ![string match Tk* $figurine($style)]} {
+			DeleteFont figurine($style)
+		}
+	}
+	if {$context eq "text"} {
+		DeleteFont figurine(small:normal)
+	}
+	array unset figurine $context:*
+}
+
+
+proc resetFigurineFonts {context} {
+	variable Options
+	variable DefaultOptions
+
+	unregisterFigurineFonts $context
+	set Options(figurine:family:normal) $DefaultOptions(figurine:family:normal)
+	set Options(figurine:family:bold) $DefaultOptions(figurine:family:bold)
+	set Options(figurine:weight:normal) $DefaultOptions(figurine:weight:normal)
+	set Options(figurine:weight:bold) $DefaultOptions(figurine:weight:bold)
+	registerFigurineFonts $context
+}
+
+
+proc resetFonts {context} {
+	resetTextFonts $context
+	if {[info exists figurine($context:normal)]} { resetFigurineFonts $context }
+	if {[info exists symbol($context:normal)]} { resetSymbolFonts $context }
+}
+
+
+proc increaseSize {context} {
+	changeSize $context +1
+}
+
+
+proc decreaseSize {context} {
+	changeSize $context -1
+}
+
+
+proc changeSize {context incr} {
+	variable Options
+	variable figurine
+	variable symbol
+
+	set size [expr {$Options($context:size) + $incr}]
+	if {8 > $size || $size > 20} { return 0 }
+
+	set Options($context:size) $size
+
+	set styles [unregisterTextFonts $context]
+	registerTextFonts $context $styles
+
+	if {[info exists figurine($context:normal)]} {
+		unregisterFigurineFonts $context
+		registerFigurineFonts $context
+	}
+	if {[info exists symbol($context:normal)]} {
+		unregisterSymbolFonts $context
+		registerSymbolFonts $context
+	}
+
+	return 1
+}
+
+
+proc copyFonts {fromContext toContext} {
+	variable Options
+	variable figurine
+	variable symbol
+	variable text
+
+	foreach attr [array names Options $fromContext:*] {
+		lassign [split $attr :] pref suff
+		set Options($toContext:$suff) $Options($attr)
+	}
+
+	set styles {}
+	foreach style [array names text $fromContext:*] {
+		lappend styles [lindex [split $style :] 1]
+	}
+	registerTextFonts $toContext $styles
+
+	if {[info exists figurine($fromContext:normal)]} {
+		registerFigurineFonts $toContext
+	}
+
+	if {[info exists symbol($fromContext:normal)]} {
+		registerSymbolFonts $toContext
+	}
+}
+
+
+proc deleteFonts {context} {
+	variable Options
+
+	unregisterTextFonts $context
+	unregisterFigurineFonts $context
+	unregisterSymbolFonts $context
+	array unset Options $context:*
 }
 
 
 proc translate {move} {
 	variable UseFigurines
+	variable Options
 
-	if {$UseFigurines} { return $move }
+	if {$UseFigurines && $Options(figurine:use)} { return $move }
 
 	variable GraphicMap
 	return [string map $GraphicMap $move]
 }
 
 
-proc splitMoves {text} {
+proc splitMoves {text {tag figurine}} {
 	variable UseFigurines
+	variable Options
 
-	if {$UseFigurines} {
+	if {$UseFigurines && $Options(figurine:use)} {
 		variable UnicodeMap
 		variable figurineEncoding
 
 		set moves [split [string map $UnicodeMap $text] &]
 		set result {}
+		if {$tag eq "figurineb"} {
+			set encoding $figurineEncoding(bold)
+		} else {
+			set encoding $figurineEncoding(normal)
+		}
 
 		foreach m $moves {
 			if {[string index $m 0] == "*"} {
-				lappend result [string range $m 1 end] figurine
+				lappend result [string range $m 1 end] $tag
 			} else {
 #				if we like to use Oh's, not zeroes, uncomment this:
-				if {[llength $figurineEncoding]} { set m [string map $figurineEncoding $m] }
+				if {[llength $encoding]} {
+					set m [string map $encoding $m]
+				}
 #				lappend result [string map {O 0} $m] {}
 				lappend result $m {}
 			}
@@ -1235,8 +1575,9 @@ proc htmlTextFamilies {} {
 if {$tcl_platform(platform) ne "windows"} {
 
 	proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
-		variable fonts
 		variable _Count
+
+		set fonts [::dialog::choosefont::fontFamilies]
 
 		if {{FigurineCB AriesSP} in $fonts} {
 			set msg $mc::ChessBaseFontsAlreadyInstalled
@@ -1333,15 +1674,32 @@ if {$tcl_platform(platform) ne "windows"} {
 
 }
 
-# setup ###############################################################################
 
-if {$UseFigurines && [::tk windowingsystem] eq "x11"} {
-	set UseFigurines 0
-	catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set UseFigurines 1 } }
+proc DeleteFont {fontvar} {
+	set fontvar [namespace current]::$fontvar
+	if {[info exists $fontvar] && ![string match Tk* [set $fontvar]]} {
+		catch { font delete [set $fontvar] }
+	}
 }
 
-useFigurines $UseFigurines
-useLanguage $langFigurine
+
+proc Weight {style} {
+	if {[string match bold* $style]} { return bold }
+	return normal
+}
+
+
+proc Slant {style} {
+	if {[string match *italic $style]} { return italic }
+	return roman
+}
+
+
+proc WriteOptions {chan} {
+	::options::writeItem $chan [namespace current]::Options
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace font
 

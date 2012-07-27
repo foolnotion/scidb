@@ -23,7 +23,7 @@ TITLE Der Partien-Browser
 Der Partien-Browser wird mit einer Partie aus einer Partieliste
 geöffnet. Der Browser ist an diese Partieliste gebunden. Wird diese
 Partieliste geschlossen während der Browser noch offen ist, kann
-keine weitere Partie mehr geladen werden.
+keine weitere Partie in diesem Browser geladen werden.
 </p>
 
 <p>
@@ -33,8 +33,8 @@ sich insbesondere zum Sichten einer Partienliste.
 </p>
 
 <p>
-Zur Einstellung der Brettgröße sowie der Anzeige steht ein
-kontextsensitives Menü bereit.
+Zur Einstellung der Textausgabe steht ein kontextsensitives Menü
+bereit.
 </p>
 
 <p>

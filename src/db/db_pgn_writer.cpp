@@ -444,6 +444,8 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 
 	if (test(Flag_Indent_Comments))
 		putNewline();
+	else
+		putSpace();
 }
 
 

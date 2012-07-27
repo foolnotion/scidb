@@ -158,7 +158,7 @@ proc openEdit {parent position {mode {}}} {
 	]
 	set main [tk::panedwindow $top.main -orient vertical -opaqueresize true]
 
-	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine
+	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine(text:normal)
 	$fig addcol image -id flag
 	$fig addcol text  -id lang
 
@@ -526,9 +526,9 @@ proc SetFigurines {dlg position} {
 	set index [lsearch -exact -index 1 $Priv($position:sets) [lindex [$w get] 0]]
 	set current [lindex $Priv($position:sets) $index 0]
 	set Priv($position:sets) {}
-	foreach {lang figurine} [array get ::font::figurines] {
+	foreach {lang figurine} [array get ::figurines::langSet] {
 		switch $lang {
-			en - graphic {}
+			en - graphic - user {}
 
 			default {
 				set figurine [string map {" " ""} $figurine]
@@ -541,7 +541,7 @@ proc SetFigurines {dlg position} {
 	set font [$w cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
 	set Priv($position:sets) [lsort -index 1 -dictionary $Priv($position:sets)]
-	set value [list en [::encoding::languageName en] [string map {" " ""}  $::font::figurines(en)]]
+	set value [list en [::encoding::languageName en] [string map {" " ""}  $::figurines::langSet(en)]]
 	set Priv($position:sets) [linsert $Priv($position:sets) 0 $value]
 	set index [lsearch -index 0 -exact $Priv($position:sets) $current]
 	if {$index == -1} { set index 0 }
@@ -551,7 +551,7 @@ proc SetFigurines {dlg position} {
 	foreach entry $Priv($position:sets) {
 		lappend Figurines [lindex $entry 1]
 		lassign $entry id lang fig
-		set flag $::country::icon::flag($::mc::langToCountry($id))
+		set flag $::country::icon::flag([::mc::countryForLang $id])
 		$w listinsert [list $fig $flag $lang]
 	}
 	$w resize
@@ -636,7 +636,7 @@ proc ShowCountry {w position} {
 	if {$i == -1} {
 		$w forgeticon
 	} else {
-		$w placeicon $::country::icon::flag($::mc::langToCountry([lindex $Priv($position:sets) $i 0]))
+		$w placeicon $::country::icon::flag([::mc::countryForLang [lindex $Priv($position:sets) $i 0]])
 	}
 }
 

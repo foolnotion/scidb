@@ -63,13 +63,13 @@ variable Piece		n
 variable Layout	ld
 
 array set RecentColors {
-	w { {} {} {} {} {} {} }
-	b { {} {} {} {} {} {} }
+	w { {} {} {} {} {} {} {} {} {} {} {} {} }
+	b { {} {} {} {} {} {} {} {} {} {} {} {} }
 }
 
 array set RecentTextures {
-	w { {} {} {} {} {} {} }
-	b { {} {} {} {} {} {} }
+	w { {} {} {} {} {} {} {} {} {} {} {} {} }
+	b { {} {} {} {} {} {} {} {} {} {} {} {} }
 }
 
 array set SquareStyle {
@@ -674,7 +674,6 @@ proc SelectColor {parent var component which showEraser} {
 	variable [namespace parent]::texture
 	variable [namespace parent]::designSize
 	variable style
-	variable RecentColors
 	variable RecentTextures
 	variable Vars
 
@@ -700,7 +699,7 @@ proc SelectColor {parent var component which showEraser} {
 							-class Dialog \
 							-initialcolor $initialColor \
 							-oldcolor $oldColor \
-							-recentcolors $RecentColors($which) \
+							-recentcolors [namespace current]::RecentColors($which) \
 							-textures $textures \
 							-geometry last \
 							-modal true \
@@ -722,7 +721,7 @@ proc SelectColor {parent var component which showEraser} {
 				set useGradient false
 
 				if {[llength $style(color,$which,fill)]} {
-					set RecentColors($which) [addToList $RecentColors($which) $style($component,$which,$var)]
+					addToList [namespace current]::RecentColors($which) $style($component,$which,$var)
 					set style(color,$which,fill) {}
 				}
 
@@ -748,10 +747,9 @@ proc SelectColor {parent var component which showEraser} {
 
 				if {$n == -1} {
 					if {[llength $style($component,$which,$var)]} {
-						set RecentColors($which) \
-							[addToList $RecentColors($which) $style($component,$which,$var)]
+						addToList [namespace current]::RecentColors($which) $style($component,$which,$var)
 					}
-					set RecentColors($which) [addToList $RecentColors($which) $selection]
+					addToList [namespace current]::RecentColors($which) $selection
 					if {$var eq "fill"} { SetTexture $which {} }
 					set style($component,$which,$var) $selection
 				} else {
@@ -956,7 +954,6 @@ proc SelectGradient {which} {
 	variable __style
 	variable Offset
 	variable Widget
-	variable RecentColors
 	variable Vars
 
 	incr Vars(open)
@@ -1117,7 +1114,7 @@ proc SelectGradient {which} {
 
 	if {$style(gradient,$which,use)} {
 		if {[llength $style(color,$which,fill)]} {
-			set RecentColors($which) [addToList $RecentColors($which) $style(color,$which,fill)]
+			addToList [namespace current]::RecentColors($which) $style(color,$which,fill)
 			set style(color,$which,fill) {}
 		}
 		set style(color,$which,texture) {}
@@ -1227,7 +1224,7 @@ proc RecolorButton {var which} {
 	} else {
 		::scidb::tk::image recolor #00000000 photo_Circle($var,$which)
 	}
-	# this trick forces update of the image
+	# this trick is forcing update of the image
 	$Widget($var,$which) configure -state normal
 }
 
@@ -1249,10 +1246,9 @@ proc FillOrStroke {which fill} {
 proc Erase {which fill} {
 	variable style
 	variable Widget
-	variable RecentColors
 
 	if {[llength $style(color,$which,$fill)]} {
-		set RecentColors($which) [addToList $RecentColors($which) $style(color,$which,$fill)]
+		addToList [namespace current]::RecentColors($which) $style(color,$which,$fill)
 	}
 	set style(color,$which,$fill) {}
 	$Widget($fill,erase,$which) configure -state disabled
@@ -1605,7 +1601,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	grid columnconfigure $bot.rt {0 2} -minsize $::theme::padx
 
 	# dialog buttons
-	widget::dialogButtons $dlg {ok cancel apply reset} apply
+	widget::dialogButtons $dlg {ok cancel apply revert} apply
 	$dlg.ok configure -command "
 		[namespace current]::MakePieces $size
 		$updateCmd true
@@ -1618,7 +1614,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	$dlg.apply configure -command "
 		[namespace current]::MakePieces $size
 		$updateCmd"
-	$dlg.reset configure -command "
+	$dlg.revert configure -command "
 		[namespace current]::Reset true
 		[namespace current]::MakePieces $size
 		$resetCmd"
@@ -1658,9 +1654,6 @@ proc MakeToolbarIcons {} {
 
 
 proc WriteOptions {chan} {
-	variable RecentColors
-	variable RecentTextures
-
 	::options::writeItem $chan [namespace current]::Piece
 	::options::writeItem $chan [namespace current]::Layout
 }

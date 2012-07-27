@@ -66,53 +66,54 @@ using namespace app;
 using namespace tcl;
 using namespace tcl::app;
 
-static char const* CmdBoard		= "::scidb::game::board";
-static char const* CmdClear		= "::scidb::game::clear";
-static char const* CmdCopy			= "::scidb::game::copy";
-static char const* CmdCount		= "::scidb::game::count";
-static char const* CmdCurrent		= "::scidb::game::current";
-static char const* CmdDump			= "::scidb::game::dump";
-static char const* CmdExchange	= "::scidb::game::exchange";
-static char const* CmdExecute		= "::scidb::game::execute";
-static char const* CmdExport		= "::scidb::game::export";
-static char const* CmdFen			= "::scidb::game::fen";
-static char const* CmdGo			= "::scidb::game::go";
-static char const* CmdImport		= "::scidb::game::import";
-static char const* CmdIndex		= "::scidb::game::index";
-static char const* CmdInfo			= "::scidb::game::info";
-static char const* CmdLangSet		= "::scidb::game::langSet";
-static char const* CmdLevel		= "::scidb::game::level";
-static char const* CmdLink			= "::scidb::game::link?";
-static char const* CmdLoad			= "::scidb::game::load";
-static char const* CmdMaterial	= "::scidb::game::material";
-static char const* CmdModified	= "::scidb::game::modified";
-static char const* CmdMove			= "::scidb::game::move";
-static char const* CmdMoveto		= "::scidb::game::moveto";
-static char const* CmdNew			= "::scidb::game::new";
-static char const* CmdNext			= "::scidb::game::next";
-static char const* CmdNumber		= "::scidb::game::number";
-static char const* CmdPly			= "::scidb::game::ply";
-static char const* CmdPop			= "::scidb::game::pop";
-static char const* CmdPosition	= "::scidb::game::position";
-static char const* CmdPush			= "::scidb::game::push";
-static char const* CmdQuery		= "::scidb::game::query";
-static char const* CmdRefresh		= "::scidb::game::refresh";
-static char const* CmdRelease		= "::scidb::game::release";
-static char const* CmdReplace		= "::scidb::game::replace";
-static char const* CmdSave			= "::scidb::game::save";
-static char const* CmdSetup		= "::scidb::game::setup";
-static char const* CmdSink			= "::scidb::game::sink";
-static char const* CmdSink_		= "::scidb::game::sink?";
-static char const* CmdStrip		= "::scidb::game::strip";
-static char const* CmdSubscribe	= "::scidb::game::subscribe";
-static char const* CmdSwap			= "::scidb::game::swap";
-static char const* CmdSwitch		= "::scidb::game::switch";
-static char const* CmdTags			= "::scidb::game::tags";
-static char const* CmdTranspose	= "::scidb::game::transpose";
-static char const* CmdTrial		= "::scidb::game::trial";
-static char const* CmdUndoSetup	= "::scidb::game::undoSetup";
-static char const* CmdUpdate		= "::scidb::game::update";
-static char const* CmdVariation	= "::scidb::game::variation";
+static char const* CmdBoard			= "::scidb::game::board";
+static char const* CmdClear			= "::scidb::game::clear";
+static char const* CmdCopy				= "::scidb::game::copy";
+static char const* CmdCount			= "::scidb::game::count";
+static char const* CmdCurrent			= "::scidb::game::current";
+static char const* CmdDump				= "::scidb::game::dump";
+static char const* CmdExchange		= "::scidb::game::exchange";
+static char const* CmdExecute			= "::scidb::game::execute";
+static char const* CmdExport			= "::scidb::game::export";
+static char const* CmdFen				= "::scidb::game::fen";
+static char const* CmdGo				= "::scidb::game::go";
+static char const* CmdImport			= "::scidb::game::import";
+static char const* CmdIndex			= "::scidb::game::index";
+static char const* CmdInfo				= "::scidb::game::info";
+static char const* CmdLangSet			= "::scidb::game::langSet";
+static char const* CmdLevel			= "::scidb::game::level";
+static char const* CmdLink				= "::scidb::game::link?";
+static char const* CmdLoad				= "::scidb::game::load";
+static char const* CmdMaterial		= "::scidb::game::material";
+static char const* CmdModified		= "::scidb::game::modified";
+static char const* CmdMove				= "::scidb::game::move";
+static char const* CmdMoveto			= "::scidb::game::moveto";
+static char const* CmdNew				= "::scidb::game::new";
+static char const* CmdNext				= "::scidb::game::next";
+static char const* CmdNumber			= "::scidb::game::number";
+static char const* CmdPly				= "::scidb::game::ply";
+static char const* CmdPop				= "::scidb::game::pop";
+static char const* CmdPosition		= "::scidb::game::position";
+static char const* CmdPush				= "::scidb::game::push";
+static char const* CmdQuery			= "::scidb::game::query";
+static char const* CmdRefresh			= "::scidb::game::refresh";
+static char const* CmdRelease			= "::scidb::game::release";
+static char const* CmdReplace			= "::scidb::game::replace";
+static char const* CmdSave				= "::scidb::game::save";
+static char const* CmdSetup			= "::scidb::game::setup";
+static char const* CmdSink				= "::scidb::game::sink";
+static char const* CmdSink_			= "::scidb::game::sink?";
+static char const* CmdStrip			= "::scidb::game::strip";
+static char const* CmdSubscribe		= "::scidb::game::subscribe";
+static char const* CmdSwap				= "::scidb::game::swap";
+static char const* CmdSwitch			= "::scidb::game::switch";
+static char const* CmdTags				= "::scidb::game::tags";
+static char const* CmdTranspose		= "::scidb::game::transpose";
+static char const* CmdTrial			= "::scidb::game::trial";
+static char const* CmdUndoSetup		= "::scidb::game::undoSetup";
+static char const* CmdUnsubscribe	= "::scidb::game::unsubscribe";
+static char const* CmdUpdate			= "::scidb::game::update";
+static char const* CmdVariation		= "::scidb::game::variation";
 
 
 static char const*
@@ -225,6 +226,8 @@ public:
 			Tcl_IncrRefCount(m_move			= Tcl_NewStringObj("move",			-1));
 			Tcl_IncrRefCount(m_start		= Tcl_NewStringObj("start",		-1));
 			Tcl_IncrRefCount(m_result		= Tcl_NewStringObj("result",		-1));
+			Tcl_IncrRefCount(m_number		= Tcl_NewStringObj("[",				-1));
+			Tcl_IncrRefCount(m_leave		= Tcl_NewStringObj("]",				-1));
 			Tcl_IncrRefCount(m_open			= Tcl_NewStringObj("(",				-1));
 			Tcl_IncrRefCount(m_close		= Tcl_NewStringObj(")",				-1));
 			Tcl_IncrRefCount(m_fold			= Tcl_NewStringObj("+",				-1));
@@ -499,9 +502,22 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void space(Bracket bracket) override
+	void number(mstl::string const& number, bool isFirstVar) override
 	{
-		Tcl_Obj* objv[2];
+		Tcl_Obj* objv[4];
+
+		objv[0] = m_space;
+		objv[1] = m_number;
+		objv[2] = Tcl_NewBooleanObj(isFirstVar);
+		objv[3] = Tcl_NewStringObj(number, number.size());
+
+		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
+		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+	}
+
+	void space(Bracket bracket, bool isFirstOrLastVar) override
+	{
+		Tcl_Obj* objv[3];
 
 		objv[0] = m_space;
 
@@ -513,8 +529,10 @@ public:
 			case edit::Node::Empty:	objv[1] = m_e; break;
 			case edit::Node::Start:	objv[1] = m_s; break;
 			case edit::Node::Blank:	objv[1] = m_blank; break;
+			case edit::Node::End:	objv[1] = m_leave; break;
 		}
 
+		objv[2] = Tcl_NewBooleanObj(isFirstOrLastVar);
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
@@ -620,6 +638,8 @@ public:
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_start;
 	static Tcl_Obj* m_result;
+	static Tcl_Obj* m_number;
+	static Tcl_Obj* m_leave;
 	static Tcl_Obj* m_open;
 	static Tcl_Obj* m_close;
 	static Tcl_Obj* m_fold;
@@ -652,7 +672,7 @@ Tcl_Obj* Visitor::m_legal			= 0;
 Tcl_Obj* Visitor::m_diagram		= 0;
 Tcl_Obj* Visitor::m_color			= 0;
 Tcl_Obj* Visitor::m_board			= 0;
-Tcl_Obj* Visitor::m_comment			= 0;
+Tcl_Obj* Visitor::m_comment		= 0;
 Tcl_Obj* Visitor::m_annotation	= 0;
 Tcl_Obj* Visitor::m_marks			= 0;
 Tcl_Obj* Visitor::m_space			= 0;
@@ -662,6 +682,8 @@ Tcl_Obj* Visitor::m_end				= 0;
 Tcl_Obj* Visitor::m_move			= 0;
 Tcl_Obj* Visitor::m_start			= 0;
 Tcl_Obj* Visitor::m_result			= 0;
+Tcl_Obj* Visitor::m_number			= 0;
+Tcl_Obj* Visitor::m_leave			= 0;
 Tcl_Obj* Visitor::m_open			= 0;
 Tcl_Obj* Visitor::m_close			= 0;
 Tcl_Obj* Visitor::m_fold			= 0;
@@ -1220,6 +1242,21 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned	position			= unsignedFromObj(objc, objv, 2);
+
+	Game&			game			= scidb->game(position);
+	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber());
+
+	if (subscriber)
+		game.setSubscriber(Game::SubscriberP(0));
+
+	return TCL_OK;
+}
+
+
+static int
 cmdRefresh(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	bool immediate = false;
@@ -1480,25 +1517,22 @@ cmdLevel(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (Scidb->haveCurrentGame())
+	int position = objc < 2 ? -1 : intFromObj(objc, objv, 1);
+	Tcl_Obj* languages = objectFromObj(objc, objv, objc < 2 ? 1 : 2);
+	Game::LanguageSet set;
+	int n;
+
+	if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
+		return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
+
+	for (int i = 0; i < n; ++i)
 	{
-		int position = objc < 2 ? -1 : intFromObj(objc, objv, 1);
-		Tcl_Obj* languages = objectFromObj(objc, objv, objc < 2 ? 1 : 2);
-		Game::LanguageSet set;
-		int n;
-
-		if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
-			return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
-
-		for (int i = 0; i < n; ++i)
-		{
-			Tcl_Obj* lang;
-			Tcl_ListObjIndex(ti, languages, i, &lang);
-			set[mstl::string(Tcl_GetString(lang))] = 1;
-		}
-
-		scidb->game(position).setLanguages(set);
+		Tcl_Obj* lang;
+		Tcl_ListObjIndex(ti, languages, i, &lang);
+		set[mstl::string(Tcl_GetString(lang))] = 1;
 	}
+
+	scidb->game(position).setLanguages(set);
 
 	return TCL_OK;
 }
@@ -1892,6 +1926,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 't': setResult(Scidb->hasTrialMode(pos)); break;							// trial
 		case 'i': setResult(Scidb->game(pos).idn()); break;							// idn
 		case 'f': setResult(Scidb->game(pos).startBoard().toFen()); break;		// fen
+		case 'o': setResult(Scidb->containsGameAt(pos)); break;						// open?
 		case 'v': setResult(Scidb->game(pos).hasVariations()); break;				// variations?
 
 		case 'p':			// parent
@@ -2258,7 +2293,7 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int position = -1;
 	int arg = 1;
 
-	if (objc == 11)
+	if (objc == 12)
 		position = intFromObj(objc, objv, arg++);
 
 	unsigned linebreakThreshold			= unsignedFromObj(objc, objv, arg++);
@@ -2266,13 +2301,14 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, arg++);
 	unsigned linebreakMinCommentLength	= unsignedFromObj(objc, objv, arg++);
 
-	bool columnStyle			= boolFromObj(objc, objv, arg++);
+	bool columnStyle				= boolFromObj(objc, objv, arg++);
 
-	char const* moveStyle = stringFromObj(objc, objv, arg++);
+	char const* moveStyle		= stringFromObj(objc, objv, arg++);
 
-	bool paragraphSpacing	= boolFromObj(objc, objv, arg++);
-	bool showDiagram			= boolFromObj(objc, objv, arg++);
-	bool showMoveInfo			= boolFromObj(objc, objv, arg++);
+	bool paragraphSpacing		= boolFromObj(objc, objv, arg++);
+	bool showDiagram				= boolFromObj(objc, objv, arg++);
+	bool showMoveInfo				= boolFromObj(objc, objv, arg++);
+	bool showVariationNumbers	= boolFromObj(objc, objv, arg++);
 
 	unsigned			displayStyle = columnStyle ? display::ColumnStyle : display::CompactStyle;
 	move::Notation	moveForm;
@@ -2283,6 +2319,8 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		displayStyle |= display::ParagraphSpacing;
 	if (showMoveInfo)
 		displayStyle |= display::ShowMoveInfo;
+	if (showVariationNumbers)
+		displayStyle |= display::ShowVariationNumbers;
 
 	if (strcmp(moveStyle, "alg") == 0)
 		moveForm = move::Algebraic;
@@ -2301,21 +2339,21 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (position >= 0)
 	{
-		scidb->game(position).setup(linebreakThreshold,
-											linebreakMaxLineLengthMain,
-											linebreakMaxLineLengthVar,
-											linebreakMinCommentLength,
-											displayStyle,
-											moveForm);
+		scidb->game(position).setup(	linebreakThreshold,
+												linebreakMaxLineLengthMain,
+												linebreakMaxLineLengthVar,
+												linebreakMinCommentLength,
+												displayStyle,
+												moveForm);
 	}
 	else
 	{
-		scidb->setupGame(linebreakThreshold,
-							linebreakMaxLineLengthMain,
-							linebreakMaxLineLengthVar,
-							linebreakMinCommentLength,
-							displayStyle,
-							moveForm);
+		scidb->setupGame(	linebreakThreshold,
+								linebreakMaxLineLengthMain,
+								linebreakMaxLineLengthVar,
+								linebreakMinCommentLength,
+								displayStyle,
+								moveForm);
 	}
 
 	return TCL_OK;
@@ -2628,9 +2666,21 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			setResult(-int(reader.countErrors()));
 		}
+		else if (trialMode)
+		{
+			setResult(scidb->game().isValidVariation(consumer.result()));
+		}
 		else if (varno < 0)
 		{
-			setResult(scidb->game().addVariation(Game::MoveNodeP(consumer.release())));
+			if (scidb->game().isEmpty())
+			{
+				scidb->game().addMoves(Game::MoveNodeP(consumer.release()));
+				setResult(0);
+			}
+			else
+			{
+				setResult(scidb->game().addVariation(Game::MoveNodeP(consumer.release())));
+			}
 		}
 		else
 		{
@@ -2744,53 +2794,54 @@ namespace game {
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdBoard,		cmdBoard);
-	createCommand(ti, CmdClear,		cmdClear);
-	createCommand(ti, CmdCopy,			cmdCopy);
-	createCommand(ti, CmdCount,		cmdCount);
-	createCommand(ti, CmdCurrent,		cmdCurrent);
-	createCommand(ti, CmdDump,			cmdDump);
-	createCommand(ti, CmdExchange,	cmdExchange);
-	createCommand(ti, CmdExecute,		cmdExecute);
-	createCommand(ti, CmdExport,		cmdExport);
-	createCommand(ti, CmdFen,			cmdFen);
-	createCommand(ti, CmdGo,			cmdGo);
-	createCommand(ti, CmdImport,		cmdImport);
-	createCommand(ti, CmdIndex,		cmdIndex);
-	createCommand(ti, CmdInfo,			cmdInfo);
-	createCommand(ti, CmdLangSet,		cmdLangSet);
-	createCommand(ti, CmdLevel,		cmdLevel);
-	createCommand(ti, CmdLink,			cmdLink);
-	createCommand(ti, CmdLoad,			cmdLoad);
-	createCommand(ti, CmdMaterial,	cmdMaterial);
-	createCommand(ti, CmdModified,	cmdModified);
-	createCommand(ti, CmdMove,			cmdMove);
-	createCommand(ti, CmdMoveto,		cmdMoveto);
-	createCommand(ti, CmdNew,			cmdNew);
-	createCommand(ti, CmdNext,			cmdNext);
-	createCommand(ti, CmdNumber,		cmdNumber);
-	createCommand(ti, CmdPly,			cmdPly);
-	createCommand(ti, CmdPop,			cmdPop);
-	createCommand(ti, CmdPosition,	cmdPosition);
-	createCommand(ti, CmdPush,			cmdPush);
-	createCommand(ti, CmdQuery,		cmdQuery);
-	createCommand(ti, CmdRefresh,		cmdRefresh);
-	createCommand(ti, CmdRelease,		cmdRelease);
-	createCommand(ti, CmdReplace,		cmdReplace);
-	createCommand(ti, CmdSave,			cmdSave);
-	createCommand(ti, CmdSetup,		cmdSetup);
-	createCommand(ti, CmdSink,			cmdSink);
-	createCommand(ti, CmdSink_,		cmdSink_);
-	createCommand(ti, CmdStrip,		cmdStrip);
-	createCommand(ti, CmdSubscribe,	cmdSubscribe);
-	createCommand(ti, CmdTags,			cmdTags);
-	createCommand(ti, CmdTranspose,	cmdTranspose);
-	createCommand(ti, CmdTrial,		cmdTrial);
-	createCommand(ti, CmdUndoSetup,	cmdUndoSetup);
-	createCommand(ti, CmdUpdate,		cmdUpdate);
-	createCommand(ti, CmdVariation,	cmdVariation);
-	createCommand(ti, CmdSwap,			cmdSwap);
-	createCommand(ti, CmdSwitch,		cmdSwitch);
+	createCommand(ti, CmdBoard,			cmdBoard);
+	createCommand(ti, CmdClear,			cmdClear);
+	createCommand(ti, CmdCopy,				cmdCopy);
+	createCommand(ti, CmdCount,			cmdCount);
+	createCommand(ti, CmdCurrent,			cmdCurrent);
+	createCommand(ti, CmdDump,				cmdDump);
+	createCommand(ti, CmdExchange,		cmdExchange);
+	createCommand(ti, CmdExecute,			cmdExecute);
+	createCommand(ti, CmdExport,			cmdExport);
+	createCommand(ti, CmdFen,				cmdFen);
+	createCommand(ti, CmdGo,				cmdGo);
+	createCommand(ti, CmdImport,			cmdImport);
+	createCommand(ti, CmdIndex,			cmdIndex);
+	createCommand(ti, CmdInfo,				cmdInfo);
+	createCommand(ti, CmdLangSet,			cmdLangSet);
+	createCommand(ti, CmdLevel,			cmdLevel);
+	createCommand(ti, CmdLink,				cmdLink);
+	createCommand(ti, CmdLoad,				cmdLoad);
+	createCommand(ti, CmdMaterial,		cmdMaterial);
+	createCommand(ti, CmdModified,		cmdModified);
+	createCommand(ti, CmdMove,				cmdMove);
+	createCommand(ti, CmdMoveto,			cmdMoveto);
+	createCommand(ti, CmdNew,				cmdNew);
+	createCommand(ti, CmdNext,				cmdNext);
+	createCommand(ti, CmdNumber,			cmdNumber);
+	createCommand(ti, CmdPly,				cmdPly);
+	createCommand(ti, CmdPop,				cmdPop);
+	createCommand(ti, CmdPosition,		cmdPosition);
+	createCommand(ti, CmdPush,				cmdPush);
+	createCommand(ti, CmdQuery,			cmdQuery);
+	createCommand(ti, CmdRefresh,			cmdRefresh);
+	createCommand(ti, CmdRelease,			cmdRelease);
+	createCommand(ti, CmdReplace,			cmdReplace);
+	createCommand(ti, CmdSave,				cmdSave);
+	createCommand(ti, CmdSetup,			cmdSetup);
+	createCommand(ti, CmdSink,				cmdSink);
+	createCommand(ti, CmdSink_,			cmdSink_);
+	createCommand(ti, CmdStrip,			cmdStrip);
+	createCommand(ti, CmdSubscribe,		cmdSubscribe);
+	createCommand(ti, CmdTags,				cmdTags);
+	createCommand(ti, CmdTranspose,		cmdTranspose);
+	createCommand(ti, CmdTrial,			cmdTrial);
+	createCommand(ti, CmdUndoSetup,		cmdUndoSetup);
+	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
+	createCommand(ti, CmdUpdate,			cmdUpdate);
+	createCommand(ti, CmdVariation,		cmdVariation);
+	createCommand(ti, CmdSwap,				cmdSwap);
+	createCommand(ti, CmdSwitch,			cmdSwitch);
 }
 
 } // namespace game

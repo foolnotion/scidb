@@ -35,8 +35,56 @@ inline KeyNode::KeyNode(Key const& key, char prefix) :m_key(key, prefix) {}
 inline Variation::Variation(Key const& key) :KeyNode(key) {}
 inline Variation::Variation(Key const& key, Key const& succ) :KeyNode(key), m_succ(succ) {}
 inline Move::Move(Key const& key) :KeyNode(key), m_ply(0) {}
-inline Space::Space(Bracket bracket) :m_level(-1), m_bracket(bracket) {}
-inline Space::Space(unsigned level) :m_level(level), m_bracket(Blank) {}
+
+
+inline
+Space::Space()
+	:m_level(-1)
+	,m_number(0)
+	,m_bracket(Blank)
+	,m_isFirstOrLast(false)
+{
+}
+
+
+inline
+Space::Space(Bracket bracket)
+	:m_level(-1)
+	,m_number(0)
+	,m_bracket(bracket)
+	,m_isFirstOrLast(false)
+{
+}
+
+
+inline
+Space::Space(Bracket bracket, bool isFirstOrLast)
+	:m_level(-1)
+	,m_number(0)
+	,m_bracket(bracket)
+	,m_isFirstOrLast(isFirstOrLast)
+{
+}
+
+
+inline
+Space::Space(unsigned level, bool isFirstOrLast)
+	:m_level(level)
+	,m_number(0)
+	,m_bracket(Blank)
+	,m_isFirstOrLast(isFirstOrLast)
+{
+}
+
+
+inline
+Space::Space(unsigned level, unsigned number, bool isFirstOrLast)
+	:m_level(level)
+	,m_number(number)
+	,m_bracket(Open)
+	,m_isFirstOrLast(isFirstOrLast)
+{
+}
 
 
 inline

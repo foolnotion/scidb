@@ -97,8 +97,8 @@ public:
 		Flag_Illegal_Move				= 1 << 23,	///< Illegal move flag
 
 		// --- temporary flags --------------------------------------------------
-		Flag_Dirty						= 1 << 23,	///< Dirty flag
-		Flag_Changed					= 1 << 24,	///< Changed flag
+		Flag_Dirty						= 1 << 24,	///< Dirty flag
+		Flag_Changed					= 1 << 25,	///< Changed flag
 
 		// --- flags for Scid 4.x -----------------------------------------------
 		Flag_User1						= Flag_Best_Game,
@@ -117,7 +117,8 @@ public:
 	bool isChanged() const;
 	bool hasPromotion() const;								// ChessBase: n/a
 	bool hasUnderPromotion() const;						// ChessBase: n/a
-	bool containsIllegalMoves() const;
+	bool containsIllegalMoves() const override;
+	bool containsIllegalCastlings() const override;
 	bool isEngine(color::ID color) const;
 	bool hasGameRecordLength() const;
 
@@ -229,6 +230,7 @@ public:
 	void setChanged(bool flag = true);
 	void setFlags(unsigned flags);
 	void setDirty(bool flag);
+	void setIllegalCastling(bool flag);
 	void setIllegalMove(bool flag);
 	void reset(Namebases& namebases);
 	void resetCharacteristics(Namebases& namebases);

@@ -66,9 +66,9 @@ variable Widget
 variable Vars
 
 array set RecentColors {
-	lite		{ {} {} {} {} {} {} }
-	dark		{ {} {} {} {} {} {} }
-	hilite	{ {} {} {} {} {} {} }
+	lite		{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	dark		{ {} {} {} {} {} {} {} {} {} {} {} {} }
+	hilite	{ {} {} {} {} {} {} {} {} {} {} {} {} }
 }
 
 
@@ -98,7 +98,6 @@ proc MakeSquare {which} {
 proc SelectSquareColor {which} {
 	variable [namespace parent]::designSize
 	variable style
-	variable RecentColors
 	variable Widget
 	variable Vars
 
@@ -114,7 +113,7 @@ proc SelectSquareColor {which} {
 							-class Dialog \
 							-initialcolor $initialcolor \
 							-oldcolor $oldcolor \
-							-recentcolors $RecentColors($which) \
+							-recentcolors [namespace current]::RecentColors($which) \
 							-geometry last \
 							-modal true \
 							-place centeronparent]
@@ -122,13 +121,13 @@ proc SelectSquareColor {which} {
 	
 	if {[llength $selection]} {
 		if {[llength $style($which,solid)]} {
-			set RecentColors($which) [addToList $RecentColors($which) $style($which,solid)]
+			addToList [namespace current]::RecentColors($which) $style($which,solid)
 		}
 		set style($which,solid) $selection
 		set style($which,texture) {}
 		loadTexture $which
 		::scidb::tk::image recolor $selection photo_Square($which,$designSize) -composite set
-		set RecentColors($which) [addToList $RecentColors($which) $selection]
+		addToList [namespace current]::RecentColors($which) $selection
 		ConfigureSquareFrame $which
 		SetTooltip $which
 	}
@@ -478,13 +477,12 @@ proc BrowserSelect {parent which chosen} {
 	variable [namespace parent]::designSize
 	variable style
 	variable Vars
-	variable RecentColors
 
 	set style($which,texture) $chosen
 	set texture [loadTexture $which]
 
 	if {[llength $style($which,solid)]} {
-		set RecentColors($which) [addToList $RecentColors($which) $style($which,solid)]
+		addToList [namespace current]::RecentColors($which) $style($which,solid)
 	}
 
 	set w [min [image width photo_Square($which,$designSize)] [image width $texture]]
@@ -754,7 +752,6 @@ proc MakePreview {type which path} {
 proc SelectColor {type which} {
 	variable [namespace parent]::designSize
 	variable style
-	variable RecentColors
 	variable Widget
 	variable Vars
 
@@ -762,7 +759,7 @@ proc SelectColor {type which} {
 	set selection [::colormenu::popup $Widget($type,$which) \
 							-initialcolor $style($type,$which) \
 							-oldcolor $style($type,$which) \
-							-recentcolors $RecentColors($type) \
+							-recentcolors [namespace current]::RecentColors($type) \
 							-geometry last \
 							-modal true \
 							-embedcmd [namespace code [list MakePreview $type $which]] \
@@ -772,12 +769,12 @@ proc SelectColor {type which} {
 	
 	if {[llength $selection]} {
 		if {[llength $style($type,$which)]} {
-			set RecentColors($type) [addToList $RecentColors($type) $style($type,$which)]
+			addToList [namespace current]::RecentColors($type) $style($type,$which)
 		}
 
 		if {$selection ne $style($type,$which)} {
 			set style($type,$which) $selection
-			set RecentColors($type) [addToList $RecentColors($type) $selection]
+			addToList [namespace current]::RecentColors($type) $selection
 			RecolorButton $type $which
 		}
 	}
@@ -965,7 +962,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	grid columnconfigure $fra {0 2} -minsize 5
 
 	# dialog buttons
-	widget::dialogButtons $dlg {ok cancel apply reset} apply
+	widget::dialogButtons $dlg {ok cancel apply revert} apply
 	$dlg.ok configure -command "
 		set [namespace parent]::needRefresh(lite,$size) true
 		set [namespace parent]::needRefresh(dark,$size) true
@@ -981,7 +978,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 		set [namespace parent]::needRefresh(dark,$size) true
 		[namespace parent]::setupSquares $size
 		$updateCmd"
-	$dlg.reset configure -command "
+	$dlg.revert configure -command "
 		[namespace current]::Reset $size
 		$resetCmd"
 

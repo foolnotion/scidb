@@ -55,12 +55,7 @@ set Command(move:comments)			"Move Comments"
 set Command(game:clear)				"Clear Game"
 set Command(game:transpose)		"Transpose Game"
 
-set ColumnStyle						"Column Style"
-set UseParagraphSpacing				"Use Paragraph Spacing"
-set ShowMoveInfo						"Show Move Information"
-set BoldTextForMainlineMoves		"Bold Text for Mainline Moves"
-set ShowDiagrams						"Show Diagrams"
-set Languages							"Languages"
+set LanguageSelection				"Language Selection"
 set MoveNotation						"Move Notation"
 set CollapseVariations				"Collapse Variations"
 set ExpandVariations					"Expand Variations"
@@ -82,10 +77,6 @@ set InsertDiagramFromBlack			"Insert Diagramm from Black's Perspective"
 set SuffixCommentaries				"Suffixed Commentaries"
 set StripOriginalComments			"Strip original comments"
 
-set AddNewGame							"Save: Add New Game to %s..."
-set ReplaceGame						"Save: Replace Game in %s..."
-set ReplaceMoves						"Save: Replace Moves Only in Game..."
-
 set EditAnnotation					"Edit annotation"
 set EditMoveInformation				"Edit move information"
 set EditCommentBefore				"Edit comment before move"
@@ -98,74 +89,13 @@ set None									"none"
 
 } ;# namespace mc
 
-array set Colors {
-	main				#000000
-	variation		#0000ee
-	startvar			#68480a
-	bracket			#0000ee
-	nag				#ee0000
-	comment			#006300
-	comment:hilite	#7a5807
-	info				#8b4513
-	info:hilite		#b22222
-	current			#ffdd76
-	hilite			#ebf4f5
-	next-move		#eeff00
-	background		#ffffff
-	emphasized		#ebf4f5
-	result			#000000
-	illegal			#ee0000
-	marks				#6300c6
-	header			#000000
-	empty				#666666
-}
-#	header			#1c1cd6
-#	next-move		#f8f2b1
-#	next-move		#e5ff00
-#	comment			#008b00
-#	comment:hilite	#005500
-#	info				#008b00
-
-array set Options {
-	font					TkTextFont
-	font-bold			{}
-	font-italic			{}
-	font-bold-italic	{}
-	mainline-bold		1
-	indent-amount		25
-	indent-max			2
-	indent-comment		1
-	indent-var			1
-	column-style		0
-	move-style			san
-	paragraph-spacing	0
-	show-move-info		0
-	diagram-size		30
-	diagram-show		1
-	diagram-pad-x		25
-	diagram-pad-y		5
-	tabstop-1			6.0
-	tabstop-2			0.7
-	tabstop-3			12.0
-}
-
 variable Vars
 variable CharLimit 250
 variable Counter 0
-variable MoveStyles { san lan alg eng cor tel }
 
 
 proc build {parent width height} {
 	variable Vars
-	variable Options
-
-	set font $Options(font)
-	foreach {key attrs} {bold bold italic italic bold-italic {bold italic}} {
-		set Vars(font-$key) $Options(font-$key)
-		if {[llength $Vars(font-$key)] == 0} {
-			set Vars(font-$key) [list [font configure $font -family] [font configure $font -size] $attrs]
-		}
-	}
 
 	set top   [::tk::frame $parent.top -borderwidth 0 -background white]
 	set main  [::tk::multiwindow $top.main -borderwidth 0 -background white]
@@ -178,7 +108,7 @@ proc build {parent width height} {
 
 	set popupcmd [namespace code [list ::gamebar::popupMenu $top no]]
 
-	$main add $logo $hist $games
+	$main add $hist $logo $games
 	bind $main <Button-3> $popupcmd
 	$hist bind <Button-3> [namespace code [list PopupHistoryMenu $hist]]
 	bind $hist <<GameHistorySelection>> [namespace code HistorySelectionChanged]
@@ -200,7 +130,7 @@ proc build {parent width height} {
 	bind $games <Button-3> [namespace code [list ::gamebar::popupMenu $top]]
 	set edit [::tk::frame $games.edit -borderwidth 0]
 	pack $edit -expand yes -fill both
-	bind $edit <Configure> [namespace code { Configure %W %h }]
+	bind $edit <Configure> [namespace code { Configure %h }]
 	set panes [::tk::multiwindow $edit.panes -borderwidth 0 -background white -overlay yes]
 	set gamebar [::gamebar::gamebar $edit.gamebar]
 
@@ -213,43 +143,16 @@ proc build {parent width height} {
 	set Vars(delta) 0
 	set Vars(after) {}
 	set Vars(index) -1
+	set Vars(position) -1
 	set Vars(break) 0
 	set Vars(height) 0
 
 	for {set i 0} {$i < 9} {incr i} {
-		set f [::tk::frame $edit.f$i]
-		set sb [::ttk::scrollbar $f.sb \
-			-command [namespace code [list ::widget::textLineScroll $f.pgn]] \
-			-takefocus 0 \
-		]
-		set pgn [tk::text $f.pgn \
-			-yscrollcommand [list $f.sb set] \
-			-takefocus 0 \
-			-exportselection 0 \
-			-undo 0 \
-			-width 0 \
-			-height 0 \
-			-relief sunken \
-			-borderwidth 1 \
-			-state disabled \
-			-wrap word \
-			-font $Options(font) \
-			-cursor {} \
-		]
-
-		::widget::textPreventSelection $pgn
+		set pgn [::pgn::setup::buildText $edit.f$i editor]
 		bind $pgn <Button-3> [namespace code [list PopupMenu $edit $i]]
-		::widget::bindMouseWheel $pgn
-
-		grid $pgn -row 1 -column 1 -sticky nsew
-		grid $sb -row 1 -column 2 -sticky ns
-		grid rowconfigure $f 1 -weight 1
-		grid columnconfigure $f 1 -weight 1
-
-		$panes add $f
-
+		$panes add $edit.f$i
 		set Vars(pgn:$i) $pgn
-		set Vars(frame:$i) $f
+		set Vars(frame:$i) $edit.f$i
 		set Vars(after:$i) {}
 	}
 
@@ -261,16 +164,9 @@ proc build {parent width height} {
 	set Vars(panes) $panes
 	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
 
-	set tab1 [expr {round($Options(tabstop-1)*$Vars(charwidth))}]
-	set tab2 [expr {$tab1 + round($Options(tabstop-2)*$Vars(charwidth))}]
-	set tab3 [expr {$tab2 + round($Options(tabstop-3)*$Vars(charwidth))}]
-
-	set Vars(tabs) [list	$tab1 right $tab2 $tab3]
-
-	SetupStyle
-	::scidb::game::undoSetup 20 9999
-
-	for {set i 0} {$i < 9} {incr i} { ConfigureText $Vars(pgn:$i) }
+	::pgn::setup::setupStyle editor
+#	::scidb::game::undoSetup 20 9999
+	::scidb::game::undoSetup 200 1
 
 	set tbGame [::toolbar::toolbar $top \
 		-id game \
@@ -316,23 +212,23 @@ proc build {parent width height} {
 	]
 	::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarColumnLayout \
-		-command [namespace code [list ToggleOption column-style]] \
-		-tooltipvar [namespace current]::mc::ColumnStyle \
-		-variable [namespace current]::Options(column-style) \
+		-command [namespace code [list ToggleOption style:column]] \
+		-tooltipvar ::pgn::setup::mc::ParLayout(column-style) \
+		-variable ::pgn::editor::Options(style:column) \
 		-padx 1 \
 		;
 	::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarParagraphSpacing \
-		-command [namespace code [list ToggleOption paragraph-spacing]] \
-		-tooltipvar [namespace current]::mc::UseParagraphSpacing \
-		-variable [namespace current]::Options(paragraph-spacing) \
+		-command [namespace code [list ToggleOption spacing:paragraph]] \
+		-tooltipvar ::pgn::setup::mc::ParLayout(use-spacing) \
+		-variable ::pgn::editor::Options(spacing:paragraph) \
 		-padx 1 \
 		;
-	set Vars(button:show-move-info) [::toolbar::add $tbDisplay checkbutton \
+	set Vars(button:show:moveinfo) [::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarClock \
-		-command [namespace code [list ToggleOption show-move-info]] \
-		-tooltipvar [namespace current]::mc::ShowMoveInfo \
-		-variable [namespace current]::Options(show-move-info) \
+		-command [namespace code [list ToggleOption show:moveinfo]] \
+		-tooltipvar ::pgn::setup::mc::Display(moveinfo) \
+		-variable ::pgn::editor::Options(show:moveinfo) \
 		-padx 1 \
 	]
 	set Vars(separator:variations) [::toolbar::addSeparator $tbDisplay]
@@ -350,7 +246,7 @@ proc build {parent width height} {
 	set tbLanguages [::toolbar::toolbar $top \
 		-id languages \
 		-side bottom \
-		-tooltipvar [namespace current]::mc::Languages \
+		-tooltipvar [namespace current]::mc::LanguageSelection \
 	]
 	set Vars(lang:active:xx) 1
 	::toolbar::add $tbLanguages checkbutton \
@@ -377,6 +273,29 @@ proc build {parent width height} {
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
 	InitScratchGame
 	Raise history
+}
+
+
+proc refresh {{regardFontSize no}} {
+	variable Vars
+
+	::widget::busyCursor on
+	::pgn::setup::setupStyle editor
+
+	for {set i 0} {$i < 9} {incr i} {
+		::pgn::setup::configureText $Vars(frame:$i)
+	}
+
+	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
+	::scidb::game::refresh -all
+
+	if {$regardFontSize} {
+		if {$Vars(index) >= 0} { ::scidb::game::refresh $Vars(index) -immediate }
+		SetAlignment
+		UpdateScrollbar
+	}
+
+	::widget::busyCursor off
 }
 
 
@@ -430,6 +349,25 @@ proc getTags {position} {
 }
 
 
+proc resetGoto {w position} {
+	variable Vars
+	variable ::pgn::editor::Colors
+
+	if {[llength $Vars(current:$position)]} {
+		$w tag configure $Vars(current:$position) -background $Colors(background)
+		set Vars(current:$position) {}
+	}
+
+	foreach k $Vars(next:$position) { $w tag configure $k -background $Colors(background) }
+	set Vars(next:$position) {}
+
+	if {[llength $Vars(previous:$position)]} {
+		$w tag configure $Vars(previous:$position) -background $Colors(background)
+		set Vars(previous:$position) {}
+	}
+}
+
+
 proc select {{position {}}} {
 	variable Vars
 
@@ -479,6 +417,15 @@ proc historyChanged {} {
 }
 
 
+proc changeFontSize {incr} {
+	if {[::font::changeSize editor $incr]} {
+		refresh
+		SetAlignment
+		UpdateScrollbar
+	}
+}
+
+
 proc editAnnotation {{position -1} {key {}}} {
 	variable Vars
 
@@ -486,7 +433,7 @@ proc editAnnotation {{position -1} {key {}}} {
 		if {[::annotation::open?]} {
 			return [::annotation::close]
 		}
-		set position $Vars(index)
+		set position $Vars(position)
 	}
 
 	if {[string length $key]} {
@@ -500,7 +447,7 @@ proc editAnnotation {{position -1} {key {}}} {
 proc editComment {pos {position -1} {key {}} {lang {}}} {
 	variable Vars
 
-	if {$position == -1} { set position $Vars(index) }
+	if {$position == -1} { set position $Vars(position) }
 	if {[llength $key] == 0 && $pos eq "a" && [::scidb::game::position $position atStart?]} { return }
 
 	if {[llength $lang] == 0} {
@@ -574,6 +521,7 @@ proc Raise {what} {
 		$Vars(panes) raise $Vars(frame:$what)
 		$Vars(main) raise $Vars(games)
 		set Vars(index) $what
+		set Vars(position) $what
 		::toolbar::setState $Vars(toolbar:display) enabled
 		::toolbar::setState $Vars(toolbar:languages) enabled
 		::toolbar::setState $Vars(toolbar:history) disabled
@@ -582,6 +530,7 @@ proc Raise {what} {
 		if {[$Vars(hist) empty?]} { set what logo } else { set what hist }
 		$Vars(main) raise $Vars($what)
 		set Vars(index) -1
+		set Vars(position) -1
 		::toolbar::setState $Vars(toolbar:display) disabled
 		::toolbar::setState $Vars(toolbar:languages) disabled
 		if {$what eq "hist"} {
@@ -618,7 +567,7 @@ proc InitScratchGame {} {
 
 	::scidb::game::subscribe board 9 [namespace parent]::board::update
 	::scidb::game::switch 9
-	set Vars(index) -1
+	set Vars(position) -1
 }
 
 
@@ -675,84 +624,53 @@ proc See {position w key succKey} { ;# NOTE: we do not use succKey
 }
 
 
-proc Configure {w height} {
+proc Configure {height} {
 	variable Vars
 
 	after cancel $Vars(after)
-	set Vars(after) [after 75 [namespace code [list Align $w $height]]]
+	set Vars(after) [after 75 [namespace code [list Align $height]]]
 }
 
 
-proc ConfigureText {w} {
-	variable Options
-	variable Colors
-	variable Vars
-
-	if {$Options(mainline-bold)} {
-		set mainFont $Vars(font-bold)
-	} else {
-		set mainFont $Options(font)
-	}
-
-	$w tag configure eco -font $Vars(font-bold)
-	$w tag configure main -font $mainFont
-	$w tag configure variation -foreground $Colors(variation)
-	$w tag configure nag -foreground $Colors(nag)
-	$w tag configure illegal -foreground $Colors(illegal)
-	$w tag configure result -font $mainFont -foreground $Colors(result)
-#	$w tag configure startvar -foreground $Colors(startvar)
-	$w tag configure bracket -foreground $Colors(bracket)
-	$w tag configure marks -foreground $Colors(marks)
-	$w tag configure header -foreground $Colors(header)
-	$w tag configure empty -foreground $Colors(empty)
-
-	$w tag configure figurine -font $::font::figurine
-	$w tag configure symbol -font $::font::symbol
-	$w tag configure symbolb -font $::font::symbolb
-
-	$w tag configure comment -foreground $Colors(comment)
-	$w tag configure info -foreground $Colors(info)
-	$w tag configure bold -font $Vars(font-bold)
-	$w tag configure italic -font $Vars(font-italic)
-	$w tag configure bold-italic -font $Vars(font-bold-italic)
-	$w tag configure underline -underline true
-
-	$w tag bind illegal <Any-Enter> [namespace code [list Tooltip $w illegal]]
-	$w tag bind illegal <Any-Leave> [namespace code [list Tooltip $w hide]]
-
-	if {$Options(column-style)} {
-		$w configure -tabs $Vars(tabs) -tabstyle wordprocessor
-	} else {
-		$w configure -tabs {} -tabstyle tabular
-	}
-
-	for {set k 0} {$k <= $Vars(indent-max)} {incr k} {
-		set amount [expr {$k*$Options(indent-amount)}]
-		$w tag configure indent$k -lmargin1 $amount -lmargin2 $amount
-	}
-
-	foreach k [array names ::annotation::mc::Nag] {
-		$w tag bind nag$k <Any-Enter> [namespace code [list Tooltip $w $k]]
-		$w tag bind nag$k <Any-Leave> [namespace code [list Tooltip $w hide]]
-	}
-}
-
-
-proc Align {w height} {
+proc Align {height} {
 	variable Vars
 
 	if {$height != $Vars(height)} {
 		set Vars(height) $height
-		set linespace [font metrics [$Vars(pgn:0) cget -font] -linespace]
-		set amounts [list $linespace [expr {$linespace - 2}] [expr {($height - 2) % $linespace}]]
-		::gamebar::setAlignment $Vars(gamebar) $amounts
+		SetAlignment
+		UpdateScrollbar
+	}
+}
+
+
+proc SetAlignment {} {
+	variable Vars
+
+	set height [winfo height $Vars(frame)]
+	set pady [$Vars(pgn:0) cget -pady]
+	set linespace1 [font metrics [$Vars(pgn:0) cget -font] -linespace]
+	set linespace2 [expr {$linespace1 - 2*$pady}]
+	set border [expr {2*[$Vars(pgn:0) cget -borderwidth]}]
+	set delta [expr {($height - $border) % $linespace1}]
+	set amounts [list $linespace1 $linespace2 $delta]
+	::gamebar::setAlignment $Vars(gamebar) $amounts
+}
+
+
+proc UpdateScrollbar {} {
+	variable Vars
+
+	::widget::textLineScroll $Vars(pgn:0) moveto 0
+	set position $Vars(index)
+	if {$position >= 0} {
+		See $position $Vars(pgn:$position) $Vars(current:$position) $Vars(successor:$position)
 	}
 }
 
 
 proc GameBarEvent {action position} {
 	variable Vars
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	switch $action {
 		removed {
@@ -788,7 +706,7 @@ proc GameBarEvent {action position} {
 
 
 proc ToggleOption {var} {
-	variable Options
+	variable ::pgn::editor::Options
 
 	set Options($var) [expr {!$Options($var)}]
 	Refresh $var
@@ -799,7 +717,7 @@ proc ToggleLanguage {lang} {
 	variable Vars
 
 	set Vars(lang:active:$lang) [expr {!$Vars(lang:active:$lang)}]
-	SetLanguages $Vars(index)
+	SetLanguages $Vars(position)
 }
 
 
@@ -839,6 +757,7 @@ proc AddLanguageButton {lang} {
 proc UpdateLanguages {position languages} {
 	variable Vars
 
+	if {$position >= 9} { return }
 	if {$Vars(lang:set) eq $languages} { return }
 
 	if {[llength $Vars(lang:set:$position)]} {
@@ -879,7 +798,7 @@ proc Edit {position ns {key {}} {pos {}} {lang {}}} {
 
 	if {![::gamebar::empty? $Vars(gamebar)]} {
 		if {$position == -1} {
-			set position $Vars(index)
+			set position $Vars(position)
 		}
 
 		if {[llength $key]} {
@@ -906,13 +825,46 @@ proc Dump {w} {
 }
 
 
-proc Update {position data} {
-	variable Options
+proc ConfigureEditor {} {
 	variable Vars
 
-#set clock0 [clock milliseconds]
-	set w $Vars(pgn:$position)
+	set position $Vars(position)
+	::scidb::tree::freeze 1
+	::scidb::game::new 10
+	set Vars(current:10) {}
+	set Vars(successor:10) {}
+	set Vars(previous:10) {}
+	set Vars(next:10) {}
+	set Vars(active:10) {}
+	set Vars(lang:set:10) [list {} $::mc::langID]
+	set Vars(see:10) 1
+	set Vars(dirty:10) 0
+	set Vars(comment:10) ""
+	set Vars(last:10) {}
+	set Vars(virgin:10) 1
+	set Vars(result:10) ""
+	set Vars(header:10) ""
+	set Vars(last:10) ""
+	set Vars(start:10) 1
+	set Vars(tags:10) {}
+	set Vars(after:10) {}
+	set Vars(position) 10
+	::scidb::game::switch 10
+	::pgn::setup::openSetupDialog [winfo toplevel $Vars(main)] editor 10
+	set Vars(position) $position
+	::scidb::game::release 10
+	::scidb::game::switch $position
+	::scidb::tree::freeze 0
+}
 
+
+proc DoLayout {position data {w {}}} {
+	variable ::pgn::editor::Options
+	variable Vars
+
+	if {[llength $w] == 0} { set w $Vars(pgn:$position) }
+
+#set clock0 [clock milliseconds]
 	foreach node $data {
 		switch [lindex $node 0] {
 			start {
@@ -1008,8 +960,15 @@ proc Update {position data} {
 					$w mark set current m-0
 					set prevChar [$w get current-1c]
 					$w delete current end
-					if {$Options(paragraph-spacing)} { $w insert current \n }
-					$w insert current [::util::formatResult $result] result
+					set result [::util::formatResult $result]
+					if {$result eq "*"} {
+						# NOTE: We need a blind character between the marks because
+						# the editor is permuting consecutive marks.
+						$w insert current "\u200b"
+					} else {
+						if {$Options(spacing:paragraph)} { $w insert current \n }
+						$w insert current $result result
+					}
 					$w mark gravity m-0 right
 					# NOTE: the text editor has a severe bug:
 					# If the char after <pos1> is a newline, the command
@@ -1037,11 +996,13 @@ proc Update {position data} {
 
 
 proc Indent {w level key} {
-	variable Options
+	variable ::pgn::editor::Options
 
 	if {$level > 0} {
-		if {($Options(column-style)) && [incr level -1] == 0} { return }
-		set level [expr {min($level, $Options(indent-max))}]
+		if {($::pgn::editor::Options(style:column))} {
+			if {[incr level -1] == 0} { return }
+		}
+		set level [expr {min($level, $Options(indent:max))}]
 		$w tag add indent$level $key current
 	}
 }
@@ -1049,7 +1010,7 @@ proc Indent {w level key} {
 
 proc ProcessGoto {position w key succKey} {
 	variable Vars
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	::move::reset
 
@@ -1061,7 +1022,7 @@ proc ProcessGoto {position w key succKey} {
 		if {[llength $Vars(previous:$position)]} {
 			$w tag configure $Vars(previous:$position) -background $Colors(background)
 		}
-		$w tag configure $key -background $Colors(current)
+		$w tag configure $key -background $Colors(background:current)
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
 		if {[llength $Vars(previous:$position)]} {
@@ -1073,11 +1034,11 @@ proc ProcessGoto {position w key succKey} {
 			}
 		}
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background $Colors(next-move)
+			$w tag configure $k -background $Colors(background:nextmove)
 		}
 		set Vars(previous:$position) $Vars(current:$position)
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
-		::annotation::update $key
+		if {$position < 9} { ::annotation::update $key }
 	} elseif {$Vars(dirty:$position)} {
 		set Vars(dirty:$position) 0
 		after cancel $Vars(after:$position)
@@ -1088,34 +1049,38 @@ proc ProcessGoto {position w key succKey} {
 
 
 proc UpdateHeader {position w data} {
+	variable ::pgn::editor::Options
 	variable Vars
-
-	set idn 0
-	set opening {}
-	set pos ""
-
-	foreach pair $data {
-		lassign $pair name value
-		switch $name {
-			idn		{ set idn $value }
-			eco		{ set eco $value }
-			position { set pos $value }
-			opening	{ set opg $value }
-		}
-	}
 
 	if {!$Vars(virgin:$position)} {
 		$w delete 1.0 m-start
 	}
 
 	$w mark set current 1.0
-	foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
-		set tags {}
-		lassign $line content tags
-		lappend tags header
-		$w insert current $content $tags
+
+	if {$Options(show:opening) || $position < 9} {
+		set idn 0
+		set opening {}
+		set pos ""
+
+		foreach pair $data {
+			lassign $pair name value
+			switch $name {
+				idn		{ set idn $value }
+				eco		{ set eco $value }
+				position { set pos $value }
+				opening	{ set opg $value }
+			}
+		}
+
+		foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
+			set tags {}
+			lassign $line content tags
+			lappend tags opening
+			$w insert current $content $tags
+		}
+		$w insert current "\n"
 	}
-	$w insert current "\n"
 	$w mark set m-start [$w index current]
 	$w mark gravity m-start left
 
@@ -1130,7 +1095,7 @@ proc UpdateHeader {position w data} {
 
 
 proc InsertMove {position w level key data} {
-	variable Options
+	variable ::pgn::editor::Options
 	variable Vars
 
 	if {[llength $data] == 0} {
@@ -1147,26 +1112,33 @@ proc InsertMove {position w level key data} {
 	foreach node $data {
 		switch [lindex $node 0] {
 			break {
-				switch  [lindex $node 1] {
-					0 - 1 - 2	{ set space "\n" }
-					3				{ if {$Options(column-style)} { set space "\n" } else { set space " " } }
-					default		{ set space " " }
+				set lvl [lindex $node 1]
+				if {$lvl <= $Options(indent:max)} {
+					set space "\n"
+				} elseif {$lvl + 1 == $Options(indent:max)} {
+					if {$Options(style:column)} { set space "\n" } else { set space " " }
+				} elseif {	$Options(indent:max) == 0
+							&& (	$Options(style:column)
+								|| ($lvl == 1 && $Options(spacing:paragraph)))} {
+					set space "\n"
+				} else {
+					set space " "
 				}
-
 				$w insert current $space
 			}
 
 			space {
-				set space [lindex $node 1]
+				lassign $node _ space flag number
 				switch $space {
 					" " { $w insert current " " }
-					")" { $w insert current " )" }
-					"s" { $w insert current "\n" }
-					"e" { $w insert current "\n<$mc::EmptyGame>" empty }
+					")" { $w insert current " )" bracket }
+					"e" { $w insert current "\n"; $w insert current "<$mc::EmptyGame>" empty }
+					"s" { if {[$w index current] ne "1.1"} { $w insert current "\n" } }
+					"]" { if {$flag && $level > $Options(indent:max)} { $w insert current "\]" bracket } }
 
 					default {
 						variable cursor::collapse
-						variable Colors
+						variable ::pgn::editor::Colors
 
 						if {$space eq "+"} {
 							$w insert current " "
@@ -1183,12 +1155,28 @@ proc InsertMove {position w level key data} {
 							$w insert current " )" bracket
 						} elseif {[info exists collapse]} {
 							set tag fold:$key
-							$w insert current "( " [list bracket $tag]
-							$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
-							$w tag bind $tag <Any-Leave> +[namespace code [list LeaveBracket $w]]
-							$w tag bind $tag <ButtonPress-1> [namespace code [list ToggleFold $w $key 1]]
+							if {$space eq "\["} {
+								if {$flag && $level > $Options(indent:max)} {
+									$w insert current "\[" [list bracket $tag]
+								}
+								$w insert current "($number) " [list numbering $tag]
+							} else {
+								$w insert current "( " [list bracket $tag]
+							}
+							if {$position < 9} {
+								$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
+								$w tag bind $tag <Any-Leave> +[namespace code [list LeaveBracket $w]]
+								$w tag bind $tag <ButtonPress-1> [namespace code [list ToggleFold $w $key 1]]
+							}
 						} else {
-							$w insert current "( " bracket
+							if {$space eq "\["} {
+								if {$flag && $level > $Options(indent:max)} {
+									$w insert current "\[" bracket
+								}
+								$w insert current "($number) " numbering
+							} else {
+								$w insert current "( " bracket
+							}
 						}
 					}
 				}
@@ -1214,9 +1202,12 @@ proc InsertMove {position w level key data} {
 					set tag marks:$key
 					if {$havePly} { $w insert current " " }
 					$w insert current "\u27f8" [list marks $tag]
-					$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $key]]
-					$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
-					$w tag bind $tag <ButtonPress-1> [namespace code [list openMarksPalette $position $key]]
+					if {$position < 9} {
+						$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $key]]
+						$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
+						$w tag bind $tag <ButtonPress-1> \
+							[namespace code [list openMarksPalette $position $key]]
+					}
 				}
 			}
 
@@ -1228,7 +1219,7 @@ proc InsertMove {position w level key data} {
 				} else {
 					PrintComment $position $w $level $key $type [lindex $node 2]
 				}
-				if {$level == 0 && !($Options(column-style))} {
+				if {$level == 0 && !($Options(style:column))} {
 					$w tag add indent1 $startPos current
 				}
 			}
@@ -1238,8 +1229,8 @@ proc InsertMove {position w level key data} {
 
 
 proc InsertDiagram {position w level key data} {
-	variable Options
-	variable Colors
+	variable ::pgn::editor::Options
+	variable ::pgn::editor::Colors
 	variable Vars
 
 	set color white
@@ -1250,12 +1241,12 @@ proc InsertDiagram {position w level key data} {
 			break { $w insert current "\n" }
 
 			board {
-				set linespace [font metrics [$Vars(pgn:0) cget -font] -linespace]
+				set linespace [font metrics [$w cget -font] -linespace]
 				set borderSize 2
-				set size $Options(diagram-size)
+				set size $Options(diagram:size)
 				set alignment [expr {$linespace - ((8*$size + 2*$borderSize) % $linespace)}]
-				if {$alignment/2 < $Options(diagram-pad-y) - 1} { incr alignment $linespace }
-				if {$alignment/2 - $Options(diagram-pad-y) >= 8} {
+				if {$alignment/2 < $Options(diagram:pady) - 1} { incr alignment $linespace }
+				if {$alignment/2 - $Options(diagram:pady) >= 8} {
 					incr size -1
 					incr alignment -8
 				}
@@ -1273,7 +1264,7 @@ proc InsertDiagram {position w level key data} {
 				$w window create current \
 					-align center \
 					-window $img \
-					-padx $Options(diagram-pad-x) \
+					-padx $Options(diagram:padx) \
 					-pady $pady \
 					;
 			}
@@ -1283,18 +1274,19 @@ proc InsertDiagram {position w level key data} {
 
 
 proc PrintMove {position w level key data annotation} {
-	variable Options
+	variable ::pgn::editor::Options
 
 	lassign $data moveNo stm san legal
-	lappend tags $key
+	set tags $key
 
 	if {$level > 0} {
 		lappend tags variation
+		set main {}
 	} else {
-		lappend tags main
+		set main main
 	}
 
-	if {$level == 0 && $Options(column-style)} {
+	if {$level == 0 && $Options(style:column)} {
 		$w insert current "\t"
 
 		if {$moveNo} {
@@ -1314,38 +1306,48 @@ proc PrintMove {position w level key data annotation} {
 			$w insert current "\u2006"
 		}
 
-		lappend tags $key
+		set myTags [list {*}$tags $main]
 
 		if {$moveNo} {
-			$w insert current $moveNo $tags
-			$w insert current "." $tags
-			if {$stm eq "black"} { $w insert current ".." $tags }
+			$w insert current $moveNo $myTags
+			$w insert current "." $myTags
+			if {$stm eq "black"} { $w insert current ".." $myTags }
 		}
 	}
 
-	foreach {text tag} [::font::splitMoves $san] {
-		PrintSingleMove $position $w $key $text [list {*}$tags $tag]
+	if {$level == 0} {
+		if {!$legal} { lappend tags illegal }
+		if {$Options(weight:mainline) eq "bold"} { set t figurineb } else { set t figurine }
+	} else {
+		set t figurine
 	}
 
-	if {!$legal} {
+	foreach {text tag} [::font::splitMoves $san $t] {
+		if {[llength $tag] == 0} { set tag $main }
+		PrintSingleMove $position $w $key $text [list {*}$tags {*}$tag]
+	}
+
+	if {!$legal && $level > 0} {
 		set tags illegal
-		if {$level == 0} { lappend tags main }
-		$w insert current "\u26A1" $tags
-		$w tag bind illegal <Any-Enter> +[namespace code [list Tooltip $w illegal]]
-		$w tag bind illegal <Any-Leave> +[namespace code [list Tooltip $w hide]]
-		$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+#		if {$level == 0} { lappend tags main }
+		$w insert current "\u26A1" $tags ;# alternatives: u26A0, u2716
+		if {$position < 9} {
+			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+		}
 	}
 }
 
 
 proc PrintSingleMove {position w key text tags} {
 	$w insert current $text [list {*}$tags]
-	$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
-	$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
-	$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-	$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
-	$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
-	$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
+	if {$position < 9} {
+		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
+		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
+		$w tag bind $key <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
+		$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
+		$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
+	}
 }
 
 
@@ -1386,7 +1388,7 @@ proc PrintComment {position w level key pos data} {
 			switch -- $code {
 				sym {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
-					$w insert current [string map $::font::pieceMap $text] [list figurine $langTag]
+					$w insert current [string map $::figurines::pieceMap $text] [list figurine $langTag]
 				}
 				nag {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
@@ -1419,11 +1421,13 @@ proc PrintComment {position w level key pos data} {
 
 		if {[llength $startPos]} {
 			$w tag add comment $startPos current
-			$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$pos:$lang]]
-			$w tag bind $langTag <Leave> \
-				[namespace code [list LeaveComment $w $position $key:$pos:$lang]]
-			$w tag bind $langTag <ButtonPress-1> \
-				[namespace code [list EditComment $position $key $pos $lang]]
+			if {$position < 9} {
+				$w tag bind $langTag <Enter> [namespace code [list EnterComment $w $key:$pos:$lang]]
+				$w tag bind $langTag <Leave> \
+					[namespace code [list LeaveComment $w $position $key:$pos:$lang]]
+				$w tag bind $langTag <ButtonPress-1> \
+					[namespace code [list EditComment $position $key $pos $lang]]
+			}
 			set startPos {}
 		}
 
@@ -1459,9 +1463,11 @@ proc PrintMoveInfo {position w level key data} {
 					}
 					$w insert current [string range $text $k [expr {$n - 1}]] [list $keyTag $tag]
 					$w tag add info $startPos current
-					$w tag bind $keyTag <Enter> [namespace code [list EnterInfo $w $key]]
-					$w tag bind $keyTag <Leave> [namespace code [list LeaveInfo $w $position $key]]
-					$w tag bind $keyTag <ButtonPress-1> [namespace code [list EditInfo $w $position $key]]
+					if {$position < 9} {
+						$w tag bind $keyTag <Enter> [namespace code [list EnterInfo $w $key]]
+						$w tag bind $keyTag <Leave> [namespace code [list LeaveInfo $w $position $key]]
+						$w tag bind $keyTag <ButtonPress-1> [namespace code [list EditInfo $w $position $key]]
+					}
 					set k [incr n]
 				}
 			}
@@ -1477,7 +1483,7 @@ proc PrintMoveInfo {position w level key data} {
 
 
 proc PrintAnnotation {w position level key nags isPrefix} {
-	variable Options
+	variable ::pgn::editor::Options
 
 	set annotation [::font::splitAnnotation $nags]
 	set pos [$w index current]
@@ -1496,7 +1502,7 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
 			if {[lindex [split [$w index current] .] end] ne "0"} {
-				if {!$isPrefix || !$Options(column-style)} {
+				if {$prevSym >= 0 || !$isPrefix} {
 					$w insert current " "
 				}
 			}
@@ -1505,7 +1511,7 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 			if {$count > 1} { $w insert current "\u2005" }
 			set prevSym 1
 		} elseif {$value == 155 || $value == 156} {
-			if {$Options(diagram-show)} {
+			if {$Options(show:diagram)} {
 				set nag ""
 			} else {
 				if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current "\u2005" }
@@ -1517,8 +1523,10 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		}
 		if {[string length $nag]} {
 			$w insert current $nag [list nag$value {*}$tag $nagTag]
-			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
-			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+			if {$position < 9} {
+				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
+				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+			}
 		}
 		set prefix 0
 	}
@@ -1528,7 +1536,10 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 	$w tag raise symbol
 	$w tag raise symbolb
 	$w tag add $keyTag $pos current
-	$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
+
+	if {$position < 9} {
+		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
+	}
 }
 
 
@@ -1555,10 +1566,10 @@ proc Mark {w key} {
 
 proc EnterMove {position key} {
 	variable Vars
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	if {$Vars(current:$position) ne $key} {
-		$Vars(pgn:$position) tag configure $key -background $Colors(hilite)
+		$Vars(pgn:$position) tag configure $key -background $Colors(hilite:move)
 		$Vars(pgn:$position) configure -cursor hand2
 	}
 
@@ -1568,13 +1579,13 @@ proc EnterMove {position key} {
 
 proc LeaveMove {position key} {
 	variable Vars
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	set Vars(active:$position) {}
 
 	if {$Vars(current:$position) ne $key} {
 		if {$key in $Vars(next:$position)} {
-			set color $Colors(next-move)
+			set color $Colors(background:nextmove)
 		} else {
 			set color $Colors(background)
 		}
@@ -1585,15 +1596,15 @@ proc LeaveMove {position key} {
 
 
 proc EnterMark {w tag key} {
-	variable Colors
+	variable ::pgn::editor::Colors
 
-	$w tag configure $tag -background $Colors(emphasized)
+	$w tag configure $tag -background $Colors(hilite:move)
 	::tooltip::show $w [string map {",," "," " " "\n"} [::scidb::game::query marks $key]]
 }
 
 
 proc LeaveMark {w tag} {
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	$w tag configure $tag -background $Colors(background)
 	::tooltip::hide
@@ -1661,45 +1672,45 @@ proc GotoMove {position key} {
 
 
 proc EnterComment {w key} {
-	variable Colors
-	$w tag configure comment:$key -foreground $Colors(comment:hilite)
+	variable ::pgn::editor::Colors
+	$w tag configure comment:$key -foreground $Colors(hilite:comment)
 }
 
 
 proc LeaveComment {w position key} {
-	variable Colors
+	variable ::pgn::editor::Colors
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure comment:$key -foreground $Colors(comment)
+		$w tag configure comment:$key -foreground $Colors(foreground:comment)
 	}
 }
 
 
 proc EnterInfo {w key} {
-	variable Colors
-	$w tag configure info:$key -foreground $Colors(info:hilite)
+	variable ::pgn::editor::Colors
+	$w tag configure info:$key -foreground $Colors(hilite:info)
 }
 
 
 proc LeaveInfo {w position key} {
-	variable Colors
+	variable ::pgn::editor::Colors
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure info:$key -foreground $Colors(info)
+		$w tag configure info:$key -foreground $Colors(foreground:info)
 	}
 }
 
 
 proc EnterAnnotation {w tag} {
-	variable Colors
-	$w tag configure $tag -background $Colors(emphasized)
+	variable ::pgn::editor::Colors
+	$w tag configure $tag -background $Colors(hilite:move)
 }
 
 
 proc LeaveAnnotation {w tag} {
-	variable Colors
+	variable ::pgn::editor::Colors
 	$w tag configure $tag -background $Colors(background)
 }
 
@@ -1714,22 +1725,6 @@ proc EditInfo {w position {key {}}} {
 	}
 
 	::beta::notYetImplemented $w moveinfo
-}
-
-
-proc Tooltip {path nag} {
-	variable ::annotation::mc::Nag
-
-	switch $nag {
-		hide		{ ::tooltip::hide }
-		illegal	{ ::tooltip::show $path $::browser::mc::IllegalMove }
-		
-		default {
-			if {[info exists Nag($nag)]} {
-				::tooltip::show $path $Nag($nag)
-			}
-		}
-	}
 }
 
 
@@ -1749,7 +1744,7 @@ proc Undo {action} {
 
 proc ResetGame {position tags} {
 	variable Vars
-	variable Colors
+	variable ::pgn::editor::Colors
 
 	set w $Vars(pgn:$position)
 
@@ -1786,9 +1781,9 @@ proc ResetGame {position tags} {
 	set Vars(tags:$position) $tags
 
 	SetLanguages $position
-	SetupStyle $position
+	::pgn::setup::setupStyle editor $position
 
-	::scidb::game::subscribe pgn $position [namespace current]::Update
+	::scidb::game::subscribe pgn $position [namespace current]::DoLayout
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
 	::scidb::game::subscribe state $position [namespace current]::StateChanged
@@ -1799,9 +1794,9 @@ proc UpdateButtons {} {
 	variable Vars
 
 	if {[::scidb::game::query moveInfo?]} {
-		::toolbar::add $Vars(button:show-move-info)
+		::toolbar::add $Vars(button:show:moveinfo)
 	} else {
-		::toolbar::remove $Vars(button:show-move-info)
+		::toolbar::remove $Vars(button:show:moveinfo)
 	}
 
 	if {[::scidb::game::query variations?]} {
@@ -1819,10 +1814,8 @@ proc UpdateButtons {} {
 proc PopupMenu {parent position} {
 	variable ::annotation::mc::Nag
 	variable ::annotation::LastNag
-	variable ::scidb::clipbaseName
 	variable ::scidb::scratchbaseName
-	variable MoveStyles
-	variable Options
+	variable ::notation::moveStyles
 	variable Vars
 
 	set menu $parent.__menu__
@@ -1955,6 +1948,21 @@ proc PopupMenu {parent position} {
 			-state $state \
 			;
 
+		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
+			$menu add command \
+				-label " $::import::mc::ImportPgnGame..." \
+				-image $::icon::16x16::filetypePGN \
+				-compound left \
+				-command [namespace code PasteClipboardGame] \
+				;
+		}
+		$menu add command \
+			-label " $::import::mc::ImportPgnVariation..." \
+			-image $::icon::16x16::filetypePGN \
+			-compound left \
+			-command [namespace code PasteClipboardVariation] \
+			;
+
 #		set vars [::scidb::game::next moves -unicode]
 #
 #		foreach {which cmd start} {first FirstVariation 2
@@ -2085,13 +2093,6 @@ proc PopupMenu {parent position} {
 				-command [namespace code [list editComment p $position]] \
 				;
 		} else {
-			$menu add command \
-				-label " $mc::EditCommentAfter..." \
-				-image $::fsbox::bookmarks::icon::16x16::modify \
-				-compound left \
-				-command [namespace code [list editComment p $position]] \
-				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
-				;
 			set accel "$::mc::Key(Ctrl)-$::mc::Key(Shift)-"
 			append accel "[set [namespace parent]::board::mc::Accel(edit-comment)]"
 			$menu add command \
@@ -2100,6 +2101,13 @@ proc PopupMenu {parent position} {
 				-compound left \
 				-command [namespace code [list editComment a $position]] \
 				-accel $accel \
+				;
+			$menu add command \
+				-label " $mc::EditCommentAfter..." \
+				-image $::fsbox::bookmarks::icon::16x16::modify \
+				-compound left \
+				-command [namespace code [list editComment p $position]] \
+				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
 		}
 		if {[::scidb::game::position atEnd?] || [::scidb::game::query length] == 0} {
@@ -2128,23 +2136,6 @@ proc PopupMenu {parent position} {
 			;
 
 		$menu add separator
-
-		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
-			$menu add command \
-				-label " $::import::mc::ImportPgnGame..." \
-				-image $::icon::16x16::filetypePGN \
-				-compound left \
-				-command [namespace code PasteClipboardGame] \
-				;
-		}
-		$menu add command \
-			-label " $::import::mc::ImportPgnVariation..." \
-			-image $::icon::16x16::filetypePGN \
-			-compound left \
-			-command [namespace code PasteClipboardVariation] \
-			;
-
-		$menu add separator
 	}
 
 	foreach action {undo redo} {
@@ -2168,87 +2159,6 @@ proc PopupMenu {parent position} {
 	}
 
 	$menu add separator
-
-	if {![::game::trialMode?]} {
-		lassign [::scidb::game::link? $position] base index
-		unset -nocomplain state
-
-		set actual [::scidb::db::get name]
-
-		if {$base ne $scratchbaseName} {
-			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-				if {$index >= 0} { set state normal } else { set state disabled }
-			} else {
-				set state disabled
-			}
-
-			if {	$base eq $clipbaseName
-				&& [lindex [::scidb::game::sink? $position] 0] eq $scratchbaseName} {
-				set state disabled
-			}
-
-			set name [::util::databaseName $base]
-
-			$menu add command \
-				-label " [format $mc::ReplaceGame $name]" \
-				-image $::icon::16x16::save \
-				-compound left \
-				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
-				-state $state \
-				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-game)]" \
-				;
-
-			if {![::scidb::game::query modified?]} { set state disabled }
-			$menu add command \
-				-label " [format $mc::ReplaceMoves $name]" \
-				-image $::icon::16x16::save \
-				-compound left \
-				-command [namespace code [list replaceMoves $parent]] \
-				-state $state \
-				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(replace-moves)]" \
-				;
-		}
-
-		if {	$actual eq $scratchbaseName
-			|| $actual eq $clipbaseName
-			|| [::scidb::db::get readonly? $actual]} {
-			set state disabled
-		} else {
-			set state normal
-		}
-		$menu add command \
-			-label " [format $mc::AddNewGame [::util::databaseName $actual]]" \
-			-image $::icon::16x16::saveAs \
-			-compound left \
-			-command [list ::dialog::save::open $parent $actual $position] \
-			-state $state \
-			-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(add-new-game)]" \
-			;
-
-		menu $menu.save
-		set count 0
-		set bases [::scidb::app::bases]
-		foreach base $bases {
-			if {$base ne $actual && ![::scidb::db::get readonly? $base]} {
-				set name [::util::databaseName $base]
-				$menu.save add command \
-					-label $name \
-					-command [list ::dialog::save::open $parent $base $position] \
-					;
-				incr count
-			}
-		}
-
-		if {$count} { set state normal } else { set state disabled }
-		$menu add cascade \
-			-menu $menu.save \
-			-label " [format $mc::AddNewGame {}]" \
-			-image $::icon::16x16::saveAs \
-			-compound left \
-			-state $state \
-			;
-		$menu add separator
-	}
 
 	if {[::scidb::game::query variations?]} {
 		$menu add command \
@@ -2275,44 +2185,67 @@ proc PopupMenu {parent position} {
 		;
 	array unset state
 
-	foreach {label var} {ColumnStyle column-style
-								UseParagraphSpacing paragraph-spacing
-								ShowMoveInfo show-move-info
-								BoldTextForMainlineMoves mainline-bold
-								ShowDiagrams diagram-show} {
-		set state normal
+	$menu.display add command \
+		-label " $::font::mc::IncreaseFontSize" \
+		-image $::icon::16x16::font(incr) \
+		-compound left \
+		-command [namespace code [list changeFontSize +1]] \
+		-accel "$::mc::Key(Ctrl) +" \
+		;
+	$menu.display add command \
+		-label " $::font::mc::DecreaseFontSize" \
+		-image $::icon::16x16::font(decr) \
+		-compound left \
+		-command [namespace code [list changeFontSize -1]] \
+		-accel "$::mc::Key(Ctrl) \u2212" \
+		;
+	$menu.display add separator
 
+	foreach {label var} {ParLayout(column-style) style:column
+								ParLayout(use-spacing) spacing:paragraph
+								Display(numbering) show:varnumbers
+								Display(moveinfo) show:moveinfo
+								Diagrams(show) show:diagram} {
 		$menu.display add checkbutton \
-			-label [set mc::$label] \
+			-label [set ::pgn::setup::mc::$label] \
 			-onvalue 1 \
 			-offvalue 0 \
-			-variable [namespace current]::Options($var) \
+			-variable ::pgn::editor::Options($var) \
 			-command [namespace code [list Refresh $var]] \
-			-state $state \
 			;
 	}
 
+	variable _BoldTextForMainlineMoves \
+		[expr {$::pgn::editor::Options(weight:mainline) eq "bold"}]
+	$menu.display add checkbutton \
+		-label $::pgn::setup::mc::ParLayout(mainline-bold) \
+		-onvalue 1 \
+		-offvalue 0 \
+		-variable [namespace current]::_BoldTextForMainlineMoves \
+		-command [namespace code [list Refresh weight:mainline]] \
+		;
+
 	menu $menu.display.moveStyles -tearoff no
 	$menu.display add cascade -menu $menu.display.moveStyles -label $mc::MoveNotation
-	foreach style $MoveStyles {
+	foreach style $moveStyles {
 		$menu.display.moveStyles add radiobutton \
 			-compound left \
-			-label $::mc::MoveForm($style) \
-			-variable [namespace current]::Options(move-style) \
+			-label $::notation::mc::MoveForm($style) \
+			-variable ::pgn::editor::Options(style:move) \
 			-value $style \
-			-command [namespace code [list Refresh move-style]] \
+			-command [namespace code [list Refresh style:move]] \
 			;
 		::theme::configureRadioEntry $menu.display.moveStyles end
 	}
 
 	menu $menu.display.languages -tearoff no
-	$menu.display add cascade -menu $menu.display.languages -label $mc::Languages
+	$menu.display add cascade -menu $menu.display.languages -label $mc::LanguageSelection
 	$menu.display.languages add checkbutton \
 		-compound left \
 		-image $::country::icon::flag([::mc::countryForLang xx]) \
 		-label " $::languagebox::mc::AllLanguages" \
 		-variable [namespace current]::Vars(lang:active:xx) \
-		-command [namespace code [list SetLanguages $Vars(index)]] \
+		-command [namespace code [list SetLanguages $Vars(position)]] \
 		;
 	if {[llength $Vars(lang:set)]} { ;# not the complete set?
 		foreach entry [::country::makeCountryList $Vars(lang:set)] {
@@ -2322,16 +2255,18 @@ proc PopupMenu {parent position} {
 				-image $flag \
 				-label " $name" \
 				-variable [namespace current]::Vars(lang:active:$code) \
-				-command [namespace code [list SetLanguages $Vars(index)]] \
+				-command [namespace code [list SetLanguages $Vars(position)]] \
 				;
 		}
 	}
 
-#	$menu add separator
-#
-#	$menu add command -label "$SetupColors..."
-#	$menu add command -label "$SetupFonts..."
-#
+	$menu.display add separator
+	
+	$menu.display add command \
+		-label "$::pgn::setup::mc::Configure(editor)..." \
+		-command [namespace code ConfigureEditor] \
+		;
+
 #	$menu add separator
 #
 #	$menu add command -label $CopyGameToClipboard
@@ -2364,7 +2299,7 @@ proc HistorySelectionChanged {} {
 proc PasteClipboardGame {} {
 	variable Vars
 
-	set position $Vars(index)
+	set position $Vars(position)
 	::import::openEdit $Vars(frame:$position) $position game
 }
 
@@ -2372,7 +2307,7 @@ proc PasteClipboardGame {} {
 proc PasteClipboardVariation {} {
 	variable Vars
 
-	set position $Vars(index)
+	set position $Vars(position)
 	::import::openEdit $Vars(frame:$position) $position variation
 }
 
@@ -2494,7 +2429,7 @@ proc DoCopyComments {dlg} {
 proc FoldVariations {flag} {
 	variable Vars
 
-	set position $Vars(index)
+	set position $Vars(position)
 	if {$position == -1} { return }
 	::scidb::game::variation fold $flag
 	See $position $Vars(pgn:$position) $Vars(current:$position) $Vars(successor:$position)
@@ -2664,38 +2599,18 @@ proc VerifyNumberOfMoves {dlg length} {
 
 
 proc Refresh {var} {
-	variable Options
-	variable Colors
 	variable Vars
 
-	if {$var eq "mainline-bold"} {
-		if {$Options(mainline-bold)} {
-			set mainFont $Vars(font-bold)
-		} else {
-			set mainFont $Options(font)
-		}
-
-		for {set i 0} {$i < 9} {incr i} {
-			$Vars(pgn:$i) tag configure main -font $mainFont
-		}
+	if {$var eq "weight:mainline"} {
+		variable _BoldTextForMainlineMoves
+		variable ::pgn::editor::Options
+		set Options(weight:mainline) [expr {$_BoldTextForMainlineMoves ? "bold" : "normal"}]
 	}
 
-	set Vars(current:$Vars(index)) {}
-	set Vars(successor:$Vars(index)) {}
-	SetupStyle
+	set Vars(current:$Vars(position)) {}
+	set Vars(successor:$Vars(position)) {}
 
-	if {$var eq "column-style" || $var eq "paragraph-spacing"} {
-		for {set i 0} {$i < 9} {incr i} {
-			if {$Options(column-style)} {
-				$Vars(pgn:$i) configure -tabs $Vars(tabs) -tabstyle wordprocessor
-			} else {
-				$Vars(pgn:$i) configure -tabs {} -tabstyle tabular
-			}
-			set Vars(result:$i) ""
-		}
-	}
-
-	::widget::busyOperation ::scidb::game::refresh -all
+	refresh
 }
 
 
@@ -2708,31 +2623,6 @@ proc NewGame {} {
 proc Shuffle {variant} {
 	variable Vars
 	::menu::gameNew $Vars(main) $variant
-}
-
-
-proc SetupStyle {{position {}}} {
-	variable Options
-	variable Vars
-
-	set Vars(indent-max) $Options(indent-max)
-
-	if {$Options(column-style)} {
-		incr Vars(indent-max)
-		set thresholds {0 0 0 0}
-	} else {
-		set thresholds {240 80 60 0}
-	}
-
-	::scidb::game::setup \
-		{*}$position \
-		{*}$thresholds \
-		$Options(column-style) \
-		$Options(move-style) \
-		$Options(paragraph-spacing) \
-		$Options(diagram-show) \
-		$Options(show-move-info) \
-		;
 }
 
 
@@ -2782,17 +2672,6 @@ proc SaveGame {mode} {
 		}
 	}
 }
-
-
-proc WriteOptions {chan} {
-	variable Vars
-
-#	::options::writeItem $chan [namespace current]::Colors
-	::options::writeItem $chan [namespace current]::Options
-}
-
-
-::options::hookWriter [namespace current]::WriteOptions
 
 
 namespace eval cursor {
@@ -2853,19 +2732,19 @@ set expand [image create photo -data {
 	gg==
 }]
 
-#set collapse [image create photo -data {
-#	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
-#	CXBIWXMAAABIAAAASABGyWs+AAAB7UlEQVQoz1WQvWsTYQCHn/feu9zl0qSXi59E6wetBbU4
-#	itTFqTSCk1D8F3TwHxBH3QUdHOzg5FhXRVFBWkFQaMQ2Hayp1djmq7nk7s3l7nVoF4ff+PB7
-#	eMRCGW7NT/J1rTExMz1z55CTXxBKnYp6XTrd3c1G9++LHaUee/BzS4JYvHmGRndv6srM7JOy
-#	zlzrf6/KQatJmqaQseg7MtlSnbdbYXB73KQmjyWd4tXzlx6dHsnrjQ9vjN7vbUaqT6IGJL2A
-#	TDQ0CuP+2aEYlTfC+JUxfcKvHMWaa335RDzoIyUYAgzAMCBVEZl2m+NOYe6wScXMm3ZFtJu5
-#	OApwz00hsi460QAIKdDhgLj+g3wqcmOWXTETFfqptrB8n8kHz7FPTaKT9AAwUJsbbNy9AUJj
-#	CMM3lYriWLqYgz3+LD5Eej6agwcESaeFHuyhC0USrWOzGQ6XA1fPl7Q2e6+X0IAW7AMaBCCz
-#	Nh3BqBkOl41akC7Vo3418UqYjsQ0+X+2JCmWqEf9ai1Il+Rqi92JMdXK2ubseMHLZ4RGGiBN
-#	iXCyKK9ETYXbn3e7956t8076OXi/zZpnR+uxkRxJHLeo3LwVOG7aEEb3W9D7uLLTu/90jZd+
-#	jvTAdl/5gk/5osflMYuTAEFMfbXNSrXNL9gv8Q+fYd/xb8HXjAAAAABJRU5ErkJggg==
-#}]
+# set collapse [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
+# 	CXBIWXMAAABIAAAASABGyWs+AAAB7UlEQVQoz1WQvWsTYQCHn/feu9zl0qSXi59E6wetBbU4
+# 	itTFqTSCk1D8F3TwHxBH3QUdHOzg5FhXRVFBWkFQaMQ2Hayp1djmq7nk7s3l7nVoF4ff+PB7
+# 	eMRCGW7NT/J1rTExMz1z55CTXxBKnYp6XTrd3c1G9++LHaUee/BzS4JYvHmGRndv6srM7JOy
+# 	zlzrf6/KQatJmqaQseg7MtlSnbdbYXB73KQmjyWd4tXzlx6dHsnrjQ9vjN7vbUaqT6IGJL2A
+# 	TDQ0CuP+2aEYlTfC+JUxfcKvHMWaa335RDzoIyUYAgzAMCBVEZl2m+NOYe6wScXMm3ZFtJu5
+# 	OApwz00hsi460QAIKdDhgLj+g3wqcmOWXTETFfqptrB8n8kHz7FPTaKT9AAwUJsbbNy9AUJj
+# 	CMM3lYriWLqYgz3+LD5Eej6agwcESaeFHuyhC0USrWOzGQ6XA1fPl7Q2e6+X0IAW7AMaBCCz
+# 	Nh3BqBkOl41akC7Vo3418UqYjsQ0+X+2JCmWqEf9ai1Il+Rqi92JMdXK2ubseMHLZ4RGGiBN
+# 	iXCyKK9ETYXbn3e7956t8076OXi/zZpnR+uxkRxJHLeo3LwVOG7aEEb3W9D7uLLTu/90jZd+
+# 	jvTAdl/5gk/5osflMYuTAEFMfbXNSrXNL9gv8Q+fYd/xb8HXjAAAAABJRU5ErkJggg==
+# }]
 
 } ;# namespace 12x12
 
@@ -2940,5 +2819,15 @@ set logo [image create photo -data {
 } ;# namespace icon
 } ;# namespace pgn
 } ;# namespace application
+
+namespace eval pgn {
+namespace eval editor {
+
+proc refresh {regardFontSize}		{ ::application::pgn::refresh $regardFontSize }
+proc resetGoto {w position}		{ ::application::pgn::resetGoto $w $position }
+proc doLayout {position data w}	{ ::application::pgn::DoLayout $position $data $w }
+
+} ;# editor
+} ;# pgn
 
 # vi:set ts=3 sw=3:

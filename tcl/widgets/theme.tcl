@@ -694,14 +694,28 @@ if {[info tclversion] < "8.6"} {
 
 	proc spinbox {args} { ::spinbox {*}$args }
 
+
+	# we don't like text selection while an arrow is pressed
+	bind Spinbox <1> {+
+		switch -exact [%W identify %x %y] {
+			buttonup - buttondown {
+				%W selection clear
+			}
+		}
+	}
+
 } else {
 
 	namespace eval spinbox {
 
-	# ttk::spinbox takes the focus in state "readonly"; this is misplaced!
+	# - ttk::spinbox takes the focus in state "readonly"; this is misplaced!
+	# - we don't like text selection while an arrow is pressed
 	proc Press {w x y} {
 		$w instate disabled { return }
 		$w instate !readonly { focus $w }
+		switch -glob -- [$w identify $x $y] {
+			uparrow - downarrow { $w selection clear }
+		}
 		switch -glob -- [$w identify $x $y] {
 			*textarea	{ ttk::entry::Press $w $x }
 			*rightarrow	-

@@ -190,13 +190,13 @@ public:
 	/// Export one game at the given position.
 	save::State exportGame(unsigned index, Database& destination);
 	/// Add new game to database.
-	save::State addGame(Game const& game);
+	save::State addGame(Game& game);
 	/// Replace game in database.
-	save::State updateGame(Game const& game);
+	save::State updateGame(Game& game);
 	/// Update the characteristics of a game
 	save::State updateCharacteristics(unsigned index, TagSet const& tags);
 	/// Update the move data of a game
-	save::State updateMoves(Game const& game);
+	save::State updateMoves(Game& game);
 
 	/// Removes all games from the database.
 	void clear();

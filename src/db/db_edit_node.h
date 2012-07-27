@@ -61,13 +61,13 @@ public:
 
 	enum Type
 	{
-		TRoot, TOpening, TLanguages,						// root level (unused)
-		TAction,													// root level (used)
-		TMove, TDiagram, TVariation,						// variation level
+		TRoot, TOpening, TLanguages,	// root level (unused)
+		TAction,								// root level (used)
+		TMove, TDiagram, TVariation,	// variation level
 		TPly, TAnnotation, TMarks, TComment, TSpace,	// move level
 	};
 
-	enum Bracket { Blank, Open, Close, Fold, Empty, Start };
+	enum Bracket { Blank, Open, Close, End, Fold, Empty, Start };
 
 	typedef mstl::vector<Node const*> List;
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
@@ -185,7 +185,11 @@ public:
 
 private:
 
-	static void makeList(Work& work, KeyNode::List& result, MoveNode const* node);
+	static void makeList(Work& work,
+								KeyNode::List& result,
+								MoveNode const* node,
+								unsigned varNo,
+								unsigned varCount);
 
 	Node*				m_opening;
 	Node* 			m_languages;
@@ -293,8 +297,8 @@ public:
 	typedef Node::List List;
 
 	Move(Work& work, MoveNode const* move);
-	Move(Work& work, MoveNode const* move, bool isEmptyGame);
-	Move(Work& work, db::Comment const& comment);
+	Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varCount);
+	Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, unsigned varCount);
 
 	Move(Key const& key);
 	Move(Spacing& spacing, Key const& key, unsigned moveNumber, MoveNode const* move);
@@ -401,8 +405,11 @@ class Space : public Node
 {
 public:
 
-	Space(Bracket bracket = Blank);
-	Space(unsigned level);
+	Space();
+	explicit Space(Bracket bracket);
+	explicit Space(Bracket bracket, bool isFirstOrLast);
+	explicit Space(unsigned level, unsigned number, bool isFirstOrLast);
+	explicit Space(unsigned level, bool isFirstOrLast = false);
 
 	bool operator==(Node const* node) const override;
 
@@ -413,7 +420,9 @@ public:
 private:
 
 	int		m_level;
+	unsigned	m_number;
 	Bracket	m_bracket;
+	bool		m_isFirstOrLast;
 };
 
 
@@ -440,7 +449,8 @@ public:
 	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation) = 0;
 	virtual void marks(bool hasMarks) = 0;
-	virtual void space(Bracket bracket) = 0;
+	virtual void number(mstl::string const& number, bool isFirstVar) = 0;
+	virtual void space(Bracket bracket, bool isFirstOrLastVar) = 0;
 	virtual void linebreak(unsigned level) = 0;
 
 	virtual void start(result::ID result) = 0;

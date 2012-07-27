@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "db_game.h"
+#include "db_game_info.h"
 #include "db_move_node.h"
 #include "db_annotation.h"
 #include "db_mark_set.h"
@@ -161,7 +162,6 @@ Game::Game()
 	,m_isIrreversible(false)
 	,m_isModified(false)
 	,m_wasModified(false)
-	,m_containsIllegalMoves(false)
 	,m_finalBoardIsValid(false)
 	,m_line(m_lineBuf[0])
 	,m_linebreakThreshold(0)
@@ -214,7 +214,6 @@ Game::operator=(Game const& game)
 		m_isIrreversible					= false;
 		m_isModified						= false;
 		m_wasModified						= false;
-		m_containsIllegalMoves			= game.m_containsIllegalMoves;
 		m_finalBoardIsValid				= false;
 		m_subscriber						= game.m_subscriber;
 		m_undoIndex							= 0;
@@ -747,6 +746,21 @@ Game::redo()
 	UndoApplyWatcher watcher(m_redoCommand, redo.command);
 	m_isModified = true;
 	applyUndo(redo, true);
+}
+
+
+
+bool
+Game::containsIllegalMoves() const
+{
+	return m_flags & GameInfo::Flag_Illegal_Move;
+}
+
+
+bool
+Game::containsIllegalCastlings() const
+{
+	return m_flags & GameInfo::Flag_Illegal_Castling;
 }
 
 
@@ -1863,6 +1877,29 @@ Game::addMove(mstl::string const& san)
 }
 
 
+void
+Game::addMoves(MoveNodeP node)
+{
+	M_REQUIRE(atLineEnd());
+	M_REQUIRE(isValidVariation(node.get()));
+	M_REQUIRE(node->atLineStart());
+	M_REQUIRE(node->getLineEnd());
+
+	if (node->countHalfMoves() == 0)
+		return;
+
+	insertUndo(Truncate_Variation, AddMoves);
+	m_currentNode->setNext(node->removeNext());
+
+	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
+
+	if (isMainline())
+		flags |= UpdateOpening;
+
+	updateSubscriber(flags);
+}
+
+
 bool
 Game::isValidKey(edit::Key const& key) const
 {
@@ -1895,6 +1932,9 @@ Game::addVariation(MoveNodeP node)
 {
 	M_REQUIRE(node);
 	M_REQUIRE(isBeforeLineEnd());
+	M_REQUIRE(node->atLineStart());
+	M_REQUIRE(node->getLineEnd());
+	M_REQUIRE(node->countHalfMoves() > 0);
 	M_REQUIRE(isValidVariation(node.get()));
 
 	forward();
@@ -2592,7 +2632,6 @@ Game::resetForNextLoad()
 	m_eco = Eco();
 	m_undoCommand = None;
 	m_redoCommand = None;
-	m_containsIllegalMoves = false;
 	m_line.length = 0;
 }
 
@@ -3011,7 +3050,7 @@ Game::setFolded(bool flag)
 
 
 void
-Game::setSubscriber(SubscriberP subscriber, unsigned action)
+Game::setSubscriber(SubscriberP subscriber)
 {
 	if ((m_subscriber = subscriber))
 		moveToMainlineStart();
@@ -3069,7 +3108,17 @@ Game::updateSubscriber(unsigned action)
 		return;
 
 	if (action & UpdateIllegalMoves)
-		m_containsIllegalMoves = m_startNode->containsIllegalMoves();
+	{
+		if (m_startNode->containsIllegalMoves())
+			m_flags |= GameInfo::Flag_Illegal_Move;
+		else
+			m_flags &= ~GameInfo::Flag_Illegal_Move;
+
+		if (m_startNode->containsIllegalCastlings())
+			m_flags |= GameInfo::Flag_Illegal_Castling;
+		else
+			m_flags &= ~GameInfo::Flag_Illegal_Castling;
+	}
 
 	updateLine();
 

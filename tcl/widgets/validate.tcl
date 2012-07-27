@@ -19,6 +19,7 @@
 namespace eval validate {
 
 namespace import ::tcl::mathfunc::max
+namespace import ::tcl::mathfunc::int
 
 proc spinboxInt {w {clamp 1}} {
 	set min [expr {int([$w cget -from])}]
@@ -32,6 +33,19 @@ proc spinboxInt {w {clamp 1}} {
 	$w configure -validatecommand $vcmd -invalidcommand { bell }
 	if {$clamp} {
 		bind $w <FocusOut> +[namespace code { ClampInt %W }]
+	}
+	bind $w <FocusOut> {+ %W selection clear }
+	bind $w <FocusIn>  {+ %W configure -validate key }
+}
+
+
+proc spinboxFloat {w {clamp 1}} {
+	set min [$w cget -from]
+	set max [$w cget -to]
+	set vcmd [namespace code { validateFloat %P }]
+	$w configure -validatecommand $vcmd -invalidcommand { bell }
+	if {$clamp} {
+		bind $w <FocusOut> +[namespace code { ClampFloat %W }]
 	}
 	bind $w <FocusOut> {+ %W selection clear }
 	bind $w <FocusIn>  {+ %W configure -validate key }
@@ -110,7 +124,25 @@ proc ClampInt {w} {
 		set val $max
 	}
 
-	if {[set $var] ne $val} { set $var $val }
+	if {[set $var] != $val} { set $var $val }
+}
+
+
+proc ClampFloat {w} {
+	set min [$w cget -from]
+	set max [$w cget -to]
+	set var [$w cget -textvariable]
+	set val [string trimleft [string trim [set $var]] "0"]
+
+	if {$val == ""} { set val 0.0 }
+
+	if {$val < $min} {
+		set val $min
+	} elseif {$val > $max} {
+		set val $max
+	}
+
+	if {[set $var] != $val} { set $var $val }
 }
 
 } ;# namespace validate

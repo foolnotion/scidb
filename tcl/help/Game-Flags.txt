@@ -40,6 +40,8 @@ BEGIN
   <dt><img src="../images/gameflag-Defense.png"           />&emsp;%::gametable::mc::GameFlags(=)%</dt>
   <dt><img src="../images/gameflag-Material.png"          />&emsp;%::gametable::mc::GameFlags(M)%</dt>
   <dt><img src="../images/gameflag-Piece-Play.png"        />&emsp;%::gametable::mc::GameFlags(P)%</dt>
+  <dt><img src="../images/gameflag-Illegal-Castling.png"  />&emsp;%::gametable::mc::GameFlags(C)%</dt>
+  <dt><img src="../images/gameflag-Illegal-Move.png"      />&emsp;%::gametable::mc::GameFlags(I)%</dt>
 </dl>
 </box>
 END

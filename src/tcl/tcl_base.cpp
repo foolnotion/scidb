@@ -278,22 +278,6 @@ decrRefCount(unsigned objc, Tcl_Obj** objv)
 }
 
 
-static bool
-getCommandInfo(char const* cmd, Tcl_CmdInfo& info)
-{
-	if (Tcl_GetCommandInfo(interp(), cmd, &info))
-		return true;
-
-	mstl::string msg;
-	msg += "Tcl_GetCommandInfo failed: unknown command '";
-	msg += cmd;
-	msg += "'";
-	Tcl_SetObjResult(interp(), Tcl_NewStringObj(msg.c_str(), msg.size()));
-
-	return false;
-}
-
-
 static void
 invocationError(char const* callee, int argc, char const* argv[])
 {
@@ -337,6 +321,22 @@ invocationError(char const* callee, int objc, Tcl_Obj* const objv[])
 
 	Tcl_AddErrorInfo(interp(), msg.c_str());
 	M_THROW(Error());
+}
+
+
+static bool
+getCommandInfo(char const* cmd, Tcl_CmdInfo& info)
+{
+	if (Tcl_GetCommandInfo(interp(), cmd, &info))
+		return true;
+
+	mstl::string msg;
+	msg += "Tcl_GetCommandInfo failed: unknown command '";
+	msg += cmd;
+	msg += "'";
+	Tcl_SetObjResult(interp(), Tcl_NewStringObj(msg.c_str(), msg.size()));
+
+	return false;
 }
 
 

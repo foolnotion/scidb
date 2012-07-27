@@ -406,6 +406,7 @@ proc open {parent base index view source} {
 	set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
 	UpdateContent $dlg 1
 
+	lassign {0 0} w h
 	scan $Geometry "%dx%d" w h
 	set w [max 1024 $w]
 	set h [max 768 $h]

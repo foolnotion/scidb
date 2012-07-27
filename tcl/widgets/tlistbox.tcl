@@ -175,6 +175,7 @@ proc Build {w args} {
 		-fullstripes 1                   \
 		-expensivespanwidth 1            \
 		-state $opts(-state)             \
+		-width 0                         \
 		;
 
 	if {$opts(-width)} { $t configure -width $opts(-width) }
@@ -498,12 +499,19 @@ proc WidgetProc {w command args} {
 		}
 
 		resize {
-			if {[llength $args] > 1 || ([llength $args] == 1 && [lindex $args 0] ne "-force")} {
-				error "wrong # args: should be \"[namespace current] resize ?-force?\""
-			}
-			if {!$Priv(resized) || [llength $args] == 1} {
+			foreach arg $args { if {$arg ni {-width -height -force}} { error "unknown option \"$arg\"" } }
+			set checkScrollbar 0
+			if {"-height" in $args && "-width" ni $args} {
+				ComputeHeight $w
+				set checkScrollbar 1
+			} elseif {"-width" in $args && "-height" ni $args} {
+				ComputeWidth $w
+			} elseif {!$Priv(resized) || "-force" in $args} {
 				ComputeGeometry $w
-
+				set checkScrollbar 1
+				set Priv(resized) 1
+			}
+			if {$checkScrollbar} {
 				if {[winfo exists $w.vsb]} {
 					if {$Priv(height) >= $Priv(last)} {
 						grid remove $w.vsb
@@ -511,9 +519,6 @@ proc WidgetProc {w command args} {
 						grid $w.vsb
 					}
 				}
-
-				set Priv(resized) 1
-#				SetState $t
 			}
 		}
 
@@ -772,14 +777,14 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-maxwidth)]} {
 				set Priv(maxwidth) [expr {max(0, $opts(-maxwidth) - 2*[$t cget -borderwidth])}]
 				if {$Priv(width) == 0} {
-					ComputeGeometry $w
+					ComputeWidth $w
 				}
 				unset opts(-maxwidth)
 			}
 			if {[info exists opts(-minwidth)]} {
 				set Priv(minwidth) [expr {max(0, $opts(-minwidth) - 2*[$t cget -borderwidth])}]
 				if {$Priv(width) == 0} {
-					ComputeGeometry $w
+					ComputeWidth $w
 				}
 				unset opts(-minwidth)
 			}
@@ -795,7 +800,7 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-height)]} {
 				set Priv(height) $opts(-height)
 				set Priv(minheight) $Priv(height)
-				$w resize -force
+				$w resize -force -height
 				unset opts(-height)
 			}
 			set args [array get opts]
@@ -911,10 +916,15 @@ proc FindMatch {w column code mapping} {
 
 
 proc ComputeGeometry {cb} {
+	ComputeWidth $cb
+	ComputeHeight $cb
+}
+
+
+proc ComputeWidth {cb} {
 	variable [namespace current]::${cb}::Priv
 
 	if {[llength $Priv(columns)] == 0} { return }
-
 	set t $cb.__tlistbox__
 
 	if {[llength $Priv(expand)] == 0} {
@@ -947,6 +957,14 @@ proc ComputeGeometry {cb} {
 			$t column expand $Priv(expand)
 		}
 	}
+}
+
+
+proc ComputeHeight {cb} {
+	variable [namespace current]::${cb}::Priv
+
+	if {[llength $Priv(columns)] == 0} { return }
+	set t $cb.__tlistbox__
 
 	set last [expr {min($Priv(last), $Priv(height))}]
 	set height 0

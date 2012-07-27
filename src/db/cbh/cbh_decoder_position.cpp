@@ -77,7 +77,7 @@ Position::doMove(Move move)
 
 	move.setColor(board.sideToMove());
 
-	if (board.isValidMove(move, move::DontAllowIllegalMove))
+	if (board.isValidMove(move, move::AllowIllegalMove))
 		move.setLegalMove();
 	else if (!board.checkMove(move, move::AllowIllegalMove))
 		return Move::empty();

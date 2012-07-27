@@ -21,167 +21,167 @@ bind TreeCtrl <Leave> {
 bind TreeCtrl <ButtonPress-1> {
     TreeCtrl::ButtonPress1 %W %x %y
 }
-#bind TreeCtrl <Double-ButtonPress-1> {
-#    TreeCtrl::DoubleButton1 %W %x %y
-#}
+# bind TreeCtrl <Double-ButtonPress-1> {
+#     TreeCtrl::DoubleButton1 %W %x %y
+# }
 bind TreeCtrl <Button1-Motion> {
     TreeCtrl::Motion1 %W %x %y
 }
 bind TreeCtrl <ButtonRelease-1> {
     TreeCtrl::Release1 %W %x %y
 }
-#bind TreeCtrl <Shift-ButtonPress-1> {
-#    set TreeCtrl::Priv(buttonMode) normal
-#    TreeCtrl::BeginExtend %W [%W item id {nearest %x %y}]
-#}
-# Command-click should provide a discontinuous selection on OSX
-#switch -- [tk windowingsystem] {
-#    "aqua" { set modifier Command }
-#    default { set modifier Control }
-#}
-#bind TreeCtrl <$modifier-ButtonPress-1> {
-#    set TreeCtrl::Priv(buttonMode) normal
-#    TreeCtrl::BeginToggle %W [%W item id {nearest %x %y}]
-#}
+# bind TreeCtrl <Shift-ButtonPress-1> {
+#     set TreeCtrl::Priv(buttonMode) normal
+#     TreeCtrl::BeginExtend %W [%W item id {nearest %x %y}]
+# }
+#  Command-click should provide a discontinuous selection on OSX
+# switch -- [tk windowingsystem] {
+#     "aqua" { set modifier Command }
+#     default { set modifier Control }
+# }
+# bind TreeCtrl <$modifier-ButtonPress-1> {
+#     set TreeCtrl::Priv(buttonMode) normal
+#     TreeCtrl::BeginToggle %W [%W item id {nearest %x %y}]
+# }
 bind TreeCtrl <Button1-Leave> {
     TreeCtrl::Leave1 %W %x %y
 }
 bind TreeCtrl <Button1-Enter> {
     TreeCtrl::Enter1 %W %x %y
 }
-#
+# 
 bind TreeCtrl <KeyPress-Up> {
     TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active -1]
 }
-#bind TreeCtrl <Shift-KeyPress-Up> {
-#    TreeCtrl::Extend %W above
-#}
+# bind TreeCtrl <Shift-KeyPress-Up> {
+#     TreeCtrl::Extend %W above
+# }
 bind TreeCtrl <KeyPress-Down> {
     TreeCtrl::SetActiveItem %W [TreeCtrl::UpDown %W active 1]
 }
-#bind TreeCtrl <Shift-KeyPress-Down> {
-#    TreeCtrl::Extend %W below
-#}
-#bind TreeCtrl <KeyPress-Left> {
-#    if {[%W cget -orient] eq "vertical" && [%W cget -wrap] eq ""} {
-#	%W item collapse [%W item id active]
-#    } else {
-#	TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active -1]
-#    }
-#}
-#bind TreeCtrl <Shift-KeyPress-Left> {
-#    TreeCtrl::Extend %W left
-#}
-#bind TreeCtrl <Control-KeyPress-Left> {
-#    %W xview scroll -1 pages
-#}
-#bind TreeCtrl <KeyPress-Right> {
-#    if {[%W cget -orient] eq "vertical" && [%W cget -wrap] eq ""} {
-#	%W item expand [%W item id active]
-#    } else {
-#	TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active 1]
-#    }
-#}
-#bind TreeCtrl <Shift-KeyPress-Right> {
-#    TreeCtrl::Extend %W right
-#}
-#bind TreeCtrl <Control-KeyPress-Right> {
-#    %W xview scroll 1 pages
-#}
-#bind TreeCtrl <KeyPress-Prior> {
-#    %W yview scroll -1 pages
-#    if {[%W item id {nearest 0 0}] ne ""} {
-#	%W activate {nearest 0 0}
-#    }
-#}
-#bind TreeCtrl <KeyPress-Next> {
-#    %W yview scroll 1 pages
-#    if {[%W item id {nearest 0 0}] ne ""} {
-#	%W activate {nearest 0 0}
-#    }
-#}
-#bind TreeCtrl <Control-KeyPress-Prior> {
-#    %W xview scroll -1 pages
-#}
-#bind TreeCtrl <Control-KeyPress-Next> {
-#    %W xview scroll 1 pages
-#}
-#bind TreeCtrl <KeyPress-Home> {
-#    %W xview moveto 0
-#}
-#bind TreeCtrl <KeyPress-End> {
-#    %W xview moveto 1
-#}
-#bind TreeCtrl <Control-KeyPress-Home> {
-#    TreeCtrl::SetActiveItem %W [%W item id {first visible state enabled}]
-#}
-#bind TreeCtrl <Shift-Control-KeyPress-Home> {
-#    TreeCtrl::DataExtend %W [%W item id {first visible state enabled}]
-#}
-#bind TreeCtrl <Control-KeyPress-End> {
-#    TreeCtrl::SetActiveItem %W [%W item id {last visible state enabled}]
-#}
-#bind TreeCtrl <Shift-Control-KeyPress-End> {
-#    TreeCtrl::DataExtend %W [%W item id {last visible state enabled}]
-#}
-#bind TreeCtrl <<Copy>> {
-#    if {[string equal [selection own -displayof %W] "%W"]} {
-#	clipboard clear -displayof %W
-#	clipboard append -displayof %W [selection get -displayof %W]
-#    }
-#}
-#bind TreeCtrl <KeyPress-space> {
-#    TreeCtrl::BeginSelect %W [%W item id active]
-#}
-#bind TreeCtrl <KeyPress-Select> {
-#    TreeCtrl::BeginSelect %W [%W item id active]
-#}
-#bind TreeCtrl <Control-Shift-KeyPress-space> {
-#    TreeCtrl::BeginExtend %W [%W item id active]
-#}
-#bind TreeCtrl <Shift-KeyPress-Select> {
-#    TreeCtrl::BeginExtend %W [%W item id active]
-#}
-#bind TreeCtrl <KeyPress-Escape> {
-#    TreeCtrl::Cancel %W
-#}
-#bind TreeCtrl <Control-KeyPress-slash> {
-#    TreeCtrl::SelectAll %W
-#}
-#bind TreeCtrl <Control-KeyPress-backslash> {
-#    if {[string compare [%W cget -selectmode] "browse"]} {
-#	%W selection clear
-#    }
-#}
+# bind TreeCtrl <Shift-KeyPress-Down> {
+#     TreeCtrl::Extend %W below
+# }
+# bind TreeCtrl <KeyPress-Left> {
+#     if {[%W cget -orient] eq "vertical" && [%W cget -wrap] eq ""} {
+# 	%W item collapse [%W item id active]
+#     } else {
+# 	TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active -1]
+#     }
+# }
+# bind TreeCtrl <Shift-KeyPress-Left> {
+#     TreeCtrl::Extend %W left
+# }
+# bind TreeCtrl <Control-KeyPress-Left> {
+#     %W xview scroll -1 pages
+# }
+# bind TreeCtrl <KeyPress-Right> {
+#     if {[%W cget -orient] eq "vertical" && [%W cget -wrap] eq ""} {
+# 	%W item expand [%W item id active]
+#     } else {
+# 	TreeCtrl::SetActiveItem %W [TreeCtrl::LeftRight %W active 1]
+#     }
+# }
+# bind TreeCtrl <Shift-KeyPress-Right> {
+#     TreeCtrl::Extend %W right
+# }
+# bind TreeCtrl <Control-KeyPress-Right> {
+#     %W xview scroll 1 pages
+# }
+# bind TreeCtrl <KeyPress-Prior> {
+#     %W yview scroll -1 pages
+#     if {[%W item id {nearest 0 0}] ne ""} {
+# 	%W activate {nearest 0 0}
+#     }
+# }
+# bind TreeCtrl <KeyPress-Next> {
+#     %W yview scroll 1 pages
+#     if {[%W item id {nearest 0 0}] ne ""} {
+# 	%W activate {nearest 0 0}
+#     }
+# }
+# bind TreeCtrl <Control-KeyPress-Prior> {
+#     %W xview scroll -1 pages
+# }
+# bind TreeCtrl <Control-KeyPress-Next> {
+#     %W xview scroll 1 pages
+# }
+# bind TreeCtrl <KeyPress-Home> {
+#     %W xview moveto 0
+# }
+# bind TreeCtrl <KeyPress-End> {
+#     %W xview moveto 1
+# }
+# bind TreeCtrl <Control-KeyPress-Home> {
+#     TreeCtrl::SetActiveItem %W [%W item id {first visible state enabled}]
+# }
+# bind TreeCtrl <Shift-Control-KeyPress-Home> {
+#     TreeCtrl::DataExtend %W [%W item id {first visible state enabled}]
+# }
+# bind TreeCtrl <Control-KeyPress-End> {
+#     TreeCtrl::SetActiveItem %W [%W item id {last visible state enabled}]
+# }
+# bind TreeCtrl <Shift-Control-KeyPress-End> {
+#     TreeCtrl::DataExtend %W [%W item id {last visible state enabled}]
+# }
+# bind TreeCtrl <<Copy>> {
+#     if {[string equal [selection own -displayof %W] "%W"]} {
+# 	clipboard clear -displayof %W
+# 	clipboard append -displayof %W [selection get -displayof %W]
+#     }
+# }
+# bind TreeCtrl <KeyPress-space> {
+#     TreeCtrl::BeginSelect %W [%W item id active]
+# }
+# bind TreeCtrl <KeyPress-Select> {
+#     TreeCtrl::BeginSelect %W [%W item id active]
+# }
+# bind TreeCtrl <Control-Shift-KeyPress-space> {
+#     TreeCtrl::BeginExtend %W [%W item id active]
+# }
+# bind TreeCtrl <Shift-KeyPress-Select> {
+#     TreeCtrl::BeginExtend %W [%W item id active]
+# }
+# bind TreeCtrl <KeyPress-Escape> {
+#     TreeCtrl::Cancel %W
+# }
+# bind TreeCtrl <Control-KeyPress-slash> {
+#     TreeCtrl::SelectAll %W
+# }
+# bind TreeCtrl <Control-KeyPress-backslash> {
+#     if {[string compare [%W cget -selectmode] "browse"]} {
+# 	%W selection clear
+#     }
+# }
 
-#bind TreeCtrl <KeyPress-plus> {
-#    %W item expand [%W item id active]
-#}
-#bind TreeCtrl <KeyPress-minus> {
-#    %W item collapse [%W item id active]
-#}
-#bind TreeCtrl <KeyPress-Return> {
-#    %W item toggle [%W item id active]
-#}
+# bind TreeCtrl <KeyPress-plus> {
+#     %W item expand [%W item id active]
+# }
+# bind TreeCtrl <KeyPress-minus> {
+#     %W item collapse [%W item id active]
+# }
+# bind TreeCtrl <KeyPress-Return> {
+#     %W item toggle [%W item id active]
+# }
 
 
 # Additional Tk bindings that aren't part of the Motif look and feel:
 
-#bind TreeCtrl <ButtonPress-2> {
-#    TreeCtrl::ScanMark %W %x %y
-#}
-#bind TreeCtrl <Button2-Motion> {
-#    TreeCtrl::ScanDrag %W %x %y
-#}
+# bind TreeCtrl <ButtonPress-2> {
+#     TreeCtrl::ScanMark %W %x %y
+# }
+# bind TreeCtrl <Button2-Motion> {
+#     TreeCtrl::ScanDrag %W %x %y
+# }
 
-#if {$tcl_platform(platform) eq "windows"} {
-#    bind TreeCtrl <Control-ButtonPress-3> {
-#	TreeCtrl::ScanMark %W %x %y
-#    }
-#    bind TreeCtrl <Control-Button3-Motion> {
-#	TreeCtrl::ScanDrag %W %x %y
-#    }
-#}
+# if {$tcl_platform(platform) eq "windows"} {
+#     bind TreeCtrl <Control-ButtonPress-3> {
+# 	TreeCtrl::ScanMark %W %x %y
+#     }
+#     bind TreeCtrl <Control-Button3-Motion> {
+# 	TreeCtrl::ScanDrag %W %x %y
+#     }
+# }
 
 # MouseWheel
 if {[string equal "x11" [tk windowingsystem]]} {

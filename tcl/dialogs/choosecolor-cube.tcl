@@ -31,17 +31,10 @@ package require tkscidb
 namespace eval dialog {
 namespace eval choosecolor {
 
-set Methods [lreplace $Methods 0 0 cube]
+set Methods [lreplace $Methods [lsearch $Methods circle] [lsearch $Methods circle] cube]
 set AdjustWidth -10
 
 namespace eval cube {
-
-variable HugeColorCube
-variable ColorCube
-variable Widget
-variable Size
-variable HSV
-variable AfterId {}
 
 namespace import [namespace parent]::hsv2rgb
 namespace import [namespace parent]::rgb2hsv
@@ -58,24 +51,24 @@ proc Icon {} { return [[namespace parent]::circle::Icon] }
 
 
 proc MakeFrame {container} {
-	variable Widget
-	variable Size
+	variable Vars
 
 	set width 225
 	set height 195
 	
-	set cchoose1	[tk::canvas $container.hs \
-							-width $width \
-							-height $height \
-							-borderwidth 2 \
-							-relief sunken \
-							-highlightthickness 1]
-	set cchoose2	[tk::canvas $container.v \
-							-width $width \
-							-height 15 \
-							-borderwidth 2 \
-							-relief sunken \
-							-highlightthickness 1]
+	set cchoose1 [tk::canvas $container.hs \
+		-width $width \
+		-height $height \
+		-borderwidth 2 \
+		-relief sunken \
+		-highlightthickness 1 \
+	]
+	set cchoose2 [tk::canvas $container.v \
+		-width $width \
+		-height 15 \
+		-borderwidth 2 \
+		-relief sunken \
+	]
 	
 	place $cchoose1 -x 0 -y 0
 	place $cchoose2 -x 0 -y 226
@@ -102,16 +95,17 @@ proc MakeFrame {container} {
 	bind $cchoose2 <B1-Motion>			[namespace code { SelectV %x %y }]
 	bind $cchoose2 <ButtonRelease-1>	+[list focus $cchoose2]
 
-	set Widget(hs) $cchoose1
-	set Widget(v) $cchoose2
-	set Size -1
+	set Vars(widget:hs) $cchoose1
+	set Vars(widget:v) $cchoose2
+	set Vars(after) {}
+	set Vars(size) -1
 }
 
 
 proc Configure {width height} {
-	variable icon::11x11::ArrowDown
-	variable Widget
-	variable Size
+	variable [namespace parent]::icon::11x11::ArrowUp
+	variable [namespace parent]::icon::11x11::ActiveArrowUp
+	variable Vars
 
 	incr height -17
 	incr width -6
@@ -126,83 +120,107 @@ proc Configure {width height} {
 	} else {
 		set xsize [expr {round($ysize*(511.0/443.0))}]
 	}
-	if {$Size == $ysize} { return }
-	set Size $ysize
+	if {$Vars(size) == $ysize} { return }
+	set Vars(size) $ysize
 
 	### setup Value window ###########################
-	$Widget(v) configure -height $vbarSize
-	$Widget(v) configure -width $xsize
-	$Widget(v) xview moveto 0
-	$Widget(v) yview moveto 0
-	$Widget(v) delete all
-	place forget $Widget(v)
-	place $Widget(v) -x 0 -y [expr {$ysize + 12}]
+	$Vars(widget:v) configure -height $vbarSize
+	$Vars(widget:v) configure -width $xsize
+	$Vars(widget:v) xview moveto 0
+	$Vars(widget:v) yview moveto 0
+#	place forget $Vars(widget:v)
+	place $Vars(widget:v) -x 0 -y [expr {$ysize + 12}]
 
-	set ncells	[min $xsize 30]
+	if {[llength [$Vars(widget:v) find withtag all]] == 0} {
+		for {set i 1} {$i <= 255} {incr i} {
+			$Vars(widget:v) create rectangle 0 0 0 0 -width 0 -tags val[expr {255 - $i}]
+		}
+
+		$Vars(widget:v) create image 0 0 -anchor n -image $ArrowUp -tags target
+		$Vars(widget:v) create image 0 0 -anchor n -image $ActiveArrowUp -tags active
+		$Vars(widget:v) itemconfigure active -state hidden
+
+		bind $Vars(widget:v) <FocusIn> "
+			$Vars(widget:v) itemconfigure target -state hidden
+			$Vars(widget:v) itemconfigure active -state normal
+		"
+		bind $Vars(widget:v) <FocusOut> "
+			$Vars(widget:v) itemconfigure target -state normal
+			$Vars(widget:v) itemconfigure active -state hidden
+		"
+	}
+
+	set ncells	[min $xsize 255]
 	set step		[expr {double($xsize)/double($ncells)}]
-	set height	[$Widget(v) cget -height]
+	set height	[$Vars(widget:v) cget -height]
 	set x0		0
 
 	for {set i 1} {$i <= $ncells} {incr i} {
 		set x1 [expr {round($i*$step)}]
-		$Widget(v) create rectangle $x0 0 $x1 $height -width 0 -tags val[expr {$ncells - $i}]
+		$Vars(widget:v) coords val[expr {$ncells - $i}] $x0 0 $x1 $height
 		set x0 $x1
 	}
+	for {} {$i <= 255} {incr i} {
+		$Vars(widget:v) coords val[expr {$ncells - $i}] 0 0 0 0
+	}
 
-	$Widget(v) create image 0 0 -anchor n -image $ArrowDown -tags target
+	set Vars(y0) [expr {$height - 12}]
+	$Vars(widget:hs) raise crosshair1
+	$Vars(widget:hs) raise crosshair2
 
 	### setup Hue-Saturation window ##################
-	$Widget(hs) configure -height $ysize
-	$Widget(hs) configure -width $xsize
-	$Widget(hs) xview moveto 0
-	$Widget(hs) yview moveto 0
-	$Widget(hs) delete all
-
+	$Vars(widget:hs) configure -height $ysize
+	$Vars(widget:hs) configure -width $xsize
+	$Vars(widget:hs) xview moveto 0
+	$Vars(widget:hs) yview moveto 0
+	$Vars(widget:hs) delete cube
 	after idle [namespace code [list MakeCubeImage $xsize $ysize]]
 
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {n crosshair} -state hidden
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {w crosshair} -state hidden
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {e crosshair} -state hidden
-	$Widget(hs) create line 0 0 1 1 -width 1 -tags {s crosshair} -state hidden
+	if {[llength [$Vars(widget:hs) find withtag crosshair1]] == 0} {
+		[namespace parent]::circle::MakeCrossHair $Vars(widget:hs)
+		$Vars(widget:hs) itemconfigure crosshair1 -state hidden
+		$Vars(widget:hs) itemconfigure crosshair2 -state hidden
+	}
+
+	$Vars(widget:hs) raise crosshair1
+	$Vars(widget:hs) raise crosshair2
 }
 
 
 proc Update {r g b afterResize} {
-	variable Widget
-	variable HSV
+	variable Vars
 
-	set HSV [rgb2hsv $r $g $b]
-	lassign $HSV h s v
+	set Vars(hsv) [rgb2hsv $r $g $b]
+	lassign $Vars(hsv) h s v
 
 	eval Reflect [hsv2rgb $h $s 1.0]
 	DrawValues
-	$Widget(v) coords target [expr {round((1.0 - $v)*([$Widget(v) cget -width] - 1))}] 1
+	set x [expr {round((1.0 - $v)*([$Vars(widget:v) cget -width] - 1))}]
+	$Vars(widget:v) coords target $x $Vars(y0)
+	$Vars(widget:v) coords active $x $Vars(y0)
 }
 
 
 proc Reflect {r g b} {
-	variable Widget
-	variable HSV
+	variable Vars
 
-	set w		[expr {[$Widget(hs) cget -width] - 1}]
+	set w		[expr {[$Vars(widget:hs) cget -width] - 1}]
 	set s		[expr {511.0/$w}]
 	set xc	[expr {$r - ($g + $b)/2.0}]
 	set yc	[expr {0.8660254038*($g - $b)}]	;# (sqrt(3)/2)*(g - b)
 	set x		[expr {round(($xc + 255.0)/$s)}]
 	set y		[expr {round((221.0 - $yc)/$s)}]
 
-	[namespace parent]::circle::DrawCrosshair $Widget(hs) $x $y [list $r $g $b]
+	[namespace parent]::circle::DrawCrosshair $Vars(widget:hs) $x $y [list $r $g $b]
 }
 
 
 proc SelectHS {x y} {
-	variable AfterId
-	variable Widget
-	variable HSV
+	variable Vars
 
 	set x		[expr {$x - 3}]
 	set y		[expr {$y - 3}]
-	set w		[$Widget(hs) cget -width]
+	set w		[$Vars(widget:hs) cget -width]
 	set sc	[expr {511.0/$w}]
 	set xt	[expr {$sc*$x - 255}]
 	set yt	[expr {221 - $sc*$y}]
@@ -211,27 +229,25 @@ proc SelectHS {x y} {
 
 	set s		[expr {(255.0 - $s)/255.0}]
 	set h		[expr {$s == 0 ? 0 : $h}]
-	set v		[lindex $HSV 2]
-	set HSV	[list $h $s $v]
+	set v		[lindex $Vars(hsv) 2]
 
+	set Vars(hsv)	[list $h $s $v]
 	eval Reflect [hsv2rgb $h $s 1.0]
 	[namespace parent]::SetRGB [hsv2rgb $h $s $v]
 
-	after cancel $AfterId
-	set AfterId [after 30 [namespace code { DrawValues }]]
+	after cancel $Vars(after)
+	set Vars(after) [after 30 [namespace code { DrawValues }]]
 }
 
 
 proc MoveHS {xdir ydir {repeat 1}} {
-	variable Widget
-	variable AfterId
-	variable HSV
+	variable Vars
 
-	lassign [[namespace parent]::circle::CrosshairCoords $Widget(hs)] x y
+	lassign [[namespace parent]::circle::CrosshairCoords $Vars(widget:hs)] x y
 
 	set x		[expr {$x + $repeat*$xdir}]
 	set y		[expr {$y - $repeat*$ydir}]
-	set w		[$Widget(hs) cget -width]
+	set w		[$Vars(widget:hs) cget -width]
 	set sc	[expr {511.0/$w}]
 
 	for {} {$repeat > 0} {incr repeat -1} {
@@ -248,58 +264,58 @@ proc MoveHS {xdir ydir {repeat 1}} {
 	if {$hs == ""} { return }
 	lassign $hs h s
 	
-	set s		[expr {(255.0 - $s)/255.0}]
-	set h		[expr {$s == 0 ? 0 : $h}]
-	set v		[lindex $HSV 2]
-	set HSV	[list $h $s $v]
+	set s [expr {(255.0 - $s)/255.0}]
+	set h [expr {$s == 0 ? 0 : $h}]
+	set v [lindex $Vars(hsv) 2]
 
+	set Vars(hsv) [list $h $s $v]
 	[namespace parent]::SetRGB [hsv2rgb $h $s $v]
-	[namespace parent]::circle::DrawCrosshair $Widget(hs) $x $y [hsv2rgb $h $s 1.0]
+	[namespace parent]::circle::DrawCrosshair $Vars(widget:hs) $x $y [hsv2rgb $h $s 1.0]
 
-	after cancel $AfterId
-	set AfterId [after idle [namespace code { DrawValues }]]
+	after cancel $Vars(after)
+	set Vars(after) [after idle [namespace code { DrawValues }]]
 }
 
 
 proc SelectV {x y} {
-	variable Widget
-	variable HSV
+	variable Vars
 
-	set width [$Widget(v) cget -width]
+	set width [$Vars(widget:v) cget -width]
 	set x [[namespace parent]::Clip $x 0 [expr {$width - 1}]]
-	$Widget(v) coords target $x 1
+	$Vars(widget:v) coords target $x $Vars(y0)
+	$Vars(widget:v) coords active $x $Vars(y0)
 	set v [expr {1.0 - double($x*$width)/double($width*($width - 1))}]
-	set HSV [lreplace $HSV 2 2 $v]
-	[namespace parent]::SetRGB [eval hsv2rgb $HSV]
+	set Vars(hsv) [lreplace $Vars(hsv) 2 2 $v]
+	[namespace parent]::SetRGB [eval hsv2rgb $Vars(hsv)]
 }
 
 
 proc MoveV {xdir} {
-	variable Widget
+	variable Vars
 
-	lassign [$Widget(v) coords target] x y
+	lassign [$Vars(widget:v) coords target] x y
 	SelectV [expr {round($x + $xdir)}] [expr {round($y)}]
 }
 
 
 proc DrawValues {} {
-	variable Widget
-	variable HSV
+	variable Vars
 
-	lassign $HSV hue sat
+	lassign $Vars(hsv) hue sat
 
-	set width	[$Widget(v) cget -width]
-	set ncells	[min $width 30]
+	set width	[$Vars(widget:v) cget -width]
+	set ncells	[min $width 255]
 	set step		[expr {1.0/($ncells - 1)}]
 
 	for {set i 0} {$i < $ncells} {incr i} {
 		set rgb [hsv2rgb $hue $sat [expr {$i*$step}]]
-		$Widget(v) itemconfigure val$i -fill [eval format "\#%02x%02x%02x" $rgb]
+		$Vars(widget:v) itemconfigure val$i -fill [eval format "\#%02x%02x%02x" $rgb]
 	}
 }
 
 
 proc DetermineColor {x y clip} {
+	# ---------------------------------------------------------------------
 	# Converting from RGB to Color Circle Location
 	# ---------------------------------------------------------------------
 	# The (x,y) coordinates of a particular color in color circle space is
@@ -313,6 +329,7 @@ proc DetermineColor {x y clip} {
  	#	y = sqrt(3)*(G - B)/2
 	# ---------------------------------------------------------------------
 	# ("Number by Colors" by B. Forthner and T. E. Meyer, p. 144)
+	# ---------------------------------------------------------------------
 
 	set h [expr {57.295779513082*atan2($y,$x)}]	;# 180/PI*atan2(y,x)
 	if {$h < 0} { set h [expr {$h + 360.0}] }
@@ -347,7 +364,7 @@ proc DetermineColor {x y clip} {
 proc MakeCubeImage {width height} {
 	variable HugeColorCube
 	variable ColorCube
-	variable Widget
+	variable Vars
 
 	catch { image delete $ColorCube }
 
@@ -358,9 +375,10 @@ proc MakeCubeImage {width height} {
 		MakeCube $width 36 12
 	}
 	
-	$Widget(hs) create image 0 0 -anchor nw -image $ColorCube -tag cube
-	$Widget(hs) lower cube
-	$Widget(hs) itemconfigure crosshair -state normal
+	$Vars(widget:hs) create image 0 0 -anchor nw -image $ColorCube -tags cube
+	$Vars(widget:hs) lower cube
+	$Vars(widget:hs) itemconfigure crosshair1 -state normal
+	$Vars(widget:hs) itemconfigure crosshair2 -state normal
 }
 
 
@@ -1114,20 +1132,6 @@ proc makeImage {} {
 	return 1
 }
 
-#makeImage
-
-namespace eval icon {
-namespace eval 11x11 {
-
-set ArrowDown [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAsAAAALCAYAAACprHcmAAAAeUlEQVQY04XNMQ7DIBBE0aFE
-	3MclUkqU++QKXMgpkeKOAyFB5e8uIjHGK22zmnlrWmtrrfVZStHVOOdkrd0ELDnn3RiDpOGm
-	lAAekiRgDSEMg957gM/3zUz/UbvCST+pM32ojvRL9V+/VbvCO8Y4V3sd2G/VrvAa3Q8ROZBw
-	lCx6eQAAAABJRU5ErkJggg==
-}]
-
-} ;# namespace 11x11
-} ;# namespace icon
 } ;# namespace cube
 } ;# namespace choosecolor
 } ;# namespace dialog

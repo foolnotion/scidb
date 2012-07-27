@@ -34,81 +34,76 @@
 ::mc::AsciiMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
-::mc::Key(Alt)			"Alt" ;# NEW
+::mc::Key(Alt)		"Alt" ;# NEW
 ::mc::Key(Ctrl)		"Ctrl" ;# NEW
 ::mc::Key(Down)		"\u2193"
-::mc::Key(End)			"End" ;# NEW
+::mc::Key(End)		"End" ;# NEW
 ::mc::Key(Home)		"Home" ;# NEW
 ::mc::Key(Left)		"\u2190"
 ::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
-::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
-::mc::Key(Right)		"\u2192"
-::mc::Key(Shift)		"Shift" ;# NEW
-::mc::Key(Up)			"\u2191"
-
-::mc::MoveForm(alg)	"Algebraic" ;# NEW
-::mc::MoveForm(san)	"Short Algebraic" ;# NEW
-::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
-::mc::MoveForm(eng)	"English" ;# NEW
-::mc::MoveForm(cor)	"Correspondence" ;# NEW
-::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+::mc::Key(Prior)	"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)	"\u2192"
+::mc::Key(Shift)	"Shift" ;# NEW
+::mc::Key(Up)		"\u2191"
 
 ::mc::Alignment		"Sorba rendezés(?)"
-::mc::Apply				"Alkalmaz"
-::mc::Archive			"Archive" ;# NEW
-::mc::Background		"Háttér"
-::mc::Black				"Sötét"
-::mc::Bottom			"Alsó"	;#Alul??
-::mc::Cancel			"Mégse"
-::mc::Clear				"Törlése"
-::mc::Close				"Bezár"
-::mc::Color				"Szín"
-::mc::Colors			"Színek"
-::mc::Copy				"Másol"
-::mc::Cut				"Kivág"
-::mc::Dark				"Sötét"
-::mc::Database			"Adatbázis"
-::mc::Delete			"Töröl"
-::mc::Edit				"Szerkeszt"
-::mc::Escape			"Kilépés"
-::mc::From				"From" ;# NEW
-::mc::Game				"Játszma"
-::mc::Layout			"Layout"
-::mc::Left				"Bal"
-::mc::Lite				"Világos"
-::mc::Modify			"Módosít"
-::mc::No					"Nem"
+::mc::Apply		"Alkalmaz"
+::mc::Archive		"Archive" ;# NEW
+::mc::Background	"Háttér"
+::mc::Black		"Sötét"
+::mc::Bottom		"Alsó"	;#Alul??
+::mc::Cancel		"Mégse"
+::mc::Clear		"Törlése"
+::mc::Close		"Bezár"
+::mc::Color		"Szín"
+::mc::Colors		"Színek"
+::mc::Configuration	"Configuration" ;# NEW
+::mc::Copy		"Másol"
+::mc::Cut		"Kivág"
+::mc::Dark		"Sötét"
+::mc::Database		"Adatbázis"
+::mc::Delete		"Töröl"
+::mc::Edit		"Szerkeszt"
+::mc::Escape		"Kilépés"
+::mc::From		"From" ;# NEW
+::mc::Game		"Játszma"
+::mc::Layout		"Layout"
+::mc::Left		"Bal"
+::mc::Lite		"Világos"
+::mc::Modify		"Módosít"
+::mc::No		"Nem"
 ::mc::NotAvailable	"Nem elérhető" ;# I put it back, since n/e has no meaning in hungarian, unlike n/a in english; Zoltan 2010.02.11
-::mc::Number			"Szám"
-::mc::OK					"OK"
-::mc::Paste				"Beillesztés"
-::mc::PieceSet			"Bábukészlet"
-::mc::Preview			"Előnézet"
-::mc::Redo				"Újra"
-::mc::Remove			"Remove" ;# NEW
-::mc::Reset				"Reset"
-::mc::Right				"Jobb"
+::mc::Number		"Szám"
+::mc::OK		"OK"
+::mc::Order		"Order" ;# NEW
+::mc::Paste		"Beillesztés"
+::mc::PieceSet		"Bábukészlet"
+::mc::Preview		"Előnézet"
+::mc::Redo		"Újra"
+::mc::Remove		"Remove" ;# NEW
+::mc::Reset		"Reset"
+::mc::Right		"Jobb"
 ::mc::SelectAll		"Mindent kijelöl"
-::mc::Texture			"Textúra"
-::mc::Theme				"Téma"
-::mc::To					"To" ;# NEW
-::mc::Top				"Felső"  ;# felül
-::mc::Undo				"Visszavonás"
+::mc::Texture		"Textúra"
+::mc::Theme		"Téma"
+::mc::To		"To" ;# NEW
+::mc::Top		"Felső"  ;# felül
+::mc::Undo		"Visszavonás"
 ::mc::Variation		"Variáció"
-::mc::White				"Világos"
-::mc::Yes				"igen"
+::mc::White		"Világos"
+::mc::Yes		"igen"
 
 ::mc::LogicalReset	"Reset" ;# NEW
-::mc::LogicalAnd		"És"
+::mc::LogicalAnd	"És"
 ::mc::LogicalOr		"Vagy"
-::mc::LogicalNot		"Nem"
+::mc::LogicalNot	"Nem"
 
-::mc::King				"Király"
-::mc::Queen				"Vezér"
-::mc::Rook				"Bástya"
-::mc::Bishop			"Futó"
-::mc::Knight			"Huszár"
-::mc::Pawn				"Gyalog"
+::mc::King		"Király"
+::mc::Queen		"Vezér"
+::mc::Rook		"Bástya"
+::mc::Bishop		"Futó"
+::mc::Knight		"Huszár"
+::mc::Pawn		"Gyalog"
 
 ### scidb ##############################################################
 ::scidb::mc::CannotOverwriteTheme	"A %s témát nem lehet felülírni."
@@ -468,16 +463,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffixed Commentaries"
 ::application::pgn::mc::StripOriginalComments			"Strip original comments" ;# NEW
 
-::application::pgn::mc::AddNewGame							"Mentés: új játszma hozzáadása %s-hez..."
-::application::pgn::mc::ReplaceGame							"Mentés: Játszma felülírása %s-ben..."
-::application::pgn::mc::ReplaceMoves						"Mentés: Replace Moves Only in Game..."
-
-::application::pgn::mc::ColumnStyle							"Oszlop stílus"
-::application::pgn::mc::UseParagraphSpacing				"Bekezdés stílus"
-::application::pgn::mc::ShowMoveInfo						"Lépés információ mutatása"
-::application::pgn::mc::BoldTextForMainlineMoves		"Főváltozat félkövér betűkkel"
-::application::pgn::mc::ShowDiagrams						"Diagramok mutatása"
-::application::pgn::mc::Languages							"Nyelvek"
+::application::pgn::mc::LanguageSelection				"Nyelvek" ;# NEW change to "Language Selection"
 ::application::pgn::mc::MoveNotation					"Move Notation" ;# NEW
 ::application::pgn::mc::CollapseVariations				"Változatok elrejtése"
 ::application::pgn::mc::ExpandVariations					"Változatok kibontása"
@@ -643,6 +629,66 @@
 
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly "Preselected only"
+
+### pgn-setup ##########################################################
+::pgn::setup::mc::Configure(editor)			"Customize Editor" ;# NEW
+::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
+::pgn::setup::mc::Pixel					"pixel" ;# NEW
+::pgn::setup::mc::RevertSettings			"Revert to initial settings" ;# NEW
+::pgn::setup::mc::ResetSettings				"Reset to factory settings" ;# NEW
+::pgn::setup::mc::DiscardAllChanges			"Discard all applied changes?" ;# NEW
+
+::pgn::setup::mc::Setup(Appearance)			"Appearance" ;# NEW
+::pgn::setup::mc::Setup(Layout)				"Layout" ;# NEW
+::pgn::setup::mc::Setup(Diagrams)			"Diagrams" ;# NEW
+::pgn::setup::mc::Setup(MoveStyle)			"Move Style" ;# NEW
+
+::pgn::setup::mc::Setup(Fonts)				"Fonts" ;# NEW
+::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
+::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
+::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
+::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+
+::pgn::setup::mc::Setup(Colors)				"Colors" ;# NEW
+::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
+::pgn::setup::mc::Setup(start-position)			"Start Position" ;# NEW
+::pgn::setup::mc::Setup(variations)			"Variations" ;# NEW
+::pgn::setup::mc::Setup(numbering)			"Numbering" ;# NEW
+::pgn::setup::mc::Setup(brackets)			"Brackets" ;# NEW
+::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
+::pgn::setup::mc::Setup(comments)			"Comments" ;# NEW
+::pgn::setup::mc::Setup(annotation)			"Annotation" ;# NEW
+::pgn::setup::mc::Setup(marks)				"Marks" ;# NEW
+::pgn::setup::mc::Setup(move-info)			"Move Information" ;# NEW
+::pgn::setup::mc::Setup(result)				"Result" ;# NEW
+::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
+::pgn::setup::mc::Setup(next-moves)			"Next Moves" ;# NEW
+::pgn::setup::mc::Setup(empty-game)			"Empty Game" ;# NEW
+
+::pgn::setup::mc::Setup(Hovers)				"Hovers" ;# NEW
+::pgn::setup::mc::Setup(hover-move)			"Move" ;# NEW
+::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
+::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+
+::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::ParLayout(use-spacing)		"Bekezdés stílus"
+::pgn::setup::mc::ParLayout(column-style)		"Oszlop stílus"
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(mainline-bold)		"Főváltozat félkövér betűkkel"
+
+::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
+::pgn::setup::mc::Variations(width)			"Indent Width" ;# NEW
+::pgn::setup::mc::Variations(level)			"Indent Level" ;# NEW
+
+::pgn::setup::mc::Section(Display)				"Display" ;# NEW
+::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
+::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+
+::pgn::setup::mc::Section(Diagrams)			"Diagrams" ;# NEW
+::pgn::setup::mc::Diagrams(show)			"Diagramok mutatása"
+::pgn::setup::mc::Diagrams(square-size)			"Square Size" ;# NEW
+::pgn::setup::mc::Diagrams(indentation)			"Indent Width" ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Játszma megjelölése töröltként"
@@ -860,6 +906,11 @@
 ::font::mc::CopyFile				"Copy file %s" ;# NEW
 ::font::mc::UpdateFontCache			"Updating font cache" ;# NEW
 
+::font::mc::ChooseFigurineFont			"Choose figurine font" ;# NEW
+::font::mc::ChooseSymbolFont			"Choose symbol font" ;# NEW
+::font::mc::IncreaseFontSize			"Increase Font Size" ;# NEW
+::font::mc::DecreaseFontSize			"Decrease Font Size" ;# NEW
+
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"kiinduló állás"
 ::gamebar::mc::Players				"Játékosok"
@@ -874,13 +925,17 @@
 ::gamebar::mc::NewGameSndPart			"Játszma"
 ::gamebar::mc::Unlock				"Zárolás feloldása"
 
-::gamebar::mc::LockGame					"Játszma zárolása"
-::gamebar::mc::CloseGame				"Játszma bezárása"
+::gamebar::mc::LockGame				"Játszma zárolása"
+::gamebar::mc::CloseGame			"Játszma bezárása"
 
-::gamebar::mc::GameNew					"Új tábla"
-::gamebar::mc::GameNewChess960		"Új játszma: Chess 960" ;# NEW
-::gamebar::mc::GameNewChess960Sym	"Új játszma: Chess 960 (symmetrical only)" ;# NEW
+::gamebar::mc::GameNew				"Új tábla"
+::gamebar::mc::GameNewChess960			"Új játszma: Chess 960" ;# NEW
+::gamebar::mc::GameNewChess960Sym		"Új játszma: Chess 960 (symmetrical only)" ;# NEW
 ::gamebar::mc::GameNewShuffle			"Új játszma: Shuffle Chess" ;# NEW
+
+::gamebar::mc::AddNewGame			"Mentés: új játszma hozzáadása %s-hez..."
+::gamebar::mc::ReplaceGame			"Mentés: Játszma felülírása %s-ben..."
+::gamebar::mc::ReplaceMoves			"Mentés: Replace Moves Only in Game..."
 
 ### browser ############################################################
 ::browser::mc::BrowseGame		"Játszma áttekintése"
@@ -1079,8 +1134,6 @@
 ::export::mc::PostscriptSpecials			"Postscript Specialities" ;# NEW
 ::export::mc::BoardSize						"Tábla méret"
 
-::export::mc::Notation				"Notation"
-::export::mc::Graphic				"Grafika"
 ::export::mc::Short				"Rövid"
 ::export::mc::Long				"Hosszú"
 ::export::mc::Algebraic				"Algebrai"
@@ -1192,6 +1245,21 @@
 ::export::mc::Option(pgn,comment_to_html)		"Megjegyzés írása HTML stílusban"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Érvénytelen lépést tartalmazó játszmák elvetése"
 ::export::mc::Option(pgn,use_utf8_encoding)		"Use UTF-8 encoding" ;# NEW
+
+### notation ###########################################################
+::notation::mc::Notation	"Notation" ;# NEW
+
+::notation::mc::MoveForm(alg)	"Algebraic" ;# NEW
+::notation::mc::MoveForm(san)	"Short Algebraic" ;# NEW
+::notation::mc::MoveForm(lan)	"Long Algebraic" ;# NEW
+::notation::mc::MoveForm(eng)	"English" ;# NEW
+::notation::mc::MoveForm(cor)	"Correspondence" ;# NEW
+::notation::mc::MoveForm(tel)	"Telegraphic" ;# NEW
+
+### figurine ###########################################################
+::figurines::mc::Figurines	"Figurines" ;# NEW
+::figurines::mc::Graphic	"Grafika"
+::figurines::mc::User		"User" ;# NEW meaning is "user defined"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame			"Játszma mentése"
@@ -1438,7 +1506,7 @@
 ::crosstable::mc::Knockout			"Kieséses"
 ::crosstable::mc::RankingList			"Rangsor"
 
-::crosstable::mc::Order				"Order"
+::crosstable::mc::Order				"Order" ;# NEW
 ::crosstable::mc::Type				"Tábla típus"
 ::crosstable::mc::Score				"Pont"
 ::crosstable::mc::Alphabetical			"Alphabetical"
@@ -1643,11 +1711,10 @@
 ::dialog::choosecolor::mc::BaseColors		"Alap színek"
 ::dialog::choosecolor::mc::UserColors		"Felhasználó színek"
 ::dialog::choosecolor::mc::RecentColors		"Legutóbbi színek"
-::dialog::choosecolor::mc::OldColor		"Régi színek"
-::dialog::choosecolor::mc::CurrentColor		"Aktuális színek"
 ::dialog::choosecolor::mc::Old			"Régi"
 ::dialog::choosecolor::mc::Current		"Aktuális"
 ::dialog::choosecolor::mc::Color		"Szín"
+::dialog::choosecolor::mc::HexCode		"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Színválasztás"
 ::dialog::choosecolor::mc::Red			"Vörös"
 ::dialog::choosecolor::mc::Green		"Zöld"
@@ -1657,7 +1724,6 @@
 ::dialog::choosecolor::mc::Value		"Érték"
 ::dialog::choosecolor::mc::Enter		"Bevitel"
 ::dialog::choosecolor::mc::AddColor		"A kiválasztott szín hozzáadaása a felhasználói színekhez"
-::dialog::choosecolor::mc::ClickToEnter		"Kattintson a hexadecimális kódok beviteléhez"
 
 ### choosefont #########################################################
 ::dialog::choosefont::mc::Apply				"&Alkalmaz"

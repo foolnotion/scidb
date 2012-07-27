@@ -495,7 +495,7 @@ Database::newGame(Game& game, GameInfo const& info)
 
 
 save::State
-Database::addGame(Game const& game)
+Database::addGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
@@ -505,6 +505,9 @@ Database::addGame(Game const& game)
 	ByteStream strm(buffer, sizeof(buffer));
 
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+
+	if (format() != format::Scidb)
+		game.setFlags(game.flags() & ~(GameInfo::Flag_Illegal_Castling | GameInfo::Flag_Illegal_Move));
 
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
 	m_namebases.update();
@@ -528,7 +531,7 @@ Database::addGame(Game const& game)
 
 
 save::State
-Database::updateGame(Game const& game)
+Database::updateGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
@@ -537,8 +540,16 @@ Database::updateGame(Game const& game)
 
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
+	GameInfo& info(*m_gameInfoList[game.index()]);
+
+	if (format() == format::Scidb)
+	{
+		info.setIllegalCastling(game.containsIllegalCastlings());
+		info.setIllegalMove(game.containsIllegalMoves());
+	}
 
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
+	game.setFlags(info.flags());
 
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
 
@@ -562,7 +573,7 @@ Database::updateGame(Game const& game)
 
 
 save::State
-Database::updateMoves(Game const& game)
+Database::updateMoves(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
@@ -578,6 +589,25 @@ Database::updateMoves(Game const& game)
 
 	if (save::isOk(state))
 	{
+		GameInfo& info = *m_gameInfoList[game.index()];
+
+		if (format() == format::Scidb)
+		{
+			bool illegalCastling	= game.containsIllegalCastlings();
+			bool illegalMoves		= game.containsIllegalMoves();
+
+			if (	illegalCastling != info.containsIllegalCastlings()
+				|| illegalMoves != info.containsIllegalMoves())
+			{
+				info.setIllegalCastling(illegalCastling);
+				info.setIllegalMove(illegalMoves);
+
+				if (!m_memoryOnly)
+					m_codec->update(m_rootname, game.index(), false);
+			}
+		}
+
+		game.setFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
 	}

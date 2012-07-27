@@ -418,7 +418,7 @@ proc fsbox {w type args} {
 	bind $top.main <<ThemeChanged>> [namespace code [list ThemeChanged $w]]
 
 	set tl [winfo toplevel $top]
-	bind $tl <Escape>		[list $Vars(button:cancel) invoke]
+#	bind $tl <Escape>		[list $Vars(button:cancel) invoke]
 	bind $tl <Return>		[list $Vars(button:ok) invoke]
 	bind $tl <Alt-Key>	[namespace code [list AltKeyInDialog $top $tl %A]]
 	bind $tl <Alt-Left>	[namespace code [list Undo $top $w]]
@@ -1692,6 +1692,7 @@ proc Build {w path args} {
 		-takefocus 0             \
 		-command [list $t yview] \
 		;
+	bind $sb <ButtonPress-1> [list focus $t]
 
 	grid $t -row 0 -column 0 -sticky nsew
 	grid $sb -row 0 -column 1 -sticky ns
@@ -2331,6 +2332,8 @@ proc Build {w path args} {
 	grid columnconfigure $path.f {0} -weight 1
 	grid rowconfigure $path.f {0} -weight 1
 
+	bind $sh <ButtonPress-1> [list focus $t]
+	bind $sv <ButtonPress-1> [list focus $t]
 	SetColumnBackground $t tail $Vars(stripes) $opts(-background)
 
 	set linespace [max [font metrics [$t cget -font] -linespace] 20]
@@ -4177,16 +4180,12 @@ set details [image create photo -data {
 }]
 
 set list [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
-	ZSBJbWFnZVJlYWR5ccllPAAAAaFJREFUeNqskz1LA0EQhmf3LmkVrATFIrUWptMmoKBW8U8o
-	RIgpLPwPKZRY2IggiK2olUZBmwgpokI4SRVQRDDEkEsM0dzejrPZC35dQCULw+3DzDvLvMOx
-	1XQZpMSDloSoYCaM5LfgbnQBuBQguT8/jC1CkIlDg8G8qUQOimhqbgAEAKznATZm+wFBn7VP
-	jF4+NdMHieNKNGAawCOVI3BYEBqUtKpatElFmzfE9le+9bhJoTRKy5LJZOexf59w7LiOpTfE
-	7QKiamjVEK1qdy4JxNhJXT0c5stnjRxHB14dAJPpjgalOEXgG3fyb1TLpQtt7fTzPiALQIuS
-	E0O64KqsY3LYnx2qRW6A0vbGgyXywLIRD+71jMUmYvEFcb8LW3Rf6niQ8DwQ8mNGTqGuJviz
-	lMoXF9raKZpDkgcuJcYHdUGB9l2oUfsu7DIVBkz1zIN4uo7XdcRsTc+ovlnae9b25+sGYjz9
-	0vbAXDmt5prVx4vdzEBE0JRqk3uXNu2dfh7mzzuZGrj207nSgvob6YRUNxXeSOFfcMjT/hzp
-	L/wuwACc0EGVyt8jVQAAAABJRU5ErkJggg==
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAgVBMVEUyMjJeXl53d3c7btI9
+	b9JFedZQiNpUjN1kmeJsn+Nflt50o+N1peWGr+eJsumVuusDAwMHBwcMDAwSEhIXFxceHh4k
+	JCQmJiYrKystLS00NDQ8PDxDQ0NKSkpRUVFTU1NYWFhZWVlgYGBlZWVra2twcHB0dHR3d3eP
+	tumlxO21z/GEKRhQAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsT
+	AQCanBgAAAAHdElNRQfcBwcLGA7vKcjiAAAALklEQVQY02NgIALwo2MtfhSMqYIIwIeGeTV5
+	UDADAzcaJgJwoWMNLhSMqQINAAA88gRFwRK+FAAAAABJRU5ErkJggg==
 }]
 
 set locked [image create photo -data {

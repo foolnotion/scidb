@@ -46,6 +46,7 @@ inline bool GameInfo::isDirty() const							{ return m_gameFlags & Flag_Dirty; }
 inline bool GameInfo::isChanged() const						{ return m_gameFlags & Flag_Changed; }
 inline bool GameInfo::hasPromotion() const					{ return m_signature.hasPromotion(); }
 inline bool GameInfo::hasUnderPromotion() const				{ return m_signature.hasUnderPromotion(); }
+inline bool GameInfo::containsIllegalCastlings() const	{ return m_gameFlags & Flag_Illegal_Castling; }
 inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag_Illegal_Move; }
 inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLength & 1; }
 inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId; }
@@ -109,6 +110,17 @@ GameInfo::setIllegalMove(bool flag)
 		m_gameFlags |= Flag_Illegal_Move;
 	else
 		m_gameFlags &= ~Flag_Illegal_Move;
+}
+
+
+inline
+void
+GameInfo::setIllegalCastling(bool flag)
+{
+	if (flag)
+		m_gameFlags |= Flag_Illegal_Castling;
+	else
+		m_gameFlags &= ~Flag_Illegal_Castling;
 }
 
 

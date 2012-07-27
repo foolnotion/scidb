@@ -54,6 +54,7 @@ SOURCES = \
 	widgets/tcombobox.tcl \
 	widgets/colormenu.tcl \
 	widgets/table.tcl \
+	widgets/treetable.tcl \
 	widgets/scrolledframe.tcl \
 	widgets/gamebar.tcl \
 	widgets/gamehistory.tcl \
@@ -81,7 +82,8 @@ SOURCES = \
 	widgets/html.tcl \
 	widgets/choosedir.tcl \
 	widgets/fsbox.tcl \
-	widgets/choosedir.tcl \
+	widgets/figurines.tcl \
+	widgets/notation.tcl \
 	widgets/twm.tcl \
 	gametable.tcl \
 	playertable.tcl \
@@ -112,6 +114,7 @@ SOURCES = \
 	app-tree-games.tcl \
 	app-variation.tcl \
 	app-analysis.tcl \
+	pgn-setup.tcl \
 	save-replace.tcl \
 	export.tcl \
 	import.tcl \

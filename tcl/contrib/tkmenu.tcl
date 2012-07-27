@@ -1548,6 +1548,11 @@ proc ::tk_popup {menu x y {entry {}}} {
 	set Priv(popup) $menu
 	tk_menuSetFocus $menu
     }
+    ### FIX begin ####################################################################
+    # tk_menuSetFocus is not always sufficient
+    tkwait visibility $menu
+    focus -force $menu
+    ### FIX end ######################################################################
 }
 
 ### MODERNIZE begin ##########################################################

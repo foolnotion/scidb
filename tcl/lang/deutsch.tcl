@@ -45,13 +45,6 @@
 ::mc::Key(Shift)		"Umschalt"
 ::mc::Key(Up)			"\u2191"
 
-::mc::MoveForm(alg)	"Algebraisch"
-::mc::MoveForm(san)	"Algebraisch - Kurzform"
-::mc::MoveForm(lan)	"Algebraisch - Langform"
-::mc::MoveForm(eng)	"Englisch"
-::mc::MoveForm(cor)	"Korrespondenz"
-::mc::MoveForm(tel)	"Telegraphie"
-
 ::mc::Alignment		"Ausrichtung"
 ::mc::Apply				"Anwenden"
 ::mc::Archive			"Archiv"
@@ -63,6 +56,7 @@
 ::mc::Close				"Schliessen"
 ::mc::Color				"Farbe"
 ::mc::Colors			"Farben"
+::mc::Configuration	"Gestaltung"
 ::mc::Copy				"Kopieren"
 ::mc::Cut				"Ausschneiden"
 ::mc::Dark				"Dunkel"
@@ -80,6 +74,7 @@
 ::mc::NotAvailable	"n/v"
 ::mc::Number			"Nummer"
 ::mc::OK					"OK"
+::mc::Order				"Sortierung"
 ::mc::Paste				"Einfügen"
 ::mc::PieceSet			"Figurensatz"
 ::mc::Preview			"Vorschau"
@@ -467,16 +462,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffix-Kommentierungen"
 ::application::pgn::mc::StripOriginalComments			"Ursprungskommentare entfernen"
 
-::application::pgn::mc::AddNewGame							"Partie hinzufügen zu %s..."
-::application::pgn::mc::ReplaceGame							"Partie ersetzen in %s..."
-::application::pgn::mc::ReplaceMoves						"Partiezüge ersetzen in aktueller Partie..."
-
-::application::pgn::mc::ColumnStyle							"Spaltenanzeige"
-::application::pgn::mc::UseParagraphSpacing				"Absatzformatierung"
-::application::pgn::mc::ShowMoveInfo						"Zuginformationen anzeigen"
-::application::pgn::mc::BoldTextForMainlineMoves		"Fettdruck für Hauptfortsetzung"
-::application::pgn::mc::ShowDiagrams						"Diagramme zeigen"
-::application::pgn::mc::Languages							"Sprachen"
+::application::pgn::mc::LanguageSelection					"Sprachauswahl"
 ::application::pgn::mc::MoveNotation						"Zugnotation"
 ::application::pgn::mc::CollapseVariations				"Alle Varianten zusammenfalten"
 ::application::pgn::mc::ExpandVariations					"Alle Varianten auffalten"
@@ -642,6 +628,66 @@
 
 ### board::texture #####################################################
 ::board::texture::mc::PreselectedOnly 	"Nur die Vorauswahl"
+
+### pgn-setup ##########################################################
+::pgn::setup::mc::Configure(editor)				"Editor konfigurieren"
+::pgn::setup::mc::Configure(browser)			"Textausgabe konfigurieren"
+::pgn::setup::mc::Pixel								"pixel"
+::pgn::setup::mc::RevertSettings					"Auf Anfangswerte zurücksetzen"
+::pgn::setup::mc::ResetSettings					"Auf Werkseinstellung zurücksetzen"
+::pgn::setup::mc::DiscardAllChanges				"Alle bereits angewendeten Änderungen verwerfen?"
+
+::pgn::setup::mc::Setup(Appearance)				"Aussehen"
+::pgn::setup::mc::Setup(Layout)					"Layout"
+::pgn::setup::mc::Setup(Diagrams)				"Diagramme"
+::pgn::setup::mc::Setup(MoveStyle)				"Zugdarstellung"
+
+::pgn::setup::mc::Setup(Fonts)					"Zeichensätze"
+::pgn::setup::mc::Setup(font-and-size)			"Textsatz und Größe"
+::pgn::setup::mc::Setup(figurine-font)			"Figurensatz (normal)"
+::pgn::setup::mc::Setup(figurine-bold)			"Figurensatz (fett)"
+::pgn::setup::mc::Setup(symbol-font)			"Symbolsatz"
+
+::pgn::setup::mc::Setup(Colors)					"Farben"
+::pgn::setup::mc::Setup(Highlighting)			"Hervorhebungen"
+::pgn::setup::mc::Setup(start-position)		"Startposition"
+::pgn::setup::mc::Setup(variations)				"Varianten"
+::pgn::setup::mc::Setup(numbering)				"Nummerierung"
+::pgn::setup::mc::Setup(brackets)				"Klammern"
+::pgn::setup::mc::Setup(illegal-move)			"Regelwidriger Zug"
+::pgn::setup::mc::Setup(comments)				"Kommentare"
+::pgn::setup::mc::Setup(annotation)				"Anmerkungen"
+::pgn::setup::mc::Setup(marks)					"Markierungen"
+::pgn::setup::mc::Setup(move-info)				"Zuginformationen"
+::pgn::setup::mc::Setup(result)					"Ergebnis"
+::pgn::setup::mc::Setup(current-move)			"Aktueller Zug"
+::pgn::setup::mc::Setup(next-moves)				"Nächster Zug"
+::pgn::setup::mc::Setup(empty-game)				"Leere Partie"
+
+::pgn::setup::mc::Setup(Hovers)					"Maus-Over"
+::pgn::setup::mc::Setup(hover-move)				"Zug"
+::pgn::setup::mc::Setup(hover-comment)			"Kommentar"
+::pgn::setup::mc::Setup(hover-move-info)		"Zuginformation"
+
+::pgn::setup::mc::Section(ParLayout)			"Absatzformatierung"
+::pgn::setup::mc::ParLayout(use-spacing)		"Absatztrennung einschalten"
+::pgn::setup::mc::ParLayout(column-style)		"Spaltenformatierung einschalten"
+::pgn::setup::mc::ParLayout(tabstop-1)			"Einrückung für weißen Zug"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Einrückung für schwarzen Zug"
+::pgn::setup::mc::ParLayout(mainline-bold)	"Fettdruck für Hauptfortsetzung"
+
+::pgn::setup::mc::Section(Variations)			"Variantenformatierung"
+::pgn::setup::mc::Variations(width)				"Einzugsmarke"
+::pgn::setup::mc::Variations(level)				"Einrückungstiefe"
+
+::pgn::setup::mc::Section(Display)				"Anzeige"
+::pgn::setup::mc::Display(numbering)			"Variantennummerierung anzeigen"
+::pgn::setup::mc::Display(moveinfo)				"Zuginformationen anzeigen"
+
+::pgn::setup::mc::Section(Diagrams)				"Diagramme"
+::pgn::setup::mc::Diagrams(show)					"Diagramme anzeigen"
+::pgn::setup::mc::Diagrams(square-size)		"Feldgröße"
+::pgn::setup::mc::Diagrams(indentation)		"Einzugsmarke"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"
@@ -859,6 +905,11 @@
 ::font::mc::CopyFile									"Datei %s kopieren"
 ::font::mc::UpdateFontCache						"Zeichensatz-Cache aktualisieren"
 
+::font::mc::ChooseFigurineFont					"Figurensatz auswählen"
+::font::mc::ChooseSymbolFont						"Symbolzeichensatz auswählen"
+::font::mc::IncreaseFontSize						"Zeichensatz vergrößern"
+::font::mc::DecreaseFontSize						"Zeichensatz verkleinern"
+
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"
 ::gamebar::mc::Players					"Spieler"
@@ -880,6 +931,10 @@
 ::gamebar::mc::GameNewChess960		"Neue Partie: Schach 960"
 ::gamebar::mc::GameNewChess960Sym	"Neue Partie: Schach 960 (nur symmetrische)"
 ::gamebar::mc::GameNewShuffle			"Neue Partie: Shuffle-Schach"
+
+::gamebar::mc::AddNewGame				"Partie hinzufügen zu %s..."
+::gamebar::mc::ReplaceGame				"Partie ersetzen in %s..."
+::gamebar::mc::ReplaceMoves			"Partiezüge ersetzen in aktueller Partie..."
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Partien-Browser"
@@ -988,8 +1043,8 @@
 
 ::import::mc::DifferentEncoding					"Die ausgewählte Enkodierung %src stimmt nicht mit der Dateienkodierung %dst überein."
 ::import::mc::DifferentEncodingDetails			"Eine Umkodierung wird danach nicht mehr erfolgreich sein."
-::import::mc::CannotDetectFigurineSet			"Es konnte kein geeigneter Figurinensatz ermittelt werden."
-::import::mc::CheckImportResult					"Bitte prüfen ob der richtige Figurinensatz ermittelt wurde."
+::import::mc::CannotDetectFigurineSet			"Es konnte kein geeigneter Figurensatz ermittelt werden."
+::import::mc::CheckImportResult					"Bitte prüfen ob der richtige Figurensatz ermittelt wurde."
 ::import::mc::CheckImportResultDetail			"In seltenen Fällen scheitert die automatische Ermittlung aufgrund von Mehrdeutigkeiten."
 
 ::import::mc::EnterOrPaste							"Eingabe oder Kopieren einer %s im PGN-Format in das obige Textfenster.\nHier werden die Fehler beim Importieren der %s angezeigt."
@@ -1078,8 +1133,6 @@
 ::export::mc::PostscriptSpecials			"Postscript-Spezialitäten"
 ::export::mc::BoardSize						"Brettgröße"
 
-::export::mc::Notation						"Notation"
-::export::mc::Graphic						"Grafisch"	;# ???
 ::export::mc::Short							"Kurz"
 ::export::mc::Long							"Lang"
 ::export::mc::Algebraic						"Algebraisch"
@@ -1191,6 +1244,21 @@
 ::export::mc::Option(pgn,comment_to_html)							"Schreibe Kommentar im HTML-Format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Partien mit regelwidrigen Zügen ausschliessen"
 ::export::mc::Option(pgn,use_utf8_encoding)						"UTF-8 Enkodierung benutzen"
+
+### notation ###########################################################
+::notation::mc::Notation		"Notation"
+
+::notation::mc::MoveForm(alg)	"Algebraisch"
+::notation::mc::MoveForm(san)	"Algebraisch - Kurzform"
+::notation::mc::MoveForm(lan)	"Algebraisch - Langform"
+::notation::mc::MoveForm(eng)	"Englisch"
+::notation::mc::MoveForm(cor)	"Korrespondenz"
+::notation::mc::MoveForm(tel)	"Telegraphie"
+
+### figurine ###########################################################
+::figurines::mc::Figurines	"Figurensatz"
+::figurines::mc::Graphic	"Grafisch"	;# ???
+::figurines::mc::User		"Benutzerdefiniert"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Partie speichern"
@@ -1507,7 +1575,7 @@
 
 ::comment::mc::InsertSymbol			"Symbol &einfügen..."
 ::comment::mc::MiscellaneousSymbols	"Verschiedene Symbole"
-::comment::mc::Figurine					"Figurine"
+::comment::mc::Figurine					"Figurensatz"
 
 ### annotation #########################################################
 ::annotation::mc::AnnotationEditor				"Anmerkungen"
@@ -1642,12 +1710,11 @@
 
 ::dialog::choosecolor::mc::BaseColors		"Grundfarben"
 ::dialog::choosecolor::mc::UserColors		"Benutzerfarben"
-::dialog::choosecolor::mc::RecentColors	"Letztere Farben"
-::dialog::choosecolor::mc::OldColor			"Zuvorige Farbe"
-::dialog::choosecolor::mc::CurrentColor	"Aktuelle Farbe"
+::dialog::choosecolor::mc::RecentColors	"Zuletzt gewählt"
 ::dialog::choosecolor::mc::Old				"Zuvor"
 ::dialog::choosecolor::mc::Current			"Aktuell"
 ::dialog::choosecolor::mc::Color				"Farbe"
+::dialog::choosecolor::mc::HexCode			"Hex-Code"
 ::dialog::choosecolor::mc::ColorSelection	"Farbauswahl"
 ::dialog::choosecolor::mc::Red				"Rot"
 ::dialog::choosecolor::mc::Green				"Grün"
@@ -1657,7 +1724,6 @@
 ::dialog::choosecolor::mc::Value				"Helligkeit"
 ::dialog::choosecolor::mc::Enter				"Eingabe"
 ::dialog::choosecolor::mc::AddColor			"Die aktuelle Farbe zu den Benutzerfarben hinzufügen"
-::dialog::choosecolor::mc::ClickToEnter	"Anklicken zur Eingabe eines Hexadezimalwertes"
 
 ### choosefont #########################################################
 ::dialog::choosefont::mc::Apply				"An&wenden"

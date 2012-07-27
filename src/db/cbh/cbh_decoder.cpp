@@ -716,6 +716,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 		Comment comment;
 		comment.swap(str, isEnglish, isOther);
+		comment.normalize();
 
 		if (node->hasComment(position))
 		{

@@ -225,6 +225,7 @@ public:
 	db::Tree const* finishUpdateTree(db::tree::Mode mode,
 												db::rating::Type ratingType,
 												db::attribute::tree::ID sortAttr);
+	void freezeTree(bool flag);
 	static void stopUpdateTree();
 	static void cancelUpdateTree();
 
@@ -312,6 +313,7 @@ private:
 	IndexMap		m_indexMap;
 	TreeP			m_currentTree;
 	bool			m_isClosed;
+	bool			m_treeIsFrozen;
 
 	mutable SubscriberP m_subscriber;
 

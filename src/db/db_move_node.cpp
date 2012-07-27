@@ -899,9 +899,10 @@ MoveNode::containsIllegalMoves() const
 {
 	for (MoveNode const* p = atLineStart() ? m_next : this; p->isBeforeLineEnd(); p = p->m_next)
 	{
-		if (!p->m_move.isLegal())
+		if (!p->m_move.isLegal() && !p->m_move.isCastling())
 			return true;
 
+#ifdef ILLEGAL_MOVES_IN_VARIATIONS
 		if (p->hasVariation())
 		{
 			for (unsigned i = 0; i < p->variationCount(); ++i)
@@ -910,6 +911,31 @@ MoveNode::containsIllegalMoves() const
 					return true;
 			}
 		}
+#endif
+	}
+
+	return false;
+}
+
+
+bool
+MoveNode::containsIllegalCastlings() const
+{
+	for (MoveNode const* p = atLineStart() ? m_next : this; p->isBeforeLineEnd(); p = p->m_next)
+	{
+		if (!p->m_move.isLegal() && p->m_move.isCastling())
+			return true;
+
+#ifdef ILLEGAL_MOVES_IN_VARIATIONS
+		if (p->hasVariation())
+		{
+			for (unsigned i = 0; i < p->variationCount(); ++i)
+			{
+				if (p->variation(i)->containsIllegalCastlings())
+					return true;
+			}
+		}
+#endif
 	}
 
 	return false;

@@ -523,12 +523,9 @@ proc CheckFullscreen {app} {
 	variable Fullscreen
 
 	if {$app eq ".application"} {
-		lassign [scan [wm geometry $app] "%dx%d"] wd ht
-
-		if {$wd == [winfo screenwidth $app] && $ht == [winfo screenheight $app]} {
-			set Fullscreen 1
-		} else {
-			set Fullscreen 0
+		set Fullscreen 0
+		if {[scan [wm geometry $app] "%dx%d" wd ht] == 2} {
+			if {$wd == [winfo screenwidth $app] && $ht == [winfo screenheight $app]} { set Fullscreen 1 }
 		}
 	}
 }

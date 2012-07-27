@@ -1146,7 +1146,7 @@ string::substr(size_type pos, size_type len) const
 
 
 unsigned
-string::appendRomanNumber(unsigned n)
+string::appendRomanNumber(unsigned n, int (*caseconv)(int))
 {
 	if (n == 0 || n > 3999)
 		return 0;
@@ -1163,9 +1163,9 @@ string::appendRomanNumber(unsigned n)
 
 			char const* rn = ::Roman[i];
 
-			buf[len++] = rn[0];
+			buf[len++] = caseconv(rn[0]);
 			if (rn[1])
-				buf[len++] = rn[1];
+				buf[len++] = caseconv(rn[1]);
 
 			remainder -= ::Arabic[i];
 		}
@@ -1173,6 +1173,20 @@ string::appendRomanNumber(unsigned n)
 
 	append(buf, len);
 	return len;
+}
+
+
+unsigned
+string::appendRomanNumber(unsigned n)
+{
+	return appendRomanNumber(n, ::toupper);
+}
+
+
+unsigned
+string::appendSmallRomanNumber(unsigned n)
+{
+	return appendRomanNumber(n, ::tolower);
 }
 
 

@@ -50,6 +50,9 @@ set GameNewChess960		"New Game: Chess 960"
 set GameNewChess960Sym	"New Game: Chess 960 (symmetrical only)"
 set GameNewShuffle		"New Game: Shuffle"
 
+set AddNewGame				"Save: Add New Game to %s..."
+set ReplaceGame			"Save: Replace Game in %s..."
+set ReplaceMoves			"Save: Replace Moves Only in Game..."
 
 } ;# namespace mc
 
@@ -109,7 +112,7 @@ proc gamebar {path} {
 	set Specs(receiver:$gamebar) {}
 	set Specs(font:$gamebar) $font
 	set Specs(bold:$gamebar) $bold
-	set Specs(adjustment:$gamebar) {1 0 0}
+	set Specs(adjustment:$gamebar) {1 0 0 0}
 	set Specs(linewidth:$gamebar) 0
 	set Specs(spacewidth:$gamebar) [font measure $font " "]
 	set Specs(player:locked) 0
@@ -583,7 +586,7 @@ proc getText {gamebar {id {}}} {
 proc setAlignment {gamebar amounts} {
 	variable Specs
 
-	if {$amounts != $Specs(adjustment:$gamebar)} {
+	if {$amounts ne $Specs(adjustment:$gamebar)} {
 		set Specs(adjustment:$gamebar) $amounts
 		Layout $gamebar
 	}
@@ -619,7 +622,7 @@ proc popupMenu {parent {addGameHistory 1} {remove -1}} {
 	set menu $parent._gamebar_menu_
 	catch { destroy $menu }
 	menu $menu -tearoff 0
-	AddGameMenuEntries $menu $addGameHistory 2 $remove
+	AddGameMenuEntries $menu 0 $addGameHistory 2 $remove
 	tk_popup $menu {*}[winfo pointerxy .]
 }
 
@@ -1141,7 +1144,7 @@ proc ShowSeparateColumn {gamebar {flag -1}} {
 }
 
 
-proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
+proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 	variable ::game::history::mc::GameHistory
 
 	if {[::game::historyIsEmpty?]} {
@@ -1151,6 +1154,7 @@ proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
 	set sub $m.__history__
 	menu $sub -tearoff 0
 	$sub configure -disabledforeground black
+	set parent [winfo parent $m]
 
 	if {$addGameHistory} {
 		set headerScript {
@@ -1215,36 +1219,120 @@ proc AddGameMenuEntries {m addGameHistory clearHistory remove} {
 		-accelerator "Ctrl+X" \
 		-image $::icon::16x16::document \
 		-compound left \
-		-command [list ::menu::gameNew [winfo parent $m]] \
+		-command [list ::menu::gameNew $parent] \
 		;
 	$m add command \
 		-label " $mc::GameNewChess960" \
 		-accelerator "Ctrl+Shift+X" \
 		-image $::icon::16x16::dice \
 		-compound left \
-		-command [list ::menu::gameNew [winfo parent $m] frc] \
+		-command [list ::menu::gameNew $parent frc] \
 		;
 	$m add command \
 		-label " $mc::GameNewChess960Sym" \
 		-accelerator "Ctrl+Shift+Y" \
 		-image $::icon::16x16::dice \
 		-compound left \
-		-command [list ::menu::gameNew [winfo parent $m] sfrc] \
+		-command [list ::menu::gameNew $parent sfrc] \
 		;
 	$m add command \
 		-label " $mc::GameNewShuffle" \
 		-accelerator "Ctrl+Shift+Z" \
 		-image $::icon::16x16::dice \
 		-compound left \
-		-command [list ::menu::gameNew [winfo parent $m] shuffle] \
+		-command [list ::menu::gameNew $parent shuffle] \
 		;
 	$m add command \
 		-label " $::import::mc::ImportPgnGame" \
 		-image $::icon::16x16::filetypePGN \
 		-compound left \
-		-command [list ::menu::importGame [winfo parent $m]] \
+		-command [list ::menu::importGame $parent] \
 		;
 	
+	if {$addSaveMenu && ![::game::trialMode?]} {
+		variable ::scidb::scratchbaseName
+		variable ::scidb::clipbaseName
+
+		$m add separator
+		set position [::scidb::game::current]
+		lassign [::scidb::game::link? $position] base index
+		unset -nocomplain state
+
+		set actual [::scidb::db::get name]
+
+		if {$base ne $scratchbaseName} {
+			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+				if {$index >= 0} { set state normal } else { set state disabled }
+			} else {
+				set state disabled
+			}
+
+			if {	$base eq $clipbaseName
+				&& [lindex [::scidb::game::sink? $position] 0] eq $scratchbaseName} {
+				set state disabled
+			}
+
+			set name [::util::databaseName $base]
+
+			$m add command \
+				-label " [format $mc::ReplaceGame $name]" \
+				-image $::icon::16x16::save \
+				-compound left \
+				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
+				-state $state \
+				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-game)" \
+				;
+
+			if {![::scidb::game::query modified?]} { set state disabled }
+			$m add command \
+				-label " [format $mc::ReplaceMoves $name]" \
+				-image $::icon::16x16::save \
+				-compound left \
+				-command [namespace code [list replaceMoves $parent]] \
+				-state $state \
+				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-moves)" \
+				;
+		}
+
+		if {	$actual eq $scratchbaseName
+			|| $actual eq $clipbaseName
+			|| [::scidb::db::get readonly? $actual]} {
+			set state disabled
+		} else {
+			set state normal
+		}
+		$m add command \
+			-label " [format $mc::AddNewGame [::util::databaseName $actual]]" \
+			-image $::icon::16x16::saveAs \
+			-compound left \
+			-command [list ::dialog::save::open $parent $actual $position] \
+			-state $state \
+			-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(add-new-game)" \
+			;
+
+		menu $m.save
+		set count 0
+		foreach base [::scidb::app::bases] {
+			if {$base ne $actual && ![::scidb::db::get readonly? $base]} {
+				set name [::util::databaseName $base]
+				$m.save add command \
+					-label $name \
+					-command [list ::dialog::save::open $parent $base $position] \
+					;
+				incr count
+			}
+		}
+
+		if {$count} { set state normal } else { set state disabled }
+		$m add cascade \
+			-menu $m.save \
+			-label " [format $mc::AddNewGame {}]" \
+			-image $::icon::16x16::saveAs \
+			-compound left \
+			-state $state \
+			;
+	}
+
 	if {$clearHistory == 2} {
 		$m add separator
 		if {$remove >= 0} {
@@ -1319,7 +1407,7 @@ proc BuildMenu {gamebar id side menu} {
 	variable Options
 
 	HideTags $gamebar
-	AddGameMenuEntries $menu 1 0 -1
+	AddGameMenuEntries $menu [expr {$Specs(size:$gamebar) > 0}] 1 0 -1
 	$menu add separator
 
 	if {$Specs(size:$gamebar) > 0} {
@@ -1368,32 +1456,35 @@ proc BuildMenu {gamebar id side menu} {
 #		::theme::configureRadioEntry $menu $text
 #		$menu add separator
 
-		menu $menu.alignment -tearoff no
-		$menu add cascade -label $mc::Alignment -menu $menu.alignment
+		menu $menu.configuration -tearoff no
+		$menu add cascade -label $::mc::Configuration -menu $menu.configuration
+
+		menu $menu.configuration.alignment -tearoff no
+		$menu.configuration add cascade -label $::mc::Alignment -menu $menu.configuration.alignment
 
 		foreach item {left center} {
 			set text [set ::toolbar::mc::[string toupper $item 0 0]]
-			$menu.alignment add radiobutton \
+			$menu.configuration.alignment add radiobutton \
 				-label $text \
 				-value $item \
 				-variable [namespace current]::Options(alignment) \
 				-command [namespace code [list Layout $gamebar]]
-			::theme::configureRadioEntry $menu.alignment $text
+			::theme::configureRadioEntry $menu.configuration.alignment end
 		}
 
-		menu $menu.layout -tearoff no
-		$menu add cascade -label $::mc::Layout -menu $menu.layout
+		menu $menu.configuration.layout -tearoff no
+		$menu.configuration add cascade -label $::mc::Layout -menu $menu.configuration.layout
 
 		if {$Options(separateColumn)} { set state disabled } else { set state normal }
 
-		$menu.layout add checkbutton \
+		$menu.configuration.layout add checkbutton \
 			-label $mc::SeparateHeader \
 			-onvalue 1 \
 			-offvalue 0 \
 			-variable [namespace current]::Options(separateColumn) \
 			-command [namespace code [list ShowSeparateColumn $gamebar]] \
 			;
-		$menu.layout add checkbutton \
+		$menu.configuration.layout add checkbutton \
 			-label $mc::ShowActiveAtBottom \
 			-onvalue 1 \
 			-offvalue 0 \
@@ -1401,7 +1492,7 @@ proc BuildMenu {gamebar id side menu} {
 			-command [namespace code [list ShowAtBottom $gamebar]] \
 			-state $state \
 			;
-		$menu.layout add checkbutton \
+		$menu.configuration.layout add checkbutton \
 			-label $mc::ShowPlayersOnSeparateLines \
 			-onvalue 1 \
 			-offvalue 0 \

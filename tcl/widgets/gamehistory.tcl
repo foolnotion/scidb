@@ -58,6 +58,7 @@ proc Build {w args} {
 	set boldFont [list [list $family $size bold]]
 
 	::tk::frame $f -background white -borderwidth 0 {*}$args
+	bind $f <Configure> [list $parent fit] ;# help the scrolled window
 	grid $f
 	grid anchor $parent center
 
@@ -143,13 +144,15 @@ proc Build {w args} {
 
 
 proc WidgetProc {w command args} {
+	set s $w.__scrolledframe__.scrolled
+
 	switch -- $command {
-		rebuild	{ return [Rebuild $w.__scrolledframe__.scrolled.f.t] }
-		empty?	{ return [expr {[$w.__scrolledframe__.scrolled.f.t item count] <= 1}] }
+		rebuild	{ return [Rebuild $s.f.t] }
+		empty?	{ return [expr {[$s.f.t item count] <= 1}] }
 
 		selection {
 			variable Map
-			set selection [$w.__scrolledframe__.scrolled.f.t selection get]
+			set selection [$s.f.t selection get]
 			if {[llength $selection] == 0} { return -1 }
 			set selection [expr {[lindex $selection 0]}]
 			if {![info exists Map($selection)]} { return -1 }
@@ -161,9 +164,9 @@ proc WidgetProc {w command args} {
 			if {1 > [llength $args] || [llength $args] > 3} {
 				error "wrong # args: should be \"[namespace current] bind <tag> ?<sequence>? ?<script?>\""
 			}
-			bind $w.__scrolledframe__.scrolled.f.t {*}$args
-			bind $w.__scrolledframe__.scrolled.f.h {*}$args
-			bind $w.__scrolledframe__.scrolled {*}$args
+			bind $s.f.t {*}$args
+			bind $s.f.h {*}$args
+			bind $s {*}$args
 			return
 		}
 	}
@@ -237,10 +240,8 @@ proc OpenGame {t args} {
 		set sel [expr {[$t item id active]}]
 	}
 
-	if {[info exists Map($sel)]} {
-		if {[llength $Map($sel)] > 1} {
-			::game::openGame $t [lindex $Map($sel) 0]
-		}
+	if {[info exists Map($sel)] && [llength $Map($sel)] > 1} {
+		::game::openGame $t [lindex $Map($sel) 0]
 	}
 }
 

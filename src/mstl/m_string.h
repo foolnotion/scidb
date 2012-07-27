@@ -176,6 +176,7 @@ public:
 	int vformat(const_pointer fmt, va_list args);
 
 	unsigned appendRomanNumber(unsigned n);
+	unsigned appendSmallRomanNumber(unsigned n);
 	int toArabic(size_type pos = 0, size_type len = npos) const;
 
 	void trim();
@@ -229,6 +230,7 @@ private:
 	void clone();
 	void copy();
 	void init(const_pointer s, size_type len);
+	unsigned appendRomanNumber(unsigned n, int (*caseconv)(int));
 
 	size_type	m_size;
 	size_type	m_capacity;

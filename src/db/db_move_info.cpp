@@ -220,7 +220,9 @@ MoveInfo::parseEvaluation(char const* s)
 	switch (*e)
 	{
 		case '|':
-			if (e[1] == 'd' && ::isdigit(e[2]))
+			if (::isdigit(e[1]))
+				m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
+			else if (e[1] == 'd' && ::isdigit(e[2]))
 				m_analysis.m_depth = ::strtoul(e + 2, &e, 10);
 			break;
 

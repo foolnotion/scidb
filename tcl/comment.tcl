@@ -102,7 +102,7 @@ variable DingbatSet {
 }
 variable Colors {darkgreen darkred darkblue darkgreen darkred darkblue}
 
-set Symbols [join $font::figurines(graphic) ""]
+set Symbols [join $::figurines::langSet(graphic) ""]
 foreach section {prefix suffix} {
 	foreach nag $NagSet($section) {
 		set c $::font::SymbolUtfEncoding($nag)
@@ -164,9 +164,9 @@ proc open {parent pos lang} {
 		if {$attr eq "bold"} { $top.text tag configure codeb -font $f }
 	}
 	# XXX possibly we can use only {Scidb Symbol Traveller}
-	$top.text tag configure figurine -font $::font::figurine
-	$top.text tag configure symbol -font $::font::symbol
-	$top.text tag configure symbolb -font $::font::symbolb
+	$top.text tag configure figurine -font $::font::figurine(text:normal)
+	$top.text tag configure symbol -font $::font::symbol(text:normal)
+	$top.text tag configure symbolb -font $::font::symbol(text:bold)
 	$top.text tag configure underline -underline true
 
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
@@ -275,25 +275,27 @@ proc open {parent pos lang} {
 	
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
-	scan [wm grid $dlg] "%d %d" w h
-	wm minsize $dlg $w $h
+	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
+		wm minsize $dlg $w $h
+	}
 	wm transient $dlg $parent
 	catch { wm attributes $dlg -type dialog }
 	wm resizable $dlg true true
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $dlg]]
 	if {[llength $Geometry] == 4} {
-		scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty
-		set rx [expr {$tx + [lindex $Geometry 0]}]
-		set ry [expr {$ty + [lindex $Geometry 1]}]
-		set rw [winfo reqwidth $dlg]
-		set rh [winfo reqheight $dlg]
-		set sw [winfo screenwidth $dlg]
-		set sh [winfo screenheight $dlg]
-		set rx [expr {max(min($rx, $sw - $rw), 0)}]
-		set ry [expr {max(min($ry, $sh - $rh), 0)}]
-		set x0 [expr {max(0, [lindex $Geometry 2])}]
-		set y0 [expr {max(0, [lindex $Geometry 3])}]
-		wm geometry $dlg ${x0}x${y0}+${rx}+${ry}
+		if {[scan [wm geometry [winfo toplevel $parent]] "%dx%d%d%d" tw th tx ty] == 4} {
+			set rx [expr {$tx + [lindex $Geometry 0]}]
+			set ry [expr {$ty + [lindex $Geometry 1]}]
+			set rw [winfo reqwidth $dlg]
+			set rh [winfo reqheight $dlg]
+			set sw [winfo screenwidth $dlg]
+			set sh [winfo screenheight $dlg]
+			set rx [expr {max(min($rx, $sw - $rw), 0)}]
+			set ry [expr {max(min($ry, $sh - $rh), 0)}]
+			set x0 [expr {max(0, [lindex $Geometry 2])}]
+			set y0 [expr {max(0, [lindex $Geometry 3])}]
+			wm geometry $dlg ${x0}x${y0}+${rx}+${ry}
+		}
 	}
 
 	Init $parent $lang
@@ -417,9 +419,11 @@ proc RecordGeometry {dlg parent} {
 	variable Geometry
 
 	lassign $Geometry fx fy fw fh
-	scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy
-	scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d%d%d" tw th tx ty
-	set Geometry [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
+	if {[scan [wm geometry $dlg] "%dx%d%d%d" fw fh fx fy] == 4} {
+		if {[scan [wm geometry [winfo toplevel [winfo toplevel $parent]]] "%dx%d%d%d" tw th tx ty] == 4} {
+			set Geometry [list [expr {max(0, $fx) - $tx}] [expr {max(0, $fy) - $ty}] $fw $fh]
+		}
+	}
 }
 
 
@@ -523,7 +527,7 @@ proc InsertFigurine {w fig} {
 
 	set Vars(symbol:[incr Vars(count)]) $fig
 	set selrange [$w tag ranges sel]
-	set text [string map $::font::pieceMap $fig]
+	set text [string map $::figurines::pieceMap $fig]
 	set key key$Vars(count)
 	set tags [list figurine $key]
 	$w tag bind $key <Enter> {}
@@ -667,7 +671,7 @@ proc ParseDump {dump} {
 					}
 
 					sym {
-						append content [string map $::font::pieceMap $Vars(symbol:$num)]
+						append content [string map $::figurines::pieceMap $Vars(symbol:$num)]
 					}
 
 					nag {
@@ -986,7 +990,7 @@ proc PopupSymbolTable {w text} {
 	bind $m <Escape> [list set [namespace current]::_Symbol {}]
 	set top [tk::frame $m.top]
 	pack $top -padx $::theme::padding -pady $::theme::padding
-	set size [expr {int(abs(double([font configure $::font::symbol -size])*2.0) + 0.5)}]
+	set size [expr {int(abs(double([font configure $::font::symbol(text:normal) -size])*2.0) + 0.5)}]
 	set _Symbol {}
 	set coords [list [expr {$size/2}] [expr {$size/2}]]
 	set bg [$top cget -background]
@@ -1010,8 +1014,8 @@ proc PopupSymbolTable {w text} {
 		if {![info exists first($s)]} { set first($s) $canv }
 		set last($s) $canv
 		set section($canv) $s
-		set sym [string map $::font::pieceMap $piece]
-		$canv create text {*}$coords -font $::font::figurine -text $sym
+		set sym [string map $::figurines::pieceMap $piece]
+		$canv create text {*}$coords -font $::font::figurine(text:normal) -text $sym
 		foreach seq {space Return ButtonPress-1} {
 			bind $canv <$seq> [namespace code [list set _Symbol [list fig $piece]]]
 		}
@@ -1041,7 +1045,7 @@ proc PopupSymbolTable {w text} {
 					set last($s) $canv
 					set section($canv) $s
 					$canv create text {*}$coords \
-						-font $::font::symbol \
+						-font $::font::symbol(text:normal) \
 						-text $sym \
 						-fill [lindex $Colors $color] \
 						;
@@ -1362,8 +1366,8 @@ proc MakeSymbolMenu {w menu} {
 
 	foreach {fig} {K Q R B N P} {
 		$m add command \
-			-font $::font::figurine \
-			-label [string map $::font::pieceMap $fig] \
+			-font $::font::figurine(text:normal) \
+			-label [string map $::figurines::pieceMap $fig] \
 			-command [namespace code [list InsertFigurine $w $fig]] \
 			-columnbreak [expr {$fig eq "B"}] \
 			;
@@ -1481,9 +1485,9 @@ proc PopupLanguageMenu {dlg} {
 	MakeLanguageMenu $dlg.langMenu
 	catch { wm attributes $dlg.langMenu -type popup_menu }
 
-	scan [winfo geometry $Vars(addLang)] "%dx%d+%d+%d" tw th tx ty
-	set x [expr {[winfo rootx $Vars(addLang)]}]
-	set y [expr {[winfo rooty $Vars(addLang)] + $th}]
+	set x [winfo rootx $Vars(addLang)]
+	set y [winfo rooty $Vars(addLang)]
+	if {[scan [winfo geometry $Vars(addLang)] "%dx%d+%d+%d" tw th] >= 2} { incr y $th }
 
 	tk_popup $dlg.langMenu $x $y
 }

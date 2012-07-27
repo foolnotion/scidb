@@ -109,8 +109,14 @@ set dialog::choosefont::iconReset	$icon::iconReset
 
 set tk::ShadowOffset $::shadow::offset
 
-proc dialog::choosefont::messageBox {parent msg buttons defaultButton} {
-	return [::dialog::warning -parent $parent -message $msg -buttons $buttons -default $defaultButton]
+proc dialog::choosefont::messageBox {parent title msg buttons defaultButton} {
+	return [::dialog::warning \
+		-parent $parent \
+		-title $title \
+		-message $msg \
+		-buttons $buttons \
+		-default $defaultButton \
+	]
 }
 
 set dialog::choosecolor::iconOk		$icon::iconOk
@@ -133,7 +139,7 @@ proc dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state 
 proc colormenu::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc WriteOptions {chan} {
-	options::writeList $chan ::dialog::choosecolor::UserColorList
+	options::writeList $chan ::dialog::choosecolor::userColorList
 	options::writeItem $chan ::table::options
 	options::writeItem $chan ::menu::Theme
 	options::writeItem $chan ::toolbar::Options
@@ -193,6 +199,16 @@ switch $::scidb::revision {
 		array unset ::browser::Options font:bold
 		array unset ::application::pgn::Options board-size
 		array unset ::dialog::fsbox::Priv lastFolder
+		array unset ::browser::Options font
+		array unset ::browser::Options hilite
+		array unset ::browser::Options background:current
+		array unset ::browser::Options foreground:result
+		array unset ::browser::Options foreground:empty
+		array unset ::browser::Options style:*
+		array unset ::browser::Options tabstop-*
+		set ::export::Values(html,moves,notation) san
+		set ::export::Values(pdf,moves,notation) san
+		set ::export::Values(tex,moves,notation) san
 	}
 }
 
@@ -210,6 +226,7 @@ set ::scidb::revision [::scidb::misc::revision]
 ::tooltip::init
 ::mc::selectLang
 ::font::useLanguage $mc::langID
+::font::setupChessFonts
 ::engine::setup
 application::open
 

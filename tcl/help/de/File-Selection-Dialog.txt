@@ -123,6 +123,8 @@ Operationen zur Verweisverwaltung möglich:
 <h3 id="FileList">Dateianzeige</h3>
 -->
 
+<h3 id="FileList">Dateianzeige</h3>
+
 <p>
 Diese Dateiliste ist auf Scidb-Dateien spezialisiert. D.h. das alle Operation immer auf
 allen zu einer Datenbank gehörigen Dateien ausgeführt werden, obwohl nur die führende Datei

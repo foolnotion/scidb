@@ -50,6 +50,7 @@ inline db::Tree const* Application::currentTree() const				{ return m_currentTre
 
 inline void Application::setSwitchReferenceBase(bool flag)			{ m_switchReference = flag; }
 inline void Application::setReferenceBase(Cursor* cursor)			{ setReferenceBase(cursor, true); }
+inline void Application::freezeTree(bool flag)							{ m_treeIsFrozen = flag; }
 
 
 inline
