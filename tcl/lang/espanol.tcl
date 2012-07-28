@@ -635,6 +635,8 @@
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
 ::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
+::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser" ;# NEW
+::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor" ;# NEW
 ::pgn::setup::mc::Pixel								"pixel" ;# NEW
 ::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
 ::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW

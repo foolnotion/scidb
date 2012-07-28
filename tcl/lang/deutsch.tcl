@@ -632,6 +632,8 @@
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Editor konfigurieren"
 ::pgn::setup::mc::Configure(browser)			"Textausgabe konfigurieren"
+::pgn::setup::mc::TakeOver(editor)				"Einstellungen des Partiebrowsers übernehmen"
+::pgn::setup::mc::TakeOver(browser)				"Einstellungen des Partieeditors übernehmen"
 ::pgn::setup::mc::Pixel								"pixel"
 ::pgn::setup::mc::RevertSettings					"Auf Anfangswerte zurücksetzen"
 ::pgn::setup::mc::ResetSettings					"Auf Werkseinstellung zurücksetzen"

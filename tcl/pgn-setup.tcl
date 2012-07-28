@@ -32,8 +32,8 @@ namespace eval mc {
 
 set Configure(editor)			"Customize Editor"
 set Configure(browser)			"Customize Text Output"
-set TakeOver(editor)				"Einstellungen des Partiebrowsers übernehmen"
-set TakeOver(browser)			"Einstellungen des Partieeditors übernehmen"
+set TakeOver(editor)				"Adopt settings from Game Browser"
+set TakeOver(browser)			"Adopt settings from Game Editor"
 set Pixel							"pixel"
 set RevertSettings				"Revert to initial settings"
 set ResetSettings					"Reset to factory settings"
@@ -96,8 +96,8 @@ set Diagrams(indentation)		"Indent Width"
 set StyleLayout {
 	{ 0 0 Appearance }
 		{ 1 0 Layout }
-		{ 1 1 Diagrams }
 		{ 1 0 MoveStyle }
+		{ 1 1 Diagrams }
 	{ 0 0 Fonts }
 		{ 1 0 font-and-size }
 		{ 1 0 figurine-font }
