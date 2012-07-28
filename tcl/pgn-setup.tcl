@@ -367,6 +367,7 @@ proc openSetupDialog {parent context position args} {
 	array set New_Colors [array get Colors]
 	array set New_Fonts [array get ::font::Options]
 
+	array unset Priv
 	set Priv(current-data) ""
 	set Priv(current-diagram-size) $Options(diagram:size)
 	set Priv(after) {}
@@ -384,6 +385,7 @@ proc openSetupDialog {parent context position args} {
 	set style [treetable $top.style -showarrows yes -selectmode browse]
 	set Priv(tree) $style
 	set complex [expr {$context eq "editor"}]
+	array set available {}
 	foreach entry $StyleLayout {
 		lassign $entry depth complexOnly name
 		set available($name) [expr {$complex || !$complexOnly}]
@@ -1123,19 +1125,21 @@ proc RefreshFigurineFont {context position lang} {
 	}
 
 	foreach tag {figurine-font figurine-bold} {
-		set t $Priv(link:text:$tag)
-		$t tag configure link -foreground $color
-		if {$action eq "enable"} {
-			$t tag bind link <Enter> [list $t tag configure link -underline 1]
-			$t tag bind link <Leave> [list $t tag configure link -underline 0]
-			$t tag bind link <ButtonPress-1> \
-				[namespace code [list $Priv(tree) select $Priv(link:item:$tag)]]
-		} else {
-			$t tag bind link <Enter> {#}
-			$t tag bind link <Leave> {#}
-			$t tag bind link <ButtonPress-1> {#}
+		if {[info exists Priv(link:text:$tag)]} {
+			set t $Priv(link:text:$tag)
+			$t tag configure link -foreground $color
+			if {$action eq "enable"} {
+				$t tag bind link <Enter> [list $t tag configure link -underline 1]
+				$t tag bind link <Leave> [list $t tag configure link -underline 0]
+				$t tag bind link <ButtonPress-1> \
+					[namespace code [list $Priv(tree) select $Priv(link:item:$tag)]]
+			} else {
+				$t tag bind link <Enter> {#}
+				$t tag bind link <Leave> {#}
+				$t tag bind link <ButtonPress-1> {#}
+			}
+			$Priv(tree) $action $tag
 		}
-		$Priv(tree) $action $tag
 	}
 
 	::font::registerFigurineFonts setup
