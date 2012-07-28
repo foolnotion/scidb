@@ -1747,7 +1747,7 @@ proc MakePreview {foreground background preview path} {
 }
 
 
-proc ChooseColor {parent title what initialcolor previewcolor background usedcolors eraser} {
+proc ChooseColor {parent title what initialcolor previewcolor background usedColors eraser} {
 	variable RecentColors
 	variable Colors
 
@@ -1792,8 +1792,8 @@ proc ChooseColor {parent title what initialcolor previewcolor background usedcol
 							-class Dialog                        \
 							-basecolors $baseColors              \
 							-initialcolor $initialcolor          \
-							-recentcolors $RecentColors($recent) \
-							-usedcolors $usedcolors              \
+							-recentcolors [namespace current]::RecentColors($recent) \
+							-usedcolors $usedColors              \
 							-eraser $eraser                      \
 							-geometry last                       \
 							-modal true                          \
@@ -1854,16 +1854,16 @@ proc SelectTableColor {table id parent title which} {
 	}
 
 	set parent $parent.b$which
-	set color [ChooseColor        \
-					$parent           \
-					[set mc::$title]  \
-					table-$which      \
-					$Options(-$which) \
-					$previewcolor     \
-					{}                \
-					$usedColors       \
-					false             \
-					]
+	set color [ChooseColor \
+		$parent             \
+		[set mc::$title]    \
+		table-$which        \
+		$Options(-$which)   \
+		$previewcolor       \
+		{}                  \
+		$usedColors         \
+		false               \
+	]
 
 	if {[llength $color]} {
 		set Options(-$which) $color
@@ -1938,16 +1938,16 @@ proc SelectColor {table id parent title which} {
 		set eraser true
 	}
 
-	set color [ChooseColor       \
-					$parent          \
-					[set mc::$title] \
-					column-$which    \
-					$initialColor    \
-					$previewColor    \
-					{}               \
-					$usedColors      \
-					$eraser          \
-					]
+	set color [ChooseColor \
+		$parent             \
+		[set mc::$title]    \
+		column-$which       \
+		$initialColor       \
+		$previewColor       \
+		{}                  \
+		$usedColors         \
+		$eraser             \
+	]
 	if {[llength $color] == 0} { return }
 	if {$color eq "erase"} { set color {} }
 	set Options(-$which:$id) $color
@@ -1965,16 +1965,16 @@ proc SelectTableStripes {table id parent} {
 
 	if {[llength $Options(-stripes)]} { set eraser true } else { set eraser false }
 
-	set color [ChooseColor            \
-					$parent               \
-					$mc::Stripes          \
-					table-stripes         \
-					$Options(-stripes)    \
-					$Options(-foreground) \
-					$Options(-background) \
-					{}                    \
-					$eraser               \
-					]
+	set color [ChooseColor   \
+		$parent               \
+		$mc::Stripes          \
+		table-stripes         \
+		$Options(-stripes)    \
+		$Options(-foreground) \
+		$Options(-background) \
+		{}                    \
+		$eraser               \
+	]
 
 	if {$color eq "erase"} {
 		set Options(-stripes) {}
@@ -1998,16 +1998,16 @@ proc SelectStripes {table id parent} {
 	if {[llength $background] == 0} { set background $Options(-background) }
 	if {[llength $Options(-stripes:$id)]} { set eraser true } else { set eraser false }
 
-	set color [ChooseColor              \
-					$parent                 \
-					$mc::Stripes            \
-					stripes                 \
-					[GetStripes $table $id] \
-					$foreground             \
-					$background             \
-					{}                      \
-					$eraser                 \
-					]
+	set color [ChooseColor     \
+		$parent                 \
+		$mc::Stripes            \
+		stripes                 \
+		[GetStripes $table $id] \
+		$foreground             \
+		$background             \
+		{}                      \
+		$eraser                 \
+	]
 
 	if {$color eq "erase"} {
 		set Options(-stripes:$id) {}

@@ -382,6 +382,7 @@ proc openSetupDialog {parent context position args} {
 	pack $top -fill both -expand yes
 
 	set style [treetable $top.style -showarrows yes -selectmode browse]
+	set Priv(tree) $style
 	set complex [expr {$context eq "editor"}]
 	foreach entry $StyleLayout {
 		lassign $entry depth complexOnly name
@@ -659,6 +660,7 @@ proc DoUpdateDisplay {context position data} {
 
 proc BuildFrame(topics) {w topic context position tree} {
 	variable StyleLayout
+	variable Priv
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
 
@@ -712,6 +714,8 @@ proc BuildFrame(topics) {w topic context position tree} {
 		$t tag bind link <ButtonPress-1> [namespace code [list $tree select $item]]
 		$t insert end $mc::Setup($tag) link
 		$t configure -state disabled
+		set Priv(link:text:$tag) $t
+		set Priv(link:item:$tag) $item
 		grid $t -row $row -column $col -sticky w
 		incr row 2
 
@@ -930,6 +934,7 @@ proc BuildFrame(Diagrams) {w position context} {
 		-exportselection no \
 		-command [namespace code [list Refresh $context $position Options diagram:size]] \
 		;
+	ttk::label $d.dsquaresize -text $mc::Pixel
 	::theme::configureSpinbox $d.ssquaresize
 	::validate::spinboxInt $d.ssquaresize
 	bind $d.ssquaresize <FocusIn> +[list $d.ssquaresize selection range 0 end]
@@ -939,16 +944,17 @@ proc BuildFrame(Diagrams) {w position context} {
 #	::validate::spinboxInt $d.sindentation
 #	bind $d.sindentation <FocusIn> +[list $d.sindentation selection range 0 end]
 
-	grid $d.show			-row 1 -column 1 -sticky w -columnspan 4
+	grid $d.show			-row 1 -column 1 -sticky w -columnspan 6
 	grid $d.lsquaresize	-row 3 -column 2 -sticky w
 	grid $d.ssquaresize	-row 3 -column 4 -sticky ew
+	grid $d.dsquaresize	-row 3 -column 6 -sticky w
 #	grid $d.lindentation	-row 5 -column 2 -sticky w
 #	grid $d.sindentation	-row 5 -column 4 -sticky ew
 
 	grid rowconfigure $d {0 4} -minsize $::theme::pady
 	grid rowconfigure $d 2 -minsize $::theme::padY
 	grid rowconfigure $d {0 4} -weight 1
-	grid columnconfigure $d {3 5} -minsize $::theme::padx
+	grid columnconfigure $d {3 5 7} -minsize $::theme::padx
 	grid columnconfigure $d 1 -minsize 20
 	grid columnconfigure $d 0 -minsize 40
 
@@ -1106,10 +1112,30 @@ proc RefreshFigurineFont {context position lang} {
 
 	if {$lang eq "graphic"} {
 		::font::useFigurines yes
+		set action enable
+		set color blue2
 	} else {
 		set ::font::Options(figurine:lang) $lang
 		::font::useLanguage $lang
 		::font::useFigurines no
+		set action disable
+		set color #595985
+	}
+
+	foreach tag {figurine-font figurine-bold} {
+		set t $Priv(link:text:$tag)
+		$t tag configure link -foreground $color
+		if {$action eq "enable"} {
+			$t tag bind link <Enter> [list $t tag configure link -underline 1]
+			$t tag bind link <Leave> [list $t tag configure link -underline 0]
+			$t tag bind link <ButtonPress-1> \
+				[namespace code [list $Priv(tree) select $Priv(link:item:$tag)]]
+		} else {
+			$t tag bind link <Enter> {#}
+			$t tag bind link <Leave> {#}
+			$t tag bind link <ButtonPress-1> {#}
+		}
+		$Priv(tree) $action $tag
 	}
 
 	::font::registerFigurineFonts setup

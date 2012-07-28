@@ -22,18 +22,19 @@ namespace eval treetable {
 
 proc treetable {path args} {
 	array set opts {
-		-takefocus			1
-		-borderwidth		1
-		-relief				sunken
-		-buttonimage		{}
-		-xscrollincrement	1
-		-background			white
-		-showfocus			1
-		-width				0
-		-showlines			1
-		-showbuttons		0
-		-showarrows			0
-		-selectmode			single
+		-takefocus				1
+		-borderwidth			1
+		-relief					sunken
+		-buttonimage			{}
+		-xscrollincrement		1
+		-background				white
+		-showfocus				1
+		-width					0
+		-showlines				1
+		-showbuttons			0
+		-showarrows				0
+		-selectmode				single
+		-disabledforeground	#999999
 	}
 	array set opts $args
 
@@ -42,6 +43,7 @@ proc treetable {path args} {
 	variable ${t}::Vars
 	set Vars(0:lastchild) root
 	set Vars(depth) 0
+	set Vars(disabledforeground) $opts(-disabledforeground)
 
 	if {$opts(-showarrows)} {
 		set opts(-showbuttons) 1
@@ -158,6 +160,7 @@ proc WidgetProc {t command args} {
 				-collapse	1
 				-enabled		1
 				-tags			{}
+				-tag			{}
 			}
 			set icon ""
 			if {[llength $args] > 2} {
@@ -174,14 +177,18 @@ proc WidgetProc {t command args} {
 			set collapse $opts(-collapse)
 			set enabled $opts(-enabled)
 			set tags $opts(-tags)
+			if {[llength $tags] == 0} { set tags $opts(-tag) }
 			array unset opts -collapse
 			array unset opts -enabled
 			array unset opts -tags
+			array unset opts -tag
 			set args [array get opts]
 			set item [$t item create -button auto -tags $tags]
+			set colors [list black enabled $Vars(disabledforeground) !enabled]
 			$t item collapse $item
 			$t item style set $item item styText
 			$t item element configure $item item elemTxt -text $text {*}$args
+			$t item element configure $item item elemTxt -fill $colors
 			if {[string length $icon]} {
 				$t item element configure $item item elemImg -image $icon
 			}
@@ -195,7 +202,7 @@ proc WidgetProc {t command args} {
 		}
 
 		select {
-			if {1 > [llength $args]} {
+			if {[llength $args] < 1} {
 				error "wrong # args: should be \"[namespace current] select <item>\""
 			}
 			set item [$t item id [lindex $args 0]]
@@ -208,6 +215,24 @@ proc WidgetProc {t command args} {
 			$t selection add $item
 			$t activate $item
 			$t see $item
+			return
+		}
+
+		enable {
+			if {[llength $args] < 1} {
+				error "wrong # args: should be \"[namespace current] enable <item>\""
+			}
+			set item [$t item id [lindex $args 0]]
+			$t item enabled $item 1
+			return
+		}
+
+		disable {
+			if {[llength $args] < 1} {
+				error "wrong # args: should be \"[namespace current] enable <item>\""
+			}
+			set item [$t item id [lindex $args 0]]
+			$t item enabled $item 0
 			return
 		}
 

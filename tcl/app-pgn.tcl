@@ -2263,7 +2263,9 @@ proc PopupMenu {parent position} {
 	$menu.display add separator
 	
 	$menu.display add command \
-		-label "$::pgn::setup::mc::Configure(editor)..." \
+		-label " $::pgn::setup::mc::Configure(editor)..." \
+		-image $::icon::16x16::setup \
+		-compound left \
 		-command [namespace code ConfigureEditor] \
 		;
 

@@ -1071,7 +1071,7 @@ proc SelectColor {w} {
 							-class Dialog \
 							-oldcolor $S(color) \
 							-initialcolor $S(color) \
-							-recentcolors $Vars(recentColors) \
+							-recentcolors [namespace current]::Vars(recentColors) \
 							-geometry last \
 							-modal true \
 							-parent [winfo toplevel $w] \
