@@ -298,11 +298,11 @@ pgn_split_eco: pgn_split_eco.o $(LIBS)
 
 cbh2si4: cbh2si4.o $(LIBS)
 	@echo "Build $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS) -lz
 
 cdb2sci: cdb2sci.o $(LIBS)
 	@echo "Build $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS) -lz
 
 $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS)
 	@echo "Build $@"
