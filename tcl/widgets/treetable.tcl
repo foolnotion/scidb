@@ -117,8 +117,6 @@ proc treetable {path args} {
 	$t notify bind $t <Expand-after>	[namespace code [list ExpandAfter $t %I]]
 	$t notify bind $t <Selection>  	[namespace code [list Selection $t %S]]
 
-	bind $t <KeyPress-Left>		{ %W item collapse [%W item id active] }
-	bind $t <KeyPress-Right>	{ %W item expand   [%W item id active] }
 	bind $t <Alt-Left>			[namespace parent]::GoBack
 	bind $t <Alt-Right>			[namespace parent]::GoForward
 	bind $t <Alt-Left>			{+ break }
@@ -302,6 +300,22 @@ proc SelectStyle {t x y} {
 	$t selection add $item
 }
 
+
+proc UpDown {w item n} {
+	set rnc [$w item rnc $item]
+	if {$rnc eq ""} {
+		return [$w item id {first visible state enabled}]
+	}
+	if {$n > 0} {
+		set next [$w item nextsibling $item]
+		if {[llength $next] > 0} { return $next }
+	} else {
+		set prev [$w item prevsibling $item]
+		if {[llength $prev] > 0} { return $prev }
+	}
+	return ""
+}
+
 namespace eval icon {
 namespace eval 16x16 {
 
@@ -353,27 +367,66 @@ bind TreeTable <ButtonPress-1> {
 	}
 }
 
+bind TreeTable <Double-Button-1> {
+	set id [%W identify %x %y]
+	if {[llength $id] == 0} { return }
+	set item [lindex $id 1]
+	if {[%W item isopen $item]} { set op collapse } else { set op expand }
+	%W item $op $item
+}
+
+bind TreeTable <KeyPress-Left>	{ %W item collapse [%W item id active] }
+bind TreeTable <KeyPress-Right>	{ %W item expand [%W item id active] }
+
+bind TreeTable <Shift-Up> {
+	set item [::treetable::UpDown %W active -1]
+	if {$item ne ""} {
+		%W activate $item
+		if {"browse" in [%W state names]} {
+			%W selection clear
+			%W selection add $item
+		}
+		%W see active
+	}
+	break
+}
+
+bind TreeTable <Shift-Down> {
+	set item [::treetable::UpDown %W active +1]
+	if {$item ne ""} {
+		%W activate $item
+		if {"browse" in [%W state names]} {
+			%W selection clear
+			%W selection add $item
+		}
+		%W see active
+	}
+	break
+}
+
 bind TreeTable <Up> {
 	set item [TreeCtrl::UpDown %W active -1]
-	if {$item eq ""} return
-	%W activate $item
-	if {"browse" in [%W state names]} {
-		%W selection clear
-		%W selection add $item
+	if {$item ne ""} {
+		%W activate $item
+		if {"browse" in [%W state names]} {
+			%W selection clear
+			%W selection add $item
+		}
+		%W see active
 	}
-	%W see active
 	break
 }
 
 bind TreeTable <Down> {
 	set item [TreeCtrl::UpDown %W active +1]
-	if {$item eq ""} return
-	%W activate $item
-	if {"browse" in [%W state names]} {
-		%W selection clear
-		%W selection add $item
+	if {$item ne ""} {
+		%W activate $item
+		if {"browse" in [%W state names]} {
+			%W selection clear
+			%W selection add $item
+		}
+		%W see active
 	}
-	%W see active
 	break
 }
 

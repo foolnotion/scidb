@@ -1590,33 +1590,8 @@ proc Parse {file wantedFile moveto {match {}}} {
 	}
 
 	set lang [lindex [file split $file] end-1]
-	set patternFilename [file join $::scidb::dir::hyphen pattern $lang.dat]
-	if {[file readable $patternFilename]} {
-		set dictFilenames ""
-		set filename [file join $::scidb::dir::hyphen dict xx.dat]
-		if {[file readable $filename]} {
-			append dictFilenames $filename
-		}
-		set filename [file join $::scidb::dir::hyphen dict $lang.dat]
-		if {[file readable $filename]} {
-			if {[string length $dictFilenames]} { append dictFilenames ";" }
-			append dictFilenames $filename
-		}
-		set filename [file join $::scidb::dir::home dict $lang.dat]
-		if {[file readable $filename]} {
-			if {[string length $dictFilenames]} { append dictFilenames ";" }
-			append dictFilenames $filename
-		}
-		if {$lang eq "de"} {
-			# we cannot hyphenate "ß" properly
-			set content [string map {"ß" "ss"} $content]
-		}
-		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
-
-		if {$Priv(latinligatures)} {
-			set content [::scidb::misc::html ligatures $content]
-		}
-	}
+	set content [::html::hyphenate $lang $content]
+	if {$Priv(latinligatures)} { set content [::scidb::misc::html ligatures $content] }
 
 	[$Priv(html) drawable] configure -cursor {}
 	$Priv(html) parse $content

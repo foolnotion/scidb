@@ -46,6 +46,76 @@ variable Margin	8 ;# do not change!
 variable MaxWidth	12000
 
 
+proc hyphenate {lang content} {
+	set patternFilename [file join $::scidb::dir::hyphen pattern $lang.dat]
+	if {[file readable $patternFilename]} {
+		set dictFilenames ""
+		set filename [file join $::scidb::dir::hyphen dict xx.dat]
+		if {[file readable $filename]} { append dictFilenames $filename }
+		set filename [file join $::scidb::dir::hyphen dict $lang.dat]
+		if {[file readable $filename]} {
+			if {[string length $dictFilenames]} { append dictFilenames ";" }
+			append dictFilenames $filename
+		}
+		set filename [file join $::scidb::dir::home dict $lang.dat]
+		if {[file readable $filename]} {
+			if {[string length $dictFilenames]} { append dictFilenames ";" }
+			append dictFilenames $filename
+		}
+		if {$lang eq "de"} {
+			# we cannot hyphenate "ß" properly
+			set content [string map {"ß" "ss"} $content]
+		}
+		set content [::scidb::misc::html hyphenate $patternFilename $dictFilenames $content]
+	}
+
+	return $content
+}
+
+
+proc formatPath {path {delim {}}} {
+	if {[llength $delim] == 0} {
+		if {$::tcl_platform(platform) eq "windows"} { set delim "\\" } else { set delim "/" }
+	}
+	set parts {}
+	set components [split $path $delim]
+	for {set i 0} {$i < [llength $components]} {incr i} {
+		set comp [lindex $components $i]
+		if {[string length $comp] > 0} {
+			lappend parts $comp
+		} elseif {$i == 0} {
+			if {[llength $components] > 1} {
+				incr i
+				lappend parts "${delim}[lindex $components $i]"
+			} else {
+				lappend parts $delim
+			}
+		}
+	}
+	if {[string index $path end] eq $delim && [lindex $parts end] ne $delim} {
+		lset $parts end "[lindex $parts end]${delim}"
+	}
+	set result ""
+	for {set i 0} {$i < [llength $parts]} {incr i} {
+		if {$i < [llength $parts] - 1} {
+			append result "<code>[lindex $parts $i]${delim}</code>&#8203;"
+		}  else {
+			append result "<code>[lindex $parts $i]</code>"
+		}
+	}
+	return $result
+}
+
+
+proc formatUrl {url} {
+	set i [string first :// $url]
+	if {$i == -1} { return [formatPath $url "/"] }
+	set result "<code>[string range $url 0 [expr {$i - 1}]]://</code>&#8203;"
+	append result [formatPath [string range $url [expr {$i + 3}] end] "/"]
+	return $result
+}
+
+
 proc defaultCSS {monoFamilies textFamilies} {
 	set css "
 		:link    { color: blue2; text-decoration: none; }
@@ -72,13 +142,14 @@ proc Build {w args} {
 		-exportselection	no
 		-center				no
 		-fittowidth			no
+		-fittoheight		no
 		-imagecmd			{}
 		-doublebuffer		yes
 		-latinligatures	yes
-		-useHorzScroll		yes
-		-useVertScroll		yes
-		-keepHorzScroll	no
-		-keepVertScroll	no
+		-usehorzscroll		yes
+		-usevertscroll		yes
+		-keephorzscroll	no
+		-keepvertscroll	no
 		-showhyphens		0
 		-delay				0
 		-css					{}
@@ -91,8 +162,8 @@ proc Build {w args} {
 	set htmlOptions {}
 	foreach name [array names opts] {
 		switch -- $name {
-			-delay - -css - -center - -fittowidth - -importdir -
-			-useHorzScroll - -useVertScroll - -keepHorzScroll - -keepVertScroll {}
+			-delay - -css - -center - -fittowidth - -fittoheight - -importdir -
+			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -showhyphens -
@@ -112,11 +183,11 @@ proc Build {w args} {
 	tk::frame $w {*}$options
 	tk::frame $w.sub -background $opts(-background) -borderwidth 0 
 	set html $w.sub.html
-	if {$opts(-useVertScroll)} {
+	if {$opts(-usevertscroll)} {
 		::scrolledframe::scrollbar $w.v -orient "vertical" -command [list $html yview]
 		grid $w.v -row 0 -column 1 -sticky ns
 	}
-	if {$opts(-useHorzScroll)} {
+	if {$opts(-usehorzscroll)} {
 		::scrolledframe::scrollbar $w.h -orient "horizontal" -command [list $html xview]
 		grid $w.h -row 1 -column 0 -sticky ew
 	}
@@ -149,14 +220,15 @@ proc Build {w args} {
 		sel:state		0
 	}
 
-	set Priv(delay)		$opts(-delay)
-	set Priv(center)		$opts(-center)
-	set Priv(fittowidth)	$opts(-fittowidth)
-	set Priv(bw)    		$opts(-borderwidth)
-	set Priv(css)   		$opts(-css)
-	set Priv(importdir)	$opts(-importdir)
-	set Priv(minbbox)		{}
-	set Priv(styleCount)	0
+	set Priv(delay)			$opts(-delay)
+	set Priv(center)			$opts(-center)
+	set Priv(fittowidth)		$opts(-fittowidth)
+	set Priv(fittoheight)	$opts(-fittoheight)
+	set Priv(bw)    			$opts(-borderwidth)
+	set Priv(css)   			$opts(-css)
+	set Priv(importdir)		$opts(-importdir)
+	set Priv(minbbox)			{}
+	set Priv(styleCount)		0
 
 	if {[llength $Priv(bw)] == 0} { set Priv(bw) 0 }
 
@@ -167,23 +239,23 @@ proc Build {w args} {
 		$w.sub configure -width $opts(-width) -height $opts(-height)
 	}
 
-	if {$opts(-useVertScroll)} { set shrink no } else { set shrink yes }
+	if {$opts(-usevertscroll)} { set shrink no } else { set shrink yes }
 	__html_widget $html {*}$htmlOptions -shrink $shrink
 	$html handler script style [namespace code [list StyleHandler $html]]
 	if {[string length $Priv(importdir)]} {
 		$html handler node link [list [namespace current]::LinkHandler $html]
 	}
 
-	if {$opts(-useHorzScroll)} {
-		if {$opts(-keepHorzScroll)} {
+	if {$opts(-usehorzscroll)} {
+		if {$opts(-keephorzscroll)} {
 			set cmd [list $w.h set]
 		} else {
 			set cmd [namespace code [list SbSet $w.h]]
 		}
 		$html configure -xscrollcommand $cmd -xscrollincrement 10
 	}
-	if {$opts(-useVertScroll)} {
-		if {$opts(-keepVertScroll)} {
+	if {$opts(-usevertscroll)} {
+		if {$opts(-keepvertscroll)} {
 			set cmd [list $w.v set]
 		} else {
 			set cmd [namespace code [list SbSet $w.v]]
@@ -196,7 +268,7 @@ proc Build {w args} {
 		bind $w.sub <Configure> [namespace code { Place %W }]
 	} else {
 		pack $html -fill both -expand yes
-		if {$opts(-useVertScroll)} {
+		if {$opts(-usevertscroll)} {
 			bind $w <Configure> [namespace code { Configure %W %w %# }]
 		}
 	}
@@ -280,6 +352,10 @@ proc WidgetProc {w command args} {
 				if {[llength $bbox] == 0} { set bbox [$w bbox] }
 				set width [expr {min([lindex $bbox 2], 4000) + $Margin}]
 				$w.sub.html configure -fixedwidth $width
+			}
+			if {$Priv(fittoheight)} {
+				lassign [$w.sub.html bbox] x y wd ht
+				$w.sub configure -height [expr {$ht + 2*$y}]
 			}
 			if {$Priv(center)} {
 				update idletasks

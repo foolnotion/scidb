@@ -1945,8 +1945,8 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					case 'h':	// checksum
 						{
 							Tcl_Obj* objs[2];
-							objs[0] = Tcl_NewIntObj(Scidb->checksumIndex(pos));
-							objs[1] = Tcl_NewIntObj(Scidb->checksumMoves(pos));
+							objs[0] = Tcl_NewWideIntObj(Scidb->checksumIndex(pos));
+							objs[1] = Tcl_NewWideIntObj(Scidb->checksumMoves(pos));
 							setResult(2, objs);
 						}
 						break;

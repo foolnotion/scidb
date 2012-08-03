@@ -129,6 +129,24 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
   </tr>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--update-player-photos</code>
+    </td>
+    <td class="standard">
+      Spielerphotos updaten bzw. installieren. Danach wird das Programm beendet.
+      <br/><br/>
+      Grundsätzlich wird empfohlen, den Update bzw. die Installation über
+      die grafische Benutzeroberfläche auszuführen.
+      <br/><br/>
+      Unix:
+      Bei einem Aufruf mit Superuser-Berechtigung wird der Update auf dem
+      gemeinsamen Verzeichnis durchgeführt (i.d.R.
+      <url>/usr/local/share/%scidb%</url>).
+      Ansonsten erfolgt der Update im Benutzerverzeichnis
+      <nobr><code>~/.%scidb%</code></nobr>.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--single-process</code>
     </td>
     <td class="standard">

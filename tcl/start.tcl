@@ -40,11 +40,11 @@ namespace eval dir {
 
 if {[info exists ::env(SCIDB_SHAREDIR)]} {
 	set share $::env(SCIDB_SHAREDIR)
-} elseif {$tcl_platform(platform) eq "windows"} {
-	set share $exec
+} elseif {$::tcl_platform(platform) eq "windows"} {
+	set share [file dirname $::nameofexecutable]
 } else {
 	set share "%SHAREDIR%"
-	if {$share eq "%SHAREDIR%"} {
+	if {[string match ?SHAREDIR? $share]} {
 		set share [file tail $::nameofexecutable]
 		set share [string range $share [string first scidb $share] end]
 		set share "/usr/local/share/$share"
@@ -75,6 +75,8 @@ if {![file isdirectory $user]} {
 if {![file isdirectory $config]} {
 	file mkdir $config
 }
+
+if {![info exists ::env(SCIDB_SHAREDIR)]} { set ::env(SCIDB_SHAREDIR) $share }
 
 } ;# namespace dir
 

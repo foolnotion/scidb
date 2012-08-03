@@ -238,7 +238,7 @@ tcl::setResult(int result)
 void
 tcl::setResult(unsigned result)
 {
-	Tcl_SetObjResult(interp(), Tcl_NewIntObj(result));
+	Tcl_SetObjResult(interp(), Tcl_NewWideIntObj(result));
 }
 
 
@@ -252,7 +252,7 @@ tcl::setResult(long result)
 void
 tcl::setResult(unsigned long result)
 {
-	Tcl_SetObjResult(interp(), Tcl_NewLongObj(result));
+	Tcl_SetObjResult(interp(), Tcl_NewWideIntObj(result));
 }
 
 

@@ -150,7 +150,7 @@ proc WriteOptions {chan} {
 options::hookWriter [namespace current]::WriteOptions
 
 proc archive::setModTime {file time} { ::scidb::misc::setModTime $file $time }
-proc archive::setMessage {progress msg} { ::dialog::progressbar::setMessage $progress $msg }
+proc archive::setInformation {progress msg} { ::dialog::progressbar::setInformation $progress ${msg}... }
 proc archive::setMaxTick {progress n} { ::dialog::progressbar::setMaximum $progress $n }
 
 proc archive::logError {msg detail} {
@@ -209,6 +209,12 @@ switch $::scidb::revision {
 		set ::export::Values(html,moves,notation) san
 		set ::export::Values(pdf,moves,notation) san
 		set ::export::Values(tex,moves,notation) san
+		for {set i 0} {$i < [llength $::game::History]} {incr i} {
+			set crc [lindex $::game::History $i 2 0]
+			if {$crc < 0} { lset ::game::History $i 2 0 [expr {$crc + 4294967296}] }
+			set crc [lindex $::game::History $i 2 1]
+			if {$crc < 0} { lset ::game::History $i 2 1 [expr {$crc + 4294967296}] }
+		}
 	}
 }
 

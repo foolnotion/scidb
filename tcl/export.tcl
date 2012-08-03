@@ -1769,72 +1769,74 @@ proc StyleSelected {tree index} {
 		set style [join [list [lindex $StyleLayout($Values(Type)) $parent 1] {*}$style] ","]
 		set parent [$tree item parent $parent]
 	}
-	set Info(style) $style
 
 	if {[string match *,ColumnStyle $style]} {
-		set Info(fontstyle) [join [lrange [split $style ","] 0 end-1] ","]
-	} else {
-		set Info(fontstyle) $Info(style)
-		lassign {{} {} {} {} {}} family size weight slant color
-		set style [join [lreplace [split $style ","] end end] ","]
-		while {[llength $style]} {
-			lassign $Styles($type,$style) f s w l c
-			set style [join [lreplace [split $style ","] end end] ","]
-			if {[llength $family] == 0} { set family $f }
-			if {[llength $size  ] == 0} { set size   $s }
-			if {[llength $weight] == 0} { set weight $w }
-			if {[llength $slant ] == 0} { set slant  $l }
-			if {[llength $color ] == 0} { set color  $c }
-		}
-		set Info($type,font,family) $family
-		set Info($type,font,size)   $size
-		set Info($type,font,weight) $weight
-		set Info($type,font,slant)  $slant
-		set Info($type,font,color)  $color
-
-		lassign $Styles($type,$Info(fontstyle)) f s w l c
-		if {[llength $f]} { set family $f }
-		if {[llength $s]} { set size   $s }
-		if {[llength $w]} { set weight $w }
-		if {[llength $l]} { set slant  $l }
-		if {[llength $c]} { set color  $c }
-
-		set Info(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
-
-		switch -glob -- $Info(fontType) {
-			Figurines	{ set fonts $::font::chessFigurineFonts }
-			Diagram		{ set fonts $::font::chessDiagramFonts }
-			Symbols		{ set fonts $::font::chessSymbolFonts }
-
-			default		{
-				if {$type eq "tex"} {
-					set Info(fonts) {{Avant Garde} Bookman Chancery Charter Courier Fixed Fourier \
-											Helvetica {Latin Modern} {New Century} Palatino Times}
-				} elseif {$Values(pdf,fonts,builtin)} {
-					set Info(fonts) {Courier Helvetica Times-Roman}
-				} else {
-					set Info(fonts) {}
-				}
-				set fonts $Info(fonts)
-			}
-		}
-
-		if {$type eq "tex"} {
-			set sizes {8 9 10 11 12 14 17 20 25}
-		} else {
-			set sizes {}
-		}
-
-		::dialog::choosefont::setFonts $Info(fontsel) $fonts
-		::dialog::choosefont::setSizes $Info(fontsel) $sizes
-		UpdateSample $family
-		::dialog::choosefont::select $Info(fontsel) \
-			-family $family \
-			-size $size \
-			-weight $weight \
-			-slant $slant \
-			-color $color
+		set style [join [lrange [split $style ","] 0 end-1] ","]
 	}
+
+	set Info(style) $style
+	set Info(fontstyle) $Info(style)
+	lassign {{} {} {} {} {}} family size weight slant color
+	set style [join [lreplace [split $style ","] end end] ","]
+	while {[llength $style]} {
+		lassign $Styles($type,$style) f s w l c
+		set style [join [lreplace [split $style ","] end end] ","]
+		if {[llength $family] == 0} { set family $f }
+		if {[llength $size  ] == 0} { set size   $s }
+		if {[llength $weight] == 0} { set weight $w }
+		if {[llength $slant ] == 0} { set slant  $l }
+		if {[llength $color ] == 0} { set color  $c }
+	}
+	set Info($type,font,family) $family
+	set Info($type,font,size)   $size
+	set Info($type,font,weight) $weight
+	set Info($type,font,slant)  $slant
+	set Info($type,font,color)  $color
+
+	lassign $Styles($type,$Info(fontstyle)) f s w l c
+	if {[llength $f]} { set family $f }
+	if {[llength $s]} { set size   $s }
+	if {[llength $w]} { set weight $w }
+	if {[llength $l]} { set slant  $l }
+	if {[llength $c]} { set color  $c }
+
+	set Info(fontType) [lindex $StyleLayout($Values(Type)) $index 1]
+
+	switch -glob -- $Info(fontType) {
+		Figurines	{ set fonts $::font::chessFigurineFonts }
+		Diagram		{ set fonts $::font::chessDiagramFonts }
+		Symbols		{ set fonts $::font::chessSymbolFonts }
+
+		default		{
+			if {$type eq "tex"} {
+				set Info(fonts) {{Avant Garde} Bookman Chancery Charter Courier Fixed Fourier \
+										Helvetica {Latin Modern} {New Century} Palatino Times}
+			} elseif {$Values(pdf,fonts,builtin)} {
+				set Info(fonts) {Courier Helvetica Times-Roman}
+			} else {
+				set Info(fonts) {}
+			}
+			set fonts $Info(fonts)
+		}
+	}
+
+	if {$type eq "tex"} {
+		set sizes {8 9 10 11 12 14 17 20 25}
+		set units pt
+	} else {
+		set sizes {}
+		set units {}
+	}
+
+	::dialog::choosefont::setFonts $Info(fontsel) $fonts
+	::dialog::choosefont::setSizes $Info(fontsel) $sizes $units
+	UpdateSample $family
+	::dialog::choosefont::select $Info(fontsel) \
+		-family $family \
+		-size $size \
+		-weight $weight \
+		-slant $slant \
+		-color $color
 }
 
 

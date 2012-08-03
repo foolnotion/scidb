@@ -1642,7 +1642,8 @@ if {$tcl_platform(platform) ne "windows"} {
 			if {[file readable $file]} {
 				incr _Count
 				update idletasks
-				::dialog::progressbar::setMessage $parent.progress [format $mc::CopyFile [file tail $file]]
+				set msg [format $mc::CopyFile [file tail $file]]
+				::dialog::progressbar::setInformation $parent.progress ${msg}...
 				update idletasks
 				catch { file copy -force $file $dstDir }
 			}
@@ -1653,7 +1654,7 @@ if {$tcl_platform(platform) ne "windows"} {
 			::dialog::info -parent $parent -message [format $mc::NoChessBaseFontFound $srcDir]
 		} else {
 			if {$::tcl_platform(platform) eq "unix"} {
-				::dialog::progressbar::setMessage $parent.progress $mc::UpdateFontCache
+				::dialog::progressbar::setInformation $parent.progress ${mc::UpdateFontCache}...
 				update idletasks
 				catch { exec fc-cache -f $dstDir }
 			}

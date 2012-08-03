@@ -327,6 +327,10 @@ u_zstream.o: ../mstl/m_construct.h
 u_zstream.o: ../mstl/m_construct.ipp
 u_zstream.o: ../mstl/m_string.h
 u_zstream.o: ../mstl/m_string.ipp
+u_zstream.o: u_byte_stream.h
+u_zstream.o: u_base.h
+u_zstream.o: u_exception.h
+u_zstream.o: u_byte_stream.ipp
 u_zstream.o: u_misc.h
 u_zstream.o: ../mstl/m_ifstream.h
 u_zstream.o: ../mstl/m_file.h

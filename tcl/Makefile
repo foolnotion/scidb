@@ -12,7 +12,9 @@
 
 include ../Makefile.in
 
-ARCH = scidb-arch
+SCRIPT = scidb$(SUFFIX)
+ARCH = arch-scidb
+UPDATE_PHOTO_FILES = update-scidb-photo-files
 
 # NOTE that the ordering is important!
 SOURCES = \
@@ -45,6 +47,7 @@ SOURCES = \
 	utils/countries.tcl \
 	utils/web.tcl \
 	utils/xcursor.tcl \
+	utils/player-photos.tcl \
 	dnd/tkdnd.tcl \
 	dnd/tkdnd_unix.tcl \
 	widgets/tooltip.tcl \
@@ -132,11 +135,14 @@ SOURCES = \
 	menu.tcl \
 	end.tcl \
 
-all: $(SCRIPT)
+SCRIPTS = $(SCRIPT) $(UPDATE_PHOTO_FILES)
+
+all: $(SCRIPTS)
 
 clean:
 	@echo "Clean `pwd`"
 	@rm -f $(SCRIPT)
+	@rm -f $(UPDATE_PHOTO_FILES)
 
 depend:
 	@# nothing to do
@@ -148,14 +154,16 @@ build-help:
 		(cd $$lang; if [ -f Makefile ]; then make; fi); \
 	done
 
-install-script: $(SCRIPT)
-	@echo "Install $(SCRIPT)"
+install-scripts: $(SCRIPTS)
+	@echo "Install Tcl scripts"
 	@install -m 755 -d $(BINDIR)
 	@install -m 755 -p $(SCRIPT) $(BINDIR)
+	@install -m 755 -p $(UPDATE_PHOTO_FILES) $(BINDIR)
 
-uninstall-script:
-	@echo "Uninstall $(SCRIPT)"
+uninstall-scripts:
+	@echo "Uninstall Tcl scripts"
 	@rm -f $(BINDIR)/$(SCRIPT)
+	@rm -f $(BINDIR)/$(UPDATE_PHOTO_FILES)
 
 install-pieces:
 	@echo "Install piece sets"
@@ -237,32 +245,31 @@ install-lang: install-localizations
 uninstall-lang: uninstall-localizations
 
 install-photos:
-	@echo -n "Install player photos:"
 	@install -m 755 -d $(SHAREDIR)/photos
-	@for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do \
-		echo -n " $$i";                                                \
-		install -m 755 -d $(SHAREDIR)/photos/$$i;                      \
-		install -m 644 -p photos/$$i/* $(SHAREDIR)/photos/$$i;         \
-	done
-	@echo ""
 
 uninstall-photos:
-	@if [ -d $(SHAREDIR)/photos ]; then                                                       \
-		echo -n "Uninstall player photos:";                                                    \
-		for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do                       \
-			dir=$(SHAREDIR)/photos/$$i;                                                         \
-			if [ -d $$dir ]; then                                                               \
-				echo -n " $$i";                                                                  \
-				for f in `ls photos/$$i/*`; do rm -f $(SHAREDIR)/$$f; done;                      \
-				if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then                     \
-					rmdir $$dir;                                                                  \
-				fi;                                                                              \
-			fi;                                                                                 \
-		done;                                                                                  \
-		echo "";                                                                               \
-		if [ "`find $(SHAREDIR)/photos -type d -empty`" = "`ls -d $(SHAREDIR)/photos`" ]; then \
-			rmdir $(SHAREDIR)/photos;                                                           \
-		fi;                                                                                    \
+	@if [ -d $(SHAREDIR)/photos ]; then                                          \
+		photodir=$(SHAREDIR)/photos;                                              \
+		if [ -f $$photodir/FILES ]; then                                          \
+			echo -n "Uninstall player photos:";                                    \
+			for file in `cat $$photodir/FILES`; do                                 \
+				if [ -f $$photodir/$file ]; then                                    \
+					rm -f $$photodir/$file;                                          \
+				fi;                                                                 \
+			done;                                                                  \
+			for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do       \
+				dir=$$photodir/$$i;                                                 \
+				if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then        \
+					rmdir $$dir;                                                     \
+				fi;                                                                 \
+			done;                                                                  \
+			if [ "`find $$photodir -type d -empty`" = "`ls -d $$photodir`" ]; then \
+				rmdir $$photodir;                                                   \
+			fi;                                                                    \
+		fi;                                                                       \
+	fi
+	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
+		rmdir $(SHAREDIR);                                                     \
 	fi
 
 install-textures:
@@ -510,14 +517,14 @@ uninstall-fonts:
 		fi;                                                          \
 	fi
 
-install-no-photos: install-script install-pieces install-cursors install-flags \
+install-no-photos: install-scripts install-pieces install-cursors install-flags \
 	install-localizations install-textures install-themes install-text-scripts  \
 	install-pdf-images install-help install-fonts
 
 install: install-no-photos install-photos
 
-uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
-	uninstall-themes uninstall-text-scripts uninstall-photos uninstall-textures uninstall-pdf-images    \
+uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
+	uninstall-themes uninstall-text-scripts uninstall-textures uninstall-pdf-images    \
 	uninstall-help uninstall-fonts
 	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
 		rmdir $(SHAREDIR);                                                     \
@@ -526,13 +533,34 @@ uninstall: uninstall-script uninstall-pieces uninstall-cursors uninstall-flags u
 $(SCRIPT): $(SOURCES)
 	@echo "Build $(SCRIPT)"
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
-	@cat $(SOURCES) | sed 's/# vi:set ts=3 sw=3:/update idletasks/' | sed -e 's#%SHAREDIR%#$(SHAREDIR)#' -e '/^##/d' -e '/^#$$/d' -e '/^[ 	]*#[ 	]\+/d' > $(SCRIPT)
+	@cat $(SOURCES) | sed                                  \
+		-e 's/# vi:set ts=3 sw=3:/update idletasks/'        \
+		-e 's#%SHAREDIR%#$(SHAREDIR)#g'                     \
+		-e 's/%UPDATE_PHOTO_FILES%/$(UPDATE_PHOTO_FILES)/g' \
+		-e '/^##/d'                                         \
+		-e '/^#$$/d'                                        \
+		-e '/^[ 	]*#[ 	]\+/d'                               \
+		> $(SCRIPT)
 	@chmod 0555 $(SCRIPT)
 
-$(ARCH): scidb-arch.tcl utils/archive.tcl
+$(UPDATE_PHOTO_FILES): utils/update-photos.tcl
+	@echo "Build $(UPDATE_PHOTO_FILES)"
+	@if [ -e $(UPDATE_PHOTO_FILES) ]; then rm -f $(UPDATE_PHOTO_FILES); fi
+	@cat utils/update-photos.tcl | sed                     \
+		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g'                \
+		-e 's#%SHAREDIR%#$(SHAREDIR)#g'                     \
+		-e 's/%UPDATE_PHOTO_FILES%/$(UPDATE_PHOTO_FILES)/g' \
+		> $(UPDATE_PHOTO_FILES)
+	@chmod 0555 $(UPDATE_PHOTO_FILES)
+
+$(ARCH): utils/archive.tcl
 	@echo "Build $(ARCH)"
 	@if [ -e $(ARCH) ]; then rm -f $(ARCH); fi
-	@cat scidb-arch.tcl utils/archive.tcl | sed -e 's/%PROGRAM%/$(PROGRAM)/' -e 's/%ARCH%/$(ARCH)/' > $(ARCH)
+	@cat utils/archive.tcl | sed            \
+		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g' \
+		-e 's#%SHAREDIR%#$(SHAREDIR)#g'      \
+		-e 's/%ARCH%/$(ARCH)/g'              \
+		> $(ARCH)
 	@chmod 0555 $(ARCH)
 
 # vi:set ts=3 sw=3:

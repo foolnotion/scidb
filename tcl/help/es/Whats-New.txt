@@ -37,6 +37,7 @@ TITLE What's new?
   <li>Menu bar removed: instead a simple main menu exists; this is state-of-the-art,
       and the layout will be improved</li>
   <li>Compacting database (.sci only) integrated</li>
+  <li>Installation/update via Internet of player photo files integrated</li>
   <li>Installation of ChessBase fonts integrated</li>
   <li>Tournament table: optional display of win/draw/loss</li>
   <li>Mouse wheel support for all lists and the chess board</li>

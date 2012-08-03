@@ -139,6 +139,11 @@ proc formatTime {time} {
 				$Pattern(time)]
 }
 
+
+proc currentTime {} {
+	return [formatTime [clock format [clock seconds] -format "%Y.%m.%d %H:%M:%S"]]
+}
+
 } ;# namespace locale
 
 # vi:set ts=3 sw=3:

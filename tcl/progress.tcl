@@ -104,7 +104,7 @@ proc DoCmd {cmd parent {value 0}} {
 
 		message {
 			if {[info exists mc::Message($value)]} { set msg $mc::Message($value) } else { set msg $value }
-			::dialog::progressbar::setMessage .progress $msg
+			::dialog::progressbar::setInformation .progress ${msg}...
 			update
 		}
 

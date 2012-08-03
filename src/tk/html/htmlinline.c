@@ -595,7 +595,13 @@ fixLineBreak(InlineContext *p, char CONST *zText, int nText)
                         InlineBox *pBox = &p->aInline[p->nInline - 1];
                         pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
                     }
-                } else if (strchr("})]", zText[0]) || Tcl_UniCharIsPunct(ch) || isAlnum(ch)) {
+                } else if (strchr("})]", zText[0])) {
+                    Tcl_UtfToUniChar(Tcl_UtfPrev(zLast + nLast, zLast), &ch);
+                    if (Tcl_UniCharIsPunct(ch) || isAlnum(ch) || ch == '/') {
+                        InlineBox *pBox = &p->aInline[p->nInline - 1];
+                        pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
+                    }
+                } else if (Tcl_UniCharIsPunct(ch)) {
                     Tcl_UtfToUniChar(Tcl_UtfPrev(zLast + nLast, zLast), &ch);
                     if (isAlnum(ch)) {
                         InlineBox *pBox = &p->aInline[p->nInline - 1];

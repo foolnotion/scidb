@@ -253,6 +253,48 @@
 ::archive::mc::PackFile						"Pack %s"
 ::archive::mc::UnpackFile					"Unpack %s"
 
+### player photos ######################################################
+::util::photos::mc::InstallPlayerPhotos		"Install/Update Player Photos"
+::util::photos::mc::TimeOut						"Timeout occurred."
+::util::photos::mc::EnterPassword				"Enter Password"
+::util::photos::mc::Download						"Download"
+::util::photos::mc::SharedInstallation			"Shared installation"
+::util::photos::mc::LocalInstallation			"Private installation"
+::util::photos::mc::RetryLater					"Please retry later."
+::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress."
+::util::photos::mc::PhotoFiles					"Photo Files"
+
+::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\nPlease enter the super-user password."
+::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection."
+::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%."
+::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
+
+::util::photos::mc::Error(nohttp)				"Cannot open an internet connection because package TclHttp is not installed."
+::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s."
+::util::photos::mc::Error(busy)					"The installation/update is already running."
+::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed."
+::util::photos::mc::Error(passwd)				"The password is wrong."
+
+::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date."
+::util::photos::mc::Message(finished)			"The installation/update of photo files has finished."
+::util::photos::mc::Message(broken)				"Broken Tcl library version."
+::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'."
+::util::photos::mc::Message(missing)			"Cannot find directory '%s'."
+::util::photos::mc::Message(httperr)			"HTTP error: %s"
+::util::photos::mc::Message(timeout)			"HTTP timeout occurred."
+::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
+::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress."
+::util::photos::mc::Message(aborted)			"User has aborted download."
+::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died."
+
+::util::photos::mc::Log(started)					"Installation/update of photo files started at %s."
+::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s."
+::util::photos::mc::Log(destination)			"Destination directory for photo file download is '%s'."
+::util::photos::mc::Log(created)					"%s file(s) created."
+::util::photos::mc::Log(deleted)					"%s file(s) deleted."
+::util::photos::mc::Log(skipped)					"%s file(s) skipped."
+::util::photos::mc::Log(updated)					"%s file(s) updated."
+
 ### application ########################################################
 ::application::mc::Database				"&Database"
 ::application::mc::Board					"&Board"
@@ -262,6 +304,7 @@
 ::application::mc::UndockWindow			"Undock Window"
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Shutdown..."
+::application::mc::QuitAnyway				"Quit anyway?"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Show tournament table for this game"

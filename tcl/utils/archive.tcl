@@ -44,7 +44,7 @@ namespace import ::tcl::mathfunc::min
 proc setModTime {file time} {}
 proc tick {progress n} {}
 proc setMaxTick {progress n} {}
-proc setMessage {progress msg} {}
+proc setInformation {progress msg} {}
 proc logError {msg detail} {}
 
 
@@ -219,7 +219,7 @@ proc packFiles {arch baseDir sources progress procCompression
 			if {$attr ne "PathName"} { puts $fd "<$attr> $value" }
 		}
 
-		setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
+		setInformation $progress [format $mc::PackFile [$procGetName $FileName]]
 
 		if {![string match http:* $FileName]} {
 			puts -nonewline $fd "<Size> "
@@ -301,7 +301,7 @@ proc packStreams {arch baseDir sources formats compression
 	foreach FileName $sources {
 		if {![string match http:* $FileName]} {
 			set PathName [file join $baseDir $FileName]
-			setMessage $progress [format $mc::PackFile [$procGetName $FileName]]
+			setInformation $progress [format $mc::PackFile [$procGetName $FileName]]
 
 			puts $fd ""
 			puts $fd "<-- H E A D -->"
@@ -395,7 +395,7 @@ proc unpack {arch procGetName progress {destDir ""}} {
 				return 0
 			}
 		}
-		setMessage $progress [format $mc::UnpackFile [$procGetName $FileName]]
+		setInformation $progress [format $mc::UnpackFile [$procGetName $FileName]]
 		lappend entries $attrs
 		set destFilename [file join $destDir $FileName]
 		if {[info exists URI] && [string match http:* $URI]} {

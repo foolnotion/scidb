@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci -I../util/curl/include
+INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci #-I../util/curl/include
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
@@ -38,12 +38,12 @@ SRC_CXX = \
 	tcl_view.cpp \
 	tcl_zlib.cpp \
 
-SRC_C = \
-	tclcurl-multi.c \
-	tclcurl.c \
+#SRC_C = \
+#	tclcurl-multi.c \
+#	tclcurl.c \
 
-SRC	= $(SRC_CXX) $(SRC_C)
-OBJS	= $(SRC_CXX:.cpp=.o) $(SRC_C:.c=.o)
+SRC	= $(SRC_CXX) #$(SRC_C)
+OBJS	= $(SRC_CXX:.cpp=.o) #$(SRC_C:.c=.o)
 LIB	= libtcl
 
 all: $(LIB).a
@@ -1511,24 +1511,3 @@ tcl_zlib.o: ../mstl/m_utility.ipp
 tcl_zlib.o: ../mstl/m_limits.h
 tcl_zlib.o: ../mstl/m_bit_functions.h
 tcl_zlib.o: ../mstl/m_bit_functions.ipp
-tclcurl-multi.o: tclcurl-multi.h
-tclcurl-multi.o: tclcurl.h
-tclcurl-multi.o: ../util/curl/include/curl/curl.h
-tclcurl-multi.o: ../util/curl/include/curl/curlver.h
-tclcurl-multi.o: ../util/curl/include/curl/curlbuild.h
-tclcurl-multi.o: ../util/curl/include/curl/curlrules.h
-tclcurl-multi.o: ../util/curl/include/curl/easy.h
-tclcurl-multi.o: ../util/curl/include/curl/multi.h
-tclcurl-multi.o: ../util/curl/include/curl/curl.h
-tclcurl-multi.o: ../util/curl/include/curl/easy.h
-tclcurl-multi.o: ../util/curl/include/curl/mprintf.h
-tclcurl.o: tclcurl.h
-tclcurl.o: ../util/curl/include/curl/curl.h
-tclcurl.o: ../util/curl/include/curl/curlver.h
-tclcurl.o: ../util/curl/include/curl/curlbuild.h
-tclcurl.o: ../util/curl/include/curl/curlrules.h
-tclcurl.o: ../util/curl/include/curl/easy.h
-tclcurl.o: ../util/curl/include/curl/multi.h
-tclcurl.o: ../util/curl/include/curl/curl.h
-tclcurl.o: ../util/curl/include/curl/easy.h
-tclcurl.o: ../util/curl/include/curl/mprintf.h

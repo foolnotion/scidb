@@ -37,6 +37,7 @@ set DockWindow				"Dock Window"
 set UndockWindow			"Undock Window"
 set ChessInfoDatabase	"Chess Information Data Base"
 set Shutdown				"Shutdown..."
+set QuitAnyway				"Quit anyway?"
 
 } ;# namespace mc
 
@@ -325,11 +326,19 @@ proc shutdown {} {
 	variable icon::32x32::shutdown
 	variable Vars
 
+	set dlg .application.shutdown
+	if {[winfo exists $dlg]} { return }
+
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
 	if {[llength [grab current]]} { bell; return }
 
-	set dlg .application.shutdown
-	if {[winfo exists $dlg]} { return }
+	if {[::util::photos::busy?]} {
+		append msg $::util::photos::mc::DownloadStillInProgress "\n\n"
+		append msg $mc::QuitAnyway
+		set reply [::dialog::question -parent .application -message $msg]
+		if {$reply ne "yes"} { return }
+		::util::photos::terminateUpdate
+	}
 
 	switch [::game::queryCloseApplication .application] {
 		restore	{ set backup 1 }

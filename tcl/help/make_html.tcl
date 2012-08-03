@@ -103,6 +103,19 @@ set KeyMapping {
 	<key>ESC</key>	{<kbd class="key">Esc</kbd>}
 }
 
+set f [open ../../../Makefile.in r]
+while {[gets $f line] >= 0} {
+	if {[regexp {SUFFIX[ \t]*=[ \t]*([^ \t]+)} $line _ suffix]} {
+		lappend HtmlMapping %scidb% scidb$suffix
+		break
+	}
+}
+close $f
+if {"%scidb%" ni $HtmlMapping} {
+	puts stderr "Couldn't find declaration of 'SUFFIX' in ../../../Makefile.in"
+	exit 1
+}
+
 
 proc print {chan source title body} {
 	variable lang
@@ -190,7 +203,7 @@ proc getArg {line} {
 
 
 if {$argc < 1} {
-	puts "Usage: [info script] <input-file> [<output-file>]"
+	puts stderr "Usage: [info script] <input-file> [<output-file>]"
 	exit 1
 }
 
@@ -236,6 +249,44 @@ if {![string match TITLE* $line]} {
 	example stderr
 }
 
+proc formatPath {path} {
+	set parts {}
+	set components [split $path "/"]
+	for {set i 0} {$i < [llength $components]} {incr i} {
+		set comp [lindex $components $i]
+		if {[string length $comp] > 0} {
+			lappend parts $comp
+		} elseif {$i == 0} {
+			if {[llength $components] > 1} {
+				incr i
+				lappend parts "/[lindex $components $i]"
+			} else {
+				lappend parts "/"
+			}
+		}
+	}
+	if {[string index $path end] eq "/" && [lindex $parts end] ne "/"} {
+		lset $parts end "[lindex $parts end]/"
+	}
+	set result ""
+	for {set i 0} {$i < [llength $parts]} {incr i} {
+		if {$i < [llength $parts] - 1} {
+			append result "<code>[lindex $parts $i]/</code>&#8203;"
+		}  else {
+			append result "<code>[lindex $parts $i]</code>"
+		}
+	}
+	return $result
+}
+
+proc formatUrl {url} {
+	set i [string first :// $url]
+	if {$i == -1} { return [formatPath $url] }
+	set result "<code>[string range $url 0 [expr {$i - 1}]]://</code>&#8203;"
+	append result [formatPath [string range $url [expr {$i + 3}] end]]
+	return $result
+}
+
 proc readContents {chan file} {
 	variable KeyMapping
 	variable HtmlMapping
@@ -265,6 +316,15 @@ proc readContents {chan file} {
 				append s $line
 				set line $s
 			}
+		}
+
+		while {[regexp -indices {<url>.*</url>} $line location]} {
+			lassign $location i k
+			set range [string range $line [expr {$i + 5}] [expr {$k - 6}]]
+			set newline [string range $line 0 [expr {$i - 1}]]
+			append newline [formatUrl [string range $line [expr {$i + 5}] [expr {$k - 6}]]]
+			append newline [string range $line [expr {$k + 1}] end]
+			set line $newline
 		}
 
 		set line [string map $KeyMapping $line]

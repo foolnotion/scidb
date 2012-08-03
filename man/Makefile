@@ -14,6 +14,9 @@ include ../Makefile.in
 
 .SUFFIXES: .n
 
+SCRIPT = scidb$(SUFFIX)
+PROGRAM = tkscidb$(SUFFIX)
+
 $(SCRIPT).1.gz: scidb.n cbh2si4.n cdb2sci.n
 	@echo "Make user manuals"
 	@cat scidb.n | sed -e 's#%SCRIPT%#$(SCRIPT)#' -e 's#%PROGRAM%#$(PROGRAM)#' -e 's#%BINDIR%#$(BINDIR)#' -e 's#%SHAREDIR%#$(SHAREDIR)#' | gzip -c > $(SCRIPT).1.gz

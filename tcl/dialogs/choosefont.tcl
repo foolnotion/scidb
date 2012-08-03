@@ -222,6 +222,7 @@ array set Vars {
 	geometry				{}
 	recentColors		{{} {} {} {} {} {}}
 	sizes					{8 9 10 11 12 13 14 15 16 17 18 19 20}
+	size,units			px
 	styles				{Regular Italic Bold {Bold Italic}}
 	sample				"AaBbYyZz\n0123456789"
 }
@@ -407,18 +408,22 @@ proc setStyles {w {styles {}}} {
 }
 
 
-proc setSizes {w {sizes {}}} {
+proc setSizes {w {sizes {}} {units px}} {
 	variable ${w}::S
 	variable Vars
 
 	if {[llength $sizes] == 0} {
 		set sizes $Vars(sizes)
+		set units $Vars(size,units)
 	} else {
 		set sizes [lsort -unique -integer $sizes]
+		if {[llength $units] == 0} { set units px }
 	}
 
 	set S(sizes) $sizes
 	set S(sizes,lcase) $sizes
+puts "setSizes: $units"
+	set S(size,units) $units
 }
 
 
@@ -696,6 +701,7 @@ proc BuildFrame {w font isDialog options} {
 	set S(color) $color
 	set S(map) 0
 	set S(locked) 0
+	set S(size,units) $Vars(size,units)
 
 	foreach var {styles sizes} {
 		set S($var) $Vars($var)
@@ -1456,10 +1462,16 @@ proc Result {w {fam {}}} {
 	MapStyle $w
 	if {[llength $fam] == 0} { set fam $S(font) }
 	if {$S(size) in $S(sizes)} {
-		set S(result) [list $fam $S(size)]
+		set size $S(size)
 	} else {
-		set S(result) [list $fam $S(prev,size)]
+		set size $S(prev,size)
 	}
+	if {$S(size,units) eq "pt"} {
+		# pt = 1 inch / 72 = 25.4 mm --- 2.83464567 = 72/25.4
+		# We do maginify a bit, otherwise the font looks a bit too small: 2.83464567 --> 3.5
+		set size [expr {int(($size*3.5*[winfo screenmmheight .])/[winfo screenheight .] + 0.5)}]
+	}
+	set S(result) [list $fam $size]
 	switch $S(style) {
 		"Regular"		{ lappend S(result) normal roman }
 		"Bold"			{ lappend S(result) bold roman }

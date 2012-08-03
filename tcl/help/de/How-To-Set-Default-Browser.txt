@@ -28,7 +28,7 @@ externen Verweise geöffnet werden, festzulegen:
     Scidb benutzt den Wert der Umgebungsvariable <code>BROWSER</code> zur
     Bestimmung des Standard-Browsers. Beispiel:<br/>
     <box>
-      <p><code>export BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox</code><br/></p>
+      <p><code>export BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><br/></p>
     </box>
   </p></li>
 
@@ -42,8 +42,8 @@ externen Verweise geöffnet werden, festzulegen:
   </p></li>
 
   <li><p>
-    Die Datei <code>"~/.htmlviewrc"</code> wird nach
-    einem Eintrag der Form <code>"X11BROWSER=&#8203;/usr&#8203;/bin&#8203;/firefox"</code>
+    Die Datei <code>"~/.htmlviewrc"</code> wird nach einem Eintrag der Form
+    <code>"X11BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><code>"</code>
     durchsucht.
   </p></li>
 

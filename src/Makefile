@@ -14,6 +14,9 @@ include ../Makefile.in
 
 .SUFFIXES: .cpp
 
+TK_PROGRAM		= tkscidb$(SUFFIX)
+TCL_PROGRAM		= tclscidb$(SUFFIX)
+
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
 ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
@@ -22,6 +25,9 @@ MINIZIP_LIB		= -Lutil/minizip -lminizip
 MAKEFLAGS += --no-print-directory
 
 LIBS_BASE = \
+	mstl/libmstl.a \
+
+LIBS_STUBS = \
 	db/libdbstubs.a \
 	util/libutil.a \
 	util/libTeXt/libTeXt.a \
@@ -39,8 +45,10 @@ LIBS = \
 	util/libhyphenate/libhyphenate.a \
 	util/universalchardet/libchardet.a \
 
-TK_LIBS = \
+TCL_LIBS = \
 	tcl/libtcl.a \
+
+TK_LIBS = \
 	tk/libtk.a \
 	tk/svg/libsvg.a \
 	tk/svg/agg/libagg.a \
@@ -62,20 +70,20 @@ SRC = \
 	tkscidb.cpp \
 
 ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) $(CURL_LIB) -lpthread
-ALL_TK_LIBS = $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
+ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 #ALL_TK_LIBS = $(TK_LIBS) /usr/local/lib/libtk.a $(X_LIBRARY) -lXft -lXss
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(PROGRAM)
+TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(TK_PROGRAM)
 
-all: check-mtime recursive cbh2si4 cdb2sci $(PROGRAM)
-tkscidb-only: recursive $(PROGRAM)
+all: check-mtime recursive cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
+tkscidb-only: recursive $(TK_PROGRAM)
 
 check-build:
 	@echo -n "Check build: ";                                            \
 	pwd=`pwd`;                                                           \
-	if [ "`$$pwd/$(PROGRAM) check-build.tcl`" = "OK" ]; then             \
+	if [ "`$$pwd/$(TK_PROGRAM) check-build.tcl`" = "OK" ]; then          \
 		echo "OK";                                                        \
 	else                                                                 \
 		echo "FAILED";                                                    \
@@ -90,26 +98,28 @@ check-build:
 	fi
 
 check-mtime:
-	@if [ -f $(PROGRAM) ]; then                              \
-		if [ $(PROGRAM) -ot ../Makefile.in ]; then            \
-			echo "src/$(PROGRAM) is older than Makefile.in.";  \
-			echo "It is recommended to use \"make clean\" at"; \
-			echo "first. Touch src/$(PROGRAM) if you think";   \
-			echo "you don't need this.";                       \
-			exit 1;                                            \
-		fi                                                    \
+	@if [ -f $(TK_PROGRAM) ]; then                             \
+		if [ $(TK_PROGRAM) -ot ../Makefile.in ]; then           \
+			echo "src/$(TK_PROGRAM) is older than Makefile.in."; \
+			echo "It is recommended to use \"make clean\" at";   \
+			echo "first. Touch src/$(TK_PROGRAM) if you think";  \
+			echo "you don't need this.";                         \
+			exit 1;                                              \
+		fi                                                      \
 	fi
 
-install-executables: recursive cbh2si4 cdb2sci $(PROGRAM)
+install-executables: recursive cbh2si4 cdb2sci $(TK_PROGRAM)
 	@echo "Install executables"
 	@install -m 755 -d $(BINDIR)
-	@install -m 755 -p $(PROGRAM) $(BINDIR)
+	@install -m 755 -p $(TK_PROGRAM) $(BINDIR)
+	@install -m 755 -p $(TCL_PROGRAM) $(BINDIR)
 	@install -m 755 -p cbh2si4 $(BINDIR)
 	@install -m 755 -p cdb2sci $(BINDIR)
 
 uninstall-executables:
 	@echo "Uninstall executables"
-	@rm -f $(BINDIR)/$(PROGRAM)
+	@rm -f $(BINDIR)/$(TK_PROGRAM)
+	@rm -f $(BINDIR)/$(TCL_PROGRAM)
 	@rm -f $(BINDIR)/cbh2si4
 	@rm -f $(BINDIR)/cdb2sci
 
@@ -255,47 +265,51 @@ db/libdbstubs.a:
 	$(MAKE) -C db libdbstubs.a
 
 #permute_eco: permute_eco.o $(LIBS)
-#	@echo "Building $@"
-#	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+#	@echo "Build $@"
+#	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
-extend_eco: extend_eco.o $(LIBS_BASE)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+extend_eco: extend_eco.o $(LIBS_STUBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
-dump_eco: dump_eco.o $(LIBS_BASE)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 $(LIBS_BASE)
+dump_eco: dump_eco.o $(LIBS_STUBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 $(LIBS_STUBS)
 
-eco2code: eco2code.o $(LIBS_BASE)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+eco2code: eco2code.o $(LIBS_STUBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
-code2eco: code2eco.o $(LIBS_BASE)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+code2eco: code2eco.o $(LIBS_STUBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
-pawn_progress: pawn_progress.o $(LIBS_BASE)
-	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_BASE)
+pawn_progress: pawn_progress.o $(LIBS_STUBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 best_move: best_move.o $(LIBS)
-	@echo "Building $@"
+	@echo "Build $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 pgn_split_eco: pgn_split_eco.o $(LIBS)
-	@echo "Building $@"
+	@echo "Build $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 cbh2si4: cbh2si4.o $(LIBS)
-	@echo "Building $@"
+	@echo "Build $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 cdb2sci: cdb2sci.o $(LIBS)
-	@echo "Building $@"
+	@echo "Build $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
-$(PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
-	@echo "Building $@"
+$(TCL_PROGRAM): tclscidb.o $(TCL_LIBS)
+	@echo "Build $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) -lz
+
+$(TK_PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
+	@echo "Build $@"
 	$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:
