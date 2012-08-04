@@ -81,10 +81,16 @@ all: check-mtime recursive cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
 tkscidb-only: recursive $(TK_PROGRAM)
 
 check-build:
-	@echo -n "Check build: ";                                            \
+	@echo -n "Check build (please wait a bit): ";                        \
 	pwd=`pwd`;                                                           \
 	if [ "`$$pwd/$(TK_PROGRAM) check-build.tcl`" = "OK" ]; then          \
 		echo "OK";                                                        \
+		echo "";                                                          \
+		case $(BINDIR) in                                                 \
+			/home/* ) make="make";;                                        \
+			* ) make="sudo make";;                                         \
+		esac;                                                             \
+		echo "Now type \"$$make install\" for installation.";             \
 	else                                                                 \
 		echo "FAILED";                                                    \
 		echo "";                                                          \

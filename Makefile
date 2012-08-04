@@ -23,11 +23,8 @@ all: Makefile.in check-mtime
 	@echo ""
 	@echo "Now it is recommended to use \"make check-build\"."
 
-check-build:
+check-build: Makefile.in
 	@$(MAKE) -C src check-build
-	@echo ""
-	@echo "Now type either \"make install\" or \"sudo make install\""
-	@echo "for installation."
 
 check-mtime:
 	@if [ Makefile.in -ot configure ]; then                    \
