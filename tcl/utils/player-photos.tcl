@@ -49,6 +49,7 @@ set Detail(nohttp)				"Please install package TclHttp, for example %s."
 set Error(busy)					"The installation/update is already running."
 set Error(failed)					"Unexpected error: The invocation of the sub-process has failed."
 set Error(passwd)					"The password is wrong."
+set Error(nosudo)					"Cannot invoke 'sudo' command."
 
 set Message(uptodate)			"The photo files are already up-to-date."
 set Message(finished)			"The installation/update of photo files has finished."
@@ -56,9 +57,12 @@ set Message(broken)				"Broken Tcl library version."
 set Message(noperm)				"You dont have write permissions for directory '%s'."
 set Message(missing)				"Cannot find directory '%s'."
 set Message(httperr)				"HTTP error: %s"
+set Message(httpcode)			"Unexpected HTTP code %s."
+set Message(badhost)				"HTTP connection failed due to a bad port."
 set Message(timeout)				"HTTP timeout occurred. Possibly the file server is currently very busy."
 set Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
 set Message(maintenance)		"Photo file server maintenance is currently in progress."
+set Message(notfound)			"Download aborted because photo file server maintenance is currently in progress."
 set Message(aborted)				"User has aborted download."
 set Message(killed)				"Unexpected termination of download. The sub-process has died."
 
@@ -157,6 +161,8 @@ proc openDialog {parent} {
 		grid $f -row 3 -column 0
 	}
 
+	if {!$Shared} { catch { file mkdir [InstallDir 0] } }
+
 	::widget::dialogButtons $dlg {cancel}
 	::widget::dialogButtonAdd $dlg download [namespace current]::mc::Download $icon::16x16::download
 	$dlg.cancel configure -command [list destroy $dlg]
@@ -178,6 +184,7 @@ proc downloadFiles {informProc shared parent} {
 	if {$Busy} { return busy }
 
 	set result ok
+	::widget::busyCursor on
 	if {[catch { OpenPipe $informProc $shared $parent } result]} { set result failed }
 	::widget::busyCursor off
 	return $result
@@ -264,16 +271,23 @@ proc OpenPipe {informProc shared parent} {
 	set cmd [file join $::scidb::dir::exec $script]
 
 	if {$shared && $tcl_platform(platform) eq "unix" && [exec id -u] != 0} {
+		set sudo [auto_execok sudo]
+		if {[string length $sudo] == 0} { return nosudo }
 		lassign [AskPassword $parent] passwd result
-		::widget::busyCursor on
 		update idletasks
 		if {$result ne "ok"} { return cancelled }
-		catch { exec echo $passwd | sudo -v -S }
-		if {[catch { exec echo $passwd | sudo -S echo "" }]} { return passwd }
-		set cmd "sudo -S $cmd"
+		# We have to use "-u root" otherwise this pseudo-Unix Debian system will not work.
+		if {[catch { exec echo $passwd | $sudo -v -S }]} { return nosudo }
+		if {[catch { exec echo $passwd | $sudo -u root -S echo "" }]} { return passwd }
+		lassign {"" ""} arg1 arg2
 		if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
-			append cmd " " $env(LD_LIBRARY_PATH)
+			set arg1 $env(LD_LIBRARY_PATH)
 		}
+		if {[info exists env(http_proxy)] && [string length $env(http_proxy)]} {
+			if {[string length $arg1] == 0} { set arg1 {""} }
+			set arg2 $env(http_proxy)
+		}
+		set cmd [string trim "$sudo -u root -S $cmd $arg1 $arg2"]
 	}
 
 	set Pipe [open "| $cmd" r+]
@@ -302,6 +316,7 @@ proc Download {parent dlg} {
 		}
 		failed	{ ::dialog::error -parent $dlg -message $mc::Error(failed) }
 		passwd	{ ::dialog::error -parent $dlg -message $mc::Error(passwd) }
+		nosudo	{ ::dialog::error -parent $dlg -message $mc::Error(nosudo) }
 		busy		{ ::dialog::error -parent $dlg -message $mc::Error(busy) }
 		ok			{ destroy $dlg }
 	}
@@ -330,7 +345,7 @@ proc ProcessUpdate {parent} {
 	catch { set data [gets $Pipe] }
 
 	set arg ""
-	lassign $data reason arg
+	lassign $data reason arg url
 
 	switch $reason {
 		maintenance {
@@ -360,7 +375,7 @@ proc ProcessUpdate {parent} {
 			::dialog::error -parent $parent -message $msg
 		}
 
-		httperr - timeout - crcerror {
+		httperr - httpcode - timeout - crcerror - badhost - notfound {
 			set msg $mc::Message($reason)
 			if {[string match *%s* $msg]} { set msg [format $msg $arg] }
 			LogProgress error "$msg ([::locale::currentTime])"

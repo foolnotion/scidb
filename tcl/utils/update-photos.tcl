@@ -25,12 +25,14 @@
 # ======================================================================
 
 #! We have to set the library path because sudo does not keep
-#! this path (in general):                     \
-if [ $# -gt 0 ]; then                          \
-	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$1; \
-	shift;                                      \
-fi;                                            \
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+#! this path (in general):                          \
+if [ $# -gt 0 ]; then                               \
+	if [ ! -z "$1" }; then                           \
+		export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$1"; \
+	fi;                                              \
+	shift;                                           \
+fi;                                                 \
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"
 
 #! The "\" at the end of the comment line below is necessary! It means
 #! that the "exec" line is a comment to Tcl/Tk, but not to /bin/sh.
@@ -66,10 +68,12 @@ if {$tcl_platform(platform) eq "windows"} {
 		set share $env(SCIDB_SHAREDIR)
 	} else {
 		set share "%SHAREDIR%"
+		if {[string match ?SHAREDIR? $share]} { set share /usr/local/share/scidb-beta }
 	}
 	set photoDir [file join $share photos]
 } else {
-	set proj [string range %PROGRAM% [string first scidb %PROGRAM%] end]
+	set prog [file tail $nameofexecutable]
+	set proj [string range $prog [string first scidb $prog] end]
 	set home [file nativename "~"]
 	set user [file join $home .$proj]
 	set photoDir [file join $user photos]
@@ -153,15 +157,28 @@ proc Checksum {file} {
 	return $::checksum($file)
 }
 
+proc GetUrl {url} {
+	if {[catch { ::http::geturl $url {*}$::GetUrlArgs } token]} { Return badhost }
+	return $token
+}
+
+proc ResetConnection {url} {
+	# is there a more convinient way to reset the connection?
+	catch { ::http::geturl $url -binary 1 -keepalive 0 -timeout 1 }
+}
+
 proc FetchFile {file srvCrc} {
 	set url [MakeUrl $file]
 	set retry 1
 
 	while {$retry > 0} {
-		set token [::http::geturl $url {*}$::GetUrlArgs]
+		set token [GetUrl $url]
 
 		switch [::http::status $token] {
 			ok {
+				set code [::http::ncode $token]
+				if {$code == 404} { Return notfound }
+				if {$code != 200} { Return httpcode $code [MakeFile $url] }
 				set data [::http::data $token]
 				set crc [::zlib::crc $data]
 				if {$crc ne $srvCrc} {
@@ -180,8 +197,7 @@ proc FetchFile {file srvCrc} {
 			timeout {
 				if {$::Terminate} { Return aborted }
 				if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
-				# is there a more convinient way to reset the connection?
-				catch { ::http::geturl $url. -binary 1 -keepalive 0 -timeout 1 }
+				ResetConnection $url.
 				after $::Wait ;# wait a bit
 			}
 			error {
@@ -199,14 +215,19 @@ proc FetchFile {file srvCrc} {
 fileevent stdin readable [namespace current]::Terminate
 ::http::config -urlencoding utf-8
 
-if {[info exists env(http_proxy)]} {
-	set i [string last : $env(http_proxy)]
-	if {$i >= 0} {
-		set host [string range $env(http_proxy) 0 [expr {$i - 1}]]
-		set port [string range $env(http_proxy) [expr {$i + 1}] end]
-		if {[string is integer -strict $port]} {
-			::http::config -proxyhost $host -proxyport $port
-		}
+if {$argc >= 1} {
+	set http_proxy [lindex $argv 0]
+} elseif {[info exists env(http_proxy)]} {
+	set http_proxy $env(http_proxy)
+} else {
+	set http_proxy ""
+}
+set i [string last : $http_proxy]
+if {$i >= 0} {
+	set host [string range $http_proxy 0 [expr {$i - 1}]]
+	set port [string range $http_proxy [expr {$i + 1}] end]
+	if {[string is integer -strict $port]} {
+		::http::config -proxyhost $host -proxyport $port
 	}
 }
 
@@ -221,14 +242,13 @@ if {[string length locTimestamp] > 0} {
 	set url [MakeUrl TIMESTAMP]
 	set retry 1
 	while {$retry > 0} {
-		set token [::http::geturl $url {*}$GetUrlArgs]
+		set token [GetUrl $url]
 		switch [::http::status $token] {
 			ok		{ set retry 0 }
-			error	{ Return httperr [::http::error $token] [MakeUrl $url] }
+			error	{ Return httperr [::http::error $token] [MakeFile $url] }
 			timeout {
-				if {[incr retry] > $::MaxRetry} { Return timeout [MakeUrl $url] }
-				# is there a more convinient way to reset the connection?
-				catch { ::http::geturl $url. -binary 1 -keepalive 0 -timeout 1 }
+				if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
+				ResetConnection $url.
 				after $::Wait ;# wait a bit
 			}
 		}
@@ -238,7 +258,7 @@ if {[string length locTimestamp] > 0} {
 	set srvTimestamp [string trim [::http::data $token]]
 	::http::cleanup $token
 	if {$code == 404} { Return maintenance }
-	if {$code != 200} { Return httperr $http [MakeFile $url] }
+	if {$code != 200} { Return httpcode $code [MakeFile $url] }
 }
 
 if {$srvTimestamp eq $locTimestamp} { Return uptodate }
@@ -246,14 +266,13 @@ if {$srvTimestamp eq $locTimestamp} { Return uptodate }
 set url [MakeUrl FILES]
 set retry 1
 while {$retry > 0} {
-	set token [::http::geturl $url {*}$GetUrlArgs]
+	set token [GetUrl $url]
 	switch [::http::status $token] {
 		ok		{ set retry 0 }
-		error	{ Return httperr [::http::error $token] [MakeUrl $url] }
+		error	{ Return httperr [::http::error $token] [MakeFile $url] }
 		timeout {
-			if {[incr retry] > $::MaxRetry} { Return timeout [MakeUrl $url] }
-			# is there a more convinient way to reset the connection?
-			catch { ::http::geturl $url. -binary 1 -keepalive 0 -timeout 1 }
+			if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
+			ResetConnection $url.
 			after $::Wait ;# wait a bit
 		}
 	}
@@ -263,7 +282,7 @@ set http [::http::code $token]
 set content [::http::data $token]
 ::http::cleanup $token
 if {$code == 404} { Return maintenance }
-if {$code != 200} { Return httperr $http [MakeFile $url] }
+if {$code != 200} { Return httpcode $code [MakeFile $url] }
 
 set locFiles {}
 if {[file readable $FilesFile]} {

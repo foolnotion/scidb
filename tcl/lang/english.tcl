@@ -274,6 +274,7 @@
 ::util::photos::mc::Error(busy)					"The installation/update is already running."
 ::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed."
 ::util::photos::mc::Error(passwd)				"The password is wrong."
+::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command."
 
 ::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date."
 ::util::photos::mc::Message(finished)			"The installation/update of photo files has finished."
@@ -281,9 +282,12 @@
 ::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'."
 ::util::photos::mc::Message(missing)			"Cannot find directory '%s'."
 ::util::photos::mc::Message(httperr)			"HTTP error: %s"
+::util::photos::mc::Message(httpcode)			"Unexpected HTTP code %s."
+::util::photos::mc::Message(badhost)			"HTTP connection failed due to a bad host, or a bad port."
 ::util::photos::mc::Message(timeout)			"HTTP timeout occurred."
 ::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
 ::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress."
+::util::photos::mc::Message(notfound)			"Download aborted because photo file server maintenance is currently in progress."
 ::util::photos::mc::Message(aborted)			"User has aborted download."
 ::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died."
 

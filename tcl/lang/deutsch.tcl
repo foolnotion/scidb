@@ -274,6 +274,7 @@
 ::util::photos::mc::Error(busy)					"Die Installation bzw. der Update ist bereits am laufen."
 ::util::photos::mc::Error(failed)				"Unerwarteter Fehler: Der Start des Unterprozesses schlug fehl."
 ::util::photos::mc::Error(passwd)				"Die Passworteingabe ist falsch."
+::util::photos::mc::Error(nosudo)				"'sudo' kann nicht ausgeführt werden."
 
 ::util::photos::mc::Message(uptodate)			"Die Photodateien sind bereits auf dem neuesten Stand."
 ::util::photos::mc::Message(finished)			"Die Installation bzw. der Update der Photodateien ist beendet."
@@ -281,10 +282,13 @@
 ::util::photos::mc::Message(noperm)				"Keine Schreibberechtigung für das Verzeichnis '%s'."
 ::util::photos::mc::Message(missing)			"Das Verzeichnis '%s' kann nicht gefunden werden."
 ::util::photos::mc::Message(httperr)			"HTTP-Fehler: %s"
+::util::photos::mc::Message(httpcode)			"Unerwarteter HTTP-Code %s."
+::util::photos::mc::Message(badhost)			"Die HTTP-Verbindung schlug fehl aufgrund einer fehlerhaften Host- bzw. Portangabe."
 ::util::photos::mc::Message(timeout)			"Eine HTTP-Zeitüberschreitung ist aufgetreten. Möglicherweise ist der Photodateienserver momentan sehr stark frequentiert."
 
 ::util::photos::mc::Message(crcerror)			"Ein Prüfsummenfehler trat auf. Möglicherweise ist der Photodateienserver gerade in einer Wartung."
 ::util::photos::mc::Message(maintenance)		"Der Photodateienserver unterliegt gerade einer Wartung."
+::util::photos::mc::Message(notfound)			"Der Downloadvorgang wurde abgebrochen weil der Photodateienserver gerade einer Wartung unterliegt."
 ::util::photos::mc::Message(aborted)			"Der Benutzer hat den Download abgebrochen."
 ::util::photos::mc::Message(killed)				"Unerwarteter Abbruch des Downloads. Der Subprozess ist verendet."
 
