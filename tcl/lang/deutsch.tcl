@@ -264,7 +264,7 @@
 ::util::photos::mc::DownloadStillInProgress	"Der Download der Photodateien ist noch im Fortgang."
 ::util::photos::mc::PhotoFiles					"Photodateien"
 
-::util::photos::mc::RequiresSuperuserRights	"Die Installation bzw. der Update erfordert Superuserberechtigung.\nBitte das Superuserpasswort eingeben."
+::util::photos::mc::RequiresSuperuserRights	"Die Installation bzw. der Update erfordert Superuserberechtigung. Bitte das Superuserpasswort eingeben.\n\nBeachte: das Passwort wird nicht akzeptiert wenn der momentane Benutzer nicht in der sudoer-Datei eingetragen ist. Als Behelf kann eine lokale Installation vorgenommen werden, oder diese Applikation wird als Superuser gestartet.\n\nBeachte das unter einigen Systemen das Benutzerpasswort zu verwenden ist."
 ::util::photos::mc::RequiresInternetAccess	"Die Installation bzw. der Update der Photodateien erfordert eine Internetverbindung."
 ::util::photos::mc::AlternativelyDownload(0)	"Alternativ können die Photodateien von %link% heruntergeladen werden. Diese werden dann im Verzeichnis %local% installiert."
 ::util::photos::mc::AlternativelyDownload(1)	"Alternativ können die Photodateien von %link% heruntergeladen werden. Diese werden dann entweder im gemeinsamen Verzeichnis %shared%, oder im privaten Verzeichnis %local% installiert."

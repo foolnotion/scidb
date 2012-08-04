@@ -39,7 +39,7 @@ set DownloadStillInProgress	"Download of photo files is still in progress."
 set PhotoFiles						"Photo Files"
 set DownloadAborted				"Download aborted."
 
-set RequiresSuperuserRights	"The installation/update requires super-user rights.\nPlease enter the super-user password."
+set RequiresSuperuserRights	"The installation/update requires super-user rights. Please enter the super-user password.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user.\n\nNote that on some systems the user password has to be entered."
 set RequiresInternetAccess		"The installation/update of the player photo files requires an internet connection."
 set AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%."
 set AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
@@ -87,9 +87,9 @@ proc openDialog {parent} {
 
 	set Shared 0
 	set haveShared 0
-	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
-		set haveShared 1
-	}
+#	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
+#		set haveShared 1
+#	}
 
 	set dlg [toplevel $parent.installPlayerPhotos -class Scidb]
 	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
@@ -134,24 +134,24 @@ proc openDialog {parent} {
 		set f [ttk::frame $top.f -borderwidth 0 -takefocus 0]
 		if {![file readable [file join $::scidb::dir::user photos TIMESTAMP]]} { set Shared 1 }
 	
-		ttk::radiobutton $f.shared \
-			-text $mc::SharedInstallation \
-			-variable [namespace current]::Shared \
-			-command [namespace code [list UpdateDir $f.dir]] \
-			-value 1 \
-			;
 		ttk::radiobutton $f.local \
 			-text $mc::LocalInstallation \
 			-variable [namespace current]::Shared \
 			-command [namespace code [list UpdateDir $f.dir]] \
 			-value 0 \
 			;
+		ttk::radiobutton $f.shared \
+			-text $mc::SharedInstallation \
+			-variable [namespace current]::Shared \
+			-command [namespace code [list UpdateDir $f.dir]] \
+			-value 1 \
+			;
 
 		tk::label $f.dir -borderwidth 1 -relief sunken
 		UpdateDir $f.dir
 
-		grid $f.shared -row 4 -column 1 -sticky w
-		grid $f.local  -row 4 -column 3 -sticky w
+		grid $f.local  -row 4 -column 1 -sticky w
+		grid $f.shared -row 4 -column 3 -sticky w
 		grid $f.dir    -row 6 -column 1 -sticky w -columnspan 3 -sticky ew
 		grid columnconfigure $f {0 2 4} -minsize $::theme::padx
 		grid rowconfigure $f {1 3 5 7 9} -minsize $::theme::pady
@@ -276,9 +276,8 @@ proc OpenPipe {informProc shared parent} {
 		lassign [AskPassword $parent] passwd result
 		update idletasks
 		if {$result ne "ok"} { return cancelled }
-		# We have to use "-u root" otherwise this pseudo-Unix Debian system will not work.
 		if {[catch { exec echo $passwd | $sudo -v -S }]} { return nosudo }
-		if {[catch { exec echo $passwd | $sudo -u root -S echo "" }]} { return passwd }
+		if {[catch { exec echo $passwd | $sudo -S echo "" }]} { return passwd }
 		lassign {"" ""} arg1 arg2
 		if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
 			set arg1 $env(LD_LIBRARY_PATH)
@@ -287,7 +286,7 @@ proc OpenPipe {informProc shared parent} {
 			if {[string length $arg1] == 0} { set arg1 {""} }
 			set arg2 $env(http_proxy)
 		}
-		set cmd [string trim "$sudo -u root -S $cmd $arg1 $arg2"]
+		set cmd [string trim "$sudo -S $cmd $arg1 $arg2"]
 	}
 
 	set Pipe [open "| $cmd" r+]
@@ -449,16 +448,24 @@ proc AskPassword {parent} {
 	wm resizable $dlg no no
 	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::_result cancel]
 
-	ttk::label $top.m -text $mc::RequiresSuperuserRights
+	tk::label $top.m \
+		-text $mc::RequiresSuperuserRights \
+		-wraplength 350 \
+		-justify left \
+		-borderwidth 0 \
+		-padx $::theme::padx \
+		-pady $::theme::pady \
+		;
+	ttk::separator $top.s -orient horizontal
 	ttk::label $top.l -text "$mc::EnterPassword:"
 	ttk::entry $top.e -show * -textvar [namespace current]::_passwd
-	grid $top.m -row 1 -column 1 -columnspan 3
-	grid $top.l -row 3 -column 1 -sticky ew
-	grid $top.e -row 3 -column 3 -sticky ew
+	grid $top.m -row 1 -column 0 -columnspan 5
+	grid $top.s -row 2 -column 0 -columnspan 5 -sticky ew
+	grid $top.l -row 4 -column 1 -sticky ew
+	grid $top.e -row 4 -column 3 -sticky ew
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
 	grid columnconfigure $top {3} -weight 1
-	grid rowconfigure $top {0 4} -minsize $::theme::pady
-	grid rowconfigure $top {2} -minsize $::theme::padY
+	grid rowconfigure $top {3 5}  -minsize $::theme::padY
 
 	::widget::dialogButtons $dlg {ok cancel} ok
 	$dlg.ok configure -command [list set [namespace current]::_result ok]

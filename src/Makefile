@@ -304,15 +304,15 @@ pgn_split_eco: pgn_split_eco.o $(LIBS)
 
 cbh2si4: cbh2si4.o $(LIBS)
 	@echo "Build $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS) -lz
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 cdb2sci: cdb2sci.o $(LIBS)
 	@echo "Build $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS) -lz
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
-$(TCL_PROGRAM): tclscidb.o $(TCL_LIBS)
+$(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
 	@echo "Build $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) -lz
+	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) $(ZLIB_LIB)
 
 $(TK_PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
 	@echo "Build $@"

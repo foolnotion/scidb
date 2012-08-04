@@ -265,7 +265,7 @@
 ::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
 ::util::photos::mc::PhotoFiles					"Photo Files" ;# NEW
 
-::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\nPlease enter the super-user password." ;# NEW
+::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights. Please enter the super-user password.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user.\n\nNote that on some systems the user password has to be entered." ;# NEW
 ::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
 ::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%." ;# NEW
 ::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
