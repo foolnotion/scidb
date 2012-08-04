@@ -972,9 +972,9 @@
 ::gamebar::mc::DiscardNewGame			"Vill du verkligen kasta bort det här partiet?"
 ::gamebar::mc::NewGameFstPart			"Nytt"
 ::gamebar::mc::NewGameSndPart			"parti"
-::gamebar::mc::Unlock					"Lås upp"
 
 ::gamebar::mc::LockGame					"Lås partiet"
+::gamebar::mc::UnlockGame				"Lås upp partiet"
 ::gamebar::mc::CloseGame				"Stäng partiet"
 
 ::gamebar::mc::GameNew					"Nytt parti"

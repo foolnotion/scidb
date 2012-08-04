@@ -974,9 +974,9 @@
 ::gamebar::mc::DiscardNewGame			"¿Realmente quiere descartar esta partida?"
 ::gamebar::mc::NewGameFstPart			"Nueva"
 ::gamebar::mc::NewGameSndPart			"Partida"
-::gamebar::mc::Unlock					"Desbloquear"
 
 ::gamebar::mc::LockGame					"Bloquear Juego"
+::gamebar::mc::UnlockGame				"Desbloquear Juego"
 ::gamebar::mc::CloseGame				"Cerrar Juego"
 
 ::gamebar::mc::GameNew					"Nueva partida"

@@ -972,9 +972,9 @@
 ::gamebar::mc::DiscardNewGame			"Tényleg el akarod vetni ezt a játszmát?"
 ::gamebar::mc::NewGameFstPart			"Új"
 ::gamebar::mc::NewGameSndPart			"Játszma"
-::gamebar::mc::Unlock				"Zárolás feloldása"
 
 ::gamebar::mc::LockGame				"Játszma zárolása"
+::gamebar::mc::UnlockGame			"Zárolás feloldása"
 ::gamebar::mc::CloseGame			"Játszma bezárása"
 
 ::gamebar::mc::GameNew				"Új tábla"

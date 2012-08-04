@@ -40,9 +40,9 @@ set DiscardChanges		"This game has altered.\n\nDo you really want to discard the
 set DiscardNewGame		"Do you really want to throw away this game?"
 set NewGameFstPart		"New"
 set NewGameSndPart		"Game"
-set Unlock					"Unlock"
 
 set LockGame				"Lock Game"
+set UnlockGame				"Unlock Game"
 set CloseGame				"Close Game"
 
 set GameNew					"New Game"
@@ -365,7 +365,7 @@ proc insert {gamebar at id tags} {
 	$gamebar bind close:input$id <ButtonRelease-1> [namespace code [list Release $gamebar $id close:]]
 	$gamebar bind close:input$id <ButtonPress-2> [namespace code [list ShowTags $gamebar $id]]
 	$gamebar bind close:input$id <ButtonRelease-2> [namespace code [list HideTags $gamebar]]
-	$gamebar bind close:input$id <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
+#	$gamebar bind close:input$id <ButtonPress-3> [namespace code [list PopupMenu $gamebar $id]]
 
 	if {$id ne "-1"} {
 		$gamebar bind close:input$id <Enter> [namespace code [list Enter $gamebar $id close:]]
@@ -1394,7 +1394,7 @@ proc PopupPlayerMenu {gamebar id side} {
 }
 
 
-proc PopupMenu {gamebar {id ""}} {
+proc PopupMenu {gamebar {id -1}} {
 	set menu $gamebar.menu
 	catch { destroy $menu }
 	menu $menu -tearoff 0
@@ -1407,45 +1407,64 @@ proc BuildMenu {gamebar id side menu} {
 	variable Options
 
 	HideTags $gamebar
-	AddGameMenuEntries $menu [expr {$Specs(size:$gamebar) > 0}] 1 0 -1
-	$menu add separator
+	set sid $Specs(selected:$gamebar)
+	set current [expr {$id == ($Specs(size:$gamebar) == 1 ? $sid : -1)}]
+	set addsep {}
+
+	set end [$menu index end]
+	AddGameMenuEntries $menu [expr {$current && $Specs(size:$gamebar) > 0}] 1 0 -1
+	if {[$menu index end] ne $end} { set addsep [list $menu add separator] }
 
 	if {$Specs(size:$gamebar) > 0} {
-		if {[llength $id] && $id ne "-1"} {
-			if {$Specs(locked:$id:$gamebar) && !$Specs(modified:$id:$gamebar)} {
+		eval $addsep
+		set addsep {}
+	
+		if {$id == -1} { set lid $sid } else { set lid $id }
+		if {!$Specs(modified:$lid:$gamebar) && $Specs(state:$lid:$gamebar) ne "modified"} {
+			if {$Specs(locked:$lid:$gamebar)} {
 				set count 0
 				foreach key [array names Specs -glob locked:*:$gamebar] {
 					if {$Specs($key)} { incr count }
 				}
 				if {$count == $Specs(size:$gamebar)} {
-					if {$Specs(state:$id:$gamebar) ne "modified"} {
-						$menu add command \
-							-compound left \
-							-image $icon::15x15::close(unlocked) \
-							-label " $mc::Unlock" \
-							-command [namespace code [list SetState $gamebar $id unlocked]] \
-							;
-						$menu add separator
-					}
+					$menu add command \
+						-compound left \
+						-image $icon::15x15::close(unlocked) \
+						-label " $mc::UnlockGame" \
+						-command [namespace code [list SetState $gamebar $lid unlocked]] \
+						;
+					set addsep [list $menu add separator]
 				}
+			} else {
+				$menu add command \
+					-compound left \
+					-image $icon::15x15::close(locked) \
+					-label " $mc::LockGame" \
+					-command [namespace code [list SetState $gamebar $lid locked]] \
+					;
+					set addsep [list $menu add separator]
 			}
 		}
 
-	lassign [::scidb::game::link? $id] base index
-	if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-		set flag [::scidb::db::get deleted? $index -1 $base]
-		if {$flag} { set var UndeleteGame } else { set var DeleteGame }
-		$menu add command \
-			-compound left \
-			-image $::icon::16x16::remove \
-			-label " [set ::gametable::mc::$var]" \
-			-command [namespace code [list ::gametable::deleteGame $base $index]] \
-			;
-		::gametable::addGameFlagsMenuEntry $menu $base -1 $index
-		$menu add separator
-	}
+		if {$current} {
+			eval $addsep
+			set addsep {}
+			lassign [::scidb::game::link? $id] base index
+			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+				set flag [::scidb::db::get deleted? $index -1 $base]
+				if {$flag} { set var UndeleteGame } else { set var DeleteGame }
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::remove \
+					-label " [set ::gametable::mc::$var]" \
+					-command [namespace code [list ::gametable::deleteGame $base $index]] \
+					;
+				::gametable::addGameFlagsMenuEntry $menu $base -1 $index
+				$menu add separator
+			}
+		}
 
-#	 currently not working
+#		currently not working
 #		foreach {num text} [list 0 $mc::Players 2 $mc::Event 3 $mc::Site] {
 #			$menu add radiobutton \
 #				-label $text \
@@ -1456,6 +1475,7 @@ proc BuildMenu {gamebar id side menu} {
 #		::theme::configureRadioEntry $menu $text
 #		$menu add separator
 
+		eval $addsep
 		menu $menu.configuration -tearoff no
 		$menu add cascade -label $::mc::Configuration -menu $menu.configuration
 
@@ -1501,11 +1521,14 @@ proc BuildMenu {gamebar id side menu} {
 			;
 	}
 
+	if {[$menu index end] eq "none"} { return }
+
 	if {$Specs(player:locked)} {
 		bind $menu <<MenuUnpost>> [namespace code [list LeavePlayer $gamebar $id $side yes]]
 	} elseif {$Specs(event:locked)} {
 		bind $menu <<MenuUnpost>> [namespace code [list LeaveEvent $gamebar $id yes]]
 	}
+
 	tk_popup $menu {*}[winfo pointerxy .]
 }
 

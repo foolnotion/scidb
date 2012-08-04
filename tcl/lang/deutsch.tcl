@@ -469,8 +469,8 @@
 ::application::database::annotators::mc::F_Annotator		"Kommentator"	;# ???
 ::application::database::annotators::mc::F_Frequency		"Häufigkeit"
 
-::application::database::annotators::mc::Find				"Finde"
-::application::database::annotators::mc::FindAnnotator	"Finde Kommentator"
+::application::database::annotators::mc::Find				"Suchen"
+::application::database::annotators::mc::FindAnnotator	"Suche Kommentator"
 ::application::database::annotators::mc::ClearEntries		"Einträge löschen"
 ::application::database::annotators::mc::NotFound			"Nicht gefunden."
 
@@ -899,7 +899,7 @@
 ::playertable::mc::T_Sex						"Geschlecht"
 ::playertable::mc::T_PlayerInfo				"Info-Kennzeichen"
 
-::playertable::mc::Find							"Finde"
+::playertable::mc::Find							"Suchen"
 ::playertable::mc::StartSearch				"Suche starten"
 ::playertable::mc::ClearEntries				"Einträge löschen"
 ::playertable::mc::NotFound					"Nicht gefunden."
@@ -972,9 +972,9 @@
 ::gamebar::mc::DiscardNewGame			"Soll diese Partie tatsächlich verworfen werden?"
 ::gamebar::mc::NewGameFstPart			"Neue"
 ::gamebar::mc::NewGameSndPart			"Partie"
-::gamebar::mc::Unlock					"Freigeben"
 
 ::gamebar::mc::LockGame					"Partie sperren"
+::gamebar::mc::UnlockGame				"Partie freigeben"
 ::gamebar::mc::CloseGame				"Partie schliessen"
 
 ::gamebar::mc::GameNew					"Neue Partie"

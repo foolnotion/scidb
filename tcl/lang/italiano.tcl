@@ -972,9 +972,9 @@
 ::gamebar::mc::DiscardNewGame			"Vuoi davvero buttare via questa partita?"
 ::gamebar::mc::NewGameFstPart			"Nuovo"
 ::gamebar::mc::NewGameSndPart			"Partita"
-::gamebar::mc::Unlock					"Sblocca"
 
 ::gamebar::mc::LockGame					"Blocca Partita"
+::gamebar::mc::UnlockGame				"Sblocca Partita"
 ::gamebar::mc::CloseGame				"Chiudi Partita"
 
 ::gamebar::mc::GameNew					"Nuova Partita"

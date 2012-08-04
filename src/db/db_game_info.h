@@ -117,8 +117,8 @@ public:
 	bool isChanged() const;
 	bool hasPromotion() const;								// ChessBase: n/a
 	bool hasUnderPromotion() const;						// ChessBase: n/a
-	bool containsIllegalMoves() const override;
-	bool containsIllegalCastlings() const override;
+	bool containsIllegalMoves() const;
+	bool containsIllegalCastlings() const;
 	bool isEngine(color::ID color) const;
 	bool hasGameRecordLength() const;
 
