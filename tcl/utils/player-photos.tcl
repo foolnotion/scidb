@@ -39,7 +39,7 @@ set DownloadStillInProgress	"Download of photo files is still in progress."
 set PhotoFiles						"Photo Files"
 set DownloadAborted				"Download aborted."
 
-set RequiresSuperuserRights	"The installation/update requires super-user rights. Please enter the super-user password.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user.\n\nNote that on some systems the user password has to be entered."
+set RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user."
 set RequiresInternetAccess		"The installation/update of the player photo files requires an internet connection."
 set AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%."
 set AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
