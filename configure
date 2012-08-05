@@ -109,6 +109,8 @@ proc findBestTclVersion {} {
 
 # Default values for Makefile settings:
 
+set suppressInsaneMessage 0
+
 array set configure {
     prefix          /usr/local
     exec-prefix     /usr/local
@@ -1478,14 +1480,14 @@ proc usage {rc} {
     puts "Defaults for the options are specified in brackets."
     puts ""
     puts "Configuration:"
-    puts "  -h, --help               display this help and exit"
-    puts "  -n, --no-create          do not create output files"
+    puts "  -h, --help                display this help and exit"
+    puts "  -n, --no-create           do not create output files"
     puts ""
     puts "Installation directories:"
-    puts "  --prefix=PREFIX          install architecture-independent files in PREFIX"
-    puts "                           \[$configure(prefix)\]"
-    puts "  --exec-prefix=EPREFIX    install architecture-dependent files in EPREFIX"
-    puts "                           \[$configure(exec-prefix)\]"
+    puts "  --prefix=PREFIX           install architecture-independent files in PREFIX"
+    puts "                            \[$configure(prefix)\]"
+    puts "  --exec-prefix=EPREFIX     install architecture-dependent files in EPREFIX"
+    puts "                            \[$configure(exec-prefix)\]"
     puts ""
     puts "By default, \`make install' will install all the files in"
     puts "\`$configure(prefix)/bin', \`$configure(prefix)/lib' etc.  You can specify"
@@ -1495,56 +1497,61 @@ proc usage {rc} {
     puts "For better control, use the options below."
     puts ""
     puts "Fine tuning of the installation directories:"
-    puts "  --bindir=DIR             user executables \[EPREFIX/bin\]"
-    puts "  --enginesdir=DIR         engines (executables) \[EPREFIX/games\]"
-    puts "  --datadir=DIR            read-only architecture-independent data \[PREFIX/share\]"
-    puts "  --libdir=DIR             object code libraries \[EPREFIX/lib\]"
-    puts "  --mandir=DIR             man documentation \[PREFIX/man\]"
+    puts "  --bindir=DIR              user executables \[EPREFIX/bin\]"
+    puts "  --enginesdir=DIR          engines (executables) \[EPREFIX/games\]"
+    puts "  --datadir=DIR             read-only architecture-independent data \[PREFIX/share\]"
+    puts "  --libdir=DIR              object code libraries \[EPREFIX/lib\]"
+    puts "  --mandir=DIR              man documentation \[PREFIX/man\]"
     puts ""
     puts "Program names:"
-    puts "  --program-suffix=SUFFIX  append SUFFIX to installed program names"
+    puts "  --program-suffix=SUFFIX   append SUFFIX to installed program names"
     puts ""
     puts "Tcl/Tk features:"
-    puts "  --tcl-version=VER        Tcl/Tk version \[$configure(tcl-version)\]"
-    puts "  --tcl-includes=DIR       Tcl include files are in DIR"
-    puts "  --tcl-libraries=DIR      Tcl library files are in DIR"
-    puts "  --tk-includes=DIR        Tk include files are in DIR"
-    puts "  --tk-libraries=DIR       Tk library files are in DIR"
+    puts "  --tcl-version=VER         Tcl/Tk version \[$configure(tcl-version)\]"
+    puts "  --tcl-includes=DIR        Tcl include files are in DIR"
+    puts "  --tcl-libraries=DIR       Tcl library files are in DIR"
+    puts "  --tk-includes=DIR         Tk include files are in DIR"
+    puts "  --tk-libraries=DIR        Tk library files are in DIR"
     puts ""
     puts "X features:"
-    puts "  --x-includes=DIR         X include files are in DIR"
-    puts "  --x-libraries=DIR        X library files are in DIR"
-    puts "  --xcursor-libraries=DIR  Xcursor library files are in DIR"
+    puts "  --x-includes=DIR          X include files are in DIR"
+    puts "  --x-libraries=DIR         X library files are in DIR"
+    puts "  --xcursor-libraries=DIR   Xcursor library files are in DIR"
     puts ""
     puts "GNU compiler features:"
     if {[llength $configure(gcc-version)]} {
-    puts "  --gcc-version=VER        GNU compiler version \[$configure(gcc-version)\]"
+    puts "  --gcc-version=VER         GNU compiler version \[$configure(gcc-version)\]"
     } else {
-    puts "  --gcc-version=VER        GNU compiler version"
+    puts "  --gcc-version=VER         GNU compiler version"
     }
-    puts "                           you may use 'clang' instead of a version for the"
-    puts "                           clang compiler"
+    puts "                            you may use 'clang' instead of a version for the"
+    puts "                            clang compiler"
     puts ""
     puts "Packages:"
-    puts "  --with-zlib-inc=DIR      path to Zlib compression library headers"
-    puts "  --with-zlib-lib=DIR      link options for Zlib compression library"
-    puts "  --with-zziplib-inc=DIR   path to Zziplib zip library headers"
-    puts "  --with-zziplib-lib=DIR   link options for Zziplib zip library"
-    puts "  --with-expat-inc=DIR     path to Expat XML Parser headers"
-    puts "  --with-expat-lib=DIR     link options for Expat XML Parser library"
+    puts "  --with-zlib-inc=DIR       path to Zlib compression library headers"
+    puts "  --with-zlib-lib=DIR       link options for Zlib compression library"
+    puts "  --with-zziplib-inc=DIR    path to Zziplib zip library headers"
+    puts "  --with-zziplib-lib=DIR    link options for Zziplib zip library"
+    puts "  --with-expat-inc=DIR      path to Expat XML Parser headers"
+    puts "  --with-expat-lib=DIR      link options for Expat XML Parser library"
     puts ""
     puts "Optional Features:"
-    puts "  --disable-FEATURE        do not include FEATURE (same as --enable-FEATURE=no)"
-    puts "  --enable-FEATURE\[=ARG\]   include FEATURE \[ARG=yes\]"
-    puts "  --enable-symbols         build with debugging symbols \[default=$feature(symbols)\]"
-    puts "  --enable-assertions      build with assertions (slows down the program)"
-    puts "                           \[default=$feature(assertions)\]"
-    puts "  --enable-gprof-profiling enable gprof profiling (slows down the program)"
-    puts "                           \[default=$feature(gprof-profiling)\]"
-    puts "  --enable-gcov-coverage   enable coverage (slows down the program)"
-    puts "                           \[default=$feature(gcov-coverage)\]"
-    puts "  --enable-si4-debugging   enable debugging information for .si3/.si4 format"
+    puts "  --disable-FEATURE         do not include FEATURE (same as --enable-FEATURE=no)"
+    puts "  --enable-FEATURE\[=ARG\]    include FEATURE \[ARG=yes\]"
+    puts "  --enable-symbols          build with debugging symbols \[default=$feature(symbols)\]"
+    puts "  --enable-assertions       build with assertions (slows down the program)"
+    puts "                            \[default=$feature(assertions)\]"
+    puts "  --enable-gprof-profiling  enable gprof profiling (slows down the program)"
+    puts "                            \[default=$feature(gprof-profiling)\]"
+    puts "  --enable-gcov-coverage    enable coverage (slows down the program)"
+    puts "                            \[default=$feature(gcov-coverage)\]"
+    puts "  --enable-si4-debugging    enable debugging information for .si3/.si4 format"
+    puts "                            \[default=$feature(debug-si4)]"
 #   puts "  --enable-splash-screen   enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
+    puts ""
+    puts "Additional Options:"
+    puts "  --suppress-insane-message suppress the message about an insane distribution"
+    puts "                            (not recommended)"
     puts ""
     puts "Some influential environment variables:"
     puts "  CC          C compiler command \[$environment(CC)\]"
@@ -1579,6 +1586,7 @@ puts "configure: Makefile configuration program for Scidb"
 
 # Parse command-line arguments:
 foreach arg $argv {
+    set arg1 {}
     lassign [split $arg =] arg0 arg1
     if {[string match --enable-* $arg0]} {
         if {![info exists arg1]} { set arg1 yes }
@@ -1592,8 +1600,10 @@ foreach arg $argv {
             set arg1 yes
         }
         set feature([string range $arg0 10 end]) $arg1
+    } elseif {$arg0 eq "--suppress-insane-message"} {
+        set suppressInsaneMessage 1
     } else {
-        if {![info exists arg1]} {
+        if {[string length $arg1] == 0} {
             puts "Invalid argument: $arg\n"
             usage 1
         }
@@ -1677,7 +1687,7 @@ if {[string length $gxxVer]} {
         puts "alternative library versions."
     }
 
-    if {[isInsaneUnixRelease]} {
+    if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {
         # it seems that we build on an insane Unix system
         # (like Debian Wheezy, or Ubuntu Oneiric)
         puts ""
