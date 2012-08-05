@@ -266,7 +266,7 @@
 ::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
 ::util::photos::mc::PhotoFiles					"Photo Files" ;# NEW
 
-::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user."
+::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
 ::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
 ::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%." ;# NEW
 ::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
@@ -276,7 +276,8 @@
 ::util::photos::mc::Error(busy)					"The installation/update is already running." ;# NEW
 ::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed." ;# NEW
 ::util::photos::mc::Error(passwd)				"The password is wrong." ;# NEW
-::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command." ;# NEW
+::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
+::util::photos::mc::Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
 
 ::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date." ;# NEW
 ::util::photos::mc::Message(finished)			"The installation/update of photo files has finished." ;# NEW

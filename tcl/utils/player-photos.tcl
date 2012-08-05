@@ -39,7 +39,7 @@ set DownloadStillInProgress	"Download of photo files is still in progress."
 set PhotoFiles						"Photo Files"
 set DownloadAborted				"Download aborted."
 
-set RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file. As a workaround you may do a private installation, or start this application as a super-user."
+set RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
 set RequiresInternetAccess		"The installation/update of the player photo files requires an internet connection."
 set AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%."
 set AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
@@ -49,7 +49,8 @@ set Detail(nohttp)				"Please install package TclHttp, for example %s."
 set Error(busy)					"The installation/update is already running."
 set Error(failed)					"Unexpected error: The invocation of the sub-process has failed."
 set Error(passwd)					"The password is wrong."
-set Error(nosudo)					"Cannot invoke 'sudo' command."
+set Error(nosudo)					"Cannot invoke 'sudo' command because your user is not in the sudoers file."
+set Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user."
 
 set Message(uptodate)			"The photo files are already up-to-date."
 set Message(finished)			"The installation/update of photo files has finished."
@@ -87,9 +88,9 @@ proc openDialog {parent} {
 
 	set Shared 0
 	set haveShared 0
-#	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
-#		set haveShared 1
-#	}
+	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
+		set haveShared 1
+	}
 
 	set dlg [toplevel $parent.installPlayerPhotos -class Scidb]
 	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
@@ -163,8 +164,8 @@ proc openDialog {parent} {
 
 	if {!$Shared} { catch { file mkdir [InstallDir 0] } }
 
-	::widget::dialogButtons $dlg {cancel}
 	::widget::dialogButtonAdd $dlg download [namespace current]::mc::Download $icon::16x16::download
+	::widget::dialogButtons $dlg {cancel}
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.download configure -command [namespace code [list Download $parent $dlg]]
 
@@ -271,13 +272,20 @@ proc OpenPipe {informProc shared parent} {
 	set cmd [file join $::scidb::dir::exec $script]
 
 	if {$shared && $tcl_platform(platform) eq "unix" && [exec id -u] != 0} {
+		variable _Result
 		set sudo [auto_execok sudo]
-		if {[string length $sudo] == 0} { return nosudo }
-		lassign [AskPassword $parent] passwd result
+		if {[string length $sudo] == 0} { return failed }
+		lassign [AskPassword $parent.installPlayerPhotos] passwd result
 		update idletasks
 		if {$result ne "ok"} { return cancelled }
-		if {[catch { exec echo $passwd | $sudo -v -S }]} { return nosudo }
-		if {[catch { exec echo $passwd | $sudo -S echo "" }]} { return passwd }
+		if {[catch { open "| echo $passwd | $sudo -S echo \"\" 2>@1" r } sudoPipe ]} { return failed }
+		fconfigure $sudoPipe -buffering none -blocking 1
+		fileevent $sudoPipe readable [namespace code [list CheckPassword $sudoPipe]]
+		set _Result ""
+		while {![eof $sudoPipe]} { vwait [namespace current]::_Result }
+		catch { close $sudoPipe }
+		if {[string match *:*:* $_Result]} { return passwd }
+		if {[string match {* sudoers *} $_Result]} { return nosudo }
 		lassign {"" ""} arg1 arg2
 		if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
 			set arg1 $env(LD_LIBRARY_PATH)
@@ -315,7 +323,7 @@ proc Download {parent dlg} {
 		}
 		failed	{ ::dialog::error -parent $dlg -message $mc::Error(failed) }
 		passwd	{ ::dialog::error -parent $dlg -message $mc::Error(passwd) }
-		nosudo	{ ::dialog::error -parent $dlg -message $mc::Error(nosudo) }
+		nosudo	{ ::dialog::error -parent $dlg -message $mc::Error(nosudo) -detail $mc::Detail(nosudo) }
 		busy		{ ::dialog::error -parent $dlg -message $mc::Error(busy) }
 		ok			{ destroy $dlg }
 	}
@@ -449,7 +457,7 @@ proc AskPassword {parent} {
 	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::_result cancel]
 
 	tk::label $top.m \
-		-text $mc::RequiresSuperuserRights \
+		-text "$mc::RequiresSuperuserRights $mc::Detail(nosudo)" \
 		-wraplength 350 \
 		-justify left \
 		-borderwidth 0 \
@@ -474,6 +482,7 @@ proc AskPassword {parent} {
 	bind $dlg <Return> [list $dlg.ok invoke]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
 
+	wm transient $dlg $parent
 	::util::place $dlg center $parent
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
@@ -483,6 +492,12 @@ proc AskPassword {parent} {
 	destroy $dlg
 
 	return [list $_passwd $_result]
+}
+
+
+proc CheckPassword {pipe} {
+	variable _Result
+	set _Result "${_Result}[read $pipe]"
 }
 
 

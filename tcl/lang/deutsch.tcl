@@ -264,7 +264,7 @@
 ::util::photos::mc::DownloadStillInProgress	"Der Download der Photodateien ist noch im Fortgang."
 ::util::photos::mc::PhotoFiles					"Photodateien"
 
-::util::photos::mc::RequiresSuperuserRights	"Die Installation bzw. der Update erfordert Superuserberechtigung.\n\nBeachte: das Passwort wird nicht akzeptiert wenn der momentane Benutzer nicht in der sudoer-Datei eingetragen ist. Als Behelf kann eine lokale Installation vorgenommen werden, oder diese Applikation wird als Superuser gestartet."
+::util::photos::mc::RequiresSuperuserRights	"Die Installation bzw. der Update erfordert Superuserberechtigung.\n\nBeachte: das Passwort wird nicht akzeptiert wenn der momentane Benutzer nicht in der sudoers-Datei eingetragen ist."
 ::util::photos::mc::RequiresInternetAccess	"Die Installation bzw. der Update der Photodateien erfordert eine Internetverbindung."
 ::util::photos::mc::AlternativelyDownload(0)	"Alternativ können die Photodateien von %link% heruntergeladen werden. Diese werden dann im Verzeichnis %local% installiert."
 ::util::photos::mc::AlternativelyDownload(1)	"Alternativ können die Photodateien von %link% heruntergeladen werden. Diese werden dann entweder im gemeinsamen Verzeichnis %shared%, oder im privaten Verzeichnis %local% installiert."
@@ -274,7 +274,8 @@
 ::util::photos::mc::Error(busy)					"Die Installation bzw. der Update ist bereits am laufen."
 ::util::photos::mc::Error(failed)				"Unerwarteter Fehler: Der Start des Unterprozesses schlug fehl."
 ::util::photos::mc::Error(passwd)				"Die Passworteingabe ist falsch."
-::util::photos::mc::Error(nosudo)				"'sudo' kann nicht ausgeführt werden."
+::util::photos::mc::Error(nosudo)				"'sudo' kann nicht ausgeführt werden weil der aktuelle Benutzer nicht in der sudoers-Datei eingetragen ist."
+::util::photos::mc::Detail(nosudo)				"Als Behelf kann eine lokale Installation vorgenommen werden, oder diese Applikation wird als Superuser gestartet."
 
 ::util::photos::mc::Message(uptodate)			"Die Photodateien sind bereits auf dem neuesten Stand."
 ::util::photos::mc::Message(finished)			"Die Installation bzw. der Update der Photodateien ist beendet."
