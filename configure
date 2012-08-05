@@ -756,7 +756,6 @@ proc findFontconfig {} {
         set option(HAVE_XFT) "-DHAVE_XFT"
         puts "yes."
     } else {
-        set option(HAVE_XFT) 0
         puts "no."
     }
 }
