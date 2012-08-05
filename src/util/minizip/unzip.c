@@ -41,6 +41,8 @@ woven in by Terry Thorsen 1/2003.
 #include "zlib.h"
 #include "unzip.h"
 
+#define NOUNCRYPT
+
 #ifdef STDC
 #  include <stddef.h>
 #  include <string.h>

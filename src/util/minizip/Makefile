@@ -17,7 +17,7 @@ include ../../../Makefile.in
 INCLUDE	= -I.
 OPTIMIZE	= -O2 -fomit-frame-pointer
 C_DEBUG	= -DNDEBUG
-DEFINES	= -D_USE_MMAP
+DEFINES	= -D_USE_MMAP # -DNOCRYPT -DNOUNCRYPT
 CFLAGS	= $(OPTIMIZE) $(C_DEBUG) $(DEFINES)
 
 SRC_C = \

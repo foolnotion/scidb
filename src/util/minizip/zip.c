@@ -17,6 +17,8 @@
 #include "zlib.h"
 #include "zip.h"
 
+#define NOCRYPT
+
 #ifdef STDC
 #  include <stddef.h>
 #  include <string.h>
