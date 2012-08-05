@@ -1219,6 +1219,32 @@ proc checkGCC {cc} {
     }
     if {[llength $configure(gcc-version)] == 0} {
         set found [Probe testgcc [regsub -all __CC__ $TestGCC $environment($cc)]]
+        if {!$found} {
+            # On some unserious distributions the link 'gcc' to the
+            # actual compiler is missing. We will take a close look.
+            set files [glob -directory /usr/local/bin -nocomplain -types f gcc-*]
+            if {[llength $files] == 0} {
+                set files [glob -directory /usr/bin -nocomplain -types f gcc-*]
+            }
+            set versions {}
+            foreach file $files {
+                set file [file tail $file]
+                set i [string last "-" $file]
+                if {$i >= 0} { lappend versions [string range $file [incr i] end] }
+            }
+            if {[llength $versions] > 0} {
+                # look for highest version
+                set versions [lsort -dictionary -decreasing $versions]
+                set configure(gcc-version) [lindex $versions 0]
+                set gccexe $gcc-$configure(gcc-version)
+                set found [Probe testgcc [regsub -all __CC__ $TestGCC $gccexe]]
+                if {$found} {
+                    set environment($cc) $gccexe
+                } else {
+                    set configure(gcc-version) ""
+                }
+            }
+        }
     }
     set version ""
     if {!$found} {
