@@ -271,7 +271,6 @@
 ::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
 
 ::util::photos::mc::Error(nohttp)		"Cannot open an internet connection because package TclHttp is not installed." ;# NEW
-::util::photos::mc::Detail(nohttp)		"Please install package TclHttp, for example %s." ;# NEW
 ::util::photos::mc::Error(busy)			"The installation/update is already running." ;# NEW
 ::util::photos::mc::Error(failed)		"Unexpected error: The invocation of the sub-process has failed." ;# NEW
 ::util::photos::mc::Error(passwd)		"The password is wrong." ;# NEW
@@ -285,13 +284,17 @@
 ::util::photos::mc::Message(missing)		"Cannot find directory '%s'." ;# NEW
 ::util::photos::mc::Message(httperr)		"HTTP error: %s" ;# NEW
 ::util::photos::mc::Message(httpcode)		"Unexpected HTTP code %s." ;# NEW
-::util::photos::mc::Message(badhost)		"HTTP connection failed due to a bad host, or a bad port." ;# NEW
+::util::photos::mc::Message(noconnect)		"HTTP connection failed." ;# NEW
 ::util::photos::mc::Message(timeout)		"HTTP timeout occurred." ;# NEW
 ::util::photos::mc::Message(crcerror)		"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
 ::util::photos::mc::Message(maintenance)	"Photo file server maintenance is currently in progress." ;# NEW
 ::util::photos::mc::Message(notfound)		"Download aborted because photo file server maintenance is currently in progress." ;# NEW
 ::util::photos::mc::Message(aborted)		"User has aborted download." ;# NEW
 ::util::photos::mc::Message(killed)		"Unexpected termination of download. The sub-process has died." ;# NEW
+
+::util::photos::mc::Detail(nohttp)		"Please install package TclHttp, for example %s." ;# NEW
+::util::photos::mc::Detail(noconnect)		"Probably you don't have an internet connection." ;# NEW
+::util::photos::mc::Detail(badhost)		"Another possibility is a bad host, or a bad port." ;# NEW
 
 ::util::photos::mc::Log(started)		"Installation/update of photo files started at %s." ;# NEW
 ::util::photos::mc::Log(finished)		"Installation/update of photo files finished at %s." ;# NEW

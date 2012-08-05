@@ -158,7 +158,7 @@ proc Checksum {file} {
 }
 
 proc GetUrl {url} {
-	if {[catch { ::http::geturl $url {*}$::GetUrlArgs } token]} { Return badhost }
+	if {[catch { ::http::geturl $url {*}$::GetUrlArgs } token]} { Return noconnect }
 	return $token
 }
 

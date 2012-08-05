@@ -270,7 +270,6 @@
 ::util::photos::mc::AlternativelyDownload(1)	"Alternativ können die Photodateien von %link% heruntergeladen werden. Diese werden dann entweder im gemeinsamen Verzeichnis %shared%, oder im privaten Verzeichnis %local% installiert."
 
 ::util::photos::mc::Error(nohttp)				"Eine Internetverbindung kann nicht aufgebaut werden weil das Paket TclHttp nicht installiert ist."
-::util::photos::mc::Detail(nohttp)				"Bitte das Paket TclHttp installieren; z.B. %s."
 ::util::photos::mc::Error(busy)					"Die Installation bzw. der Update ist bereits am laufen."
 ::util::photos::mc::Error(failed)				"Unerwarteter Fehler: Der Start des Unterprozesses schlug fehl."
 ::util::photos::mc::Error(passwd)				"Die Passworteingabe ist falsch."
@@ -284,7 +283,7 @@
 ::util::photos::mc::Message(missing)			"Das Verzeichnis '%s' kann nicht gefunden werden."
 ::util::photos::mc::Message(httperr)			"HTTP-Fehler: %s"
 ::util::photos::mc::Message(httpcode)			"Unerwarteter HTTP-Code %s."
-::util::photos::mc::Message(badhost)			"Die HTTP-Verbindung schlug fehl aufgrund einer fehlerhaften Host- bzw. Portangabe."
+::util::photos::mc::Message(noconnect)			"Die HTTP-Verbindung schlug fehl."
 ::util::photos::mc::Message(timeout)			"Eine HTTP-Zeitüberschreitung ist aufgetreten. Möglicherweise ist der Photodateienserver momentan sehr stark frequentiert."
 
 ::util::photos::mc::Message(crcerror)			"Ein Prüfsummenfehler trat auf. Möglicherweise ist der Photodateienserver gerade in einer Wartung."
@@ -292,6 +291,10 @@
 ::util::photos::mc::Message(notfound)			"Der Downloadvorgang wurde abgebrochen weil der Photodateienserver gerade einer Wartung unterliegt."
 ::util::photos::mc::Message(aborted)			"Der Benutzer hat den Download abgebrochen."
 ::util::photos::mc::Message(killed)				"Unerwarteter Abbruch des Downloads. Der Subprozess ist verendet."
+
+::util::photos::mc::Detail(nohttp)				"Bitte das Paket TclHttp installieren; z.B. %s."
+::util::photos::mc::Detail(noconnect)			"Möglicherweise besteht zur Zeit keine Internetverbindung."
+::util::photos::mc::Detail(badhost)				"Möglich ist auch eine fehlerhafte Host- bzw. Portangabe."
 
 ::util::photos::mc::Log(started)					"Die Installation bzw. der Update der Photodateien wurde gestartet am %s."
 ::util::photos::mc::Log(finished)				"Die Installation bzw. der Update der Photodateien wurde abgeschlossen am %s."

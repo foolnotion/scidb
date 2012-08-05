@@ -45,7 +45,6 @@ set AlternativelyDownload(0)	"Alternatively you may download the photo files fro
 set AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
 
 set Error(nohttp)					"Cannot open an internet connection because package TclHttp is not installed."
-set Detail(nohttp)				"Please install package TclHttp, for example %s."
 set Error(busy)					"The installation/update is already running."
 set Error(failed)					"Unexpected error: The invocation of the sub-process has failed."
 set Error(passwd)					"The password is wrong."
@@ -59,13 +58,17 @@ set Message(noperm)				"You dont have write permissions for directory '%s'."
 set Message(missing)				"Cannot find directory '%s'."
 set Message(httperr)				"HTTP error: %s"
 set Message(httpcode)			"Unexpected HTTP code %s."
-set Message(badhost)				"HTTP connection failed due to a bad port."
+set Message(noconnect)			"HTTP connection failed."
 set Message(timeout)				"HTTP timeout occurred. Possibly the file server is currently very busy."
 set Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
 set Message(maintenance)		"Photo file server maintenance is currently in progress."
 set Message(notfound)			"Download aborted because photo file server maintenance is currently in progress."
 set Message(aborted)				"User has aborted download."
 set Message(killed)				"Unexpected termination of download. The sub-process has died."
+
+set Detail(nohttp)				"Please install package TclHttp, for example %s."
+set Detail(noconnect)			"Probably you don't have an internet connection."
+set Detail(badhost)				"Another possibility is a bad host, or a bad port."
 
 set Log(started)					"Installation/update of photo files started at %s."
 set Log(finished)					"Installation/update of photo files finished at %s."
@@ -308,8 +311,10 @@ proc Download {parent dlg} {
 	variable Shared
 	variable Count
 	variable Finished
+	variable Started
 
 	set Finished 0
+	set Started 0
 	array set Count { deleted 0 created 0 skipped 0 updated 0 }
 	set result [downloadFiles [namespace code [list ProcessUpdate $parent]] $Shared $parent]
 
@@ -332,7 +337,9 @@ proc Download {parent dlg} {
 
 proc LogProgress {type msg} {
 	variable Count
+	variable Started
 
+	if {!$Started} { return }
 	::log::open $mc::PhotoFiles
 	::log::$type $msg
 	foreach attr {created deleted skipped updated} {
@@ -347,6 +354,7 @@ proc ProcessUpdate {parent} {
 	variable Pipe
 	variable Count
 	variable Finished
+	variable Started
 
 	set data ""
 	catch { set data [gets $Pipe] }
@@ -382,12 +390,23 @@ proc ProcessUpdate {parent} {
 			::dialog::error -parent $parent -message $msg
 		}
 
-		httperr - httpcode - timeout - crcerror - badhost - notfound {
+		httperr - httpcode - timeout - crcerror - noconnect - notfound {
 			set msg $mc::Message($reason)
 			if {[string match *%s* $msg]} { set msg [format $msg $arg] }
 			LogProgress error "$msg ([::locale::currentTime])"
 			set details ""
-			switch $reason { timeout - crcerror { set details $mc::RetryLater } }
+			switch $reason {
+				timeout - crcerror {
+					set details $mc::RetryLater
+				}
+				noconnect {
+					global env
+					set details $mc::Detail(noconnect)
+					if {[info exists env(http_proxy)] && [string length $env(http_proxy)]} {
+						append details " " $mc::Detail(badhost)
+					}
+				}
+			}
 			::dialog::error -parent $parent -message $msg -detail $details
 		}
 
@@ -411,6 +430,7 @@ proc ProcessUpdate {parent} {
 			bind $parent.downloadPlayerPhotos <<LanguageChanged>> \
 				[namespace code [list LanguageChanged $parent.downloadPlayerPhotos]]
 			update idletasks
+			set Started 1
 		}
 
 		progress { ::dialog::progressbar::tick $parent.downloadPlayerPhotos }

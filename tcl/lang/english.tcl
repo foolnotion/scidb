@@ -270,7 +270,6 @@
 ::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%."
 
 ::util::photos::mc::Error(nohttp)				"Cannot open an internet connection because package TclHttp is not installed."
-::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s."
 ::util::photos::mc::Error(busy)					"The installation/update is already running."
 ::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed."
 ::util::photos::mc::Error(passwd)				"The password is wrong."
@@ -284,13 +283,17 @@
 ::util::photos::mc::Message(missing)			"Cannot find directory '%s'."
 ::util::photos::mc::Message(httperr)			"HTTP error: %s"
 ::util::photos::mc::Message(httpcode)			"Unexpected HTTP code %s."
-::util::photos::mc::Message(badhost)			"HTTP connection failed due to a bad host, or a bad port."
+::util::photos::mc::Message(noconnect)			"HTTP connection failed."
 ::util::photos::mc::Message(timeout)			"HTTP timeout occurred."
 ::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode."
 ::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress."
 ::util::photos::mc::Message(notfound)			"Download aborted because photo file server maintenance is currently in progress."
 ::util::photos::mc::Message(aborted)			"User has aborted download."
 ::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died."
+
+::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s."
+::util::photos::mc::Detail(noconnect)			"Probably you don't have an internet connection."
+::util::photos::mc::Detail(badhost)				"Another possibility is a bad host, or a bad port."
 
 ::util::photos::mc::Log(started)					"Installation/update of photo files started at %s."
 ::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s."
