@@ -17,6 +17,8 @@ include ../../../Makefile.in
 INCLUDE	= -I. -I../../mstl
 DEFINES	= -DHPDF_NOPNGLIB
 
+ALL_INCLUDE = $(INCLUDE) $(ZLIB_INC)
+
 ifdef HAVE_XFT
 DEFINES += -DLIBHPDF_HAVE_FONTCONFIG_H=1
 endif
@@ -106,7 +108,7 @@ $(LIB).a: $(OBJS)
 
 .c.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

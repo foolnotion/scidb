@@ -21,6 +21,8 @@ C_DEBUG	= -DNDEBUG -Wno-strict-aliasing
 DEFINES	= -D_USE_MMAP -DZZIP_HAVE_STDINT_H
 CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 
+ALL_INCLUDE	= $(INCLUDE) $(ZLIB_INC)
+
 SRC_C = \
 	zzcat.c \
 	zzdir.c \
@@ -61,7 +63,7 @@ $(LIB).a: $(OBJS)
 
 .c.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
-	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(ALL_INCLUDE) $<
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

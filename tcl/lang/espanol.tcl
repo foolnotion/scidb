@@ -258,7 +258,7 @@
 ### player photos ######################################################
 ::util::photos::mc::InstallPlayerPhotos		"Install/Update Player Photos" ;# NEW
 ::util::photos::mc::TimeOut						"Timeout occurred." ;# NEW
-::util::photos::mc::EnterPassword				"Enter Password" ;# NEW
+::util::photos::mc::EnterPassword				"Personal Password" ;# NEW
 ::util::photos::mc::Download						"Download" ;# NEW
 ::util::photos::mc::SharedInstallation			"Shared installation" ;# NEW
 ::util::photos::mc::LocalInstallation			"Private installation" ;# NEW

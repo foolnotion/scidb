@@ -14,7 +14,7 @@ include ../../../Makefile.in
 
 .SUFFIXES: .c
 
-INCLUDE	= -I.
+INCLUDE	= -I. $(ZLIB_INC)
 OPTIMIZE	= -O2 -fomit-frame-pointer
 C_DEBUG	= -DNDEBUG
 DEFINES	= -D_USE_MMAP # -DNOCRYPT -DNOUNCRYPT

@@ -256,7 +256,7 @@
 ### player photos ######################################################
 ::util::photos::mc::InstallPlayerPhotos		"Spielerphotos installieren/updaten"
 ::util::photos::mc::TimeOut						"Eine Zeitüberschreitung ist aufgetreten."
-::util::photos::mc::EnterPassword				"Passworteingabe"
+::util::photos::mc::EnterPassword				"Benutzerkennwort"
 ::util::photos::mc::Download						"Herunterladen"
 ::util::photos::mc::SharedInstallation			"Gemeinschaftliche Installation"
 ::util::photos::mc::LocalInstallation			"Private Installation"
