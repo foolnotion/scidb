@@ -318,16 +318,16 @@ Consumer::putMove(Move const& move,
 
 		entry.board.doMove(entry.move);
 
-		if (!move.isLegal())
-		{
-			if (move.isCastling())
-				m_flags |= GameInfo::Flag_Illegal_Castling;
-			else
-				m_flags |= GameInfo::Flag_Illegal_Move;
-		}
-
 		if (isMainline())
 		{
+			if (!move.isLegal())
+			{
+				if (move.isCastling())
+					m_flags |= GameInfo::Flag_Illegal_Castling;
+				else
+					m_flags |= GameInfo::Flag_Illegal_Move;
+			}
+
 			m_homePawns.move(move);
 
 			if (m_line.length < opening::Max_Line_Length)
@@ -376,16 +376,16 @@ Consumer::putMove(Move const& move)
 
 		entry.board.doMove(entry.move);
 
-		if (!move.isLegal())
-		{
-			if (move.isCastling())
-				m_flags |= GameInfo::Flag_Illegal_Castling;
-			else
-				m_flags |= GameInfo::Flag_Illegal_Move;
-		}
-
 		if (isMainline())
 		{
+			if (!move.isLegal())
+			{
+				if (move.isCastling())
+					m_flags |= GameInfo::Flag_Illegal_Castling;
+				else
+					m_flags |= GameInfo::Flag_Illegal_Move;
+			}
+
 			m_homePawns.move(move);
 
 			if (m_line.length < opening::Max_Line_Length)

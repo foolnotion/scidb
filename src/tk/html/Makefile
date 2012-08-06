@@ -77,19 +77,19 @@ $(LIB).a: $(OBJS)
 
 LEMON_CFLAGS = $(CFLAGS) -Wno-uninitialized -fno-strict-aliasing
 
-TCLSH	= tclsh$(TCL_VERSION)
-
 htmltokens.h: tokenlist.txt
-	$(TCLSH) $?
+	@echo "Building $@"
+	@$(TCL_SHELL) $?
 
 htmldefaultstyle.c: tkhtml.tcl html.css quirks.css mkdefaultstyle.tcl 
-	$(TCLSH) mkdefaultstyle.tcl > htmldefaultstyle.c
-
-htmltokens.c: htmltokens.h
+	@echo "Building $@"
+	@$(TCL_SHELL) mkdefaultstyle.tcl > htmldefaultstyle.c
 
 cssprop.h: cssprop.tcl
-	$(TCLSH) $?
+	@echo "Building $@"
+	@$(TCL_SHELL) $?
 
+htmltokens.c: htmltokens.h
 cssprop.c: cssprop.h
 
 LEMON = lemon
@@ -100,7 +100,8 @@ $(LEMON): tools/lemon.c
 
 cssparse.c: cssparse.lem lemon
 	@ln -sf tools/lempar.c .
-	./$(LEMON) cssparse.lem
+	@echo "Building $<"
+	@./$(LEMON) cssparse.lem
 
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.

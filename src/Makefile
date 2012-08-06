@@ -271,52 +271,52 @@ db/libdbstubs.a:
 	$(MAKE) -C db libdbstubs.a
 
 #permute_eco: permute_eco.o $(LIBS)
-#	@echo "Build $@"
+#	@echo "Building $@"
 #	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 extend_eco: extend_eco.o $(LIBS_STUBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 dump_eco: dump_eco.o $(LIBS_STUBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) -Idb/si3 $(LIBS_STUBS)
 
 eco2code: eco2code.o $(LIBS_STUBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 code2eco: code2eco.o $(LIBS_STUBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 pawn_progress: pawn_progress.o $(LIBS_STUBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
 best_move: best_move.o $(LIBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 pgn_split_eco: pgn_split_eco.o $(LIBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 cbh2si4: cbh2si4.o $(LIBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 cdb2sci: cdb2sci.o $(LIBS)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
 
 $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
-	@echo "Build $@"
+	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) $(ZLIB_LIB)
 
 $(TK_PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
-	@echo "Build $@"
-	$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
+	@echo "Building $@"
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
