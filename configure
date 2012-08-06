@@ -116,6 +116,7 @@ array set configure {
     exec-prefix     /usr/local
     program-suffix  {}
     fontconfig-path {}
+    tcl-shell       {}
 }
 set configure(tcl-version) [findBestTclVersion]
 set configure(gcc-version) ""
@@ -857,15 +858,17 @@ proc SystemHasZlib {} {
     set result 0
     if {![catch {exec sh testzlib.sh} err]} { set result 1 }
 
-    set testZlib [regsub -all __CC__ $TestGzOffset $environment(CC)]
-    set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
-    set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
-    flush stdout
-    if {[catch {open testzlib.sh w} f]} { return 0 }
-    puts $f $testZlib
-    close $f
-    if {[catch {exec sh testzlib.sh} err]} {
-        set compiler(no-gzoffset) -Dgzoffset=gztell
+    if {$result} {
+        set testZlib [regsub -all __CC__ $TestGzOffset $environment(CC)]
+        set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
+        set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
+        flush stdout
+        if {[catch {open testzlib.sh w} f]} { return 0 }
+        puts $f $testZlib
+        close $f
+        if {[catch {exec sh testzlib.sh} err]} {
+            set compiler(no-gzoffset) -Dgzoffset=gztell
+        }
     }
 
     catch { file delete -force testzlib.sh }
@@ -1349,6 +1352,7 @@ proc writeMakefile {{type ""}} {
 #   if {!$feature(splash-screen)}   { set option(SPLASH) "no" }
 
     set option(TCL_VERSION) $configure(tcl-version)
+    set option(TCL_SHELL) $configure(tcl-shell)
     set option(SUFFIX) $configure(program-suffix)
 
     foreach {d p} {bin bin lib lib engines games} {
@@ -1642,6 +1646,12 @@ if {[string length $distribution(revision)]} {
 }
 if {[string length $distribution(codename)]} {
     puts "                    Codename: [string toupper $distribution(codename) 0 0]"
+}
+
+set configure(tcl-shell) [auto_execok tclsh$tclv]
+if {[string length $configure(tcl-shell)] == 0} {
+    puts "Cannot find Tcl shell 'tclsh$tclv'"
+    exit 1
 }
 
 set gxxVer ""
