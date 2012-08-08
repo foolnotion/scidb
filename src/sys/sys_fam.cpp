@@ -271,15 +271,16 @@ cancelMonitorFAM(Request& req)
 	}
 }
 
-#elif defined(HAVE_INOTIFY) || defined(SYS_INOTIFY) /////////////////////
+#elif defined(HAVE_INOTIFY) /////////////////////////////////////////////
 
 #include "m_hash.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <errno.h>
 
-#ifndef HAVE_INOTIFY
+#ifdef SYS_INOTIFY
 # include "sys_inotify.h"
 #else
 # include <sys/inotify.h>

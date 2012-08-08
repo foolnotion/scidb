@@ -798,7 +798,7 @@ proc findFreetype {} {
 #
 set TestInotify {#!/bin/sh
 cat <<EOF > testinotify.c
-#include <inotify.h>
+#include <sys/inotify.h>
 int main()
 {
     inotify_init1(0);
@@ -816,12 +816,15 @@ fi
 
 
 # TestInotify.sh:
-#    Script used to test if syscall (probably) supports inotify.
+#    Script used to test if syscall supports inotify.
 #
 set TestInotifySys {#!/bin/sh
 cat <<EOF > testinotify.c
 #include "__pwd__/src/sys/sys_inotify.h"
-int main() { return 0; }
+int main()
+{
+    return inotify_init1(0) == -1 ? 1 : 0;
+}
 EOF
 
 __CC__ -o testinotify testinotify.c
@@ -858,18 +861,26 @@ proc SystemHasInotify {} {
     if {$result} {
         set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
     } else {
-        set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
-        set testinotify [regsub -all __pwd__ $testinotify [pwd]]
-        flush stdout
-        if {[catch {open testinotify.sh w} f]} { return 0 }
-        puts $f $testinotify
-        close $f
-        if {![catch {exec sh testinotify.sh} err]} { set result 2 }
-        if {$result} { set option(SYS_INOTIFY) "-DSYS_INOTIFY=1" }
+# Seems to be to dangerous!
+#       set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
+#       set testinotify [regsub -all __pwd__ $testinotify [pwd]]
+#       flush stdout
+#       if {[catch {open testinotify.sh w} f]} { return 0 }
+#       puts $f $testinotify
+#       close $f
+#       if {![catch {exec sh testinotify.sh} err]} { set result 2 }
+#       if {$result} {
+#           if {[catch { exec ./testinotify } r]} {
+#               set result 0
+#           } else {
+#               set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
+#               set option(SYS_INOTIFY) "-DSYS_INOTIFY=1"
+#           }
+#       }
 
-        catch { file delete -force testinotify.sh }
-        catch { file delete -force testinotify.c }
-        catch { file delete -force testinotify }
+#       catch { file delete -force testinotify.sh }
+#       catch { file delete -force testinotify.c }
+#       catch { file delete -force testinotify }
     }
  
     return $result
@@ -884,11 +895,10 @@ proc checkInotify {} {
 
     puts -nonewline "    Checking if your kernel has inotify support: "
     flush stdout
-
     switch [SystemHasInotify] {
         0 { puts "no" }
         1 { puts "yes" }
-        2 { puts "probably (trying syscall())" }
+        2 { puts "yes (via syscall())" }
     }
 }
 
@@ -907,7 +917,7 @@ int main()
 }
 EOF
 
-__CC__ -o testfam testfam.c -lfam
+__CC__ -o testfam testfam.c __lib__
 if [ -f testfam ]; then
     exit 0
 else
@@ -925,17 +935,42 @@ proc SystemHasFAM {} {
     global package
     global option
 
+    set lib -lfam
     set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
     set testfam [regsub -all __pwd__ $testfam [pwd]]
+    set testfam [regsub -all __lib__ $testfam $lib]
     flush stdout
     if {[catch {open testfam.sh w} f]} { return 0 }
     puts $f $testfam
     close $f
     set result 0
     if {![catch {exec sh testfam.sh} err]} { set result 1 }
+
+#   if {$result == 0} {
+#       catch { file delete -force testfam.sh }
+#       catch { file delete -force testfam.c }
+#       catch { file delete -force testfam }
+
+#       # On many system /usr/lib/libfam.so is not exisiting, but /usr/lib/libfam.so.0
+#       set lib [FindDir libfam.so.0 {/usr/lib /usr/local/lib}]
+
+#       if {[string length $lib]} {
+#           set lib $lib/libfam.so.0
+#           set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
+#           set testfam [regsub -all __pwd__ $testfam [pwd]]
+#           set testfam [regsub -all __lib__ $testfam $lib]
+#           flush stdout
+#           if {[catch {open testfam.sh w} f]} { return 0 }
+#           puts $f $testfam
+#           close $f
+#           set result 0
+#           if {![catch {exec sh testfam.sh} err]} { set result 1 }
+#       }
+#   }
+
     if {$result} {
         set option(HAVE_LIBFAM) "-DHAVE_LIBFAM=1"
-        set package(fam-lib) "-lfam"
+        set package(fam-lib) $lib
     }
 
     catch { file delete -force testfam.sh }
@@ -1834,7 +1869,7 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
-    checkInotify
+#   checkInotify ;# not yet working
     checkFAM
     checkZlib
     checkZziplib
