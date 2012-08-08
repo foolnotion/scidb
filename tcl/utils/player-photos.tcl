@@ -222,7 +222,7 @@ proc get {name info} {
 
 		foreach alias $aliases {
 			set key [NormalizeName $alias]
-			set file [find $key]
+			set file [FindPhotoFile $key]
 			if {[string length $file]} {
 				set found $file
 				break

@@ -133,6 +133,7 @@ array set package {
     x-inc        {}
     x-lib        {}
     freetype-inc {}
+    fam-lib      {}
 }
 
 array set feature {
@@ -170,6 +171,9 @@ array set option {
     EXTRA_CXXFLAGS  {}
     HAVE_XFT        {}
     HAVE_FREETYPE   {}
+    HAVE_LIBFAM     {}
+    HAVE_INOTIFY    {}
+    SYS_INOTIFY     {}
 }
 
 array set defaults {
@@ -789,6 +793,171 @@ proc findFreetype {} {
 }
 
 
+# TestInotify.sh:
+#    Script used to test if the kernel has inotify.
+#
+set TestInotify {#!/bin/sh
+cat <<EOF > testinotify.c
+#include <inotify.h>
+int main()
+{
+    inotify_init1(0);
+    return 0;
+}
+EOF
+
+__CC__ -o testinotify testinotify.c
+if [ -f testinotify ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# TestInotify.sh:
+#    Script used to test if syscall (probably) supports inotify.
+#
+set TestInotifySys {#!/bin/sh
+cat <<EOF > testinotify.c
+#include "__pwd__/src/sys/sys_inotify.h"
+int main() { return 0; }
+EOF
+
+__CC__ -o testinotify testinotify.c
+if [ -f testinotify ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# SystemHasInotify:
+#    Determines if the kernel supports inotify.
+#
+proc SystemHasInotify {} {
+    global TestInotify
+    global TestInotifySys
+    global environment
+    global option
+
+    set testinotify [regsub -all __CC__ $TestInotify $environment(CC)]
+    set testinotify [regsub -all __pwd__ $testinotify [pwd]]
+    flush stdout
+    if {[catch {open testinotify.sh w} f]} { return 0 }
+    puts $f $testinotify
+    close $f
+    set result 0
+    if {![catch {exec sh testinotify.sh} err]} { set result 1 }
+
+    catch { file delete -force testinotify.sh }
+    catch { file delete -force testinotify.c }
+    catch { file delete -force testinotify }
+
+    if {$result} {
+        set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
+    } else {
+        set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
+        set testinotify [regsub -all __pwd__ $testinotify [pwd]]
+        flush stdout
+        if {[catch {open testinotify.sh w} f]} { return 0 }
+        puts $f $testinotify
+        close $f
+        if {![catch {exec sh testinotify.sh} err]} { set result 2 }
+        if {$result} { set option(SYS_INOTIFY) "-DSYS_INOTIFY=1" }
+
+        catch { file delete -force testinotify.sh }
+        catch { file delete -force testinotify.c }
+        catch { file delete -force testinotify }
+    }
+ 
+    return $result
+}
+
+
+# checkInotify:
+#    Checks whether the system kernel supports inotify.
+#
+proc checkInotify {} {
+    global environment package subdir
+
+    puts -nonewline "    Checking if your kernel has inotify support: "
+    flush stdout
+
+    switch [SystemHasInotify] {
+        0 { puts "no" }
+        1 { puts "yes" }
+        2 { puts "probably (trying syscall())" }
+    }
+}
+
+
+# TestFAM.sh:
+#    Script used to test if libfam is available.
+#
+set TestFAM {#!/bin/sh
+cat <<EOF > testfam.c
+#include <fam.h>
+int main()
+{
+    FAMConnection conn;
+    FAMOpen(&conn);
+    return 0;
+}
+EOF
+
+__CC__ -o testfam testfam.c -lfam
+if [ -f testfam ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# SystemHasFAM:
+#    Determines if libfam is available.
+#
+proc SystemHasFAM {} {
+    global TestFAM
+    global environment
+    global package
+    global option
+
+    set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
+    set testfam [regsub -all __pwd__ $testfam [pwd]]
+    flush stdout
+    if {[catch {open testfam.sh w} f]} { return 0 }
+    puts $f $testfam
+    close $f
+    set result 0
+    if {![catch {exec sh testfam.sh} err]} { set result 1 }
+    if {$result} {
+        set option(HAVE_LIBFAM) "-DHAVE_LIBFAM=1"
+        set package(fam-lib) "-lfam"
+    }
+
+    catch { file delete -force testfam.sh }
+    catch { file delete -force testfam.c }
+    catch { file delete -force testfam }
+ 
+    return $result
+}
+
+
+# checkFAM:
+#    Checks whether libfam is available.
+#
+proc checkFAM {} {
+    global environment package subdir
+
+    puts -nonewline "    Checking if your system has libfam: "
+    flush stdout
+    if {[SystemHasFAM]} { puts "yes." } else { puts "no" }
+}
+
+
 # testzlib_sh:
 #    Script used to test if the system has zlib installed,
 #    and if it is the right version.
@@ -1080,7 +1249,7 @@ fi
 
 
 # TestSyncBuiltin.sh:
-#    Script used to test if the system supports the __sync builtin functions.
+#    Script used to test if the kernel supports the __sync builtin functions.
 #
 #   On some system the compiler is newer than the libc library. In this case
 #   it may happen that the __sync_val_compare_and_swap symbol is not contained
@@ -1255,7 +1424,7 @@ proc checkGCC {cc} {
         } else {
             puts "no."
         }
-        puts -nonewline "    Checking if your system supports __sync_* builtin functions: "
+        puts -nonewline "    Checking if your kernel supports __sync_* builtin functions: "
         flush stdout
         if {[Probe testSyncBuiltin [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]]} {
             puts "yes."
@@ -1665,6 +1834,8 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
+    checkInotify
+    checkFAM
     checkZlib
     checkZziplib
     checkExpat

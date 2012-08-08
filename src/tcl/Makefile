@@ -26,6 +26,7 @@ SRC_CXX = \
 	tcl_crosstable.cpp \
 	tcl_database.cpp \
 	tcl_exception.cpp \
+	tcl_fam.cpp \
 	tcl_file.cpp \
 	tcl_game.cpp \
 	tcl_http.cpp \
@@ -38,7 +39,6 @@ SRC_CXX = \
 	tcl_view.cpp \
 	tcl_zlib.cpp \
 
-#SRC_C = \
 #	tclcurl-multi.c \
 #	tclcurl.c \
 
@@ -630,6 +630,21 @@ tcl_exception.o: ../mstl/m_exception.h
 tcl_exception.o: ../mstl/m_backtrace.h
 tcl_exception.o: ../mstl/m_types.h
 tcl_exception.o: ../mstl/m_exception.ipp
+tcl_fam.o: ../sys/sys_fam.h
+tcl_fam.o: ../mstl/m_string.h
+tcl_fam.o: ../mstl/m_types.h
+tcl_fam.o: ../mstl/m_string.ipp
+tcl_fam.o: ../mstl/m_utility.h
+tcl_fam.o: ../mstl/m_type_traits.h
+tcl_fam.o: ../mstl/m_type_traits.ipp
+tcl_fam.o: ../mstl/m_utility.ipp
+tcl_fam.o: ../mstl/m_limits.h
+tcl_fam.o: ../mstl/m_bit_functions.h
+tcl_fam.o: ../mstl/m_bit_functions.ipp
+tcl_fam.o: ../mstl/m_assert.h
+tcl_fam.o: ../mstl/m_exception.h
+tcl_fam.o: ../mstl/m_backtrace.h
+tcl_fam.o: ../mstl/m_exception.ipp
 tcl_file.o: tcl_file.h
 tcl_file.o: ../mstl/m_stdio.h
 tcl_file.o: ../mstl/m_assert.h

@@ -770,7 +770,10 @@ cmdMapExtension(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* Extensions[] = { "sci", "si3", "si4", "cbh" };
 
-	mstl::string extension(stringFromObj(objc, objv, 1));
+	char const* extension = stringFromObj(objc, objv, 1);
+
+	if (*extension == '.')
+		++extension;
 
 	for (unsigned i = 0; i < U_NUMBER_OF(Extensions); ++i)
 	{

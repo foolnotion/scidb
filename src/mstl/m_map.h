@@ -36,14 +36,16 @@ public:
 	typedef pair<K,V>				value_type;
 	typedef vector<value_type>	container_type;
 
-	typedef typename container_type::size_type			size_type;
-	typedef typename container_type::difference_type	difference_type;
-	typedef typename container_type::pointer				pointer;
-	typedef typename container_type::const_pointer		const_pointer;
-	typedef typename container_type::reference			reference;
-	typedef typename container_type::const_reference	const_reference;
-	typedef typename container_type::const_iterator		const_iterator;
-	typedef typename container_type::iterator				iterator;
+	typedef typename container_type::size_type					size_type;
+	typedef typename container_type::difference_type			difference_type;
+	typedef typename container_type::pointer						pointer;
+	typedef typename container_type::const_pointer				const_pointer;
+	typedef typename container_type::reference					reference;
+	typedef typename container_type::const_reference			const_reference;
+	typedef typename container_type::const_iterator				const_iterator;
+	typedef typename container_type::iterator						iterator;
+	typedef typename container_type::reverse_iterator			reverse_iterator;
+	typedef typename container_type::const_reverse_iterator	const_reverse_iterator;
 
 	typedef pair<iterator,bool> result_t;
 
@@ -73,6 +75,10 @@ public:
 	const_iterator	begin() const;
 	iterator end();
 	const_iterator	end() const;
+	reverse_iterator rbegin();
+	reverse_iterator rend();
+	const_reverse_iterator rbegin() const;
+	const_reverse_iterator rend() const;
 
 	void assign(const_iterator first, const_iterator last);
 	result_t insert(const_reference v);

@@ -31,6 +31,7 @@ TITLE Was ist neu?
   <li>Partie-Speichern/Ersetzen-Dialog verbessert</li>
   <li>Spieler-Karteikarten implementiert</li>
   <li>Datenbankarchivierung integriert</li>
+  <li>Setup-Dialog für Partie-Editor/Browser</li>
   <li>Drag&amp;Drop von Dateien integriert: der Datenbankumschalter ist Drop-Zielbereich</li>
   <li>Datenbankfenster: Andocken/Abkopplen der Listen-Reiter integriert</li>
   <li>Zugeingabe mit der Maus überarbeitet (wenn Zugvorschlag abgeschaltet ist)</li>

@@ -486,7 +486,7 @@ proc BuildFrame {w options} {
 	if {$opts(embedcmd) ne ""} {
 		set Priv(embedded) [ttk::frame $lt.embed -takefocus 0]
 		grid $Priv(embedded) -row $frow -sticky nsew
-		lappend frows [expr {$frow - 1}]
+		lappend frows [expr {$frow + 1}]
 		set rcv [eval $opts(embedcmd) $Priv(embedded)]
 		if {$rcv ni $Priv(receiver)} { lappend Priv(receiver) $rcv }
 		incr frow 2

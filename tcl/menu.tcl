@@ -381,6 +381,7 @@ proc dbOpen {parent} {
 
 proc dbCreateArchive {parent {base ""}} {
 	if {[string length $base] == 0} { set base [::scidb::db::get name] }
+	if {$base eq $::scidb::clipbaseName} { set name $::util::clipbaseName } else { set name $base}
 	set filetypes [list	[list $mc::ScidbArchives {.scv}]]
 	set result [::dialog::saveFile \
 		-parent $parent \
@@ -389,7 +390,7 @@ proc dbCreateArchive {parent {base ""}} {
 		-needencoding 0 \
 		-geometry last \
 		-title $mc::CreateArchive \
-		-initialfile [file tail [file rootname $base]] \
+		-initialfile [file tail [file rootname $name]] \
 		-customcommand {} \
 	]
 	if {[llength $result]} {

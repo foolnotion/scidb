@@ -447,7 +447,7 @@ proc popupMenu {menu base info {playerCard {}}} {
 	set m [menu $menu.web -tearoff false]
 	$menu add cascade \
 		-menu $m \
-		-label " $::playercard::mc::OpenInWebBrowser..." \
+		-label " $::playercard::mc::OpenInWebBrowser" \
 		-image $::icon::16x16::internet \
 		-compound left \
 		;

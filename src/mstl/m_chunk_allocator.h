@@ -50,7 +50,6 @@ public:
 	size_t chunk_size() const;
 	size_t elems_per_chunk() const;
 
-	void set_zero();
 	void clear();
 
 	T* alloc();

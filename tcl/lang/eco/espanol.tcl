@@ -183,6 +183,7 @@
 "Latvian"				"letón"
 "Lithuanian"				"lituana"
 "Mexican"				"mejicana"
+"Mittelgambit"				"Apertura del centro (Partida central)"
 "Modern"				"moderna"
 "Norwegian"				"noruega"
 "Old"					"antigüa"

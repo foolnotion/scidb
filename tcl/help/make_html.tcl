@@ -270,11 +270,9 @@ proc formatPath {path} {
 	}
 	set result ""
 	for {set i 0} {$i < [llength $parts]} {incr i} {
-		if {$i < [llength $parts] - 1} {
-			append result "<code>[lindex $parts $i]/</code>&#8203;"
-		}  else {
-			append result "<code>[lindex $parts $i]</code>"
-		}
+		set part [lindex $parts $i]
+		append result "<code>$part/</code>"
+		if {$i < [llength $parts] - 1 && [string length $part] > 2} { append result "&#8203;" }
 	}
 	return $result
 }

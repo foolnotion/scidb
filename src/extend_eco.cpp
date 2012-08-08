@@ -53,7 +53,7 @@ using namespace db;
 
 
 typedef mstl::vector<uint32_t> Line;
-typedef mstl::chunk_allocator<char> Allocator;
+typedef mstl::chunk_allocator<char,true> Allocator;
 
 struct Name
 {
@@ -241,7 +241,7 @@ extend()
 
 			for (unsigned k = 0; k < moves.size(); ++k)
 			{
-				board.prepareForSan(moves[k]);
+				board.prepareForPrint(moves[k]);
 				board.doMove(moves[k]);
 			}
 
@@ -253,7 +253,7 @@ extend()
 				__attribute__((unused)) uint64_t h = board.hashNoEP();
 
 				board.prepareUndo(more[k]);
-				board.prepareForSan(more[k]);
+				board.prepareForPrint(more[k]);
 				board.doMove(more[k]);
 
 				if (board.isLegal())
@@ -372,7 +372,7 @@ prepare()
 				Move move = Move(line[k]);
 
 				moves.append(move);
-				board.prepareForSan(move);
+				board.prepareForPrint(move);
 				board.doMove(move);
 
 				if (k + 1 < line.size())
@@ -628,7 +628,6 @@ parse(char const* filename)
 	lines.resize(Eco::Max_Code + 1);
 	names.resize(Eco::Max_Code + 1);
 	lineNumbers.resize(Eco::Max_Code + 1);
-	stringAllocator.set_zero();
 
 	mstl::ifstream stream(filename);
 

@@ -205,15 +205,16 @@ proc popup {parent args} {
 	set col 0
 	foreach {name icon tip} $actions {
 		set f [tk::label $top.f.$name \
-					-highlightthickness 1 \
-					-highlightcolor black \
-					-highlightbackground $bg \
-					-background $bg \
-					-takefocus 1 \
-					-borderwidth 1 \
-					-width 16 \
-					-height 16 \
-					-image $icon]
+			-highlightthickness 1 \
+			-highlightcolor black \
+			-highlightbackground $bg \
+			-background $bg \
+			-takefocus 1 \
+			-borderwidth 1 \
+			-width 16 \
+			-height 16 \
+			-image $icon \
+		]
 		grid $f -column $col -row $row
 		bind $f <ButtonPress-1> [namespace code [list set selection $name]]
 		bind $f <Return> [namespace code [list set selection $name]]
@@ -226,8 +227,8 @@ proc popup {parent args} {
 	}
 	lappend buttonList $buttonRow
 
-	grid rowconfigure $top.f [list 0 [expr {$row + 2}]] -minsize 2
-	grid [ttk::separator $top.f.sep1] -column 0 -row [expr {$row + 1}] -columnspan 6 -sticky we
+	grid rowconfigure $top.f [expr {$row - 1}] -minsize 2
+	grid rowconfigure $top.f [expr {$row + 1}] -minsize 8
 	incr row 2
 	set col 0
 	set buttonRow {}
@@ -358,6 +359,7 @@ proc popup {parent args} {
 		set sum [expr {$sum + [set $v]}]
 		set row [expr {2*(($sum + 5)/6) + 2}]
 		if {0 <= $row && $row < $lastrow} { grid rowconfigure $top.f $row -minsize 8 }
+if {0 <= $row && $row < $lastrow} { puts "--> $row" }
 	}
 	grid columnconfigure $top.f 6 -minsize 1
 

@@ -360,6 +360,7 @@
 "Mexican Variation"					"Variante Messicana"
 "Milner-Barry (Zurich) Variation"			"Variante Milner-Barry (di Zurigo)"
 "Mieses (Paulsen) Variation"				"Variante Mieses (Paulsen)"
+"Mittelgambit"						"Partita del Centro"
 "Modern (Steinitz) Attack"				"Attacco Moderno (Steinitz)"
 "Modern Benoni"						"Moderna Benoni"
 "Modern Botvinnik Variation"				"Moderna Variante Botvinnik"

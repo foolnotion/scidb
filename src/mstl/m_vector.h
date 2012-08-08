@@ -53,6 +53,7 @@ public:
 
 		bool operator==(reverse_iterator const& iter) const;
 		bool operator!=(reverse_iterator const& iter) const;
+		bool operator<=(reverse_iterator const& iter) const;
 		bool operator< (reverse_iterator const& iter) const;
 
 		iterator base() const;
@@ -75,6 +76,43 @@ public:
 	protected:
 
 		iterator m_i;
+	};
+
+	class const_reverse_iterator
+	{
+	public:
+
+		explicit const_reverse_iterator(const_iterator i);
+		explicit const_reverse_iterator(iterator i);
+
+		const_reverse_iterator& operator=(const_iterator i);
+		const_reverse_iterator& operator=(iterator i);
+
+		bool operator==(const_reverse_iterator const& iter) const;
+		bool operator!=(const_reverse_iterator const& iter) const;
+		bool operator<=(const_reverse_iterator const& iter) const;
+		bool operator< (const_reverse_iterator const& iter) const;
+
+		const_iterator base() const;
+
+		const_reference operator*() const;
+		const_pointer operator->() const;
+
+		const_reverse_iterator& operator++();
+		const_reverse_iterator& operator--();
+		const_reverse_iterator  operator++(int);
+		const_reverse_iterator  operator--(int);
+		const_reverse_iterator& operator+=(size_t n);
+		const_reverse_iterator& operator-=(size_t n);
+		const_reverse_iterator  operator+(size_t n) const;
+		const_reverse_iterator  operator-(size_t n) const;
+
+		reference operator[](difference_type n) const;
+		difference_type operator-(const_reverse_iterator const& i) const;
+
+	protected:
+
+		const_iterator m_i;
 	};
 
 	vector();
@@ -116,6 +154,8 @@ public:
 
 	reverse_iterator rbegin();
 	reverse_iterator rend();
+	const_reverse_iterator rbegin() const;
+	const_reverse_iterator rend() const;
 
 	void push_back(const_reference v);
 	void push_back();
@@ -133,7 +173,9 @@ public:
 	void insert(iterator position, Iterator first, Iterator last);
 
 	iterator erase(iterator position);
+	iterator erase(reverse_iterator position);
 	iterator erase(iterator first, iterator last);
+	iterator erase(reverse_iterator first, reverse_iterator last);
 
 	void fill(value_type const& value);
 

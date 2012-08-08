@@ -46,9 +46,11 @@ array set Defaults {
 	header:button:background	#d7d7d7
 	highlight:color				#3778ed
 	highlight:opacity				0.4
+	highlight:minwidth			150
 }
 # highlight:color #6495ed
 
+array set Options [array get Defaults]
 variable Counter 0
 
 
@@ -63,7 +65,6 @@ if {![catch {package require tooltip}]} {
 proc twm {path args} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
-	variable ${path}::Options
 
 	array set opts { -makepane {} -getname {} }
 	array set opts $args
@@ -125,7 +126,7 @@ proc WidgetProc {twm command args} {
 
 
 proc MakeFrame {twm id} {
-	variable Defaults
+	variable Options
 	variable Counter
 	variable ${twm}::Vars
 
@@ -133,7 +134,7 @@ proc MakeFrame {twm id} {
 	incr Counter
 	set top [tk::frame $parent.__frame__$Counter -borderwidth 0 -background black]
 	set hdr [tk::frame $top.__header__ \
-					-background $Defaults(header:background) \
+					-background $Options(header:background) \
 					-borderwidth 1 \
 					-relief raised \
 				]
@@ -143,10 +144,13 @@ proc MakeFrame {twm id} {
 	pack $hdr -side top -fill x -expand no
 	pack $child -side top -fill both -expand yes
 
-	tk::button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
+	tk::button $hdr.close \
+		-image $icon::12x12::close \
+		-background $Options(header:button:background) \
+		;
 	tk::button $hdr.undock \
 		-image $icon::12x12::undock \
-		-background $Defaults(header:button:background) \
+		-background $Options(header:button:background) \
 		-command [namespace code [list Undock $twm $top]] \
 		;
 
@@ -162,10 +166,11 @@ proc MakeFrame {twm id} {
 		set text $name
 	}
 
-	set headerFont [list [font configure $Defaults(header:font) -family] $Defaults(header:fontsize) bold]
+	# TODO: use ::font::registerFont
+	set headerFont [list [font configure $Options(header:font) -family] $Options(header:fontsize) bold]
 	tk::label $hdr.label \
-		-background $Defaults(header:background) \
-		-foreground $Defaults(header:foreground) \
+		-background $Options(header:background) \
+		-foreground $Options(header:foreground) \
 		-font $headerFont \
 		-text $text \
 		;
@@ -314,62 +319,49 @@ proc ShowDockingPoint {twm top w x y} {
 					m {
 						set wd [expr {$iw + 4}]
 						set ht [expr {$ih + 4}]
+						set ht_1 [expr {$ht - 1}]
+						set wd_1 [expr {$wd - 1}]
 						set ix 2
 						set iy 2
-						set lines [list \
-							0 0 1 0 \
-							0 [expr {$ht - 1}] 1 [expr {$ht - 1}] \
-							[expr {$wd - 1}] 0 $wd 0 \
-							[expr {$ht - 1}] [expr {$wd - 1}] [expr {$ht - 1}] $wd \
-						]
+						set lines [list 0 0 1 0   0 $ht_1 1 $ht_1   $wd_1 0 $wd 0   $ht_1 $wd_1 $ht_1 $wd]
 					}
 
 					l {
 						set wd [expr {$iw + 2}]
 						set ht [expr {$ih + 4}]
+						set ht_1 [expr {$ht - 1}]
 						set ix 2
 						set iy 2
-						set lines [list \
-							0 0 $wd 0 \
-							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
-							0 0 0 $ht \
-						]
+						set lines [list 0 0 $wd 0   0 $ht_1 $wd $ht_1   0 0 0 $ht]
 					}
 
 					r {
 						set wd [expr {$iw + 2}]
 						set ht [expr {$ih + 4}]
+						set ht_1 [expr {$ht - 1}]
+						set wd_1 [expr {$wd - 1}]
 						set ix 0
 						set iy 2
-						set lines [list \
-							0 0 $wd 0 \
-							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
-							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
-						]
+						set lines [list 0 0 $wd 0  0 $ht_1 $wd $ht_1   $wd_1 0 $wd_1 $ht]
 					}
 
 					t {
 						set wd [expr {$iw + 4}]
 						set ht [expr {$ih + 2}]
+						set wd_1 [expr {$wd - 1}]
 						set ix 2
 						set iy 2
-						set lines [list \
-							0 0 $wd 0 \
-							0 0 0 $ht \
-							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
-						]
+						set lines [list 0 0 $wd 0   0 0 0 $ht   $wd_1 0 $wd_1 $ht]
 					}
 
 					b {
 						set wd [expr {$iw + 4}]
 						set ht [expr {$ih + 2}]
+						set ht_1 [expr {$ht - 1}]
+						set wd_1 [expr {$wd - 1}]
 						set ix 2
 						set iy 0
-						set lines [list \
-							0 [expr {$ht - 1}] $wd [expr {$ht - 1}] \
-							0 0 0 $ht \
-							[expr {$wd - 1}] 0 [expr {$wd - 1}] $ht \
-						]
+						set lines [list 0 $ht_1 $wd $ht_1   0 0 0 $ht   $wd_1 0 $wd_1 $ht]
 					}
 				}
 
@@ -425,7 +417,7 @@ proc DockingMotion {twm top w canv mode x y} {
 
 proc ShowHighlightRegion {twm top w canv} {
 	variable ${twm}::Vars
-	variable Defaults
+	variable Options
 
 	update idletasks
 
@@ -445,30 +437,23 @@ proc ShowHighlightRegion {twm top w canv} {
 		$tl.c create image 0 0 -anchor nw -tag image
 	}
 
-	set ht2 [expr {min(150,$ht/2)}]
-	set wd2 [expr {min(150,$wd/2)}]
+	set ht2 [expr {min($Options(highlight:minwidth),$ht/2)}]
+	set wd2 [expr {min($Options(highlight:minwidth),$wd/2)}]
 
-	switch -glob -- $canv {
-		*.__t__.__docking__ {
-			set ht $ht2
-		}
-		*.__b__.__docking__ {
-			set y  [expr {$y + $ht - $ht2}]
-			set ht $ht2
-		}
-		*.__r__.__docking__ {
-			set x  [expr {$x + $wd - $wd2}]
-			set wd $wd2
-		}
-		*.__l__.__docking__ {
-			set wd $wd2
-		}
+	set pos ""
+	regexp {.*\.__([tbrl])__\.__docking__} $canv _ pos
+
+	switch $pos {
+		t { set ht $ht2 }
+		b { set y  [expr {$y + $ht - $ht2}]; set ht $ht2 }
+		r { set x  [expr {$x + $wd - $wd2}]; set wd $wd2 }
+		l { set wd $wd2 }
 	}
 
 	$tl.c configure -width $wd -height $ht
 	set img [image create photo -width $wd -height $ht]
 	::scidb::tk::x11 region $x $y $img
-	::scidb::tk::image paintover $Defaults(highlight:color) $Defaults(highlight:opacity) $img
+	::scidb::tk::image paintover $Options(highlight:color) $Options(highlight:opacity) $img
 	$tl.c itemconfigure image -image $img
 	wm geometry $tl ${wd}x${ht}+${x}+${y}
 	wm overrideredirect $tl true
@@ -734,159 +719,157 @@ proc Update {data} {
 }
 
 
-if {0} {
-proc Add {twm w args} {
-	variable ${twm}::Vars
-	variable ${twm}::Options
-
-	array set opts {
-		-expand		none
-		-height		100
-		-width		100
-		-minwidth	50
-		-minheight	50
-		-side			right
-		-text			""
-		-textVar		{}
-	}
-
-	array set opts $args
-
-	foreach {key val} [array get Options *:$w] {
-		set opts($key) $val
-	}
-
-	set textVar $opts(-textVar)
-	if {[llength $textVar] == 0} {
-		set Vars(textVar:$w) $opts(-text)
-		set textVar [namespace current]::${twm}::Vars(textVar:$w)
-	}
-	
-	lappend Vars(childs:$opts(-side)) $w
-	set Vars(childs:$opts(-side)) \
-		[lsort -command [namespace code [list Compare $twm]] $Vars(childs:$opts(-side))]
-	set Vars(arranged:$w) 0
-
-	switch $opts(-side) {
-		left - right {
-			set Vars(orientation:$w) vert
-			set Vars(resizable:$w) [expr {$expand eq "y" || $expand eq "both"}]
-		}
-
-		top - bottom {
-			set Vars(orientation:$w) horz
-			set Vars(resizable:$w) [expr {$expand eq "x" || $expand eq "both"}]
-		}
-	}
-
-	foreach {key val} [array get opts] {
-		set Options($key) $val
-	}
-}
-
-
-proc Display {twm} {
-	variable ${twm}::Vars
-	variable ${twm}::Options
-
-	foreach w $Vars(childs) {
-		if {!$Vars(arranged:$w)} {
-			set root $Vars(graph:$Options(-side:$w))
-			InsertLeaf $twm $w $root [GetChild $root 0]
-		}
-	}
-}
-
-
-proc GetChild {node index} {
-	return [lindex $index [lindex 3 $node]]
-}
-
-
-proc InsertLeaf {twm w pred curr} {
-	variable ${twm}::Vars
-	variable ${twm}::Options
-
-	# graph:
-	#	type in {leaf, frame, panedWindow, notebook}
-	#	min position number
-	#	max position number
-	#	ordered list of childs
-
-	set position $Options(-position:$w)
-	lassign $curr type minPos maxPos childs
-
-	if {$position < $minPos} {
-		switch $type {
-			leaf {
-			}
-
-			frame {
-			}
-
-			panedWindow {
-			}
-
-			notebook {
-				set node [MakeFrame $curr $pred]
-			}
-		}
-	} elseif {$position > $maxPos} {
-	} else {
-	}
-}
-
-
-proc Compare {twm lhs rhs} {
-	variable ${twm}::Options
-	return [expr {$Options(-position:$lhs) - $Options(-position:$rhs)}]
-}
-
-
-proc MakeFrame {path text args} {
-	variable Defaults
-
-	set top [ttk::frame $path {*}$args]
-	set hdr [tk::frame $path.header \
-					-background $Defaults(header:background) \
-					-borderwidth 1 \
-					-relief raised \
-				]
-
-	pack $top -fill both -expand yes
-	pack $hdr -side top -fill x -expand yes
-
-	tk::button $hdr.close  -image $icon::12x12::close  -background $Defaults(header:button:background)
-	tk::button $hdr.undock -image $icon::12x12::undock -background $Defaults(header:button:background)
-
-	tooltip $hdr.close  Close
-	tooltip $hdr.undock Undock
-
-	set opts {}
-	if {[info exists $text]} {
-		lappend opts -textvar $text
-	} else {
-		lappend opts -text $text
-	}
-
-	set headerFont [list [font configure $Defaults(header:font) -family] $Defaults(header:fontsize) bold]
-	tk::label $hdr.label \
-		-background $Defaults(header:background) \
-		-foreground $Defaults(header:foreground) \
-		-font $headerFont \
-		{*}$opts \
-		;
-
-	grid $hdr.close	-column 4 -row 0
-	grid $hdr.undock	-column 2 -row 0
-	grid $hdr.label	-column 0 -row 0 -padx 2
-
-	grid columnconfigure $hdr 1 -weight 1
-	grid columnconfigure $hdr {3 5} -minsize 3
-
-	return $path
-}
-}
+# proc Add {twm w args} {
+# 	variable ${twm}::Vars
+# 	variable ${twm}::Options
+# 
+# 	array set opts {
+# 		-expand		none
+# 		-height		100
+# 		-width		100
+# 		-minwidth	50
+# 		-minheight	50
+# 		-side			right
+# 		-text			""
+# 		-textVar		{}
+# 	}
+# 
+# 	array set opts $args
+# 
+# 	foreach {key val} [array get Options *:$w] {
+# 		set opts($key) $val
+# 	}
+# 
+# 	set textVar $opts(-textVar)
+# 	if {[llength $textVar] == 0} {
+# 		set Vars(textVar:$w) $opts(-text)
+# 		set textVar [namespace current]::${twm}::Vars(textVar:$w)
+# 	}
+# 	
+# 	lappend Vars(childs:$opts(-side)) $w
+# 	set Vars(childs:$opts(-side)) \
+# 		[lsort -command [namespace code [list Compare $twm]] $Vars(childs:$opts(-side))]
+# 	set Vars(arranged:$w) 0
+# 
+# 	switch $opts(-side) {
+# 		left - right {
+# 			set Vars(orientation:$w) vert
+# 			set Vars(resizable:$w) [expr {$expand eq "y" || $expand eq "both"}]
+# 		}
+# 
+# 		top - bottom {
+# 			set Vars(orientation:$w) horz
+# 			set Vars(resizable:$w) [expr {$expand eq "x" || $expand eq "both"}]
+# 		}
+# 	}
+# 
+# 	foreach {key val} [array get opts] {
+# 		set Options($key) $val
+# 	}
+# }
+# 
+# 
+# proc Display {twm} {
+# 	variable ${twm}::Vars
+# 	variable ${twm}::Options
+# 
+# 	foreach w $Vars(childs) {
+# 		if {!$Vars(arranged:$w)} {
+# 			set root $Vars(graph:$Options(-side:$w))
+# 			InsertLeaf $twm $w $root [GetChild $root 0]
+# 		}
+# 	}
+# }
+# 
+# 
+# proc GetChild {node index} {
+# 	return [lindex $index [lindex 3 $node]]
+# }
+# 
+# 
+# proc InsertLeaf {twm w pred curr} {
+# 	variable ${twm}::Vars
+# 	variable ${twm}::Options
+# 
+# 	# graph:
+# 	#	type in {leaf, frame, panedWindow, notebook}
+# 	#	min position number
+# 	#	max position number
+# 	#	ordered list of childs
+# 
+# 	set position $Options(-position:$w)
+# 	lassign $curr type minPos maxPos childs
+# 
+# 	if {$position < $minPos} {
+# 		switch $type {
+# 			leaf {
+# 			}
+# 
+# 			frame {
+# 			}
+# 
+# 			panedWindow {
+# 			}
+# 
+# 			notebook {
+# 				set node [MakeFrame $curr $pred]
+# 			}
+# 		}
+# 	} elseif {$position > $maxPos} {
+# 	} else {
+# 	}
+# }
+# 
+# 
+# proc Compare {twm lhs rhs} {
+# 	variable ${twm}::Options
+# 	return [expr {$Options(-position:$lhs) - $Options(-position:$rhs)}]
+# }
+# 
+# 
+# proc MakeFrame {path text args} {
+# 	variable Options
+# 
+# 	set top [ttk::frame $path {*}$args]
+# 	set hdr [tk::frame $path.header \
+# 					-background $Options(header:background) \
+# 					-borderwidth 1 \
+# 					-relief raised \
+# 				]
+# 
+# 	pack $top -fill both -expand yes
+# 	pack $hdr -side top -fill x -expand yes
+# 
+# 	tk::button $hdr.close  -image $icon::12x12::close  -background $Options(header:button:background)
+# 	tk::button $hdr.undock -image $icon::12x12::undock -background $Options(header:button:background)
+# 
+# 	tooltip $hdr.close  Close
+# 	tooltip $hdr.undock Undock
+# 
+# 	set opts {}
+# 	if {[info exists $text]} {
+# 		lappend opts -textvar $text
+# 	} else {
+# 		lappend opts -text $text
+# 	}
+# 
+# 	set headerFont [list [font configure $Options(header:font) -family] $Options(header:fontsize) bold]
+# 	tk::label $hdr.label \
+# 		-background $Options(header:background) \
+# 		-foreground $Options(header:foreground) \
+# 		-font $headerFont \
+# 		{*}$opts \
+# 		;
+# 
+# 	grid $hdr.close	-column 4 -row 0
+# 	grid $hdr.undock	-column 2 -row 0
+# 	grid $hdr.label	-column 0 -row 0 -padx 2
+# 
+# 	grid columnconfigure $hdr 1 -weight 1
+# 	grid columnconfigure $hdr {3 5} -minsize 3
+# 
+# 	return $path
+# }
 
 
 proc Destroy {twm} {

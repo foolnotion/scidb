@@ -371,9 +371,6 @@
 ::application::database::mc::ClipbaseDescription		"Temporär databas, lagras inte på disk."
 ::application::database::mc::HardLinkDetected			"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
 ::application::database::mc::HardLinkDetectedDetail	"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
-::application::database::mc::CannotOpenUri				"Kan inte öppna följande  URI:"
-::application::database::mc::InvalidUri					"Innehåll som släpps är inte en giltig URI-lista."
-::application::database::mc::UriRejected					"Följande filer är förkastade:"
 ::application::database::mc::UriRejectedDetail			"Bara Scidb databaser kan öppnas:"
 ::application::database::mc::EmptyUriList					"Innehåll som släpps är tomt."
 ::application::database::mc::OverwriteExistingFiles	"Skriver över existerande filer i folder '%s'?"
@@ -1821,7 +1818,6 @@
 ::fsbox::mc::Backward						"Bakåt till '%s'"
 ::fsbox::mc::Delete							"Radera"
 ::fsbox::mc::Restore							"Återställ"
-::fsbox::mc::Rename							"Byt namn"
 ::fsbox::mc::Duplicate						"Duplicera"
 ::fsbox::mc::CopyOf							"Kopia av %s"
 ::fsbox::mc::NewFolder						"Ny folder"
@@ -1834,6 +1830,8 @@
 ::fsbox::mc::Cancel							"&Avbryt"
 ::fsbox::mc::Save								"&Spara"
 ::fsbox::mc::Open								"&Öppna"
+::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Rename							"&Byt namn"
 
 ::fsbox::mc::AddBookmark					"Lägg till bokmärke '%s'"
 ::fsbox::mc::RemoveBookmark				"Ta bort bokmärke '%s'"
@@ -1902,6 +1900,20 @@
 ::fsbox::mc::CannotDeleteDetail			"Filen används."
 ::fsbox::mc::CannotOverwrite				"Kan inte skriva över filen '%s'."
 ::fsbox::mc::PermissionDenied				"Åtkomst nekad för foldern '%s'."
+::fsbox::mc::CannotOpenUri					"Kan inte öppna följande  URI:"
+::fsbox::mc::InvalidUri						"Innehåll som släpps är inte en giltig URI-lista."
+::fsbox::mc::UriRejected					"Följande filer är förkastade:"
+::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
+::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
+::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
+::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
+::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
+::fsbox::mc::NewName							"New name" ;# NEW
+
+::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
+::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
+::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Verktygsfält"

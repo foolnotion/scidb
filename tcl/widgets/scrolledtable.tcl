@@ -622,11 +622,11 @@ proc ConfigureScale {table} {
 	variable ${table}::Vars
 
 	if {![winfo exists $Vars(scale)]} { return }
-	set w [winfo width $Vars(scale)]
-	set rows [expr {max(1, $Vars(size) - $Vars(height) + 1)}]
-	set n [expr {int(($w - 4)/double($rows) + 0.5)}]
-	set length [expr {max($Vars(slider), $n)}]
-	$Vars(scale) configure -sliderlength $length
+	set len [expr {[winfo width $Vars(scale)] - 4}]
+	if {$Vars(height) > 0 && $Vars(size) > 0} {
+		set len [expr {max($Vars(slider), min($len, $len*double($Vars(height))/double($Vars(size))))}]
+	}
+	$Vars(scale) configure -sliderlength $len
 	$Vars(scale) set $Vars(start)
 }
 

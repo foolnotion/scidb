@@ -59,6 +59,42 @@ inline typename map<K,V>::container_type const& map<K,V>::container() const { re
 
 template <typename K, typename V>
 inline
+typename map<K,V>::reverse_iterator
+map<K,V>::rbegin()
+{
+	return m_v.rbegin();
+}
+
+
+template <typename K, typename V>
+inline
+typename map<K,V>::reverse_iterator
+map<K,V>::rend()
+{
+	return m_v.rend();
+}
+
+
+template <typename K, typename V>
+inline
+typename map<K,V>::const_reverse_iterator
+map<K,V>::rbegin() const
+{
+	return m_v.rbegin();
+}
+
+
+template <typename K, typename V>
+inline
+typename map<K,V>::const_reverse_iterator
+map<K,V>::rend() const
+{
+	return m_v.rend();
+}
+
+
+template <typename K, typename V>
+inline
 map<K,V> const&
 map<K,V>::operator=(map const& v)
 {

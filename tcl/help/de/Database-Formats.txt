@@ -31,7 +31,7 @@ Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 </p>
 
 <p>
-Datenbanken im Scidb-Format sind immer im UTF-8 Zeichensatz enkodiert und damit
+Datenbanken im Scidb-Format sind immer im <nobr>UTF-8</nobr> Zeichensatz enkodiert und damit
 unter jedem System und jeder Lokation problemlos verwendbar.
 </p>
 
@@ -73,10 +73,10 @@ erhalten.
 <p>
 Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
 werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
-sind mit großer Wahrscheinlichkeit UTF-8 enkodiert, ältere evt. im Latin-1
-(ISO-<nobr>8859-1</nobr>) Zeichensatz, das Scid-Format gibt keine Auskunft darüber. In
-vielen Fällen sollte aber die programmeigene, automatische Ermittlung des
-Zeichensatzes erfolgreich sein.
+sind mit großer Wahrscheinlichkeit <nobr>UTF-8</nobr> enkodiert, ältere evt. im
+<nobr>Latin-1</nobr> (ISO-<nobr>8859-1</nobr>) Zeichensatz, das Scid-Format gibt
+keine Auskunft darüber. In vielen Fällen sollte aber die programmeigene, automatische
+Ermittlung des Zeichensatzes erfolgreich sein.
 </p>
 
 <p>
@@ -154,8 +154,11 @@ Scidb-Format empfohlen.
 </p>
 
 <p>
-Gemäß dem PGN-Standard ist eine PGN-Datei mit dem Zeichensatz Latin-1 (ISO-<nobr>8859-1</nobr>)
-enkodiert.
+Gemäß dem PGN-Standard ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
+(ISO-<nobr>8859-1</nobr>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
+<nobr>UTF-8</nobr>-Markierung (<nobr>UTF-8</nobr>-BOM: Bytesequenz EF BB BF) so wird
+eine <nobr>UTF-8</nobr>-Enkodierung angenommen (gemäß
+<a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ</a>).
 </p>
 
 <p>

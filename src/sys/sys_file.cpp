@@ -358,6 +358,39 @@ sys::file::rename(char const* oldFilename, char const* newFilename, bool preserv
 }
 
 
+sys::file::Type
+sys::file::type(char const* filename)
+{
+	M_REQUIRE(filename);
+
+	struct stat st;
+
+	if (stat(internalName(filename), &st) == -1)
+		return None;
+
+	if (S_ISREG(st.st_mode))
+		return RegularFile;
+	if (S_ISDIR(st.st_mode))
+		return Directory;
+	if (S_ISCHR(st.st_mode))
+		return CharacterDevice;
+	if (S_ISBLK(st.st_mode))
+		return BlockDevice;
+	if (S_ISFIFO(st.st_mode))
+		return NamedPipe;
+#ifdef S_ISLNK
+	if (S_ISLNK(st.st_mode))
+		return SymbolicLink;
+#endif
+#ifdef S_ISSOCK
+	if (S_ISSOCK(st.st_mode))
+		return Socket;
+#endif
+
+	return Unknown;
+}
+
+
 bool
 sys::file::isHardLinked(char const* filename1, char const* filename2)
 {

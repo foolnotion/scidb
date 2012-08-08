@@ -44,7 +44,7 @@ There exists four possibilites to set the default browser:
   <li><p>
     Scidb looks for an entry like
     <code>"X11BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><code>"</code>
-    in file <code>"~/.htmlviewrc"</code>.
+    in file <url>"~/.htmlviewrc"</url>.
   </p></li>
 
   <li><p>

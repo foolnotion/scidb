@@ -40,7 +40,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-extern "C" { extern int Treectrl_Init(Tcl_Interp*); }
+extern "C" { int Treectrl_Init(Tcl_Interp*); }
+extern "C" { int Inotify_Init(Tcl_Interp *interp); }
 extern "C" { static Tcl_FreeProc* __tcl_static = TCL_STATIC; }
 
 using namespace ::tcl;
@@ -909,6 +910,7 @@ namespace board		{ void init(Tcl_Interp* interp); }
 namespace misc			{ void init(Tcl_Interp* interp); }
 namespace crosstable	{ void init(Tcl_Interp* interp); }
 namespace zlib			{ void init(Tcl_Interp* interp); }
+namespace fam			{ void init(Tcl_Interp* interp); }
 
 } // namespace tcl
 
@@ -946,6 +948,7 @@ tcl::init(Tcl_Interp* ti)
 	misc::init(ti);
 	crosstable::init(ti);
 	zlib::init(ti);
+	fam::init(ti);
 }
 
 // vi:set ts=3 sw=3:

@@ -31,6 +31,7 @@ TITLE What's new?
   <li>Game-Save/Replace dialog improved</li>
   <li>Player notecards implemented</li>
   <li>Archiving databases integrated</li>
+  <li>Setup dialog for game browser/editor</li>
   <li>Drag&amp;Drop of files integrated: database switcher is drop target</li>
   <li>Database window: docking/undocking of list tabs integrated</li>
   <li>Move input with mouse overworked (if move suggestion is disabled)</li>

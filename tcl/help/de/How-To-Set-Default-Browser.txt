@@ -42,7 +42,7 @@ externen Verweise geöffnet werden, festzulegen:
   </p></li>
 
   <li><p>
-    Die Datei <code>"~/.htmlviewrc"</code> wird nach einem Eintrag der Form
+    Die Datei <url>"~/.htmlviewrc"</url> wird nach einem Eintrag der Form
     <code>"X11BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><code>"</code>
     durchsucht.
   </p></li>

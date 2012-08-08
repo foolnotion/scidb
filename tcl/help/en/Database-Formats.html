@@ -46,7 +46,7 @@ recommended because of speed and feature completeness considerations.
 </p>
 
 <p>
-Scidb databases are always encoded with character set UTF-8. Hence
+Scidb databases are always encoded with character set <span style="white-space:nowrap;">UTF-8</span>. Hence
 these databases can be used without any complications under all systems
 and locations.
 </p>
@@ -88,7 +88,7 @@ re-opening the database.
 <p>
 In some cases the user has to choose the appropriate encoding while opening
 the database, to ensure a correct display of names and other text. Newer
-databases may be UTF-8 encoded, older database may be written with Latin-1
+databases may be <span style="white-space:nowrap;">UTF-8</span> encoded, older database may be written with <span style="white-space:nowrap;">Latin-1</span>
 (ISO-<span style="white-space:nowrap;">8859-1</span>) character set, the Scid format does not provide information
 about this. But in many cases the automatic detection of the character set
 should be successful.
@@ -167,7 +167,10 @@ chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. Wi
 
 <p>
 According to the PGN standard a PGN file is encoded with character set 
-Latin-1 (ISO-<span style="white-space:nowrap;">8859-1</span>).
+<span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>). But if a PGN file is starting with an
+<span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM: byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span>
+encoding will be expected (according to
+<a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
 
 <p>

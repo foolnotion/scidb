@@ -26,14 +26,14 @@ $(SCRIPT).1.gz: scidb.n cbh2si4.n cdb2sci.n
 all: $(SCRIPT).1.gz
 
 install: $(SCRIPT).1.gz
-	@echo "Install man page"
+	@echo "Install man pages"
 	@install -m 755 -d $(MANDIR)/man1
 	@install -m 755 -p $(SCRIPT).1.gz $(MANDIR)/man1
 	@install -m 755 -p cbh2si4.1.gz $(MANDIR)/man1
 	@install -m 755 -p cdb2sci.1.gz $(MANDIR)/man1
 
 uninstall:
-	@echo "Uninstall man page"
+	@echo "Uninstall man pages"
 	@rm -f $(MANDIR)/man1/$(SCRIPT).1.gz
 	@rm -f $(MANDIR)/man1/cbh2si4.1.gz
 	@rm -f $(MANDIR)/man1/cdb2sci.1.gz

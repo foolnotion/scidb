@@ -372,9 +372,6 @@
 ::application::database::mc::ClipbaseDescription		"Base temporal, no se guarda al disco."
 ::application::database::mc::HardLinkDetected			"No se puede cargar el archivo '%file1' porque ya está cargado como '%file2'. Esto sucede cuando se usan hard links."
 ::application::database::mc::HardLinkDetectedDetail	 "Si se carga la misma base de datos nuevamente, la aplicació puede terminar debido a los hilos usados."
-::application::database::mc::CannotOpenUri				"No se puede abrir la siguiente URI:"
-::application::database::mc::InvalidUri					"Descartar contenido no es una lista URI válida."
-::application::database::mc::UriRejected					"Los siguientes archivos fueron rechazados:"
 ::application::database::mc::UriRejectedDetail			"Solamente pueden abrirse bases de datos Scidb:"
 ::application::database::mc::EmptyUriList					"Descartar contenido está vacóo."
 ::application::database::mc::OverwriteExistingFiles	"Sobrescribir archivos existentes en el directorio '%s'?"
@@ -1823,7 +1820,6 @@
 ::fsbox::mc::Backward						"Retroceder a '%s'"
 ::fsbox::mc::Delete							"Eliminar"
 ::fsbox::mc::Restore							"Restaurar"
-::fsbox::mc::Rename							"Renombrar"
 ::fsbox::mc::Duplicate						"Duplicar"
 ::fsbox::mc::CopyOf							"Copia de %s"
 ::fsbox::mc::NewFolder						"Nueva Carpeta"
@@ -1836,6 +1832,8 @@
 ::fsbox::mc::Cancel							"&Cancelar"
 ::fsbox::mc::Save								"&Guardar"
 ::fsbox::mc::Open								"&Abrir"
+::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Rename							"&Renombrar"
 
 ::fsbox::mc::AddBookmark					"Agregar Marcador '%s'"
 ::fsbox::mc::RemoveBookmark				"Quitar Marcador '%s'"
@@ -1904,6 +1902,20 @@
 ::fsbox::mc::CannotDeleteDetail			"El archivo se encuentra en uso."
 ::fsbox::mc::CannotOverwrite				"No se puede sobrescribir el archivo '%s'." 
 ::fsbox::mc::PermissionDenied				"Permiso denegado para el directorio '%s'."
+::fsbox::mc::CannotOpenUri					"No se puede abrir la siguiente URI:"
+::fsbox::mc::InvalidUri						"Descartar contenido no es una lista URI válida."
+::fsbox::mc::UriRejected					"Los siguientes archivos fueron rechazados:"
+::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
+::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
+::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
+::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
+::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
+::fsbox::mc::NewName							"New name" ;# NEW
+
+::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
+::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
+::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"

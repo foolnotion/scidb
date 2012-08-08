@@ -29,7 +29,7 @@ TITLE Formati Database
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
 
 <p>
-I database Scidb sono sempre codificati con il set caratteri UTF-8. Per questo
+I database Scidb sono sempre codificati con il set caratteri <nobr>UTF-8</nobr>. Per questo
 i database possono essere usati senza complicazioni su tutti i sistemi e con tutte
 le localizzazioni.
 </p>
@@ -67,10 +67,11 @@ in scrittura dopo l'apertura. L'ultima modalità di utilizzo sarà preservata al
 <p>
 In alcuni casi l'utente deve scegliere la codifica appropriata nell'aprire il
 database, per assicurare una corretta visualizzazione dei nomi e di altro testo.
-I database più recenti potrebbero avere codifica UTF-8, database più vecchi potrebbero
-essere scritti con  il set di caratteri Latin-1(ISO-8859-1), il formato Scid non fornisce
-informazioni sulla codifica utilizzata. In alcuni casi tuttavia l'identificazione
-automatica del set caratteri dovrebbe avere successo.
+I database più recenti potrebbero avere codifica <nobr>UTF-8</nobr>, database più
+vecchi potrebbero essere scritti con  il set di caratteri <nobr>Latin-1</nobr>
+(ISO-<nobr>8859-1</nobr>), il formato Scid non fornisce informazioni sulla codifica
+utilizzata. In alcuni casi tuttavia l'identificazione automatica del set caratteri dovrebbe
+avere successo.
 </p>
 
 <p>
@@ -137,7 +138,12 @@ Il formato database di ChessBase è diviso in diversi file separati, quelli più
 Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 
 <p>
-Secondo lo standard PGN un file PGN ha codifica Latin-1 (ISO-8859-1).
+Secondo lo standard PGN un file PGN ha codifica <nobr>Latin-1</nobr> (ISO-<nobr>8859-1</nobr>).
+<!-- NEW
+But if a PGN file is starting with an <nobr>UTF-8</nobr> mark
+(<nobr>UTF-8</nobr>-BOM: byte sequence EF BB BF) an <nobr>UTF-8</nobr> encoding will be expected
+(according to <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+-->
 </p>
 
 <p>

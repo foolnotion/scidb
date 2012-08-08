@@ -427,7 +427,10 @@ proc openBases {pathList} {
 
 	if {[llength $pathList]} {
 		foreach path $pathList {
-			::application::database::openBase .application [::util::databasePath $path] no
+			::application::database::openBase .application [::util::databasePath $path] no {} no
+		}
+		if {[llength $pathList] == 1} {
+			::application::database::switchToBase [lindex $pathList 0]
 		}
 	}
 

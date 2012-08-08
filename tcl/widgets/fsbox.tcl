@@ -22,6 +22,8 @@ package require toolbar
 package require choosedir
 package require tcombobox
 package require entrybuttonbox
+package require messagebox
+catch { package require tkDND 2.3 }
 if {[catch { package require tkpng }]} { package require Img }
 package provide fxbox 1.0
 
@@ -40,7 +42,6 @@ set Forward							"Forward to '%s'"
 set Backward						"Backward to '%s'"
 set Delete							"Delete"
 set Restore							"Restore"
-set Rename							"Rename"
 set Duplicate						"Duplicate"
 set CopyOf							"Copy of %s"
 set NewFolder						"New Folder"
@@ -53,6 +54,8 @@ set AppendToExisitingFile		"&Append to an existing file"
 set Cancel							"&Cancel"
 set Save								"&Save"
 set Open								"&Open"
+set Overwrite						"&Overwrite"
+set Rename							"&Rename"
 
 set AddBookmark					"Add Bookmark '%s'"
 set RemoveBookmark				"Remove Bookmark '%s'"
@@ -121,14 +124,29 @@ set CannotRename					"Cannot rename file '%s'."
 set CannotDeleteDetail			"This file is currently in use."
 set CannotOverwrite				"Cannot overwrite file '%s'."
 set PermissionDenied				"Permission denied for directory '%s'."
+set CannotOpenUri					"Cannot open the following URI:"
+set InvalidUri						"Drop content is not a valid URI list."
+set UriRejected					"The following files are rejected:"
+set UriRejectedDetail			"Only the listed file types can be handled."
+set OperationAborted				"Operation aborted."
+set ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?"
+set EntryAlreadyExists			"Entry already exists"
+set AnEntryAlreadyExists		"An entry '%s' already exists."
+set SourceDirectoryIs			"The source directories is '%s'."
+set NewName							"New name"
+
+set DropAction(move)				"Move Here"
+set DropAction(copy)				"Copy Here"
+set DropAction(link)				"Link Here"
 
 }
 
 namespace import ::tcl::mathfunc::max
 
-set duplicateFileSizeLimit 5000000
+set HaveFAM 1
+set DuplicateFileSizeLimit 5000000
 
-# possibly we should avoid "{}[]+=,;%", too especially ';' should be avoided!?
+# possibly we should avoid "{}[]+=,;%", too - especially ';' should be avoided!?
 set reservedChars {\" \\ / : * < > ? |}
 
 array set Options {
@@ -184,6 +202,7 @@ proc fsbox {w type args} {
 		-okcommand					{}
 		-cancelcommand				{}
 		-inspectcommand			{}
+		-mapextcommand				{}
 		-customcommand				{}
 		-customfiletypes			{}
 		-customicon					{}
@@ -192,6 +211,7 @@ proc fsbox {w type args} {
 		-helpicon					{}
 		-helplabel					{}
 		-isusedcommand				{}
+		-formattimecmd				{}
 		-actions						{delete rename copy new}
 	}
 
@@ -205,7 +225,7 @@ proc fsbox {w type args} {
 							deletecommand renamecommand duplicatecommand okcommand cancelcommand
 							inspectcommand initialfile bookmarkswidth customcommand customicon
 							customtooltip customfiletypes helpcommand helpicon helplabel
-							isusedcommand actions} {
+							isusedcommand actions mapextcommand formattimecmd} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -228,6 +248,7 @@ proc fsbox {w type args} {
 
 	set Vars(type) $type
 	set Vars(glob) Files
+	set Vars(fam) {}
 	set Vars(folder:home) [file nativename ~]
 	set Vars(folder:desktop) [file join $Vars(folder:home) Desktop]
 	if {![file isdirectory $Vars(folder:desktop)]} { set Vars(folder:desktop) "" }
@@ -250,9 +271,10 @@ proc fsbox {w type args} {
 	set Vars(icon:trash) $icon::16x16::trash
 	set Vars(icon:home) $icon::16x16::home
 
-	set Vars(folder) $opts(-initialdir)
-	set Vars(prevFolder) ""
+	set initialdir $opts(-initialdir)
 	array unset opts -initialdir
+	set Vars(folder) $initialdir
+	set Vars(prevFolder) ""
 	if {[string length $Vars(folder)] == 0 || ![file isdirectory $Vars(folder)]} {
 		set Vars(folder) [pwd]
 		set Vars(lastFolder) ""
@@ -440,7 +462,8 @@ proc fsbox {w type args} {
 	bind $top.main.fav <Configure> [namespace code { ConfigurePane %w }]
 
 	CheckInitialFile $w
-	DirChanged $w
+	set Vars(folder) ""
+	ChangeDir $w $initialdir
 	focus $top.ent_filename
 	return $w
 }
@@ -458,6 +481,7 @@ proc reset {w type args} {
 	set Vars(selectencodingcommand) {}
 	set Vars(fileencodings) {}
 	set Vars(initialfile) ""
+	set Vars(prevFolder) ""
 
 	foreach option {	multiple defaultextension defaultencoding filetypes fileencodings
 							showhidden sizecommand selectencodingcommand deletecommand
@@ -507,6 +531,16 @@ proc reset {w type args} {
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
 	filelist::RefreshFileList $w
 	focus $Vars(widget:filename)
+}
+
+
+proc cleanup {w} {
+	variable ${w}::Vars
+
+	if {[llength $Vars(fam)]} {
+		::fam::close $Vars(fam)
+		set Vars(fam) {}
+	}
 }
 
 
@@ -564,23 +598,25 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		set Vars(defaultextension) [lindex $filetypes 0 1 0]
 	}
 
-	set fileiconlist {}
+	set fileIconTypes {}
 	foreach {extensions name} $Vars(fileicons) {
 		foreach ext $extensions {
-			if {$ext ni $fileiconlist} {
-				lappend fileiconlist $ext
+			if {$ext ni $fileIconTypes} {
+				lappend fileIconTypes $ext
 				set Vars(fti:$ext) $name
 			}
 		}
 	}
 
 	set filetypeCount 0
+	set Vars(file:type:list) {}
 
 	foreach entry $filetypes {
 		lassign $entry name extensions
+		set Vars(file:type:list) [concat $Vars(file:type:list) $extensions]
 		set iconList {}
 		foreach ext $extensions {
-			if {$ext in $fileiconlist} {
+			if {$ext in $fileIconTypes} {
 				if {$Vars(fti:$ext) ni $iconList} {
 					lappend iconList $Vars(fti:$ext)
 				}
@@ -588,6 +624,8 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		}
 		set filetypeCount [max $filetypeCount [llength $iconList]]
 	}
+
+	set Vars(file:type:list) [lsort -unique $Vars(file:type:list)]
 
 	set cb $Vars(widget:filetypes:combobox)
 	if {[winfo exists $cb]} {
@@ -701,6 +739,50 @@ proc verifyPath {path} {
 		return reservedName
 	}
 	return {}
+}
+
+
+proc parseUriList {uriFiles} {
+	set result {}
+
+	foreach file [split $uriFiles \n] {
+		if {[string length $file]} {
+			set uri $file
+			if {[string equal -length 5 $file "file:"]} {
+				if {[string equal -length 17 $file "file://localhost/"]} {
+					# correct implementation
+					set file [string range $file 16 end]
+				} elseif {[string equal -length 8 $file "file:///"]} {
+					# no hostname, but three slashes - nearly correct
+					set file [string range $file 7 end]
+				} elseif {[string index $file 5] eq "/"} {
+					# theoretically, the hostname should be the first, but no one implements it
+					set file [string range $uri 5 end]
+					for {set n 1} {$n < 5} {incr n} { if {[string index $file $n] eq "/"} { break } }
+					set file [string range $uri [expr {$n - 1}] end]
+					
+					if {![file exists $file]} {
+						# perhaps a correct implementation with hostname?
+						set i [string first "/" $file 1]
+						if {$i >= 0} {
+							set f [string range $file $i end]
+							if {[file exists $f]} {
+								# it seems so
+								set file $f
+							}
+						}
+					}
+				} else {
+					# no slash after "file:" - what is that for a crappy program?
+					set file [string range $file 5 end]
+				}
+			}
+
+			lappend result $uri [file normalize $file]
+		}
+	}
+
+	return $result
 }
 
 
@@ -1132,6 +1214,30 @@ proc AddToHistory {w folder} {
 proc DirChanged {w {useHistory 1}} {
 	variable ${w}::Vars
 	variable bookmarks::Bookmarks
+	variable HaveFAM
+
+	if {$HaveFAM && [llength $Vars(fam)] == 0} {
+		set Vars(fam) [namespace code [list FAMHandler $w]]
+		set Vars(fam:lastid) ""
+		if {[catch { ::fam::open $Vars(fam) } _ err]} {
+			array set opts $err
+			puts stderr "'fam::open failed: $opts(-errorinfo)"
+			set Vars(fam) {}
+			set HaveFAM 0
+		}
+	}
+	if {[llength $Vars(fam)] && [string length $Vars(prevFolder)]} {
+		if {[catch { ::fam::remove $Vars(fam) $Vars(prevFolder) } _ err]} {
+			array set opts $err
+			puts stderr "'fam::remove' failed: $opts(-errorinfo)"
+		}
+	}
+	if {[llength $Vars(fam)] && [string length $Vars(folder)]} {
+		if {[catch { ::fam::add $Vars(fam) $Vars(folder) } _ err]} {
+			array set opts $err
+			puts stderr "'fam::add' failed: $opts(-errorinfo)"
+		}
+	}
 
 	set Vars(history:folder) ""
 
@@ -1195,6 +1301,26 @@ proc DirChanged {w {useHistory 1}} {
 	set tip [format [Tr AddBookmark] [file tail $folder]]
 	::toolbar::childconfigure $Vars(button:add) -tooltip $tip
 	filelist::ConfigureButtons $w
+
+	if {[namespace exists ::tkdnd]} {
+		if {[string length $Vars(folder)]} {
+			RegisterDropEvents $w
+		} else {
+			UnregisterDropEvent $w
+		}
+	}
+}
+
+
+proc FAMHandler {w action path} {
+	variable ${w}::Vars
+
+	# deletion events are triggered twice (bug in libfam?)
+	set id $action:$path
+	if {$id new $Vars(fam:lastid)} {
+		filelist::RefreshFileList $w
+		set Vars(fam:lastid) $id
+	}
 }
 
 
@@ -1240,9 +1366,6 @@ proc ChangeDir {w path {useHistory 1}} {
 	}
 
 	set Vars(prevFolder) $Vars(folder)
-	if {[string length $Vars(prevFolder)] == 0} {
-		set Vars(prevFolder) $Vars(glob)
-	}
 
 	switch $path {
 		Favorites - LastVisited {
@@ -1608,6 +1731,370 @@ proc CheckIsKDE {w} {
 	}
 
 	return $Vars(iskde)
+}
+
+
+proc MakeFileSize {size} {
+	set unit Byte
+	if {$size >= 1000000000} {
+		set size [expr {($size + 500000000)/1000000000}]
+		set unit GB
+	} elseif {$size >= 1000000} {
+		set size [expr {($size + 500000)/1000000}]
+		set unit MB
+	} elseif {$size >= 1000} {
+		set size [expr {($size + 500)/1000}]
+		set unit KB
+	}
+	return "$size $unit"
+}
+
+
+proc RegisterDropEvents {w} {
+	variable ${w}::Vars
+
+	set t $Vars(widget:list:file)
+	::tkdnd::drop_target register $t DND_Files
+	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
+	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
+	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
+}
+
+
+proc UnregisterDropEvent {w} {
+	variable ${w}::Vars
+	set t $Vars(widget:list:file)
+	::tkdnd::drop_target unregister $t DND_Files
+}
+
+
+proc HandleDropEvent {w action types actions} {
+	variable ${w}::Vars
+
+	if {[string length $Vars(folder)] == 0} { return refuse_drop }
+	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
+
+	switch $action {
+		enter		{ return ask }
+		leave		{ return ask }
+		default	{ return [AskAboutAction $w $action $actions] }
+	}
+}
+
+
+proc AskAboutAction {w uriFiles actions} {
+	set m $w.askAboutAction
+	catch { destroy $m }
+	menu $m -tearoff 0
+
+	foreach action {move copy link} {
+		if {$action in $actions} {
+			$m add command \
+				-label " [Tr DropAction($action)]" \
+				-image $icon::16x16::action($action) \
+				-compound left \
+				-command [list set [namespace current]::_action $action] \
+				;
+		}
+	}
+	$m add separator
+	$m add command \
+		-label " [string map {& {}} [Tr Cancel]]" \
+		-image $filelist::icon::16x16::delete \
+		-compound left \
+			-command [list set [namespace current]::_action refuse_drop] \
+		;
+
+	variable _action
+	set _action ""
+	bind $m <<MenuUnpost>> [list set [namespace current]::_action refuse_drop]
+	tk_popup $m {*}[winfo pointerxy $w]
+	vwait [namespace current]::_action
+
+	if {$_action ne "refuse_drop"} {
+		# It is important that HandleDropEvent is returning as fast as possible.
+		after idle [namespace code [list DoFileOperations $w $_action $uriFiles]]
+	}
+
+	return $_action
+}
+
+
+proc DoFileOperations {w action uriFiles} {
+	variable ${w}::Vars
+
+	set errorList {}
+	set rejectList {}
+	set dirList {}
+	set databaseList {}
+
+	foreach {uri file} [parseUriList $uriFiles] {
+		if {[file isdirectory $file]} {
+			lappend dirList $file
+		} elseif {[file exists $file]} {
+			set origExt [file extension $file]
+			set mappedExt $origExt
+
+			if {[string length $Vars(mapextcommand)]} {
+				set mappedExt [$Vars(mapextcommand) $origExt]
+			}
+
+			set valid 0
+			if {$mappedExt in $Vars(file:type:list)} {
+				set valid 1
+			} else {
+				foreach ext $Vars(file:type:list) {
+					if {[string match *$ext $file]} { set valid 1 }
+				}
+			}
+
+			if {$valid} {
+				if {$origExt ne $mappedExt} {
+					set f [file rootname $file]
+					append f $mappedExt
+					if {[file exists $f]} {
+						set file $f
+					} else {
+						set valid 0
+						if {$file ni $rejectList} { lappend rejectList $file }
+					}
+				}
+				if {$valid && $file ni $databaseList} {
+					lappend databaseList $file
+				}
+			} elseif {$file ni $rejectList} {
+				lappend rejectList $file
+			}
+		} elseif {$uri ni $errorList} {
+			# This shouldn't happen.
+			lappend errorList $uri
+		}
+	}
+
+	if {[llength $errorList]} {
+		set options {}
+		if {[string match file:* $uriFiles] && [llength $databaseList] == 0} {
+			set message [Tr CannotOpenUri]
+			append message <embed>
+			lappend options -embed [namespace code [list EmbedFileList $errorList no]]
+		} else {
+			set message [Tr InvalidUri]
+			append message "\n\n"
+		}
+		append message [Tr OperationAborted]
+		return [dialog::error -parent $w -message $message {*}$options]
+	}
+
+	if {[llength $rejectList]} {
+		set message [Tr UriRejected]
+		append message <embed>
+		append message [Tr OperationAborted]
+		return [dialog::error \
+			-parent $w \
+			-message $message \
+			-detail [Tr UriRejectedDetail] \
+			-embed [namespace code [list EmbedFileList $rejectList no]]
+		]
+	}
+
+	if {[llength $dirList]} {
+		set message [Tr ApplyOnDirectories]
+		append message <embed>
+		set reply [dialog::question \
+			-parent $w \
+			-message $message \
+			-embed [namespace code [list EmbedFileList $dirList yes]]
+		]
+		if {$reply eq "no"} { set dirList {} }
+	}
+
+	set fileList {}
+
+	foreach file [concat $databaseList $dirList] {
+		set dst $Vars(folder)
+		set dst [file join $dst [file tail $file]]
+		set dst [file normalize $dst]
+
+		if {$dst ne $file} {
+			set op overwrite
+			if {[file exists $dst]} { lassign [AskFileAction $w $file $dst] op newName }
+			switch $op {
+				cancel { return }
+				rename { set dst $newName }
+			}
+			lappend fileList $file $dst
+		}
+	}
+
+	set refresh 0
+
+	foreach {src dst} $fileList {
+		if {[llength $Vars(duplicatecommand)]} {
+			set list [$Vars(duplicatecommand) $src $dst]
+		} else {
+			set list [list $src $dst]
+		}
+		foreach {src dst} $list {
+			if {[file exists $src]} {
+				switch $action {
+					move {
+						file rename -force $src $dst
+					}
+					copy {
+						while {[file type $src] eq "link"} { set src [file readlink $src] }
+						file copy -force $src $dst
+						if {$::tcl_platform(platform) eq "unix"} { catch { exec touch $dst } }
+					}
+					link {
+						catch { file delete -force $dst }
+						file link -symbolic $dst $src
+					}
+				}
+				set refresh 1
+			}
+		}
+	}
+
+	if {$refresh} { filelist::RefreshFileList $w }
+}
+
+
+proc EmbedFileList {fileList isdir w infoFont alertFont} {
+	set row 0
+	foreach file $fileList {
+		if {$isdir} {
+			append file [file separator]
+		} else {
+			set file [file tail $file]
+		}
+		grid [tk::label $w.l$row -text $file -font TkFixedFont] -column 1 -row $row -sticky w
+		if {[incr row] == 10} {
+			grid [tk::label $w.l$row -text "..." -font TkFixedFont] -column 1 -row $row -sticky w
+			break
+		}
+	}
+	grid columnconfigure $w {0} -minsize 15
+}
+
+
+proc AskFileAction {w old new} {
+	variable ${w}::Vars
+	variable _action
+	variable _newName
+
+	set rootname [file tail $old]
+	set extension ""
+	foreach ext $Vars(file:type:list) {
+		if {[string match *$ext $rootname]} { set extension $ext }
+	}
+
+	set _action ""
+	set _newName [string range $rootname 0 end-[string length $extension]]
+
+	set dir [file dirname $new]
+	if {[string length $dir] > 40} {
+		append f [string range $dir 0 8] "..." [string range $dir end-32 end]
+		set dir $f
+	}
+
+	if {[file isdirectory $old]} {
+		set icon $icon::16x16::folder
+	} else {
+		set icon $Vars(fti:[file extension $new])
+	}
+
+	set oldTime [file mtime $old]
+	set newTime [file mtime $new]
+	if {[string length $Vars(formattimecmd)]} {
+		set oldTime [$Vars(formattimecmd) $oldTime]
+		set newTime [$Vars(formattimecmd) $newTime]
+	} else {
+		set oldTime [clock format $oldTime]
+		set newTime [clock format $newTime]
+	}
+
+	append oldInfo "[Tr Size]: [MakeFileSize [file size $old]]"
+	append oldInfo " - "
+	append oldInfo "[Tr Modified]: $oldTime"
+
+	append newInfo "[Tr Size] [MakeFileSize [file size $new]]"
+	append newInfo " - "
+	append newInfo "[Tr Modified]: $newTime"
+
+	set dlg [tk::toplevel $w.askFileAction -class FSBoxDialog]
+	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
+	bind $dlg <Alt-Key> [namespace code [list tk::AltKeyInDialog $dlg %A]]
+	wm withdraw $dlg
+
+	ttk::label $top.oldName -text [format [Tr AnEntryAlreadyExists] [file tail $old]]
+	ttk::label $top.oldAttrs -image $icon -compound left -text $oldInfo
+	ttk::label $top.newName -text [format [Tr SourceDirectoryIs] $dir]
+	ttk::label $top.newAttrs -image $icon -compound left -text $newInfo
+	set ren [ttk::frame $top.rename -takefocus 0 -borderwidth 0]
+	ttk::label $ren.label -text "[Tr NewName]:"
+	ttk::entry $ren.entry -textvar [namespace current]::_newName
+	bind $ren.entry <FocusIn> [list $ren.entry selection range 0 end]
+	bind $ren.entry <FocusOut> [list $ren.entry selection clear]
+	grid $ren.label -row 0 -column 1 -sticky w
+	grid $ren.entry -row 0 -column 3 -sticky we
+	grid columnconfigure $ren {2} -minsize 5
+	grid columnconfigure $ren {3} -weight 1
+
+	grid $top.oldName  -row 1 -column 1 -sticky w -columnspan 2
+	grid $top.oldAttrs -row 3 -column 1 -sticky w
+	grid $top.newName  -row 5 -column 1 -sticky w -columnspan 2
+	grid $top.newAttrs -row 7 -column 1 -sticky w
+	grid $top.rename   -row 9 -column 1 -sticky ew -columnspan 2
+	grid columnconfigure $top {0 3} -minsize 5
+	grid columnconfigure $top {1} -minsize 10
+	grid rowconfigure $top {0 2 6 10} -minsize 5
+	grid rowconfigure $top {4 8} -minsize 15
+
+	ttk::separator $dlg.sep
+	set buttons [tk::frame $dlg.buttons -takefocus 0]
+
+	tk::AmpWidget ttk::button $buttons.rename  \
+		-class TButton \
+		-default normal \
+		-compound left \
+		-text " [Tr Rename]" \
+		-command [list set [namespace current]::_action rename] \
+		;
+	tk::AmpWidget ttk::button $buttons.overwrite  \
+		-class TButton \
+		-default normal \
+		-compound left \
+		-text " [Tr Overwrite]" \
+		-command [list set [namespace current]::_action overwrite] \
+		;
+	tk::AmpWidget ttk::button $buttons.cancel  \
+		-class TButton \
+		-default normal \
+		-compound left \
+		-text " [Tr Cancel]" \
+		-command [list set [namespace current]::_action cancel] \
+		;
+
+	pack $buttons.rename    -pady 5 -padx 5 -side left
+	pack $buttons.overwrite -pady 5 -padx 5 -side left
+	pack $buttons.cancel    -pady 5 -padx 5 -side left
+
+	pack $top -fill x
+	pack $dlg.sep -fill x -side bottom -before $top
+	pack $buttons -side bottom -before $dlg.sep
+
+	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::_action cancel]
+	wm title $dlg [Tr EntryAlreadyExists]
+	wm transient $dlg [winfo toplevel $w]
+	::ttk::grabWindow $dlg
+	::util::place $dlg center $w
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus -force $ren.entry
+	vwait [namespace current]::_action
+	::ttk::releaseGrab $dlg
+	destroy $dlg
+	return [list $_action [file join [file dirname $new] ${_newName}${extension}]]
 }
 
 ###### B O O K M A R K S ######################################################
@@ -2234,7 +2721,7 @@ proc Build {w path args} {
 		set Vars(button:rename) [::toolbar::add $tb button \
 			-image $icon::16x16::iconModify                 \
 			-command [namespace code [list RenameFile $w]]  \
-			-tooltip [Tr Rename]                            \
+			-tooltip [string map {& {}} [Tr Rename]]        \
 			-state disabled                                 \
 		]
 		incr count
@@ -3057,6 +3544,7 @@ proc RefreshFileList {w} {
 
 	set Vars(lock:selection) 1
 	set t $Vars(widget:list:file)
+	set item [$t item id {nearest 0 0}]
 	$t item delete all
 	Glob $w yes
 	set n "root"
@@ -3091,9 +3579,8 @@ proc RefreshFileList {w} {
 	set Vars(lock:selection) 0
 	$t activate $n
 
-	if {[string is integer $n]} {
-		$t see $n
-	}
+	if {[string length $item]} { $t yview scroll [expr {$item - 1}] units }
+	if {[string is integer $n]} { $t see $n }
 
 	ConfigureButtons $w
 }
@@ -3406,24 +3893,8 @@ proc RenameFile {w} {
 }
 
 
-proc MakeFileSize {size} {
-	set unit Byte
-	if {$size >= 1000000000} {
-		set size [expr {($size + 500000000)/1000000000}]
-		set unit GB
-	} elseif {$size >= 1000000} {
-		set size [expr {($size + 500000)/1000000}]
-		set unit MB
-	} elseif {$size >= 1000} {
-		set size [expr {($size + 500)/1000}]
-		set unit KB
-	}
-	return "$size $unit"
-}
-
-
 proc DuplicateFile {w} {
-	variable [namespace parent]::duplicateFileSizeLimit
+	variable [namespace parent]::DuplicateFileSizeLimit
 	variable [namespace parent]::${w}::Vars
 
 	set t $Vars(widget:list:file)
@@ -3469,9 +3940,9 @@ proc DuplicateFile {w} {
 			incr size [file size $f]
 		}
 	}
-	if {$size > $duplicateFileSizeLimit} {
+	if {$size > $DuplicateFileSizeLimit} {
 		set msg [Tr ReallyDuplicateFile]
-		set detail [format [Tr ReallyDuplicateDetail] [MakeFileSize $size]]
+		set detail [format [Tr ReallyDuplicateDetail] [[namespace parent]::MakeFileSize $size]]
 		set reply [[namespace parent]::messageBox \
 			-type yesno                            \
 			-icon question                         \
@@ -3780,7 +4251,7 @@ proc FinishDuplicateFile {w sel name} {
 				[namespace parent]::unbusy $w
 				return $srcFile
 			} else {
-				if {$::tcl_platform(platform) eq "unix"} { exec touch $g }
+				if {$::tcl_platform(platform) eq "unix"} { catch { exec touch $g } }
 				lappend newFiles $g
 			}
 		}
@@ -3950,7 +4421,7 @@ proc PopupMenu {w x y} {
 					$m add command                                    \
 						-compound left                                 \
 						-image $icon::16x16::modify                    \
-						-label " [Tr Rename]"                          \
+						-label " [string map {& {}} [Tr Rename]]"      \
 						-command [namespace code [list RenameFile $w]] \
 						;
 				}
@@ -4378,6 +4849,45 @@ set disk [image create photo -data {
 	wugaf2cAAGltB47jgON4VE5PQoPNRhv5QgGf4y88GwZYECxu4HlTxOIJJOLxhVXZT2gAIEWj
 	cCfuDPAxHMY8z1vplSGY95RS5PN7MwuMsfN2q7Uvy/J7Npcpdh47AjgOghh+jZdeL6A2ZQ6l
 	U0mSRk/dLtzx+GHTf4Rvr/6GjnFu/ZQAAAAASUVORK5CYII=
+}]
+
+set action(copy) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEVjGABli9ydt+7s7/j/
+	//9Udr4gqxYTAAAAAXRSTlMAQObYZgAAAAFiS0dEAIgFHUgAAAAJcEhZcwAACxMAAAsTAQCa
+	nBgAAAAHdElNRQfcAQcLLzlI0zh5AAAAQUlEQVQI12NgYGBQDQ0NDQLSDKGCgoKhYAYIgBgh
+	Li4uriBGsLGxsSmCAdYCYoC1gBkgAGKAtYAMDIFpIYYBcwMAgsMW8snNu0wAAAAASUVORK5C
+	YII=
+}]
+
+set action(move) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABqlBM
+	VEX///9VAAEAAABVAAEAAAAAAABVAAEAAACfAABVAAFdAAD/FwAAAAAAAAAAAABVAAEAAABV
+	AAHCDAAYAAAAAABVAAEAAABoCQkAAABVAAF1JiYAAABpAwQAAAB3JCp5JSYAAAAAAABwBQYA
+	AABRAAR1BwcdAAMqAAPvKBxjAwZOAAN3GBnNBgZFBAZjAAHdFBRQAgaBGxxjGR2LKyGyEw+d
+	PD+eODGBAAPeIx6RSU2uc2xwJy2aDxKqZFmRDQ68AQGmOzulUVNsAwiINz26WlHBamKCAwWj
+	YWSbGRucLy+cLy+PMDGUMTKSCw2aPD2xT0fEkpLFkJGFAgW/YVmnPT3EiYrGk5TGlJTMmY3G
+	goSWAgObDxG5d3iBIh68LjDOhn2sIh2wfHG9a2TRh4jFYFrTZ2CmLi6oLy+jBQezPz+8FxjW
+	bWanCQq+MTHbeHKxLy/cZGXptK2kAAClAQGtCQmxBwe4Cwu9MS7DKyTEERHEEhLHFxfQFxfT
+	R0DgZ2XkIiLmXFztb2/uzc3vYWHwNTXwW1v0c3P1ysr2i4v3qaj5r6/76en++/v///82ktD2
+	AAAAcnRSTlMAAQICAwQECAgJCwsNDhESFRUVFhgYGhscJCQnJygrLzA0NDg/SlBQUlhiaHZ3
+	f4GFhYyXmqenqKmusrO3vL2/xcrLzM3T1NTV19jZ2d7e3+Hh4+Pk5OTk5+jp6enq6uzt7e3w
+	8vT19fb29/r7+/v8/f1JibTaAAAAzUlEQVQY02NgAAE2SUFGBgSQt43PSw02U2Jg0APzpSI6
+	O9qaG+pSjA39wAJWhUn+Lq7ZtRXl+V4gPnNigj0HA4OqQ25psSdYRay+DoiSCSkpgghog0l+
+	78z0NB8w0z0wINSZi1MUCDTBAmG9PZFyIIYGtxNYILy3O9lUnIFByMIkCCLQ1N7VGGdj5xud
+	YQ7is8ZYOha0ttTXVJZFqbACBXispRWNPLKqq3LctMR4gAIswhLSCspqugbqshJ8LGBDmNh5
+	BUREBHjZmRiwAABh6CkKMnwE5gAAAABJRU5ErkJggg==
+}]
+
+set action(link) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA0lBMVEX///9dXV1eXl5dXV1e
+	Xl5eXl5dXV1cXFxdXV1eXl5dXV1eXl5eXl5dXV1eXl5dXV1eXl5fYGBhYWFhYWJjY2NjZGRl
+	ZGVlZWVmZmZoaGhqampra2xra21sbGxtbW1ub3Fvb3JvcHBvcHJvcXNvcXRxcXRycnJzc3V1
+	dnZ2d3d3d3d3eHh4eHh5eXl5eXp5en15e317e3t7fHx8fH1+f4F+gIF/foCAgYKEhYeFh4qG
+	iIiGiIqJiYqMjY2anJ6bnJ6cnqCjo6ajpKWlpaeur7GxsbMppJxVAAAAD3RSTlMADw9fX3+P
+	n5+fv7/P7+/qclvDAAAAkElEQVQYGZ3B1RaCUBQFwA0c8ArcUFGwO7C7O/7/l+QJHl3LGeA3
+	3ZHKQkJze+9PmSFmN6+X8z1g0GxFiMjTUYntoZCi4FYlAKK9EgZf7pUpFo+KAVCmPubEPY8b
+	fPKqEUDZTihMtRtyEtMnB0C5rkfM3wy4Gq0lIiTTAPPn/XBWchBj+Vaj6GpIWFI5Ov7wBdH/
+	C7a3P1lgAAAAAElFTkSuQmCC
 }]
 
 } ;# namespace 16x16

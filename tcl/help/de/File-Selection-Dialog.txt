@@ -86,10 +86,10 @@ Dies ermöglicht die Direktanwahl der Wurzel des Dateisystems.
 <h4><img src="../images/fsbox-desktop.png" alt="desktop" /> %::fsbox::mc::Desktop%</h4>
 
 <p>
-Dieser Ordner listet alle in <code>~/Desktop</code> angelegten Dateiverknüpfungen auf.
+Dieser Ordner listet alle in <url>~/Desktop</url> angelegten Dateiverknüpfungen auf.
 Dies sind normalerweise die Verknüpfungen, die auf der Arbeitsfläche zu sehen
 sind.
-<note/>Dieser Verweis exisitiert nur wenn das Verzeichnis <code>~/Desktop</code>
+<note/>Dieser Verweis exisitiert nur wenn das Verzeichnis <url>~/Desktop</url>
 vorhanden ist.
 </p>
 
@@ -154,7 +154,7 @@ Dialog bestätigt werden.
 
 <p>
 Das Umbenennen der selektierten Datenbank. Diese Operation kann mit <key>ESC</key>
-wirkungslos verlassen werden. Der Dialog überprüft, ob der neue Dateiname
+wirkungslos verlassen werden. Es wird überprüft ob der neue Dateiname
 zulässig ist, dabei werden die Besonderheiten aller unterstützten Betriebssysteme
 berücksichtigt, um einen Austausch auch zwischen den unterschiedlichen
 Betriebssystemen zu unterstützen.
@@ -182,7 +182,7 @@ einem weiteren Dateiauswahldialog ermittelt.
 Ein neues Unterverzeichnis wird angelegt, aber erst nach Eingabe des
 Verzeichnisnamens. Diese Operation kann mit <key>ESC</key> wirkungslos
 verlassen werden. Es ist nicht möglich, einen bereits vorhandenen
-Verzeichniseintrag zu überschreiben.
+Eintrag zu überschreiben.
 </p>
 
 <h3 id="FileName">Dateinameneingabe</h3>

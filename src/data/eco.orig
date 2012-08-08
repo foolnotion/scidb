@@ -8103,13 +8103,13 @@ C21 1.e4 e5 2.d4 exd4 3.c3 dxc3 4.Bc4 cxb2 5.Bxb2 Nf6 "Classical Defence" {1}
 C21 1.e4 e5 2.d4 exd4 3.c3 dxc3 4.Bc4 cxb2 5.Bxb2 d5 "Schlechter Defence" {1}
 
 C22 1.e4 e5 2.d4 exd4 3.Qxd4
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qc4 "Hall Variation" {1}
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 "Paulsen Attack" {1}
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Bb4+ 5.c3 Be7 "Charousek Variation" {1}
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 f5 "l'Hermet Variation" {1}
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Nf6 "Berger Variation" {1}
-C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Nf6 5.Nc3 Bb4 6.Bd2 O-O 7.O-O-O Re8 8.Bc4 d6 9.Nh3 "Kupreichik Variation" {1}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 "Mittelgambit" {1}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qc4 "Hall Variation" {2}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 "Paulsen Attack" {2}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Bb4+ 5.c3 Be7 "Charousek Variation" {2}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 f5 "l'Hermet Variation" {2}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Nf6 "Berger Variation" {2}
+C22 1.e4 e5 2.d4 exd4 3.Qxd4 Nc6 4.Qe3 Nf6 5.Nc3 Bb4 6.Bd2 O-O 7.O-O-O Re8 8.Bc4 d6 9.Nh3 "Kupreichik Variation" {2}
 
 C23 1.e4 e5 2.Bc4 "Bishop's Opening" {0}
 C23 1.e4 e5 2.Bc4 g6

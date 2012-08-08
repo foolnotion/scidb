@@ -371,9 +371,6 @@
 ::application::database::mc::ClipbaseDescription		"Database temporaneo, non è salvato sul disco"
 ::application::database::mc::HardLinkDetected			"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
 ::application::database::mc::HardLinkDetectedDetail	"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
-::application::database::mc::CannotOpenUri				"Impossibile aprire il seguente URI:"
-::application::database::mc::InvalidUri					"Il contenuto trascinato non è una lista valida di URI."
-::application::database::mc::UriRejected					"I seguenti file sono rifiutati:"
 ::application::database::mc::UriRejectedDetail			"Solo database Scidb possono essere aperti:"
 ::application::database::mc::EmptyUriList					"Gli archivi trascinati sono vuoti."
 ::application::database::mc::OverwriteExistingFiles	"Sovrascrivi i file esistenti nella cartella '%s'?"
@@ -1821,7 +1818,6 @@
 ::fsbox::mc::Backward						"Indietro a '%s'"
 ::fsbox::mc::Delete							"Elimina"
 ::fsbox::mc::Restore							"Ripristina"
-::fsbox::mc::Rename							"Rinomina"
 ::fsbox::mc::Duplicate						"Duplica"
 ::fsbox::mc::CopyOf							"Copia di %s"
 ::fsbox::mc::NewFolder						"Nuova Cartella"
@@ -1834,6 +1830,8 @@
 ::fsbox::mc::Cancel							"&Cancella"
 ::fsbox::mc::Save								"&Salva"
 ::fsbox::mc::Open								"A&pri"
+::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Rename							"&Rinomina"
 
 ::fsbox::mc::AddBookmark					"Aggiungi Segnalibro '%s'"
 ::fsbox::mc::RemoveBookmark				"Rimuovi il segnalibro '%s'"
@@ -1902,6 +1900,20 @@
 ::fsbox::mc::CannotDeleteDetail			"Questo file è correntemente in uso."
 ::fsbox::mc::CannotOverwrite				"Impossibile sovrascrivere il file '%s'."
 ::fsbox::mc::PermissionDenied				"Permessi negati per la cartella '%s'."
+::fsbox::mc::CannotOpenUri					"Impossibile aprire il seguente URI:"
+::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
+::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
+::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
+::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
+::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
+::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
+::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
+::fsbox::mc::NewName							"New name" ;# NEW
+
+::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
+::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
+::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"

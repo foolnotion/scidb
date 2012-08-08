@@ -402,6 +402,7 @@ proc UpdateContent {w key base name playerCardArgs} {
 		\\def\\DecimalPoint{[::locale::decimalPoint]}
 		\\def\\Lang{$::mc::langID}
 		\\def\\Title{$mc::PlayerCard: $name}
+		\\let\\Tracing\\$Options(debug:log)
 		\\def\\Label-White{$::mc::White}
 		\\def\\Label-Black{$::mc::Black}
 		\\def\\Label-Surname{$::playertable::mc::F_LastName}

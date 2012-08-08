@@ -55,51 +55,61 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr valign="top">
     <td class="eco">A01</td>
     <td class="eco">1.b3</td>
+    <!-- Nimzovich-Larsen Attack -->
     <td class="eco">Nimzowitsch-Larsen-Angriff</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A02-A03</td>
     <td class="eco">1.f4</td>
+    <!-- Bird's Opening -->
     <td class="eco">Bird-Eröffnung</td>
   </tr>
   <tr valign="top">
     <td class="eco">A04</td>
     <td class="eco">1.&Knight;f3</td>
+    <!-- Réti Opening (Dutch System) -->
     <td class="eco">Réti-Eröffnung (Holländisches System, etc.)</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A05</td>
     <td class="eco">1.&Knight;f3 &Knight;f6</td>
+    <!-- Symmetrical Variation --> <!-- Symmetrievariante -->
     <td class="eco">Symmetrische Variante<br /> (Übergang in verschiedene Eröffnungen)</td>
   </tr>
   <tr valign="top">
     <td class="eco">A06</td>
     <td class="eco">1.&Knight;f3 d5 2.</td>
-    <td class="eco">Zuckertort-Eröffnung, etc.</td>
+    <!-- Zukertort Variation -->
+    <td class="eco">Zuckertort-Variante, etc.</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A07</td>
     <td class="eco">1.&Knight;f3 d5 2.g3</td>
+    <!-- Barcza System -->
     <td class="eco">Barcza-System</td>
   </tr>
   <tr valign="top">
     <td class="eco">A08</td>
     <td class="eco">1.&Knight;f3 d5 2.g3 c5 3.&Bishop;g2</td>
+    <!-- King's Indian Attack -->
     <td class="eco">Königsindisch im Anzug</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A09</td>
     <td class="eco">1.&Knight;f3 d5 2.c4</td>
-    <td class="eco">Réti-Eröffnung</td>
+    <!-- Réti Opening - Landstrasse Gambit -->
+    <td class="eco">Réti-Eröffnung - Landstrasse Gambit</td>
   </tr>
   <tr valign="top">
     <td class="eco">A10</td>
     <td class="eco">1.c4</td>
+    <!-- Dutch, Queen's Indian, King's Indian -->
     <td class="eco">Arten von Holländisch, Damenindisch, Königsindisch</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A11-A39</td>
     <td class="eco">1.c4</td>
+    <!-- English -->
     <td class="eco">Englisch</td>
   </tr>
   <tr valign="top">
@@ -115,6 +125,7 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr valign="top">
     <td class="eco">A43-A44</td>
     <td class="eco">1.d4 c5</td>
+    <!-- Old Benoni Defence -->
     <td class="eco">Alt-Benoni</td>
   </tr>
   <tr valign="top" class="stripes">
@@ -125,26 +136,31 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr valign="top">
     <td class="eco">A47</td>
     <td class="eco">1.d4 &Knight;f6 2.&Knight;f3 b6</td>
+    <!-- Queen's Indian -->
     <td class="eco">Damenindisch ohne c2-c4</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A48-A49</td>
     <td class="eco">1.d4 &Knight;f6 2.&Knight;f3 g6</td>
+    <!-- King's Indian -->
     <td class="eco">Königsindisch ohne c2-c4</td>
   </tr>
   <tr valign="top">
     <td class="eco">A50</td>
     <td class="eco">1.d4 &Knight;f6 2.c4</td>
+    <!-- Queen's Indian -->
     <td class="eco">Damenindisch ohne e7-e6</td>
   </tr>
   <tr valign="top" class="stripes">
     <td class="eco">A51-A52</td>
     <td class="eco">1.d4 &Knight;f6 2.c4 e5</td>
+    <!-- Budapest Gambit -->
     <td class="eco">Budapester Gambit</td>
   </tr>
   <tr valign="top">
     <td class="eco">A53-A55</td>
     <td class="eco">1.d4 &Knight;f6 2.c4 d6</td>
+    <!-- Old Indian Defence --> <!-- Altindische Verteidigung -->
     <td class="eco">Altindisch</td>
   </tr>
   <tr valign="top" class="stripes">
@@ -170,6 +186,7 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr valign="top" class="stripes">
     <td class="eco">A80-A99</td>
     <td class="eco">1.d4 f5</td>
+    <!-- Dutch Defence --> <!-- Holländische Verteidigung -->
     <td class="eco">Holländisch</td>
   </tr>
 </table>
@@ -182,36 +199,43 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr class="stripes">
     <td>B00</td>
     <td style="padding-left: 1em;">1.e4</td>
+    <!-- King's Pawn Opening -->
     <td style="padding-left: 1em;">Königsbauerneröffnung</td>
   </tr>
   <tr>
     <td>B01</td>
     <td style="padding-left: 1em;">1.e4 d5</td>
+    <!-- Scandinavian Defence --> <!-- Skandinavische Verteidigung -->
     <td style="padding-left: 1em;">Skandinavisch</td>
   </tr>
   <tr class="stripes">
     <td>B02-B05</td>
     <td style="padding-left: 1em;">1.e4 &Knight;f6</td>
+    <!-- Alekhine Defence -->
     <td style="padding-left: 1em;">Aljechin-Verteidigung</td>
   </tr>
   <tr>
     <td>B06</td>
     <td style="padding-left: 1em;">1.e4 g6</td>
+    <!-- Modern Defence (Robatsch) -->
     <td style="padding-left: 1em;">Moderne Verteidigung (Robatsch)</td>
   </tr>
   <tr class="stripes">
     <td>B07-B09</td>
     <td style="padding-left: 1em;">1.e4 d6</td>
+    <!-- Pirc Defence -->
     <td style="padding-left: 1em;">Pirc-Verteidigung</td>
   </tr>
   <tr>
     <td>B10-B19</td>
     <td style="padding-left: 1em;">1.e4 c6</td>
+    <!-- Caro-Kann -->
     <td style="padding-left: 1em;">Caro-Kann-Verteidigung</td>
   </tr>
   <tr class="stripes">
     <td>B20-B99</td>
     <td style="padding-left: 1em;">1.e4 c5</td>
+    <!-- Sicilian Defence -->
     <td style="padding-left: 1em;">Sizilianische Verteidigung</td>
   </tr>
 </table>
@@ -224,6 +248,7 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr class="stripes">
     <td>C00-C19</td>
     <td style="padding-left: 1em;">1.e4 e6</td>
+    <!-- French Defence -->
     <td style="padding-left: 1em;">Französische Verteidigung</td>
   </tr>
   <tr>
@@ -234,56 +259,66 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr class="stripes">
     <td>C21</td>
     <td style="padding-left: 1em;">1.e4 e5 2.d4</td>
+    <!-- Center Game -->
     <td style="padding-left: 1em;">Zentrumsspiel</td>
   </tr>
   <tr>
     <td>C22</td>
     <td style="padding-left: 1em;">1.e4 e5 2.d4 exd4 3.&Queen;xd4 &Knight;c6</td>
+    <!-- Center Game -->
     <td style="padding-left: 1em;">Mittelgambit</td>
   </tr>
   <tr class="stripes">
-    <td>C23-C24</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Bishop;c4</td>
+    <!-- Bishop's Opening -->
     <td style="padding-left: 1em;">Läuferspiel</td>
   </tr>
   <tr>
     <td>C25-C29</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;c3</td>
+    <!-- Vienna Game -->
     <td style="padding-left: 1em;">Wiener Partie</td>
   </tr>
   <tr class="stripes">
     <td>C30-C39</td>
     <td style="padding-left: 1em;">1.e4 e5 2.f4</td>
+    <!-- King's Gambit -->
     <td style="padding-left: 1em;">Königsgambit</td>
   </tr>
   <tr>
     <td>C40</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3</td>
+    <!-- Latvian Gambit -->
     <td style="padding-left: 1em;">Lettisches Gambit</td>
   </tr>
   <tr class="stripes">
     <td>C41</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3 d6</td>
+    <!-- Philidor Defence -->
     <td style="padding-left: 1em;">Philidor-Verteidigung</td>
   </tr>
   <tr>
     <td>C42-C43</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3 &Knight;f6</td>
-    <td style="padding-left: 1em;">Russische Verteidigung</td>
+    <!-- Russian Game --> <!-- Russische Partie -->
+    <td style="padding-left: 1em;">Russische Partie</td>
   </tr>
   <tr class="stripes">
     <td>C44-C49</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3 &Knight;c6</td>
-    <td style="padding-left: 1em;">Schottische Verteidigung</td>
+    <!-- Scotch Opening -->
+    <td style="padding-left: 1em;">Schottische Eröffnung</td>
   </tr>
   <tr>
     <td>C50-C59</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3 &Knight;c6 3.&Bishop;c4</td>
+    <!-- Italian Game -->
     <td style="padding-left: 1em;">Italienische Verteidigung</td>
   </tr>
   <tr class="stripes">
     <td>C60-C99</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Knight;f3 &Knight;c6 3.&Bishop;b5</td>
+    <!-- Spanish Opening -->
     <td style="padding-left: 1em;">Spanische Eröffnung</td>
   </tr>
 </table>
@@ -296,16 +331,19 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr class="stripes">
     <td>D00-D05</td>
     <td style="padding-left: 1em;">1.d4 d5</td>
+    <!-- Queen's Pawn Game -->
     <td style="padding-left: 1em;">Damenbauernspiel</td>
   </tr>
   <tr>
     <td>D06-D69</td>
     <td style="padding-left: 1em;">1.d4 d5 2.c4</td>
+    <!-- Queen's Gambit -->
     <td style="padding-left: 1em;">Damengambit</td>
   </tr>
   <tr class="stripes">
     <td>D70-D99</td>
     <td style="padding-left: 1em;">1.d4 &Knight;f6 2.c4 g6 nebst 3. ... d5</td>
+    <!-- Grünfeld Defence -->
     <td style="padding-left: 1em;">Grünfeld-Verteidigung</td>
   </tr>
 </table>
@@ -318,21 +356,25 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
   <tr class="stripes">
     <td>E00-E09</td>
     <td style="padding-left: 1em;">1.d4 &Knight;f6 2.c4 e6</td>
+    <!-- Catalan Opening --> <!-- Katalanische Eröffnung -->
     <td style="padding-left: 1em;">Katalanisch</td>
   </tr>
   <tr>
     <td>E10-E19</td>
     <td style="padding-left: 1em;">1.d4 &Knight;f6 2.c4 e6 3.&Knight;f3</td>
-    <td style="padding-left: 1em;">Damenindich</td>
+    <!-- Queen's Indian Defence --> <!-- Damenindische Verteidigung -->
+    <td style="padding-left: 1em;">Damenindisch</td>
   </tr>
   <tr class="stripes">
     <td>E20-E59</td>
     <td style="padding-left: 1em;">1.d4 &Knight;f6 2.c4 e6 3.&Knight;c3</td>
+    <!-- Nimzo-Indian Defence --> <!-- Nimzoindische Verteidigung -->
     <td style="padding-left: 1em;">Nimzoindisch</td>
   </tr>
   <tr>
     <td>E60-E99</td>
     <td style="padding-left: 1em;">1.d4 &Knight;f6 2.c4 g6</td>
+    <!-- King's Indian Defence --> <!-- Königsindische Verteidigung -->
     <td style="padding-left: 1em;">Königsindisch</td>
   </tr>
 </table>

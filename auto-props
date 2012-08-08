@@ -45,6 +45,7 @@ magic         = svn:eol-style=LF; svn:mime-type=text/plain
 Makefile      = svn:eol-style=LF; svn:mime-type=text/x-makefile
 Makefile.*    = svn:eol-style=LF; svn:mime-type=text/x-makefile
 readme        = svn:eol-style=native; svn:mime-type=text/plain
+INSTALL       = svn:eol-style=native; svn:mime-type=text/plain
 README        = svn:eol-style=native; svn:mime-type=text/plain
 split         = svn:eol-style=native; svn:mime-type=text/x-tcl
 TODO          = svn:eol-style=native; svn:mime-type=text/plain

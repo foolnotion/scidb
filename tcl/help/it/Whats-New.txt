@@ -31,6 +31,7 @@ TITLE Novità 
   <li>Migliorata finestra di salvataggio/sovrascrittura partite</li>
   <li>Scheda giocatore implementata</li>
   <li>Archiviazione database integrata</li>
+  <!--NEW <li>Setup dialog for game browser/editor</li>-->
   <li>Trascinamento (Drag&amp;Drop) dei file integrato: si possono trascinare sul selezionatore di database</li>
   <li>Finestra Database: blocco/sblocco delle tab integrato</li>
   <li>Rivisto input mosse col mouse (se il suggerimento è disabilitato)</li>

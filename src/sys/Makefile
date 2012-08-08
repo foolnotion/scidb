@@ -17,11 +17,12 @@ include ../../Makefile.in
 
 INCLUDE		= -I. -I../util -I../tcl -I../mstl
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
-LIBS			= mstl/libmstl.a
 CXXFLAGS		+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(THR_SUPPORT)
+CXXFLAGS		+= $(HAVE_INOTIFY) $(SYS_INOTIFY) $(HAVE_LIBFAM)
 
 SRC_CXX = \
 	sys_dl.cpp \
+	sys_fam.cpp \
 	sys_file.cpp \
 	sys_pipe.cpp \
 	sys_process.cpp \
@@ -58,6 +59,9 @@ $(LIB).a: $(OBJS)
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CXXFLAGS:  = )]"
 	@$(CXX) -c $(CXXFLAGS) $(EXTRA_CXXFLAGS) $(ALL_INCLUDE) $<
 
+# explciit dependency is required
+sys_fam.o: sys_inotify.h
+
 # vi:set ts=3 sw=3:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
@@ -80,6 +84,41 @@ sys_dl.o: ../mstl/m_assert.h
 sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
 sys_dl.o: ../mstl/m_exception.ipp
+sys_fam.o: sys_fam.h
+sys_fam.o: ../mstl/m_string.h
+sys_fam.o: ../mstl/m_types.h
+sys_fam.o: ../mstl/m_string.ipp
+sys_fam.o: ../mstl/m_utility.h
+sys_fam.o: ../mstl/m_type_traits.h
+sys_fam.o: ../mstl/m_type_traits.ipp
+sys_fam.o: ../mstl/m_utility.ipp
+sys_fam.o: ../mstl/m_limits.h
+sys_fam.o: ../mstl/m_bit_functions.h
+sys_fam.o: ../mstl/m_bit_functions.ipp
+sys_fam.o: ../mstl/m_assert.h
+sys_fam.o: ../mstl/m_exception.h
+sys_fam.o: ../mstl/m_backtrace.h
+sys_fam.o: ../mstl/m_exception.ipp
+sys_fam.o: sys_fam.ipp
+sys_fam.o: sys_file.h
+sys_fam.o: sys_time.h
+sys_fam.o: ../util/u_base.h
+sys_fam.o: ../mstl/m_hash.h
+sys_fam.o: ../mstl/m_vector.h
+sys_fam.o: ../mstl/m_memblock.h
+sys_fam.o: ../mstl/m_memblock.ipp
+sys_fam.o: ../mstl/m_vector.ipp
+sys_fam.o: ../mstl/m_uninitialized.h
+sys_fam.o: ../mstl/m_uninitialized.ipp
+sys_fam.o: ../mstl/m_algobase.h
+sys_fam.o: ../mstl/m_algobase.ipp
+sys_fam.o: ../mstl/m_construct.h
+sys_fam.o: ../mstl/m_construct.ipp
+sys_fam.o: ../mstl/m_pair.h
+sys_fam.o: ../mstl/m_pair.ipp
+sys_fam.o: ../mstl/m_hash.ipp
+sys_fam.o: ../mstl/m_algorithm.h
+sys_fam.o: ../mstl/m_algorithm.ipp
 sys_file.o: sys_file.h
 sys_file.o: sys_time.h
 sys_file.o: ../util/u_base.h

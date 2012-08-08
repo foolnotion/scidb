@@ -1,0 +1,71 @@
+
+   _/|            __
+  // o\         /    )           ,        /    /
+  || ._)    ----\---------__----------__-/----/__-
+  //__\          \      /   '  /    /   /    /   )
+  )___(     _(____/____(___ __/____(___/____(___/_
+
+                       How To Compile
+
+==============================================================================
+UNIX
+==============================================================================
+A normal unix installation is made in three or four steps (after you've
+unpacked the source archive):
+
+   ./configure
+   make
+   make check-build
+   make install
+
+Note: if the step with "make check-build" fails, please re-configure and build
+again:
+
+   CXXFLAGS="-Wall -DBROKEN_LINKER_HACK=1" ./configure
+   make clean
+   make
+   make install
+
+This "broken linker hack" is required on many modern Linux/Unix distributions
+because the GNU linker is broken.
+
+You probably need to be root when doing the last command. An alternative is to
+use the "sudo" command for the installation:
+
+   sudo make install
+
+Get a full listing of all available configure options by invoking it like:
+
+   ./configure --help
+
+If you want to install curl in a different file hierarchy than /usr/local,
+you need to specify that already when running configure:
+
+   ./configure --prefix=/path/to/scidb/tree
+
+If you happen to have write permission in that directory, you can do "make
+install" without being root. An example of this would be to make a local
+install in your own home directory:
+
+   ./configure --prefix=$HOME
+   make
+   make check-build
+   make install
+
+The configure script always tries to find a working Tcl/Tk library unless
+explicitly told not to. If you have Tcl/Tk installed in the default search
+path for your compiler/linker, you don't need to do anything special. If
+you have Tcl/Tk somewhere else (for example, /opt/mytcltk), you can run
+configure like:
+
+   PATH=$PATH:/opt/mytcltk/bin \
+   ./configure --tcl-includes=/opt/mytcltk/include \
+               --tk-includes=/opt/mytcltk/include \
+               --tcl-libraries=/opt/mytcltk/lib \
+               --tk-libraries=/opt/mytcltk/lib
+
+Note that the PATH variable has to contain the path of the Tcl shell (for
+example '/opt/mytcltk/bin/tclsh8.5'), otherwise the Tcl shell will not be
+found.
+
+= vi:set et sw=3 ts=3: =

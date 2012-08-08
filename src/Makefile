@@ -69,7 +69,7 @@ SRC = \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
 
-ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) -lpthread
+ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) $(FAM_LIB) -lpthread
 ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 #ALL_TK_LIBS = $(TK_LIBS) /usr/local/lib/libtk.a $(X_LIBRARY) -lXft -lXss
 
@@ -314,7 +314,7 @@ $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) $(ZLIB_LIB)
 
-$(TK_PROGRAM): tkscidb.o $(LIBS) $(TK_LIBS)
+$(TK_PROGRAM): tkscidb.o $(LIBS) $(TCL_LIBS) $(TK_LIBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 

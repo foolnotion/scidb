@@ -1,6 +1,15 @@
 [August 2012] ================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #407)
+------------------------------------------------------------------------------
+* File drop in file selection box implemented.
+
+* Support for file monitoring implemented (inotify + libfam).
+
+* File selection dialog now has file monitoring.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #390)
 ------------------------------------------------------------------------------
 * Internet installation/update of player photo files implemented.
@@ -12,7 +21,7 @@ Scidb 1.0 BETA (rev. #385)
 ------------------------------------------------------------------------------
 * Color dialog revised.
 
-* Setup dialog for PGN/browser editor implemented.
+* Setup dialog for game browser/editor implemented.
 
 * Swedish translation updated.
 

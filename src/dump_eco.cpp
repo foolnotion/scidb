@@ -578,7 +578,7 @@ dumpAscii(	Board& board,
 		mstl::string s;
 
 		board.prepareUndo(move);
-		board.prepareForSan(move);
+		board.prepareForPrint(move);
 		board.doMove(move);
 		for (unsigned k = 0; k < level; ++k) printf("| ");
 		printf("%s: ", move.printSan(s).c_str());

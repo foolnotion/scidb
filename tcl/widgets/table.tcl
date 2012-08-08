@@ -1734,7 +1734,7 @@ proc ConfigureDialog {table id dlg} {
 
 proc MakePreview {foreground background preview path} {
 	set text [set [namespace current]::mc::Preview]
-	set canv [tk::canvas $path.coords -width 150 -height 20 -borderwidth 2 -relief sunken]
+	set canv [tk::canvas $path.coords -width 150 -height 20 -borderwidth 1 -relief sunken]
 	$canv configure -background $background
 	$canv create text 75 10 -text $text -fill $foreground -tag abcd -font TkDefaultFont
 	if {$preview eq "foreground"} {

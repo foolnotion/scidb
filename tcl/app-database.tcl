@@ -69,9 +69,6 @@ set DescrTooLargeDetail		"The entry contains %d characters, but only %d characte
 set ClipbaseDescription		"Temporary database, not kept on disk."
 set HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
 set HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."
-set CannotOpenUri				"Cannot open the following URI:"
-set InvalidUri					"Drop content is not a valid URI list."
-set UriRejected				"The following files are rejected:"
 set UriRejectedDetail		"Only Scidb databases can be opened:"
 set EmptyUriList				"Drop content is empty."
 set OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
@@ -479,6 +476,11 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 
 	if {$switchToBase} { Switch $file }
 	return 1
+}
+
+
+proc switchToBase {base} {
+	Switch $base
 }
 
 
@@ -956,83 +958,50 @@ proc OpenUri {uriFiles} {
 	set rejectList {}
 	set databaseList {}
 
-	foreach file [split $uriFiles \n] {
-		if {[string length $file]} {
-			set uri $file
-			if {[string equal -length 5 $file "file:"]} {
-				if {[string equal -length 17 $file "file://localhost/"]} {
-					# correct implementation
-					set file [string range $file 16 end]
-				} elseif {[string equal -length 8 $file "file:///"]} {
-					# no hostname, but three slashes - nearly correct
-					set file [string range $file 7 end]
-				} elseif {[string index $file 5] eq "/"} {
-					# theoretically, the hostname should be the first, but no one implements it
-					set file [string range $uri 5 end]
-					for {set n 1} {$n < 5} {incr n} { if {[string index $file $n] eq "/"} { break } }
-					set file [string range $uri [expr {$n - 1}] end]
-					
-					if {![file exists $file]} {
-						# perhaps a correct implementation with hostname?
-						set i [string first "/" $file 1]
-						if {$i >= 0} {
-							set f [string range $file $i end]
-							if {[file exists $f]} {
-								# it seems so
-								set file $f
-							}
-						}
-					}
-				} else {
-					# no slash after "file:" - what is that for a crappy program?
-					set file [string range $file 5 end]
-				}
-			}
+	foreach {uri file} [::fsbox::parseUriList $uriFiles] {
+		if {[file exists $file]} {
+			if {[string match *.pgn.gz $file]} {
+				if {$file ni $databaseList} { lappend databaseList $file }
+			} else {
+				set origExt [file extension $file]
 
-			set file [file normalize $file]
+				if {[string length $origExt]} {
+					set origExt [string range $origExt 1 end]
+					set mappedExt [::scidb::misc::mapExtension $origExt]
 
-			if {[file exists $file]} {
-				if {[string match *.pgn.gz $file]} {
-					if {$file ni $databaseList} { lappend databaseList $file }
-				} else {
-					set origExt [file extension $file]
-
-					if {[string length $origExt]} {
-						set origExt [string range $origExt 1 end]
-						set mappedExt [::scidb::misc::mapExtension $origExt]
-
-						if {$origExt ne $mappedExt} {
-							set f [file rootname $file]
-							append f . $mappedExt
-							if {[file exists $f]} {
-								set file $f
-							}
-						}
-					}
-
-					switch [file extension $file] {
-						.sci - .scv - .si3 - .si4 - .cbh - .pgn - .zip {
-							if {$file ni $databaseList} { lappend databaseList $file }
-						}
-						default {
-							if {$file ni $rejectList} { lappend rejectList $file }
+					if {$origExt ne $mappedExt} {
+						set f [file rootname $file]
+						append f . $mappedExt
+						if {[file exists $f]} {
+							set file $f
 						}
 					}
 				}
-			} elseif {$uri ni $errorList} {
-				# This shouldn't happen.
-				lappend errorList $uri
+
+				switch [file extension $file] {
+					.sci - .scv - .si3 - .si4 - .cbh - .pgn - .zip {
+						if {$file ni $databaseList} { lappend databaseList $file }
+					}
+					default {
+						if {$file ni $rejectList} { lappend rejectList $file }
+					}
+				}
 			}
+		} elseif {$uri ni $errorList} {
+			# This shouldn't happen.
+			lappend errorList $uri
 		}
 	}
 
-	foreach file $databaseList {
-		openBase $Vars(canvas) $file no {} -1 [expr {[llength $databaseList] == 1}]
-	}
+	# take into account that the application is currently loading a database
+	::remote::requestOpenBases $databaseList
+#	foreach file $databaseList {
+#		openBase $Vars(canvas) $file no {} -1 [expr {[llength $databaseList] == 1}]
+#	}
 
 	if {[llength $errorList]} {
 		if {[string match file:* $uriFiles] && [llength $databaseList] == 0} {
-			set message $mc::CannotOpenUri
+			set message $::fsbox::mc::CannotOpenUri
 			if {[llength $errorList] > 10} {
 				append message \n\n [join [lrange $errorList 0 9] \n]
 				append message \n...
@@ -1040,13 +1009,13 @@ proc OpenUri {uriFiles} {
 				append message \n\n [join $errorList \n]
 			}
 		} else {
-			set message $mc::InvalidUri
+			set message $::fsbox::mc::InvalidUri
 		}
 		dialog::error -parent $Vars(canvas) -message $message
 	}
 
 	if {[llength $rejectList]} {
-		set message $mc::UriRejected
+		set message $::fsbox::mc::UriRejected
 		if {[llength $rejectList] > 10} {
 			append message \n\n [join [lrange $rejectList 0 9] \n]
 			append message \n...
@@ -1576,10 +1545,11 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs command "$mc::EditDescription..." \
 				[list [namespace current]::EditDescription $canv $i] 1 0 {} {} {}
 		} else {
+			if {[::scidb::db::count games $file] == 0} { set state disabled } else { set state normal }
 			lappend specs command \
 				$mc::EmptyClipbase \
 				[list [namespace current]::EmptyClipbase $canv] \
-				0 0 trash {} {} \
+				0 0 trash {} $state \
 				;
 		}
 		switch $ext {
@@ -1681,7 +1651,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 
 	$menu add separator
 	$menu add command \
-		-label " [::mc::stripAmpersand $mc::HelpSwitcher]" \
+		-label " [::mc::stripAmpersand $mc::HelpSwitcher]..." \
 		-image $::icon::16x16::help \
 		-compound left \
 		-command [list ::help::open .application Database-Switcher] \
@@ -1731,10 +1701,12 @@ proc EditDescription {canv index} {
 	set Vars(description) [::scidb::db::get description $file]
 
 	set dlg [tk::toplevel $canv.descr -class Dialog]
-	::ttk::entry $dlg.entry -takefocus 1 -width 108 -textvar [namespace current]::Vars(description)
-	$dlg.entry selection range 0 end
-	$dlg.entry icursor end
-	pack $dlg.entry -fill x -padx $::theme::padx -pady $::theme::pady
+	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
+	pack $top -fill both
+	::ttk::entry $top.entry -takefocus 1 -width 108 -textvar [namespace current]::Vars(description)
+	$top.entry selection range 0 end
+	$top.entry icursor end
+	pack $top.entry -fill x -padx $::theme::padx -pady $::theme::pady
 	::widget::dialogButtons $dlg {ok cancel} ok
 	$dlg.ok configure -command [namespace code [list SetDescription $dlg $index]]
 	$dlg.cancel configure -command [list destroy $dlg]
@@ -1745,7 +1717,7 @@ proc EditDescription {canv index} {
 	wm resizable $dlg false false
 	::util::place $dlg below $canv
 	wm deiconify $dlg
-	focus $dlg.entry
+	focus $top.entry
 	::ttk::grabWindow $dlg
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg

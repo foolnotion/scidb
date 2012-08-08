@@ -371,9 +371,6 @@
 ::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
 ::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::CannotOpenUri				"Cannot open the following URI:" ;# NEW
-::application::database::mc::InvalidUri					"Drop content is not a valid URI list." ;# NEW
-::application::database::mc::UriRejected					"The following files are rejected:" ;# NEW
 ::application::database::mc::UriRejectedDetail			"Only Scidb databases can be opened:" ;# NEW
 ::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
@@ -1812,95 +1809,110 @@
 ::choosedir::mc::Folder				"Könyvtár"
 
 ### fsbox ##############################################################
-::fsbox::mc::Name								"Név"
-::fsbox::mc::Size								"Dátum"
-::fsbox::mc::Modified						"Módosítva"
+::fsbox::mc::Name			"Név"
+::fsbox::mc::Size			"Dátum"
+::fsbox::mc::Modified			"Módosítva"
 
-::fsbox::mc::Forward							"Forward to '%s'"
-::fsbox::mc::Backward						"Backward to '%s'"
-::fsbox::mc::Delete							"Töröl"
-::fsbox::mc::Restore							"Restore" ;# NEW
-::fsbox::mc::Rename							"Átnevez"
-::fsbox::mc::Duplicate						"Duplicate"
-::fsbox::mc::CopyOf							"Copy of %s"
-::fsbox::mc::NewFolder						"Új könyvtár"
-::fsbox::mc::Layout							"Nézet"
-::fsbox::mc::ListLayout						"Lista nézet"
-::fsbox::mc::DetailedLayout				"Részletes nézet"
-::fsbox::mc::ShowHiddenDirs				"Mutasd a &rejtett könyvtárakat"
-::fsbox::mc::ShowHiddenFiles				"Mutasd a &rejtett fájlokat és könyvtárakat"
-::fsbox::mc::AppendToExisitingFile		"Játszmák hozzá&adása egy létező fájlhoz"
-::fsbox::mc::Cancel							"&Mégse"
-::fsbox::mc::Save								"Menté&s"
-::fsbox::mc::Open								"&Megynitás"
+::fsbox::mc::Forward			"Forward to '%s'"
+::fsbox::mc::Backward			"Backward to '%s'"
+::fsbox::mc::Delete			"Töröl"
+::fsbox::mc::Restore			"Restore" ;# NEW
+::fsbox::mc::Duplicate			"Duplicate"
+::fsbox::mc::CopyOf			"Copy of %s"
+::fsbox::mc::NewFolder			"Új könyvtár"
+::fsbox::mc::Layout			"Nézet"
+::fsbox::mc::ListLayout			"Lista nézet"
+::fsbox::mc::DetailedLayout		"Részletes nézet"
+::fsbox::mc::ShowHiddenDirs		"Mutasd a &rejtett könyvtárakat"
+::fsbox::mc::ShowHiddenFiles		"Mutasd a &rejtett fájlokat és könyvtárakat"
+::fsbox::mc::AppendToExisitingFile	"Játszmák hozzá&adása egy létező fájlhoz"
+::fsbox::mc::Cancel			"&Mégse"
+::fsbox::mc::Save			"Menté&s"
+::fsbox::mc::Open			"&Megynitás"
+::fsbox::mc::Overwrite			"&Overwrite" ;# NEW
+::fsbox::mc::Rename			"&Átnevez"
 
-::fsbox::mc::AddBookmark					"Könyvjelző hozzáadása '%s'"
-::fsbox::mc::RemoveBookmark				"Könyvjelző eltávolítása '%s'"
-::fsbox::mc::RenameBookmark				"Rename Bookmark '%s'" ;# NEW
+::fsbox::mc::AddBookmark		"Könyvjelző hozzáadása '%s'"
+::fsbox::mc::RemoveBookmark		"Könyvjelző eltávolítása '%s'"
+::fsbox::mc::RenameBookmark		"Rename Bookmark '%s'" ;# NEW
 
-::fsbox::mc::Filename						"Fájl &név:"
-::fsbox::mc::Filenames						"Fájl &nevek:"
-::fsbox::mc::Directory						"Kö&nyvtár:" ;# NEW
-::fsbox::mc::FilesType						"Fájl &típusok:"
-::fsbox::mc::FileEncoding					"Fájl &kódolás:"
+::fsbox::mc::Filename			"Fájl &név:"
+::fsbox::mc::Filenames			"Fájl &nevek:"
+::fsbox::mc::Directory			"Kö&nyvtár:" ;# NEW
+::fsbox::mc::FilesType			"Fájl &típusok:"
+::fsbox::mc::FileEncoding		"Fájl &kódolás:"
 
-::fsbox::mc::Favorites						"Kedvencek"
-::fsbox::mc::LastVisited					"Utoljára használt"  ;#?
-::fsbox::mc::FileSystem						"Fájlredszer"
-::fsbox::mc::Desktop							"Asztal"
-::fsbox::mc::Trash							"Trash" ;# NEW
-::fsbox::mc::Home								"Home" ;# NEW
+::fsbox::mc::Favorites			"Kedvencek"
+::fsbox::mc::LastVisited		"Utoljára használt"  ;#?
+::fsbox::mc::FileSystem			"Fájlredszer"
+::fsbox::mc::Desktop			"Asztal"
+::fsbox::mc::Trash			"Trash" ;# NEW
+::fsbox::mc::Home			"Home" ;# NEW
 
-::fsbox::mc::SelectEncoding				"Adatbázis kódolásának kiválasztása"
-::fsbox::mc::SelectWhichType				"Megjelenítendő fájltípusok kiválasztása"
-::fsbox::mc::TimeFormat						"%Y.%m.%d %H:%M"
+::fsbox::mc::SelectEncoding		"Adatbázis kódolásának kiválasztása"
+::fsbox::mc::SelectWhichType		"Megjelenítendő fájltípusok kiválasztása"
+::fsbox::mc::TimeFormat			"%Y.%m.%d %H:%M"
 
-::fsbox::mc::CannotChangeDir				"Cannot change to the directory \"%s\".\nHozzáférés megtagadva."
-::fsbox::mc::DirectoryRemoved				"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."
-::fsbox::mc::ReallyMove(file,w)			"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
-::fsbox::mc::ReallyMove(file,r)			"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
-::fsbox::mc::ReallyMove(folder,w)		"Biztos hogy a kukába dobod a(z) '%s' könyvtárat"
-::fsbox::mc::ReallyMove(folder,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett könyvtárat?"
-::fsbox::mc::ReallyDelete(file,w)		"Biztos hogy törlöd a(z) '%s' fájlt? Ez a művelet később nem vonható vissza." ;# You cannot undo this operation."
-::fsbox::mc::ReallyDelete(file,r)		"Biztos hogy törlöd a(z) '%s' írásvédett fájlt? Ez a művelet később nem vonható vissza."
-::fsbox::mc::ReallyDelete(link,w)		"Biztos hogy törlöd a(z) '%s' linket?"
-::fsbox::mc::ReallyDelete(link,r)		"Biztos hogy törlöd a(z) '%s' linket?"
-::fsbox::mc::ReallyDelete(folder,w)		"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
-::fsbox::mc::ReallyDelete(folder,r)		"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
-::fsbox::mc::DeleteFailed					"'%s' törlése meghiúsult."
-::fsbox::mc::RestoreFailed					"Restoring of '%s' failed." ;# NEW
-::fsbox::mc::CommandFailed					"'%s' utasítás nem hajtható vége."
-::fsbox::mc::CopyFailed						"'%s' fájl másolása meghiúsult: hozzáférés megtagadva"
-::fsbox::mc::CannotCopy						"'%s' már létezik. A másolás meghiúsult."
-::fsbox::mc::CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
-::fsbox::mc::ReallyDuplicateFile			"Really duplicate this file?"
-::fsbox::mc::ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
-::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
-::fsbox::mc::ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
-::fsbox::mc::InvalidFileExt				"A művelet meghiúsult: '%s' kiterjesztése érvénytelen."
-::fsbox::mc::CannotRename					"'%s' nem nevezhető át, mert a könyvtár/fájl már létezik."
-::fsbox::mc::CannotCreate					"'%s' könyvtár nem hozható létre, mert a könyvtár/fájl már létezik."
-::fsbox::mc::ErrorCreate					"Hiba a könyvtár létrehozás közben: hozzáférés megtagadva."
-::fsbox::mc::FilenameNotAllowed			"'%s' fájlnév nem engedélyezett."
-::fsbox::mc::ContainsTwoDots				"Két egymásutáni pontot tartalmaz."
-::fsbox::mc::ContainsReservedChars		"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Fenntartott karaktereket tartalmaz: %s."
-::fsbox::mc::InvalidFileName				"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
-::fsbox::mc::IsReservedName				"Ez egy fenntartott név néhány operációs rendszeren."
-::fsbox::mc::FilenameTooLong				"A file name should have less than 256 characters." ;# NEW
-::fsbox::mc::InvalidFileExtension		"'%s': érvénytelen kiterjesztés."
-::fsbox::mc::MissingFileExtension		"'%s': hiányzó kiterjesztés."
-::fsbox::mc::FileAlreadyExists			"\"%s\" fájl már létezik.\n\nFelül akarod írni?"
+::fsbox::mc::CannotChangeDir		"Cannot change to the directory \"%s\".\nHozzáférés megtagadva."
+::fsbox::mc::DirectoryRemoved		"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."
+::fsbox::mc::ReallyMove(file,w)		"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
+::fsbox::mc::ReallyMove(file,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
+::fsbox::mc::ReallyMove(folder,w)	"Biztos hogy a kukába dobod a(z) '%s' könyvtárat"
+::fsbox::mc::ReallyMove(folder,r)	"Biztos hogy a kukába dobod a(z) '%s' írásvédett könyvtárat?"
+::fsbox::mc::ReallyDelete(file,w)	"Biztos hogy törlöd a(z) '%s' fájlt? Ez a művelet később nem vonható vissza." ;# You cannot undo this operation."
+::fsbox::mc::ReallyDelete(file,r)	"Biztos hogy törlöd a(z) '%s' írásvédett fájlt? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(link,w)	"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(link,r)	"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(folder,w)	"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(folder,r)	"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::DeleteFailed		"'%s' törlése meghiúsult."
+::fsbox::mc::RestoreFailed		"Restoring of '%s' failed." ;# NEW
+::fsbox::mc::CommandFailed		"'%s' utasítás nem hajtható vége."
+::fsbox::mc::CopyFailed			"'%s' fájl másolása meghiúsult: hozzáférés megtagadva"
+::fsbox::mc::CannotCopy			"'%s' már létezik. A másolás meghiúsult."
+::fsbox::mc::CannotDuplicate		"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
+::fsbox::mc::ReallyDuplicateFile	"Really duplicate this file?"
+::fsbox::mc::ReallyDuplicateDetail	"This file has about %s. Duplicating this file may take some time."
+::fsbox::mc::ErrorRenaming(folder)	"Error renaming folder '%old' to '%new': permission denied."
+::fsbox::mc::ErrorRenaming(file)	"Error renaming file '%old' to '%new': permission denied."
+::fsbox::mc::InvalidFileExt		"A művelet meghiúsult: '%s' kiterjesztése érvénytelen."
+::fsbox::mc::CannotRename		"'%s' nem nevezhető át, mert a könyvtár/fájl már létezik."
+::fsbox::mc::CannotCreate		"'%s' könyvtár nem hozható létre, mert a könyvtár/fájl már létezik."
+::fsbox::mc::ErrorCreate		"Hiba a könyvtár létrehozás közben: hozzáférés megtagadva."
+::fsbox::mc::FilenameNotAllowed		"'%s' fájlnév nem engedélyezett."
+::fsbox::mc::ContainsTwoDots		"Két egymásutáni pontot tartalmaz."
+::fsbox::mc::ContainsReservedChars	"Contains reserved characters: %s, or a control character (ASCII 0-31)." ;# NEW previously: "Fenntartott karaktereket tartalmaz: %s."
+::fsbox::mc::InvalidFileName		"A filename cannot start with a hyphen, and cannot end with a space or a period." ;# NEW
+::fsbox::mc::IsReservedName		"Ez egy fenntartott név néhány operációs rendszeren."
+::fsbox::mc::FilenameTooLong		"A file name should have less than 256 characters." ;# NEW
+::fsbox::mc::InvalidFileExtension	"'%s': érvénytelen kiterjesztés."
+::fsbox::mc::MissingFileExtension	"'%s': hiányzó kiterjesztés."
+::fsbox::mc::FileAlreadyExists		"\"%s\" fájl már létezik.\n\nFelül akarod írni?"
 ::fsbox::mc::CannotOverwriteDirectory	"'%s' könyvtár nem írható felül."
-::fsbox::mc::FileDoesNotExist			"\"%s\" fájl nem létezik."
-::fsbox::mc::DirectoryDoesNotExist		"\"%s\" könyvtár nem létezik."
-::fsbox::mc::CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
-::fsbox::mc::WaitWhileDuplicating		"Please wait while duplicating file..."
-::fsbox::mc::FileHasDisappeared			"File '%s' has disappeared." ;# NEW
-::fsbox::mc::CannotDelete			"Cannot delete file '%s'." ;# NEW
-::fsbox::mc::CannotRename			"Cannot rename file '%s'." ;# NEW
-::fsbox::mc::CannotDeleteDetail			"This file is currently in use." ;# NEW
-::fsbox::mc::CannotOverwrite			"Cannot overwrite file '%s'." ;# NEW
-::fsbox::mc::PermissionDenied			"Permission denied for directory '%s'." ;# NEW
+::fsbox::mc::FileDoesNotExist		"\"%s\" fájl nem létezik."
+::fsbox::mc::DirectoryDoesNotExist	"\"%s\" könyvtár nem létezik."
+::fsbox::mc::CannotOpenOrCreate		"Cannot open/create '%s'. Please choose a directory."
+::fsbox::mc::WaitWhileDuplicating	"Please wait while duplicating file..."
+::fsbox::mc::FileHasDisappeared		"File '%s' has disappeared." ;# NEW
+::fsbox::mc::CannotDelete		"Cannot delete file '%s'." ;# NEW
+::fsbox::mc::CannotRename		"Cannot rename file '%s'." ;# NEW
+::fsbox::mc::CannotDeleteDetail		"This file is currently in use." ;# NEW
+::fsbox::mc::CannotOverwrite		"Cannot overwrite file '%s'." ;# NEW
+::fsbox::mc::PermissionDenied		"Permission denied for directory '%s'." ;# NEW
+::fsbox::mc::CannotOpenUri		"Cannot open the following URI:" ;# NEW
+::fsbox::mc::InvalidUri			"Drop content is not a valid URI list." ;# NEW
+::fsbox::mc::UriRejected		"The following files are rejected:" ;# NEW
+::fsbox::mc::UriRejectedDetail		"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::OperationAborted		"Operation aborted." ;# NEW
+::fsbox::mc::ApplyOnDirectories		"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
+::fsbox::mc::EntryAlreadyExists		"Entry already exists" ;# NEW
+::fsbox::mc::AnEntryAlreadyExists	"An entry '%s' already exists." ;# NEW
+::fsbox::mc::SourceDirectoryIs		"The source directories is '%s'." ;# NEW
+::fsbox::mc::NewName			"New name" ;# NEW
+
+::fsbox::mc::DropAction(move)		"Move Here" ;# NEW
+::fsbox::mc::DropAction(copy)		"Copy Here" ;# NEW
+::fsbox::mc::DropAction(link)		"Link Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Eszköztár"
