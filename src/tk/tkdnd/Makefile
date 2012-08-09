@@ -18,13 +18,14 @@ include ../../../Makefile.in
 INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) -I../tk$(TCL_VERSION)
 CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING) -DUSE_TKINT_H
 
-SRC	= unix/TkDND_XDND.c
+SRC	= unix/TkDND_XDND.c unix/Cursors.c
+OBJS	= TkDND_XDND.o Cursors.o
 LIB	= libtkDnd
 
 all: $(LIB).a
 
 clean:
-	@rm -f $(LIB).a TkDND_XDND.o Makefile.bak
+	@rm -f $(LIB).a $(OBJS) Makefile.bak
 
 depend:
 #	makedepend -fMakefile -Y -- -I../tk$(TCL_VERSION) -- -w1 $(SRC) 2>/dev/null
@@ -33,12 +34,16 @@ depend:
 #		mv Makefile.bak Makefile; \
 #	fi
 
-$(LIB).a: TkDND_XDND.o
+$(LIB).a: $(OBJS)
 	@echo "Building $(LIB).a"
-	@$(AR) $(ARFLAGS) $(LIB).a TkDND_XDND.o
+	@$(AR) $(ARFLAGS) $(LIB).a $(OBJS)
 	@$(RANLIB) $(LIB).a
 
 TkDND_XDND.o: unix/TkDND_XDND.c
+	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
+	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
+
+Cursors.o: unix/Cursors.c
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(CFLAGS:  = )]"
 	@$(CC) -c $(CFLAGS) $(EXTRA_CFLAGS) $(INCLUDE) $<
 

@@ -1817,6 +1817,7 @@
 ::fsbox::mc::Forward							"Avanti a '%s'"
 ::fsbox::mc::Backward						"Indietro a '%s'"
 ::fsbox::mc::Delete							"Elimina"
+::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
 ::fsbox::mc::Restore							"Ripristina"
 ::fsbox::mc::Duplicate						"Duplica"
 ::fsbox::mc::CopyOf							"Copia di %s"
@@ -1832,6 +1833,7 @@
 ::fsbox::mc::Open								"A&pri"
 ::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
 ::fsbox::mc::Rename							"&Rinomina"
+::fsbox::mc::Move								"Move" ;# NEW
 
 ::fsbox::mc::AddBookmark					"Aggiungi Segnalibro '%s'"
 ::fsbox::mc::RemoveBookmark				"Rimuovi il segnalibro '%s'"
@@ -1878,6 +1880,7 @@
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
 ::fsbox::mc::InvalidFileExt				"Operazione fallita: '%s' ha un'estensione file non valida."
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
+::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
@@ -1897,7 +1900,7 @@
 ::fsbox::mc::FileHasDisappeared			"Il file '%s' è scomparso."
 ::fsbox::mc::CannotDelete					"Impossibile eliminare il file '%s'."
 ::fsbox::mc::CannotRename					"Impossibile rinominare il file '%s'."
-::fsbox::mc::CannotDeleteDetail			"Questo file è correntemente in uso."
+::fsbox::mc::CurrentlyInUse				"Questo file è correntemente in uso."
 ::fsbox::mc::CannotOverwrite				"Impossibile sovrascrivere il file '%s'."
 ::fsbox::mc::PermissionDenied				"Permessi negati per la cartella '%s'."
 ::fsbox::mc::CannotOpenUri					"Impossibile aprire il seguente URI:"

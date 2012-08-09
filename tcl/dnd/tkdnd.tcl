@@ -58,12 +58,12 @@ namespace eval tkdnd {
 
   variable _windowingsystem
 
-  bind TkDND_Drag1 <ButtonPress-1> {tkdnd::_begin_drag press  %W %s %X %Y}
-  bind TkDND_Drag1 <B1-Motion>     {tkdnd::_begin_drag motion %W %s %X %Y}
-  bind TkDND_Drag2 <ButtonPress-2> {tkdnd::_begin_drag press  %W %s %X %Y}
-  bind TkDND_Drag2 <B2-Motion>     {tkdnd::_begin_drag motion %W %s %X %Y}
-  bind TkDND_Drag3 <ButtonPress-3> {tkdnd::_begin_drag press  %W %s %X %Y}
-  bind TkDND_Drag3 <B3-Motion>     {tkdnd::_begin_drag motion %W %s %X %Y}
+  bind TkDND_Drag1 <ButtonPress-1> {tkdnd::_begin_drag press  1 %W %s %X %Y}
+  bind TkDND_Drag1 <B1-Motion>     {tkdnd::_begin_drag motion 1 %W %s %X %Y}
+  bind TkDND_Drag2 <ButtonPress-2> {tkdnd::_begin_drag press  2 %W %s %X %Y}
+  bind TkDND_Drag2 <B2-Motion>     {tkdnd::_begin_drag motion 2 %W %s %X %Y}
+  bind TkDND_Drag3 <ButtonPress-3> {tkdnd::_begin_drag press  3 %W %s %X %Y}
+  bind TkDND_Drag3 <B3-Motion>     {tkdnd::_begin_drag motion 3 %W %s %X %Y}
   
   # ----------------------------------------------------------------------------
   #  Command tkdnd::initialise: Initialise the TkDND package.
@@ -260,7 +260,7 @@ proc tkdnd::drop_target { mode path { types {} } } {
 # ----------------------------------------------------------------------------
 #  Command tkdnd::_begin_drag
 # ----------------------------------------------------------------------------
-proc tkdnd::_begin_drag { event source state X Y } {
+proc tkdnd::_begin_drag { event button source state X Y } {
   variable _x0
   variable _y0
   variable _state
@@ -305,7 +305,7 @@ proc tkdnd::_init_drag { button source state rootX rootY } {
       set action refuse_drop
       switch $_windowingsystem {
         x11 {
-          error "dragging from Tk widgets not yet supported"
+          set action [xdnd::_dodragdrop $source $actions $types $data $button]
         }
         win32 -
         windows {

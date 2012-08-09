@@ -41,6 +41,7 @@ set Modified						"Modified"
 set Forward							"Forward to '%s'"
 set Backward						"Backward to '%s'"
 set Delete							"Delete"
+set MoveToTrash					"Move to Trash"
 set Restore							"Restore"
 set Duplicate						"Duplicate"
 set CopyOf							"Copy of %s"
@@ -56,6 +57,7 @@ set Save								"&Save"
 set Open								"&Open"
 set Overwrite						"&Overwrite"
 set Rename							"&Rename"
+set Move								"Move"
 
 set AddBookmark					"Add Bookmark '%s'"
 set RemoveBookmark				"Remove Bookmark '%s'"
@@ -121,7 +123,8 @@ set WaitWhileDuplicating		"Wait while duplicating file..."
 set FileHasDisappeared			"File '%s' has disappeared."
 set CannotDelete					"Cannot delete file '%s'."
 set CannotRename					"Cannot rename file '%s'."
-set CannotDeleteDetail			"This file is currently in use."
+set CannotMove						"Cannot move file '%s'."
+set CurrentlyInUse				"This file is currently in use."
 set CannotOverwrite				"Cannot overwrite file '%s'."
 set PermissionDenied				"Permission denied for directory '%s'."
 set CannotOpenUri					"Cannot open the following URI:"
@@ -746,6 +749,8 @@ proc parseUriList {uriFiles} {
 	set result {}
 
 	foreach file [split $uriFiles \n] {
+		# according to RFC2-483 lines starting with a '#' are comment lines.
+		# should we really discard these lines?
 		if {[string length $file]} {
 			set uri $file
 			if {[string equal -length 5 $file "file:"]} {
@@ -1304,9 +1309,9 @@ proc DirChanged {w {useHistory 1}} {
 
 	if {[namespace exists ::tkdnd]} {
 		if {[string length $Vars(folder)]} {
-			RegisterDropEvents $w
+			RegisterDndEvents $w
 		} else {
-			UnregisterDropEvent $w
+			UnregisterDndEvents $w
 		}
 	}
 }
@@ -1699,9 +1704,9 @@ proc Stimulate {w} {
 proc CheckIfInUse {w file mode} {
 	variable ${w}::Vars
 
-	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $Vars(folder) $file]} {
+	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $file]} {
 		set msg [format [Tr Cannot[string toupper $mode 0 0]] [file tail $file]]
-		set detail [Tr CannotDeleteDetail]
+		set detail [Tr CurrentlyInUse]
 		messageBox                    \
 			-type ok                   \
 			-icon info                 \
@@ -1750,21 +1755,23 @@ proc MakeFileSize {size} {
 }
 
 
-proc RegisterDropEvents {w} {
+proc RegisterDndEvents {w} {
 	variable ${w}::Vars
 
 	set t $Vars(widget:list:file)
 	::tkdnd::drop_target register $t DND_Files
+	::tkdnd::drag_source register $t DND_Files
 	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
 	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
 	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
 }
 
 
-proc UnregisterDropEvent {w} {
+proc UnregisterDndEvents {w} {
 	variable ${w}::Vars
 	set t $Vars(widget:list:file)
 	::tkdnd::drop_target unregister $t DND_Files
+	::tkdnd::drag_source unregister $t DND_Files
 }
 
 
@@ -2709,10 +2716,11 @@ proc Build {w path args} {
 	set count 0
 
 	if {"delete" in $Vars(actions)} {
+		if {[[namespace parent]::CheckIsKDE $w]} { set tip MoveToTrash } else { set tip Delete }
 		set Vars(button:delete) [::toolbar::add $tb button \
 			-image $icon::16x16::iconDelete                 \
 			-command [namespace code [list DeleteFile $w]]  \
-			-tooltip [Tr Delete]                            \
+			-tooltip [Tr $tip]                              \
 			-state disabled                                 \
 		]
 		incr count
@@ -2908,7 +2916,7 @@ proc DetailsLayout {w} {
 
 	catch { $t item delete 1 end }
 	foreach col [$t column list] { $t column delete $col }
-	$t style delete {*}[$t style names]
+# 	$t style delete {*}[$t style names]
 	$t element delete {*}[$t element names]
 
 	if {[info exists Vars(column:name)]} {
@@ -3592,7 +3600,7 @@ proc RefreshFileList {w} {
 #	if {$Vars(glob) ne "Files"} { return 0 }
 #	if {[llength $Vars(selected:files)] > 1} { return 0 }
 #	if {[llength $Vars(isusedcommand)] == 0} { return 0 }
-#	return [$Vars(isusedcommand) $Vars(folder) [file join $Vars(folder) $Vars(initialfile)]]
+#	return [$Vars(isusedcommand) [file join $Vars(folder) $Vars(initialfile)]]
 #}
 
 
@@ -3876,20 +3884,43 @@ proc SetDeleteAction {w action} {
 }
 
 
-proc RenameFile {w} {
+proc GetCurrentSelection {w} {
 	variable [namespace parent]::${w}::Vars
 
 	set t $Vars(widget:list:file)
 	set sel [$t item id active]
 	set i [expr {$sel - 1}]
 	if {$i < [llength $Vars(list:folder)]} {
-		set Vars(edit:file) [lindex $Vars(list:folder) $i]
-	} else {
-		set i [expr {$i - [llength $Vars(list:folder)]}]
-		set Vars(edit:file) [lindex $Vars(list:file) $i]
-		if {[[namespace parent]::CheckIfInUse $w $Vars(edit:file) rename]} { return }
+		return [list folder $sel [lindex $Vars(list:folder) $i]]
 	}
-	OpenEdit $w $sel rename
+	set i [expr {$i - [llength $Vars(list:folder)]}]
+	return [list file $sel [lindex $Vars(list:file) $i]]
+}
+
+
+# proc MoveFile {w m} {
+# 	variable [namespace parent]::${w}::Vars
+# 
+# 	lassign [GetCurrentSelection $w] type _ file
+# 	if {$type eq "file" && [[namespace parent]::CheckIfInUse $w $file move]} { return }
+# 	set filter *
+# 	if {$::tcl_platform(platform) eq "unix" && $Vars(showhidden)} { lappend filter .* }
+# 	set dir [file dirname $file]
+# 	set subdirs [glob -nocomplain -tails -dir $dir -types d {*}$filter]
+# 	foreach dir $subdirs {
+# 		if {$dir ne "."} {
+# 		}
+# 	}
+# }
+
+
+proc RenameFile {w} {
+	variable [namespace parent]::${w}::Vars
+
+	lassign [GetCurrentSelection $w] type sel Vars(edit:file)
+	if {$type eq "folder" || ![[namespace parent]::CheckIfInUse $w $Vars(edit:file) rename]} {
+		OpenEdit $w $sel rename
+	}
 }
 
 
@@ -3897,12 +3928,8 @@ proc DuplicateFile {w} {
 	variable [namespace parent]::DuplicateFileSizeLimit
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:list:file)
-	set sel [$t item id active]
-	set i [expr {$sel - 1}]
-	if {$i < [llength $Vars(list:folder)]} { return }
-	set i [expr {$i - [llength $Vars(list:folder)]}]
-	set file [lindex $Vars(list:file) $i]
+	lassign [GetCurrentSelection $w] type _ file
+	if {$type eq "folder"} { return }
 	if {![file exists $file]} {
 		set msg [format [Tr FileHasDisappeared] [file tail $file]]
 		[namespace parent]::messageBox \
@@ -3953,6 +3980,7 @@ proc DuplicateFile {w} {
 		if {$reply ne "yes"} { return }
 	}
 
+	set t $Vars(widget:list:file)
 	$t item delete all
 	TraverseFolders $w
 	if {[$t item count] == 1} { set item root } else { set item "root children" }
@@ -3966,16 +3994,8 @@ proc DuplicateFile {w} {
 proc NewFolder {w} {
 	variable [namespace parent]::${w}::Vars
 
+	lassign [GetCurrentSelection $w] _ _ Vars(edit:file)
 	set t $Vars(widget:list:file)
-
-	set sel [$t item id active]
-	set i [expr {$sel - 1}]
-	if {$i < [llength $Vars(list:folder)]} {
-		set Vars(edit:file) [lindex $Vars(list:folder) $i]
-	} else {
-		set i [expr {$i - [llength $Vars(list:folder)]}]
-		set Vars(edit:file) [lindex $Vars(list:file) $i]
-	}
 	$t item delete all
 	TraverseFolders $w
 	set icon [set [namespace parent]::icon::16x16::folder]
@@ -3989,17 +4009,7 @@ proc NewFolder {w} {
 proc CallCustomCommand {w} {
 	variable [namespace parent]::${w}::Vars
 
-	set t $Vars(widget:list:file)
-
-	set sel [$t item id active]
-	set i [expr {$sel - 1}]
-	if {$i < [llength $Vars(list:folder)]} {
-		set file [lindex $Vars(list:folder) $i]
-	} else {
-		set i [expr {$i - [llength $Vars(list:folder)]}]
-		set file [lindex $Vars(list:file) $i]
-	}
-
+	lassign [GetCurrentSelection $w] _ _ file
 	{*}$Vars(customcommand) [winfo toplevel $w] $file
 	RefreshFileList $w
 	[namespace parent]::bookmarks::LayoutBookmarks $w
@@ -4408,7 +4418,13 @@ proc PopupMenu {w x y} {
 				# NOTE ktrash is not working
 				if {$Vars(state:delete) eq "normal" && $Vars(delete:action) eq "delete"} {
 					incr count
-					set name [string toupper $Vars(delete:action) 0 0]
+					if {$Vars(delete:action) eq "restore"} {
+						set name Restore
+					} elseif {[[namespace parent]::CheckIsKDE $w]} {
+						set name MoveToTrash
+					} else {
+						set name Delete
+					}
 					$m add command                                    \
 						-compound left                                 \
 						-image [set icon::16x16::$Vars(delete:action)] \
@@ -4425,6 +4441,13 @@ proc PopupMenu {w x y} {
 						-command [namespace code [list RenameFile $w]] \
 						;
 				}
+#				incr count
+#				$m add cascade                                                \
+#					-compound left                                             \
+#					-image [set [namespace parent]::icon::16x16::action(move)] \
+#					-label " [Tr Move]"                                        \
+#					-command [namespace code [list MoveFile $w $m]]            \
+#					;
 #			}
 			if {$Vars(state:copy) eq "normal"} {
 				incr count

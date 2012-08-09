@@ -508,7 +508,7 @@ proc GetNumGames {filename mtime} {
 }
 
 
-proc IsUsed {folder file} {
+proc IsUsed {file} {
 	switch [file extension $file] {
 		.pgn - .gz - .zip {
 			# no action

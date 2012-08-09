@@ -1816,6 +1816,7 @@
 ::fsbox::mc::Forward			"Forward to '%s'"
 ::fsbox::mc::Backward			"Backward to '%s'"
 ::fsbox::mc::Delete			"Töröl"
+::fsbox::mc::MoveToTrash		"Move to Trash" ;# NEW
 ::fsbox::mc::Restore			"Restore" ;# NEW
 ::fsbox::mc::Duplicate			"Duplicate"
 ::fsbox::mc::CopyOf			"Copy of %s"
@@ -1831,6 +1832,7 @@
 ::fsbox::mc::Open			"&Megynitás"
 ::fsbox::mc::Overwrite			"&Overwrite" ;# NEW
 ::fsbox::mc::Rename			"&Átnevez"
+::fsbox::mc::Move			"Move" ;# NEW
 
 ::fsbox::mc::AddBookmark		"Könyvjelző hozzáadása '%s'"
 ::fsbox::mc::RemoveBookmark		"Könyvjelző eltávolítása '%s'"
@@ -1877,6 +1879,7 @@
 ::fsbox::mc::ErrorRenaming(file)	"Error renaming file '%old' to '%new': permission denied."
 ::fsbox::mc::InvalidFileExt		"A művelet meghiúsult: '%s' kiterjesztése érvénytelen."
 ::fsbox::mc::CannotRename		"'%s' nem nevezhető át, mert a könyvtár/fájl már létezik."
+::fsbox::mc::CannotMove			"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate		"'%s' könyvtár nem hozható létre, mert a könyvtár/fájl már létezik."
 ::fsbox::mc::ErrorCreate		"Hiba a könyvtár létrehozás közben: hozzáférés megtagadva."
 ::fsbox::mc::FilenameNotAllowed		"'%s' fájlnév nem engedélyezett."
@@ -1896,7 +1899,7 @@
 ::fsbox::mc::FileHasDisappeared		"File '%s' has disappeared." ;# NEW
 ::fsbox::mc::CannotDelete		"Cannot delete file '%s'." ;# NEW
 ::fsbox::mc::CannotRename		"Cannot rename file '%s'." ;# NEW
-::fsbox::mc::CannotDeleteDetail		"This file is currently in use." ;# NEW
+::fsbox::mc::CurrentlyInUse		"This file is currently in use." ;# NEW
 ::fsbox::mc::CannotOverwrite		"Cannot overwrite file '%s'." ;# NEW
 ::fsbox::mc::PermissionDenied		"Permission denied for directory '%s'." ;# NEW
 ::fsbox::mc::CannotOpenUri		"Cannot open the following URI:" ;# NEW

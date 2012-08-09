@@ -198,7 +198,7 @@ proc FetchFile {file srvCrc} {
 				if {$::Terminate} { Return aborted }
 				if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
 				ResetConnection $url.
-				after $::Wait ;# wait a bit
+				after [expr {($retry - 1)*$::Wait}] ;# wait a bit
 			}
 			error {
 				Return httperr [::http::error $token] [MakeFile $url]
@@ -249,7 +249,7 @@ if {[string length locTimestamp] > 0} {
 			timeout {
 				if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
 				ResetConnection $url.
-				after $::Wait ;# wait a bit
+				after [expr {($retry - 1)*$::Wait}] ;# wait a bit
 			}
 		}
 	}
@@ -273,7 +273,7 @@ while {$retry > 0} {
 		timeout {
 			if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
 			ResetConnection $url.
-			after $::Wait ;# wait a bit
+			after [expr {($retry - 1)*$::Wait}] ;# wait a bit
 		}
 	}
 }

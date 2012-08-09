@@ -1819,6 +1819,7 @@
 ::fsbox::mc::Forward							"Continuar a '%s'"
 ::fsbox::mc::Backward						"Retroceder a '%s'"
 ::fsbox::mc::Delete							"Eliminar"
+::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
 ::fsbox::mc::Restore							"Restaurar"
 ::fsbox::mc::Duplicate						"Duplicar"
 ::fsbox::mc::CopyOf							"Copia de %s"
@@ -1834,6 +1835,7 @@
 ::fsbox::mc::Open								"&Abrir"
 ::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
 ::fsbox::mc::Rename							"&Renombrar"
+::fsbox::mc::Move								"Move" ;# NEW
 
 ::fsbox::mc::AddBookmark					"Agregar Marcador '%s'"
 ::fsbox::mc::RemoveBookmark				"Quitar Marcador '%s'"
@@ -1880,6 +1882,7 @@
 ::fsbox::mc::ErrorRenaming(file)			"Error cambiando de nombre el archivo '%old' a '%new': permiso denegado."
 ::fsbox::mc::InvalidFileExt				"Operación falló: '%s' tiene una extensión inválida."
 ::fsbox::mc::CannotRename					"No se puede cambiar el nombre a '%s' porque la carpeta/archivo ya existe."
+::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate					"No se puede crear la carpeta '%s' porque ya existe."
 ::fsbox::mc::ErrorCreate					"Error creando la carpeta: permiso denegado."
 ::fsbox::mc::FilenameNotAllowed			"El nombre de archivo '%s' no se permite."
@@ -1899,7 +1902,7 @@
 ::fsbox::mc::FileHasDisappeared			"El archivo '%s' ha desaparecido."
 ::fsbox::mc::CannotDelete					"No se puede borrar el archivo '%s'."
 ::fsbox::mc::CannotRename					"No se puede renombrar el archivo '%s'."
-::fsbox::mc::CannotDeleteDetail			"El archivo se encuentra en uso."
+::fsbox::mc::CurrentlyInUse				"El archivo se encuentra en uso."
 ::fsbox::mc::CannotOverwrite				"No se puede sobrescribir el archivo '%s'." 
 ::fsbox::mc::PermissionDenied				"Permiso denegado para el directorio '%s'."
 ::fsbox::mc::CannotOpenUri					"No se puede abrir la siguiente URI:"

@@ -1817,6 +1817,7 @@
 ::fsbox::mc::Forward							"Framåt till '%s'"
 ::fsbox::mc::Backward						"Bakåt till '%s'"
 ::fsbox::mc::Delete							"Radera"
+::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
 ::fsbox::mc::Restore							"Återställ"
 ::fsbox::mc::Duplicate						"Duplicera"
 ::fsbox::mc::CopyOf							"Kopia av %s"
@@ -1832,6 +1833,7 @@
 ::fsbox::mc::Open								"&Öppna"
 ::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
 ::fsbox::mc::Rename							"&Byt namn"
+::fsbox::mc::Move								"Move" ;# NEW
 
 ::fsbox::mc::AddBookmark					"Lägg till bokmärke '%s'"
 ::fsbox::mc::RemoveBookmark				"Ta bort bokmärke '%s'"
@@ -1878,6 +1880,7 @@
 ::fsbox::mc::ErrorRenaming(file)			"Fel vid namnbyte av filen '%old' till '%new': åtkomst nekad."
 ::fsbox::mc::InvalidFileExt				"Operationen misslyckades: '%s' har ett ogiltigt filtilläggg."
 ::fsbox::mc::CannotRename					"Kan inte byta namn till '%s'. Det finns redan en folder/fil med det namnet."
+::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate					"Kan inte skapa foldern '%s' Det finns redan en folder/fil med det namnet."
 ::fsbox::mc::ErrorCreate					"Fel vid skapande av folder: åtkomst nekad."
 ::fsbox::mc::FilenameNotAllowed			"Filnamnet '%s' är inte tillåtet."
@@ -1897,7 +1900,7 @@
 ::fsbox::mc::FileHasDisappeared			"Filen '%s' är försvunnen."
 ::fsbox::mc::CannotDelete					"Kan inte radera filen '%s'."
 ::fsbox::mc::CannotRename					"Kan inte byta namn på filen '%s'."
-::fsbox::mc::CannotDeleteDetail			"Filen används."
+::fsbox::mc::CurrentlyInUse				"Filen '%s' används."
 ::fsbox::mc::CannotOverwrite				"Kan inte skriva över filen '%s'."
 ::fsbox::mc::PermissionDenied				"Åtkomst nekad för foldern '%s'."
 ::fsbox::mc::CannotOpenUri					"Kan inte öppna följande  URI:"
