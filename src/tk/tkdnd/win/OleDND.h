@@ -1,8 +1,8 @@
 /*
  * OleDND.h --
  * 
- *    This file implements the windows portion of the drag&drop mechanish
- *    for the tk toolkit. The protocol in use under windows is the
+ *    This file implements the windows portion of the drag&drop mechanism
+ *    for the Tk toolkit. The protocol in use under windows is the
  *    OLE protocol. Based on code wrote by Gordon Chafee.
  *
  * This software is copyrighted by:
@@ -41,6 +41,12 @@
 
 #ifndef _OLE_DND_H
 #define _OLE_DND_H
+
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#ifndef WINVER
+#define WINVER 0x0500 /* version 5.0 */
+#endif /* !WINVER */
+#endif /* __MINGW32__ */
 
 #include <windows.h>
 #include <ole2.h>
@@ -103,18 +109,11 @@ extern "C" {
 /*****************************************************************************
  * Windows Clipboard formats.
  ****************************************************************************/
-#define STRING_(s) s,TEXT(#s)
+#define STRING_(s) {s,TEXT(#s)}
 typedef struct {
   UINT   cfFormat;
-  TCHAR *name;
+  const TCHAR *name;
 } CLIP_FORMAT_STRING_TABLE;
-
-// Older MinGW versions do not know CF_DIBV5.
-#if !defined(CF_DIBV5) && CF_MAX == 17
-# define CF_DIBV5 17
-# undef CF_MAX
-# define CF_MAX 18
-#endif
 
 static CLIP_FORMAT_STRING_TABLE ClipboardFormatBook[] = {
   STRING_(CF_TEXT),
@@ -131,9 +130,15 @@ static CLIP_FORMAT_STRING_TABLE ClipboardFormatBook[] = {
   STRING_(CF_WAVE),
   STRING_(CF_UNICODETEXT),
   STRING_(CF_ENHMETAFILE),
+#ifdef    CF_HDROP
   STRING_(CF_HDROP),
+#endif /* CF_HDROP */
+#ifdef    CF_LOCALE
   STRING_(CF_LOCALE),
+#endif /* CF_LOCALE */
+#ifdef    CF_DIBV5
   STRING_(CF_DIBV5),
+#endif /* CF_DIBV5 */
   STRING_(CF_OWNERDISPLAY),
   STRING_(CF_DSPTEXT),
   STRING_(CF_DSPBITMAP),
@@ -141,7 +146,7 @@ static CLIP_FORMAT_STRING_TABLE ClipboardFormatBook[] = {
   STRING_(CF_DSPENHMETAFILE),
   STRING_(CF_GDIOBJFIRST),
   STRING_(CF_PRIVATEFIRST),
-  0, 0
+  {0, 0}
 }; /* ClipboardFormatBook */
 
 /*****************************************************************************
@@ -401,7 +406,7 @@ public:
       return currentFormat;
     }; /* GetCurrentFormat */
 
-    TCHAR *GetCurrentFormatName(void) {
+    const TCHAR *GetCurrentFormatName(void) {
       for (int i = 0; ClipboardFormatBook[i].name != 0; i++) {
         if (ClipboardFormatBook[i].cfFormat == currentFormat)
                      return ClipboardFormatBook[i].name;
@@ -529,7 +534,7 @@ class TkDND_DropTarget: public IDropTarget {
               *pressedkeys = Tcl_NewListObj(0, NULL), *result,
               *codelist    = Tcl_NewListObj(0, NULL);
       int i, status, index;
-      static char *DropActions[] = {
+      static const char *DropActions[] = {
         "copy", "move", "link", "ask",  "private", "refuse_drop",
         "default", 
         (char *) NULL
@@ -613,7 +618,7 @@ class TkDND_DropTarget: public IDropTarget {
     STDMETHODIMP DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
       Tcl_Obj *objv[5], *pressedkeys = Tcl_NewListObj(0, NULL), *result;
       int i, status, index;
-      static char *DropActions[] = {
+      static const char *DropActions[] = {
         "copy", "move", "link", "ask",  "private", "refuse_drop",
         "default",
         (char *) NULL
@@ -681,7 +686,7 @@ class TkDND_DropTarget: public IDropTarget {
       Tcl_Obj *objv[7], *result, **typeObj, *data = NULL, *type,
               *pressedkeys = NULL;
       int i, type_index, status, index, typeObjc;
-      static char *DropTypes[] = {
+      static const char *DropTypes[] = {
         "CF_UNICODETEXT", "CF_TEXT", "CF_HDROP",
         "FileGroupDescriptorW", "FileGroupDescriptor",
         (char *) NULL
@@ -690,7 +695,7 @@ class TkDND_DropTarget: public IDropTarget {
         TYPE_CF_UNICODETEXT, TYPE_CF_TEXT, TYPE_CF_HDROP,
         TYPE_FILEGROUPDESCRIPTORW, TYPE_FILEGROUPDESCRIPTOR
       };
-      static char *DropActions[] = {
+      static const char *DropActions[] = {
         "copy", "move", "link", "ask",  "private", "refuse_drop",
         "default",
         (char *) NULL
@@ -1171,6 +1176,8 @@ private:
  ****************************************************************************/
 class TkDND_DropSource : public IDropSource {
 public:
+    int button;
+
     // IUnknown members
     HRESULT __stdcall QueryInterface(REFIID iid, void ** ppvObject) {
       // check to see what interface has been requested
@@ -1204,8 +1211,23 @@ public:
       // cancel the drop
       if(fEscapePressed == TRUE) return DRAGDROP_S_CANCEL;        
 
-      // if the <LeftMouse> button has been released, then do the drop!
-      if((grfKeyState & MK_LBUTTON) == 0) return DRAGDROP_S_DROP;
+      switch (button) {
+        case 1: {
+          // if the <LeftMouse> button has been released, then do the drop!
+          if((grfKeyState & MK_LBUTTON) == 0) return DRAGDROP_S_DROP;
+          break;
+        }
+        case 2: {
+          // if the <MiddleMouse> button has been released, then do the drop!
+          if((grfKeyState & MK_MBUTTON) == 0) return DRAGDROP_S_DROP;
+          break;
+        }
+        case 3: {
+          // if the <RightMouse> button has been released, then do the drop!
+          if((grfKeyState & MK_RBUTTON) == 0) return DRAGDROP_S_DROP;
+          break;
+        }
+      }
 
       // continue with the drag-drop
       return S_OK;
@@ -1220,6 +1242,12 @@ public:
     // Constructor / Destructor
     TkDND_DropSource() {
       m_lRefCount = 1;
+      button = 1;
+    }; /* TkDND_DropSource */
+
+    TkDND_DropSource(int b) {
+      m_lRefCount = 1;
+      button = b;
     }; /* TkDND_DropSource */
     
     ~TkDND_DropSource() {};
@@ -1228,4 +1256,4 @@ private:
     LONG   m_lRefCount;
 }; /* TkDND_DropSource */
 
-#endif _OLE_DND_H
+#endif /* _OLE_DND_H */

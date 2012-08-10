@@ -19,13 +19,7 @@
 #import <tkMacOSXInt.h>
 #import <Cocoa/Cocoa.h>
 
-#ifndef PACKAGE_NAME
-# define PACKAGE_NAME "tkDND"
-#endif
-
-#ifndef PACKAGE_VERSION
-# define PACKAGE_VERSION "2.3"
-#endif
+#define TKDND_OSX_KEVIN_WORKARROUND
 
 #define TkDND_Tag    1234
 
@@ -112,6 +106,9 @@ TkWindow* TkMacOSXGetTkWindow(NSWindow *w)  {
 DNDView* TkDND_GetDNDSubview(NSView *view, Tk_Window tkwin) {
   NSRect frame, bounds;
   DNDView* dnd_view = [view viewWithTag:TkDND_Tag];
+#ifdef TKDND_OSX_KEVIN_WORKARROUND
+  Rect bnds;
+#endif /* TKDND_OSX_KEVIN_WORKARROUND */
 
   if (dnd_view == nil) {
     dnd_view = [[DNDView alloc] init];
@@ -121,14 +118,23 @@ DNDView* TkDND_GetDNDSubview(NSView *view, Tk_Window tkwin) {
       [view addSubview:dnd_view positioned:NSWindowBelow relativeTo:nil];
     }
     [view setAutoresizesSubviews:true];
-    // Rect bnds;
-    // TkMacOSXWinBounds((TkWindow*)tkwin, &bnds);
-    // frame = NSMakeRect(bnds.left, bnds.top, 100000, 100000);
-    // frame.origin.y = 0;
-    // if (!NSEqualRects(frame, [dnd_view frame])) {
-    //   [dnd_view setFrame:frame];
-    // }
+    /*
+     * Bug fix by Kevin Walzer: On 23 Dec 2010, Kevin reported that he has
+     * found cases where the code below is needed, in order for DnD to work
+     * correctly under Snow Leopard 10.6. So, I am restoring it...
+     */
+#ifdef TKDND_OSX_KEVIN_WORKARROUND
+    /* Hack to make sure subview is set to take up entire geometry of window. */
+    TkMacOSXWinBounds((TkWindow*)tkwin, &bnds);
+    frame = NSMakeRect(bnds.left, bnds.top, 100000, 100000);
+    frame.origin.y = 0;
+    if (!NSEqualRects(frame, [dnd_view frame])) {
+      [dnd_view setFrame:frame];
+    }
+#endif /* TKDND_OSX_KEVIN_WORKARROUND */
   }
+
+#ifndef TKDND_OSX_KEVIN_WORKARROUND
   if (dnd_view == nil) return dnd_view;
 
   /* Ensure that we have the correct geometry... */
@@ -141,16 +147,8 @@ DNDView* TkDND_GetDNDSubview(NSView *view, Tk_Window tkwin) {
   if (!NSEqualRects(bounds, [dnd_view bounds])) {
     [dnd_view setBounds:bounds];
   }
+#endif /* TKDND_OSX_KEVIN_WORKARROUND */
   return dnd_view;
-#if 0
-  /* Hack to make sure subview is set to take up entire geometry of window... */
-  frame = NSMakeRect(bounds.left, bounds.top, 100000, 100000);
-  frame.origin.y = 0;
-  if (!NSEqualRects(frame, [dnd_view frame])) {
-    [dnd_view setFrame:frame];
-  }
-  return dnd_view;
-#endif
 }; /* TkDND_GetDNDSubview */
 
 /* Set flags for local DND operations, i.e. dragging within a single
@@ -760,13 +758,13 @@ int Tkdnd_Init (Tcl_Interp *interp) {
     return TCL_ERROR;
   }
 
-  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::registerdragwidget",
+  Tcl_CreateObjCommand(interp, "::macdnd::registerdragwidget",
                        TkDND_RegisterDragWidgetObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::unregisterdragwidget",
+  Tcl_CreateObjCommand(interp, "::macdnd::unregisterdragwidget",
                        TkDND_UnregisterDragWidgetObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
-  Tcl_CreateObjCommand(interp, "::tkdnd::::macdnd::dodragdrop",
+  Tcl_CreateObjCommand(interp, "::macdnd::dodragdrop",
                        TkDND_DoDragDropObjCmd,
                        (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL);
 
@@ -780,5 +778,3 @@ int Tkdnd_Init (Tcl_Interp *interp) {
 int Tkdnd_SafeInit(Tcl_Interp *ip) {
   return Tkdnd_Init(ip);
 }; /* Tkdnd_SafeInit */
-
-/* vi:set ts=2 sw=2 et: */

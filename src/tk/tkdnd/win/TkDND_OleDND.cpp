@@ -2,7 +2,7 @@
  * TkDND_OleDND.h -- Tk OleDND Drag'n'Drop Protocol Implementation
  * 
  *    This file implements the unix portion of the drag&drop mechanism
- *    for the tk toolkit. The protocol in use under windows is the
+ *    for the Tk toolkit. The protocol in use under windows is the
  *    OleDND protocol.
  *
  * This software is copyrighted by:
@@ -39,13 +39,8 @@
  */
 
 #include "OleDND.h"
-
-#ifndef PACKAGE_NAME
-# define PACKAGE_NAME "tkDND"
-#endif
-
-#ifndef PACKAGE_VERSION
-# define PACKAGE_VERSION "2.3"
+#if defined(HAVE_STRSAFE_H) || !defined(NO_STRSAFE_H)
+#include "Strsafe.h"
 #endif
 
 int TkDND_RegisterDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
@@ -136,14 +131,14 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
   Tcl_UniChar      *unicode, *ptr_u;
   FORMATETC        *m_pfmtetc;
   STGMEDIUM        *m_pstgmed;
-  static char *DropTypes[] = {
+  static const char *DropTypes[] = {
     "CF_UNICODETEXT", "CF_TEXT", "CF_HDROP",
     (char *) NULL
   };
   enum droptypes {
     TYPE_CF_UNICODETEXT, TYPE_CF_TEXT, TYPE_CF_HDROP
   };
-  static char *DropActions[] = {
+  static const char *DropActions[] = {
     "copy", "move", "link", "ask",  "private", "refuse_drop",
     "default",
     (char *) NULL
@@ -152,6 +147,7 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
     ActionCopy, ActionMove, ActionLink, ActionAsk, ActionPrivate,
     refuse_drop, ActionDefault
   };
+  size_t buffer_size;
 
   if (objc != 5 && objc != 6) {
     Tcl_WrongNumArgs(interp, 1, objv, "path actions types data ?mouse-button?");
@@ -210,11 +206,15 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
         case TYPE_CF_UNICODETEXT: {
           m_pfmtetc[i].cfFormat = CF_UNICODETEXT;
           unicode = Tcl_GetUnicodeFromObj(objv[4], &nDataLength);
-          m_pstgmed[i].hGlobal = GlobalAlloc(GHND, (nDataLength+1) *
-                                                   sizeof(Tcl_UniChar));
+          buffer_size = (nDataLength+1) * sizeof(Tcl_UniChar);
+          m_pstgmed[i].hGlobal = GlobalAlloc(GHND, buffer_size);
           if (m_pstgmed[i].hGlobal) {
             ptr_u = (Tcl_UniChar *) GlobalLock(m_pstgmed[i].hGlobal);
+#ifdef HAVE_STRSAFE_H
+            StringCchCopyW((LPWSTR) ptr_u, buffer_size, (LPWSTR) unicode);
+#else
             lstrcpyW((LPWSTR) ptr_u, (LPWSTR) unicode);
+#endif
             GlobalUnlock(m_pstgmed[i].hGlobal);
           }
           break;
@@ -234,68 +234,70 @@ int TkDND_DoDragDropObjCmd(ClientData clientData, Tcl_Interp *interp,
         case TYPE_CF_HDROP: {
           LPDROPFILES pDropFiles;
           Tcl_DString ds;
-          Tcl_Obj **File;
-          int file_nu;
+          Tcl_Obj **File, *native_files_obj = NULL, *obj;
+          int file_nu, j, size, len;
+          char *native_name;
+
           status = Tcl_ListObjGetElements(interp, objv[4], &file_nu, &File);
-          if (status !=TCL_OK) { elem_nu = i; goto error;}
+          if (status != TCL_OK) {elem_nu = i; goto error;}
+          /* What we expect is a list of filenames. Convert the filenames into
+           * the native format, and store the translated filenames into a new
+           * list... */
+          native_files_obj = Tcl_NewListObj(0, NULL);
+          if (native_files_obj == NULL) {elem_nu = i; goto error;}
+          size = 0;
+          for (j = 0; j < file_nu; ++j) {
+            Tcl_DStringInit(&ds);
+            native_name = Tcl_TranslateFileName(NULL, 
+                                                Tcl_GetString(File[j]), &ds);
+            if (native_name == NULL) {
+              Tcl_DStringFree(&ds);
+              continue;
+            }
+            obj = Tcl_NewStringObj(native_name, -1);
+            Tcl_ListObjAppendElement(NULL, native_files_obj, obj);
+            /* Get the length in unicode... */
+            Tcl_GetUnicodeFromObj(obj, &len);
+            size += len + 1; // NULL character...
+            Tcl_DStringFree(&ds);
+          }
+
+          buffer_size = sizeof(wchar_t) * (size+1);
           m_pfmtetc[i].cfFormat = CF_HDROP;
           m_pstgmed[i].hGlobal = GlobalAlloc(GHND, 
-                       (DWORD) (sizeof(DROPFILES)+(_MAX_PATH)*file_nu+1));
+                   (DWORD) (sizeof(DROPFILES) + buffer_size));
           if (m_pstgmed[i].hGlobal) {
             TCHAR *CurPosition;
             pDropFiles = (LPDROPFILES) GlobalLock(m_pstgmed[i].hGlobal);
             // Set the offset where the starting point of the file start.
             pDropFiles->pFiles = sizeof(DROPFILES);
             // File contains wide characters?
-#ifdef UNICODE
             pDropFiles->fWide = TRUE;
-#else
-            pDropFiles->fWide = FALSE;
-#endif /* UNICODE */
             CurPosition = (TCHAR *) (LPBYTE(pDropFiles) + sizeof(DROPFILES)); 
-            for (i = 0; i < file_nu; i++) {
-              char *native_name;
-              TCHAR *pszFileName;
-              TCHAR api_name[MAX_PATH+2];
-              // Convert File Name to native paths...
-              Tcl_DStringInit(&ds);
-              native_name = Tcl_TranslateFileName(NULL, 
-                                Tcl_GetString(File[i]), &ds);
-              if (native_name != NULL) {
-                if (Tcl_NumUtfChars(native_name, -1) > MAX_PATH) {
-                  native_name = "too long filename!";
-                }
-              }
-
-              if (native_name != NULL) {
-#ifdef UNICODE
-                Tcl_UtfToUniChar(native_name, (Tcl_UniChar *) api_name);
-                pszFileName = api_name;
-#else /* UNICODE */
-                lstrcpy(api_name, native_name);
-                // Convert the file name using the system encoding.
-                Tcl_DStringFree(&ds);
-                Tcl_DStringInit(&ds);
-                pszFileName = Tcl_UtfToExternalDString(NULL,
-                                                       api_name, -1, &ds);
-#endif /* UNICODE */
-              }
+            Tcl_ListObjGetElements(NULL, native_files_obj, &file_nu, &File);
+            for (j = 0; j < file_nu; j++) {
+              TCHAR *pszFileName = (TCHAR *)
+                                   Tcl_GetUnicodeFromObj(File[j], &len);
               // Copy the file name into global memory.
-              lstrcpy(CurPosition, pszFileName);
+#ifdef HAVE_STRSAFE_H
+              StringCchCopyW(CurPosition, buffer_size, pszFileName);
+#else
+              lstrcpyW(CurPosition, pszFileName);
+#endif
               /*
                * Move the current position beyond the file name copied, and
                * don't forget the NULL terminator (+1)
                */
-              CurPosition = 1 + _tcschr(pszFileName, '\0');
-              Tcl_DStringFree(&ds);
+              CurPosition += 1 + _tcschr(pszFileName, '\0') - pszFileName;
             }
             /*
              * Finally, add an additional null terminator, as per CF_HDROP
              * Format specs.
              */
-            CurPosition = '\0';
+            *CurPosition = '\0';
             GlobalUnlock(m_pstgmed[i].hGlobal);
           }
+          if (native_files_obj) Tcl_DecrRefCount(native_files_obj);
           break;
         }
       }
@@ -417,18 +419,18 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
   }
 
   /* Register the various commands */
-  if (Tcl_CreateObjCommand(interp, "::tkdnd::_RegisterDragDrop",
+  if (Tcl_CreateObjCommand(interp, "_RegisterDragDrop",
            (Tcl_ObjCmdProc*) TkDND_RegisterDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;
   }
-  if (Tcl_CreateObjCommand(interp, "::tkdnd::_RevokeDragDrop",
+  if (Tcl_CreateObjCommand(interp, "_RevokeDragDrop",
            (Tcl_ObjCmdProc*) TkDND_RevokeDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;
   }
 
-  if (Tcl_CreateObjCommand(interp, "::tkdnd::_DoDragDrop",
+  if (Tcl_CreateObjCommand(interp, "_DoDragDrop",
            (Tcl_ObjCmdProc*) TkDND_DoDragDropObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
       return TCL_ERROR;
@@ -441,5 +443,3 @@ int DLLEXPORT Tkdnd_Init(Tcl_Interp *interp) {
 int DLLEXPORT Tkdnd_SafeInit(Tcl_Interp *interp) {
   return Tkdnd_Init(interp);
 } /* Tkdnd_SafeInit */
-
-/* vi:set ts=2 sw=2 et: */
