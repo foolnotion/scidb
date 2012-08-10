@@ -1764,6 +1764,8 @@ proc RegisterDndEvents {w} {
 	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
 	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
 	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
+	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %X %Y]]
+	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %t %a %A]]
 }
 
 
@@ -1787,6 +1789,18 @@ proc HandleDropEvent {w action types actions} {
 		default	{ return [AskAboutAction $w $action $actions] }
 	}
 }
+
+
+proc HandleDragEvent {w x y} {
+	puts "HandleDragEvent: x=$x, y=$y"
+	return {ask DND_Files {/tmp/o9}}
+}
+
+
+proc FinishDragEvent {w t actionList currentAction} {
+	puts "FinishDragEvent: $actionList -- $currentAction"
+}
+
 
 
 proc AskAboutAction {w uriFiles actions} {

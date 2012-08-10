@@ -56,6 +56,7 @@ namespace eval xdnd {
   variable _drag_source {}
   variable _drop_target {}
   variable _prev_drop_target {}
+  variable _dragging 0
 
   proc debug {msg} {
     puts $msg

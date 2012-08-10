@@ -235,6 +235,8 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 		Atom xaHtmlUtf8			= 0;
 		Atom xaHtmlLatin1			= 0;
 
+		// TODO: text/uri-list
+
 		if (	type == Tk_InternAtom(tkwin, "text/plain")
 			|| type == Tk_InternAtom(tkwin, "text/html")
 			|| type == Tk_InternAtom(tkwin, "text/x-moz-url")
@@ -339,6 +341,9 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* selName		= 0;
 	char const* targetName	= 0;
 	long			timestamp	= CurrentTime;
+	Tcl_Obj*		used[6]		= {  0, 0, 0, 0, 0, 0 };
+	Tcl_Obj*		args[8]		= { objv[0], objv[1] };
+	int			nargs			= 2;
 
 	for ( ; count > 0; count -= 2, objs += 2)
 	{
@@ -365,14 +370,20 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			case GET_DISPLAYOF:
 				path = Tcl_GetString(objs[1]);
+				used[2*GET_DISPLAYOF    ] = objs[0];
+				used[2*GET_DISPLAYOF + 1] = objs[1];
 				break;
 
 			case GET_SELECTION:
 				selName = Tcl_GetString(objs[1]);
+				used[2*GET_SELECTION    ] = objs[0];
+				used[2*GET_SELECTION + 1] = objs[1];
 				break;
 
 			case GET_TYPE:
 				targetName = Tcl_GetString(objs[1]);
+				used[2*GET_TYPE    ] = objs[0];
+				used[2*GET_TYPE + 1] = objs[1];
 				break;
 
 			case GET_TIME:
@@ -415,7 +426,14 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_OK;
 	}
 
-	return invokeTkSelection(ti, objc, objv);
+	// strip "-time" from objv
+	for (unsigned i = 0; i < 6; ++i)
+	{
+		if (used[i])
+			args[nargs++] = used[i];
+	}
+
+	return invokeTkSelection(ti, nargs, args);
 }
 
 
