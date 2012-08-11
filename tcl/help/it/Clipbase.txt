@@ -25,7 +25,7 @@ Scidb fornisce il Clipbase già aperto ad ogni sua nuova istanza. Il Clipbase è c
  
 <p>
 Il Clipbase non può essere chiuso. Esiste una funzione per svuotare il Clipbase.
-(see <a href="Database-Switcher.html#Empty-Clipbase">
+(vedi <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 

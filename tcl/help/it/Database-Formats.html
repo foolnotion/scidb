@@ -40,7 +40,7 @@
 
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
-Questo Ë il formato proprio di Scidb. L'uso di questo formato Ë fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornir‡ un'ottima velocit‡ nell'uso.
+Questo √® il formato proprio di Scidb. L'uso di questo formato √® fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornir√† un'ottima velocit√† nell'uso.
 
 <p>
 I database Scidb sono sempre codificati con il set caratteri <span style="white-space:nowrap;">UTF-8</span>. Per questo
@@ -71,17 +71,17 @@ A database in Scidb's format is divided into several files:
 
 <h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
-Questo Ë il formato database di Scid e data la sua ampia distribuzione Ë supportato sia in lettura sia in scrittura. Usando questo formato non sar‡ possibile usare tutte le funzioni disponibili in Scidb.
+Questo √® il formato database di Scid e data la sua ampia distribuzione √® supportato sia in lettura sia in scrittura. Usando questo formato non sar√† possibile usare tutte le funzioni disponibili in Scidb.
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-I database Scid saranno aperti in modalit‡ sola-lettura, l'utente puÚ passare alla modalit‡
-in scrittura dopo l'apertura. L'ultima modalit‡ di utilizzo sar‡ preservata alla prossima apertura.
+I database Scid saranno aperti in modalit√† sola-lettura, l'utente pu√≤ passare alla modalit√†
+in scrittura dopo l'apertura. L'ultima modalit√† di utilizzo sar√† preservata alla prossima apertura.
 </div>
 
 <p>
 In alcuni casi l'utente deve scegliere la codifica appropriata nell'aprire il
 database, per assicurare una corretta visualizzazione dei nomi e di altro testo.
-I database pi˘ recenti potrebbero avere codifica <span style="white-space:nowrap;">UTF-8</span>, database pi˘
+I database pi√π recenti potrebbero avere codifica <span style="white-space:nowrap;">UTF-8</span>, database pi√π
 vecchi potrebbero essere scritti con  il set di caratteri <span style="white-space:nowrap;">Latin-1</span>
 (ISO-<span style="white-space:nowrap;">8859-1</span>), il formato Scid non fornisce informazioni sulla codifica
 utilizzata. In alcuni casi tuttavia l'identificazione automatica del set caratteri dovrebbe
@@ -115,7 +115,7 @@ Questo formato ricorda per struttura il formato Scidb:
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
-L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura Ë supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparir‡ il messaggio che comunica la non riuscita dell'operazione di decodifica.
+L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura √® supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparir√† il messaggio che comunica la non riuscita dell'operazione di decodifica.
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
 I database ChessBase non possono essere usati come databases di riferimento.
@@ -123,12 +123,12 @@ I database ChessBase non possono essere usati come databases di riferimento.
 
 <p>
 Generalmente, questo database ha codifica con set caratteri CP1252, ma in alcuni casi
-una selezione manuale del set caratteri durante l'apertura del database puÚ essere
+una selezione manuale del set caratteri durante l'apertura del database pu√≤ essere
 necessaria, per assicurare una corretta visualizzazione dei nomi e di altro testo.
 </p>
 
 <p>
-Il formato database di ChessBase Ë diviso in diversi file separati, quelli pi˘ importanti sono:
+Il formato database di ChessBase √® diviso in diversi file separati, quelli pi√π importanti sono:
 </p>
 
 <div class="box">
@@ -149,7 +149,7 @@ Il formato database di ChessBase Ë diviso in diversi file separati, quelli pi˘ i
 
 <h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
-Il formato <abbr>PGN</abbr> (Portable Game Notation) Ë uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> Ë permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
+Il formato <abbr>PGN</abbr> (Portable Game Notation) √® uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> √® permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 
 <p>
 Secondo lo standard PGN un file PGN ha codifica <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
@@ -169,14 +169,14 @@ Standard: Portable Game Notation Specification and Implementation Guide</a>.
 <h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Archivio Database (<abbr>.scv</abbr>)</h2>
 
 <p>
-L'archivio database di Scidb Ë basato su un formato archivio indipendente,
-e contiene uno (o pi˘) database nella forma archiviata. Questo facilita
-il trasferimento di database su internet, perchÈ si tratta di un singolo file
-invece di molti. Questo archivio database non Ë limitato a uno specifico formato database.
+L'archivio database di Scidb √® basato su un formato archivio indipendente,
+e contiene uno (o pi√π) database nella forma archiviata. Questo facilita
+il trasferimento di database su internet, perch√© si tratta di un singolo file
+invece di molti. Questo archivio database non √® limitato a uno specifico formato database.
 </p>
 
 <p>
-Una dettagliata descrizione di questo formato Ë alla pagina
+Una dettagliata descrizione di questo formato √® alla pagina
 <!-- NOTE for translators: only German and English specification will be available -->
 <!-- This means: do not translate next line -->
 <a href="../en/Database-Archive.html">Specification of database archive</a>.
