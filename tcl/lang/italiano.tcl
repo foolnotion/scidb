@@ -57,7 +57,7 @@
 ::mc::Close				"Chiudi"
 ::mc::Color				"Colore"
 ::mc::Colors			"Colori"
-::mc::Configuration	"Configuration" ;# NEW
+::mc::Configuration	"Configurazione"
 ::mc::Copy				"Copia"
 ::mc::Cut				"Taglia"
 ::mc::Dark				"Scura"
@@ -255,54 +255,54 @@
 ::archive::mc::UnpackFile					"Estrai %s"
 
 ### player photos ######################################################
-::util::photos::mc::InstallPlayerPhotos		"Install/Update Player Photos" ;# NEW
-::util::photos::mc::TimeOut						"Timeout occurred." ;# NEW
-::util::photos::mc::EnterPassword				"Personal Password" ;# NEW
-::util::photos::mc::Download						"Download" ;# NEW
-::util::photos::mc::SharedInstallation			"Shared installation" ;# NEW
-::util::photos::mc::LocalInstallation			"Private installation" ;# NEW
-::util::photos::mc::RetryLater					"Please retry later." ;# NEW
-::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
-::util::photos::mc::PhotoFiles					"Photo Files" ;# NEW
+::util::photos::mc::InstallPlayerPhotos		"Installa/Aggiorna le foto dei giocatori"
+::util::photos::mc::TimeOut						"Tempo per la connessione scaduto."
+::util::photos::mc::EnterPassword				"Password personale"
+::util::photos::mc::Download						"Download"
+::util::photos::mc::SharedInstallation			"Installazione condivisa"
+::util::photos::mc::LocalInstallation			"Installazione privata"
+::util::photos::mc::RetryLater					"Per favore riprova più tardi."
+::util::photos::mc::DownloadStillInProgress	"Il download delle foto è ancora in corso."
+::util::photos::mc::PhotoFiles					"File di foto"
 
-::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
-::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
-::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%." ;# NEW
-::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
+::util::photos::mc::RequiresSuperuserRights	"L'installazione/aggiornamento richiede diritti di super-user.\n\nNota che l apassword non sarà accettata se il tuo utente non è nel gruppo wheel." ;# sudoers file?
+::util::photos::mc::RequiresInternetAccess	"L'installazione/aggiornamento delle foto dei giocatori richiede una connessione internet."
+::util::photos::mc::AlternativelyDownload(0)	"Alternativamente puoi scaricare le foto da %link%. Installa questi file nella directory %local%."
+::util::photos::mc::AlternativelyDownload(1)	"Alternativamente puoi scaricare questi file da %link%. Installa questi file nella cartella condivisa %shared%, o nella cartella privata %local%.
 
-::util::photos::mc::Error(nohttp)				"Cannot open an internet connection because package TclHttp is not installed." ;# NEW
-::util::photos::mc::Error(busy)					"The installation/update is already running." ;# NEW
-::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed." ;# NEW
-::util::photos::mc::Error(passwd)				"The password is wrong." ;# NEW
-::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
-::util::photos::mc::Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
+::util::photos::mc::Error(nohttp)				"Non posso aprire una connessione internet perché il pacchetto TclHttp non è installato."
+::util::photos::mc::Error(busy)					"L'installazione/aggiornamento è ancora in corso."
+::util::photos::mc::Error(failed)				"Errore inaspettato: l'invocazione della sub-routine è fallita."
+::util::photos::mc::Error(passwd)				"La password è sbagliata."
+::util::photos::mc::Error(nosudo)				"Impossibile invocare il comando 'sudo' perché il tuo utente non è nel gruppo wheel."
+::util::photos::mc::Detail(nosudo)				"Per aggirare il problema puoi fare un'installazione privata, o lanciare il programma come super-user."
 
-::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date." ;# NEW
-::util::photos::mc::Message(finished)			"The installation/update of photo files has finished." ;# NEW
-::util::photos::mc::Message(broken)				"Broken Tcl library version." ;# NEW
-::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'." ;# NEW
-::util::photos::mc::Message(missing)			"Cannot find directory '%s'." ;# NEW
-::util::photos::mc::Message(httperr)			"HTTP error: %s" ;# NEW
-::util::photos::mc::Message(httpcode)			"Unexpected HTTP code %s." ;# NEW
-::util::photos::mc::Message(noconnect)			"HTTP connection failed." ;# NEW
-::util::photos::mc::Message(timeout)			"HTTP timeout occurred." ;# NEW
-::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
-::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(notfound)			"Download aborted because photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(aborted)			"User has aborted download." ;# NEW
-::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died." ;# NEW
+::util::photos::mc::Message(uptodate)			"Le foto sono già aggiornate."
+::util::photos::mc::Message(finished)			"L'installazione/aggiornamento delle foto è finito."
+::util::photos::mc::Message(broken)				"La versione della libreria Tcl è corrotta."
+::util::photos::mc::Message(noperm)				"Non hai diritti di scittura nella cartella '%s'."
+::util::photos::mc::Message(missing)			"Impossibile trovare la cartella '%s'."
+::util::photos::mc::Message(httperr)			"Errore HTTP: %s"
+::util::photos::mc::Message(httpcode)			"Codice HTTP inaspettato %s."
+::util::photos::mc::Message(noconnect)			"Connessione HTTP fallita."
+::util::photos::mc::Message(timeout)			"Tempo di connessione HTTP scaduto."
+::util::photos::mc::Message(crcerror)			"Errore nel Checksum. Probabilmente il server è al momento sottoposto a manutenzione."
+::util::photos::mc::Message(maintenance)		"Il server che ospita le foto è al momento in manutenzione."
+::util::photos::mc::Message(notfound)			"Download interrotto perché il server che ospita le foto è al momento in manutenzione."
+::util::photos::mc::Message(aborted)			"L'utente ha interrotto il download."
+::util::photos::mc::Message(killed)				"Interruzione inaspettata del download. La sub-routine è cessata." ;# has died?
 
-::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s." ;# NEW
-::util::photos::mc::Detail(noconnect)			"Probably you don't have an internet connection." ;# NEW
-::util::photos::mc::Detail(badhost)				"Another possibility is a bad host, or a bad port." ;# NEW
+::util::photos::mc::Detail(nohttp)				"Per favore installa il pacchetto TclHttp, per esemio %s."
+::util::photos::mc::Detail(noconnect)			"Probabilmente non hai una connessione internet."
+::util::photos::mc::Detail(badhost)				"Un'altra possibilità è un cattivo host, o una cattiva porta."
 
-::util::photos::mc::Log(started)					"Installation/update of photo files started at %s." ;# NEW
-::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s." ;# NEW
-::util::photos::mc::Log(destination)			"Destination directory for photo file download is '%s'." ;# NEW
-::util::photos::mc::Log(created)					"%s file(s) created." ;# NEW
-::util::photos::mc::Log(deleted)					"%s file(s) deleted." ;# NEW
-::util::photos::mc::Log(skipped)					"%s file(s) skipped." ;# NEW
-::util::photos::mc::Log(updated)					"%s file(s) updated." ;# NEW
+::util::photos::mc::Log(started)					"L'installazione/aggiornamento delle foto è cominciato a %s."
+::util::photos::mc::Log(finished)				"L'installazione/aggiornamneto delle foto è finito a %s."
+::util::photos::mc::Log(destination)			"La cartella di destinazione del download è '%s'."
+::util::photos::mc::Log(created)					"%s file(s) creati."
+::util::photos::mc::Log(deleted)					"%s file(s) eliminati."
+::util::photos::mc::Log(skipped)					"%s file(s) saltati."
+::util::photos::mc::Log(updated)					"%s file(s) aggiornati."
 
 ### application ########################################################
 ::application::mc::Database				"&Database"
@@ -313,7 +313,7 @@
 ::application::mc::UndockWindow			"Sblocca Finestra"
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Spegni..."
-::application::mc::QuitAnyway				"Quit anyway?" ;# NEW
+::application::mc::QuitAnyway				"Uscire comunque?"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"
@@ -511,7 +511,7 @@
 ::application::pgn::mc::SuffixCommentaries				"Commenti dopo mossa"
 ::application::pgn::mc::StripOriginalComments			"Rimuovi commenti originali"
 
-::application::pgn::mc::LanguageSelection					"Lingue" ;# NEW change to "Language Selection"
+::application::pgn::mc::LanguageSelection					"Selezione Lingue"
 ::application::pgn::mc::MoveNotation						"Muovi Notazione"
 ::application::pgn::mc::CollapseVariations				"Comprimi Varianti"
 ::application::pgn::mc::ExpandVariations					"Espandi Varianti"
@@ -679,66 +679,66 @@
 ::board::texture::mc::PreselectedOnly "Solo preselezionato"
 
 ### pgn-setup ##########################################################
-::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
-::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
-::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser" ;# NEW
-::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor" ;# NEW
-::pgn::setup::mc::Pixel								"pixel" ;# NEW
-::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
-::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
-::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
+::pgn::setup::mc::Configure(editor)				"Personalizza l'editor"
+::pgn::setup::mc::Configure(browser)			"Personalizza il testo in output"
+::pgn::setup::mc::TakeOver(editor)				"Imposta configurazione dallo Sfoglia Partite"
+::pgn::setup::mc::TakeOver(browser)				"Imposta configurazione dall'Editor Partite"
+::pgn::setup::mc::Pixel								"pixel"
+::pgn::setup::mc::RevertSettings					"Torna alla configurazione iniziale"
+::pgn::setup::mc::ResetSettings					"Torna alla configurazione di produzione"
+::pgn::setup::mc::DiscardAllChanges				"Annulla tutte le modifiche applicate?"
 
-::pgn::setup::mc::Setup(Appearance)				"Appearance" ;# NEW
-::pgn::setup::mc::Setup(Layout)					"Layout" ;# NEW
-::pgn::setup::mc::Setup(Diagrams)				"Diagrams" ;# NEW
-::pgn::setup::mc::Setup(MoveStyle)				"Move Style" ;# NEW
+::pgn::setup::mc::Setup(Appearance)				"Aspetto"
+::pgn::setup::mc::Setup(Layout)					"Layout"
+::pgn::setup::mc::Setup(Diagrams)				"Diagrammi"
+::pgn::setup::mc::Setup(MoveStyle)				"Stile Mossa"
 
-::pgn::setup::mc::Setup(Fonts)					"Fonts" ;# NEW
-::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
-::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
-::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
-::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+::pgn::setup::mc::Setup(Fonts)					"Fonts"
+::pgn::setup::mc::Setup(font-and-size)			"Font e dimensione testo"
+::pgn::setup::mc::Setup(figurine-font)			"Figurine (normale)"
+::pgn::setup::mc::Setup(figurine-bold)			"Figurine (grassetto)"
+::pgn::setup::mc::Setup(symbol-font)			"Simboli"
 
-::pgn::setup::mc::Setup(Colors)					"Colors" ;# NEW
-::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
-::pgn::setup::mc::Setup(start-position)		"Start Position" ;# NEW
-::pgn::setup::mc::Setup(variations)				"Variations" ;# NEW
-::pgn::setup::mc::Setup(numbering)				"Numbering" ;# NEW
-::pgn::setup::mc::Setup(brackets)				"Brackets" ;# NEW
-::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
-::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
-::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
-::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
-::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
-::pgn::setup::mc::Setup(result)					"Result" ;# NEW
-::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
-::pgn::setup::mc::Setup(next-moves)				"Next Moves" ;# NEW
-::pgn::setup::mc::Setup(empty-game)				"Empty Game" ;# NEW
+::pgn::setup::mc::Setup(Colors)					"Colori"
+::pgn::setup::mc::Setup(Highlighting)			"Evidenziazione"
+::pgn::setup::mc::Setup(start-position)		"Posizione Iniziale"
+::pgn::setup::mc::Setup(variations)				"Varianti"
+::pgn::setup::mc::Setup(numbering)				"Numerazione"
+::pgn::setup::mc::Setup(brackets)				"Parentesi"
+::pgn::setup::mc::Setup(illegal-move)			"Mosse Illegali"
+::pgn::setup::mc::Setup(comments)				"Commenti"
+::pgn::setup::mc::Setup(annotation)				"Annotazioni"
+::pgn::setup::mc::Setup(marks)					"Codici"
+::pgn::setup::mc::Setup(move-info)				"Informazioni Mossa"
+::pgn::setup::mc::Setup(result)					"Risultato"
+::pgn::setup::mc::Setup(current-move)			"Mossa Corrente"
+::pgn::setup::mc::Setup(next-moves)				"Prossima Mossa"
+::pgn::setup::mc::Setup(empty-game)				"Partita Vuota"
 
-::pgn::setup::mc::Setup(Hovers)					"Hovers" ;# NEW
-::pgn::setup::mc::Setup(hover-move)				"Move" ;# NEW
-::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
-::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+::pgn::setup::mc::Setup(Hovers)					"Al passaggio del mouse"
+::pgn::setup::mc::Setup(hover-move)				"Mossa"
+::pgn::setup::mc::Setup(hover-comment)			"Commento"
+::pgn::setup::mc::Setup(hover-move-info)		"Informazioni Mossa"
 
-::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::Section(ParLayout)			"Layout Paragrafo"
 ::pgn::setup::mc::ParLayout(use-spacing)		"Usa spaziatura di paragrafo"
 ::pgn::setup::mc::ParLayout(column-style)		"Stile colonna"
-::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
-::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indentazione per Mossa Bianca"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indentazione per Mossa Nera"
 ::pgn::setup::mc::ParLayout(mainline-bold)	"Grassetto per mosse nella linea principale"
 
-::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
-::pgn::setup::mc::Variations(width)				"Indent Width" ;# NEW
-::pgn::setup::mc::Variations(level)				"Indent Level" ;# NEW
+::pgn::setup::mc::Section(Variations)			"Layout Varianti"
+::pgn::setup::mc::Variations(width)				"Larghezza Indentazione"
+::pgn::setup::mc::Variations(level)				"Livello Indentazione"
 
-::pgn::setup::mc::Section(Display)				"Display" ;# NEW
-::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
-::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+::pgn::setup::mc::Section(Display)				"Visualizzazione"
+::pgn::setup::mc::Display(numbering)			"Mostra Numerazione Varianti"
+::pgn::setup::mc::Display(moveinfo)				"Mostra Informazioni Mossa"
 
-::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Section(Diagrams)				"Diagrammi"
 ::pgn::setup::mc::Diagrams(show)					"Mostra diagrammi"
-::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
-::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
+::pgn::setup::mc::Diagrams(square-size)		"Grandezza Casa"
+::pgn::setup::mc::Diagrams(indentation)		"Larghezza Indentazione"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Segna partita come eliminata"
@@ -956,10 +956,10 @@
 ::font::mc::CopyFile									"Copiando i file %s"
 ::font::mc::UpdateFontCache						"Aggiornando cache caratteri"
 
-::font::mc::ChooseFigurineFont					"Choose figurine font" ;# NEW
-::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
-::font::mc::IncreaseFontSize						"Increase Font Size" ;# NEW
-::font::mc::DecreaseFontSize						"Decrease Font Size" ;# NEW
+::font::mc::ChooseFigurineFont					"Scegli un font figurine"
+::font::mc::ChooseSymbolFont						"Scegli un font per i simboli"
+::font::mc::IncreaseFontSize						"Aumenta Grandezza Font"
+::font::mc::DecreaseFontSize						"Diminuisci Grandezza Font"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Posizione di partenza"
@@ -1294,7 +1294,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Aggiungi modalità dopo il tipo dell'evento"
 ::export::mc::Option(pgn,comment_to_html)							"Scrivi commento in stile HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Escludi partite con mosse illegali"
-::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
+::export::mc::Option(pgn,use_utf8_encoding)						"Usa encoding UTF-8"
 
 ### notation ###########################################################
 ::notation::mc::Notation		"Notazione"
@@ -1309,7 +1309,7 @@
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Figurines"
 ::figurines::mc::Graphic	"Grafica"
-::figurines::mc::User		"User" ;# NEW meaning is "user defined"
+::figurines::mc::User		"Definito dall'utente"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Salva Partita"
@@ -1765,7 +1765,7 @@
 ::dialog::choosecolor::mc::Old				"Vecchio"
 ::dialog::choosecolor::mc::Current			"Attuale"
 ::dialog::choosecolor::mc::Color				"Colore"
-::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
+::dialog::choosecolor::mc::HexCode			"Codice Esadecimale"
 ::dialog::choosecolor::mc::ColorSelection	"Selezione Colore"
 ::dialog::choosecolor::mc::Red				"Rosso"
 ::dialog::choosecolor::mc::Green				"Verde"
@@ -1817,7 +1817,7 @@
 ::fsbox::mc::Forward							"Avanti a '%s'"
 ::fsbox::mc::Backward						"Indietro a '%s'"
 ::fsbox::mc::Delete							"Elimina"
-::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
+::fsbox::mc::MoveToTrash					"Sposta nel Cestino"
 ::fsbox::mc::Restore							"Ripristina"
 ::fsbox::mc::Duplicate						"Duplica"
 ::fsbox::mc::CopyOf							"Copia di %s"
@@ -1831,9 +1831,9 @@
 ::fsbox::mc::Cancel							"&Cancella"
 ::fsbox::mc::Save								"&Salva"
 ::fsbox::mc::Open								"A&pri"
-::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Overwrite						"&Sovrascrivi"
 ::fsbox::mc::Rename							"&Rinomina"
-::fsbox::mc::Move								"Move" ;# NEW
+::fsbox::mc::Move								"Muovi"
 
 ::fsbox::mc::AddBookmark					"Aggiungi Segnalibro '%s'"
 ::fsbox::mc::RemoveBookmark				"Rimuovi il segnalibro '%s'"
@@ -1880,7 +1880,7 @@
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
 ::fsbox::mc::InvalidFileExt				"Operazione fallita: '%s' ha un'estensione file non valida."
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
-::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
+::fsbox::mc::CannotMove						"Impossibile spostare il file '%s'."
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
@@ -1906,17 +1906,17 @@
 ::fsbox::mc::CannotOpenUri					"Impossibile aprire il seguente URI:"
 ::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
 ::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
-::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
-::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
-::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
-::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
-::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
-::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
-::fsbox::mc::NewName							"New name" ;# NEW
+::fsbox::mc::UriRejectedDetail			"Solo i seguenti tipi di file possono essere gestiti."
+::fsbox::mc::OperationAborted				"Operazione interrotta."
+::fsbox::mc::ApplyOnDirectories			"Sei sicuro di voler appllicare l'operazione selezionata sulle (seguenti) cartelle?"
+::fsbox::mc::EntryAlreadyExists			"Valore già esistente"
+::fsbox::mc::AnEntryAlreadyExists		"Un valore '%s' è già presente."
+::fsbox::mc::SourceDirectoryIs			"La cartella d'origine è '%s'."
+::fsbox::mc::NewName							"Nuovo nome"
 
-::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
-::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
-::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
+::fsbox::mc::DropAction(move)				"Sposta qui"
+::fsbox::mc::DropAction(copy)				"Copia qui"
+::fsbox::mc::DropAction(link)				"Collega qui"
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"
