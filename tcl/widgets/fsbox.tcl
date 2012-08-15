@@ -264,6 +264,7 @@ proc fsbox {w type args} {
 	set Vars(lookup:$Vars(folder:home)) home
 	set Vars(lookup:$Vars(folder:filesystem)) filesystem
 	set Vars(history:folder) ""
+	set Vars(dragging) 0
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
 #	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
 
@@ -315,7 +316,7 @@ proc fsbox {w type args} {
 	bind $top.lbl_filename <<AltUnderlined>> [list focus $top.ent_filename]
 	bind $top.ent_filename <FocusIn> [namespace code { FocusIn %W }]
 	bind $top.ent_filename <FocusOut> [namespace code { FocusOut %W }]
-	bind $top.ent_filename <Return> [namespace code [list Activate $w]]
+	bind $top.ent_filename <Return> [namespace code [list Activate $w yes]]
 	bind $top.ent_filename <Return> {+ break }
 	bind $top.ent_filename <Any-KeyRelease> [namespace code [list CheckFileEncoding $w]]
 
@@ -433,7 +434,9 @@ proc fsbox {w type args} {
 	changeFileDialogType $w $type
 
 	bind $Vars(button:ok) <Return> [namespace code { InvokeOk %W }]
+	bind $Vars(button:ok) <Return> {+ break }
 	bind $Vars(button:cancel) <Return> [namespace code [list Cancel $w]]
+	bind $Vars(button:cancel) <Return> {+ break }
 
 	if {$type eq "save"} { useSaveMode $w $Vars(savemode) }
 	if {[llength $Vars(helpcommand)]} { pack $buttons.help -pady 5 -padx 5 -fill x -side left }
@@ -445,6 +448,7 @@ proc fsbox {w type args} {
 	set tl [winfo toplevel $top]
 #	bind $tl <Escape>		[list $Vars(button:cancel) invoke]
 	bind $tl <Return>		[list $Vars(button:ok) invoke]
+	bind $tl <Return>		{+ break }
 	bind $tl <Alt-Key>	[namespace code [list AltKeyInDialog $top $tl %A]]
 	bind $tl <Alt-Left>	[namespace code [list Undo $top $w]]
 	bind $tl <Alt-Right>	[namespace code [list Redo $top $w]]
@@ -1224,12 +1228,14 @@ proc DirChanged {w {useHistory 1}} {
 	if {$HaveFAM && [llength $Vars(fam)] == 0} {
 		set Vars(fam) [namespace code [list FAMHandler $w]]
 		set Vars(fam:lastid) ""
-		if {[catch { ::fam::open $Vars(fam) } _ err]} {
+		if {[catch { ::fam::open $Vars(fam) } Vars(fam) err]} {
 			array set opts $err
 			puts stderr "'fam::open failed: $opts(-errorinfo)"
-			set Vars(fam) {}
+			set HaveFAM 0
+		} elseif {[string length $Vars(fam)] == 0} {
 			set HaveFAM 0
 		}
+		if {$HaveFAM} { set Vars(fam) {} }
 	}
 	if {[llength $Vars(fam)] && [string length $Vars(prevFolder)]} {
 		if {[catch { ::fam::remove $Vars(fam) $Vars(prevFolder) } _ err]} {
@@ -1764,8 +1770,9 @@ proc RegisterDndEvents {w} {
 	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
 	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
 	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
-	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %X %Y]]
-	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %t %a %A]]
+	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %t %X %Y]]
+	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %A]]
+	bind $t <<DragPosition>> [namespace code [list DragPosition $w %V %X %Y]]
 }
 
 
@@ -1782,6 +1789,7 @@ proc HandleDropEvent {w action types actions} {
 
 	if {[string length $Vars(folder)] == 0} { return refuse_drop }
 	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
+	if {$Vars(dragging)} { return refuse_drop }
 
 	switch $action {
 		enter		{ return ask }
@@ -1791,14 +1799,33 @@ proc HandleDropEvent {w action types actions} {
 }
 
 
-proc HandleDragEvent {w x y} {
-	puts "HandleDragEvent: x=$x, y=$y"
-	return {ask DND_Files {/tmp/o9}}
+proc HandleDragEvent {w types x y} {
+	variable ${w}::Vars
+
+	set Vars(dragging) 1
+	lassign [filelist::GetCurrentSelection $w] _ _ file
+	set files {}
+
+	if {[string length $Vars(deletecommand)]} {
+		foreach f [{*}$Vars(deletecommand) $file] {
+			if {[file exists $f]} { lappend files $f }
+		}
+	} else {
+		lappend files $file
+	}
+
+	return [list {copy move link ask private} DND_Files $files]
 }
 
 
-proc FinishDragEvent {w t actionList currentAction} {
-	puts "FinishDragEvent: $actionList -- $currentAction"
+proc DragPosition {w dst x y} {
+	# TODO: we like to move a database icon
+}
+
+
+proc FinishDragEvent {w currentAction} {
+	variable ${w}::Vars
+	set Vars(dragging) 0
 }
 
 
@@ -2273,6 +2300,7 @@ proc Build {w path args} {
 	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
 	bind $t <Key-space> [namespace code [list InvokeBookmark $w]]
 	bind $t <Return> [namespace code [list InvokeBookmark $w]]
+	bind $t <Return> {+ break }
 
 	if {[llength $Vars(inspectcommand)]} {
 		bind $t <ButtonPress-2> [namespace code [list InspectBookmark $w show %x %y]]
@@ -2885,6 +2913,7 @@ proc Build {w path args} {
 	bind $t <ButtonPress-3> [namespace code [list PopupMenu $w %x %y]]
 	bind $t <Key-space> [namespace code [list InvokeFile $w]]
 	bind $t <Return> [namespace code [list InvokeFile $w]]
+	bind $t <Return> {+ break }
 
 	if {[llength $Vars(inspectcommand)]} {
 		bind $t <ButtonPress-2>		[namespace code [list Inspect $w show %x %y]]
@@ -2930,7 +2959,7 @@ proc DetailsLayout {w} {
 
 	catch { $t item delete 1 end }
 	foreach col [$t column list] { $t column delete $col }
-# 	$t style delete {*}[$t style names]
+	foreach sty [$t style names] { $t style delete $sty }
 	$t element delete {*}[$t element names]
 
 	if {[info exists Vars(column:name)]} {

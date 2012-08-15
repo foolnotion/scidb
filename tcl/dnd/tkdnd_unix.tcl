@@ -319,6 +319,42 @@ proc xdnd::_HandleXdndDrop { time } {
 };# xdnd::_HandleXdndDrop
 
 # ----------------------------------------------------------------------------
+#  Command xdnd::_HandleXdndDrop
+# ----------------------------------------------------------------------------
+proc xdnd::_HandleDragPosition { window rootX rootY } {
+  variable _types
+  variable _typelist
+  variable _actionlist
+  variable _pressedkeys
+  variable _action
+  variable _common_drag_source_types
+  variable _common_drop_target_types
+  variable _dodragdrop_drag_source
+
+  ## Call the <<DragPosition>> event.
+  # debug "\t<<DragPosition>> on $_dodragdrop_drag_source"
+  set cmd [bind $_dodragdrop_drag_source <<DragPosition>>]
+  if {[string length $cmd]} {
+    set _codelist $_typelist
+    set cmd [string map [list \
+      %W   $_dodragdrop_drag_source \
+      %V   \{$window\} \
+      %CST \{$_common_drag_source_types\} \
+      %CTT \{$_common_drop_target_types\} \
+      %X   $rootX            %Y $rootY \
+      %ST  \{$_typelist\}    %TT \{$_types\} \
+      %A   \{$_action\}      %a \{$_actionlist\} \
+      %b   \{$_pressedkeys\} %m \{$_pressedkeys\} \
+      %D   \{\}              %e <<DragPosition>> \
+      %L   \{$_typelist\}    %% % \
+      %t   \{$_typelist\}    %T  \{[lindex $_common_drag_source_types 0]\} \
+      %c   \{$_codelist\}    %C  \{[lindex $_codelist 0]\} \
+      ] $cmd]
+    uplevel \#0 $cmd
+  }
+}
+
+# ----------------------------------------------------------------------------
 #  Command xdnd::_GetDroppedData
 # ----------------------------------------------------------------------------
 proc xdnd::_GetDroppedData { time } {
@@ -402,7 +438,8 @@ proc xdnd::_platform_specific_type { type } {
                         text/plain;charset=ISO-8859-1
                         text/html;charset=UTF-8
                         text/html;charset=ISO-8859-1
-                        UTF8_STRING STRING}}
+                        UTF8_STRING
+                        STRING}}
     DND_Files  {return {text/uri-list text/x-moz-url application/x-qiconlist}}
     DND_Color  {return {application/x-color}}
     default    {return [list $type]}
@@ -422,12 +459,11 @@ proc xdnd::_platform_independent_type { type } {
     text/html;charset=ISO-8859-1  -
     text/html                     -
     text/plain                    {return DND_Text}
-
     text/uri-list                 -
     application/x-qiconlist       -
     text/x-moz-url                {return DND_Files}
     application/x-color           {return DND_Color}
-    default                       {return [list $type]}
+    default                       {return $type}
   }
 }; # xdnd::_platform_independent_type
 
@@ -436,16 +472,18 @@ proc xdnd::_platform_independent_type { type } {
 # ----------------------------------------------------------------------------
 proc xdnd::_supported_type { type } {
   switch $type {
-    text/plain -
-    text/html -
-    text/plain;charset=UTF-8 -
+    UTF8_STRING                   -
+    STRING                        -
+    text/plain                    -
+    text/html                     -
+    text/plain;charset=UTF-8      -
     text/plain;charset=ISO-8859-1 -
-    text/html;charset=UTF-8 -
-    text/html;charset=ISO-8859-1 -
-    text/uri-list -
-    text/x-moz-url -
-    application/x-qiconlist -
-    application/x-color {return 1}
+    text/html;charset=UTF-8       -
+    text/html;charset=ISO-8859-1  -
+    text/uri-list                 -
+    text/x-moz-url                -
+    application/x-qiconlist       -
+    application/x-color           {return 1}
   }
   return 0
 }; # xdnd::_supported_type
@@ -496,6 +534,7 @@ proc xdnd::_dodragdrop { source actions types data button } {
   variable _dodragdrop_current_cursor             $_dodragdrop_default_action
   variable _dodragdrop_drop_occured               0
   variable _dodragdrop_selection_requestor        0
+  variable _dodragdrop_action                     {}
 
   ##
   ## If we have more than 3 types, the property XdndTypeList must be set on
@@ -515,7 +554,7 @@ proc xdnd::_dodragdrop { source actions types data button } {
   ##
   ## Arrange selection handlers for our drag source, and all the supported types
   ##
-  registerSelectionHandler $source $types
+# registerSelectionHandler $source $types
 
   ##
   ## Step 1: When a drag begins, the source takes ownership of XdndSelection.
@@ -525,7 +564,8 @@ proc xdnd::_dodragdrop { source actions types data button } {
   set _dragging 1
 
   ## Grab the mouse pointer...
-  _grab_pointer $source $_dodragdrop_default_action
+#puts "_grab_pointer"
+# _grab_pointer $source $_dodragdrop_default_action
 
   ## Register our generic event handler...
   #  The generic event callback will report events by modifying variable
@@ -540,10 +580,12 @@ proc xdnd::_dodragdrop { source actions types data button } {
   _SendXdndLeave
 
   set _dragging 0
+#puts "_ungrab_pointer"
   _ungrab_pointer $source
   _unregister_generic_event_handler
   catch {selection clear -selection XdndSelection}
-  unregisterSelectionHandler $source $types
+# unregisterSelectionHandler $source $types
+# return $_dodragdrop_action
 };# xdnd::_dodragdrop
 
 # ----------------------------------------------------------------------------
@@ -573,8 +615,7 @@ proc xdnd::_process_drag_events {event} {
     MotionNotify {
       set rootx  [dict get $event x_root]
       set rooty  [dict get $event y_root]
-      set window [_find_drop_target_window $_dodragdrop_drag_source \
-                                           $rootx $rooty]
+      set window [_find_drop_target_window $_dodragdrop_drag_source $rootx $rooty]
       if {[string length $window]} {
         ## Examine the modifiers to suggest an action...
         set _dodragdrop_default_action [_default_action $event]
@@ -599,6 +640,7 @@ proc xdnd::_process_drag_events {event} {
         ## No window under the mouse. Send XdndLeave to $_dodragdrop_drop_target
         _SendXdndLeave
       }
+      _HandleDragPosition $window $rootx $rooty
     }
     ButtonPress {
     }
@@ -628,12 +670,21 @@ proc xdnd::_process_drag_events {event} {
       variable _dodragdrop_selection_selection
       variable _dodragdrop_selection_target
       variable _dodragdrop_selection_time
+      variable _dodragdrop_action
       set _dodragdrop_selection_requestor [dict get $event requestor]
       set _dodragdrop_selection_property  [dict get $event property]
       set _dodragdrop_selection_selection [dict get $event selection]
       set _dodragdrop_selection_target    [dict get $event target]
       set _dodragdrop_selection_time      $time
-      return 0
+      selection send \
+        $_dodragdrop_drag_source \
+        $_dodragdrop_selection_requestor \
+        $_dodragdrop_selection_property \
+        $_dodragdrop_selection_target \
+        $_dodragdrop_selection_time \
+        [_SendData $_dodragdrop_selection_target 0 -1] \
+        ;
+      return 1
     }
     default {
       return 0
@@ -692,6 +743,7 @@ proc xdnd::_SendXdndPosition {rootx rooty action} {
 proc xdnd::_HandleXdndStatus {event} {
   variable _dodragdrop_drop_target
   variable _dodragdrop_waiting_status
+  variable _dodragdrop_action
 
   variable _dodragdrop_drop_target_accepts_drop
   variable _dodragdrop_drop_target_accepts_action
@@ -704,7 +756,9 @@ proc xdnd::_HandleXdndStatus {event} {
   if {$_dodragdrop_drop_target < 1} return
   variable _dodragdrop_drop_occured
   if {$_dodragdrop_drop_occured} return
+#puts "_HandleXdndStatus: [set [namespace current]::_dodragdrop_current_cursor]"
   _update_cursor
+  set _dodragdrop_action [dict get $event action]
   # puts "XdndStatus: $event"
 };# xdnd::_HandleXdndStatus
 
@@ -737,6 +791,7 @@ proc xdnd::_SendXdndLeave {} {
   set _dodragdrop_drop_target_accepts_action refuse_drop
   variable _dodragdrop_drop_occured
   if {$_dodragdrop_drop_occured} return
+#puts "_SendXdndLeave: [set [namespace current]::_dodragdrop_current_cursor]"
   _update_cursor
 };# xdnd::_SendXdndLeave
 
@@ -758,6 +813,7 @@ proc xdnd::_SendXdndDrop {} {
   variable _dodragdrop_drop_target_accepts_action
 
   set _dodragdrop_drop_occured 1
+#puts "_SendXdndDrop(clock): [set [namespace current]::_dodragdrop_current_cursor]"
   _update_cursor clock
 
   if {!$_dodragdrop_drop_target_accepts_drop} {
@@ -773,7 +829,7 @@ proc xdnd::_SendXdndDrop {} {
   set _dodragdrop_drop_target 0
   # puts "XdndDrop: $_dodragdrop_drop_target"
   ## Arrange a timeout for receiving XdndFinished...
-  after 10000 [list ::tkdnd::xdnd::_HandleXdndFinished {}]
+  after 500 [list ::tkdnd::xdnd::_HandleXdndFinished {}]
 };# xdnd::_SendXdndDrop
 
 # ----------------------------------------------------------------------------
@@ -826,20 +882,20 @@ proc xdnd::_default_action {event} {
 #  Command xdnd::getFormatForType
 # ----------------------------------------------------------------------------
 proc xdnd::getFormatForType {type} {
-  switch -glob [string tolower $type] {
-    text/plain;charset=utf-8      -
+  switch $type {
+    text/plain;charset=UTF-8      -
     text/html;charset=UTF-8       -
     text/uri-list                 -
-    utf8_string                   {set format UTF8_STRING}
+    UTF8_STRING                   -
     text/plain;charset=ISO-8859-1 -
     text/html;charset=ISO-8859-1  -
     text/html                     -
     application/x-qiconlist       -
     text/plain                    -
-    text/x-moz-url                -
-    string                        -
-    text                          -
-    compound_text                 {set format STRING}
+    text/x-moz-url                {set format $type}
+    STRING                        -
+    TEXT                          -
+    COMPOUND_TEXT                 {set format STRING}
     application/x-color           {set format $type}
     default                       {set format $type}
   }
@@ -850,10 +906,12 @@ proc xdnd::getFormatForType {type} {
 #  Command xdnd::registerSelectionHandler
 # ----------------------------------------------------------------------------
 proc xdnd::registerSelectionHandler {source types} {
+  variable _dodragdrop_time
   foreach type $types {
     selection handle -selection XdndSelection \
                      -type $type \
                      -format [getFormatForType $type] \
+                     -time $_dodragdrop_time \
                      $source [list ::tkdnd::xdnd::_SendData $type]
   }
 };# xdnd::registerSelectionHandler
@@ -883,10 +941,8 @@ proc xdnd::_convert_to_unsigned {data format} {
     default {error "unsupported format $format"}
   }
   ## Convert signed integer into unsigned...
-  set d [list]
-  foreach num $data {
-    lappend d [expr { $num & $mask }]
-  }
+  set d {}
+  foreach num $data { lappend d [expr { $num & $mask }] }
   return $d
 };# xdnd::_convert_to_unsigned
 
@@ -901,13 +957,18 @@ proc xdnd::_SendData {type offset bytes args} {
   if {$offset == 0} {
     ## Prepare the data to be transfered...
     switch -glob $type {
-      text/plain* - UTF8_STRING - STRING - TEXT - COMPOUND_TEXT {
-        binary scan [encoding convertto utf-8 $_dodragdrop_data] \
-                    c* _dodragdrop_transfer_data
-        set _dodragdrop_transfer_data \
-           [_convert_to_unsigned $_dodragdrop_transfer_data $format]
+      text/plain*             -
+      text/html*              -
+      text/x-moz-url          -
+      application/x-qiconlist -
+      UTF8_STRING             -
+      STRING                  -
+      TEXT                    -
+      COMPOUND_TEXT           {
+        binary scan $_dodragdrop_data c* _dodragdrop_transfer_data
+        set _dodragdrop_transfer_data [_convert_to_unsigned $_dodragdrop_transfer_data $format]
       }
-      text/uri-list* {
+      text/uri-list {
         set files [list]
         foreach file $_dodragdrop_data {
           switch -glob $file {
@@ -915,10 +976,8 @@ proc xdnd::_SendData {type offset bytes args} {
             default   {lappend files file://$file}
           }
         }
-        binary scan [encoding convertto utf-8 "[join $files \r\n]\r\n"] \
-                    c* _dodragdrop_transfer_data
-        set _dodragdrop_transfer_data \
-           [_convert_to_unsigned $_dodragdrop_transfer_data $format]
+        binary scan "[join $files \r\n]\r\n" c* _dodragdrop_transfer_data
+        set _dodragdrop_transfer_data [_convert_to_unsigned $_dodragdrop_transfer_data $format]
       }
       application/x-color {
         set format 16
@@ -926,17 +985,14 @@ proc xdnd::_SendData {type offset bytes args} {
         ## or a list of 3 values (red green blue) or a list of 4 values
         ## (red green blue opacity).
         switch [llength $_dodragdrop_data] {
-          1 { set color [winfo rgb $_dodragdrop_drag_source $_dodragdrop_data]
-              lappend color 65535 }
+          1 { set color [winfo rgb $_dodragdrop_drag_source $_dodragdrop_data]; lappend color 65535 }
           3 { set color $_dodragdrop_data; lappend color 65535 }
           4 { set color $_dodragdrop_data }
           default {error "unknown color data: \"$_dodragdrop_data\""}
         }
         ## Convert the 4 elements into 16 bit values...
-        set _dodragdrop_transfer_data [list]
-        foreach c $color {
-          lappend _dodragdrop_transfer_data [format 0x%04X $c]
-        }
+        set _dodragdrop_transfer_data {}
+        foreach c $color { lappend _dodragdrop_transfer_data [format 0x%04X $c] }
       }
       default {
         set format 32
@@ -948,36 +1004,15 @@ proc xdnd::_SendData {type offset bytes args} {
   ##
   ## Data has been split into bytes. Count the bytes requested, and return them
   ##
-  set data [lrange $_dodragdrop_transfer_data $offset [expr {$offset+$bytes-1}]]
+  if {$bytes >= 0} {
+    set data [lrange $_dodragdrop_transfer_data $offset [expr {$offset + $bytes - 1}]]
+  } else {
+    set data $_dodragdrop_transfer_data
+  }
   switch $format {
-    8  {
-      set data [encoding convertfrom utf-8 [binary format c* $data]]
-    }
-    16 {
-      variable _dodragdrop_selection_requestor
-      if {$_dodragdrop_selection_requestor} {
-        ## Tk selection cannot process this format (only 8 & 32 supported).
-        ## Call our XChangeProperty...
-        set numItems [llength $data]
-        variable _dodragdrop_selection_property
-        variable _dodragdrop_selection_selection
-        variable _dodragdrop_selection_target
-        variable _dodragdrop_selection_time
-        XChangeProperty $_dodragdrop_drag_source \
-                        $_dodragdrop_selection_requestor \
-                        $_dodragdrop_selection_property \
-                        $_dodragdrop_selection_target \
-                        $format \
-                        $_dodragdrop_selection_time \
-                        $data $numItems
-        return -code break
-      }
-    }
-    32 {
-    }
-    default {
-      error "unsupported format $format"
-    }
+    8       { set data [binary format c* $data] }
+    16 - 32 { ;# nothing to do }
+    default { error "unsupported format $format" }
   }
   # puts "SendData: $type $offset $bytes $args ($_dodragdrop_data)"
   # puts "          $data"

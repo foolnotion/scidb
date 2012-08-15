@@ -422,7 +422,6 @@ proc setSizes {w {sizes {}} {units px}} {
 
 	set S(sizes) $sizes
 	set S(sizes,lcase) $sizes
-puts "setSizes: $units"
 	set S(size,units) $units
 }
 

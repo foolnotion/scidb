@@ -386,8 +386,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, XClientMessageEvent *cm) {
     typelist[2] = cm->data.l[4];
     typelist[3] = None;
   }
-  /* We have all the information we need. Its time to pass it at the Tcl
-   * level.*/
+  /* We have all the information we need. Its time to pass it at the Tcl level.*/
   objv[0] = Tcl_NewStringObj("tkdnd::xdnd::_HandleXdndEnter", -1);
   objv[1] = Tcl_NewStringObj(Tk_PathName(TkDND_GetToplevelFromWrapper(tkwin)), -1);
   objv[2] = Tcl_NewLongObj(drag_source);
@@ -434,11 +433,11 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent *cm) {
 #endif
   if (mouse_tkwin == NULL) {
     mouse_tkwin = Tk_CoordsToWindow(rootX, rootY, tkwin);
-  }
-  if (mouse_tkwin == NULL) {
-    int dx, dy;
-    Tk_GetRootCoords(tkwin, &dx, &dy);
-    mouse_tkwin = Tk_CoordsToWindow(rootX + dx, rootY + dy, tkwin);
+    if (mouse_tkwin == NULL) {
+      int dx, dy;
+      Tk_GetRootCoords(tkwin, &dx, &dy);
+      mouse_tkwin = Tk_CoordsToWindow(rootX + dx, rootY + dy, tkwin);
+    }
   }
   /* Ask the Tk widget whether it will accept the drop... */
   index = refuse_drop;
@@ -816,7 +815,7 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
       TkDND_Dict_PutInt(interp, dict,  "x_root",  eventPtr->xmotion.x_root);
       TkDND_Dict_PutInt(interp, dict,  "y_root",  eventPtr->xmotion.y_root);
       TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xmotion.time);
-      TkDND_AddStateInformation(interp,   dict,   eventPtr->xmotion.state);
+      TkDND_AddStateInformation(interp, dict,     eventPtr->xmotion.state);
       break;
     case ButtonPress:
       TkDND_Dict_Put(interp, dict,     "type",   "ButtonPress");
@@ -825,7 +824,7 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
       TkDND_Dict_PutInt(interp, dict,  "x_root",  eventPtr->xbutton.x_root);
       TkDND_Dict_PutInt(interp, dict,  "y_root",  eventPtr->xbutton.y_root);
       TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xbutton.time);
-      TkDND_AddStateInformation(interp,   dict,   eventPtr->xbutton.state);
+      TkDND_AddStateInformation(interp, dict,     eventPtr->xbutton.state);
       TkDND_Dict_PutInt(interp, dict,  "button",  eventPtr->xbutton.button);
       break;
     case ButtonRelease:
@@ -835,7 +834,7 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
       TkDND_Dict_PutInt(interp, dict,  "x_root",  eventPtr->xbutton.x_root);
       TkDND_Dict_PutInt(interp, dict,  "y_root",  eventPtr->xbutton.y_root);
       TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xbutton.time);
-      TkDND_AddStateInformation(interp,   dict,   eventPtr->xbutton.state);
+      TkDND_AddStateInformation(interp, dict,     eventPtr->xbutton.state);
       TkDND_Dict_PutInt(interp, dict,  "button",  eventPtr->xbutton.button);
       break;
     case KeyPress:
@@ -845,7 +844,7 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
       TkDND_Dict_PutInt(interp, dict,  "x_root",  eventPtr->xkey.x_root);
       TkDND_Dict_PutInt(interp, dict,  "y_root",  eventPtr->xkey.y_root);
       TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xkey.time);
-      TkDND_AddStateInformation(interp,   dict,   eventPtr->xkey.state);
+      TkDND_AddStateInformation(interp, dict,     eventPtr->xkey.state);
       TkDND_Dict_PutInt(interp, dict,  "keycode", eventPtr->xkey.keycode);
       main_window = Tk_MainWindow(interp);
       sym = XKeycodeToKeysym(Tk_Display(main_window),
@@ -859,7 +858,7 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
       TkDND_Dict_PutInt(interp, dict,  "x_root",  eventPtr->xkey.x_root);
       TkDND_Dict_PutInt(interp, dict,  "y_root",  eventPtr->xkey.y_root);
       TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xkey.time);
-      TkDND_AddStateInformation(interp,   dict,   eventPtr->xkey.state);
+      TkDND_AddStateInformation(interp, dict,     eventPtr->xkey.state);
       TkDND_Dict_PutInt(interp, dict,  "keycode", eventPtr->xkey.keycode);
       main_window = Tk_MainWindow(interp);
       sym = XKeycodeToKeysym(Tk_Display(main_window),
@@ -869,20 +868,19 @@ int TkDND_HandleGenericEvent(ClientData clientData, XEvent *eventPtr) {
     case EnterNotify:
       return 0;
       TkDND_Dict_Put(interp, dict, "type", "EnterNotify");
-      TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xcrossing.time);
+      TkDND_Dict_PutLong(interp, dict, "time", eventPtr->xcrossing.time);
       break;
     case LeaveNotify:
       return 0;
       TkDND_Dict_Put(interp, dict, "type", "LeaveNotify");
-      TkDND_Dict_PutLong(interp, dict, "time",    eventPtr->xcrossing.time);
+      TkDND_Dict_PutLong(interp, dict, "time", eventPtr->xcrossing.time);
       break;
     case SelectionRequest:
       main_window = Tk_MainWindow(interp);
       TkDND_Dict_Put(interp, dict, "type", "SelectionRequest");
       TkDND_Dict_PutLong(interp, dict, "time",     eventPtr->xselectionrequest.time);
       TkDND_Dict_PutLong(interp, dict, "owner",    eventPtr->xselectionrequest.owner);
-      TkDND_Dict_PutLong(interp, dict, "requestor",
-                                eventPtr->xselectionrequest.requestor);
+      TkDND_Dict_PutLong(interp, dict, "requestor", eventPtr->xselectionrequest.requestor);
       TkDND_Dict_Put(interp, dict,     "selection",
             Tk_GetAtomName(main_window, eventPtr->xselectionrequest.selection));
       TkDND_Dict_Put(interp, dict,     "target",
@@ -1343,7 +1341,8 @@ int TkDND_XChangePropertyObjCmd(ClientData clientData,
   if (Tcl_GetIntFromObj(interp, objv[8], &numItems) != TCL_OK) {
     return TCL_ERROR;
   }
-  if (!time) time = CurrentTime;
+  if (!time)
+    time = CurrentTime;
   switch (format) {
     case 8:
       data = (unsigned char *) Tcl_GetString(objv[7]);
@@ -1351,8 +1350,7 @@ int TkDND_XChangePropertyObjCmd(ClientData clientData,
     case 16: {
       short *propPtr = (short *) Tcl_Alloc(sizeof(short)*numItems);
       data = (unsigned char *) propPtr;
-      if (Tcl_ListObjGetElements(interp, objv[7], &numFields, &field)
-                                                                   != TCL_OK) {
+      if (Tcl_ListObjGetElements(interp, objv[7], &numFields, &field) != TCL_OK) {
         return TCL_ERROR;
       }
       for (i = 0; i < numItems; i++) {
@@ -1364,8 +1362,7 @@ int TkDND_XChangePropertyObjCmd(ClientData clientData,
     case 32: {
       long *propPtr  = (long *) Tcl_Alloc(sizeof(long)*numItems);
       data = (unsigned char *) propPtr;
-      if (Tcl_ListObjGetElements(interp, objv[7], &numFields, &field)
-                                                                   != TCL_OK) {
+      if (Tcl_ListObjGetElements(interp, objv[7], &numFields, &field) != TCL_OK) {
         return TCL_ERROR;
       }
       for (i = 0; i < numItems; i++) {
@@ -1375,8 +1372,7 @@ int TkDND_XChangePropertyObjCmd(ClientData clientData,
       break;
     }
   }
-  XChangeProperty(display, target, property, type, format, PropModeReplace,
-         (unsigned char *) data, numItems);
+  XChangeProperty(display, target, property, type, format, PropModeReplace, (unsigned char *) data, numItems);
   if (format > 8 && data)
     Tcl_Free((char *) data);
   /* Send selection notify to requestor... */

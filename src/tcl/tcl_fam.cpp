@@ -99,25 +99,33 @@ cmdOpen(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	mstl::string proc(Tcl_GetString(objv[1]));
-	Monitor*& fam = procMap.find_or_insert(proc, 0);
-
-	if (fam == 0)
+	if (FileAlterationMonitor::isSupported())
 	{
-		fam = new Monitor(proc);
+		mstl::string proc(Tcl_GetString(objv[1]));
+		Monitor*& fam = procMap.find_or_insert(proc, 0);
 
-		if (!fam->valid())
+		if (fam == 0)
 		{
-			mstl::string err(fam->error());
-			delete fam;
-			procMap.remove(proc);
-			Tcl_SetResult(ti, const_cast<char*>(err.c_str()), TCL_VOLATILE);
+			fam = new Monitor(proc);
 
-			return TCL_ERROR;
+			if (!fam->valid())
+			{
+				mstl::string err(fam->error());
+				delete fam;
+				procMap.remove(proc);
+				Tcl_SetResult(ti, const_cast<char*>(err.c_str()), TCL_VOLATILE);
+				return TCL_ERROR;
+			}
 		}
+
+		++fam->m_ref;
+		setResult(objv[1]);
+	}
+	else
+	{
+		setResult("");
 	}
 
-	++fam->m_ref;
 	return TCL_OK;
 }
 

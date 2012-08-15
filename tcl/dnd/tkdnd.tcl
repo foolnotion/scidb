@@ -296,7 +296,7 @@ proc tkdnd::_init_drag { button source state rootX rootY } {
   if {[string length $cmd]} {
     set cmd [string map [list %W $source %X $rootX %Y $rootY \
                               %S $state  %e <<DragInitCmd>> %A \{\} \
-                              %t [bind $source <<DragSourceTypes>>]] $cmd]
+                              %t [list [bind $source <<DragSourceTypes>>]]] $cmd]
     set info [uplevel \#0 $cmd]
     if { $info != "" } {
       variable _windowingsystem
@@ -338,29 +338,29 @@ proc tkdnd::_end_drag { button source target action type data result
     set cmd [string map [list %W $source %X $rootX %Y $rootY \
                               %S $state %e <<DragEndCmd>> %A \{$action\}] $cmd]
     set info [uplevel \#0 $cmd]
-    if { $info != "" } {
-      variable _windowingsystem
-      foreach { actions types data } $info { break }
-      set types [platform_specific_types $types]
-      switch $_windowingsystem {
-        x11 {
-          error "dragging from Tk widgets not yet supported"
-        }
-        win32 -
-        windows {
-          set action [_DoDragDrop $source $actions $types $data $button]
-        }
-        aqua {
-          macdnd::dodragdrop $source $actions $types $data
-        }
-        default {
-          error "unknown Tk windowing system"
-        }
-      }
-      ## Call _end_drag to notify the widget of the result of the drag
-      ## operation...
-      _end_drag $button $source {} $action {} $data {} $state $rootX $rootY
-    }
+#   if { $info != "" } {
+#     variable _windowingsystem
+#     foreach { actions types data } $info { break }
+#     set types [platform_specific_types $types]
+#     switch $_windowingsystem {
+#       x11 {
+#         set action [xdnd::_dodragdrop $source $actions $types $data $button]
+#       }
+#       win32 -
+#       windows {
+#         set action [_DoDragDrop $source $actions $types $data $button]
+#       }
+#       aqua {
+#         set action [macdnd::dodragdrop $source $actions $types $data]
+#       }
+#       default {
+#         error "unknown Tk windowing system"
+#       }
+#     }
+#     ## Call _end_drag to notify the widget of the result of the drag
+#     ## operation...
+#     _end_drag $button $source {} $action {} $data {} $state $rootX $rootY
+#   }
   }
 };# tkdnd::_end_drag
 

@@ -96,7 +96,7 @@ proc open {parent {file {}} args} {
 	variable Links
 	variable ExternalLinks
 	variable Geometry
-	
+
 	array set opts {
 		-transient	no
 		-parent		{}

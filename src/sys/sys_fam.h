@@ -46,6 +46,8 @@ public:
 	virtual void signalDeleted(mstl::string const& path) = 0;
 	virtual void signalCreated(mstl::string const& path) = 0;
 
+	static bool isSupported();
+
 private:
 
 	bool				m_valid;

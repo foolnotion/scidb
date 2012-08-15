@@ -53,6 +53,8 @@ struct Monitor
 	void signalDeleted(char const* filename) const;
 	void signalCreated(char const* filename) const;
 
+	static bool isSupported();
+
 	FileAlterationMonitor* m_fam;
 	unsigned m_states;
 	Request* m_request;
@@ -100,6 +102,17 @@ Monitor::signalCreated(char const* filename) const
 		m_fam->signalCreated(m_request->m_path + PathDelim + filename);
 	else
 		m_fam->signalCreated(m_request->m_path);
+}
+
+
+bool
+Monitor::isSupported()
+{
+#if defined(HAVE_INOTIFY) || defined(HAVE_LIBFAM)
+	return true;
+#else
+	return false;
+#endif
 }
 
 } // namespace
@@ -618,6 +631,13 @@ FileAlterationMonitor::remove(mstl::string const& path)
 				::reqMap.remove(path);
 		}
 	}
+}
+
+
+bool
+FileAlterationMonitor::isSupported()
+{
+	return Monitor::isSupported();
 }
 
 // vi:set ts=3 sw=3:

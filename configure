@@ -138,6 +138,7 @@ array set package {
 
 array set feature {
     symbols         no
+    fam             no
     assertions      no
     gprof-profiling no
     gcov-coverage   no
@@ -985,11 +986,13 @@ proc SystemHasFAM {} {
 #    Checks whether libfam is available.
 #
 proc checkFAM {} {
-    global environment package subdir
+    global environment package subdir feature
 
-    puts -nonewline "    Checking if your system has libfam: "
-    flush stdout
-    if {[SystemHasFAM]} { puts "yes." } else { puts "no" }
+    if {$feature(fam)} {
+        puts -nonewline "    Checking if your system has libfam: "
+        flush stdout
+        if {[SystemHasFAM]} { puts "yes." } else { puts "no" }
+    }
 }
 
 
@@ -1098,7 +1101,7 @@ proc checkZlib {} {
     if {[SystemHasZlib]} {
         puts "yes."
     } else {
-        puts "no (use bundled library)."
+        puts "no.\n      Using bundled library."
         set subdir(zlib) "util/zlib"
         set package(zlib-lib) "util/zlib/libz.a"
         set package(zlib-inc) "-I[pwd]/src/util/zlib"
@@ -1169,7 +1172,7 @@ proc checkZziplib {} {
     if {[SystemHasZziplib]} {
         puts "yes."
     } else {
-        puts "no (use bundled library)."
+        puts "no.\n      Using bundled library."
         set subdir(zziplib) "util/zzip"
         set package(zziplib-lib) "util/zzip/libzzip.a"
         set package(zziplib-inc) "-I[pwd]/src/util/zzip"
@@ -1241,7 +1244,7 @@ proc checkExpat {} {
     if {[SystemHasExpat]} {
         puts "yes."
     } else {
-        puts "no (use bundled library)."
+        puts "no.\n      Using bundled library."
         set subdir(expat) "util/expat"
         set package(expat-lib) "util/expat/libexpat.a"
         set package(expat-inc) "-I[pwd]/src/util/expat"
@@ -1745,6 +1748,7 @@ proc usage {rc} {
     puts "Optional Features:"
     puts "  --disable-FEATURE         do not include FEATURE (same as --enable-FEATURE=no)"
     puts "  --enable-FEATURE\[=ARG\]    include FEATURE \[ARG=yes\]"
+    puts "  --enable-fam              build with FAM support \[default=$feature(fam)\]"
     puts "  --enable-symbols          build with debugging symbols \[default=$feature(symbols)\]"
     puts "  --enable-assertions       build with assertions (slows down the program)"
     puts "                            \[default=$feature(assertions)\]"
@@ -1796,10 +1800,10 @@ foreach arg $argv {
     set arg1 {}
     lassign [split $arg =] arg0 arg1
     if {[string match --enable-* $arg0]} {
-        if {![info exists arg1]} { set arg1 yes }
+        if {[string length $arg1] == 0} { set arg1 yes }
         set feature([string range $arg0 9 end]) $arg1
     } elseif {[string match --disable-* $arg0]} {
-        if {![info exists arg1]} {
+        if {[string length $arg1] == 0} {
             set arg1 no
         } elseif {[string match y* $arg1]} {
             set arg1 no
