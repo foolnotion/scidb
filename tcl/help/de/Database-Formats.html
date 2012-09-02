@@ -41,9 +41,9 @@
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 <p>
-Dies ist Scidb's eigenes Datenbankformat und wird ausdrücklich
+Dies ist Scidb's eigenes Datenbankformat und wird ausdrÃ¼cklich
 zur Verwendung mit Scidb empfohlen. Nur mit diesem Format ist der volle Umfang von
-Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
+Scidb verfÃ¼gbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 </p>
 
 <p>
@@ -63,7 +63,7 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scg =&nbsp;</kbd></td>
-      <td>Partiezüge, Kommentare, Anmerkungen, Zuginformationen und PGN-Tags</td>
+      <td>PartiezÃ¼ge, Kommentare, Anmerkungen, Zuginformationen und PGN-Tags</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scn =&nbsp;</kbd></td>
@@ -76,27 +76,27 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
 
 <p>
 Dies ist Scid's Datenbankformat und wird aufgrund des hohen
-Verbreitungsgrades vollständig unterstützt. Es kann mit diesem Format jedoch nicht
+Verbreitungsgrades vollstÃ¤ndig unterstÃ¼tzt. Es kann mit diesem Format jedoch nicht
 der volle Umfang von Scidb genutzt werden.
 </p>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-Scid-Datenbanken werden im Lesemodus geöffnet, können dann aber schreibbar gesetzt
-werden. Beim erneuten Öffnen bleibt der zuletzt eingestellte Lese/Schreibmodus
+Scid-Datenbanken werden im Lesemodus geÃ¶ffnet, kÃ¶nnen dann aber schreibbar gesetzt
+werden. Beim erneuten Ã–ffnen bleibt der zuletzt eingestellte Lese/Schreibmodus
 erhalten.
 </div>
 
 <p>
-Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
+Beim Ã–ffnen einer Scid-Datenbank muÃŸ eventuell die passende Enkodierung gewÃ¤hlt
 werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
-sind mit großer Wahrscheinlichkeit <span style="white-space:nowrap;">UTF-8</span> enkodiert, ältere evt. im
+sind mit groÃŸer Wahrscheinlichkeit <span style="white-space:nowrap;">UTF-8</span> enkodiert, Ã¤ltere evt. im
 <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>) Zeichensatz, das Scid-Format gibt
-keine Auskunft darüber. In vielen Fällen sollte aber die programmeigene, automatische
+keine Auskunft darÃ¼ber. In vielen FÃ¤llen sollte aber die programmeigene, automatische
 Ermittlung des Zeichensatzes erfolgreich sein.
 </p>
 
 <p>
-Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
+Dieses Datenbankformat Ã¤hnelt strukturell dem Scidb-Format:
 </p>
 
 <div class="box">
@@ -107,7 +107,7 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sg4 =&nbsp;</kbd></td>
-      <td>Partiezüge, Kommentare, Anmerkungen und PGN-Tags</td>
+      <td>PartiezÃ¼ge, Kommentare, Anmerkungen und PGN-Tags</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
@@ -120,23 +120,27 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
   </table>
 </div>
 
+<p><img src="../images/note.png" alt="note" /> Die Dateien mit den Endungen <code>.sso</code> (Scid-Suchoptionendatei)
+und <code>.sor</code> (Scid-Repertoire-Datei) gehÃ¶ren nicht explizit zu einer
+Datenbank und werden von Scidb nicht beachtet.</p>
+
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 <p>
-Die Firma ChessBase hält das Format dieser Datenbank geheim und es wird deshalb
-nur im Lesemodus unterstützt. Nicht alle Partiedaten können korrekt gelesen
-werden; bei manchen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
-werden konnte.
+Die Firma <a href="http://www.chessbase.de">ChessBase</a> hÃ¤lt das Format dieser
+Datenbank geheim und es wird deshalb nur im Lesemodus unterstÃ¼tzt. Nicht alle
+Partiedaten kÃ¶nnen korrekt gelesen werden; bei manchen Partien kommt es zur Meldung,
+daÃŸ die Partie nicht dekodiert werden konnte.
 </p>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-ChessBase-Datenbanken können nicht als Referenzdatenbank verwendet werden.
+ChessBase-Datenbanken kÃ¶nnen nicht als Referenzdatenbank verwendet werden.
 </div>
 
 <p>
-Es kann normalerweise davon ausgegangen werden, daß die Datenbank im CP1252
-Zeichensatz enkodiert ist. Unter Umständen ist aber eine manuelle Auswahl
-des Zeichensatzes beim Öffnen der Datenbank notwendig, damit alle Namen und
+Es kann normalerweise davon ausgegangen werden, daÃŸ die Datenbank im CP1252
+Zeichensatz enkodiert ist. Unter UmstÃ¤nden ist aber eine manuelle Auswahl
+des Zeichensatzes beim Ã–ffnen der Datenbank notwendig, damit alle Namen und
 Texte korrekt dargestellt werden.
 </p>
 
@@ -147,7 +151,7 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Partiedaten</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Partiezüge und Varianten</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>PartiezÃ¼ge und Varianten</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cba &nbsp;=&nbsp;</kbd></td><td>Anmerkungen und Kommentare</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbs &nbsp;=&nbsp;</kbd></td><td>Quellenindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbp &nbsp;=&nbsp;</kbd></td><td>Spielerindex</td></tr>
@@ -155,7 +159,7 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Turnierindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Teamindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Teaminformation</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Datenbankinitialiserungsdatei</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Datenbankinitialisierungsdatei</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML-Dokumentenverzeichnis</td></tr>
   </table>
 </div>
@@ -164,21 +168,23 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
 
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
-Transfer von Schachpartien. <abbr>PGN</abbr>-Dateien werden nur im Lesemodus geöffnet.
-Bei größeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das
+Transfer von Schachpartien. <abbr>PGN</abbr>-Dateien werden nur im Lesemodus geÃ¶ffnet.
+Bei grÃ¶ÃŸeren <abbr>PGN</abbr>-Partiensammlungen wird eine Umwandlung in das
 Scidb-Format empfohlen.
 </p>
 
 <p>
-Gemäß dem PGN-Standard ist eine PGN-Datei mit dem Zeichensatz <span style="white-space:nowrap;">Latin-1</span>
+GemÃ¤ÃŸ dem
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN-Standard</a>
+ist eine PGN-Datei mit dem Zeichensatz <span style="white-space:nowrap;">Latin-1</span>
 (ISO-<span style="white-space:nowrap;">8859-1</span>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
 <span style="white-space:nowrap;">UTF-8</span>-Markierung (<span style="white-space:nowrap;">UTF-8</span>-BOM: Bytesequenz EF BB BF) so wird
-eine <span style="white-space:nowrap;">UTF-8</span>-Enkodierung angenommen (gemäß
+eine <span style="white-space:nowrap;">UTF-8</span>-Enkodierung angenommen (gemÃ¤ÃŸ
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ</a>).
 </p>
 
 <p>
-Eine vollständige Beschreibung dieses Formats findet man unter
+Eine vollstÃ¤ndige Beschreibung dieses Formats findet man unter
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
@@ -186,15 +192,15 @@ Standard: Portable Game Notation Specification and Implementation Guide</a>.
 <h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Datenbankarchiv (<abbr>.scv</abbr>)</h2>
 
 <p>
-Scidb's Datenbankarchiv stützt sich auf ein unabhängiges Archivformat, und
-enthält eine Datenbank (oder sogar mehrere) in archivierter Form. Dies ermöglicht
-eine Versendung der Datenbank(en), die ansonsten aus mehreren Dateien besteht, über
+Scidb's Datenbankarchiv stÃ¼tzt sich auf ein unabhÃ¤ngiges Archivformat, und
+enthÃ¤lt eine Datenbank (oder sogar mehrere) in archivierter Form. Dies ermÃ¶glicht
+eine Versendung der Datenbank(en), die ansonsten aus mehreren Dateien besteht, Ã¼ber
 das Internet. Dieses Datenbankarchiv ist an kein spezielles Datenbankformat
 gebunden.
 </p>
 
 <p>
-Eine nährere Beschreibung diese Formats gibt es auf der Seite
+Eine nÃ¤hrere Beschreibung diese Formats gibt es auf der Seite
 <a href="Database-Archive.html">Spezifikation des Datenbankarchivs</a>.
 </p>
 

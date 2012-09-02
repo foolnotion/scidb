@@ -318,7 +318,7 @@ while {$loci < $locn && $srvi < $srvn} {
 			incr srvi
 		}
 		1 {
-			# It's a new file, but only write if not user-written:
+			# It's a new file, but only overwrite if not user-written:
 			if {![file exists $srvFile]} {
 				if {[FetchFile $srvFile $srvCrc]} {
 					puts [list created $srvFile]
@@ -361,7 +361,7 @@ for {} {$loci < $locn} {incr loci} {
 
 for {} {$srvi < $srvn} {incr srvi} {
 	lassign [lindex $srvFiles $srvi] srvFile srvCrc
-	# It's a new file, but only write if not user-written:
+	# It's a new file, but only overwrite if not user-written:
 	set crc [Checksum $srvFile]
 	if {$crc == -1} {
 		if {[FetchFile $srvFile $srvCrc]} {
@@ -390,4 +390,4 @@ file rename -force $tmpfile $TimestampFile
 
 Return finished
 
-# vi:set ts=3 sw=3:
+# vi:set ts=3 sw=3 filetype=tcl:

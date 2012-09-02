@@ -26,23 +26,22 @@
 using namespace mstl;
 
 
-exception::exception() throw() : m_msg(new string) {}
-exception::exception(string const& msg) : m_msg(new string(msg)) {}
-exception::exception(exception const& exc) : m_msg(new mstl::string(*exc.m_msg)) {}
-exception::~exception() throw() { delete m_msg; }
+basic_exception::basic_exception() throw() : m_msg(new string) {}
+basic_exception::basic_exception(string const& msg) : m_msg(new string(msg)) {}
+basic_exception::basic_exception(basic_exception const& exc) : m_msg(new mstl::string(*exc.m_msg)) {}
+basic_exception::~basic_exception() throw() { delete m_msg; }
 
-char const* exception::what() const throw()		{ return *m_msg; }
-backtrace const& exception::backtrace() const	{ return m_backtrace; }
+char const* basic_exception::what() const throw() { return *m_msg; }
 
 
-exception::exception(char const* fmt, va_list args)
+basic_exception::basic_exception(char const* fmt, va_list args)
 	:m_msg(new string)
 {
 	m_msg->vformat(fmt, args);
 }
 
 
-exception::exception(char const* fmt, ...)
+basic_exception::basic_exception(char const* fmt, ...)
 	:m_msg(new string)
 {
 	M_REQUIRE(fmt);
@@ -55,9 +54,40 @@ exception::exception(char const* fmt, ...)
 
 
 void
-exception::set_message(char const* fmt, va_list args)
+basic_exception::set_message(char const* fmt, va_list args)
 {
 	m_msg->vformat(fmt, args);
+}
+
+
+void
+basic_exception::assign(mstl::string const& s)
+{
+	m_msg->assign(s);
+}
+
+
+exception::exception() throw() {}
+exception::exception(string const& msg) : basic_exception(msg) {}
+exception::exception(exception const& exc) : basic_exception(exc) {}
+
+backtrace const& exception::backtrace() const { return m_backtrace; }
+
+
+exception::exception(char const* fmt, va_list args)
+	:basic_exception(fmt, args)
+{
+}
+
+
+exception::exception(char const* fmt, ...)
+{
+	M_REQUIRE(fmt);
+
+	va_list args;
+	va_start(args, fmt);
+	set_message(fmt, args);
+	va_end(args);
 }
 
 
@@ -106,7 +136,7 @@ mstl::bits::prepare_msg(mstl::exception& exc,
 #endif
 
 		excbreak();
-		exc.m_msg->assign(strm.str());
+		exc.assign(strm.str());
 	}
 	catch (...)
 	{

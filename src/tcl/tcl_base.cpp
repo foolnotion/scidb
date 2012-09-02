@@ -722,6 +722,19 @@ tcl::ioError(mstl::string const& file, mstl::string const& error, mstl::string c
 }
 
 
+int
+tcl::interrupt(int count)
+{
+	Tcl_Obj* objs[2];
+
+	objs[0] = Tcl_NewStringObj("%Interrupted%", -1);
+	objs[1] = Tcl_NewIntObj(count);
+
+	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	return TCL_ERROR;
+}
+
+
 static int
 safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -739,11 +752,15 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		rc = Cast(clientData).proc_(0, ti, objc, objv);
 	}
-	catch (Error const&)
+	catch (tcl::Error const&)
 	{
 		rc = TCL_ERROR;
 	}
-	catch (IOException const& exc)
+	catch (tcl::InterruptException const& exc)
+	{
+		rc = tcl::interrupt(exc.count());
+	}
+	catch (::db::IOException const& exc)
 	{
 		char const* file	= 0;	// avoids gcc warning
 		char const* error	= 0;	// avoids gcc warning
@@ -911,6 +928,7 @@ namespace misc			{ void init(Tcl_Interp* interp); }
 namespace crosstable	{ void init(Tcl_Interp* interp); }
 namespace zlib			{ void init(Tcl_Interp* interp); }
 namespace fam			{ void init(Tcl_Interp* interp); }
+namespace engine		{ void init(Tcl_Interp* interp); }
 
 } // namespace tcl
 
@@ -933,6 +951,7 @@ tcl::init(Tcl_Interp* ti)
 	Tcl_Eval(ti, "namespace eval ::scidb::board {}");
 	Tcl_Eval(ti, "namespace eval ::scidb::misc {}");
 	Tcl_Eval(ti, "namespace eval ::scidb::crosstable {}");
+	Tcl_Eval(ti, "namespace eval ::scidb::engine {}");
 
 	Tcl_IncrRefCount(::m_value_1 = Tcl_NewIntObj(1));
 	Tcl_IncrRefCount(::m_blocked = Tcl_NewStringObj("::remote::blocked", -1));
@@ -949,6 +968,7 @@ tcl::init(Tcl_Interp* ti)
 	crosstable::init(ti);
 	zlib::init(ti);
 	fam::init(ti);
+	engine::init(ti);
 }
 
 // vi:set ts=3 sw=3:

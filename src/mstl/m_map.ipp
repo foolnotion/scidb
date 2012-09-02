@@ -39,6 +39,9 @@ template <typename K, typename V>
 inline typename map<K,V>::size_type map<K,V>::size() const { return m_v.size(); }
 
 template <typename K, typename V>
+inline typename map<K,V>::size_type map<K,V>::capacity() const { return m_v.capacity(); }
+
+template <typename K, typename V>
 inline typename map<K,V>::iterator map<K,V>::begin() { return m_v.begin(); }
 
 template <typename K, typename V>

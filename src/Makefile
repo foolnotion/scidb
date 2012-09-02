@@ -68,6 +68,7 @@ SRC = \
 	pawn_progress.cpp \
 	pgn_split_eco.cpp \
 	tkscidb.cpp \
+	tclscidb.cpp \
 
 ALL_LIBS = $(LIBS) $(TCL_LIBRARY) $(ZZIPLIB_LIB) $(MINIZIP_LIB) $(ZLIB_LIB) $(EXPAT_LIB) $(FAM_LIB) -lpthread
 ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
@@ -75,7 +76,7 @@ ALL_TK_LIBS = $(TCL_LIBS) $(TK_LIBS) $(TK_LIBRARY) $(X_LIBRARY)
 
 SUBDIRS = db app mstl sys tcl tk/jpeg tk/svg/agg tk/svg tk/treectrl tk/html tk/tkdnd tk util util/minizip util/libTeXt util/libharu util/universalchardet util/libhyphenate $(LIB_SUBDIRS)
 
-TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(TK_PROGRAM)
+TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progress cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
 
 all: check-mtime recursive cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
 tkscidb-only: recursive $(TK_PROGRAM)

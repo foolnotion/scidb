@@ -144,24 +144,24 @@ Application::Subscriber::~Subscriber() {}
 
 
 void
-Application::Subscriber::updateList(mstl::string const& filename)
+Application::Subscriber::updateList(unsigned id, mstl::string const& filename)
 {
-	updateGameList(filename);
-	updatePlayerList(filename);
-	updateEventList(filename);
-	updateSiteList(filename);
-	updateAnnotatorList(filename);
+	updateGameList(id, filename);
+	updatePlayerList(id, filename);
+	updateEventList(id, filename);
+	updateSiteList(id, filename);
+	updateAnnotatorList(id, filename);
 }
 
 
 void
-Application::Subscriber::updateList(mstl::string const& filename, unsigned view)
+Application::Subscriber::updateList(unsigned id, mstl::string const& filename, unsigned view)
 {
-	updateGameList(filename, view);
-	updatePlayerList(filename, view);
-	updateEventList(filename, view);
-	updateSiteList(filename, view);
-	updateAnnotatorList(filename, view);
+	updateGameList(id, filename, view);
+	updatePlayerList(id, filename, view);
+	updateEventList(id, filename, view);
+	updateSiteList(id, filename, view);
+	updateAnnotatorList(id, filename, view);
 }
 
 
@@ -174,6 +174,7 @@ Application::Application()
 	,m_isUserSet(false)
 	,m_position(InvalidPosition)
 	,m_fallbackPosition(InvalidPosition)
+	,m_updateCount(0)
 	,m_isClosed(false)
 	,m_treeIsFrozen(false)
 	,m_subscriber(0)
@@ -414,7 +415,7 @@ Cursor*
 Application::open(mstl::string const& filename,
 						mstl::string const& encoding,
 						bool readOnly,
-						Progress& progress)
+						util::Progress& progress)
 {
 	// IMPORTANT NOTE:
 	// -------------------------------------------------------------------------------------------
@@ -702,7 +703,7 @@ Application::setSubscriber(SubscriberP subscriber)
 	m_subscriber = subscriber;
 //	if ((m_subscriber = subscriber))
 //	{
-//		m_subscriber->updateGameList(cursor().name());
+//		m_subscriber->updateGameList(m_updateCount++, cursor().name());
 //
 //		if (m_referenceBase)
 //			m_subscriber->updateTree(m_referenceBase->name());
@@ -725,7 +726,7 @@ Application::switchBase(Cursor& cursor)
 	}
 
 	if (m_subscriber)
-		m_subscriber->updateList(cursor.name());
+		m_subscriber->updateList(m_updateCount++, cursor.name());
 }
 
 
@@ -755,17 +756,19 @@ Application::searchGames(Cursor& cursor, Query const& query, unsigned view, unsi
 
 	if (m_subscriber && m_current == &cursor)
 	{
-		m_subscriber->updateGameList(cursor.name(), view);
+		m_subscriber->updateGameList(m_updateCount, cursor.name(), view);
 
 		if (filter & Players)
-			m_subscriber->updatePlayerList(cursor.name(), view);
+			m_subscriber->updatePlayerList(m_updateCount, cursor.name(), view);
 
 		if (filter & Events)
-			m_subscriber->updateEventList(cursor.name(), view);
+			m_subscriber->updateEventList(m_updateCount, cursor.name(), view);
 
 		if (filter & Sites)
-			m_subscriber->updateSiteList(cursor.name(), view);
+			m_subscriber->updateSiteList(m_updateCount, cursor.name(), view);
 	}
+
+	++m_updateCount;
 }
 
 
@@ -779,7 +782,7 @@ Application::sort(Cursor& cursor,
 	cursor.view(view).sort(attr, order, ratingType);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(cursor.name(), view);
+		m_subscriber->updateGameList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -793,7 +796,7 @@ Application::sort(Cursor& cursor,
 	cursor.view(view).sort(attr, order, ratingType);
 
 	if (m_subscriber)
-		m_subscriber->updatePlayerList(cursor.name(), view);
+		m_subscriber->updatePlayerList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -806,7 +809,7 @@ Application::sort(Cursor& cursor,
 	cursor.view(view).sort(attr, order);
 
 	if (m_subscriber)
-		m_subscriber->updateEventList(cursor.name(), view);
+		m_subscriber->updateEventList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -819,7 +822,7 @@ Application::sort(Cursor& cursor,
 	cursor.view(view).sort(attr, order);
 
 	if (m_subscriber)
-		m_subscriber->updateSiteList(cursor.name(), view);
+		m_subscriber->updateSiteList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -829,7 +832,7 @@ Application::sort(Cursor& cursor, unsigned view, attribute::annotator::ID attr, 
 	cursor.view(view).sort(attr, order);
 
 	if (m_subscriber)
-		m_subscriber->updateAnnotatorList(cursor.name(), view);
+		m_subscriber->updateAnnotatorList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -839,7 +842,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::game::ID attr)
 	cursor.view(view).reverse(attr);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(cursor.name(), view);
+		m_subscriber->updateGameList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -849,7 +852,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::player::ID attr)
 	cursor.view(view).reverse(attr);
 
 	if (m_subscriber)
-		m_subscriber->updatePlayerList(cursor.name(), view);
+		m_subscriber->updatePlayerList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -859,7 +862,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::event::ID attr)
 	cursor.view(view).reverse(attr);
 
 	if (m_subscriber)
-		m_subscriber->updateEventList(cursor.name(), view);
+		m_subscriber->updateEventList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -869,7 +872,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::site::ID attr)
 	cursor.view(view).reverse(attr);
 
 	if (m_subscriber)
-		m_subscriber->updateSiteList(cursor.name(), view);
+		m_subscriber->updateSiteList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -879,7 +882,7 @@ Application::reverse(Cursor& cursor, unsigned view, attribute::annotator::ID att
 	cursor.view(view).reverse(attr);
 
 	if (m_subscriber)
-		m_subscriber->updateAnnotatorList(cursor.name(), view);
+		m_subscriber->updateAnnotatorList(m_updateCount++, cursor.name(), view);
 }
 
 
@@ -917,7 +920,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 	}
 
 	if (m_subscriber)
-		m_subscriber->updateList(cursor.name());
+		m_subscriber->updateList(m_updateCount++, cursor.name());
 }
 
 
@@ -1027,11 +1030,12 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 
 	if (m_subscriber && m_current == &cursor)
 	{
-		m_subscriber->updateGameList(cursor.name(), view, index);
-		m_subscriber->updatePlayerList(cursor.name(), view);
-		m_subscriber->updateEventList(cursor.name(), view);
-		m_subscriber->updateSiteList(cursor.name(), view);
-		m_subscriber->updateAnnotatorList(cursor.name(), view);
+		m_subscriber->updateGameList(m_updateCount, cursor.name(), view, index);
+		m_subscriber->updatePlayerList(m_updateCount, cursor.name(), view);
+		m_subscriber->updateEventList(m_updateCount, cursor.name(), view);
+		m_subscriber->updateSiteList(m_updateCount, cursor.name(), view);
+		m_subscriber->updateAnnotatorList(m_updateCount, cursor.name(), view);
+		++m_updateCount;
 	}
 }
 
@@ -1104,7 +1108,7 @@ Application::setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigne
 	cursor.base().setGameFlags(cursor.gameIndex(index, view), flags);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(cursor.name(), view, index);
+		m_subscriber->updateGameList(m_updateCount, cursor.name(), view, index);
 }
 
 
@@ -1320,7 +1324,7 @@ Application::clearBase(Cursor& cursor)
 		m_subscriber->updateDatabaseInfo(cursor.name());
 
 		if (m_current == &cursor)
-			m_subscriber->updateList(cursor.name());
+			m_subscriber->updateList(m_updateCount++, cursor.name());
 
 		if (m_referenceBase == &cursor && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name());
@@ -1329,7 +1333,7 @@ Application::clearBase(Cursor& cursor)
 
 
 void
-Application::compactBase(Cursor& cursor, ::util::Progress& progress)
+Application::compactBase(Cursor& cursor, util::Progress& progress)
 {
 	M_REQUIRE(!cursor.isReadOnly());
 	M_REQUIRE(!cursor.isScratchBase());
@@ -1342,7 +1346,7 @@ Application::compactBase(Cursor& cursor, ::util::Progress& progress)
 		m_subscriber->updateDatabaseInfo(cursor.name());
 
 		if (m_current == &cursor)
-			m_subscriber->updateList(cursor.name());
+			m_subscriber->updateList(m_updateCount++, cursor.name());
 
 		if (cursor.isReferenceBase() && !m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name());
@@ -1497,7 +1501,8 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 
 					if (m_subscriber && m_referenceBase->hasTreeView())
 					{
-						m_subscriber->updateGameList(	m_referenceBase->name(),
+						m_subscriber->updateGameList(	m_updateCount++,
+																m_referenceBase->name(),
 																m_referenceBase->treeViewIdentifier());
 					}
 				}
@@ -1639,19 +1644,21 @@ Application::saveGame(Cursor& cursor, bool replace)
 					{
 						if (replace)
 						{
-							m_subscriber->updateGameList(db.name(), i, g.game->index());
-							m_subscriber->updatePlayerList(db.name(), i);
-							m_subscriber->updateEventList(db.name(), i);
-							m_subscriber->updateSiteList(db.name(), i);
-							m_subscriber->updateAnnotatorList(db.name(), i);
+							m_subscriber->updateGameList(m_updateCount, db.name(), i, g.game->index());
+							m_subscriber->updatePlayerList(m_updateCount, db.name(), i);
+							m_subscriber->updateEventList(m_updateCount, db.name(), i);
+							m_subscriber->updateSiteList(m_updateCount, db.name(), i);
+							m_subscriber->updateAnnotatorList(m_updateCount, db.name(), i);
 						}
 						else
 						{
-							m_subscriber->updateList(db.name(), i);
+							m_subscriber->updateList(m_updateCount, db.name(), i);
 						}
 					}
 				}
 			}
+
+			++m_updateCount;
 		}
 
 		g.game->updateSubscriber(Game::UpdatePgn);
@@ -1709,8 +1716,10 @@ Application::updateMoves()
 				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
 				{
 					if (cursor.isViewOpen(i))
-						m_subscriber->updateGameList(name, i, g.sourceIndex);
+						m_subscriber->updateGameList(m_updateCount, name, i, g.sourceIndex);
 				}
+
+				++m_updateCount;
 			}
 		}
 
@@ -1767,13 +1776,15 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 				{
 					if (cursor.isViewOpen(i))
 					{
-						m_subscriber->updateGameList(name, i, index);
-						m_subscriber->updatePlayerList(name, i);
-						m_subscriber->updateEventList(name, i);
-						m_subscriber->updateSiteList(name, i);
-						m_subscriber->updateAnnotatorList(name, i);
+						m_subscriber->updateGameList(m_updateCount, name, i, index);
+						m_subscriber->updatePlayerList(m_updateCount, name, i);
+						m_subscriber->updateEventList(m_updateCount, name, i);
+						m_subscriber->updateSiteList(m_updateCount, name, i);
+						m_subscriber->updateAnnotatorList(m_updateCount, name, i);
 					}
 				}
+
+				m_updateCount++;
 			}
 
 			if (game)

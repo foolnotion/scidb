@@ -30,7 +30,6 @@
 #include "tcl_file.h"
 
 #include "db_comment.h"
-#include "db_player.h"
 #include "db_database_codec.h"
 #include "db_eco_table.h"
 
@@ -846,7 +845,7 @@ cmdHtmlHyphenate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 4)
 	{
-		Tcl_WrongNumArgs(	ti, 1, objv, "<patternFile> <dictFiles> <document>");
+		Tcl_WrongNumArgs(ti, objc, objv, "<patternFile> <dictFiles> <document>");
 		return TCL_ERROR;
 	}
 
@@ -870,7 +869,7 @@ cmdHtmlLigatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 2)
 	{
-		Tcl_WrongNumArgs(	ti, 1, objv, "<document>");
+		Tcl_WrongNumArgs(ti, objc, objv, "<document>");
 		return TCL_ERROR;
 	}
 
@@ -890,7 +889,7 @@ cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc < 3)
 	{
-		Tcl_WrongNumArgs(	ti, 1, objv,
+		Tcl_WrongNumArgs(	ti, objc, objv,
 								"?-nocase? ?-entireword? ?-titleonly? "
 								"?-max N? <needle> <haystack>");
 		return TCL_ERROR;

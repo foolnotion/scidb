@@ -34,6 +34,7 @@
 #include "db_comment.h"
 #include "db_eco.h"
 #include "db_pgn_aquarium.h"
+#include "db_exception.h"
 
 #include "u_nul_string.h"
 #include "u_progress.h"

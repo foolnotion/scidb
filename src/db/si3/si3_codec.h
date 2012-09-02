@@ -172,7 +172,10 @@ private:
 	void readIndex(mstl::fstream& fstrm, util::Progress& progress);
 
 	void readNamebases(mstl::fstream& stream, util::Progress& progress);
-	void preloadNamebase(ByteIStream& bstrm, unsigned maxFreq, unsigned count, util::Progress& progress);
+	void preloadNamebase(ByteIStream& bstrm,
+								unsigned maxFreq,
+								unsigned count,
+								util::Progress& progress);
 	void readNamebase(ByteIStream& stream,
 							Namebase& base,
 							NameList& shadowBase,

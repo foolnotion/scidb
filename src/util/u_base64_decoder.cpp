@@ -101,12 +101,12 @@ Base64Decoder::read(unsigned char* buf, size_t len)
 			{
 				case B64_Pad:
 					if (m_last)
-						U_RAISE("couldn't recognize image data");
+						throw BasicException("couldn't recognize image data");
 					break;
 
 				case B64_Space:	break;	// ignore spaces
-				case B64_Done:		U_RAISE("unexpected nul byte in Base-64 stream");
-				default:				U_RAISE("illegal character in Base-64 stream");
+				case B64_Done:		throw BasicException("unexpected nul byte in Base-64 stream");
+				default:				throw BasicException("illegal character in Base-64 stream");
 			}
 #endif
 		}
@@ -156,12 +156,12 @@ Base64Decoder::skip(size_t nbytes)
 			{
 				case B64_Pad:
 					if (m_last == 0)
-						U_RAISE("incomplete Base-64 stream");
+						throw BasicException("incomplete Base-64 stream");
 					break;
 
 				case B64_Space:	break; // ignore spaces
-				case B64_Done:		U_RAISE("unexpected nul byte in Base-64 stream");
-				default:				U_RAISE("illegal character in Base-64 stream");
+				case B64_Done:		throw BasicException("unexpected nul byte in Base-64 stream");
+				default:				throw BasicException("illegal character in Base-64 stream");
 			}
 #endif
 		}

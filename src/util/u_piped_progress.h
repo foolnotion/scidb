@@ -31,13 +31,13 @@ public:
 
 	PipedProgress();
 
-	bool interrupted();
+	bool interrupted() override;
 	bool interruptReceived() const;
 
-	void start(unsigned total);
-	void update(unsigned progress);
+	void start(unsigned total) override;
+	void update(unsigned progress) override;
 	void refresh(unsigned progress);
-	void finish();
+	void finish() throw() override;
 
 private:
 

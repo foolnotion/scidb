@@ -34,6 +34,7 @@ TITLE Welcome to Scidb-Help
   <li><a href="Game-List-Window.html">Game list</a></li>
   <li><a href="Player-List-Window.html">Player list</a></li>
   <li><a href="Event-List-Window.html">Event List</a></li>
+  <li><a href="Site-List-Window.html">Site List</a></li>
   <li><a href="Annotator-List-Window.html">Annotator list</a></li>
 </dir>
 

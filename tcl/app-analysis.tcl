@@ -35,6 +35,7 @@ set Depth					"Depth"
 set Time						"Time"
 
 set Control					"Control"
+set Switcher				"Switcher"
 set Pause					"Pause"
 set Lock						"Lock"
 set MultipleVariations	"Multiple Variations"
@@ -63,7 +64,7 @@ proc build {parent width height} {
 	variable Vars
 
 	set engines [::engine::engines]
-	if {[lsearch -index 0 $engines $Options(engine:current)] == -1} {
+	if {[lsearch -exact -index 0 $engines $Options(engine:current)] == -1} {
 		if {[llength $engines] == 0} {
 			set Options(engine:current) ""
 		} else {
@@ -73,7 +74,7 @@ proc build {parent width height} {
 
 	array set fopt [font configure $Options(font)]
 	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
-	set Vars(font:figurine) [list $::font::defaultFigurineFont $fopt(-size)]
+	set Vars(font:figurine) [list $::font::figurine(text:normal) $fopt(-size)]
 	set Vars(charwidth) [font measure $Options(font) "0"]
 	set Vars(minsize) [expr {11*$Vars(charwidth)}]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
@@ -82,15 +83,21 @@ proc build {parent width height} {
 
 	set w [ttk::frame $parent.f]
 
-	set info [tk::frame $w.info -background $Options(background) -borderwidth 0]
-
-	set move  [tk::frame $info.move -background $Options(info:background) -borderwidth 1 -relief raised]
-	set lmove [tk::label $info.move.l \
-					-font $Vars(font:bold) \
-					-background $Options(info:background) \
-					-borderwidth 0 \
+	set info		[tk::frame $w.info \
+						-background $Options(background) \
+						-borderwidth 0 \
 					]
-	set tmove [tk::text $info.move.t \
+	set move		[tk::frame $info.move \
+						-background $Options(info:background) \
+						-borderwidth 1 \
+						-relief raised \
+					]
+	set lmove	[tk::label $info.move.l \
+						-font $Vars(font:bold) \
+						-background $Options(info:background) \
+						-borderwidth 0 \
+					]
+	set tmove	[tk::text $info.move.t \
 						-background $Options(info:background) \
 						-borderwidth 0 \
 						-foreground $Options(info:background) \
@@ -201,17 +208,17 @@ proc build {parent width height} {
 	set Vars(time) $info.time.t
 
 	set tbControl [::toolbar::toolbar $parent \
-		-id control \
+		-id analysis-control \
 		-hide 0 \
-		-side top \
+		-side bottom \
 		-alignment left \
 		-allow {top bottom} \
 		-tooltipvar [namespace current]::mc::Control \
 		]
 	set tbSwitcher [::toolbar::toolbar $parent \
-		-id switch \
+		-id analysis-switch \
 		-hide 0 \
-		-side top \
+		-side bottom \
 		-alignment left \
 		-allow {top bottom} \
 		-tooltipvar [namespace current]::mc::Switcher \

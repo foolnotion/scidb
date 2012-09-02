@@ -129,7 +129,7 @@ proc WidgetProc {w command args} {
 		}
 
 		valid? {
-			return [expr {[lsearch [$w.__w__ cget -values] [$w.__w__ get]] >= 0}]
+			return [expr {[lsearch -exact [$w.__w__ cget -values] [$w.__w__ get]] >= 0}]
 		}
 
 		set {
@@ -161,6 +161,7 @@ proc WidgetProc {w command args} {
 
 
 proc Select {w key sym var} {
+	if {[$w popdown?]} { return }
 	if {![info exists [winfo parent $w]::Ratings]} { return }
 
 	variable [winfo parent $w]::Ratings

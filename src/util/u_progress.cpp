@@ -31,7 +31,7 @@ void Progress::start(unsigned) {}
 void Progress::message(mstl::string const&) {}
 void Progress::tick(unsigned) {}
 void Progress::update(unsigned) {}
-void Progress::finish() {}
+void Progress::finish() throw() {}
 bool Progress::interrupted() { return false; }
 unsigned Progress::ticks() const { return 0; }
 

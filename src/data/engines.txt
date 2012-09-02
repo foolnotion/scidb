@@ -410,7 +410,8 @@
 	Grizzly								1895	----	GER	WB
 	Grok									2436	----	USA
 	Gromit								2422	----	GER	WB
-*	Gullydeckel							2101	----	GER	WB
+*	Gullydeckel							----	----	GER	WB
+*	Gullydeckel 2						2101	----	GER	WB
 =	Gully
 	Gunda									----	----	INA
 ## H ########################################################
@@ -673,6 +674,7 @@
 *	MFChess								1451	----	SWE	WB
 *	Microchess							----	----	GER	WB
 *	Micro-Max							1845	2046	NED	WB
+=	MicroMax
 *	Milady								1796	----	FRA	WB
 *	MiniChessAI							1674	----	POL	WB
 =	MiniChess

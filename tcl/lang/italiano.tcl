@@ -65,6 +65,7 @@
 ::mc::Delete			"Elimina"
 ::mc::Edit				"Modifica"
 ::mc::Escape			"Esci"
+::mc::File				"File" ;# NEW
 ::mc::From				"Da"
 ::mc::Game				"Partita"
 ::mc::Layout			"Layout"
@@ -135,6 +136,10 @@
 ::widget::mc::Last		"&Ultima"
 ::widget::mc::Help		"&Aiuto"
 
+::widget::mc::New			"&New" ;# NEW
+::widget::mc::Save		"&Salva"
+::widget::mc::Delete		"&Elimina"
+
 ::widget::mc::Control(minimize)	"Minimizza"
 ::widget::mc::Control(restore)	"Esci da Schermo-Interno"
 ::widget::mc::Control(close)		"Chiudi"
@@ -202,14 +207,17 @@
 ::menu::mc::Contact						"&Contenuti (browser)"
 ::menu::mc::Quit							"&Esci"
 ::menu::mc::Extras						"E&xtras"
+::menu::mc::Setup							"Setu&p" ;# NEW
+::menu::mc::Engines						"&Engines" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Segnala Bug"
 ::menu::mc::ContactFeatureRequest	"&Richiesta Funzione"
 ::menu::mc::InstallChessBaseFonts	"Installa Caratteri ChessBase"
+::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
-::menu::mc::ImportFiles					"Importa file PGN..."
+::menu::mc::ImportFiles					"Importa file PGN"
 ::menu::mc::Archiving					"Archiviazione"
 ::menu::mc::CreateArchive				"Crea Archivio"
 ::menu::mc::BuildArchive				"Crea Archivio %s"
@@ -224,6 +232,9 @@
 ::load::mc::ReadingOptionsFile	"Permessi di lettura del file"
 ::load::mc::StartupFinished		"Startup completato"
 ::load::mc::SystemEncoding			"La codifica di sistema è '%s'"
+
+::load::mc::ReadingFile(options)	"Permessi di lettura del file"
+::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
 
 ::load::mc::ECOFile					"File ECO"
 ::load::mc::EngineFile				"File motore"
@@ -740,6 +751,38 @@
 ::pgn::setup::mc::Diagrams(square-size)		"Grandezza Casa"
 ::pgn::setup::mc::Diagrams(indentation)		"Larghezza Indentazione"
 
+
+### engine #############################################################
+::engine::mc::Name					"Name" ;# NEW
+::engine::mc::Identifier			"Identifier" ;# NEW
+::engine::mc::Author					"Author" ;# NEW
+::engine::mc::Country				"Country" ;# NEW
+::engine::mc::Rating					"Rating" ;# NEW
+::engine::mc::Logo					"Logo" ;# NEW
+::engine::mc::Protocol				"Protocol" ;# NEW
+::engine::mc::Parameters			"Parameters" ;# NEW
+::engine::mc::Command				"Command" ;# NEW
+::engine::mc::Variants				"Variants" ;# NEW
+::engine::mc::LastUsed				"Last used" ;# NEW
+
+::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+
+::engine::mc::SetupEngines			"Setup Engines" ;# NEW
+::engine::mc::ImageFiles			"Image files" ;# NEW
+::engine::mc::SelectEngine			"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
+::engine::mc::Executables			"Executables" ;# NEW
+::engine::mc::EngineLog				"Engine Log" ;# NEW
+::engine::mc::Probing				"Probing" ;# NEW
+
+::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Segna partita come eliminata"
 ::gametable::mc::UndeleteGame				"Ripristina questa partita"
@@ -1159,6 +1202,8 @@
 ::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
 ::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"
 ::import::mc::AbortedDueToInternalError		"Annullato per errore interno"
+::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
+::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selezione File"
@@ -1309,7 +1354,7 @@
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Figurines"
 ::figurines::mc::Graphic	"Grafica"
-::figurines::mc::User		"Definito dall'utente"
+::figurines::mc::User		"Utente" ;# "Definito dall'utente"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Salva Partita"
@@ -1764,7 +1809,6 @@
 ::dialog::choosecolor::mc::RecentColors	"Colori recenti"
 ::dialog::choosecolor::mc::Old				"Vecchio"
 ::dialog::choosecolor::mc::Current			"Attuale"
-::dialog::choosecolor::mc::Color				"Colore"
 ::dialog::choosecolor::mc::HexCode			"Codice Esadecimale"
 ::dialog::choosecolor::mc::ColorSelection	"Selezione Colore"
 ::dialog::choosecolor::mc::Red				"Rosso"
@@ -1858,16 +1902,6 @@
 
 ::fsbox::mc::CannotChangeDir				"Non posso cambiare la cartella a '%s'.\nPermesso negato."
 ::fsbox::mc::DirectoryRemoved				"Non posso passare alla cartella '%s'.\nLa cartella è rimossa."
-::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
-::fsbox::mc::ReallyMove(file,r)			"Vuoi davvero spostare il file protetto in scrittura '%s' nel cestino?"
-::fsbox::mc::ReallyMove(folder,w)		"Vuoi davvero spostare la cartella '%s' nel cestino?"
-::fsbox::mc::ReallyMove(folder,r)		"Vuoi davvero spostare la cartella protetta in scrittura '%s' nel cestino?"
-::fsbox::mc::ReallyDelete(file,w)		"Vuoi davvero eliminare il file '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(file,r)		"Vuoi davvero eliminare il file protetto in scrittura '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(link,w)		"Vuoi davvero eliminare il collegamento a '%s'?"
-::fsbox::mc::ReallyDelete(link,r)		"Vuoi davvero eliminare il collegamento a '%s'?"
-::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
 ::fsbox::mc::RestoreFailed					"Ripristino di '%s' fallito."
 ::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
@@ -1880,7 +1914,6 @@
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
 ::fsbox::mc::InvalidFileExt				"Operazione fallita: '%s' ha un'estensione file non valida."
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
-::fsbox::mc::CannotMove						"Impossibile spostare il file '%s'."
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::ErrorCreate					"Errore nel creare la cartella: permesso negato."
 ::fsbox::mc::FilenameNotAllowed			"Il nome del file '%s' non è permesso."
@@ -1898,10 +1931,7 @@
 ::fsbox::mc::CannotOpenOrCreate			"Non posso aprire/creare '%s'. Per favore scegli una cartella."
 ::fsbox::mc::WaitWhileDuplicating		"Per favore attendere mentre avviene la duplicazione del file..."
 ::fsbox::mc::FileHasDisappeared			"Il file '%s' è scomparso."
-::fsbox::mc::CannotDelete					"Impossibile eliminare il file '%s'."
-::fsbox::mc::CannotRename					"Impossibile rinominare il file '%s'."
 ::fsbox::mc::CurrentlyInUse				"Questo file è correntemente in uso."
-::fsbox::mc::CannotOverwrite				"Impossibile sovrascrivere il file '%s'."
 ::fsbox::mc::PermissionDenied				"Permessi negati per la cartella '%s'."
 ::fsbox::mc::CannotOpenUri					"Impossibile aprire il seguente URI:"
 ::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
@@ -1913,6 +1943,25 @@
 ::fsbox::mc::AnEntryAlreadyExists		"Un valore '%s' è già presente."
 ::fsbox::mc::SourceDirectoryIs			"La cartella d'origine è '%s'."
 ::fsbox::mc::NewName							"Nuovo nome"
+
+::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
+::fsbox::mc::ReallyMove(file,r)			"Vuoi davvero spostare il file protetto in scrittura '%s' nel cestino?"
+::fsbox::mc::ReallyMove(folder,w)		"Vuoi davvero spostare la cartella '%s' nel cestino?"
+::fsbox::mc::ReallyMove(folder,r)		"Vuoi davvero spostare la cartella protetta in scrittura '%s' nel cestino?"
+::fsbox::mc::ReallyDelete(file,w)		"Vuoi davvero eliminare il file '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(file,r)		"Vuoi davvero eliminare il file protetto in scrittura '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(link,w)		"Vuoi davvero eliminare il collegamento a '%s'?"
+::fsbox::mc::ReallyDelete(link,r)		"Vuoi davvero eliminare il collegamento a '%s'?"
+::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
+
+::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
+::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
+
+::fsbox::mc::Cannot(delete)				"Impossibile eliminare il file '%s'."
+::fsbox::mc::Cannot(rename)				"Impossibile rinominare il file '%s'."
+::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(overwrite)			"Impossibile sovrascrivere il file '%s'."
 
 ::fsbox::mc::DropAction(move)				"Sposta qui"
 ::fsbox::mc::DropAction(copy)				"Copia qui"

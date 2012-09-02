@@ -126,7 +126,7 @@ private:
 	}
 	__attribute__((packed));
 
-	typedef mstl::map<uint32_t,NamebaseEntry*>				BaseMap;
+	typedef mstl::map<uint32_t,NamebaseEntry*>			BaseMap;
 	typedef mstl::map<uint32_t,uint32_t>					AnnotationMap;
 	typedef mstl::hash<GameInfo const*,Source*>			SourceMap;
 	typedef mstl::map<NamebaseEvent const*,Tournament>	TournamentMap;

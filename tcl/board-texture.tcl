@@ -408,7 +408,7 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} 
 		[buildBrowser $top $dlg $which $Browser(rows) $Browser(cols) $currentTexture $otherTexture]
 	set Browser(recv) $parent
 	
-	widget::dialogButtons $dlg close close
+	widget::dialogButtons $dlg close
 	$dlg.close configure -command [list destroy $dlg]
 
 	if {[winfo viewable [winfo toplevel $parent]]} {

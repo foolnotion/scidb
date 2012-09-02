@@ -1663,14 +1663,27 @@ tk_disable_image(	char const* subcmd,
 						Tcl_Interp* ti,
 						char const* srcName,
 						char const* dstName,
-						int objc, Tcl_Obj* const[])
+						int objc, Tcl_Obj* const objv[])
 {
 	enum { Disabled_Alpha = 100 };
 
-	if (objc > 0)
+	int alpha = Disabled_Alpha;
+
+	if (objc > 1)
 	{
 		Tcl_WrongNumArgs(ti, 0, 0, "subcommand");
 		return TCL_ERROR;
+	}
+
+	if (objc == 1)
+	{
+		if (Tcl_GetIntFromObj(ti, objv[0], &alpha) != TCL_OK || 0 > alpha || alpha > 255)
+		{
+			return tcl_error(
+				subcmd,
+				"invalid alpha value '%s': valid range is 0..255",
+				Tcl_GetString(objv[0]));
+		}
 	}
 
 	Tk_PhotoHandle srcHandle = Tk_FindPhoto(ti, srcName);
@@ -1690,7 +1703,7 @@ tk_disable_image(	char const* subcmd,
 	memcpy(&dstBlock, &srcBlock, sizeof(srcBlock));
 	dstBlock.pixelPtr = new unsigned char[dstBlock.pitch*dstBlock.height];
 	memcpy(dstBlock.pixelPtr, srcBlock.pixelPtr, srcBlock.pitch*srcBlock.height);
-	processImage(dstBlock, SetAlpha(Disabled_Alpha));
+	processImage(dstBlock, SetAlpha(alpha));
 	Tk_PhotoPutBlock(	ti,
 							dstHandle,
 							&dstBlock,

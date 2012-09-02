@@ -144,7 +144,7 @@ set Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
 set Option(pgn,use_chessbase_format)					"Use ChessBase format"
 set Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
 #set Option(pgn,include_termination_tag)				"Write tag 'Termination'"
-#set Option(pgn,include_mode_tag)							"Write tag 'Mode'"
+#set Option(pgn,include_mode_tag)						"Write tag 'Mode'"
 set Option(pgn,include_opening_tag)						"Write tags 'Opening', 'Variation', 'Subvariation'"
 set Option(pgn,include_setup_tag)						"Write tag 'Setup' (if needed)"
 set Option(pgn,include_variant_tag)						"Write tag 'Variant' (if needed)"
@@ -695,6 +695,7 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	lappend opts -initialfile $initialfile
 	lappend opts -filetypes {{dummy .___}}
 	lappend opts -width 720
+	lappend opts -class export
 	set Info(fsbox) [::dialog::saveFile {*}$opts]
 	$nb add $Info(fsbox) -sticky nsew
 	::widget::notebookTextvarHook $nb $Info(fsbox) [namespace current]::mc::FileSelection
@@ -1298,7 +1299,7 @@ proc ToggleUseImages {selbox sizes {sizeFrame {}}} {
 	variable [namespace parent]::Info
 
 	set type $Values(Type)
-	set index [lsearch -index 0 $Info(diagram:list) $Values($type,diagram,image-style)]
+	set index [lsearch -exact -index 0 $Info(diagram:list) $Values($type,diagram,image-style)]
 	if {$Values($type,diagram,use-images)} { set state normal } else { set state disabled }
 	$selbox configure -state $state
 	$selbox select none
@@ -2115,7 +2116,7 @@ proc Setup {pane} {
 		$Info(lang:box$i) set [lindex $Values($type,comments,languages) $i]
 	}
 
-	set lang [lsearch -index 0 $Info(languages) $Values($type,comments,hyphenation)]
+	set lang [lsearch -exact -index 0 $Info(languages) $Values($type,comments,hyphenation)]
 	$Info(lang:primary) select $lang
 
 	$Info(lang:num) set [lindex $Values($type,comments,languages) 0 1]
@@ -2166,7 +2167,7 @@ proc BuildFrame {w} {
 	if {$Values($type,paper,format) eq "_Custom_"} {
 		set n [llength $Paper($type)]
 	} else {
-		set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+		set n [lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)]
 	}
 	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
 
@@ -2189,7 +2190,7 @@ proc BuildFrame {w} {
 		foreach style $DocumentStyle {
 			lappend Info(tex,paper,document-styles) [set [namespace parent]::mc::$style]
 		}
-		set n [lsearch $DocumentStyle $Values(tex,paper,document)]
+		set n [lsearch -exact $DocumentStyle $Values(tex,paper,document)]
 		set Info(tex,paper,document) [lindex $Info(tex,paper,document-styles) $n]
 		ttk::labelframe $w.doc -text [set [namespace parent]::mc::DocumentStyle]
 		ttk::combobox $w.doc.style \
@@ -2267,7 +2268,8 @@ proc BuildFrame {w} {
 		if {$Values($type,paper,format) eq "_Custom_"} {
 			set units [lindex $Values($type,paper,custom) 2]
 		} else {
-			set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,paper,format)] 3]
+			set units [lindex $Paper($type) \
+				[lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)] 3]
 		}
 		foreach {dir row col} {top 1 1 bottom 3 1 left 1 5 right 3 5} {
 			set text [string toupper $dir 0 0]
@@ -2389,12 +2391,12 @@ proc ResetPaper {w} {
 
 	array set Values [array get Defaults $type,paper,*]
 
-	set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+	set n [lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)]
 	set Info($type,paper,textvar) [lindex $Info($type,formats) $n]
 	set Info($type,paper,units) [GetUnits]
 
 	if {$type eq "tex"} {
-		set n [lsearch $DocumentStyle $Values(tex,paper,document)]
+		set n [lsearch -exact $DocumentStyle $Values(tex,paper,document)]
 		set Info(tex,paper,document) [lindex $Info(tex,paper,document-styles) $n]
 	}
 
@@ -2435,7 +2437,8 @@ proc GetUnits {} {
 	if {$Values($type,paper,format) eq "_Custom_"} {
 		set units $Info($type,paper,units,textvar)
 	} else {
-		set units [lindex $Paper($type) [lsearch -index 0 $Paper($type) $Values($type,paper,format)]]
+		set units [lindex $Paper($type) \
+			[lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)]]
 	}
 
 	return $units
@@ -2487,7 +2490,7 @@ proc ConfigureWidgets {w {action {}}} {
 			foreach name {width height units} {
 				$w.paper.$name configure -state disabled
 			}
-			set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+			set n [lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)]
 			set wantedUnits [lindex $Paper($type) $n 3]
 		}
 
@@ -2550,7 +2553,7 @@ proc RefreshPreview {w} {
 		set units $Info($type,paper,units)
 		set Values($type,paper,custom) [list $pw $ph $units]
 	} else {
-		set n [lsearch -index 0 $Paper($type) $Values($type,paper,format)]
+		set n [lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)]
 		lassign [lindex $Paper($type) $n] id pw ph units
 	}
 	if {[llength $pw] == 0} { set pw 0 }
@@ -2677,7 +2680,7 @@ proc DefaultMargin {dir type units} {
 	variable [namespace parent]::Paper
 	variable [namespace parent]::Info
 
-	if {[lsearch -index 0 $Paper($type) $Values($type,paper,format)] == -1} {
+	if {[lsearch -exact -index 0 $Paper($type) $Values($type,paper,format)] == -1} {
 		set format A4
 	} else {
 		set format $Values($type,paper,format)
@@ -2693,7 +2696,7 @@ proc SelectDocumentStyle {w} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::DocumentStyle
 
-	set n [lsearch $Info(tex,paper,document-styles) $Info(tex,paper,document)]
+	set n [lsearch -exact $Info(tex,paper,document-styles) $Info(tex,paper,document)]
 	set Values(tex,paper,document) [lindex $DocumentStyle $n]
 }
 
@@ -2960,7 +2963,7 @@ proc DoExport {parent dlg file} {
 
 	switch $Values(Type) {
 		pgn {
-			if {$Option(pgn,use_utf8_encoding)} {
+			if {$Values(pgn,flag,use_utf8_encoding)} {
 				set encoding "utf-8"
 			} else {
 				set encoding $Values($Values(Type),encoding)
@@ -3197,7 +3200,7 @@ proc ShowTrace {parent trace} {
 		grid $f.vsb  -row 1 -column 2 -sticky ns
 		grid rowconfigure $f 1 -weight 1
 		grid columnconfigure $f 1 -weight 1
-		::widget::dialogButtons $dlg close close
+		::widget::dialogButtons $dlg close
 		$dlg.close configure -command [list destroy $dlg]
 		::util::place $dlg center $w
 		wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]

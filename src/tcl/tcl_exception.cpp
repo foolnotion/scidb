@@ -39,31 +39,18 @@ Exception::Exception(char const* fmt, ...)
 }
 
 
-Exception::Exception(util::Exception& exc)
-	:util::Exception(exc)
-{
-}
+Exception::Exception(util::Exception& exc) :util::Exception(exc) {}
+Exception::~Exception() throw() {}
 
 
-Exception::~Exception() throw()
-{
-}
+Error::Error() :util::Exception() {}
+Error::Error(util::Exception& exc) :util::Exception(exc) {}
+Error::~Error() throw() {}
 
 
-Error::Error()
-	:util::Exception()
-{
-}
+InterruptException::InterruptException() :m_count(-1) {}
+InterruptException::InterruptException(unsigned count) :m_count(count) {}
 
-
-Error::Error(util::Exception& exc)
-	:util::Exception(exc)
-{
-}
-
-
-Error::~Error() throw()
-{
-}
+int InterruptException::count() const { return m_count; }
 
 // vi:set ts=3 sw=3:

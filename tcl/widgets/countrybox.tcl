@@ -37,7 +37,6 @@ proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content ""
 	variable ${w}::Key ""
-	variable ${w}::IgnoreKey 0
 
 	array set opts {
 		-height			15
@@ -80,8 +79,6 @@ proc Build {w args} {
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
-	bind $w <<ComboBoxPosted>> [list set [namespace current]::${w}::IgnoreKey 1]
-	bind $w <<ComboBoxUnposted>> [list set [namespace current]::${w}::IgnoreKey 0]
 	bind $w <<ComboBoxUnposted>> +[list set [namespace current]::${w}::Key ""]
 	bind $w <<ComboboxCurrent>> [namespace code [list ShowCountry $w]]
 	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
@@ -202,10 +199,7 @@ proc LanguageChanged {w} {
 
 
 proc Completion {w code sym var} {
-	if {![info exists ${w}::IgnoreKey]} { return }
-	variable ${w}::IgnoreKey
-
-	if {$IgnoreKey} { return }
+	if {[$w popdown?]} { return }
 	if {[$w state] eq "readonly"} { return }
 
 	switch -- $sym {

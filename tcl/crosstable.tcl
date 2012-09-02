@@ -278,7 +278,7 @@ proc open {parent base index view source} {
 	variable List
 
 	set tb [::toolbar::toolbar $dlg \
-				-id settings \
+				-id crosstable-settings \
 				-allow {top bottom} \
 				-titlevar [namespace current]::mc::Settings \
 				-padx 4 \
@@ -394,11 +394,11 @@ proc open {parent base index view source} {
 	bind $dlg <<LanguageChanged>> [namespace code [list LanguageChanged $dlg %W]]
 
 	if {$source eq "event"} {
-		::widget::dialogButtons $dlg {close previous next} close
+		::widget::dialogButtons $dlg {close previous next}
 		$dlg.previous configure -command [namespace code [list NextEvent $dlg -1]]
 		$dlg.next configure -command [namespace code [list NextEvent $dlg +1]]
 	} else {
-		::widget::dialogButtons $dlg close close
+		::widget::dialogButtons $dlg close
 	}
 	$dlg.close configure -command [list destroy $dlg]
 
@@ -472,7 +472,7 @@ proc InsertEntries {dlg} {
 
 	set parent $Vars(widget:tiebreak1)
 	foreach i {1 2 3 4 5 6} {
-		set n [lsearch $List(tiebreak) $Vars(value:tiebreak$i)]
+		set n [lsearch -exact $List(tiebreak) $Vars(value:tiebreak$i)]
 		set Vars(label:tiebreak$i) "$i. $mc::Tiebreak"
 		$Vars(widget:tiebreak$i) configure -values $List(tiebreak)
 		set clone [::toolbar::lookupClone $parent $Vars(widget:tiebreak$i)]
@@ -480,19 +480,19 @@ proc InsertEntries {dlg} {
 		if {$n >= 0} { set Vars(value:tiebreak$i) [lindex $List(tiebreak) $n] }
 	}
 
-	set n [lsearch $List(scoring) $Vars(value:scoring)]
+	set n [lsearch -exact $List(scoring) $Vars(value:scoring)]
 	$Vars(widget:scoring) configure -values $List(scoring)
 	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:scoring)] $Vars(widget:scoring)]
 	if {[llength $clone]} { $clone configure -values $List(scoring) }
 	if {$n >= 0} { set Vars(value:scoring) [lindex $List(scoring) $n] }
 
-	set n [lsearch $List(order) $Vars(value:order)]
+	set n [lsearch -exact $List(order) $Vars(value:order)]
 	$Vars(widget:order) configure -values $List(order)
 	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:order)] $Vars(widget:order)]
 	if {[llength $clone]} { $clone configure -values $List(order) }
 	if {$n >= 0} { set Vars(value:order) [lindex $List(order) $n] }
 
-	set n [lsearch $List(type) $Vars(value:type)]
+	set n [lsearch -exact $List(type) $Vars(value:type)]
 	$Vars(widget:type) configure -values $List(type)
 	set clone [::toolbar::lookupClone [winfo parent $Vars(widget:type)] $Vars(widget:type)]
 	if {[llength $clone]} { $clone configure -values $List(type) }
@@ -544,12 +544,12 @@ proc Refresh {dlg} {
 	set Vars(prevMode) $Vars(bestMode)
 	set Vars(prevTiebreaks) $Vars(tiebreaks)
 	set Vars(prevScoring) $Vars(scoring)
-	set Vars(order) [lindex $ListEntries(order) [lsearch $List(order) $Vars(value:order)]]
-	set Vars(bestMode) [lindex $ListEntries(type) [lsearch $List(type) $Vars(value:type)]]
-	set Vars(scoring) [lindex $ListEntries(scoring) [lsearch $List(scoring) $Vars(value:scoring)]]
+	set Vars(order) [lindex $ListEntries(order) [lsearch -exact $List(order) $Vars(value:order)]]
+	set Vars(bestMode) [lindex $ListEntries(type) [lsearch -exact $List(type) $Vars(value:type)]]
+	set Vars(scoring) [lindex $ListEntries(scoring) [lsearch -exact $List(scoring) $Vars(value:scoring)]]
 	set Vars(tiebreaks) {}
 	for {set i 1} {$i <= 6} {incr i} {
-		set n [lsearch $List(tiebreak) $Vars(value:tiebreak$i)]
+		set n [lsearch -exact $List(tiebreak) $Vars(value:tiebreak$i)]
 		if {$n > 0} { lappend Vars(tiebreaks) [lindex $ListEntries(tiebreak) $n] }
 	}
 
@@ -572,7 +572,7 @@ proc UpdateHistory {dlg} {
 		|| $Vars(prevScoring) ne $Vars(scoring)
 		|| $Vars(prevTiebreaks) ne $Vars(tiebreaks)} {
 		set event $Vars(event)
-		set i [lsearch -index 0 $RecentlyUsedHistory $event]
+		set i [lsearch -exact -index 0 $RecentlyUsedHistory $event]
 
 		if {$i >= 0} {
 			set RecentlyUsedHistory [lreplace $RecentlyUsedHistory $i $i]
@@ -627,12 +627,12 @@ proc UpdateContent {dlg {setup 0}} {
 			set Vars(eventName) " ($name)"
 		}
 		set Vars(event) [list $name $eventDate $site $eventCountry $eventType $eventMode $timeMode]
-		set i [lsearch -index 0 $RecentlyUsedHistory $Vars(event)]
+		set i [lsearch -exact -index 0 $RecentlyUsedHistory $Vars(event)]
 
 		if {$i >= 0} {
 			lassign [lindex $RecentlyUsedHistory $i 1] bestMode tiebreaks scoring
 		} else {
-			set i [lsearch -index 0 $MostRecentHistory $Vars(event)]
+			set i [lsearch -exact -index 0 $MostRecentHistory $Vars(event)]
 
 			if {$i >= 0} {
 				lassign [lindex $MostRecentHistory $i 1] bestMode tiebreaks scoring
@@ -646,13 +646,14 @@ proc UpdateContent {dlg {setup 0}} {
 
 		set i 0
 		foreach tb $tiebreaks {
-			set Vars(value:tiebreak[incr i]) [lindex $List(tiebreak) [lsearch $ListEntries(tiebreak) $tb]]
+			set Vars(value:tiebreak[incr i]) \
+				[lindex $List(tiebreak) [lsearch -exact $ListEntries(tiebreak) $tb]]
 		}
 		for {incr i} {$i <= 6} {incr i} {
 			set Vars(value:tiebreak$i) [lindex $List(tiebreak) 0]
 		}
-		set Vars(value:scoring) [lindex $List(scoring) [lsearch $ListEntries(scoring) $scoring]]
-		set Vars(value:type) [lindex $List(type) [lsearch $ListEntries(type) $bestMode]]
+		set Vars(value:scoring) [lindex $List(scoring) [lsearch -exact $ListEntries(scoring) $scoring]]
+		set Vars(value:type) [lindex $List(type) [lsearch -exact $ListEntries(type) $bestMode]]
 		set Vars(bestMode) $bestMode
 		set Vars(tiebreaks) $tiebreaks
 		set Vars(scoring) $scoring
@@ -725,7 +726,8 @@ proc UpdateContent {dlg {setup 0}} {
 						set Vars(bestMode) [::scidb::crosstable::get bestMode $Vars(tableId) $viewId]
 						set Vars(bestMode) [string tolower $Vars(bestMode) 0 0]
 						if {$Vars(bestMode) eq "crosstable"} { set Vars(bestMode) rankingList }
-						set Vars(value:type) [lindex $List(type) [lsearch $ListEntries(type) $Vars(bestMode)]]
+						set Vars(value:type) \
+							[lindex $List(type) [lsearch -exact $ListEntries(type) $Vars(bestMode)]]
 						UpdateHistory $dlg
 						after idle [namespace code [list UpdateContent $dlg]]
 					}
@@ -860,13 +862,13 @@ proc Open {dlg which gameIndex} {
 	set path $Vars(html)
 
 	if {$which eq "pgn"} {
-		::widget::busyOperation ::game::new $path $base $gameIndex
+		::widget::busyOperation { ::game::new $path $base $gameIndex }
 	} else {
 		set viewId $Vars(viewId)
 		set index [::scidb::view::map game $base $viewId $gameIndex]
 		set info [::scidb::db::get gameInfo $index $viewId $base]
 		set Vars(${which}Id) [::widget::busyOperation \
-			::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]
+			[list ::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]]
 	}
 }
 
@@ -1024,10 +1026,11 @@ proc Mouse1Down {dlg node} {
 		$Vars(html) stimulate
 		::tooltip::hide
 	}
+
+	# don't use because Button-1 is used for highlighting
 #	set rank [$node attribute -default {} rank]
-#	if {[string length $rank]} {
-#		ShowPlayerCard $dlg $rank
-#	}
+#	if {[string length $rank]} { ShowPlayerCard $dlg $rank }
+
 	set mark [$node attribute -default {} mark]
 	if {[string length $mark]} {
 		set idList [$node attribute -default {} send]

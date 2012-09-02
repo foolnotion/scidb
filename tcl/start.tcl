@@ -51,6 +51,13 @@ if {[info exists ::env(SCIDB_SHAREDIR)]} {
 	}
 }
 
+if {$::tcl_platform(platform) eq "windows"} {
+	set engines $share/engines
+} else {
+	set engines "%ENGINESDIR%"
+	if {[string match ?ENGINESDIR? $engines]} { set engines "/usr/local/games" }
+}
+
 set home		[file nativename "~"]
 set exec		[file dirname $::nameofexecutable]
 set user		[file join $home .[string range [file tail $::nameofexecutable] 2 end]]
@@ -58,6 +65,7 @@ set data		[file join $share data]
 set help		[file join $share help]
 set hyphen	[file join $share hyphen]
 set photos	[file join $share photos]
+set log		[file join $share log]
 set backup	[file join $user backup]
 set config	[file join $user config]
 
@@ -83,6 +91,7 @@ if {![info exists ::env(SCIDB_SHAREDIR)]} { set ::env(SCIDB_SHAREDIR) $share }
 namespace eval file {
 
 set options [file join [set [namespace parent]::dir::config] options.dat]
+set engines [file join [set [namespace parent]::dir::config] engines.dat]
 
 } ;# namespace file
 
@@ -263,7 +272,6 @@ proc require {myNamespace requiredNamespaces} {
 	}
 }
 
-
 namespace eval util {
 namespace eval mc {
 
@@ -361,8 +369,8 @@ proc databasePath {file} {
 }
 
 
-proc catchIoError {cmd {resultVar {}}} {
-	if {[catch {{*}$cmd} result options]} {
+proc catchException {cmd {resultVar {}}} {
+	if {[catch { uplevel 1 $cmd } result options]} {
 		array set opts $options
 		if {[string first %IO-Error% $opts(-errorinfo)] >= 0} {
 			lassign $opts(-errorinfo) type file error what
@@ -389,11 +397,14 @@ proc catchIoError {cmd {resultVar {}}} {
 				;
 			return 1
 		}
+		if {[string first %Interrupted% $opts(-errorinfo)] >= 0} {
+			lassign $opts(-errorinfo) type count
+			if {$count == -1} { return -1 }
+			return [expr {-$count - 2}]
+		}
 		return -code $opts(-code) -errorcode $opts(-errorcode) -rethrow 1 $result
 	}
-	if {[llength $resultVar]} {
-		uplevel 1 [list set $resultVar $result]
-	}
+	if {[llength $resultVar]} { uplevel 1 [list set $resultVar $result] }
 	return 0
 }
 
@@ -423,14 +434,14 @@ proc source {what} {
 namespace eval remote {
 
 proc openBases {pathList} {
-	raise .application
+	set parent [::dialog::fsbox::currentDialog]
+	if {[string length $parent] == 0} { set parent .application }
+	raise $parent
 
 	if {[llength $pathList]} {
+		if {[llength $pathList] == 1} { set switch yes } else { set switch no }
 		foreach path $pathList {
-			::application::database::openBase .application [::util::databasePath $path] no {} no
-		}
-		if {[llength $pathList] == 1} {
-			::application::database::switchToBase [lindex $pathList 0]
+			::application::database::openBase $parent [::util::databasePath $path] no -switchToBase $switch
 		}
 	}
 

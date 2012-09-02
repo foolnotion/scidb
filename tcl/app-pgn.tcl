@@ -117,8 +117,13 @@ proc build {parent width height} {
 	$main paneconfigure $logo -sticky ""
 	bind $logo <Button-3> $popupcmd
 
-	tk::label $logo.icon -image $::icon::64x64::logo -borderwidth 0 -background white
-	tk::label $logo.logo -image $icon::104x30::logo  -borderwidth 0 -background white
+	tk::label $logo.icon -image $::icon::64x64::logo -background white
+	tk::label $logo.logo \
+		-text "Scidb" \
+		-foreground steelblue4 \
+		-font [list {Final Frontier} 26] \
+		-background white \
+		;
 	grid $logo.icon -row 1 -column 1
 	grid $logo.logo -row 2 -column 1
 
@@ -169,7 +174,7 @@ proc build {parent width height} {
 	::scidb::game::undoSetup 200 1
 
 	set tbGame [::toolbar::toolbar $top \
-		-id game \
+		-id editor-game \
 		-hide 1 \
 		-side bottom \
 		-tooltipvar ::mc::Game \
@@ -190,7 +195,7 @@ proc build {parent width height} {
 		-command [namespace code [list ::menu::importGame $Vars(main)]] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
-		-id history \
+		-id editor-history \
 		-hide 1 \
 		-side bottom \
 		-tooltipvar ::dialog::save::mc::History \
@@ -206,7 +211,7 @@ proc build {parent width height} {
 		-command [list ::game::clearHistory] \
 		;
 	set tbDisplay [::toolbar::toolbar $top \
-		-id display \
+		-id editor-display \
 		-side bottom \
 		-tooltipvar [namespace current]::mc::Display \
 	]
@@ -244,7 +249,7 @@ proc build {parent width height} {
 	]
 
 	set tbLanguages [::toolbar::toolbar $top \
-		-id languages \
+		-id editor-languages \
 		-side bottom \
 		-tooltipvar [namespace current]::mc::LanguageSelection \
 	]
@@ -489,7 +494,7 @@ proc redo {} { Undo redo }
 proc replaceMoves {parent} {
 	if {[::scidb::game::query modified?]} {
 		set reply [::dialog::question -parent $parent -message $mc::ReallyReplaceMoves]
-		if {$reply eq "yes"} { ::util::catchIoError [list ::scidb::game::update moves] }
+		if {$reply eq "yes"} { ::util::catchException { ::scidb::game::update moves } }
 	} else {
 		::dialog::info -parent $parent -message $mc::CurrentGameIsNotModified
 	}
@@ -1883,7 +1888,7 @@ proc PopupMenu {parent position} {
 		$menu.strip add command \
 			-label $mc::Command(strip:moves) \
 			-state $state \
-			-command [list ::widget::busyOperation ::scidb::game::strip moves] \
+			-command [list ::widget::busyOperation { ::scidb::game::strip moves }] \
 			;
 		set state "normal"
 		if {	[::scidb::game::position atEnd?]
@@ -1894,7 +1899,7 @@ proc PopupMenu {parent position} {
 		$menu.strip add command \
 			-label $mc::Command(strip:truncate) \
 			-state $state \
-			-command [list ::widget::busyOperation ::scidb::game::strip truncate] \
+			-command [list ::widget::busyOperation { ::scidb::game::strip truncate }] \
 			;
 		foreach cmd {variations annotations info marks} {
 			set state "normal"
@@ -1902,7 +1907,7 @@ proc PopupMenu {parent position} {
 			$menu.strip add command \
 				-label $mc::Command(strip:$cmd) \
 				-state $state \
-				-command [list ::widget::busyOperation ::scidb::game::strip $cmd] \
+				-command [list ::widget::busyOperation [list ::scidb::game::strip $cmd]] \
 				;
 		}
 
@@ -1921,7 +1926,7 @@ proc PopupMenu {parent position} {
 				-compound left \
 				-image $::country::icon::flag([::mc::countryForLang xx]) \
 				-label " $::languagebox::mc::AllLanguages" \
-				-command [list ::widget::busyOperation ::scidb::game::strip comments] \
+				-command [list ::widget::busyOperation { ::scidb::game::strip comments }] \
 				;
 
 			foreach lang $Vars(lang:set) {
@@ -1929,7 +1934,7 @@ proc PopupMenu {parent position} {
 					-compound left \
 					-image $::country::icon::flag([::mc::countryForLang $lang]) \
 					-label " [::encoding::languageName $lang]" \
-					-command [list ::widget::busyOperation ::scidb::game::strip comments $lang] \
+					-command [list ::widget::busyOperation [list ::scidb::game::strip comments $lang]] \
 					;
 			}
 		}
@@ -2399,7 +2404,7 @@ proc CopyComments {parent} {
 	grid rowconfigure $top {0 4} -minsize $::theme::pady
 	grid rowconfigure $top {2} -minsize $::theme::padY
 
-	::widget::dialogButtons $dlg {ok cancel} cancel
+	::widget::dialogButtons $dlg {ok cancel} -default cancel
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.ok configure -command [namespace code [list DoCopyComments $dlg]]
 
@@ -2421,8 +2426,8 @@ proc DoCopyComments {dlg} {
 	variable Vars
 
 	set countryList [::country::makeCountryList]
-	set srcCode [lindex $countryList [lsearch -index 1 $countryList $Vars(lang:src)] 2]
-	set dstCode [lindex $countryList [lsearch -index 1 $countryList $Vars(lang:dst)] 2]
+	set srcCode [lindex $countryList [lsearch -exact -index 1 $countryList $Vars(lang:src)] 2]
+	set dstCode [lindex $countryList [lsearch -exact -index 1 $countryList $Vars(lang:dst)] 2]
 	::scidb::game::copy $srcCode $dstCode -strip $Vars(strip:orig)
 	destroy $dlg
 }
@@ -2440,7 +2445,7 @@ proc FoldVariations {flag} {
 
 proc TransposeGame {} {
 	::game::flipTrialMode
-	::widget::busyOperation ::scidb::game::transpose true
+	::widget::busyOperation { ::scidb::game::transpose true }
 }
 
 
@@ -2461,7 +2466,7 @@ proc FirstVariation {{varno 0}} {
 		set key [join $parts "."]
 	}
 
-	::widget::busyOperation ::scidb::game::variation first $varno
+	::widget::busyOperation { ::scidb::game::variation first $varno }
 	::scidb::game::moveto $key
 }
 
@@ -2478,7 +2483,7 @@ proc PromoteVariation {{varno 0}} {
 		set key [join $parts "."]
 	}
 
-	::widget::busyOperation ::scidb::game::variation promote $varno
+	::widget::busyOperation { ::scidb::game::variation promote $varno }
 	::scidb::game::moveto $key
 }
 
@@ -2490,7 +2495,7 @@ proc RemoveVariation {{varno 0}} {
 		set varno [::scidb::game::variation leave]
 	}
 
-	::widget::busyOperation ::scidb::game::variation remove $varno
+	::widget::busyOperation { ::scidb::game::variation remove $varno }
 
 	if {$varno} {
 		::scidb::game::position backward
@@ -2507,7 +2512,7 @@ proc InsertMoves {parent} {
 	::move::doDestructiveCommand \
 		$parent \
 		$mc::Command(variation:insert) \
-		[list ::widget::busyOperation ::scidb::game::variation insert $varno] \
+		[list ::widget::busyOperation [list ::scidb::game::variation insert $varno]] \
 		[list ::scidb::game::moveto [::scidb::game::query parent $key]] \
 		[list ::scidb::game::moveto $key]
 }
@@ -2537,7 +2542,7 @@ proc ExchangeMoves {parent} {
 	$top.sblength selection range 0 end
 	$top.sblength icursor end
 	::ttk::label $top.llength -text $mc::NumberOfMoves
-	::widget::dialogButtons $dlg {ok cancel} ok
+	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.cancel configure -command [namespace code [list DontExchangeMoves $dlg $key]]
 	$dlg.ok configure -command [namespace code [list VerifyNumberOfMoves $dlg $Length_]]
 
@@ -2562,7 +2567,7 @@ proc ExchangeMoves {parent} {
 		::move::doDestructiveCommand \
 			$parent \
 			$mc::Command(variation:exchange) \
-			[list ::widget::busyOperation ::scidb::game::variation exchange $varno $Length_] \
+			[list ::widget::busyOperation [list ::scidb::game::variation exchange $varno $Length_]] \
 			[list ::scidb::game::moveto [::scidb::game::query parent $key]] \
 			[list ::scidb::game::moveto $key]
 	}
@@ -2750,74 +2755,6 @@ set expand [image create photo -data {
 
 } ;# namespace 12x12
 
-namespace eval 104x30 {
-
-set logo [image create photo -data {
-	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
-	5+6xMI//AruNNzmyEcKFAAAAAElFTkSuQmCC
-}]
-
-} ;# namespace 104x30
 } ;# namespace icon
 } ;# namespace pgn
 } ;# namespace application

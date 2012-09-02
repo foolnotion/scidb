@@ -101,14 +101,12 @@ proc xdnd::_HandleXdndPosition { drop_target rootX rootY drag_source } {
   #             _drop_target=$_drop_target, rootX=$rootX, rootY=$rootY"
 
   if {![info exists _drag_source] && ![string length $_drag_source]} {
-    # debug "xdnd::_HandleXdndPosition: no or empty _drag_source:\
-    #               return refuse_drop"
+    # debug "xdnd::_HandleXdndPosition: no or empty _drag_source: return refuse_drop"
     return refuse_drop
   }
 
   if {$drag_source ne "" && $drag_source ne $_drag_source} {
-    debug "XDND position event from unexpected source: $_drag_source\
-           != $drag_source"
+    # debug "XDND position event from unexpected source: $_drag_source != $drag_source"
     return refuse_drop
   }
 
@@ -243,11 +241,10 @@ proc xdnd::_HandleXdndLeave {  } {
       set _action [uplevel \#0 $cmd]
     }
   }
-  foreach var {_types _typelist _actionlist _pressedkeys _action
-               _common_drag_source_types _common_drop_target_types
-               _drag_source _drop_target} {
-    set $var {}
-  }
+  lassign {{} {} {} {} {} {} {} {} {}} \
+    _types _typelist _actionlist _pressedkeys _action \
+    _common_drag_source_types _common_drop_target_types \
+    _drag_source _drop_target
 };# xdnd::_HandleXdndLeave
 
 # ----------------------------------------------------------------------------
@@ -564,8 +561,9 @@ proc xdnd::_dodragdrop { source actions types data button } {
   set _dragging 1
 
   ## Grab the mouse pointer...
-#puts "_grab_pointer"
-# _grab_pointer $source $_dodragdrop_default_action
+  # NOTE: _grab_pointer cannot work because it is not interacting with ttk::grab.
+  # _grab_pointer $source $_dodragdrop_default_action
+  ttk::globalGrab $source
 
   ## Register our generic event handler...
   #  The generic event callback will report events by modifying variable
@@ -580,8 +578,8 @@ proc xdnd::_dodragdrop { source actions types data button } {
   _SendXdndLeave
 
   set _dragging 0
-#puts "_ungrab_pointer"
-  _ungrab_pointer $source
+  # _ungrab_pointer $source
+  ttk::releaseGrab $source
   _unregister_generic_event_handler
   catch {selection clear -selection XdndSelection}
 # unregisterSelectionHandler $source $types

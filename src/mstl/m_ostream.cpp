@@ -91,19 +91,9 @@ ostream::operator<<(void const* p)
 
 
 ostream&
-ostream::put(char c)
-{
-	if (fputc(c, m_fp) == EOF)
-		setstate(badbit);
-
-	return *this;
-}
-
-
-ostream&
 ostream::write(char const* buffer, size_t size)
 {
-	if (fwrite(buffer, size, 1, m_fp) == 0)
+	if (fwrite(buffer, 1, size, m_fp) == 0)
 	{
 		if (ferror(m_fp))
 			setstate(badbit);

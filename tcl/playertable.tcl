@@ -267,33 +267,33 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	if {$useFind} {
 		set tbFind [::toolbar::toolbar $path \
-			-id find \
+			-id playertable-find \
 			-hide 1 \
 			-side bottom \
 			-alignment left \
 			-allow {top bottom} \
-			-tooltipvar [namespace current]::mc::Find] \
-			;
+			-tooltipvar [namespace current]::mc::Find \
+		]
 		::toolbar::add $tbFind label -float 0 -textvar [::mc::var [namespace current]::mc::Find ":"]
 		set cb [::toolbar::add $tbFind ttk::combobox \
 			-width 20 \
 			-takefocus 1 \
 			-values $Find \
-			-textvariable [namespace current]::${path}::Vars(find-current)] \
-			;
+			-textvariable [namespace current]::${path}::Vars(find-current) \
+		]
 		trace add variable [namespace current]::${path}::Vars(find-current) \
 			write [namespace code [list Find $path $cb]]
 		::bind $cb <Return> [namespace code [list Find $path $cb]]
 		::toolbar::add $tbFind button \
 			-image $::icon::22x22::enter \
 			-tooltipvar [namespace current]::mc::StartSearch \
-			-command [namespace code [list Find $path $cb]] \
-			;
+			-command [namespace code [list Find $path $cb] \
+		]
 		::toolbar::add $tbFind button \
 			-image $::icon::22x22::clear \
 			-tooltipvar [namespace current]::mc::ClearEntries \
-			-command [namespace code [list Clear $path $cb]] \
-			;
+			-command [namespace code [list Clear $path $cb] \
+		]
 	}
 
 	return $Vars(table)

@@ -41,128 +41,137 @@
 <ul><img src="images/database-switcher.png"/></ul>
 
 <p>
-Der Datanbankumschalter ermöglicht den einfachen Wechsel zwischen Datenbanken.
+Der Datanbankumschalter ermÃ¶glicht den einfachen Wechsel zwischen Datenbanken.
 Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 </p>
 
 <p>
-Mit Halten der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine
-Informationsbox angezeigt.
+Mit Halten der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) auf einem
+Datenbankfeld wird eine Informationsbox angezeigt.
 </p>
 
-<h3>Administration</h3>
+<p>
+Die FunktionalitÃ¤ten im Datenbankumschalter sind:
+</p>
+
+<ul>
+  <li><a href="#Administration">Administration</a></li>
+  <li><a href="#DND">Drag &amp; Drop</a></li>
+</ul>
+
+<h3 id="Administration">Administration</h3>
 
 <p>
-Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
+Zur Administration einer Datenbank steht ein kontextsensitives MenÃ¼ bereit:
 </p>
 
 <ul><img src="images/database-switcher-menu.png"/></ul>
 
 <p>
 <span class="menuitem">Eigenschaften</span>
-Öffnet eine Box mit der Anzeige verschiedener Datenbankinformationen.
+Ã–ffnet eine Box mit der Anzeige verschiedener Datenbankinformationen.
 </p>
 
 <p>
 <span class="menuitem">Export</span>
-Öffnet einen Dialog zum <a href="Database-Export-Dialog.html">Datenbankenexport</a>
+Ã–ffnet einen Dialog zum <a href="Database-Export-Dialog.html">Datenbankenexport</a>
 in andere Datenbankformate oder in ein Dokumentenformat.
 </p>
 
 <p>
 <span class="menuitem">PGN-Dateien importieren</span>
-Öffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
-importierenden <abbr>PGN</abbr>-Dateien auszuwählen. Es können mehrere
-<abbr>PGN</abbr>-Dateien gleichzeitig gewählt werden. Die Partien werden an die
-bestehende Datenbank angehängt.
+Ã–ffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
+importierenden <abbr>PGN</abbr>-Dateien auszuwÃ¤hlen. Es kÃ¶nnen mehrere
+<abbr>PGN</abbr>-Dateien gleichzeitig gewÃ¤hlt werden. Die Partien werden an die
+bestehende Datenbank angehÃ¤ngt.
 </p>
 
 <p>
 <span class="menuitem">Archiv erzeugen</span>
 Ein <a href="Database-Formats.html#Database-Archive">Datenbankarchiv</a>
-für die gewählte Datenbank anlegen. Der
-<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geöffnet,
-um den Archivnamen zu wählen.
+fÃ¼r die gewÃ¤hlte Datenbank anlegen. Der
+<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geÃ¶ffnet,
+um den Archivnamen zu wÃ¤hlen.
 </p>
 
 <p>
 <span class="menuitem">Schliessen</span>
-Die gewählte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
+Die gewÃ¤hlte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
 aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
-<br/><img src="../images/note.png" alt="note" /> Eine Schliessung der <a href="Clipbase.html">Ablage-Datenbank</a> ist nicht möglich.
+<br/><img src="../images/note.png" alt="note" /> Eine Schliessung der <a href="Clipbase.html">Ablage-Datenbank</a> ist nicht mÃ¶glich.
 </p>
 
 <p id="Compact">
 <span class="menuitem">Komprimieren</span>
-Diese Datenbank komprimieren, d.h. die zum Löschen vorgemerkten Partien werden
-physikalisch gelöscht. Diese Aktion kann nicht rückgägngig gemacht werden.
-Dieser Menüpunkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
-Lösch-Markierung versehen sind.
+Diese Datenbank komprimieren, d.h. die zum LÃ¶schen vorgemerkten Partien werden
+physikalisch gelÃ¶scht. Diese Aktion kann nicht rÃ¼ckgÃ¤gngig gemacht werden.
+Dieser MenÃ¼punkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
+LÃ¶sch-Markierung versehen sind.
 </p>
 
 <p>
-<span class="menuitem">Piktogramm wählen</span>
-Ein neues Piktogramm für diese Datanbank auswählen.
-<br/><img src="../images/note.png" alt="note" /> Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
+<span class="menuitem">Piktogramm wÃ¤hlen</span>
+Ein neues Piktogramm fÃ¼r diese Datanbank auswÃ¤hlen.
+<br/><img src="../images/note.png" alt="note" /> Dies ist nicht fÃ¼r die <a href="Clipbase.html">Ablage-Datenbank</a> mÃ¶glich.
 </p>
 
 <p>
 <span class="menuitem">Beschreibung bearbeiten</span>
-Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
-<br/><img src="../images/note.png" alt="note" /> Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
+Die Beschreibung dieser Datanbank Ã¤ndern bzw. neu anlegen.
+<br/><img src="../images/note.png" alt="note" /> Dies ist nicht fÃ¼r die <a href="Clipbase.html">Ablage-Datenbank</a> mÃ¶glich.
 </p>
 
 <p>
-<span class="menuitem">Schreibgeschützt</span>
-Diese Datanbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
-Dies ist nur für Scidb- und Scid-Datenbanken
-(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) möglich.
+<span class="menuitem">SchreibgeschÃ¼tzt</span>
+Diese Datanbank wird schreibgeschÃ¼tzt bzw. schreibberechtigt gesetzt.
+Dies ist nur fÃ¼r Scidb- und Scid-Datenbanken
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) mÃ¶glich.
 <br/><img src="../images/note.png" alt="note" /> <abbr>PGN</abbr>-Dateien und ChessBase-Datenbanken
-sind immer schreibgeschützt. <br/><img src="../images/note.png" alt="note" /> Die <a href="Clipbase.html">Ablage-Datenbank</a> kann
-nicht schreibgeschützt werden.
+sind immer schreibgeschÃ¼tzt. <br/><img src="../images/note.png" alt="note" /> Die <a href="Clipbase.html">Ablage-Datenbank</a> kann
+nicht schreibgeschÃ¼tzt werden.
 </p>
 
 <p>
 <span class="menuitem">Neue Datenbank anlegen</span>
-Eine neue Datenbank anlegen. Es können nur Scidb- und
+Eine neue Datenbank anlegen. Es kÃ¶nnen nur Scidb- und
 Scid-Datenbanken (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 neu angelegt werden.
 </p>
 
 <p>
-<span class="menuitem">Datenbank öffnen</span>
-Eine weitere Datenbank öffnen.
+<span class="menuitem">Datenbank Ã¶ffnen</span>
+Eine weitere Datenbank Ã¶ffnen.
 </p>
 
 <p>
-<span class="menuitem">Öffne zuvorige</span>
-Eine Datenbank öffnen über die Datenbankhistorie.
+<span class="menuitem">Ã–ffne zuvorige</span>
+Eine Datenbank Ã¶ffnen Ã¼ber die Datenbankhistorie.
 </p>
 
 <p>
-<span class="menuitem">Symbolgröße</span>
-Auswahl der Symbolgröße für die Datenbankkacheln.
+<span class="menuitem">SymbolgrÃ¶ÃŸe</span>
+Auswahl der SymbolgrÃ¶ÃŸe fÃ¼r die Datenbankkacheln.
 </p>
 
 <p>
 <span class="menuitem">Hilfe zum Datenbankumschalter</span>
-Hilfedialog zum Datenbankumschalter öffnen.
+Hilfedialog zum Datenbankumschalter Ã¶ffnen.
 </p>
 
 <ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
 
 <span class="menuitem">
 Ablage-Datenbank leeren</span>
-<br/><img src="../images/note.png" alt="note" /> Dieser Menüpunkt steht nur für die
-<a href="Clipbase.html">Ablage-Datenbank</a> zur Verfügung.
+<br/><img src="../images/note.png" alt="note" /> Dieser MenÃ¼punkt steht nur fÃ¼r die
+<a href="Clipbase.html">Ablage-Datenbank</a> zur VerfÃ¼gung.
 
-<h3>Drag &amp; Drop</h3>
+<h3 id="DND">Drag &amp; Drop</h3>
 
 <p>
-Datenbanken können auch durch Drop (Fallenlassen) einer URI-Liste geöffnet werden.
+Datenbanken kÃ¶nnen auch durch Drop (Fallenlassen) einer URI-Liste geÃ¶ffnet werden.
 Wird eine URI-Liste (Dateienliste) &ndash; oder eine einzelne Datei &ndash; in
 das Datenbankumschaltfenster gezogen, so signalisiert ein farbiger Hintergrund,
-daß ein Drop erfolgen kann. Auf diese Weise kann das Öffnen von Datenbanken
+daÃŸ ein Drop erfolgen kann. Auf diese Weise kann das Ã–ffnen von Datenbanken
 beispielsweise auch mit einem externen Dateimanager erfolgen.
 </p>
 

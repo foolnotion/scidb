@@ -25,6 +25,7 @@ TITLE Was ist neu?
   <li>Kommandozeilen-Hilfsprogramm cdb2sci zur Konvertierung von Datenbanken ins Scidb-Format (.sci)</li>
   <li>HTML-Widget überarbeitet: es werden auf signifikante Weise Ressourcen geschont</li>
   <li>Schwedische Lokalisierung integriert (Dank an Lars Ekman)</li>
+  <li>Spanische Lokalisierung reaktiviert (Dank an Juan Carlos Vásquez)</li>
   <li>Automatische Erkennung des Zeichensatzes beim Laden von Partien (betrifft si3/si4/cbh)</li>
   <li>Partien-Browser: Vollbild-Modus, sowie Maximieren/Minimieren des Brettes, hinzugefügt</li>
   <li>Dateiauswahldialog verbessert</li>
@@ -33,6 +34,7 @@ TITLE Was ist neu?
   <li>Datenbankarchivierung integriert</li>
   <li>Setup-Dialog für Partie-Editor/Browser</li>
   <li>Drag&amp;Drop von Dateien integriert: der Datenbankumschalter ist Drop-Zielbereich</li>
+  <li>Drag&amp;Drop im Dateiauswahldialog implementiert</li>
   <li>Datenbankfenster: Andocken/Abkopplen der Listen-Reiter integriert</li>
   <li>Zugeingabe mit der Maus überarbeitet (wenn Zugvorschlag abgeschaltet ist)</li>
   <li>Menüleiste entfernt, stattdessen exisitiert ein simples Hauptmenü;
@@ -43,7 +45,6 @@ TITLE Was ist neu?
   <li>Turniertabelle: Optionale Anzeige von Gewinn/Remis/Verlust</li>
   <li>Mausradunterstützung für alle Listen und das Schachbrett</li>
   <li>Algebraische- (Normal-, Kurz- und Langform), Englische, Korrespondenz- und telegrafische Notation verfügbar</li>
-  <li>Spanische Lokalisierung reaktiviert (Dank an Juan Carlos Vásquez)</li>
   <li>Einige Icons neu gestaltet</li>
 </ul>
 

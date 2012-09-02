@@ -16,6 +16,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_exception.h"
+
 namespace util {
 
 inline unsigned Progress::frequency() const { return m_freq; }
@@ -41,7 +43,7 @@ ProgressWatcher::ProgressWatcher(Progress* progress, unsigned total)
 
 inline ProgressWatcher::~ProgressWatcher()
 {
-	if (m_progress)
+	if (m_progress && !mstl::uncaught_exception() && !m_progress->interrupted())
 		m_progress->finish();
 }
 

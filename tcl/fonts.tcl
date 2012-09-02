@@ -1008,7 +1008,7 @@ proc FindOle!Fonts {} {
 
 	set reset 0
 
-	if {[lsearch -nocase $chessFigurineFonts {Scidb Chess Ole!}] == -1} {
+	if {[lsearch -exact -nocase $chessFigurineFonts {Scidb Chess Ole!}] == -1} {
 		array set opts [font actual {{Scidb Chess Ole!} -12}]
 		if {[string compare -nocase $opts(-family) {Scidb Chess Ole!}] == 0} {
 			AddFigurineFont $opts(-family)
@@ -1016,7 +1016,7 @@ proc FindOle!Fonts {} {
 		}
 	}
 
-	if {[lsearch -nocase $chessSymbolFonts {Scidb Symbol Ole!}] == -1} {
+	if {[lsearch -exact -nocase $chessSymbolFonts {Scidb Symbol Ole!}] == -1} {
 		array set opts [font actual {{Scidb Symbol Ole!} -12}]
 		if {[string compare -nocase $opts(-family) {Scidb Symbol Ole!}] == 0} {
 			AddSymbolFont $opts(-family)

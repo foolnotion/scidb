@@ -23,7 +23,7 @@ TITLE ECO-Code
 <!-- Taken from http://de.wikipedia.org/wiki/ECO-Code -->
 
 <p>
-Mit der Bezeichnung ECO-Codes (Encyclopedia of Chess Openings, deutsch auch ECO-Schlüssel)
+Mit der Bezeichnung ECO-Code (Encyclopedia of Chess Openings, deutsch auch ECO-Schlüssel)
 wird ein international verwendetes System zur Systematisierung von Eröffnungen des
 Schachspiels bezeichnet. Die Eröffnungsvarianten werden durchwegs mit Symbolen dargestellt
 und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international verständlich sind.
@@ -269,6 +269,7 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
     <td style="padding-left: 1em;">Mittelgambit</td>
   </tr>
   <tr class="stripes">
+    <td>C23-C24</td>
     <td style="padding-left: 1em;">1.e4 e5 2.&Bishop;c4</td>
     <!-- Bishop's Opening -->
     <td style="padding-left: 1em;">Läuferspiel</td>

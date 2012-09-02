@@ -56,6 +56,7 @@ set ScidbArchive				"Scidb Arvchive"
 set PortableDocumentFile	"Portable Document File"
 set HypertextFile				"Hypertext File"
 set TypesettingFile			"Typesetting File"
+set ImageFile					"Image File"
 set LinkTo						"Link to %s"
 set LinkTarget					"Link target"
 set Directory					"Directory"
@@ -65,12 +66,9 @@ set Open							"Open"
 
 }
 
-array set Priv {
-	lastFolder:ChooseDir ""
-	lastFolder:FileDialog ""
-	dialog {}
-}
+array set Priv { dialog {} }
 array set FileSizeCache {}
+array set LastFolders {}
 
 set FileIcons [list                        \
 	.sci	$::icon::16x16::filetypeScidbBase \
@@ -116,6 +114,11 @@ array set FileType [list      \
 	.htm	HypertextFile        \
 	.tex	TypesettingFile      \
 	.ltx	TypesettingFile      \
+	.ppm	ImageFile            \
+	.png	ImageFile            \
+	.gif	ImageFile            \
+	.jpg	ImageFile            \
+	.jpeg	ImageFile            \
 ]
 
 
@@ -146,6 +149,12 @@ proc geometry {class {whichPart size}} {
 }
 
 
+proc currentDialog {} {
+	variable Priv
+	return $Priv(dialog)
+}
+
+
 proc fileIcons {} {
 	return [set [namespace current]::FileIcons]
 }
@@ -172,6 +181,7 @@ proc saveMode {w} {
 
 
 proc Open {type args} {
+	variable LastFolders
 	variable Priv
 
 	if {$type eq "dir"} {
@@ -191,12 +201,34 @@ proc Open {type args} {
 		-embed			0
 		-needencoding	0
 		-rows				10
+		-class			{}
+		-databases		1
+		-filetypes		{}
 	}
-	set opts(-initialdir) $Priv(lastFolder:$class)
+
+	set opts(-initialdir) {}
 	set opts(-defaultencoding) {}
 
 	array set data $args
 	array set opts $args
+
+	if {[info exists LastFolders($class:$data(-class))]} {
+		set opts(-initialdir) $LastFolders($class:$data(-class))
+	}
+
+	set scidbFileType 0
+	set knownFileType 0
+	foreach entry $data(-filetypes) {
+		set ft [lindex $entry 1]
+		if {".sci" in $ft || ".pgn" in $ft} {
+			set scidbFileType 1
+			set knownFileType 1
+			break;
+		} elseif {".png" in $ft} {
+			set knownFileType 1
+			break;
+		}
+	}
 
 	array unset opts -class
 	array unset opts -embed
@@ -238,6 +270,7 @@ proc Open {type args} {
 		lappend Priv(dialogs) $w
 		bind $w <Destroy> [namespace code [list Destroyed $w]]
 		bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
+		set Priv(dialog) $w
 	}
 
 	set Priv($type:type) $type
@@ -265,24 +298,29 @@ proc Open {type args} {
 		set opts(-okcommand) [namespace code [list OkCmd $type:$w]]
 	}
 
-	if {$create} {
-		if {[string length $geometry] == 0} {
-			set opts(-rows) 8
-		}
-		::fsbox $w.fsbox $type \
-			-fileicons [fileIcons] \
+	lappend options -fileicons [fileIcons]
+	if {$scidbFileType} {
+		lappend options \
 			-sizecommand [namespace code GetNumGames] \
 			-validatecommand [namespace code ValidateFile] \
 			-deletecommand [namespace code DeleteFile] \
 			-renamecommand [namespace code RenameFile] \
-			-bookmarkswidth 120 \
 			-duplicatecommand [namespace code DuplicateFile] \
 			-inspectcommand [namespace code Inspect] \
 			-mapextcommand [namespace code MapExtension] \
 			-isusedcommand [namespace code IsUsed] \
+	} elseif  {$knownFileType} {
+		lappend options -inspectcommand [namespace code Inspect]
+	}
+
+	if {$create} {
+		if {[string length $geometry] == 0} { set opts(-rows) 8 }
+		::fsbox $w.fsbox $type \
+			-bookmarkswidth 120 \
 			-formattimecmd [namespace code FormatTime] \
 			-font TkTextFont \
 			{*}[array get opts] \
+			{*}$options \
 			;
 		grid $w.fsbox -column 0 -row 0 -sticky nsew
 		grid columnconfigure $w 0 -weight 1
@@ -353,8 +391,9 @@ proc Open {type args} {
 			}
 			wm geometry $w $geometry${x}${y}
 		}
+		wm minsize $w 640 $Priv(minheight)
 		update idletasks
-		::fsbox::reset $w.fsbox $type {*}[array get opts]
+		::fsbox::reset $w.fsbox $type {*}[array get opts] {*}$options
 	}
 
 	wm iconname $w ""
@@ -366,8 +405,8 @@ proc Open {type args} {
 	vwait [namespace current]::Priv($type:$w:result)
 	::ttk::releaseGrab $w
 	wm withdraw $w
-
-	set Priv(lastFolder:$class) [::fsbox::lastFolder $w.fsbox]
+	set Priv(dialog) {}
+	set LastFolders($class:$data(-class)) [::fsbox::lastFolder $w.fsbox]
 	::fsbox::cleanup $w.fsbox
 
 	lassign $Priv($type:$w:result) path encoding
@@ -388,7 +427,7 @@ proc OpenHelp {w} {
 
 proc Destroyed {w} {
 	variable Priv
-	set i [lsearch $Priv(dialogs) $w]
+	set i [lsearch -exact $Priv(dialogs) $w]
 	if {$i >= 0} { set Priv(dialogs) [lreplace $Priv(dialogs) $i $i] }
 }
 
@@ -566,10 +605,11 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
 				tk::label $f.tmodified -text $mtime
 			} else {
+				set ext [file extension $filename]
+				if {![info exists FileType($ext)]} { return }
 				set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
 				# TODO: should we sum the sizes of all related files?
 				set size [::locale::formatFileSize $stat(size)]
-				set ext [file extension $filename]
 				set fileType [set mc::$FileType($ext)]
 				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
 
@@ -718,8 +758,7 @@ proc RecordGeometry {dlg window width class} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Priv(lastFolder:ChooseDir)
-	::options::writeItem $chan [namespace current]::Priv(lastFolder:FileDialog)
+	::options::writeItem $chan [namespace current]::LastFolders no
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

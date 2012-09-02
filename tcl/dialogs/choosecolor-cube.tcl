@@ -31,7 +31,7 @@ package require tkscidb
 namespace eval dialog {
 namespace eval choosecolor {
 
-set Methods [lreplace $Methods [lsearch $Methods circle] [lsearch $Methods circle] cube]
+set Methods [lreplace $Methods [lsearch -exact $Methods circle] [lsearch -exact $Methods circle] cube]
 set AdjustWidth -10
 
 namespace eval cube {

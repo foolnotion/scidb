@@ -29,6 +29,7 @@
 #include "tcl_application.h"
 #include "tcl_pgn_reader.h"
 #include "tcl_progress.h"
+#include "tcl_exception.h"
 #include "tcl_game.h"
 #include "tcl_file.h"
 #include "tcl_log.h"
@@ -443,159 +444,103 @@ struct Subscriber : public Application::Subscriber
 		Tcl_DecrRefCount(f);
 	}
 
-	void updateGameList(string const& filename) override
+	void updateList(unsigned id, string const& filename, unsigned view, unsigned index, Type type)
 	{
-		updateGameList(filename, unsigned(-1), unsigned(-1));
-	}
-
-	void updateGameList(string const& filename, unsigned view) override
-	{
-		updateGameList(filename, view, unsigned(-1));
-	}
-
-	void updateGameList(string const& filename, unsigned view, unsigned index) override
-	{
+		Tcl_Obj* n = Tcl_NewIntObj(id);
 		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
 		Tcl_Obj* v = Tcl_NewIntObj(view);
 		Tcl_Obj* w = Tcl_NewIntObj(index);
 
+		Tcl_IncrRefCount(n);
 		Tcl_IncrRefCount(f);
 		Tcl_IncrRefCount(v);
 		Tcl_IncrRefCount(w);
 
 		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
 		{
-			if (i->m_type & GameList)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, nullptr);
+			if (i->m_type & type)
+				invoke(__func__, i->getUpdate(), i->getArg(), n, f, v, w, nullptr);
 		}
 
+		Tcl_DecrRefCount(n);
 		Tcl_DecrRefCount(f);
 		Tcl_DecrRefCount(v);
 		Tcl_DecrRefCount(w);
 	}
 
-	void updatePlayerList(mstl::string const& filename) override
+	void updateGameList(unsigned id, string const& filename) override
 	{
-		updatePlayerList(filename, unsigned(-1), unsigned(-1));
+		updateList(id, filename, unsigned(-1), unsigned(-1), GameList);
 	}
 
-	void updatePlayerList(mstl::string const& filename, unsigned view) override
+	void updateGameList(unsigned id, string const& filename, unsigned view) override
 	{
-		updatePlayerList(filename, view, unsigned(-1));
+		updateList(id, filename, view, unsigned(-1), GameList);
 	}
 
-	void updatePlayerList(mstl::string const& filename, unsigned view, unsigned index) override
+	void updateGameList(unsigned id, string const& filename, unsigned view, unsigned index) override
 	{
-		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
-		Tcl_Obj* v = Tcl_NewIntObj(view);
-		Tcl_Obj* w = Tcl_NewIntObj(index);
-
-		Tcl_IncrRefCount(f);
-		Tcl_IncrRefCount(v);
-		Tcl_IncrRefCount(w);
-
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
-		{
-			if (i->m_type & PlayerList)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, nullptr);
-		}
-
-		Tcl_DecrRefCount(f);
-		Tcl_DecrRefCount(v);
-		Tcl_DecrRefCount(w);
+		updateList(id, filename, view, index, GameList);
 	}
 
-	void updateEventList(mstl::string const& filename) override
+	void updatePlayerList(unsigned id, mstl::string const& filename) override
 	{
-		updateEventList(filename, unsigned(-1), unsigned(-1));
+		updateList(id, filename, unsigned(-1), unsigned(-1), PlayerList);
 	}
 
-	void updateEventList(mstl::string const& filename, unsigned view) override
+	void updatePlayerList(unsigned id, mstl::string const& filename, unsigned view) override
 	{
-		updateEventList(filename, view, unsigned(-1));
+		updateList(id, filename, view, unsigned(-1), PlayerList);
 	}
 
-	void updateEventList(mstl::string const& filename, unsigned view, unsigned index) override
+	void updatePlayerList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) override
 	{
-		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
-		Tcl_Obj* v = Tcl_NewIntObj(view);
-		Tcl_Obj* w = Tcl_NewIntObj(index);
-
-		Tcl_IncrRefCount(f);
-		Tcl_IncrRefCount(v);
-		Tcl_IncrRefCount(w);
-
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
-		{
-			if (i->m_type & EventList)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, nullptr);
-		}
-
-		Tcl_DecrRefCount(f);
-		Tcl_DecrRefCount(v);
-		Tcl_DecrRefCount(w);
+		updateList(id, filename, view, index, PlayerList);
 	}
 
-	void updateSiteList(mstl::string const& filename) override
+	void updateEventList(unsigned id, mstl::string const& filename) override
 	{
-		updateSiteList(filename, unsigned(-1), unsigned(-1));
+		updateList(id, filename, unsigned(-1), unsigned(-1), EventList);
 	}
 
-	void updateSiteList(mstl::string const& filename, unsigned view) override
+	void updateEventList(unsigned id, mstl::string const& filename, unsigned view) override
 	{
-		updateSiteList(filename, view, unsigned(-1));
+		updateList(id, filename, view, unsigned(-1), EventList);
 	}
 
-	void updateSiteList(mstl::string const& filename, unsigned view, unsigned index) override
+	void updateEventList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) override
 	{
-		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
-		Tcl_Obj* v = Tcl_NewIntObj(view);
-		Tcl_Obj* w = Tcl_NewIntObj(index);
-
-		Tcl_IncrRefCount(f);
-		Tcl_IncrRefCount(v);
-		Tcl_IncrRefCount(w);
-
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
-		{
-			if (i->m_type & SiteList)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, nullptr);
-		}
-
-		Tcl_DecrRefCount(f);
-		Tcl_DecrRefCount(v);
-		Tcl_DecrRefCount(w);
+		updateList(id, filename, view, index, EventList);
 	}
 
-	void updateAnnotatorList(mstl::string const& filename) override
+	void updateSiteList(unsigned id, mstl::string const& filename) override
 	{
-		updateAnnotatorList(filename, unsigned(-1), unsigned(-1));
+		updateList(id, filename, unsigned(-1), unsigned(-1), SiteList);
 	}
 
-	void updateAnnotatorList(mstl::string const& filename, unsigned view) override
+	void updateSiteList(unsigned id, mstl::string const& filename, unsigned view) override
 	{
-		updateAnnotatorList(filename, view, unsigned(-1));
+		updateList(id, filename, view, unsigned(-1), SiteList);
 	}
 
-	void updateAnnotatorList(mstl::string const& filename, unsigned view, unsigned index) override
+	void updateSiteList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) override
 	{
-		Tcl_Obj* f = Tcl_NewStringObj(filename, filename.size());
-		Tcl_Obj* v = Tcl_NewIntObj(view);
-		Tcl_Obj* w = Tcl_NewIntObj(index);
+		updateList(id, filename, view, index, SiteList);
+	}
 
-		Tcl_IncrRefCount(f);
-		Tcl_IncrRefCount(v);
-		Tcl_IncrRefCount(w);
+	void updateAnnotatorList(unsigned id, mstl::string const& filename) override
+	{
+		updateList(id, filename, unsigned(-1), unsigned(-1), AnnotatorList);
+	}
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
-		{
-			if (i->m_type & AnnotatorList)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, v, w, nullptr);
-		}
+	void updateAnnotatorList(unsigned id, mstl::string const& filename, unsigned view) override
+	{
+		updateList(id, filename, view, unsigned(-1), AnnotatorList);
+	}
 
-		Tcl_DecrRefCount(f);
-		Tcl_DecrRefCount(v);
-		Tcl_DecrRefCount(w);
+	void updateAnnotatorList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) override
+	{
+		updateList(id, filename, view, index, AnnotatorList);
 	}
 
 	void updateGameInfo(unsigned position) override
@@ -930,6 +875,8 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		encoding = sys::utf8::Codec::utf8();
 
 	Progress	progress(objv[2], objv[3]);
+	progress.checkInterruption();
+
 	Cursor* cursor = scidb->open(path, encoding, false, progress);
 
 	if (cursor == 0)
@@ -1007,6 +954,9 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		n = cursor.importGames(reader, progress);
 		cursor.setDescription(reader.description());
 		stream.close();
+
+		if (progress.interrupted())
+			throw InterruptException(n);
 	}
 
 	setResult(n);

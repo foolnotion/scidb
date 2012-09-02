@@ -582,7 +582,7 @@ void
 DatabaseCodec::open(	DatabaseContent* db,
 							mstl::string const& rootname,
 							mstl::string const& encoding,
-							Progress& progress)
+							util::Progress& progress)
 {
 	M_REQUIRE(db);
 
@@ -595,7 +595,7 @@ void
 DatabaseCodec::open(	DatabaseContent* db,
 							mstl::string const& encoding,
 							Producer& producer,
-							Progress& progress)
+							util::Progress& progress)
 {
 	M_REQUIRE(db);
 

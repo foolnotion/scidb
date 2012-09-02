@@ -40,7 +40,7 @@ public:
 	virtual void message(mstl::string const& msg);
 	virtual void tick(unsigned count);
 	virtual void update(unsigned progress);
-	virtual void finish();
+	virtual void finish() throw();
 
 	void setFrequency(unsigned frequency);
 	void setCount(unsigned count);

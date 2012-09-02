@@ -30,7 +30,18 @@ Il database attivo sarà evidenziato con uno sfondo giallo.
 Premendo il tasto centrale del mouse (o la rotella) apparirà una finestra informativa.
 </p>
 
-<h3>Amministrazione</h3>
+<!-- NEW
+<p>
+The functionalities of the database switcher:
+</p>
+-->
+
+<ul>
+  <li><a href="#Administration">Amministrazione</a></li>
+  <li><a href="#DND">Trascinamento (Drag &amp; Drop)</a></li>
+</ul>
+
+<h3 id="Administration">Amministrazione</h3>
 
 <p>
 Per l'amministrazione del database è disponibile un menu contestuale:
@@ -119,7 +130,7 @@ Apri la finestra di aiuto riguardante il selezionatore di database.
 <note/>Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
 
-<h3>Trascinamento (Drag &amp; Drop)</h3>
+<h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 
 <p>
 Il database può essere aperto con il trascinamento di una lista URI. Se una lista URI (lista di file)

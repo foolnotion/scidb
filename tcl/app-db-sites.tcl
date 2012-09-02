@@ -73,6 +73,10 @@ proc build {parent} {
 		[namespace current]::Close \
 		$top \
 		;
+	::scidb::db::subscribe gameList \
+		[namespace current]::games::Update \
+		$top \
+		;
 	::scidb::db::subscribe eventList \
 		[namespace current]::events::Update \
 		$top \
@@ -84,7 +88,7 @@ proc build {parent} {
 	$top add $lt
 	$top add $rt
 
-	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 580	;# XXX
+	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 580
 	$top paneconfigure $rt -sticky nsew -stretch always
 
 	return $top
@@ -96,7 +100,9 @@ proc activate {w flag} {
 	variable ${path}::Vars
 
 	set Vars(active) $flag
-	sites::Update2 $path [::scidb::db::get name]
+	set base [::scidb::db::get name]
+	set Vars($base:update:sites) 1
+	sites::DoUpdate $path $base
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $path.sites $flag
@@ -167,6 +173,8 @@ proc InitBase {path base} {
 		set Vars($base:sort:sites) $Defaults(sort:sites)
 		set Vars($base:sort:events) $Defaults(sort:events)
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
+		set Vars($base:sites:lastId) -1
+		set Vars($base:events:lastId) -1
 		set Vars($base:select) -1
 		set Vars($base:selected:key) {}
 		::sitetable::init $path.sites $base
@@ -226,18 +234,20 @@ proc Search {path base view {selected -1}} {
 }
 
 
-proc Update {path base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	after cancel $Vars(after:sites)
-	set Vars(after:sites) [after idle [namespace code [list Update2 $path $base]]]
+	set Vars(after:sites) [after idle [namespace code [list Update2 $id $path $base]]]
 }
 
 
-proc Update2 {path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
+	if {$id <= $Vars($base:sites:lastId)} { return }
+	set Vars($base:sites:lastId) $id
 	set Vars($base:update:sites) 1
 	DoUpdate $path $base
 }
@@ -256,35 +266,50 @@ proc DoUpdate {path base} {
 		if {$Vars($base:update:sites)} {
 			set n [::scidb::db::count sites $base]
 			after idle [list ::sitetable::update $path.sites $base $n]
-			after idle [namespace code [list [namespace parent]::events::Update2 $path $base]]
+			after idle [namespace code \
+				[list [namespace parent]::events::Update2 $Vars($base:sites:lastId) $path $base]]
 			set Vars($base:update:sites) 0
 			if {$Vars($base:select) >= 0} {
 				after idle [list [namespace parent]::Select $path $base $Vars($base:select)]
 				set Vars($base:select) -1
 			}
 		}
-	} else {
-		set Vars($base:update:sites) 1
 	}
 }
 
 } ;# namespace sites
 
-namespace eval events {
+namespace eval games {
 
-proc Update {path base {view -1} {index -1}} {
-	variable [namespace parent]::${path}::Vars
-
-	set Vars($base:update:events) 1
-	after cancel $Vars(after:events)
-	set Vars(after:events) [after idle [namespace code [list Update2 $path $base]]]
-}
-
-
-proc Update2 {path base} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
+
+	if {$view == $Vars($base:view)} {
+		set n [::scidb::view::count events $base $view]
+		after idle [list ::eventtable::update $path.events $base $n]
+		set Vars($base:events:lastId) $id
+	}
+}
+
+} ;# namespace games
+
+namespace eval events {
+
+proc Update {path id base {view -1} {index -1}} {
+	variable [namespace parent]::${path}::Vars
+
+	after cancel $Vars(after:events)
+	set Vars(after:events) [after idle [namespace code [list Update2 $id $path $base]]]
+}
+
+
+proc Update2 {id path base} {
+	variable [namespace parent]::${path}::Vars
+
+	if {$id <= $Vars($base:events:lastId)} { return }
+	set Vars($base:events:lastId) $id
 	set Vars($base:update:events) 1
 	DoUpdate $path $base
 }
@@ -305,8 +330,6 @@ proc DoUpdate {path base} {
 			after idle [list ::eventtable::update $path.events $base $n]
 			set Vars($base:update:events) 0
 		}
-	} else {
-		set Vars($base:update:events) 1
 	}
 }
 
@@ -328,7 +351,7 @@ proc WriteOptions {chan} {
 
 ::options::hookWriter [namespace current]::WriteOptions
 
-} ;# namespace events
+} ;# namespace sites
 } ;# namespace database
 } ;# namespace application
 

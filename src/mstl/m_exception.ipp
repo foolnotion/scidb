@@ -27,6 +27,8 @@ class type_info; // because of a cyclic bug in gcc headers
 
 #include <typeinfo>
 
+namespace std { bool uncaught_exception() throw(); }
+
 namespace mstl {
 
 class exception;
@@ -51,6 +53,10 @@ throw_exc(Exc const& exc, char const* file, int line, char const* func)
 }
 
 } // namespace bits
+
+
+inline bool uncaught_exception() throw() { return ::std::uncaught_exception(); }
+
 } // namespace mstl
 
 #endif // __OPTIMIZE__

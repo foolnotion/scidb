@@ -1503,6 +1503,75 @@ proc checkEngines {path} {
 }
 
 
+# TestFontConfig.sh:
+#    Script used to test the fontconfig version
+#    (because version 3.8 is corrupt).
+#
+set TestFontConfig {#!/bin/sh
+cat <<EOF > testfontconfig.c
+#include <stdio.h>
+extern int FcGetVersion();
+int main()
+{
+    printf("%d", FcGetVersion());
+    return 0;
+}
+EOF
+
+__CC__ -o testfontconfig testfontconfig.c -lfontconfig
+if [ -f testfontconfig ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+proc checkFontConfig {} {
+    global TestFontConfig
+    global environment
+
+    puts -nonewline "    Checking your fontconfig version: "
+    set testfontconfig [regsub -all __CC__ $TestFontConfig $environment(CC)]
+    flush stdout
+    if {[catch {open testfontconfig.sh w} f]} { return 0 }
+    puts $f $testfontconfig
+    close $f
+    set result 0
+    if {![catch {exec sh testfontconfig.sh} err]} { set result 1 }
+
+    if {![file exists testfontconfig]} {
+        puts "\n"
+        puts "Cannot install Scidb because library fontconfig"
+        puts "cannot be found."
+        set result 0
+    }
+
+    set version 0
+    if {[catch {exec ./testfontconfig} version err]} {
+        puts $err
+        set result 0
+    }
+
+    catch { file delete -force testfontconfig.sh }
+    catch { file delete -force testfontconfig.c }
+    catch { file delete -force testfontconfig }
+
+    puts "[expr {$version/10000}].[expr {($version % 10000)/100}]"
+
+    if {$version == 30800} {
+        puts ""
+        puts "Your system has fontconfig version 3.8 installed."
+        puts "This library version is broken, Scidb is not working"
+        puts "with this version. Please upgrade to library version"
+        puts "3.9 or higher before installing Scidb."
+        set result 0
+    }
+
+    return $result
+}
+
+
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
@@ -1873,7 +1942,9 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
-#   checkInotify ;# not yet working
+    if {![checkFontConfig]} { exit 1 }
+
+    checkInotify
     checkFAM
     checkZlib
     checkZziplib

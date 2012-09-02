@@ -25,6 +25,7 @@ TITLE Novità 
   <li>Tool da linea di comando cdb2sci aggiunto per la conversione di database al formato Scidb (.sci)</li>
   <li>Widget HTML rivisitato: notevole risparmio di risorse</li>
   <li>Integrata localizzazione in svedese (ringraziamenti a Lars Ekman)</li>
+  <li>Traduzione in spagnolo ripristinata (grazie a Juan Carlos Vásquez)</li>
   <li>Identificazione automatica del set caratteri durante la codifica delle partite (riguarda i formati si3/si4/cbh)</li>
   <li>Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
   <li>Migliorata finestra di selezione file</li>
@@ -33,6 +34,7 @@ TITLE Novità 
   <li>Archiviazione database integrata</li>
   <li>Interfaccia di configurazione per sfogliare\modificare partite</li>
   <li>Trascinamento (Drag&amp;Drop) dei file integrato: si possono trascinare sul selezionatore di database</li>
+  <!--NEW <li>Drag&amp;Drop in file selection dialog implemented</li>-->
   <li>Finestra Database: blocco/sblocco delle tab integrato</li>
   <li>Rivisto input mosse col mouse (se il suggerimento è disabilitato)</li>
   <li>Rimossa barra menu: c'è invece un semplice menu principale; questo è allo stato-dell'arte e il layout sarà migliorato</li>
@@ -42,7 +44,6 @@ TITLE Novità 
   <li>Tabella tornei: visualizzazione opzionale di vincite/patte/perse</li>
   <li>Supportato scorrimento con rotella del mouse per tutte le liste e la scacchiera</li>
   <li>Notazione delle mosse disponibile per Algebrica (normal, breve e completa), Inglese, Corrispondenza e Telegrafo</li>
-  <li>Traduzione in spagnolo ripristinata (grazie a Juan Carlos Vásquez)</li>
   <li>Alcune icone sono state ridisegnte</li>
 </ul>
 

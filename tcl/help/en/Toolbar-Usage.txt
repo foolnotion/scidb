@@ -25,7 +25,15 @@ The orientation and adjustment of each toolbar is individually adjustable.
 This will be elucidated with some examples.
 </p>
 
-<h3>%::toolbar::mc::Orientation%</h3>
+<ul>
+  <li><a href="#Orientation">%::toolbar::mc::Orientation%</a></li>
+  <li><a href="#Alignment">%::toolbar::mc::Alignment%</a></li>
+  <li><a href="#IconSize">%::toolbar::mc::IconSize%</a></li>
+  <li><a href="#Hide-Unhide">Hide and Unhide</a></li>
+  <li><a href="#Expand">%::toolbar::mc::Expand%</a></li>
+</ul>
+
+<h3 id="Orientation">%::toolbar::mc::Orientation%</h3>
 
 <ul><img src="images/toolbar-usage-dnd-hover.png"/></ul>
 
@@ -83,7 +91,7 @@ In the next example the toolbars at the top are minimized (flat).
 The toolbar will reappear after a click on the drag bar (the ribbed bar).
 </p>
 
-<h3>%::toolbar::mc::Alignment%</h3>
+<h3 id="Alignment">%::toolbar::mc::Alignment%</h3>
 
 <p>
 The toolbars can also be aligned.
@@ -96,7 +104,7 @@ Usually the bars are aligned to left, but in some cases an alignment to the
 middle, or even to the right, is useful.
 </p>
 
-<h3>%::toolbar::mc::IconSize%</h3>
+<h3 id="IconSize">%::toolbar::mc::IconSize%</h3>
 
 <p>
 Each bar offers an individually setting of the icon size.
@@ -111,7 +119,7 @@ is given with the setting under
 in the main menu.
 </p>
 
-<h3>Hide and Unhide</h3>
+<h3 id="Hide-Unhide">Hide and Unhide</h3>
 
 <p>
 Furthermore the context-sensitive menu offers hide and unhide functionality:
@@ -125,7 +133,7 @@ This functionality is available also in the main menu under
 <note/>Not all toolbars can be hidden.
 </p>
 
-<h3>%::toolbar::mc::Expand%</h3>
+<h3 id="Expand">%::toolbar::mc::Expand%</h3>
 
 <p>
 Finally there exists a special setting, demonstrated with the help of

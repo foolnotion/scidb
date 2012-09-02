@@ -42,9 +42,10 @@ public:
 	bool add(mstl::string const& path, unsigned states = StateAll);
 	void remove(mstl::string const& path);
 
-	virtual void signalChanged(mstl::string const& path) = 0;
-	virtual void signalDeleted(mstl::string const& path) = 0;
-	virtual void signalCreated(mstl::string const& path) = 0;
+	virtual void signalId(unsigned id, mstl::string const& path) = 0;
+	virtual void signalChanged(unsigned id, mstl::string const& path) = 0;
+	virtual void signalDeleted(unsigned id, mstl::string const& path) = 0;
+	virtual void signalCreated(unsigned id, mstl::string const& path) = 0;
 
 	static bool isSupported();
 

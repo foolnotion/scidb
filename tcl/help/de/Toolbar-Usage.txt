@@ -25,7 +25,15 @@ Einstellungen. Alle Funktionsleisten sind in ihrer Position und Ausrichtung indi
 einstellbar. Dies wird an Beispielen erläutert.
 </p>
 
-<h3>%::toolbar::mc::Orientation%</h3>
+<ul>
+  <li><a href="#Orientation">%::toolbar::mc::Orientation%</a></li>
+  <li><a href="#Alignment">%::toolbar::mc::Alignment%</a></li>
+  <li><a href="#IconSize">%::toolbar::mc::IconSize%</a></li>
+  <li><a href="#Hide-Unhide">Ein- und Ausblenden</a></li>
+  <li><a href="#Expand">%::toolbar::mc::Expand%</a></li>
+</ul>
+
+<h3 id="Orientation">%::toolbar::mc::Orientation%</h3>
 
 <ul><img src="images/toolbar-usage-dnd-hover.png"/></ul>
 
@@ -87,7 +95,7 @@ Ein Klick auf die Dragleiste (die geriffelte Leiste) läßt die Funktionsleiste
 wieder expandieren.
 </p>
 
-<h3>%::toolbar::mc::Alignment%</h3>
+<h3 id="Alignment">%::toolbar::mc::Alignment%</h3>
 
 <p>
 Die Funktionsleisten können auch ausgerichtet werden.
@@ -100,7 +108,7 @@ Normalerweise sind diese Leisten immer nach Links ausgerichtet, doch bei manchen
 ist eine Ausrichtung in die Mitte oder sogar nach Rechts sinnvoll.
 </p>
 
-<h3>%::toolbar::mc::IconSize%</h3>
+<h3 id="IconSize">%::toolbar::mc::IconSize%</h3>
 
 <p>
 Jede Leiste läßt eine individuelle Einstellung der Piktogrammgröße zu.
@@ -115,7 +123,7 @@ die Piktogrammgröße gewählt, die im Hauptmenü unter
 vorgegeben ist.
 </p>
 
-<h3>Ein- und Ausblenden</h3>
+<h3 id="Hide-Unhide">Ein- und Ausblenden</h3>
 
 <p>
 Auch ein Ein- oder Ausblenden einer Leiste wird im kontextsensitiven Menü angeboten:
@@ -130,7 +138,7 @@ erreichbar.
 <note/>Nicht alle Funktionsleisten sind ausblendbar.
 </p>
 
-<h3>%::toolbar::mc::Expand%</h3>
+<h3 id="Expand">%::toolbar::mc::Expand%</h3>
 
 <p>
 Letzlich gibt es noch eine besondere Einstellung, was hier am Beispiel des

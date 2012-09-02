@@ -33,6 +33,14 @@ ostream::write(unsigned char const* buffer, size_t size)
 	return write(reinterpret_cast<char const*>(buffer), size);
 }
 
+
+inline
+ostream&
+ostream::put(char c)
+{
+	return write(&c, 1);
+}
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:

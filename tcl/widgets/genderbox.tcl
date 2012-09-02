@@ -154,7 +154,7 @@ proc WidgetProc {w command args} {
 
 		valid? {
 			set value [$w.__w__ get]
-			set index [lsearch [$w.__w__ cget -values] $value]
+			set index [lsearch -exact [$w.__w__ cget -values] $value]
 			if {$index >= 0} { return true }
 			if {$value eq "-" || $value eq "\u2014" || $value eq ""} { return true }
 			return false
@@ -243,6 +243,7 @@ proc Setup {w} {
 
 
 proc Select {w key} {
+	if {[$w popdown?]} { return }
 	if {![info exists ${w}::Male]} { return }
 
 	variable ${w}::Male

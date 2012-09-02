@@ -77,7 +77,7 @@ proc inspect {arch {destDir ""}} {
 	}
 
 	foreach attr {Format Type} {
-		if {[lsearch -index 0 $header $attr] == -1} {
+		if {[lsearch -exact -index 0 $header $attr] == -1} {
 			logError [format $mc::CorruptedHeader $arch] ""
 			close $fd
 			return {}
@@ -105,7 +105,7 @@ proc inspect {arch {destDir ""}} {
 			gets $fd line
 		}
 		foreach attr {FileName Size} {
-			if {[lsearch -index 0 $attrs $attr] == -1} {
+			if {[lsearch -exact -index 0 $attrs $attr] == -1} {
 				logError [format $mc::CorruptedHeader $arch] ""
 				close $fd
 				return {}

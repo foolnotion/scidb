@@ -629,7 +629,7 @@ proc SelectTexture {parent which} {
 	SetTexture $which $style(color,$which,texture) true
 	if {[llength $style(color,$which,texture)]} { ConfigureTextureFrame $which }
 
-	widget::dialogButtons $dlg {ok cancel} ok
+	widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command "destroy $dlg"
 	$dlg.cancel configure -command "
 		[namespace current]::ResetTexture $which
@@ -1070,7 +1070,7 @@ proc SelectGradient {which} {
 		grid columnconfigure $offs 1 -minsize $::theme::padx
 	}
 
-	widget::dialogButtons $dlg {ok cancel} ok false
+	widget::dialogButtons $dlg {ok cancel} -icons no
 	$dlg.ok configure -command [list destroy $dlg]
 	$dlg.cancel configure -command "
 		[namespace current]::RestoreGradient $which
@@ -1601,7 +1601,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	grid columnconfigure $bot.rt {0 2} -minsize $::theme::padx
 
 	# dialog buttons
-	widget::dialogButtons $dlg {ok cancel apply revert} apply
+	widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	$dlg.ok configure -command "
 		[namespace current]::MakePieces $size
 		$updateCmd true

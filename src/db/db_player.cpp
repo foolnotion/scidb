@@ -667,6 +667,9 @@ findPlayer(mstl::string const& name, Players const& players, country::Code feder
 }
 
 
+Player::PlayerCallback::~PlayerCallback() {}
+
+
 Player::Player()
 	:m_fideID(0)
 	,m_ratingType(rating::Last)
@@ -2602,9 +2605,10 @@ Player::parseComputerList(mstl::istream& stream)
 
 					country::Code federation = country::Unknown;
 
-					bool winboard	= false;
-					bool uci			= false;
-					bool chess960	= false;
+					bool winboard		= false;
+					bool uci				= false;
+					bool chess960		= false;
+					bool shuffleChess	= false;
 
 					*const_cast<char*>(t) = '\0';
 					str.hook(const_cast<char*>(s), t++ - s);
@@ -2649,7 +2653,8 @@ Player::parseComputerList(mstl::istream& stream)
 							{
 								case 'W': winboard = true; break;
 								case 'U': uci = true; break;
-								case 'R': chess960 = true; break;
+								case 'F': chess960 = true; break;
+								case 'S': shuffleChess = chess960 = true; break;
 							}
 
 							while (::isalpha(*s))
@@ -2666,6 +2671,7 @@ Player::parseComputerList(mstl::istream& stream)
 						DEBUG(++countEngines);
 
 						player->setChess960Flag(chess960);
+						player->setShuffleChessFlag(shuffleChess);
 						player->setWinboardProtocol(winboard);
 						player->setUciProtocol(uci);
 						player->setType(species::Program);
@@ -2901,6 +2907,17 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 	receptacle.add("Result", result);
 	receptacle.add("Score", score);
 	receptacle.add("EcoLines", ecoLines);
+}
+
+
+void
+Player::enumerate(PlayerCallback& cb)
+{
+	for (PlayerLookup::const_iterator i = playerLookup.begin(); i != playerLookup.end(); ++i)
+	{
+		for (unsigned k = 0; k < i->second.size(); ++k)
+			cb.entry(*i->second[k]);
+	}
 }
 
 

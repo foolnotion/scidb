@@ -821,7 +821,7 @@ proc TableSelected {path index} {
 	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 
 	set pos [::widget::busyOperation \
-					::game::new $path $base [expr {[column $info number] - 1}] $fen]
+					{ ::game::new $path $base [expr {[column $info number] - 1}] $fen }]
 }
 
 
@@ -1666,7 +1666,7 @@ proc PopupMenu {path menu base index} {
 	foreach entry $Columns {
 		set name [lindex $entry 1]
 		if {[string length $name]} {
-			set k [lsearch $groups $name]
+			set k [lsearch -exact $groups $name]
 			if {$k == -1} { lappend groups $name }
 		}
 	}
@@ -1768,7 +1768,7 @@ proc OpenBrowser {path {index -1}} {
 	set info [::scidb::db::get gameInfo $index $view $base]
 	set topl [winfo toplevel $path]
 
-	::widget::busyOperation ::browser::open $topl $base $info $view $index [{*}$Vars(positioncmd)]
+	::widget::busyOperation { ::browser::open $topl $base $info $view $index [{*}$Vars(positioncmd)] }
 }
 
 
@@ -1782,7 +1782,7 @@ proc OpenOverview {path {index -1}} {
 	set view [{*}$Vars(viewcmd) $base]
 	set info [::scidb::db::get gameInfo $index $view $base]
 
-	::widget::busyOperation ::overview::open $path $base $info $view $index [{*}$Vars(positioncmd)]
+	::widget::busyOperation { ::overview::open $path $base $info $view $index [{*}$Vars(positioncmd)] }
 }
 
 

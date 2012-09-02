@@ -65,6 +65,7 @@
 ::mc::Delete			"Radera"
 ::mc::Edit				"Redigera"
 ::mc::Escape			"Esc"
+::mc::File				"File" ;# NEW
 ::mc::From				"Från"
 ::mc::Game				"Parti"
 ::mc::Layout			"Layout"
@@ -135,6 +136,10 @@
 ::widget::mc::Last		"&Sista"
 ::widget::mc::Help		"&Hjälp"
 
+::widget::mc::New			"&New" ;# NEW
+::widget::mc::Save		"&Spara"
+::widget::mc::Delete		"&Radera"
+
 ::widget::mc::Control(minimize)	"Minimera"
 ::widget::mc::Control(restore)	"Lämna helskärm"
 ::widget::mc::Control(close)		"Stäng"
@@ -202,14 +207,17 @@
 ::menu::mc::Contact						"&Kontakt (Webbläsare)"
 ::menu::mc::Quit							"&Avsluta"
 ::menu::mc::Extras						"&Tillägg"
+::menu::mc::Setup							"Setu&p" ;# NEW
+::menu::mc::Engines						"&Engines" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Felrapport"
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
+::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
-::menu::mc::ImportFiles					"Importera PGN fil..."
+::menu::mc::ImportFiles					"Importera PGN fil"
 ::menu::mc::Archiving					"Arkiverar"
 ::menu::mc::CreateArchive				"Skapa arkiv"
 ::menu::mc::BuildArchive				"Skapa arkiver %s"
@@ -221,9 +229,11 @@
 ::load::mc::ProgramAborting		"Programmet avbryter."
 
 ::load::mc::Loading					"Laddar %s"
-::load::mc::ReadingOptionsFile	"Läser alternativ"
 ::load::mc::StartupFinished		"Inläsning klar"
 ::load::mc::SystemEncoding			"Systemkodning är '%s'"
+
+::load::mc::ReadingFile(options)	"Läser alternativ"
+::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
 
 ::load::mc::ECOFile					"ECO-fil"
 ::load::mc::EngineFile				"schackmotor"
@@ -740,6 +750,37 @@
 ::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
 
+### engine #############################################################
+::engine::mc::Name					"Name" ;# NEW
+::engine::mc::Identifier			"Identifier" ;# NEW
+::engine::mc::Author					"Author" ;# NEW
+::engine::mc::Country				"Country" ;# NEW
+::engine::mc::Rating					"Rating" ;# NEW
+::engine::mc::Logo					"Logo" ;# NEW
+::engine::mc::Protocol				"Protocol" ;# NEW
+::engine::mc::Parameters			"Parameters" ;# NEW
+::engine::mc::Command				"Command" ;# NEW
+::engine::mc::Variants				"Variants" ;# NEW
+::engine::mc::LastUsed				"Last used" ;# NEW
+
+::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+
+::engine::mc::SetupEngines			"Setup Engines" ;# NEW
+::engine::mc::ImageFiles			"Image files" ;# NEW
+::engine::mc::SelectEngine			"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
+::engine::mc::Executables			"Executables" ;# NEW
+::engine::mc::EngineLog				"Engine Log" ;# NEW
+::engine::mc::Probing				"Probing" ;# NEW
+
+::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
 ::gametable::mc::UndeleteGame				"Ångra radering av partiet"
@@ -1118,7 +1159,7 @@
 ::import::mc::InvalidRating						"Ogiltigt 'ratingtal'"
 ::import::mc::InvalidNag							"Ogiltig 'NAG'"
 ::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
-::import::mc::MissingFen							"FEN saknas (variant tag kommer att ignoreras)"
+::import::mc::MissingFen							"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
 ::import::mc::UnknownEventType					"Okänd tävlingstyp"
 ::import::mc::UnknownTitle							"Okänd titel(ignorerad)"
 ::import::mc::UnknownPlayerType					"Okänd spelartyp (ignorerad)"
@@ -1159,6 +1200,8 @@
 ::import::mc::TooManySourceNames					"För många källnamn i databasen (avbrott)"
 ::import::mc::SeemsNotToBePgnText				"Det här är ingen PGN-text."
 ::import::mc::AbortedDueToInternalError		"Avbrott på grund av internt fel."
+::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
+::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&File Selection"
@@ -1748,6 +1791,7 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Flyttbar dokumentfil"
 ::dialog::fsbox::mc::HypertextFile			"Hypertext fil"
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
+::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
 ::dialog::fsbox::mc::LinkTo					"Länka till %s"
 ::dialog::fsbox::mc::LinkTarget				"Länkmål"
 ::dialog::fsbox::mc::Directory				"Folder"
@@ -1764,7 +1808,6 @@
 ::dialog::choosecolor::mc::RecentColors	"Senaste färger"
 ::dialog::choosecolor::mc::Old				"Tidigare"
 ::dialog::choosecolor::mc::Current			"Aktuell"
-::dialog::choosecolor::mc::Color				"Färg"
 ::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Färgval"
 ::dialog::choosecolor::mc::Red				"Rött"
@@ -1858,16 +1901,6 @@
 
 ::fsbox::mc::CannotChangeDir				"Kan inte byta till foldern \"%s\".\nÅtkomst nekad."
 ::fsbox::mc::DirectoryRemoved				"Kan inte byta till foldern \"%s\".\nFoldern är borttagen."
-::fsbox::mc::ReallyMove(file,w)			"Är du säker att filen '%s' ska flyttas till papperskorgen?"
-::fsbox::mc::ReallyMove(file,r)			"Är du säker att den skrivskyddade filen '%s' ska flyttas till papperskorgen?"
-::fsbox::mc::ReallyMove(folder,w)		"Är du säker att foldern '%s' ska flyttas till papperskorgen?"
-::fsbox::mc::ReallyMove(folder,r)		"Är du säker att den skrivskyddade foldern '%s' ska flyttas till papperskorgen?"
-::fsbox::mc::ReallyDelete(file,w)		"Är du säker att filen '%s' ska raderas? Denna åtgärd kan inte ångras."
-::fsbox::mc::ReallyDelete(file,r)		"Är du säker att den skrivskyddade filen '%s' ska raderas? Denna åtgärd kan inte ångras."
-::fsbox::mc::ReallyDelete(link,w)		"Är du säker att länken till '%s' ska raderas?"
-::fsbox::mc::ReallyDelete(link,r)		"Är du säker att länken till '%s' ska raderas?"
-::fsbox::mc::ReallyDelete(folder,w)		"Är du säker att folder '%s'ska raderas? Denna åtgärd kan inte ångras."
-::fsbox::mc::ReallyDelete(folder,r)		"Är du säker att den skrivskyddade foldern '%s' ska raderas? Denna åtgärd kan inte ångras."
 ::fsbox::mc::DeleteFailed					"Det gick inte att radera '%s'."
 ::fsbox::mc::RestoreFailed					"Det gick inte att återställa '%s'."
 ::fsbox::mc::CommandFailed					"Command '%s' failed."
@@ -1876,11 +1909,8 @@
 ::fsbox::mc::CannotDuplicate				"Kan inte duplicera filen '%s'. Tillstånd att läsa saknas."
 ::fsbox::mc::ReallyDuplicateFile			"Är du säker att filen ska dupliceras?"
 ::fsbox::mc::ReallyDuplicateDetail		"Denna fil har omkring %s. Dupliceringen kan ta en stund."
-::fsbox::mc::ErrorRenaming(folder)		"Fel vid namnbyte av foldern '%old' till '%new': åtkomst nekad."
-::fsbox::mc::ErrorRenaming(file)			"Fel vid namnbyte av filen '%old' till '%new': åtkomst nekad."
 ::fsbox::mc::InvalidFileExt				"Operationen misslyckades: '%s' har ett ogiltigt filtilläggg."
 ::fsbox::mc::CannotRename					"Kan inte byta namn till '%s'. Det finns redan en folder/fil med det namnet."
-::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate					"Kan inte skapa foldern '%s' Det finns redan en folder/fil med det namnet."
 ::fsbox::mc::ErrorCreate					"Fel vid skapande av folder: åtkomst nekad."
 ::fsbox::mc::FilenameNotAllowed			"Filnamnet '%s' är inte tillåtet."
@@ -1898,10 +1928,7 @@
 ::fsbox::mc::CannotOpenOrCreate			"Kan inte öppna/skapa '%s'. Var vänlig och välj en folder."
 ::fsbox::mc::WaitWhileDuplicating		"Var vänlig vänta, filen dupliceras..."
 ::fsbox::mc::FileHasDisappeared			"Filen '%s' är försvunnen."
-::fsbox::mc::CannotDelete					"Kan inte radera filen '%s'."
-::fsbox::mc::CannotRename					"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::CurrentlyInUse				"Filen '%s' används."
-::fsbox::mc::CannotOverwrite				"Kan inte skriva över filen '%s'."
 ::fsbox::mc::PermissionDenied				"Åtkomst nekad för foldern '%s'."
 ::fsbox::mc::CannotOpenUri					"Kan inte öppna följande  URI:"
 ::fsbox::mc::InvalidUri						"Innehåll som släpps är inte en giltig URI-lista."
@@ -1913,6 +1940,25 @@
 ::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
 ::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
 ::fsbox::mc::NewName							"New name" ;# NEW
+
+::fsbox::mc::ReallyMove(file,w)			"Är du säker att filen '%s' ska flyttas till papperskorgen?"
+::fsbox::mc::ReallyMove(file,r)			"Är du säker att den skrivskyddade filen '%s' ska flyttas till papperskorgen?"
+::fsbox::mc::ReallyMove(folder,w)		"Är du säker att foldern '%s' ska flyttas till papperskorgen?"
+::fsbox::mc::ReallyMove(folder,r)		"Är du säker att den skrivskyddade foldern '%s' ska flyttas till papperskorgen?"
+::fsbox::mc::ReallyDelete(file,w)		"Är du säker att filen '%s' ska raderas? Denna åtgärd kan inte ångras."
+::fsbox::mc::ReallyDelete(file,r)		"Är du säker att den skrivskyddade filen '%s' ska raderas? Denna åtgärd kan inte ångras."
+::fsbox::mc::ReallyDelete(link,w)		"Är du säker att länken till '%s' ska raderas?"
+::fsbox::mc::ReallyDelete(link,r)		"Är du säker att länken till '%s' ska raderas?"
+::fsbox::mc::ReallyDelete(folder,w)		"Är du säker att folder '%s'ska raderas? Denna åtgärd kan inte ångras."
+::fsbox::mc::ReallyDelete(folder,r)		"Är du säker att den skrivskyddade foldern '%s' ska raderas? Denna åtgärd kan inte ångras."
+
+::fsbox::mc::ErrorRenaming(folder)		"Fel vid namnbyte av foldern '%old' till '%new': åtkomst nekad."
+::fsbox::mc::ErrorRenaming(file)			"Fel vid namnbyte av filen '%old' till '%new': åtkomst nekad."
+
+::fsbox::mc::Cannot(delete)				"Kan inte radera filen '%s'."
+::fsbox::mc::Cannot(rename)				"Kan inte byta namn på filen '%s'."
+::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(overwrite)			"Kan inte skriva över filen '%s'."
 
 ::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
 ::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW

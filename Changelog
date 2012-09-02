@@ -1,6 +1,17 @@
 [August 2012] ================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #416)
+------------------------------------------------------------------------------
+* Toolbars enhanced: scrolling implemented.
+
+* Drag&Drop support in file selection dialog completed (except drag icon).
+
+* configure script: check for broken fontconfig version 3.8.
+
+* Setup dialog for engines implemented.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #409)
 ------------------------------------------------------------------------------
 * Drag support implemented, but not yet used.

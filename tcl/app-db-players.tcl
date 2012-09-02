@@ -122,7 +122,9 @@ proc activate {w flag} {
 	variable ${path}::Vars
 
 	set Vars(active) $flag
-	players::Update2 $path [::scidb::db::get name]
+	set base [::scidb::db::get name]
+	set Vars($base:update:players) 1
+	players::DoUpdate $path $base
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $path.players $flag
@@ -195,6 +197,9 @@ proc InitBase {path base} {
 		set Vars($base:sort:players) $Defaults(sort:players)
 		set Vars($base:sort:events) $Defaults(sort:events)
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
+		set Vars($base:players:lastId) -1
+		set Vars($base:games:lastId) -1
+		set Vars($base:events:lastId) -1
 		set Vars($base:select) -1
 		set Vars($base:selected:key) {}
 		::playertable::init $path.players $base
@@ -217,21 +222,23 @@ proc SelectEvent {path base view} {
 
 namespace eval games {
 
-proc Update {path base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
 
 	if {$view == $Vars($base:view)} {
 		after cancel $Vars(after:games)
-		set Vars(after:games) [after idle [namespace code [list Update2 $path $base]]]
+		set Vars(after:games) [after idle [namespace code [list Update2 $id $path $base]]]
 	}
 }
 
 
-proc Update2 {path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
+	if {$id <= $Vars($base:games:lastId)} { return }
+	set Vars($base:games:lastId) $id
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 	set selected [::playertable::selectedPlayer $path.players $base]
@@ -255,6 +262,7 @@ proc Update2 {path base} {
 
 		set n [::scidb::view::count events $base $view]
 		after idle [list ::eventtable::update $path.info.events $base $n]
+		set Vars($base:events:lastId) $id
 	}
 }
 
@@ -304,18 +312,20 @@ proc Search {path base view {selected -1}} {
 }
 
 
-proc Update {path base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	after cancel $Vars(after:players)
-	set Vars(after:players) [after idle [namespace code [list Update2 $path $base]]]
+	set Vars(after:players) [after idle [namespace code [list Update2 $id $path $base]]]
 }
 
 
-proc Update2 {path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
+	if {$id <= $Vars($base:players:lastId)} { return }
+	set Vars($base:players:lastId) $id
 	set Vars($base:update:players) 1
 	DoUpdate $path $base
 }
@@ -334,15 +344,14 @@ proc DoUpdate {path base} {
 		if {$Vars($base:update:players)} {
 			set n [::scidb::db::count players $base]
 			after idle [list ::playertable::update $path.players $base $n]
-			after idle [namespace code [list [namespace parent]::games::Update2 $path $base]]
+			after idle [namespace code [list \
+				[namespace parent]::games::Update2 $Vars($base:players:lastId) $path $base]]
 			set Vars($base:update:players) 0
 			if {$Vars($base:select) >= 0} {
 				after idle [list [namespace parent]::Select $path $base $Vars($base:select)]
 				set Vars($base:select) -1
 			}
 		}
-	} else {
-		set Vars($base:update:players) 1
 	}
 }
 
@@ -350,19 +359,20 @@ proc DoUpdate {path base} {
 
 namespace eval events {
 
-proc Update {path base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
-	set Vars($base:update:events) 1
 	after cancel $Vars(after:events)
-	set Vars(after:events) [after idle [namespace code [list Update2 $path $base]]]
+	set Vars(after:events) [after idle [namespace code [list Update2 $id $path $base]]]
 }
 
 
-proc Update2 {path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
+	if {$id <= $Vars($base:events:lastId)} { return }
+	set Vars($base:events:lastId) $id
 	set Vars($base:update:events) 1
 	DoUpdate $path $base
 }
@@ -383,8 +393,6 @@ proc DoUpdate {path base} {
 			after idle [list ::eventtable::update $path.info.events $base $n]
 			set Vars($base:update:events) 0
 		}
-	} else {
-		set Vars($base:update:events) 1
 	}
 }
 

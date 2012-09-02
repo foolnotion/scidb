@@ -1682,7 +1682,7 @@ proc OpenConfigureDialog {table id header} {
 	grid columnconfigure $f {0 2 4} -minsize $::theme::padding
 
 	pack $f -fill x
-	::widget::dialogButtons $top {ok cancel} ok
+	::widget::dialogButtons $top {ok cancel}
 	$top.cancel configure -command "[namespace current]::ResetColors $table $id; destroy $top"
 	$top.ok configure -command "[namespace current]::AcceptSettings $table $id; destroy $top"
 	::bind $top <Return> "

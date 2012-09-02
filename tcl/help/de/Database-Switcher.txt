@@ -29,11 +29,20 @@ Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 </p>
 
 <p>
-Mit Halten der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) wird eine
-Informationsbox angezeigt.
+Mit Halten der mittleren Maustaste (<abbr>i.d.R.</abbr> das Mausrad) auf einem
+Datenbankfeld wird eine Informationsbox angezeigt.
 </p>
 
-<h3>Administration</h3>
+<p>
+Die Funktionalitäten im Datenbankumschalter sind:
+</p>
+
+<ul>
+  <li><a href="#Administration">Administration</a></li>
+  <li><a href="#DND">Drag &amp; Drop</a></li>
+</ul>
+
+<h3 id="Administration">Administration</h3>
 
 <p>
 Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
@@ -139,7 +148,7 @@ Hilfedialog zum Datenbankumschalter öffnen.
 <note/>Dieser Menüpunkt steht nur für die
 <a href="Clipbase.html">Ablage-Datenbank</a> zur Verfügung.
 
-<h3>Drag &amp; Drop</h3>
+<h3 id="DND">Drag &amp; Drop</h3>
 
 <p>
 Datenbanken können auch durch Drop (Fallenlassen) einer URI-Liste geöffnet werden.

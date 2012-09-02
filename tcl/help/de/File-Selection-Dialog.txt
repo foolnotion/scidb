@@ -32,6 +32,13 @@ Der Dateiauswahldialog besteht hauptsächlich aus sechs Bereichen:
   <li><a href="#Encoding">Auswahl der Enkodierung</a></li>
 </ul>
 
+<p>
+In der Dateianzeige wird Drag &amp; Drop unterstützt:
+</p>
+
+<ul><li><a href="#DND">Drag &amp; Drop</a></li></ul>
+</ul>
+
 <h3 id="Navigation">Verzeichnisnavigation</h3>
 
 <p>
@@ -214,6 +221,22 @@ Weitere Informationen sind auf der Seite über die
 meisten Fällen ist jedoch die voreingestellte automatische Erkennung
 ausreichend.
 </p>
+
+<h3 id="DND">Drag &amp; Drop</h3>
+
+<p>
+Die Dateianzeige unterstützt Drag &amp; Drop (Ziehen und Fallenlassen).
+Auf diese Weise können Datenbanken mit Hilfe eines weiteren Dateimanagers
+verschoben (bzw. kopiert oder verlinkt) werden. Zudem können durch diese
+Unterstützung mehrere Datenbanken geöffnet werden, ohne den Dateiauswahldialog
+jeweils erneut zu öffnen; nämlich durch Ziehen der Datenbank in den
+<a href="Database-Switcher.html">Datenbankumschalter</a>.
+</p>
+
+<annotation>
+Alle Drag&amp;Drop-Operationen wirken auf eine gesamte Datenbank, d.h. auf
+alle zu einer Datenbank gehörigen Dateien.
+</annotation>
 
 END
 

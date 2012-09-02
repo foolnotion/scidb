@@ -82,16 +82,6 @@ set TimeFormat						"%d/%m/%y %I:%M %p"
 
 set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denied."
 set DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
-set ReallyMove(file,w)			"Really move file '%s' to trash?"
-set ReallyMove(file,r)			"Really move write-protected file '%s' to trash?"
-set ReallyMove(folder,w)		"Really move folder '%s' to trash?"
-set ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?"
-set ReallyDelete(file,w)		"Really delete file '%s'? You cannot undo this operation."
-set ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation."
-set ReallyDelete(link,w)		"Really delete link to '%s'?"
-set ReallyDelete(link,r)		"Really delete link to '%s'?"
-set ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
-set ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
 set DeleteFailed					"Deletion of '%s' failed."
 set RstoreFailed					"Restoring '%s' failed."
 set CommandFailed					"Command '%s' failed."
@@ -100,8 +90,6 @@ set CannotCopy						"Cannot create a copy because file '%s' is already exisiting
 set CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission."
 set ReallyDuplicateFile			"Really duplicate this file?"
 set ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
-set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
-set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
 set InvalidFileExt				"Operation failed: '%s' has an invalid file extension."
 set CannotRename					"Cannot rename to '%s' because this folder/file already exists."
 set CannotCreate					"Cannot create folder '%s' because this folder/file already exists."
@@ -121,11 +109,7 @@ set DirectoryDoesNotExist		"Directory \"%s\" does not exist."
 set CannotOpenOrCreate			"Cannot open/create '%s'. Please choose a directory."
 set WaitWhileDuplicating		"Wait while duplicating file..."
 set FileHasDisappeared			"File '%s' has disappeared."
-set CannotDelete					"Cannot delete file '%s'."
-set CannotRename					"Cannot rename file '%s'."
-set CannotMove						"Cannot move file '%s'."
 set CurrentlyInUse				"This file is currently in use."
-set CannotOverwrite				"Cannot overwrite file '%s'."
 set PermissionDenied				"Permission denied for directory '%s'."
 set CannotOpenUri					"Cannot open the following URI:"
 set InvalidUri						"Drop content is not a valid URI list."
@@ -137,6 +121,25 @@ set EntryAlreadyExists			"Entry already exists"
 set AnEntryAlreadyExists		"An entry '%s' already exists."
 set SourceDirectoryIs			"The source directories is '%s'."
 set NewName							"New name"
+
+set ReallyMove(file,w)			"Really move file '%s' to trash?"
+set ReallyMove(file,r)			"Really move write-protected file '%s' to trash?"
+set ReallyMove(folder,w)		"Really move folder '%s' to trash?"
+set ReallyMove(folder,r)		"Really move write-protected folder '%s' to trash?"
+set ReallyDelete(file,w)		"Really delete file '%s'? You cannot undo this operation."
+set ReallyDelete(file,r)		"Really delete write-protected file '%s'? You cannot undo this operation."
+set ReallyDelete(link,w)		"Really delete link to '%s'?"
+set ReallyDelete(link,r)		"Really delete link to '%s'?"
+set ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
+set ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
+
+set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
+set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
+
+set Cannot(delete)				"Cannot delete file '%s'."
+set Cannot(rename)				"Cannot rename file '%s'."
+set Cannot(move)					"Cannot move file '%s'."
+set Cannot(overwrite)			"Cannot overwrite file '%s'."
 
 set DropAction(move)				"Move Here"
 set DropAction(copy)				"Copy Here"
@@ -264,7 +267,11 @@ proc fsbox {w type args} {
 	set Vars(lookup:$Vars(folder:home)) home
 	set Vars(lookup:$Vars(folder:filesystem)) filesystem
 	set Vars(history:folder) ""
+	set Vars(folder) ""
 	set Vars(dragging) 0
+	set Vars(startup) 1
+	set Vars(extensions) {}
+	set Vars(onlyexecutables) 0
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
 #	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
 
@@ -336,25 +343,23 @@ proc fsbox {w type args} {
 		set Vars(encodingUser) ""
 	}
 
-	if {[llength $Vars(filetypes)]} {
-		::tk::AmpWidget ttk::label $top.lbl_filetype -text [Tr FilesType]
-		ttk::tcombobox $top.ent_filetype  \
-			-state readonly                \
-			-format "%1 (%2)"              \
-			-padding 1                     \
-			;
-		bind $top.ent_filetype <<ComboboxSelected>> [namespace code [list SelectFileTypes $w %W]]
-		bind $top.lbl_filetype <<AltUnderlined>> [list ::ttk::combobox::Post $top.ent_filetype]
-		set Vars(widget:filetypes:combobox) $top.ent_filetype
-		tooltip $top.ent_filetype [Tr SelectWhichType]
+	::tk::AmpWidget ttk::label $top.lbl_filetype -text [Tr FilesType]
+	ttk::tcombobox $top.ent_filetype  \
+		-state readonly                \
+		-format "%1 (%2)"              \
+		-padding 1                     \
+		;
+	bind $top.ent_filetype <<ComboboxSelected>> [namespace code [list SelectFileTypes $w %W]]
+	bind $top.lbl_filetype <<AltUnderlined>> [list ::ttk::combobox::Post $top.ent_filetype]
+	set Vars(widget:filetypes:combobox) $top.ent_filetype
+	tooltip $top.ent_filetype [Tr SelectWhichType]
 
-		if {$Options(show:filetypeicons)} {
-			tk::canvas $top.cnv_filetype -width 1 -height 1 -relief sunken -borderwidth 1 -takefocus 0
-			bind $top.cnv_filetype <Configure> [namespace code [list SetFileTypes $w]]
-#			bind $top.cnv_filetype <ButtonPress-1> [list $top.ent_filetype post]
-			set Vars(widget:filetypes:canvas) $top.cnv_filetype
-#			tooltip $top.cnv_filetype [Tr SelectWhichType]
-		}
+	if {$Options(show:filetypeicons)} {
+		tk::canvas $top.cnv_filetype -width 1 -height 1 -relief sunken -borderwidth 1 -takefocus 0
+		bind $top.cnv_filetype <Configure> [namespace code [list SetFileTypes $w]]
+#		bind $top.cnv_filetype <ButtonPress-1> [list $top.ent_filetype post]
+		set Vars(widget:filetypes:canvas) $top.cnv_filetype
+#		tooltip $top.cnv_filetype [Tr SelectWhichType]
 	}
 
 	grid columnconfigure $top {3} -weight 1
@@ -366,27 +371,16 @@ proc fsbox {w type args} {
 	grid $top.main				-row 3 -column 1 -sticky nsew -columnspan 7
 	grid $top.lbl_filename	-row 5 -column 1 -sticky w
 	grid $top.ent_filename	-row 5 -column 3 -sticky ew
+
 	if {[llength $Vars(selectencodingcommand)]} {
 		grid $top.lbl_encoding -row 5 -column 5
 		grid $top.ent_encoding -row 5 -column 7
 		grid columnconfigure $top {4} -minsize 10
 		grid columnconfigure $top {6} -minsize 5
 		grid columnconfigure $top {7} -minsize 0
-	} elseif {[llength $Vars(filetypes)]} {
+	} else { ;#if {[llength $Vars(filetypes)]}
 		grid $top.ent_filename -columnspan 5
 		grid columnconfigure $top {7} -minsize 92
-	}
-	if {[llength $Vars(filetypes)]} {
-		grid $top.lbl_filetype	-row 7 -column 1 -sticky w
-		grid $top.ent_filetype	-row 7 -column 3 -sticky ew -columnspan 5
-		grid rowconfigure $top {8} -minsize 5
-		if {$Options(show:filetypeicons)} {
-			grid $top.ent_filetype -columnspan 3
-			grid $top.cnv_filetype -row 7 -column 7 -sticky nsew
-			grid columnconfigure $top {6} -minsize 5
-		}
-	} else {
-		grid rowconfigure $top {4} -minsize 10
 	}
 
 	set buttons [tk::frame $w.buttons -takefocus 0]
@@ -469,8 +463,8 @@ proc fsbox {w type args} {
 	bind $top.main.fav <Configure> [namespace code { ConfigurePane %w }]
 
 	CheckInitialFile $w
-	set Vars(folder) ""
 	ChangeDir $w $initialdir
+	SelectInitialFile $w
 	focus $top.ent_filename
 	return $w
 }
@@ -480,7 +474,25 @@ proc reset {w type args} {
 	variable ${w}::Vars
 	variable Options
 
-	array set opts { -multiple 0 }
+	array set opts {
+		-multiple					0 
+		-initialdir					""
+		-initialfile				""
+		-filetypes					{}
+		-fileicons					{}
+		-defaultextension			{}
+		-defaultencoding			{}
+		-sizecommand				{}
+		-validatecommand			{}
+		-selectencodingcommand	{}
+		-deletecommand				{}
+		-renamecommand				{}
+		-duplicatecommand			{}
+		-okcommand					{}
+		-cancelcommand				{}
+		-inspectcommand			{}
+		-mapextcommand				{}
+	}
 	array set opts $args
 
 	if {$opts(-multiple)} { set mode extended } else { set mode single }
@@ -490,12 +502,22 @@ proc reset {w type args} {
 	set Vars(initialfile) ""
 	set Vars(prevFolder) ""
 
-	foreach option {	multiple defaultextension defaultencoding filetypes fileencodings
-							showhidden sizecommand selectencodingcommand deletecommand
-							renamecommand okcommand cancelcommand initialfile} {
+	foreach option {	multiple defaultextension defaultencoding filetypes fileicons
+							fileencodings showhidden sizecommand validatecommand
+							selectencodingcommand deletecommand renamecommand duplicatecommand
+							okcommand cancelcommand inspectcommand mapextcommand initialfile} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
+	}
+
+	set t $Vars(widget:list:file)
+	if {[llength $Vars(inspectcommand)]} {
+		bind $t <ButtonPress-2>		[namespace code [list filelist::Inspect $w show %x %y]]
+		bind $t <ButtonRelease-2>	[namespace code [list filelist::Inspect $w hide]]
+	} else {
+		bind $t <ButtonPress-2> {#}
+		bind $t <ButtonRelease-2> {#}
 	}
 	if {[llength $Vars(sizecommand)] == 0} {
 		set Vars(sizecommand) [namespace code GetFileSize]
@@ -531,12 +553,18 @@ proc reset {w type args} {
 	set Vars(undo:current) -1
 	set Vars(tip:forward) ""
 	set Vars(tip:backward) ""
+	set Vars(startup) 1
 
 	CheckInitialFile $w
-	DirChanged $w 0
+	if {[string length $opts(-initialdir)] && $opts(-initialdir) ne $Vars(folder)} {
+		ChangeDir $w $opts(-initialdir)
+	} else {
+		DirChanged $w 0
+	}
+	SelectInitialFile $w
 	changeFileDialogType $w $type
 	setFileTypes $w $Vars(filetypes) $Vars(defaultextension)
-	filelist::RefreshFileList $w
+#	filelist::RefreshFileList $w
 	focus $Vars(widget:filename)
 }
 
@@ -593,13 +621,27 @@ proc changeFileDialogType {w type} {
 
 proc setFileTypes {w filetypes {defaultextension ""}} {
 	variable ${w}::Vars
+	variable Options
 
-	if {![info exists Vars(widget:filetypes:combobox)]} { return }
+	set list {}
+	set filetypeList {}
+	set Vars(onlyexecutables) 0
+
+	foreach entry $filetypes {
+		if {[lindex $entry 1] eq "x"} {
+			set Vars(onlyexecutables) 1
+			set onlyexecutables [lindex $entry 0]
+		} else {
+			lappend list $entry
+			set filetypeList [concat $filetypeList [lindex $entry 1]]
+		}
+	}
+	set filetypes $list
+	set filetypeList [lsort -unique $filetypeList]
 
 	set Vars(defaultextension) $defaultextension
 	set Vars(filetypes) $filetypes
 	set Vars(extensions) [lindex $filetypes 0 1]
-#	set Vars(initialfile) ""
 
 	if {[llength $filetypes] && [string length $Vars(defaultextension)] == 0} {
 		set Vars(defaultextension) [lindex $filetypes 0 1 0]
@@ -608,7 +650,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 	set fileIconTypes {}
 	foreach {extensions name} $Vars(fileicons) {
 		foreach ext $extensions {
-			if {$ext ni $fileIconTypes} {
+			if {$ext in $filetypeList && $ext ni $fileIconTypes} {
 				lappend fileIconTypes $ext
 				set Vars(fti:$ext) $name
 			}
@@ -635,45 +677,65 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 	set Vars(file:type:list) [lsort -unique $Vars(file:type:list)]
 
 	set cb $Vars(widget:filetypes:combobox)
-	if {[winfo exists $cb]} {
-		$cb showcolumns [list 0 [expr {$filetypeCount + 1}]]
-		$cb columns clear
+	set top [winfo parent $cb]
 
-		if {[llength $filetypes]} {
-			$cb configure -state readonly
-			$cb addcol text -id name -type text
-			for {set i 0} {$i < $filetypeCount} {incr i} {
-				$cb addcol image -id icon$i -type image
-			}
-			$cb addcol text -id extensions -type text
+	$cb showcolumns [list 0 [expr {$filetypeCount + 1}]]
+	$cb columns clear
 
-			foreach entry $filetypes {
-				lassign $entry name extensions
-				set types {}
-				set icons {}
+	$cb configure -state readonly
+	$cb addcol text -id name -type text
+	for {set i 0} {$i < $filetypeCount} {incr i} {
+		$cb addcol image -id icon$i -type image
+	}
+	$cb addcol text -id extensions -type text
+	$cb clear
 
-				foreach ext $extensions {
-					if {[info exists Vars(fti:$ext)]} {
-						set img $Vars(fti:$ext)
-						if {$img ni $icons} {
-							lappend icons $img
-						}
-					}
-					if {[string length $types] > 0} { append types ", " }
-					append types "$ext"
+	foreach entry $filetypes {
+		lassign $entry name extensions
+		set types {}
+		set icons {}
+
+		foreach ext $extensions {
+			if {[info exists Vars(fti:$ext)]} {
+				set img $Vars(fti:$ext)
+				if {$img ni $icons} {
+					lappend icons $img
 				}
-
-				while {[llength $icons] < $filetypeCount} {
-					lappend icons {}
-				}
-				$cb listinsert [list $name {*}$icons $types]
 			}
-
-			$cb resize
-			SetFileTypes $w 0
-		} else {
-			$cb configure -state disabled
+			if {[string length $types] > 0} { append types ", " }
+			append types "$ext"
 		}
+
+		while {[llength $icons] < $filetypeCount} {
+			lappend icons {}
+		}
+		$cb listinsert [list $name {*}$icons $types]
+	}
+	if {$Vars(onlyexecutables)} {
+		$cb listinsert [list $onlyexecutables {} {}]
+	}
+
+	if {[llength $filetypes] || $Vars(onlyexecutables)} {
+		$cb resize
+		SetFileTypes $w 0
+	}
+
+	grid $top.lbl_filetype	-row 7 -column 1 -sticky w
+	grid $top.ent_filetype	-row 7 -column 3 -sticky ew -columnspan 5
+	grid rowconfigure $top {8} -minsize 5
+	if {$Options(show:filetypeicons) && [llength $fileIconTypes] > 0} {
+		grid $top.ent_filetype -columnspan 3
+		grid $top.cnv_filetype -row 7 -column 7 -sticky nsew
+		grid columnconfigure $top {6} -minsize 5
+	} else {
+		grid forget $top.cnv_filetype
+		grid configure $top.ent_filetype -columnspan 5
+	}
+
+	if {[llength $filetypes] == 0 && !$Vars(onlyexecutables)} {
+		$cb configure -state disabled
+		grid forget $top.cnv_filetype
+		grid configure $top.ent_filetype -columnspan 5
 	}
 
 	UpdateFileTypesState $w
@@ -797,7 +859,6 @@ proc parseUriList {uriFiles} {
 
 proc tooltip {args} {}
 proc mc {msg args} { return [::msgcat::mc [set $msg] {*}$args] }
-proc messageBox {args} { return [tk_messageBox {*}$args] }
 proc busy {w} {}
 proc unbusy {w} {}
 proc configureRadioEntry {sub text} {}
@@ -825,7 +886,7 @@ proc checkIsKDE {} {
 }
 
 
-proc x11NoWindowDecor {w} {}
+proc x11NoWindowDecor {w} { ;# how to do? }
 
 
 proc noWindowDecor {w} {
@@ -845,7 +906,7 @@ namespace export Tr
 
 
 proc GetFileSize {file mtime} {
-	set size [expr {[file size $file]/1024 + 1}]
+	return [MakeFileSize [file size $file]]
 }
 
 
@@ -869,22 +930,29 @@ proc CheckInitialFile {w} {
 		if {[string length $Vars(initialfile)] == 0} {
 			set Vars(initialfile) [fileSeparator]
 		}
-		ChangeDir $w $Vars(initialfile)
-	} elseif {[string length $Vars(initialfile)]} {
-		set t $Vars(widget:list:file)
-		set i [expr {[llength $Vars(list:folder)] + 1}]
-		set sel 0
-		foreach file $Vars(list:file) {
-			set file [file tail $file]
-			if {$file eq $Vars(initialfile)} { set sel $i }
-			incr i
-		}
-		$t selection clear
-		$t selection add $sel
-		$t activate $sel
-		$t see $sel
-		filelist::SelectFiles $w [list $sel]
 	}
+}
+
+
+proc SelectInitialFile {w} {
+	variable ${w}::Vars
+
+	if {$Vars(type) eq "dir"} { return }
+	if {[string length $Vars(initialfile)] == 0} { return }
+
+	set t $Vars(widget:list:file)
+	set i [expr {[llength $Vars(list:folder)] + 1}]
+	set sel 0
+	foreach file $Vars(list:file) {
+		set file [file tail $file]
+		if {$file eq $Vars(initialfile)} { set sel $i }
+		incr i
+	}
+	$t selection clear
+	$t selection add $sel
+	$t activate $sel
+	$t see $sel
+	filelist::SelectFiles $w [list $sel]
 }
 
 
@@ -1227,7 +1295,8 @@ proc DirChanged {w {useHistory 1}} {
 
 	if {$HaveFAM && [llength $Vars(fam)] == 0} {
 		set Vars(fam) [namespace code [list FAMHandler $w]]
-		set Vars(fam:lastid) ""
+		set Vars(fam:lastid) 0
+		set Vars(fam:currentid) 0
 		if {[catch { ::fam::open $Vars(fam) } Vars(fam) err]} {
 			array set opts $err
 			puts stderr "'fam::open failed: $opts(-errorinfo)"
@@ -1235,7 +1304,7 @@ proc DirChanged {w {useHistory 1}} {
 		} elseif {[string length $Vars(fam)] == 0} {
 			set HaveFAM 0
 		}
-		if {$HaveFAM} { set Vars(fam) {} }
+		if {!$HaveFAM} { set Vars(fam) {} }
 	}
 	if {[llength $Vars(fam)] && [string length $Vars(prevFolder)]} {
 		if {[catch { ::fam::remove $Vars(fam) $Vars(prevFolder) } _ err]} {
@@ -1323,14 +1392,16 @@ proc DirChanged {w {useHistory 1}} {
 }
 
 
-proc FAMHandler {w action path} {
+proc FAMHandler {w id action path} {
 	variable ${w}::Vars
 
 	# deletion events are triggered twice (bug in libfam?)
-	set id $action:$path
-	if {$id new $Vars(fam:lastid)} {
-		filelist::RefreshFileList $w
+
+	set Vars(fam:currentid) $id
+
+	if {$id ne $Vars(fam:lastid)} {
 		set Vars(fam:lastid) $id
+		after idle [namespace code [list filelist::RefreshFileList $w]]
 	}
 }
 
@@ -1367,12 +1438,7 @@ proc ChangeDir {w path {useHistory 1}} {
 
 	if {[catch {glob -nocomplain -directory $path -types d .*} result err]} {
 		set msg [format [Tr PermissionDenied] $path]
-		messageBox                    \
-			-type ok                   \
-			-icon error                \
-			-parent $Vars(widget:main) \
-			-message $msg              \
-			;
+		::dialog::error -parent $Vars(widget:main) -message $msg
 		return
 	}
 
@@ -1388,6 +1454,7 @@ proc ChangeDir {w path {useHistory 1}} {
 		default {
 			set Vars(glob) Files
 			set appPWD [pwd]
+			if {[string length $path] == 0} { set path $appPWD }
 
 			if {[catch {cd $path}]} {
 				if {[file isdirectory $path]} {
@@ -1396,7 +1463,7 @@ proc ChangeDir {w path {useHistory 1}} {
 					set message [Tr DirectoryRemoved $path]
 				}
 				$Vars(choosedir) set $appPWD
-				messageBox -type ok -parent $Vars(widget:main) -icon warning -message $message
+				::dialog::warning -parent $Vars(widget:main) -message $message -buttons {ok}
 				if {![file isdirectory $path]} { filelist::RefreshFileList $w }
 				return
 			}
@@ -1507,7 +1574,7 @@ proc Activate {w {exit no}} {
 	foreach file $selected {
 		if {[lindex [file split $file] 0] ne [fileSeparator]} {
 			set msg [format [Tr CannotOpenOrCreate] $file]
-			messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+			::dialog::error -parent $Vars(widget:main) -message $msg
 			return
 		}
 	}
@@ -1526,7 +1593,7 @@ proc Activate {w {exit no}} {
 					}
 					if {!$found} {
 						set msg [format [Tr InvalidFileExtension] [file tail $file]]
-						messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+						::dialog::error -parent $Vars(widget:main) -message $msg
 						return
 					}
 				}
@@ -1534,7 +1601,7 @@ proc Activate {w {exit no}} {
 				append file $Vars(defaultextension)
 			} else {
 				set msg [format [Tr MissingFileExtension] [file tail $file]]
-				messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+				::dialog::error -parent $Vars(widget:main) -message $msg
 				return
 			}
 		}
@@ -1546,7 +1613,7 @@ proc Activate {w {exit no}} {
 			foreach dir $files {
 				if {![file isdirectory $dir]} {
 					set msg [format [Tr DirectoryDoesNotExist] $file]
-					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					::dialog::error -parent $Vars(widget:main) -message $msg
 					return
 				}
 			}
@@ -1556,7 +1623,7 @@ proc Activate {w {exit no}} {
 			foreach file $files {
 				if {![file exists $file]} {
 					set msg [format [Tr FileDoesNotExist] $file]
-					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					::dialog::error -parent $Vars(widget:main) -message $msg
 					filelist::RefreshFileList $w
 					return
 				}
@@ -1567,18 +1634,13 @@ proc Activate {w {exit no}} {
 			foreach file $files {
 				if {[file isdirectory $file]} {
 					set msg [format [Tr CannotOverwriteDirectory] [file tail $file]]
-					messageBox -type ok -icon error -parent $Vars(widget:main) -message $msg
+					::dialog::error -parent $Vars(widget:main) -message $msg
 					return
 				}
 				if {[CheckIfInUse $w $file overwrite]} { return }
 				if {[file exists $file]} {
 					set msg [format [Tr FileAlreadyExists] [file tail $file]]
-					set reply [messageBox                  \
-									-type yesno                \
-									-icon question             \
-									-parent $Vars(widget:main) \
-									-message $msg              \
-					]
+					set reply [::dialog::question -parent $Vars(widget:main) -message $msg]
 					if {$reply ne "yes"} { return }
 				}
 			}
@@ -1673,15 +1735,7 @@ proc CheckPath {w path} {
 	}
 
 	if {[string length $message] == 0} { return 1 }
-
-	messageBox \
-		-type ok \
-		-icon error \
-		-parent $Vars(widget:main) \
-		-message $message \
-		-detail $detail \
-		;
-
+	::dialog::error -parent $Vars(widget:main) -message $message -detail $detail
 	return 0
 }
 
@@ -1711,15 +1765,9 @@ proc CheckIfInUse {w file mode} {
 	variable ${w}::Vars
 
 	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $file]} {
-		set msg [format [Tr Cannot[string toupper $mode 0 0]] [file tail $file]]
+		set msg [format [Tr Cannot($mode)] [file tail $file]]
 		set detail [Tr CurrentlyInUse]
-		messageBox                    \
-			-type ok                   \
-			-icon info                 \
-			-parent $Vars(widget:main) \
-			-message $msg              \
-			-detail $detail            \
-			;
+		::dialog::info -parent $Vars(widget:main) -message $msg -detail $detail
 		return 1
 	}
 	return 0
@@ -1764,6 +1812,10 @@ proc MakeFileSize {size} {
 proc RegisterDndEvents {w} {
 	variable ${w}::Vars
 
+	if {![winfo ismapped $w]} {
+		return [bind $w <Map> [namespace code [list DoRegisterDndEvents $w]]]
+	}
+
 	set t $Vars(widget:list:file)
 	::tkdnd::drop_target register $t DND_Files
 	::tkdnd::drag_source register $t DND_Files
@@ -1776,8 +1828,15 @@ proc RegisterDndEvents {w} {
 }
 
 
+proc DoRegisterDndEvents {w} {
+	bind $w <Map> {#}
+	RegisterDndEvents $w
+}
+
+
 proc UnregisterDndEvents {w} {
 	variable ${w}::Vars
+
 	set t $Vars(widget:list:file)
 	::tkdnd::drop_target unregister $t DND_Files
 	::tkdnd::drag_source unregister $t DND_Files
@@ -1803,7 +1862,8 @@ proc HandleDragEvent {w types x y} {
 	variable ${w}::Vars
 
 	set Vars(dragging) 1
-	lassign [filelist::GetCurrentSelection $w] _ _ file
+	lassign [filelist::GetCurrentSelection $w] type _ file
+	if {$type eq "folder"} { return {} }
 	set files {}
 
 	if {[string length $Vars(deletecommand)]} {
@@ -1930,14 +1990,14 @@ proc DoFileOperations {w action uriFiles} {
 			append message "\n\n"
 		}
 		append message [Tr OperationAborted]
-		return [dialog::error -parent $w -message $message {*}$options]
+		return [::dialog::error -parent $w -message $message {*}$options]
 	}
 
 	if {[llength $rejectList]} {
 		set message [Tr UriRejected]
 		append message <embed>
 		append message [Tr OperationAborted]
-		return [dialog::error \
+		return [::dialog::error \
 			-parent $w \
 			-message $message \
 			-detail [Tr UriRejectedDetail] \
@@ -2039,10 +2099,10 @@ proc AskFileAction {w old new} {
 	set _action ""
 	set _newName [string range $rootname 0 end-[string length $extension]]
 
-	set dir [file dirname $new]
-	if {[string length $dir] > 40} {
-		append f [string range $dir 0 8] "..." [string range $dir end-32 end]
-		set dir $f
+	set srcDir [file dirname $old]
+	if {[string length $srcDir] > 40} {
+		append f [string range $srcDir 0 8] "..." [string range $srcDir end-32 end]
+		set srcDir $f
 	}
 
 	if {[file isdirectory $old]} {
@@ -2076,7 +2136,7 @@ proc AskFileAction {w old new} {
 
 	ttk::label $top.oldName -text [format [Tr AnEntryAlreadyExists] [file tail $old]]
 	ttk::label $top.oldAttrs -image $icon -compound left -text $oldInfo
-	ttk::label $top.newName -text [format [Tr SourceDirectoryIs] $dir]
+	ttk::label $top.newName -text [format [Tr SourceDirectoryIs] $srcDir]
 	ttk::label $top.newAttrs -image $icon -compound left -text $newInfo
 	set ren [ttk::frame $top.rename -takefocus 0 -borderwidth 0]
 	ttk::label $ren.label -text "[Tr NewName]:"
@@ -2106,14 +2166,14 @@ proc AskFileAction {w old new} {
 		-default normal \
 		-compound left \
 		-text " [Tr Rename]" \
-		-command [list set [namespace current]::_action rename] \
+		-command [namespace code [list ActionRename $w [file dirname $new] $extension]] \
 		;
 	tk::AmpWidget ttk::button $buttons.overwrite  \
 		-class TButton \
 		-default normal \
 		-compound left \
 		-text " [Tr Overwrite]" \
-		-command [list set [namespace current]::_action overwrite] \
+		-command [namespace code [list ActionOverwrite $w $new]] \
 		;
 	tk::AmpWidget ttk::button $buttons.cancel  \
 		-class TButton \
@@ -2143,6 +2203,26 @@ proc AskFileAction {w old new} {
 	::ttk::releaseGrab $dlg
 	destroy $dlg
 	return [list $_action [file join [file dirname $new] ${_newName}${extension}]]
+}
+
+
+proc ActionRename {w dstDir extension} {
+	variable _action
+	variable _newName
+
+	set newName [file join $dstDir ${_newName}${extension}]
+
+	if {[file exists $newName]} {
+		::dialog::error -parent $w -message [format [Tr CannotRename] [file tail $newName]]
+	} else {
+		set _action rename
+	}
+}
+
+
+proc ActionOverwrite {w file} {
+	variable _action
+	if {![CheckIfInUse $w $file overwrite]} { set _action overwrite }
 }
 
 ###### B O O K M A R K S ######################################################
@@ -2416,13 +2496,13 @@ proc AddBookmark {w} {
 	variable Bookmarks
 
 #	set ReallyAddBookmark "A bookmark for folder '%folder%' already exists, with name '%name%'. Really add this bookmark again?"
-#	set i [lsearch -index 0 $Bookmarks(user) $Vars(folder)]
+#	set i [lsearch -exact -index 0 $Bookmarks(user) $Vars(folder)]
 #	if {$i >= 0} {
 #		set msg [string map \
 #			[list %name% [lindex $Bookmarks(user) $i 1] %folder% [file tail $Vars(folder)]] \
 #			[Tr ReallyAddBookmark] \
 #		]
-#		set reply [messageBox -yesno -parent $w -icon question -message $msg]
+#		set reply [::dialog::question -parent $w -message $msg]
 #	}
 
 	set folder $Vars(folder)
@@ -2624,7 +2704,6 @@ proc PopupMenu {w x y} {
 	}
 }
 
-
 namespace eval icon {
 namespace eval 16x16 {
 
@@ -2733,6 +2812,7 @@ proc Build {w path args} {
 	set Vars(disable:copy) 0
 	set Vars(disable:new) 0
 	set Vars(disable:custom) 0
+	set Vars(lock:refresh) 0
 
 	tk::frame $path -borderwidth 0 -takefocus 0
 	tk::frame $path.f -borderwidth 0 -takefocus 0
@@ -3432,6 +3512,8 @@ proc Glob {w refresh} {
 	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
+	if {$Vars(startup) && !$refresh} { return }
+	set Vars(startup) 0
 	set lookupFolder 0
 
 	if {$refresh || ![info exists Vars(list:folder)]} {
@@ -3493,9 +3575,10 @@ proc Glob {w refresh} {
 		if {$Vars(glob) eq "Files" && $Vars(type) ne "dir"} {
 			set filter *
 			if {$Options(show:hidden)} { lappend filter .* }
-			set files [glob -nocomplain -directory $Vars(folder) -types f {*}$filter]
+			if {$Vars(onlyexecutables)} { set types {f x} } else { set types f }
+			set files [glob -nocomplain -directory $Vars(folder) -types $types {*}$filter]
 
-			# NOTE: we dont want -dictionary
+			# NOTE: we don't want -dictionary
 			foreach file [lsort -nocase -unique $files] {
 				set match 0
 
@@ -3593,6 +3676,8 @@ proc InvokeFile {w args} {
 proc RefreshFileList {w} {
 	variable [namespace parent]::${w}::Vars
 
+	if {$Vars(lock:refresh)} { return } ;# may happen due to FAM service
+	set Vars(lock:refresh) 1
 	set Vars(lock:selection) 1
 	set t $Vars(widget:list:file)
 	set item [$t item id {nearest 0 0}]
@@ -3634,6 +3719,7 @@ proc RefreshFileList {w} {
 	if {[string is integer $n]} { $t see $n }
 
 	ConfigureButtons $w
+	set Vars(lock:refresh) 0
 }
 
 
@@ -3851,19 +3937,15 @@ proc DeleteFile {w} {
 		set fmt [Tr ${which}($type,$mode)]
 		set msg [format $fmt [file tail $dest]]
 		foreach item [$t item children root] { $t item state set $item {!hilite} }
-		set reply [[namespace parent]::messageBox \
-						-type yesno                   \
-						-icon question                \
-						-parent $Vars(widget:main)    \
-						-message $msg                 \
-						-default no                   \
-		]
+		set reply [::dialog::question -parent $Vars(widget:main) -message $msg -default no]
 		after idle [list [namespace parent]::Stimulate $w]
 
 		if {$reply ne "yes" } {
 			[namespace parent]::unbusy $w
 			return
 		}
+
+		incr Vars(fam:lastid)
 
 		if {$iskde} {
 			if {$ltype eq "file" && [llength $Vars(deletecommand)] > 0} {
@@ -3896,20 +3978,21 @@ proc DeleteFile {w} {
 	}
 
 	RefreshFileList $w
+	after idle [namespace code [list ResetFamId $w]]
 	[namespace parent]::unbusy $w
 
 	if {$file in $Vars(list:$ltype)} {
 		set action [string toupper $Vars(delete:action) 0 0]
 		set msg [format [Tr ${action}Failed] $file]
 		set detail [format [Tr CommandFailed] $cmd]
-		[namespace parent]::messageBox \
-			-type ok                    \
-			-icon error                 \
-			-parent $Vars(widget:main)  \
-			-message $msg               \
-			-detail $detail             \
-			;
+		::dialog::error -parent $Vars(widget:main) -message $msg -detail $detail
 	}
+}
+
+
+proc ResetFamId {w} {
+	variable [namespace parent]::${w}::Vars
+	set Vars(fam:lastid) $Vars(fam:currentid)
 }
 
 
@@ -3975,12 +4058,7 @@ proc DuplicateFile {w} {
 	if {$type eq "folder"} { return }
 	if {![file exists $file]} {
 		set msg [format [Tr FileHasDisappeared] [file tail $file]]
-		[namespace parent]::messageBox \
-			-type ok                    \
-			-icon error                 \
-			-parent $Vars(widget:main)  \
-			-message $msg               \
-			;
+		::dialog::error -parent $Vars(widget:main) -message $msg
 		return
 	}
 	set Vars(edit:file) $file
@@ -3999,12 +4077,7 @@ proc DuplicateFile {w} {
 		if {[file exists $f]} {
 			if {[file exists $g]} {
 				set msg [format [Tr CannotCopy] [file tail $g]]
-				[namespace parent]::messageBox \
-					-type ok                    \
-					-icon error                 \
-					-parent $Vars(widget:main)  \
-					-message $msg               \
-					;
+				::dialog::error -parent $Vars(widget:main) -message $msg
 				return
 			}
 			incr size [file size $f]
@@ -4013,13 +4086,7 @@ proc DuplicateFile {w} {
 	if {$size > $DuplicateFileSizeLimit} {
 		set msg [Tr ReallyDuplicateFile]
 		set detail [format [Tr ReallyDuplicateDetail] [[namespace parent]::MakeFileSize $size]]
-		set reply [[namespace parent]::messageBox \
-			-type yesno                            \
-			-icon question                         \
-			-parent $Vars(widget:main)             \
-			-message $msg                          \
-			-detail $detail                        \
-		]
+		set reply [::dialog::question -parent $Vars(widget:main) -message $msg -detail $detail]
 		if {$reply ne "yes"} { return }
 	}
 
@@ -4114,6 +4181,7 @@ proc FinishEdit {w} {
 
 	if {$Vars(edit:accept)} {
 		set name [string trim [$t item element cget $sel 0 txtName -text]]
+		incr Vars(fam:lastid)
 
 		switch $Vars(edit:mode) {
 			rename		{ set selFile [FinishRenameFile $w $sel $name] }
@@ -4125,11 +4193,14 @@ proc FinishEdit {w} {
 	}
 
 	RefreshFileList $w
+	if {[llength $Vars(fam)]} {
+		set Vars(fam:lastid) $Vars(fam:currentid)
+	}
 
 	if {[string length $selFile]} {
-		set k [lsearch $Vars(list:folder) $selFile]
+		set k [lsearch -exact $Vars(list:folder) $selFile]
 		if {$k == -1} {
-			set k [lsearch $Vars(list:file) $selFile]
+			set k [lsearch -exact $Vars(list:file) $selFile]
 			if {$k >= 0} { set k [expr {[llength $Vars(list:folder)] + $k}] }
 		}
 		if {$k >= 0} {
@@ -4166,12 +4237,7 @@ proc FinishRenameFile {w sel name} {
 	if {![[namespace parent]::CheckPath $w $name]} { return $oldName }
 
 	if {[file exists $newName]} {
-		[namespace parent]::messageBox               \
-			-type ok                                  \
-			-icon error                               \
-			-parent $Vars(widget:main)                \
-			-message [format [Tr CannotRename] $name] \
-			;
+		::dialog::error -parent $Vars(widget:main) -message [format [Tr CannotRename] $name]
 		return $oldName
 	}
 
@@ -4210,12 +4276,7 @@ proc FinishRenameFile {w sel name} {
 			set msg [Tr ErrorRenaming($type)]
 			set msg [string map [list %old [file tail $old] %new [file tail $new]] $msg]
 		}
-		[namespace parent]::messageBox \
-			-type ok                    \
-			-icon error                 \
-			-parent $Vars(widget:main)  \
-			-message $msg               \
-			;
+		::dialog::error -parent $Vars(widget:main) -message $msg
 		return $oldName
 	}
 
@@ -4251,23 +4312,13 @@ proc FinishDuplicateFile {w sel name} {
 
 	if {[llength $files] == 0} {
 		set msg [format [Tr InvalidFileExt] $name]
-		[namespace parent]::messageBox \
-			-type ok                    \
-			-icon error                 \
-			-parent $Vars(widget:main)  \
-			-message $msg               \
-			;
+		::dialog::error -parent $Vars(widget:main) -message $msg
 		return $srcFile
 	}
 
 	foreach {_ f} $files {
 		if {[file exists $f]} {
-			[namespace parent]::messageBox                      \
-				-type ok                                         \
-				-icon error                                      \
-				-parent $Vars(widget:main)                       \
-				-message [format [Tr CannotCopy] [file tail $f]] \
-				;
+			::dialog::error -parent $Vars(widget:main) -message [format [Tr CannotCopy] [file tail $f]]
 			return $srcFile
 		}
 	}
@@ -4294,13 +4345,8 @@ proc FinishDuplicateFile {w sel name} {
 				::ttk::releaseGrab $dlg
 				destroy $dlg
 				set msg [format [Tr CopyFailed] [file tail $f]]
-				[namespace parent]::messageBox \
-					-type ok                    \
-					-icon error                 \
-					-parent $Vars(widget:main)  \
-					-message $msg               \
-					;
 				foreach f $newFiles { catch { file delete -force $f } }
+				::dialog::error -parent $Vars(widget:main) -message $msg
 				[namespace parent]::unbusy $w
 				return $srcFile
 			} else {
@@ -4326,19 +4372,9 @@ proc FinishNewFolder {w sel name} {
 
 	set folder [file join $Vars(folder) $name]
 	if {[file exists $folder]} {
-		[namespace parent]::messageBox               \
-			-type ok                                  \
-			-icon error                               \
-			-parent $Vars(widget:main)                \
-			-message [format [Tr CannotCreate] $name] \
-			;
+		::dialog::error -parent $Vars(widget:main) -message [format [Tr CannotCreate] $name]
 	} elseif {[catch {file mkdir $folder}]} {
-		[namespace parent]::messageBox      \
-			-type ok                         \
-			-icon error                      \
-			-parent $Vars(widget:main)       \
-			-message [Tr ErrorCreate($type)] \
-			;
+		::dialog::error -parent $Vars(widget:main) -message [Tr ErrorCreate($type)]
 		RefreshFileList $w
 	} else {
 		$Vars(widget:list:file) item element configure $sel 0 txtName -text $name

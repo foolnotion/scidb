@@ -1745,6 +1745,13 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 {
 	M_REQUIRE(&comment != &result.content());
 
+	if (	comment.size() >= 13
+		&& strncmp(comment.begin(), "<html>", 6) == 0
+		&& strncmp(comment.end() - 7, "</html>", 7) == 0)
+	{
+		return result.fromHtml(comment); // NOTE: encoding is ignored
+	}
+
 	char const* s = comment.c_str();
 	bool hasDiagram = false;
 

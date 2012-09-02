@@ -151,7 +151,10 @@ private:
 	void readNamebase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 	void readSitebase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
 	void readEventbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
-	void readPlayerbase(util::ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress);
+	void readPlayerbase(	util::ByteStream& bstrm,
+								Namebase& base,
+								unsigned count,
+								util::Progress& progress);
 
 	void updateIndex(mstl::ostream& strm);
 	void writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress);

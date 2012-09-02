@@ -93,7 +93,7 @@ proc BuildDialog {dlg} {
 		incr count
 	}
 
-	widget::dialogButtons $dlg close close
+	widget::dialogButtons $dlg close
 	$dlg.close configure -command [list destroy $dlg]
 	bind $dlg <Escape> [list $dlg.close invoke]
 }

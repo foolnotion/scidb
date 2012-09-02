@@ -13,8 +13,8 @@
 MAKEFLAGS += --no-print-directory
 
 all: Makefile.in check-mtime
-#	@$(MAKE) -C engines
-#	@if [ $$? != 0 ]; then exit 1; fi
+	@$(MAKE) -C engines
+	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
@@ -35,12 +35,12 @@ check-mtime:
 	fi
 
 depend:
-#	@$(MAKE) -C engines depend
+	@$(MAKE) -C engines depend
 	@$(MAKE) -C src depend
 	@$(MAKE) -C tcl depend
 
 clean:
-#	@$(MAKE) -C engines clean
+	@$(MAKE) -C engines clean
 	@$(MAKE) -C src clean
 	@$(MAKE) -C tcl clean
 	@$(MAKE) -C man clean
@@ -50,7 +50,7 @@ clean:
 install: check-mtime install-subdirs # update-etc-magic
 
 uninstall:
-#	@$(MAKE) -C engines uninstall
+	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C src uninstall
 	@$(MAKE) -C tcl uninstall
 	@$(MAKE) -C man install
@@ -60,10 +60,16 @@ Makefile.in:
 	@exit 1
 
 install-subdirs:
-#	@$(MAKE) -C engines install
+	@$(MAKE) -C engines install
 	@$(MAKE) -C src install
 	@$(MAKE) -C tcl install
 	@$(MAKE) -C man install
+
+install-engines: 
+	@$(MAKE) -C engines install
+
+uninstall-engines: 
+	@$(MAKE) -C engines uninstall
 
 update-magic:
 	@echo "Update magic file"

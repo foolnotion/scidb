@@ -51,14 +51,17 @@ set Help							"&Help"
 set Contact						"&Contact (Web Browser)"
 set Quit							"&Quit"
 set Extras						"&Extras"
+set Setup						"Setu&p"
+set Engines						"&Engines"
 
 set ContactBugReport			"&Bug Report"
 set ContactFeatureRequest	"&Feature Request"
 set InstallChessBaseFonts	"Install ChessBase Fonts"
+set OpenEngineLog				"Open &Engine Log"
 
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
-set ImportFiles				"Import PGN files..."
+set ImportFiles				"Import PGN files"
 set Archiving					"Archiving"
 set CreateArchive				"Create Archive"
 set BuildArchive				"Create archive %s"
@@ -157,7 +160,7 @@ proc build {menu} {
 		;
 	set Theme [::theme::currentTheme]
 	set styles [lsort -dictionary [ttk::style theme names]]
-	set i [lsearch $styles default]
+	set i [lsearch -exact $styles default]
 	if {$i >= 0} { set styles [linsert [lreplace $styles $i $i] 0 default] }
 	foreach style $styles {
 		if {$style ne "classic"} {
@@ -172,6 +175,20 @@ proc build {menu} {
 			::theme::configureRadioEntry $m $style
 		}
 	}
+
+	### setup ################################################################
+	set m [menu $menu.mSetup]
+	lassign [::tk::UnderlineAmpersand $mc::Setup] text ul
+	$menu add cascade \
+		-compound left \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::setup \
+		;
+	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
+	set cmd [namespace code [list ::engine::openSetup .application]]
+	$m add command -label " $text" -underline [incr ul] -command $cmd 
 
 	### toolbars #############################################################
 	set m [menu $menu.mToolbars]
@@ -282,6 +299,18 @@ proc build {menu} {
 			;
 	}
 
+	lassign [::tk::UnderlineAmpersand $mc::OpenEngineLog] text ul
+	set cmd [namespace code [list ::engine::openEngineLog .application]]
+	if {[::engine::logIsOpen? .application]} { set state disabled } else { set state normal }
+	$m add command \
+		-compound left \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		-command $cmd \
+		-state $state \
+		;
+
 	### fullscreen ###########################################################
 	$menu add separator
 	if {$Fullscreen} { set var LeaveFullscreen } else { set var Fullscreen }
@@ -322,6 +351,7 @@ proc dbNew {parent} {
 	]
 	set result [::dialog::saveFile \
 		-parent $parent \
+		-class database \
 		-filetypes $filetypes \
 		-geometry last \
 		-defaultextension .sci \
@@ -360,6 +390,7 @@ proc dbOpen {parent} {
 	]
 	set result [::dialog::openFile \
 		-parent $parent \
+		-class database \
 		-filetypes $filetypes \
 		-defaultextension .sci \
 		-needencoding 1 \
@@ -374,7 +405,7 @@ proc dbOpen {parent} {
 
 	if {[llength $result]} {
 		lassign $result file encoding
-		::application::database::openBase $parent $file yes $encoding
+		::application::database::openBase $parent $file yes -encoding $encoding
 	}
 }
 
@@ -385,6 +416,7 @@ proc dbCreateArchive {parent {base ""}} {
 	set filetypes [list	[list $mc::ScidbArchives {.scv}]]
 	set result [::dialog::saveFile \
 		-parent $parent \
+		-class database \
 		-filetypes $filetypes \
 		-defaultextension .scv \
 		-needencoding 0 \
@@ -459,6 +491,7 @@ proc dbImport {parent {base ""}} {
 	set title $mc::ImportFiles
 	set result [::dialog::openFile \
 		-parent $parent \
+		-class pgn \
 		-filetypes $filetypes \
 		-defaultextension .pgn \
 		-needencoding 1 \

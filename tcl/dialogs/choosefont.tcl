@@ -1077,6 +1077,7 @@ proc SelectColor {w} {
 							-oldcolor $S(color) \
 							-initialcolor $S(color) \
 							-recentcolors [namespace current]::Vars(recentColors) \
+							-basecolors $::colormenu::baseColors \
 							-geometry last \
 							-modal true \
 							-parent [winfo toplevel $w] \

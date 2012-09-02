@@ -117,6 +117,7 @@ proc Build {w args} {
 		-skiponeunit			1
 		-columns					1
 		-state					normal
+		-stripes					{}
 	}
 	array set opts $args
 
@@ -188,6 +189,7 @@ proc Build {w args} {
 	if {$opts(-columns) > 1} {
 		$t configure -itemwidthequal yes -orient vertical -wrap window
 	}
+	set Priv(stripes) $opts(-stripes)
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
@@ -288,6 +290,7 @@ proc WidgetProc {w command args} {
 				-font2		{}
 				-squeeze		no
 				-steady		yes
+				-header		""
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -306,13 +309,19 @@ proc WidgetProc {w command args} {
 			} elseif {$opts(-expand)} {
 				set Priv(expand) $id
 			}
-			$t column create                      \
-				-tag $id                           \
-				-itemjustify $opts(-justify)       \
-				-expand $opts(-expand)             \
-				-squeeze $opts(-squeeze)           \
-				-steady $opts(-steady)             \
-				-itembackground $opts(-background) \
+			set colors $opts(-background)
+			if {[llength $Priv(stripes)]} { set colors [list $Priv(stripes) $colors] }
+			if {[string length $opts(-header)]} { $t configure -showheader yes }
+			$t column create                \
+				-tag $id                     \
+				-itemjustify $opts(-justify) \
+				-expand $opts(-expand)       \
+				-squeeze $opts(-squeeze)     \
+				-steady $opts(-steady)       \
+				-itembackground $colors      \
+				-text $opts(-header)         \
+				-borderwidth 1               \
+				-button no                   \
 				;
 			if {[llength $opts(-font)]} {
 				set charwidth [font measure $opts(-font) "0"]
@@ -562,6 +571,57 @@ proc WidgetProc {w command args} {
 			return $result
 		}
 
+		set {
+			if {[llength $args] == 0 || [llength $args] > 2} {
+				error "wrong # args: should be \"[namespace current] set ?<index>? <content>...\""
+			}
+			if {[llength $args] == 1} {
+				set index $Priv(selected)
+				if {$index == 0} { return }
+				set content [lindex $args 0]
+			} else {
+				set index [lindex $args 0]
+				if {![string is integer -strict $index]} {
+					error "wrong argument: index should be integer ('$index' is given)"
+				}
+				if {$index < 0} { return }
+				if {$index >= $Priv(last)} {
+					error "index '$index' out of range"
+				}
+				incr index
+				set content [lindex $args 1]
+			}
+			set col 0
+			foreach id $Priv(columns) {
+				set item [lindex $content $col]
+				switch -- $Priv(type:$id) {
+					elemImg - elemTxt {
+						if {[string length $item]} {
+							set isImage 0
+							catch { set isImage [expr {[image width $item] != -9999999}] }
+							if {$isImage} {
+								$t item element configure $index $id elemTxt -text ""
+								$t item element configure $index $id elemImg -image $item
+							} else {
+								$t item element configure $index $id elemImg -image ""
+								$t item element configure $index $id elemTxt -text $item
+							}
+						} else {
+							$t item element configure $index $id elemImg -image ""
+							$t item element configure $index $id elemTxt -text ""
+						}
+					}
+					elemCom {
+						$t item element configure $index $id \
+							elemImg -image [lindex $item 0] + \
+							elemTxt -text [lindex $item 1] -fill $fill -font $font {*}$textOpts \
+							;
+					}
+				}
+			}
+			return
+		}
+
 		child {
 			return $t
 		}
@@ -573,10 +633,13 @@ proc WidgetProc {w command args} {
 		see {
 			if {[llength $args] > 0} {
 				set index [lindex $args 0]
-				if {![string is integer -strict $index]} {
+				if {$index eq "end"} {
+					set index $Priv(last)
+				} elseif {![string is integer -strict $index]} {
 					error "wrong argument: index should be integer ('$index' is given)"
+				} else {
+					incr index
 				}
-				incr index
 			} elseif {$Priv(selected) > 1} {
 				set index $Priv(selected)
 			} else {
@@ -817,9 +880,7 @@ proc WidgetProc {w command args} {
 			switch -- $arg {
 				-height		{ return $Priv(height) }
 				-linespace	{ return $Priv(linespace) }
-				-takefocus	{ return [$t cget $arg] }
 				-cursor		{ return [$w.__tlistbox_frame__ cget $arg] }
-				-state		{ return [$t cget -state] }
 			}
 			if {[catch {$t cget $arg} result]} {
 				error "unknown option \"$arg\""
@@ -971,6 +1032,9 @@ proc ComputeHeight {cb} {
 	for {set i 1} {$i <= $last} {incr i} {
 		lassign [$t item bbox $i] x0 y0 x1 y1
 		incr height [expr {$y1 - $y0}]
+	}
+	if {[$t cget -showheader]} {
+		incr height [$t headerheight]
 	}
 	if {$last < $Priv(minheight)} {
 		set height [expr {$height + ($Priv(minheight) - $last)*$Priv(linespace)}]

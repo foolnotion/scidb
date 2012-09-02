@@ -569,7 +569,7 @@ proc EnterName {parent labelText} {
 	bind $f.e <Return> "$dlg.ok invoke"
 	bind $dlg <Escape> "$dlg.cancel invoke"
 
-	::widget::dialogButtons $dlg {ok cancel} ok false
+	::widget::dialogButtons $dlg {ok cancel} -icons no
 	$dlg.cancel configure -command "destroy $dlg"
 	$dlg.ok configure -command "
 		set [namespace current]::Vars(identifier) \[string trim \[$f.e get\]\]
@@ -690,7 +690,7 @@ proc SaveSquareStyle {parent} {
 	bind $entry <Return> "$dlg.ok invoke"
 	bind $dlg <Escape> "$dlg.cancel invoke"
 
-	::widget::dialogButtons $dlg {ok cancel} ok false
+	::widget::dialogButtons $dlg {ok cancel} -icons no
 	$dlg.cancel configure -command "destroy $dlg"
 	$dlg.ok configure -command "
 		set name \[string trim \[$entry get\]\]
@@ -851,7 +851,7 @@ proc openConfigDialog {parent applyProc} {
 	wm iconname $dlg ""
 	wm resizable $dlg 0 0
 	makeFrame $dlg
-	::widget::dialogButtons $dlg {ok cancel apply revert} apply
+	::widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	$dlg.cancel configure -command [namespace code [list Cancel $dlg $applyProc]]
 	$dlg.ok configure -command "
 		[namespace current]::Apply {$applyProc}

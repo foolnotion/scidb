@@ -452,7 +452,7 @@ proc PopupDirs {w btn i} {
 		if {$::tcl_platform(platform) eq "unix" && $Vars(showhidden)} { lappend filter .* }
 		set subdirs [glob -nocomplain -tails -dir $rootdir -types d {*}$filter]
 		foreach dir {. ..} {
-			set i [lsearch $subdirs $dir]
+			set i [lsearch -exact $subdirs $dir]
 			if {$i >= 0} { set subdirs [lreplace $subdirs $i $i] }
 		}
 		set subdirs [lsort -dictionary -unique $subdirs]

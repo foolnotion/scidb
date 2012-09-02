@@ -77,6 +77,7 @@ Engine::Process::readyRead()
 			;
 
 		m_engine->concrete()->protocolStart(m_engine->isProbing());
+		m_connected = true;
 	}
 }
 
@@ -85,6 +86,7 @@ void
 Engine::Process::exited()
 {
 	m_engine->exited();
+	m_connected = false;
 }
 
 
@@ -98,15 +100,12 @@ Engine::Concrete::maxVariations() const
 }
 
 
-Engine::Engine(Protocol protocol,
-					mstl::string const& name,
-					mstl::string const& command,
-					mstl::string const& directory)
+Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
 	:m_engine(0)
-	,m_name(name)
 	,m_command(command)
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
+	,m_maxMultiPV(1)
 	,m_variations(1, MoveList())
 	,m_numVariations(1)
 	,m_searchMate(0)
@@ -199,8 +198,10 @@ void
 Engine::activate()
 {
 	if (!m_active)
+	{
 		m_process = new Process(this, m_command, m_directory);
-
+		m_active = true;
+	}
 }
 
 
@@ -217,9 +218,10 @@ Engine::log(mstl::string const& msg)
 {
 	if (m_logStream && !msg.empty())
 	{
-		m_logStream->write(" >", 2);
-		m_logStream->write(msg, msg.size());
-		m_logStream->put('\n');
+		m_buffer.assign("< ", 2);
+		m_buffer.append(msg);
+		m_buffer.append('\n');
+		m_logStream->write(m_buffer);
 	}
 }
 
@@ -228,20 +230,39 @@ void
 Engine::error(mstl::string const& msg)
 {
 	if (m_logStream)
-		log("<ERROR> " + msg);
+	{
+		m_buffer.assign("! ", 2);
+		m_buffer.append(msg);
+		m_buffer.append('\n');
+		m_logStream->write(m_buffer);
+	}
 }
 
 
 void
 Engine::readyRead()
 {
+	mstl::string lines;
 	mstl::string line;
 
-	while (m_process->gets(line) > 0)
+	while (m_process->gets(lines) > 0)
 	{
-		line.trim();
-		log(line);
-		m_engine->processMessage(line);
+		char const* s = lines.begin();
+		char const* e = lines.end();
+
+		while (s < e)
+		{
+			char const *p = s;
+
+			while (p < e && *p != '\n')
+				++p;
+
+			line.assign(s, p - s);
+			line.trim();
+			m_engine->processMessage(line);
+			log(line);
+			s = p + 1;
+		}
 	}
 }
 
@@ -266,10 +287,16 @@ Engine::exited()
 
 
 void
-Engine::send(mstl::string const& message)
+Engine::send(mstl::string const& msg)
 {
-	log(message);
-	m_process->puts(message);
+	if (m_logStream)
+	{
+		m_buffer.assign("> ", 2);
+		m_buffer.append(msg);
+		m_buffer.append('\n');
+		m_logStream->write(m_buffer);
+	}
+	m_process->puts(msg);
 }
 
 

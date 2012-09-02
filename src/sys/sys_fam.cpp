@@ -25,6 +25,10 @@
 
 #include <tcl.h>
 
+#ifdef __linux__
+# include <fcntl.h> // needed to test for F_NOTIFY
+#endif
+
 using namespace sys;
 
 
@@ -44,20 +48,24 @@ struct Monitor
 		:m_fam(fam)
 		,m_states(states)
 		,m_request(&request)
+		,m_lastId(-1)
 	{
 	}
 
 	bool operator==(FileAlterationMonitor const* fam) { return m_fam == fam; }
 
-	void signalChanged(char const* filename) const;
-	void signalDeleted(char const* filename) const;
-	void signalCreated(char const* filename) const;
+	void signalChanged(unsigned id, char const* filename) const;
+	void signalDeleted(unsigned id, char const* filename) const;
+	void signalCreated(unsigned id, char const* filename) const;
+
+	void checkId(int id) const;
 
 	static bool isSupported();
 
 	FileAlterationMonitor* m_fam;
 	unsigned m_states;
 	Request* m_request;
+	mutable int m_lastId;
 };
 
 
@@ -65,43 +73,62 @@ struct Request
 {
 	typedef mstl::vector<Monitor> MonitorList;
 
-	Request() :m_isDir(false), m_data(0) {}
+	Request() :m_isDir(false), m_data(0), m_id(0) {}
 
 	mstl::string	m_path;
 	bool				m_isDir;
 	void*				m_data;
+	int				m_id;
 
 	MonitorList m_monitorList;
 };
 
 
 void
-Monitor::signalChanged(char const* filename) const
+Monitor::checkId(int id) const
 {
-	if (m_request->m_isDir)
-		m_fam->signalChanged(m_request->m_path + PathDelim + filename);
-	else
-		m_fam->signalChanged(m_request->m_path);
+	if (m_lastId != id)
+	{
+		++m_request->m_id;
+		m_lastId = id;
+		m_fam->signalId(m_request->m_id, m_request->m_path);
+	}
 }
 
 
 void
-Monitor::signalDeleted(char const* filename) const
+Monitor::signalChanged(unsigned id, char const* filename) const
 {
+	checkId(id);
+
 	if (m_request->m_isDir)
-		m_fam->signalDeleted(m_request->m_path + PathDelim + filename);
+		m_fam->signalChanged(m_request->m_id, m_request->m_path + PathDelim + filename);
 	else
-		m_fam->signalDeleted(m_request->m_path);
+		m_fam->signalChanged(m_request->m_id, m_request->m_path);
 }
 
 
 void
-Monitor::signalCreated(char const* filename) const
+Monitor::signalDeleted(unsigned id, char const* filename) const
 {
+	checkId(id);
+
 	if (m_request->m_isDir)
-		m_fam->signalCreated(m_request->m_path + PathDelim + filename);
+		m_fam->signalDeleted(m_request->m_id, m_request->m_path + PathDelim + filename);
 	else
-		m_fam->signalCreated(m_request->m_path);
+		m_fam->signalDeleted(m_request->m_id, m_request->m_path);
+}
+
+
+void
+Monitor::signalCreated(unsigned id, char const* filename) const
+{
+	checkId(id);
+
+	if (m_request->m_isDir)
+		m_fam->signalCreated(m_request->m_id, m_request->m_path + PathDelim + filename);
+	else
+		m_fam->signalCreated(m_request->m_id, m_request->m_path);
 }
 
 
@@ -146,6 +173,7 @@ struct LibfamRequest
 static FAMConnection		libfamConnect;
 static FAMConnection*	libfamConnection	= &libfamConnect;
 static unsigned			libfamRefCount	= 0;
+static unsigned			libfamId = 0;
 
 
 static void
@@ -169,7 +197,7 @@ libfamHandler(ClientData clientData, int)
 						Monitor const& m = request->m_monitorList[i];
 
 						if (m.m_states & FileAlterationMonitor::StateChanged)
-							m.signalChanged(event.filename);
+							m.signalChanged(libfamId, event.filename);
 					}
 					break;
 
@@ -179,7 +207,7 @@ libfamHandler(ClientData clientData, int)
 						Monitor const& m = request->m_monitorList[i];
 
 						if (m.m_states & FileAlterationMonitor::StateDeleted)
-							m.signalDeleted(event.filename);
+							m.signalDeleted(libfamId, event.filename);
 					}
 					break;
 
@@ -189,12 +217,14 @@ libfamHandler(ClientData clientData, int)
 						Monitor const& m = request->m_monitorList[i];
 
 						if (m.m_states & FileAlterationMonitor::StateCreated)
-							m.signalCreated(event.filename);
+							m.signalCreated(libfamId, event.filename);
 					}
 					break;
 			}
 		}
 	}
+
+	++libfamId;
 }
 
 
@@ -292,6 +322,7 @@ cancelMonitorFAM(Request& req)
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/ioctl.h>
 
 #ifdef SYS_INOTIFY
 # include "sys_inotify.h"
@@ -309,12 +340,25 @@ struct InotifyRequest
 	unsigned	m_ref;
 };
 
+union InotifyEvent
+{
+	InotifyEvent(char* buf) :p(buf) {}
+
+	bool operator<=(InotifyEvent const& ev) { return p <= ev.p; }
+
+	struct inotify_event* e;
+	char* p;
+
+	InotifyEvent next() { return InotifyEvent(p + sizeof(struct inotify_event) + e->len); }
+};
+
 } // namespace
 
 typedef mstl::hash<int,Request*> InotifyMap;
 
 static int inotifyFD			= -1;
 static int inotifyRefCount	= 0;
+static int inotifyId			= 0;
 
 static InotifyMap inotifyMap;
 
@@ -322,63 +366,65 @@ static InotifyMap inotifyMap;
 static void
 inotifyHandler(ClientData clientData, int)
 {
-	typedef struct inotify_event Event;
 
 	M_ASSERT(inotifyFD != -1);
 
-	while (1)
+	int size = 0;
+
+	if (ioctl(inotifyFD, FIONREAD, &size) == -1)
 	{
-		char eventBuf[sizeof(Event)];
+		fprintf(stderr, "ioctl error(%d): %s\n", errno, strerror(errno));
+		return;
+	}
 
-		int nbytes = read(inotifyFD, eventBuf, sizeof(eventBuf));
+	char*	eventBuf	= new char[size];
+	int	nbytes	= read(inotifyFD, eventBuf, size);
 
-		if (nbytes < int(sizeof(eventBuf)))
-			return;
+	if (nbytes == -1 && errno != EINVAL)
+	{
+		fprintf(stderr, "inotify error(%d): %s\n", errno, strerror(errno));
+		return;
+	}
 
-		Event*	event(reinterpret_cast<Event*>(&eventBuf));
-		char*		eventBuf2(new char[sizeof(Event) + event->len]);
+	InotifyEvent event(eventBuf);
+	InotifyEvent last(eventBuf + nbytes);
 
-		memcpy(eventBuf2, eventBuf, sizeof(eventBuf));
-		nbytes = read(inotifyFD, eventBuf2 + sizeof(eventBuf), event->len);
+	while (event.next() <= last)
+	{
+		Request* const* req = inotifyMap.find(event.e->wd);
 
-		if (nbytes != int(sizeof(eventBuf) + event->len))
+		if (req)
 		{
-			Request* const* req = inotifyMap.find(event->wd);
+			Request::MonitorList const& mlist = (*req)->m_monitorList;
 
-			if (req)
+			for (unsigned i = 0; i < mlist.size(); ++i)
 			{
-				Request::MonitorList const& mlist = (*req)->m_monitorList;
+				Monitor const& m = mlist[i];
 
-				for (unsigned i = 0; i < mlist.size(); ++i)
+				if (event.e->mask & (IN_IGNORED | IN_UNMOUNT))
 				{
-					Monitor const& m = mlist[i];
+					m.signalDeleted(inotifyId, event.e->name);
+				}
+				else
+				{
+					if (event.e->mask & (IN_ISDIR & (IN_DELETE_SELF | IN_MOVE_SELF)))
+						m.signalDeleted(inotifyId, event.e->name);
 
-					if (event->mask & (IN_IGNORED | IN_UNMOUNT))
-					{
-						m.m_fam->signalDeleted(event->name);
-					}
-					else if (event->mask & IN_ISDIR)
-					{
-						if (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF))
-							m.m_fam->signalDeleted(event->name);
-						if (event->mask & (IN_ATTRIB | IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO))
-							m.m_fam->signalChanged(event->name);
-						if (event->mask & IN_CREATE)
-							m.m_fam->signalCreated(event->name);
-					}
-					else
-					{
-						if (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF))
-							m.m_fam->signalDeleted(event->name);
-						if (event->mask & IN_ATTRIB)
-							m.m_fam->signalChanged(event->name);
-					}
+					if (event.e->mask & (IN_DELETE | IN_MOVED_TO))
+						m.signalDeleted(inotifyId, event.e->name);
+					if (event.e->mask & (IN_CREATE | IN_MOVED_FROM))
+						m.signalCreated(inotifyId, event.e->name);
+					if (event.e->mask & IN_ATTRIB)
+						m.signalChanged(inotifyId, event.e->name);
 				}
 			}
 		}
 
-		delete eventBuf2;
+		event = event.next();
 	}
+
+	delete eventBuf;
+	++inotifyId;
 }
 
 
@@ -393,10 +439,10 @@ initFAM(mstl::string& error)
 		{
 			switch (errno)
 			{
-				case EINVAL:	error.assign("inotify_init1(): invalid value"); break;
-				case EMFILE:	error.assign("inotify_init1(): user limit exceeded"); break;
-				case ENFILE:	error.assign("inotify_init1(): system limit exceeded"); break;
-				case ENOMEM:	error.assign("inotify_init1(): out of memory"); break;
+				case EINVAL: error.assign("inotify_init1(): invalid value"); break;
+				case EMFILE: error.assign("inotify_init1(): user limit exceeded"); break;
+				case ENFILE: error.assign("inotify_init1(): system limit exceeded"); break;
+				case ENOMEM: error.assign("inotify_init1(): out of memory"); break;
 			}
 
 			return false;
@@ -418,6 +464,15 @@ closeFAM()
 		if (--inotifyRefCount == 0)
 		{
 			Tcl_DeleteFileHandler(inotifyFD);
+
+			for (InotifyMap::const_iterator i = inotifyMap.begin(); i != inotifyMap.end(); ++i)
+			{
+				InotifyRequest* r = static_cast<InotifyRequest*>(i->second->m_data);
+				inotify_rm_watch(inotifyFD, r->m_wd);
+				delete r;
+			}
+
+			inotifyMap.clear();
 			close(inotifyFD);
 			inotifyFD = -1;
 		}
@@ -466,6 +521,7 @@ monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned sta
 				case ENOENT:	error.assign("notify_add_watch(): path does not exists"); break;
 				case ENOMEM:	error.assign("notify_add_watch(): out of memory"); break;
 				case ENOSPC:	error.assign("notify_add_watch(): user limit exceeded"); break;
+				default:			error.format("notify_add_watch(): unexpected error %d", errno); break;
 			}
 
 			return false;
@@ -483,9 +539,7 @@ monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned sta
 static void
 cancelMonitorFAM(Request& req)
 {
-	M_ASSERT(inotifyFD != -1);
-
-	if (req.m_data)
+	if (inotifyFD != -1 && req.m_data)
 	{
 		InotifyRequest* r = static_cast<InotifyRequest*>(req.m_data);
 
@@ -501,12 +555,197 @@ cancelMonitorFAM(Request& req)
 	}
 }
 
+#elif defined(__linux__) && defined(F_NOTIFY)
+
+#include <stdio.h>
+#include <signal.h>
+
+namespace {
+
+enum { FcntlSignal = SIGRTMIN; };
+
+struct FcntlRequest
+{
+	FcntlRequest(int fd) :m_fd(wd), m_ref(0) {}
+
+	int		m_fd;
+	unsigned	m_ref;
+};
+
+} // namespace
+
+typedef mstl::hash<int,Request*> FcntlMap;
+
+static FcntlMap fcntlMap;
+static struct sigaction signalAction;
+static unsigned signalRefCount = 0;
+static unsigned signalId = 0;
+
+
+static void
+fcntlSignalHandler(int signum, siginfo_t* info, void*)
+{
+	Request* const* req = fcntlMap.find(info->si_fd);
+
+	if (req)
+	{
+		Request::MonitorList const& mlist = (*req)->m_monitorList;
+
+		for (unsigned i = 0; i < mlist.size(); ++i)
+		{
+			Monitor const& m = mlist[i];
+
+#if 0
+			if (event->mask & (IN_IGNORED | IN_UNMOUNT))
+			{
+				m.signalDeleted(event->name);
+			}
+			else if (event->mask & IN_ISDIR)
+			{
+				if (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF))
+					m.signalDeleted(event->name);
+				if (event->mask & (IN_ATTRIB | IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO))
+					m.signalChanged(event->name);
+				if (event->mask & IN_CREATE)
+					m.signalCreated(event->name);
+			}
+			else
+			{
+				if (event->mask & (IN_DELETE_SELF | IN_MOVE_SELF))
+					m.signalDeleted(event->name);
+				if (event->mask & IN_ATTRIB)
+					m.signalChanged(event->name);
+			
+#endif
+		}
+	}
+
+	++signalId;
+}
+
+
+static bool
+initFAM(mstl::string& error)
+{
+	if (FcntlSignal > SIGRTMAX)
+	{
+		error.assign("no more real-time signals available");
+		return false;
+	}
+
+	if (signalRefCount++ == 0)
+	{
+		struct sigaction action;
+
+		action.sa_sigaction = fcntlSignalHandler;
+		action.sa_flags = SA_SIGINFO;
+		action.sa_mask = 0;
+		action.sa_restorer = 0;
+
+		sigaction(FcntlSignal, &action, &signalAction);
+	}
+
+	return true;
+}
+
+
+static void
+closeFAM()
+{
+	M_ASSERT(signalRefCount > 0);
+
+	if (--signalRefCount == 0)
+	{
+		for (FcntlMap::const_iterator i = fcntlMap.begin(); i != fcntlMap.end(); ++i)
+		{
+			FcntlRequest* r = static_cast<FcntlRequest*>(i->second->m_data);
+			close(r->m_fd);
+			delete r;
+		}
+
+		fcntlMap.clear();
+		sigaction(FcntlSignal, &signalAction, 0);
+	}
+}
+
+
+static bool
+monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned states, mstl::string& error)
+{
+	if (type == file::RegularFile)
+		return false;
+
+	if (req.m_data == 0)
+	{
+		int fd = open(path, O_RDONLY | O_NONBLOCK);
+
+		if (fd == -1)
+		{
+			switch (errno)
+			{
+				case EACCES:			error.assign("open(): read access not permitted"); break;
+				case ELOOP:				error.assign("open(): cannot resolve symbolic link"); break;
+				case EMFILE:			error.assign("open(): user limit exceeded"); break;
+				case ENFILE:			error.assign("open(): system limit eceeded"); break;
+				case ENAMETOOLONG:	error.assign("open(): path name too long"); break;
+				case ENOENT:			error.assign("open(): path does not exists"); break;
+				case ENOMEM:			error.assign("open(): out of memory"); break;
+				case ENOTDIR:			error.assign("open(): invalid directory component"); break;
+				case EOVERFLOW:		error.assign("open(): too large to be opened"); break;
+				default:					error.format("open(): unexpected error %d", errno); break;
+			}
+
+			return false;
+		}
+
+		long mask = 0;
+
+		if (states & FileAlterationMonitor::StateChanged)
+			mask |= DN_MODIFY | DN_ATTRIB;
+		if (states & FileAlterationMonitor::StateDeleted)
+			mask |= DN_CREATE | DN_RENAME;
+		if (states & FileAlterationMonitor::StateCreated)
+			mask |= DN_CREATE;
+
+		if (fcntl(fd, mask | DN_MULTISHOT) == -1 || fctnl(fd, F_SETSIG, long(FcntlSignal)) == -1)
+		{
+			error.format("fcntl(): unexpected error %d\n", errno);
+			return false;
+		}
+
+		req.m_data = new FcntlRequest(fd);
+		fcntlMap.insert_unique(fd, &req);
+	}
+
+	return true;
+}
+
+
+static void
+cancelMonitorFAM(Request& req)
+{
+	if (req.m_data)
+	{
+		FcntlRequest* r = static_cast<FcntlRequest*>(req.m_data);
+
+		M_ASSERT(r->m_ref > 0);
+
+		if (--r->m_ref == 0)
+		{
+			fcntlMap.remove(r->m_fd);
+			close(r->m_fd);
+			delete r;
+			req.m_data = 0;
+		}
+	}
+}
+
 #else //////////////////////////////////////////////////////////////////
 
 static bool
 initFAM(mstl::string& error)
 {
-	error.assign("dont't have any FAM service");
+	error.assign("don't have any FAM service");
 	return false;
 }
 

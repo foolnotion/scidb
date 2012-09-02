@@ -29,26 +29,28 @@
 namespace eval load {
 namespace eval mc {
 
-set SevereError			"Severe error during load of ECO file"
-set FileIsCorrupt 		"File %s is corrupt:"
-set ProgramAborting		"Program is aborting."
+set SevereError				"Severe error during load of ECO file"
+set FileIsCorrupt 			"File %s is corrupt:"
+set ProgramAborting			"Program is aborting."
 
-set Loading					"Loading %s"
-set ReadingOptionsFile	"Reading options file"
-set StartupFinished		"Startup finished"
-set SystemEncoding		"System encoding is '%s'"
+set Loading						"Loading %s"
+set StartupFinished			"Startup finished"
+set SystemEncoding			"System encoding is '%s'"
 
-set ECOFile					"ECO file"
-set EngineFile				"engine file"
-set SpellcheckFile		"spell-check file"
-set LocalizationFile		"localization file"
-set RatingList				"%s rating list"
-set WikipediaLinks		"Wikipedia links"
-set ChessgamesComLinks	"chessgames.com links"
-set Cities					"cities"
-set PieceSet				"piece set"
-set Theme					"theme"
-set Icons					"icons"
+set ReadingFile(options)	"Reading options file"
+set ReadingFile(engines)	"Reading engines file"
+
+set ECOFile						"ECO file"
+set EngineFile					"engine file"
+set SpellcheckFile			"spell-check file"
+set LocalizationFile			"localization file"
+set RatingList					"%s rating list"
+set WikipediaLinks			"Wikipedia links"
+set ChessgamesComLinks		"chessgames.com links"
+set Cities						"cities"
+set PieceSet					"piece set"
+set Theme						"theme"
+set Icons						"icons"
 
 }
 
@@ -142,7 +144,13 @@ proc write {} {
 	fconfigure $chan -encoding utf-8
 
 	foreach name [info vars ::load::mc::*] {
-		puts $chan "set $name \"[set $name]\""
+		if {[array exists $name]} {
+			foreach attr [array names $name] {
+				puts $chan "set ${name}($attr) \"[set ${name}($attr)]\""
+			}
+		} else {
+			puts $chan "set $name \"[set $name]\""
+		}
 	}
 
 	close $chan
@@ -167,12 +175,6 @@ load::load	[format $load::mc::Loading $load::mc::ECOFile] \
 
 if {![::process::testOption fast-load]} {
 
-# --- Load engines -----------------------------------------------------
-load::load	[format $load::mc::Loading $load::mc::EngineFile] \
-				comp \
-				[file join $scidb::dir::data engines.txt] \
-				;
-
 # --- Load spellcheck files --------------------------------------------
 foreach file {ratings_utf8.ssp.zip ratings-additional.ssp} {
 	load::load	[format $load::mc::Loading $load::mc::SpellcheckFile] \
@@ -180,6 +182,12 @@ foreach file {ratings_utf8.ssp.zip ratings-additional.ssp} {
 					[file join $scidb::dir::data $file] \
 					;
 }
+
+# --- Load engines -----------------------------------------------------
+load::load	[format $load::mc::Loading $load::mc::EngineFile] \
+				comp \
+				[file join $scidb::dir::data engines.txt] \
+				;
 
 # --- Load FIDE players ------------------------------------------------
 load::load	[format $load::mc::Loading [format $load::mc::RatingList FIDE]] \

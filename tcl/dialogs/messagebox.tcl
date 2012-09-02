@@ -371,7 +371,7 @@ proc alert {args} {
 	set entries {}
 	foreach entry $opts(-buttons) {
 		lassign $entry type text icon
-		set index [lsearch $ButtonOrder $type]
+		set index [lsearch -exact $ButtonOrder $type]
 		lappend entries [list $type $text $icon $index]
 	}
 	set entries [lsort -integer -index 3 $entries]

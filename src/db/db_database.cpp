@@ -134,7 +134,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
 							Mode mode,
-							Progress& progress)
+							util::Progress& progress)
 	:DatabaseContent(encoding)
 	,m_codec(0)
 	,m_name(name)
@@ -175,7 +175,7 @@ Database::Database(	mstl::string const& name,
 }
 
 
-Database::Database(mstl::string const& name, Producer& producer, Progress& progress)
+Database::Database(mstl::string const& name, Producer& producer, util::Progress& progress)
 	:DatabaseContent(producer.encoding())
 	,m_codec(0)
 	,m_name(name)
@@ -390,7 +390,7 @@ Database::clear()
 
 
 void
-Database::reopen(mstl::string const& encoding, Progress& progress)
+Database::reopen(mstl::string const& encoding, util::Progress& progress)
 {
 	M_REQUIRE(file::hasSuffix(name()));
 	M_REQUIRE(!isMemoryOnly());

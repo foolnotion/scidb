@@ -63,7 +63,7 @@ proc open {parent base info view index {fen {}}} {
 	lappend Priv($base:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
-	::widget::dialogButtons $dlg {close previous next help} close
+	::widget::dialogButtons $dlg {close previous next help} -default close
 #	foreach type {close previous next help} { $dlg.$type configure -width 15 }
 	$dlg.close configure -command [list destroy $dlg]
 	$dlg.help configure -command [list ::help::open .application Game-Overview -parent $dlg]
@@ -170,7 +170,7 @@ proc ConfigureButtons {nb} {
 }
 
 
-proc Update {nb base {view -1} {index -1}} {
+proc Update {nb id base {view -1} {index -1}} {
 	variable ${nb}::Vars
 
 	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
@@ -254,7 +254,7 @@ proc NextGame {nb base {step 0}} {
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set dlg [winfo toplevel $nb]
 	set key $Vars(base):$number:$Vars(view)
-	set i [lsearch $Priv($key) $dlg]
+	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
 	set key $Vars(base):$Vars(number):$Vars(view)
@@ -266,8 +266,8 @@ proc NextGame {nb base {step 0}} {
 	foreach {boardSize nrows ncols} $Vars(tabs) {
 		if {$failed} { continue }
 		set num [expr {$ncols*$nrows}]
-		set result \
-			[::widget::busyOperation ::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num]
+		set result [::widget::busyOperation \
+			{ ::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num }]
 		set failed 1
 		switch [lindex $result 0] {
 			 1 { set failed 0 }
@@ -483,7 +483,7 @@ proc Destroy {nb} {
 		catch { destroy $nb.__menu__ }
 
 		set key $Vars(base):$Vars(number):$Vars(view)
-		set i [lsearch $Priv($key) [winfo toplevel $nb]]
+		set i [lsearch -exact $Priv($key) [winfo toplevel $nb]]
 		if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 		if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
@@ -505,7 +505,7 @@ proc TabChanged {nb} {
 
 proc LoadGame {nb} {
 	variable ${nb}::Vars
-	::widget::busyOperation ::game::new $nb $Vars(base) [expr {$Vars(number) - 1}] $Vars(fen)
+	::widget::busyOperation { ::game::new $nb $Vars(base) [expr {$Vars(number) - 1}] $Vars(fen) }
 }	
 
 

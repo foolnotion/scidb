@@ -25,8 +25,8 @@ TITLE NAG-Kommentarwerte
 </annotation>
 
 <p>
-Im <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
-PGN-Standard</a>
+Im
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN-Standard</a>
 sind folgende <acronym>NAG</acronym>-Werte definiert:
 </p>
 

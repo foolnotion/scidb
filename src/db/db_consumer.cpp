@@ -64,8 +64,6 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_setupBoard(true)
 	,m_commentEngFlag(false)
 	,m_commentOthFlag(false)
-	,m_illegalCastling(false)
-	,m_illegalMove(false)
 {
 }
 
@@ -146,8 +144,7 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_line.length = 0;
 	m_commentEngFlag = false;
 	m_commentOthFlag = false;
-	m_illegalCastling = false;
-	m_illegalMove = false;
+	m_flags = 0;
 	m_moveInfoSet.clear();
 	m_engines.clear();
 	m_homePawns.clear();

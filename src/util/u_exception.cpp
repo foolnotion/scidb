@@ -25,6 +25,24 @@
 using namespace util;
 
 
+BasicException::BasicException() {}
+
+
+BasicException::BasicException(char const* fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	set_message(fmt, args);
+	va_end(args);
+}
+
+
+BasicException::BasicException(char const* fmt, va_list args)
+	:mstl::basic_exception(fmt, args)
+{
+}
+
+
 Exception::Exception() {}
 
 

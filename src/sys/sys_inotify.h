@@ -19,9 +19,9 @@
 #ifndef _sys_inotify_included
 #define _sys_inotify_included
 
-#include <sys/syscall.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <sys/syscall.h>
 
 // the following are legal, implemented events that user-space can watch for
 #define IN_ACCESS				0x00000001	// File was accessed

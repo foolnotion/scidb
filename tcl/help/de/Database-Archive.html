@@ -39,10 +39,10 @@
 </div>
 
 <p>
-Scidb's Datenbankarchiv stützt sich auf ein unabhängiges Archivformat, für das die
+Scidb's Datenbankarchiv stÃ¼tzt sich auf ein unabhÃ¤ngiges Archivformat, fÃ¼r das die
 generelle Dateiendung "<abbr>.ive</abbr>" vorgesehen ist. Scidb benutzt jedoch die
-spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthält Informationen
-über die enthaltenen Dateien wie Name, Größe, Komprimierungsmethode, etc.
+spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthÃ¤lt Informationen
+Ã¼ber die enthaltenen Dateien wie Name, GrÃ¶ÃŸe, Komprimierungsmethode, etc.
 </p>
 
 <p>
@@ -80,8 +80,8 @@ Time        = Hour ":" Minute ":" Second ;<!--
 --></code></pre></div>
 
 <p>
-<b><code>&lt;FileName&gt;</code></b> ist irgendein plattformunabhängiger, gültiger Dateiname,
-ohne Pfadbezeichnung. Ein plattformunabhängiger Dateiname darf die Zeichen "&lt;"
+<b><code>&lt;FileName&gt;</code></b> ist irgendein plattformunabhÃ¤ngiger, gÃ¼ltiger Dateiname,
+ohne Pfadbezeichnung. Ein plattformunabhÃ¤ngiger Dateiname darf die Zeichen "&lt;"
 und "&gt;" nicht enthalten.
 </p>
 
@@ -89,31 +89,31 @@ und "&gt;" nicht enthalten.
 <b><code>&lt;URI&gt;</code></b> ist ein genormter Ressourcen-Identifikator, wie z.B.
 <code>http://www.chess-and-more.com/any-database.scv</code>, oder
 <code>file:///home/chris/Chess/MyBase.sci</code>. Es ist dem Dekodierungsprogramm
-überlassen, wie die vorangestellten Pfadbezeichnungen verarbeitet werden.
+Ã¼berlassen, wie die vorangestellten Pfadbezeichnungen verarbeitet werden.
 </p>
 
 <p>
-<b><code>&lt;Size&gt;</code></b> enthält die Größe der Datei innerhalb der
+<b><code>&lt;Size&gt;</code></b> enthÃ¤lt die GrÃ¶ÃŸe der Datei innerhalb der
 Archivierungsdatei.
 </p>
 
 <p>
-<b><code>&lt;FileSize&gt;</code></b> enthält die Größe der entpackten Datei.
-Diese Angabe der internen Größe ist zugleich der Offset zum nächsten Datei-Header.
+<b><code>&lt;FileSize&gt;</code></b> enthÃ¤lt die GrÃ¶ÃŸe der entpackten Datei.
+Diese Angabe der internen GrÃ¶ÃŸe ist zugleich der Offset zum nÃ¤chsten Datei-Header.
 </p>
 
 <p>
-<b><code>&lt;TotalSize&gt;</code></b> enthält die Summe aller (externen) Dateigrößen.
+<b><code>&lt;TotalSize&gt;</code></b> enthÃ¤lt die Summe aller (externen) DateigrÃ¶ÃŸen.
 Ist diese Summe unbekannt, dann ist <code>&lt;TotalSize&gt;</code> nicht vorhanden.
 </p>
 
 <p>
 <b><code>&lt;Checksum&gt;</code></b> ist eine mit dem CRC32-Verfahren ermittelte
-Prüfsumme.  Diese Prüfsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
+PrÃ¼fsumme.  Diese PrÃ¼fsumme bezieht sich auf die Dateidaten in der Archivierungsdatei.
 </p>
 
 <p>
-<b><code>&lt;Modified&gt;</code></b> enthält den Zeitstempel der letzten Modifikation
+<b><code>&lt;Modified&gt;</code></b> enthÃ¤lt den Zeitstempel der letzten Modifikation
 (GMT), dieses Datum kann vom Dekoder verwendet werden um den Modifikationszeitstempel
 der extrahierten Datei wiederherzustellen.
 </p>
@@ -123,40 +123,40 @@ der extrahierten Datei wiederherzustellen.
 </p>
 
 <p>
-Die Attribute <code>&lt;FileName&gt;</code>, <code>URI</code>,
+Die Attribute <code>&lt;FileName&gt;</code>, <code>&lt;URI&gt;</code>,
 <code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
 <code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code> und
-<code>&lt;Modified&gt;</code> können in beliebiger Reihenfolge aufgeführt werden.
+<code>&lt;Modified&gt;</code> kÃ¶nnen in beliebiger Reihenfolge aufgefÃ¼hrt werden.
 Fehlt die Angabe <code>&lt;Compression&gt;</code> wird
 '<code>raw</code>' als Wert angenommen (d.h. es wird keine Dekomprimierung verwendet).
 </p>
 
 <p>
-Wenn für URI eine externe Quelle angegeben ist (z.B. <code>http://*</code>),
+Wenn fÃ¼r URI eine externe Quelle angegeben ist (z.B. <code>http://*</code>),
 dann ist in diesem Fall das Attribute <code>Size</code> nicht vorhanden, und
 <code>FileSize</code> mag ebenso unbekannt sein.  Der Datenbereich ist bei
-Angabe einer externen Quelle normalerweise leer (Leerzeile). Es können jedoch
+Angabe einer externen Quelle normalerweise leer (Leerzeile). Es kÃ¶nnen jedoch
 Daten vorhanden sein, die verwendet werden sollen, wenn die externe Quelle
-nicht erreichbar ist. Dann muß allerdings auch wieder das Attribute
+nicht erreichbar ist. Dann muÃŸ allerdings auch wieder das Attribute
 <code>Size</code> spezifiziert sein.
 </p>
 
 <p>
-<b><code>Magic</code></b> ist so gewählt, daß folgende Punkte gewährleistet sind:
+<b><code>Magic</code></b> ist so gewÃ¤hlt, daÃŸ folgende Punkte gewÃ¤hrleistet sind:
 </p>
 
 <ul>
   <li>Lesbarkeit mit einem Texteditor.</li>
-  <li>Keine Verwechslung mit einer gewöhnlichen Textdatei.</li>
+  <li>Keine Verwechslung mit einer gewÃ¶hnlichen Textdatei.</li>
 </ul>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Texteditor
-(der binäre Daten verkraftet) gelesen und bearbeitet werden kann.
+Das Archivformat ist insgeamt so aufgebaut, daÃŸ es mit einem geeigneten Texteditor
+(der binÃ¤re Daten verkraftet) gelesen und bearbeitet werden kann.
 </div>
 
 <p>
-<b><code>UserInfo</code></b> ist im "<abbr>.scv</abbr>"-Format folgendermaßen definiert:
+<b><code>UserInfo</code></b> ist im "<abbr>.scv</abbr>"-Format folgendermaÃŸen definiert:
 </p>
 
 <div class="box"><pre><code><!-- don't translate --><!--
@@ -184,11 +184,11 @@ dann ist dieses Attribut nicht vorhanden.
 
 <p>
 Scidb-Archive enthalten in der Regel immer nur eine Datenbank
-(<b><code>&lt;Type&gt;</code></b> = 'single'). Es ist jedoch vorgesehen, daß auch
-mehrere Datenbanken in ein Archiv gepackt werden können. Dann muß
+(<b><code>&lt;Type&gt;</code></b> = 'single'). Es ist jedoch vorgesehen, daÃŸ auch
+mehrere Datenbanken in ein Archiv gepackt werden kÃ¶nnen. Dann muÃŸ
 <code>&lt;Type&gt;</code> den Wert 'multi' enthalten, und unter
 <code>&lt;Format&gt;</code> werden alle enthaltenen Datenbankformate
-komma-separiert aufgeführt. Zudem ist <code>&lt;Count&gt;</code> dann die
+komma-separiert aufgefÃ¼hrt. Zudem ist <code>&lt;Count&gt;</code> dann die
 Summe der Partien in allen Datenbanken.
 </p>
 
@@ -198,7 +198,7 @@ und <code>&lt;Type&gt;</code> ist beliebig.
 </p>
 
 <p>
-Zum Abschluß zwei einfache Beispiele für Archive:
+Zum AbschluÃŸ zwei einfache Beispiele fÃ¼r Archive:
 </p>
 
 <div class="box"><pre><code><!-- don't translate --><!--

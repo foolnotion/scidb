@@ -36,6 +36,7 @@ public:
 	~Exception() throw();
 };
 
+
 class Error : public util::Exception
 {
 public:
@@ -43,6 +44,21 @@ public:
 	Error();
 	Error(util::Exception& exc);
 	~Error() throw();
+};
+
+
+class InterruptException : public util::BasicException
+{
+public:
+
+	InterruptException();
+	InterruptException(unsigned count);
+
+	int count() const;
+
+private:
+
+	int m_count;
 };
 
 } // namespace tcl

@@ -25,6 +25,16 @@
 
 namespace util {
 
+class BasicException : public mstl::basic_exception
+{
+public:
+
+	// structors
+	BasicException();
+	explicit BasicException(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+	BasicException(char const* fmt, va_list args);
+};
+
 class Exception : public mstl::exception
 {
 public:

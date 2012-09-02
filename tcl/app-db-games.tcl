@@ -91,7 +91,7 @@ proc build {parent} {
 	bind $tb <<LanguageChanged>>	[namespace code [list ::scrolledtable::refresh $tb]]
 
 	set tbGameNo [::toolbar::toolbar $parent \
-		-id gameno \
+		-id games-gameno \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
@@ -100,7 +100,7 @@ proc build {parent} {
 		;
 	lappend Vars(toolbars) $tbGameNo
 	set tbControl [::toolbar::toolbar $parent \
-		-id control \
+		-id games-control \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
@@ -109,7 +109,7 @@ proc build {parent} {
 		;
 	lappend Vars(toolbars) $tbControl
 #	set tbFind [::toolbar::toolbar $parent \
-#		-id find \
+#		-id games-find \
 #		-hide 1 \
 #		-side bottom \
 #		-alignment center \
@@ -118,7 +118,7 @@ proc build {parent} {
 	;
 #	lappend Vars(toolbars) $tbFind
 	set tbLayout [::toolbar::toolbar $parent \
-		-id layout \
+		-id games-layout \
 		-hide 1 \
 		-side bottom \
 		-alignment center \
@@ -243,7 +243,7 @@ proc View {pane base} {
 }
 
 
-proc Update {path base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable ${path}::Vars
 
 	if {$view <= 0} {

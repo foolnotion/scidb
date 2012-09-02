@@ -99,6 +99,10 @@ proc DoCmd {cmd parent {value 0}} {
 		start {
 			set Priv(value) 0
 			::dialog::progressbar::setMaximum .progress $value
+			array set opts $Priv(options)
+			if {[info exists opts(-information)]} {
+				::dialog::progressbar::setInformation .progress $opts(-information)
+			}
 			update
 		}
 

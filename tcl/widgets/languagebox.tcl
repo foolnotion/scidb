@@ -43,7 +43,6 @@ proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content ""
 	variable ${w}::Key ""
-	variable ${w}::IgnoreKey 0
 	variable ${w}::List {}
 	variable ${w}::Values {}
 	variable ${w}::None 0
@@ -86,8 +85,6 @@ proc Build {w args} {
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
-	bind $w <<ComboBoxPosted>> [list set [namespace current]::${w}::IgnoreKey 1]
-	bind $w <<ComboBoxUnposted>> [list set [namespace current]::${w}::IgnoreKey 0]
 	bind $w <<ComboBoxUnposted>> +[list set [namespace current]::${w}::Key ""]
 	bind $w <<ComboboxCurrent>> [namespace code [list ShowCountry $w]]
 	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
@@ -114,7 +111,7 @@ proc WidgetProc {w command args} {
 			set lang [$w.__w__ get [$w.__w__ current] name]
 			if {$lang eq $mc::None} { return "" }
 			variable ${w}::Values
-			set n [lsearch -index 1 $Values $lang]
+			set n [lsearch -exact -index 1 $Values $lang]
 			return [lindex $Values $n 2]
 		}
 
@@ -131,7 +128,7 @@ proc WidgetProc {w command args} {
 				set lang $mc::None
 			} elseif {[string length $lang] == 2} {
 				variable ${w}::Values
-				set n [lsearch -index 2 $Values $lang]
+				set n [lsearch -exact -index 2 $Values $lang]
 				if {$n >= 0} { set lang [lindex $Values $n 1] }
 			}
 			set var [$w.__w__ cget -textvariable]
@@ -199,13 +196,13 @@ proc LanguageChanged {w} {
 
 	set lang ""
 	set content [$w get]
-	set n [lsearch -index 2 $Values $content]
+	set n [lsearch -exact -index 2 $Values $content]
 	if {$n >= 0} { set lang [lindex $Values $n 2] }
 
 	SetupList $w
 
 	if {[llength $lang]} {
-		set n [lsearch -index 0 $Values $lang]
+		set n [lsearch -exact -index 0 $Values $lang]
 		if {$n >= 0} { $w set [lindex $Values $n 1] }
 	}
 
@@ -216,10 +213,7 @@ proc LanguageChanged {w} {
 
 
 proc Completion {w code sym var} {
-	if {![info exists ${w}::IgnoreKey]} { return }
-	variable ${w}::IgnoreKey
-
-	if {$IgnoreKey} { return }
+	if {[$w popdown?]} { return }
 	if {[$w state] eq "readonly"} { return }
 
 	switch -- $sym {
@@ -293,7 +287,7 @@ proc ShowCountry {cb} {
 
 	set content [$cb get]
 	if {[string length $content] > 1} {
-		set n [lsearch -index 1 $Values $content]
+		set n [lsearch -exact -index 1 $Values $content]
 		if {$n >= 1 || (!$None && $n == 0)} {
 			set code [::mc::countryForLang [lindex $Values $n 2]]
 			if {[info exists ::country::icon::flag($code)]} {

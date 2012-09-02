@@ -962,7 +962,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	grid columnconfigure $fra {0 2} -minsize 5
 
 	# dialog buttons
-	widget::dialogButtons $dlg {ok cancel apply revert} apply
+	widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	$dlg.ok configure -command "
 		set [namespace parent]::needRefresh(lite,$size) true
 		set [namespace parent]::needRefresh(dark,$size) true

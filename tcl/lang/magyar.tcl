@@ -65,6 +65,7 @@
 ::mc::Delete		"Töröl"
 ::mc::Edit		"Szerkeszt"
 ::mc::Escape		"Kilépés"
+::mc::File		"File" ;# NEW
 ::mc::From		"From" ;# NEW
 ::mc::Game		"Játszma"
 ::mc::Layout		"Layout"
@@ -135,6 +136,10 @@
 ::widget::mc::Last		"&Utolsó"
 ::widget::mc::Help		"&Help" ;# NEW
 
+::widget::mc::New		"&New" ;# NEW
+::widget::mc::Save		"Menté&s"
+::widget::mc::Delete		"&Töröl"
+
 ::widget::mc::Control(minimize)	"Minimize" ;# NEW
 ::widget::mc::Control(restore)	"Leave Full-screen" ;# NEW
 ::widget::mc::Control(close)	"Bezár"
@@ -202,10 +207,13 @@
 ::menu::mc::Contact						"&Contact (Web Browser)" ;# NEW
 ::menu::mc::Quit							"&Kilépés"
 ::menu::mc::Extras						"E&xtras" ;# NEW
+::menu::mc::Setup						"Setu&p" ;# NEW
+::menu::mc::Engines						"&Engines" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Hiba jelentés"
 ::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
 ::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
+::menu::mc::OpenEngineLog		"Open &Engine Log" ;# NEW
 
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
@@ -221,9 +229,11 @@
 ::load::mc::ProgramAborting		"Program is aborting." ;# NEW
 
 ::load::mc::Loading					"%s betöltése"
-::load::mc::ReadingOptionsFile	"beállítások beolvasása"
 ::load::mc::StartupFinished		"A betöltés befejeződött"
 ::load::mc::SystemEncoding	"System encoding is '%s'" ;# NEW
+
+::load::mc::ReadingFile(options)	"beállítások beolvasása"
+::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
 
 ::load::mc::ECOFile					"ECO fájl"
 ::load::mc::EngineFile				"Elemző program fájl"
@@ -740,6 +750,37 @@
 ::pgn::setup::mc::Diagrams(square-size)			"Square Size" ;# NEW
 ::pgn::setup::mc::Diagrams(indentation)			"Indent Width" ;# NEW
 
+### engine #############################################################
+::engine::mc::Name		"Name" ;# NEW
+::engine::mc::Identifier	"Identifier" ;# NEW
+::engine::mc::Author		"Author" ;# NEW
+::engine::mc::Country		"Country" ;# NEW
+::engine::mc::Rating		"Rating" ;# NEW
+::engine::mc::Logo		"Logo" ;# NEW
+::engine::mc::Protocol		"Protocol" ;# NEW
+::engine::mc::Parameters	"Parameters" ;# NEW
+::engine::mc::Command		"Command" ;# NEW
+::engine::mc::Variants		"Variants" ;# NEW
+::engine::mc::LastUsed		"Last used" ;# NEW
+
+::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+
+::engine::mc::SetupEngines	"Setup Engines" ;# NEW
+::engine::mc::ImageFiles	"Image files" ;# NEW
+::engine::mc::SelectEngine	"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
+::engine::mc::Executables	"Executables" ;# NEW
+::engine::mc::EngineLog		"Engine Log" ;# NEW
+::engine::mc::Probing		"Probing" ;# NEW
+
+::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Játszma megjelölése töröltként"
 ::gametable::mc::UndeleteGame				"Játszma törlésének visszavonása"
@@ -1077,88 +1118,90 @@
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
 
 ### import #############################################################
-::import::mc::ImportingPgnFile					"'%s' PGN file importálása"
-::import::mc::Line						"Sor"
-::import::mc::Column						"Oszlop"
-::import::mc::GameNumber					"Játszma"
-::import::mc::ImportedGames					"játszma %s  betöltve"
-::import::mc::NoGamesImported					"Nem került játszma importálásra"
-::import::mc::FileIsEmpty					"A fájl valószínűleg üres"
-::import::mc::PgnImport						"PGN Importálás"
-::import::mc::ImportPgnGame					"PGN játszma importálása"
-::import::mc::ImportPgnVariation				"PGN Változat importálása"
-::import::mc::ImportOK						"A PGN szöveg hiba és figyelmeztetés nélkül került betöltésre."
-::import::mc::ImportAborted					"Importálás megszakítva."
-::import::mc::TextIsEmpty					"PGN szöveg üres."
-::import::mc::AbortImport					"Meg akarja szakítani a PGN importálást?"
+::import::mc::ImportingPgnFile			"'%s' PGN file importálása"
+::import::mc::Line				"Sor"
+::import::mc::Column				"Oszlop"
+::import::mc::GameNumber			"Játszma"
+::import::mc::ImportedGames			"játszma %s  betöltve"
+::import::mc::NoGamesImported			"Nem került játszma importálásra"
+::import::mc::FileIsEmpty			"A fájl valószínűleg üres"
+::import::mc::PgnImport				"PGN Importálás"
+::import::mc::ImportPgnGame			"PGN játszma importálása"
+::import::mc::ImportPgnVariation		"PGN Változat importálása"
+::import::mc::ImportOK				"A PGN szöveg hiba és figyelmeztetés nélkül került betöltésre."
+::import::mc::ImportAborted			"Importálás megszakítva."
+::import::mc::TextIsEmpty			"PGN szöveg üres."
+::import::mc::AbortImport			"Meg akarja szakítani a PGN importálást?"
 
-::import::mc::DifferentEncoding					"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
-::import::mc::DifferentEncodingDetails			"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
-::import::mc::CannotDetectFigurineSet			"Nem sikerült felismerni egyetlen megfelelő bábukészletet sem."
-::import::mc::CheckImportResult					"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve."
-::import::mc::CheckImportResultDetail			"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
+::import::mc::DifferentEncoding			"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
+::import::mc::DifferentEncodingDetails		"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
+::import::mc::CannotDetectFigurineSet		"Nem sikerült felismerni egyetlen megfelelő bábukészletet sem."
+::import::mc::CheckImportResult			"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve."
+::import::mc::CheckImportResultDetail		"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 
-::import::mc::EnterOrPaste					"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
-::import::mc::EnterOrPaste-Game					"játszma"
-::import::mc::EnterOrPaste-Variation				"változat"
+::import::mc::EnterOrPaste			"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
+::import::mc::EnterOrPaste-Game			"játszma"
+::import::mc::EnterOrPaste-Variation		"változat"
 
-::import::mc::MissingWhitePlayerTag				"Hiányzó világos játékos"
-::import::mc::MissingBlackPlayerTag				"Hiányzó sötét játékos"
-::import::mc::MissingPlayerTags					"Hiányzó játékosok"
-::import::mc::MissingResult					"Hiányzó eredmény (at end of move section)"
-::import::mc::MissingResultTag					"Hiányzó eredmény (in tag section)"
-::import::mc::InvalidRoundTag					"Érvénytelen foduló cimke"
-::import::mc::InvalidResultTag					"Érvénytelen eredmény cimke"
-::import::mc::InvalidDateTag					"Érvénytelen dátum cimke"
-::import::mc::InvalidEventDateTag				"Érvénytelen esemény-dátum címke"
-::import::mc::InvalidTimeModeTag				"Érvénytelen időbosztás cimke"
-::import::mc::InvalidEcoTag					"Érvénytelen ECO cimke"
-::import::mc::InvalidTagName					"Érvénytelen cimke név (kihagyva)"
-::import::mc::InvalidCountryCode				"Érvénytelen országkód"
-::import::mc::InvalidRating					"Érvénytelen értékszám"
-::import::mc::InvalidNag					"Érvénytelen NAG"
-::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
-::import::mc::MissingFen					"Hiányzó FEN (változat cimke kihagyva)"
-::import::mc::UnknownEventType					"Ismeretlen verseny típus"
-::import::mc::UnknownTitle					"Ismeretlen cím (kihagyva)"
-::import::mc::UnknownPlayerType					"Ismeretlen játkos típus (kihagyva)"
-::import::mc::UnknownSex					"Ismeretlen nem (kihagyva)"
-::import::mc::UnknownTermination				"Ismeretlen megszakítási ok"
-::import::mc::UnknownMode					"Ismeretlen mód"
-::import::mc::RatingTooHigh					"Túl magas érétkszám (kihagyva))"
-::import::mc::TooManyNags					"Túl sok NAG (a későbbiek kihagyva)"
-::import::mc::IllegalCastling					"Szabálytalan sáncolás"
-::import::mc::IllegalMove					"Szabálytalan lépés"
-::import::mc::CastlingCorrection				"Castling correction" ;# NEW
-::import::mc::UnsupportedVariant				"Unsupported chess variant"
-::import::mc::DecodingFailed					"Sikertelen dekódolás"
-::import::mc::ResultDidNotMatchHeaderResult			"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
-::import::mc::ValueTooLong					"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
+::import::mc::MissingWhitePlayerTag		"Hiányzó világos játékos"
+::import::mc::MissingBlackPlayerTag		"Hiányzó sötét játékos"
+::import::mc::MissingPlayerTags			"Hiányzó játékosok"
+::import::mc::MissingResult			"Hiányzó eredmény (at end of move section)"
+::import::mc::MissingResultTag			"Hiányzó eredmény (in tag section)"
+::import::mc::InvalidRoundTag			"Érvénytelen foduló cimke"
+::import::mc::InvalidResultTag			"Érvénytelen eredmény cimke"
+::import::mc::InvalidDateTag			"Érvénytelen dátum cimke"
+::import::mc::InvalidEventDateTag		"Érvénytelen esemény-dátum címke"
+::import::mc::InvalidTimeModeTag		"Érvénytelen időbosztás cimke"
+::import::mc::InvalidEcoTag			"Érvénytelen ECO cimke"
+::import::mc::InvalidTagName			"Érvénytelen cimke név (kihagyva)"
+::import::mc::InvalidCountryCode		"Érvénytelen országkód"
+::import::mc::InvalidRating			"Érvénytelen értékszám"
+::import::mc::InvalidNag			"Érvénytelen NAG"
+::import::mc::BraceSeenOutsideComment		"\"\}\" seen outisde a comment in game (ignored)"
+::import::mc::MissingFen			"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
+::import::mc::UnknownEventType			"Ismeretlen verseny típus"
+::import::mc::UnknownTitle			"Ismeretlen cím (kihagyva)"
+::import::mc::UnknownPlayerType			"Ismeretlen játkos típus (kihagyva)"
+::import::mc::UnknownSex			"Ismeretlen nem (kihagyva)"
+::import::mc::UnknownTermination		"Ismeretlen megszakítási ok"
+::import::mc::UnknownMode			"Ismeretlen mód"
+::import::mc::RatingTooHigh			"Túl magas érétkszám (kihagyva))"
+::import::mc::TooManyNags			"Túl sok NAG (a későbbiek kihagyva)"
+::import::mc::IllegalCastling			"Szabálytalan sáncolás"
+::import::mc::IllegalMove			"Szabálytalan lépés"
+::import::mc::CastlingCorrection		"Castling correction" ;# NEW
+::import::mc::UnsupportedVariant		"Unsupported chess variant"
+::import::mc::DecodingFailed			"Sikertelen dekódolás"
+::import::mc::ResultDidNotMatchHeaderResult	"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
+::import::mc::ValueTooLong			"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
 ::import::mc::MaximalErrorCountExceeded		"A maximális hibaszám túllépve; több hiba (az előző hibatípusból) nem lesz közölve"
-::import::mc::MaximalWarningCountExceeded		"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
-::import::mc::InvalidToken					"Érvénytelen token"
-::import::mc::InvalidMove					"Érvénytelen lépés"
-::import::mc::UnexpectedSymbol					"Váratlan szimbólum"
-::import::mc::UnexpectedEndOfInput				"A bement váratlanul véget ért" ;# ? Unexpected end of input"
-::import::mc::UnexpectedResultToken				"Váratlan eredmény token"
-::import::mc::UnexpectedTag						"Váratlan cimke a játszmában"
-::import::mc::UnexpectedEndOfGame				"A játszma váratlanul véget ért (hiényzó eredmény)"
-::import::mc::TagNameExpected						"Szintaktikai hiba: meg kell adni a cimke nevét"
-::import::mc::TagValueExpected					"Szintaktikai hiba: meg kell adni a cimke értékét"
-::import::mc::InvalidFen							"Érvénytelen FEN"
-::import::mc::UnterminatedString					"Befejezetlen string"
-::import::mc::UnterminatedVariation				"Befejezetlen változat"
-::import::mc::TooManyGames							"Az adatbézis túl sok játszmát tartalmaz (aborted)"
-::import::mc::GameTooLong							"A játszma túl hosszú (átugorva)"
-::import::mc::FileSizeExceeded					"A legnagyobb kezelhető ájlméret (2GB) túllépésre került (aborted)"
-::import::mc::TooManyPlayerNames					"Túl sok játékos az adatbázisban (aborted)"
-::import::mc::TooManyEventNames					"Túl sok esemény az adatbázisban (aborted)"
-::import::mc::TooManySiteNames					"Túl sok helyzín az adatbázisban (aborted)"
-::import::mc::TooManyRoundNames					"Túl sok forduló az adatbázisban (aborted)"
-::import::mc::TooManyAnnotatorNames				"Túl sok elemző az adatbázisban (aborted)"
-::import::mc::TooManySourceNames					"Túl sok forrás az adatbázisban (aborted)"
-::import::mc::SeemsNotToBePgnText				"Nem tűnik PGN szövegnek"
+::import::mc::MaximalWarningCountExceeded	"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
+::import::mc::InvalidToken			"Érvénytelen token"
+::import::mc::InvalidMove			"Érvénytelen lépés"
+::import::mc::UnexpectedSymbol			"Váratlan szimbólum"
+::import::mc::UnexpectedEndOfInput		"A bement váratlanul véget ért" ;# ? Unexpected end of input"
+::import::mc::UnexpectedResultToken		"Váratlan eredmény token"
+::import::mc::UnexpectedTag			"Váratlan cimke a játszmában"
+::import::mc::UnexpectedEndOfGame		"A játszma váratlanul véget ért (hiényzó eredmény)"
+::import::mc::TagNameExpected			"Szintaktikai hiba: meg kell adni a cimke nevét"
+::import::mc::TagValueExpected			"Szintaktikai hiba: meg kell adni a cimke értékét"
+::import::mc::InvalidFen			"Érvénytelen FEN"
+::import::mc::UnterminatedString		"Befejezetlen string"
+::import::mc::UnterminatedVariation		"Befejezetlen változat"
+::import::mc::TooManyGames			"Az adatbézis túl sok játszmát tartalmaz (aborted)"
+::import::mc::GameTooLong			"A játszma túl hosszú (átugorva)"
+::import::mc::FileSizeExceeded			"A legnagyobb kezelhető ájlméret (2GB) túllépésre került (aborted)"
+::import::mc::TooManyPlayerNames		"Túl sok játékos az adatbázisban (aborted)"
+::import::mc::TooManyEventNames			"Túl sok esemény az adatbázisban (aborted)"
+::import::mc::TooManySiteNames			"Túl sok helyzín az adatbázisban (aborted)"
+::import::mc::TooManyRoundNames			"Túl sok forduló az adatbázisban (aborted)"
+::import::mc::TooManyAnnotatorNames		"Túl sok elemző az adatbázisban (aborted)"
+::import::mc::TooManySourceNames		"Túl sok forrás az adatbázisban (aborted)"
+::import::mc::SeemsNotToBePgnText		"Nem tűnik PGN szövegnek"
 ::import::mc::AbortedDueToInternalError		"Beslő hiba miatt Aborted"
+::import::mc::AbortedDueToIoError		"Aborted due to an read/write error" ;# NEW
+::import::mc::UserHasInterrupted		"User has interrupted" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection			"&Fájl Kiválasztás"
@@ -1747,6 +1790,7 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
 ::dialog::fsbox::mc::HypertextFile			"Hypertext File" ;# NEW
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
+::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
 ::dialog::fsbox::mc::LinkTo					"Link to %s" ;# NEW
 ::dialog::fsbox::mc::LinkTarget				"Link target" ;# NEW
 ::dialog::fsbox::mc::Directory				"Directory" ;# NEW
@@ -1763,7 +1807,6 @@
 ::dialog::choosecolor::mc::RecentColors		"Legutóbbi színek"
 ::dialog::choosecolor::mc::Old			"Régi"
 ::dialog::choosecolor::mc::Current		"Aktuális"
-::dialog::choosecolor::mc::Color		"Szín"
 ::dialog::choosecolor::mc::HexCode		"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Színválasztás"
 ::dialog::choosecolor::mc::Red			"Vörös"
@@ -1857,16 +1900,6 @@
 
 ::fsbox::mc::CannotChangeDir		"Cannot change to the directory \"%s\".\nHozzáférés megtagadva."
 ::fsbox::mc::DirectoryRemoved		"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."
-::fsbox::mc::ReallyMove(file,w)		"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
-::fsbox::mc::ReallyMove(file,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
-::fsbox::mc::ReallyMove(folder,w)	"Biztos hogy a kukába dobod a(z) '%s' könyvtárat"
-::fsbox::mc::ReallyMove(folder,r)	"Biztos hogy a kukába dobod a(z) '%s' írásvédett könyvtárat?"
-::fsbox::mc::ReallyDelete(file,w)	"Biztos hogy törlöd a(z) '%s' fájlt? Ez a művelet később nem vonható vissza." ;# You cannot undo this operation."
-::fsbox::mc::ReallyDelete(file,r)	"Biztos hogy törlöd a(z) '%s' írásvédett fájlt? Ez a művelet később nem vonható vissza."
-::fsbox::mc::ReallyDelete(link,w)	"Biztos hogy törlöd a(z) '%s' linket?"
-::fsbox::mc::ReallyDelete(link,r)	"Biztos hogy törlöd a(z) '%s' linket?"
-::fsbox::mc::ReallyDelete(folder,w)	"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
-::fsbox::mc::ReallyDelete(folder,r)	"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
 ::fsbox::mc::DeleteFailed		"'%s' törlése meghiúsult."
 ::fsbox::mc::RestoreFailed		"Restoring of '%s' failed." ;# NEW
 ::fsbox::mc::CommandFailed		"'%s' utasítás nem hajtható vége."
@@ -1875,11 +1908,8 @@
 ::fsbox::mc::CannotDuplicate		"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
 ::fsbox::mc::ReallyDuplicateFile	"Really duplicate this file?"
 ::fsbox::mc::ReallyDuplicateDetail	"This file has about %s. Duplicating this file may take some time."
-::fsbox::mc::ErrorRenaming(folder)	"Error renaming folder '%old' to '%new': permission denied."
-::fsbox::mc::ErrorRenaming(file)	"Error renaming file '%old' to '%new': permission denied."
 ::fsbox::mc::InvalidFileExt		"A művelet meghiúsult: '%s' kiterjesztése érvénytelen."
 ::fsbox::mc::CannotRename		"'%s' nem nevezhető át, mert a könyvtár/fájl már létezik."
-::fsbox::mc::CannotMove			"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate		"'%s' könyvtár nem hozható létre, mert a könyvtár/fájl már létezik."
 ::fsbox::mc::ErrorCreate		"Hiba a könyvtár létrehozás közben: hozzáférés megtagadva."
 ::fsbox::mc::FilenameNotAllowed		"'%s' fájlnév nem engedélyezett."
@@ -1897,10 +1927,7 @@
 ::fsbox::mc::CannotOpenOrCreate		"Cannot open/create '%s'. Please choose a directory."
 ::fsbox::mc::WaitWhileDuplicating	"Please wait while duplicating file..."
 ::fsbox::mc::FileHasDisappeared		"File '%s' has disappeared." ;# NEW
-::fsbox::mc::CannotDelete		"Cannot delete file '%s'." ;# NEW
-::fsbox::mc::CannotRename		"Cannot rename file '%s'." ;# NEW
 ::fsbox::mc::CurrentlyInUse		"This file is currently in use." ;# NEW
-::fsbox::mc::CannotOverwrite		"Cannot overwrite file '%s'." ;# NEW
 ::fsbox::mc::PermissionDenied		"Permission denied for directory '%s'." ;# NEW
 ::fsbox::mc::CannotOpenUri		"Cannot open the following URI:" ;# NEW
 ::fsbox::mc::InvalidUri			"Drop content is not a valid URI list." ;# NEW
@@ -1912,6 +1939,25 @@
 ::fsbox::mc::AnEntryAlreadyExists	"An entry '%s' already exists." ;# NEW
 ::fsbox::mc::SourceDirectoryIs		"The source directories is '%s'." ;# NEW
 ::fsbox::mc::NewName			"New name" ;# NEW
+
+::fsbox::mc::ReallyMove(file,w)		"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
+::fsbox::mc::ReallyMove(file,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
+::fsbox::mc::ReallyMove(folder,w)	"Biztos hogy a kukába dobod a(z) '%s' könyvtárat"
+::fsbox::mc::ReallyMove(folder,r)	"Biztos hogy a kukába dobod a(z) '%s' írásvédett könyvtárat?"
+::fsbox::mc::ReallyDelete(file,w)	"Biztos hogy törlöd a(z) '%s' fájlt? Ez a művelet később nem vonható vissza." ;# You cannot undo this operation."
+::fsbox::mc::ReallyDelete(file,r)	"Biztos hogy törlöd a(z) '%s' írásvédett fájlt? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(link,w)	"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(link,r)	"Biztos hogy törlöd a(z) '%s' linket?"
+::fsbox::mc::ReallyDelete(folder,w)	"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(folder,r)	"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
+
+::fsbox::mc::ErrorRenaming(folder)	"Error renaming folder '%old' to '%new': permission denied."
+::fsbox::mc::ErrorRenaming(file)	"Error renaming file '%old' to '%new': permission denied."
+
+::fsbox::mc::Cannot(delete)		"Cannot delete file '%s'." ;# NEW
+::fsbox::mc::Cannot(rename)		"Cannot rename file '%s'." ;# NEW
+::fsbox::mc::Cannot(move)		"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(overwrite)		"Cannot overwrite file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)		"Move Here" ;# NEW
 ::fsbox::mc::DropAction(copy)		"Copy Here" ;# NEW

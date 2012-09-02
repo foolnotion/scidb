@@ -155,7 +155,7 @@ proc ParseArgs {} {
 		set option [string range $arg 2 end]
 		set Options($option) 1
 
-		if {[lsearch -index 0 $ProgramOptions $arg] == -1} {
+		if {[lsearch -exact -index 0 $ProgramOptions $arg] == -1} {
 			puts stderr "Unrecognized option: $arg"
 		}
 	}

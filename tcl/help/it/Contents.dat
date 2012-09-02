@@ -15,6 +15,7 @@ set Contents {
     {{{Lista Partite} {Game-List-Window.html}}}
     {{{Lista Giocatori} {Player-List-Window.html}}}
     {{{Lista Eventi} {Event-List-Window.html}}}
+    {{{Site List} {Site-List-Window.html}}}
     {{{Lista Commentatori} {Annotator-List-Window.html}}}
   }
   {

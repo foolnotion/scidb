@@ -83,7 +83,6 @@ proc Build {w args} {
 
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content ""
-	variable ${w}::IgnoreKey 0
 
 	array set opts {
 		-height			15
@@ -127,8 +126,6 @@ proc Build {w args} {
 #	bind $w <FocusOut> [namespace code [list Completion $w]]
 	bind $w <Any-Key> [namespace code [list Completion $w %A %K $opts(-textvariable)]]
 	bind $w <<LanguageChanged>> [namespace code [list LanguageChanged $w]]
-	bind $w <<ComboboxPosted>> [list set [namespace current]::${w}::IgnoreKey 1]
-	bind $w <<ComboboxUnposted>> [list set [namespace current]::${w}::IgnoreKey 0]
 
 	SetupList $w
 
@@ -157,7 +154,7 @@ proc WidgetProc {w command args} {
 
 		valid? {
 			set value [$w.__w__ get]
-			set index [lsearch [$w.__w__ cget -values] $value]
+			set index [lsearch -exact [$w.__w__ cget -values] $value]
 			if {$index >= 0} { return true }
 			if {$value eq "-" || $value eq "\u2014" || $value eq ""} { return true }
 			return false
@@ -226,11 +223,7 @@ proc LanguageChanged {w} {
 
 
 proc Completion {w code sym var} {
-	if {![info exists ${w}::IgnoreKey]} { return }
-
-	variable ${w}::IgnoreKey
-
-	if {$IgnoreKey} { return }
+	if {[$w popdown?]} { return }
 
 	switch -- $sym {
 		Tab {

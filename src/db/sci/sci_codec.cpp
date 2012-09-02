@@ -854,7 +854,7 @@ Codec::makeCodec(mstl::string const& name)
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
+Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
 {
 //	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 	M_ASSERT(m_gameData == 0);
@@ -1011,7 +1011,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
+Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
 {
 	GameInfoList& infoList = gameInfoList();
 
@@ -1404,7 +1404,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 
 
 void
-Codec::readNamebases(mstl::fstream& stream, Progress& progress)
+Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 {
 #ifdef USE_LZO
 	LzoByteStream bstrm(stream);
@@ -1464,7 +1464,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 
 void
-Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
+Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1510,7 +1510,7 @@ Codec::readNamebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress&
 
 
 void
-Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
+Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1561,7 +1561,7 @@ Codec::readSitebase(ByteStream& bstrm, Namebase& base, unsigned count, Progress&
 
 
 void
-Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
+Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1702,7 +1702,7 @@ Codec::readEventbase(ByteStream& bstrm, Namebase& base, unsigned count, Progress
 
 
 void
-Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, Progress& progress)
+Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;

@@ -27,6 +27,7 @@ inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing
 inline bool Engine::startAnalysis(db::Board const& board)	{ return m_engine->startAnalysis(board); }
 inline bool Engine::stopAnalysis()									{ return m_engine->stopAnalysis(); }
 
+inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
@@ -83,6 +84,20 @@ void Engine::Concrete::setIdentifier(mstl::string const& name)
 
 
 inline
+void Engine::Concrete::setAuthor(mstl::string const& name)
+{
+	m_engine->setAuthor(name);
+}
+
+
+inline
+void Engine::Concrete::setMaxMultiPV(unsigned n)
+{
+	m_engine->setMaxMultiPV(n);
+}
+
+
+inline
 void
 Engine::Concrete::addOption(	mstl::string const& name,
 										mstl::string const& type,
@@ -97,7 +112,9 @@ Engine::Concrete::addOption(	mstl::string const& name,
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
 
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
+inline mstl::string const& Engine::author() const				{ return m_author; }
 inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
+inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
 inline unsigned Engine::numVariations() const					{ return m_numVariations; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
@@ -107,6 +124,8 @@ inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
 inline void Engine::setIdentifier(mstl::string const& name)	{ m_identifier = name; }
+inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
+inline void Engine::setMaxMultiPV(unsigned n)					{ m_maxMultiPV = n; }
 inline void Engine::setBestMove(db::Move const& move)			{ m_bestMove = move; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
 inline void Engine::setLimitedStrength(unsigned elo)			{ m_limitedStrength = elo; }

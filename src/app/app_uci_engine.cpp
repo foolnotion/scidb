@@ -422,20 +422,25 @@ uci::Engine::processMessage(mstl::string const& message)
 			break;
 
 		case 'i':
-			if (::strncmp(message, "id name ", 8) == 0)
+			switch (message[1])
 			{
-				setIdentifier(message.c_str() + 8);
-			}
-			else if (isAnalyzing() || m_stopAnalyizeIsPending)
-			{
-				if (::strncmp(message, "info ", 5) == 0)
-					parseInfo(::skipSpaces(message.c_str() + 5));
+				case 'd':
+					if (::strncmp(message, "id name ", 8) == 0)
+						setIdentifier(message.c_str() + 8);
+					else if (::strncmp(message, "id author ", 10) == 0)
+						setAuthor(message.c_str() + 10);
+					break;
+
+				case 'n':
+					if ((isAnalyzing() || m_stopAnalyizeIsPending) && ::strncmp(message, "info ", 5) == 0)
+						parseInfo(::skipSpaces(message.c_str() + 5));
+					break;
 			}
 			break;
 
 		case 'o':
 			if (isProbing() && ::strncmp(message, "option name ", 12) == 0)
-				parseOption(::skipSpaces(message.c_str() + 12));
+				parseOption(::skipSpaces(message.c_str() + 7));
 			break;
 
 		case 'b':
@@ -606,13 +611,13 @@ uci::Engine::parseOption(char const* msg)
 
 	while (::nextWord(key, msg))
 	{
-		if (key == "name")			value = &name;
+		if      (key == "name")		value = &name;
 		else if (key == "type")		value = &type;
 		else if (key == "default")	value = &dflt;
 		else if (key == "min")		value = &min;
 		else if (key == "max")		value = &max;
 		else if (key == "var")		value = vars.insert(vars.end(), mstl::string());
-		else								::append(*value,  key);
+		else if (value)				::append(*value,  key);
 	}
 
 	if (name.empty())
@@ -708,7 +713,7 @@ uci::Engine::parseOption(char const* msg)
 
 		switch (name[0])
 		{
-//			case 'H':
+			case 'H':
 //				if (name == "Hash")
 //				{
 //				}
@@ -719,6 +724,7 @@ uci::Engine::parseOption(char const* msg)
 				{
 					m_hasMultiPV = true;
 					m_maxMultiPV = mstl::max(1ul, ::strtoul(max, nullptr, 10));
+					setMaxMultiPV(m_maxMultiPV);
 				}
 				break;
 		}

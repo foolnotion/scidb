@@ -265,7 +265,7 @@ array set Texture {}
 
 array set layout {
 	material-values	1
-	material-bar		1
+	material-bar		0
 	side-to-move		1
 	border				1
 	coordinates			1

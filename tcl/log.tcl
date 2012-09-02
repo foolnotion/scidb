@@ -279,7 +279,7 @@ proc Open {} {
 	$log tag configure Callee -foreground #88681a
 	$log tag configure hyperlink -underline on -foreground blue
 	$log tag configure link -foreground blue
-	widget::dialogButtons $Log {clear close} close no
+	widget::dialogButtons $Log {clear close} -default close -icons no
 	$Log.close configure -command [list wm withdraw $Log]
 	$Log.clear configure -command [namespace code Clear]
 	wm title $Log "$::scidb::app - $mc::LogTitle"

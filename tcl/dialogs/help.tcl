@@ -166,13 +166,13 @@ proc open {parent {file {}} args} {
 		-state disabled \
 		;
 	ttk::button $buttons.expand \
-		-image $icon::16x16::collapse \
+		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::collapse] \
 		-command [namespace code ExpandAllItems] \
 		;
 	set Priv(button:collapse) $buttons.collapse
 	::tooltip::tooltip $buttons.expand [namespace current]::mc::ExpandAllItems
 	ttk::button $buttons.collapse \
-		-image $icon::16x16::expand \
+		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::expand] \
 		-command [namespace code CollapseAllItems] \
 		;
 	set Priv(button:expand) $buttons.expand
@@ -233,20 +233,19 @@ proc open {parent {file {}} args} {
 			::widget::dialogRaise $dlg
 			update idletasks
 			set Geometry [winfo width $dlg]x[winfo height $dlg]
-			focus $Priv($Priv(tab))
+			focus $Priv($Priv(tab):tree)
 		}
 		wm geometry $dlg $Geometry
 	} else {
 		::util::place $dlg center $parent
 	}
-	wm deiconify $dlg
 
 	if {[string length $file]} {
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
 	}
 	ReloadCurrentPage
-
+	wm deiconify $dlg
 	return $dlg
 }
 
@@ -333,7 +332,7 @@ proc CheckLanguage {parent helpFile} {
 		pack $top.$code -side top -padx $::theme::padx -pady $::theme::pady
 		bind $top.$code <Return> { event generate %W <Key-space>; break }
 	}
-	::widget::dialogButtons $dlg cancel cancel yes
+	::widget::dialogButtons $dlg cancel
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm resizable $dlg no no
 	wm title $dlg $mc::SelectLanguage
@@ -376,136 +375,74 @@ proc Destroy {} {
 namespace eval contents {
 
 proc BuildFrame {w} {
-	variable [namespace parent]::icon::16x16::collapse
-	variable [namespace parent]::icon::16x16::expand
 	variable [namespace parent]::Priv
 
-	tk::frame $w -background white -takefocus 0
+	::treetable $w -takefocus 1 -showarrows 1 -borderwidth 1 -relief sunken -showlines no
 
-	set t $w.tree
-	set Priv(contents) $t
 	set Priv(contents:changed) 0
-	set images [list $collapse open $expand {}]
-	treectrl $t \
-		-class HelpTree \
-		-takefocus 1 \
-		-highlightthickness 0 \
-		-borderwidth 1 \
-		-relief sunken \
-		-showheader no \
-		-showbuttons yes \
-		-buttonimage $images \
-		-showroot no \
-		-showlines no \
-		-xscrollincrement 1 \
-		-background white \
-		-linestyle solid \
-		;
-	set Priv(contents:tree) $t
-	set height [font metrics [$t cget -font] -linespace]
-	if {$height < 18} { set height 18 }
-	$t configure -itemheight $height
+	set Priv(contents:tree) $w
 
-	$t state define hilite
-	$t column create -tags item
-	$t configure -treecolumn item
-	$t element create elemImg image
-	$t element create elemTxt text -lines 1
-	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus !hilite}
-					\#f2f2f2 {selected !focus !hilite}
-					\#ebf4f5 {active focus}
-					\#f0f9fa {selected hilite}
-					\#f0f9fa {hilite}} \
-		;
-	$t element create elemBrd border \
-		-filled no \
-		-relief raised \
-		-thickness 1 \
-		-background {#e5e5e5 {active focus} {} {}} \
-		;
-
-	$t style create styText
-	$t style elements styText {elemSel elemBrd elemImg elemTxt}
-	$t style layout styText elemImg -expand ns -padx {2 2}
-	$t style layout styText elemTxt -padx {2 2} -expand ns -squeeze x
-	$t style layout styText elemSel -union {elemTxt} -iexpand nes -ipadx {2 2}
-	$t style layout styText elemBrd -union {elemTxt} -iexpand nes -ipadx {2 2} -detach yes
-
-	$t notify install <Elem-enter>
-	$t notify install <Elem-leave>
-	$t notify bind $t <Elem-enter> [list [namespace parent]::VisitElem $t enter %I %E]
-	$t notify bind $t <Elem-leave> [list [namespace parent]::VisitElem $t leave %I %E]
-	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
-
-	bind $t <KeyPress-Left>		{ %W item collapse [%W item id active] }
-	bind $t <KeyPress-Right>	{ %W item expand   [%W item id active] }
-	bind $t <Alt-Left>			[namespace parent]::GoBack
-	bind $t <Alt-Right>			[namespace parent]::GoForward
-	bind $t <Alt-Left>			{+ break }
-	bind $t <Alt-Right>			{+ break }
-
-	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
-	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sh <ButtonPress-1> [list focus $t]
-	ttk::scrollbar $w.sv -orient vertical -command [list $t yview]
-	$t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sv <ButtonPress-1> [list focus $t]
-
-	grid $t    -row 0 -column 0 -sticky nsew
-	grid $w.sh -row 1 -column 0 -sticky ew
-	grid $w.sv -row 0 -column 1 -sticky ns
-	grid columnconfigure $w 0 -weight 1
-	grid rowconfigure $w 0 -weight 1
+	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
+	bind $w <Alt-Left>	[namespace parent]::GoBack
+	bind $w <Alt-Right>	[namespace parent]::GoForward
+	bind $w <Alt-Left>	{+ break }
+	bind $w <Alt-Right>	{+ break }
 
 	Update
 }
 
 
-proc FillContents {t depth root contents} {
+proc FillContents {t contents {depth 0}} {
 	variable [namespace parent]::Colors
-
 	variable [namespace parent]::icon::16x16::library
 	variable [namespace parent]::icon::16x16::document
 	variable [namespace parent]::icon::16x16::bookClosed
 	variable [namespace parent]::icon::16x16::bookOpen
 	variable [namespace parent]::Priv
 
+	set g 0
 	foreach group $contents {
-		set lastchild $root
+		set e 0
+		set d $depth
 		foreach entry $group {
 			if {[llength $entry] == 1} {
 				set topic [lindex $entry 0]
-				set item [$t item create -button auto]
-				set fill {}
+				set enabled yes
+				set collapse no
+				set tag "$d-$g-$e"
 				if {[llength $topic] > 0} {
 					set file [[namespace parent]::FullPath [lindex $topic 1]]
 					if {![file readable $file]} {
-						lappend fill -fill $Colors(foreground:gray)
-						$t item enabled $item no
+						set enabled no
 					} elseif {[llength $topic] > 2} {
-						set Priv(uri:$item) [::tkhtml::uri $file#[lindex $topic 2]]
+						set Priv(uri:$tag) [::tkhtml::uri $file#[lindex $topic 2]]
 					} else {
-						set Priv(uri:$item) [::tkhtml::uri $file]
+						set Priv(uri:$tag) [::tkhtml::uri $file]
 					}
 				}
 				set title [lindex $topic 0]
+				set icon ""
 				if {[llength $topic] == 2} {
 					set Priv(topic:$file) $title
-					if {$item == 1} { set icon $library } else { set icon $document }
+					if {$d == 0} { set icon $library } else { set icon $document }
 				} else {
-					$t item collapse $item
+					set collapse yes
 					set icon [list $bookClosed {!open} $bookOpen {open}]
 				}
-				$t item style set $item item styText
-				$t item element configure $item item elemTxt -text $title {*}$fill
-				$t item element configure $item item elemImg -image $icon
-				$t item lastchild $lastchild $item
-				if {[llength $topic] != 2} { set lastchild $item }
+				$t add $d \
+					-text $title \
+					-icon $icon \
+					-enabled $enabled \
+					-collapse $collapse \
+					-tag $tag \
+					;
+				if {[llength $topic] != 2} { incr d }
 			} else {
-				FillContents $t [expr {$depth + 1}] $root $entry
+				FillContents $t $entry [expr {$depth + 1}]
 			}
+			incr e
 		}
+		incr g
 	}
 }
 
@@ -546,14 +483,14 @@ proc Update {} {
 		set Contents [FilterContents $Contents $UnixOnly]
 	}
 	array unset Priv uri:*
-	set t $Priv(contents)
-	$t item delete all
-	FillContents $t 0 root $Contents
+	set t $Priv(contents:tree)
+	$t clear
+	FillContents $t $Contents
 	catch { $t activate 1 }
 }
 
 
-proc LoadPage {t item} {
+proc LoadPage {item} {
 	variable [namespace parent]::Priv
 	variable [namespace parent]::Links
 	variable [namespace parent]::ExternalLinks
@@ -578,74 +515,11 @@ namespace eval index {
 proc BuildFrame {w} {
 	variable [namespace parent]::Priv
 
-	tk::frame $w -background white -takefocus 0
-
-	set t $w.tree
-	set Priv(index) $t
 	set Priv(index:changed) 0
-	treectrl $t \
-		-class HelpTree \
-		-takefocus 1 \
-		-highlightthickness 0 \
-		-borderwidth 1 \
-		-relief sunken \
-		-showheader no \
-		-showbuttons no \
-		-showroot no \
-		-showlines no \
-		-xscrollincrement 1 \
-		-background white \
-		-linestyle solid \
-		;
-	set Priv(index:tree) $t
-	bind $t <Any-KeyPress> [namespace code { Select %W %A }]
-	set height [font metrics [$t cget -font] -linespace]
-	if {$height < 18} { set height 18 }
-	$t configure -itemheight $height
-
-	$t state define hilite
-	$t column create -tags item
-	$t configure -treecolumn item
-	$t element create elemTxt text -lines 1
-	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus}
-					\#f2f2f2 {selected !focus}
-					\#ebf4f5 {active focus}
-					\#f0f9fa {selected hilite}
-					\#f0f9fa {hilite}} \
-		;
-	$t element create elemBrd border \
-		-filled no \
-		-relief raised \
-		-thickness 1 \
-		-background {#e5e5e5 {active focus} {} {}} \
-		;
-
-	$t style create styText
-	$t style elements styText {elemSel elemBrd elemTxt}
-	$t style layout styText elemTxt -padx {4 4} -expand ns -squeeze x
-	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
-	$t style layout styText elemBrd -iexpand xy -detach yes
-
-	$t notify install <Item-enter>
-	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
-	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
-
-	ttk::scrollbar $w.sh -orient horizontal -command [list $t xview]
-	$t notify bind $w.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sh <ButtonPress-1> [list focus $t]
-	ttk::scrollbar $w.sv -orient vertical -command [list $t yview]
-	$t notify bind $w.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
-	bind $w.sv <ButtonPress-1> [list focus $t]
-
-	grid $t    -row 0 -column 0 -sticky nsew
-	grid $w.sh -row 1 -column 0 -sticky ew
-	grid $w.sv -row 0 -column 1 -sticky ns
-	grid columnconfigure $w 0 -weight 1
-	grid rowconfigure $w 0 -weight 1
-
+	set Priv(index:tree) $w
+	::treetable $w -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
+	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
+	bind $w <Any-KeyPress> [namespace code { Select %W %A }]
 	Update
 }
 
@@ -660,7 +534,7 @@ proc Update {} {
 	set file [[namespace parent]::FullPath Index.dat]
 	if {![file readable $file]} { return }
 	catch { source -encoding utf-8 $file }
-	$t item delete all
+	$t clear
 	set font [$t cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
 	array unset Priv index:path:*
@@ -669,30 +543,17 @@ proc Update {} {
 	foreach group $Index {
 		lassign $group alph entries
 
-		set item [$t item create]
-		$t item style set $item item styText
-		$t item element configure $item item elemTxt -text $alph -fill red4 -font $bold
-		$t item enabled $item no
-		$t item lastchild root $item
-
-		set lastchild $item
+		$t add 0 -text $alph -fill red4 -font $bold -enabled no -tag $alph -collapse no
 		set count 0
 
 		foreach entry $entries {
 			lassign $entry topic file fragment
-
-			set item [$t item create]
-			$t item style set $item item styText
-			$t item element configure $item item elemTxt -text $topic
-			$t item lastchild $lastchild $item
-
+			set tag "$alph-$count"
+			$t add 1 -text $topic -tag $tag
 			set path [[namespace parent]::FullPath $file]
-			set Priv(index:path:$item) [list $path $fragment]
-
-			if {$count == 0} {
-				set Priv(key:$alph) $item
-				incr count
-			}
+			set Priv(index:path:$tag) [list $path $fragment]
+			if {$count == 0} { set Priv(key:$alph) $tag }
+			incr count
 		}
 	}
 
@@ -700,7 +561,7 @@ proc Update {} {
 }
 
 
-proc LoadPage {t item} {
+proc LoadPage {item} {
 	variable [namespace parent]::Priv
 
 	if {[string length $item] == 0} { return }
@@ -738,14 +599,7 @@ proc BuildFrame {w} {
 
 	ttk::frame $w -takefocus 0
 	set top [ttk::frame $w.top -takefocus 0]
-	set bot [ttk::frame $w.bot -takefocus 0]
-	set t $bot.tree
-
-	grid $top -row 0 -column 0 -sticky ew
-	grid $bot -row 2 -column 0 -sticky nsew
-	grid rowconfigure $w 2 -weight 1
-	grid rowconfigure $w 1 -minsize $::theme::padding
-	grid columnconfigure $w 0 -weight 1
+	set bot $w.bot
 
 	### Top Frame ###########################################
 	ttk::entry $top.search \
@@ -782,70 +636,20 @@ proc BuildFrame {w} {
 	grid rowconfigure $top {1} -minsize $::theme::padding
 
 	foreach v {search entire case title current} {
-		bind $top.$v <Return> [namespace code [list Search $t]]
+		bind $top.$v <Return> [namespace code [list Search $bot]]
 	}
 
 	### Bottom Frame ########################################
-	treectrl $t \
-		-class HelpTree \
-		-takefocus 1 \
-		-highlightthickness 0 \
-		-borderwidth 1 \
-		-relief sunken \
-		-showheader no \
-		-showbuttons no \
-		-showroot no \
-		-showlines no \
-		-xscrollincrement 1 \
-		-background white \
-		-linestyle solid \
-		;
-	set Priv(search:tree) $t
-	set height [font metrics [$t cget -font] -linespace]
-	if {$height < 18} { set height 18 }
-	$t configure -itemheight $height
-	$t state define hilite
+	set Priv(search:tree) $bot
+	::treetable $bot -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
+	bind $bot <<TreeTableSelection>> [namespace code [list LoadPage %d]]
 
-	$t column create -tags item
-	$t element create elemTxt text -lines 1
-	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus}
-					\#f2f2f2 {selected !focus}
-					\#ebf4f5 {active focus}
-					\#f0f9fa {selected hilite}
-					\#f0f9fa {hilite}} \
-		;
-	$t element create elemBrd border \
-		-filled no \
-		-relief raised \
-		-thickness 1 \
-		-background {#e5e5e5 {active focus} {} {}} \
-		;
-
-	$t style create styText
-	$t style elements styText {elemSel elemBrd elemTxt}
-	$t style layout styText elemTxt -padx {4 4} -expand ns -squeeze x
-	$t style layout styText elemSel -union {elemTxt} -iexpand nsew
-	$t style layout styText elemBrd -iexpand xy -detach yes
-
-	$t notify install <Item-enter>
-	$t notify install <Item-leave>
-	$t notify bind $t <Item-enter> [list [namespace parent]::VisitItem $t enter %I]
-	$t notify bind $t <Item-leave> [list [namespace parent]::VisitItem $t leave %I]
-	$t notify bind $t <Selection>  [namespace code [list LoadPage $t %S]]
-
-	ttk::scrollbar $bot.sh -orient horizontal -command [list $t xview]
-	$t notify bind $bot.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
-	bind $bot.sh <ButtonPress-1> [list focus $t]
-	ttk::scrollbar $bot.sv -orient vertical -command [list $t yview]
-	$t notify bind $bot.sv <Scroll-y> { ::scrolledframe::sbset %W %l %u }
-	bind $bot.sv <ButtonPress-1> [list focus $t]
-
-	grid $t      -row 0 -column 0 -sticky nsew
-	grid $bot.sh -row 1 -column 0 -sticky ew
-	grid $bot.sv -row 0 -column 1 -sticky ns
-	grid columnconfigure $bot 0 -weight 1
-	grid rowconfigure $bot 0 -weight 1
+	### Geometry ############################################
+	grid $top -row 0 -column 0 -sticky ew
+	grid $bot -row 2 -column 0 -sticky nsew
+	grid rowconfigure $w 2 -weight 1
+	grid rowconfigure $w 1 -minsize $::theme::padding
+	grid columnconfigure $w 0 -weight 1
 }
 
 
@@ -904,31 +708,28 @@ proc Search {t} {
 
 	::log::close
 	set results [lsort -integer -decreasing -index 0 $results]
-	$t item delete all
+	$t clear
 
 	if {[llength $results] == 0} {
-		set item [$t item create]
-		$t item style set $item item styText
-		$t item element configure $item item elemTxt \
+		$t add 0 \
 			-text [set [namespace parent]::mc::NoMatch] \
 			-fill $Colors(foreground:litegray) \
+			-enabled no \
 			;
-		$t item enabled $item no
-		$t item lastchild root $item
 	} else {
+		set count 0
 		foreach match $results {
-			set item [$t item create]
-			$t item style set $item item styText
-			$t item element configure $item item elemTxt -text [lindex $match 3]
-			$t item lastchild root $item
-			set Priv(match:$item) $match
+			set tag "t-$count"
+			$t add 0 -text [lindex $match 3] -tag $tag
+			set Priv(match:$tag) $match
+			incr count
 		}
 		$t activate 1
 		for {set i 0} {$i < [llength $results]} {incr i} {
 			set path [lindex $results $i 1]
 			if {$Priv(current:file) eq $path} {
 				set Priv(current:file) ""
-				$t selection add [expr {$i + 1}]
+				$t select "t-$i"
 				break
 			}
 		}
@@ -961,7 +762,7 @@ proc FindTitle {file contents} {
 }
 
 
-proc LoadPage {t item} {
+proc LoadPage {item} {
 	variable [namespace parent]::Priv
 
 	if {[llength $item] > 0} {
@@ -974,7 +775,7 @@ proc LoadPage {t item} {
 
 proc Update {} {
 	variable [namespace parent]::Priv
-	$Priv(search:tree) item delete all
+	$Priv(search:tree) clear
 }
 
 } ;# namespace search
@@ -1000,8 +801,7 @@ proc TabChanged {nb} {
 		default	{ set state disabled }
 	}
 
-	$Priv(button:collapse) configure -state $state
-	$Priv(button:expand) configure -state $state
+	foreach type {expand collapse} { $Priv(button:$type) configure -state $state }
 }
 
 
@@ -1059,13 +859,13 @@ proc RecordGeometry {pw} {
 
 proc ExpandAllItems {} {
 	variable Priv
-	$Priv(contents) expand -recurse root
+	$Priv(contents:tree) expand
 }
 
 
 proc CollapseAllItems {} {
 	variable Priv
-	$Priv(contents) collapse -recurse root
+	$Priv(contents:tree) collapse
 }
 
 
@@ -1086,13 +886,13 @@ proc PopupMenu {dlg tab} {
 			$m add command \
 				-command [namespace code ExpandAllItems] \
 				-label " $mc::ExpandAllItems" \
-				-image $icon::16x16::collapse \
+				-image $::treetable::icon::16x16::collapse \
 				-compound left \
 				;
 			$m add command \
 				-command [namespace code CollapseAllItems] \
 				-label " $mc::CollapseAllItems" \
-				-image $icon::16x16::expand \
+				-image $::treetable::icon::16x16::expand \
 				-compound left \
 				;
 			$m add separator
@@ -1245,37 +1045,6 @@ proc BuildHtmlFrame {dlg w} {
 			bind $dlg <ButtonPress-4> [list event generate [$w drawable] <ButtonPress-4>]
 			bind $dlg <ButtonPress-5> [list event generate [$w drawable] <ButtonPress-5>]
 		}
-	}
-}
-
-
-proc VisitItem {t mode item} {
-	if {[string length $item] == 0} { return }
-	if {![$t item enabled $item]} { return }
-
-	switch $mode {
-		enter {
-			foreach i [$t item children root] { $t item state set $i {!hilite} }
-			catch { $t item state set $item {hilite} }
-		}
-
-		leave { catch { $t item state set $item {!hilite} } }
-	}
-}
-
-
-proc VisitElem {t mode item elem} {
-	if {[string length $item] == 0} { return }
-	if {![$t item enabled $item]} { return }
-	if {$elem ne "elemTxt" && $elem ne "elemBrd"} { return }
-
-	switch $mode {
-		enter {
-			foreach i [$t item children root] { $t item state set $i {!hilite} }
-			catch { $t item state set $item {hilite} }
-		}
-
-		leave { catch { $t item state set $item {!hilite} } }
 	}
 }
 
@@ -1702,57 +1471,6 @@ proc WriteOptions {chan} {
 ::options::hookWriter [namespace current]::WriteOptions
 
 
-ttk::copyBindings TreeCtrl HelpTree
-
-bind HelpTree <Motion> {
-	TreeCtrl::MotionInItems %W %x %y
-	TreeCtrl::MotionInElems %W %x %y
-}
-
-bind HelpTree <Leave> {
-	TreeCtrl::MotionInItems %W
-	TreeCtrl::MotionInElems %W
-}
-
-bind HelpTree <ButtonPress-1> {
-	set id [%W identify %x %y]
-	if {[llength $id] == 0} { return }
-	lassign $id where item arg1 _ _ elem
-	if {$arg1 eq "button"} {
-		TreeCtrl::ButtonPress1 %W %x %y
-	} elseif {$where eq "item" && $arg1 eq "column" && ($elem eq "elemTxt" || $elem eq "elemBrd")} {
-		TreeCtrl::ButtonPress1 %W %x %y
-		%W selection clear
-		%W selection add $item
-	}
-}
-
-bind HelpTree <KeyPress-Up> {
-	set item [TreeCtrl::UpDown %W active -1]
-	if {$item eq ""} return
-	%W activate $item
-	%W see active
-	break
-}
-
-bind HelpTree <KeyPress-Down> {
-	set item [TreeCtrl::UpDown %W active +1]
-	if {$item eq ""} return
-	%W activate $item
-	%W see active
-	break
-}
-
-bind HelpTree <KeyPress-space> {
-	 %W selection clear
-	 %W selection add active
-}
-
-bind HelpTree <KeyPress-Return> {
-	 %W selection clear
-	 %W selection add active
-}
-
 namespace eval icon {
 namespace eval 16x16 {
 
@@ -1774,24 +1492,6 @@ set broken [image create photo -data {
 	CQQCo5acaeo2oGbTJiy5HKHpBEfPnGIs9zbxP86wM5vl3MQEdaEQpUBy5jea/E3/3r+IuF/s
 	6/urDKQC5L9QrmmyDqSvf0/uVt7r9X6gRASPx7OzMxJ5xTQMx8cnT76eTqfnl31Wimg02nFt
 	bu6+5MWLhycnJ9O3/N/9/wBvyWHwrbQl3wAAAABJRU5ErkJggg==
-}]
-
-set collapse [image create photo -data {
-	R0lGODlhEAAQALIAAAAAAAAAMwAAZgAAmQAAzAAA/wAzAAAzMyH5BAUAAAYALAAAAAAQABAA
-	ggAAAGZmzIiIiLu7u5mZ/8zM/////wAAAAMlaLrc/jDKSRm4OAMHiv8EIAwcYRKBSD6AmY4S
-	8K4xXNFVru9SAgAh/oBUaGlzIGFuaW1hdGVkIEdJRiBmaWxlIHdhcyBjb25zdHJ1Y3RlZCB1
-	c2luZyBVbGVhZCBHSUYgQW5pbWF0b3IgTGl0ZSwgdmlzaXQgdXMgYXQgaHR0cDovL3d3dy51
-	bGVhZC5jb20gdG8gZmluZCBvdXQgbW9yZS4BVVNTUENNVAAh/wtQSUFOWUdJRjIuMAdJbWFn
-	ZQEBADs=
-}]
-
-set expand [image create photo -data {
-	R0lGODlhEAAQALIAAAAAAAAAMwAAZgAAmQAAzAAA/wAzAAAzMyH5BAUAAAYALAAAAAAQABAA
-	ggAAAGZmzIiIiLu7u5mZ/8zM/////wAAAAMnaLrc/lCB6MCkC5SLNeGR93UFQQRgVaLCEBas
-	G35tB9Qdjhny7vsJACH+gFRoaXMgYW5pbWF0ZWQgR0lGIGZpbGUgd2FzIGNvbnN0cnVjdGVk
-	IHVzaW5nIFVsZWFkIEdJRiBBbmltYXRvciBMaXRlLCB2aXNpdCB1cyBhdCBodHRwOi8vd3d3
-	LnVsZWFkLmNvbSB0byBmaW5kIG91dCBtb3JlLgFVU1NQQ01UACH/C1BJQU5ZR0lGMi4wB0lt
-	YWdlAQEAOw==
 }]
 
 set bookOpen [image create photo -data {

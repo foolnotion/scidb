@@ -16,11 +16,24 @@
 # (at your option) any later version.
 # ======================================================================
 
+package require treectrl
+package provide treetable
+
 proc treetable {path args} { return [treetable::treetable $path {*}$args] }
 
 namespace eval treetable {
 
+set Colors {
+	\#ffdd76 {selected focus}
+	\#ffdd76 {selected !focus}
+	\#ebf4f5 {active focus}
+	\#f0f9fa {hilite !selected}
+}
+# #e0e0e0 is an alternative for {selected !focus}
+
 proc treetable {path args} {
+	variable Colors
+
 	array set opts {
 		-takefocus				1
 		-borderwidth			1
@@ -89,20 +102,13 @@ proc treetable {path args} {
 	$t configure -treecolumn item
 	$t element create elemImg image
 	$t element create elemTxt text -lines 1
-	$t element create elemSel rect \
-		-fill {	\#ffdd76 {selected focus !hilite}
-					\#ffdd76 {selected !focus !hilite}
-					\#ebf4f5 {active focus}
-					\#f0f9fa {selected hilite}
-					\#f0f9fa {hilite}} \
-		;
+	$t element create elemSel rect -fill $Colors
 	$t element create elemBrd border \
 		-filled no \
 		-relief raised \
 		-thickness 1 \
 		-background {#e5e5e5 {active focus} {} {}} \
 		;
-
 	$t style create styText
 	$t style elements styText {elemSel elemBrd elemImg elemTxt}
 	$t style layout styText elemImg -expand ns -padx {2 2}
@@ -116,11 +122,6 @@ proc treetable {path args} {
 	$t notify bind $t <Elem-leave>	[namespace code [list VisitElem $t leave %I %E]]
 	$t notify bind $t <Expand-after>	[namespace code [list ExpandAfter $t %I]]
 	$t notify bind $t <Selection>  	[namespace code [list Selection $t %S]]
-
-	bind $t <Alt-Left>			[namespace parent]::GoBack
-	bind $t <Alt-Right>			[namespace parent]::GoForward
-	bind $t <Alt-Left>			{+ break }
-	bind $t <Alt-Right>			{+ break }
 
 	ttk::scrollbar $f.sh -orient horizontal -command [list $t xview]
 	$t notify bind $f.sh <Scroll-x> { ::scrolledframe::sbset %W %l %u }
@@ -147,8 +148,8 @@ proc WidgetProc {t command args} {
 
 	switch -- $command {
 		add {
-			if {2 > [llength $args]} {
-				error "wrong # args: should be \"[namespace current] add <depth> <text> ?<icon>? ?<args>?\""
+			if {1 > [llength $args]} {
+				error "wrong # args: should be \"[namespace current] add <depth> ?<args>?\""
 			}
 			lassign $args depth text
 			if {![info exists Vars($depth:lastchild)]} {
@@ -157,39 +158,34 @@ proc WidgetProc {t command args} {
 			array set opts {
 				-collapse	1
 				-enabled		1
+				-text			""
+				-icon			""
+				-fill			{}
 				-tags			{}
 				-tag			{}
 			}
-			set icon ""
-			if {[llength $args] > 2} {
-				set n 2
-				if {[string index [lindex $args 2] 0] ne "-"} {
-					set icon [lindex $args 2]
-					incr n
-				}
-				set args [lrange $args $n end]
-			} else {
-				set args {}
-			}
-			array set opts $args
+			array set opts [lrange $args 1 end]
 			set collapse $opts(-collapse)
 			set enabled $opts(-enabled)
 			set tags $opts(-tags)
+			set icon $opts(-icon)
 			if {[llength $tags] == 0} { set tags $opts(-tag) }
 			array unset opts -collapse
 			array unset opts -enabled
+			array unset opts -icon
 			array unset opts -tags
 			array unset opts -tag
+			if {[llength $opts(-fill)] == 0} {
+				set opts(-fill) [list black enabled $Vars(disabledforeground) !enabled]
+			}
 			set args [array get opts]
 			set item [$t item create -button auto -tags $tags]
-			set colors [list black enabled $Vars(disabledforeground) !enabled]
-			$t item collapse $item
+			if {$collapse} { set action collapse } else { set action expand }
+			$t item $action $item
 			$t item style set $item item styText
-			$t item element configure $item item elemTxt -text $text {*}$args
-			$t item element configure $item item elemTxt -fill $colors
-			if {[string length $icon]} {
-				$t item element configure $item item elemImg -image $icon
-			}
+			$t item element configure $item item elemTxt {*}$args
+			if {[string length $icon]} { $t item element configure $item item elemImg -image $icon }
+			$t item enabled $item $enabled
 			$t item lastchild $Vars($depth:lastchild) $item
 			set Vars([expr {$depth + 1}]:lastchild) $item
 			return
@@ -216,6 +212,17 @@ proc WidgetProc {t command args} {
 			return
 		}
 
+		clear {
+			return [$t item delete all]
+		}
+
+		activate {
+			if {[llength $args] < 1} {
+				error "wrong # args: should be \"[namespace current] activate <item>\""
+			}
+			return [$t activate [lindex $args 0]]
+		}
+
 		enable {
 			if {[llength $args] < 1} {
 				error "wrong # args: should be \"[namespace current] enable <item>\""
@@ -232,6 +239,14 @@ proc WidgetProc {t command args} {
 			set item [$t item id [lindex $args 0]]
 			$t item enabled $item 0
 			return
+		}
+
+		collapse {
+			return [$t collapse -recurse root]
+		}
+
+		expand {
+			return [$t expand -recurse root]
 		}
 
 		itemheight? {

@@ -76,13 +76,13 @@ struct TclInterpreter
 
 struct Progress : public util::Progress
 {
-	void update(unsigned progress)
+	void update(unsigned progress) override
 	{
 		::printf(".");
 		::fflush(stdout);
 	}
 
-	void finish() { }
+	void finish() throw() override {}
 };
 
 

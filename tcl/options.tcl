@@ -30,36 +30,41 @@ namespace eval options {
 
 namespace import ::tcl::mathfunc::max
 
-variable Callbacks {}
+array set Callbacks {}
 
 
-proc hookWriter {callback} {
+proc hookWriter {callback {file options}} {
 	variable Callbacks
-	lappend Callbacks $callback
+	lappend Callbacks($file) $callback
 }
 
 
 proc write {} {
 	variable Callbacks
 
-	set chan [open $::scidb::file::options.tmp w]
-	fconfigure $chan -encoding utf-8
+	foreach file [array names Callbacks] {
+		set filename [set ::scidb::file::$file]
+		set chan [open $filename.tmp w]
+		fconfigure $chan -encoding utf-8
 
-	puts $chan "# Scidb options file"
-	puts $chan "# Version: $::scidb::version"
-	puts $chan "# Syntax: Tcl language format"
-	puts $chan ""
+		puts $chan "# Scidb $file file"
+		puts $chan "# Version: $::scidb::version"
+		puts $chan "# Syntax: Tcl language format"
+		puts $chan ""
 
-	foreach callback $Callbacks { $callback $chan }
+		foreach callback $Callbacks($file) { $callback $chan }
 
-	foreach dialog [::toolbar::toolbarDialogs] {
-		puts $chan "::toolbar::setOptions $dialog {"
-		::options::writeArray $chan [::toolbar::getOptions $dialog]
-		puts $chan "}"
+		if {$file eq "options"} {
+			foreach dialog [::toolbar::toolbarDialogs] {
+				puts $chan "::toolbar::setOptions $dialog {"
+				::options::writeArray $chan [::toolbar::getOptions $dialog]
+				puts $chan "}"
+			}
+		}
+
+		close $chan
+		file rename -force $filename.tmp $filename
 	}
-
-	close $chan
-	file rename -force $::scidb::file::options.tmp $::scidb::file::options
 }
 
 

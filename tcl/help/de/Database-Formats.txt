@@ -104,13 +104,17 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
   </table>
 </box>
 
+<note>Die Dateien mit den Endungen <code>.sso</code> (Scid-Suchoptionendatei)
+und <code>.sor</code> (Scid-Repertoire-Datei) gehören nicht explizit zu einer
+Datenbank und werden von Scidb nicht beachtet.</note>
+
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 <p>
-Die Firma ChessBase hält das Format dieser Datenbank geheim und es wird deshalb
-nur im Lesemodus unterstützt. Nicht alle Partiedaten können korrekt gelesen
-werden; bei manchen Partien kommt es zur Meldung, daß die Partie nicht dekodiert
-werden konnte.
+Die Firma <a href="http://www.chessbase.de">ChessBase</a> hält das Format dieser
+Datenbank geheim und es wird deshalb nur im Lesemodus unterstützt. Nicht alle
+Partiedaten können korrekt gelesen werden; bei manchen Partien kommt es zur Meldung,
+daß die Partie nicht dekodiert werden konnte.
 </p>
 
 <annotation>
@@ -139,7 +143,7 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Turnierindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Teamindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Teaminformation</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Datenbankinitialiserungsdatei</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Datenbankinitialisierungsdatei</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML-Dokumentenverzeichnis</td></tr>
   </table>
 </box>
@@ -154,7 +158,9 @@ Scidb-Format empfohlen.
 </p>
 
 <p>
-Gemäß dem PGN-Standard ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
+Gemäß dem
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN-Standard</a>
+ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
 (ISO-<nobr>8859-1</nobr>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
 <nobr>UTF-8</nobr>-Markierung (<nobr>UTF-8</nobr>-BOM: Bytesequenz EF BB BF) so wird
 eine <nobr>UTF-8</nobr>-Enkodierung angenommen (gemäß

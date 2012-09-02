@@ -140,8 +140,13 @@ proc formatTime {time} {
 }
 
 
+proc timestampToTime {timestamp} {
+	return [formatTime [clock format $timestamp -format "%Y.%m.%d %H:%M:%S"]]
+}
+
+
 proc currentTime {} {
-	return [formatTime [clock format [clock seconds] -format "%Y.%m.%d %H:%M:%S"]]
+	return [timestampToTime [clock seconds]]
 }
 
 } ;# namespace locale

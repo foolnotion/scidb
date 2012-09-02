@@ -211,18 +211,16 @@ proc busy? {} {
 }
 
 
-proc get {name info} {
-	set key [NormalizeName $name]
-	set file [FindPhotoFile $key]
+proc get {name {info {}}} {
+	set file [findPhotoFile $name]
 	set found $file
 	set img ""
 
-	if {[string length $found] == 0} {
+	if {[string length $found] == 0 && [llength $info]} {
 		set aliases [lindex $info 20]
 
 		foreach alias $aliases {
-			set key [NormalizeName $alias]
-			set file [FindPhotoFile $key]
+			set file [findPhotoFile $alias]
 			if {[string length $file]} {
 				set found $file
 				break
@@ -243,12 +241,13 @@ proc get {name info} {
 }
 
 
-proc FindPhotoFile {name} {
-	set dir [string index $name 0]
+proc findPhotoFile {name} {
+	set key [NormalizeName $name]
+	set dir [string index $key 0]
 	if {![string match {[a-z]} $dir]} { return "" }
-	set path [file join $::scidb::dir::user photos $dir $name]
+	set path [file join $::scidb::dir::user photos $dir $key]
 	if {[file readable $path]} { return $path }
-	set path [file join $::scidb::dir::photos $dir $name]
+	set path [file join $::scidb::dir::photos $dir $key]
 	if {[file readable $path]} { return $path }
 	return ""
 }
@@ -495,7 +494,7 @@ proc AskPassword {parent} {
 	grid columnconfigure $top {3} -weight 1
 	grid rowconfigure $top {3 5}  -minsize $::theme::padY
 
-	::widget::dialogButtons $dlg {ok cancel} ok
+	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [list set [namespace current]::_result ok]
 	$dlg.cancel configure -command [list set [namespace current]::_result cancel]
 

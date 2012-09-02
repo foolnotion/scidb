@@ -143,12 +143,13 @@ proc build {parent} {
 	$top paneconfigure $rt -sticky nsew -stretch always
 
 	set tbFind [::toolbar::toolbar $lt \
-		-id find \
+		-id annotators-find \
 		-hide 1 \
 		-side bottom \
 		-alignment left \
 		-allow {top bottom} \
-		-tooltipvar [namespace current]::mc::Find]
+		-tooltipvar [namespace current]::mc::Find \
+	]
 	::toolbar::add $tbFind label -float 0 -textvar [::mc::var [namespace current]::mc::Find ":"]
 	set cb [::toolbar::add $tbFind ::ttk::combobox \
 		-width 14 \
@@ -159,11 +160,13 @@ proc build {parent} {
 	::toolbar::add $tbFind button \
 		-image $::icon::22x22::enter \
 		-tooltipvar [namespace current]::mc::FindAnnotator \
-		-command [namespace code [list Find $top $cb]]
+		-command [namespace code [list Find $top $cb] \
+	]
 	::toolbar::add $tbFind button \
 		-image $::icon::22x22::clear \
 		-tooltipvar [namespace current]::mc::ClearEntries \
-		-command [namespace code [list Clear $top $cb]]
+		-command [namespace code [list Clear $top $cb] \
+	]
 
 	return $table
 }
@@ -174,7 +177,9 @@ proc activate {w flag} {
 	variable ${path}::Vars
 
 	set Vars(active) $flag
-	names::TableUpdate2 $path [::scidb::db::get name]
+	set base [::scidb::db::get name]
+	set Vars($base:update) 1
+	names::UpdateTable $path $base
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $path.names $flag
@@ -231,6 +236,7 @@ proc InitBase {path base} {
 		set Vars($base:after:games) {}
 		set Vars($base:after:names) {}
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
+		set Vars($base:lastId) -1
 		::scidb::view::search $base $Vars($base:view) null none
 	}
 }
@@ -238,21 +244,23 @@ proc InitBase {path base} {
 
 namespace eval games {
 
-proc TableUpdate {path base {view -1} {index -1}} {
+proc TableUpdate {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 	
 	[namespace parent]::InitBase $path $base
 
 	if {$view == $Vars($base:view)} {
 		after cancel $Vars($base:after:games)
-		set Vars($base:after:games) [after idle [namespace code [list GameTableUpdate2 $path $base]]]
+		set Vars($base:after:games) [after idle [namespace code [list GameTableUpdate2 $id $path $base]]]
 	}
 }
 
 
-proc GameTableUpdate2 {path base} {
+proc GameTableUpdate2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
+	if {$id <= $Vars($base:lastId)} { return }
+	set Vars($base:lastId) $id
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 	set view $Vars($base:view)
@@ -306,27 +314,27 @@ proc UpdateTable {path base} {
 		if {$Vars($base:update)} {
 			set n [::scidb::db::count annotators $base]
 			after idle [list ::scrolledtable::update $path.names $base $n]
-			after idle [list [namespace parent]::games::GameTableUpdate2 $path $base]
+			after idle [list [namespace parent]::games::GameTableUpdate2 $Vars($base:lastId) $path $base]
 			set Vars($base:update) 0
 		}
-	} else {
-		set Vars($base:update) 1
 	}
 }
 
 
-proc TableUpdate {path base {view -1} {index -1}} {
+proc TableUpdate {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
 	after cancel $Vars($base:after:names)
-	set Vars($base:after:names) [after idle [namespace code [list TableUpdate2 $path $base]]]
+	set Vars($base:after:names) [after idle [namespace code [list TableUpdate2 $id $path $base]]]
 }
 
 
-proc TableUpdate2 {path base} {
+proc TableUpdate2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
+	if {$id <= $Vars($base:lastId)} { return }
+	set Vars($base:lastId) $id
 	set Vars($base:update) 1
 	UpdateTable $path $base
 }

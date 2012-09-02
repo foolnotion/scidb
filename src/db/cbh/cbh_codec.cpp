@@ -680,7 +680,9 @@ Codec::close()
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
+Codec::doOpen(	mstl::string const& rootname,
+					mstl::string const& encoding,
+					util::Progress& progress)
 {
 	ProgressWatcher watcher(progress, 0);
 
@@ -1245,7 +1247,7 @@ Codec::reloadDescription(mstl::string const& rootname)
 
 
 void
-Codec::reloadNamebases(mstl::string const& rootname, util::Progress& progress)
+Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
 {
 	ProgressWatcher watcher(progress, 0);
 

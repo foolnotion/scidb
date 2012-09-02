@@ -80,6 +80,7 @@ Progress::Progress(Tcl_Obj* cmd, Tcl_Obj* arg)
 	,m_numTicks(-1)
 	,m_sendFinish(false)
 	,m_firstStart(true)
+	,m_checkInterruption(false)
 {
 	invoke(__func__, m_cmd, m_open, m_arg, nullptr);
 }
@@ -91,6 +92,13 @@ Progress::~Progress() throw()
 		sendFinish();
 
 	invoke(__func__, m_cmd, m_close, m_arg, nullptr);
+}
+
+
+void
+Progress::checkInterruption()
+{
+	m_checkInterruption = true;
 }
 
 
@@ -145,6 +153,9 @@ Progress::start(unsigned total)
 	Tcl_DecrRefCount(maximum);
 	m_sendFinish = rc == TCL_OK;
 	checkResult(rc, m_cmd, m_start, m_arg);
+
+	if (m_checkInterruption && interrupted())
+		throw InterruptException();
 }
 
 
@@ -156,6 +167,9 @@ Progress::message(mstl::string const& msg)
 	int rc = invoke(__func__, m_cmd, m_message, m_arg, message, nullptr);
 	Tcl_DecrRefCount(message);
 	checkResult(rc, m_cmd, m_update, m_arg);
+
+	if (m_checkInterruption && interrupted())
+		throw InterruptException();
 }
 
 
@@ -167,6 +181,9 @@ Progress::tick(unsigned count)
 	int rc = invoke(__func__, m_cmd, m_tick, m_arg, value, nullptr);
 	Tcl_DecrRefCount(value);
 	checkResult(rc, m_cmd, m_update, m_arg);
+
+	if (m_checkInterruption && interrupted())
+		throw InterruptException();
 }
 
 
@@ -178,6 +195,9 @@ Progress::update(unsigned progress)
 	int rc = invoke(__func__, m_cmd, m_update, m_arg, value, nullptr);
 	Tcl_DecrRefCount(value);
 	checkResult(rc, m_cmd, m_update, m_arg);
+
+	if (m_checkInterruption && interrupted())
+		throw InterruptException();
 }
 
 
@@ -193,7 +213,7 @@ Progress::sendFinish() throw()
 
 
 void
-Progress::finish()
+Progress::finish() throw()
 {
 	int rc = sendFinish();
 	m_sendFinish = rc != TCL_OK;

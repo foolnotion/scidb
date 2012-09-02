@@ -251,6 +251,7 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(info) $info
 	set Vars(fullscreen) 0
 	set Vars(next) {}
+	set Vars(next:move) {}
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
@@ -404,6 +405,18 @@ proc resetGoto {w position} {
 	}
 	set Vars(current) {}
 	set Vars(next) {}
+	set Vars(next:move) {}
+}
+
+
+proc showNext {w position flag} {
+	variable ${position}::Vars
+	variable ::pgn::browser::Colors
+
+	if {[llength $Vars(next:move)]} {
+		if {$flag} { set attr background:nextmove } else { set attr background }
+		$w tag configure $Vars(next:move) -background $Colors($attr)
+	}
 }
 
 
@@ -475,13 +488,16 @@ proc ShowPosition {parent position key {state 0}} {
 proc SetupStyle {position {refresh yes}} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
+	variable ::pgn::browser::Options
 
 	if {[llength $Vars(next)]} { $Vars(pgn) tag configure $Vars(next) -background $Colors(background) }
+	if {$Options(style:column)} { set Vars(next) $Vars(next:move) } else { set Vars(next) {} }
+
 	::pgn::setup::setupStyle browser
 	::pgn::setup::configureText $Vars(frame)
 
 	if {$refresh} {
-		::widget::busyOperation ::scidb::game::refresh $position -immediate
+		::widget::busyOperation { ::scidb::game::refresh $position -immediate }
 	}
 }
 
@@ -502,7 +518,7 @@ proc ConfigureButtons {position} {
 }
 
 
-proc Update {position base {view -1} {index -1}} {
+proc Update {position id base {view -1} {index -1}} {
 	variable ${position}::Vars
 
 	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
@@ -585,7 +601,7 @@ proc NextGame {parent position {step 0}} {
 	set Vars(result) [::util::formatResult [::gametable::column $Vars(info) result]]
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set key $Vars(base):$number:$Vars(view)
-	set i [lsearch $Priv($key) $parent]
+	set i [lsearch -exact $Priv($key) $parent]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
 	set key $Vars(base):$Vars(number):$Vars(view)
@@ -593,7 +609,7 @@ proc NextGame {parent position {step 0}} {
 	ConfigureButtons $position
 	SetTitle $position
 	set number [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
-	::widget::busyOperation ::game::load $parent $position $Vars(base) $number
+	::widget::busyOperation { ::game::load $parent $position $Vars(base) $number }
 	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position
 }
@@ -853,6 +869,7 @@ proc UpdatePGN {position data {w {}}} {
 				set Vars(current) {}
 				set Vars(active) {}
 				set Vars(next) {}
+				set Vars(next:move) {}
 			}
 
 			move {
@@ -913,7 +930,8 @@ proc UpdatePGN {position data {w {}}} {
 					if {[llength $Vars(next)]} {
 						$w tag configure $Vars(next) -background $Colors(background)
 					}
-					if {$Options(style:column)} { set Vars(next) [::scidb::game::next keys $position] }
+					set Vars(next:move) [::scidb::game::next keys $position]
+					if {$Options(style:column)} { set Vars(next) $Vars(next:move) }
 					if {$Vars(active) eq $key} { $w configure -cursor {} }
 					set previous $Vars(current)
 					if {[llength $previous]} {
@@ -1059,7 +1077,7 @@ proc Destroy {dlg w position base} {
 	}
 
 	set key $Vars(base):$Vars(number):$Vars(view)
-	set i [lsearch $Priv($key) $dlg]
+	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
@@ -1268,6 +1286,7 @@ proc ConfigureBrowser {parent} {
 	variable 11::Vars
 
 	set Vars(next) {}
+	set Vars(next:move) {}
 	set Vars(current) {}
 	::scidb::game::new 11
 	::pgn::setup::openSetupDialog [winfo toplevel $parent] browser 11
@@ -1289,7 +1308,7 @@ proc ViewFullscreen {position board} {
 
 proc LoadGame {parent position fen} {
 	variable ${position}::Vars
-	::widget::busyOperation ::game::new $parent $Vars(base) [expr {$Vars(number) - 1}] $fen
+	::widget::busyOperation { ::game::new $parent $Vars(base) [expr {$Vars(number) - 1}] $fen }
 }	
 
 
@@ -1424,6 +1443,7 @@ namespace eval browser {
 
 proc refresh {regardFontSize}		{ ::browser::refresh $regardFontSize }
 proc resetGoto {w position}		{ ::browser::resetGoto $w $position }
+proc showNext {w position flag}	{ ::browser::showNext $w $position $flag }
 proc doLayout {position data w}	{ ::browser::UpdatePGN $position $data $w }
 
 } ;# browser

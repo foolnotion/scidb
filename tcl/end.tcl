@@ -107,6 +107,8 @@ set dialog::choosefont::iconCancel	$icon::iconCancel
 set dialog::choosefont::iconApply	$icon::iconApply
 set dialog::choosefont::iconReset	$icon::iconReset
 
+set dialog::progressbar::icon::16x16::stop $::icon::16x16::stop
+
 set tk::ShadowOffset $::shadow::offset
 
 proc dialog::choosefont::messageBox {parent title msg buttons defaultButton} {
@@ -124,11 +126,12 @@ set dialog::choosecolor::iconCancel	$icon::iconCancel
 
 proc dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
 
+proc toolbar::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
+
 proc calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc fsbox::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
 proc fsbox::tooltip {args} { return [::tooltip::tooltip {*}$args] }
-proc fsbox::messageBox {args} { return [::dialog::messageBox {*}$args] }
 proc fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIcons {*}$args] }
 proc fsbox::busy {args} { ::widget::busyCursor on }
 proc fsbox::unbusy {args} { ::widget::busyCursor off }
@@ -173,7 +176,7 @@ log::finishLayout
 proc dialog::fsbox::setBookmarks {args} {}
 
 if {[file readable $::scidb::file::options]} {
-	::load::source $::scidb::file::options -message $::load::mc::ReadingOptionsFile -encoding utf-8
+	::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8
 }
 
 switch $::scidb::revision {
@@ -206,6 +209,7 @@ switch $::scidb::revision {
 		array unset ::browser::Options foreground:empty
 		array unset ::browser::Options style:*
 		array unset ::browser::Options tabstop-*
+		array unset ::load::mc::ChessgamesComLinks
 		set ::export::Values(html,moves,notation) san
 		set ::export::Values(pdf,moves,notation) san
 		set ::export::Values(tex,moves,notation) san

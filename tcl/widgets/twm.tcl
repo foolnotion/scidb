@@ -612,7 +612,7 @@ proc SaveUndockPosition {twm top} {
 							lappend options [lindex $entry 0] [lindex $entry 4]
 						}
 					}
-					set pos [lsearch $panes $top]
+					set pos [lsearch -exact $panes $top]
 					if {$pos + 1 < [llength $panes]} {
 						lappend options -before [lindex $panes [expr {$pos + 1}]]
 					}
@@ -623,7 +623,7 @@ proc SaveUndockPosition {twm top} {
 				if {$top in $tabs} {
 					set container $w
 					set options [$w tab $top]
-					set pos [lsearch $tabs $top]
+					set pos [lsearch -exact $tabs $top]
 					if {$pos + 1 == [llength $tabs]} { set pos end }
 				}
 			}

@@ -112,6 +112,8 @@ set TooManyAnnotatorNames				"Too many annotator names in database (aborted)"
 set TooManySourceNames					"Too many source names in database (aborted)"
 set SeemsNotToBePgnText					"Seems not to be PGN text"
 set AbortedDueToInternalError			"Aborted due to an internal error"
+set AbortedDueToIoError					"Aborted due to an I/O error"
+set UserHasInterrupted					"User has interrupted"
 
 }
 
@@ -121,8 +123,7 @@ variable HiliteBackground	linen
 
 
 proc open {parent base files msg {encoding {}} {type {}} {useLog 1}} {
-	::remote::busyOperation \
-		[list [namespace current]::Open $parent $base $files $msg $encoding $type $useLog]
+	::remote::busyOperation { Open $parent $base $files $msg $encoding $type $useLog }
 }
 
 
@@ -228,7 +229,7 @@ proc openEdit {parent position {mode {}}} {
 	grid columnconfigure $top {0 2 6 8} -minsize $::theme::padding
 	grid columnconfigure $top 4 -minsize [expr {2*$::theme::padding}]
 
-	::widget::dialogButtons $dlg {import close} import
+	::widget::dialogButtons $dlg {import close} -default import
 	bind $dlg <Return> {}
 	$dlg.import configure -command [namespace code [list Import $position $dlg]]
 	$dlg.close configure -command [namespace code [list Close $position $dlg]]
@@ -351,14 +352,29 @@ proc Open {parent base files msg encoding type useLog} {
 
 	foreach file $files {
 		::log::info [format $mc::ImportingPgnFile $file]
+		set info "$::mc::File: [file tail $file]"
+		set options [list -message $msg -log $useLog -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
-		set options [list -message $msg -log $useLog]
-		if {[catch { ::progress::start $parent $cmd [list -encoding $encoding] $options 0 } count opts]} {
+		set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
+		if {[catch { ::util::catchException $cmd count } rc opts]} {
 			::log::error $mc::AbortedDueToInternalError
 			::progress::close
 			::log::close
 			return {*}$opts -rethrow 1 $count
 		}
+		if {$rc == 1} {
+			::log::error $mc::AbortedDueToIoError
+			::progress::close
+			::log::close
+			set Priv(ok) 0
+			return 0
+		}
+		if {$rc < 0} {
+			::log::warning $mc::UserHasInterrupted
+			set count [expr {-$rc - 2}]
+			set rc -1
+		}
+
 		update idletasks	;# be sure the following will be appended
 
 		if {$count == 0} {
@@ -368,19 +384,37 @@ proc Open {parent base files msg encoding type useLog} {
 		} else {
 			::log::info	[format $mc::ImportedGames [::locale::formatNumber $count]]
 		}
+
+		if {$rc == -1} { break }
 	}
 
 	set cmd [list ::scidb::db::save $base $ngames]
-	if {[catch { ::progress::start $parent $cmd {} {} 1 } result opts]} {
-		::progress::close
-		::log::close
-		return {*}$opts -rethrow 1 $result
+	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
+	if {$rc == 1} {
+		::log::error $mc::AbortedDueToIoError
+		set Priv(ok) 0
 	}
+	::progress::close
 	::log::close
 
 	return $Priv(ok)
 }
 
+
+proc DoImport {parent base file encoding options} {
+	set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
+	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
+	set rc [::util::catchException $cmd count]
+	if {$rc == 1} {
+		::log::error $mc::AbortedDueToIoError
+		return -1
+	}
+	if {$rc < 0} {
+		::log::warning $mc::UserHasInterrupted
+		set count [expr {-$rc - 2}]
+	}
+	return $count
+}
 
 
 proc PopupMenu {edit position x y} {
@@ -697,7 +731,7 @@ proc Import {position dlg} {
 			set code en
 		}
 
-		set index [lsearch -index 0 $Priv($position:sets) $code]
+		set index [lsearch -exact -index 0 $Priv($position:sets) $code]
 		$Priv($position:figurines) current [incr index]
 	}
 

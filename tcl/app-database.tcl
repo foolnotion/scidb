@@ -24,7 +24,7 @@
 # (at your option) any later version.
 # ======================================================================
 
-::util::source database--pane
+::util::source database-pane
 
 namespace eval application {
 namespace eval database {
@@ -207,10 +207,10 @@ proc build {tab width height} {
 		-opaqueresize true \
 		-borderwidth 0 \
 		-sashcmd [namespace code SashCmd] \
-		]
+	]
 	pack $main -fill both -expand yes
 
-	set switcher [::ttk::frame $main.switcher -borderwidth 1]
+	set switcher [::ttk::frame $main.switcher -borderwidth 1 -relief sunken]
 	set contents [::ttk::notebook $tab.contents -class UndockingNotebook -takefocus 1]
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
@@ -233,16 +233,18 @@ proc build {tab width height} {
 	$main paneconfigure $switcher -sticky nsew -stretch never
 	$main paneconfigure $contents -sticky nsew -stretch always
 
-	bind $contents.games <<TableMinSize>> [namespace code [list TableMinSize $main $contents %d]]
+	bind $contents.games <<TableMinSize>> \
+		[namespace code [list TableMinSize $main $contents $switcher %d]]
 	bind $contents.games <Configure> [namespace code [list ConfigureList $main $contents $switcher %h]]
 
 	bind $main <Double-Button-1>	{ break }
 	bind $main <Double-Button-2>	{ break }
 
 	set tbFile [::toolbar::toolbar $switcher \
-						-hide 1 \
-						-id switcher \
-						-tooltipvar [namespace current]::mc::File]
+		-hide 1 \
+		-id database-switcher \
+		-tooltipvar [namespace current]::mc::File \
+	]
 
 	foreach event {ToolbarShow ToolbarHide ToolbarFlat ToolbarIcon} {
 		bind $tbFile <<$event>> [namespace code [list ToolbarShow $switcher]]
@@ -289,11 +291,12 @@ proc build {tab width height} {
 	set Vars(selection) 0
 	set Vars(after) {}
 	set Vars(lock:minsize) 0
+	set Vars(minheight:switcher) 0
 
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
 	bind $contents <<LanguageChanged>> [namespace code LanguageChanged]
 
-	AddBase $ClipbaseType $::scidb::clipbaseName {} no
+	AddBase $ClipbaseType $::scidb::clipbaseName no
 	SetClipbaseDescription
 	bind $contents <<LanguageChanged>> +[namespace code SetClipbaseDescription]
 	Switch $clipbaseName
@@ -331,7 +334,7 @@ proc preOpen {parent} {
 		}
 		if {[file readable $file]} {
 			::log::hide 1
-			openBase $parent $file no $encoding $readonly $active
+			openBase $parent $file no -encoding $encoding -readonly $readonly -switchToBase $active
 			if {$active} { set current $file }
 			::log::hide 0
 		} 
@@ -350,7 +353,7 @@ proc activate {w flag} {
 }
 
 
-proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}} {
+proc openBase {parent file byUser args} {
 	variable Vars
 	variable RecentFiles
 	variable Types
@@ -371,11 +374,15 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 
 	if {[file extension $file] eq ".scv"} {
-		return [::remote::busyOperation \
-					[list OpenArchive $parent $file $byUser $encoding $readonly $switchToBase]]
+		return [::remote::busyOperation { OpenArchive $parent $file $byUser $args }]
 	}
 
-	if {$encoding eq $::encoding::mc::AutoDetect} { set encoding $::encoding::autoEncoding }
+	array set opts { -readonly -1 -encoding "" -switchToBase 1 }
+	array set opts $args
+
+	if {$opts(-encoding) eq $::encoding::mc::AutoDetect} {
+		set opts(-encoding) $::encoding::autoEncoding
+	}
 	set i [lsearch -exact -index 2 $Vars(bases) $file]
 	if {$i == -1} {
 		set ext [string range [file extension $file] 1 end]
@@ -394,53 +401,53 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 				}
 			}
 		}
-		if {[llength $encoding] == 0 || $encoding eq $::encoding::autoEncoding} {
+		if {[llength $opts(-encoding)] == 0 || $opts(-encoding) eq $::encoding::autoEncoding} {
 			set k [FindRecentFile $file]
-			if {$k >= 0} { set encoding [lindex $RecentFiles $k 2] }
+			if {$k >= 0} { set opts(-encoding) [lindex $RecentFiles $k 2] }
 		}
-		if {$readonly == -1} {
+		if {$opts(-readonly) == -1} {
 			set k [FindRecentFile $file]
-			if {$k >= 0} { set readonly [lindex $RecentFiles $k 3] }
+			if {$k >= 0} { set opts(-readonly) [lindex $RecentFiles $k 3] }
 		}
 		set name [::util::databaseName $file]
 		set msg [format $mc::LoadMessage $name]
-		if {[llength $encoding] == 0} {
+		if {[llength $opts(-encoding)] == 0} {
 			switch $ext {
-				sci - si3 - si4 - cbh	{ set encoding auto }
-				pgn - gz - zip				{ set encoding $::encoding::defaultEncoding }
+				sci - si3 - si4 - cbh	{ set opts(-encoding) auto }
+				pgn - gz - zip				{ set opts(-encoding) $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
 			sci - si3 - si4 - cbh {
 				set args {}
-				if {$readonly == -1} {
+				if {$opts(-readonly) == -1} {
 					switch $ext {
-						cbh			{ set readonly 1 }
-						si3 - si4	{ set readonly $Defaults(si4-readonly) }
-						default		{ set readonly 0 }
+						cbh			{ set opts(-readonly) 1 }
+						si3 - si4	{ set opts(-readonly) $Defaults(si4-readonly) }
+						default		{ set opts(-readonly) 0 }
 					}
 				}
-				if {[llength $encoding]} { lappend args -encoding $encoding }
+				set args {}
+				if {[llength $opts(-encoding)]} { lappend args -encoding $opts(-encoding) }
 				set cmd [list ::scidb::db::load $file]
-				set options [list -message $msg]
-				if {[::util::catchIoError [list ::progress::start $parent $cmd $args $options]]} {
-					return 0
-				}
+				set options [list -message $msg -interrupt yes]
+				set rc [::util::catchException { ::progress::start $parent $cmd $args $options }]
+				if {$rc != 0} { return 0 }
 			}
 			pgn - gz - zip {
 				set type [lsearch -exact $Types(sci) Temporary]
-				set cmd [list ::import::open $parent $file [list $file] $msg $encoding $type]
-				if {[::util::catchIoError $cmd rc]} { return 0 }
-				if {!$rc} {
-					::scidb::db::close $file
+				set cmd [list ::import::open $parent $file [list $file] $msg $opts(-encoding) $type]
+				set rc [::util::catchException $cmd]
+				if {$rc != 0} {
+					catch { ::scidb::db::close $file }
 					return 0
 				}
-				set readonly 1
+				set opts(-readonly) 1
 			}
 		}
-		set ro $readonly
+		set readonly $opts(-readonly)
 		if {[::scidb::db::get upgrade? $file]} {
-			set readonly 1
+			set opts(-readonly) 1
 			set rc [::dialog::question \
 						-parent $parent \
 						-message [format $mc::UpgradeDatabase $name] \
@@ -449,22 +456,21 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 			if {$rc eq "yes"} {
 				set cmd [list ::scidb::db::upgrade $file]
 				set options [list -message [format $mc::UpgradeMessage $name]]
-				if {![::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
-					::scidb::db::close $file
-					set cmd [list ::scidb::db::load $file]
-					set options [list -message $msg]
-					if {[::util::catchIoError [list ::progress::start $parent $cmd {} $options]]} {
-						return 0
-					}
-					set readonly $ro
-				}
+				set rc [::util::catchException { ::progress::start $parent $cmd {} $options }]
+				::scidb::db::close $file
+				if {$rc != 0} { return 0 }
+				set cmd [list ::scidb::db::load $file]
+				set options [list -message $msg -interrupt yes]
+				set rc [::util::catchException { ::progress::start $parent $cmd {} $options }]
+				if {$rc != 0} { return 0 }
+				set opts(-readonly) $readonly
 			}
 		}
-		if {![::scidb::db::get writeable? $file]} { set readonly 1 }
-		::scidb::db::set readonly $file $readonly
+		if {![::scidb::db::get writeable? $file]} { set opts(-readonly) 1 }
+		::scidb::db::set readonly $file $opts(-readonly)
 		set type [::scidb::db::get type $file]
-		AddBase $type $file $encoding $readonly $switchToBase
-		AddRecentFile $type $file $encoding $ro
+		AddBase $type $file $opts(-readonly) $opts(-encoding) $opts(-switchToBase)
+		AddRecentFile $type $file $opts(-encoding) $readonly
 		CheckEncoding $parent $file [::scidb::db::get encoding $file]
 	} else {
 		SeeSymbol [lindex $Vars(bases) $i 0]
@@ -474,7 +480,7 @@ proc openBase {parent file byUser {encoding ""} {readonly -1} {switchToBase yes}
 		}
 	}
 
-	if {$switchToBase} { Switch $file }
+	if {$opts(-switchToBase)} { Switch $file }
 	return 1
 }
 
@@ -504,7 +510,7 @@ proc prepareClose {} {
 
 
 proc closeBase {parent {file {}} {number -1}} {
-	::remote::busyOperation [list [namespace current]::CloseBase $parent $file $number]
+	::remote::busyOperation { CloseBase $parent $file $number }
 }
 
 
@@ -519,8 +525,8 @@ proc newBase {parent file {encoding ""}} {
 		::scidb::db::new $file [lsearch -exact $Types(sci) $type] {*}$encoding
 		::scidb::db::attach $file $file
 		set encoding [::scidb::db::get encoding $file]
-		AddBase $type $file $encoding 0
-		AddRecentFile $type $file $encoding 0
+		AddBase $type $file no $encoding
+		AddRecentFile $type $file $encoding no
 		::widget::busyCursor off
 	} else {
 		set msg [format $mc::DatabaseAlreadyOpen  [::util::databaseName $file]]
@@ -603,7 +609,8 @@ proc addRecentlyUsedToMenu {parent m} {
 				-label " $name  \u25b8  $dir" \
 				-image [set [namespace current]::icons::${type}(16x16)] \
 				-compound left \
-				-command [namespace code [list openBase $parent $file yes $encoding $readonly]] \
+				-command [namespace code \
+					[list openBase $parent $file yes -encoding $encoding -readonly $readonly]] \
 				;
 		}
 		$m add separator
@@ -619,7 +626,7 @@ proc addRecentlyUsedToMenu {parent m} {
 }
 
 
-proc OpenArchive {parent file byUser encoding readonly switchToBase} {
+proc OpenArchive {parent file byUser args} {
 	variable _Select
 
 	lassign [::archive::inspect $file] header files
@@ -662,7 +669,7 @@ proc OpenArchive {parent file byUser encoding readonly switchToBase} {
 	if {!$rc} { return [::log::show] }
 
 	if {[llength $bases] == 1} {
-		return [openBase $parent [lindex $bases 0] $byUser $encoding $readonly $switchToBase]
+		return [openBase $parent [lindex $bases 0] $byUser {*}$args]
 	}
 
 	set dlg $parent.__choose__
@@ -690,9 +697,8 @@ proc OpenArchive {parent file byUser encoding readonly switchToBase} {
 	grid rowconfigure $top [list 0 $r] -minsize $::theme::pady
 	grid rowconfigure $top 2 -minsize $::theme::padY
 	grid columnconfigure $top {0 2} -minsize $::theme::padx
-	::widget::dialogButtons $dlg {ok cancel} ok
-	$dlg.ok configure -command \
-		[namespace code [list OpenBases $parent $dlg $bases $byUser $encoding $readonly]]
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.ok configure -command [namespace code [list OpenBases $parent $dlg $bases $byUser {*}$args]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	::util::place $dlg center $parent
 	wm deiconify $dlg
@@ -704,12 +710,16 @@ proc OpenArchive {parent file byUser encoding readonly switchToBase} {
 }
 
 
-proc OpenBases {parent dlg bases byUser encoding readonly} {
+proc OpenBases {parent dlg bases byUser args} {
 	variable _Select
+
+	array set opts { -readonly -1 -encoding "" -switchToBase 1 }
+	array set opts $args
+	set opts(-switchToBase) 0
 
 	set n 0
 	foreach base $bases {
-		if {$_Select($n)} { openBase $parent $base $byUser $encoding $readonly no }
+		if {$_Select($n)} { openBase $parent $base $byUser {*}[array get opts] }
 		incr n
 	}
 	destroy $dlg
@@ -754,8 +764,9 @@ proc TabChanged {} {
 	variable Vars
 
 	set tab [lindex [split [$Vars(contents) select] .] end]
-	if {$tab ne $Vars(current:tab)} {
-		[namespace current]::[set Vars(current:tab)]::activate $Vars($Vars(current:tab)) 0
+	set w $Vars($Vars(current:tab))
+	if {$tab ne $Vars(current:tab) && $w ne [winfo toplevel $w]} {
+		[namespace current]::[set Vars(current:tab)]::activate $w 0
 	}
 	[namespace current]::${tab}::activate $Vars($tab) 1
 	set Vars(current:tab) $tab
@@ -801,7 +812,7 @@ proc ToolbarShow {pane} {
 	variable Vars
 
 	update idletasks
-	set minheight [::toolbar::totalheight $pane]
+	set minheight [::toolbar::totalHeight $pane]
 	if {$minheight == 1} {
 		after idle [namespace code [list ToolbarShow $pane]]
 	} else {
@@ -811,13 +822,15 @@ proc ToolbarShow {pane} {
 }
 
 
-proc TableMinSize {main pane sizeInfo} {
+proc TableMinSize {main pane switcher sizeInfo} {
 	variable Vars
 
 	if {[llength $sizeInfo] != 3} { return }
 	lassign $sizeInfo minwidth minheight Vars(incr)
+	set height [winfo height $pane]
+	if {$height == 1} { return }
 
-	incr minheight [winfo height $pane]
+	incr minheight $height
 	incr minheight [expr {-[winfo height $Vars(games)]}]
 	incr minheight [expr {2*[games::borderwidth $Vars(games)]}]
 
@@ -825,17 +838,17 @@ proc TableMinSize {main pane sizeInfo} {
 		$main paneconfigure $pane -minsize $minheight
 	}
 
-	set h [expr {(([winfo height $pane] - $minheight)/$Vars(incr))*$Vars(incr) + $minheight}]
-	if {$h > [winfo height $pane]} { incr h [expr {-$Vars(incr)}] }
-	if {$h < [winfo height $pane]} {
-		incr Vars(pixels) [winfo height $pane]
+	set h [expr {(($height - $minheight)/$Vars(incr))*$Vars(incr)} + $minheight]
+	if {$h > $height} { incr h [expr {-$Vars(incr)}] }
+	if {$h < $height} {
+		incr Vars(pixels) $height
 		incr Vars(pixels) [expr {-$h}]
 		if {$Vars(pixels) >= $Vars(incr)} {
 			incr h $Vars(incr)
 			incr Vars(pixels) [expr {-$Vars(incr)}]
 		}
 		lassign [$main sash coord 0] x y
-		$main sash place 0 $x [expr {$y + [winfo height $pane] - $h}]
+		$main sash place 0 $x [expr {$y + $height - $h}]
 	}
 
 	after idle [namespace code [list LayoutSwitcher]]
@@ -852,8 +865,8 @@ proc BuildSwitcher {pane} {
 		-takefocus 1 \
 		-background white \
 		-height $height \
-		-borderwidth 0 \
-		-yscrollcommand [list $pane.sb set]]
+		-yscrollcommand [list $pane.sb set]] \
+		;
 	set Vars(canvas) $canv
 	set Vars(active) 0
 	set sb [::ttk::scrollbar $pane.sb -orient vertical -takefocus 0 -command [list $canv yview]]
@@ -996,7 +1009,7 @@ proc OpenUri {uriFiles} {
 	# take into account that the application is currently loading a database
 	::remote::requestOpenBases $databaseList
 #	foreach file $databaseList {
-#		openBase $Vars(canvas) $file no {} -1 [expr {[llength $databaseList] == 1}]
+#		openBase $Vars(canvas) $file no -switchToBase [expr {[llength $databaseList] == 1}]
 #	}
 
 	if {[llength $errorList]} {
@@ -1059,7 +1072,7 @@ proc DeleteBase {number} {
 }
 
 
-proc AddBase {type file encoding readonly {selectBase yes}} {
+proc AddBase {type file readonly {encoding ""} {selectBase yes}} {
 	variable Vars
 	variable Defaults
 
@@ -1240,7 +1253,7 @@ proc CheckTabState {} {
 }
 
 
-proc Update {path base {view 0} {index -1}} {
+proc Update {path id base {view 0} {index -1}} {
 	variable Vars
 
 	if {$index >= 0} {
@@ -1445,6 +1458,28 @@ proc LayoutSwitcher {{w -1} {h -1}} {
 }
 
 
+proc ComputeMinHeight {} {
+	variable Defaults
+	variable Vars
+
+	$Vars(canvas) itemconfigure size0 -state normal
+	lassign [$Vars(canvas) bbox size0] x1 y1 x2 y2
+	set textHeight [expr {$y2 - $y1}]
+
+	set ipad 2
+	set minheight $Defaults(iconsize)
+	incr minheight $Defaults(symbol-padding)
+	incr minheight [expr {2*$ipad + 4}]
+	if {$Defaults(iconsize) < 32} {
+		set minheight [expr {max($minheight, $textHeight + 4)}]
+	} else {
+		set minheight [expr {max($minheight, 2*$textHeight + 6)}]
+	}
+
+	return $minheight
+}
+
+
 proc ConfigureList {main contents switcher height} {
 	variable Vars
 
@@ -1456,7 +1491,7 @@ proc ConfigureList {main contents switcher height} {
 		set wantedHeight [expr {$n*$Vars(incr) + $overhang + 2}]
 		set offset [expr {$height - $wantedHeight}]
 
-		if {$offset != 0} {
+		if {$offset != 0 || $Vars(minheight:switcher) == 0} {
 			after cancel $Vars(afterid)
 			set Vars(afterid) [after 50 [namespace code \
 				[list ResizeList $main $contents $switcher $wantedHeight $offset]]]
@@ -1475,9 +1510,16 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 
 	set Vars(pixels) $pixels
 
-	if {$offset != 0} {
+	if {$offset != 0 || $Vars(minheight:switcher) == 0} {
 		lassign [$main sash coord 0] x y
 		incr y $offset
+
+		if {$Vars(minheight:switcher) == 0} {
+			set minheight [expr {[ComputeMinHeight] + [::toolbar::totalHeight $switcher] + 2}]
+			while {$minheight > $y} { incr y $Vars(incr) }
+			set Vars(minheight:switcher) $minheight
+		}
+
 		$main sash place 0 $x $y
 	}
 }
@@ -1707,7 +1749,7 @@ proc EditDescription {canv index} {
 	$top.entry selection range 0 end
 	$top.entry icursor end
 	pack $top.entry -fill x -padx $::theme::padx -pady $::theme::pady
-	::widget::dialogButtons $dlg {ok cancel} ok
+	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list SetDescription $dlg $index]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -1790,7 +1832,7 @@ proc Compact {parent file} {
 		set cmd [list ::scidb::db::compact $file]
 		set name [::util::databaseName $file]
 		set options [list -message [format $mc::CompactMessage $name]]
-		::util::catchIoError [list ::progress::start $parent $cmd {} $options]
+		::util::catchException { ::progress::start $parent $cmd {} $options }
 	}
 }
 
@@ -1819,7 +1861,7 @@ proc Recode {number parent} {
 		pgn {
 			::import::showOnlyEncodingWarnings true
 			closeBase $parent $file $index
-			openBase $parent $file no $encoding true
+			openBase $parent $file no -encoding $encoding -readonly yes
 			::import::showOnlyEncodingWarnings false
 		}
 
@@ -1878,7 +1920,7 @@ proc ChangeIcon {number parent} {
 	bind $list <Escape> [list $dlg.cancel invoke]
 	bind $list <<ListboxSelect>> [namespace code [list SelectIcon %W %d $index]]
 	$list select $Vars(icon)
-	::widget::dialogButtons $dlg {ok cancel} ok
+	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list SetIcon $dlg $index]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -2121,7 +2163,7 @@ proc Properties {index popup} {
 		set Vars(properties) $dlg
 		::tooltip::popup $canv $dlg cursor
 	} elseif {![winfo exists $dlg.close]} {
-		::widget::dialogButtons $dlg close close
+		::widget::dialogButtons $dlg close
 		$dlg.close configure -command [list destroy $dlg]
 		wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 		wm withdraw $dlg
@@ -2430,11 +2472,11 @@ proc Dock {nb w} {
 	set id [lindex [split $w .] end]
 	set indices {}
 	foreach t [$nb tabs] {
-		set i [lsearch $Vars(taborder) [lindex [split $t .] end]]
+		set i [lsearch -exact $Vars(taborder) [lindex [split $t .] end]]
 		lappend indices $i
 	}
 	set indices [lsort -integer $indices]
-	set i [lsearch $Vars(taborder) $id]
+	set i [lsearch -exact $Vars(taborder) $id]
 	set k 0
 	while {$k < [llength $indices] && [lindex $indices $k] < $i} { incr k }
 	if {$k == [llength [$nb tabs]]} { set k end }

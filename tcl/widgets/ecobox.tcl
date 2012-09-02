@@ -143,6 +143,8 @@ proc ValidateEco {eco key} {
 
 
 proc Completion {w code sym var} {
+	if {[$w popdown?]} { return }
+
 	if {$sym eq "Tab"} {
 		after idle [namespace code [list Completion2 $w $var no]]
 	} elseif {[string is alnum -strict $code] || $code eq " "} {

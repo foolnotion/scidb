@@ -103,7 +103,7 @@ der extrahierten Datei wiederherzustellen.
 </p>
 
 <p>
-Die Attribute <code>&lt;FileName&gt;</code>, <code>URI</code>,
+Die Attribute <code>&lt;FileName&gt;</code>, <code>&lt;URI&gt;</code>,
 <code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
 <code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code> und
 <code>&lt;Modified&gt;</code> können in beliebiger Reihenfolge aufgeführt werden.

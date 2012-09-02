@@ -84,6 +84,11 @@ switch $::tcl_platform(platform) {
 proc currentTheme {} { return $::ttk::currentTheme }
 
 
+proc getToplevelBackground {} {
+	return [set [namespace current]::Settings(tk:background)]
+}
+
+
 proc getBackgroundColor {} {
 	return [ttk::style lookup [currentTheme] -background]
 }
@@ -864,6 +869,26 @@ bind ComboboxListbox <ButtonPress-4> {
 bind ComboboxListbox <ButtonPress-5> {
 	%W yview scroll +1 units
 	after idle { ttk::combobox::LBHover %W %x %y }
+}
+
+bind ComboboxListbox <Any-Key> {
+	if {[string is alnum -strict "%A"]} {
+		set key  [string toupper "%A"]
+		set cb [ttk::combobox::LBMaster %W]
+		set values [$cb cget -values]
+		set i [$cb current]
+		if {$i >= 0} {
+			while {$i < [llength $values] && [string index [lindex $values $i] 0] eq $key} { incr i }
+			set i [lsearch -glob -start $i $values ${key}*]
+		}
+		if {$i == -1} { set i [lsearch -glob $values ${key}*] }
+		if {$i >= 0} {
+			%W activate $i
+			%W selection clear 0 end
+			%W selection set $i
+			%W see $i
+		}
+	}
 }
 
 bind ComboboxPopdown <ButtonPress-4> { %W.l yview scroll -1 units }

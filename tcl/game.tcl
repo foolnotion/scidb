@@ -735,10 +735,10 @@ proc traverseHistory {headerScript gameScript} {
 	set count 0
 
 	foreach entry $History {
-		if {[lsearch -index 3 $List [lindex $entry 1]] == -1} {
+		if {[lsearch -exact -index 3 $List [lindex $entry 1]] == -1} {
 			lassign $entry tags key 
 			set base [lindex $key 0]
-			set i [lsearch $myList $base]
+			set i [lsearch -exact $myList $base]
 			if {$i == -1} { lappend myList $base }
 			lappend data($base) $tags $count
 		}
@@ -769,7 +769,7 @@ proc openGame {parent index} {
 	set rc 1
 	set parent [winfo toplevel $parent]
 
-	if {[::application::database::openBase $parent $base no $encoding]} {
+	if {[::application::database::openBase $parent $base no -encoding $encoding]} {
 		set pos [new $parent $base $number]
 		if {$pos >= 0} {
 			set crcLoad [lindex $List $pos 4]
@@ -916,7 +916,7 @@ proc Update {_ position} {
 
 		lassign [::scidb::game::link? $position] base number
 
-		set i [lsearch -index 1 $History $key]
+		set i [lsearch -exact -index 1 $History $key]
 		if {$i >= 0} {
 			lassign [lindex $History $i 1] filename _ index
 			if {$base eq $filename} {
@@ -984,7 +984,7 @@ proc UpdateHistoryEntry {pos base tags} {
 	set i 0
 	set k -1
 	while {$i < [llength $History]} {
-		set i [lsearch -index 0 -start $i $History $info]
+		set i [lsearch -exact -index 0 -start $i $History $info]
 		if {$i == -1} { break }
 		if {$base eq [lindex $History $i 1 0]} { set k $i }
 		incr i

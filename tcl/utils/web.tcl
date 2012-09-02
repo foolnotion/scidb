@@ -123,7 +123,7 @@ proc IsX11Browser {browser} {
 proc IsExcluded {browser} {
 	variable Excluded
 
-	return [expr {[lsearch $Excluded $browser] >= 0}]
+	return [expr {[lsearch -exact $Excluded $browser] >= 0}]
 }
 
 } ;# namespace web

@@ -590,7 +590,7 @@ Codec::doOpen(mstl::string const& encoding)
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
+Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
 {
 	M_ASSERT(	m_codec == 0
 				|| encoding == sys::utf8::Codec::automatic()
@@ -1085,7 +1085,7 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 
 
 void
-Codec::readIndex(mstl::fstream& fstrm, Progress& progress)
+Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
 {
 	char header[MaxIndexHeaderSize];
 
@@ -1137,7 +1137,7 @@ Codec::getRecodedDescription(char const* description, mstl::string& result, sys:
 
 
 void
-Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
+Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
@@ -1566,7 +1566,7 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 
 
 void
-Codec::readNamebases(mstl::fstream& stream, Progress& progress)
+Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 {
 	M_ASSERT(m_codec);
 
@@ -1665,7 +1665,7 @@ Codec::readNamebases(mstl::fstream& stream, Progress& progress)
 
 
 void
-Codec::preloadNamebase(ByteIStream& bstrm, unsigned maxFreq, unsigned count, Progress& progress)
+Codec::preloadNamebase(ByteIStream& bstrm, unsigned maxFreq, unsigned count, util::Progress& progress)
 {
 	if (count == 0)
 		return;
@@ -1723,7 +1723,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 							unsigned maxFreq,
 							unsigned count,
 							unsigned limit,
-							Progress& progress)
+							util::Progress& progress)
 {
 	typedef Namebase::Type Type;
 

@@ -374,6 +374,7 @@ proc openSetupDialog {parent context position args} {
 	set Priv(blink) 0
 	set Priv(color:attr) {}
 	set Priv(color:selected) {}
+	set Priv(previous-pane) ""
 	set Priv(refresh:cmd) {}
 	set Priv(applied) 0
 	set Priv(dlg) $parent.pgnSetup
@@ -390,7 +391,7 @@ proc openSetupDialog {parent context position args} {
 		lassign $entry depth complexOnly name
 		set available($name) [expr {$complex || !$complexOnly}]
 		if {$available($name)} {
-			$style add $depth $mc::Setup($name) -tags $name
+			$style add $depth -text $mc::Setup($name) -tags $name
 		}
 	}
 	$style resize
@@ -448,7 +449,7 @@ proc openSetupDialog {parent context position args} {
 	grid columnconfigure $sample 1 -minsize 300
 	grid rowconfigure $top 1 -minsize [expr {18*[$style itemheight?] + 4}]
 
-	::widget::dialogButtons $dlg {ok apply cancel reset revert} ok
+	::widget::dialogButtons $dlg {ok apply cancel reset revert}
 	$dlg.ok configure -command [namespace code [list ApplyOptions $context $position yes]]
 	$dlg.apply configure -command [namespace code [list ApplyOptions $context $position no]]
 	$dlg.cancel configure -command [namespace code [list RevertOptions $context $position yes]]
@@ -766,15 +767,15 @@ proc BuildFrame(Layout) {w position context} {
 	if {$complex} {
 		ttk::checkbutton $m.useSpacing \
 			-text $mc::ParLayout(use-spacing) \
-			-variable [namespace parent]::${context}::Options(spacing:paragraph) \
-			-command [namespace code [list Refresh $context $position Options spacing:paragraph]] \
+			-variable [namespace current]::New_Options(spacing:paragraph) \
+			-command [namespace code [list RefreshOptions $context $position spacing:paragraph]] \
 			;
 		grid $m.useSpacing	-row 1 -column 1 -sticky w -columnspan 4
 		grid rowconfigure $m {2} -minsize $::theme::padY
 	}
 	ttk::checkbutton $m.columnStyle \
 		-text $mc::ParLayout(column-style) \
-		-variable [namespace parent]::${context}::Options(style:column) \
+		-variable [namespace current]::New_Options(style:column) \
 		-command [namespace code [list ToggleColumnStyle $context $position $m.stabstop1 $m.stabstop2]] \
 		;
 	ttk::label $m.ltabstop1 -text $mc::ParLayout(tabstop-1)
@@ -783,8 +784,8 @@ proc BuildFrame(Layout) {w position context} {
 		-to 15.0 \
 		-increment 0.1 \
 		-width 5 \
-		-textvariable [namespace parent]::${context}::Options(tabstop:1) \
-		-command [namespace code [list Refresh $context $position Options tabstop:1]] \
+		-textvariable [namespace current]::New_Options(tabstop:1) \
+		-command [namespace code [list RefreshOptions $context $position tabstop:1]] \
 		-exportselection no \
 		-state $state \
 		;
@@ -797,8 +798,8 @@ proc BuildFrame(Layout) {w position context} {
 		-to 15.0 \
 		-increment 0.1 \
 		-width 5 \
-		-textvariable [namespace parent]::${context}::Options(tabstop:3) \
-		-command [namespace code [list Refresh $context $position Options tabstop:3]] \
+		-textvariable [namespace current]::New_Options(tabstop:3) \
+		-command [namespace code [list RefreshOptions $context $position tabstop:3]] \
 		-exportselection no \
 		-state $state \
 		;
@@ -824,10 +825,10 @@ proc BuildFrame(Layout) {w position context} {
 	if {$complex} {
 		ttk::checkbutton $m.mainlineBold \
 			-text $mc::ParLayout(mainline-bold) \
-			-variable [namespace parent]::${context}::Options(weight:mainline) \
+			-variable [namespace current]::New_Options(weight:mainline) \
 			-offvalue normal \
 			-onvalue bold \
-			-command [namespace code [list Refresh $context $position Options weight:mainline]] \
+			-command [namespace code [list RefreshOptions $context $position weight:mainline]] \
 			;
 		grid $m.mainlineBold -row 9 -column 1 -sticky w -columnspan 4
 	}
@@ -841,7 +842,7 @@ proc BuildFrame(Layout) {w position context} {
 			-from 0 \
 			-to 9 \
 			-width 5 \
-			-textvariable [namespace parent]::${context}::Options(indent:max) \
+			-textvariable [namespace current]::New_Options(indent:max) \
 			-command [namespace code [list RefreshIndentLevel $context $position $p.sindentation]] \
 			-exportselection no \
 			;
@@ -853,8 +854,8 @@ proc BuildFrame(Layout) {w position context} {
 			-from 0 \
 			-to 99 \
 			-width 5 \
-			-textvariable [namespace parent]::${context}::Options(indent:amount) \
-			-command [namespace code [list Refresh $context $position Options indent:amount]] \
+			-textvariable [namespace current]::New_Options(indent:amount) \
+			-command [namespace code [list RefreshOptions $context $position indent:amount]] \
 			-exportselection no \
 			-state $state \
 			;
@@ -879,13 +880,13 @@ proc BuildFrame(Layout) {w position context} {
 
 		ttk::checkbutton $d.varnumbers \
 			-text $mc::Display(numbering) \
-			-variable [namespace parent]::${context}::Options(show:varnumbers) \
-			-command [namespace code [list Refresh $context $position Options show:varnumbers]] \
+			-variable [namespace current]::New_Options(show:varnumbers) \
+			-command [namespace code [list RefreshOptions $context $position show:varnumbers]] \
 			;
 		ttk::checkbutton $d.moveinfo \
 			-text $mc::Display(moveinfo) \
-			-variable [namespace parent]::${context}::Options(show:moveinfo) \
-			-command [namespace code [list Refresh $context $position Options show:moveinfo]] \
+			-variable [namespace current]::New_Options(show:moveinfo) \
+			-command [namespace code [list RefreshOptions $context $position show:moveinfo]] \
 			;
 
 		grid $d.varnumbers	-row 1 -column 1 -sticky w
@@ -914,17 +915,16 @@ proc BuildFrame(Layout) {w position context} {
 
 
 proc BuildFrame(Diagrams) {w position context} {
-	variable	[namespace parent]::${context}::Options
-
 	ttk::frame $w -borderwidth 0 -takefocus 0
 
 	### Section: Diagrams ##################################################
 	set d [ttk::labelframe $w.diagrams -text $mc::Section(Diagrams)]
+	set refresh [namespace code [list RefreshOptions $context $position diagram:size]]
 
 	ttk::checkbutton $d.show \
 		-text $mc::Diagrams(show) \
-		-variable [namespace parent]::${context}::Options(show:diagram) \
-		-command [namespace code [list Refresh $context $position Options show:diagram]] \
+		-variable [namespace current]::New_Options(show:diagram) \
+		-command [namespace code [list RefreshOptions $context $position show:diagram]] \
 		;
 	ttk::label $d.lsquaresize -text $mc::Diagrams(square-size)
 	ttk::spinbox $d.ssquaresize \
@@ -932,10 +932,13 @@ proc BuildFrame(Diagrams) {w position context} {
 		-to 30 \
 		-increment 1 \
 		-width 5 \
-		-textvariable [namespace parent]::${context}::Options(diagram:size) \
+		-textvariable [namespace current]::New_Options(diagram:size) \
 		-exportselection no \
-		-command [namespace code [list Refresh $context $position Options diagram:size]] \
+		-command $refresh \
 		;
+	bind $d.ssquaresize <Leave> $refresh
+	bind $d.ssquaresize <Return> $refresh
+	bind $d.ssquaresize <Return> {+ break }
 	ttk::label $d.dsquaresize -text $mc::Pixel
 	::theme::configureSpinbox $d.ssquaresize
 	::validate::spinboxInt $d.ssquaresize
@@ -1088,21 +1091,21 @@ proc ConfigureTakeOverButton {w topic context} {
 
 
 proc ToggleColumnStyle {context position ts1 ts2} {
-	variable [namespace parent]::${context}::Options
+	variable New_Options
 
-	if {$Options(style:column)} { set state normal } else { set state disabled }
+	if {$New_Options(style:column)} { set state normal } else { set state disabled }
 	$ts1 configure -state $state
 	$ts2 configure -state $state
-	Refresh $context $position Options style:column
+	RefreshOptions $context $position style:column
 }
 
 
 proc RefreshIndentLevel {context position amount} {
-	variable [namespace parent]::${context}::Options
+	variable New_Options
 
-	if {$Options(indent:max) <= 0} { set state disabled } else { set state normal }
+	if {$New_Options(indent:max) <= 0} { set state disabled } else { set state normal }
 	$amount configure -state $state
-	Refresh $context $position Options indent:max
+	RefreshOptions $context $position indent:max
 }
 
 
@@ -1150,10 +1153,10 @@ proc RefreshFigurineFont {context position lang} {
 
 
 proc RefreshNotation {context position style} {
-	variable [namespace parent]::${context}::Options
+	variable New_Options
 
-	set Options(style:move) $style
-	Refresh $context $position Options style:move
+	set New_Options(style:move) $style
+	RefreshOptions $context $position style:move
 }
 
 
@@ -1176,7 +1179,7 @@ proc SelectColor {context position color} {
 }
 
 
-proc Refresh {context position var attr} {
+proc RefreshOptions {context position attr} {
 	variable [namespace parent]::${context}::Options
 	variable [namespace parent]::${context}::Colors
 	variable Fonts
@@ -1185,8 +1188,8 @@ proc Refresh {context position var attr} {
 	variable New_Fonts
 	variable Priv
 
-	if {[set ${var}($attr)] eq [set New_${var}($attr)]} { return }
-	set New_${var}($attr) [set ${var}($attr)]
+	if {$Options($attr) eq $New_Options($attr)} { return }
+	set Options($attr) $New_Options($attr)
 	setupStyle $context $position
 	configureText $Priv(path) setup
 	::scidb::game::refresh $position -immediate
@@ -1286,7 +1289,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	variable New_Options
 	variable ::mc::langID
 
-	BreakBlink $context
+	BreakBlink $context $position
 
 	if {[llength $Priv(color:attr)]} {
 		addToList [namespace current]::Recent($Priv(color:attr)) $Priv(color:selected)
@@ -1299,11 +1302,11 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	set Priv(refresh:cmd) [namespace code [list SelectionChanged $mw $context $position $tag no]]
 	array set Colors [array get New_Colors]
 	array set Options [array get New_Options]
-	set Options(show:moveinfo) 1
 
 	switch $tag {
 		Appearance - Fonts - Colors - Highlighting - Hovers {
 			ConfigureTakeOverButton $Priv(pane:$tag) $tag $context
+			set Options(show:moveinfo) 1
 			set pane $tag 
 		}
 
@@ -1322,6 +1325,8 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				$mw.sub-MoveStyle.notation select $Options(style:move)
 				$mw.sub-MoveStyle.figurines select $lang
 				set Options(show:moveinfo) 0
+			} elseif {$tag ne "Layout"} {
+				set Options(show:moveinfo) 1
 			}
 		}
 
@@ -1372,6 +1377,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			::dialog::choosefont::setup $dlg {*}$args
 			bind $dlg <<FontSelected>> [namespace code $cmd]
 			set Options(show:opening) 0
+			set Options(show:moveinfo) 1
 			set data $Games(colors)
 			set pane Font
 		}
@@ -1437,16 +1443,17 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	setupStyle $context
 	::scidb::game::import $position $data [namespace current]::Trash {}
 	::scidb::game::langSet $position [list {} $langID]
-	::pgn::${context}::resetGoto $w $position
-	foreach key [$w tag names] { $w tag configure $key -background {} }
+	if {$pane ne $Priv(previous-pane)} {
+		::pgn::${context}::resetGoto $w $position
+		foreach key [$w tag names] { $w tag configure $key -background {} }
+	}
 	set Priv(current-data) $data
 
 	if {[llength $Priv(color:attr)]} {
 		if {$pane eq "colors"} {
 			::scidb::game::go $position end
-			set key [::scidb::game::position key]
+			set key [::scidb::game::position $position key]
 			::scidb::game::go $position start
-			set commentKey comment:$key:p:$langID
 			set hover [string match hover* $tag]
 
 			if {$hover} { set color $Colors(hilite:move) } else { set color {} }
@@ -1470,22 +1477,35 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				}
 			}
 
-			after idle [list $w tag configure comment:$key:p:$langID -foreground $hilite(comment)]
-			after idle [list $w tag configure info:$key -foreground $hilite(info)]
+			if {$context eq "editor"} {
+				after idle [list $w tag configure comment:$key:p:$langID -foreground $hilite(comment)]
+				after idle [list $w tag configure info:$key -foreground $hilite(info)]
+			}
 		}
 
-		::scidb::game::go $position 1
+		if {$context eq "editor"} {
+			::scidb::game::go $position 1
+		} else {
+			if {$tag in {"current-move" "next-moves"}} {
+				::scidb::game::go $position 1
+				after idle [list ::pgn::browser::showNext $w $position yes]
+			} else {
+				::pgn::browser::showNext $w $position no
+			}
+		}
 		switch $Priv(color:attr) {
 			foreground:variation { set color $Colors(foreground:variation) }
 			default { set color $Colors($attr) }
 		}
 
-		if {$blink} { after idle [namespace code [list HiliteTags $context]] }
+		if {$blink} { after idle [namespace code [list HiliteTags $context $position]] }
 	}
+
+	set Priv(previous-pane) $pane
 }
 
 
-proc HiliteTags {context} {
+proc HiliteTags {context position} {
 	variable Priv
 
 	if {[llength $Priv(color:attr)] == 0} { return }
@@ -1514,11 +1534,11 @@ proc HiliteTags {context} {
 	}
 
 	set Priv(blink) 0
-	set Priv(after) [after 250 [namespace code [list Blink $context $compl]]]
+	set Priv(after) [after 250 [namespace code [list Blink $context $position $compl]]]
 }
 
 
-proc Blink {context compl} {
+proc Blink {context position compl} {
 	variable [namespace parent]::${context}::Colors
 	variable Priv
 
@@ -1540,11 +1560,11 @@ proc Blink {context compl} {
 						$w tag configure $tag -foreground $compl
 					}
 					current {
-						set key [::scidb::game::position key]
+						set key [::scidb::game::position $position key]
 						$w tag configure $key -foreground $Colors($Priv(color:attr))
 					}
 					nextmove {
-						set key [::scidb::game::next keys] 
+						set key [::scidb::game::next keys $position] 
 						$w tag configure $key -foreground $Colors($Priv(color:attr))
 					}
 					default {
@@ -1568,11 +1588,11 @@ proc Blink {context compl} {
 					$w tag configure $tag -foreground $Colors($Priv(color:attr))
 				}
 				current {
-					set key [::scidb::game::position key]
+					set key [::scidb::game::position $position key]
 					$w tag configure $key -foreground black
 				}
 				nextmove {
-					set key [::scidb::game::next keys] 
+					set key [::scidb::game::next keys $position] 
 					$w tag configure $key -foreground black
 				}
 				default {
@@ -1585,16 +1605,16 @@ proc Blink {context compl} {
 	}
 
 	if {[llength $compl] && [incr Priv(blink)] < 4} {
-		set Priv(after) [after $period [namespace code [list Blink $context $compl]]]
+		set Priv(after) [after $period [namespace code [list Blink $context $position $compl]]]
 	}
 }
 
 
-proc BreakBlink {context} {
+proc BreakBlink {context position} {
 	variable Priv
 
 	after cancel $Priv(after)
-	if {$Priv(blink) % 2} { Blink $context {} }
+	if {$Priv(blink) % 2} { Blink $context $position {} }
 	set Priv(blink) 0
 	set Priv(after) {}
 }

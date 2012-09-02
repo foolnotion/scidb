@@ -95,7 +95,7 @@ array set Attr {
 	bottom,after			top
 	bottom,type				panedwindow
 
-	tree,width				450
+	tree,width				400
 	tree,height				200
 	tree,minWidth			200
 	tree,minHeight			150
@@ -268,6 +268,7 @@ if {[::process::testOption use-analysis]} {
 			-minsize $Attr($sub,minWidth) \
 			-stretch $Attr($sub,stretch) \
 			;
+		if {$sub eq "tree"} { $bottom paneconfigure $bottom.$sub -width 400 }
 		bind $bottom.$sub <Configure> [namespace code [list ConfigureEvent $sub $bottom.$sub %W %w %h]]
 		$bottom add $bottom.$sub
 
@@ -308,8 +309,8 @@ if {[::process::testOption use-analysis]} {
 	database::preOpen $app
 
 	foreach file [::process::arguments] {
-		database::openBase \
-			.application [::util::databasePath $file] $::encoding::autoEncoding
+		database::openBase .application [::util::databasePath $file] yes \
+			-encoding $::encoding::autoEncoding
 	}
 
 	::game::recover
@@ -349,8 +350,7 @@ proc shutdown {} {
 	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	pack [tk::frame $dlg.f -border 2 -relief raised]
-	pack [tk::label $dlg.f.text -compound left -image $shutdown -text " $mc::Shutdown"] \
-		-padx 10 -pady 10
+	pack [tk::label $dlg.f.text -compound left -image $shutdown -text " $mc::Shutdown"] -padx 10 -pady 10
 	wm resizable $dlg no no
 	wm transient $dlg .application
 	::util::place $dlg center .application

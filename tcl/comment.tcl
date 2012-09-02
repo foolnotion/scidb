@@ -227,7 +227,7 @@ proc open {parent pos lang} {
 	grid rowconfigure $butts {4 6} -minsize $::theme::pady
 	grid rowconfigure $butts 2 -weight 1
 
-	::widget::dialogButtons $dlg {ok apply cancel} ok
+	::widget::dialogButtons $dlg {ok apply cancel}
 	bind $dlg <Return> {}
 
 	$dlg.apply	configure -command [namespace code Apply]
@@ -235,14 +235,14 @@ proc open {parent pos lang} {
 	$dlg.cancel	configure -command [namespace code [list Close $dlg]]
 
 	set tb [::toolbar::toolbar $dlg \
-		-id languages \
+		-id comment-languages \
 		-float 0 \
 		-side left \
 		-allow {left top bottom} \
 		-tooltipvar [namespace current]::mc::LanguageSelection \
 	]
 	set Vars(tb) [::toolbar::toolbar $dlg \
-		-id format \
+		-id comment-format \
 		-float 0 \
 		-side top \
 		-allow {left top bottom} \
@@ -276,6 +276,7 @@ proc open {parent pos lang} {
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
 	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
+		incr h 3 ;# XXX why is it to small?
 		wm minsize $dlg $w $h
 	}
 	wm transient $dlg $parent
@@ -1581,7 +1582,7 @@ proc PopdownLanguages {dlg} {
 	$popdown.l resize
 	$popdown.l see 0
 
-	set index [lsearch -index 2 $Vars(countryList) $Vars(wantedLang)]
+	set index [lsearch -exact -index 2 $Vars(countryList) $Vars(wantedLang)]
 	if {$index >= 0 && $Vars(wantedLang) ni $Vars(langSet)} {
 		$popdown.l select $index
 	} elseif {$first >= 0} {

@@ -37,7 +37,34 @@ namespace mstl {
 
 class string;
 
-class exception
+class basic_exception
+{
+public:
+
+	basic_exception() throw();
+	basic_exception(string const& msg);
+	explicit basic_exception(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
+	basic_exception(char const* fmt, va_list args);
+	basic_exception(basic_exception const& exc);
+	virtual ~basic_exception () throw();
+
+	virtual char const* what() const throw();
+
+protected:
+
+	void set_message(char const* fmt, va_list args);
+	void assign(mstl::string const& s);
+
+private:
+
+#if !HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
+	basic_exception& operator=(basic_exception const&);
+#endif
+
+	string* m_msg;
+};
+
+class exception : public basic_exception
 {
 public:
 
@@ -46,18 +73,15 @@ public:
 	explicit exception(char const* fmt, ...) __attribute__((__format__(__printf__, 2, 3)));
 	exception(char const* fmt, va_list args);
 	exception(exception const& exc);
-	virtual ~exception () throw();
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	exception& operator=(exception const&) = delete;
 #endif
 
-	virtual char const* what() const throw();
 	::mstl::backtrace const& backtrace() const;
 
 protected:
 
-	void set_message(char const* fmt, va_list args);
 	void set_backtrace(::mstl::backtrace const& backtrace);
 
 private:
@@ -66,13 +90,11 @@ private:
 	friend void bits::prepare_msg(exception& exc, char const*, unsigned, char const*, char const*);
 #endif
 
-#if !HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
-	exception& operator=(exception const&);
-#endif
-
-	string* m_msg;
 	::mstl::backtrace	m_backtrace;
 };
+
+
+bool uncaught_exception() throw();
 
 } // namespace mstl
 

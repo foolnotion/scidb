@@ -218,7 +218,7 @@ proc open {parent} {
 	grid rowconfigure $top 4 -minsize [expr {2*$::theme::padding}]
 	grid rowconfigure $top {0 2 6} -minsize $::theme::padding
 
-	::widget::dialogButtons $dlg {ok cancel} ok
+	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.ok configure -command [namespace code [list Accept $dlg]] -state disabled
 

@@ -380,6 +380,10 @@ proc WidgetProc {w command args} {
 			$w.popdown.l clone $cb.popdown.l
 			return $w
 		}
+
+		popdown? {
+			return [winfo ismapped $w.popdown.l]
+		}
 	}
 
 	return [$w.__combobox__ $command {*}$args]

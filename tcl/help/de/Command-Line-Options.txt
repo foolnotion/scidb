@@ -142,7 +142,7 @@ Auf der Kommandozeile stehen folgende Optionen bei Programmstart zur Verfügung:
       gemeinsamen Verzeichnis durchgeführt (i.d.R.
       <url>/usr/local/share/%scidb%</url>).
       Ansonsten erfolgt der Update im Benutzerverzeichnis
-      <nobr><code>~/.%scidb%</code></nobr>.
+      <url>~/.%scidb%</url>.
     </td>
   </tr>
   <tr>

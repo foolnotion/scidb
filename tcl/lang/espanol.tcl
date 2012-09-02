@@ -66,6 +66,7 @@
 ::mc::Delete			"Eliminar"
 ::mc::Edit				"Editar"
 ::mc::Escape			"Esc"
+::mc::File				"File" ;# NEW
 ::mc::From				"De"
 ::mc::Game				"Partida"
 ::mc::Layout			"Disposición"
@@ -136,6 +137,10 @@
 ::widget::mc::Last		"Últi&mo" 
 ::widget::mc::Help		"Ayuda" 
 
+::widget::mc::New			"&New" ;# NEW
+::widget::mc::Save		"&Guardar"
+::widget::mc::Delete		"&Eliminar"
+
 ::widget::mc::Control(minimize)	"Minimizar" 
 ::widget::mc::Control(restore)	"Salir de pantalla completa"
 ::widget::mc::Control(close)		"Cerrar"
@@ -203,14 +208,17 @@
 ::menu::mc::Contact						"&Contenidos (navegador web)"
 ::menu::mc::Quit							"&Salir"
 ::menu::mc::Extras						"E&xtras" 
+::menu::mc::Setup							"Setu&p" ;# NEW
+::menu::mc::Engines						"&Engines" ;# NEW
 
 ::menu::mc::ContactBugReport			"&Reporte de errores"
 ::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
 ::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
+::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
 
 ::menu::mc::OpenFile						"Abrir un archivo Scidb"
 ::menu::mc::NewFile						"Crear un archivo Scidb"
-::menu::mc::ImportFiles					"Importar archivos PGN..."
+::menu::mc::ImportFiles					"Importar archivos PGN"
 ::menu::mc::Archiving					"Archivando" 
 ::menu::mc::CreateArchive				"Crear Archivo" 
 ::menu::mc::BuildArchive				"Crear archivo %s" 
@@ -222,9 +230,11 @@
 ::load::mc::ProgramAborting		"Abortando programa."
 
 ::load::mc::Loading					"Cargando %s"
-::load::mc::ReadingOptionsFile	"Leer archivo de opciones"
 ::load::mc::StartupFinished		"Inicio del programa completado"
 ::load::mc::SystemEncoding			"La codificación del sistema es '%s'"
+
+::load::mc::ReadingFile(options)	"Leer archivo de opciones"
+::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
 
 ::load::mc::ECOFile					"archivo ECO"
 ::load::mc::EngineFile				"archivo de motor"
@@ -742,6 +752,37 @@
 ::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
 
+### engine #############################################################
+::engine::mc::Name					"Name" ;# NEW
+::engine::mc::Identifier			"Identifier" ;# NEW
+::engine::mc::Author					"Author" ;# NEW
+::engine::mc::Country				"Country" ;# NEW
+::engine::mc::Rating					"Rating" ;# NEW
+::engine::mc::Logo					"Logo" ;# NEW
+::engine::mc::Protocol				"Protocol" ;# NEW
+::engine::mc::Parameters			"Parameters" ;# NEW
+::engine::mc::Command				"Command" ;# NEW
+::engine::mc::Variants				"Variants" ;# NEW
+::engine::mc::LastUsed				"Last used" ;# NEW
+
+::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+
+::engine::mc::SetupEngines			"Setup Engines" ;# NEW
+::engine::mc::ImageFiles			"Image files" ;# NEW
+::engine::mc::SelectEngine			"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
+::engine::mc::Executables			"Executables" ;# NEW
+::engine::mc::EngineLog				"Engine Log" ;# NEW
+::engine::mc::Probing				"Probing" ;# NEW
+
+::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Marcar partida como eliminada"
 ::gametable::mc::UndeleteGame				"Recuperar esta partida"
@@ -1120,7 +1161,7 @@
 ::import::mc::InvalidRating						"Número de rating no válido"
 ::import::mc::InvalidNag							"NAG no válido"
 ::import::mc::BraceSeenOutsideComment			"\"\}\" fuera de un comentario en la partida (se ignorarán)" 
-::import::mc::MissingFen							"FEN desconocido (el encabezado de variante se ignorará)"
+::import::mc::MissingFen							"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
 ::import::mc::UnknownEventType					"Tipo de evento desconocido"
 ::import::mc::UnknownTitle							"Título desconocido (ignored)"
 ::import::mc::UnknownPlayerType					"Tipo de jugador desconocido (ignorado)"
@@ -1161,6 +1202,8 @@
 ::import::mc::TooManySourceNames					"Demasiados nombres de orígenes en la base (abortado)"
 ::import::mc::SeemsNotToBePgnText				"No parece ser un texto PGN"
 ::import::mc::AbortedDueToInternalError		"Abortado debido a un error interno"
+::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
+::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selección de archivo"
@@ -1750,6 +1793,7 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Archivo PDF" 
 ::dialog::fsbox::mc::HypertextFile			"Archivo HTML"
 ::dialog::fsbox::mc::TypesettingFile		"Archivo LATEX"
+::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
 ::dialog::fsbox::mc::LinkTo					"Vúnculo a %s" 
 ::dialog::fsbox::mc::LinkTarget				"Destino del vúnculo" 
 ::dialog::fsbox::mc::Directory				"Directorio" 
@@ -1766,7 +1810,6 @@
 ::dialog::choosecolor::mc::RecentColors	"Colores recientes"
 ::dialog::choosecolor::mc::Old				"Antiguo"
 ::dialog::choosecolor::mc::Current			"Actual"
-::dialog::choosecolor::mc::Color				"Color"
 ::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
 ::dialog::choosecolor::mc::ColorSelection	"Elección del color"
 ::dialog::choosecolor::mc::Red				"Rojo"
@@ -1860,16 +1903,6 @@
 
 ::fsbox::mc::CannotChangeDir				"No se puede cambiar al directorio '%s'.\nPermiso denegado."
 ::fsbox::mc::DirectoryRemoved				"No se puede cambiar al directorio '%s'.\nEl directorio fue eliminado."
-::fsbox::mc::ReallyMove(file,w)			"¿Realmente desea mover el archivo '%s' a la papelera?"
-::fsbox::mc::ReallyMove(file,r)			"¿Realmente desea mover el archivo de solo lectura '%s' a la papelera?"
-::fsbox::mc::ReallyMove(folder,w)		"¿Realmente desea mover la carpeta '%s' a la papelera?"
-::fsbox::mc::ReallyMove(folder,r)		"¿Realmente desea mover la carpeta de solo lectura '%s' a la papelera?"
-::fsbox::mc::ReallyDelete(file,w)		"¿Realmente desea borrar el archivo '%s'? Esta operación no puede revertirse."
-::fsbox::mc::ReallyDelete(file,r)		"¿Realmente desea borrar el archivo de solo lectura '%s'? Esta operación no puede revertirse."
-::fsbox::mc::ReallyDelete(link,w)		"¿Realmente desea borrar el vúnculo a '%s'?"
-::fsbox::mc::ReallyDelete(link,r)		"¿Realmente desea borrar el vúnculo a '%s'?"
-::fsbox::mc::ReallyDelete(folder,w)		"¿Realmente desea borrar la carpeta '%s'? Esta operación no puede revertirse."
-::fsbox::mc::ReallyDelete(folder,r)		"¿Realmente desea borrar la carpeta de solo lectura '%s'? Esta operación no puede revertirse."
 ::fsbox::mc::DeleteFailed					"No se pudo borrar '%s'."
 ::fsbox::mc::RestoreFailed					"No se pudo restaurar '%s'."
 ::fsbox::mc::CommandFailed					"Falló el comando '%s'."
@@ -1878,11 +1911,8 @@
 ::fsbox::mc::CannotDuplicate				"No se puede duplicar el archivo '%s': no se tiene permisos de lectura."
 ::fsbox::mc::ReallyDuplicateFile			"¿Realmente desea duplicar este archivo?"
 ::fsbox::mc::ReallyDuplicateDetail		"Este archivo tiene aproximadamente %s. Duplicarlo puede tardar algún tiempo."
-::fsbox::mc::ErrorRenaming(folder)		"No se puede cambiar el nombre de la carpeta '%old' a '%new': permiso denegado."
-::fsbox::mc::ErrorRenaming(file)			"Error cambiando de nombre el archivo '%old' a '%new': permiso denegado."
 ::fsbox::mc::InvalidFileExt				"Operación falló: '%s' tiene una extensión inválida."
 ::fsbox::mc::CannotRename					"No se puede cambiar el nombre a '%s' porque la carpeta/archivo ya existe."
-::fsbox::mc::CannotMove						"Cannot move file '%s'." ;# NEW
 ::fsbox::mc::CannotCreate					"No se puede crear la carpeta '%s' porque ya existe."
 ::fsbox::mc::ErrorCreate					"Error creando la carpeta: permiso denegado."
 ::fsbox::mc::FilenameNotAllowed			"El nombre de archivo '%s' no se permite."
@@ -1900,10 +1930,7 @@
 ::fsbox::mc::CannotOpenOrCreate			"No se puede abrir/crear '%s'. Por favor escoja un directorio."
 ::fsbox::mc::WaitWhileDuplicating		"Por favor espere mientras se duplica el archivo..."
 ::fsbox::mc::FileHasDisappeared			"El archivo '%s' ha desaparecido."
-::fsbox::mc::CannotDelete					"No se puede borrar el archivo '%s'."
-::fsbox::mc::CannotRename					"No se puede renombrar el archivo '%s'."
 ::fsbox::mc::CurrentlyInUse				"El archivo se encuentra en uso."
-::fsbox::mc::CannotOverwrite				"No se puede sobrescribir el archivo '%s'." 
 ::fsbox::mc::PermissionDenied				"Permiso denegado para el directorio '%s'."
 ::fsbox::mc::CannotOpenUri					"No se puede abrir la siguiente URI:"
 ::fsbox::mc::InvalidUri						"Descartar contenido no es una lista URI válida."
@@ -1915,6 +1942,25 @@
 ::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
 ::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
 ::fsbox::mc::NewName							"New name" ;# NEW
+
+::fsbox::mc::ReallyMove(file,w)			"¿Realmente desea mover el archivo '%s' a la papelera?"
+::fsbox::mc::ReallyMove(file,r)			"¿Realmente desea mover el archivo de solo lectura '%s' a la papelera?"
+::fsbox::mc::ReallyMove(folder,w)		"¿Realmente desea mover la carpeta '%s' a la papelera?"
+::fsbox::mc::ReallyMove(folder,r)		"¿Realmente desea mover la carpeta de solo lectura '%s' a la papelera?"
+::fsbox::mc::ReallyDelete(file,w)		"¿Realmente desea borrar el archivo '%s'? Esta operación no puede revertirse."
+::fsbox::mc::ReallyDelete(file,r)		"¿Realmente desea borrar el archivo de solo lectura '%s'? Esta operación no puede revertirse."
+::fsbox::mc::ReallyDelete(link,w)		"¿Realmente desea borrar el vúnculo a '%s'?"
+::fsbox::mc::ReallyDelete(link,r)		"¿Realmente desea borrar el vúnculo a '%s'?"
+::fsbox::mc::ReallyDelete(folder,w)		"¿Realmente desea borrar la carpeta '%s'? Esta operación no puede revertirse."
+::fsbox::mc::ReallyDelete(folder,r)		"¿Realmente desea borrar la carpeta de solo lectura '%s'? Esta operación no puede revertirse."
+
+::fsbox::mc::ErrorRenaming(folder)		"No se puede cambiar el nombre de la carpeta '%old' a '%new': permiso denegado."
+::fsbox::mc::ErrorRenaming(file)			"Error cambiando de nombre el archivo '%old' a '%new': permiso denegado."
+
+::fsbox::mc::Cannot(delete)				"No se puede borrar el archivo '%s'."
+::fsbox::mc::Cannot(rename)				"No se puede renombrar el archivo '%s'."
+::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(overwrite)			"No se puede sobrescribir el archivo '%s'." 
 
 ::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
 ::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW

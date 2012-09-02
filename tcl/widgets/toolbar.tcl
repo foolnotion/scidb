@@ -55,6 +55,7 @@ variable Lookup [dict create]
 variable Map [dict create]
 
 set Specs(toolbars) {}
+set Specs(repeat) {}
 
 if {[catch {package require tooltip}]} { set HaveTooltips 0 }
 
@@ -103,6 +104,7 @@ event add <<ToolbarEnabled>>	ToolbarEnabled
 
 
 proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
+proc makeStateSpecificIcons {img} { return $img }
 
 
 proc toolbar {parent args} {
@@ -291,7 +293,9 @@ proc toolbar {parent args} {
 		set handleOptions {-side top -fill x -expand yes}
 	}
 	
-	set widgets [tk::frame $toolbar.widgets -relief flat -borderwidth 0]
+	set widgets [tk::frame $toolbar.widgets -borderwidth 0 -takefocus 0]
+	set tbf [Join $parent __tbf__$Specs(side:$toolbar)]
+	bind $toolbar <Configure> [namespace code [list Resize $tbf]]
 
 	if {$Specs(usehandle:$toolbar)} {
 		CreateHandle $toolbar $toolbar.handle
@@ -727,33 +731,33 @@ proc requestetHeight {parent} {
 
 	foreach side {left right flat} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr height [winfo reqheight $tbf] }
+		if {$tbf in $slaves} { incr height [winfo reqheight $tbf.frame.scrolled] }
 	}
 
 	return $height
 }
 
 
-proc totalheight {parent} {
+proc totalHeight {parent} {
 	set slaves [pack slaves $parent]
 	set height 0
 
 	foreach side {top bottom flat} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr height [winfo reqheight $tbf] }
+		if {$tbf in $slaves} { incr height [winfo reqheight $tbf.frame.scrolled] }
 	}
 
 	return $height
 }
 
 
-proc totalwidth {parent} {
+proc totalWidth {parent} {
 	set slaves [pack slaves $parent]
 	set width 0
 
 	foreach side {left right} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr width [winfo reqwidth $tbf] }
+		if {$tbf in $slaves} { incr width [winfo reqwidth $tbf.frame.scrolled] }
 	}
 
 	return $width
@@ -1107,12 +1111,26 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 	set tbf [Join $parent __tbf__$Specs(side:$toolbar)]
 
 	if {![winfo exists $tbf]} {
-		tk::frame $tbf -class ToolbarFrame -borderwidth 1 -relief raised -takefocus 0
 		set Specs(orientation:$tbf) $Specs(orientation:$toolbar)
 		set Specs(side:$tbf) $Specs(side:$toolbar)
+		set Specs(offset:$tbf) 0
+		set Specs(pos:$tbf) 0
+		set Specs(after:$tbf) {}
+		tk::frame $tbf -class ToolbarFrame -borderwidth 0 -takefocus 0
+		tk::frame $tbf.frame -borderwidth 0 -takefocus 0
+		tk::frame $tbf.frame.scrolled -borderwidth 1 -relief raised -takefocus 0
+		grid $tbf.frame -row 1 -column 1 -sticky ewns
+		if {$Specs(orientation:$toolbar) eq "horz"} {
+			grid columnconfigure $tbf {1} -weight 1
+		} else {
+			grid rowconfigure $tbf {1} -weight 1
+		}
+		place $tbf.frame.scrolled -x 0 -y 0
+		bind $tbf <Configure> [namespace code [list Resize $tbf]]
+		bind $tbf.frame.scrolled <Configure> [namespace code [list Resize $tbf]]
 #		bind $tbf <Destroy> [list catch [list array unset [namespace current]::Specs *:$tbf]]
 		if {$Specs(usehandle:$toolbar)} {
-			bind $tbf <ButtonPress-3> [namespace code [list ToolbarMenu $tbf]]
+			bind $tbf.frame.scrolled <ButtonPress-3> [namespace code [list ToolbarMenu $tbf]]
 		}
 		if {![info exists Specs(childs:$tbf)]} { set Specs(childs:$tbf) {} }
 		if {![info exists Specs(alignment:$tbf)]} {
@@ -1121,15 +1139,15 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 		}
 	} 
 	
-	if {[llength [pack slaves $tbf]] == 0} {
+	if {[llength [pack slaves $tbf.frame.scrolled]] == 0} {
 		PackToolbarFrame $tbf $Specs(side:$toolbar)
 	} elseif {$Defaults(toolbarframe:iconsize)} {
-		set Specs(iconsize:$toolbar) $Specs(iconsize:[lindex [pack slaves $tbf] 0])
+		set Specs(iconsize:$toolbar) $Specs(iconsize:[lindex [pack slaves $tbf.frame.scrolled] 0])
 	}
 
 	set nextSlave ""
 	if {[llength $before] == 0} {
-		set slaves [pack slaves $tbf]
+		set slaves [pack slaves $tbf.frame.scrolled]
 		set childs $Specs(childs:$tbf)
 		set index [lsearch -exact $childs $toolbar]
 
@@ -1161,7 +1179,7 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 		lappend Specs(childs:$tbf) $toolbar
 	} elseif {[llength $nextSlave] == 0} {
 		set i -1
-		foreach child [pack slaves $tbf] {
+		foreach child [pack slaves $tbf.frame.scrolled] {
 			set i [max $i [lsearch -exact $Specs(childs:$tbf) $child]]
 		}
 		if {$i > $index} {
@@ -1184,12 +1202,238 @@ proc PackToolbar {toolbar {before {}} {alignment {}}} {
 		lappend options -side $justify -padx 1 -pady 0 -fill x -ipadx $Defaults(toolbarframe:padding)
 	}
 
-	pack $toolbar -in $tbf {*}$options
-	raise $toolbar
-	DoAlignment $tbf
 	set Specs(frame:$toolbar) $tbf
 	set Specs(packed:$toolbar) 1
+
+	pack $toolbar -in $tbf.frame.scrolled {*}$options
+	raise $toolbar
+	RaiseArrows $toolbar
+	DoAlignment $tbf
 	ReplaceIcons $toolbar
+}
+
+
+proc Resize {tbf} {
+	variable Specs
+
+	if {![winfo exists $tbf]} { return }
+
+	if {$Specs(orientation:$tbf) eq "horz"} {
+		if {[winfo width $tbf] == 1 || [winfo reqwidth $tbf.frame.scrolled] == 1} { return }
+		$tbf.frame configure -height [winfo reqheight $tbf.frame.scrolled]
+		PlaceToolbarFrame $tbf r 0
+	} else {
+		if {[winfo height $tbf] == 1 || [winfo reqheight $tbf.frame.scrolled] == 1} { return }
+		$tbf.frame configure -width [winfo reqwidth $tbf.frame.scrolled]
+		PlaceToolbarFrame $tbf b 0
+	}
+}
+
+
+proc PlaceToolbarFrame {tbf dir incr} {
+	variable Specs
+
+	set parent [winfo parent $tbf]
+	set side $Specs(side:$tbf)
+	after cancel $Specs(after:$tbf)
+
+	switch $dir {
+		l - r {
+			set offset [min 0 [expr {$Specs(offset:$tbf) - $incr*max(5, (2*[winfo width $tbf.frame])/3)}]]
+			set rheight [winfo reqheight $tbf.frame.scrolled]
+			set rwidth [winfo reqwidth $tbf.frame.scrolled]
+			set width [winfo width $tbf]
+
+			if {$offset != 0 && $incr != 0} {
+				if {$incr < 0} {
+					set x [expr {-$rwidth}]
+					foreach w [lreverse [pack slaves $tbf.frame.scrolled]] {
+						set x1 [expr {$x + [winfo width $w]}]
+						if {$x1 > $Specs(offset:$tbf)} { break }
+						set x $x1
+					}
+					if {$offset > $x && $x > $Specs(offset:$tbf)} { set offset $x }
+				} else {
+					set x 0
+					foreach w [pack slaves $tbf.frame.scrolled] {
+						set x1 [expr {$x - [winfo width $w]}]
+						if {$x1 < $Specs(offset:$tbf)} { break }
+						set x $x1
+					}
+					if {$offset < $x && $x < $Specs(offset:$tbf)} { set offset $x }
+				}
+			}
+
+			set rarrow $parent.__tba__${side}_r
+			set larrow $parent.__tba__${side}_l
+
+			if {$width < $rwidth} {
+				incr width -26 ;# XXX real width required
+				set offset [max $offset [expr {$width - $rwidth}]]
+				if {$rarrow ni [grid slaves $tbf]} {
+					MakeArrow $tbf r +1
+					MakeArrow $tbf l -1
+					grid $larrow -in $tbf -row 1 -column 0 -sticky ns
+					grid $rarrow -in $tbf -row 1 -column 2 -sticky ns
+					raise $rarrow
+					raise $larrow
+				}
+			} else {
+				if {$rarrow in [grid slaves $tbf]} {
+					grid forget $rarrow
+					grid forget $larrow
+					# we need this trick to force a Configure event
+					$tbf configure -width [expr {$width - 1}]
+					after idle [list $tbf configure -width $width]
+				}
+				set offset 0
+			}
+
+			if {[winfo exists $rarrow]} {
+				if {$width < $rwidth + $offset} { set state normal } else { set state disabled }
+				$rarrow configure -state $state
+				if {$offset < 0} { set state normal } else { set state disabled }
+				$larrow configure -state $state
+			}
+
+			set Specs(offset:$tbf) $offset
+			PlaceHorzFrame $tbf $rheight [max $width $rwidth]
+		}
+
+		t - b {
+			set offset [min 0 [expr {$Specs(offset:$tbf) - $incr*max(5, [winfo height $tbf.frame]/2)}]]
+			set rwidth [winfo reqwidth $tbf.frame.scrolled]
+			set rheight [winfo reqheight $tbf.frame.scrolled]
+			set height [winfo height $tbf]
+
+			if {$offset != 0 && $incr != 0} {
+				if {$incr < 0} {
+					set y [expr {-$rheight}]
+					foreach w [lreverse [pack slaves $tbf.frame.scrolled]] {
+						set y1 [expr {$y + [winfo height $w]}]
+						if {$y1 > $Specs(offset:$tbf)} { break }
+						set y $y1
+					}
+					if {$offset > $y && $y > $Specs(offset:$tbf)} { set offset $y }
+				} else {
+					set y 0
+					foreach w [pack slaves $tbf.frame.scrolled] {
+						set y1 [expr {$y - [winfo height $w]}]
+						if {$y1 < $Specs(offset:$tbf)} { break }
+						set y $y1
+					}
+					if {$offset < $y && $y < $Specs(offset:$tbf)} { set offset $y }
+				}
+			}
+
+			set tarrow $parent.__tba__${side}_t
+			set barrow $parent.__tba__${side}_b
+
+			if {$height < $rheight} {
+				incr height -26 ;# XXX real height required
+				set offset [max $offset [expr {$height - $rheight}]]
+				if {$barrow ni [grid slaves $tbf]} {
+					MakeArrow $tbf b +1
+					MakeArrow $tbf t -1
+					grid $tarrow -in $tbf -row 0 -column 1 -sticky ew
+					grid $barrow -in $tbf -row 2 -column 1 -sticky ew
+					raise $barrow
+					raise $tarrow
+				}
+			} else {
+				if {$tarrow in [grid slaves $tbf]} {
+					grid forget $tarrow
+					grid forget $barrow
+					# we need this trick to force a Configure event
+					$tbf configure -height [expr {$height - 1}]
+					after idle [list $tbf configure -height $height]
+				}
+				set offset 0
+			}
+
+			if {[winfo exists $tarrow]} {
+				if {$height < $rheight + $offset} { set state normal } else { set state disabled }
+				$barrow configure -state $state
+				if {$offset < 0} { set state normal } else { set state disabled }
+				$tarrow configure -state $state
+			}
+
+			set Specs(offset:$tbf) $offset
+			PlaceVertFrame $tbf [max $height $rheight] $rwidth
+		}
+	}
+}
+
+
+proc PlaceHorzFrame {tbf height width} {
+	variable Specs
+
+	if {![winfo exists $tbf]} { return }
+
+	set x $Specs(pos:$tbf)
+	set offs $Specs(offset:$tbf)
+	if {$x < $offs} { set dir +1 } elseif {$x > $offs} { set dir -1 } else { set dir 0 }
+	incr x $dir
+	place $tbf.frame.scrolled -x $x -y 0 -height $height -width $width
+	set Specs(pos:$tbf) $x
+
+	if {$x != $offs} {
+		set Specs(after:$tbf) [after 20 [namespace code [list PlaceHorzFrame $tbf $height $width]]]
+	}
+}
+
+
+proc PlaceVertFrame {tbf height width} {
+	variable Specs
+
+	if {![winfo exists $tbf]} { return }
+
+	set y $Specs(pos:$tbf)
+	set offs $Specs(offset:$tbf)
+	if {$y < $offs} { set dir +1 } elseif {$y > $offs} { set dir -1 } else { set dir 0 }
+	incr y $dir
+	place $tbf.frame.scrolled -x 0 -y $y -height $height -width $width
+	set Specs(pos:$tbf) $y
+
+	if {$y != $offs} {
+		set Specs(after:$tbf) [after 20 [namespace code [list PlaceVertFrame $tbf $height $width]]]
+	}
+}
+
+
+proc MakeArrow {tbf dir incr} {
+	variable Specs
+
+	set parent [winfo parent $tbf]
+	set arrow $parent.__tba__$Specs(side:$tbf)_${dir}
+	if {[winfo exists $arrow]} { return }
+	ttk::style configure _toolbar_arrow.TButton -padding 0
+	ttk::button $arrow \
+		-style _toolbar_arrow.TButton \
+		-takefocus 0 \
+		-image [makeStateSpecificIcons $icon::8x16::arrow($dir)] \
+		-command [namespace code [list PlaceToolbarFrame $tbf $dir $incr]] \
+		;
+	bind $arrow <ButtonPress-1> [namespace code [list InvokeRepeat $arrow]]
+}
+
+
+proc InvokeRepeat {w} {
+	variable Specs
+
+	after cancel $Specs(repeat)
+	set Specs(repeat) [after 300 [namespace code [list Repeat $w]]]
+}
+
+
+proc Repeat {w} {
+	variable Specs
+
+	if {![winfo exists $w]} { return }
+	$w instate disabled { $w state !pressed } ;# looks like a Tk bug
+	$w instate !pressed { return }
+	set Specs(repeat) [after 100 [namespace code [list Repeat $w]]]
+	eval [$w cget -command]
 }
 
 
@@ -1204,10 +1448,7 @@ proc Finish {parent} {
 	foreach toolbar $Specs(count:$parent) {
 		if {$Specs(enabled:$toolbar) && $Specs(finish:$toolbar)} {
 			lassign $Specs(position:$toolbar) fx fy
-			if {[llength $fy] == 0} {
-				set fx 500
-				set fy 500
-			}
+			if {[llength $fy] == 0} { set fx 500; set fy 500 }
 			set tl [winfo toplevel $parent]
 			UndockToolbar $toolbar [expr {[winfo rootx $tl] + $fx}] [expr {[winfo rooty $tl] + $fy}]
 		}
@@ -1218,7 +1459,7 @@ proc Finish {parent} {
 proc DoAlignment {tbf} {
 	variable Specs
 
-	set slaves [pack slaves $tbf]
+	set slaves [pack slaves $tbf.frame.scrolled]
 	if {[llength $slaves] == 0} { return }
 
 	switch $Specs(alignment:$tbf) {
@@ -1265,7 +1506,8 @@ proc Forget {toolbar} {
 	if {!$Specs(packed:$toolbar)} { return }
 	pack forget $toolbar
 	set tbf $Specs(frame:$toolbar)
-	if {[llength [pack slaves $tbf]] == 0} {
+	after idle [namespace code [list Resize $tbf]]
+	if {[llength [pack slaves $tbf.frame.scrolled]] == 0} {
 		pack forget $tbf
 		set parent [winfo parent $tbf]
 		set side [lindex [split $tbf __] end]
@@ -1889,7 +2131,7 @@ proc FindNearest {toolbar dir x y region} {
 	set parent [winfo parent $Specs(frame:$toolbar)]
 	set tbf [Join $parent __tbf__$dir]
 	if {![winfo exists $tbf]} { return "" }
-	set childs [pack slaves $tbf]
+	set childs [pack slaves $tbf.frame.scrolled]
 	if {[llength $childs] == 0} { return "" }
 	set sx [winfo rootx $parent]
 	set sy [winfo rooty $parent]
@@ -2066,6 +2308,19 @@ proc Repack {toolbar} {
 	}
 
 	raise $toolbar
+	RaiseArrows $toolbar
+}
+
+
+proc RaiseArrows {toolbar} {
+	variable Specs
+
+	set tbf $Specs(frame:$toolbar)
+	set parent [winfo parent $tbf]
+	foreach dir {l r t b} {
+		set arrow $parent.${dir}arrow
+		if {[winfo exists $arrow]} { raise $arrow }
+	}
 }
 
 
@@ -2086,7 +2341,7 @@ proc MoveCmd {toolbar side oldSide} {
 proc ToolbarMenu {tbf} {
 	variable Defaults
 
-	set menu $tbf.menu
+	set menu $tbf.frame.scrolled.menu
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
@@ -2095,7 +2350,7 @@ proc ToolbarMenu {tbf} {
 
 	MenuAlignment $tbf $menu
 	if {$Defaults(toolbarframe:iconsize) && [UseIconSizeMenu $tbf]} {
-		MenuIconSize [lindex [pack slaves $tbf] 0] $menu
+		MenuIconSize [lindex [pack slaves $tbf.frame.scrolled] 0] $menu
 		incr count
 	}
 	if {[addToolbarMenu $menu $parent end] >= 0} { incr count }
@@ -2182,7 +2437,7 @@ proc UseIconSizeMenu {tbf} {
 
 	foreach size $iconSizes { set $size 0 }
 
-	foreach toolbar [pack slaves $tbf] {
+	foreach toolbar [pack slaves $tbf.frame.scrolled] {
 		foreach size $iconSizes {
 			if {$Specs($size:$toolbar)} { set $size 1 }
 		}
@@ -2302,7 +2557,7 @@ proc Expand {tbf} {
 	if {$i >= 0} {
 		set Specs(frame:order:$parent) [lreplace $Specs(frame:order:$parent) $i $i]
 	}
-	PackToolbarFrame $tbf $Specs(side:[lindex [pack slaves $tbf] 0])
+	PackToolbarFrame $tbf $Specs(side:[lindex [pack slaves $tbf.frame.scrolled] 0])
 }
 
 
@@ -2694,6 +2949,44 @@ proc Focus {win mode} {
 
 proc Tr {tok} { return [mc [namespace current]::mc::$tok] }
 
+namespace eval icon {
+namespace eval 8x16 {
+
+set arrow(l) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAgAAAAQCAQAAACBg/b2AAAAAmJLR0QA/vCI/CkAAAAJb0ZGcwAA
+	AAQAAAAAAEG79NgAAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJdnBBZwAAABAAAAAQAFzGrcMAAAA2
+	SURBVBjTY2AgDfxnYGBC5SIL/IdQTKhcmMB/hD4mVC6qoXABRkwVjJhaGDHNYGTAAv4zEAEAjWwH
+	EotT0u8AAAAldEVYdGRhdGU6Y3JlYXRlADIwMTItMDgtMjJUMTA6NTI6NDUrMDI6MDCawkqxAAAA
+	JXRFWHRkYXRlOm1vZGlmeQAyMDEyLTA4LTIyVDEwOjUyOjQ1KzAyOjAw65/yDQAAAABJRU5ErkJg
+	gg==
+}]
+
+set arrow(r) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAgAAAAQCAQAAACBg/b2AAAAAmJLR0QA/vCI/CkAAAAJb0ZGcwAA
+	AAQAAAAAAEG79NgAAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJdnBBZwAAABAAAAAQAFzGrcMAAAAz
+	SURBVBjTY2AgBvxH5jChCzGhq2JC18iEbhayAAPDf3QBDBWMqAKMqCoYUbUw4nQ6YQAAl1IHEp/u
+	ZiMAAAAldEVYdGRhdGU6Y3JlYXRlADIwMTItMDgtMjJUMTA6NTI6NDcrMDI6MDANXVuYAAAAJXRF
+	WHRkYXRlOm1vZGlmeQAyMDEyLTA4LTIyVDEwOjUyOjQ3KzAyOjAwfADjJAAAAABJRU5ErkJggg==
+}]
+
+set arrow(t) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAQAAABaf7ccAAAAAmJLR0QAAKqNIzIAAAAJb0ZGc///
+	//gAAAAIABYA5y8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJdnBBZwAAAAgAAAAgAGwFG8YAAAAs
+	SURBVBjTY2AgEfxn+I8qwIgmjSHKiEUaRZwRqzSSDCMOabgcI05pTBdiBwAP3AcEZbEJrgAAACV0
+	RVh0ZGF0ZTpjcmVhdGUAMjAxMi0wOC0yMlQxMDo1Mzo1NCswMjowMB/dKqUAAAAldEVYdGRhdGU6
+	bW9kaWZ5ADIwMTItMDgtMjJUMTA6NTM6NTQrMDI6MDBugJIZAAAAAElFTkSuQmCC
+}]
+
+set arrow(b) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAICAQAAABaf7ccAAAAAmJLR0QAAKqNIzIAAAAJb0ZGc///
+	//gAAAAIABYA5y8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJdnBBZwAAAAgAAAAgAGwFG8YAAAAy
+	SURBVBjThY5BCgAwCMPS/z+6XsaYaFlOlaYgfBAAzq1OdBrrnt7qV+iKRmiKiDg+nChsvAcEVLmW
+	6gAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAxMi0wOC0yMlQxMDo1NTowNiswMjowMM28Ra8AAAAldEVY
+	dGRhdGU6bW9kaWZ5ADIwMTItMDgtMjJUMTA6NTU6MDYrMDI6MDC84f0TAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 8x16
+} ;# namespace icon
 } ;# namespace toolbar
 
 # vi:set ts=3 sw=3:

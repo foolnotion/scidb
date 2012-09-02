@@ -36,6 +36,10 @@ set Last			"Las&t"
 set First		"&First"
 set Help			"&Help"
 
+set New			"&New"
+set Save			"&Save"
+set Delete		"&Delete"
+
 set Control(minimize)	"Minimize"
 set Control(restore)		"Leave Full-screen"
 set Control(close)		"Close"
@@ -45,7 +49,7 @@ set Control(close)		"Close"
 set Priv(busy:state) 0
 
 
-set ButtonOrder { previous next update clear close ok apply cancel revert reset help }
+set ButtonOrder { new delete save previous next update clear close ok apply cancel revert reset help }
 	
 
 proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
@@ -84,7 +88,7 @@ proc showTrace {path text useHorzScroll closeCmd} {
 		$txt delete 1.0 end
 	} else {
 		tk::toplevel $path -class Scidb
-		set f [::ttk::frame $path.f]
+		set f [::ttk::frame $path.f -takefocus 0]
 
 		if {$useHorzScroll} {
 			set wrap none
@@ -113,7 +117,7 @@ proc showTrace {path text useHorzScroll closeCmd} {
 		grid $f.vsb  -row 1 -column 2 -sticky ns
 		grid rowconfigure $f 1 -weight 1
 		grid columnconfigure $f 1 -weight 1
-		dialogButtons $path close close
+		dialogButtons $path close
 		if {[llength $closeCmd]} {
 			$path.close configure -command $closeCmd
 		}
@@ -212,11 +216,17 @@ proc dialogRaise {dlg} {
 }
 
 
-proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
+proc dialogButtons {dlg buttons args} {
 	variable ButtonOrder
 
+	array set opts {
+		-default {}
+		-icons	yes
+	}
+	array set opts $args
+
 	if {![winfo exists $dlg.__buttons]} {
-		if {[llength $dflt] == 0} { set dflt [lindex $buttons 0] }
+		if {[llength $opts(-default)] == 0} { set opts(-default) [lindex $buttons 0] }
 		bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 		::ttk::separator $dlg.__sep -class Dialog
 		tk::frame $dlg.__buttons -class Dialog -takefocus 0
@@ -233,7 +243,7 @@ proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
 	foreach entry $buttons {
 		set icon {}
 		lassign $entry type var icon
-		lappend entries [list $type $var $icon [lsearch $ButtonOrder $type]]
+		lappend entries [list $type $var $icon [lsearch -exact $ButtonOrder $type]]
 	}
 	set entries [lsort -index 3 -integer $entries]
 
@@ -242,7 +252,15 @@ proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
 		set w [::ttk::button $dlg.$type -class TButton]
 
 		switch -- $type {
-			ok			{ set var [namespace current]::mc::Ok }
+			ok			{
+				set n [llength [pack slaves $dlg.__buttons]]
+				if {$n > 0} {
+					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
+					pack $sep -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+				}
+				set var [namespace current]::mc::Ok
+			}
+
 			cancel	{ set var [namespace current]::mc::Cancel }
 			apply		{ set var [namespace current]::mc::Apply }
 			update	{ set var [namespace current]::mc::Update }
@@ -255,21 +273,32 @@ proc dialogButtons {dlg buttons {dflt {}} {useIcons yes}} {
 			next		{ set var [namespace current]::mc::Next }
 			first		{ set var [namespace current]::mc::First }
 			last		{ set var [namespace current]::mc::Last }
-			help		{ set var [namespace current]::mc::Help }
+			new		{ set var [namespace current]::mc::New }
+			save		{ set var [namespace current]::mc::Save }
+			delete	{ set var [namespace current]::mc::Delete }
+
+			help		{
+				set n [llength [pack slaves $dlg.__buttons]]
+				if {$n > 0} {
+					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
+					pack $sep -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+				}
+				set var [namespace current]::mc::Help
+			}
 
 			default	{
-				if {![info exists var]} {
+				if {[string length $var] == 0} {
 					return -code error "unknown button type $type"
 				}
 			}
 		}
 
-		dialogButtonsSetup $dlg $type $var $dflt
+		dialogButtonsSetup $dlg $type $var $opts(-default)
 		bind $w <Return> "event generate $w <Key-space>; break"
 		pack $w -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
 	}
 
-	if {$useIcons} { dialogButtonSetIcons $dlg }
+	if {$opts(-icons)} { dialogButtonSetIcons $dlg }
 }
 
 
@@ -291,6 +320,9 @@ proc dialogButtonSetIcons {dlg} {
 				next		{ set icon $::icon::iconForward }
 				first		{ set icon $::icon::iconFirst }
 				last		{ set icon $::icon::iconLast }
+				new		{ set icon $::icon::16x16::plus }
+				save		{ set icon $::icon::iconSave }
+				delete	{ set icon $::icon::16x16::delete }
 				help		{ set icon $::icon::16x16::help }
 			}
 
@@ -445,10 +477,10 @@ proc unbusyCursor {{w {}}} {
 }
 
 
-proc busyOperation {args} {
+proc busyOperation {cmd} {
 	busyCursor on
 
-	if {[catch {uplevel $args} result options]} {
+	if {[catch {uplevel 1 $cmd} result options]} {
 		busyCursor off
 		array set opts $options
 		return \

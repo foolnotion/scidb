@@ -76,7 +76,7 @@ PipedProgress::update(unsigned progress)
 
 
 void
-PipedProgress::finish()
+PipedProgress::finish() throw()
 {
 	if (!m_interrupted)
 		send(255);

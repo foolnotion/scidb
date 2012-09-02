@@ -119,12 +119,16 @@ This format resembles structurally Scidb's format:
   </table>
 </div>
 
+<p><img src="../images/note.png" alt="note" /> The files with suffixes <code>.sso</code> (Scid Search Option File),
+and <code>.sor</code> (Scid Repertoire File) do not belong explicitely to
+a database and will not be regarded by Scidb.</p>
+
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 <p>
-The company ChessBase keeps this format secret, therefore only the reading
-mode is supported. Not all game data can be read correctly, with some games
-the message of failed decoding will appear.
+The company <a href="http://www.chessbase.de">ChessBase</a> keeps this format secret,
+therefore only the reading mode is supported. Not all game data can be read correctly,
+with some games the message of failed decoding will appear.
 </p>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
@@ -166,10 +170,11 @@ chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. Wi
 </p>
 
 <p>
-According to the PGN standard a PGN file is encoded with character set 
-<span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>). But if a PGN file is starting with an
-<span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM: byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span>
-encoding will be expected (according to
+According to the
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN standard</a>
+a PGN file is encoded with character set <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
+But if a PGN file is starting with an <span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM:
+byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encoding will be expected (according to
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
 

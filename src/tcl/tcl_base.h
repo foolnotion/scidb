@@ -66,6 +66,7 @@ void setResult(long result);
 void setResult(unsigned long result);
 
 int ioError(mstl::string const& file, mstl::string const& error, mstl::string const& message);
+int interrupt(int count);
 
 int
 error(

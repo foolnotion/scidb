@@ -53,23 +53,32 @@ struct Monitor : public FileAlterationMonitor
 			Tcl_IncrRefCount(m_changed = Tcl_NewStringObj("changed", -1));
 			Tcl_IncrRefCount(m_deleted = Tcl_NewStringObj("deleted", -1));
 			Tcl_IncrRefCount(m_created = Tcl_NewStringObj("created", -1));
+			Tcl_IncrRefCount(m_id = Tcl_NewStringObj("id", -1));
 		}
 	}
 
 	~Monitor() throw() { Tcl_DecrRefCount(m_proc); }
 
-	void signal(Tcl_Obj* action, mstl::string const& path)
+	void signal(unsigned id, Tcl_Obj* action, mstl::string const& path)
 	{
-		Tcl_Obj* pathObj = Tcl_NewStringObj(path, path.size());
+		Tcl_Obj* pathObj	= Tcl_NewStringObj(path, path.size());
+		Tcl_Obj* idObj		= Tcl_NewIntObj(id);
+
 		Tcl_IncrRefCount(pathObj);
-		Tcl_Obj* objv[3] = { m_proc, action, pathObj };
-		Tcl_EvalObjv(interp(), 3, objv, TCL_EVAL_GLOBAL);
+		Tcl_IncrRefCount(idObj);
+
+		Tcl_Obj* objv[4] = { m_proc, idObj, action, pathObj };
+		Tcl_EvalObjv(interp(), 4, objv, TCL_EVAL_GLOBAL);
+
 		Tcl_DecrRefCount(pathObj);
+		Tcl_DecrRefCount(idObj);
 	}
 
-	void signalChanged(mstl::string const& path) override { signal(m_changed, path); }
-	void signalDeleted(mstl::string const& path) override { signal(m_deleted, path); }
-	void signalCreated(mstl::string const& path) override { signal(m_created, path); }
+	void signalId(unsigned id, mstl::string const& path) override { signal(id, m_id, path); }
+
+	void signalChanged(unsigned id, mstl::string const& path) override { signal(id, m_changed, path); }
+	void signalDeleted(unsigned id, mstl::string const& path) override { signal(id, m_deleted, path); }
+	void signalCreated(unsigned id, mstl::string const& path) override { signal(id, m_created, path); }
 
 	Tcl_Obj*	m_proc;
 	unsigned	m_ref;
@@ -77,11 +86,13 @@ struct Monitor : public FileAlterationMonitor
 	static Tcl_Obj* m_changed;
 	static Tcl_Obj* m_deleted;
 	static Tcl_Obj* m_created;
+	static Tcl_Obj* m_id;
 };
 
-Tcl_Obj* Monitor::m_changed = 0;
-Tcl_Obj* Monitor::m_deleted = 0;
-Tcl_Obj* Monitor::m_created = 0;
+Tcl_Obj* Monitor::m_changed	= 0;
+Tcl_Obj* Monitor::m_deleted	= 0;
+Tcl_Obj* Monitor::m_created	= 0;
+Tcl_Obj* Monitor::m_id			= 0;
 
 typedef mstl::hash<mstl::string, Monitor*> Map;
 

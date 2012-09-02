@@ -95,6 +95,7 @@ public:
 		bool isProbing() const;
 		bool hasFeature(unsigned feature) const;
 
+		unsigned maxMultiPV() const;
 		unsigned numVariations() const;
 		unsigned searchMate() const;
 		unsigned limitedStrength() const;
@@ -121,6 +122,8 @@ public:
 		void setNodes(unsigned nodes);
 		void setVariation(db::MoveList const& moves, unsigned no = 1);
 		void setIdentifier(mstl::string const& name);
+		void setAuthor(mstl::string const& name);
+		void setMaxMultiPV(unsigned n);
 
 		void updateInfo();
 		void resetInfo();
@@ -138,10 +141,7 @@ public:
 	static unsigned const Feature_Pause				= 1 << 2;
 	static unsigned const Feature_PlayOther		= 1 << 3;
 
-	Engine(	Protocol protocol,
-				mstl::string const& name,
-				mstl::string const& command,
-				mstl::string const& directory);
+	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
 	virtual ~Engine() throw();
 
 	Concrete* concrete();
@@ -159,6 +159,8 @@ public:
 	bool hasFeature(unsigned feature) const;
 
 	mstl::string const& identifier() const;
+	mstl::string const& author() const;
+	unsigned maxMultiPV() const;
 	unsigned numVariations() const;
 	unsigned searchMate() const;
 	unsigned limitedStrength() const;
@@ -178,7 +180,6 @@ protected:
 
 	Engine();
 
-	virtual void updateLog() = 0;
 	virtual void updateInfo() = 0;
 
 	long pid() const;
@@ -206,6 +207,8 @@ protected:
 	void setPonder(db::Move const& move);
 	void setVariation(db::MoveList const& moves, unsigned no);
 	void setIdentifier(mstl::string const& name);
+	void setAuthor(mstl::string const& name);
+	void setMaxMultiPV(unsigned n);
 	void resetInfo();
 
 	void log(mstl::string const& msg);
@@ -229,6 +232,8 @@ private:
 	mstl::string	m_command;
 	mstl::string	m_directory;
 	mstl::string	m_identifier;
+	mstl::string	m_author;
+	unsigned			m_maxMultiPV;
 	Variations		m_variations;
 	unsigned			m_numVariations;
 	unsigned			m_searchMate;
@@ -247,6 +252,7 @@ private:
 	Process*			m_process;
 	mstl::ostream*	m_logStream;
 	Options			m_options;
+	mstl::string	m_buffer;
 };
 
 } // namespace app

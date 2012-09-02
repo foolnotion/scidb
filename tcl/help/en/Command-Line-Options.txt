@@ -134,9 +134,9 @@ On the command line the following options are available at program start:
       <br/><br/>
       Unix:
       If called with super-user rights the update will be done in the shared
-      directory (normally <nobr><url>/usr/local/share/%scidb%</url></nobr>).
+      directory (normally <url>/usr/local/share/%scidb%</url>).
       Otherwise the update will be done in user directory
-      <nobr><code>~/.%scidb%</code></nobr>.
+      <url>~/.%scidb%</url>.
     </td>
   </tr>
   <tr>

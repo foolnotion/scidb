@@ -41,7 +41,8 @@ public:
 	void message(mstl::string const& msg) override;
 	void tick(unsigned count) override;
 	void update(unsigned progress) override;
-	void finish() override;
+	void finish() throw() override;
+	void checkInterruption();
 
 	static void initialize();
 
@@ -55,6 +56,7 @@ private:
 	mutable int	m_numTicks;
 	bool			m_sendFinish;
 	bool			m_firstStart;
+	bool			m_checkInterruption;
 
 	static Tcl_Obj* m_open;
 	static Tcl_Obj* m_close;

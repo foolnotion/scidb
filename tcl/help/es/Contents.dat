@@ -15,6 +15,7 @@ set Contents {
     {{{Game list} {Game-List-Window.html}}}
     {{{Player list} {Player-List-Window.html}}}
     {{{Event List} {Event-List-Window.html}}}
+    {{{Site List} {Site-List-Window.html}}}
     {{{Annotator list} {Annotator-List-Window.html}}}
   }
   {

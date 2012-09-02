@@ -48,6 +48,14 @@ class Player
 {
 public:
 
+	class PlayerCallback
+	{
+	public:
+
+		virtual ~PlayerCallback();
+		virtual void entry(Player const& player) = 0;
+	};
+
 	typedef mstl::pair<mstl::string,mstl::string> Assoc;
 	typedef mstl::list<Assoc> AssocList;
 	typedef mstl::vector<mstl::string> StringList;
@@ -62,6 +70,14 @@ public:
 	bool isUnique() const;
 	/// Returns whether player name is an ordinary last name.
 	bool isNotUnique() const;
+	/// Returns whether UCI protocol is supported.
+	bool supportsUciProtocol() const;
+	/// Returns whether Winboard protocol is supported.
+	bool supportsWinboardProtocol() const;
+	/// Return whether chess 960 is supported.
+	bool supportsChess960() const;
+	/// Return whether shuffle chess is supported.
+	bool supportsShuffleChess() const;
 
 	/// Returns players name.
 	mstl::string const& name() const;
@@ -137,6 +153,7 @@ public:
 	void setViafID(unsigned id);
 	void setPndID(char const* id);
 	void setChess960Flag(bool flag);
+	void setShuffleChessFlag(bool flag);
 	void setWinboardProtocol(bool flag);
 	void setUciProtocol(bool flag);
 	void setUnique(bool flag);
@@ -155,6 +172,7 @@ public:
 	static unsigned findMatches(mstl::string const& name, Matches& result, unsigned maxMatches);
 	static unsigned countPlayers();
 	static Player* insertPlayer(uint32_t fideID, mstl::string const& name);
+	static void enumerate(PlayerCallback& cb);
 
 	static void parseSpellcheckFile(mstl::istream& stream);
 	static void parseFideRating(mstl::istream& stream);
@@ -237,7 +255,8 @@ private:
 	uint32_t m_zpsPrefix		:5;	// 1. digit (0-9, A-L)
 	uint32_t m_ecfSuffix		:4;	// A-L
 	uint32_t m_region			:3;
-	uint32_t m_unused			:11;
+	uint32_t m_shuffle		:1;
+	uint32_t m_unused			:10;
 
 	static unsigned m_minELO;
 	static unsigned m_minDWZ;

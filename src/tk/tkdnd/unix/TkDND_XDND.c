@@ -696,7 +696,6 @@ int TkDND_GetSelectionObjCmd(ClientData clientData, Tcl_Interp *interp,
                     selection, Tk_WindowId(path), time);
   return TCL_OK;
 } /* TkDND_GetSelectionObjCmd */
-#endif
 
 int TkDND_GrabPointerObjCmd(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
   Tk_Window path;
@@ -742,6 +741,7 @@ int TkDND_UnrabPointerObjCmd(ClientData clientData, Tcl_Interp *interp, int objc
   XUngrabPointer(Tk_Display(path), CurrentTime);
   return TCL_OK;
 }; /* TkDND_GrabPointerObjCmd */
+#endif
 
 int TkDND_SetPointerCursorObjCmd(ClientData clientData, Tcl_Interp *interp,
                             int objc, Tcl_Obj *CONST objv[]) {
@@ -1444,7 +1444,6 @@ int Tkdnd_Init(Tcl_Interp *interp) {
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }
-#endif
 
   if (Tcl_CreateObjCommand(interp, "_grab_pointer",
            (Tcl_ObjCmdProc*) TkDND_GrabPointerObjCmd,
@@ -1457,6 +1456,7 @@ int Tkdnd_Init(Tcl_Interp *interp) {
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }
+#endif
 
   if (Tcl_CreateObjCommand(interp, "_set_pointer_cursor",
            (Tcl_ObjCmdProc*) TkDND_SetPointerCursorObjCmd,

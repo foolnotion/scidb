@@ -116,7 +116,7 @@ struct DString
 
 	operator Tcl_DString* ()	{ return &str; }
 	operator char const* ()		{ return Tcl_DStringValue(&str); }
-	operator bool ()				{ return Tcl_DStringValue(&str); }
+	operator bool ()				{ return Tcl_DStringLength(&str) > 0; }
 
 	int length()					{ return Tcl_DStringLength(&str); }
 };
@@ -147,11 +147,8 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	Tcl_TranslateFileName(::sys::tcl::interp(), command, cmd);
 	Tcl_TranslateFileName(::sys::tcl::interp(), directory, dir);
 
-	if (!directory.empty())
-	{
-		Tcl_GetCwd(::sys::tcl::interp(), cwd);
+	if (!directory.empty() && Tcl_GetCwd(::sys::tcl::interp(), cwd) && cwd)
 		Tcl_Chdir(dir);
-	}
 
 	char const* argv[1] = { command.c_str() };
 
@@ -159,11 +156,13 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 												1, argv,
 												TCL_STDIN | TCL_STDOUT | TCL_STDERR | TCL_ENFORCE_MODE);
 
-	if (!directory.empty() && cwd)
+	if (cwd)
 		Tcl_Chdir(cwd);
 
 	if (!m_chan)
 		TCL_RAISE("cannot create process: %s", Tcl_PosixError(::sys::tcl::interp()));
+
+	Tcl_RegisterChannel(::sys::tcl::interp(), m_chan);
 
 #ifdef Tcl_PidObjCmd__is_not_hidden
 
@@ -176,12 +175,20 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 #else
 
-	char const* pidCmd = "::pid";
+	char const*	pidCmd = "::pid";
+	Tcl_Obj*		result = 0;
 
-	Tcl_Obj* result = ::tcl::call(__func__, pidCmd, Tcl_GetChannelName(m_chan), 0);
+	try
+	{
+		result = ::tcl::call(__func__, pidCmd, Tcl_GetChannelName(m_chan), 0);
+	}
+	catch (::tcl::Error const&)
+	{
+	}
 
 	if (result == 0)
-		TCL_RAISE("tcl::invoke(\"%s\") failed", pidCmd);
+		TCL_RAISE("tcl::invoke(\"%s %s\") failed", pidCmd, Tcl_GetChannelName(m_chan));
+
 	if (Tcl_GetLongFromObj(::sys::tcl::interp(), result, &m_pid) != TCL_OK)
 	{
 		TCL_RAISE(	"%s should return long (instead of '%s')",
@@ -191,9 +198,10 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 #endif
 
-	// XXX should be "-buffering", "none" ?
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "0");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "none");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-encoding", "binary");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary binary");
 	Tcl_CreateChannelHandler(m_chan, TCL_READABLE, ::readHandler, this);
 	Tcl_CreateCloseHandler(m_chan, ::closeHandler, this);
 }
@@ -239,19 +247,22 @@ Process::gets(mstl::string& result)
 	if (!isAlive())
 		return -1;
 
-	DString buf;
+	char buf[2048];
 
-	int bytesRead = Tcl_Gets(m_chan, buf);
+	int bytesRead = Tcl_Read(m_chan, buf, sizeof(buf));
 
 	if (bytesRead == -1)
 	{
 		if (!isAlive())
 			return -1;
 
-		TCL_RAISE("read error occured: %s", Tcl_PosixError(::sys::tcl::interp()));
+		Tcl_ResetResult(::sys::tcl::interp());
+		Tcl_AppendResult(::sys::tcl::interp(), "read error occured: ");
+		Tcl_AppendResult(::sys::tcl::interp(), Tcl_PosixError(::sys::tcl::interp()));
+		Tcl_BackgroundError(::sys::tcl::interp());
 	}
 
-	result.assign(static_cast<char const*>(buf), buf.length());
+	result.assign(static_cast<char const*>(buf), bytesRead);
 
 	return bytesRead;
 }
@@ -289,7 +300,7 @@ Process::kill() throw()
 	{
 		Tcl_DeleteChannelHandler(m_chan, ::readHandler, this);
 		Tcl_DeleteCloseHandler(m_chan, ::closeHandler, this);
-		Tcl_Close(::sys::tcl::interp(), m_chan);
+		Tcl_UnregisterChannel(::sys::tcl::interp(), m_chan);
 		m_chan = 0;
 	}
 }
@@ -302,10 +313,15 @@ Process::write(char const* msg, int size)
 
 	if (bytesWritten == -1)
 	{
-		if (!isAlive())
-			return -1;
+		if (isAlive())
+		{
+			Tcl_ResetResult(::sys::tcl::interp());
+			Tcl_AppendResult(::sys::tcl::interp(), "write error occured: ");
+			Tcl_AppendResult(::sys::tcl::interp(), Tcl_PosixError(::sys::tcl::interp()));
+			Tcl_BackgroundError(::sys::tcl::interp());
+		}
 
-		TCL_RAISE("write error occured: %s", Tcl_PosixError(::sys::tcl::interp()));
+		return -1;
 	}
 
 	return bytesWritten;

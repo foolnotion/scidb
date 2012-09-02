@@ -25,6 +25,7 @@ SRC_CXX = \
 	tcl_board.cpp \
 	tcl_crosstable.cpp \
 	tcl_database.cpp \
+	tcl_engine.cpp \
 	tcl_exception.cpp \
 	tcl_fam.cpp \
 	tcl_file.cpp \

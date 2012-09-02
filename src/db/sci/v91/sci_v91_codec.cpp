@@ -671,7 +671,7 @@ Codec::doOpen(mstl::string const& encoding)
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, Progress& progress)
+Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
 {
 //	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 	M_ASSERT(m_gameData == 0);
@@ -828,7 +828,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::decodeIndex(mstl::fstream &fstrm, Progress& progress)
+Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
 {
 	GameInfoList& infoList = gameInfoList();
 
@@ -1064,7 +1064,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 
 
 void
-Codec::readNamebases(mstl::fstream& stream, Progress& progress)
+Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 {
 #ifdef USE_LZO
 	LzoByteStream bstrm(stream);
