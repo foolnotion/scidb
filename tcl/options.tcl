@@ -39,6 +39,14 @@ proc hookWriter {callback {file options}} {
 }
 
 
+proc writeHeader {chan file} {
+	puts $chan "# Scidb $file file"
+	puts $chan "# Version: $::scidb::version"
+	puts $chan "# Syntax: Tcl language format"
+	puts $chan ""
+}
+
+
 proc write {} {
 	variable Callbacks
 
@@ -46,11 +54,7 @@ proc write {} {
 		set filename [set ::scidb::file::$file]
 		set chan [open $filename.tmp w]
 		fconfigure $chan -encoding utf-8
-
-		puts $chan "# Scidb $file file"
-		puts $chan "# Version: $::scidb::version"
-		puts $chan "# Syntax: Tcl language format"
-		puts $chan ""
+		writeHeader $chan $file
 
 		foreach callback $Callbacks($file) { $callback $chan }
 

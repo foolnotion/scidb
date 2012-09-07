@@ -1275,8 +1275,6 @@ proc PlaceToolbarFrame {tbf dir incr} {
 					MakeArrow $tbf l -1
 					grid $larrow -in $tbf -row 1 -column 0 -sticky ns
 					grid $rarrow -in $tbf -row 1 -column 2 -sticky ns
-					raise $rarrow
-					raise $larrow
 				}
 			} else {
 				if {$rarrow in [grid slaves $tbf]} {
@@ -1298,6 +1296,11 @@ proc PlaceToolbarFrame {tbf dir incr} {
 
 			set Specs(offset:$tbf) $offset
 			PlaceHorzFrame $tbf $rheight [max $width $rwidth]
+
+			if {[winfo exists $rarrow]} {
+				raise $rarrow
+				raise $larrow
+			}
 		}
 
 		t - b {
@@ -1337,8 +1340,6 @@ proc PlaceToolbarFrame {tbf dir incr} {
 					MakeArrow $tbf t -1
 					grid $tarrow -in $tbf -row 0 -column 1 -sticky ew
 					grid $barrow -in $tbf -row 2 -column 1 -sticky ew
-					raise $barrow
-					raise $tarrow
 				}
 			} else {
 				if {$tarrow in [grid slaves $tbf]} {
@@ -1360,6 +1361,11 @@ proc PlaceToolbarFrame {tbf dir incr} {
 
 			set Specs(offset:$tbf) $offset
 			PlaceVertFrame $tbf [max $height $rheight] $rwidth
+
+			if {[winfo exists $barrow]} {
+				raise $barrow
+				raise $tarrow
+			}
 		}
 	}
 }

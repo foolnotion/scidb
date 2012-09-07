@@ -64,6 +64,17 @@ public:
 		WinBoard,
 	};
 
+	struct Option
+	{
+		mstl::string name;
+		mstl::string type;
+		mstl::string dflt;
+		mstl::string var;
+		mstl::string max;
+	};
+
+	typedef mstl::list<Option> Options;
+
 	class Concrete
 	{
 	public:
@@ -71,6 +82,8 @@ public:
 		typedef app::Engine::Result Result;
 
 		virtual ~Concrete() throw();
+
+		virtual bool isReady() const = 0;
 
 		virtual bool startAnalysis(db::Board const& board) = 0;
 		virtual bool startAnalysis(db::Game const& game, bool isNewGame) = 0;
@@ -84,6 +97,7 @@ public:
 		virtual void doMove(db::Game const& game, db::Move const& lastMove) = 0;
 
 		virtual Result probeResult() const = 0;
+		virtual unsigned probeTimeout() const = 0;
 		virtual unsigned maxVariations() const;
 
 		friend class Engine;
@@ -101,6 +115,8 @@ public:
 		unsigned limitedStrength() const;
 
 		long pid() const;
+
+		void engineIsReady();
 
 		void send(mstl::string const& message);
 		void deactivate();
@@ -164,12 +180,14 @@ public:
 	unsigned numVariations() const;
 	unsigned searchMate() const;
 	unsigned limitedStrength() const;
+	Options const& options() const;
 
 	Result probe(unsigned timeout);
 
 	bool startAnalysis(db::Board const& board);
 	bool startAnalysis(db::Game const& game, bool isNewGame);
 	bool stopAnalysis();
+
 	unsigned setNumberOfVariations(unsigned n);
 	void doMove(db::Game const& game, db::Move const& lastMove);
 
@@ -181,6 +199,9 @@ protected:
 	Engine();
 
 	virtual void updateInfo() = 0;
+
+	bool protocolAlreadyStarted() const;
+	void engineIsReady();
 
 	long pid() const;
 	void kill();
@@ -216,9 +237,6 @@ protected:
 
 private:
 
-	struct Option { mstl::string s[5]; };
-
-	typedef mstl::list<Option> Options;
 	typedef mstl::list<db::MoveList> Variations;
 
 	class Process;
@@ -249,10 +267,15 @@ private:
 	bool				m_active;
 	bool				m_analyzing;
 	bool				m_probe;
+	bool				m_protocol;
+	bool				m_startAnalysisIsPending;
+	bool				m_isNewGame;
 	Process*			m_process;
 	mstl::ostream*	m_logStream;
 	Options			m_options;
 	mstl::string	m_buffer;
+	db::Board*		m_board;
+	db::Game*		m_game;
 };
 
 } // namespace app

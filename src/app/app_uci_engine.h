@@ -45,6 +45,7 @@ public:
 	bool startAnalysis(db::Board const& board) override;
 	bool startAnalysis(db::Game const& game, bool isNewGame) override;
 	bool stopAnalysis() override;
+	bool isReady() const override;
 
 protected:
 
@@ -55,6 +56,7 @@ protected:
 	void doMove(db::Game const& game, db::Move const& lastMove) override;
 
 	Result probeResult() const override;
+	unsigned probeTimeout() const override;
 	unsigned maxVariations() const override;
 
 private:
@@ -73,6 +75,7 @@ private:
 	unsigned			m_maxMultiPV;
 	bool				m_needChess960;
 	bool				m_uciok;
+	bool				m_isReady;
 	bool				m_hasMultiPV;
 	bool				m_hasAnalyseMode;
 	bool				m_hasChess960;

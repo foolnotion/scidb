@@ -187,7 +187,7 @@ quoteChars(char* src, char const* end, char* dst)
 
 	for ( ; src < end; ++src)
 	{
-		switch (char c = *src)
+		switch (unsigned char c = *src)
 		{
 			case '\r':
 			case '\n':

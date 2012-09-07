@@ -848,7 +848,8 @@ proc TableMinSize {main pane switcher sizeInfo} {
 			incr Vars(pixels) [expr {-$Vars(incr)}]
 		}
 		lassign [$main sash coord 0] x y
-		$main sash place 0 $x [expr {$y + $height - $h}]
+		set y [expr {$y + $height - $h}]
+		$main sash place 0 $x $y
 	}
 
 	after idle [namespace code [list LayoutSwitcher]]
@@ -1469,7 +1470,8 @@ proc ComputeMinHeight {} {
 	set ipad 2
 	set minheight $Defaults(iconsize)
 	incr minheight $Defaults(symbol-padding)
-	incr minheight [expr {2*$ipad + 4}]
+	incr minheight [expr {2*$ipad + 6}]
+
 	if {$Defaults(iconsize) < 32} {
 		set minheight [expr {max($minheight, $textHeight + 4)}]
 	} else {
@@ -1516,10 +1518,10 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 
 		if {$Vars(minheight:switcher) == 0} {
 			set minheight [expr {[ComputeMinHeight] + [::toolbar::totalHeight $switcher] + 2}]
-			while {$minheight > $y} { incr y $Vars(incr) }
 			set Vars(minheight:switcher) $minheight
 		}
 
+		while {$Vars(minheight:switcher) > $y} { incr y $Vars(incr) }
 		$main sash place 0 $x $y
 	}
 }

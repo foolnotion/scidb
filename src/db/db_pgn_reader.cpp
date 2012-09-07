@@ -2941,9 +2941,28 @@ PgnReader::Token
 PgnReader::parseAtSign(Token prevToken, int)
 {
 	// Move suffix: "@"
+	// Null move:   "@@@@"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "@");
+	{
+		char c[3];
+
+		c[0] = get();
+		c[1] = get();
+		c[2] = get();
+
+		if (c[0] != '@' || c[1] != '@' || c[2] != '@')
+		{
+			putback(c[2]);
+			putback(c[1]);
+			putback(c[0]);
+
+			error(UnexpectedSymbol, "@");
+		}
+
+		setNullMove();
+		return kSan;
+	}
 
 	putNag(nag::WhiteHasAModerateTimeAdvantage, nag::BlackHasAModerateTimeAdvantage);
 	return kNag;
@@ -3357,8 +3376,45 @@ PgnReader::parseLowercaseN(Token, int)
 
 	m_prevPos = m_currPos;
 
-	if (get() != 'u' && get() != 'l' && get() != 'l')
+	char c[3];
+
+	c[0] = get();
+	c[1] = get();
+	c[2] = get();
+
+	if (c[0] != 'u' || c[1] != 'l' || c[2] != 'l')
+	{
+		putback(c[2]);
+		putback(c[1]);
+		putback(c[0]);
 		error(UnexpectedSymbol, m_prevPos, "n");
+	}
+
+	setNullMove();
+	return kSan;
+}
+
+
+PgnReader::Token
+PgnReader::parseLowercaseP(Token, int)
+{
+	// Null move: "pass"
+
+	m_prevPos = m_currPos;
+
+	char c[3];
+
+	c[0] = get();
+	c[1] = get();
+	c[2] = get();
+
+	if (c[0] != 'a' || c[1] != 's' || c[2] != 's')
+	{
+		putback(c[2]);
+		putback(c[1]);
+		putback(c[0]);
+		error(UnexpectedSymbol, m_prevPos, "p");
+	}
 
 	setNullMove();
 	return kSan;
@@ -4341,7 +4397,7 @@ PgnReader::nextToken(Token prevToken)
 		/* 109 m  */ &PgnReader::parseMate,
 		/* 110 n  */ &PgnReader::parseLowercaseN,
 		/* 111 o  */ &PgnReader::parseLowercaseO,
-		/* 112 p  */ &PgnReader::unexpectedSymbol,
+		/* 112 p  */ &PgnReader::parseLowercaseP,
 		/* 113 q  */ &PgnReader::unexpectedSymbol,
 		/* 114 r  */ &PgnReader::unexpectedSymbol,
 		/* 115 s  */ &PgnReader::unexpectedSymbol,

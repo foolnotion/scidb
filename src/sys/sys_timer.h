@@ -33,6 +33,7 @@ public:
 	bool expired() const;
 
 	void doNextEvent();
+	void restart(unsigned timeout);
 
 	virtual void timeout();
 

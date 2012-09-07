@@ -206,7 +206,8 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case app::Engine::Probe_Successfull:
 		{
-			Tcl_Obj* objs[8];
+			Tcl_Obj* objs[9];
+			Engine::Options const& options = engine.options();
 
 			objs[0] = Tcl_NewStringObj("ok", -1);
 			objs[1] = Tcl_NewStringObj(engine.identifier(), engine.identifier().size());
@@ -216,6 +217,21 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			objs[5] = Tcl_NewBooleanObj(engine.hasFeature(app::Engine::Feature_Shuffle_Chess));
 			objs[6] = Tcl_NewBooleanObj(engine.hasFeature(app::Engine::Feature_Pause));
 			objs[7] = Tcl_NewBooleanObj(engine.hasFeature(app::Engine::Feature_PlayOther));
+			objs[8] = Tcl_NewListObj(0, 0);
+
+			for (Engine::Options::const_iterator i = options.begin(); i != options.end(); ++i)
+			{
+				Tcl_Obj* v[6];
+
+				v[0] = Tcl_NewStringObj(i->name, i->name.size());
+				v[1] = Tcl_NewStringObj(i->type, i->type.size());
+				v[2] = Tcl_NewStringObj(i->dflt, i->dflt.size());
+				v[3] = Tcl_NewStringObj(i->dflt, i->dflt.size());
+				v[4] = Tcl_NewStringObj(i->var, i->var.size());
+				v[5] = Tcl_NewStringObj(i->max, i->max.size());
+
+				Tcl_ListObjAppendElement(ti, objs[8], Tcl_NewListObj(U_NUMBER_OF(v), v));
+			}
 
 			setResult(U_NUMBER_OF(objs), objs);
 			break;

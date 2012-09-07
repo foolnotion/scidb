@@ -637,14 +637,11 @@
 ::board::options::mc::BoardSetup				"Brädesinställningar"
 ::board::options::mc::OpenTextureDialog	"Öppna texturdialog"
 
-::board::options::mc::YouCannotReverse
-	"Du kan inte ta tillbaka den här handlingen. Filen '%s' kommer fysiskt raderas."
+::board::options::mc::YouCannotReverse		"Du kan inte ta tillbaka den här handlingen. Filen '%s' kommer fysiskt raderas."
 
-::board::options::mc::CannotUsePieceWorkingSet
-	"Kan inte skapa nytt tema med %s markerad för pjässtil.\n Först måste du spara den nya pjässtilen, eller välja en annan pjässtil."
+::board::options::mc::CannotUsePieceWorkingSet "Kan inte skapa nytt tema med %s markerad för pjässtil.\n Först måste du spara den nya pjässtilen, eller välja en annan pjässtil."
 
-::board::options::mc::CannotUseSquareWorkingSet
-	"Kan inte skapa nytt tema med %s markerad för brädstil.\n Först måste du spara den nya brädstilen, eller välja en annan brädstil."
+::board::options::mc::CannotUseSquareWorkingSet "Kan inte skapa nytt tema med %s markerad för brädstil.\n Först måste du spara den nya brädstilen, eller välja en annan brädstil."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -751,35 +748,45 @@
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
 
 ### engine #############################################################
-::engine::mc::Name					"Name" ;# NEW
-::engine::mc::Identifier			"Identifier" ;# NEW
-::engine::mc::Author					"Author" ;# NEW
-::engine::mc::Country				"Country" ;# NEW
-::engine::mc::Rating					"Rating" ;# NEW
-::engine::mc::Logo					"Logo" ;# NEW
-::engine::mc::Protocol				"Protocol" ;# NEW
-::engine::mc::Parameters			"Parameters" ;# NEW
-::engine::mc::Command				"Command" ;# NEW
-::engine::mc::Variants				"Variants" ;# NEW
-::engine::mc::LastUsed				"Last used" ;# NEW
+::engine::mc::Information				"Information" ;# NEW
+::engine::mc::Options					"Options" ;# NEW
 
-::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
-::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
-::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+::engine::mc::Name						"Name" ;# NEW
+::engine::mc::Identifier				"Identifier" ;# NEW
+::engine::mc::Author						"Author" ;# NEW
+::engine::mc::Country					"Country" ;# NEW
+::engine::mc::Rating						"Rating" ;# NEW
+::engine::mc::Logo						"Logo" ;# NEW
+::engine::mc::Protocol					"Protocol" ;# NEW
+::engine::mc::Parameters				"Parameters" ;# NEW
+::engine::mc::Command					"Command" ;# NEW
+::engine::mc::Variants					"Variants" ;# NEW
+::engine::mc::LastUsed					"Last used" ;# NEW
+::engine::mc::Frequency					"Frequency" ;# NEW
 
-::engine::mc::SetupEngines			"Setup Engines" ;# NEW
-::engine::mc::ImageFiles			"Image files" ;# NEW
-::engine::mc::SelectEngine			"Select Engine" ;# NEW
-::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
-::engine::mc::Executables			"Executables" ;# NEW
-::engine::mc::EngineLog				"Engine Log" ;# NEW
-::engine::mc::Probing				"Probing" ;# NEW
+::engine::mc::Variant(standard)		"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)		"Shuffle Chess" ;# NEW
 
-::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
-::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
-::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
-::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
-::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+::engine::mc::SetupEngines				"Setup Engines" ;# NEW
+::engine::mc::ImageFiles				"Image files" ;# NEW
+::engine::mc::SelectEngine				"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
+::engine::mc::Executables				"Executables" ;# NEW
+::engine::mc::EngineLog					"Engine Log" ;# NEW
+::engine::mc::Probing					"Probing" ;# NEW
+::engine::mc::NeverUsed					"never used" ;# NEW
+::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
+::engine::mc::DefaultValue				"Default value" ;# NEW
+::engine::mc::ResetToDefault			"Reset to default" ;# NEW
+
+::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine			"Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess		"Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
+::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
+::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"

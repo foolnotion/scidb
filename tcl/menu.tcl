@@ -304,7 +304,7 @@ proc build {menu} {
 	if {[::engine::logIsOpen? .application]} { set state disabled } else { set state normal }
 	$m add command \
 		-compound left \
-		-label " $text" \
+		-label " $text..." \
 		-underline [incr ul] \
 		-image $::icon::16x16::none \
 		-command $cmd \

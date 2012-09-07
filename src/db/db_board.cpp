@@ -601,9 +601,9 @@ Board::prepareForPrint(Move& move) const
 									break;
 							}
 
-							// this is confusing if more than one of the moving piece exists
 							if (count(movers & m_occupiedBy[m_stm]) == 1)
 							{
+								// this is confusing if more than moving piece exists
 								if (state & CheckMate)
 									filterCheckMateMovesTo(move, others);
 								else
@@ -1961,7 +1961,7 @@ Board::setup(char const* fen)
 		return false;
 	unsigned moveNo = ::strtoul(fen, nullptr, 10);
 	if (moveNo & (~unsigned(0) << 12))
-		moveNo = 0;	// silently fix broken move numbers (sg3/sg4 may contain broken FEN's)
+		moveNo = 0;	// silently fix broken move numbers (Scid's sg3/sg4 may contain broken FEN's)
 	setMoveNumber(moveNo);
 
 	// IMPORTANT NOTE:
@@ -2991,11 +2991,28 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 		case '-':	// "--"		null move used in ChessBase
 			if (*++s != '-')
 				return 0;
+			if (s[1] == '-' && s[2] == '-')	// "----" null move used in LAN
+				s += 2;
 			move = makeNullMove();
 			return ++s;
 
+		case '@':
+			if (s[1] != '@' || s[2] != '@' || s[3] != '@')
+				return 0;
+			return s + 4;	// "@@@@" null move used in WinBoard protocol
+
+		case 'n':
+			if (s[1] != 'u' || s[2] != 'l' || s[3] != 'l')
+				return 0;
+			return s + 4;	// "null" null move used in WinBoard protocol
+
+		case 'p':
+			if (s[1] != 'a' || s[2] != 's' || s[3] != 's')
+				return 0;
+			return s + 4;	// "pass" null move used in WinBoard protocol
+
 		case '0':	// "0000"	null move used in UCI protocol
-			if (s[0] != '0' || s[1] != '0' || s[2] != '0')
+			if (s[1] != '0' || s[2] != '0' || s[3] != '0')
 				return 0;
 			move = makeNullMove();
 			return s + 4;
@@ -3016,7 +3033,7 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 					s += 3;
 				}
 
-				unsigned rook	= m_castleRookCurrent[index];
+				unsigned rook = m_castleRookCurrent[index];
 
 				if (rook != Null)
 				{
@@ -3518,7 +3535,7 @@ Board::doMove(Move const& m)
 						to = sq::make(FyleC, rank);
 					}
 
-					// in Chess 960 the king may stay on his field
+					// in Chess 960 the king may stand still
 					if (to != m_ksq[m_stm])
 					{
 						bothMask = fromMask ^ setBit(to);
@@ -3791,7 +3808,7 @@ Board::undoMove(Move const& m)
 						m_castleRookCurrent[index] = m_castleRookAtStart[index];
 					}
 
-					// in Chess 960 the king may stay on his field
+					// in Chess 960 the king may stand still
 					if (from != m_ksq[sntm])
 					{
 						bothMask = fromMask ^ setBit(to);

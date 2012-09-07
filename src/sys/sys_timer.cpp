@@ -69,4 +69,13 @@ Timer::timerEvent(void* clientData)
 	timer->timeout();
 }
 
+
+void
+Timer::restart(unsigned timeout)
+{
+	Tcl_DeleteTimerHandler(m_token);
+	m_expired = false;
+	m_token = Tcl_CreateTimerHandler(timeout, Timer::timerEvent, this);
+}
+
 // vi:set ts=3 sw=3:

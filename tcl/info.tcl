@@ -258,7 +258,7 @@ proc DisplayContributions {t} {
 	$t insert end [Enc "Steven Atkinson, "]
 	$t insert end [Enc "Paolo Casaschi, "]
 	$t insert end [Enc "Lars Ekman, "]
-#	$t insert end [Enc "Fernando González, "]
+#	$t insert end [Enc "Carlos Fernando González, "]
 #	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
 	$t insert end [Enc "Zoltán Tibenszky"]

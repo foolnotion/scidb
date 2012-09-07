@@ -412,7 +412,7 @@
 ::application::database::mc::ChangeIcon					"Cambiar ícono"
 ::application::database::mc::Recode							"Recodificar"
 ::application::database::mc::EditDescription				"Editar Descripción"
-::application::database::mc::EmptyClipbase				"vaciar Base temporal"
+::application::database::mc::EmptyClipbase				"Vaciar Base temporal"
 
 ::application::database::mc::T_Unspecific					"Inespecífico"
 ::application::database::mc::T_Temporary					"Temporal"
@@ -639,14 +639,11 @@
 ::board::options::mc::BoardSetup				"Disposición del tablero"
 ::board::options::mc::OpenTextureDialog	"Abrir diálogo de texturas"
 
-::board::options::mc::YouCannotReverse
-	"No puede revertir esta acción. El archivo '%s' será removido físicamente."
+::board::options::mc::YouCannotReverse		"No puede revertir esta acción. El archivo '%s' será removido físicamente."
 
-::board::options::mc::CannotUsePieceWorkingSet
-	"No se puede crear un nuevo tema con el estilo de piezas %s elegido.\n Primero debe guardar el nuevo estilo de pieza, o elegir otro."
+::board::options::mc::CannotUsePieceWorkingSet "No se puede crear un nuevo tema con el estilo de piezas %s elegido.\n Primero debe guardar el nuevo estilo de pieza, o elegir otro."
 
-::board::options::mc::CannotUseSquareWorkingSet
-	"No se puede crear un nuevo tema con el estilo de casillas %s elegido.\n Primero debe guardar el nuevo estilo de casillas, o elegir otro."
+::board::options::mc::CannotUseSquareWorkingSet "No se puede crear un nuevo tema con el estilo de casillas %s elegido.\n Primero debe guardar el nuevo estilo de casillas, o elegir otro."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Iniciar"
@@ -753,35 +750,44 @@
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
 
 ### engine #############################################################
-::engine::mc::Name					"Name" ;# NEW
-::engine::mc::Identifier			"Identifier" ;# NEW
-::engine::mc::Author					"Author" ;# NEW
-::engine::mc::Country				"Country" ;# NEW
-::engine::mc::Rating					"Rating" ;# NEW
-::engine::mc::Logo					"Logo" ;# NEW
-::engine::mc::Protocol				"Protocol" ;# NEW
-::engine::mc::Parameters			"Parameters" ;# NEW
-::engine::mc::Command				"Command" ;# NEW
-::engine::mc::Variants				"Variants" ;# NEW
-::engine::mc::LastUsed				"Last used" ;# NEW
+::engine::mc::Information				"Information" ;# NEW
+::engine::mc::Options					"Options" ;# NEW
 
-::engine::mc::Variant(standard)	"Standard Chess" ;# NEW
-::engine::mc::Variant(chess960)	"Chess 960" ;# NEW
-::engine::mc::Variant(shuffle)	"Shuffle Chess" ;# NEW
+::engine::mc::Name						"Name" ;# NEW
+::engine::mc::Identifier				"Identifier" ;# NEW
+::engine::mc::Author						"Author" ;# NEW
+::engine::mc::Country					"Country" ;# NEW
+::engine::mc::Rating						"Rating" ;# NEW
+::engine::mc::Logo						"Logo" ;# NEW
+::engine::mc::Protocol					"Protocol" ;# NEW
+::engine::mc::Parameters				"Parameters" ;# NEW
+::engine::mc::Command					"Command" ;# NEW
+::engine::mc::Variants					"Variants" ;# NEW
+::engine::mc::LastUsed					"Last used" ;# NEW
+::engine::mc::Frequency					"Frequency" ;# NEW
 
-::engine::mc::SetupEngines			"Setup Engines" ;# NEW
-::engine::mc::ImageFiles			"Image files" ;# NEW
-::engine::mc::SelectEngine			"Select Engine" ;# NEW
-::engine::mc::SelectEngineLogo	"Select Engine Logo" ;# NEW
-::engine::mc::Executables			"Executables" ;# NEW
-::engine::mc::EngineLog				"Engine Log" ;# NEW
-::engine::mc::Probing				"Probing" ;# NEW
+::engine::mc::Variant(standard)		"Standard Chess" ;# NEW
+::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
+::engine::mc::Variant(shuffle)		"Shuffle Chess" ;# NEW
 
-::engine::mc::ConfirmNewEngine    "Confirm new engine" ;# NEW
-::engine::mc::EngineAlreadyExists "An entry with this engine already exists." ;# NEW
-::engine::mc::CopyFromEngine      "Make a copy of entry" ;# NEW
-::engine::mc::CannotOpenProcess   "Cannot start process." ;# NEW
-::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol." ;# NEW
+::engine::mc::SetupEngines				"Setup Engines" ;# NEW
+::engine::mc::ImageFiles				"Image files" ;# NEW
+::engine::mc::SelectEngine				"Select Engine" ;# NEW
+::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
+::engine::mc::Executables				"Executables" ;# NEW
+::engine::mc::EngineLog					"Engine Log" ;# NEW
+::engine::mc::Probing					"Probing" ;# NEW
+::engine::mc::NeverUsed					"never used" ;# NEW
+::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
+::engine::mc::DefaultValue				"Default value" ;# NEW
+
+::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
+::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
+::engine::mc::CopyFromEngine			"Make a copy of entry" ;# NEW
+::engine::mc::CannotOpenProcess		"Cannot start process." ;# NEW
+::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
+::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?" ;# NEW
+::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Marcar partida como eliminada"

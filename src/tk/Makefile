@@ -165,6 +165,10 @@ tk_jpeg.o: jpeg/jpeg_reader.h
 tk_jpeg.o: jpeg/jpeg_exception.h
 tk_jpeg.o: ../util/u_base64_decoder.h
 tk_jpeg.o: ../mstl/m_types.h
+tk_jpeg.o: ../util/u_exception.h
+tk_jpeg.o: ../mstl/m_exception.h
+tk_jpeg.o: ../mstl/m_backtrace.h
+tk_jpeg.o: ../mstl/m_exception.ipp
 tk_multiwindow.o: tk_init.h
 tk_multiwindow.o: ../tcl/tcl_base.h
 tk_multiwindow.o: ../tcl/tcl_base.ipp

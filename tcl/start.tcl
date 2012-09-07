@@ -65,7 +65,7 @@ set data		[file join $share data]
 set help		[file join $share help]
 set hyphen	[file join $share hyphen]
 set photos	[file join $share photos]
-set log		[file join $share log]
+set log		[file join $user log]
 set backup	[file join $user backup]
 set config	[file join $user config]
 
@@ -248,8 +248,6 @@ if {[::scidb::misc::debug?]} {
 	if {![::process::testOption force-grab]} { proc grab {args} {} }
 }
 
-proc decr {w} { uplevel [list incr $w -1] }
-
 ### need to predefine some namespaces ################################
 
 namespace eval menu {}
@@ -261,6 +259,40 @@ namespace eval menu::mc {}
 proc do {cmds while expr} {
 	uplevel $cmds
 	uplevel [list while $expr $cmds]
+}
+
+
+proc decr {w} { uplevel [list incr $w -1] }
+
+
+proc arrayCompare {lhs rhs} {
+	upvar 1 $lhs foo $rhs bar
+
+	if {![array exists foo]} {
+		return -code error "$lhs is not an array"
+	}
+	if {![array exists bar]} {
+		return -code error "$rhs is not an array"
+	}
+	if {[array size foo] != [array size bar]} {
+		return 0
+	}
+	if {[array size foo] == 0} {
+		return 1
+	}
+
+	;# some 8.4 optimization using the lsort -unique feature 
+	set keys [lsort -unique [concat [array names foo] [array names bar]]]
+	if {[llength $keys] != [array size foo]} {
+		return 0
+	}
+
+	foreach key $keys {
+		if {$foo($key) ne $bar($key)} {
+			return 0
+		}
+	}
+	return 1
 }
 
 

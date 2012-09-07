@@ -24,9 +24,6 @@ inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive()
 inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyzing(); }
 inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
 
-inline bool Engine::startAnalysis(db::Board const& board)	{ return m_engine->startAnalysis(board); }
-inline bool Engine::stopAnalysis()									{ return m_engine->stopAnalysis(); }
-
 inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
@@ -36,6 +33,7 @@ inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
 inline void Engine::Concrete::deactivate()								{ m_engine->deactivate(); }
 inline void Engine::Concrete::addFeature(unsigned feature)			{ m_engine->addFeature(feature); }
+inline void Engine::Concrete::engineIsReady()							{ m_engine->engineIsReady(); }
 
 inline void Engine::Concrete::setBestMove(db::Move const& move)	{ m_engine->setBestMove(move); }
 inline void Engine::Concrete::setPonder(db::Move const& move)		{ m_engine->setPonder(move); }
@@ -50,6 +48,10 @@ inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
 
 inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
+
+
+inline bool Engine::protocolAlreadyStarted() const		{ return m_protocol; }
+inline Engine::Options const& Engine::options() const	{ return m_options; }
 
 
 inline

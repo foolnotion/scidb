@@ -46,6 +46,8 @@ struct Engine::Process : public sys::Process
 {
 	Process(Engine* engine, mstl::string const& command, mstl::string const& directory);
 
+	bool isConnected() const { return m_connected; }
+
 	void readyRead();
 	void exited();
 
@@ -65,18 +67,13 @@ Engine::Process::Process(Engine* engine, mstl::string const& command, mstl::stri
 void
 Engine::Process::readyRead()
 {
-	if (m_connected)
-	{
-		m_engine->readyRead();
-	}
-	else
-	{
-		mstl::string buf;
+	m_engine->readyRead();
 
-		while (gets(buf))
-			;
+	if (!m_connected)
+	{
+		if (!m_engine->protocolAlreadyStarted())
+			m_engine->concrete()->protocolStart(m_engine->isProbing());
 
-		m_engine->concrete()->protocolStart(m_engine->isProbing());
 		m_connected = true;
 	}
 }
@@ -119,8 +116,12 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_active(false)
 	,m_analyzing(false)
 	,m_probe(false)
+	,m_protocol(false)
+	,m_startAnalysisIsPending(false)
 	,m_process(0)
 	,m_logStream(0)
+	,m_board(0)
+	,m_game(0)
 {
 	switch (protocol)
 	{
@@ -141,6 +142,8 @@ Engine::~Engine() throw()
 	}
 
 	delete m_engine;
+	delete m_board;
+	delete m_game;
 }
 
 
@@ -259,8 +262,13 @@ Engine::readyRead()
 
 			line.assign(s, p - s);
 			line.trim();
-			m_engine->processMessage(line);
-			log(line);
+
+			if (!line.empty())
+			{
+				m_engine->processMessage(line);
+				log(line);
+			}
+
 			s = p + 1;
 		}
 	}
@@ -314,22 +322,16 @@ Engine::probe(unsigned timeout)
 {
 	Result result = Probe_Failed;
 
-	if (timeout < 2000)
-		timeout = 2000;
+	sys::Timer timer(1000);
 
 	m_probe = true;
-
-	sys::Timer timer(timeout);
 
 	try
 	{
 		activate();
 
-		while (result != Probe_Successfull && !timer.expired())
-		{
+		while (m_process->isConnected() && !timer.expired())
 			timer.doNextEvent();
-			result = m_engine->probeResult();
-		}
 	}
 	catch (mstl::exception const& exc)
 	{
@@ -339,11 +341,152 @@ Engine::probe(unsigned timeout)
 		throw exc;
 	}
 
+	result = m_engine->probeResult();
+
+	if (result != Probe_Successfull)
+	{
+		if (!m_process->isConnected())
+		{
+			// Seems to be a quiet engine. Start the protocol.
+			m_protocol = true;
+			m_engine->protocolStart(true);
+		}
+
+		timer.restart(mstl::max(timeout, m_engine->probeTimeout()));
+
+		try
+		{
+			while (result != Probe_Successfull && !timer.expired())
+			{
+				timer.doNextEvent();
+				result = m_engine->probeResult();
+			}
+		}
+		catch (mstl::exception const& exc)
+		{
+			deactivate();
+			m_active = false;
+			m_probe = false;
+			throw exc;
+		}
+	}
+
 	deactivate();
 	m_active = false;
 	m_probe = false;
 
 	return result;
+}
+
+
+bool
+Engine::startAnalysis(db::Board const& board)
+{
+	bool result = false;
+
+	if (isActive())
+	{
+		if (m_engine->isReady())
+		{
+			if ((result = m_engine->startAnalysis(board)))
+				m_analyzing = true;
+		}
+		else
+		{
+			// With wb engines, we don't know when the startup phase is over and when the
+			// engine is ready: so wait until it is ready.
+			if (m_game)
+			{
+				delete m_game;
+				m_game = 0;
+			}
+
+			if (m_board)
+				*m_board = board;
+			else
+				m_board = new db::Board(board);
+
+			m_startAnalysisIsPending = true;
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+
+bool
+Engine::startAnalysis(db::Game const& game, bool isNewGame)
+{
+	bool result = false;
+
+	if (isActive())
+	{
+		if (m_engine->isReady())
+		{
+			if ((result = m_engine->startAnalysis(game, isNewGame)))
+				m_analyzing = true;
+		}
+		else
+		{
+			// With wb engines, we don't know when the startup phase is over and when the
+			// engine is ready: so wait until it is ready.
+			if (m_board)
+			{
+				delete m_board;
+				m_board = 0;
+			}
+
+			if (m_game)
+				*m_game = game;
+			else
+				m_game = new db::Game(game);
+
+			m_isNewGame = isNewGame;
+			m_startAnalysisIsPending = true;
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+
+bool
+Engine::stopAnalysis()
+{
+	bool result = true;
+
+	if (m_analyzing)
+	{
+		result = m_engine->stopAnalysis();
+		m_analyzing = false;
+	}
+	else if (m_startAnalysisIsPending)
+	{
+		delete m_board;
+		delete m_game;
+		m_board = 0,
+		m_game = 0;
+		m_startAnalysisIsPending = false;
+	}
+
+	return result;
+}
+
+
+void
+Engine::engineIsReady()
+{
+	if (m_startAnalysisIsPending)
+	{
+		m_startAnalysisIsPending = false;
+
+		if (m_board)
+			m_engine->startAnalysis(*m_board);
+		else if (m_game)
+			m_engine->startAnalysis(*m_game, m_isNewGame);
+	}
 }
 
 
@@ -400,11 +543,11 @@ Engine::addOption(mstl::string const& name,
 
 	Option& opt = m_options.back();
 
-	opt.s[0] = name;
-	opt.s[1] = type;
-	opt.s[2] = dflt;
-	opt.s[3] = var;
-	opt.s[4] = max;
+	opt.name	= name;
+	opt.type	= type;
+	opt.dflt	= dflt;
+	opt.var	= var;
+	opt.max	= max;
 }
 
 // vi:set ts=3 sw=3:

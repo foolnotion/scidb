@@ -894,7 +894,7 @@ proc BuildFrame {w font isDialog options} {
 	pack $WS.fsample.sample -fill both -expand 1
 	pack propagate $WS.fsample 0
 
-	grid $WF.fixed		-row 1 -sticky w -padx 10
+	grid $WF.fixed		-row 1 -sticky w -padx 5
 	grid rowconfigure $WF 2 -minsize 3
 
 	if {[llength $color]} {
@@ -902,11 +902,11 @@ proc BuildFrame {w font isDialog options} {
 		grid $WC.name		-row 1 -column 3 -sticky nsew -pady 1
 		grid rowconfigure $WC {0 2} -minsize 5
 		grid columnconfigure $WC 2 -minsize 5
-		grid columnconfigure $WC {0 4} -minsize 10
+		grid columnconfigure $WC {0 4} -minsize 5
 		grid columnconfigure $WC 3 -weight 1
 	} else {
-		grid $WE.strike	-row 1 -sticky w -padx 10
-		grid $WE.under		-row 2 -sticky w -padx 10
+		grid $WE.strike	-row 1 -sticky w -padx 5
+		grid $WE.under		-row 2 -sticky w -padx 5
 		grid rowconfigure $WE 3 -minsize 3
 	}
 

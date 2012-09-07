@@ -47,7 +47,7 @@ clean:
 	@echo ""
 	@echo "Now you may use \"make\" to build the program."
 
-install: check-mtime install-subdirs # update-etc-magic
+install: check-mtime install-subdirs install-engines # update-etc-magic
 
 uninstall:
 	@$(MAKE) -C engines uninstall

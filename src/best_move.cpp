@@ -77,7 +77,7 @@ init(Tcl_Interp* ti)
 {
 	util::ZStream::setZipFileSuffixes(util::ZStream::Strings(1, "pgn"));
 
-	char const* ecoPath = "/home/gregor/development/c++/scidb/src/data/eco.bin";
+	char const* ecoPath = SHAREDIR "/data/eco.bin";
 	mstl::ifstream stream(ecoPath, mstl::ios_base::in | mstl::ios_base::binary);
 	db::EcoTable::specimen().load(stream);
 

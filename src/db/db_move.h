@@ -286,9 +286,6 @@ public:
 	/// Required for keeping moves in some map-like structures (discarding info values).
 	friend bool operator<(Move const& m1, Move const& m2);
 
-	template <int N> static uint8_t compress(uint16_t move);
-	template <int N> static uint16_t uncompress(uint8_t move);
-
 	friend class Board;
 	friend class MoveList;
 

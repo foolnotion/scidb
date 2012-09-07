@@ -637,14 +637,11 @@
 ::board::options::mc::BoardSetup				"Brettkonfiguration"
 ::board::options::mc::OpenTextureDialog	"Textur-Dialog öffnen"
 
-::board::options::mc::YouCannotReverse
-	"Diese Aktion kann nicht zurückgenommen werden. Die Datei '%s' wird physikalisch gelöscht."
+::board::options::mc::YouCannotReverse		"Diese Aktion kann nicht zurückgenommen werden. Die Datei '%s' wird physikalisch gelöscht."
 
-::board::options::mc::CannotUsePieceWorkingSet
-	"Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Figurengestaltung anzulegen.\n Zuerst muß die neue Figurengestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
+::board::options::mc::CannotUsePieceWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Figurengestaltung anzulegen.\n Zuerst muß die neue Figurengestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
 
-::board::options::mc::CannotUseSquareWorkingSet
-	"Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Feldergestaltung anzulegen.\n Zuerst muß die neue Feldergestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
+::board::options::mc::CannotUseSquareWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Feldergestaltung anzulegen.\n Zuerst muß die neue Feldergestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -751,35 +748,44 @@
 ::pgn::setup::mc::Diagrams(indentation)		"Einzugsmarke"
 
 ### engine #############################################################
-::engine::mc::Name					"Name"
-::engine::mc::Identifier			"Identifizierung"
-::engine::mc::Author					"Author"
-::engine::mc::Country				"Land"
-::engine::mc::Rating					"Wertungszahl"
-::engine::mc::Logo					"Logo"
-::engine::mc::Protocol				"Protokoll"
-::engine::mc::Parameters			"Parameter"
-::engine::mc::Command				"Befehl"
-::engine::mc::Variants				"Schachformen"
-::engine::mc::LastUsed				"Zuletzt benutzt"
+::engine::mc::Information				"Informationen"
+::engine::mc::Options					"Einstellungen"
 
-::engine::mc::Variant(standard)	"Standardschach"
-::engine::mc::Variant(chess960)	"Schach-960"
-::engine::mc::Variant(shuffle)	"Shuffle-Schach"
+::engine::mc::Name						"Name"
+::engine::mc::Identifier				"Kennung"
+::engine::mc::Author						"Autor"
+::engine::mc::Country					"Land"
+::engine::mc::Rating						"Wertungszahl"
+::engine::mc::Logo						"Logo"
+::engine::mc::Protocol					"Protokoll"
+::engine::mc::Parameters				"Parameter"
+::engine::mc::Command					"Befehl"
+::engine::mc::Variants					"Schachvarianten"
+::engine::mc::LastUsed					"Zuletzt benutzt"
+::engine::mc::Frequency					"Häufigkeit"
 
-::engine::mc::SetupEngines			"Schachprogramme konfigurieren"
-::engine::mc::ImageFiles			"Bilddateien"
-::engine::mc::SelectEngine			"Programm auswählen"
-::engine::mc::SelectEngineLogo	"Logo auswählen"
-::engine::mc::Executables			"Ausführbare Dateien"
-::engine::mc::EngineLog				"Schachprogramm-Log"
-::engine::mc::Probing				"Erprobung"
+::engine::mc::Variant(standard)		"Standardschach"
+::engine::mc::Variant(chess960)		"Schach-960"
+::engine::mc::Variant(shuffle)		"Shuffle-Schach"
 
-::engine::mc::ConfirmNewEngine    "Neuen Eintrag bestätigen"
-::engine::mc::EngineAlreadyExists "Ein Eintrag mit diesem Programm existiert bereits."
-::engine::mc::CopyFromEngine      "Eine Kopie anfertigen von"
-::engine::mc::CannotOpenProcess   "Der Prozess kann nicht gestartet werden"
-::engine::mc::DoesNotRespond      "Dieses Schachprogramm reagiert weder auf auf das UCI- noch auf das WinBoard-Protokoll."
+::engine::mc::SetupEngines				"Schachprogramme konfigurieren"
+::engine::mc::ImageFiles				"Bilddateien"
+::engine::mc::SelectEngine				"Programm auswählen"
+::engine::mc::SelectEngineLogo		"Logo auswählen"
+::engine::mc::Executables				"Ausführbare Dateien"
+::engine::mc::EngineLog					"Schachprogramm-Log"
+::engine::mc::Probing					"Erprobung"
+::engine::mc::NeverUsed					"nie benutzt"
+::engine::mc::OpenFsbox					"Dateiauswahldialog öffnen"
+::engine::mc::ResetToDefault			"Auf Standardwert setzen"
+
+::engine::mc::ConfirmNewEngine		"Neuen Eintrag bestätigen"
+::engine::mc::EngineAlreadyExists	"Ein Eintrag mit diesem Programm existiert bereits."
+::engine::mc::CopyFromEngine			"Eine Kopie anfertigen von"
+::engine::mc::CannotOpenProcess		"Der Prozess kann nicht gestartet werden"
+::engine::mc::DoesNotRespond			"Dieses Schachprogramm reagiert weder auf auf das UCI- noch auf das XBoard/WinBoard-Protokoll."
+::engine::mc::DiscardChanges			"Der aktuelle Posten wurde verändert.\n\nDie Änderungen tatsächlich verwerfen?"
+::engine::mc::ReallyDelete				"Den Eintrag für das Programm '%s' tatsächlich löschen?"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"

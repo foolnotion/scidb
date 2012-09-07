@@ -283,6 +283,7 @@ private:
 	Token parseLowercaseE(Token prevToken, int c);
 	Token parseLowercaseN(Token prevToken, int c);
 	Token parseLowercaseO(Token prevToken, int c);
+	Token parseLowercaseP(Token prevToken, int c);
 	Token parseLowercaseZ(Token prevToken, int c);
 	Token parseMate(Token prevToken, int c);
 	Token parseMinusSign(Token prevToken, int c);

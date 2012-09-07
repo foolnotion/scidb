@@ -636,14 +636,11 @@
 ::board::options::mc::BoardSetup				"Board Setup"
 ::board::options::mc::OpenTextureDialog	"Open Texture Dialog"
 
-::board::options::mc::YouCannotReverse
-	"You cannot reverse this action. File '%s' will be physically removed."
+::board::options::mc::YouCannotReverse		"You cannot reverse this action. File '%s' will be physically removed."
 
-::board::options::mc::CannotUsePieceWorkingSet
-	"Cannot create new theme with %s selected for piece style.\n At first you have to save new piece style, or choose another piece style."
+::board::options::mc::CannotUsePieceWorkingSet "Cannot create new theme with %s selected for piece style.\n At first you have to save new piece style, or choose another piece style."
 
-::board::options::mc::CannotUseSquareWorkingSet
-	"Cannot create new theme with %s selected for square style.\n At first you have to save new square style, or choose another square style."
+::board::options::mc::CannotUseSquareWorkingSet "Cannot create new theme with %s selected for square style.\n At first you have to save new square style, or choose another square style."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -750,35 +747,44 @@
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width"
 
 ### engine #############################################################
-::engine::mc::Name					"Name"
-::engine::mc::Identifier			"Identifier"
-::engine::mc::Author					"Author"
-::engine::mc::Country				"Country"
-::engine::mc::Rating					"Rating"
-::engine::mc::Logo					"Logo"
-::engine::mc::Protocol				"Protocol"
-::engine::mc::Parameters			"Parameters"
-::engine::mc::Command				"Command"
-::engine::mc::Variants				"Variants"
-::engine::mc::LastUsed				"Last used"
+::engine::mc::Information				"Information"
+::engine::mc::Options					"Options"
 
-::engine::mc::Variant(standard)	"Standard Chess"
-::engine::mc::Variant(chess960)	"Chess 960"
-::engine::mc::Variant(shuffle)	"Shuffle Chess"
+::engine::mc::Name						"Name"
+::engine::mc::Identifier				"Identifier"
+::engine::mc::Author						"Author"
+::engine::mc::Country					"Country"
+::engine::mc::Rating						"Rating"
+::engine::mc::Logo						"Logo"
+::engine::mc::Protocol					"Protocol"
+::engine::mc::Parameters				"Parameters"
+::engine::mc::Command					"Command"
+::engine::mc::Variants					"Variants"
+::engine::mc::LastUsed					"Last used"
+::engine::mc::Frequency					"Frequency"
 
-::engine::mc::SetupEngines			"Setup Engines"
-::engine::mc::ImageFiles			"Image files"
-::engine::mc::SelectEngine			"Select Engine"
-::engine::mc::SelectEngineLogo	"Select Engine Logo"
-::engine::mc::Executables			"Executables"
-::engine::mc::EngineLog				"Engine Log"
-::engine::mc::Probing				"Probing"
+::engine::mc::Variant(standard)		"Standard Chess"
+::engine::mc::Variant(chess960)		"Chess 960"
+::engine::mc::Variant(shuffle)		"Shuffle Chess"
 
-::engine::mc::ConfirmNewEngine    "Confirm new engine"
-::engine::mc::EngineAlreadyExists "An entry with this engine already exists."
-::engine::mc::CopyFromEngine      "Make a copy of entry"
-::engine::mc::CannotOpenProcess   "Cannot start process."
-::engine::mc::DoesNotRespond      "This engine does not respond either to UCI nor to WinBoard protocol."
+::engine::mc::SetupEngines				"Setup Engines"
+::engine::mc::ImageFiles				"Image files"
+::engine::mc::SelectEngine				"Select Engine"
+::engine::mc::SelectEngineLogo		"Select Engine Logo"
+::engine::mc::Executables				"Executables"
+::engine::mc::EngineLog					"Engine Log"
+::engine::mc::Probing					"Probing"
+::engine::mc::NeverUsed					"never used"
+::engine::mc::OpenFsbox					"Open File Selection Dialog"
+::engine::mc::ResetToDefault			"Reset to default"
+
+::engine::mc::ConfirmNewEngine		"Confirm new engine"
+::engine::mc::EngineAlreadyExists	"An entry with this engine already exists."
+::engine::mc::CopyFromEngine			"Make a copy of entry"
+::engine::mc::CannotOpenProcess		"Cannot start process."
+::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."
+::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
+::engine::mc::ReallyDelete				"Really delete engine '%s'?"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"

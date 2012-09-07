@@ -162,6 +162,10 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	if (!m_chan)
 		TCL_RAISE("cannot create process: %s", Tcl_PosixError(::sys::tcl::interp()));
 
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-encoding", "binary");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary binary");
 	Tcl_RegisterChannel(::sys::tcl::interp(), m_chan);
 
 #ifdef Tcl_PidObjCmd__is_not_hidden
@@ -198,10 +202,6 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 #endif
 
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "none");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-encoding", "binary");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary binary");
 	Tcl_CreateChannelHandler(m_chan, TCL_READABLE, ::readHandler, this);
 	Tcl_CreateCloseHandler(m_chan, ::closeHandler, this);
 }

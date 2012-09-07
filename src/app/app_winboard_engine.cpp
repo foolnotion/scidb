@@ -201,13 +201,20 @@ winboard::Engine::Engine()
 }
 
 
-winboard::Engine::~Engine() throw()		{}
+winboard::Engine::~Engine() throw() {}
 
 
 winboard::Engine::Result
 winboard::Engine::probeResult() const
 {
 	return m_response ? app::Engine::Probe_Successfull : app::Engine::Probe_Undecidable;
+}
+
+
+unsigned
+winboard::Engine::probeTimeout() const
+{
+	return 2000;
 }
 
 
@@ -422,27 +429,31 @@ winboard::Engine::stopAnalysis()
 }
 
 
+bool
+winboard::Engine::isReady() const
+{
+	return m_response;
+}
+
+
 void
 winboard::Engine::protocolStart(bool isProbing)
 {
 	send("xboard");
 	send("protover 2");
+	send("ponder off");
 
 	if (isProbing)
 	{
 		send("log off");		// turn off crafty logging, to reduce number of junk files
-		send("ping");
+		send("ping");			// probably the engine will send 'pong'
 		send("new");
 		send("sd 1");
 		send("depth 1");		// some engines are expecting "depth" instead of "sd"
-		send("level 1 1 0");	// better than "st 1"
+		send("st 1");			// "level 1 1 0" does not work with any machine
+		send("st 0");
 		send("post");
 		send("go");				// NOTE: don't send "go" if the user is to move
-//		send("?");
-//		send("force");
-//		send("easy");
-//		send("hard");
-//		send("easy");
 
 		// NOTE: GNU Chess 4 might expect "depth\n1" !!
 	}
@@ -488,7 +499,14 @@ winboard::Engine::featureDone(bool done)
 		// The engine will send done=1, when its ready to go,
 		//  and done=0 if it needs more than 2 seconds to start.
 		if (done)
+		{
+			m_response = true;
+			engineIsReady();
+		}
+		else
+		{
 			timeout();
+		}
 	}
 }
 
@@ -545,6 +563,12 @@ winboard::Engine::processMessage(mstl::string const& message)
 			case 'M':
 				if (::strncmp(msg + 1, "y move is", 9) == 0)
 				{
+					if (isProbing())
+					{
+						m_response = true;
+						return;
+					}
+
 					// TODO: do something with move
 					// skip possible colon after " is".
 					return;
@@ -594,7 +618,7 @@ winboard::Engine::parseFeatures(char const* msg)
 		char const* key	= msg;
 		char const* sep	= ::strchr(msg, '=');
 
-		if (sep[0] == 0 || sep[1] == 0)
+		if (sep == 0 || sep[0] == '\0' || sep[1] == '\0')
 			return;
 
 		char const* val	= sep + 1;
@@ -743,20 +767,23 @@ winboard::Engine::parseFeatures(char const* msg)
 					if (isProbing())
 					{
 						if (m_variantChess960)
+						{
 							addFeature(app::Engine::Feature_Chess_960);
-						if (m_variantNoCastle)
-							addFeature(app::Engine::Feature_Shuffle_Chess);
+
+							if (m_variantNoCastle)
+								addFeature(app::Engine::Feature_Shuffle_Chess);
+						}
 					}
 				}
 				break;
 		}
 
 		if (accept)
-			send("accepted " + mstl::string(val, end));
+			send("accepted " + mstl::string(key, sep));
 		else if (reject)
-			send("rejected " + mstl::string(val, end));
+			send("rejected " + mstl::string(key, sep));
 
-		msg = ::skipSpaces(msg);
+		msg = ::skipSpaces(end);
 	}
 }
 
@@ -973,7 +1000,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 	}
 	else if (type == "file" || type == "path")
 	{
-		addOption(name, "path", args);
+		addOption(name, type, args);
 	}
 }
 
@@ -1033,7 +1060,7 @@ winboard::Engine::detectFeatures(char const* identifier)
 
 		send("log off");		// turn off crafty logging, to reduce number of junk files
 		send("noise 1000");	// set a fairly low noise value
-		send("egtb off");		// turn off end game table book
+//		send("egtb off");		// turn off end game table book
 		send("resign 0");		// turn off alarm
 
 		m_featureSetboard = true;

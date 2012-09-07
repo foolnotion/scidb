@@ -91,13 +91,13 @@ skipWords(char const* s, unsigned n)
 static bool
 nextWord(mstl::string& result, char const*& p)
 {
-	if (!isalpha(*p))
+	if (*p == '\0')
 		return false;
 
 	result.clear();
 
 	while (*p && !isspace(*p))
-		result += *++p;
+		result += *p++;
 
 	while (isspace(*p))
 		++p;
@@ -155,10 +155,21 @@ endsWithPath(mstl::string const& s)
 }
 
 
+static bool
+endsWithFile(mstl::string const& s)
+{
+	if (s.size() < 4)
+		return false;
+
+	return strncmp(s.c_str() + s.size() - 4, "File", 4) == 0;
+}
+
+
 uci::Engine::Engine()
 	:m_maxMultiPV(1)
 	,m_needChess960(false)
 	,m_uciok(false)
+	,m_isReady(false)
 	,m_hasMultiPV(false)
 	,m_hasAnalyseMode(false)
 	,m_hasChess960(false)
@@ -196,6 +207,13 @@ uci::Engine::Result
 uci::Engine::probeResult() const
 {
 	return m_uciok ? app::Engine::Probe_Successfull : app::Engine::Probe_Failed;
+}
+
+
+unsigned
+uci::Engine::probeTimeout() const
+{
+	return 1000;
 }
 
 
@@ -309,6 +327,13 @@ uci::Engine::stopAnalysis()
 }
 
 
+bool
+uci::Engine::isReady() const
+{
+	return m_isReady;
+}
+
+
 void
 uci::Engine::protocolStart(bool isProbing)
 {
@@ -355,7 +380,8 @@ uci::Engine::processMessage(mstl::string const& message)
 				if (m_waitingOn == "uciok")
 				{
 					// engine is now initialised and ready to go
-//					setReady(true);
+					m_isReady = true;
+
 					// now we can send our options
 					if (m_hasMultiPV)
 						send("setoption name MultiPV value " + ::toStr(numVariations()));
@@ -387,6 +413,7 @@ uci::Engine::processMessage(mstl::string const& message)
 					send("setoption name NalimovCache value true");
 					send("setoption name NalimovPath value d:\tb;c\tb");
 #endif
+					engineIsReady();
 				}
 				else if (m_waitingOn == "position")
 				{
@@ -623,12 +650,6 @@ uci::Engine::parseOption(char const* msg)
 	if (name.empty())
 		return;
 
-	if (name == "UCI_Chess960")
-	{
-		addFeature(app::Engine::Feature_Chess_960);
-		return;
-	}
-
 	if (::strncmp(name, "UCI_", 4) == 0)
 	{
 		switch (name[4])
@@ -643,6 +664,7 @@ uci::Engine::parseOption(char const* msg)
 			case 'C':
 				if (name == "UCI_Chess960")
 				{
+					addFeature(app::Engine::Feature_Chess_960);
 					m_hasChess960 = true;
 					break;
 				}
@@ -657,7 +679,7 @@ uci::Engine::parseOption(char const* msg)
 			case 'E':
 				if (name == "UCI_Elo")
 					break;
-				if (name == "UCI_EngineAbout")
+				else if (name == "UCI_EngineAbout")
 					break;
 				// fallthru
 			case 'S':
@@ -665,23 +687,20 @@ uci::Engine::parseOption(char const* msg)
 				{
 					break;
 				}
-				if (name == "UCI_ShowCurrLine")
+				else if (name == "UCI_ShowCurrLine")
 				{
 					m_hasShowCurrLine = true;
 					break;
 				}
-				if (name == "UCI_ShowRefutations")
+				else if (name == "UCI_ShowRefutations")
 				{
 					m_hasShowRefutations = true;
 					break;
 				}
-				// fallthru
-			default:
-				return;
+				break;
 		}
 	}
-
-	if (type == "check")
+	else if (type == "check")
 	{
 		if (dflt != "true" && dflt != "false")
 			return;
@@ -709,25 +728,15 @@ uci::Engine::parseOption(char const* msg)
 		if (!::isNumeric(dflt) || !::isNumeric(min) || !::isNumeric(max))
 			return;
 
-		addOption(name, type, dflt, min, max);
-
-		switch (name[0])
+		if (name == "MultiPV")
 		{
-			case 'H':
-//				if (name == "Hash")
-//				{
-//				}
-//				break;
-
-			case 'M':
-				if (name == "MultiPV")
-				{
-					m_hasMultiPV = true;
-					m_maxMultiPV = mstl::max(1ul, ::strtoul(max, nullptr, 10));
-					setMaxMultiPV(m_maxMultiPV);
-				}
-				break;
+			m_hasMultiPV = true;
+			m_maxMultiPV = mstl::max(1ul, ::strtoul(max, nullptr, 10));
+			setMaxMultiPV(m_maxMultiPV);
+			return;
 		}
+
+		addOption(name, type, dflt, min, max);
 	}
 	else if (type == "combo")
 	{
@@ -753,13 +762,14 @@ uci::Engine::parseOption(char const* msg)
 	}
 	else if (type == "button")
 	{
-		// Possibly we should skip: "Clear Hash", "Clear PosLearning"
 		addOption(name, type);
 	}
 	else if (type == "string")
 	{
 		if (::endsWithPath(name))
-			addOption(name, "path");
+			addOption(name, "path", dflt);
+		else if (::endsWithFile(name))
+			addOption(name, "file", dflt);
 		else
 			addOption(name, type, dflt);
 	}

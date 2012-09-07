@@ -2538,6 +2538,8 @@ db_pgn_reader.o: db_site.ipp
 db_pgn_reader.o: db_eco.h
 db_pgn_reader.o: db_eco.ipp
 db_pgn_reader.o: db_pgn_aquarium.h
+db_pgn_reader.o: db_exception.h
+db_pgn_reader.o: ../util/u_exception.h
 db_pgn_reader.o: ../util/u_nul_string.h
 db_pgn_reader.o: ../util/u_nul_string.ipp
 db_pgn_reader.o: ../util/u_progress.h

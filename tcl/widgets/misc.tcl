@@ -312,7 +312,7 @@ proc dialogButtonSetIcons {dlg} {
 				cancel	{ set icon $::icon::iconCancel }
 				apply		{ set icon $::icon::iconApply }
 				update	{ set icon $::icon::iconUpdate }
-				reset		{ set icon $::icon::iconEraser }
+				reset		{ set icon $::icon::iconSetup }
 				clear		{ set icon $::icon::iconClear }
 				close		{ set icon $::icon::iconClose }
 				revert	{ set icon $::icon::iconReset }
