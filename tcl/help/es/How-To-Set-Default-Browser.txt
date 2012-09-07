@@ -1,0 +1,69 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision$
+* Date   : $Date$
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2011-2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+TITLE Cómo definir el explorador de Internet predeterminado
+
+<p>
+El explorador de Internet predeterminado se utilizará para abrir enlaces externos.
+Existen cuatro posibilidades para definir el explorador de Internet predeterminado:
+</p>
+
+<ol>
+  <li><p>
+    El valor de la variable de entorno <code>BROWSER</code> se usará al inicio del
+    programa. Ejemplo:<br/>
+    <box>
+      <p><code>export BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><br/></p>
+    </box>
+  </p></li>
+
+  <li><p>
+    Se utilizará el enlace <nobr><code>"x-www-browser"</code></nobr>.
+    En Ubuntu/Debian este enlace puede actualizarse a explorador de Internet predeterminado
+    con:
+    <box>
+      <p><code>sudo update-alternatives <nobr>--config</nobr> <nobr>x-www-browser</nobr></code></p>
+    </box>
+  </p></li>
+
+  <li><p>
+    Scidb busca alguna entrada tal como
+    <code>"X11BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><code>"</code>
+    en el archivo <url>"~/.htmlviewrc"</url>.
+  </p></li>
+
+  <li><p>
+    Usar el primer explorador que pueda encontrarse en la siguiente lista:<br/>
+    <ragged>iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex</ragged>.
+  </p></li>
+</ol>
+
+<p>
+La primera posibilidad exitosa determinará el explorador de Internet predeterminado. 
+Si ninguna de estas posibilidades es exitosa y no es posible abrir un explorador de
+Internet se mostrará un mensaje de error.
+</p>
+
+<note>Los exploradores de Internet de terminal no se usarán
+con Scidb; esto significa que usted tendrá que especificar un explorador X (un explorador
+gráfico).</note>
+
+END
+
+# vi:set ts=2 sw=2 et filetype=html:

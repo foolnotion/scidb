@@ -1,0 +1,70 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Marcadores
+INDEX Marcadores de partida
+
+TITLE Marcadores de partida
+
+<p>
+Un <em>marcador</em> es un indicador de alguna característica ajedrecística que puede ser
+agregado o no a cada partida en una base de datos. Hay 21 marcadores programables por el
+usuario que se pueden adjudicar a cada partida.  Estos marcadores se usarán como parte de
+búsquedas complejas en una base de datos, o para propósitos de filtrado del listado de
+partidas. Debido a que todos los marcadores programables por el usuario carecen de
+significado usted puede utilizarlos para cualquier propósito que cumpla con sus necesidades.</p>
+
+<p>
+Los marcadores y sus símbolos en detalle:
+</p>
+
+INCLUDE ../Game-Flags.txt
+
+<NEW>
+<p>
+The last two markers are not user-settable, they will be set automatically if a
+game contains illegal castlings or even other illegal moves (for example the king
+is moving into check) within the main line. If a game is marked with both only
+the marker <em>%::gametable::mc::GameFlags(I)%</em> will be displayed.
+</p>
+</NEW>
+
+<p>
+Existe otro marcador especial que no es programable por el usuario, el marcador de
+borrado. Así, una partida marcada será removida la próxima vez que la base de datos sea
+compactada.
+</p>
+
+<p>
+Cuando se editan partidas de bases de datos Scid (.si4) Scidb soporta los seis marcadores
+definidos por el ususario (1..6). Pero se recomienda no utilizar estos marcadores ya que
+ocurrirán problemas insolubles al copiar partidas a otras bases de datos; incluso la
+aplicación Scid es incapaz de resolver estos problemas.
+</p>
+
+<p>
+Cuando se leen bases de datos ChessBase los marcadores
+<em>%::gametable::mc::GameFlags(s)%</em> y
+<em>%::gametable::mc::GameFlags(t)%</em>
+se unificarán bajo el marcador común <em>%::gametable::mc::GameFlags(?)%</em>.
+Scidb no distingue entre estas dos características.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

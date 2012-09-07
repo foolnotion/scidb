@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/es/Command-Line-Options.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='es'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="es" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Ayuda: Opciones de la línea de comandos</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Opciones de la línea de comandos</h1>
+</div>
+
+<p>
+Al inicio del programa se encuentran disponibles las siguientes opciones en la línea de comandos:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--</code>
+    </td>
+    <td class="standard">
+      Luego de esta opción todos los argumentos se interpretarán como nombres de archivo. 
+      Esto permite que los nombres de archivo puedan comenzar con guiones.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--help</code>
+    </td>
+    <td class="standard">Muestra todas las opciones y termina.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--show-board</code>
+    </td>
+    <td class="standard">Cambia a la pestaña tablero luego del inicio.</td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--re-open</code>
+    </td>
+    <td class="standard">
+      Abre todas las bases de datos que estaban abiertas en la última sesión 
+      inmediatamente después del inicio.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--fast-load</code>
+    </td>
+    <td class="standard">
+      Sólo carga los archivos de datos necesarios tras el inicio, permitiendo un inicio del
+      programa significativamente más rápido. No se recomienda el uso de esta opción excepto
+      para pruebas
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--first-time</code>
+    </td>
+    <td class="standard">
+      Inicia el programa como si fuera la primera vez; esto significa que resetea todas
+      las opciones de usuario, borra los archivos de recuperación y copia todos los temas
+      de tablero estándar en el directorio del usuario, salvo los modificados. Esta opción
+      puede ser útil si falla el inicio por un error en el archivo de opciones.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--elo-only</code>
+    </td>
+    <td class="standard">
+      No carga más archivos de rating que los del ELO. Esto acelera el inicio del programa.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--print-recovery-files</code>
+    </td>
+    <td class="standard">
+      Muestra todos los archivos de recuperación que fueron generados al final de la 
+      última sesión debido a modificaciones no guardadas, y termina. La salida está vacía
+      si no existen archivos de recuperación.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--delete-recovery-files</code>
+    </td>
+    <td class="standard">
+      Borra todos los archivos de recuperación de la última sesión y termina el programa.
+      No es un borrado físico, ya que con la opción
+      <code>--recover-old</code> es posible reutilizar los archivos.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--dont-recover</code>
+    </td>
+    <td class="standard">
+      Inicia el programa sin utilizar los archivos de recuperación (que contienen
+      las partidas modificadas no guardadas de la última sesión). La remoción no es física
+      ya que con la opción <code>--recover-old</code> es posible reutilizar los archivos.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--recover-old</code>
+    </td>
+    <td class="standard">
+      Recupera las partidas no guardadas de sesiones anteriores. Las partidas no guardadas
+      de la última sesión se descartarán.
+    </td>
+  </tr>
+<span class="NEW">
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--update-player-photos</code>
+    </td>
+    <td class="standard">
+      Update or install player photos. Afterwards the program will be terminated.
+      <br/><br/>
+      The basic recommendation is to use the update or install functionality via
+      the graphical user interface.
+      <br/><br/>
+      Unix:
+      If called with super-user rights the update will be done in the shared
+      directory (normally <code>/usr/</code>&#8203;<code>local/</code>&#8203;<code>share/</code>&#8203;<code>scidb-beta/</code>).
+      Otherwise the update will be done in user directory
+      <code>~/</code><code>.scidb-beta/</code>.
+    </td>
+  </tr>
+</span>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--single-process</code>
+    </td>
+    <td class="standard">
+      Fuerza otra instancia de Scidb. Esta opción es sólo para pruebas.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>--force-grab</code>
+    </td>
+    <td class="standard">
+      El programa suprime las apropiaciones automáticamente si se inicia dentro de un
+      depurador, ya que las apropiaciones pueden congelar las pantallas. Con esta opción
+      apropiarse de la pantalla sólo se permitirá en modo depuración.
+    </td>
+  </tr>
+</table>
+
+<p>
+Las siguientes opciones serán reconocidas por la biblioteca Tk:
+</p>
+
+<table class="standard">
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>-geometry GEOMETRY</code>
+    </td>
+    <td class="standard">
+      Usa la información geométrica de la ventana principal. Por ejemplo, el argumento 
+      <code>-geometry</code> <code>600x800+20+10</code> modificará el tamaño de la 
+      ventana principal a 600x800 y la posición de la ventana tendrá las coordenadas
+      en la pantalla 20,10.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>-display DISPLAY</code>
+    </td>
+    <td class="standard">
+      Nombre de la pantalla en la que crear la ventana.
+    </td>
+  </tr>
+  <tr>
+    <td class="standard" style="white-space:nowrap;" valign="top">
+        <code>-sync</code>
+    </td>
+    <td class="standard">
+      Usar el modo sincronizado para servidor de pantalla.
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

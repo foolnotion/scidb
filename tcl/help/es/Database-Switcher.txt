@@ -1,0 +1,161 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Intercambiador de bases de datos
+
+TITLE El intercambiador de bases de datos
+
+<dir><img src="images/database-switcher.png"/></dir>
+
+<p>
+El intercambiador de bases de datos provee una navegación fácil entre las bases de datos.
+La base de datos activa se resaltará con un trasfondo amarillo.
+</p>
+
+<p>
+Al apretar el botón del medio del ratón (i.e. la rueda) se mostrará una caja de
+información.
+</p>
+
+<NEW>
+<p>
+The functionalities of the database switcher:
+</p>
+
+<ul>
+  <li><a href="#Administration">Administration</a></li>
+  <li><a href="#DND">Drag &amp; Drop</a></li>
+</ul>
+</NEW>
+
+<h3 id="Administration">Administration</h3>
+
+<p>
+Se encuentra disponible un menú sensible al contexto para la administración de la base de datos:
+</p>
+
+<dir><img src="images/database-switcher-menu.png"/></dir>
+
+<p>
+<menuitem>%::application::database::mc::Properties%</menuitem>
+Abre una caja que muestra variada información sobre la base de datos.
+</p>
+
+<p>
+<menuitem>%::export::mc::Export%</menuitem>
+Abre un diálogo para <a href="Database-Export-Dialog.html">exportar base</a>
+a otros formatos de base de datos o formatos de documento.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileImport%</menuitem>
+Abre el <a href="File-Selection-Dialog.html">diálogo de selección de archivo</a> para
+la selección de archivos <abbr>PGN</abbr> para importar. Es posible seleccionar múltiples
+archivos <abbr>PGN</abbr> simultáneamente. Las partidas se agregarán al final de la base
+de datos.
+</p>
+
+<NEW>
+<p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Create a <a href="Database-Formats.html#Database-Archive">database archive</a>.
+The <a href="File-Selection-Dialog.html">file selection dialog</a>
+will be opened for the selection of an archive name.
+</p>
+</NEW>
+
+<p>
+<menuitem>%::application::database::mc::FileClose%</menuitem>
+La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
+se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
+<note/>No es posible cerrar <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<NEW>
+<p id="Compact">
+<menuitem>%::application::database::mc::FileCompact%</menuitem>
+Compact this database, this means that all games marked for deletion
+wil be deleted physically. You cannot revert this action. This menu
+item is disabled if the database does not contain any game with a
+deletion marker.
+</p>
+</NEW>
+
+<p>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
+Selecciona un icono para esta base.
+<note/>Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
+Crea o cambia la descripción para esta base.
+<note/>Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+Establecer esta base como de sólo-lectura o editable.
+Esto sólo es posible para las bases Scidb y Scid
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+<note/>Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
+<note/><a href="Clipbase.html">Clipbase</a> no puede establecerse como de sólo-lectura.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
+Crea una nueva base de datos. Sólo pueden crearse bases Scidb y Scid
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileOpen%</menuitem>
+Abre otra base de datos.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
+Abre una base de datos a través del historial de bases de datos.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::SymbolSize%</menuitem>
+Selección del tamaño de los símbolos de base de datos.
+</p>
+
+<dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>
+
+<menuitem>
+%::application::database::mc::EmptyClipbase%</menuitem>
+<note/>Esta entrada de menú sólo se proporcionará para
+<a href="Clipbase.html">Clipbase</a>.
+
+<NEW>
+<h3 id="DND">Drag &amp; Drop</h3>
+
+<p>
+Database can be opened with the drop of an URI list. If an URI list (list of files)
+&ndash; or a single file &ndash; will be dragged over the database switcher,
+a colored background will indicate that a drop of this item is possible.
+In this way you may open databases with the help of an external file manager.
+</p>
+</NEW>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

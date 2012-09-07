@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/es/Game-Flags.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='es'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="es" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Ayuda: Marcadores de partida</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Marcadores de partida</h1>
+</div>
+
+<p>
+Un <em>marcador</em> es un indicador de alguna característica ajedrecística que puede ser
+agregado o no a cada partida en una base de datos. Hay 21 marcadores programables por el
+usuario que se pueden adjudicar a cada partida.  Estos marcadores se usarán como parte de
+búsquedas complejas en una base de datos, o para propósitos de filtrado del listado de
+partidas. Debido a que todos los marcadores programables por el usuario carecen de
+significado usted puede utilizarlos para cualquier propósito que cumpla con sus necesidades.</p>
+
+<p>
+Los marcadores y sus símbolos en detalle:
+</p>
+
+<div class="box">
+<dl>
+  <dt><img src="../images/gameflag-White-Opening.png"     />&emsp;Apertura de las Blancas</dt>
+  <dt><img src="../images/gameflag-Black-Opening.png"     />&emsp;Apertura de las Negras</dt>
+  <dt><img src="../images/gameflag-Middle-Game.png"       />&emsp;Medio juego</dt>
+  <dt><img src="../images/gameflag-End-Game.png"          />&emsp;Final</dt>
+  <dt><img src="../images/gameflag-Novelty.png"           />&emsp;Novedad</dt>
+  <dt><img src="../images/gameflag-Pawn-Structure.png"    />&emsp;Estructura de peones</dt>
+  <dt><img src="../images/gameflag-Tactics.png"           />&emsp;Táctica</dt>
+  <dt><img src="../images/gameflag-King-Side.png"         />&emsp;Ala de rey</dt>
+  <dt><img src="../images/gameflag-Queen-Side.png"        />&emsp;Ala de dama</dt>
+  <dt><img src="../images/gameflag-Brilliancy.png"        />&emsp;Genialidad</dt>
+  <dt><img src="../images/gameflag-Blunder.png"           />&emsp;Error Decisivo</dt>
+  <dt><img src="../images/gameflag-User.png"              />&emsp;Usuario</dt>
+  <dt><img src="../images/gameflag-Best-Game.png"         />&emsp;Mejor partida</dt>
+  <dt><img src="../images/gameflag-Decided-Tournament.png"/>&emsp;Torneo resuelto</dt>
+  <dt><img src="../images/gameflag-Model-Game.png"        />&emsp;Partida modelo</dt>
+  <dt><img src="../images/gameflag-Strategy.png"          />&emsp;Estrategia</dt>
+  <dt><img src="../images/gameflag-With-Attack.png"       />&emsp;Ataque</dt>
+  <dt><img src="../images/gameflag-Sacrifice.png"         />&emsp;Sacrificio</dt>
+  <dt><img src="../images/gameflag-Defense.png"           />&emsp;Defensa</dt>
+  <dt><img src="../images/gameflag-Material.png"          />&emsp;Material</dt>
+  <dt><img src="../images/gameflag-Piece-Play.png"        />&emsp;Juego de piezas</dt>
+  <dt><img src="../images/gameflag-Illegal-Castling.png"  />&emsp;Entoque Ilegal</dt>
+  <dt><img src="../images/gameflag-Illegal-Move.png"      />&emsp;Jugada Ilegal</dt>
+</dl>
+</div>
+
+<span class="NEW">
+<p>
+The last two markers are not user-settable, they will be set automatically if a
+game contains illegal castlings or even other illegal moves (for example the king
+is moving into check) within the main line. If a game is marked with both only
+the marker <em>Jugada Ilegal</em> will be displayed.
+</p>
+</span>
+
+<p>
+Existe otro marcador especial que no es programable por el usuario, el marcador de
+borrado. Así, una partida marcada será removida la próxima vez que la base de datos sea
+compactada.
+</p>
+
+<p>
+Cuando se editan partidas de bases de datos Scid (.si4) Scidb soporta los seis marcadores
+definidos por el ususario (1..6). Pero se recomienda no utilizar estos marcadores ya que
+ocurrirán problemas insolubles al copiar partidas a otras bases de datos; incluso la
+aplicación Scid es incapaz de resolver estos problemas.
+</p>
+
+<p>
+Cuando se leen bases de datos ChessBase los marcadores
+<em>Error estratégico</em> y
+<em>Error táctico</em>
+se unificarán bajo el marcador común <em>Error Decisivo</em>.
+Scidb no distingue entre estas dos características.
+</p>
+
+</body>
+</html>

@@ -91,6 +91,9 @@ set HtmlMapping {
 	<dir>				{<ul style="list-style-type: none"><li>}
 	</dir>			{</li></ul>}
 
+	<NEW>				{<span class="NEW">}
+	</NEW>			{</span>}
+
 	&King;			{<span class="chess">&#x2654;</span>}
 	&Queen;			{<span class="chess">&#x2655;</span>}
 	&Rook;			{<span class="chess">&#x2656;</span>}
@@ -179,10 +182,14 @@ proc readTranslationFile {file nagFile encoding} {
 
 
 proc example {chan} {
-	puts $chan "Example usage:"
+	puts $chan "<!-- Example usage: -->"
 	puts $chan ""
-	puts $chan "CHARSET iso-8859-1"
+	puts $chan "<!-- CHARSET may be omitted if the encoding"
+	puts $chan "     of the language file will be used. -->"
+	puts $chan ""
+	puts $chan "CHARSET iso8859-1"
 	puts $chan "TITLE   Clipbase"
+	puts $chan "INDEX   Clipbase"
 	puts $chan ""
 	puts $chan "BEGIN"
 	puts $chan ""
@@ -418,6 +425,7 @@ set body {}
 processContents [readContents $src [info script]]
 
 if {[string length $dstfile] == 0} {
+	fconfigure stdout -encoding utf-8
 	print stdout [file join tcl help $lang $srcfile] $title $body
 } else {
 	set dst [open $dstfile w]

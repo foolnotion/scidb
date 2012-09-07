@@ -16,42 +16,46 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-TITLE Development roadmap
+TITLE Mapa de ruta del desarrollo
 
-<h2>Features for next releases</h2>
+<h2>Características para las próximas versiones</h2>
 
 <ul>
-  <li>Analysis window: launch external chess engines</li>
-  <li>Search functions: search by header, position search, etc.</li>
-  <li>Filter functions: game filter, player filter</li>
-  <li>Drag &amp; Drop of games into different databases</li>
-  <li>Flexible window layout</li>
-  <li>Document generation:: LaTeX export</li>
-  <li>Windows support</li>
-  <li>Database compression (elimination of deleted games)</li>
+  <li>Ventana de análisis: lanza motores ajedrecísticos externos</li>
+  <li>Funciones de búsqueda: búsqueda por encabezado, búsqueda por posición, etc.</li>
+  <li>Funciones de filtro: filtro de partidas, filtro de jugadores</li>
+  <li>Arrastrar &amp; Soltar partidas entre diferentes bases de datos</li>
+  <li>Distribución de ventanas flexible</li>
+  <li>Generación de documentos: exportar a LaTeX</li>
+  <li>Soporte de Windows</li>
+  <li>Compresión de bases de datos (eliminación de las partidas borradas)</li>
+<NEW>
   <li>Input of moves with keyboard</li>
-  <li>Board photo</li>
+</NEW>
+  <li>Foto del tablero</li>
 </ul>
 
-<h2>Features for the far future</h2>
+<h2>Características para un futuro lejano</h2>
 
 <ul>
-  <li>Duplicate detection</li>
-  <li>Loading databases from the Internet</li>
+  <li>Detección de duplicadas</li>
+  <li>Cargar bases de datos desde Internet</li>
+<NEW>
   <li>Player dictionary dialog</li>
-  <li>Document generation: PDF export and HTML export</li>
-  <li>Dialog for spell checking player names</li>
-  <li>Tip of the Day window</li>
-  <li>Usage of end-game tables</li>
-  <li>3D chessboard</li>
+</NEW>
+  <li>Generación de documentos: exportar a PDF y a HTML</li>
+  <li>Diálogo para corregir los nombres de los jugadores</li>
+  <li>Ventana con Consejos del Día</li>
+  <li>Utilización de tablas de finales</li>
+  <li>Tablero 3D</li>
 </ul>
 
-<h2>Volunteers wanted for...</h2>
+<h2>Se necesitan voluntarios para...</h2>
 
 <ul>
-  <li>More languages</li>
-  <li>More chess board themes</li>
-  <li>More help pages</li>
+  <li>Más idiomas</li>
+  <li>Más temas para el tablero</li>
+  <li>Más páginas de ayuda</li>
 </ul>
 
 END

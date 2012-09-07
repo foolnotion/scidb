@@ -3,49 +3,50 @@ set Contents {
      {{{Resumen} {Overview.html}}}
   }
   {
-    {{{General help} {Overview.html} {general}}}
-    {{{Database formats} {Database-Formats.html}}}
-    {{{Usage of the file selection dialog} {File-Selection-Dialog.html}}}
-    {{{Usage of the toolbars} {Toolbar-Usage.html}}}
-    {{{The Clipbase} {Clipbase.html}}}
-    {{{How to set the default browser} {How-To-Set-Default-Browser.html}}}
+    {{{Generalidades} {Overview.html} {general}}}
+    {{{Formatos de bases de datos} {Database-Formats.html}}}
+    {{{Uso del diálogo Selección de archivos} {File-Selection-Dialog.html}}}
+    {{{Uso de las barras de tareas} {Toolbar-Usage.html}}}
+    {{{La base temporal (Clipbase)} {Clipbase.html}}}
+    {{{Como definir el explorador de Internet predeterminado} {How-To-Set-Default-Browser.html}}}
   }
   {
-    {{{Scidb list windows} {Overview.html} {list-windows}}}
-    {{{Game list} {Game-List-Window.html}}}
-    {{{Player list} {Player-List-Window.html}}}
-    {{{Event List} {Event-List-Window.html}}}
+    {{{Ventanas de listado en Scidb} {Overview.html} {list-windows}}}
+    {{{Listado de partidas} {Game-List-Window.html}}}
+    {{{Listado de jugadores} {Player-List-Window.html}}}
+    {{{Listado de torneos} {Event-List-Window.html}}}
     {{{Site List} {Site-List-Window.html}}}
-    {{{Annotator list} {Annotator-List-Window.html}}}
+    {{{Listado de comentaristas} {Annotator-List-Window.html}}}
   }
   {
-    {{{Scidb-Windows und dialogs} {Overview.html} {windows-and-dialogs}}}
-    {{{Database switcher} {Database-Switcher.html}}}
-    {{{Game browser} {Game-Browser.html}}}
-    {{{Game overview browser} {Game-Overview.html}}}
-    {{{Game text window} {Game-Text-Window.html}}}
-    {{{Game history} {Game-History-Window.html}}}
-    {{{Chessboard} {Board-Window.html}}}
-    {{{Tree window} {Tree-Window.html}}}
-    {{{Tree games window} {Tree-Games-Window.html}}}
-    {{{Comment editor} {Comment-Editor-Dialog.html}}}
-    {{{Square marker palette} {Mark-Palette-Dialog.html}}}
-    {{{Edit position} {Board-Setup-Dialog.html}}}
-    {{{Edit start position} {Start-Position-Setup-Dialog.html}}}
-    {{{Crosstable} {Crosstable-Window.html}}}
-    {{{Game import} {PGN-Import-Dialog.html}}}
-    {{{Database export} {Database-Export-Dialog.html}}}
+    {{{Ventanas y diálogos en Scidb} {Overview.html} {windows-and-dialogs}}}
+    {{{Intercambiador de bases de datos} {Database-Switcher.html}}}
+    {{{Buscador de partidas} {Game-Browser.html}}}
+    {{{Panorámica de la partida} {Game-Overview.html}}}
+    {{{Ventana de texto de la partida} {Game-Text-Window.html}}}
+    {{{Historial de la partida} {Game-History-Window.html}}}
+    {{{Tablero} {Board-Window.html}}}
+    {{{Ventana de árbol} {Tree-Window.html}}}
+    {{{Ventana de árbol de partidas} {Tree-Games-Window.html}}}
+    {{{Editor de comentarios} {Comment-Editor-Dialog.html}}}
+    {{{Paleta de marcadores de escaques} {Mark-Palette-Dialog.html}}}
+    {{{Diálogo de Editar posición en el tablero} {Board-Setup-Dialog.html}}}
+    {{{Diálogo de Disposición de la posición inicial} {Start-Position-Setup-Dialog.html}}}
+    {{{Ventana de Tabla cruzada} {Crosstable-Window.html}}}
+    {{{Diálogo de Importar partidas PGN} {PGN-Import-Dialog.html}}}
+    {{{Diálogo de Exportar base de datos} {Database-Export-Dialog.html}}}
   }
   {
-    {{{Further information} {Overview.html} {further-information}}}
-    {{{Game markers} {Game-Flags.html}}}
-    {{{Specification of database archive (English)} {../en/Database-Archive.html}}}
-    {{{Command line options} {Command-Line-Options.html}}}
-    {{{NAG annotation values} {NAG-Comments.html}}}
-    {{{Contact information} {Contact-Information.html}}}
-    {{{Development Roadmap} {Development-Roadmap.html}}}
-    {{{What's new?} {Whats-New.html}}}
-    {{{Benvenuto su Scidb!} {Welcome.html}}}
+    {{{Información adicional} {Overview.html} {further-information}}}
+    {{{Marcadores de partida} {Game-Flags.html}}}
+    {{{Specification of database archive} {../en/Database-Archive.html}}}
+    {{{Opciones de la línea de comandos} {Command-Line-Options.html}}}
+    {{{Valores de las anotaciones NAG} {NAG-Comments.html}}}
+    {{{ECO-Code} {ECO-Code.html}}}
+    {{{Información de contacto} {Contact-Information.html}}}
+    {{{Mapa de ruta del desarrollo} {Development-Roadmap.html}}}
+    {{{Novedades} {Whats-New.html}}}
+    {{{¡Bienvenido a Scidb!} {Welcome.html}}}
   }
 }
 

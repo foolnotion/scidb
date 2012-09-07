@@ -34,7 +34,9 @@ TITLE Benvenuti a Scidb-Help
   <li><a href="Game-List-Window.html">Lista Partite</a></li>
   <li><a href="Player-List-Window.html">Lista Giocatori</a></li>
   <li><a href="Event-List-Window.html">Lista Eventi</a></li>
-  <!-- NEW <li><a href="Site-List-Window.html">Site List</a></li> -->
+<NEW>
+  <li><a href="Site-List-Window.html">Site List</a></li>
+</NEW>
   <li><a href="Annotator-List-Window.html">Lista Commentatori</a></li>
 </ul>
 

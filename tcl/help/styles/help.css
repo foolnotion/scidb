@@ -46,7 +46,7 @@ div.title {
 }
 
 div.box {
-	color:				black;
+/*	color:				black; */
 /*	background:			#e5eeff;*/
 /*	background:			#dde6ef;*/
 /*	background:			#ffffe0;*/
@@ -64,7 +64,7 @@ div.box {
 }
 
 div.annotation {
-	color:				black;
+/*	color:				black; */
 	background:			#eedd82;
 	border:				1px solid black;
 	border-radius:		0.5em;
@@ -76,6 +76,11 @@ div.annotation {
 	padding-bottom:	1em;
 	padding-left:		1em;
 	padding-right:		1em;
+}
+
+span.NEW {
+	color: darkgreen;
+/*	background-color: #ff9bff; */
 }
 
 table.standard {
@@ -117,7 +122,7 @@ kbd.key {
 }
 
 .menuitem {
-	color:         	black;
+/*	color:         	black; */
 	background:    	#c4d0f4;
 }
 

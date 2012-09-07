@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/es/How-To-Set-Default-Browser.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='es'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="es" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Ayuda: Cómo definir el explorador de Internet predeterminado</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Cómo definir el explorador de Internet predeterminado</h1>
+</div>
+
+<p>
+El explorador de Internet predeterminado se utilizará para abrir enlaces externos.
+Existen cuatro posibilidades para definir el explorador de Internet predeterminado:
+</p>
+
+<ol>
+  <li><p>
+    El valor de la variable de entorno <code>BROWSER</code> se usará al inicio del
+    programa. Ejemplo:<br/>
+    <div class="box">
+      <p><code>export BROWSER=</code>&#8203;<code>/usr/</code>&#8203;<code>bin/</code>&#8203;<code>firefox/</code><br/></p>
+    </div>
+  </p></li>
+
+  <li><p>
+    Se utilizará el enlace <span style="white-space:nowrap;"><code>"x-www-browser"</code></span>.
+    En Ubuntu/Debian este enlace puede actualizarse a explorador de Internet predeterminado
+    con:
+    <div class="box">
+      <p><code>sudo update-alternatives <span style="white-space:nowrap;">--config</span> <span style="white-space:nowrap;">x-www-browser</span></code></p>
+    </div>
+  </p></li>
+
+  <li><p>
+    Scidb busca alguna entrada tal como
+    <code>"X11BROWSER=</code>&#8203;<code>/usr/</code>&#8203;<code>bin/</code>&#8203;<code>firefox/</code><code>"</code>
+    en el archivo <code>"~/</code><code>.htmlviewrc"/</code>.
+  </p></li>
+
+  <li><p>
+    Usar el primer explorador que pueda encontrarse en la siguiente lista:<br/>
+    <ragged>iceweasel, firefox, google-chrome, iexplorer, opera, konqueror,
+    epiphany, galeon, mosaic, amaya, browsex</ragged>.
+  </p></li>
+</ol>
+
+<p>
+La primera posibilidad exitosa determinará el explorador de Internet predeterminado. 
+Si ninguna de estas posibilidades es exitosa y no es posible abrir un explorador de
+Internet se mostrará un mensaje de error.
+</p>
+
+<p><img src="../images/note.png" alt="note" /> Los exploradores de Internet de terminal no se usarán
+con Scidb; esto significa que usted tendrá que especificar un explorador X (un explorador
+gráfico).</p>
+
+</body>
+</html>

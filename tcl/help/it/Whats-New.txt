@@ -34,7 +34,9 @@ TITLE Novità 
   <li>Archiviazione database integrata</li>
   <li>Interfaccia di configurazione per sfogliare\modificare partite</li>
   <li>Trascinamento (Drag&amp;Drop) dei file integrato: si possono trascinare sul selezionatore di database</li>
-  <!--NEW <li>Drag&amp;Drop in file selection dialog implemented</li>-->
+<NEW>
+  <li>Drag&amp;Drop in file selection dialog implemented</li>
+</NEW>
   <li>Finestra Database: blocco/sblocco delle tab integrato</li>
   <li>Rivisto input mosse col mouse (se il suggerimento è disabilitato)</li>
   <li>Rimossa barra menu: c'è invece un semplice menu principale; questo è allo stato-dell'arte e il layout sarà migliorato</li>

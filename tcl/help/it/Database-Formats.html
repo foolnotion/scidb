@@ -113,9 +113,18 @@ Questo formato ricorda per struttura il formato Scidb:
   </table>
 </div>
 
+<span class="NEW">
+<p><img src="../images/note.png" alt="note" /> The files with suffixes <code>.sso</code> (Scid Search Option File),
+and <code>.sor</code> (Scid Repertoire File) do not belong explicitely to
+a database and will not be regarded by Scidb.</p>
+</span>
+
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
-L'azienda ChessBase mantiene questo formato segreto, per questo solo la lettura è supportata. Non tutti i dati della partita possono essere letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita dell'operazione di decodifica.
+L'azienda <a href="http://www.chessbase.de">ChessBase</a> mantiene questo formato segreto,
+per questo solo la lettura è supportata. Non tutti i dati della partita possono essere
+letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita
+dell'operazione di decodifica.
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
 I database ChessBase non possono essere usati come databases di riferimento.
@@ -152,12 +161,14 @@ Il formato database di ChessBase è diviso in diversi file separati, quelli più
 Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 
 <p>
-Secondo lo standard PGN un file PGN ha codifica <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
-<!-- NEW
+Secondo lo
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">standard PGN</a>
+un file PGN ha codifica <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
+<span class="NEW">
 But if a PGN file is starting with an <span style="white-space:nowrap;">UTF-8</span> mark
 (<span style="white-space:nowrap;">UTF-8</span>-BOM: byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encoding will be expected
 (according to <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
--->
+</span>
 </p>
 
 <p>

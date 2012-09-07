@@ -16,8 +16,9 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-TITLE What's new?
+TITLE Novedades
 
+<NEW>
 <ul>
   <li>More help pages</li>
   <li>New database tab: list of sites</li>
@@ -47,6 +48,54 @@ TITLE What's new?
   <li>Algebraic (normal, short, and long), English, Correspondence, and Telegraphic move notations available</li>
   <li>Some icons newly designed</li>
 </ul>
+</NEW>
+
+<!-- OUTDATED
+<ul>
+  <li><p>Historial de la partida</p></li>
+  <li><p>Diálogo de Ayuda (con algunas páginas de ayuda)</p></li>
+  <li><p>Nueva caja de selección de archivos con extrañas funciones:</p>
+    <ul type="circle">
+      <li>Borrar base</li>
+      <li>Renombrar base</li>
+      <li>Duplicar base</li>
+      <li>Crear nueva carpeta</li>
+      <li>Elegir la codificación de la base</li>
+    </ul>
+  </li>
+  <li><p>Detección automática de la codificación de la base</p></li>
+  <li><p>Formato de base de datos Scidb mejorado; ahora existe un nuevo tipo de comentario: 
+  información de la jugada.
+  Esto proporciona un almacenaje compacto y, en una futura versión, un ingreso de datos más 
+  fácil.</p></li>
+  <li><p>Actualización automática al nuevo formato de base de datos</p></li>
+  <li><p>Diálogo de exportación revisado</p></li>
+  <li><p>Hacer/deshacer en el editor de comentarios</p></li>
+  <li><p>Funcionamiento mejorado de la ventana HTML</p>
+    <ul type="circle">
+      <li>Doble buffering para eliminar el parpadeo de la pantalla</li>
+      <li>Separación en sílabas automática</li>
+    </ul>
+  </li>
+  <li><p>Aparición más rápida del diálogo Guardar partida</p></li>
+  <li><p>Tabla de torneos mejorada:</p>
+    <ul type="circle">
+      <li>Sistema de puntuación "Bilbao" adicional (tres puntos para el ganador)</li>
+      <li>Desempates adicionales</li>
+    </ul>
+  </li>
+  <li><p>Exportar a .si3/.si4 ofrece ahora una selección de <acronym>PGN</acronym>-Etiquetas  
+ (una restricción de las etiquetas acelera el árbol de posiciones)</p></li>
+  <li><p>Se revisó el diálogo de selección de símbolos de las bases de datos</p></li>
+  <li><p>Nueva característica en el editor de partidas: copiar/mover comentarios entre 
+  diferentes idiomas</p></li>
+  <li><p>Sombras descendentes (experimental)</p></li>
+  <li><p>Traducción parcial al húngaro; la traducción aún está en progreso</p></li>
+  <li><p>La traducción al español se retiró temporalmente debido a que se encuentra 
+  incompleta. Voluntarios para la traducción: por favor miren en <a href="Contact-Information.html">Información de contacto</a></p></li>
+  <li><p><acronym>UNIX:</acronym> páginas del manual</p></li>
+</ul>
+-->
 
 END
 

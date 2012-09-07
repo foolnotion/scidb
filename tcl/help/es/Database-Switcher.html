@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/es/Database-Switcher.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='es'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="es" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Ayuda: El intercambiador de bases de datos</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">El intercambiador de bases de datos</h1>
+</div>
+
+<ul style="list-style-type: none"><li><img src="images/database-switcher.png"/></li></ul>
+
+<p>
+El intercambiador de bases de datos provee una navegación fácil entre las bases de datos.
+La base de datos activa se resaltará con un trasfondo amarillo.
+</p>
+
+<p>
+Al apretar el botón del medio del ratón (i.e. la rueda) se mostrará una caja de
+información.
+</p>
+
+<span class="NEW">
+<p>
+The functionalities of the database switcher:
+</p>
+
+<ul>
+  <li><a href="#Administration">Administration</a></li>
+  <li><a href="#DND">Drag &amp; Drop</a></li>
+</ul>
+</span>
+
+<h3 id="Administration">Administration</h3>
+
+<p>
+Se encuentra disponible un menú sensible al contexto para la administración de la base de datos:
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/database-switcher-menu.png"/></li></ul>
+
+<p>
+<span class="menuitem">Propiedades</span>
+Abre una caja que muestra variada información sobre la base de datos.
+</p>
+
+<p>
+<span class="menuitem">Exportar</span>
+Abre un diálogo para <a href="Database-Export-Dialog.html">exportar base</a>
+a otros formatos de base de datos o formatos de documento.
+</p>
+
+<p>
+<span class="menuitem">Importar archivos PGN</span>
+Abre el <a href="File-Selection-Dialog.html">diálogo de selección de archivo</a> para
+la selección de archivos <abbr>PGN</abbr> para importar. Es posible seleccionar múltiples
+archivos <abbr>PGN</abbr> simultáneamente. Las partidas se agregarán al final de la base
+de datos.
+</p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Crear Archivo</span>
+Create a <a href="Database-Formats.html#Database-Archive">database archive</a>.
+The <a href="File-Selection-Dialog.html">file selection dialog</a>
+will be opened for the selection of an archive name.
+</p>
+</span>
+
+<p>
+<span class="menuitem">Cerrar</span>
+La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
+se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
+<br/><img src="../images/note.png" alt="note" /> No es posible cerrar <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<span class="NEW">
+<p id="Compact">
+<span class="menuitem">Compactar</span>
+Compact this database, this means that all games marked for deletion
+wil be deleted physically. You cannot revert this action. This menu
+item is disabled if the database does not contain any game with a
+deletion marker.
+</p>
+</span>
+
+<p>
+<span class="menuitem">Cambiar ícono</span>
+Selecciona un icono para esta base.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<span class="menuitem">Editar Descripción</span>
+Crea o cambia la descripción para esta base.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<span class="menuitem">Sólo lectura</span>
+Establecer esta base como de sólo-lectura o editable.
+Esto sólo es posible para las bases Scidb y Scid
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+<br/><img src="../images/note.png" alt="note" /> Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
+<br/><img src="../images/note.png" alt="note" /> <a href="Clipbase.html">Clipbase</a> no puede establecerse como de sólo-lectura.
+</p>
+
+<p>
+<span class="menuitem">Nueva Base</span>
+Crea una nueva base de datos. Sólo pueden crearse bases Scidb y Scid
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+</p>
+
+<p>
+<span class="menuitem">Abrir Base</span>
+Abre otra base de datos.
+</p>
+
+<p>
+<span class="menuitem">Abrir Recientes</span>
+Abre una base de datos a través del historial de bases de datos.
+</p>
+
+<p>
+<span class="menuitem">Tamaño del símbolo</span>
+Selección del tamaño de los símbolos de base de datos.
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></li></ul>
+
+<span class="menuitem">
+Vaciar Base temporal</span>
+<br/><img src="../images/note.png" alt="note" /> Esta entrada de menú sólo se proporcionará para
+<a href="Clipbase.html">Clipbase</a>.
+
+<span class="NEW">
+<h3 id="DND">Drag &amp; Drop</h3>
+
+<p>
+Database can be opened with the drop of an URI list. If an URI list (list of files)
+&ndash; or a single file &ndash; will be dragged over the database switcher,
+a colored background will indicate that a drop of this item is possible.
+In this way you may open databases with the help of an external file manager.
+</p>
+</span>
+
+</body>
+</html>

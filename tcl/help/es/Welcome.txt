@@ -16,59 +16,58 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-TITLE Benvenuto su Scidb!
+TITLE ¡Bienvenido a Scidb!
 
 <p>
-Esta es una versión preliminar de Scidb, sólo para pruebas. La primera
-versión completa será liberada luego de un período de pruebas
-suficientemente prolongado. Por favor, al experimentar con Scidb considere
-que:
+Esta es una versión preliminar de prueba de Scidb. La primera versión completa
+será liberada luego de un período de testeo suficientemente prolongado. Por favor,
+tenga en cuenta al experimentar con Scidb:
 </p>
 
 <ol>
-  <li class="space">
-    Esta versión contiene gran cantidad de información de depuración y,
-    por consiguiente, se ejecuta más lento en varios lugares.
+  <li style="margin-top: 0.5em; ">
+    Que esta versión contiene gran cantidad de información de depurado y, por lo tanto,
+    será lenta en algunas partes.
   </li>
 
-  <li class="space">
-    El soporte de bases Scid (.si3/.si4) se realiza mediante una emulación
-    bastante compleja, la cual aún no está probada en forma suficiente.
+  <li style="margin-top: 0.5em; ">
+    Que el soporte de las bases de datos de Scid (.si3/.si4) se realiza mediante una 
+    emulación bastante compleja que aún no ha sido probada en forma suficiente.
 	  <annotation>
-    Por consiguiente, tenga a bien no editar sus bases Scid originales con
-    este programa.
+    Debido a esto, por favor, no edite sus bases de datos originales de Scid con este 
+    programa.
     </annotation>
-    En forma predeterminada, las bases Scid se abrirán en modo de
-    sólo-lectura - que, por supuesto, no es crítico.
+    Que en forma predeterminada las bases de datos Scid se abrirán en modo de 
+    sólo-lectura, el cual es - por supuesto - más seguro.
   </li>
 
-  <li class="space">
-    El formato actual Scidb (.sci) se completará, como mucho, con la
-    primera versión completa (i.e. en la versión 1.0, la actual es la
-    0.92). De cualquier modo, el formato actual ya es completamente
-    utilizable, y se ofrecerá la capacidad de mejora.
+  <li style="margin-top: 0.5em; ">
+    Que el actual formato Scidb (.sci) estará terminado, a más tardar, para la primera
+    versión completa (i.e. cuando se alcance la versión 1.0, la actual es la 0.92). 
+    No obstante, el formato actual ya es completamente utilizable y se ofrecerá la 
+    capacidad de actualizarlo en el futuro.
   </li>
 
-  <li class="space">
-    El soporte del formato ChessBase (.cbh) no está terminado.
-    Actualmente esta aplicación no puede abrir partidas en formato Chess 960.
+  <li style="margin-top: 0.5em; ">
+    Que el soporte del formato ChessBase (.cbh) aún no está terminado. Actualmente
+    esta aplicación no puede abrir partidas de ajedrez Chess 960.
   </li>
 
-  <li class="space">
-    De vez en cuando se liberará una nueva versión de pruebas.
+  <li style="margin-top: 0.5em; ">
+    Que de vez en cuando se liberará una nueva versión de prueba.
   </li>
 </ol>
 
 <p>
-¡Diviértase mucho con Scidb, cuyo desarrollo ya lleva quatro años!
+¡Diviértase mucho con Scidb, cuyo desarrollo ya ha tomado quatro años!
 </p>
 
 <h2>Links</h2>
 
-<ul>
-  <li><a href="Development-Roadmap.html">Development roadmap</a></li>
-  <li><a href="Whats-New.html">What's new?</a></li>
-</ul>
+<dir>
+  <li><a href="Development-Roadmap.html">Mapa de ruta del desarrollo</a></li>
+  <li><a href="Whats-New.html">Novedades</a></li>
+</dir>
 
 END
 

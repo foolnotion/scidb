@@ -1,2 +1,45 @@
 set Index {
+  { B
+    {
+      {{Base temporal (Clipbase)} {Clipbase.html} {}}
+    }
+  }
+  { C
+    {
+      {{Clipbase} {Clipbase.html} {}}
+    }
+  }
+  { F
+    {
+      {{Formatos de bases de datos} {Database-Formats.html} {}}
+      {{Formatos de bases de datos} {Database-Formats.html} {}}
+    }
+  }
+  { I
+    {
+      {{Información de contacto} {Contact-Information.html} {}}
+      {{Intercambiador de bases de datos} {Database-Switcher.html} {}}
+    }
+  }
+  { M
+    {
+      {{Marcadores} {Game-Flags.html} {}}
+      {{Marcadores de partida} {Game-Flags.html} {}}
+    }
+  }
+  { O
+    {
+      {{Opciones de la línea de comandos} {Command-Line-Options.html} {}}
+    }
+  }
+  { P
+    {
+      {{Página de inicio} {Contact-Information.html} {}}
+    }
+  }
+  { S
+    {
+      {{Sitio Web} {Contact-Information.html} {}}
+    }
+  }
 }
