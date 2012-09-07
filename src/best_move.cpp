@@ -61,7 +61,7 @@ best_move()
 	if (move)
 	{
 		mstl::string m;
-		board.prepareForSan(move);
+		board.prepareForPrint(move);
 		move.printSan(m);
 		printf("best move: %s\n", m.c_str());
 	}

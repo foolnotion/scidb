@@ -295,9 +295,9 @@ pawn_progress: pawn_progress.o $(LIBS_STUBS)
 	@echo "Building $@"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(LIBS_STUBS)
 
-best_move: best_move.o $(LIBS)
+best_move: best_move.o $(LIBS) $(TCL_LIBS) $(TK_LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 pgn_split_eco: pgn_split_eco.o $(LIBS)
 	@echo "Building $@"
