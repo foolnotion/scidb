@@ -67,6 +67,7 @@ set CannotOpenProcess	"Cannot start process."
 set DoesNotRespond		"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."
 set DiscardChanges		"The current item has changed.\n\nReally discard changes?"
 set ReallyDelete			"Really delete engine '%s'?"
+set EntryAlreadyExists	"An entry with name '%s' already exists."
 
 } ;# namespace mc
 
@@ -669,7 +670,6 @@ proc setup {} {
 
 		foreach entry $list {
 			array set arr $entry
-			set arr(Directory) $::scidb::dir::user
 			set arr(Command) "[file join $::scidb::dir::engines $arr(Command)]"
 
 			if {[file executable $arr(Command)]} {
@@ -1209,11 +1209,53 @@ proc ProbeEngine {parent entry} {
 proc SaveEngine {list} {
 	variable Engines
 	variable Option
+	variable Var
+	variable Priv
 
 	set sel [$list curselection]
 
 	if {$sel >= 0} {
+		set i 0
+
+		foreach entry $Engines {
+			if {$i ne $sel} {
+				array set engine $entry
+				if {$Var(Name) eq $engine(Name)} {
+					set msg [format $mc::EntryAlreadyExists $Var(Name)]
+					::dialog::error -parent [winfo toplevel $list] -message $msg
+					return
+				}
+			}
+			incr i
+		}
+
 		array set engine [lindex $Engines $sel]
+
+		foreach attr [array names engine] {
+			switch $attr {
+				Protocol {
+					if {$engine(Protocol) eq "WB/UCI" || $engine(Protocol) eq "UCI/WB"} {
+						switch $Var(protocol) {
+							WB		{ set engine(Protocol) "WB/UCI" }
+							UCI	{ set engine(Protocol) "UCI/WB" }
+						}
+					} else {
+						set engine(Protocol) $Var(protocol)
+					}
+				}
+				Country {
+					# OK?
+					set engine(Country) $Priv(countrybox)
+				}
+				LastUsed - Frequency - Variant - Options:UCI - Options:WB {
+					;# alreay set
+				}
+				default {
+					set engine($attr) $Var($attr)
+				}
+			}
+		}
+
 		set protocol ""
 		switch -glob $engine(Protocol) {
 			WB*	{ set protocol WB }

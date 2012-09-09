@@ -244,8 +244,8 @@ sys_utf8_codec.o: ../mstl/m_algobase.h
 sys_utf8_codec.o: ../mstl/m_algobase.ipp
 sys_utf8_codec.o: ../mstl/m_construct.h
 sys_utf8_codec.o: ../mstl/m_construct.ipp
-sys_utf8_codec.o: ../mstl/m_pointer_iterator.h
-sys_utf8_codec.o: ../mstl/m_pointer_iterator.ipp
+sys_utf8_codec.o: ../mstl/m_list_node.h
+sys_utf8_codec.o: ../mstl/m_list_node.ipp
 sys_utf8_codec.o: ../mstl/m_list.ipp
 sys_utf8_codec.o: sys_utf8_codec.ipp
 sys_utf8_codec.o: sys_utf8.h

@@ -149,8 +149,8 @@ Hyphenator.o: HyphenationRule.h
 Hyphenator.o: HyphenationTree.h
 Hyphenator.o: Language.h
 Hyphenator.o: ../../mstl/m_list.h
-Hyphenator.o: ../../mstl/m_pointer_iterator.h
-Hyphenator.o: ../../mstl/m_pointer_iterator.ipp
+Hyphenator.o: ../../mstl/m_list_node.h
+Hyphenator.o: ../../mstl/m_list_node.ipp
 Hyphenator.o: ../../mstl/m_list.ipp
 Hyphenator.o: ../../sys/sys_utf8.h
 Hyphenator.o: ../../sys/sys_utf8.ipp
@@ -191,8 +191,8 @@ Language.o: ../../mstl/m_algobase.h
 Language.o: ../../mstl/m_algobase.ipp
 Language.o: ../../mstl/m_construct.h
 Language.o: ../../mstl/m_construct.ipp
-Language.o: ../../mstl/m_pointer_iterator.h
-Language.o: ../../mstl/m_pointer_iterator.ipp
+Language.o: ../../mstl/m_list_node.h
+Language.o: ../../mstl/m_list_node.ipp
 Language.o: ../../mstl/m_list.ipp
 Language.o: ../../mstl/m_string.h
 Language.o: ../../mstl/m_string.ipp

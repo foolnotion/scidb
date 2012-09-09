@@ -788,6 +788,7 @@
 ::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
+::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Segna partita come eliminata"
@@ -1649,6 +1650,9 @@
 ::info::mc::BoardThemeDesign	"Design della scacchiera"
 ::info::mc::FlagsDesign			"Design identificatori miniaturizzati"
 ::info::mc::IconDesign			"Design icone"
+::info::mc::Development			"Development" ;# NEW
+::info::mc::Programming			"Programming" ;# NEW
+::info::mc::Leader				"Leader" ;# NEW
 
 ::info::mc::Version				"Versione"
 ::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."

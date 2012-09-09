@@ -122,25 +122,23 @@ Al inicio del programa se encuentran disponibles las siguientes opciones en la l
       de la última sesión se descartarán.
     </td>
   </tr>
-<NEW>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--update-player-photos</code>
     </td>
     <td class="standard">
-      Update or install player photos. Afterwards the program will be terminated.
+      Actualiza o instala las fotos de los jugadores. Luego de hacerlo terminará el programa.
       <br/><br/>
-      The basic recommendation is to use the update or install functionality via
-      the graphical user interface.
+      La recomendación básica es utilizar la funcionalidad de actualización o instalación a través 
+      de la interface gráfica de usuario.
       <br/><br/>
       Unix:
-      If called with super-user rights the update will be done in the shared
-      directory (normally <url>/usr/local/share/%scidb%</url>).
-      Otherwise the update will be done in user directory
+      Si se invocan derechos de superusuario la actualización podrá hacerse en el directorio 
+      compartido (usualmente <url>/usr/local/share/%scidb%</url>).
+      De otro modo, la actualización se realizará en el directorio del usuario
       <url>~/.%scidb%</url>.
     </td>
   </tr>
-</NEW>
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--single-process</code>

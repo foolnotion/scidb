@@ -33,7 +33,7 @@
 #include "db_board.h"
 #include "db_line.h"
 
-#include "m_list.h"
+#include "m_pvector.h"
 #include "m_ref_counter.h"
 #include "m_ref_counted_ptr.h"
 
@@ -145,7 +145,7 @@ public:
 private:
 
 	typedef bool (*ReachableFunc)(Signature const&, Signature const&, uint16_t);
-	typedef mstl::list<TreeInfo> List;
+	typedef mstl::pvector<TreeInfo> List;
 
 	bool buildTree0(			unsigned myIdn,
 									Board const& startPosition,

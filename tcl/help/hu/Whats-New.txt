@@ -18,14 +18,19 @@
 
 TITLE What's new?
 
+<NEW>
 <ul>
   <li>More help pages</li>
+<NEW>
+  <li>Move input: pressing middle mouse button (or fullstop key) is showing alternative move suggestion</li>
+</NEW>
   <li>New database tab: list of sites</li>
   <li>Full-screen mode tweaked</li>
   <li>Command line tool cdb2sci added for conversion of databases to Scidb format (.sci)</li>
   <li>HTML widget reworked: saving resources in a highly significant way</li>
   <li>Swedish localisation integrated (thanks to Lars Ekman)</li>
   <li>Spanish translation reactivated (thanks to Juan Carlos V·squez)</li>
+  <li>Spanish help pages added (thanks to Carlos Fernando Gonz√°lez)</li>
   <li>Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
   <li>Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
   <li>File selection dialog improved</li>
@@ -47,6 +52,7 @@ TITLE What's new?
   <li>Algebraic (normal, short, and long), English, Correspondence, and Telegraphic move notations available</li>
   <li>Some icons newly designed</li>
 </ul>
+</NEW>
 
 END
 

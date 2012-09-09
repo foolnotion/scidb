@@ -4,6 +4,11 @@ set Index {
       {{Archive} {Database-Formats.html} {Database-Archive}}
     }
   }
+  { B
+    {
+      {{Browsing games} {Game-Browser.html} {}}
+    }
+  }
   { C
     {
       {{Clipbase} {Clipbase.html} {}}
@@ -29,10 +34,12 @@ set Index {
   { F
     {
       {{File formats} {Database-Formats.html} {}}
+      {{File Selection Dialog} {File-Selection-Dialog.html} {}}
     }
   }
   { G
     {
+      {{Game Browser} {Game-Browser.html} {}}
       {{Game markers} {Game-Flags.html} {}}
     }
   }
@@ -52,6 +59,11 @@ set Index {
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
     }
   }
+  { P
+    {
+      {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
+    }
+  }
   { T
     {
       {{Toolbars} {Toolbar-Usage.html} {}}
@@ -60,6 +72,11 @@ set Index {
   { W
     {
       {{Website} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { Ü
+    {
+      {{Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
 }

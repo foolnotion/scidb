@@ -102,7 +102,7 @@ app_application.o: ../db/db_signature.ipp
 app_application.o: ../db/db_board.ipp
 app_application.o: ../db/db_line.h
 app_application.o: ../db/db_line.ipp
-app_application.o: ../mstl/m_list.h
+app_application.o: ../mstl/m_pvector.h
 app_application.o: ../mstl/m_vector.h
 app_application.o: ../mstl/m_memblock.h
 app_application.o: ../mstl/m_memblock.ipp
@@ -115,7 +115,7 @@ app_application.o: ../mstl/m_construct.h
 app_application.o: ../mstl/m_construct.ipp
 app_application.o: ../mstl/m_pointer_iterator.h
 app_application.o: ../mstl/m_pointer_iterator.ipp
-app_application.o: ../mstl/m_list.ipp
+app_application.o: ../mstl/m_pvector.ipp
 app_application.o: ../mstl/m_ref_counter.h
 app_application.o: ../mstl/m_ref_counter.ipp
 app_application.o: ../mstl/m_ref_counted_ptr.h
@@ -134,6 +134,10 @@ app_application.o: ../db/db_date.h
 app_application.o: ../db/db_date.ipp
 app_application.o: ../db/db_namebase_entry.ipp
 app_application.o: ../db/db_player.h
+app_application.o: ../mstl/m_list.h
+app_application.o: ../mstl/m_list_node.h
+app_application.o: ../mstl/m_list_node.ipp
+app_application.o: ../mstl/m_list.ipp
 app_application.o: ../mstl/m_pair.h
 app_application.o: ../mstl/m_pair.ipp
 app_application.o: ../db/db_player.ipp
@@ -263,10 +267,10 @@ app_cursor.o: ../mstl/m_construct.h
 app_cursor.o: ../mstl/m_construct.ipp
 app_cursor.o: ../db/db_selector.ipp
 app_cursor.o: ../db/db_log.h
-app_cursor.o: ../mstl/m_list.h
+app_cursor.o: ../mstl/m_pvector.h
 app_cursor.o: ../mstl/m_pointer_iterator.h
 app_cursor.o: ../mstl/m_pointer_iterator.ipp
-app_cursor.o: ../mstl/m_list.ipp
+app_cursor.o: ../mstl/m_pvector.ipp
 app_cursor.o: ../mstl/m_pair.h
 app_cursor.o: ../mstl/m_pair.ipp
 app_cursor.o: ../mstl/m_string.h
@@ -311,6 +315,10 @@ app_cursor.o: ../db/db_date.h
 app_cursor.o: ../db/db_date.ipp
 app_cursor.o: ../db/db_namebase_entry.ipp
 app_cursor.o: ../db/db_player.h
+app_cursor.o: ../mstl/m_list.h
+app_cursor.o: ../mstl/m_list_node.h
+app_cursor.o: ../mstl/m_list_node.ipp
+app_cursor.o: ../mstl/m_list.ipp
 app_cursor.o: ../db/db_player.ipp
 app_cursor.o: ../mstl/m_chunk_allocator.h
 app_cursor.o: ../mstl/m_stack.h
@@ -366,7 +374,7 @@ app_engine.o: ../mstl/m_string.h
 app_engine.o: ../mstl/m_string.ipp
 app_engine.o: ../db/db_move.ipp
 app_engine.o: ../db/db_move_list.ipp
-app_engine.o: ../mstl/m_list.h
+app_engine.o: ../mstl/m_pvector.h
 app_engine.o: ../mstl/m_vector.h
 app_engine.o: ../mstl/m_memblock.h
 app_engine.o: ../mstl/m_memblock.ipp
@@ -379,6 +387,10 @@ app_engine.o: ../mstl/m_construct.h
 app_engine.o: ../mstl/m_construct.ipp
 app_engine.o: ../mstl/m_pointer_iterator.h
 app_engine.o: ../mstl/m_pointer_iterator.ipp
+app_engine.o: ../mstl/m_pvector.ipp
+app_engine.o: ../mstl/m_list.h
+app_engine.o: ../mstl/m_list_node.h
+app_engine.o: ../mstl/m_list_node.ipp
 app_engine.o: ../mstl/m_list.ipp
 app_engine.o: app_engine.ipp
 app_engine.o: app_uci_engine.h
@@ -461,7 +473,7 @@ app_uci_engine.o: ../mstl/m_string.h
 app_uci_engine.o: ../mstl/m_string.ipp
 app_uci_engine.o: ../db/db_move.ipp
 app_uci_engine.o: ../db/db_move_list.ipp
-app_uci_engine.o: ../mstl/m_list.h
+app_uci_engine.o: ../mstl/m_pvector.h
 app_uci_engine.o: ../mstl/m_vector.h
 app_uci_engine.o: ../mstl/m_memblock.h
 app_uci_engine.o: ../mstl/m_memblock.ipp
@@ -474,6 +486,10 @@ app_uci_engine.o: ../mstl/m_construct.h
 app_uci_engine.o: ../mstl/m_construct.ipp
 app_uci_engine.o: ../mstl/m_pointer_iterator.h
 app_uci_engine.o: ../mstl/m_pointer_iterator.ipp
+app_uci_engine.o: ../mstl/m_pvector.ipp
+app_uci_engine.o: ../mstl/m_list.h
+app_uci_engine.o: ../mstl/m_list_node.h
+app_uci_engine.o: ../mstl/m_list_node.ipp
 app_uci_engine.o: ../mstl/m_list.ipp
 app_uci_engine.o: app_engine.ipp
 app_uci_engine.o: ../db/db_board.h
@@ -553,10 +569,10 @@ app_view.o: ../mstl/m_construct.h
 app_view.o: ../mstl/m_construct.ipp
 app_view.o: ../db/db_selector.ipp
 app_view.o: ../db/db_log.h
-app_view.o: ../mstl/m_list.h
+app_view.o: ../mstl/m_pvector.h
 app_view.o: ../mstl/m_pointer_iterator.h
 app_view.o: ../mstl/m_pointer_iterator.ipp
-app_view.o: ../mstl/m_list.ipp
+app_view.o: ../mstl/m_pvector.ipp
 app_view.o: ../mstl/m_pair.h
 app_view.o: ../mstl/m_pair.ipp
 app_view.o: ../mstl/m_string.h
@@ -600,6 +616,10 @@ app_view.o: ../db/db_date.h
 app_view.o: ../db/db_date.ipp
 app_view.o: ../db/db_namebase_entry.ipp
 app_view.o: ../db/db_player.h
+app_view.o: ../mstl/m_list.h
+app_view.o: ../mstl/m_list_node.h
+app_view.o: ../mstl/m_list_node.ipp
+app_view.o: ../mstl/m_list.ipp
 app_view.o: ../db/db_player.ipp
 app_view.o: ../mstl/m_chunk_allocator.h
 app_view.o: ../mstl/m_stack.h
@@ -742,7 +762,7 @@ app_winboard_engine.o: ../mstl/m_string.h
 app_winboard_engine.o: ../mstl/m_string.ipp
 app_winboard_engine.o: ../db/db_move.ipp
 app_winboard_engine.o: ../db/db_move_list.ipp
-app_winboard_engine.o: ../mstl/m_list.h
+app_winboard_engine.o: ../mstl/m_pvector.h
 app_winboard_engine.o: ../mstl/m_vector.h
 app_winboard_engine.o: ../mstl/m_memblock.h
 app_winboard_engine.o: ../mstl/m_memblock.ipp
@@ -755,6 +775,10 @@ app_winboard_engine.o: ../mstl/m_construct.h
 app_winboard_engine.o: ../mstl/m_construct.ipp
 app_winboard_engine.o: ../mstl/m_pointer_iterator.h
 app_winboard_engine.o: ../mstl/m_pointer_iterator.ipp
+app_winboard_engine.o: ../mstl/m_pvector.ipp
+app_winboard_engine.o: ../mstl/m_list.h
+app_winboard_engine.o: ../mstl/m_list_node.h
+app_winboard_engine.o: ../mstl/m_list_node.ipp
 app_winboard_engine.o: ../mstl/m_list.ipp
 app_winboard_engine.o: app_engine.ipp
 app_winboard_engine.o: ../db/db_board.h

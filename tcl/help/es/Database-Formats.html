@@ -42,38 +42,35 @@
 
 <p>
 Este es el formato de bases de datos propietario de Scidb. La utilización de este 
-formato se recomienda fuertemente debido a consideraciones de velocidad y explotación
+formato se recomienda fuertemente debido a motivos de velocidad y explotación
 de todas sus características al completo.
 </p>
 
-<span class="NEW">
 <p>
-Scidb databases are always encoded with character set <span style="white-space:nowrap;">UTF-8</span>. Hence
-these databases can be used without any complications under all systems
-and locations.
+Las bases de datos Scidb siempre se codificarán con el grupo de caracteres <span style="white-space:nowrap;">UTF-8</span>. De este modo
+dichas bases se pueden utilizar sin complicaciones en todos los sistemas y ubicaciones geográficas.
 </p>
 
 <p>
-A database in Scidb's format is divided into several files:
+Una base en formato Scidb se encuentra dividida en varios archivos:
 </p>
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
-      <td>Game data</td>
+      <td>Información de la partida</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scg =&nbsp;</kbd></td>
-      <td>Game moves, commentaries, annotations, move information, and PGN tags</td>
+      <td>Información de las jugadas, comentarios, anotaciones y etiquetas PGN de las partidas</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scn =&nbsp;</kbd></td>
-      <td>Player/Event/Site/Annotator data</td>
+      <td>Información sobre los Jugadores/Torneos/Lugares/Comentaristas</td>
     </tr>
   </table>
 </div>
-</span>
 
 <h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
@@ -83,50 +80,48 @@ adopción. Pero con este formato usted no utilizará todas las capacidades de Sc
 </p>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-Scid databases will be opened in read-only mode, the user may switch to
-writeable mode after opening. The last mode will be prerserved while
-re-opening the database.
+Las bases de datos Scid sólo podrán abrirse en modo de sólo-lectura; el usuario podrá
+cambiar a un modo editable luego de abiertas. Al reabrir dicha base se mantendrá el modo
+utilizado al cerrarla por última vez.
 </div>
 
-<span class="NEW">
 <p>
-In some cases the user has to choose the appropriate encoding while opening
-the database, to ensure a correct display of names and other text. Newer
-databases may be <span style="white-space:nowrap;">UTF-8</span> encoded, older database may be written with <span style="white-space:nowrap;">Latin-1</span>
-(ISO-<span style="white-space:nowrap;">8859-1</span>) character set, the Scid format does not provide information
-about this. But in many cases the automatic detection of the character set
-should be successful.
+En algunos casos el usuario tendrá que elegir la codificación adecuada cuando abra la 
+base de datos para asegurar la correcta exhibición de los nombres y otro tipo de texto. 
+Las bases de datos nuevas se codificarán en <span style="white-space:nowrap;">UTF-8</span>, las antiguas podrían 
+estar en los grupos de caracteres <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>) y el
+formato Scid no proporciona información acerca de esto. No obstante, en muchos casos la 
+detección automática del grupo de caracteres funcionará en forma correcta.
 </p>
 
 <p>
-This format resembles structurally Scidb's format:
+Este formato se parece estructuralmente al formato Scidb:
 </p>
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.si4 =&nbsp;</kbd></td>
-      <td>Game data</td>
+      <td>Información de las partidas</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sg4 =&nbsp;</kbd></td>
-      <td>Game moves, commentaries, annotations, and PGN tags</td>
+      <td>Información de las jugadas, comentarios, anotaciones y etiquetas PGN de las partidas</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sn4 =&nbsp;</kbd></td>
-      <td>Player/Event/Site/Round data</td>
+      <td>Información sobre los Jugadores/Torneo/Lugar/Ronda</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.ssc =&nbsp;</kbd></td>
-      <td>Sorting data</td>
+      <td>Información para el ordenamiento</td>
     </tr>
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> The files with suffixes <code>.sso</code> (Scid Search Option File),
-and <code>.sor</code> (Scid Repertoire File) do not belong explicitely to
-a database and will not be regarded by Scidb.</p>
-</span>
+<p><img src="../images/note.png" alt="note" /> Los archivos con los sufijos <code>.sso</code> (Scid Search Option File),
+y <code>.sor</code> (Scid Repertoire File) no pertenecen explícitamente a una base
+de datos y no serán tenidos en cuenta por Scidb.</p>
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
@@ -137,37 +132,37 @@ leída en forma correcta; en algunas partidas puede aparecer el mensaje de
 decodificación fallida.
 </p>
 
-<span class="NEW">
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-ChessBase databases cannot be used as reference database.
+Las bases de datos ChessBase no podrán utilizarse como bases de referencia.
 </div>
 
 <p>
-Usually this database is encoded with character set CP1252, but in some cases
-a manual selection of the the character set while opening the database may
-be required, to ensure a correct display of names and other text.
+Habitualmente estas bases se codifican con el grupo de caracteres CP1252, pero en algunos casos
+puede requerirse una selección manual del grupo de caracteres al abrir la base de datos para 
+asegurar una correcta exhibición de los nombres y de otro tipo de texto.
 </p>
 
 <p>
-A database in ChessBase format is divided into many separate files, the important ones are:
+Una base de datos en formato ChessBase se encuentra dividida en varios archivos separados, los más importantes de 
+los cuales son:
 </p>
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Game data</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Game moves and variations</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cba &nbsp;=&nbsp;</kbd></td><td>Annotations and commentaries</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs &nbsp;=&nbsp;</kbd></td><td>Source index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp &nbsp;=&nbsp;</kbd></td><td>Players index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc &nbsp;=&nbsp;</kbd></td><td>Commentators index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Tournament index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Team index</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Team information</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Database initialisation file</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML document folder</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Información de las partidas</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Jugadas y variantes de las partidas</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cba &nbsp;=&nbsp;</kbd></td><td>Comentarios y anotaciones</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs &nbsp;=&nbsp;</kbd></td><td>Índice principal</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp &nbsp;=&nbsp;</kbd></td><td>Índice de jugadores</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc &nbsp;=&nbsp;</kbd></td><td>Índice de comentaristas</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Índice de torneos</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Índice de equipos</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Información de los equipos</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Archivo de inicialización de la base de 
+    datos</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>Carpeta de documentos HTML</td></tr>
   </table>
 </div>
-</span>
 
 <h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
@@ -177,39 +172,37 @@ transferencia de partidas de ajedrez. Sólo se permite la apertura de un archivo
 de partidas <abbr>PGN</abbr> al formato Scidb.
 </p>
 
-<span class="NEW">
 <p>
-According to the
-<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN standard</a>
-a PGN file is encoded with character set <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
-But if a PGN file is starting with an <span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM:
-byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encoding will be expected (according to
-<a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+De acuerdo con el <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">estándar PGN</a>
+un archivo PGN está codificado con el grupo de caracteres <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>). No obstante, si un
+archivo PGN comienza con un marcador <span style="white-space:nowrap;">UTF-8</span> (<span style="white-space:nowrap;">UTF-8</span>-BOM:
+byte sequence EF BB BF) se prevee una codificación <span style="white-space:nowrap;">UTF-8</span> (de acuerdo con la <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
 
 <p>
-A complete specification of this format will be found at
+Se puede hallar una completa especificación de este formato en
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Database archive (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Archivo de base de datos (<abbr>.scv</abbr>)</h2>
 
 <p>
-Scidb's database archive is based on an independent archive format,
-and contains one (or perhaps several) databases in archived form. This
-facilitates the shipment of databases through the internet, because it
-is a single file instead of several ones. This database archive is not
-limited to a specific database format.
+El archivo de base de datos Scidb está basado en un formato de archivo independiente
+y contiene una (o quizás varias) bases de datos en forma
+and contains one (or perhaps several) databases en forma de archivo único. Esto
+facilita el envío de bases de datos por Internet ya que es un archivo único
+en lugar de varios archivos. Este archivo de base de datos no se limita
+a un formato específico de base de datos.
 </p>
 
 <p>
-A detailed description of this format is on page
+En la página
 <!-- NOTE for translators: only German and English specification will be available -->
 <!-- This means: do not translate next line -->
-<a href="../en/Database-Archive.html">Specification of database archive</a>.
+<a href="../en/Database-Archive.html">Specification of database archive</a>
+se encuentra una descripción detallada de este formato de archivo.
 </p>
-</span>
 
 </body>
 </html>

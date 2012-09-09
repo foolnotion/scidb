@@ -889,8 +889,8 @@ T_Environment.o: ../../mstl/m_member_list.h
 T_Environment.o: ../../mstl/m_member_list.ipp
 T_Environment.o: ../../mstl/m_tuple.ipp
 T_Environment.o: ../../mstl/m_list.h
-T_Environment.o: ../../mstl/m_pointer_iterator.h
-T_Environment.o: ../../mstl/m_pointer_iterator.ipp
+T_Environment.o: ../../mstl/m_list_node.h
+T_Environment.o: ../../mstl/m_list_node.ipp
 T_Environment.o: ../../mstl/m_list.ipp
 T_Environment.o: ../../mstl/m_hash.h
 T_Environment.o: ../../mstl/m_pair.h
@@ -2188,8 +2188,8 @@ T_Memory.o: ../../mstl/m_type_list.h
 T_Memory.o: ../../mstl/m_type_list.ipp
 T_Memory.o: ../../mstl/m_make_type_list.ipp
 T_Memory.o: ../../mstl/m_list.h
-T_Memory.o: ../../mstl/m_pointer_iterator.h
-T_Memory.o: ../../mstl/m_pointer_iterator.ipp
+T_Memory.o: ../../mstl/m_list_node.h
+T_Memory.o: ../../mstl/m_list_node.ipp
 T_Memory.o: ../../mstl/m_list.ipp
 T_Messages.o: T_Messages.h
 T_Messages.o: T_Package.h
@@ -3039,8 +3039,8 @@ T_TokenBuffer.o: ../../mstl/m_algobase.ipp
 T_TokenBuffer.o: ../../mstl/m_construct.h
 T_TokenBuffer.o: ../../mstl/m_construct.ipp
 T_TokenBuffer.o: ../../mstl/m_list.h
-T_TokenBuffer.o: ../../mstl/m_pointer_iterator.h
-T_TokenBuffer.o: ../../mstl/m_pointer_iterator.ipp
+T_TokenBuffer.o: ../../mstl/m_list_node.h
+T_TokenBuffer.o: ../../mstl/m_list_node.ipp
 T_TokenBuffer.o: ../../mstl/m_list.ipp
 T_TokenBuffer.o: ../../mstl/m_hash.h
 T_TokenBuffer.o: ../../mstl/m_pair.h

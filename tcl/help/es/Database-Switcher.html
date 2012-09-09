@@ -50,21 +50,19 @@ Al apretar el botón del medio del ratón (i.e. la rueda) se mostrará una caja 
 información.
 </p>
 
-<span class="NEW">
 <p>
-The functionalities of the database switcher:
+Funcionalidades del intercambiador de bases de datos:
 </p>
 
 <ul>
-  <li><a href="#Administration">Administration</a></li>
-  <li><a href="#DND">Drag &amp; Drop</a></li>
+  <li><a href="#Administration">Administración</a></li>
+  <li><a href="#DND">Arrastrar &amp; Soltar</a></li>
 </ul>
-</span>
 
-<h3 id="Administration">Administration</h3>
+<h3 id="Administration">Administración</h3>
 
 <p>
-Se encuentra disponible un menú sensible al contexto para la administración de la base de datos:
+Se encuentra disponible un menú contextual para la administración de la base de datos:
 </p>
 
 <ul style="list-style-type: none"><li><img src="images/database-switcher-menu.png"/></li></ul>
@@ -76,54 +74,50 @@ Abre una caja que muestra variada información sobre la base de datos.
 
 <p>
 <span class="menuitem">Exportar</span>
-Abre un diálogo para <a href="Database-Export-Dialog.html">exportar base</a>
+Abre el diálogo <a href="Database-Export-Dialog.html">Exportar...</a> para exportar la base
 a otros formatos de base de datos o formatos de documento.
 </p>
 
 <p>
 <span class="menuitem">Importar archivos PGN</span>
-Abre el <a href="File-Selection-Dialog.html">diálogo de selección de archivo</a> para
+Abre <a href="File-Selection-Dialog.html">Importar archivos PGN...</a> para
 la selección de archivos <abbr>PGN</abbr> para importar. Es posible seleccionar múltiples
 archivos <abbr>PGN</abbr> simultáneamente. Las partidas se agregarán al final de la base
 de datos.
 </p>
 
-<span class="NEW">
 <p>
 <span class="menuitem">Crear Archivo</span>
-Create a <a href="Database-Formats.html#Database-Archive">database archive</a>.
-The <a href="File-Selection-Dialog.html">file selection dialog</a>
-will be opened for the selection of an archive name.
+Crea un <a href="Database-Formats.html#Database-Archive">Archivo de base de datos</a>.
+Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
+para seleccionar un nombre de archivo.
 </p>
-</span>
 
 <p>
 <span class="menuitem">Cerrar</span>
 La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
 se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
-<br/><img src="../images/note.png" alt="note" /> No es posible cerrar <a href="Clipbase.html">Clipbase</a>.
+<br/><img src="../images/note.png" alt="note" /> No es posible cerrar la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
-<span class="NEW">
 <p id="Compact">
 <span class="menuitem">Compactar</span>
-Compact this database, this means that all games marked for deletion
-wil be deleted physically. You cannot revert this action. This menu
-item is disabled if the database does not contain any game with a
-deletion marker.
+Compactará la base de datos actual; esto significa que todas las partidas
+marcadas para su eliminación se borrarán físicamente y no podrá revertir
+esta acción. Este ítem no está habilitado si la base de datos no contiene
+ninguna partida con un marcador de eliminación.
 </p>
-</span>
 
 <p>
 <span class="menuitem">Cambiar ícono</span>
 Selecciona un icono para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
 <p>
 <span class="menuitem">Editar Descripción</span>
 Crea o cambia la descripción para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para <a href="Clipbase.html">Clipbase</a>.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
 <p>
@@ -132,7 +126,7 @@ Establecer esta base como de sólo-lectura o editable.
 Esto sólo es posible para las bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
 <br/><img src="../images/note.png" alt="note" /> Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
-<br/><img src="../images/note.png" alt="note" /> <a href="Clipbase.html">Clipbase</a> no puede establecerse como de sólo-lectura.
+<br/><img src="../images/note.png" alt="note" /> La <a href="Clipbase.html">Base temporal</a> no puede establecerse como de sólo-lectura.
 </p>
 
 <p>
@@ -160,19 +154,17 @@ Selección del tamaño de los símbolos de base de datos.
 
 <span class="menuitem">
 Vaciar Base temporal</span>
-<br/><img src="../images/note.png" alt="note" /> Esta entrada de menú sólo se proporcionará para
-<a href="Clipbase.html">Clipbase</a>.
+<br/><img src="../images/note.png" alt="note" /> Esta entrada de menú sólo se proporcionará para la
+<a href="Clipbase.html">Base temporal</a>.
 
-<span class="NEW">
-<h3 id="DND">Drag &amp; Drop</h3>
+<h3 id="DND">Arrastrar &amp; Soltar</h3>
 
 <p>
-Database can be opened with the drop of an URI list. If an URI list (list of files)
-&ndash; or a single file &ndash; will be dragged over the database switcher,
-a colored background will indicate that a drop of this item is possible.
-In this way you may open databases with the help of an external file manager.
+Una base de datos puede abrirse soltando una lista URI. 
+Si se arrastra una lista URI (lista de archivos) &ndash; o un único archivo &ndash; sobre el
+intercambiador de bases de datos, un trasfondo coloreado indicará que es posible soltar dicho ítem. 
+De esta manera usted podrá abrir bases de datos con la ayuda de un administrador de archivos externo.
 </p>
-</span>
 
 </body>
 </html>

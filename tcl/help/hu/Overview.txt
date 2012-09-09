@@ -18,6 +18,7 @@
 
 TITLE Welcome to Scidb-Help
 
+<NEW>
 <h2 id="general">General help</h2>
 
 <ul>
@@ -71,6 +72,7 @@ TITLE Welcome to Scidb-Help
   <li><a href="Whats-New.html">What's new?</a></li>
   <li><a href="Welcome.html">Üdvözöljük a Scidb-ben!</a></li>
 </ul>
+</NEW>
 
 END
 

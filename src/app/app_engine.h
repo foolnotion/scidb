@@ -30,6 +30,7 @@
 #include "db_move_list.h"
 
 #include "m_string.h"
+#include "m_pvector.h"
 #include "m_list.h"
 
 namespace mstl	{ class ostream; }
@@ -237,7 +238,7 @@ protected:
 
 private:
 
-	typedef mstl::list<db::MoveList> Variations;
+	typedef mstl::pvector<db::MoveList> Variations;
 
 	class Process;
 	friend class Process;

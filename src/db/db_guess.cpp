@@ -393,7 +393,7 @@ db::Guess::search(Square square, unsigned maxDepth)
 
 
 Move
-db::Guess::bestMove(Square square, unsigned maxDepth)
+db::Guess::bestMove(Square square, MoveList const& exclude, unsigned maxDepth)
 {
 	EcoTable::Successors successors;
 	EcoTable::specimen().getSuccessors(hash(), successors);
@@ -402,6 +402,21 @@ db::Guess::bestMove(Square square, unsigned maxDepth)
 	MoveList ecoMoves;
 
 	generateMoves(square, moves);
+
+	if (!exclude.isEmpty())
+	{
+		MoveList ml(moves);
+		moves.clear();
+
+		Move const* m = ml.begin();
+		Move const* e = ml.end();
+
+		for ( ; m != e; ++m)
+		{
+			if (exclude.find(m->index()) == -1)
+				moves.append(*m);
+		}
+	}
 
 	for (unsigned i = 0; i < successors.length; ++i)
 	{
@@ -432,6 +447,13 @@ db::Guess::bestMove(Square square, unsigned maxDepth)
 		return setColor(search(moves, maxDepth));
 
 	return setColor(search(ecoMoves, maxDepth));
+}
+
+
+Move
+db::Guess::bestMove(Square square, unsigned maxDepth)
+{
+	return bestMove(square, MoveList(), maxDepth);
 }
 
 

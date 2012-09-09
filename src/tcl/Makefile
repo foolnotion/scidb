@@ -124,7 +124,7 @@ tcl_application.o: ../db/db_signature.ipp
 tcl_application.o: ../db/db_board.ipp
 tcl_application.o: ../db/db_line.h
 tcl_application.o: ../db/db_line.ipp
-tcl_application.o: ../mstl/m_list.h
+tcl_application.o: ../mstl/m_pvector.h
 tcl_application.o: ../mstl/m_vector.h
 tcl_application.o: ../mstl/m_memblock.h
 tcl_application.o: ../mstl/m_memblock.ipp
@@ -137,7 +137,7 @@ tcl_application.o: ../mstl/m_construct.h
 tcl_application.o: ../mstl/m_construct.ipp
 tcl_application.o: ../mstl/m_pointer_iterator.h
 tcl_application.o: ../mstl/m_pointer_iterator.ipp
-tcl_application.o: ../mstl/m_list.ipp
+tcl_application.o: ../mstl/m_pvector.ipp
 tcl_application.o: ../mstl/m_ref_counter.h
 tcl_application.o: ../mstl/m_ref_counter.ipp
 tcl_application.o: ../mstl/m_ref_counted_ptr.h
@@ -156,6 +156,10 @@ tcl_application.o: ../db/db_date.h
 tcl_application.o: ../db/db_date.ipp
 tcl_application.o: ../db/db_namebase_entry.ipp
 tcl_application.o: ../db/db_player.h
+tcl_application.o: ../mstl/m_list.h
+tcl_application.o: ../mstl/m_list_node.h
+tcl_application.o: ../mstl/m_list_node.ipp
+tcl_application.o: ../mstl/m_list.ipp
 tcl_application.o: ../mstl/m_pair.h
 tcl_application.o: ../mstl/m_pair.ipp
 tcl_application.o: ../db/db_player.ipp
@@ -320,7 +324,7 @@ tcl_crosstable.o: ../db/db_signature.ipp
 tcl_crosstable.o: ../db/db_board.ipp
 tcl_crosstable.o: ../db/db_line.h
 tcl_crosstable.o: ../db/db_line.ipp
-tcl_crosstable.o: ../mstl/m_list.h
+tcl_crosstable.o: ../mstl/m_pvector.h
 tcl_crosstable.o: ../mstl/m_vector.h
 tcl_crosstable.o: ../mstl/m_memblock.h
 tcl_crosstable.o: ../mstl/m_memblock.ipp
@@ -333,7 +337,7 @@ tcl_crosstable.o: ../mstl/m_construct.h
 tcl_crosstable.o: ../mstl/m_construct.ipp
 tcl_crosstable.o: ../mstl/m_pointer_iterator.h
 tcl_crosstable.o: ../mstl/m_pointer_iterator.ipp
-tcl_crosstable.o: ../mstl/m_list.ipp
+tcl_crosstable.o: ../mstl/m_pvector.ipp
 tcl_crosstable.o: ../mstl/m_ref_counter.h
 tcl_crosstable.o: ../mstl/m_ref_counter.ipp
 tcl_crosstable.o: ../mstl/m_ref_counted_ptr.h
@@ -352,6 +356,10 @@ tcl_crosstable.o: ../db/db_date.h
 tcl_crosstable.o: ../db/db_date.ipp
 tcl_crosstable.o: ../db/db_namebase_entry.ipp
 tcl_crosstable.o: ../db/db_player.h
+tcl_crosstable.o: ../mstl/m_list.h
+tcl_crosstable.o: ../mstl/m_list_node.h
+tcl_crosstable.o: ../mstl/m_list_node.ipp
+tcl_crosstable.o: ../mstl/m_list.ipp
 tcl_crosstable.o: ../db/db_player.ipp
 tcl_crosstable.o: ../mstl/m_chunk_allocator.h
 tcl_crosstable.o: ../mstl/m_stack.h
@@ -520,10 +528,10 @@ tcl_database.o: ../mstl/m_bitset_iterator.h
 tcl_database.o: ../mstl/m_bitset_iterator.ipp
 tcl_database.o: ../mstl/m_bitset.ipp
 tcl_database.o: ../db/db_filter.ipp
-tcl_database.o: ../mstl/m_list.h
+tcl_database.o: ../mstl/m_pvector.h
 tcl_database.o: ../mstl/m_pointer_iterator.h
 tcl_database.o: ../mstl/m_pointer_iterator.ipp
-tcl_database.o: ../mstl/m_list.ipp
+tcl_database.o: ../mstl/m_pvector.ipp
 tcl_database.o: ../mstl/m_ref_counter.h
 tcl_database.o: ../mstl/m_ref_counter.ipp
 tcl_database.o: ../mstl/m_ref_counted_ptr.h
@@ -540,6 +548,10 @@ tcl_database.o: ../db/db_namebase.h
 tcl_database.o: ../db/db_namebase_entry.h
 tcl_database.o: ../db/db_namebase_entry.ipp
 tcl_database.o: ../db/db_player.h
+tcl_database.o: ../mstl/m_list.h
+tcl_database.o: ../mstl/m_list_node.h
+tcl_database.o: ../mstl/m_list_node.ipp
+tcl_database.o: ../mstl/m_list.ipp
 tcl_database.o: ../db/db_player.ipp
 tcl_database.o: ../mstl/m_chunk_allocator.h
 tcl_database.o: ../mstl/m_chunk_allocator.ipp
@@ -654,7 +666,7 @@ tcl_engine.o: ../mstl/m_string.h
 tcl_engine.o: ../mstl/m_string.ipp
 tcl_engine.o: ../db/db_move.ipp
 tcl_engine.o: ../db/db_move_list.ipp
-tcl_engine.o: ../mstl/m_list.h
+tcl_engine.o: ../mstl/m_pvector.h
 tcl_engine.o: ../mstl/m_vector.h
 tcl_engine.o: ../mstl/m_memblock.h
 tcl_engine.o: ../mstl/m_memblock.ipp
@@ -667,6 +679,10 @@ tcl_engine.o: ../mstl/m_construct.h
 tcl_engine.o: ../mstl/m_construct.ipp
 tcl_engine.o: ../mstl/m_pointer_iterator.h
 tcl_engine.o: ../mstl/m_pointer_iterator.ipp
+tcl_engine.o: ../mstl/m_pvector.ipp
+tcl_engine.o: ../mstl/m_list.h
+tcl_engine.o: ../mstl/m_list_node.h
+tcl_engine.o: ../mstl/m_list_node.ipp
 tcl_engine.o: ../mstl/m_list.ipp
 tcl_engine.o: ../app/app_engine.ipp
 tcl_engine.o: ../db/db_player.h
@@ -830,10 +846,10 @@ tcl_game.o: ../mstl/m_bitset_iterator.h
 tcl_game.o: ../mstl/m_bitset_iterator.ipp
 tcl_game.o: ../mstl/m_bitset.ipp
 tcl_game.o: ../db/db_filter.ipp
-tcl_game.o: ../mstl/m_list.h
+tcl_game.o: ../mstl/m_pvector.h
 tcl_game.o: ../mstl/m_pointer_iterator.h
 tcl_game.o: ../mstl/m_pointer_iterator.ipp
-tcl_game.o: ../mstl/m_list.ipp
+tcl_game.o: ../mstl/m_pvector.ipp
 tcl_game.o: ../mstl/m_ref_counter.h
 tcl_game.o: ../mstl/m_ref_counter.ipp
 tcl_game.o: ../mstl/m_ref_counted_ptr.h
@@ -850,6 +866,10 @@ tcl_game.o: ../db/db_namebase.h
 tcl_game.o: ../db/db_namebase_entry.h
 tcl_game.o: ../db/db_namebase_entry.ipp
 tcl_game.o: ../db/db_player.h
+tcl_game.o: ../mstl/m_list.h
+tcl_game.o: ../mstl/m_list_node.h
+tcl_game.o: ../mstl/m_list_node.ipp
+tcl_game.o: ../mstl/m_list.ipp
 tcl_game.o: ../db/db_player.ipp
 tcl_game.o: ../mstl/m_chunk_allocator.h
 tcl_game.o: ../mstl/m_chunk_allocator.ipp
@@ -991,8 +1011,8 @@ tcl_misc.o: ../db/db_date.ipp
 tcl_misc.o: ../db/db_namebase_entry.ipp
 tcl_misc.o: ../db/db_player.h
 tcl_misc.o: ../mstl/m_list.h
-tcl_misc.o: ../mstl/m_pointer_iterator.h
-tcl_misc.o: ../mstl/m_pointer_iterator.ipp
+tcl_misc.o: ../mstl/m_list_node.h
+tcl_misc.o: ../mstl/m_list_node.ipp
 tcl_misc.o: ../mstl/m_list.ipp
 tcl_misc.o: ../db/db_player.ipp
 tcl_misc.o: ../mstl/m_bitset.h
@@ -1142,8 +1162,8 @@ tcl_pgn_reader.o: tcl_base.h
 tcl_pgn_reader.o: tcl_base.ipp
 tcl_pgn_reader.o: ../sys/sys_utf8_codec.h
 tcl_pgn_reader.o: ../mstl/m_list.h
-tcl_pgn_reader.o: ../mstl/m_pointer_iterator.h
-tcl_pgn_reader.o: ../mstl/m_pointer_iterator.ipp
+tcl_pgn_reader.o: ../mstl/m_list_node.h
+tcl_pgn_reader.o: ../mstl/m_list_node.ipp
 tcl_pgn_reader.o: ../mstl/m_list.ipp
 tcl_pgn_reader.o: ../sys/sys_utf8_codec.ipp
 tcl_pgn_reader.o: ../mstl/m_istream.h
@@ -1199,7 +1219,7 @@ tcl_position.o: ../db/db_signature.ipp
 tcl_position.o: ../db/db_board.ipp
 tcl_position.o: ../db/db_line.h
 tcl_position.o: ../db/db_line.ipp
-tcl_position.o: ../mstl/m_list.h
+tcl_position.o: ../mstl/m_pvector.h
 tcl_position.o: ../mstl/m_vector.h
 tcl_position.o: ../mstl/m_memblock.h
 tcl_position.o: ../mstl/m_memblock.ipp
@@ -1212,7 +1232,7 @@ tcl_position.o: ../mstl/m_construct.h
 tcl_position.o: ../mstl/m_construct.ipp
 tcl_position.o: ../mstl/m_pointer_iterator.h
 tcl_position.o: ../mstl/m_pointer_iterator.ipp
-tcl_position.o: ../mstl/m_list.ipp
+tcl_position.o: ../mstl/m_pvector.ipp
 tcl_position.o: ../mstl/m_ref_counter.h
 tcl_position.o: ../mstl/m_ref_counter.ipp
 tcl_position.o: ../mstl/m_ref_counted_ptr.h
@@ -1231,6 +1251,10 @@ tcl_position.o: ../db/db_date.h
 tcl_position.o: ../db/db_date.ipp
 tcl_position.o: ../db/db_namebase_entry.ipp
 tcl_position.o: ../db/db_player.h
+tcl_position.o: ../mstl/m_list.h
+tcl_position.o: ../mstl/m_list_node.h
+tcl_position.o: ../mstl/m_list_node.ipp
+tcl_position.o: ../mstl/m_list.ipp
 tcl_position.o: ../mstl/m_pair.h
 tcl_position.o: ../mstl/m_pair.ipp
 tcl_position.o: ../db/db_player.ipp
@@ -1352,7 +1376,7 @@ tcl_tree.o: ../db/db_signature.ipp
 tcl_tree.o: ../db/db_board.ipp
 tcl_tree.o: ../db/db_line.h
 tcl_tree.o: ../db/db_line.ipp
-tcl_tree.o: ../mstl/m_list.h
+tcl_tree.o: ../mstl/m_pvector.h
 tcl_tree.o: ../mstl/m_vector.h
 tcl_tree.o: ../mstl/m_memblock.h
 tcl_tree.o: ../mstl/m_memblock.ipp
@@ -1365,7 +1389,7 @@ tcl_tree.o: ../mstl/m_construct.h
 tcl_tree.o: ../mstl/m_construct.ipp
 tcl_tree.o: ../mstl/m_pointer_iterator.h
 tcl_tree.o: ../mstl/m_pointer_iterator.ipp
-tcl_tree.o: ../mstl/m_list.ipp
+tcl_tree.o: ../mstl/m_pvector.ipp
 tcl_tree.o: ../mstl/m_ref_counter.h
 tcl_tree.o: ../mstl/m_ref_counter.ipp
 tcl_tree.o: ../mstl/m_ref_counted_ptr.h
@@ -1384,6 +1408,10 @@ tcl_tree.o: ../db/db_date.h
 tcl_tree.o: ../db/db_date.ipp
 tcl_tree.o: ../db/db_namebase_entry.ipp
 tcl_tree.o: ../db/db_player.h
+tcl_tree.o: ../mstl/m_list.h
+tcl_tree.o: ../mstl/m_list_node.h
+tcl_tree.o: ../mstl/m_list_node.ipp
+tcl_tree.o: ../mstl/m_list.ipp
 tcl_tree.o: ../db/db_player.ipp
 tcl_tree.o: ../mstl/m_chunk_allocator.h
 tcl_tree.o: ../mstl/m_stack.h
@@ -1487,7 +1515,7 @@ tcl_view.o: ../db/db_signature.ipp
 tcl_view.o: ../db/db_board.ipp
 tcl_view.o: ../db/db_line.h
 tcl_view.o: ../db/db_line.ipp
-tcl_view.o: ../mstl/m_list.h
+tcl_view.o: ../mstl/m_pvector.h
 tcl_view.o: ../mstl/m_vector.h
 tcl_view.o: ../mstl/m_memblock.h
 tcl_view.o: ../mstl/m_memblock.ipp
@@ -1500,7 +1528,7 @@ tcl_view.o: ../mstl/m_construct.h
 tcl_view.o: ../mstl/m_construct.ipp
 tcl_view.o: ../mstl/m_pointer_iterator.h
 tcl_view.o: ../mstl/m_pointer_iterator.ipp
-tcl_view.o: ../mstl/m_list.ipp
+tcl_view.o: ../mstl/m_pvector.ipp
 tcl_view.o: ../mstl/m_ref_counter.h
 tcl_view.o: ../mstl/m_ref_counter.ipp
 tcl_view.o: ../mstl/m_ref_counted_ptr.h
@@ -1519,6 +1547,10 @@ tcl_view.o: ../db/db_date.h
 tcl_view.o: ../db/db_date.ipp
 tcl_view.o: ../db/db_namebase_entry.ipp
 tcl_view.o: ../db/db_player.h
+tcl_view.o: ../mstl/m_list.h
+tcl_view.o: ../mstl/m_list_node.h
+tcl_view.o: ../mstl/m_list_node.ipp
+tcl_view.o: ../mstl/m_list.ipp
 tcl_view.o: ../mstl/m_pair.h
 tcl_view.o: ../mstl/m_pair.ipp
 tcl_view.o: ../db/db_player.ipp

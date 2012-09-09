@@ -36,6 +36,7 @@
 #include "db_guess.h"
 #include "db_board.h"
 #include "db_move.h"
+#include "db_move_list.h"
 
 #include <tcl.h>
 #include <ctype.h>
@@ -51,6 +52,7 @@ using namespace tcl::app;
 static char const* CmdBoard			= "::scidb::pos::board";
 static char const* CmdFen				= "::scidb::pos::fen";
 static char const* CmdGuess			= "::scidb::pos::guess";
+static char const* CmdGuessNext		= "::scidb::pos::guessNext";
 static char const* CmdIdn				= "::scidb::pos::idn";
 static char const* CmdPromotion		= "::scidb::pos::promotion?";
 static char const* CmdSan				= "::scidb::pos::san";
@@ -59,8 +61,10 @@ static char const* CmdSetup			= "::scidb::pos::setup";
 static char const* CmdStm				= "::scidb::pos::stm";
 static char const* CmdValid			= "::scidb::pos::valid?";
 
-static Square		bestMoveCache[64];
-static unsigned	searchDepth	= 3;
+static Square		m_bestMoveCache[64];
+static unsigned	m_searchDepth	= 3;
+static MoveList	m_bestMoveList;
+static unsigned	m_bestMoveIndex = 0;
 
 
 static Square
@@ -108,7 +112,8 @@ pieceFromObj(int objc, Tcl_Obj* const objv[], unsigned index)
 void
 pos::resetMoveCache()
 {
-	memset(::bestMoveCache, sq::Null, sizeof(::bestMoveCache));
+	memset(m_bestMoveCache, sq::Null, sizeof(m_bestMoveCache));
+	m_bestMoveList.clear();
 }
 
 
@@ -148,21 +153,69 @@ cmdGuess(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Board const& currentBoard = Scidb->game().currentBoard();
 
-	if (::bestMoveCache[square] != sq::Null)
+	if (m_bestMoveCache[square] != sq::Null)
 	{
-		setResult(::bestMoveCache[square]);
+		setResult(m_bestMoveCache[square]);
 	}
 	else
 	{
 		// TODO: We have to distinguish between chess960 and standard chess.
 		// Currently class Guess is designed for standard chess.
 		Guess board(currentBoard, Scidb->gameInfoAt().idn());
-		int bestSquare(board.bestSquare(square, ::searchDepth));
+		Move bestMove(board.bestMove(square, m_searchDepth));
+		int bestSquare = -1;
+		
+		if (bestMove)
+		{
+			m_bestMoveList.clear();
+			m_bestMoveList.append(bestMove);
+			bestSquare = bestMove.from() == square ? bestMove.to() : bestMove.from();
+		}
 
-		::bestMoveCache[square] = bestSquare;
+		m_bestMoveCache[square] = bestSquare;
+		setResult(bestSquare);
+	}
 
-		if (bestSquare == sq::Null)
-			bestSquare = -1;
+	return TCL_OK;
+}
+
+
+static int
+cmdGuessNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Square square = squareFromObj(objc, objv, 1);
+
+	if (square == sq::Null)
+		return error(::CmdGuess, nullptr, nullptr, "invalid square %s", Tcl_GetString(objv[1]));
+
+	if (m_bestMoveCache[square] == sq::Null || m_bestMoveList.isEmpty())
+	{
+		setResult(-1);
+	}
+	else
+	{
+		Board const& currentBoard = Scidb->game().currentBoard();
+
+		// TODO: We have to distinguish between chess960 and standard chess.
+		// Currently class Guess is designed for standard chess.
+		Guess board(currentBoard, Scidb->gameInfoAt().idn());
+		Move bestMove(board.bestMove(square, m_bestMoveList, m_searchDepth));
+		int bestSquare = -1;
+
+		if (bestMove)
+		{
+			m_bestMoveList.append(bestMove);
+			bestSquare = bestMove.from() == square ? bestMove.to() : bestMove.from();
+			m_bestMoveIndex = 0;
+		}
+		else if (m_bestMoveList.size() > 1)
+		{
+			bestMove = m_bestMoveList[m_bestMoveIndex];
+			bestSquare = bestMove.from() == square ? bestMove.to() : bestMove.from();
+
+			if (++m_bestMoveIndex == m_bestMoveList.size())
+				m_bestMoveIndex = 0;
+		}
 
 		setResult(bestSquare);
 	}
@@ -174,7 +227,7 @@ cmdGuess(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSearchDepth(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	::searchDepth = unsignedFromObj(objc, objv, 1);
+	m_searchDepth = unsignedFromObj(objc, objv, 1);
 	resetMoveCache();
 	return TCL_OK;
 }
@@ -370,14 +423,15 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdBoard,			cmdBoard);
-	createCommand(ti, CmdFen,			cmdFen);
+	createCommand(ti, CmdFen,				cmdFen);
 	createCommand(ti, CmdGuess,			cmdGuess);
-	createCommand(ti, CmdIdn,			cmdIdn);
-	createCommand(ti, CmdPromotion,	cmdPromotion);
-	createCommand(ti, CmdSan,			cmdSan);
+	createCommand(ti, CmdGuessNext,		cmdGuessNext);
+	createCommand(ti, CmdIdn,				cmdIdn);
+	createCommand(ti, CmdPromotion,		cmdPromotion);
+	createCommand(ti, CmdSan,				cmdSan);
 	createCommand(ti, CmdSearchDepth,	cmdSearchDepth);
 	createCommand(ti, CmdSetup,			cmdSetup);
-	createCommand(ti, CmdStm,			cmdStm);
+	createCommand(ti, CmdStm,				cmdStm);
 	createCommand(ti, CmdValid,			cmdValid);
 }
 

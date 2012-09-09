@@ -45,6 +45,9 @@ set ChessPieceDesign		"chess piece design"
 set BoardThemeDesign		"Board theme design"
 set FlagsDesign			"Miniature flags design"
 set IconDesign				"Icon design"
+set Development			"Development"
+set Programming			"Programming"
+set Leader					"Leader"
 
 set Version					"Version"
 set Distributed			"This program is distributed under the terms of the GNU General Public License."
@@ -151,7 +154,7 @@ proc DisplayAbout {w} {
 		<br/><br/>
 		<font style='font-family: $fam; font-size: 12pt;'>
 			$mc::Version $::scidb::version<br/>
-			Copyright &#x00A9; 2011-2012 Gregor Cramer<br/><br/>
+			Copyright &#x00A9; 2008-2012 Gregor Cramer<br/><br/>
 			<a href='http://scidb.sourceforge.net'>scidb.sourceforge.net</a><br/><br/>
 			$mc::Distributed<br/><br/>
 			<font style='font-size: 10pt;'>$mc::Inspired</font>
@@ -245,41 +248,49 @@ proc DisplayContributions {t} {
 	$t configure -state normal
 	$t delete 1.0 end
 
+	$t insert end [Enc "[set [namespace current]::mc::Development]:\n"] caption
+	$t insert end [Enc "Gregor Cramer"]
+
+	$t insert end [Enc "\n\n"]
+	$t insert end [Enc "[set [namespace current]::mc::Programming]:\n"] caption
+	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Leader]), "]
+	$t insert end [Enc "Giovanni Ornaghi"]
+
+	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
-	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
-	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
-	$t insert end [Enc "Juan Carlos V�squez ([::encoding::languageName es]), "]
-	$t insert end [Enc "Zoltán Tibenszky ([::encoding::languageName hu]), "]
 	$t insert end [Enc "Lars Ekman ([::encoding::languageName sv]), "]
+	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
+	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
+	$t insert end [Enc "Zoltán Tibenszky ([::encoding::languageName hu]), "]
+	$t insert end [Enc "Juan Carlos V�squez ([::encoding::languageName es]), "]
 	$t insert end [Enc "Gregor Cramer ([::encoding::languageName de], [::encoding::languageName en])"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
 	$t insert end [Enc "Steven Atkinson, "]
 	$t insert end [Enc "Paolo Casaschi, "]
+	$t insert end [Enc "Gregor Cramer, "]
 	$t insert end [Enc "Lars Ekman, "]
 #	$t insert end [Enc "Carlos Fernando González, "]
-#	$t insert end [Enc "Austen Green, "]
 	$t insert end [Enc "Giovanni Ornaghi, "]
 	$t insert end [Enc "Zoltán Tibenszky"]
-#	$t insert end [Enc "Natalia Parés Vives"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "TrueType [set [namespace current]::mc::FontDesign]:\n"] caption
 	$t insert end [Enc "Armando Hernández Marroquín, "]
 	$t insert end [Enc "Eric Bentzen, "]
-	$t insert end [Enc "Matthieu Leschemelle, "]
-	$t insert end [Enc "Alastair Scott, "]
-	$t insert end [Enc "Alan Cowderoy, "]
-	$t insert end [Enc "Christian Poisson, "]
 	$t insert end [Enc "David L. Brown, "]
+	$t insert end [Enc "Alan Cowderoy, "]
 	$t insert end [Enc "Frank David, "]
+	$t insert end [Enc "Matthieu Leschemelle, "]
+	$t insert end [Enc "Christian Poisson, "]
+	$t insert end [Enc "Alastair Scott, "]
 	$t insert end [Enc "Christoph Wirth"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "SVG [set [namespace current]::mc::ChessPieceDesign]:\n"] caption
-	$t insert end [Enc "Maurizio Monge, "]
-	$t insert end [Enc "Colin M.L. Burnett"]
+	$t insert end [Enc "Colin M.L. Burnett, "]
+	$t insert end [Enc "Maurizio Monge"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::BoardThemeDesign]:\n"] caption
@@ -287,7 +298,8 @@ proc DisplayContributions {t} {
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::FlagsDesign]:\n"] caption
-	$t insert end [Enc "Mark James, Gregor Cramer"]
+	$t insert end [Enc "Mark James, "]
+	$t insert end [Enc "Gregor Cramer"]
 
 #	$t insert end [Enc "\n\n"]
 #	$t insert end [Enc "[set [namespace current]::mc::IconDesign]:\n"] caption

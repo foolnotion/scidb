@@ -125,6 +125,34 @@ proc reset {} {
 }
 
 
+proc nextGuess {args} {
+	variable ::application::board::board
+	variable ::board::hilite
+	variable Square
+	variable Disabled
+
+	if {$Disabled} { return }
+	if {$Square(current) == -1} { return }
+
+	if {$hilite(show-suggested) && $Square(selected) == -1} {
+		if {[llength $args] == 2} {
+			set square [::board::stuff::getSquare $board {*}$args]
+			if {$square != $Square(current)} { return }
+		}
+
+		set suggested [::scidb::pos::guessNext $Square(current)]
+
+		if {$suggested != -1} {
+			if {$Square(suggested) != -1} {
+				::board::stuff::hilite $board $Square(suggested) off
+			}
+			::board::stuff::hilite $board $suggested suggested
+			set Square(suggested) $suggested
+		}
+	}
+}
+
+
 proc enterSquare {{square {}}} {
 	variable ::application::board::board
 	variable ::board::hilite
@@ -133,7 +161,7 @@ proc enterSquare {{square {}}} {
 
 	if {$Disabled} { return }
 
-	if {[llength $square]} {
+	if {[string length $square]} {
 		set Square(current) $square
 	} elseif {$Square(current) == -1} {
 		return
@@ -180,7 +208,7 @@ proc leaveSquare {{square {}}} {
 	variable Square
 	variable Leave
 
-	if {[llength $square] == 0} {
+	if {[string length $square] == 0} {
 		if {$Square(current) != -1} {
 			::board::stuff::hilite $board $Square(current) off
 		}
@@ -349,7 +377,7 @@ proc addMove {san noMoveCmd {force no}} {
 			doDestructiveCommand \
 				$board \
 				$mc::ExchangeMove \
-				[list ::widget::busyOperation [list ::scidb::game::exchange $san]] \
+				[list ::scidb::game::exchange $san] \
 				[list ::scidb::game::go 1] \
 				$noMoveCmd \
 				;
@@ -368,13 +396,13 @@ proc addMove {san noMoveCmd {force no}} {
 
 
 proc doDestructiveCommand {parent action cmd yesAction noAction} {
-	if {![eval $cmd]} {
+	if {![eval [list ::widget::busyOperation $cmd]]} {
 		set rc [;;dialog::question -parent $parent -message [format $mc::GameWillBeTruncated $action]]
 		if {$rc eq "no"} {
 			eval $noAction
 			return
 		}
-		eval $cmd -force
+		eval ::widget::busyOperation [list [list {*}$cmd -force]]
 	}
 
 	eval $yesAction

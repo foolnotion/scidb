@@ -471,8 +471,8 @@ cbh2si4.o: db/db_date.ipp
 cbh2si4.o: db/db_namebase_entry.ipp
 cbh2si4.o: db/db_player.h
 cbh2si4.o: mstl/m_list.h
-cbh2si4.o: mstl/m_pointer_iterator.h
-cbh2si4.o: mstl/m_pointer_iterator.ipp
+cbh2si4.o: mstl/m_list_node.h
+cbh2si4.o: mstl/m_list_node.ipp
 cbh2si4.o: mstl/m_list.ipp
 cbh2si4.o: db/db_player.ipp
 cbh2si4.o: db/db_namebase.ipp
@@ -622,8 +622,8 @@ cdb2sci.o: db/db_date.ipp
 cdb2sci.o: db/db_namebase_entry.ipp
 cdb2sci.o: db/db_player.h
 cdb2sci.o: mstl/m_list.h
-cdb2sci.o: mstl/m_pointer_iterator.h
-cdb2sci.o: mstl/m_pointer_iterator.ipp
+cdb2sci.o: mstl/m_list_node.h
+cdb2sci.o: mstl/m_list_node.ipp
 cdb2sci.o: mstl/m_list.ipp
 cdb2sci.o: db/db_player.ipp
 cdb2sci.o: db/db_namebase.ipp
@@ -1024,8 +1024,8 @@ pgn_split_eco.o: util/u_progress.h
 pgn_split_eco.o: util/u_progress.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.h
 pgn_split_eco.o: mstl/m_list.h
-pgn_split_eco.o: mstl/m_pointer_iterator.h
-pgn_split_eco.o: mstl/m_pointer_iterator.ipp
+pgn_split_eco.o: mstl/m_list_node.h
+pgn_split_eco.o: mstl/m_list_node.ipp
 pgn_split_eco.o: mstl/m_list.ipp
 pgn_split_eco.o: sys/sys_utf8_codec.ipp
 pgn_split_eco.o: mstl/m_ifstream.h
@@ -1080,7 +1080,7 @@ tkscidb.o: db/db_signature.ipp
 tkscidb.o: db/db_board.ipp
 tkscidb.o: db/db_line.h
 tkscidb.o: db/db_line.ipp
-tkscidb.o: mstl/m_list.h
+tkscidb.o: mstl/m_pvector.h
 tkscidb.o: mstl/m_vector.h
 tkscidb.o: mstl/m_memblock.h
 tkscidb.o: mstl/m_memblock.ipp
@@ -1093,7 +1093,7 @@ tkscidb.o: mstl/m_construct.h
 tkscidb.o: mstl/m_construct.ipp
 tkscidb.o: mstl/m_pointer_iterator.h
 tkscidb.o: mstl/m_pointer_iterator.ipp
-tkscidb.o: mstl/m_list.ipp
+tkscidb.o: mstl/m_pvector.ipp
 tkscidb.o: mstl/m_ref_counter.h
 tkscidb.o: mstl/m_ref_counter.ipp
 tkscidb.o: mstl/m_ref_counted_ptr.h
@@ -1112,6 +1112,10 @@ tkscidb.o: db/db_date.h
 tkscidb.o: db/db_date.ipp
 tkscidb.o: db/db_namebase_entry.ipp
 tkscidb.o: db/db_player.h
+tkscidb.o: mstl/m_list.h
+tkscidb.o: mstl/m_list_node.h
+tkscidb.o: mstl/m_list_node.ipp
+tkscidb.o: mstl/m_list.ipp
 tkscidb.o: mstl/m_pair.h
 tkscidb.o: mstl/m_pair.ipp
 tkscidb.o: db/db_player.ipp

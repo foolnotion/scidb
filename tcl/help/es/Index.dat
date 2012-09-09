@@ -1,6 +1,7 @@
 set Index {
   { B
     {
+      {{Barras de tareas} {Toolbar-Usage.html} {}}
       {{Base temporal (Clipbase)} {Clipbase.html} {}}
     }
   }

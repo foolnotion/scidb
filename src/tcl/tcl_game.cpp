@@ -1495,9 +1495,13 @@ cmdNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		Tcl_Obj* objs[result.size()];
+		unsigned k = 0;
 
-		for (unsigned i = 0; i < result.size(); ++i)
-			objs[i] = Tcl_NewStringObj(result[i], -1);
+		Game::StringList::const_iterator i = result.begin();
+		Game::StringList::const_iterator e = result.end();
+
+		for ( ; i != e; ++i)
+			objs[k++] = Tcl_NewStringObj(*i, -1);
 
 		setResult(result.size(), objs);
 	}

@@ -787,6 +787,7 @@
 ::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
+::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
@@ -1648,6 +1649,9 @@
 ::info::mc::BoardThemeDesign	"Design av schackbräden"
 ::info::mc::FlagsDesign			"Design av miniaturflaggor"
 ::info::mc::IconDesign			"Design av ikoner"
+::info::mc::Development			"Development" ;# NEW
+::info::mc::Programming			"Programming" ;# NEW
+::info::mc::Leader				"Leader" ;# NEW
 
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."

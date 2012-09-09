@@ -26,7 +26,7 @@
 #include "m_tuple.h"
 #include "m_string.h"
 #include "m_vector.h"
-#include "m_list.h"
+#include "m_pvector.h"
 #include "m_hash.h"
 
 namespace mstl { class ostream; }
@@ -92,7 +92,7 @@ private:
 	typedef mstl::shared_ptr<Domain>				DomainP;
 	typedef mstl::tuple<ID,DomainP>				DomainEntry;
 	typedef mstl::vector<DomainEntry>			DomainStack;
-	typedef mstl::list<Relations>					RelList;
+	typedef mstl::pvector<Relations>				RelList;
 	typedef mstl::hash<mstl::string,Index>		RelIndexMap;
 	typedef mstl::vector<TokenP>					RootEntries;
 

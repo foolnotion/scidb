@@ -101,15 +101,6 @@ proc open {w args} {
 		-wraplength [expr {$ticks - 50}] \
 		;
 
-	if {$opts(-interrupt)} {
-		variable icon::16x16::stop
-		ttk::button $w.i -text $mc::Interrupt -command [namespace code [list interrupt $w]] -takefocus 0
-		if {[info exists stop]} {
-			$w.i configure -image $stop -compound left
-		}
-		bind $w.i <ButtonRelease-1> [list after idle [list $w.i state pressed]]
-	}
-
 	set options {}
 	if {[llength $opts(-variable)]} { lappend options -variable $opts(-variable) }
 	if {$opts(-mode) eq "determinate"} { lappend options -maximum $opts(-maximum) }
@@ -122,20 +113,29 @@ proc open {w args} {
 	
 	tk::label $w.m -text " "
 
+	if {$opts(-interrupt)} {
+		variable icon::16x16::stop
+		ttk::button $w.i -text $mc::Interrupt -command [namespace code [list interrupt $w]] -takefocus 0
+		if {[info exists stop]} {
+			$w.i configure -image $stop -compound left
+		}
+		bind $w.i <ButtonRelease-1> [list after idle [list $w.i state pressed]]
+	}
+
 	grid $w.l -row 1 -column 1 -sticky we
-	grid $w.p -row 5 -column 1 -sticky we
-	grid $w.m -row 7 -column 1 -sticky w
+	grid $w.p -row 3 -column 1 -sticky we
+	grid $w.m -row 5 -column 1 -sticky w
 
 	grid rowconfigure $w {0} -minsize 10
-	grid rowconfigure $w {4} -minsize 15
-	grid rowconfigure $w {6} -minsize 5
-	grid rowconfigure $w {8} -minsize 10
+	grid rowconfigure $w {2} -minsize 15
+	grid rowconfigure $w {4} -minsize 5
+	grid rowconfigure $w {6} -minsize 10
 
 	grid columnconfigure $w {0 2} -minsize 10
 
 	if {$opts(-interrupt)} {
-		grid $w.i -row 3 -column 1
-		grid rowconfigure $w {2} -minsize 5
+		grid $w.i -row 7 -column 1 ;# -sticky we
+		grid rowconfigure $w {8} -minsize 10
 	}
 
 	if {[string length $opts(-information)]} {

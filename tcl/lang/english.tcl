@@ -785,6 +785,7 @@
 ::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?"
+::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"
@@ -1646,6 +1647,9 @@
 ::info::mc::BoardThemeDesign	"Board theme design"
 ::info::mc::FlagsDesign			"Miniature flags design"
 ::info::mc::IconDesign			"Icon design"
+::info::mc::Development			"Development"
+::info::mc::Programming			"Programming"
+::info::mc::Leader				"Leader"
 
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"This program is distributed under the terms of the GNU General Public License."

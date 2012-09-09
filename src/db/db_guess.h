@@ -49,6 +49,9 @@ public:
 
 	Move search(Square square, unsigned maxDepth = DefaultDepth);
 	Move bestMove(Square square, unsigned maxDepth = DefaultDepth);
+	Move bestMove(	Square square,
+						MoveList const& exclude,
+						unsigned maxDepth = DefaultDepth);
 	Square bestSquare(Square square, unsigned maxDepth = DefaultDepth);
 
 	struct Score

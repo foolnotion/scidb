@@ -18,6 +18,7 @@
 
 TITLE Development roadmap
 
+<NEW>
 <h2>Features for next releases</h2>
 
 <ul>
@@ -53,6 +54,7 @@ TITLE Development roadmap
   <li>More chess board themes</li>
   <li>More help pages</li>
 </ul>
+</NEW>
 
 END
 

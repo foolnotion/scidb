@@ -32,7 +32,7 @@
 #include "db_log.h"
 #include "db_common.h"
 
-#include "m_list.h"
+#include "m_pvector.h"
 #include "m_vector.h"
 #include "m_pair.h"
 #include "m_bitfield.h"
@@ -63,7 +63,7 @@ public:
 	enum UpdateMode	{ AddNewGames, LeaveEmpty };
 	enum GameMode		{ AllGames, ExcludeIllegal };
 
-	typedef mstl::list<mstl::string>	StringList;
+	typedef mstl::pvector<mstl::string>	StringList;
 	typedef mstl::vector<unsigned>	LengthList;
 	typedef mstl::bitfield<uint64_t>	TagBits;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];

@@ -15,7 +15,7 @@ set Contents {
     {{{Listado de partidas} {Game-List-Window.html}}}
     {{{Listado de jugadores} {Player-List-Window.html}}}
     {{{Listado de torneos} {Event-List-Window.html}}}
-    {{{Site List} {Site-List-Window.html}}}
+    {{{Listado de lugares} {Site-List-Window.html}}}
     {{{Listado de comentaristas} {Annotator-List-Window.html}}}
   }
   {
@@ -39,10 +39,10 @@ set Contents {
   {
     {{{Información adicional} {Overview.html} {further-information}}}
     {{{Marcadores de partida} {Game-Flags.html}}}
-    {{{Specification of database archive} {../en/Database-Archive.html}}}
+    {{{Especificación de Archivos de base de datos (inglés)} {../en/Database-Archive.html}}}
     {{{Opciones de la línea de comandos} {Command-Line-Options.html}}}
     {{{Valores de las anotaciones NAG} {NAG-Comments.html}}}
-    {{{ECO-Code} {ECO-Code.html}}}
+    {{{Código ECO} {ECO-Code.html}}}
     {{{Información de contacto} {Contact-Information.html}}}
     {{{Mapa de ruta del desarrollo} {Development-Roadmap.html}}}
     {{{Novedades} {Whats-New.html}}}

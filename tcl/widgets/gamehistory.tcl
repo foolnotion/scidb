@@ -57,7 +57,7 @@ proc Build {w args} {
 	set size [font configure $font -size]
 	set boldFont [list [list $family $size bold]]
 
-	::tk::frame $f -background white -borderwidth 0 {*}$args
+	::tk::frame $f -background white -borderwidth 0 {*}$args -takefocus 0
 	bind $f <Configure> [list $parent fit] ;# help the scrolled window
 	grid $f
 	grid anchor $parent center
@@ -75,7 +75,7 @@ proc Build {w args} {
 		-class GHist          \
 		-borderwidth 0        \
 		-highlightthickness 0 \
-		-takefocus 1          \
+		-takefocus 0          \
 		-showroot no          \
 		-showheader no        \
 		-showbuttons no       \

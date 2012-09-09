@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -20,7 +20,7 @@
 #define _mstl_list_included
 
 #include "m_vector.h"
-#include "m_pointer_iterator.h"
+#include "m_list_node.h"
 
 namespace mstl {
 
@@ -29,23 +29,97 @@ class list
 {
 public:
 
-	typedef T									value_type;
-	typedef vector<T*>						vector_type;
-	typedef list<T>							list_type;
-	typedef value_type*						pointer;
-	typedef value_type const*				const_pointer;
-	typedef pointer_iterator<T>			iterator;
-	typedef pointer_const_iterator<T>	const_iterator;
-	typedef value_type&						reference;
-	typedef value_type const&				const_reference;
-	typedef ptrdiff_t							difference_type;
-	typedef bits::size_t						size_type;
+	typedef T						value_type;
+	typedef vector<T*>			vector_type;
+	typedef list<T>				list_type;
+	typedef value_type*			pointer;
+	typedef value_type const*	const_pointer;
+	typedef value_type&			reference;
+	typedef value_type const&	const_reference;
+	typedef ptrdiff_t				difference_type;
+	typedef bits::size_t			size_type;
+
+	class iterator
+	{
+	public:
+
+		typedef ptrdiff_t	difference_type;
+		typedef T			value_type;
+		typedef T*			pointer;
+		typedef T&			reference;
+
+		iterator();
+		explicit iterator(bits::node_base* n);
+
+		bool operator==(iterator const& i) const;
+		bool operator!=(iterator const& i) const;
+
+		reference operator*() const;
+		pointer operator->() const;
+
+		iterator& operator++();
+		iterator  operator++(int);
+		iterator& operator--();
+		iterator  operator--(int);
+
+		iterator& operator+=(int n);
+		iterator& operator-=(int n);
+		iterator  operator+ (int n) const;
+		iterator  operator- (int n) const;
+
+		bits::node_base* base() const;
+
+	private:
+
+		void advance(int n);
+
+		bits::node_base* m_node;
+	};
+
+	class const_iterator
+	{
+	public:
+
+		typedef ptrdiff_t	difference_type;
+		typedef T			value_type;
+		typedef T const*	pointer;
+		typedef T const&	reference;
+
+		const_iterator();
+		explicit const_iterator(bits::node_base const* n);
+		const_iterator(iterator const& i);
+
+		const_iterator& operator=(const_iterator const& i);
+		const_iterator& operator=(iterator const& i);
+
+		bool operator==(const_iterator const& i) const;
+		bool operator!=(const_iterator const& i) const;
+
+		reference operator*() const;
+		pointer operator->() const;
+
+		const_iterator& operator++();
+		const_iterator  operator++(int);
+		const_iterator& operator--();
+		const_iterator  operator--(int);
+
+		const_iterator& operator+=(int n);
+		const_iterator& operator-=(int n);
+		const_iterator  operator+ (int n) const;
+		const_iterator  operator- (int n) const;
+
+	private:
+
+		void advance(int n);
+
+		bits::node_base const* m_node;
+	};
 
 	list();
-	explicit list(size_type n);
+	list(size_type n);
 	list(size_type n, const_reference v);
 	list(list const& v);
-	~list() throw();
+	~list();
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 	list(list&& v);
@@ -54,8 +128,11 @@ public:
 
 	list& operator=(list const& v);
 
+#if 0
 	reference operator[](size_type n);
 	const_reference operator[](size_type n) const;
+#endif
+
 	reference front();
 	const_reference front() const;
 	reference back();
@@ -76,22 +153,30 @@ public:
 	void pop_back();
 
 	iterator insert(iterator i, const_reference value);
+	void insert(iterator i, size_type n, const_reference value);
+	void insert(iterator pos, const_iterator first, const_iterator last);
 	iterator erase(iterator i);
+	iterator erase(iterator first, iterator last);
 
-	void reserve(size_type n);
-	void reserve_exact(size_type n);
 	void resize(size_type n);
 	void resize(size_type n, const_reference v);
 	void clear();
 	void swap(list& v);
-	void release();
-
-	vector_type const& base() const;
-	vector_type& base();	// use with care!
 
 private:
 
-	vector_type m_vec;
+	struct node : public bits::node_base
+	{
+		T m_data;
+	};
+
+	void init();
+
+	node* create_node(T const& x);
+	void erase(node* n);
+
+	node			m_node;
+	size_type	m_size;
 };
 
 template <typename T> void swap(list<T>& lhs, list<T>& rhs);

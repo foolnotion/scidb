@@ -235,8 +235,8 @@ tk_twm.o: ../mstl/m_algobase.ipp
 tk_twm.o: ../mstl/m_construct.h
 tk_twm.o: ../mstl/m_construct.ipp
 tk_twm.o: ../mstl/m_list.h
-tk_twm.o: ../mstl/m_pointer_iterator.h
-tk_twm.o: ../mstl/m_pointer_iterator.ipp
+tk_twm.o: ../mstl/m_list_node.h
+tk_twm.o: ../mstl/m_list_node.ipp
 tk_twm.o: ../mstl/m_list.ipp
 tk_twm.o: ../mstl/m_string.h
 tk_twm.o: ../mstl/m_string.ipp

@@ -1,6 +1,17 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #420)
+------------------------------------------------------------------------------
+* Spanish translation files updated.
+
+* mstl: new list implementation "m_list.h", the old file is renamed to
+"m_pvector.h".
+
+* Move input: pressing middle mouse button (or fullstop key) is showing
+alternative move suggestion.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #419)
 ------------------------------------------------------------------------------
 * Toolbars enhanced: scrolling implemented.

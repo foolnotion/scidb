@@ -3764,7 +3764,7 @@ cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static Tcl_Obj*
 wikiLinkList(Player const* player)
 {
-	typedef Player::AssocList	AssocList;
+	typedef Player::AssocList AssocList;
 
 	AssocList wikiLinks;
 
@@ -3773,9 +3773,12 @@ wikiLinkList(Player const* player)
 		Tcl_Obj* objs[mstl::mul2(wikiLinks.size())];
 		unsigned n = 0;
 
-		for (unsigned i = 0; i < wikiLinks.size(); ++i)
+		Player::AssocList::const_iterator i = wikiLinks.begin();
+		Player::AssocList::const_iterator e = wikiLinks.end();
+
+		for ( ; i != e; ++i)
 		{
-			Player::Assoc const& assoc = wikiLinks[i];
+			Player::Assoc const& assoc = *i;
 
 			objs[n++] = Tcl_NewStringObj(assoc.first, -1);
 			objs[n++] = Tcl_NewStringObj(assoc.second, -1);

@@ -2265,6 +2265,7 @@ proc Move {toolbar oldSide {before {}}} {
 	Repack $toolbar
 	PackToolbar $toolbar $before
 	event generate $toolbar <<ToolbarShow>>
+	after idle [namespace code [list Resize $Specs(frame:$toolbar)]]
 }
 
 
