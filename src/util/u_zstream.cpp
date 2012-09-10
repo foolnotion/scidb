@@ -401,7 +401,7 @@ uint64_t
 ZStream::goffset()
 {
 	if (m_type == GZip)
-		return gzoffset(m_handle.handle);
+		return gzoffset(gzFile(m_handle.handle));
 
 	return tellg();
 }
