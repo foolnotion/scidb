@@ -54,7 +54,6 @@ namespace util
 {
 	class Progress;
 	class BlockFile;
-	class BlockFileReader;
 	class ByteStream;
 }
 
@@ -256,7 +255,7 @@ protected:
 						mstl::string const& magic,
 						unsigned mode = 0);
 
-	static void getGameRecord(GameInfo const& info, util::BlockFileReader& reader, util::ByteStream& src);
+	static void getGameRecord(GameInfo const& info, util::BlockFile& reader, util::ByteStream& src);
 
 private:
 

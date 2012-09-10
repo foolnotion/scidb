@@ -287,10 +287,8 @@ Codec::Codec(CustomFlags* customFlags)
 
 Codec::~Codec() throw()
 {
-	if (m_asyncReader)
-		m_gameData->closeAsyncReader(m_asyncReader);
-
 	delete m_gameData;
+	delete m_asyncReader;
 	delete m_codec;
 	delete m_playerList;
 	delete m_eventList;
@@ -448,7 +446,7 @@ Codec::getGame(GameInfo const& info)
 	M_ASSERT(m_gameData);
 
 	ByteStream src;
-	getGameRecord(info, m_gameData->reader(), src);
+	getGameRecord(info, *m_gameData, src);
 	return src;
 }
 
@@ -475,7 +473,7 @@ Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
 	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
+	getGameRecord(info, *m_gameData, strm);
 	Decoder decoder(strm, *m_codec);
 	return decoder.doDecoding(consumer, tags);
 }
@@ -497,7 +495,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string* encoding)
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
 	ByteStream strm;
-	getGameRecord(info, m_gameData->reader(), strm);
+	getGameRecord(info, *m_gameData, strm);
 
 	Decoder decoder(strm, *m_codec);
 
@@ -2135,11 +2133,14 @@ Codec::useAsyncReader(bool flag)
 	if (flag)
 	{
 		if (m_asyncReader == 0)
-			m_asyncReader = m_gameData->openAsyncReader();
+		{
+			M_ASSERT(m_gameStream.is_open());
+			m_asyncReader = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength);
+		}
 	}
 	else if (m_asyncReader)
 	{
-		m_gameData->closeAsyncReader(m_asyncReader);
+		delete m_asyncReader;
 		m_asyncReader = 0;
 	}
 }

@@ -634,7 +634,7 @@ DatabaseCodec::produce(Producer& producer, Consumer& consumer, util::Progress& p
 
 
 void
-DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFileReader& reader, util::ByteStream& src)
+DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFile& reader, util::ByteStream& src)
 {
 	switch (reader.get(src, info.gameOffset(), info.gameRecordLength()))
 	{

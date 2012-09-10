@@ -38,7 +38,6 @@ namespace util
 {
 	class ByteStream;
 	class BlockFile;
-	class BlockFileReader;
 	class Progress;
 }
 
@@ -170,14 +169,14 @@ private:
 	uint16_t readIndexHeader(mstl::fstream& fstrm);
 	void checkFileVersion(mstl::fstream& fstrm, mstl::string const& magic, uint16_t fileVersion);
 
-	mstl::fstream				m_gameStream;
-	util::BlockFile*			m_gameData;
-	util::BlockFileReader*	m_asyncReader;
-	mstl::string				m_magicGameFile;
-	Lookup						m_lookup[4];
-	unsigned						m_progressFrequency;
-	unsigned						m_progressReportAfter;
-	unsigned						m_progressCount;
+	mstl::fstream		m_gameStream;
+	util::BlockFile*	m_gameData;
+	util::BlockFile*	m_asyncReader;
+	mstl::string		m_magicGameFile;
+	Lookup				m_lookup[4];
+	unsigned				m_progressFrequency;
+	unsigned				m_progressReportAfter;
+	unsigned				m_progressCount;
 };
 
 } // namespace sci
