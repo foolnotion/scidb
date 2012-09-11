@@ -1702,7 +1702,9 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 	// Make sure OpenGL's GLX extension supported.
 	if (!glXQueryExtension(dpy, &dummy, &dummy))
 	{
-		Tcl_SetResult(ogl->interp, "X server has no OpenGL GLX extension", TCL_STATIC);
+		Tcl_SetResult(	ogl->interp,
+							const_cast<char*>("X server has no OpenGL GLX extension"),
+							TCL_STATIC);
 		return DUMMY_WINDOW;
 	}
 
@@ -1731,7 +1733,9 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 			visinfo = XGetVisualInfo(dpy, VisualIDMask, &tmplate, &count);
 			if (visinfo == 0)
 			{
-				Tcl_SetResult(ogl->interp, "couldn't choose pixel format", TCL_STATIC);
+				Tcl_SetResult(	ogl->interp,
+									const_cast<char*>("couldn't choose pixel format"),
+									TCL_STATIC);
 				return DUMMY_WINDOW;
 			}
 			// fill in flags normally passed in that affect behavior.
@@ -1836,7 +1840,9 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
 			if (visinfo == 0)
 			{
-				Tcl_SetResult(ogl->interp, "couldn't choose pixel format", TCL_STATIC);
+				Tcl_SetResult(	ogl->interp,
+									const_cast<char*>("couldn't choose pixel format"),
+									TCL_STATIC);
 				return DUMMY_WINDOW;
 			}
 
@@ -1893,7 +1899,9 @@ ogl_makeWindow(Tk_Window tkwin, Window parent, ClientData instanceData)
 
 		if (ogl->ctx == 0)
 		{
-			Tcl_SetResult(ogl->interp, "could not create rendering context", TCL_STATIC);
+			Tcl_SetResult(	ogl->interp,
+								const_cast<char*>("could not create rendering context"),
+								TCL_STATIC);
 			return DUMMY_WINDOW;
 		}
 	}
