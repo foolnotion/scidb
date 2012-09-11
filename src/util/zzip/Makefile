@@ -24,8 +24,6 @@ CFLAGS	+= $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
 ALL_INCLUDE	= $(INCLUDE) $(ZLIB_INC)
 
 SRC_C = \
-	zzcat.c \
-	zzdir.c \
 	zzip-dir.c \
 	zzip-err.c \
 	zzip-file.c \
@@ -33,11 +31,6 @@ SRC_C = \
 	zzip-io.c \
 	zzip-stat.c \
 	zzip-zip.c \
-	zzipwrap-mem.c \
-	zzipwrap.c \
-	zzxorcat.c \
-	zzxorcopy.c \
-	zzxordir.c \
 
 SRC	= $(SRC_C)
 OBJS	= $(SRC_C:.c=.o)
