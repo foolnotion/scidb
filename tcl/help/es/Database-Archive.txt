@@ -1,0 +1,242 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+<!-- ------------------------------------------------------------------------ -->
+<!-- NOTE: It is not required to translate this file into different languages -->
+<!-- ------------------------------------------------------------------------ -->
+
+TITLE Archivo de base de datos
+
+<p>
+El Archivo de base de datos de Scidb está basado en un formato de archivo independiente
+con el sufijo general de archivo "<abbr>.ive</abbr>". Scidb utilizará el sufijo especial
+de archivo "<abbr>.scv</abbr>". Este formato de archivo contiene información acerca de los
+archivos incluidos, tal como el nombre, el tamaño, el método de compresión, etc.
+</p>
+
+<p>
+Este formato de archivo tiene la siguiente sintaxis (EBNF simplificado):
+</p>
+
+<verbatim><!-- don't translate -->
+Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
+Magic       = 'iveArch' LF ;
+File        = Header BinaryData ;
+Header      = HeadDelim LF HeaderInfo DataDelim ;
+HeadDelim   = LF '&lt;-- H E A D --&gt;' ;
+DataDelim   = '&lt;-- D A T A --&gt;' LF ;
+HeaderInfo  =
+  '&lt;FileName&gt;' { Space } FileName LF
+  [ '&lt;URI&gt;' { Space } Number LF ]
+  [ '&lt;FileSize&gt;' { Space } Number LF ]
+  [ '&lt;Size&gt;' { Space } Number LF ]
+  [ '&lt;Compression&gt;' { Space } Compression LF ]
+  [ '&lt;Checksum&gt;' { Space } Crc32Number LF ]
+  [ '&lt;Modified&gt;' { Space } Timestamp LF ]
+  [ '&lt;Encoding&gt;' { Space } Encoding LF ] ;
+Space       = HT | " " ;
+Compression = 'raw' | 'zlib' | 'lzo' ;
+BinaryData  = { Byte } ;
+ArchInfo    = '&lt;TotalSize&gt;' { Space } Number ;
+UserInfo    = LF { Attribute LF } Attribute ;
+Attribute   = AttrName { Space } AttrValue ;
+AttrName    = "&lt;" Identifier "&gt;" ;
+Identifier  = AsciiLetter { AsciiLetter } ;
+AttrValue   = AsciiGraphical { AsciiGraphical } ;
+Timestamp   = Date " " Time ;
+Date        = Year "-" Month "-" Day ;
+Time        = Hour ":" Minute ":" Second ;
+</verbatim>
+
+<p>
+<b><code>&lt;FileName&gt;</code></b> corresponde a cualquier nombre de archivo
+válido, independientemente de la plataforma, sin una ruta precedente. Un nombre
+de archivo independiente a la plataforma no puede contener los caracteres "&lt;" 
+y "&gt;"
+</p>
+
+<p>
+<b><code>&lt;URI&gt;</code></b> es un identificador unificado de recursos,
+por ejemplo <code>http://www.chess-and-more.com/any-database.scv</code>, o
+<code>file:///home/chris/Chess/MyBase.sci</code>. Es una decisión del 
+decodificador el modo en el que usará la especificación de ruta precedente.
+</p>
+
+<p>
+<b><code>&lt;Size&gt;</code></b> es el tamaño del documento contenido 
+dentro del Archivo.
+</p>
+
+<p>
+<b><code>&lt;FileSize&gt;</code></b> es el tamaño del archivo desempaquetado.
+Esta información del tamaño interno es, simultáneamente, el desplazamiento
+hacia la siguiente cabecera de archivo.
+</p>
+
+<p>
+<b><code>&lt;TotalSize&gt;</code></b> contiene la suma de todos
+los archivos desempaquetados. Este atributo puede no estar 
+disponible si la suma es desconocida.
+</p>
+
+<p>
+<b><code>&lt;Checksum&gt;</code></b> es una suma de chequeo que se refiere
+a la información que hay dentro de los archivos y que puede computarse con el
+método CRC32.
+</p>
+
+<p>
+<b><code>&lt;Modified&gt;</code></b> contiene la fecha y hora de la
+última modificación (GMT); el decodificador puede utilizar esta
+información para restablecer dicha fecha y hora en el archivo extraído.
+</p>
+
+<p>
+<b><code>&lt;Encoding&gt;</code></b> es el grupo de caracteres especificado.
+</p>
+
+<p>
+Los atributos <code>&lt;FileName&gt;</code>, <code>&lt;URI&gt;</code>,
+<code>&lt;FileSize&gt;</code>, <code>&lt;Size&gt;</code>,
+<code>&lt;Compression&gt;</code>, <code>&lt;Checksum&gt;</code>,
+y <code>&lt;Modified&gt;</code> pueden enumerarse en orden aleatorio.
+El modo predeterminado para el atributo <code>&lt;Compression&gt;</code> es
+'<code>raw</code>' (que significa que no se requiere descompresión).
+</p>
+
+<p>
+si <code>URI</code> es un enlace externo (por ejemplo <code>http://*</code>),
+<code>Size</code> puede que no esté disponible y <code>FileSize</code>
+también podría desconocerse (no estar disponible). En este caso, usualmente 
+la sección de información se encuentra vacía (línea vacía). Pero la información
+de archivo podría estar disponible y  ser utilizada si no fuese posible 
+acceder al enlace externo. Así, el atributo <code>Size</code> debe especificarse
+de todos modos.
+</p>
+
+<p>
+<b><code>Magic</code></b> se elige siempre y cuando se aseguren los siguientes puntos:
+</p>
+
+<ul>
+  <li>Que sea legible con un editor de textos.</li>
+  <li>Que no se confunda con un archivo de texto ordinario.</li>
+</ul>
+
+<annotation>
+Todo el formato de archivo está diseñado de modo que sea legible y editable con cualquier editor
+de texto adecuado (que permita los datos binarios).
+</annotation>
+
+<p>
+En el formato "<abbr>.scv</abbr>" el atributo <b><code>UserInfo</code></b> tiene la 
+siguiente definición:
+</p>
+
+<verbatim><!-- don't translate -->
+UserInfo    = { LF Attributes } ;
+Attributes  =
+  "&lt;Format&gt;" { Space } Formats
+  "&lt;Type&gt;" { Space } Type
+  [ "&lt;Count&gt;" { Space } Number ] ;
+Type        = 'single' | 'multi' ;
+Formats     = Format { "," Format } ;
+Format      = 'sci' | 'si3' | 'si4' |
+              'cbh' | 'pgn' | 'gz' ;
+</verbatim>
+
+<p>
+<b><code>&lt;Count&gt;</code></b> es el número de partidas en la base de datos. 
+Si esta información se desconoce (por ejemplo, en el caso de archivos PGN), 
+entonces este atributo no está disponible.
+</p>
+
+<p>
+<b><code>&lt;Format&gt;</code></b> describe el formato de la base de datos extraída.
+</p>
+
+<p>
+En general, los Archivos contienen sólo una base de datos (<b><code>&lt;Type&gt;</code></b>
+= 'single').  Pero también está previsto que varias bases de datos puedan empaquetarse en un
+Archivo. En este caso <code>&lt;Type&gt;</code> tendría el valor 'multi' y
+<code>&lt;Format&gt;</code> contendrá una lista separada por comas de todos los formatos
+de bases de datos comprendidos.  Además, <code>&lt;Count&gt;</code> es la suma
+de todas las partidas en todas las bases de datos.
+</p>
+
+<p>
+El orden de los atributos <code>&lt;Count&gt;</code>, <code>&lt;Format&gt;</code>,
+y <code>&lt;Type&gt;</code> es arbitrario.
+</p>
+
+<p>
+Al final, dos ejemplos simples de los Archivos:
+</p>
+
+<verbatim><!-- don't translate -->
+iveArch
+&lt;TotalSize&gt; 468
+&lt;Count&gt; 1
+&lt;Format&gt; pgn
+&lt;Type&gt; single
+&lt;-- H E A D --&gt;
+&lt;Name&gt; one-game.pgn
+&lt;Size&gt; 468
+&lt;Compression&gt; raw
+&lt;Checksum&gt; 3225351655
+&lt;Modified&gt; 2012-02-21 18:31:12
+&lt;-- D A T A --&gt;
+[Event "London knockout"]
+[Site "London"]
+[Date "1851.05.27"]
+[Round "1.1"]
+[White "Staunton, Howard"]
+[Black "Brodie, Alfred"]
+[Result "1-0"]
+[EventDate "1851.05.27"]
+[EventCountry "ENG"]
+[EventType "k.o."]
+[EventRounds "3"]
+[ECO "C44"]
+[TimeMode "normal"]
+[Source "Tournaments"]
+[SourceDate "2004.03.11"]
+
+1.e4 e5 2.Nf3 Nc6 3.d4 exd4 4.Bc4 Bb4+ 5.c3 dxc3 6.O-O
+Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
+12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0
+</verbatim>
+
+<verbatim><!-- don't translate -->
+iveArch
+&lt;Format&gt; pgn
+&lt;Type&gt; multi
+&lt;-- H E A D --&gt;
+&lt;FileName&gt; tiny-1.pgn
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-1.pgn
+&lt;-- D A T A --&gt;
+
+&lt;-- H E A D --&gt;
+&lt;FileName&gt; tiny-2.pgn
+&lt;URI&gt; http://scidb.sf.net/bases/tiny-2.pgn
+&lt;-- D A T A --&gt;
+</verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -1,0 +1,52 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Explorador de partidas
+TITLE El Explorador de partidas
+
+<p>
+El Explorador de partidas permite seleccionar cualquier partida de una lista
+de partidas abierta. El Explorador está ligado a dicho listado de partidas. No se podrá cerrar
+el listado de partidas, ni cargar otra partida, mientras el Explorador continúe
+abierto.
+</p>
+
+<p>
+El Explorador de partidas muestra dichas partidas en un formato sencillo, es decir, 
+sin anotaciones, comentarios o subvariantes. Está dirigido especialmente a la
+visualización de un Listado de partidas.
+</p>
+
+<p>
+Para configurar la salida de texto existe un menú contextual.
+</p>
+
+<p>
+El encabezado de la partida contiene tres campos: el Torneo y los Nombres del jugador. 
+Manteniendo apretado el botón central del ratón aparece un cuadro de información. Al
+cliquear sobre el Nombre de un jugador aparece la Ficha de dicho jugador.
+</p>
+
+<p>
+Si el puntero del ratón se encuentra fuera de la Ventana de texto (de la partida), pero aún
+dentro del cuadro de diálogo, girando la rueda se pueden oir las sucesivas jugadas.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

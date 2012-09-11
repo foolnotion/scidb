@@ -18,41 +18,41 @@
 
 TITLE Novità 
 
-<ul>
-  <li>Più pagine di aiuto</li>
+<ul style="padding: 5px;">
+  <li class="space">Più pagine di aiuto</li>
 <NEW>
-  <li>Move input: pressing middle mouse button (or fullstop key) is showing alternative move suggestion</li>
+  <li class="space">Move input: pressing middle mouse button (or fullstop key) is showing alternative move suggestion</li>
 </NEW>
-  <li>Nuova tab database: lista dei luoghi</li>
-  <li>Modificata modalità a tutto schermo</li>
-  <li>Tool da linea di comando cdb2sci aggiunto per la conversione di database al formato Scidb (.sci)</li>
-  <li>Widget HTML rivisitato: notevole risparmio di risorse</li>
-  <li>Integrata localizzazione in svedese (ringraziamenti a Lars Ekman)</li>
-  <li>Traduzione in spagnolo ripristinata (grazie a Juan Carlos Vásquez)</li>
+  <li class="space">Nuova tab database: lista dei luoghi</li>
+  <li class="space">Modificata modalità a tutto schermo</li>
+  <li class="space">Tool da linea di comando cdb2sci aggiunto per la conversione di database al formato Scidb (.sci)</li>
+  <li class="space">Widget HTML rivisitato: notevole risparmio di risorse</li>
+  <li class="space">Integrata localizzazione in svedese (ringraziamenti a Lars Ekman)</li>
+  <li class="space">Traduzione in spagnolo ripristinata (grazie a Juan Carlos Vásquez)</li>
 <NEW>
-  <li>Spanish help pages added (thanks to Carlos Fernando GonzÃ¡lez)</li>
+  <li class="space">Spanish help pages added (thanks to Carlos Fernando GonzÃ¡lez)</li>
 </NEW>
-  <li>Identificazione automatica del set caratteri durante la codifica delle partite (riguarda i formati si3/si4/cbh)</li>
-  <li>Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
-  <li>Migliorata finestra di selezione file</li>
-  <li>Migliorata finestra di salvataggio/sovrascrittura partite</li>
-  <li>Scheda giocatore implementata</li>
-  <li>Archiviazione database integrata</li>
-  <li>Interfaccia di configurazione per sfogliare\modificare partite</li>
-  <li>Trascinamento (Drag&amp;Drop) dei file integrato: si possono trascinare sul selezionatore di database</li>
+  <li class="space">Identificazione automatica del set caratteri durante la codifica delle partite (riguarda i formati si3/si4/cbh)</li>
+  <li class="space">Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
+  <li class="space">Migliorata finestra di selezione file</li>
+  <li class="space">Migliorata finestra di salvataggio/sovrascrittura partite</li>
+  <li class="space">Scheda giocatore implementata</li>
+  <li class="space">Archiviazione database integrata</li>
+  <li class="space">Interfaccia di configurazione per sfogliare\modificare partite</li>
+  <li class="space">Trascinamento (Drag&amp;Drop) dei file integrato: si possono trascinare sul selezionatore di database</li>
 <NEW>
-  <li>Drag&amp;Drop in file selection dialog implemented</li>
+  <li class="space">Drag&amp;Drop in file selection dialog implemented</li>
 </NEW>
-  <li>Finestra Database: blocco/sblocco delle tab integrato</li>
-  <li>Rivisto input mosse col mouse (se il suggerimento è disabilitato)</li>
-  <li>Rimossa barra menu: c'è invece un semplice menu principale; questo è allo stato-dell'arte e il layout sarà migliorato</li>
-  <li>Compressione database (.sci only) integratata</li>
-  <li>Integrata installazione/aggiornamento via internet delle foto dei giocatori</li>
-  <li>Installazione dei caratteri ChessBase integrata</li>
-  <li>Tabella tornei: visualizzazione opzionale di vincite/patte/perse</li>
-  <li>Supportato scorrimento con rotella del mouse per tutte le liste e la scacchiera</li>
-  <li>Notazione delle mosse disponibile per Algebrica (normal, breve e completa), Inglese, Corrispondenza e Telegrafo</li>
-  <li>Alcune icone sono state ridisegnte</li>
+  <li class="space">Finestra Database: blocco/sblocco delle tab integrato</li>
+  <li class="space">Rivisto input mosse col mouse (se il suggerimento è disabilitato)</li>
+  <li class="space">Rimossa barra menu: c'è invece un semplice menu principale; questo è allo stato-dell'arte e il layout sarà migliorato</li>
+  <li class="space">Compressione database (.sci only) integratata</li>
+  <li class="space">Integrata installazione/aggiornamento via internet delle foto dei giocatori</li>
+  <li class="space">Installazione dei caratteri ChessBase integrata</li>
+  <li class="space">Tabella tornei: visualizzazione opzionale di vincite/patte/perse</li>
+  <li class="space">Supportato scorrimento con rotella del mouse per tutte le liste e la scacchiera</li>
+  <li class="space">Notazione delle mosse disponibile per Algebrica (normal, breve e completa), Inglese, Corrispondenza e Telegrafo</li>
+  <li class="space">Alcune icone sono state ridisegnte</li>
 </ul>
 
 END

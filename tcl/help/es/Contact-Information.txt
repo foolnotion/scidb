@@ -37,7 +37,7 @@ Son bienvenidos los voluntarios para:
   <li>Escribir las páginas de ayuda</li>
 </dir>
 
-Por favor envíele un mensaje al autor para poser coordinar estas tareas.
+Por favor, envíele un mensaje al autor para poder coordinar estas tareas.
 
 <box>
 <p>

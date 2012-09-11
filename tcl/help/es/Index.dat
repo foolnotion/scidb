@@ -1,19 +1,36 @@
 set Index {
   { B
     {
-      {{Barras de tareas} {Toolbar-Usage.html} {}}
+      {{Barras de herramientas} {Toolbar-Usage.html} {}}
       {{Base temporal (Clipbase)} {Clipbase.html} {}}
     }
   }
   { C
     {
       {{Clipbase} {Clipbase.html} {}}
+      {{Código ECO} {ECO-Code.html} {}}
+    }
+  }
+  { D
+    {
+      {{Diálogo Selección de archivos} {File-Selection-Dialog.html} {}}
+    }
+  }
+  { E
+    {
+      {{Enciclopedia de Aperturas de Ajedrez} {ECO-Code.html} {}}
+      {{Explorador de partidas} {Game-Browser.html} {}}
     }
   }
   { F
     {
       {{Formatos de bases de datos} {Database-Formats.html} {}}
       {{Formatos de bases de datos} {Database-Formats.html} {}}
+    }
+  }
+  { G
+    {
+      {{Glifos de anotación numérica} {NAG-Comments.html} {}}
     }
   }
   { I
@@ -35,12 +52,19 @@ set Index {
   }
   { P
     {
+      {{Panorámica del Explorador de partidas} {Game-Overview.html} {}}
+      {{Panorámica del Explorador de partidas} {Game-Overview.html} {}}
       {{Página de inicio} {Contact-Information.html} {}}
     }
   }
   { S
     {
       {{Sitio Web} {Contact-Information.html} {}}
+    }
+  }
+  { V
+    {
+      {{Valores de las anotaciones NAG} {NAG-Comments.html} {}}
     }
   }
 }

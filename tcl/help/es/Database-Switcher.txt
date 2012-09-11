@@ -33,7 +33,7 @@ información.
 </p>
 
 <p>
-Funcionalidades del intercambiador de bases de datos:
+Funciones del intercambiador de bases de datos:
 </p>
 
 <ul>
@@ -51,7 +51,7 @@ Se encuentra disponible un menú contextual para la administración de la base d
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
-Abre una caja que muestra variada información sobre la base de datos.
+Abre una caja que muestra información variada sobre la base de datos.
 </p>
 
 <p>
@@ -70,7 +70,7 @@ de datos.
 
 <p>
 <menuitem>%::application::database::mc::FileCreate%</menuitem>
-Crea un <a href="Database-Formats.html#Database-Archive">Archivo de base de datos</a>.
+Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
 Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
 para seleccionar un nombre de archivo.
 </p>
@@ -92,7 +92,7 @@ ninguna partida con un marcador de eliminación.
 
 <p>
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Selecciona un icono para esta base.
+Selecciona un ícono para esta base.
 <note/>Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
@@ -129,7 +129,7 @@ Abre una base de datos a través del historial de bases de datos.
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>
-Selección del tamaño de los símbolos de base de datos.
+Selecciona el tamaño de los símbolos de base de datos.
 </p>
 
 <dir><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></dir>

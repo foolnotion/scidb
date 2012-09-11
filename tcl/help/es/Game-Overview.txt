@@ -1,0 +1,67 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Panorámica del Explorador de partidas
+INDEX Panorámica del Explorador de partidas
+TITLE La Panorámica del Explorador de partidas
+
+<p>
+La Panorámica del Explorador de partidas se puede aplicar a cualquier partida de una lista
+de partidas abierta. El Explorador está ligado a dicho listado de partidas. No se podrá cerrar
+el listado de partidas, ni cargar otra partida, mientras el Explorador continúe
+abierto.
+</p>
+
+<p>
+La Panorámica del Explorador de partidas divide las partidas en intervalos aproximadamente
+iguales y ofrece una panorámica de las posiciones. El número de posiciones depende del 
+tamaño de la pantalla y de la configuración elegida. Debajo de cada posición puede verse 
+la sucesión de jugadas que llevaron a ella, es decir que la última imagen muestra la posición 
+final. A veces no se ven todas las jugadas en la ventana de texto. En estos casos se puede 
+arrastrar hacia arriba o abajo la barra de desplazamiento manteniendo apretado el botón izquierdo
+del ratón, o puede desplazarse por el texto usando la rueda del ratón dentro del cuadro 
+de texto (ver el gráfico).
+</p>
+
+<ul><img src="../images/game-browser-scroll-text.png"/></ul>
+
+<p>
+El menú contextual de la Panorámica del Explorador de partidas ofrece las siguientes funciones:
+</p>
+
+<ul>
+	<li>Girar el Tablero</li>
+	<li>Cargar la partida actual en el Editor de partidas</li>
+	<li>Cargar la primera partida del Listado de partidas</li>
+	<li>Cargar la última partida del Listado de partidas</li>
+</ul>
+
+<p>
+Además, se pueden realizar las siguientes acciones:
+</p>
+
+<ul>
+	<li>Cargar la partida previa del Listado de partidas</li>
+	<li>Cargar la partida siguiente del Listado de partidas</li>
+	<li>Cerrar el Explorador de partidas</li>
+	<li>Abrir esta página de Ayuda</li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

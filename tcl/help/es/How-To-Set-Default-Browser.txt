@@ -25,7 +25,7 @@ Existen cuatro posibilidades para definir el explorador de Internet predetermina
 
 <ol>
   <li><p>
-    El valor de la variable de entorno <code>BROWSER</code> se usará al inicio del
+    Usar el valor de la variable de entorno <code>BROWSER</code> al inicio del
     programa. Ejemplo:<br/>
     <box>
       <p><code>export BROWSER=</code>&#8203;<url>/usr/bin/firefox</url><br/></p>
@@ -33,7 +33,7 @@ Existen cuatro posibilidades para definir el explorador de Internet predetermina
   </p></li>
 
   <li><p>
-    Se utilizará el enlace <nobr><code>"x-www-browser"</code></nobr>.
+    Usar el enlace <nobr><code>"x-www-browser"</code></nobr>.
     En Ubuntu/Debian este enlace puede actualizarse a explorador de Internet predeterminado
     con:
     <box>

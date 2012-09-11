@@ -18,36 +18,36 @@
 
 TITLE What's new?
 
-<ul>
-  <li>More help pages</li>
-  <li>Move input: pressing middle mouse button (or fullstop key) is showing alternative move suggestion</li>
-  <li>New database tab: list of sites</li>
-  <li>Full-screen mode tweaked</li>
-  <li>Command line tool cdb2sci added for conversion of databases to Scidb format (.sci)</li>
-  <li>HTML widget reworked: saving resources in a highly significant way</li>
-  <li>Swedish localisation integrated (thanks to Lars Ekman)</li>
-  <li>Spanish translation reactivated (thanks to Juan Carlos Vásquez)</li>
-  <li>Spanish help pages added (thanks to Carlos Fernando González)</li>
-  <li>Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
-  <li>Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
-  <li>File selection dialog improved</li>
-  <li>Game-Save/Replace dialog improved</li>
-  <li>Player notecards implemented</li>
-  <li>Archiving databases integrated</li>
-  <li>Setup dialog for game browser/editor</li>
-  <li>Drag&amp;Drop of files integrated: database switcher is drop target</li>
-  <li>Drag&amp;Drop in file selection dialog implemented</li>
-  <li>Database window: docking/undocking of list tabs integrated</li>
-  <li>Move input with mouse overworked (if move suggestion is disabled)</li>
-  <li>Menu bar removed: instead a simple main menu exists; this is state-of-the-art,
+<ul style="padding: 5px;">
+  <li class="space">More help pages</li>
+  <li class="space">Move input: pressing middle mouse button (or fullstop key) is showing alternative move suggestion</li>
+  <li class="space">New database tab: list of sites</li>
+  <li class="space">Full-screen mode tweaked</li>
+  <li class="space">Command line tool cdb2sci added for conversion of databases to Scidb format (.sci)</li>
+  <li class="space">HTML widget reworked: saving resources in a highly significant way</li>
+  <li class="space">Swedish localisation integrated (thanks to Lars Ekman)</li>
+  <li class="space">Spanish translation reactivated (thanks to Juan Carlos Vásquez)</li>
+  <li class="space">Spanish help pages added (thanks to Carlos Fernando González)</li>
+  <li class="space">Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
+  <li class="space">Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
+  <li class="space">File selection dialog improved</li>
+  <li class="space">Game-Save/Replace dialog improved</li>
+  <li class="space">Player notecards implemented</li>
+  <li class="space">Archiving databases integrated</li>
+  <li class="space">Setup dialog for game browser/editor</li>
+  <li class="space">Drag&amp;Drop of files integrated: database switcher is drop target</li>
+  <li class="space">Drag&amp;Drop in file selection dialog implemented</li>
+  <li class="space">Database window: docking/undocking of list tabs integrated</li>
+  <li class="space">Move input with mouse overworked (if move suggestion is disabled)</li>
+  <li class="space">Menu bar removed: instead a simple main menu exists; this is state-of-the-art,
       and the layout will be improved</li>
-  <li>Compacting database (.sci only) integrated</li>
-  <li>Installation/update via Internet of player photo files integrated</li>
-  <li>Installation of ChessBase fonts integrated</li>
-  <li>Tournament table: optional display of win/draw/loss</li>
-  <li>Mouse wheel support for all lists and the chess board</li>
-  <li>Algebraic (normal, short, and long), English, Correspondence, and Telegraphic move notations available</li>
-  <li>Some icons newly designed</li>
+  <li class="space">Compacting database (.sci only) integrated</li>
+  <li class="space">Installation/update via Internet of player photo files integrated</li>
+  <li class="space">Installation of ChessBase fonts integrated</li>
+  <li class="space">Tournament table: optional display of win/draw/loss</li>
+  <li class="space">Mouse wheel support for all lists and the chess board</li>
+  <li class="space">Algebraic (normal, short, and long), English, Correspondence, and Telegraphic move notations available</li>
+  <li class="space">Some icons newly designed</li>
 </ul>
 
 END

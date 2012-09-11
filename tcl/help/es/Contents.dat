@@ -6,9 +6,9 @@ set Contents {
     {{{Generalidades} {Overview.html} {general}}}
     {{{Formatos de bases de datos} {Database-Formats.html}}}
     {{{Uso del diálogo Selección de archivos} {File-Selection-Dialog.html}}}
-    {{{Uso de las barras de tareas} {Toolbar-Usage.html}}}
+    {{{Uso de las Barras de herramientas} {Toolbar-Usage.html}}}
     {{{La base temporal (Clipbase)} {Clipbase.html}}}
-    {{{Como definir el explorador de Internet predeterminado} {How-To-Set-Default-Browser.html}}}
+    {{{Cómo definir el explorador de Internet predeterminado} {How-To-Set-Default-Browser.html}}}
   }
   {
     {{{Ventanas de listado en Scidb} {Overview.html} {list-windows}}}
@@ -21,20 +21,20 @@ set Contents {
   {
     {{{Ventanas y diálogos en Scidb} {Overview.html} {windows-and-dialogs}}}
     {{{Intercambiador de bases de datos} {Database-Switcher.html}}}
-    {{{Buscador de partidas} {Game-Browser.html}}}
-    {{{Panorámica de la partida} {Game-Overview.html}}}
-    {{{Ventana de texto de la partida} {Game-Text-Window.html}}}
+    {{{Explorador de partidas} {Game-Browser.html}}}
+    {{{Panorámica del Explorador de partidas} {Game-Overview.html}}}
+    {{{Ventana Texto de la partida} {Game-Text-Window.html}}}
     {{{Historial de la partida} {Game-History-Window.html}}}
     {{{Tablero} {Board-Window.html}}}
     {{{Ventana de árbol} {Tree-Window.html}}}
-    {{{Ventana de árbol de partidas} {Tree-Games-Window.html}}}
+    {{{Ventana Árbol de partidas} {Tree-Games-Window.html}}}
     {{{Editor de comentarios} {Comment-Editor-Dialog.html}}}
     {{{Paleta de marcadores de escaques} {Mark-Palette-Dialog.html}}}
-    {{{Diálogo de Editar posición en el tablero} {Board-Setup-Dialog.html}}}
-    {{{Diálogo de Disposición de la posición inicial} {Start-Position-Setup-Dialog.html}}}
-    {{{Ventana de Tabla cruzada} {Crosstable-Window.html}}}
-    {{{Diálogo de Importar partidas PGN} {PGN-Import-Dialog.html}}}
-    {{{Diálogo de Exportar base de datos} {Database-Export-Dialog.html}}}
+    {{{Diálogo Editar posición en el tablero} {Board-Setup-Dialog.html}}}
+    {{{Diálogo Disposición de la posición inicial} {Start-Position-Setup-Dialog.html}}}
+    {{{Ventana Tabla cruzada} {Crosstable-Window.html}}}
+    {{{Diálogo Importar partidas PGN} {PGN-Import-Dialog.html}}}
+    {{{Diálogo Exportar base de datos} {Database-Export-Dialog.html}}}
   }
   {
     {{{Información adicional} {Overview.html} {further-information}}}

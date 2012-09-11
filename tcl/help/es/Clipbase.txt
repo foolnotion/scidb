@@ -29,14 +29,13 @@ que la capacidad de esta base de datos es limitada. El nombre predefinido para e
 de datos es <b>%::application::database::mc::T_Clipbase%</b>.
 </p>
  
-<!-- p>
 La base temporal es útil como una base de datos temporal, para unificar los resultados de
 búsquedas en múltiples bases de datos, o para tratar los resultados como una base de datos
 independiente. 
-</p -->
+</p>
    
 <p>
-Base temporal no puede cerrarse. Existe una función de menú para vaciarla
+La Base temporal no puede cerrarse. Existe una función de menú para vaciarla
 (ver <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>

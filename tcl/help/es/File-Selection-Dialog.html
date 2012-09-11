@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/es/File-Selection-Dialog.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='es'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="es" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Ayuda: El diálogo Selección de archivos</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">El diálogo Selección de archivos</h1>
+</div>
+
+<p>
+El cuadro de diálogo Selección de archivos se compone de seis partes:
+</p>
+
+<ul>
+  <li><a href="#Navigation">Navegación de directorios</a></li>
+  <li><a href="#Bookmarks">Marcadores</a></li>
+  <li><a href="#FileList">Listado de archivos</a></li>
+  <li><a href="#FileName">Nombre de archivo</a></li>
+  <li><a href="#FilesType">Selección del tipo de archivo</a></li>
+  <li><a href="#Encoding">Selección de la codificación</a></li>
+</ul>
+
+<p>
+Soporte de Arrastrar &amp; Soltar en el Listado de archivos:
+</p>
+
+<ul><li><a href="#DND">Arrastrar &amp; Soltar</a></li></ul>
+</ul>
+
+<h3 id="Navigation">Navegación de directorios</h3>
+
+<p>
+Esta barra muestra la ruta de ubicación del Directorio actual y permite un rápido cambio 
+al Directorio raíz, así como a los directorios subordinados.
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-navigation-folder.png" alt="folder" /></li></ul>
+
+<p>
+Se pueden seleccionar los directorios previos haciendo clic en sus botones.
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-navigation-arrow.png" alt="arrow" /></li></ul>
+
+<p>
+Se puede acceder a los directorios subordinados haciendo clic en el botón de flecha 
+correspondiente.
+</p>
+
+<h3 id="Bookmarks">Marcadores</h3>
+
+<p>
+Aquí el usuario puede crear o eliminar sus propias referencias a los directorios. Para 
+este fin se puede utilizar el menú contextual o la Barra de herramientas. Manteniendo 
+pulsado el botón central del ratón sobre un enlace se muestra la ruta correspondiente.
+</p>
+
+<p>
+Existen referencias internas que no se pueden eliminar:
+</p>
+
+<h4><img src="../images/fsbox-favorites.png" alt="favorites" /> Favoritoes</h4>
+
+<p>
+Esta carpeta contiene los Directorios más visitados.
+</p>
+
+<h4><img src="../images/fsbox-visited.png" alt="visited" /> Visitado por última vez</h4>
+
+<p>
+En esta carpeta están incluidos los Directorios visitados más recientemente.
+</p>
+
+<h4><img src="../images/fsbox-filesystem.png" alt="filesystem" /> Sistema de archivos</h4>
+
+<p>
+Esta entrada permite la selección directa de la raíz del Directorio de archivos.
+</p>
+
+<h4><img src="../images/fsbox-desktop.png" alt="desktop" /> Escritorio</h4>
+
+<p>
+Esta carpeta muestra todos los enlaces a Directorios creados en el <code>~/</code><code>Escritorio/</code>.
+Estos son, por lo general, los enlaces que se muestran en el Escritorio.
+<br/><img src="../images/note.png" alt="note" /> Esta referencia sólo existe cuando el Directorio <code>~/</code><code>Desktop/</code> está disponible.
+</p>
+
+<h4><img src="../images/fsbox-trash.png" alt="trash" /> Papelera</h4>
+
+<p>
+Bajo esta referencia se listan los componentes de la Papelera.
+<br/><img src="../images/note.png" alt="note" /> Esta referencia sólo existe en KDE/Unix.
+</p>
+
+<h4><img src="../images/fsbox-home.png" alt="home" /> Inicio</h4>
+
+<p>
+Esta entrada permite una selección directa del Directorio de inicio del usuario.
+</p>
+
+<!--
+<h4>Gestión de Marcadores</h4>
+
+<p>
+A través del menú contextual o de la Barra de herramientas son posibles las siguientes
+acciones de gestión de Marcadores:
+</p>
+
+<h4><img src="../images/fsbox-add.png" alt="add" /> Agregar Marcador '%s'</h4>
+
+<h4><img src="../images/fsbox-minus.png" alt="minus" /> Quitar Marcador '%s'</h4>
+
+<h4><img src="../images/fsbox-rename.png" alt="rename" /> Renombrar Marcador '%s'</h4>
+
+<h3 id="FileList">Listado de archivos</h3>
+-->
+
+<h3 id="FileList">Listado de archivos</h3>
+
+<p>
+El Listado de archivos es una especialización de los archivos Scidb. Es decir que toda operación 
+relacionada con una base de datos se ejecuta en los archivos, aunque sólo se enumerará en el archivo 
+principal (en general, el archivo índice). De este modo, el usuario no necesita preocuparse sobre 
+los detalles de los <a href="Database-Formats.html">Formatos de bases de datos</a>.
+</p>
+
+<p>
+Mantener pulsado el botón central sobre los Archivos presentará su información.
+</p>
+
+<p>
+Las operaciones de archivo en detalle:
+</p>
+
+<h4><img src="../images/fsbox-delete.png" alt="delete" /> Eliminar</h4>
+
+<p>
+Elimina la base de datos seleccionada. En KDE/Unix la enviará a la Papelera; de lo contrario 
+se efectuaría una eliminación física, que no sería pasible de revertir. En cualquier caso, hay 
+que confirmar está operación en un cuadro de diálogo de seguridad.
+</p>
+
+<h4><img src="../images/fsbox-rename.png" alt="rename" /> Renombrar</h4>
+
+<p>
+Renombra la base de datos seleccionada. La operación se puede dejar sin efecto con la tecla
+<kbd class="key">Esc</kbd>. Se comprueba si el nuevo nombre de archivo es válido, considerando los detalles 
+de los sistemas operativos soportados, así como el intercambio entre los diferentes sistemas 
+operativos.
+</p>
+
+<h4><img src="../images/fsbox-duplicate.png" alt="duplicate" /> Duplicar</h4>
+
+<p>
+Se duplica la base de datos seleccionada luego de elegir un nuevo nombre de archivo. 
+Esta operación se puede abortar con la tecla <kbd class="key">Esc</kbd>. Ninguna base de datos existente 
+se sobreescribe; no es posible sobreescribir una base de datos existente.
+</p>
+
+<h4><img src="../images/fsbox-archive.png" alt="archive" /> Crear Archivo</h4>
+
+<p>
+Archiva la base de datos actualmente seleccionada. El nombre del Archivo se suministra mediante
+el cuadro de diálogo Selección de archivos.
+</p>
+
+<h4><img src="../images/fsbox-newfolder.png" alt="newfolder" /> Nueva Carpeta</h4>
+
+<p>
+Se crea una nueva carpeta, pero sólo tras introducir un nombre válido. Apretando <kbd class="key">Esc</kbd> 
+se puede dejar sin efecto esta operación. No es posible sobreescribir una ya existente.
+</p>
+
+<h3 id="FileName">Nombrar archivo</h3>
+
+<p>
+Este campo le permite introducir directamente el nombre del archivo, con una extensión opcional
+para seleccionar el formato deseado para la base de datos. Si no se define un formato para la base
+de datos, un formato predeterminado se seleccionará automáticamente. Éste será el primer formato 
+que aparezca entre los archivos seleccionados.
+</p>
+
+<h3 id="FilesType">Seleccionar Tipo de archivo</h3>
+
+<p>
+Aquí puede seleccionar el tipo de archivo para su base de datos. Se puede ver un panorama general
+de los tipos de formatos de bases de datos en
+<a href="Database-Formats.html">Formatos de bases de datos</a>.
+</p>
+
+<h3 id="Encoding">Seleccionar codificación</h3>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-encoding.png" alt="encoding" /></li></ul>
+
+<p>
+La selección de la codificación adecuada depende del Formato de la base de datos.
+Encontrará más información disponible en <a href="Database-Formats.html">Formatos de bases de datos</a>. 
+En la mayoría de los casos, sin embargo, será suficiente la auto-detección.
+</p>
+
+<h3 id="DND">Arrastrar &amp; Soltar</h3>
+
+<p>
+El Visor de archivos soporta Arrastrar &amp; Soltar. De esta manera se pueden manejar 
+(copiar o enlazar) las bases de datos con gestores de archivos externos. Además, mediante
+este medio se pueden abrir múltiples bases de datos sin depender del Selector de archivos; 
+es decir, mediante el manejo de las bases de datos en el
+<a href="Database-Switcher.html">Intercambiador de bases de datos</a>.
+</p>
+
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+Todas las operaciones de Arrastrar&amp;Soltar se realizan sobre bases de datos completas, es 
+decir, sobre todos los archivos asociados a una base de datos determinada.
+</div>
+
+</body>
+</html>

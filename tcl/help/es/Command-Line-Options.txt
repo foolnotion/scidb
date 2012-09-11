@@ -129,7 +129,7 @@ Al inicio del programa se encuentran disponibles las siguientes opciones en la l
     <td class="standard">
       Actualiza o instala las fotos de los jugadores. Luego de hacerlo terminará el programa.
       <br/><br/>
-      La recomendación básica es utilizar la funcionalidad de actualización o instalación a través 
+      La recomendación básica es utilizar la función de actualización o instalación a través 
       de la interface gráfica de usuario.
       <br/><br/>
       Unix:

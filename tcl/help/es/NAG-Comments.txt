@@ -1,0 +1,108 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Valores de las anotaciones NAG
+INDEX Glifos de anotación numérica
+TITLE Valores de las anotaciones NAG
+
+<annotation>
+<!-- Translators: don't translate first description, instead  -->
+<!-- Translators: de-comment and translate second description -->
+<acronym>NAG</acronym> = Glifo de Anotación Numérica, por sus siglas en inglés<!-- = "numeric annotation glyph" -->
+</annotation>
+
+<p>
+El <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
+estándar PGN</a>
+define los siguientes valores <acronym>NAG</acronym>:
+</p>
+
+<box>
+  <p>Infijos:</p>
+
+  <ol start="1">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(1..6))%</li>
+  </ol>
+</box>
+
+<box>
+  <p>Sufijos:</p>
+
+  <ol start="7">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(7..139))%</li>
+  </ol>
+</box>
+
+<p>
+Otros valores <acronym>NAG</acronym> propuestos son:
+</p>
+
+<box>
+  <p>Prefijos:</p>
+
+  <ol start="140">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(140..145))%</li>
+  </ol>
+</box>
+
+<box>
+  <p>Sufijos:</p>
+
+  <ol start="146">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(146..154))%</li>
+  </ol>
+</box>
+
+<p>
+Scidb define algunos valores <acronym>NAG</acronym> más:
+</p>
+
+<box>
+  <p>Sufijos:</p>
+
+  <ol start="155">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(155..172))%</li>
+  </ol>
+</box>
+
+<p>
+Para el soporte de comentarios en los archivos ChessBase se requieren algunos
+valores <acronym>NAG</acronym> extra:
+</p>
+
+<box>
+  <ol start="173">
+    <!-- Translators: don't translate -->
+    <li>%::annotation::mc::Nag(ENUM(173..184))%</li>
+  </ol>
+</box>
+
+<p>
+Scid y ChessPad definen aún más valores <acronym>NAG</acronym> (&gt; 190), pero éstos
+serán automáticamente mapeados a los valores específicos de Scidb durante
+la importación y conversión de la base de datos.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->
