@@ -123,8 +123,6 @@ variable HiliteBackground	linen
 
 
 proc open {parent base files msg {encoding {}} {type {}} {useLog 1}} {
-Open $parent $base $files $msg $encoding $type $useLog
-return
 	::remote::busyOperation { Open $parent $base $files $msg $encoding $type $useLog }
 }
 

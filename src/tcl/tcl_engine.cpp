@@ -469,11 +469,10 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	::db::Player const* player = ::db::Player::findPlayer(stringFromObj(objc, objv, 1));
 
-	Tcl_Obj* objs[10];
-
 	if (player)
 	{
 		::db::Player::StringList const& aliases = player->aliases();
+		Tcl_Obj* objs[10];
 		Tcl_Obj* v[aliases.size() + 1];
 
 		v[0] = Tcl_NewStringObj(player->name(), player->name().size());
@@ -491,9 +490,14 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		objs[7] = Tcl_NewBooleanObj(player->supportsShuffleChess());
 		objs[8] = Tcl_NewStringObj(player->url(), -1);
 		objs[9] = Tcl_NewListObj(aliases.size() + 1, v);
+
+		setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
+	else
+	{
+		setResult("");
 	}
 
-	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	return TCL_OK;
 }
 
